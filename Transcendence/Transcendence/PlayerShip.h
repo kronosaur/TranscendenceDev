@@ -43,7 +43,7 @@ class CUIMessageController
 		CUIMessageController (void);
 
 		UIMessageTypes Find (const CString &sMessageName);
-		inline bool IsEnabled (UIMessageTypes iMsg) const { return m_bMsgEnabled[iMsg]; }
+		bool IsEnabled (UIMessageTypes iMsg) const { return m_bMsgEnabled[iMsg]; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetEnabled (UIMessageTypes iMsg, bool bEnabled = true);
 		void WriteToStream (IWriteStream *pStream);
@@ -73,8 +73,8 @@ class CManeuverController
 		bool CmdMoveTo (const CVector &vPos);
 		EManeuverTypes GetManeuver (CShip *pShip) const;
 		bool GetThrust (CShip *pShip) const;
-		inline bool IsActive (void) const { return m_iCommand != cmdNone; }
-		inline bool IsManeuverActive (void) const { return m_iCommand != cmdNone; }
+		bool IsActive (void) const { return m_iCommand != cmdNone; }
+		bool IsManeuverActive (void) const { return m_iCommand != cmdNone; }
 		bool IsThrustActive (void) const;
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Update (SUpdateCtx &Ctx, CShip *pShip);
@@ -101,68 +101,68 @@ class CPlayerShipController : public IShipController
 		~CPlayerShipController (void);
 
 		void Cargo (void);
-		inline CurrencyValue Charge (DWORD dwEconUNID, CurrencyValue iCredits) { return m_Credits.IncCredits(dwEconUNID, -iCredits); }
+		CurrencyValue Charge (DWORD dwEconUNID, CurrencyValue iCredits) { return m_Credits.IncCredits(dwEconUNID, -iCredits); }
 
 		bool CanShowShipStatus (void);
 		void Communications (CSpaceObject *pObj, MessageTypes iMsg, DWORD dwData = 0, DWORD *iodwFormationPlace = NULL);
 		void Dock (void);
-		inline bool DockingInProgress (void) { return m_pStation != NULL; }
-		inline UIMessageTypes FindUIMessage (const CString &sName) { return m_UIMsgs.Find(sName); }
+		bool DockingInProgress (void) { return m_pStation != NULL; }
+		UIMessageTypes FindUIMessage (const CString &sName) { return m_UIMsgs.Find(sName); }
 		void Gate (void);
 		void GenerateGameStats (CGameStats &Stats, bool bGameOver);
-		inline int GetBestEnemyShipsDestroyed (DWORD *retdwUNID = NULL) { return m_Stats.GetBestEnemyShipsDestroyed(retdwUNID); }
-		inline CurrencyValue GetCredits (DWORD dwEconUNID) { return m_Credits.GetCredits(dwEconUNID); }
-		inline int GetCargoSpace (void) { return mathRound(m_pShip->GetCargoSpaceLeft()); }
-		inline int GetEndGameScore (void) { return m_Stats.CalcEndGameScore(); }
-		inline int GetEnemiesDestroyed (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("enemyShipsDestroyed")), 0); }
-		inline CGameSession *GetGameSession (void) { return m_pSession; }
-		inline CPlayerGameStats &GetGameStats (void) { return m_Stats; }
-		inline CString GetItemStat (const CString &sStat, ICCItem *pItemCriteria) const { return m_Stats.GetItemStat(sStat, pItemCriteria); }
-		inline CString GetKeyEventStat (const CString &sStat, const CString &sNodeID, const CDesignTypeCriteria &Crit) const { return m_Stats.GetKeyEventStat(sStat, sNodeID, Crit); }
-		inline GenomeTypes GetPlayerGenome (void) const { return m_iGenome; }
-		inline CString GetPlayerName (void) const { return m_sName; }
-		inline int GetResurrectCount (void) const { return ::strToInt(m_Stats.GetStat(CONSTLIT("resurrectCount")), 0); }
-		inline int GetScore (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("score")), 0); }
-		inline CSpaceObject *GetSelectedTarget (void) { return m_pTarget; }
-		inline CShip *GetShip (void) { return m_pShip; }
-		inline DWORD GetStartingShipClass (void) const { return m_dwStartingShipClass; }
-		inline CString GetStat (const CString &sStat) { return m_Stats.GetStat(sStat); }
-		inline DWORD GetSystemEnteredTime (const CString &sNodeID) { return m_Stats.GetSystemEnteredTime(sNodeID); }
-		inline int GetSystemsVisited (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("systemsVisited")), 0); }
-		inline CTranscendenceWnd *GetTrans (void) { return m_pTrans; }
-		inline void IncScore (int iBonus) { m_Stats.IncStat(CONSTLIT("score"), iBonus); }
+		int GetBestEnemyShipsDestroyed (DWORD *retdwUNID = NULL) { return m_Stats.GetBestEnemyShipsDestroyed(retdwUNID); }
+		CurrencyValue GetCredits (DWORD dwEconUNID) { return m_Credits.GetCredits(dwEconUNID); }
+		int GetCargoSpace (void) { return mathRound(m_pShip->GetCargoSpaceLeft()); }
+		int GetEndGameScore (void) { return m_Stats.CalcEndGameScore(); }
+		int GetEnemiesDestroyed (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("enemyShipsDestroyed")), 0); }
+		CGameSession *GetGameSession (void) { return m_pSession; }
+		CPlayerGameStats &GetGameStats (void) { return m_Stats; }
+		CString GetItemStat (const CString &sStat, ICCItem *pItemCriteria) const { return m_Stats.GetItemStat(sStat, pItemCriteria); }
+		CString GetKeyEventStat (const CString &sStat, const CString &sNodeID, const CDesignTypeCriteria &Crit) const { return m_Stats.GetKeyEventStat(sStat, sNodeID, Crit); }
+		GenomeTypes GetPlayerGenome (void) const { return m_iGenome; }
+		CString GetPlayerName (void) const { return m_sName; }
+		int GetResurrectCount (void) const { return ::strToInt(m_Stats.GetStat(CONSTLIT("resurrectCount")), 0); }
+		int GetScore (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("score")), 0); }
+		CSpaceObject *GetSelectedTarget (void) { return m_pTarget; }
+		CShip *GetShip (void) { return m_pShip; }
+		DWORD GetStartingShipClass (void) const { return m_dwStartingShipClass; }
+		CString GetStat (const CString &sStat) { return m_Stats.GetStat(sStat); }
+		DWORD GetSystemEnteredTime (const CString &sNodeID) { return m_Stats.GetSystemEnteredTime(sNodeID); }
+		int GetSystemsVisited (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("systemsVisited")), 0); }
+		CTranscendenceWnd *GetTrans (void) { return m_pTrans; }
+		void IncScore (int iBonus) { m_Stats.IncStat(CONSTLIT("score"), iBonus); }
 		void Init (CTranscendenceWnd *pTrans);
 		void InsuranceClaim (void);
-		inline bool IsGalacticMapAvailable (void) { return (m_pShip && (m_pShip->GetAbility(::ablGalacticMap) > ::ablUninstalled)); }
-		inline bool IsMapHUDActive (void) { return m_bMapHUD; }
-		inline bool IsUIMessageEnabled (UIMessageTypes iMsg) { return m_UIMsgs.IsEnabled(iMsg); }
+		bool IsGalacticMapAvailable (void) { return (m_pShip && (m_pShip->GetAbility(::ablGalacticMap) > ::ablUninstalled)); }
+		bool IsMapHUDActive (void) { return m_bMapHUD; }
+		bool IsUIMessageEnabled (UIMessageTypes iMsg) { return m_UIMsgs.IsEnabled(iMsg); }
 		void OnEnemyShipsDetected (void);
-		inline void OnGameEnd (void) { m_Stats.OnGameEnd(m_pShip); }
-		inline void OnMouseAimSetting (bool bEnabled) { if (!bEnabled) m_ManeuverController.CmdCancel(); }
+		void OnGameEnd (void) { m_Stats.OnGameEnd(m_pShip); }
+		void OnMouseAimSetting (bool bEnabled) { if (!bEnabled) m_ManeuverController.CmdCancel(); }
 		void OnStartGame (void);
 		void OnSystemEntered (CSystem *pSystem, int *retiLastVisit = NULL) { m_Stats.OnSystemEntered(pSystem, retiLastVisit); }
 		void OnSystemLeft (CSystem *pSystem) { m_Stats.OnSystemLeft(pSystem); }
-		inline CurrencyValue Payment (DWORD dwEconUNID, CurrencyValue iCredits) { return m_Credits.IncCredits(dwEconUNID, iCredits); }
+		CurrencyValue Payment (DWORD dwEconUNID, CurrencyValue iCredits) { return m_Credits.IncCredits(dwEconUNID, iCredits); }
 		void ReadyNextWeapon (int iDir = 1);
 		void ReadyNextMissile (int iDir = 1);
-		inline void SetCharacterClass (CGenericType *pClass) { m_pCharacterClass = pClass; }
-		inline void SetGameSession (CGameSession *pSession) { m_pSession = pSession; }
-		inline void SetGenome (GenomeTypes iGenome) { m_iGenome = iGenome; }
-		inline void SetMapHUD (bool bActive) { m_bMapHUD = bActive; }
-		inline void SetMouseAimAngle (int iAngle) { m_ManeuverController.CmdMouseAim(iAngle); }
-		inline void SetName (const CString &sName) { m_sName = sName; }
-		inline void SetResurrectCount (int iCount) { m_Stats.SetStat(CONSTLIT("resurrectCount"), ::strFromInt(iCount)); }
-		inline void SetStartingShipClass (DWORD dwUNID) { m_dwStartingShipClass = dwUNID; }
+		void SetCharacterClass (CGenericType *pClass) { m_pCharacterClass = pClass; }
+		void SetGameSession (CGameSession *pSession) { m_pSession = pSession; }
+		void SetGenome (GenomeTypes iGenome) { m_iGenome = iGenome; }
+		void SetMapHUD (bool bActive) { m_bMapHUD = bActive; }
+		void SetMouseAimAngle (int iAngle) { m_ManeuverController.CmdMouseAim(iAngle); }
+		void SetName (const CString &sName) { m_sName = sName; }
+		void SetResurrectCount (int iCount) { m_Stats.SetStat(CONSTLIT("resurrectCount"), ::strFromInt(iCount)); }
+		void SetStartingShipClass (DWORD dwUNID) { m_dwStartingShipClass = dwUNID; }
 		void SetTarget (CSpaceObject *pTarget);
 		void SelectNearestTarget (void);
 		void SelectNextFriendly (int iDir = 1);
 		void SelectNextTarget (int iDir = 1);
-		inline void SetActivate (bool bActivate) { m_bActivate = bActivate; }
+		void SetActivate (bool bActivate) { m_bActivate = bActivate; }
 		void SetFireMain (bool bFire);
-		inline void SetFireMissile (bool bFire);
-		inline void SetShip (CShip *pShip) { m_pShip = pShip; }
-		inline void SetStopThrust (bool bStop) { m_bStopThrust = bStop; }
-		inline void SetUIMessageEnabled (UIMessageTypes iMsg, bool bEnabled = true) { m_UIMsgs.SetEnabled(iMsg, bEnabled); }
+		void SetFireMissile (bool bFire);
+		void SetShip (CShip *pShip) { m_pShip = pShip; }
+		void SetStopThrust (bool bStop) { m_bStopThrust = bStop; }
+		void SetUIMessageEnabled (UIMessageTypes iMsg, bool bEnabled = true) { m_UIMsgs.SetEnabled(iMsg, bEnabled); }
 		ALERROR SwitchShips (CShip *pNewShip, SPlayerChangedShipsCtx &Options);
 		void Undock (void);
 		void Update (int iTick);

@@ -794,22 +794,7 @@ CPlayerGameStats::SItemTypeStats *CPlayerGameStats::GetItemStats (DWORD dwUNID)
 	{
 	SItemTypeStats *pStats = m_ItemStats.Find(dwUNID);
 	if (pStats == NULL)
-		{
 		pStats = m_ItemStats.Insert(dwUNID);
-		pStats->iCountSold = 0;
-		pStats->iValueSold = 0;
-		pStats->iCountBought = 0;
-		pStats->iValueBought = 0;
-
-		pStats->iCountInstalled = 0;
-		pStats->dwFirstInstalled = INVALID_TIME;
-		pStats->dwLastInstalled = INVALID_TIME;
-		pStats->dwLastUninstalled = INVALID_TIME;
-		pStats->dwTotalInstalledTime = 0;
-
-		pStats->iCountFired = 0;
-		pStats->iHPDamaged = 0;
-		}
 
 	return pStats;
 	}
@@ -1591,7 +1576,6 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 //	CString				sObjName
 
 	{
-	int i, j;
 	DWORD dwLoad, dwCount;
 
 	//	Prior to version 49 we only saved:
@@ -1604,14 +1588,14 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion < 49)
 		{
-		Ctx.pStream->Read((char *)&m_iScore, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iExtraSystemsVisited, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iExtraEnemyShipsDestroyed, sizeof(DWORD));
+		Ctx.pStream->Read(m_iScore);
+		Ctx.pStream->Read(m_iExtraSystemsVisited);
+		Ctx.pStream->Read(m_iExtraEnemyShipsDestroyed);
 
 		//	Load the ship class and count of the best enemy
 
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
+		Ctx.pStream->Read(dwCount);
 
 		if (dwLoad)
 			{
@@ -1630,97 +1614,97 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 
 	//	New version
 
-	Ctx.pStream->Read((char *)&m_iScore, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iExtraSystemsVisited, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iExtraEnemyShipsDestroyed, sizeof(DWORD));
+	Ctx.pStream->Read(m_iScore);
+	Ctx.pStream->Read(m_iExtraSystemsVisited);
+	Ctx.pStream->Read(m_iExtraEnemyShipsDestroyed);
 	if (Ctx.dwVersion >= 53)
 		{
-		Ctx.pStream->Read((char *)&m_PlayTime, sizeof(CTimeSpan));
-		Ctx.pStream->Read((char *)&m_GameTime, sizeof(CTimeSpan));
+		m_PlayTime.ReadFromStream(Ctx.pStream);
+		m_GameTime.ReadFromStream(Ctx.pStream);
 		}
 
     if (Ctx.dwVersion >= 129)
-    	Ctx.pStream->Read((char *)&m_rFuelConsumed, sizeof(Metric));
+    	Ctx.pStream->Read(m_rFuelConsumed);
 
-	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
+	Ctx.pStream->Read(dwCount);
+	for (int i = 0; i < (int)dwCount; i++)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		SItemTypeStats *pStats = m_ItemStats.Insert(dwLoad);
 
-		Ctx.pStream->Read((char *)&pStats->iCountSold, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->iValueSold, sizeof(CurrencyValue));
-		Ctx.pStream->Read((char *)&pStats->iCountBought, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->iValueBought, sizeof(CurrencyValue));
-		Ctx.pStream->Read((char *)&pStats->iCountInstalled, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->dwFirstInstalled, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->dwLastInstalled, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->dwLastUninstalled, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->dwTotalInstalledTime, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->iCountFired, sizeof(DWORD));
+		Ctx.pStream->Read(pStats->iCountSold);
+		Ctx.pStream->Read(pStats->iValueSold);
+		Ctx.pStream->Read(pStats->iCountBought);
+		Ctx.pStream->Read(pStats->iValueBought);
+		Ctx.pStream->Read(pStats->iCountInstalled);
+		Ctx.pStream->Read(pStats->dwFirstInstalled);
+		Ctx.pStream->Read(pStats->dwLastInstalled);
+		Ctx.pStream->Read(pStats->dwLastUninstalled);
+		Ctx.pStream->Read(pStats->dwTotalInstalledTime);
+		Ctx.pStream->Read(pStats->iCountFired);
 
 		if (Ctx.dwVersion >= 102)
-			Ctx.pStream->Read((char *)&pStats->iHPDamaged, sizeof(DWORD));
+			Ctx.pStream->Read(pStats->iHPDamaged);
 		else
 			pStats->iHPDamaged = 0;
 		}
 
-	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
+	Ctx.pStream->Read(dwCount);
+	for (int i = 0; i < (int)dwCount; i++)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		SShipClassStats *pStats = m_ShipStats.Insert(dwLoad);
 
-		Ctx.pStream->Read((char *)&pStats->iEnemyDestroyed, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->iFriendDestroyed, sizeof(DWORD));
+		Ctx.pStream->Read(pStats->iEnemyDestroyed);
+		Ctx.pStream->Read(pStats->iFriendDestroyed);
 		}
 
-	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
+	Ctx.pStream->Read(dwCount);
+	for (int i = 0; i < (int)dwCount; i++)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		SStationTypeStats *pStats = m_StationStats.Insert(dwLoad);
 
-		Ctx.pStream->Read((char *)&pStats->iDestroyed, sizeof(DWORD));
+		Ctx.pStream->Read(pStats->iDestroyed);
 		}
 
-	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
+	Ctx.pStream->Read(dwCount);
+	for (int i = 0; i < (int)dwCount; i++)
 		{
 		CString sNodeID;
 		sNodeID.ReadFromStream(Ctx.pStream);
 		SSystemStats *pStats = m_SystemStats.Insert(sNodeID);
 
-		Ctx.pStream->Read((char *)&pStats->dwFirstEntered, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->dwLastEntered, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->dwLastLeft, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pStats->dwTotalTime, sizeof(DWORD));
+		Ctx.pStream->Read(pStats->dwFirstEntered);
+		Ctx.pStream->Read(pStats->dwLastEntered);
+		Ctx.pStream->Read(pStats->dwLastLeft);
+		Ctx.pStream->Read(pStats->dwTotalTime);
 		}
 
 	//	Read the m_KeyEventStats
 
 	if (Ctx.dwVersion >= 74)
 		{
-		Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-		for (i = 0; i < (int)dwCount; i++)
+		Ctx.pStream->Read(dwCount);
+		for (int i = 0; i < (int)dwCount; i++)
 			{
 			CString sNodeID;
 			sNodeID.ReadFromStream(Ctx.pStream);
 			TArray<SKeyEventStats> *pEventList = m_KeyEventStats.Insert(sNodeID);
 
 			DWORD dwListCount;
-			Ctx.pStream->Read((char *)&dwListCount, sizeof(DWORD));
-			for (j = 0; j < (int)dwListCount; j++)
+			Ctx.pStream->Read(dwListCount);
+			for (int j = 0; j < (int)dwListCount; j++)
 				{
 				SKeyEventStats *pStats = pEventList->Insert();
 
-				Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+				Ctx.pStream->Read(dwLoad);
 				pStats->iType = (EEventTypes)dwLoad;
 
-				Ctx.pStream->Read((char *)&pStats->dwTime, sizeof(DWORD));
-				Ctx.pStream->Read((char *)&pStats->dwObjUNID, sizeof(DWORD));
-				Ctx.pStream->Read((char *)&pStats->dwCauseUNID, sizeof(DWORD));
-				Ctx.pStream->Read((char *)&pStats->dwObjNameFlags, sizeof(DWORD));
+				Ctx.pStream->Read(pStats->dwTime);
+				Ctx.pStream->Read(pStats->dwObjUNID);
+				Ctx.pStream->Read(pStats->dwCauseUNID);
+				Ctx.pStream->Read(pStats->dwObjNameFlags);
 				pStats->sObjName.ReadFromStream(Ctx.pStream);
 				}
 			}
@@ -1806,64 +1790,63 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 	{
 	DWORD dwSave;
 	CMapIterator i;
-	int j;
 
-	pStream->Write((char *)&m_iScore, sizeof(DWORD));
-	pStream->Write((char *)&m_iExtraSystemsVisited, sizeof(DWORD));
-	pStream->Write((char *)&m_iExtraEnemyShipsDestroyed, sizeof(DWORD));
-	pStream->Write((char *)&m_PlayTime, sizeof(CTimeSpan));
-	pStream->Write((char *)&m_GameTime, sizeof(CTimeSpan));
-	pStream->Write((char *)&m_rFuelConsumed, sizeof(Metric));
+	pStream->Write(m_iScore);
+	pStream->Write(m_iExtraSystemsVisited);
+	pStream->Write(m_iExtraEnemyShipsDestroyed);
+	m_PlayTime.WriteToStream(pStream);
+	m_GameTime.WriteToStream(pStream);
+	pStream->Write(m_rFuelConsumed);
 
 	dwSave = m_ItemStats.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	m_ItemStats.Reset(i);
 	while (m_ItemStats.HasMore(i))
 		{
 		SItemTypeStats *pStats;
 		DWORD dwUNID = m_ItemStats.GetNext(i, &pStats);
 
-		pStream->Write((char *)&dwUNID, sizeof(DWORD));
-		pStream->Write((char *)&pStats->iCountSold, sizeof(DWORD));
-		pStream->Write((char *)&pStats->iValueSold, sizeof(CurrencyValue));
-		pStream->Write((char *)&pStats->iCountBought, sizeof(DWORD));
-		pStream->Write((char *)&pStats->iValueBought, sizeof(CurrencyValue));
-		pStream->Write((char *)&pStats->iCountInstalled, sizeof(DWORD));
-		pStream->Write((char *)&pStats->dwFirstInstalled, sizeof(DWORD));
-		pStream->Write((char *)&pStats->dwLastInstalled, sizeof(DWORD));
-		pStream->Write((char *)&pStats->dwLastUninstalled, sizeof(DWORD));
-		pStream->Write((char *)&pStats->dwTotalInstalledTime, sizeof(DWORD));
-		pStream->Write((char *)&pStats->iCountFired, sizeof(DWORD));
-		pStream->Write((char *)&pStats->iHPDamaged, sizeof(DWORD));
+		pStream->Write(dwUNID);
+		pStream->Write(pStats->iCountSold);
+		pStream->Write(pStats->iValueSold);
+		pStream->Write(pStats->iCountBought);
+		pStream->Write(pStats->iValueBought);
+		pStream->Write(pStats->iCountInstalled);
+		pStream->Write(pStats->dwFirstInstalled);
+		pStream->Write(pStats->dwLastInstalled);
+		pStream->Write(pStats->dwLastUninstalled);
+		pStream->Write(pStats->dwTotalInstalledTime);
+		pStream->Write(pStats->iCountFired);
+		pStream->Write(pStats->iHPDamaged);
 		}
 
 	dwSave = m_ShipStats.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	m_ShipStats.Reset(i);
 	while (m_ShipStats.HasMore(i))
 		{
 		SShipClassStats *pStats;
 		DWORD dwUNID = m_ShipStats.GetNext(i, &pStats);
 
-		pStream->Write((char *)&dwUNID, sizeof(DWORD));
-		pStream->Write((char *)&pStats->iEnemyDestroyed, sizeof(DWORD));
-		pStream->Write((char *)&pStats->iFriendDestroyed, sizeof(DWORD));
+		pStream->Write(dwUNID);
+		pStream->Write(pStats->iEnemyDestroyed);
+		pStream->Write(pStats->iFriendDestroyed);
 		}
 
 	dwSave = m_StationStats.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	m_StationStats.Reset(i);
 	while (m_StationStats.HasMore(i))
 		{
 		SStationTypeStats *pStats;
 		DWORD dwUNID = m_StationStats.GetNext(i, &pStats);
 
-		pStream->Write((char *)&dwUNID, sizeof(DWORD));
-		pStream->Write((char *)&pStats->iDestroyed, sizeof(DWORD));
+		pStream->Write(dwUNID);
+		pStream->Write(pStats->iDestroyed);
 		}
 
 	dwSave = m_SystemStats.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	m_SystemStats.Reset(i);
 	while (m_SystemStats.HasMore(i))
 		{
@@ -1871,14 +1854,14 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 		const CString &sNodeID = m_SystemStats.GetNext(i, &pStats);
 
 		sNodeID.WriteToStream(pStream);
-		pStream->Write((char *)&pStats->dwFirstEntered, sizeof(DWORD));
-		pStream->Write((char *)&pStats->dwLastEntered, sizeof(DWORD));
-		pStream->Write((char *)&pStats->dwLastLeft, sizeof(DWORD));
-		pStream->Write((char *)&pStats->dwTotalTime, sizeof(DWORD));
+		pStream->Write(pStats->dwFirstEntered);
+		pStream->Write(pStats->dwLastEntered);
+		pStream->Write(pStats->dwLastLeft);
+		pStream->Write(pStats->dwTotalTime);
 		}
 
 	dwSave = m_KeyEventStats.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	m_KeyEventStats.Reset(i);
 	while (m_KeyEventStats.HasMore(i))
 		{
@@ -1888,18 +1871,18 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 		sNodeID.WriteToStream(pStream);
 
 		DWORD dwCount = pEventList->GetCount();
-		pStream->Write((char *)&dwCount, sizeof(DWORD));
-		for (j = 0; j < (int)dwCount; j++)
+		pStream->Write(dwCount);
+		for (int j = 0; j < (int)dwCount; j++)
 			{
 			SKeyEventStats *pStats = &pEventList->GetAt(j);
 
 			dwSave = (DWORD)pStats->iType;
-			pStream->Write((char *)&dwSave, sizeof(DWORD));
+			pStream->Write(dwSave);
 
-			pStream->Write((char *)&pStats->dwTime, sizeof(DWORD));
-			pStream->Write((char *)&pStats->dwObjUNID, sizeof(DWORD));
-			pStream->Write((char *)&pStats->dwCauseUNID, sizeof(DWORD));
-			pStream->Write((char *)&pStats->dwObjNameFlags, sizeof(DWORD));
+			pStream->Write(pStats->dwTime);
+			pStream->Write(pStats->dwObjUNID);
+			pStream->Write(pStats->dwCauseUNID);
+			pStream->Write(pStats->dwObjNameFlags);
 			pStats->sObjName.WriteToStream(pStream);
 			}
 		}
