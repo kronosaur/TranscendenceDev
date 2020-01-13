@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidMiningSkill;">
+		<Properties>
+			<Constant id="rpg.xpPerItem">6</Constant>"
+			<Constant id="rpg.xpPerFailedTry">0.5</Constant>"
+
+			<Global id="rpg.miningRank">0</Global>
+			<Global id="rpg.miningXP">0</Global>
+			<Global id="rpg.miningYieldAdj">1.0</Global>
+
+			<Global id="rpg.debugMining">True</Global>
+		</Properties>
+	</Type>
+
+</TranscendenceModule>

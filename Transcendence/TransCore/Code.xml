@@ -82,7 +82,7 @@
 					(totalIllegalProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Illegal")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "*~wsam +Illegal"))
 						)
-					(totalOreMinedValue (plyGetItemStat gPlayer 'itemsMinedValue "* +ore"))
+					(totalOreMinedValue (plyGetItemStat gPlayer 'itemsMinedValue "* +ore | * +minable;"))
 
 					; Conducts
 					(systemData (plyGetStat gPlayer "systemData"))
@@ -171,7 +171,7 @@
 							(list (list "Profit on ship's equipment" totalEquipProfit "commerce"))
 							)
 						(if (gr totalOreMinedValue 0)
-							(list (list "Value of ore mined" totalOreMinedValue "commerce"))
+							(list (list "Value of mined resources" totalOreMinedValue "commerce"))
 							)
 							
 						; Slave sales

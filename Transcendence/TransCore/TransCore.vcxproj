@@ -622,6 +622,7 @@
     <Xml Include="RPGLibrary.xml" />
     <Xml Include="GalaxyLibrary.xml" />
     <Xml Include="RPGMembership.xml" />
+    <Xml Include="RPGMining.xml" />
     <Xml Include="RPGRumors.xml" />
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>

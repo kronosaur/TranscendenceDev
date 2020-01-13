@@ -51,8 +51,9 @@
 			<Sell	criteria="wNU +unid:&itMiningLaser;;" priceAdj="100"	inventoryAdj="100"/>
 			<Sell	criteria="cNU +unid:&itMinersCargoHold;;" priceAdj="100"	inventoryAdj="100"/>
 			<Sell	criteria="*NU +miningEquipment; -defective; -Illegal; -NotForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ru|c|cur"/>
-			<Sell	criteria="*NU +Ore; -defective; -NotForSale;"	priceAdj="100"/>
-			<Buy	criteria="*NU +Food; -Illegal; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU +ore; -defective; -notForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU +minable; -defective; -notForSale;"	priceAdj="100"/>
+			<Buy	criteria="*NU +food; -illegal; -notForSale;"	priceAdj="100"/>
 			
 			<Refuel			criteria="f +BasicFuel; L:1-5;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-5;" priceAdj="100"/>
@@ -73,9 +74,8 @@
 
 		<Items>
 			<RandomItem 
-					criteria=		"* +Ore; -NotStandard; -NotForSale;"
-					level=			"1"
-					levelCurve=		"2"
+					criteria=		"* +ore; -notStandard; -notForSale; | * +minable; -notStandard; -notForSale;"
+					levelFrequency= "systemLevel:ru|c|ur"
 					/>
 		</Items>
 

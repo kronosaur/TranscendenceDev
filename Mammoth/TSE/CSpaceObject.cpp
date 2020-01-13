@@ -2820,6 +2820,7 @@ void CSpaceObject::FireOnMining (const SDamageCtx &Ctx)
 		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(this);
 		CCCtx.SaveAndDefineSourceVar(this);
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aMiner"), Ctx.Attacker.GetObj());
 		CCCtx.DefineVector(CONSTLIT("aMinePos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aMineDir"), Ctx.iDirection);

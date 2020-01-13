@@ -897,5 +897,8 @@
     <Xml Include="Makayev.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </Xml>
+    <Xml Include="RPGMining.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
