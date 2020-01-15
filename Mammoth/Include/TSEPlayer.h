@@ -30,12 +30,15 @@ class CPlayerGameStats
 		CString GetItemStat (const CString &sStat, ICCItem *pItemCriteria) const;
 		CString GetKeyEventStat (const CString &sStat, const CString &sNodeID, const CDesignTypeCriteria &Crit) const;
         CTimeSpan GetPlayTime (void) const;
-		CString GetStat (const CString &sStat) const;
+		ICCItemPtr GetStat (const CString &sStat) const;
+		CString GetStatString (const CString &sStat) const;
 		DWORD GetSystemEnteredTime (const CString &sNodeID);
         DWORD GetSystemLastVisitedTime (const CString &sNodeID);
+		ICCItemPtr GetSystemStat (const CString &sStat, const CString &sNodeID) const;
 		int IncItemStat (const CString &sStat, DWORD dwUNID, int iInc);
 		int IncScore (int iScore) { m_iScore = Max(0, m_iScore + iScore); return m_iScore; }
 		int IncStat (const CString &sStat, int iInc = 1);
+		int IncSystemStat (const CString &sStat, const CString &sNodeID, int iInc);
         void OnFuelConsumed (CSpaceObject *pPlayer, Metric rFuel) { m_rFuelConsumed += rFuel; }
 		void OnGameEnd (CSpaceObject *pPlayer);
 		void OnItemBought (const CItem &Item, CurrencyValue iTotalPrice);
@@ -108,6 +111,8 @@ class CPlayerGameStats
 			DWORD dwLastEntered = INVALID_TIME;		//	Last time this system was entered (0xffffffff = never)
 			DWORD dwLastLeft = INVALID_TIME;		//	Last time this system was left (0xffffffff = never)
 			DWORD dwTotalTime = 0;					//	Total time in system (all visits)
+
+			int iAsteroidsMined = 0;				//	Count of asteroids explored for resources
 			};
 
 		bool AddMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStats> *pEventList, TArray<SKeyEventStatsResult> *retList) const;
@@ -117,7 +122,8 @@ class CPlayerGameStats
 		bool GetMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStatsResult> *retList) const;
 		SShipClassStats *GetShipStats (DWORD dwUNID);
 		SStationTypeStats *GetStationStats (DWORD dwUNID);
-		SSystemStats *GetSystemStats (const CString &sNodeID);
+		const SSystemStats *GetSystemStats (const CString &sNodeID) const;
+		SSystemStats *SetSystemStats (const CString &sNodeID);
 
 		static void WriteTimeValue (CMemoryWriteStream &Output, DWORD dwTime);
 

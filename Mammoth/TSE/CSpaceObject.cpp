@@ -1363,6 +1363,10 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 		pObj->m_fHasOnOrderChangedEvent = pObj->FindEventHandler(CONSTLIT("OnOrderChanged"));
 		}
 
+	//	Set event flags in case any events got added
+
+	pObj->SetEventFlags();
+
 	//	Done
 
 	*retpObj = pObj;

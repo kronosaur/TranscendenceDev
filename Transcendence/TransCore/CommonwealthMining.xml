@@ -154,6 +154,10 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &dsCommonwealthMiningInfo;)
+							</Action>
+
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +commonwealthMining; =" (sysGetLevel) ";")
@@ -180,7 +184,6 @@
 					</Default>
 				</Panes>
 			</Main>
-
 		</DockScreens>
 
 		<!-- Events and Data -->
@@ -206,6 +209,27 @@
 						)
 					)
 			</OnCreate>
+
+			<GetDockScreen>
+				(block (
+					newRankDesc
+					)
+					(dbgOutput "GetDockScreen")
+					(switch
+						;	See if the player has been promoted.
+						;	NOTE: Can't advance beyond wildcatter at a mining
+						;	colony; must join IMU.
+
+						(and (ls (typGetProperty &unidMiningSkill; 'rpg.miningRank) 3)
+								(setq newRankDesc (typFireEvent &unidMiningSkill; 'CheckPromotion))
+								)
+							{
+								screen: &dsCommonwealthMiningPromotion;
+								priority: 5
+								}
+						)
+					)
+			</GetDockScreen>
 			
 			<GetGlobalAchievements>
 				(rpgMissionAchievements &stMiningColony; "* +commonwealthMining;")
@@ -430,6 +454,164 @@
 			</Text>
 		</Language>
 	</StationType>
+
+<!-- DOCK SCREENS -->
+
+	<DockScreen unid="&dsCommonwealthMiningInfo;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+						(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+						(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
+
+						(totalAsteroids (count (sysFindObject Nil "t +property:canBeMined;")))
+						(exploredAsteroids (count (sysFindObject Nil "t +property:canBeMined; +property:explored;")))
+						(percentExplored
+							(if (gr totalAsteroids 0)
+								(cat (round (* 100 (/ exploredAsteroids totalAsteroids))) "%")
+								"N/A"
+								)
+							)
+						)
+						(scrSetDescTranslate gScreen (cat "descInfo." rankID) {
+							yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+							asteroidsMined: (fmtNumber asteroidsMined)
+							percentExplored: percentExplored
+							})
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="descInfo.novice">
+				LATER: Mining is fun, try it!
+			</Text>
+			<Text id="descInfo.digger">
+				
+				Rank: Digger\n
+				Skill: %yieldAdj% yield\n
+				Asteroids Mined: %asteroidsMined%\n
+				Asteroids Explored: %percentExplored%
+
+			</Text>
+			<Text id="descInfo.excavator">
+				
+				Rank: Excavator\n
+				Skill: %yieldAdj% yield\n
+				Asteroids Mined: %asteroidsMined%\n
+				Asteroids Explored: %percentExplored%
+
+			</Text>
+			<Text id="descInfo.wildcatter">
+				
+				Rank: Wildcatter\n
+				Skill: %yieldAdj% yield\n
+				Asteroids Mined: %asteroidsMined%\n
+				Asteroids Explored: %percentExplored%
+
+			</Text>
+			<Text id="descInfo.prospector">
+				
+				Rank: Prospector\n
+				Skill: %yieldAdj% yield\n
+				Asteroids Mined: %asteroidsMined%\n
+				Asteroids Explored: %percentExplored%
+
+			</Text>
+			<Text id="descInfo.miner">
+				
+				Rank: Miner\n
+				Skill: %yieldAdj% yield\n
+				Asteroids Mined: %asteroidsMined%\n
+				Asteroids Explored: %percentExplored%
+
+			</Text>
+			<Text id="descInfo.expertMiner">
+				
+				Rank: Expert Miner\n
+				Skill: %yieldAdj% yield\n
+				Asteroids Mined: %asteroidsMined%\n
+				Asteroids Explored: %percentExplored%
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<DockScreen unid="&dsCommonwealthMiningPromotion;"
+			
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+						(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+						)
+						(scrSetDescTranslate gScreen (cat "descPromotion." rankID) {
+							yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+							})
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="descPromotion.digger">
+
+				LATER: Congratulations, you are now an asteroid miner.
+			
+			</Text>
+			<Text id="descPromotion.excavator">
+
+				LATER: You are now recognized as an excavator.
+			
+			</Text>
+			<Text id="descPromotion.wildcatter">
+
+				LATER: You are now recognized as a wildcatter. Your skill give 
+				you a %yieldAdj% bonus to mining yield.
+			
+			</Text>
+			<Text id="descPromotion.prospector">
+
+				LATER: You are now recognized as a prospector. Your skill give 
+				you a %yieldAdj% bonus to mining yield.
+			
+			</Text>
+			<Text id="descPromotion.miner">
+
+				LATER: You are now recognized as a miner. Your skill give 
+				you a %yieldAdj% bonus to mining yield.
+			
+			</Text>
+			<Text id="descPromotion.expertMiner">
+
+				LATER: You are now recognized as an expert miner. Your skill give 
+				you a %yieldAdj% bonus to mining yield.
+			
+			</Text>
+		</Language>
+	</DockScreen>
 	
 <!-- RESOURCES -->
 

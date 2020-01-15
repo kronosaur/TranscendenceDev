@@ -5,7 +5,8 @@
 
 #include "PreComp.h"
 
-#define BEST_ENEMY_SHIPS_DESTROYED_STATS		CONSTLIT("bestEnemyShipsDestroyed")
+#define ASTEROIDS_MINED_STAT					CONSTLIT("asteroidsMined")
+#define BEST_ENEMY_SHIPS_DESTROYED_STAT			CONSTLIT("bestEnemyShipsDestroyed")
 #define ENEMY_OBJS_DESTROYED_STAT				CONSTLIT("enemyObjsDestroyed")
 #define ENEMY_SHIPS_DESTROYED_STAT				CONSTLIT("enemyShipsDestroyed")
 #define ENEMY_STATIONS_DESTROYED_STAT			CONSTLIT("enemyStationsDestroyed")
@@ -131,7 +132,7 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 //  Returns a the given property (or NULL).
 
     {
-    if (strEquals(sProperty, BEST_ENEMY_SHIPS_DESTROYED_STATS))
+    if (strEquals(sProperty, BEST_ENEMY_SHIPS_DESTROYED_STAT))
         {
         DWORD dwUNID;
         int iCount = GetBestEnemyShipsDestroyed(&dwUNID);
@@ -258,6 +259,9 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
             if (pStats->dwTotalTime != INVALID_TIME)
                 pSysData->SetIntegerAt(CONSTLIT("totalTimeSpent"), pStats->dwTotalTime);
 
+			if (pStats->iAsteroidsMined > 0)
+                pSysData->SetIntegerAt(CONSTLIT("asteroidsMined"), pStats->iAsteroidsMined);
+
             pResult->Append(pSysData);
             pSysData->Discard();
 			}
@@ -319,19 +323,19 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 
 	//	Some combat stats
 
-	CString sDestroyed = GetStat(ENEMY_SHIPS_DESTROYED_STAT);
+	CString sDestroyed = GetStatString(ENEMY_SHIPS_DESTROYED_STAT);
 	if (!sDestroyed.IsBlank())
 		Stats.Insert(CONSTLIT("Enemy ships destroyed"), sDestroyed, CONSTLIT("combat"));
 
-	sDestroyed = GetStat(FRIENDLY_SHIPS_DESTROYED_STAT);
+	sDestroyed = GetStatString(FRIENDLY_SHIPS_DESTROYED_STAT);
 	if (!sDestroyed.IsBlank())
 		Stats.Insert(CONSTLIT("Friendly ships destroyed"), sDestroyed, CONSTLIT("combat"));
 
-	sDestroyed = GetStat(ENEMY_STATIONS_DESTROYED_STAT);
+	sDestroyed = GetStatString(ENEMY_STATIONS_DESTROYED_STAT);
 	if (!sDestroyed.IsBlank())
 		Stats.Insert(CONSTLIT("Enemy stations destroyed"), sDestroyed, CONSTLIT("combat"));
 
-	sDestroyed = GetStat(FRIENDLY_STATIONS_DESTROYED_STAT);
+	sDestroyed = GetStatString(FRIENDLY_STATIONS_DESTROYED_STAT);
 	if (!sDestroyed.IsBlank())
 		Stats.Insert(CONSTLIT("Friendly stations destroyed"), sDestroyed, CONSTLIT("combat"));
 
@@ -933,14 +937,51 @@ CPlayerGameStats::SShipClassStats *CPlayerGameStats::GetShipStats (DWORD dwUNID)
 	return pStats;
 	}
 
-CString CPlayerGameStats::GetStat (const CString &sStat) const
+ICCItemPtr CPlayerGameStats::GetStat (const CString &sStat) const
 
 //	GetStat
 //
 //	Returns the given stat
 
 	{
-	if (strEquals(sStat, BEST_ENEMY_SHIPS_DESTROYED_STATS))
+	if (strEquals(sStat, ASTEROIDS_MINED_STAT))
+		{
+		//	Total asteroids mined across all systems.
+
+		CMapIterator i;
+		int iCount = 0;
+		m_SystemStats.Reset(i);
+		while (m_SystemStats.HasMore(i))
+			{
+			SSystemStats *pStats;
+			m_SystemStats.GetNext(i, &pStats);
+
+			iCount += pStats->iAsteroidsMined;
+			}
+
+		if (iCount == 0)
+			return ICCItemPtr::Nil();
+		else
+			return ICCItemPtr(iCount);
+		}
+	else
+		{
+		CString sResult = GetStatString(sStat);
+		if (sResult.IsBlank())
+			return ICCItemPtr::Nil();
+		else
+			return CCodeChain::LinkCode(sResult);
+		}
+	}
+
+CString CPlayerGameStats::GetStatString (const CString &sStat) const
+
+//	GetStatString
+//
+//	Returns the given stat
+
+	{
+	if (strEquals(sStat, BEST_ENEMY_SHIPS_DESTROYED_STAT))
 		{
 		DWORD dwUNID;
 		int iCount = GetBestEnemyShipsDestroyed(&dwUNID);
@@ -1153,24 +1194,42 @@ DWORD CPlayerGameStats::GetSystemLastVisitedTime (const CString &sNodeID)
     return INVALID_TIME;
     }
 
-CPlayerGameStats::SSystemStats *CPlayerGameStats::GetSystemStats (const CString &sNodeID)
+const CPlayerGameStats::SSystemStats *CPlayerGameStats::GetSystemStats (const CString &sNodeID) const
 
 //	GetSystemStats
 //
 //	Get system stats
 
 	{
-	SSystemStats *pStats = m_SystemStats.Find(sNodeID);
-	if (pStats == NULL)
+	if (sNodeID.IsBlank())
 		{
-		pStats = m_SystemStats.Insert(sNodeID);
-		pStats->dwFirstEntered = INVALID_TIME;
-		pStats->dwLastEntered = INVALID_TIME;
-		pStats->dwLastLeft = INVALID_TIME;
-		pStats->dwTotalTime = 0;
-		}
+		const CTopologyNode *pNode = m_Universe.GetCurrentTopologyNode();
+		if (pNode == NULL)
+			return NULL;
 
-	return pStats;
+		return m_SystemStats.Find(pNode->GetID());
+		}
+	else
+		{
+		return m_SystemStats.Find(sNodeID);
+		}
+	}
+
+ICCItemPtr CPlayerGameStats::GetSystemStat (const CString &sStat, const CString &sNodeID) const
+
+//	GetSystemStat
+//
+//	Returns a stat about the given system.
+
+	{
+	const SSystemStats *pStats = GetSystemStats(sNodeID);
+	if (pStats == NULL)
+		return ICCItemPtr::Nil();
+
+	if (strEquals(sStat, ASTEROIDS_MINED_STAT))
+		return ICCItemPtr(pStats->iAsteroidsMined);
+	else
+		return ICCItemPtr::Nil();
 	}
 
 int CPlayerGameStats::IncItemStat (const CString &sStat, DWORD dwUNID, int iInc)
@@ -1230,6 +1289,26 @@ int CPlayerGameStats::IncStat (const CString &sStat, int iInc)
 	{
 	if (strEquals(sStat, SCORE_STAT))
 		return (m_iScore += iInc);
+	else
+		return 0;
+	}
+
+int CPlayerGameStats::IncSystemStat (const CString &sStat, const CString &sNodeID, int iInc)
+
+//	IntSystemStat
+//
+//	Increments a system stat
+
+	{
+	SSystemStats *pStats = SetSystemStats(sNodeID);
+	if (pStats == NULL)
+		return 0;
+
+	if (strEquals(sStat, ASTEROIDS_MINED_STAT))
+		{
+		pStats->iAsteroidsMined += iInc;
+		return pStats->iAsteroidsMined;
+		}
 	else
 		return 0;
 	}
@@ -1488,7 +1567,10 @@ void CPlayerGameStats::OnSystemEntered (CSystem *pSystem, int *retiLastVisit)
 		return;
 		}
 
-	SSystemStats *pStats = GetSystemStats(pNode->GetID());
+	SSystemStats *pStats = SetSystemStats(pNode->GetID());
+	if (pStats == NULL)
+		return;
+
 	pStats->dwLastEntered = m_Universe.GetTicks();
 	if (pStats->dwFirstEntered == INVALID_TIME)
 		{
@@ -1516,7 +1598,10 @@ void CPlayerGameStats::OnSystemLeft (CSystem *pSystem)
 	if (pNode == NULL)
 		return;
 
-	SSystemStats *pStats = GetSystemStats(pNode->GetID());
+	SSystemStats *pStats = SetSystemStats(pNode->GetID());
+	if (pStats == NULL)
+		return;
+
 	ASSERT(pStats->dwLastEntered != INVALID_TIME);
 	pStats->dwLastLeft = m_Universe.GetTicks();
 	pStats->dwTotalTime += pStats->dwLastLeft - pStats->dwLastEntered;
@@ -1547,6 +1632,7 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 //	DWORD			dwLastUninstalled
 //	DWORD			dwTotalInstalledTime
 //	DWORD			iCountFired
+//	DWORD			iCountMined
 //	DWORD			iHPDamaged
 //
 //	DWORD		Count of ship classes
@@ -1564,6 +1650,7 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 //	DWORD			dwLastEntered
 //	DWORD			dwLastLeft
 //	DWORD			dwTotalTime
+//	DWORD			iAsteroidsMined
 //
 //	DWORD		Count of systems
 //	CString			NodeID
@@ -1643,10 +1730,11 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read(pStats->dwTotalInstalledTime);
 		Ctx.pStream->Read(pStats->iCountFired);
 
+		if (Ctx.dwVersion >= 179)
+			Ctx.pStream->Read(pStats->iCountMined);
+
 		if (Ctx.dwVersion >= 102)
 			Ctx.pStream->Read(pStats->iHPDamaged);
-		else
-			pStats->iHPDamaged = 0;
 		}
 
 	Ctx.pStream->Read(dwCount);
@@ -1679,6 +1767,9 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read(pStats->dwLastEntered);
 		Ctx.pStream->Read(pStats->dwLastLeft);
 		Ctx.pStream->Read(pStats->dwTotalTime);
+
+		if (Ctx.dwVersion >= 179)
+			Ctx.pStream->Read(pStats->iAsteroidsMined);
 		}
 
 	//	Read the m_KeyEventStats
@@ -1734,6 +1825,28 @@ void CPlayerGameStats::SetStat (const CString &sStat, const CString &sValue)
 		}
 	}
 
+CPlayerGameStats::SSystemStats *CPlayerGameStats::SetSystemStats (const CString &sNodeID)
+
+//	SetSystemStats
+//
+//	Finds or allocates stats for the given system. If sNodeID is NULL, then we
+//	assume the current system.
+
+	{
+	if (sNodeID.IsBlank())
+		{
+		const CTopologyNode *pNode = m_Universe.GetCurrentTopologyNode();
+		if (pNode == NULL)
+			return NULL;
+
+		return m_SystemStats.Set(pNode->GetID());
+		}
+	else
+		{
+		return m_SystemStats.Set(sNodeID);
+		}
+	}
+
 void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
@@ -1759,6 +1872,7 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 //	DWORD			dwLastUninstalled
 //	DWORD			dwTotalInstalledTime
 //	DWORD			iCountFired
+//	DWORD			iCountMined
 //	DWORD			iHPDamaged
 //
 //	DWORD		Count of ship classes
@@ -1776,6 +1890,7 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 //	DWORD			dwLastEntered
 //	DWORD			dwLastLeft
 //	DWORD			dwTotalTime
+//	DWORD			iAsteroidsMined
 //
 //	DWORD		Count of systems
 //	CString			NodeID
@@ -1817,6 +1932,7 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 		pStream->Write(pStats->dwLastUninstalled);
 		pStream->Write(pStats->dwTotalInstalledTime);
 		pStream->Write(pStats->iCountFired);
+		pStream->Write(pStats->iCountMined);
 		pStream->Write(pStats->iHPDamaged);
 		}
 
@@ -1858,6 +1974,7 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 		pStream->Write(pStats->dwLastEntered);
 		pStream->Write(pStats->dwLastLeft);
 		pStream->Write(pStats->dwTotalTime);
+		pStream->Write(pStats->iAsteroidsMined);
 		}
 
 	dwSave = m_KeyEventStats.GetCount();

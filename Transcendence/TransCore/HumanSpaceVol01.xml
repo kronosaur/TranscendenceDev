@@ -1953,6 +1953,8 @@
 	<!ENTITY rsMiningColonyPrimordial	"0x00100252">
 	<!ENTITY rsMiningColonyRocky		"0x00100253">
 	<!ENTITY rsMiningColonyVolcanic		"0x00100254">
+	<!ENTITY dsCommonwealthMiningInfo	"0x00100255">
+	<!ENTITY dsCommonwealthMiningPromotion	"0x00100256">
 
 	<!-- 0270-028F SOLON CORPORATION -->
 

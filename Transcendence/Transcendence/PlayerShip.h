@@ -114,21 +114,21 @@ class CPlayerShipController : public IShipController
 		CurrencyValue GetCredits (DWORD dwEconUNID) { return m_Credits.GetCredits(dwEconUNID); }
 		int GetCargoSpace (void) { return mathRound(m_pShip->GetCargoSpaceLeft()); }
 		int GetEndGameScore (void) { return m_Stats.CalcEndGameScore(); }
-		int GetEnemiesDestroyed (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("enemyShipsDestroyed")), 0); }
+		int GetEnemiesDestroyed (void) { return ::strToInt(m_Stats.GetStatString(CONSTLIT("enemyShipsDestroyed")), 0); }
 		CGameSession *GetGameSession (void) { return m_pSession; }
+		const CPlayerGameStats &GetGameStats (void) const { return m_Stats; }
 		CPlayerGameStats &GetGameStats (void) { return m_Stats; }
 		CString GetItemStat (const CString &sStat, ICCItem *pItemCriteria) const { return m_Stats.GetItemStat(sStat, pItemCriteria); }
 		CString GetKeyEventStat (const CString &sStat, const CString &sNodeID, const CDesignTypeCriteria &Crit) const { return m_Stats.GetKeyEventStat(sStat, sNodeID, Crit); }
 		GenomeTypes GetPlayerGenome (void) const { return m_iGenome; }
 		CString GetPlayerName (void) const { return m_sName; }
-		int GetResurrectCount (void) const { return ::strToInt(m_Stats.GetStat(CONSTLIT("resurrectCount")), 0); }
-		int GetScore (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("score")), 0); }
+		int GetResurrectCount (void) const { return ::strToInt(m_Stats.GetStatString(CONSTLIT("resurrectCount")), 0); }
+		int GetScore (void) { return ::strToInt(m_Stats.GetStatString(CONSTLIT("score")), 0); }
 		CSpaceObject *GetSelectedTarget (void) { return m_pTarget; }
 		CShip *GetShip (void) { return m_pShip; }
 		DWORD GetStartingShipClass (void) const { return m_dwStartingShipClass; }
-		CString GetStat (const CString &sStat) { return m_Stats.GetStat(sStat); }
 		DWORD GetSystemEnteredTime (const CString &sNodeID) { return m_Stats.GetSystemEnteredTime(sNodeID); }
-		int GetSystemsVisited (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("systemsVisited")), 0); }
+		int GetSystemsVisited (void) { return ::strToInt(m_Stats.GetStatString(CONSTLIT("systemsVisited")), 0); }
 		CTranscendenceWnd *GetTrans (void) { return m_pTrans; }
 		void IncScore (int iBonus) { m_Stats.IncStat(CONSTLIT("score"), iBonus); }
 		void Init (CTranscendenceWnd *pTrans);

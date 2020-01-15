@@ -30,10 +30,12 @@
 #define PROPERTY_ACTIVE							CONSTLIT("active")
 #define PROPERTY_ANGRY							CONSTLIT("angry")
 #define PROPERTY_BARRIER						CONSTLIT("barrier")
+#define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
 #define PROPERTY_DEST_NODE_ID					CONSTLIT("destNodeID")
 #define PROPERTY_DEST_STARGATE_ID				CONSTLIT("destStargateID")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_EXPLORED						CONSTLIT("explored")
+#define PROPERTY_EXPLORED_BY_PLAYER				CONSTLIT("exploredByPlayer")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
 #define PROPERTY_IMAGE_SELECTOR					CONSTLIT("imageSelector")
 #define PROPERTY_IMAGE_VARIANT					CONSTLIT("imageVariant")
@@ -1830,6 +1832,9 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 
 	else if (strEquals(sName, PROPERTY_BARRIER))
 		return CC.CreateBool(m_fBlocksShips);
+
+	else if (strEquals(sName, PROPERTY_CAN_BE_MINED))
+		return CC.CreateBool(!IsOutOfPlaneObj() && m_pType->ShowsUnexploredAnnotation());
 
 	else if (strEquals(sName, PROPERTY_DEST_NODE_ID))
 		return (IsStargate() ? CC.CreateString(m_sStargateDestNode) : CC.CreateNil());
@@ -4880,6 +4885,25 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_EXPLORED))
 		{
 		m_fExplored = !pValue->IsNil();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_EXPLORED_BY_PLAYER))
+		{
+		if (!m_fExplored && !pValue->IsNil())
+			{
+			m_fExplored = true;
+
+			IPlayerController *pPlayer = GetUniverse().GetPlayer();
+			if (pPlayer)
+				{
+				CPlayerGameStats *pStats = pPlayer->GetGameStats();
+				if (pStats)
+					pStats->IncSystemStat(CONSTLIT("asteroidsMined"), NULL_STR, 1);
+				}
+
+			return true;
+			}
+
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))

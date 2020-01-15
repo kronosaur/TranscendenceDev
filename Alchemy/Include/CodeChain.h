@@ -917,6 +917,7 @@ class CCodeChain
 		ICCItem *GetTrue (void) { return &m_True; }
 		ICCItem *Eval (CEvalContext *pEvalCtx, ICCItem *pItem);
 		static ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
+		static ICCItemPtr LinkCode (const CString &sString, SLinkOptions &Options = SLinkOptions()) { return ICCItemPtr(Link(sString, Options)); }
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
 		ICCItem *TopLevel (ICCItem *pItem, LPVOID pExternalCtx);
 		static CString Unlink (ICCItem *pItem);

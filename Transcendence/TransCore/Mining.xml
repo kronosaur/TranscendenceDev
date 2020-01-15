@@ -111,6 +111,8 @@
 					(successChance (* 2 (rpgCalcToHit aMineProbability miningDifficulty)))
 					(debugMining (typGetProperty &unidMiningSkill; 'rpg.debugMining))
 
+					(setExplored Nil)
+
 					theOre countMined
 					allOre extractedOre
 					)
@@ -182,7 +184,7 @@
 						;	the asteroid.
 						
 						(not (setq allOre (objGetItems gSource "* +ore; | * +minable;")))
-							(objSetProperty gSource 'explored True)
+							(setq setExplored True)
 							
 						;	Figure out how many tons we mine this time.
 						
@@ -206,7 +208,7 @@
 										)
 									)
 								))
-							(objSetProperty gSource 'explored True)
+							(setq setExplored True)
 						
 						;	Otherwise, success
 						
@@ -246,7 +248,7 @@
 								(dbgOutput "Yield Adj: " yieldAdj)
 								)
 
-							(objSetProperty gSource 'explored True)
+							(setq setExplored True)
 							
 							(enum extractedOre theOre
 								(objRemoveItem gSource theOre)
@@ -315,6 +317,18 @@
 									)
 								)
 							)
+						)
+
+					;	If the asteroid has been explored, then increment our stats.
+
+					(if setExplored
+
+						;	This is a slight HACK. Setting 'exploredByPlayer will also 
+						;	increment the stat of asteroids mined in the system. We need to
+						;	do it this way because we can't access ply* functions from this
+						;	level. In the future we should move player stats to the engine.
+
+						(objSetProperty gSource (if isPlayer 'exploredByPlayer 'explored) True)
 						)
 					)
 				))

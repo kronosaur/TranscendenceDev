@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							48;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					178;
+constexpr DWORD SYSTEM_SAVE_VERSION =					179;
 
 //	Uncomment out the following define when building a stable release
 
@@ -656,3 +656,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					178;
 //
 //	178: 1.9 Alpha 5
 //		m_rMaxPlayerDist in CDockingPorts
+//
+//	179: 1.9 Beta 1
+//		iCountMined in CPlayerGameStats
