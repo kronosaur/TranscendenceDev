@@ -32,10 +32,10 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 	//	Calculate some basic metrics
 
 	RECT rcList = Ctx.rcRect;
-	rcList.left += Options.rcControl.left;
-	rcList.right = rcList.left + RectWidth(Options.rcControl);
-	rcList.top += Options.rcControl.top;
-	rcList.bottom = rcList.top + RectHeight(Options.rcControl);
+	rcList.left += Options.rcDisplay.left;
+	rcList.right = rcList.left + RectWidth(Options.rcDisplay);
+	rcList.top += Options.rcDisplay.top;
+	rcList.bottom = rcList.top + RectHeight(Options.rcDisplay);
 
 	//	Create the picker control
 

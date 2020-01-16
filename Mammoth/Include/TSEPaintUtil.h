@@ -92,6 +92,7 @@ class CRTFText
 
 		CRTFText (const CString &sText = NULL_STR, const IFontTable *pFontTable = NULL);
 
+		int CalcHeight (int cxWidth) const;
 		void Format (const RECT &rcRect) const;
 		void GetBounds (const RECT &rcRect, RECT *retrcRect) const;
 		void Paint (CG32bitImage &Dest, const RECT &rcRect) const;

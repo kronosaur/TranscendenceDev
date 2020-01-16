@@ -14,6 +14,25 @@ CRTFText::CRTFText (const CString &sText, const IFontTable *pFontTable) :
 	{
 	}
 
+int CRTFText::CalcHeight (int cxWidth) const
+
+//	CalcHeight
+//
+//	Computes the height of the text given a certain width.
+
+	{
+	RECT rcRect;
+	rcRect.left = 0;
+	rcRect.right = cxWidth;
+	rcRect.top = 0;
+	rcRect.bottom = 1000;
+
+	RECT rcBounds;
+	GetBounds(rcRect, &rcBounds);
+
+	return RectHeight(rcBounds);
+	}
+
 void CRTFText::Format (const RECT &rcRect) const
 
 //	Format

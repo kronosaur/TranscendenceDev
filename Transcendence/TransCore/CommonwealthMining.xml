@@ -2,7 +2,110 @@
 
 <TranscendenceModule>
 
-	<!-- Mining Colony ===================================================== -->
+	<Type unid="&unidIndependentMiner;">
+		<Properties>
+			<DynamicGlobal id="mining.rankIcon">
+				(block (
+					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+					)
+					(switch
+						(= rankID 'novice)
+							(itmGetImageDesc &itTitaniumOre;)
+
+						(= rankID 'digger)
+							(itmGetImageDesc &itMiningLaser;)
+
+						(= rankID 'excavator)
+							(itmGetImageDesc &itClassAExcavationPod;)
+
+						(= rankID 'wildcatter)
+							(itmGetImageDesc &itClassBExcavationPod;)
+
+						(= rankID 'prospector)
+							(itmGetImageDesc &itClassCExcavationPod;)
+
+						(= rankID 'miner)
+							(shpGetImageDesc &scBorer; { rotation:300 })
+
+						(= rankID 'expertMiner)
+							(itmGetImageDesc &itPlasmaTorch;)
+
+						(itmGetImageDesc &itTitaniumOre;)
+						)
+					)
+			</DynamicGlobal>
+		</Properties>
+
+		<Language>
+			<Code id="mining.rankDetails">
+				(block (
+					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+					(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+					(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
+
+					(totalAsteroids (count (sysFindObject Nil "t +property:canBeMined;")))
+					(exploredAsteroids (count (sysFindObject Nil "t +property:canBeMined; +property:explored;")))
+					(percentExplored
+						(if (gr totalAsteroids 0)
+							(cat (round (* 100 (/ exploredAsteroids totalAsteroids))) "%")
+							"N/A"
+							)
+						)
+					)
+					(if (gr (typGetProperty &unidMiningSkill; 'rpg.miningXP) 0)
+						{
+							title: (fmtNoun (typTranslate gType (cat "rank." rankID)) 1 'titleCapitalize)
+							largeIcon: (typGetProperty gType 'mining.rankIcon)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelSkill)
+									desc: (typTranslate gType 'rtfSkill {
+										value: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+										})
+									}
+								{
+									title: (typTranslate gType 'labelAsteroidsMined)
+									desc: (typTranslate gType 'rtfAsteroidsMined {
+										value: asteroidsMined
+										})
+									}
+								{
+									title: (typTranslate gType 'labelSystem { systemName:(sysGetName) })
+									desc: (typTranslate gType 'rtfExplored {
+										value: percentExplored
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+
+			<Text id="rank.novice">novice(s)</Text>
+			<Text id="rank.digger">digger(s)</Text>
+			<Text id="rank.excavator">excavator(s)</Text>
+			<Text id="rank.wildcatter">wildcatter(s)</Text>
+			<Text id="rank.prospector">prospector(s)</Text>
+			<Text id="rank.miner">miner(s)</Text>
+			<Text id="rank.expertMiner">expert miner(s)</Text>
+
+			<Text id="labelSkill">Skill:</Text>
+			<Text id="labelAsteroidsMined">Asteroids Mined:</Text>
+			<Text id="labelSystem">%SystemName% System:</Text>
+
+			<RTF id="rtfSkill">				{/rtf {/f:LargeBold;/c:#ffe667; %value% yield}}</RTF>
+			<RTF id="rtfAsteroidsMined">	{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+			<RTF id="rtfExplored">			{/rtf {/f:LargeBold;/c:#ffe667; %value% explored}}</RTF>
+		</Language>
+	</Type>
+
+<!-- STATION TYPES -->
+
+	<!-- Level 1: Mining Colony -->
 
 	<StationType UNID="&stMiningColony;"
 			name=				"Commonwealth mining colony"
@@ -125,7 +228,13 @@
 		<!-- Dock Screens -->
 		
 		<DockScreens>
-			<Main>
+			<Main backgroundID="object">
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidIndependentMiner; 'mining.RankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -214,7 +323,6 @@
 				(block (
 					newRankDesc
 					)
-					(dbgOutput "GetDockScreen")
 					(switch
 						;	See if the player has been promoted.
 						;	NOTE: Can't advance beyond wildcatter at a mining
@@ -460,29 +568,41 @@
 	<DockScreen unid="&dsCommonwealthMiningInfo;"
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
+			backgroundID=		"object"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidIndependentMiner; 'mining.RankDetails)
+			</OnDisplayInit>
+		</Display>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(block (
-						(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
-						(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
-						(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
+					(switch
+						(gr (typGetProperty &unidMiningSkill; 'rpg.miningXP) 0)
+							(block (
+								(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+								(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+								(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
 
-						(totalAsteroids (count (sysFindObject Nil "t +property:canBeMined;")))
-						(exploredAsteroids (count (sysFindObject Nil "t +property:canBeMined; +property:explored;")))
-						(percentExplored
-							(if (gr totalAsteroids 0)
-								(cat (round (* 100 (/ exploredAsteroids totalAsteroids))) "%")
-								"N/A"
+								(totalAsteroids (count (sysFindObject Nil "t +property:canBeMined;")))
+								(exploredAsteroids (count (sysFindObject Nil "t +property:canBeMined; +property:explored;")))
+								(percentExplored
+									(if (gr totalAsteroids 0)
+										(cat (round (* 100 (/ exploredAsteroids totalAsteroids))) "%")
+										"N/A"
+										)
+									)
 								)
-							)
-						)
-						(scrSetDescTranslate gScreen (cat "descInfo." rankID) {
-							yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
-							asteroidsMined: (fmtNumber asteroidsMined)
-							percentExplored: percentExplored
-							})
+								(scrSetDescTranslate gScreen (cat "descInfo." rankID) {
+									yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+									asteroidsMined: (fmtNumber asteroidsMined)
+									percentExplored: percentExplored
+									})
+								)
+
+						(scrSetDescTranslate gScreen 'descInfo.unranked)
 						)
 				</OnPaneInit>
 
@@ -495,65 +615,61 @@
 		</Panes>
 
 		<Language>
+			<Text id="descInfo.unranked">
+
+				LATER: Mining is fun, you should try it!
+
+			</Text>
 			<Text id="descInfo.novice">
-				LATER: Mining is fun, try it!
+
+				LATER: You are a novice at mining.
+
 			</Text>
 			<Text id="descInfo.digger">
 				
-				Rank: Digger\n
-				Skill: %yieldAdj% yield\n
-				Asteroids Mined: %asteroidsMined%\n
-				Asteroids Explored: %percentExplored%
+				LATER: You are recognized as an independent miner with the rank of Digger.
 
 			</Text>
 			<Text id="descInfo.excavator">
 				
-				Rank: Excavator\n
-				Skill: %yieldAdj% yield\n
-				Asteroids Mined: %asteroidsMined%\n
-				Asteroids Explored: %percentExplored%
+				LATER: You are recognized as an independent miner with the rank of Excavator.
 
 			</Text>
 			<Text id="descInfo.wildcatter">
 				
-				Rank: Wildcatter\n
-				Skill: %yieldAdj% yield\n
-				Asteroids Mined: %asteroidsMined%\n
-				Asteroids Explored: %percentExplored%
+				LATER: You are recognized as an independent miner with the rank of Wildcatter.
 
 			</Text>
 			<Text id="descInfo.prospector">
 				
-				Rank: Prospector\n
-				Skill: %yieldAdj% yield\n
-				Asteroids Mined: %asteroidsMined%\n
-				Asteroids Explored: %percentExplored%
+				LATER: You are recognized as an independent miner with the rank of Prospector.
 
 			</Text>
 			<Text id="descInfo.miner">
 				
-				Rank: Miner\n
-				Skill: %yieldAdj% yield\n
-				Asteroids Mined: %asteroidsMined%\n
-				Asteroids Explored: %percentExplored%
+				LATER: You are recognized as an independent miner with the rank of Miner.
 
 			</Text>
 			<Text id="descInfo.expertMiner">
 				
-				Rank: Expert Miner\n
-				Skill: %yieldAdj% yield\n
-				Asteroids Mined: %asteroidsMined%\n
-				Asteroids Explored: %percentExplored%
+				LATER: You are recognized as an independent miner with the rank of Expert Miner.
 
 			</Text>
 		</Language>
 	</DockScreen>
 
 	<DockScreen unid="&dsCommonwealthMiningPromotion;"
-			
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
+			backgroundID=		"object"
 			>
+
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidIndependentMiner; 'mining.RankDetails)
+			</OnDisplayInit>
+		</Display>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>

@@ -17,13 +17,14 @@ class CDetailList
 		static constexpr DWORD FORMAT_PLACE_CENTER =		0x00000008;	//	Area placed at center of rect
 		static constexpr DWORD FORMAT_ANTI_MIRROR_COLUMNS =	0x00000010;	//	Detail icons are outside
 		static constexpr DWORD FORMAT_MIRROR_COLUMNS =		0x00000020;	//	Detail icons are on center line
+		static constexpr DWORD FORMAT_SINGLE_COLUMN =		0x00000040;	//	Single column
 
 		CDetailList (const CVisualPalette &VI) : m_VI(VI)
 			{ }
 
-		void Format (const RECT &rcRect, DWORD dwFlags = 0, int *retcyHeight = NULL);
+		void Format (int cxWidth, int cyHeight = 0, DWORD dwFlags = 0, int *retcyHeight = NULL);
 		void Load (ICCItem *pDetails);
-		void Paint (CG32bitImage &Dest) const;
+		void Paint (CG32bitImage &Dest, int x, int y) const;
         void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		
 	private:
@@ -31,13 +32,17 @@ class CDetailList
 			{
 			CString sTitle;
 			CG32bitImage *pIcon = NULL;
-			RECT rcIcon = { 0, 0, 0, 0 };
+			RECT rcIconSrc = { 0 };
 			CRTFText Desc;
 
 			bool bAlignRight = false;
-			RECT rcRect = { 0, 0, 0, 0 };
+			RECT rcRect = { 0 };
 			int cyText = 0;
 			int cyRect = 0;
+
+			RECT rcIcon = { 0 };					//	Where to paint icon
+			RECT rcTitle = { 0 };					//	Where to paint title
+			RECT rcDesc = { 0 };					//	Where to paint description
 			};
 
 		static constexpr int SPACING_X = 8;
@@ -48,9 +53,13 @@ class CDetailList
 		static constexpr DWORD FORMAT_LEFT_COLUMN =			0x00000000;
 		static constexpr DWORD FORMAT_RIGHT_COLUMN =		0x10000000;
 
-		void CalcColumnRects (const RECT &rcRect, int cxCol, int cyCol1, int cyCol2, DWORD dwFlags, RECT &retCol1, RECT &retCol2) const;
+		void CalcColumnRects (int cxWidth, int cyHeight, int cxCol, int cyCol1, int cyCol2, DWORD dwFlags, RECT &retCol1, RECT &retCol2) const;
 		void CalcColumnRect (const RECT &rcArea, int xCol, int cxCol, int cyCol, DWORD dwFlags, RECT &retCol) const;
 		void FormatColumn (int iStart, int iEnd, const RECT &rcRect, DWORD dwFlags);
+		void FormatDoubleColumns (int cxWidth, int cyHeight, DWORD dwFlags = 0, int *retcyHeight = NULL);
+		void FormatSingleColumn (int cxWidth, int cyHeight, DWORD dwFlags = 0, int *retcyHeight = NULL);
+
+		static void AlignRect (const RECT &rcFrame, int cxWidth, int cyHeight, DWORD dwAlign, RECT &rcResult);
 
 		const CVisualPalette &m_VI;
         CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
@@ -63,12 +72,14 @@ class CDetailArea
 		CDetailArea (CUniverse &Universe, const CVisualPalette &VI, const CDockScreenVisuals &Theme) :
 				m_Universe(Universe),
 				m_VI(VI),
-				m_Theme(Theme)
+				m_Theme(Theme),
+				m_Details(VI)
 			{ }
 
-		void Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData);
+		void Paint (CG32bitImage &Dest, const RECT &rcRect);
         void SetBackColor (CG32bitPixel rgbColor) { m_rgbBack = rgbColor; }
         void SetColor (CG32bitPixel rgbColor) { m_rgbText = rgbColor; }
+		void SetData (ICCItem *pData) { m_pData = pData; m_bFormatted = false; }
 		void SetTabRegion (int cyHeight) { m_cyTabRegion = cyHeight; }
 
 	private:
@@ -79,27 +90,45 @@ class CDetailArea
 		static constexpr int SPACING_Y = 8;
 		static constexpr int BACKGROUND_IMAGE_MARGIN_Y = 24;
 
+		static constexpr CG32bitPixel RGB_BADGE = CG32bitPixel(255, 255, 255, 25);
+
 		enum EStyles
 			{
 			styleDefault,
 			styleStacked,
 			styleFull,
+			styleStats,
 			};
 
-		EStyles GetStyle (ICCItem *pData);
+		bool Format (const RECT &rcRect);
+		static EStyles GetStyle (ICCItem *pData);
 		void PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32bitPixel rgbColor);
 		void PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, int cyExtraMargin = 0);
+		void PaintBadgeImage (CG32bitImage &Dest, const RECT &rcDest) const;
+		void PaintScaledImage (CG32bitImage &Dest, const RECT &rcDest, const ICCItem &ImageDesc) const;
 		void PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale = 1.0);
 
 		CUniverse &m_Universe;
 		const CVisualPalette &m_VI;
 		const CDockScreenVisuals &m_Theme;
 
+		ICCItemPtr m_pData;
+		CString m_sTitle;
+
+		EStyles m_iStyle = styleDefault;
+		AlignmentStyles m_iAlignment = alignTop;
 		CG32bitPixel m_rgbText = CG32bitPixel(255, 255, 255);
 		CG32bitPixel m_rgbBack = CG32bitPixel(0, 0, 0);
 		int m_cxLargeIcon = DEFAULT_LARGE_ICON_WIDTH;
 		int m_cyLargeIcon = DEFAULT_LARGE_ICON_HEIGHT;
 		int m_cyTabRegion = 0;
+
+		bool m_bFormatted = false;
+		RECT m_rcFrame = { 0 };
+		RECT m_rcDetails = { 0 };
+		RECT m_rcIcon = { 0 };
+		RECT m_rcTitle = { 0 };
+		CDetailList m_Details;
 	};
 
 class CGCarouselArea : public AGArea

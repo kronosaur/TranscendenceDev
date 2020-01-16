@@ -1955,6 +1955,7 @@
 	<!ENTITY rsMiningColonyVolcanic		"0x00100254">
 	<!ENTITY dsCommonwealthMiningInfo	"0x00100255">
 	<!ENTITY dsCommonwealthMiningPromotion	"0x00100256">
+	<!ENTITY unidIndependentMiner		"0x00100257">
 
 	<!-- 0270-028F SOLON CORPORATION -->
 
