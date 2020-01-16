@@ -31,11 +31,6 @@ const int MAX_THREAD_COUNT =					16;
 
 #define SEPARATION_CRITERIA						CONSTLIT("sTA")
 
-int g_iGateTimer = 0;
-int g_iGateTimerTick = -1;
-int g_cxStarField = -1;
-int g_cyStarField = -1;
-
 const CG32bitPixel g_rgbSpaceColor = CG32bitPixel(0,0,8);
 const Metric g_MetersPerKlick = 1000.0;
 const Metric MAP_VERTICAL_ADJUST =						1.4;
@@ -58,7 +53,7 @@ CSystem::CSystem (CUniverse &Universe, CTopologyNode *pTopology) :
 		m_pTopology(pTopology),
 		m_pEnvironment(NULL),
 		m_iTick(0),
-        m_iNextEncounter(0),
+		m_iNextEncounter(0),
 		m_iTimeStopped(0),
 		m_rKlicksPerPixel(KLICKS_PER_PIXEL),
 		m_rTimeScale(TIME_SCALE),
@@ -1455,7 +1450,7 @@ ALERROR CSystem::CreateStargate (CStationType *pType,
 	}
 
 ALERROR CSystem::CreateStation (CStationType *pType,
-							    CDesignType *pEventHandler,
+								CDesignType *pEventHandler,
 								CVector &vPos,
 								CSpaceObject **retpStation)
 
@@ -1761,16 +1756,16 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 			for (i = 0; i < iFragmentCount; i++)
 				{
-                //  If we're only creating a fraction of fragments, then skip some.
+				//  If we're only creating a fraction of fragments, then skip some.
 
-                if (Angles[i] < 0)
-                    continue;
+				if (Angles[i] < 0)
+					continue;
 
-                //  Generate initial speed (this might be random for each fragment)
+				//  Generate initial speed (this might be random for each fragment)
 
 				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 
-                //  Create the fragment
+				//  Create the fragment
 
 				SShotCreateCtx FragCtx;
 				FragCtx.pDesc = pFragDesc->pDesc;
@@ -1904,7 +1899,7 @@ CSpaceObject *CSystem::FindObjectWithOrbit (const COrbit &Orbit) const
 //
 //  Returns an object that shows the given orbit
 
-    {
+	{
 	int i;
 
 	for (i = 0; i < GetObjectCount(); i++)
@@ -1912,15 +1907,15 @@ CSpaceObject *CSystem::FindObjectWithOrbit (const COrbit &Orbit) const
 		CSpaceObject *pObj = GetObject(i);
 		const COrbit *pOrbit;
 		if (pObj 
-                && !pObj->IsDestroyed()
-                && pObj->ShowMapOrbit()
-                && (pOrbit = pObj->GetMapOrbit())
+				&& !pObj->IsDestroyed()
+				&& pObj->ShowMapOrbit()
+				&& (pOrbit = pObj->GetMapOrbit())
 				&& (*pOrbit == Orbit))
 			return pObj;
 		}
 
 	return NULL;
-    }
+	}
 
 bool CSystem::FindObjectName (const CSpaceObject *pObj, CString *retsName)
 
@@ -3753,19 +3748,10 @@ void CSystem::PlaceInGate (CSpaceObject *pObj, CSpaceObject *pGate)
 	//	We keep on incrementing the timer as long as we are creating ships
 	//	in the same tick. [But only if we're not creating the system.]
 
-	if (!m_fInCreate)
-		{
-		if (m_iTick != g_iGateTimerTick)
-			{
-			g_iGateTimer = 0;
-			g_iGateTimerTick = m_iTick;
-			}
-
-		pShip->SetInGate(pGate, g_iGateTimer);
-		g_iGateTimer += mathRandom(11, 22);
-		}
-	else
+	if (m_fInCreate)
 		pShip->SetInGate(pGate, 0);
+	else
+		pShip->SetInGate(pGate, m_GateTimer.GetTick(pGate->GetID(), m_Universe.GetTicks()));
 
 	DEBUG_CATCH
 	}
@@ -4755,10 +4741,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		CSpaceObject *pObj = GetObject(i);
 
 		if (pObj 
-                && !pObj->IsDestroyed()
-                && pObj->CanMove()
+				&& !pObj->IsDestroyed()
+				&& pObj->CanMove()
 				&& !pObj->IsSuspended()
-                && !pObj->IsTimeStopped())
+				&& !pObj->IsTimeStopped())
 			{
 			//	Move the objects
 

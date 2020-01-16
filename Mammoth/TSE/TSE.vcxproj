@@ -421,6 +421,7 @@
     <ClCompile Include="CFireAndSmokePainter.cpp" />
     <ClCompile Include="CFractalTextureLibrary.cpp" />
     <ClCompile Include="CGalacticMapPainter.cpp" />
+    <ClCompile Include="CGateTimerManager.cpp" />
     <ClCompile Include="CGenericType.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CHullDesc.cpp" />

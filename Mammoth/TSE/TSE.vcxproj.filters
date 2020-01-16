@@ -1402,5 +1402,8 @@
     <ClCompile Include="SpaceObjectItemProperties.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
+    <ClCompile Include="CGateTimerManager.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
