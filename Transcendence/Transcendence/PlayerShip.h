@@ -265,6 +265,7 @@ class CPlayerShipController : public IShipController
 
 		void ClearFireAngle (void);
 		void DisplayTranslate (const CString &sID, ICCItem *pData = NULL);
+		void DisplayTranslate (const CString &sID, const CString &sVar, const CString &sValue);
 		CSpaceObject *FindDockTarget (void);
 		bool HasCommsTarget (void);
 		void InitTargetList (TargetTypes iTargetType, bool bUpdate = false);

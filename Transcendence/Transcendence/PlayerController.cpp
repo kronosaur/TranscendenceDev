@@ -10,8 +10,6 @@
 #define CMD_PLAYER_COMBAT_ENDED					CONSTLIT("playerCombatEnded")
 #define CMD_PLAYER_COMBAT_STARTED				CONSTLIT("playerCombatStarted")
 
-#define STR_NO_TARGETING_COMPUTER				CONSTLIT("No targeting computer installed")
-
 const Metric MAX_IN_COMBAT_RANGE =				LIGHT_SECOND * 30.0;
 const int UPDATE_HELP_TIME =					31;
 const Metric MAX_AUTO_TARGET_DISTANCE =			LIGHT_SECOND * 30.0;
@@ -295,6 +293,19 @@ void CPlayerShipController::DisplayTranslate (const CString &sID, ICCItem *pData
 
 	{
 	m_pTrans->DisplayMessage(Translate(sID, pData));
+	}
+
+void CPlayerShipController::DisplayTranslate (const CString &sID, const CString &sVar, const CString &sValue)
+
+//	DisplayTranslate
+//
+//	Displays a translated message with a replaceable parameter.
+
+	{
+	ICCItemPtr pData(ICCItem::SymbolTable);
+	pData->SetStringAt(sVar, sValue);
+
+	DisplayTranslate(sID, pData);
 	}
 
 void CPlayerShipController::Dock (void)
@@ -1155,17 +1166,15 @@ void CPlayerShipController::OnDeviceEnabledDisabled (int iDev, bool bEnable, boo
 		if (!bEnable)
 			{
 			if (m_UIMsgs.IsEnabled(uimsgEnableDeviceHint))
-				m_pTrans->DisplayMessage(CONSTLIT("(press [B] to enable/disable devices)"));
+				DisplayTranslate(CONSTLIT("hintEnableDevices"));
 
 			if (!bSilent)
-				m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s disabled"),
-						pDevice->GetClass()->GetName())));
+				DisplayTranslate(CONSTLIT("msgDeviceDisabled"), CONSTLIT("itemName"), pDevice->GetClass()->GetName());
 			}
 		else
 			{
 			if (!bSilent)
-				m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s enabled"),
-						pDevice->GetClass()->GetName())));
+				DisplayTranslate(CONSTLIT("msgDeviceEnabled"), CONSTLIT("itemName"), pDevice->GetClass()->GetName());
 			}
 		}
 
@@ -1182,43 +1191,43 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 	switch (iEvent)
 		{
 		case CDeviceClass::statusDisruptionRepaired:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s repaired"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceRepaired"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 
 		case CDeviceClass::failDamagedByDisruption:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s damaged"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 
 		case CDeviceClass::failWeaponJammed:
-			m_pTrans->DisplayMessage(CONSTLIT("Weapon jammed!"));
+			DisplayTranslate(CONSTLIT("msgWeaponJammed"));
 			break;
 
 		case CDeviceClass::failWeaponMisfire:
-			m_pTrans->DisplayMessage(CONSTLIT("Weapon misfire!"));
+			DisplayTranslate(CONSTLIT("msgWeaponMisfire"));
 			break;
 
 		case CDeviceClass::failWeaponExplosion:
-			m_pTrans->DisplayMessage(CONSTLIT("Weapon chamber explosion!"));
+			DisplayTranslate(CONSTLIT("msgWeaponExplosion"));
 			break;
 
 		case CDeviceClass::failShieldFailure:
-			m_pTrans->DisplayMessage(CONSTLIT("Shield failure"));
+			DisplayTranslate(CONSTLIT("msgShieldFailure"));
 			break;
 
 		case CDeviceClass::failDeviceHitByDamage:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s damaged"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 
 		case CDeviceClass::failDeviceHitByDisruption:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s ionized"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceIonized"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 
 		case CDeviceClass::failDeviceOverheat:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s damaged by overheating"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceDamagedOverheat"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 
 		case CDeviceClass::failDeviceDisabledByOverheat:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s disabled by overheating"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceDisabledOverheat"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 		}
 	}
@@ -1230,7 +1239,7 @@ void CPlayerShipController::OnEnemyShipsDetected (void)
 //	Enemy ships
 
 	{
-	m_pTrans->DisplayMessage(CONSTLIT("Enemy ships detected"));
+	DisplayTranslate(CONSTLIT("msgEnemyShipsDetected"));
 	m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_ENEMY_SHIP_ALARM));
 	}
 
@@ -1285,17 +1294,17 @@ void CPlayerShipController::OnOverlayConditionChanged (CConditionSet::ETypes iCo
 			//	Time stopped
 
 			if (iChange == CConditionSet::cndAdded)
-				m_pTrans->DisplayMessage(CONSTLIT("Time has stopped for you!"));
+				DisplayTranslate(CONSTLIT("msgTimeStopped"));
 
 			//	If we're no longer time-stopped
 
 			else if (!m_pShip->IsTimeStopped())
-				m_pTrans->DisplayMessage(CONSTLIT("Time continues"));
+				DisplayTranslate(CONSTLIT("msgTimeContinues"));
 
 			//	Otherwise, time is still stopped
 
 			else
-				m_pTrans->DisplayMessage(CONSTLIT("Time is still stopped"));
+				DisplayTranslate(CONSTLIT("msgTimeStillStopped"));
 
 			break;
 			}
@@ -1408,7 +1417,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 
 			if (iSeq == -1)
 				{
-				m_pTrans->DisplayMessage(Translate(CONSTLIT("msgOutOfFuel")));
+				DisplayTranslate(CONSTLIT("msgOutOfFuel"));
 
 				//	Stop
 
@@ -1423,8 +1432,9 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			else if ((iSeq % 15) == 0)
 				{
 				if (m_UIMsgs.IsEnabled(uimsgRefuelHint))
-					m_pTrans->DisplayMessage(CONSTLIT("(press [S] to access refueling screen)"));
-				m_pTrans->DisplayMessage(CONSTLIT("Fuel low!"));
+					DisplayTranslate(CONSTLIT("hintRefuel"));
+
+				DisplayTranslate(CONSTLIT("msgFuelLow"));
 				if ((iSeq % 30) == 0)
 					m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_FUEL_LOW_ALARM));
 				}
@@ -1439,14 +1449,14 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			if (iSecondsLeft > 10 && ((iSecondsLeft % 5) != 0))
 				NULL;
 			else if (iSecondsLeft > 1)
-				m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Life support failure in %d seconds"), iSecondsLeft));
+				DisplayTranslate(CONSTLIT("msgLifeSupportWarningN"), CONSTLIT("time"), strFromInt(iSecondsLeft));
 			else if (iSecondsLeft == 1)
-				m_pTrans->DisplayMessage(CONSTLIT("Life support failure in 1 second"));
+				DisplayTranslate(CONSTLIT("msgLifeSupportWarning1"));
 			break;
 			}
 
 		case statusRadiationCleared:
-			m_pTrans->DisplayMessage(CONSTLIT("Decontamination complete"));
+			DisplayTranslate(CONSTLIT("msgDeconComplete"));
 			break;
 
 		case statusRadiationWarning:
@@ -1460,11 +1470,11 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 				if (iSecondsLeft > 10 && ((iSecondsLeft % 5) != 0))
 					NULL;
 				else if (iSecondsLeft > 1)
-					m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Radiation Warning: Fatal exposure in %d seconds"), iSecondsLeft));
+					DisplayTranslate(CONSTLIT("msgRadiationWarningN"), CONSTLIT("time"), strFromInt(iSecondsLeft));
 				else if (iSecondsLeft == 1)
-					m_pTrans->DisplayMessage(CONSTLIT("Radiation Warning: Fatal exposure in 1 second"));
+					DisplayTranslate(CONSTLIT("msgRadiationWarning1"));
 				else
-					m_pTrans->DisplayMessage(CONSTLIT("Radiation Warning: Fatal exposure received"));
+					DisplayTranslate(CONSTLIT("msgRadiationDeath"));
 
 				if ((iTicksLeft % 150) == 0)
 					m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_RADIATION_ALARM));
@@ -1481,7 +1491,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 
 			if ((iSeq % 6) == 0)
 				{
-				m_pTrans->DisplayMessage(CONSTLIT("Warning: Reactor overload"));
+				DisplayTranslate(CONSTLIT("msgReactorOverloadWarning"));
 				if ((iSeq % 24) == 0)
 					m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_REACTOR_OVERLOAD_ALARM));
 				}
@@ -1489,7 +1499,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			}
 
 		case statusReactorPowerFailure:
-			m_pTrans->DisplayMessage(CONSTLIT("No power from reactor"));
+			DisplayTranslate(CONSTLIT("msgReactorNoPower"));
 
 			SetThrust(false);
 			SetManeuver(NoRotation);
@@ -1498,7 +1508,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			break;
 
 		case statusReactorRestored:
-			m_pTrans->DisplayMessage(CONSTLIT("Reactor power restored"));
+			DisplayTranslate(CONSTLIT("msgReactorPowerRestored"));
 			break;
 		}
 
@@ -2069,15 +2079,15 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 			switch (iHint)
 				{
 				case EDamageHint::useMiningOrWMD:
-					m_pTrans->DisplayMessage(CONSTLIT("Use mining or WMD weapons to damage asteroid station"));
+					DisplayTranslate(CONSTLIT("hintMiningOrWMDNeeded"));
 					break;
 
 				case EDamageHint::useWMD:
-					m_pTrans->DisplayMessage(CONSTLIT("Use WMD weapons to damage reinforced station"));
+					DisplayTranslate(CONSTLIT("hintWMDNeeded"));
 					break;
 
 				case EDamageHint::useMining:
-					m_pTrans->DisplayMessage(CONSTLIT("Use mining weapons to damage burried station"));
+					DisplayTranslate(CONSTLIT("hintMiningNeeded"));
 					break;
 				}
 			}
@@ -2108,7 +2118,7 @@ void CPlayerShipController::OnProgramDamage (CSpaceObject *pHacker, const Progra
 	if (pHacker)
 		pHacker->Highlight();
 
-	m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Cyberattack detected: %s"), Program.sProgramName));
+	DisplayTranslate(CONSTLIT("msgCyberattackDetected"), CONSTLIT("program"), Program.sProgramName);
 	}
 
 void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
@@ -2201,7 +2211,7 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 		if ((iTicks % 150) == 0)
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("Warning: Deep gravity zone"));
+			DisplayTranslate(CONSTLIT("msgGravityWarning"));
 			m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_GRAVITY_ALARM));
 			}
 		}
@@ -2376,7 +2386,7 @@ void CPlayerShipController::ReadyNextMissile (int iDir)
 	if (pLauncher)
 		{
 		if (pLauncher->GetValidVariantCount(m_pShip) == 0)
-			m_pTrans->DisplayMessage(CONSTLIT("No missiles on board"));
+			DisplayTranslate(CONSTLIT("msgNoMissiles"));
 		else
 			{
 			CString sVariant;
@@ -2384,14 +2394,15 @@ void CPlayerShipController::ReadyNextMissile (int iDir)
 			pLauncher->GetSelectedVariantInfo(m_pShip, &sVariant, &iAmmoLeft);
 			if (sVariant.IsBlank())
 				sVariant = pLauncher->GetName();
-			m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("%s ready"), sVariant));
+
+			DisplayTranslate(CONSTLIT("msgMissileReady"), CONSTLIT("missile"), sVariant);
 			}
 
 		if (m_pSession)
 			m_pSession->OnWeaponStatusChanged();
 		}
 	else
-		m_pTrans->DisplayMessage(CONSTLIT("No launcher installed"));
+		DisplayTranslate(CONSTLIT("msgNoLauncher"));
 	}
 
 void CPlayerShipController::ReadyNextWeapon (int iDir)
@@ -2445,9 +2456,9 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 		//	Feedback to player
 
 		if (pNewWeapon->IsEnabled())
-			m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("%s ready"), strCapitalize(pNewWeapon->GetName())));
+			DisplayTranslate(CONSTLIT("msgWeaponReady"), CONSTLIT("itemName"), pNewWeapon->GetName());
 		else
-			m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Disabled %s selected"), pNewWeapon->GetName()));
+			DisplayTranslate(CONSTLIT("msgDisabledWeaponReady"), CONSTLIT("itemName"), pNewWeapon->GetName());
 		}
 
 	if (m_pSession)
@@ -2512,7 +2523,7 @@ void CPlayerShipController::SelectNearestTarget (void)
 
 	if (!m_pShip->HasTargetingComputer())
 		{
-		m_pTrans->DisplayMessage(STR_NO_TARGETING_COMPUTER);
+		DisplayTranslate(CONSTLIT("msgNoTargetingComputer"));
 		return;
 		}
 
@@ -2611,7 +2622,7 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 
 	if (!m_pShip->HasTargetingComputer())
 		{
-		m_pTrans->DisplayMessage(STR_NO_TARGETING_COMPUTER);
+		DisplayTranslate(CONSTLIT("msgNoTargetingComputer"));
 		return;
 		}
 
@@ -2679,7 +2690,7 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 
 	if (!m_pShip->HasTargetingComputer())
 		{
-		m_pTrans->DisplayMessage(STR_NO_TARGETING_COMPUTER);
+		DisplayTranslate(CONSTLIT("msgNoTargetingComputer"));
 		return;
 		}
 
