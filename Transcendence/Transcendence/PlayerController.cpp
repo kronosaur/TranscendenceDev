@@ -31,6 +31,11 @@ const DWORD DAMAGE_BAR_TIMER =					30 * 5;
 #define MAX_GATE_DISTANCE						(g_KlicksPerPixel * 150.0)
 #define MAX_STARGATE_HELP_RANGE					(g_KlicksPerPixel * 256.0)
 
+#define FIELD_ID								CONSTLIT("id")
+#define FIELD_ORE_LEVEL							CONSTLIT("oreLevel")
+
+#define HINT_MINING_NEED_BETTER_WEAPON			CONSTLIT("mining.needBetterWeapon")
+
 #define PROPERTY_CHARACTER_CLASS				CONSTLIT("characterClass")
 
 #define SETTING_ENABLED							CONSTLIT("enabled")
@@ -930,7 +935,7 @@ void CPlayerShipController::OnAbilityChanged (Abilities iAbility, AbilityModific
 		}
 	}
 
-DWORD CPlayerShipController::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CPlayerShipController::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	OnCommunicate
 //
@@ -943,6 +948,27 @@ DWORD CPlayerShipController::OnCommunicate (CSpaceObject *pSender, MessageTypes 
 			pSender->Highlight();
 			DisplayTranslate(CONSTLIT("msgDockingSequenceEngaged"));
 			return resAck;
+
+		case msgOnAsteroidExplored:
+			m_Stats.IncSystemStat(CONSTLIT("asteroidsMined"), NULL_STR, 1);
+			return resAck;
+
+		case msgOnPlayerHint:
+			{
+			if (pData == NULL)
+				return resNoAnswer;
+
+			CString sHintID = pData->GetStringAt(FIELD_ID);
+			if (strEquals(sHintID, HINT_MINING_NEED_BETTER_WEAPON))
+				{
+				if (m_UIMsgs.ShowMessage(m_Universe, uimsgMiningDamageTypeHint, pSender))
+					DisplayTranslate(CONSTLIT("hintMiningOreLevelTooHigh"), pData);
+				}
+			else
+				return resNoAnswer;
+
+			return resAck;
+			}
 
 		default:
 			{
@@ -2038,19 +2064,22 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 
 	else if ((iHint = Ctx.GetHint()) != EDamageHint::none)
 		{
-		switch (iHint)
+		if (m_UIMsgs.ShowMessage(m_Universe, uimsgStationDamageHint, Ctx.pObj))
 			{
-			case EDamageHint::useMiningOrWMD:
-				m_pTrans->DisplayMessage(CONSTLIT("Use mining or WMD weapons to damage asteroid station"));
-				break;
+			switch (iHint)
+				{
+				case EDamageHint::useMiningOrWMD:
+					m_pTrans->DisplayMessage(CONSTLIT("Use mining or WMD weapons to damage asteroid station"));
+					break;
 
-			case EDamageHint::useWMD:
-				m_pTrans->DisplayMessage(CONSTLIT("Use WMD weapons to damage reinforced station"));
-				break;
+				case EDamageHint::useWMD:
+					m_pTrans->DisplayMessage(CONSTLIT("Use WMD weapons to damage reinforced station"));
+					break;
 
-			case EDamageHint::useMining:
-				m_pTrans->DisplayMessage(CONSTLIT("Use mining weapons to damage burried station"));
-				break;
+				case EDamageHint::useMining:
+					m_pTrans->DisplayMessage(CONSTLIT("Use mining weapons to damage burried station"));
+					break;
+				}
 			}
 		}
 

@@ -569,7 +569,7 @@ void CFleetShipAI::ImplementKeepFormation (bool *retbInFormation)
 	m_AICtx.ImplementFormationManeuver(m_pShip, vDest, vDestVel, m_pShip->AlignToRotationAngle(m_pLeader->GetRotation()), retbInFormation);
 	}
 
-DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //

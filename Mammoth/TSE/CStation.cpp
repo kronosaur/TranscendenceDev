@@ -35,7 +35,6 @@
 #define PROPERTY_DEST_STARGATE_ID				CONSTLIT("destStargateID")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_EXPLORED						CONSTLIT("explored")
-#define PROPERTY_EXPLORED_BY_PLAYER				CONSTLIT("exploredByPlayer")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
 #define PROPERTY_IMAGE_SELECTOR					CONSTLIT("imageSelector")
 #define PROPERTY_IMAGE_VARIANT					CONSTLIT("imageVariant")
@@ -2758,7 +2757,7 @@ bool CStation::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, con
 	DEBUG_CATCH
 	}
 
-DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	OnCommunicate
 //
@@ -4885,25 +4884,6 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_EXPLORED))
 		{
 		m_fExplored = !pValue->IsNil();
-		return true;
-		}
-	else if (strEquals(sName, PROPERTY_EXPLORED_BY_PLAYER))
-		{
-		if (!m_fExplored && !pValue->IsNil())
-			{
-			m_fExplored = true;
-
-			IPlayerController *pPlayer = GetUniverse().GetPlayer();
-			if (pPlayer)
-				{
-				CPlayerGameStats *pStats = pPlayer->GetGameStats();
-				if (pStats)
-					pStats->IncSystemStat(CONSTLIT("asteroidsMined"), NULL_STR, 1);
-				}
-
-			return true;
-			}
-
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))

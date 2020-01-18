@@ -15,7 +15,7 @@ class CAutonAI : public CBaseShipAI
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetClass (void) override { return CONSTLIT("auton"); }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 
 	protected:
 		//	CBaseShipAI overrides
@@ -55,7 +55,7 @@ class CFerianShipAI : public CBaseShipAI
 		virtual CSpaceObject *GetBase (void) const override { return m_pBase; }
 		virtual CString GetClass (void) override { return CONSTLIT("ferian"); }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 
 	protected:
 		//	CBaseShipAI overrides
@@ -99,7 +99,7 @@ class CFleetCommandAI : public CBaseShipAI
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetClass (void) override { return CONSTLIT("fleetcommand"); }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override { return m_pTarget; }
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 
 	protected:
 		//	CBaseShipAI overrides
@@ -195,7 +195,7 @@ class CFleetShipAI : public CBaseShipAI
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetClass (void) override { return CONSTLIT("fleet"); }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 
 	protected:
 		//	CBaseShipAI overrides
@@ -250,7 +250,7 @@ class CGaianProcessorAI : public CBaseShipAI
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetClass (void) override { return CONSTLIT("gaianprocessor"); }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 
 	protected:
 		//	CBaseShipAI overrides
@@ -335,7 +335,7 @@ class CStandardShipAI : public CBaseShipAI
 		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
 		virtual void OnBehavior (SUpdateCtx &Ctx) override;
 		virtual void OnCleanUp (void) override { m_State = stateNone; m_pTarget = NULL; m_pDest = NULL; }
-		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual CString OnDebugCrashInfo (void) override;
 		virtual void OnDockedEvent (CSpaceObject *pObj) override;
 		virtual void OnDestroyedNotify (SDestroyCtx &Ctx) override;
@@ -439,7 +439,7 @@ class CZoanthropeAI : public CBaseShipAI
 		virtual CString GetClass (void) override { return CONSTLIT("zoanthrope"); }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 
 	protected:
 		//	CBaseShipAI overrides

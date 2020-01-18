@@ -1264,7 +1264,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CDesignType *GetDefaultOverride (void) const { return m_pClass->GetDefaultEventHandler(); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) override;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
 		virtual bool OnGetCondition (CConditionSet::ETypes iCondition) const override;
@@ -1607,7 +1607,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) override;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
 		virtual bool OnGetCondition (CConditionSet::ETypes iCondition) const override;

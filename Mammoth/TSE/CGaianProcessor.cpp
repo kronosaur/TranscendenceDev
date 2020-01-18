@@ -270,7 +270,7 @@ CSpaceObject *CGaianProcessorAI::GetTarget (DWORD dwFlags) const
 		}
 	}
 
-DWORD CGaianProcessorAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CGaianProcessorAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //

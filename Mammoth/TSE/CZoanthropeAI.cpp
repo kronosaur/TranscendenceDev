@@ -455,7 +455,7 @@ void CZoanthropeAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damag
 	DEBUG_CATCH
 	}
 
-DWORD CZoanthropeAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CZoanthropeAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //

@@ -5728,6 +5728,29 @@ ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	else
 		iMessage = GetMessageFromID(pArgs->GetElement(2)->GetStringValue());
 
+	//	Optional args
+
+	CSpaceObject *pParam1 = NULL;
+	ICCItem *pData = NULL;
+	if (pArgs->GetCount() > 3)
+		{
+		ICCItem *pArg3 = pArgs->GetElement(3);
+		if (pArg3->IsSymbolTable())
+			pData = pArg3;
+		else
+			pParam1 = CreateObjFromItem(pArg3);
+		}
+
+	DWORD dwParam2 = 0;
+	if (pArgs->GetCount() > 4)
+		{
+		ICCItem *pArg4 = pArgs->GetElement(4);
+		if (pData == NULL && pArg4->IsSymbolTable())
+			pData = pArg4;
+		else
+			dwParam2 = (DWORD)pArg4->GetIntegerValue();
+		}
+
 	//	If this is not a built-in comms message, then see if it as the ID of a 
 	//	comms message.
 
@@ -5746,25 +5769,18 @@ ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		return pCC->CreateTrue();
 		}
 
-	//	Optional args
+	//	Otherwise, this is a built-in comms message
 
-	CSpaceObject *pParam1 = NULL;
-	if (pArgs->GetCount() > 3)
-		pParam1 = CreateObjFromItem(pArgs->GetElement(3));
-
-	DWORD dwParam2 = 0;
-	if (pArgs->GetCount() > 4)
-		dwParam2 = (DWORD)pArgs->GetElement(4)->GetIntegerValue();
-
-	//	Done
-
-	DWORD dwResult = pSender->Communicate(pObj, (MessageTypes)iMessage, pParam1, dwParam2);
-	if (dwResult == resNoAnswer)
-		return pCC->CreateNil();
-	else if (dwResult == resAck)
-		return pCC->CreateTrue();
 	else
-		return pCC->CreateInteger(dwResult);
+		{
+		DWORD dwResult = pSender->Communicate(pObj, (MessageTypes)iMessage, pParam1, dwParam2, pData);
+		if (dwResult == resNoAnswer)
+			return pCC->CreateNil();
+		else if (dwResult == resAck)
+			return pCC->CreateTrue();
+		else
+			return pCC->CreateInteger(dwResult);
+		}
 	}
 
 ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)

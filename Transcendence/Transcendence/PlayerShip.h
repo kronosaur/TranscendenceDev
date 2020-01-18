@@ -33,8 +33,10 @@ enum UIMessageTypes
 	uimsgGalacticMapHint =			12,
 	uimsgMouseManeuverHint =		13,
 	uimsgKeyboardManeuverHint =		14,
+	uimsgStationDamageHint =		15,
+	uimsgMiningDamageTypeHint =		16,
 
-	uimsgCount =					15,
+	uimsgCount =					17,
 	};
 
 class CUIMessageController
@@ -42,16 +44,32 @@ class CUIMessageController
 	public:
 		CUIMessageController (void);
 
-		UIMessageTypes Find (const CString &sMessageName);
-		bool IsEnabled (UIMessageTypes iMsg) const { return m_bMsgEnabled[iMsg]; }
+		bool CanShow (CUniverse &Universe, UIMessageTypes iMsg, const CSpaceObject *pMsgObj = NULL) const;
+		UIMessageTypes Find (const CString &sMessageName) const;
+		bool IsEnabled (UIMessageTypes iMsg) const { return m_Messages[iMsg].bEnabled; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetEnabled (UIMessageTypes iMsg, bool bEnabled = true);
-		void WriteToStream (IWriteStream *pStream);
+		bool ShowMessage (CUniverse &Universe, UIMessageTypes iMsg, const CSpaceObject *pMsgObj = NULL);
+		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
-		bool IsHint (UIMessageTypes iMsg);
+		static constexpr DWORD OBJ_MSG_INTERVAL = 240;
 
-		bool m_bMsgEnabled[uimsgCount];
+		struct SMsgEntry
+			{
+			bool bEnabled = true;				//	Hint is enabled
+			DWORD dwLastShown = 0;				//	Frame Tick on which we last showed
+												//		this hint.
+			DWORD dwLastObjID = 0;				//	Last obj that we showed hint for.
+			};
+
+		bool IsHint (UIMessageTypes iMsg);
+		void OnMessageShown (CUniverse &Universe, UIMessageTypes iMsg, const CSpaceObject *pMsgObj = NULL);
+
+		static bool IsTime (DWORD dwCurTick, DWORD dwLastTick, DWORD dwInterval)
+			{ return (dwLastTick == 0 || (dwCurTick - dwLastTick) >= dwInterval); }
+
+		SMsgEntry m_Messages[uimsgCount];
 	};
 
 class CManeuverController
@@ -214,7 +232,7 @@ class CPlayerShipController : public IShipController
 		//	Events
 
 		virtual void OnAbilityChanged (Abilities iAbility, AbilityModifications iChange, bool bNoMessage = false) override;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override;
 		virtual void OnDamaged (const CDamageSource &Cause, CInstalledArmor *pArmor, const DamageDesc &Damage, int iDamage) override;
 		virtual bool OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker) override;

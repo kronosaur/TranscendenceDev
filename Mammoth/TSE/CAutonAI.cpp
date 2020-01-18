@@ -193,7 +193,7 @@ CSpaceObject *CAutonAI::GetTarget (DWORD dwFlags) const
 		}
 	}
 
-DWORD CAutonAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CAutonAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //

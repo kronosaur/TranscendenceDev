@@ -4300,7 +4300,7 @@ void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
 		}
 	}
 
-DWORD CShip::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CShip::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -4308,7 +4308,7 @@ DWORD CShip::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpace
 
 	{
 	if (!IsInactive())
-		return m_pController->OnCommunicate(pSender, iMessage, pParam1, dwParam2);
+		return m_pController->OnCommunicate(pSender, iMessage, pParam1, dwParam2, pData);
 	else
 		return resNoAnswer;
 	}

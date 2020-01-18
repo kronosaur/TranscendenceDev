@@ -501,7 +501,7 @@ bool CFerianShipAI::InRangeOfThreat (CSpaceObject **retpThreat)
 	return false;
 	}
 
-DWORD CFerianShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CFerianShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //

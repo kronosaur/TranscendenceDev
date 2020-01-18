@@ -1080,7 +1080,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 	DEBUG_CATCH
 	}
 
-DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -1088,9 +1088,9 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 
 	{
 	if (m_pOrderModule)
-		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2);
+		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 	else
-		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2);
+		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2, pData);
 	}
 
 void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)

@@ -50,16 +50,16 @@
 	<ItemTable unid="&tbAsteroidOre;">
 		<LocationCriteriaTable>
 			<Group criteria="*metallicComp"		value="standard:x=0.30">
-				<RandomItem criteria="* +ore; -notStandard; +metallicComp; | * +minable; -notStandard; +metallicComp;" levelFrequency="systemLevel:vruuc|c|cuurv" />
+				<RandomItem criteria="* +ore; -notStandard; +metallicComp; | * +minable; -notStandard; +metallicComp;" levelFrequency="systemLevel:vruc|c|curv" />
 			</Group>
 			<Group criteria="*organicComp"		value="standard:x=0.20">
-				<RandomItem criteria="* +ore; -notStandard; +organicComp; | * +minable; -notStandard; +organicComp;" levelFrequency="systemLevel:vruuc|c|cuurv" />
+				<RandomItem criteria="* +ore; -notStandard; +organicComp; | * +minable; -notStandard; +organicComp;" levelFrequency="systemLevel:vruc|c|curv" />
 			</Group>
 			<Group criteria="*rockyComp"		value="standard:x=0.30">
-				<RandomItem criteria="* +ore; -notStandard; +rockyComp; | * +minable; -notStandard; +rockyComp;" levelFrequency="systemLevel:vruuc|c|cuurv" />
+				<RandomItem criteria="* +ore; -notStandard; +rockyComp; | * +minable; -notStandard; +rockyComp;" levelFrequency="systemLevel:vruc|c|curv" />
 			</Group>
 			<Group criteria="*waterComp"		value="standard:x=0.20">
-				<RandomItem criteria="* +ore; -notStandard; +waterComp; | * +minable; -notStandard; +waterComp;" levelFrequency="systemLevel:vruuc|c|cuurv" />
+				<RandomItem criteria="* +ore; -notStandard; +waterComp; | * +minable; -notStandard; +waterComp;" levelFrequency="systemLevel:vruc|c|curv" />
 			</Group>
 		</LocationCriteriaTable>
 	</ItemTable>
@@ -107,11 +107,38 @@
 						205 266 346 450 586
 						))
 
+					(maxOreLevelByDamageType {
+						laser: 4
+						kinetic: 4
+
+						particle: 7
+						blast: 7
+
+						ion: 10
+						thermo: 10
+
+						positron: 13
+						plasma: 13
+
+						antimatter: 16
+						nano: 16
+
+						graviton: 19
+						singularity: 19
+
+						darkAcid: 22
+						darkSteel: 22
+
+						darkLightning: 25
+						darkFire: 25
+						})
+
 					(isPlayer (and gPlayerShip (= aOrderGiver gPlayerShip)))
 					(successChance (* 2 (rpgCalcToHit aMineProbability miningDifficulty)))
 					(debugMining (typGetProperty &unidMiningSkill; 'rpg.debugMining))
 
 					(setExplored Nil)
+					(addCounter Nil)
 
 					theOre countMined
 					allOre extractedOre
@@ -121,6 +148,7 @@
 						(block ()
 							(dbgOutput "Asteroid difficulty: " miningDifficulty)
 							(dbgOutput "Effort: " aMineProbability)
+							(dbgOutput "DamageType: " aDamageType)
 							(dbgOutput "HP: " aHP)
 							(dbgOutput "Chance: " successChance)
 							)
@@ -191,24 +219,61 @@
 						(not (setq extractedOre 
 								(map allOre 'excludeNil theOre
 									(block (
-										(extractedCount 
-											(min 
-												(round 'stochastic (/ aHP (@ oreVolumeTable (itmGetLevel theOre))))
-												(itmGetCount theOre)
-												)
-											)
-										)
-										(if debugMining
-											(dbgOutput (itmGetName theOre 'count) ": " extractedCount " extracted")
-											)
+										(oreLevel (itmGetLevel theOre))
+										(maxOreLevel (@ maxOreLevelByDamageType aDamageType))
 
-										(if (gr extractedCount 0)
-											(itmSetCount theOre extractedCount)
+										extractedCount 
+										)
+										(switch
+											;	If the ore level is too high for our damage type, then we need
+											;	a better mining weapon.
+
+											(gr oreLevel maxOreLevel)
+												(block ()
+													(if debugMining
+														(dbgOutput "Ore level " oreLevel " is too high for " aDamageType " damage.")
+														)
+
+													(objCommunicate aOrderGiver gSource 'core.onPlayerHint {
+														id: 'mining.needBetterWeapon
+														oreLevel: oreLevel
+														})
+
+													Nil
+													)
+
+											;	Figure out how many tons we extract based on weapon damage HPs
+
+											(= (setq extractedCount 
+													(round 'stochastic (/ aHP (@ oreVolumeTable oreLevel)))
+													)
+													0)
+												(block ()
+													(if debugMining
+														(dbgOutput "Failed to extract any level " oreLevel " ore.")
+														)
+
+													Nil
+													)
+
+											;	Ore extracted
+
+											(block ()
+												(if debugMining
+													(dbgOutput "Extracted " (min extractedCount (itmGetCount theOre)) " of " (itmGetCount theOre) " level " oreLevel " ore.")
+													)
+												(itmSetCount theOre 
+													(min extractedCount (itmGetCount theOre))
+													)
+												)
 											)
 										)
 									)
 								))
-							(setq setExplored True)
+							(block ()
+								(setq setExplored True)
+								(setq addCounter True)
+								)
 						
 						;	Otherwise, success
 						
@@ -249,6 +314,7 @@
 								)
 
 							(setq setExplored True)
+							(setq addCounter True)
 							
 							(enum extractedOre theOre
 								(objRemoveItem gSource theOre)
@@ -293,22 +359,6 @@
 											)
 										)
 								
-									;	If we don't already have an ore count overlay, and if
-									;	there is any ore left in the asteroid, add one.
-									
-									(if (and (objGetItems gSource "* +ore; | * +minable;")
-											(not (filter (objGetOverlays gSource) theOverlay
-												(= (objGetOverlayType gSource theOverlay) &ovMiningOreCount;)
-												))
-											)
-										(block (
-											overlayID
-											)
-											(setq overlayID (objAddOverlay gSource &ovMiningOreCount;))
-											(objSetOverlayProperty gSource overlayID 'counterLabel (typTranslate &ovMiningOreCount; 'msgScanning))
-											)
-										)
-										
 									;	If this asteroid is part of a deposit, then notify others
 									
 									(if depositID
@@ -321,14 +371,35 @@
 
 					;	If the asteroid has been explored, then increment our stats.
 
-					(if setExplored
+					(if (and setExplored
+							(not (objGetProperty gSource 'explored))
+							)
+						(block ()
+							;	Set the explored property and also tell the player that 
+							;	they explored an asteroid so that we can increment the
+							;	stats.
 
-						;	This is a slight HACK. Setting 'exploredByPlayer will also 
-						;	increment the stat of asteroids mined in the system. We need to
-						;	do it this way because we can't access ply* functions from this
-						;	level. In the future we should move player stats to the engine.
+							(objSetProperty gSource 'explored True)
+							(if isPlayer
+								(objCommunicate gPlayerShip gSource 'core.onAsteroidExplored)
+								)
+							)
+						)
 
-						(objSetProperty gSource (if isPlayer 'exploredByPlayer 'explored) True)
+					;	If necessary, we show a counter to indicate the ore left.
+
+					(if (and addCounter
+							(objGetItems gSource "* +ore; | * +minable;")
+							(not (filter (objGetOverlays gSource) theOverlay
+								(= (objGetOverlayType gSource theOverlay) &ovMiningOreCount;)
+								))
+							)
+						(block (
+							overlayID
+							)
+							(setq overlayID (objAddOverlay gSource &ovMiningOreCount;))
+							(objSetOverlayProperty gSource overlayID 'counterLabel (typTranslate &ovMiningOreCount; 'msgScanning))
+							)
 						)
 					)
 				))
