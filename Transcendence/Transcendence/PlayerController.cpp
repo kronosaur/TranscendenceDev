@@ -10,7 +10,6 @@
 #define CMD_PLAYER_COMBAT_ENDED					CONSTLIT("playerCombatEnded")
 #define CMD_PLAYER_COMBAT_STARTED				CONSTLIT("playerCombatStarted")
 
-#define STR_NO_TARGET_FOR_FLEET					CONSTLIT("No target selected")
 #define STR_NO_TARGETING_COMPUTER				CONSTLIT("No targeting computer installed")
 
 const Metric MAX_IN_COMBAT_RANGE =				LIGHT_SECOND * 30.0;
@@ -197,7 +196,7 @@ void CPlayerShipController::CancelDocking (void)
 		{
 		m_pStation->Undock(m_pShip);
 		m_pStation = NULL;
-		m_pTrans->DisplayMessage(CONSTLIT("Docking canceled"));
+		DisplayTranslate(CONSTLIT("msgDockingCanceled"));
 		}
 	}
 
@@ -235,7 +234,7 @@ void CPlayerShipController::Communications (CSpaceObject *pObj,
 			if (m_pTarget)
 				m_pShip->Communicate(pObj, msgAttack, m_pTarget);
 			else
-				m_pTrans->DisplayMessage(STR_NO_TARGET_FOR_FLEET);
+				DisplayTranslate(CONSTLIT("msgNoTargetForFleet"));
 
 			break;
 			}
@@ -283,6 +282,16 @@ CString CPlayerShipController::DebugCrashInfo (void)
 	return sResult;
 	}
 
+void CPlayerShipController::DisplayTranslate (const CString &sID, ICCItem *pData)
+
+//	DisplayTranslate
+//
+//	Displays a translated message.
+
+	{
+	m_pTrans->DisplayMessage(Translate(sID, pData));
+	}
+
 void CPlayerShipController::Dock (void)
 
 //	Dock
@@ -295,7 +304,7 @@ void CPlayerShipController::Dock (void)
 	if (m_pStation)
 		{
 		Undock();
-		m_pTrans->DisplayMessage(CONSTLIT("Docking canceled"));
+		DisplayTranslate(CONSTLIT("msgDockingCanceled"));
 		return;
 		}
 
@@ -314,7 +323,7 @@ void CPlayerShipController::Dock (void)
 		iDockPort = -1;
 	else
 		{
-		m_pTrans->DisplayMessage(CONSTLIT("No stations in range"));
+		DisplayTranslate(CONSTLIT("msgNoStationsInRange"));
 		return;
 		}
 
@@ -492,9 +501,9 @@ void CPlayerShipController::Gate (void)
 	if (pStation == NULL)
 		{
 		if (bGateNearby)
-			m_pTrans->DisplayMessage(CONSTLIT("Too far from stargate"));
+			DisplayTranslate(CONSTLIT("msgTooFarFromStargate"));
 		else
-			m_pTrans->DisplayMessage(CONSTLIT("No stargates in range"));
+			DisplayTranslate(CONSTLIT("msgNoStargatesInRage"));
 		return;
 		}
 
@@ -908,15 +917,15 @@ void CPlayerShipController::OnAbilityChanged (Abilities iAbility, AbilityModific
 				//	If we're in a nebula, then we're still blind.
 
 				if (m_pShip->IsLRSBlind())
-					m_pTrans->DisplayMessage(CONSTLIT("Long-range scanner still inoperative"));
+					DisplayTranslate(CONSTLIT("msgLRSStillInoperative"));
 				else
-					m_pTrans->DisplayMessage(CONSTLIT("Long-range scanner repaired"));
+					DisplayTranslate(CONSTLIT("msgLRSRepaired"));
 				}
 			break;
 
 		case ablShortRangeScanner:
 			if (iChange == ablRepair && !bNoMessage)
-				m_pTrans->DisplayMessage(CONSTLIT("Visual display repaired"));
+				DisplayTranslate(CONSTLIT("msgSRSRepaired"));
 			break;
 		}
 	}
@@ -932,7 +941,7 @@ DWORD CPlayerShipController::OnCommunicate (CSpaceObject *pSender, MessageTypes 
 		{
 		case msgDockingSequenceEngaged:
 			pSender->Highlight();
-			m_pTrans->DisplayMessage(CONSTLIT("Docking sequence engaged"));
+			DisplayTranslate(CONSTLIT("msgDockingSequenceEngaged"));
 			return resAck;
 
 		default:
@@ -1036,7 +1045,7 @@ void CPlayerShipController::OnDamaged (const CDamageSource &Cause, CInstalledArm
 
 	if (pArmor->GetHitPoints() < (iMaxArmorHP / 4) && Damage.CausesSRSFlash())
 		{
-		m_pTrans->DisplayMessage(CONSTLIT("Hull breach imminent!"));
+		DisplayTranslate(CONSTLIT("msgHullBreachImminent"));
 		m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_HULL_BREACH_ALARM));
 		}
 
@@ -1373,7 +1382,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 
 			if (iSeq == -1)
 				{
-				m_pTrans->DisplayMessage(g_pUniverse->TranslateEngineText(CONSTLIT("msgOutOfFuel")));
+				m_pTrans->DisplayMessage(Translate(CONSTLIT("msgOutOfFuel")));
 
 				//	Stop
 

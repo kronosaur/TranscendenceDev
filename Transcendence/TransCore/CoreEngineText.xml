@@ -4,8 +4,29 @@
 
 	<Type UNID="&unidEngineText;">
 		<Language>
+
+			<!-- Messages for the player -->
+
+			<Text id="msgDockingCanceled">Docking canceled</Text>
+			<Text id="msgDockingSequenceEngaged">Docking sequence engaged</Text>
+			<Text id="msgHullBreachImminent">Hull breach imminent!</Text>
+			<Text id="msgLRSRepaired">Long-range scanner repaired</Text>
+			<Text id="msgLRSStillInoperative">Long-range scanner still inoperative</Text>
+			<Text id="msgNoStargatesInRange">No stargates in range</Text>
+			<Text id="msgNoStationsInRange">No stations in range</Text>
+			<Text id="msgNoTargetForFleet">No target selected</Text>
 			<Text id="msgOutOfFuel">Out of fuel!</Text>
+			<Text id="msgSRSRepaired">Visual display repaired</Text>
+			<Text id="msgTooFarFromStargate">Too far from stargate</Text>
+
+			<!-- Hints for player -->
+
+			<Text id="hintMiningOreLevelTooHigh">Use a higher level mining weapon to extract level %oreLevel% resources</Text>
+
+			<!-- Miscellaneous text -->
+
 			<Text id="averageCommodityPrices">Average commodity prices</Text>
+
 		</Language>
 	</Type>
 

@@ -400,7 +400,7 @@ class CUniverse
 		void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
 		CTimeSpan StopGameTime (void);
-		CString TranslateEngineText (const CString &sID, ICCItem *pData = CCodeChain::CreateNil()) const;
+		CString TranslateEngineText (const CString &sID, ICCItem *pData = NULL) const;
 		void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }
 		static CString ValidatePlayerName (const CString &sName);
 
@@ -589,6 +589,7 @@ class CUniverse
 
 		mutable const CEconomyType *m_pCreditCurrency = NULL;
 		CNamedEffects m_NamedEffects;
+		mutable const CDesignType *m_pEngineText = NULL;
 
 		//	Debugging structures
 

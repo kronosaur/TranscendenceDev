@@ -521,6 +521,7 @@
     </Xml>
     <Xml Include="CommonwealthStarCarrier.xml" />
     <Xml Include="CompatibilityLibrary.xml" />
+    <Xml Include="CoreEngineText.xml" />
     <Xml Include="CoreFireEffects.xml">
       <SubType>Designer</SubType>
     </Xml>

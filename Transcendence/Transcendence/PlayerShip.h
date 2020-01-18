@@ -246,6 +246,7 @@ class CPlayerShipController : public IShipController
 	private:
 
 		void ClearFireAngle (void);
+		void DisplayTranslate (const CString &sID, ICCItem *pData = NULL);
 		CSpaceObject *FindDockTarget (void);
 		bool HasCommsTarget (void);
 		void InitTargetList (TargetTypes iTargetType, bool bUpdate = false);
@@ -255,6 +256,7 @@ class CPlayerShipController : public IShipController
 		void PaintDockingPortIndicators (SViewportPaintCtx &Ctx, CG32bitImage &Dest) const;
 		void PaintTargetingReticle (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject *pTarget);
 		void Reset (void);
+		CString Translate (const CString &sID, ICCItem *pData = NULL) const { return m_Universe.TranslateEngineText(sID, pData); }
 
 		static constexpr DWORD OPTION_HIGHLIGHT = 0x00000001;
 		void SetDestination (CSpaceObject *pTarget, DWORD dwOptions = 0);
