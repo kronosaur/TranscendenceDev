@@ -179,7 +179,7 @@
 				(block (
 					(damage (scrGetData gScreen 'damage))
 					)
-					(if (geq damage 0) (int damage) (scrTranslate gScreen 'msgRepairing))
+					(if (geq damage 0) (int damage) (typTranslate gType 'msgRepairing))
 					)
 			</Text>
 			

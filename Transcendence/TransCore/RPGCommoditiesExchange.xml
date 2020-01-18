@@ -985,13 +985,13 @@
 			<Text id="descItemStats">
 				(cat
 					(if (@ gData 'max)
-						(scrTranslate gScreen 'descItemStatsMultiple gData)
-						(scrTranslate gScreen 'descItemStatsSingle gData)
+						(typTranslate gType 'descItemStatsMultiple gData)
+						(typTranslate gType 'descItemStatsSingle gData)
 						)
 					"\n"
 					(if (@ gData 'markup) 
-						(scrTranslate gScreen 'descMarkup gData)
-						(scrTranslate gScreen 'descDiscount gData)
+						(typTranslate gType 'descMarkup gData)
+						(typTranslate gType 'descDiscount gData)
 						)
 					"\n\n"
 					)
