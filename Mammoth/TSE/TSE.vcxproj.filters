@@ -1405,5 +1405,14 @@
     <ClCompile Include="CGateTimerManager.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
+    <ClCompile Include="CStarDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CStargateDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CAsteroidDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

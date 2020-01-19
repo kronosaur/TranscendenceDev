@@ -351,6 +351,7 @@
     <ClCompile Include="CArtifactAwakening.cpp" />
     <ClCompile Include="CArtifactProgram.cpp" />
     <ClCompile Include="CAscendedObjectList.cpp" />
+    <ClCompile Include="CAsteroidDesc.cpp" />
     <ClCompile Include="CAttackOrder.cpp" />
     <ClCompile Include="CAttackStationOrder.cpp" />
     <ClCompile Include="CAutoDockCalc.cpp" />
@@ -533,6 +534,8 @@
     <ClCompile Include="CSpaceObjectTargetList.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />
+    <ClCompile Include="CStarDesc.cpp" />
+    <ClCompile Include="CStargateDesc.cpp" />
     <ClCompile Include="CStationCreateOptions.cpp" />
     <ClCompile Include="CStationEncounterCtx.cpp" />
     <ClCompile Include="CStationEncounterDesc.cpp" />
