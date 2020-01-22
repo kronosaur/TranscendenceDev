@@ -903,5 +903,8 @@
     <Xml Include="CoreEngineText.xml">
       <Filter>Core Types</Filter>
     </Xml>
+    <Xml Include="MiningPods.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

@@ -3646,6 +3646,10 @@
 					)
 				))
 
+			(setq miningScanObj (lambda (asteroidObj podType)
+				Nil
+				))
+
 			; Aliases for backwards compatibility ------------------------------
 			
 			(setq comShowBuyScreen scrShowBuyScreen)

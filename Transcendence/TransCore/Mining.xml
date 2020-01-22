@@ -171,7 +171,8 @@
 						(leq aSuccessChance 0)
 							Nil
 							
-						;	If we fail at extraction, then nothing
+						;	If we fail at extraction, then nothing, though we might gain some
+						;	experience.
 						
 						(gr (random 1 100) aSuccessChance)
 							(if (and isPlayer (not (objGetProperty gSource 'explored)))
@@ -187,14 +188,14 @@
 									)
 								)
 								
-						;	Pick a random ore item that exists here. If no ore, 
-						;	then nothing to do. If we get this far then we've explored
-						;	the asteroid.
+						;	If there is nothing to mine, then we just mark the asteroid as
+						;	explored.
 						
 						(not (setq allOre (objGetItems gSource "* +ore; | * +minable;")))
 							(setq setExplored True)
 
-						;	Generic damage just scans
+						;	Generic damage just scans (does not extract, and no experience is
+						;	gained).
 
 						(= aDamageType 'generic)
 							(block ()
@@ -295,10 +296,6 @@
 								
 							oreObj
 							)
-							(if debugMining
-								(dbgOutput "Yield Adj: " yieldAdj)
-								)
-
 							(setq setExplored True)
 							(setq addCounter True)
 							

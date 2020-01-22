@@ -2489,6 +2489,7 @@
 	<Module filename="ArmorEnhancementItems.xml"/>
 	<Module filename="ArmorRepairItems.xml"/>
 	<Module filename="Barricades.xml"/>
+	<Module filename="MiningPods.xml"/>
 	<Module filename="MiscItems.xml"/>
 	<Module filename="QuantumCPU.xml"/>
 	<Module filename="ShieldEnhancementItems.xml"/>
