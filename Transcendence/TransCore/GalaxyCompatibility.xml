@@ -1854,6 +1854,14 @@
 		</LevelTable>
 	</ItemTable>
 	
+	<Type unid="&baOreStoneAsteroidOld;">
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining 30)
+			</OnMining>
+		</Events>
+	</Type>
+
 <!-- RESOURCES -->
 
 	<Image obsoleteVersion="37" UNID="&rsAStar;"					bitmap="Resources\AStar.jpg"				bitmask="Resources\Star1Mask.bmp"   loadOnUse="true"/>

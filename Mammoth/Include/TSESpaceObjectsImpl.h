@@ -1633,6 +1633,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 
 		static constexpr int MIN_NAMED_WORLD_SIZE = 1000;
 		static constexpr int LARGE_WORLD_SIZE = 5000;
+		static constexpr CG32bitPixel RGB_MINING_MARKER_UNEXPORED = CG32bitPixel(128, 128, 128);
 
 		void AvengeAttack (CSpaceObject *pAttacker);
 		bool Blacklist (CSpaceObject *pObj);
@@ -1652,6 +1653,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void FinishCreation (SSystemCreateCtx *pSysCreateCtx = NULL);
 		Metric GetAttackDistance (void) const;
 		const CObjectImageArray &GetImage (bool bFade, int *retiTick = NULL, int *retiVariant = NULL) const;
+		CItem HasMinableResources (void) const;
 		bool IsBlacklisted (const CSpaceObject *pObj = NULL) const;
 		EDamageResults OnDamageAbandoned (SDamageCtx &Ctx);
 		EDamageResults OnDamageImmutable (SDamageCtx &Ctx);

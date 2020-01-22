@@ -132,7 +132,7 @@
 			value=				"150"
 			mass=				"500"
 
-			description=		"This scanner pod explodes into a seismic wave that reveals the location of valuable ores in asteroids. It has a 30 light-seconds range, and it detects ores up to level 5."
+			description=		"This scanner pod emits a seismic wave that reveals the location of valuable resources in asteroids. It has a range of 30 light-seconds."
 			>
 
 		<Image imageID="&rsItems2;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -140,7 +140,6 @@
 		<StaticData>
 			<Data id="effectRadius">30</Data>
 			<Data id="imageVariant">0</Data>
-			<Data id="oreCriteria">"t +ore; L:1-5;"</Data>
 		</StaticData>
 		
 		<Events>
@@ -168,7 +167,7 @@
 		<Weapon
 				type=				"shockwave"
 
-				damage=				"blast:3d6"
+				damage=				"generic:1; mining:5;"
 				fireRate=			"30"
 				expansionSpeed=		"80"
 				missileSpeed=		"0"
@@ -191,10 +190,6 @@
 						/>
 			</Effect>
 		</Weapon>
-		
-		<StaticData>
-			<Data id="podType">&itSeismicScannerPod;</Data>
-		</StaticData>
 	</ItemType>
 	
 	<!-- Level 3: Class-A Excavation Pod -->
@@ -381,7 +376,7 @@
 			value=				"250"
 			mass=				"500"
 
-			description=		"This is an improved version of the seismic scanner pod. It detects ore of level 10 or below in a 60 light-second radius."
+			description=		"This is an improved version of the seismic scanner pod. It detects ore in a 60 light-second radius."
 			>
 
 		<Image imageID="&rsItems6;" imageX="288" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -389,7 +384,6 @@
 		<StaticData>
 			<Data id="effectRadius">60</Data>
 			<Data id="imageVariant">0</Data>
-			<Data id="oreCriteria">"t +ore; L:1-10;"</Data>
 		</StaticData>
 		
 		<Events>
@@ -417,7 +411,7 @@
 		<Weapon
 				type=				"shockwave"
 
-				damage=				"blast:5d6"
+				damage=				"generic:1; mining:7;"
 				fireRate=			"30"
 				expansionSpeed=		"80"
 				missileSpeed=		"0"
@@ -440,10 +434,6 @@
 						/>
 			</Effect>
 		</Weapon>
-		
-		<StaticData>
-			<Data id="podType">&itAdvancedScannerPod;</Data>
-		</StaticData>
 	</ItemType>
 	
 	<!-- Level 6: Plasma Torch -->
@@ -575,7 +565,7 @@
 <!-- OVERLAYS -->
 
 	<OverlayType UNID="&ovMiningPodRadius;"
-            attributes=         "effect"
+			attributes=         "effect"
 			>
 		<Counter style=	"radius"
 				color=	"#5ff12a"
@@ -583,7 +573,7 @@
 	</OverlayType>
 	
 	<OverlayType UNID="&ovMiningPodArmedRadius;"
-            attributes=         "effect"
+			attributes=         "effect"
 			>
 		<Counter style=	"radius"
 				color=	"#f24b29"
@@ -591,7 +581,7 @@
 	</OverlayType>
 	
 	<OverlayType UNID="&ovMiningPodTimer;"
-            attributes=         "effect"
+			attributes=         "effect"
 			>
 		
 		<Counter style=	"progress"
@@ -686,61 +676,26 @@
 			virtual=			"true"
 			level=				"2"
 			>
+		<Properties>
+			<ObjData id="mining.asteroidsFound">0</ObjData>
+		</Properties>
 
 		<Events>
-			<OnCreateShot>
-				(block Nil
-					(objSetData gSource 'asteroidsFound 0)
-					(objSetData gSource 'asteroidsInDeposit 0)
-					)
-			</OnCreateShot>
-			
-			<OnDamageAbandoned>
-				(block (
-					(podType (typGetStaticData aWeaponType 'podType))
-					)
-					
-					(if (miningScanObj gSource podType)
-						(block (depositID)
-							(objIncData aCause 'asteroidsFound 1)
-						
-							;	If this asteroid is part of a larger ore deposit, 
-							;	then remember it.
-							
-							(if (setq depositID (objGetData gSource 'oreDeposit))
-								(block Nil
-									(objSetData aCause 'depositID depositID)
-									(objIncData aCause 'asteroidsInDeposit 1)
-									)
-								)
-							)
-						)
-						
-					;	We return Nil to indicate that we want the default damage
-					;	to apply.
-					
-					Nil
-					)
-			</OnDamageAbandoned>
-		
 			<OnDestroyShot>
-				(switch
-					;	If we found asteroids in a deposit, then we broadcast a
-					;	message to all stations (to let them know that a desposit
-					;	has been found).
-					
-					(!= (objGetData gSource 'asteroidsInDeposit) 0)
-						(miningNotifyOnOreDepositFound (objGetObjByID (objGetData gSource 'depositID)) aOrderGiver)
-							
-					;	If we found some ore, then nothing to do (we've marked the ore
-					;	found).
-					
-					(!= (objGetData gSource 'asteroidsFound) 0)
-						Nil
-						
-					;	If we found no ore, tell the player/orderGiver
-					
-					(objSendMessage aOrderGiver Nil (typTranslate &ovMiningOreCount; 'msgNoOreFound))
+				(block (
+					(asteroidsFound (objGetProperty gSource 'mining.asteroidsFound))
+					)
+					(switch
+						(= asteroidsFound 0)
+							(objSendMessage aOrderGiver Nil (typTranslate &ovMiningOreCount; 'msgNoOreFound))
+
+						(= asteroidsFound 1)
+							(objSendMessage aOrderGiver Nil (typTranslate &ovMiningOreCount; 'msgOreFound1))
+
+						(objSendMessage aOrderGiver Nil (typTranslate &ovMiningOreCount; 'msgOreFoundN {
+							count: asteroidsFound
+							}))
+						)
 					)
 			</OnDestroyShot>
 		</Events>
@@ -751,50 +706,7 @@
 	<Globals>
 		(block Nil
 			(setq miningScanObj (lambda (asteroidObj podType)
-				(block (
-					(podOreCriteria (typGetStaticData podType 'oreCriteria))
-					(oreCriteria (if podOreCriteria podOreCriteria "t +ore;"))
-					oreFound
-					)
-					;	If we're showing an annotation, then this counts as exploring it.
-					
-					(if (objGetProperty asteroidObj 'showsUnexploredAnnotation)
-						(objSetProperty asteroidObj 'explored True)
-						)
-					
-					(switch
-						;	If not an asteroid, then nothing to do
-						
-						(not (objHasAttribute asteroidObj "asteroid"))
-							Nil
-							
-						;	If there is no detectable ore here, nothing to do
-						
-						(not (setq oreFound (objGetItems asteroidObj oreCriteria)))
-							Nil
-							
-						;	If we already have this overlay, then nothing to do
-						
-						(filter (objGetOverlays asteroidObj) theOverlay
-								(= (objGetOverlayType asteroidObj theOverlay) &ovMiningOreCount;)
-								)
-							Nil
-							
-						;	Otherwise, create an overlay
-						
-						(block (
-							overlayID
-							)
-							
-							(setq overlayID (objAddOverlay asteroidObj &ovMiningOreCount;))
-							(objSetOverlayProperty asteroidObj overlayID 'counterLabel (typTranslate &ovMiningOreCount; 'msgScanning))
-							
-							;	Return TRUE to indicate that we found ore
-							
-							True
-							)
-						)
-					)
+				Nil
 				))
 			)
 	</Globals>

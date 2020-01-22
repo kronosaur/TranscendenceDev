@@ -1898,8 +1898,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 		{
 		switch (iPropType)
 			{
-			case EPropertyType::propVariant:
 			case EPropertyType::propData:
+			case EPropertyType::propItemData:
+			case EPropertyType::propVariant:
 				return GetDataAsItem(sProperty)->Reference();
 
 			case EPropertyType::propDynamicData:
@@ -1914,6 +1915,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 				ICCItemPtr pValue = RunCtx.RunCode(pResult);
 				return pValue->Reference();
 				}
+
+			case EPropertyType::propObjData:
+				return CC.CreateNil();
 
 			default:
 				return pResult->Reference();

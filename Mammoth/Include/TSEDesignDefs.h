@@ -33,6 +33,9 @@ enum class EPropertyType
 	propVariant,				//	Object-based, eval at object-create, constant
 	propData,					//	Object-based, eval at object-create, mutable
 	propDynamicData,			//	Object-based, eval at get-time
+	propItemData,				//	Same as propData, but used by <ItemType> to 
+	propObjData,				//		distinguish between item-based data and
+								//		shot-based data.
 
 	propEngine,					//	Property handled by the engine
 

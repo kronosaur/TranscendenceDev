@@ -16,6 +16,7 @@ class COverlayType : public CDesignType
 			counterProgress,					//	Show as progress bar on object
 			counterRadius,						//	Show as circle of given radius (pixels)
 			counterFlag,						//	Show a flag with counter and label
+			counterTextFlag,					//	Show a flag with just text (no counter)
 			};
 
 		COverlayType(void);

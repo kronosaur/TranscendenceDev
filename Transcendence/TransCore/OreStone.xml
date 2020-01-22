@@ -445,13 +445,17 @@
 
 <!-- BASE CLASSES -->
 
-	<Type unid="&baOreStoneAsteroid;">
+	<StationType unid="&baOreStoneAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="metallic"/>
+
 		<Events>
 			<OnMining>
 				(intAsteroidOnMining 30)
 			</OnMining>
 		</Events>
-	</Type>
+	</StationType>
 
 	<Type unid="&baOreStonePlanetoid;">
 	</Type>

@@ -1414,5 +1414,8 @@
     <ClCompile Include="CAsteroidDesc.cpp">
       <Filter>Source Files\Stations</Filter>
     </ClCompile>
+    <ClCompile Include="CEngineLanguage.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

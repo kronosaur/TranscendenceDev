@@ -21,8 +21,6 @@
 #define PROPERTY_DIFFICULTY					CONSTLIT("difficulty")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
 
-#define UNID_ENGINE_TEXT					0x00030004
-
 struct SExtensionSaveDesc
 	{
 	DWORD dwUNID = 0;
@@ -66,7 +64,8 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 CUniverse::CUniverse (void) : 
 		m_Topology(*this),
 		m_AllMissions(true),
-		m_pHost(&g_DefaultHost)
+		m_pHost(&g_DefaultHost),
+		m_Language(m_Design)
 
 //	CUniverse constructor
 
@@ -2404,7 +2403,7 @@ ALERROR CUniverse::Reinit (void)
 	m_dwNextID = 1;
 	m_Objects.DeleteAll();
 	m_Difficulty = CDifficultyOptions();
-	m_pEngineText = NULL;
+	m_Language.Reinit();
 
 	//	NOTE: We don't reinitialize m_bDebugMode or m_bRegistered because those
 	//	are set before Reinit (and thus we would overwrite them).
@@ -2890,30 +2889,6 @@ CTimeSpan CUniverse::StopGameTime (void)
 	{
 	CTimeDate StopTime(CTimeDate::Now);
 	return timeSpan(m_StartTime, StopTime);
-	}
-
-CString CUniverse::TranslateEngineText (const CString &sID, ICCItem *pData) const
-
-//	TranslateEngineText
-//
-//	Look up text used by the game engine.
-
-	{
-	if (m_pEngineText == NULL)
-		{
-		m_pEngineText = FindDesignType(UNID_ENGINE_TEXT);
-		if (!m_pEngineText)
-			return CONSTLIT("Error: Can't find engine text type.");
-		}
-
-	ICCItemPtr pResult;
-	if (!m_pEngineText->Translate(sID, pData, pResult))
-		return strPatternSubst(CONSTLIT("Error: Can't find engine text ID %s"), sID);
-
-	if (pResult->IsNil())
-		return strPatternSubst(CONSTLIT("Error: Engine text ID %s returned Nil."), sID);
-
-	return pResult->GetStringValue();
 	}
 
 bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)

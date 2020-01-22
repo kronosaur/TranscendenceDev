@@ -94,6 +94,36 @@
 				))
 				
 			(setq intAsteroidOnMining (lambda (miningDifficulty)
+
+			;	Called from inside OnMining. The following variables are
+			;	defined:
+			;
+			;	gType: The design type of the object being mined
+			;	gSource: The object being mined
+			;
+			;	aAsteroidType: The type of asteroid being mined:
+			;		icy
+			;		metallic
+			;		primordial
+			;		rocky
+			;		volcanic
+			;
+			;	aCause: The shot object
+			;	aDamageType: Weapon damage type
+			;	aHP: Hit points of damage of the weapon
+			;	aMaxOreLevel: The maximum level of ore that can be extracted
+			;		with the given shot.
+			;	aMineDifficulty: The target object's mining difficulty (0-100)
+			;	aMineDir: The direction from which the shot came
+			;	aMinePos: The position where the mining weapon hit
+			;	aMineProbability: The mining level (0-100)
+			;	aMiner: The object that fired the mining weapon
+			;	aOrderGiver: The object that controls the mining
+			;	aSuccessChance: The computed chance (0-100) that mining will
+			;		succeed.
+			;	aWeaponType: UNID of mining weapon
+			;	aYieldAdj: Adjustment to the yield as a factor (double)
+
 				(block (
 					;	This table is used to calc the number of HP required 
 					;	to extract a ton of ore of a given level.
@@ -107,38 +137,13 @@
 						205 266 346 450 586
 						))
 
-					(maxOreLevelByDamageType {
-						laser: 4
-						kinetic: 4
-
-						particle: 7
-						blast: 7
-
-						ion: 10
-						thermo: 10
-
-						positron: 13
-						plasma: 13
-
-						antimatter: 16
-						nano: 16
-
-						graviton: 19
-						singularity: 19
-
-						darkAcid: 22
-						darkSteel: 22
-
-						darkLightning: 25
-						darkFire: 25
-						})
-
 					(isPlayer (and gPlayerShip (= aOrderGiver gPlayerShip)))
-					(successChance (* 2 (rpgCalcToHit aMineProbability miningDifficulty)))
 					(debugMining (typGetProperty &unidMiningSkill; 'rpg.debugMining))
 
 					(setExplored Nil)
 					(addCounter Nil)
+					(notifyOfDeposits Nil)
+					(depositID Nil)
 
 					theOre countMined
 					allOre extractedOre
@@ -146,59 +151,34 @@
 
 					(if debugMining
 						(block ()
-							(dbgOutput "Asteroid difficulty: " miningDifficulty)
-							(dbgOutput "Effort: " aMineProbability)
+							(dbgOutput "Asteroid Type: " aAsteroidType)
+							(dbgOutput "Asteroid difficulty: " aMineDifficulty)
+							(dbgOutput "Mining Level: " aMineProbability)
 							(dbgOutput "DamageType: " aDamageType)
 							(dbgOutput "HP: " aHP)
-							(dbgOutput "Chance: " successChance)
+							(dbgOutput "Max Ore Level: " aMaxOreLevel)
+							(dbgOutput "Chance: " aSuccessChance)
+							(dbgOutput "Yield Adj (Base): " aYieldAdj)
+							(dbgOutput "Yield Adj (Player): " (* (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj) aYieldAdj))
 							)
 						)
 				
-					;	NOTE:
-					;
-					;	EFFORT is the effort applied to mining (0-100),
-					;		stored as aMineProbability.
-					;	DIFFICULTY is how hard it is to mine a given asteroid (0-100).
-					;	EFFICIENCY is the probability that we succeed in mining ore.
-					;	VOLUME is the amount of ore we mine if we succeed.
-					;	YIELD is the percent of mined ore that we manage to extract
-					;		(the rest is lost).
-					;
-					;	EFFORT and YIELD are both determined by the mining level
-					;	(from the damage descriptor). Consult the following table:
-					;
-					;	LEVEL	EFFORT		YIELD
-					;	1		4			97
-					;	2		10			91
-					;	3		20			84
-					;	4		34			78
-					;	5		52			76
-					;	6		74			81
-					;	7		100			100
-					;
-					;	EFFICIENCY is computed from EFFORT and DIFFICULTY:
-					;
-					;	EFFICIENCY = 2 * (EFFORT * EFFORT) / (EFFORT + DIFFICULTY)
-					;
-					;	VOLUME is computed from hit points of damage and the level of
-					;	the ore we're trying to extract.
-					
 					(switch
 					
 						;	Compute the chance of success. If there is no chance, 
 						;	nothing happens.
 						
-						(leq successChance 0)
+						(leq aSuccessChance 0)
 							Nil
 							
 						;	If we fail at extraction, then nothing
 						
-						(gr (random 1 100) successChance)
+						(gr (random 1 100) aSuccessChance)
 							(if (and isPlayer (not (objGetProperty gSource 'explored)))
 								(block (
 									;	We get some experience even for failures.
 									(xpPerTry (typGetProperty &unidMiningSkill; 'rpg.xpPerFailedTry))
-									(xpGained (round 'stochastic (* xpPerTry (/ miningDifficulty 100))))
+									(xpGained (round 'stochastic (* xpPerTry (/ aMineDifficulty 100))))
 									)
 									(if debugMining
 										(dbgOutput "XP " (typGetProperty &unidMiningSkill; 'rpg.miningXP) " [+" xpGained "]")
@@ -213,6 +193,14 @@
 						
 						(not (setq allOre (objGetItems gSource "* +ore; | * +minable;")))
 							(setq setExplored True)
+
+						;	Generic damage just scans
+
+						(= aDamageType 'generic)
+							(block ()
+								(setq setExplored True)
+								(setq addCounter True)
+								)
 							
 						;	Figure out how many tons we mine this time.
 						
@@ -220,7 +208,6 @@
 								(map allOre 'excludeNil theOre
 									(block (
 										(oreLevel (itmGetLevel theOre))
-										(maxOreLevel (@ maxOreLevelByDamageType aDamageType))
 
 										extractedCount 
 										)
@@ -228,7 +215,7 @@
 											;	If the ore level is too high for our damage type, then we need
 											;	a better mining weapon.
 
-											(gr oreLevel maxOreLevel)
+											(gr oreLevel aMaxOreLevel)
 												(block ()
 													(if debugMining
 														(dbgOutput "Ore level " oreLevel " is too high for " aDamageType " damage.")
@@ -281,11 +268,10 @@
 							;	Compute the yield based on the mining rating and
 							;	player's mining skill
 							
-							(yield (subtract 100 (divide (multiply aMineProbability (subtract 100 aMineProbability)) 100)))
 							(yieldAdj 
 								(if isPlayer
-									(* (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj) (/ yield 100))
-									(/ yield 100)
+									(* (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj) aYieldAdj)
+									aYieldAdj
 									)
 								)
 
@@ -322,7 +308,6 @@
 							
 							(if minedOre
 								(block (
-									(depositID (objGetData gSource 'oreDeposit))
 									)
 									;	Create floating ore object
 									
@@ -346,7 +331,7 @@
 															(or (itmGetProperty theItem 'rpg.miningXP)
 																(typGetProperty &unidMiningSkill; 'rpg.xpPerItem)
 																)
-															(/ miningDifficulty 50)
+															(/ aMineDifficulty 50)
 															)
 														)
 													)
@@ -360,10 +345,8 @@
 										)
 								
 									;	If this asteroid is part of a deposit, then notify others
-									
-									(if depositID
-										(miningNotifyOnOreDepositFound (objGetObjByID depositID) aMiner)
-										)
+
+									(setq notifyOfDeposits True)
 									)
 								)
 							)
@@ -394,12 +377,22 @@
 								(= (objGetOverlayType gSource theOverlay) &ovMiningOreCount;)
 								))
 							)
-						(block (
-							overlayID
+						(block ()
+							(objAddOverlay gSource &ovMiningOreCount;)
+							(setq notifyOfDeposits True)
+
+							(if (objGetProperty aCause 'mining.asteroidsFound)
+								(objIncProperty aCause 'mining.asteroidsFound 1)
+								)
 							)
-							(setq overlayID (objAddOverlay gSource &ovMiningOreCount;))
-							(objSetOverlayProperty gSource overlayID 'counterLabel (typTranslate &ovMiningOreCount; 'msgScanning))
+						)
+
+					;	Notify others that we've found a large deposit
+
+					(if (and notifyOfDeposits
+							(setq depositID (objGetData gSource 'oreDeposit))
 							)
+						(miningNotifyOnOreDepositFound (objGetObjByID depositID) aMiner)
 						)
 					)
 				))
@@ -511,32 +504,54 @@
 	<OverlayType UNID="&ovMiningOreCount;"
 			attributes=		"effect, oreCount"
 			>
-		<Counter style=		"flag"
+		<Counter style=		"textFlag"
 				color=		"#5ff12a"
 				showOnMap=	"true"
 				/>
 	
 		<Events>
+			<OnCreate>
+				(block (
+					(asteroidType (objGetProperty gSource 'asteroidType))
+					)
+					(objSetOverlayProperty gSource aOverlayID 'counter 0)
+					(objSetOverlayProperty gSource aOverlayID 'counterLabel 
+						(typTranslate gType 'msgScanning {
+							asteroidType: (typTranslate &unidEngineText; (cat 'asteroidType. asteroidType))
+							})
+						)
+					)
+			</OnCreate>
+
 			<OnUpdate>
 				(block (
 					(oreFound (objGetItems gSource "* +ore; | * +minable;"))
-					(tons (or 
-						(map oreFound 'reduceSum theItem 
-							(/ (* (itmGetCount theItem) (itmGetMass theItem)) 1000)
+					(bestItem 
+						(map oreFound '(reduceMax original) theItem 
+							(itmGetLevel theItem)
 							)
-						0
-						))
+						)
+					(bestLevel (itmGetLevel bestItem))
+					(resType
+						(switch 
+							(itmHasAttribute bestItem 'ore)
+								'ore
 
-					(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
-					(adjCount (round (* tons yieldAdj)))
+							'res
+							)
+						)
+					(asteroidType (objGetProperty gSource 'asteroidType))
 					)
 					
-					(if (= tons 0)
+					(if (not oreFound)
 						(objRemoveOverlay gSource aOverlayID)
 						(block Nil
-							(objSetOverlayProperty gSource aOverlayID 'counter tons)
+							(objSetOverlayProperty gSource aOverlayID 'counter bestLevel)
 							(objSetOverlayProperty gSource aOverlayID 'counterLabel
-								(fmtNoun (typTranslate gType 'msgTonsOfOre) tons 'noDeterminer)
+								(typTranslate gType (cat 'msgLabel. resType) {
+									asteroidType: (typTranslate &unidEngineText; (cat 'asteroidType. asteroidType))
+									level: bestLevel
+									})
 								)
 							)
 						)
@@ -545,11 +560,13 @@
 		</Events>
 	
 		<Language>
-			<Text id="msgNoOreFound">No ore found</Text>
-			<Text id="msgScanning">Scanning...</Text>
-			<Text id="msgTonsOfOre">
-				ton(s) of ore
-			</Text>
+			<Text id="msgNoOreFound">No asteroid resources found</Text>
+			<Text id="msgOreFound1">Found an asteroid with resources</Text>
+			<Text id="msgOreFoundN">Found %count% asteroids with resources</Text>
+
+			<Text id="msgScanning">%AsteroidType%\nScanning...</Text>
+			<Text id="msgLabel.ore">%AsteroidType%\nLevel %level% Ore</Text>
+			<Text id="msgLabel.res">%AsteroidType%\nLevel %level% Resource</Text>
 		</Language>
 	</OverlayType>
 	

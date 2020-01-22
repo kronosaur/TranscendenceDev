@@ -163,6 +163,12 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 
 	pParticles->m_iParticleCount = Max(1, pParticles->m_iParticleCount);
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pParticles, pParticles->GetData());
+
 	//	Add to system
 
 	if (error = pParticles->AddToSystem(System))

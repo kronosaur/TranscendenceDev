@@ -659,7 +659,7 @@ class CSpaceObject
 		void FireOnEnteredGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGate);
 		void FireOnEnteredSystem (CSpaceObject *pGate);
 		void FireOnLoad (SLoadCtx &Ctx);
-		void FireOnMining (const SDamageCtx &Ctx);
+		void FireOnMining (const SDamageCtx &Ctx, EAsteroidType iType);
 		void FireOnMissionAccepted (CMission *pMission);
 		void FireOnMissionCompleted (CMission *pMission, const CString &sReason);
 		void FireOnObjBlacklistedPlayer (CSpaceObject *pObj);
@@ -1277,6 +1277,7 @@ class CSpaceObject
 		//	Helper functions
 		void AddEffect (IEffectPainter *pPainter, int xOffset, int yOffset, int iTick = 0, int iRotation = 0);
 		void CalcInsideBarrier (void);
+		int CalcMiningDifficulty (EAsteroidType iType) const;
 		Metric CalculateItemMass (Metric *retrCargoMass = NULL) const;
 		bool CanFireOnObjHelper (CSpaceObject *pObj) const;
 		void ClearCannotBeHit (void) { m_fCannotBeHit = false; }
@@ -1288,6 +1289,7 @@ class CSpaceObject
 		void DisableObjectDestructionNotify (void) { m_fNoObjectDestructionNotify = true; }
 		const Metric &GetBounds (void) { return m_rBoundsX; }
 		const CEnhancementDesc *GetSystemEnhancements (void) const;
+		ICCItemPtr GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		CSpaceObject *HitTest (const CVector &vStart, const DamageDesc &Damage, CVector *retvHitPos, int *retiHitDir);
 		CSpaceObject *HitTestProximity (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, CVector *retvHitPos, int *retiHitDir);
 		bool ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,

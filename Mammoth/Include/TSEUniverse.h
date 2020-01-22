@@ -121,6 +121,26 @@ class CSFXOptions
 		bool m_bDockScreenTransparent;		//	Show SRS behind dock screen
 	};
 
+//	Engine Strings -------------------------------------------------------------
+
+class CEngineLanguage
+	{
+	public:
+		CEngineLanguage (const CDesignCollection &Design) :
+				m_Design(Design)
+			{ }
+
+		const CString &GetAsteroidTypeLabel (EAsteroidType iType) const;
+		CString Translate (const CString &sID, ICCItem *pData = NULL) const;
+		void Reinit (void);
+
+	private:
+		const CDesignCollection &m_Design;
+
+		mutable const CDesignType *m_pEngineText = NULL;
+		mutable CString m_AsteroidTypeLabel[EAsteroidTypeCount];
+	};
+
 //	Named Painters -------------------------------------------------------------
 
 class CNamedEffects
@@ -338,6 +358,7 @@ class CUniverse
 		CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
 		CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
 		CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
+		const CEngineLanguage &GetEngineLanguage (void) const { return m_Language; }
 		const CEngineOptions &GetEngineOptions (void) const { return m_EngineOptions; }
 		CExtensionCollection &GetExtensionCollection (void) { return m_Extensions; }
 		CString GetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib);
@@ -400,7 +421,7 @@ class CUniverse
 		void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
 		CTimeSpan StopGameTime (void);
-		CString TranslateEngineText (const CString &sID, ICCItem *pData = NULL) const;
+		CString TranslateEngineText (const CString &sID, ICCItem *pData = NULL) const { return m_Language.Translate(sID, pData); }
 		void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }
 		static CString ValidatePlayerName (const CString &sName);
 
@@ -589,7 +610,7 @@ class CUniverse
 
 		mutable const CEconomyType *m_pCreditCurrency = NULL;
 		CNamedEffects m_NamedEffects;
-		mutable const CDesignType *m_pEngineText = NULL;
+		CEngineLanguage m_Language;
 
 		//	Debugging structures
 

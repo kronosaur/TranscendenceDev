@@ -47,6 +47,7 @@
 		size=				"4"
 
 		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		asteroidType=		"metallic"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -75,6 +76,7 @@
 		size=				"55"
 
 		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		asteroidType=		"metallic"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -104,6 +106,7 @@
 		size=				"250"
 
 		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		asteroidType=		"metallic"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -132,6 +135,7 @@
 		size=				"625"
 
 		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		asteroidType=		"metallic"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>

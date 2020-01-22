@@ -290,11 +290,76 @@ enum ScaleTypes
 	scaleFlotsam =					4,
 	};
 
+enum class EAsteroidType
+	{
+	unknown = -1,			//	Unknown composition
+	none = 0,				//	No mining
+
+	icy = 1,
+	metallic = 2,
+	primordial = 3,
+	rocky = 4,
+	volcanic = 5,
+	};
+
+constexpr int EAsteroidTypeCount = 6;
+
+enum class EMiningMethod
+	{
+	unknown = -1,
+
+	ablation = 0,
+	drill = 1,
+	explosion = 2,
+	shockwave = 3,
+	};
+
+constexpr int EMiningMethodCount = 4;
+
 class CAsteroidDesc
 	{
 	public:
-		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
 
+		//	Composition (for mining purposes)
+
+		struct SMiningStats
+			{
+			int iSuccessChance = 0;
+			int iMaxOreLevel = 1;
+			Metric rYieldAdj = 1.0;
+			};
+
+		EAsteroidType GetType (void) const { return m_iType; }
+		CString GetTypeLabel (CUniverse &Universe) const;
+		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool IsEmpty (void) const { return m_bDefault; }
+
+		static void CalcMining (int iMiningLevel, int iMiningDifficulty, EAsteroidType iType, const SDamageCtx &DamageCtx, SMiningStats &retMining);
+		static EMiningMethod CalcMiningMethod (const CWeaponFireDesc &Desc);
+		static CString CompositionID (EAsteroidType iType);
+		static int GetDefaultMiningDifficulty (EAsteroidType iType);
+		static EAsteroidType ParseComposition (const CString &sValue);
+
+	private:
+		struct SCompositionDesc
+			{
+			LPSTR pszID = NULL;
+			int iMiningDifficulty = 0;
+
+			Metric SuccessAdj[EMiningMethodCount] = { 0.0 };
+			Metric YieldAdj[EMiningMethodCount] = { 0.0 };
+			};
+
+		static Metric CalcBaseMiningSuccess (int iMiningLevel, int iMiningDifficulty);
+		static int CalcMaxOreLevel (DamageTypes iDamageType);
+		static const SCompositionDesc &GetCompositionDesc (EAsteroidType iType) { return COMPOSITION_TABLE[static_cast<int>(iType)]; }
+
+		EAsteroidType m_iType = EAsteroidType::unknown;
+		bool m_bDefault = false;
+
+		static TStaticStringTable<TStaticStringEntry<EAsteroidType>, 5> COMPOSITION_INDEX;
+		static SCompositionDesc COMPOSITION_TABLE[EAsteroidTypeCount];
 	};
 
 class CStarDesc
@@ -374,6 +439,7 @@ class CStationType : public CDesignType
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices) const;
 		CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
 		CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }
+		const CAsteroidDesc &GetAsteroidDesc (void) const;
 		CurrencyValue GetBalancedTreasure (void) const;
 		CEffectCreator *GetBarrierEffect (void) { return m_pBarrierEffect; }
 		IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }

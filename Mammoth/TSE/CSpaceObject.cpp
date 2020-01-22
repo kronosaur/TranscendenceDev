@@ -99,6 +99,8 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 
 #define ORDER_DOCKED							CONSTLIT("docked")
 
+#define PROPERTY_CORE_MINING_DIFFICULTY			CONSTLIT("core.miningDifficulty")
+
 #define SPECIAL_CHARACTER						CONSTLIT("character:")
 #define SPECIAL_DATA							CONSTLIT("data:")
 #define SPECIAL_IS_PLANET						CONSTLIT("isPlanet:")
@@ -653,6 +655,20 @@ int CSpaceObject::CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed)
 
 	CVector vInterceptPoint = vPos + vVel * rTimeToIntercept;
 	return VectorToPolar(vInterceptPoint);
+	}
+
+int CSpaceObject::CalcMiningDifficulty (EAsteroidType iType) const
+
+//	CalcMiningDifficulty
+//
+//	Compute mining difficult based on asteroid (0-100).
+
+	{
+	ICCItemPtr pValue = GetTypeProperty(CCodeChainCtx(GetUniverse()), PROPERTY_CORE_MINING_DIFFICULTY);
+	if (!pValue->IsNil())
+		return Max(0, Min(pValue->GetIntegerValue(), 100));
+
+	return CAsteroidDesc::GetDefaultMiningDifficulty(iType);
 	}
 
 DWORD CSpaceObject::CalcSRSVisibility (SViewportPaintCtx &Ctx) const
@@ -2810,7 +2826,7 @@ void CSpaceObject::FireOnLoad (SLoadCtx &Ctx)
 		}
 	}
 
-void CSpaceObject::FireOnMining (const SDamageCtx &Ctx)
+void CSpaceObject::FireOnMining (const SDamageCtx &Ctx, EAsteroidType iType)
 
 //	FireOnMining
 //
@@ -2818,26 +2834,51 @@ void CSpaceObject::FireOnMining (const SDamageCtx &Ctx)
 
 	{
 	SEventHandlerDesc Event;
+	if (!FindEventHandler(ON_MINING_EVENT, &Event))
+		return;
 
-	if (FindEventHandler(ON_MINING_EVENT, &Event))
-		{
-		CCodeChainCtx CCCtx(GetUniverse());
-		CCCtx.DefineContainingType(this);
-		CCCtx.SaveAndDefineSourceVar(this);
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
-		CCCtx.DefineSpaceObject(CONSTLIT("aMiner"), Ctx.Attacker.GetObj());
-		CCCtx.DefineVector(CONSTLIT("aMinePos"), Ctx.vHitPos);
-		CCCtx.DefineInteger(CONSTLIT("aMineDir"), Ctx.iDirection);
-		CCCtx.DefineInteger(CONSTLIT("aMineProbability"), Ctx.Damage.GetMiningAdj());
-		CCCtx.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
-		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+	//	Compute some mining values:
+	//
+	//	Mining difficulty 0-100, based on properties or default value
+	//		from asteroid type
+	//
+	//	Max ore level, based on damage type
+	//
+	//	Chance of success
+	//
+	//	Yield, based on mining level, asteroid type, and weapon type.
 
-		ICCItem *pResult = CCCtx.Run(Event);
-		if (pResult->IsError())
-			ReportEventError(ON_MINING_EVENT, pResult);
-		CCCtx.Discard(pResult);
-		}
+	//	Figure out the mining difficulty.
+
+	const int iMiningLevel = Ctx.Damage.GetMiningAdj();
+	const int iMiningDifficulty = CalcMiningDifficulty(iType);
+
+	CAsteroidDesc::SMiningStats MiningStats;
+	CAsteroidDesc::CalcMining(iMiningLevel, iMiningDifficulty, iType, Ctx, MiningStats);
+
+	//	Run
+
+	CCodeChainCtx CCX(GetUniverse());
+	CCX.DefineContainingType(this);
+	CCX.SaveAndDefineSourceVar(this);
+	CCX.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
+	CCX.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+	CCX.DefineSpaceObject(CONSTLIT("aMiner"), Ctx.Attacker.GetObj());
+	CCX.DefineVector(CONSTLIT("aMinePos"), Ctx.vHitPos);
+	CCX.DefineInteger(CONSTLIT("aMineDir"), Ctx.iDirection);
+	CCX.DefineInteger(CONSTLIT("aMineProbability"), iMiningLevel);
+	CCX.DefineInteger(CONSTLIT("aMineDifficulty"), iMiningDifficulty);
+	CCX.DefineString(CONSTLIT("aAsteroidType"), CAsteroidDesc::CompositionID(iType));
+	CCX.DefineInteger(CONSTLIT("aSuccessChance"), MiningStats.iSuccessChance);
+	CCX.DefineInteger(CONSTLIT("aMaxOreLevel"), MiningStats.iMaxOreLevel);
+	CCX.DefineDouble(CONSTLIT("aYieldAdj"), MiningStats.rYieldAdj);
+	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
+	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
+	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_MINING_EVENT, pResult);
 	}
 
 void CSpaceObject::FireOnMissionAccepted (CMission *pMission)
@@ -5058,6 +5099,7 @@ bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItem
 				return true;
 
 			case EPropertyType::propData:
+			case EPropertyType::propObjData:
 				pResult = IncData(sProperty, pInc);
 				return true;
 

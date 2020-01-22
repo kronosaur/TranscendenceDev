@@ -326,7 +326,7 @@
 
 	<!ENTITY tbOreStoneTables			"0x00020120">
 	<!ENTITY rsOreStoneAsteroids		"0x00020121">
-	<!ENTITY baOreStoneAsteroid			"0x00020122">
+	<!ENTITY baOreStoneAsteroidOld		"0x00020122">
 	<!ENTITY stOreStoneAsteroidSizeA	"0x00020123">
 	<!ENTITY stOreStoneAsteroidSizeB	"0x00020124">
 	<!ENTITY stOreStoneAsteroidSizeC	"0x00020125">
@@ -335,6 +335,7 @@
 	<!ENTITY stOreStonePlanetoidSizeE	"0x00020128">
 	<!ENTITY stOreStonePlanetoidSizeF	"0x00020129">
 	<!ENTITY stOreStonePlanetoidSizeG	"0x0002012A">
+	<!ENTITY baOreStoneAsteroid			"0x0002012B">
 	]>
 	
 <CoreLibrary

@@ -154,7 +154,9 @@
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
 #define FIELD_WEAPON_STRENGTH					CONSTLIT("weaponStrength")			//	Strength of weapons (100 = level weapon @ 1/4 fire rate).
 
+#define PROPERTY_ASTEROID_TYPE					CONSTLIT("asteroidType")
 #define PROPERTY_AUTO_LEVEL_FREQUENCY			CONSTLIT("autoLevelFrequency")
+#define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
 #define PROPERTY_ENCOUNTERED_BY_NODE			CONSTLIT("encounteredByNode")
 #define PROPERTY_ENCOUNTERED_TOTAL				CONSTLIT("encounteredTotal")
 #define PROPERTY_LEVEL_FREQUENCY				CONSTLIT("levelFrequency")
@@ -796,8 +798,8 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 	retrcImage.right = RectWidth(rcBounds);
 	retrcImage.bottom = RectHeight(rcBounds);
 
-    retxCenter = xCenter;
-    retyCenter = yCenter;
+	retxCenter = xCenter;
+	retyCenter = yCenter;
 
 	return pCompositeImage;
 	}
@@ -811,33 +813,33 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 	{
 	if (m_HullDesc.FindDataField(sField, retsValue))
 		return true;
-    else if (strEquals(sField, FIELD_ABANDONED_DOCK_SCREEN))
-        *retsValue = m_pAbandonedDockScreen.GetStringUNID(const_cast<CStationType *>(this));
-    else if (strEquals(sField, FIELD_BALANCE))
-        *retsValue = strFromInt((int)(CalcBalance() * 100.0));
-    else if (strEquals(sField, FIELD_CATEGORY))
-        {
-        if (!CanBeEncounteredRandomly())
-            *retsValue = CONSTLIT("04-Not Random");
-        else if (HasLiteralAttribute(CONSTLIT("debris")))
-            *retsValue = CONSTLIT("03-Debris");
-        else if (HasLiteralAttribute(CONSTLIT("enemy")))
-            *retsValue = CONSTLIT("02-Enemy");
-        else if (HasLiteralAttribute(CONSTLIT("friendly")))
-            *retsValue = CONSTLIT("01-Friendly");
-        else
-            *retsValue = CONSTLIT("04-Not Random");
-        }
-    else if (strEquals(sField, FIELD_DEFENDER_STRENGTH))
-        *retsValue = strFromInt((int)(100.0 * CalcDefenderStrength(GetLevel())));
-    else if (strEquals(sField, FIELD_DOCK_SCREEN))
-        *retsValue = m_pFirstDockScreen.GetStringUNID(const_cast<CStationType *>(this));
-    else if (strEquals(sField, FIELD_LEVEL))
-        *retsValue = strFromInt(GetLevel());
-    else if (strEquals(sField, FIELD_LOCATION_CRITERIA))
-        *retsValue = GetLocationCriteria().AsString();
-    else if (strEquals(sField, FIELD_NAME))
-        *retsValue = GetNounPhrase();
+	else if (strEquals(sField, FIELD_ABANDONED_DOCK_SCREEN))
+		*retsValue = m_pAbandonedDockScreen.GetStringUNID(const_cast<CStationType *>(this));
+	else if (strEquals(sField, FIELD_BALANCE))
+		*retsValue = strFromInt((int)(CalcBalance() * 100.0));
+	else if (strEquals(sField, FIELD_CATEGORY))
+		{
+		if (!CanBeEncounteredRandomly())
+			*retsValue = CONSTLIT("04-Not Random");
+		else if (HasLiteralAttribute(CONSTLIT("debris")))
+			*retsValue = CONSTLIT("03-Debris");
+		else if (HasLiteralAttribute(CONSTLIT("enemy")))
+			*retsValue = CONSTLIT("02-Enemy");
+		else if (HasLiteralAttribute(CONSTLIT("friendly")))
+			*retsValue = CONSTLIT("01-Friendly");
+		else
+			*retsValue = CONSTLIT("04-Not Random");
+		}
+	else if (strEquals(sField, FIELD_DEFENDER_STRENGTH))
+		*retsValue = strFromInt((int)(100.0 * CalcDefenderStrength(GetLevel())));
+	else if (strEquals(sField, FIELD_DOCK_SCREEN))
+		*retsValue = m_pFirstDockScreen.GetStringUNID(const_cast<CStationType *>(this));
+	else if (strEquals(sField, FIELD_LEVEL))
+		*retsValue = strFromInt(GetLevel());
+	else if (strEquals(sField, FIELD_LOCATION_CRITERIA))
+		*retsValue = GetLocationCriteria().AsString();
+	else if (strEquals(sField, FIELD_NAME))
+		*retsValue = GetNounPhrase();
 	else if (strEquals(sField, FIELD_FIRE_RATE_ADJ))
 		*retsValue = strFromInt(10000 / m_iFireRateAdj);
 	else if (strEquals(sField, FIELD_HITS_TO_DESTROY))
@@ -906,6 +908,21 @@ void CStationType::GenerateDevices (int iLevel, CDeviceDescList &Devices) const
 
 		m_pDevices->AddDevices(Ctx);
 		}
+	}
+
+const CAsteroidDesc &CStationType::GetAsteroidDesc (void) const
+
+//	GetAsteroidDesc
+//
+//	Returns the asteroid descriptor.
+
+	{
+	if (!m_Asteroid.IsEmpty())
+		return m_Asteroid;
+	else if (const CStationType *pParent = CStationType::AsType(GetInheritFrom()))
+		return pParent->GetAsteroidDesc();
+	else
+		return m_Asteroid;
 	}
 
 CurrencyValue CStationType::GetBalancedTreasure (void) const
@@ -1436,7 +1453,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fBeacon = pDesc->GetAttributeBool(BEACON_ATTRIB);
 	m_fRadioactive = pDesc->GetAttributeBool(RADIOACTIVE_ATTRIB);
 	m_fNoMapIcon = pDesc->GetAttributeBool(NO_MAP_ICON_ATTRIB);
-    m_fNoMapDetails = pDesc->GetAttributeBool(NO_MAP_DETAILS_ATTRIB);
+	m_fNoMapDetails = pDesc->GetAttributeBool(NO_MAP_DETAILS_ATTRIB);
 	m_fTimeStopImmune = pDesc->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);
 	m_fCanAttack = pDesc->GetAttributeBool(CAN_ATTACK_ATTRIB);
 	m_fReverseArticle = pDesc->GetAttributeBool(REVERSE_ARTICLE_ATTRIB);
@@ -1855,8 +1872,20 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 
-	if (strEquals(sProperty, PROPERTY_AUTO_LEVEL_FREQUENCY))
+	if (strEquals(sProperty, PROPERTY_ASTEROID_TYPE))
+		{
+		auto iType = m_Asteroid.GetType();
+		if (iType == EAsteroidType::none)
+			return ICCItemPtr::Nil();
+		else
+			return ICCItemPtr(CAsteroidDesc::CompositionID(iType));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_AUTO_LEVEL_FREQUENCY))
 		return (GetEncounterDesc().HasAutoLevelFrequency() ? ICCItemPtr(GetEncounterDesc().GetLevelFrequency()) : ICCItemPtr(ICCItem::Nil));
+
+	else if (strEquals(sProperty, PROPERTY_CAN_BE_MINED))
+		return ICCItemPtr(ShowsUnexploredAnnotation());
 
 	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_BY_NODE))
 		{
@@ -1900,8 +1929,8 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		}
 	else if (strEquals(sProperty, PROPERTY_SYSTEM_CRITERIA))
 		{
-        const CTopologyNode::SCriteria *pSystemCriteria;
-        if (!GetEncounterDesc().HasSystemCriteria(&pSystemCriteria))
+		const CTopologyNode::SCriteria *pSystemCriteria;
+		if (!GetEncounterDesc().HasSystemCriteria(&pSystemCriteria))
 			return ICCItemPtr(ICCItem::Nil);
 
 		if (pSystemCriteria->AttribCriteria.IsEmpty())

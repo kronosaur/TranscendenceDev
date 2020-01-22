@@ -2314,7 +2314,7 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 	//	If we have mining damage then call OnMining
 
 	if (Ctx.Damage.GetMiningAdj())
-		FireOnMining(Ctx);
+		FireOnMining(Ctx, m_pType->GetAsteroidDesc().GetType());
 
 	//	Adjust the damage based on WMD requirements. Most hull types require
 	//	WMD damage to be hurt.
@@ -3206,7 +3206,8 @@ void CStation::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPa
 			&& m_pType->ShowsUnexploredAnnotation()
 			&& Ctx.bShowUnexploredAnnotation)
 		{
-		COverlay::PaintCounterFlag(Dest, x, y, NULL_STR, CONSTLIT("Unexplored"), CG32bitPixel(128, 128, 128), Ctx);
+		CString sType = strCapitalize(m_pType->GetAsteroidDesc().GetTypeLabel(GetUniverse()));
+		COverlay::PaintCounterFlag(Dest, x, y, sType, CONSTLIT("Unexplored"), RGB_MINING_MARKER_UNEXPORED, Ctx);
 		}
 	}
 

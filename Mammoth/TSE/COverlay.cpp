@@ -910,6 +910,14 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 			PaintCounterFlag(Dest, x, y, strFromInt(m_iCounter), m_sMessage, m_pType->GetCounterColor(), Ctx);
 			break;
 
+		case COverlayType::counterTextFlag:
+			{
+			TArray<CString> Text;
+			strDelimit(m_sMessage, '\n', 2, &Text);
+			PaintCounterFlag(Dest, x, y, Text[0], Text[1], m_pType->GetCounterColor(), Ctx);
+			break;
+			}
+
 		case COverlayType::counterProgress:
 			{
 			int cyHeight;
@@ -1019,6 +1027,7 @@ void COverlay::PaintLRSAnnotations (const ViewportTransform &Trans, CG32bitImage
 	switch (m_pType->GetCounterStyle())
 		{
 		case COverlayType::counterFlag:
+		case COverlayType::counterTextFlag:
 			{
 			const CG16bitFont &CounterFont = GetUniverse().GetNamedFont(CUniverse::fontMapLabel);
 
@@ -1047,6 +1056,7 @@ void COverlay::PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, in
 	switch (m_pType->GetCounterStyle())
 		{
 		case COverlayType::counterFlag:
+		case COverlayType::counterTextFlag:
 			{
 			const CG16bitFont &CounterFont = GetUniverse().GetNamedFont(CUniverse::fontMapLabel);
 

@@ -250,6 +250,14 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Bind %02d> %s"), Ctx.iBindNesting, sName));
 		}
 
+	//	Bind ancestors
+
+	if (m_pInheritFrom && !m_pInheritFrom->IsBound())
+		{
+		if (ALERROR error = m_pInheritFrom->BindDesign(Ctx))
+			return error;
+		}
+
 	//	Bind. Set the flag so that we do not recurse.
 
 	Ctx.pType = this;
@@ -1934,9 +1942,14 @@ ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 	ICCItem *pResult;
 	ICCItemPtr pResultPtr;
 
-	//	Let our subclass handle this first
+	//	Check to see if this is a custom property.
 
-	if (pResultPtr = OnGetProperty(Ctx, sProperty))
+	if (FindCustomProperty(sProperty, pResultPtr, retiType))
+		return pResultPtr;
+
+	//	Let our subclass handle it.
+
+	else if (pResultPtr = OnGetProperty(Ctx, sProperty))
 		{
 		if (retiType) *retiType = EPropertyType::propEngine;
 		return pResultPtr;
@@ -1949,11 +1962,6 @@ ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 		if (retiType) *retiType = EPropertyType::propEngine;
 		return ICCItemPtr(pResult);
 		}
-
-	//	Otherwise, check to see if this is a custom property.
-
-	else if (FindCustomProperty(sProperty, pResultPtr, retiType))
-		return pResultPtr;
 
 	//	Nobody handled it, so just return Nil
 

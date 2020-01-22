@@ -125,6 +125,7 @@
 		size=				"4"
 
 		attributes=			"asteroid, generic, inner, lifeZone, rocky"
+		asteroidType=		"rocky"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -152,6 +153,7 @@
 		size=				"4"
 
 		attributes=			"asteroid, generic, outer, rocky"
+		asteroidType=		"rocky"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -190,6 +192,7 @@
 		size=				"65"
 
 		attributes=			"asteroid, generic, inner, lifeZone, rocky"
+		asteroidType=		"rocky"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -219,6 +222,7 @@
 		size=				"65"
 
 		attributes=			"asteroid, generic, outer, rocky"
+		asteroidType=		"rocky"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -256,6 +260,7 @@
 		size=				"250"
 
 		attributes=			"asteroid, generic, inner, lifeZone, rocky"
+		asteroidType=		"rocky"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -283,6 +288,7 @@
 		size=				"250"
 
 		attributes=			"asteroid, generic, outer, rocky"
+		asteroidType=		"rocky"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -316,6 +322,7 @@
 		size=				"625"
 
 		attributes=			"asteroid, generic, inner, lifeZone, rocky"
+		asteroidType=		"rocky"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -343,6 +350,7 @@
 		size=				"625"
 
 		attributes=			"asteroid, generic, outer, rocky"
+		asteroidType=		"rocky"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>

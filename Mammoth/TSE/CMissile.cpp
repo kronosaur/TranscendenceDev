@@ -270,6 +270,12 @@ ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpM
 
 	pMissile->m_pSovereign = pMissile->m_Source.GetSovereign();
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pMissile, pMissile->GetData());
+
 	//	Create a painter instance
 
 	pMissile->m_pPainter = Ctx.pDesc->CreateEffectPainter(Ctx);

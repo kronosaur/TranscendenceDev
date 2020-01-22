@@ -63,8 +63,15 @@
 
 			<!-- Miscellaneous text -->
 
-			<Text id="averageCommodityPrices">		Average commodity prices</Text>
+			<Text id="asteroidType.icy">			icy</Text>
+			<Text id="asteroidType.metallic">		metallic</Text>
+			<Text id="asteroidType.none">			none</Text>
+			<Text id="asteroidType.primordial">		primordial</Text>
+			<Text id="asteroidType.rocky">			rocky</Text>
+			<Text id="asteroidType.unknown">		unknown</Text>
+			<Text id="asteroidType.volcanic">		volcanic</Text>
 
+			<Text id="averageCommodityPrices">		Average commodity prices</Text>
 		</Language>
 	</Type>
 

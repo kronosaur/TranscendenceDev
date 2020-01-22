@@ -4506,9 +4506,9 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
-        case FN_DESIGN_ADD_TIMER:
-        case FN_DESIGN_ADD_RECURRING_TIMER:
-            {
+		case FN_DESIGN_ADD_TIMER:
+		case FN_DESIGN_ADD_RECURRING_TIMER:
+			{
 			int iTime = pArgs->GetElement(1)->GetIntegerValue();
 			if (iTime < 0 || (iTime == 0 && dwData == FN_DESIGN_ADD_RECURRING_TIMER))
 				return pCC->CreateError(CONSTLIT("Invalid recurring time"), pArgs->GetElement(1));
@@ -4532,9 +4532,9 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pCtx->GetUniverse().AddEvent(pEvent);
 
 			return pCC->CreateTrue();
-            }
+			}
 
-        case FN_DESIGN_CANCEL_TIMER:
+		case FN_DESIGN_CANCEL_TIMER:
 			return pCC->CreateBool(pCtx->GetUniverse().CancelEvent(pType, pArgs->GetElement(1)->GetStringValue(), pCtx->InEvent(eventDoEvent)));
 
 		case FN_DESIGN_FIRE_OBJ_EVENT:
@@ -4602,8 +4602,8 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_DESIGN_INC_GLOBAL_DATA:
 			{
 			CString sAttrib = pArgs->GetElement(1)->GetStringValue();
-            ICCItem *pValue = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
-            return pType->IncGlobalData(sAttrib, pValue)->Reference();
+			ICCItem *pValue = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
+			return pType->IncGlobalData(sAttrib, pValue)->Reference();
 			}
 
 		case FN_DESIGN_INC_PROPERTY:
@@ -4815,8 +4815,8 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateString(CLanguage::ComposeNounPhrase(sName, iCount, NULL_STR, dwNameFlags, dwFlags));
 			}
 
-        case FN_NUMBER:
-            {
+		case FN_NUMBER:
+			{
 			if (pArgs->GetCount() == 1)
 				return pCC->CreateString(CLanguage::ComposeNumber(CLanguage::numberInteger, pArgs->GetElement(0)->GetIntegerValue()));
 			else
@@ -4827,7 +4827,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1)));
 				}
-            }
+			}
 
 		case FN_POWER:
 			return pCC->CreateString(CLanguage::ComposeNumber(CLanguage::numberPower, pArgs->GetElement(0)->GetDoubleValue()));
@@ -6235,7 +6235,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pSection->GetSect() >= pClass->GetHullSectionCount())
 				return pCC->CreateNil();
 
-            DWORD dwCritical = pClass->GetHullSection(pSection->GetSect()).GetCriticalArea();
+			DWORD dwCritical = pClass->GetHullSection(pSection->GetSect()).GetCriticalArea();
 			if (dwCritical & CShipClass::sectCritical)
 				return pCC->CreateString(CONSTLIT("critical"));
 			else
@@ -6259,25 +6259,25 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_ARMOR_REPAIR_PRICE:
 			{
-            int iArg = 1;
+			int iArg = 1;
 
-            //  If we have more than 3 args then we expect the second arg to be
-            //  the object that has the armor.
+			//  If we have more than 3 args then we expect the second arg to be
+			//  the object that has the armor.
 
-            CSpaceObject *pSource = NULL;
-            if (pArgs->GetCount() > 3)
-                pSource = CreateObjFromItem(pArgs->GetElement(iArg++));
+			CSpaceObject *pSource = NULL;
+			if (pArgs->GetCount() > 3)
+				pSource = CreateObjFromItem(pArgs->GetElement(iArg++));
 
-            //  Get the armor item
+			//  Get the armor item
 
 			CItem Item(pCtx->AsItem(pArgs->GetElement(iArg++)));
 			if (Item.GetType() == NULL)
 				return pCC->CreateNil();
 
-            //  Get HP to repair
+			//  Get HP to repair
 
-            ICCItem *pHPToRepair = pArgs->GetElement(iArg++);
-            int iHPToRepair = ((!pHPToRepair->IsNil() || pSource == NULL) ? pHPToRepair->GetIntegerValue() : -1);
+			ICCItem *pHPToRepair = pArgs->GetElement(iArg++);
+			int iHPToRepair = ((!pHPToRepair->IsNil() || pSource == NULL) ? pHPToRepair->GetIntegerValue() : -1);
 
 			//	Ask the object
 
@@ -6857,12 +6857,12 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_GET_OVERLAYS:
 			{
-            //  See if we have a criteria
+			//  See if we have a criteria
 
 			DWORD dwType = 0;
-            CDesignTypeCriteria Criteria;
-            if (pArgs->GetCount() >= 2)
-                {
+			CDesignTypeCriteria Criteria;
+			if (pArgs->GetCount() >= 2)
+				{
 				if (pArgs->GetElement(1)->IsInteger())
 					{
 					dwType = pArgs->GetElement(1)->GetIntegerValue();
@@ -6876,16 +6876,16 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 					Criteria.IncludeType(designOverlayType);
 					}
-                }
+				}
 
-            //  Get the list of overlays
+			//  Get the list of overlays
 
 			TArray<COverlay *> List;
 			pObj->GetOverlayList(&List);
 
-            //  Generate result 
+			//  Generate result 
 
-            ICCItem *pResult = NULL;
+			ICCItem *pResult = NULL;
 
 			for (int i = 0; i < List.GetCount(); i++)
 				{
@@ -6894,22 +6894,22 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (dwType != 0 && List[i]->GetType()->GetUNID() != dwType)
 					continue;
 
-                //  If we don't match the criteria, skip
+				//  If we don't match the criteria, skip
 
-                if (!Criteria.IsEmpty() && !List[i]->GetType()->MatchesCriteria(Criteria))
-                    continue;
+				if (!Criteria.IsEmpty() && !List[i]->GetType()->MatchesCriteria(Criteria))
+					continue;
 
-                //  Create a list if necessary
+				//  Create a list if necessary
 
-                if (pResult == NULL)
-                    pResult = pCC->CreateLinkedList();
+				if (pResult == NULL)
+					pResult = pCC->CreateLinkedList();
 
-                //  Add to list
+				//  Add to list
 
-                pResult->AppendInteger(List[i]->GetID());
+				pResult->AppendInteger(List[i]->GetID());
 				}
 
-            return (pResult ? pResult : pCC->CreateNil());
+			return (pResult ? pResult : pCC->CreateNil());
 			}
 
 		case FN_OBJ_GET_OVERLAY_TYPE:
@@ -6987,8 +6987,8 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_GET_SELL_PRICE:
 			{
 			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
-            if (Item.IsEmpty())
-                return pCC->CreateNil();
+			if (Item.IsEmpty())
+				return pCC->CreateNil();
 
 			ICCItem *pOptions = pArgs->GetElement(2);
 			bool bActual = CTLispConvert::AsOption(pOptions, CONSTLIT("actual"));
@@ -7151,11 +7151,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
 			CString sAttrib = pArgs->GetElement(2)->GetStringValue();
 
-            COverlayList *pOverlays = pObj->GetOverlays();
-            if (pOverlays == NULL)
-                return pCC->CreateNil();
+			COverlayList *pOverlays = pObj->GetOverlays();
+			if (pOverlays == NULL)
+				return pCC->CreateNil();
 
-            return pOverlays->IncData(dwID, sAttrib, (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL))->Reference();
+			return pOverlays->IncData(dwID, sAttrib, (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL))->Reference();
 			}
 
 		case FN_OBJ_INC_OVERLAY_PROPERTY:
@@ -7163,9 +7163,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
 			CString sAttrib = pArgs->GetElement(2)->GetStringValue();
 
-            COverlayList *pOverlays = pObj->GetOverlays();
-            if (pOverlays == NULL)
-                return pCC->CreateNil();
+			COverlayList *pOverlays = pObj->GetOverlays();
+			if (pOverlays == NULL)
+				return pCC->CreateNil();
 
 			ICCItemPtr pResult;
 			if (!pOverlays->IncProperty(*pObj, dwID, sAttrib, pArgs->GetElement(3), pResult))
@@ -8204,8 +8204,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pResult;
 			ICCItem *pData = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
 			pObj->FireCustomEvent(pArgs->GetElement(1)->GetStringValue(), eventObjFireEvent, pData, &pResult);
-            if (pResult->IsError() && pCtx->GetUniverse().InDebugMode())
-                ::kernelDebugLogPattern("[%s %s]: %s", pObj->GetNounPhrase(), pArgs->GetElement(1)->GetStringValue(), pResult->GetStringValue());
+			if (pResult->IsError() && pCtx->GetUniverse().InDebugMode())
+				::kernelDebugLogPattern("[%s %s]: %s", pObj->GetNounPhrase(), pArgs->GetElement(1)->GetStringValue(), pResult->GetStringValue());
 			return pResult;
 			}
 
@@ -11961,7 +11961,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pItemType == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
 
-            CString sError;
+			CString sError;
 			CWeaponFireDesc *pDesc = pItemType->GetWeaponFireDesc(CItemCtx(), &sError);
 			if (pDesc == NULL)
 				return pCC->CreateError(sError, pArgs->GetElement(0));

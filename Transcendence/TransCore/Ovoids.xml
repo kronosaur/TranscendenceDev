@@ -177,6 +177,7 @@
 		size=				"4"
 
 		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		asteroidType=		"icy"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -224,6 +225,7 @@
 		size=				"70"
 
 		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		asteroidType=		"icy"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -273,6 +275,7 @@
 		size=				"255"
 
 		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		asteroidType=		"icy"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -314,6 +317,7 @@
 		size=				"590"
 
 		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		asteroidType=		"icy"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
