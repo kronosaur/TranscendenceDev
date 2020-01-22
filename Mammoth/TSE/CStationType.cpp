@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 #define ANIMATIONS_TAG							CONSTLIT("Animations")
+#define ASTEROID_TAG							CONSTLIT("Asteroid")
 #define COMMUNICATIONS_TAG						CONSTLIT("Communications")
 #define COMPOSITE_TAG							CONSTLIT("ImageComposite")
 #define CONSTRUCTION_TAG						CONSTLIT("Construction")
@@ -1203,6 +1204,7 @@ void CStationType::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags
 	{
 	//	We know how to handle these tags through the inheritance hierarchy.
 
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(ASTEROID_TAG), CXMLElement::MERGE_OVERRIDE);
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(COMMUNICATIONS_TAG), CXMLElement::MERGE_OVERRIDE);
 	}
 
@@ -1874,7 +1876,7 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	if (strEquals(sProperty, PROPERTY_ASTEROID_TYPE))
 		{
-		auto iType = m_Asteroid.GetType();
+		auto iType = GetAsteroidDesc().GetType();
 		if (iType == EAsteroidType::none)
 			return ICCItemPtr::Nil();
 		else

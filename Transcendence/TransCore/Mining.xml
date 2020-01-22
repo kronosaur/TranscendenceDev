@@ -93,7 +93,7 @@
 					)
 				))
 				
-			(setq intAsteroidOnMining (lambda (miningDifficulty)
+			(setq intAsteroidOnMining (lambda ()
 
 			;	Called from inside OnMining. The following variables are
 			;	defined:

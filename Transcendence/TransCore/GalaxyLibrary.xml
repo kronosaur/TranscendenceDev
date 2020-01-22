@@ -252,6 +252,7 @@
 	<!ENTITY stOvoidPlanetoidSizeF		"0x00020086">
 	<!ENTITY stOvoidPlanetoidSizeG		"0x00020087">
 	<!ENTITY tbOvoidTables				"0x00020088">
+	<!ENTITY baOvoidAsteroid			"0x00020089">
 	
 	<!-- 0090-00AF SYSTEM BACKGROUNDS -->
 	
@@ -281,6 +282,7 @@
 	<!ENTITY rsIcePlanetoidSizeE		"0x000200D4">
 	<!ENTITY rsIcePlanetoidSizeF		"0x000200D5">
 	<!ENTITY rsIcePlanetoidSizeG		"0x000200D6">
+	<!ENTITY baIceAsteroid				"0x000200D7">
 	
 	<!-- 00E0-00EF METALLIC ASTEROIDS -->
 	
@@ -291,6 +293,7 @@
 	<!ENTITY rsMetallicPlanetoidSizeE	"0x000200E4">
 	<!ENTITY rsMetallicPlanetoidSizeF	"0x000200E5">
 	<!ENTITY rsMetallicPlanetoidSizeG	"0x000200E6">
+	<!ENTITY baMetallicAsteroid			"0x000200E7">
 	
 	<!-- 00F0-00FF PRIMORDIAL ASTEROIDS -->
 	
@@ -301,6 +304,7 @@
 	<!ENTITY rsPrimordialPlanetoidSizeE	"0x000200F4">
 	<!ENTITY rsPrimordialPlanetoidSizeF	"0x000200F5">
 	<!ENTITY rsPrimordialPlanetoidSizeG	"0x000200F6">
+	<!ENTITY baPrimordialAsteroid		"0x000200F7">
 	
 	<!-- 0100-010F ROCKY ASTEROIDS -->
 	
@@ -311,6 +315,7 @@
 	<!ENTITY rsRockyPlanetoidSizeE		"0x00020104">
 	<!ENTITY rsRockyPlanetoidSizeF		"0x00020105">
 	<!ENTITY rsRockyPlanetoidSizeG		"0x00020106">
+	<!ENTITY baRockyAsteroid			"0x00020107">
 	
 	<!-- 0110-011F VOLCANIC ASTEROIDS -->
 	
@@ -321,6 +326,7 @@
 	<!ENTITY rsVolcanicPlanetoidSizeE	"0x00020114">
 	<!ENTITY rsVolcanicPlanetoidSizeF	"0x00020115">
 	<!ENTITY rsVolcanicPlanetoidSizeG	"0x00020116">
+	<!ENTITY baVolcanicAsteroid			"0x00020117">
 
 	<!-- 0120-013F ORE STONE ASTEROIDS -->
 

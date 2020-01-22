@@ -121,11 +121,11 @@
 
 	<StationType UNID="&stRockyAsteroidSizeA;"
 		name=				"(rocky asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, rocky"
+		inherit=			"&baRockyAsteroid;"
+
 		scale=				"world"
 		size=				"4"
-
-		attributes=			"asteroid, generic, inner, lifeZone, rocky"
-		asteroidType=		"rocky"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -137,27 +137,20 @@
 				<Lookup chance="10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 100)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size A Rocky Outer Asteroid -->
 
 	<StationType UNID="&stRockyOuterAsteroidSizeA;"
 		name=				"(rocky outer asteroid)"
+		attributes=			"asteroid, generic, outer, rocky"
+		inherit=			"&baRockyAsteroid;"
+
 		scale=				"world"
 		size=				"4"
 
-		attributes=			"asteroid, generic, outer, rocky"
-		asteroidType=		"rocky"
-
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-
 		<ImageVariants>
 			<Image			imageID="&rsWorlds1;" imageX="224" imageY="768" imageWidth="32" imageHeight="32"/>
 			<Image			imageID="&rsWorlds1;" imageX="224" imageY="800" imageWidth="32" imageHeight="32"/>
@@ -176,28 +169,20 @@
 				<Lookup chance="5" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 50)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size B Rocky Asteroid -->
 
 	<StationType UNID="&stRockyAsteroidSizeB;"
 		name=				"(rocky asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, rocky"
+		inherit=			"&baRockyAsteroid;"
+
 		scale=				"world"
 		size=				"65"
 
-		attributes=			"asteroid, generic, inner, lifeZone, rocky"
-		asteroidType=		"rocky"
-
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-
 		<ImageLookup imageID="&rsRockyAsteroidSizeB;"/>
 
 		<Items>
@@ -206,23 +191,17 @@
 				<Lookup chance="10" count="1d6" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 100)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size B Rocky Outer Asteroid -->
 
 	<StationType UNID="&stRockyOuterAsteroidSizeB;"
 		name=				"(rocky outer asteroid)"
+		attributes=			"asteroid, generic, outer, rocky"
+		inherit=			"&baRockyAsteroid;"
+
 		scale=				"world"
 		size=				"65"
-
-		attributes=			"asteroid, generic, outer, rocky"
-		asteroidType=		"rocky"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -244,23 +223,17 @@
 				<Lookup chance="5" count="1d6" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 50)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size C Rocky Asteroid -->
 
 	<StationType UNID="&stRockyAsteroidSizeC;"
 		name=				"(rocky asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, rocky"
+		inherit=			"&baRockyAsteroid;"
+
 		scale=				"world"
 		size=				"250"
-
-		attributes=			"asteroid, generic, inner, lifeZone, rocky"
-		asteroidType=		"rocky"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -272,23 +245,17 @@
 				<Lookup chance="10" count="1d8" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 100)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size C Rocky Outer Asteroid -->
 
 	<StationType UNID="&stRockyOuterAsteroidSizeC;"
 		name=				"(rocky outer asteroid)"
+		attributes=			"asteroid, generic, outer, rocky"
+		inherit=			"&baRockyAsteroid;"
+
 		scale=				"world"
 		size=				"250"
-
-		attributes=			"asteroid, generic, outer, rocky"
-		asteroidType=		"rocky"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -306,23 +273,17 @@
 				<Lookup chance="5" count="1d8" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 50)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size D Rocky Asteroid -->
 
 	<StationType UNID="&stRockyAsteroidSizeD;"
 		name=				"(rocky asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, rocky"
+		inherit=			"&baRockyAsteroid;"
+
 		scale=				"world"
 		size=				"625"
-
-		attributes=			"asteroid, generic, inner, lifeZone, rocky"
-		asteroidType=		"rocky"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -334,23 +295,17 @@
 				<Lookup chance="10" count="1d10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 100)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size D Rocky Outer Asteroid -->
 
 	<StationType UNID="&stRockyOuterAsteroidSizeD;"
 		name=				"(rocky outer asteroid)"
+		attributes=			"asteroid, generic, outer, rocky"
+		inherit=			"&baRockyAsteroid;"
+
 		scale=				"world"
 		size=				"625"
-
-		attributes=			"asteroid, generic, outer, rocky"
-		asteroidType=		"rocky"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -367,12 +322,6 @@
 				<Lookup chance="5" count="1d10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 50)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Rocky Planetoid Size E -->
@@ -415,6 +364,20 @@
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
 		<ImageLookup imageID="&rsRockyPlanetoidSizeG;"/>
+	</StationType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&baRockyAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="rocky"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
 	</StationType>
 
 <!-- RESOURCES -->

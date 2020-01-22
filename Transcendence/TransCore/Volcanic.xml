@@ -150,11 +150,11 @@
 
 	<StationType UNID="&stVolcanicAsteroidSizeA;"
 		name=				"(volcanic asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
+		inherit=			"&baVolcanicAsteroid;"
+
 		scale=				"world"
 		size=				"4"
-
-		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
-		asteroidType=		"volcanic"
 
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
@@ -166,28 +166,20 @@
 				<Lookup chance="15" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 20)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size B Volcanic Asteroid -->
 
 	<StationType UNID="&stVolcanicAsteroidSizeB;"
 		name=				"(volcanic asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
+		inherit=			"&baVolcanicAsteroid;"
+
 		scale=				"world"
 		size=				"70"
 
-		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
-		asteroidType=		"volcanic"
-
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-
 		<ImageLookup imageID="&rsVolcanicAsteroidSizeB;"/>
 
 		<Items>
@@ -196,23 +188,17 @@
 				<Lookup chance="15" count="1d6" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 20)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size C Volcanic Asteroid -->
 
 	<StationType UNID="&stVolcanicAsteroidSizeC;"
 		name=				"(volcanic asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
+		inherit=			"&baVolcanicAsteroid;"
+
 		scale=				"world"
 		size=				"255"
-
-		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
-		asteroidType=		"volcanic"
 
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
@@ -224,23 +210,17 @@
 				<Lookup chance="15" count="1d8" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 20)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size D Volcanic Asteroid -->
 
 	<StationType UNID="&stVolcanicAsteroidSizeD;"
 		name=				"(volcanic asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
+		inherit=			"&baVolcanicAsteroid;"
+
 		scale=				"world"
 		size=				"590"
-
-		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
-		asteroidType=		"volcanic"
 
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
@@ -252,12 +232,6 @@
 				<Lookup chance="15" count="1d10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 20)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Volcanic Planetoid Size E -->
@@ -317,6 +291,20 @@
 			<Image	imageID="&rsVolcanicTerrestrials;" imageX="0"   imageY="400" imageWidth="200" imageHeight="200"/>
 			<Image	imageID="&rsVolcanicTerrestrials;" imageX="0"   imageY="600" imageWidth="200" imageHeight="200"/>
 		</ImageVariants>
+	</StationType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&baVolcanicAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="volcanic"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
 	</StationType>
 
 <!-- RESOURCES -->

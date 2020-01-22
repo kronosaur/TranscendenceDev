@@ -452,7 +452,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 30)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 	</StationType>
