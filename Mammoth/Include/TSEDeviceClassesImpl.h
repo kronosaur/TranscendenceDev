@@ -672,7 +672,6 @@ class CWeaponClass : public CDeviceClass
         int GetAmmoItemCount (void) const;
 		inline int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
         CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo = CItem()) const;
-		CWeaponFireDesc *GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo = CItem()) const;
 
         static const SStdStats &GetStdStats (int iLevel);
 		static int GetStdDamage (int iLevel);
@@ -707,7 +706,7 @@ class CWeaponClass : public CDeviceClass
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
-		virtual DeviceRotationTypes GetRotationType (CItemCtx &Ctx, int *retiMinArc = NULL, int *retiMaxArc = NULL) const override;
+		virtual DeviceRotationTypes GetRotationType (const CDeviceItem &DeviceItem, int *retiMinArc = NULL, int *retiMaxArc = NULL) const override;
 		virtual void GetSelectedVariantInfo (const CSpaceObject *pSource, 
 											 const CInstalledDevice *pDevice,
 											 CString *retsLabel,
@@ -717,14 +716,15 @@ class CWeaponClass : public CDeviceClass
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const override;
+		virtual const CWeaponFireDesc *GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo = CItem()) const override;
 		virtual bool IsAmmoWeapon (void) override;
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override;
-		virtual bool IsTrackingWeapon (CItemCtx &Ctx) override;
+		virtual bool IsTrackingWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const override;
-		virtual bool NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) override;
+		virtual bool NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual bool RequiresItems (void) const override;
 		virtual bool SelectFirstVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
@@ -839,7 +839,7 @@ class CWeaponClass : public CDeviceClass
 		int GetContinuous (const CWeaponFireDesc &Shot) const;
 		int GetContinuousFireDelay (const CWeaponFireDesc &Shot) const;
 		int GetFireDelay (CWeaponFireDesc *pShot) const;
-		CWeaponFireDesc *GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
+		const CWeaponFireDesc *GetReferenceShotData (const CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
 		int GetSelectVariantCount (void) const;
 		bool HasAmmoLeft (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const;
 		ALERROR InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType);
@@ -849,7 +849,7 @@ class CWeaponClass : public CDeviceClass
 		inline bool IsLauncherWithAmmo (void) const { return (IsLauncher() && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
 		bool IsSinglePointOrigin (void) const;
 		inline bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
-		bool IsTracking (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const;
+		bool IsTracking (const CDeviceItem &DeviceItem, const CWeaponFireDesc *pShot) const;
 		bool UpdateShipCounter(CItemCtx &ItemCtx, CWeaponFireDesc *pShot);
 		bool UpdateTemperature (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed);
 		inline bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }

@@ -229,7 +229,6 @@ class CDeviceClass
 		ItemCategories GetCategory (void) const { return (m_iSlotCategory == itemcatNone ? GetImplCategory() : m_iSlotCategory); }
 		CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
-		int GetFireArc (CItemCtx &Ctx) const;
 		int GetInstallCost (CItemCtx &ItemCtx);
 		CItemType *GetItemType (void) const { return m_pItemType; }
 		inline int GetLevel (void) const;
@@ -281,7 +280,7 @@ class CDeviceClass
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const { return false; }
 		virtual int GetReflectChance (const CDeviceItem &DeviceItem, const DamageDesc &Damage) const { return 0; }
-		virtual DeviceRotationTypes GetRotationType (CItemCtx &Ctx, int *retiMinArc = NULL, int *retiMaxArc = NULL) const { return rotNone; }
+		virtual DeviceRotationTypes GetRotationType (const CDeviceItem &DeviceItem, int *retiMinArc = NULL, int *retiMaxArc = NULL) const { return rotNone; }
 		virtual void GetSelectedVariantInfo (const CSpaceObject *pSource, 
 											 const CInstalledDevice *pDevice,
 											 CString *retsLabel,
@@ -292,6 +291,7 @@ class CDeviceClass
 		virtual void GetStatus (const CInstalledDevice *pDevice, const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) { *retiStatus = 0; *retiMaxStatus = 0; }
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) { return 0; }
 		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const { return 0; }
+		virtual const CWeaponFireDesc *GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo = CItem()) const { return NULL; }
 		virtual bool IsAmmoWeapon (void) { return false; }
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsAutomatedWeapon (void) { return false; }
@@ -299,10 +299,10 @@ class CDeviceClass
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return false; }
 		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
-		virtual bool IsTrackingWeapon (CItemCtx &Ctx) { return false; }
+		virtual bool IsTrackingWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const { return false; }
-		virtual bool NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) { return false; }
+		virtual bool NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const { return false; }
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) { return NULL_STR; }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }
 		virtual void OnUninstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }
@@ -498,7 +498,6 @@ class CInstalledDevice
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
 		int GetExtraPowerUse (void) const { return m_iExtraPowerUse; }
 		ItemFates GetFate (void) const;
-		int GetFireArc (void) const { return (IsOmniDirectional() ? 360 : AngleRange(m_iMinFireArc, m_iMaxFireArc)); }
 		int GetFireAngle (void) const { return m_iFireAngle; }
 		int GetHitPointsPercent (const CSpaceObject *pSource) const;
 		const CString &GetID (void) const { return m_sID; }

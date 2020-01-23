@@ -521,6 +521,8 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 	if (pDeviceClass == NULL)
 		return;
 
+	const CDeviceItem DeviceItem = Device.Item.AsDeviceItem();
+
 	//	If this is a weapon, then we can take some settings from the weapon.
 
 	bool bWeaponIsOmnidirectional = false;
@@ -529,7 +531,7 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 	CWeaponClass *pWeapon = pDeviceClass->AsWeaponClass();
 	if (pWeapon)
 		{
-		switch (pWeapon->GetRotationType(CItemCtx(), &iWeaponMinFireArc, &iWeaponMaxFireArc))
+		switch (pWeapon->GetRotationType(DeviceItem, &iWeaponMinFireArc, &iWeaponMaxFireArc))
 			{
 			case CDeviceClass::rotOmnidirectional:
 				bWeaponIsOmnidirectional = true;

@@ -293,6 +293,7 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 
 		CSpaceObject *pTarget;
 		if (Ctx.pPlayer 
+				&& Ctx.pPlayer != this
 				&& (pTarget = GetTarget())
 				&& Ctx.pPlayer->IsEnemy(this)
 				&& (GetUniverse().GetTicks() - GetLastFireTime()) < ATTACK_THRESHOLD
@@ -593,77 +594,19 @@ bool CShip::CalcDeviceTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponIt
 	{
 	DEBUG_TRY
 
-	const CInstalledDevice &Device = *WeaponItem.GetInstalledDevice();
-
-	//	For primary weapons, the target is the controller target.
-	//	
-	//	NOTE: Selectable means that the weapon is not a secondary weapon
-	//	and not a linked-fire weapon. We specifically exclude "fire if selected"
-	//  linked-fire weapons, which normally count as "selectable", from this definition.
-
-	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
-
-	if (Device.IsSelectable() && !(Device.GetSlotLinkedFireOptions() & dwLinkedFireSelected))
+	switch (WeaponItem.CalcTargetType())
 		{
-		*retpTarget = m_pController->GetTarget();
-		*retiFireSolution = -1;
-		return true;
-		}
-
-	//	Otherwise this is a linked fire weapon or a secondary weapon.
-
-	else
-		{
-		const CDeviceClass &Weapon = WeaponItem.GetDeviceClass();
-
-		//	Get the actual options.
-
-		DWORD dwLinkedFireOptions = WeaponItem.GetLinkedFireOptions();
-
-		CInstalledDevice *pPrimaryWeapon = GetNamedDevice(devPrimaryWeapon);
-		CInstalledDevice *pSelectedLauncher = GetNamedDevice(devMissileWeapon);
-
-		//  If our options is "never fire", or if our options is "fire if selected" and this is the player ship,
-		//  but the primary weapon or launcher isn't both "fire if selected" AND of the same type, then don't fire.
-		//  If a weapon is "fire if selected and same variant", then it only fires if the primary weapon is of the
-		//  same variant and type.
-
-		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
-
-		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (dwLinkedFireOptions
-			& CDeviceClass::lkfSelectedVariant ? WeaponItem.GetVariantNumber() == CItemCtx(this, pPrimaryWeapon).GetItemVariantNumber() : true) : false;
-		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (dwLinkedFireOptions
-			& CDeviceClass::lkfSelectedVariant ? WeaponItem.GetVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
-
-		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) 
-			|| (((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) 
-							&& (pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == Weapon.GetUNID()) && bPrimaryWeaponCheckVariant) : false)
-							)
-						&& (Weapon.GetCategory() == itemcatWeapon))
-					|| (!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) 
-							&& (pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == Weapon.GetUNID()) && bSelectedLauncherCheckVariant) : false))
-						&& (Weapon.GetCategory() == itemcatLauncher)))
-				&& (dwLinkedFireOptions & dwLinkedFireSelected) 
-				&& IsPlayer()
-				))
-			{
+		case CDeviceItem::calcNoTarget:
 			return false;
-			}
 
-		//	If our options is "fire always" or "fire if selected" then our target is always the same
-		//	as the primary target.
-
-		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & dwLinkedFireSelected))
+		case CDeviceItem::calcControllerTarget:
 			{
 			*retpTarget = m_pController->GetTarget();
 			*retiFireSolution = -1;
-
 			return true;
 			}
 
-		//	Otherwise, we need to let our controller find a target for this weapon.
-
-		else
+		case CDeviceItem::calcWeaponTarget:
 			{
 			m_pController->GetWeaponTarget(UpdateCtx, WeaponItem, retpTarget, retiFireSolution);
 
@@ -671,6 +614,9 @@ bool CShip::CalcDeviceTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponIt
 
 			return (*retpTarget != NULL);
 			}
+
+		default:
+			return false;
 		}
 
 	DEBUG_CATCH
@@ -3098,9 +3044,9 @@ CDeviceClass *CShip::GetNamedDeviceClass (DeviceNames iDev)
 		return pDev->GetClass(); 
 	}
 
-CItem CShip::GetNamedDeviceItem (DeviceNames iDev) const
+CItem CShip::GetNamedItem (DeviceNames iDev) const
 
-//	GetNamedDeviceItem
+//	GetNamedItem
 //
 //	Returns the item for the named device
 
@@ -3319,7 +3265,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SELECTED_LAUNCHER))
 		{
-		CItem theItem = GetNamedDeviceItem(devMissileWeapon);
+		CItem theItem = GetNamedItem(devMissileWeapon);
 		if (theItem.GetType() == NULL)
 			return CC.CreateNil();
 
@@ -3351,7 +3297,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 		else
 			{
-			CItem theItem = GetNamedDeviceItem(devMissileWeapon);
+			CItem theItem = GetNamedItem(devMissileWeapon);
 			if (theItem.GetType() == NULL)
 				return CC.CreateNil();
 
@@ -3360,7 +3306,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		}
 	else if (strEquals(sName, PROPERTY_SELECTED_WEAPON))
 		{
-		CItem theItem = GetNamedDeviceItem(devPrimaryWeapon);
+		CItem theItem = GetNamedItem(devPrimaryWeapon);
 		if (theItem.GetType() == NULL)
 			return CC.CreateNil();
 

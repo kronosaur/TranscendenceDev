@@ -1010,7 +1010,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		int GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice);
 		DeviceNames GetDeviceNameForCategory (ItemCategories iCategory);
 		int GetItemDeviceName (const CItem &Item) const;
-		CItem GetNamedDeviceItem (DeviceNames iDev) const;
+		CItem GetNamedItem (DeviceNames iDev) const;
 		bool HasNamedDevice (DeviceNames iDev) const;
 		void InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1);
 		bool IsDeviceSlotAvailable (ItemCategories iItemCat = itemcatNone, int *retiSlot = NULL);
@@ -1160,6 +1160,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const override;
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) override;
+		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const override { return m_Devices.GetNamedDeviceItem(iDev); }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CShip"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
@@ -1489,6 +1490,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool CanAttack (void) const override;
 		virtual bool CanBeAttacked (void) const override { return (m_Hull.GetHitPoints() > 0 || CanAttack() || (m_fIsSegment && m_Hull.GetStructuralHP() > 0)); }
 		virtual bool CanBeDestroyed (void) override { return m_Hull.CanBeDestroyed(); }
+		virtual bool CanBeMined (void) const override { return (m_pType->ShowsUnexploredAnnotation() && !IsOutOfPlaneObj()); }
 		virtual bool CanBlock (CSpaceObject *pObj) override;
 		virtual bool CanBlockShips (void) override { return m_fBlocksShips; }
 		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
@@ -1554,7 +1556,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool IsAnchored (void) const override { return (!m_pType->IsMobile() || IsManuallyAnchored()); }
 		virtual bool IsAngry (void) override { return (!IsAbandoned() && (m_iAngryCounter > 0)); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override { return (IsEnemy(pObj) || IsBlacklisted(pObj)); }
-		virtual bool IsExplored (void) override { return m_fExplored; }
+		virtual bool IsExplored (void) const override { return m_fExplored; }
 		virtual bool IsIdentified (void) const override { return m_fKnown; }
 		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
 		virtual bool IsInactive (void) const override { return !CanBeAttacked(); }
@@ -1631,12 +1633,17 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 			maxDevices				= 8,
 			};
 
+		static constexpr CG32bitPixel RGB_MINING_MARKER_UNEXPORED = CG32bitPixel(128, 128, 128);
+
 		static constexpr int MIN_NAMED_WORLD_SIZE = 1000;
 		static constexpr int LARGE_WORLD_SIZE = 5000;
-		static constexpr CG32bitPixel RGB_MINING_MARKER_UNEXPORED = CG32bitPixel(128, 128, 128);
+
+		static constexpr int WMD_HINT_THRESHOLD = 40;
 
 		void AvengeAttack (CSpaceObject *pAttacker);
 		bool Blacklist (CSpaceObject *pObj);
+		int CalcAdjustedDamage (SDamageCtx &Ctx) const;
+		int CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const;
 		void CalcBounds (void);
 		void CalcDeviceBonus (void);
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
@@ -1653,7 +1660,6 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void FinishCreation (SSystemCreateCtx *pSysCreateCtx = NULL);
 		Metric GetAttackDistance (void) const;
 		const CObjectImageArray &GetImage (bool bFade, int *retiTick = NULL, int *retiVariant = NULL) const;
-		CItem HasMinableResources (void) const;
 		bool IsBlacklisted (const CSpaceObject *pObj = NULL) const;
 		EDamageResults OnDamageAbandoned (SDamageCtx &Ctx);
 		EDamageResults OnDamageImmutable (SDamageCtx &Ctx);

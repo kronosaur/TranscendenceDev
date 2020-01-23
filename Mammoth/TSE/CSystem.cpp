@@ -4644,7 +4644,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	target.
 
 	if (Ctx.pPlayer)
+		{
+		Ctx.AutoMining.Init(*Ctx.pPlayer);
 		Ctx.AutoTarget.Init(*Ctx.pPlayer);
+		}
 
 	//	Add all objects to the grid so that we can do faster
 	//	hit tests

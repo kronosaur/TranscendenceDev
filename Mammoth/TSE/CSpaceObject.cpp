@@ -4543,6 +4543,25 @@ bool CSpaceObject::HasFuelItem (void)
 	return false;
 	}
 
+bool CSpaceObject::HasMinableItem (void) const
+
+//	HasMinableItem
+//
+//	Returns TRUE if the object has any minable items.
+
+	{
+	CItemListManipulator Search(const_cast<CSpaceObject *>(this)->GetItemList());
+	while (Search.MoveCursorForward())
+		{
+		const CItem &Item = Search.GetItemAtCursor();
+		if (Item.HasAttribute(CONSTLIT("ore"))
+				|| Item.HasAttribute(CONSTLIT("minable")))
+			return true;
+		}
+
+	return false;
+	}
+
 bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 
 //	HasSpecialAttribute
@@ -7286,6 +7305,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			&& !Ctx.pPlayer->IsDestroyed()
 			&& this != Ctx.pPlayer)
 		{
+		Ctx.AutoMining.Update(*Ctx.pPlayer, *this);
 		Ctx.AutoTarget.Update(*Ctx.pPlayer, *this);
 		}
 

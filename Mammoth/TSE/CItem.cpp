@@ -2432,17 +2432,16 @@ bool CItem::IsEnhancementEffective (const CItemEnhancement &Enhancement) const
 		}
 	else if (IsDevice())
 		{
-		const CDeviceClass *pDevice = GetType()->GetDeviceClass();
 		CItem BasicItem(GetType(), 1);
-		CItemCtx ItemCtx(BasicItem);
+		const CDeviceItem DeviceItem = BasicItem.AsDeviceItemOrThrow();
 
 		switch (Enhancement.GetType())
 			{
 			case etOmnidirectional:
 				if (Enhancement.IsDisadvantage())
-					return (pDevice->GetFireArc(ItemCtx) > 0);
+					return (DeviceItem.GetFireArc() > 0);
 				else
-					return (pDevice->GetFireArc(ItemCtx) < Enhancement.GetFireArc());
+					return (DeviceItem.GetFireArc() < Enhancement.GetFireArc());
 
 			default:
 				return true;

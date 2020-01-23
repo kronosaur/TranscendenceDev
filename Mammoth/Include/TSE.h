@@ -262,6 +262,7 @@ struct SUpdateCtx
 		SViewportAnnotations *pAnnotations = NULL;	//	Extra structure to deliver to PaintViewport
 
 		CAutoDockCalc AutoDock;						//	Used to compute nearest docking port
+		CAutoMiningCalc AutoMining;					//	Used to compute nearest minable asteroid
 		CAutoTargetCalc AutoTarget;					//	Used to compute player's auto target
 
 		CSpaceObjectTargetList Targets;				//	Cached list of targets for object being updated
@@ -598,6 +599,11 @@ class CSpaceObject
 
 		CObjectJoint *GetFirstJoint (void) const { return m_pFirstJoint; }
 		void SetFirstJoint (CObjectJoint *pJoint) { m_pFirstJoint = pJoint; }
+
+		//	Mining
+
+		virtual bool CanBeMined (void) const { return false; }
+		bool HasMinableItem (void) const;
 
 		//	Miscellaneous
 
@@ -1067,7 +1073,7 @@ class CSpaceObject
 		virtual bool HasSpecialAttribute (const CString &sAttrib) const;
 		virtual bool HasStarlightImage (void) const { return false; }
 		virtual bool HasVolumetricShadow (void) const { return false; }
-		virtual bool IsExplored (void) { return true; }
+		virtual bool IsExplored (void) const { return true; }
 		virtual bool IsImmutable (void) const { return false; }
 		virtual bool IsKnown (void) const { return true; }
 		virtual bool IsMarker (void) const { return false; }
@@ -1129,6 +1135,7 @@ class CSpaceObject
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
 		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
+		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return CItem().AsDeviceItem(); }
 		virtual int GetPerception (void) const { return perceptNormal; }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 		virtual int GetScore (void) { return 0; }

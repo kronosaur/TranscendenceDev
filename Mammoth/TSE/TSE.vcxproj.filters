@@ -1417,5 +1417,8 @@
     <ClCompile Include="CEngineLanguage.cpp">
       <Filter>Source Files\Universe</Filter>
     </ClCompile>
+    <ClCompile Include="CAutoMiningCalc.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

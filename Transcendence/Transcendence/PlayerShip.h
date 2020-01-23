@@ -332,6 +332,7 @@ class CPlayerShipController : public IShipController
 		bool m_bShowAutoTarget = false;				//	If TRUE, we show the autotarget
 		bool m_bTargetOutOfRange = false;			//	If TRUE, m_pTarget is out of weapon range
 		CSpaceObject *m_pAutoTarget = NULL;			//	Saved autotarget.
+		const CSpaceObject *m_pAutoMining = NULL;	//	Saved auto mining target
 		mutable int m_iAutoTargetTick = 0;
 
 		CSpaceObject *m_pAutoDamage = NULL;			//	Show damage bar for this object

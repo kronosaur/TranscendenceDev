@@ -5045,9 +5045,8 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_ITEM_DAMAGE_TYPE:
 			{
 			int iDamageType;
-			CDeviceClass *pClass = pType->GetDeviceClass();
-			if (pClass)
-				iDamageType = pClass->GetDamageType(CItemCtx());
+			if (const CDeviceItem DeviceItem = Item.AsDeviceItem())
+				iDamageType = DeviceItem.GetWeaponDamageType();
 			else
 				iDamageType = -1;
 
@@ -6765,7 +6764,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				if (strEquals(sName, NAMED_ITEM_SELECTED_WEAPON))
 					{
-					CItem theItem = pShip->GetNamedDeviceItem(devPrimaryWeapon);
+					CItem theItem = pShip->GetNamedItem(devPrimaryWeapon);
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(theItem);
@@ -6775,7 +6774,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					}
 				else if (strEquals(sName, NAMED_ITEM_SELECTED_LAUNCHER))
 					{
-					CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
+					CItem theItem = pShip->GetNamedItem(devMissileWeapon);
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(theItem);
@@ -6805,7 +6804,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 								}
 							else
 								{
-								CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
+								CItem theItem = pShip->GetNamedItem(devMissileWeapon);
 								if (theItem.GetType())
 									{
 									ICCItem *pItem = CreateListFromItem(theItem);

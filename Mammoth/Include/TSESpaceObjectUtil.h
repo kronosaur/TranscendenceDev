@@ -64,6 +64,27 @@ class CAutoDockCalc
 		Metric m_rDockingPortDist2 = 0.0;			//	Distance from player to docking port
 	};
 
+class CAutoMiningCalc
+	{
+	public:
+		static constexpr Metric MAX_DISTANCE =			30.0 * LIGHT_SECOND;
+		static constexpr Metric MAX_DISTANCE2 =			(MAX_DISTANCE * MAX_DISTANCE);
+
+		const CSpaceObject *GetAutoTarget (void) const;
+		void Init (const CSpaceObject &PlayerObj);
+		void Update (const CSpaceObject &PlayerObj, const CSpaceObject &Obj);
+
+	private:
+		void SetTargetIfBetter (const CSpaceObject &Obj, Metric rObjDist2);
+
+		bool m_bNeedsAutoTarget = false;
+
+		const CSpaceObject *m_pAsteroidTarget = NULL;	//	Current asteroid target (may be NULL)
+		Metric m_rTargetDist2 = g_InfiniteDistance2;	//	Distance from player to target
+		int m_iMinFireArc = 0;							//	Fire arc of primary weapon
+		int m_iMaxFireArc = 0;
+	};
+
 class CAutoTargetCalc
 	{
 	public:

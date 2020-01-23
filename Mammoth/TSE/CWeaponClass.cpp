@@ -365,6 +365,8 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	if (pShot == NULL)
 		return 0;
 
+	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
+
 	//	Compute the level. For launchers we take either the missile level or the
 	//	launcher level (whichever is higher).
 
@@ -453,7 +455,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Tracking weapons are a bonus
 
-    if (IsTracking(ItemCtx, pShot))
+    if (IsTracking(DeviceItem, pShot))
         {
         retBalance.rTracking = BALANCE_TRACKING_BONUS;
         retBalance.rBalance += retBalance.rTracking;
@@ -461,7 +463,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Omni and swivel weapons are a bonus
 
-    Metric rSwivelRange = GetFireArc(ItemCtx) / 360.0;
+    Metric rSwivelRange = DeviceItem.GetFireArc() / 360.0;
     if (rSwivelRange > 0.0)
         {
 		Metric rOmni = BALANCE_OMNI_FACTOR * pow(rSwivelRange, BALANCE_OMNI_POWER);
@@ -1026,10 +1028,12 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 	if (pDevice == NULL)
 		return -1;
 
+	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
+
 	//	Get the swivel/turret parameters
 
 	int iMinFireArc, iMaxFireArc;
-	DeviceRotationTypes iType = GetRotationType(ItemCtx, &iMinFireArc, &iMaxFireArc);
+	DeviceRotationTypes iType = GetRotationType(DeviceItem, &iMinFireArc, &iMaxFireArc);
 
 	//	If we're firing straight, then we just fire straight
 
@@ -1856,6 +1860,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	{
 	int i;
     CItemCtx ItemCtx(pSource, pDevice);
+	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
 
 	//	Pre-init
 
@@ -1950,7 +1955,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	//	it is somewhat expensive to get the target from the device so
 	//	we only do it if we really need it.
 
-	if (pTarget == NULL && (IsTracking(ItemCtx, pShot) || m_bBurstTracksTargets) && !(pSource->IsBlind() && !(m_bCanFireWhenBlind)))
+	if (pTarget == NULL && (IsTracking(DeviceItem, pShot) || m_bBurstTracksTargets) && !(pSource->IsBlind() && !(m_bCanFireWhenBlind)))
 		pTarget = pDevice->GetTarget(pSource);
 
 	//	Get the fire angle from the device (the AI sets it when it has pre-
@@ -2345,6 +2350,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	if (pShot == NULL)
 		return CDeviceClass::FindAmmoItemProperty(Ctx, Ammo, sProperty);
 
+	const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
+
 	//	Enhancements
 
 	TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
@@ -2455,7 +2462,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		int iMinFireArc;
 		int iMaxFireArc;
 
-		switch (GetRotationType(Ctx, &iMinFireArc, &iMaxFireArc))
+		switch (GetRotationType(DeviceItem, &iMinFireArc, &iMaxFireArc))
 			{
 			case rotOmnidirectional:
 				return CC.CreateString(PROPERTY_OMNIDIRECTIONAL);
@@ -2547,7 +2554,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		return CC.CreateBool(m_bCanFireWhenBlind);
 
 	else if (strEquals(sProperty, PROPERTY_OMNIDIRECTIONAL))
-		return CC.CreateBool(GetRotationType(Ctx) == rotOmnidirectional);
+		return CC.CreateBool(GetRotationType(DeviceItem) == rotOmnidirectional);
 
 	else if (strEquals(sProperty, PROPERTY_REPEATING))
 		return CC.CreateInteger(GetContinuous(*pShot));
@@ -2846,6 +2853,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 	const CItem &Item = Ctx.GetItem();
 	CSpaceObject *pSource = Ctx.GetSource();
 	CInstalledDevice *pDevice = Ctx.GetDevice();
+	const CDeviceItem DeviceItem = Item.AsDeviceItem();
 
 	DamageTypes iDamageType;
 	CString sReference;
@@ -2869,7 +2877,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 		int iFragments;
         CWeaponFireDesc *pRootShot = GetWeaponFireDesc(Ctx, Ammo);
-		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
+		const CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
 		DamageDesc Damage = pShot->GetDamage();
 		iDamageType = Damage.GetDamageType();
 
@@ -2949,7 +2957,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 		//	For large number of fragments, we have a special description
 
-		else if (iFragments >= 8 && !IsTracking(Ctx, pShot))
+		else if (iFragments >= 8 && !IsTracking(DeviceItem, pShot))
 			{
 			//	Compute total damage
 
@@ -3002,7 +3010,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 	return true;
 	}
 
-CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments) const
+const CWeaponFireDesc *CWeaponClass::GetReferenceShotData (const CWeaponFireDesc *pShot, int *retiFragments) const
 
 //	GetReferenceShotData
 //
@@ -3010,7 +3018,7 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 //	return the fragment (since it is more representative)
 
 	{
-	CWeaponFireDesc *pBestShot = pShot;
+	const CWeaponFireDesc *pBestShot = pShot;
 	Metric rBestDamage = 0.0;	//	Fragments always take precedence
 	int iBestFragments = 1;
 	DamageTypes iBestDamageType = damageLaser;
@@ -3061,7 +3069,7 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 	return pBestShot;
 	}
 
-CDeviceClass::DeviceRotationTypes CWeaponClass::GetRotationType (CItemCtx &Ctx, int *retiMinArc, int *retiMaxArc) const
+CDeviceClass::DeviceRotationTypes CWeaponClass::GetRotationType (const CDeviceItem &DeviceItem, int *retiMinArc, int *retiMaxArc) const
 
 //	GetRotationType
 //
@@ -3078,9 +3086,9 @@ CDeviceClass::DeviceRotationTypes CWeaponClass::GetRotationType (CItemCtx &Ctx, 
 //	it).
 
 	{
-	CInstalledDevice *pDevice = Ctx.GetDevice();
-	TSharedPtr<CItemEnhancementStack> pEnhancement = Ctx.GetEnhancementStack();
-	int iEnhancedFireArc = (pEnhancement ? pEnhancement->GetFireArc() : 0);
+	const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
+	int iEnhancedFireArc = Enhancements.GetFireArc();
 
 	//	If the device has a fire arc, then we use that for a direction
 
@@ -3390,7 +3398,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 	int iScore = 0;
 
 	CSpaceObject *pSource = DeviceItem.GetSource();
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
+	const CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
 	if (pShot == NULL)
 		return -100;
 
@@ -3501,7 +3509,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 	return iScore;
 	}
 
-CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo) const
+const CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo) const
 
 //  GetWeaponFireDesc
 //
@@ -3894,7 +3902,7 @@ bool CWeaponClass::IsAreaWeapon (const CDeviceItem &DeviceItem) const
 //	Is this a weapon with an area of effect
 
 	{
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
+	const CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
 	if (pShot == NULL)
 		return false;
 
@@ -3998,7 +4006,7 @@ bool CWeaponClass::IsStdDamageType (DamageTypes iDamageType, int iLevel)
 	return (iLevel >= iTierLevel && iLevel < iTierLevel + 3);
 	}
 
-bool CWeaponClass::IsTracking (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const
+bool CWeaponClass::IsTracking (const CDeviceItem &DeviceItem, const CWeaponFireDesc *pShot) const
 
 //	IsTracking
 //
@@ -4011,21 +4019,21 @@ bool CWeaponClass::IsTracking (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const
 	if (pShot->IsTrackingOrHasTrackingFragments())
 		return true;
 
-	TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
-	if (pEnhancements && pEnhancements->IsTracking())
+	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
+	if (Enhancements.IsTracking())
 		return true;
 
 	return false;
 	}
 
-bool CWeaponClass::IsTrackingWeapon (CItemCtx &Ctx)
+bool CWeaponClass::IsTrackingWeapon (const CDeviceItem &DeviceItem) const
 
 //	IsTrackingWeapon
 //
 //	Returns TRUE if we're a tracking weapon
 	
 	{
-	return IsTracking(Ctx, GetWeaponFireDesc(Ctx));
+	return IsTracking(DeviceItem, GetWeaponFireDesc(DeviceItem));
 	}
 
 bool CWeaponClass::IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice)
@@ -4052,6 +4060,8 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	{
 	CItemCtx Ctx(pShip, pDevice);
+	const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
+
 	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 	if (pShot == NULL || pShip == NULL || pDevice == NULL)
 		{
@@ -4086,7 +4096,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 	//	Get rotation info
 
 	int iMinFireArc, iMaxFireArc;
-	DeviceRotationTypes iType = GetRotationType(Ctx, &iMinFireArc, &iMaxFireArc);
+	DeviceRotationTypes iType = GetRotationType(DeviceItem, &iMinFireArc, &iMaxFireArc);
 
 	//	Omnidirectional weapons are always aligned
 
@@ -4149,7 +4159,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	//	Tracking weapons behave like directional weapons with 120 degree field
 
-	if (iType != rotSwivel && IsTracking(Ctx, pShot))
+	if (iType != rotSwivel && IsTracking(DeviceItem, pShot))
 		{
 		int iDeviceAngle = AngleMiddle(iMinFireArc, iMaxFireArc);
 		iMinFireArc = AngleMod(iDeviceAngle - 60);
@@ -4219,7 +4229,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 		return false;
 	}
 
-bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *retiMaxFireArc)
+bool CWeaponClass::NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinFireArc, int *retiMaxFireArc) const
 
 //	NeedsAutoTarget
 //
@@ -4232,7 +4242,7 @@ bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *ret
 	{
 	//	If we're a tracking weapon then we have no swivel restrictions
 
-	if (IsTrackingWeapon(Ctx))
+	if (IsTrackingWeapon(DeviceItem))
 		{
 		if (retiMinFireArc) *retiMinFireArc = 0;
 		if (retiMaxFireArc) *retiMaxFireArc = 0;
@@ -4242,7 +4252,7 @@ bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *ret
 	//	If we're an omni or swivel weapon, adjust our fire arc
 
 	int iMinFireArc, iMaxFireArc;
-	switch (GetRotationType(Ctx, &iMinFireArc, &iMaxFireArc))
+	switch (GetRotationType(DeviceItem, &iMinFireArc, &iMaxFireArc))
 		{
 		case rotOmnidirectional:
 			{
@@ -4253,10 +4263,10 @@ bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *ret
 
 		case rotSwivel:
 			{
-			if (Ctx.GetSource())
+			if (const CSpaceObject *pSource = DeviceItem.GetSource())
 				{
-				iMinFireArc = AngleMod(Ctx.GetSource()->GetRotation() + iMinFireArc);
-				iMaxFireArc = AngleMod(Ctx.GetSource()->GetRotation() + iMaxFireArc);
+				iMinFireArc = AngleMod(pSource->GetRotation() + iMinFireArc);
+				iMaxFireArc = AngleMod(pSource->GetRotation() + iMaxFireArc);
 				}
 			if (retiMinFireArc) *retiMinFireArc = iMinFireArc;
 			if (retiMaxFireArc) *retiMaxFireArc = iMaxFireArc;
@@ -4275,12 +4285,10 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 //	Adds attributes of the weapon type
 
 	{
-	CItemCtx ItemCtx(&(const CItem &)DeviceItem, DeviceItem.GetSource());
-
 	//	Add omnidirectional and arc attributes
 
 	int iMinArc, iMaxArc;
-	switch (GetRotationType(ItemCtx, &iMinArc, &iMaxArc))
+	switch (GetRotationType(DeviceItem, &iMinArc, &iMaxArc))
 		{
 		case rotOmnidirectional:
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("omnidirectional")));
@@ -4298,15 +4306,15 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 	//	These properties are valid either for an ammo-less weapon, or a specific
 	//	ammo/missile.
 
-	CWeaponFireDesc *pRootShot;
+	const CWeaponFireDesc *pRootShot;
 	if ((GetSelectVariantCount() == 1 || !Ammo.IsEmpty())
-			&& (pRootShot = GetWeaponFireDesc(ItemCtx, Ammo)))
+			&& (pRootShot = GetWeaponFireDesc(DeviceItem, Ammo)))
 		{
 		//	Sometimes the fragments do all the damage. In that case, we take 
 		//	the properties from the fragment.
 
 		int iFragments;
-		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
+		const CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
 		DamageDesc Damage = pShot->GetDamage();
 
 		//	Apply enhancements

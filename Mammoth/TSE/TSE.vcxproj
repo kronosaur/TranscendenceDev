@@ -355,6 +355,7 @@
     <ClCompile Include="CAttackOrder.cpp" />
     <ClCompile Include="CAttackStationOrder.cpp" />
     <ClCompile Include="CAutoDockCalc.cpp" />
+    <ClCompile Include="CAutoMiningCalc.cpp" />
     <ClCompile Include="CAutoTargetCalc.cpp" />
     <ClCompile Include="CCargoDesc.cpp" />
     <ClCompile Include="CCircleRadiusDisruptor.cpp" />

@@ -1355,6 +1355,9 @@ void CPlayerShipController::OnPaintSRSEnhancements (CG32bitImage &Dest, SViewpor
 			&& m_bShowAutoTarget)
 		PaintTargetingReticle(Ctx, Dest, m_pAutoTarget);
 
+	else if (m_pAutoMining)
+		PaintTargetingReticle(Ctx, Dest, const_cast<CSpaceObject *>(m_pAutoMining));
+
 	//	If necessary, show damage bar
 
 	if (m_pAutoDamage
@@ -1675,6 +1678,8 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 	if (pShip == NULL)
 		return;
 
+	const CDeviceItem DeviceItem = Weapon.GetItem()->AsDeviceItem();
+
 	//	Compute the fire direction of the weapon.
 
 	int iDir = Weapon.GetFireAngle();
@@ -1682,7 +1687,7 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 	if (pWeapon)
 		{
 		int iWeaponMinFireArc, iWeaponMaxFireArc;
-		switch (pWeapon->GetRotationType(CItemCtx(&TargetObj, &Weapon), &iWeaponMinFireArc, &iWeaponMaxFireArc))
+		switch (pWeapon->GetRotationType(DeviceItem, &iWeaponMinFireArc, &iWeaponMaxFireArc))
 			{
 			case CDeviceClass::rotSwivel:
 				iDir = AngleMiddle(iWeaponMinFireArc, iWeaponMaxFireArc);
@@ -1911,22 +1916,20 @@ CSpaceObject *CPlayerShipController::GetTarget (DWORD dwFlags) const
 
 		m_iAutoTargetTick = iTick;
 
-		//	Make sure the fire angle is set to -1 if we don't have a target.
-		//	Otherwise, we will keep firing at the wrong angle after we destroy
-		//	a target.
+		//	If we have an auto target, return it.
 
-		if (m_pAutoTarget == NULL)
-			{
-			CInstalledDevice *pDevice = m_pShip->GetNamedDevice(devPrimaryWeapon);
-			if (pDevice)
-				pDevice->SetFireAngle(-1);
+		if (m_pAutoTarget && !m_pAutoTarget->IsDestroyed())
+			return m_pAutoTarget;
 
-			pDevice = m_pShip->GetNamedDevice(devMissileWeapon);
-			if (pDevice)
-				pDevice->SetFireAngle(-1);
-			}
+		//	If we have a mining target, then use that instead.
 
-		return ((m_pAutoTarget && !m_pAutoTarget->IsDestroyed()) ? m_pAutoTarget : NULL);
+		else if (m_pAutoMining && !m_pAutoMining->IsDestroyed())
+			return const_cast<CSpaceObject *>(m_pAutoMining);
+
+		//	Otherwise, no target
+
+		else
+			return NULL;
 		}
 
 	//	Otherwise, no target
@@ -2033,6 +2036,9 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 	if (m_pAutoTarget == Ctx.Obj)
 		m_pAutoTarget = NULL;
 
+	if (m_pAutoMining == Ctx.Obj)
+		m_pAutoMining = NULL;
+
 	if (m_pAutoDamage == Ctx.Obj)
 		{
 		m_pAutoDamage->ClearShowDamageBar();
@@ -2135,6 +2141,10 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 	m_pAutoTarget = const_cast<CSpaceObject *>(Ctx.AutoTarget.GetAutoTarget());
 	m_bShowAutoTarget = Ctx.AutoTarget.IsAutoTargetNeeded();
 	m_bTargetOutOfRange = Ctx.AutoTarget.IsPlayerTargetOutOfRange();
+
+	//	Remember auto mining, if necessary
+
+	m_pAutoMining = Ctx.AutoMining.GetAutoTarget();
 
 	//	Compute the AutoDock target.
 	//
@@ -2505,6 +2515,7 @@ void CPlayerShipController::Reset (void)
 		}
 
 	m_pAutoDock = NULL;
+	m_pAutoMining = NULL;
 	m_pAutoTarget = NULL;
 	m_bSignalDock = false;
 	m_bTargetOutOfRange = false;
