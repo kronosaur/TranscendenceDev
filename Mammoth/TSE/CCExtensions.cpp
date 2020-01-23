@@ -527,6 +527,7 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_GET_NAME				20
 #define FN_DESIGN_SET_PROPERTY			21
 #define FN_DESIGN_INC_PROPERTY			22
+#define FN_DESIGN_GET_IMAGE_DESC		23
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -3488,6 +3489,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"",
 			"is",	0,	},
 
+		{	"typGetImageDesc",				fnDesignGet,		FN_DESIGN_GET_IMAGE_DESC,
+			"(typGetImageDesc unid [options]) -> imageDesc",
+			"i*",	0,	},
+
 		{	"typGetName",					fnDesignGet,		FN_DESIGN_GET_NAME,
 			"(typGetName unid [flags]) -> name",
 			"i*",	0,	},
@@ -4566,6 +4571,14 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_DESIGN_GET_GLOBAL_DATA:
 			return pType->GetGlobalData(pArgs->GetElement(1)->GetStringValue())->Reference();
+
+		case FN_DESIGN_GET_IMAGE_DESC:
+			{
+			const CCompositeImageDesc &CompImage = pType->GetTypeImage();
+			const CObjectImageArray &Image = CompImage.GetImage(SGetImageCtx(pCtx->GetUniverse()), CCompositeImageSelector(), CCompositeImageModifiers());
+
+			return CreateListFromImage(*pCC, Image);
+			}
 
 		case FN_DESIGN_GET_NAME:
 			{

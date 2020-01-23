@@ -164,7 +164,7 @@
 			value=				"250"
 			mass=				"500"
 
-			description=		"Class A excavation pods uses a seismic charge to extract ore from asteroids in a 30 light-second radius."
+			description=		"Class A excavation pods uses a seismic charge to extract ore from asteroids in a 30 light-second radius. Excavation pods are most effective on metallic and volcanic asteroids."
 			>
 
 		<Image imageID="&rsItems3;" imageX="96" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -249,7 +249,7 @@
 			value=				"500"
 			mass=				"500"
 
-			description=		"This improved excavation pod has 40 light-second radius."
+			description=		"This improved excavation pod has a 40 light-second radius. Excavation pods are most effective on metallic and volcanic asteroids."
 			>
 
 		<Image imageID="&rsItems5;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -408,7 +408,7 @@
 			value=				"1000"
 			mass=				"500"
 
-			description=		"The class C excavation pod is used for large-scale asteroid mining. It uses a thermonuclear change and has a range of 60 light-seconds."
+			description=		"The class C uses a thermonuclear change and has a range of 60 light-seconds. Excavation pods are most effective on metallic and volcanic asteroids."
 			>
 
 		<Image imageID="&rsItems8;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>

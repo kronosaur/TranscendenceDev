@@ -8,7 +8,7 @@
 
 	<ItemType UNID="&itMiningLaser;"
 			name=				"mining laser"
-			attributes=			"commonwealth, energyWeapon, majorItem, miningEquipment, specialty"
+			attributes=			"commonwealth, EI, energyWeapon, majorItem, miningEquipment, specialty"
 			  
 			level=				"2"
 			frequency=			"rare"
@@ -16,7 +16,7 @@
 			value=				"1150"
 			mass=				"2000"
 			  
-			description=		"This powerful laser is generally used for asteroid mining."
+			description=		"This powerful laser is generally used for asteroid mining. Mining lasers are particularly effective on icy and primordial asteroids."
 			>
 
 		<Image imageID="&rsItems2;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -41,6 +41,53 @@
 						secondaryColor=		"0x00, 0xff, 0x00"
 						/>
 			</Effect>			
+		</Weapon>
+	</ItemType>
+
+	<!-- Level 3: Magma Cutter -->
+
+	<ItemType UNID="&itMagmaCutter;"
+			name=				"magma cutter(s)"
+			attributes=			"commonwealth, majorItem, miningEquipment, NAMI, specialty"
+			  
+			level=				"3"
+			frequency=			"rare"
+
+			value=				"2400"
+			mass=				"3000"
+			  
+			description=		"22nd century miners relied on magma cutters to carve up iron-rich asteroids. Magma cutters are particularly effective on metallic and icy asteroids."
+			>
+
+		<Image imageID="&rsItems6;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"particles"
+				damage=				"blast:16; mining:5; WMD:4"
+				
+				fireRate=			"30"
+
+				powerUse=			"50"
+				sound=				"&snRecoillessCannon;"
+				>
+			
+			<ParticleSystem
+					style=				"spray"
+					emitLifetime=		"1"
+					emitRate=			"60-75"
+					emitSpeed=			"40"
+					spreadAngle=		"1"
+					
+					particleLifetime=	"30"
+					>
+			    <ParticleEffect>
+				    <Particle
+						    style=			"flame"
+                            minWidth=       "1"
+						    maxWidth=		"5-10"
+						    />
+			    </ParticleEffect>
+			</ParticleSystem>
 		</Weapon>
 	</ItemType>
 
@@ -71,11 +118,43 @@
 
 	</ItemType>
 
+	<!-- Level 4: Proton Drill -->
+
+	<ItemType UNID="&itProtonDrill;"
+			name=				"proton drill"
+			attributes=			"commonwealth, EI, energyWeapon, majorItem, miningEquipment, specialty"
+			  
+			level=				"4"
+			frequency=			"rare"
+
+			value=				"5000"
+			mass=				"3500"
+			  
+			description=		"This proton beam weapon is primarily used for mining. It is particularly effective on icy and primordial asteroids."
+			>
+
+		<Image imageID="&rsItems2;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"beam"
+
+				damage=				"particle:3d8+1; mining:6;"
+				fireRate=			"20"
+				lifetime=			"15"
+				powerUse=			"100"
+
+				effect=				"&efParticleBeamDefault;"
+				fireEffect=			"&efParticleFireDefault;"
+				hitEffect=			"&efParticleHitDefault;"
+				sound=				"&snLaserCannon;"
+				/>
+	</ItemType>
+
 	<!-- Level 6: Plasma Torch -->
 
 	<ItemType UNID="&itPlasmaTorch;"
 			name=				"plasma torch(es)"
-			attributes=			"commonwealth, majorItem, miningEquipment"
+			attributes=			"commonwealth, majorItem, miningEquipment, specialty"
 			  
 			level=				"6"
 			frequency=			"rare"
@@ -83,7 +162,7 @@
 			value=				"12000"
 			mass=				"4000"
 			  
-			description=		"Plasma torches are used for large-scale asteroid mining."
+			description=		"Plasma torches are used for large-scale asteroid mining. They are effective on icy and metallic asteroids."
 			>
 
 		<Image imageID="&rsItems6;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>

@@ -1956,6 +1956,7 @@
 	<!ENTITY dsCommonwealthMiningInfo	"0x00100255">
 	<!ENTITY dsCommonwealthMiningPromotion	"0x00100256">
 	<!ENTITY unidIndependentMiner		"0x00100257">
+	<!ENTITY dsCommonwealthAsteroidInfo	"0x00100258">
 
 	<!-- 0270-028F SOLON CORPORATION -->
 

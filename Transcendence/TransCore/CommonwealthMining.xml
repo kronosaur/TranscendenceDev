@@ -565,6 +565,113 @@
 
 <!-- DOCK SCREENS -->
 
+	<DockScreen unid="&dsCommonwealthAsteroidInfo;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		<Display type="customPicker"
+				rowHeight="110"
+				iconWidth="110"
+				iconHeight="110"
+				>
+			<OnDisplayInit>
+				(block (
+					(asteroidList (list 'icy 'metallic 'primordial 'rocky 'volcanic))
+					(asteroidImages {
+						icy: (typGetImageDesc &stIceAsteroidSizeC;)
+						metallic: (typGetImageDesc &stMetallicAsteroidSizeC;)
+						primordial: (typGetImageDesc &stPrimordialAsteroidSizeC;)
+						rocky: (typGetImageDesc &stRockyAsteroidSizeC;)
+						volcanic: (typGetImageDesc &stVolcanicAsteroidSizeC;)
+						})
+					)
+					(map asteroidList theType {
+						id: theType
+						title: (scrTranslate gScreen (cat 'asteroidName. theType))
+						icon: (@ asteroidImages theType)
+						desc: (scrTranslate gScreen (cat 'asteroidDesc. theType))
+						hint: (scrTranslate gScreen (cat 'asteroidHint. theType))
+						})
+					)
+			</OnDisplayInit>
+		</Display>
+		
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theEntry (scrGetListEntry gScreen))
+						)
+						(scrSetDesc gScreen (@ theEntry 'hint))
+						)
+				</OnPaneInit>
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="asteroidName.icy">Icy Asteroid</Text>
+			<Text id="asteroidDesc.icy">
+
+				LATER: Icy asteroids are mostly ice. They contain some minerals.
+			
+			</Text>
+			<Text id="asteroidHint.icy">
+
+				LATER: Use drilling and ablative techniques.
+			
+			</Text>
+			<Text id="asteroidName.metallic">Metallic Asteroid</Text>
+			<Text id="asteroidDesc.metallic">
+
+				LATER: Icy asteroids are mostly ice. They contain some minerals.
+			
+			</Text>
+			<Text id="asteroidHint.metallic">
+
+				LATER: Use drilling and ablative techniques.
+			
+			</Text>
+			<Text id="asteroidName.primordial">Primordial Asteroid</Text>
+			<Text id="asteroidDesc.primordial">
+
+				LATER: Icy asteroids are mostly ice. They contain some minerals.
+			
+			</Text>
+			<Text id="asteroidHint.primordial">
+
+				LATER: Use drilling and ablative techniques.
+			
+			</Text>
+			<Text id="asteroidName.rocky">Rocky Asteroid</Text>
+			<Text id="asteroidDesc.rocky">
+
+				LATER: Icy asteroids are mostly ice. They contain some minerals.
+			
+			</Text>
+			<Text id="asteroidHint.rocky">
+
+				LATER: Use drilling and ablative techniques.
+			
+			</Text>
+			<Text id="asteroidName.volcanic">Volcanic Asteroid</Text>
+			<Text id="asteroidDesc.volcanic">
+
+				LATER: Icy asteroids are mostly ice. They contain some minerals.
+			
+			</Text>
+			<Text id="asteroidHint.volcanic">
+
+				LATER: Use drilling and ablative techniques.
+			
+			</Text>
+		</Language>
+	</DockScreen>
+
 	<DockScreen unid="&dsCommonwealthMiningInfo;"
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
@@ -607,6 +714,10 @@
 				</OnPaneInit>
 
 				<Actions>
+					<Action id="actionAsteroidInfo">
+						(scrShowScreen gScreen &dsCommonwealthAsteroidInfo;)
+					</Action>
+
 					<Action id="actionDone" default="1" cancel="1">
 						(scrExitScreen gScreen)
 					</Action>
@@ -615,6 +726,8 @@
 		</Panes>
 
 		<Language>
+			<Text id="actionAsteroidInfo">[A]steroid Data</Text>
+
 			<Text id="descInfo.unranked">
 
 				LATER: Mining is fun, you should try it!
