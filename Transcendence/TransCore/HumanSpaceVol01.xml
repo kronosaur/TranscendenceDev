@@ -1849,6 +1849,8 @@
 	<!ENTITY vtAdvancedScannerPower		"0x0010016E">
 	<!ENTITY baSeismicScannerPower		"0x0010016F">
 	<!ENTITY rsMiningPod				"0x00100170">
+	<!ENTITY itMagmaCutter				"0x00100171">
+	<!ENTITY itProtonDrill				"0x00100172">
 	
 	<!-- 0180-018F OUTLAWS -->
 	
