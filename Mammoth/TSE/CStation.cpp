@@ -1050,35 +1050,40 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 		if (iDamage == 0)
 			return;
 
-		//	Compute the number of pieces of ejecta
+		//	Mining damage never causes ejecta (but we still get a geyser effect)
 
-		int iCount;
-		if (iDamage <= 5)
-			iCount = ((mathRandom(1, 100) <= (iDamage * 20)) ? 1 : 0);
-		else if (iDamage <= 12)
-			iCount = mathRandom(1, 3);
-		else if (iDamage <= 24)
-			iCount = mathRandom(2, 6);
-		else
-			iCount = mathRandom(4, 12);
-
-		//	Generate ejecta
-
-		CWeaponFireDesc *pEjectaType = m_pType->GetEjectaType();
-		for (int i = 0; i < iCount; i++)
+		if (Damage.GetMiningDamage() == 0 || !CanBeMined())
 			{
-			SShotCreateCtx Ctx;
+			//	Compute the number of pieces of ejecta
 
-			Ctx.pDesc = pEjectaType;
-			Ctx.Source = CDamageSource(this, killedByEjecta);
-			Ctx.iDirection = AngleMod(iDirection 
-					+ (mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12))
-					+ (360 - 30));
-			Ctx.vPos = vHitPos;
-			Ctx.vVel = GetVel() + PolarToVector(Ctx.iDirection, pEjectaType->GetInitialSpeed());
-			Ctx.dwFlags = SShotCreateCtx::CWF_EJECTA;
+			int iCount;
+			if (iDamage <= 5)
+				iCount = ((mathRandom(1, 100) <= (iDamage * 20)) ? 1 : 0);
+			else if (iDamage <= 12)
+				iCount = mathRandom(1, 3);
+			else if (iDamage <= 24)
+				iCount = mathRandom(2, 6);
+			else
+				iCount = mathRandom(4, 12);
 
-			GetSystem()->CreateWeaponFire(Ctx);
+			//	Generate ejecta
+
+			CWeaponFireDesc *pEjectaType = m_pType->GetEjectaType();
+			for (int i = 0; i < iCount; i++)
+				{
+				SShotCreateCtx Ctx;
+
+				Ctx.pDesc = pEjectaType;
+				Ctx.Source = CDamageSource(this, killedByEjecta);
+				Ctx.iDirection = AngleMod(iDirection 
+						+ (mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12))
+						+ (360 - 30));
+				Ctx.vPos = vHitPos;
+				Ctx.vVel = GetVel() + PolarToVector(Ctx.iDirection, pEjectaType->GetInitialSpeed());
+				Ctx.dwFlags = SShotCreateCtx::CWF_EJECTA;
+
+				GetSystem()->CreateWeaponFire(Ctx);
+				}
 			}
 
 		//	Create geyser effect
