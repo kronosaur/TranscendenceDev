@@ -617,56 +617,85 @@
 			<Text id="asteroidName.icy">Icy Asteroid</Text>
 			<Text id="asteroidDesc.icy">
 
-				LATER: Icy asteroids are mostly ice. They contain some minerals.
+				Icy asteroids can be found at the frozen edge of star systems.
+				They are a mix of rock and ice.
 			
 			</Text>
 			<Text id="asteroidHint.icy">
 
-				LATER: Use drilling and ablative techniques.
+				5% of icy asteroids have resources. The most commonly found are
+				Cobalt-thorium, xenotite, and pteracnium.
+
+				Use a mining laser (drill mining) or a plasma torch (ablative 
+				mining) for best results. Avoid using excavation pods as they 
+				tend to shatter the ice without extracting resources.
 			
 			</Text>
 			<Text id="asteroidName.metallic">Metallic Asteroid</Text>
 			<Text id="asteroidDesc.metallic">
 
-				LATER: Icy asteroids are mostly ice. They contain some minerals.
+				These asteroids are filled with valuable metals. They are most
+				common around average-sized stars.
 			
 			</Text>
 			<Text id="asteroidHint.metallic">
 
-				LATER: Use drilling and ablative techniques.
-			
+				10% of metallic asteroids have extractable ores, such as
+				titanium, plasteel, and orthosteel.
+
+				Mining lasers and their ilk are not very effective. Use a plasma
+				torch (ablative mining) or excavation pods (shockwave mining)
+				instead.
+
 			</Text>
 			<Text id="asteroidName.primordial">Primordial Asteroid</Text>
 			<Text id="asteroidDesc.primordial">
 
-				LATER: Icy asteroids are mostly ice. They contain some minerals.
+				Primordial asteroids are rich in organic compounds, and often
+				contain exotic resources.
 			
 			</Text>
 			<Text id="asteroidHint.primordial">
 
-				LATER: Use drilling and ablative techniques.
+				8% of primordial asteroids have useful resources. The most 
+				commonly found are cerallox, duranium, and tetramite.
+
+				Use a mining laser (drill mining) or mining charges (explosive
+				mining) for best results. Avoid plasma torches (ablative mining)
+				because they burn away the target ores.
 			
 			</Text>
 			<Text id="asteroidName.rocky">Rocky Asteroid</Text>
 			<Text id="asteroidDesc.rocky">
 
-				LATER: Icy asteroids are mostly ice. They contain some minerals.
+				Rocky asteroids are common throughout the universe.
 			
 			</Text>
 			<Text id="asteroidHint.rocky">
 
-				LATER: Use drilling and ablative techniques.
+				10% of rocky asteroids have useful resources. The most commonly
+				found are palladium, gold, and platinum.
+
+				All mining techniques are effective on rocky asteroids.
 			
 			</Text>
 			<Text id="asteroidName.volcanic">Volcanic Asteroid</Text>
 			<Text id="asteroidDesc.volcanic">
 
-				LATER: Icy asteroids are mostly ice. They contain some minerals.
+				Volcanic asteroids are formed in high-temperature regions when
+				molten lava solidifies.
+
 			
 			</Text>
 			<Text id="asteroidHint.volcanic">
 
-				LATER: Use drilling and ablative techniques.
+				15% of volcanic asteroids have valuable resources of all kinds.
+				Palladium, gold, cerallox, titanium, and even duranium are all
+				commonly found.
+
+				Use mining charges (explosive mining) or excavation pods
+				(shockwave mining) for best results. Mining lasers (drill 
+				mining) are too weak against volcanic rock.
 			
 			</Text>
 		</Language>
