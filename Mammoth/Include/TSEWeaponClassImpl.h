@@ -92,57 +92,57 @@ class CWeaponClass : public CDeviceClass
 			evtCount					= 3,
 			};
 
-        struct SBalance
-            {
-            Metric rBalance = 0.0;			//  Total balance
-            int iLevel = 0;					//  Level for which we balanced
+		struct SBalance
+			{
+			Metric rBalance = 0.0;			//  Total balance
+			int iLevel = 0;					//  Level for which we balanced
 
-            Metric rStdDamage180 = 0.0;		//  Standard damage (for level and fire rate)
-            Metric rDamageHP = 0.0;			//  HP damage per projectile
-            Metric rDamageMult = 0.0;		//  Effective number of projectiles
-            Metric rDamage180 = 0.0;		//  Damage per 180 ticks
-            Metric rDamage = 0.0;			//  Damage balance component
-            Metric rDamageType = 0.0;		//  Damage type balance contribution
+			Metric rStdDamage180 = 0.0;		//  Standard damage (for level and fire rate)
+			Metric rDamageHP = 0.0;			//  HP damage per projectile
+			Metric rDamageMult = 0.0;		//  Effective number of projectiles
+			Metric rDamage180 = 0.0;		//  Damage per 180 ticks
+			Metric rDamage = 0.0;			//  Damage balance component
+			Metric rDamageType = 0.0;		//  Damage type balance contribution
 
-            Metric rStdAmmoCost = 0.0;		//  Standard ammo cost (for level and fire rate)
-            Metric rStdAmmoMass = 0.0;		//  Standard ammo mass (for level and fire rate)
-            Metric rAmmo = 0.0;				//  Ammo contribution
-            Metric rOmni = 0.0;				//  Omni and swivel component
-            Metric rTracking = 0.0;			//  Tracking component
+			Metric rStdAmmoCost = 0.0;		//  Standard ammo cost (for level and fire rate)
+			Metric rStdAmmoMass = 0.0;		//  Standard ammo mass (for level and fire rate)
+			Metric rAmmo = 0.0;				//  Ammo contribution
+			Metric rOmni = 0.0;				//  Omni and swivel component
+			Metric rTracking = 0.0;			//  Tracking component
 
-            Metric rRange = 0.0;			//  Range component
-            Metric rSpeed = 0.0;			//  Speed component
-            Metric rProjectileHP = 0.0;		//  HP and interaction balance component
-            Metric rPower = 0.0;			//  Power use component
-            Metric rCost = 0.0;				//  Cost component to balance
-            Metric rSlots = 0.0;			//  Slot component
-            Metric rExternal = 0.0;			//  External component
-            Metric rLinkedFire = 0.0;		//  Weapon is linked-fire
-            Metric rRecoil = 0.0;			//  Weapon has recoil
+			Metric rRange = 0.0;			//  Range component
+			Metric rSpeed = 0.0;			//  Speed component
+			Metric rProjectileHP = 0.0;		//  HP and interaction balance component
+			Metric rPower = 0.0;			//  Power use component
+			Metric rCost = 0.0;				//  Cost component to balance
+			Metric rSlots = 0.0;			//  Slot component
+			Metric rExternal = 0.0;			//  External component
+			Metric rLinkedFire = 0.0;		//  Weapon is linked-fire
+			Metric rRecoil = 0.0;			//  Weapon has recoil
 
-            Metric rRadiation = 0.0;		//  Bonus for radiation
-            Metric rDeviceDisrupt = 0.0;	//  Bonus for device disrupt
-            Metric rDeviceDamage = 0.0;		//  Bonus for device damage
-            Metric rDisintegration = 0.0;	//  Bonus for disintegration
-            Metric rShatter = 0.0;			//  Bonus for shatter damage
-            Metric rShieldPenetrate = 0.0;	//  Bonus for shield penetration
-            Metric rShield = 0.0;			//  Bonus for shield damage
-            Metric rArmor = 0.0;			//  Bonus for armor damage
-            Metric rWMD = 0.0;				//  Bonus for WMD
-            Metric rMining = 0.0;			//  Bonus for mining
+			Metric rRadiation = 0.0;		//  Bonus for radiation
+			Metric rDeviceDisrupt = 0.0;	//  Bonus for device disrupt
+			Metric rDeviceDamage = 0.0;		//  Bonus for device damage
+			Metric rDisintegration = 0.0;	//  Bonus for disintegration
+			Metric rShatter = 0.0;			//  Bonus for shatter damage
+			Metric rShieldPenetrate = 0.0;	//  Bonus for shield penetration
+			Metric rShield = 0.0;			//  Bonus for shield damage
+			Metric rArmor = 0.0;			//  Bonus for armor damage
+			Metric rWMD = 0.0;				//  Bonus for WMD
+			Metric rMining = 0.0;			//  Bonus for mining
 			Metric rTimeStop = 0.0;			//	Bonus for time stop
-            };
+			};
 
-        struct SStdStats
-	        {
-	        int iDamage;			//	Average damage at this level
-	        int iPower;				//	Power (in tenths of MWs)
-            Metric rCost;           //  Weapon cost (credits)
-            Metric rAmmoCost;       //  Ammo cost (credits)
+		struct SStdStats
+			{
+			int iDamage;			//	Average damage at this level
+			int iPower;				//	Power (in tenths of MWs)
+			Metric rCost;           //  Weapon cost (credits)
+			Metric rAmmoCost;       //  Ammo cost (credits)
 
-	        int iOverTierAdj;		//	Balance points to add to adjust for damage type above level
-	        int iUnderTierAdj;		//	Balance points to add to adjust for damage type below level
-	        };
+			int iOverTierAdj;		//	Balance points to add to adjust for damage type above level
+			int iUnderTierAdj;		//	Balance points to add to adjust for damage type below level
+			};
 
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpWeapon);
 		virtual ~CWeaponClass (void);
@@ -157,12 +157,12 @@ class CWeaponClass : public CDeviceClass
 			return true;
 			}
 
-        CItemType *GetAmmoItem (int iIndex) const;
-        int GetAmmoItemCount (void) const;
+		CItemType *GetAmmoItem (int iIndex) const;
+		int GetAmmoItemCount (void) const;
 		inline int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
-        CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo = CItem()) const;
+		CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo = CItem()) const;
 
-        static const SStdStats &GetStdStats (int iLevel);
+		static const SStdStats &GetStdStats (int iLevel);
 		static int GetStdDamage (int iLevel);
 		static Metric GetStdDamage180 (int iLevel);
 		static bool IsStdDamageType (DamageTypes iDamageType, int iLevel);
@@ -177,7 +177,7 @@ class CWeaponClass : public CDeviceClass
 		virtual CWeaponClass *AsWeaponClass (void) override { return this; }
 		virtual int CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSource, CSpaceObject *pTarget) override;
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
-        virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) override;
+		virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) override;
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
 		virtual int GetAmmoVariant (const CItemType *pItem) const override;
 		virtual ItemCategories GetImplCategory (void) const override;
@@ -248,7 +248,7 @@ class CWeaponClass : public CDeviceClass
 			CWeaponFireDesc *pDesc;	//	Pointer to descriptor (may be external)
 			CItemTypeRef pAmmoType;	//	ItemType for ammo, only if referring to a missile
 			bool bOwned;			//	TRUE if we own the descriptor (otherwise, it
-                                    //      may be owned by a missile).
+									//      may be owned by a missile).
 			};
 
 		enum EOnFireWeaponResults
@@ -275,7 +275,7 @@ class CWeaponClass : public CDeviceClass
 		Metric CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
 		Metric CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
 		int CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbOutOfArc);
-        int CalcLevel (CWeaponFireDesc *pShot) const;
+		int CalcLevel (CWeaponFireDesc *pShot) const;
 		bool ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount, bool *retbConsumed);
 		bool ConsumeCapacitor (CItemCtx &ItemCtx, CWeaponFireDesc *pShot);
 		void FailureExplosion (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, bool *retbSourceDestroyed);

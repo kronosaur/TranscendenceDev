@@ -73,7 +73,7 @@ class CCargoSpaceClass : public CDeviceClass
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
 
 	protected:
-        virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const override;
+		virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const override;
 		virtual bool OnCanBeDamaged (void) const override { return false; }
 		virtual bool OnCanBeDisabled (CItemCtx &Ctx) const override { return false; }
 		virtual bool OnCanBeDisrupted (void) const override { return false; }
@@ -81,9 +81,9 @@ class CCargoSpaceClass : public CDeviceClass
 
 	private:
 		CCargoSpaceClass (void);
-        const CCargoDesc *GetDesc (CItemCtx &Ctx) const;
+		const CCargoDesc *GetDesc (CItemCtx &Ctx) const;
 
-        TArray<CCargoDesc> m_Desc;
+		TArray<CCargoDesc> m_Desc;
 	};
 
 class CCyberDeckClass : public CDeviceClass
@@ -138,7 +138,7 @@ class CCyberDeckClass : public CDeviceClass
 class CDriveClass : public CDeviceClass
 	{
 	public:
-        ~CDriveClass (void);
+		~CDriveClass (void);
 
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDrive);
 		static ICCItem *GetDriveProperty (const CDriveDesc &Desc, const CString &sProperty);
@@ -156,36 +156,36 @@ class CDriveClass : public CDeviceClass
 		//	CDeviceClass virtuals
 
 		virtual void OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const override;
-        virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const override;
+		virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const override;
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 
 	private:
-        struct SScalableStats
-            {
-            SScalableStats (void) : 
-                    iLevel(-1)
-                { }
+		struct SScalableStats
+			{
+			SScalableStats (void) : 
+					iLevel(-1)
+				{ }
 
-            int iLevel;
-            CDriveDesc DriveDesc;
-            CRotationDesc ManeuverDesc;
-            };
+			int iLevel;
+			CDriveDesc DriveDesc;
+			CRotationDesc ManeuverDesc;
+			};
 
 		CDriveClass (void);
 		CDriveClass (const CDriveClass &Desc) = delete;
-        CDriveClass &operator= (const CDriveClass &Desc) = delete;
+		CDriveClass &operator= (const CDriveClass &Desc) = delete;
 
-        const SScalableStats *GetDesc (CItemCtx &Ctx) const;
-        const SScalableStats *GetDesc (const CDeviceItem &DeviceItem) const;
-        void InitDamagedDesc (void) const;
-        void InitEnhancedDesc (void) const;
-        static ALERROR InitStatsFromXML (SDesignLoadCtx &Ctx, int iLevel, DWORD dwUNID, CXMLElement *pDesc, SScalableStats &retStats);
+		const SScalableStats *GetDesc (CItemCtx &Ctx) const;
+		const SScalableStats *GetDesc (const CDeviceItem &DeviceItem) const;
+		void InitDamagedDesc (void) const;
+		void InitEnhancedDesc (void) const;
+		static ALERROR InitStatsFromXML (SDesignLoadCtx &Ctx, int iLevel, DWORD dwUNID, CXMLElement *pDesc, SScalableStats &retStats);
 
-        int m_iLevels;                      //  Total number of levels.
-        SScalableStats *m_pDesc;            //  Array of entries, one per scaled level (minimum 1)
+		int m_iLevels;                      //  Total number of levels.
+		SScalableStats *m_pDesc;            //  Array of entries, one per scaled level (minimum 1)
 
-        mutable SScalableStats *m_pDamagedDesc;
-        mutable SScalableStats *m_pEnhancedDesc;
+		mutable SScalableStats *m_pDamagedDesc;
+		mutable SScalableStats *m_pEnhancedDesc;
 	};
 
 class CEnhancerClass : public CDeviceClass
@@ -284,7 +284,7 @@ class CMiscellaneousClass : public CDeviceClass
 class CReactorClass : public CDeviceClass
 	{
 	public:
-        ~CReactorClass (void);
+		~CReactorClass (void);
 
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
 
@@ -298,7 +298,7 @@ class CReactorClass : public CDeviceClass
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
 
 	protected:
-        virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const override;
+		virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const override;
 		virtual bool OnCanBeDisabled (CItemCtx &Ctx) const override { return false; }
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 
@@ -307,21 +307,21 @@ class CReactorClass : public CDeviceClass
 
 		const CReactorDesc *GetReactorDesc (CItemCtx &Ctx, DWORD dwFlags = 0) const;
 		int GetMaxPower (CItemCtx &ItemCtx, const CReactorDesc &Desc) const;
-        void InitDamagedDesc (void) const;
-        void InitEnhancedDesc (void) const;
+		void InitDamagedDesc (void) const;
+		void InitEnhancedDesc (void) const;
 
-        //  Descriptors (optional scaling)
+		//  Descriptors (optional scaling)
 
-        int m_iBaseLevel;                   //  Base level.
-        int m_iLevels;                      //  Total number of levels.
-        CReactorDesc *m_pDesc;              //  Array of entries, one per scaled level (minimum 1)
+		int m_iBaseLevel;                   //  Base level.
+		int m_iLevels;                      //  Total number of levels.
+		CReactorDesc *m_pDesc;              //  Array of entries, one per scaled level (minimum 1)
 
 		//	Other properties
 
 		int m_iExtraPowerPerCharge;			//	Adds to max power
 
-        //  Damaged/enhanced
-        //  We allocate these as needed; the array matches m_pDesc
+		//  Damaged/enhanced
+		//  We allocate these as needed; the array matches m_pDesc
 
 		mutable CReactorDesc *m_pDamagedDesc;
 		mutable CReactorDesc *m_pEnhancedDesc;
@@ -393,7 +393,7 @@ class CShieldClass : public CDeviceClass
 					rDamageAdj(0.0),
 					rRecoveryAdj(0.0),
 					rPowerUse(0.0),
-                    rSlots(0.0),
+					rSlots(0.0),
 					rSpecial(0.0),
 					rCost(0.0)
 				{ }
