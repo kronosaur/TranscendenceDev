@@ -338,6 +338,9 @@
     <ClInclude Include="SystemCreateImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WeaponClassImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\Include\TSEWeaponClassImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1422,6 +1425,9 @@
     </ClCompile>
     <ClCompile Include="CAutoMiningCalc.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CConfigurationDesc.cpp">
+      <Filter>Source Files\Items</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

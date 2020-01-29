@@ -5,6 +5,57 @@
 
 #pragma once
 
+struct SShotOrigin
+	{
+	CVector vPos;
+	int iDir = -1;
+	};
+
+class CConfigurationDesc
+	{
+	public:
+		enum ETypes
+			{
+			ctUnknown,
+
+			ctSingle,						//	single shot
+			ctDual,							//	dual, parallel shots
+			ctWall,							//	five parallel shots
+			ctSpread2,						//	dual, spread shots
+			ctSpread3,						//	three, spread shots
+			ctSpread5,						//	five, spread shots
+			ctDualAlternating,				//	alternate barrels
+			ctCustom,						//	custom configuration
+			};
+
+		TArray<SShotOrigin> CalcOrigins (const CVector &vSource, int iFireAngle = 0, int iPolarity = -1, Metric rScale = 1.0) const;
+		int GetAimTolerance (int iFireDelay = 8) const;
+		int GetCustomConfigCount (void) const { return m_Custom.GetCount(); }
+		int GetCustomConfigFireAngle (int iIndex, int iFireAngle = 0) const { return AngleMod(iFireAngle + m_Custom[iIndex].Angle.Roll()); }
+		CVector GetCustomConfigPos (int iIndex, int iFireAngle = 0) const { return PolarToVector(AngleMod(iFireAngle + m_Custom[iIndex].iPosAngle), m_Custom[iIndex].rPosRadius); }
+		Metric GetMultiplier (void) const;
+		ETypes GetType (void) const { return m_iType; }
+		ALERROR InitFromWeaponClassXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool IsAlternating (void) const { return (m_bCustomAlternating || m_iType == ctDualAlternating); }
+		bool IsSinglePointOrigin (void) const;
+
+	private:
+		static constexpr Metric DUAL_SHOT_SEPARATION = 12.0;	//	Radius of dual shot (pixels)
+
+		struct SConfigDesc
+			{
+			DiceRange Angle;				//	Offset from fire angle
+			int iPosAngle = 0;				//	Origin of shot
+			Metric rPosRadius = 0.0;		//	Origin of shot
+			};
+
+		ETypes m_iType = ctUnknown;			//	Shot configuration;
+		int m_iAimTolerance = 0;			//	Aim tolerance
+
+		TArray<SConfigDesc> m_Custom;
+		bool m_bCustomAlternating = false;	//	Fire each shot in turn
+	};
+
 class CWeaponClass : public CDeviceClass
 	{
 	public:
@@ -182,18 +233,6 @@ class CWeaponClass : public CDeviceClass
 		static constexpr int CONTINUOUS_START = 0xff;
 		static constexpr int CONTINUOUS_DATA_LIMIT = 0xfe;
 
-		enum ConfigurationTypes
-			{
-			ctSingle,				//	single shot
-			ctDual,					//	dual, parallel shots
-			ctWall,					//	five parallel shots
-			ctSpread2,				//	dual, spread shots
-			ctSpread3,				//	three, spread shots
-			ctSpread5,				//	five, spread shots
-			ctDualAlternating,		//	alternate barrels
-			ctCustom,				//	custom configuration
-			};
-
 		enum EVariantTypes
 			{
 			varSingle,				//	Single CWeaponFireDesc (may or may not use ammo)
@@ -202,13 +241,6 @@ class CWeaponClass : public CDeviceClass
 			varLevelScaling,		//	Explicit definitions for each level
 			varCharges,				//	Current charge determines definition
 			varCounter,				//	Current counter value determines definition
-			};
-
-		struct SConfigDesc
-			{
-			DiceRange Angle;		//	Offset from fire angle
-			int iPosAngle;			//	Origin of shot
-			Metric rPosRadius;		//	Origin of shot
 			};
 
 		struct SShotDesc
@@ -238,7 +270,7 @@ class CWeaponClass : public CDeviceClass
 		CWeaponClass (void);
 
 		int CalcActivateDelay (CItemCtx &ItemCtx) const;
-		int CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iFireAngle, CVector *ShotPosOffset, int *ShotDir, bool bSetAlternating) const;
+		int CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iFireAngle, TArray<SShotOrigin> &retConfig, bool bSetAlternating = false) const;
 		Metric CalcConfigurationMultiplier (CWeaponFireDesc *pShot = NULL, bool bIncludeFragments = true) const;
 		Metric CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
 		Metric CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
@@ -285,7 +317,7 @@ class CWeaponClass : public CDeviceClass
 		inline bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
 		inline bool IsLauncher (void) const { return (m_iVariantType == varLauncher); }
 		inline bool IsLauncherWithAmmo (void) const { return (IsLauncher() && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
-		bool IsSinglePointOrigin (void) const;
+		bool IsSinglePointOrigin (void) const { return m_Configuration.IsSinglePointOrigin(); }
 		inline bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
 		bool IsTracking (const CDeviceItem &DeviceItem, const CWeaponFireDesc *pShot) const;
 		bool UpdateShipCounter(CItemCtx &ItemCtx, CWeaponFireDesc *pShot);
@@ -320,11 +352,7 @@ class CWeaponClass : public CDeviceClass
 		EVariantTypes m_iVariantType;			//	Type of variant
 		TArray<SShotDesc> m_ShotData;			//	Desc for each shot variation
 
-		ConfigurationTypes m_Configuration;		//	Shot configuration;
-		int m_iConfigCount;						//	Number of shots for custom configurations
-		SConfigDesc *m_pConfig;					//	Custom configuration (may be NULL)
-		int m_iConfigAimTolerance;				//	Aim tolerance
-		bool m_bConfigAlternating;				//	Fire each shot in turn
+		CConfigurationDesc m_Configuration;		//	Shot configuration
 
 		int m_iContinuous = 0;					//	Repeat fire
 		int m_iContinuousFireDelay = 0;			//	Delay between shots
@@ -344,7 +372,5 @@ class CWeaponClass : public CDeviceClass
 		SEventHandlerDesc m_CachedEvents[evtCount];	//	Cached events
 
 		static CFailureDesc g_DefaultFailure;
-
-	friend CObjectClass<CWeaponClass>;
 	};
 
