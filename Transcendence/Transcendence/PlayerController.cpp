@@ -1187,7 +1187,6 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 		case CDeviceClass::failDamagedByDisruption:
 			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s damaged"), pDev->GetClass()->GetName())));
 			break;
-
 		case CDeviceClass::failWeaponJammed:
 			m_pTrans->DisplayMessage(CONSTLIT("Weapon jammed!"));
 			break;
@@ -1195,6 +1194,9 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 		case CDeviceClass::failWeaponMisfire:
 			m_pTrans->DisplayMessage(CONSTLIT("Weapon misfire!"));
 			break;
+
+		case CDeviceClass::failWeaponNoFire:
+			m_pTrans->DisplayMessage(CONSTLIT("Weapon cannot fire!"))
 
 		case CDeviceClass::failWeaponExplosion:
 			m_pTrans->DisplayMessage(CONSTLIT("Weapon chamber explosion!"));

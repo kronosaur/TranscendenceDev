@@ -10,7 +10,7 @@
 #define FIELD_CHANCE							CONSTLIT("chance")
 #define FIELD_TYPE								CONSTLIT("type")
 
-static TStaticStringTable<TStaticStringEntry<CFailureDesc::EFailureTypes>, 7> FAILURE_TYPE_TABLE = {
+static TStaticStringTable<TStaticStringEntry<CFailureDesc::EFailureTypes>, 8> FAILURE_TYPE_TABLE = {
 	"custom",				CFailureDesc::failCustom,
 	"explosion",			CFailureDesc::failExplosion,
 	"heatDamage",			CFailureDesc::failHeatDamage,
@@ -18,6 +18,8 @@ static TStaticStringTable<TStaticStringEntry<CFailureDesc::EFailureTypes>, 7> FA
 	"misfire",				CFailureDesc::failMisfire,
 	"noFailure",			CFailureDesc::failNone,
 	"safeMode",				CFailureDesc::failSafeMode,
+
+	"noFire",				CFailureDesc::failNoFire
 	};
 
 CFailureDesc::CFailureDesc (EProfile iProfile)
@@ -64,6 +66,10 @@ CFailureDesc::EFailureTypes CFailureDesc::Failure (CSpaceObject *pSource, CInsta
 
 		case failMisfire:
 			pSource->OnDeviceStatus(pDevice, CDeviceClass::failWeaponMisfire);
+			break;
+
+		case failNoFire:
+			pSource->OnDeviceStatus(pDevice, CDeviceClass::failNoFire);
 			break;
 
 		case failSafeMode:
