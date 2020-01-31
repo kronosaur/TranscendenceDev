@@ -33,6 +33,8 @@ class TPropertyHandler
 
 		template <int N> TPropertyHandler (const std::array<SPropertyDef, N> &Table)
 			{
+			m_Table.GrowToFit(N);
+
 			for (int i = 0; i < N; i++)
 				m_Table.SetAt(Table[i].pProperty, Table[i]);
 			}

@@ -90,7 +90,7 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 	{
 		{	NULL },	//	keyNone
 
-		{	"Autopilot",            "Autopilot",                    SGameKeyData::FLAG_NO_REPEAT },
+		{	"Autopilot",            "Accelerate Time",				SGameKeyData::FLAG_NO_REPEAT },
 		{	"EnableDevices",        "Enable/Disable Devices",       SGameKeyData::FLAG_NO_REPEAT },
 		{	"Communications",       "Communications",               SGameKeyData::FLAG_NO_REPEAT },
 		{	"Dock",                 "Request Dock",                 SGameKeyData::FLAG_NO_REPEAT },
@@ -189,6 +189,16 @@ CGameKeys::CGameKeys (void) :
 
 	for (int i = 0; i < 256; i++)
 		m_CustomMap[i] = keyNone;
+	}
+
+CString CGameKeys::GetCommandID (Keys iCommand)
+
+//	GetCommandID
+//
+//	Returns the command ID
+
+	{
+	return CString(g_GameKeyData[iCommand].pszName, -1, true);
 	}
 
 void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result) const
@@ -392,6 +402,56 @@ CString CGameKeys::GetLayoutName (ELayouts iLayout) const
             return CONSTLIT("(Unknown)");
         }
     }
+
+bool CGameKeys::IsKeyMapped (int iVirtKey, Keys iCommand) const
+
+//	IsKeyMapped
+//
+//	Returns TRUE if the given virtual key maps to the given command.
+
+	{
+	for (int i = 0; i < 256; i++)
+        if (m_iMap[i] == iCommand)
+            {
+            //  If this is a non-standard key, then skip it because
+            //  we won't be able to see it in the keyboard UI.
+
+            if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
+                continue;
+
+            //  Found it
+
+            return true;
+            }
+
+    return false;
+	}
+
+bool CGameKeys::IsKeyDown (Keys iCommand) const
+
+//	IsKeyDown
+//
+//	Returns TRUE if the key for the given command is currently down. This handles
+//	multiple keys mapped to the same command.
+
+	{
+	for (int i = 0; i < 256; i++)
+        if (m_iMap[i] == iCommand)
+            {
+            //  If this is a non-standard key, then skip it because
+            //  we won't be able to see it in the keyboard UI.
+
+            if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
+                continue;
+
+            //  Found it
+
+            if (::uiIsKeyDown(i))
+				return true;
+            }
+
+    return false;
+	}
 
 bool CGameKeys::IsNonRepeatCommand (Keys iCommand) const
 

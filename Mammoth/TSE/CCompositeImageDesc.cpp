@@ -76,6 +76,7 @@
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define EFFECT_ATTRIB							CONSTLIT("effect")
 #define HUE_ATTRIB								CONSTLIT("hue")
+#define ID_ATTRIB								CONSTLIT("id")
 #define IMAGE_ID_ATTRIB							CONSTLIT("imageID")
 #define ROTATION_ATTRIB							CONSTLIT("rotation")
 #define SATURATION_ATTRIB						CONSTLIT("saturation")
@@ -273,7 +274,9 @@ class CTableEntry : public IImageEntry
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual CShipClass *GetShipwreckClass (const CCompositeImageSelector &Selector) const override;
+		virtual int GetVariantByID (const CString &sID) const override;
 		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
+		virtual CString GetVariantID (int iVariant) const override;
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override { return (m_Table.GetCount() == 0 || ((m_Table.GetCount() == 1) && m_Table[0].pImage->IsConstant())); }
@@ -286,6 +289,7 @@ class CTableEntry : public IImageEntry
 			{
 			IImageEntry *pImage;
 			int iChance;
+			CString sID;
 			};
 
 		TArray<SEntry> m_Table;
@@ -533,6 +537,27 @@ CObjectImageArray &CCompositeImageDesc::GetSimpleImage (void)
     return m_pRoot->GetSimpleImage();
     }
 
+int CCompositeImageDesc::GetVariantByID (const CString &sID) const
+
+//	GetVariantByID
+//
+//	Returns a variant index from an ID. If not found, we return -1.
+
+	{
+	if (m_pRoot == NULL)
+		return -1;
+
+	int iVariant = m_pRoot->GetVariantByID(sID);
+	if (iVariant != -1)
+		return iVariant;
+
+	iVariant = strToInt(sID, -1);
+	if (iVariant < 0 || iVariant >= m_pRoot->GetVariantCount())
+		return -1;
+
+	return iVariant;
+	}
+
 bool CCompositeImageDesc::HasShipwreckClass (const CCompositeImageSelector &Selector, CShipClass **retpClass) const
 
 //	HasShipwreckClass
@@ -614,7 +639,7 @@ ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 	else if (strEquals(pDesc->GetTag(), LOOKUP_TAG) || strEquals(pDesc->GetTag(), IMAGE_LOOKUP_TAG))
 		{
 		DWORD dwUNID = pDesc->GetAttributeInteger(IMAGE_ID_ATTRIB);
-		CCompositeImageType *pEntry = Ctx.GetUniverse().FindCompositeImageType(dwUNID);
+		CCompositeImageType *pEntry = Ctx.GetUniverse().FindCompositeImageTypeBound(Ctx, dwUNID);
 		if (pEntry == NULL)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unable to find composite image type: %08x."), dwUNID);
@@ -2353,6 +2378,33 @@ CShipClass *CTableEntry::GetShipwreckClass (const CCompositeImageSelector &Selec
 	return m_Table[iIndex].pImage->GetShipwreckClass(Selector);
 	}
 
+int CTableEntry::GetVariantByID (const CString &sID) const
+
+//	GetVariantByID
+//
+//	Returns a variant index from the ID. If none is found, we return -1.
+
+	{
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		if (strEquals(sID, m_Table[i].sID))
+			return i;
+
+	return -1;
+	}
+
+CString CTableEntry::GetVariantID (int iVariant) const
+
+//	GetVariantID
+//
+//	Returns the ID of the given variant. If not found, we return NULL_STR.
+
+	{
+	if (iVariant < 0 || iVariant >= m_Table.GetCount())
+		return NULL_STR;
+
+	return m_Table[iVariant].sID;
+	}
+
 ALERROR CTableEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc)
 
 //	InitFromXML
@@ -2379,6 +2431,10 @@ ALERROR CTableEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLEl
 
 		if (error = CCompositeImageDesc::InitEntryFromXML(Ctx, pItem, IDGen, &m_Table[i].pImage))
 			return error;
+
+		//	ID
+
+		m_Table[i].sID = pItem->GetAttribute(ID_ATTRIB);
 
 		//	Load the chance
 

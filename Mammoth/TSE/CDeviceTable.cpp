@@ -40,6 +40,7 @@
 #define MAX_COUNT_ATTRIB						CONSTLIT("maxCount")
 #define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
 #define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
+#define MISSILE_DEFENSE_ATTRIB					CONSTLIT("missileDefense")
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define SECONDARY_WEAPON_ATTRIB					CONSTLIT("secondaryWeapon")
 #define SHOT_SEPARATION_SCALE_ATTRIB			CONSTLIT("shotSeparationScale")
@@ -60,7 +61,6 @@ class CSingleDevice : public IDeviceGenerator
 
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) override;
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual bool IsVariant (void) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
@@ -116,7 +116,6 @@ class CLevelTableOfDeviceGenerators : public IDeviceGenerator
 		virtual ~CLevelTableOfDeviceGenerators (void);
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) override;
 		virtual IDeviceGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pDevice; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
@@ -144,7 +143,6 @@ class CTableOfDeviceGenerators : public IDeviceGenerator
 		virtual ~CTableOfDeviceGenerators (void);
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) override;
 		virtual IDeviceGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pDevice; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
@@ -171,7 +169,6 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual Metric CalcHullPoints (void) const override;
-		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) override;
 		virtual IDeviceGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pDevice; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
@@ -321,6 +318,9 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		}
 
 	retDesc->iSlotBonus = pDesc->GetAttributeInteger(HP_BONUS_ATTRIB);
+
+	if (pDesc->GetAttributeBool(MISSILE_DEFENSE_ATTRIB))
+		retDesc->Enhancements.InsertMissileDefense();
 
 	return NOERROR;
 	}
@@ -542,20 +542,6 @@ bool CSingleDevice::FindSlot (SDeviceGenerateCtx &Ctx, const CItem &Item, SDevic
 		return false;
 	}
 
-ALERROR CSingleDevice::FinishBind (SDesignLoadCtx &Ctx)
-
-//	FinishBind
-//
-//	Resolve references
-
-	{
-	if (m_pExtraItems)
-		if (ALERROR error = m_pExtraItems->FinishBind(Ctx))
-			return error;
-
-	return NOERROR;
-	}
-
 bool CSingleDevice::HasItemAttribute (const CString &sAttrib) const
 
 //	HasItemAttribute
@@ -739,6 +725,9 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_bDefaultSlotBonus = true;
 		}
 
+	if (pDesc->GetAttributeBool(MISSILE_DEFENSE_ATTRIB))
+		m_Enhancements.InsertMissileDefense();
+
 	//	Load extra items
 
 	CXMLElement *pItems = pDesc->GetContentElementByTag(ITEMS_TAG);
@@ -834,22 +823,6 @@ void CTableOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed
 
 	for (i = 0; i < m_Table.GetCount(); i++)
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
-	}
-
-ALERROR CTableOfDeviceGenerators::FinishBind (SDesignLoadCtx &Ctx)
-
-//	FinishBind
-//
-//	Resolve references
-
-	{
-	for (int i = 0; i < m_Table.GetCount(); i++)
-		{
-		if (ALERROR error = m_Table[i].pDevice->FinishBind(Ctx))
-			return error;
-		}
-
-	return NOERROR;
 	}
 
 bool CTableOfDeviceGenerators::HasItemAttribute (const CString &sAttrib) const
@@ -1011,22 +984,6 @@ void CLevelTableOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retType
 
 	for (i = 0; i < m_Table.GetCount(); i++)
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
-	}
-
-ALERROR CLevelTableOfDeviceGenerators::FinishBind (SDesignLoadCtx &Ctx)
-
-//	FinishBind
-//
-//	Bind design
-
-	{
-	for (int i = 0; i < m_Table.GetCount(); i++)
-		{
-		if (ALERROR error = m_Table[i].pDevice->FinishBind(Ctx))
-			return error;
-		}
-
-	return NOERROR;
 	}
 
 bool CLevelTableOfDeviceGenerators::HasItemAttribute (const CString &sAttrib) const
@@ -1240,8 +1197,7 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (CSpaceObject *pObj, const CItem 
 		if (m_SlotDesc[i].iMaxCount != -1 
 				&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
 				&& pObj
-				&& pObj->GetDeviceSystem()
-				&& pObj->GetDeviceSystem()->GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
+				&& pObj->GetDeviceSystem().GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
 			continue;
 
 		//	If we get this far, then this is a valid slot.
@@ -1364,20 +1320,6 @@ const CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDes
 			return &m_SlotDesc[i];
 
 	return NULL;
-	}
-
-ALERROR CGroupOfDeviceGenerators::FinishBind (SDesignLoadCtx &Ctx)
-
-//	FinishBind
-//
-//	Resolve references
-
-	{
-	for (int i = 0; i < m_Table.GetCount(); i++)
-		if (ALERROR error = m_Table[i].pDevice->FinishBind(Ctx))
-			return error;
-
-	return NOERROR;
 	}
 
 bool CGroupOfDeviceGenerators::HasItemAttribute (const CString &sAttrib) const

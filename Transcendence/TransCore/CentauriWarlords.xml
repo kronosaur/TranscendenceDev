@@ -674,7 +674,6 @@
 				damage=				"kinetic:1d6+1; momentum:1"
 				fireRate=			"24"
 				missileSpeed=		"40"
-				interaction=		"50"
 				lifetime=			"30"
 				powerUse=			"100"
 
@@ -714,7 +713,6 @@
 				damage=				"kinetic:2d8+1; momentum:1; WMD:5"
 				fireRate=			"16"
 				missileSpeed=		"50"
-				interaction=		"50"
 				lifetime=			"20"
 				powerUse=			"100"
 
@@ -753,7 +751,6 @@
 				damage=				"kinetic:1d3; momentum1"
 				fireRate=			"15"
 				missileSpeed=		"30"
-				interaction=		"30"
 				lifetime=			"30"
 				powerUse=			"10"
 

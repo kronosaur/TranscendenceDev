@@ -190,6 +190,7 @@ static char *CACHED_EVENTS[CItemType::evtCount] =
 		"OnEnable",
 		"OnInstall",
 		"OnRefuel",
+		"GetHUDName",
 	};
 
 static TStaticStringTable<TStaticStringEntry<ItemFates>, 5> FATE_TABLE = {
@@ -246,11 +247,16 @@ bool CItemType::IsAmmunition (void) const
 	if (!IsMissile())
 		return false;
 
-	CDeviceClass *pWeapon;
-	if (!CDeviceClass::FindWeaponFor(const_cast<CItemType *>(this), &pWeapon))
-		return false;
+	//	If any of the weapons that launches is is a missile launcher, then we
+	//	count as a missile.
 
-	return (pWeapon->GetItemType()->GetCategory() != itemcatLauncher);
+	for (int i = 0; i < m_Weapons.GetCount(); i++)
+		if (m_Weapons[i]->GetItemType()->GetCategory() == itemcatLauncher)
+			return false;
+
+	//	Otherwise, we count as ammo
+
+	return true;
 	}
 
 void CItemType::CreateEmptyFlotsam (CSystem &System, 
@@ -659,27 +665,7 @@ CDeviceClass *CItemType::GetAmmoLauncher (int *retiVariant) const
 //	Returns a weapon that can launch this ammo (or NULL)
 
 	{
-	int i;
-
-	for (i = 0; i < GetUniverse().GetItemTypeCount(); i++)
-		{
-		CItemType *pType = GetUniverse().GetItemType(i);
-		CDeviceClass *pWeapon;
-
-		if (pType->IsDevice() 
-				&& (pWeapon = pType->GetDeviceClass()))
-			{
-			int iVariant = pWeapon->GetAmmoVariant(this);
-			if (iVariant != -1)
-				{
-				if (retiVariant)
-					*retiVariant = iVariant;
-				return pWeapon;
-				}
-			}
-		}
-
-	return NULL;
+	return (m_Weapons.GetCount() > 0 ? m_Weapons[0] : NULL);
 	}
 
 ItemCategories CItemType::GetCategory (void) const
@@ -1166,8 +1152,10 @@ CWeaponFireDesc *CItemType::GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError
             //  We prefer the item from the context. NOTE: We assume that the
             //  context has already validated that this ammo is compatible.
 
+#if 0
             else if (!(pAmmo = &Ctx.GetVariantItem())->IsEmpty())
                 { }
+#endif
 
             //  If we are the same weapon, then we use the first ammo item
 
@@ -1283,12 +1271,11 @@ void CItemType::InitRandomNames (void)
 
 //	InitRandomNames
 //
-//	Initialize random names
+//	Initialize random names. NOTE: This is called from inside BindDesign, so we
+//	need to deal with the fact that other item types might not yet be bound.
 
 	{
 	DEBUG_TRY
-
-	int i;
 
 	//	If we don't have random names for other items then we're done
 
@@ -1300,7 +1287,7 @@ void CItemType::InitRandomNames (void)
 
 	TArray<int> Randomize;
 	Randomize.InsertEmpty(iCount);
-	for (i = 0; i < iCount; i++)
+	for (int i = 0; i < iCount; i++)
 		Randomize[i] = i;
 
 	Randomize.Shuffle();
@@ -1311,9 +1298,11 @@ void CItemType::InitRandomNames (void)
 
 	//	Loop over all items and assign each item that has us as the
 	//	unknown placeholder.
+	//
+	//	NOTE: This code must work even if some of the items are not yet bound.
 
 	int j = 0;
-	for (i = 0; i < GetUniverse().GetItemTypeCount(); i++)
+	for (int i = 0; i < GetUniverse().GetItemTypeCount(); i++)
 		{
 		CItemType *pType = GetUniverse().GetItemType(i);
 		int iUnknownIndex;
@@ -1353,13 +1342,17 @@ bool CItemType::IsMissile (void) const
 
 //	IsMissile
 //
-//	Returns TRUE if this is a missile
+//	Returns TRUE if this is a missile/ammo fired by some weapon.
 
 	{
 	if (m_pMissile)
 		return true;
 
-	return HasLiteralAttribute(STR_MISSILE);
+	else if (m_Weapons.GetCount() > 0)
+		return true;
+
+	else
+		return HasLiteralAttribute(STR_MISSILE);
 	}
 
 bool CItemType::IsUnknownType (DWORD dwUNID, int *retiUnknownIndex) const
@@ -1800,38 +1793,6 @@ CEffectCreator *CItemType::OnFindEffectCreator (const CString &sUNID)
 		return NULL;
 	}
 
-ALERROR CItemType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
-
-//  OnFinishBindDesign
-//
-//  Done with binding
-
-    {
-    ALERROR error;
-
-	if (m_pComponents)
-		{
-		if (error = m_pComponents->FinishBind(Ctx))
-			return error;
-
-		InitComponents();
-		}
-
-    if (m_pDevice)
-        if (error = m_pDevice->FinishBind(Ctx))
-            return error;
-
-    if (m_pArmor)
-        if (error = m_pArmor->FinishBindDesign(Ctx))
-            return error;
-
-    if (m_pMissile)
-        if (error = m_pMissile->FinishBindDesign(Ctx))
-            return error;
-
-    return NOERROR;
-    }
-
 const CEconomyType &CItemType::OnGetDefaultCurrency (void) const
 
 //	OnGetDefaultCurrency
@@ -1966,10 +1927,9 @@ ALERROR CItemType::OnPrepareBindDesign (SDesignLoadCtx &Ctx)
 //	Get ready to bind
 
 	{
-	//	Delete the weapon relationship until we've bound everything and known
-	//	what we've got.
-
-	m_Weapons.DeleteAll();
+	if (m_pDevice)
+		if (ALERROR error = m_pDevice->PrepareBind(Ctx))
+			return error;
 
 	//	Done
 
@@ -2086,6 +2046,19 @@ void CItemType::OnReinit (void)
 
 	InitRandomNames();
 	InitComponents();
+	}
+
+void CItemType::OnUnbindDesign (void)
+
+//	OnUnbindDesign
+//
+//	Reset
+
+	{
+	//	Delete the weapon relationship until we've bound everything and know
+	//	what we've got.
+
+	m_Weapons.DeleteAll();
 	}
 
 void CItemType::OnWriteToStream (IWriteStream *pStream)

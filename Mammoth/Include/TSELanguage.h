@@ -43,6 +43,7 @@ enum NounPhraseFlags
 	nounNoDeterminer		= 0x00040000,	//	No count or article, but pluralize if count > 1
 	nounNoQuotes			= 0x00080000,	//	Convert double-quotes to single-quotes (for use inside quoted text)
 	nounEscapeQuotes		= 0x00100000,	//	Convert double-quotes to escaped double-quotes
+	nounHUDName				= 0x00200000,	//  Name to be displayed on the HUD
 	};
 
 class CLanguage
@@ -103,7 +104,7 @@ class CLanguage
 		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);
 		static bool FindGenderedWord (const CString &sWord, GenomeTypes iGender, CString *retsResult = NULL);
 		static ICCItemPtr GetNounFlags (DWORD dwFlags);
-		static DWORD LoadNameFlags (CXMLElement *pDesc);
+		static DWORD LoadNameFlags (const CXMLElement *pDesc);
 		static void ParseItemName (const CString &sName, CString *retsRoot, CString *retsModifiers);
 		static void ParseLabelDesc (const CString &sLabelDesc, CString *retsLabel, CString *retsKey = NULL, int *retiKey = NULL, TArray<ELabelAttribs> *retAttribs = NULL);
 		static DWORD ParseNounFlags (const CString &sValue);
@@ -134,6 +135,13 @@ class CLanguageDataBlock
 			ICCItemPtr pCode;
 			};
 
+		struct SParams
+			{
+			const CSpaceObject *pSource = NULL;
+			const CItem *pItem = NULL;
+			ICCItem *pData = NULL;
+			};
+
 		CLanguageDataBlock (void) { }
 		CLanguageDataBlock (const CLanguageDataBlock &Src) { Copy(Src); }
 		~CLanguageDataBlock (void) { CleanUp(); }
@@ -148,11 +156,10 @@ class CLanguageDataBlock
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline bool IsEmpty (void) const { return (m_Data.GetCount() == 0); }
 		void MergeFrom (const CLanguageDataBlock &Source);
-		bool Translate (const CDesignType &Type, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
-		bool Translate (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
-		bool TranslateText (const CDesignType &Type, const CString &sID, ICCItem *pData, CString *retsText) const;
-		bool TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
-		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
+		bool Translate (const CDesignType &Type, const CString &sID, const SParams &Params, ICCItemPtr &retResult) const;
+		bool TranslateText (const CDesignType &Type, const CString &sID, const SParams &Params, CString *retsText) const;
+
+		static const CLanguageDataBlock m_Null;
 
 	private:
 		enum ETranslateResult
@@ -179,9 +186,7 @@ class CLanguageDataBlock
 		void Copy (const CLanguageDataBlock &Src);
 		bool IsCode (const CString &sText) const;
 		CString ParseTextBlock (const CString &sText) const;
-		ETranslateResult TranslateFull (const CDesignType &Type, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
-		ETranslateResult TranslateFull (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
-		ETranslateResult TranslateFull (const CItem &Item, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
+		ETranslateResult TranslateEval (const CDesignType &Type, const CString &sID, const SParams &Params, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
 		const SEntry *TranslateTry (const CString &sID, ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText = NULL, CString *retsText = NULL) const;
 
 		TSortMap<CString, SEntry> m_Data;
@@ -193,7 +198,7 @@ class CNameDesc
 		CNameDesc (void);
 
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		ALERROR InitFromXMLRoot (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR InitFromXMLRoot (SDesignLoadCtx &Ctx, const CXMLElement *pDesc);
 //		CString GenerateName (CSystem *pSystem, DWORD *retdwNameFlags) const;
 		CString GenerateName (TSortMap<CString, CString> *pParams = NULL, DWORD *retdwNameFlags = NULL) const;
 		const CString &GetConstantName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwConstantNameFlags; return m_sConstantName; }

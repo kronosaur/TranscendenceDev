@@ -122,13 +122,13 @@
 							<!-- The main stations are all in a group -->
 
 							<Siblings angleInc="180">
-								<Location attributes="startonMetropolis"/>
+								<Location attributes="startonMetropolis" required="true"/>
 							</Siblings>
 
 							<!-- The Sisters of Domina is opposite -->
 
 							<Siblings radiusInc="12">
-								<Location attributes="sistersOfDomina"/>
+								<Location attributes="sistersOfDomina" required="true"/>
 							</Siblings>
 						</Group>
 
@@ -180,7 +180,7 @@
 					<!-- Arco Vaugh's base is somewhere around here -->
 
 					<Siblings count="1" angleInc="20-340" radiusInc="-20-180">
-						<Location attributes="arcoVaughnBase"/>
+						<Location attributes="arcoVaughnBase" required="true"/>
 					</Siblings>
 
 					<!-- There are a few other Centauri bases here -->
@@ -466,10 +466,10 @@
 		<Events>
 			<OnCreate>
 				(block (centauriStations)
-					; Devices greater than level III are not for sale in Eridani
+					; Armor above level 4 and devices above level 3 are not for sale in Eridani
 					(enum (sysFindObject Nil "TF +populated;") theObj
-						(enum (objGetItems theObj "dU") theItem
-							(if (and (gr (itmGetLevel theItem) 3) (objGetSellPrice theObj theItem))
+						(enum (objGetItems theObj "dU L:4-; | aU L:5-;") theItem
+							(if (objGetSellPrice theObj theItem)
 								(objRemoveItem theObj theItem)
 								)
 							)

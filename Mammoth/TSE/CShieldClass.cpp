@@ -729,7 +729,7 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 	//	Load damage adjustment
 
 	pShield->m_iDamageAdjLevel = pDesc->GetAttributeIntegerBounded(DAMAGE_ADJ_LEVEL_ATTRIB, 1, MAX_ITEM_LEVEL, InitCtx.pType->GetLevel());
-	if (error = pShield->m_DamageAdj.InitFromXML(Ctx, pDesc))
+	if (error = pShield->m_DamageAdj.InitFromXML(Ctx, *pDesc))
 		return error;
 
 	//	Load absorb adjustment; if attribute not found, assume 100% for everything
@@ -1459,7 +1459,7 @@ int CShieldClass::GetReflectChance (const CDeviceItem &DeviceItem, const CItemEn
 	return iReflect;
 	}
 
-void CShieldClass::GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus)
+void CShieldClass::GetStatus (const CInstalledDevice *pDevice, const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus)
 
 //	GetStatus
 //
@@ -1618,7 +1618,7 @@ ALERROR CShieldClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	//	If the hit effect is NULL, then use default
 
 	if (m_pHitEffect == NULL)
-		m_pHitEffect.Set(GetUniverse().FindEffectType(g_ShieldEffectUNID));
+		m_pHitEffect.Set(GetUniverse().FindEffectTypeBound(Ctx, g_ShieldEffectUNID));
 
 	return NOERROR;
 	}

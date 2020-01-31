@@ -62,6 +62,7 @@
 #define VARIANTS_TABLE_TAG				CONSTLIT("VariantTable")
 #define Z_ADJUST_TAG					CONSTLIT("ZAdjust")
 
+#define ALLOW_3D_LOCATIONS_ATTRIB		CONSTLIT("allow3DLocations")
 #define ANGLE_ATTRIB					CONSTLIT("angle")
 #define ANGLE_ADJ_ATTRIB				CONSTLIT("angleAdj")
 #define ANGLE_INC_ATTRIB				CONSTLIT("angleInc")
@@ -83,7 +84,6 @@
 #define ENCOUNTERS_ATTRIB				CONSTLIT("encountersCount")
 #define ERODE_ATTRIB					CONSTLIT("erode")
 #define EVENT_HANDLER_ATTRIB			CONSTLIT("eventHandler")
-#define EXCLUDE_LOCATIONS_ATTRIB		CONSTLIT("excludeLocations")
 #define EXCLUSION_RADIUS_ATTRIB			CONSTLIT("exclusionRadius")
 #define GAP_WIDTH_ATTRIB				CONSTLIT("gapWidth")
 #define ID_ATTRIB						CONSTLIT("id")
@@ -125,6 +125,7 @@
 #define RADIUS_ATTRIB					CONSTLIT("radius")
 #define RADIUS_DEC_ATTRIB				CONSTLIT("radiusDec")
 #define RADIUS_INC_ATTRIB				CONSTLIT("radiusInc")
+#define REQUIRED_ATTRIB					CONSTLIT("required")
 #define ROTATION_ATTRIB					CONSTLIT("rotation")
 #define SEGMENT_ATTRIB			        CONSTLIT("segment")
 #define SEPARATE_ENEMIES_ATTRIB			CONSTLIT("separateEnemies")
@@ -239,6 +240,7 @@ static char g_ProbabilitiesAttrib[] = "probabilities";
 ALERROR AddAttribute (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc);
 ALERROR AddLabelAttributes (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc);
 ALERROR AddTerritory (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc);
+ALERROR ApplyStationCreateOptions (SSystemCreateCtx &Ctx, const COrbit &OrbitDesc, CStation &Station, const CStationCreateOptions &StationCreate);
 bool CheckForOverlap (SSystemCreateCtx *pCtx, const CVector &vPos);
 ALERROR ChooseRandomLocation (SSystemCreateCtx *pCtx, 
 							  const SLocationCriteria &Criteria, 
@@ -272,8 +274,8 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 						const COrbit &OrbitDesc);
 ALERROR CreateRandomStation (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
 ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc);
-ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, CXMLElement *pSatellites, const COrbit &OrbitDesc);
-ALERROR CreateShipsForStation (SSystemCreateCtx &Ctx, CSpaceObject *pStation, CXMLElement *pShips);
+ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, const CXMLElement *pSatellites, const COrbit &OrbitDesc);
+ALERROR CreateShipsForStation (SSystemCreateCtx &Ctx, CSpaceObject *pStation, const CXMLElement *pShips);
 ALERROR CreateSiblings (SSystemCreateCtx *pCtx, 
 						CXMLElement *pObj, 
 						const COrbit &OrbitDesc);
@@ -307,7 +309,7 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 									bool *retbAddToCache);
 ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocationCriteria *retCriteria);
 bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric rRadius);
-ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLElement *pDesc, const COrbit &OrbitDesc);
+ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CXMLElement &XMLDesc, const COrbit &OrbitDesc);
 inline void PopDebugStack (SSystemCreateCtx *pCtx) { if (pCtx->GetUniverse().InDebugMode()) pCtx->DebugStack.Pop(); }
 inline void PushDebugStack (SSystemCreateCtx *pCtx, const CString &sLine) { if (pCtx->GetUniverse().InDebugMode()) pCtx->DebugStack.Push(sLine); }
 
@@ -632,7 +634,7 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 	int iCount;
 	int iPercent;
 	if (pDesc->FindAttributeInteger(PERCENT_FULL_ATTRIB, &iPercent))
-		iCount = iPercent * iLocationCount / 100;
+		iCount = mathAdjust(iLocationCount, iPercent);
 	else
 		iCount = GetDiceCountFromAttribute(pDesc->GetAttribute(COUNT_ATTRIB));
 
@@ -1074,12 +1076,19 @@ ALERROR CreateLabel (SSystemCreateCtx *pCtx,
 	if (pCtx->ZAdjust.bIgnoreLocations)
 		{
 		LocationOrbit.SetInclination(0.0);
+		LocationOrbit.SetFocus(LocationOrbit.GetFocus());
 		}
+
+	//	Options
+
+	DWORD dwLocationFlags = 0;
+	if (pObj->GetAttributeBool(REQUIRED_ATTRIB))
+		dwLocationFlags |= CSystem::FLAG_REQUIRED_LOCATION;
 
 	//	Add the label to the list
 
 	CLocationDef *pLoc;
-	pCtx->System.CreateLocation(NULL_STR, LocationOrbit, sAttribs, &pLoc);
+	pCtx->System.CreateLocation(NULL_STR, LocationOrbit, sAttribs, dwLocationFlags, &pLoc);
 
 	//	Keep stats
 
@@ -1265,7 +1274,7 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 	int iCount;
 	int iPercent;
 	if (pDesc->FindAttributeInteger(PERCENT_FULL_ATTRIB, &iPercent))
-		iCount = Max(0, iPercent * Table.GetCount() / 100);
+		iCount = mathAdjust(Table.GetCount(), Min(Max(0, iPercent), 100));
 	else
 		iCount = GetDiceCountFromAttribute(pDesc->GetAttribute(COUNT_ATTRIB));
 
@@ -1885,7 +1894,7 @@ ALERROR CreateRandomStation (SSystemCreateCtx *pCtx,
 
 	//	Modify the station, if necessary
 
-	if (error = ModifyCreatedStation(pCtx, pStation, pDesc, OrbitDesc))
+	if (error = ModifyCreatedStation(*pCtx, *pStation, *pDesc, OrbitDesc))
 		return error;
 
 	PopDebugStack(pCtx);
@@ -2009,7 +2018,7 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 	return NOERROR;
 	}
 
-ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, CXMLElement *pSatellites, const COrbit &OrbitDesc)
+ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, const CXMLElement *pSatellites, const COrbit &OrbitDesc)
 
 //	CreateSatellites
 //
@@ -2247,7 +2256,7 @@ ALERROR CreateSiblings (SSystemCreateCtx *pCtx,
 	return NOERROR;
 	}
 
-ALERROR CreateShipsForStation (SSystemCreateCtx &CreateCtx, CSpaceObject *pStation, CXMLElement *pShips)
+ALERROR CreateShipsForStation (SSystemCreateCtx &CreateCtx, CSpaceObject *pStation, const CXMLElement *pShips)
 
 //	CreateShipsForStation
 //
@@ -2639,15 +2648,19 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		}
 	else if (strEquals(sTag, LOOKUP_TAG))
 		{
-		CString sTable = pObj->GetAttribute(TABLE_ATTRIB);
-
 		//	If we've got an offset, change the orbit
 
 		COrbit NewOrbit;
 		const COrbit *pOrbitDesc = ComputeOffsetOrbit(pObj, OrbitDesc, &NewOrbit);
 
+		//	If we've got an station create changes, load them.
+
+		CSmartStationCreateOptions SmartStationOptions(*pCtx);
+		SmartStationOptions.InitFromSimpleXML(*pObj);
+
 		//	Create
 
+		CString sTable = pObj->GetAttribute(TABLE_ATTRIB);
 		if (error = pCtx->System.CreateLookup(pCtx, sTable, *pOrbitDesc, pObj))
 			return error;
 		}
@@ -3143,7 +3156,7 @@ ALERROR CreateZAdjust (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit 
 	pCtx->ZAdjust.ZOffset.LoadFromXML(pDesc->GetAttribute(Z_OFFSET_ATTRIB));
 	pCtx->ZAdjust.rScale = GetScale(pDesc);
 
-	pCtx->ZAdjust.bIgnoreLocations = pDesc->GetAttributeBool(EXCLUDE_LOCATIONS_ATTRIB);
+	pCtx->ZAdjust.bIgnoreLocations = !pDesc->GetAttributeBool(ALLOW_3D_LOCATIONS_ATTRIB);
 
 	//	Create all objects.
 
@@ -3580,115 +3593,93 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 	return true;
 	}
 
-ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLElement *pDesc, const COrbit &OrbitDesc)
-
-//	ModifyCreatedStation
-//
-//	Modifies a newly created station based on commands in the original element
-//	descriptor.
-
+ALERROR ApplyStationCreateOptions (SSystemCreateCtx &Ctx, const COrbit &OrbitDesc, CStation &Station, const CStationCreateOptions &StationCreate)
 	{
-	ALERROR error;
-
-	ASSERT(pStation);
-	if (pStation == NULL)
-		return ERR_FAIL;
-
 	//	Set the name of the station, if specified by the system
 
-	CNameDesc Name;
-	if (error = Name.InitFromXMLRoot(SDesignLoadCtx(), pDesc))
-		return error;
-
-	if (!Name.IsEmpty())
+	if (!StationCreate.GetNameDesc().IsEmpty())
 		{
 		DWORD dwNameFlags;
-		CString sName = Name.GenerateName(&pCtx->NameParams, &dwNameFlags);
-		pStation->SetName(sName, dwNameFlags);
+		CString sName = StationCreate.GetNameDesc().GenerateName(&Ctx.NameParams, &dwNameFlags);
+		Station.SetName(sName, dwNameFlags);
 		}
 
 	//	If we want to show the orbit for this station, set the orbit desc
 
-	if (pDesc->GetAttributeBool(SHOW_ORBIT_ATTRIB)
-			&& !OrbitDesc.IsNull())
-		pStation->SetMapOrbit(OrbitDesc);
+	if (StationCreate.ForceMapOrbit() && !OrbitDesc.IsNull())
+		Station.SetMapOrbit(OrbitDesc);
 
 	//	Set the image variant
 
-	int iVariant;
-	if (pDesc->FindAttributeInteger(IMAGE_VARIANT_ATTRIB, &iVariant))
-		pStation->SetImageVariant(iVariant);
+	if (!StationCreate.GetImageVariant().IsBlank())
+		Station.SetImageVariant(StationCreate.GetImageVariant());
 
 	//	Paint layer
 
-	CString sPaintLayer;
-	if (pDesc->FindAttribute(PAINT_LAYER_ATTRIB, &sPaintLayer) 
-			&& strEquals(sPaintLayer, CONSTLIT("overhang")))
-		pStation->SetPaintOverhang();
+	if (StationCreate.GetPaintOrder() != CPaintOrder::none)
+		Station.SetPaintOrder(StationCreate.GetPaintOrder());
 
 	//	If this station is a gate entry-point, then add it to
 	//	the table in the system.
 
-	CString sEntryPoint = pDesc->GetAttribute(OBJ_NAME_ATTRIB);
-	if (!sEntryPoint.IsBlank())
-		pCtx->System.NameObject(sEntryPoint, *pStation);
+	if (!StationCreate.GetObjName().IsBlank())
+		Ctx.System.NameObject(StationCreate.GetObjName(), Station);
 
 	//	If we don't want to show a map label
 
-	bool bValue;
-	if (pDesc->FindAttributeBool(SHOW_MAP_LABEL_ATTRIB, &bValue))
+	if (StationCreate.ForceMapLabel())
 		{
-		pStation->SetForceMapLabel(bValue);
-		pStation->SetSuppressMapLabel(!bValue);
+		Station.SetForceMapLabel(true);
+		Station.SetSuppressMapLabel(false);
 		}
-	else if (pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB))
-		pStation->SetSuppressMapLabel();
+	else if (StationCreate.SuppressMapLabel())
+		{
+		Station.SetForceMapLabel(false);
+		Station.SetSuppressMapLabel(true);
+		}
 
 	//	No reinforcements
 
-	if (pDesc->GetAttributeBool(NO_CONSTRUCTION_ATTRIB))
-		pStation->SetNoConstruction();
+	if (StationCreate.SuppressConstruction())
+		Station.SetNoConstruction();
 
-	if (pDesc->GetAttributeBool(NO_REINFORCEMENTS_ATTRIB))
-		pStation->SetNoReinforcements();
+	if (StationCreate.SuppressReinforcements())
+		Station.SetNoReinforcements();
 
 	//	Create additional satellites
 
-	CXMLElement *pSatellites = pDesc->GetContentElementByTag(SATELLITES_TAG);
-	if (pSatellites)
+	if (const CXMLElement *pSatellites = StationCreate.GetSatellitesXML())
 		{
-		if (error = CreateSatellites(pCtx, pStation, pSatellites, OrbitDesc))
+		if (ALERROR error = CreateSatellites(&Ctx, &Station, pSatellites, OrbitDesc))
 			return error;
 		}
 
 	//	See if we need to create additional ships
 
-	CXMLElement *pShips = pDesc->GetContentElementByTag(SHIPS_TAG);
-	if (pShips)
+	if (const CXMLElement *pShips = StationCreate.GetShipsXML())
 		{
-		if (error = CreateShipsForStation(*pCtx, pStation, pShips))
+		if (ALERROR error = CreateShipsForStation(Ctx, &Station, pShips))
 			{
-			pCtx->sError = CONSTLIT("Unable to create ships for station");
+			Ctx.sError = CONSTLIT("Unable to create ships for station");
 			return error;
 			}
 		}
 
 	//	If we have a <Trade> element, then add it to the object.
 
-	CXMLElement *pTrade = pDesc->GetContentElementByTag(TRADE_TAG);
-	if (pTrade)
+	if (const CXMLElement *pTrade = StationCreate.GetTradeXML())
 		{
 		SDesignLoadCtx LoadCtx;
 		CTradingDesc *pNewTrade;
-		if (error = CTradingDesc::CreateFromXML(LoadCtx, pTrade, &pNewTrade))
+		if (ALERROR error = CTradingDesc::CreateFromXML(LoadCtx, pTrade, &pNewTrade))
 			{
-			pCtx->sError = strPatternSubst(CONSTLIT("Unable to load <Trade> element: %s"), LoadCtx.sError);
+			Ctx.sError = strPatternSubst(CONSTLIT("Unable to load <Trade> element: %s"), LoadCtx.sError);
 			return error;
 			}
 
 		//	Add to station
 
-		pStation->AddTradeDesc(*pNewTrade);
+		Station.AddTradeDesc(*pNewTrade);
 
 		//	Done
 
@@ -3697,9 +3688,42 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 
 	//	If we have an OnCreate block then add it to the set of deferred code
 
-	CXMLElement *pOnCreate = pDesc->GetContentElementByTag(ON_CREATE_EVENT);
-	if (pOnCreate)
-		pCtx->Events.AddDeferredEvent(pStation, pCtx->pExtension, pOnCreate);
+	if (const CXMLElement *pOnCreate = StationCreate.GetOnCreateXML())
+		Ctx.Events.AddDeferredEvent(&Station, Ctx.pExtension, pOnCreate);
+
+	//	Done
+
+	return NOERROR;
+	}
+
+ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CXMLElement &XMLDesc, const COrbit &OrbitDesc)
+
+//	ModifyCreatedStation
+//
+//	Modifies a newly created station based on commands in the original element
+//	descriptor.
+
+	{
+	//	Load any station modifications on top of the station options.
+
+	CStationCreateOptions StationCreate;
+	if (ALERROR error = StationCreate.InitFromXML(Ctx, XMLDesc))
+		return error;
+
+	//	If already have station options in the context block, we need to merge 
+	//	them.
+
+	if (Ctx.bHasStationCreate)
+		{
+		CStationCreateOptions Merged = Ctx.StationCreate;
+		Merged.Merge(StationCreate);
+		StationCreate = Merged;
+		}
+
+	//	Apply options
+
+	if (ALERROR error = ApplyStationCreateOptions(Ctx, OrbitDesc, Station, StationCreate))
+		return error;
 
 	//	Done
 
@@ -4053,7 +4077,7 @@ ALERROR CSystem::CreateLookup (SSystemCreateCtx *pCtx, const CString &sTable, co
 
 	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Lookup table=%s"), sTable));
 
-	//	Keep track of the current extension, because we may change it below
+	//	Keep track of some context properties in case we change them
 
 	CExtension *pOldExtension = pCtx->pExtension;
 
@@ -4465,12 +4489,12 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 
 	//	If this is a satellite, then add it as a subordinate
 
-	if (pStation && pCtx->pStation && pStation->CanAttack())
+	if (pStation && pCtx->pStation && (pStation->CanAttack() || CreateCtx.bIsSegment))
 		pCtx->pStation->AddSubordinate(pStation);
 
 	//	Create any satellites of the station
 
-	CXMLElement *pSatellites = pType->GetSatellitesDesc();
+	const CXMLElement *pSatellites = pType->GetSatellitesDesc();
 	if (pSatellites 
 			&& CreateCtx.bCreateSatellites
 			&& CreateCtx.pOrbit)
@@ -4592,6 +4616,12 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	if (pObj)
 		pStation = pObj->AsStation();
 
+	if (pStation == NULL)
+		{
+		pCtx->sError = CONSTLIT("No station created.");
+		return ERR_FAIL;
+		}
+
 #ifdef DEBUG_STATION_PLACEMENT2
 	if (pStation->GetScale() == scaleStructure)
 		{
@@ -4613,7 +4643,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 
 	//	Modify the station based on attributes
 
-	if (error = ModifyCreatedStation(pCtx, pStation, pDesc, OrbitDesc))
+	if (error = ModifyCreatedStation(*pCtx, *pStation, *pDesc, OrbitDesc))
 		return error;
 
 	//	Done

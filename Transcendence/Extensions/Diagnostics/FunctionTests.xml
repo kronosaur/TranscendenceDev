@@ -286,6 +286,24 @@
 					{	test: '(= nil '(1 2 3))			result: Nil }
 					{	test: '(!= nil '(1 2 3))			result: True }
 
+					{	test: '(= { } { })					result: True }
+					{	test: '(= nil { })					result: True }
+					{	test: '(= nil { a:1 })				result: Nil }
+
+					{	test: '(= { a:1 b:'foo }
+								{ b:'foo a:1 }
+								)							result: True }
+
+					{	test: '(= { a:1 b:nil } { a:1 })		result: True }
+
+					{	test: '(= (set@ { a:1 b:'foo } 'b nil)
+								{ a:1 }
+								)							result: True }
+
+					{	test: '(= (struct '(a 1) '(b nil))
+								{ a:1 }
+								)							result: True }
+
 					;	Conversion code
 
 					{	test: '(convertTo 'int32 5)			result: 5 }
@@ -313,6 +331,32 @@
 					{	test: '(if (list) 1)				result: Nil }
 					{	test: '(if nil 1)					result: Nil }
 
+					;	Map
+
+					{	test: '(map '(1 2 3 4) i i)			result: '(1 2 3 4) }
+					{	test: '(map '(1 2 3 4) i (+ i i))	result: '(2 4 6 8) }
+					{	test: '(map '(1 2 Nil 4) 'excludeNil i
+							i
+							)								result: '(1 2 4) }
+					{	test: '(map '(1.5 2.5 3.5 4) i i)	result: '(1.5 2.5 3.5 4) }
+					{	test: '(map '(1 2 3 4) 'reduceMin i
+							i
+							)								result: 1 }
+					{	test: '(map '(1 2 3 4) 'reduceMax i
+							i
+							)								result: 4 }
+					{	test: '(map '(1 2 3 4) 'reduceMin i
+							(+ i 2)
+							)								result: 3 }
+					{	test: '(map '(1 2 3 4) '(original reduceMin) i
+							(+ i 2)
+							)								result: 1 }
+					{	test: '(map '(1 2 3 4) 'reduceSum i
+							i
+							)								result: 10 }
+					{	test: '(map '(1 2.5 3 4) 'reduceSum i
+							i
+							)								result: 10.5 }
 					))
 				]]>
 			</OnGlobalStartDiagnostics>

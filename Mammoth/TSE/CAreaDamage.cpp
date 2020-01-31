@@ -63,6 +63,12 @@ ALERROR CAreaDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CAreaDamage *
 
 	pArea->m_pSovereign = Ctx.Source.GetSovereign();
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pArea, pArea->GetData());
+
 	//	Create a painter instance
 
 	pArea->m_pPainter = Ctx.pDesc->CreateShockwavePainter();

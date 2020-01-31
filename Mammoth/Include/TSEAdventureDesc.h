@@ -12,14 +12,13 @@ class CAdventureDesc : public CDesignType
 
 		void FireOnGameEnd (const CGameRecord &Game, const SBasicGameStats &BasicStats);
 		void FireOnGameStart (void);
-		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ArmorDamageAdj[iLevel - 1]; }
 		DWORD GetBackgroundUNID (void) const { return m_dwBackgroundUNID; }
 		const CEconomyType &GetDefaultCurrency (void) const;
 		CString GetDesc (void);
 		const CXMLElement &GetEncounterOverrideXML (void) const { return m_EncounterOverridesXML; }
+		const CEngineOptions &GetEngineOptions (void) const { return m_EngineOptions; }
 		DWORD GetExtensionUNID (void) const { return m_dwExtensionUNID; }
 		const CString &GetName (void) const { return m_sName; }
-		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { return &m_ShieldDamageAdj[iLevel - 1]; }
 		DWORD GetStartingMapUNID (void) const { return m_dwStartingMap; }
 		const CString &GetStartingNodeID (void) const { return m_sStartingNodeID; }
 		const CString &GetStartingPos (void) const { return m_sStartingPos; }
@@ -36,11 +35,6 @@ class CAdventureDesc : public CDesignType
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual DesignTypes GetType (void) const override { return designAdventureDesc; }
 
-		//	Helpers
-
-		static const CDamageAdjDesc *GetDefaultArmorDamageAdj (int iLevel);
-		static const CDamageAdjDesc *GetDefaultShieldDamageAdj (int iLevel);
-
 	protected:
 		//	CDesignType overrides
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
@@ -48,7 +42,6 @@ class CAdventureDesc : public CDesignType
 		virtual void OnUnbindDesign (void) override { m_fIsCurrentAdventure = false; }
 
 	private:
-		static void InitDefaultDamageAdj (void);
 
 		DWORD m_dwExtensionUNID = 0;
 
@@ -61,9 +54,7 @@ class CAdventureDesc : public CDesignType
 		CString m_sStartingNodeID;				//	NodeID where we start
 		CString m_sStartingPos;					//	Named object at which we start
 
-		CDamageAdjDesc m_ArmorDamageAdj[MAX_ITEM_LEVEL];
-		CDamageAdjDesc m_ShieldDamageAdj[MAX_ITEM_LEVEL];
-
+		CEngineOptions m_EngineOptions;			//	Options for engine behavior
 		CXMLElement m_EncounterOverridesXML;
 
 		CEconomyTypeRef m_pDefaultCurrency;		//	Default currency (mostly used for UI)
@@ -73,4 +64,3 @@ class CAdventureDesc : public CDesignType
 		DWORD m_fIncludeOldShipClasses:1;		//	TRUE if we should include older extensions (even if 
 												//		they don't match starting ship criteria).
 	};
-

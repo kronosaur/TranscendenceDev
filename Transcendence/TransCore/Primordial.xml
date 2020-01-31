@@ -71,14 +71,14 @@
 
 	<StationType UNID="&stPrimordialAsteroidSizeA;"
 		name=				"(primordial asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&baPrimordialAsteroid;"
+
 		scale=				"world"
 		size=				"6"
 
-		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
-
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsPrimordialAsteroidSizeA;"/>
 
 		<Items>
@@ -87,27 +87,20 @@
 				<Lookup chance="8" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 80)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size B Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeB;"
 		name=				"(primordial asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&baPrimordialAsteroid;"
+
 		scale=				"world"
 		size=				"55"
 
-		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
-
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-
 		<ImageLookup imageID="&rsPrimordialAsteroidSizeB;"/>
 
 		<Items>
@@ -116,22 +109,17 @@
 				<Lookup chance="8" count="1d6" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 80)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size C Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeC;"
 		name=				"(primordial asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&baPrimordialAsteroid;"
+
 		scale=				"world"
 		size=				"250"
-
-		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -143,22 +131,17 @@
 				<Lookup chance="8" count="1d8" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 80)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size D Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeD;"
 		name=				"(primordial asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&baPrimordialAsteroid;"
+
 		scale=				"world"
 		size=				"740"
-
-		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -170,12 +153,6 @@
 				<Lookup chance="8" count="1d10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 80)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size E Primordial Planetoid -->
@@ -324,6 +301,20 @@
 				imageWidth="2048" 
 				imageHeight="2048"/>
 	</SpaceEnvironmentType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&baPrimordialAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="primordial"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
 
 <!-- RESOURCES -->
 	

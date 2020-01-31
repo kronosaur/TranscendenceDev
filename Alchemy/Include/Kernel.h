@@ -649,6 +649,7 @@ class CString : public CObject
 		static CString INTMakeString (void *pvStore);
 		static void INTSetStorage (CString &sString, void *pStore);
 		void INTTakeStorage (void *pStore);
+		static void InitLowerCaseAbsoluteTable (void);
 
 		//	Debugging APIs
 
@@ -697,8 +698,6 @@ class CString : public CObject
 		static constexpr DWORD FLAG_PRESERVE_CONTENTS =		0x00000001;
 		static constexpr DWORD FLAG_GEOMETRIC_GROWTH =		0x00000002;
 		void Size (int iLength, DWORD dwFlags = 0);
-
-		static void InitLowerCaseAbsoluteTable (void);
 
 		PSTORESTRUCT m_pStore;
 
@@ -971,6 +970,8 @@ class IWriteStream
 		ALERROR Write (int iValue) { return Write((char *)&iValue, sizeof(DWORD)); }
 		ALERROR Write (DWORD dwValue) { return Write((char *)&dwValue, sizeof(DWORD)); }
 		ALERROR Write (double rValue) { return Write((char *)&rValue, sizeof(double)); }
+		ALERROR Write (LONGLONG iValue) { return Write((char *)&iValue, sizeof(LONGLONG)); }
+		ALERROR Write (DWORDLONG iValue) { return Write((char *)&iValue, sizeof(DWORDLONG)); }
 		ALERROR Write (const CString &sString) { return Write(sString.GetPointer(), sString.GetLength()); }
 
 		ALERROR WriteChar (char chChar, int iLength = 1);
@@ -987,6 +988,8 @@ class IReadStream
 		ALERROR Read (int &iValue) { return Read((char *)&iValue, sizeof(DWORD)); }
 		ALERROR Read (DWORD &dwValue) { return Read((char *)&dwValue, sizeof(DWORD)); }
 		ALERROR Read (double &rValue) { return Read((char *)&rValue, sizeof(double)); }
+		ALERROR Read (LONGLONG &iValue) { return Read((char *)&iValue, sizeof(LONGLONG)); }
+		ALERROR Read (DWORDLONG &iValue) { return Read((char *)&iValue, sizeof(DWORDLONG)); }
 	};
 
 //	CMemoryWriteStream. This object is used to write variable length
@@ -1407,6 +1410,7 @@ class CThreadPool
 		CManualEvent m_Quit;
 	};
 
+extern bool g_bLowerCaseAbsoluteTableInit;
 extern char g_LowerCaseAbsoluteTable[256];
 
 //	Initialization functions (Kernel.cpp)
@@ -1483,7 +1487,7 @@ bool strIsInt (const CString &sValue, DWORD dwFlags = 0, int *retiValue = NULL);
 inline bool strIsWhitespace (const char *pPos) { return *pPos == ' ' || *pPos == '\t' || *pPos == '\n' || *pPos == '\r'; }
 CString strJoin (const TArray<CString> &List, const CString &sConjunction);
 CString strLoadFromRes (HINSTANCE hInst, int iResID);
-inline char strLowerCaseAbsolute (char chChar) { return g_LowerCaseAbsoluteTable[(BYTE)chChar]; }
+inline char strLowerCaseAbsolute (char chChar) { if (!g_bLowerCaseAbsoluteTableInit) CString::InitLowerCaseAbsoluteTable(); return g_LowerCaseAbsoluteTable[(BYTE)chChar]; }
 bool strNeedsEscapeCodes (const CString &sString);
 
 #define PARSE_THOUSAND_SEPARATOR				0x00000001

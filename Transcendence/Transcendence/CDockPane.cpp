@@ -20,6 +20,7 @@
 #define DESC_ID_ATTRIB				CONSTLIT("descID")
 #define ID_ATTRIB					CONSTLIT("id")
 #define LAYOUT_ATTRIB				CONSTLIT("layout")
+#define SHOW_ACTUAL_ITEM_ATTRIB		CONSTLIT("showActualItem")
 #define SHOW_COUNTER_ATTRIB			CONSTLIT("showCounter")
 #define SHOW_TEXT_INPUT_ATTRIB		CONSTLIT("showTextInput")
 #define STYLE_ATTRIB				CONSTLIT("style")
@@ -112,7 +113,7 @@ void CDockPane::CleanUp (AGScreen *pScreen)
 	m_sDeferredShowPane = NULL_STR;
 	}
 
-void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CString &sStyle, RECT rcPane)
+void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CXMLElement &ControlDesc, RECT rcPane)
 
 //	CreateControl
 //
@@ -166,6 +167,10 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CS
 
 			//	Choose font and colors based on style
 
+			CString sStyle;
+			if (!ControlDesc.FindAttribute(STYLE_ATTRIB, &sStyle))
+				sStyle = STYLE_DEFAULT;
+
 			SControlStyle Style;
 			GetControlStyle(sStyle, &Style);
 
@@ -213,6 +218,7 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CS
 			CGItemListDisplayArea *pItemDisplayArea = new CGItemListDisplayArea;
             pItemDisplayArea->SetColor(DockScreenVisuals.GetTitleTextColor());
             pItemDisplayArea->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+			pItemDisplayArea->SetDisplayAsKnown(ControlDesc.GetAttributeBool(SHOW_ACTUAL_ITEM_ATTRIB));
 
 			pControl->pArea = pItemDisplayArea;
 			m_pContainer->AddArea(pControl->pArea, rcPane, 0);
@@ -300,10 +306,6 @@ ALERROR CDockPane::CreateControls (RECT rcPane, CString *retsError)
 				return ERR_FAIL;
 				}
 
-			CString sStyle;
-			if (!pControlDef->FindAttribute(STYLE_ATTRIB, &sStyle))
-				sStyle = STYLE_DEFAULT;
-
             //  Keep track of default controls created
 
             if (strEquals(sID, DEFAULT_DESC_ID))
@@ -311,7 +313,7 @@ ALERROR CDockPane::CreateControls (RECT rcPane, CString *retsError)
 
 			//	Create the control
 
-			CreateControl(iType, sID, sStyle, rcPane);
+			CreateControl(iType, sID, *pControlDef, rcPane);
 			}
 
         //  If we don't have a default description control, create it. NOTE: It 
@@ -319,7 +321,7 @@ ALERROR CDockPane::CreateControls (RECT rcPane, CString *retsError)
         //  collapsed.
 
         if (!bDescCreated)
-            CreateControl(controlDesc, DEFAULT_DESC_ID, STYLE_DEFAULT, rcPane);
+            CreateControl(controlDesc, DEFAULT_DESC_ID, CXMLElement(), rcPane);
 		}
 
 	//	Otherwise we create default controls
@@ -328,14 +330,14 @@ ALERROR CDockPane::CreateControls (RECT rcPane, CString *retsError)
 		{
 		//	Create the text description control
 
-		CreateControl(controlDesc, DEFAULT_DESC_ID, STYLE_DEFAULT, rcPane);
+		CreateControl(controlDesc, DEFAULT_DESC_ID, CXMLElement(), rcPane);
 
 		//	Create counter or input fields
 
 		if (m_pPaneDesc->GetAttributeBool(SHOW_COUNTER_ATTRIB))
-			CreateControl(controlCounter, DEFAULT_COUNTER_ID, STYLE_DEFAULT, rcPane);
+			CreateControl(controlCounter, DEFAULT_COUNTER_ID, CXMLElement(), rcPane);
 		else if (m_pPaneDesc->GetAttributeBool(SHOW_TEXT_INPUT_ATTRIB))
-			CreateControl(controlTextInput, DEFAULT_TEXT_INPUT_ID, STYLE_DEFAULT, rcPane);
+			CreateControl(controlTextInput, DEFAULT_TEXT_INPUT_ID, CXMLElement(), rcPane);
 		}
 
 	return NOERROR;
@@ -1190,7 +1192,12 @@ ALERROR CDockPane::ReportError (const CString &sError)
 	//	Make sure we have a description control
 
 	if (GetTextControlByType(controlDesc) == NULL)
-		CreateControl(controlDesc, DEFAULT_DESC_ID, STYLE_WARNING, m_rcControls);
+		{
+		CXMLElement Desc(TEXT_TAG);
+		Desc.AddAttribute(STYLE_ATTRIB, STYLE_WARNING);
+
+		CreateControl(controlDesc, DEFAULT_DESC_ID, Desc, m_rcControls);
+		}
 
 	//	Report the error through the screen. This will add screen information and
 	//	eventually call us back at SetDescription.

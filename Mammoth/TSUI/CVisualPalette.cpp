@@ -157,6 +157,15 @@ static SImageInitTable IMAGE_TABLE[] =
 		{	"DebugIcon",			"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			 64,	512,	 64,	 64, },
 
 		{	"SettingsIcon",			"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			  0,	576,	 64,	 64, },
+
+		{	"StoryDifficultyIcon",		"JPEG_UI_ICONS",			"BMP_UI_ICONS_MASK",			 64,	576,	 32,	 32, },
+		{	"NormalDifficultyIcon",		"JPEG_UI_ICONS",			"BMP_UI_ICONS_MASK",			 96,	576,	 32,	 32, },
+		{	"ChallengeDifficultyIcon",	"JPEG_UI_ICONS",			"BMP_UI_ICONS_MASK",			 64,	608,	 32,	 32, },
+		{	"PermadeathDifficultyIcon",	"JPEG_UI_ICONS",			"BMP_UI_ICONS_MASK",			 96,	608,	 32,	 32, },
+
+		{	"PlayIcon",				"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			128,	  0,	128,	128, },
+		{	"PauseIcon",			"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			128,	128,	128,	128, },
+		{	"FastForwardIcon",		"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			128,	256,	128,	128, },
 	};
 
 class CResourceImageCache
@@ -211,6 +220,9 @@ void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitI
 	CG32bitPixel rgbLineColor = GetColor(colorLineFrame);
 	int cyCenter = RectHeight(rcCenter);
 
+	if (dwFlags & OPTION_SESSION_DLG_BACKGROUND)
+		rgbCenter = GetColor(colorAreaDialog);
+
 	if (!Background.IsEmpty())
 		{
 		//	Compute the RECT of the background image
@@ -245,11 +257,7 @@ void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitI
 		{
 		Screen.Fill(rcFull.left, 0, RectWidth(rcFull), rcFull.top, rgbBackgroundColor);
 		Screen.Fill(rcFull.left, rcFull.bottom, RectWidth(rcFull), cyScreen - rcFull.bottom, rgbBackgroundColor);
-
-		if (dwFlags & OPTION_SESSION_DLG_BACKGROUND)
-			Screen.Fill(rcFull.left, rcFull.top, RectWidth(rcFull), RectHeight(rcFull), GetColor(colorAreaDialog));
-		else
-			Screen.Fill(rcFull.left, rcFull.top, RectWidth(rcFull), RectHeight(rcFull), rgbCenter);
+		Screen.Fill(rcFull.left, rcFull.top, RectWidth(rcFull), RectHeight(rcFull), rgbCenter);
 		}
 
 	//	Paint the frame

@@ -509,7 +509,7 @@ CString CFleetShipAI::DebugCrashInfo (void)
 	return sResult;
 	}
 
-CSpaceObject *CFleetShipAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CFleetShipAI::GetTarget (DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -569,7 +569,7 @@ void CFleetShipAI::ImplementKeepFormation (bool *retbInFormation)
 	m_AICtx.ImplementFormationManeuver(m_pShip, vDest, vDestVel, m_pShip->AlignToRotationAngle(m_pLeader->GetRotation()), retbInFormation);
 	}
 
-DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -643,7 +643,7 @@ DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage,
 			if (GetCurrentOrder() == IShipController::orderEscort && GetCurrentOrderTarget() == pSender)
 				{
 				DWORD dwRes = (resCanBeInFormation | resCanBreakAndAttack);
-				if (pSender->GetTarget(CItemCtx(), FLAG_ACTUAL_TARGET))
+				if (pSender->GetTarget(FLAG_ACTUAL_TARGET))
 					dwRes |= resCanAttack;
 
 				if (m_State == stateAttackTarget

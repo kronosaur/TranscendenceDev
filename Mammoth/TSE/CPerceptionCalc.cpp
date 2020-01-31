@@ -74,6 +74,17 @@ bool CPerceptionCalc::CanBeTargetedAtDist (CSpaceObject *pTarget, Metric rTarget
 		return (rTargetDist < GetMaxDist(pTarget));
 	}
 
+Metric CPerceptionCalc::GetMaxDist (int iPerception)
+
+//	GetMaxDist
+//
+//	Returns the maximum range at with the given perception can detect an object
+//	with normal stealth.
+
+	{
+	return GetRange(GetRangeIndex(CSpaceObject::stealthNormal, iPerception));
+	}
+
 Metric CPerceptionCalc::GetMaxDist (CSpaceObject *pTarget) const
 
 //	GetMaxDist

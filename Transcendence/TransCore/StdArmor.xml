@@ -37,6 +37,39 @@
 		<Armor
 				hitPoints=	"25"
 				hpBonus=	"+100,  +0,  +0,  +0"
+
+				blindingImmune=			"false"
+				deviceDamageImmune=		"false"
+				disintegrationImmune=	"false"
+				radiationImmune=		"false"
+				shatterImmune=			"false"
+
+				chargeDecay=			"false"
+				decay=					"0.0"
+				distribute=				"0.0"
+				regen=					"0.0"
+				regenType=				"none"
+
+				idlePowerUse=			"0"
+				powerUse=				"0"
+
+				enhancementType=		""
+				deviceCriteria=			"s"
+				deviceHPBonus=			"0"
+
+				balanceAdj=				"0"
+				completeBonus=			"0"
+				hpBonusPerCharge=		"0"
+				installCost=			""
+				maxHPBonus=				"150"
+				maxSpeedInc=			"0"
+				maxSpeedLimit=			"-1"
+				photoRecharge=			"0"
+				reflective=				""
+				repairCost=				""
+				repairTech=				"1"
+				shieldInterference=		"false"
+				stealth=				"0"
 				/>
 	</ItemType>
 

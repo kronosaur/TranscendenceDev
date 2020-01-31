@@ -111,6 +111,11 @@ static constexpr int GLOBAL_ON_UPDATE_CYCLE =			30;					//	OnGlobalUpdate for al
 
 static constexpr int ON_SCREEN_UPDATE_CYCLE =			15;					//	OnScreenUpdate for <DockScreen>
 
+//	Constants & Enums
+
+static constexpr int MAX_OBJECT_LEVEL =					25;	//	Max level for space objects
+static constexpr int MAX_ITEM_LEVEL =					25;	//	Max level for items
+
 //	Special UNIDs
 //	LATER: UNID should not be hard-coded
 
@@ -175,7 +180,7 @@ static constexpr DWORD g_DamageImageUNID =				0x0000F001;	//	rsMediumDamage
 static constexpr DWORD SHIP_INTERIOR_IMAGE_UNID =		0x0000F002;	//	rsShipInterior
 static constexpr DWORD g_LRSImageUNID =					0x0000F006;	//	rsZubrinLRS
 static constexpr DWORD UNID_TARGETING_HUD_BACKGROUND =	0x0000F007;	//	rsZubrinTargeting
-static constexpr DWORD g_SRSSnowImageUNID =				0x0000F008;	//	rsSRSSnow
+static constexpr DWORD UNID_SRS_SNOW_PATTERN =			0x0000F008;	//	rsSRSSnow
 static constexpr DWORD g_LRSBorderUNID =				0x0000F009;	//	rsZubrinLRSBorder
 static constexpr DWORD DEFAULT_REACTOR_DISPLAY_IMAGE =	0x0000F00C;	//	rsZubrinReactor
 static constexpr DWORD DEFAULT_DOCK_SCREEN_IMAGE_UNID = 0x0000F013;	//	Default dock screen background

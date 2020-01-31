@@ -33,6 +33,7 @@
 #define COUNTER_FLAG							CONSTLIT("flag")
 #define COUNTER_PROGRESS						CONSTLIT("progress")
 #define COUNTER_RADIUS							CONSTLIT("radius")
+#define COUNTER_TEXT_FLAG						CONSTLIT("textFlag")
 
 #define FIELD_WEAPON_SUPPRESS					CONSTLIT("weaponSuppress")
 
@@ -273,6 +274,9 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		else if (strEquals(sStyle, COUNTER_RADIUS))
 			m_iCounterType = counterRadius;
+
+		else if (strEquals(sStyle, COUNTER_TEXT_FLAG))
+			m_iCounterType = counterTextFlag;
 
 		else
 			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown counter style: %s"), sStyle));

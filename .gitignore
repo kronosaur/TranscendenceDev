@@ -68,6 +68,7 @@ bld/
 ## Visual Studio Config files
 
 .vs/config/applicationhost.config
+.vs/slnx.sqlite
 
 # Roslyn cache directories
 *.ide/

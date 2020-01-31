@@ -276,7 +276,7 @@ bool CObjectTracker::GetCustomDesc (const CSpaceObject &Obj, const SObjBasics &O
     CString sTradeDesc;
 	if (!ObjData.fShowDestroyed
 			&& (pTrade = pType->GetTradingDesc())
-			&& pTrade->ComposeDescription(&sTradeDesc))
+			&& pTrade->ComposeDescription(Obj.GetUniverse(), &sTradeDesc))
 		{
 		pData->SetStringAt(CONSTLIT("tradeDesc"), sTradeDesc);
 		}
@@ -509,9 +509,9 @@ void CObjectTracker::GetTradingObjects (const CTopologyNode *pNode, TArray<SObjE
             {
             const SObjBasics &ObjData = pList->Objects[j];
 
-            //  We only care about friendly objects.
+            //  We only care about living friendly objects.
 
-            if (ObjData.fEnemy)
+            if (ObjData.fEnemy || ObjData.fShowDestroyed)
 				continue;
 
             //  Add the object to the result

@@ -80,7 +80,7 @@ ALERROR CEnhancementDesc::Bind (SDesignLoadCtx &Ctx)
 
 		if (DWORD dwEnhancementType = strToInt(Enhance.sType, 0))
 			{
-			CItemType *pEnhancementType = Ctx.GetUniverse().FindItemType(dwEnhancementType);
+			CItemType *pEnhancementType = Ctx.GetUniverse().FindItemTypeBound(Ctx, dwEnhancementType);
 			if (pEnhancementType == NULL)
 				{
 				Ctx.sError = strPatternSubst(CONSTLIT("Unknown enhancement type: %08x"), dwEnhancementType);
@@ -177,6 +177,18 @@ void CEnhancementDesc::InsertHPBonus (int iBonus)
 	SEnhancerDesc *pEnhance = m_Enhancements.Insert();
 	pEnhance->Criteria.Init(CItemCriteria::ALL);
 	pEnhance->Enhancement.SetModBonus(iBonus);
+	}
+
+void CEnhancementDesc::InsertMissileDefense (void)
+
+//	InsertMissileDefense
+//
+//	Adds a missile defense enhancement.
+
+	{
+	SEnhancerDesc *pEnhance = m_Enhancements.Insert();
+	pEnhance->Criteria.Init(CItemCriteria::ALL);
+	pEnhance->Enhancement.SetModMissileDefense();
 	}
 
 void CEnhancementDesc::SetCriteria (int iEntry, const CItemCriteria &Criteria)

@@ -2,7 +2,110 @@
 
 <TranscendenceModule>
 
-	<!-- Mining Colony ===================================================== -->
+	<Type unid="&unidIndependentMiner;">
+		<Properties>
+			<DynamicGlobal id="mining.rankIcon">
+				(block (
+					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+					)
+					(switch
+						(= rankID 'novice)
+							(itmGetImageDesc &itTitaniumOre;)
+
+						(= rankID 'digger)
+							(itmGetImageDesc &itMiningLaser;)
+
+						(= rankID 'excavator)
+							(itmGetImageDesc &itClassAExcavationPod;)
+
+						(= rankID 'wildcatter)
+							(itmGetImageDesc &itClassBExcavationPod;)
+
+						(= rankID 'prospector)
+							(itmGetImageDesc &itClassCExcavationPod;)
+
+						(= rankID 'miner)
+							(shpGetImageDesc &scBorer; { rotation:300 })
+
+						(= rankID 'expertMiner)
+							(itmGetImageDesc &itPlasmaTorch;)
+
+						(itmGetImageDesc &itTitaniumOre;)
+						)
+					)
+			</DynamicGlobal>
+		</Properties>
+
+		<Language>
+			<Code id="mining.rankDetails">
+				(block (
+					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+					(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+					(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
+
+					(totalAsteroids (count (sysFindObject Nil "t +property:canBeMined;")))
+					(exploredAsteroids (count (sysFindObject Nil "t +property:canBeMined; +property:explored;")))
+					(percentExplored
+						(if (gr totalAsteroids 0)
+							(cat (round (* 100 (/ exploredAsteroids totalAsteroids))) "%")
+							"N/A"
+							)
+						)
+					)
+					(if (gr (typGetProperty &unidMiningSkill; 'rpg.miningXP) 0)
+						{
+							title: (fmtNoun (typTranslate gType (cat "rank." rankID)) 1 'titleCapitalize)
+							largeIcon: (typGetProperty gType 'mining.rankIcon)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelSkill)
+									desc: (typTranslate gType 'rtfSkill {
+										value: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+										})
+									}
+								{
+									title: (typTranslate gType 'labelAsteroidsMined)
+									desc: (typTranslate gType 'rtfAsteroidsMined {
+										value: asteroidsMined
+										})
+									}
+								{
+									title: (typTranslate gType 'labelSystem { systemName:(sysGetName) })
+									desc: (typTranslate gType 'rtfExplored {
+										value: percentExplored
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+
+			<Text id="rank.novice">novice(s)</Text>
+			<Text id="rank.digger">digger(s)</Text>
+			<Text id="rank.excavator">excavator(s)</Text>
+			<Text id="rank.wildcatter">wildcatter(s)</Text>
+			<Text id="rank.prospector">prospector(s)</Text>
+			<Text id="rank.miner">miner(s)</Text>
+			<Text id="rank.expertMiner">expert miner(s)</Text>
+
+			<Text id="labelSkill">Skill:</Text>
+			<Text id="labelAsteroidsMined">Asteroids Mined:</Text>
+			<Text id="labelSystem">%SystemName% System:</Text>
+
+			<RTF id="rtfSkill">				{/rtf {/f:LargeBold;/c:#ffe667; %value% yield}}</RTF>
+			<RTF id="rtfAsteroidsMined">	{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+			<RTF id="rtfExplored">			{/rtf {/f:LargeBold;/c:#ffe667; %value% explored}}</RTF>
+		</Language>
+	</Type>
+
+<!-- STATION TYPES -->
+
+	<!-- Level 1: Mining Colony -->
 
 	<StationType UNID="&stMiningColony;"
 			name=				"Commonwealth mining colony"
@@ -51,8 +154,9 @@
 			<Sell	criteria="wNU +unid:&itMiningLaser;;" priceAdj="100"	inventoryAdj="100"/>
 			<Sell	criteria="cNU +unid:&itMinersCargoHold;;" priceAdj="100"	inventoryAdj="100"/>
 			<Sell	criteria="*NU +miningEquipment; -defective; -Illegal; -NotForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ru|c|cur"/>
-			<Sell	criteria="*NU +Ore; -defective; -NotForSale;"	priceAdj="100"/>
-			<Buy	criteria="*NU +Food; -Illegal; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU +ore; -defective; -notForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU +minable; -defective; -notForSale;"	priceAdj="100"/>
+			<Buy	criteria="*NU +food; -illegal; -notForSale;"	priceAdj="100"/>
 			
 			<Refuel			criteria="f +BasicFuel; L:1-5;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-5;" priceAdj="100"/>
@@ -73,9 +177,8 @@
 
 		<Items>
 			<RandomItem 
-					criteria=		"* +Ore; -NotStandard; -NotForSale;"
-					level=			"1"
-					levelCurve=		"2"
+					criteria=		"* +ore; -notStandard; -notForSale; | * +minable; -notStandard; -notForSale;"
+					levelFrequency= "systemLevel:ru|c|ur"
 					/>
 		</Items>
 
@@ -125,7 +228,13 @@
 		<!-- Dock Screens -->
 		
 		<DockScreens>
-			<Main>
+			<Main backgroundID="object">
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidIndependentMiner; 'mining.RankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -154,12 +263,16 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &dsCommonwealthMiningInfo;)
+							</Action>
+
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +commonwealthMining; =" (sysGetLevel) ";")
-									noMissionTextID: 'descNoMissions
 									maxPerStation: (+ 1 (modulo (objGetDestiny gSource) 3))
 									intervalPerStation: (+ 5400 (* (objGetDestiny gSource) 10))
+									noMissionTextID: 'descNoMissions
 									})
 							</Action>
 
@@ -180,7 +293,6 @@
 					</Default>
 				</Panes>
 			</Main>
-
 		</DockScreens>
 
 		<!-- Events and Data -->
@@ -206,6 +318,26 @@
 						)
 					)
 			</OnCreate>
+
+			<GetDockScreen>
+				(block (
+					newRankDesc
+					)
+					(switch
+						;	See if the player has been promoted.
+						;	NOTE: Can't advance beyond wildcatter at a mining
+						;	colony; must join IMU.
+
+						(and (ls (typGetProperty &unidMiningSkill; 'rpg.miningRank) 3)
+								(setq newRankDesc (typFireEvent &unidMiningSkill; 'CheckPromotion))
+								)
+							{
+								screen: &dsCommonwealthMiningPromotion;
+								priority: 5
+								}
+						)
+					)
+			</GetDockScreen>
 			
 			<GetGlobalAchievements>
 				(rpgMissionAchievements &stMiningColony; "* +commonwealthMining;")
@@ -214,11 +346,7 @@
 			<GetRumors>
 				(append
 					(rpgRumorAdd 'commonwealthPub 1 20 'scan {station: (objGetName gSource)})
-					)
-			</GetRumors>
 
-			<GetGlobalRumors>
-				(append
 					(rpgRumorAdd 'commonwealthMining (make 'sequence 15))
 
 					(if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
@@ -226,7 +354,7 @@
 						(rpgRumorAdd 'commonwealthMining 'freelancer)
 						)
 					)
-			</GetGlobalRumors>
+			</GetRumors>
 
 			<OnOreDepositFound>
 				(switch
@@ -307,89 +435,125 @@
 			</Text>
 
 			<String id="rumor.commonwealthMining.1">
+
 				"It's calm now, but I've been hearing a lot of military chatter lately."
+
 			</String>
 			<Text id="rumor.commonwealthMining.2">
+
 				"Most people don't care where their metals come from, but let me
 				tell you: plasteel doesn't grow in greenhouses! We have to struggle
 				to mine enough for everyone."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.3">
+
 				"Charon pirates have always been a problem here. They're getting
 				stronger every year. One of these days we're going to have to do
 				something about them."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.4">
+
 				"The Korolov folks are good people; they're a little uptight about
 				schedules and they're big on pomp and medals, but we get along pretty well."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.5">
+
 				"We've had a lot of trouble with the warlords. They come through
 				in gangs and shoot up the place; they take what they need and then leave."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.6">
+
 				"I don't know much about weapons; not as much as you do, anyway.
 				But I know a lot of people who favor the AK15 Partisan. Of course,
 				if you can get your hands on a slam cannon, you're styling."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.7">
+
 				"Heavy metal armor is the best, in my opinion. Ceramic is nice for
 				my dishes, but it will do kack-all against a slam cannon. Ithalium
 				is the best; orthosteel is pretty awesome too. Duralloy lasts almost
 				forever, though."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.8">
+
 				"Have you ever been to the Outer Realm? Out beyond the Sung Slavers,
 				where the Ringers live? It's miner heaven, I bet. I'd like to go out
 				there some day. Just me and a souped-up Borer. The Ferians are there
 				too; I hear they've got mining techniques like you've never seen."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.9">
+
 				"It's not too dangerous from Eridani to St. Kat's. Mostly just pirates
 				to worry about. But deeper in the Ungoverned Territories there are
 				dangers that you cannot imagine. Slavers will jump you out in deep
 				space and boost your body for their slave farms."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.10">
+
 				"The Charon pirates are nasty, but you can handle their gunships.
 				Stay away from their frigates, though."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.11">
+
 				"When a Charon frigate is out hunting you'd best get away. They'll
 				take you down fast without so much as a warning."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.12">
+
 				"Titanium ore is as common as suit-rash. Palladium and plasteel
 				are kack too. If you want a good payday, find an asteroid with cerallox
 				or helium regolith."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.13">
+
 				"Every chump with a mining laser thinks he can mine. But if you want
 				to be a serious miner you need a miner's cargo hold."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.14">
+
 				"Volcanic asteroids are the best for mining. I once found 30 tons
 				of ithalium ore on one! Kept me in vodka and cunnu for a couple of years!"
+
 			</Text>
 			<Text id="rumor.commonwealthMining.15">
+
 				"Ice asteroids are filthy with cerallox. Lots of palladium and
 				plasteel too, though, so they're not always worth the effort."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.pilgrim">
+
 				"So you're going to the Core, huh? Good luck with that! I've known
 				a lot of people heading towards the Core. My best friend's wife left
 				about a year ago. Can't say that anyone's ever returned, though."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.freelancer">
+
 				"So you're a freelancer, huh? Good luck with that! I've known
 				a lot of freelancers and mercs. My best friend's husband was
 				a freelancer for a while. Caught a missile out in Heilong Xing."
+
 			</Text>
 
 			<Text id="rumor.commonwealthPub.1">
+
 				You talk to a group of miners from %station% who try to impress
 				you with their knowledge of helium regolith market prices.
 				You spend 5 credits on drinks.
+
 			</Text>
 
 			<Text id="rpg.missionTypeDesc">Mining colony missions</Text>
@@ -398,6 +562,314 @@
 			</Text>
 		</Language>
 	</StationType>
+
+<!-- DOCK SCREENS -->
+
+	<DockScreen unid="&dsCommonwealthAsteroidInfo;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		<Display type="customPicker"
+				rowHeight="110"
+				iconWidth="110"
+				iconHeight="110"
+				>
+			<OnDisplayInit>
+				(block (
+					(asteroidList (list 'icy 'metallic 'primordial 'rocky 'volcanic))
+					(asteroidImages {
+						icy: (typGetImageDesc &stIceAsteroidSizeC;)
+						metallic: (typGetImageDesc &stMetallicAsteroidSizeC;)
+						primordial: (typGetImageDesc &stPrimordialAsteroidSizeC;)
+						rocky: (typGetImageDesc &stRockyAsteroidSizeC;)
+						volcanic: (typGetImageDesc &stVolcanicAsteroidSizeC;)
+						})
+					)
+					(map asteroidList theType {
+						id: theType
+						title: (scrTranslate gScreen (cat 'asteroidName. theType))
+						icon: (@ asteroidImages theType)
+						desc: (scrTranslate gScreen (cat 'asteroidDesc. theType))
+						hint: (scrTranslate gScreen (cat 'asteroidHint. theType))
+						})
+					)
+			</OnDisplayInit>
+		</Display>
+		
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theEntry (scrGetListEntry gScreen))
+						)
+						(scrSetDesc gScreen (@ theEntry 'hint))
+						)
+				</OnPaneInit>
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="asteroidName.icy">Icy Asteroid</Text>
+			<Text id="asteroidDesc.icy">
+
+				Icy asteroids can be found at the frozen edge of star systems.
+				They are a mix of rock and ice.
+			
+			</Text>
+			<Text id="asteroidHint.icy">
+
+				5% of icy asteroids have resources. The most commonly found are
+				Cobalt-thorium, xenotite, and pteracnium.
+
+				Use a mining laser (drill mining) or a plasma torch (ablative 
+				mining) for best results. Avoid using excavation pods as they 
+				tend to shatter the ice without extracting resources.
+			
+			</Text>
+			<Text id="asteroidName.metallic">Metallic Asteroid</Text>
+			<Text id="asteroidDesc.metallic">
+
+				These asteroids are filled with valuable metals. They are most
+				common around average-sized stars.
+			
+			</Text>
+			<Text id="asteroidHint.metallic">
+
+				10% of metallic asteroids have extractable ores, such as
+				titanium, plasteel, and orthosteel.
+
+				Mining lasers and their ilk are not very effective. Use a plasma
+				torch (ablative mining) or excavation pods (shockwave mining)
+				instead.
+
+			</Text>
+			<Text id="asteroidName.primordial">Primordial Asteroid</Text>
+			<Text id="asteroidDesc.primordial">
+
+				Primordial asteroids are rich in organic compounds, and often
+				contain exotic resources.
+			
+			</Text>
+			<Text id="asteroidHint.primordial">
+
+				8% of primordial asteroids have useful resources. The most 
+				commonly found are cerallox, duranium, and tetramite.
+
+				Use a mining laser (drill mining) or mining charges (explosive
+				mining) for best results. Avoid plasma torches (ablative mining)
+				because they burn away the target ores.
+			
+			</Text>
+			<Text id="asteroidName.rocky">Rocky Asteroid</Text>
+			<Text id="asteroidDesc.rocky">
+
+				Rocky asteroids are common throughout the universe.
+			
+			</Text>
+			<Text id="asteroidHint.rocky">
+
+				10% of rocky asteroids have useful resources. The most commonly
+				found are palladium, gold, and platinum.
+
+				All mining techniques are effective on rocky asteroids.
+			
+			</Text>
+			<Text id="asteroidName.volcanic">Volcanic Asteroid</Text>
+			<Text id="asteroidDesc.volcanic">
+
+				Volcanic asteroids are formed in high-temperature regions when
+				molten lava solidifies.
+
+			
+			</Text>
+			<Text id="asteroidHint.volcanic">
+
+				15% of volcanic asteroids have valuable resources of all kinds.
+				Palladium, gold, cerallox, titanium, and even duranium are all
+				commonly found.
+
+				Use mining charges (explosive mining) or excavation pods
+				(shockwave mining) for best results. Mining lasers (drill 
+				mining) are too weak against volcanic rock.
+			
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<DockScreen unid="&dsCommonwealthMiningInfo;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			backgroundID=		"object"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidIndependentMiner; 'mining.RankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(switch
+						(gr (typGetProperty &unidMiningSkill; 'rpg.miningXP) 0)
+							(block (
+								(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+								(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+								(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
+
+								(totalAsteroids (count (sysFindObject Nil "t +property:canBeMined;")))
+								(exploredAsteroids (count (sysFindObject Nil "t +property:canBeMined; +property:explored;")))
+								(percentExplored
+									(if (gr totalAsteroids 0)
+										(cat (round (* 100 (/ exploredAsteroids totalAsteroids))) "%")
+										"N/A"
+										)
+									)
+								)
+								(scrSetDescTranslate gScreen (cat "descInfo." rankID) {
+									yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+									asteroidsMined: (fmtNumber asteroidsMined)
+									percentExplored: percentExplored
+									})
+								)
+
+						(scrSetDescTranslate gScreen 'descInfo.unranked)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionAsteroidInfo">
+						(scrShowScreen gScreen &dsCommonwealthAsteroidInfo;)
+					</Action>
+
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="actionAsteroidInfo">[A]steroid Data</Text>
+
+			<Text id="descInfo.unranked">
+
+				LATER: Mining is fun, you should try it!
+
+			</Text>
+			<Text id="descInfo.novice">
+
+				LATER: You are a novice at mining.
+
+			</Text>
+			<Text id="descInfo.digger">
+				
+				LATER: You are recognized as an independent miner with the rank of Digger.
+
+			</Text>
+			<Text id="descInfo.excavator">
+				
+				LATER: You are recognized as an independent miner with the rank of Excavator.
+
+			</Text>
+			<Text id="descInfo.wildcatter">
+				
+				LATER: You are recognized as an independent miner with the rank of Wildcatter.
+
+			</Text>
+			<Text id="descInfo.prospector">
+				
+				LATER: You are recognized as an independent miner with the rank of Prospector.
+
+			</Text>
+			<Text id="descInfo.miner">
+				
+				LATER: You are recognized as an independent miner with the rank of Miner.
+
+			</Text>
+			<Text id="descInfo.expertMiner">
+				
+				LATER: You are recognized as an independent miner with the rank of Expert Miner.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<DockScreen unid="&dsCommonwealthMiningPromotion;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			backgroundID=		"object"
+			>
+
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidIndependentMiner; 'mining.RankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+						(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+						)
+						(scrSetDescTranslate gScreen (cat "descPromotion." rankID) {
+							yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+							})
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="descPromotion.digger">
+
+				LATER: Congratulations, you are now an asteroid miner.
+			
+			</Text>
+			<Text id="descPromotion.excavator">
+
+				LATER: You are now recognized as an excavator.
+			
+			</Text>
+			<Text id="descPromotion.wildcatter">
+
+				LATER: You are now recognized as a wildcatter. Your skill give 
+				you a %yieldAdj% bonus to mining yield.
+			
+			</Text>
+			<Text id="descPromotion.prospector">
+
+				LATER: You are now recognized as a prospector. Your skill give 
+				you a %yieldAdj% bonus to mining yield.
+			
+			</Text>
+			<Text id="descPromotion.miner">
+
+				LATER: You are now recognized as a miner. Your skill give 
+				you a %yieldAdj% bonus to mining yield.
+			
+			</Text>
+			<Text id="descPromotion.expertMiner">
+
+				LATER: You are now recognized as an expert miner. Your skill give 
+				you a %yieldAdj% bonus to mining yield.
+			
+			</Text>
+		</Language>
+	</DockScreen>
 	
 <!-- RESOURCES -->
 

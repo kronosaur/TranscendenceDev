@@ -31,11 +31,6 @@ const int MAX_THREAD_COUNT =					16;
 
 #define SEPARATION_CRITERIA						CONSTLIT("sTA")
 
-int g_iGateTimer = 0;
-int g_iGateTimerTick = -1;
-int g_cxStarField = -1;
-int g_cyStarField = -1;
-
 const CG32bitPixel g_rgbSpaceColor = CG32bitPixel(0,0,8);
 const Metric g_MetersPerKlick = 1000.0;
 const Metric MAP_VERTICAL_ADJUST =						1.4;
@@ -58,7 +53,7 @@ CSystem::CSystem (CUniverse &Universe, CTopologyNode *pTopology) :
 		m_pTopology(pTopology),
 		m_pEnvironment(NULL),
 		m_iTick(0),
-        m_iNextEncounter(0),
+		m_iNextEncounter(0),
 		m_iTimeStopped(0),
 		m_rKlicksPerPixel(KLICKS_PER_PIXEL),
 		m_rTimeScale(TIME_SCALE),
@@ -1115,7 +1110,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 	return NOERROR;
 	}
 
-ALERROR CSystem::CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, CLocationDef **retpLocation)
+ALERROR CSystem::CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, DWORD dwFlags, CLocationDef **retpLocation)
 
 //	CreateLocation
 //
@@ -1125,6 +1120,9 @@ ALERROR CSystem::CreateLocation (const CString &sID, const COrbit &Orbit, const 
 	CLocationDef *pLocation = m_Locations.Insert(sID);
 	pLocation->SetOrbit(Orbit);
 	pLocation->SetAttributes(sAttributes);
+	if (dwFlags & FLAG_REQUIRED_LOCATION)
+		pLocation->SetRequired();
+
 	if (retpLocation)
 		*retpLocation = pLocation;
 
@@ -1452,7 +1450,7 @@ ALERROR CSystem::CreateStargate (CStationType *pType,
 	}
 
 ALERROR CSystem::CreateStation (CStationType *pType,
-							    CDesignType *pEventHandler,
+								CDesignType *pEventHandler,
 								CVector &vPos,
 								CSpaceObject **retpStation)
 
@@ -1670,58 +1668,54 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			//	For multitargets, we need to find a target 
 			//	for each fragment
 
-			if (pFragDesc->bMIRV)
+			if (pFragDesc->bMIRV && pMissileSource)
 				{
-				TArray<CSpaceObject *> TargetList;
+				CSpaceObjectTargetList TargetList;
+				TargetList.InitWithNearestVisibleEnemies(*pMissileSource, 
+						iFragmentCount, 
+						MAX_MIRV_TARGET_RANGE, 
+						NULL, 
+						CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObjectTargetList::FLAG_INCLUDE_STATIONS);
+				int iFound = TargetList.GetList().GetCount();
+				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 
-				if (pMissileSource)
+				if (iFound > 0)
 					{
-					int iFound = pMissileSource->GetNearestVisibleEnemies(iFragmentCount, 
-							MAX_MIRV_TARGET_RANGE, 
-							&TargetList, 
-							NULL, 
-							FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS);
-
-					Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
-
-					if (iFound > 0)
+					for (i = 0; i < iFragmentCount; i++)
 						{
-						for (i = 0; i < iFragmentCount; i++)
-							{
-							CSpaceObject *pTarget = TargetList[i % iFound];
-							Targets[i] = pTarget;
+						CSpaceObject *pTarget = TargetList.GetList()[i % iFound];
+						Targets[i] = pTarget;
 
-							//	Calculate direction to fire in
+						//	Calculate direction to fire in
 
-							CVector vTarget = pTarget->GetPos() - Ctx.vPos;
-							Metric rTimeToIntercept = CalcInterceptTime(vTarget, pTarget->GetVel(), rSpeed);
-							CVector vInterceptPoint = vTarget + pTarget->GetVel() * rTimeToIntercept;
+						CVector vTarget = pTarget->GetPos() - Ctx.vPos;
+						Metric rTimeToIntercept = CalcInterceptTime(vTarget, pTarget->GetVel(), rSpeed);
+						CVector vInterceptPoint = vTarget + pTarget->GetVel() * rTimeToIntercept;
 
-							//	If fragments can maneuver, then fire angle jitters a bit.
+						//	If fragments can maneuver, then fire angle jitters a bit.
 
-							if (pFragDesc->pDesc->IsTracking())
-								Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-45, 45));
+						if (pFragDesc->pDesc->IsTracking())
+							Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-45, 45));
 
-							//	If we've got multiple fragments to the same target, then
-							//	jitter a bit.
+						//	If we've got multiple fragments to the same target, then
+						//	jitter a bit.
 
-							else if (i >= iFound)
-								Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-6, 6));
+						else if (i >= iFound)
+							Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-6, 6));
 
-							//	Otherwise, head straight for the target
+						//	Otherwise, head straight for the target
 
-							else
-								Angles[i] = VectorToPolar(vInterceptPoint, NULL);
-							}
+						else
+							Angles[i] = VectorToPolar(vInterceptPoint, NULL);
 						}
+					}
 
-					//	If no targets found, an we require a target, then we skip
+				//	If no targets found, an we require a target, then we skip
 
-					else if (Ctx.pDesc->IsTargetRequired() || pFragDesc->pDesc->IsTargetRequired())
-						{
-						pFragDesc = pFragDesc->pNext;
-						continue;
-						}
+				else if (Ctx.pDesc->IsTargetRequired() || pFragDesc->pDesc->IsTargetRequired())
+					{
+					pFragDesc = pFragDesc->pNext;
+					continue;
 					}
 				}
 
@@ -1762,16 +1756,16 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 			for (i = 0; i < iFragmentCount; i++)
 				{
-                //  If we're only creating a fraction of fragments, then skip some.
+				//  If we're only creating a fraction of fragments, then skip some.
 
-                if (Angles[i] < 0)
-                    continue;
+				if (Angles[i] < 0)
+					continue;
 
-                //  Generate initial speed (this might be random for each fragment)
+				//  Generate initial speed (this might be random for each fragment)
 
 				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 
-                //  Create the fragment
+				//  Create the fragment
 
 				SShotCreateCtx FragCtx;
 				FragCtx.pDesc = pFragDesc->pDesc;
@@ -1905,7 +1899,7 @@ CSpaceObject *CSystem::FindObjectWithOrbit (const COrbit &Orbit) const
 //
 //  Returns an object that shows the given orbit
 
-    {
+	{
 	int i;
 
 	for (i = 0; i < GetObjectCount(); i++)
@@ -1913,17 +1907,17 @@ CSpaceObject *CSystem::FindObjectWithOrbit (const COrbit &Orbit) const
 		CSpaceObject *pObj = GetObject(i);
 		const COrbit *pOrbit;
 		if (pObj 
-                && !pObj->IsDestroyed()
-                && pObj->ShowMapOrbit()
-                && (pOrbit = pObj->GetMapOrbit())
+				&& !pObj->IsDestroyed()
+				&& pObj->ShowMapOrbit()
+				&& (pOrbit = pObj->GetMapOrbit())
 				&& (*pOrbit == Orbit))
 			return pObj;
 		}
 
 	return NULL;
-    }
+	}
 
-bool CSystem::FindObjectName (CSpaceObject *pObj, CString *retsName)
+bool CSystem::FindObjectName (const CSpaceObject *pObj, CString *retsName)
 
 //	FindObjectName
 //
@@ -3754,19 +3748,10 @@ void CSystem::PlaceInGate (CSpaceObject *pObj, CSpaceObject *pGate)
 	//	We keep on incrementing the timer as long as we are creating ships
 	//	in the same tick. [But only if we're not creating the system.]
 
-	if (!m_fInCreate)
-		{
-		if (m_iTick != g_iGateTimerTick)
-			{
-			g_iGateTimer = 0;
-			g_iGateTimerTick = m_iTick;
-			}
-
-		pShip->SetInGate(pGate, g_iGateTimer);
-		g_iGateTimer += mathRandom(11, 22);
-		}
-	else
+	if (m_fInCreate)
 		pShip->SetInGate(pGate, 0);
+	else
+		pShip->SetInGate(pGate, m_GateTimer.GetTick(pGate->GetID(), m_Universe.GetTicks()));
 
 	DEBUG_CATCH
 	}
@@ -4659,7 +4644,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	target.
 
 	if (Ctx.pPlayer)
+		{
+		Ctx.AutoMining.Init(*Ctx.pPlayer);
 		Ctx.AutoTarget.Init(*Ctx.pPlayer);
+		}
 
 	//	Add all objects to the grid so that we can do faster
 	//	hit tests
@@ -4692,7 +4680,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 		//	Initialize context
 
-		Ctx.SetTimeStopped(pObj->IsTimeStopped());
+		Ctx.OnStartUpdate(*pObj);
 
 		//	Update behavior first.
 
@@ -4756,10 +4744,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		CSpaceObject *pObj = GetObject(i);
 
 		if (pObj 
-                && !pObj->IsDestroyed()
-                && pObj->CanMove()
+				&& !pObj->IsDestroyed()
+				&& pObj->CanMove()
 				&& !pObj->IsSuspended()
-                && !pObj->IsTimeStopped())
+				&& !pObj->IsTimeStopped())
 			{
 			//	Move the objects
 

@@ -48,6 +48,7 @@ class CGameSession : public IHISession
 		//	IHISession virtuals
 
 		virtual CReanimator &GetReanimator (void) override { return g_pTrans->GetReanimator(); }
+		virtual void OnActivate (void) override;
         virtual void OnAnimate (CG32bitImage &Screen, bool bTopMost) override;
         virtual void OnChar (char chChar, DWORD dwKeyData) override;
         virtual void OnCleanUp (void);
@@ -83,6 +84,8 @@ class CGameSession : public IHISession
 
 	private:
 		void DismissMenu (void);
+		void ExecuteCommandRefresh (void);
+		void ExecuteCommandRefresh (CPlayerShipController &Player);
 		void HideMenu (void);
 		void InitUI (void);
 		void PaintSRS (CG32bitImage &Screen);

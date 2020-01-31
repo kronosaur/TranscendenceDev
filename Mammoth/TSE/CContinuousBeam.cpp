@@ -167,6 +167,12 @@ ALERROR CContinuousBeam::Create (CSystem &System, SShotCreateCtx &Ctx, CContinuo
 
 	pBeam->AddContinuousBeam(Ctx.vPos, Ctx.vVel, Ctx.iDirection);
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pBeam, pBeam->GetData());
+
 	//	Add to system
 
 	if (error = pBeam->AddToSystem(System))

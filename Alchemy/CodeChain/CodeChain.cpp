@@ -158,25 +158,7 @@ ICCItem *CCodeChain::CreateError (const CString &sError, ICCItem *pData)
 //	pData: Item that caused error.
 
 	{
-	ICCItem *pError;
-	CString sArg;
-	CString sErrorLine;
-
-	//	Convert the argument to a string
-
-	if (pData)
-		{
-		sArg = pData->Print();
-		sErrorLine = strPatternSubst(LITERAL("%s [%s]"), sError, sArg);
-		}
-	else
-		sErrorLine = sError;
-
-	//	Create the error
-
-	pError = CreateString(sErrorLine);
-	pError->SetError();
-	return pError;
+	return ICCItemPtr::Error(sError, pData)->Reference();
 	}
 
 ICCItem *CCodeChain::CreateErrorCode (int iErrorCode)
@@ -919,7 +901,9 @@ ICCItem *CCodeChain::EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem)
 		ICCItem *pNewKey = CreateString(sKey);
 		ICCItem *pNewValue = (pValue ? Eval(pCtx, pValue) : CreateNil());
 
-		pNewTable->AddEntry(pNewKey, pNewValue);
+		if (!pNewValue->IsNil())
+			pNewTable->AddEntry(pNewKey, pNewValue);
+
 		pNewKey->Discard();
 		pNewValue->Discard();
 		}

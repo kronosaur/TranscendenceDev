@@ -7,6 +7,7 @@
 
 #define PROPERTY_CANNOT_BE_HIT					CONSTLIT("cannotBeHit")
 #define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_HULL_TYPE						CONSTLIT("hullType")
 #define PROPERTY_IMMUTABLE						CONSTLIT("immutable")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_MAX_STRUCTURAL_HP				CONSTLIT("maxStructuralHP")
@@ -15,13 +16,8 @@
 const int REGEN_PER_DAY_FACTOR =		10;
 
 CStationHull::CStationHull (void) :
-		m_iArmorLevel(0),
-		m_iHitPoints(0),
-		m_iMaxHitPoints(0),
-		m_iStructuralHP(0),
-		m_iMaxStructuralHP(0),
-		m_fMultiHull(false),
-		m_fImmutable(false)
+		m_fImmutable(false),
+		m_fCannotBeHit(false)
 
 //	CStationHull constructor
 
@@ -40,6 +36,9 @@ ICCItem *CStationHull::FindProperty (const CString &sProperty) const
 
 	else if (strEquals(sProperty, PROPERTY_HP))
 		return CCodeChain::CreateInteger(m_iHitPoints);
+
+	else if (strEquals(sProperty, PROPERTY_HULL_TYPE))
+		return CCodeChain::CreateString(CStationHullDesc::GetID(m_iType));
 
 	else if (strEquals(sProperty, PROPERTY_IMMUTABLE))
 		return CCodeChain::CreateBool(IsImmutable());
@@ -162,7 +161,7 @@ void CStationHull::Init (const CStationHullDesc &Desc)
 	//	Flags
 
 	m_fImmutable = Desc.IsImmutable();
-	m_fMultiHull = Desc.IsMultiHull();
+	m_iType = Desc.GetHullType();
 	m_fCannotBeHit = !Desc.CanBeHit();
 	}
 
@@ -184,8 +183,20 @@ void CStationHull::ReadFromStream (SLoadCtx &Ctx)
 
 	Ctx.pStream->Read(dwFlags);
 	m_fImmutable =		((dwFlags & 0x00000001) ? true : false);
-	m_fMultiHull =		((dwFlags & 0x00000002) ? true : false);
+	//	0x00000002 Unused at version 176
 	m_fCannotBeHit =	((dwFlags & 0x00000004) ? true : false);
+
+	//	We encode hull type in the flags DWORD
+
+	if (Ctx.dwVersion >= 176)
+		m_iType = (CStationHullDesc::EHullTypes)((dwFlags & HULL_TYPES_MASK) >> HULL_TYPES_SHIFT);
+	else
+		{
+		bool bMultiHull =	((dwFlags & 0x00000002) ? true : false);
+		m_iType = (bMultiHull ? CStationHullDesc::hullMultiple : CStationHullDesc::hullSingle);
+		}
+
+	//	Other values
 
 	Ctx.pStream->Read(m_iArmorLevel);
 	Ctx.pStream->Read(m_iHitPoints);
@@ -304,8 +315,11 @@ void CStationHull::WriteToStream (IWriteStream &Stream, CStation *pStation)
 	DWORD dwFlags = 0;
 
 	dwFlags |= (m_fImmutable ?		0x00000001 : 0);
-	dwFlags |= (m_fMultiHull ?		0x00000002 : 0);
+	//	0x00000002 Unused at version 176
 	dwFlags |= (m_fCannotBeHit ?	0x00000004 : 0);
+
+	dwFlags |= (((DWORD)m_iType) << HULL_TYPES_SHIFT) & HULL_TYPES_MASK;
+
 	Stream.Write(dwFlags);
 
 	Stream.Write(m_iArmorLevel);

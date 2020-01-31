@@ -93,7 +93,7 @@ class COrbit
 		ICCItemPtr AsItem (void) const;
 		const Metric &GetEccentricity (void) const { return m_rEccentricity; }
 		const CVector3D &GetFocus3D (void) const { return m_vFocus; }
-		const CVector &GetFocus (void) const { return CVector(m_vFocus.GetX(), m_vFocus.GetY()); }
+		CVector GetFocus (void) const { return CVector(m_vFocus.GetX(), m_vFocus.GetY()); }
 		const Metric &GetInclination (void) const { return m_rInclination; }
 		const Metric &GetObjectAngle (void) const { return m_rPos; }
 		CVector GetObjectPos (Metric *retrZ = NULL) const { return GetPoint(m_rPos, retrZ); }
@@ -244,7 +244,7 @@ class CSystemCreateStats
 class CSystemCreateEvents
 	{
 	public:
-		void AddDeferredEvent (CSpaceObject *pObj, CExtension *pExtension, CXMLElement *pEventCode);
+		void AddDeferredEvent (CSpaceObject *pObj, CExtension *pExtension, const CXMLElement *pEventCode);
 		ALERROR FireDeferredEvent (const CString &sEvent, CString *retsError);
 
 	private:
@@ -252,7 +252,7 @@ class CSystemCreateEvents
 			{
 			CSpaceObject *pObj;
 			CExtension *pExtension;
-			CXMLElement *pEventCode;
+			const CXMLElement *pEventCode;
 			};
 
 		TArray<SEventDesc> m_Events;
@@ -305,6 +305,9 @@ struct SSystemCreateCtx
 	CString sLabelAttribs;					//	Inherited label attributes
 
 	//	Options
+
+	bool bHasStationCreate = false;			//	TRUE if we've defined some create options
+	CStationCreateOptions StationCreate;	//	Options for creating a station
 
 	SZAdjust ZAdjust;						//	Adjust Z
 	EOverlapCheck iOverlapCheck = checkOverlapNone;	//	If TRUE, we adjust locations to avoid overlapping an existing object
@@ -380,19 +383,22 @@ class CMoveCtx
 class CLocationDef
 	{
 	public:
-		CLocationDef (void);
+		CLocationDef (void) { }
 
+		bool CanBeBlocked (void) const;
 		const CString &GetAttributes (void) const { return m_sAttributes; }
 		DWORD GetObjID (void) const { return m_dwObjID; }
 		const COrbit &GetOrbit (void) const { return m_OrbitDesc; }
 		bool HasAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool IsBlocked (void) const { return m_bBlocked; }
 		bool IsEmpty (void) const { return (m_dwObjID == 0 && !m_bBlocked); }
+		bool IsRequired (void) const { return m_bRequired; }
 		void SetAttributes (const CString &sAttribs) { m_sAttributes = sAttribs; }
 		void SetBlocked (bool bBlocked = true) { m_bBlocked = bBlocked; }
 		void SetID (const CString &sID) { m_sID = sID; }
 		void SetObjID (DWORD dwObjID) { m_dwObjID = dwObjID; }
 		void SetOrbit (const COrbit &Orbit) { m_OrbitDesc = Orbit; }
+		void SetRequired (bool bValue = true) { m_bRequired = bValue; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
@@ -401,9 +407,10 @@ class CLocationDef
 		COrbit m_OrbitDesc;
 		CString m_sAttributes;
 
-		DWORD m_dwObjID;					//	Object created at this location (or 0)
+		DWORD m_dwObjID = 0;				//	Object created at this location (or 0)
 
-		bool m_bBlocked;					//	If TRUE, this location is too close to another
+		bool m_bRequired = false;			//	If TRUE, location cannot be blocked
+		bool m_bBlocked = false;			//	If TRUE, this location is too close to another
 	};
 
 class CLocationList
@@ -423,6 +430,9 @@ class CLocationList
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
+		static constexpr Metric OVERLAP_DIST = 25.0 * LIGHT_SECOND;
+		static constexpr Metric OVERLAP_DIST2 = OVERLAP_DIST * OVERLAP_DIST;
+
 		void InvalidateObjIndex (void) { m_ObjIndex.DeleteAll(); }
 
 		TArray<CLocationDef> m_List;
@@ -649,6 +659,16 @@ class CSystemSpacePainter
 		DWORD m_dwCurBackgroundUNID;
 	};
 
+class CGateTimerManager
+	{
+	public:
+		int GetTick (DWORD dwGateID, DWORD dwNow);
+
+	private:
+		DWORD m_dwTick = 0;
+		TSortMap<DWORD, int> m_Timers;
+	};
+
 struct SObjCreateCtx
 	{
 	SObjCreateCtx (SSystemCreateCtx &SystemCtxArg) :
@@ -804,7 +824,7 @@ class CSystem
 		CSpaceObject *FindObject (DWORD dwID) const;
 		CSpaceObject *FindObjectInRange (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria()) const;
         CSpaceObject *FindObjectWithOrbit (const COrbit &Orbit) const;
-		bool FindObjectName (CSpaceObject *pObj, CString *retsName = NULL);
+		bool FindObjectName (const CSpaceObject *pObj, CString *retsName = NULL);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CWeaponFireDesc *pDesc, const CDamageSource &Source);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
@@ -900,7 +920,10 @@ class CSystem
 		void BlockOverlappingLocations (void);
 		int CalcLocationAffinity (const CAffinityCriteria &Criteria, const CString &sLocationAttribs, const CVector &vPos) const;
 		int CalcLocationAffinity (const CLocationDef &Loc, const CAffinityCriteria &Criteria) const { return CalcLocationAffinity(Criteria, Loc.GetAttributes(), Loc.GetOrbit().GetObjectPos()); }
-		ALERROR CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, CLocationDef **retpLocation = NULL);
+
+		static constexpr DWORD FLAG_REQUIRED_LOCATION = 0x00000001;
+		ALERROR CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, DWORD dwFlags = 0, CLocationDef **retpLocation = NULL);
+
 		bool FindRandomLocation (const SLocationCriteria &Criteria, DWORD dwFlags, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, int *retiLocID);
 		int GetEmptyLocationCount (void);
 		bool GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion, TProbabilityTable<int> *retTable);
@@ -1025,6 +1048,7 @@ class CSystem
 		CSystemSpacePainter m_SpacePainter;		//	Paints space background
 		CMapGridPainter m_GridPainter;			//	Structure to paint a grid
 		CPhysicsContactResolver m_ContactResolver;	//	Resolves physics contacts
+		CGateTimerManager m_GateTimer;			//	Assign delay when ships exit a gate
 
 		static const Metric g_MetersPerKlick;
 	};

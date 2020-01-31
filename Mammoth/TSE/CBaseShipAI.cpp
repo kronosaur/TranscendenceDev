@@ -4,22 +4,6 @@
 
 #include "PreComp.h"
 
-constexpr Metric MAX_AREA_WEAPON_CHECK =	(15.0 * LIGHT_SECOND);
-constexpr Metric MAX_AREA_WEAPON_CHECK2 =	(MAX_AREA_WEAPON_CHECK * MAX_AREA_WEAPON_CHECK);
-constexpr Metric MIN_TARGET_DIST =			(5.0 * LIGHT_SECOND);
-constexpr Metric MIN_TARGET_DIST2 =			(MIN_TARGET_DIST * MIN_TARGET_DIST);
-constexpr Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
-constexpr Metric MIN_STATION_TARGET_DIST2 =	(MIN_STATION_TARGET_DIST * MIN_STATION_TARGET_DIST);
-constexpr Metric HIT_NAV_POINT_DIST =		(8.0 * LIGHT_SECOND);
-constexpr Metric HIT_NAV_POINT_DIST2 =		(HIT_NAV_POINT_DIST * HIT_NAV_POINT_DIST);
-constexpr Metric MAX_TARGET_OF_OPPORTUNITY_RANGE = (20.0 * LIGHT_SECOND);
-constexpr Metric ESCORT_DISTANCE =			(6.0 * LIGHT_SECOND);
-constexpr Metric MAX_ESCORT_DISTANCE =		(12.0 * LIGHT_SECOND);
-constexpr Metric ATTACK_RANGE =				(20.0 * LIGHT_SECOND);
-constexpr Metric CLOSE_RANGE =				(50.0 * LIGHT_SECOND);
-constexpr Metric CLOSE_RANGE2 =				(CLOSE_RANGE * CLOSE_RANGE);
-constexpr Metric MIN_POTENTIAL2 =			(KLICKS_PER_PIXEL * KLICKS_PER_PIXEL * 25.0);
-
 constexpr int MAX_TARGETS =				10;
 
 #ifdef DEBUG_COMBAT
@@ -759,88 +743,74 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 		}
 	}
 
-void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles)
+void CBaseShipAI::GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	GetNearestTargets
 //
 //	Returns a list of nearest targets
 
 	{
-	int i;
-	CInstalledDevice *pDevice = ItemCtx.GetDevice();
-	CDeviceClass *pWeapon = ItemCtx.GetDeviceClass();
+	const CInstalledDevice &Device = *WeaponItem.GetInstalledDevice();
 
-	//	Get targets, if necessary
+	//	Make sure we have a list of targets. This will initialize a list of
+	//	nearby targets and (if required) a list of missiles to defend against.
+	//	It will store them in UpdateCtx so that more than one weapon can access
+	//	the list without recomputing.
 
-	if (TargetingCtx.bRecalcTargets)
+	InitTargetList(UpdateCtx);
+
+	//	If this weapon does not target missiles, then we just do a quick find.
+
+	if (!WeaponItem.IsMissileDefenseWeapon() && !WeaponItem.IsTargetableMissileDefenseWeapon())
 		{
-		TargetingCtx.Targets.DeleteAll();
-
-		//	If we are aggressive, then include ships that haven't fired 
-		//	their weapons recently
-
-		DWORD dwFlags = 0;
-		if (m_AICtx.IsAggressor())
-			dwFlags |= FLAG_INCLUDE_NON_AGGRESSORS;
-
-		//  Include missiles if appropriate
-
-		if (bTargetMissiles)
-			dwFlags |= FLAG_INCLUDE_MISSILES;
-
-		//	First build a list of the nearest enemy ships within
-		//	range of the ship.
-
-		m_pShip->GetNearestVisibleEnemies(MAX_TARGETS,
-				m_AICtx.GetBestWeaponRange(),
-				&TargetingCtx.Targets,
-				GetBase(),
-				dwFlags);
-
-		//	If we've got a target, add it to the list. Sometimes this will be 
-		//	a duplicate, but that's OK.
-
-		CSpaceObject *pTarget = GetTarget(ItemCtx, FLAG_NO_AUTO_TARGET);
-		if (pTarget)
-			TargetingCtx.Targets.Insert(pTarget);
-
-		//	If the player is blacklisted, add her to the list.
-
-		if (m_fPlayerBlacklisted)
+		if (!UpdateCtx.Targets.FindTargetInRange(*m_pShip, 
+				WeaponItem, 
+				m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
+				retpTarget,
+				retiFireSolution))
 			{
-			pTarget = m_pShip->GetPlayerShip();
-			if (pTarget)
-				TargetingCtx.Targets.Insert(pTarget);
+			*retpTarget = NULL;
+			*retiFireSolution = -1;
 			}
-
-		TargetingCtx.bRecalcTargets = false;
 		}
 
-	//	Now find a target for the given weapon.
+	//	Otherwise, we look in both the target and the missile lists and choose
+	//	the nearest one.
 
-	Metric rMaxRange = pDevice->GetClass()->GetMaxEffectiveRange(m_pShip, pDevice, NULL);
-	Metric rMaxRange2 = rMaxRange * rMaxRange;
-	for (i = 0; i < TargetingCtx.Targets.GetCount(); i++)
+	else
 		{
-		int iFireAngle;
-		CSpaceObject *pTarget = TargetingCtx.Targets[i];
-		Metric rDist2 = (pTarget->GetPos() - m_pShip->GetPos()).Length2();
+		CSpaceObject *pTarget = NULL;
+		int iFireSolution = -1;
+		Metric rDist2;
 
-		if (rDist2 < rMaxRange2 
-				&& pDevice->GetWeaponEffectiveness(m_pShip, pTarget) >= 0
-				&& pDevice->IsWeaponAligned(m_pShip, pTarget, NULL, &iFireAngle)
-				&& m_AICtx.CheckForFriendsInLineOfFire(m_pShip, pDevice, pTarget, iFireAngle, rMaxRange))
+		UpdateCtx.Targets.FindTargetInRange(*m_pShip, 
+				WeaponItem, 
+				m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
+				&pTarget,
+				&iFireSolution,
+				&rDist2);
+
+		CSpaceObject *pMissile = NULL;
+		int iMissileFireSolution = -1;
+		Metric rMissileDist2;
+
+		if (!UpdateCtx.Missiles.FindTargetInRange(*m_pShip, 
+					WeaponItem, 
+					m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
+					&pMissile, 
+					&iMissileFireSolution, 
+					&rMissileDist2)
+				|| (pTarget && rDist2 < rMissileDist2))
 			{
 			*retpTarget = pTarget;
-			*retiFireSolution = iFireAngle;
-			return;
+			*retiFireSolution = iFireSolution;
+			}
+		else
+			{
+			*retpTarget = pMissile;
+			*retiFireSolution = iMissileFireSolution;
 			}
 		}
-
-	//	If we get this far then no target found
-
-	*retpTarget = NULL;
-	*retiFireSolution = -1;
 	}
 
 CSpaceObject *CBaseShipAI::GetOrderGiver (void)
@@ -893,7 +863,7 @@ CSpaceObject *CBaseShipAI::GetPlayerOrderGiver (void) const
 		return m_pShip;
 	}
 
-CSpaceObject *CBaseShipAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CBaseShipAI::GetTarget (DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -917,7 +887,7 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 	//	unless they were targeting us.
 
 	if (!pAttacker->IsPlayer() 
-			&& pAttacker->GetTarget(CItemCtx()) != m_pShip)
+			&& pAttacker->GetTarget() != m_pShip)
 		NULL;
 
 	//	If the player hit us (and it seems to be on purpose) then raise an event
@@ -931,6 +901,53 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 
 	else
 		m_pShip->Communicate(pOrderGiver, msgWatchTargets);
+	}
+
+void CBaseShipAI::InitTargetList (SUpdateCtx &UpdateCtx) const
+
+//	CalcTargetsOfOpportunity
+//
+//	Returns a list of targets of opportunity.
+
+	{
+	//	Initialize the targets list if necessary
+
+	if (!UpdateCtx.Targets.IsValid())
+		{
+		//	If we are aggressive, then include ships that haven't fired 
+		//	their weapons recently
+
+		DWORD dwFlags = 0;
+		if (m_AICtx.IsAggressor())
+			dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS;
+
+		//	Include our target
+
+		dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_SOURCE_TARGET;
+
+		//	Include the player
+
+		if (m_fPlayerBlacklisted)
+			dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_PLAYER;
+		
+		//	Init
+
+		UpdateCtx.Targets.InitWithNearestVisibleEnemies(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), GetBase(), dwFlags);
+		}
+
+	//	Initialize the list of missiles, if necessary
+
+	if (!UpdateCtx.Missiles.IsValid())
+		{
+		if (m_AICtx.ShootsAllMissiles())
+			UpdateCtx.Missiles.InitWithNearestMissiles(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), 0);
+
+		else if (m_AICtx.ShootsTargetableMissiles())
+			UpdateCtx.Missiles.InitWithNearestTargetableMissiles(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), 0);
+
+		else
+			UpdateCtx.Missiles.InitEmpty();
+		}
 	}
 
 bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
@@ -947,7 +964,7 @@ bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 
 	//	If we're attacking the object, then we're angry at it.
 
-	if (GetTarget(CItemCtx()) == pObj)
+	if (GetTarget() == pObj)
 		return true;
 
 	//	Are we angry at the player?
@@ -1063,7 +1080,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 	DEBUG_CATCH
 	}
 
-DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -1071,9 +1088,9 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 
 	{
 	if (m_pOrderModule)
-		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2);
+		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 	else
-		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2);
+		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2, pData);
 	}
 
 void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)
@@ -1793,22 +1810,18 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 //	Upgrade the ship's weapon with a better one in cargo
 
 	{
-	int i;
-
 	//	Loop over all currently installed weapons
 
 	bool bWeaponsInstalled = false;
-	for (i = 0; i < m_pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = m_pShip->GetDevice(i);
-		if (!pDevice->IsEmpty() 
-				&& pDevice->GetCategory() == itemcatWeapon)
+		if (DeviceItem.GetCategory() == itemcatWeapon)
 			{
 			//	Loop over all uninstalled weapons and see if we can
 			//	find something better than this one.
 
 			CItem BestItem;
-			int iBestLevel = pDevice->GetLevel();
+			int iBestLevel = DeviceItem.GetLevel();
 
 			CItemListManipulator ItemList(m_pShip->GetItemList());
 			while (ItemList.MoveCursorForward())
@@ -1843,17 +1856,19 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 
 			//	If we found a better weapon, upgrade
 
-			if (BestItem.GetType())
+			if (!BestItem.IsEmpty())
 				{
+				int iSlot = DeviceItem.GetInstalledDevice()->GetDeviceSlot();
+
 				//	Uninstall the previous weapon
 
-				m_pShip->SetCursorAtDevice(ItemList, i);
+				m_pShip->SetCursorAtDevice(ItemList, iSlot);
 				m_pShip->RemoveItemAsDevice(ItemList);
 
 				//	Install the new item
 
 				ItemList.SetCursorAtItem(BestItem);
-				m_pShip->InstallItemAsDevice(ItemList, i);
+				m_pShip->InstallItemAsDevice(ItemList, iSlot);
 
 				bWeaponsInstalled = true;
 				}

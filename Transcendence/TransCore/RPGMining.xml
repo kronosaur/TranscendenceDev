@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidMiningSkill;">
+		<Properties>
+			<Constant id="rpg.miningLevels">
+				'(
+					{	id:'novice			minXP:0			yieldAdj:1.0	rank:0	}
+					{	id:'digger			minXP:1			yieldAdj:1.0	rank:1	}
+					{	id:'excavator		minXP:300		yieldAdj:1.05	rank:2	}
+					{	id:'wildcatter		minXP:600		yieldAdj:1.1	rank:3	}
+					{	id:'prospector		minXP:1200		yieldAdj:1.2	rank:4	}
+					{	id:'miner			minXP:2400		yieldAdj:1.35	rank:5	}
+					{	id:'expertMiner		minXP:4800		yieldAdj:1.5	rank:6	}
+					)
+			</Constant>
+			<Constant id="rpg.xpPerItem">6</Constant>"
+			<Constant id="rpg.xpPerFailedTry">0.5</Constant>"
+
+			<Global id="rpg.miningRank">0</Global>
+			<Global id="rpg.miningRankID">'novice</Global>
+			<Global id="rpg.miningXP">0</Global>
+			<Global id="rpg.miningYieldAdj">1.0</Global>
+
+			<Global id="rpg.debugMining">True</Global>
+
+			<DynamicGlobal id="rpg.newMiningRank">
+				(block (
+					(xp (typGetProperty &unidMiningSkill; 'rpg.miningXP))
+					(miningLevels (typGetProperty &unidMiningSkill; 'rpg.miningLevels))
+					)
+					(map miningLevels '(reduceMax original excludeNil) theEntry
+						(if (geq xp (@ theEntry 'minXP))
+							(@ theEntry 'rank)
+							)
+						)
+					)
+			</DynamicGlobal>
+		</Properties>
+
+		<Events>
+			<CheckPromotion>
+				(block (
+					(newRankDesc (typGetProperty gType 'rpg.newMiningRank))
+					(curRank (typGetProperty gType 'rpg.miningRank))
+					)
+					(if (!= curRank (@ newRankDesc 'rank))
+						(block ()
+							(typSetProperty gType 'rpg.miningRank (@ newRankDesc 'rank))
+							(typSetProperty gType 'rpg.miningRankID (@ newRankDesc 'id))
+							(typSetProperty gType 'rpg.miningYieldAdj (@ newRankDesc 'yieldAdj))
+
+							;	Return new rank
+
+							newRankDesc
+							)
+
+						;	No promotion
+
+						Nil
+						)
+					)
+			</CheckPromotion>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

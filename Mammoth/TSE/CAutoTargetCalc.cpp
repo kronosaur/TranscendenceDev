@@ -28,25 +28,24 @@ void CAutoTargetCalc::Init (const CSpaceObject &PlayerObj)
 //	Initializes. Call this before Update.
 
 	{
-	m_pPlayerTarget = PlayerObj.GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+	m_pPlayerTarget = PlayerObj.GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 
 	//	Check to see if the primary weapon requires autotargetting
 
-	const CInstalledDevice *pWeapon = PlayerObj.GetNamedDevice(devPrimaryWeapon);
-	if (pWeapon && pWeapon->IsEnabled())
+	if (const CDeviceItem Weapon = PlayerObj.GetNamedDeviceItem(devPrimaryWeapon))
 		{
-		CItemCtx ItemCtx(&PlayerObj, pWeapon);
-		m_bNeedsAutoTarget = pWeapon->GetClass()->NeedsAutoTarget(ItemCtx, &m_iMinFireArc, &m_iMaxFireArc);
+		if (Weapon.IsEnabled())
+			m_bNeedsAutoTarget = Weapon.NeedsAutoTarget(&m_iMinFireArc, &m_iMaxFireArc);
 		}
 
-	//	If the primary does not need it, check the missile launcher
+	//	Now check the launcher
 
-	const CInstalledDevice *pLauncher = PlayerObj.GetNamedDevice(devMissileWeapon);
-	if (pLauncher && pLauncher->IsEnabled())
+	if (const CDeviceItem Launcher = PlayerObj.GetNamedDeviceItem(devMissileWeapon))
 		{
-		CItemCtx ItemCtx(&PlayerObj, pLauncher);
 		int iLauncherMinFireArc, iLauncherMaxFireArc;
-		if (pLauncher->GetClass()->NeedsAutoTarget(ItemCtx, &iLauncherMinFireArc, &iLauncherMaxFireArc))
+
+		if (Launcher.IsEnabled() 
+				&& Launcher.NeedsAutoTarget(&iLauncherMinFireArc, &iLauncherMaxFireArc))
 			{
 			if (m_bNeedsAutoTarget)
 				CGeometry::CombineArcs(m_iMinFireArc, m_iMaxFireArc, iLauncherMinFireArc, iLauncherMaxFireArc, &m_iMinFireArc, &m_iMaxFireArc);

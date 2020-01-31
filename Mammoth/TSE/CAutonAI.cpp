@@ -176,7 +176,7 @@ CString CAutonAI::DebugCrashInfo (void)
 	return sResult;
 	}
 
-CSpaceObject *CAutonAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CAutonAI::GetTarget (DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -193,7 +193,7 @@ CSpaceObject *CAutonAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 		}
 	}
 
-DWORD CAutonAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CAutonAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //

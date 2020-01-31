@@ -208,7 +208,6 @@
 				damage=				"kinetic:14d8; momentum5; WMD5"
 				fireRate=			"45"
 				missileSpeed=		"45"
-				interaction=		"90"
 				hitPoints=			"5"
 				lifetime=			"67"
 				powerUse=			"160"

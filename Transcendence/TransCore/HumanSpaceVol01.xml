@@ -805,7 +805,7 @@
 	<!ENTITY stStKatsArcology285		"0x0010201C">
 	<!ENTITY stStKatsArcology315		"0x0010201D">
 	<!ENTITY stStKatsArcology345		"0x0010201E">
-	<!ENTITY stStKatsArcology			"0x0010201F">
+	<!ENTITY stStKatsArcologyOld		"0x0010201F">
 	<!ENTITY stIocrymMonument			"0x00102020">
 	<!ENTITY baStKatsArcologyBaseObsolete	"0x00102021">
 	<!ENTITY stDallMissionWreck			"0x00102022">
@@ -827,7 +827,7 @@
 	<!ENTITY scIAVHeavy					"0x0010300A">
 	<!ENTITY scManticore				"0x0010300B">
 	<!ENTITY evCommTrafficBehavior		"0x0010300C">
-	<!ENTITY evStKatsTrafficBehavior	"0x0010300D">
+	<!ENTITY evStKatsTrafficBehaviorOld	"0x0010300D">
 	
 	<!ENTITY itIncandescentStrawberries	"0x00104001">
 	<!ENTITY itIncandescentPeaches		"0x00104002">
@@ -1316,7 +1316,7 @@
 	<!ENTITY scVentariDestroyer			"0x080100C1">	<!-- Reclassified -->
 	<!ENTITY scVentariCruiser			"0x080100C1">	<!-- For compatibility -->
 
-	<!ENTITY stAbbasidOutpost			"0x08010100">
+	<!ENTITY stAbbasidOutpostCompatible	"0x08010100">
 	<!ENTITY itAbbasidThanogram			"0x08010101">
 
 	<!ENTITY stPteravoreLair			"0x08010140">
@@ -1849,6 +1849,8 @@
 	<!ENTITY vtAdvancedScannerPower		"0x0010016E">
 	<!ENTITY baSeismicScannerPower		"0x0010016F">
 	<!ENTITY rsMiningPod				"0x00100170">
+	<!ENTITY itMagmaCutter				"0x00100171">
+	<!ENTITY itProtonDrill				"0x00100172">
 	
 	<!-- 0180-018F OUTLAWS -->
 	
@@ -1897,6 +1899,7 @@
 	
 	<!ENTITY itAmmoBoxXM900 			"0x001001F0">
 	<!ENTITY smTinkerSpace	 			"0x001001F1">
+	<!ENTITY vtTinkerEnhancement		"0x001001F2">
     
     <!-- 0200-020F BLACK MARKET -->
     
@@ -1952,6 +1955,10 @@
 	<!ENTITY rsMiningColonyPrimordial	"0x00100252">
 	<!ENTITY rsMiningColonyRocky		"0x00100253">
 	<!ENTITY rsMiningColonyVolcanic		"0x00100254">
+	<!ENTITY dsCommonwealthMiningInfo	"0x00100255">
+	<!ENTITY dsCommonwealthMiningPromotion	"0x00100256">
+	<!ENTITY unidIndependentMiner		"0x00100257">
+	<!ENTITY dsCommonwealthAsteroidInfo	"0x00100258">
 
 	<!-- 0270-028F SOLON CORPORATION -->
 
@@ -2242,6 +2249,11 @@
 
 	<!ENTITY smAbbasidSpace				"0x00100600">
 
+	<!ENTITY rsAbbasidOutpost			"0x00100601">
+	<!ENTITY stAbbasidOutpostWall		"0x00100602">
+	<!ENTITY stAbbasidOutpost			"0x00100603">
+	<!ENTITY rsAbbasidOutpostWalls		"0x00100604">
+
 	<!-- 0620-063F GAIAN TERRAFORMERS -->
 
 	<!ENTITY smGaianSpace				"0x00100620">
@@ -2288,6 +2300,11 @@
 	<!ENTITY scWolfenC2					"0x00100701">
 	<!ENTITY scWolfenC3					"0x00100702">
 	<!ENTITY vtUniversityEnhancement	"0x00100703">
+
+	<!ENTITY stStKatsArcology			"0x00100704">
+	<!ENTITY stStKatsArcologySegment	"0x00100705">
+	<!ENTITY rsStKatsArcologySegments	"0x00100706">
+	<!ENTITY evStKatsTrafficBehavior	"0x00100707">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2413,6 +2430,7 @@
 	<Module filename="CorporateHierarchy.xml"/>
 	<Module filename="CorporateInsurance.xml"/>
 	<Module filename="CorporateTradingPost.xml"/>
+	<Module filename="Makayev.xml"/>
 	<Module filename="Rasiermesser.xml"/>
 	<Module filename="RasiermesserMission01.xml"/>
 
@@ -2474,6 +2492,7 @@
 	<Module filename="ArmorEnhancementItems.xml"/>
 	<Module filename="ArmorRepairItems.xml"/>
 	<Module filename="Barricades.xml"/>
+	<Module filename="MiningPods.xml"/>
 	<Module filename="MiscItems.xml"/>
 	<Module filename="QuantumCPU.xml"/>
 	<Module filename="ShieldEnhancementItems.xml"/>
@@ -2519,6 +2538,8 @@
 	<!-- St. Katharine's Star -->
 
 	<Module filename="Dall01.xml"/>
+	<Module filename="FirstContactMonument.xml"/>
+	<Module filename="NewVictoria.xml"/>
 	<Module filename="StKatharines.xml"/>
 
 	<!-- Star Systems -->

@@ -97,6 +97,37 @@ class CSmartZAdjust
 		DiceRange m_ZOffset;
 	};
 
+class CSmartStationCreateOptions
+	{
+	public:
+		CSmartStationCreateOptions (SSystemCreateCtx &Ctx) :
+				m_Ctx(Ctx)
+			{ }
+
+		~CSmartStationCreateOptions (void)
+			{
+			if (m_bRestore)
+				{
+				m_Ctx.bHasStationCreate = m_bOldHasStationCreate;
+				m_Ctx.StationCreate = m_OldStationCreate;
+				}
+			}
+
+		void InitFromSimpleXML (const CXMLElement &XMLDesc)
+			{
+			m_bOldHasStationCreate = m_Ctx.bHasStationCreate;
+			m_bRestore = m_Ctx.StationCreate.MergeFromSimpleXML(XMLDesc, &m_OldStationCreate);
+			if (m_bRestore)
+				m_Ctx.bHasStationCreate = true;
+			}
+
+	private:
+		SSystemCreateCtx &m_Ctx;
+		bool m_bRestore = false;
+		bool m_bOldHasStationCreate = false;
+		CStationCreateOptions m_OldStationCreate;
+	};
+
 class CSmartSystemCreateOptions
 	{
 	public:

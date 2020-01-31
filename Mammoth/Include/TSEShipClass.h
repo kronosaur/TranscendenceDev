@@ -35,7 +35,7 @@ class CShipStandard : public TRefCounted<CShipStandard>
 		CShipStandard (void) { }
 		CShipStandard (const TInitDefaults &Src);
 
-		inline Metric GetValue (EFields iField) const { return m_rValue[iField]; }
+		Metric GetValue (EFields iField) const { return m_rValue[iField]; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement &Desc);
 
 		static const CShipStandard &GetDefaults (void) { return m_Default; }
@@ -87,13 +87,13 @@ class CArmorLimits
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
 		void CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Summary) const;
 		EResults CanInstallArmor (const CItem &Item) const;
-		inline const CString &GetMaxArmorClass (void) const { return m_sMaxArmorClass; }
-		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
-		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
-		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
-		inline const CString &GetStdArmorClass (void) const { return m_sStdArmorClass; }
-		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
-		inline bool HasArmorLimits (void) const { return (m_iType != typeNone); }
+		const CString &GetMaxArmorClass (void) const { return m_sMaxArmorClass; }
+		int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
+		int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
+		int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
+		const CString &GetStdArmorClass (void) const { return m_sStdArmorClass; }
+		int GetStdArmorMass (void) const { return m_iStdArmorMass; }
+		bool HasArmorLimits (void) const { return (m_iType != typeNone); }
 		void InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio);
 		ALERROR InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pLimits);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iHullMass, int iMaxSpeed);
@@ -147,34 +147,34 @@ class CHullDesc
 	public:
 
 		ALERROR Bind (SDesignLoadCtx &Ctx);
-		inline const CArmorLimits &GetArmorLimits (void) const { return m_ArmorLimits; }
-		inline int GetCargoSpace (void) const { return m_iCargoSpace; }
-		inline int GetCounterIncrementRate(void) const { return m_iCounterIncrementRate; }
-		inline int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
-		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
-		inline Metric GetExtraPoints (void) const { return m_rExtraPoints; }
-		inline int GetMass (void) const { return m_iMass; }
-		inline int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
-		inline int GetMaxCounter(void) const { return m_iMaxCounter; }
-		inline int GetMaxDevices (void) const { return m_iMaxDevices; }
-		inline int GetMaxNonWeapons (void) const { return m_iMaxNonWeapons; }
-		inline int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
-		inline int GetMaxWeapons (void) const { return m_iMaxWeapons; }
-		inline int GetSize (void) const { return m_iSize; }
-		inline const CCurrencyAndValue &GetValue (void) const { return m_Value; }
-		inline bool HasArmorLimits (void) const { return m_ArmorLimits.HasArmorLimits(); }
-		inline void InitCyberDefenseLevel (int iLevel) { if (m_iCyberDefenseLevel == -1) m_iCyberDefenseLevel = iLevel; }
-		inline void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio) { m_ArmorLimits.InitDefaultArmorLimits(m_iMass, iMaxSpeed, rThrustRatio); }
+		const CArmorLimits &GetArmorLimits (void) const { return m_ArmorLimits; }
+		int GetCargoSpace (void) const { return m_iCargoSpace; }
+		int GetCounterIncrementRate(void) const { return m_iCounterIncrementRate; }
+		int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
+		const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
+		Metric GetExtraPoints (void) const { return m_rExtraPoints; }
+		int GetMass (void) const { return m_iMass; }
+		int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
+		int GetMaxCounter(void) const { return m_iMaxCounter; }
+		int GetMaxDevices (void) const { return m_iMaxDevices; }
+		int GetMaxNonWeapons (void) const { return m_iMaxNonWeapons; }
+		int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
+		int GetMaxWeapons (void) const { return m_iMaxWeapons; }
+		int GetSize (void) const { return m_iSize; }
+		const CCurrencyAndValue &GetValue (void) const { return m_Value; }
+		bool HasArmorLimits (void) const { return m_ArmorLimits.HasArmorLimits(); }
+		void InitCyberDefenseLevel (int iLevel) { if (m_iCyberDefenseLevel == -1) m_iCyberDefenseLevel = iLevel; }
+		void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio) { m_ArmorLimits.InitDefaultArmorLimits(m_iMass, iMaxSpeed, rThrustRatio); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
-		inline bool IsTimeStopImmune (void) const { return m_bTimeStopImmune; }
+		bool IsTimeStopImmune (void) const { return m_bTimeStopImmune; }
 #ifdef APPLY_DEFAULT_ARMOR_LIMITS
-		inline bool NeedsDefaultArmorLimits (void) const { return (m_ArmorLimits.GetMaxArmorMass() == 0 && GetMass() > 0 && GetMass() < 1000); }
+		bool NeedsDefaultArmorLimits (void) const { return (m_ArmorLimits.GetMaxArmorMass() == 0 && GetMass() > 0 && GetMass() < 1000); }
 #else
-		inline bool NeedsDefaultArmorLimits (void) const { return false; }
+		bool NeedsDefaultArmorLimits (void) const { return false; }
 #endif
-		inline void SetSize (int iSize) { m_iSize = iSize; }
-		inline void SetMaxCargoSpace (int iCargoSpace) { m_iMaxCargoSpace = iCargoSpace; }
-		inline void SetValue (const CCurrencyAndValue &Value) { m_Value = Value; }
+		void SetSize (int iSize) { m_iSize = iSize; }
+		void SetMaxCargoSpace (int iCargoSpace) { m_iMaxCargoSpace = iCargoSpace; }
+		void SetValue (const CCurrencyAndValue &Value) { m_Value = Value; }
 
 	private:
 
@@ -231,9 +231,9 @@ class CHullPointsCalculator
 
 		CHullPointsCalculator (const CShipClass &Class, const CShipStandard &Standard);
 
-		inline Metric GetField (int iIndex) const { return m_Data[iIndex]; }
-		inline int GetFieldCount (void) const { return fieldCount; }
-		inline Metric GetTotalPoints (void) const { return m_rTotalPoints; }
+		Metric GetField (int iIndex) const { return m_Data[iIndex]; }
+		int GetFieldCount (void) const { return fieldCount; }
+		Metric GetTotalPoints (void) const { return m_rTotalPoints; }
 		CurrencyValue GetValueInCredits (void) const;
 
 		static CString GetFieldName (int iIndex);
@@ -256,14 +256,14 @@ class CShipwreckDesc
 		void ClearMarks (void);
 		bool CreateEmptyWreck (CSystem &System, CShipClass *pClass, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck) const;
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const;
-		inline CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
+		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		size_t GetMemoryUsage (void) const;
-		inline int GetStructuralHP (void) const { return m_iStructuralHP; }
-		inline int GetWreckChance (void) const { return m_iLeavesWreck; }
+		int GetStructuralHP (void) const { return m_iStructuralHP; }
+		int GetWreckChance (void) const { return m_iLeavesWreck; }
 		CObjectImageArray *GetWreckImage (CShipClass *pClass, int iRotation) const;
 		CStationType *GetWreckType (void) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Metric rHullMass);
-		inline bool IsRadioactive (void) const { return m_bRadioactiveWreck; }
+		bool IsRadioactive (void) const { return m_bRadioactiveWreck; }
 		void MarkImages (CShipClass *pClass, int iRotation) const;
 		void SweepImages (void);
 
@@ -272,7 +272,7 @@ class CShipwreckDesc
 	private:
 		void AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const;
 		int CalcDeviceComponentChance (const CItem &Item, bool bDropDamaged) const;
-		inline int CalcDeviceDestroyChance (void) const { return 100 - Min(GetWreckChance(), 50); }
+		int CalcDeviceDestroyChance (void) const { return 100 - Min(GetWreckChance(), 50); }
 		ItemFates CalcDeviceFate (CShip *pSource, const CItem &Item, CSpaceObject *pWreck, bool bDropDamaged) const;
 		bool CreateWreckImage (CShipClass *pClass, int iRotationFrame, CObjectImageArray &Result) const;
 		void InitDamageImage (void) const;
@@ -359,10 +359,10 @@ class CShipClass : public CDesignType
 		CShipClass (void);
 		virtual ~CShipClass (void);
 
-		inline int Angle2Direction (int iAngle) const { return m_Perf.GetIntegralRotationDesc().GetFrameIndex(iAngle); }
-		inline int AlignToRotationAngle (int iAngle) const { return m_Perf.GetIntegralRotationDesc().AlignToRotationAngle(iAngle); }
+		int Angle2Direction (int iAngle) const { return m_Perf.GetIntegralRotationDesc().GetFrameIndex(iAngle); }
+		int AlignToRotationAngle (int iAngle) const { return m_Perf.GetIntegralRotationDesc().AlignToRotationAngle(iAngle); }
 		Metric CalcFuelEfficiency (const CDeviceDescList &Devices) const;
-		inline int CalcImageSize (void) const { return m_Interior.CalcImageSize(const_cast<CShipClass *>(this)); }
+		int CalcImageSize (void) const { return m_Interior.CalcImageSize(const_cast<CShipClass *>(this)); }
 		Metric CalcMass (const CDeviceDescList &Devices) const;
 		int CalcRatedPowerUse (const CDeviceDescList &Devices) const;
 		int CalcScore (void);
@@ -374,76 +374,76 @@ class CShipClass : public CDesignType
 		bool FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDesc *retDesc) const;
 
 		static const DWORD GDFLAG_NO_DEVICE_SLOT_SEARCH = 0x00000001;
-		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0);
+		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0) const;
 
 		CString GenerateShipName (DWORD *retdwFlags) const;
-		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
-        inline const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
+		const CAISettings &GetAISettings (void) { return m_AISettings; }
+        const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
 		DWORD GetCategoryFlags (void) const;
         const CCargoDesc &GetCargoDesc (const CItem **retpCargoItem = NULL) const;
-		inline CGenericType *GetCharacter (void) { return m_Character; }
-		inline CGenericType *GetCharacterClass (void) { return m_CharacterClass; }
-		inline Metric GetCombatStrength (void) const { return m_rCombatStrength; }
-		inline int GetCyberDefenseLevel (void) const { return m_Hull.GetCyberDefenseLevel(); }
-		inline DWORD GetDefaultBkgnd (void) const { return m_dwDefaultBkgnd; }
-		inline CDesignType *GetDefaultEventHandler (void) const { return m_EventHandler; }
-		inline CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
+		CGenericType *GetCharacter (void) { return m_Character; }
+		CGenericType *GetCharacterClass (void) { return m_CharacterClass; }
+		Metric GetCombatStrength (void) const { return m_rCombatStrength; }
+		int GetCyberDefenseLevel (void) const { return m_Hull.GetCyberDefenseLevel(); }
+		DWORD GetDefaultBkgnd (void) const { return m_dwDefaultBkgnd; }
+		CDesignType *GetDefaultEventHandler (void) const { return m_EventHandler; }
+		CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
 		CString GetDesc (void) const;
-		inline IDeviceGenerator *GetDeviceSlots (void) const { return m_pDeviceSlots; }
-		inline const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
+		IDeviceGenerator *GetDeviceSlots (void) const { return m_pDeviceSlots; }
+		const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
 		CVector GetDockingPortOffset (int iRotation);
         const CDriveDesc &GetDriveDesc (const CItem **retpDriveItem = NULL) const;
-		inline const CObjectEffectDesc &GetEffectsDesc (void) const { return m_Effects; }
+		const CObjectEffectDesc &GetEffectsDesc (void) const { return m_Effects; }
 		IShipGenerator *GetEscorts (void) { return m_pEscorts; }
 		CWeaponFireDesc *GetExplosionType (CShip *pShip) const;
-		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
-		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
+		CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
+		CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
 		FrequencyTypes GetFrequency (void) const { return m_Frequency; }
-        const CObjectImageArray &GetHeroImage (void);
-		inline const CHullDesc &GetHullDesc (void) const { return m_Hull; }
-		inline const CDriveDesc &GetHullDriveDesc (void) const { return m_DriveDesc; }
-		inline const CReactorDesc *GetHullReactorDesc (void) { return &m_ReactorDesc; }
-		inline const CRotationDesc &GetHullRotationDesc (void) const { return m_RotationDesc; }
-		inline const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
+        const CObjectImageArray &GetHeroImage (void) const;
+		const CHullDesc &GetHullDesc (void) const { return m_Hull; }
+		const CDriveDesc &GetHullDriveDesc (void) const { return m_DriveDesc; }
+		const CReactorDesc *GetHullReactorDesc (void) { return &m_ReactorDesc; }
+		const CRotationDesc &GetHullRotationDesc (void) const { return m_RotationDesc; }
+		const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
 		int GetHullSectionAtAngle (int iAngle);
-		inline int GetHullSectionCount (void) const { return m_Armor.GetCount(); }
+		int GetHullSectionCount (void) const { return m_Armor.GetCount(); }
 		CString GetHullSectionName (int iIndex) const;
 		CCurrencyAndValue GetHullValue (CShip *pShip = NULL) const;
 		const CObjectImageArray &GetImage (const CImageFilterStack *pFilters = NULL) const;
-		inline int GetImageViewportSize (void) const { return m_Image.GetSimpleImage().GetImageViewportSize(); }
-		inline const CIntegralRotationDesc &GetIntegralRotationDesc (void) const { return m_Perf.GetIntegralRotationDesc(); }
-        inline const CAttributeDataBlock &GetInitialData (void) const { return m_InitialData; }
-		inline const CShipInteriorDesc &GetInteriorDesc (void) const { return m_Interior; }
+		int GetImageViewportSize (void) const { return m_Image.GetSimpleImage().GetImageViewportSize(); }
+		const CIntegralRotationDesc &GetIntegralRotationDesc (void) const { return m_Perf.GetIntegralRotationDesc(); }
+        const CAttributeDataBlock &GetInitialData (void) const { return m_InitialData; }
+		const CShipInteriorDesc &GetInteriorDesc (void) const { return m_Interior; }
 		int GetMaxStructuralHitPoints (void) const;
         const CPlayerSettings *GetPlayerSettings (void) const;
 		CString GetPlayerSortString (void) const;
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
-		inline IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
+		IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
         const CReactorDesc &GetReactorDesc (const CItem **retpReactorItem = NULL) const;
-		inline int GetRotationAngle (void) { return m_Perf.GetIntegralRotationDesc().GetFrameAngle(); }
-		inline const CRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
-		inline int GetRotationRange (void) { return m_Perf.GetIntegralRotationDesc().GetFrameCount(); }
-		inline int GetScore (void) { return m_iScore; }
-		inline DWORD GetShipNameFlags (void) { return m_dwShipNameFlags; }
+		int GetRotationAngle (void) { return m_Perf.GetIntegralRotationDesc().GetFrameAngle(); }
+		const CRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
+		int GetRotationRange (void) { return m_Perf.GetIntegralRotationDesc().GetFrameCount(); }
+		int GetScore (void) { return m_iScore; }
+		DWORD GetShipNameFlags (void) { return m_dwShipNameFlags; }
 		CString GetShortName (void) const;
 		const CShipStandard &GetStandard (void) const;
-		inline Metric GetThrustRatio (void) const { return m_rThrustRatio; }
-		inline const CString &GetClassName (void) const { return m_sName; }
-		inline const CString &GetManufacturerName (void) const { return m_sManufacturer; }
-		inline const CString &GetShipTypeName (void) const { return m_sTypeName; }
-		inline int GetWreckChance (void) const { return m_WreckDesc.GetWreckChance(); }
-		inline const CShipwreckDesc &GetWreckDesc (void) const { return m_WreckDesc; }
-		inline bool HasDockingPorts (void) const { return (m_DockingPorts.GetPortCount() > 0 || !m_pDefaultScreen.IsEmpty()); }
-		inline bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
+		Metric GetThrustRatio (void) const { return m_rThrustRatio; }
+		const CString &GetClassName (void) const { return m_sName; }
+		const CString &GetManufacturerName (void) const { return m_sManufacturer; }
+		const CString &GetShipTypeName (void) const { return m_sTypeName; }
+		int GetWreckChance (void) const { return m_WreckDesc.GetWreckChance(); }
+		const CShipwreckDesc &GetWreckDesc (void) const { return m_WreckDesc; }
+		bool HasDockingPorts (void) const { return (m_DockingPorts.GetPortCount() > 0 || !m_pDefaultScreen.IsEmpty()); }
+		bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);
         void InitPerformance (SShipPerformanceCtx &Ctx) const;
 		void InstallEquipment (CShip *pShip);
-        inline bool IsDebugOnly (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsDebugOnly()); }
-		inline bool IsIncludedInAllAdventures (void) { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsIncludedInAllAdventures()); }
-		inline bool IsPlayerShip (void) { return (GetPlayerSettings() != NULL); }
-		inline bool IsShipSection (void) const { return m_fShipCompartment; }
-		inline bool IsShownAtNewGame (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsInitialClass() && !IsVirtual()); }
-		inline bool IsTimeStopImmune (void) { return m_Hull.IsTimeStopImmune(); }
+        bool IsDebugOnly (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsDebugOnly()); }
+		bool IsIncludedInAllAdventures (void) { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsIncludedInAllAdventures()); }
+		bool IsPlayerShip (void) { return (GetPlayerSettings() != NULL); }
+		bool IsShipSection (void) const { return m_fShipCompartment; }
+		bool IsShownAtNewGame (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsInitialClass() && !IsVirtual()); }
+		bool IsTimeStopImmune (void) { return m_Hull.IsTimeStopImmune(); }
 		void MarkImages (bool bMarkDevices);
 		void Paint (CG32bitImage &Dest, 
 					int x, 
@@ -453,7 +453,7 @@ class CShipClass : public CDesignType
 					int iTick, 
 					bool bThrusting = false,
 					bool bRadioactive = false,
-					DWORD byInvisible = 0);
+					DWORD byInvisible = 0) const;
 		void PaintDevicePositions (CG32bitImage &Dest, int x, int y, const CDeviceDescList &Devices, int iShipRotation) const;
 		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
 		void PaintInteriorCompartments (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
@@ -478,8 +478,8 @@ class CShipClass : public CDesignType
 						const ViewportTransform &Trans, 
 						int iDirection, 
 						int iTick,
-						bool bInFrontOnly);
-		inline bool ShowsMapLabel (void) const { return HasDockingPorts(); }
+						bool bInFrontOnly) const;
+		bool ShowsMapLabel (void) const { return HasDockingPorts(); }
 
 		//	CDesignType overrides
 		static const CShipClass *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designShipClass) ? (CShipClass *)pType : NULL); }
@@ -508,7 +508,6 @@ class CShipClass : public CDesignType
 		virtual void OnClearMark (void) override { m_WreckDesc.ClearMarks(); }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
-		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
         virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
@@ -542,7 +541,7 @@ class CShipClass : public CDesignType
 		Metric CalcCombatStrength (void) const;
 		Metric CalcDamageRate (int *retiAveWeaponLevel = NULL, int *retiMaxWeaponLevel = NULL) const;
 		Metric CalcDefenseRate (void) const;
-		inline Metric CalcDodgeRate (void) const { return CalcManeuverValue(true); }
+		Metric CalcDodgeRate (void) const { return CalcManeuverValue(true); }
 		CurrencyValue CalcHullValue (const CShipStandard &Standard, Metric *retrPoints = NULL) const;
 		int CalcLevel (void) const;
 		Metric CalcManeuverValue (bool bDodge = false) const;
@@ -559,7 +558,7 @@ class CShipClass : public CDesignType
 		void FindBestMissile (CDeviceClass *pLauncher, IItemGenerator *pItems, CItemType **retpMissile) const;
 		void FindBestMissile (CDeviceClass *pLauncher, const CItemList &Items, CItemType **retpMissile) const;
 		CString GetGenericName (DWORD *retdwFlags = NULL) const;
-		inline int GetManeuverDelay (void) const { return m_Perf.GetIntegralRotationDesc().GetManeuverDelay(); }
+		int GetManeuverDelay (void) const { return m_Perf.GetIntegralRotationDesc().GetManeuverDelay(); }
 		void InitShipNamesIndices (void);
 
 		static int CalcDefaultSize (const CObjectImageArray &Image);
@@ -634,7 +633,7 @@ class CShipClass : public CDesignType
 		//	Image
 
 		CCompositeImageDesc m_Image;			//	Image of ship
-        CObjectImageArray m_HeroImage;          //  Large image
+        mutable CObjectImageArray m_HeroImage;	//  Large image
 		CObjectEffectDesc m_Effects;			//	Effects for ship
 
 		//	Exhaust

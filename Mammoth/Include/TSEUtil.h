@@ -64,6 +64,7 @@ inline int AngleBearing (int iDir, int iTarget)
 	else
 		return iBearing;
 	}
+inline int Seconds2Ticks (Metric rSeconds) { return mathRound(rSeconds / g_SecondsPerUpdate); }
 inline Metric Ticks2Seconds (int iTicks) { return (Metric)iTicks * g_SecondsPerUpdate; }
 
 //	Debugging Support
@@ -660,7 +661,7 @@ class CDamageAdjDesc
 		ALERROR InitFromArray (int *pTable);
 		ALERROR InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
 		ALERROR InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsDefault = false);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, bool bIsDefault = false);
 		bool IsEmpty (void) const;
 
 		static int GetBonusFromAdj (int iDamageAdj, int iDefault = 100);
@@ -721,6 +722,7 @@ class CPerceptionCalc
 		bool IsVisibleInLRS (CSpaceObject *pSource, CSpaceObject *pTarget) const;
 		void SetPerception (int iPerception) { m_iPerception = iPerception; }
 
+		static Metric GetMaxDist (int iPerception);
 		static Metric GetRange (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange[iIndex])); }
 		static Metric GetRange2 (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange2[iIndex])); }
 		static int GetRangeIndex (int iStealth, int iPerception);

@@ -35,11 +35,12 @@ void CGDetailsArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	DEBUG_TRY
 
 	CDetailArea Painter(*g_pUniverse, m_VI, m_Theme);
+	Painter.SetData(m_pData);
 	Painter.SetBackColor(m_rgbBackColor);
 	Painter.SetColor(m_rgbTextColor);
 	Painter.SetTabRegion(m_cyTabRegions);
 
-	Painter.Paint(Dest, rcRect, m_pData);
+	Painter.Paint(Dest, rcRect);
 
 	DEBUG_CATCH
 	}

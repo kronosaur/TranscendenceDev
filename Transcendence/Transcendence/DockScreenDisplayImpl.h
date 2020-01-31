@@ -16,7 +16,7 @@ class CDockScreenCarousel : public IDockScreenDisplay
 		//	IDockScreenDisplay
 
 		virtual ICCItem *OnGetCurrentListEntry (void) const override;
-		virtual bool OnGetDefaultBackground (SBackgroundDesc *retDesc) override { retDesc->iType = backgroundNone; return true; }
+		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override { retDesc->iType = EDockScreenBackground::none; return true; }
 		virtual int OnGetListCursor (void) const override { return m_pControl->GetCursor(); }
 		virtual IListData *OnGetListData (void) override { return m_pControl->GetList(); }
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pControl->GetSource(); }
@@ -51,7 +51,7 @@ class CDockScreenDetailsPane : public IDockScreenDisplay
 		//	IDockScreenDisplay
 
 		virtual ICCItem *OnGetCurrentListEntry (void) const override;
-		virtual bool OnGetDefaultBackground (SBackgroundDesc *retDesc) override { retDesc->iType = backgroundNone; return true; }
+		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override { retDesc->iType = EDockScreenBackground::none; return true; }
 		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;
 		virtual void OnShowItem (void) override;
 		virtual void OnShowPane (bool bNoListNavigation) override;
@@ -94,7 +94,7 @@ class CDockScreenList : public IDockScreenDisplay
 		virtual void OnDeleteCurrentItem (int iCount) override;
 		virtual const CItem &OnGetCurrentItem (void) const override;
 		virtual ICCItem *OnGetCurrentListEntry (void) const override;
-		virtual bool OnGetDefaultBackground (SBackgroundDesc *retDesc) override { retDesc->iType = backgroundNone; return true; }
+		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override { retDesc->iType = EDockScreenBackground::none; return true; }
 		virtual CItemListManipulator &OnGetItemListManipulator (void) override { return m_pItemListControl->GetItemListManipulator(); }
 		virtual int OnGetListCursor (void) const override { return m_pItemListControl->GetCursor(); }
 		virtual IListData *OnGetListData (void) override { return m_pItemListControl->GetList(); }
@@ -208,7 +208,7 @@ class CDockScreenSelector : public IDockScreenDisplay
 		virtual void OnDeleteCurrentItem (int iCount) override;
 		virtual const CItem &OnGetCurrentItem (void) const override;
 		virtual ICCItem *OnGetCurrentListEntry (void) const override;
-		virtual bool OnGetDefaultBackground (SBackgroundDesc *retDesc) override;
+		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override;
 		virtual int OnGetListCursor (void) const override { return m_pControl->GetCursor(); }
 		virtual IListData *OnGetListData (void) override { return m_pControl->GetList(); }
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pControl->GetSource(); }

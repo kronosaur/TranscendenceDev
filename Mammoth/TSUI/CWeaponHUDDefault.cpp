@@ -80,7 +80,7 @@ void CWeaponHUDDefault::GetBounds (int *retWidth, int *retHeight) const
 	*retHeight = DISPLAY_HEIGHT;
 	}
 
-ALERROR CWeaponHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
+bool CWeaponHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 //	InitFromXML
 //
@@ -88,16 +88,24 @@ ALERROR CWeaponHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass,
 
 	{
 	ALERROR error;
+	SDesignLoadCtx Ctx;
 
 	//	Load the image
 
-	if (error = m_BackImage.InitFromXML(Ctx, 
-			pDesc->GetContentElementByTag(IMAGE_TAG)))
-		return ComposeLoadError(Ctx, ERR_WEAPON_DISPLAY_NEEDED);
+	if (CXMLElement *pImage = CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG))
+		{
+		if (error = m_BackImage.InitFromXML(Ctx, pImage))
+			return ComposeLoadError(ERR_WEAPON_DISPLAY_NEEDED, retsError);
+		}
+
+	//	Bind
+
+	if (Bind(Ctx) != NOERROR)
+		return ComposeLoadError(Ctx.sError, retsError);
 
 	//	Done
 
-	return NOERROR;
+	return true;
 	}
 
 void CWeaponHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
@@ -142,15 +150,16 @@ void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x
 	CInstalledDevice *pDevice = pShip->GetNamedDevice(iDev);
 	if (pDevice)
 		{
+		CItemCtx ItemCtx(pShip, pDevice);
 		CDeviceClass *pClass = pDevice->GetClass();
 
 		CString sVariant;
 		int iAmmoLeft;
-		pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft);
+		pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft, NULL, true);
 		int iSelectedFireAmmoLeft = pShip->GetAmmoForSelectedLinkedFireWeapons(pDevice);
 		if (iSelectedFireAmmoLeft >= 0)
 			iAmmoLeft = iSelectedFireAmmoLeft;
-		CString sDevName = pClass->GetName();
+		CString sDevName = pDevice->GetItem()->GetNounPhrase(nounDuplicateModifier | nounNoModifiers | nounHUDName);
 
 		//	Paint the bonus
 
@@ -257,9 +266,8 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 	{
 	//	Skip if we don't have a ship
 
-	CShip *pShip;
-	if (Ctx.pSource == NULL
-			|| (pShip = Ctx.pSource->AsShip()) == NULL)
+	CShip *pShip = Ctx.Source.AsShip();
+	if (pShip == NULL)
 		return;
 
 	//	Set up some metrics
@@ -338,7 +346,7 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 	//	Paint the target
 
-	CSpaceObject *pTarget = pShip->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+	CSpaceObject *pTarget = pShip->GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 	if (pTarget)
 		{
 		//	Paint image
@@ -360,8 +368,24 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 			Ctx.fNoRecon = true;
 			Ctx.fNoDockedShips = true;
 			Ctx.fNoSelection = true;
+            Ctx.fShowSatellites = true;
 
-			pTarget->Paint(m_Target, TARGET_IMAGE_X, TARGET_IMAGE_Y, Ctx);
+			int xCenter = TARGET_IMAGE_X;
+			int yCenter = TARGET_IMAGE_Y;
+
+			//	If we've docked with a satellite of a composite object, then we 
+			//	figure out the parent so that we can paint the entire composite.
+
+			CSpaceObject *pBase = pTarget->GetBase();
+			if (pBase && pTarget->IsSatelliteSegmentOf(*pBase))
+				{
+				Ctx.XForm.Transform(pBase->GetPos(), &xCenter, &yCenter);
+				Ctx.pObj = pBase;
+				}
+
+			//	Paint
+
+			Ctx.pObj->Paint(m_Target, xCenter, yCenter, Ctx);
 
 			//	Blt on buffer through the target mask
 

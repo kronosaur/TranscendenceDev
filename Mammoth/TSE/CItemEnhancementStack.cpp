@@ -93,8 +93,10 @@ void CItemEnhancementStack::AccumulateAttributes (const CItem &Item, TArray<SDis
 		//	Only add this as an enhancement if the raw (unenhanced device) 
 		//	doesn't already have it.
 
-		CDeviceClass *pClass = Item.GetDeviceClass();
-		if (pClass && !pClass->IsTrackingWeapon(CItemCtx()))
+		CItem BasicItem(Item.GetType(), 1);
+		const CDeviceItem DeviceItem = BasicItem.AsDeviceItem();
+
+		if (DeviceItem.IsTrackingWeapon())
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+tracking"), true));
 		}
 	}
@@ -605,6 +607,20 @@ bool CItemEnhancementStack::IsEMPImmune (void) const
 
 	for (i = 0; i < m_Stack.GetCount(); i++)
 		if (m_Stack[i].IsEMPImmune())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsMissileDefense (void) const
+
+//	IsMissileDefense
+//
+//	Returns TRUE if we give missile defense.
+
+	{
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsMissileDefense())
 			return true;
 
 	return false;

@@ -65,6 +65,36 @@
 
 	</ItemType>
 
+	<ItemType UNID="&itTestWeaponRelativistic;"
+			name=				"relativistic weapon"
+			attributes=			"testItem"
+
+			level=				"3-8"
+			frequency=			"common"
+
+			value=				"1000"
+			mass=				"3000"
+
+			description=		"Test weapon: relativistic."
+			>
+
+		<Image imageID="&rsItemsNAMI1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"continuousBeam"
+				repeating=			"4"
+
+				damage=				"antimatter:2d20"
+				fireRate=			"16"
+				relativisticSpeed=	"100"
+				lifetime=			"3"
+				powerUse=			"10"
+
+				effect=				"&efKineticBoltDefault;"
+				sound=				"&snRecoillessCannon;"
+				/>
+	</ItemType>
+
 	<ItemType UNID="&itTestWeaponScaled;"
 			name=				"scaled weapon"
 			attributes=			"testItem"

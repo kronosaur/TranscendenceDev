@@ -163,33 +163,6 @@
 
 <!-- LEVEL III -->
 
-	<!-- Miner's Cargo Hold -->
-
-	<ItemType UNID="&itMinersCargoHold;"
-			name=				"miner's cargo hold"
-			attributes=			"commonwealth, majorItem, minersHold, miningEquipment"
-			  
-			level=				"3"
-			frequency=			"rare"
-
-			value=				"2000"
-			mass=				"1250"
-			  
-			description=		"Designed for mining ships, this cargo hold has grapples to bring ore on board."
-			>
-
-		<Image imageID="&rsItems1;" imageX="96" imageY="192" imageWidth="96" imageHeight="96"/>
-
-		<CargoHoldDevice
-				cargoSpace=		"150"
-				>
-			<Equipment>
-				<Install equipment="miningComputer"/>
-			</Equipment>
-		</CargoHoldDevice>
-
-	</ItemType>
-
 	<!-- Nova-25 reactor -->
 
 	<ItemType UNID="&it25MWReactor;"
@@ -761,7 +734,6 @@
 				fireRate=			"15"
 				missileSpeed=		"90"
 				lifetime=			"27"
-				interaction=		"20"
 				powerUse=			"100"
 
 				effect=				"&efKineticBoltDefault;"

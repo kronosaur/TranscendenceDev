@@ -427,7 +427,11 @@ CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const 
 //	name. If there is ambiguity, a random item is chosen.
 
 	{
-	int i;
+	if (!Universe.GetDesignCollection().IsBindComplete())
+		{
+		ASSERT(false);
+		return CItem();
+		}
 
 	TArray<CItemType *> List;
 
@@ -445,7 +449,7 @@ CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const 
 
 	int iBestMatch = -1000;
 	int iBestNonCriteriaMatch = -1000;
-	for (i = 0; i < Universe.GetItemTypeCount(); i++)
+	for (int i = 0; i < Universe.GetItemTypeCount(); i++)
 		{
 		CItemType *pType = Universe.GetItemType(i);
 		CItem Item(pType, 1);
@@ -1544,8 +1548,38 @@ CString CItem::GetNounPhrase (DWORD dwFlags) const
 	//	If we have code, call it to generate the name
 
 	SEventHandlerDesc Event;
-	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetName, &Event)
-			&& !(dwFlags & nounNoEvent))
+	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetHUDName, &Event)
+			&& !(dwFlags & nounNoEvent) && (dwFlags & nounHUDName))
+		{
+		CCodeChainCtx Ctx(GetUniverse());
+
+		Ctx.SetEvent(eventGetName);
+		Ctx.SetItemType(GetType());
+		Ctx.DefineContainingType(m_pItemType);
+		Ctx.SaveAndDefineSourceVar(NULL);
+		Ctx.SaveAndDefineItemVar(*this);
+		Ctx.DefineVar(CONSTLIT("aFlags"), CLanguage::GetNounFlags(dwFlags));
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			{
+			sName = pResult->GetStringValue();
+			dwNounFlags = 0;
+			}
+		else if (pResult->IsList() && pResult->GetCount() >= 2)
+			{
+			sName = pResult->GetElement(0)->GetStringValue();
+			dwNounFlags = pResult->GetElement(1)->GetIntegerValue();
+			}
+		else
+			{
+			sName = pResult->GetStringValue();
+			dwNounFlags = 0;
+			}
+		Ctx.Discard(pResult);
+		}
+	else if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetName, &Event)
+			 && !(dwFlags & nounNoEvent))
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 
@@ -1864,8 +1898,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 		{
 		switch (iPropType)
 			{
-			case EPropertyType::propVariant:
 			case EPropertyType::propData:
+			case EPropertyType::propItemData:
+			case EPropertyType::propVariant:
 				return GetDataAsItem(sProperty)->Reference();
 
 			case EPropertyType::propDynamicData:
@@ -1880,6 +1915,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 				ICCItemPtr pValue = RunCtx.RunCode(pResult);
 				return pValue->Reference();
 				}
+
+			case EPropertyType::propObjData:
+				return CC.CreateNil();
 
 			default:
 				return pResult->Reference();
@@ -2377,17 +2415,16 @@ bool CItem::IsEnhancementEffective (const CItemEnhancement &Enhancement) const
 	{
 	if (IsArmor())
 		{
-		const CArmorClass *pArmor = GetType()->GetArmorClass();
 		CItem BasicItem(GetType(), 1);
-		CItemCtx ItemCtx(BasicItem);
+		CArmorItem ArmorItem = BasicItem.AsArmorItemOrThrow();
 
 		switch (Enhancement.GetType())
 			{
 			case etSpecialDamage:
 				if (Enhancement.IsDisadvantage())
-					return pArmor->IsImmune(ItemCtx, Enhancement.GetSpecialDamage());
+					return ArmorItem.IsImmune(Enhancement.GetSpecialDamage());
 				else
-					return !pArmor->IsImmune(ItemCtx, Enhancement.GetSpecialDamage());
+					return !ArmorItem.IsImmune(Enhancement.GetSpecialDamage());
 
 			default:
 				return true;
@@ -2395,17 +2432,16 @@ bool CItem::IsEnhancementEffective (const CItemEnhancement &Enhancement) const
 		}
 	else if (IsDevice())
 		{
-		const CDeviceClass *pDevice = GetType()->GetDeviceClass();
 		CItem BasicItem(GetType(), 1);
-		CItemCtx ItemCtx(BasicItem);
+		const CDeviceItem DeviceItem = BasicItem.AsDeviceItemOrThrow();
 
 		switch (Enhancement.GetType())
 			{
 			case etOmnidirectional:
 				if (Enhancement.IsDisadvantage())
-					return (pDevice->GetFireArc(ItemCtx) > 0);
+					return (DeviceItem.GetFireArc() > 0);
 				else
-					return (pDevice->GetFireArc(ItemCtx) < Enhancement.GetFireArc());
+					return (DeviceItem.GetFireArc() < Enhancement.GetFireArc());
 
 			default:
 				return true;
@@ -2451,6 +2487,11 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags, DWORD dwNow)
 			&& (bIgnoreDisrupted || (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < dwNow))
 			&& (bIgnoreEnhancements || pExtra->m_Mods.IsEmpty())
 			&& (bIgnoreData || pExtra->m_Data.IsEmpty()));
+	}
+
+bool CItem::IsExtraEmpty (DWORD dwFlags)
+	{
+	return !m_pExtra || IsExtraEmpty(m_pExtra, dwFlags, GetUniverse().GetTicks());
 	}
 
 bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const

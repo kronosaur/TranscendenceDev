@@ -562,6 +562,12 @@ template <class PAINTER> class TBlt
 			if (cxDest <= 0 || cyDest <= 0 || cxSrc <= 0 || cySrc <= 0)
 				return;
 
+			if (cxDest == cxSrc && cyDest == cySrc)
+				{
+				Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+				return;
+				}
+
 			//	Compute the increment on the source to cover the entire destination
 
 			Metric xSrcInc = (Metric)cxSrc / (Metric)cxDest;

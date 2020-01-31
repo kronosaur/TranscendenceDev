@@ -913,6 +913,8 @@ void CTranscendenceModel::ExitScreenSession (bool bForceUndock)
 	CGameSession *pSession = GetPlayer()->GetGameSession();
 	if (pSession == NULL)
 		return;
+
+	CSpaceObject *pLocation = (GetScreenStack().IsEmpty() ? NULL : GetScreenStack().GetCurrent().pLocation);
 			
 	//	Exit the current screen. If we've got a screen underneath, then we need
 	//	to show it.
@@ -953,6 +955,11 @@ void CTranscendenceModel::ExitScreenSession (bool bForceUndock)
 
 		pSession->OnShowDockScreen(false);
 		pSession->GetDockScreen().CleanUpScreen();
+
+		//	If necessary, checkpoint the game.
+
+		if (pLocation && !pLocation->IsPlayer() && m_Universe.GetDifficulty().SaveOnUndock())
+			SaveGame(CGameFile::FLAG_CHECKPOINT);
 		}
 
 	DEBUG_CATCH
@@ -1279,7 +1286,9 @@ ALERROR CTranscendenceModel::LoadGame (const CString &sSignedInUsername, const C
 
 		//	If this game is in end game state OR if we are forcing permadeath and this game is over then we just load the stats.
 
-		if (m_GameFile.IsEndGame() || (m_bForcePermadeath && m_GameFile.IsGameResurrect() && m_GameFile.GetResurrectCount() == 0))
+		if (m_GameFile.IsEndGame() 
+				|| (m_GameFile.GetDifficulty() == CDifficultyOptions::lvlPermadeath && m_GameFile.IsGameResurrect())
+				|| (m_bForcePermadeath && m_GameFile.IsGameResurrect() && m_GameFile.GetResurrectCount() == 0))
 			{
 			error = m_GameFile.LoadGameStats(&m_GameStats);
 			m_GameFile.Close();
@@ -2053,11 +2062,18 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 	{
 	ALERROR error;
 
+	//	Skip if we already saved the game this tick.
+
+	if (m_GameFile.GetLastSavedOn() == m_Universe.GetTicks())
+		return NOERROR;
+
 	//	We never save on mission check point in debug mode. [Otherwise it's hard
 	//	to debug a mission.]
 
 	if ((dwFlags & CGameFile::FLAG_ACCEPT_MISSION) 
-			&& m_Universe.InDebugMode())
+			&& (m_Universe.InDebugMode()
+				|| m_bNoMissionCheckpoint
+				|| m_Universe.GetDifficultyLevel() == CDifficultyOptions::lvlPermadeath))
 		return NOERROR;
 
 	//	If this is a mission check point and we've already quit the game, then
@@ -2065,13 +2081,6 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 
 	if ((dwFlags & CGameFile::FLAG_ACCEPT_MISSION) 
 			&& m_iState == statePlayerInEndGame)
-		return NOERROR;
-
-	//	If we're saving a mission, check the option and exit if we're not 
-	//	supposed to save on mission accept.
-
-	if ((dwFlags & CGameFile::FLAG_ACCEPT_MISSION) 
-			&& m_bNoMissionCheckpoint)
 		return NOERROR;
 
 	//	Fire and event to give global types a chance to save any volatiles
@@ -2541,6 +2550,10 @@ ALERROR CTranscendenceModel::StartNewGame (const CString &sUsername, const SNewG
 
 	if (!sUsername.IsBlank() && !m_Universe.InDebugMode() && m_Universe.GetDesignCollection().IsRegisteredGame())
 		m_Universe.SetRegistered(true);
+
+	//	Set difficulty
+
+	m_Universe.SetDifficultyLevel(NewGame.iDifficulty);
 
 	//	Create a controller for the player's ship (this is owned
 	//	by the ship once we pass it to CreateShip)

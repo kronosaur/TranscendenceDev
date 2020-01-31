@@ -7,11 +7,6 @@
 #define TRAIL_COUNT								4
 #define MAX_TARGET_RANGE						(24.0 * LIGHT_SECOND)
 
-#define PROPERTY_LIFE_LEFT						CONSTLIT("lifeLeft")
-#define PROPERTY_ROTATION						CONSTLIT("rotation")
-#define PROPERTY_SOURCE							CONSTLIT("source")
-#define PROPERTY_TARGET							CONSTLIT("target")
-
 const DWORD VAPOR_TRAIL_OPACITY =				80;
 
 const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
@@ -275,6 +270,12 @@ ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpM
 
 	pMissile->m_pSovereign = pMissile->m_Source.GetSovereign();
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pMissile, pMissile->GetData());
+
 	//	Create a painter instance
 
 	pMissile->m_pPainter = Ctx.pDesc->CreateEffectPainter(Ctx);
@@ -501,6 +502,17 @@ CSpaceObject::Categories CMissile::GetCategory (void) const
 	return ((m_pDesc->GetFireType() == CWeaponFireDesc::ftBeam || m_pDesc->GetInteraction() < MIN_MISSILE_INTERACTION) ? catBeam : catMissile);
 	}
 
+int CMissile::GetLastFireTime (void) const
+
+//	GetLastFireTime
+//
+//	For purposes of aggression, we always treat missiles are recently 
+//	aggressive (we need this so that these missiles are targeted).
+
+	{
+	return GetUniverse().GetTicks();
+	}
+
 int CMissile::GetManeuverRate (void) const
 
 //	GetManeuverRate
@@ -527,31 +539,6 @@ CString CMissile::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) co
 		*retdwFlags = nounNoArticle;
 
 	return strPatternSubst(CONSTLIT("%s damage"), GetDamageShortName(m_pDesc->GetDamage().GetDamageType()));
-	}
-
-ICCItem *CMissile::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
-
-//	GetProperty
-//
-//	Returns a property
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-
-	if (strEquals(sName, PROPERTY_LIFE_LEFT))
-		return (m_fDestroyOnAnimationDone ? CC.CreateInteger(0) : CC.CreateInteger(m_iLifeLeft));
-
-	else if (strEquals(sName, PROPERTY_ROTATION))
-		return CC.CreateInteger(GetRotation());
-
-	else if (strEquals(sName, PROPERTY_SOURCE))
-		return ::CreateDamageSource(CC, m_Source);
-
-	else if (strEquals(sName, PROPERTY_TARGET))
-		return ::CreateObjPointer(CC, m_pTarget);
-
-	else
-		return CSpaceObject::GetProperty(Ctx, sName);
 	}
 
 int CMissile::GetStealth (void) const
@@ -1312,10 +1299,15 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 					bDestroy = (m_iHitPoints == 0);
 					}
 
-				//	Set the missile to destroy itself after a hit, if we did not
-				//	pass through
+				//	If we have passthrough and we did not reflect, then we 
+				//	continue without being destroyed.
 
-				else if (!m_fPassthrough)
+				else if (m_fPassthrough && !DamageCtx.IsShotReflected())
+					{ }
+
+				//	Otherwise, missile is destroyed on hit
+
+				else
 					bDestroy = true;
 				}
 			}
@@ -1522,43 +1514,3 @@ bool CMissile::SetMissileFade (void)
 	return true;
 	}
 
-bool CMissile::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
-
-//	SetProperty
-//
-//	Sets an object property
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-
-    if (strEquals(sName, PROPERTY_LIFE_LEFT))
-        {
-        if (!m_fDestroyOnAnimationDone)
-            m_iLifeLeft = Max(0, pValue->GetIntegerValue());
-        return true;
-        }
-
-	else if (strEquals(sName, PROPERTY_ROTATION))
-		{
-		m_iRotation = AngleMod(pValue->GetIntegerValue());
-		return true;
-		}
-
-	else if (strEquals(sName, PROPERTY_SOURCE))
-		{
-		//	NOTE: CDamageSource handles the case where any objects are destroyed.
-		//	so we don't need to check anything here.
-
-		m_Source = ::GetDamageSourceArg(CC, pValue);
-		return true;
-		}
-
-	else if (strEquals(sName, PROPERTY_TARGET))
-		{
-		m_pTarget = ::CreateObjFromItem(pValue, CCUTIL_FLAG_CHECK_DESTROYED);
-		return true;
-		}
-
-	else
-		return CSpaceObject::SetProperty(sName, pValue, retsError);
-	}

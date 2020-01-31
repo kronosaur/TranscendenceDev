@@ -37,11 +37,6 @@ struct SDestroyCtx;
 struct SSystemCreateCtx;
 struct STradeServiceCtx;
 
-//	Constants & Enums
-
-const int MAX_OBJECT_LEVEL =			25;	//	Max level for space objects
-const int MAX_ITEM_LEVEL =				25;	//	Max level for items
-
 //	Base Design Type ----------------------------------------------------------
 //
 //	To add a new DesignType:
@@ -135,9 +130,9 @@ class CDesignTypeCriteria
 		const CString &GetRequiredSpecialAttrib (int iIndex) const { return m_sRequireSpecial[iIndex]; }
 		int GetRequiredSpecialAttribCount (void) const { return m_sRequireSpecial.GetCount(); }
 		bool HasORExpression (void) const { return (m_pOr ? true : false); }
-        void IncludeType (DesignTypes iType) { m_dwTypeSet |= (1 << iType); }
+		void IncludeType (DesignTypes iType) { m_dwTypeSet |= (1 << iType); }
 		bool IncludesVirtual (void) const { return m_bIncludeVirtual; }
-        bool IsEmpty (void) const { return (m_dwTypeSet == 0); }
+		bool IsEmpty (void) const { return (m_dwTypeSet == 0); }
 		bool IsEqual (const CDesignTypeCriteria &Src) const { return strEquals(Src.AsString(), AsString()); }
 		bool MatchesDesignType (DesignTypes iType) const
 			{ return ((m_dwTypeSet & (1 << iType)) ? true : false); }
@@ -167,7 +162,7 @@ class CDesignTypeCriteria
 		int m_iLessThanLevel = INVALID_COMPARE;
 
 		bool m_bIncludeVirtual = false;
-        bool m_bStructuresOnly = false;
+		bool m_bStructuresOnly = false;
 
 		TUniquePtr<CDesignTypeCriteria> m_pOr;
 
@@ -195,18 +190,18 @@ class CDesignType
 			evtCount					= 10,
 			};
 
-        struct SMapDescriptionCtx
-            {
-            SMapDescriptionCtx (void) :
-                    bShowDestroyed(false),
-                    bEnemy(false),
-                    bFriend(false)
-                { }
+		struct SMapDescriptionCtx
+			{
+			SMapDescriptionCtx (void) :
+					bShowDestroyed(false),
+					bEnemy(false),
+					bFriend(false)
+				{ }
 
-            bool bShowDestroyed;
-            bool bEnemy;
-            bool bFriend;
-            };
+			bool bShowDestroyed;
+			bool bEnemy;
+			bool bFriend;
+			};
 
 		struct SStats
 			{
@@ -218,9 +213,9 @@ class CDesignType
 
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const;
-		ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
+		bool IsBound (void) const { return m_bBindCalled; }
 		bool IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const;
 		bool IsNull (void) const { return (m_dwUNID == 0); }
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
@@ -228,7 +223,7 @@ class CDesignType
 		void PrepareReinit (void) { OnPrepareReinit(); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Reinit (void);
-		void UnbindDesign (void) { m_pInheritFrom = NULL; OnUnbindDesign(); }
+		void UnbindDesign (void) { m_pInheritFrom = NULL; m_bBindCalled = false; OnUnbindDesign(); }
 		void WriteToStream (IWriteStream *pStream);
 
 		void AddExternals (TArray<CString> *retExternals) { OnAddExternals(retExternals); }
@@ -297,8 +292,9 @@ class CDesignType
 		ICCItemPtr GetGlobalData (const CString &sAttrib) const;
 		CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
 		DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
+		const CLanguageDataBlock &GetLanguageBlock (void) const;
 		CXMLElement *GetLocalScreens (void) const;
-        CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
+		CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType = NULL) const;
@@ -319,7 +315,7 @@ class CDesignType
 		bool HasLanguageEntry (const CString &sID) const;
 		bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
-        ICCItemPtr IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL) { return SetExtra()->GlobalData.IncData(sAttrib, pValue); }
+		ICCItemPtr IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL) { return SetExtra()->GlobalData.IncData(sAttrib, pValue); }
 		ICCItemPtr IncTypeProperty (const CString &sProperty, ICCItem *pValue);
 		bool InheritsFrom (DWORD dwUNID) const;
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
@@ -330,6 +326,7 @@ class CDesignType
 		bool IsModification (void) const { return m_bIsModification; }
 		bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_dwMinVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
 		void MarkImages (void) { OnMarkImages(); }
+		void ReportEventError (const CString &sEvent, const ICCItem *pError) const;
 		void SetGlobalData (const CString &sAttrib, const ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
 		void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		void SetMerged (bool bValue = true) { m_bIsMerged = true; }
@@ -340,9 +337,9 @@ class CDesignType
 		void Sweep (void) { OnSweep(); }
 		void TopologyInitialized (void) { OnTopologyInitialized(); }
 		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
-		bool Translate (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
+		bool Translate (const CSpaceObject &Obj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const;
-		bool TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
+		bool TranslateText (const CSpaceObject &Obj, const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
 
 		static CString GetTypeChar (DesignTypes iType);
@@ -355,7 +352,7 @@ class CDesignType
 		virtual const CEconomyType *GetEconomyType (void) const;
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const;
 		virtual CTradingDesc *GetTradingDesc (void) const { return NULL; }
-        virtual const CCompositeImageDesc &GetTypeImage (void) const;
+		virtual const CCompositeImageDesc &GetTypeImage (void) const;
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return GetDataField(CONSTLIT("name")); }
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = -1; if (retiMaxLevel) *retiMaxLevel = -1; return -1; }
 		virtual DesignTypes GetType (void) const = 0;
@@ -366,7 +363,6 @@ class CDesignType
 		ICCItem *FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		bool IsValidLoadXML (const CString &sTag);
 		void ReadGlobalData (SUniverseLoadCtx &Ctx);
-		void ReportEventError (const CString &sEvent, ICCItem *pError) const;
 
 		//	CDesignType overrides
 		virtual ~CDesignType (void);
@@ -380,7 +376,6 @@ class CDesignType
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
 		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const { return false; }
-		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual const CEconomyType &OnGetDefaultCurrency (void) const;
 		virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const { return NULL_STR; }
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const { return NULL; }
@@ -423,6 +418,8 @@ class CDesignType
 		bool HasCachedEvent (ECachedHandlers iEvent) const { return (m_pExtra && m_pExtra->EventsCache[iEvent].pCode != NULL); }
 		void InitCachedEvents (void);
 		bool InSelfReference (CDesignType *pType);
+		bool Translate (const CDesignType &Type, const CString &sID, const CLanguageDataBlock::SParams &Params, ICCItemPtr &retResult) const;
+		bool TranslateText (const CDesignType &Type, const CString &sID, const CLanguageDataBlock::SParams &Params, CString *retsText) const;
 		bool TranslateVersion2 (const CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const;
 		SExtra *SetExtra (void) { if (!m_pExtra) m_pExtra.Set(new SExtra); return m_pExtra; }
 
@@ -442,6 +439,7 @@ class CDesignType
 		TUniquePtr<SExtra> m_pExtra;					//	Extra type stuff (not all types need this, so we only
 														//		allocate when necessary).
 
+		bool m_bBindCalled = false;						//	TRUE if we've bound this type
 		bool m_bIsModification = false;					//	TRUE if this modifies the type it overrides
 		bool m_bIsMerged = false;						//	TRUE if we created this type by merging (inheritance)
 
@@ -460,19 +458,8 @@ template <class CLASS> class CDesignTypeRef
 			{
 			if (m_dwUNID)
 				{
-				CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
-				if (pBaseType == NULL)
-					{
-					Ctx.sError = strPatternSubst(CONSTLIT("Unknown design type: %x"), m_dwUNID);
-					return ERR_FAIL;
-					}
-
-				m_pType = CLASS::AsType(pBaseType);
-				if (m_pType == NULL)
-					{
-					Ctx.sError = strPatternSubst(CONSTLIT("Specified type is invalid: %x"), m_dwUNID);
-					return ERR_FAIL;
-					}
+				if (ALERROR error = BindType(Ctx, m_dwUNID, m_pType))
+					return error;
 				}
 
 			return NOERROR;
@@ -497,6 +484,33 @@ template <class CLASS> class CDesignTypeRef
 				m_dwUNID = dwUNID;
 				m_pType = NULL;
 				}
+			}
+
+		static ALERROR BindType (SDesignLoadCtx &Ctx, DWORD dwUNID, CLASS *&pType)
+			{
+			CDesignType *pBaseType = Ctx.GetUniverse().FindDesignTypeUnbound(dwUNID);
+			if (pBaseType)
+				{
+				if (!pBaseType->IsBound())
+					{
+					if (ALERROR error = pBaseType->BindDesign(Ctx))
+						return error;
+					}
+				}
+			else
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Unknown design type: %x"), dwUNID);
+				return ERR_FAIL;
+				}
+
+			pType = CLASS::AsType(pBaseType);
+			if (pType == NULL)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Specified type is invalid: %x"), dwUNID);
+				return ERR_FAIL;
+				}
+
+			return NOERROR;
 			}
 
 	protected:
@@ -598,7 +612,7 @@ class CEffectCreatorRef : public CDesignTypeRef<CEffectCreator>
 		void Set (CEffectCreator *pEffect);
 
 	private:
-        CAttributeDataBlock m_Data;
+		CAttributeDataBlock m_Data;
 		mutable IEffectPainter *m_pSingleton;
 		bool m_bDelete;
 	};
@@ -1006,7 +1020,7 @@ class CExtensionCollection
 			FLAG_DESC_ONLY =			0x00000004,	//	Load adventure descs only
 			FLAG_ERROR_ON_DISABLE =		0x00000008,	//	Return an error if an extension was loaded disabled
 												//		(due to missing dependencies, etc.)
-            FLAG_NO_COLLECTION =		0x00000010, //  Do not load collection
+			FLAG_NO_COLLECTION =		0x00000010, //  Do not load collection
 			FLAG_NO_COLLECTION_CHECK =	0x00000020,	//	Do not check signatures on collection
 			FLAG_DIAGNOSTICS =			0x00000040,	//	Allow diagnostics extension to be loaded
 
@@ -1152,10 +1166,15 @@ class CDynamicDesignTable
 
 struct SDesignLoadCtx
 	{
+	SDesignLoadCtx (CUniverse &UniverseArg = *g_pUniverse) :
+			Universe(UniverseArg)
+		{ }
+
 	DWORD GetAPIVersion (void) const { return (pExtension ? pExtension->GetAPIVersion() : API_VERSION); }
-	CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+	CUniverse &GetUniverse (void) const { return Universe; }
 
 	//	Context
+	CUniverse &Universe;
 	CDesignCollection *pDesign = NULL;		//	Design collection
 	CString sResDb;							//	ResourceDb filespec
 	CResourceDb *pResDb = NULL;				//	Open ResourceDb object
@@ -1170,10 +1189,12 @@ struct SDesignLoadCtx
 	//	Options
 	bool bBindAsNewGame = false;			//	If TRUE, then we are binding a new game
 	bool bNoResources = false;
-    bool bLoopImages = false;				//  If TRUE, image effects loop by default
+	bool bLoopImages = false;				//  If TRUE, image effects loop by default
+	bool bTraceBind = false;				//	If TRUE, output bind trace
 
 	//	Bind Temporaries (valid only inside BindDesign)
 	TSortMap<CString, CMissionType *> MissionArcRoots;
+	int iBindNesting = 0;
 
 	//	Output
 	CString sError;
@@ -1253,17 +1274,30 @@ class CDesignCollection
 			size_t dwGraphicsMemory = 0;		//	Total memory used by graphics
 			};
 
+		struct SBindOptions
+			{
+			DWORD dwAPIVersion = 0;
+			bool bNewGame = false;
+			bool bNoResources = false;
+			bool bTraceBind = false;
+			};
+
 		CDesignCollection (void);
 		~CDesignCollection (void);
 
 		ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError);
-		ALERROR BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion, bool bNewGame, bool bNoResources, CString *retsError);
+		ALERROR BindDesign (CUniverse &Universe, const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, const SBindOptions &Options, CString *retsError);
 		void CleanUp (void);
 		void ClearImageMarks (void);
 		void DebugOutputExtensions (void) const;
 		const CEconomyType *FindEconomyType (const CString &sID) { const CEconomyType **ppType = m_EconomyIndex.GetAt(sID); return (ppType ? *ppType : NULL); }
-		const CDesignType *FindEntry (DWORD dwUNID) const { return m_AllTypes.FindByUNID(dwUNID); }
-		CDesignType *FindEntry (DWORD dwUNID) { return m_AllTypes.FindByUNID(dwUNID); }
+		const CDesignType *FindEntry (DWORD dwUNID) const;
+		CDesignType *FindEntry (DWORD dwUNID);
+		CDesignType *FindEntryBound (SDesignLoadCtx &Ctx, DWORD dwUNID);
+
+		const CDesignType *FindUnboundEntry (DWORD dwUNID) const { return m_AllTypes.FindByUNID(dwUNID); }
+		CDesignType *FindUnboundEntry (DWORD dwUNID) { return m_AllTypes.FindByUNID(dwUNID); }
+
 		CExtension *FindExtension (DWORD dwUNID) const;
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) const;
 		void FireGetGlobalAchievements (CGameStats &Stats);
@@ -1295,6 +1329,8 @@ class CDesignCollection
 		void FireOnGlobalUniverseLoad (void);
 		void FireOnGlobalUniverseSave (void);
 		void FireOnGlobalUpdate (int iTick);
+		const CAdventureDesc &GetAdventureDesc (void) const { return (m_pAdventureDesc ? *m_pAdventureDesc : m_EmptyAdventure); }
+		CAdventureDesc &GetAdventureDesc (void) { return (m_pAdventureDesc ? *m_pAdventureDesc : m_EmptyAdventure); }
 		DWORD GetAdventureUNID (void) const { return (m_pAdventureExtension ? m_pAdventureExtension->GetUNID() : 0); }
 		DWORD GetAPIVersion (void) const { return m_dwMinAPIVersion; }
 		CArmorMassDefinitions &GetArmorMassDefinitions (void) { return m_ArmorDefinitions; }
@@ -1330,12 +1366,16 @@ class CDesignCollection
 		CDesignType *ResolveDockScreen (CDesignType *pLocalScreen, const CString &sScreen, CString *retsScreenActual = NULL, bool *retbIsLocal = NULL);
 
 	private:
+		ALERROR BindDesignError (SDesignLoadCtx &Ctx, CString *retsError = NULL);
 		void CacheGlobalEvents (CDesignType *pType);
 		ALERROR CreateTemplateTypes (SDesignLoadCtx &Ctx);
+		bool InitAdventure (SDesignLoadCtx &Ctx);
+		bool InitEconomyTypes (SDesignLoadCtx &Ctx);
 		bool OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLElement &OverridesXML);
 		ALERROR ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, CDesignType **retpNewType = NULL);
 		ALERROR ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed);
 		ALERROR ResolveTypeHierarchy (SDesignLoadCtx &Ctx);
+		void Unbind (void);
 
 		//	Loaded types. These are initialized at load-time and never change.
 
@@ -1345,18 +1385,19 @@ class CDesignCollection
 
 		//	Cached data initialized at bind-time
 
-		DWORD m_dwMinAPIVersion;
+		DWORD m_dwMinAPIVersion = 0;
 		TArray<CExtension *> m_BoundExtensions;
 		CDesignTable m_AllTypes;
 		CDesignList m_ByType[designCount];
 		CDesignList m_OverrideTypes;
 		CTopologyDescTable *m_pTopology;
-		CExtension *m_pAdventureExtension;
-		CAdventureDesc *m_pAdventureDesc;
+		CExtension *m_pAdventureExtension = NULL;
+		CAdventureDesc *m_pAdventureDesc = NULL;
 		TSortMap<CString, const CEconomyType *> m_EconomyIndex;
 		CArmorMassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
 		CGlobalEventCache *m_EventsCache[evtCount];
+		CAdventureDesc m_EmptyAdventure;
 
 		//	Dynamic design types
 
@@ -1367,7 +1408,7 @@ class CDesignCollection
 
 		//	State
 
-		bool m_bInBindDesign;
+		bool m_bInBindDesign = false;
 	};
 
 //	Utility functions

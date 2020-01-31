@@ -95,7 +95,7 @@
 			
 			<Message id="msgBreakAndAttack" name="Break &amp; attack" key="B">
 				<OnShow>
-					(not (find '(goingHome attackingAtWill) (objGetData gSource 'behavior)))
+					(not (find '(attackingAtWill goingHome) (objGetData gSource 'behavior)))
 				</OnShow>
 				
 				<Invoke>
@@ -109,26 +109,15 @@
 				</OnShow>
 
 				<Invoke>
-					(block (behavior)
-						(setq behavior (objGetData gSource "behavior"))
-						(switch
-							(eq behavior 'escorting)
-								(block Nil
-									(objCommunicate gSource gSender 'FormUp)
-									(objSendMessageTranslate gSender gSource 'FormUpAck)
-									)
-
-							(block Nil
-								(objSetData gSource "behavior" 'escorting)
-								(if (or (eq behavior 'attackingTarget) (eq behavior 'attackingAtWill))
-									(objSendMessageTranslate gSender gSource 'CancelAttackAck)
-									(objSendMessageTranslate gSender gSource 'FormUpAck)
-									)
-									
-								(shpCancelOrders gSource)
-								(shpOrder gSource 'follow gPlayerShip)
-								)
+					(block Nil
+						(if (find '(attackingTarget attackingAtWill) (objGetData gSource 'behavior))
+							(objSendMessageTranslate gSender gSource 'CancelAttackAck)
+							(objSendMessageTranslate gSender gSource 'FormUpAck)
 							)
+						(objSetData gSource 'behavior 'escorting)
+							
+						(shpCancelOrders gSource)
+						(shpOrder gSource 'follow gPlayerShip)
 						)
 				</Invoke>
 			</Message>

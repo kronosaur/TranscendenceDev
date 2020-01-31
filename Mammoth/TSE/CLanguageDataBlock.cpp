@@ -1,9 +1,11 @@
 //	CLanguageDataBlock.cpp
 //
 //	CLanguageDataBlock class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
+#define CODE_TAG								CONSTLIT("Code")
 #define MESSAGE_TAG								CONSTLIT("Message")
 #define RTF_TAG									CONSTLIT("RTF")
 #define STRING_TAG								CONSTLIT("String")
@@ -11,6 +13,8 @@
 
 #define ID_ATTRIB								CONSTLIT("id")
 #define TEXT_ATTRIB								CONSTLIT("text")
+
+const CLanguageDataBlock CLanguageDataBlock::m_Null;
 
 void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 
@@ -49,7 +53,8 @@ ICCItemPtr CLanguageDataBlock::ComposeCCItem (ICCItem *pValue, ICCItem *pData) c
 			{
 			ICCItemPtr pElement = ComposeCCItem(pValue->GetElement(i), pData);
 			ICCItemPtr pKey = ICCItemPtr(pValue->GetKey(i));
-			pResult->AddEntry(pKey, pElement);
+			if (!pElement->IsNil())
+				pResult->AddEntry(pKey, pElement);
 			}
 
 		return pResult;
@@ -79,7 +84,7 @@ bool CLanguageDataBlock::ComposeCCResult (ETranslateResult iResult, ICCItem *pDa
 
 //	ComposeCCResult
 //
-//	Takes the result from TranslateFull and returns an appropriate CC result.
+//	Takes the result from TranslateEval and returns an appropriate CC result.
 
 	{
 	switch (iResult)
@@ -302,11 +307,13 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 		//	Read the text
 
-		if (strEquals(pItem->GetTag(), TEXT_TAG))
+		bool bForceCode = false;
+		if (strEquals(pItem->GetTag(), TEXT_TAG) 
+				|| (bForceCode = strEquals(pItem->GetTag(), CODE_TAG)))
 			{
 			//	If this is code, then link it.
 
-			if (IsCode(pItem->GetContentText(0)))
+			if (bForceCode || IsCode(pItem->GetContentText(0)))
 				{
 				//	Link the code
 
@@ -645,90 +652,33 @@ CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const
 	return sOutput;
 	}
 
-bool CLanguageDataBlock::Translate (const CDesignType &Type, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+bool CLanguageDataBlock::Translate (const CDesignType &Type, const CString &sID, const SParams &Params, ICCItemPtr &retResult) const
 
 //	Translate
 //
-//	Translates a type's language element and returns an item. The caller is
-//	responsible for discarding.
+//	Translates to an item.
 
 	{
 	TArray<CString> List;
 	CString sText;
 	ICCItemPtr pResult;
-	ETranslateResult iResult = TranslateFull(Type, sID, pData, &List, &sText, &pResult);
 
-	return ComposeCCResult(iResult, pData, List, sText, pResult, retResult);
+	ETranslateResult iResult = TranslateEval(Type, sID, Params, &List, &sText, &pResult);
+
+	return ComposeCCResult(iResult, Params.pData, List, sText, pResult, retResult);
 	}
 
-bool CLanguageDataBlock::Translate (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateEval (const CDesignType &Type, const CString &sID, const SParams &Params, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult) const
 
-//	Translate
+//	TranslateEval
 //
-//	Translates to an item. The caller is responsible for discarding.
-
-	{
-	TArray<CString> List;
-	CString sText;
-	ICCItemPtr pResult;
-	ETranslateResult iResult = TranslateFull(pObj, sID, pData, &List, &sText, &pResult);
-
-	return ComposeCCResult(iResult, pData, List, sText, pResult, retResult);
-	}
-
-bool CLanguageDataBlock::TranslateText (const CDesignType &Type, const CString &sID, ICCItem *pData, CString *retsText) const
-
-//	TranslateText
-//
-//	Translates to text. If not found, returns FALSE.
-
-	{
-	TArray<CString> List;
-
-	ETranslateResult iResult = TranslateFull(Type, sID, pData, &List, retsText);
-
-	return ComposeTextResult(iResult, List, retsText);
-	}
-
-bool CLanguageDataBlock::TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
-
-//	TranslateText
-//
-//	Translates to text. If not found, returns FALSE.
-
-	{
-	TArray<CString> List;
-
-	ETranslateResult iResult = TranslateFull(pObj, sID, pData, &List, retsText);
-
-	return ComposeTextResult(iResult, List, retsText);
-	}
-
-bool CLanguageDataBlock::TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const
-
-//	TranslateText
-//
-//	Translates to text. If not found, returns FALSE.
-
-	{
-	TArray<CString> List;
-
-	ETranslateResult iResult = TranslateFull(Item, sID, pData, &List, retsText);
-
-	return ComposeTextResult(iResult, List, retsText);
-	}
-
-CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateFull (const CDesignType &Type, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult) const
-
-//	TranslateFull
-//
-//	Translates an entry for a design type.
+//	Translates an entry, evaluating code, if necessary.
 
 	{
 	//	If we can resolve this without running code, then do it.
 
 	ETranslateResult iResult;
-	const SEntry *pEntry = TranslateTry(sID, pData, iResult, retText, retsText);
+	const SEntry *pEntry = TranslateTry(sID, Params.pData, iResult, retText, retsText);
 	if (pEntry == NULL)
 		return iResult;
 
@@ -736,66 +686,32 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateFull (const CD
 
 	CCodeChainCtx Ctx(Type.GetUniverse());
 	Ctx.DefineContainingType(&Type);
-	Ctx.SaveAndDefineSourceVar(NULL);
+	Ctx.SaveAndDefineSourceVar(Params.pSource);
+	Ctx.SaveAndDefineDataVar(Params.pData);
+	if (Params.pItem)
+		{
+		Ctx.SaveAndDefineItemVar(*Params.pItem);
+		Ctx.SetItemType(Params.pItem->GetType());
+		}
+
 	Ctx.DefineString(CONSTLIT("aTextID"), sID);
-	Ctx.SaveAndDefineDataVar(pData);
 	
 	ICCItemPtr pResult = Ctx.RunCode(pEntry->pCode);	//	LATER:Event
-	return ComposeResult(pResult, pData, retText, retsText, retpResult);
+	return ComposeResult(pResult, Params.pData, retText, retsText, retpResult);
 	}
 
-CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateFull (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult) const
+bool CLanguageDataBlock::TranslateText (const CDesignType &Type, const CString &sID, const SParams &Params, CString *retsText) const
 
-//	Translate
+//	TranslateText
 //
-//	Translates an entry to either a string or an array of strings.
+//	Translates to text. If not found, returns FALSE.
 
 	{
-	//	If we can resolve this without running code, then do it.
+	TArray<CString> List;
 
-	ETranslateResult iResult;
-	const SEntry *pEntry = TranslateTry(sID, pData, iResult, retText, retsText);
-	if (pEntry == NULL)
-		return iResult;
+	ETranslateResult iResult = TranslateEval(Type, sID, Params, &List, retsText);
 
-	//	Otherwise we have to run some code
-
-	CCodeChainCtx Ctx(pObj ? pObj->GetUniverse() : *g_pUniverse);
-	Ctx.DefineContainingType(pObj);
-	Ctx.SaveAndDefineSourceVar(pObj);
-	Ctx.DefineString(CONSTLIT("aTextID"), sID);
-	Ctx.SaveAndDefineDataVar(pData);
-	
-	ICCItemPtr pResult = Ctx.RunCode(pEntry->pCode);	//	LATER:Event
-	return ComposeResult(pResult, pData, retText, retsText, retpResult);
-	}
-
-CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateFull (const CItem &Item, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult) const
-
-//	Translate
-//
-//	Translates an entry to either a string or an array of strings.
-
-	{
-	//	If we can resolve this without running code, then do it.
-
-	ETranslateResult iResult;
-	const SEntry *pEntry = TranslateTry(sID, pData, iResult, retText, retsText);
-	if (pEntry == NULL)
-		return iResult;
-
-	//	Otherwise we have to run some code
-
-	CCodeChainCtx Ctx(Item.GetUniverse());
-	Ctx.DefineContainingType(Item);
-	Ctx.SaveAndDefineSourceVar(NULL);
-	Ctx.SaveAndDefineItemVar(Item);
-	Ctx.SetItemType(Item.GetType());
-	Ctx.DefineString(CONSTLIT("aTextID"), sID);
-	Ctx.SaveAndDefineDataVar(pData);
-	
-	ICCItemPtr pResult = Ctx.RunCode(pEntry->pCode);	//	LATER:Event
-	return ComposeResult(pResult, pData, retText, retsText, retpResult);
+	return ComposeTextResult(iResult, List, retsText);
 	}
 
 const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CString &sID, ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText, CString *retsText) const

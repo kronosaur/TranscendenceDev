@@ -83,7 +83,7 @@ bool CCString::GetBinding (int *retiFrame, int *retiOffset)
 		}
 	}
 
-CString CCString::Print (DWORD dwFlags)
+CString CCString::Print (DWORD dwFlags) const
 
 //	Print
 //

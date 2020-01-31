@@ -82,7 +82,7 @@ void CReactorHUDDefault::GetBounds (int *retWidth, int *retHeight) const
 	*retHeight = DISPLAY_HEIGHT;
 	}
 
-ALERROR CReactorHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
+bool CReactorHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 //	InitFromXML
 //
@@ -90,29 +90,30 @@ ALERROR CReactorHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass
 
 	{
 	ALERROR error;
+	SDesignLoadCtx Ctx;
 
 	//	Background image
 
 	if (error = m_ReactorImage.InitFromXML(Ctx,
-			pDesc->GetContentElementByTag(IMAGE_TAG)))
-		return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
+			CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG)))
+		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
 	//	Power level image
 
-	CXMLElement *pImage = pDesc->GetContentElementByTag(POWER_LEVEL_IMAGE_TAG);
+	CXMLElement *pImage = CreateCtx.Desc.GetContentElementByTag(POWER_LEVEL_IMAGE_TAG);
 	if (pImage == NULL || (error = m_PowerLevelImage.InitFromXML(Ctx, pImage)))
-		return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
+		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
 	m_xPowerLevelImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
 	m_yPowerLevelImage = pImage->GetAttributeInteger(DEST_Y_ATTRIB);
 
 	//	Power generation image
 
-	pImage = pDesc->GetContentElementByTag(POWER_GEN_IMAGE_TAG);
+	pImage = CreateCtx.Desc.GetContentElementByTag(POWER_GEN_IMAGE_TAG);
 	if (pImage)
 		{
 		if (error = m_PowerGenImage.InitFromXML(Ctx, pImage))
-			return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
+			return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
 		m_xPowerGenImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
 		m_yPowerGenImage = pImage->GetAttributeInteger(DEST_Y_ATTRIB);
@@ -141,32 +142,37 @@ ALERROR CReactorHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass
 
 	//	Fuel level image
 
-	pImage = pDesc->GetContentElementByTag(FUEL_LEVEL_IMAGE_TAG);
+	pImage = CreateCtx.Desc.GetContentElementByTag(FUEL_LEVEL_IMAGE_TAG);
 	if (pImage == NULL || (error = m_FuelLevelImage.InitFromXML(Ctx, pImage)))
-		return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
+		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
 	m_xFuelLevelImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
 	m_yFuelLevelImage = pImage->GetAttributeInteger(DEST_Y_ATTRIB);
 
 	//	Low fuel level image
 
-	pImage = pDesc->GetContentElementByTag(FUEL_LOW_LEVEL_IMAGE_TAG);
+	pImage = CreateCtx.Desc.GetContentElementByTag(FUEL_LOW_LEVEL_IMAGE_TAG);
 	if (pImage == NULL || (error = m_FuelLowLevelImage.InitFromXML(Ctx, pImage)))
-		return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
+		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
-	if (error = InitRectFromElement(pDesc->GetContentElementByTag(REACTOR_TEXT_TAG),
+	if (error = InitRectFromElement(CreateCtx.Desc.GetContentElementByTag(REACTOR_TEXT_TAG),
 			&m_rcReactorText))
-		return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
+		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
-	if (error = InitRectFromElement(pDesc->GetContentElementByTag(POWER_LEVEL_TEXT_TAG),
+	if (error = InitRectFromElement(CreateCtx.Desc.GetContentElementByTag(POWER_LEVEL_TEXT_TAG),
 			&m_rcPowerLevelText))
-		return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
+		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
-	if (error = InitRectFromElement(pDesc->GetContentElementByTag(FUEL_LEVEL_TEXT_TAG),
+	if (error = InitRectFromElement(CreateCtx.Desc.GetContentElementByTag(FUEL_LEVEL_TEXT_TAG),
 			&m_rcFuelLevelText))
-		return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
+		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
-	return NOERROR;
+	//	Bind
+
+	if (Bind(Ctx) != NOERROR)
+		return ComposeLoadError(Ctx.sError, retsError);
+
+	return true;
 	}
 
 void CReactorHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
@@ -221,9 +227,8 @@ void CReactorHUDDefault::Realize (SHUDPaintCtx &Ctx)
 	{
 	//	Skip if we don't have a ship
 
-	CShip *pShip;
-	if (Ctx.pSource == NULL
-			|| (pShip = Ctx.pSource->AsShip()) == NULL)
+	CShip *pShip = Ctx.Source.AsShip();
+	if (pShip == NULL)
 		return;
 
 	SReactorStats Stats;

@@ -70,7 +70,7 @@ CParticleSystemDesc::CParticleSystemDesc (void) :
 	{
 	}
 
-ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID)
+ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, const CString &sUNID)
 
 //	InitFromXML
 //
@@ -142,7 +142,7 @@ ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	return NOERROR;
 	}
 
-ALERROR CParticleSystemDesc::InitFromWeaponDescXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID)
+ALERROR CParticleSystemDesc::InitFromWeaponDescXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, const CString &sUNID)
 
 //	InitFromWeaponDescXML
 //

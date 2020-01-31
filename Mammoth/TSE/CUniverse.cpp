@@ -18,6 +18,7 @@
 
 #define PROPERTY_API_VERSION				CONSTLIT("apiVersion")
 #define PROPERTY_DEFAULT_CURRENCY			CONSTLIT("defaultCurrency")
+#define PROPERTY_DIFFICULTY					CONSTLIT("difficulty")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
 
 struct SExtensionSaveDesc
@@ -61,29 +62,10 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 	};
 
 CUniverse::CUniverse (void) : 
-		m_bBasicInit(false),
-
-		m_bRegistered(false),
-		m_bResurrectMode(false),
-		m_iTick(1),
-		m_iPaintTick(1),
-		m_pAdventure(NULL),
-		m_pPOV(NULL),
-		m_pPlayer(NULL),
-		m_pPlayerShip(NULL),
-		m_pCurrentSystem(NULL),
-		m_dwNextID(1),
 		m_Topology(*this),
 		m_AllMissions(true),
-
-		m_pSoundMgr(NULL),
-
 		m_pHost(&g_DefaultHost),
-		m_pSavedGlobalSymbols(NULL),
-
-		m_bDebugMode(false),
-		m_bNoSound(false),
-		m_iLogImageLoad(0)
+		m_Language(m_Design)
 
 //	CUniverse constructor
 
@@ -174,6 +156,37 @@ ALERROR CUniverse::AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem)
 	return NOERROR;
 	}
 
+void CUniverse::AdjustDamage (SDamageCtx &Ctx) const
+
+//	AdjustDamage
+//
+//	Adjust damage to implement difficulty levels.
+
+	{
+	const CSpaceObject *pOrderGiver;
+
+	//	If the player got hit, then adjust
+
+	Metric rAdjust;
+	if (Ctx.pObj->IsPlayer())
+		rAdjust = m_Difficulty.GetPlayerDamageAdj();
+
+	//	Otherwise, if the attacker is the player, then adjust
+
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
+		rAdjust = m_Difficulty.GetEnemyDamageAdj();
+
+	//	Otherwise, no adjustment.
+
+	else
+		return;
+
+	//	Adjust damage
+
+	if (rAdjust != 1.0)
+		Ctx.iDamage = mathRoundStochastic(Ctx.iDamage * rAdjust);
+	}
+
 void CUniverse::Boot (void)
 
 //	Boot
@@ -259,7 +272,7 @@ ALERROR CUniverse::CreateRandomItem (const CItemCriteria &Crit,
 	//	Create the generator
 
 	IItemGenerator *pTable;
-	if (error = IItemGenerator::CreateRandomItemTable(Crit, sLevelFrequency, &pTable))
+	if (error = IItemGenerator::CreateRandomItemTable(*this, Crit, sLevelFrequency, &pTable))
 		return error;
 
 	//	Pick an item
@@ -745,6 +758,10 @@ void CUniverse::GenerateGameStats (CGameStats &Stats)
 	else
 		Stats.Insert(CONSTLIT("Game"), CONSTLIT("Unregistered"));
 
+	//	Difficulty
+
+	Stats.Insert(CONSTLIT("Difficulty"), CDifficultyOptions::GetLabel(GetDifficultyLevel()));
+
 	DEBUG_CATCH
 	}
 
@@ -755,10 +772,7 @@ const CDamageAdjDesc *CUniverse::GetArmorDamageAdj (int iLevel) const
 //	Returns the armor damage adj table
 
 	{
-	if (m_pAdventure)
-		return m_pAdventure->GetArmorDamageAdj(iLevel);
-	else
-		return CAdventureDesc::GetDefaultArmorDamageAdj(iLevel);
+	return GetEngineOptions().GetArmorDamageAdj(iLevel);
 	}
 
 const CEconomyType &CUniverse::GetCreditCurrency (void) const
@@ -858,10 +872,7 @@ const CDamageAdjDesc *CUniverse::GetShieldDamageAdj (int iLevel) const
 //	Returns the shield damage table
 
 	{
-	if (m_pAdventure)
-		return m_pAdventure->GetShieldDamageAdj(iLevel);
-	else
-		return CAdventureDesc::GetDefaultShieldDamageAdj(iLevel);
+	return GetEngineOptions().GetShieldDamageAdj(iLevel);
 	}
 
 void CUniverse::GetCurrentAdventureExtensions (TArray<DWORD> *retList)
@@ -1010,6 +1021,9 @@ ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 
 	else if (strEquals(sProperty, PROPERTY_DEFAULT_CURRENCY))
 		return ICCItemPtr(GetDefaultCurrency().GetUNID());
+
+	else if (strEquals(sProperty, PROPERTY_DIFFICULTY))
+		return ICCItemPtr(CDifficultyOptions::GetID(GetDifficultyLevel()));
 
 	else if (strEquals(sProperty, PROPERTY_MIN_API_VERSION))
 		return ICCItemPtr(m_Design.GetAPIVersion());
@@ -1346,18 +1360,6 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 				}
 			}
 
-		//	Set the current adventure (we need to do this before BindDesign, since
-		//	we need the current adventure to get the shield and armor damage adj
-		//	tables.
-
-		if (Ctx.pAdventure)
-			m_pAdventure = Ctx.pAdventure->GetAdventureDesc();
-		else
-			{
-			m_EmptyAdventure = CAdventureDesc();
-			m_pAdventure = &m_EmptyAdventure;
-			}
-
 		//	Figure out the minimum API version for all extensions being used.
 
 		DWORD dwAPIVersion = Ctx.dwMinAPIVersion;
@@ -1371,8 +1373,17 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		//
 		//	We don't need to log image load
 
+		CDesignCollection::SBindOptions BindOptions;
+		BindOptions.dwAPIVersion = dwAPIVersion;
+		BindOptions.bNewGame = !Ctx.bInLoadGame;
+		BindOptions.bNoResources = Ctx.bNoResources;
+
+#ifdef DEBUG_BIND
+		BindOptions.bTraceBind = Ctx.bDiagnostics;
+#endif
+
 		SetLogImageLoad(false);
-		error = m_Design.BindDesign(BindOrder, Ctx.TypesUsed, dwAPIVersion, !Ctx.bInLoadGame, Ctx.bNoResources, retsError);
+		error = m_Design.BindDesign(*this, BindOrder, Ctx.TypesUsed, BindOptions, retsError);
 		SetLogImageLoad(true);
 
 		if (error)
@@ -1730,6 +1741,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 //	DWORD		m_dwNextID
 //
 //	CGameTimeKeeper
+//	CDifficulty
 //
 //	DWORD		No of enabled extensions
 //	SExtensionSaveDesc for each
@@ -1831,6 +1843,13 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	if (Ctx.dwVersion >= 7)
 		m_Time.ReadFromStream(pStream);
+
+	//	m_Difficulty
+
+	if (Ctx.dwVersion >= 38)
+		m_Difficulty.ReadFromStream(*pStream);
+	else
+		m_Difficulty.SetLevel(CDifficultyOptions::lvlChallenge);
 
 	//	Prepare a universe initialization context
 	//	NOTE: Caller has set debug mode based on game file header flag.
@@ -2383,6 +2402,8 @@ ALERROR CUniverse::Reinit (void)
 	m_StarSystems.DeleteAll();
 	m_dwNextID = 1;
 	m_Objects.DeleteAll();
+	m_Difficulty = CDifficultyOptions();
+	m_Language.Reinit();
 
 	//	NOTE: We don't reinitialize m_bDebugMode or m_bRegistered because those
 	//	are set before Reinit (and thus we would overwrite them).
@@ -2436,6 +2457,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 //	DWORD		flags
 //	DWORD		m_dwNextID
 //	CGameTimeKeeper m_Time
+//	CDifficultyOptions m_Difficulty
 //
 //	DWORD		No of enabled extensions
 //	SExtensionSaveDesc for each
@@ -2491,6 +2513,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 
 	pStream->Write(m_dwNextID);
 	m_Time.WriteToStream(pStream);
+	m_Difficulty.WriteToStream(*pStream);
 
 	//	Extensions
 	//
@@ -2515,10 +2538,10 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	//	Adventure UNID
 
 	SExtensionSaveDesc Desc;
-	if (m_pAdventure->GetExtension())
+	if (const CExtension *pExtension = GetCurrentAdventureDesc().GetExtension())
 		{
-		Desc.dwUNID = m_pAdventure->GetExtension()->GetUNID();
-		Desc.dwRelease = m_pAdventure->GetExtension()->GetRelease();
+		Desc.dwUNID = pExtension->GetUNID();
+		Desc.dwRelease = pExtension->GetRelease();
 		}
 	pStream->Write((char *)&Desc, sizeof(SExtensionSaveDesc));
 
@@ -2868,9 +2891,48 @@ CTimeSpan CUniverse::StopGameTime (void)
 	return timeSpan(m_StartTime, StopTime);
 	}
 
-void CUniverse::Update (SSystemUpdateCtx &Ctx)
+bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 
 //	Update
+//
+//	Updates one frame. Returns TRUE if the universe was actually updated.
+
+	{
+	m_iLastUpdateSpeed = iUpdateMode;
+
+	switch (iUpdateMode)
+		{
+		case updateAccelerated:
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			m_dwFrame++;
+			return true;
+
+		case updatePaused:
+			return false;
+
+		case updateSlowMotion:
+			if ((m_dwFrame++ % 4) == 0)
+				{
+				UpdateTick(Ctx);
+				return true;
+				}
+			else
+				return false;
+
+		default:
+			UpdateTick(Ctx);
+			m_dwFrame++;
+			return true;
+		}
+	}
+
+void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
+
+//	UpdateTick
 //
 //	Update the system of the current point of view
 

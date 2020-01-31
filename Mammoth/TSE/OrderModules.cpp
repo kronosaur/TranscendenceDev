@@ -49,7 +49,7 @@ void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 	DEBUG_CATCH
 	}
 
-DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -75,7 +75,7 @@ DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject
 			return (IsAttacking() ? resAck : resNoAnswer);
 
 		default:
-			return OnCommunicate(pShip, Ctx, pSender, iMessage, pParam1, dwParam2);
+			return OnCommunicate(pShip, Ctx, pSender, iMessage, pParam1, dwParam2, pData);
 		}
 	}
 

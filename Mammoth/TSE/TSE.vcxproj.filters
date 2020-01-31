@@ -1123,9 +1123,6 @@
     <ClCompile Include="CPowerConsumption.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="SUpdateCtx.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="CFailureDesc.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
@@ -1371,6 +1368,57 @@
     </ClCompile>
     <ClCompile Include="CSmartSystemCreateOptions.cpp">
       <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CEngineOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CDifficultyOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationCreateOptions.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectTargetList.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="SUpdateCtx.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CPaintOrder.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CMissileItem.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectProperties.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="MissionProperties.cpp">
+      <Filter>Source Files\Missions</Filter>
+    </ClCompile>
+    <ClCompile Include="MissileProperties.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="SpaceObjectItemProperties.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CGateTimerManager.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CStarDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CStargateDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CAsteroidDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CEngineLanguage.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoMiningCalc.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1796,11 +1796,8 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				for (i = 0; i < pTable->GetCount(); i++)
 					{
-					ICCItem *pKey = pCC->CreateString(pTable->GetKey(i));
 					ICCItem *pItem = pTable->GetElement(i);
-
-					pTarget->AddEntry(pKey, pItem);
-					pKey->Discard();
+					pTarget->SetAt(pTable->GetKey(i), pItem);
 					}
 
 				return pTarget;
@@ -2633,7 +2630,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	//	Loop over all elements of the list
 
 	int iBestItem = -1;
-	int iAccumulate = 0;
+	double rAccumulate = 0;
 	int iCount = 0;
 	for (i = 0; i < pSource->GetCount(); i++)
 		{
@@ -2663,25 +2660,25 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 		else if (bReduceMax)
 			{
-			int iValue = pMapped->GetIntegerValue();
-			if (iBestItem == -1 || iValue > iAccumulate)
+			double rValue = pMapped->GetDoubleValue();
+			if (iBestItem == -1 || rValue > rAccumulate)
 				{
 				iBestItem = i;
-				iAccumulate = iValue;
+				rAccumulate = rValue;
 				}
 			}
 		else if (bReduceMin)
 			{
-			int iValue = pMapped->GetIntegerValue();
-			if (iBestItem == -1 || iValue < iAccumulate)
+			double rValue = pMapped->GetDoubleValue();
+			if (iBestItem == -1 || rValue < rAccumulate)
 				{
 				iBestItem = i;
-				iAccumulate = iValue;
+				rAccumulate = rValue;
 				}
 			}
 		else if (bReduceAverage || bReduceSum)
 			{
-			iAccumulate += pMapped->GetIntegerValue();
+			rAccumulate += pMapped->GetDoubleValue();
 			iCount++;
 			}
 		else if (bReduceUnique)
@@ -2740,22 +2737,27 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 		if (bOriginal)
 			return pSource->GetElement(iBestItem)->Reference();
+		else if (rAccumulate == floor(rAccumulate))
+			return pCC->CreateInteger((int)rAccumulate);
 		else
-			return pCC->CreateInteger(iAccumulate);
+			return pCC->CreateDouble(rAccumulate);
 		}
 	else if (bReduceSum)
 		{
 		if (iCount == 0)
 			return pCC->CreateNil();
 
-		return pCC->CreateInteger(iAccumulate);
+		else if (rAccumulate == floor(rAccumulate))
+			return pCC->CreateInteger((int)rAccumulate);
+		else
+			return pCC->CreateDouble(rAccumulate);
 		}
 	else if (bReduceAverage)
 		{
 		if (iCount == 0)
 			return pCC->CreateNil();
 
-		return pCC->CreateInteger(iAccumulate / iCount);
+		return pCC->CreateDouble(rAccumulate / iCount);
 		}
 	else if (bReduceUnique)
 		{
@@ -4051,10 +4053,14 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 break;
                 }
 
-			if (bAppend)
-				pResult->AppendAt(sKey, pArg->GetElement(1));
-			else
-				pResult->SetAt(sKey, pArg->GetElement(1));
+			if (!pArg->GetElement(1)->IsNil())
+				{
+				if (bAppend)
+					pResult->AppendAt(sKey, pArg->GetElement(1));
+				else
+					pResult->SetAt(sKey, pArg->GetElement(1));
+				}
+
             iArg++;
             }
 
@@ -4079,10 +4085,14 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 break;
                 }
 
-			if (bAppend)
-				pResult->AppendAt(sKey, pArgs->GetElement(iArg));
-			else
-				pResult->SetAt(sKey, pArgs->GetElement(iArg));
+			if (!pArgs->GetElement(iArg)->IsNil())
+				{
+				if (bAppend)
+					pResult->AppendAt(sKey, pArgs->GetElement(iArg));
+				else
+					pResult->SetAt(sKey, pArgs->GetElement(iArg));
+				}
+
             iArg++;
             }
 

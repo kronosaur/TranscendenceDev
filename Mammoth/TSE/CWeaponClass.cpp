@@ -1,6 +1,7 @@
 //	CWeaponClass.cpp
 //
 //	CWeaponClass class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -57,6 +58,7 @@
 
 #define ON_FIRE_WEAPON_EVENT					CONSTLIT("OnFireWeapon")
 #define GET_AMMO_TO_CONSUME_EVENT				CONSTLIT("GetAmmoToConsume")
+#define GET_AMMO_COUNT_TO_DISPLAY_EVENT			CONSTLIT("GetAmmoCountToDisplay")
 
 #define FIELD_AMMO_TYPE							CONSTLIT("ammoType")
 #define FIELD_AVERAGE_DAMAGE					CONSTLIT("averageDamage")	//	Average damage (1000x hp)
@@ -113,12 +115,6 @@
 #define VARIANT_TYPE_MISSILES					CONSTLIT("missiles")
 
 const int MAX_SHOT_COUNT =				100;
-
-const Metric MAX_EXPECTED_PASSTHROUGH = 4.0;
-const Metric EXPECTED_FRAGMENT_HITS =   0.2;                //  Fraction of fragments that hit (for balance purposes)
-const Metric EXPECTED_TRACKING_FRAGMENT_HITS = 0.9;			//  Fraction of tracking fragments that hit (for balance purposes)
-const Metric EXPECTED_SHOCKWAVE_HITS =  0.2;                //  Fraction of shockwave that hits (for balance purposes)
-const Metric EXPECTED_RADIUS_DAMAGE =   0.8;                //  Fraction of radius damage (for balance purposes)
 
 const Metric g_DualShotSeparation =		12;					//	Radius of dual shot (pixels)
 const int TEMP_DECREASE =				-1;					//	Decrease in temp per cooling rate
@@ -220,6 +216,7 @@ static char *CACHED_EVENTS[CWeaponClass::evtCount] =
 	{
 		"OnFireWeapon",
 		"GetAmmoToConsume",
+		"GetAmmoCountToDisplay",
 	};
 
 CFailureDesc CWeaponClass::g_DefaultFailure(CFailureDesc::profileWeaponFailure);
@@ -368,6 +365,8 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	if (pShot == NULL)
 		return 0;
 
+	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
+
 	//	Compute the level. For launchers we take either the missile level or the
 	//	launcher level (whichever is higher).
 
@@ -456,7 +455,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Tracking weapons are a bonus
 
-    if (IsTracking(ItemCtx, pShot))
+    if (IsTracking(DeviceItem, pShot))
         {
         retBalance.rTracking = BALANCE_TRACKING_BONUS;
         retBalance.rBalance += retBalance.rTracking;
@@ -464,7 +463,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Omni and swivel weapons are a bonus
 
-    Metric rSwivelRange = GetFireArc(ItemCtx) / 360.0;
+    Metric rSwivelRange = DeviceItem.GetFireArc() / 360.0;
     if (rSwivelRange > 0.0)
         {
 		Metric rOmni = BALANCE_OMNI_FACTOR * pow(rSwivelRange, BALANCE_OMNI_POWER);
@@ -947,124 +946,61 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 //	Computes damage for the given weapon fire desc.
 
 	{
-	//	If we have fragments we need to recurse
+	//	Compute the damage for the shot.
 
-	if (pShot->HasFragments())
+	Metric rDamage = pShot->CalcDamage(dwDamageFlags);
+
+	//	If we have a capacitor, adjust damage
+
+	switch (m_Counter)
 		{
-		Metric rTotal = 0.0;
-
-		CWeaponFireDesc::SFragmentDesc *pFragment = pShot->GetFirstFragment();
-		while (pFragment)
+		case cntCapacitor:
 			{
-			//	By default, 1/8 of fragments hit, unless the fragments are radius type
+			//	Compute the number of ticks until we discharge the capacitor
 
-			Metric rHitFraction;
-			switch (pFragment->pDesc->GetType())
-				{
-				case CWeaponFireDesc::ftArea:
-				case CWeaponFireDesc::ftRadius:
-					rHitFraction = 1.0;
-					break;
+			Metric rFireTime = (MAX_COUNTER / (Metric)-m_iCounterActivate) * GetFireDelay(pShot);
 
-				default:
-                    if (pFragment->pDesc->IsTracking())
-                        rHitFraction = EXPECTED_TRACKING_FRAGMENT_HITS;
-                    else
-                        rHitFraction = EXPECTED_FRAGMENT_HITS;
-                    break;
-				}
+			//	Compute the number of ticks to recharge
 
-            //  Adjust for passthrough
+			Metric rRechargeTime = (MAX_COUNTER / (Metric)m_iCounterUpdate) * m_iCounterUpdateRate;
 
-            if (pFragment->pDesc->GetPassthrough() > 0)
-                {
-                Metric rPassthroughProb = Min(0.99, pFragment->pDesc->GetPassthrough() / 100.0);
-                rHitFraction *= Min(1.0 / (1.0 - rPassthroughProb), MAX_EXPECTED_PASSTHROUGH);
-                }
+			//	Adjust damage by the fraction of time that we spend firing.
+            //  Remember that we're recharging even while firing, so we 
+            //  only care about the ratio.
 
-			//	Add up values
+            if (rRechargeTime > rFireTime)
+				rDamage *= rFireTime / rRechargeTime;
 
-			rTotal += rHitFraction * pFragment->Count.GetAveValueFloat() * CalcDamage(pFragment->pDesc, pEnhancements, dwDamageFlags);
-
-			pFragment = pFragment->pNext;
+			break;
 			}
 
-		return rTotal;
+        case cntTemperature:
+            {
+            //  Compute the number of ticks until we reach max temp
+
+            Metric rFireTime = (MAX_COUNTER / (Metric)m_iCounterActivate) * GetFireDelay(pShot);
+
+            //  Compute the number of ticks to cool down
+
+            Metric rCoolDownTime = (MAX_COUNTER / (Metric)-m_iCounterUpdate) * m_iCounterUpdateRate;
+
+            //  Adjust damage by the fraction of time that we spend firing.
+
+            if (rCoolDownTime > rFireTime)
+                rDamage *= rFireTime / rCoolDownTime;
+
+            break;
+            }
 		}
-	else
-		{
-		Metric rDamage;
 
-		//	Average damage depends on type
+	//	Adjust for enhancements
 
-		switch (pShot->GetType())
-			{
-			case CWeaponFireDesc::ftArea:
-				//	Assume 1/8th damage points hit on average
-				rDamage = EXPECTED_SHOCKWAVE_HITS * pShot->GetAreaDamageDensityAverage() * pShot->GetDamage().GetDamageValue(dwDamageFlags);
-				break;
+	if (pEnhancements)
+		rDamage += (rDamage * pEnhancements->GetBonus() / 100.0);
 
-			case CWeaponFireDesc::ftRadius:
-				//	Assume average target is far enough away to take half damage
-				rDamage = EXPECTED_RADIUS_DAMAGE * pShot->GetDamage().GetDamageValue(dwDamageFlags);
-				break;
+	//	Done
 
-			default:
-				rDamage = pShot->GetDamage().GetDamageValue(dwDamageFlags);
-			}
-
-		//	If we have a capacitor, adjust damage
-
-		switch (m_Counter)
-			{
-			case cntCapacitor:
-				{
-				//	Compute the number of ticks until we discharge the capacitor
-
-				Metric rFireTime = (MAX_COUNTER / (Metric)-m_iCounterActivate) * GetFireDelay(pShot);
-
-				//	Compute the number of ticks to recharge
-
-				Metric rRechargeTime = (MAX_COUNTER / (Metric)m_iCounterUpdate) * m_iCounterUpdateRate;
-
-				//	Adjust damage by the fraction of time that we spend firing.
-                //  Remember that we're recharging even while firing, so we 
-                //  only care about the ratio.
-
-                if (rRechargeTime > rFireTime)
-					rDamage *= rFireTime / rRechargeTime;
-
-				break;
-				}
-
-            case cntTemperature:
-                {
-                //  Compute the number of ticks until we reach max temp
-
-                Metric rFireTime = (MAX_COUNTER / (Metric)m_iCounterActivate) * GetFireDelay(pShot);
-
-                //  Compute the number of ticks to cool down
-
-                Metric rCoolDownTime = (MAX_COUNTER / (Metric)-m_iCounterUpdate) * m_iCounterUpdateRate;
-
-                //  Adjust damage by the fraction of time that we spend firing.
-
-                if (rCoolDownTime > rFireTime)
-                    rDamage *= rFireTime / rCoolDownTime;
-
-                break;
-                }
-			}
-
-		//	Adjust for enhancements
-
-		if (pEnhancements)
-			rDamage += (rDamage * pEnhancements->GetBonus() / 100.0);
-
-		//	Done
-
-		return rDamage;
-		}
+	return rDamage;
 	}
 
 Metric CWeaponClass::CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements, DWORD dwDamageFlags) const
@@ -1092,10 +1028,12 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 	if (pDevice == NULL)
 		return -1;
 
+	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
+
 	//	Get the swivel/turret parameters
 
 	int iMinFireArc, iMaxFireArc;
-	DeviceRotationTypes iType = GetRotationType(ItemCtx, &iMinFireArc, &iMaxFireArc);
+	DeviceRotationTypes iType = GetRotationType(DeviceItem, &iMinFireArc, &iMaxFireArc);
 
 	//	If we're firing straight, then we just fire straight
 
@@ -1758,6 +1696,44 @@ bool CWeaponClass::FindDataField (const CString &sField, CString *retsValue)
 	return FindAmmoDataField(Ammo, sRootField, retsValue);
 	}
 
+bool CWeaponClass::FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount) const
+
+//	FireGetAmmoCountToDisplay
+//
+//	Fires <GetAmmoCountToDisplay> and returns the ammo count.
+//
+//	NOTE: This is only used to change the display value, it does not affect the
+//	actual ammo count available. See: https://github.com/kronosaur/TranscendenceDev/pull/18
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandlerWeaponClass(evtGetAmmoCountToDisplay, &Event))
+		return false;
+
+	CCodeChainCtx CCX(GetUniverse());
+	CCX.DefineContainingType(GetItemType());
+	CCX.SaveAndDefineSourceVar(DeviceItem.GetSource());
+	CCX.SaveAndDefineItemVar(DeviceItem);
+	CCX.DefineItemType(CONSTLIT("aWeaponType"), Shot.GetWeaponType());
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+
+	if (pResult->IsError())
+		{
+		DeviceItem.ReportEventError(GET_AMMO_COUNT_TO_DISPLAY_EVENT, *pResult);
+		return false;
+		}
+	else if (pResult->IsNumber() && !pResult->IsNil())
+		{
+		if (retiAmmoCount)
+			*retiAmmoCount = pResult->GetIntegerValue();
+
+		return true;
+		}
+	else
+		return false;
+	}
+
 int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount)
 
 //	FireOnFireWeapon
@@ -1884,6 +1860,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	{
 	int i;
     CItemCtx ItemCtx(pSource, pDevice);
+	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
 
 	//	Pre-init
 
@@ -1983,7 +1960,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	//	it is somewhat expensive to get the target from the device so
 	//	we only do it if we really need it.
 
-	if (pTarget == NULL && (IsTracking(ItemCtx, pShot) || m_bBurstTracksTargets) && !(pSource->IsBlind() && !(m_bCanFireWhenBlind)))
+	if (pTarget == NULL && (IsTracking(DeviceItem, pShot) || m_bBurstTracksTargets) && !(pSource->IsBlind() && !(m_bCanFireWhenBlind)))
 		pTarget = pDevice->GetTarget(pSource);
 
 	//	Get the fire angle from the device (the AI sets it when it has pre-
@@ -2028,12 +2005,9 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
         if (iShotCount > 1)
             {
-		    TArray<CSpaceObject *> TargetList;
-		    int iFound = pSource->GetNearestVisibleEnemies(iShotCount, 
-				    MAX_TARGET_RANGE, 
-				    &TargetList, 
-				    pTarget, 
-				    FLAG_INCLUDE_NON_AGGRESSORS);
+			CSpaceObjectTargetList Targets;
+			Targets.InitWithNearestVisibleEnemies(*pSource, iShotCount, MAX_TARGET_RANGE, pTarget, CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS);
+			int iFound = Targets.GetList().GetCount();
 
             int iNextTarget = 0;
             for (i = 1; i < iShotCount; i++)
@@ -2049,7 +2023,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
                     }
                 else
                     {
-			        CSpaceObject *pNewTarget = TargetList[iNextTarget++ % iFound];
+			        CSpaceObject *pNewTarget = Targets.GetList()[iNextTarget++ % iFound];
 
                     //	Calculate direction to fire in
 
@@ -2381,6 +2355,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	if (pShot == NULL)
 		return CDeviceClass::FindAmmoItemProperty(Ctx, Ammo, sProperty);
 
+	const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
+
 	//	Enhancements
 
 	TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
@@ -2491,7 +2467,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		int iMinFireArc;
 		int iMaxFireArc;
 
-		switch (GetRotationType(Ctx, &iMinFireArc, &iMaxFireArc))
+		switch (GetRotationType(DeviceItem, &iMinFireArc, &iMaxFireArc))
 			{
 			case rotOmnidirectional:
 				return CC.CreateString(PROPERTY_OMNIDIRECTIONAL);
@@ -2564,6 +2540,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfSelectedVariant));
 		else if (dwOptions & CDeviceClass::lkfNever)
 			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfNever));
+
 		//	Done
 
 		return pResult;
@@ -2582,7 +2559,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		return CC.CreateBool(m_bCanFireWhenBlind);
 
 	else if (strEquals(sProperty, PROPERTY_OMNIDIRECTIONAL))
-		return CC.CreateBool(GetRotationType(Ctx) == rotOmnidirectional);
+		return CC.CreateBool(GetRotationType(DeviceItem) == rotOmnidirectional);
 
 	else if (strEquals(sProperty, PROPERTY_REPEATING))
 		return CC.CreateInteger(GetContinuous(*pShot));
@@ -2789,7 +2766,7 @@ ICCItem *CWeaponClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
     return FindAmmoItemProperty(Ctx, Ammo, sProperty);
 	}
 
-Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)
+Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const
 
 //	GetMaxEffectiveRange
 //
@@ -2881,6 +2858,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 	const CItem &Item = Ctx.GetItem();
 	CSpaceObject *pSource = Ctx.GetSource();
 	CInstalledDevice *pDevice = Ctx.GetDevice();
+	const CDeviceItem DeviceItem = Item.AsDeviceItem();
 
 	DamageTypes iDamageType;
 	CString sReference;
@@ -2904,7 +2882,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 		int iFragments;
         CWeaponFireDesc *pRootShot = GetWeaponFireDesc(Ctx, Ammo);
-		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
+		const CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
 		DamageDesc Damage = pShot->GetDamage();
 		iDamageType = Damage.GetDamageType();
 
@@ -2984,7 +2962,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 		//	For large number of fragments, we have a special description
 
-		else if (iFragments >= 8 && !IsTracking(Ctx, pShot))
+		else if (iFragments >= 8 && !IsTracking(DeviceItem, pShot))
 			{
 			//	Compute total damage
 
@@ -3037,7 +3015,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 	return true;
 	}
 
-CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments) const
+const CWeaponFireDesc *CWeaponClass::GetReferenceShotData (const CWeaponFireDesc *pShot, int *retiFragments) const
 
 //	GetReferenceShotData
 //
@@ -3045,7 +3023,7 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 //	return the fragment (since it is more representative)
 
 	{
-	CWeaponFireDesc *pBestShot = pShot;
+	const CWeaponFireDesc *pBestShot = pShot;
 	Metric rBestDamage = 0.0;	//	Fragments always take precedence
 	int iBestFragments = 1;
 	DamageTypes iBestDamageType = damageLaser;
@@ -3096,7 +3074,7 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 	return pBestShot;
 	}
 
-CDeviceClass::DeviceRotationTypes CWeaponClass::GetRotationType (CItemCtx &Ctx, int *retiMinArc, int *retiMaxArc) const
+CDeviceClass::DeviceRotationTypes CWeaponClass::GetRotationType (const CDeviceItem &DeviceItem, int *retiMinArc, int *retiMaxArc) const
 
 //	GetRotationType
 //
@@ -3113,9 +3091,9 @@ CDeviceClass::DeviceRotationTypes CWeaponClass::GetRotationType (CItemCtx &Ctx, 
 //	it).
 
 	{
-	CInstalledDevice *pDevice = Ctx.GetDevice();
-	TSharedPtr<CItemEnhancementStack> pEnhancement = Ctx.GetEnhancementStack();
-	int iEnhancedFireArc = (pEnhancement ? pEnhancement->GetFireArc() : 0);
+	const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
+	int iEnhancedFireArc = Enhancements.GetFireArc();
 
 	//	If the device has a fire arc, then we use that for a direction
 
@@ -3202,11 +3180,12 @@ int CWeaponClass::GetSelectVariantCount (void) const
 		}
 	}
 
-void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource, 
-										   CInstalledDevice *pDevice,
+void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource, 
+										   const CInstalledDevice *pDevice,
 										   CString *retsLabel,
 										   int *retiAmmoLeft,
-										   CItemType **retpType)
+										   CItemType **retpType,
+										   bool bUseCustomAmmoCountHandler)
 
 //	GetSelectedVariantInfo
 //
@@ -3238,12 +3217,17 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 
 		if (retiAmmoLeft)
 			{
+			//	See if we use an event
+
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+				{ }
+
 			//	If each ammo item uses charges, then we need a different method.
 
-			if (pShot->GetAmmoType()->AreChargesAmmo())
+			else if (pShot->GetAmmoType()->AreChargesAmmo())
 				{
 				int iCharges = 0;
-				CItemListManipulator ItemList(pSource->GetItemList());
+				CItemListManipulator ItemList(const_cast<CSpaceObject *>(pSource)->GetItemList());
 				while (ItemList.MoveCursorForward())
 					{
 					const CItem &Item = ItemList.GetItemAtCursor();
@@ -3258,7 +3242,7 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 
 			else
 				{
-				CItemListManipulator ItemList(pSource->GetItemList());
+				CItemListManipulator ItemList(const_cast<CSpaceObject *>(pSource)->GetItemList());
 				CItem Item(pShot->GetAmmoType(), 1);
 				if (ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
 					*retiAmmoLeft = ItemList.GetItemAtCursor().GetCount();
@@ -3287,7 +3271,12 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 			*retsLabel = CString();
 
 		if (retiAmmoLeft)
-			*retiAmmoLeft = pDevice->GetCharges(pSource);
+			{
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+				{ }
+			else
+				*retiAmmoLeft = pDevice->GetCharges(pSource);
+			}
 
 		if (retpType)
 			*retpType = GetItemType();
@@ -3301,7 +3290,12 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 			*retsLabel = CString();
 
 		if (retiAmmoLeft)
-			*retiAmmoLeft = -1;
+			{
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+				{ }
+			else
+				*retiAmmoLeft = -1;
+			}
 
 		if (retpType)
 			*retpType = GetItemType();
@@ -3392,7 +3386,7 @@ int CWeaponClass::GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice 
 		}
 	}
 
-int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)
+int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const
 
 //	GetWeaponEffectiveness
 //
@@ -3408,14 +3402,14 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 	{
 	int iScore = 0;
 
-	CItemCtx Ctx(pSource, pDevice);
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+	CSpaceObject *pSource = DeviceItem.GetSource();
+	const CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
 	if (pShot == NULL)
 		return -100;
 
 	//	If we don't enough ammo, clearly we will not be effective
 
-	if (pShot->GetAmmoType())
+	if (pSource && pShot->GetAmmoType())
 		{
 		CItemListManipulator ItemList(pSource->GetItemList());
 		CItem Item(pShot->GetAmmoType(), 1);
@@ -3429,48 +3423,59 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 			&& (pTarget == NULL || pTarget->GetCategory() != CSpaceObject::catStation))
 		return -100;
 
+	//	If the target is a missile, then we need to be able to hit missiles.
+
+	if (pTarget && pTarget->GetCategory() == CSpaceObject::catMissile)
+		{
+		if (!DeviceItem.IsMissileDefenseWeapon())
+			return -100;
+		}
+
 	//	Check our state
 
-	switch (m_Counter)
+	if (const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice())
 		{
-		//	If we're overheating, we will not be effective
+		switch (m_Counter)
+			{
+			//	If we're overheating, we will not be effective
 
-		case cntTemperature:
-			if (pDevice->IsWaiting() && pDevice->GetTemperature() > 0)
-				return -100;
+			case cntTemperature:
+				if (pDevice->IsWaiting() && pDevice->GetTemperature() > 0)
+					return -100;
 
-			if (pDevice->GetTemperature() + m_iCounterActivate >= MAX_COUNTER)
-				{
-				pDevice->SetWaiting(true);
-				return -100;
-				}
+				if (pDevice->GetTemperature() + m_iCounterActivate >= MAX_COUNTER)
+					{
+					pDevice->SetWaiting(true);
+					return -100;
+					}
 
-			pDevice->SetWaiting(false);
-			break;
+				pDevice->SetWaiting(false);
+				break;
 
-		//	If our capacitor is discharged, we will not be effective
+			//	If our capacitor is discharged, we will not be effective
 
-		case cntCapacitor:
-			if (pDevice->IsWaiting() && pDevice->GetTemperature() < MAX_COUNTER)
-				return -100;
+			case cntCapacitor:
+				if (pDevice->IsWaiting() && pDevice->GetTemperature() < MAX_COUNTER)
+					return -100;
 
-			if (pDevice->GetTemperature() < m_iCounterActivate)
-				{
-				pDevice->SetWaiting(true);
-				return -100;
-				}
+				if (pDevice->GetTemperature() < m_iCounterActivate)
+					{
+					pDevice->SetWaiting(true);
+					return -100;
+					}
 
-			pDevice->SetWaiting(false);
-			break;
+				pDevice->SetWaiting(false);
+				break;
+			}
 		}
 
 	//  If we're blind and this weapon doesn't have the canFireWhenBlind attribute, then
 	//  weapon is not effective.
 
-	if (pSource->IsBlind() && (!m_bCanFireWhenBlind))
-	{
+	if (pSource && pSource->IsBlind() && (!m_bCanFireWhenBlind))
+		{
 		return -100;
-	}
+		}
 
 	//	If the weapon has EMP damage and the target has no shields and is not paralysed then
 	//	this is very effective.
@@ -3508,6 +3513,115 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 
 	return iScore;
 	}
+
+const CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo) const
+
+//  GetWeaponFireDesc
+//
+//  Get weapon fire descriptor for the weapon when shooting the given ammo.
+//  ItemCtx may optionally refer to the installed weapon (it must not contain
+//  a different item, though it may be empty).
+//
+//  Ammo may be specified either through the ammo item or through ItemCtx
+//  (as an installed device selection).
+//
+//	NOTE: If Ammo is passed in, we expect it to be fired by this weapon. Check
+//	before calling if not sure.
+
+    {
+	DEBUG_TRY
+
+    if (m_ShotData.GetCount() == 0)
+        return NULL;
+
+	//	Handle scalable levels
+
+	else if (m_iVariantType == varLevelScaling)
+		{
+		//	We assume that all levels are represented in m_ShotData.
+
+        int iIndex = Min(Max(0, DeviceItem.GetLevel() - m_ShotData[0].pDesc->GetLevel()), m_ShotData.GetCount() - 1);
+		return m_ShotData[iIndex].pDesc;
+		}
+
+	//	Handle counter variants
+
+	else if (m_iVariantType == varCounter)
+		{
+		//	We assume that all charge values are represented in m_ShotData.
+
+		int iIndex = Min(Max(0, DeviceItem.GetVariantNumber()), m_ShotData.GetCount() - 1);
+		return m_ShotData[iIndex].pDesc;
+		}
+
+	//	Handle charge variants
+
+	else if (m_iVariantType == varCharges)
+		{
+		//	We assume that all charge values are represented in m_ShotData.
+
+        int iIndex = Min(Max(0, DeviceItem.GetCharges()), m_ShotData.GetCount() - 1);
+		return m_ShotData[iIndex].pDesc;
+		}
+
+    //  If we need ammo, then we have extra work to do.
+    //  NOTE: Currently, if one variant uses ammo, all need to use ammo.
+	//	NOTE 2: This only applies to launchers. By definition, non-launchers
+	//	never have more than one type of ammo. [But some launchers do not
+	//	have ammo, so we need to check that they use ammo.]
+
+    else if (IsLauncherWithAmmo())
+        {
+		CWeaponFireDesc *pRoot = NULL;
+		int iLevel = -1;
+
+        //  If we have ammo, use it (this overrides whatever item is selected 
+        //  in ItemCtx).
+
+        if (!Ammo.IsEmpty())
+            {
+            int iSelection = GetAmmoVariant(Ammo.GetType());
+            if (iSelection != -1)
+                pRoot = m_ShotData[iSelection].pDesc;
+            else
+                return NULL;
+            }
+
+        //  If we have a device, we ask it for the variant
+        //
+        //  NOTE: We need to make sure we check that the source exists because
+        //  some code (like CStationType::OnBindDesign) will call this with a
+        //  valid CInstalledDevice but a NULL source.
+
+        else if (const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice())
+            {
+            int iSelection = GetCurrentVariant(pDevice);
+            if (iSelection != -1 && iSelection < m_ShotData.GetCount())
+                pRoot = m_ShotData[iSelection].pDesc;
+            else
+                return NULL;
+            }
+
+        //  Otherwise, just return the first entry
+
+        else
+            pRoot = m_ShotData[0].pDesc;
+
+        //  For now, the scaling for ammo weapons always comes from the weapon
+        //  (we can't have scalable ammo).
+
+        iLevel = DeviceItem.GetLevel();
+		return (iLevel == 0 ? pRoot : pRoot->GetScaledDesc(iLevel));
+        }
+    else
+        {
+        CWeaponFireDesc *pRoot = m_ShotData[0].pDesc;
+        int iLevel = DeviceItem.GetLevel();
+	    return (iLevel == 0 ? pRoot : pRoot->GetScaledDesc(iLevel));
+        }
+
+	DEBUG_CATCH
+    }
 
 CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo) const
 
@@ -3597,6 +3711,7 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
                 return NULL;
             }
 
+#if 0
         else if (!ItemCtx.GetVariantItem().IsEmpty())
             {
             int iSelection = GetAmmoVariant(ItemCtx.GetVariantItem().GetType());
@@ -3605,6 +3720,7 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
             else
                 return NULL;
             }
+#endif
 
         else if (ItemCtx.GetVariant() != -1 && ItemCtx.GetVariant() < m_ShotData.GetCount())
             {
@@ -3784,15 +3900,14 @@ bool CWeaponClass::IsAmmoWeapon (void)
 	return (UsesAmmo() || m_bCharges);
 	}
 
-bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice)
+bool CWeaponClass::IsAreaWeapon (const CDeviceItem &DeviceItem) const
 
 //	IsAreaWeapon
 //
 //	Is this a weapon with an area of effect
 
 	{
-	CItemCtx Ctx(pSource, pDevice);
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+	const CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
 	if (pShot == NULL)
 		return false;
 
@@ -3896,7 +4011,7 @@ bool CWeaponClass::IsStdDamageType (DamageTypes iDamageType, int iLevel)
 	return (iLevel >= iTierLevel && iLevel < iTierLevel + 3);
 	}
 
-bool CWeaponClass::IsTracking (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const
+bool CWeaponClass::IsTracking (const CDeviceItem &DeviceItem, const CWeaponFireDesc *pShot) const
 
 //	IsTracking
 //
@@ -3909,21 +4024,21 @@ bool CWeaponClass::IsTracking (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const
 	if (pShot->IsTrackingOrHasTrackingFragments())
 		return true;
 
-	TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
-	if (pEnhancements && pEnhancements->IsTracking())
+	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
+	if (Enhancements.IsTracking())
 		return true;
 
 	return false;
 	}
 
-bool CWeaponClass::IsTrackingWeapon (CItemCtx &Ctx)
+bool CWeaponClass::IsTrackingWeapon (const CDeviceItem &DeviceItem) const
 
 //	IsTrackingWeapon
 //
 //	Returns TRUE if we're a tracking weapon
 	
 	{
-	return IsTracking(Ctx, GetWeaponFireDesc(Ctx));
+	return IsTracking(DeviceItem, GetWeaponFireDesc(DeviceItem));
 	}
 
 bool CWeaponClass::IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice)
@@ -3937,10 +4052,10 @@ bool CWeaponClass::IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *p
 	}
 
 bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip, 
-									CInstalledDevice *pDevice, 
+									const CInstalledDevice *pDevice, 
 									CSpaceObject *pTarget, 
 									int *retiAimAngle, 
-									int *retiFireAngle)
+									int *retiFireAngle) const
 
 //	IsWeaponAligned
 //
@@ -3950,6 +4065,8 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	{
 	CItemCtx Ctx(pShip, pDevice);
+	const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
+
 	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 	if (pShot == NULL || pShip == NULL || pDevice == NULL)
 		{
@@ -3984,7 +4101,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 	//	Get rotation info
 
 	int iMinFireArc, iMaxFireArc;
-	DeviceRotationTypes iType = GetRotationType(Ctx, &iMinFireArc, &iMaxFireArc);
+	DeviceRotationTypes iType = GetRotationType(DeviceItem, &iMinFireArc, &iMaxFireArc);
 
 	//	Omnidirectional weapons are always aligned
 
@@ -4047,7 +4164,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	//	Tracking weapons behave like directional weapons with 120 degree field
 
-	if (iType != rotSwivel && IsTracking(Ctx, pShot))
+	if (iType != rotSwivel && IsTracking(DeviceItem, pShot))
 		{
 		int iDeviceAngle = AngleMiddle(iMinFireArc, iMaxFireArc);
 		iMinFireArc = AngleMod(iDeviceAngle - 60);
@@ -4117,7 +4234,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 		return false;
 	}
 
-bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *retiMaxFireArc)
+bool CWeaponClass::NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinFireArc, int *retiMaxFireArc) const
 
 //	NeedsAutoTarget
 //
@@ -4130,7 +4247,7 @@ bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *ret
 	{
 	//	If we're a tracking weapon then we have no swivel restrictions
 
-	if (IsTrackingWeapon(Ctx))
+	if (IsTrackingWeapon(DeviceItem))
 		{
 		if (retiMinFireArc) *retiMinFireArc = 0;
 		if (retiMaxFireArc) *retiMaxFireArc = 0;
@@ -4140,7 +4257,7 @@ bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *ret
 	//	If we're an omni or swivel weapon, adjust our fire arc
 
 	int iMinFireArc, iMaxFireArc;
-	switch (GetRotationType(Ctx, &iMinFireArc, &iMaxFireArc))
+	switch (GetRotationType(DeviceItem, &iMinFireArc, &iMaxFireArc))
 		{
 		case rotOmnidirectional:
 			{
@@ -4151,10 +4268,10 @@ bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *ret
 
 		case rotSwivel:
 			{
-			if (Ctx.GetSource())
+			if (const CSpaceObject *pSource = DeviceItem.GetSource())
 				{
-				iMinFireArc = AngleMod(Ctx.GetSource()->GetRotation() + iMinFireArc);
-				iMaxFireArc = AngleMod(Ctx.GetSource()->GetRotation() + iMaxFireArc);
+				iMinFireArc = AngleMod(pSource->GetRotation() + iMinFireArc);
+				iMaxFireArc = AngleMod(pSource->GetRotation() + iMaxFireArc);
 				}
 			if (retiMinFireArc) *retiMinFireArc = iMinFireArc;
 			if (retiMaxFireArc) *retiMaxFireArc = iMaxFireArc;
@@ -4173,12 +4290,10 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 //	Adds attributes of the weapon type
 
 	{
-	CItemCtx ItemCtx(&(const CItem &)DeviceItem, DeviceItem.GetSource());
-
 	//	Add omnidirectional and arc attributes
 
 	int iMinArc, iMaxArc;
-	switch (GetRotationType(ItemCtx, &iMinArc, &iMaxArc))
+	switch (GetRotationType(DeviceItem, &iMinArc, &iMaxArc))
 		{
 		case rotOmnidirectional:
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("omnidirectional")));
@@ -4196,15 +4311,15 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 	//	These properties are valid either for an ammo-less weapon, or a specific
 	//	ammo/missile.
 
-	CWeaponFireDesc *pRootShot;
+	const CWeaponFireDesc *pRootShot;
 	if ((GetSelectVariantCount() == 1 || !Ammo.IsEmpty())
-			&& (pRootShot = GetWeaponFireDesc(ItemCtx, Ammo)))
+			&& (pRootShot = GetWeaponFireDesc(DeviceItem, Ammo)))
 		{
 		//	Sometimes the fragments do all the damage. In that case, we take 
 		//	the properties from the fragment.
 
 		int iFragments;
-		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
+		const CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
 		DamageDesc Damage = pShot->GetDamage();
 
 		//	Apply enhancements
@@ -4355,75 +4470,17 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 		    if (error = m_ShotData[i].pAmmoType.Bind(Ctx))
 			    return error;
-
-			//	Must be valid
-
-			if (m_ShotData[i].pAmmoType == NULL)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Unable to find ItemType for ammoID: %x"), m_ShotData[i].pAmmoType.GetUNID());
-				return ERR_FAIL;
-				}
-
-			//	Get the descriptor
-
-			m_ShotData[i].pDesc = m_ShotData[i].pAmmoType->GetMissileDesc();
-			if (m_ShotData[i].pDesc == NULL)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("ItemType must have <Missile> definition: %x"), m_ShotData[i].pAmmoType.GetUNID());
-				return ERR_FAIL;
-				}
 			}
 		}
-
-	return NOERROR;
-
-	DEBUG_CATCH
-	}
-
-ALERROR CWeaponClass::OnFinishBind (SDesignLoadCtx &Ctx)
-
-//  OnFinishBind
-//
-//  Finish binding
-
-    {
-	int i;
-	ALERROR error;
 
 	//	Events
 
 	GetItemType()->InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
 
-	//	Shots
-
-	TSortMap<CItemType *, bool> UniqueAmmo;
-	for (i = 0; i < m_ShotData.GetCount(); i++)
-		{
-		//	If we own this definition, then we need to bind it.
-
-		if (m_ShotData[i].bOwned)
-			{
-			if (error = m_ShotData[i].pDesc->FinishBindDesign(Ctx))
-				return error;
-			}
-
-		//	Make a list of all unique ammo items
-
-		if (m_ShotData[i].pDesc->GetAmmoType())
-			UniqueAmmo.SetAt(m_ShotData[i].pDesc->GetAmmoType(), true);
-		}
-
-	//	For each ammo item that we fire, give it a pointer to us so that it can
-	//	refer back.
-
-	for (i = 0; i < UniqueAmmo.GetCount(); i++)
-		{
-		CItemType *pAmmoType = UniqueAmmo.GetKey(i);
-		pAmmoType->AddWeapon(this);
-		}
-
 	return NOERROR;
-    }
+
+	DEBUG_CATCH
+	}
 
 CEffectCreator *CWeaponClass::OnFindEffectCreator (const CString &sUNID)
 
@@ -4494,6 +4551,77 @@ void CWeaponClass::OnMarkImages (void)
 
 	for (i = 0; i < m_ShotData.GetCount(); i++)
 		m_ShotData[i].pDesc->MarkImages();
+	}
+
+ALERROR CWeaponClass::OnPrepareBind (SDesignLoadCtx &Ctx)
+
+//	OnPrepareBind
+//
+//	Get ready for bind.
+
+	{
+	DEBUG_TRY
+
+	//	We need to connect the pointers to the missile items BEFORE we bind 
+	//	because sometimes we don't know whether we'll bind weapon or missile
+
+	TSortMap<CItemType *, bool> UniqueAmmo;
+	for (int i = 0; i < m_ShotData.GetCount(); i++)
+		{
+		CItemType *pAmmoType = NULL;
+
+		//	Resolve in case we have ammo
+
+		if (m_ShotData[i].bOwned)
+			{
+			DWORD dwAmmoUNID = m_ShotData[i].pDesc->GetAmmoTypeUNID();
+			if (dwAmmoUNID)
+				pAmmoType = Ctx.GetUniverse().FindItemTypeUnbound(dwAmmoUNID);
+			}
+
+		//	If we have a reference to a missile we need to connect its weapon
+		//	fire descriptor. We need to do this before Bind.
+
+		else
+			{
+			//	Resolve the item pointer, but don't bind yet.
+
+			DWORD dwAmmoUNID = m_ShotData[i].pAmmoType.GetUNID();
+			pAmmoType = Ctx.GetUniverse().FindItemTypeUnbound(dwAmmoUNID);
+			if (pAmmoType == NULL)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Unable to find ItemType for ammoID: %x"), dwAmmoUNID);
+				return ERR_FAIL;
+				}
+
+			//	Initialize the descriptor
+
+			m_ShotData[i].pDesc = pAmmoType->GetMissileDesc();
+			if (m_ShotData[i].pDesc == NULL)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("ItemType must have <Missile> definition: %x"), dwAmmoUNID);
+				return ERR_FAIL;
+				}
+			}
+
+		//	While we're looping, make a list of all unique ammo items.
+
+		if (pAmmoType)
+			UniqueAmmo.SetAt(pAmmoType, true);
+		}
+
+	//	For each ammo item that we fire, give it a pointer to us so that it can
+	//	refer back.
+
+	for (int i = 0; i < UniqueAmmo.GetCount(); i++)
+		{
+		CItemType *pAmmoType = UniqueAmmo.GetKey(i);
+		pAmmoType->AddWeapon(this);
+		}
+
+	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 bool CWeaponClass::RequiresItems (void) const

@@ -19,15 +19,18 @@
 			<Text id="actionDone">[D]one</Text>
 			<Text id="actionExit">E[x]it</Text>
 			<Text id="actionInformation">[I]nformation</Text>
+			<Text id="actionInstall">[I]nstall</Text>
 			<Text id="actionJettison">[J]ettison</Text>
 			<Text id="actionLeave">[L]eave</Text>
 			<Text id="actionLoot">[L]oot</Text>
+			<Text id="actionNo">[N]o</Text>
 			<Text id="actionRefuel">[R]efuel</Text>
 			<Text id="actionRepairArmor">Repair [A]rmor</Text>
 			<Text id="actionRepairItem">[R]epair Item</Text>
 			<Text id="actionRepairReplaceArmor">Repair or Replace [A]rmor</Text>
 			<Text id="actionSellItems">[S]ell Items</Text>
 			<Text id="actionUndock">[U]ndock</Text>
+			<Text id="actionYes">[Y]es</Text>
 
 			<!-- Dock Screen Text -->
 			
@@ -54,6 +57,7 @@
 
 			<Text id="dashSeparator">" &mdash; "</Text>
 			<Text id="elipsis">...</Text>
+			<Text id="ellipsis">...</Text>
 			<Text id="listAnd">" and "</Text>
 			<Text id="listComma">", "</Text>
 			<Text id="listCommaAnd">", and "</Text>

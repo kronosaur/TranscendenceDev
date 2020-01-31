@@ -32,36 +32,6 @@
 					)
 				))
 
-			(setq intArmorEnhanceStatus (lambda (result)
-				(switch
-					(eq result 0)	;	ok
-						""
-
-					(eq result 1)	;	noEffect
-						" But it has no effect on your armor."
-
-					(eq result 2)	;	alreadyEnhanced
-						" But your armor is already enhanced."
-
-					(eq result 3)	;	degraded
-						" Your armor has weakened further."
-
-					(eq result 4)	;	defectRemoved
-						" It seems to have restored your armor."
-
-					(eq result 5)	;	enhancementRemoved
-						" Your armor has lost its enhancement."
-
-					(eq result 6)	;	enhancementReplaced
-						" Unfortunately, your armor has lost its previous enhancement."
-
-					(eq result 7)	;	improved
-						" Your armor has been further enhanced."
-
-					""
-					)
-				))
-
 			(setq intComputeBuyPrice (lambda (thisItem)
 				(objGetBuyPrice gSource thisItem)
 				))
@@ -87,53 +57,50 @@
 				))
 				  
 			(setq intGetGlobalAchievements (lambda ()
-				(block (theList 
-						resurrectCount
-						totalGMProfit totalArmsProfit totalEquipProfit totalMedsProfit totalLuxProfit totalIllegalProfit
-						friendlyShipsDestroyed friendlyStationsDestroyed
-						systemData neverBacktracked
-						slavesFreed slaveSales
-						neverReachedBA neverReachedStK neverReachedJiangs neverReachedPointJuno neverReachedHeretic)
-				
+				(block (
+					theList 
+
 					; Game stats
-					(setq resurrectCount (plyGetStat gPlayer "resurrectCount"))
+					(resurrectCount (plyGetStat gPlayer "resurrectCount"))
 				
 					; Commerce stats
-					(setq totalGMProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~fudam -Fuel; -Illegal; -Lux; -Meds;")
+					(totalGMProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~fudam -Fuel; -Illegal; -Lux; -Meds;")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "*~fudam -Fuel; -Illegal; -Lux; -Meds;"))
 						)
-					(setq totalArmsProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "wsam")
+					(totalArmsProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "wsam")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "wsam"))
 						)
-					(setq totalEquipProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "fud~ws")
+					(totalEquipProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "fud~ws")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "fud~ws"))
 						)
-					(setq totalMedsProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Meds")
+					(totalMedsProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Meds")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "*~wsam +Meds"))
 						)
-					(setq totalLuxProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Lux")
+					(totalLuxProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Lux")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "*~wsam +Lux"))
 						)
-					(setq totalIllegalProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Illegal")
+					(totalIllegalProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Illegal")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "*~wsam +Illegal"))
 						)
-						
+					(totalOreMinedValue (plyGetItemStat gPlayer 'itemsMinedValue "* +ore | * +minable;"))
+
 					; Conducts
-					(setq systemData (plyGetStat gPlayer "systemData"))
-					(setq neverBacktracked (not (filter systemData theData (not (eq (item theData 1) (item theData 2))))))
-					(setq friendlyShipsDestroyed (plyGetStat gPlayer "friendlyShipsDestroyed"))
-					(setq friendlyStationsDestroyed (plyGetStat gPlayer "friendlyStationsDestroyed"))
+					(systemData (plyGetStat gPlayer "systemData"))
+					(neverBacktracked (not (filter systemData theData (not (eq (item theData 1) (item theData 2))))))
+					(friendlyShipsDestroyed (plyGetStat gPlayer "friendlyShipsDestroyed"))
+					(friendlyStationsDestroyed (plyGetStat gPlayer "friendlyStationsDestroyed"))
 					
 					; Exploration
-					(setq neverReachedBA (not (find systemData "BA" 0)))
-					(setq neverReachedStK (not (find systemData "SK" 0)))
-					(setq neverReachedJiangs (not (find systemData "C9" 0)))
-					(setq neverReachedPointJuno (not (find systemData "PJ" 0)))
-					(setq neverReachedHeretic (not (find systemData "G2" 0)))
-					
+					(neverReachedBA (not (find systemData "BA" 0)))
+					(neverReachedStK (not (find systemData "SK" 0)))
+					(neverReachedJiangs (not (find systemData "C9" 0)))
+					(neverReachedPointJuno (not (find systemData "PJ" 0)))
+					(neverReachedHeretic (not (find systemData "G2" 0)))
+				
 					; Misc
-					(setq slavesFreed (objGetData gPlayerShip "slavesFreed"))
-					(setq slaveSales (objGetData gPlayerShip "slaveSales"))
+					(slavesFreed (objGetData gPlayerShip "slavesFreed"))
+					(slaveSales (objGetData gPlayerShip "slaveSales"))
+					)
 					
 					; First add all the stats that are unconditional
 					(setq theList (list
@@ -203,6 +170,9 @@
 						(if (gr totalEquipProfit 0)
 							(list (list "Profit on ship's equipment" totalEquipProfit "commerce"))
 							)
+						(if (gr totalOreMinedValue 0)
+							(list (list "Value of mined resources" totalOreMinedValue "commerce"))
+							)
 							
 						; Slave sales
 						(if slaveSales
@@ -219,36 +189,6 @@
 					)
 				))
 
-			(setq intItemEnhanceStatus (lambda (result successText itemName)
-				(switch
-					(eq result 0)
-						successText
-
-					(eq result 1)
-						"The enhancement has no effect"
-
-					(eq result 2)
-						(cat (strCapitalize itemName) " is already enhanced")
-
-					(eq result 3)
-						(cat (strCapitalize itemName) " has weakened further")
-
-					(eq result 4)
-						(cat (strCapitalize itemName) " has been repaired")
-
-					(eq result 5)
-						(cat (strCapitalize itemName) " has lost its enhancement")
-
-					(eq result 6)
-						(cat successText " (previous enhancement lost)")
-
-					(eq result 7)
-						(cat (strCapitalize itemName) " has been further enhanced")
-
-					""
-					)
-				))
-				
 			(setq intLootAllItems (lambda (theSource theDest criteria)
 				(block (lootedItems)
 					(setq lootedItems (objGetItems theSource criteria))
