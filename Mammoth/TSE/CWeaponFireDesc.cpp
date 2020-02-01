@@ -493,7 +493,7 @@ IEffectPainter *CWeaponFireDesc::CreateEffectPainter (SShotCreateCtx &CreateCtx)
 	return m_pEffect.CreatePainter(PainterCtx);
 	}
 
-void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir)
+void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir) const
 
 //	CreateFireEffect
 //
@@ -507,7 +507,7 @@ void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource,
 		//	Create a painter.
 
 		CCreatePainterCtx Ctx;
-		Ctx.SetWeaponFireDesc(this);
+		Ctx.SetWeaponFireDesc(const_cast<CWeaponFireDesc *>(this));
 
 		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, &GetUniverse().GetDefaultFireEffect(m_Damage.GetDamageType()));
 		if (pPainter == NULL)

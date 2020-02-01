@@ -5,10 +5,3 @@
 
 #pragma once
 
-class CTargetingSolution
-	{
-	public:
-		CTargetingSolution (CDeviceItem &DeviceItem, const CTargetList &TargetList);
-
-		bool Compute (void);
-	};

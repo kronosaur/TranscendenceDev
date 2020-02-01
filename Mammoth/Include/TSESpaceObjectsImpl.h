@@ -1296,7 +1296,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;
 		void CalcDeviceBonus (void);
-		bool CalcDeviceTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution);
 		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
         void CalcPerformance (void);
@@ -1649,7 +1648,6 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
 		Metric CalcMaxAttackDist (void) const;
 		int CalcNumberOfShips (void);
-		bool CalcWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) const;
 		bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
 		void CreateDestructionEffect (void);
@@ -1674,7 +1672,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void SetWreckParams (CShipClass *pWreckClass, CShip *pShip = NULL);
 		bool UpdateAttacking (SUpdateCtx &Ctx, int iTick);
 		void UpdateDestroyedAnimation (void);
-		bool UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified);
+		bool UpdateDevices (SUpdateCtx &Ctx, int iTick, const CTargetList &TargetList, bool &iobModified);
 		bool UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCalcDevices);
 		void UpdateReinforcements (int iTick);
 		void UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange);
@@ -1705,7 +1703,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		CSpaceObject *m_pBase = NULL;			//	If we're a subordinate, this points to our base
 		CSpaceObjectList m_Subordinates;		//	List of subordinates
 		CSpaceObjectList m_Targets;				//	Targets to destroy (by our ships)
-		CSpaceObjectTargetList m_WeaponTargets;	//	Targets to destroy (by our weapons)
+		CTargetList m_WeaponTargets;			//	Targets to destroy (by our weapons)
 
 		CAttackDetector m_Blacklist;			//	Player blacklisted
 		int m_iAngryCounter = 0;				//	Attack cycles until station is not angry

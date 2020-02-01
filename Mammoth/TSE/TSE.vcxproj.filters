@@ -344,6 +344,12 @@
     <ClInclude Include="..\Include\TSEWeaponClassImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSETargeting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetListImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1384,9 +1390,6 @@
     <ClCompile Include="CStationCreateOptions.cpp">
       <Filter>Source Files\Stations</Filter>
     </ClCompile>
-    <ClCompile Include="CSpaceObjectTargetList.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
     <ClCompile Include="SUpdateCtx.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
@@ -1427,6 +1430,12 @@
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
     <ClCompile Include="CConfigurationDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CTargetList.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CShotArray.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
   </ItemGroup>

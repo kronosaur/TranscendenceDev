@@ -8295,19 +8295,25 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_FIRE_WEAPON:
 			{
+			constexpr Metric MAX_TARGET_RANGE =	(24.0 * LIGHT_SECOND);
+
 			CInstalledDevice *pDevice = pCtx->AsInstalledDevice(pObj, pArgs->GetElement(1));
 			if (pDevice == NULL)
 				return pCC->CreateError(CONSTLIT("Item is not an installed device on object"), pArgs->GetElement(1));
 
 			CItemCtx WeaponCtx(pObj, pDevice);
 
+			CTargetList TargetList;
+			CTargetList::STargetOptions Options;
+			Options.bIncludeNonAggressors = true;
+			Options.rMaxDist = MAX_TARGET_RANGE;
+			TargetList.Init(*pObj, Options);
+
 			CSpaceObject *pTarget = CreateObjFromItem(pArgs->GetElement(2));
 
-			if (pTarget) pTarget->SetDestructionNotify();
-			pDevice->SetFireAngle(-1);
-			pDevice->SetTarget(pTarget);
+			if (pTarget) 
+				pTarget->SetDestructionNotify();
 
-			bool bSourceDestroyed = false;
 			bool bConsumedItems = false;
 			bool bSuccess = false;
 
@@ -8329,7 +8335,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *p_OldWeaponBonus = pCC->LookupGlobal(CONSTLIT("aWeaponBonus"), pCtx);
 				ICCItem *p_OldWeaponType = pCC->LookupGlobal(CONSTLIT("aWeaponType"), pCtx);
 
-				bSuccess = pDevice->Activate(pObj, pTarget, &bSourceDestroyed, &bConsumedItems);
+				bSuccess = pDevice->Activate(pTarget, TargetList, &bConsumedItems);
 
 				pCtx->DefineInteger(CONSTLIT("aFireAngle"), p_OldFireAngle->GetIntegerValue());
 				pCtx->DefineVector(CONSTLIT("aFirePos"), vOldFirePos);
@@ -8339,7 +8345,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pCtx->DefineItemType(CONSTLIT("aWeaponType"), pCtx->AsItem(p_OldWeaponType).GetType());
 				}
 
-			if (bSourceDestroyed)
+			if (pObj->IsDestroyed())
 				return pCC->CreateTrue();
 
 			if (bSuccess)

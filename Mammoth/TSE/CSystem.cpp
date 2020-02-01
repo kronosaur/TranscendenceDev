@@ -1670,43 +1670,31 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 			if (pFragDesc->bMIRV && pMissileSource)
 				{
-				CSpaceObjectTargetList TargetList;
-				TargetList.InitWithNearestVisibleEnemies(*pMissileSource, 
-						iFragmentCount, 
-						MAX_MIRV_TARGET_RANGE, 
-						NULL, 
-						CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObjectTargetList::FLAG_INCLUDE_STATIONS);
-				int iFound = TargetList.GetList().GetCount();
-				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
+				TArray<CTargetList::STargetResult> TargetList = CWeaponClass::CalcMIRVFragmentationTargets(*pMissileSource, *pFragDesc->pDesc, iFragmentCount);
+				int iFound = TargetList.GetCount();
 
 				if (iFound > 0)
 					{
 					for (i = 0; i < iFragmentCount; i++)
 						{
-						CSpaceObject *pTarget = TargetList.GetList()[i % iFound];
-						Targets[i] = pTarget;
-
-						//	Calculate direction to fire in
-
-						CVector vTarget = pTarget->GetPos() - Ctx.vPos;
-						Metric rTimeToIntercept = CalcInterceptTime(vTarget, pTarget->GetVel(), rSpeed);
-						CVector vInterceptPoint = vTarget + pTarget->GetVel() * rTimeToIntercept;
+						auto &Target = TargetList[i % iFound];
+						Targets[i] = Target.pObj;
 
 						//	If fragments can maneuver, then fire angle jitters a bit.
 
 						if (pFragDesc->pDesc->IsTracking())
-							Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-45, 45));
+							Angles[i] = AngleMod(Target.iFireAngle + mathRandom(-45, 45));
 
 						//	If we've got multiple fragments to the same target, then
 						//	jitter a bit.
 
 						else if (i >= iFound)
-							Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-6, 6));
+							Angles[i] = AngleMod(Target.iFireAngle + mathRandom(-6, 6));
 
 						//	Otherwise, head straight for the target
 
 						else
-							Angles[i] = VectorToPolar(vInterceptPoint, NULL);
+							Angles[i] = Target.iFireAngle;
 						}
 					}
 

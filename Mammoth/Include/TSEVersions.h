@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							48;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					179;
+constexpr DWORD SYSTEM_SAVE_VERSION =					180;
 
 //	Uncomment out the following define when building a stable release
 
@@ -583,7 +583,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					179;
 //		Added m_pEnhancements to CInstalledArmor
 //
 //	153: 1.8 Alpha 4
-//		Added m_WeaponTargets
+//		Added m_WeaponTargetsOld
 //
 //	154: 1.8 Alpha 4
 //		Added sNodeID and flags to CSystemMap::SMapAnnotation
@@ -659,3 +659,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					179;
 //
 //	179: 1.9 Beta 1
 //		iCountMined in CPlayerGameStats
+//
+//	180: 1.9 Beta 1
+//		Replace m_WeaponTargets
+

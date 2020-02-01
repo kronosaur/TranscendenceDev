@@ -265,9 +265,6 @@ struct SUpdateCtx
 		CAutoMiningCalc AutoMining;					//	Used to compute nearest minable asteroid
 		CAutoTargetCalc AutoTarget;					//	Used to compute player's auto target
 
-		CSpaceObjectTargetList Targets;				//	Cached list of targets for object being updated
-		CSpaceObjectTargetList Missiles;			//	Cached list of missiles for object being updated
-		
 		//	Misc flags
 
 		bool bGravityWarning = false;				//	Player in a dangerous gravity field

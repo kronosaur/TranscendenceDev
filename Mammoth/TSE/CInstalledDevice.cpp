@@ -533,11 +533,11 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 		{
 		switch (pWeapon->GetRotationType(DeviceItem, &iWeaponMinFireArc, &iWeaponMaxFireArc))
 			{
-			case CDeviceClass::rotOmnidirectional:
+			case CDeviceRotationDesc::rotOmnidirectional:
 				bWeaponIsOmnidirectional = true;
 				break;
 
-			case CDeviceClass::rotSwivel:
+			case CDeviceRotationDesc::rotSwivel:
 				break;
 
 			default:

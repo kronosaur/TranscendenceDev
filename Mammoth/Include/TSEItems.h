@@ -173,6 +173,7 @@ class CDeviceItem : public CDifferentiatedItem
 		Metric GetMaxEffectiveRange (CSpaceObject *pTarget = NULL) const;
 		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		inline DWORD GetTargetTypes (void) const;
 		DamageTypes GetWeaponDamageType (void) const;
 		inline int GetWeaponEffectiveness (CSpaceObject *pTarget) const;
 		inline const CWeaponFireDesc *GetWeaponFireDesc (void) const;
@@ -180,8 +181,6 @@ class CDeviceItem : public CDifferentiatedItem
 		inline bool IsAreaWeapon (void) const;
 		inline bool IsEnabled (void) const;
 		inline bool IsMiningWeapon (void) const;
-		bool IsMissileDefenseWeapon (void) const;
-		bool IsTargetableMissileDefenseWeapon (void) const;
 		inline bool IsTrackingWeapon (void) const;
 		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
 		inline bool NeedsAutoTarget (int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const;

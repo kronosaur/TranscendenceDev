@@ -456,7 +456,7 @@ class CWeaponFireDesc
 		bool CanHit (CSpaceObject *pObj) const;
 		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		IEffectPainter *CreateEffectPainter (SShotCreateCtx &CreateCtx);
-		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir);
+		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir) const;
 		void CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx);
 		IEffectPainter *CreateParticlePainter (void);
 		IEffectPainter *CreateSecondaryPainter (bool bTrackingObj = false, bool bUseObjectCenter = false);
@@ -558,7 +558,7 @@ class CWeaponFireDesc
 		bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
-		void PlayFireSound (CSpaceObject *pSource) { m_FireSound.PlaySound(pSource); }
+		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource); }
 		bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
 
 	private:

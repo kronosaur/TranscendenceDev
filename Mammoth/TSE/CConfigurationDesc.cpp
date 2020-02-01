@@ -21,15 +21,13 @@
 #define CONFIG_TYPE_SPREAD5						CONSTLIT("spread5")
 #define CONFIG_TYPE_DUAL_ALTERNATING			CONSTLIT("alternating")
 
-TArray<SShotOrigin> CConfigurationDesc::CalcOrigins (const CVector &vSource, int iFireAngle, int iPolarity, Metric rScale) const
+CShotArray CConfigurationDesc::CalcOrigins (const CVector &vSource, int iFireAngle, int iPolarity, Metric rScale) const
 
 //	CalcOrigins
 //
 //	Returns an array of shot origins and directions.
 
 	{
-	TArray<SShotOrigin> Result;
-
 	switch (GetType())
 		{
 		case CConfigurationDesc::ctDual:
@@ -41,14 +39,14 @@ TArray<SShotOrigin> CConfigurationDesc::CalcOrigins (const CVector &vSource, int
 
 			//	Create two shots
 
-			Result.InsertEmpty(2);
+			CShotArray Result(2);
 			Result[0].vPos = vSource + Perp;
 			Result[0].iDir = iFireAngle;
 
 			Result[1].vPos = vSource - Perp;
 			Result[1].iDir = iFireAngle;
 
-			break;
+			return Result;
 			}
 
 		case CConfigurationDesc::ctDualAlternating:
@@ -62,12 +60,14 @@ TArray<SShotOrigin> CConfigurationDesc::CalcOrigins (const CVector &vSource, int
 
 			if (iPolarity == -1)
 				{
-				Result.InsertEmpty(2);
+				CShotArray Result(2);
 				Result[0].vPos = vSource + Perp;
 				Result[0].iDir = iFireAngle;
 
 				Result[1].vPos = vSource - Perp;
 				Result[1].iDir = iFireAngle;
+
+				return Result;
 				}
 
 			//	Otherwise, alternate based on polarity
@@ -77,9 +77,11 @@ TArray<SShotOrigin> CConfigurationDesc::CalcOrigins (const CVector &vSource, int
 				//	Create a shot either from the left or from the right depending
 				//	on the continuous shot variable.
 
-				Result.InsertEmpty(1);
+				CShotArray Result(1);
 				Result[0].vPos = vSource + ((iPolarity % 2) ? Perp : -Perp);
 				Result[0].iDir = iFireAngle;
+
+				return Result;
 				}
 
 			break;
@@ -94,19 +96,19 @@ TArray<SShotOrigin> CConfigurationDesc::CalcOrigins (const CVector &vSource, int
 
 			//	Create five shots
 
-			Result.InsertEmpty(5);
+			CShotArray Result(5);
 			for (int i = -2; i <= 2; i++)
 				{
 				Result[i + 2].vPos = vSource + ((Metric)i * Perp);
 				Result[i + 2].iDir = iFireAngle;
 				}
 
-			break;
+			return Result;
 			}
 
 		case CConfigurationDesc::ctSpread5:
 			{
-			Result.InsertEmpty(5);
+			CShotArray Result(5);
 
 			//	Shots at +2 and -2 degrees
 
@@ -129,12 +131,12 @@ TArray<SShotOrigin> CConfigurationDesc::CalcOrigins (const CVector &vSource, int
 			Result[4].vPos = vSource;
 			Result[4].iDir = (iFireAngle + 355) % 360;
 
-			break;
+			return Result;
 			}
 
 		case CConfigurationDesc::ctSpread3:
 			{
-			Result.InsertEmpty(3);
+			CShotArray Result(3);
 
 			//	Shot at 0 degrees
 
@@ -149,12 +151,12 @@ TArray<SShotOrigin> CConfigurationDesc::CalcOrigins (const CVector &vSource, int
 			Result[2].vPos = vSource;
 			Result[2].iDir = (iFireAngle + 355) % 360;
 
-			break;
+			return Result;
 			}
 
 		case CConfigurationDesc::ctSpread2:
 			{
-			Result.InsertEmpty(2);
+			CShotArray Result(2);
 
 			//	Shots at +2 and -2 degrees
 
@@ -164,13 +166,13 @@ TArray<SShotOrigin> CConfigurationDesc::CalcOrigins (const CVector &vSource, int
 			Result[1].vPos = vSource;
 			Result[1].iDir = (iFireAngle + 358) % 360;
 
-			break;
+			return Result;
 			}
 
 		case CConfigurationDesc::ctCustom:
 			{
 			if (GetCustomConfigCount() == 0)
-				{ }
+				return CShotArray();
 
 			else if (IsAlternating() && iPolarity != -1)
 				{
@@ -178,33 +180,37 @@ TArray<SShotOrigin> CConfigurationDesc::CalcOrigins (const CVector &vSource, int
 
 				int iShot = (iPolarity % GetCustomConfigCount());
 
-				Result.InsertEmpty(1);
+				CShotArray Result(1);
 				Result[0].vPos = vSource + GetCustomConfigPos(iShot, iFireAngle) * rScale;
 				Result[0].iDir = GetCustomConfigFireAngle(iShot, iFireAngle);
+
+				return Result;
 				}
 			else
 				{
-				Result.InsertEmpty(GetCustomConfigCount());
+				CShotArray Result(GetCustomConfigCount());
 
 				for (int i = 0; i < Result.GetCount(); i++)
 					{
 					Result[i].vPos = vSource + GetCustomConfigPos(i, iFireAngle) * rScale;
 					Result[i].iDir = GetCustomConfigFireAngle(i, iFireAngle);
 					}
+
+				return Result;
 				}
+
 			break;
 			}
 
 		default:
 			{
-			Result.InsertEmpty(1);
+			CShotArray Result(1);
 			Result[0].vPos = vSource;
 			Result[0].iDir = iFireAngle;
-			break;
+
+			return Result;
 			}
 		}
-
-	return Result;
 	}
 
 int CConfigurationDesc::GetAimTolerance (int iFireDelay) const
@@ -231,35 +237,65 @@ int CConfigurationDesc::GetAimTolerance (int iFireDelay) const
 		}
 	}
 
-Metric CConfigurationDesc::GetMultiplier (void) const
+int CConfigurationDesc::GetShotCount (void) const
 
-//	GetMultiplier
+//	GetShotCount
 //
-//	Returns the shot multiplier.
+//	Return the number of shots fired.
 
 	{
 	switch (m_iType)
 		{
 		case ctDual:
 		case ctSpread2:
-			return 2.0;
+			return 2;
 
 		case ctSpread3:
-			return 3.0;
+			return 3;
 
 		case ctWall:
 		case ctSpread5:
-			return 5.0;
+			return 5;
 
 		case ctCustom:
 			if (m_bCustomAlternating)
-				return 1.0;
+				return 1;
 			else
 				return m_Custom.GetCount();
 
 		default:
-			return 1.0;
+			return 1;
 		}
+	}
+
+bool CConfigurationDesc::IncPolarity (int iPolarity, int *retiNewPolarity) const
+
+//	IncPolarity
+//
+//	If this is an alternating configuration, we return TRUE and initialize the
+//	new polarity.
+
+	{
+	switch (m_iType)
+		{
+		case ctDualAlternating:
+			if (retiNewPolarity)
+				*retiNewPolarity = ((iPolarity + 1) % 2);
+			break;
+
+		case CConfigurationDesc::ctCustom:
+			if (GetCustomConfigCount() == 0)
+				return false;
+
+			if (retiNewPolarity)
+				*retiNewPolarity = ((iPolarity + 1) % GetCustomConfigCount());
+			break;
+
+		default:
+			return false;
+		}
+
+	return true;
 	}
 
 ALERROR CConfigurationDesc::InitFromWeaponClassXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc)

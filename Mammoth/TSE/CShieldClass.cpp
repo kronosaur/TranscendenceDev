@@ -356,20 +356,6 @@ bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *p
 		return false;
 	}
 
-bool CShieldClass::Activate (CInstalledDevice *pDevice, 
-							 CSpaceObject *pSource, 
-							 CSpaceObject *pTarget,
-							 bool *retbSourceDestroyed,
-							 bool *retbConsumedItems)
-
-//	Activate
-//
-//	Activates device
-
-	{
-	return false;
-	}
-
 int CShieldClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 //	CalcBalance

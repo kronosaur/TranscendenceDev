@@ -20,6 +20,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
+		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsAutomatedWeapon (void) override { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
@@ -93,11 +94,7 @@ class CCyberDeckClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
-		virtual bool Activate (CInstalledDevice *pDevice, 
-							   CSpaceObject *pSource, 
-							   CSpaceObject *pTarget,
-							   bool *retbSourceDestroyed,
-							   bool *retbConsumedItems = NULL) override;
+		virtual bool Activate (CInstalledDevice &Device, CSpaceObject *pTarget, const CTargetList &TargetList, bool *retbConsumedItems = NULL) override;
 		virtual bool CanHitFriends (void) const override { return false; }
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override { return 30; }
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatWeapon; }
@@ -110,6 +107,7 @@ class CCyberDeckClass : public CDeviceClass
 											 int *retiAmmoLeft,
 											 CItemType **retpType = NULL,
 											 bool bUseCustomAmmoCountHandler = false) override;
+		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override { return CTargetList::typeAttacker | CTargetList::typeFortification; }
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return 1; }
 		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
@@ -444,11 +442,6 @@ class CShieldClass : public CDeviceClass
 
 		virtual bool AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon) override;
 		virtual bool AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &Ctx) override;
-		virtual bool Activate (CInstalledDevice *pDevice, 
-							   CSpaceObject *pSource, 
-							   CSpaceObject *pTarget,
-							   bool *retbSourceDestroyed,
-							   bool *retbConsumedItems = NULL) override;
 		virtual CShieldClass *AsShieldClass (void) override { return this; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) override;

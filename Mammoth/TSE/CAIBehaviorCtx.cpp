@@ -232,10 +232,11 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 		//	See if this weapon shoots missiles.
 
-		if (DeviceItem.IsMissileDefenseWeapon())
+		DWORD dwTargetTypes = DeviceItem.GetTargetTypes();
+		if (dwTargetTypes & CTargetList::typeMissile)
 			m_fShootAllMissiles = true;
 
-		else if (Weapon.CanTargetMissiles())
+		else if (dwTargetTypes & CTargetList::typeTargetableMissile)
 			m_fShootTargetableMissiles = true;
 
 		//	If this is a secondary weapon, remember that we have some and 
