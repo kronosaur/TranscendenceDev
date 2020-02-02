@@ -1428,6 +1428,11 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 			return resFailure;
 		}
 	
+	//	We can fail to fire but still update temperature and consume power.
+
+	if (iFailureMode == CFailureDesc::failNoFire)
+		return resNoEffect;
+	
 	//	See if we have enough ammo/charges to proceed. If we don't then we 
 	//	cannot continue.
 
