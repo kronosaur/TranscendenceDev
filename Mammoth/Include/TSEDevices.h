@@ -47,10 +47,8 @@ class CFailureDesc
 			failJammed =			3,
 			failMisfire =			4,
 			failSafeMode =			5,		//	Device disabled
-
 			failCustom =			6,		//	Fire OnFailure event
-
-			failNoFire =			7,
+			failNoFire =			7,		//	Same as jammed, but increase temp
 			};
 
 		CFailureDesc (EProfile iProfile = profileNone);

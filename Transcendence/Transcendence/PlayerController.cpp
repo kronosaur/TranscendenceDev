@@ -1177,7 +1177,8 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 			break;
 
 		case CDeviceClass::failWeaponNoFire:
-			m_pTrans->DisplayMessage(CONSTLIT("Weapon cannot fire!"))
+			DisplayTranslate(CONSTLIT("msgWeaponCannotFire"));
+			break;
 
 		case CDeviceClass::failWeaponExplosion:
 			DisplayTranslate(CONSTLIT("msgWeaponExplosion"));

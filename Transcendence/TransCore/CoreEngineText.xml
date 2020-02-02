@@ -47,6 +47,7 @@
 			<Text id="msgTimeStillStopped">			Time is still stopped</Text>
 			<Text id="msgTimeStopped">				Time has stopped for you!</Text>
 			<Text id="msgTooFarFromStargate">		Too far from stargate</Text>
+			<Text id="msgWeaponCannotFire">			Weapon cannot fire!</Text>
 			<Text id="msgWeaponExplosion">			Weapon chamber explosion!</Text>
 			<Text id="msgWeaponJammed">				Weapon jammed!</Text>
 			<Text id="msgWeaponMisfire">			Weapon misfire!</Text>

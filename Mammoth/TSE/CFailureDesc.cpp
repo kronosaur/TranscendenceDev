@@ -17,9 +17,8 @@ static TStaticStringTable<TStaticStringEntry<CFailureDesc::EFailureTypes>, 8> FA
 	"jammed",				CFailureDesc::failJammed,
 	"misfire",				CFailureDesc::failMisfire,
 	"noFailure",			CFailureDesc::failNone,
+	"noFire",				CFailureDesc::failNoFire,
 	"safeMode",				CFailureDesc::failSafeMode,
-
-	"noFire",				CFailureDesc::failNoFire
 	};
 
 CFailureDesc::CFailureDesc (EProfile iProfile)
@@ -69,7 +68,7 @@ CFailureDesc::EFailureTypes CFailureDesc::Failure (CSpaceObject *pSource, CInsta
 			break;
 
 		case failNoFire:
-			pSource->OnDeviceStatus(pDevice, CDeviceClass::failNoFire);
+			pSource->OnDeviceStatus(pDevice, CDeviceClass::failWeaponNoFire);
 			break;
 
 		case failSafeMode:
