@@ -49,6 +49,8 @@ class CFailureDesc
 			failSafeMode =			5,		//	Device disabled
 
 			failCustom =			6,		//	Fire OnFailure event
+
+			failNoFire =			7,
 			};
 
 		CFailureDesc (EProfile iProfile = profileNone);
@@ -166,6 +168,7 @@ class CDeviceClass
 			failWeaponExplosion,
 			failWeaponJammed,
 			failWeaponMisfire,
+			failWeaponNoFire,
 			};
 
 		enum LinkedFireOptions
