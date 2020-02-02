@@ -23,11 +23,7 @@ CCyberDeckClass::CCyberDeckClass (void)
 	{
 	}
 
-bool CCyberDeckClass::Activate (CInstalledDevice *pDevice, 
-							    CSpaceObject *pSource, 
-							    CSpaceObject *pTarget,
-								bool *retbSourceDestroyed,
-							    bool *retbConsumedItems)
+bool CCyberDeckClass::Activate (CInstalledDevice &Device, CSpaceObject *pTarget, const CTargetList &TargetList, bool *retbConsumedItems)
 
 //	Activate
 //
@@ -41,9 +37,10 @@ bool CCyberDeckClass::Activate (CInstalledDevice *pDevice,
 	if (retbConsumedItems)
 		*retbConsumedItems = false;
 
+
 	//	Won't work if not enabled
 
-	if (!pDevice->IsWorking())
+	if (!Device.IsWorking())
 		return false;
 
 	//	We better have a target
@@ -77,12 +74,13 @@ bool CCyberDeckClass::Activate (CInstalledDevice *pDevice,
 
 	//	Run the program
 
-	pTarget->ProgramDamage(pSource, m_Program);
+	CSpaceObject &SourceObj = Device.GetSourceOrThrow();
+	pTarget->ProgramDamage(&SourceObj, m_Program);
 
 	//	Identify when program is run
 
-	if (pSource->IsPlayer())
-		pDevice->GetItem()->SetKnown();
+	if (SourceObj.IsPlayer())
+		Device.GetItem()->SetKnown();
 
 	return true;
 

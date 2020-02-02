@@ -170,6 +170,7 @@ class CDeviceSystem
 		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
 		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return GetDevice(m_NamedDevices[iDev]).GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
 		int GetNamedIndex (DeviceNames iDev) const { return (HasNamedDevices() ? m_NamedDevices[iDev] : -1); }
+		DWORD GetTargetTypes (void) const;
 		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
 		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices = 0);
 		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1, bool bInCreate = false, int *retiDeviceSlot = NULL);
@@ -187,6 +188,7 @@ class CDeviceSystem
 		DeviceNames SelectWeapon (CSpaceObject *pObj, int iIndex, int iVariant);
 		void SetCursorAtDevice (CItemListManipulator &ItemList, int iIndex) const;
 		void SetCursorAtNamedDevice (CItemListManipulator &ItemList, DeviceNames iDev) const;
+		void SetSecondary (bool bValue = true);
 		bool Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList, ItemCategories *retiCat = NULL);
         void WriteToStream (IWriteStream *pStream);
 

@@ -519,7 +519,7 @@ void CPlayerShipController::Gate (void)
 		if (bGateNearby)
 			DisplayTranslate(CONSTLIT("msgTooFarFromStargate"));
 		else
-			DisplayTranslate(CONSTLIT("msgNoStargatesInRage"));
+			DisplayTranslate(CONSTLIT("msgNoStargatesInRange"));
 		return;
 		}
 
@@ -646,35 +646,6 @@ IShipController::OrderTypes CPlayerShipController::GetOrder (int iIndex, CSpaceO
 
 		default:
 			return orderNone;
-		}
-	}
-
-void CPlayerShipController::GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
-
-//	GetNearestTargets
-//
-//	Returns a list of nearest targets
-
-	{
-	constexpr int MAX_TARGETS = 10;
-
-	//	Get targets, if necessary
-
-	if (!UpdateCtx.Targets.IsValid())
-		{
-		UpdateCtx.Targets.InitWithNearestVisibleEnemies(*m_pShip,
-				MAX_TARGETS,
-				MAX_AUTO_TARGET_DISTANCE,
-				NULL,
-				CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObjectTargetList::FLAG_INCLUDE_STATIONS | CSpaceObjectTargetList::FLAG_INCLUDE_SOURCE_TARGET);
-		}
-
-	//	Now find a target for the given weapon.
-
-	if (!UpdateCtx.Targets.FindTargetAligned(*m_pShip, WeaponItem, retpTarget, retiFireSolution))
-		{
-		*retpTarget = NULL;
-		*retiFireSolution = -1;
 		}
 	}
 
@@ -1691,7 +1662,7 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 		int iWeaponMinFireArc, iWeaponMaxFireArc;
 		switch (pWeapon->GetRotationType(DeviceItem, &iWeaponMinFireArc, &iWeaponMaxFireArc))
 			{
-			case CDeviceClass::rotSwivel:
+			case CDeviceRotationDesc::rotSwivel:
 				iDir = AngleMiddle(iWeaponMinFireArc, iWeaponMaxFireArc);
 				break;
 			}
@@ -1938,6 +1909,36 @@ CSpaceObject *CPlayerShipController::GetTarget (DWORD dwFlags) const
 
 	else
 		return NULL;
+	}
+
+CTargetList CPlayerShipController::GetTargetList (void) const
+
+//	GetTargetList
+//
+//	Returns a target list suitable for weapons looking for targets.
+
+	{
+	CTargetList::STargetOptions Options;
+
+	Options.rMaxDist = MAX_AUTO_TARGET_DISTANCE;
+	Options.bIncludeNonAggressors = true;
+	Options.bIncludeStations = true;
+	Options.bIncludeSourceTarget = true;
+	Options.bNoLineOfFireCheck = true;
+
+	//	Include targeting requirements from weapons
+
+	DWORD dwTargetTypes = m_pShip->GetDeviceSystem().GetTargetTypes();
+
+	if (dwTargetTypes & CTargetList::typeMissile)
+		Options.bIncludeMissiles = true;
+
+	if (dwTargetTypes & CTargetList::typeMinable)
+		Options.bIncludeMinable = true;
+
+	//	Done
+
+	return CTargetList(*m_pShip, Options);
 	}
 
 void CPlayerShipController::OnDocked (CSpaceObject *pObj)

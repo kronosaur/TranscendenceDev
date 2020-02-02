@@ -136,10 +136,10 @@ int CDeviceItem::GetFireArc (void) const
 	int iMinArc, iMaxArc;
 	switch (GetType().GetDeviceClass()->GetRotationType(*this, &iMinArc, &iMaxArc))
 		{
-		case CDeviceClass::rotOmnidirectional:
+		case CDeviceRotationDesc::rotOmnidirectional:
 			return 360;
 
-		case CDeviceClass::rotSwivel:
+		case CDeviceRotationDesc::rotSwivel:
 			return AngleRange(iMinArc, iMaxArc);
 
 		default:
@@ -250,43 +250,6 @@ DamageTypes CDeviceItem::GetWeaponDamageType (void) const
 	//	Get the damage type
 
 	return pShot->GetDamageType();
-	}
-
-bool CDeviceItem::IsMissileDefenseWeapon (void) const
-
-//	IsMissileDefenseWeapon
-//
-//	Returns TRUE if this weapon has missile defense capabilities.
-//
-//	LATER: Paradoxically, this return FALSE for missile defense devices. In the
-//	future we should fix that. The semantics is that we fire on missiles during
-//	a normal fire (Activate) call, not during OnUpdate.
-
-	{
-	//	See if this is confered via enhancement or via slot property.
-
-	if (const CItemEnhancementStack *pStack = GetEnhancementStack())
-		{
-		if (pStack->IsMissileDefense())
-			return true;
-		}
-
-	return false;
-	}
-
-bool CDeviceItem::IsTargetableMissileDefenseWeapon (void) const
-
-//	IsTargetableMissileDefenseWeapon
-//
-//	Returns TRUE if we target specially marked missiles.
-
-	{
-	if (const CInstalledDevice *pInstalled = GetInstalledDevice())
-		{
-		return pInstalled->CanTargetMissiles();
-		}
-	else
-		return false;
 	}
 
 bool CDeviceItem::IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle, int *retiFireAngle) const

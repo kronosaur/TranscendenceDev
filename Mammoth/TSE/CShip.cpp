@@ -575,53 +575,6 @@ int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const
 	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon);
 	}
 
-bool CShip::CalcDeviceTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
-
-//	CalcDeviceTarget
-//
-//	Compute the target for this weapon.
-//
-//	retpTarget is either a valid target or NULL, which means that the weapon has
-//	no target (should fire straight).
-//
-//	retiFireSolution is either an angle or -1. If -1, it means either that the
-//	weapon has no target (and should fire straight) or that we did not compute
-//	a fire solution.
-//
-//	We return TRUE if we should fire and FALSE otherwise (automatic weapons
-//	don't always fire if they have no target).
-
-	{
-	DEBUG_TRY
-
-	switch (WeaponItem.CalcTargetType())
-		{
-		case CDeviceItem::calcNoTarget:
-			return false;
-
-		case CDeviceItem::calcControllerTarget:
-			{
-			*retpTarget = m_pController->GetTarget();
-			*retiFireSolution = -1;
-			return true;
-			}
-
-		case CDeviceItem::calcWeaponTarget:
-			{
-			m_pController->GetWeaponTarget(UpdateCtx, WeaponItem, retpTarget, retiFireSolution);
-
-			//	We only fire if we have a target
-
-			return (*retpTarget != NULL);
-			}
-
-		default:
-			return false;
-		}
-
-	DEBUG_CATCH
-	}
-
 CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot)
 
 //	CalcDeviceToReplace
@@ -6109,6 +6062,12 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     if ((iTick % TRADE_UPDATE_FREQUENCY) == 0)
         UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
 
+	//	We keep a target list across all device activations/update in case 
+	//	multiple weapons on the ship want to access a target list (otherwise we
+	//	would have to re-create the target list for every weapon).
+
+	CTargetList TargetList;
+
     //	Check controls
 
     if (!IsParalyzed())
@@ -6123,33 +6082,25 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
                 CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
                 if (Device.IsTriggered() && Device.IsReady())
                     {
-                    bool bSourceDestroyed = false;
                     bool bConsumedItems = false;
 
-                    //	Compute the target for this weapon.
+					//	Initialize the target list, if necessary.
+					//
+					//	NOTE: The target list is initialized with options for 
+					//	how to fill it, but we have not yet done the search of 
+					//	targets in the system.
+					//
+					//	Inside the Activate method, a weapon will Realize() the
+					//	target list if necessary.
 
-                    CSpaceObject *pTarget;
-                    int iFireAngle;
-                    if (!CalcDeviceTarget(Ctx, DeviceItem, &pTarget, &iFireAngle))
-                        {
-                        //	Do not consume power, even though we're triggered.
+					if (TargetList.IsEmpty())
+						TargetList = m_pController->GetTargetList();
 
-                        Device.SetLastActivateSuccessful(false);
-                        continue;
-                        }
+					//	Fire
 
-                    //	Set the target on the device. We need to do this for 
-                    //	repeating weapons.
-
-                    Device.SetFireAngle(iFireAngle);
-                    Device.SetTarget(pTarget);
-
-                    //	Fire
-
-                    bool bSuccess = Device.Activate(this,
-                        pTarget,
-                        &bSourceDestroyed,
-                        &bConsumedItems);
+                    bool bSuccess = Device.Activate(m_pController->GetTarget(),
+							TargetList,
+							&bConsumedItems);
                     if (IsDestroyed())
                         return;
 
@@ -6283,7 +6234,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
     //	Update each device
 
-	CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
+	CDeviceClass::SDeviceUpdateCtx DeviceCtx(TargetList, iTick);
     m_fDeviceDisrupted = false;
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
         {
@@ -6293,7 +6244,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
         Device.Update(this, DeviceCtx);
 
-        if (DeviceCtx.bSourceDestroyed)
+        if (IsDestroyed())
             return;
 
         if (DeviceCtx.bConsumedItems)

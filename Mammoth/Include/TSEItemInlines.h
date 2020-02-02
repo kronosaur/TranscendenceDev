@@ -323,6 +323,11 @@ inline CSpaceObject *CDeviceItem::GetSource (void) const
 		return NULL;
 	}
 
+inline DWORD CDeviceItem::GetTargetTypes (void) const
+	{
+	return GetType().GetDeviceClass()->GetTargetTypes(*this);
+	}
+
 inline int CDeviceItem::GetWeaponEffectiveness (CSpaceObject *pTarget) const
 	{
 	return GetType().GetDeviceClass()->GetWeaponEffectiveness(*this, pTarget);

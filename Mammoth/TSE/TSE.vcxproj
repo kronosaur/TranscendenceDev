@@ -302,13 +302,16 @@
     <ClInclude Include="..\Include\TSESystem.h" />
     <ClInclude Include="..\Include\TSESystemMap.h" />
     <ClInclude Include="..\Include\TSESystemType.h" />
+    <ClInclude Include="..\Include\TSETargeting.h" />
     <ClInclude Include="..\Include\TSETopology.h" />
     <ClInclude Include="..\Include\TSETrade.h" />
     <ClInclude Include="..\Include\TSETransLispUtil.h" />
     <ClInclude Include="..\Include\TSEUniverse.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="..\Include\TSEVersions.h" />
+    <ClInclude Include="..\Include\TSEWeaponClassImpl.h" />
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
+    <ClInclude Include="..\Include\TSEConfigurationDescInlines.h" />
     <ClInclude Include="SystemCreateImpl.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="GameFileCompatibility.h" />
@@ -333,8 +336,10 @@
     <ClInclude Include="ShipAIImpl.h" />
     <ClInclude Include="SystemImpl.h" />
     <ClInclude Include="SystemPaintImpl.h" />
+    <ClInclude Include="TargetListImpl.h" />
     <ClInclude Include="TopologyDescImpl.h" />
     <ClInclude Include="TopologyProcessorsImpl.h" />
+    <ClInclude Include="WeaponClassImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C3DObjectPos.cpp" />
@@ -380,6 +385,7 @@
     <ClCompile Include="CCompositeImageModifiers.cpp" />
     <ClCompile Include="CCompositeImageType.cpp" />
     <ClCompile Include="CConditionSet.cpp" />
+    <ClCompile Include="CConfigurationDesc.cpp" />
     <ClCompile Include="CContinuousBeam.cpp" />
     <ClCompile Include="CCreatePainterCtx.cpp" />
     <ClCompile Include="CCrewAI.cpp" />
@@ -524,6 +530,7 @@
     <ClCompile Include="CShockwaveHitTest.cpp" />
     <ClCompile Include="CEnvironmentGrid.cpp" />
     <ClCompile Include="CMusicResource.cpp" />
+    <ClCompile Include="CShotArray.cpp" />
     <ClCompile Include="CSimpleOrder.cpp" />
     <ClCompile Include="CSimplePathStargateGenerator.cpp" />
     <ClCompile Include="CSmartSystemCreateOptions.cpp" />
@@ -533,7 +540,6 @@
     <ClCompile Include="CSpaceObjectItemList.cpp" />
     <ClCompile Include="CSpaceObjectPool.cpp" />
     <ClCompile Include="CSpaceObjectProperties.cpp" />
-    <ClCompile Include="CSpaceObjectTargetList.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />
     <ClCompile Include="CStarDesc.cpp" />
@@ -547,6 +553,7 @@
     <ClCompile Include="CSystemMapThumbnails.cpp" />
     <ClCompile Include="CSystemSpacePainter.cpp" />
     <ClCompile Include="CSystemEventList.cpp" />
+    <ClCompile Include="CTargetList.cpp" />
     <ClCompile Include="CTimedMissionEvent.cpp" />
     <ClCompile Include="CTLispConvert.cpp" />
     <ClCompile Include="CTopologyAttributeCriteria.cpp" />

@@ -309,8 +309,8 @@ class IShipController
 		static constexpr DWORD FLAG_NO_AUTO_TARGET =	0x00000002;
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 
+		virtual CTargetList GetTargetList (void) const { return CTargetList(); }
 		virtual bool GetThrust (void) = 0;
-		virtual void GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) { }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const { return false; }
 		virtual bool IsPlayer (void) const { return false; }
 		virtual bool IsPlayerBlacklisted (void) const { return false; }

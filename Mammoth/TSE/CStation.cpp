@@ -659,7 +659,7 @@ void CStation::CalcDeviceBonus (void)
 		//	to do this AFTER we set up the enhancements stack, since this 
 		//	usually comes from the device slot.
 
-		if (DeviceItem.IsMissileDefenseWeapon())
+		if (DeviceItem.GetTargetTypes() & CTargetList::typeMissile)
 			m_fHasMissileDefense = true;
 		}
 
@@ -759,66 +759,6 @@ bool CStation::CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int
 	//	Get the shadow line from the image
 
 	return Image.CalcVolumetricShadowLine(Ctx, iTick, iVariant, retxCenter, retyCenter, retiWidth, retiLength);
-	}
-
-bool CStation::CalcWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) const
-
-//	CalcWeaponTarget
-//
-//	Calculates the target for the given weapon.
-
-	{
-	//	If we're angry and this is an area weapon, then we fire 
-	//	regardless of range so that we can soak up missiles/shots.
-
-	DWORD dwFlags = 0;
-	if (m_iAngryCounter > 0 && WeaponItem.IsAreaWeapon())
-		dwFlags |= CSpaceObjectTargetList::FLAG_NO_RANGE_CHECK;
-
-	//	If this weapon does not target missiles, then we can just look for enemy
-	//	ships.
-
-	if (!WeaponItem.IsMissileDefenseWeapon())
-		return m_WeaponTargets.FindTargetInRange(*this, WeaponItem, dwFlags, retpTarget, retiFireSolution);
-
-	//	Otherwise we look in both the ship list and the missile list.
-
-	else
-		{
-		CSpaceObject *pTarget = NULL;
-		int iFireSolution = -1;
-		Metric rDist2;
-
-		m_WeaponTargets.FindTargetInRange(*this, 
-				WeaponItem, 
-				dwFlags,
-				&pTarget,
-				&iFireSolution,
-				&rDist2);
-
-		CSpaceObject *pMissile = NULL;
-		int iMissileFireSolution = -1;
-		Metric rMissileDist2;
-
-		if (!UpdateCtx.Missiles.FindTargetInRange(*this, 
-					WeaponItem, 
-					dwFlags,
-					&pMissile, 
-					&iMissileFireSolution, 
-					&rMissileDist2)
-				|| (pTarget && rDist2 < rMissileDist2))
-			{
-			*retpTarget = pTarget;
-			*retiFireSolution = iFireSolution;
-			}
-		else
-			{
-			*retpTarget = pMissile;
-			*retiFireSolution = iMissileFireSolution;
-			}
-
-		return (*retpTarget) != NULL;
-		}
 	}
 
 bool CStation::CanAttack (void) const
@@ -1300,6 +1240,13 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 	CDeviceDescList Devices;
 	pType->GenerateDevices(System.GetLevel(), Devices);
+
+	//	Always set station weapons as secondaries so that they search for their 
+	//	own targets.
+
+	Devices.SetSecondary(true);
+
+	//	Install devices
 
 	pStation->m_Devices.Init(pStation, Devices);
 	pStation->CalcDeviceBonus();
@@ -3601,9 +3548,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_iPaintOrder
 //
 //	CIntegralRotation m_pRotation
-//
-//	DWORD		No of weapon targets (only if armed)
-//	DWORD		target (CSpaceObject ref)
+//	CTargetList	m_WeaponTargets
 
 	{
 #ifdef DEBUG_LOAD
@@ -3746,6 +3691,12 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	//	Devices
 
 	m_Devices.ReadFromStream(Ctx, this);
+
+	//	Prior to version 180 we didn't automatically set devices to be
+	//	secondary.
+
+	if (Ctx.dwVersion < 180)
+		m_Devices.SetSecondary(true);
 
 	//	In debug mode, recalc weapon bonus in case anything has changed.
 
@@ -3987,8 +3938,24 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Weapon targets
 
-	if (m_fArmed && Ctx.dwVersion >= 153)
-		m_WeaponTargets.ReadFromStream(Ctx);
+	if (m_fArmed)
+		{
+		if (Ctx.dwVersion >= 180)
+			m_WeaponTargets.ReadFromStream(Ctx);
+		else if (Ctx.dwVersion >= 153)
+			{
+			DWORD dwCount;
+			Ctx.pStream->Read(dwCount);
+			if (dwCount != 0xffffffff)
+				{
+				for (int i = 0; i < (int)dwCount; i++)
+					{
+					DWORD dwDummy;
+					Ctx.pStream->Read(dwDummy);
+					}
+				}
+			}
+		}
 	}
 
 void CStation::OnSetEventFlags (void)
@@ -4195,7 +4162,7 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (!m_Devices.IsEmpty())
 		{
-		if (!UpdateDevices(Ctx, iTick, bCalcDeviceBonus))
+		if (!UpdateDevices(Ctx, iTick, m_WeaponTargets, bCalcDeviceBonus))
 			return;
 		}
 
@@ -4300,9 +4267,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_iPaintOrder
 //
 //	CIntegralRotation	m_pRotation
-//
-//	DWORD		No of weapon targets (only if armed)
-//	DWORD		target (CSpaceObject ref)
+//	CTargetList	m_WeaponTargets
 
 	{
 	DWORD dwSave;
@@ -5376,17 +5341,9 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 	if ((iTick % STATION_SCAN_TARGET_FREQUENCY) == 0)
 		UpdateTargets(Ctx, rAttackRange + GetHitSize());
 
-	//	If we have missile defense, then make a list.
-	//
-	//	NOTE: We only do this if we're angry (are under attack) so that we don't
-	//	waste cycles.
-
-	if (m_fHasMissileDefense && m_iAngryCounter > 0 && !Ctx.Missiles.IsValid())
-		Ctx.Missiles.InitWithNearestMissiles(*this, MAX_ENEMIES, rAttackRange + GetHitSize(), 0);
-
 	//	Fire with all weapons (if we've got a target)
 
-	if ((!m_WeaponTargets.IsEmpty() || !Ctx.Missiles.IsEmpty())
+	if (!m_WeaponTargets.IsEmpty()
 			&& !IsParalyzed()
 			&& !IsDisarmed())
 		{
@@ -5400,21 +5357,10 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 					|| !Weapon.IsReady())
 				continue;
 
-			//	Get the target and fire angle
+			CSpaceObject *pTarget = NULL;
 
-			CSpaceObject *pTarget;
-			int iFireAngle;
-			if (!CalcWeaponTarget(Ctx, DeviceItem, &pTarget, &iFireAngle))
-				continue;
-
-			//	Fire the weapon
-
-			Weapon.SetTarget(pTarget);
-			Weapon.SetFireAngle(iFireAngle);
-
-			bool bSourceDestroyed = false;
-			Weapon.Activate(this, pTarget, &bSourceDestroyed);
-			if (bSourceDestroyed)
+			Weapon.Activate(pTarget, m_WeaponTargets);
+			if (IsDestroyed())
 				return false;
 
 			Weapon.SetTimeUntilReady(m_pType->GetFireRateAdj() * Weapon.GetActivateDelay(this) / 10);
@@ -5457,7 +5403,7 @@ void CStation::UpdateDestroyedAnimation (void)
 	m_iDestroyedAnimation--;
 	}
 
-bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified)
+bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, const CTargetList &TargetList, bool &iobModified)
 
 //	UpdateDevices
 //
@@ -5468,7 +5414,7 @@ bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified)
 //	update.
 
 	{
-	CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
+	CDeviceClass::SDeviceUpdateCtx DeviceCtx(TargetList, iTick);
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
@@ -5476,7 +5422,7 @@ bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified)
 		DeviceCtx.ResetOutputs();
 
 		Device.Update(this, DeviceCtx);
-		if (DeviceCtx.bSourceDestroyed)
+		if (IsDestroyed())
 			return false;
 
 		//	If the device was repaired or disabled, we need to update
@@ -5651,16 +5597,18 @@ void CStation::UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange)
 //	Update the targets for each weapon.
 
 	{
-	constexpr int MAX_ENEMIES = 10;
+	CTargetList::STargetOptions Options;
+	Options.rMaxDist = rAttackRange;
+	Options.bIncludeNonAggressors = true;
 
-	DWORD dwFlags = CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS;
+	if (m_fHasMissileDefense && m_iAngryCounter > 0)
+		Options.bIncludeMissiles = true;
+
 	if (m_Blacklist.IsBlacklisted())
-		dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_PLAYER;
+		Options.bIncludePlayer = true;
 
-	m_WeaponTargets.CleanUp();
-	m_WeaponTargets.InitWithNearestVisibleEnemies(*this,
-			MAX_ENEMIES,
-			rAttackRange,
-			NULL,
-			dwFlags);
+	if (m_iAngryCounter > 0)
+		Options.bNoRangeCheck = true;
+
+	m_WeaponTargets.Init(*this, Options);
 	}

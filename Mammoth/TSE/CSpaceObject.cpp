@@ -4343,13 +4343,13 @@ void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *ret
 
 	//	Include stations
 
-	bool bIncludeStations = ((dwFlags & CSpaceObjectTargetList::FLAG_INCLUDE_STATIONS) ? true : false);
+	bool bIncludeStations = ((dwFlags & CTargetList::FLAG_INCLUDE_STATIONS) ? true : false);
 
 	//	If a ship has fired its weapon after this time, then it counts
 	//	as an aggressor
 
 	int iAggressorThreshold;
-	if (dwFlags & CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS)
+	if (dwFlags & CTargetList::FLAG_INCLUDE_NON_AGGRESSORS)
 		iAggressorThreshold = -1;
 	else
 		iAggressorThreshold = GetUniverse().GetTicks() - AGGRESSOR_THRESHOLD;

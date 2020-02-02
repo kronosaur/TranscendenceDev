@@ -211,17 +211,17 @@ class CPlayerShipController : public IShipController
 		virtual CCurrencyBlock *GetCurrencyBlock (void) override { return &m_Credits; }
 		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) override;
 		virtual CSpaceObject *GetDestination (void) const override { return m_pDestination; }
-		virtual EManeuverTypes GetManeuver (void) override;
-		virtual bool GetThrust (void) override;
-		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
-		virtual bool GetReverseThrust (void) override;
-		virtual bool GetStopThrust (void) override;
-		virtual OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const override;
-		virtual CSpaceObject *GetOrderGiver (void) override { return m_pShip; }
-		virtual int GetOrderCount (void) const override { return (m_iOrder == IShipController::orderNone ? 0 : 1); }
 		virtual bool GetDeviceActivate (void) override;
 		virtual int GetFireDelay (void) override { return mathRound(5.0 / STD_SECONDS_PER_UPDATE); }
-		virtual void GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) override;
+		virtual EManeuverTypes GetManeuver (void) override;
+		virtual OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const override;
+		virtual int GetOrderCount (void) const override { return (m_iOrder == IShipController::orderNone ? 0 : 1); }
+		virtual CSpaceObject *GetOrderGiver (void) override { return m_pShip; }
+		virtual bool GetReverseThrust (void) override;
+		virtual bool GetStopThrust (void) override;
+		virtual bool GetThrust (void) override;
+		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
+		virtual CTargetList GetTargetList (void) const override;
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayer (void) const override { return true; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;

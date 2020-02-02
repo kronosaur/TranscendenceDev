@@ -701,6 +701,7 @@ class CGenericType : public CDesignType
 
 //	Ship Systems ---------------------------------------------------------------
 
+#include "TSETargeting.h"
 #include "TSEShipEquipment.h"
 #include "TSEArmor.h"
 #include "TSEDevices.h"
