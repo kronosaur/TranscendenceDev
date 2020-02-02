@@ -292,11 +292,12 @@ class CWeaponClass : public CDeviceClass
 
 		struct SShotFireResult
 			{
-			bool bNoShotFired = false;			//	If TRUE, no shot was fired
+			bool bShotFired = true;				//	If TRUE, at lease one shot was fired
 
-			bool bNoFireEffect = false;			//	If TRUE, do not create fire effect
-			bool bNoSoundEffect = false;		//	If TRUE, do not create sound effect
-			bool bNoRecoil = false;				//	If TRUE, do not create recoil
+			bool bFireEffect = true;			//	If TRUE, create fire effect
+			bool bSoundEffect = true;			//	If TRUE, create sound effect
+			bool bRecoil = true;				//	If TRUE, create recoil
+			CVector vRecoil;
 			};
 
 		CWeaponClass (void);
@@ -317,6 +318,7 @@ class CWeaponClass : public CDeviceClass
 		bool ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, bool *retbConsumed);
 		bool ConsumeCapacitor (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc);
 		void FailureExplosion (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, bool *retbSourceDestroyed);
+		bool FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CShotArray &Shots, int iRepeatingCount, SShotFireResult &retResult);
 		bool FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount = NULL) const;
 		int FireGetAmmoToConsume(CItemCtx &ItemCtx,
 							  const CWeaponFireDesc &ShotDesc,

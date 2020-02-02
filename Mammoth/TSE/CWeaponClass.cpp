@@ -1968,6 +1968,75 @@ bool CWeaponClass::FindDataField (const CString &sField, CString *retsValue)
 	return FindAmmoDataField(Ammo, sRootField, retsValue);
 	}
 
+bool CWeaponClass::FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CShotArray &Shots, int iRepeatingCount, SShotFireResult &retResult)
+
+//	FireAllShots
+//
+//	Fires all shots and returns an aggregated SShotFireResult structure.
+
+	{
+	CSpaceObject &Source = Device.GetSourceOrThrow();
+	CItemCtx ItemCtx(&Source, &Device);
+	Metric rSpeed = ShotDesc.GetInitialSpeed();
+
+	retResult.vRecoil = CVector();
+	retResult.bRecoil = false;
+	retResult.bShotFired = false;
+	retResult.bSoundEffect = false;
+
+	for (int i = 0; i < Shots.GetCount(); i++)
+		{
+		SShotFireResult Result;
+
+		//	Fire out to event, if the weapon has one.
+		//	Otherwise, we create weapon fire
+
+		if (FireOnFireWeapon(ItemCtx, 
+				ShotDesc, 
+				Shots[i].vPos, 
+				Shots[i].pTarget,
+				Shots[i].iDir, 
+				iRepeatingCount,
+				Result))
+			{
+			//	Did we destroy the source?
+
+			if (Source.IsDestroyed())
+				return false;
+			}
+
+		//	Otherwise, fire default
+
+		else
+			FireWeaponShot(&Source, &Device, ShotDesc, Shots[i].vPos, Shots[i].iDir, rSpeed, Shots[i].pTarget, iRepeatingCount, i);
+
+		//	Create the barrel flash effect, unless canceled
+
+		if (Result.bFireEffect)
+			ShotDesc.CreateFireEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir);
+
+		//	Create the sound effect, if necessary
+
+		if (Result.bSoundEffect)
+			retResult.bSoundEffect = true;
+
+		//	Recoil
+
+		if (m_iRecoil && Result.bRecoil)
+			{
+			retResult.bRecoil = true;
+			retResult.vRecoil = retResult.vRecoil + PolarToVector(Shots[i].iDir, 1.0);
+			}
+
+		//	If we fired, then remember that.
+
+		if (Result.bShotFired)
+			retResult.bShotFired = true;
+		}
+
+	return retResult.bShotFired;
+	}
+
 bool CWeaponClass::FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount) const
 
 //	FireGetAmmoCountToDisplay
@@ -2104,10 +2173,10 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 
 	else
 		{
-		retResult.bNoShotFired = pResult->GetBooleanAt(CONSTLIT("noShot"));
-		retResult.bNoFireEffect = retResult.bNoShotFired || pResult->GetBooleanAt("noFireEffect");
-		retResult.bNoSoundEffect = retResult.bNoShotFired || pResult->GetBooleanAt("noSoundEffect");
-		retResult.bNoRecoil = retResult.bNoShotFired || pResult->GetBooleanAt("noRecoil");
+		retResult.bShotFired = !pResult->GetBooleanAt(CONSTLIT("noShot"));
+		retResult.bFireEffect = retResult.bShotFired && !pResult->GetBooleanAt("noFireEffect");
+		retResult.bSoundEffect = retResult.bShotFired && !pResult->GetBooleanAt("noSoundEffect");
+		retResult.bRecoil = retResult.bShotFired && !pResult->GetBooleanAt("noRecoil");
 
 		return true;
 		}
@@ -2130,10 +2199,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	{
 	CSpaceObject &Source = Device.GetSourceOrThrow();
-	CItemCtx ItemCtx(&Source, &Device);
 	CDeviceItem DeviceItem = Device.GetDeviceItem();
-
-	//	Pre-init
 
 	//	Compute the shots to fire
 
@@ -2186,83 +2252,27 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 			&& m_Configuration.IncPolarity(GetAlternatingPos(&Device), &iNewPolarity))
 		SetAlternatingPos(&Device, iNewPolarity);
 
-	//	Create all the shots
-
-	CVector vRecoil;
-	bool bShotsFired = false;
-	bool bSoundEffect = false;
-	bool bRecoil = false;
+	//	Remember last shot count
 
 	if (ShotDesc.GetFireType() == CWeaponFireDesc::ftContinuousBeam && !Device.HasLastShots())
 		Device.SetLastShotCount(Shots.GetCount());
 
-	Metric rSpeed = ShotDesc.GetInitialSpeed();
+	//	Create all the shots
 
-	for (int i = 0; i < Shots.GetCount(); i++)
-		{
-		SShotFireResult Result;
-
-		//	Fire out to event, if the weapon has one.
-		//	Otherwise, we create weapon fire
-
-		if (FireOnFireWeapon(ItemCtx, 
-				ShotDesc, 
-				Shots[i].vPos, 
-				Shots[i].pTarget,
-				Shots[i].iDir, 
-				iRepeatingCount,
-				Result))
-			{
-			//	Did we destroy the source?
-
-			if (Source.IsDestroyed())
-				return false;
-			}
-
-		//	Otherwise, fire default
-
-		else
-			FireWeaponShot(&Source, &Device, ShotDesc, Shots[i].vPos, Shots[i].iDir, rSpeed, Shots[i].pTarget, iRepeatingCount, i);
-
-		//	Create the barrel flash effect, unless canceled
-
-		if (!Result.bNoFireEffect)
-			ShotDesc.CreateFireEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir);
-
-		//	Create the sound effect, if necessary
-
-		if (!Result.bNoSoundEffect)
-			bSoundEffect = true;
-
-		//	Recoil
-
-		if (m_iRecoil && !Result.bNoRecoil)
-			{
-			vRecoil = vRecoil + PolarToVector(Shots[i].iDir, 1.0);
-			bRecoil = true;
-			}
-
-		//	If we fired, then remember that.
-
-		if (!Result.bNoShotFired)
-			bShotsFired = true;
-		}
-
-	//	If no shots were fired, then we're done
-
-	if (!bShotsFired)
+	SShotFireResult Result;
+	if (!FireAllShots(Device, ShotDesc, Shots, iRepeatingCount, Result))
 		return false;
 
 	//	Sound effect
 
-	if (bSoundEffect)
+	if (Result.bSoundEffect)
 		ShotDesc.PlayFireSound(&Source);
 
 	//	Recoil
 
-	if (bRecoil)
+	if (Result.bRecoil)
 		{
-		CVector vAccel = vRecoil.Normal() * (Metric)(-10 * m_iRecoil * m_iRecoil);
+		CVector vAccel = Result.vRecoil.Normal() * (Metric)(-10 * m_iRecoil * m_iRecoil);
 		Source.Accelerate(vAccel, g_MomentumConstant);
 		Source.ClipSpeed(Source.GetMaxSpeed());
 		}
