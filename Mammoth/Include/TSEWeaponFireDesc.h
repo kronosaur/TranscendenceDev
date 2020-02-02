@@ -360,6 +360,58 @@ struct SShotCreateCtx
 	DWORD dwFlags = 0;
 	};
 
+class CConfigurationDesc
+	{
+	public:
+		static constexpr Metric DUAL_SHOT_SEPARATION = 12.0;	//	Radius of dual shot (pixels)
+
+		enum ETypes
+			{
+			ctUnknown,
+
+			ctSingle,						//	single shot
+			ctDual,							//	dual, parallel shots
+			ctWall,							//	five parallel shots
+			ctSpread2,						//	dual, spread shots
+			ctSpread3,						//	three, spread shots
+			ctSpread5,						//	five, spread shots
+			ctDualAlternating,				//	alternate barrels
+			ctCustom,						//	custom configuration
+			};
+
+		template <class T>
+		inline T CalcShots (const CVector &vSource, int iFireAngle, int iPolarity, Metric rScale) const;
+
+		int GetAimTolerance (int iFireDelay = 8) const;
+		int GetCustomConfigCount (void) const { return m_Custom.GetCount(); }
+		int GetCustomConfigFireAngle (int iIndex, int iFireAngle = 0) const { return AngleMod(iFireAngle + m_Custom[iIndex].Angle.Roll()); }
+		CVector GetCustomConfigPos (int iIndex, int iFireAngle = 0) const { return PolarToVector(AngleMod(iFireAngle + m_Custom[iIndex].iPosAngle), m_Custom[iIndex].rPosRadius); }
+		Metric GetMultiplier (void) const { return GetShotCount(); }
+		int GetShotCount (void) const;
+		ETypes GetType (void) const { return m_iType; }
+		bool IncPolarity (int iPolarity, int *retiNewPolarity = NULL) const;
+		ALERROR InitFromWeaponClassXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, ETypes iDefault = ctSingle);
+		bool IsAlternating (void) const { return (m_bCustomAlternating || m_iType == ctDualAlternating); }
+		bool IsEmpty (void) const { return m_iType == ctUnknown; }
+		bool IsSinglePointOrigin (void) const;
+
+	private:
+		struct SConfigDesc
+			{
+			DiceRange Angle;				//	Offset from fire angle
+			int iPosAngle = 0;				//	Origin of shot
+			Metric rPosRadius = 0.0;		//	Origin of shot
+			};
+
+		ETypes m_iType = ctUnknown;			//	Shot configuration;
+		int m_iAimTolerance = 0;			//	Aim tolerance
+
+		TArray<SConfigDesc> m_Custom;
+		bool m_bCustomAlternating = false;	//	Fire each shot in turn
+	};
+
+#include "TSEConfigurationDescInlines.h"
+
 //	WeaponFireDesc
 
 struct SExplosionType
@@ -400,7 +452,6 @@ class CWeaponFireDesc
 			{
 			CWeaponFireDesc *pDesc;			//	Data for fragments
 			DiceRange Count;				//	Number of fragments
-			bool bMIRV;						//	Fragments seek independent targets
 
 			SFragmentDesc *pNext;
 			};
@@ -491,6 +542,7 @@ class CWeaponFireDesc
 		Metric GetAveDamage (void) const { return m_Damage.GetDamageValue(); }
 		Metric GetAveExpansionSpeed (void) const { return (m_ExpansionSpeed.GetAveValue() * LIGHT_SPEED / 100.0); }
 		Metric GetAveInitialSpeed (void) const;
+		const CConfigurationDesc &GetConfiguration (void) const { return m_Configuration; }
 		int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
 		Metric GetAveParticleCount (void) const;
         Metric GetAveSpeed (void) const { return 0.5 * (GetRatedSpeed() + m_rMaxMissileSpeed); }
@@ -549,7 +601,8 @@ class CWeaponFireDesc
 		bool IsCurvedBeam (void) const { return false; }
         bool IsDirectionalImage (void) const { return m_fDirectional; }
         bool IsFragment (void) const { return m_fFragment; }
-		bool IsMIRV (void) const { return (m_pFirstFragment ? m_pFirstFragment->bMIRV : false); }
+		bool IsMIRV (void) const { return (m_fMIRV ? true : false); }
+		bool IsMIRVFragment (void) const { return (m_pFirstFragment ? m_pFirstFragment->pDesc->IsMIRV(): false); }
         bool IsScalable (void) const { return (m_pScalable != NULL); }
 		bool IsTargetRequired (void) const { return (m_fTargetRequired ? true : false); }
 		bool IsTracking (void) const { return m_iManeuverability != 0; }
@@ -603,6 +656,7 @@ class CWeaponFireDesc
 		CItemTypeRef m_pAmmoType;				//	item type for this ammo
 		FireTypes m_iFireType = ftMissile;		//	beam or missile
 		DamageDesc m_Damage;					//	Damage per shot
+		CConfigurationDesc m_Configuration;		//	Configuration (empty = default)
 		int m_iContinuous = -1;					//	repeat for this number of frames (-1 = default)
 		int m_iContinuousFireDelay = -1;		//	Ticks between continuous fire shots (-1 = default)
 		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
@@ -685,7 +739,7 @@ class CWeaponFireDesc
         DWORD m_fDefaultInteraction:1;			//	If TRUE, compute default interaction at bind-time.
 
 		DWORD m_fDefaultHitPoints:1;			//	If TRUE, computer hit points at bind-time.
-		DWORD m_fSpare2:1;
+		DWORD m_fMIRV:1;						//	If TRUE, shots require their own target.
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;

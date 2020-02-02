@@ -330,7 +330,7 @@ void CMissile::CreateFragments (const CVector &vPos)
 
 	if (m_pDesc->IsTargetRequired() 
 			&& m_pTarget == NULL
-			&& !m_pDesc->IsMIRV())
+			&& !m_pDesc->IsMIRVFragment())
 		return;
 
     //  If we triggering inside an object, then we only create half the number

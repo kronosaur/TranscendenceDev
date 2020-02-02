@@ -27,57 +27,11 @@ class CShotArray
 
 		void AdjustFireAngle (int iAngleAdj);
 		int GetCount (void) const { return m_Shots.GetCount(); }
+		void InsertEmpty (int iCount) { m_Shots.InsertEmpty(iCount); }
 		void SetTarget (CSpaceObject *pTarget);
 		
 	private:
 		TArray<SShotDesc> m_Shots;
-	};
-
-class CConfigurationDesc
-	{
-	public:
-		enum ETypes
-			{
-			ctUnknown,
-
-			ctSingle,						//	single shot
-			ctDual,							//	dual, parallel shots
-			ctWall,							//	five parallel shots
-			ctSpread2,						//	dual, spread shots
-			ctSpread3,						//	three, spread shots
-			ctSpread5,						//	five, spread shots
-			ctDualAlternating,				//	alternate barrels
-			ctCustom,						//	custom configuration
-			};
-
-		CShotArray CalcOrigins (const CVector &vSource, int iFireAngle = 0, int iPolarity = -1, Metric rScale = 1.0) const;
-		int GetAimTolerance (int iFireDelay = 8) const;
-		int GetCustomConfigCount (void) const { return m_Custom.GetCount(); }
-		int GetCustomConfigFireAngle (int iIndex, int iFireAngle = 0) const { return AngleMod(iFireAngle + m_Custom[iIndex].Angle.Roll()); }
-		CVector GetCustomConfigPos (int iIndex, int iFireAngle = 0) const { return PolarToVector(AngleMod(iFireAngle + m_Custom[iIndex].iPosAngle), m_Custom[iIndex].rPosRadius); }
-		Metric GetMultiplier (void) const { return GetShotCount(); }
-		int GetShotCount (void) const;
-		ETypes GetType (void) const { return m_iType; }
-		bool IncPolarity (int iPolarity, int *retiNewPolarity = NULL) const;
-		ALERROR InitFromWeaponClassXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
-		bool IsAlternating (void) const { return (m_bCustomAlternating || m_iType == ctDualAlternating); }
-		bool IsSinglePointOrigin (void) const;
-
-	private:
-		static constexpr Metric DUAL_SHOT_SEPARATION = 12.0;	//	Radius of dual shot (pixels)
-
-		struct SConfigDesc
-			{
-			DiceRange Angle;				//	Offset from fire angle
-			int iPosAngle = 0;				//	Origin of shot
-			Metric rPosRadius = 0.0;		//	Origin of shot
-			};
-
-		ETypes m_iType = ctUnknown;			//	Shot configuration;
-		int m_iAimTolerance = 0;			//	Aim tolerance
-
-		TArray<SConfigDesc> m_Custom;
-		bool m_bCustomAlternating = false;	//	Fire each shot in turn
 	};
 
 class CWeaponClass : public CDeviceClass
@@ -345,6 +299,7 @@ class CWeaponClass : public CDeviceClass
 							 CSpaceObject *pTarget,
 							 int iRepeatingCount,
 							 int iShotNumber);
+		const CConfigurationDesc &GetConfiguration (const CWeaponFireDesc &ShotDesc) const;
 		int GetContinuous (const CWeaponFireDesc &Shot) const;
 		int GetContinuousFireDelay (const CWeaponFireDesc &Shot) const;
 		int GetFireDelay (const CWeaponFireDesc &ShotDesc) const;
@@ -356,6 +311,7 @@ class CWeaponClass : public CDeviceClass
 		inline bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
 		inline bool IsLauncher (void) const { return (m_iVariantType == varLauncher); }
 		inline bool IsLauncherWithAmmo (void) const { return (IsLauncher() && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
+		bool IsMIRV (const CWeaponFireDesc &ShotDesc) const { return (m_bMIRV || ShotDesc.IsMIRV()); }
 		bool IsSinglePointOrigin (void) const { return m_Configuration.IsSinglePointOrigin(); }
 		inline bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
 		bool IsTargetReachable (const CInstalledDevice &Device, CSpaceObject &Target, int iDefaultFireAngle = -1, int *retiFireAngle = NULL) const;

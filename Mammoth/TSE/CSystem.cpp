@@ -1668,7 +1668,7 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			//	For multitargets, we need to find a target 
 			//	for each fragment
 
-			if (pFragDesc->bMIRV && pMissileSource)
+			if (pFragDesc->pDesc->IsMIRV() && pMissileSource)
 				{
 				TArray<CTargetList::STargetResult> TargetList = CWeaponClass::CalcMIRVFragmentationTargets(*pMissileSource, *pFragDesc->pDesc, iFragmentCount);
 				int iFound = TargetList.GetCount();
@@ -1711,7 +1711,7 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			//	(unless we are MIRVed)
 
 			CVector vInitVel;
-			if (!pFragDesc->bMIRV)
+			if (!pFragDesc->pDesc->IsMIRV())
 				vInitVel = Ctx.vVel;
 
 			//	If we don't want to create all fragments, we randomly delete 

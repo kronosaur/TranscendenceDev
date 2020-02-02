@@ -747,7 +747,8 @@ CShotArray CWeaponClass::CalcConfiguration (const CDeviceItem &DeviceItem, const
 
 	//	Compute the array
 
-	return m_Configuration.CalcOrigins(vSource, iFireAngle, iPolarity, rShotSeparationScale);
+	const CConfigurationDesc &Configuration = GetConfiguration(ShotDesc);
+	return Configuration.CalcShots<CShotArray>(vSource, iFireAngle, iPolarity, rShotSeparationScale);
 	}
 
 Metric CWeaponClass::CalcConfigurationMultiplier (const CWeaponFireDesc *pShot, bool bIncludeFragments) const
@@ -764,7 +765,7 @@ Metric CWeaponClass::CalcConfigurationMultiplier (const CWeaponFireDesc *pShot, 
 			return 1.0;
 		}
 
-	Metric rMult = m_Configuration.GetMultiplier();
+	Metric rMult = GetConfiguration(*pShot).GetMultiplier();
 
 	if (int iRepeating = GetContinuous(*pShot))
 		rMult *= (iRepeating + 1);
@@ -1180,7 +1181,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 	//	MIRVed shots are different because we have a different target for each 
 	//	one.
 
-	if (m_bMIRV)
+	if (IsMIRV(ShotDesc))
 		{
 		//	We never set the fire angle on the device because we already
 		//	recalculate.
@@ -1282,7 +1283,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 //	NOTE: If we return FALSE, all other return variables are undefined.
 
 	{
-	ASSERT(!m_bMIRV);
+	ASSERT(!IsMIRV(ShotDesc));
 
 	//	For repeating weapons, we need the target stored in the device
 
@@ -1930,7 +1931,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		return true;
 		}
 	else if (strEquals(sField, FIELD_IS_ALTERNATING))
-		*retsValue = (m_Configuration.IsAlternating() ? CString("True") : NULL_STR);
+		*retsValue = (GetConfiguration(*pShot).IsAlternating() ? CString("True") : NULL_STR);
 	else
 		return pShot->FindDataField(sField, retsValue);
 
@@ -2249,7 +2250,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	int iNewPolarity;
 	if ((iRepeatingCount == GetContinuous(ShotDesc))
-			&& m_Configuration.IncPolarity(GetAlternatingPos(&Device), &iNewPolarity))
+			&& GetConfiguration(ShotDesc).IncPolarity(GetAlternatingPos(&Device), &iNewPolarity))
 		SetAlternatingPos(&Device, iNewPolarity);
 
 	//	Remember last shot count
@@ -2403,6 +2404,20 @@ int CWeaponClass::GetAmmoItemCount (void) const
 		return 1;
 	}
 
+const CConfigurationDesc &CWeaponClass::GetConfiguration (const CWeaponFireDesc &ShotDesc) const
+
+//	GetConfiguration
+//
+//	Returns the configuration to use.
+
+	{
+	const CConfigurationDesc &ShotConfiguration = ShotDesc.GetConfiguration();
+	if (!ShotConfiguration.IsEmpty())
+		return ShotConfiguration;
+
+	return m_Configuration;
+	}
+
 int CWeaponClass::GetContinuous (const CWeaponFireDesc &Shot) const
 
 //	GetContinous
@@ -2480,7 +2495,7 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 
 	if (GetRotationType(DeviceItem) != CDeviceRotationDesc::rotNone
 			|| IsTracking(DeviceItem, pShotDesc)
-			|| m_bMIRV)
+			|| IsMIRV(*pShotDesc))
 		{
 		//	See if we can target missiles
 
@@ -2762,7 +2777,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		return CC.CreateDouble(CalcDamagePerShot(*pShot, pEnhancements, DamageDesc::flagMinDamage));
 
 	else if (strEquals(sProperty, PROPERTY_MULTI_SHOT))
-		return CC.CreateBool(m_Configuration.GetType() != CConfigurationDesc::ctSingle);
+		return CC.CreateBool(GetConfiguration(*pShot).GetType() != CConfigurationDesc::ctSingle);
 
 	else if (strEquals(sProperty, PROPERTY_CAN_FIRE_WHEN_BLIND))
 		return CC.CreateBool(m_bCanFireWhenBlind);
@@ -4231,7 +4246,7 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 
 	else
 		{
-		int iAimTolerance = m_Configuration.GetAimTolerance(GetFireDelay(*pShotDesc));
+		int iAimTolerance = GetConfiguration(*pShotDesc).GetAimTolerance(GetFireDelay(*pShotDesc));
 
 		//	Compute the angular size of the target
 
@@ -4356,7 +4371,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	//	Figure out our aim tolerance
 
-	int iAimTolerance = m_Configuration.GetAimTolerance(GetFireDelay(*pShot));
+	int iAimTolerance = GetConfiguration(*pShot).GetAimTolerance(GetFireDelay(*pShot));
 
 	//	Tracking weapons behave like directional weapons with 120 degree field
 
