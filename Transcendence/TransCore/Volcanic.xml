@@ -149,7 +149,7 @@
 	<!-- Size A Volcanic Asteroid -->
 
 	<StationType UNID="&stVolcanicAsteroidSizeA;"
-		name=				"(volcanic asteroid)"
+		name=				"volcanic asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
 		inherit=			"&baVolcanicAsteroid;"
 
@@ -171,7 +171,7 @@
 	<!-- Size B Volcanic Asteroid -->
 
 	<StationType UNID="&stVolcanicAsteroidSizeB;"
-		name=				"(volcanic asteroid)"
+		name=				"volcanic asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
 		inherit=			"&baVolcanicAsteroid;"
 
@@ -193,7 +193,7 @@
 	<!-- Size C Volcanic Asteroid -->
 
 	<StationType UNID="&stVolcanicAsteroidSizeC;"
-		name=				"(volcanic asteroid)"
+		name=				"volcanic asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
 		inherit=			"&baVolcanicAsteroid;"
 
@@ -215,7 +215,7 @@
 	<!-- Size D Volcanic Asteroid -->
 
 	<StationType UNID="&stVolcanicAsteroidSizeD;"
-		name=				"(volcanic asteroid)"
+		name=				"volcanic asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, volcanic"
 		inherit=			"&baVolcanicAsteroid;"
 
@@ -237,7 +237,7 @@
 	<!-- Volcanic Planetoid Size E -->
 
 	<StationType UNID="&stVolcanicPlanetoidSizeE;"
-		name=				"(volcanic planetoid)"
+		name=				"volcanic planetoid"
 		scale=				"world"
 		size=				"1000"
 
@@ -251,7 +251,7 @@
 	<!-- Volcanic Planetoid Size F -->
 
 	<StationType UNID="&stVolcanicPlanetoidSizeF;"
-		name=				"(volcanic planetoid)"
+		name=				"volcanic planetoid"
 		scale=				"world"
 		size=				"2450"
 
@@ -265,7 +265,7 @@
 	<!-- Volcanic Planetoid Size G -->
 
 	<StationType UNID="&stVolcanicPlanetoidSizeG;"
-		name=				"(volcanic planetoid)"
+		name=				"volcanic planetoid"
 		scale=				"world"
 		size=				"3750"
 
@@ -279,7 +279,7 @@
 	<!-- Size H Volcanic Terrestrial -->
 
 	<StationType UNID="&stVolcanicTerrestrialSizeH;"
-		name=				"(volcanic terrestrial)"
+		name=				"volcanic terrestrial"
 		scale=				"world"
 		size=				"5250"
 

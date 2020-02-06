@@ -324,7 +324,7 @@
 
 	<ItemType UNID="&itAdvancedScannerPod;"
 			name=				"advanced scanner pod"
-			attributes=			"commonwealth, miningEquipment, notStandard"
+			attributes=			"advanced, commonwealth, miningEquipment, specialty"
 			inherit=			"&baMiningPodItem;"
 			  
 			level=				"6"
@@ -398,7 +398,7 @@
 	
 	<ItemType UNID="&itClassCExcavationPod;"
 			name=				"class C excavation pod"
-			attributes=			"commonwealth, miningEquipment, notStandard"
+			attributes=			"advanced, commonwealth, miningEquipment, specialty"
 			inherit=			"&baMiningPodItem;"
 			  
 			level=				"8"

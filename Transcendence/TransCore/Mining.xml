@@ -144,6 +144,8 @@
 					(addCounter Nil)
 					(notifyOfDeposits Nil)
 					(depositID Nil)
+					(markedExplored Nil)
+					(counterAdded Nil)
 
 					theOre countMined
 					allOre extractedOre
@@ -360,6 +362,7 @@
 							;	stats.
 
 							(objSetProperty gSource 'explored True)
+							(setq markedExplored True)
 							(if isPlayer
 								(objCommunicate gPlayerShip gSource 'core.onAsteroidExplored)
 								)
@@ -377,6 +380,7 @@
 						(block ()
 							(objAddOverlay gSource &ovMiningOreCount;)
 							(setq notifyOfDeposits True)
+							(setq counterAdded True)
 
 							(if (objGetProperty aCause 'mining.asteroidsFound)
 								(objIncProperty aCause 'mining.asteroidsFound 1)
@@ -390,6 +394,15 @@
 							(setq depositID (objGetData gSource 'oreDeposit))
 							)
 						(miningNotifyOnOreDepositFound (objGetObjByID depositID) aMiner)
+						)
+
+					;	If we marked the asteroid as explored and we did NOT add
+					;	a counter then it means that we explored an asteroid 
+					;	with no ore. Tell the player, if they were the one who
+					;	hit the asteroid.
+
+					(if (and isPlayer markedExplored (not counterAdded))
+						(objSendMessage gPlayerShip gSource (typTranslate &ovMiningOreCount; 'msgNoResourcesFound))
 						)
 					)
 				))
@@ -557,6 +570,8 @@
 		</Events>
 	
 		<Language>
+			<Text id="msgNoResourcesFound">No resources found</Text>
+
 			<Text id="msgNoOreFound">No asteroid resources found</Text>
 			<Text id="msgOreFound1">Found an asteroid with resources</Text>
 			<Text id="msgOreFoundN">Found %count% asteroids with resources</Text>

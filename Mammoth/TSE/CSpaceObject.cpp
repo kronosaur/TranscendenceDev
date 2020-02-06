@@ -6489,7 +6489,7 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 
 	CString sName;
 	if (IsIdentified())
-		sName = GetNounPhrase(0);
+		sName = GetNounPhrase(nounTitleCapitalize);
 	else if (Ctx.pCenter == NULL)
 		sName = CONSTLIT("Unknown Object");
 	else if (Ctx.pCenter->IsEnemy(this))

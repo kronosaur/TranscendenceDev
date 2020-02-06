@@ -153,7 +153,7 @@
 		<Trade currency="credit">
 			<Sell	criteria="wNU +unid:&itMiningLaser;;" priceAdj="100"	inventoryAdj="100"/>
 			<Sell	criteria="cNU +unid:&itMinersCargoHold;;" priceAdj="100"	inventoryAdj="100"/>
-			<Sell	criteria="*NU +miningEquipment; -defective; -Illegal; -NotForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ru|c|cur"/>
+			<Sell	criteria="*NU +miningEquipment; -advanced; -defective; -Illegal; -NotForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ru|c|cur"/>
 			<Sell	criteria="*NU +ore; -defective; -notForSale;"	priceAdj="100"/>
 			<Sell	criteria="*NU +minable; -defective; -notForSale;"	priceAdj="100"/>
 			<Buy	criteria="*NU +food; -illegal; -notForSale;"	priceAdj="100"/>

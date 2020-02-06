@@ -172,7 +172,7 @@
 	<!-- Size A Ovoid Asteroid -->
 
 	<StationType UNID="&stOvoidAsteroidSizeA;"
-		name=				"(ovoid asteroid)"
+		name=				"ovoid asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
 		inherit=			"&baOvoidAsteroid;"
 
@@ -212,7 +212,7 @@
 	<!-- Size B Ovoid Asteroid -->
 
 	<StationType UNID="&stOvoidAsteroidSizeB;"
-		name=				"(ovoid asteroid)"
+		name=				"ovoid asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
 		inherit=			"&baOvoidAsteroid;"
 
@@ -254,7 +254,7 @@
 	<!-- Size C Ovoid Asteroid -->
 
 	<StationType UNID="&stOvoidAsteroidSizeC;"
-		name=				"(ovoid asteroid)"
+		name=				"ovoid asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
 		inherit=			"&baOvoidAsteroid;"
 
@@ -288,7 +288,7 @@
 	<!-- Size D Ovoid Asteroid -->
 
 	<StationType UNID="&stOvoidAsteroidSizeD;"
-		name=				"(ovoid asteroid)"
+		name=				"ovoid asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
 		inherit=			"&baOvoidAsteroid;"
 
@@ -318,7 +318,7 @@
 	<!-- Ovoid Planetoid Size E -->
 
 	<StationType UNID="&stOvoidPlanetoidSizeE;"
-		name=				"(ovoid planetoid)"
+		name=				"ovoid planetoid"
 		scale=				"world"
 		size=				"1000"
 
@@ -340,7 +340,7 @@
 	<!-- Ovoid Planetoid Size F -->
 
 	<StationType UNID="&stOvoidPlanetoidSizeF;"
-		name=				"(ovoid planetoid)"
+		name=				"ovoid planetoid"
 		scale=				"world"
 		size=				"2450"
 
@@ -361,7 +361,7 @@
 	<!-- Ovoid Planetoid Size G -->
 
 	<StationType UNID="&stOvoidPlanetoidSizeG;"
-		name=				"(ovoid planetoid)"
+		name=				"ovoid planetoid"
 		scale=				"world"
 		size=				"3750"
 

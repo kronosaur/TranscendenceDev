@@ -120,7 +120,7 @@
 	<!-- Size A Rocky Asteroid -->
 
 	<StationType UNID="&stRockyAsteroidSizeA;"
-		name=				"(rocky asteroid)"
+		name=				"rocky asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, rocky"
 		inherit=			"&baRockyAsteroid;"
 
@@ -142,7 +142,7 @@
 	<!-- Size A Rocky Outer Asteroid -->
 
 	<StationType UNID="&stRockyOuterAsteroidSizeA;"
-		name=				"(rocky outer asteroid)"
+		name=				"rocky outer asteroid"
 		attributes=			"asteroid, generic, outer, rocky"
 		inherit=			"&baRockyAsteroid;"
 
@@ -174,7 +174,7 @@
 	<!-- Size B Rocky Asteroid -->
 
 	<StationType UNID="&stRockyAsteroidSizeB;"
-		name=				"(rocky asteroid)"
+		name=				"rocky asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, rocky"
 		inherit=			"&baRockyAsteroid;"
 
@@ -196,7 +196,7 @@
 	<!-- Size B Rocky Outer Asteroid -->
 
 	<StationType UNID="&stRockyOuterAsteroidSizeB;"
-		name=				"(rocky outer asteroid)"
+		name=				"rocky outer asteroid"
 		attributes=			"asteroid, generic, outer, rocky"
 		inherit=			"&baRockyAsteroid;"
 
@@ -228,7 +228,7 @@
 	<!-- Size C Rocky Asteroid -->
 
 	<StationType UNID="&stRockyAsteroidSizeC;"
-		name=				"(rocky asteroid)"
+		name=				"rocky asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, rocky"
 		inherit=			"&baRockyAsteroid;"
 
@@ -250,7 +250,7 @@
 	<!-- Size C Rocky Outer Asteroid -->
 
 	<StationType UNID="&stRockyOuterAsteroidSizeC;"
-		name=				"(rocky outer asteroid)"
+		name=				"rocky outer asteroid"
 		attributes=			"asteroid, generic, outer, rocky"
 		inherit=			"&baRockyAsteroid;"
 
@@ -278,7 +278,7 @@
 	<!-- Size D Rocky Asteroid -->
 
 	<StationType UNID="&stRockyAsteroidSizeD;"
-		name=				"(rocky asteroid)"
+		name=				"rocky asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, rocky"
 		inherit=			"&baRockyAsteroid;"
 
@@ -300,7 +300,7 @@
 	<!-- Size D Rocky Outer Asteroid -->
 
 	<StationType UNID="&stRockyOuterAsteroidSizeD;"
-		name=				"(rocky outer asteroid)"
+		name=				"rocky outer asteroid"
 		attributes=			"asteroid, generic, outer, rocky"
 		inherit=			"&baRockyAsteroid;"
 
@@ -327,7 +327,7 @@
 	<!-- Rocky Planetoid Size E -->
 
 	<StationType UNID="&stRockyPlanetoidSizeE;"
-		name=				"(rocky planetoid)"
+		name=				"rocky planetoid"
 		scale=				"world"
 		size=				"1150"
 
@@ -341,7 +341,7 @@
 	<!-- Rocky Planetoid Size F -->
 
 	<StationType UNID="&stRockyPlanetoidSizeF;"
-		name=				"(rocky planetoid)"
+		name=				"rocky planetoid"
 		scale=				"world"
 		size=				"2050"
 
@@ -355,7 +355,7 @@
 	<!-- Rocky Planetoid Size G -->
 
 	<StationType UNID="&stRockyPlanetoidSizeG;"
-		name=				"(rocky planetoid)"
+		name=				"rocky planetoid"
 		scale=				"world"
 		size=				"4000"
 

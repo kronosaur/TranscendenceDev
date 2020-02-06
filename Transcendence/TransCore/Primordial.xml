@@ -70,7 +70,7 @@
 	<!-- Size A Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeA;"
-		name=				"(primordial asteroid)"
+		name=				"primordial asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
 		inherit=			"&baPrimordialAsteroid;"
 
@@ -92,7 +92,7 @@
 	<!-- Size B Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeB;"
-		name=				"(primordial asteroid)"
+		name=				"primordial asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
 		inherit=			"&baPrimordialAsteroid;"
 
@@ -114,7 +114,7 @@
 	<!-- Size C Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeC;"
-		name=				"(primordial asteroid)"
+		name=				"primordial asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
 		inherit=			"&baPrimordialAsteroid;"
 
@@ -136,7 +136,7 @@
 	<!-- Size D Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeD;"
-		name=				"(primordial asteroid)"
+		name=				"primordial asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
 		inherit=			"&baPrimordialAsteroid;"
 
@@ -158,7 +158,7 @@
 	<!-- Size E Primordial Planetoid -->
 
 	<StationType UNID="&stPrimordialPlanetoidSizeE;"
-		name=				"(primordial planetoid)"
+		name=				"primordial planetoid"
 		scale=				"world"
 		size=				"1150"
 
@@ -172,7 +172,7 @@
 	<!-- Size F Primordial Planetoid -->
 
 	<StationType UNID="&stPrimordialPlanetoidSizeF;"
-		name=				"(primordial planetoid)"
+		name=				"primordial planetoid"
 		scale=				"world"
 		size=				"1640"
 
@@ -186,7 +186,7 @@
 	<!-- Size F Primordial Planetoid -->
 
 	<StationType UNID="&stPrimordialPlanetoidSizeF2;"
-		name=				"(primordial planetoid)"
+		name=				"primordial planetoid"
 		scale=				"world"
 		size=				"2530"
 
@@ -200,7 +200,7 @@
 	<!-- Size G Primordial Planetoid -->
 
 	<StationType UNID="&stPrimordialPlanetoidSizeG;"
-		name=				"(primordial planetoid)"
+		name=				"primordial planetoid"
 		scale=				"world"
 		size=				"4000"
 
@@ -212,7 +212,7 @@
 	<!-- Size H Primordial Terrestrial -->
 
 	<StationType UNID="&stPrimordialTerrestrialSizeH;"
-		name=				"(primordial terrestrial)"
+		name=				"primordial world"
 		scale=				"world"
 		size=				"4285"
 
@@ -226,7 +226,7 @@
 	<!-- Size H Primordial Terrestrial -->
 
 	<StationType UNID="&stPrimordialTerrestrialSizeH2;"
-		name=				"(primordial terrestrial)"
+		name=				"primordial world"
 		scale=				"world"
 		size=				"6300"
 
@@ -241,7 +241,7 @@
 	<!-- Size J Primordial Terrestrial -->
 
 	<StationType UNID="&stPrimordialTerrestrialSizeJ;"
-		name=				"(primordial terrestrial)"
+		name=				"primordial world"
 		scale=				"world"
 		size=				"22000"
 
@@ -255,7 +255,7 @@
 	<!-- Size K Primordial Gas Giant -->
 
 	<StationType UNID="&stPrimordialGasGiantSizeK;"
-		name=				"(primordial gas giant)"
+		name=				"primordial gas giant"
 		scale=				"world"
 		size=				"48200"
 

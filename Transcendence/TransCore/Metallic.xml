@@ -42,7 +42,7 @@
 	<!-- Size A Metallic Asteroid -->
 
 	<StationType UNID="&stMetallicAsteroidSizeA;"
-		name=				"(metallic asteroid)"
+		name=				"metallic asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
 		inherit=			"&baMetallicAsteroid;"
 
@@ -64,7 +64,7 @@
 	<!-- Size B Metallic Asteroid -->
 
 	<StationType UNID="&stMetallicAsteroidSizeB;"
-		name=				"(metallic asteroid)"
+		name=				"metallic asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
 		inherit=			"&baMetallicAsteroid;"
 
@@ -86,7 +86,7 @@
 	<!-- Size C Metallic Asteroid -->
 
 	<StationType UNID="&stMetallicAsteroidSizeC;"
-		name=				"(metallic asteroid)"
+		name=				"metallic asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
 		inherit=			"&baMetallicAsteroid;"
 
@@ -108,7 +108,7 @@
 	<!-- Size D Metallic Asteroid -->
 
 	<StationType UNID="&stMetallicAsteroidSizeD;"
-		name=				"(metallic asteroid)"
+		name=				"metallic asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
 		inherit=			"&baMetallicAsteroid;"
 
@@ -130,7 +130,7 @@
 	<!-- Metallic Planetoid Size E -->
 
 	<StationType UNID="&stMetallicPlanetoidSizeE;"
-		name=				"(metallic planetoid)"
+		name=				"metallic planetoid"
 		scale=				"world"
 		size=				"1150"
 
@@ -144,7 +144,7 @@
 	<!-- Metallic Planetoid Size F -->
 
 	<StationType UNID="&stMetallicPlanetoidSizeF;"
-		name=				"(metallic planetoid)"
+		name=				"metallic planetoid"
 		scale=				"world"
 		size=				"2050"
 
@@ -158,7 +158,7 @@
 	<!-- Metallic Planetoid Size G -->
 
 	<StationType UNID="&stMetallicPlanetoidSizeG;"
-		name=				"(metallic planetoid)"
+		name=				"metallic planetoid"
 		scale=				"world"
 		size=				"4000"
 

@@ -224,7 +224,7 @@
 	<!-- Size A OreStone Asteroid -->
 
 	<StationType UNID="&stOreStoneAsteroidSizeA;"
-		name=				"(oreStone asteroid)"
+		name=				"orestone asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
 		inherit=			"&baOreStoneAsteroid;"
 
@@ -266,7 +266,7 @@
 	<!-- Size B OreStone Asteroid -->
 
 	<StationType UNID="&stOreStoneAsteroidSizeB;"
-		name=				"(oreStone asteroid)"
+		name=				"orestone asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
 		inherit=			"&baOreStoneAsteroid;"
 
@@ -310,7 +310,7 @@
 	<!-- Size C OreStone Asteroid -->
 
 	<StationType UNID="&stOreStoneAsteroidSizeC;"
-		name=				"(oreStone asteroid)"
+		name=				"oresone asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
 		inherit=			"&baOreStoneAsteroid;"
 
@@ -346,7 +346,7 @@
 	<!-- Size D OreStone Asteroid -->
 
 	<StationType UNID="&stOreStoneAsteroidSizeD;"
-		name=				"(oreStone asteroid)"
+		name=				"orestone asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
 		inherit=			"&baOreStoneAsteroid;"
 
@@ -378,7 +378,7 @@
 	<!-- OreStone Planetoid Size E -->
 
 	<StationType UNID="&stOreStonePlanetoidSizeE;"
-		name=				"(oreStone planetoid)"
+		name=				"orestone planetoid"
 		attributes=			"generic, inner, lifeZone, oreStone, outer, planetoid"
 		inherit=			"&baOreStonePlanetoid;"
 
@@ -401,7 +401,7 @@
 	<!-- OreStone Planetoid Size F -->
 
 	<StationType UNID="&stOreStonePlanetoidSizeF;"
-		name=				"(oreStone planetoid)"
+		name=				"orestone planetoid"
 		attributes=			"generic, inner, lifeZone, oreStone, outer, planetoid"
 		inherit=			"&baOreStonePlanetoid;"
 
@@ -423,7 +423,7 @@
 	<!-- OreStone Planetoid Size G -->
 
 	<StationType UNID="&stOreStonePlanetoidSizeG;"
-		name=				"(oreStone planetoid)"
+		name=				"orestone planetoid"
 		attributes=			"generic, inner, lifeZone, oreStone, outer, planetoid"
 		inherit=			"&baOreStonePlanetoid;"
 
