@@ -2089,15 +2089,15 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 			switch (iHint)
 				{
 				case EDamageHint::useMiningOrWMD:
-					DisplayTranslate(CONSTLIT("hintMiningOrWMDNeeded"));
+					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintMiningOrWMDNeeded")));
 					break;
 
 				case EDamageHint::useWMD:
-					DisplayTranslate(CONSTLIT("hintWMDNeeded"));
+					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintWMDNeeded")));
 					break;
 
 				case EDamageHint::useMining:
-					DisplayTranslate(CONSTLIT("hintMiningNeeded"));
+					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintMiningNeeded")));
 					break;
 				}
 			}
