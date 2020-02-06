@@ -313,7 +313,7 @@ CSpaceObject *CZoanthropeAI::GetBase (void) const
 		}
 	}
 
-CSpaceObject *CZoanthropeAI::GetTarget (DWORD dwFlags) const
+CSpaceObject *CZoanthropeAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //

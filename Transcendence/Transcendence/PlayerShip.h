@@ -220,7 +220,7 @@ class CPlayerShipController : public IShipController
 		virtual bool GetReverseThrust (void) override;
 		virtual bool GetStopThrust (void) override;
 		virtual bool GetThrust (void) override;
-		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
+		virtual CSpaceObject *GetTarget (const CDeviceItem *pDeviceItem = NULL, DWORD dwFlags = 0) const override;
 		virtual CTargetList GetTargetList (void) const override;
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayer (void) const override { return true; }

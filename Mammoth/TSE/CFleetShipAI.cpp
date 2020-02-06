@@ -509,7 +509,7 @@ CString CFleetShipAI::DebugCrashInfo (void)
 	return sResult;
 	}
 
-CSpaceObject *CFleetShipAI::GetTarget (DWORD dwFlags) const
+CSpaceObject *CFleetShipAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //

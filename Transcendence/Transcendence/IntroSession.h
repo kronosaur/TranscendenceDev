@@ -164,7 +164,7 @@ class CIntroShipController : public IShipController
 		virtual bool GetReverseThrust (void) override { return m_pDelegate->GetReverseThrust(); }
 		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
 		virtual bool GetStopThrust (void) override { return m_pDelegate->GetStopThrust(); }
-		virtual CSpaceObject *GetTarget (DWORD dwFlags) const override { return m_pDelegate->GetTarget(dwFlags); }
+		virtual CSpaceObject *GetTarget (const CDeviceItem *pDeviceItem = NULL, DWORD dwFlags = 0) const override { return m_pDelegate->GetTarget(pDeviceItem, dwFlags); }
 		virtual CTargetList GetTargetList (void) const override { return m_pDelegate->GetTargetList(); }
 		virtual bool GetThrust (void) override { return m_pDelegate->GetThrust(); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override { return m_pDelegate->IsAngryAt(pObj); }

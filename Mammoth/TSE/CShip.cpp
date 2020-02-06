@@ -3410,7 +3410,7 @@ CSpaceObject *CShip::GetTarget (DWORD dwFlags) const
 //	Returns the target that this ship is attacking
 
 	{
-	return m_pController->GetTarget(dwFlags);
+	return m_pController->GetTarget(NULL, dwFlags);
 	}
 
 int CShip::GetTotalArmorHP (int *retiMaxHP) const
@@ -6098,7 +6098,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 					//	Fire
 
-                    bool bSuccess = Device.Activate(m_pController->GetTarget(),
+                    bool bSuccess = Device.Activate(m_pController->GetTarget(&DeviceItem),
 							TargetList,
 							&bConsumedItems);
                     if (IsDestroyed())

@@ -1860,7 +1860,7 @@ bool CPlayerShipController::GetDeviceActivate (void)
 	return m_bActivate;
 	}
 
-CSpaceObject *CPlayerShipController::GetTarget (DWORD dwFlags) const
+CSpaceObject *CPlayerShipController::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -1897,7 +1897,10 @@ CSpaceObject *CPlayerShipController::GetTarget (DWORD dwFlags) const
 
 		//	If we have a mining target, then use that instead.
 
-		else if (m_pAutoMining && !m_pAutoMining->IsDestroyed())
+		else if (m_pAutoMining 
+					&& !m_pAutoMining->IsDestroyed()
+					&& pDeviceItem
+					&& pDeviceItem->IsMiningWeapon())
 			return const_cast<CSpaceObject *>(m_pAutoMining);
 
 		//	Otherwise, no target

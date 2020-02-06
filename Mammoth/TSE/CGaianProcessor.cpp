@@ -253,7 +253,7 @@ CString CGaianProcessorAI::DebugCrashInfo (void)
 	return sResult;
 	}
 
-CSpaceObject *CGaianProcessorAI::GetTarget (DWORD dwFlags) const
+CSpaceObject *CGaianProcessorAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //

@@ -339,7 +339,7 @@ class CBaseShipAI : public IShipController
 		virtual bool GetReverseThrust (void) override { return false; }
 		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
 		virtual bool GetStopThrust (void) override { return false; }
-		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
+		virtual CSpaceObject *GetTarget (const CDeviceItem *pDeviceItem = NULL, DWORD dwFlags = 0) const override;
 		virtual CTargetList GetTargetList (void) const override;
 		virtual bool GetThrust (void) override { return m_AICtx.GetThrust(m_pShip); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
