@@ -558,7 +558,11 @@
 
 			<Text id="rpg.missionTypeDesc">Mining colony missions</Text>
 			<Text id="core.mapDesc">
-				Refuels up to level 5 &mdash; Repairs/installs armor up to level 5 &mdash; Installs mining equipment up to level 6 &mdash; Sells ore &mdash; Buys food
+
+				Refuels up to level 5 &mdash; Repairs/installs armor up to 
+				level 5 &mdash; Installs mining equipment up to level 6 &mdash;
+				Sells ore &mdash; Buys food
+
 			</Text>
 		</Language>
 	</StationType>
@@ -759,42 +763,75 @@
 
 			<Text id="descInfo.unranked">
 
-				LATER: Mining is fun, you should try it!
+				Don't sit in a corporate office all day making someone else 
+				rich! Find your fortune as an independent asteroid miner and
+				make yourself rich for a change.
+
+				Asteroid mining requires only two pieces of equipment. You need
+				a mining tool, such as a mining laser, and you need a mining 
+				cargo hold. Both are available for purchase on this station.
 
 			</Text>
 			<Text id="descInfo.novice">
 
-				LATER: You are a novice at mining.
+				Based on your experience you are considered a novice at asteroid
+				mining. Keep at it!
+
+				Hit an asteroid with your mining weapon and see if you find any
+				resources. Each time you try, whether you find anything or not,
+				you will increase your experience.
 
 			</Text>
 			<Text id="descInfo.digger">
 				
-				LATER: You are recognized as an independent miner with the rank of Digger.
+				You are recognized as an independent miner with the rank of 
+				Digger.
+
+				Keep mining to gain experience. The next rank is Excavator, in
+				which you will gain a +5% bonus on mining yield.
 
 			</Text>
 			<Text id="descInfo.excavator">
 				
-				LATER: You are recognized as an independent miner with the rank of Excavator.
+				You are recognized as an independent miner with the rank of 
+				Excavator.
+
+				Keep mining to gain experience. The next rank is Wildcatter, in
+				which you will have a +10% bonus on mining yield.
 
 			</Text>
 			<Text id="descInfo.wildcatter">
 				
-				LATER: You are recognized as an independent miner with the rank of Wildcatter.
+				You are recognized as an independent miner with the rank of 
+				Wildcatter.
+
+				Keep mining to gain experience. The next rank is Prospector, in
+				which you will have a +20% bonus on mining yield.
 
 			</Text>
 			<Text id="descInfo.prospector">
 				
-				LATER: You are recognized as an independent miner with the rank of Prospector.
+				You are recognized as an independent miner with the rank of 
+				Prospector.
+
+				The next rank is Miner, with a +35% bonus on mining yield.
 
 			</Text>
 			<Text id="descInfo.miner">
 				
-				LATER: You are recognized as an independent miner with the rank of Miner.
+				You are recognized as an independent miner with the rank of 
+				Miner.
+
+				The next rank is Expert Miner, with a +50% bonus on mining 
+				yield.
 
 			</Text>
 			<Text id="descInfo.expertMiner">
 				
-				LATER: You are recognized as an independent miner with the rank of Expert Miner.
+				You are recognized as an independent miner with the rank of 
+				Expert Miner.
+
+				You have reached the top of your profession.
 
 			</Text>
 		</Language>
@@ -836,36 +873,49 @@
 		<Language>
 			<Text id="descPromotion.digger">
 
-				LATER: Congratulations, you are now an asteroid miner.
+				Congratulations, you have gained experience mining asteroids!
+				You are now recognized as a Digger.
 			
 			</Text>
 			<Text id="descPromotion.excavator">
 
-				LATER: You are now recognized as an excavator.
+				Congratulations, you have gained experience mining asteroids,
+				and are now recognized as an Excavator.
+
+				You have a +5% yield bonus when mining.
 			
 			</Text>
 			<Text id="descPromotion.wildcatter">
 
-				LATER: You are now recognized as a wildcatter. Your skill give 
-				you a %yieldAdj% bonus to mining yield.
+				Congratulations, you have gained experience mining asteroids,
+				and are now recognized as a Wildcatter.
+
+				You have a +10% yield bonus when mining.
 			
 			</Text>
 			<Text id="descPromotion.prospector">
 
-				LATER: You are now recognized as a prospector. Your skill give 
-				you a %yieldAdj% bonus to mining yield.
+				Congratulations, you have gained experience mining asteroids,
+				and are now recognized as a Prospector.
+
+				You have a +20% yield bonus when mining.
 			
 			</Text>
 			<Text id="descPromotion.miner">
 
-				LATER: You are now recognized as a miner. Your skill give 
-				you a %yieldAdj% bonus to mining yield.
+				Congratulations, you have gained experience mining asteroids,
+				and are now recognized as a Miner.
+
+				You have a +35% yield bonus when mining.
 			
 			</Text>
 			<Text id="descPromotion.expertMiner">
 
-				LATER: You are now recognized as an expert miner. Your skill give 
-				you a %yieldAdj% bonus to mining yield.
+				Congratulations, you have gained experience mining asteroids,
+				and are now recognized as an Expert Miner, the highest rank in
+				our profession!
+
+				You have a +50% yield bonus when mining.
 			
 			</Text>
 		</Language>
