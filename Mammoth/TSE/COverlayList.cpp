@@ -6,8 +6,7 @@
 
 #define EVENT_ON_REMOVE_AT_DOCK_SERVICES		CONSTLIT("OnRemoveAtDockServices")
 
-COverlayList::COverlayList (void) :
-		m_pFirst(NULL)
+COverlayList::COverlayList (void)
 
 //	COverlayList constructor
 
@@ -629,7 +628,7 @@ ICCItemPtr COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *p
 //
 //  Increment data
 
-    {
+	{
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
@@ -639,10 +638,10 @@ ICCItemPtr COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *p
 		pField = pField->GetNext();
 		}
 
-    //  If we get this far, then we couldn't find it, so we just return nil
+	//  If we get this far, then we couldn't find it, so we just return nil
 
 	return ICCItemPtr(ICCItem::Nil);
-    }
+	}
 
 bool COverlayList::IncProperty (CSpaceObject &SourceObj, DWORD dwID, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult)
 
@@ -780,7 +779,7 @@ void COverlayList::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource)
 	{
 	DWORD dwCount;
 
-	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
+	Ctx.pStream->Read(dwCount);
 	COverlay *pPrevField = NULL;
 	while (dwCount)
 		{
@@ -1102,7 +1101,7 @@ void COverlayList::WriteToStream (IWriteStream *pStream)
 		pField = pField->GetNext();
 		}
 
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	pField = m_pFirst;
 	while (pField)
 		{

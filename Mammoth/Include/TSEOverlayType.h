@@ -23,24 +23,24 @@ class COverlayType : public CDesignType
 		virtual ~COverlayType(void);
 
 		bool AbsorbsWeaponFire (CInstalledDevice *pWeapon);
-		inline bool Disarms (void) const { return m_fDisarmShip; }
-		inline CG32bitPixel GetCounterColor (void) const { return m_rgbCounterColor; }
-		inline const CString &GetCounterLabel (void) const { return m_sCounterLabel; }
-		inline int GetCounterMax (void) const { return m_iCounterMax; }
-		inline ECounterDisplay GetCounterStyle (void) const { return m_iCounterType; }
+		bool Disarms (void) const { return m_fDisarmShip; }
+		CG32bitPixel GetCounterColor (void) const { return m_rgbCounterColor; }
+		const CString &GetCounterLabel (void) const { return m_sCounterLabel; }
+		int GetCounterMax (void) const { return m_iCounterMax; }
+		ECounterDisplay GetCounterStyle (void) const { return m_iCounterType; }
 		int GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx);
-		inline Metric GetDrag (void) const { return m_rDrag; }
-		inline CEffectCreator *GetEffectCreator (void) const { return m_pEffect; }
-		inline CEffectCreator *GetHitEffectCreator (void) const { return m_pHitEffect; }
+		Metric GetDrag (void) const { return m_rDrag; }
+		CEffectCreator *GetEffectCreator (void) const { return m_pEffect; }
+		CEffectCreator *GetHitEffectCreator (void) const { return m_pHitEffect; }
 		int GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource);
-		inline bool IsHitEffectAlt (void) { return m_fAltHitEffect; }
-		inline bool IsShieldOverlay (void) { return m_fShieldOverlay; }
-		inline bool IsShipScreenDisabled (void) { return m_fDisableShipScreen; }
-		inline bool IsShownOnMap (void) { return m_fShowOnMap; }
-		inline bool Paralyzes (void) const { return m_fParalyzeShip; }
-		inline bool RotatesWithShip (void) { return m_fRotateWithShip; }
-		inline bool Spins (void) const { return m_fSpinShip; }
-		inline bool StopsTime (void) const { return m_fTimeStop; }
+		bool IsHitEffectAlt (void) { return m_fAltHitEffect; }
+		bool IsShieldOverlay (void) { return m_fShieldOverlay; }
+		bool IsShipScreenDisabled (void) { return m_fDisableShipScreen; }
+		bool IsShownOnMap (void) { return m_fShowOnMap; }
+		bool Paralyzes (void) const { return m_fParalyzeShip; }
+		bool RotatesWithShip (void) { return m_fRotateWithShip; }
+		bool Spins (void) const { return m_fSpinShip; }
+		bool StopsTime (void) const { return m_fTimeStop; }
 
 		//	CDesignType overrides
 		static COverlayType *AsType(CDesignType *pType) { return ((pType && pType->GetType() == designOverlayType) ? (COverlayType *)pType : NULL); }

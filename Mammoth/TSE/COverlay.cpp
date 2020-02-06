@@ -28,13 +28,8 @@ const int ANNOTATION_INNER_SPACING_Y =			2;
 const int FLAG_INNER_SPACING_X =				4;
 
 COverlay::COverlay (void) : 
-		m_pType(NULL),
-		m_iCounter(0),
-		m_pPainter(NULL),
-		m_pHitPainter(NULL),
 		m_fDestroyed(false),
-		m_fFading(false),
-		m_pNext(NULL)
+		m_fFading(false)
 
 //	COverlay constructor
 
@@ -1097,17 +1092,17 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 	{
 	DWORD dwLoad;
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_pType = Ctx.GetUniverse().FindShipEnergyFieldType(dwLoad);
 	if (m_pType == NULL)
 		throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Undefined overlay type: %08x"), dwLoad));
 
 	if (Ctx.dwVersion >= 38)
 		{
-		Ctx.pStream->Read((char *)&m_dwID, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iPosAngle, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iPosRadius, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iRotation, sizeof(DWORD));
+		Ctx.pStream->Read(m_dwID);
+		Ctx.pStream->Read(m_iPosAngle);
+		Ctx.pStream->Read(m_iPosRadius);
+		Ctx.pStream->Read(m_iRotation);
 		}
 	else
 		{
@@ -1119,7 +1114,7 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 168)
 		{
-		Ctx.pStream->Read((char *)&m_iPosZ, sizeof(DWORD));
+		Ctx.pStream->Read(m_iPosZ);
 		}
 	else
 		{
@@ -1127,23 +1122,23 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 		}
 
 	if (Ctx.dwVersion >= 63)
-		Ctx.pStream->Read((char *)&m_iDevice, sizeof(DWORD));
+		Ctx.pStream->Read(m_iDevice);
 	else
 		m_iDevice = -1;
 
 	if (Ctx.dwVersion >= 124)
-		Ctx.pStream->Read((char *)&m_iTick, sizeof(DWORD));
+		Ctx.pStream->Read(m_iTick);
 	else
 		m_iTick = 0;
 
-	Ctx.pStream->Read((char *)&m_iLifeLeft, sizeof(DWORD));
+	Ctx.pStream->Read(m_iLifeLeft);
 
 	if (Ctx.dwVersion >= 39)
 		m_Data.ReadFromStream(Ctx);
 
 	if (Ctx.dwVersion >= 103)
 		{
-		Ctx.pStream->Read((char *)&m_iCounter, sizeof(DWORD));
+		Ctx.pStream->Read(m_iCounter);
 		m_sMessage.ReadFromStream(Ctx.pStream);
 		}
 
@@ -1156,7 +1151,7 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 
 	DWORD dwFlags = 0;
 	if (Ctx.dwVersion >= 101)
-		Ctx.pStream->Read((char *)&dwFlags, sizeof(DWORD));
+		Ctx.pStream->Read(dwFlags);
 
 	//	NOTE: We need to saved the destroyed flag because we defer removal of
 	//	overlays. There are cases where we set the flag, save the game, and then
@@ -1408,19 +1403,19 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 
 	{
 	DWORD dwSave = m_pType->GetUNID();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	pStream->Write((char *)&m_dwID, sizeof(DWORD));
-	pStream->Write((char *)&m_iPosAngle, sizeof(DWORD));
-	pStream->Write((char *)&m_iPosRadius, sizeof(DWORD));
-	pStream->Write((char *)&m_iRotation, sizeof(DWORD));
-	pStream->Write((char *)&m_iPosZ, sizeof(DWORD));
-	pStream->Write((char *)&m_iDevice, sizeof(DWORD));
-	pStream->Write((char *)&m_iTick, sizeof(DWORD));
-	pStream->Write((char *)&m_iLifeLeft, sizeof(DWORD));
+	pStream->Write(dwSave);
+	pStream->Write(m_dwID);
+	pStream->Write(m_iPosAngle);
+	pStream->Write(m_iPosRadius);
+	pStream->Write(m_iRotation);
+	pStream->Write(m_iPosZ);
+	pStream->Write(m_iDevice);
+	pStream->Write(m_iTick);
+	pStream->Write(m_iLifeLeft);
 
 	m_Data.WriteToStream(pStream);
 
-	pStream->Write((char *)&m_iCounter, sizeof(DWORD));
+	pStream->Write(m_iCounter);
 	m_sMessage.WriteToStream(pStream);
 
 	CEffectCreator::WritePainterToStream(pStream, m_pPainter);
@@ -1429,6 +1424,6 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 	DWORD dwFlags = 0;
 	dwFlags |= (m_fDestroyed ?	0x00000001 : 0);
 	dwFlags |= (m_fFading ?		0x00000002 : 0);
-	pStream->Write((char *)&dwFlags, sizeof(DWORD));
+	pStream->Write(dwFlags);
 	}
 
