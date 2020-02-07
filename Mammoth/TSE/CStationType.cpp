@@ -160,6 +160,7 @@
 #define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
 #define PROPERTY_ENCOUNTERED_BY_NODE			CONSTLIT("encounteredByNode")
 #define PROPERTY_ENCOUNTERED_TOTAL				CONSTLIT("encounteredTotal")
+#define PROPERTY_HULL_TYPE						CONSTLIT("hullType")
 #define PROPERTY_LEVEL_FREQUENCY				CONSTLIT("levelFrequency")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_PRIMARY_WEAPON					CONSTLIT("primaryWeapon")
@@ -1900,6 +1901,18 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		}
 	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_TOTAL))
 		return ICCItemPtr(m_EncounterRecord.GetTotalCount());
+
+	else if (strEquals(sProperty, PROPERTY_HULL_TYPE))
+		{
+		if (IsShipEncounter())
+			return ICCItemPtr::Nil();
+		else if (m_HullDesc.IsImmutable())
+			return ICCItemPtr(CONSTLIT("immutable"));
+		else if (m_HullDesc.GetHullType() == CStationHullDesc::hullUnknown)
+			return ICCItemPtr::Nil();
+		else
+			return ICCItemPtr(CStationHullDesc::GetID(m_HullDesc.GetHullType()));
+		}
 
 	else if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
 		return ICCItemPtr(GetEncounterDesc().GetLevelFrequency());

@@ -27,13 +27,7 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"78"
-			armorID=			"&itLightPlasteelPlate;"
-			hitPoints=			"160"
-			multiHull=			"true"
-            regen=              "2"
-
 			fireRateAdj=		"30"
-
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -55,6 +49,12 @@
 
 		<!-- Configuration -->
 
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itLightPlasteelPlate;"
+				hitPoints=		"160"
+			    regen=			"2"
+				/>
+		
 		<Devices>
 			<Device deviceID="&itTurbolaserCannon;"	omnidirectional="true"/>
 		</Devices>
@@ -106,13 +106,7 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"144"
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"320"
-			multiHull=			"true"
-            regen=              "6"
-
 			fireRateAdj=		"20"
-
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -134,6 +128,12 @@
 
 		<!-- Configuration -->
 
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itPlasteelPlate;"
+				hitPoints=		"320"
+			    regen=			"6"
+				/>
+		
 		<Devices>
 			<Device deviceID="&itTurbolaserCannon;"	omnidirectional="true"/>
 		</Devices>
@@ -206,13 +206,7 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"251"
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"400"
-			multiHull=			"true"
-            regen=              "6"
-
 			fireRateAdj=		"20"
-
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -234,6 +228,12 @@
 
 		<!-- Configuration -->
 
+		<Hull 	hullType=		"undergroundHull"
+				armorID=		"&itPlasteelPlate;"
+				hitPoints=		"400"
+			    regen=			"6"
+				/>
+		
 		<Devices>
 			<Device deviceID="&itTurbolaserCannon;"	omnidirectional="true"/>
 		</Devices>

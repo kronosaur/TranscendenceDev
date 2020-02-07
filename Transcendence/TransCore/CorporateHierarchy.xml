@@ -1715,11 +1715,6 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"150"
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"120"
-			multiHull=			"true"
-			regen=              "1"
-
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtIceAsteroidEjecta;"
 			>
@@ -1759,6 +1754,14 @@
 			<Item chance="50"	count="2d12"	item="&itHogeiSalmon;" />
 		</Items>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itPlasteelPlate;"
+				hitPoints=		"120"
+				regen=			"1"
+				/>
+		
 		<!-- Ships and Defenses -->
 
 		<Ships>

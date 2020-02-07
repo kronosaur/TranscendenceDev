@@ -101,10 +101,6 @@
 			sovereign=			"&svUrakWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
-			multiHull=			"true"
-			armorID=			"&itUrakArmorLight;"
-			hitPoints=			"120"
-            regen=              "1"
 			fireRateAdj=		"60"
 			explosionType=		"&vtKineticExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -125,6 +121,14 @@
 
 		<Image			imageID="&rsStations3;" imageX="0" imageY="608" imageWidth="192" imageHeight="192"/>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itUrakArmorLight;"
+				hitPoints=		"120"
+				regen=			"1"
+				/>
+		
 		<Devices>
 			<Device deviceID="&itUrakHowitzer;" omnidirectional="true"/>
 		</Devices>

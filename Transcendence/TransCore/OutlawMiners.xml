@@ -25,14 +25,8 @@
 				 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
-			armorID=			"&itCeramicPlate;"
-			hitPoints=			"75"
-			regen=				"1"
-			multiHull=			"true"
-				 
 			explosionType=		"&vtKineticExplosion2;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
-
 			>
 
 		<!-- Encounter Info -->
@@ -60,6 +54,14 @@
 			</Group>
 		</Items>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itCeramicPlate;"
+				hitPoints=		"75"
+				regen=			"1"
+				/>
+		
 		<!-- Ships and Defenses -->
 		
 		<Ships>
@@ -144,11 +146,6 @@
 				 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
-			armorID=			"&itHeavyCeramicPlate;"
-			hitPoints=			"90"
-			regen=				"1"
-			multiHull=			"true"
-				 
 			explosionType=		"&vtKineticExplosion2;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
 			>
@@ -178,6 +175,14 @@
 			</Group>
 		</Items>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itHeavyCeramicPlate;"
+				hitPoints=		"90"
+				regen=			"1"
+				/>
+		
 		<!-- Ships and Defenses -->
 		
 		<Ships>
@@ -259,11 +264,6 @@
 				 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"150"
-			regen=				"2"
-			multiHull=			"true"
-				 
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
 			>
@@ -293,6 +293,14 @@
 			</Group>
 		</Items>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itPlasteelPlate;"
+				hitPoints=		"150"
+				regen=			"2"
+				/>
+		
 		<!-- Ships and Defenses -->
 		
 		<Ships>
@@ -370,11 +378,6 @@
 				 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"150"
-			regen=				"2"
-			multiHull=			"true"
-				 
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
 			>
@@ -404,6 +407,14 @@
 				<Lookup chance="25"	table="&trStdTreasure;"/>
 			</Group>
 		</Items>
+		
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itPlasteelPlate;"
+				hitPoints=		"150"
+				regen=			"2"
+				/>
 		
 		<!-- Satellites -->
 
@@ -498,11 +509,6 @@
 				 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
-			armorID=			"&itCeralloyArmor;"
-			hitPoints=			"250"
-			regen=				"2"
-			multiHull=			"true"
-				 
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
 			>
@@ -533,6 +539,14 @@
 			</Group>
 		</Items>
 			
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itCeralloyArmor;"
+				hitPoints=		"250"
+				regen=			"2"
+				/>
+		
 		<!-- Satellites -->
 		
 		<Satellites overlapCheck="asteroids">
