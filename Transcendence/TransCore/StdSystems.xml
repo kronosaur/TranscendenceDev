@@ -68,7 +68,7 @@
 
 			<FillLocations
 					percentFull=		"80" 
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; -asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -121,7 +121,7 @@
 
 			<FillLocations
 					percentFull=		"80"
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; +asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -174,7 +174,7 @@
 
 			<FillLocations
 					percentFull=		"80"
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; +asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -281,7 +281,7 @@
 
 			<FillLocations
 					percentFull=		"80" 
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; -asteroidBase;" 
 					percentEnemies=		"70"
 					separateEnemies=	"true"
 					/>
@@ -387,7 +387,7 @@
 
 			<FillLocations
 					percentFull=		"80"
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; +asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -441,7 +441,7 @@
 
 			<FillLocations
 					percentFull=		"80" 
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; -asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -494,7 +494,7 @@
 
 			<FillLocations
 					percentFull=		"80" 
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; -asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -653,7 +653,7 @@
 
 			<FillLocations
 					percentFull=		"80"
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; +asteroidBase;" 
 					percentEnemies=		"75"
 					separateEnemies=	"true"
 					/>
