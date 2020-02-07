@@ -149,7 +149,7 @@ class CWeaponClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
-		virtual bool Activate (CInstalledDevice &Device, CSpaceObject *pTarget, const CTargetList &TargetList, bool *retbConsumedItems = NULL) override;
+		virtual bool Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) override;
 		virtual CWeaponClass *AsWeaponClass (void) override { return this; }
 		virtual bool CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const override;
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
@@ -266,8 +266,8 @@ class CWeaponClass : public CDeviceClass
 		int CalcLevel (CWeaponFireDesc *pShot) const;
 		TArray<CTargetList::STargetResult> CalcMIRVTargets (CInstalledDevice &Device, const CTargetList &TargetList, int iMaxCount) const;
 		int CalcReachableFireAngle (const CInstalledDevice &Device, int iDesiredAngle, int iDefaultAngle = -1) const;
-		CShotArray CalcShotsFired (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CSpaceObject *pSourceTarget, const CTargetList &TargetList, int iRepeatingCount, int &retiFireAngle, bool &retbSetFireAngle) const;
-		bool CalcSingleTarget (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CSpaceObject *pSourceTarget, const CTargetList &TargetList, int iRepeatingCount, int &retiFireAngle, CSpaceObject *&retpTarget, bool &retbSetFireAngle) const;
+		CShotArray CalcShotsFired (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, SActivateCtx &ActivateCtx, int &retiFireAngle, bool &retbSetFireAngle) const;
+		bool CalcSingleTarget (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, SActivateCtx &ActivateCtx, int &retiFireAngle, CSpaceObject *&retpTarget, bool &retbSetFireAngle) const;
 		EFireResults Consume (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, bool *retbConsumedItems = NULL);
 		bool ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, bool *retbConsumed);
 		bool ConsumeCapacitor (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc);
@@ -286,10 +286,7 @@ class CWeaponClass : public CDeviceClass
 							   SShotFireResult &retResult);
 		bool FireWeapon (CInstalledDevice &Device, 
 						 const CWeaponFireDesc &ShotDesc, 
-						 CSpaceObject *pTarget,
-						 const CTargetList &TargetList,
-						 int iRepeatingCount,
-						 bool *retbConsumedItems);
+						 SActivateCtx &ActivateCtx);
 		void FireWeaponShot (CSpaceObject *pSource, 
 							 CInstalledDevice *pDevice, 
 							 const CWeaponFireDesc &ShotDesc, 

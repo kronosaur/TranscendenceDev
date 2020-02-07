@@ -222,7 +222,7 @@ CWeaponClass::~CWeaponClass (void)
 			delete m_ShotData[i].pDesc;
 	}
 
-bool CWeaponClass::Activate (CInstalledDevice &Device, CSpaceObject *pTarget, const CTargetList &TargetList, bool *retbConsumedItems)
+bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 
 //	Activate
 //
@@ -234,8 +234,8 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, CSpaceObject *pTarget, co
 	CSpaceObject &SourceObj = Device.GetSourceOrThrow();
 	const CWeaponFireDesc *pShotDesc = GetWeaponFireDesc(Device);
 
-	if (retbConsumedItems)
-		*retbConsumedItems = false;
+	ActivateCtx.iRepeatingCount = 0;
+	ActivateCtx.bConsumedItems = false;
 
 	//	If not enabled, no firing
 
@@ -247,11 +247,11 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, CSpaceObject *pTarget, co
 
 	//  Set the target to NULL if we're blind and we can't fire when blind
 
-	CSpaceObject *pTargetOrNull = ((!m_bCanFireWhenBlind) && SourceObj.IsBlind()) ? NULL : pTarget;
+	ActivateCtx.pTarget = ((!m_bCanFireWhenBlind) && SourceObj.IsBlind()) ? NULL : ActivateCtx.pTarget;
 
 	//	Fire the weapon
 
-	bool bSuccess = FireWeapon(Device, *pShotDesc, pTargetOrNull, TargetList, 0, retbConsumedItems);
+	bool bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx);
 
 	//	If firing the weapon destroyed the ship, then we bail out
 
@@ -1171,7 +1171,7 @@ int CWeaponClass::CalcReachableFireAngle (const CInstalledDevice &Device, int iD
 		}
 	}
 
-CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CSpaceObject *pSourceTarget, const CTargetList &TargetList, int iRepeatingCount, int &retiFireAngle, bool &retbSetFireAngle) const
+CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, SActivateCtx &ActivateCtx, int &retiFireAngle, bool &retbSetFireAngle) const
 
 //	CalcShotsFired
 //
@@ -1198,7 +1198,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 		//	Get a list of targets
 
-		auto Targets = CalcMIRVTargets(Device, TargetList, Shots.GetCount());
+		auto Targets = CalcMIRVTargets(Device, ActivateCtx.TargetList, Shots.GetCount());
 
 		//	Depending on our linked-fire state, we might not fire if we have no
 		//	targets.
@@ -1246,7 +1246,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 		{
 		CSpaceObject *pTarget;
 
-		if (!CalcSingleTarget(Device, ShotDesc, pSourceTarget, TargetList, iRepeatingCount, retiFireAngle, pTarget, retbSetFireAngle))
+		if (!CalcSingleTarget(Device, ShotDesc, ActivateCtx, retiFireAngle, pTarget, retbSetFireAngle))
 			return CShotArray();
 
 		//	Figure out how many shots to create
@@ -1268,9 +1268,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device, 
 									 const CWeaponFireDesc &ShotDesc, 
-									 CSpaceObject *pSourceTarget, 
-									 const CTargetList &TargetList, 
-									 int iRepeatingCount, 
+									 SActivateCtx &ActivateCtx, 
 									 int &retiFireAngle, 
 									 CSpaceObject *&retpTarget, 
 									 bool &retbSetFireAngle) const
@@ -1287,7 +1285,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 	//	For repeating weapons, we need the target stored in the device
 
-	if (iRepeatingCount != 0)
+	if (ActivateCtx.iRepeatingCount != 0)
 		{
 		CDeviceItem DeviceItem = Device.GetDeviceItem();
 		CSpaceObject &Source = Device.GetSourceOrThrow();
@@ -1337,9 +1335,11 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 			case CDeviceItem::calcControllerTarget:
 				{
 				CSpaceObject &Source = Device.GetSourceOrThrow();
-				retpTarget = pSourceTarget;
+				retpTarget = ActivateCtx.pTarget;
 
-				if (retpTarget)
+				if (ActivateCtx.iFireAngle != -1)
+					retiFireAngle = ActivateCtx.iFireAngle;
+				else if (retpTarget)
 					{
 					Metric rSpeed = ShotDesc.GetInitialSpeed();
 					retiFireAngle = CalcFireAngle(CItemCtx(&Source, &Device), rSpeed, retpTarget);
@@ -1352,7 +1352,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 			case CDeviceItem::calcWeaponTarget:
 				{
-				retpTarget = CalcBestTarget(Device, TargetList, NULL, &retiFireAngle);
+				retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
 				if (retpTarget == NULL)
 					return false;
 
@@ -2194,10 +2194,7 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 
 bool CWeaponClass::FireWeapon (CInstalledDevice &Device, 
 							   const CWeaponFireDesc &ShotDesc, 
-							   CSpaceObject *pTarget,
-							   const CTargetList &TargetList, 
-							   int iRepeatingCount,
-							   bool *retbConsumedItems)
+							   SActivateCtx &ActivateCtx)
 
 //	FireWeapon
 //
@@ -2211,13 +2208,13 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	bool bSetFireAngle;
 	int iFireAngle;
-	CShotArray Shots = CalcShotsFired(Device, ShotDesc, pTarget, TargetList, iRepeatingCount, iFireAngle, bSetFireAngle);
+	CShotArray Shots = CalcShotsFired(Device, ShotDesc, ActivateCtx, iFireAngle, bSetFireAngle);
 	if (Shots.GetCount() == 0)
 		return false;
 
 	//	Figure out when happens when we try to consume ammo, etc.
 
-	EFireResults iResult = Consume(DeviceItem, ShotDesc, iRepeatingCount, retbConsumedItems);
+	EFireResults iResult = Consume(DeviceItem, ShotDesc, ActivateCtx.iRepeatingCount, &ActivateCtx.bConsumedItems);
 	switch (iResult)
 		{
 		case resFailure:
@@ -2254,7 +2251,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	//	Increment polarity, if necessary
 
 	int iNewPolarity;
-	if ((iRepeatingCount == GetContinuous(ShotDesc))
+	if ((ActivateCtx.iRepeatingCount == GetContinuous(ShotDesc))
 			&& GetConfiguration(ShotDesc).IncPolarity(GetAlternatingPos(&Device), &iNewPolarity))
 		SetAlternatingPos(&Device, iNewPolarity);
 
@@ -2266,7 +2263,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	//	Create all the shots
 
 	SShotFireResult Result;
-	if (!FireAllShots(Device, ShotDesc, Shots, iRepeatingCount, Result))
+	if (!FireAllShots(Device, ShotDesc, Shots, ActivateCtx.iRepeatingCount, Result))
 		return false;
 
 	//	Sound effect
@@ -2370,7 +2367,11 @@ int CWeaponClass::GetActivateDelay (CItemCtx &ItemCtx) const
 	{
 	const CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
 	if (pShot == NULL)
-		return 0;
+
+		//	If no shot then it could be that we have a launcher with no 
+		//	missiles. In that case we just return the launcher fire rate.
+
+		return m_iFireRate;
 
 	return GetFireDelay(*pShot);
 	}
@@ -5044,14 +5045,13 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			int iContinuous = GetContinuous(*pShot);
 			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
 
+			SActivateCtx ActivateCtx(NULL, Ctx.TargetList);
+
 			if ((dwContinuous % iContinuousDelay) == 0)
 				{
-				FireWeapon(*pDevice,
-					*pShot,
-					NULL,
-					Ctx.TargetList,
-					1 + iContinuous - (dwContinuous / iContinuousDelay),
-					&Ctx.bConsumedItems);
+				ActivateCtx.iRepeatingCount = 1 + iContinuous - (dwContinuous / iContinuousDelay);
+
+				FireWeapon(*pDevice, *pShot, ActivateCtx);
 
 				if (pSource->IsDestroyed())
 					return;

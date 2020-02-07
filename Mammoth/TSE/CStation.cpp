@@ -5357,9 +5357,8 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 					|| !Weapon.IsReady())
 				continue;
 
-			CSpaceObject *pTarget = NULL;
-
-			Weapon.Activate(pTarget, m_WeaponTargets);
+			CDeviceClass::SActivateCtx ActivateCtx(NULL, m_WeaponTargets);
+			Weapon.Activate(ActivateCtx);
 			if (IsDestroyed())
 				return false;
 

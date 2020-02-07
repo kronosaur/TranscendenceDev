@@ -6082,8 +6082,6 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
                 CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
                 if (Device.IsTriggered() && Device.IsReady())
                     {
-                    bool bConsumedItems = false;
-
 					//	Initialize the target list, if necessary.
 					//
 					//	NOTE: The target list is initialized with options for 
@@ -6098,9 +6096,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 					//	Fire
 
-                    bool bSuccess = Device.Activate(m_pController->GetTarget(&DeviceItem),
-							TargetList,
-							&bConsumedItems);
+					CDeviceClass::SActivateCtx ActivateCtx(m_pController->GetTarget(&DeviceItem), TargetList);
+                    bool bSuccess = Device.Activate(ActivateCtx);
                     if (IsDestroyed())
                         return;
 
@@ -6108,16 +6105,16 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
                     if (bSuccess)
                         {
-                        if (bConsumedItems)
-                            {
-                            bWeaponStatusChanged = true;
-                            bCargoChanged = true;
-                            }
+						if (ActivateCtx.bConsumedItems)
+							{
+							bWeaponStatusChanged = true;
+							bCargoChanged = true;
+							}
 
-                        //	Remember the last time we fired a weapon
+						//	Remember the last time we fired a weapon
 
-                        if (Device.GetCategory() == itemcatWeapon || Device.GetCategory() == itemcatLauncher)
-                            m_iLastFireTime = GetUniverse().GetTicks();
+						if (Device.GetCategory() == itemcatWeapon || Device.GetCategory() == itemcatLauncher)
+							m_iLastFireTime = GetUniverse().GetTicks();
 
 						//  Set the delay for the next activation.
 

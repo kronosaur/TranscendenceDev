@@ -94,7 +94,7 @@ class CCyberDeckClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
-		virtual bool Activate (CInstalledDevice &Device, CSpaceObject *pTarget, const CTargetList &TargetList, bool *retbConsumedItems = NULL) override;
+		virtual bool Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) override;
 		virtual bool CanHitFriends (void) const override { return false; }
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override { return 30; }
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatWeapon; }

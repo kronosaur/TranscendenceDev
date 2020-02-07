@@ -186,6 +186,29 @@ class CDeviceClass
 			evtCount					= 1,
 			};
 
+		struct SActivateCtx
+			{
+			SActivateCtx (CSpaceObject *pTargetArg, const CTargetList &TargetListArg, int iFireAngleArg = -1) :
+					pTarget(pTargetArg),
+					TargetList(TargetListArg),
+					iFireAngle(iFireAngleArg)
+				{ }
+
+			//	Inputs to Activate
+
+			CSpaceObject *pTarget = NULL;
+			int iFireAngle = -1;
+			const CTargetList &TargetList;
+
+			//	Used internally
+
+			int iRepeatingCount = 0;
+
+			//	Status results
+
+			bool bConsumedItems = false;
+			};
+
 		struct SDeviceUpdateCtx
 			{
 			SDeviceUpdateCtx (const CTargetList &TargetListArg, int iTickArg = 0) :
@@ -268,7 +291,7 @@ class CDeviceClass
 
 		virtual bool AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &Ctx) { Ctx.iAbsorb = 0; return false; }
 		virtual bool AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon) { return false; }
-		virtual bool Activate (CInstalledDevice &Device, CSpaceObject *pTarget, const CTargetList &TargetList, bool *retbConsumedItems = NULL) { return false; }
+		virtual bool Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) { return false; }
 		virtual CShieldClass *AsShieldClass (void) { return NULL; }
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
 		virtual bool CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const { return false; }
@@ -592,10 +615,8 @@ class CInstalledDevice
 		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return m_pClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements); }
 		bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const { return m_pClass->AccumulatePerformance(ItemCtx, Ctx); }
 		bool AccumulateSlotEnhancements (CSpaceObject *pSource, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
-		bool Activate (CSpaceObject *pTarget,
-					   const CTargetList &TargetList,
-					   bool *retbConsumedItems = NULL)
-			{ return m_pClass->Activate(*this, pTarget, TargetList, retbConsumedItems); }
+		bool Activate (CDeviceClass::SActivateCtx &ActivateCtx)
+			{ return m_pClass->Activate(*this, ActivateCtx); }
 		int CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource);
 		bool CanBeDamaged (void) { return m_pClass->CanBeDamaged(); }
 		bool CanBeDisabled (CItemCtx &Ctx) { return m_pClass->CanBeDisabled(Ctx); }

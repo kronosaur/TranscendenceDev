@@ -8314,7 +8314,6 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pTarget) 
 				pTarget->SetDestructionNotify();
 
-			bool bConsumedItems = false;
 			bool bSuccess = false;
 
 			bool ReadyToFire;
@@ -8325,6 +8324,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ReadyToFire = true;
 
 			// Save the variables changed in OnFireWeapon first.
+
 			if (ReadyToFire)
 				{
 				ICCItem *p_OldFireAngle = pCC->LookupGlobal(CONSTLIT("aFireAngle"), pCtx);
@@ -8335,7 +8335,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *p_OldWeaponBonus = pCC->LookupGlobal(CONSTLIT("aWeaponBonus"), pCtx);
 				ICCItem *p_OldWeaponType = pCC->LookupGlobal(CONSTLIT("aWeaponType"), pCtx);
 
-				bSuccess = pDevice->Activate(pTarget, TargetList, &bConsumedItems);
+				CDeviceClass::SActivateCtx ActivateCtx(pTarget, TargetList);
+				bSuccess = pDevice->Activate(ActivateCtx);
 
 				pCtx->DefineInteger(CONSTLIT("aFireAngle"), p_OldFireAngle->GetIntegerValue());
 				pCtx->DefineVector(CONSTLIT("aFirePos"), vOldFirePos);

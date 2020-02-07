@@ -11,7 +11,6 @@ class CTargetList
 		static constexpr DWORD FLAG_INCLUDE_STATIONS =			0x00000001;
 		static constexpr DWORD FLAG_INCLUDE_NON_AGGRESSORS =	0x00000002;
 
-
 		enum ETargetTypes
 			{
 			typeUnknown =				0x00000000,
