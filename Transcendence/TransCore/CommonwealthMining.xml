@@ -151,8 +151,6 @@
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
-			<Sell	criteria="wNU +unid:&itMiningLaser;;" priceAdj="100"	inventoryAdj="100"/>
-			<Sell	criteria="cNU +unid:&itMinersCargoHold;;" priceAdj="100"	inventoryAdj="100"/>
 			<Sell	criteria="*NU +miningEquipment; -advanced; -defective; -Illegal; -NotForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ru|c|cur"/>
 			<Sell	criteria="*NU +ore; -defective; -notForSale;"	priceAdj="100"/>
 			<Sell	criteria="*NU +minable; -defective; -notForSale;"	priceAdj="100"/>
@@ -176,6 +174,15 @@
 		</Trade>
 
 		<Items>
+			<!-- 
+				NOTE: Explicit spawning is better than inventory refresh (above)
+				because this guarantees that the items will be created, while 
+				inventory refresh is probabilistic.
+			-->
+
+			<Item count="1"	item="&itMinersCargoHold;"/>
+			<Item count="1"	item="&itMiningLaser;"/>
+
 			<RandomItem 
 					criteria=		"* +ore; -notStandard; -notForSale; | * +minable; -notStandard; -notForSale;"
 					levelFrequency= "systemLevel:ru|c|ur"
@@ -722,23 +729,19 @@
 					(switch
 						(gr (typGetProperty &unidMiningSkill; 'rpg.miningXP) 0)
 							(block (
+								(rank (typGetProperty &unidMiningSkill; 'rpg.miningRank))
 								(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+
 								(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
 								(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
 
-								(totalAsteroids (count (sysFindObject Nil "t +property:canBeMined;")))
-								(exploredAsteroids (count (sysFindObject Nil "t +property:canBeMined; +property:explored;")))
-								(percentExplored
-									(if (gr totalAsteroids 0)
-										(cat (round (* 100 (/ exploredAsteroids totalAsteroids))) "%")
-										"N/A"
-										)
-									)
+								(nextRank (min (+ rank 1) 6))
+								(nextYieldAdj (@ (@ (typGetProperty &unidMiningSkill; 'rpg.miningLevels) nextRank) 'yieldAdj))
 								)
 								(scrSetDescTranslate gScreen (cat "descInfo." rankID) {
 									yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+									nextYieldAdj: (cat "+" (round (* (- nextYieldAdj 1.0) 100)) "%")
 									asteroidsMined: (fmtNumber asteroidsMined)
-									percentExplored: percentExplored
 									})
 								)
 
@@ -788,7 +791,7 @@
 				Digger.
 
 				Keep mining to gain experience. The next rank is Excavator, in
-				which you will gain a +5% bonus on mining yield.
+				which you will gain a %nextYieldAdj% bonus on mining yield.
 
 			</Text>
 			<Text id="descInfo.excavator">
@@ -797,7 +800,7 @@
 				Excavator.
 
 				Keep mining to gain experience. The next rank is Wildcatter, in
-				which you will have a +10% bonus on mining yield.
+				which you will have a %nextYieldAdj% bonus on mining yield.
 
 			</Text>
 			<Text id="descInfo.wildcatter">
@@ -806,7 +809,7 @@
 				Wildcatter.
 
 				Keep mining to gain experience. The next rank is Prospector, in
-				which you will have a +20% bonus on mining yield.
+				which you will have a %nextYieldAdj% bonus on mining yield.
 
 			</Text>
 			<Text id="descInfo.prospector">
@@ -814,7 +817,7 @@
 				You are recognized as an independent miner with the rank of 
 				Prospector.
 
-				The next rank is Miner, with a +35% bonus on mining yield.
+				The next rank is Miner, with a %nextYieldAdj% bonus on mining yield.
 
 			</Text>
 			<Text id="descInfo.miner">
@@ -822,7 +825,7 @@
 				You are recognized as an independent miner with the rank of 
 				Miner.
 
-				The next rank is Expert Miner, with a +50% bonus on mining 
+				The next rank is Expert Miner, with a %nextYieldAdj% bonus on mining 
 				yield.
 
 			</Text>
