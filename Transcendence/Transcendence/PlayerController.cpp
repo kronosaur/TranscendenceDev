@@ -2080,7 +2080,10 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 
 	//	Skip if we don't care about these objects.
 
-	else if (Ctx.pObj == NULL || Ctx.pObj->IsDestroyed() || !m_pShip->IsAngryAt(Ctx.pObj))
+	else if (Ctx.pObj == NULL 
+			|| Ctx.pObj->IsDestroyed() 
+			|| !m_pShip->IsAngryAt(Ctx.pObj)
+			|| Ctx.Attacker.IsAutomatedWeapon())
 		return;
 
 	//	If we have a hint, then show it to the player.
