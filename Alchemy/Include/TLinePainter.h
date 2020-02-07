@@ -15,6 +15,7 @@ class ILinePainter
 		virtual void Draw (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth) = 0;
 		virtual void SetParam (const CString &sParam, BYTE byValue) { }
 		virtual void SetParam (const CString &sParam, const TArray<CG32bitPixel> &ColorTable) { }
+		virtual void DrawWithOpenGL (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, bool& bSuccess) { }
 	};
 
 template <class PAINTER, class BLENDER> class TLinePainter32 : public ILinePainter

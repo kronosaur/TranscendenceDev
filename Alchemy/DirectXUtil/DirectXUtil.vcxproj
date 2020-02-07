@@ -576,6 +576,7 @@
     <ClCompile Include="IAnimatron.cpp" />
     <ClCompile Include="PropertyAnimators.cpp" />
     <ClCompile Include="CTextBlock.cpp" />
+    <ClCompile Include="OpenGLInstancedRayRenderQueue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graphics\Graphics.vcxproj">

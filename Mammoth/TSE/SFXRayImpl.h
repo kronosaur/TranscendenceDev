@@ -19,14 +19,148 @@ typedef TArray<ColorArray> ColorPlane;
 
 typedef TArray<Metric> WidthAdjArray;
 
+class CRayEffectPainter : public IEffectPainter
+{
+public:
+	CRayEffectPainter(CEffectCreator *pCreator);
+	~CRayEffectPainter(void);
+
+	//	IEffectPainter virtuals
+	virtual CEffectCreator *GetCreator(void) override { return m_pCreator; }
+	virtual int GetLifetime(void) override { return m_iLifetime; }
+	virtual bool GetParam(const CString &sParam, CEffectParamDesc *retValue) const override;
+	virtual bool GetParamList(TArray<CString> *retList) const override;
+	virtual void GetRect(RECT *retRect) const override;
+	virtual void Paint(CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+	virtual void PaintHit(CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) override;
+	virtual void PaintLine(CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx) override;
+	virtual bool PointInImage(int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
+
+protected:
+	virtual bool OnSetParam(CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
+
+private:
+	enum EAnimationTypes
+	{
+		animateNone = 0,
+
+		animateFade = 1,
+		animateFlicker = 2,
+		animateCycle = 3,
+
+		animateMax = 3,
+	};
+
+	enum ERayShapes
+	{
+		shapeUnknown = 0,
+
+		shapeDiamond = 1,
+		shapeOval = 2,
+		shapeStraight = 3,
+		shapeTapered = 4,
+		shapeCone = 5,
+
+		shapeMax = 5,
+	};
+
+	enum ERayStyles
+	{
+		styleUnknown = 0,
+
+		styleBlob = 1,
+		styleGlow = 2,
+		styleJagged = 3,
+		styleGrainy = 4,
+		styleLightning = 5,
+		styleWhiptail = 6,
+
+		styleMax = 6,
+	};
+
+	enum EColorTypes
+	{
+		colorNone,
+		colorGlow,
+	};
+
+	enum EOpacityTypes
+	{
+		opacityNone,
+		opacityGlow,
+		opacityGrainy,
+		opacityTaperedGlow,
+	};
+
+	enum EWidthAdjTypes
+	{
+		widthAdjNone,
+		widthAdjBlob,
+		widthAdjDiamond,
+		widthAdjJagged,
+		widthAdjOval,
+		widthAdjTapered,
+		widthAdjCone,
+		widthAdjWhiptail,
+	};
+
+	void CalcCone(TArray<Metric> &AdjArray);
+	void CalcDiamond(TArray<Metric> &AdjArray);
+	void CalcIntermediates(int iLength);
+	int CalcLength(SViewportPaintCtx &Ctx) const;
+	void CalcOval(TArray<Metric> &AdjArray);
+	void CalcRandomWaves(TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
+	void CalcTaper(TArray<Metric> &AdjArray);
+	void CalcWaves(TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength, Metric rDecay, Metric rCyclePos);
+	void CleanUpIntermediates(void);
+	ILinePainter *CreateRenderer(int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos = 0.0);
+	void PaintRay(CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
+
+	CEffectCreator *m_pCreator;
+
+	int m_iLength;
+	int m_iWidth;
+	ERayShapes m_iShape;
+	ERayStyles m_iStyle;
+	int m_iIntensity;
+	CG32bitPixel m_rgbPrimaryColor;
+	CG32bitPixel m_rgbSecondaryColor;
+	CGDraw::EBlendModes m_iBlendMode;
+
+	int m_iXformRotation;
+
+	int m_iLifetime;
+	EAnimationTypes m_iAnimation;
+
+	//	Temporary variables based on shape/style/etc.
+
+	int m_iInitializedLength;			//	If -1, not yet initialized; otherwise, initialized to the given length
+	TArray<ILinePainter *> m_RayRenderer;
+	TArray<int> m_Length;               //  Length for each frame (only for multi-frame animations)
+
+	template<typename T> friend class CRayRasterizer;
+};
+
 template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRasterizer<BLENDER>, BLENDER>
     {
     public:
-        CRayRasterizer (int iLengthCount, int iWidthCount, ColorPlane &ColorMap, OpacityPlane &OpacityMap, WidthAdjArray &WidthAdjTop, WidthAdjArray &WidthAdjBottom) :
+        CRayRasterizer (int iLengthCount, int iWidthCount, ColorPlane &ColorMap, OpacityPlane &OpacityMap, WidthAdjArray &WidthAdjTop, WidthAdjArray &WidthAdjBottom,
+			CRayEffectPainter::EColorTypes iColorType, CRayEffectPainter::EOpacityTypes iOpacityType, CRayEffectPainter::EWidthAdjTypes iWidthAdjType, CRayEffectPainter::EWidthAdjTypes iReshape, CRayEffectPainter::EOpacityTypes iTexture,
+			CG32bitPixel rgbPrimaryColor, CG32bitPixel rgbSecondaryColor, int iIntensity, Metric rCyclePos) :
                 m_iLengthCount(iLengthCount),
                 m_iWidthCount(iWidthCount),
                 m_rgbColor(255, 255, 255),
-                m_byOpacity(255)
+                m_byOpacity(255),
+
+				m_iColorType(iColorType),
+				m_iOpacityType(iOpacityType),
+				m_iWidthAdjType(iWidthAdjType),
+				m_iReshape(iReshape),
+				m_iTexture(iTexture),
+				m_primaryColor(rgbPrimaryColor),
+				m_secondaryColor(rgbSecondaryColor),
+				m_iIntensity(iIntensity),
+			    m_rCyclePos(rCyclePos)
             {
             m_ColorMap.TakeHandoff(ColorMap);
             m_OpacityMap.TakeHandoff(OpacityMap);
@@ -39,6 +173,36 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
             if (strEquals(sParam, CONSTLIT("opacity")))
                 m_byOpacity = byValue;
             }
+
+		virtual void DrawWithOpenGL (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, bool& bSuccess) override
+			{
+			OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
+			if (!pRenderQueue)
+				{
+				bSuccess = false;
+				return;
+				}
+
+			int iDistX = x1 - x2;
+			int iDistY = y1 - y2;
+			int iPosX = (x1 + x2) / 2;
+			int iPosY = (y1 + y2) / 2;
+			int iCanvasHeight = Dest.GetHeight();
+			int iCanvasWidth = Dest.GetWidth();
+
+			int iDist = int(sqrt(float(iDistX * iDistX) + float(iDistY * iDistY)));
+			float rAngle = -float(atan2(iDistY, iDistX));
+			std::tuple<int, int, int> primaryColor (int(m_primaryColor.GetRed()), int(m_primaryColor.GetGreen()), int(m_primaryColor.GetBlue()));
+			std::tuple<int, int, int> secondaryColor (int(m_secondaryColor.GetRed()), int(m_secondaryColor.GetGreen()), int(m_secondaryColor.GetBlue()));
+
+			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, iDist * 2, iWidth * 2, iCanvasHeight, iCanvasWidth, rAngle, m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
+				primaryColor, secondaryColor, m_iIntensity, float(m_rCyclePos));
+			
+			bSuccess = true;
+			return;
+
+
+			}
 
     private:
         inline CG32bitPixel GetPixel (Metric rV, Metric rW)
@@ -130,6 +294,17 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
 		OpacityPlane m_OpacityMap;	        //	Full opacity map
 		WidthAdjArray m_WidthAdjTop;	    //	Top width adjustment
 		WidthAdjArray m_WidthAdjBottom;	    //	Bottom width adjustment
+		
+		CRayEffectPainter::EColorTypes m_iColorType;
+		CRayEffectPainter::EOpacityTypes m_iOpacityType;
+		CRayEffectPainter::EWidthAdjTypes m_iWidthAdjType;
+		CRayEffectPainter::EWidthAdjTypes m_iReshape;
+		CRayEffectPainter::EOpacityTypes m_iTexture;
+		int m_iIntensity;
+		Metric m_rCyclePos;
+
+		CG32bitPixel m_primaryColor;
+		CG32bitPixel m_secondaryColor;
 
         friend TLinePainter32;
     };
