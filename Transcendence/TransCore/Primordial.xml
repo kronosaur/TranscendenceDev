@@ -76,6 +76,7 @@
 
 		scale=				"world"
 		size=				"6"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -98,6 +99,7 @@
 
 		scale=				"world"
 		size=				"55"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -120,6 +122,7 @@
 
 		scale=				"world"
 		size=				"250"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -142,6 +145,7 @@
 
 		scale=				"world"
 		size=				"740"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -159,10 +163,11 @@
 
 	<StationType UNID="&stPrimordialPlanetoidSizeE;"
 		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
 		scale=				"world"
 		size=				"1150"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -173,10 +178,11 @@
 
 	<StationType UNID="&stPrimordialPlanetoidSizeF;"
 		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
 		scale=				"world"
 		size=				"1640"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -187,10 +193,11 @@
 
 	<StationType UNID="&stPrimordialPlanetoidSizeF2;"
 		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
 		scale=				"world"
 		size=				"2530"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsPrimordialWorlds;"	imageX="182" imageY="580"   imageWidth="158"  imageHeight="158"/>
@@ -201,10 +208,11 @@
 
 	<StationType UNID="&stPrimordialPlanetoidSizeG;"
 		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
 		scale=				"world"
 		size=				"4000"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+		anonymous=			"true"
 		>
 		<ImageLookup imageID="&rsPrimordialPlanetoidSizeG;"/>
 	</StationType>
@@ -213,10 +221,11 @@
 
 	<StationType UNID="&stPrimordialTerrestrialSizeH;"
 		name=				"primordial world"
+		attributes=			"generic, inner, lifeZone, outer, primordial, terrestrial"
+
 		scale=				"world"
 		size=				"4285"
-
-		attributes=			"generic, inner, lifeZone, outer, primordial, terrestrial"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsPrimordialWorlds;"	imageX="0"   imageY="580"   imageWidth="182"  imageHeight="182"/>
@@ -227,10 +236,11 @@
 
 	<StationType UNID="&stPrimordialTerrestrialSizeH2;"
 		name=				"primordial world"
+		attributes=			"atmosphere, denseAtmosphere, generic, inner, lifeZone, outer, primordial, terrestrial"
+
 		scale=				"world"
 		size=				"6300"
-
-		attributes=			"atmosphere, denseAtmosphere, generic, inner, lifeZone, outer, primordial, terrestrial"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsPrimordialWorlds;"	imageX="0"   imageY="340"   imageWidth="240"  imageHeight="240"/>
@@ -242,10 +252,11 @@
 
 	<StationType UNID="&stPrimordialTerrestrialSizeJ;"
 		name=				"primordial world"
+		attributes=			"generic, inner, lifeZone, outer, primordial, terrestrial"
+
 		scale=				"world"
 		size=				"22000"
-
-		attributes=			"generic, inner, lifeZone, outer, primordial, terrestrial"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsPrimordialWorlds;"	imageX="340" imageY="0"     imageWidth="270"  imageHeight="270"/>
@@ -256,10 +267,11 @@
 
 	<StationType UNID="&stPrimordialGasGiantSizeK;"
 		name=				"primordial gas giant"
+		attributes=			"atmosphere, denseAtmosphere, gasGiant, generic, inner, lifeZone, outer, primordial"
+
 		scale=				"world"
 		size=				"48200"
-
-		attributes=			"atmosphere, denseAtmosphere, gasGiant, generic, inner, lifeZone, outer, primordial"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsPrimordialWorlds;"	imageX="0"   imageY="0"     imageWidth="340"  imageHeight="340"/>

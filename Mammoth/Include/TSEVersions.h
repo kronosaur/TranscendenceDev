@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							48;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					181;
+constexpr DWORD SYSTEM_SAVE_VERSION =					182;
 
 //	Uncomment out the following define when building a stable release
 
@@ -665,3 +665,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					181;
 //
 //	181: 1.9 Beta 1
 //		Remove m_iFireDelay and m_iMissileFireDelay from CShip
+//
+//	182: 1.9 Beta 1
+//		Add m_fAnonymous to CStation

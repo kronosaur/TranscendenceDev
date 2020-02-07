@@ -193,6 +193,7 @@
 
 		scale=				"world"
 		size=				"7"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -215,6 +216,7 @@
 
 		scale=				"world"
 		size=				"60"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -237,6 +239,7 @@
 
 		scale=				"world"
 		size=				"165"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -259,6 +262,7 @@
 
 		scale=				"world"
 		size=				"670"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -276,14 +280,14 @@
 
 	<StationType UNID="&stIcePlanetoidSizeE;"
 		name=				"ice planetoid"
+		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+
 		scale=				"world"
 		size=				"1250"
-
-		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsIcePlanetoidSizeE;"/>
 	</StationType>
 
@@ -291,14 +295,14 @@
 
 	<StationType UNID="&stIcePlanetoidSizeF;"
 		name=				"ice planetoid"
+		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+
 		scale=				"world"
 		size=				"2450"
-
-		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsIcePlanetoidSizeF;"/>
 	</StationType>
 
@@ -306,14 +310,14 @@
 
 	<StationType UNID="&stIcePlanetoidSizeG;"
 		name=				"ice planetoid"
+		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+
 		scale=				"world"
 		size=				"4000"
-
-		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsIcePlanetoidSizeG;"/>
 	</StationType>
 

@@ -1743,7 +1743,8 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		DWORD m_fHasMissileDefense:1;			//	If TRUE, at least one device is a missile defense weapon
 		mutable DWORD m_fMapLabelInitialized:1;	//	If TRUE, we've initialized m_MapLabel
 		mutable DWORD m_fMaxAttackDistValid:1;	//	TRUE if m_rMaxAttackDist is valid
-		DWORD m_dwSpare:13;
+		DWORD m_fAnonymous:1;					//	TRUE if world has not been explicitly named
+		DWORD m_dwSpare:12;
 
 		//	Wreck image
 		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)

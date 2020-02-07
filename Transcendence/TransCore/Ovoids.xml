@@ -178,6 +178,7 @@
 
 		scale=				"world"
 		size=				"4"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -218,6 +219,7 @@
 
 		scale=				"world"
 		size=				"70"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -260,6 +262,7 @@
 
 		scale=				"world"
 		size=				"255"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -294,6 +297,7 @@
 
 		scale=				"world"
 		size=				"590"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -319,15 +323,14 @@
 
 	<StationType UNID="&stOvoidPlanetoidSizeE;"
 		name=				"ovoid planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, ovoid"
+
 		scale=				"world"
 		size=				"1000"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, ovoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="320"  imageY="0"   imageWidth="128" imageHeight="128"/>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="320"  imageY="128"   imageWidth="128" imageHeight="128"/>
@@ -341,15 +344,14 @@
 
 	<StationType UNID="&stOvoidPlanetoidSizeF;"
 		name=				"ovoid planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, ovoid"
+
 		scale=				"world"
 		size=				"2450"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, ovoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="0"  imageY="580"   imageWidth="156" imageHeight="156"/>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="156"  imageY="580"   imageWidth="156" imageHeight="156"/>
@@ -362,15 +364,14 @@
 
 	<StationType UNID="&stOvoidPlanetoidSizeG;"
 		name=				"ovoid planetoid"
+		attributes=			"generic, inner, lifeZone, outer, ovoid, planetoid"
+
 		scale=				"world"
 		size=				"3750"
-
-		attributes=			"generic, inner, lifeZone, outer, ovoid, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="0"    imageY="736"   imageWidth="180" imageHeight="180"/>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="180"  imageY="736"   imageWidth="180" imageHeight="180"/>

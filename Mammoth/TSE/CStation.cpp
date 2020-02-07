@@ -1099,6 +1099,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pStation->m_iPaintOrder = pType->GetPaintOrder();
 	pStation->m_fDestroyIfEmpty = false;
 	pStation->m_fIsSegment = CreateCtx.bIsSegment;
+	pStation->m_fAnonymous = pType->IsAnonymous();
 	pStation->Set3DExtra(CreateCtx.bIs3DExtra);
 
 	//	Set up rotation, if necessary
@@ -1151,7 +1152,13 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 	const CNameDesc &Name = pType->GetNameDesc();
 	if (!Name.IsConstant())
+		{
 		pStation->m_sName = Name.GenerateName(&CreateCtx.SystemCtx.NameParams, &pStation->m_dwNameFlags);
+
+		//	NOTE: We leave anonymous alone because maybe we want asteroids to
+		//	have a name for targeting purposes but still not show the name on 
+		//	the map.
+		}
 	else
 		pStation->m_dwNameFlags = 0;
 
@@ -3857,7 +3864,11 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		bImmutable = false;
 
 	m_fExplored =			((dwLoad & 0x00000800) ? true : false);
-	//	0x00001000 Unused as of version 160
+	if (Ctx.dwVersion >= 182)
+		m_fAnonymous =		((dwLoad & 0x00001000) ? true : false);
+	else
+		m_fAnonymous = (m_pType->IsAnonymous() && m_sName.IsBlank());
+
 	//	0x00002000 Unused as of version 160
 	m_fNoBlacklist =		((dwLoad & 0x00004000) ? true : false);
 	m_fNoConstruction =		((dwLoad & 0x00008000) ? true : false);
@@ -4357,7 +4368,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	//	0x00000200 retired
 	//	0x00000400 retired at 151
 	dwSave |= (m_fExplored ?			0x00000800 : 0);
-	//	0x00001000
+	dwSave |= (m_fAnonymous ?			0x00001000 : 0);
 	//	0x00002000
 	dwSave |= (m_fNoBlacklist ?			0x00004000 : 0);
 	dwSave |= (m_fNoConstruction ?		0x00008000 : 0);
@@ -4846,6 +4857,7 @@ void CStation::SetName (const CString &sName, DWORD dwFlags)
 	{
 	m_sName = sName;
 	m_dwNameFlags = dwFlags;
+	m_fAnonymous = false;
 
 	//	Clear cache so we recompute label metrics
 
@@ -5211,6 +5223,7 @@ bool CStation::ShowMapLabel (int *retcxLabel, int *retcyLabel) const
 					{
 					bHasMapLabel = !sMapLabel.IsBlank() 
 						&& *sMapLabel.GetASCIIZPointer() != '('
+						&& !m_fAnonymous
 						&& iPlanetarySize >= MIN_NAMED_WORLD_SIZE;
 					}
 

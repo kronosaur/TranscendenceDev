@@ -155,6 +155,7 @@
 
 		scale=				"world"
 		size=				"4"
+		anonymous=			"true"
 
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
@@ -177,6 +178,7 @@
 
 		scale=				"world"
 		size=				"70"
+		anonymous=			"true"
 
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
@@ -199,6 +201,7 @@
 
 		scale=				"world"
 		size=				"255"
+		anonymous=			"true"
 
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
@@ -221,6 +224,7 @@
 
 		scale=				"world"
 		size=				"590"
+		anonymous=			"true"
 
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
@@ -238,10 +242,11 @@
 
 	<StationType UNID="&stVolcanicPlanetoidSizeE;"
 		name=				"volcanic planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, volcanic"
+
 		scale=				"world"
 		size=				"1000"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, volcanic"
+		anonymous=			"true"
 
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
@@ -252,10 +257,11 @@
 
 	<StationType UNID="&stVolcanicPlanetoidSizeF;"
 		name=				"volcanic planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, volcanic"
+
 		scale=				"world"
 		size=				"2450"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, volcanic"
+		anonymous=			"true"
 
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
@@ -266,10 +272,11 @@
 
 	<StationType UNID="&stVolcanicPlanetoidSizeG;"
 		name=				"volcanic planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, volcanic"
+
 		scale=				"world"
 		size=				"3750"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, volcanic"
+		anonymous=			"true"
 
 		ejectaType=			"&vtVolcanicAsteroidEjecta;"
 		>
@@ -280,10 +287,11 @@
 
 	<StationType UNID="&stVolcanicTerrestrialSizeH;"
 		name=				"volcanic terrestrial"
+		attributes=			"generic, terrestrial, volcanic"
+
 		scale=				"world"
 		size=				"5250"
-
-		attributes=			"generic, terrestrial, volcanic"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsVolcanicTerrestrials;" imageX="0"   imageY="0"   imageWidth="200" imageHeight="200"/>

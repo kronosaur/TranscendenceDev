@@ -152,17 +152,17 @@ class CStationEncounterDesc
 		int GetMaxAppearing (void) const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
 		int GetNumberAppearing (void) const { return (m_bNumberAppearing ? m_NumberAppearing.Roll() : -1); }
 		bool HasAutoLevelFrequency (void) const { return m_bAutoLevelFrequency; }
-        bool HasSystemCriteria (const CTopologyNode::SCriteria **retpCriteria = NULL) const 
-            {
-            if (m_bSystemCriteria) 
-                {
-                if (retpCriteria) 
-                    *retpCriteria = &m_SystemCriteria;
-                return m_bSystemCriteria; 
-                }
-            else
-                return false;
-            }
+		bool HasSystemCriteria (const CTopologyNode::SCriteria **retpCriteria = NULL) const 
+			{
+			if (m_bSystemCriteria) 
+				{
+				if (retpCriteria) 
+					*retpCriteria = &m_SystemCriteria;
+				return m_bSystemCriteria; 
+				}
+			else
+				return false;
+			}
 		bool HasSystemLimit (int *retiLimit = NULL) const { if (retiLimit) *retiLimit = m_iMaxCountInSystem; return (m_iMaxCountInSystem != -1); }
 		bool IsUniqueInSystem (void) const { return (m_iMaxCountInSystem == 1); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
@@ -220,7 +220,7 @@ class CStationEncounterCtx
 			int iLimit = -1;					//	Encounter limit (-1 = no limit)
 			int iMinimum = 0;					//	Minimum encounters (-1 = no limit)
 
-            mutable int iNodeCriteria = -1;		//  Cached frequency for node (-1 = unknown)
+			mutable int iNodeCriteria = -1;		//  Cached frequency for node (-1 = unknown)
 			};
 
 		int GetBaseFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
@@ -499,7 +499,8 @@ class CStationType : public CDesignType
 		bool HasGravity (void) const { return m_Star.HasGravity(); }
 		bool HasWreckImage (void) const { return m_HullDesc.CanBeWrecked(); }
 		void IncEncounterMinimum (CTopologyNode *pNode, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(pNode, GetEncounterDesc(), iInc); }
-		bool IsActive (void) { return (m_fInactive ? false : true); }
+		bool IsActive (void) const { return (m_fInactive ? false : true); }
+		bool IsAnonymous (void) const { return (m_fAnonymous ? true : false); }
 		bool IsOutOfPlaneObject (void) { return (m_fOutOfPlane ? true : false); }
 		bool IsBeacon (void) { return (m_fBeacon ? true : false); }
 		bool IsBlacklistEnabled (void) { return (m_fNoBlacklist ? false : true); }
@@ -539,7 +540,7 @@ class CStationType : public CDesignType
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CTradingDesc *GetTradingDesc (void) const override { return m_pTrade; }
 		virtual DesignTypes GetType (void) const override { return designStationType; }
-        virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
+		virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
 		static Metric CalcSatelliteHitsToDestroy (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
@@ -645,7 +646,7 @@ class CStationType : public CDesignType
 		DWORD m_fBalanceValid:1;						//	If TRUE, m_rCombatBalance is valid
 		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
 		DWORD m_fForceMapLabel:1;						//	If TRUE, show map label, even if we wouldn't by default.
-		DWORD m_fSpare6:1;
+		DWORD m_fAnonymous:1;							//	If TRUE, object is anonymous world/asteroid/etc.
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 
