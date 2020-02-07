@@ -146,6 +146,7 @@
 					(depositID Nil)
 					(markedExplored Nil)
 					(counterAdded Nil)
+					(gainTrialXP Nil)
 
 					theOre countMined
 					allOre extractedOre
@@ -153,6 +154,9 @@
 
 					(if debugMining
 						(block ()
+							(if isPlayer
+								(dbgOutput "PLAYER")
+								)
 							(dbgOutput "Asteroid Type: " aAsteroidType)
 							(dbgOutput "Asteroid difficulty: " aMineDifficulty)
 							(dbgOutput "Mining Level: " aMineProbability)
@@ -178,23 +182,20 @@
 						
 						(gr (random 1 100) aSuccessChance)
 							(if (and isPlayer (not (objGetProperty gSource 'explored)))
-								(block (
-									;	We get some experience even for failures.
-									(xpPerTry (typGetProperty &unidMiningSkill; 'rpg.xpPerFailedTry))
-									(xpGained (round 'stochastic (* xpPerTry (/ aMineDifficulty 100))))
-									)
-									(if debugMining
-										(dbgOutput "XP " (typGetProperty &unidMiningSkill; 'rpg.miningXP) " [+" xpGained "]")
-										)
-									(typIncProperty &unidMiningSkill; 'rpg.miningXP xpGained)
-									)
+								(setq gainTrialXP True)
 								)
 								
 						;	If there is nothing to mine, then we just mark the asteroid as
 						;	explored.
 						
 						(not (setq allOre (objGetItems gSource "* +ore; | * +minable;")))
-							(setq setExplored True)
+							(block ()
+								(setq setExplored True)
+
+								(if (and isPlayer (not (objGetProperty gSource 'explored)))
+									(setq gainTrialXP True)
+									)
+								)
 
 						;	Generic damage just scans (does not extract, and no experience is
 						;	gained).
@@ -203,6 +204,10 @@
 							(block ()
 								(setq setExplored True)
 								(setq addCounter True)
+
+								(if (and isPlayer (not (objGetProperty gSource 'explored)))
+									(setq gainTrialXP True)
+									)
 								)
 							
 						;	Figure out how many tons we mine this time.
@@ -385,6 +390,21 @@
 							(if (objGetProperty aCause 'mining.asteroidsFound)
 								(objIncProperty aCause 'mining.asteroidsFound 1)
 								)
+							)
+						)
+
+					;	See if we gain experience from failed attempts
+
+					(if gainTrialXP
+						(block (
+							;	We get some experience even for failures.
+							(xpPerTry (typGetProperty &unidMiningSkill; 'rpg.xpPerFailedTry))
+							(xpGained (round 'stochastic (* xpPerTry (/ aMineDifficulty 100))))
+							)
+							(if debugMining
+								(dbgOutput "XP " (typGetProperty &unidMiningSkill; 'rpg.miningXP) " [+" xpGained "]")
+								)
+							(typIncProperty &unidMiningSkill; 'rpg.miningXP xpGained)
 							)
 						)
 
