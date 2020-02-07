@@ -1290,6 +1290,14 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual void RevertOrientationChange (void) override;
 
 	private:
+		static constexpr int GATE_ANIMATION_LENGTH =				30;
+
+		static constexpr int FUEL_CHECK_CYCLE =						4;
+		static constexpr int LIFESUPPORT_FUEL_USE_PER_CYCLE =		1;
+		static constexpr int FUEL_GRACE_PERIOD =					30 * 30;
+
+		static constexpr int TRADE_UPDATE_FREQUENCY =				1801;		//	Interval for checking trade
+		static constexpr int INVENTORY_REFRESHED_PER_UPDATE =		20;			//	% of inventory refreshed on each update frequency
 
 		void AccumulateDeviceEnhancementsToArmor (CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void CalcArmorBonus (void);
@@ -1321,9 +1329,13 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
 		void SetTotalArmorHP (int iNewHP);
 		bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }
+		bool UpdateAllDevices (CDeviceClass::SDeviceUpdateCtx &DeviceCtx, CShipUpdateSet &UpdateFlags);
+		bool UpdateConditions (CShipUpdateSet &UpdateFlags);
 		void UpdateDestroyInGate (void);
 		bool UpdateFuel (SUpdateCtx &Ctx, int iTick);
 		void UpdateInactive (void);
+		void UpdateManeuvers (Metric rSecondsPerTick);
+		bool UpdateTriggerAllDevices (CDeviceClass::SActivateCtx &ActivateCtx, CShipUpdateSet &UpdateFlags);
 
 		CShipClass *m_pClass;					//	Ship class
 		IShipController *m_pController;			//	Controller
@@ -1347,8 +1359,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		CCurrencyBlock *m_pMoney;				//	Store of money (may be NULL)
 		CPowerConsumption *m_pPowerUse;			//	Power consumption variables (may be NULL if not tracking fuel)
 
-		int m_iFireDelay:16;					//	Ticks until next fire
-		int m_iMissileFireDelay:16;				//	Ticks until next missile fire
 		int m_iContaminationTimer:16;			//	Ticks left to live
 		int m_iBlindnessTimer:16;				//	Ticks until blindness wears off
 												//	(-1 = permanent)
@@ -1672,7 +1682,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void SetWreckParams (CShipClass *pWreckClass, CShip *pShip = NULL);
 		bool UpdateAttacking (SUpdateCtx &Ctx, int iTick);
 		void UpdateDestroyedAnimation (void);
-		bool UpdateDevices (SUpdateCtx &Ctx, int iTick, const CTargetList &TargetList, bool &iobModified);
+		bool UpdateDevices (SUpdateCtx &Ctx, int iTick, CTargetList &TargetList, bool &iobModified);
 		bool UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCalcDevices);
 		void UpdateReinforcements (int iTick);
 		void UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange);

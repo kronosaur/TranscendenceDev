@@ -5402,7 +5402,7 @@ void CStation::UpdateDestroyedAnimation (void)
 	m_iDestroyedAnimation--;
 	}
 
-bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, const CTargetList &TargetList, bool &iobModified)
+bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, CTargetList &TargetList, bool &iobModified)
 
 //	UpdateDevices
 //
@@ -5448,7 +5448,7 @@ bool CStation::UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCa
 	const CObjectImageArray &Image = GetImage(true);
 
 	m_Overlays.Update(this, Image.GetImageViewportSize(), GetRotation(), &bModified);
-	if (CSpaceObject::IsDestroyedInUpdate())
+	if (IsDestroyed())
 		return false;
 
 	else if (bModified)

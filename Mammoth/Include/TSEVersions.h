@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							48;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					180;
+constexpr DWORD SYSTEM_SAVE_VERSION =					181;
 
 //	Uncomment out the following define when building a stable release
 
@@ -662,4 +662,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					180;
 //
 //	180: 1.9 Beta 1
 //		Replace m_WeaponTargets
-
+//
+//	181: 1.9 Beta 1
+//		Remove m_iFireDelay and m_iMissileFireDelay from CShip

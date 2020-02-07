@@ -526,6 +526,7 @@
     <ClCompile Include="CShipPerformanceDesc.cpp" />
     <ClCompile Include="CShipStandard.cpp" />
     <ClCompile Include="CShipTable.cpp" />
+    <ClCompile Include="CShipUpdateSet.cpp" />
     <ClCompile Include="CShipwreckDesc.cpp" />
     <ClCompile Include="CShockwaveHitTest.cpp" />
     <ClCompile Include="CEnvironmentGrid.cpp" />
@@ -634,6 +635,7 @@
     <ClCompile Include="SFXOrb.cpp" />
     <ClCompile Include="SFXParticleSystem.cpp" />
     <ClCompile Include="SFXRay.cpp" />
+    <ClCompile Include="ShipUpdate.cpp" />
     <ClCompile Include="SpaceObjectItemProperties.cpp" />
     <ClCompile Include="SUpdateCtx.cpp" />
     <ClCompile Include="XMLLoader.cpp">

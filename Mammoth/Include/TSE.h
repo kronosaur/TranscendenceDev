@@ -769,7 +769,6 @@ class CSpaceObject
 		bool IsCreated (void) const { return m_fOnCreateCalled; }
 		bool IsDestinyTime (int iCycle, int iOffset = 0);
 		bool IsDestroyed (void) const { return (m_fDestroyed ? true : false); }
-		static bool IsDestroyedInUpdate (void) { return m_bObjDestroyed; }
 		bool IsEnemy (const CSpaceObject *pObj) const;
 		bool IsEnemy (const CDamageSource &Obj) const;
 		bool IsEnemyInRange (Metric rMaxRange, bool bIncludeStations = false);
@@ -1286,7 +1285,6 @@ class CSpaceObject
 		bool CanFireOnObjHelper (CSpaceObject *pObj) const;
 		void ClearCannotBeHit (void) { m_fCannotBeHit = false; }
 		void ClearInDamageCode (void) { m_fInDamage = false; }
-		void ClearInUpdateCode (void) { m_pObjInUpdate = NULL; m_bObjDestroyed = false; }
 		void ClearNoFriendlyFire(void) { m_fNoFriendlyFire = false; }
 		void ClearObjReferences (void) { m_Data.OnSystemChanged(NULL); }
 		void ClearPainted (void) { m_fPainted = false; }
@@ -1324,7 +1322,6 @@ class CSpaceObject
 		void SetHasGravity (bool bGravity = true) { m_fHasGravity = bGravity; }
 		void SetIsBarrier (void) { m_fIsBarrier = true; }
 		void SetInDamageCode (void) { m_fInDamage = true; }
-		void SetInUpdateCode (void) { m_pObjInUpdate = this; m_bObjDestroyed = false; }
 		void SetNoFriendlyFire (void) { m_fNoFriendlyFire = true; }
 		void SetNoFriendlyTarget (void) { m_fNoFriendlyTarget = true; }
 		void SetNonLinearMove (bool bValue = true) { m_fNonLinearMove = bValue; }
@@ -1440,18 +1437,6 @@ class CSpaceObject
 		//	Property table
 
 		static TPropertyHandler<CSpaceObject> m_BasePropertyTable;
-
-		//	This is a global variable that is set when we update an object.
-		//	We use it to detect when an object gets destroyed inside its
-		//	own Update method.
-		//
-		//	Note: Obviously this only works if object updates take place
-		//	on the same thread and if they are not re-entrant. (i.e., can't
-		//	call Update on a object from inside the Update of a different
-		//	object).
-
-		static CSpaceObject *m_pObjInUpdate;
-		static bool m_bObjDestroyed;
 
 		//	Empty list of overlays
 

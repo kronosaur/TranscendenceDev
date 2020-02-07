@@ -161,9 +161,6 @@ SInstallItemResultsData INSTALL_ITEM_RESULTS_TABLE[] =
 		{	"replacementRequired",		-1,		4	},
 	};
 
-CSpaceObject *CSpaceObject::m_pObjInUpdate = NULL;
-bool CSpaceObject::m_bObjDestroyed = false;
-
 CString ParseParam (char **ioPos);
 
 CSpaceObject::CSpaceObject (CUniverse &Universe) : 
@@ -1611,11 +1608,6 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 
 	if (retpWreck)
 		*retpWreck = Ctx.pWreck;
-
-	//	See if we are in the middle of update
-
-	if (m_pObjInUpdate == this)
-		m_bObjDestroyed = true;
 
 	//	If resurrection is pending, then clear the destroyed flag. Otherwise, 
 	//	wingmen might leave the player.
@@ -7219,8 +7211,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 //	Update the object
 
 	{
-	SetInUpdateCode();
-
 	//	Update as long as we are not time-stopped.
 
 	if (!Ctx.IsTimeStopped())
@@ -7239,10 +7229,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			//	We could have gotten destroyed here.
 
 			if (IsDestroyed())
-				{
-				ClearInUpdateCode();
 				return;
-				}
 			}
 
 		//	Update object
@@ -7262,20 +7249,14 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			//	necessary.
 
 			if (IsDestroyed())
-				{
-				ClearInUpdateCode();
 				return;
-				}
 			}
 
 		//	Update the specific object subclass.
 
 		OnUpdate(Ctx, g_SecondsPerUpdate);
 		if (IsDestroyed())
-			{
-			ClearInUpdateCode();
 			return;
-			}
 		}
 
 	//	Otherwise, if we're time-stopped we need to update any overlays that
@@ -7320,10 +7301,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 		{
 		m_fHasDockScreenMaybe = (CanObjRequestDock(Ctx.pPlayer) == dockingOK);
 		}
-
-	//	Done
-
-	ClearInUpdateCode();
 	}
 
 void CSpaceObject::UpdateDrag (SUpdateCtx &Ctx, Metric rDragFactor)

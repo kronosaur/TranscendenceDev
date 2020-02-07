@@ -1001,7 +1001,7 @@ void COverlayList::Update (CSpaceObject *pSource, int iScale, int iRotation, boo
 
 			//	If the source got destroyed, then we're done
 
-			if (CSpaceObject::IsDestroyedInUpdate())
+			if (pSource->IsDestroyed())
 				return;
 			}
 
@@ -1059,7 +1059,7 @@ void COverlayList::UpdateTimeStopped (CSpaceObject *pSource, int iScale, int iRo
 
 			//	If the source got destroyed, then we're done
 
-			if (CSpaceObject::IsDestroyedInUpdate())
+			if (pSource->IsDestroyed())
 				return;
 			}
 

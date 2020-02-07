@@ -188,7 +188,7 @@ class CDeviceClass
 
 		struct SActivateCtx
 			{
-			SActivateCtx (CSpaceObject *pTargetArg, const CTargetList &TargetListArg, int iFireAngleArg = -1) :
+			SActivateCtx (CSpaceObject *pTargetArg, CTargetList &TargetListArg, int iFireAngleArg = -1) :
 					pTarget(pTargetArg),
 					TargetList(TargetListArg),
 					iFireAngle(iFireAngleArg)
@@ -198,7 +198,7 @@ class CDeviceClass
 
 			CSpaceObject *pTarget = NULL;
 			int iFireAngle = -1;
-			const CTargetList &TargetList;
+			CTargetList &TargetList;
 
 			//	Used internally
 
@@ -211,7 +211,7 @@ class CDeviceClass
 
 		struct SDeviceUpdateCtx
 			{
-			SDeviceUpdateCtx (const CTargetList &TargetListArg, int iTickArg = 0) :
+			SDeviceUpdateCtx (CTargetList &TargetListArg, int iTickArg = 0) :
 					TargetList(TargetListArg),
 					iTick(iTickArg)
 				{
@@ -227,7 +227,7 @@ class CDeviceClass
 				}
 					
 			int iTick;
-			const CTargetList &TargetList;
+			CTargetList &TargetList;
 
 			//	Outputs
 
