@@ -1010,7 +1010,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		int GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice);
 		DeviceNames GetDeviceNameForCategory (ItemCategories iCategory);
 		int GetItemDeviceName (const CItem &Item) const;
-		CItem GetNamedDeviceItem (DeviceNames iDev) const;
+		CItem GetNamedItem (DeviceNames iDev) const;
 		bool HasNamedDevice (DeviceNames iDev) const;
 		void InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1);
 		bool IsDeviceSlotAvailable (ItemCategories iItemCat = itemcatNone, int *retiSlot = NULL);
@@ -1160,6 +1160,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const override;
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) override;
+		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const override { return m_Devices.GetNamedDeviceItem(iDev); }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CShip"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
@@ -1264,7 +1265,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CDesignType *GetDefaultOverride (void) const { return m_pClass->GetDefaultEventHandler(); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) override;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
 		virtual bool OnGetCondition (CConditionSet::ETypes iCondition) const override;
@@ -1295,7 +1296,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;
 		void CalcDeviceBonus (void);
-		bool CalcDeviceTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution);
 		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
         void CalcPerformance (void);
@@ -1489,6 +1489,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool CanAttack (void) const override;
 		virtual bool CanBeAttacked (void) const override { return (m_Hull.GetHitPoints() > 0 || CanAttack() || (m_fIsSegment && m_Hull.GetStructuralHP() > 0)); }
 		virtual bool CanBeDestroyed (void) override { return m_Hull.CanBeDestroyed(); }
+		virtual bool CanBeMined (void) const override { return (m_pType->ShowsUnexploredAnnotation() && !IsOutOfPlaneObj()); }
 		virtual bool CanBlock (CSpaceObject *pObj) override;
 		virtual bool CanBlockShips (void) override { return m_fBlocksShips; }
 		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
@@ -1554,7 +1555,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool IsAnchored (void) const override { return (!m_pType->IsMobile() || IsManuallyAnchored()); }
 		virtual bool IsAngry (void) override { return (!IsAbandoned() && (m_iAngryCounter > 0)); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override { return (IsEnemy(pObj) || IsBlacklisted(pObj)); }
-		virtual bool IsExplored (void) override { return m_fExplored; }
+		virtual bool IsExplored (void) const override { return m_fExplored; }
 		virtual bool IsIdentified (void) const override { return m_fKnown; }
 		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
 		virtual bool IsInactive (void) const override { return !CanBeAttacked(); }
@@ -1607,7 +1608,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) override;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
 		virtual bool OnGetCondition (CConditionSet::ETypes iCondition) const override;
@@ -1631,17 +1632,22 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 			maxDevices				= 8,
 			};
 
+		static constexpr CG32bitPixel RGB_MINING_MARKER_UNEXPORED = CG32bitPixel(128, 128, 128);
+
 		static constexpr int MIN_NAMED_WORLD_SIZE = 1000;
 		static constexpr int LARGE_WORLD_SIZE = 5000;
 
+		static constexpr int WMD_HINT_THRESHOLD = 40;
+
 		void AvengeAttack (CSpaceObject *pAttacker);
 		bool Blacklist (CSpaceObject *pObj);
+		int CalcAdjustedDamage (SDamageCtx &Ctx) const;
+		int CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const;
 		void CalcBounds (void);
 		void CalcDeviceBonus (void);
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
 		Metric CalcMaxAttackDist (void) const;
 		int CalcNumberOfShips (void);
-		bool CalcWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) const;
 		bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
 		void CreateDestructionEffect (void);
@@ -1666,7 +1672,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void SetWreckParams (CShipClass *pWreckClass, CShip *pShip = NULL);
 		bool UpdateAttacking (SUpdateCtx &Ctx, int iTick);
 		void UpdateDestroyedAnimation (void);
-		bool UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified);
+		bool UpdateDevices (SUpdateCtx &Ctx, int iTick, const CTargetList &TargetList, bool &iobModified);
 		bool UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCalcDevices);
 		void UpdateReinforcements (int iTick);
 		void UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange);
@@ -1697,7 +1703,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		CSpaceObject *m_pBase = NULL;			//	If we're a subordinate, this points to our base
 		CSpaceObjectList m_Subordinates;		//	List of subordinates
 		CSpaceObjectList m_Targets;				//	Targets to destroy (by our ships)
-		CSpaceObjectTargetList m_WeaponTargets;	//	Targets to destroy (by our weapons)
+		CTargetList m_WeaponTargets;			//	Targets to destroy (by our weapons)
 
 		CAttackDetector m_Blacklist;			//	Player blacklisted
 		int m_iAngryCounter = 0;				//	Attack cycles until station is not angry

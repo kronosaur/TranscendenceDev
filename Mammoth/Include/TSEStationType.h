@@ -64,7 +64,6 @@ class CStationHull
 	public:
 		CStationHull (void);
 
-		int CalcAdjustedDamage (SDamageCtx &Ctx) const;
 		bool CanBeDestroyed (void) const { return (m_iStructuralHP > 0); }
 		bool CanBeHit (void) const { return !m_fCannotBeHit; }
 		ICCItem *FindProperty (const CString &sProperty) const;
@@ -97,7 +96,6 @@ class CStationHull
 		void WriteToStream (IWriteStream &Stream, CStation *pStation);
 
 	private:
-		static constexpr int HINT_THRESHOLD =		40;
 		static constexpr DWORD HULL_TYPES_MASK =	0x000000f0;
 		static constexpr DWORD HULL_TYPES_SHIFT =	4;
 
@@ -290,6 +288,110 @@ enum ScaleTypes
 	scaleFlotsam =					4,
 	};
 
+enum class EAsteroidType
+	{
+	unknown = -1,			//	Unknown composition
+	none = 0,				//	No mining
+
+	icy = 1,
+	metallic = 2,
+	primordial = 3,
+	rocky = 4,
+	volcanic = 5,
+	};
+
+constexpr int EAsteroidTypeCount = 6;
+
+enum class EMiningMethod
+	{
+	unknown = -1,
+
+	ablation = 0,
+	drill = 1,
+	explosion = 2,
+	shockwave = 3,
+	};
+
+constexpr int EMiningMethodCount = 4;
+
+class CAsteroidDesc
+	{
+	public:
+
+		//	Composition (for mining purposes)
+
+		struct SMiningStats
+			{
+			int iSuccessChance = 0;
+			int iMaxOreLevel = 1;
+			Metric rYieldAdj = 1.0;
+			};
+
+		EAsteroidType GetType (void) const { return m_iType; }
+		CString GetTypeLabel (CUniverse &Universe) const;
+		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool IsEmpty (void) const { return m_bDefault; }
+
+		static void CalcMining (int iMiningLevel, int iMiningDifficulty, EAsteroidType iType, const SDamageCtx &DamageCtx, SMiningStats &retMining);
+		static EMiningMethod CalcMiningMethod (const CWeaponFireDesc &Desc);
+		static CString CompositionID (EAsteroidType iType);
+		static int GetDefaultMiningDifficulty (EAsteroidType iType);
+		static EAsteroidType ParseComposition (const CString &sValue);
+
+	private:
+		struct SCompositionDesc
+			{
+			LPSTR pszID = NULL;
+			int iMiningDifficulty = 0;
+
+			Metric SuccessAdj[EMiningMethodCount] = { 0.0 };
+			Metric YieldAdj[EMiningMethodCount] = { 0.0 };
+			};
+
+		static Metric CalcBaseMiningSuccess (int iMiningLevel, int iMiningDifficulty);
+		static int CalcMaxOreLevel (DamageTypes iDamageType);
+		static const SCompositionDesc &GetCompositionDesc (EAsteroidType iType) { return COMPOSITION_TABLE[static_cast<int>(iType)]; }
+
+		EAsteroidType m_iType = EAsteroidType::unknown;
+		bool m_bDefault = false;
+
+		static TStaticStringTable<TStaticStringEntry<EAsteroidType>, 5> COMPOSITION_INDEX;
+		static SCompositionDesc COMPOSITION_TABLE[EAsteroidTypeCount];
+	};
+
+class CStarDesc
+	{
+	public:
+		Metric GetGravityRadius (void) const { return m_rGravityRadius; }
+		int GetMaxLightDistance (void) const { return m_iMaxLightDistance; }
+		CG32bitPixel GetSpaceColor (void) const { return m_rgbSpaceColor; }
+		bool HasGravity (void) const { return (m_rGravityRadius > 0.0); }
+		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+
+	private:
+		CG32bitPixel m_rgbSpaceColor;					//	Space color
+		int m_iMaxLightDistance = 0;					//	Max distance at which there is no (effective) light from star
+		Metric m_rGravityRadius = 0.0;					//	Gravity radius
+	};
+
+class CStargateDesc
+	{
+	public:
+		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const { retTypesUsed->SetAt(m_pGateEffect.GetUNID(), true); }
+		ALERROR Bind (SDesignLoadCtx &Ctx) { return m_pGateEffect.Bind(Ctx); }
+		const CString &GetDestEntryPoint (void) const { return m_sDestEntryPoint; }
+		const CString &GetDestNodeID (void) const { return m_sDestNodeID; }
+		CEffectCreator *GetGateEffect (void) const { return m_pGateEffect; }
+		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		void MarkImages (void) { if (m_pGateEffect) m_pGateEffect->MarkImages(); }
+
+	private:
+		CString m_sDestNodeID;							//	Dest node
+		CString m_sDestEntryPoint;						//	Dest entry point
+		CEffectCreatorRef m_pGateEffect;				//	Effect when object gates in/out of station
+	};
+
 class CStationType : public CDesignType
 	{
 	public:
@@ -335,6 +437,7 @@ class CStationType : public CDesignType
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices) const;
 		CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
 		CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }
+		const CAsteroidDesc &GetAsteroidDesc (void) const;
 		CurrencyValue GetBalancedTreasure (void) const;
 		CEffectCreator *GetBarrierEffect (void) { return m_pBarrierEffect; }
 		IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }
@@ -342,8 +445,8 @@ class CStationType : public CDesignType
 		DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
 		const CShipChallengeDesc &GetDefenderCount (void) const { return m_DefenderCount; }
 		CXMLElement *GetDesc (void) { return m_pDesc; }
-		CString GetDestNodeID (void) { return m_sStargateDestNode; }
-		CString GetDestEntryPoint (void) { return m_sStargateDestEntryPoint; }
+		CString GetDestNodeID (void) const { return m_Stargate.GetDestNodeID(); }
+		CString GetDestEntryPoint (void) const { return m_Stargate.GetDestEntryPoint(); }
 		int GetEjectaAdj (void) { return m_iEjectaAdj; }
 		CWeaponFireDesc *GetEjectaType (void) { return m_pEjectaType; }
 		const CStationEncounterDesc &GetEncounterDesc (void) const;
@@ -362,8 +465,8 @@ class CStationType : public CDesignType
 		int GetFrequencyByLevel (int iLevel) { return m_EncounterRecord.GetFrequencyByLevel(iLevel, GetEncounterDesc()); }
 		int GetFrequencyForNode (CTopologyNode *pNode) { return m_EncounterRecord.GetFrequencyForNode(pNode, this, GetEncounterDesc()); }
 		int GetFrequencyForSystem (CSystem *pSystem) { return m_EncounterRecord.GetFrequencyForSystem(pSystem, this, GetEncounterDesc()); }
-		CEffectCreator *GetGateEffect (void) { return m_pGateEffect; }
-		Metric GetGravityRadius (void) const { return m_rGravityRadius; }
+		CEffectCreator *GetGateEffect (void) const { return m_Stargate.GetGateEffect(); }
+		Metric GetGravityRadius (void) const { return m_Star.GetGravityRadius(); }
 		const CObjectImageArray &GetHeroImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_HeroImage.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
 		const CStationHullDesc &GetHullDesc (void) const { return m_HullDesc; }
 		const CCompositeImageDesc &GetImage (void) const { return m_Image; }
@@ -373,7 +476,7 @@ class CStationType : public CDesignType
 		Metric GetLevelStrength (int iLevel);
 		const CAffinityCriteria &GetLocationCriteria (void) const { return GetEncounterDesc().GetLocationCriteria(); }
 		Metric GetMass (void) { return m_rMass; }
-		int GetMaxLightDistance (void) { return m_iMaxLightDistance; }
+		int GetMaxLightDistance (void) const { return m_Star.GetMaxLightDistance(); }
 		int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
 		const CNameDesc &GetNameDesc (void) const { return m_Name; }
 		int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
@@ -389,11 +492,11 @@ class CStationType : public CDesignType
 		int GetShipConstructionRate (void) { return m_iShipConstructionRate; }
 		const CRegenDesc &GetShipRegenDesc (void) { return m_ShipRegen; }
 		CSovereign *GetSovereign (void) const { return m_pSovereign; }
-		CG32bitPixel GetSpaceColor (void) { return m_rgbSpaceColor; }
+		CG32bitPixel GetSpaceColor (void) const { return m_Star.GetSpaceColor(); }
 		int GetStealth (void) const { return m_iStealth; }
 		int GetTempChance (void) const { return m_iChance; }
 		bool HasAnimations (void) const { return (m_pAnimations != NULL); }
-		bool HasGravity (void) const { return (m_rGravityRadius > 0.0); }
+		bool HasGravity (void) const { return m_Star.HasGravity(); }
 		bool HasWreckImage (void) const { return m_HullDesc.CanBeWrecked(); }
 		void IncEncounterMinimum (CTopologyNode *pNode, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(pNode, GetEncounterDesc(), iInc); }
 		bool IsActive (void) { return (m_fInactive ? false : true); }
@@ -479,7 +582,6 @@ class CStationType : public CDesignType
 		Metric CalcTreasureValue (int iLevel) const;
 		Metric CalcWeaponStrength (int iLevel) const;
 		CStationEncounterDesc &GetEncounterDesc (void);
-		void InitStationDamage (void);
 
 		CXMLElement *m_pDesc = NULL;
 
@@ -596,15 +698,10 @@ class CStationType : public CDesignType
 														//		>100 = greater than normal chance
 		CWeaponFireDescRef m_pEjectaType;				//	Type of ejecta generated
 
-		//	Stellar objects
-		CG32bitPixel m_rgbSpaceColor;					//	Space color
-		int m_iMaxLightDistance = 0;					//	Max distance at which there is no (effective) light from star
-		Metric m_rGravityRadius = 0.0;					//	Gravity radius
-
-		//	Stargates
-		CString m_sStargateDestNode;					//	Dest node
-		CString m_sStargateDestEntryPoint;				//	Dest entry point
-		CEffectCreatorRef m_pGateEffect;				//	Effect when object gates in/out of station
+		//	Special descriptors
+		CAsteroidDesc m_Asteroid;						//	Asteroid parameters
+		CStarDesc m_Star;								//	Star parameters
+		CStargateDesc m_Stargate;						//	Stargate parameters
 
 		//	Miscellaneous
 		CEffectCreatorRef m_pBarrierEffect;				//	Effect when object hits station

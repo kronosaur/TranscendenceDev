@@ -716,7 +716,7 @@ void CFleetCommandAI::ImplementWaitAtPosition (void)
 		}
 	}
 
-DWORD CFleetCommandAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CFleetCommandAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //

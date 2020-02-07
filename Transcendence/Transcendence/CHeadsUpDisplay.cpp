@@ -12,31 +12,10 @@ void CHeadsUpDisplay::CleanUp (void)
 //
 //  Release resources
 
-    {
-	if (m_pArmorPainter)
-		{
-		delete m_pArmorPainter;
-		m_pArmorPainter = NULL;
-		}
-
-	if (m_pShieldsPainter)
-		{
-		delete m_pShieldsPainter;
-		m_pShieldsPainter = NULL;
-		}
-
-    if (m_pReactorPainter)
-        {
-        delete m_pReactorPainter;
-        m_pReactorPainter = NULL;
-        }
-
-    if (m_pWeaponsPainter)
-        {
-        delete m_pWeaponsPainter;
-        m_pWeaponsPainter = NULL;
-        }
-    }
+	{
+	for (int i = 0; i < hudCount; i++)
+		m_pHUD[i].Delete();
+	}
 
 void CHeadsUpDisplay::GetClearHorzRect (RECT *retrcRect) const
 
@@ -44,68 +23,77 @@ void CHeadsUpDisplay::GetClearHorzRect (RECT *retrcRect) const
 //
 //  Returns a RECT that excludes all corner HUD elements.
 
-    {
-    RECT rcReactor;
-    if (m_pReactorPainter)
-        m_pReactorPainter->GetRect(&rcReactor);
+	{
+	RECT rcRect = m_rcScreen;
 
-    RECT rcArmor;
-    if (m_pArmorPainter)
-        m_pArmorPainter->GetRect(&rcArmor);
+	for (int i = 0; i < hudCount; i++)
+		if (m_pHUD[i])
+			{
+			RECT rcHUD;
+			m_pHUD[i]->GetRect(&rcHUD);
 
-    RECT rcWeapons;
-    if (m_pWeaponsPainter)
-        m_pWeaponsPainter->GetRect(&rcWeapons);
+			DWORD dwLoc = m_pHUD[i]->GetLocation();
+			if (dwLoc & IHUDPainter::locAlignTop)
+				{
+				if (rcRect.top < rcHUD.bottom)
+					rcRect.top = rcHUD.bottom;
+				}
+			else if (dwLoc & IHUDPainter::locAlignBottom)
+				{
+				if (rcRect.bottom > rcHUD.top)
+					rcRect.bottom = rcHUD.top;
+				}
+			}
 
-    retrcRect->left = m_rcScreen.left;
-    retrcRect->right = m_rcScreen.right;
-    retrcRect->top = (m_pReactorPainter ? rcReactor.bottom : m_rcScreen.top);
-    retrcRect->bottom = Min((m_pArmorPainter ? rcArmor.top : m_rcScreen.bottom), (m_pWeaponsPainter ? rcWeapons.top : m_rcScreen.bottom));
-    }
+	if (retrcRect)
+		*retrcRect = rcRect;
+	}
 
-bool CHeadsUpDisplay::Init (const RECT &rcRect)
+bool CHeadsUpDisplay::CreateHUD (EHUDTypes iHUD, const CShipClass &SourceClass, const RECT &rcScreen, CString *retsError)
+
+//	CreateHUD
+//
+//	Creates a new HUD object of the given type.
+
+	{
+	IHUDPainter *pHUD = IHUDPainter::Create(iHUD, m_Model.GetUniverse(), m_HI.GetVisuals(), SourceClass, rcScreen, retsError);
+	if (pHUD == NULL)
+		return false;
+
+	m_pHUD[iHUD].Set(pHUD);
+	return true;
+	}
+
+bool CHeadsUpDisplay::Init (const RECT &rcRect, CString *retsError)
 
 //  Init
 //
 //  Initialize
 
-    {
-    CPlayerShipController *pPlayer = m_Model.GetPlayer();
-    if (pPlayer == NULL)
-        return false;
+	{
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (pPlayer == NULL)
+		return false;
 
-    CShip *pShip = pPlayer->GetShip();
-    if (pShip == NULL)
-        return false;
+	CShip *pShip = pPlayer->GetShip();
+	if (pShip == NULL)
+		return false;
 
-    CleanUp();
-    m_rcScreen = rcRect;
+	CleanUp();
+	m_rcScreen = rcRect;
 
-    //  Initialize armor
+	//	Create all HUD painters
 
-	SDesignLoadCtx Ctx;
-	m_pArmorPainter = IHUDPainter::Create(Ctx, pShip->GetClass(), hudArmor);
-	m_pShieldsPainter = IHUDPainter::Create(Ctx, pShip->GetClass(), hudShields);
+	for (int i = 0; i < hudCount; i++)
+		{
+		if (!CreateHUD((EHUDTypes)i, *pShip->GetClass(), rcRect, retsError))
+			return false;
+		}
 
-	if (m_pArmorPainter)
-		m_pArmorPainter->SetLocation(rcRect, IHUDPainter::locAlignBottom | IHUDPainter::locAlignRight);
+	//  Success!
 
-    //  Initialize reactor
-
-	m_pReactorPainter = IHUDPainter::Create(Ctx, pShip->GetClass(), hudReactor);
-	if (m_pReactorPainter)
-		m_pReactorPainter->SetLocation(rcRect, IHUDPainter::locAlignTop | IHUDPainter::locAlignLeft);
-
-    //  Initialize weapons
-
-	m_pWeaponsPainter = IHUDPainter::Create(Ctx, pShip->GetClass(), hudTargeting);
-	if (m_pWeaponsPainter)
-		m_pWeaponsPainter->SetLocation(rcRect, IHUDPainter::locAlignBottom | IHUDPainter::locAlignLeft);
-
-    //  Success!
-
-    return true;
-    }
+	return true;
+	}
 
 void CHeadsUpDisplay::Invalidate (EHUDTypes iHUD)
 
@@ -113,113 +101,121 @@ void CHeadsUpDisplay::Invalidate (EHUDTypes iHUD)
 //
 //  Invalidates a specific HUD. If iHUD == hudNone, then we invalidate all HUDs.
 
-    {
-    switch (iHUD)
-        {
-        case hudNone:
-            if (m_pArmorPainter)
-                m_pArmorPainter->Invalidate();
+	{
+	switch (iHUD)
+		{
+		case hudNone:
+			for (int i = 0; i < hudCount; i++)
+				InvalidateHUD((EHUDTypes)i);
+			break;
 
-            if (m_pShieldsPainter)
-                m_pShieldsPainter->Invalidate();
+		case hudArmor:
+		case hudShields:
+			InvalidateHUD(hudArmor);
+			InvalidateHUD(hudShields);
+			break;
 
-            if (m_pReactorPainter)
-                m_pReactorPainter->Invalidate();
+		default:
+			InvalidateHUD(iHUD);
+			break;
+		}
+	}
 
-            if (m_pWeaponsPainter)
-                m_pWeaponsPainter->Invalidate();
-            break;
-
-        case hudArmor:
-        case hudShields:
-            if (m_pArmorPainter)
-                m_pArmorPainter->Invalidate();
-
-            if (m_pShieldsPainter)
-                m_pShieldsPainter->Invalidate();
-            break;
-
-        case hudReactor:
-            if (m_pReactorPainter)
-                m_pReactorPainter->Invalidate();
-            break;
-
-        case hudTargeting:
-            if (m_pWeaponsPainter)
-                m_pWeaponsPainter->Invalidate();
-            break;
-
-        default:
-            ASSERT(false);
-            break;
-        }
-    }
-
-void CHeadsUpDisplay::Paint (CG32bitImage &Screen, bool bInDockScreen)
+void CHeadsUpDisplay::Paint (CG32bitImage &Screen, int iTick, bool bInDockScreen)
 
 //  Paint
 //
 //  Paint
 
-    {
+	{
 	DEBUG_TRY
 
-    CPlayerShipController *pPlayer = m_Model.GetPlayer();
-    if (pPlayer == NULL)
-        return;
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (pPlayer == NULL)
+		return;
 
-	SHUDPaintCtx PaintCtx;
-	PaintCtx.pSource = pPlayer->GetShip();
-	PaintCtx.byOpacity = g_pUniverse->GetSFXOptions().GetHUDOpacity();
+	CSpaceObject *pSource = pPlayer->GetShip();
+	if (pSource == NULL)
+		return;
 
-    //  If we're in a dock screen, we don't always paint the HUD if we don't 
-    //  have enough room.
+	CUniverse &Universe = m_Model.GetUniverse();
+	SHUDPaintCtx PaintCtx(Universe, m_HI.GetVisuals(), *pSource);
+	PaintCtx.iTick = iTick;
+	PaintCtx.byOpacity = Universe.GetSFXOptions().GetHUDOpacity();
 
-    bool bPaintTop = true;
-    bool bPaintBottom = true;
-    if (bInDockScreen)
-        {
-        if (Screen.GetHeight() < 768)
-            bPaintBottom = false;
+	//  If we're in a dock screen, we don't always paint the HUD if we don't 
+	//  have enough room.
 
-        if (Screen.GetHeight() < 960)
-            bPaintTop = false;
-        }
+	bool bPaintTop = true;
+	bool bPaintBottom = true;
+	if (bInDockScreen)
+		{
+		if (Screen.GetHeight() < 768)
+			bPaintBottom = false;
 
-    //  Paint armor
+		if (Screen.GetWidth() < 1920)
+			bPaintTop = false;
+		}
 
-    if (m_pArmorPainter && bPaintBottom)
-        {
-	    PaintCtx.iSegmentSelected = m_iSelection;
-	    PaintCtx.pShieldsHUD = m_pShieldsPainter;
+	//	Paint
 
-		SetProgramState(psPaintingArmorDisplay);
-    	m_pArmorPainter->Paint(Screen, PaintCtx);
-
-        PaintCtx.iSegmentSelected = -1;
-        PaintCtx.pShieldsHUD = NULL;
-        }
-
-    //  Paint reactor
-
-    if (m_pReactorPainter && bPaintTop)
-        {
-        SetProgramState(psPaintingReactorDisplay);
-        m_pReactorPainter->Paint(Screen, PaintCtx);
-        }
-
-    //  Paint weapons
-
-    if (m_pWeaponsPainter && bPaintBottom)
-        {
-        SetProgramState(psPaintingTargetDisplay);
-        m_pWeaponsPainter->Paint(Screen, PaintCtx);
-        }
-
-    SetProgramState(psAnimating);
+	for (int i = 0; i < hudCount; i++)
+		{
+		if (m_pHUD[i])
+			{
+			DWORD dwLoc = m_pHUD[i]->GetLocation();
+			if ((dwLoc & IHUDPainter::locAlignTop) && bPaintTop)
+				{
+				PaintHUD((EHUDTypes)i, Screen, PaintCtx);
+				}
+			else if ((dwLoc & IHUDPainter::locAlignBottom) && bPaintBottom)
+				{
+				PaintHUD((EHUDTypes)i, Screen, PaintCtx);
+				}
+			else if (!bInDockScreen)
+				{
+				PaintHUD((EHUDTypes)i, Screen, PaintCtx);
+				}
+			}
+		}
 
 	DEBUG_CATCH
-    }
+	}
+
+void CHeadsUpDisplay::PaintHUD (EHUDTypes iHUD, CG32bitImage &Screen, SHUDPaintCtx &PaintCtx) const
+
+//	PaintHUD
+//
+//	Paint the given HUD.
+
+	{
+	if (!m_pHUD[iHUD])
+		return;
+
+	switch (iHUD)
+		{
+		//	Armor and shields paint together
+
+		case hudArmor:
+			PaintCtx.iSegmentSelected = m_iSelection;
+			PaintCtx.pShieldsHUD = m_pHUD[hudShields];
+			SetProgramState(psPaintingArmorDisplay);
+
+			m_pHUD[iHUD]->Paint(Screen, PaintCtx);
+
+			PaintCtx.iSegmentSelected = -1;
+			PaintCtx.pShieldsHUD = NULL;
+			SetProgramState(psAnimating);
+			break;
+
+		case hudShields:
+			break;
+
+		default:
+			m_pHUD[iHUD]->Paint(Screen, PaintCtx);
+			break;
+		}
+	}
 
 void CHeadsUpDisplay::SetArmorSelection (int iSelection)
 
@@ -227,14 +223,13 @@ void CHeadsUpDisplay::SetArmorSelection (int iSelection)
 //
 //  Selects a given armor section.
 
-    {
-    if (m_pArmorPainter
-            && m_iSelection != iSelection)
-        {
-        m_iSelection = iSelection;
-        Invalidate(hudArmor);
-        }
-    }
+	{
+	if (m_iSelection != iSelection)
+		{
+		m_iSelection = iSelection;
+		Invalidate(hudArmor);
+		}
+	}
 
 void CHeadsUpDisplay::Update (int iTick)
 
@@ -242,28 +237,23 @@ void CHeadsUpDisplay::Update (int iTick)
 //
 //  Update displays
 
-    {
+	{
 	DEBUG_TRY
 
-    CPlayerShipController *pPlayer = m_Model.GetPlayer();
-    if (pPlayer == NULL)
-        return;
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (pPlayer == NULL)
+		return;
 
-	SHUDUpdateCtx UpdateCtx;
-	UpdateCtx.pSource = pPlayer->GetShip();
+	CSpaceObject *pSource = pPlayer->GetShip();
+	if (pSource == NULL)
+		return;
+
+	SHUDUpdateCtx UpdateCtx(m_Model.GetUniverse(), *pSource);
 	UpdateCtx.iTick = iTick;
 
-    if (m_pArmorPainter)
-        m_pArmorPainter->Update(UpdateCtx);
-
-    if (m_pShieldsPainter)
-        m_pShieldsPainter->Update(UpdateCtx);
-
-    if (m_pReactorPainter)
-        m_pReactorPainter->Update(UpdateCtx);
-
-    if (m_pWeaponsPainter)
-        m_pWeaponsPainter->Update(UpdateCtx);
+	for (int i = 0; i < hudCount; i++)
+		if (m_pHUD[i])
+			m_pHUD[i]->Update(UpdateCtx);
 
 	DEBUG_CATCH
-    }
+	}

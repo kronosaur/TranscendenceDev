@@ -148,15 +148,24 @@ class CDeviceItem : public CDifferentiatedItem
 	{
 	public:
 
+		enum ECalcTargetTypes
+			{
+			calcNoTarget,
+			calcControllerTarget,
+			calcWeaponTarget,
+			};
+
 		inline operator bool () const;
 		operator const CItem & () const { return m_Item; }
 		operator CItem & () { return m_Item; }
 
 		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
+		ECalcTargetTypes CalcTargetType (void) const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);
 		inline int GetDeviceSlot (void) const;
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
+		int GetFireArc (void) const;
 		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
 		inline const CInstalledDevice *GetInstalledDevice (void) const;
 		inline CInstalledDevice *GetInstalledDevice (void);
@@ -164,11 +173,17 @@ class CDeviceItem : public CDifferentiatedItem
 		Metric GetMaxEffectiveRange (CSpaceObject *pTarget = NULL) const;
 		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		inline DWORD GetTargetTypes (void) const;
+		DamageTypes GetWeaponDamageType (void) const;
 		inline int GetWeaponEffectiveness (CSpaceObject *pTarget) const;
+		inline const CWeaponFireDesc *GetWeaponFireDesc (void) const;
+		inline const CWeaponFireDesc *GetWeaponFireDesc (const CItem &Ammo) const;
 		inline bool IsAreaWeapon (void) const;
-		bool IsMissileDefenseWeapon (void) const;
-		bool IsTargetableMissileDefenseWeapon (void) const;
+		inline bool IsEnabled (void) const;
+		inline bool IsMiningWeapon (void) const;
+		inline bool IsTrackingWeapon (void) const;
 		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
+		inline bool NeedsAutoTarget (int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const;
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 
 	private:

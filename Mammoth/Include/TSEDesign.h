@@ -130,9 +130,9 @@ class CDesignTypeCriteria
 		const CString &GetRequiredSpecialAttrib (int iIndex) const { return m_sRequireSpecial[iIndex]; }
 		int GetRequiredSpecialAttribCount (void) const { return m_sRequireSpecial.GetCount(); }
 		bool HasORExpression (void) const { return (m_pOr ? true : false); }
-        void IncludeType (DesignTypes iType) { m_dwTypeSet |= (1 << iType); }
+		void IncludeType (DesignTypes iType) { m_dwTypeSet |= (1 << iType); }
 		bool IncludesVirtual (void) const { return m_bIncludeVirtual; }
-        bool IsEmpty (void) const { return (m_dwTypeSet == 0); }
+		bool IsEmpty (void) const { return (m_dwTypeSet == 0); }
 		bool IsEqual (const CDesignTypeCriteria &Src) const { return strEquals(Src.AsString(), AsString()); }
 		bool MatchesDesignType (DesignTypes iType) const
 			{ return ((m_dwTypeSet & (1 << iType)) ? true : false); }
@@ -162,7 +162,7 @@ class CDesignTypeCriteria
 		int m_iLessThanLevel = INVALID_COMPARE;
 
 		bool m_bIncludeVirtual = false;
-        bool m_bStructuresOnly = false;
+		bool m_bStructuresOnly = false;
 
 		TUniquePtr<CDesignTypeCriteria> m_pOr;
 
@@ -190,18 +190,18 @@ class CDesignType
 			evtCount					= 10,
 			};
 
-        struct SMapDescriptionCtx
-            {
-            SMapDescriptionCtx (void) :
-                    bShowDestroyed(false),
-                    bEnemy(false),
-                    bFriend(false)
-                { }
+		struct SMapDescriptionCtx
+			{
+			SMapDescriptionCtx (void) :
+					bShowDestroyed(false),
+					bEnemy(false),
+					bFriend(false)
+				{ }
 
-            bool bShowDestroyed;
-            bool bEnemy;
-            bool bFriend;
-            };
+			bool bShowDestroyed;
+			bool bEnemy;
+			bool bFriend;
+			};
 
 		struct SStats
 			{
@@ -294,7 +294,7 @@ class CDesignType
 		DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
 		const CLanguageDataBlock &GetLanguageBlock (void) const;
 		CXMLElement *GetLocalScreens (void) const;
-        CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
+		CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType = NULL) const;
@@ -315,7 +315,7 @@ class CDesignType
 		bool HasLanguageEntry (const CString &sID) const;
 		bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
-        ICCItemPtr IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL) { return SetExtra()->GlobalData.IncData(sAttrib, pValue); }
+		ICCItemPtr IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL) { return SetExtra()->GlobalData.IncData(sAttrib, pValue); }
 		ICCItemPtr IncTypeProperty (const CString &sProperty, ICCItem *pValue);
 		bool InheritsFrom (DWORD dwUNID) const;
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
@@ -352,7 +352,7 @@ class CDesignType
 		virtual const CEconomyType *GetEconomyType (void) const;
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const;
 		virtual CTradingDesc *GetTradingDesc (void) const { return NULL; }
-        virtual const CCompositeImageDesc &GetTypeImage (void) const;
+		virtual const CCompositeImageDesc &GetTypeImage (void) const;
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return GetDataField(CONSTLIT("name")); }
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = -1; if (retiMaxLevel) *retiMaxLevel = -1; return -1; }
 		virtual DesignTypes GetType (void) const = 0;
@@ -612,7 +612,7 @@ class CEffectCreatorRef : public CDesignTypeRef<CEffectCreator>
 		void Set (CEffectCreator *pEffect);
 
 	private:
-        CAttributeDataBlock m_Data;
+		CAttributeDataBlock m_Data;
 		mutable IEffectPainter *m_pSingleton;
 		bool m_bDelete;
 	};
@@ -701,6 +701,7 @@ class CGenericType : public CDesignType
 
 //	Ship Systems ---------------------------------------------------------------
 
+#include "TSETargeting.h"
 #include "TSEShipEquipment.h"
 #include "TSEArmor.h"
 #include "TSEDevices.h"
@@ -1020,7 +1021,7 @@ class CExtensionCollection
 			FLAG_DESC_ONLY =			0x00000004,	//	Load adventure descs only
 			FLAG_ERROR_ON_DISABLE =		0x00000008,	//	Return an error if an extension was loaded disabled
 												//		(due to missing dependencies, etc.)
-            FLAG_NO_COLLECTION =		0x00000010, //  Do not load collection
+			FLAG_NO_COLLECTION =		0x00000010, //  Do not load collection
 			FLAG_NO_COLLECTION_CHECK =	0x00000020,	//	Do not check signatures on collection
 			FLAG_DIAGNOSTICS =			0x00000040,	//	Allow diagnostics extension to be loaded
 
@@ -1189,7 +1190,7 @@ struct SDesignLoadCtx
 	//	Options
 	bool bBindAsNewGame = false;			//	If TRUE, then we are binding a new game
 	bool bNoResources = false;
-    bool bLoopImages = false;				//  If TRUE, image effects loop by default
+	bool bLoopImages = false;				//  If TRUE, image effects loop by default
 	bool bTraceBind = false;				//	If TRUE, output bind trace
 
 	//	Bind Temporaries (valid only inside BindDesign)

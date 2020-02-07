@@ -135,6 +135,11 @@
 
 	<!ENTITY dsRPGShipClassViewer		"0x00010120">
 	<!ENTITY dsRPGUseItemOnShields		"0x00010121">
+
+	<!-- 0140-015F MINING -->
+
+	<!ENTITY unidMiningSkill			"0x00010140">
+
 	]>
 	
 <CoreLibrary
@@ -164,6 +169,7 @@
 	<Module filename="RPGDockScreens.xml"/>
 	<Module filename="RPGDockServices.xml"/>
 	<Module filename="RPGMembership.xml"/>
+	<Module filename="RPGMining.xml"/>
 	<Module filename="RPGMissions.xml"/>
 	<Module filename="RPGPlayer.xml"/>
 	<Module filename="RPGRumors.xml"/>

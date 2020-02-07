@@ -63,14 +63,14 @@ void CWeaponHUDCircular::GetBounds (int *retWidth, int *retHeight) const
 	*retHeight = m_cyDisplay;
 	}
 
-ALERROR CWeaponHUDCircular::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
+bool CWeaponHUDCircular::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 //	InitFromXML
 //
 //	Initialize from XML
 
 	{
-	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CVisualPalette &VI = CreateCtx.VI;
 
 	//	LATER: Load this from definition
 
@@ -78,9 +78,9 @@ ALERROR CWeaponHUDCircular::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass
 
 	//	Colors
 
-	m_rgbTargetBack = ::LoadRGBColor(pDesc->GetAttribute(BACKGROUND_COLOR_ATTRIB), CG32bitPixel(55, 58, 64));
-	m_rgbTargetText = ::LoadRGBColor(pDesc->GetAttribute(TARGET_COLOR_ATTRIB), CG32bitPixel(5, 211, 5));
-	m_rgbWeaponText = ::LoadRGBColor(pDesc->GetAttribute(WEAPON_COLOR_ATTRIB), VI.GetColor(colorTextHighlight));
+	m_rgbTargetBack = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(BACKGROUND_COLOR_ATTRIB), CG32bitPixel(55, 58, 64));
+	m_rgbTargetText = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(TARGET_COLOR_ATTRIB), CG32bitPixel(5, 211, 5));
+	m_rgbWeaponText = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(WEAPON_COLOR_ATTRIB), VI.GetColor(colorTextHighlight));
 	m_rgbWeaponBack = m_rgbTargetBack;
 
 	//	Calculate metrics
@@ -94,7 +94,7 @@ ALERROR CWeaponHUDCircular::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass
 
 	//	Done
 
-	return NOERROR;
+	return true;
 	}
 
 void CWeaponHUDCircular::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
@@ -354,9 +354,8 @@ void CWeaponHUDCircular::Realize (SHUDPaintCtx &Ctx)
 	{
 	//	Skip if we don't have a ship
 
-	CShip *pShip;
-	if (Ctx.pSource == NULL
-			|| (pShip = Ctx.pSource->AsShip()) == NULL)
+	CShip *pShip = Ctx.Source.AsShip();
+	if (pShip == NULL)
 		return;
 
 	//	Get the current target

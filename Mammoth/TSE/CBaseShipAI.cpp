@@ -743,76 +743,6 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 		}
 	}
 
-void CBaseShipAI::GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
-
-//	GetNearestTargets
-//
-//	Returns a list of nearest targets
-
-	{
-	const CInstalledDevice &Device = *WeaponItem.GetInstalledDevice();
-
-	//	Make sure we have a list of targets. This will initialize a list of
-	//	nearby targets and (if required) a list of missiles to defend against.
-	//	It will store them in UpdateCtx so that more than one weapon can access
-	//	the list without recomputing.
-
-	InitTargetList(UpdateCtx);
-
-	//	If this weapon does not target missiles, then we just do a quick find.
-
-	if (!WeaponItem.IsMissileDefenseWeapon() && !WeaponItem.IsTargetableMissileDefenseWeapon())
-		{
-		if (!UpdateCtx.Targets.FindTargetInRange(*m_pShip, 
-				WeaponItem, 
-				m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
-				retpTarget,
-				retiFireSolution))
-			{
-			*retpTarget = NULL;
-			*retiFireSolution = -1;
-			}
-		}
-
-	//	Otherwise, we look in both the target and the missile lists and choose
-	//	the nearest one.
-
-	else
-		{
-		CSpaceObject *pTarget = NULL;
-		int iFireSolution = -1;
-		Metric rDist2;
-
-		UpdateCtx.Targets.FindTargetInRange(*m_pShip, 
-				WeaponItem, 
-				m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
-				&pTarget,
-				&iFireSolution,
-				&rDist2);
-
-		CSpaceObject *pMissile = NULL;
-		int iMissileFireSolution = -1;
-		Metric rMissileDist2;
-
-		if (!UpdateCtx.Missiles.FindTargetInRange(*m_pShip, 
-					WeaponItem, 
-					m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
-					&pMissile, 
-					&iMissileFireSolution, 
-					&rMissileDist2)
-				|| (pTarget && rDist2 < rMissileDist2))
-			{
-			*retpTarget = pTarget;
-			*retiFireSolution = iFireSolution;
-			}
-		else
-			{
-			*retpTarget = pMissile;
-			*retiFireSolution = iMissileFireSolution;
-			}
-		}
-	}
-
 CSpaceObject *CBaseShipAI::GetOrderGiver (void)
 
 //	GetOrderGiver
@@ -863,7 +793,7 @@ CSpaceObject *CBaseShipAI::GetPlayerOrderGiver (void) const
 		return m_pShip;
 	}
 
-CSpaceObject *CBaseShipAI::GetTarget (DWORD dwFlags) const
+CSpaceObject *CBaseShipAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -874,6 +804,51 @@ CSpaceObject *CBaseShipAI::GetTarget (DWORD dwFlags) const
 		return m_pOrderModule->GetTarget();
 	else
 		return OnGetTarget(dwFlags);
+	}
+
+CTargetList CBaseShipAI::GetTargetList (void) const
+
+//	GetTargetList
+//
+//	Returns an initialized (though not yet realized) target list, suitable for
+//	weapons to find appropriate targets.
+
+	{
+	CTargetList::STargetOptions Options;
+	
+	//	Range
+
+	Options.rMaxDist = m_AICtx.GetBestWeaponRange();
+
+	//	Include our target
+
+	Options.bIncludeSourceTarget = true;
+
+	//	If we are aggressive, then include ships that haven't fired 
+	//	their weapons recently
+
+	if (m_AICtx.IsAggressor())
+		Options.bIncludeNonAggressors = true;
+
+	//	Include the player if they are blacklisted
+
+	if (m_fPlayerBlacklisted)
+		Options.bIncludePlayer = true;
+
+	//	Always exclude our base (even if it is an enemy)
+
+	Options.pExcludeObj = GetBase();
+
+	//	Include missiles if we have anti-missile defense
+
+	if (m_AICtx.ShootsAllMissiles())
+		Options.bIncludeMissiles = true;
+	else if (m_AICtx.ShootsTargetableMissiles())
+		Options.bIncludeTargetableMissiles = true;
+
+	//	Done
+
+	return CTargetList(*m_pShip, Options);
 	}
 
 void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)
@@ -901,53 +876,6 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 
 	else
 		m_pShip->Communicate(pOrderGiver, msgWatchTargets);
-	}
-
-void CBaseShipAI::InitTargetList (SUpdateCtx &UpdateCtx) const
-
-//	CalcTargetsOfOpportunity
-//
-//	Returns a list of targets of opportunity.
-
-	{
-	//	Initialize the targets list if necessary
-
-	if (!UpdateCtx.Targets.IsValid())
-		{
-		//	If we are aggressive, then include ships that haven't fired 
-		//	their weapons recently
-
-		DWORD dwFlags = 0;
-		if (m_AICtx.IsAggressor())
-			dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS;
-
-		//	Include our target
-
-		dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_SOURCE_TARGET;
-
-		//	Include the player
-
-		if (m_fPlayerBlacklisted)
-			dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_PLAYER;
-		
-		//	Init
-
-		UpdateCtx.Targets.InitWithNearestVisibleEnemies(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), GetBase(), dwFlags);
-		}
-
-	//	Initialize the list of missiles, if necessary
-
-	if (!UpdateCtx.Missiles.IsValid())
-		{
-		if (m_AICtx.ShootsAllMissiles())
-			UpdateCtx.Missiles.InitWithNearestMissiles(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), 0);
-
-		else if (m_AICtx.ShootsTargetableMissiles())
-			UpdateCtx.Missiles.InitWithNearestTargetableMissiles(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), 0);
-
-		else
-			UpdateCtx.Missiles.InitEmpty();
-		}
 	}
 
 bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
@@ -1080,7 +1008,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 	DEBUG_CATCH
 	}
 
-DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -1088,9 +1016,9 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 
 	{
 	if (m_pOrderModule)
-		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2);
+		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 	else
-		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2);
+		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2, pData);
 	}
 
 void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)

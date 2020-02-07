@@ -44,7 +44,7 @@ void CArmorHUDShaped::GetBounds (int *retWidth, int *retHeight) const
 	*retHeight = m_cyDisplay;
 	}
 
-ALERROR CArmorHUDShaped::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
+bool CArmorHUDShaped::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 //	InitFromXML
 //
@@ -76,7 +76,7 @@ ALERROR CArmorHUDShaped::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 	m_cxMaxValue = MediumFont.MeasureText(CONSTLIT("100%"), &m_cyMaxValue);
 	*/
 
-	return NOERROR;
+	return true;
 	}
 
 void CArmorHUDShaped::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
@@ -115,9 +115,8 @@ void CArmorHUDShaped::Realize (SHUDPaintCtx &Ctx)
 	{
 	//	Skip if we don't have a ship
 
-	CShip *pShip;
-	if (Ctx.pSource == NULL
-			|| (pShip = Ctx.pSource->AsShip()) == NULL)
+	CShip *pShip = Ctx.Source.AsShip();
+	if (pShip == NULL)
 		return;
 
 	CInstalledDevice *pShield = pShip->GetNamedDevice(devShields);

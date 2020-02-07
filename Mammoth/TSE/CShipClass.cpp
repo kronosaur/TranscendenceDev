@@ -560,6 +560,8 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 		if (pWeapon == NULL)
 			continue;
 
+		const CDeviceItem DeviceItem = Desc.Item.AsDeviceItem();
+
 		//	If this is a launcher then we need to figure out the best available
 		//	variant.
 
@@ -600,7 +602,7 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 		else
 			iDeviceCoverage = 0;
 
-		int iWeaponCoverage = pWeapon->GetFireArc(CItemCtx());
+		int iWeaponCoverage = DeviceItem.GetFireArc();
 
 		if (bCanTrack)
 			iWeaponCoverage = Max(iWeaponCoverage, 180);

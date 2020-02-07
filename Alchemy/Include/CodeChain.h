@@ -277,6 +277,10 @@ class ICCItemPtr
 			*this = Src;
 			}
 
+		static ICCItemPtr Error (const CString &sError, ICCItem *pData = NULL);
+		static ICCItemPtr Nil (void) { return ICCItemPtr(ICCItem::Nil); }
+		static ICCItemPtr True (void) { return ICCItemPtr(ICCItem::True); }
+
 	private:
 		ICCItem *m_pPtr;
 	};
@@ -913,6 +917,7 @@ class CCodeChain
 		ICCItem *GetTrue (void) { return &m_True; }
 		ICCItem *Eval (CEvalContext *pEvalCtx, ICCItem *pItem);
 		static ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
+		static ICCItemPtr LinkCode (const CString &sString, SLinkOptions &Options = SLinkOptions()) { return ICCItemPtr(Link(sString, Options)); }
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
 		ICCItem *TopLevel (ICCItem *pItem, LPVOID pExternalCtx);
 		static CString Unlink (ICCItem *pItem);

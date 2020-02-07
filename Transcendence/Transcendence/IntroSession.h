@@ -164,9 +164,9 @@ class CIntroShipController : public IShipController
 		virtual bool GetReverseThrust (void) override { return m_pDelegate->GetReverseThrust(); }
 		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
 		virtual bool GetStopThrust (void) override { return m_pDelegate->GetStopThrust(); }
-		virtual CSpaceObject *GetTarget (DWORD dwFlags) const override { return m_pDelegate->GetTarget(dwFlags); }
+		virtual CSpaceObject *GetTarget (const CDeviceItem *pDeviceItem = NULL, DWORD dwFlags = 0) const override { return m_pDelegate->GetTarget(pDeviceItem, dwFlags); }
+		virtual CTargetList GetTargetList (void) const override { return m_pDelegate->GetTargetList(); }
 		virtual bool GetThrust (void) override { return m_pDelegate->GetThrust(); }
-		virtual void GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) override { m_pDelegate->GetWeaponTarget(UpdateCtx, WeaponItem, retpTarget, retiFireSolution); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override { return m_pDelegate->IsAngryAt(pObj); }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override { return m_pDelegate->SetAISettingInteger(sSetting, iValue); }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override { return m_pDelegate->SetAISettingString(sSetting, sValue); }
@@ -186,7 +186,7 @@ class CIntroShipController : public IShipController
 
 		virtual void OnAbilityChanged (Abilities iAbility, AbilityModifications iChange, bool bNoMessage = false) override { m_pDelegate->OnAbilityChanged(iAbility, iChange, bNoMessage); }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override { m_pDelegate->OnAttacked(pAttacker, Damage); }
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override { return m_pDelegate->OnCommunicate(pSender, iMessage, pParam1, dwParam2); }
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override { return m_pDelegate->OnCommunicate(pSender, iMessage, pParam1, dwParam2, pData); }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override { m_pDelegate->OnComponentChanged(iComponent); }
 		virtual void OnDamaged (const CDamageSource &Cause, CInstalledArmor *pArmor, const DamageDesc &Damage, int iDamage) override { m_pDelegate->OnDamaged(Cause, pArmor, Damage, iDamage); }
 		virtual void OnDeviceEnabledDisabled (int iDev, bool bEnabled, bool bSilent = false) override { m_pDelegate->OnDeviceEnabledDisabled(iDev, bEnabled, bSilent); }

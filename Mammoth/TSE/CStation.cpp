@@ -30,6 +30,7 @@
 #define PROPERTY_ACTIVE							CONSTLIT("active")
 #define PROPERTY_ANGRY							CONSTLIT("angry")
 #define PROPERTY_BARRIER						CONSTLIT("barrier")
+#define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
 #define PROPERTY_DEST_NODE_ID					CONSTLIT("destNodeID")
 #define PROPERTY_DEST_STARGATE_ID				CONSTLIT("destStargateID")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
@@ -371,6 +372,122 @@ bool CStation::Blacklist (CSpaceObject *pObj)
 		return false;
 	}
 
+int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
+
+//	CalcAdjustedDamage
+//
+//	Adjusts damage because some hulls require WMD.
+
+	{
+	EDamageHint iHint = EDamageHint::none;
+
+	//	Short-circuit
+
+	if (Ctx.iDamage == 0)
+		return 0;
+
+	//	Depending on hull type we need special damage to penetrate.
+
+	int iSpecialDamage;
+	switch (m_Hull.GetHullType())
+		{
+		//	Multi-hull stations require WMD.
+
+		case CStationHullDesc::hullMultiple:
+			iSpecialDamage = Ctx.Damage.GetMassDestructionDamage();
+			iHint = EDamageHint::useWMD;
+			break;
+
+		//	Stations built on asteroids must be attacked with either WMD or
+		//	mining damage.
+
+		case CStationHullDesc::hullAsteroid:
+			iSpecialDamage = Max(Ctx.Damage.GetMassDestructionDamage(), Ctx.Damage.GetMiningDamage());
+			iHint = EDamageHint::useMiningOrWMD;
+			break;
+
+		//	Underground stations must be attacked with  mining damage.
+
+		case CStationHullDesc::hullUnderground:
+			iSpecialDamage = Ctx.Damage.GetMiningDamage();
+			iHint = EDamageHint::useMining;
+			break;
+
+		//	For single-hull stations we don't need special damage.
+
+		case CStationHullDesc::hullSingle:
+		default:
+			iSpecialDamage = -1;
+			break;
+		}
+
+	//	If we don't need special damage, then we do full damage.
+
+	if (iSpecialDamage == -1)
+		return Ctx.iDamage;
+
+	//	Otherwise, we adjust the damage.
+
+	else
+		{
+        int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
+		int iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
+
+		//	If we're not making progress, then return a hint about what to do.
+
+		if (iHint != EDamageHint::none 
+				&& iDamageAdj <= 25 
+				&& (iDamage == 0 || (m_Hull.GetHitPoints() / iDamage) > WMD_HINT_THRESHOLD))
+			Ctx.SetHint(iHint);
+
+		//	Return adjusted damage
+
+        return iDamage;
+		}
+	}
+
+int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
+
+//	CalcAdjustedDamageAbandoned
+//
+//	Adjusts damage because some hulls require WMD.
+
+	{
+	EDamageHint iHint = EDamageHint::none;
+
+	//	Short-circuit
+
+	if (Ctx.iDamage == 0)
+		return 0;
+
+	//	Asteroid-class objects are affected either by WMD or by mining.
+
+	int iSpecialDamage;
+	if (CanBeMined() 
+			|| m_Hull.GetHullType() == CStationHullDesc::hullAsteroid
+			|| m_Hull.GetHullType() == CStationHullDesc::hullUnderground)
+
+		iSpecialDamage = Max(Ctx.Damage.GetMassDestructionDamage(), Ctx.Damage.GetMiningDamage());
+
+	//	Other stations require WMD.
+
+	else
+		iSpecialDamage = Ctx.Damage.GetMassDestructionDamage();
+
+	//	No damage unless we have the required special damage.
+
+	if (iSpecialDamage <= 0)
+		return 0;
+
+	//	Otherwise, we adjust the damage.
+
+	else
+		{
+        int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
+		return mathAdjust(Ctx.iDamage, iDamageAdj);
+		}
+	}
+
 void CStation::CalcBounds (void)
 
 //	CalcBounds
@@ -542,7 +659,7 @@ void CStation::CalcDeviceBonus (void)
 		//	to do this AFTER we set up the enhancements stack, since this 
 		//	usually comes from the device slot.
 
-		if (DeviceItem.IsMissileDefenseWeapon())
+		if (DeviceItem.GetTargetTypes() & CTargetList::typeMissile)
 			m_fHasMissileDefense = true;
 		}
 
@@ -642,66 +759,6 @@ bool CStation::CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int
 	//	Get the shadow line from the image
 
 	return Image.CalcVolumetricShadowLine(Ctx, iTick, iVariant, retxCenter, retyCenter, retiWidth, retiLength);
-	}
-
-bool CStation::CalcWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) const
-
-//	CalcWeaponTarget
-//
-//	Calculates the target for the given weapon.
-
-	{
-	//	If we're angry and this is an area weapon, then we fire 
-	//	regardless of range so that we can soak up missiles/shots.
-
-	DWORD dwFlags = 0;
-	if (m_iAngryCounter > 0 && WeaponItem.IsAreaWeapon())
-		dwFlags |= CSpaceObjectTargetList::FLAG_NO_RANGE_CHECK;
-
-	//	If this weapon does not target missiles, then we can just look for enemy
-	//	ships.
-
-	if (!WeaponItem.IsMissileDefenseWeapon())
-		return m_WeaponTargets.FindTargetInRange(*this, WeaponItem, dwFlags, retpTarget, retiFireSolution);
-
-	//	Otherwise we look in both the ship list and the missile list.
-
-	else
-		{
-		CSpaceObject *pTarget = NULL;
-		int iFireSolution = -1;
-		Metric rDist2;
-
-		m_WeaponTargets.FindTargetInRange(*this, 
-				WeaponItem, 
-				dwFlags,
-				&pTarget,
-				&iFireSolution,
-				&rDist2);
-
-		CSpaceObject *pMissile = NULL;
-		int iMissileFireSolution = -1;
-		Metric rMissileDist2;
-
-		if (!UpdateCtx.Missiles.FindTargetInRange(*this, 
-					WeaponItem, 
-					dwFlags,
-					&pMissile, 
-					&iMissileFireSolution, 
-					&rMissileDist2)
-				|| (pTarget && rDist2 < rMissileDist2))
-			{
-			*retpTarget = pTarget;
-			*retiFireSolution = iFireSolution;
-			}
-		else
-			{
-			*retpTarget = pMissile;
-			*retiFireSolution = iMissileFireSolution;
-			}
-
-		return (*retpTarget) != NULL;
-		}
 	}
 
 bool CStation::CanAttack (void) const
@@ -933,35 +990,40 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 		if (iDamage == 0)
 			return;
 
-		//	Compute the number of pieces of ejecta
+		//	Mining damage never causes ejecta (but we still get a geyser effect)
 
-		int iCount;
-		if (iDamage <= 5)
-			iCount = ((mathRandom(1, 100) <= (iDamage * 20)) ? 1 : 0);
-		else if (iDamage <= 12)
-			iCount = mathRandom(1, 3);
-		else if (iDamage <= 24)
-			iCount = mathRandom(2, 6);
-		else
-			iCount = mathRandom(4, 12);
-
-		//	Generate ejecta
-
-		CWeaponFireDesc *pEjectaType = m_pType->GetEjectaType();
-		for (int i = 0; i < iCount; i++)
+		if (Damage.GetMiningDamage() == 0 || !CanBeMined())
 			{
-			SShotCreateCtx Ctx;
+			//	Compute the number of pieces of ejecta
 
-			Ctx.pDesc = pEjectaType;
-			Ctx.Source = CDamageSource(this, killedByEjecta);
-			Ctx.iDirection = AngleMod(iDirection 
-					+ (mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12))
-					+ (360 - 30));
-			Ctx.vPos = vHitPos;
-			Ctx.vVel = GetVel() + PolarToVector(Ctx.iDirection, pEjectaType->GetInitialSpeed());
-			Ctx.dwFlags = SShotCreateCtx::CWF_EJECTA;
+			int iCount;
+			if (iDamage <= 5)
+				iCount = ((mathRandom(1, 100) <= (iDamage * 20)) ? 1 : 0);
+			else if (iDamage <= 12)
+				iCount = mathRandom(1, 3);
+			else if (iDamage <= 24)
+				iCount = mathRandom(2, 6);
+			else
+				iCount = mathRandom(4, 12);
 
-			GetSystem()->CreateWeaponFire(Ctx);
+			//	Generate ejecta
+
+			CWeaponFireDesc *pEjectaType = m_pType->GetEjectaType();
+			for (int i = 0; i < iCount; i++)
+				{
+				SShotCreateCtx Ctx;
+
+				Ctx.pDesc = pEjectaType;
+				Ctx.Source = CDamageSource(this, killedByEjecta);
+				Ctx.iDirection = AngleMod(iDirection 
+						+ (mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12))
+						+ (360 - 30));
+				Ctx.vPos = vHitPos;
+				Ctx.vVel = GetVel() + PolarToVector(Ctx.iDirection, pEjectaType->GetInitialSpeed());
+				Ctx.dwFlags = SShotCreateCtx::CWF_EJECTA;
+
+				GetSystem()->CreateWeaponFire(Ctx);
+				}
 			}
 
 		//	Create geyser effect
@@ -1178,6 +1240,13 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 	CDeviceDescList Devices;
 	pType->GenerateDevices(System.GetLevel(), Devices);
+
+	//	Always set station weapons as secondaries so that they search for their 
+	//	own targets.
+
+	Devices.SetSecondary(true);
+
+	//	Install devices
 
 	pStation->m_Devices.Init(pStation, Devices);
 	pStation->CalcDeviceBonus();
@@ -1831,6 +1900,9 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 	else if (strEquals(sName, PROPERTY_BARRIER))
 		return CC.CreateBool(m_fBlocksShips);
 
+	else if (strEquals(sName, PROPERTY_CAN_BE_MINED))
+		return CC.CreateBool(!IsOutOfPlaneObj() && m_pType->ShowsUnexploredAnnotation());
+
 	else if (strEquals(sName, PROPERTY_DEST_NODE_ID))
 		return (IsStargate() ? CC.CreateString(m_sStargateDestNode) : CC.CreateNil());
 
@@ -2310,12 +2382,12 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 	//	If we have mining damage then call OnMining
 
 	if (Ctx.Damage.GetMiningAdj())
-		FireOnMining(Ctx);
+		FireOnMining(Ctx, m_pType->GetAsteroidDesc().GetType());
 
 	//	Adjust the damage based on WMD requirements. Most hull types require
 	//	WMD damage to be hurt.
 
-	Ctx.iDamage = m_Hull.CalcAdjustedDamage(Ctx);
+	Ctx.iDamage = CalcAdjustedDamageAbandoned(Ctx);
 
 	//	Give events a chance to change the damage
 
@@ -2472,7 +2544,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 	//	Adjust the damage based on WMD requirements. Most hull types require
 	//	WMD damage to be hurt.
 
-	Ctx.iDamage = m_Hull.CalcAdjustedDamage(Ctx);
+	Ctx.iDamage = CalcAdjustedDamage(Ctx);
 
 	//	Give events a chance to change the damage
 
@@ -2753,7 +2825,7 @@ bool CStation::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, con
 	DEBUG_CATCH
 	}
 
-DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	OnCommunicate
 //
@@ -3202,7 +3274,8 @@ void CStation::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPa
 			&& m_pType->ShowsUnexploredAnnotation()
 			&& Ctx.bShowUnexploredAnnotation)
 		{
-		COverlay::PaintCounterFlag(Dest, x, y, NULL_STR, CONSTLIT("Unexplored"), CG32bitPixel(128, 128, 128), Ctx);
+		CString sType = strCapitalize(m_pType->GetAsteroidDesc().GetTypeLabel(GetUniverse()));
+		COverlay::PaintCounterFlag(Dest, x, y, sType, CONSTLIT("Unexplored"), RGB_MINING_MARKER_UNEXPORED, Ctx);
 		}
 	}
 
@@ -3475,9 +3548,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_iPaintOrder
 //
 //	CIntegralRotation m_pRotation
-//
-//	DWORD		No of weapon targets (only if armed)
-//	DWORD		target (CSpaceObject ref)
+//	CTargetList	m_WeaponTargets
 
 	{
 #ifdef DEBUG_LOAD
@@ -3620,6 +3691,12 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	//	Devices
 
 	m_Devices.ReadFromStream(Ctx, this);
+
+	//	Prior to version 180 we didn't automatically set devices to be
+	//	secondary.
+
+	if (Ctx.dwVersion < 180)
+		m_Devices.SetSecondary(true);
 
 	//	In debug mode, recalc weapon bonus in case anything has changed.
 
@@ -3861,8 +3938,24 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Weapon targets
 
-	if (m_fArmed && Ctx.dwVersion >= 153)
-		m_WeaponTargets.ReadFromStream(Ctx);
+	if (m_fArmed)
+		{
+		if (Ctx.dwVersion >= 180)
+			m_WeaponTargets.ReadFromStream(Ctx);
+		else if (Ctx.dwVersion >= 153)
+			{
+			DWORD dwCount;
+			Ctx.pStream->Read(dwCount);
+			if (dwCount != 0xffffffff)
+				{
+				for (int i = 0; i < (int)dwCount; i++)
+					{
+					DWORD dwDummy;
+					Ctx.pStream->Read(dwDummy);
+					}
+				}
+			}
+		}
 	}
 
 void CStation::OnSetEventFlags (void)
@@ -4069,7 +4162,7 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (!m_Devices.IsEmpty())
 		{
-		if (!UpdateDevices(Ctx, iTick, bCalcDeviceBonus))
+		if (!UpdateDevices(Ctx, iTick, m_WeaponTargets, bCalcDeviceBonus))
 			return;
 		}
 
@@ -4174,9 +4267,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_iPaintOrder
 //
 //	CIntegralRotation	m_pRotation
-//
-//	DWORD		No of weapon targets (only if armed)
-//	DWORD		target (CSpaceObject ref)
+//	CTargetList	m_WeaponTargets
 
 	{
 	DWORD dwSave;
@@ -5250,17 +5341,9 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 	if ((iTick % STATION_SCAN_TARGET_FREQUENCY) == 0)
 		UpdateTargets(Ctx, rAttackRange + GetHitSize());
 
-	//	If we have missile defense, then make a list.
-	//
-	//	NOTE: We only do this if we're angry (are under attack) so that we don't
-	//	waste cycles.
-
-	if (m_fHasMissileDefense && m_iAngryCounter > 0 && !Ctx.Missiles.IsValid())
-		Ctx.Missiles.InitWithNearestMissiles(*this, MAX_ENEMIES, rAttackRange + GetHitSize(), 0);
-
 	//	Fire with all weapons (if we've got a target)
 
-	if ((!m_WeaponTargets.IsEmpty() || !Ctx.Missiles.IsEmpty())
+	if (!m_WeaponTargets.IsEmpty()
 			&& !IsParalyzed()
 			&& !IsDisarmed())
 		{
@@ -5274,21 +5357,10 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 					|| !Weapon.IsReady())
 				continue;
 
-			//	Get the target and fire angle
+			CSpaceObject *pTarget = NULL;
 
-			CSpaceObject *pTarget;
-			int iFireAngle;
-			if (!CalcWeaponTarget(Ctx, DeviceItem, &pTarget, &iFireAngle))
-				continue;
-
-			//	Fire the weapon
-
-			Weapon.SetTarget(pTarget);
-			Weapon.SetFireAngle(iFireAngle);
-
-			bool bSourceDestroyed = false;
-			Weapon.Activate(this, pTarget, &bSourceDestroyed);
-			if (bSourceDestroyed)
+			Weapon.Activate(pTarget, m_WeaponTargets);
+			if (IsDestroyed())
 				return false;
 
 			Weapon.SetTimeUntilReady(m_pType->GetFireRateAdj() * Weapon.GetActivateDelay(this) / 10);
@@ -5331,7 +5403,7 @@ void CStation::UpdateDestroyedAnimation (void)
 	m_iDestroyedAnimation--;
 	}
 
-bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified)
+bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, const CTargetList &TargetList, bool &iobModified)
 
 //	UpdateDevices
 //
@@ -5342,7 +5414,7 @@ bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified)
 //	update.
 
 	{
-	CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
+	CDeviceClass::SDeviceUpdateCtx DeviceCtx(TargetList, iTick);
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
@@ -5350,7 +5422,7 @@ bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified)
 		DeviceCtx.ResetOutputs();
 
 		Device.Update(this, DeviceCtx);
-		if (DeviceCtx.bSourceDestroyed)
+		if (IsDestroyed())
 			return false;
 
 		//	If the device was repaired or disabled, we need to update
@@ -5525,16 +5597,18 @@ void CStation::UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange)
 //	Update the targets for each weapon.
 
 	{
-	constexpr int MAX_ENEMIES = 10;
+	CTargetList::STargetOptions Options;
+	Options.rMaxDist = rAttackRange;
+	Options.bIncludeNonAggressors = true;
 
-	DWORD dwFlags = CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS;
+	if (m_fHasMissileDefense && m_iAngryCounter > 0)
+		Options.bIncludeMissiles = true;
+
 	if (m_Blacklist.IsBlacklisted())
-		dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_PLAYER;
+		Options.bIncludePlayer = true;
 
-	m_WeaponTargets.CleanUp();
-	m_WeaponTargets.InitWithNearestVisibleEnemies(*this,
-			MAX_ENEMIES,
-			rAttackRange,
-			NULL,
-			dwFlags);
+	if (m_iAngryCounter > 0)
+		Options.bNoRangeCheck = true;
+
+	m_WeaponTargets.Init(*this, Options);
 	}

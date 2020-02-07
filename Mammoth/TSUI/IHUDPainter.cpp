@@ -17,7 +17,9 @@
 #define STYLE_RECTANGULAR						CONSTLIT("rectangular")
 #define STYLE_SHAPED							CONSTLIT("shaped")
 
-IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDTypes iType)
+const CXMLElement IHUDPainter::m_NullDesc;
+
+IHUDPainter *IHUDPainter::Create (EHUDTypes iType, CUniverse &Universe, const CVisualPalette &VI, const CShipClass &SourceClass, const RECT &rcScreen, CString *retsError)
 
 //	Create
 //
@@ -25,29 +27,28 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDT
 //	freeing the result. We return NULL in case of error.
 
 	{
-	const CPlayerSettings *pSettings = pClass->GetPlayerSettings();
-	CXMLElement *pDesc = pSettings->GetHUDDesc(iType);
+	const CPlayerSettings *pSettings = SourceClass.GetPlayerSettings();
+	const CXMLElement *pDesc = pSettings->GetHUDDesc(iType);
 	if (pDesc == NULL)
-		{
-		//	For backwards compatibility we still allow no targeting descriptor.
+		pDesc = &m_NullDesc;
 
-		if (iType == hudTargeting)
-			return new CWeaponHUDDefault;
+	//	Cons up a create context
 
-		//	Otherwise, no HUD
+	SHUDCreateCtx CreateCtx(Universe, VI, SourceClass, *pDesc);
+	CreateCtx.rcScreen = rcScreen;
 
-		else
-			return NULL;
-		}
-
-	//	Create
+	//	Create the appropriate HUD object.
 
 	IHUDPainter *pPainter;
 	switch (iType)
 		{
+		case hudAccelerate:
+			pPainter = new CAccelerateHUD;
+			break;
+
 		case hudArmor:
 			{
-			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
+			CString sStyle = CreateCtx.Desc.GetAttribute(STYLE_ATTRIB);
 			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
 				pPainter = new CArmorHUDImages;
 			else if (strEquals(sStyle, STYLE_CIRCULAR))
@@ -56,23 +57,27 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDT
 				pPainter = new CArmorHUDRectangular;
 			else
 				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Invalid armor display style: %s."), sStyle);
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid armor display style: %s."), sStyle);
 				return NULL;
 				}
 
 			break;
 			}
 
+		case hudLRS:
+			pPainter = new CLRSHUD;
+			break;
+
 		case hudReactor:
 			{
-			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
+			CString sStyle = CreateCtx.Desc.GetAttribute(STYLE_ATTRIB);
 			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
 				pPainter = new CReactorHUDDefault;
 			else if (strEquals(sStyle, STYLE_CIRCULAR))
 				pPainter = new CReactorHUDCircular;
 			else
 				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Invalid reactor display style: %s."), sStyle);
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid reactor display style: %s."), sStyle);
 				return NULL;
 				}
 
@@ -87,14 +92,14 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDT
 
 		case hudTargeting:
 			{
-			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
+			CString sStyle = CreateCtx.Desc.GetAttribute(STYLE_ATTRIB);
 			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
 				pPainter = new CWeaponHUDDefault;
 			else if (strEquals(sStyle, STYLE_CIRCULAR))
 				pPainter = new CWeaponHUDCircular;
 			else
 				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Invalid weapon display style: %s."), sStyle);
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid weapon display style: %s."), sStyle);
 				return NULL;
 				}
 
@@ -108,19 +113,16 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDT
 
 	//	Initialize
 
-	if (pPainter->InitFromXML(Ctx, pClass, pDesc) != NOERROR)
+	if (!pPainter->OnCreate(CreateCtx, retsError))
 		{
 		delete pPainter;
 		return NULL;
 		}
 
-	//	Bind
+	//	If we did not set a location at creation time, then set it to a default.
 
-	if (pPainter->Bind(Ctx) != NOERROR)
-		{
-		delete pPainter;
-		return NULL;
-		}
+	if (pPainter->GetLocation() == 0)
+		pPainter->SetLocation(rcScreen, GetDefaultLocation(iType));
 
 	//	Success
 
@@ -170,6 +172,39 @@ void IHUDPainter::DrawModifier (CG32bitImage &Dest, int x, int y, const CString 
 		}
 	}
 
+DWORD IHUDPainter::GetDefaultLocation (EHUDTypes iType)
+
+//	GetDefaultLocation
+//
+//	Returns the default location for the given HUD type.
+
+	{
+	switch (iType)
+		{
+		case hudAccelerate:
+			return locAlignTop | locAlignCenter;
+
+		case hudArmor:
+			return locAlignBottom | locAlignRight;
+
+		case hudLRS:
+			return locAlignTop | locAlignRight;
+
+		case hudReactor:
+			return locAlignTop | locAlignLeft;
+
+		case hudShields:
+			return locNone;
+
+		case hudTargeting:
+			return locAlignBottom | locAlignLeft;
+
+		default:
+			ASSERT(false);
+			return 0;
+		}
+	}
+
 void IHUDPainter::GetRect (RECT *retrcRect) const
 
 //	GetRect
@@ -201,7 +236,7 @@ ALERROR IHUDPainter::InitRectFromElement (CXMLElement *pItem, RECT *retRect)
 	retRect->top = pItem->GetAttributeInteger(Y_ATTRIB);
 	retRect->right = retRect->left + pItem->GetAttributeInteger(WIDTH_ATTRIB);
 	retRect->bottom = retRect->top + pItem->GetAttributeInteger(HEIGHT_ATTRIB);
-
+	
 	return NOERROR;
 	}
 
@@ -212,11 +247,12 @@ void IHUDPainter::SetLocation (const RECT &rcRect, DWORD dwLocation)
 //	Sets the location on the screen.
 
 	{
+	m_dwLoc = dwLocation;
+
 	if (dwLocation == locNone)
 		{
 		m_xPos = 0;
 		m_yPos = 0;
-		return;
 		}
 	else
 		{

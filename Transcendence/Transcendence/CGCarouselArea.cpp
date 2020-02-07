@@ -287,10 +287,11 @@ void CGCarouselArea::PaintContent (CG32bitImage &Dest, const RECT &rcRect) const
 	//	Paint as content
 
 	CDetailArea Painter(*g_pUniverse, m_VI, m_Theme);
+	Painter.SetData(pData);
 	Painter.SetBackColor(m_rgbBackColor);
 	Painter.SetColor(m_rgbTextColor);
 
-	Painter.Paint(Dest, rcRect, pData);
+	Painter.Paint(Dest, rcRect);
 	}
 
 void CGCarouselArea::PaintList (CG32bitImage &Dest, const RECT &rcRect)

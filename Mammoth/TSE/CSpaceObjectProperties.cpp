@@ -110,9 +110,7 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 //	Returns the property
 
 	{
-	int i;
 	CCodeChain &CC = GetUniverse().GetCC();
-	CDesignType *pType;
 
 	if (strEquals(sName, PROPERTY_CATEGORY))
 		{
@@ -192,7 +190,7 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 			return CC.CreateNil();
 
 		ICCItem *pList = CC.CreateLinkedList();
-		for (i = 0; i < pPorts->GetPortCount(this); i++)
+		for (int i = 0; i < pPorts->GetPortCount(this); i++)
 			{
 			ICCItem *pPortDesc = CC.CreateSymbolTable();
 
@@ -389,16 +387,29 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 	else if (strEquals(sName, PROPERTY_UNDER_ATTACK))
 		return CC.CreateBool(IsUnderAttack());
 
-	else if (pType = GetType())
+	else
+		return GetTypeProperty(Ctx, sName)->Reference();
+	}
+
+ICCItemPtr CSpaceObject::GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const
+
+//	GetCustomProperty
+//
+//	Returns a property from the type.
+
+	{
+	if (CDesignType *pType = GetType())
 		{
 		EPropertyType iType;
-		ICCItemPtr pResult = pType->GetProperty(Ctx, sName, &iType);
+		ICCItemPtr pResult = pType->GetProperty(CCX, sProperty, &iType);
 
 		//	If the property is an object property, then we need to look in 
 		//	object data.
 
-		if (iType == EPropertyType::propVariant || iType == EPropertyType::propData)
-			return GetData(sName)->Reference();
+		if (iType == EPropertyType::propVariant 
+				|| iType == EPropertyType::propData
+				|| iType == EPropertyType::propObjData)
+			return GetData(sProperty);
 
 		//	If this is a dynamic property, we need to evaluate.
 
@@ -408,17 +419,16 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 			Ctx.SaveAndDefineSourceVar(this);
 
 			ICCItemPtr pValue = Ctx.RunCode(pResult);
-			return pValue->Reference();
+			return pValue;
 			}
 
 		//	Otherwise we have a valid property.
 
 		else
-			return pResult->Reference();
+			return pResult;
 		}
-
 	else
-		return CC.CreateNil();
+		return ICCItemPtr::Nil();
 	}
 
 bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
@@ -473,6 +483,7 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 				return true;
 
 			case EPropertyType::propData:
+			case EPropertyType::propObjData:
 				SetData(sName, pValue);
 				return true;
 

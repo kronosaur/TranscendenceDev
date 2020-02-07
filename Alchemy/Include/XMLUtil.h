@@ -62,7 +62,7 @@ class CXMLElement
 
 		CXMLElement (void);
 		CXMLElement (const CXMLElement &Obj);
-		CXMLElement (const CString &sTag, CXMLElement *pParent);
+		CXMLElement (const CString &sTag, CXMLElement *pParent = NULL);
 		~CXMLElement (void) { CleanUp(); }
 
 		CXMLElement &operator= (const CXMLElement &Obj);

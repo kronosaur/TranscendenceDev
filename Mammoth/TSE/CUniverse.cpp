@@ -21,8 +21,6 @@
 #define PROPERTY_DIFFICULTY					CONSTLIT("difficulty")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
 
-#define UNID_ENGINE_TEXT					0x00030004
-
 struct SExtensionSaveDesc
 	{
 	DWORD dwUNID = 0;
@@ -66,7 +64,8 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 CUniverse::CUniverse (void) : 
 		m_Topology(*this),
 		m_AllMissions(true),
-		m_pHost(&g_DefaultHost)
+		m_pHost(&g_DefaultHost),
+		m_Language(m_Design)
 
 //	CUniverse constructor
 
@@ -174,7 +173,7 @@ void CUniverse::AdjustDamage (SDamageCtx &Ctx) const
 
 	//	Otherwise, if the attacker is the player, then adjust
 
-	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer())
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
 		rAdjust = m_Difficulty.GetEnemyDamageAdj();
 
 	//	Otherwise, no adjustment.
@@ -2404,6 +2403,7 @@ ALERROR CUniverse::Reinit (void)
 	m_dwNextID = 1;
 	m_Objects.DeleteAll();
 	m_Difficulty = CDifficultyOptions();
+	m_Language.Reinit();
 
 	//	NOTE: We don't reinitialize m_bDebugMode or m_bRegistered because those
 	//	are set before Reinit (and thus we would overwrite them).
@@ -2891,22 +2891,48 @@ CTimeSpan CUniverse::StopGameTime (void)
 	return timeSpan(m_StartTime, StopTime);
 	}
 
-CString CUniverse::TranslateEngineText(const CString &sID, ICCItem *pData) const
-	{
-	const CDesignType *pEngineTextType = FindDesignType(UNID_ENGINE_TEXT);
-	if (!pEngineTextType)
-		return CONSTLIT("Error: Can't find engine text type.");
-	ICCItemPtr pResult;
-	if (!pEngineTextType->Translate(sID, pData, pResult))
-		return strPatternSubst(CONSTLIT("Error: Can't find engine text ID %s"), sID);
-	if (pResult->IsNil())
-		return strPatternSubst(CONSTLIT("Error: Engine text ID %s returned Nil."), sID);
-	return pResult->GetStringValue();
-	}
-
-void CUniverse::Update (SSystemUpdateCtx &Ctx)
+bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 
 //	Update
+//
+//	Updates one frame. Returns TRUE if the universe was actually updated.
+
+	{
+	m_iLastUpdateSpeed = iUpdateMode;
+
+	switch (iUpdateMode)
+		{
+		case updateAccelerated:
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			m_dwFrame++;
+			return true;
+
+		case updatePaused:
+			return false;
+
+		case updateSlowMotion:
+			if ((m_dwFrame++ % 4) == 0)
+				{
+				UpdateTick(Ctx);
+				return true;
+				}
+			else
+				return false;
+
+		default:
+			UpdateTick(Ctx);
+			m_dwFrame++;
+			return true;
+		}
+	}
+
+void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
+
+//	UpdateTick
 //
 //	Update the system of the current point of view
 

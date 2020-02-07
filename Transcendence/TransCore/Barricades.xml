@@ -19,6 +19,10 @@
 			noMapIcon=			"true"
 			>
 
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
+
 		<Image imageID="&rsBarricades;" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="1"/>
 
 		<DockingPorts
@@ -49,6 +53,10 @@
 			noMapIcon=			"true"
 			>
 
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
+
 		<Image imageID="&rsBarricades;" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="1"/>
 
 		<DockingPorts
@@ -78,6 +86,10 @@
 			mass=				"30"
 			noMapIcon=			"true"
 			>
+
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
 
 		<Image imageID="&rsBarricades;" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="1"/>
 

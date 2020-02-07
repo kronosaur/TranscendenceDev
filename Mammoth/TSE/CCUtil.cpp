@@ -230,6 +230,12 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 //	Creates an imageDesc from an image
 
 	{
+	//	For now we only support original images.
+
+	DWORD dwUNID = Image.GetBitmapUNID();
+	if (dwUNID == 0)
+		return CC.CreateNil();
+
 	ICCItem *pResult = CC.CreateLinkedList();
 	if (pResult->IsError())
 		return pResult;

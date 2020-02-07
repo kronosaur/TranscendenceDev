@@ -187,6 +187,11 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 			}
 		}
 
+	retOptions->rcDisplay.left = 0;
+	retOptions->rcDisplay.top = 23;
+	retOptions->rcDisplay.right = RectWidth(Ctx.rcRect);
+	retOptions->rcDisplay.bottom = RectHeight(Ctx.rcRect) - 47;
+
 	//	Initialize control rect. If we have a background, then initialize to
 	//	backwards compatible position. Otherwise, we take up the full range.
 	//
@@ -200,12 +205,7 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 		retOptions->rcControl.bottom = 396;
 		}
 	else
-		{
-		retOptions->rcControl.left = 0;
-		retOptions->rcControl.top = 23;
-		retOptions->rcControl.right = RectWidth(Ctx.rcRect);
-		retOptions->rcControl.bottom = RectHeight(Ctx.rcRect) - 47;
-		}
+		retOptions->rcControl = retOptions->rcDisplay;
 
 	//	Get the type
 

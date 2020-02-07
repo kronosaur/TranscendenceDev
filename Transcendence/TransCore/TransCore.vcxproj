@@ -521,6 +521,7 @@
     </Xml>
     <Xml Include="CommonwealthStarCarrier.xml" />
     <Xml Include="CompatibilityLibrary.xml" />
+    <Xml Include="CoreEngineText.xml" />
     <Xml Include="CoreFireEffects.xml">
       <SubType>Designer</SubType>
     </Xml>
@@ -597,7 +598,9 @@
     <Xml Include="KSMission03.xml" />
     <Xml Include="KSMissionC01.xml" />
     <Xml Include="KSMissionC02.xml" />
+    <Xml Include="Makayev.xml" />
     <Xml Include="Marauders.xml" />
+    <Xml Include="MiningPods.xml" />
     <Xml Include="MRAD.xml" />
     <Xml Include="NewVictoria.xml" />
     <Xml Include="Ore.xml" />
@@ -621,6 +624,7 @@
     <Xml Include="RPGLibrary.xml" />
     <Xml Include="GalaxyLibrary.xml" />
     <Xml Include="RPGMembership.xml" />
+    <Xml Include="RPGMining.xml" />
     <Xml Include="RPGRumors.xml" />
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>

@@ -53,7 +53,7 @@ class CSoundRef
 		inline bool IsNull (void) const { return (m_dwUNID == 0); }
 		ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sAttrib);
 		inline void Mark (void) { if (m_pSound) m_pSound->Mark(); }
-		void PlaySound (CSpaceObject *pSource);
+		void PlaySound (CSpaceObject *pSource) const;
 
 	private:
 		DWORD m_dwUNID;

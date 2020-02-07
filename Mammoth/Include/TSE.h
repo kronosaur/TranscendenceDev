@@ -262,11 +262,9 @@ struct SUpdateCtx
 		SViewportAnnotations *pAnnotations = NULL;	//	Extra structure to deliver to PaintViewport
 
 		CAutoDockCalc AutoDock;						//	Used to compute nearest docking port
+		CAutoMiningCalc AutoMining;					//	Used to compute nearest minable asteroid
 		CAutoTargetCalc AutoTarget;					//	Used to compute player's auto target
 
-		CSpaceObjectTargetList Targets;				//	Cached list of targets for object being updated
-		CSpaceObjectTargetList Missiles;			//	Cached list of missiles for object being updated
-		
 		//	Misc flags
 
 		bool bGravityWarning = false;				//	Player in a dangerous gravity field
@@ -547,7 +545,7 @@ class CSpaceObject
 		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) { }
 		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
 		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const;
-        virtual const CCompositeImageSelector &GetImageSelector (void) const { return CCompositeImageSelector::Null(); }
+		virtual const CCompositeImageSelector &GetImageSelector (void) const { return CCompositeImageSelector::Null(); }
 		virtual void MarkImages (void) { }
 
 		int GetImageScale (void) const;
@@ -567,7 +565,7 @@ class CSpaceObject
 		CItem GetItemForDevice (CInstalledDevice *pDevice);
 		const CItemList &GetItemList (void) const { return m_ItemList; }
 		CItemList &GetItemList (void) { return m_ItemList; }
-		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName) const;
+		ICCItemPtr GetItemProperty (CCodeChainCtx &CCX, const CItem &Item, const CString &sName) const;
 		bool RemoveItem (const CItem &Item, DWORD dwItemMatchFlags, int iCount = -1, int *retiCountRemoved = NULL, CString *retsError = NULL);
 		void RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID, bool bExpiredOnly = false);
 		void RepairItem (CItemListManipulator &ItemList);
@@ -599,6 +597,11 @@ class CSpaceObject
 		CObjectJoint *GetFirstJoint (void) const { return m_pFirstJoint; }
 		void SetFirstJoint (CObjectJoint *pJoint) { m_pFirstJoint = pJoint; }
 
+		//	Mining
+
+		virtual bool CanBeMined (void) const { return false; }
+		bool HasMinableItem (void) const;
+
 		//	Miscellaneous
 
 		void AddEffect (IEffectPainter *pPainter, const CVector &vPos, int iTick = 0, int iRotation = 0);
@@ -618,7 +621,7 @@ class CSpaceObject
 		void ClearSelection (void) { m_fSelected = false; }
 		void ClearShowDamageBar (void) { m_fShowDamageBar = false; }
 		void CommsMessageFrom (CSpaceObject *pSender, int iIndex);
-		DWORD Communicate (CSpaceObject *pReceiver, MessageTypes iMessage, CSpaceObject *pParam1 = NULL, DWORD dwParam2 = 0) { return pReceiver->OnCommunicate(this, iMessage, pParam1, dwParam2); }
+		DWORD Communicate (CSpaceObject *pReceiver, MessageTypes iMessage, CSpaceObject *pParam1 = NULL, DWORD dwParam2 = 0, ICCItem *pData = NULL) { return pReceiver->OnCommunicate(this, iMessage, pParam1, dwParam2, pData); }
 		void CopyDataFromObj (CSpaceObject *pSource);
 		ALERROR CreateRandomItems (CXMLElement *pItems, CSystem *pSystem);
 		ALERROR CreateRandomItems (IItemGenerator *pItems, CSystem *pSystem);
@@ -659,7 +662,7 @@ class CSpaceObject
 		void FireOnEnteredGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGate);
 		void FireOnEnteredSystem (CSpaceObject *pGate);
 		void FireOnLoad (SLoadCtx &Ctx);
-		void FireOnMining (const SDamageCtx &Ctx);
+		void FireOnMining (const SDamageCtx &Ctx, EAsteroidType iType);
 		void FireOnMissionAccepted (CMission *pMission);
 		void FireOnMissionCompleted (CMission *pMission, const CString &sReason);
 		void FireOnObjBlacklistedPlayer (CSpaceObject *pObj);
@@ -1067,7 +1070,7 @@ class CSpaceObject
 		virtual bool HasSpecialAttribute (const CString &sAttrib) const;
 		virtual bool HasStarlightImage (void) const { return false; }
 		virtual bool HasVolumetricShadow (void) const { return false; }
-		virtual bool IsExplored (void) { return true; }
+		virtual bool IsExplored (void) const { return true; }
 		virtual bool IsImmutable (void) const { return false; }
 		virtual bool IsKnown (void) const { return true; }
 		virtual bool IsMarker (void) const { return false; }
@@ -1129,6 +1132,7 @@ class CSpaceObject
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
 		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
+		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return CItem().AsDeviceItem(); }
 		virtual int GetPerception (void) const { return perceptNormal; }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 		virtual int GetScore (void) { return 0; }
@@ -1208,11 +1212,11 @@ class CSpaceObject
 		virtual void AddSubordinate (CSpaceObject *pSubordinate) { }
 		virtual IShipGenerator *GetRandomEncounterTable (int *retiFrequency = NULL) const { if (retiFrequency) *retiFrequency = 0; return NULL; }
 		virtual bool IsAbandoned (void) const { return false; }
-        virtual bool IsSatelliteSegmentOf (const CSpaceObject &Base, CPaintOrder::Types *retiPaintOrder = NULL) const { return false; }
+		virtual bool IsSatelliteSegmentOf (const CSpaceObject &Base, CPaintOrder::Types *retiPaintOrder = NULL) const { return false; }
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate) { return false; }
 		virtual bool ShowMapLabel (int *retcxLabel = NULL, int *retcyLabel = NULL) const { return false; }
-        virtual bool ShowMapOrbit (void) const { return false; }
-        virtual bool ShowStationDamage (void) const { return false; }
+		virtual bool ShowMapOrbit (void) const { return false; }
+		virtual bool ShowStationDamage (void) const { return false; }
 
 		//	...for particle effects
 
@@ -1238,7 +1242,7 @@ class CSpaceObject
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }
 		virtual void OnAscended (void) { }
 		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) { }
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damageNoDamage; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) { }
 		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const { return ICCItemPtr(); }
@@ -1277,6 +1281,7 @@ class CSpaceObject
 		//	Helper functions
 		void AddEffect (IEffectPainter *pPainter, int xOffset, int yOffset, int iTick = 0, int iRotation = 0);
 		void CalcInsideBarrier (void);
+		int CalcMiningDifficulty (EAsteroidType iType) const;
 		Metric CalculateItemMass (Metric *retrCargoMass = NULL) const;
 		bool CanFireOnObjHelper (CSpaceObject *pObj) const;
 		void ClearCannotBeHit (void) { m_fCannotBeHit = false; }
@@ -1288,6 +1293,7 @@ class CSpaceObject
 		void DisableObjectDestructionNotify (void) { m_fNoObjectDestructionNotify = true; }
 		const Metric &GetBounds (void) { return m_rBoundsX; }
 		const CEnhancementDesc *GetSystemEnhancements (void) const;
+		ICCItemPtr GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		CSpaceObject *HitTest (const CVector &vStart, const DamageDesc &Damage, CVector *retvHitPos, int *retiHitDir);
 		CSpaceObject *HitTestProximity (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, CVector *retvHitPos, int *retiHitDir);
 		bool ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
@@ -1512,55 +1518,55 @@ class CObjectTracker
 	public:
 		struct SObjEntry
 			{
-            SObjEntry (void) :
-                    fKnown(false),
-                    fShowDestroyed(false),
-                    fShowInMap(false),
-                    fFriendly(false),
-                    fEnemy(false),
+			SObjEntry (void) :
+					fKnown(false),
+					fShowDestroyed(false),
+					fShowInMap(false),
+					fFriendly(false),
+					fEnemy(false),
 					fInactive(false),
 					fPlayerBlacklisted(false)
-                { }
+				{ }
 
 			CTopologyNode *pNode = NULL;
 			CDesignType *pType = NULL;
 			DWORD dwObjID = 0;
 			CString sName;
 			DWORD dwNameFlags = 0;
-            CCompositeImageSelector ImageSel;
-            CString sNotes;
+			CCompositeImageSelector ImageSel;
+			CString sNotes;
 
-            DWORD fKnown:1;
-            DWORD fShowDestroyed:1;
-            DWORD fShowInMap:1;
-            DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
-            DWORD fEnemy:1;
+			DWORD fKnown:1;
+			DWORD fShowDestroyed:1;
+			DWORD fShowInMap:1;
+			DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
+			DWORD fEnemy:1;
 			DWORD fInactive:1;				//	pObj->IsInactive()
-            DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
+			DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
 			};
 
-        struct SBackgroundObjEntry
-            {
-            CStationType *pType;
-            CVector vPos;
-            CCompositeImageSelector *pImageSel;
-            };
+		struct SBackgroundObjEntry
+			{
+			CStationType *pType;
+			CVector vPos;
+			CCompositeImageSelector *pImageSel;
+			};
 
 		~CObjectTracker (void);
 
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
 		bool Find (const CString &sNodeID, const CObjectTrackerCriteria &Criteria, TArray<SObjEntry> *retResult);
-        void GetGalacticMapObjects (const CTopologyNode &Node, TArray<SObjEntry> &Results) const;
-        void GetSystemBackgroundObjects (const CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const;
-        void GetSystemStarObjects (const CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const;
-        const TArray<COrbit> &GetSystemOrbits (const CTopologyNode *pNode) const;
+		void GetGalacticMapObjects (const CTopologyNode &Node, TArray<SObjEntry> &Results) const;
+		void GetSystemBackgroundObjects (const CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const;
+		void GetSystemStarObjects (const CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const;
+		const TArray<COrbit> &GetSystemOrbits (const CTopologyNode *pNode) const;
 		void GetTradingObjects (const CTopologyNode *pNode, TArray<SObjEntry> &Results) const;
 		void Insert (CSpaceObject *pObj);
 		bool IsTracked (CSpaceObject *pObj) { CSpaceObject::Categories iCategory = pObj->GetCategory(); return (iCategory == CSpaceObject::catStation || iCategory == CSpaceObject::catShip); }
 		void InsertIfTracked (CSpaceObject *pObj) { if (IsTracked(pObj)) Insert(pObj); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
-        void Refresh (CSystem *pSystem);
+		void Refresh (CSystem *pSystem);
 		void ReplayCommands (CSystem *pSystem);
 		void SetKnown (const CString &sNodeID, const CDesignTypeCriteria &Criteria, bool bKnown = true);
 		void WriteToStream (IWriteStream *pStream);
@@ -1589,50 +1595,50 @@ class CObjectTracker
 			{
 			CString sName;
 			DWORD dwNameFlags = 0;
-            CCompositeImageSelector ImageSel;
-            CString sNotes;
+			CCompositeImageSelector ImageSel;
+			CString sNotes;
 			};
 
-        struct SObjBasics
-            {
-            SObjBasics (void) :
-                    fKnown(false),
-                    fShowDestroyed(false),
-                    fShowInMap(false),
-                    fFriendly(false),
-                    fEnemy(false),
+		struct SObjBasics
+			{
+			SObjBasics (void) :
+					fKnown(false),
+					fShowDestroyed(false),
+					fShowInMap(false),
+					fFriendly(false),
+					fEnemy(false),
 					fInactive(false),
 					fPlayerBlacklisted(false)
-                { }
+				{ }
 
-            void DeleteExtra (void)
-                {
+			void DeleteExtra (void)
+				{
 				pExtra.Delete();
-                }
+				}
 
-            SObjExtra &SetExtra (void)
-                {
-                if (!pExtra)
-                    pExtra.Set(new SObjExtra);
+			SObjExtra &SetExtra (void)
+				{
+				if (!pExtra)
+					pExtra.Set(new SObjExtra);
 
-                return *pExtra;
-                }
+				return *pExtra;
+				}
 
-            CVector vPos;                   //  Position of object in its system
+			CVector vPos;                   //  Position of object in its system
 
-            DWORD fKnown:1;                 //  TRUE if player knows about this obj
-            DWORD fShowDestroyed:1;         //  TRUE if we need to paint station as destroyed
-            DWORD fShowInMap:1;             //  TRUE if we can dock with the obj
-            DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
-            DWORD fEnemy:1;
-            DWORD fInactive:1;				//	TRUE if pObj->IsInactive()
-            DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
-            DWORD fSpare8:1;
+			DWORD fKnown:1;                 //  TRUE if player knows about this obj
+			DWORD fShowDestroyed:1;         //  TRUE if we need to paint station as destroyed
+			DWORD fShowInMap:1;             //  TRUE if we can dock with the obj
+			DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
+			DWORD fEnemy:1;
+			DWORD fInactive:1;				//	TRUE if pObj->IsInactive()
+			DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
+			DWORD fSpare8:1;
 
-            DWORD dwSpare:24;
+			DWORD dwSpare:24;
 
-            TUniquePtr<SObjExtra> pExtra;
-            };
+			TUniquePtr<SObjExtra> pExtra;
+			};
 
 		struct SObjList
 			{
@@ -1641,21 +1647,21 @@ class CObjectTracker
 			TSortMap<DWORD, SObjBasics> Objects;
 			};
 
-        struct SNodeData
-            {
-            TArray<SObjList *> ObjLists;
-            TArray<COrbit> Orbits;
+		struct SNodeData
+			{
+			TArray<SObjList *> ObjLists;
+			TArray<COrbit> Orbits;
 			TArray<SDelayedCommand> Commands;
-            };
+			};
 
 		bool AccumulateEntries (TArray<SObjList *> &Table, const CObjectTrackerCriteria &Criteria, DWORD dwFlags, TArray<SObjEntry> *retResult) const;
-        void AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, const SObjBasics &ObjData, DWORD dwFlags, TArray<SObjEntry> &Results) const;
-        bool Find (CTopologyNode *pNode, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
-        bool Find (SNodeData *pNodeData, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
+		void AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, const SObjBasics &ObjData, DWORD dwFlags, TArray<SObjEntry> &Results) const;
+		bool Find (CTopologyNode *pNode, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
+		bool Find (SNodeData *pNodeData, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
 		bool GetCustomDesc (const CSpaceObject &Obj, const SObjBasics &ObjData, CString *retsDesc) const;
 		SObjList *GetList (CSpaceObject *pObj) const;
 		SObjList *GetList (CTopologyNode *pNode, CDesignType *pType) const;
-        void Refresh (const CSpaceObject &Obj, SObjBasics &ObjData, const CSpaceObject *pPlayer);
+		void Refresh (const CSpaceObject &Obj, SObjBasics &ObjData, const CSpaceObject *pPlayer);
 		void ReplayCommand (const SDelayedCommand &Cmd, CSystem *pSystem);
 		void SetKnown (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, bool bKnown);
 		SObjList *SetList (CSpaceObject *pObj);

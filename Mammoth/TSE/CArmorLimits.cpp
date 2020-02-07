@@ -620,7 +620,8 @@ void CArmorLimits::CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Sum
 				if (!pItemType->IsArmor())
 					continue;
 
-				int iMass = pItemType->GetMassKg(CItemCtx());
+				CItem Item(pItemType, 1);
+				int iMass = Item.GetMassKg();
 				iTotalArmor++;
 
 				if (iMass <= Summary.iStdArmorMass)

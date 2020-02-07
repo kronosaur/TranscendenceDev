@@ -17,12 +17,14 @@ enum EHUDTypes
 	{
 	hudNone =						-1,	//	Invalid HUD
 
-	hudArmor =						0,
-	hudShields =					1,
-	hudReactor =					2,
-	hudTargeting =					3,
+	hudAccelerate =					0,
+	hudArmor =						1,
+	hudLRS =						2,
+	hudReactor =					3,
+	hudShields =					4,
+	hudTargeting =					5,
 
-	hudCount =						4,
+	hudCount =						6,
 	};
 
 class CDockScreenVisuals
@@ -82,50 +84,44 @@ class CPlayerSettings
 	{
 	public:
 		CPlayerSettings (void);
-        inline CPlayerSettings (const CPlayerSettings &Src) { Copy(Src); }
-		inline ~CPlayerSettings (void) { CleanUp(); }
+        CPlayerSettings (const CPlayerSettings &Src) { Copy(Src); }
+		~CPlayerSettings (void) { CleanUp(); }
 
-        inline CPlayerSettings &operator= (const CPlayerSettings &Src) { CleanUp(); Copy(Src); return *this; }
+        CPlayerSettings &operator= (const CPlayerSettings &Src) { CleanUp(); Copy(Src); return *this; }
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
 		ALERROR Bind (SDesignLoadCtx &Ctx, CShipClass *pClass);
 		CEffectCreator *FindEffectCreator (const CString &sUNID) const;
-		inline EUITypes GetDefaultUI (void) const { return m_iDefaultUI; }
-		inline const CString &GetDesc (void) const { return m_sDesc; }
-		inline const CDockScreenTypeRef &GetDockServicesScreen (void) const { return m_pDockServicesScreen; }
-        inline const CDockScreenVisuals &GetDockScreenVisuals (CUniverse &Universe) const { return (m_pDockScreenDesc ? *m_pDockScreenDesc : CDockScreenVisuals::GetDefault(Universe)); }
-		inline CXMLElement *GetHUDDesc (EHUDTypes iType) const { ASSERT(iType >= 0 && iType < hudCount); return m_HUDDesc[iType].pDesc; }
-		inline DWORD GetLargeImage (void) const { return m_dwLargeImage; }
-		inline const CDockScreenTypeRef &GetShipConfigScreen (void) const { return m_pShipConfigScreen; }
-		inline const CDockScreenTypeRef &GetShipScreen (void) const { return m_pShipScreen; }
-		inline int GetSortOrder (void) const { return m_iSortOrder; }
-		inline const CCurrencyAndRange &GetStartingCredits (void) const { return m_StartingCredits; }
-		inline DWORD GetStartingMap (void) const { return m_dwStartMap; }
-		inline const CString &GetStartingNode (void) const { return m_sStartNode; }
-		inline const CString &GetStartingPos (void) const { return m_sStartPos; }
+		EUITypes GetDefaultUI (void) const { return m_iDefaultUI; }
+		const CString &GetDesc (void) const { return m_sDesc; }
+		const CDockScreenTypeRef &GetDockServicesScreen (void) const { return m_pDockServicesScreen; }
+        const CDockScreenVisuals &GetDockScreenVisuals (CUniverse &Universe) const { return (m_pDockScreenDesc ? *m_pDockScreenDesc : CDockScreenVisuals::GetDefault(Universe)); }
+		CXMLElement *GetHUDDesc (EHUDTypes iType) const { ASSERT(iType >= 0 && iType < hudCount); return m_HUDDesc[iType].pDesc; }
+		DWORD GetLargeImage (void) const { return m_dwLargeImage; }
+		const CDockScreenTypeRef &GetShipConfigScreen (void) const { return m_pShipConfigScreen; }
+		const CDockScreenTypeRef &GetShipScreen (void) const { return m_pShipScreen; }
+		int GetSortOrder (void) const { return m_iSortOrder; }
+		const CCurrencyAndRange &GetStartingCredits (void) const { return m_StartingCredits; }
+		DWORD GetStartingMap (void) const { return m_dwStartMap; }
+		const CString &GetStartingNode (void) const { return m_sStartNode; }
+		const CString &GetStartingPos (void) const { return m_sStartPos; }
 		void InitAsDefault (void);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		inline bool IsDebugOnly (void) const { return (m_fDebug ? true : false); }
-		inline bool IsDefault (void) const { return (m_fIsDefault ? true : false); }
-		inline bool IsIncludedInAllAdventures (void) const { return (m_fIncludeInAllAdventures ? true : false); }
-		inline bool IsInitialClass (void) const { return (m_fInitialClass ? true : false); }
-        inline bool IsResolved (void) const { return (m_fResolved ? true : false); }
-        inline void MarkImages (CUniverse &Universe) const { GetDockScreenVisuals(Universe).MarkImages(); }
+		bool IsDebugOnly (void) const { return (m_fDebug ? true : false); }
+		bool IsDefault (void) const { return (m_fIsDefault ? true : false); }
+		bool IsIncludedInAllAdventures (void) const { return (m_fIncludeInAllAdventures ? true : false); }
+		bool IsInitialClass (void) const { return (m_fInitialClass ? true : false); }
+        bool IsResolved (void) const { return (m_fResolved ? true : false); }
+        void MarkImages (CUniverse &Universe) const { GetDockScreenVisuals(Universe).MarkImages(); }
 		void MergeFrom (const CPlayerSettings &Src);
         void Resolve (CUniverse &Universe, const CPlayerSettings *pSrc);
 
 	private:
 		struct SHUDDesc
 			{
-			SHUDDesc (void) :
-					pDesc(NULL),
-					bOwned(false),
-					bFree(false)
-				{ }
-
-			CXMLElement *pDesc;						//	HUD descriptor
-			bool bOwned;							//	If TRUE, we own this element
-			bool bFree;								//	If TRUE, we need to free this element
+			CXMLElement *pDesc = NULL;				//	HUD descriptor
+			bool bOwned = false;					//	If TRUE, we own this element
+			bool bFree = false;						//	If TRUE, we need to free this element
 			};
 
 		void CleanUp (void);

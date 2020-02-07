@@ -47,13 +47,12 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Paint various displays
 
 				SetProgramState(psPaintingLRS);
-				g_pTrans->PaintLRS();
 
 				bool bShowMapHUD = (g_pTrans->GetPlayer() && g_pTrans->GetPlayer()->IsMapHUDActive());
 				if (!m_bShowingSystemMap || bShowMapHUD)
 					{
-                    m_HUD.Update(g_pTrans->m_iTick);
-                    m_HUD.Paint(Screen);
+                    m_HUD.Update(g_pUniverse->GetFrameTicks());
+                    m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
 
 					SetProgramState(psPaintingDeviceDisplay);
 					g_pTrans->m_DeviceDisplay.Paint(Screen);
@@ -158,36 +157,39 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 					dwStartTimer = dwNow;
 					}
 
-				//	Update the universe
+				//	Figure out the update mode
 
-				if (!g_pTrans->m_bPaused || g_pTrans->m_bPausedStep)
+				CUniverse::EUpdateSpeeds iUpdateMode;
+				if (g_pTrans->m_bPaused)
 					{
-					SetProgramState(psUpdating);
-					if (bSlowMotion)
+					if (g_pTrans->m_bPausedStep)
 						{
-						if ((g_pTrans->m_iTick % 4) == 0)
-							g_pUniverse->Update(UpdateCtx);
+						iUpdateMode = CUniverse::updateSingleFrame;
+						g_pTrans->m_bPausedStep = false;
 						}
 					else
-						{
-						g_pUniverse->Update(UpdateCtx);
-						if (g_pTrans->m_bAutopilot)
-							{
-							g_pUniverse->Update(UpdateCtx);
-							g_pUniverse->Update(UpdateCtx);
-							g_pUniverse->Update(UpdateCtx);
-							g_pUniverse->Update(UpdateCtx);
-							}
-						}
-					SetProgramState(psAnimating);
+						iUpdateMode = CUniverse::updatePaused;
+					}
+				else if (bSlowMotion)
+					iUpdateMode = CUniverse::updateSlowMotion;
+				else if (g_pTrans->m_bAutopilot)
+					iUpdateMode = CUniverse::updateAccelerated;
+				else
+					iUpdateMode = CUniverse::updateNormal;
 
+				//	Update the universe
+
+				SetProgramState(psUpdating);
+				bool bUpdated = g_pUniverse->Update(UpdateCtx, iUpdateMode);
+				SetProgramState(psAnimating);
+
+				if (iUpdateMode != CUniverse::updatePaused)
+					{
 					if (g_pTrans->GetPlayer())
-						g_pTrans->GetPlayer()->Update(g_pTrans->m_iTick);
+						g_pTrans->GetPlayer()->Update(g_pUniverse->GetFrameTicks());
+
 					if (g_pTrans->GetPlayer() && g_pTrans->GetPlayer()->GetSelectedTarget())
 						m_HUD.Invalidate(hudTargeting);
-					g_pTrans->m_iTick++;
-
-					g_pTrans->m_bPausedStep = false;
 					}
 
 				g_pTrans->m_MessageDisplay.Update();
@@ -236,16 +238,8 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
                 //  Paint displays
 
-                m_HUD.Update(g_pTrans->m_iTick);
-                m_HUD.Paint(Screen, true);
-
-				//	If we have even more room, paint the LRS and reactor display
-
-				if (g_cyScreen >= 960)
-					{
-					SetProgramState(psPaintingLRS);
-					g_pTrans->PaintLRS();
-					}
+                m_HUD.Update(g_pUniverse->GetFrameTicks());
+                m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks(), true);
 
 				//	Debug console
 
@@ -258,11 +252,9 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				//	Update the universe (at 1/4 rate)
 
-				if ((g_pTrans->m_iTick % 4) == 0)
-					g_pUniverse->Update(UpdateCtx);
+				g_pUniverse->Update(UpdateCtx, CUniverse::updateSlowMotion);
 				g_pTrans->m_MessageDisplay.Update();
-				m_CurrentDock.Update(g_pTrans->m_iTick);
-				g_pTrans->m_iTick++;
+				m_CurrentDock.Update(g_pUniverse->GetFrameTicks());
 
 				//	Never let message redirection last beyond a frame. We do 
 				//	this in case a mod forgets to reset it.
@@ -284,10 +276,9 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Tell the universe to paint
 
 				g_pUniverse->PaintPOV(Screen, m_rcScreen, 0);
-				g_pTrans->PaintLRS();
 
-                m_HUD.Update(g_pTrans->m_iTick);
-                m_HUD.Paint(Screen);
+                m_HUD.Update(g_pUniverse->GetFrameTicks());
+                m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
 
 				g_pTrans->m_MessageDisplay.Paint(Screen);
 				g_pTrans->m_DeviceDisplay.Paint(Screen);
@@ -311,7 +302,6 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				g_pUniverse->Update(UpdateCtx);
 				g_pTrans->m_MessageDisplay.Update();
-				g_pTrans->m_iTick++;
 
 				if (--g_pTrans->m_iCountdown == 0)
 					{
@@ -349,10 +339,9 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Tell the universe to paint
 
 				g_pUniverse->PaintPOV(Screen, m_rcScreen, 0);
-				g_pTrans->PaintLRS();
 
-                m_HUD.Update(g_pTrans->m_iTick);
-                m_HUD.Paint(Screen);
+                m_HUD.Update(g_pUniverse->GetFrameTicks());
+                m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
 
 				g_pTrans->m_MessageDisplay.Paint(Screen);
 				g_pTrans->m_DeviceDisplay.Paint(Screen);
@@ -376,12 +365,12 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				g_pUniverse->Update(UpdateCtx);
 				g_pTrans->m_MessageDisplay.Update();
-				g_pTrans->m_iTick++;
 
 				if (--g_pTrans->m_iCountdown == 0)
 					{
 					g_pHI->HICommand(CONSTLIT("gameLeaveStargate"));
 					g_pTrans->m_State = CTranscendenceWnd::gsInGame;
+					ExecuteCommandRefresh();
 					}
 				break;
 				}
@@ -471,7 +460,7 @@ void CGameSession::PaintSRS (CG32bitImage &Screen)
 	//	Otherwise, if we're blind, paint scramble
 
 	else if (bBlind 
-			&& (g_pTrans->m_iTick % (20 + (((g_pTrans->m_iTick / 100) * pShip->GetDestiny()) % 100))) > 15)
+			&& (g_pUniverse->GetFrameTicks() % (20 + (((g_pUniverse->GetFrameTicks() / 100) * pShip->GetDestiny()) % 100))) > 15)
 		g_pTrans->PaintSRSSnow();
 
 	//	Otherwise, paint the normal SRS screen

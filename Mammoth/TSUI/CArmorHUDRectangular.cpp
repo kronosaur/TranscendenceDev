@@ -23,16 +23,6 @@ CArmorHUDRectangular::CArmorHUDRectangular (void) :
 	{
 	}
 
-ALERROR CArmorHUDRectangular::Bind (SDesignLoadCtx &Ctx)
-
-//	Bind
-//
-//	Bind design
-
-	{
-	return NOERROR;
-	}
-
 void CArmorHUDRectangular::GetBounds (int *retWidth, int *retHeight) const
 
 //	GetBounds
@@ -42,41 +32,6 @@ void CArmorHUDRectangular::GetBounds (int *retWidth, int *retHeight) const
 	{
 	*retWidth = m_cxDisplay;
 	*retHeight = m_cyDisplay;
-	}
-
-ALERROR CArmorHUDRectangular::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
-
-//	InitFromXML
-//
-//	Initialize from XML
-
-	{
-	m_rgbArmor = ::LoadRGBColor(pDesc->GetAttribute(ARMOR_COLOR_ATTRIB), CG32bitPixel(255, 128, 0));
-	m_rgbArmorText = CG32bitPixel::Fade(m_rgbArmor, CG32bitPixel(255, 255, 255), 80);
-	m_rgbArmorTextBack = CG32bitPixel::Darken(m_rgbArmor, 128);
-	m_rgbShields = ::LoadRGBColor(pDesc->GetAttribute(SHIELDS_COLOR_ATTRIB), CG32bitPixel(103, 204, 0));
-	m_rgbShieldsText = CG32bitPixel::Fade(m_rgbShields, CG32bitPixel(255, 255, 255), 80);
-	m_rgbShieldsTextBack = CG32bitPixel::Darken(m_rgbShields, 128);
-
-	//	LATER: Load this from definition
-
-	m_cyRow = 20;
-
-	//	Calculate metrics
-
-	const CVisualPalette &VI = g_pHI->GetVisuals();
-	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
-
-	m_cxDisplay = m_cyRow * 12;
-	m_cyDisplay = m_cyRow * 8;
-
-	m_cxShipSize = 10 * m_cyRow;
-
-	//	Measure out metrics for armor/shield integrity text
-
-	m_cxMaxValue = MediumFont.MeasureText(CONSTLIT("100%"), &m_cyMaxValue);
-
-	return NOERROR;
 	}
 
 void CArmorHUDRectangular::InitLabelDistribution (void)
@@ -287,6 +242,41 @@ void CArmorHUDRectangular::InitShipSectionLabels (const TArray<CShip::SAttachedS
 
 	}
 
+bool CArmorHUDRectangular::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
+
+//	InitFromXML
+//
+//	Initialize from XML
+
+	{
+	m_rgbArmor = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(ARMOR_COLOR_ATTRIB), CG32bitPixel(255, 128, 0));
+	m_rgbArmorText = CG32bitPixel::Fade(m_rgbArmor, CG32bitPixel(255, 255, 255), 80);
+	m_rgbArmorTextBack = CG32bitPixel::Darken(m_rgbArmor, 128);
+	m_rgbShields = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(SHIELDS_COLOR_ATTRIB), CG32bitPixel(103, 204, 0));
+	m_rgbShieldsText = CG32bitPixel::Fade(m_rgbShields, CG32bitPixel(255, 255, 255), 80);
+	m_rgbShieldsTextBack = CG32bitPixel::Darken(m_rgbShields, 128);
+
+	//	LATER: Load this from definition
+
+	m_cyRow = 20;
+
+	//	Calculate metrics
+
+	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
+
+	m_cxDisplay = m_cyRow * 12;
+	m_cyDisplay = m_cyRow * 8;
+
+	m_cxShipSize = 10 * m_cyRow;
+
+	//	Measure out metrics for armor/shield integrity text
+
+	m_cxMaxValue = MediumFont.MeasureText(CONSTLIT("100%"), &m_cyMaxValue);
+
+	return true;
+	}
+
 void CArmorHUDRectangular::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
 
 //	OnPaint
@@ -466,9 +456,8 @@ void CArmorHUDRectangular::Realize (SHUDPaintCtx &Ctx)
 	{
 	//	Skip if we don't have a ship
 
-	CShip *pShip;
-	if (Ctx.pSource == NULL
-			|| (pShip = Ctx.pSource->AsShip()) == NULL)
+	CShip *pShip = Ctx.Source.AsShip();
+	if (pShip == NULL)
 		return;
 
 	CInstalledDevice *pShield = pShip->GetNamedDevice(devShields);

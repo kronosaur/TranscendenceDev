@@ -121,6 +121,26 @@ class CSFXOptions
 		bool m_bDockScreenTransparent;		//	Show SRS behind dock screen
 	};
 
+//	Engine Strings -------------------------------------------------------------
+
+class CEngineLanguage
+	{
+	public:
+		CEngineLanguage (const CDesignCollection &Design) :
+				m_Design(Design)
+			{ }
+
+		const CString &GetAsteroidTypeLabel (EAsteroidType iType) const;
+		CString Translate (const CString &sID, ICCItem *pData = NULL) const;
+		void Reinit (void);
+
+	private:
+		const CDesignCollection &m_Design;
+
+		mutable const CDesignType *m_pEngineText = NULL;
+		mutable CString m_AsteroidTypeLabel[EAsteroidTypeCount];
+	};
+
 //	Named Painters -------------------------------------------------------------
 
 class CNamedEffects
@@ -206,6 +226,17 @@ class CUniverse
 			{
 			public:
 				virtual void OnObjDestroyed (SDestroyCtx &Ctx) { }
+			};
+
+		enum EUpdateSpeeds
+			{
+			updateNone,
+
+			updateNormal,
+			updateAccelerated,
+			updatePaused,
+			updateSingleFrame,
+			updateSlowMotion,
 			};
 
 		struct SInitDesc
@@ -327,6 +358,7 @@ class CUniverse
 		CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
 		CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
 		CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
+		const CEngineLanguage &GetEngineLanguage (void) const { return m_Language; }
 		const CEngineOptions &GetEngineOptions (void) const { return m_EngineOptions; }
 		CExtensionCollection &GetExtensionCollection (void) { return m_Extensions; }
 		CString GetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib);
@@ -336,6 +368,7 @@ class CUniverse
         CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
         const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
 		IHost *GetHost (void) const { return m_pHost; }
+		EUpdateSpeeds GetLastUpdateSpeed (void) const { return m_iLastUpdateSpeed; }
 		CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
 		int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
 		CMissionList &GetMissions (void) { return m_AllMissions; }
@@ -388,7 +421,7 @@ class CUniverse
 		void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
 		CTimeSpan StopGameTime (void);
-		CString TranslateEngineText (const CString &sID, ICCItem *pData = CCodeChain::CreateNil()) const;
+		CString TranslateEngineText (const CString &sID, ICCItem *pData = NULL) const { return m_Language.Translate(sID, pData); }
 		void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }
 		static CString ValidatePlayerName (const CString &sName);
 
@@ -434,6 +467,7 @@ class CUniverse
 		IPlayerController::EUIMode GetCurrentUIMode (void) const { return (m_pPlayer ? m_pPlayer->GetUIMode() : IPlayerController::uimodeUnknown); }
 		const CDifficultyOptions &GetDifficulty (void) const { return m_Difficulty; }
 		CDifficultyOptions::ELevels GetDifficultyLevel (void) const { return m_Difficulty.GetLevel(); }
+		DWORD GetFrameTicks (void) const { return m_dwFrame; }
 		int GetPaintTick (void) { return m_iPaintTick; }
 		CSpaceObject *GetPOV (void) const { return m_pPOV; }
 		IPlayerController *GetPlayer (void) const { return m_pPlayer; }
@@ -480,7 +514,7 @@ class CUniverse
 		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
 		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale);
 		void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
-		void Update (SSystemUpdateCtx &Ctx);
+		bool Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode = updateNormal);
 		void UpdateExtended (void);
 
 		void DebugOutput (char *pszLine, ...);
@@ -514,6 +548,7 @@ class CUniverse
 		ALERROR InitTopology (DWORD dwStartingMap, CString *retsError);
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);
+		void UpdateTick (SSystemUpdateCtx &Ctx);
 		void UpdateMissions (int iTick, CSystem *pSystem);
 		void UpdateSovereigns (int iTick, CSystem *pSystem);
 
@@ -568,11 +603,14 @@ class CUniverse
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;
+		EUpdateSpeeds m_iLastUpdateSpeed = updateNone;
+		DWORD m_dwFrame = 0;
 
 		//	Cached singletons
 
 		mutable const CEconomyType *m_pCreditCurrency = NULL;
 		CNamedEffects m_NamedEffects;
+		CEngineLanguage m_Language;
 
 		//	Debugging structures
 

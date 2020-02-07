@@ -1898,8 +1898,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 		{
 		switch (iPropType)
 			{
-			case EPropertyType::propVariant:
 			case EPropertyType::propData:
+			case EPropertyType::propItemData:
+			case EPropertyType::propVariant:
 				return GetDataAsItem(sProperty)->Reference();
 
 			case EPropertyType::propDynamicData:
@@ -1914,6 +1915,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 				ICCItemPtr pValue = RunCtx.RunCode(pResult);
 				return pValue->Reference();
 				}
+
+			case EPropertyType::propObjData:
+				return CC.CreateNil();
 
 			default:
 				return pResult->Reference();
@@ -2428,17 +2432,16 @@ bool CItem::IsEnhancementEffective (const CItemEnhancement &Enhancement) const
 		}
 	else if (IsDevice())
 		{
-		const CDeviceClass *pDevice = GetType()->GetDeviceClass();
 		CItem BasicItem(GetType(), 1);
-		CItemCtx ItemCtx(BasicItem);
+		const CDeviceItem DeviceItem = BasicItem.AsDeviceItemOrThrow();
 
 		switch (Enhancement.GetType())
 			{
 			case etOmnidirectional:
 				if (Enhancement.IsDisadvantage())
-					return (pDevice->GetFireArc(ItemCtx) > 0);
+					return (DeviceItem.GetFireArc() > 0);
 				else
-					return (pDevice->GetFireArc(ItemCtx) < Enhancement.GetFireArc());
+					return (DeviceItem.GetFireArc() < Enhancement.GetFireArc());
 
 			default:
 				return true;

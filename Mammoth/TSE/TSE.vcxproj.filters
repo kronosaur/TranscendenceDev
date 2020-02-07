@@ -338,6 +338,21 @@
     <ClInclude Include="SystemCreateImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WeaponClassImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEWeaponClassImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSETargeting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetListImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEConfigurationDescInlines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1378,9 +1393,6 @@
     <ClCompile Include="CStationCreateOptions.cpp">
       <Filter>Source Files\Stations</Filter>
     </ClCompile>
-    <ClCompile Include="CSpaceObjectTargetList.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
     <ClCompile Include="SUpdateCtx.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
@@ -1398,6 +1410,36 @@
     </ClCompile>
     <ClCompile Include="MissileProperties.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="SpaceObjectItemProperties.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CGateTimerManager.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CStarDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CStargateDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CAsteroidDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CEngineLanguage.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoMiningCalc.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CConfigurationDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CTargetList.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CShotArray.cpp">
+      <Filter>Source Files\Items</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

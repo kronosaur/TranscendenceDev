@@ -1371,7 +1371,7 @@ void CAIBehaviorCtx::ImplementFireWeapon (CShip *pShip, DeviceNames iDev)
 
 	if (pWeapon && pWeapon->IsReady())
 		{
-		int iFireAngle = pWeapon->GetDefaultFireAngle(pShip);
+		int iFireAngle = pWeapon->GetDefaultFireAngle();
 		if (CheckForFriendsInLineOfFire(pShip, pWeapon, NULL, iFireAngle, Max(pWeapon->GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK)))
 			pShip->SetWeaponTriggered(pWeapon);
 		}

@@ -130,6 +130,33 @@ void ICCItemPtr::Delete (void)
 	m_pPtr = NULL;
 	}
 
+ICCItemPtr ICCItemPtr::Error (const CString &sError, ICCItem *pData)
+
+//	Error
+//
+//	Creates an error
+
+	{
+	CString sArg;
+	CString sErrorLine;
+
+	//	Convert the argument to a string
+
+	if (pData)
+		{
+		sArg = pData->Print();
+		sErrorLine = strPatternSubst(CONSTLIT("%s [%s]"), sError, sArg);
+		}
+	else
+		sErrorLine = sError;
+
+	//	Create the error
+
+	ICCItemPtr pError(sErrorLine);
+	pError->SetError();
+	return pError;
+	}
+
 bool ICCItemPtr::Load (const CString &sCode, CString *retsError)
 
 //	Load

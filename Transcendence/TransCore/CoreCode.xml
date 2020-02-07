@@ -398,6 +398,36 @@
 					)
 				))
 
+			(setq intItemEnhanceStatus (lambda (result successText itemName)
+				(switch
+					(eq result 0)
+						successText
+
+					(eq result 1)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.noEffect)
+
+					(eq result 2)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.alreadyEnhanced { itemName:itemName })
+
+					(eq result 3)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.degraded { itemName:itemName })
+
+					(eq result 4)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.defectRemoved { itemName:itemName })
+
+					(eq result 5)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.enhancementRemoved { itemName:itemName })
+
+					(eq result 6)
+						(cat successText " " (typTranslate &vtGenericEnhancement; 'itemEnhanceResult.enhancementReplaced))
+
+					(eq result 7)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.improved { itemName:itemName })
+
+					""
+					)
+				))
+				
 			; Math functions ---------------------------------------------------
 			
 			(setq mathAngleDiffDegrees (lambda (first second)

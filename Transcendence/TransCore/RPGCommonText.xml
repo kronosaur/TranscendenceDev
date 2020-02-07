@@ -23,12 +23,14 @@
 			<Text id="actionJettison">[J]ettison</Text>
 			<Text id="actionLeave">[L]eave</Text>
 			<Text id="actionLoot">[L]oot</Text>
+			<Text id="actionNo">[N]o</Text>
 			<Text id="actionRefuel">[R]efuel</Text>
 			<Text id="actionRepairArmor">Repair [A]rmor</Text>
 			<Text id="actionRepairItem">[R]epair Item</Text>
 			<Text id="actionRepairReplaceArmor">Repair or Replace [A]rmor</Text>
 			<Text id="actionSellItems">[S]ell Items</Text>
 			<Text id="actionUndock">[U]ndock</Text>
+			<Text id="actionYes">[Y]es</Text>
 
 			<!-- Dock Screen Text -->
 			

@@ -659,6 +659,16 @@ class CSystemSpacePainter
 		DWORD m_dwCurBackgroundUNID;
 	};
 
+class CGateTimerManager
+	{
+	public:
+		int GetTick (DWORD dwGateID, DWORD dwNow);
+
+	private:
+		DWORD m_dwTick = 0;
+		TSortMap<DWORD, int> m_Timers;
+	};
+
 struct SObjCreateCtx
 	{
 	SObjCreateCtx (SSystemCreateCtx &SystemCtxArg) :
@@ -1038,6 +1048,7 @@ class CSystem
 		CSystemSpacePainter m_SpacePainter;		//	Paints space background
 		CMapGridPainter m_GridPainter;			//	Structure to paint a grid
 		CPhysicsContactResolver m_ContactResolver;	//	Resolves physics contacts
+		CGateTimerManager m_GateTimer;			//	Assign delay when ships exit a gate
 
 		static const Metric g_MetersPerKlick;
 	};

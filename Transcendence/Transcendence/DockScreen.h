@@ -44,7 +44,8 @@ class IDockScreenDisplay
 			{
 			SDockScreenBackgroundDesc BackgroundDesc;	//	Background specified by screen
 
-			RECT rcControl = { 0, 0, 0, 0 };	//	Position of main control
+			RECT rcDisplay = { 0 };				//	Rect of full display area
+			RECT rcControl = { 0 };				//	Position of main control
 			int cyTabRegion = 0;				//	Make room for tabs
 
 			CString sType;						//	Display type
@@ -342,7 +343,7 @@ class CDockPane
 			CG32bitPixel TextColor;
 			};
 
-		void CreateControl (EControlTypes iType, const CString &sID, const CString &sStyle, RECT rcPane);
+		void CreateControl (EControlTypes iType, const CString &sID, const CXMLElement &ControlDesc, RECT rcPane);
 		ALERROR CreateControls (RECT rcPane, CString *retsError);
 		void ExecuteAction (int iAction);
 		bool FindControl (const CString &sID, const SControl **retpControl = NULL) const;

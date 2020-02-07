@@ -478,6 +478,65 @@ DeviceNames CDeviceSystem::GetNamedFromDeviceIndex (int iIndex) const
 	return devNone;
 	}
 
+DWORD CDeviceSystem::GetTargetTypes (void) const
+
+//	GetTargetTypes
+//
+//	Returns the set of targets that we need based on our devices.
+
+	{
+	DWORD dwAllTargetTypes = 0;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		const CInstalledDevice &Device = GetDevice(i);
+		if (Device.IsEmpty())
+			continue;
+
+		const CDeviceItem DeviceItem = Device.GetDeviceItem();
+
+		switch (Device.GetCategory())
+			{
+			case itemcatWeapon:
+				{
+				//	Primary weapons and anything linked to the primary weapon count.
+
+				if ((i == m_NamedDevices[devPrimaryWeapon])
+						|| Device.IsLinkedFire(itemcatWeapon))
+					{
+					dwAllTargetTypes |= DeviceItem.GetTargetTypes();
+					}
+					
+				break;
+				}
+
+			case itemcatLauncher:
+				{
+				//	Launcher and anything linked to the launcher count.
+
+				if ((i == m_NamedDevices[devMissileWeapon])
+						|| Device.IsLinkedFire(itemcatLauncher))
+					{
+					dwAllTargetTypes |= DeviceItem.GetTargetTypes();
+					}
+					
+				break;
+				}
+
+			default:
+				{
+				//	Include other non-weapon devices with target requirements. 
+				//	These are usually missile defense devices.
+
+				dwAllTargetTypes |= DeviceItem.GetTargetTypes();
+				break;
+				}
+			}
+		}
+
+	return dwAllTargetTypes;
+	}
+
 bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices)
 
 //	Init
@@ -486,7 +545,6 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 
 	{
 	int i;
-
 
 	//	Allocate devices
 
@@ -1000,6 +1058,19 @@ void CDeviceSystem::SetCursorAtNamedDevice (CItemListManipulator &ItemList, Devi
 
 	if (m_NamedDevices[iDev] != -1)
 		SetCursorAtDevice(ItemList, m_NamedDevices[iDev]);
+	}
+
+void CDeviceSystem::SetSecondary (bool bValue)
+
+//	SetSecondary
+//
+//	Sets all devices to secondary (or not)
+
+	{
+	for (CInstalledDevice &Device : *this)
+		{
+		Device.SetSecondary(bValue);
+		}
 	}
 
 bool CDeviceSystem::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList, ItemCategories *retiCat)
