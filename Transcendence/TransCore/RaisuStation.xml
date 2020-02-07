@@ -225,8 +225,6 @@
 					(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
 					(arcoVaughn (objGetObjByID (msnGetData gSource 'targetID)))
 					)
-					(dbgOutput "OnTimer: stationObj = " stationObj "; raiders = " (sysFindObject stationObj "sH +centauriWarlords;"))
-
 					(switch
 						;	If not in Starton Eridani, then nothing to do
 						(!= (sysGetNode) (msnGetProperty gSource 'nodeID))
@@ -465,8 +463,6 @@
 						(if (gr raidersSummoned 0) (sysFindObject stationObj "GN -uncharted;") stationObj)
 						)
 					)
-					(dbgOutput (unvGetTick) ": SummonRaiders")
-
 					(enum raidersToCreate theClass
 						(block (theShip)
 							(setq theShip (sysCreateShip theClass sourceObj &svCentauriWarlords;))
