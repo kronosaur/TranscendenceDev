@@ -3684,6 +3684,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   K                  Killed objects only\n"
 			"   L:x-y;             Objects of level x to y\n"
 			"   P                  Only objects known to the player\n"
+			"   U                  Only objects unknown to the player\n"
 			"   V                  Include virtual objects\n"
 			"   +/-{attrib}        Require/exclude types with given attribute\n"
 			"   +/-unid:{unid}     Require/exclude types of given unid\n"

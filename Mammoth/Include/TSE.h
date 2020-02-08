@@ -1490,12 +1490,14 @@ class CObjectTrackerCriteria
 		bool SelectsActiveOnly (void) const { return m_bActiveOnly; }
 		bool SelectsKilledOnly (void) const { return m_bKilledOnly; }
 		bool SelectsKnownOnly (void) const { return m_bKnownOnly; }
+		bool SelectsUnknownOnly (void) const { return m_bUnknownOnly; }
 		
 	private:
 		CDesignTypeCriteria m_TypeCriteria;
 		bool m_bActiveOnly = false;
 		bool m_bKilledOnly = false;
 		bool m_bKnownOnly = false;
+		bool m_bUnknownOnly = false;
 	};
 
 class CObjectTracker
