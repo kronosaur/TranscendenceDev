@@ -11,6 +11,7 @@
 #define EXPIRE_TIME_ATTRIB						CONSTLIT("expireTime")
 #define FAILURE_AFTER_OUT_OF_SYSTEM_ATTRIB		CONSTLIT("failureAfterOutOfSystem")
 #define FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB		CONSTLIT("forceUndockAfterDebrief")
+#define IGNORE_STATION_LIMIT_ATTRIB				CONSTLIT("ignoreOwnerLimit")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define MAX_APPEARING_ATTRIB					CONSTLIT("maxAppearing")
 #define MISSION_ARC_ATTRIB						CONSTLIT("missionArc")
@@ -39,6 +40,7 @@
 #define PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF		CONSTLIT("forceUndockAfterDebrief")
 #define PROPERTY_HAS_DEBRIEF					CONSTLIT("hasDebrief")
 #define PROPERTY_HAS_IN_PROGRESS				CONSTLIT("hasInProgress")
+#define PROPERTY_IGNORE_STATION_LIMIT			CONSTLIT("ignoreOwnerLimit")
 #define PROPERTY_MAX_APPEARING					CONSTLIT("maxAppearing")
 #define PROPERTY_PRIORITY						CONSTLIT("priority")
 #define PROPERTY_TOTAL_ACCEPTED					CONSTLIT("totalAccepted")
@@ -216,6 +218,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fForceUndockAfterDebrief = pDesc->GetAttributeBool(FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB);
 	m_fAllowDelete = pDesc->GetAttributeBool(ALLOW_PLAYER_DELETE_ATTRIB);
 	m_fDestroyOnDecline = pDesc->GetAttributeBool(DESTROY_ON_DECLINE_ATTRIB);
+	m_fIgnoreStationLimit = pDesc->GetAttributeBool(IGNORE_STATION_LIMIT_ATTRIB);
 
 	//	Mission creation
 
@@ -329,6 +332,9 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_HAS_IN_PROGRESS))
 		return ICCItemPtr(HasInProgress());
+
+	else if (strEquals(sProperty, PROPERTY_IGNORE_STATION_LIMIT))
+		return ICCItemPtr(m_fIgnoreStationLimit ? true : false);
 
 	else if (strEquals(sProperty, PROPERTY_PRIORITY))
 		return ICCItemPtr(GetPriority());

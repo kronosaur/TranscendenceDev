@@ -124,7 +124,7 @@ class CMissionType : public CDesignType
 		DWORD m_fDestroyOnDecline:1;		//	If TRUE, destroy mission if player declines.
 
 		DWORD m_fNoInProgress:1;			//	If TRUE, no in progress messages
-		DWORD m_fSpare2:1;
+		DWORD m_fIgnoreStationLimit:1;		//	If TRUE, offer mission even if station has hit count limit
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;

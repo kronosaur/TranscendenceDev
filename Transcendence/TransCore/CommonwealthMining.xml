@@ -331,6 +331,11 @@
 					newRankDesc
 					)
 					(switch
+						;	If station is abandoned, then nothing to do
+					
+						(objIsAbandoned gSource)
+							Nil
+						
 						;	See if the player has been promoted.
 						;	NOTE: Can't advance beyond wildcatter at a mining
 						;	colony; must join IMU.
