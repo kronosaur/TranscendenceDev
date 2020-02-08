@@ -23,6 +23,8 @@ in vec2 aIntensitiesAndCycles;
 in vec3 aPrimaryColor;
 in vec3 aSecondaryColor;
 
+uniform vec2 aCanvasAdjustedDimensions;
+
 out vec2 quadPos;
 flat out int reshape;
 flat out int widthAdjType;
@@ -80,10 +82,14 @@ void main(void)
 	//vec2 fixedTexPos = vec2((aTexPositions[0] * 1.0), (aTexPositions[1] * 1.0));
 	//fixedCanvPos = fixedCanvPos + positionOffset;
 	//vec2 pos2d = vec2(aPos[0] * fixedSize[0], aPos[1] * fixedSize[1]) + fixedCanvPos;
-	
-    vec4 final_pos = aPos * scalingMatrix2D(aSize[0], aSize[1]) * rotationMatrix2D(aRotation) * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]);//rotationMatrix2D(3.14 / 1.0);
 
-    quadPos = vec2(aPos[0], aPos[1]) * 2.0;
+    //vec4 final_pos = aPos * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]);
+	//vec4 final_pos = aPos * scalingMatrix2D(aSize[0] * aCanvasAdjustedDimensions[0], aSize[1] * aCanvasAdjustedDimensions[1]) * rotationMatrix2D(aRotation) * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]);
+	vec4 final_pos = aPos * scalingMatrix2D(aSize[0], aSize[1]) * rotationMatrix2D(aRotation) * scalingMatrix2D(1.0 / aCanvasAdjustedDimensions[0], 1.0 / aCanvasAdjustedDimensions[1]) * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]);
+	//vec4 final_pos = aPos * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]) * rotationMatrix2D(aRotation) * scalingMatrix2D(aSize[0], aSize[1]);
+
+    //vec4 quadPosV4 = (vec4(aPos[0], aPos[1], 0.0, 0.5) * 2.0) * scalingMatrix2D(aSize[0], aSize[1]) * rotationMatrix2D(-aRotation);
+	quadPos = vec2(aPos[0], aPos[1]) * 2.0;
 	// Note, the iVec values are casted to float but treated as int for some weird reason. This means that the
 	// iVecs will contain bits equal to the float representation of their value, but are of type int. We should use intBitsToFloat
 	// to fix this.

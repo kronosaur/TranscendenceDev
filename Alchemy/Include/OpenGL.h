@@ -226,6 +226,8 @@ private:
 	std::vector<glm::vec2> m_intensitiesAndCyclesFloat;
 	std::vector<glm::vec3> m_primaryColorsFloat;
 	std::vector<glm::vec3> m_secondaryColorsFloat;
+	int m_iCanvasHeight = 0;
+	int m_iCanvasWidth = 0;
 	void setShader(Shader *shader) { m_pShader = shader; }
 	Shader* m_pShader;
 	OpenGLTexture* m_pTexture;

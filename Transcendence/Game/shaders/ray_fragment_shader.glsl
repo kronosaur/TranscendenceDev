@@ -235,13 +235,13 @@ vec3 blendVectors(vec3 rgbFrom, vec3 rgbTo, float rFade)
 vec3 calcColorGlow(vec3 primaryColor, vec3 secondaryColor, float rWidthCount, float iIntensity, float distanceFromCenter)
 {
     // Note, Intensity should be a percentage of the ray's width.
-    float BRIGHT_FACTOR = 0.025;
+    float BRIGHT_FACTOR = 0.0025;
 
-    float centerBlendIntensity = min(1.0, iIntensity);
+    float centerBlendIntensity = min(50.0, iIntensity) / 50.0;
     float rBrightPoint = BRIGHT_FACTOR * rWidthCount * iIntensity;
     vec3 innerColor = blendVectors(primaryColor, vec3(1.0, 1.0, 1.0), centerBlendIntensity);
     
-    float rFadeInc = max(0.0f, 1.0f / (rWidthCount - rBrightPoint)) * distanceFromCenter;
+    float rFadeInc = max(0.0f, 1.0f / (rWidthCount - rBrightPoint)) * (distanceFromCenter - rBrightPoint);
     vec3 outerColor = blendVectors(secondaryColor, primaryColor, 1.0f - rFadeInc);
     
     float useInnerColor = float(distanceFromCenter < rBrightPoint);
@@ -262,9 +262,9 @@ float calcOpacityGlow(float rWidthCount, float rIntensity, float distanceFromCen
     // Decay exponentially to edge
     float useNonSolid = float(distanceFromCenter >= rPeakPoint);
     float rGlowLevel = MIN_GLOW_LEVEL + (rIntensity * GLOW_FACTOR);
-    float rGlowInc = max(0.0f, 1.0f / (rWidthCount - rPeakPoint)) * distanceFromCenter;
+    float rGlowInc = max(0.0f, 1.0f / (rWidthCount - rPeakPoint)) * (distanceFromCenter - rPeakPoint);
     float rGlow = 1.0;
-    float outerGlow = rGlowLevel * rGlow * rGlow * (1.0 - rGlowInc);
+    float outerGlow = rGlowLevel * (rGlow - rGlowInc) * (rGlow - rGlowInc);
     
     return (useSolid) + (useNonSolid * outerGlow);
 }
@@ -294,9 +294,9 @@ float calcOpacityTaperedGlow(float rWidthCount, float rIntensity, float distance
     float useNontaperedOpacity = float(coordinate_l < rFadePoint);
     float useNonSolid = float(distanceFromCenter_w >= rPeakPoint);
     float rGlowLevel = MIN_GLOW_LEVEL + (rIntensity * GLOW_FACTOR);
-    float rGlowInc = max(0.0f, 1.0f / (rWidthCount - rPeakPoint)) * distanceFromCenter_w;
+    float rGlowInc = max(0.0f, 1.0f / (rWidthCount - rPeakPoint)) * (distanceFromCenter_w - rPeakPoint);
     float rGlow = 1.0;
-    float outerGlow = rGlowLevel * rGlow * rGlow * (1.0 - rGlowInc) * taperComponent;
+    float outerGlow = rGlowLevel * (rGlow - rGlowInc) * (rGlow - rGlowInc) * taperComponent;
     
     return (useSolid * taperComponent) + (useNonSolid * outerGlow);
 }
@@ -397,8 +397,8 @@ void main(void)
     );
     //vec4 colorGlowTop = vec4(topOpacityGlow, topOpacityGlow, topOpacityGlow, topOpacityGlow) * float(pixelInUpperBounds);
     //vec4 colorGlowBottom = vec4(bottomOpacityGlow, bottomOpacityGlow, bottomOpacityGlow, bottomOpacityGlow) * float(pixelInLowerBounds);
-    vec4 colorGlowTop = vec4(calcColorGlow(primaryColor, secondaryColor, limitTop, intensity, distanceFromCenter), topOpacity) * topOpacity * 2.0 * float(pixelInUpperBounds);
-    vec4 colorGlowBottom = vec4(calcColorGlow(primaryColor, secondaryColor, limitBottom, intensity, distanceFromCenter), bottomOpacity) * bottomOpacity * 2.0 * float(pixelInLowerBounds);
+    vec4 colorGlowTop = vec4(calcColorGlow(primaryColor, secondaryColor, limitTop, intensity, distanceFromCenter), topOpacity) * float(pixelInUpperBounds);
+    vec4 colorGlowBottom = vec4(calcColorGlow(primaryColor, secondaryColor, limitBottom, intensity, distanceFromCenter), bottomOpacity) * float(pixelInLowerBounds);
     //fragColor = vec4(grains, grains, grains, grains);
     //fragColor = (abs(colorGlowTop + colorGlowBottom) + vec4((primaryColor + secondaryColor) * min(1.0, grains) / 2.0, grains) * pixelWithinBounds);
 

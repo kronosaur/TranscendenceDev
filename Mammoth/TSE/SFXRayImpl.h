@@ -114,7 +114,7 @@ private:
 	void CalcWaves(TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength, Metric rDecay, Metric rCyclePos);
 	void CleanUpIntermediates(void);
 	ILinePainter *CreateRenderer(int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos = 0.0);
-	void PaintRay(CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
+	void PaintRay(CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, int iLength, int iRotationDegrees, SViewportPaintCtx &Ctx);
 
 	CEffectCreator *m_pCreator;
 
@@ -174,7 +174,7 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
                 m_byOpacity = byValue;
             }
 
-		virtual void DrawWithOpenGL (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, bool& bSuccess) override
+		virtual void DrawWithOpenGL (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iLength, int iWidth, int iRotDegrees, bool& bSuccess) override
 			{
 			OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
 			if (!pRenderQueue)
@@ -195,7 +195,7 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
 			std::tuple<int, int, int> primaryColor (int(m_primaryColor.GetRed()), int(m_primaryColor.GetGreen()), int(m_primaryColor.GetBlue()));
 			std::tuple<int, int, int> secondaryColor (int(m_secondaryColor.GetRed()), int(m_secondaryColor.GetGreen()), int(m_secondaryColor.GetBlue()));
 
-			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, iDist * 2, iWidth * 2, iCanvasHeight, iCanvasWidth, rAngle, m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
+			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, iLength * 2, iWidth * 2, iCanvasHeight, iCanvasWidth, float(iRotDegrees) * (float(PI) / 180.0f), m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
 				primaryColor, secondaryColor, m_iIntensity, float(m_rCyclePos));
 			
 			bSuccess = true;
