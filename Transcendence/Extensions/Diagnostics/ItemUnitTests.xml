@@ -197,11 +197,58 @@
 
 						;	Various weapon properties ----------------------------------------------
 
+						{	test:'(itmGetProperty &itLaserCannon; 'ammoTypes)				result:Nil	}
+						{	test:'(itmGetProperty &itLaserCannon; 'averageDamage)			result:2.5	}
+						{	test:'(itmGetProperty &itLaserCannon; 'balance)					result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'balanceDamage)			result:89	}
+						{	test:'(itmGetProperty &itLaserCannon; 'balanceCost)				result:385	}
+						{	test:'(itmGetProperty &itLaserCannon; 'balanceExcludeCost)		result:5	}
+						{	test:'(itmGetProperty &itLaserCannon; 'canFireWhenBlind)		result:Nil	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damage)					result:90	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damagePerProjectile)		result:2.5	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageTypeID)			result:'laser	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageWMD180)			result:9	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damaged)					result:Nil	}
+						{	test:'(itmGetProperty &itLaserCannon; 'effectiveRange)			result:60	}
+						{	test:'(itmGetProperty &itLaserCannon; 'fireArc)					result:Nil	}
+						{	test:'(itmGetProperty &itLaserCannon; 'fireDelay)				result:5	}
+						{	test:'(itmGetProperty &itLaserCannon; 'fireRate)				result:200	}
 						{	test:'(itmGetProperty &itLaserCannon; 'hp)						result:0	}
 						{	test:'(itmGetProperty &itLaserCannon; 'interaction)				result:0	}
 						{	test:'(itmGetProperty &itLaserCannon; 'lifetime)				result:30	}
+						{	test:'(itmGetProperty &itLaserCannon; 'linkedFireOptions)		result:Nil	}
+						{	test:'(itmGetProperty &itLaserCannon; 'maxDamage)				result:4.0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'minDamage)				result:1.0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'multiShot)				result:Nil	}
+						{	test:'(itmGetProperty &itLaserCannon; 'omnidirectional)			result:Nil	}
 						{	test:'(itmGetProperty &itLaserCannon; 'range)					result:60	}
+						{	test:'(itmGetProperty &itLaserCannon; 'repeating)				result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'secondary)				result:Nil	}
+						{	test:'(itmGetProperty &itLaserCannon; 'shipCounterPerShot)		result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'singlePointOrigin)		result:True	}
 						{	test:'(itmGetProperty &itLaserCannon; 'speed)					result:100	}
+						{	test:'(itmGetProperty &itLaserCannon; 'stdCost)					result:350.0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'stdHP)					result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'stdInteraction)			result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'tracking)				result:Nil	}
+
+						{	test:'(itmGetProperty &itLaserCannon; 'damageArmorLevel)		result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageBlinding)			result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageDeviceDestroy)		result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageDeviceDisrupt)		result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageDisintegration)	result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageEMP)				result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageFuel)				result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageMining)			result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageMomentum)			result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageRadiation)			result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageSensor)			result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageShatter)			result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageShieldLevel)		result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageShieldPenetrate)	result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageTimeStop)			result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageWMD)				result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'damageWormhole)			result:0	}
 
 						{	test:'(itmGetProperty &itRecoillessCannon; 'hp)					result:2	}
 						{	test:'(itmGetProperty &itRecoillessCannon; 'interaction)		result:47	}
@@ -238,6 +285,112 @@
 						{	test:'(itmGetProperty &itSmartCannonShell; 'lifetime)			result:60	}
 						{	test:'(itmGetProperty &itSmartCannonShell; 'range)				result:60	}
 						{	test:'(itmGetProperty &itSmartCannonShell; 'speed)				result:50	}
+
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'ammoTypes)				result:'(&itKM100Missile; &itFragmentationMissile; &itKM120Missile;	&itKM500Missile; &itKM550Missile; &itXM300Missile; &itXM900Missile;)	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'averageDamage)			result:14.0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'balance)					result:-56	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'balanceDamage)			result:241	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'balanceCost)				result:599	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'balanceExcludeCost)		result:-12	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'canFireWhenBlind)		result:Nil	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damage)					result:168	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damagePerProjectile)		result:14.0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageTypeID)			result:'blast	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageWMD180)			result:106	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damaged)					result:Nil	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'effectiveRange)			result:108	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'fireArc)					result:Nil	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'fireDelay)				result:15	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'fireRate)				result:66	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'hp)						result:10	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'interaction)				result:100	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'lifetime)				result:90	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'linkedFireOptions)		result:Nil	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'maxDamage)				result:24.0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'minDamage)				result:4.0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'multiShot)				result:Nil	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'omnidirectional)			result:Nil	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'range)					result:108	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'repeating)				result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'secondary)				result:Nil	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'shipCounterPerShot)		result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'singlePointOrigin)		result:True	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'speed)					result:60	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'stdCost)					result:800.0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'stdHP)					result:7	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'stdInteraction)			result:100	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'tracking)				result:Nil	}
+
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageArmorLevel)		result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageBlinding)			result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageDeviceDestroy)		result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageDeviceDisrupt)		result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageDisintegration)	result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageEMP)				result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageFuel)				result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageMining)			result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageMomentum)			result:4	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageRadiation)			result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageSensor)			result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageShatter)			result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageShieldLevel)		result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageShieldPenetrate)	result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageTimeStop)			result:0	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageWMD)				result:5	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damageWormhole)			result:0	}
+
+						{	test:'(itmGetProperty &itKM500Missile; 'ammoTypes)				result:Nil	}
+						{	test:'(itmGetProperty &itKM500Missile; 'averageDamage)			result:17.5	}
+						{	test:'(itmGetProperty &itKM500Missile; 'balance)				result:15	}
+						{	test:'(itmGetProperty &itKM500Missile; 'balanceDamage)			result:199	}
+						{	test:'(itmGetProperty &itKM500Missile; 'balanceCost)			result:2410	}
+						{	test:'(itmGetProperty &itKM500Missile; 'balanceExcludeCost)		result:15	}
+						{	test:'(itmGetProperty &itKM500Missile; 'canFireWhenBlind)		result:Nil	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damage)					result:210	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damagePerProjectile)	result:17.5	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageTypeID)			result:'blast }
+						{	test:'(itmGetProperty &itKM500Missile; 'damageWMD180)			result:132	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damaged)				result:Nil	}
+						{	test:'(itmGetProperty &itKM500Missile; 'effectiveRange)			result:72	}
+						{	test:'(itmGetProperty &itKM500Missile; 'fireArc)				result:Nil	}
+						{	test:'(itmGetProperty &itKM500Missile; 'fireDelay)				result:15	}
+						{	test:'(itmGetProperty &itKM500Missile; 'fireRate)				result:66	}
+						{	test:'(itmGetProperty &itKM500Missile; 'hp)						result:10	}
+						{	test:'(itmGetProperty &itKM500Missile; 'interaction)			result:100	}
+						{	test:'(itmGetProperty &itKM500Missile; 'lifetime)				result:120	}
+						{	test:'(itmGetProperty &itKM500Missile; 'linkedFireOptions)		result:Nil	}
+						{	test:'(itmGetProperty &itKM500Missile; 'maxDamage)				result:30.0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'minDamage)				result:5.0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'multiShot)				result:Nil	}
+						{	test:'(itmGetProperty &itKM500Missile; 'omnidirectional)		result:Nil	}
+						{	test:'(itmGetProperty &itKM500Missile; 'range)					result:96	}
+						{	test:'(itmGetProperty &itKM500Missile; 'repeating)				result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'secondary)				result:Nil	}
+						{	test:'(itmGetProperty &itKM500Missile; 'shipCounterPerShot)		result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'singlePointOrigin)		result:True	}
+						{	test:'(itmGetProperty &itKM500Missile; 'speed)					result:40	}
+						{	test:'(itmGetProperty &itKM500Missile; 'stdCost)				result:1850.0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'stdHP)					result:12	}
+						{	test:'(itmGetProperty &itKM500Missile; 'stdInteraction)			result:100	}
+						{	test:'(itmGetProperty &itKM500Missile; 'tracking)				result:True	}
+
+						{	test:'(itmGetProperty &itKM500Missile; 'damageArmorLevel)		result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageBlinding)			result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageDeviceDestroy)	result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageDeviceDisrupt)	result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageDisintegration)	result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageEMP)				result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageFuel)				result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageMining)			result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageMomentum)			result:4	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageRadiation)		result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageSensor)			result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageShatter)			result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageShieldLevel)		result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageShieldPenetrate)	result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageTimeStop)			result:0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageWMD)				result:5	}
+						{	test:'(itmGetProperty &itKM500Missile; 'damageWormhole)			result:0	}
 						))
 
 					;	Unit Tests on Armor Damage

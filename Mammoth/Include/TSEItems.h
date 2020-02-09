@@ -594,6 +594,7 @@ class CItemCtx
 		CArmorClass *GetArmorClass (void) const;
 		CInstalledDevice *GetDevice (void);
 		CDeviceClass *GetDeviceClass (void);
+		CDeviceItem GetDeviceItem (void);
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void);
 		const CItemEnhancementStack &GetEnhancements (void) { const CItemEnhancementStack *pStack = GetEnhancementStack(); if (pStack) return *pStack; else return *m_pNullEnhancements; }
 		const CItem &GetItem (void) const;
@@ -624,6 +625,7 @@ class CItemCtx
 		CDeviceClass *m_pWeapon = NULL;			//	This is the weapon that uses the given item
 		int m_iVariant = -1;					//	NOTE: In this case, m_pItem may be either a
 												//	missile or the weapon.
+		CItem m_Weapon;
 
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Only used if we need to cons one up
 

@@ -77,6 +77,7 @@
 #define PROPERTY_BALANCE_DAMAGE					CONSTLIT("balanceDamage")
 #define PROPERTY_BALANCE_COST 					CONSTLIT("balanceCost")
 #define PROPERTY_BALANCE_EXCLUDE_COST			CONSTLIT("balanceExcludeCost")
+#define PROPERTY_CAN_FIRE_WHEN_BLIND			CONSTLIT("canFireWhenBlind")
 #define PROPERTY_DAMAGE_180						CONSTLIT("damage")			//	HP damage per 180 ticks
 #define PROPERTY_DAMAGE_PER_PROJECTILE			CONSTLIT("damagePerProjectile")
 #define PROPERTY_DAMAGE_TYPE_ID					CONSTLIT("damageTypeID")
@@ -90,7 +91,6 @@
 #define PROPERTY_MAX_DAMAGE						CONSTLIT("maxDamage")
 #define PROPERTY_MIN_DAMAGE						CONSTLIT("minDamage")
 #define PROPERTY_MULTI_SHOT						CONSTLIT("multiShot")
-#define PROPERTY_CAN_FIRE_WHEN_BLIND			CONSTLIT("canFireWhenBlind")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_REPEATING						CONSTLIT("repeating")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
@@ -319,27 +319,32 @@ int CWeaponClass::CalcActivateDelay (CItemCtx &ItemCtx) const
 	return GetActivateDelay(ItemCtx);
 	}
 
-int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
+int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 
 //	CalcBalance
 //
-//	Calculates weapon balance relative to level. +100 is 100% overpowered
+//	Calculates weapon balance relative to level. +100 is 100% overpowered.
 
 	{
+	const CItem Item(GetItemType(), 1);
+	const CDeviceItem DeviceItem = Item.AsDeviceItem();
+	if (!DeviceItem)
+		return 0;
+
+	CItemCtx ItemCtx(Item);
+
 	//  Initialize
 
 	retBalance.rBalance = 0.0;
 
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
-	if (pShot == NULL)
+	const CWeaponFireDesc *pShotDesc = GetWeaponFireDesc(DeviceItem, Ammo);
+	if (pShotDesc == NULL)
 		return 0;
-
-	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
 
 	//	Compute the level. For launchers we take either the missile level or the
 	//	launcher level (whichever is higher).
 
-	retBalance.iLevel = CalcLevel(pShot);
+	retBalance.iLevel = CalcLevel(*pShotDesc);
 
 	//  Get the standard stats for this level
 
@@ -348,10 +353,10 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Compute how much damage we do in 180 ticks.
 
-	retBalance.rDamageHP = CalcDamage(*pShot);
-	retBalance.rDamageMult = CalcConfigurationMultiplier(pShot, false);
+	retBalance.rDamageHP = CalcDamage(*pShotDesc);
+	retBalance.rDamageMult = CalcConfigurationMultiplier(pShotDesc, false);
 	Metric rDamagePerShot = retBalance.rDamageMult * retBalance.rDamageHP;
-	Metric rFireDelay = (Metric)Max(GetFireDelay(*pShot), 1);
+	Metric rFireDelay = (Metric)Max(GetFireDelay(*pShotDesc), 1);
 	retBalance.rDamage180 = rDamagePerShot * 180.0 / rFireDelay;
 
 	//  Compute the number of balance points (BP) of the damage. +100 = double
@@ -364,17 +369,18 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	//  adjust our balance. Positive nunmbers mean that the weapon has a lower 
 	//  level than the minimum for its damage type.
 
-	DamageTypes iDamageType = pShot->GetDamageType();
+	DamageTypes iDamageType = pShotDesc->GetDamageType();
 	int iTypeDelta = DamageDesc::GetDamageLevel(iDamageType) - retBalance.iLevel;
 	retBalance.rDamageType = (iTypeDelta >= 0 ? STD_WEAPON_STATS[iTypeDelta].iOverTierAdj : STD_WEAPON_STATS[-iTypeDelta].iUnderTierAdj);
 	retBalance.rBalance += retBalance.rDamageType;
 
 	//  Ammo weapons have the inherent disadvantage of needing ammo
 
-	bool bAmmo = ItemCtx.GetItem().GetType()->IsMissile();
+	bool bAmmo = !Ammo.IsEmpty();
 	bool bUsesAmmo;
-	if (CItemType *pAmmoType = pShot->GetAmmoType())
+	if (CItemType *pAmmoType = pShotDesc->GetAmmoType())
 		{
+		CItemCtx AmmoItemCtx(Ammo);
 		bUsesAmmo = true;
 
 		//  Having ammo is a 100% penalty
@@ -390,7 +396,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 		//  percent cost difference. +1 = ammo is 1% more expensive than 
 		//  standard. -1 = ammo is 1% cheaper than standard.
 
-		Metric rAmmoCost = (Metric)CEconomyType::ExchangeToCredits(pAmmoType->GetCurrencyAndValue(ItemCtx, true));
+		Metric rAmmoCost = (Metric)CEconomyType::ExchangeToCredits(pAmmoType->GetCurrencyAndValue(AmmoItemCtx, true));
 		if (pAmmoType->AreChargesAmmo() && pAmmoType->GetMaxCharges() > 0)
 			rAmmoCost /= (Metric)pAmmoType->GetMaxCharges();
 
@@ -399,7 +405,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 		//  Compute the ammo mass bonus
 
-		Metric rAmmoMass = pAmmoType->GetMassKg(ItemCtx);
+		Metric rAmmoMass = pAmmoType->GetMassKg(AmmoItemCtx);
 		if (pAmmoType->AreChargesAmmo() && pAmmoType->GetMaxCharges() > 0)
 			rAmmoMass /= (Metric)pAmmoType->GetMaxCharges();
 
@@ -424,7 +430,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Tracking weapons are a bonus
 
-	if (IsTracking(DeviceItem, pShot))
+	if (IsTracking(DeviceItem, pShotDesc))
 		{
 		retBalance.rTracking = BALANCE_TRACKING_BONUS;
 		retBalance.rBalance += retBalance.rTracking;
@@ -445,7 +451,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Range
 
-	Metric rRange = Min(MAX_BALANCE_RANGE, pShot->GetMaxRange());
+	Metric rRange = Min(MAX_BALANCE_RANGE, pShotDesc->GetMaxRange());
 	if (rRange >= STD_RANGE)
 		retBalance.rRange = BALANCE_RANGE_OVER_FACTOR * (rRange - STD_RANGE) / LIGHT_SECOND;
 	else
@@ -455,17 +461,17 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Speed
 
-	retBalance.rSpeed = BALANCE_SPEED_FACTOR * (1.0 - pow(pShot->GetRatedSpeed() / LIGHT_SPEED, BALANCE_SPEED_POWER));
+	retBalance.rSpeed = BALANCE_SPEED_FACTOR * (1.0 - pow(pShotDesc->GetRatedSpeed() / LIGHT_SPEED, BALANCE_SPEED_POWER));
 	retBalance.rBalance += retBalance.rSpeed;
 
 	//  Projectile HP and interaction
 
 	retBalance.rProjectileHP = 0.0;
-	if (pShot->GetInteraction() < 100)
-		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100 - pShot->GetInteraction()) / 100.0;
+	if (pShotDesc->GetInteraction() < 100)
+		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100 - pShotDesc->GetInteraction()) / 100.0;
 
-	if (pShot->GetHitPoints() > 0)
-		retBalance.rProjectileHP += BALANCE_HP_FACTOR * pShot->GetHitPoints() / (Metric)Stats.iDamage;
+	if (pShotDesc->GetHitPoints() > 0)
+		retBalance.rProjectileHP += BALANCE_HP_FACTOR * pShotDesc->GetHitPoints() / (Metric)Stats.iDamage;
 
 	retBalance.rBalance += retBalance.rProjectileHP;
 
@@ -532,7 +538,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	//  Radiation
 
 	int iDamage;
-	if (iDamage = pShot->GetSpecialDamage(specialRadiation))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialRadiation))
 		{
 		retBalance.rRadiation = BALANCE_RADIATION;
 		retBalance.rBalance += retBalance.rRadiation;
@@ -540,13 +546,13 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Device disrupt and damage
 
-	if (iDamage = pShot->GetSpecialDamage(specialDeviceDisrupt, DamageDesc::flagSpecialAdj))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialDeviceDisrupt, DamageDesc::flagSpecialAdj))
 		{
 		retBalance.rDeviceDisrupt = BALANCE_DEVICE_DISRUPT_FACTOR * Min(iDamage, 50);
 		retBalance.rBalance += retBalance.rDeviceDisrupt;
 		}
 
-	if (iDamage = pShot->GetSpecialDamage(specialDeviceDamage, DamageDesc::flagSpecialAdj))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialDeviceDamage, DamageDesc::flagSpecialAdj))
 		{
 		retBalance.rDeviceDamage = BALANCE_DEVICE_DAMAGE_FACTOR * Min(iDamage, 50);
 		retBalance.rBalance += retBalance.rDeviceDamage;
@@ -554,7 +560,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Disintegration
 
-	if (iDamage = pShot->GetSpecialDamage(specialDisintegration))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialDisintegration))
 		{
 		retBalance.rDisintegration = BALANCE_DISINTEGRATION;
 		retBalance.rBalance += retBalance.rDisintegration;
@@ -562,7 +568,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Shatter
 
-	if (iDamage = pShot->GetSpecialDamage(specialShatter))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialShatter))
 		{
 		retBalance.rShatter = BALANCE_SHATTER_FACTOR * iDamage;
 		retBalance.rBalance += retBalance.rShatter;
@@ -570,7 +576,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Shield penetrate
 
-	if (iDamage = pShot->GetSpecialDamage(specialShieldPenetrator, DamageDesc::flagSpecialAdj))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialShieldPenetrator, DamageDesc::flagSpecialAdj))
 		{
 		retBalance.rShieldPenetrate = BALANCE_SHIELD_PENETRATE_FACTOR * iDamage;
 		retBalance.rBalance += retBalance.rShieldPenetrate;
@@ -578,7 +584,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Extra shield damage
 
-	if (iDamage = pShot->GetSpecialDamage(specialShieldDisrupt))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialShieldDisrupt))
 		{
 		int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
 		retBalance.rShield = BALANCE_SHIELD_LEVEL_FACTOR * iEffectLevel;
@@ -587,7 +593,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Extra armor damage
 
-	if (iDamage = pShot->GetSpecialDamage(specialArmor))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialArmor))
 		{
 		int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
 		retBalance.rArmor = BALANCE_ARMOR_LEVEL_FACTOR * iEffectLevel;
@@ -596,7 +602,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//	Time stop
 
-	if (iDamage = pShot->GetSpecialDamage(specialTimeStop))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialTimeStop))
 		{
 		int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
 		retBalance.rTimeStop = BALANCE_TIME_STOP_LEVEL_FACTOR * iEffectLevel;
@@ -605,7 +611,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Mining
 
-	if (iDamage = pShot->GetSpecialDamage(specialMining, DamageDesc::flagSpecialAdj))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialMining, DamageDesc::flagSpecialAdj))
 		{
 		retBalance.rMining = BALANCE_MINING_FACTOR * iDamage;
 		retBalance.rBalance += retBalance.rMining;
@@ -616,9 +622,9 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	//  All weapons have some degree of WMD, but we only count the ones that 
 	//  have non-default WMD.
 
-	if (pShot->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialLevel))
+	if (pShotDesc->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialLevel))
 		{
-		retBalance.rWMD = BALANCE_WMD_FACTOR * pShot->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialAdj);
+		retBalance.rWMD = BALANCE_WMD_FACTOR * pShotDesc->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialAdj);
 		retBalance.rBalance += retBalance.rWMD;
 		}
 
@@ -902,7 +908,7 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 	if (pDevice == NULL)
 		return -1;
 
-	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
+	const CDeviceItem DeviceItem = ItemCtx.GetDeviceItem();
 
 	//	Get the swivel/turret parameters
 
@@ -1033,14 +1039,14 @@ bool CWeaponClass::CalcFireSolution (const CInstalledDevice &Device, CSpaceObjec
 	return true;
 	}
 
-int CWeaponClass::CalcLevel (CWeaponFireDesc *pShot) const
+int CWeaponClass::CalcLevel (const CWeaponFireDesc &ShotDesc) const
 
 //  CalcLevel
 //
 //  Returns the level of the given shot.
 
 	{
-	return Max(1, Min(pShot->GetLevel(), MAX_ITEM_LEVEL));
+	return Max(1, Min(ShotDesc.GetLevel(), MAX_ITEM_LEVEL));
 	}
 
 TArray<CTargetList::STargetResult> CWeaponClass::CalcMIRVFragmentationTargets (CSpaceObject &Source, const CWeaponFireDesc &ShotDesc, int iMaxCount)
@@ -1888,9 +1894,8 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		*retsValue = strFromInt(mathRound((GetFireDelay(*pShot) * m_iPowerUse * STD_SECONDS_PER_UPDATE * 1000) / 600.0));
 	else if (strEquals(sField, FIELD_BALANCE))
 		{
-		CItemCtx ItemCtx(Item);
 		SBalance Balance;
-		*retsValue = strFromInt(CalcBalance(ItemCtx, Balance));
+		*retsValue = strFromInt(CalcBalance(Ammo, Balance));
 		}
 	else if (strEquals(sField, FIELD_RANGE))
 		*retsValue = strFromInt(mathRound(pShot->GetMaxRange() / LIGHT_SECOND));
@@ -2585,7 +2590,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	if (pShot == NULL)
 		return CDeviceClass::FindAmmoItemProperty(Ctx, Ammo, sProperty);
 
-	const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
+	const CDeviceItem DeviceItem = Ctx.GetDeviceItem();
+	const CItem AmmoItem = (Ctx.GetItem().IsMissile() ? Ctx.GetItem() : CItem());
 
 	//	Enhancements
 
@@ -2596,7 +2602,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	ICCItem *pResult;
 	if (strEquals(sProperty, PROPERTY_AMMO_TYPES))
 		{
-		if (UsesAmmo())
+		if (UsesAmmo() && !AmmoItem)
 			{
 			pResult = CC.CreateLinkedList();
 			for (i = 0; i < m_ShotData.GetCount(); i++)
@@ -2615,7 +2621,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	else if (strEquals(sProperty, PROPERTY_BALANCE))
 		{
 		SBalance Balance;
-		CalcBalance(Ctx, Balance);
+		CalcBalance(AmmoItem, Balance);
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
@@ -2624,7 +2630,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	else if (strEquals(sProperty, PROPERTY_BALANCE_DAMAGE))
 		{
 		SBalance Balance;
-		CalcBalance(Ctx, Balance);
+		CalcBalance(AmmoItem, Balance);
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
@@ -2643,7 +2649,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	else if (strEquals(sProperty, PROPERTY_BALANCE_COST))
 		{
 		SBalance Balance;
-		CalcBalance(Ctx, Balance);
+		CalcBalance(AmmoItem, Balance);
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
@@ -2663,7 +2669,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	else if (strEquals(sProperty, PROPERTY_BALANCE_EXCLUDE_COST))
 		{
 		SBalance Balance;
-		CalcBalance(Ctx, Balance);
+		CalcBalance(AmmoItem, Balance);
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
@@ -2740,8 +2746,6 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	else if (strEquals(sProperty, PROPERTY_LINKED_FIRE_OPTIONS))
 		{
-		const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
-
 		//	Get the options from the device
 
 		DWORD dwOptions = DeviceItem.GetLinkedFireOptions();
@@ -2804,7 +2808,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	else if (strEquals(sProperty, PROPERTY_STD_COST))
 		{
-		const SStdStats &Stats = STD_WEAPON_STATS[CalcLevel(pShot) - 1];
+		const SStdStats &Stats = STD_WEAPON_STATS[CalcLevel(*pShot) - 1];
 		return CC.CreateDouble(Stats.rCost);
 		}
 
@@ -3452,7 +3456,7 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 			{
 			//	See if we use an event
 
-			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetDeviceItem(), *pShot, retiAmmoLeft))
 				{ }
 
 			//	If each ammo item uses charges, then we need a different method.
@@ -3505,7 +3509,7 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 
 		if (retiAmmoLeft)
 			{
-			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetDeviceItem(), *pShot, retiAmmoLeft))
 				{ }
 			else
 				*retiAmmoLeft = pDevice->GetCharges(pSource);
@@ -3524,7 +3528,7 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 
 		if (retiAmmoLeft)
 			{
-			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetDeviceItem(), *pShot, retiAmmoLeft))
 				{ }
 			else
 				*retiAmmoLeft = -1;
@@ -4324,7 +4328,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	{
 	CItemCtx Ctx(pShip, pDevice);
-	const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
+	const CDeviceItem DeviceItem = Ctx.GetDeviceItem();
 
 	const CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
 	if (pShot == NULL || pShip == NULL || pDevice == NULL)

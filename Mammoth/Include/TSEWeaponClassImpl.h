@@ -126,7 +126,7 @@ class CWeaponClass : public CDeviceClass
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpWeapon);
 		virtual ~CWeaponClass (void);
 
-		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
+		int CalcBalance (const CItem &Ammo, SBalance &retBalance) const;
 		inline bool FindEventHandlerWeaponClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const
 			{
 			if (!m_CachedEvents[iEvent].pCode)
@@ -263,7 +263,7 @@ class CWeaponClass : public CDeviceClass
 		Metric CalcDamage (const CWeaponFireDesc &ShotDesc, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
 		Metric CalcDamagePerShot (const CWeaponFireDesc &ShotDesc, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
 		int CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbSetDeviceAngle = NULL) const;
-		int CalcLevel (CWeaponFireDesc *pShot) const;
+		int CalcLevel (const CWeaponFireDesc &ShotDesc) const;
 		TArray<CTargetList::STargetResult> CalcMIRVTargets (CInstalledDevice &Device, const CTargetList &TargetList, int iMaxCount) const;
 		int CalcReachableFireAngle (const CInstalledDevice &Device, int iDesiredAngle, int iDefaultAngle = -1) const;
 		CShotArray CalcShotsFired (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, SActivateCtx &ActivateCtx, int &retiFireAngle, bool &retbSetFireAngle) const;
