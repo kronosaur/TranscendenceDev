@@ -97,6 +97,7 @@
 #define PROPERTY_SHIP_COUNTER_PER_SHOT			CONSTLIT("shipCounterPerShot")
 #define PROPERTY_SINGLE_POINT_ORIGIN			CONSTLIT("singlePointOrigin")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
+#define PROPERTY_STD_MASS						CONSTLIT("stdMass")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
 #define VARIANT_TYPE_COUNTER					CONSTLIT("counter")
@@ -630,7 +631,7 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 
 	//  Done
 
-	return (int)retBalance.rBalance;
+	return mathRound(retBalance.rBalance);
 	}
 
 CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTargetList &TargetList, Metric *retrDist2, int *retiFireAngle) const
@@ -1865,9 +1866,9 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_HP))
 		*retsValue = strFromInt(pShot->GetHitPoints());
 	else if (strEquals(sField, FIELD_MIN_DAMAGE))
-		*retsValue = strFromInt((int)(CalcConfigurationMultiplier(pShot) * pShot->GetDamage().GetMinDamage()));
+		*retsValue = strFromInt(mathRound(CalcConfigurationMultiplier(pShot) * pShot->GetDamage().GetMinDamage()));
 	else if (strEquals(sField, FIELD_MAX_DAMAGE))
-		*retsValue = strFromInt((int)(CalcConfigurationMultiplier(pShot) * pShot->GetDamage().GetMaxDamage()));
+		*retsValue = strFromInt(mathRound(CalcConfigurationMultiplier(pShot) * pShot->GetDamage().GetMaxDamage()));
 	else if (strEquals(sField, FIELD_DAMAGE_TYPE))
 		*retsValue = strFromInt(pShot->GetDamageType());
 	else if (strEquals(sField, FIELD_FIRE_DELAY))
@@ -1881,7 +1882,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 			return false;
 		}
 	else if (strEquals(sField, FIELD_AVERAGE_DAMAGE))
-		*retsValue = strFromInt((int)(CalcDamagePerShot(*pShot) * 1000.0));
+		*retsValue = strFromInt(mathRound(CalcDamagePerShot(*pShot) * 1000.0));
 	else if (strEquals(sField, FIELD_DAMAGE_180))
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(*pShot);
@@ -1900,7 +1901,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_RANGE))
 		*retsValue = strFromInt(mathRound(pShot->GetMaxRange() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_RECOIL))
-		*retsValue = (m_iRecoil ? strFromInt((int)(m_iRecoil * m_iRecoil * 10 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
+		*retsValue = (m_iRecoil ? strFromInt(mathRound(m_iRecoil * m_iRecoil * 10 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
 	else if (strEquals(sField, FIELD_SPEED))
 		*retsValue = strFromInt(mathRound(100.0 * pShot->GetRatedSpeed() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_VARIANT_COUNT))
@@ -2625,7 +2626,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
-		return CC.CreateInteger((int)Balance.rBalance);
+		return CC.CreateInteger(mathRound(Balance.rBalance));
 		}
 	else if (strEquals(sProperty, PROPERTY_BALANCE_DAMAGE))
 		{
@@ -2673,7 +2674,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
-		return CC.CreateInteger((int)(Balance.rBalance - Balance.rCost));
+		return CC.CreateInteger(mathRound(Balance.rBalance - Balance.rCost));
 		}
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_180))
 		{
@@ -2696,7 +2697,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		}
 
 	else if (strEquals(sProperty, PROPERTY_EFFECTIVE_RANGE))
-		return CC.CreateInteger((int)(pShot->GetEffectiveRange() / LIGHT_SECOND));
+		return CC.CreateInteger(mathRound(pShot->GetEffectiveRange() / LIGHT_SECOND));
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_ARC))
 		{
@@ -2741,7 +2742,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		if (rDelay <= 0.0)
 			return CC.CreateNil();
 
-		return CC.CreateInteger((int)(1000.0 / rDelay));
+		return CC.CreateInteger(mathRound(1000.0 / rDelay));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_LINKED_FIRE_OPTIONS))
@@ -2808,8 +2809,35 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	else if (strEquals(sProperty, PROPERTY_STD_COST))
 		{
-		const SStdStats &Stats = STD_WEAPON_STATS[CalcLevel(*pShot) - 1];
-		return CC.CreateDouble(Stats.rCost);
+		if (AmmoItem)
+			{
+			SBalance Balance;
+			CalcBalance(AmmoItem, Balance);
+			if (Balance.iLevel == 0)
+				return CC.CreateNil();
+
+			return CC.CreateInteger(mathRound(Balance.rStdAmmoCost));
+			}
+		else
+			{
+			const SStdStats &Stats = STD_WEAPON_STATS[CalcLevel(*pShot) - 1];
+			return CC.CreateDouble(Stats.rCost);
+			}
+		}
+
+	else if (strEquals(sProperty, PROPERTY_STD_MASS))
+		{
+		if (AmmoItem)
+			{
+			SBalance Balance;
+			CalcBalance(AmmoItem, Balance);
+			if (Balance.iLevel == 0)
+				return CC.CreateNil();
+
+			return CC.CreateInteger(mathRound(Balance.rStdAmmoMass));
+			}
+		else
+			return CC.CreateNil();
 		}
 
 	//	See if the shot has the property
@@ -3176,7 +3204,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			//	Some weapons fire multiple shots (e.g., Avalanche cannon)
 
 			CString sMult;
-			int iMult = (int)CalcConfigurationMultiplier(pRootShot, false);
+			int iMult = mathRound(CalcConfigurationMultiplier(pRootShot, false));
 			if (iMult != 1)
 				sMult = strPatternSubst(CONSTLIT(" (x%d)"), iMult);
 
@@ -3229,7 +3257,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 			//	Add the multiplier
 
-			int iMult = (int)CalcConfigurationMultiplier(pRootShot);
+			int iMult = mathRound(CalcConfigurationMultiplier(pRootShot));
 			if (iMult > 1)
 				sDamage.Append(strPatternSubst(CONSTLIT(" (x%d)"), iMult));
 
@@ -3275,7 +3303,7 @@ const CWeaponFireDesc *CWeaponClass::GetReferenceShotData (const CWeaponFireDesc
 			//	Area damage counts as multiple hits
 
 			case CWeaponFireDesc::ftArea:
-				iFragments = (int)(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
+				iFragments = mathRound(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
 				break;
 
 			//	Radius damage always hits (if in range)
@@ -3287,7 +3315,7 @@ const CWeaponFireDesc *CWeaponClass::GetReferenceShotData (const CWeaponFireDesc
 
 			default:
 				if (!pFragDesc->pDesc->IsTracking())
-					iFragments = (int)(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
+					iFragments = mathRound(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
 				break;
 			}
 

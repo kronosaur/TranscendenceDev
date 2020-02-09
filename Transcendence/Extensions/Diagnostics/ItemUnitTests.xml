@@ -199,7 +199,7 @@
 
 						{	test:'(itmGetProperty &itLaserCannon; 'ammoTypes)				result:Nil	}
 						{	test:'(itmGetProperty &itLaserCannon; 'averageDamage)			result:2.5	}
-						{	test:'(itmGetProperty &itLaserCannon; 'balance)					result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'balance)					result:1	}
 						{	test:'(itmGetProperty &itLaserCannon; 'balanceDamage)			result:89	}
 						{	test:'(itmGetProperty &itLaserCannon; 'balanceCost)				result:385	}
 						{	test:'(itmGetProperty &itLaserCannon; 'balanceExcludeCost)		result:5	}
@@ -229,6 +229,7 @@
 						{	test:'(itmGetProperty &itLaserCannon; 'speed)					result:100	}
 						{	test:'(itmGetProperty &itLaserCannon; 'stdCost)					result:350.0	}
 						{	test:'(itmGetProperty &itLaserCannon; 'stdHP)					result:0	}
+						{	test:'(itmGetProperty &itLaserCannon; 'stdMass)					result:Nil	}
 						{	test:'(itmGetProperty &itLaserCannon; 'stdInteraction)			result:0	}
 						{	test:'(itmGetProperty &itLaserCannon; 'tracking)				result:Nil	}
 
@@ -291,7 +292,7 @@
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'balance)					result:-56	}
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'balanceDamage)			result:241	}
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'balanceCost)				result:599	}
-						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'balanceExcludeCost)		result:-12	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'balanceExcludeCost)		result:-13	}
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'canFireWhenBlind)		result:Nil	}
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damage)					result:168	}
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'damagePerProjectile)		result:14.0	}
@@ -301,7 +302,7 @@
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'effectiveRange)			result:108	}
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'fireArc)					result:Nil	}
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'fireDelay)				result:15	}
-						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'fireRate)				result:66	}
+						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'fireRate)				result:67	}
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'hp)						result:10	}
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'interaction)				result:100	}
 						{	test:'(itmGetProperty &itNAMIMissileLauncher; 'lifetime)				result:90	}
@@ -354,7 +355,7 @@
 						{	test:'(itmGetProperty &itKM500Missile; 'effectiveRange)			result:72	}
 						{	test:'(itmGetProperty &itKM500Missile; 'fireArc)				result:Nil	}
 						{	test:'(itmGetProperty &itKM500Missile; 'fireDelay)				result:15	}
-						{	test:'(itmGetProperty &itKM500Missile; 'fireRate)				result:66	}
+						{	test:'(itmGetProperty &itKM500Missile; 'fireRate)				result:67	}
 						{	test:'(itmGetProperty &itKM500Missile; 'hp)						result:10	}
 						{	test:'(itmGetProperty &itKM500Missile; 'interaction)			result:100	}
 						{	test:'(itmGetProperty &itKM500Missile; 'lifetime)				result:120	}
@@ -369,7 +370,8 @@
 						{	test:'(itmGetProperty &itKM500Missile; 'shipCounterPerShot)		result:0	}
 						{	test:'(itmGetProperty &itKM500Missile; 'singlePointOrigin)		result:True	}
 						{	test:'(itmGetProperty &itKM500Missile; 'speed)					result:40	}
-						{	test:'(itmGetProperty &itKM500Missile; 'stdCost)				result:1850.0	}
+						{	test:'(itmGetProperty &itKM500Missile; 'stdCost)				result:6	}
+						{	test:'(itmGetProperty &itKM500Missile; 'stdMass)				result:19	}
 						{	test:'(itmGetProperty &itKM500Missile; 'stdHP)					result:12	}
 						{	test:'(itmGetProperty &itKM500Missile; 'stdInteraction)			result:100	}
 						{	test:'(itmGetProperty &itKM500Missile; 'tracking)				result:True	}
