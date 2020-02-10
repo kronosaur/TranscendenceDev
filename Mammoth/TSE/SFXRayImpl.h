@@ -189,12 +189,12 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
 			int iCanvasWidth = Dest.GetWidth();
 
 			float iDist = sqrt(float(iDistX * iDistX) + float(iDistY * iDistY));
-			int iPosX = x1 - int((float(iDistX) / iDist) * float(m_iLengthCount / 4));
-			int iPosY = y1 - int((float(iDistY) / iDist) * float(m_iLengthCount / 4));
+			int iPosX = x1 - ((iDistX) / 2);
+			int iPosY = y1 - ((iDistY) / 2);
 			std::tuple<int, int, int> primaryColor (int(m_primaryColor.GetRed()), int(m_primaryColor.GetGreen()), int(m_primaryColor.GetBlue()));
 			std::tuple<int, int, int> secondaryColor (int(m_secondaryColor.GetRed()), int(m_secondaryColor.GetGreen()), int(m_secondaryColor.GetBlue()));
 
-			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, m_iLengthCount, m_iWidthCount * 2, iCanvasHeight, iCanvasWidth, float(iRotDegrees) * (float(PI) / 180.0f), m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
+			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, int(iDist) * 2, m_iWidthCount * 2, iCanvasHeight, iCanvasWidth, float(iRotDegrees) * (float(PI) / 180.0f), m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
 				primaryColor, secondaryColor, m_iIntensity, float(m_rCyclePos), m_byOpacity);
 			
 			bSuccess = true;
