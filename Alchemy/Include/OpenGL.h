@@ -210,7 +210,7 @@ public:
 	// Rays take the following arguments: sizePixelX/Y, posPixelX/Y, canvasHeight, canvasWidth, iRotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture
 	// all are Ints, except the last 5 which are enums (to be passed as ints)
 	void addObjToRender(int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, float rotation, int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture,
-                        glm::vec3 primaryColor, glm::vec3 secondaryColor, int iIntensity, float waveCyclePos);
+                        glm::vec3 primaryColor, glm::vec3 secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj);
 	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
 	Shader* getShader(void) { return m_pShader; }
 	int getNumObjectsToRender(void) { return m_iNumObjectsToRender; }
@@ -223,7 +223,7 @@ private:
 	std::vector<float> m_depthsFloat;
 	std::vector<glm::ivec2> m_shapesInt; // contains iWidthAdjType and iReshape
 	std::vector<glm::ivec3> m_stylesInt; // contains iColorTypes, iOpacityTypes and iTexture - not sure if we even need colorTypes right now, since there is only one :)
-	std::vector<glm::vec2> m_intensitiesAndCyclesFloat;
+	std::vector<glm::vec3> m_FParamsFloat; // contains intensity, cycles, and opacity adjustment in that order
 	std::vector<glm::vec3> m_primaryColorsFloat;
 	std::vector<glm::vec3> m_secondaryColorsFloat;
 	int m_iCanvasHeight = 0;
@@ -245,7 +245,7 @@ public:
 		float glowR = 0.0, float glowG = 0.0, float glowB = 0.0, float glowA = 0.0, float glowNoise = 0.0);
 	void addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
 		int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
-		std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos);
+		std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj);
 	void setCurrentTick (int currTick) { m_iCurrentTick = currTick; }
 private:
 	void initializeVAO (void);

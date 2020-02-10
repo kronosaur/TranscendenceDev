@@ -114,7 +114,7 @@ private:
 	void CalcWaves(TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength, Metric rDecay, Metric rCyclePos);
 	void CleanUpIntermediates(void);
 	ILinePainter *CreateRenderer(int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos = 0.0);
-	void PaintRay(CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, int iLength, int iRotationDegrees, SViewportPaintCtx &Ctx);
+	void PaintRay(CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, int iRotationDegrees, SViewportPaintCtx &Ctx);
 
 	CEffectCreator *m_pCreator;
 
@@ -174,7 +174,7 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
                 m_byOpacity = byValue;
             }
 
-		virtual void DrawWithOpenGL (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iLength, int iWidth, int iRotDegrees, bool& bSuccess) override
+		virtual void DrawWithOpenGL (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iRotDegrees, bool& bSuccess) override
 			{
 			OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
 			if (!pRenderQueue)
@@ -185,18 +185,17 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
 
 			int iDistX = x1 - x2;
 			int iDistY = y1 - y2;
-			int iPosX = (x1 + x2) / 2;
-			int iPosY = (y1 + y2) / 2;
 			int iCanvasHeight = Dest.GetHeight();
 			int iCanvasWidth = Dest.GetWidth();
 
-			int iDist = int(sqrt(float(iDistX * iDistX) + float(iDistY * iDistY)));
-			float rAngle = -float(atan2(iDistY, iDistX));
+			float iDist = sqrt(float(iDistX * iDistX) + float(iDistY * iDistY));
+			int iPosX = x1 - int((float(iDistX) / iDist) * float(m_iLengthCount / 4));
+			int iPosY = y1 - int((float(iDistY) / iDist) * float(m_iLengthCount / 4));
 			std::tuple<int, int, int> primaryColor (int(m_primaryColor.GetRed()), int(m_primaryColor.GetGreen()), int(m_primaryColor.GetBlue()));
 			std::tuple<int, int, int> secondaryColor (int(m_secondaryColor.GetRed()), int(m_secondaryColor.GetGreen()), int(m_secondaryColor.GetBlue()));
 
-			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, iLength * 2, iWidth * 2, iCanvasHeight, iCanvasWidth, float(iRotDegrees) * (float(PI) / 180.0f), m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
-				primaryColor, secondaryColor, m_iIntensity, float(m_rCyclePos));
+			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, m_iLengthCount, m_iWidthCount * 2, iCanvasHeight, iCanvasWidth, float(iRotDegrees) * (float(PI) / 180.0f), m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
+				primaryColor, secondaryColor, m_iIntensity, float(m_rCyclePos), m_byOpacity);
 			
 			bSuccess = true;
 			return;

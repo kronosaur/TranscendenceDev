@@ -23,6 +23,8 @@ in vec3 primaryColor;
 in vec3 secondaryColor;
 in float waveCyclePos;
 flat in int colorTypes;
+in float opacityAdj;
+in vec2 quadSize;
 
 uniform float current_tick;
 
@@ -196,7 +198,7 @@ float widthRandomWaves(float rInputValue, float rAmplitude, float rWavelength, f
     //  
     {
     int i, v;
-    int iNumHarmonics = 5;
+    int iNumHarmonics = 2;
     
     //  Peak size is related to intensity.
     float iStdPeakSize = max(0.001, rWavelength);
@@ -303,32 +305,25 @@ float calcOpacityTaperedGlow(float rWidthCount, float rIntensity, float distance
 
 void main(void)
 {
-    //int reshape = widthAdjTaper;
-    //int widthAdjType = widthAdjJagged;
-    //int opacity = 1;
-    //vec3 primaryColor = vec3(1.0, 1.0, 0.0);
-    //vec3 secondaryColor = vec3(0.1, 0.3, 0.3);
-    //float intensity = 1.0;
-
     float center_point = 0.0; // Remember to remove this in the real shader!!
     vec2 uv = -1. + 2. * quadPos;
     vec2 real_texcoord = quadPos;
     
     float distanceFromCenter = abs(real_texcoord[1] - center_point);
     
-    float grains_x = 50;
-    float grains_y = grains_x;
-    float avg_grains = (grains_x * grains_y) / 2;
-    float perlinNoise = (0.5 + (cnoise(vec3(quadPos[0]*grains_x, quadPos[1]*grains_y, current_tick * 100)) / 2.0));
-    float grains = (perlinNoise * float(grainyTexture == 1) * 2) + float(grainyTexture == 0);
-    //float grains = max(-1.0, pow(perlinNoise, 4));
-    //grains = pow(perlinNoise, 6) * 2;
-    float blobWidthTop = widthRandomWaves(real_texcoord[0], BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR, 1.1);
-    float blobWidthBottom = widthRandomWaves(real_texcoord[0], BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR, 2.2);
-    float jaggedWidthTop = widthRandomWaves(real_texcoord[0], JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR, 3.3);
-    float jaggedWidthBottom = widthRandomWaves(real_texcoord[0], JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR, 4.4);
-    float whiptailWidthTop = widthWave(real_texcoord[0], WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR, WHIPTAIL_DECAY, waveCyclePos);
-    float whiptailWidthBottom = widthWave(real_texcoord[0], WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR, WHIPTAIL_DECAY, waveCyclePos + 0.5);
+    float grains_x = quadSize[0] / 20.0f;
+    float grains_y = quadSize[1] / 20.0f;
+    float perlinNoise = (0.5 + (cnoise(vec3(quadPos[0] * grains_x, quadPos[1] * grains_y, current_tick * 100)) / 2.0));
+    float grains = (perlinNoise * float(grainyTexture == opacityGrainy) * 2) + float(grainyTexture == 0);
+
+    float blobWidthTop = widthRandomWaves(real_texcoord[0], BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), 1.1);
+    float blobWidthBottom = blobWidthTop;
+    //float blobWidthBottom = widthRandomWaves(real_texcoord[0], BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), 2.2);
+    float jaggedWidthTop = widthRandomWaves(real_texcoord[0], JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), 3.3);
+    float jaggedWidthBottom = jaggedWidthTop;
+    //float jaggedWidthBottom = widthRandomWaves(real_texcoord[0], JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), 4.4);
+    float whiptailWidthTop = widthWave(real_texcoord[0], WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), WHIPTAIL_DECAY, waveCyclePos);
+    float whiptailWidthBottom = widthWave(real_texcoord[0], WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), WHIPTAIL_DECAY, waveCyclePos + 0.5);
     float taperWidth = widthTapered(real_texcoord[0]);
     float coneWidth = widthCone(real_texcoord[0]);
     float diamondWidth = widthDiamond(real_texcoord[0]);
@@ -379,7 +374,7 @@ void main(void)
     
     float limitTop = taperAdjTop * widthAdjTop;
     float limitBottom = taperAdjBottom * widthAdjBottom;
-    
+
     bool pixelInUpperBounds = ((real_texcoord[1] - center_point) < limitTop) && ((real_texcoord[1] - center_point) > 0);
     bool pixelInLowerBounds = ((real_texcoord[1] - center_point) > (-limitBottom)) && ((real_texcoord[1] - center_point) < 0);
     float pixelWithinBounds = float(pixelInUpperBounds || pixelInLowerBounds);
@@ -390,11 +385,11 @@ void main(void)
     float topOpacity = (
         (topOpacityGlow * float(opacity == opacityGlow)) + 
         (topOpacityTaperedGlow * float(opacity == opacityTaperedGlow))
-    );
+    ) * opacityAdj;
     float bottomOpacity = (
         (bottomOpacityGlow * float(opacity == opacityGlow)) + 
         (bottomOpacityTaperedGlow * float(opacity == opacityTaperedGlow))
-    );
+    ) * opacityAdj;
     //vec4 colorGlowTop = vec4(topOpacityGlow, topOpacityGlow, topOpacityGlow, topOpacityGlow) * float(pixelInUpperBounds);
     //vec4 colorGlowBottom = vec4(bottomOpacityGlow, bottomOpacityGlow, bottomOpacityGlow, bottomOpacityGlow) * float(pixelInLowerBounds);
     vec4 colorGlowTop = vec4(calcColorGlow(primaryColor, secondaryColor, limitTop, intensity, distanceFromCenter), topOpacity) * float(pixelInUpperBounds);

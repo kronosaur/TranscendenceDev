@@ -19,7 +19,7 @@ in float aRotation;
 in float aDepth;
 in ivec2 aShapes;
 in ivec3 aStyles;
-in vec2 aIntensitiesAndCycles;
+in vec3 aFloatParams;
 in vec3 aPrimaryColor;
 in vec3 aSecondaryColor;
 
@@ -36,6 +36,8 @@ out vec3 primaryColor;
 out vec3 secondaryColor;
 out float waveCyclePos;
 flat out int colorTypes;
+out float opacityAdj;
+out vec2 quadSize;
 
 mat4 rotationMatrix2D(float rotation)
 {
@@ -99,10 +101,12 @@ void main(void)
     opacity = int(intBitsToFloat(aStyles[1]));
     grainyTexture = int(intBitsToFloat(aStyles[2]));
     depth = aDepth;
-    intensity = aIntensitiesAndCycles[0];
-    waveCyclePos = aIntensitiesAndCycles[1];
+    intensity = aFloatParams[0];
+    waveCyclePos = aFloatParams[1];
+    opacityAdj = aFloatParams[2];
     primaryColor = aPrimaryColor;
     secondaryColor = aSecondaryColor;
+    quadSize = aSize;
     gl_Position = final_pos;
     
 }

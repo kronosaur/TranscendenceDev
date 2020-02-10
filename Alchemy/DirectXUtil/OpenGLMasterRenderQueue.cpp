@@ -134,12 +134,12 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 
 void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
 	                                                    int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
-	                                                    std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos)
+	                                                    std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj)
 	{
 	glm::vec3 vPrimaryColor = glm::vec3(std::get<0>(primaryColor), std::get<1>(primaryColor), std::get<2>(primaryColor)) / float(255.0);
 	glm::vec3 vSecondaryColor = glm::vec3(std::get<0>(secondaryColor), std::get<1>(secondaryColor), std::get<2>(secondaryColor)) / float(255.0);
 	m_effectRayRenderQueue->addObjToRender(sizePixelX, sizePixelY, posPixelX, posPixelY, canvasSizeX, canvasSizeY, rotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture,
-		vPrimaryColor, vSecondaryColor, iIntensity, waveCyclePos);
+		vPrimaryColor, vSecondaryColor, iIntensity, waveCyclePos, opacityAdj);
 	//m_effectRayRenderQueue->addObjToRender(200, 200, 500, 500, 1024, 768, 0, 1, 1, 1, 1, 1,
 		//glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0, 0.0, 1.0), 255, 0);
 	}
@@ -316,7 +316,7 @@ void OpenGLMasterRenderQueue::initializeRayVAO(void)
 	glVertexAttribPointer((GLuint)5, 3, GL_INT, GL_FALSE, 3 * sizeof(int), (void*)0);
 	glEnableVertexAttribArray(6);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[5]);
-	glVertexAttribPointer((GLuint)6, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glVertexAttribPointer((GLuint)6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(7);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[6]);
 	glVertexAttribPointer((GLuint)7, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);

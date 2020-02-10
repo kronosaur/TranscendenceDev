@@ -1248,7 +1248,7 @@ void CRayEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 	//	Paint the effect
 
-    PaintRay(Dest, xFrom, yFrom, xTo, yTo, m_iLength, AngleMod(Ctx.iRotation + m_iXformRotation), Ctx);
+    PaintRay(Dest, xFrom, yFrom, xTo, yTo, AngleMod(Ctx.iRotation + m_iXformRotation), Ctx);
 
 	DEBUG_CATCH
 	}
@@ -1276,7 +1276,7 @@ void CRayEffectPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVecto
 
 	//	Paint the effect
 
-	PaintRay(Dest, xFrom, yFrom, xTo, yTo, m_iLength, AngleMod(Ctx.iRotation + m_iXformRotation), Ctx);
+	PaintRay(Dest, xFrom, yFrom, xTo, yTo, AngleMod(Ctx.iRotation + m_iXformRotation), Ctx);
 	}
 
 void CRayEffectPainter::PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx)
@@ -1296,10 +1296,10 @@ void CRayEffectPainter::PaintLine (CG32bitImage &Dest, const CVector &vHead, con
 	int xTail, yTail;
 	Ctx.XFormRel.Transform(vTail, &xTail, &yTail);
 
-	PaintRay(Dest, xHead, yHead, xTail, yTail, iLength, AngleMod(Ctx.iRotation + m_iXformRotation), Ctx);
+	PaintRay(Dest, xHead, yHead, xTail, yTail, AngleMod(Ctx.iRotation + m_iXformRotation), Ctx);
 	}
 
-void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, int iLength, int iRotationDegrees, SViewportPaintCtx &Ctx)
+void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, int iRotationDegrees, SViewportPaintCtx &Ctx)
 
 //	PaintRay
 //
@@ -1332,7 +1332,7 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 
             m_RayRenderer[0]->SetParam(FIELD_OPACITY, (BYTE)dwOpacity);
 
-			m_RayRenderer[0]->DrawWithOpenGL(Dest, xFrom, yFrom, xTo, yTo, iLength, m_iWidth, iRotationDegrees, bSuccess);
+			m_RayRenderer[0]->DrawWithOpenGL(Dest, xFrom, yFrom, xTo, yTo, iRotationDegrees, bSuccess);
 			if (!bSuccess)
                 m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
 			break;
@@ -1340,13 +1340,13 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 
 		case animateCycle:
         case animateFlicker:
-			m_RayRenderer[Ctx.iTick % m_RayRenderer.GetCount()]->DrawWithOpenGL(Dest, xFrom, yFrom, xTo, yTo, iLength, m_iWidth, iRotationDegrees, bSuccess);
+			m_RayRenderer[Ctx.iTick % m_RayRenderer.GetCount()]->DrawWithOpenGL(Dest, xFrom, yFrom, xTo, yTo, iRotationDegrees, bSuccess);
 			if (!bSuccess)
 				m_RayRenderer[Ctx.iTick % m_RayRenderer.GetCount()]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
             break;
 
 		default:
-			m_RayRenderer[0]->DrawWithOpenGL(Dest, xFrom, yFrom, xTo, yTo, iLength, m_iWidth, iRotationDegrees, bSuccess);
+			m_RayRenderer[0]->DrawWithOpenGL(Dest, xFrom, yFrom, xTo, yTo, iRotationDegrees, bSuccess);
 			if (!bSuccess)
 				m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
 		}
