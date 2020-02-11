@@ -1,4 +1,4 @@
-#version 330 core
+#version 410 core
 
 // The shader used in RayRasterizer comprises the following:
 // -Width specification. The RayRasterizer draws a line in an arbitrary direction, then extends it width-wise.
@@ -13,31 +13,31 @@
 // Vertex shader should handle only the sizing and rotation aspects. All the magic happens in fragment shader.
 // Note, it seems that numLengthCells is just the length of the ray in pixels...
 
-in vec4 aPos;
-in vec4 aSizeAndPosition;
-in float aRotation;
-in float aDepth;
-in ivec2 aShapes;
-in ivec3 aStyles;
-in vec3 aFloatParams;
-in vec3 aPrimaryColor;
-in vec3 aSecondaryColor;
+layout (location = 0) in vec4 aPos;
+layout (location = 1) in vec4 aSizeAndPosition;
+layout (location = 2) in float aRotation;
+layout (location = 3) in float aDepth;
+layout (location = 4) in ivec2 aShapes;
+layout (location = 5) in ivec3 aStyles;
+layout (location = 6) in vec3 aFloatParams;
+layout (location = 7) in vec3 aPrimaryColor;
+layout (location = 8) in vec3 aSecondaryColor;
 
 uniform vec2 aCanvasAdjustedDimensions;
 
-out vec2 quadPos;
-flat out int reshape;
-flat out int widthAdjType;
-flat out int opacity;
-flat out int grainyTexture;
-out float depth;
-out float intensity;
-out vec3 primaryColor;
-out vec3 secondaryColor;
-out float waveCyclePos;
-flat out int colorTypes;
-out float opacityAdj;
-out vec2 quadSize;
+layout (location = 0) out vec2 quadPos;
+layout (location = 1) flat out int reshape;
+layout (location = 2) flat out int widthAdjType;
+layout (location = 3) flat out int opacity;
+layout (location = 4) flat out int grainyTexture;
+layout (location = 5) out float depth;
+layout (location = 6) out float intensity;
+layout (location = 7) out vec3 primaryColor;
+layout (location = 8) out vec3 secondaryColor;
+layout (location = 9) out float waveCyclePos;
+layout (location = 10) flat out int colorTypes;
+layout (location = 11) out float opacityAdj;
+layout (location = 12) out vec2 quadSize;
 
 mat4 rotationMatrix2D(float rotation)
 {
@@ -95,11 +95,11 @@ void main(void)
 	// Note, the iVec values are casted to float but treated as int for some weird reason. This means that the
 	// iVecs will contain bits equal to the float representation of their value, but are of type int. We should use intBitsToFloat
 	// to fix this.
-    widthAdjType = int(intBitsToFloat(aShapes[0]));
-    reshape = int(intBitsToFloat(aShapes[1]));
-    colorTypes = int(intBitsToFloat(aStyles[0]));
-    opacity = int(intBitsToFloat(aStyles[1]));
-    grainyTexture = int(intBitsToFloat(aStyles[2]));
+    widthAdjType = aShapes[0];
+    reshape = aShapes[1];
+    colorTypes = aStyles[0];
+    opacity = aStyles[1];
+    grainyTexture = aStyles[2];
     depth = aDepth;
     intensity = aFloatParams[0];
     waveCyclePos = aFloatParams[1];

@@ -1,25 +1,25 @@
-#version 330 core
+#version 410 core
 
-in vec3 aPos;
-in vec2 aTexPositions;
-in vec2 aCanvasQuadSizes;
-in vec2 aCanvasPositions;
-in vec2 aTexQuadSizes;
-in float aAlphaStrength;
-in float aDepth;
-in vec4 aGlowColor;
-in float aGlowNoise;
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexPositions;
+layout (location = 2) in vec2 aCanvasQuadSizes;
+layout (location = 3) in vec2 aCanvasPositions;
+layout (location = 4) in vec2 aTexQuadSizes;
+layout (location = 5) in float aAlphaStrength;
+layout (location = 6) in float aDepth;
+layout (location = 7) in vec4 aGlowColor;
+layout (location = 8) in float aGlowNoise;
 
-out vec2 texture_uv;
-out vec2 texture_pos;
-out vec2 texture_size;
-out vec2 fragment_pos;
-out float alpha_strength;
-out float depth;
-out vec4 glow_color;
-out float glow_noise;
-out vec2 texture_bounds_min;
-out vec2 texture_bounds_max;
+layout (location = 0) out vec2 texture_uv;
+layout (location = 1) out vec2 texture_pos;
+layout (location = 2) out vec2 texture_size;
+layout (location = 3) out vec2 fragment_pos;
+layout (location = 4) out float alpha_strength;
+layout (location = 5) out float depth;
+layout (location = 6) out vec4 glow_color;
+layout (location = 7) out float glow_noise;
+layout (location = 8) out vec2 texture_bounds_min;
+layout (location = 9) out vec2 texture_bounds_max;
 void main(void)
 {
 	// Fix positions and sizes

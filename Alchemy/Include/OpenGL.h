@@ -233,6 +233,38 @@ private:
 	OpenGLTexture* m_pTexture;
 };
 
+class OpenGLInstancedLightningRenderQueue {
+	// Renders Ray objects. These are procedurally generated effects on quads, that do not use textures.
+	// The RayRenderQueue always uses the ray shader.
+public:
+	OpenGLInstancedLightningRenderQueue(void);
+	~OpenGLInstancedLightningRenderQueue(void);
+	void Render(Shader *shader, OpenGLVAO *vao, float &startingDepth, float incDepth, int currentTick);
+	void clear(void);
+	// Rays take the following arguments: sizePixelX/Y, posPixelX/Y, canvasHeight, canvasWidth, iRotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture
+	// all are Ints, except the last 5 which are enums (to be passed as ints)
+	void addObjToRender(int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, float rotation, int iWidthAdjType, int iReshape,
+		glm::vec3 primaryColor, glm::vec3 secondaryColor, int opacityAdj);
+	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
+	Shader* getShader(void) { return m_pShader; }
+	int getNumObjectsToRender(void) { return m_iNumObjectsToRender; }
+private:
+
+	int m_iNumObjectsToRender = 0;
+	std::vector<glm::vec4> m_quadSizesAndCanvasPositionsFloat; // first 2 are quad sizes, last 2 are canvas positions
+	std::vector<float> m_rotationsFloat;
+	std::vector<float> m_depthsFloat;
+	std::vector<glm::ivec2> m_shapesInt; // contains iWidthAdjType and iReshape
+	std::vector<float> m_opacitiesFloat; // contains intensity, opacity adjustment in that order
+	std::vector<glm::vec3> m_primaryColorsFloat;
+	std::vector<glm::vec3> m_secondaryColorsFloat;
+	int m_iCanvasHeight = 0;
+	int m_iCanvasWidth = 0;
+	void setShader(Shader *shader) { m_pShader = shader; }
+	Shader* m_pShader;
+	OpenGLTexture* m_pTexture;
+};
+
 class OpenGLMasterRenderQueue {
 public:
 	OpenGLMasterRenderQueue (void);
@@ -243,9 +275,11 @@ public:
 	void addShipToRenderQueue (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY,
 		int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight, float alphaStrength = 1.0,
 		float glowR = 0.0, float glowG = 0.0, float glowB = 0.0, float glowA = 0.0, float glowNoise = 0.0);
-	void addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
+	void addRayToEffectRenderQueue (int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
 		int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
 		std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj);
+	void addLightningToEffectRenderQueue (int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
+		int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor, std::tuple<int, int, int> secondaryColor, int opacityAdj);
 	void setCurrentTick (int currTick) { m_iCurrentTick = currTick; }
 private:
 	void initializeVAO (void);
@@ -254,18 +288,24 @@ private:
 	void deinitCanvasVAO (void);
 	void initializeRayVAO(void);
 	void deinitRayVAO(void);
+	void initializeLightningVAO(void);
+	void deinitLightningVAO(void);
 	void clear (void);
 	OpenGLVAO* m_pVao;
 	OpenGLVAO* m_pRayVAO;
 	OpenGLVAO* m_pCanvasVAO;
+	OpenGLVAO* m_pLightningVAO;
 	Shader *m_pObjectTextureShader;
 	Shader *m_pGlowmapShader;
 	Shader *m_pRayShader;
+	Shader *m_pLightningShader;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipRenderQueues;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipEffectTextureRenderQueues;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_effectTextureRenderQueues;
 	OpenGLInstancedRayRenderQueue* m_shipEffectRayRenderQueue;
 	OpenGLInstancedRayRenderQueue* m_effectRayRenderQueue;
+	OpenGLInstancedLightningRenderQueue* m_shipEffectLightningRenderQueue;
+	OpenGLInstancedLightningRenderQueue* m_effectLightningRenderQueue;
 	//OpenGLInstancedRenderQueue* m_shipEffectOrbRenderQueues;
 	//OpenGLInstancedRenderQueue* m_effectOrbRenderQueues;
 	std::map<GLvoid*, OpenGLTexture*> m_textures;

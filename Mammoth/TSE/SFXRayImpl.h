@@ -196,7 +196,7 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
 
 			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, int(iDist) * 2, m_iWidthCount * 2, iCanvasHeight, iCanvasWidth, float(iRotDegrees) * (float(PI) / 180.0f), m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
 				primaryColor, secondaryColor, m_iIntensity, float(m_rCyclePos), m_byOpacity);
-			
+
 			bSuccess = true;
 			return;
 

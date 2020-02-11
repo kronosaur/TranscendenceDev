@@ -1,8 +1,8 @@
-#version 330 core
+#version 410 core
 out vec4 FragColor;
   
-in vec3 ourColor;
-in vec2 TexCoord;
+layout (location = 0) in vec3 ourColor;
+layout (location = 1) in vec2 TexCoord;
 
 uniform sampler2D ourTexture;
 uniform vec2 quadSize;

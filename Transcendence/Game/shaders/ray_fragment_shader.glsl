@@ -1,4 +1,4 @@
-#version 330 core
+#version 410 core
 
 
 
@@ -12,19 +12,19 @@
 // Following variables will be required:
 // Direct from GeorgeCode: iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture
 
-in vec2 quadPos;
-flat in int reshape;
-flat in int widthAdjType;
-flat in int opacity;
-flat in int grainyTexture;
-in float depth;
-in float intensity;
-in vec3 primaryColor;
-in vec3 secondaryColor;
-in float waveCyclePos;
-flat in int colorTypes;
-in float opacityAdj;
-in vec2 quadSize;
+layout (location = 0) in vec2 quadPos;
+layout (location = 1) flat in int reshape;
+layout (location = 2) flat in int widthAdjType;
+layout (location = 3) flat in int opacity;
+layout (location = 4) flat in int grainyTexture;
+layout (location = 5) in float depth;
+layout (location = 6) in float intensity;
+layout (location = 7) in vec3 primaryColor;
+layout (location = 8) in vec3 secondaryColor;
+layout (location = 9) in float waveCyclePos;
+layout (location = 10) flat in int colorTypes;
+layout (location = 11) in float opacityAdj;
+layout (location = 12) in vec2 quadSize;
 
 uniform float current_tick;
 
@@ -316,14 +316,14 @@ void main(void)
     float perlinNoise = (0.5 + (cnoise(vec3(quadPos[0] * grains_x, quadPos[1] * grains_y, current_tick * 100)) / 2.0));
     float grains = (perlinNoise * float(grainyTexture == opacityGrainy) * 2) + float(grainyTexture == 0);
 
-    float blobWidthTop = widthRandomWaves(real_texcoord[0], BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), 1.1);
+    float blobWidthTop = widthRandomWaves(real_texcoord[0], BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), 1.1);
     float blobWidthBottom = blobWidthTop;
-    //float blobWidthBottom = widthRandomWaves(real_texcoord[0], BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), 2.2);
-    float jaggedWidthTop = widthRandomWaves(real_texcoord[0], JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), 3.3);
+    //float blobWidthBottom = widthRandomWaves(real_texcoord[0], BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), 2.2);
+    float jaggedWidthTop = widthRandomWaves(real_texcoord[0], JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), 3.3);
     float jaggedWidthBottom = jaggedWidthTop;
-    //float jaggedWidthBottom = widthRandomWaves(real_texcoord[0], JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), 4.4);
-    float whiptailWidthTop = widthWave(real_texcoord[0], WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), WHIPTAIL_DECAY, waveCyclePos);
-    float whiptailWidthBottom = widthWave(real_texcoord[0], WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR * 2.0 * (quadSize[1] / quadSize[0]), WHIPTAIL_DECAY, waveCyclePos + 0.5);
+    //float jaggedWidthBottom = widthRandomWaves(real_texcoord[0], JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), 4.4);
+    float whiptailWidthTop = widthWave(real_texcoord[0], WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), WHIPTAIL_DECAY, waveCyclePos);
+    float whiptailWidthBottom = widthWave(real_texcoord[0], WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), WHIPTAIL_DECAY, waveCyclePos + 0.5);
     float taperWidth = widthTapered(real_texcoord[0]);
     float coneWidth = widthCone(real_texcoord[0]);
     float diamondWidth = widthDiamond(real_texcoord[0]);

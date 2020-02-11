@@ -10,6 +10,7 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	initializeVAO();
 	initializeCanvasVAO();
 	initializeRayVAO();
+	initializeLightningVAO();
 	// Depth level starts at one minus the delta.
 	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;
 	m_iCurrentTick = 0;
@@ -19,8 +20,10 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	m_pGlowmapShader = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader.glsl");
 	m_pObjectTextureShader = new Shader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
 	m_pRayShader = new Shader("./shaders/ray_vertex_shader.glsl", "./shaders/ray_fragment_shader.glsl");
+	m_pLightningShader = new Shader("./shaders/lightning_vertex_shader.glsl", "./shaders/lightning_fragment_shader.glsl");
 	
 	m_effectRayRenderQueue = new OpenGLInstancedRayRenderQueue();
+	m_effectLightningRenderQueue = new OpenGLInstancedLightningRenderQueue();
 }
 
 OpenGLMasterRenderQueue::~OpenGLMasterRenderQueue(void)
@@ -104,6 +107,14 @@ void OpenGLMasterRenderQueue::deinitRayVAO(void)
 	delete[] m_pRayVAO;
 }
 
+void OpenGLMasterRenderQueue::deinitLightningVAO(void)
+{
+	// TODO(heliogenesis): Move this VAO to the parent class once it's done
+	unsigned int *instancedLightningVBO = m_pLightningVAO->getinstancedVBO();
+	glDeleteBuffers(8, &instancedLightningVBO[0]);
+	delete[] m_pLightningVAO;
+}
+
 void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX,
 	int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight,
 	float alphaStrength, float glowR, float glowG, float glowB, float glowA, float glowNoise)
@@ -144,6 +155,18 @@ void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPi
 		//glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0, 0.0, 1.0), 255, 0);
 	}
 
+void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
+	int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor,
+	std::tuple<int, int, int> secondaryColor, int opacityAdj)
+{
+	glm::vec3 vPrimaryColor = glm::vec3(std::get<0>(primaryColor), std::get<1>(primaryColor), std::get<2>(primaryColor)) / float(255.0);
+	glm::vec3 vSecondaryColor = glm::vec3(std::get<0>(secondaryColor), std::get<1>(secondaryColor), std::get<2>(secondaryColor)) / float(255.0);
+	m_effectLightningRenderQueue->addObjToRender(sizePixelX, sizePixelY, posPixelX, posPixelY, canvasSizeX, canvasSizeY, rotation, iWidthAdjType, iReshape,
+		vPrimaryColor, vSecondaryColor, opacityAdj);
+	//m_effectRayRenderQueue->addObjToRender(200, 200, 500, 500, 1024, 768, 0, 1, 1, 1, 1, 1,
+		//glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0, 0.0, 1.0), 255, 0);
+}
+
 void OpenGLMasterRenderQueue::renderAllQueues(void)
 {
 	// For each render queue in the ships render queue, render that render queue. We need to set the texture and do a glBindTexture before doing so.
@@ -157,6 +180,7 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		m_fDepthLevel = depthLevel;
 	}
 	m_effectRayRenderQueue->Render(m_pRayShader, m_pRayVAO, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
+	m_effectLightningRenderQueue->Render(m_pLightningShader, m_pLightningVAO, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
 	// Reset the depth level.
 	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;
 }
@@ -310,10 +334,10 @@ void OpenGLMasterRenderQueue::initializeRayVAO(void)
 	glVertexAttribPointer((GLuint)3, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(4);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[3]);
-	glVertexAttribPointer((GLuint)4, 2, GL_INT, GL_FALSE, 2 * sizeof(int), (void*)0);
+	glVertexAttribIPointer((GLuint)4, 2, GL_INT, 2 * sizeof(int), (void*)0);
 	glEnableVertexAttribArray(5);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[4]);
-	glVertexAttribPointer((GLuint)5, 3, GL_INT, GL_FALSE, 3 * sizeof(int), (void*)0);
+	glVertexAttribIPointer((GLuint)5, 3, GL_INT, 3 * sizeof(int), (void*)0);
 	glEnableVertexAttribArray(6);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[5]);
 	glVertexAttribPointer((GLuint)6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -362,6 +386,75 @@ void OpenGLMasterRenderQueue::initializeRayVAO(void)
 	glVertexAttribDivisor(13, 1);
 	glVertexAttribDivisor(14, 1);
 	glVertexAttribDivisor(15, 1);
+	glBindVertexArray(0);
+}
+
+void OpenGLMasterRenderQueue::initializeLightningVAO(void)
+{
+	// First, we need to initialize the quad's vertices. Create a single VAO that will
+	// be the basis for all of our quads rendered using this queue.
+	// TODO(heliogenesis): Allow passing in of the texture for loading. Maybe move
+	// this VAO to the parent class once it's done?
+	float fSize = 0.5f;
+	float posZ = 0.9f; // TODO(heliogenesis): Fix this
+
+	std::vector<float> vertices{
+		fSize, fSize, posZ,
+		fSize, -fSize, posZ,
+		-fSize, -fSize, posZ,
+		-fSize, fSize, posZ,
+	};
+
+	std::vector<float> colors{
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 1.0f
+	};
+
+	std::vector<unsigned int> indices{
+		0, 1, 3,
+		1, 2, 3
+	};
+
+	std::vector<std::vector<float>> vbos{ vertices };
+	std::vector<std::vector<unsigned int>> ebos{ indices };
+
+	m_pLightningVAO = new OpenGLVAO(vbos, ebos);
+	unsigned int iVAOID = m_pLightningVAO->getVAO()[0];
+	unsigned int *instancedVBO = m_pLightningVAO->getinstancedVBO();
+	glBindVertexArray(iVAOID);
+	glGenBuffers(8, &instancedVBO[0]);
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
+	glVertexAttribPointer((GLuint)1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[1]);
+	glVertexAttribPointer((GLuint)2, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(3);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[2]);
+	glVertexAttribPointer((GLuint)3, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(4);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[3]);
+	glVertexAttribIPointer((GLuint)4, 2, GL_INT, 2 * sizeof(int), (void*)0);
+	glEnableVertexAttribArray(5);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[4]);
+	glVertexAttribPointer((GLuint)5, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(6);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[5]);
+	glVertexAttribPointer((GLuint)6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(7);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[6]);
+	glVertexAttribPointer((GLuint)7, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribDivisor(1, 1);
+	glVertexAttribDivisor(2, 1);
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
+	glVertexAttribDivisor(6, 1);
+	glVertexAttribDivisor(7, 1);
 	glBindVertexArray(0);
 }
 

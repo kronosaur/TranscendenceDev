@@ -1,14 +1,14 @@
-#version 330 core
-in vec2 texture_uv;
-in vec2 texture_pos;
-in vec2 texture_size;
-in vec2 fragment_pos;
-in float alpha_strength;
-in float depth;
-in vec4 glow_color;
-in float glow_noise;
-in vec2 texture_bounds_min;
-in vec2 texture_bounds_max;
+#version 410 core
+layout (location = 0) in vec2 texture_uv;
+layout (location = 1) in vec2 texture_pos;
+layout (location = 2) in vec2 texture_size;
+layout (location = 3) in vec2 fragment_pos;
+layout (location = 4) in float alpha_strength;
+layout (location = 5) in float depth;
+layout (location = 6) in vec4 glow_color;
+layout (location = 7) in float glow_noise;
+layout (location = 8) in vec2 texture_bounds_min;
+layout (location = 9) in vec2 texture_bounds_max;
 out vec4 out_color;
 
 uniform sampler2D obj_texture;

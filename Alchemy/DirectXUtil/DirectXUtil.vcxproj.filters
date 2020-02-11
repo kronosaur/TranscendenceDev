@@ -455,5 +455,8 @@
     <ClCompile Include="OpenGLInstancedRayRenderQueue.cpp">
       <Filter>Source Files\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="OpenGLInstancedLightningRenderQueue.cpp">
+      <Filter>Source Files\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
