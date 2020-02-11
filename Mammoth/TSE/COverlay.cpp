@@ -137,9 +137,9 @@ void COverlay::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotatio
 //	Set bounds
 
 	{
-	switch (m_pType->GetCounterStyle())
+	switch (m_pType->GetCounterDesc().GetType())
 		{
-		case COverlayType::counterRadius:
+		case COverlayCounterDesc::counterRadius:
 			{
 			if (m_iCounter > 0)
 				{
@@ -752,7 +752,7 @@ ICCItemPtr COverlay::GetProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj,
 		return ICCItemPtr(m_iCounter);
 
 	else if (strEquals(sProperty, PROPERTY_COUNTER_LABEL))
-		return ICCItemPtr(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterLabel());
+		return ICCItemPtr(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterDesc().GetLabel());
 
 	else if (strEquals(sProperty, PROPERTY_POS))
 		return ICCItemPtr(CreateListFromVector(GetPos(&SourceObj)));
@@ -813,7 +813,7 @@ bool COverlay::IncProperty (CSpaceObject &SourceObj, const CString &sProperty, I
 		{
 		//	If we're a radius counter, then do unit conversion.
 
-		if (m_pType->GetCounterStyle() == COverlayType::counterRadius)
+		if (m_pType->GetCounterDesc().GetType() == COverlayCounterDesc::counterRadius)
 			{
 			Metric rOldRadius = m_iCounter * g_KlicksPerPixel;
 			Metric rRadiusInc;
@@ -899,25 +899,27 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 //	Paint field annotations.
 
 	{
-	switch (m_pType->GetCounterStyle())
+	const COverlayCounterDesc &Counter = m_pType->GetCounterDesc();
+
+	switch (Counter.GetType())
 		{
-		case COverlayType::counterFlag:
-			PaintCounterFlag(Dest, x, y, strFromInt(m_iCounter), m_sMessage, m_pType->GetCounterColor(), Ctx);
+		case COverlayCounterDesc::counterFlag:
+			PaintCounterFlag(Dest, x, y, strFromInt(m_iCounter), m_sMessage, Counter.GetColor(), Ctx);
 			break;
 
-		case COverlayType::counterTextFlag:
+		case COverlayCounterDesc::counterTextFlag:
 			{
 			TArray<CString> Text;
 			strDelimit(m_sMessage, '\n', 2, &Text);
-			PaintCounterFlag(Dest, x, y, Text[0], Text[1], m_pType->GetCounterColor(), Ctx);
+			PaintCounterFlag(Dest, x, y, Text[0], Text[1], Counter.GetColor(), Ctx);
 			break;
 			}
 
-		case COverlayType::counterProgress:
+		case COverlayCounterDesc::counterProgress:
 			{
 			int cyHeight;
 
-			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+			CG32bitPixel rgbColor = Counter.GetColor();
 			if (rgbColor.IsNull() && Ctx.pObj)
 				rgbColor = Ctx.pObj->GetSymbolColor();
 
@@ -926,9 +928,9 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 					Ctx.yAnnotations,
 					GetUniverse().GetPaintTick(),
 					rgbColor,
-					(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterLabel()),
-					Min(Max(0, m_iCounter), m_pType->GetCounterMax()),
-					m_pType->GetCounterMax(),
+					(!m_sMessage.IsBlank() ? m_sMessage : Counter.GetLabel()),
+					Min(Max(0, m_iCounter), Counter.GetMaxValue()),
+					Counter.GetMaxValue(),
 					&cyHeight);
 
 			Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
@@ -944,11 +946,13 @@ void COverlay::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaint
 //	Paints overlay background
 
 	{
-	switch (m_pType->GetCounterStyle())
+	const COverlayCounterDesc &Counter = m_pType->GetCounterDesc();
+
+	switch (Counter.GetType())
 		{
-		case COverlayType::counterRadius:
+		case COverlayCounterDesc::counterRadius:
 			{
-			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+			CG32bitPixel rgbColor = Counter.GetColor();
 			if (rgbColor.IsNull() && Ctx.pObj)
 				rgbColor = Ctx.pObj->GetSymbolColor();
 
@@ -1019,14 +1023,16 @@ void COverlay::PaintLRSAnnotations (const ViewportTransform &Trans, CG32bitImage
 //	Paints annotations on the LRS
 
 	{
-	switch (m_pType->GetCounterStyle())
+	const COverlayCounterDesc &Counter = m_pType->GetCounterDesc();
+
+	switch (Counter.GetType())
 		{
-		case COverlayType::counterFlag:
-		case COverlayType::counterTextFlag:
+		case COverlayCounterDesc::counterFlag:
+		case COverlayCounterDesc::counterTextFlag:
 			{
 			const CG16bitFont &CounterFont = GetUniverse().GetNamedFont(CUniverse::fontMapLabel);
 
-			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+			CG32bitPixel rgbColor = Counter.GetColor();
 
 			//	We paint the text to the right and vertically centered
 
@@ -1048,14 +1054,16 @@ void COverlay::PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, in
 //	Paints annotations on the system map
 
 	{
-	switch (m_pType->GetCounterStyle())
+	const COverlayCounterDesc &Counter = m_pType->GetCounterDesc();
+
+	switch (Counter.GetType())
 		{
-		case COverlayType::counterFlag:
-		case COverlayType::counterTextFlag:
+		case COverlayCounterDesc::counterFlag:
+		case COverlayCounterDesc::counterTextFlag:
 			{
 			const CG16bitFont &CounterFont = GetUniverse().GetNamedFont(CUniverse::fontMapLabel);
 
-			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+			CG32bitPixel rgbColor = Counter.GetColor();
 
 			//	We paint the text to the right and vertically centered
 
@@ -1234,7 +1242,7 @@ bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem
 		{
 		//	If we're a radius counter, then do unit conversion.
 
-		if (m_pType->GetCounterStyle() == COverlayType::counterRadius)
+		if (m_pType->GetCounterDesc().GetType() == COverlayCounterDesc::counterRadius)
 			{
 			Metric rRadius = ParseDistance(pValue->GetStringValue(), LIGHT_SECOND);
 			m_iCounter = mathRound(rRadius / g_KlicksPerPixel);

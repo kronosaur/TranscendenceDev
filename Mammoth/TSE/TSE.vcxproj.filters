@@ -1447,5 +1447,8 @@
     <ClCompile Include="ShipUpdate.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
+    <ClCompile Include="COverlayCounterDesc.cpp">
+      <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

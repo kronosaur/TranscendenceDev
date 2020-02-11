@@ -5,10 +5,10 @@
 
 #pragma once
 
-class COverlayType : public CDesignType
+class COverlayCounterDesc
 	{
 	public:
-		enum ECounterDisplay
+		enum ETypes
 			{
 			counterNone,						//	Do not show a counter
 
@@ -19,15 +19,38 @@ class COverlayType : public CDesignType
 			counterTextFlag,					//	Show a flag with just text (no counter)
 			};
 
+		CG32bitPixel GetColor (void) const { return m_rgbPrimary; }
+		const CString &GetLabel (void) const { return m_sLabel; }
+		int GetMaxValue (void) const { return m_iMaxValue; }
+		ETypes GetType (void) const { return m_iType; }
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool IsEmpty (void) const { return (m_iType == counterNone); }
+		bool IsShownOnMap (void) const { return m_bShowOnMap; }
+
+	private:
+		ETypes m_iType = counterNone;			//	Type of counter to paint
+		CString m_sLabel;						//	Label for counter
+		int m_iMaxValue = 0;					//	Max value of counter (for progress bar)
+		CG32bitPixel m_rgbPrimary;				//	Counter color
+
+		bool m_bShowOnMap = false;				//	If TRUE, show counter on map
+	};
+
+class COverlayType : public CDesignType
+	{
+	public:
 		COverlayType(void);
+		COverlayType (const COverlayType &Src) = delete;
+		COverlayType (COverlayType &&Src) = delete;
+
 		virtual ~COverlayType(void);
+
+		COverlayType &operator= (const COverlayType &Src) = delete;
+		COverlayType &operator= (COverlayType &&Src) = delete;
 
 		bool AbsorbsWeaponFire (CInstalledDevice *pWeapon);
 		bool Disarms (void) const { return m_fDisarmShip; }
-		CG32bitPixel GetCounterColor (void) const { return m_rgbCounterColor; }
-		const CString &GetCounterLabel (void) const { return m_sCounterLabel; }
-		int GetCounterMax (void) const { return m_iCounterMax; }
-		ECounterDisplay GetCounterStyle (void) const { return m_iCounterType; }
+		const COverlayCounterDesc &GetCounterDesc (void) const { return m_Counter; }
 		int GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx);
 		Metric GetDrag (void) const { return m_rDrag; }
 		CEffectCreator *GetEffectCreator (void) const { return m_pEffect; }
@@ -36,7 +59,7 @@ class COverlayType : public CDesignType
 		bool IsHitEffectAlt (void) { return m_fAltHitEffect; }
 		bool IsShieldOverlay (void) { return m_fShieldOverlay; }
 		bool IsShipScreenDisabled (void) { return m_fDisableShipScreen; }
-		bool IsShownOnMap (void) { return m_fShowOnMap; }
+		bool IsShownOnMap (void) { return m_Counter.IsShownOnMap(); }
 		bool Paralyzes (void) const { return m_fParalyzeShip; }
 		bool RotatesWithShip (void) { return m_fRotateWithShip; }
 		bool Spins (void) const { return m_fSpinShip; }
@@ -58,15 +81,12 @@ class COverlayType : public CDesignType
 		CDamageAdjDesc m_AbsorbAdj;				//	Damage absorbed by the field
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
 		CDamageAdjDesc m_BonusAdj;				//	Bonus to weapon damage (by damage type)
-		Metric m_rDrag;							//	Drag coefficient (1.0 = no drag)
+		Metric m_rDrag = 1.0;					//	Drag coefficient (1.0 = no drag)
 
-		CEffectCreator *m_pEffect;				//	Effect for field
-		CEffectCreator *m_pHitEffect;			//	Effect when field is hit by damage
+		CEffectCreator *m_pEffect = NULL;		//	Effect for field
+		CEffectCreator *m_pHitEffect = NULL;	//	Effect when field is hit by damage
 
-		ECounterDisplay m_iCounterType;			//	Type of counter to paint
-		CString m_sCounterLabel;				//	Label for counter
-		int m_iCounterMax;						//	Max value of counter (for progress bar)
-		CG32bitPixel m_rgbCounterColor;					//	Counter color
+		COverlayCounterDesc m_Counter;			//	Counter descriptor
 
 		DWORD m_fAltHitEffect:1;				//	If TRUE, hit effect replaces normal effect
 		DWORD m_fRotateWithShip:1;				//	If TRUE, we rotate along with source rotation
@@ -75,9 +95,9 @@ class COverlayType : public CDesignType
 		DWORD m_fDisarmShip:1;					//	If TRUE, ship is disarmed
 		DWORD m_fDisableShipScreen:1;			//	If TRUE, player cannot bring up ship screen
 		DWORD m_fSpinShip:1;					//	If TRUE, ship spins uncontrollably
-		DWORD m_fShowOnMap:1;					//	If TRUE, we show on the system map
-
 		DWORD m_fTimeStop:1;					//	If TRUE, ship is time-stopped
+
+		DWORD m_fSpare1:1;
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
@@ -88,5 +108,3 @@ class COverlayType : public CDesignType
 
 		DWORD m_dwSpare:16;
 	};
-
-

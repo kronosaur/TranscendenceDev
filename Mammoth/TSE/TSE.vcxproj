@@ -456,6 +456,7 @@
     <ClCompile Include="CObjectTrackerCriteria.cpp" />
     <ClCompile Include="COrbitFocusGenerator.cpp" />
     <ClCompile Include="COverlay.cpp" />
+    <ClCompile Include="COverlayCounterDesc.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />
     <ClCompile Include="CFireEventOrder.cpp" />

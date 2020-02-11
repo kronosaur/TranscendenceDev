@@ -495,7 +495,7 @@ void COverlayList::GetListOfCommandPaneCounters (TArray<COverlay *> *retList)
 
 		if (!pField->IsDestroyed()
 				&& (pType = pField->GetType())
-				&& pType->GetCounterStyle() == COverlayType::counterCommandBarProgress)
+				&& pType->GetCounterDesc().GetType() == COverlayCounterDesc::counterCommandBarProgress)
 			retList->Insert(pField);
 
 		pField = pField->GetNext();

@@ -1,6 +1,7 @@
 //	COverlayType.cpp
 //
 //	COverlayType class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -12,28 +13,17 @@
 
 #define ABSORB_ADJ_ATTRIB						CONSTLIT("absorbAdj")
 #define ALT_EFFECT_ATTRIB						CONSTLIT("altEffect")
-#define COLOR_ATTRIB							CONSTLIT("color")
 #define DISABLE_SHIP_SCREEN_ATTRIB				CONSTLIT("disableShipScreen")
 #define DISARM_ATTRIB							CONSTLIT("disarm")
 #define DRAG_ATTRIB								CONSTLIT("drag")
 #define IGNORE_SHIP_ROTATION_ATTRIB				CONSTLIT("ignoreSourceRotation")
-#define LABEL_ATTRIB							CONSTLIT("label")
-#define MAX_ATTRIB								CONSTLIT("max")
 #define PARALYZE_ATTRIB							CONSTLIT("paralyze")
 #define SHIELD_OVERLAY_ATTRIB					CONSTLIT("shieldOverlay")
-#define SHOW_ON_MAP_ATTRIB						CONSTLIT("showOnMap")
 #define SPIN_ATTRIB								CONSTLIT("spin")
-#define STYLE_ATTRIB							CONSTLIT("style")
 #define TIME_STOP_ATTRIB						CONSTLIT("timeStop")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 #define BONUS_ADJ_ATTRIB						CONSTLIT("weaponBonusAdj")
 #define WEAPON_SUPPRESS_ATTRIB					CONSTLIT("weaponSuppress")
-
-#define COUNTER_COMMAND_BAR_PROGRESS			CONSTLIT("commandBarProgress")
-#define COUNTER_FLAG							CONSTLIT("flag")
-#define COUNTER_PROGRESS						CONSTLIT("progress")
-#define COUNTER_RADIUS							CONSTLIT("radius")
-#define COUNTER_TEXT_FLAG						CONSTLIT("textFlag")
 
 #define FIELD_WEAPON_SUPPRESS					CONSTLIT("weaponSuppress")
 
@@ -41,9 +31,7 @@
 
 #define SUPPRESS_ALL							CONSTLIT("*")
 
-COverlayType::COverlayType (void) :
-		m_pEffect(NULL),
-		m_pHitEffect(NULL)
+COverlayType::COverlayType (void)
 
 //	COverlayType constructor
 
@@ -261,37 +249,8 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pCounter = pDesc->GetContentElementByTag(COUNTER_TAG);
 	if (pCounter)
 		{
-		CString sStyle = pCounter->GetAttribute(STYLE_ATTRIB);
-
-		if (strEquals(sStyle, COUNTER_COMMAND_BAR_PROGRESS))
-			m_iCounterType = counterCommandBarProgress;
-
-		else if (strEquals(sStyle, COUNTER_FLAG))
-			m_iCounterType = counterFlag;
-
-		else if (strEquals(sStyle, COUNTER_PROGRESS))
-			m_iCounterType = counterProgress;
-
-		else if (strEquals(sStyle, COUNTER_RADIUS))
-			m_iCounterType = counterRadius;
-
-		else if (strEquals(sStyle, COUNTER_TEXT_FLAG))
-			m_iCounterType = counterTextFlag;
-
-		else
-			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown counter style: %s"), sStyle));
-
-		m_sCounterLabel = pCounter->GetAttribute(LABEL_ATTRIB);
-		m_iCounterMax = pCounter->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, 100);
-		m_rgbCounterColor = ::LoadRGBColor(pCounter->GetAttribute(COLOR_ATTRIB));
-		m_fShowOnMap = pCounter->GetAttributeBool(SHOW_ON_MAP_ATTRIB);
-		}
-	else
-		{
-		m_iCounterType = counterNone;
-		m_iCounterMax = 0;
-		m_rgbCounterColor = CG32bitPixel::Null();
-		m_fShowOnMap = false;
+		if (ALERROR error = m_Counter.InitFromXML(Ctx, *pCounter))
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
 	//	Options

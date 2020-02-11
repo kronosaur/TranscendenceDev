@@ -347,6 +347,10 @@
 								screen: &dsCommonwealthMiningPromotion;
 								priority: 5
 								}
+
+						;	Let the base class handle any other screen
+
+						(typFireObjEvent &baCommonwealthStation; gSource 'GetDockScreen)
 						)
 					)
 			</GetDockScreen>

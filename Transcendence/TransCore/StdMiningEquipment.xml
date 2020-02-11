@@ -154,7 +154,7 @@
 
 	<ItemType UNID="&itPlasmaTorch;"
 			name=				"plasma torch(es)"
-			attributes=			"commonwealth, majorItem, miningEquipment, specialty"
+			attributes=			"commonwealth, majorItem, miningEquipment, NAMI, specialty"
 			  
 			level=				"6"
 			frequency=			"rare"
