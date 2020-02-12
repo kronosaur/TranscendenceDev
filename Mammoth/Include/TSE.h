@@ -599,6 +599,7 @@ class CSpaceObject
 
 		//	Mining
 
+		int CalcMiningDifficulty (EAsteroidType iType) const;
 		virtual bool CanBeMined (void) const { return false; }
 		bool HasMinableItem (void) const;
 
@@ -1015,6 +1016,10 @@ class CSpaceObject
 		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
 		static CString ConvertToID (InstallItemResults iResult);
 
+		//	Stations
+
+		virtual const CAsteroidDesc &GetAsteroidDesc (void) const { return CAsteroidDesc::Null(); }
+
 		//	Wingmen
 
 		virtual bool IsEscortingPlayer (void) const { return false; }
@@ -1280,7 +1285,6 @@ class CSpaceObject
 		//	Helper functions
 		void AddEffect (IEffectPainter *pPainter, int xOffset, int yOffset, int iTick = 0, int iRotation = 0);
 		void CalcInsideBarrier (void);
-		int CalcMiningDifficulty (EAsteroidType iType) const;
 		Metric CalculateItemMass (Metric *retrCargoMass = NULL) const;
 		bool CanFireOnObjHelper (CSpaceObject *pObj) const;
 		void ClearCannotBeHit (void) { m_fCannotBeHit = false; }

@@ -36,6 +36,25 @@ class COverlayCounterDesc
 		bool m_bShowOnMap = false;				//	If TRUE, show counter on map
 	};
 
+class COverlayUndergroundDesc
+	{
+	public:
+		enum ETypes
+			{
+			typeNone,
+
+			typeVault,
+			};
+
+		int GetHitPoints (int iLevel = 1) const;
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool IsEmpty (void) const { return m_iType == typeNone; }
+
+	private:
+		ETypes m_iType = typeNone;
+		int m_iStrength = 0;					//	Hits points to dig up
+	};
+
 class COverlayType : public CDesignType
 	{
 	public:
@@ -55,13 +74,16 @@ class COverlayType : public CDesignType
 		Metric GetDrag (void) const { return m_rDrag; }
 		CEffectCreator *GetEffectCreator (void) const { return m_pEffect; }
 		CEffectCreator *GetHitEffectCreator (void) const { return m_pHitEffect; }
+		int GetMaxHitPoints (const CSpaceObject &Source) const;
+		const COverlayUndergroundDesc &GetUndergroundDesc (void) const { return m_Underground; }
 		int GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		bool IsHitEffectAlt (void) { return m_fAltHitEffect; }
 		bool IsShieldOverlay (void) { return m_fShieldOverlay; }
 		bool IsShipScreenDisabled (void) { return m_fDisableShipScreen; }
 		bool IsShownOnMap (void) { return m_Counter.IsShownOnMap(); }
+		bool IsUnderground (void) const { return !m_Underground.IsEmpty(); }
 		bool Paralyzes (void) const { return m_fParalyzeShip; }
-		bool RotatesWithShip (void) { return m_fRotateWithShip; }
+		bool RotatesWithSource (const CSpaceObject &Source) const;
 		bool Spins (void) const { return m_fSpinShip; }
 		bool StopsTime (void) const { return m_fTimeStop; }
 
@@ -87,6 +109,7 @@ class COverlayType : public CDesignType
 		CEffectCreator *m_pHitEffect = NULL;	//	Effect when field is hit by damage
 
 		COverlayCounterDesc m_Counter;			//	Counter descriptor
+		COverlayUndergroundDesc m_Underground;	//	Underground (mining) descriptor
 
 		DWORD m_fAltHitEffect:1;				//	If TRUE, hit effect replaces normal effect
 		DWORD m_fRotateWithShip:1;				//	If TRUE, we rotate along with source rotation
@@ -97,7 +120,7 @@ class COverlayType : public CDesignType
 		DWORD m_fSpinShip:1;					//	If TRUE, ship spins uncontrollably
 		DWORD m_fTimeStop:1;					//	If TRUE, ship is time-stopped
 
-		DWORD m_fSpare1:1;
+		DWORD m_fRotateWithSource:1;			//	If TRUE, we rotate along with source
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;

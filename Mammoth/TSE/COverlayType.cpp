@@ -10,6 +10,7 @@
 #define EFFECT_TAG								CONSTLIT("Effect")
 #define HIT_EFFECT_TAG							CONSTLIT("HitEffect")
 #define SHIP_ENERGY_FIELD_TYPE_TAG				CONSTLIT("ShipEnergyFieldType")
+#define UNDERGROUND_TAG							CONSTLIT("Underground")
 
 #define ABSORB_ADJ_ATTRIB						CONSTLIT("absorbAdj")
 #define ALT_EFFECT_ATTRIB						CONSTLIT("altEffect")
@@ -18,6 +19,7 @@
 #define DRAG_ATTRIB								CONSTLIT("drag")
 #define IGNORE_SHIP_ROTATION_ATTRIB				CONSTLIT("ignoreSourceRotation")
 #define PARALYZE_ATTRIB							CONSTLIT("paralyze")
+#define ROTATE_WITH_SOURCE_ATTRIB				CONSTLIT("rotateWithSource")
 #define SHIELD_OVERLAY_ATTRIB					CONSTLIT("shieldOverlay")
 #define SPIN_ATTRIB								CONSTLIT("spin")
 #define TIME_STOP_ATTRIB						CONSTLIT("timeStop")
@@ -108,14 +110,12 @@ int COverlayType::GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx)
 //	Returns the amount of damage absorbed
 
 	{
-	int i;
-
 	if (Ctx.Damage.GetDamageType() == damageGeneric)
 		{
 		//	For generic damage, we absorb the min of all other damage types
 
 		int iMin = 100;
-		for (i = 0; i < damageCount; i++)
+		for (int i = 0; i < damageCount; i++)
 			if (m_AbsorbAdj.GetAbsorbAdj((DamageTypes)i) < iMin)
 				iMin = m_AbsorbAdj.GetAbsorbAdj((DamageTypes)i);
 
@@ -123,6 +123,23 @@ int COverlayType::GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx)
 		}
 
 	return (Ctx.iDamage * m_AbsorbAdj.GetAbsorbAdj(Ctx.Damage.GetDamageType())) / 100;
+	}
+
+int COverlayType::GetMaxHitPoints (const CSpaceObject &Source) const
+
+//	GetMaxHitPoints
+//
+//	Returns maximum hit points.
+
+	{
+	if (!m_Underground.IsEmpty())
+		{
+		const CSystem *pSystem = Source.GetSystem();
+		int iLevel = (pSystem ? pSystem->GetLevel() : 1);
+		return m_Underground.GetHitPoints(iLevel);
+		}
+	else
+		return 0;
 	}
 
 int COverlayType::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource)
@@ -219,6 +236,7 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Rotation
 
 	m_fRotateWithShip = !pDesc->GetAttributeBool(IGNORE_SHIP_ROTATION_ATTRIB);
+	m_fRotateWithSource = pDesc->GetAttributeBool(ROTATE_WITH_SOURCE_ATTRIB);
 
 	//	Damage adjustment
 
@@ -246,10 +264,17 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Counter
 
-	CXMLElement *pCounter = pDesc->GetContentElementByTag(COUNTER_TAG);
-	if (pCounter)
+	if (const CXMLElement *pCounter = pDesc->GetContentElementByTag(COUNTER_TAG))
 		{
 		if (ALERROR error = m_Counter.InitFromXML(Ctx, *pCounter))
+			return ComposeLoadError(Ctx, Ctx.sError);
+		}
+
+	//	Underground
+
+	if (const CXMLElement *pUnderground = pDesc->GetContentElementByTag(UNDERGROUND_TAG))
+		{
+		if (ALERROR error = m_Underground.InitFromXML(Ctx, *pUnderground))
 			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
@@ -296,4 +321,17 @@ CEffectCreator *COverlayType::OnFindEffectCreator (const CString &sUNID)
 		default:
 			return NULL;
 		}
+	}
+
+bool COverlayType::RotatesWithSource (const CSpaceObject &Source) const
+
+//	RotatesWithSource
+//
+//	Returns TRUE if we rotate along with the source.
+
+	{
+	if (Source.GetCategory() == CSpaceObject::catShip)
+		return (m_fRotateWithShip || m_fRotateWithSource);
+	else
+		return m_fRotateWithSource;
 	}

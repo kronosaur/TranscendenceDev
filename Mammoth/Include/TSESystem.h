@@ -837,7 +837,7 @@ class CSystem
 		CEnvironmentGrid *GetEnvironmentGrid (void) { InitSpaceEnvironment(); return m_pEnvironment; }
 		DWORD GetID (void) { return m_dwID; }
 		int GetLastUpdated (void) { return m_iLastUpdated; }
-		int GetLevel (void);
+		int GetLevel (void) const;
 		const CLocationList &GetLocations (void) const { return m_Locations; }
 		CSpaceObject *GetNamedObject (const CString &sName);
 		const CString &GetName (void) const { return m_sName; }
@@ -860,7 +860,7 @@ class CSystem
 		int GetTick (void) { return m_iTick; }
 		int GetTileSize (void) const;
 		Metric GetTimeScale (void) const { return m_rTimeScale; }
-		CTopologyNode *GetTopology (void) { return m_pTopology; }
+		CTopologyNode *GetTopology (void) const { return m_pTopology; }
 		CSystemType *GetType (void) { return m_pType; }
 		CSpaceEnvironmentType *GetSpaceEnvironment (int xTile, int yTile);
 		CSpaceEnvironmentType *GetSpaceEnvironment (const CVector &vPos, int *retxTile = NULL, int *retyTile = NULL);

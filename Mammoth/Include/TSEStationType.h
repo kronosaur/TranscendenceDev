@@ -331,12 +331,13 @@ class CAsteroidDesc
 		CString GetTypeLabel (CUniverse &Universe) const;
 		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
-		bool IsEmpty (void) const { return m_bDefault; }
+		bool IsEmpty (void) const { return (m_bDefault || m_iType == EAsteroidType::unknown); }
 
 		static void CalcMining (int iMiningLevel, int iMiningDifficulty, EAsteroidType iType, const SDamageCtx &DamageCtx, SMiningStats &retMining);
 		static EMiningMethod CalcMiningMethod (const CWeaponFireDesc &Desc);
 		static CString CompositionID (EAsteroidType iType);
 		static int GetDefaultMiningDifficulty (EAsteroidType iType);
+		static const CAsteroidDesc &Null (void) { return m_Null; }
 		static EAsteroidType ParseComposition (const CString &sValue);
 
 	private:
@@ -358,6 +359,8 @@ class CAsteroidDesc
 
 		static TStaticStringTable<TStaticStringEntry<EAsteroidType>, 5> COMPOSITION_INDEX;
 		static SCompositionDesc COMPOSITION_TABLE[EAsteroidTypeCount];
+
+		static const CAsteroidDesc m_Null;
 	};
 
 class CStarDesc

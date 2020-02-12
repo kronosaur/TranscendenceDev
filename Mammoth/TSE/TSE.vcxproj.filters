@@ -1450,5 +1450,8 @@
     <ClCompile Include="COverlayCounterDesc.cpp">
       <Filter>Source Files\Overlays</Filter>
     </ClCompile>
+    <ClCompile Include="COverlayUndergroundDesc.cpp">
+      <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

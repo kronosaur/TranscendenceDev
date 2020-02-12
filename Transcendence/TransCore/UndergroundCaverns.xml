@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- OVERLAY TYPES -->
+
+	<OverlayType unid="&ovUndergroundCavernIce;"
+            attributes=         "asteroid, cavern, ice, underground"
+			inherit=			"&baUndergroundCavern;"
+
+			rotateWithSource=	"true"
+			>
+		<Underground
+			type="vault"
+			strength="10"
+			/>
+
+		<Effect>
+			<Image imageID="&rsUndergroundCavernIce;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
+		</Effect>
+	</OverlayType>
+
+<!-- BASE TYPES -->
+
+	<Type unid="&baUndergroundCavern;">
+		<Events>
+			<OnMining>
+				(block (
+					(isPlayer (and gPlayerShip (= aOrderGiver gPlayerShip)))
+					(debugMining (typGetProperty &unidMiningSkill; 'rpg.debugMining))
+
+					(setExplored Nil)
+					(gainTrialXP Nil)
+					(markedExplored Nil)
+
+					(excavateHP 0)
+					)
+
+					(if debugMining
+						(block ()
+							(dbgOutput "UNDERGROUND CAVERN")
+							(dbgOutput "Asteroid Type: " aAsteroidType)
+							(dbgOutput "Asteroid difficulty: " aMineDifficulty)
+							(dbgOutput "Mining Level: " aMineProbability)
+							(dbgOutput "DamageType: " aDamageType)
+							(dbgOutput "Damage HP: " aHP)
+							(dbgOutput "Max Ore Level: " aMaxOreLevel)
+							(dbgOutput "Chance: " aSuccessChance)
+							)
+						)
+
+					(switch
+
+						;	If cavern is already found, then nothing happens.
+
+						(objGetOverlayProperty gSource aOverlayID 'active)
+							Nil
+
+						;	Compute the chance of success. If there is no chance, 
+						;	nothing happens.
+						
+						(leq aSuccessChance 0)
+							Nil
+							
+						;	If we fail at extraction, then nothing, though we might gain some
+						;	experience.
+						
+						(gr (random 1 100) aSuccessChance)
+							(if (and isPlayer (not (objGetProperty gSource 'explored)))
+								(setq gainTrialXP True)
+								)
+								
+						;	Generic damage just scans (does not extract, and no experience is
+						;	gained).
+
+						(= aDamageType 'generic)
+							(block ()
+								(setq setExplored True)
+
+								(if (and isPlayer (not (objGetProperty gSource 'explored)))
+									(setq gainTrialXP True)
+									)
+								)
+
+						;	Compute damage
+
+						(= (setq excavateHP (round 'stochastic (* aHP aMineProbability 0.01))) 0)
+							(block ()
+								(setq setExplored True)
+
+								(if debugMining
+									(dbgOutput "NO DAMAGE")
+									)
+								)
+
+						;	Decrement HP
+
+						(gr (objIncOverlayProperty gSource aOverlayID 'hp (- excavateHP)) 0)
+							(block ()
+								(setq setExplored True)
+
+								(if debugMining
+									(dbgOutput excavateHP " damage; " (objGetOverlayProperty gSource aOverlayID 'hp) " hp remaining.")
+									)
+								)
+
+						;	Otherwise, the cavern is revealed
+
+						(block ()
+							(setq setExplored True)
+							(objSetOverlayProperty gSource aOverlayID 'active True)
+							)
+						)
+
+					;	If the asteroid has been explored, then increment our stats.
+
+					(if (and setExplored
+							(not (objGetProperty gSource 'explored))
+							)
+						(block ()
+							;	Set the explored property and also tell the player that 
+							;	they explored an asteroid so that we can increment the
+							;	stats.
+
+							(objSetProperty gSource 'explored True)
+							(setq markedExplored True)
+							(if isPlayer
+								(objCommunicate gPlayerShip gSource 'core.onAsteroidExplored)
+								)
+
+							;	Set the label while we're still excavating
+
+							(objSetOverlayProperty gSource aOverlayID 'counterLabel 
+								(typTranslate gType 'msgExcavating {
+									asteroidType: (typTranslate &unidEngineText; (cat 'asteroidType. aAsteroidType))
+									})
+								)
+							)
+						)
+
+					;	See if we gain experience from failed attempts
+
+					(if gainTrialXP
+						(block (
+							;	We get some experience even for failures.
+							(xpPerTry (typGetProperty &unidMiningSkill; 'rpg.xpPerFailedTry))
+							(xpGained (round 'stochastic (* xpPerTry (/ aMineDifficulty 100))))
+							)
+							(if debugMining
+								(dbgOutput "XP " (typGetProperty &unidMiningSkill; 'rpg.miningXP) " [+" xpGained "]")
+								)
+							(typIncProperty &unidMiningSkill; 'rpg.miningXP xpGained)
+							)
+						)
+					)
+			</OnMining>
+		</Events>
+
+		<Language>
+			<Text id="core.undergroundName">cavern(s)</Text>
+
+			<Text id="msgExcavating">%AsteroidType%\nBuried Cavern</Text>
+		</Language>
+	</Type>
+
+<!-- RESOURCES -->
+
+	<Image unid="&rsUndergroundCavernIce;"			bitmap="Resources\UndergroundCavernIce.jpg"			bitmask="Resources\UndergroundCavernIceMask.bmp"	loadOnUse="true"/>
+
+</TranscendenceModule>

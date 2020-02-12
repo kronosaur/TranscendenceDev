@@ -624,7 +624,7 @@ void CSpaceObject::CalcOverlayPos (COverlayType *pOverlayType, const CVector &vP
 	{
 	Metric rRadius;
 	int iDirection = VectorToPolar(vPos - GetPos(), &rRadius);
-	int iRotationOrigin = ((pOverlayType && pOverlayType->RotatesWithShip()) ? GetRotation() : 0);
+	int iRotationOrigin = ((pOverlayType && pOverlayType->RotatesWithSource(*this)) ? GetRotation() : 0);
 
 	if (retiPosAngle)
 		*retiPosAngle = AngleMod(iDirection - iRotationOrigin);

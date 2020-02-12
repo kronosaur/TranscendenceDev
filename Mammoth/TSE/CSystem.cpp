@@ -2308,7 +2308,7 @@ bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit
 	return (retTable->GetCount() > 0);
 	}
 
-int CSystem::GetLevel (void)
+int CSystem::GetLevel (void) const
 
 //	GetLevel
 //

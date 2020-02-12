@@ -684,6 +684,29 @@ void COverlayList::OnConditionsChanged (CSpaceObject *pSource)
 		}
 	}
 
+bool COverlayList::OnMiningDamage (CSpaceObject &Source, EAsteroidType iType, SDamageCtx &Ctx)
+
+//	OnMiningDamage
+//
+//	Handle mining damage. Returns TRUE if the overlays handled it.
+
+	{
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed())
+			{
+			if (pField->OnMiningDamage(Source, iType, Ctx))
+				//	We only handle one underground vault
+				return true;
+			}
+
+		pField = pField->GetNext();
+		}
+
+	return false;
+	}
+
 void COverlayList::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
@@ -941,7 +964,7 @@ bool COverlayList::SetProperty (CSpaceObject *pSource, DWORD dwID, const CString
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
-			return pField->SetProperty(pSource, sName, pValue);
+			return pField->SetProperty(*pSource, sName, pValue);
 
 		pField = pField->GetNext();
 		}

@@ -7907,7 +7907,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				CVector vPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
 				Metric rRadius;
 				int iDirection = VectorToPolar(vPos - pObj->GetPos(), &rRadius);
-				int iRotationOrigin = (pField->RotatesWithShip() ? pObj->GetRotation() : 0);
+				int iRotationOrigin = (pField->RotatesWithSource(*pObj) ? pObj->GetRotation() : 0);
 				iPosAngle = AngleMod(iDirection - iRotationOrigin);
 				iPosRadius = (int)(rRadius / g_KlicksPerPixel);
 

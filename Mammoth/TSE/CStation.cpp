@@ -1436,15 +1436,17 @@ void CStation::CreateStarlightImage (int iStarAngle, Metric rStarDist)
 //	iStarAngle.
 
 	{
+	constexpr int DEFAULT_LIGHTING_ANGLE = 315;
+
 	//	If we already have a starlight image, then we skip. This can happen if
 	//	we have a double star and overlapping light zones.
 
 	if (!m_StarlightImage.IsEmpty())
 		return;
 
-	//	Figure out the rotation
+	//	Figure out the rotation (and remember it)
 
-	int iRotation = iStarAngle - 315;
+	m_iStarlightImageRotation = iStarAngle - DEFAULT_LIGHTING_ANGLE;
 
 	//	Get the source image
 
@@ -1453,7 +1455,7 @@ void CStation::CreateStarlightImage (int iStarAngle, Metric rStarDist)
 
 	//	Create a rotated image
 
-	m_StarlightImage.InitFromRotated(Image, iTick, iVariant, iRotation);
+	m_StarlightImage.InitFromRotated(Image, iTick, iVariant, m_iStarlightImageRotation);
 
 	//	Recalculate bounds
 
@@ -2046,6 +2048,29 @@ IShipGenerator *CStation::GetRandomEncounterTable (int *retiFrequency) const
 	return m_pType->GetEncountersTable();
 	}
 
+int CStation::GetRotation (void) const
+
+//	GetRotation
+//
+//	Returns the current rotation angle.
+
+	{
+	//	For rotated worlds, use the starlight rotation.
+
+	if (!m_StarlightImage.IsEmpty())
+		return m_iStarlightImageRotation;
+
+	//	Otherwise, see if we have a rotation object
+
+	else if (m_pRotation)
+		return m_pRotation->GetRotationAngle(m_pType->GetRotationDesc());
+
+	//	Otherwise, no rotation
+
+	else
+		return 0;
+	}
+
 CString CStation::GetStargateID (void) const
 
 //	GetStargateID
@@ -2388,8 +2413,11 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 
 	//	If we have mining damage then call OnMining
 
-	if (Ctx.Damage.GetMiningAdj())
-		FireOnMining(Ctx, m_pType->GetAsteroidDesc().GetType());
+	if (Ctx.Damage.HasMiningDamage())
+		{
+		if (!OnMiningDamage(Ctx))
+			return damageDestroyed;
+		}
 
 	//	Adjust the damage based on WMD requirements. Most hull types require
 	//	WMD damage to be hurt.
@@ -2730,6 +2758,29 @@ bool CStation::OnIsImmuneTo (CConditionSet::ETypes iCondition) const
 		default:
 			return false;
 		}
+	}
+
+bool CStation::OnMiningDamage (SDamageCtx &Ctx)
+
+//	OnMiningDamage
+//
+//	We've been hit by mining damage. Returns TRUE if we should continue; FALSE 
+//	if the station was destroyed.
+
+	{
+	//	See if any overlays will handle mining. E.g., if there is an underground 
+	//	vault, then mining is handled by them.
+
+	if (!Ctx.bIgnoreOverlays 
+			&& m_Overlays.OnMiningDamage(*this, m_pType->GetAsteroidDesc().GetType(), Ctx))
+		{ }
+
+	//	Otherwise, fire <OnMining>
+
+	else
+		FireOnMining(Ctx, m_pType->GetAsteroidDesc().GetType());
+
+	return !IsDestroyed();
 	}
 
 void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
@@ -3555,6 +3606,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_iPaintOrder
 //
 //	CIntegralRotation m_pRotation
+//	DWORD		m_iStarlightImageRotation
 //	CTargetList	m_WeaponTargets
 
 	{
@@ -3947,6 +3999,9 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	else
 		m_pRotation = NULL;
 
+	if (Ctx.dwVersion >= 183)
+		Ctx.pStream->Read(m_iStarlightImageRotation);
+
 	//	Weapon targets
 
 	if (m_fArmed)
@@ -4278,6 +4333,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_iPaintOrder
 //
 //	CIntegralRotation	m_pRotation
+//	DWORD		m_iStarlightImageRotation
 //	CTargetList	m_WeaponTargets
 
 	{
@@ -4390,6 +4446,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 
 	if (m_pRotation)
 		m_pRotation->WriteToStream(pStream);
+
+	pStream->Write(m_iStarlightImageRotation);
 
 	//	Weapon targets
 

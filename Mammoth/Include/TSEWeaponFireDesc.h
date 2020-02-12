@@ -94,6 +94,7 @@ class DamageDesc
 		int GetMinDamage (void) const;
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
+		bool HasMiningDamage (void) const { return (m_MiningAdj > 0); }
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
 		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageGeneric); }
 		bool IsEnergyDamage (void) const;
