@@ -1094,7 +1094,7 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
     if (iStyle == styleLightning)
         {
         int iBoltCount = Max(1, Min(iIntensity / 5, 20));
-        return new CLightningBundlePainter(iBoltCount, m_rgbPrimaryColor, m_rgbSecondaryColor, WidthAdjTop, WidthAdjBottom);
+        return new CLightningBundlePainter(iBoltCount, m_rgbPrimaryColor, m_rgbSecondaryColor, WidthAdjTop, WidthAdjBottom, iWidthCount, iWidthAdjType, iReshape);
         }
     else
         {

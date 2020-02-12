@@ -244,7 +244,7 @@ public:
 	// Rays take the following arguments: sizePixelX/Y, posPixelX/Y, canvasHeight, canvasWidth, iRotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture
 	// all are Ints, except the last 5 which are enums (to be passed as ints)
 	void addObjToRender(int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, float rotation, int iWidthAdjType, int iReshape,
-		glm::vec3 primaryColor, glm::vec3 secondaryColor, int opacityAdj);
+		glm::vec3 primaryColor, glm::vec3 secondaryColor, float seed);
 	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
 	Shader* getShader(void) { return m_pShader; }
 	int getNumObjectsToRender(void) { return m_iNumObjectsToRender; }
@@ -255,7 +255,7 @@ private:
 	std::vector<float> m_rotationsFloat;
 	std::vector<float> m_depthsFloat;
 	std::vector<glm::ivec2> m_shapesInt; // contains iWidthAdjType and iReshape
-	std::vector<float> m_opacitiesFloat; // contains intensity, opacity adjustment in that order
+	std::vector<float> m_seedsFloat; // contains seeds
 	std::vector<glm::vec3> m_primaryColorsFloat;
 	std::vector<glm::vec3> m_secondaryColorsFloat;
 	int m_iCanvasHeight = 0;
@@ -279,7 +279,7 @@ public:
 		int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
 		std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj);
 	void addLightningToEffectRenderQueue (int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
-		int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor, std::tuple<int, int, int> secondaryColor, int opacityAdj);
+		int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor, std::tuple<int, int, int> secondaryColor, float seed);
 	void setCurrentTick (int currTick) { m_iCurrentTick = currTick; }
 private:
 	void initializeVAO (void);

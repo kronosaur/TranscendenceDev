@@ -157,12 +157,12 @@ void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPi
 
 void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
 	int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor,
-	std::tuple<int, int, int> secondaryColor, int opacityAdj)
+	std::tuple<int, int, int> secondaryColor, float seed)
 {
 	glm::vec3 vPrimaryColor = glm::vec3(std::get<0>(primaryColor), std::get<1>(primaryColor), std::get<2>(primaryColor)) / float(255.0);
 	glm::vec3 vSecondaryColor = glm::vec3(std::get<0>(secondaryColor), std::get<1>(secondaryColor), std::get<2>(secondaryColor)) / float(255.0);
 	m_effectLightningRenderQueue->addObjToRender(sizePixelX, sizePixelY, posPixelX, posPixelY, canvasSizeX, canvasSizeY, rotation, iWidthAdjType, iReshape,
-		vPrimaryColor, vSecondaryColor, opacityAdj);
+		vPrimaryColor, vSecondaryColor, seed);
 	//m_effectRayRenderQueue->addObjToRender(200, 200, 500, 500, 1024, 768, 0, 1, 1, 1, 1, 1,
 		//glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0, 0.0, 1.0), 255, 0);
 }

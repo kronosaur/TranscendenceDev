@@ -139,6 +139,7 @@ private:
 	TArray<int> m_Length;               //  Length for each frame (only for multi-frame animations)
 
 	template<typename T> friend class CRayRasterizer;
+	friend class CLightningBundlePainter;
 };
 
 template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRasterizer<BLENDER>, BLENDER>
@@ -348,9 +349,11 @@ template <class BLENDER> class CFlareRayRasterizer : public TLinePainter32<CFlar
 class CLightningBundlePainter : public ILinePainter
     {
     public:
-        CLightningBundlePainter (int iBoltCount, CG32bitPixel rgbPrimaryColor, CG32bitPixel rgbSecondaryColor, WidthAdjArray &WidthAdjTop, WidthAdjArray &WidthAdjBottom);
+        CLightningBundlePainter (int iBoltCount, CG32bitPixel rgbPrimaryColor, CG32bitPixel rgbSecondaryColor, WidthAdjArray &WidthAdjTop, WidthAdjArray &WidthAdjBottom, int iWidthCount,
+			CRayEffectPainter::EWidthAdjTypes iWidthAdjType, CRayEffectPainter::EWidthAdjTypes iReshape);
 
         virtual void Draw (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth) override;
+		virtual void DrawWithOpenGL(CG32bitImage & Dest, int x1, int y1, int x2, int y2, int iRotDegrees, bool & bSuccess) override;
 
     private:
         int m_iBoltCount;
@@ -358,4 +361,7 @@ class CLightningBundlePainter : public ILinePainter
         CG32bitPixel m_rgbSecondaryColor;
         WidthAdjArray m_WidthAdjTop;
         WidthAdjArray m_WidthAdjBottom;
+		int m_iWidthCount;
+		CRayEffectPainter::EWidthAdjTypes m_iWidthAdjType;
+		CRayEffectPainter::EWidthAdjTypes m_iReshape;
     };
