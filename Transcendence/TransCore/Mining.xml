@@ -146,6 +146,7 @@
 					(depositID Nil)
 					(markedExplored Nil)
 					(counterAdded Nil)
+					(oreFound Nil)
 					(gainTrialXP Nil)
 
 					theOre countMined
@@ -350,6 +351,7 @@
 								
 									;	If this asteroid is part of a deposit, then notify others
 
+									(setq oreFound True)
 									(setq notifyOfDeposits True)
 									)
 								)
@@ -421,7 +423,7 @@
 					;	with no ore. Tell the player, if they were the one who
 					;	hit the asteroid.
 
-					(if (and isPlayer markedExplored (not counterAdded))
+					(if (and isPlayer markedExplored (not counterAdded) (not oreFound))
 						(objSendMessage gPlayerShip gSource (typTranslate &ovMiningOreCount; 'msgNoResourcesFound))
 						)
 					)

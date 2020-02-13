@@ -4,25 +4,165 @@
 
 <!-- OVERLAY TYPES -->
 
-	<OverlayType unid="&ovUndergroundCavernIce;"
+	<OverlayType unid="&ovLootCavernIce;"
             attributes=         "asteroid, cavern, ice, underground"
-			inherit=			"&baUndergroundCavern;"
+			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"
 			>
 		<Underground
 			type="vault"
-			strength="10"
+			strength="20"
 			/>
 
 		<Effect>
 			<Image imageID="&rsUndergroundCavernIce;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
 		</Effect>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in underground ice cavern.
+
+			</Text>
+		</Language>
+	</OverlayType>
+
+	<OverlayType unid="&ovLootCavernMetallic;"
+            attributes=         "asteroid, cavern, metallic, underground"
+			inherit=			"&baLootCavern;"
+
+			rotateWithSource=	"true"
+			>
+		<Underground
+			type="vault"
+			strength="20"
+			/>
+
+		<Effect>
+			<Image imageID="&rsUndergroundCavernMetallic;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
+		</Effect>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in underground cavern inside of a metallic asteroid.
+
+			</Text>
+		</Language>
+	</OverlayType>
+
+	<OverlayType unid="&ovLootCavernPrimordial;"
+            attributes=         "asteroid, cavern, primordial, underground"
+			inherit=			"&baLootCavern;"
+
+			rotateWithSource=	"true"
+			>
+		<Underground
+			type="vault"
+			strength="20"
+			/>
+
+		<Effect>
+			<Image imageID="&rsUndergroundCavernPrimordial;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
+		</Effect>
+	</OverlayType>
+
+	<OverlayType unid="&ovLootCavernRocky;"
+            attributes=         "asteroid, cavern, rocky, underground"
+			inherit=			"&baLootCavern;"
+
+			rotateWithSource=	"true"
+			>
+		<Underground
+			type="vault"
+			strength="20"
+			/>
+
+		<Effect>
+			<Image imageID="&rsUndergroundCavernRocky;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
+		</Effect>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in underground cavern inside a rocky asteroid.
+
+			</Text>
+		</Language>
+	</OverlayType>
+
+	<OverlayType unid="&ovLootCavernVolcanic;"
+            attributes=         "asteroid, cavern, underground, volcanic"
+			inherit=			"&baLootCavern;"
+
+			rotateWithSource=	"true"
+			>
+		<Underground
+			type="vault"
+			strength="20"
+			/>
+
+		<Effect>
+			<Image imageID="&rsUndergroundCavernVolcanic;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
+		</Effect>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in underground cavern inside a volcanic asteroid.
+
+			</Text>
+		</Language>
 	</OverlayType>
 
 <!-- BASE TYPES -->
 
-	<Type unid="&baUndergroundCavern;">
+	<Type unid="&baLootCavern;"
+			inherit="&baUndergroundCavern;">
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionLoot" default="1">
+								(scrShowScreen gScreen &dsRPGLoot;)
+							</Action>
+
+							<Action id="actionJettison">
+								(scrShowScreen gScreen &dsRPGJettison;)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								(scrExitScreen gScreen)
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Events>
+			<GetDockScreen>
+				{	screen: "Main"
+					priority: 1
+					}
+			</GetDockScreen>
+		</Events>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in an asteroid cavern.
+
+			</Text>
+		</Language>
+	</Type>
+
+	<Type unid="&baUndergroundCavern;"
+			inherit="&unidCommonText;"
+			>
 		<Events>
 			<OnMining>
 				(block (
@@ -109,6 +249,7 @@
 						(block ()
 							(setq setExplored True)
 							(objSetOverlayProperty gSource aOverlayID 'active True)
+							(objSendMessage aOrderGiver gSource (typTranslate gType 'msgCavernFound))
 							)
 						)
 
@@ -160,11 +301,16 @@
 			<Text id="core.undergroundName">cavern(s)</Text>
 
 			<Text id="msgExcavating">%AsteroidType%\nBuried Cavern</Text>
+			<Text id="msgCavernFound">Cavern found! Dock to enter.</Text>
 		</Language>
 	</Type>
 
 <!-- RESOURCES -->
 
 	<Image unid="&rsUndergroundCavernIce;"			bitmap="Resources\UndergroundCavernIce.jpg"			bitmask="Resources\UndergroundCavernIceMask.bmp"	loadOnUse="true"/>
+	<Image unid="&rsUndergroundCavernMetallic;"		bitmap="Resources\UndergroundCavernMetallic.jpg"			bitmask="Resources\UndergroundCavernMetallicMask.bmp"	loadOnUse="true"/>
+	<Image unid="&rsUndergroundCavernPrimordial;"	bitmap="Resources\UndergroundCavernPrimordial.jpg"			bitmask="Resources\UndergroundCavernPrimordialMask.bmp"	loadOnUse="true"/>
+	<Image unid="&rsUndergroundCavernRocky;"		bitmap="Resources\UndergroundCavernRocky.jpg"			bitmask="Resources\UndergroundCavernRockyMask.bmp"	loadOnUse="true"/>
+	<Image unid="&rsUndergroundCavernVolcanic;"		bitmap="Resources\UndergroundCavernVolcanic.jpg"			bitmask="Resources\UndergroundCavernVolcanicMask.bmp"	loadOnUse="true"/>
 
 </TranscendenceModule>

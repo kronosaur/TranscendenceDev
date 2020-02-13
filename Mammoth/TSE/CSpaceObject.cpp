@@ -4582,6 +4582,12 @@ bool CSpaceObject::HasMinableItem (void) const
 			return true;
 		}
 
+	if (const COverlayList *pOverlays = GetOverlays())
+		{
+		if (pOverlays->HasMinableItem())
+			return true;
+		}
+
 	return false;
 	}
 

@@ -576,7 +576,7 @@ enum DestructionTypes
 class CDamageSource
 	{
 	public:
-		CDamageSource (void) : m_pSource(NULL), m_iCause(removedFromSystem), m_dwFlags(0), m_pSecondarySource(NULL) { }
+		CDamageSource (void) { }
 		CDamageSource (CSpaceObject *pSource, DestructionTypes iCause = killedByDamage, CSpaceObject *pSecondarySource = NULL, const CString &sSourceName = NULL_STR, DWORD dwSourceFlags = 0);
 
 		bool CanHit (CSpaceObject *pTarget) const;
@@ -628,14 +628,14 @@ class CDamageSource
 		bool IsObjPointer (void) const { return (m_pSource && !IsObjID()); }
 		bool IsObjID (void) const { return ((m_dwFlags & FLAG_OBJ_ID) == FLAG_OBJ_ID); }
 
-		CSpaceObject *m_pSource;
-		DestructionTypes m_iCause;
-		DWORD m_dwFlags;
+		CSpaceObject *m_pSource = NULL;
+		DestructionTypes m_iCause = removedFromSystem;
+		DWORD m_dwFlags = 0;
 
 		CString m_sSourceName;
-		DWORD m_dwSourceNameFlags;
+		DWORD m_dwSourceNameFlags = 0;
 
-		CSpaceObject *m_pSecondarySource;
+		CSpaceObject *m_pSecondarySource = NULL;
 
 		static CDamageSource m_Null;
 	};

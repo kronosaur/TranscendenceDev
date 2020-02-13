@@ -801,6 +801,7 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 
 		virtual bool CanBeHitBy (const DamageDesc &Damage) override;
 		virtual bool CanMove (void) const { return true; }
+		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerSpace; }
@@ -864,8 +865,9 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 		void SetParticleSpeed (SParticleType *pType, SParticle *pParticle);
 
 		CString m_sName;
-		SParticleArray *m_pFirstGroup;
-		CSpaceObject *m_pAnchor;
+		SParticleArray *m_pFirstGroup = NULL;
+		CSpaceObject *m_pAnchor = NULL;
+		CDamageSource m_Source;					//	Object that caused effect
 	};
 
 class CPOVMarker : public TSpaceObjectImpl<OBJID_CPOVMARKER>

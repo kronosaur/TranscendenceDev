@@ -17,7 +17,13 @@ int COverlayUndergroundDesc::GetHitPoints (int iLevel) const
 //	Returns the number of hit points at the given system level.
 
 	{
-	return m_iStrength;
+	if (IsEmpty())
+		return 0;
+
+	else
+		//	Strength of 100 = standard armor hit points at the given level.
+
+		return Max(1, mathAdjustRound(CArmorClass::GetStdHP(iLevel), m_iStrength));
 	}
 
 ALERROR COverlayUndergroundDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc)

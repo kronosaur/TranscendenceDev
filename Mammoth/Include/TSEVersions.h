@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							48;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					185;
+constexpr DWORD SYSTEM_SAVE_VERSION =					186;
 
 //	Uncomment out the following define when building a stable release
 
@@ -677,3 +677,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					185;
 //
 //	185: 1.9 Beta 1
 //		Move m_fAutoCreatedPorts to CSpaceObject (from CShip)
+//
+//	186: 1.9 Beta 1
+//		Add m_Source to CParticleEffect

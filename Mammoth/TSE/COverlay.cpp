@@ -300,7 +300,7 @@ void COverlay::CreateFromType (COverlayType &Type,
 	//	must excavate it).
 
 	if (Type.IsUnderground() && pField->m_iHitPoints > 0)
-		pField->SetActive(Source);
+		pField->SetActive(Source, false);
 
 	//	Create painters
 

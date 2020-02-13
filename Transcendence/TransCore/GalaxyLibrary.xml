@@ -346,16 +346,17 @@
 	<!-- 0140-015F UNDERGROUND CAVERNS -->
 
 	<!ENTITY baUndergroundCavern		"0x00020140">
-	<!ENTITY ovUndergroundCavernIce		"0x00020141">
-	<!ENTITY rsUndergroundCavernIce		"0x00020142">
-	<!ENTITY ovUndergroundCavernMetallic	"0x00020143">
-	<!ENTITY rsUndergroundCavernMetallic	"0x00020144">
-	<!ENTITY ovUndergroundCavernPrimordial	"0x00020145">
-	<!ENTITY rsUndergroundCavernPrimordial	"0x00020146">
-	<!ENTITY ovUndergroundCavernRocky	"0x00020147">
-	<!ENTITY rsUndergroundCavernRocky	"0x00020148">
-	<!ENTITY ovUndergroundCavernVolcanic	"0x00020149">
-	<!ENTITY rsUndergroundCavernVolcanic	"0x0002014A">
+	<!ENTITY rsUndergroundCavernIce		"0x00020141">
+	<!ENTITY rsUndergroundCavernMetallic	"0x00020142">
+	<!ENTITY rsUndergroundCavernPrimordial	"0x00020143">
+	<!ENTITY rsUndergroundCavernRocky	"0x00020144">
+	<!ENTITY rsUndergroundCavernVolcanic	"0x00020145">
+	<!ENTITY baLootCavern				"0x00020146">
+	<!ENTITY ovLootCavernIce			"0x00020147">
+	<!ENTITY ovLootCavernMetallic		"0x00020148">
+	<!ENTITY ovLootCavernPrimordial		"0x00020149">
+	<!ENTITY ovLootCavernRocky			"0x0002014A">
+	<!ENTITY ovLootCavernVolcanic		"0x0002014B">
 	]>
 	
 <CoreLibrary

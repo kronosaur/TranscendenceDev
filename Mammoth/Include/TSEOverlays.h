@@ -163,6 +163,7 @@ class COverlayList
 		int GetRotation (DWORD dwID);
 		COverlayType *GetType(DWORD dwID);
 		int GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource);
+		bool HasMinableItem (void) const;
 		ICCItemPtr IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue = NULL);
 		bool IncProperty (CSpaceObject &SourceObj, DWORD dwID, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		bool IsEmpty (void) { return (m_pFirst == NULL); }

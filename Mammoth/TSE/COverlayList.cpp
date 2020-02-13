@@ -629,6 +629,30 @@ int COverlayList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSour
 	return iBonus;
 	}
 
+bool COverlayList::HasMinableItem (void) const
+
+//	HasMinableItem
+//
+//	Returns TRUE if we have an overlay that can be mined. This is generally
+//	used to determine mining targets.
+
+	{
+	const COverlay *pOverlay = m_pFirst;
+	while (pOverlay)
+		{
+		//	Not active means that it is still buried and that mining will help
+		//	to uncover it.
+
+		if (!pOverlay->IsActive() 
+				&& pOverlay->GetType()->IsUnderground())
+			return true;
+
+		pOverlay = pOverlay->GetNext();
+		}
+
+	return false;
+	}
+
 ICCItemPtr COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue)
 
 //  IncData
