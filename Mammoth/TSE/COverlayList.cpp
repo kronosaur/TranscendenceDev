@@ -300,7 +300,7 @@ COverlay *COverlayList::FindField (DWORD dwID)
 	return NULL;
 	}
 
-bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector) const
+bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector, CDesignType **retpLocalScreens) const
 
 //	FireGetDockScreen
 //
@@ -308,6 +308,7 @@ bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSy
 //	discard retpData.
 
 	{
+	CDesignType *pBestLocalScreens = NULL;
 	CDockScreenSys::SSelector BestScreen;
 	BestScreen.iPriority = -1;
 
@@ -328,7 +329,10 @@ bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSy
 				//	See if this is better than previous.
 
 				else if (OverlayScreen.iPriority > BestScreen.iPriority)
+					{
 					BestScreen = OverlayScreen;
+					pBestLocalScreens = pField->GetType();
+					}
 				}
 			}
 
@@ -340,6 +344,9 @@ bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSy
 
 	if (retSelector)
 		*retSelector = BestScreen;
+
+	if (retpLocalScreens)
+		*retpLocalScreens = pBestLocalScreens;
 
 	return true;
 	}

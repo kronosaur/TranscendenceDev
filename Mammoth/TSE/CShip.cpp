@@ -1283,6 +1283,21 @@ void CShip::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
         }
 	}
 
+void CShip::CreateDefaultDockingPorts (void)
+
+//	CreateDefaultDockingPorts
+//
+//	Called to create docking ports on objects that don't already have them. This
+//	can be overridden by subclasses to control port position, etc.
+
+	{
+	if (m_DockingPorts.GetPortCount())
+		return;
+
+	m_DockingPorts.InitPorts(this, 4, 48.0 * g_KlicksPerPixel);
+	m_DockingPorts.SetMaxDockingDist(3);
+	}
+
 void CShip::CreateExplosion (SDestroyCtx &Ctx)
 
 //	CreateExplosion
@@ -1499,7 +1514,6 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 	pShip->m_fLRSDisabledByNebula = false;
 	pShip->m_fShipCompartment = false;
 	pShip->m_fHasShipCompartments = false;
-	pShip->m_fAutoCreatedPorts = false;
 	pShip->m_fNameBlanked = false;
 	pShip->m_fShowMapLabel = pClass->ShowsMapLabel();
 
@@ -5525,7 +5539,12 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	bool bBit01 =				((dwLoad & 0x00000001) ? true : false);
 	m_fRadioactive =			((dwLoad & 0x00000002) ? true : false);
-	m_fAutoCreatedPorts =		((dwLoad & 0x00000004) ? true : false) && (Ctx.dwVersion >= 155);
+	if (Ctx.dwVersion >= 155 && Ctx.dwVersion < 185)
+		{
+		if (dwLoad & 0x00000004)
+			SetAutoCreatedPorts(true);
+		}
+	//	0x00000004 Unused as of version 185
 	m_fDestroyInGate =			((dwLoad & 0x00000008) ? true : false);
 	m_fHalfSpeed =				((dwLoad & 0x00000010) ? true : false);
 	m_fNameBlanked =			((dwLoad & 0x00000020) ? true : false) && (Ctx.dwVersion >= 155);
@@ -5947,32 +5966,6 @@ void CShip::OnSetEventFlags (void)
 	SetHasOnOrderChangedEvent(FindEventHandler(CONSTLIT("OnOrderChanged")));
 	SetHasOnOrdersCompletedEvent(FindEventHandler(CONSTLIT("OnOrdersCompleted")));
 	SetHasOnSubordinateAttackedEvent(FindEventHandler(CONSTLIT("OnSubordinateAttacked")));
-
-	//	See if we have a handler for dock screens.
-
-	bool bHasGetDockScreen = HasDockScreen();
-
-	//	If we have an event for a dock screen, but we don't have docking ports
-	//	then we create some default ports. This is useful for when overlays or
-	//	event handlers create dock screens.
-
-	if (bHasGetDockScreen && m_DockingPorts.GetPortCount() == 0)
-		{
-		//	LATER: Create docking ports based on image size.
-
-		m_DockingPorts.InitPorts(this, 4, 48.0 * g_KlicksPerPixel);
-		m_DockingPorts.SetMaxDockingDist(3);
-		m_fAutoCreatedPorts = true;
-		}
-
-	//	If we DON'T have dock screens and we auto-created some docking ports,
-	//	then we need to remove them.
-
-	else if (!bHasGetDockScreen && m_fAutoCreatedPorts)
-		{
-		m_DockingPorts.DeleteAll(this);
-		m_fAutoCreatedPorts = false;
-		}
 	}
 
 void CShip::OnStationDestroyed (const SDestroyCtx &Ctx)
@@ -6096,7 +6089,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave = 0;
 	dwSave |= (m_fLRSDisabledByNebula ? 0x00000001 : 0);
 	dwSave |= (m_fRadioactive ?			0x00000002 : 0);
-	dwSave |= (m_fAutoCreatedPorts ?	0x00000004 : 0);
+	//	0x00000004 Unused as of 185
 	dwSave |= (m_fDestroyInGate ?		0x00000008 : 0);
 	dwSave |= (m_fHalfSpeed ?			0x00000010 : 0);
 	dwSave |= (m_fNameBlanked ?			0x00000020 : 0);

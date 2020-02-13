@@ -300,7 +300,7 @@ void COverlay::CreateFromType (COverlayType &Type,
 	//	must excavate it).
 
 	if (Type.IsUnderground() && pField->m_iHitPoints > 0)
-		pField->m_fInactive = true;
+		pField->SetActive(Source);
 
 	//	Create painters
 
@@ -1354,6 +1354,28 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 	m_fInactive =	((dwFlags & 0x00000004) ? true : false);
 	}
 
+void COverlay::SetActive (CSpaceObject &Source, bool bActive)
+
+//	SetActive
+//
+//	Set active or inactive
+
+	{
+	if (bActive != !m_fInactive)
+		{
+		m_fInactive = !bActive;
+
+		//	Activating may enable dock screens, so we need to refresh various
+		//	cached flags on the object.
+
+		Source.SetEventFlags();
+
+		//	Refresh bounds, since the overlay may need to be shown.
+
+		Source.RefreshBounds();
+		}
+	}
+
 bool COverlay::SetCustomProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pValue)
 
 //	SetCustomProperty
@@ -1422,8 +1444,7 @@ bool COverlay::SetProperty (CSpaceObject &Source, const CString &sName, ICCItem 
 
 	if (strEquals(sName, PROPERTY_ACTIVE))
 		{
-		m_fInactive = pValue->IsNil();
-		Source.RefreshBounds();
+		SetActive(Source, !pValue->IsNil());
 		}
 	else if (strEquals(sName, PROPERTY_COUNTER))
 		{
@@ -1627,4 +1648,3 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 	dwFlags |= (m_fInactive ?	0x00000004 : 0);
 	pStream->Write(dwFlags);
 	}
-

@@ -1106,6 +1106,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool CanThrust (void) const override { return (GetThrust() > 0.0); }
 		virtual bool ClassCanAttack (void) override { return true; }
 		virtual void ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse = CReactorDesc::fuelConsume) override;
+		virtual void CreateDefaultDockingPorts (void) override;
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) override;
 		virtual void DeactivateShields (void) override;
 		virtual CString DebugCrashInfo (void) override;
@@ -1407,9 +1408,9 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		DWORD m_fLRSDisabledByNebula:1;			//	TRUE if LRS is disabled due to environment
 		DWORD m_fShipCompartment:1;				//	TRUE if we're part of another ship (m_pDocked is the root ship)
 		DWORD m_fHasShipCompartments:1;			//	TRUE if we have ship compartment objects attached
-		DWORD m_fAutoCreatedPorts:1;			//	TRUE if we have auto created some docking ports
 		DWORD m_fNameBlanked:1;					//	TRUE if name has been blanked; show generic name
 		DWORD m_fShowMapLabel:1;				//	TRUE if we should show a map label
+		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 

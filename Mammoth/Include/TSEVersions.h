@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							48;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					184;
+constexpr DWORD SYSTEM_SAVE_VERSION =					185;
 
 //	Uncomment out the following define when building a stable release
 
@@ -674,3 +674,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					184;
 //
 //	184: 1.9 Beta 1
 //		Add m_iHitPoints to COverlay
+//
+//	185: 1.9 Beta 1
+//		Move m_fAutoCreatedPorts to CSpaceObject (from CShip)

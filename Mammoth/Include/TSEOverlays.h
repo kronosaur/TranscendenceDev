@@ -71,6 +71,7 @@ class COverlay
 		void PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		bool Paralyzes (CSpaceObject *pSource) const { return m_pType->Paralyzes(); }
 		void ReadFromStream (SLoadCtx &Ctx);
+		void SetActive (CSpaceObject &Source, bool bActive = true);
 		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
 		void SetDevice (int iDev) { m_iDevice = iDev; }
 		bool SetEffectProperty (const CString &sProperty, ICCItem *pValue);
@@ -147,7 +148,7 @@ class COverlayList
 		void AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds);
 		bool Damage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		CString DebugCrashInfo (void) const;
-		bool FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector = NULL) const;
+		bool FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector = NULL, CDesignType **retpLocalScreens = NULL) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
 		const CConditionSet &GetConditions (void) const { return m_Conditions; }

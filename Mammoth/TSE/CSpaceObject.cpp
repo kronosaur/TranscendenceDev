@@ -227,7 +227,8 @@ CSpaceObject::CSpaceObject (CUniverse &Universe) :
 		m_fCollisionTestNeeded(false),
 		m_fHasDockScreenMaybe(false),
 		m_fAutoClearDestinationOnGate(false),
-		m_f3DExtra(false)
+		m_f3DExtra(false),
+		m_fAutoCreatedPorts(false)
 
 //	CSpaceObject constructor
 
@@ -1103,6 +1104,26 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
     m_Data.Copy(pSource->m_Data, Options);
 	}
 
+void CSpaceObject::CreateDefaultDockingPorts (void)
+
+//	CreateDefaultDockingPorts
+//
+//	Called to create docking ports on objects that don't already have them. This
+//	can be overridden by subclasses to control port position, etc.
+
+	{
+	if (CDockingPorts *pDockingPorts = GetDockingPorts())
+		{
+		if (pDockingPorts->GetPortCount() == 0)
+			{
+			constexpr int PORT_COUNT = 4;
+			int iRadius = GetHitSizePixels() / 2;
+
+			pDockingPorts->InitPorts(this, PORT_COUNT, iRadius * g_KlicksPerPixel);
+			}
+		}
+	}
+
 CSpaceObject *CSpaceObject::CreateFromClassID (CUniverse &Universe, DWORD dwClass)
 
 //	CreateFromClassID
@@ -1312,6 +1333,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fHasOnOrderChangedEvent =	((dwLoad & 0x00000008) ? true : false);
 	pObj->m_fManualAnchor =				((dwLoad & 0x00000010) ? true : false);
 	pObj->m_f3DExtra =					((dwLoad & 0x00000020) ? true : false);
+	pObj->m_fAutoCreatedPorts =			((dwLoad & 0x00000040) ? true : false);
 
 	//	No need to save the following
 
@@ -3825,6 +3847,8 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 //	NOTE: Caller must discard *retpData.
 
 	{
+	CDesignType *pLocalScreens = GetType();
+
 	//	First see if any global types override this
 
 	CDockScreenSys::SSelector Screen;
@@ -3837,9 +3861,13 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	if (pOverlays = GetOverlays())
 		{
 		CDockScreenSys::SSelector OverlayScreen;
-		if (pOverlays->FireGetDockScreen(this, &OverlayScreen)
+		CDesignType *pOverlayLocalScreens;
+		if (pOverlays->FireGetDockScreen(this, &OverlayScreen, &pOverlayLocalScreens)
 				&& OverlayScreen.iPriority > Screen.iPriority)
+			{
 			Screen = OverlayScreen;
+			pLocalScreens = pOverlayLocalScreens;
+			}
 		}
 
 	//	Next see if we have an event that handles this
@@ -3847,14 +3875,17 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	CDockScreenSys::SSelector CustomScreen;
 	if (FireGetDockScreen(&CustomScreen)
 			&& CustomScreen.iPriority > Screen.iPriority)
+		{
 		Screen = CustomScreen;
+		pLocalScreens = GetType();
+		}
 
 	//	If an event has overridden the dock screen, then resolve
 	//	the screen now.
 
 	if (Screen.iPriority != -1)
 		{
-		CDesignType *pScreen = GetDesign().ResolveDockScreen(GetType(), Screen.sScreen, retsScreen);
+		CDesignType *pScreen = GetDesign().ResolveDockScreen(pLocalScreens, Screen.sScreen, retsScreen);
 		if (pScreen)
 			{
 			if (retpData)
@@ -7014,6 +7045,32 @@ void CSpaceObject::SetEventFlags (void)
 	SetHasOnDamageEvent(FindEventHandler(CONSTLIT("OnDamage")));
 	SetHasOnObjDockedEvent(FindEventHandler(CONSTLIT("OnObjDocked")));
 
+	//	See if we have a handler for dock screens.
+
+	if (CDockingPorts *pDockingPorts = GetDockingPorts())
+		{
+		bool bHasGetDockScreen = HasDockScreen();
+
+		//	If we have an event for a dock screen, but we don't have docking ports
+		//	then we create some default ports. This is useful for when overlays or
+		//	event handlers create dock screens.
+
+		if (bHasGetDockScreen && pDockingPorts->GetPortCount() == 0)
+			{
+			CreateDefaultDockingPorts();
+			m_fAutoCreatedPorts = true;
+			}
+
+		//	If we DON'T have dock screens and we auto-created some docking ports,
+		//	then we need to remove them.
+
+		else if (!bHasGetDockScreen && m_fAutoCreatedPorts)
+			{
+			pDockingPorts->DeleteAll(this);
+			m_fAutoCreatedPorts = false;
+			}
+		}
+
 	//	Let subclasses do their bit
 
 	OnSetEventFlags();
@@ -7566,6 +7623,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fHasOnOrderChangedEvent	? 0x00000008 : 0);
 	dwSave |= (m_fManualAnchor				? 0x00000010 : 0);
 	dwSave |= (m_f3DExtra					? 0x00000020 : 0);
+	dwSave |= (m_fAutoCreatedPorts			? 0x00000040 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Write out the opaque data

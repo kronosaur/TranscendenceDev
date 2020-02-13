@@ -483,6 +483,7 @@ class CSpaceObject
 
 		//	Docking
 
+		virtual void CreateDefaultDockingPorts (void);
 		virtual CSpaceObject *GetDockedObj (void) const { return NULL; }
 		virtual CVector GetDockingPortOffset (int iRotation) { return NullVector; }
 		virtual void OnDocked (CSpaceObject *pObj) { }
@@ -1306,6 +1307,7 @@ class CSpaceObject
 		void PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void SetAutoCreatedPorts (bool bValue = true) { m_fAutoCreatedPorts = bValue; }
 		void SetObjectDestructionHook (void) { m_fHookObjectDestruction = true; }
 		void SetCannotBeHit (void) { m_fCannotBeHit = true; }
 		void SetCanBounce (void) { m_fCanBounce = true; }
@@ -1429,7 +1431,7 @@ class CSpaceObject
 		DWORD m_fHasDockScreenMaybe:1;			//	TRUE if object has a dock screen for player (may be stale)
 		DWORD m_fAutoClearDestinationOnGate:1;	//	TRUE if we should clear the destination when player gates
 		DWORD m_f3DExtra:1;						//	TRUE if object is an optional 3D extra
-		DWORD m_fSpare7:1;
+		DWORD m_fAutoCreatedPorts:1;			//	TRUE if we have auto created some docking ports
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:16;
