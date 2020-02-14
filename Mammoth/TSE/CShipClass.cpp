@@ -214,6 +214,7 @@
 #define PROPERTY_VIEWPORT_SIZE					CONSTLIT("viewportSize")
 #define PROPERTY_WEAPON_ITEMS					CONSTLIT("weaponItems")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
+#define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
 #define SPECIAL_ITEM_ATTRIBUTE					CONSTLIT("itemAttribute:")
@@ -3962,6 +3963,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
 		return ICCItemPtr(GetMaxStructuralHitPoints());
+
+	else if (strEquals(sProperty, PROPERTY_WRECK_TYPE))
+		return (m_WreckDesc.GetWreckType() ? ICCItemPtr(m_WreckDesc.GetWreckType()->GetUNID()) : ICCItemPtr::Nil());
 
 	//	Drive properties
 
