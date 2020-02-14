@@ -2113,12 +2113,98 @@
 
 <!-- SHIP CLASSES -->
 
-	<!-- CorporateCruiser -->
+	<!-- Level 8: Corporate Explorer -->
+
+	<ShipClass UNID="&scCorporateExplorer;"
+			manufacturer=		"Rasiermesser"
+			class=				"Svalbard"
+			type=				"explorer"
+			defaultSovereign=	"&svCorporate;"
+
+			attributes=			"capitalShip, corporate, genericClass, majorShip"
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"195"
+			mass=				"4000"
+			cargoSpace=			"1000"
+
+			cyberDefenseLevel=	"8"
+			/>
+
+		<Drive
+			maxSpeed=			"10"
+			thrust=				"5000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3"
+			rotationAccel=		"0.5"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"120"
+					/>
+
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"80"
+
+					posX=		"-61"
+					posY=		"0"
+					sizeX=		"60"
+					sizeY=		"40"
+					/>
+		</Interior>
+
+		<Wreck
+			explosionType=		"&vtThermoExplosion2;"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itQuadroCarbideArmor;"
+			count=				"16"
+			/>
+
+		<Devices>
+			<Device deviceID="&itPlasmaShieldGenerator;"/>
+		</Devices>
+
+		<Items>
+			<Item count="2d12" item="&itPteracniumFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsCorporateExplorerHD;" imageWidth="192" imageHeight="192"	rotationCount="120" rotationColumns="12" viewportRatio="0.025"/>
+		<HeroImage imageID="&rsCorporateExplorerHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"25"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+	</ShipClass>
+
+	<!-- Level 9: Corporate Cruiser -->
 
 	<ShipClass UNID="&scCorporateCruiser;"
 			manufacturer=		"Rasiermesser"
-			class=				"corporate cruiser"
-			type=				""
+			class=				"Eir"
+			type=				"cruiser"
 			defaultSovereign=	"&svCorporate;"
 
 			attributes=			"capitalShip, corporate, genericClass, majorShip"
@@ -2596,4 +2682,9 @@
 	<Image UNID="&rsCorporateCruiserHD;"	bitmap="Resources\CorporateCruiserHD.jpg" bitmask="Resources\CorporateCruiserHDMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCorporateCruiserHero;"	bitmap="Resources\CorporateCruiserLarge.jpg" bitmask="Resources\CorporateCruiserLargeMask.bmp"  loadOnUse="true"/>
 	
+	<Image UNID="&rsCorporateExplorerHD;"	bitmap="Resources\CorporateExplorerHD.jpg" bitmask="Resources\CorporateExplorerHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsCorporateExplorerHero;"	bitmap="Resources\CorporateExplorerLarge.jpg" bitmask="Resources\CorporateExplorerLargeMask.bmp"  loadOnUse="true"/>
+
+	<!-- Deprecate when we re-do Huygens Explorer -->
+
 </TranscendenceModule>

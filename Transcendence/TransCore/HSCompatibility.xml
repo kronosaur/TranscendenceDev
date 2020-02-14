@@ -6334,5 +6334,6 @@
 	<Image UNID="&rsStKatsArcology;"	obsoleteVersion="49"		bitmap="Resources\StKatsArcologyOld.jpg" bitmask="Resources\StKatsArcologyOldMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsStKatsArcologyScreen;" obsoleteVersion="49"		bitmap="Resources\StKatsArcologyScreen.jpg" loadOnUse="true"/>
 	<Image UNID="&rsStKatsArcologySchematic;" obsoleteVersion="49"	bitmap="Resources\StKatsArcologySchematic.jpg" bitmask="Resources\StKatsArcologySchematicMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsCorporateExplorer;"	obsoleteVersion="49" bitmap="Resources\CorporateExplorer.jpg" bitmask="Resources\CorporateExplorerMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

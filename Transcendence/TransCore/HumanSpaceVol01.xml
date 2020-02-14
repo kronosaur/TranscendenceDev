@@ -1635,6 +1635,8 @@
 	<!ENTITY tbCorporateDeliveryTransport		"0x0010004E">
 	<!ENTITY rsCorporateCruiserHero		"0x0010004F">
 	<!ENTITY rsCorporateManufacturing	"0x00100050">
+	<!ENTITY scCorporateExplorer		"0x00100051">
+	<!ENTITY rsCorporateExplorerHero	"0x00100052">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	

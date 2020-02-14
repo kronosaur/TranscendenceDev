@@ -235,7 +235,7 @@
 
 		<Armor
 			armorID=			"&itQuadroCarbideArmor;"
-			count=				"24"
+			count=				"12"
 			/>
 		
 		<Devices>
@@ -266,13 +266,14 @@
 					/>
 		</Interior>
 
-		<Image imageID="&rsCorporateExplorer;" imageWidth="192" imageHeight="192" />
+		<Image imageID="&rsCorporateExplorerHD;" imageWidth="192" imageHeight="192"	rotationCount="120" rotationColumns="12" viewportRatio="0.025"/>
+		<HeroImage imageID="&rsCorporateExplorerHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 			<Effect type="thrustMain"		posAngle="-176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 		</Effects>
-		
+
 		<Names definiteArticle="true">Huygens Explorer</Names>
 
 		<AISettings
@@ -2135,8 +2136,6 @@
 
 	<Image UNID="&rsIocrymManipulator;"	bitmap="Resources\IocrymManipulator.jpg" bitmask="Resources\IocrymManipulatorMask.bmp" loadOnUse="true"/>
 	
-	<Image UNID="&rsCorporateExplorer;"	bitmap="Resources\CorporateExplorer.jpg" bitmask="Resources\CorporateExplorerMask.bmp" loadOnUse="true"/>
-
 	<Image UNID="&rsHereticItems;"		bitmap="Resources\HereticItems.jpg" bitmask="Resources\HereticItemsMask.bmp" />
 
 </TranscendenceModule>
