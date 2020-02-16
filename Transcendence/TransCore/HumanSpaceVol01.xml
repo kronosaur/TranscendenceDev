@@ -2097,6 +2097,9 @@
 	<!ENTITY rsKobolGunshipMissilesHD	"0x00100411">
 	<!ENTITY rsKobolGunshipOmniHD		"0x00100412">
 	<!ENTITY smKobolSpace				"0x00100413">
+	<!ENTITY rsKobolGunshipDualHero		"0x00100414">
+	<!ENTITY rsKobolGunshipMissilesHero	"0x00100415">
+	<!ENTITY rsKobolGunshipOmniHero		"0x00100416">
 
 	<!-- 0430-044F ANARCHISTS -->
 
