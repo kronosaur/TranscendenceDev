@@ -273,7 +273,10 @@
     <ClInclude Include="..\Include\DXSparseMask.h" />
     <ClInclude Include="..\Include\DXUI.h" />
     <ClInclude Include="..\Include\OpenGL.h" />
+    <ClInclude Include="..\Include\OpenGLIncludes.h" />
+    <ClInclude Include="..\Include\OpenGLInstancedBatch.h" />
     <ClInclude Include="..\Include\OpenGLShader.h" />
+    <ClInclude Include="..\Include\OpenGLVAO.h" />
     <ClInclude Include="..\Include\Reanimator.h" />
     <ClInclude Include="..\Include\TBlt.h" />
     <ClInclude Include="..\Include\TCirclePainter.h" />

@@ -101,7 +101,7 @@ bool OpenGLContext::initOpenGL (HWND hwnd, HDC hdc)
 	//testShaderInstancedBatch->addObjToRender(4.0f, 4.0f, 4.1f, 4.2f); // should error
 	// testShaderInstancedBatch->addObjToRender(4, 4.0, 4.1, 4.2, 5); // should error
 	testShaderInstancedBatch->DebugRender();
-
+	testShaderInstancedBatch->clear();
 	return true;
 	}
 

@@ -1,4 +1,4 @@
-#include "OpenGL.h"
+#include "OpenGLVAO.h"
 #include "PreComp.h"
 
 OpenGLVAO::OpenGLVAO (std::vector<std::vector<float>> vbos,

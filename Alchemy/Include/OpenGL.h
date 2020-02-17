@@ -46,7 +46,7 @@ For special effects that use textures (such as glow), what we can do is use a se
 */
 
 #include "OpenGLIncludes.h"
-#include "OpenGLShader.h"
+#include "OpenGLInstancedBatch.h"
 #include <vector>
 #include <map>
 #include <algorithm>
@@ -61,37 +61,6 @@ private:
 
 };
 */
-
-class OpenGLVAO {
-public:
-	OpenGLVAO (void) { };
-	OpenGLVAO (std::vector<std::vector<float>> vbos,
-		std::vector<std::vector<unsigned int>> ebos);
-	OpenGLVAO (std::vector<std::vector<float>> vbos,
-		std::vector<std::vector<unsigned int>> ebos,
-		std::vector<std::vector<float>> texcoords);
-	~OpenGLVAO (void);
-	void initVAO (std::vector<std::vector<float>> vbos,
-		std::vector<std::vector<unsigned int>> ebos);
-	void initVAO (std::vector<std::vector<float>> vbos,
-		std::vector<std::vector<unsigned int>> ebos,
-		std::vector<std::vector<float>> texcoords);
-	void setShader (OpenGLShader* shader) { m_pShader = shader; }
-	void addTexture2D (void* texture);
-	void removeTexture ();
-	OpenGLShader* getShader (void) { return m_pShader; }
-	unsigned int* getVAO (void) { return vaoID; }
-	unsigned int* getinstancedVBO(void) { return instancedVboID; }
-
-private:
-	OpenGLShader *m_pShader;
-	unsigned int m_iNumArrays;
-	unsigned int m_iNumTexArrays;
-	unsigned int vaoID[128];
-	unsigned int vboID[128];
-	unsigned int eboID[128];
-	unsigned int instancedVboID[128];
-};
 
 class OpenGLTexture {
 public:
@@ -263,108 +232,6 @@ private:
 	void setShader(OpenGLShader *shader) { m_pShader = shader; }
 	OpenGLShader* m_pShader;
 	OpenGLTexture* m_pTexture;
-};
-
-// Vector of arbitrary type for the instanced batch template class
-// See https://stackoverflow.com/questions/51046949/constructing-array-of-c-vectors-of-different-types
-class ContainerBase
-{
-public:
-	virtual ~ContainerBase() = 0;
-	//virtual std::vector<int> getValues() = 0;
-};
-
-inline ContainerBase::~ContainerBase() = default;
-
-template<class T>
-class ContainerTyped : public ContainerBase
-{
-public:
-	std::vector<T>& getValues() { return values; }
-private:
-	std::vector<T> values;
-};
-
-// First typename is a tuple type that contains all uniforms
-// Second and onwards are shader arguments
-template<typename uniformTuple, typename ... shaderArgs> class OpenGLInstancedBatch {
-public:
-	OpenGLInstancedBatch(void) {
-	};
-	~OpenGLInstancedBatch(void) {
-		clear();
-	};
-	void clear(void) {
-		m_depthsFloat.clear();
-		m_iNumObjectsToRender = 0;
-		std::apply([](auto&&... args) {((args.clear()), ...);}, m_shaderParameterVectors);
-	};
-	OpenGLVAO* CreateVAO();
-	void DebugRender() {
-		// Print out the elements of each array.
-		for (int i = 0; i < m_numShaderArgs; i++) {
-			//std::cout << "On shader argument " << i;
-			for (int j = 0; j < m_iNumObjectsToRender; j++) {
-				//std::cout << m_shaderParameterVectors[i][j];
-			}
-		}
-	};
-	void Render(OpenGLShader *shader, OpenGLVAO *vao, float &startingDepth, float incDepth, int currentTick);
-	/*template<typename ... shaderArgs> void addObjToRender(shaderArgs ... shaderArgsList) {
-		//addObjToRenderHelper(0, shaderArgsList);
-
-		addObjToRenderHelper(std::make_tuple(shaderArgsList ...), std::make_index_sequence<sizeof...(shaderArgs)>{});
-		m_iNumObjectsToRender += 1;
-	};*/
-	void addObjToRender(shaderArgs ... shaderArgsList) {
-		//addObjToRenderHelper(0, shaderArgsList);
-
-		//addObjToRenderHelper(std::make_tuple(shaderArgsList ...), std::make_index_sequence<sizeof...(shaderArgs)>{});
-		if (m_shaderParameterVectors.size() == 0) {
-			addObjToRenderHelper(true, 0, shaderArgsList...);
-		}
-		else {
-			addObjToRenderHelper(false, 0, shaderArgsList...);
-		}
-		m_iNumObjectsToRender += 1;
-	};
-	int getNumObjectsToRender(void) { return m_iNumObjectsToRender; }
-	void setUniforms(std::vector<std::string> uniformNames, uniformTuple uniformValues) { m_uniformNames = uniformNames; m_uniformValues = m_uniformValues; }
-	void setUniformValues(uniformTuple uniformValues) { m_uniformValues = m_uniformValues; }
-	void setUniformNames(std::vector<std::string> uniformNames) { m_uniformNames = uniformNames; }
-private:
-	/*template<typename... T2, std::size_t... I> void addObjToRenderHelper(const std::tuple<T2...>& t2, std::index_sequence<I...>) {
-		(std::get<I>(m_shaderParameterVectors).push_back(std::get<I>(t2))...);
-	};*/
-	template<typename firstArg, typename ... otherShaderArgs> void addObjToRenderHelper(bool doInit, int currentShaderArg, firstArg a1, otherShaderArgs ... rest) {
-		// Initialize shader parameter container if needed
-		if (doInit) {
-			m_shaderParameterVectors.push_back(std::make_unique<ContainerTyped<firstArg>>());
-		}
-		ContainerTyped<firstArg>* pShaderParameterVector = static_cast<ContainerTyped<firstArg>*>(m_shaderParameterVectors[currentShaderArg].get());
-		pShaderParameterVector->getValues().push_back(a1);
-		//m_shaderParameterVectors[currentShaderArg].insert(firstArg);
-		addObjToRenderHelper(doInit, currentShaderArg + 1, rest...);
-	};
-	template<typename firstArg> void addObjToRenderHelper(bool doInit, int currentShaderArg, firstArg a1) {
-		if (doInit) {
-			m_shaderParameterVectors.push_back(std::make_unique<ContainerTyped<firstArg>>());
-		}
-
-		ContainerTyped<firstArg>* pShaderParameterVector = static_cast<ContainerTyped<firstArg>*>(m_shaderParameterVectors[currentShaderArg].get());
-		pShaderParameterVector->getValues().push_back(a1);
-		//m_shaderParameterVectors[currentShaderArg].insert(firstArg);
-		//addObjToRenderHelper(currentShaderArg + 1, rest);
-	};
-	template<typename firstArg, typename ... otherShaderArgs> void CreateVAOHelper(firstArg a1, otherShaderArgs ... rest);
-	template<typename firstArg> void CreateVAOHelper(firstArg a1);
-	std::vector<std::unique_ptr<ContainerBase>> m_shaderParameterVectors;
-	//std::tuple<std::vector<shaderArgs>...> m_shaderParameterVectors;
-	std::vector<float> m_depthsFloat;
-	int m_iNumObjectsToRender;
-	std::vector <std::string> m_uniformNames;
-	uniformTuple m_uniformValues;
-	static const std::size_t m_numShaderArgs = sizeof...(shaderArgs);
 };
 
 class OpenGLMasterRenderQueue {
