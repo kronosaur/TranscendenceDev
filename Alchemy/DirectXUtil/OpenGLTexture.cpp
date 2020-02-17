@@ -115,7 +115,7 @@ OpenGLTexture::~OpenGLTexture ()
 	glDeleteBuffers(2, &pboID[0]);
 	}
 
-OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao, Shader* shader, glm::vec2 texQuadSize)
+OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao, OpenGLShader* shader, glm::vec2 texQuadSize)
 	{
 	// Generate a glow map. Kernel is a multivariate gaussian.
 	// Vertical pass

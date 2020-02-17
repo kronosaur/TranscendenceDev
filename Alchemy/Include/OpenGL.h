@@ -76,15 +76,15 @@ public:
 	void initVAO (std::vector<std::vector<float>> vbos,
 		std::vector<std::vector<unsigned int>> ebos,
 		std::vector<std::vector<float>> texcoords);
-	void setShader (Shader* shader) { m_pShader = shader; }
+	void setShader (OpenGLShader* shader) { m_pShader = shader; }
 	void addTexture2D (void* texture);
 	void removeTexture ();
-	Shader* getShader (void) { return m_pShader; }
+	OpenGLShader* getShader (void) { return m_pShader; }
 	unsigned int* getVAO (void) { return vaoID; }
 	unsigned int* getinstancedVBO(void) { return instancedVboID; }
 
 private:
-	Shader *m_pShader;
+	OpenGLShader *m_pShader;
 	unsigned int m_iNumArrays;
 	unsigned int m_iNumTexArrays;
 	unsigned int vaoID[128];
@@ -105,7 +105,7 @@ public:
 	void unbindTexture2D(void) { glBindTexture(GL_TEXTURE_2D, 0); }
 	void updateTexture2D(void* texture, int width, int height);
 	unsigned int* getTexture(void) { return m_pTextureID; }
-	OpenGLTexture *GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, Shader* shader, glm::vec2 texQuadSize);
+	OpenGLTexture *GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, OpenGLShader* shader, glm::vec2 texQuadSize);
 	OpenGLTexture *getGlowMap (void) { return m_pGlowMap; }
 
 private:
@@ -145,7 +145,7 @@ private:
 	int m_iWindowHeight;
 	bool m_bResized;
 
-	Shader *m_pTestShader;
+	OpenGLShader *m_pTestShader;
 
 	// Projection, view and model matrices respectively
 	glm::mat4 m_pMatrix;
@@ -171,16 +171,16 @@ public:
 	OpenGLInstancedRenderQueue (void);
 	~OpenGLInstancedRenderQueue (void);
 	// TODO: Allow this function to take an array of textures.
-	void Render (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture, float &startingDepth, float incDepth, int currentTick);
-	void RenderNonInstanced (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture);
+	void Render (OpenGLShader *shader, OpenGLVAO *vao, OpenGLTexture *texture, float &startingDepth, float incDepth, int currentTick);
+	void RenderNonInstanced (OpenGLShader *shader, OpenGLVAO *vao, OpenGLTexture *texture);
 	void clear (void);
 	// TODO: pass the canvas height and widths as uniforms
 	void addObjToRender (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, int texHeight, int texWidth,
 		int texQuadWidth, int texQuadHeight, float alphaStrength, glm::vec4 glow, float glowNoise);
 	void addObjToRender (float startFX, float startFY, float sizeFX, float sizeFY, float posFX, float posFY);
 	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
-	void setShader (Shader *shader) { m_pShader = shader; }
-	Shader* getShader (void) { return m_pShader; }
+	void setShader (OpenGLShader *shader) { m_pShader = shader; }
+	OpenGLShader* getShader (void) { return m_pShader; }
 	void setTexture (OpenGLTexture *texture) { m_pTexture = texture; }
 	OpenGLTexture* getTexture (void) { return m_pTexture; }
 	int getNumObjectsToRender (void) { return m_iNumObjectsToRender; }
@@ -195,7 +195,7 @@ private:
 	std::vector<float> m_depthsFloat;
 	std::vector<glm::vec4> m_glowColorFloat;
 	std::vector<float> m_glowNoiseFactorFloat;
-	Shader* m_pShader;
+	OpenGLShader* m_pShader;
 	OpenGLTexture* m_pTexture;
 };
 
@@ -205,14 +205,14 @@ class OpenGLInstancedRayRenderQueue {
 public:
 	OpenGLInstancedRayRenderQueue(void);
 	~OpenGLInstancedRayRenderQueue(void);
-	void Render(Shader *shader, OpenGLVAO *vao, float &startingDepth, float incDepth, int currentTick);
+	void Render(OpenGLShader *shader, OpenGLVAO *vao, float &startingDepth, float incDepth, int currentTick);
 	void clear(void);
 	// Rays take the following arguments: sizePixelX/Y, posPixelX/Y, canvasHeight, canvasWidth, iRotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture
 	// all are Ints, except the last 5 which are enums (to be passed as ints)
 	void addObjToRender(int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, float rotation, int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture,
                         glm::vec3 primaryColor, glm::vec3 secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj);
 	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
-	Shader* getShader(void) { return m_pShader; }
+	OpenGLShader* getShader(void) { return m_pShader; }
 	int getNumObjectsToRender(void) { return m_iNumObjectsToRender; }
 private:
 
@@ -228,8 +228,8 @@ private:
 	std::vector<glm::vec3> m_secondaryColorsFloat;
 	int m_iCanvasHeight = 0;
 	int m_iCanvasWidth = 0;
-	void setShader(Shader *shader) { m_pShader = shader; }
-	Shader* m_pShader;
+	void setShader(OpenGLShader *shader) { m_pShader = shader; }
+	OpenGLShader* m_pShader;
 	OpenGLTexture* m_pTexture;
 };
 
@@ -239,14 +239,14 @@ class OpenGLInstancedLightningRenderQueue {
 public:
 	OpenGLInstancedLightningRenderQueue(void);
 	~OpenGLInstancedLightningRenderQueue(void);
-	void Render(Shader *shader, OpenGLVAO *vao, float &startingDepth, float incDepth, int currentTick);
+	void Render(OpenGLShader *shader, OpenGLVAO *vao, float &startingDepth, float incDepth, int currentTick);
 	void clear(void);
 	// Rays take the following arguments: sizePixelX/Y, posPixelX/Y, canvasHeight, canvasWidth, iRotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture
 	// all are Ints, except the last 5 which are enums (to be passed as ints)
 	void addObjToRender(int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, float rotation, int iWidthAdjType, int iReshape,
 		glm::vec3 primaryColor, glm::vec3 secondaryColor, float seed);
 	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
-	Shader* getShader(void) { return m_pShader; }
+	OpenGLShader* getShader(void) { return m_pShader; }
 	int getNumObjectsToRender(void) { return m_iNumObjectsToRender; }
 private:
 
@@ -260,9 +260,111 @@ private:
 	std::vector<glm::vec3> m_secondaryColorsFloat;
 	int m_iCanvasHeight = 0;
 	int m_iCanvasWidth = 0;
-	void setShader(Shader *shader) { m_pShader = shader; }
-	Shader* m_pShader;
+	void setShader(OpenGLShader *shader) { m_pShader = shader; }
+	OpenGLShader* m_pShader;
 	OpenGLTexture* m_pTexture;
+};
+
+// Vector of arbitrary type for the instanced batch template class
+// See https://stackoverflow.com/questions/51046949/constructing-array-of-c-vectors-of-different-types
+class ContainerBase
+{
+public:
+	virtual ~ContainerBase() = 0;
+	//virtual std::vector<int> getValues() = 0;
+};
+
+inline ContainerBase::~ContainerBase() = default;
+
+template<class T>
+class ContainerTyped : public ContainerBase
+{
+public:
+	std::vector<T>& getValues() { return values; }
+private:
+	std::vector<T> values;
+};
+
+// First typename is a tuple type that contains all uniforms
+// Second and onwards are shader arguments
+template<typename uniformTuple, typename ... shaderArgs> class OpenGLInstancedBatch {
+public:
+	OpenGLInstancedBatch(void) {
+	};
+	~OpenGLInstancedBatch(void) {
+		clear();
+	};
+	void clear(void) {
+		m_depthsFloat.clear();
+		m_iNumObjectsToRender = 0;
+		std::apply([](auto&&... args) {((args.clear()), ...);}, m_shaderParameterVectors);
+	};
+	OpenGLVAO* CreateVAO();
+	void DebugRender() {
+		// Print out the elements of each array.
+		for (int i = 0; i < m_numShaderArgs; i++) {
+			//std::cout << "On shader argument " << i;
+			for (int j = 0; j < m_iNumObjectsToRender; j++) {
+				//std::cout << m_shaderParameterVectors[i][j];
+			}
+		}
+	};
+	void Render(OpenGLShader *shader, OpenGLVAO *vao, float &startingDepth, float incDepth, int currentTick);
+	/*template<typename ... shaderArgs> void addObjToRender(shaderArgs ... shaderArgsList) {
+		//addObjToRenderHelper(0, shaderArgsList);
+
+		addObjToRenderHelper(std::make_tuple(shaderArgsList ...), std::make_index_sequence<sizeof...(shaderArgs)>{});
+		m_iNumObjectsToRender += 1;
+	};*/
+	void addObjToRender(shaderArgs ... shaderArgsList) {
+		//addObjToRenderHelper(0, shaderArgsList);
+
+		//addObjToRenderHelper(std::make_tuple(shaderArgsList ...), std::make_index_sequence<sizeof...(shaderArgs)>{});
+		if (m_shaderParameterVectors.size() == 0) {
+			addObjToRenderHelper(true, 0, shaderArgsList...);
+		}
+		else {
+			addObjToRenderHelper(false, 0, shaderArgsList...);
+		}
+		m_iNumObjectsToRender += 1;
+	};
+	int getNumObjectsToRender(void) { return m_iNumObjectsToRender; }
+	void setUniforms(std::vector<std::string> uniformNames, uniformTuple uniformValues) { m_uniformNames = uniformNames; m_uniformValues = m_uniformValues; }
+	void setUniformValues(uniformTuple uniformValues) { m_uniformValues = m_uniformValues; }
+	void setUniformNames(std::vector<std::string> uniformNames) { m_uniformNames = uniformNames; }
+private:
+	/*template<typename... T2, std::size_t... I> void addObjToRenderHelper(const std::tuple<T2...>& t2, std::index_sequence<I...>) {
+		(std::get<I>(m_shaderParameterVectors).push_back(std::get<I>(t2))...);
+	};*/
+	template<typename firstArg, typename ... otherShaderArgs> void addObjToRenderHelper(bool doInit, int currentShaderArg, firstArg a1, otherShaderArgs ... rest) {
+		// Initialize shader parameter container if needed
+		if (doInit) {
+			m_shaderParameterVectors.push_back(std::make_unique<ContainerTyped<firstArg>>());
+		}
+		ContainerTyped<firstArg>* pShaderParameterVector = static_cast<ContainerTyped<firstArg>*>(m_shaderParameterVectors[currentShaderArg].get());
+		pShaderParameterVector->getValues().push_back(a1);
+		//m_shaderParameterVectors[currentShaderArg].insert(firstArg);
+		addObjToRenderHelper(doInit, currentShaderArg + 1, rest...);
+	};
+	template<typename firstArg> void addObjToRenderHelper(bool doInit, int currentShaderArg, firstArg a1) {
+		if (doInit) {
+			m_shaderParameterVectors.push_back(std::make_unique<ContainerTyped<firstArg>>());
+		}
+
+		ContainerTyped<firstArg>* pShaderParameterVector = static_cast<ContainerTyped<firstArg>*>(m_shaderParameterVectors[currentShaderArg].get());
+		pShaderParameterVector->getValues().push_back(a1);
+		//m_shaderParameterVectors[currentShaderArg].insert(firstArg);
+		//addObjToRenderHelper(currentShaderArg + 1, rest);
+	};
+	template<typename firstArg, typename ... otherShaderArgs> void CreateVAOHelper(firstArg a1, otherShaderArgs ... rest);
+	template<typename firstArg> void CreateVAOHelper(firstArg a1);
+	std::vector<std::unique_ptr<ContainerBase>> m_shaderParameterVectors;
+	//std::tuple<std::vector<shaderArgs>...> m_shaderParameterVectors;
+	std::vector<float> m_depthsFloat;
+	int m_iNumObjectsToRender;
+	std::vector <std::string> m_uniformNames;
+	uniformTuple m_uniformValues;
+	static const std::size_t m_numShaderArgs = sizeof...(shaderArgs);
 };
 
 class OpenGLMasterRenderQueue {
@@ -270,8 +372,8 @@ public:
 	OpenGLMasterRenderQueue (void);
 	~OpenGLMasterRenderQueue (void);
 	void renderAllQueues (void);
-	void setObjectTextureShader (Shader *shader) { m_pObjectTextureShader = shader; }
-	Shader* getObjectTextureShader (void) { return m_pObjectTextureShader; }
+	void setObjectTextureShader (OpenGLShader *shader) { m_pObjectTextureShader = shader; }
+	OpenGLShader* getObjectTextureShader (void) { return m_pObjectTextureShader; }
 	void addShipToRenderQueue (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY,
 		int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight, float alphaStrength = 1.0,
 		float glowR = 0.0, float glowG = 0.0, float glowB = 0.0, float glowA = 0.0, float glowNoise = 0.0);
@@ -295,10 +397,10 @@ private:
 	OpenGLVAO* m_pRayVAO;
 	OpenGLVAO* m_pCanvasVAO;
 	OpenGLVAO* m_pLightningVAO;
-	Shader *m_pObjectTextureShader;
-	Shader *m_pGlowmapShader;
-	Shader *m_pRayShader;
-	Shader *m_pLightningShader;
+	OpenGLShader *m_pObjectTextureShader;
+	OpenGLShader *m_pGlowmapShader;
+	OpenGLShader *m_pRayShader;
+	OpenGLShader *m_pLightningShader;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipRenderQueues;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipEffectTextureRenderQueues;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_effectTextureRenderQueues;

@@ -12,7 +12,7 @@ OpenGLInstancedRayRenderQueue::~OpenGLInstancedRayRenderQueue(void)
 
 // TODO: Add a RenderLine function. Maybe even rename to LineRenderQueue.
 
-void OpenGLInstancedRayRenderQueue::Render(Shader *shader, OpenGLVAO *quad, float &startingDepth, float incDepth, int currentTick)
+void OpenGLInstancedRayRenderQueue::Render(OpenGLShader *shader, OpenGLVAO *quad, float &startingDepth, float incDepth, int currentTick)
 {
 	if (m_iNumObjectsToRender > 0)
 	{

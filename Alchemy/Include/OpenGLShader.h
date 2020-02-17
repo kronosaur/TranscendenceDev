@@ -8,11 +8,11 @@
 
 #include <string>
 
-class Shader {
+class OpenGLShader {
 public:
-	Shader ();
-	Shader (const char *vsFile, const char *fsFile);
-	~Shader ();
+	OpenGLShader ();
+	OpenGLShader (const char *vsFile, const char *fsFile);
+	~OpenGLShader ();
 
 	void init (const char *vsFile, const char *fsFile);
 

@@ -10,7 +10,7 @@ OpenGLInstancedRenderQueue::~OpenGLInstancedRenderQueue(void)
 	clear();
 	}
 
-void OpenGLInstancedRenderQueue::RenderNonInstanced(Shader *shader, OpenGLVAO *quad, OpenGLTexture *texture)
+void OpenGLInstancedRenderQueue::RenderNonInstanced(OpenGLShader *shader, OpenGLVAO *quad, OpenGLTexture *texture)
 	{
 	// TODO(heliogenesis): Allow usage of an array of textures.
 	//glUniform1i(glGetUniformLocation(shader->id(), "obj_texture"), 0);
@@ -41,7 +41,7 @@ void OpenGLInstancedRenderQueue::RenderNonInstanced(Shader *shader, OpenGLVAO *q
 	clear();
 	}
 
-void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *quad, OpenGLTexture *texture, float &startingDepth, float incDepth, int currentTick)
+void OpenGLInstancedRenderQueue::Render(OpenGLShader *shader, OpenGLVAO *quad, OpenGLTexture *texture, float &startingDepth, float incDepth, int currentTick)
 	{
 	// TODO(heliogenesis): Allow usage of an array of textures.
 	if (m_iNumObjectsToRender > 0)

@@ -15,15 +15,15 @@ string textFileRead (const char *fileName) {
 	return contents;
 }
 
-Shader::Shader () {
+OpenGLShader::OpenGLShader () {
 
 }
 
-Shader::Shader (const char *vsFile, const char *fsFile) {
+OpenGLShader::OpenGLShader (const char *vsFile, const char *fsFile) {
 	init(vsFile, fsFile);
 }
 
-void Shader::init (const char *vsFile, const char *fsFile) {
+void OpenGLShader::init (const char *vsFile, const char *fsFile) {
 	char err_log[512];
 	shader_vp = glCreateShader(GL_VERTEX_SHADER);
 	shader_fp = glCreateShader(GL_FRAGMENT_SHADER);
@@ -68,7 +68,7 @@ void Shader::init (const char *vsFile, const char *fsFile) {
 	glLinkProgram(shader_id);
 }
 
-Shader::~Shader () {
+OpenGLShader::~OpenGLShader () {
 	glDetachShader(shader_id, shader_fp);
 	glDetachShader(shader_id, shader_vp);
 
@@ -77,15 +77,15 @@ Shader::~Shader () {
 	glDeleteProgram(shader_id);
 }
 
-unsigned int Shader::id () {
+unsigned int OpenGLShader::id () {
 	return shader_id;
 }
 
-void Shader::bind () {
+void OpenGLShader::bind () {
 	glUseProgram(shader_id);
 }
 
-void Shader::unbind () {
+void OpenGLShader::unbind () {
 	glUseProgram(0);
 }
 

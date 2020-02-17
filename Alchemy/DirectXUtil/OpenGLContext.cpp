@@ -90,6 +90,18 @@ bool OpenGLContext::initOpenGL (HWND hwnd, HDC hdc)
 	::kernelDebugLogPattern("[OpenGL] Maximum %d textures at resolution %dx%d, max %d per shader", iMaxTextures, iMaxTextureSize, iMaxTextureSize, iMaxTexturesPerShader);
 	prepSquareCanvas();
 	setBlendMode();
+
+	// sandbox time
+
+	OpenGLInstancedBatch<std::tuple<int, float>, int, float, float, float>* testShaderInstancedBatch = new OpenGLInstancedBatch<std::tuple<int, float>, int, float, float, float>();
+	testShaderInstancedBatch->addObjToRender(1, 1.0f, 1.1f, 1.2f);
+	testShaderInstancedBatch->addObjToRender(2, 2.0f, 2.1f, 2.2f);
+	testShaderInstancedBatch->addObjToRender(3, 3.0f, 3.1f, 3.2f);
+	testShaderInstancedBatch->addObjToRender(4, 4.0f, 4.1f, 4.2f);
+	//testShaderInstancedBatch->addObjToRender(4.0f, 4.0f, 4.1f, 4.2f); // should error
+	// testShaderInstancedBatch->addObjToRender(4, 4.0, 4.1, 4.2, 5); // should error
+	testShaderInstancedBatch->DebugRender();
+
 	return true;
 	}
 
@@ -106,8 +118,8 @@ void OpenGLContext::setBlendMode ()
 void OpenGLContext::prepSquareCanvas ()
 {
 	// Prepare the background canvas.
-	//Shader* pTestShader = new Shader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
-	Shader* pTestShader = new Shader("./shaders/texture_vertex_shader.glsl", "./shaders/texture_fragment_shader.glsl");
+	//OpenGLShader* pTestShader = new OpenGLShader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
+	OpenGLShader* pTestShader = new OpenGLShader("./shaders/texture_vertex_shader.glsl", "./shaders/texture_fragment_shader.glsl");
 	float fSize = 1.0f;
 	float posZ = 0.999999f;
 
@@ -149,7 +161,7 @@ void OpenGLContext::prepSquareCanvas ()
 
 void OpenGLContext::prepTestScene ()
 	{
-	m_pTestShader = new Shader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
+	m_pTestShader = new OpenGLShader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
 	// Create our square
 	// Declare vertices for our square - 18 floats (6 vertices, xyz for each)
 	float* vertices = new float[18];
@@ -249,7 +261,7 @@ void OpenGLContext::testShaders ()
 	glm::mat4 modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 	rotation += 5.0f;
 
-	Shader* pShader = vaos[0]->getShader();
+	OpenGLShader* pShader = vaos[0]->getShader();
 	pShader->bind(); // Bind our shader
 	// TODO: Put the rest of these thingies into the VAO class...
 					// Get the location of the matrix variables inside our shaders
@@ -300,7 +312,7 @@ void OpenGLContext::testTextures (OpenGLTexture* texture)
 	//glm::mat4 rotationMatrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 	//rotation += 1.0f;
 
-	Shader* pShader = vaos[0]->getShader();
+	OpenGLShader* pShader = vaos[0]->getShader();
 	pShader->bind(); // Bind our shader
 					 // TODO: Put the rest of these thingies into the VAO class...
 					 // Get the location of the matrix variables inside our shaders

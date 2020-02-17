@@ -17,10 +17,10 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	// Initialize the FBO.
 	glGenFramebuffers(1, &fbo);
 	glGenRenderbuffers(1, &rbo);
-	m_pGlowmapShader = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader.glsl");
-	m_pObjectTextureShader = new Shader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
-	m_pRayShader = new Shader("./shaders/ray_vertex_shader.glsl", "./shaders/ray_fragment_shader.glsl");
-	m_pLightningShader = new Shader("./shaders/lightning_vertex_shader.glsl", "./shaders/lightning_fragment_shader.glsl");
+	m_pGlowmapShader = new OpenGLShader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader.glsl");
+	m_pObjectTextureShader = new OpenGLShader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
+	m_pRayShader = new OpenGLShader("./shaders/ray_vertex_shader.glsl", "./shaders/ray_fragment_shader.glsl");
+	m_pLightningShader = new OpenGLShader("./shaders/lightning_vertex_shader.glsl", "./shaders/lightning_fragment_shader.glsl");
 	
 	m_effectRayRenderQueue = new OpenGLInstancedRayRenderQueue();
 	m_effectLightningRenderQueue = new OpenGLInstancedLightningRenderQueue();
@@ -43,7 +43,7 @@ OpenGLMasterRenderQueue::~OpenGLMasterRenderQueue(void)
 void OpenGLMasterRenderQueue::initializeCanvasVAO()
 {
 	// Prepare the background canvas.
-	//Shader* pTestShader = new Shader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
+	//OpenGLShader* pTestShader = new OpenGLShader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
 
 	float fSize = 1.0f;
 	float posZ = 0.999999f;
