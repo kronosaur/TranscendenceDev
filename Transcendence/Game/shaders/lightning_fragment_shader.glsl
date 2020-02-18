@@ -210,12 +210,13 @@ void main(void)
     float noise = fbm((uv * 2) + vec2(100, 100), (current_tick + seed) * 5) * 2;
     float s1 = ((wavefront_pos) + (noise * endXReduction));
     float colorGrad = 1.0 / (s1 * (50.0));
-	float alpha = abs(colorGrad);
-	vec3 color = blendVectors(secondaryColor, primaryColor, (quadPos.x + 1) / 2);
+	float alpha = abs(colorGrad * colorGrad);
+	float quadPosAlphaAdj = (quadPos.x + 1) / 2;
+	vec3 color = blendVectors(secondaryColor, primaryColor, quadPosAlphaAdj);
 
 	float epsilon = 0.01;
 	bool alphaIsZero = alpha < epsilon;
-	vec4 finalColor = vec4(color, alpha * float(!alphaIsZero));
+	vec4 finalColor = vec4(color, pow(alpha, 0.1) * quadPosAlphaAdj * float(!alphaIsZero));
 	gl_FragDepth = depth + float(alphaIsZero && (finalColor[3] < epsilon));
     fragColor = finalColor;
 }
