@@ -93,11 +93,11 @@ bool OpenGLContext::initOpenGL (HWND hwnd, HDC hdc)
 
 	// sandbox time
 
-	OpenGLInstancedBatch<std::tuple<int, float>, int, float, float, float>* testShaderInstancedBatch = new OpenGLInstancedBatch<std::tuple<int, float>, int, float, float, float>();
-	testShaderInstancedBatch->addObjToRender(1, 1.0f, 1.1f, 1.2f);
-	testShaderInstancedBatch->addObjToRender(2, 2.0f, 2.1f, 2.2f);
-	testShaderInstancedBatch->addObjToRender(3, 3.0f, 3.1f, 3.2f);
-	testShaderInstancedBatch->addObjToRender(4, 4.0f, 4.1f, 4.2f);
+	auto* testShaderInstancedBatch = new OpenGLInstancedBatch<std::tuple<int, float>, int, float, float, float, glm::vec4, glm::ivec2>();
+	testShaderInstancedBatch->addObjToRender(1, 1.0f, 1.1f, 1.2f, glm::vec4(0.0f, 0.1f, 0.2f, 0.3f), glm::ivec2(10, 20));
+	testShaderInstancedBatch->addObjToRender(2, 2.0f, 2.1f, 2.2f, glm::vec4(1.0f, 1.1f, 1.2f, 1.3f), glm::ivec2(11, 21));
+	testShaderInstancedBatch->addObjToRender(3, 3.0f, 3.1f, 3.2f, glm::vec4(2.0f, 2.1f, 2.2f, 2.3f), glm::ivec2(12, 22));
+	testShaderInstancedBatch->addObjToRender(4, 4.0f, 4.1f, 4.2f, glm::vec4(3.0f, 3.1f, 3.2f, 3.3f), glm::ivec2(13, 23));
 	//testShaderInstancedBatch->addObjToRender(4.0f, 4.0f, 4.1f, 4.2f); // should error
 	// testShaderInstancedBatch->addObjToRender(4, 4.0, 4.1, 4.2, 5); // should error
 	testShaderInstancedBatch->DebugRender();
