@@ -6336,4 +6336,9 @@
 	<Image UNID="&rsStKatsArcologySchematic;" obsoleteVersion="49"	bitmap="Resources\StKatsArcologySchematic.jpg" bitmask="Resources\StKatsArcologySchematicMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCorporateExplorer;"	obsoleteVersion="49" bitmap="Resources\CorporateExplorer.jpg" bitmask="Resources\CorporateExplorerMask.bmp" loadOnUse="true"/>
 
+	<Image UNID="&rsSmallShips1;"		obsoleteVersion="49" bitmap="Resources\SmallShips1.jpg"	bitmask="Resources\SmallShips1Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsMediumShips1;"		obsoleteVersion="49"	bitmap="Resources\MediumShips1.jpg"	bitmask="Resources\MediumShips1Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsMediumShips2;"		obsoleteVersion="49" bitmap="Resources\MediumShips2.jpg"	bitmask="Resources\MediumShips2Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsLargeShips2;"		obsoleteVersion="49"	bitmap="Resources\LargeShips2.jpg"	bitmask="Resources\LargeShips2Mask.bmp" loadOnUse="true"/>
+
 </TranscendenceModule>
