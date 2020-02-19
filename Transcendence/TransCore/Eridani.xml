@@ -49,8 +49,8 @@
 					<!-- Trojans of Dante II are metal-rich asteroids -->
 
 					<LocationAttributes attributes="danteTrojans">
-						<Lookup table="AsteroidCompactTrojans50"/>
-						<Lookup table="AsteroidCompactAntiTrojans50"/>
+						<Lookup table="AsteroidCompactTrojans25"/>
+						<Lookup table="AsteroidCompactAntiTrojans25"/>
 					</LocationAttributes>
 				</Group>
 
@@ -160,7 +160,7 @@
 					<!-- Antipode -->
 
 					<LocationAttributes attributes="stJohnAntipode">
-						<Lookup table="AsteroidAntipode100"/>
+						<Lookup table="AsteroidAntipode50"/>
 					</LocationAttributes>
 				</Group>
 
@@ -195,6 +195,9 @@
 				<Group distance="1100">
 					<Station type="&stAsteroidEldir;" showOrbit="true"/>
 
+					<Orbitals distance="1d8+8" angle="random">
+						<Location attributes="eldirOrbit"/>
+					</Orbitals>
 				</Group>
 
 			</Orbitals>
