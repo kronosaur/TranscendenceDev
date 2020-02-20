@@ -11,7 +11,7 @@ class CHighScoreDisplay
 		CHighScoreDisplay (void);
 		~CHighScoreDisplay (void);
 
-		inline bool HasHighScores (void) const { return (m_pHighScoreList && m_pHighScoreList->GetCount() > 0); }
+		bool HasHighScores (void) const { return (m_pHighScoreList && m_pHighScoreList->GetCount() > 0); }
 		bool IsPerformanceRunning (void);
 		void SelectNext (void);
 		void SelectPrev (void);
@@ -23,7 +23,7 @@ class CHighScoreDisplay
 		void CreatePerformance (CReanimator &Reanimator, const CString &sPerformanceID, const RECT &rcRect, CAdventureHighScoreList *pHighScoreList, IAnimatron **retpAnimatron);
 		void DeletePerformance (void);
 		int GetCurrentScrollPos (void);
-		inline bool IsPerformanceCreated (void) const { return (m_dwPerformance != 0); }
+		bool IsPerformanceCreated (void) const { return (m_dwPerformance != 0); }
 		void ScrollToPos (int iPos);
 
 		CAdventureHighScoreList *m_pHighScoreList;
@@ -58,6 +58,7 @@ class CIntroSession : public IHISession
 			isEnterCommand,
 			isNews,
 			isWaitingForHighScores,
+			isTextMessage,
 			};
 
 		CIntroSession (STranscendenceSessionCtx &CreateCtx, EStates iInitialState) : IHISession(*CreateCtx.pHI),
@@ -92,12 +93,15 @@ class CIntroSession : public IHISession
 		void CreateIntroSystem (void);
 		void CreateIntroShips (DWORD dwNewShipClass = 0, DWORD dwSovereign = 0, CSpaceObject *pShipDestroyed = NULL);
 		ALERROR CreateRandomShip (CSystem *pSystem, DWORD dwClass, CSovereign *pSovereign, CShip **retpShip);
+		void CreateTextPerformance (const CString &sText);
 		void InitShipTable (TSortMap<int, CShipClass *> &List, bool bAll = false);
 		void OrderAttack (CShip *pShip, CSpaceObject *pTarget);
 
 		void CancelCurrentState (void);
 		void CreateSoundtrackTitleAnimation (CMusicResource *pTrack, IAnimatron **retpAni);
-		inline EStates GetState (void) const { return m_iState; }
+
+		EStates GetState (void) const { return m_iState; }
+		void ExecuteCommand (const CString &sCommand);
 		bool HandleCommandBoxChar (char chChar, DWORD dwKeyData);
 		bool HandleChar (char chChar, DWORD dwKeyData);
 		void OnPOVSet (CSpaceObject *pObj);
@@ -126,6 +130,7 @@ class CIntroSession : public IHISession
         RECT m_rcMainExpanded;              //  Full screen
 
 		CHighScoreDisplay m_HighScoreDisplay;
+		DWORD m_dwTextPerformance = 0;
 
 		TSortMap<int, CShipClass *> m_ShipList;
 		bool m_bShowAllShips;				//	If FALSE, we only show the lower half (by score)
@@ -138,7 +143,7 @@ class CIntroShipController : public IShipController
 		CIntroShipController (IShipController *pDelegate);
 		virtual ~CIntroShipController (void);
 
-		inline void SetShip (CShip *pShip) { m_pShip = pShip; }
+		void SetShip (CShip *pShip) { m_pShip = pShip; }
 
 		virtual void AccumulateCrewMetrics (SCrewMetrics &Metrics) override { m_pDelegate->AccumulateCrewMetrics(Metrics); }
 		virtual void Behavior (SUpdateCtx &Ctx) override { m_pDelegate->Behavior(Ctx); }
