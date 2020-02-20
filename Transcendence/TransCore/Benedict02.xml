@@ -26,35 +26,36 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBenedictAndFiona;"
-			name=				"Benedict and Fiona"
+			name=				"Benedict 02: Benedict and Fiona"
 			attributes=			"benedictStoryArc, sistersMission"
 
 			level=				"1"
+			missionArc=			"benedictArc:20"
 
 			maxAppearing=		"1"
 			debriefAfterOutOfSystem="true"
 			failureAfterOutOfSystem="5400"
 			>
-
-		<StaticData>
-			<sequence>20</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block Nil
-					(switch
-						;	This mission only works in the starting system
+			<CanCreate>
+				(switch
+					;	This mission only works in the starting system
 
-						(not (eq (sysGetNode) (objGetProperty gPlayerShip 'startingSystem)))
-							(msnDestroy gSource)
+					(!= (sysGetNode) (objGetProperty gPlayerShip 'startingSystem))
+						Nil
 
-						;	Set up the mission
+					;	If Fiona is dead, mission doesn't show up
+						
+					(not (rpgCharacterIsAliveAndWell &unidFiona;))
+						Nil
+							
+					;	Success!
 
-						(block Nil
-							)
-						)
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>

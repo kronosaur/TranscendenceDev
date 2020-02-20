@@ -273,6 +273,7 @@ class CTopologyNodeList
 		bool IsNodeInRangeOf (const CTopologyNode *pNode, int iMin, int iMax, const CTopologyAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const;
 		void RestoreMarks (TArray<bool> &Saved);
 		void SaveAndSetMarks (bool bMark, TArray<bool> *retSaved);
+		void SetMarked (bool bMark = true) const;
 		void Shuffle (void) { m_List.Shuffle(); }
 
 	private:
@@ -451,6 +452,7 @@ class CTopology
 		ALERROR AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyNode **retpNewNode = NULL);
 		void CalcDistances (const CTopologyNode &Src, TSortMap<CString, int> &retDistances) const;
 		void CalcDistances (const TArray<const CTopologyNode *> &Src, TSortMap<CString, int> &retDistances) const;
+		void CalcTraversal (const CString &sStartingNode, TArray<CString> &retPath, TArray<CString> &retUnvisited) const;
 		ALERROR CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode = NULL);
 		void DeleteAll (void);
 		bool FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNode, CTopologyNode **retpNewNode = NULL);

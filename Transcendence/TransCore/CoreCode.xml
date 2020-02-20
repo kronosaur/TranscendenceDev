@@ -17,6 +17,14 @@
 
 	<Globals>
 		(block Nil
+			;	Diagnostics Helper Functions -----------------------------------
+
+			(setq diagAssert (lambda (expr errorMsg)
+				(if (not expr)
+					(error errorMsg)
+					)
+				))
+
 			; Internal functions -----------------------------------------------
 
 			(setq intArmorRepairAll (lambda (theShip repairTech minHPPercent)

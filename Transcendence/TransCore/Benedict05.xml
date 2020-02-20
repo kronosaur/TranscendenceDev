@@ -9,52 +9,37 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msFionaInStKats;"
-			name=				"Fiona in St. Kats"
+			name=				"Benedict 05: Fiona in St. Kats"
 			attributes=			"benedictStoryArc, stKatsHospital"
 
 			level=				"4"
+			missionArc=			"benedictArc:50"
+
 			maxAppearing=		"1"
 			priority=			"100"
 
 			noDebrief=			"true"
 			>
-
-		<StaticData>
-			<sequence>50</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block ()
-					(switch
-						;	See if the mission is still available
-
-						(not (benedict_isMissionAvailable (objGetType gSource)))
-							(msnDestroy gSource)
-							
-						;	If Fiona is dead, mission doesn't show up
+			<CanCreate>
+				(switch
+					;	If Fiona is dead, mission doesn't show up
 						
-						(not (rpgCharacterIsAliveAndWell &unidFiona;))
-							(msnDestroy gSource)
+					(not (rpgCharacterIsAliveAndWell &unidFiona;))
+						(msnDestroy gSource)
 							
-						;	If player skipped original Fiona mission, then nothing here.
+					;	If player skipped original Fiona mission, then nothing here.
 						
-						(not (msnFind "r +unid:&msBenedictAndFiona;; +property:isSuccess;"))
-							(msnDestroy gSource)
+					(not (msnFind "r +unid:&msBenedictAndFiona;; +property:isSuccess;"))
+						(msnDestroy gSource)
 							
-						;	OK
+					;	Mission can be created
 
-						(block ()
-							;	If the Stormhound mission is open (not yet accepted) then
-							;	we close it here. Otherwise the player would be able to go
-							;	back and finish it.
-
-							(enum (msnFind "o +unid:&msBenedictInNewBeyond;;") theMission
-								(msnSetUnavailable theMission)
-								)
-							)
-						)
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>
@@ -76,11 +61,9 @@
 		<Language>
 			<Text id="Name">Contact Hugo Sandoval</Text>
 			<Text id="Summary">
-				(cat
-					"Go to " (sysGetName 'C5) " and find Hugo Sandoval. He flies a heavily modified Armstrong-class transport.\n\n"
-					"System: " (sysGetName 'C5) "\n"
-					"Payment: None"
-					)
+				(msnTranslate gSource 'textSummary {
+					systemName: (sysGetName 'C5)
+					})
 			</Text>
 			<Text id="Intro">
 				(list
@@ -117,25 +100,28 @@
 			<Text id="Briefing">
 				(list
 					{
-						desc: (cat
-							"Fiona brings up a starmap on her datapad.\n\n"
-							
-							"\"I'm going to need your help. Go to the " (sysGetName 'C5) " system and "
-							"get in touch with Hugo Sandoval. He's a friend of mine. He's a merc, but "
-							"I can trust him.\n\n"
-							
-							"\"Together you should be able to find the wreckage of Sister Ston's medical "
-							"ship. Perhaps we'll scrape off a clue.\""
-							)
-							
-						acceptLabel: "\"[I]'m on my way.\""
-						declineLabel: "\"[L]et me prepare first.\""
+						descID: 'descBriefing1
+						acceptLabelID: 'actionAccept
+						declineLabelID: 'actionDecline
+
+						data: {
+							systemName: (sysGetName 'C5)
+							}
 						}
 					)
 			</Text>
 
 			<!-- INTRO -->
 
+			<Text id="textSummary">
+
+				Go to %systemName% and find Hugo Sandoval. He flies a heavily modified 
+				Armstrong-class transport.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
 			<Text id="descIntro1">
 			
 				You enter the brightly lit central garden of the New Victoria 
@@ -231,6 +217,23 @@
 				that he's turned."
 			
 			</Text>
+
+			<!-- BRIEFING -->
+
+			<Text id="descBriefing1">
+			
+				Fiona brings up a starmap on her datapad.
+							
+				"I'm going to need your help. Go to the %systemName% system and 
+				get in touch with Hugo Sandoval. He's a friend of mine. He's a 
+				merc, but I can trust him.
+							
+				"Together you should be able to find the wreckage of Sister 
+				Ston's medical ship. Perhaps we'll scrape off a clue."
+
+			</Text>
+			<String id="actionAccept">"[I]'m on my way."</String>
+			<String id="actionDecline">"[L]et me prepare first."</String>
 
 			<!-- ACCEPT -->
 

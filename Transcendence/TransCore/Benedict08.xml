@@ -16,21 +16,18 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msRescueChildrenFromPenitents;"
-			name=				"Rescue Children from Penitents"
+			name=				"Benedict 08: Rescue Children from Penitents"
 			attributes=			"benedictStoryArc, stormhoundMission"
 
 			level=				"7"
+			missionArc=			"benedictArc:80"
+
 			maxAppearing=		"1"
 			priority=			"100"
 
 			failureAfterOutOfSystem="5400"
 			noDebrief=			"true"
 			>
-
-		<StaticData>
-			<sequence>80</sequence>
-		</StaticData>
-
 		<Events>
 			<CanCreate>
 				(block (targetObj)
@@ -40,11 +37,6 @@
 						(!= (sysGetNode) 'EC)
 							Nil
 						
-						;	See if the mission is still available
-
-						(not (benedict_isMissionAvailable gType))
-							Nil
-							
 						;	Must have completed the previous mission.
 						
 						(not (msnFind "r +unid:&msRescueBenedict;; +property:isSuccess;"))

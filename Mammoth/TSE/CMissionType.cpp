@@ -6,6 +6,7 @@
 
 #define ALLOW_PLAYER_DELETE_ATTRIB				CONSTLIT("allowPlayerDelete")
 #define AUTO_ACCEPT_ATTRIB						CONSTLIT("autoAccept")
+#define CREATE_CRITERIA_ATTRIB					CONSTLIT("createCriteria")
 #define DEBRIEF_AFTER_OUT_OF_SYSTEM_ATTRIB		CONSTLIT("debriefAfterOutOfSystem")
 #define DESTROY_ON_DECLINE_ATTRIB				CONSTLIT("destroyOnDecline")
 #define EXPIRE_TIME_ATTRIB						CONSTLIT("expireTime")
@@ -33,6 +34,8 @@
 #define FIELD_MIN_LEVEL							CONSTLIT("minLevel")
 #define FIELD_NAME								CONSTLIT("name")
 
+#define PROPERTY_ARC							CONSTLIT("arc")
+#define PROPERTY_ARC_SEQUENCE					CONSTLIT("arcSequence")
 #define PROPERTY_AUTO_ACCEPT					CONSTLIT("autoAccept")
 #define PROPERTY_CAN_BE_DECLINED				CONSTLIT("canBeDeclined")
 #define PROPERTY_CAN_BE_DELETED					CONSTLIT("canBeDeleted")
@@ -71,30 +74,50 @@ ICCItemPtr CMissionType::AutoAcceptAsItem (EMissionAutoAccept iAutoAccept)
 		}
 	}
 
-bool CMissionType::CanBeCreated (const CMissionList &AllMissions, CSpaceObject *pOwner, ICCItem *pCreateData) const
+bool CMissionType::CanBeCreated (const CMissionList &AllMissions, SCreateCtx &CreateCtx) const
 
 //	CanBeCreated
 //
 //	Returns TRUE if we can create this mission.
-//
-//	NOTE: We don't check to see if the mission is appropriate to the system 
-//	level here because we want to allow explicitly created missions. Instead
-//	we check for system level inside CUniverse::CreateRandomMission.
 
 	{
 	if (!CanBeEncountered())
 		return false;
 
+	//	Skip if this mission is not appropriate for this system level.
+
+	if (!CreateCtx.bNoSystemLevelCheck)
+		{
+		int iMinLevel, iMaxLevel;
+		GetLevel(&iMinLevel, &iMaxLevel);
+		if (CreateCtx.iLevel < iMinLevel || CreateCtx.iLevel > iMaxLevel)
+			return false;
+		}
+
+	//	If we have create criteria, then make sure we match
+
+	CMission::SCriteria CreateCriteria;
+	if (!m_sCreateCriteria.IsBlank())
+		{
+		if (!CMission::ParseCriteria(m_sCreateCriteria, &CreateCriteria))
+			return false;
+
+		if (!AllMissions.Matches(CreateCtx.pOwner, CreateCriteria))
+			return false;
+		}
+
 	//	If this is part of a mission arc, then see if we can create it.
 
-	TArray<CMission *> MissionArc;
-	if (!m_sArc.IsBlank() 
-			&& !AllMissions.CanCreateMissionInArc(m_sArc, m_iArcSequence))
-		return false;
+	if (!CreateCtx.bNoMissionArcCheck)
+		{
+		if (!m_sArc.IsBlank() 
+				&& !AllMissions.CanCreateMissionInArc(*this, CreateCtx.pOwner, CreateCriteria))
+			return false;
+		}
 
 	//	Fire <CanCreate>
 
-	if (!FireCanCreate(pOwner, pCreateData))
+	if (!FireCanCreate(CreateCtx.pOwner, CreateCtx.pCreateData))
 		return false;
 
 	return true;
@@ -235,6 +258,8 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			return ComposeLoadError(Ctx, CONSTLIT("Invalid maxAppearing parameter."));
 		}
 
+	m_sCreateCriteria = pDesc->GetAttribute(CREATE_CRITERIA_ATTRIB);
+
 	m_iMaxAppearing = (m_MaxAppearing.IsEmpty() ? -1 : m_MaxAppearing.Roll());
 	m_iAccepted = 0;
 	m_iExisting = 0;
@@ -312,7 +337,13 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 
-	if (strEquals(sProperty, PROPERTY_AUTO_ACCEPT))
+	if (strEquals(sProperty, PROPERTY_ARC))
+		return (m_sArc.IsBlank() ? ICCItemPtr::Nil() : ICCItemPtr(m_sArc));
+
+	else if (strEquals(sProperty, PROPERTY_ARC_SEQUENCE))
+		return (m_sArc.IsBlank() ? ICCItemPtr::Nil() : ICCItemPtr(m_iArcSequence));
+
+	else if (strEquals(sProperty, PROPERTY_AUTO_ACCEPT))
 		return AutoAcceptAsItem(m_iAutoAccept);
 
 	else if (strEquals(sProperty, PROPERTY_CAN_BE_DECLINED))

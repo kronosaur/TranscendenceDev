@@ -41,35 +41,30 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBenedictTraining;"
-			name=				"Benedict Training"
+			name=				"Benedict 01: Benedict Training"
 			attributes=			"benedictStoryArc, sistersMission"
 
 			level=				"1"
+			missionArc=			"benedictArc:15"
 				 
 			maxAppearing=		"1"
 			noDebrief=			"true"
 			>
-
-		<StaticData>
-			<sequence>15</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block Nil
+			<CanCreate>
+				(switch
+					;	This mission only works in the starting system
 
-					(switch
-						;	This mission only works in the starting system
+					(!= (sysGetNode) (objGetProperty gPlayerShip 'startingSystem))
+						Nil
 
-						(not (eq (sysGetNode) (objGetProperty gPlayerShip 'startingSystem)))
-							(msnDestroy gSource)
+					;	Success!
 
-						;	Set up the mission
-
-						(block Nil
-							)
-						)
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>

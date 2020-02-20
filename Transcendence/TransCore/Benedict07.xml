@@ -23,45 +23,40 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msRescueBenedict;"
-			name=				"Rescue Benedict"
+			name=				"Benedict 07: Rescue Benedict"
 			attributes=			"benedictStoryArc, cathedralOfDominaMission"
 
 			level=				"5"
+			missionArc=			"benedictArc:70"
+
 			maxAppearing=		"1"
 			priority=			"100"
 
 			failureAfterOutOfSystem="5400"
 			noDebrief=			"true"
 			>
-
-		<StaticData>
-			<sequence>70</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block ()
-					(switch
-						;	See if the mission is still available
-
-						(not (benedict_isMissionAvailable (objGetType gSource)))
-							(msnDestroy gSource)
-							
-						;	Must have completed Sandoval mission (but previous Benedict
-						;	mission is optional).
+			<CanCreate>
+				(switch
+					;	Must have completed Sandoval mission (but previous Benedict
+					;	mission is optional).
 						
-						(not (msnFind "r +unid:&msFindHandOfSolace;; +property:isSuccess;"))
-							(msnDestroy gSource)
+					(not (msnFind "r +unid:&msFindHandOfSolace;; +property:isSuccess;"))
+						Nil
 
-						;	If Penitent infiltration mission fails, we can't proceed
-						;	(but OK if we never do it).
+					;	If Penitent infiltration mission fails, we can't proceed
+					;	(but OK if we never do it).
 						
-						(msnFind "r +unid:&msInfiltratePenitents;; +property:isFailure;")
-							(msnDestroy gSource)
+					(msnFind "r +unid:&msInfiltratePenitents;; +property:isFailure;")
+						Nil
 
-						;	OK
-						)
+					;	OK
+
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>

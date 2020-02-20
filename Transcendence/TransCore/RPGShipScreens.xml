@@ -580,47 +580,47 @@
 <!-- MISSION JOURNAL ===========================================================
 
 	This screen is designed to be opened from the Ship's interior screen. It
-	show the list of active missions for the player.
+	shows the list of active missions for the player.
 
 -->
 
 	<DockScreen UNID="&dsRPGMissionJournal;"
-			type=				"customPicker"
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
 			>
+		<Display type="customPicker"
+				rowHeight="32"
+				>
+			<OnDisplayInit>
+				(block (
+					; Make a list of active player missions entries.
 
-		<List
-			rowHeight="32"
-			>
-			(block (missionList)
+					(missionList 
+						(map (msnFind "a") theMission {
+							title: (msnGetProperty theMission 'name)
+							icon: Nil
+							desc: Nil
 
-				; Make a list of active player missions entries. Each entry is a list
-				; with the following elements:
-				;
-				; 0.	The name of the mission
-				; 1.	Nil (this would normally be the icon)
-				; 2.	Nil (this would normally be a short description)
-				; 3.	The mission object
-				; 4.	The time the mission was accepted
+							missionObj: theMission
+							acceptedOn: (msnGetProperty theMission 'acceptedOn)
+							})
+						)
+					)
 
-				(setq missionList (map (msnFind "a") theMission
-					(list (msnGetProperty theMission 'name) Nil Nil theMission (msnGetProperty theMission 'acceptedOn))
-					))
+					; Now sort by accepted time (later first)
 
-				; Now sort by accepted time (later first)
-
-				(sort missionList 'descending 4)
-				)
-		</List>
+					(sort missionList 'descending 'acceptedOn)
+					)
+			</OnDisplayInit>
+		</Display>
 
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(block (theEntry theMission)
-						(setq theEntry (scrGetListEntry gScreen))
-						(setq theMission (@ theEntry 3))
-
+					(block (
+						(theEntry (scrGetListEntry gScreen))
+						(theMission (@ theEntry 'missionObj))
+						)
 						(switch
 							(not theEntry)
 								(scrSetDescTranslate gScreen 'descNoMissions)
@@ -636,17 +636,20 @@
 
 				<Actions>
 					<Action id="actionSetTarget" default="1">
-						(block ((theMission (@ (scrGetListEntry gScreen) 3)))
+						(block (
+							(theMission (@ (scrGetListEntry gScreen) 'missionObj))
+							)
 							(msnSetPlayerTarget theMission)
 							(scrSetData gScreen 'targetMission theMission)
 							(scrSetListCursor gScreen (scrGetListCursor gScreen)) ;  Refresh to disable action
 							)
 					</Action>
+
 					<Action id="actionRemoveMission">
-						(block (theEntry theMission)
-							(setq theEntry (scrGetListEntry gScreen))
-							(setq theMission (@ theEntry 3))
-							
+						(block (
+							(theEntry (scrGetListEntry gScreen))
+							(theMission (@ theEntry 'missionObj))
+							)
 							(msnFailure theMission)
 							(scrRefreshScreen gScreen)
 							)

@@ -11,43 +11,38 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msInfiltratePenitents;"
-			name=				"Infiltrate Penitents"
+			name=				"Benedict 06: Infiltrate Penitents"
 			attributes=			"benedictStoryArc, commonwealthColonyArmed, sistersMission"
 
 			level=				"5"
+			missionArc=			"benedictArc:60"
+
 			maxAppearing=		"1"
 			priority=			"100"
 
 			failureAfterOutOfSystem="5400"
 			noFailureOnOwnerDestroyed="true"
 			>
-
-		<StaticData>
-			<sequence>60</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block ()
-					(switch
-						;	See if the mission is still available
+			<CanCreate>
+				(switch
+					;	Only valid in system C6A (or C6)
 
-						(not (benedict_isMissionAvailable (objGetType gSource)))
-							(msnDestroy gSource)
+					(!= (sysGetNode) (if (find (sysGetNodes) 'C6A) 'C6A 'C6))
+						Nil
 							
-						;	Only valid in system C6A (or C6)
-
-						(!= (sysGetNode) (if (find (sysGetNodes) 'C6A) 'C6A 'C6))
-							(msnDestroy gSource)
-							
-						;	Must have completed Sandoval mission
+					;	Must have completed Sandoval mission
 						
-						(not (msnFind "r +unid:&msFindHandOfSolace;; +property:isSuccess;"))
-							(msnDestroy gSource)
+					(not (msnFind "r +unid:&msFindHandOfSolace;; +property:isSuccess;"))
+						Nil
 
-						;	OK
-						)
+					;	OK
+
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>
@@ -234,17 +229,9 @@
 			
 			<OnGlobalSystemStarted>
 				(switch
-					;	This mission is spawned in C6A, or C6 (if C6A does not exist).
-					;	If we're not in the right node, then nothing to do.
-					
-					(!= (sysGetNode) (if (find (sysGetNodes) 'C6A) 'C6A 'C6))
+					(not (msnCanCreate &msInfiltratePenitents;))
 						Nil
-						
-					;	If the mission isn't available, then nothing to do
-					
-					(not (benedict_isMissionAvailable &msInfiltratePenitents;))
-						Nil
-						
+
 					;	If we've already gone through this setup code, then skip it.
 					;	Otherwise we would keep creating stations whenever one got
 					;	destroyed.

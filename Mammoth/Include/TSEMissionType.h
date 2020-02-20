@@ -28,7 +28,17 @@ class CMissionType : public CDesignType
 			evtCount					= 1,
 			};
 
-		bool CanBeCreated (const CMissionList &AllMissions, CSpaceObject *pOwner, ICCItem *pCreateData) const;
+		struct SCreateCtx
+			{
+			int iLevel = 0;
+			CSpaceObject *pOwner = NULL;
+			ICCItem *pCreateData = NULL;
+
+			bool bNoSystemLevelCheck = false;
+			bool bNoMissionArcCheck = false;
+			};
+
+		bool CanBeCreated (const CMissionList &AllMissions, SCreateCtx &CreateCtx) const;
 		bool CanBeDeclined (void) const { return (m_iAutoAccept == EMissionAutoAccept::none); }
 		bool CanBeDeleted (void) const { return m_fAllowDelete; }
 		bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iExisting < m_iMaxAppearing); }
@@ -41,6 +51,7 @@ class CMissionType : public CDesignType
 		const CString &GetArc (void) const { return m_sArc; }
 		int GetArcSequence (void) const { return m_iArcSequence; }
 		EMissionAutoAccept GetAutoAccept (void) const { return m_iAutoAccept; }
+		const CString &GetCreateCriteria (void) const { return m_sCreateCriteria; }
 		const CString &GetName (void) const { return m_sName; }
 		int GetExpireTime (void) const { return m_iExpireTime; }
 		DWORD GetLastAcceptedOn (void) const { return m_dwLastAcceptedOn; }
@@ -86,6 +97,7 @@ class CMissionType : public CDesignType
 		CMissionType *m_pArcRoot = NULL;	//	First mission in arc (NULL if not part of mission arc)
 		CString m_sArc;						//	For related missions
 		int m_iArcSequence = -1;			//	Missions assigned in this order (lower numbers first)
+		CString m_sCreateCriteria;			//	Allow create if current mission list matches this criteria
 		int m_iPriority;					//	Relative priority (default = 1)
 		EMissionAutoAccept m_iAutoAccept = EMissionAutoAccept::none;
 

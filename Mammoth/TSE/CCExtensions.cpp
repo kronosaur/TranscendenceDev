@@ -2513,7 +2513,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	-----------------
 
 		{	"msnAccept",					fnMissionSet,		FN_MISSION_ACCEPTED,
-			"(msnAccept missionObj)",
+			"(msnAccept missionObj) -> True/Nil",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnAddTimerEvent",				fnMissionSet,		FN_MISSION_ADD_TIMER,
@@ -2560,7 +2560,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnFailure",				fnMissionSet,		FN_MISSION_FAILURE,
-			"(msnFailure missionObj [data])",
+			"(msnFailure missionObj [data]) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnFind",						fnMission,			FN_MISSION_FIND,
@@ -2694,7 +2694,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnSuccess",				fnMissionSet,		FN_MISSION_SUCCESS,
-			"(msnSuccess missionObj [data])",
+			"(msnSuccess missionObj [data]) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnTranslate",					fnObjGet,		FN_OBJ_TRANSLATE,
@@ -9235,7 +9235,6 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	ALERROR error;
-	int i, j;
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
@@ -9249,20 +9248,24 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get arguments
 
-			CSpaceObject *pOwner = CreateObjFromItem(pArgs->GetElement(1));
-			ICCItem *pData = pArgs->GetElement(2);
+			CMissionType::SCreateCtx CreateCtx;
+			CreateCtx.iLevel = (pCtx->GetUniverse().GetCurrentSystem() ? pCtx->GetUniverse().GetCurrentSystem()->GetLevel() : 1);
+			CreateCtx.pOwner = CreateObjFromItem(pArgs->GetElement(1));
+			CreateCtx.pCreateData = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
 
 			//	See if we can create the mission
 
-			return pCC->CreateBool(pType->CanBeCreated(pCtx->GetUniverse().GetMissions(), pOwner, pData));
+			return pCC->CreateBool(pType->CanBeCreated(pCtx->GetUniverse().GetMissions(), CreateCtx));
 			}
 
 		case FN_MISSION_CREATE:
 			{
 			//	Get arguments
 
-			CSpaceObject *pOwner = CreateObjFromItem(pArgs->GetElement(1));
-			ICCItem *pData = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
+			CMissionType::SCreateCtx CreateCtx;
+			CreateCtx.iLevel = (pCtx->GetUniverse().GetCurrentSystem() ? pCtx->GetUniverse().GetCurrentSystem()->GetLevel() : 1);
+			CreateCtx.pOwner = CreateObjFromItem(pArgs->GetElement(1));
+			CreateCtx.pCreateData = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
 
 			//	If we have a list of missions, then we need to choose one 
 			//	randomly.
@@ -9292,7 +9295,7 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				CString sError;
 				CMission *pMission;
-				if (error = pCtx->GetUniverse().CreateRandomMission(Missions, pOwner, pData, &pMission, &sError))
+				if (error = pCtx->GetUniverse().CreateRandomMission(Missions, CreateCtx, &pMission, &sError))
 					{
 					//	ERR_NOTFOUND means that conditions do not allow for the
 					//	mission to be created. This is not technically an error; it
@@ -9320,9 +9323,17 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pType == NULL)
 					return pCC->CreateError(CONSTLIT("Unknown mission type"), pArgs->GetElement(0));
 
+				//	We're creating this mission type explicitly, so we don't do certain
+				//	checks (such as system level).
+
+				CreateCtx.bNoMissionArcCheck = true;
+				CreateCtx.bNoSystemLevelCheck = true;
+
+				//	Create the mission
+
 				CString sError;
 				CMission *pMission;
-				if (error = pCtx->GetUniverse().CreateMission(pType, pOwner, pData, &pMission, &sError))
+				if (error = pCtx->GetUniverse().CreateMission(*pType, CreateCtx, &pMission, &sError))
 					{
 					//	ERR_NOTFOUND means the mission refused to be created,
 					//	so we return Nil.
@@ -9362,39 +9373,31 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (!CMission::ParseCriteria(sCriteria, &Criteria))
 				return pCC->CreateError(CONSTLIT("Unable to parse criteria"), pArgs->GetElement(1));
 
-			//	Get list of missions
+			//	Get list of missions that match criteria
 
-			TArray<CMission *> List;
-			pCtx->GetUniverse().GetMissions(pSource, Criteria, &List);
+			CMissionList List = pCtx->GetUniverse().GetMissions().Filter(pSource, Criteria);
 			if (List.GetCount() == 0)
 				return pCC->CreateNil();
 
+			//	Return a single mission
+
 			if (Criteria.bPriorityOnly)
 				{
-				//	Return a single mission
-
-				int bestPriority = -1;
-				j = 0;
-				for (i = 0; i < List.GetCount(); i++)
-					if (List[i]->GetPriority() > bestPriority)
-						{
-						j = i;
-						bestPriority = List[i]->GetPriority();
-						}
-				
-				return pCC->CreateInteger((int)List[j]);
+				CMission *pBestMission = List.FindHighestPriority();
+				return pCC->CreateInteger((int)pBestMission);
 				}
+
+			//	Create a list to return
+
 			else
 				{
-				//	Create a list to return
-
 				ICCItem *pResult = pCC->CreateLinkedList();
 				if (pResult->IsError())
 					return pResult;
 
 				CCLinkedList *pList = (CCLinkedList *)pResult;
-				for (i = 0; i < List.GetCount(); i++)
-					pList->AppendInteger((int)List[i]);
+				for (int i = 0; i < List.GetCount(); i++)
+					pList->AppendInteger((int)List.GetMission(i));
 
 				//	Done
 

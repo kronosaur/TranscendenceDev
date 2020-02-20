@@ -312,11 +312,11 @@ class CUniverse
 		bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pType, sEvent, bInDoEvent); }
 		ALERROR CreateEmptyStarSystem (CSystem **retpSystem);
 		DWORD CreateGlobalID (void) { return m_dwNextID++; }
-		ALERROR CreateMission (CMissionType *pType, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError);
+		ALERROR CreateMission (CMissionType &Type, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError);
 		ALERROR CreateRandomItem (const CItemCriteria &Crit, 
 								  const CString &sLevelFrequency,
 								  CItem *retItem);
-		ALERROR CreateRandomMission (const TArray<CMissionType *> &Types, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError);
+		ALERROR CreateRandomMission (const TArray<CMissionType *> &Types, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError);
 		IShipController *CreateShipController (const CString &sAI);
 		ALERROR CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		ALERROR CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
@@ -345,7 +345,6 @@ class CUniverse
 		const CAdventureDesc &GetCurrentAdventureDesc (void) const { return m_Design.GetAdventureDesc(); }
 		CAdventureDesc &GetCurrentAdventureDesc (void) { return m_Design.GetAdventureDesc(); }
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
-		CMission *GetCurrentMission (void);
 		const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
 		const CEconomyType &GetCreditCurrency (void) const;
 		const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
@@ -371,8 +370,8 @@ class CUniverse
 		EUpdateSpeeds GetLastUpdateSpeed (void) const { return m_iLastUpdateSpeed; }
 		CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
 		int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
+		const CMissionList &GetMissions (void) const { return m_AllMissions; }
 		CMissionList &GetMissions (void) { return m_AllMissions; }
-		void GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList);
 		const CG16bitFont &GetNamedFont (ENamedFonts iFont) { return *m_FontTable[iFont]; }
 		IEffectPainter &GetNamedPainter (CNamedEffects::ETypes iPainter) { return m_NamedEffects.GetPainter(m_Design, iPainter); }
 		const CObjectStats::SEntry &GetObjStats (DWORD dwObjID) const { return m_ObjStats.GetEntry(dwObjID); }
@@ -412,7 +411,7 @@ class CUniverse
 		void SetDifficultyLevel (CDifficultyOptions::ELevels iLevel) { m_Difficulty.SetLevel(iLevel); }
 		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
-		void SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV);
+		void SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV = NULL);
 		bool SetPOV (CSpaceObject *pPOV);
 		void SetPlayerShip (CSpaceObject *pPlayer);
 		void SetRegistered (bool bRegistered = true) { m_bRegistered = bRegistered; }

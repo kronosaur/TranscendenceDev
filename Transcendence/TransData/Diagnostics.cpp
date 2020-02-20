@@ -41,29 +41,52 @@ void GenerateDiagnostics (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	Universe.StartGame(true);
 
+	//	Calculate the traversal order.
+
+	TArray<CString> Path;
+	TArray<CString> Extra;
+
 	//	Start diagnostics are always in the starting system (if available)
 
-	CSystem *pSE = NULL;
-	if (AllSystems.Find(Universe.GetCurrentAdventureDesc().GetStartingNodeID(), &pSE))
+	CString sStartingNode = Universe.GetCurrentAdventureDesc().GetStartingNodeID();
+	if (!AllSystems.Find(sStartingNode))
 		{
-		Universe.SetCurrentSystem(pSE);
-
-		Universe.GetDesignCollection().FireOnGlobalStartDiagnostics(DiagnosticsCtx);
-		Universe.GetDesignCollection().FireOnGlobalRunDiagnostics(DiagnosticsCtx);
+		printf("ERROR: Unable to find starting system. Cannot run <OnGlobalStartDiagnostics>\n");
+		return;
 		}
-	else
-		printf("WARNING: Unable to find starting system. Cannot run <OnGlobalStartDiagnostics>\n");
 
-	//	Now loop over all systems and invoke OnSystemDiagnostics
+	Universe.GetTopology().CalcTraversal(sStartingNode, Path, Extra);
 
-	for (i = 0; i < AllSystems.GetCount(); i++)
+	//	Traverse
+
+	for (int i = 0; i < Path.GetCount(); i++)
 		{
-		if (AllSystems[i] == pSE)
+		CSystem *pSystem;
+		if (!AllSystems.Find(Path[i], &pSystem))
 			continue;
 
-		Universe.SetCurrentSystem(AllSystems[i]);
+		Universe.SetNewSystem(*pSystem);
+		printf("[%s] %s\n", (LPSTR)pSystem->GetTopology()->GetID(), (LPSTR)pSystem->GetName());
 
-		//	System diagnostics
+		if (i == 0)
+			{
+			Universe.GetDesignCollection().FireOnGlobalStartDiagnostics(DiagnosticsCtx);
+			Universe.GetDesignCollection().FireOnGlobalRunDiagnostics(DiagnosticsCtx);
+			}
+
+		Universe.GetDesignCollection().FireOnGlobalSystemDiagnostics(DiagnosticsCtx);
+		}
+
+	//	Visit any extra systems.
+
+	for (int i = 0; i < Extra.GetCount(); i++)
+		{
+		CSystem *pSystem;
+		if (!AllSystems.Find(Extra[i], &pSystem))
+			continue;
+
+		Universe.SetNewSystem(*pSystem);
+		printf("[%s] %s\n", (LPSTR)pSystem->GetTopology()->GetID(), (LPSTR)pSystem->GetName());
 
 		Universe.GetDesignCollection().FireOnGlobalSystemDiagnostics(DiagnosticsCtx);
 		}

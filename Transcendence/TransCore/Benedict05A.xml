@@ -15,33 +15,32 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msFindHandOfSolace;"
-			name=				"Find Hand of Solace"
+			name=				"Benedict 05A: Find Hand of Solace"
 			attributes=			"benedictStoryArc, hugoSandovalMission"
 
 			level=				"4"
+			missionArc=			"benedictArc:55"
+			createCriteria=		"a +unid:&msFionaInStKats;;"
+
 			maxAppearing=		"1"
 			priority=			"100"
 
 			failureAfterOutOfSystem="5400"
 			noDebrief=			"true"
 			>
-
-		<StaticData>
-			<sequence>55</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block ()
-					(switch
-						;	See if the mission is still available
+			<CanCreate>
+				(switch
+					;	Fiona mission must be active
 
-						(not (benedict_isMissionAvailable (objGetType gSource) { allowActiveMissions:True }))
-							(msnDestroy gSource)
-							
-						;	OK
-						)
+					(not (rpgIsMissionActive &msFionaInStKats;))
+						Nil
+
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>
@@ -201,8 +200,8 @@
 						
 					;	If we don't have a mission to meet Sandoval, then 
 					;	there's nothing to do.
-					
-					(not (rpgIsMissionActive &msFionaInStKats;))
+
+					(not (msnCanCreate &msFindHandOfSolace;))
 						Nil
 						
 					;	Create Sandoval here.
@@ -273,92 +272,135 @@
 		</Events>
 		
 		<Language>
-			<Text id="Name">"Help Sandoval Find the Hand of Solace"</Text>
+			<Text id="Name">Help Sandoval Find the Hand of Solace</Text>
 			<Text id="Summary">
-				(cat
-					"Follow Sandoval and help him scan for the wreckage of the Hand of Solace. "
-					"Do not enter or let anyone enter the scanning zone.\n\n"
-					
-					"System: " (sysGetName) "\n"
-					"Payment: None"
-					)
+				(msnTranslate gSource 'textSummary {
+					systemName: (sysGetName)
+					})
 			</Text>
 			<Text id="FirstIntro">
 				(list
 					{
-						desc: (cat
-							"Sandoval shakes his head and puts his blaster away.\n\n"
-							
-							"\"So you're Fiona's new pet? "
-							(if (= (plyGetGenome gPlayer) 'humanFemale)
-								"Well, I'm not disappointed."
-								"Well, I expected someone taller."
-								)
-							"\""
-							)
-							
-						label: "\"[C]an we skip the banter?\""
+						descID: (if (= (plyGetGenome gPlayer) 'humanFemale) 'textFirstIntro1.female 'textFirstIntro1)
+						labelID: 'actionFirstIntro1
 						}
 					{
-						desc: (cat
-							"\"All business, eh? Just like Fiona! OK, let's get to work!\n\n"
-							
-							"\"We're looking for a tiny wreck in an entire star system. "
-							"Not my favorite job, by far. But I've got enough equipment "
-							"here to do it. I'll be able to pick up even the faintest radiation.\""
-							)
-							
-						label: "\"[W]hat are we waiting for?\""
+						descID: 'textFirstIntro2
+						labelID: 'actionFirstIntro2
 						}
 					{
-						desc: (cat
-							"\"Nothing's easy, kid. We'll be scanning right in the middle "
-							"of marauder territory, and we're going to be attracting a lot of "
-							"attention.\""
-							)
-							
-						label: "\"[I] can handle marauders.\""
+						descID: 'textFirstIntro3
+						labelID: 'actionFirstIntro3
 						}
 					{
-						desc: (cat
-							"\"I'm sure you can. But here's the trick: a gunship engine belching "
-							"hot plasma is going to blind the scanner, right? You'll have to keep "
-							"all ships away from me until I'm done scanning.\""
-							)
-						label: "\"[I]'ll do what I can.\""
+						descID: 'textFirstIntro4
+						labelID: 'actionFirstIntro4
 						}
 					)
 			</Text>
 			<Text id="Intro">
 				(list
 					{
-						desc: (cat
-							"\"You ready now? Armor all clean? Weapons loaded? Do you need a hug before we go?\""
-							)
-						label: "\"[G]o to hell.\""
+						descID: 'textIntro1
+						labelID: 'actionIntro1
 						}
 					{
-						desc: (cat
-							"\"You're not as fun as I expected.\n\n"
-							
-							"\"Remember, keep all ships away from me until I'm done scanning. It's "
-							"our best chance to find the Hand of Solace.\""
-							)
-						label: "\"[G]ot it.\""
+						descID: 'textIntro2
+						labelID: 'actionIntro2
 						}
 					)
 			</Text>
 			<Text id="Briefing">
 				(list
 					{
-						desc: (cat
-							"\"Alright. Follow me to the search area.\""
-							)
-						acceptLabel: "\"[I]'m right behind you.\""
-						declineLabel: "\"[L]et me prepare first.\""
+						descID: 'textBriefing1
+						acceptLabelID: 'actionAccept
+						declineLabelID: 'actionDecline
 						}
 					)
 			</Text>
+
+			<!-- INTRO -->
+
+			<Text id="textSummary">
+			
+				Follow Sandoval and help him scan for the wreckage of the Hand 
+				of Solace. Do not enter or let anyone enter the scanning zone.
+					
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textFirstIntro1">
+
+				Sandoval shakes his head and puts his blaster away.
+							
+				"So you're Fiona's new pet? Well, I expected someone taller."
+
+			</Text>
+			<Text id="textFirstIntro1.female">
+
+				Sandoval shakes his head and puts his blaster away.
+							
+				"So you're Fiona's new pet? Well, I'm not disappointed."
+
+			</Text>
+			<String id="actionFirstIntro1">"[C]an we skip the banter?"</String>
+			<Text id="textFirstIntro2">
+
+				"All business, eh? Just like Fiona! OK, let's get to work!
+							
+				"We're looking for a tiny wreck in an entire star system. Not my
+				favorite job, by far. But I've got enough equipment here to do
+				it. I'll be able to pick up even the faintest radiation."
+
+			</Text>
+			<String id="actionFirstIntro2">"[W]hat are we waiting for?"</String>
+			<Text id="textFirstIntro3">
+			
+				"Nothing's easy, kid. We'll be scanning right in the middle of
+				marauder territory, and we're going to be attracting a lot of 
+				attention."
+
+			</Text>
+			<String id="actionFirstIntro3">"[I] can handle marauders."</String>
+			<Text id="textFirstIntro4">
+
+				"I'm sure you can. But here's the trick: a gunship engine 
+				belching hot plasma is going to blind the scanner, right?
+				
+				You'll have to keep all ships away from me until I'm done 
+				scanning."
+			
+			</Text>
+			<String id="actionFirstIntro4">"[I]'ll do what I can."</String>
+			<Text id="textIntro1">
+
+				"You ready now? Armor all clean? Weapons loaded? Do you need 
+				a hug before we go?"
+			
+			</Text>
+			<String id="actionIntro1">"[G]o to hell."</String>
+			<Text id="textIntro2">
+
+				"You're not as fun as I expected.
+							
+				"Remember, keep all ships away from me until I'm done scanning. 
+				It's our best chance to find the Hand of Solace."
+			
+			</Text>
+			<String id="actionIntro2">"[G]ot it."</String>
+
+			<!-- BRIEFING -->
+
+			<String id="textBriefing1">
+
+				"Alright. Follow me to the search area."
+			
+			</String>
+			<String id="actionAccept">"[I]'m right behind you."</String>
+			<String id="actionDecline">"[L]et me prepare first."</String>
+
 			<String id="AcceptReply">
 				"Try to keep up!"
 			</String>
@@ -457,85 +499,34 @@
 			<Text id="dlgHandOfSolace">
 				(list
 					{
-						desc: (cat
-							"You board the medical ship behind Sandoval and are immediately "
-							"confronted by an armored figure. He opens his helmet.\n\n"
-							
-							"It's Benedict."
-							)
-						label: "\"[W]hat are you doing here?\""
+						descID: 'textHoS1
+						labelID: 'actionHoS1
 						}
 					{
-						desc: (cat
-							"\"Fiona was attacked before she could find this wreck. This is what "
-							"they were trying to keep her from seeing.\"\n\n"
-							
-							"He looks at Sandoval, arm cannon ready.\n\n"
-							
-							"\"But I guess you already know that. Hello, Sandoval.\""
-							)
+						descID: 'textHoS2
 						}
 					{
-						desc: (cat
-							"Sandoval nods with a smirk and casually shows his empty hands.\n\n"
-							
-							"\"I'm impressed, Benedict. I guess you're not just a mindless gun.\""
-							)
-						label: "\"[D]id you find anything?\""
+						descID: 'textHoS3
+						labelID: 'actionHoS3
 						}
 					{
-						desc: (cat
-							"\"No. Everything's been wiped: computers, logs, comms records. Everything.\n\n"
-							
-							"\"There was definite fighting. The hull's covered in laser scars and blast damage. "
-							"The reactor's scrammed and useless. No bodies, of course. Everything's clean.\""
-							)
-						label: "\"[S]o that's it?\""
+						descID: 'textHoS4
+						labelID: 'actionHoS4
 						}
 					{
-						desc: (cat
-							"Sandoval turns towards him, \"What about propulsion?\"\n\n"
-							
-							"Benedict shakes his head, \"Dead. Everything's vented...\"\n\n"
-							
-							"\"The firmware!\" interrupts Sandoval, \"The black-box! Is it still "
-							"sealed?\""
-							)
-						label: "\"[T]he what?\""
+						descID: 'textHoS5
+						labelID: 'actionHoS5
 						}
 					{
-						desc: (cat
-							"Sandoval's magnetic boots clang as he runs to the aft compartments. You and Benedict "
-							"follow.\n\n"
-							
-							"\"The drive system logs all acceleration events for servicing and "
-							"maintenance!\" says Sandoval. \"We can use the data to reconstruct "
-							"the ship's course. That might tell us something.\""
-							)
-						label: "\"[I]f they didn't wipe it.\""
+						descID: 'textHoS6
+						labelID: 'actionHoS6
 						}
 					{
-						desc: (cat
-							"Sandoval plugs into the drive system and downloads its data.\n\n"
-							
-							"\"It looks OK. I can't reconstruct it here, but I'll take it back "
-							"to Fiona and we can plot a path.\n\n"
-							
-							"\"Thanks for your help, %name%. I'll tell Fiona you said hi.\""
-							)
-						label: "\"[G]ood luck!\""
+						descID: 'textHoS7
+						labelID: 'actionHoS7
 						}
 					{
-						desc: (cat
-							"Benedict is about to interject, but stops himself. He looks deflated.\n\n"
-							
-							"Sandoval shakes his head and smiles, \"Don't look like a lost little "
-							"microsaur! Here, take a copy of the data and do your own analysis. "
-							"We'll share what we find. Deal?\"\n\n"
-							
-							"Benedict grunts a thank you to Sandoval. He nods to you, \"I'm heading "
-							"towards Sanctuary. Maybe we'll meet again!\""
-							)
+						descID: 'textHoS8
 							
 						code: (lambda ()
 							(block (
@@ -550,17 +541,20 @@
 			<Text id="dlgWaitForSandoval">
 				(list
 					{
-						desc: (cat "You decide to wait for Sandoval.")
+						descID: 'textWaitForSandoval1
 						nextPage: 'forceUndock
 						}
 					)
 			</Text>
+			<Text id="textWaitForSandoval1">
+
+				You decide to wait for Sandoval.
+			
+			</Text>
 			<Text id="dlgBenedictAlone">
 				(list
 					{
-						desc: (cat
-							"LATER: Sandoval is dead, so it's just the two of us."
-							)
+						descID: 'textBenedictAlone1
 							
 						code: (lambda ()
 							(block (
@@ -571,6 +565,99 @@
 							)
 						}
 					)
+			</Text>
+			<Text id="textBenedictAlone1">
+
+				Benedict pulls some data our of the propulsion system.
+				
+				"Sandoval is dead, so it's just the two of us. I'll take this
+				data to Sanctuary. Meet me there!"
+			
+			</Text>
+
+			<Text id="textHoS1">
+			
+				You board the medical ship behind Sandoval and are immediately 
+				confronted by an armored figure. He opens his helmet.
+							
+				It's Benedict.
+
+			</Text>
+			<String id="actionHoS1">"[W]hat are you doing here?"</String>
+			<Text id="textHoS2">
+			
+				"Fiona was attacked before she could find this wreck. This is 
+				what they were trying to keep her from seeing."
+							
+				He looks at Sandoval, arm cannon ready.
+							
+				"But I guess you already know that. Hello, Sandoval."
+
+			</Text>
+			<Text id="textHoS3">
+			
+				Sandoval nods with a smirk and casually shows his empty hands.
+							
+				"I'm impressed, Benedict. I guess you're not just a mindless gun."
+
+			</Text>
+			<String id="actionHoS3">"[D]id you find anything?"</String>
+			<Text id="textHoS4">
+			
+				"No. Everything's been wiped: computers, logs, comms records.
+				Everything.
+							
+				"There was definite fighting. The hull's covered in laser scars
+				and blast damage. The reactor's scrammed and useless. No bodies,
+				of course. Everything's clean."
+
+			</Text>
+			<String id="actionHoS4">"[S]o that's it?"</String>
+			<Text id="textHoS5">
+			
+				Sandoval turns towards him, "What about propulsion?"
+							
+				Benedict shakes his head, "Dead. Everything's vented..."
+							
+				"The firmware!" interrupts Sandoval, "The black-box! Is it still
+				sealed?"
+
+			</Text>
+			<String id="actionHoS5">"[T]he what?"</String>
+			<Text id="textHoS6">
+
+				Sandoval's magnetic boots clang as he runs to the aft 
+				compartments. You and Benedict follow.
+							
+				"The drive system logs all acceleration events for servicing and
+				maintenance!" says Sandoval. "We can use the data to reconstruct
+				the ship's course. That might tell us something."
+			
+			</Text>
+			<String id="actionHoS6">"[I]f they didn't wipe it."</String>
+			<Text id="textHoS7">
+			
+				Sandoval plugs into the drive system and downloads its data.
+							
+				"It looks OK. I can't reconstruct it here, but I'll take it back 
+				to Fiona and we can plot a path.
+							
+				"Thanks for your help, %name%. I'll tell Fiona you said hi."
+
+			</Text>
+			<String id="actionHoS7">"[G]ood luck!"</String>
+			<Text id="textHoS8">
+			
+				Benedict is about to interject, but stops himself. He looks 
+				deflated.
+							
+				Sandoval shakes his head and smiles, "Don't look like a lost 
+				little microsaur! Here, take a copy of the data and do your own
+				analysis. We'll share what we find. Deal?"
+							
+				Benedict grunts a thank you to Sandoval. He nods to you, "I'm 
+				heading towards Sanctuary. Maybe we'll meet again!"
+
 			</Text>
 		</Language>
 	</StationType>
@@ -695,7 +782,9 @@
 				Restarting scan...Keep the area clear!
 			</Text>
 			<Text id="msgScanning">
-				(cat "Scanning..." (@ gData 'percent) "%")
+				Scanning...%percent%%
+			</Text>
+			<Text id="textScanning">
 			</Text>
 			<Text id="msgInterference">
 				Interference!
@@ -704,12 +793,11 @@
 				Kack! We lost the alignment. We have to recalibrate!
 			</Text>
 			<Text id="msgIncomingWave">
-				(random (list
-					(cat "Marauders coming in!")
-					(cat "Here they come!")
-					(cat "We've got hostiles coming in!")
-					))
+				(typTranslate gType (random (list 'msgWarn1 'msgWarn2 'msgWarn3)))
 			</Text>
+			<Text id="msgWarn1">Marauders coming in!</Text>
+			<Text id="msgWarn2">Here they come!</Text>
+			<Text id="msgWarn3">We've got hostiles coming in!</Text>
 		</Language>
 	</OverlayType>
 	

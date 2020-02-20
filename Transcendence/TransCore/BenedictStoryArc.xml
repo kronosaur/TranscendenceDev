@@ -68,6 +68,179 @@
 					Nil
 					)
 			</GetGlobalDockScreen>
+
+			<OnGlobalSystemDiagnostics>
+				(block (
+					(curSystem (sysGetNode))
+					)
+					(switch
+						(= curSystem 'SE)
+							(block (sistersObj missionObj)
+								(diagCreatePlayerShip)
+								(setq sistersObj (sysFindObject gPlayerShip "TAN +sistersOfDomina;"))
+
+								;	Benedict 00
+
+								(diagAssert (setq missionObj (msnCreate &msBenedictsDrones; sistersObj)) "Benedict 00: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 00: Unable to accept.")
+								(diagAssert (msnSuccess missionObj) "Benedict 00: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+
+								;	Benedict 01
+								;
+								;	This mission is created and accepted when we succeed at Benedict 00.
+
+								(setq missionObj (msnFind "aP +unid:&msBenedictTraining;;"))
+								(diagAssert missionObj "Benedict 01: Failed to create.")
+								(diagAssert (msnSuccess missionObj) "Benedict 01: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+
+								;	Benedict 02
+
+								(diagAssert (setq missionObj (msnCreate &msBenedictAndFiona; sistersObj)) "Benedict 02: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 02: Unable to accept.")
+								(diagAssert (msnSuccess missionObj) "Benedict 02: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+
+								(objDestroy gPlayerShip)
+								(setq gPlayerShip Nil)
+								)
+
+						(sysHasAttribute 'newBeyond)
+							(block (colonyObj)
+								(switch
+									;	If we already finished Benedict 04, then we're done.
+
+									(msnFind "r +unid:&msBenedictInNewBeyond;;")
+										Nil
+
+									;	If there is no Commonwealth colony here, then we're done.
+
+									(not (setq colonyObj (@ (sysFindObject Nil "TA +unid:&stCommonwealthColony;;") 0)))
+										Nil
+
+									;	Create the mission
+
+									(block (missionObj)
+										(diagCreatePlayerShip)
+
+										(diagAssert (setq missionObj (msnCreate &msBenedictInNewBeyond; colonyObj)) "Benedict 04: Unable to create.")
+										(diagAssert (msnAccept missionObj) "Benedict 04: Unable to accept.")
+										(diagAssert (msnSuccess missionObj) "Benedict 04: Unable to complete.")
+										(msnReward missionObj)
+										(msnSetProperty missionObj 'isDebriefed True)
+										
+										(objDestroy gPlayerShip)
+										(setq gPlayerShip Nil)
+										)
+									)
+								)
+
+						(= curSystem 'SK)
+							(block (missionObj)
+								(diagAssert (setq missionObj (msnCreate &msFionaInStKats; Nil)) "Benedict 05: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 05: Unable to accept.")
+								)
+
+						(= curSystem 'C5)
+							(block (missionObj)
+								(diagAssert (setq missionObj (msnCreate &msFindHandOfSolace; Nil)) "Benedict 05A: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 05A: Unable to accept.")
+								(diagAssert (msnSuccess missionObj) "Benedict 05A: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+								)
+
+						(or (= curSystem 'C6A) (= curSystem 'C6))
+							(switch
+								;	If we already finished Benedict 06, then we're done.
+
+								(msnFind "r +unid:&msInfiltratePenitents;;")
+									Nil
+
+								;	If C6A exists and we're in C6, then skip
+
+								(and (= curSystem 'C6) (find (sysGetNodes) 'C6A))
+									Nil
+
+								;	Continue
+
+								(block (
+									(sources (append
+										(sysFindObject Nil "TA +unid:&stCommonwealthColonyArmed;;")
+										(sysFindObject Nil "TA +unid:&stSistersOfDomina;;")
+										))
+									(sourceObj (@ sources 0))
+
+									missionObj
+									)
+									(if (not (msnFind "r +unid:&msFindHandOfSolace;; +property:isSuccess;"))
+										(error "Benedict 06: Did not finish previous mission.")
+										)
+
+									(diagCreatePlayerShip)
+									(if (not sourceObj)
+										(error "Benedict 06: Unable to find mission-giver station.")
+										)
+
+									(diagAssert (setq missionObj (msnCreate &msInfiltratePenitents; sourceObj)) "Benedict 06: Unable to create.")
+									(diagAssert (msnAccept missionObj) "Benedict 06: Unable to accept.")
+									(diagAssert (msnSuccess missionObj) "Benedict 06: Unable to complete.")
+									(msnReward missionObj)
+									(msnSetProperty missionObj 'isDebriefed True)
+										
+									(objDestroy gPlayerShip)
+									(setq gPlayerShip Nil)
+									)
+								)
+
+						(= curSystem 'CD)
+							(block (
+								(sourceObj (@ (sysFindObject Nil "TA +unid:&stCathedralOfDomina;;") 0))
+
+								missionObj
+								)
+								(diagCreatePlayerShip)
+								(if (not sourceObj)
+									(error "Benedict 07: Unable to find mission-giver station.")
+									)
+
+								(diagAssert (setq missionObj (msnCreate &msRescueBenedict; sourceObj)) "Benedict 07: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 07: Unable to accept.")
+								(diagAssert (msnSuccess missionObj) "Benedict 07: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+										
+								(objDestroy gPlayerShip)
+								(setq gPlayerShip Nil)
+								)
+
+						(= curSystem 'EC)
+							(block (
+								(sourceObj (@ (sysFindObject Nil "sA +unid:&scStormhoundAquila;;") 0))
+
+								missionObj
+								)
+								(diagCreatePlayerShip)
+								(if (not sourceObj)
+									(error "Benedict 08: Unable to find mission-giver station.")
+									)
+
+								(diagAssert (setq missionObj (msnCreate &msRescueChildrenFromPenitents; sourceObj)) "Benedict 08: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 08: Unable to accept.")
+								(diagAssert (msnSuccess missionObj) "Benedict 08: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+										
+								(objDestroy gPlayerShip)
+								(setq gPlayerShip Nil)
+								)
+						)
+					)
+			</OnGlobalSystemDiagnostics>
 		</Events>
 		
 		<Language>
@@ -282,31 +455,38 @@
 			<Text id="actionDone">Do[n]e</Text>
 			
 			<Text id="IntroFirst">
+
 				You are docked at an abbey of the Sisters of Domina.
 				A woman in a flowing cardinal robe approaches you.
 							
 				"Welcome, pilgrim! Your journey to the Galactic Core has just begun.
 				Your path will be filled with many obstacles, but do not worry:
 				Domina chooses only those who have the strength to succeed."
+
 			</Text>
 			<Text id="IntroReturning">
+
 				The abbess greets you:
 					
 				"Welcome back, %name%! Your journey to the Galactic Core has just begun.
 				Whatever obstacles you've faced so far are nothing compared to what
 				awaits you. Take comfort in Domina's guidance."
+
 			</Text>
 			<Text id="IntroSkip">
+
 				The abbess signals an unseen companion and a stout man emerges from
 				the shadows. He marches to the abbess's side, looking past you at
 				your ship.
 					
 				The abbess continues: "This is Benedict, our most valuable friend.
 				He will help you prepare for your journey."
+
 			</Text>
 			
 			<Text id="q1:Label">*"Who is [D]omina?"</Text>
 			<Text id="q1:Answer">
+
 				"Domina is the divine intelligence who brought you here!
 					
 				"You can feel her in your thoughts, can't you? She compels you
@@ -318,73 +498,40 @@
 				all humanity.
 					
 				"Perhaps when you reach her you will understand."
+
 			</Text>
 			
 			<Text id="q2:Label">*"How do I reach the [G]alactic Core?"</Text>
 			<Text id="q2:Answer">
+
 				"The stargates will take you. Seek them out and enter.
 				But be prepared for many obstacles. You must grow stronger to reach the Core.
 					
 				"You will upgrade your ship in your travels, and eventually you'll
 				command terrible energies, enough to defeat anyone who blocks your path."
+
 			</Text>
 			
 			<Text id="q3:Label">*"[W]hat obstacles will I face?"</Text>
 			<Text id="q3:Answer">
+
 				"Star travel is dangerous, even in the Commonwealth.
 				You'll face pirates, outlaws and worse before you reach the Core.
 				But we can prepare you."
+
 			</Text>
 			
 			<Text id="BenedictMeeting">
+
 				The abbess signals an unseen companion and a stout man emerges from
 				he shadows. He marches to the abbess's side, looking past you at
 				your ship.
 					
 				The abbess continues: "This is Benedict, our most valuable friend.
 				He will help you."
+
 			</Text>
 		</Language>
 	</DockScreen>
-
-<!-- CODE -->
-
-	<Globals>
-		(block Nil
-			(setq benedict_isFirstMission (lambda ()
-				(not (typGetData &unidBenedictStoryArc; 'curMission))
-				))
-				
-			(setq benedict_isMissionAvailable (lambda (missionUNID options)
-				(block (curMission)
-					(setq curMission (typGetData &unidBenedictStoryArc; 'curMission))
-
-					(switch
-						;	If there are active missions that the player has not 
-						;	yet completed, then they need to complete them first.
-
-						(and (not (@ options 'allowActiveMissions))
-								(msnFind "a +benedictStoryArc;")
-								)
-							Nil
-
-						;	If the new mission is earlier than the latest mission
-						;	then it is too late.
-
-						(and curMission (leq (typGetStaticData missionUNID 'sequence) (typGetStaticData curMission 'sequence)))
-							Nil
-
-						;	Otherwise, the mission is available
-
-						True
-						)
-					)
-				))
-
-			(setq benedict_missionAccepted (lambda (missionObj)
-				(typSetData &unidBenedictStoryArc; 'curMission (msnGetProperty missionObj 'unid))
-				))
-			)
-	</Globals>
 
 </TranscendenceModule>

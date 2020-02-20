@@ -1882,38 +1882,15 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 			}
 		}
 
-	//	Let all types know that the current system is going away
-	//	(Obviously, we need to call this before we change the current system.
-	//	Note also that at this point the player is already gone.)
-
-	m_Universe.GetMissions().FireOnSystemStopped();
-	m_Universe.GetDesignCollection().FireOnGlobalSystemStopped();
-
 	//	Set the new system
 
-	m_Universe.SetNewSystem(pNewSystem, pStart);
+	m_Universe.SetNewSystem(*pNewSystem, pStart);
 
 	//	Move any henchmen through the stargate (note: we do this here because
 	//	we need to remove the henchmen out of the old system before we save).
 
 	SetProgramState(psStargateTransferringGateFollowers);
 	TransferGateFollowers(m_pOldSystem, pNewSystem, pStart);
-
-    //  Make sure we've updated current system data to global data.
-
-    m_Universe.GetGlobalObjects().Refresh(m_pOldSystem);
-
-	//	Compute how long (in ticks) it has been since this system has been
-	//	updated.
-
-	int iLastUpdated = pNewSystem->GetLastUpdated();
-	DWORD dwElapsedTime = (iLastUpdated > 0 ? ((DWORD)m_Universe.GetTicks() - (DWORD)iLastUpdated) : 0);
-
-	//	Let all types know that we have a new system. Again, this is called 
-	//	before the player has entered the system.
-
-	m_Universe.GetDesignCollection().FireOnGlobalSystemStarted(dwElapsedTime);
-	m_Universe.GetMissions().FireOnSystemStarted(dwElapsedTime);
 
 	//	Garbage-collect images and load those for the new system
 

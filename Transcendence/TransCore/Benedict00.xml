@@ -13,41 +13,31 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBenedictsDrones;"
-			name=				"Benedict&apos;s Autons"
+			name=				"Benedict 00: Benedict&apos;s Autons"
 			attributes=			"benedictStoryArc, sistersMission"
 
 			level=				"1"
+			missionArc=			"benedictArc:10"
 
 			maxAppearing=		"1"
 			debriefAfterOutOfSystem="true"
 			failureAfterOutOfSystem="5400"
 			>
-
-		<StaticData>
-			<sequence>10</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block Nil
+			<CanCreate>
+				(switch
+					;	This mission only works in the starting system
 
-					(switch
-						;	This mission only works in the starting system
+					(!= (sysGetNode) (objGetProperty gPlayerShip 'startingSystem))
+						Nil
 
-						(not (eq (sysGetNode) (objGetProperty gPlayerShip 'startingSystem)))
-							(msnDestroy gSource)
+					;	Success!
 
-						;	See if the mission is still available
-
-						(not (benedict_isMissionAvailable &msBenedictsDrones;))
-							(msnDestroy gSource)
-
-						;	Set up the mission
-
-						(block Nil
-							)
-						)
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>

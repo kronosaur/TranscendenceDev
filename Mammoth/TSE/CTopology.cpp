@@ -976,6 +976,48 @@ void CTopology::CalcDistances (const CTopologyNode &Src, TSortMap<CString, int> 
 	CalcDistances(SrcList, retDistances);
 	}
 
+void CTopology::CalcTraversal (const CString &sStartingNode, TArray<CString> &retPath, TArray<CString> &retUnvisited) const
+
+//	CalcTraversal
+//
+//	Generates a path to visit all possible nodes starting at the given starting
+//	node.
+
+	{
+	const CTopologyNode *pStartingNode = FindTopologyNode(sStartingNode);
+	if (pStartingNode == NULL)
+		return;
+
+	m_Topology.SetMarked(false);
+
+	TArray<const CTopologyNode *> Stack;
+	Stack.GrowToFit(m_Topology.GetCount());
+	Stack.Push(pStartingNode);
+	pStartingNode->SetMarked(true);
+
+	while (Stack.GetCount() > 0)
+		{
+		const CTopologyNode *pNode = Stack.Pop();
+		retPath.Push(pNode->GetID());
+
+		for (int i = 0; i < pNode->GetStargateCount(); i++)
+			{
+			const CTopologyNode *pDestNode = pNode->GetStargateDest(i);
+			if (pDestNode->IsMarked())
+				continue;
+
+			Stack.Push(pDestNode);
+			pDestNode->SetMarked(true);
+			}
+		}
+
+	for (int i = 0; i < m_Topology.GetCount(); i++)
+		{
+		if (!m_Topology[i].IsMarked())
+			retUnvisited.Push(m_Topology[i].GetID());
+		}
+	}
+
 ALERROR CTopology::CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode)
 
 //	CreateTopologyNode

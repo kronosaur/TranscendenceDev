@@ -172,12 +172,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 		}
 	}
 
-ALERROR CMission::Create (CUniverse &Universe,
-						  CMissionType *pType,
-						  CSpaceObject *pOwner,
-						  ICCItem *pCreateData,
-					      CMission **retpMission,
-						  CString *retsError)
+ALERROR CMission::Create (CMissionType &Type, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError)
 
 //	Create
 //
@@ -185,11 +180,12 @@ ALERROR CMission::Create (CUniverse &Universe,
 //	not be created because conditions do not allow it.
 
 	{
+	CUniverse &Universe = Type.GetUniverse();
 	CMission *pMission;
 
 	//	If we cannot encounter this mission, then we fail
 
-	if (!pType->CanBeCreated(Universe.GetMissions(), pOwner, pCreateData))
+	if (!Type.CanBeCreated(Universe.GetMissions(), CreateCtx))
 		return ERR_NOTFOUND;
 
 	//	Create the new object
@@ -201,7 +197,7 @@ ALERROR CMission::Create (CUniverse &Universe,
 		return ERR_MEMORY;
 		}
 
-	pMission->m_pType = pType;
+	pMission->m_pType = &Type;
 
 	//	Initialize
 
@@ -210,14 +206,14 @@ ALERROR CMission::Create (CUniverse &Universe,
 	pMission->m_fDeclined = false;
 	pMission->m_fDebriefed = false;
 	pMission->m_fAcceptedByPlayer = false;
-	pMission->m_pOwner = pOwner;
+	pMission->m_pOwner = CreateCtx.pOwner;
 	pMission->m_pDebriefer = NULL;
 
 	//	NodeID
 
 	CTopologyNode *pNode = NULL;
 	CSystem *pSystem = NULL;
-	if ((pSystem = (pOwner ? pOwner->GetSystem() : Universe.GetCurrentSystem()))
+	if ((pSystem = (CreateCtx.pOwner ? CreateCtx.pOwner->GetSystem() : Universe.GetCurrentSystem()))
 			&& (pNode = pSystem->GetTopology()))
 		pMission->m_sNodeID = pNode->GetID();
 
@@ -236,8 +232,8 @@ ALERROR CMission::Create (CUniverse &Universe,
 	pMission->m_fInOnCreate = true;
 
 	CSpaceObject::SOnCreate OnCreate;
-	OnCreate.pData = pCreateData;
-	OnCreate.pOwnerObj = pOwner;
+	OnCreate.pData = CreateCtx.pCreateData;
+	OnCreate.pOwnerObj = CreateCtx.pOwner;
 	pMission->FireOnCreate(OnCreate);
 
 	pMission->m_fInOnCreate = false;
@@ -258,8 +254,8 @@ ALERROR CMission::Create (CUniverse &Universe,
 
 	//	If we haven't subscribed to the owner, do it now
 
-	if (pOwner && !pOwner->FindEventSubscriber(*pMission))
-		pOwner->AddEventSubscriber(pMission);
+	if (CreateCtx.pOwner && !CreateCtx.pOwner->FindEventSubscriber(*pMission))
+		CreateCtx.pOwner->AddEventSubscriber(pMission);
 
 	//	Mission created
 
@@ -459,6 +455,21 @@ void CMission::FireOnStop (const CString &sReason, ICCItem *pData)
 		}
 	}
 
+const CString &CMission::GetArc (int *retiSequence) const
+
+//	GetArc
+//
+//	Returns the mission arc and sequence.
+
+	{
+	const CString &sArc = m_pType->GetArc();
+
+	if (retiSequence)
+		*retiSequence = m_pType->GetArcSequence();
+
+	return sArc;
+	}
+
 bool CMission::HasSpecialAttribute (const CString &sAttrib) const
 
 //	HasSpecialAttribute
@@ -478,7 +489,7 @@ bool CMission::HasSpecialAttribute (const CString &sAttrib) const
 		return CSpaceObject::HasSpecialAttribute(sAttrib);
 	}
 
-bool CMission::MatchesCriteria (CSpaceObject *pSource, const SCriteria &Criteria)
+bool CMission::MatchesCriteria (const CSpaceObject *pSource, const SCriteria &Criteria) const
 
 //	MatchesCriteria
 //
@@ -986,6 +997,10 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 				retCriteria->bIncludeUnavailable = true;
 				break;
 
+			case 'A':
+				retCriteria->bOnlyMissionArcs = true;
+				break;
+
 			case 'D':
 				retCriteria->bOnlySourceDebriefer = true;
 				break;
@@ -1111,6 +1126,10 @@ bool CMission::SetAccepted (void)
 	if (m_iStatus != statusOpen)
 		return false;
 
+	//	Close out any previous missions in the same arc
+
+	GetUniverse().GetMissions().CloseMissionsInArc(*m_pType);
+
 	//	Remember that we accepted
 
 	m_fAcceptedByPlayer = true;
@@ -1129,7 +1148,7 @@ bool CMission::SetAccepted (void)
 		if (KeepsStats())
 			GetUniverse().GetObjStatsActual(pOwner->GetID()).iPlayerMissionsGiven++;
 
-		//	Let the mission given know
+		//	Let the mission-giver know
 
 		pOwner->FireOnMissionAccepted(this);
 		}

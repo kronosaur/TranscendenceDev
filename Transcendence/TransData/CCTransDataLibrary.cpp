@@ -216,7 +216,7 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Set as current system.
 
-			Universe.SetCurrentSystem(pSystem);
+			Universe.SetNewSystem(*pSystem);
 			return pCC->CreateTrue();
 			}
 
