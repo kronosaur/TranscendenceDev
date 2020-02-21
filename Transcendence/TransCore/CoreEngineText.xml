@@ -55,12 +55,12 @@
 
 			<!-- Hints for player -->
 
-			<Text id="hintEnableDevices">			(press [B] to enable/disable devices)</Text>
+			<String id="hintEnableDevices">			(press [B] to enable/disable devices)</String>
 			<Text id="hintMiningNeeded">			Use mining weapons to damage buried station</Text>
 			<Text id="hintMiningOreLevelTooHigh">	Use a higher level mining weapon to extract level %oreLevel% resources</Text>
 			<Text id="hintMiningOrWMDNeeded">		Use mining or WMD weapons to damage asteroid station</Text>
 			<Text id="hintWMDNeeded">				Use WMD weapons to damage reinforced station</Text>
-			<Text id="hintRefuel">					(press [S] to access refueling screen)</Text>
+			<String id="hintRefuel">				(press [S] to access refueling screen)</String>
 
 			<!-- Miscellaneous text -->
 
