@@ -10,60 +10,60 @@
 					;	Unit Tests for Properties
 
 					(diagEval (list
-						{	test:'(typGetProperty &unidTestBaseType; 'unid)					result:&unidTestBaseType;	}
+						{	test:'(typ@ &unidTestBaseType; 'unid)					result:&unidTestBaseType;	}
 
-						{	test:'(typGetProperty &unidTestBaseType; 'diag.def1)			result:17	}
-						{	test:'(typGetProperty &unidTestBaseType; 'diag.def2)			result:'foo	}
-						{	test:'(typGetProperty &unidTestBaseType; 'diag.def3)			result:5	}
+						{	test:'(typ@ &unidTestBaseType; 'diag.def1)			result:17	}
+						{	test:'(typ@ &unidTestBaseType; 'diag.def2)			result:'foo	}
+						{	test:'(typ@ &unidTestBaseType; 'diag.def3)			result:5	}
 
-						{	test:'(typGetProperty &unidTestDescendantType1; 'diag.def1)		result:17	}
-						{	test:'(typGetProperty &unidTestDescendantType1; 'diag.const1)	result:34	}
-						{	test:'(typGetProperty &unidTestDescendantType1; 'diag.const2)	result:4	}
+						{	test:'(typ@ &unidTestDescendantType1; 'diag.def1)		result:17	}
+						{	test:'(typ@ &unidTestDescendantType1; 'diag.const1)	result:34	}
+						{	test:'(typ@ &unidTestDescendantType1; 'diag.const2)	result:4	}
 
-						{	test:'(typGetProperty &unidTestDescendantType2; 'diag.def1)		result:17	}
+						{	test:'(typ@ &unidTestDescendantType2; 'diag.def1)		result:17	}
 
-						{	test:'(typGetProperty &unidTestBaseType; 'diag.global1)			result:54	}
-						{	test:'(typGetProperty &unidTestDescendantType1; 'diag.global1)	result:54	}
-						{	test:'(typGetProperty &unidTestDescendantType2; 'diag.global1)	result:54	}
+						{	test:'(typ@ &unidTestBaseType; 'diag.global1)			result:54	}
+						{	test:'(typ@ &unidTestDescendantType1; 'diag.global1)	result:54	}
+						{	test:'(typ@ &unidTestDescendantType2; 'diag.global1)	result:54	}
 
-						{	test:'(typIncProperty &unidTestBaseType; 'diag.global2a)		result:1	}
-						{	test:'(typIncProperty &unidTestBaseType; 'diag.global2b 4)		result:4	}
-						{	test:'(typIncProperty &unidTestBaseType; 'diag.global2c -4.5)	result:-4.5	}
+						{	test:'(typInc@ &unidTestBaseType; 'diag.global2a)		result:1	}
+						{	test:'(typInc@ &unidTestBaseType; 'diag.global2b 4)		result:4	}
+						{	test:'(typInc@ &unidTestBaseType; 'diag.global2c -4.5)	result:-4.5	}
 
-						{	test:'(typIncProperty &unidTestBaseType; 'diag.global3)			result:9	}
-						{	test:'(typIncProperty &unidTestBaseType; 'diag.global3 5)		result:14	}
-						{	test:'(typIncProperty &unidTestBaseType; 'diag.global3 1.5)		result:15.5	}
+						{	test:'(typInc@ &unidTestBaseType; 'diag.global3)			result:9	}
+						{	test:'(typInc@ &unidTestBaseType; 'diag.global3 5)		result:14	}
+						{	test:'(typInc@ &unidTestBaseType; 'diag.global3 1.5)		result:15.5	}
 
-						{	test:'(typIncProperty &unidTestBaseType; 'diag.global4)			result:2.2	}
-						{	test:'(typIncProperty &unidTestBaseType; 'diag.global4 -2)		result:(+ 2.2 -2)	}
-						{	test:'(typIncProperty &unidTestBaseType; 'diag.global4 7.3)		result:7.5	}
+						{	test:'(typInc@ &unidTestBaseType; 'diag.global4)			result:2.2	}
+						{	test:'(typInc@ &unidTestBaseType; 'diag.global4 -2)		result:(+ 2.2 -2)	}
+						{	test:'(typInc@ &unidTestBaseType; 'diag.global4 7.3)		result:7.5	}
 
 						;	NOTE: a global property is unique for each type. That is, even though unidTestBaseType
 						;	'diag.global2a has been set to 1, it does not affect its descendant type 
 						;	(whose value is still Nil). Thus when we increment below we're still at 1.
 
-						{	test:'(typIncProperty &unidTestDescendantType1; 'diag.global2a)		result:1	}
+						{	test:'(typInc@ &unidTestDescendantType1; 'diag.global2a)		result:1	}
 
-						{	test:'(typSetProperty &unidTestBaseType; 'diag.global2c 17)		result:True	}
-						{	test:'(typSetProperty &unidTestDescendantType1; 'diag.global2c 1)		result:True	}
-						{	test:'(typGetProperty &unidTestDescendantType1; 'diag.global2c)		result:1	}
-						{	test:'(typIncProperty &unidTestDescendantType1; 'diag.global2c)		result:2	}
+						{	test:'(typSet@ &unidTestBaseType; 'diag.global2c 17)		result:True	}
+						{	test:'(typSet@ &unidTestDescendantType1; 'diag.global2c 1)		result:True	}
+						{	test:'(typ@ &unidTestDescendantType1; 'diag.global2c)		result:1	}
+						{	test:'(typInc@ &unidTestDescendantType1; 'diag.global2c)		result:2	}
 
 						{	test:'(setq gTestStation1 (sysCreateStation &stTestStation1; Nil))		result:'ignore	}
-						{	test:'(objGetProperty gTestStation1 'diag.data1)				result:7	}
-						{	test:'(objSetProperty gTestStation1 'diag.data1 17)				result:True	}
-						{	test:'(objGetProperty gTestStation1 'diag.data1)				result:17	}
+						{	test:'(obj@ gTestStation1 'diag.data1)				result:7	}
+						{	test:'(objSet@ gTestStation1 'diag.data1 17)				result:True	}
+						{	test:'(obj@ gTestStation1 'diag.data1)				result:17	}
 
-						{	test:'(objGetProperty gTestStation1 'diag.data2)				result:11	}
-						{	test:'(objSetProperty gTestStation1 'diag.data2 -5)				result:True	}
-						{	test:'(objGetProperty gTestStation1 'diag.data2)				result:-5	}
+						{	test:'(obj@ gTestStation1 'diag.data2)				result:11	}
+						{	test:'(objSet@ gTestStation1 'diag.data2 -5)				result:True	}
+						{	test:'(obj@ gTestStation1 'diag.data2)				result:-5	}
 
-						{	test:'(objSetProperty gTestStation1 'diag.global2a 'foo7)		result:True	}
-						{	test:'(objGetProperty gTestStation1 'diag.global2a)				result:'foo7	}
+						{	test:'(objSet@ gTestStation1 'diag.global2a 'foo7)		result:True	}
+						{	test:'(obj@ gTestStation1 'diag.global2a)				result:'foo7	}
 
-						{	test:'(objSetProperty gTestStation1 'diag.global2a 15)			result:True	}
-						{	test:'(objIncProperty gTestStation1 'diag.global2a 7)			result:22	}
-						{	test:'(objGetProperty gTestStation1 'diag.global2a)				result:22	}
+						{	test:'(objSet@ gTestStation1 'diag.global2a 15)			result:True	}
+						{	test:'(objInc@ gTestStation1 'diag.global2a 7)			result:22	}
+						{	test:'(obj@ gTestStation1 'diag.global2a)				result:22	}
 						))
 					)
 			</OnGlobalStartDiagnostics>

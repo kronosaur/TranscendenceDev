@@ -209,8 +209,6 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_HAS_ABILITY			101
 #define FN_OBJ_TRANSLATE			102
 #define FN_OBJ_GET_STARGATE_ID		103
-#define FN_OBJ_SET_PROPERTY			104
-#define FN_OBJ_GET_PROPERTY			105
 #define FN_OBJ_DEVICE_LINKED_FIRE_OPTIONS	106
 #define FN_OBJ_ARMOR_CRITICALITY	107
 #define FN_OBJ_SET_ITEM_PROPERTY	108
@@ -834,8 +832,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetPrice item|type [currency]) -> price of a single item",
 			"v*",	0,	},
 
-		{	"itmGetProperty",				fnItemGet,		FN_ITEM_PROPERTY,
-			"(itmGetProperty item|type property) -> value\n\n"
+		{	"itm@",							fnItemGet,		FN_ITEM_PROPERTY,
+			"(itm@ item|type property) -> value\n\n"
 			
 			"property (instance)\n\n"
 			"   'canBeUsed\n"
@@ -919,6 +917,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'valueBonusPerCharge\n"
 			"   'weaponTypes\n",
 
+			"vs",	0,	},
+
+		{	"itmGetProperty",				fnItemGet,		FN_ITEM_PROPERTY,
+			"RENAMED: Use (itm@ ...) instead.",
 			"vs",	0,	},
 
 		{	"itmGetStaticData",				fnItemGet,		FN_ITEM_GET_STATIC_DATA,
@@ -1031,8 +1033,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmSetKnown type|item [True/Nil]) -> True/Nil",
 			"v*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"itmSetProperty",				fnItemSet,		FN_ITEM_PROPERTY,
-			"(itmSetProperty item property value) -> item\n\n"
+		{	"itmSet@",						fnItemSet,		FN_ITEM_PROPERTY,
+			"(itmSet@ item property value) -> item\n\n"
 			
 			"property\n\n"
 			
@@ -1044,6 +1046,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'level level"
 			"   'shotSeparationScale separation\n",
 
+			"vs*",	0,	},
+
+		{	"itmSetProperty",				fnItemSet,		FN_ITEM_PROPERTY,
+			"RENAMED: Use (itmSet@ ...) instead.",
 			"vs*",	0,	},
 
 		{	"itmSetReference",				fnItemGet,		FN_ITEM_SET_REFERENCE,
@@ -1798,36 +1804,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"objGetItemProperty",			fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
-			"(objGetItemProperty obj item property) -> value\n\n"
-
-			"property (install/remove)\n\n"
-
-			"   'installDevicePrice   Price to install the given device\n"
-			"   'installDeviceStatus  {canInstall, price, descID, upgradeOnly}\n"
-			"   'installItemStatus    {canInstall, price, descID, upgradeOnly}\n"
-			"   'removeDevicePrice    Price to remove the given device\n"
-			"   'removeItemStatus     {canRemove, price, descID, upgradeOnly}\n"
-			"\n"
-
-			"property (device)\n\n"
-
-			"   'capacitor\n"
-			"   'enabled\n"
-			"   'linkedFireOptions\n"
-			"   'pos\n"
-			"   'secondary\n"
-			"   'temperature\n"
-			"\n"
-
-			"property (armor)\n\n"
-
-			"   'completeSet     True if part of a complete set\n"
-			"   'hp              Current hit points\n"
-			"   'primeSegment    True if first segment in a set\n"
-			"\n"
-			
-			"All properties for itmGetProperty are also valid.",
-
+			"RENAMED: Use (obj@ obj item property) instead.",
 			"ivs",	0,	},
 
 		{	"objGetItems",					fnObjItemOld,		FN_OBJ_ENUM_ITEMS,
@@ -1896,8 +1873,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetOverlayPos obj overlayID) -> vector",
 			"ii",	0,	},
 
-		{	"objGetOverlayProperty",			fnObjGet,		FN_OBJ_GET_OVERLAY_PROPERTY,
-			"(objGetOverlayProperty obj overlayID property) -> value\n\n"
+		{	"ovr@",						fnObjGet,		FN_OBJ_GET_OVERLAY_PROPERTY,
+			"(ovr@ obj overlayID property) -> value\n\n"
 			
 			"property\n\n"
 			
@@ -1907,6 +1884,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'rotation\n"
 			"   'type\n"
 			,
+			"iis",	0,	},
+
+		{	"objGetOverlayProperty",			fnObjGet,		FN_OBJ_GET_OVERLAY_PROPERTY,
+			"RENAMED: Use (ovr@ ...) instead.",
 			"iis",	0,	},
 
 		{	"objGetOverlayRotation",	fnObjGet,		FN_OBJ_GET_OVERLAY_ROTATION,
@@ -1929,8 +1910,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetPos obj) -> vector",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objGetProperty",				fnObjGet,		FN_OBJ_GET_PROPERTY,
-			"(objGetProperty obj property) -> value\n\n"
+		{	"obj@",							fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
+			"(obj@ obj property) -> value\n\n"
 
 			"property (all)\n\n"
 
@@ -2071,8 +2052,37 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'style -> 'smallCross\n"
 			"\n"
-			"NOTE: All type properties (accessed via typGetProperty) are also valid object properties.",
+			"(obj@ obj item property) -> value\n\n"
 
+			"property (install/remove)\n\n"
+
+			"   'installDevicePrice   Price to install the given device\n"
+			"   'installDeviceStatus  {canInstall, price, descID, upgradeOnly}\n"
+			"   'installItemStatus    {canInstall, price, descID, upgradeOnly}\n"
+			"   'removeDevicePrice    Price to remove the given device\n"
+			"   'removeItemStatus     {canRemove, price, descID, upgradeOnly}\n"
+			"\n"
+			"property (device)\n\n"
+
+			"   'capacitor\n"
+			"   'enabled\n"
+			"   'linkedFireOptions\n"
+			"   'pos\n"
+			"   'secondary\n"
+			"   'temperature\n"
+			"\n"
+			"property (armor)\n\n"
+
+			"   'completeSet     True if part of a complete set\n"
+			"   'hp              Current hit points\n"
+			"   'primeSegment    True if first segment in a set\n"
+			"\n"
+			"NOTE: All type properties (accessed via typ@) are also valid object properties.",
+
+			"i*s",	0,	},
+
+		{	"objGetProperty",				fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
+			"RENAMED: Use (obj@ ...) instead.",
 			"is",	0,	},
 
 		{	"objGetRefuelItemAndPrice",		fnObjGet,		FN_OBJ_GET_REFUEL_ITEM,	
@@ -2165,12 +2175,20 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objIncOverlayData obj overlayID attrib [increment]) -> new value",
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objIncOverlayProperty",		fnObjGet,		FN_OBJ_INC_OVERLAY_PROPERTY,
-			"(objIncOverlayProperty obj overlayID property [increment]) -> new value",
+		{	"ovrInc@",						fnObjGet,		FN_OBJ_INC_OVERLAY_PROPERTY,
+			"(ovrInc@ obj overlayID property [increment]) -> new value",
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"objIncOverlayProperty",		fnObjGet,		FN_OBJ_INC_OVERLAY_PROPERTY,
+			"RENAMED: Use (ovrInc@ ...) instead.",
+			"iis*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objInc@",				fnObjSet,		FN_OBJ_INC_PROPERTY,
+			"(objInc@ obj property [increment]) -> new value",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"objIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
-			"(objIncProperty obj property [increment]) -> new value",
+			"RENAMED: Use (objInc@ ...) instead.",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIncVel",					fnObjSet,		FN_OBJ_INCREMENT_VELOCITY,	
@@ -2295,23 +2313,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivsv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetItemProperty",			fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
-			"(objSetItemProperty obj item property value [count]) -> item\n\n"
-			
-			"property\n\n"
-
-			"   'charges charges\n"
-			"   'cycleFire [True|Nil]"
-			"   'damaged [True|Nil]\n"
-			"   'disrupted [True|Nil|ticks]\n"
-			"   'enabled [True|Nil|'silentDisabled|'silentEnabled]\n"
-			"   'fireArc Nil|(min max)|'omnidirectional\n"
-			"   'hp hitPoints\n"
-			"   'incCharges charges\n"
-			"   'linkedFireOptions list-of-options\n"
-			"   'pos (angle radius [z])\n"
-			"   'secondary [True|Nil]"
-			"   'unknownTypeIndex [integer|Nil]",
-
+			"RENAMED: Use (objSet@ obj item ...) instead.",
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetKnown",					fnObjGetOld,		FN_OBJ_SET_KNOWN,
@@ -2350,8 +2352,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objSetOverlayPos obj overlayID pos)",
 			"iiv",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objSetOverlayProperty",			fnObjGet,		FN_OBJ_SET_OVERLAY_PROPERTY,
-			"(objSetOverlayProperty obj overlayID property value)\n\n"
+		{	"ovrSet@",					fnObjGet,		FN_OBJ_SET_OVERLAY_PROPERTY,
+			"(ovrSet@ obj overlayID property value)\n\n"
 			
 			"property:\n\n"
 			
@@ -2362,6 +2364,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"iisv",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"objSetOverlayProperty",			fnObjGet,		FN_OBJ_SET_OVERLAY_PROPERTY,
+			"RENAMED: Use (ovrSet@ ...) instead.",
+			"iisv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"objSetOverlayRotation",		fnObjGet,		FN_OBJ_SET_OVERLAY_ROTATION,
 			"(objSetOverlayRotation obj overlayID rotation)",
 			"iii",	PPFLAG_SIDEEFFECTS,	},
@@ -2370,8 +2376,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objSetPos obj vector [rotation])",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objSetProperty",				fnObjSet,		FN_OBJ_SET_PROPERTY,
-			"(objSetProperty obj property value) -> True/Nil\n\n"
+		{	"objSet@",						fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
+			"(objSet@ obj property value) -> True/Nil\n\n"
 			
 			"property (ships)\n\n"
 
@@ -2412,8 +2418,29 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'shipReinforcementEnabled True|Nil\n"
 			"   'showMapLabel True|Nil\n"
 			"   'sovereign type\n"
-			"   'structuralHP hitPoints",
+			"   'structuralHP hitPoints\n"
+			"\n"
+			"(objSet@ obj item property value [count]) -> item\n\n"
+			
+			"property\n\n"
 
+			"   'charges charges\n"
+			"   'cycleFire [True|Nil]"
+			"   'damaged [True|Nil]\n"
+			"   'disrupted [True|Nil|ticks]\n"
+			"   'enabled [True|Nil|'silentDisabled|'silentEnabled]\n"
+			"   'fireArc Nil|(min max)|'omnidirectional\n"
+			"   'hp hitPoints\n"
+			"   'incCharges charges\n"
+			"   'linkedFireOptions list-of-options\n"
+			"   'pos (angle radius [z])\n"
+			"   'secondary [True|Nil]"
+			"   'unknownTypeIndex [integer|Nil]",
+
+			"i*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSetProperty",				fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
+			"RENAMED: Use (objSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetShowAsDestination",			fnObjSet,		FN_OBJ_SET_AS_DESTINATION,
@@ -2594,8 +2621,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnGetObjRefData missionObj attrib) -> obj",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"msnGetProperty",				fnObjGet,		FN_OBJ_GET_PROPERTY,
-			"(msnGetProperty missionObj property) -> value\n\n"
+		{	"msn@",							fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
+			"(msn@ missionObj property) -> value\n\n"
 			
 			"property\n\n"
 			
@@ -2631,6 +2658,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"is",	0,	},
 
+		{	"msnGetProperty",				fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
+			"RENAMED: Use (msn@ ...) instead.",
+			"is",	0,	},
+
 		{	"msnGetStaticData",				fnObjData,		FN_OBJ_GET_STATIC_DATA,
 			"(msnGetStaticData missionObj attrib) -> data",
 			NULL,	0,	},
@@ -2643,8 +2674,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnIncData missionObj attrib [increment]) -> new value",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"msnInc@",						fnObjSet,		FN_OBJ_INC_PROPERTY,
+			"(msnInc@ obj property [increment]) -> new value",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"msnIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
-			"(msnIncProperty obj property [increment]) -> new value",
+			"RENAMED: Use (msnInc@ ...) instead.",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnRefreshSummary",			fnMissionSet,		FN_MISSION_REFRESH_SUMMARY,
@@ -2671,8 +2706,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnSetPlayerTarget missionObj)",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"msnSetProperty",				fnObjSet,		FN_OBJ_SET_PROPERTY,
-			"(msnSetProperty obj property value) -> True/Nil\n\n"
+		{	"msnSet@",						fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
+			"(msnSet@ obj property value) -> True/Nil\n\n"
 			
 			"property\n\n"
 
@@ -2683,6 +2718,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'name newName\n"
 			"   'summary newSummary",
 
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"msnSetProperty",				fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
+			"RENAMED: Use (msnSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnSetTypeData",				fnObjData,		FN_OBJ_SET_GLOBAL_DATA,
@@ -3001,8 +3040,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysGetObjectByName [source] name) -> obj",
 			"*s",	0,	},
 
-		{	"sysGetProperty",	fnSystemGet,	FN_SYS_GET_PROPERTY,
-			"(sysGetProperty [nodeID] property) -> value\n\n"
+		{	"sys@",							fnSystemGet,	FN_SYS_GET_PROPERTY,
+			"(sys@ [nodeID] property) -> value\n\n"
 			
 			"property:\n\n"
 			
@@ -3014,6 +3053,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'name              The name of the system\n"
 			"   'pos               Node position on map (x y)",
 
+			"*s",	0,	},
+
+		{	"sysGetProperty",	fnSystemGet,	FN_SYS_GET_PROPERTY,
+			"RENAMED: Use (sys@ ...) instead.",
 			"*s",	0,	},
 
 		{	"sysGetPOV",					fnSystemGet,	FN_SYS_GET_POV,
@@ -3179,14 +3222,18 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysSetPOV obj|vector) -> True/Nil",
 			"v",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"sysSetProperty",	fnSystemGet,	FN_SYS_SET_PROPERTY,
-			"(sysSetProperty [nodeID] property value) -> True/Nil\n\n"
+		{	"sysSet@",						fnSystemGet,	FN_SYS_SET_PROPERTY,
+			"(sysSet@ [nodeID] property value) -> True/Nil\n\n"
 			
 			"property:\n\n"
 
 			"   'known             Known to player\n"
 			"   'pos               Node position on map (x y)",
 
+			"*sv",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"sysSetProperty",	fnSystemGet,	FN_SYS_SET_PROPERTY,
+			"RENAMED: Use (sysSet@ ...) instead.",
 			"*sv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysStartTime",					fnSystemMisc,	FN_SYS_START_TIME,
@@ -3497,8 +3544,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(typGetName unid [flags]) -> name",
 			"i*",	0,	},
 
-		{	"typGetProperty",				fnDesignGet,		FN_DESIGN_GET_PROPERTY,
-			"(typGetProperty unid property) -> value\n\n"
+		{	"typ@",							fnDesignGet,		FN_DESIGN_GET_PROPERTY,
+			"(typ@ unid property) -> value\n\n"
 			
 			"property (all):\n\n"
 			
@@ -3555,6 +3602,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"is",	0,	},
 
+		{	"typGetProperty",				fnDesignGet,		FN_DESIGN_GET_PROPERTY,
+			"RENAMED: Use (typ@ ...) instead.",
+			"is",	0,	},
+
 		{	"typGetStaticData",				fnDesignGet,		FN_DESIGN_GET_STATIC_DATA,
 			"(typGetStaticData unid attrib) -> data",
 			"is",	0,	},
@@ -3575,8 +3626,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(typIncData unid attrib [increment]) -> new value",
 			"is*",	0,	},
 
+		{	"typInc@",			fnDesignGet,		FN_DESIGN_INC_PROPERTY,
+			"(typInc@ unid property [increment]) -> True/Nil",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"typIncProperty",			fnDesignGet,		FN_DESIGN_INC_PROPERTY,
-			"(typIncProperty unid property [increment]) -> True/Nil",
+			"RENAMED: Use (typInc@ ...) instead.",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typMarkImages",				fnDesignGet,		FN_DESIGN_MARK_IMAGES,
@@ -3591,8 +3646,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(typSetData unid attrib data) -> True/Nil",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"typSet@",					fnDesignGet,		FN_DESIGN_SET_PROPERTY,
+			"(typSet@ unid property data) -> True/Nil",
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"typSetProperty",			fnDesignGet,		FN_DESIGN_SET_PROPERTY,
-			"(typSetProperty unid property data) -> True/Nil",
+			"RENAMED: Use (typSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typTranslate",				fnDesignGet,		FN_DESIGN_TRANSLATE,
@@ -3714,13 +3773,17 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(unvGetExtensionData scope attrib) -> data",
 			"ss",	0,	},
 
-		{	"unvGetProperty",				fnUniverseGet,	FN_UNIVERSE_GET_PROPERTY,
-			"(unvGetProperty property)\n\n"
+		{	"unv@",							fnUniverseGet,	FN_UNIVERSE_GET_PROPERTY,
+			"(unv@ property)\n\n"
 				
 			"   'apiVersion        Engine API version\n"
 			"   'defaultCurrency   Default currency\n"
 			"   'minAPIVersion     Lowest API version used by extensions\n",
 
+			"s",	0,	},
+
+		{	"unvGetProperty",				fnUniverseGet,	FN_UNIVERSE_GET_PROPERTY,
+			"RENAMED: Use (unv@ ...) instead.",
 			"s",	0,	},
 
 		{	"unvGetRealDate",				fnUniverseGet,	FN_UNIVERSE_REAL_DATE,
@@ -3814,15 +3877,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	--------------------
 
 		{	"objSetSovereign",				fnObjSetOld,		FN_OBJ_SOVEREIGN,
-			"DEPRECATED: Use (objSetProperty obj 'sovereign sovereign) instead.",
+			"DEPRECATED: Use (objSet@ obj 'sovereign sovereign) instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetSovereign",				fnObjGetOld,		FN_OBJ_SOVEREIGN,
-			"DEPRECATED: Use (objGetProperty obj 'sovereign) instead.",
+			"DEPRECATED: Use (obj@ obj 'sovereign) instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetDestiny",				fnObjGetOld,		FN_OBJ_DESTINY,
-			"DEPRECATED: Use (objGetProperty obj 'destiny) instead.",
+			"DEPRECATED: Use (obj@ obj 'destiny) instead.",
 			NULL,	0,	},
 
 		{	"unvFindObj",					fnUniverseGet,		FN_UNIVERSE_FIND_OBJ,
@@ -3830,11 +3893,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"*s",	0,	},
 
 		{	"objGetDefaultCurrency",		fnObjGet,		FN_OBJ_DEFAULT_CURRENCY,
-			"DEPRECATED: Use (objGetProperty obj 'currency) instead.",
+			"DEPRECATED: Use (obj@ obj 'currency) instead.",
 			"i",	0,	},
 
 		{	"itmGetDefaultCurrency",		fnItemTypeGet,	FN_ITEM_DEFAULT_CURRENCY,
-			"DEPRECATED: Use (itmGetProperty item 'currency) instead.",
+			"DEPRECATED: Use (itm@ item 'currency) instead.",
 			"v",	0,	},
 
 		{	"shpCanInstallArmor",			fnShipSet,			FN_SHIP_CAN_INSTALL_ARMOR,
@@ -3846,11 +3909,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iv",	0,	},
 
 		{	"shpSetPlayerWingman",			fnShipSet,		FN_SHIP_PLAYER_WINGMAN,
-			"DEPRECATED: Use (objSetProperty ship 'playerWingman ...) instead.",
+			"DEPRECATED: Use (objSet@ ship 'playerWingman ...) instead.",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"armGetHitPoints",				fnArmGet,		FN_ARM_HITPOINTS,
-			"DEPRECATED: Use (itmGetProperty item 'maxHP) instead.",
+			"DEPRECATED: Use (itm@ item 'maxHP) instead.",
 			"v",	0,	},
 
 		{	"armGetName",					fnArmGet,		FN_ARM_NAME,
@@ -3858,55 +3921,55 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0,	},
 
 		{	"objIsUnderAttack",				fnObjGetOld,		FN_OBJ_IS_UNDER_ATTACK,
-			"DEPRECATED: Use objGetProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"armIsRadiationImmune",			fnArmGet,		FN_ARM_IS_RADIATION_IMMUNE,
-			"DEPRECATED: Use itmGetProperty instead.",
+			"DEPRECATED: Use itm@ instead.",
 			"v",	0,	},
 
 		{	"objIsAbandoned",				fnObjGetOld,		FN_OBJ_IS_ABANDONED,
-			"DEPRECATED: Use objGetProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"staGetMaxStructuralHP",		fnStationGet,		FN_STATION_MAX_STRUCTURAL_HP,
-			"DEPRECATED: Use objGetProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			"i",	0,	},
 
 		{	"staGetStructuralHP",			fnStationGetOld,	FN_STATION_STRUCTURAL_HP,
-			"DEPRECATED: Use objGetProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"staSetStructuralHP",			fnStationSetOld,	FN_STATION_STRUCTURAL_HP,
-			"DEPRECATED: Use objSetProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIsDeviceEnabled",			fnObjGet,		FN_OBJ_IS_DEVICE_ENABLED,
-			"DEPRECATED: Use objGetItemProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			"iv",	0,	},
 
 		{	"objSetDevicePos",				fnObjSet,		FN_OBJ_DEVICE_POS,
-			"DEPRECATED: Use objSetItemProperty instead.",
+			"DEPRECATED: Use objSet@ instead.",
 			"ivv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetDevicePos",				fnObjGet,		FN_OBJ_DEVICE_POS,
-			"DEPRECATED: Use objGetItemProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			"iv",	0,	},
 
 		{	"objGetDeviceFireArc",			fnObjGet,		FN_OBJ_DEVICE_FIRE_ARC,
-			"DEPRECATED: Use objGetItemProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			"iv",	0,	},
 
 		{	"objGetDeviceLinkedFireOptions",	fnObjGet,		FN_OBJ_DEVICE_LINKED_FIRE_OPTIONS,
-			"DEPRECATED: Use objGetItemProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			"iv",	0,	},
 
 		{	"objSetDeviceFireArc",			fnObjSet,		FN_OBJ_DEVICE_FIRE_ARC,
-			"DEPRECATED: Use objSetItemProperty instead.",
+			"DEPRECATED: Use objSet@ instead.",
 			"ivv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetDeviceLinkedFireOptions",	fnObjSet,		FN_OBJ_DEVICE_LINKED_FIRE_OPTIONS,
-			"DEPRECATED: Use objSetItemProperty instead.",
+			"DEPRECATED: Use objSet@ instead.",
 			"ivv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmAtCursor",					fnItemList,		0,
@@ -3914,7 +3977,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0,	},
 
 		{	"itmGetCharges",				fnItemGet,		FN_ITEM_CHARGES,
-			"DEPRECATED: Use (itmGetProperty item 'charges) instead.",
+			"DEPRECATED: Use (itm@ item 'charges) instead.",
 			"v",	0,	},
 
 		{	"itmGetGlobalData",				fnItemGet,		FN_ITEM_GET_GLOBAL_DATA,
@@ -3954,15 +4017,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vs",	0,	},
 
 		{	"itmIsDamaged",					fnItemGet,		FN_ITEM_DAMAGED,
-			"DEPRECATED: Use (itmGetProperty item 'damaged) instead",
+			"DEPRECATED: Use (itm@ item 'damaged) instead",
 			"v",	0,	},
 
 		{	"itmSetCharges",				fnItemSet,		FN_ITEM_CHARGES,
-			"DEPRECATED: Use (itmSetProperty item 'charges ...) instead",
+			"DEPRECATED: Use (itmSet@ item 'charges ...) instead",
 			"vi",	0,	},
 
 		{	"itmSetDamaged",				fnItemSet,		FN_ITEM_DAMAGED,
-			"DEPRECATED: Use (itmSetProperty item 'damaged ...) instead",
+			"DEPRECATED: Use (itmSet@ item 'damaged ...) instead",
 			"v*",	0,	},
 
 		{	"shpAddEnergyField",			fnShipSetOld,		FN_SHIP_ADD_ENERGY_FIELD,
@@ -3970,7 +4033,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpDamageItem",				fnShipSetOld,		FN_SHIP_DAMAGE_ITEM,
-			"DEPRECATED: Use (objSetItemProperty obj item 'damaged ...) instead",
+			"DEPRECATED: Use (objSet@ obj item 'damaged ...) instead",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpEnhanceSRS",				fnShipGetOld,		FN_SHIP_ENHANCE_SRS,
@@ -3998,7 +4061,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIncItemCharges",			fnObjSet,		FN_OBJ_INC_ITEM_CHARGES,
-			"DEPRECATED: Use (objSetItemProperty obj item 'incCharges ...) instead",
+			"DEPRECATED: Use (objSet@ obj item 'incCharges ...) instead",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallAutopilot",			fnShipGetOld,		FN_SHIP_INSTALL_AUTOPILOT,
@@ -4085,7 +4148,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpRechargeItem",				fnShipSetOld,		FN_SHIP_RECHARGE_ITEM,
-			"DEPRECATED: Use (objSetItemProperty obj item 'incCharges ...) instead",
+			"DEPRECATED: Use (objSet@ obj item 'incCharges ...) instead",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpSetGlobalData",				fnShipClass,	FN_SHIP_SET_GLOBAL_DATA,
@@ -4093,7 +4156,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetItemCharges",			fnObjSet,		FN_OBJ_SET_ITEM_CHARGES,
-			"DEPRECATED: Use (objSetItemProperty obj item 'charges ...) instead",
+			"DEPRECATED: Use (objSet@ obj item 'charges ...) instead",
 			"ivi*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetStaticDataForStationType",fnObjData,		FN_OBJ_GET_STATIC_DATA_FOR_STATION_TYPE,
@@ -6744,19 +6807,26 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_GET_ITEM_PROPERTY:
 			{
-			//	Get the item
+			if (pArgs->GetCount() == 3)
+				{
+				//	Get the item
 
-			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			if (Item.GetType() == NULL)
-				return pCC->CreateNil();
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (Item.GetType() == NULL)
+					return pCC->CreateNil();
 
-			//	Get the property
+				//	Get the property
 
-			CString sProperty = pArgs->GetElement(2)->GetStringValue();
+				CString sProperty = pArgs->GetElement(2)->GetStringValue();
 
-			//	Get it
+				//	Get it
 
-			return pObj->GetItemProperty(*pCtx, Item, sProperty)->Reference();
+				return pObj->GetItemProperty(*pCtx, Item, sProperty)->Reference();
+				}
+			else
+				{
+				return pObj->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue())->Reference();
+				}
 			}
 
 		case FN_OBJ_GET_NAMED_ITEM:
@@ -6958,9 +7028,6 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			return pCC->CreateInteger(iPriceAdj);
 			}
-
-		case FN_OBJ_GET_PROPERTY:
-			return pObj->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue())->Reference();
 
 		case FN_OBJ_GET_REFUEL_ITEM:
 			{
@@ -8736,32 +8803,52 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_SET_ITEM_PROPERTY:
 			{
-			//	Get the item
-
-			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			if (Item.GetType() == NULL)
-				return pCC->CreateNil();
-
-			//	Get the property
-
-			CString sProperty = pArgs->GetElement(2)->GetStringValue();
-			ICCItem *pValue = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
-			int iCount = (pArgs->GetCount() > 4 ? Max(0, pArgs->GetElement(4)->GetIntegerValue()) : 1);
-
-			//	Set it
-
-			CString sError;
-			if (!pObj->SetItemProperty(Item, sProperty, pValue, iCount, &Item, &sError))
+			if (pArgs->GetCount() > 3)
 				{
-				if (sError.IsBlank())
+				//	Get the item
+
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (Item.GetType() == NULL)
 					return pCC->CreateNil();
-				else
-					return pCC->CreateError(sError);
+
+				//	Get the property
+
+				CString sProperty = pArgs->GetElement(2)->GetStringValue();
+				ICCItem *pValue = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
+				int iCount = (pArgs->GetCount() > 4 ? Max(0, pArgs->GetElement(4)->GetIntegerValue()) : 1);
+
+				//	Set it
+
+				CString sError;
+				if (!pObj->SetItemProperty(Item, sProperty, pValue, iCount, &Item, &sError))
+					{
+					if (sError.IsBlank())
+						return pCC->CreateNil();
+					else
+						return pCC->CreateError(sError);
+					}
+
+				//	Return the newly changed item
+
+				return CreateListFromItem(Item);
 				}
+			else if (pArgs->GetCount() == 3)
+				{
+				CString sError;
+				if (!pObj->SetProperty(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2), &sError))
+					{
+					if (sError.IsBlank())
+						return pCC->CreateError(CONSTLIT("Invalid property"), pArgs->GetElement(1));
+					else
+						return pCC->CreateError(sError);
+					}
 
-			//	Return the newly changed item
-
-			return CreateListFromItem(Item);
+				return pCC->CreateTrue();
+				}
+			else
+				{
+				return pCC->CreateError(CONSTLIT("Insufficient arguments."));
+				}
 			}
 
 		case FN_OBJ_SET_EVENT_HANDLER:
@@ -8779,20 +8866,6 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pObj->SetOverride(pType);
 				}
 			return pCC->CreateTrue();
-
-		case FN_OBJ_SET_PROPERTY:
-			{
-			CString sError;
-			if (!pObj->SetProperty(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2), &sError))
-				{
-				if (sError.IsBlank())
-					return pCC->CreateError(CONSTLIT("Invalid property"), pArgs->GetElement(1));
-				else
-					return pCC->CreateError(sError);
-				}
-
-			return pCC->CreateTrue();
-			}
 
 		case FN_OBJ_SET_TRADE_DESC:
 			{

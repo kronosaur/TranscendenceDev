@@ -105,6 +105,8 @@ CUniverse::~CUniverse (void)
         delete m_StarSystems[i];
     m_StarSystems.DeleteAll();
 
+	m_AscendedObjects.DeleteAll();
+
 	//	Free up various arrays whose cleanup requires m_CC
 
 	m_NamedEffects.CleanUp();
