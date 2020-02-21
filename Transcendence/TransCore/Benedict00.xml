@@ -75,10 +75,6 @@
 					(msnSetData gSource 'targetIDs (map droneObjList theObj (objGetID theObj)))
 					(msnSetPlayerTarget gSource)
 					
-					;	Remember that we accepted this mission
-					
-					(benedict_missionAccepted gSource)
-					
 					;	Once we accept this mission, we're done with the intro
 					
 					(typSetData &unidBenedictStoryArc; 'introDone True)

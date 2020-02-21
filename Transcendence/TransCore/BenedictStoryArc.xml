@@ -11,10 +11,6 @@
 
 	GLOBAL DATA
 	
-	curMission: The UNID of the most recent mission that the player accepted.
-			Nil if the player has not yet accepted any mission in the story
-			arc. Use benedict_missionAccepted to set this value.
-
 	firstDockedAtSisters: The tick on which the player first docked at a Sisters
 			of Domina station. Nil if never docked.
 			

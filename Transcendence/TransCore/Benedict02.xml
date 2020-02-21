@@ -80,10 +80,6 @@
 					;	stargate).
 
 					(plyEnableMessage gPlayer 'enabledHints Nil)
-
-					;	Remember that we accepted this mission
-					
-					(benedict_missionAccepted gSource)
 					)
 			</OnAccepted>
 

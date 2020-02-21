@@ -117,9 +117,6 @@
 					
 					;	Set up enemies
 						
-					;	Mission accepted
-					
-					(benedict_missionAccepted gSource)
 					)
 			</OnAccepted>
 			

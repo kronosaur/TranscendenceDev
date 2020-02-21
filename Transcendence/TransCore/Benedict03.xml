@@ -56,7 +56,6 @@
 			<OnAccepted>
 				(block Nil
 					(msnRegisterForEvents gSource gPlayerShip)
-					(benedict_missionAccepted gSource)
 					)
 			</OnAccepted>
 

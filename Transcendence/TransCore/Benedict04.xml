@@ -90,7 +90,6 @@
 					;	Mission accepted
 					
 					(msnRegisterForEvents gSource gPlayerShip)
-					(benedict_missionAccepted gSource)
 					)
 			</OnAccepted>
 
