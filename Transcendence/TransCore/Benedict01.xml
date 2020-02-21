@@ -10,7 +10,6 @@
 	
 		Nil: We don't know what the next training task should be.
 		
-		attackCentauri: Attack a Centauri station.
 		attackFirstStation: Attack an enemy station.
 		attackHiddenEnemy: Attack hidden enemy station.
 		explore: Explore worlds and asteroid fields in the system.
@@ -236,19 +235,6 @@
 										(setq state 'sellLoot)
 										)
 										
-								;	If we're in Eridani and the player has destroyed fewer than 3 Centauri warlord
-								;	stations, then send the player out to destroy one.
-
-								(and (eq (sysGetNode) 'SE)
-										(setq targetObj (sysFindObject gPlayerShip "TAEN +centauriWarlords; +populated; -occupation; -questTarget; -uncharted;"))
-										(ls (count (sysFindObject gPlayerShip "TKE +centauriWarlords; +populated; -occupation; -uncharted;")) 3)
-										)
-									(block Nil
-										(msnIncData gSource 'centauriMissions 1)
-										(msnRegisterForEvents gSource targetObj)
-										(setq state 'attackCentauri)
-										)
-										
 								;	Send the player to explore all friendly stations (until they are all explored)
 								
 								(and (eq (sysGetNode) 'SE)
@@ -339,8 +325,7 @@
 						
 					(if targetObj
 						(switch
-							(or (eq state 'attackCentauri)
-									(eq state 'attackFirstStation)
+							(or (eq state 'attackFirstStation)
 									(eq state 'attackHiddenEnemy)
 									)
 								(objSetShowAsDestination targetObj (list 'showHighlight 'autoClearOnDestroy))
@@ -390,7 +375,7 @@
 							
 						;	Check to see if destroying this object completes a task
 						
-						(and (or (eq state 'attackFirstStation) (eq state 'attackCentauri) (eq state 'attackHiddenEnemy))
+						(and (or (eq state 'attackFirstStation) (eq state 'attackHiddenEnemy))
 								(eq (objGetID aObjDestroyed) (msnGetData gSource 'targetID))
 								)
 							(block Nil
@@ -664,39 +649,6 @@
 						(msnTranslate gSource (cat state ":Begin") data)
 						)
 					)
-			</Text>
-			<Text id="attackCentauri:Begin">
-				(if (= (msnGetData gSource 'centauriMissions) 1)
-					(msnTranslate gSource "attackCentauri:Begin:First")
-					(msnTranslate gSource "attackCentauri:Begin:Another")
-					)
-			</Text>
-			<Text id="attackCentauri:Begin:First">
-
-				"I have little respect for Centauri warlords; they're
-				undisciplined and predictable. Still, they've managed to
-				scare half the star system into paying them tribute.
-
-				"Go out to one of their stations. Smash it and loot its
-				remains. It's time for them to be afraid."
-
-			</Text>
-			<Text id="attackCentauri:Begin:Another">
-
-				"We've found another band of warlords for you to attack.
-				Go out there and smash!"
-
-			</Text>
-			<String id="attackCentauri:Debrief">
-
-				"Keep it up and we'll free this system of their filth."
-
-			</String>
-			<Text id="attackCentauri:Summary">
-				Destroy a Centauri station.
-
-				System: %systemName%\n
-				Payment: None
 			</Text>
 			<Text id="attackFirstStation:Begin">
 
