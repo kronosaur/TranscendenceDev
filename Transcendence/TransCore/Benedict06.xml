@@ -13,6 +13,7 @@
 	<MissionType UNID="&msInfiltratePenitents;"
 			name=				"Benedict 06: Infiltrate Penitents"
 			attributes=			"benedictStoryArc, commonwealthColonyArmed, sistersMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"5"
 			missionArc=			"benedictArc:60"
@@ -315,7 +316,9 @@
 		<Language>
 			<!-- Mission Summary -->
 
-			<Text id="Name">Infiltrate a Penitent Sanctum</Text>
+			<Text id="Name">
+				Chapter 7: The Penitents
+			</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'descSummary {
 					systemName: (sysGetName)

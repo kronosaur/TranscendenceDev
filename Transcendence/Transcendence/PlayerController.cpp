@@ -1955,6 +1955,19 @@ void CPlayerShipController::OnDocked (CSpaceObject *pObj)
 	m_bSignalDock = true;
 	}
 
+void CPlayerShipController::OnAcceptedMission (CMission &MissionObj)
+
+//	OnAcceptedMission
+//
+//	We accepted a mission.
+
+	{
+	//	Tell the session so that it shows a mission banner
+
+	if (m_pSession)
+		m_pSession->OnAcceptedMission(MissionObj);
+	}
+
 void CPlayerShipController::OnMissionCompleted (CMission *pMission, bool bSuccess)
 
 //	OnMissionCompleted

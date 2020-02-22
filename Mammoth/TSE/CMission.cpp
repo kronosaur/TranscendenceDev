@@ -773,6 +773,7 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_dwLeftSystemOn
 //	DWORD		m_dwAcceptedOn
 //	DWORD		m_dwCompletedOn
+//	CString		m_sArc
 //	CString		m_sTitle
 //	CString		m_sInstructions
 //	DWORD		Flags
@@ -813,6 +814,15 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read(m_dwCompletedOn);
 	else
 		m_dwCompletedOn = 0;
+
+	if (Ctx.dwVersion >= 187)
+		{
+		m_sArcTitle.ReadFromStream(Ctx.pStream);
+		}
+	else if (!m_pType->GetArc().IsBlank())
+		{
+		TranslateText(CONSTLIT("ArcName"), NULL, &m_sArcTitle);
+		}
 
 	if (Ctx.dwVersion >= 86)
 		{
@@ -906,6 +916,7 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_dwLeftSystemOn
 //	DWORD		m_dwAcceptedOn
 //	DWORD		m_dwCompletedOn
+//	CString		m_sArc
 //	CString		m_sTitle
 //	CString		m_sInstructions
 //	DWORD		Flags
@@ -924,6 +935,7 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write(m_dwAcceptedOn);
 	pStream->Write(m_dwCompletedOn);
 
+	m_sArcTitle.WriteToStream(pStream);
 	m_sTitle.WriteToStream(pStream);
 	m_sInstructions.WriteToStream(pStream);
 
@@ -1067,6 +1079,12 @@ bool CMission::RefreshSummary (void)
 	{
 	bool bSuccess = true;
 
+	if (!m_pType->GetArc().IsBlank())
+		{
+		if (!TranslateText(CONSTLIT("ArcName"), NULL, &m_sArcTitle))
+			m_sArcTitle = m_pType->GetName();
+		}
+
 	if (!TranslateText(CONSTLIT("Name"), NULL, &m_sTitle))
 		m_sTitle = m_pType->GetName();
 
@@ -1135,6 +1153,10 @@ bool CMission::SetAccepted (void)
 	m_fAcceptedByPlayer = true;
 	m_dwAcceptedOn = GetUniverse().GetTicks();
 	m_pType->IncAccepted();
+
+	//	Tell the player
+
+	GetUniverse().GetPlayerShip()->OnAcceptedMission(*this);
 
 	//	Player accepts the mission
 

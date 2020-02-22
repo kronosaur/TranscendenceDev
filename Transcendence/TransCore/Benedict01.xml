@@ -42,6 +42,7 @@
 	<MissionType UNID="&msBenedictTraining;"
 			name=				"Benedict 01: Benedict Training"
 			attributes=			"benedictStoryArc, sistersMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"1"
 			missionArc=			"benedictArc:15"
@@ -586,7 +587,7 @@
 		
 		<Language>
 			<Text id="Name">
-				"Training Day"
+				Chapter 2: Training Day
 			</Text>
 			<Text id="Summary">
 				(block (

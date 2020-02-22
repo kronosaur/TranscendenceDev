@@ -189,6 +189,7 @@
     </ClCompile>
     <ClCompile Include="CItemPainter.cpp" />
     <ClCompile Include="CListCollectionTask.cpp" />
+    <ClCompile Include="CListEntryPainter.cpp" />
     <ClCompile Include="CLRSHUD.cpp" />
     <ClCompile Include="CMapLegendPainter.cpp" />
     <ClCompile Include="CMapScaleCounter.cpp" />

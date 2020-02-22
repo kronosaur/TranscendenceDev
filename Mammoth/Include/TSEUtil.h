@@ -1496,17 +1496,30 @@ extern CItemListManipulator g_DummyItemListManipulator;
 class IListData
 	{
 	public:
+		struct SEntry
+			{
+			CString sTitle;
+			CString sDesc;
+
+			const CG32bitImage *pImage = NULL;
+			RECT rcImageSrc = { 0 };
+			Metric rImageScale = 1.0;
+
+			int cyHeight = 0;
+			};
+
 		virtual ~IListData (void) { }
 		virtual void DeleteAtCursor (int iCount) { }
 		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) { return false; }
 		virtual int GetCount (void) const { return 0; }
 		virtual int GetCursor (void) const { return -1; }
-		virtual CString GetDescAtCursor (void) { return NULL_STR; }
-		virtual ICCItem *GetEntryAtCursor (void) { return CCodeChain::CreateNil(); }
-		virtual const CItem &GetItemAtCursor (void) { return g_DummyItem; }
+		virtual CString GetDescAtCursor (void) const { return NULL_STR; }
+		virtual ICCItem *GetEntryAtCursor (void) const { return CCodeChain::CreateNil(); }
+		virtual SEntry GetEntryDescAtCursor (void) const { return SEntry(); }
+		virtual const CItem &GetItemAtCursor (void) const { return g_DummyItem; }
 		virtual CItemListManipulator &GetItemListManipulator (void) { return g_DummyItemListManipulator; }
-		virtual CSpaceObject *GetSource (void) { return NULL; }
-		virtual CString GetTitleAtCursor (void) { return NULL_STR; }
+		virtual CSpaceObject *GetSource (void) const { return NULL; }
+		virtual CString GetTitleAtCursor (void) const { return NULL_STR; }
 		virtual bool IsCursorValid (void) const { return false; }
 		virtual bool MoveCursorBack (void) { return false; }
 		virtual bool MoveCursorForward (void) { return false; }

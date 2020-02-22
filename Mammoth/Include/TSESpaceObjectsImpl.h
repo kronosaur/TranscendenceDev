@@ -1208,6 +1208,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool IsVirtual (void) const override { return m_pClass->IsVirtual(); }
 		virtual void MarkImages (void) override;
 		virtual bool ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos) override;
+		virtual void OnAcceptedMission (CMission &MissionObj) override;
 		virtual void OnAscended (void) override;
 		virtual void OnBounce (CSpaceObject *pBarrierObj, const CVector &vPos) override;
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override;

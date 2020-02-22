@@ -127,6 +127,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 											//		times out when out of the system).
 		DWORD m_dwCompletedOn;				//	Tick on which mission was completed
 
+		CString m_sArcTitle;				//	Arc title (if any)
 		CString m_sTitle;					//	Mission title
 		CString m_sInstructions;			//	Current instructions
 
@@ -153,6 +154,9 @@ class CMissionList
 
 		~CMissionList (void) { DeleteAll(); }
 
+		const CMission &operator [] (int iIndex) const { return *m_List[iIndex]; }
+		CMission &operator [] (int iIndex) { return *m_List[iIndex]; }
+
 		bool CanCreateMissionInArc (const CMissionType &NewMissionType, const CSpaceObject *pSource, const CMission::SCriteria &CreateCriteria) const;
 		void CloseMissionsInArc (const CMissionType &NewMissionType);
 		void Delete (int iIndex);
@@ -160,6 +164,7 @@ class CMissionList
 		void DeleteAll (void);
 		CMissionList Filter (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const;
 		CMissionList FilterByArc (void) const;
+		CMission *FindByArc (const CString &sArc) const;
 		CMission *FindLatestActivePlayer (void) const;
 		CMission *FindHighestPriority (void) const;
 		void FireOnSystemStarted (DWORD dwElapsedTime);

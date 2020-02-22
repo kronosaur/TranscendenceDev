@@ -11,6 +11,7 @@
 	<MissionType UNID="&msBenedictInNewBeyond;"
 			name=				"Benedict 04: Meet Stormhound"
 			attributes=			"benedictStoryArc, commonwealthColony"
+			inherit=			"&baBenedictMission;"
 
 			level=				"1-4"
 			missionArc=			"benedictArc:40"
@@ -160,7 +161,9 @@
 		</Events>
 		
 		<Language>
-			<Text id="Name">Meet Benedict's Informant</Text>
+			<Text id="Name">
+				Chapter 4: Stormhound
+			</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
 					systemName: (sysGetName)

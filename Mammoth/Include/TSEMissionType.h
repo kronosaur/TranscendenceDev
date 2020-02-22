@@ -38,6 +38,14 @@ class CMissionType : public CDesignType
 			bool bNoMissionArcCheck = false;
 			};
 
+		struct SArcStatus
+			{
+			int iTotal = 0;
+			int iCompleted = 0;
+			int iLeft = 0;
+			};
+
+		SArcStatus CalcArcStatus (void) const;
 		bool CanBeCreated (const CMissionList &AllMissions, SCreateCtx &CreateCtx) const;
 		bool CanBeDeclined (void) const { return (m_iAutoAccept == EMissionAutoAccept::none); }
 		bool CanBeDeleted (void) const { return m_fAllowDelete; }

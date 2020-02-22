@@ -541,7 +541,7 @@ class CItemListManipulator
 		void ClearInstalledAtCursor (void);
 		void DeleteAtCursor (int iCount);
 		void DeleteMarkedItems (void);
-		const CItem &GetItemAtCursor (void);
+		const CItem &GetItemAtCursor (void) const;
 		CItem *GetItemPointerAtCursor (void);
 		bool IsItemPointerValid (const CItem *pItem) const;
 		void MarkDeleteAtCursor (int iCount);

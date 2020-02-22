@@ -15,6 +15,7 @@
 	<MissionType UNID="&msBenedictsDrones;"
 			name=				"Benedict 00: Benedict&apos;s Autons"
 			attributes=			"benedictStoryArc, sistersMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"1"
 			missionArc=			"benedictArc:10"
@@ -185,7 +186,7 @@
 		
 		<Language>
 			<Text id="Name">
-				"Benedict's Autons"
+				Chapter 1: Benedict's Autons
 			</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {

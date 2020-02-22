@@ -4104,6 +4104,16 @@ bool CShip::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const 
 			vObj1Pos);
 	}
 
+void CShip::OnAcceptedMission (CMission &MissionObj)
+
+//	OnAcceptedMission
+//
+//	We accepted a mission.
+
+	{
+	m_pController->OnAcceptedMission(MissionObj);
+	}
+
 void CShip::OnAscended (void)
 
 //	OnAscended

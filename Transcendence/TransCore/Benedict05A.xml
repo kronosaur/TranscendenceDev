@@ -17,6 +17,7 @@
 	<MissionType UNID="&msFindHandOfSolace;"
 			name=				"Benedict 05A: Find Hand of Solace"
 			attributes=			"benedictStoryArc, hugoSandovalMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"4"
 			missionArc=			"benedictArc:55"
@@ -269,7 +270,9 @@
 		</Events>
 		
 		<Language>
-			<Text id="Name">Help Sandoval Find the Hand of Solace</Text>
+			<Text id="Name">
+				Chapter 6: The Hand of Solace
+			</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
 					systemName: (sysGetName)

@@ -213,6 +213,32 @@ CMissionList CMissionList::FilterByArc (void) const
 	return Result;
 	}
 
+CMission *CMissionList::FindByArc (const CString &sArc) const
+
+//	FindByArc
+//
+//	Returns the latest mission in the given arc.
+
+	{
+	CMission *pLatest = NULL;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+		int iSequence;
+		const CString &sArc = pMission->GetArc(&iSequence);
+		if (sArc.IsBlank())
+			continue;
+
+		//	Add the mission only if it is the latest in the arc.
+
+		if (pLatest == NULL || pLatest->GetArcSequence() < iSequence)
+			pLatest = pMission;
+		}
+
+	return pLatest;
+	}
+
 CMission *CMissionList::FindHighestPriority (void) const
 
 //	FindHighestPriority

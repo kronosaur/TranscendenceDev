@@ -187,6 +187,15 @@ void CGameSession::InitUI (void)
 	pPlayer->OnMouseAimSetting(m_bMouseAim);
 	}
 
+void CGameSession::OnAcceptedMission (CMission &MissionObj)
+
+//	OnAcceptedMission
+//
+//	The player accepted a mission.
+
+	{
+	}
+
 void CGameSession::OnActivate (void)
 
 //	OnActivate

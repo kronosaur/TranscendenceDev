@@ -305,8 +305,34 @@ void CGItemListArea::InitRowHeight (int iRow, SRowDesc &RowDesc)
 			}
 
 		case listCustom:
-			RowDesc.cyHeight = m_cyRow;
+			{
+			//	Get the item
+
+			if (!m_pListData->IsCursorValid())
+				{
+				RowDesc.cyHeight = m_cyRow;
+				}
+			else
+				{
+				CListEntryPainter::SOptions Options;
+
+				//	If the caller overrides the row height, then we use that. 
+				//	Otherwise, we let the entry painter computer an appropriate
+				//	row height for every row.
+
+				Options.cyDefaultRow = (m_cyRow != 96 ? m_cyRow : 0);
+
+				Options.cxImage = m_cxIcon;
+				Options.cyImage = m_cyIcon;
+				Options.rImageScale = m_rIconScale;
+
+				RowDesc.CustomPainter.Init(m_pListData->GetEntryDescAtCursor(), RectWidth(rcRect), Options);
+
+				RowDesc.cyHeight = RowDesc.CustomPainter.GetHeight();
+				}
+
 			break;
+			}
 
 		default:
 			RowDesc.cyHeight = DEFAULT_ROW_HEIGHT;
@@ -684,7 +710,7 @@ void CGItemListArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 				switch (m_iType)
 					{
 					case listCustom:
-						PaintCustom(Dest, rcItem, bIsCursor);
+						PaintCustom(Dest, m_Rows[iPos], rcItem, bIsCursor);
 						break;
 
 					case listItem:
@@ -731,60 +757,18 @@ void CGItemListArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	DEBUG_CATCH
 	}
 
-void CGItemListArea::PaintCustom (CG32bitImage &Dest, const RECT &rcRect, bool bSelected)
+void CGItemListArea::PaintCustom (CG32bitImage &Dest, const SRowDesc &RowDesc, const RECT &rcRect, bool bSelected)
 
 //	PaintCustom
 //
 //	Paints a custom element
 
 	{
-	//	Paint the image
+	DWORD dwOptions = 0;
+	if (bSelected)
+		dwOptions |= CListEntryPainter::OPTION_SELECTED;
 
-	m_pListData->PaintImageAtCursor(Dest, rcRect.left, rcRect.top, m_cxIcon, m_cyIcon, m_rIconScale);
-
-	RECT rcDrawRect = rcRect;
-	rcDrawRect.left += m_cxIcon + ITEM_TEXT_MARGIN_X;
-	rcDrawRect.right -= ITEM_TEXT_MARGIN_X;
-	rcDrawRect.top += ITEM_TEXT_MARGIN_Y;
-
-	//	Measure the title and description
-
-	CString sTitle = m_pListData->GetTitleAtCursor();
-	int cyText = m_pFonts->LargeBold.GetHeight();
-
-	CString sDesc = m_pListData->GetDescAtCursor();
-	int iLines = m_pFonts->Medium.BreakText(sDesc, RectWidth(rcDrawRect), NULL, 0);
-	cyText += iLines * m_pFonts->Medium.GetHeight();
-
-	//	Text is vertically centered.
-
-	int yOffset = Max(0, (RectHeight(rcDrawRect) - cyText) / 2);
-
-	//	Paint the title
-
-	int cyHeight;
-	rcDrawRect.top += yOffset;
-	m_pFonts->LargeBold.DrawText(Dest,
-			rcDrawRect,
-			m_pFonts->rgbItemTitle,
-			m_pListData->GetTitleAtCursor(),
-			0,
-			CG16bitFont::SmartQuotes | CG16bitFont::TruncateLine,
-			&cyHeight);
-
-	rcDrawRect.top += cyHeight;
-
-	//	Paint the description
-
-	m_pFonts->Medium.DrawText(Dest, 
-			rcDrawRect,
-			(bSelected ? m_pFonts->rgbItemDescSelected : m_pFonts->rgbItemDesc),
-			m_pListData->GetDescAtCursor(),
-			0,
-			CG16bitFont::SmartQuotes,
-			&cyHeight);
-
-	rcDrawRect.top += cyHeight;
+	RowDesc.CustomPainter.Paint(Dest, rcRect.left, rcRect.top, m_rgbTextColor, dwOptions);
 	}
 
 void CGItemListArea::PaintItem (CG32bitImage &Dest, const SRowDesc &RowDesc, const RECT &rcRect, bool bSelected)

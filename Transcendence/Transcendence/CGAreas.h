@@ -415,6 +415,7 @@ class CGItemListArea : public AGArea
 			int cyHeight;						//	Height of this row
 
 			CItemPainter Painter;				//	Painter used for the item, which keeps some metrics.
+			CListEntryPainter CustomPainter;	//	Painter used for custom entries
 			};
 
 		struct STabDesc
@@ -439,7 +440,7 @@ class CGItemListArea : public AGArea
 		int FindRow (int y);
 		bool FindTab (DWORD dwID, int *retiIndex = NULL) const;
 		bool HitTestTabs (int x, int y, int *retiTab);
-		void PaintCustom (CG32bitImage &Dest, const RECT &rcRect, bool bSelected);
+		void PaintCustom (CG32bitImage &Dest, const SRowDesc &RowDesc, const RECT &rcRect, bool bSelected);
 		void PaintItem (CG32bitImage &Dest, const SRowDesc &RowDesc, const RECT &rcRect, bool bSelected);
 		void PaintTab (CG32bitImage &Dest, const STabDesc &Tab, const RECT &rcRect, bool bSelected, bool bHover);
 

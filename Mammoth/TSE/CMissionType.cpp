@@ -36,6 +36,7 @@
 
 #define PROPERTY_ARC							CONSTLIT("arc")
 #define PROPERTY_ARC_SEQUENCE					CONSTLIT("arcSequence")
+#define PROPERTY_ARC_STATUS						CONSTLIT("arcStatus")
 #define PROPERTY_AUTO_ACCEPT					CONSTLIT("autoAccept")
 #define PROPERTY_CAN_BE_DECLINED				CONSTLIT("canBeDeclined")
 #define PROPERTY_CAN_BE_DELETED					CONSTLIT("canBeDeleted")
@@ -72,6 +73,61 @@ ICCItemPtr CMissionType::AutoAcceptAsItem (EMissionAutoAccept iAutoAccept)
 		default:
 			return ICCItemPtr(ICCItem::Nil);
 		}
+	}
+
+CMissionType::SArcStatus CMissionType::CalcArcStatus (void) const
+
+//	CalcArcStatus
+//
+//	Computes the progress on this mission arc.
+
+	{
+	CUniverse &Universe = GetUniverse();
+	SArcStatus Status;
+
+	if (m_sArc.IsBlank())
+		return Status;
+
+	//	Find the latest mission that's been created in this arc.
+
+	const CMissionList &Missions = Universe.GetMissions();
+	const CMission *pLatest = Missions.FindByArc(m_sArc);
+
+	//	If the latest has not yet been recorded, then we count it as left to complete.
+
+	if (pLatest && !pLatest->IsRecorded())
+		Status.iLeft++;
+
+	//	Make a list of all types with this status.
+
+	int iMissionTypeCount = Universe.GetDesignCollection().GetCount(designMissionType);
+	for (int i = 0; i < iMissionTypeCount; i++)
+		{
+		const CMissionType *pMissionType = CMissionType::AsType(Universe.GetDesignCollection().GetEntry(designMissionType, i));
+		if (!strEquals(pMissionType->m_sArc, m_sArc))
+			continue;
+
+		Status.iTotal++;
+
+		if (pLatest == NULL || pMissionType->GetArcSequence() > pLatest->GetArcSequence())
+			Status.iLeft++;
+		}
+
+	//	Loop over all created missions
+
+	for (int i = 0; i < Missions.GetCount(); i++)
+		{
+		const CMission &Mission = Missions[i];
+		if (!strEquals(Mission.GetArc(), m_sArc))
+			continue;
+
+		if (Mission.IsRecorded())
+			Status.iCompleted++;
+		}
+
+	//	Done
+
+	return Status;
 	}
 
 bool CMissionType::CanBeCreated (const CMissionList &AllMissions, SCreateCtx &CreateCtx) const
@@ -342,6 +398,23 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_ARC_SEQUENCE))
 		return (m_sArc.IsBlank() ? ICCItemPtr::Nil() : ICCItemPtr(m_iArcSequence));
+
+	else if (strEquals(sProperty, PROPERTY_ARC_STATUS))
+		{
+		if (m_sArc.IsBlank())
+			return ICCItemPtr::Nil();
+		else
+			{
+			SArcStatus Status = CalcArcStatus();
+
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetIntegerAt(CONSTLIT("total"), Status.iTotal);
+			pResult->SetIntegerAt(CONSTLIT("completed"), Status.iCompleted);
+			pResult->SetIntegerAt(CONSTLIT("left"), Status.iLeft);
+
+			return pResult;
+			}
+		}
 
 	else if (strEquals(sProperty, PROPERTY_AUTO_ACCEPT))
 		return AutoAcceptAsItem(m_iAutoAccept);

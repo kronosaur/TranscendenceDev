@@ -338,6 +338,7 @@ class IShipController
 		//	Events
 
 		virtual void OnAbilityChanged (Abilities iAbility, AbilityModifications iChange, bool bNoMessage = false) { }
+		virtual void OnAcceptedMission (CMission &MissionObj) { }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) { }

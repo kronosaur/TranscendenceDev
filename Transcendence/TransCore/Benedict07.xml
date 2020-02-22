@@ -25,6 +25,7 @@
 	<MissionType UNID="&msRescueBenedict;"
 			name=				"Benedict 07: Rescue Benedict"
 			attributes=			"benedictStoryArc, cathedralOfDominaMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"5"
 			missionArc=			"benedictArc:70"
@@ -321,7 +322,9 @@
 		</Events>
 		
 		<Language>
-			<Text id="Name">Rescue Benedict</Text>
+			<Text id="Name">
+				Chapter 8: Benedict
+			</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
 					systemName: (sysGetName)

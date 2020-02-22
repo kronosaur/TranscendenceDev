@@ -18,6 +18,7 @@
 	<MissionType UNID="&msRescueChildrenFromPenitents;"
 			name=				"Benedict 08: Rescue Children from Penitents"
 			attributes=			"benedictStoryArc, stormhoundMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"7"
 			missionArc=			"benedictArc:80"
@@ -201,7 +202,9 @@
 		</Events>
 		
 		<Language>
-			<Text id="Name">Rescue Children from Penitents</Text>
+			<Text id="Name">
+				Chapter 9: The Children
+			</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
 					systemName: (sysGetName)

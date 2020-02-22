@@ -238,11 +238,6 @@
 					)
 			</OnGlobalSystemDiagnostics>
 		</Events>
-		
-		<Language>
-			<Text id="actionTalkToAbbess">*[M]atriarch's Chamber</Text>
-			<Text id="actionTalkToBenedict">*Talk to [B]enedict</Text>
-		</Language>
 	</Type>
 	
 <!-- DOCK SCREENS -->
@@ -529,5 +524,21 @@
 			</Text>
 		</Language>
 	</DockScreen>
+
+<!-- BASE CLASSES -->
+
+	<Type unid="&baBenedictMission;">
+		<Properties>
+			<Definition id="rpg.missionIcon">(resCreateImageDesc &rsBenedictMission; 0 0 384 192)</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="ArcName">Benedict &amp; Fiona</Text>
+		</Language>
+	</Type>
+
+<!-- RESOURCE -->
+
+	<Image UNID="&rsBenedictMission;"		bitmap="Resources\BenedictMissionTile.jpg"			loadOnUse="true" />
 
 </TranscendenceModule>

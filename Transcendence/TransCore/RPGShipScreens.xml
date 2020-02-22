@@ -37,7 +37,7 @@
 						;	class.
 					
 						(scrShowScreen gScreen
-							(objGetProperty gPlayerShip 'shipConfigScreen)
+							(obj@ gPlayerShip 'shipConfigScreen)
 							{ }
 							)
 					</Action>
@@ -167,7 +167,7 @@
 							(thisItem (scrGetItem gScreen))
 							(maxCount (itmGetCount thisItem))
 							(unitPrice (itmGetPrice thisItem))
-							(itemCurrency (itmGetProperty thisItem 'currency))
+							(itemCurrency (itm@ thisItem 'currency))
 
 							;	Compose text that describes the item
 
@@ -205,7 +205,7 @@
 
 							;	Enable/disable actions
 
-							(scrShowAction gScreen 'actionUse (objGetItemProperty gPlayerShip thisItem 'canBeUsed))
+							(scrShowAction gScreen 'actionUse (obj@ gPlayerShip thisItem 'canBeUsed))
 							(scrEnableAction gScreen 'actionJettisonItem (gr maxCount 0))
 							)
 						)
@@ -217,7 +217,7 @@
 							(thisItem (scrGetItem gScreen))
 							)
 							(switch
-								(objGetItemProperty gPlayerShip thisItem 'hasUseScreen)
+								(obj@ gPlayerShip thisItem 'hasUseScreen)
 									(block Nil
 										(scrSetData gScreen 'cursor (scrGetListCursor gScreen))
 										(scrShowItemUseScreen gScreen thisItem)
@@ -589,27 +589,46 @@
 			nestedScreen=		"true"
 			>
 		<Display type="customPicker"
-				rowHeight="32"
+				iconWidth="192"
+				iconHeight="96"
 				>
 			<OnDisplayInit>
 				(block (
-					; Make a list of active player missions entries.
+					;	Make a list of all mission arcs
 
-					(missionList 
-						(map (msnFind "a") theMission {
-							title: (msnGetProperty theMission 'name)
-							icon: Nil
-							desc: Nil
+					(missionArcs
+						(map (msnFind "*A") theMission {
+							title: (msn@ theMission 'arcName)
+							icon: (or (msn@ theMission 'rpg.missionIcon) (resCreateImageDesc &rsGenericMissionIcon; 0 0 64 64))
+							desc: (cat (msn@ theMission 'name) "\n" (scrTranslate gScreen 'textArcStatus (msn@ theMission 'arcStatus)))
+							rowHeight: 96
 
 							missionObj: theMission
-							acceptedOn: (msnGetProperty theMission 'acceptedOn)
+							acceptedOn: (msn@ theMission 'acceptedOn)
+							})
+						)
+
+					;	Now a list of all non-mission arc missions
+
+					(singleMissions 
+						(map (msnFind "a -property:arc;") theMission {
+							title: (msn@ theMission 'name)
+							icon: (or (msn@ theMission 'rpg.missionIcon) (resCreateImageDesc &rsGenericMissionIcon; 0 0 64 64))
+							desc: Nil
+							rowHeight: 64
+
+							missionObj: theMission
+							acceptedOn: (msn@ theMission 'acceptedOn)
 							})
 						)
 					)
 
 					; Now sort by accepted time (later first)
 
-					(sort missionList 'descending 'acceptedOn)
+					(append
+						(sort missionArcs 'descending 'acceptedOn)
+						(sort singleMissions 'descending 'acceptedOn)
+						)
 					)
 			</OnDisplayInit>
 		</Display>
@@ -625,11 +644,16 @@
 							(not theEntry)
 								(scrSetDescTranslate gScreen 'descNoMissions)
 
-							(scrSetDesc gScreen (msnGetProperty theMission 'summary))
+							(scrSetDesc gScreen (msn@ theMission 'summary))
 							)
 							
-						(scrShowAction gScreen 'actionRemoveMission (msnGetProperty theMission 'canBeDeleted))
-						(scrShowAction gScreen 'actionSetTarget (typHasEvent (msnGetProperty theMission 'unid) 'OnSetPlayerTarget))
+						(scrShowAction gScreen 'actionRemoveMission (msn@ theMission 'canBeDeleted))
+						(scrShowAction gScreen 'actionSetTarget 
+							(and
+								(msn@ theMission 'isActive)
+								(typHasEvent (msn@ theMission 'unid) 'OnSetPlayerTarget)
+								)
+							)
 						(scrEnableAction gScreen 'actionSetTarget (neq theMission (scrGetData gScreen 'targetMission)))
 						)
 				</OnPaneInit>
@@ -667,6 +691,11 @@
 			<Text id="actionSetTarget">[S]et Target</Text>
 
 			<Text id="descNoMissions">You have no missions to complete.</Text>
+
+			<Text id="textArcStatus">
+				Chapters Completed: %completed%\n
+				Chapters Left: %left%
+			</Text>
 		</Language>
 	</DockScreen>
 

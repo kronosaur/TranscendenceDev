@@ -412,7 +412,7 @@ void CItemListManipulator::GenerateViewMap (void)
 		}
 	}
 
-const CItem &CItemListManipulator::GetItemAtCursor (void)
+const CItem &CItemListManipulator::GetItemAtCursor (void) const
 
 //	GetItemAtCursor
 //

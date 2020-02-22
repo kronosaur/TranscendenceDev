@@ -28,6 +28,7 @@
 	<MissionType UNID="&msBenedictAndFiona;"
 			name=				"Benedict 02: Benedict and Fiona"
 			attributes=			"benedictStoryArc, sistersMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"1"
 			missionArc=			"benedictArc:20"
@@ -337,7 +338,7 @@
 		
 		<Language>
 			<Text id="Name">
-				Defend Fiona's Freighter
+				Chapter 3: The Woman
 			</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {

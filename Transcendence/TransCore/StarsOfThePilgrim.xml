@@ -41,6 +41,8 @@
 	<!ENTITY evBenedict06PenitentShip	"0x00200020">
 	<!ENTITY evBenedict07Wingman		"0x00200021">
 	<!ENTITY evBenedict02FionaWreck		"0x00200022">
+	<!ENTITY baBenedictMission			"0x00200023">
+	<!ENTITY rsBenedictMission			"0x00200024">
 
 	<!-- 0060-007F HERETIC MISSION ARC -->
 	

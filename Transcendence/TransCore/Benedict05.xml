@@ -11,6 +11,7 @@
 	<MissionType UNID="&msFionaInStKats;"
 			name=				"Benedict 05: Fiona in St. Kats"
 			attributes=			"benedictStoryArc, stKatsHospital"
+			inherit=			"&baBenedictMission;"
 
 			level=				"4"
 			missionArc=			"benedictArc:50"
@@ -53,7 +54,9 @@
 		</Events>
 		
 		<Language>
-			<Text id="Name">Contact Hugo Sandoval</Text>
+			<Text id="Name">
+				Chapter 5: The Merc
+			</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
 					systemName: (sysGetName 'C5)
