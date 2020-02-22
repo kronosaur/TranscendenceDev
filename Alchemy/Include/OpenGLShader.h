@@ -16,10 +16,11 @@ public:
 
 	void init (const char *vsFile, const char *fsFile);
 
-	void bind ();
-	void unbind ();
+	void bind () const;
+	void unbind () const;
 
-	unsigned int id ();
+	unsigned int id () const;
+
 
 private:
 	unsigned int shader_id;

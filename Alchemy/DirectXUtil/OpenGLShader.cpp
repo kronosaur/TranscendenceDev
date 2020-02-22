@@ -77,15 +77,15 @@ OpenGLShader::~OpenGLShader () {
 	glDeleteProgram(shader_id);
 }
 
-unsigned int OpenGLShader::id () {
+unsigned int OpenGLShader::id () const {
 	return shader_id;
 }
 
-void OpenGLShader::bind () {
+void OpenGLShader::bind () const {
 	glUseProgram(shader_id);
 }
 
-void OpenGLShader::unbind () {
+void OpenGLShader::unbind () const {
 	glUseProgram(0);
 }
 

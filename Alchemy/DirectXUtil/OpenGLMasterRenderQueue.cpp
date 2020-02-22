@@ -161,8 +161,13 @@ void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int
 {
 	glm::vec3 vPrimaryColor = glm::vec3(std::get<0>(primaryColor), std::get<1>(primaryColor), std::get<2>(primaryColor)) / float(255.0);
 	glm::vec3 vSecondaryColor = glm::vec3(std::get<0>(secondaryColor), std::get<1>(secondaryColor), std::get<2>(secondaryColor)) / float(255.0);
-	m_effectLightningRenderQueue->addObjToRender(sizePixelX, sizePixelY, posPixelX, posPixelY, canvasSizeX, canvasSizeY, rotation, iWidthAdjType, iReshape,
-		vPrimaryColor, vSecondaryColor, seed);
+	glm::vec4 sizeAndPosition((float)sizePixelX, (float)sizePixelY,
+		(float)posPixelX / (float)canvasSizeX, (float)posPixelY / (float)canvasSizeY);
+	glm::ivec2 shapes(iWidthAdjType, iReshape);
+
+	m_effectLightningRenderQueue2.addObjToRender(sizeAndPosition, rotation, shapes, seed, vPrimaryColor, vSecondaryColor);
+	//m_effectLightningRenderQueue->addObjToRender(sizePixelX, sizePixelY, posPixelX, posPixelY, canvasSizeX, canvasSizeY, rotation, iWidthAdjType, iReshape,
+	//	vPrimaryColor, vSecondaryColor, seed);
 	//m_effectRayRenderQueue->addObjToRender(200, 200, 500, 500, 1024, 768, 0, 1, 1, 1, 1, 1,
 		//glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0, 0.0, 1.0), 255, 0);
 }
@@ -180,7 +185,11 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		m_fDepthLevel = depthLevel;
 	}
 	m_effectRayRenderQueue->Render(m_pRayShader, m_pRayVAO, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
-	m_effectLightningRenderQueue->Render(m_pLightningShader, m_pLightningVAO, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
+	//m_effectLightningRenderQueue->Render(m_pLightningShader, m_pLightningVAO, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
+
+	std::array<std::string, 2> lightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions" };
+	m_effectLightningRenderQueue2.setUniforms(lightningUniformNames, float(m_iCurrentTick), glm::ivec2(m_iCanvasWidth, m_iCanvasHeight));
+	m_effectLightningRenderQueue2.Render(m_pLightningShader, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
 	// Reset the depth level.
 	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;
 }
@@ -433,19 +442,19 @@ void OpenGLMasterRenderQueue::initializeLightningVAO(void)
 	glVertexAttribPointer((GLuint)2, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(3);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[2]);
-	glVertexAttribPointer((GLuint)3, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glVertexAttribIPointer((GLuint)3, 2, GL_INT, 2 * sizeof(int), (void*)0);
 	glEnableVertexAttribArray(4);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[3]);
-	glVertexAttribIPointer((GLuint)4, 2, GL_INT, 2 * sizeof(int), (void*)0);
+	glVertexAttribPointer((GLuint)4, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(5);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[4]);
-	glVertexAttribPointer((GLuint)5, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glVertexAttribPointer((GLuint)5, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(6);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[5]);
 	glVertexAttribPointer((GLuint)6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(7);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[6]);
-	glVertexAttribPointer((GLuint)7, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer((GLuint)7, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glVertexAttribDivisor(1, 1);

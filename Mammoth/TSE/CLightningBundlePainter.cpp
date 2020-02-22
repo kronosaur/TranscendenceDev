@@ -105,7 +105,7 @@ void CLightningBundlePainter::DrawWithOpenGL(CG32bitImage &Dest, int x1, int y1,
 	float rSeed = mathRandom(20, 80) / 20.0f;
 	
 	for (int i = 0; i < m_iBoltCount; i++) {
-		pRenderQueue->addLightningToEffectRenderQueue(iPosX, iPosY, int(iDist) * 2, m_iWidthCount * 2 * int(rSeed), iCanvasHeight, iCanvasWidth, float(iRotDegrees) * (float(PI) / 180.0f), m_iWidthAdjType, m_iReshape,
+		pRenderQueue->addLightningToEffectRenderQueue(iPosX, iPosY, int(iDist) * 2, m_iWidthCount * 2 * int(rSeed), iCanvasWidth, iCanvasHeight, float(iRotDegrees) * (float(PI) / 180.0f), m_iWidthAdjType, m_iReshape,
 			primaryColor, secondaryColor, rSeed + float(i));
 	}
 

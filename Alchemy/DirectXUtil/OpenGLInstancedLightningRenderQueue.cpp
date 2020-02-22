@@ -29,15 +29,15 @@ void OpenGLInstancedLightningRenderQueue::Render(OpenGLShader *shader, OpenGLVAO
 		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[1]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_iNumObjectsToRender, &m_rotationsFloat[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[2]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_iNumObjectsToRender, &m_depthsFloat[0], GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[3]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::ivec2) * m_iNumObjectsToRender, &m_shapesInt[0], GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[4]);
+		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[3]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_iNumObjectsToRender, &m_seedsFloat[0], GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[5]);
+		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[4]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * m_iNumObjectsToRender, &m_primaryColorsFloat[0], GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[6]);
+		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[5]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * m_iNumObjectsToRender, &m_secondaryColorsFloat[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[6]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_iNumObjectsToRender, &m_depthsFloat[0], GL_STATIC_DRAW);
 		shader->bind();
 		glUniform1f(glGetUniformLocation(shader->id(), "current_tick"), float(currentTick));
 		glUniform2f(glGetUniformLocation(shader->id(), "aCanvasAdjustedDimensions"), float(m_iCanvasWidth), float(m_iCanvasHeight));
@@ -62,7 +62,7 @@ void OpenGLInstancedLightningRenderQueue::clear(void)
 	m_iNumObjectsToRender = 0;
 }
 
-void OpenGLInstancedLightningRenderQueue::addObjToRender(int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, float rotation, int iWidthAdjType, int iReshape,
+void OpenGLInstancedLightningRenderQueue::addObjToRender(int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasWidth, int canvasHeight, float rotation, int iWidthAdjType, int iReshape,
 	glm::vec3 primaryColor, glm::vec3 secondaryColor, float seed)
 {
 	glm::vec4 sizeAndPosition((float)sizePixelX, (float)sizePixelY,

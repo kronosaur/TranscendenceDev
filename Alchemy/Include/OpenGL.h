@@ -212,7 +212,7 @@ public:
 	void clear(void);
 	// Rays take the following arguments: sizePixelX/Y, posPixelX/Y, canvasHeight, canvasWidth, iRotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture
 	// all are Ints, except the last 5 which are enums (to be passed as ints)
-	void addObjToRender(int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, float rotation, int iWidthAdjType, int iReshape,
+	void addObjToRender(int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasWidth, int canvasHeight, float rotation, int iWidthAdjType, int iReshape,
 		glm::vec3 primaryColor, glm::vec3 secondaryColor, float seed);
 	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
 	OpenGLShader* getShader(void) { return m_pShader; }
@@ -250,6 +250,7 @@ public:
 	void addLightningToEffectRenderQueue (int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
 		int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor, std::tuple<int, int, int> secondaryColor, float seed);
 	void setCurrentTick (int currTick) { m_iCurrentTick = currTick; }
+	void setCanvasDimensions(int width, int height) { m_iCanvasHeight = height; m_iCanvasWidth = width; }
 private:
 	void initializeVAO (void);
 	void deinitVAO (void);
@@ -275,6 +276,7 @@ private:
 	OpenGLInstancedRayRenderQueue* m_effectRayRenderQueue;
 	OpenGLInstancedLightningRenderQueue* m_shipEffectLightningRenderQueue;
 	OpenGLInstancedLightningRenderQueue* m_effectLightningRenderQueue;
+	OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, float, glm::vec3, glm::vec3> m_effectLightningRenderQueue2;
 	//OpenGLInstancedRenderQueue* m_shipEffectOrbRenderQueues;
 	//OpenGLInstancedRenderQueue* m_effectOrbRenderQueues;
 	std::map<GLvoid*, OpenGLTexture*> m_textures;
@@ -282,6 +284,8 @@ private:
 	static const float m_fDepthDelta;
 	static const float m_fDepthStart;
 	unsigned int m_iCurrentTick; // Used instead of ticks
+	unsigned int m_iCanvasWidth;
+	unsigned int m_iCanvasHeight;
 	unsigned int fbo;
 	unsigned int rbo;
 
