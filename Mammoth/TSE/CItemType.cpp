@@ -1585,7 +1585,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		if (strEquals(pSubDesc->GetTag(), IMAGE_TAG))
 			{
-			if (error = m_Image.InitFromXML(Ctx, pSubDesc))
+			if (error = m_Image.InitFromXML(Ctx, *pSubDesc))
 				return ComposeLoadError(Ctx, CONSTLIT("Unable to load image"));
 			}
 

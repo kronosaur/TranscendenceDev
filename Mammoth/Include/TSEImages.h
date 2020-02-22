@@ -212,8 +212,8 @@ class CObjectImageArray
 		ALERROR InitFromBitmap (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap, int xOffset = 0, int yOffset = 0);
 		ALERROR InitFromFrame (const CObjectImageArray &Source, int iTick, int iRotationIndex);
 		ALERROR InitFromRotated (const CObjectImageArray &Source, int iTick, int iVariant, int iRotation);
-		ALERROR InitFromXML (CXMLElement *pDesc);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1);
+		ALERROR InitFromXML (const CXMLElement &Desc);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, bool bResolveNow = false, int iDefaultRotationCount = 1);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
 		bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int iTick, int iRotation, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) const;

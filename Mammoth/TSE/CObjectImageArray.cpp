@@ -1165,17 +1165,17 @@ ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int
 	return NOERROR;
 	}
 
-ALERROR CObjectImageArray::InitFromXML (CXMLElement *pDesc)
+ALERROR CObjectImageArray::InitFromXML (const CXMLElement &Desc)
 
 //	InitFromXML
 
 	{
 	SDesignLoadCtx Ctx;
 
-	return InitFromXML(Ctx, pDesc, true);
+	return InitFromXML(Ctx, Desc, true);
 	}
 
-ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow, int iDefaultRotationCount)
+ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, bool bResolveNow, int iDefaultRotationCount)
 
 //	InitFromXML
 //
@@ -1186,16 +1186,16 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 
 	//	Initialize basic info
 
-	m_rcImage.left = pDesc->GetAttributeInteger(CONSTLIT(g_ImageXAttrib));
-	m_rcImage.top = pDesc->GetAttributeInteger(CONSTLIT(g_ImageYAttrib));
+	m_rcImage.left = Desc.GetAttributeInteger(CONSTLIT(g_ImageXAttrib));
+	m_rcImage.top = Desc.GetAttributeInteger(CONSTLIT(g_ImageYAttrib));
 
 	//	If we have a width and height, then initialize it.
 
 	int cxWidth;
-	if (pDesc->FindAttributeInteger(IMAGE_WIDTH_ATTRIB, &cxWidth))
+	if (Desc.FindAttributeInteger(IMAGE_WIDTH_ATTRIB, &cxWidth))
 		{
 		m_rcImage.right = m_rcImage.left + cxWidth;
-		m_rcImage.bottom = m_rcImage.top + pDesc->GetAttributeInteger(IMAGE_HEIGHT_ATTRIB);
+		m_rcImage.bottom = m_rcImage.top + Desc.GetAttributeInteger(IMAGE_HEIGHT_ATTRIB);
 		m_bDefaultSize = false;
 		}
 
@@ -1208,27 +1208,27 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 		m_bDefaultSize = true;
 		}
 
-	m_iFrameCount = pDesc->GetAttributeInteger(CONSTLIT(g_ImageFrameCountAttrib));
-	m_iRotationCount = pDesc->GetAttributeIntegerBounded(ROTATION_COUNT_ATTRIB, 1, -1, iDefaultRotationCount);
+	m_iFrameCount = Desc.GetAttributeInteger(CONSTLIT(g_ImageFrameCountAttrib));
+	m_iRotationCount = Desc.GetAttributeIntegerBounded(ROTATION_COUNT_ATTRIB, 1, -1, iDefaultRotationCount);
 
-	int iRotationCols = pDesc->GetAttributeIntegerBounded(ROTATION_COLUMNS_ATTRIB, 0, m_iRotationCount, 0);
+	int iRotationCols = Desc.GetAttributeIntegerBounded(ROTATION_COLUMNS_ATTRIB, 0, m_iRotationCount, 0);
 	if (iRotationCols > 0)
 		m_iFramesPerColumn = (m_iRotationCount + iRotationCols - 1) / iRotationCols;
 	else
 		m_iFramesPerColumn = m_iRotationCount;
 
-	int iAnimationCols = pDesc->GetAttributeIntegerBounded(ANIMATION_COLUMNS_ATTRIB, 0, m_iFrameCount, 0);
+	int iAnimationCols = Desc.GetAttributeIntegerBounded(ANIMATION_COLUMNS_ATTRIB, 0, m_iFrameCount, 0);
 	if (iAnimationCols > 0)
 		m_iFramesPerRow = (m_iFrameCount + iAnimationCols - 1) / iAnimationCols;
 	else
 		m_iFramesPerRow = m_iFrameCount;
 
-	m_iTicksPerFrame = pDesc->GetAttributeInteger(CONSTLIT(g_ImageTicksPerFrameAttrib));
+	m_iTicksPerFrame = Desc.GetAttributeInteger(CONSTLIT(g_ImageTicksPerFrameAttrib));
 	if (m_iTicksPerFrame <= 0 && m_iFrameCount > 1)
 		m_iTicksPerFrame = 1;
-	m_iFlashTicks = pDesc->GetAttributeInteger(FLASH_TICKS_ATTRIB);
+	m_iFlashTicks = Desc.GetAttributeInteger(FLASH_TICKS_ATTRIB);
 
-	CString sBlending = pDesc->GetAttribute(BLENDING_ATTRIB);
+	CString sBlending = Desc.GetAttribute(BLENDING_ATTRIB);
 	if (strEquals(sBlending, LIGHTEN_BLENDING))
 		m_iBlending = blendLighten;
 	else
@@ -1237,34 +1237,34 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 	//	Viewport
 
 	Metric rViewportRatio;
-	if (pDesc->FindAttributeDouble(VIEWPORT_RATIO_ATTRIB, &rViewportRatio))
+	if (Desc.FindAttributeDouble(VIEWPORT_RATIO_ATTRIB, &rViewportRatio))
 		{
 		if (rViewportRatio > 0.0)
 			m_iViewportSize = Max(1, mathRound(RectWidth(m_rcImage) / (2.0 * rViewportRatio)));
 		else
 			m_iViewportSize = Max(1, RectWidth(m_rcImage));
 		}
-	else if (pDesc->FindAttributeInteger(VIEWPORT_SIZE_ATTRIB, &m_iViewportSize))
+	else if (Desc.FindAttributeInteger(VIEWPORT_SIZE_ATTRIB, &m_iViewportSize))
 		m_iViewportSize = Max(1, m_iViewportSize);
 	else
 		m_iViewportSize = Max(1, RectWidth(m_rcImage));
 
 	//	Compute rotation offsets
 
-	m_iRotationOffset = pDesc->GetAttributeInteger(ROTATE_OFFSET_ATTRIB);
+	m_iRotationOffset = Desc.GetAttributeInteger(ROTATE_OFFSET_ATTRIB);
 	if (m_iRotationOffset)
 		ComputeRotationOffsets();
 	else
 		{
-		int xOffset = pDesc->GetAttributeInteger(X_OFFSET_ATTRIB);
-		int yOffset = pDesc->GetAttributeInteger(Y_OFFSET_ATTRIB);
+		int xOffset = Desc.GetAttributeInteger(X_OFFSET_ATTRIB);
+		int yOffset = Desc.GetAttributeInteger(Y_OFFSET_ATTRIB);
 		if (xOffset != 0 || yOffset != 0)
 			ComputeRotationOffsets(xOffset, yOffset);
 		}
 
 	//	Get the image from the universe
 
-	if (error = LoadUNID(Ctx, pDesc->GetAttribute(CONSTLIT(g_ImageIDAttrib)), &m_dwBitmapUNID))
+	if (error = LoadUNID(Ctx, Desc.GetAttribute(CONSTLIT(g_ImageIDAttrib)), &m_dwBitmapUNID))
 		return error;
 
 	if (bResolveNow)

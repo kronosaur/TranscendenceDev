@@ -1914,7 +1914,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 			CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG);
 			if (pImage)
-				if (error = SetOldEffects().Image.InitFromXML(Ctx, pImage))
+				if (error = SetOldEffects().Image.InitFromXML(Ctx, *pImage))
 					return error;
 
 			m_fDirectional = pDesc->GetAttributeBool(DIRECTIONAL_ATTRIB);
@@ -1932,7 +1932,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 				Exhaust.rExhaustDrag = pExhaust->GetAttributeInteger(EXHAUST_DRAG_ATTRIB) / 100.0;
 
 				CXMLElement *pImage = pExhaust->GetContentElementByTag(IMAGE_TAG);
-				if (error = Exhaust.ExhaustImage.InitFromXML(Ctx, pImage))
+				if (error = Exhaust.ExhaustImage.InitFromXML(Ctx, *pImage))
 					return error;
 				}
 

@@ -130,7 +130,7 @@ ALERROR CParticleEffect::Create (CSystem &System,
 	if (pImage)
 		{
 		pType->iPaintStyle = paintImage;
-		pType->Image.InitFromXML(pImage);
+		pType->Image.InitFromXML(*pImage);
 		}
 
 	//	Miscelleanous settings

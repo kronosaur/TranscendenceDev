@@ -628,7 +628,7 @@ ALERROR CSpaceEnvironmentType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement
 	CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG);
 	if (pImage)
 		{
-		if (error = m_Image.InitFromXML(Ctx, pImage))
+		if (error = m_Image.InitFromXML(Ctx, *pImage))
 			return error;
 		}
 
@@ -637,7 +637,7 @@ ALERROR CSpaceEnvironmentType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement
 	CXMLElement *pEdgeMask = pDesc->GetContentElementByTag(EDGE_MASK_TAG);
 	if (pEdgeMask)
 		{
-		if (error = m_EdgeMask.InitFromXML(Ctx, pEdgeMask))
+		if (error = m_EdgeMask.InitFromXML(Ctx, *pEdgeMask))
 			return error;
 		}
 

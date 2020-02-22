@@ -3489,7 +3489,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
     pImage = pDesc->GetContentElementByTag(HERO_IMAGE_TAG);
     if (pImage)
-        if (error = m_HeroImage.InitFromXML(Ctx, pImage))
+        if (error = m_HeroImage.InitFromXML(Ctx, *pImage))
             return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Maneuvering
@@ -3639,7 +3639,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			CXMLElement *pItem = pDriveImages->GetContentElement(i);
 			if (strEquals(pItem->GetTag(), NOZZLE_IMAGE_TAG))
 				{
-				if (error = m_ExhaustImage.InitFromXML(Ctx, pItem))
+				if (error = m_ExhaustImage.InitFromXML(Ctx, *pItem))
 					return ComposeLoadError(Ctx, ERR_BAD_EXHAUST_IMAGE);
 				}
 			else if (strEquals(pItem->GetTag(), NOZZLE_POS_TAG))

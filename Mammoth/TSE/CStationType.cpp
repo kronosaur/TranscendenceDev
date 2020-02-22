@@ -1704,7 +1704,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			if (pSection->GetContentElementCount() > 0)
 				{
 				CXMLElement *pImage = pSection->GetContentElement(0);
-				if (error = m_pAnimations[i].m_Image.InitFromXML(Ctx, pImage))
+				if (error = m_pAnimations[i].m_Image.InitFromXML(Ctx, *pImage))
 					return ComposeLoadError(Ctx, CONSTLIT("Unable to load animation image"));
 				}
 			}

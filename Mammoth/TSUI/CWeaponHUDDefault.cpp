@@ -94,7 +94,7 @@ bool CWeaponHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 	if (CXMLElement *pImage = CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG))
 		{
-		if (error = m_BackImage.InitFromXML(Ctx, pImage))
+		if (error = m_BackImage.InitFromXML(Ctx, *pImage))
 			return ComposeLoadError(ERR_WEAPON_DISPLAY_NEEDED, retsError);
 		}
 
