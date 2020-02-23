@@ -193,13 +193,9 @@ private:
 	void deinitVAO (void);
 	void initializeCanvasVAO (void);
 	void deinitCanvasVAO (void);
-	void initializeRayVAO(void);
-	void deinitRayVAO(void);
 	void clear (void);
 	OpenGLVAO* m_pVao;
-	OpenGLVAO* m_pRayVAO;
 	OpenGLVAO* m_pCanvasVAO;
-	OpenGLVAO* m_pLightningVAO;
 	OpenGLShader *m_pObjectTextureShader;
 	OpenGLShader *m_pGlowmapShader;
 	OpenGLShader *m_pRayShader;
