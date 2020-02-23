@@ -1,3 +1,4 @@
+#pragma once
 #include "OpenGLIncludes.h"
 #include "OpenGLShader.h"
 #include <stdlib.h>

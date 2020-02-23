@@ -1,3 +1,4 @@
+#pragma once
 #include "OpenGLIncludes.h"
 #include "OpenGLVAO.h"
 #include <stdlib.h>
@@ -135,6 +136,7 @@ public:
 			shader->bind();
 			//int uniformArgIndex = 0;
 			//set uniforms
+			m_iNumTexturesBound = 0;
 			std::apply
 			(
 				[this, shader](uniformArgs const&... tupleArgs)
@@ -157,7 +159,7 @@ public:
 	};
 	int getNumObjectsToRender(void) { return m_iNumObjectsToRender; }
 	void setUniforms(std::array<std::string, sizeof...(uniformArgs)> uniformNames, uniformArgs... uniformValues) { m_uniformNames = uniformNames; m_uniformValues = std::make_tuple(uniformValues...); }
-	void setCanvasDImensions(std::tuple<int, int> canvasDimensions) { m_canvasDimensions = canvasDimensions; }
+	void setCanvasDimensions(std::tuple<int, int> canvasDimensions) { m_canvasDimensions = canvasDimensions; }
 	void setUniformValues(std::tuple<uniformArgs...> uniformValues) { m_uniformValues = m_uniformValues; }
 	void setUniformNames(std::array<std::string, sizeof...(uniformArgs)> uniformNames) { m_uniformNames = uniformNames; }
 private:
@@ -213,6 +215,11 @@ private:
 	void setGLUniformValue(const OpenGLShader* shader, int uniformArgIndex, const glm::vec2 tupleArg) { glUniform2f(glGetUniformLocation(shader->id(), m_uniformNames[uniformArgIndex].c_str()), tupleArg[0], tupleArg[1]); }
 	void setGLUniformValue(const OpenGLShader* shader, int uniformArgIndex, const glm::vec3 tupleArg) { glUniform3f(glGetUniformLocation(shader->id(), m_uniformNames[uniformArgIndex].c_str()), tupleArg[0], tupleArg[1], tupleArg[2]); }
 	void setGLUniformValue(const OpenGLShader* shader, int uniformArgIndex, const glm::vec4 tupleArg) { glUniform4f(glGetUniformLocation(shader->id(), m_uniformNames[uniformArgIndex].c_str()), tupleArg[0], tupleArg[1], tupleArg[2], tupleArg[3]); }
+	void setGLUniformValue(const OpenGLShader* shader, int uniformArgIndex, const OpenGLTexture* tupleArg) {
+		glUniform1i(glGetUniformLocation(shader->id(), m_uniformNames[uniformArgIndex].c_str()), m_iNumTexturesBound);
+		tupleArg->bindTexture2D(GL_TEXTURE0 + m_iNumTexturesBound);
+		m_iNumTexturesBound += 1;
+	}
 
 	void setGLVertexAttribPointer(GLuint argIndex, GLint size, GLenum type, GLsizei stride) {
 		if (type == GL_FLOAT) {
@@ -263,5 +270,6 @@ private:
 	std::array<std::string, sizeof...(uniformArgs)> m_uniformNames;
 	std::tuple<uniformArgs...> m_uniformValues;
 	std::tuple<int, int> m_canvasDimensions;
+	int m_iNumTexturesBound;
 	static const std::size_t m_numShaderArgs = sizeof...(shaderArgs);
 };

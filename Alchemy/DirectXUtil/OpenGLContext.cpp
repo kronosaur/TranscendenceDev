@@ -50,6 +50,9 @@ bool OpenGLContext::initOpenGL (HWND hwnd, HDC hdc)
 		WGL_CONTEXT_MINOR_VERSION_ARB, 3,
 		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+		// enable hardware MSAA
+		//WGL_SAMPLE_BUFFERS_ARB, TRUE,
+		//WGL_SAMPLES_ARB, 4,
 		0
 	};
 
@@ -91,6 +94,7 @@ bool OpenGLContext::initOpenGL (HWND hwnd, HDC hdc)
 	prepSquareCanvas();
 	setBlendMode();
 
+	//glEnable(GL_MULTISAMPLE);
 	return true;
 	}
 

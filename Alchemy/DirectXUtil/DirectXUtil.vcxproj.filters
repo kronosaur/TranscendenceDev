@@ -150,6 +150,9 @@
     <ClInclude Include="..\Include\OpenGLVAO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OpenGLTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="8bitDrawCircle.cpp">
