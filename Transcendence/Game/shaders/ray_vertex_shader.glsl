@@ -16,12 +16,12 @@
 layout (location = 0) in vec4 aPos;
 layout (location = 1) in vec4 aSizeAndPosition;
 layout (location = 2) in float aRotation;
-layout (location = 3) in float aDepth;
-layout (location = 4) in ivec2 aShapes;
-layout (location = 5) in ivec3 aStyles;
-layout (location = 6) in vec3 aFloatParams;
-layout (location = 7) in vec3 aPrimaryColor;
-layout (location = 8) in vec3 aSecondaryColor;
+layout (location = 3) in ivec2 aShapes;
+layout (location = 4) in ivec3 aStyles;
+layout (location = 5) in vec3 aFloatParams;
+layout (location = 6) in vec3 aPrimaryColor;
+layout (location = 7) in vec3 aSecondaryColor;
+layout (location = 8) in float aDepth;
 
 uniform vec2 aCanvasAdjustedDimensions;
 

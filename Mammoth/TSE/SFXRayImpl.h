@@ -195,7 +195,7 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
 			std::tuple<int, int, int> primaryColor (int(m_primaryColor.GetRed()), int(m_primaryColor.GetGreen()), int(m_primaryColor.GetBlue()));
 			std::tuple<int, int, int> secondaryColor (int(m_secondaryColor.GetRed()), int(m_secondaryColor.GetGreen()), int(m_secondaryColor.GetBlue()));
 
-			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, int(iDist) * 2, m_iWidthCount * 2, iCanvasHeight, iCanvasWidth, float(iRotDegrees) * (float(PI) / 180.0f), m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
+			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, int(iDist) * 2, m_iWidthCount * 2, iCanvasWidth, iCanvasHeight, float(iRotDegrees) * (float(PI) / 180.0f), m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
 				primaryColor, secondaryColor, m_iIntensity, float(m_rCyclePos), m_byOpacity);
 
 			bSuccess = true;

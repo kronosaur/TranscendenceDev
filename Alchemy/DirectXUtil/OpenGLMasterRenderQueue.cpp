@@ -20,8 +20,7 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	m_pObjectTextureShader = new OpenGLShader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
 	m_pRayShader = new OpenGLShader("./shaders/ray_vertex_shader.glsl", "./shaders/ray_fragment_shader.glsl");
 	m_pLightningShader = new OpenGLShader("./shaders/lightning_vertex_shader.glsl", "./shaders/lightning_fragment_shader.glsl");
-	
-	m_effectRayRenderQueue = new OpenGLInstancedRayRenderQueue();
+
 }
 
 OpenGLMasterRenderQueue::~OpenGLMasterRenderQueue(void)
@@ -139,8 +138,17 @@ void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPi
 	{
 	glm::vec3 vPrimaryColor = glm::vec3(std::get<0>(primaryColor), std::get<1>(primaryColor), std::get<2>(primaryColor)) / float(255.0);
 	glm::vec3 vSecondaryColor = glm::vec3(std::get<0>(secondaryColor), std::get<1>(secondaryColor), std::get<2>(secondaryColor)) / float(255.0);
-	m_effectRayRenderQueue->addObjToRender(sizePixelX, sizePixelY, posPixelX, posPixelY, canvasSizeX, canvasSizeY, rotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture,
-		vPrimaryColor, vSecondaryColor, iIntensity, waveCyclePos, opacityAdj);
+
+	glm::vec4 sizeAndPosition((float)sizePixelX, (float)sizePixelY,
+		(float)posPixelX / (float)canvasSizeX, (float)posPixelY / (float)canvasSizeY);
+	glm::ivec2 shapes(iWidthAdjType, iReshape);
+	glm::vec3 intensitiesAndCycles(float(iIntensity), waveCyclePos, float(opacityAdj) / 255.0f);
+	glm::ivec3 styles(iColorTypes, iOpacityTypes, iTexture);
+
+	m_effectRayRenderQueue.addObjToRender(sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, vPrimaryColor, vSecondaryColor);
+
+	//m_effectRayRenderQueue->addObjToRender(sizePixelX, sizePixelY, posPixelX, posPixelY, canvasSizeX, canvasSizeY, rotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture,
+	//	vPrimaryColor, vSecondaryColor, iIntensity, waveCyclePos, opacityAdj);
 	//m_effectRayRenderQueue->addObjToRender(200, 200, 500, 500, 1024, 768, 0, 1, 1, 1, 1, 1,
 		//glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0, 0.0, 1.0), 255, 0);
 	}
@@ -174,9 +182,11 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		pInstancedRenderQueue->Render(m_pObjectTextureShader, m_pVao, pTextureToUse, depthLevel, m_fDepthDelta, m_iCurrentTick);
 		m_fDepthLevel = depthLevel;
 	}
-	m_effectRayRenderQueue->Render(m_pRayShader, m_pRayVAO, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
 
 	std::array<std::string, 2> lightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions" };
+
+	m_effectRayRenderQueue.setUniforms(lightningUniformNames, float(m_iCurrentTick), glm::ivec2(m_iCanvasWidth, m_iCanvasHeight));
+	m_effectRayRenderQueue.Render(m_pRayShader, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
 	m_effectLightningRenderQueue.setUniforms(lightningUniformNames, float(m_iCurrentTick), glm::ivec2(m_iCanvasWidth, m_iCanvasHeight));
 	m_effectLightningRenderQueue.Render(m_pLightningShader, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
 	// Reset the depth level.

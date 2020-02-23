@@ -461,8 +461,5 @@
     <ClCompile Include="CIconLabelBlock.cpp">
       <Filter>Source Files\TextFormat</Filter>
     </ClCompile>
-    <ClCompile Include="OpenGLInstancedRayRenderQueue.cpp">
-      <Filter>Source Files\OpenGL</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

@@ -62,6 +62,9 @@ private:
 };
 */
 
+typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, float, glm::vec3, glm::vec3> OpenGLInstancedBatchLightning;
+typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, glm::ivec3, glm::vec3, glm::vec3, glm::vec3> OpenGLInstancedBatchRay;
+
 class OpenGLTexture {
 public:
 	OpenGLTexture(void) { }
@@ -168,40 +171,6 @@ private:
 	OpenGLTexture* m_pTexture;
 };
 
-class OpenGLInstancedRayRenderQueue {
-	// Renders Ray objects. These are procedurally generated effects on quads, that do not use textures.
-	// The RayRenderQueue always uses the ray shader.
-public:
-	OpenGLInstancedRayRenderQueue(void);
-	~OpenGLInstancedRayRenderQueue(void);
-	void Render(OpenGLShader *shader, OpenGLVAO *vao, float &startingDepth, float incDepth, int currentTick);
-	void clear(void);
-	// Rays take the following arguments: sizePixelX/Y, posPixelX/Y, canvasHeight, canvasWidth, iRotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture
-	// all are Ints, except the last 5 which are enums (to be passed as ints)
-	void addObjToRender(int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, float rotation, int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture,
-                        glm::vec3 primaryColor, glm::vec3 secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj);
-	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
-	OpenGLShader* getShader(void) { return m_pShader; }
-	int getNumObjectsToRender(void) { return m_iNumObjectsToRender; }
-private:
-
-	int m_iNumObjectsToRender = 0;
-	std::vector<glm::vec4> m_quadSizesAndCanvasPositionsFloat; // first 2 are quad sizes, last 2 are canvas positions
-	//std::vector<glm::vec2> m_canvasPositionsFloat;
-	std::vector<float> m_rotationsFloat;
-	std::vector<float> m_depthsFloat;
-	std::vector<glm::ivec2> m_shapesInt; // contains iWidthAdjType and iReshape
-	std::vector<glm::ivec3> m_stylesInt; // contains iColorTypes, iOpacityTypes and iTexture - not sure if we even need colorTypes right now, since there is only one :)
-	std::vector<glm::vec3> m_FParamsFloat; // contains intensity, cycles, and opacity adjustment in that order
-	std::vector<glm::vec3> m_primaryColorsFloat;
-	std::vector<glm::vec3> m_secondaryColorsFloat;
-	int m_iCanvasHeight = 0;
-	int m_iCanvasWidth = 0;
-	void setShader(OpenGLShader *shader) { m_pShader = shader; }
-	OpenGLShader* m_pShader;
-	OpenGLTexture* m_pTexture;
-};
-
 class OpenGLMasterRenderQueue {
 public:
 	OpenGLMasterRenderQueue (void);
@@ -235,15 +204,18 @@ private:
 	OpenGLShader *m_pGlowmapShader;
 	OpenGLShader *m_pRayShader;
 	OpenGLShader *m_pLightningShader;
+	// TODO: Maybe use filenames of texture images as the key rather than pointer to OpenGLTextures? Using pointers as map keys is not reliable.
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipRenderQueues;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipEffectTextureRenderQueues;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_effectTextureRenderQueues;
-	OpenGLInstancedRayRenderQueue* m_shipEffectRayRenderQueue;
-	OpenGLInstancedRayRenderQueue* m_effectRayRenderQueue;
-	OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, float, glm::vec3, glm::vec3> m_effectLightningRenderQueue;
-	OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, float, glm::vec3, glm::vec3> m_shipEffectLightningRenderQueue;
+	OpenGLInstancedBatchRay m_shipEffectRayRenderQueue;
+	OpenGLInstancedBatchRay m_effectRayRenderQueue;
+	OpenGLInstancedBatchLightning m_effectLightningRenderQueue;
+	OpenGLInstancedBatchLightning m_shipEffectLightningRenderQueue;
 	//OpenGLInstancedRenderQueue* m_shipEffectOrbRenderQueues;
 	//OpenGLInstancedRenderQueue* m_effectOrbRenderQueues;
+	// TODO: CPU images should own corresponding OpenGL textures. We need to permanently map our RAM textures to GPU textures, which means avoiding
+	// the dictionary we have below as CPU memory addresses can change so the dictionary method is not reliable.
 	std::map<GLvoid*, OpenGLTexture*> m_textures;
 	float m_fDepthLevel;
 	static const float m_fDepthDelta;
