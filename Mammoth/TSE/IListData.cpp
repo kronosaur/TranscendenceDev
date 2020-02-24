@@ -105,28 +105,30 @@ ICCItem *CListWrapper::GetEntryAtCursor (void) const
 	return pItem->Reference();
 	}
 
-IListData::SEntry CListWrapper::GetEntryDescAtCursor (void) const
+CTileData CListWrapper::GetEntryDescAtCursor (void) const
 
 //	GetEntryDescAtCursor
 //
 //	Returns the list entry.
 
 	{
-	IListData::SEntry Entry;
+	CTileData Entry;
 
 	if (!IsCursorValid())
 		return Entry;
 
 	ICCItem *pItem = m_pList->GetElement(m_iCursor);
 
-	Entry.sTitle = GetTitleAtCursor();
-	Entry.sDesc = GetDescAtCursor();
+	Entry.SetTitle(GetTitleAtCursor());
+	Entry.SetDesc(GetDescAtCursor());
 
-	DWORD dwUNID = GetImageDescAtCursor(&Entry.rcImageSrc, &Entry.rImageScale);
+	RECT rcImageSrc;
+	Metric rImageScale;
+	DWORD dwUNID = GetImageDescAtCursor(&rcImageSrc, &rImageScale);
 	if (dwUNID)
-		Entry.pImage = g_pUniverse->GetLibraryBitmap(dwUNID);
+		Entry.SetImage(g_pUniverse->GetLibraryBitmap(dwUNID), rcImageSrc, rImageScale);
 
-	Entry.cyHeight = pItem->GetIntegerAt(FIELD_ROW_HEIGHT);
+	Entry.SetHeight(pItem->GetIntegerAt(FIELD_ROW_HEIGHT));
 
 	return Entry;
 	}

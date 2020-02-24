@@ -213,7 +213,28 @@ CMissionList CMissionList::FilterByArc (void) const
 	return Result;
 	}
 
-CMission *CMissionList::FindByArc (const CString &sArc) const
+CMission *CMissionList::FindAcceptedArcChapter (const CString &sTargetArc, const CString &sTargetTitle, CMission *pExclude) const
+
+//	FindAcceptedArcChapter
+//
+//	Finds an accepted mission with the same arc and title.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+
+		if (pMission != pExclude
+				&& strEquals(sTargetArc, pMission->GetArc())
+				&& strEquals(sTargetTitle, pMission->GetTitle())
+				&& pMission->IsPlayerMission())
+			return pMission;
+		}
+
+	return NULL;
+	}
+
+CMission *CMissionList::FindByArc (const CString &sTargetArc) const
 
 //	FindByArc
 //
@@ -227,7 +248,7 @@ CMission *CMissionList::FindByArc (const CString &sArc) const
 		CMission *pMission = GetMission(i);
 		int iSequence;
 		const CString &sArc = pMission->GetArc(&iSequence);
-		if (sArc.IsBlank())
+		if (!strEquals(sTargetArc, sArc))
 			continue;
 
 		//	Add the mission only if it is the latest in the arc.

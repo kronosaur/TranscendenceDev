@@ -305,6 +305,9 @@
     <ClCompile Include="CDockScreenLayout.cpp">
       <Filter>Source Files\Dock Screens</Filter>
     </ClCompile>
+    <ClCompile Include="CNarrativeDisplay.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BackgroundTasks.h">

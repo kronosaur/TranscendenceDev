@@ -72,6 +72,9 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 					g_pTrans->m_PickerDisplay.Paint(Screen);
 				m_DebugConsole.Paint(Screen);
 
+				m_Narrative.Update(g_pUniverse->GetFrameTicks());
+				m_Narrative.Paint(Screen, g_pUniverse->GetFrameTicks());
+
 				//	If we're in a HUD menu, run quarter speed
 
 				bool bSlowMotion = (g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuCommsTarget

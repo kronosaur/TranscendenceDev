@@ -34,9 +34,9 @@
 						
 					(not (rpgCharacterIsAliveAndWell &unidFiona;))
 						Nil
-							
+
 					;	If player skipped original Fiona mission, then nothing here.
-						
+
 					(not (msnFind "r +unid:&msBenedictAndFiona;; +property:isSuccess;"))
 						Nil
 
@@ -162,7 +162,7 @@
 		
 		<Language>
 			<Text id="Name">
-				Chapter 4: Stormhound
+				Chapter 3: Stormhound
 			</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {

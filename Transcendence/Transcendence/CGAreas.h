@@ -415,7 +415,7 @@ class CGItemListArea : public AGArea
 			int cyHeight;						//	Height of this row
 
 			CItemPainter Painter;				//	Painter used for the item, which keeps some metrics.
-			CListEntryPainter CustomPainter;	//	Painter used for custom entries
+			CTilePainter CustomPainter;	//	Painter used for custom entries
 			};
 
 		struct STabDesc
@@ -430,10 +430,12 @@ class CGItemListArea : public AGArea
 			bool bDisabled;
 			};
 
-		static const int DEFAULT_ROW_HEIGHT =				96;
-		static const int ICON_WIDTH =						96;
-		static const int ICON_HEIGHT =						96;
+		static constexpr int DEFAULT_ROW_HEIGHT =			96;
+		static constexpr int ICON_WIDTH =					96;
+		static constexpr int ICON_HEIGHT =					96;
 
+		static constexpr CG32bitPixel RGB_SELECTED_DESC =	CG32bitPixel(200,200,200);
+		static constexpr CG32bitPixel RGB_NORMAL_DESC =		CG32bitPixel(128,128,128);
 
 		void InitRowHeight (int iRow, SRowDesc &RowDesc);
 		void InitRowDesc (void);

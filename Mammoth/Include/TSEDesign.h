@@ -353,6 +353,7 @@ class CDesignType
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const;
 		virtual CTradingDesc *GetTradingDesc (void) const { return NULL; }
 		virtual const CCompositeImageDesc &GetTypeImage (void) const;
+		virtual const CObjectImageArray &GetTypeSimpleImage (void) const;
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return GetDataField(CONSTLIT("name")); }
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = -1; if (retiMaxLevel) *retiMaxLevel = -1; return -1; }
 		virtual DesignTypes GetType (void) const = 0;

@@ -50,40 +50,50 @@ class CHoverDescriptionPainter
 		mutable CTextBlock m_DescriptionRTF;	//	Rich text to draw
 	};
 
-class CListEntryPainter
+class CTilePainter
 	{
 	public:
 
-		struct SOptions
+		struct SInitOptions
 			{
 			int cyDefaultRow = 0;			//	Default row height
 
 			int cxImage = 96;				//	Force icon to fit
 			int cyImage = 96;				//	Force icon to fit
 			Metric rImageScale = 1.0;		//	If not 1.0, then use this to scale icon
+
+			const CG16bitFont *pTitleFont = NULL;
+			const CG16bitFont *pDescFont = NULL;
 			};
 
-		CListEntryPainter (const CVisualPalette &VI = g_pHI->GetVisuals()) :
+		struct SPaintOptions
+			{
+			CG32bitPixel rgbTitleColor = RGB_NORMAL_TITLE;
+			CG32bitPixel rgbDescColor = RGB_NORMAL_DESC;
+			};
+
+		CTilePainter (const CVisualPalette &VI = g_pHI->GetVisuals()) :
 				m_VI(VI)
 			{ }
 
 		int GetHeight (void) const { return m_cyHeight; }
-		void Init (const IListData::SEntry &Entry, int cxWidth, const SOptions &Options);
+		void Init (const CTileData &Entry, int cxWidth, const SInitOptions &Options);
+		bool IsEmpty (void) const { return (m_cxWidth == 0);}
 
-		static constexpr DWORD OPTION_SELECTED =				0x00000010;
-		void Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbTextColor = RGB_NORMAL_TEXT, DWORD dwOptions = 0) const;
+		void Paint (CG32bitImage &Dest, int x, int y, const SPaintOptions &Options) const;
 
 	private:
 		static constexpr int PADDING_X = 8;
 		static constexpr int PADDING_Y = 8;
 
-		static constexpr CG32bitPixel RGB_NORMAL_TEXT =						CG32bitPixel(220,220,220);	//	H:0   S:0   B:86
+		static constexpr CG32bitPixel RGB_NORMAL_DESC =							CG32bitPixel(128,128,128);
+		static constexpr CG32bitPixel RGB_NORMAL_TITLE =						CG32bitPixel(220,220,220);	//	H:0   S:0   B:86
 
 		void PaintImage (CG32bitImage &Dest, int x, int y) const;
 
 		const CVisualPalette &m_VI;
-		IListData::SEntry m_Entry;
-		SOptions m_Options;
+		CTileData m_Entry;
+		SInitOptions m_Options;
 
 		//	Computed after Init
 

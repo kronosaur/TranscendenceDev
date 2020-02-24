@@ -64,6 +64,11 @@ void CMission::CloseMission (void)
 
 	GetUniverse().CancelEvent(this, true);
 
+	//	Refresh the summary, if necessary
+
+	if (IsPlayerMission())
+		RefreshSummary();
+
 	//	If this is a player mission then refresh another player mission
 
 	if (m_fAcceptedByPlayer)
@@ -154,6 +159,12 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 			FireOnSetPlayerTarget(REASON_DEBRIEFED);
 			CloseMission();
 			}
+
+		//	Refresh mission summary so that we get the latest info in the 
+		//	mission screen.
+
+		if (IsPlayerMission())
+			RefreshSummary();
 		}
 
 	//	Set status for non-player missions

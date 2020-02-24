@@ -47,7 +47,10 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		DWORD GetAcceptedOn (void) const { return m_dwAcceptedOn; }
 		const CString &GetArc (int *retiSequence = NULL) const;
 		int GetArcSequence (void) const { return m_pType->GetArcSequence(); }
+		const CString &GetArcTitle (void) const { return m_sArcTitle; }
+		const CMissionType &GetMissionType (void) const { return *m_pType; }
 		int GetPriority (void) const { return m_pType->GetPriority(); }
+		const CString &GetTitle (void) const { return m_sTitle; }
 		bool IsAccepted (void) const { return (m_iStatus == statusAccepted); }
 		bool IsActive (void) const { return (m_iStatus == statusAccepted || (!m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure))); }
 		bool IsClosed (void) const { return (!IsActive() && IsCompleted()); }
@@ -78,6 +81,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 
 		virtual CMission *AsMission (void) override { return this; }
 		virtual Categories GetCategory (void) const override { return catMission; }
+		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const override { return m_pType->GetImage(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_pType->GetName(); }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual bool HasAttribute (const CString &sAttribute) const override { return m_pType->HasLiteralAttribute(sAttribute); }
@@ -164,7 +168,8 @@ class CMissionList
 		void DeleteAll (void);
 		CMissionList Filter (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const;
 		CMissionList FilterByArc (void) const;
-		CMission *FindByArc (const CString &sArc) const;
+		CMission *FindAcceptedArcChapter (const CString &sTargetArc, const CString &sTargetTitle, CMission *pExclude = NULL) const;
+		CMission *FindByArc (const CString &sTargetArc) const;
 		CMission *FindLatestActivePlayer (void) const;
 		CMission *FindHighestPriority (void) const;
 		void FireOnSystemStarted (DWORD dwElapsedTime);

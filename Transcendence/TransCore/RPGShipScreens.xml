@@ -599,7 +599,7 @@
 					(missionArcs
 						(map (msnFind "*A") theMission {
 							title: (msn@ theMission 'arcName)
-							icon: (or (msn@ theMission 'rpg.missionIcon) (resCreateImageDesc &rsGenericMissionIcon; 0 0 64 64))
+							icon: (or (msn@ theMission 'imageDesc) (resCreateImageDesc &rsGenericMissionIcon; 0 0 64 64))
 							desc: (cat (msn@ theMission 'name) "\n" (scrTranslate gScreen 'textArcStatus (msn@ theMission 'arcStatus)))
 							rowHeight: 96
 
@@ -613,7 +613,7 @@
 					(singleMissions 
 						(map (msnFind "a -property:arc;") theMission {
 							title: (msn@ theMission 'name)
-							icon: (or (msn@ theMission 'rpg.missionIcon) (resCreateImageDesc &rsGenericMissionIcon; 0 0 64 64))
+							icon: (or (msn@ theMission 'imageDesc) (resCreateImageDesc &rsGenericMissionIcon; 0 0 64 64))
 							desc: Nil
 							rowHeight: 64
 

@@ -535,3 +535,22 @@ void CG8bitImage::IntersectChannel (ChannelTypes iChannel, const CG32bitImage &S
 		}
 	}
 
+void CG8bitImage::SetPixelTrans (int x, int y, BYTE Value, BYTE byOpacity)
+
+//	SetPixelTrans
+//
+//	Sets a pixel and blends with the destination.
+
+	{
+	if (x < m_rcClip.left || y < m_rcClip.top || x >= m_rcClip.right || y >= m_rcClip.bottom)
+		{ }
+	else if (byOpacity == 0)
+		{ }
+	else if (byOpacity == 255)
+		*GetPixelPos(x, y) = Value;
+	else
+		{
+		BYTE *pDest = GetPixelPos(x, y);
+		*pDest = CG32bitPixel::BlendAlpha(byOpacity, Value) + CG32bitPixel::BlendAlpha(255-byOpacity, *pDest);
+		}
+	}

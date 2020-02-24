@@ -16,6 +16,7 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
         m_HUD(*CreateCtx.pHI, *CreateCtx.pModel),
         m_bShowingSystemMap(false),
         m_SystemMap(*CreateCtx.pHI, *CreateCtx.pModel, m_HUD),
+		m_Narrative(*CreateCtx.pHI),
 		m_CurrentMenu(menuNone),
 		m_pCurrentComms(NULL),
         m_iDamageFlash(0),
@@ -194,6 +195,28 @@ void CGameSession::OnAcceptedMission (CMission &MissionObj)
 //	The player accepted a mission.
 
 	{
+	const CString &sArc = MissionObj.GetArc();
+	const CString &sArcTitle = MissionObj.GetArcTitle();
+	const CString &sTitle = MissionObj.GetTitle();
+
+	//	For missions that are part of an arc, we announce them. Also, we skip
+	//	announcing a mission if we've already previously accepted a mission with
+	//	the same title.
+
+	if (!sArc.IsBlank() 
+			&& !sArcTitle.IsBlank()
+			&& !sTitle.IsBlank()
+			&& !GetUniverse().GetMissions().FindAcceptedArcChapter(sArc, sTitle, &MissionObj))
+		{
+		CTileData Data;
+		Data.SetTitle(sArcTitle);
+		Data.SetDesc(sTitle);
+		const CObjectImageArray &ImageArray = MissionObj.GetImage();
+		const CG32bitImage &Image = ImageArray.GetImage(CONSTLIT("Mission tile"));
+		Data.SetImage(&Image, ImageArray.GetImageRect());
+
+		m_Narrative.Show(ENarrativeDisplayStyle::missionAccept, Data);
+		}
 	}
 
 void CGameSession::OnActivate (void)
@@ -246,6 +269,10 @@ ALERROR CGameSession::OnInit (CString *retsError)
 	InitUI();
     m_HUD.Init(m_rcScreen);
     m_SystemMap.Init(m_rcScreen);
+
+    RECT rcCenter;
+    m_HUD.GetClearHorzRect(&rcCenter);
+	m_Narrative.Init(rcCenter);
 
 	//	Move the mouse cursor so that it points to where the ship is points.
 	//	Otherwise the ship will try to turn to point to the mouse.

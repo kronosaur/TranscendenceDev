@@ -527,15 +527,13 @@
 
 <!-- BASE CLASSES -->
 
-	<Type unid="&baBenedictMission;">
-		<Properties>
-			<Definition id="rpg.missionIcon">(resCreateImageDesc &rsBenedictMission; 0 0 384 192)</Definition>
-		</Properties>
+	<MissionType unid="&baBenedictMission;">
+		<Image imageID="&rsBenedictMission;"	imageWidth="384" imageHeight="192"/>
 
 		<Language>
 			<Text id="ArcName">Benedict &amp; Fiona</Text>
 		</Language>
-	</Type>
+	</MissionType>
 
 <!-- RESOURCE -->
 

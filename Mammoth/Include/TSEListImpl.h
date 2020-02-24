@@ -43,7 +43,7 @@ class CListWrapper : public IListData
 		virtual int GetCursor (void) const override { return m_iCursor; }
 		virtual CString GetDescAtCursor (void) const override;
 		virtual ICCItem *GetEntryAtCursor (void) const override;
-		virtual SEntry GetEntryDescAtCursor (void) const override;
+		virtual CTileData GetEntryDescAtCursor (void) const override;
 		virtual CString GetTitleAtCursor (void) const override;
 		virtual bool IsCursorValid (void) const override { return (m_iCursor != -1); }
 		virtual bool MoveCursorBack (void) override;

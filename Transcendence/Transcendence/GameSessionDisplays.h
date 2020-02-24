@@ -44,6 +44,65 @@ class CHeadsUpDisplay
 		int m_iSelection = -1;						//  Selected armor seg (or -1)
 	};
 
+enum class ENarrativeDisplayStyle
+	{
+	none,
+
+	missionAccept,
+	};
+
+class CNarrativeDisplay
+	{
+	public:
+		CNarrativeDisplay (CHumanInterface &HI) :
+				m_HI(HI),
+				m_Painter(HI.GetVisuals())
+			{ }
+
+		void Init (const RECT &rcRect);
+		void Paint (CG32bitImage &Screen, int iTick) const;
+		void Show (ENarrativeDisplayStyle iStyle, const CTileData &Data);
+		void Update (int iTick);
+
+	private:
+		static constexpr int FADE_IN_TIME = 5;
+		static constexpr int NORMAL_TIME = 300;
+		static constexpr int FADE_OUT_TIME = 15;
+		static constexpr int DISPLAY_WIDTH = 600;
+		static constexpr int DISPLAY_HEIGHT = 96;
+		static constexpr int IMAGE_WIDTH = 192;
+		static constexpr int IMAGE_HEIGHT = 96;
+		static constexpr int MARGIN_X = 20;
+		static constexpr int MARGIN_Y = 20;
+
+		static constexpr CG32bitPixel RGB_BACKGROUND_COLOR = CG32bitPixel(80, 80, 80);
+		static constexpr BYTE BACKGROUND_OPACITY = 0x40;
+		static constexpr int BACKGROUND_CORNER_RADIUS = 4;
+
+		enum EStates
+			{
+			stateNone,
+
+			stateStart,
+			stateFadeIn,
+			stateNormal,
+			stateFadeOut,
+			};
+
+		CHumanInterface &m_HI;
+
+		CTilePainter m_Painter;
+
+		EStates m_iState = stateNone;
+		int m_iStartTick = 0;
+		BYTE m_byOpacity = 0;
+
+		CG32bitImage m_Buffer;
+		RECT m_rcRect = { 0 };
+		RECT m_rcIcon = { 0 };
+		RECT m_rcText = { 0 };
+	};
+
 class CSystemMapDisplay
 	{
 	public:

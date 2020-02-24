@@ -43,6 +43,7 @@ class CMissionType : public CDesignType
 			int iTotal = 0;
 			int iCompleted = 0;
 			int iLeft = 0;
+			int iSkipped =  0;
 			};
 
 		SArcStatus CalcArcStatus (void) const;
@@ -60,12 +61,14 @@ class CMissionType : public CDesignType
 		int GetArcSequence (void) const { return m_iArcSequence; }
 		EMissionAutoAccept GetAutoAccept (void) const { return m_iAutoAccept; }
 		const CString &GetCreateCriteria (void) const { return m_sCreateCriteria; }
+		const CObjectImageArray &GetImage (void) const;
 		const CString &GetName (void) const { return m_sName; }
 		int GetExpireTime (void) const { return m_iExpireTime; }
 		DWORD GetLastAcceptedOn (void) const { return m_dwLastAcceptedOn; }
 		int GetOutOfSystemTimeOut (void) const { return m_iFailIfOutOfSystem; }
 		int GetPriority (void) const { return (m_pArcRoot ? m_pArcRoot->m_iPriority : m_iPriority); }
 		DWORD GetShuffle (void) const { return (m_pArcRoot ? m_pArcRoot->m_dwShuffle : m_dwShuffle); }
+		CString GetTitle (void) const;
 		bool HasDebrief (void) const { return !m_fNoDebrief; }
 		bool HasInProgress (void) const { return !m_fNoInProgress; }
 		void IncAccepted (void);
@@ -80,10 +83,12 @@ class CMissionType : public CDesignType
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iMinLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return (m_iMinLevel + m_iMaxLevel) / 2; }
 		virtual DesignTypes GetType (void) const override { return designMissionType; }
+		virtual const CObjectImageArray &GetTypeSimpleImage (void) const override { return m_Image; }
 
 	protected:
 		//	CDesignType overrides
 
+		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
@@ -102,19 +107,23 @@ class CMissionType : public CDesignType
 		//	Basic properties
 
 		CString m_sName;					//	Internal name
+		CObjectImageArray m_Image;			//	Mission icon
 		CMissionType *m_pArcRoot = NULL;	//	First mission in arc (NULL if not part of mission arc)
 		CString m_sArc;						//	For related missions
 		int m_iArcSequence = -1;			//	Missions assigned in this order (lower numbers first)
-		CString m_sCreateCriteria;			//	Allow create if current mission list matches this criteria
-		int m_iPriority;					//	Relative priority (default = 1)
-		EMissionAutoAccept m_iAutoAccept = EMissionAutoAccept::none;
 
 		//	Mission creation
 
+		int m_iPriority;					//	Relative priority (default = 1)
+		CString m_sCreateCriteria;			//	Allow create if current mission list matches this criteria
 		int m_iMinLevel;					//	Minimum system level supported
 		int m_iMaxLevel;					//	Maximum system level supported
 		DiceRange m_MaxAppearing;			//	Limit to number of times mission has been accepted by player
 											//		(NULL if no limit)
+
+		//	Options
+
+		EMissionAutoAccept m_iAutoAccept = EMissionAutoAccept::none;
 		int m_iExpireTime;					//	Mission expires after this amount
 											//		of time if not accepted.
 		int m_iFailIfOutOfSystem;			//	If player is out of mission system for this amount of time

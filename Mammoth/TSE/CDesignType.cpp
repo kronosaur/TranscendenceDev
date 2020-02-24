@@ -2375,6 +2375,16 @@ const CCompositeImageDesc &CDesignType::GetTypeImage (void) const
 	return CCompositeImageDesc::Null();
 	}
 
+const CObjectImageArray &CDesignType::GetTypeSimpleImage (void) const
+
+//	GetTypeSimpleImage
+//
+//	Default implementation
+
+	{
+	return GetTypeImage().GetSimpleImage();
+	}
+
 bool CDesignType::HasAttribute (const CString &sAttrib) const
 
 //	HasAttribute

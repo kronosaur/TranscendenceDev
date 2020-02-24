@@ -314,7 +314,7 @@ void CGItemListArea::InitRowHeight (int iRow, SRowDesc &RowDesc)
 				}
 			else
 				{
-				CListEntryPainter::SOptions Options;
+				CTilePainter::SInitOptions Options;
 
 				//	If the caller overrides the row height, then we use that. 
 				//	Otherwise, we let the entry painter computer an appropriate
@@ -764,11 +764,11 @@ void CGItemListArea::PaintCustom (CG32bitImage &Dest, const SRowDesc &RowDesc, c
 //	Paints a custom element
 
 	{
-	DWORD dwOptions = 0;
-	if (bSelected)
-		dwOptions |= CListEntryPainter::OPTION_SELECTED;
+	CTilePainter::SPaintOptions Options;
+	Options.rgbTitleColor = m_rgbTextColor;
+	Options.rgbDescColor = (bSelected ? RGB_SELECTED_DESC : RGB_NORMAL_DESC);
 
-	RowDesc.CustomPainter.Paint(Dest, rcRect.left, rcRect.top, m_rgbTextColor, dwOptions);
+	RowDesc.CustomPainter.Paint(Dest, rcRect.left, rcRect.top, Options);
 	}
 
 void CGItemListArea::PaintItem (CG32bitImage &Dest, const SRowDesc &RowDesc, const RECT &rcRect, bool bSelected)

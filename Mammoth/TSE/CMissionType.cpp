@@ -4,6 +4,8 @@
 
 #include "PreComp.h"
 
+#define IMAGE_TAG								CONSTLIT("Image")
+
 #define ALLOW_PLAYER_DELETE_ATTRIB				CONSTLIT("allowPlayerDelete")
 #define AUTO_ACCEPT_ATTRIB						CONSTLIT("autoAccept")
 #define CREATE_CRITERIA_ATTRIB					CONSTLIT("createCriteria")
@@ -45,6 +47,7 @@
 #define PROPERTY_HAS_DEBRIEF					CONSTLIT("hasDebrief")
 #define PROPERTY_HAS_IN_PROGRESS				CONSTLIT("hasInProgress")
 #define PROPERTY_IGNORE_STATION_LIMIT			CONSTLIT("ignoreOwnerLimit")
+#define PROPERTY_IMAGE_DESC						CONSTLIT("imageDesc")
 #define PROPERTY_MAX_APPEARING					CONSTLIT("maxAppearing")
 #define PROPERTY_PRIORITY						CONSTLIT("priority")
 #define PROPERTY_TOTAL_ACCEPTED					CONSTLIT("totalAccepted")
@@ -82,23 +85,21 @@ CMissionType::SArcStatus CMissionType::CalcArcStatus (void) const
 //	Computes the progress on this mission arc.
 
 	{
+	struct SEntry
+		{
+		TArray<const CMission *> Missions;
+		};
+
 	CUniverse &Universe = GetUniverse();
 	SArcStatus Status;
 
 	if (m_sArc.IsBlank())
 		return Status;
 
-	//	Find the latest mission that's been created in this arc.
+	//	If there are multiple missions with the same title, then we count them
+	//	as the same for "chapter" purposes.
 
-	const CMissionList &Missions = Universe.GetMissions();
-	const CMission *pLatest = Missions.FindByArc(m_sArc);
-
-	//	If the latest has not yet been recorded, then we count it as left to complete.
-
-	if (pLatest && !pLatest->IsRecorded())
-		Status.iLeft++;
-
-	//	Make a list of all types with this status.
+	TSortMap<CString, TSortMap<const CMissionType *, SEntry>> ChapterList;
 
 	int iMissionTypeCount = Universe.GetDesignCollection().GetCount(designMissionType);
 	for (int i = 0; i < iMissionTypeCount; i++)
@@ -107,22 +108,98 @@ CMissionType::SArcStatus CMissionType::CalcArcStatus (void) const
 		if (!strEquals(pMissionType->m_sArc, m_sArc))
 			continue;
 
-		Status.iTotal++;
-
-		if (pLatest == NULL || pMissionType->GetArcSequence() > pLatest->GetArcSequence())
-			Status.iLeft++;
+		CString sTitle = pMissionType->GetTitle();
+		auto pList = ChapterList.SetAt(sTitle);
+		auto pEntry = pList->SetAt(pMissionType);
 		}
 
-	//	Loop over all created missions
-
+	const CMissionList &Missions = Universe.GetMissions();
 	for (int i = 0; i < Missions.GetCount(); i++)
 		{
 		const CMission &Mission = Missions[i];
 		if (!strEquals(Mission.GetArc(), m_sArc))
 			continue;
 
-		if (Mission.IsRecorded())
+		const CMissionType &MissionType = Mission.GetMissionType();
+		auto pList = ChapterList.GetAt(MissionType.GetTitle());
+		if (!pList)
+			continue;
+
+		auto pEntry = pList->GetAt(&MissionType);
+		pEntry->Missions.Insert(&Mission);
+		}
+
+	//	The total number of chapters in the mission arc is equal to the total
+	//	number of unique mission titles.
+
+	Status.iTotal = ChapterList.GetCount();
+
+	//	Find the latest mission that's been created in this arc.
+
+	const CMission *pLatest = Missions.FindByArc(m_sArc);
+
+	//	Now loop over all chapters and count the number that have been completed.
+
+	for (int i = 0; i < ChapterList.GetCount(); i++)
+		{
+		const auto &MissionTypes = ChapterList[i];
+
+		//	First figure out if all the mission types in this chapter are before
+		//	the latest.
+
+		bool bBeforeLatest;
+		if (pLatest)
+			{
+			bBeforeLatest = true;
+			for (int j = 0; j < MissionTypes.GetCount(); j++)
+				{
+				if (MissionTypes.GetKey(j)->GetArcSequence() >= pLatest->GetArcSequence())
+					{
+					bBeforeLatest = false;
+					break;
+					}
+				}
+			}
+		else
+			bBeforeLatest = false;
+
+		//	Now see if any/all of the missions in this chapter have been 
+		//	completed (recorded).
+
+		bool bAtLeastOneNotCompleted = false;
+		bool bAtLeastOneCompleted = false;
+		for (int j = 0; j < MissionTypes.GetCount(); j++)
+			{
+			const auto &Entry = MissionTypes[j];
+			for (int k = 0; k < Entry.Missions.GetCount(); k++)
+				if (Entry.Missions[k]->IsRecorded())
+					bAtLeastOneCompleted = true;
+				else
+					bAtLeastOneNotCompleted = true;
+			}
+
+		//	If all missions have been completed, then we count this chapter as
+		//	being completed.
+
+		if (bAtLeastOneCompleted && !bAtLeastOneNotCompleted)
 			Status.iCompleted++;
+
+		//	If we're already past this chapter and if we've completed any of the
+		//	missions, then we count it as completed.
+
+		else if (bAtLeastOneCompleted && bBeforeLatest)
+			Status.iCompleted++;
+
+		//	Otherwise, if we're at or ahead of the latest mission, then we count
+		//	this as a chapter that's still left.
+
+		else if (!bBeforeLatest)
+			Status.iLeft++;
+
+		//	Otherwise, this chapter was skipped
+
+		else
+			Status.iSkipped++;
 		}
 
 	//	Done
@@ -234,6 +311,35 @@ bool CMissionType::FindDataField (const CString &sField, CString *retsValue) con
 	return true;
 	}
 
+const CObjectImageArray &CMissionType::GetImage (void) const
+
+//	GetImage
+//
+//	Returns mission image.
+
+	{
+	if (!m_Image.IsEmpty())
+		return m_Image;
+	else if (GetInheritFrom())
+		return GetInheritFrom()->GetTypeSimpleImage();
+	else
+		return CObjectImageArray::Null();
+	}
+
+CString CMissionType::GetTitle (void) const
+
+//	GetTitle
+//
+//	Returns the mission title.
+
+	{
+	CString sTitle;
+	if (TranslateText(CONSTLIT("Name"), NULL, &sTitle))
+		return sTitle;
+
+	return GetName();
+	}
+
 void CMissionType::IncAccepted (void)
 
 //	IncAccepted
@@ -245,6 +351,18 @@ void CMissionType::IncAccepted (void)
 	m_dwLastAcceptedOn = GetUniverse().GetTicks();
 	}
 
+void CMissionType::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
+
+//	OnAccumulateXMLMergeFlags
+//
+//	Returns flags to determine how we merge from inherited types.
+
+	{
+	//	We know how to handle these tags through the inheritance hierarchy.
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(IMAGE_TAG), CXMLElement::MERGE_OVERRIDE);
+	}
+
 ALERROR CMissionType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 //	OnBindDesign
@@ -252,6 +370,9 @@ ALERROR CMissionType::OnBindDesign (SDesignLoadCtx &Ctx)
 //	Bind design
 
 	{
+	if (ALERROR error = m_Image.OnDesignLoadComplete(Ctx))
+		return error;
+
 	m_CachedEvents.Init(this, CACHED_EVENTS);
 
 	//	For missions that are part of an arc, we track the first mission in the
@@ -298,6 +419,14 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fAllowDelete = pDesc->GetAttributeBool(ALLOW_PLAYER_DELETE_ATTRIB);
 	m_fDestroyOnDecline = pDesc->GetAttributeBool(DESTROY_ON_DECLINE_ATTRIB);
 	m_fIgnoreStationLimit = pDesc->GetAttributeBool(IGNORE_STATION_LIMIT_ATTRIB);
+
+	//	Image
+
+	if (const CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG))
+		{
+		if (error = m_Image.InitFromXML(Ctx, *pImage))
+			return ComposeLoadError(Ctx, CONSTLIT("Unable to load image"));
+		}
 
 	//	Mission creation
 
@@ -439,6 +568,9 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_IGNORE_STATION_LIMIT))
 		return ICCItemPtr(m_fIgnoreStationLimit ? true : false);
+
+	else if (strEquals(sProperty, PROPERTY_IMAGE_DESC))
+		return ICCItemPtr(CreateListFromImage(CC, GetImage()));
 
 	else if (strEquals(sProperty, PROPERTY_PRIORITY))
 		return ICCItemPtr(GetPriority());

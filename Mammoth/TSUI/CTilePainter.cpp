@@ -1,24 +1,29 @@
-//	CListEntryPainter.cpp
+//	CTilePainter.cpp
 //
-//	CListEntryPainter class
+//	CTilePainter class
 //	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "stdafx.h"
 
-void CListEntryPainter::Init (const IListData::SEntry &Entry, int cxWidth, const SOptions &Options)
+void CTilePainter::Init (const CTileData &Entry, int cxWidth, const SInitOptions &Options)
 
 //	Init
 //
 //	Initializes the painter.
 
 	{
-	const CG16bitFont &LargeBold = m_VI.GetFont(fontLargeBold);
-	const CG16bitFont &Medium = m_VI.GetFont(fontMedium);
-
 	m_Entry = Entry;
 	m_Options = Options;
 
 	m_cxWidth = cxWidth;
+
+	//	Choose default fonts, if the caller did not supply them
+
+	if (!m_Options.pTitleFont)
+		m_Options.pTitleFont = &m_VI.GetFont(fontLargeBold);
+
+	if (!m_Options.pDescFont)
+		m_Options.pDescFont = &m_VI.GetFont(fontMedium);
 
 	//	Compute the rect for the text region
 
@@ -28,15 +33,15 @@ void CListEntryPainter::Init (const IListData::SEntry &Entry, int cxWidth, const
 
 	//	Compute text height
 
-	int cyText = LargeBold.GetHeight();
-	int iLines = Medium.BreakText(m_Entry.sDesc, RectWidth(m_rcText), NULL, 0);
-	cyText += iLines * Medium.GetHeight();
+	int cyText = m_Options.pTitleFont->GetHeight();
+	int iLines = m_Options.pDescFont->BreakText(m_Entry.GetDesc(), RectWidth(m_rcText), NULL, 0);
+	cyText += iLines * m_Options.pDescFont->GetHeight();
 	m_rcText.bottom = m_rcText.top + cyText;
 
 	//	If the row specifies its own row height, then use that.
 
-	if (Entry.cyHeight)
-		m_cyHeight = Entry.cyHeight;
+	if (Entry.GetHeight())
+		m_cyHeight = Entry.GetHeight();
 
 	//	If we have a valid default from the list, then use that.
 
@@ -47,26 +52,22 @@ void CListEntryPainter::Init (const IListData::SEntry &Entry, int cxWidth, const
 
 	else
 		{
-		if (m_Entry.pImage)
+		if (m_Entry.GetImage())
 			m_cyHeight = Max(m_Options.cyImage, cyText + 2 * PADDING_Y);
 		else
 			m_cyHeight = cyText + 2 * PADDING_Y;
 		}
 	}
 
-void CListEntryPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbTextColor, DWORD dwOptions) const
+void CTilePainter::Paint (CG32bitImage &Dest, int x, int y, const SPaintOptions &Options) const
 
 //	Paint
 //
 //	Paints the entry.
 
 	{
-	bool bSelected = ((dwOptions & OPTION_SELECTED) ? true : false);
-	const CG32bitPixel rgbColorDescSel = CG32bitPixel(200,200,200);
-	const CG32bitPixel rgbColorDesc = CG32bitPixel(128,128,128);
-
-	const CG16bitFont &LargeBold = m_VI.GetFont(fontLargeBold);
-	const CG16bitFont &Medium = m_VI.GetFont(fontMedium);
+	if (IsEmpty())
+		return;
 
 	//	Paint the image
 
@@ -87,10 +88,10 @@ void CListEntryPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rg
 
 	int cyHeight;
 	rcDrawRect.top += yOffset;
-	LargeBold.DrawText(Dest,
+	m_Options.pTitleFont->DrawText(Dest,
 			rcDrawRect,
-			rgbTextColor,
-			m_Entry.sTitle,
+			Options.rgbTitleColor,
+			m_Entry.GetTitle(),
 			0,
 			CG16bitFont::SmartQuotes | CG16bitFont::TruncateLine,
 			&cyHeight);
@@ -99,10 +100,10 @@ void CListEntryPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rg
 
 	//	Paint the description
 
-	Medium.DrawText(Dest, 
+	m_Options.pDescFont->DrawText(Dest, 
 			rcDrawRect,
-			(bSelected ? rgbColorDescSel : rgbColorDesc),
-			m_Entry.sDesc,
+			Options.rgbDescColor,
+			m_Entry.GetDesc(),
 			0,
 			CG16bitFont::SmartQuotes,
 			&cyHeight);
@@ -110,16 +111,16 @@ void CListEntryPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rg
 	rcDrawRect.top += cyHeight;
 	}
 
-void CListEntryPainter::PaintImage (CG32bitImage &Dest, int x, int y) const
+void CTilePainter::PaintImage (CG32bitImage &Dest, int x, int y) const
 
 //	PaintImage
 //
 //	Paints the image.
 
 	{
-	if (m_Entry.pImage == NULL)
+	if (m_Entry.GetImage() == NULL)
 		return;
 
-	Metric rScale = (m_Entry.rImageScale != 1.0 ? m_Entry.rImageScale : m_Options.rImageScale);
-	CPaintHelper::PaintScaledImage(Dest, x, y, m_Options.cxImage, Min(m_cyHeight, m_Options.cyImage), *m_Entry.pImage, m_Entry.rcImageSrc, rScale);
+	Metric rScale = (m_Entry.GetImageScale() != 1.0 ? m_Entry.GetImageScale() : m_Options.rImageScale);
+	CPaintHelper::PaintScaledImage(Dest, x, y, m_Options.cxImage, Min(m_cyHeight, m_Options.cyImage), *m_Entry.GetImage(), m_Entry.GetImageSrc(), rScale);
 	}

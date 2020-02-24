@@ -87,6 +87,7 @@ class CGameSession : public IHISession
 		void DismissMenu (void);
 		void ExecuteCommandRefresh (void);
 		void ExecuteCommandRefresh (CPlayerShipController &Player);
+		CUniverse &GetUniverse (void) const { return m_Model.GetUniverse(); }
 		void HideMenu (void);
 		void InitUI (void);
 		void PaintSRS (CG32bitImage &Screen);
@@ -119,6 +120,10 @@ class CGameSession : public IHISession
 		bool m_bShowingSystemMap;           //  If TRUE, show map
 		CSystemMapDisplay m_SystemMap;      //  Helps to paint the system map
 		CGalacticMapSession::SOptions m_GalacticMapSettings;
+
+		//	Other displays
+
+		CNarrativeDisplay m_Narrative;
 
 		//	Dock screen state
 

@@ -1490,24 +1490,38 @@ class CDeviceStorage
 
 //	IListData ------------------------------------------------------------------
 
+class CTileData
+	{
+	public:
+		const CString &GetDesc (void) const { return m_sDesc; }
+		int GetHeight (void) const { return m_cyHeight; }
+		const CG32bitImage *GetImage (void) const { return m_pImage; }
+		Metric GetImageScale (void) const { return m_rImageScale; }
+		const RECT &GetImageSrc (void) const { return m_rcImageSrc; }
+		const CString &GetTitle (void) const { return m_sTitle; }
+		void SetDesc (const CString &sValue) { m_sDesc = sValue; }
+		void SetHeight (int iValue) { m_cyHeight = iValue; }
+		void SetImage (const CG32bitImage *pImage, const RECT &rcImageSrc, Metric rImageScale = 1.0)
+			{ m_pImage = pImage; m_rcImageSrc = rcImageSrc; m_rImageScale = rImageScale; }
+		void SetTitle (const CString &sValue) { m_sTitle = sValue; }
+
+	private:
+		CString m_sTitle;
+		CString m_sDesc;
+
+		const CG32bitImage *m_pImage = NULL;
+		RECT m_rcImageSrc = { 0 };
+		Metric m_rImageScale = 1.0;
+
+		int m_cyHeight = 0;
+	};
+
 extern const CItem g_DummyItem;
 extern CItemListManipulator g_DummyItemListManipulator;
 
 class IListData
 	{
 	public:
-		struct SEntry
-			{
-			CString sTitle;
-			CString sDesc;
-
-			const CG32bitImage *pImage = NULL;
-			RECT rcImageSrc = { 0 };
-			Metric rImageScale = 1.0;
-
-			int cyHeight = 0;
-			};
-
 		virtual ~IListData (void) { }
 		virtual void DeleteAtCursor (int iCount) { }
 		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) { return false; }
@@ -1515,7 +1529,7 @@ class IListData
 		virtual int GetCursor (void) const { return -1; }
 		virtual CString GetDescAtCursor (void) const { return NULL_STR; }
 		virtual ICCItem *GetEntryAtCursor (void) const { return CCodeChain::CreateNil(); }
-		virtual SEntry GetEntryDescAtCursor (void) const { return SEntry(); }
+		virtual CTileData GetEntryDescAtCursor (void) const { return CTileData(); }
 		virtual const CItem &GetItemAtCursor (void) const { return g_DummyItem; }
 		virtual CItemListManipulator &GetItemListManipulator (void) { return g_DummyItemListManipulator; }
 		virtual CSpaceObject *GetSource (void) const { return NULL; }

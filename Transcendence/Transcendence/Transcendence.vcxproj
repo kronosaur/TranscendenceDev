@@ -435,6 +435,7 @@
     <ClCompile Include="CKeyboardMapSession.cpp" />
     <ClCompile Include="CLoadGameWithSignInTask.cpp" />
     <ClCompile Include="CManeuverController.cpp" />
+    <ClCompile Include="CNarrativeDisplay.cpp" />
     <ClCompile Include="CodeChainExtensions.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
