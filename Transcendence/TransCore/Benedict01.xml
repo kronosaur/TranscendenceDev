@@ -250,8 +250,8 @@
 								(and (setq targetObj (objGetObjByID (msnGetData gSource 'hiddenEnemyID)))
 										(not (objGetProperty targetObj 'abandoned))
 										)
-                                    (block Nil
-									    (setq state 'attackHiddenEnemy)
+									(block Nil
+										(setq state 'attackHiddenEnemy)
 										
 										;	This is a risky mission, so save the game
 										
@@ -277,30 +277,20 @@
 
 								;	Mission to defend a freighter
 
-								(and (setq ownerObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
-										(setq fionaMission (msnCreate &msBenedictAndFiona; ownerObj))
-										)
-									(block Nil
-										
-										;	Current mission is done
-										
-										(msnSuccess gSource)
-										
-										;	Accept Fiona mission
-										
-										(msnAccept fionaMission)
-										(setq state 'fionaMission)
-										
-										;	This is a risky mission, so save the game
-										
-										(msnSetData gSource 'missionCheckpoint True)
-										)
-								
-								;	Nothing else
-								
 								(block Nil
+										
+									;	Current mission is done
+										
 									(msnSuccess gSource)
-									(setq state 'nothing)
+										
+									;	Text for Fiona mission (the actual creation and accept
+									;	happens in code associated with the dialog).
+										
+									(setq state 'fionaMission)
+										
+									;	This is a risky mission, so save the game
+										
+									(msnSetData gSource 'missionCheckpoint True)
 									)
 								)
 								
@@ -640,9 +630,29 @@
 						;	We also clear the task completed variable so that we don't
 						;	debrief twice.
 					
-						(append
-							(msnTranslate gSource (cat taskCompleted ":Debrief"))
-							(msnTranslate gSource (cat state ":Begin") data)
+						(block (
+							(debriefText (msnTranslate gSource (cat taskCompleted ":Debrief")))
+							(beginText (msnTranslate gSource (cat state ":Begin") data))
+							)
+							(if (and (= (typeof beginText) 'list)
+									(= (typeof (@ beginText 0)) 'struct)
+									)
+
+								;	If the begin text is a dialog (a list of structs) then we
+								;	need to convert the debrief into dialog format.
+
+								(append
+									{ desc:debriefText }
+									beginText
+									)
+
+								;	Otherwise, normal append
+
+								(append
+									debriefText
+									beginText
+									)
+								)
 							)
 						
 						;	Otherwise, we just describe the current mission
@@ -865,12 +875,23 @@
 			</Text>
 			<Text id="fionaMission:Begin">
 				(list
-					(msnTranslate gSource "fionaMission:Begin:1")
-					(msnTranslate gSource "fionaMission:Begin:2")
-					(if (objGetItems gPlayerShip "wI +unid:&itSmartCannon;;")
-						(msnTranslate gSource "fionaMission:Begin:3a")
-						(msnTranslate gSource "fionaMission:Begin:3b")
-						)
+					{	desc:(msnTranslate gSource "fionaMission:Begin:1")	}
+					{	desc:(msnTranslate gSource "fionaMission:Begin:2")	}
+					{	desc:(if (objGetItems gPlayerShip "wI +unid:&itSmartCannon;;")
+							(msnTranslate gSource "fionaMission:Begin:3a")
+							(msnTranslate gSource "fionaMission:Begin:3b")
+							)
+						code: 
+							(lambda ()
+								;	Create and Accept Fiona mission
+
+								(block (
+									(fionaMission (msnCreate &msBenedictAndFiona; gSource))
+									)
+									(msnAccept fionaMission)
+									)
+								)
+						}
 					)
 			</Text>
 			<Text id="fionaMission:Begin:1">
@@ -889,10 +910,11 @@
 
 				Benedict continues:
 
-				"Fiona, one of our operatives, is in trouble. We need you to help her.
+				"One of our freighters is in trouble; we don't know very much,
+				but it appears to be under attack.
 
-				"She's on a freighter, coming in to the system.
-				Meet her at the stargate and protect her until she can reach us here."
+				"She'll enter the system soon. Meet her at the stargate and
+				protect her until she can reach us here."
 
 			</Text>
 			<Text id="fionaMission:Begin:3a">

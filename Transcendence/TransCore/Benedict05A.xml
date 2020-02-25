@@ -37,6 +37,11 @@
 					(not (rpgIsMissionActive &msFionaInStKats;))
 						Nil
 
+					;	Sandoval must be alive
+						
+					(not (rpgCharacterIsAliveAndWell &unidHugoSandoval;))
+						Nil
+
 					True
 					)
 			</CanCreate>
@@ -158,7 +163,6 @@
 				
 					(= (objGetID aObjDestroyed) (msnGetData gSource 'sandovalID))
 						(block Nil
-							(rpgCharacterSetStatus &unidHugoSandoval; 'dead)
 							(msnFailure gSource)
 							)
 					)
@@ -218,6 +222,8 @@
 								{ repairAll:True }
 								)
 							)
+
+						(objSetEventHandler sandovalObj &evBenedict05ASandoval;)
 						
 						;	Order appropriately
 
@@ -274,9 +280,24 @@
 				Chapter 5: The Hand of Solace
 			</Text>
 			<Text id="Summary">
-				(msnTranslate gSource 'textSummary {
-					systemName: (sysGetName)
-					})
+				(block (
+					)
+					(switch
+						(msn@ gSource 'isFailure)
+							(msnTranslate gSource 'textSummary.failure {
+								systemName: (sysGetName)
+								})
+							
+						(msn@ gSource 'isDebriefed)
+							(msnTranslate gSource 'textSummary.next {
+								systemName: (sysGetName 'CD)
+								})
+
+						(msnTranslate gSource 'textSummary.active {
+							systemName: (sysGetName)
+							})
+						)
+					)
 			</Text>
 			<Text id="FirstIntro">
 				(list
@@ -322,11 +343,46 @@
 
 			<!-- INTRO -->
 
-			<Text id="textSummary">
+			<Text id="textSummary.active">
+
+				Fiona has asked you to team up with Hugo Sandoval to find the
+				wreckage of the Hand of Solace. She hopes that the wreckage will
+				help to unravel the mystery of its destruction, and reveal its
+				connection to the attack on Fiona.
 			
 				Follow Sandoval and help him scan for the wreckage of the Hand 
 				of Solace. Do not enter or let anyone enter the scanning zone.
 					
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.next">
+
+				With Sandoval and Benedict's help, you extract a course-log from
+				the drive computer of the doomed Hand of Solace. Sandoval takes
+				the	data to Fiona for decoding in hopes that it will reveal the 
+				ultimate cause of its destruction.
+
+				Meanwhile, Benedict heads towards the Sisters' capital in the
+				Sanctuary system to see if they can help. Meet him there if you
+				wish to help him.
+
+				System: %systemName%\n
+				Payment: None
+			
+			</Text>
+			<Text id="textSummary.failure">
+
+				You have failed. Fiona asked you to team up with Hugo Sandoval
+				to find the wreckage of the Hand of Solace and search for 
+				clues.
+
+				But now Sandoval is dead and you've lost any hope of finding the
+				Hand of Solace.
+
+				No further progress on this storyline is possible.
+			
 				System: %systemName%\n
 				Payment: None
 
@@ -665,7 +721,7 @@
 <!-- OVERLAYS -->
 	
 	<OverlayType UNID="&ovBenedict05ScanRange;"
-            attributes=         "effect"
+			attributes=         "effect"
 			>
 		<Counter style=	"radius"
 				color=	"#6666cc"
@@ -800,6 +856,24 @@
 			<Text id="msgWarn3">We've got hostiles coming in!</Text>
 		</Language>
 	</OverlayType>
+
+<!-- EVENT HANDLERS -->
+
+	<Type unid="&evBenedict05ASandoval;">
+		<Events>
+			<OnDestroy>
+				(block (
+					(findSandovalMission (@ (msnFind "a +unid:&msFionaInStKats;;") 0))
+					)
+					(rpgCharacterSetStatus &unidHugoSandoval; 'dead)
+
+					(if findSandovalMission
+						(msnFailure findSandovalMission)
+						)
+					)
+			</OnDestroy>
+		</Events>
+	</Type>
 	
 <!-- TABLES AND RESOURCES -->
 

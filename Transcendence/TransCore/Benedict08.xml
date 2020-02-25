@@ -206,9 +206,19 @@
 				Chapter 8: The Children
 			</Text>
 			<Text id="Summary">
-				(msnTranslate gSource 'textSummary {
-					systemName: (sysGetName)
-					})
+				(switch
+					(msn@ gSource 'isFailure)
+						(msnTranslate gSource 'textSummary.failure {
+							systemName: (sysGetName)
+							})
+							
+					(msn@ gSource 'isDebriefed)
+						(msnTranslate gSource 'textSummary.next)
+
+					(msnTranslate gSource 'textSummary.active {
+						systemName: (sysGetName)
+						})
+					)
 			</Text>
 			<Text id="Intro">
 				(list
@@ -224,15 +234,49 @@
 
 			<!-- INTRO -->
 
-			<Text id="textSummary">
-			
-				Help Stormhound to smash the Penitent fortress and rescue the 
-				children there.
+			<Text id="textSummary.active">
+
+				With your help, Benedict and Fiona uncovered a conspiracy 
+				between the Penitents and Sister Elana Ston. You have video
+				proof of Sister Ston handing over infants to the Penitents.
+
+				Now, with Stormhound's help, you plan on assaulting a Penitent
+				monastery and rescuing the kidnapped children.
 
 				System: %systemName%\n
 				Payment: None
 
 			</Text>
+			<Text id="textSummary.next">
+			
+				Even now you're not sure what you saw. A winged demon? Mutant
+				children? Whatever the Penitents are doing goes well beyond a
+				simple power struggle. And if some of the Sisters are conspiring
+				with them, the mystery only deepens.
+
+				What was that creature, whom Stormhound called an 'arioi'? Why
+				are the Penitents and Sisters working together? And what does it
+				all have to do with Domina and Oracus?
+
+				The answers, you hope, will be at the end of your journey, 
+				outside the Quarantine Zone, at the eternal temple of the gods:
+				the Galactic Core.
+
+				You have completed the Benedict &amp; Domina storyline.
+
+			</Text>
+			<Text id="textSummary.failure">
+			
+				You have failed. Children were being held by Penitents at one of
+				their monasteries, but your rescue attempt failed.
+
+				No further progress on this storyline is possible.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+
 			<Text id="textIntro1">
 
 				Stormhound leads you to the tactical room. A central map depicts

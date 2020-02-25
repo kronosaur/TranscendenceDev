@@ -43,6 +43,7 @@
 	<!ENTITY evBenedict02FionaWreck		"0x00200022">
 	<!ENTITY baBenedictMission			"0x00200023">
 	<!ENTITY rsBenedictMission			"0x00200024">
+	<!ENTITY evBenedict05ASandoval		"0x00200025">
 
 	<!-- 0060-007F HERETIC MISSION ARC -->
 	

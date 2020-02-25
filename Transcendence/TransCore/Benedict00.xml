@@ -189,17 +189,49 @@
 				Chapter 1: Training Day
 			</Text>
 			<Text id="Summary">
-				(msnTranslate gSource 'textSummary {
-					systemName: (sysGetName)
-					})
-			</Text>
-			<Text id="textSummary">
+				(switch
+					;	Not needed because we always accept a new mission in the 
+					;	story arc after debriefing.
 
-				Destroy Benedict's autons.
+					(msn@ gSource 'isDebriefed)
+						Nil
+
+					;	If completed but not debriefed, then tell the player to
+					;	return to the Benedict.
+
+					(msn@ gSource 'isCompleted)
+						(msnTranslate gSource 'textSummary.completed {
+							systemName: (sysGetName)
+							})
+
+					;	Otherwise, we're active
+
+					(msnTranslate gSource 'textSummary.active {
+						systemName: (sysGetName)
+						})
+					)
+			</Text>
+			<Text id="textSummary.active">
+
+				Searching for answers about your quest, you seek out the Sisters
+				of Domina. There you meet Benedict, obviously a mercenary of 
+				some sort, who offers you training.
+
+				Destroy all of Benedict's autons to practice your combat skills.
 
 				System: %systemName%\n
 				Payment: None
 
+			</Text>
+			<Text id="textSummary.completed">
+
+				You've destroyed all of Benedict's autons in target practice.
+				Return to the Sisters of Domina to hear Benedict's evaluation of
+				your performance.
+
+				System: %systemName%\n
+				Payment: None
+			
 			</Text>
 			<Text id="Intro">
 

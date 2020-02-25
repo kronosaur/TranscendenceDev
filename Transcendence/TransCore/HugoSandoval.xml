@@ -47,18 +47,18 @@
 		<!-- Configuration -->
 		
 		<Armor
-			armorID=			"&itDuralloyArmor;"
+			armorID=			"&itCarbideCarapace;"
 			count=				"6"
-			enhancement=		"+immunity:radiation"
+			enhancement=		"+immunity:EMP"
 			/>
 		
 		<Devices>
-			<Device deviceID="&itAkan600Turret;"	posAngle="0" posRadius="4" posZ="16">
+			<Device deviceID="&itOmniThermoCannon;"	posAngle="0" posRadius="4" posZ="16">
 				<Items>
-					<Item count="500" item="&itAkan30CannonShell;"/>
+					<Item count="500" item="&itThermoCannonShell;"/>
 				</Items>
 			</Device>
-			<Device deviceID="&itNephrenP25;"/>
+			<Device deviceID="&itYoroiMX;"/>
 		</Devices>
 
 		<Maneuver
@@ -94,17 +94,18 @@
 		<Language>
 			<Text id="FirstMeetingIntro">
 				(list
-					{
-						desc: (cat
-							"The airlock opens and you see a slim man wearing a well-fitted "
-							"carbon-fiber jacket. A scattering of gray shines on otherwise "
-							"dark hair.\n\n"
-							
-							"A faint smile and bright eyes draw attention away from the "
-							"compact blaster in his right hand."
-							)
-						}
+					{	descID: 'textFirstMeetingIntro1	}
 					)
+			</Text>
+			<Text id="textFirstMeetingIntro1">
+			
+				The airlock opens and you see a slim man wearing a well-fitted 
+				carbon-fiber jacket. A scattering of gray shines on otherwise 
+				dark hair.
+
+				A faint smile and bright eyes draw attention away from the 
+				compact blaster in his right hand.
+
 			</Text>
 
 			<Text id="MeetingIntro">

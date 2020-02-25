@@ -326,9 +326,28 @@
 				Chapter 7: Benedict
 			</Text>
 			<Text id="Summary">
-				(msnTranslate gSource 'textSummary {
-					systemName: (sysGetName)
-					})
+				(switch
+					(msn@ gSource 'isFailure)
+						(msnTranslate gSource 'textSummary.failure {
+							systemName: (sysGetName)
+							})
+							
+					(and (not (unvFindObject 'EC "tA +unid:&stPenitentMonastery;;"))
+							(msn@ gSource 'isDebriefed)
+							)
+						(msnTranslate gSource 'textSummary.deadEnd {
+							systemName: (sysGetName)
+							})
+
+					(msn@ gSource 'isDebriefed)
+						(msnTranslate gSource 'textSummary.next {
+							systemName: (sysGetName 'EC)
+							})
+
+					(msnTranslate gSource 'textSummary.active {
+						systemName: (sysGetName)
+						})
+					)
 			</Text>
 			<Text id="Intro">
 				(switch
@@ -387,14 +406,64 @@
 
 			<!-- INTRO -->
 
-			<Text id="textSummary">
+			<Text id="textSummary.active">
 			
-				Intercept a Penitent convoy carrying Benedict.
+				After extracting proof implicating Sister Elana Ston in a
+				conspiracy, Benedict was captured by Penitents.
+
+				Though Fiona failed to convince the Sisters about Elana Ston's
+				betrayal, you have an opportunity to rescue Benedict.
+
+				He's aboard a Penitent ship passing through the system. Help 
+				Fiona and Sandoval rescue him.
 
 				System: %systemName%\n
 				Payment: None
 
 			</Text>
+			<Text id="textSummary.next">
+
+				At great cost, Benedict extracted a video showing Sister Elana
+				Ston handing over a group of infants to the Penitents. Fiona 
+				failed to convince the rest of the Sisters, however, because 
+				Sister Ston tampered with the video to make it look like a 
+				forgery.
+
+				But Benedict knows where the children are being kept, and he's
+				planning a rescue mission.
+
+				If you wish to help, go to the %systemName% system.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.deadEnd">
+
+				Though you rescued Benedict, you are no closer to unravelling
+				the mystery of the Penitents and the Sisters. Perhaps your 
+				questions will not be answered until you reach Domina at the
+				Galactic Core.
+
+				No further progress on this storyline is possible.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.failure">
+
+				You have failed. Benedict was being help prisoner inside a 
+				Penitent ship. You attempted a rescue, but the Penitent ship
+				escaped through the stargate.
+
+				No further progress on this storyline is possible.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+
 			<Text id="textIntro1">
 			
 				The beautiful central chamber, built hundreds of years ago by 
@@ -891,24 +960,40 @@
 						;	If Fiona is at the wreck, then we need to rescue her
 						
 						(= (msnGetData missionObj 'fionaStatus) 'wrecked)
-							(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgGoRescueFiona) 10)
+							{	screen: &dsRPGDialog;
+								priority: 10
+								translateType: &msRescueBenedict;
+								dialogID: 'dlgGoRescueFiona
+								}
 							
 						;	If Fiona has not yet docked with the wreck, the player has to wait.
 						
 						(and (!= (objGetProperty fionaObj 'dockedAtID) (objGetID gSource))
 								(not (msnGetData missionObj 'fionaStatus))
 								)
-							(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgWaitForFiona) 10)
+							{	screen: &dsRPGDialog;
+								priority: 10
+								translateType: &msRescueBenedict;
+								dialogID: 'dlgWaitForFiona
+								}
 
 						;	If the Penitent station in Eta Ceti is already destroyed, then we get
 						;	an alternate script.
 
 						(not (unvFindObject 'EC "tA +unid:&stPenitentMonastery;;"))
-							(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgRescueBenedictDeadEnd) 10)
+							{	screen: &dsRPGDialog;
+								priority: 10
+								translateType: &msRescueBenedict;
+								dialogID: 'dlgRescueBenedictDeadEnd
+								}
 
 						;	Rescue script
 						
-						(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgRescueBenedict) 10)
+						{	screen: &dsRPGDialog;
+							priority: 10
+							translateType: &msRescueBenedict;
+							dialogID: 'dlgRescueBenedict
+							}
 						)
 					)
 			</GetDockScreen>
@@ -938,11 +1023,19 @@
 						;	If we haven't yet destroyed the target, Fiona tells us to continue
 						
 						(!= (msnGetData missionObj 'status) 'rescue)
-							(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgContinueWithAttack) 10)
+							{	screen: &dsRPGDialog;
+								priority: 10
+								translateType: &msRescueBenedict;
+								dialogID: 'dlgContinueWithAttack
+								}
 							
 						;	Rescue script
-						
-						(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgRescueFiona) 10)
+
+						{	screen: &dsRPGDialog;
+							priority: 10
+							translateType: &msRescueBenedict;
+							dialogID: 'dlgRescueFiona
+							}
 						)
 					)
 			</GetDockScreen>

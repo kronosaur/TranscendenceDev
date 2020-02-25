@@ -131,6 +131,10 @@
 					;	Install targeting ROM
 					
 					(objChangeEquipmentStatus newShipObj 'TargetingComputer 'install)
+
+					;	Add more ammo
+
+					(objAddItem newShipObj &itPX3HexageneMAG; (random 80 100))
 					
 					;	Switch ships
 					;
@@ -320,15 +324,74 @@
 				Chapter 6: The Penitents
 			</Text>
 			<Text id="Summary">
-				(msnTranslate gSource 'descSummary {
-					systemName: (sysGetName)
-					})
+				(block (
+					)
+					(switch
+						(msn@ gSource 'isFailure)
+							(msnTranslate gSource 'textSummary.failure {
+								systemName: (sysGetName)
+								})
+							
+						(msn@ gSource 'isDebriefed)
+							(msnTranslate gSource 'textSummary.next {
+								systemName: (sysGetName 'CD)
+								})
+
+						(msnTranslate gSource 'textSummary.active {
+							systemName: (sysGetName)
+							})
+						)
+					)
 			</Text>
-			<Text id="descSummary">
-				Help Benedict to infiltrate a Penitent Sanctum.
+			<Text id="textSummary.active">
+
+				Hoping to unravel the mystery of the Hand of Solace, Benedict
+				has come up with a bold plan: infiltrate a Penitent station and
+				extract data that could implicate Sister Elana Ston in a 
+				conspiracy.
+
+				Aboard a stolen Penitent vessel, you and Benedict must dock with
+				a Penitent station, extract its secrets, and escape with your
+				lives.
 
 				System: %systemName%\n
 				Payment: None
+
+			</Text>
+			<Text id="textSummary.next">
+
+				Benedict's bold plan worked! You infiltrated a Penitent station
+				and extracted video evidence that Sister Elana Ston had been
+				conspiring with Penitents.
+
+				But on leaving the station, Benedict chose to stay behind to 
+				give you a chance to escape with the evidence.
+
+				You turned over the evidence to Fiona, who will take it to the
+				grandmatriarch of the Sisters at their cathedral in the 
+				Sanctuary system.
+
+				Meet her there if you wish to help.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.failure">
+
+				You have failed. Hoping to unravel the mystery of the Hand of 
+				Solace, Benedict had come up with a bold plan: infiltrate a
+				Penitent station and extract data that could implicate Sister
+				Elana Ston in a conspiracy.
+
+				But the plan failed spectacularly, and now you have no hope of
+				solving the mystery.
+
+				No further progress on this storyline is possible.
+			
+				System: %systemName%\n
+				Payment: None
+
 			</Text>
 
 			<!-- Intro -->
@@ -526,7 +589,7 @@
 <!-- OVERLAYS -->
 	
 	<OverlayType UNID="&ovBenedict06Disarm;"
-            attributes=         "effect"
+			attributes=         "effect"
 			disarm=		"true"
 			>
 		<Events>

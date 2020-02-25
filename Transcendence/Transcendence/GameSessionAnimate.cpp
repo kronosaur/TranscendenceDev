@@ -58,6 +58,12 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 					g_pTrans->m_DeviceDisplay.Paint(Screen);
 					}
 
+				if (!m_bShowingSystemMap && g_pTrans->m_State != CTranscendenceWnd::gsDestroyed)
+					{
+					m_Narrative.Update(g_pUniverse->GetFrameTicks());
+					m_Narrative.Paint(Screen, g_pUniverse->GetFrameTicks());
+					}
+
 				if (g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickNone)
 					{
 					SetProgramState(psPaintingMessageDisplay);
@@ -71,9 +77,6 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				if (g_pTrans->m_CurrentPicker != CTranscendenceWnd::pickNone)
 					g_pTrans->m_PickerDisplay.Paint(Screen);
 				m_DebugConsole.Paint(Screen);
-
-				m_Narrative.Update(g_pUniverse->GetFrameTicks());
-				m_Narrative.Paint(Screen, g_pUniverse->GetFrameTicks());
 
 				//	If we're in a HUD menu, run quarter speed
 

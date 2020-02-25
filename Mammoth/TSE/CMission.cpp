@@ -66,8 +66,7 @@ void CMission::CloseMission (void)
 
 	//	Refresh the summary, if necessary
 
-	if (IsPlayerMission())
-		RefreshSummary();
+	RefreshSummary();
 
 	//	If this is a player mission then refresh another player mission
 
@@ -163,8 +162,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 		//	Refresh mission summary so that we get the latest info in the 
 		//	mission screen.
 
-		if (IsPlayerMission())
-			RefreshSummary();
+		RefreshSummary();
 		}
 
 	//	Set status for non-player missions

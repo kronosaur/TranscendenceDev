@@ -68,14 +68,14 @@
 		<!-- Configuration -->
 		
 		<Armor
-			armorID=			"&itAdvancedPlasteelPlate;"
+			armorID=			"&itMediumIthaliumArmor;"
 			count=				"6"
-			enhancement=		"+immunity:radiation"
+			enhancement=		"+immunity:EMP"
 			/>
 		
 		<Devices>
-			<Device deviceID="&itMarkIIIHowitzer;"	posAngle="180" posRadius="8" posZ="20"/>
-			<Device deviceID="&itYoroiS100;"/>
+			<Device deviceID="&itFusionfireHowitzer;"	posAngle="180" posRadius="8" posZ="20"/>
+			<Device deviceID="&itYoroiMX;"/>
 		</Devices>
 
 		<Maneuver

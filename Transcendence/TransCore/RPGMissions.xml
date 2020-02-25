@@ -470,8 +470,8 @@
 										(missionObj (@ options 'missionObj))
 										(screenOptions Nil)
 										)
-							
 										(msnSetPlayerTarget missionObj)
+
 										;	Ask the mission if it wants a different screen
 							
 										(setq aScreenType 'InProgressFollowUp)
