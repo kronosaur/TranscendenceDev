@@ -3215,7 +3215,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysSetKnown",					fnSystemGet,	FN_SYS_SET_KNOWN,
-			"(sysSetKNown [nodeID] [True/Nil]) -> True/Nil",
+			"(sysSetKnown [nodeID] [True/Nil]) -> True/Nil",
 			"*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysSetPOV",					fnSystemGet,	FN_SYS_SET_POV,

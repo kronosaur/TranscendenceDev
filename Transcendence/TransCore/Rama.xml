@@ -50,6 +50,11 @@
 	<Type unid="&chRama;"
 			inherit=	"&baStdWingmanBase;">
 
+		<StaticData>
+			<Name>Rama</Name>
+			<Sovereign>&svCommonwealth;</Sovereign>
+		</StaticData>
+
 		<Language>
 			<Text id="ArmorRepaired">			My ship's as good as new</Text>
 			<Text id="AttackTargetAck">			Target acquired</Text>

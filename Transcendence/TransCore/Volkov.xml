@@ -246,6 +246,11 @@
 	<Type unid="&chVolkov;"
 			inherit=	"&baStdWingmanBase;">
 
+		<StaticData>
+			<Name>Volkov</Name>
+			<Sovereign>&svCommonwealth;</Sovereign>
+		</StaticData>
+
 		<Language>
 			<Text id="ArmorRepaired">			Good! Armor is repaired</Text>
 			<Text id="AttackTargetAck">			Da! Target acquired</Text>

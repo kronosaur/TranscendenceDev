@@ -179,6 +179,8 @@
 #define PROPERTY_ARMOR_ITEM						CONSTLIT("armorItem")
 #define PROPERTY_ARMOR_SPEED_ADJ				CONSTLIT("armorSpeedAdj")
 #define PROPERTY_ARMOR_SPEED_ADJ_PARAM			CONSTLIT("armorSpeedAdj:")
+#define PROPERTY_CHARACTER						CONSTLIT("character")
+#define PROPERTY_CHARACTER_NAME					CONSTLIT("characterName")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
@@ -3839,6 +3841,12 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return ICCItemPtr(iSpeedAdj);
 		}
 
+	else if (strEquals(sProperty, PROPERTY_CHARACTER))
+		return (m_Character.GetUNID() ? ICCItemPtr(m_Character.GetUNID()) : ICCItemPtr::Nil());
+		
+	else if (strEquals(sProperty, PROPERTY_CHARACTER_NAME))
+		return (m_Character.GetUNID() ? m_Character->GetStaticData(CONSTLIT("Name")) : ICCItemPtr::Nil());
+		
 	else if (strEquals(sProperty, PROPERTY_CURRENCY))
 		return ICCItemPtr(GetEconomyType()->GetUNID());
 		
