@@ -797,7 +797,10 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 	//	See if this is one of the special damage properties
 
 	else if ((iSpecial = DamageDesc::ConvertPropertyToSpecialDamageTypes(sProperty)) != specialNone)
-		return CC.CreateInteger(GetSpecialDamage(iSpecial));
+		{
+		int iDamage = GetSpecialDamage(iSpecial);
+		return (iDamage ? CC.CreateInteger(iDamage) : CC.CreateNil());
+		}
 
 	//	Check the damage structure
 
