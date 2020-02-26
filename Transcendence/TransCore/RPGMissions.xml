@@ -716,11 +716,25 @@
 
 		<Events>
 			<GetGlobalDockScreen>
-				(block (missionObj)
+				(block (
+					(activeMissions 
+						(filter (msnFind gSource "aD") theMission 
+							(or (msn@ theMission 'isCompleted)
+
+								;	A mission can set this property to bring up 
+								;	the mission screen when the player docks.
+
+								(msn@ theMission 'rpg.showInProgressOnDock)
+								)
+							)
+						)
+
+					(missionObj (@ activeMissions 0))
+					)
 					(switch
 						; Find any mission that is completed and not yet debriefed
 
-						(setq missionObj (@ (filter (msnFind gSource "aD") theMission (msnGetProperty theMission 'isCompleted)) 0))
+						missionObj
 							{	
 								screen: &dsRPGMission;
 								priority: 4

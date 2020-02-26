@@ -16,6 +16,7 @@
 		exploreSystem: Explore all friendly stations.
 		installDevice: Install a device.
 		installSmartCannon: Install SmartCannon.
+		installWMD: Install a WMD weapon.
 		loot: Loot a station.
 		lootHiddenEnemy: Loot hidden enemy.
 		nothing: Nothing more to learn.
@@ -50,6 +51,12 @@
 			maxAppearing=		"1"
 			noDebrief=			"true"
 			>
+		<Properties>
+			<DynamicData id="rpg.showInProgressOnDock">
+				(msnGetData gSource 'taskCompleted)
+			</DynamicData>
+		</Properties>
+
 		<Events>
 			<CanCreate>
 				(switch
@@ -244,6 +251,12 @@
 												)
 										)
 									(setq state 'exploreSystem)
+
+								;	If the player does not have a WMD weapon, then tell them to 
+								;	get one.
+
+								(not (objGetItems gPlayerShip "wI +property:damageWMD;"))
+									(setq state 'installWMD)
 									
 								;	Send the player to destroy the hidden station, if it's not yet destroyed
 								
@@ -463,9 +476,14 @@
 							(if	(typGetData &svPlayer; 'tutorialInstalled)
 								(setq taskDone True)
 								)
-								
+
 						(eq state 'installSmartCannon)
 							(if (not (objGetItems gPlayerShip "wU +unid:&itSmartCannon;;"))
+								(setq taskDone True)
+								)
+								
+						(= state 'installWMD)
+							(if (objGetItems gPlayerShip "wI +property:damageWMD")
 								(setq taskDone True)
 								)
 								
@@ -972,6 +990,67 @@
 
 				System: %systemName%\n
 				Payment: None
+			</Text>
+			<Text id="installWMD:Begin">
+
+				"Enemy stations are often protected against standard laser and 
+				kinetic	weapons. You'll need something stronger, like a missile 
+				launcher.
+
+				"Look for a weapon that has WMD damage and install it on your
+				ship."
+
+			</Text>
+			<Text id="installWMD:Debrief">
+				(switch
+					(objGetItems gPlayerShip "lI +disposable; +property:damageWMD")
+						(msnTranslate gSource 'installWMD.debriefDisposable)
+					
+					(objGetItems gPlayerShip "lI +property:damageWMD")
+						(msnTranslate gSource 'installWMD.debriefLauncher)
+
+					(msnTranslate gSource 'installWMD.debriefWeapon)
+					)
+			</Text>
+			<Text id="installWMD.debriefDisposable">
+
+				"That's a good choice. A disposable missile launcher is cheap
+				and effective. The only downside is that you will need to 
+				replaces it once it runs out of missiles.
+
+				"Eventually you'll want to get a full missile launcher, but this
+				is good for now."
+			
+			</Text>
+			<Text id="installWMD.debriefLauncher">
+
+				"That's an excellent choice. A good missile launcher will serve
+				you well in your travels. There's a wide range of missiles
+				available for your model.
+
+				"Still, missiles are expensive, so don't waste them unless you
+				really need them."
+			
+			</Text>
+			<Text id="installWMD.debriefWeapon">
+
+				"That's a good choice. A good weapon that does WMD damage is 
+				cheap and effective against hardened stations.
+
+				"Eventually you'll want to get a full missile launcher, but this
+				is good for now."
+			
+			</Text>
+			<Text id="installWMD:Summary">
+
+				Install a weapon with WMD damage, such as a missile launcher.
+
+				Many stations cannot be harmed with standard lasers or kinetic
+				weapons; they must be attacked with mass-destruction weapons.
+
+				System: %systemName%\n
+				Payment: None
+
 			</Text>
 			<Text id="loot:Begin">
 

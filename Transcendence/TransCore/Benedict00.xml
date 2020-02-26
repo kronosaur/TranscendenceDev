@@ -178,7 +178,7 @@
 					Nil
 					)
 			</OnReward>
-			
+
 			<GetGlobalAchievements>
 				(typGetData &msBenedictsDrones; 'achievements)
 			</GetGlobalAchievements>
@@ -271,7 +271,7 @@
 				Benedict stares. A smile flashes for an instant.
 					
 				"Fine. You'll be working your weapons soon enough. Meet me in 
-				the Matriarch's Chamber when you're ready to tackle something 
+				the Matriarch's Chancery when you're ready to tackle something 
 				more dangerous."
 
 			</Text>
@@ -284,13 +284,29 @@
 
 			</Text>
 			<Text id="SuccessDebrief">
-				(msnTranslate gSource 'textSuccessDebrief {
-					time: (unvGetElapsedGameTime (msnGetData gSource 'startTime) (msnGetData gSource 'endTime) 'display)
-					})
+				(list
+					{	descID: 'textSuccessDebrief1
+						data: {
+							time: (unvGetElapsedGameTime (msnGetData gSource 'startTime) (msnGetData gSource 'endTime) 'display)
+							}
+						}
+					{	descID: 'textSuccessDebrief2	}
+					)
 			</Text>
-			<String id="textSuccessDebrief">
+			<String id="textSuccessDebrief1">
+
 				"Excellent work! You destroyed all autons in %time%."
+
 			</String>
+			<Text id="textSuccessDebrief2">
+
+				"I know you're eager to start your journey, but take the time to
+				practice your skills here in the civilized safety of Eridani.
+				
+				"Return to the Matriarch's Chancery when you're ready and I will
+				continue your training."
+			
+			</Text>
 			<Text id="SuccessMsg">
 				Mission complete!
 			</Text>
