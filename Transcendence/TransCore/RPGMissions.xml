@@ -1017,9 +1017,10 @@
 
 					(displayCriteria (@ options 'displayCriteria))
 
+					(maxMissions (or (obj@ gSource 'rpg.maxMissions) (@ options 'maxPerStation)))
 					(ownerHasHitLimit
-						(and (@ options 'maxPerStation)
-							(geq (count (msnFind gSource "*S")) (@ options 'maxPerStation))
+						(and maxMissions
+							(geq (count (msnFind gSource "*S")) maxMissions)
 							)
 						)
 
@@ -1037,7 +1038,17 @@
 					)
 
 					(if debugAssignment
-						(dbgOutput (objGetName gSource) ": rpgMissionGetAssignment")
+						(block ()
+							(dbgOutput (objGetName gSource) ": rpgMissionGetAssignment")
+
+							(if ownerHasHitLimit
+								(block ()
+									(dbgOutput (objGetName gSource) ": Owner has no more standard missions.")
+									(dbgOutput (objGetName gSource) ": " ownerLimitMissionCriteria)
+									)
+								(dbgOutput (objGetName gSource) ": " missionCriteria)
+								)
+							)
 						)
 
 					;	Show proper screen
@@ -1071,7 +1082,7 @@
 						;	Don't give out more than X mission per station
 						(and ownerHasHitLimit (not newMissions))
 							(block ()
-								(if debugAssignment (dbgOutput "Station has hit maximum missions: " (@ options 'maxPerStation)))
+								(if debugAssignment (dbgOutput "Station has hit maximum missions: " maxMissions))
 								Nil
 								)
 

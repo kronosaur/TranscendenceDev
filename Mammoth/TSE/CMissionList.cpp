@@ -54,7 +54,7 @@ bool CMissionList::CanCreateMissionInArc (const CMissionType &NewMissionType, co
 		//	If we've got an active mission, then we can't create a new mission 
 		//	in the same arc.
 
-		else if (Mission.IsActive())
+		else if (Mission.IsActive() && !MissionType.AllowsOtherArcMissions())
 			return false;
 
 		//	If we've got a completed mission with a higher sequence number, then

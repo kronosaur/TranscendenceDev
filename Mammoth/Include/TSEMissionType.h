@@ -46,6 +46,7 @@ class CMissionType : public CDesignType
 			int iSkipped =  0;
 			};
 
+		bool AllowsOtherArcMissions (void) const { return m_bAllowOtherArcMissions; }
 		SArcStatus CalcArcStatus (void) const;
 		bool CanBeCreated (const CMissionList &AllMissions, SCreateCtx &CreateCtx) const;
 		bool CanBeDeclined (void) const { return (m_iAutoAccept == EMissionAutoAccept::none); }
@@ -120,6 +121,7 @@ class CMissionType : public CDesignType
 		int m_iMaxLevel;					//	Maximum system level supported
 		DiceRange m_MaxAppearing;			//	Limit to number of times mission has been accepted by player
 											//		(NULL if no limit)
+		bool m_bAllowOtherArcMissions = false;
 
 		//	Options
 

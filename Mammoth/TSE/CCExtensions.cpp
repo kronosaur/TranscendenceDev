@@ -2570,7 +2570,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is",	0,	},
 
 		{	"msnCanCreate",					fnMission,			FN_MISSION_CAN_CREATE,
-			"(msnCanCreate unid [owner [data]]) -> True|Nil",
+			"(msnCanCreate unid [owner [data|options]]) -> True|Nil\n\n"
+			
+			"options:\n\n"
+			
+			"   'noMissionArcCheck: Do not check if in correct sequence.\n"
+			"   'noSystemLevelCheck: Do not check if correct system level.\n",
+
 			"v*",	0,	},
 
 		{	"msnCreate",					fnMission,			FN_MISSION_CREATE,
@@ -9325,6 +9331,14 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CreateCtx.iLevel = (pCtx->GetUniverse().GetCurrentSystem() ? pCtx->GetUniverse().GetCurrentSystem()->GetLevel() : 1);
 			CreateCtx.pOwner = CreateObjFromItem(pArgs->GetElement(1));
 			CreateCtx.pCreateData = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
+
+			//	Set some options
+
+			if (CreateCtx.pCreateData)
+				{
+				CreateCtx.bNoMissionArcCheck = CreateCtx.pCreateData->GetBooleanAt(CONSTLIT("noMissionArcCheck"));
+				CreateCtx.bNoSystemLevelCheck = CreateCtx.pCreateData->GetBooleanAt(CONSTLIT("noSystemLevelCheck"));
+				}
 
 			//	See if we can create the mission
 

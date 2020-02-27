@@ -6,6 +6,7 @@
 
 #define IMAGE_TAG								CONSTLIT("Image")
 
+#define ALLOW_ARC_MISSIONS_ATTRIB				CONSTLIT("allowArcMissions")
 #define ALLOW_PLAYER_DELETE_ATTRIB				CONSTLIT("allowPlayerDelete")
 #define AUTO_ACCEPT_ATTRIB						CONSTLIT("autoAccept")
 #define CREATE_CRITERIA_ATTRIB					CONSTLIT("createCriteria")
@@ -444,6 +445,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		}
 
 	m_sCreateCriteria = pDesc->GetAttribute(CREATE_CRITERIA_ATTRIB);
+	m_bAllowOtherArcMissions = pDesc->GetAttribute(ALLOW_ARC_MISSIONS_ATTRIB);
 
 	m_iMaxAppearing = (m_MaxAppearing.IsEmpty() ? -1 : m_MaxAppearing.Roll());
 	m_iAccepted = 0;
