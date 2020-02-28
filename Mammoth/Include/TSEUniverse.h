@@ -77,6 +77,39 @@ class CDebugOptions
 		bool m_bVerboseCreate = false;
 	};
 
+class CPerformanceCounters
+	{
+	public:
+		struct SCounter
+			{
+			DWORD dwStartTime = 0;
+
+			int iTotalCalls = 0;
+			int iTotalTime = 0;
+
+			bool bEnabled = false;
+			};
+
+		int GetCount (void) const { return m_Counters.GetCount(); }
+		const SCounter &GetCounter (int iIndex) const { return m_Counters[iIndex]; }
+		const CString &GetCounterID (int iIndex) const { return m_Counters.GetKey(iIndex); }
+		void Paint (CG32bitImage &Dest, const RECT &rcRect, const CG16bitFont &Font) const;
+		void SetEnabled (bool bEnabled = true) { m_bEnabled = bEnabled; }
+		bool SetEnabled (const CString &sID, bool bEnabled = true);
+		void StartCounter (const CString &sID) { if (m_bEnabled) StartTimer(sID); }
+		void StartEventCounter (const CString &sEvent) { if (m_bEnabled) StartTimer(strPatternSubst(CONSTLIT("event.%s"), sEvent)); }
+		void StopCounter (const CString &sID) { if (m_bEnabled) StopTimer(sID); }
+		void StopEventCounter (const CString &sEvent) { if (m_bEnabled) StopTimer(strPatternSubst(CONSTLIT("event.%s"), sEvent)); }
+
+	private:
+		bool IsAnyCounterEnabled (void) const;
+		void StartTimer (const CString &sID);
+		void StopTimer (const CString &sID);
+
+		TSortMap<CString, SCounter> m_Counters;
+		bool m_bEnabled = false;
+	};
+
 //	SFX Options ----------------------------------------------------------------
 
 class CSFXOptions
@@ -288,7 +321,7 @@ class CUniverse
 			fontPlanetoidMapLabel =		5,
 			fontWorldMapLabel =			6,
 
-			fontCount =					75,
+			fontCount =					7,
 			};
 
 		CUniverse (void);
@@ -376,6 +409,7 @@ class CUniverse
 		IEffectPainter &GetNamedPainter (CNamedEffects::ETypes iPainter) { return m_NamedEffects.GetPainter(m_Design, iPainter); }
 		const CObjectStats::SEntry &GetObjStats (DWORD dwObjID) const { return m_ObjStats.GetEntry(dwObjID); }
 		CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
+		CPerformanceCounters &GetPerformanceCounters (void) { return m_PerformanceCounters; }
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
 		void GetRandomLevelEncounter (int iLevel, CDesignType **retpType, IShipGenerator **retpTable, CSovereign **retpBaseSovereign);
 		CString GetResourceDb (void) { return m_sResourceDb; }
@@ -599,6 +633,7 @@ class CUniverse
 		CEngineOptions m_EngineOptions;
 		CSFXOptions m_SFXOptions;
 		CDebugOptions m_DebugOptions;
+		CPerformanceCounters m_PerformanceCounters;
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;

@@ -45,6 +45,7 @@
 //#define DEBUG_NEBULA_PAINTING
 //#define DEBUG_PARTICLE_BOUNDS
 //#define DEBUG_PERFORMANCE
+//#define DEBUG_PERFORMANCE_COUNTERS
 //#define DEBUG_PROGRAM_UPGRADE
 //#define DEBUG_RANDOM_SEED
 //#define DEBUG_SHIP
@@ -1729,6 +1730,7 @@ class CAscendedObjectList
 
 #include "TSESpaceObjectsEnum.h"
 #include "TSEItemInlines.h"
+#include "TSEUniverseInlines.h"
 
 //	String-Constant Helpers
 

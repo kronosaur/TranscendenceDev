@@ -30,6 +30,7 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_DEBUG_GET				7
 #define FN_DEBUG_SET				8
 #define FN_DEBUG_BREAK				9
+#define FN_DEBUG_SET_PERFORMANCE_COUNTER	10
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -652,7 +653,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"*",	PPFLAG_SIDEEFFECTS, },
 
-		{	"dbgGet",					fnDebug,		FN_DEBUG_GET,
+		{	"dbgGet",						fnDebug,		FN_DEBUG_GET,
 			"(dbgGet property) -> value\n\n"
 			
 			"property:\n\n"
@@ -693,6 +694,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showNodeInfo True/Nil\n",
 
 			"sv",	PPFLAG_SIDEEFFECTS, },
+
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+		{	"dbgSetPerformanceCounter",		fnDebug,			FN_DEBUG_SET_PERFORMANCE_COUNTER,
+			"(dbgSetPerformanceCounter counter [True|Nil]) -> True/Nil\n"
+			"(dbgSetPerformanceCounter \"*\" [True|Nil]) -> True/Nil\n"
+			"(dbgSetPerformanceCounter \"?\") -> List of counters",
+
+			"s*",	PPFLAG_SIDEEFFECTS, },
+#endif
 
 		{	"getAPIVersion",				fnDebug,		FN_API_VERSION,
 			"(getAPIVersion) -> version",
@@ -4362,6 +4372,34 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Invalid property"), pValue);
 				else
 					return pCC->CreateError(sError);
+				}
+
+			return pCC->CreateTrue();
+			}
+
+		case FN_DEBUG_SET_PERFORMANCE_COUNTER:
+			{
+			CString sCounter = pArgs->GetElement(0)->GetStringValue();
+			bool bEnabled = (pArgs->GetElement(1) ? !pArgs->GetElement(1)->IsNil() : true);
+
+			CPerformanceCounters &Counters = pCtx->GetUniverse().GetPerformanceCounters();
+
+			if (strEquals(sCounter, CONSTLIT("*")))
+				{
+				Counters.SetEnabled(bEnabled);
+				}
+			else if (strEquals(sCounter, CONSTLIT("?")))
+				{
+				ICCItemPtr pResult(ICCItem::List);
+				for (int i = 0; i < Counters.GetCount(); i++)
+					pResult->AppendString(Counters.GetCounterID(i));
+
+				return pResult->Reference();
+				}
+			else
+				{
+				if (!Counters.SetEnabled(sCounter, bEnabled))
+					return pCC->CreateNil();
 				}
 
 			return pCC->CreateTrue();

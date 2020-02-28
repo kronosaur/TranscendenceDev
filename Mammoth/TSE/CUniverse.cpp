@@ -2190,6 +2190,8 @@ void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 		m_ViewportAnnotations.Init();
 		}
 
+	m_PerformanceCounters.Paint(Dest, rcView, GetNamedFont(fontSRSMessage));
+
 	m_iPaintTick++;
 	}
 
