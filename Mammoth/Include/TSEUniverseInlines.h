@@ -34,22 +34,22 @@ class CUsePerformanceCounterForEvent
 	public:
 		CUsePerformanceCounterForEvent (CUniverse &Universe, const CString &sEvent) :
 				m_Universe(Universe),
-				m_sEvent(sEvent)
+				m_sID(strPatternSubst(CONSTLIT("event.%s"), sEvent))
 			{
 #ifdef DEBUG_PERFORMANCE_COUNTERS
-			m_Universe.GetPerformanceCounters().StartEventCounter(m_sEvent);
+			m_Universe.GetPerformanceCounters().StartCounter(m_sID);
 #endif
 			}
 
 		~CUsePerformanceCounterForEvent (void)
 			{
 #ifdef DEBUG_PERFORMANCE_COUNTERS
-			m_Universe.GetPerformanceCounters().StopEventCounter(m_sEvent);
+			m_Universe.GetPerformanceCounters().StopCounter(m_sID);
 #endif
 			}
 
 	private:
 		CUniverse &m_Universe;
-		CString m_sEvent;
+		CString m_sID;
 	};
 

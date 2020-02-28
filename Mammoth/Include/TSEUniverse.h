@@ -97,9 +97,7 @@ class CPerformanceCounters
 		void SetEnabled (bool bEnabled = true) { m_bEnabled = bEnabled; }
 		bool SetEnabled (const CString &sID, bool bEnabled = true);
 		void StartCounter (const CString &sID) { if (m_bEnabled) StartTimer(sID); }
-		void StartEventCounter (const CString &sEvent) { if (m_bEnabled) StartTimer(strPatternSubst(CONSTLIT("event.%s"), sEvent)); }
 		void StopCounter (const CString &sID) { if (m_bEnabled) StopTimer(sID); }
-		void StopEventCounter (const CString &sEvent) { if (m_bEnabled) StopTimer(strPatternSubst(CONSTLIT("event.%s"), sEvent)); }
 
 	private:
 		bool IsAnyCounterEnabled (void) const;
