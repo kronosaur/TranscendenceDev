@@ -3745,7 +3745,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 	//	If the weapon has EMP damage and the target has no shields and is not paralysed then
 	//	this is very effective.
 
-	if (pTarget && pTarget->GetShieldLevel() <= 0 && pShot->GetDamage().GetEMPDamage() > 0)
+	if (pShot->GetDamage().GetEMPDamage() > 0 && pTarget && !pTarget->GetDeviceSystem().HasShieldsUp())
 		{
 		//	If the target is already paralyzed, or if the target is immune
 		//	or is a station (which cannot be paralyzed) then don't use this weapon.
@@ -3761,7 +3761,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 	//	If the weapon has blinding damage and the target is not blind then
 	//	this is very effective
 
-	if (pTarget && pTarget->GetShieldLevel() <= 0 && pShot->GetDamage().GetBlindingDamage() > 0)
+	if (pShot->GetDamage().GetBlindingDamage() > 0 && pTarget && !pTarget->GetDeviceSystem().HasShieldsUp())
 		{
 		//	If the target is already blind, or if the target is immune or is
 		//	a station, then don't bother with this weapon.

@@ -1729,9 +1729,11 @@ int CStation::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice 
 	{
 	//	First ask the shields, if we have them, and if they are up.
 
-	CInstalledDevice *pShields = GetNamedDevice(devShields);
-	if (pShields && GetShieldLevel() > 0)
+	if (m_Devices.HasShieldsUp())
+		{
+		CInstalledDevice *pShields = GetNamedDevice(devShields);
 		return pShields->GetDamageEffectiveness(pAttacker, pWeapon);
+		}
 	else
 		return m_pType->GetHullDesc().CalcDamageEffectiveness(pAttacker, pWeapon);
 	}

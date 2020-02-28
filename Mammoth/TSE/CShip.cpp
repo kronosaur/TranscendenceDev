@@ -2675,9 +2675,11 @@ int CShip::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pW
 	{
 	//	First ask the shields, if we have them, and if they are up.
 
-	CInstalledDevice *pShields = GetNamedDevice(devShields);
-	if (pShields && GetShieldLevel() > 0)
+	if (m_Devices.HasShieldsUp())
+		{
+		CInstalledDevice *pShields = GetNamedDevice(devShields);
 		return pShields->GetDamageEffectiveness(pAttacker, pWeapon);
+		}
 	else if (m_Armor.GetSegmentCount() > 0)
 		return m_Armor.GetSegment(0).GetDamageEffectiveness(pAttacker, pWeapon);
 	else

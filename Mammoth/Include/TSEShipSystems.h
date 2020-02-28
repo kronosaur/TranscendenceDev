@@ -172,6 +172,7 @@ class CDeviceSystem
 		int GetNamedIndex (DeviceNames iDev) const { return (HasNamedDevices() ? m_NamedDevices[iDev] : -1); }
 		DWORD GetTargetTypes (void) const;
 		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
+		bool HasShieldsUp (void) const;
 		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices = 0);
 		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1, bool bInCreate = false, int *retiDeviceSlot = NULL);
 		bool IsEmpty (void) const { return (m_Devices.GetCount() == 0); }

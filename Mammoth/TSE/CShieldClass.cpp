@@ -890,20 +890,27 @@ int CShieldClass::FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource
 		ASSERT(pSource);
 		ASSERT(pDevice);
 
-		CCodeChainCtx Ctx(GetUniverse());
+		if (pDevice->GetCachedMaxHP(iMaxHP))
+			return iMaxHP;
+		else
+			{
+			CUsePerformanceCounterForEvent Counter(GetUniverse(), GET_MAX_HP_EVENT);
 
-		Ctx.DefineContainingType(GetItemType());
-		Ctx.SaveAndDefineSourceVar(pSource);
-		Ctx.SaveAndDefineItemVar(pSource->GetItemForDevice(pDevice));
-		Ctx.DefineInteger(CONSTLIT("aMaxHP"), iMaxHP);
+			CCodeChainCtx Ctx(GetUniverse());
 
-		ICCItem *pResult = Ctx.Run(Event);
-		if (pResult->IsError())
-			pSource->ReportEventError(GET_MAX_HP_EVENT, pResult);
-		else if (!pResult->IsNil())
-			iMaxHP = Max(0, pResult->GetIntegerValue());
+			Ctx.DefineContainingType(GetItemType());
+			Ctx.SaveAndDefineSourceVar(pSource);
+			Ctx.SaveAndDefineItemVar(pSource->GetItemForDevice(pDevice));
+			Ctx.DefineInteger(CONSTLIT("aMaxHP"), iMaxHP);
 
-		Ctx.Discard(pResult);
+			ICCItemPtr pResult = Ctx.RunCode(Event);
+			if (pResult->IsError())
+				pSource->ReportEventError(GET_MAX_HP_EVENT, pResult);
+			else if (!pResult->IsNil())
+				iMaxHP = Max(0, pResult->GetIntegerValue());
+
+			pDevice->SetCachedMaxHP(iMaxHP);
+			}
 		}
 
 	return iMaxHP;
@@ -919,6 +926,8 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	SEventHandlerDesc Event;
 	if (FindEventHandlerShieldClass(evtOnShieldDamage, &Event))
 		{
+		CUsePerformanceCounterForEvent Counter(GetUniverse(), ON_SHIELD_DAMAGE_EVENT);
+
 		//	Setup arguments
 
 		CCodeChainCtx CCCtx(GetUniverse());
@@ -943,7 +952,7 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 			CCCtx.DefineInteger(CONSTLIT("aOriginalArmorDamageHP"), Ctx.iDamage - Ctx.iAbsorb);
 			}
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 
 		//	If we return Nil, then nothing
 
@@ -998,8 +1007,6 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 				Ctx.iAbsorb = Max(0, Ctx.iDamage - Max(0, pResult->GetElement(2)->GetIntegerValue()));
 				}
 			}
-
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -1013,16 +1020,16 @@ void CShieldClass::FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pS
 	SEventHandlerDesc Event;
 	if (FindEventHandlerShieldClass(evtOnShieldDown, &Event))
 		{
+		CUsePerformanceCounterForEvent Counter(GetUniverse(), ON_SHIELD_DOWN_EVENT);
 		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(pSource->GetItemForDevice(pDevice));
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(ON_SHIELD_DOWN_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 

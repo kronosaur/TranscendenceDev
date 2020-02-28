@@ -160,6 +160,25 @@ int CInstalledDevice::GetActivateDelay (CSpaceObject *pSource) const
 	return m_iActivateDelay;
 	}
 
+bool CInstalledDevice::GetCachedMaxHP (int &retiMaxHP) const
+
+//	GetCachedMaxHP
+//
+//	Returns TRUE if we have a cached max hp.
+
+	{
+	if (m_pSource == NULL)
+		return false;
+
+	DWORD dwNow = m_pSource->GetUniverse().GetTicks();
+	DWORD dwCachedTime = (DWORD)MAKELONG((WORD)m_iTimeUntilReady, (WORD)m_iFireAngle);
+	if (dwCachedTime != dwNow)
+		return false;
+
+	retiMaxHP = (int)MAKELONG((WORD)m_iMinFireArc, (WORD)m_iMaxFireArc);
+	return true;
+	}
+
 CString CInstalledDevice::GetEnhancedDesc (void)
 
 //	GetEnhancedDesc
@@ -835,6 +854,28 @@ int CInstalledDevice::IncCharges (CSpaceObject *pSource, int iChange)
 	pShip->RechargeItem(ItemList, iChange);
 
 	return ItemList.GetItemAtCursor().GetCharges();
+	}
+
+void CInstalledDevice::SetCachedMaxHP (int iMaxHP)
+
+//	SetCachedMaxHP
+//
+//	For shields we cache max HP when calculated by script.
+
+	{
+	if (m_pSource == NULL)
+		return;
+
+	//	Store the tick on which we cache it in these two 16-bit fields.
+
+	DWORD dwNow = m_pSource->GetUniverse().GetTicks();
+	m_iTimeUntilReady = (short)LOWORD(dwNow);
+	m_iFireAngle = (short)HIWORD(dwNow);
+
+	//	Store the hit points in these two 16-bit fields
+
+	m_iMinFireArc = (short)LOWORD((DWORD)iMaxHP);
+	m_iMaxFireArc = (short)HIWORD((DWORD)iMaxHP);
 	}
 
 void CInstalledDevice::SetCharges (CSpaceObject *pSource, int iCharges)

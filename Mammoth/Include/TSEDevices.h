@@ -534,6 +534,7 @@ class CInstalledDevice
 
 		bool CanBeEmpty (void) const { return !m_fCannotBeEmpty; }
 		bool CanTargetMissiles (void) const { return m_fCanTargetMissiles; }
+		bool GetCachedMaxHP (int &retiMaxHP) const;
 		int GetCharges (const CSpaceObject *pSource) const { return (m_pItem ? m_pItem->GetCharges() : 0); }
 		DWORD GetContinuousFire (void) const { return (int)(DWORD)LOBYTE(LOWORD(m_dwData)); }
 		bool GetCycleFireSettings (void) const { return m_fCycleFire; }
@@ -576,6 +577,7 @@ class CInstalledDevice
 		bool IsWorking (void) const { return (IsEnabled() && !IsDamaged() && !IsDisrupted()); }
 		bool IsWaiting (void) const { return (m_fWaiting ? true : false); }
 		void SetActivateDelay (int iDelay) { m_iActivateDelay = iDelay; }
+		void SetCachedMaxHP (int iMaxHP);
 		void SetCanTargetMissiles (bool bCanTargetMissiles) { m_fCanTargetMissiles = bCanTargetMissiles; }
 		void SetCycleFireSettings (bool bCycleFire) { m_fCycleFire = bCycleFire; }
 		void SetData (DWORD dwData) { m_dwData = dwData; }

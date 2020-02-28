@@ -537,6 +537,21 @@ DWORD CDeviceSystem::GetTargetTypes (void) const
 	return dwAllTargetTypes;
 	}
 
+bool CDeviceSystem::HasShieldsUp (void) const
+
+//	HasShieldsUp
+//
+//	Returns TRUE if ship has shields > 0 HP. This is cheaper than calculating
+//	the shield level, since we don't have to compute max HP (which sometimes
+//	calls to TLisp).
+
+	{
+	if (CDeviceItem ShieldItem = GetNamedDeviceItem(devShields))
+		return (ShieldItem.GetHP() > 0);
+	else
+		return false;
+	}
+
 bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices)
 
 //	Init
