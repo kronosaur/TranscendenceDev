@@ -290,7 +290,11 @@
 							time: (unvGetElapsedGameTime (msnGetData gSource 'startTime) (msnGetData gSource 'endTime) 'display)
 							}
 						}
-					{	descID: 'textSuccessDebrief2	}
+					{	descID: 'textSuccessDebrief2
+						data: {
+							systemName: (sysGetName)
+							}
+						}
 					)
 			</Text>
 			<String id="textSuccessDebrief1">
@@ -301,7 +305,7 @@
 			<Text id="textSuccessDebrief2">
 
 				"I know you're eager to start your journey, but take the time to
-				practice your skills here in the civilized safety of Eridani.
+				practice your skills here in the civilized safety of %systemName%.
 				
 				"Return to the Matriarch's Chancery when you're ready and I will
 				continue your training."
