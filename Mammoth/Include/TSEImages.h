@@ -204,6 +204,8 @@ class CObjectImageArray
 		CObjectImageArray (void);
 		CObjectImageArray (const CObjectImageArray &Source);
 		~CObjectImageArray (void);
+
+		explicit operator bool () const { return !IsEmpty(); }
 		CObjectImageArray &operator= (const CObjectImageArray &Source);
 
 		ALERROR Init (CUniverse &Universe, DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow = false);

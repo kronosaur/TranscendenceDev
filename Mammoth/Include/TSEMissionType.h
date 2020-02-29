@@ -85,6 +85,7 @@ class CMissionType : public CDesignType
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iMinLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return (m_iMinLevel + m_iMaxLevel) / 2; }
 		virtual DesignTypes GetType (void) const override { return designMissionType; }
 		virtual const CObjectImageArray &GetTypeSimpleImage (void) const override { return m_Image; }
+		virtual bool IsVirtual (void) const override { return m_sName.IsBlank(); }
 
 	protected:
 		//	CDesignType overrides

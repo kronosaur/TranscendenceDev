@@ -51,7 +51,7 @@ class CDockScreenDetailsPane : public IDockScreenDisplay
 		//	IDockScreenDisplay
 
 		virtual ICCItem *OnGetCurrentListEntry (void) const override;
-		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override { retDesc->iType = EDockScreenBackground::none; return true; }
+		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override;
 		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;
 		virtual void OnShowItem (void) override;
 		virtual void OnShowPane (bool bNoListNavigation) override;

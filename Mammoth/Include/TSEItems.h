@@ -109,7 +109,7 @@ class CArmorItem : public CDifferentiatedItem
 			Metric rCost = 0.0;					//	Balance from cost
 			};
 
-		inline operator bool () const;
+		inline explicit operator bool () const;
 		operator const CItem & () const { return m_Item; }
 		operator CItem & () { return m_Item; }
 
@@ -155,7 +155,7 @@ class CDeviceItem : public CDifferentiatedItem
 			calcWeaponTarget,
 			};
 
-		inline operator bool () const;
+		inline explicit operator bool () const;
 		operator const CItem & () const { return m_Item; }
 		operator CItem & () { return m_Item; }
 
@@ -202,7 +202,7 @@ class CMissileItem : public CDifferentiatedItem
 	{
 	public:
 		
-		inline operator bool () const;
+		inline explicit operator bool () const;
 		operator const CItem & () const { return m_Item; }
 		operator CItem & () { return m_Item; }
 
@@ -259,7 +259,7 @@ class CItem
 		~CItem (void);
 		CItem &operator= (const CItem &Copy);
 
-		operator bool () const { return (m_pItemType != NULL); }
+		explicit operator bool () const { return (m_pItemType != NULL); }
 
 		bool AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const;
 		DWORD AddEnhancement (const CItemEnhancement &Enhancement);
