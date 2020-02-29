@@ -959,7 +959,20 @@ void CTranscendenceModel::ExitScreenSession (bool bForceUndock)
 		//	If necessary, checkpoint the game.
 
 		if (pLocation && !pLocation->IsPlayer() && m_Universe.GetDifficulty().SaveOnUndock())
-			SaveGame(CGameFile::FLAG_CHECKPOINT);
+			{
+			//	If we're in the middle of a script, then we wait until the 
+			//	script is done before saving because the script made set some
+			//	additional state that we want to capture.
+			//
+			//	For example, we exit a screen before calling <OnAcceptUndock>.
+			//	If we were to save now, we would lose all the changes made in 
+			//	<OnAcceptUndock>.
+
+			if (pSession->GetDockScreen().InExecuteAction())
+				m_bSaveOnActionDone = true;
+			else
+				SaveGame(CGameFile::FLAG_CHECKPOINT);
+			}
 		}
 
 	DEBUG_CATCH
@@ -1541,6 +1554,23 @@ void CTranscendenceModel::MarkGateFollowers (CSystem *pSystem)
 				&& pObj != pShip
 				&& !pObj->IsDestroyed())
 			m_GateFollowers.Insert(pObj->GetID());
+		}
+	}
+
+void CTranscendenceModel::OnExecuteActionDone (void)
+
+//	OnExecuteActionDone
+//
+//	This method is called when we're done executing a dock screen action.
+
+	{
+	if (m_bSaveOnActionDone)
+		{
+		//	We treat this as a mission checkpoint because we want to disable
+		//	this autosave under the same circumstances (debug mode, etc.).
+
+		SaveGame(CGameFile::FLAG_CHECKPOINT | CGameFile::FLAG_ACCEPT_MISSION);
+		m_bSaveOnActionDone = false;
 		}
 	}
 

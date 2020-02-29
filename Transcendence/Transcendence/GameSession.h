@@ -38,6 +38,7 @@ class CGameSession : public IHISession
 		void OnArmorRepaired (int iSegment) { m_HUD.Invalidate(hudArmor); }
 		void OnArmorSelected (int iSelection) { m_HUD.SetArmorSelection(iSelection); }
 		void OnDamageFlash (void) { m_iDamageFlash = Min(2, m_iDamageFlash + 2); }
+		void OnExecuteActionDone (void) { m_Model.OnExecuteActionDone(); }
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
 		void OnPlayerChangedShips (CSpaceObject *pOldShip) { InitUI(); m_HUD.Init(m_rcScreen); g_pTrans->InitDisplays(); }
 		void OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph);
@@ -77,6 +78,7 @@ class CGameSession : public IHISession
 		CGalacticMapSession::SOptions &GetGalacticMapSettings (void) { return m_GalacticMapSettings; }
 		CGameSettings &GetGameSettings (void) { return m_Settings; }
 		IPlayerController::EUIMode GetUIMode (void) const;
+		CUniverse &GetUniverse (void) const { return m_Model.GetUniverse(); }
 		bool InMenu (void) { return (m_CurrentMenu != menuNone); }
 		bool InSystemMap (void) const { return m_bShowingSystemMap; }
 		bool IsMouseAimEnabled (void) const { return m_bMouseAim; }
@@ -87,7 +89,6 @@ class CGameSession : public IHISession
 		void DismissMenu (void);
 		void ExecuteCommandRefresh (void);
 		void ExecuteCommandRefresh (CPlayerShipController &Player);
-		CUniverse &GetUniverse (void) const { return m_Model.GetUniverse(); }
 		void HideMenu (void);
 		void InitUI (void);
 		void PaintSRS (CG32bitImage &Screen);

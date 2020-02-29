@@ -950,6 +950,7 @@ class CTranscendenceModel
 
 		ALERROR GetGameStats (CGameStats *retStats);
 
+		void OnExecuteActionDone (void);
 		void OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, SPlayerChangedShipsCtx &Options);
 		void OnPlayerDestroyed (SDestroyCtx &Ctx, CString *retsEpitaph = NULL);
 		void OnPlayerDocked (CSpaceObject *pObj);
@@ -1075,6 +1076,7 @@ class CTranscendenceModel
 		CG32bitImage *m_pCrawlImage;				//	For epilogue/prologue
 		CMusicResource *m_pCrawlSoundtrack;				//	For epilogue/prologue
 		CString m_sCrawlText;						//	For epilogue/prologue
+		bool m_bSaveOnActionDone = false;			//	Save when we're done executing.
 
 		//	Stargate temporaries
 		CTopologyNode *m_pDestNode;					//	While player in gate

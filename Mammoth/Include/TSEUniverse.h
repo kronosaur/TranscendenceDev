@@ -251,6 +251,7 @@ class CUniverse
 				virtual CG32bitPixel GetColor (const CString &sColor) const { return CG32bitPixel(255, 255, 255); }
 				virtual const CG16bitFont &GetFont (const CString &sFont) const { const CG16bitFont *pFont; if (!FindFont(sFont, &pFont)) return CG16bitFont::GetDefault(); return *pFont; }
 				virtual void LogOutput (const CString &sLine) const { ::kernelDebugLogString(sLine); }
+				virtual void OnSaveGame (void) const { }
 			};
 
 		class INotifications
