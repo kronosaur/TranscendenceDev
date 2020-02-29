@@ -3159,6 +3159,11 @@ void CShipClass::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) 
 //	Returns flags to determine how we merge from inherited types.
 
 	{
+	//	Do not inherit these attributes
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(CONSTLIT("attrib.level")), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(CONSTLIT("attrib.score")), CXMLElement::MERGE_OVERRIDE);
+
 	//	We know how to handle these tags through the inheritance hierarchy.
 
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(COMMUNICATIONS_TAG), CXMLElement::MERGE_OVERRIDE);
