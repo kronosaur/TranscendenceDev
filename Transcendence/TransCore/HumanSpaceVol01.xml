@@ -1742,6 +1742,7 @@
 	<!ENTITY rsSalvagerNomad			"0x001000C0">
 	<!ENTITY svSalvagers				"0x001000C1">
 	<!ENTITY smSalvagerSpace			"0x001000C2">
+	<!ENTITY rsSalvagerNomadHero		"0x001000C3">
 	
 	<!-- 00D0-00DF URAK WARLORDS -->
 	

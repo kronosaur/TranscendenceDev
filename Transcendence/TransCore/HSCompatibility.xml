@@ -6341,5 +6341,6 @@
 	<Image UNID="&rsMediumShips2;"		obsoleteVersion="49" bitmap="Resources\MediumShips2.jpg"	bitmask="Resources\MediumShips2Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsLargeShips2;"		obsoleteVersion="49"	bitmap="Resources\LargeShips2.jpg"	bitmask="Resources\LargeShips2Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsSungTransport;"		obsoleteVersion="49" bitmap="Resources\SungTransport.jpg"	bitmask="Resources\SungTransportMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsSalvagerNomad;"	obsoleteVersion="49"				bitmap="Resources\SalvagerNomad.jpg"		bitmask="Resources\SalvagerNomadMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>
