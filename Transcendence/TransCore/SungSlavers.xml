@@ -907,9 +907,9 @@
 			type=				""
 			defaultSovereign=	"&svSung;"
 
-			size=				"240"
-			mass=				"10000"
-			cargoSpace=			"7000"
+			size=				"366"
+			mass=				"16000"
+			cargoSpace=			"30000"
 			thrustRatio=		"0.3"
 			maxSpeed=			"6"
 
@@ -926,7 +926,7 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itParticleBeamWeapon;" omnidirectional="true"/>
+			<Device deviceID="&itParticleBeamWeapon;" omnidirectional="true" posAngle="0" posRadius="100" posZ="10"/>
 			<Device deviceID="&itYoroiS100;"/>
 			<Device deviceID="&it100MWReactor;"/>
 		</Devices>
@@ -948,7 +948,7 @@
 					posX=		"-66"
 					posY=		"0"
 					sizeX=		"60"
-					sizeY=		"30"
+					sizeY=		"40"
 					/>
 			
 			<Compartment name="cargo containers"
@@ -957,7 +957,7 @@
 
 					posX=		"10"
 					posY=		"0"
-					sizeX=		"118"
+					sizeX=		"140"
 					sizeY=		"30"
 					/>
 		</Interior>
@@ -966,11 +966,12 @@
 			<Item	count="2d6"		item="&itXenotiteFuelRod;"/>
 		</Items>
 
-		<Image imageID="&rsSungTransport;" imageWidth="216" imageHeight="216"/>
+		<Image imageID="&rsSungTransportHD;" imageWidth="290" imageHeight="290" rotationCount="120" rotationColumns="12" viewportRatio="0.0475"/>
+		<HeroImage imageID="&rsSungTransportHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="176"	posRadius="80"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
-			<Effect type="thrustMain"		posAngle="-176"	posRadius="80"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="172"	posRadius="94"	posZ="-2"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="-172"	posRadius="94"	posZ="-2"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
 		</Effects>
 
 		<AISettings
@@ -1740,8 +1741,10 @@
 	<Image UNID="&rsSteelSlaver;"		bitmap="Resources\SteelSlaver.jpg"	bitmask="Resources\SteelSlaverMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsSteelSlaverHero;"	bitmap="Resources\SteelSlaverLarge.jpg"	bitmask="Resources\SteelSlaverLargeMask.bmp"  loadOnUse="true"/>
 
+	<Image UNID="&rsSungTransportHD;"	bitmap="Resources\SungTransportHD.jpg"	bitmask="Resources\SungTransportHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsSungTransportHero;"	bitmap="Resources\SungTransportLarge.jpg"	bitmask="Resources\SungTransportLargeMask.bmp"  loadOnUse="true"/>
+
 	<Image UNID="&rsDragonSlaverImage;"	bitmap="Resources\DragonSlaver.jpg"		bitmask="Resources\DragonSlaverMask.bmp"  loadOnUse="true"/>
-	<Image UNID="&rsSungTransport;"		bitmap="Resources\SungTransport.jpg"	bitmask="Resources\SungTransportMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsWindSlaverHD;"		bitmap="Resources\WindSlaverHD.jpg"		bitmask="Resources\WindSlaverHDMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

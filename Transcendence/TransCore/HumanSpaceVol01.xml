@@ -1814,6 +1814,7 @@
 	<!ENTITY smSungSpace				"0x00100127">
 	<!ENTITY rsSteelSlaverHero			"0x00100128">
 	<!ENTITY rsSteelSlaver				"0x00100129">
+	<!ENTITY rsSungTransportHero		"0x0010012A">
 	
 	<!-- 0140-014F XENOPHOBES -->
 	
