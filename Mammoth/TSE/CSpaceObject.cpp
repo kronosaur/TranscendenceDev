@@ -4516,6 +4516,17 @@ bool CSpaceObject::HasDockScreen (void) const
 			&& pOverlays->FireGetDockScreen(this))
 		return true;
 
+	//	If we don't have any docking screens so far (not even from overlays) and
+	//	if we don't have any docking ports, then don't bother calling
+	//	<GetGlobalDockScreen>. The performance hit of calling these global 
+	//	events at create time (e.g., on asteroids) is too much.
+
+	if (const CDockingPorts *pDockingPorts = GetDockingPorts())
+		{
+		if (pDockingPorts->GetPortCount() == 0)
+			return false;
+		}
+
 	//	If we still have no screens, we call <GetGlobalDockScreen>, but we're
 	//	only interested in non-override screens. Override screens are screens
 	//	like decontamination screens, which should only show up if the station
