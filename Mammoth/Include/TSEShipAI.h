@@ -82,6 +82,7 @@ class CAISettings
 		bool IsAggressor (void) const { return m_fAggressor; }
 		bool IsFlocker (void) const { return (m_iFlockingStyle != flockNone); }
 		bool IsNonCombatant (void) const { return m_fNonCombatant; }
+		bool IsPlayer (void) const { return m_fIsPlayer; }
 		bool NoAttackOnThreat (void) const { return m_fNoAttackOnThreat; }
 		bool NoDogfights (void) const { return m_fNoDogfights; }
 		bool NoFriendlyFire (void) const { return m_fNoFriendlyFire; }
@@ -123,7 +124,8 @@ class CAISettings
 		DWORD m_fNoNavPaths:1;					//	If TRUE, do not use nav paths
 		DWORD m_fNoAttackOnThreat:1;			//	Do not attack enemies while escorting (unless ordered)
 		DWORD m_fNoTargetsOfOpportunity:1;		//	If TRUE, do not attack targets of opportunity
-		DWORD m_fSpare4:1;
+		DWORD m_fIsPlayer:1;					//	If TRUE, we're controlling the player ship (this is usually
+												//		for debugging only).
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;

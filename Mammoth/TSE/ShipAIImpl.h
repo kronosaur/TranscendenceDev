@@ -78,6 +78,7 @@ class CAIBehaviorCtx
 		bool IsDockingRequested (void) const { return m_fDockingRequested; }
 		bool IsImmobile (void) const { return m_fImmobile; }
 		bool IsNonCombatant (void) const { return m_AISettings.IsNonCombatant(); }
+		bool IsPlayer (void) const { return m_AISettings.IsPlayer(); }
 		bool IsSecondAttack (void) const;
 		bool IsWaitingForShieldsToRegen (void) const { return m_fWaitForShieldsToRegen; }
 		bool ShootsAllMissiles (void) const { return m_fShootAllMissiles; }
@@ -343,6 +344,7 @@ class CBaseShipAI : public IShipController
 		virtual CTargetList GetTargetList (void) const override;
 		virtual bool GetThrust (void) override { return m_AICtx.GetThrust(m_pShip); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
+		virtual bool IsPlayer (void) const override { return m_AICtx.IsPlayer(); }
 		virtual bool IsPlayerBlacklisted (void) const override { return (m_fPlayerBlacklisted ? true : false); }
 		virtual bool IsPlayerWingman (void) const override { return (m_fIsPlayerWingman ? true : false); }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
