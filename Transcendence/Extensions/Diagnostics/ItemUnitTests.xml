@@ -233,23 +233,23 @@
 						{	test:'(itm@ &itLaserCannon; 'stdInteraction)			result:0	}
 						{	test:'(itm@ &itLaserCannon; 'tracking)				result:Nil	}
 
-						{	test:'(itm@ &itLaserCannon; 'damageArmorLevel)		result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageBlinding)			result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageDeviceDestroy)		result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageDeviceDisrupt)		result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageDisintegration)	result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageEMP)				result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageFuel)				result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageMining)			result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageMomentum)			result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageRadiation)			result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageSensor)			result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageShatter)			result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageShieldLevel)		result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageShieldPenetrate)	result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageTimeStop)			result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageWMD)				result:0	}
-						{	test:'(itm@ &itLaserCannon; 'damageWormhole)			result:0	}
+						{	test:'(itm@ &itLaserCannon; 'damageArmorLevel)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageBlinding)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageDeviceDestroy)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageDeviceDisrupt)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageDisintegration)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageEMP)					result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageFuel)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageMining)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageMomentum)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageRadiation)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageSensor)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageShatter)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageShieldLevel)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageShieldPenetrate)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageTimeStop)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageWMD)					result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageWormhole)			result:Nil	}
 
 						{	test:'(itm@ &itRecoillessCannon; 'hp)					result:2	}
 						{	test:'(itm@ &itRecoillessCannon; 'interaction)		result:47	}
@@ -322,23 +322,23 @@
 						{	test:'(itm@ &itNAMIMissileLauncher; 'stdInteraction)			result:100	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'tracking)				result:Nil	}
 
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageArmorLevel)		result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageBlinding)			result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDeviceDestroy)		result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDeviceDisrupt)		result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDisintegration)	result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageEMP)				result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageFuel)				result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageMining)			result:0	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageArmorLevel)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageBlinding)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDeviceDestroy)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDeviceDisrupt)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDisintegration)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageEMP)					result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageFuel)				result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageMining)				result:Nil	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageMomentum)			result:4	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageRadiation)			result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageSensor)			result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShatter)			result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShieldLevel)		result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShieldPenetrate)	result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageTimeStop)			result:0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageWMD)				result:5	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'damageWormhole)			result:0	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageRadiation)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageSensor)				result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShatter)				result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShieldLevel)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShieldPenetrate)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageTimeStop)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageWMD)					result:5	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageWormhole)			result:Nil	}
 
 						{	test:'(itm@ &itKM500Missile; 'ammoTypes)				result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'averageDamage)			result:17.5	}
@@ -376,23 +376,23 @@
 						{	test:'(itm@ &itKM500Missile; 'stdInteraction)			result:100	}
 						{	test:'(itm@ &itKM500Missile; 'tracking)				result:True	}
 
-						{	test:'(itm@ &itKM500Missile; 'damageArmorLevel)		result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageBlinding)			result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageDeviceDestroy)	result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageDeviceDisrupt)	result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageDisintegration)	result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageEMP)				result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageFuel)				result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageMining)			result:0	}
+						{	test:'(itm@ &itKM500Missile; 'damageArmorLevel)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageBlinding)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageDeviceDestroy)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageDeviceDisrupt)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageDisintegration)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageEMP)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageFuel)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageMining)				result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'damageMomentum)			result:4	}
-						{	test:'(itm@ &itKM500Missile; 'damageRadiation)		result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageSensor)			result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageShatter)			result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageShieldLevel)		result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageShieldPenetrate)	result:0	}
-						{	test:'(itm@ &itKM500Missile; 'damageTimeStop)			result:0	}
+						{	test:'(itm@ &itKM500Missile; 'damageRadiation)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageSensor)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageShatter)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageShieldLevel)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageShieldPenetrate)	result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageTimeStop)			result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'damageWMD)				result:5	}
-						{	test:'(itm@ &itKM500Missile; 'damageWormhole)			result:0	}
+						{	test:'(itm@ &itKM500Missile; 'damageWormhole)			result:Nil	}
 						))
 
 					;	Unit Tests on Armor Damage
