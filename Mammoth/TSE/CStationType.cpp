@@ -908,6 +908,7 @@ void CStationType::GenerateDevices (int iLevel, CDeviceDescList &Devices) const
 		Ctx.iLevel = iLevel;
 		Ctx.pRoot = m_pDevices;
 		Ctx.pResult = &Devices;
+		Ctx.bNoDefaultPos = true;
 
 		m_pDevices->AddDevices(Ctx);
 		}

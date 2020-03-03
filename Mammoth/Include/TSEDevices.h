@@ -477,6 +477,8 @@ struct SDeviceGenerateCtx
 	IDeviceGenerator *pRoot = NULL;
 
 	CDeviceDescList *pResult = NULL;
+	bool bNoDefaultPos = false;					//	If TRUE, do not place device at 20 pixel offset
+												//	(we do that for ships for backwards compatibility)
 	};
 
 class IDeviceGenerator
@@ -495,10 +497,10 @@ class IDeviceGenerator
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 
-		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const { return false; }
-		virtual bool FindDefaultDesc (CSpaceObject *pSource, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
-		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
-		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, DeviceNames iDev, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pSource, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const { return false; }
 
 		static ALERROR InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SDeviceDesc *retDesc);
 	};

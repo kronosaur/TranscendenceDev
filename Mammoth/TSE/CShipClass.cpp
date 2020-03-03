@@ -2104,15 +2104,17 @@ bool CShipClass::FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) con
 //	Looks for a device slot descriptor
 
 	{
+	SDeviceGenerateCtx Ctx(GetUniverse());
+
 	//	If we have a dedicated device slot object, then use that.
 
 	if (m_pDeviceSlots)
-		return m_pDeviceSlots->FindDefaultDesc(iDev, retDesc);
+		return m_pDeviceSlots->FindDefaultDesc(Ctx, iDev, retDesc);
 
 	//	Otherwise, for backwards compatibility we check the device generator.
 
 	else if (m_pDevices)
-		return m_pDevices->FindDefaultDesc(iDev, retDesc);
+		return m_pDevices->FindDefaultDesc(Ctx, iDev, retDesc);
 
 	//	Otherwise, not found
 
@@ -2126,15 +2128,17 @@ bool CShipClass::FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDes
 //	Looks for a device slot descriptor
 
 	{
+	SDeviceGenerateCtx Ctx(GetUniverse());
+
 	//	If we have a dedicated device slot object, then use that.
 
 	if (m_pDeviceSlots)
-		return m_pDeviceSlots->FindDefaultDesc(pShip, Item, retDesc);
+		return m_pDeviceSlots->FindDefaultDesc(Ctx, pShip, Item, retDesc);
 
 	//	Otherwise, for backwards compatibility we check the device generator.
 
 	else if (m_pDevices)
-		return m_pDevices->FindDefaultDesc(pShip, Item, retDesc);
+		return m_pDevices->FindDefaultDesc(Ctx, pShip, Item, retDesc);
 
 	//	Otherwise, not found
 

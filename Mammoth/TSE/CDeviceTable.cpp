@@ -176,10 +176,10 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
-		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const override;
-		virtual bool FindDefaultDesc (CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const override;
-		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
-		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, DeviceNames iDev, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
 
 	private:
 		struct SEntry
@@ -521,7 +521,7 @@ bool CSingleDevice::FindSlot (SDeviceGenerateCtx &Ctx, const CItem &Item, SDevic
 
 	else if (!m_sSlotID.IsBlank())
 		{
-		if (!Ctx.pRoot->FindDefaultDesc(*Ctx.pResult, m_sSlotID, &retSlotDesc))
+		if (!Ctx.pRoot->FindDefaultDesc(Ctx, *Ctx.pResult, m_sSlotID, &retSlotDesc))
 			{
 			if (Ctx.GetUniverse().InDebugMode())
 				::kernelDebugLogPattern("WARNING: Unable to find device slot %s", m_sSlotID);
@@ -533,7 +533,7 @@ bool CSingleDevice::FindSlot (SDeviceGenerateCtx &Ctx, const CItem &Item, SDevic
 
 	//	Otherwise, see if a slot wants this item
 
-	else if (Ctx.pRoot->FindDefaultDesc(*Ctx.pResult, Item, &retSlotDesc))
+	else if (Ctx.pRoot->FindDefaultDesc(Ctx, *Ctx.pResult, Item, &retSlotDesc))
 		return true;
 
 	//	Otherwise, not found
@@ -1137,7 +1137,7 @@ Metric CGroupOfDeviceGenerators::CalcHullPoints (void) const
 	return rPoints;
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const
+bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, DeviceNames iDev, SDeviceDesc *retDesc) const
 
 //	FindDefaultDesc
 //
@@ -1173,7 +1173,7 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *r
 	return true;
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc (CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const
+bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const
 
 //	FindDefaultDesc
 //
@@ -1212,16 +1212,19 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (CSpaceObject *pObj, const CItem 
 	//	For backwards compatibility, however, we place all weapons 20 pixels
 	//	forward.
 
-	ItemCategories iCategory = Item.GetType()->GetCategory();
-	if (iCategory == itemcatWeapon || iCategory == itemcatLauncher)
-		retDesc->iPosRadius = 20;
+	if (!Ctx.bNoDefaultPos)
+		{
+		ItemCategories iCategory = Item.GetType()->GetCategory();
+		if (iCategory == itemcatWeapon || iCategory == itemcatLauncher)
+			retDesc->iPosRadius = 20;
+		}
 
 	//	Done
 
 	return true;
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc (const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const
+bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const
 
 //	FindDefaultDesc
 //
@@ -1259,16 +1262,19 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (const CDeviceDescList &DescList,
 	//	For backwards compatibility, however, we place all weapons 20 pixels
 	//	forward.
 
-	ItemCategories iCategory = Item.GetType()->GetCategory();
-	if (iCategory == itemcatWeapon || iCategory == itemcatLauncher)
-		retDesc->iPosRadius = 20;
+	if (!Ctx.bNoDefaultPos)
+		{
+		ItemCategories iCategory = Item.GetType()->GetCategory();
+		if (iCategory == itemcatWeapon || iCategory == itemcatLauncher)
+			retDesc->iPosRadius = 20;
+		}
 
 	//	Done
 
 	return true;
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc (const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const
+bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const
 
 //	FindDefaultDesc
 //
