@@ -1165,7 +1165,8 @@ bool CMission::SetAccepted (void)
 
 	//	Tell the player
 
-	GetUniverse().GetPlayerShip()->OnAcceptedMission(*this);
+	if (CSpaceObject *pPlayerShip = GetUniverse().GetPlayerShip())
+		pPlayerShip->OnAcceptedMission(*this);
 
 	//	Player accepts the mission
 
