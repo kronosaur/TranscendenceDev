@@ -1317,6 +1317,7 @@ class ILog
 		void LogOutput (DWORD dwFlags, char *pszLine, ...) const;
 		void LogOutput (DWORD dwFlags, const CString &sLine) const;
 		virtual void Print (const CString &sLine) const = 0;
+		virtual void Progress (const CString &sLine, int iPercent = -1) const { Print(sLine); }
 	};
 
 class CTextFileLog : public ILog

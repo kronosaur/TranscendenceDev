@@ -1003,7 +1003,7 @@ void CTopology::CalcTraversal (const CString &sStartingNode, TArray<CString> &re
 		for (int i = 0; i < pNode->GetStargateCount(); i++)
 			{
 			const CTopologyNode *pDestNode = pNode->GetStargateDest(i);
-			if (pDestNode->IsMarked())
+			if (pDestNode->IsMarked() || pDestNode->IsEndGame())
 				continue;
 
 			Stack.Push(pDestNode);
@@ -1013,7 +1013,7 @@ void CTopology::CalcTraversal (const CString &sStartingNode, TArray<CString> &re
 
 	for (int i = 0; i < m_Topology.GetCount(); i++)
 		{
-		if (!m_Topology[i].IsMarked())
+		if (!m_Topology[i].IsMarked() && !m_Topology[i].IsEndGame())
 			retUnvisited.Push(m_Topology[i].GetID());
 		}
 	}
