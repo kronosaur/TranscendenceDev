@@ -4252,12 +4252,12 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 	int iMinFireArc, iMaxFireArc;
 	CDeviceRotationDesc::ETypes iType = GetRotationType(Device, &iMinFireArc, &iMaxFireArc);
 
-	//	Compute the fire solution
+	//	Compute the fire solution. NOTE: iAim and rDist are always computed, 
+	//	even if we don't have a firing solution.
 
 	int iAim;
 	Metric rDist;
-	if (!CalcFireSolution(Device, Target, &iAim, &rDist))
-		return false;
+	bool bNoFireSolution = !CalcFireSolution(Device, Target, &iAim, &rDist);
 
 	//	Figure out how close we can get
 
@@ -4265,14 +4265,21 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 	if (retiFireAngle)
 		*retiFireAngle = iFireAngle;
 
-	//	Omnidirectional weapons are always aligned
+	//	Area weapons are always aligned (we try even if we don't have a
+	//	firing solution).
 
-	if (iType == CDeviceRotationDesc::rotOmnidirectional)
+	if (pShotDesc->GetType() == CWeaponFireDesc::ftArea)
 		return true;
 
-	//	Area weapons are always aligned
+	//	If we get this far and we don't have a firing solution, then we cannot
+	//	reach the target.
 
-	else if (pShotDesc->GetType() == CWeaponFireDesc::ftArea)
+	else if (bNoFireSolution)
+		return false;
+
+	//	Omnidirectional weapons are always aligned.
+
+	else if (iType == CDeviceRotationDesc::rotOmnidirectional)
 		return true;
 
 	//	Tracking weapons are always aligned.
