@@ -1027,7 +1027,7 @@
 				(if (and (leq (itmGetCharges gItem) 256)
 						(objGetItems gSource "u +LongzhuSphere;"))
 					(block Nil
-						(objFireItemEvent gSource gItem "Recharge" { charges:256 })
+						(objFireItemEvent gSource gItem 'Recharge { charges:256 })
 						(objRemoveItem gSource (itmCreate &itLongzhuSphere; 1))
 						)
 					)
