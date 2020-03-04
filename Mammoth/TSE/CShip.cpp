@@ -4495,12 +4495,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	else
 		Ctx.iArmorDamage = Ctx.iDamage;
 
-	//	Tell our attacker that we got hit
-
-	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
-	if (pOrderGiver && pOrderGiver->CanAttack())
-		pOrderGiver->OnObjHit(Ctx);
-
 	//	Handle special attacks
 
 	if (Ctx.IsTimeStopped() 
@@ -4518,6 +4512,12 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	if (Ctx.iDamage == 0)
 		{
+		//	Tell our attacker that we got hit
+
+		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+		if (pOrderGiver && pOrderGiver->CanAttack())
+			pOrderGiver->OnObjHit(Ctx);
+
 		//	Tell the controller that we were damaged
 
 		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, Ctx.iArmorDamage);
@@ -4530,6 +4530,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	else if (!m_Interior.IsEmpty())
 		{
 		EDamageResults iResult = m_Interior.Damage(this, m_pClass->GetInteriorDesc(), Ctx);
+
+		//	Tell our attacker that we got hit
+
+		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+		if (pOrderGiver && pOrderGiver->CanAttack())
+			pOrderGiver->OnObjHit(Ctx);
+
+		//	Destroy, if necessary
+
 		if (iResult == damageDestroyed)
 			{
 			if (!OnDestroyCheck(Ctx.Damage.GetCause(), Ctx.Attacker))
@@ -4545,6 +4554,12 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	else
 		{
+		//	Tell our attacker that we got hit
+
+		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+		if (pOrderGiver && pOrderGiver->CanAttack())
+			pOrderGiver->OnObjHit(Ctx);
+
 		//	Figure out which areas of the ship got affected
 
 		const CShipArmorSegmentDesc *pSect = ((Ctx.iSectHit != -1 && Ctx.iSectHit < m_pClass->GetHullSectionCount()) ? &m_pClass->GetHullSection(Ctx.iSectHit) : NULL);

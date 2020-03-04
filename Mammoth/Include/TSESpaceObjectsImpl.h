@@ -1652,8 +1652,6 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		static constexpr int MIN_NAMED_WORLD_SIZE = 1000;
 		static constexpr int LARGE_WORLD_SIZE = 5000;
 
-		static constexpr int WMD_HINT_THRESHOLD = 40;
-
 		void AvengeAttack (CSpaceObject *pAttacker);
 		bool Blacklist (CSpaceObject *pObj);
 		int CalcAdjustedDamage (SDamageCtx &Ctx) const;

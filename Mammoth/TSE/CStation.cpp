@@ -436,8 +436,8 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 		//	If we're not making progress, then return a hint about what to do.
 
 		if (iHint != EDamageHint::none 
-				&& iDamageAdj <= 25 
-				&& (iDamage == 0 || (m_Hull.GetHitPoints() / iDamage) > WMD_HINT_THRESHOLD))
+				&& iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD 
+				&& (iDamage == 0 || (m_Hull.GetHitPoints() / iDamage) > SDamageCtx::WMD_HINT_THRESHOLD))
 			Ctx.SetHint(iHint);
 
 		//	Return adjusted damage

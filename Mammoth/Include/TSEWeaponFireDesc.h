@@ -200,11 +200,15 @@ enum class EDamageHint
 	useMiningOrWMD,						//	Use either mining or WMD
 	useMining,							//	Use mining weapons
 	useWMD,								//	Use WMD
+	useWMDforShip,						//	Use WMD on a ship
 	};
 
 struct SDamageCtx
 	{
 	public:
+		static constexpr int DAMAGE_ADJ_HINT_THRESHOLD = 25;
+		static constexpr int WMD_HINT_THRESHOLD = 40;
+
 		SDamageCtx (void) { }
 		SDamageCtx (CSpaceObject *pObjHitArg, 
 				CWeaponFireDesc *pDescArg, 
