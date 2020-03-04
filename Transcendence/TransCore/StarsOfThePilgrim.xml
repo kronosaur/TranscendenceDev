@@ -101,8 +101,12 @@
 			>
 
 		<Properties>
-			<Constant id="core.defaultInteraction">Nil</Constant>
-			<Constant id="core.defaultShotHP">Nil</Constant>
+			<Constant id="core.defaultInteraction">			Nil</Constant>
+			<Constant id="core.defaultShotHP">				Nil</Constant>
+			<Constant id="core.hideDisintegrationImmune">	Nil</Constant>
+			<Constant id="core.hideIonizeImmune">			Nil</Constant>
+			<Constant id="core.hideRadiationImmune">		Nil</Constant>
+			<Constant id="core.hideShatterImmune">			Nil</Constant>
 		</Properties>
 		
 		<EncounterOverrides>

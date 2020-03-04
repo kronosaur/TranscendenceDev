@@ -5,6 +5,44 @@
 
 #pragma once
 
+//	Engine Options -------------------------------------------------------------
+
+class CEngineOptions
+	{
+	public:
+		CEngineOptions (void);
+
+		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ArmorDamageAdj[iLevel - 1]; }
+		int GetDefaultInteraction (void) const { return m_iDefaultInteraction; }
+		int GetDefaultShotHP (void) const { return m_iDefaultShotHP; }
+		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
+		bool HidesArmorImmunity (SpecialDamageTypes iSpecial) const;
+		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
+		bool InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type);
+		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomShieldDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
+		void Merge (const CEngineOptions &Src);
+
+	private:
+		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
+
+		static void InitDefaultDamageAdj (void);
+
+		CDamageAdjDesc m_ArmorDamageAdj[MAX_ITEM_LEVEL];
+		CDamageAdjDesc m_ShieldDamageAdj[MAX_ITEM_LEVEL];
+		int m_iDefaultInteraction = -1;
+		int m_iDefaultShotHP = -1;
+
+		bool m_bCustomArmorDamageAdj = false;
+		bool m_bCustomShieldDamageAdj = false;
+
+		bool m_bHideDisintegrationImmune = false;
+		bool m_bHideIonizeImmune = false;
+		bool m_bHideRadiationImmune = false;
+		bool m_bHideShatterImmune = false;
+	};
+
+//	CAdventureDesc -------------------------------------------------------------
+
 class CAdventureDesc : public CDesignType
 	{
 	public:
