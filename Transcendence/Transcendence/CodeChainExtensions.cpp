@@ -1557,39 +1557,8 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
                 return pCC->CreateNil();
 
             const SDockFrame &CurFrame = DockSession.GetCurrentFrame();
-			DWORD dwRootUNID = (CurFrame.pResolvedRoot ? CurFrame.pResolvedRoot->GetUNID() : 0);
-            CString sScreen = CurFrame.sResolvedScreen;
-
-            ICCItem *pResult = pCC->CreateSymbolTable();
-
-			pResult->SetIntegerAt(CONSTLIT("type"), dwRootUNID);
-
-			if (sScreen.IsBlank())
-				{
-                pResult->SetIntegerAt(CONSTLIT("screen"), dwRootUNID);
-				pResult->SetIntegerAt(CONSTLIT("screenType"), dwRootUNID);
-				}
-			else
-				{
-				bool bNotUNID;
-				DWORD dwScreen = strToInt(sScreen, 0, &bNotUNID);
-				if (bNotUNID)
-					{
-					pResult->SetStringAt(CONSTLIT("screen"), sScreen);
-					pResult->SetStringAt(CONSTLIT("screenName"), sScreen);
-					}
-				else
-					{
-					pResult->SetIntegerAt(CONSTLIT("screen"), dwScreen);
-					pResult->SetIntegerAt(CONSTLIT("screenType"), dwScreen);
-					}
-				}
-
-            pResult->SetStringAt(CONSTLIT("pane"), CurFrame.sPane);
-            if (CurFrame.pStoredData)
-                pResult->SetAt(CONSTLIT("data"), CurFrame.pStoredData);
-
-            return pResult;
+			ICCItemPtr pResult = CDockScreenStack::AsCCItem(CurFrame);
+            return pResult->Reference();
             }
 
 		case FN_SCR_IS_ACTION_ENABLED:

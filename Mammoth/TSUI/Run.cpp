@@ -575,6 +575,7 @@ LONG CHumanInterface::WMLButtonDblClick (int x, int y, DWORD dwFlags)
     m_bLButtonDown = true;
 	return 0;
 	}
+
 LONG CHumanInterface::WMLButtonDown (int x, int y, DWORD dwFlags)
 
 //	WMLButtonDown
@@ -641,6 +642,7 @@ LONG CHumanInterface::WMMButtonDblClick (int x, int y, DWORD dwFlags)
     m_bMButtonDown = true;
 	return 0;
 	}
+
 LONG CHumanInterface::WMMButtonDown (int x, int y, DWORD dwFlags)
 
 //	WMMButtonDown
