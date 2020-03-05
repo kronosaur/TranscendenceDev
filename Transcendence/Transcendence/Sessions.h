@@ -463,7 +463,7 @@ class CModExchangeSession : public IHISession
 class CNewGameSession : public IHISession
 	{
 	public:
-		CNewGameSession (CHumanInterface &HI, CCloudService &Service, const SNewGameSettings &Defaults);
+		CNewGameSession (CHumanInterface &HI, CCloudService &Service, CUniverse &Universe, const SNewGameSettings &Defaults);
 
 		//	IHISession virtuals
 		virtual void OnCleanUp (void) override;
@@ -498,6 +498,7 @@ class CNewGameSession : public IHISession
 		void SetShipClassName (const CString &sName, int x, int y, int cxWidth);
 
 		CCloudService &m_Service;
+		CUniverse &m_Universe;
 		SNewGameSettings m_Settings;
 		CG32bitImage m_Background;
 
@@ -509,6 +510,7 @@ class CNewGameSession : public IHISession
 		CSmallOptionButtonAnimator m_PlayerName;
 		CSmallOptionButtonAnimator m_PlayerGenome;
 		CSmallOptionButtonAnimator m_Difficulty;
+		CTextAreaAnimator m_DifficultyDesc;
 
 		int m_xShipClass = 0;
 		int m_yShipClass = 0;

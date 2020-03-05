@@ -890,7 +890,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		//	New game screen
 
-		if (error = m_HI.ShowSession(new CNewGameSession(m_HI, m_Service, Defaults), &sError))
+		if (error = m_HI.ShowSession(new CNewGameSession(m_HI, m_Service, m_Model.GetUniverse(), Defaults), &sError))
 			{
 			kernelDebugLogString(sError);
 			m_HI.OpenPopupSession(new CMessageSession(m_HI, ERR_CANT_START_GAME, sError, CMD_UI_BACK_TO_INTRO));

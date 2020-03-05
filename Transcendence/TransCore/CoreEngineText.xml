@@ -5,6 +5,31 @@
 	<Type UNID="&unidEngineText;">
 		<Language>
 
+			<!-- Create Game UI -->
+
+			<Text id="descDifficulty.story">
+
+				Start here to explore the universe. Combat is significantly 
+				easier.
+
+			</Text>
+			<Text id="descDifficulty.normal">
+
+				A balanced experience. Combat is important,	but not too hard.
+
+			</Text>
+			<Text id="descDifficulty.challenge">
+
+				Combat is difficult. You will need experience and ingenuity to
+				survive.
+
+			</Text>
+			<Text id="descDifficulty.permadeath">
+
+				Same as Challenge, but you cannot resurrect when the game ends.
+
+			</Text>
+
 			<!-- Messages for the player -->
 
 			<Text id="msgCyberattackDetected">		Cyberattack detected: %program%</Text>
