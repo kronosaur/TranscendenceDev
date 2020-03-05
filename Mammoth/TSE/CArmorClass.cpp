@@ -401,7 +401,7 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 			&& (Stats.iDeviceDamageAdj < 100))
 		{
 		if (!Options.HidesArmorImmunity(specialEMP))
-			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ionize immune")));
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ionization immune")));
 
 		bCheckedBlind = true;
 		bCheckedEMP = true;
@@ -452,13 +452,18 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 
 	if (!bCheckedDevice)
 		{
-		if (Stats.iDeviceDamageAdj < 100)
+		if (Stats.iDeviceDamageAdj == 0)
 			{
 			if (!Options.HidesArmorImmunity(specialDeviceDamage))
-				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device protect")));
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device-ionization immune")));
+			}
+		else if (Stats.iDeviceDamageAdj < 100)
+			{
+			if (!Options.HidesArmorImmunity(specialDeviceDamage))
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device-ionization resistant")));
 			}
 		else if (Options.HidesArmorImmunity(specialDeviceDamage))
-			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("device vulnerable")));
+			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("device-ionization vulnerable")));
 		}
 
 	//	Disintegration

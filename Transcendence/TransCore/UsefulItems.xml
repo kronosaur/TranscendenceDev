@@ -619,7 +619,7 @@
 		</Invoke>
 
 		<Language>
-			<Text id="msgResult">ROM failure: Visual display temporarily damaged</Text>
+			<Text id="msgResult">ROM failure: Visual display temporarily blinded</Text>
 		</Language>
 	</ItemType>
 

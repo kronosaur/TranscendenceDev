@@ -4645,7 +4645,7 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device damage")));
 
 		if (Damage.GetDeviceDisruptDamage() > 0)
-			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device ionize")));
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device ionization")));
 
 		//	Disintegration
 
