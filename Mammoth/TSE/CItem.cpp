@@ -3141,7 +3141,7 @@ void CItem::SetPrepareUninstalled (void)
 	m_dwInstalled = (BYTE)(char)-2;
 	}
 
-ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError)
+ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError)
 
 //	SetProperty
 //
@@ -3157,7 +3157,7 @@ ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, con
 	if (IsEmpty())
 		{
 		if (retsError) *retsError = CONSTLIT("Unable to set propery on a null item.");
-		return resultPropertyError;
+		return ESetPropertyResult::error;
 		}
 
 	else if (strEquals(sName, PROPERTY_CHARGES))
@@ -3165,7 +3165,7 @@ ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, con
 		if (pValue == NULL || pValue->IsNil())
 			{
 			if (retsError) *retsError = NULL_STR;
-			return resultPropertyError;
+			return ESetPropertyResult::error;
 			}
 			
 		SetCharges(pValue->GetIntegerValue());
@@ -3200,7 +3200,7 @@ ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, con
 		else if (pValue->IsNil())
 			{
 			if (retsError) *retsError = NULL_STR;
-			return resultPropertyError;
+			return ESetPropertyResult::error;
 			}
 		else
 			SetCharges(Max(0, GetCharges() + pValue->GetIntegerValue()));
@@ -3214,7 +3214,7 @@ ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, con
 			{
 			CItemEnhancement NewEnhancement;
 			if (NewEnhancement.InitFromDesc(GetUniverse(), *pValue, retsError) != NOERROR)
-				return resultPropertyError;
+				return ESetPropertyResult::error;
 
 			AddEnhancement(NewEnhancement);
 			}
@@ -3227,7 +3227,7 @@ ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, con
 		else
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to set installation flag on item.");
-			return resultPropertyError;
+			return ESetPropertyResult::error;
 			}
 		}
 
@@ -3250,7 +3250,7 @@ ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, con
 		//	Otherwise, we just set the item level.
 
         if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
-			return resultPropertyError;
+			return ESetPropertyResult::error;
         }
 	else if (strEquals(sName, PROPERTY_UNKNOWN_TYPE_INDEX))
 		{
@@ -3272,7 +3272,7 @@ ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, con
 		if (pValue == NULL || pValue->IsNil())
 			{
 			if (retsError) *retsError = NULL_STR;
-			return resultPropertyError;
+			return ESetPropertyResult::error;
 			}
 
 		SetVariantNumber(pValue->GetIntegerValue());
@@ -3293,10 +3293,10 @@ ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, con
 	else
 		{
 		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
-		return resultPropertyNotFound;
+		return ESetPropertyResult::notFound;
 		}
 
-	return resultPropertySet;
+	return ESetPropertyResult::set;
 	}
 
 void CItem::SetUnknownIndex (int iIndex)

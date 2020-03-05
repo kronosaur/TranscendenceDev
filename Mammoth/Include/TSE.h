@@ -1794,7 +1794,7 @@ ICCItem *CreateListFromItem (const CItem &Item);
 ICCItem *CreateListFromOrbit (CCodeChain &CC, const COrbit &OrbitDesc);
 ICCItem *CreateListFromVector (const CVector &vVector);
 ICCItem *CreatePowerResult (double rPowerInKW);
-CSpaceObject *CreateObjFromItem (ICCItem *pItem, DWORD dwFlags = 0);
+CSpaceObject *CreateObjFromItem (const ICCItem *pItem, DWORD dwFlags = 0);
 ICCItem *CreateObjPointer (CCodeChain &CC, CSpaceObject *pObj);
 bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc);
 ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue);

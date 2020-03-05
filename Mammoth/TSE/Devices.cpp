@@ -884,7 +884,7 @@ int CDeviceClass::ParseVariantFromPropertyName (const CString &sName, CString *r
 	return -1;
 	}
 
-ESetPropertyResults CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
+ESetPropertyResult CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
 
 //	SetItemProperty
 //
@@ -893,6 +893,6 @@ ESetPropertyResults CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString 
 
 	{
 	*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
-	return resultPropertyNotFound;
+	return ESetPropertyResult::notFound;
 	}
 

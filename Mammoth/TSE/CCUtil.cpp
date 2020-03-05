@@ -314,7 +314,7 @@ ICCItem *CreateListFromVector (const CVector &vVector)
 	return CreateListFromBinary(NULL_STR, &vVector, sizeof(vVector));
 	}
 
-CSpaceObject *CreateObjFromItem (ICCItem *pItem, DWORD dwFlags)
+CSpaceObject *CreateObjFromItem (const ICCItem *pItem, DWORD dwFlags)
 	{
 	if (pItem == NULL)
 		return NULL;

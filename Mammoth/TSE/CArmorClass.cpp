@@ -2617,7 +2617,7 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, const ICCItem &Value, CString *retsError)
+ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, const ICCItem &Value, CString *retsError)
 
 //	SetItemProperty
 //
@@ -2638,7 +2638,7 @@ ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, co
 			if (pShip == NULL)
 				{
 				if (retsError) *retsError = CONSTLIT("Not yet implemented.");
-				return resultPropertyError;
+				return ESetPropertyResult::error;
 				}
 
 			iHP = Max(0, Min(iHP, ArmorItem.GetMaxHP()));
@@ -2670,7 +2670,7 @@ ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, co
 			if (pShip == NULL)
 				{
 				if (retsError) *retsError = CONSTLIT("Not yet implemented.");
-				return resultPropertyError;
+				return ESetPropertyResult::error;
 				}
 
 			if (iChange < 0)
@@ -2702,7 +2702,7 @@ ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, co
         //  Set the level
 
         if (!Item.SetLevel(Value.GetIntegerValue(), retsError))
-			return resultPropertyError;
+			return ESetPropertyResult::error;
 
         //  Set armor HP
 
@@ -2718,10 +2718,10 @@ ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, co
 	else
 		{
 		*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sProperty);
-		return resultPropertyNotFound;
+		return ESetPropertyResult::notFound;
 		}
 
-	return resultPropertySet;
+	return ESetPropertyResult::set;
 	}
 
 void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified)

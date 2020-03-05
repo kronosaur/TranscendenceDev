@@ -326,6 +326,7 @@ class IShipController
 		virtual void SetThrust (bool bThrust) { }
 		virtual void SetPlayerBlacklisted (bool bValue) { }
 		virtual void SetPlayerWingman (bool bIsWingman) { }
+		virtual ESetPropertyResult SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL) { return ESetPropertyResult::notFound; }
 		virtual void WriteToStream (IWriteStream *pStream) { ASSERT(false); }
 
 		virtual void AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false) { }

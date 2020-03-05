@@ -1830,8 +1830,8 @@ bool CItemType::OnSetTypeProperty (const CString &sProperty, const ICCItem &Valu
 	CItem Item(this, 1);
 	CItemCtx ItemCtx(Item);
 
-	ESetPropertyResults iResult = Item.SetProperty(ItemCtx, sProperty, &Value, true);
-	return (iResult == resultPropertySet);
+	ESetPropertyResult iResult = Item.SetProperty(ItemCtx, sProperty, &Value, true);
+	return (iResult == ESetPropertyResult::set);
 	}
 
 bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const

@@ -1,6 +1,7 @@
 //	PlayerController.cpp
 //
 //	Implements class to control player's ship
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 #include "Transcendence.h"

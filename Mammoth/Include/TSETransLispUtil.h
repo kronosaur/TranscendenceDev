@@ -22,7 +22,8 @@ class CTLispConvert
 
 		static ETypes ArgType (ICCItem *pItem, ETypes iDefaultType, ICCItem **retpValue = NULL);
 		static DWORD AsImageDesc (const ICCItem *pItem, RECT *retrcRect);
-		inline static bool AsOption (ICCItem *pItem, const CString &sOption) { return (pItem && pItem->GetBooleanAt(sOption)); }
+		static CSpaceObject *AsObject (const ICCItem *pItem);
+		static bool AsOption (ICCItem *pItem, const CString &sOption) { return (pItem && pItem->GetBooleanAt(sOption)); }
 		static bool AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector = NULL);
 		static ICCItemPtr CreateCurrencyValue (CurrencyValue Value);
 		static ICCItemPtr CreateObject (const CSpaceObject *pObj);

@@ -308,6 +308,9 @@
     <ClCompile Include="CNarrativeDisplay.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerControllerProperties.cpp">
+      <Filter>Source Files\Player</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BackgroundTasks.h">

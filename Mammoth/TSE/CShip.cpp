@@ -7358,6 +7358,7 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
+	ESetPropertyResult iResult;
 
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		{
@@ -7557,6 +7558,10 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		{
 		m_fShowMapLabel = !pValue->IsNil();
 		return true;
+		}
+	else if ((iResult = m_pController->SetProperty(sName, *pValue, retsError)) != ESetPropertyResult::notFound)
+		{
+		return (iResult == ESetPropertyResult::set);
 		}
 	else
 		return CSpaceObject::SetProperty(sName, pValue, retsError);

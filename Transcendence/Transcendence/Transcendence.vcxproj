@@ -693,6 +693,7 @@
     </ClCompile>
     <ClCompile Include="CUIResources.cpp" />
     <ClCompile Include="GameOutput.cpp" />
+    <ClCompile Include="PlayerControllerProperties.cpp" />
     <ClCompile Include="Utilities.cpp" />
     <ClCompile Include="CDockScreen.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

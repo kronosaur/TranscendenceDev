@@ -5527,12 +5527,12 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CString sError;
 			CItemCtx ItemCtx(&Item);
-			ESetPropertyResults iResult = Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), bOnType, &sError);
+			ESetPropertyResult iResult = Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), bOnType, &sError);
 
 			switch (iResult)
 				{
-				case resultPropertyError:
-				case resultPropertyNotFound:
+				case ESetPropertyResult::error:
+				case ESetPropertyResult::notFound:
 					if (sError.IsBlank())
 						return pCC->CreateNil();
 					else

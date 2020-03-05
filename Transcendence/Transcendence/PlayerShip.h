@@ -226,6 +226,7 @@ class CPlayerShipController : public IShipController
 		virtual bool IsPlayer (void) const override { return true; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
 		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_iManeuver = iManeuver; }
+		virtual ESetPropertyResult SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL) override;
 		virtual void SetThrust (bool bThrust) override { m_bThrust = bThrust; }
 		virtual void WriteToStream (IWriteStream *pStream) override;
 
@@ -338,6 +339,8 @@ class CPlayerShipController : public IShipController
 
 		CSpaceObject *m_pAutoDamage = NULL;			//	Show damage bar for this object
 		DWORD m_dwAutoDamageExpire = 0;				//	Stop showing on this tick
+
+		static TPropertyHandler<CPlayerShipController> m_PropertyTable;
 
 	friend CObjectClass<CPlayerShipController>;
 	};

@@ -368,7 +368,7 @@ class CItem
 		void SetKnown (bool bKnown = true) const;
         bool SetLevel (int iLevel, CString *retsError = NULL);
 		void SetPrepareUninstalled (void);
-		ESetPropertyResults SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError = NULL);
+		ESetPropertyResult SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError = NULL);
 		void SetUnknownIndex (int iIndex);
 		void SetVariantNumber (int iVariantCounter);
 
