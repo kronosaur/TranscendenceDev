@@ -327,6 +327,7 @@ struct SSystemCreateCtx
 	CSpaceObject *pStation = NULL;			//	Root station when creating satellites
 	DWORD dwLastObjID = 0;					//	Object created in last call
 											//	NOTE: This is an ID in case the object gets deleted.
+	TSortMap<CString, IElementGenerator::STableStats> TableStats;
 
 	CStationTableCache StationTables;		//	Cached station tables
 	};

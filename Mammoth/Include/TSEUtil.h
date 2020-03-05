@@ -764,10 +764,17 @@ class CRandomEntryResults
 class IElementGenerator
 	{
 	public:
+		struct STableStats
+			{
+			TArray<int> Counts;
+			};
+
 		struct SCtx
 			{
 			const CTopology *pTopology = NULL;
 			const CTopologyNode *pNode = NULL;
+
+			STableStats *pTableCounts = NULL;
 			};
 
 		struct SResult

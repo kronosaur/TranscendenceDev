@@ -298,6 +298,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 							bool bIgnoreChance = false);
 ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
 ALERROR CreateZAdjust (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
+CString GetXMLObjID (const CXMLElement &Obj);
 void DumpDebugStack (SSystemCreateCtx *pCtx);
 void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPlace, COrbit *retOrbit);
 ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
@@ -1216,7 +1217,6 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 
 	{
 	ALERROR error;
-	int i;
 
 	//	If we have no elements, then there is nothing to do
 
@@ -1285,7 +1285,7 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 
 	CString sSavedLocationAttribs = pCtx->sLocationAttribs;
 
-	for (i = 0; i < iCount; i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		COrbit NewOrbit;
 
@@ -2619,7 +2619,11 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		{
 		PushDebugStack(pCtx, TABLE_TAG);
 
+		CString sTableID = GetXMLObjID(*pObj);
+		
 		IElementGenerator::SCtx GenCtx;
+		GenCtx.pTableCounts = pCtx->TableStats.SetAt(sTableID);
+
 		TArray<CXMLElement *> Results;
 		if (!IElementGenerator::GenerateAsTable(GenCtx, pObj, Results, &pCtx->sError))
 			return ERR_FAIL;
@@ -4653,6 +4657,11 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 		*retpStation = pStation;
 
 	return NOERROR;
+	}
+
+CString GetXMLObjID (const CXMLElement &Obj)
+	{
+	return strPatternSubst(CONSTLIT("xml_%x"), (DWORD)&Obj);
 	}
 
 //	SSystemCreateCtx -----------------------------------------------------------
