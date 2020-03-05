@@ -41,7 +41,7 @@
 			inherit=			"&dsDockScreenBase;"
 			>
 		<Properties>
-			<Global id="rpg.debugMissionAssignment">Nil</Global>
+			<Global id="rpg.debug">Nil</Global>
 		</Properties>
 
 		<OnScreenInit>
@@ -1013,7 +1013,7 @@
 				;				for the mission source (gSource)
 				
 				(block (
-					(debugAssignment (typGetProperty &dsRPGMission; 'rpg.debugMissionAssignment))
+					(debugAssignment (typGetProperty &dsRPGMission; 'rpg.debug))
 
 					(displayCriteria (@ options 'displayCriteria))
 
@@ -1143,7 +1143,7 @@
 				;		missionCriteria: Criteria used to create new missions. [Required]
 				
 				(block (
-					(debugAssignment (typGetProperty &dsRPGMission; 'rpg.debugMissionAssignment))
+					(debugAssignment (typGetProperty &dsRPGMission; 'rpg.debug))
 
 					(ownerHasHitLimit 
 						(and (@ options 'maxPerStation) 

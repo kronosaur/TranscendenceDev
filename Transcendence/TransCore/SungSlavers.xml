@@ -1027,8 +1027,7 @@
 				(if (and (leq (itmGetCharges gItem) 256)
 						(objGetItems gSource "u +LongzhuSphere;"))
 					(block Nil
-						(setq aCharges 256)
-						(objFireItemEvent gSource gItem "Recharge")
+						(objFireItemEvent gSource gItem 'Recharge { charges:256 })
 						(objRemoveItem gSource (itmCreate &itLongzhuSphere; 1))
 						)
 					)
@@ -1037,8 +1036,10 @@
 			<Recharge>
 				; aCharges = amount to recharge
 				; Returns the amount recharged
-				(block (rechargeNeeded)
-					(setq rechargeNeeded (min aCharges (subtract 9999 (itmGetCharges gItem))))
+				(block (
+					(newCharges (@ gData 'charges))
+					(rechargeNeeded (min newCharges (subtract 9999 (itmGetCharges gItem))))
+					)
 					(if (gr rechargeNeeded 0)
 						(shpRechargeItem gSource gItem rechargeNeeded)
 						)
@@ -1164,6 +1165,7 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
+					{	criteria:"w +unid:&itQianlongArchcannon;;"	custom:True		descID:'descCanRecharge	}
 					{	criteria:"Ds L:1-10; -nonEnergyShields;"	enhancement:"+repair:10"	}
 					{	criteria:"Dw L:1-10; +EnergyWeapon;"		enhancement:"+repair:10"	}
 					{	criteria:"s L:1-10; -nonEnergyShields;"		enhancement:"+hpBonus:20"	}
@@ -1184,7 +1186,7 @@
 						;	Recharge Qianlong Archcannon
 						(= (itmGetType dstItem) &itQianlongArchcannon;)
 							(block (recharged)
-								(setq recharged (objFireItemEvent gPlayerShip gItem 'Recharge 256))
+								(setq recharged (objFireItemEvent gPlayerShip dstItem 'Recharge { charges:256 }))
 
 								;	Remove the item from the player's cargo
 								(objRemoveItem gPlayerShip gItem 1)
@@ -1223,6 +1225,11 @@
 
 			</Text>
 			<Text id="descNoFurther">The enhancement has no effect.</Text>
+			<Text id="descCanRecharge">
+				
+				You can use the longzhu sphere to recharge %dstItem%.
+				
+			</Text>
 		</Language>
 	</ItemType>
 

@@ -167,7 +167,7 @@
 			<OnMining>
 				(block (
 					(isPlayer (and gPlayerShip (= aOrderGiver gPlayerShip)))
-					(debugMining (typGetProperty &unidMiningSkill; 'rpg.debugMining))
+					(debugMining (typGetProperty &unidMiningSkill; 'rpg.debug))
 
 					(setExplored Nil)
 					(gainTrialXP Nil)

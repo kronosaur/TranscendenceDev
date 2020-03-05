@@ -4828,8 +4828,7 @@
 							(switch
 								(eq itemType &itQianlongArchcannon;)
 									(block (recharged)
-										(setq aCharges 256)
-										(setq recharged (objFireItemEvent gPlayerShip gItem "Recharge"))
+										(setq recharged (objFireItemEvent gPlayerShip gItem "Recharge" { charges:256 }))
 
 										(switch
 											(eq recharged 0)
