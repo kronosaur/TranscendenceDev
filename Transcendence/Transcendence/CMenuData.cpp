@@ -15,7 +15,9 @@ CMenuData::CMenuData (void) : m_iCount(0)
 void CMenuData::AddMenuItem (const CString &sKey,
 							 const CString &sLabel,
 							 const CObjectImageArray *pImage,
+							 int iCount,
 							 const CString &sExtra,
+							 const CString &sHelp,
 							 DWORD dwFlags,
 							 DWORD dwData,
 							 DWORD dwData2)
@@ -55,7 +57,9 @@ void CMenuData::AddMenuItem (const CString &sKey,
 	m_List[iPos].sLabel = sLabel;
 	m_List[iPos].dwData = dwData;
 	m_List[iPos].dwData2 = dwData2;
+	m_List[iPos].iCount = iCount;
 	m_List[iPos].sExtra = sExtra;
+	m_List[iPos].sHelp = sHelp;
 	m_List[iPos].dwFlags = dwFlags;
 	m_List[iPos].pImage = pImage;
 

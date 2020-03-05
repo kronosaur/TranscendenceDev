@@ -124,3 +124,52 @@ void CCartoucheBlock::Paint (CG32bitImage &Dest, int x, int y) const
 				m_Data[i].sText);
 		}
 	}
+
+void CCartoucheBlock::PaintCartouche (CG32bitImage &Dest, int x, int y, const SCartoucheDesc &Desc, const CG16bitFont &Font, DWORD dwAlignment)
+
+//	PaintCartouche
+//
+//	Paints a single cartouche.
+
+	{
+	//	Measure
+
+	int cxText = (ATTRIB_PADDING_X * 2) + Font.MeasureText(Desc.sText);
+	int cyText = (ATTRIB_PADDING_Y * 2) + Font.GetHeight();
+
+	//	Align
+
+	int xDest;
+	if (dwAlignment & alignCenter)
+		xDest = x - (cxText / 2);
+	else if (dwAlignment & alignRight)
+		xDest = x - cxText;
+	else
+		xDest = x;
+
+	int yDest;
+	if (dwAlignment & alignMiddle)
+		yDest = y - (cyText / 2);
+	else if (dwAlignment & alignBottom)
+		yDest = y - cyText;
+	else
+		yDest = y;
+
+	//	Draw the background
+
+	CGDraw::RoundedRect(Dest, 
+			xDest, 
+			yDest, 
+			cxText, 
+			cyText, 
+			RADIUS, 
+			Desc.rgbBack);
+
+	//	Draw the text
+
+	Font.DrawText(Dest, 
+			xDest + ATTRIB_PADDING_X, 
+			yDest + ATTRIB_PADDING_Y, 
+			Desc.rgbColor, 
+			Desc.sText);
+	}

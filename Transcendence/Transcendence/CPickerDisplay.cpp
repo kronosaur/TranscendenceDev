@@ -15,14 +15,15 @@
 
 #define MAX_ITEMS_VISIBLE							3
 
-#define RGB_SELECTION								(CG32bitPixel(150,255,180))
-#define RGB_TEXT									(CG32bitPixel(150,255,180))
-#define RGB_EXTRA									(CG32bitPixel(255,255,255))
-#define RGB_HELP									(CG32bitPixel(96,96,96))
-#define RGB_HOTKEY_BACKGROUND						(CG32bitPixel(150,255,180))
-#define RGB_BACKGROUND								(CG32bitPixel(0,0,16))
+static constexpr CG32bitPixel RGB_SELECTION =			CG32bitPixel(150,255,180);
+static constexpr CG32bitPixel RGB_TEXT =				CG32bitPixel(150,255,180);
+static constexpr CG32bitPixel RGB_EXTRA =				CG32bitPixel(255,255,255);
+static constexpr CG32bitPixel RGB_EXTRA_BACKGROUND =	CG32bitPixel(150,255,180);
+static constexpr CG32bitPixel RGB_HELP =				CG32bitPixel(96,96,96);
+static constexpr CG32bitPixel RGB_HOTKEY_BACKGROUND =	CG32bitPixel(150,255,180);
+static constexpr CG32bitPixel RGB_BACKGROUND =			CG32bitPixel(0,0,16);
 
-const CG32bitPixel RGB_HOVER_BACKGROUND =			CG32bitPixel(40, 40, 40);
+static constexpr CG32bitPixel RGB_HOVER_BACKGROUND =	CG32bitPixel(40, 40, 40);
 
 CPickerDisplay::CPickerDisplay (void)
 
@@ -366,17 +367,30 @@ void CPickerDisplay::Update (void)
 
 		//	Paint the number of items
 
-		CString sExtra = m_pMenu->GetItemExtra(i);
-		if (!sExtra.IsBlank() && !m_sHelpText.IsBlank())
+		if (int iCount = m_pMenu->GetItemCount(i))
 			{
+			CString sCount = strFromInt(iCount);
 			int cyExtra;
-			int cxExtra = m_pFonts->LargeBold.MeasureText(sExtra, &cyExtra);
+			int cxExtra = m_pFonts->LargeBold.MeasureText(sCount, &cyExtra);
 
 			m_pFonts->LargeBold.DrawText(m_Buffer,
 					x + TILE_WIDTH - cxExtra - TILE_SPACING_X,
 					m_rcView.top + TILE_HEIGHT - cyExtra,
 					RGB_EXTRA,
-					sExtra);
+					sCount);
+			}
+
+		//	Paint extra tags
+
+		CString sExtra = m_pMenu->GetItemExtra(i);
+		if (!sExtra.IsBlank())
+			{
+			CCartoucheBlock::SCartoucheDesc Desc;
+			Desc.sText = sExtra;
+			Desc.rgbBack = CItemPainter::RGB_MODIFIER_NORMAL_BACKGROUND;
+			Desc.rgbColor = CItemPainter::RGB_MODIFIER_NORMAL_TEXT;
+
+			CCartoucheBlock::PaintCartouche(m_Buffer, x + TILE_SPACING_X, m_rcView.top + TILE_HEIGHT, Desc, m_pFonts->Medium, alignBottom);
 			}
 
 		//	Paint the hotkey
@@ -384,18 +398,12 @@ void CPickerDisplay::Update (void)
 		CString sKey = m_pMenu->GetItemKey(i);
 		if (!sKey.IsBlank())
 			{
-			int cyKey;
-			int cxKey = m_pFonts->LargeBold.MeasureText(sKey, &cyKey);
+			CCartoucheBlock::SCartoucheDesc Desc;
+			Desc.sText = sKey;
+			Desc.rgbBack = m_pFonts->rgbTitleColor;
+			Desc.rgbColor = m_pFonts->rgbBackground;
 
-			int xKey = x + TILE_SPACING_X;
-			int yKey = m_rcView.top + TILE_SPACING_Y;
-			m_Buffer.Fill(xKey, yKey, cxKey + 4, cyKey, m_pFonts->rgbTitleColor);
-
-			m_pFonts->LargeBold.DrawText(m_Buffer,
-					xKey + 2,
-					yKey,
-					m_pFonts->rgbBackground,
-					sKey);
+			CCartoucheBlock::PaintCartouche(m_Buffer, x + TILE_SPACING_X, m_rcView.top + TILE_SPACING_Y, Desc, m_pFonts->LargeBold);
 			}
 
 		//	If this item is selected, paint the selection
@@ -411,7 +419,10 @@ void CPickerDisplay::Update (void)
 	CString sTitle = m_pMenu->GetItemLabel(m_iSelection);
 	int cxTitle = m_pFonts->Header.MeasureText(sTitle);
 
-	CString sHelp = (m_sHelpText.IsBlank() ? m_pMenu->GetItemExtra(m_iSelection) : m_sHelpText);
+	CString sHelp = m_pMenu->GetItemHelpText(m_iSelection);
+	if (sHelp.IsBlank())
+		sHelp = m_sHelpText;
+
 	int cxHelp = m_pFonts->Medium.MeasureText(sHelp);
 
 	int cxBack = Max(cxTitle, cxHelp) + 2 * TILE_SPACING_X;

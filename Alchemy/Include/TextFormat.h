@@ -119,6 +119,8 @@ class CCartoucheBlock
 		void Paint (CG32bitImage &Dest, int x, int y) const;
 		void SetFont (const CG16bitFont *pFont) { if (m_pFont != pFont) { m_pFont = pFont; Invalidate(); } }
 
+		static void PaintCartouche (CG32bitImage &Dest, int x, int y, const SCartoucheDesc &Desc, const CG16bitFont &Font, DWORD dwAlignment = 0);
+
 	private:
 		static constexpr int ATTRIB_PADDING_X =	4;
 		static constexpr int ATTRIB_PADDING_Y =	1;
