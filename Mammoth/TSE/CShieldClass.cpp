@@ -1941,7 +1941,7 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 	if (pDevice->IsDamaged() || pDevice->IsDisrupted())
 		{
-		if ((Ctx.iTick % 10) == 0 && mathRandom(1, 100) <= 5)
+		if ((Ctx.iTick % 30) == 0 && mathRandom(1, 100) <= 5)
 			{
 			Deplete(pDevice, pSource);
 			pSource->OnDeviceStatus(pDevice, failShieldFailure);

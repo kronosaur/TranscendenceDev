@@ -124,6 +124,109 @@
 		</Language>
 	</ItemType>
 
+<!-- LEVEL 3 -->
+
+	<!-- Level 3: Defective Shield Enhancement ROM -->
+
+	<ItemType UNID="&itShieldIonizeROM;"
+			inherit=			"&baStdDeviceEnhancement;"
+			name=				"defective shield enhancement ROM"
+			level=				"3"
+			value=				"5"
+			mass=				"1"
+			frequency=			"rare"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+			attributes=			"defective, info, minorItem, shieldDamage"
+
+			description=		"This aftermarket ROM worked on older shield generators, but all current shield generators are ionized by it."
+
+			useScreen=			"&dsRPGUseItemOnShields;"
+			>
+
+		<Properties>
+			<Constant id="rpg.useCriteria">"s"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<CanEnhanceItem>
+				(block (
+					(targetItem (@ gData 'targetItem))
+					(trdata { weapon:(itmGetName targetItem 'noModifiers) } )
+					)
+					(switch
+						(gr (itmGetProperty targetItem 'level) 6)
+							{
+								resultCode: 'noEffect
+								effect: 'tooAdvanced
+								}
+
+						(or (itmGetProperty targetItem 'damaged)
+								(itmGetProperty targetItem 'disrupted)
+								)
+							{
+								resultCode: 'noEffect
+								effect: 'alreadyDamaged
+								}
+
+						(itmIsEnhanced targetItem)
+							{
+								resultCode: 'enhancementRemoved
+								effect:
+									(if (itmGetProperty targetItem 'defectiveEnhancement)
+										'defectLost
+										'enhancementLost
+										)
+								}
+
+						{
+							resultCode: 'damaged
+							effect: 'shieldIonized
+							}
+						)
+					)
+			</CanEnhanceItem>
+
+			<OnEnhanceItem>
+				(block (
+					(targetItem (@ gData 'targetItem))
+
+					;	Call CanEnhanceItem to figure out what should happen
+					(result (objFireItemEvent gSource gItem 'CanEnhanceItem gData))
+					(effect (@ result 'effect))
+					)
+					(switch
+						(= effect 'shieldIonized)
+							(objSetItemProperty gSource targetItem 'disrupted 9000)
+
+						(or (= effect 'defectLost) (= effect 'enhancementLost))
+							(shpDamageItem gSource targetItem)
+						)
+
+					{
+						resultCode: (@ result 'resultCode)
+						desc: (typTranslate gType (cat "result." effect) {
+							shield: (itmGetName targetItem 'noModifiers)
+							})
+						}
+					)
+			</OnEnhanceItem>
+		</Events>
+		
+		<Language>
+			<Text id="descResultIntro">
+				This is a defective shield enhancement ROM.
+			</Text>
+
+			<Text id="result.alreadyDamaged">The ROM has no effect on your damaged %shield%.</Text>
+			<Text id="result.defectLost">The defective ROM reset your %shield%, restoring it to normal.</Text>
+			<Text id="result.enhancementLost">The %shield% has lost its previous enhancement.</Text>
+			<Text id="result.tooAdvanced">Fortunately, the %shield% is too advanced to be affected.</Text>
+			<Text id="result.shieldIonized">Your %shield% has been ionized.</Text>
+		</Language>
+	</ItemType>
+
 <!-- LEVEL 4 -->
 
 	<!-- Level 4: Hiro's Shield Optimizer -->
