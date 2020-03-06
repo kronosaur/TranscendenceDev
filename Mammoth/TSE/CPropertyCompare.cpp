@@ -179,7 +179,7 @@ bool CPropertyCompare::Parse (CCodeChainCtx &CCX, const CString &sExpression, CS
 				if (!ParseValue(CCX, pPos, pMinValue, retsError))
 					return false;
 
-				if (*pPos == ':')
+				if (*pPos == ':' || *pPos == '-')
 					pPos++;
 
 				if (!ParseValue(CCX, pPos, pMaxValue, retsError))
@@ -246,6 +246,7 @@ bool CPropertyCompare::ParseValue (CCodeChainCtx &CCX, const char *&pPos, ICCIte
 	const char *pStart = pPos;
 	bool bDone = *pPos == '\0';
 	bool bInQuotes = false;
+	bool bHasContent = false;
 	while (!bDone)
 		{
 		switch (*pPos)
@@ -262,10 +263,23 @@ bool CPropertyCompare::ParseValue (CCodeChainCtx &CCX, const char *&pPos, ICCIte
 					bDone = true;
 				break;
 
+			//	Dash can be a delimiter if it follows a value, but not at the
+			//	beginning of a value (because it could be a minus sign).
+
+			case '-':
+				if (!bInQuotes && bHasContent)
+					bDone = true;
+				break;
+
 			//	Quotes
 
 			case '\"':
 				bInQuotes = !bInQuotes;
+				bHasContent = true;
+				break;
+
+			default:
+				bHasContent = true;
 				break;
 			}
 

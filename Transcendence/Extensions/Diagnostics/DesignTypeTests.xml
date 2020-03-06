@@ -97,6 +97,13 @@
 						{	test:'(typMatches &itLaserCannon; "i +property:cost[0:10];")		result:Nil }
 						{	test:'(typMatches &itLaserCannon; "i +property:cost[0:100];")		result:Nil }
 						{	test:'(typMatches &itLaserCannon; "i +property:cost[300:400];")		result:True }
+
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[100-];")		result:True }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[100-1000];")	result:True }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[1000-2000];")	result:Nil }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[0-10];")		result:Nil }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[0-100];")		result:Nil }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[300-400];")		result:True }
 						))
 					)
 			</OnGlobalStartDiagnostics>
