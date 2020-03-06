@@ -21,7 +21,6 @@
 #define ATTRIBUTES_ATTRIB						CONSTLIT("attributes")
 #define CHANCE_ATTRIB							CONSTLIT("chance")
 #define COUNT_ATTRIB							CONSTLIT("count")
-#define DEBUG_ATTRIB							CONSTLIT("debug")
 #define DEBUG_ONLY_ATTRIB						CONSTLIT("debugOnly")
 #define DEST_FRAGMENT_ATTRIBUTES_ATTRIB			CONSTLIT("destFragmentAttributes")
 #define DEST_FRAGMENT_EXIT_ATTRIB				CONSTLIT("destFragmentExit")

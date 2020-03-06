@@ -280,6 +280,11 @@ struct SZAdjust
 	bool bIgnoreLocations = false;			//	Do not adjust locations
 	};
 
+struct SStationTypeTableStats
+	{
+	TSortMap<CStationType *, int> Counts;
+	};
+
 struct SSystemCreateCtx
 	{
 	enum EOverlapCheck 
@@ -328,6 +333,7 @@ struct SSystemCreateCtx
 	DWORD dwLastObjID = 0;					//	Object created in last call
 											//	NOTE: This is an ID in case the object gets deleted.
 	TSortMap<CString, IElementGenerator::STableStats> TableStats;
+	TSortMap<CString, SStationTypeTableStats> RandomStationStats;
 
 	CStationTableCache StationTables;		//	Cached station tables
 	};

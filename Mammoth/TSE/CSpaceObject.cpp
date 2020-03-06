@@ -4675,7 +4675,7 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 
 		CString sError;
 		CPropertyCompare Compare;
-		if (!Compare.Parse(sProperty, &sError))
+		if (!Compare.Parse(CCodeChainCtx(GetUniverse()), sProperty, &sError))
 			{
 			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
 			return false;

@@ -65,6 +65,39 @@
 						{	test:'(objInc@ gTestStation1 'diag.global2a 7)			result:22	}
 						{	test:'(obj@ gTestStation1 'diag.global2a)				result:22	}
 						))
+
+					;	Unit Tests for Criteria
+
+					(diagEval (list
+						{	test:'(typMatches &itLaserCannon; "*")								result:True	}
+						{	test:'(typMatches &itLaserCannon; "i")								result:True	}
+						{	test:'(typMatches &itLaserCannon; "n")								result:Nil	}
+						{	test:'(typMatches &itLaserCannon; "i L:1-10;")						result:True	}
+						{	test:'(typMatches &itLaserCannon; "i L:2-10;")						result:Nil	}
+						{	test:'(typMatches &itLaserCannon; "i L:2-;")						result:Nil	}
+						{	test:'(typMatches &itLaserCannon; "i L:-10;")						result:Nil	}
+						{	test:'(typMatches &itLaserCannon; "i +commonwealth;")				result:True	}
+						{	test:'(typMatches &itLaserCannon; "i +corporate;")					result:Nil	}
+						{	test:'(typMatches &itLaserCannon; "i -commonwealth;")				result:Nil	}
+						{	test:'(typMatches &itLaserCannon; "i -corporate;")					result:True	}
+						{	test:'(typMatches &itLaserCannon; "i +unid:&itLaserCannon;;")		result:True	}
+						{	test:'(typMatches &itLaserCannon; "i +unid:&itRecoillessCannon;;")	result:Nil }
+						{	test:'(typMatches &itLaserCannon; "i +damageType:laser;")			result:True }
+						{	test:'(typMatches &itLaserCannon; "i +damageType:particle;")		result:Nil }
+
+						{	test:'(typMatches &itLaserCannon; "i +property:cost;")				result:True }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost&gt;=100;")		result:True }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost&lt;=100;")		result:Nil }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost=380;")			result:True }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost=480;")			result:Nil }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[:1000];")		result:True }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[100:];")		result:True }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[100:1000];")	result:True }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[1000:2000];")	result:Nil }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[0:10];")		result:Nil }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[0:100];")		result:Nil }
+						{	test:'(typMatches &itLaserCannon; "i +property:cost[300:400];")		result:True }
+						))
 					)
 			</OnGlobalStartDiagnostics>
 		</Events>

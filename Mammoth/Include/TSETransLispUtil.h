@@ -37,7 +37,7 @@ class CPropertyCompare
 	public:
 		bool Eval (ICCItem *pPropertyValue) const;
 		inline const CString &GetProperty (void) const { return m_sProperty; }
-		bool Parse (const CString &sExpression, CString *retsError = NULL);
+		bool Parse (CCodeChainCtx &CCX, const CString &sExpression, CString *retsError = NULL);
 
 	private:
 		enum EOperator
@@ -50,12 +50,15 @@ class CPropertyCompare
 			opLessThan,
 			opGreaterThanOrEqual,
 			opLessThanOrEqual,
+			opInRange,
 			opNonNil,
 			};
 
-		inline bool IsOperatorChar (char chChar) { return (chChar == '=' || chChar == '!' || chChar == '>' || chChar == '<'); }
+		bool IsOperatorChar (char chChar) { return (chChar == '=' || chChar == '!' || chChar == '>' || chChar == '<' || chChar == '['); }
+		static bool ParseValue (CCodeChainCtx &CCX, const char *&pPos, ICCItemPtr &pValue, CString *retsError = NULL);
 
 		CString m_sProperty;
 		EOperator m_iOp = opNone;
 		ICCItemPtr m_pValue;
+		ICCItemPtr m_pValue2;
 	};

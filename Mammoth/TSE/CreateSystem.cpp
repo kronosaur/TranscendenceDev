@@ -77,6 +77,7 @@
 #define CONTROLLER_ATTRIB				CONSTLIT("controller")
 #define COUNT_ATTRIB					CONSTLIT("count")
 #define CRITERIA_ATTRIB					CONSTLIT("criteria")
+#define DEBUG_ATTRIB					CONSTLIT("debug")
 #define DEBUG_ONLY_ATTRIB				CONSTLIT("debugOnly")
 #define DISTANCE_ATTRIB					CONSTLIT("distance")
 #define DISTRIBUTION_ATTRIB				CONSTLIT("distribution")
@@ -96,6 +97,7 @@
 #define LOCATION_CRITERIA_ATTRIB		CONSTLIT("locationCriteria")
 #define MATCH_ATTRIB					CONSTLIT("match")
 #define MAX_ATTRIB						CONSTLIT("max")
+#define MAX_COUNT_ATTRIB				CONSTLIT("maxCount")
 #define MAX_DIST_ATTRIB					CONSTLIT("maxDist")
 #define MAX_RADIUS_ATTRIB				CONSTLIT("maxRadius")
 #define MAX_SHIPS_ATTRIB				CONSTLIT("maxShips")
@@ -300,6 +302,7 @@ ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const C
 ALERROR CreateZAdjust (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
 CString GetXMLObjID (const CXMLElement &Obj);
 void DumpDebugStack (SSystemCreateCtx *pCtx);
+void DumpDebugStackTop (SSystemCreateCtx *pCtx);
 void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPlace, COrbit *retOrbit);
 ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 									const CString &sCriteria,
@@ -481,7 +484,10 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 							 const CVector &vPos,
 							 bool bSeparateEnemies,
 							 bool bIncludeAll,
+							 bool bDebug,
 							 CStationType **retpType,
+							 SStationTypeTableStats *pTypeStats = NULL,
+							 int iMaxCountPerType = -1,
 							 TArray<CStationTableCache::SEntry> **retpTable = NULL)
 
 //	ChooseRandomStation
@@ -542,9 +548,33 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 		if (bSeparateEnemies && !pCtx->System.IsExclusionZoneClear(vPos, *Entry.pType))
 			continue;
 
+		//	If we have limits, check them now.
+
+		if (pTypeStats && iMaxCountPerType != -1)
+			{
+			int *pExisting = pTypeStats->Counts.GetAt(Entry.pType);
+			int iExisting = (pExisting ? *pExisting : 0);
+			if (iExisting >= iMaxCountPerType)
+				continue;
+			}
+
 		//	Add it
 
 		Table.Insert(Entry.pType, Entry.iChance);
+		}
+
+	//	Output table
+
+	if (bDebug)
+		{
+		DumpDebugStackTop(pCtx);
+		if (Table.GetCount() == 0)
+			pCtx->GetUniverse().LogOutput(CONSTLIT("No entries in table."));
+
+		for (int i = 0; i < Table.GetCount(); i++)
+			{
+			pCtx->GetUniverse().LogOutput(strPatternSubst(CONSTLIT("[%08x] %s\t%d"), Table[i]->GetUNID(), Table[i]->GetNounPhrase(), Table.GetChance(i)));
+			}
 		}
 
 	//	Returns the original table if desired for debugging purposes. Note, however, that
@@ -565,7 +595,26 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 
 	//	Roll
 
-	*retpType = Table.GetAt(Table.RollPos());
+	CStationType *pType = Table.GetAt(Table.RollPos());
+	if (retpType)
+		*retpType = pType;
+
+	if (bDebug)
+		pCtx->GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Chose: [%08x] %s"), pType->GetUNID(), pType->GetNounPhrase()));
+
+	//	Add to stats, if necessary
+
+	if (pTypeStats)
+		{
+		bool bNew;
+		int *pExisting = pTypeStats->Counts.SetAt(pType, &bNew);
+		if (bNew)
+			*pExisting = 1;
+		else
+			(*pExisting) += 1;
+		}
+
+	//	Free
 
 	if (bFreeTable)
 		delete pTable;
@@ -791,7 +840,10 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 				Loc.GetOrbit().GetObjectPos(),
 				bSeparateEnemies,
 				false,
+				false,
 				&pType,
+				NULL,
+				-1,
 				&pStationTable))
 			{
 			//	If we couldn't find an appropriate location then try picking
@@ -1844,8 +1896,14 @@ ALERROR CreateRandomStation (SSystemCreateCtx *pCtx,
 	if (sLocationAttribs.IsBlank())
 		sLocationAttribs = pCtx->sLocationAttribs;
 	bool bIncludeAll = pDesc->GetAttributeBool(INCLUDE_ALL_ATTRIB);
+	bool bDebug = pDesc->GetAttributeBool(DEBUG_ATTRIB);
+	int iMaxCount = pDesc->GetAttributeIntegerBounded(MAX_COUNT_ATTRIB, 0, -1, -1);
 
 	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("RandomStation stationCriteria=%s locationAttribs=%s"), sStationCriteria, sLocationAttribs));
+
+	SStationTypeTableStats *pTableStats = NULL;
+	if (iMaxCount != -1)
+		pTableStats = pCtx->RandomStationStats.SetAt(GetXMLObjID(*pDesc));
 
 	//	Pick a random station type that fits the criteria
 
@@ -1856,7 +1914,10 @@ ALERROR CreateRandomStation (SSystemCreateCtx *pCtx,
 			OrbitDesc.GetObjectPos(),
 			false,
 			bIncludeAll,
-			&pType))
+			bDebug,
+			&pType,
+			pTableStats,
+			iMaxCount))
 		{
 		if (error == ERR_NOTFOUND)
 			{
@@ -1936,6 +1997,7 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 				sStationCriteria, 
 				MATCH_ALL,
 				NullVector,
+				false,
 				false,
 				false,
 				&pType))
@@ -2619,10 +2681,18 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		{
 		PushDebugStack(pCtx, TABLE_TAG);
 
-		CString sTableID = GetXMLObjID(*pObj);
-		
 		IElementGenerator::SCtx GenCtx;
-		GenCtx.pTableCounts = pCtx->TableStats.SetAt(sTableID);
+
+		//	If we have a maxCount= attribute at the <Table> level, then we track
+		//	usage. We require this at the root level (even though we also support
+		//	per-entry maxCount) because we don't want to initialize the TableStats
+		//	variable unless we have to.
+
+		if (pObj->FindAttribute(MAX_COUNT_ATTRIB))
+			{
+			CString sTableID = GetXMLObjID(*pObj);
+			GenCtx.pTableCounts = pCtx->TableStats.SetAt(sTableID);
+			}
 
 		TArray<CXMLElement *> Results;
 		if (!IElementGenerator::GenerateAsTable(GenCtx, pObj, Results, &pCtx->sError))
@@ -3223,6 +3293,20 @@ void DumpDebugStack (SSystemCreateCtx *pCtx)
 			}
 
 		pCtx->GetUniverse().LogOutput(sStack);
+		}
+	}
+
+void DumpDebugStackTop (SSystemCreateCtx *pCtx)
+
+//	DumpDebugStackTop
+//
+//	Output the top stack entry
+
+	{
+	if (pCtx->GetUniverse().InDebugMode() && pCtx->DebugStack.GetCount() > 0)
+		{
+		int iLast = pCtx->DebugStack.GetCount() - 1;
+		pCtx->GetUniverse().LogOutput(strPatternSubst(CONSTLIT("%2d: %s"), iLast+1, pCtx->DebugStack[iLast]));
 		}
 	}
 

@@ -697,6 +697,7 @@ ALERROR CElementTable::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, T
 
 	pEntry->m_bHasLimits = false;
 	pEntry->m_iTotalChance = 0;
+	int iDefaultMaxCount = pDesc->GetAttributeIntegerBounded(MAX_COUNT_ATTRIB, 0, -1, -1);
 	pEntry->m_Table.InsertEmpty(pDesc->GetContentElementCount());
 	for (int i = 0; i < pEntry->m_Table.GetCount(); i++)
 		{
@@ -708,7 +709,7 @@ ALERROR CElementTable::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, T
 			}
 
 		pEntry->m_Table[i].iChance = pTableDesc->GetAttributeIntegerBounded(CHANCE_ATTRIB, 0, -1, 1);
-		pEntry->m_Table[i].iMaxCount = pTableDesc->GetAttributeIntegerBounded(MAX_COUNT_ATTRIB, 0, -1, -1);
+		pEntry->m_Table[i].iMaxCount = pTableDesc->GetAttributeIntegerBounded(MAX_COUNT_ATTRIB, 0, -1, iDefaultMaxCount);
 
 		pEntry->m_iTotalChance += pEntry->m_Table[i].iChance;
 
