@@ -689,7 +689,7 @@ class CItemTypeProbabilityTable
 class IItemGenerator
 	{
 	public:
-		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IItemGenerator **retpGenerator);
+		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, IItemGenerator **retpGenerator);
 		static ALERROR CreateLookupTable (SDesignLoadCtx &Ctx, DWORD dwUNID, IItemGenerator **retpGenerator);
 		static ALERROR CreateRandomItemTable (CUniverse &Universe,
 											  const CItemCriteria &Crit, 
@@ -707,7 +707,7 @@ class IItemGenerator
 		virtual int GetItemTypeCount (void) { return 0; }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const { return CItemTypeProbabilityTable(); }
 		virtual bool HasItemAttribute (const CString &sAttrib) const { return false; }
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 
 	protected:

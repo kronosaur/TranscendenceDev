@@ -237,6 +237,7 @@ class CStationCreateOptions
 		bool ForceMapLabel (void) const { return m_bForceMapLabel; }
 		bool ForceMapOrbit (void) const { return m_bForceMapOrbit; }
 		const CString &GetImageVariant (void) const { return m_sImageVariant; }
+		const CXMLElement *GetItemsXML (void) const { return m_pItems; }
 		const CNameDesc &GetNameDesc (void) const { return m_Name; }
 		const CString &GetObjName (void) const { return m_sObjName; }
 		const CXMLElement *GetOnCreateXML (void) const { return m_pOnCreate; }
@@ -261,6 +262,7 @@ class CStationCreateOptions
 
 		const CXMLElement *m_pOnCreate = NULL;
 
+		const CXMLElement *m_pItems = NULL;
 		const CXMLElement *m_pSatellites = NULL;
 		const CXMLElement *m_pShips = NULL;
 		const CXMLElement *m_pTrade = NULL;

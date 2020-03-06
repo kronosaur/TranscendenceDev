@@ -3742,6 +3742,23 @@ ALERROR ApplyStationCreateOptions (SSystemCreateCtx &Ctx, const COrbit &OrbitDes
 			return error;
 		}
 
+	//	Additional items
+
+	if (const CXMLElement *pItems = StationCreate.GetItemsXML())
+		{
+		SDesignLoadCtx LoadCtx;
+		IItemGenerator *pItemTable;
+		if (ALERROR error = IItemGenerator::CreateFromXML(LoadCtx, pItems, &pItemTable))
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unable to load <Items> element: %s"), LoadCtx.sError);
+			return error;
+			}
+
+		Station.CreateRandomItems(pItemTable, &Ctx.System);
+
+		delete pItemTable;
+		}
+
 	//	See if we need to create additional ships
 
 	if (const CXMLElement *pShips = StationCreate.GetShipsXML())
