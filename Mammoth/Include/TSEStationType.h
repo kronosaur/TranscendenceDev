@@ -443,6 +443,7 @@ class CStationType : public CDesignType
 		const CAsteroidDesc &GetAsteroidDesc (void) const;
 		CurrencyValue GetBalancedTreasure (void) const;
 		CEffectCreator *GetBarrierEffect (void) { return m_pBarrierEffect; }
+		int GetChallengeRating (void) const;
 		IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }
 		CSovereign *GetControllingSovereign (void) const;
 		DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }

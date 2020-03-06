@@ -906,6 +906,9 @@ Metric CSingleShip::GetAverageLevelStrength (int iLevel)
 
 	Metric rTotal = m_Count.GetAveValueFloat() * ::CalcLevelDiffStrength(m_pShipClass->GetLevel() - iLevel);
 
+	if (IShipGenerator *pEscorts = m_pShipClass->GetEscorts())
+		rTotal += pEscorts->GetAverageLevelStrength(iLevel);
+
 	//	Add any escorts
 
 	if (m_pEscorts)

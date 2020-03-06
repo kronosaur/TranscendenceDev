@@ -159,6 +159,7 @@
 #define PROPERTY_ASTEROID_TYPE					CONSTLIT("asteroidType")
 #define PROPERTY_AUTO_LEVEL_FREQUENCY			CONSTLIT("autoLevelFrequency")
 #define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
+#define PROPERTY_CHALLENGE_RATING				CONSTLIT("challengeRating")
 #define PROPERTY_ENCOUNTERED_BY_NODE			CONSTLIT("encounteredByNode")
 #define PROPERTY_ENCOUNTERED_TOTAL				CONSTLIT("encounteredTotal")
 #define PROPERTY_HULL_TYPE						CONSTLIT("hullType")
@@ -169,6 +170,7 @@
 #define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
+#define PROPERTY_STD_TREASURE					CONSTLIT("stdTreasure")
 #define PROPERTY_SYSTEM_CRITERIA				CONSTLIT("systemCriteria")
 #define PROPERTY_TREASURE_DESIRED_VALUE			CONSTLIT("treasureDesiredValue")
 #define PROPERTY_TREASURE_DESIRED_VALUE_LOOP_COUNT	CONSTLIT("treasureDesiredValueLoopCount")
@@ -938,6 +940,19 @@ CurrencyValue CStationType::GetBalancedTreasure (void) const
 
 	{
 	return (CurrencyValue)(pow(CalcBalance(), TREASURE_BALACE_POWER) * (Metric)STD_STATION_DATA[GetLevel()].dwTreasureValue);
+	}
+
+int CStationType::GetChallengeRating (void) const
+
+//	GetChallengeRating
+//
+//	An integer value representing the combat strength of the station.
+
+	{
+	static constexpr Metric CHALLENGE_RATING_K0 = 1.0 / 250.0;
+	static constexpr Metric CHALLENGE_RATING_K1 = 1.25;
+
+	return mathRound(mathLog((Metric)GetBalancedTreasure() * CHALLENGE_RATING_K0, CHALLENGE_RATING_K1));
 	}
 
 CCommunicationsHandler *CStationType::GetCommsHandler (void)
@@ -1893,6 +1908,15 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	else if (strEquals(sProperty, PROPERTY_CAN_BE_MINED))
 		return ICCItemPtr(ShowsUnexploredAnnotation());
 
+	else if (strEquals(sProperty, PROPERTY_CHALLENGE_RATING))
+		{
+		int iRating = GetChallengeRating();
+		if (iRating <= 0)
+			return ICCItemPtr::Nil();
+		else
+			return ICCItemPtr(iRating);
+		}
+
 	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_BY_NODE))
 		{
 		ICCItemPtr pResult(ICCItem::SymbolTable);
@@ -1944,6 +1968,14 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 			return ICCItemPtr(ICCItem::Nil);
 
 		return m_pSovereign->GetProperty(Ctx, PROPERTY_NAME);
+		}
+	else if (strEquals(sProperty, PROPERTY_STD_TREASURE))
+		{
+		Metric rTreasure = (Metric)GetBalancedTreasure();
+		if (rTreasure <= 0.0)
+			return ICCItemPtr::Nil();
+
+		return ICCItemPtr(rTreasure);
 		}
 	else if (strEquals(sProperty, PROPERTY_SYSTEM_CRITERIA))
 		{
