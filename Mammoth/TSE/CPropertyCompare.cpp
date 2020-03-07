@@ -166,10 +166,14 @@ bool CPropertyCompare::Parse (CCodeChainCtx &CCX, const CString &sExpression, CS
 			{
 			ICCItemPtr pMinValue;
 			ICCItemPtr pMaxValue;
+			bool bHasRangeMarker = false;
 
 			pPos++;
 			if (*pPos == ':')
 				{
+				bHasRangeMarker = true;
+				pPos++;
+
 				pMinValue = ICCItemPtr::Nil();
 				if (!ParseValue(CCX, pPos, pMaxValue, retsError))
 					return false;
@@ -180,7 +184,10 @@ bool CPropertyCompare::Parse (CCodeChainCtx &CCX, const CString &sExpression, CS
 					return false;
 
 				if (*pPos == ':' || *pPos == '-')
+					{
+					bHasRangeMarker = true;
 					pPos++;
+					}
 
 				if (!ParseValue(CCX, pPos, pMaxValue, retsError))
 					return false;
@@ -196,10 +203,15 @@ bool CPropertyCompare::Parse (CCodeChainCtx &CCX, const CString &sExpression, CS
 				}
 
 			//	If we have a min value, but no max, then this is equivalent to >=
+			//	Or to =
 
 			else if (!pMinValue->IsNil())
 				{
-				m_iOp = opGreaterThanOrEqual;
+				if (bHasRangeMarker)
+					m_iOp = opGreaterThanOrEqual;
+				else
+					m_iOp = opEqual;
+
 				m_pValue = pMinValue;
 				}
 

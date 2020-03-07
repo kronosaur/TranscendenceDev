@@ -479,7 +479,7 @@ class CStationType : public CDesignType
 		const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) const { return m_Image.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
 		int GetImageVariants (void) { return m_Image.GetVariantCount(); }
 		IShipGenerator *GetInitialShips (void) const { return m_pInitialShips; }
-		Metric GetLevelStrength (int iLevel);
+		Metric GetLevelStrength (int iLevel) const;
 		const CAffinityCriteria &GetLocationCriteria (void) const { return GetEncounterDesc().GetLocationCriteria(); }
 		Metric GetMass (void) { return m_rMass; }
 		int GetMaxLightDistance (void) const { return m_Star.GetMaxLightDistance(); }
@@ -584,6 +584,7 @@ class CStationType : public CDesignType
 
 		void AddTypesUsedByXML (CXMLElement *pElement, TSortMap<DWORD, bool> *retTypesUsed);
 		Metric CalcBalance (void) const;
+		Metric CalcBalanceHitsAdj (int iLevel) const;
 		Metric CalcDefenderStrength (int iLevel) const;
 		int CalcHitsToDestroy (int iLevel) const;
 		Metric CalcTreasureValue (int iLevel) const;
@@ -599,6 +600,7 @@ class CStationType : public CDesignType
 		ScaleTypes m_iScale = scaleNone;				//	Scale
 		Metric m_rParallaxDist = 1.0;					//	Parallax distance for background objects
 		mutable int m_iLevel = 0;						//	Station level
+		int m_iChallengeRating = 0;						//	If non-zero, this overrides calculated value
 		Metric m_rMass = 0.0;							//	Mass of station
 														//		For stars, this is in solar masses
 														//		For worlds, this is in Earth masses

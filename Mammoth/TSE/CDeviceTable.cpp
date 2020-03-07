@@ -1502,6 +1502,27 @@ const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const
 	return NULL;
     }
 
+int CDeviceDescList::GetFireArc (int iIndex) const
+
+//	GetFireArc
+//
+//	Returns the fire arc of the device.
+
+	{
+	const SDeviceDesc &Desc = GetDeviceDesc(iIndex);
+	int iDescFireArc;
+	if (Desc.bOmnidirectional)
+		iDescFireArc = 360;
+	else if (Desc.iMaxFireArc != Desc.iMinFireArc)
+		iDescFireArc = AngleRange(Desc.iMinFireArc, Desc.iMaxFireArc);
+	else
+		iDescFireArc = 0;
+
+	int iDeviceFireArc = GetDeviceItem(iIndex).GetFireArc();
+
+	return Max(iDescFireArc, iDeviceFireArc);
+	}
+
 CDeviceClass *CDeviceDescList::GetNamedDevice (DeviceNames iDev) const
 
 //	GetNamedDevice

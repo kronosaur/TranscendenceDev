@@ -157,7 +157,7 @@
 		<Encounter
 				systemCriteria=			"+outlawSpace;"
 				systemAffinity=			"+envEarth; -envAir;"
-				levelFrequency=			"-ucr- ----- ----- ----- -----"
+				levelFrequency=			"rucr- ----- ----- ----- -----"
 
 				locationCriteria=		"++asteroids"
 				/>
@@ -275,7 +275,7 @@
 		<Encounter
 				systemCriteria=			"+outlawSpace;"
 				systemAffinity=			"+envEarth; -envAir;"
-				levelFrequency=			"--uur ----- ----- ----- -----"
+				levelFrequency=			"-ruur ----- ----- ----- -----"
 
 				locationCriteria=		"++asteroids"
 				/>
@@ -389,7 +389,7 @@
 		<Encounter
 				systemCriteria=			"+outlawSpace;"
 				systemAffinity=			"+envEarth; -envAir;"
-				levelFrequency=			"---uc r---- ----- ----- -----"
+				levelFrequency=			"--ruc r---- ----- ----- -----"
 
 				locationCriteria=		"++asteroids"
 				enemyExclusionRadius=	"40"
@@ -520,7 +520,7 @@
 		<Encounter
 				systemCriteria=			"+outlawSpace;"
 				systemAffinity=			"+envEarth; -envAir;"
-				levelFrequency=			"----u ur--- ----- ----- -----"
+				levelFrequency=			"---ru ur--- ----- ----- -----"
 
 				locationCriteria=		"++asteroids"
 				enemyExclusionRadius=	"40"

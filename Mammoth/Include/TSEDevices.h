@@ -456,6 +456,7 @@ class CDeviceDescList
 		const SDeviceDesc &GetDeviceDesc (int iIndex) const { return m_List[iIndex]; }
 		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev) const;
 		CDeviceItem GetDeviceItem (int iIndex) const { return m_List[iIndex].Item.AsDeviceItemOrThrow(); }
+		int GetFireArc (int iIndex) const;
 		const CItem &GetItem (int iIndex) const { return m_List[iIndex].Item; }
 		CDeviceClass *GetNamedDevice (DeviceNames iDev) const;
 		void SetSecondary (bool bValue = true) { for (int i = 0; i < GetCount(); i++) m_List[i].bSecondary = bValue; }
