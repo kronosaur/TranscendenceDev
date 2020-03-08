@@ -794,7 +794,7 @@ PLAYER DATA
 			type=				"heavy gunship"
 			defaultSovereign=	"&svBlackMarket;"
 
-			attributes=			"blackMarket, genericClass, outlaws"
+			attributes=			"blackMarket, genericClass, makayev, outlaws"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -870,7 +870,7 @@ PLAYER DATA
 			type=				"heavy gunship"
 			defaultSovereign=	"&svBlackMarket;"
 
-			attributes=			"blackMarket, genericClass, outlaws"
+			attributes=			"blackMarket, genericClass, makayev, outlaws"
 			inherit=			"&baHumanTechShip;"
 			>
 

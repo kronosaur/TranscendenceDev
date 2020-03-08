@@ -75,20 +75,31 @@
 			</OnCreate>
 
 			<OnAccepted>
-				(block (hiddenObj enemyPos enemyType)
+				(block (
+					(sourceObj (objGetObjByID (msn@ gSource 'ownerID)))
+
+					;	Find an enemy station to attack
+
+					(hiddenObj (sysFindObject sourceObj "TAN +enemy; +property:challengeRating[6-7];"))
+					)
 					;	Keep track of player
 					
 					(msnRegisterForEvents gSource gPlayerShip)
-					
+
 					;	Create a hidden station somewhere out in the deep
 					;	Pick a random enemy and location
+					
+					(if (not hiddenObj)
+						(block (
+							(enemyType (random (list &stAbbasidOutpost; &stAnarchistGathering; &stUrakOutpost;)))
+							(enemyPos (sysVectorRandom Nil (random 950 1000) 150 "TsA"))
+							)
 							
-					(setq enemyType (random (list &stAbbasidOutpost; &stAnarchistGathering; &stUrakOutpost;)))
-					(setq enemyPos (sysVectorRandom Nil (random 950 1000) 150 "TsA"))
+							;	Create the enemy station
 							
-					;	Create the enemy station
-							
-					(setq hiddenObj (sysCreateStation enemyType enemyPos))
+							(setq hiddenObj (sysCreateStation enemyType enemyPos))
+							)
+						)
 							
 					;	Place treasure on the station (but first remove any existing treasure)
 							

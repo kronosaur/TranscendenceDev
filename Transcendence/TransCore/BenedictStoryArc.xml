@@ -113,6 +113,13 @@
 									(msnFind "r +unid:&msBenedictInNewBeyond;;")
 										Nil
 
+									;	If this is not the Stormhound system, then we're done.
+
+									(and (typ@ &msBenedictInNewBeyond; 'stormhoundSystem)
+											(!= curSystem (typ@ &msBenedictInNewBeyond; 'stormhoundSystem))
+											)
+										Nil
+
 									;	If there is no Commonwealth colony here, then we're done.
 
 									(not (setq colonyObj (@ (sysFindObject Nil "TA +unid:&stCommonwealthColony;;") 0)))
@@ -237,6 +244,14 @@
 						)
 					)
 			</OnGlobalSystemDiagnostics>
+
+			<OnGlobalEndDiagnostics>
+				(block ()
+					(if (not (msnFind "r +unid:&msBenedictInNewBeyond;;"))
+						(print "WARNING: Benedict 04 mission was not created.")
+						)
+					)
+			</OnGlobalEndDiagnostics>
 		</Events>
 	</Type>
 	

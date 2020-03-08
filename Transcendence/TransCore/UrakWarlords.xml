@@ -46,7 +46,7 @@
 		<Encounter
 				systemCriteria=			"+urakSpace;"
 				systemAffinity=			"+envAir; -envFire;"
-				levelFrequency=			"-cuv- ----- ----- ----- -----"
+				levelFrequency=			"rcuv- ----- ----- ----- -----"
 
 				locationCriteria=		"-innerSystem, -void"
 				enemyExclusionRadius=	"50"
@@ -113,7 +113,7 @@
 		<Encounter
 				systemCriteria=			"+urakSpace;"
 				systemAffinity=			"+envAir; -envFire;"
-				levelFrequency=			"--cuv ----- ----- ----- -----"
+				levelFrequency=			"-vcuv ----- ----- ----- -----"
 
 				locationCriteria=		"+outerSystem"
 				enemyExclusionRadius=	"50"
@@ -194,7 +194,7 @@
 		<Encounter
 				systemCriteria=			"+urakSpace;"
 				systemAffinity=			"+envAir; -envFire;"
-				levelFrequency=			"---cu v---- ----- ----- -----"
+				levelFrequency=			"--vcu v---- ----- ----- -----"
 
 				locationCriteria=		"-innerSystem, -void"
 				enemyExclusionRadius=	"60"
