@@ -607,8 +607,6 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 //	Initializes the volumetric mask for the given star
 
 	{
-	int i;
-
 	Metric rMaxDist = (pStar->GetMaxLightDistance() + 100) * LIGHT_SECOND;
 	int iSize = (int)(2.0 * rMaxDist / g_KlicksPerPixel);
 	VolumetricMask.Create(iSize, iSize, 0xff);
@@ -620,36 +618,22 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 
 	//	Loop over all planets/asteroids and generate a shadow
 
-	for (i = 0; i < GetObjectCount(); i++)
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
+		int iStarAngle;
+		Metric rStarDist;
+
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj == NULL
 				|| pObj->IsDestroyed())
 			{ }
 
-		//	See if we need to do any starlight processing
+		//	Add the shadow, if necessary
 
-		else if (pObj->HasStarlightImage())
+		else if (pObj->HasVolumetricShadow(&iStarAngle, &rStarDist))
 			{
-			//	Compute the angle of the object with respect to the star
-			//	And skip any objects that are outside the star's light radius.
-
-			Metric rStarDist;
-			int iStarAngle = ::VectorToPolar(pObj->GetPos() - pStar->GetPos(), &rStarDist);
-			if (rStarDist > rMaxDist)
-				continue;
-
-			//	Generate an image lit from the proper angle
-
-			pObj->CreateStarlightImage(iStarAngle, rStarDist);
-
-			//	Add the shadow, if necessary
-
-			if (pObj->HasVolumetricShadow())
-				{
-				CVolumetricShadowPainter Painter(pStar, xStar, yStar, iStarAngle, rStarDist, pObj, VolumetricMask);
-				Painter.PaintShadow();
-				}
+			CVolumetricShadowPainter Painter(pStar, xStar, yStar, iStarAngle, rStarDist, pObj, VolumetricMask);
+			Painter.PaintShadow();
 			}
 		}
 	}
@@ -2902,13 +2886,16 @@ void CSystem::MarkImages (void)
 	{
 	DEBUG_TRY
 
-	int i;
-
 	m_Universe.SetLogImageLoad(false);
+
+	//	Set starlight parameters for every object
+
+	if (m_Universe.GetSFXOptions().IsStarshineEnabled())
+		SetStarlightParams();
 
 	//	Mark images for all objects that currently exist in the system.
 
-	for (i = 0; i < GetObjectCount(); i++)
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
 
@@ -2956,7 +2943,7 @@ void CSystem::MarkImages (void)
 	if (pImage)
 		pImage->Mark();
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
 		CEffectCreator &Effect = m_Universe.GetDefaultHitEffect((DamageTypes)i);
 		Effect.MarkImages();
@@ -4388,6 +4375,44 @@ void CSystem::SetSpaceEnvironment (int xTile, int yTile, CSpaceEnvironmentType *
 	{
 	InitSpaceEnvironment();
 	m_pEnvironment->SetTileType(xTile, yTile, pEnvironment);
+	}
+
+void CSystem::SetStarlightParams (void)
+
+//	SetStarlightParams
+//
+//	Sets starlight parameters for all objects.
+
+	{
+	for (int i = 0; i < m_Stars.GetCount(); i++)
+		{
+		if (m_Stars[i].VolumetricMask.IsEmpty())
+			SetStarlightParams(*m_Stars[i].pStarObj);
+		}
+	}
+
+void CSystem::SetStarlightParams (const CSpaceObject &StarObj)
+
+//	SetStarlightParams
+//
+//	Sets starlight parameters for all objects relative to this star.
+
+	{
+	Metric rMaxDist = (StarObj.GetMaxLightDistance() + 100) * LIGHT_SECOND;
+
+	//	Loop over all planets/asteroids and generate a shadow
+
+	for (int i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj == NULL
+				|| pObj->IsDestroyed())
+			continue;
+
+		//	Set parameters
+
+		pObj->SetStarlightParams(StarObj, rMaxDist);
+		}
 	}
 
 void CSystem::SortByPaintOrder (void)

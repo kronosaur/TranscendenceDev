@@ -544,11 +544,13 @@ class CSpaceObject
 
 		//	Images
 
-		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) { }
 		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
 		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const;
 		virtual const CCompositeImageSelector &GetImageSelector (void) const { return CCompositeImageSelector::Null(); }
+		virtual bool HasStarlightImage (void) const { return false; }
+		virtual bool HasVolumetricShadow (int *retiStarAngle = NULL, Metric *retrStarDist = NULL) const { return false; }
 		virtual void MarkImages (void) { }
+		virtual void SetStarlightParams (const CSpaceObject &StarObj, Metric rLightRadius) { }
 
 		int GetImageScale (void) const;
 
@@ -1078,8 +1080,6 @@ class CSpaceObject
 		virtual CDesignType *GetWreckType (void) const { return NULL; }
 		virtual bool HasAttribute (const CString &sAttribute) const { return sAttribute.IsBlank(); }
 		virtual bool HasSpecialAttribute (const CString &sAttrib) const;
-		virtual bool HasStarlightImage (void) const { return false; }
-		virtual bool HasVolumetricShadow (void) const { return false; }
 		virtual bool IsExplored (void) const { return true; }
 		virtual bool IsImmutable (void) const { return false; }
 		virtual bool IsKnown (void) const { return true; }
@@ -1138,7 +1138,7 @@ class CSpaceObject
 		virtual int GetLevel (void) const { return 1; }
 		virtual int GetMaxCounterValue(void) { return 0; }
 		virtual int GetMaxPower (void) const { return 0; }
-		virtual int GetMaxLightDistance (void) { return 0; }
+		virtual int GetMaxLightDistance (void) const { return 0; }
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
 		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }

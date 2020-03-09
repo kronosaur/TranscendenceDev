@@ -1509,7 +1509,6 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
 		virtual bool ClassCanAttack (void) override;
 		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, const CShipChallengeDesc &Needed = CShipChallengeDesc()) override;
-		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual const CAsteroidDesc &GetAsteroidDesc (void) const { return m_pType->GetAsteroidDesc(); }
 		virtual CurrencyValue GetBalancedTreasure (void) const { return m_pType->GetBalancedTreasure(); }
@@ -1535,7 +1534,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual int GetLevel (void) const override { return m_pType->GetLevel(); }
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual Metric GetMass (void) const override { return m_rMass; }
-		virtual int GetMaxLightDistance (void) override { return m_pType->GetMaxLightDistance(); }
+		virtual int GetMaxLightDistance (void) const override { return m_pType->GetMaxLightDistance(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CStation"); }
@@ -1562,8 +1561,8 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const override { return m_Hull.GetVisibleDamageDesc(Damage); }
 		virtual CDesignType *GetWreckType (void) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
-		virtual bool HasStarlightImage (void) const override { return (GetScale() == scaleWorld); }
-		virtual bool HasVolumetricShadow (void) const override { return (GetScale() == scaleWorld && !IsOutOfPlaneObj()); }
+		virtual bool HasStarlightImage (void) const override { return (m_rStarlightDist > 0.0); }
+		virtual bool HasVolumetricShadow (int *retiStarAngle = NULL, Metric *retrStarDist = NULL) const override;
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
 		virtual bool IsAbandoned (void) const override { return m_Hull.IsAbandoned(); }
 		virtual bool IsActiveStargate (void) const override { return !m_sStargateDestNode.IsBlank() && m_fActive; }
@@ -1609,6 +1608,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void SetMapLabelPos (CMapLabelPainter::EPositions iPos) override { m_MapLabel.CleanUp(); m_MapLabel.SetPos(iPos); m_fMapLabelInitialized = false; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
+		virtual void SetStarlightParams (const CSpaceObject &StarObj, Metric rLightRadius) override;
 		virtual bool ShowMapLabel (int *retcxLabel = NULL, int *retcyLabel = NULL) const override;
         virtual bool ShowMapOrbit (void) const override { return (m_fShowMapOrbit ? true : false); }
         virtual bool ShowStationDamage (void) const override { return m_Hull.IsWrecked(); }
@@ -1704,6 +1704,8 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		COrbit *m_pMapOrbit = NULL;				//	Orbit to draw on map
 		Metric m_rParallaxDist = 1.0;			//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
 		CPaintOrder::Types m_iPaintOrder = CPaintOrder::none;	//	Paint order instructions
+		int m_iStarlightImageRotation = 0;		//	Rotation of starlight image
+		Metric m_rStarlightDist = 0.0;			//	Distance from nearest star
 
 		CString m_sStargateDestNode;			//	Destination node
 		CString m_sStargateDestEntryPoint;		//	Destination entry point
@@ -1755,9 +1757,6 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 
 		mutable CG32bitImage m_MapImage;		//	Image for the map (if star or world)
 		mutable CMapLabelPainter m_MapLabel;	//	Cached info about map label
-
-		CObjectImageArray m_StarlightImage;		//	Image rotated for proper lighting.
-		int m_iStarlightImageRotation = 0;		//	Rotation of starlight image
 	};
 
 

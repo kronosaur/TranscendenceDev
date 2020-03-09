@@ -1111,18 +1111,17 @@ ALERROR CObjectImageArray::InitFromFrame (const CObjectImageArray &Source, int i
 	return NOERROR;
 	}
 
-ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int iTick, int iVariant, int iRotation)
+ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, const RECT &rcSrc, int iRotation)
 
 //	InitFromRotated
 //
-//	Creates a new image from the source
+//	Creates a new image from the source.
 
 	{
 	if (Source.m_pImage == NULL)
 		return NOERROR;
 
 	CG32bitImage &SourceImage = Source.GetImage(CONSTLIT("Rotated image"));
-	RECT rcSrc = Source.GetImageRect(iTick, iVariant);
 
 	//	If we have a shadow mask, make a copy
 
@@ -1163,6 +1162,16 @@ ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int
 	m_bDefaultSize = false;
 
 	return NOERROR;
+	}
+
+ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int iTick, int iVariant, int iRotation)
+
+//	InitFromRotated
+//
+//	Creates a new image from the source
+
+	{
+	return InitFromRotated(Source, Source.GetImageRect(iTick, iVariant), iRotation);
 	}
 
 ALERROR CObjectImageArray::InitFromXML (const CXMLElement &Desc)

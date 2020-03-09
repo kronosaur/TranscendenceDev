@@ -689,6 +689,13 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 
 	if (retModifiers)
 		{
+		//	Starlight rotation
+
+		if (HasStarlightImage())
+			{
+			retModifiers->SetRotateImage(m_iStarlightImageRotation);
+			}
+
 		//	System filters
 
 		retModifiers->SetFilters(GetSystemFilters());
@@ -1428,44 +1435,6 @@ void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, const CS
 		}
 	}
 
-void CStation::CreateStarlightImage (int iStarAngle, Metric rStarDist)
-
-//	CreateStarlightImage
-//
-//	Creates an image of the object rotated so it's shadow faces towards 
-//	iStarAngle.
-
-	{
-	constexpr int DEFAULT_LIGHTING_ANGLE = 315;
-
-	//	If we already have a starlight image, then we skip. This can happen if
-	//	we have a double star and overlapping light zones.
-
-	if (!m_StarlightImage.IsEmpty())
-		return;
-
-	//	Figure out the rotation (and remember it)
-
-	m_iStarlightImageRotation = iStarAngle - DEFAULT_LIGHTING_ANGLE;
-
-	//	Get the source image
-
-	int iTick, iVariant;
-	const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
-
-	//	Create a rotated image
-
-	m_StarlightImage.InitFromRotated(Image, iTick, iVariant, m_iStarlightImageRotation);
-
-	//	Recalculate bounds
-
-	CalcBounds();
-
-	//	While we're here, create the map image
-
-	CreateMapImage();
-	}
-
 void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 
 //	CreateStructuralDestructionEffect
@@ -1793,30 +1762,12 @@ const CObjectImageArray &CStation::GetImage (bool bFade, int *retiTick, int *ret
 //	Returns the image of this station
 
 	{
-	//	If we have a rotated image, use that
+	CCompositeImageModifiers Modifiers;
+	CalcImageModifiers(&Modifiers, retiTick);
 
-	if (!m_StarlightImage.IsEmpty())
-		{
-		if (retiTick)
-			*retiTick = 0;
+	//	Image
 
-		if (retiVariant)
-			*retiVariant = 0;
-
-		return m_StarlightImage;
-		}
-
-	//	Otherwise get the image from the type
-
-	else
-		{
-		CCompositeImageModifiers Modifiers;
-		CalcImageModifiers(&Modifiers, retiTick);
-
-		//	Image
-
-		return m_pType->GetImage(m_ImageSelector, Modifiers, retiVariant);
-		}
+	return m_pType->GetImage(m_ImageSelector, Modifiers, retiVariant);
 	}
 
 Metric CStation::GetInvMass (void) const
@@ -2059,7 +2010,7 @@ int CStation::GetRotation (void) const
 	{
 	//	For rotated worlds, use the starlight rotation.
 
-	if (!m_StarlightImage.IsEmpty())
+	if (HasStarlightImage())
 		return m_iStarlightImageRotation;
 
 	//	Otherwise, see if we have a rotation object
@@ -2164,6 +2115,25 @@ bool CStation::HasAttribute (const CString &sAttribute) const
 
 	{
 	return m_pType->HasLiteralAttribute(sAttribute);
+	}
+
+bool CStation::HasVolumetricShadow (int *retiStarAngle, Metric *retrStarDist) const
+
+//	HasVolumetricShadow
+//
+//	Returns TRUE if we should create a volumetric shadow for this object.
+
+	{
+	constexpr int DEFAULT_LIGHTING_ANGLE = 315;
+
+	if (m_rStarlightDist > 0.0 && !IsOutOfPlaneObj())
+		{
+		if (retiStarAngle) *retiStarAngle = m_iStarlightImageRotation + DEFAULT_LIGHTING_ANGLE;
+		if (retrStarDist) *retrStarDist = m_rStarlightDist;
+		return true;
+		}
+	else
+		return false;
 	}
 
 bool CStation::ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos)
@@ -4934,6 +4904,41 @@ void CStation::SetStargate (const CString &sDestNode, const CString &sDestEntryP
 	{
 	m_sStargateDestNode = sDestNode;
 	m_sStargateDestEntryPoint = sDestEntryPoint;
+	}
+
+void CStation::SetStarlightParams (const CSpaceObject &StarObj, Metric rLightRadius)
+
+//	SetStarlightParams
+//
+//	Sets the parameters for starlight.
+
+	{
+	constexpr int DEFAULT_LIGHTING_ANGLE = 315;
+
+	//	Only world objects respond to starlight.
+
+	if (GetScale() != scaleWorld)
+		return;
+
+	//	Compute the direction and distance of the star
+
+	Metric rStarDist;
+	int iStarAngle = ::VectorToPolar(GetPos() - StarObj.GetPos(), &rStarDist);
+
+	//	Skip if we're outside the light radius.
+
+	if (rStarDist > rLightRadius)
+		return;
+
+	//	Skip if some other star is closer than this one.
+
+	if (m_rStarlightDist != 0.0 && m_rStarlightDist < rStarDist)
+		return;
+
+	//	Set the parameters
+
+	m_iStarlightImageRotation = iStarAngle - DEFAULT_LIGHTING_ANGLE;
+	m_rStarlightDist = rStarDist;
 	}
 
 void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)

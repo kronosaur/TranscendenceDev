@@ -993,6 +993,8 @@ class CSystem
 		void PaintViewportAnnotations (CG32bitImage &Dest, SViewportAnnotations &Annotations, SViewportPaintCtx &Ctx);
 		void RemoveVolumetricShadow (CSpaceObject *pObj);
 		void SetPainted (void);
+		void SetStarlightParams (void);
+		void SetStarlightParams (const CSpaceObject &StarObj);
 		void SortByPaintOrder (void);
 		void UpdateCollisionTesting (SUpdateCtx &Ctx);
 		void UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj);
