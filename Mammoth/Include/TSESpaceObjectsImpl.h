@@ -1706,6 +1706,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		CPaintOrder::Types m_iPaintOrder = CPaintOrder::none;	//	Paint order instructions
 		int m_iStarlightImageRotation = 0;		//	Rotation of starlight image
 		Metric m_rStarlightDist = 0.0;			//	Distance from nearest star
+		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)
 
 		CString m_sStargateDestNode;			//	Destination node
 		CString m_sStargateDestEntryPoint;		//	Destination entry point
@@ -1750,10 +1751,10 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		mutable DWORD m_fMapLabelInitialized:1;	//	If TRUE, we've initialized m_MapLabel
 		mutable DWORD m_fMaxAttackDistValid:1;	//	TRUE if m_rMaxAttackDist is valid
 		DWORD m_fAnonymous:1;					//	TRUE if world has not been explicitly named
-		DWORD m_dwSpare:12;
+		DWORD m_fFadeImage:1;					//	If TRUE, fade image in stellar light
+		DWORD m_dwSpare:11;
 
-		//	Wreck image
-		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)
+		//	Cached
 
 		mutable CG32bitImage m_MapImage;		//	Image for the map (if star or world)
 		mutable CMapLabelPainter m_MapLabel;	//	Cached info about map label

@@ -102,7 +102,7 @@ struct SViewportPaintCtx
 
 		int iPerception = 4;					//	LATER: Same as CSpaceObject::perceptNormal (but we haven't included it yet).
 		Metric rIndicatorRadius = 0.0;			//	Radius of circle to show target indicators (in pixels)
-		CG32bitPixel rgbSpaceColor = CG32bitPixel::Null();			//	Starshine color
+		CG32bitPixel rgbStarshineColor = CG32bitPixel::Null();			//	Starshine color
 		CSpaceObject *pStar = NULL;				//	Nearest star to POV
 		const CG8bitSparseImage *pVolumetricMask = NULL;	//	Volumetric mask for starshine
 

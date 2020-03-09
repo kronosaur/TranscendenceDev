@@ -152,6 +152,7 @@
 	<SystemType UNID="&ssCharonPirateFortress;"
 				attributes=			"envAir"
 				backgroundID=		"&rsRedDwarfSpace;"
+				spaceColor=			"#10131d"
 				>
 
 		<SystemGroup>

@@ -1832,6 +1832,7 @@
 
 	<SystemType UNID="&ssHeretic;" 
 			backgroundID=		"&rsLightNebulaSpace;"
+			spaceColor=			"#282a3c"
 			spaceEnvironmentTileSize=	"large"
 			noRandomEncounters=	"true"
 			noExtraEncounters=	"true"

@@ -14,19 +14,30 @@ class CUsePerformanceCounter
 			{
 #ifdef DEBUG_PERFORMANCE_COUNTERS
 			m_Universe.GetPerformanceCounters().StartCounter(m_sID);
+			m_bRunning = true;
 #endif
 			}
 
 		~CUsePerformanceCounter (void)
 			{
+			StopCounter();
+			}
+
+		void StopCounter (void)
+			{
 #ifdef DEBUG_PERFORMANCE_COUNTERS
-			m_Universe.GetPerformanceCounters().StopCounter(m_sID);
+			if (m_bRunning)
+				{
+				m_Universe.GetPerformanceCounters().StopCounter(m_sID);
+				m_bRunning = false;
+				}
 #endif
 			}
 
 	private:
 		CUniverse &m_Universe;
 		CString m_sID;
+		bool m_bRunning = false;
 	};
 
 class CUsePerformanceCounterForEvent
@@ -38,18 +49,29 @@ class CUsePerformanceCounterForEvent
 			{
 #ifdef DEBUG_PERFORMANCE_COUNTERS
 			m_Universe.GetPerformanceCounters().StartCounter(m_sID);
+			m_bRunning = true;
 #endif
 			}
 
 		~CUsePerformanceCounterForEvent (void)
 			{
+			StopCounter();
+			}
+
+		void StopCounter (void)
+			{
 #ifdef DEBUG_PERFORMANCE_COUNTERS
-			m_Universe.GetPerformanceCounters().StopCounter(m_sID);
+			if (m_bRunning)
+				{
+				m_Universe.GetPerformanceCounters().StopCounter(m_sID);
+				m_bRunning = false;
+				}
 #endif
 			}
 
 	private:
 		CUniverse &m_Universe;
 		CString m_sID;
+		bool m_bRunning = false;
 	};
 

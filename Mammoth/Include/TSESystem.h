@@ -636,7 +636,8 @@ class CSystemSpacePainter
 		CSystemSpacePainter (void);
 
 		void CleanUp (void);
-		void PaintViewport (CG32bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx);
+		void PaintSpaceBackground (CG32bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx);
+		void PaintStarshine (CG32bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx);
 		void PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSystemType *pType, CMapViewportCtx &Ctx);
 
 	private:
@@ -655,6 +656,7 @@ class CSystemSpacePainter
 		void InitSpaceBackground (DWORD dwBackgroundUNID, CG32bitPixel rgbSpaceColor);
 		void PaintSpaceBackground (CG32bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx);
 		void PaintStarfield (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, CG32bitPixel rgbSpaceColor);
+		void PaintStarshine (CG32bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx);
 
 		bool m_bInitialized;
 
@@ -808,9 +810,9 @@ class CSystem
 		void AddToDeleteList (CSpaceObject *pObj);
 		ALERROR AddToSystem (CSpaceObject *pObj, int *retiIndex);
 		bool AscendObject (CSpaceObject *pObj, CString *retsError = NULL);
-		int CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL);
+		CG32bitPixel CalcNearestStarColor (const CVector &vPos, CSpaceObject **retpStar = NULL) const;
+		int CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL) const;
 		CVector CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric rDistance, const CSpaceObject *pEncounterBase = NULL) const;
-		CG32bitPixel CalculateSpaceColor (CSpaceObject *pPOV, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL);
 		void CancelTimedEvent (CSpaceObject *pSource, bool bInDoEvent = false);
 		void CancelTimedEvent (CSpaceObject *pSource, const CString &sEvent, bool bInDoEvent = false);
 		void CancelTimedEvent (CDesignType *pSource, const CString &sEvent, bool bInDoEvent = false);
@@ -863,6 +865,7 @@ class CSystem
 		void GetObjectsInBox (const CVector &vUR, const CVector &vLL, CSpaceObjectList &Result) { m_ObjGrid.GetObjectsInBox(vUR, vLL, Result); }
 		CSpaceObject *GetPlayerShip (void) const;
 		static DWORD GetSaveVersion (void);
+		CG32bitPixel GetSpaceColor (void) const { return (m_pType ? m_pType->GetSpaceColor() : CSystemType::DEFAULT_SPACE_COLOR); }
 		Metric GetSpaceScale (void) const { return m_rKlicksPerPixel; }
 		int GetTick (void) { return m_iTick; }
 		int GetTileSize (void) const;
@@ -975,6 +978,7 @@ class CSystem
 
 		CSystem (CUniverse &Universe, CTopologyNode *pTopology);
 
+		CG32bitPixel CalcStarshineColor (CSpaceObject *pPOV, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL) const;
 		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
 		void CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &VolumetricMask);
 		void ComputeRandomEncounters (void);
@@ -984,6 +988,7 @@ class CSystem
 								  SObjCreateCtx &CreateCtx,
 								  CSpaceObject **retpStation,
 								  CString *retsError = NULL);
+		const SStarDesc *FindNearestStar (const CVector &vPos, int *retiDist = NULL) const;
 		void FlushDeletedObjects (void);
 		int GetTimedEventCount (void) { return m_TimedEvents.GetCount(); }
 		CSystemEvent *GetTimedEvent (int iIndex) { return m_TimedEvents.GetEvent(iIndex); }

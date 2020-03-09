@@ -615,6 +615,7 @@
 				noRandomEncounters=	"true"
 				noExtraEncounters=	"true"
 				backgroundID=		"&rsBrightStarSpace;"
+				spaceColor=			"#1c150f"
 				>
 
 		<Tables>

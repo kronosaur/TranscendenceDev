@@ -685,6 +685,8 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 //	Compute the modifiers for the station
 
 	{
+	constexpr BYTE FADE_OPACITY = 0x80;
+
 	//	Modifiers (such as station damage)
 
 	if (retModifiers)
@@ -694,6 +696,19 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 		if (HasStarlightImage())
 			{
 			retModifiers->SetRotateImage(m_iStarlightImageRotation);
+			}
+
+		//	Out of plane worlds are faded
+
+		if (m_fFadeImage)
+			{
+			CG32bitPixel rgbColor;
+			if (CSystem *pSystem = GetSystem())
+				rgbColor = pSystem->GetSpaceColor();
+			else
+				rgbColor = CSystemType::DEFAULT_SPACE_COLOR;
+
+			retModifiers->SetFadeColor(rgbColor, FADE_OPACITY);
 			}
 
 		//	System filters
@@ -1108,6 +1123,10 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pStation->m_fIsSegment = CreateCtx.bIsSegment;
 	pStation->m_fAnonymous = pType->IsAnonymous();
 	pStation->Set3DExtra(CreateCtx.bIs3DExtra);
+
+	//	3D Extra objects are always faded
+
+	pStation->m_fFadeImage = CreateCtx.bIs3DExtra;
 
 	//	Set up rotation, if necessary
 
@@ -3880,30 +3899,14 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fReconned =			((dwLoad & 0x00000080) ? true : false);
 	m_fFireReconEvent =		((dwLoad & 0x00000100) ? true : false);
 	bool fNoArticle =		((dwLoad & 0x00000200) ? true : false);
-
-	bool bImmutable;
-	if (Ctx.dwVersion < 151)
-		bImmutable =		((dwLoad & 0x00000400) ? true : false);
-	else
-		bImmutable = false;
-
+	bool bImmutable =		(Ctx.dwVersion < 151  ? ((dwLoad & 0x00000400) ? true : false) : false);
 	m_fExplored =			((dwLoad & 0x00000800) ? true : false);
-	if (Ctx.dwVersion >= 182)
-		m_fAnonymous =		((dwLoad & 0x00001000) ? true : false);
-	else
-		m_fAnonymous = (m_pType->IsAnonymous() && m_sName.IsBlank());
-
-	//	0x00002000 Unused as of version 160
+	m_fAnonymous =			(Ctx.dwVersion >= 182 ? ((dwLoad & 0x00001000) ? true : false) : (m_pType->IsAnonymous() && m_sName.IsBlank()));
+	m_fFadeImage =			(Ctx.dwVersion >= 187 ? ((dwLoad & 0x00002000) ? true : false) : false);
 	m_fNoBlacklist =		((dwLoad & 0x00004000) ? true : false);
 	m_fNoConstruction =		((dwLoad & 0x00008000) ? true : false);
 	m_fBlocksShips =		((dwLoad & 0x00010000) ? true : false);
-
-	bool bPaintOverhang;
-	if (Ctx.dwVersion < 177)
-		bPaintOverhang =	((dwLoad & 0x00020000) ? true : false);
-	else
-		bPaintOverhang = false;
-
+	bool bPaintOverhang =	(Ctx.dwVersion < 177  ? ((dwLoad & 0x00020000) ? true : false) : false);
 	m_fShowMapOrbit =		((dwLoad & 0x00040000) ? true : false);
 	m_fDestroyIfEmpty =		((dwLoad & 0x00080000) ? true : false);
 	m_fIsSegment =		    ((dwLoad & 0x00100000) ? true : false);
@@ -4397,7 +4400,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	//	0x00000400 retired at 151
 	dwSave |= (m_fExplored ?			0x00000800 : 0);
 	dwSave |= (m_fAnonymous ?			0x00001000 : 0);
-	//	0x00002000
+	dwSave |= (m_fFadeImage ?			0x00002000 : 0);
 	dwSave |= (m_fNoBlacklist ?			0x00004000 : 0);
 	dwSave |= (m_fNoConstruction ?		0x00008000 : 0);
 	dwSave |= (m_fBlocksShips ?			0x00010000 : 0);

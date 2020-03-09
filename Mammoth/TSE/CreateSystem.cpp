@@ -946,6 +946,30 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 	return NOERROR;
 	}
 
+class CZPosGenerator
+	{
+	public:
+		CZPosGenerator (int iZHeight, Metric rScale = LIGHT_SECOND)
+			{
+			constexpr Metric MAX_STD_DEV = 3.0;
+
+			//	This generator clusters points on a plane iZHeight below the 
+			//	main plane.
+
+			m_rZFactor = rScale * iZHeight / (2.0 * MAX_STD_DEV);
+			m_rZPlane = rScale * iZHeight;
+			}
+
+		CVector3D Generate (void)
+			{
+			return CVector3D(0.0, 0.0, m_rZPlane - (m_rZFactor * ::mathRandomGaussian()));
+			}
+
+	private:
+		Metric m_rZPlane = 0.0;
+		Metric m_rZFactor = 0.0;
+	};
+
 ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc)
 
 //	CreateArcDistribution
@@ -986,7 +1010,7 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 	if (ALERROR error = Focus.InitFromXML(*pCtx, *pObj, OrbitDesc.GetFocus3D(), iCount))
 		return error;
 
-	Metric rZFactor = rScale * iZHeight / (2.0 * rMaxStdDev);
+	CZPosGenerator ZPos(iZHeight, rScale);
 
 	//	If arc length is 0 then it means that we distribute evenly around the
 	//	entire orbit.
@@ -1007,7 +1031,7 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 				//	Orbit focus
 
 				if (iZHeight)
-					SiblingOrbit.SetFocus(Focus.GetValue(i) + CVector3D(0.0, 0.0, rZFactor * mathRandomGaussian()));
+					SiblingOrbit.SetFocus(Focus.GetValue(i) + ZPos.Generate());
 				else
 					SiblingOrbit.SetFocus(Focus.GetValue(i));
 
@@ -1042,7 +1066,7 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 				//	Orbit focus
 
 				if (iZHeight)
-					SiblingOrbit.SetFocus(Focus.GetValue(i) + CVector3D(0.0, 0.0, rZFactor * mathRandomGaussian()));
+					SiblingOrbit.SetFocus(Focus.GetValue(i) + ZPos.Generate());
 				else
 					SiblingOrbit.SetFocus(Focus.GetValue(i));
 
@@ -1078,7 +1102,7 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 			//	Orbit focus
 
 			if (iZHeight)
-				SiblingOrbit.SetFocus(Focus.GetValue(i) + CVector3D(0.0, 0.0, rZFactor * mathRandomGaussian()));
+				SiblingOrbit.SetFocus(Focus.GetValue(i) + ZPos.Generate());
 			else
 				SiblingOrbit.SetFocus(Focus.GetValue(i));
 
