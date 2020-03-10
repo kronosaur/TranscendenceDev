@@ -86,7 +86,10 @@ IHUDPainter *IHUDPainter::Create (EHUDTypes iType, CUniverse &Universe, const CV
 
 		case hudShields:
 			{
-			pPainter = new CShieldHUDDefault;
+			if (pDesc->GetTag().IsBlank())
+				pPainter = new CNullHUD;
+			else
+				pPainter = new CShieldHUDDefault;
 			break;
 			}
 

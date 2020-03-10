@@ -158,6 +158,18 @@ class CLRSHUD : public IHUDPainter
 		CG32bitImage m_Buffer;
 	};
 
+class CNullHUD : public IHUDPainter
+	{
+	public:
+		virtual void GetBounds (int *retWidth, int *retHeight) const override { *retWidth = 0; *retHeight = 0; }
+
+	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override { return true; }
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override { }
+
+	private:
+	};
+
 class CReactorHUDDefault : public IHUDPainter
 	{
 	public:
