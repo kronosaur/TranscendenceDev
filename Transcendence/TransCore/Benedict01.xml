@@ -55,6 +55,8 @@
 			<DynamicData id="rpg.showInProgressOnDock">
 				(msnGetData gSource 'taskCompleted)
 			</DynamicData>
+
+			<Data id="declineSmartCannon">Nil</Data>
 		</Properties>
 
 		<Events>
@@ -173,7 +175,7 @@
 											
 										;	Otherwise, we tell the player to attack a different station
 									
-										(setq targetObj (sysFindObject gPlayerShip "TAEN +populated;"))
+										(setq targetObj (sysFindObject gPlayerShip "TAEN +populated; +property:hullType=singleHull; +property:challengeRating[1-4]"))
 											(block Nil
 												(msnRegisterForEvents gSource targetObj)
 												(setq state 'attackFirstStation)
@@ -296,6 +298,7 @@
 										(not (objGetItems gPlayerShip "wI +unid:&itSmartCannon;"))
 										(not (objGetItems gPlayerShip "wI L:4-"))
 										(setq targetObj (@ (rpgGetInstallerList gPlayerShip foundItem) 0))
+										(not (msn@ gSource 'declineSmartCannon))
 										)
 									(setq state 'installSmartCannon)
 
@@ -692,8 +695,6 @@
 			</Text>
 			<Text id="attackFirstStation:Begin">
 
-				Benedict greets you as you enter.
-
 				"Every star system has its share of outlaws and warlords.
 				Most people fear them, but you can't afford to.
 
@@ -984,11 +985,51 @@
 				Payment: None
 			</Text>
 			<Text id="installSmartCannon:Begin">
+				(block (
+					;	Store here because we'll need it for the closure below.
 
+					(missionObj gSource)
+					)
+					(list
+						{	desc:(msnTranslate gSource 'installSmartCannon.begin1 gData)
+							actions: (list
+								{	label:(msnTranslate gSource 'actionInstallSmartCannonOK)
+									nextPage:'exitPane
+									}
+								{	label:(msnTranslate gSource 'actionInstallSmartCannonDecline)
+									}
+								)
+							}
+						{	desc:(msnTranslate gSource 'installSmartCannon.decline)
+							code: (lambda ()
+								(block ()
+									(msnSet@ missionObj 'declineSmartCannon True)
+									(msnSetData missionObj 'state Nil)
+									(objClearShowAsDestination (objGetObjByID (msnGetData missionObj 'targetID)))
+									)
+								)
+							}
+						)
+					)
+			</Text>
+			<Text id="installSmartCannon.begin1">
+			
 				"The %item% in your cargo hold is powerful.
 				Go to %target% and have it installed at their dock services."
 
 			</Text>
+			<String id="actionInstallSmartCannonOK">"[O]K"</String>
+			<String id="actionInstallSmartCannonDecline">"[N]o, I don't need it."</String>
+			<Text id="installSmartCannon.decline">
+
+				Benedict shrugs, "Fine. It's your ship. But remember: a weapon 
+				is just a tool. Don't get too attached to one way of doing 
+				things.
+
+				"Come back here when you're ready for more training."
+			
+			</Text>
+
 			<Text id="installSmartCannon:Debrief">
 
 				"Weapons, armor, and most other items need to be properly
@@ -1004,7 +1045,7 @@
 			</Text>
 			<Text id="installWMD:Begin">
 
-				"Enemy stations are often protected against standard laser and 
+				"Enemy stations are often resistant to standard laser and 
 				kinetic	weapons. You'll need something stronger, like a missile 
 				launcher.
 
