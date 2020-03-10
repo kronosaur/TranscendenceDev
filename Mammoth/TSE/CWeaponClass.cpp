@@ -171,36 +171,36 @@ const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
 
 static CWeaponClass::SStdStats STD_WEAPON_STATS[MAX_ITEM_LEVEL] =
 	{
-		//	Damage	Power	        Cost     Ammo Cost   Over	Under
-		{	4,		10,		        350.,       0.6,     0,	    0, },
-		{	5,		20,		        800.,       1.2,     0,	    -20, },
-		{	7,		50,		       1850.,       3.0,     0,     -50, },
-		{	9,		100,	       4000.,       6.0,     0,     -100, },
-		{	12,		200,	       8500.,      12.0,     5,     -170, },
+		//	Damage	   Power	          Cost     Ammo Cost   Over	Under
+		{	   4,	     10,	           350,         0.6,     0,	    0, },
+		{	   5,	     20,	           800,         1.2,     0,	    -20, },
+		{	   7,	     50,	         1'850,         3.0,     0,     -50, },
+		{	   9,	    100,	         4'000,         6.0,     0,     -100, },
+		{	  12,	    200,	         8'500,        12.0,     5,     -170, },
 			
-		{	16,		300,	      18500.,      18.0,     5,     -250, },
-		{	21,		500,	      39000.,      30.0,     5,     -300, },
-		{	27,		1000,	      78500.,      60.0,     10,    -300, },
-		{	35,		2000,	     158000.,     120.0,     10,    -300, },
-		{	46,		3000,	     320000.,     180.0,     10,    -300, },
+		{	  16,	    300,	        18'500,        18.0,     5,     -250, },
+		{	  21,	    500,	        39'000,        30.0,     5,     -300, },
+		{	  27,	  1'000,	        78'500,        60.0,     10,    -300, },
+		{	  35,	  2'000,	       158'000,       120.0,     10,    -300, },
+		{	  46,	  3'000,	       320'000,       180.0,     10,    -300, },
 			
-		{	60,		5000,	     640000.,     300.0,     25,    -300, },
-		{	78,		8000,	    1300000.,     480.0,     25,    -300, },
-		{	101,	12000,	    2700000.,     720.0,     25,    -300, },
-		{	131,	18000,	    5300000.,    1080.0,     100,   -300, },
-		{	170,	28000,	   10600000.,    1680.0,     100,   -300, },
+		{	  60,	  5'000,	       640'000,       300.0,     25,    -300, },
+		{	  78,	  8'000,	     1'300'000,       480.0,     25,    -300, },
+		{	  101,	 12'000,	     2'700'000,       720.0,     25,    -300, },
+		{	  131,	 18'000,	     5'300'000,     1'080.0,     100,   -300, },
+		{	  170,	 28'000,	    10'600'000,     1'680.0,     100,   -300, },
 			
-		{	221,	40000,	   21300000.,    2400.0,     100,   -300, },
-		{	287,	60000,	   42600000.,    3600.0,     200,   -300, },
-		{	373,	90000,	   85200000.,    5400.0,     200,   -300, },
-		{	485,	120000,	  170000000.,    7200.0,     200,   -300, },
-		{	631,	160000,	  341000000.,    9600.0,     200,   -300, },
+		{	  221,	 40'000,	    21'300'000,     2'400.0,     100,   -300, },
+		{	  287,	 60'000,	    42'600'000,     3'600.0,     200,   -300, },
+		{	  373,	 90'000,	    85'200'000,     5'400.0,     200,   -300, },
+		{	  485,	120'000,	   170'000'000,     7'200.0,     200,   -300, },
+		{	  631,	160'000,	   341'000'000,     9'600.0,     200,   -300, },
 			
-		{	820,	220000,	  682000000.,   13200.0,     200,   -300, },
-		{	1066,	300000,	 1400000000.,   18000.0,     200,   -300, },
-		{	1386,	400000,	 2700000000.,   24000.0,     200,   -300, },
-		{	1802,	500000,	 5500000000.,   30000.0,     200,   -300, },
-		{	2343,	600000,	10900000000.,   36000.0,     200,   -300, },
+		{	  820,	220'000,	   682'000'000,    13'200.0,     200,   -300, },
+		{	1'066,	300'000,	 1'400'000'000,    18'000.0,     200,   -300, },
+		{	1'386,	400'000,	 2'700'000'000,    24'000.0,     200,   -300, },
+		{	1'802,	500'000,	 5'500'000'000,    30'000.0,     200,   -300, },
+		{	2'343,	600'000,	10'900'000'000,    36'000.0,     200,   -300, },
 	};
 
 static char *CACHED_EVENTS[CWeaponClass::evtCount] =
@@ -496,7 +496,7 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 	if (!bAmmo || !IsLauncher())
 		{
 		Metric rCost = (Metric)CEconomyType::ExchangeToCredits(GetItemType()->GetCurrencyAndValue(ItemCtx, true));
-		Metric rCostDelta = 100.0 * (rCost - Stats.rCost) / Stats.rCost;
+		Metric rCostDelta = 100.0 * (rCost - (Metric)Stats.Cost) / (Metric)Stats.Cost;
 		retBalance.rCost = BALANCE_COST_RATIO * rCostDelta;
 		retBalance.rBalance += retBalance.rCost;
 		}
@@ -2663,7 +2663,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		//  Compute cost to compensate for this balance
 
 		Metric rCostDelta = -rBalance / BALANCE_COST_RATIO;
-		Metric rCostCredits = Stats.rCost + (Stats.rCost * rCostDelta / 100.0);
+		Metric rCostCredits = (Metric)Stats.Cost + (Stats.Cost * rCostDelta / 100.0);
 
 		return CC.CreateInteger((int)GetItemType()->GetCurrencyType()->Exchange(NULL, (CurrencyValue)rCostCredits));
 		}
@@ -2821,7 +2821,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		else
 			{
 			const SStdStats &Stats = STD_WEAPON_STATS[CalcLevel(*pShot) - 1];
-			return CC.CreateDouble(Stats.rCost);
+			return CC.CreateDouble((Metric)Stats.Cost);
 			}
 		}
 

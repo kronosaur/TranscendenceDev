@@ -116,8 +116,8 @@ class CWeaponClass : public CDeviceClass
 			{
 			int iDamage;			//	Average damage at this level
 			int iPower;				//	Power (in tenths of MWs)
-			Metric rCost;           //  Weapon cost (credits)
-			Metric rAmmoCost;       //  Ammo cost (credits)
+			CurrencyValue Cost;		//  Weapon cost (credits)
+			Metric rAmmoCost;		//  Ammo cost (credits)
 
 			int iOverTierAdj;		//	Balance points to add to adjust for damage type above level
 			int iUnderTierAdj;		//	Balance points to add to adjust for damage type below level

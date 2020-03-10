@@ -310,121 +310,121 @@ bool CTradingDesc::ComposeDescription (CUniverse &Universe, CString *retsDesc) c
 //  Composes a description of the trading desc, suitable for map description.
 //  We return FALSE if we have no relevant services.
 
-    {
-    CString sDesc;
+	{
+	CString sDesc;
 
-    //  Short-circuit
+	//  Short-circuit
 
-    if (!HasServices())
-        return false;
+	if (!HasServices())
+		return false;
 
-    //  Buying and selling ships
+	//  Buying and selling ships
 
-    SServiceTypeInfo BuyShips;
-    GetServiceTypeInfo(Universe, serviceBuyShip, BuyShips);
+	SServiceTypeInfo BuyShips;
+	GetServiceTypeInfo(Universe, serviceBuyShip, BuyShips);
 
-    SServiceTypeInfo SellShips;
-    GetServiceTypeInfo(Universe, serviceSellShip, SellShips);
+	SServiceTypeInfo SellShips;
+	GetServiceTypeInfo(Universe, serviceSellShip, SellShips);
 
-    CString sBuySellShips;
-    if (BuyShips.bAvailable && SellShips.bAvailable)
-        sDesc = CONSTLIT("Buys and sells ships");
-    else if (BuyShips.bAvailable)
-        sDesc = CONSTLIT("Buys ships");
-    else if (BuyShips.bAvailable)
-        sDesc = CONSTLIT("Sells ships");
+	CString sBuySellShips;
+	if (BuyShips.bAvailable && SellShips.bAvailable)
+		sDesc = CONSTLIT("Buys and sells ships");
+	else if (BuyShips.bAvailable)
+		sDesc = CONSTLIT("Buys ships");
+	else if (BuyShips.bAvailable)
+		sDesc = CONSTLIT("Sells ships");
 
-    //  Refuels
+	//  Refuels
 
-    SServiceTypeInfo Refuel;
-    if (GetServiceTypeInfo(Universe, serviceRefuel, Refuel))
-        {
-        CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), Refuel.iMaxLevel);
+	SServiceTypeInfo Refuel;
+	if (GetServiceTypeInfo(Universe, serviceRefuel, Refuel))
+		{
+		CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), Refuel.iMaxLevel);
 
-        if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
-        else
-            sDesc = sText;
-        }
+		if (!sDesc.IsBlank())
+			sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
+		else
+			sDesc = sText;
+		}
 
-    //  Repair armor
+	//  Repair armor
 
-    SServiceTypeInfo RepairArmor;
-    GetServiceTypeInfo(Universe, serviceRepairArmor, RepairArmor);
+	SServiceTypeInfo RepairArmor;
+	GetServiceTypeInfo(Universe, serviceRepairArmor, RepairArmor);
 
-    SServiceTypeInfo InstallArmor;
-    GetServiceTypeInfo(Universe, serviceReplaceArmor, InstallArmor);
+	SServiceTypeInfo InstallArmor;
+	GetServiceTypeInfo(Universe, serviceReplaceArmor, InstallArmor);
 
-    if (RepairArmor.iMaxLevel != -1 || InstallArmor.iMaxLevel != -1)
-        {
-        CString sPurchased = (InstallArmor.bUpdateInstallOnly ? CONSTLIT("purchased ") : NULL_STR);
+	if (RepairArmor.iMaxLevel != -1 || InstallArmor.iMaxLevel != -1)
+		{
+		CString sPurchased = (InstallArmor.bUpdateInstallOnly ? CONSTLIT("purchased ") : NULL_STR);
 
-        CString sText;
-        if (RepairArmor.iMaxLevel == InstallArmor.iMaxLevel)
-            sText = strPatternSubst(CONSTLIT("Repairs/installs %sarmor up to level %d"), sPurchased, RepairArmor.iMaxLevel);
-        else if (RepairArmor.iMaxLevel != -1 && InstallArmor.iMaxLevel != -1)
-            sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d %&mdash; Installs %sarmor up to level %d"), RepairArmor.iMaxLevel, sPurchased, InstallArmor.iMaxLevel);
-        else if (RepairArmor.iMaxLevel != -1)
-            sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d"), RepairArmor.iMaxLevel);
-        else
-            sText = strPatternSubst(CONSTLIT("Installs %sarmor up to level %d"), sPurchased, InstallArmor.iMaxLevel);
+		CString sText;
+		if (RepairArmor.iMaxLevel == InstallArmor.iMaxLevel)
+			sText = strPatternSubst(CONSTLIT("Repairs/installs %sarmor up to level %d"), sPurchased, RepairArmor.iMaxLevel);
+		else if (RepairArmor.iMaxLevel != -1 && InstallArmor.iMaxLevel != -1)
+			sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d %&mdash; Installs %sarmor up to level %d"), RepairArmor.iMaxLevel, sPurchased, InstallArmor.iMaxLevel);
+		else if (RepairArmor.iMaxLevel != -1)
+			sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d"), RepairArmor.iMaxLevel);
+		else
+			sText = strPatternSubst(CONSTLIT("Installs %sarmor up to level %d"), sPurchased, InstallArmor.iMaxLevel);
 
-        if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
-        else
-            sDesc = sText;
-        }
+		if (!sDesc.IsBlank())
+			sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
+		else
+			sDesc = sText;
+		}
 
-    //  Install devices
+	//  Install devices
 
-    SServiceTypeInfo InstallDevice;
-    GetServiceTypeInfo(Universe, serviceInstallDevice, InstallDevice);
+	SServiceTypeInfo InstallDevice;
+	GetServiceTypeInfo(Universe, serviceInstallDevice, InstallDevice);
 
-    if (InstallDevice.iMaxLevel != -1)
-        {
-        CString sPurchased = (InstallDevice.bUpdateInstallOnly ? CONSTLIT("purchased ") : NULL_STR);
-        CString sText = strPatternSubst(CONSTLIT("Installs %sdevices up to level %d"), sPurchased, InstallDevice.iMaxLevel);
+	if (InstallDevice.iMaxLevel != -1)
+		{
+		CString sPurchased = (InstallDevice.bUpdateInstallOnly ? CONSTLIT("purchased ") : NULL_STR);
+		CString sText = strPatternSubst(CONSTLIT("Installs %sdevices up to level %d"), sPurchased, InstallDevice.iMaxLevel);
 
-        if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
-        else
-            sDesc = sText;
-        }
+		if (!sDesc.IsBlank())
+			sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
+		else
+			sDesc = sText;
+		}
 
-    SServiceTypeInfo Buys;
-    GetServiceTypeInfo(Universe, serviceBuy, Buys);
+	SServiceTypeInfo Buys;
+	GetServiceTypeInfo(Universe, serviceBuy, Buys);
 
-    SServiceTypeInfo Sells;
-    GetServiceTypeInfo(Universe, serviceSell, Sells);
+	SServiceTypeInfo Sells;
+	GetServiceTypeInfo(Universe, serviceSell, Sells);
 
-    if (Buys.bAvailable || Sells.bAvailable)
-        {
-        CString sText;
-        if (Buys.bAvailable && Sells.bAvailable)
-            sText = CONSTLIT("Buys and sells commodities");
-        else if (Buys.bAvailable)
-            sText = CONSTLIT("Buys commodities");
-        else
-            sText = CONSTLIT("Sells commodities");
+	if (Buys.bAvailable || Sells.bAvailable)
+		{
+		CString sText;
+		if (Buys.bAvailable && Sells.bAvailable)
+			sText = CONSTLIT("Buys and sells commodities");
+		else if (Buys.bAvailable)
+			sText = CONSTLIT("Buys commodities");
+		else
+			sText = CONSTLIT("Sells commodities");
 
-        if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
-        else
-            sDesc = sText;
-        }
+		if (!sDesc.IsBlank())
+			sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
+		else
+			sDesc = sText;
+		}
 
-    //  If we don't have any trade descriptor, then we're done
+	//  If we don't have any trade descriptor, then we're done
 
-    if (sDesc.IsBlank())
-        return false;
+	if (sDesc.IsBlank())
+		return false;
 
-    //  Return it
+	//  Return it
 
-    if (retsDesc)
-        *retsDesc = sDesc;
+	if (retsDesc)
+		*retsDesc = sDesc;
 
-    return true;
-    }
+	return true;
+	}
 
 CString CTradingDesc::ComputeID (ETradeServiceTypes iService, DWORD dwUNID, const CString &sCriteria, DWORD dwFlags)
 
@@ -508,7 +508,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 			if (!ArmorItem)
 				return -1;
 
-   			iBasePrice = (int)ArmorItem.GetRepairCost(Ctx.iCount);
+			iBasePrice = (int)ArmorItem.GetRepairCost(Ctx.iCount);
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}
@@ -756,8 +756,8 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDe
 			if (pLine->GetAttributeBool(UPGRADE_INSTALL_ONLY_ATTRIB))
 				pCommodity->dwFlags |= FLAG_UPGRADE_INSTALL_ONLY;
 
-            if (pLine->GetAttributeBool(NO_DESCRIPTION_ATTRIB))
-                pCommodity->dwFlags |= FLAG_NO_DESCRIPTION;
+			if (pLine->GetAttributeBool(NO_DESCRIPTION_ATTRIB))
+				pCommodity->dwFlags |= FLAG_NO_DESCRIPTION;
 
 			//	Set ID
 
@@ -1151,7 +1151,7 @@ bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject &Obj, CSpaceObject *p
 	Ctx.iService = serviceRepairArmor;
 	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
-    Ctx.pObj = pSource;
+	Ctx.pObj = pSource;
 	Ctx.pItem = &Item;
 	Ctx.iCount = iHPToRepair;
 
@@ -1298,11 +1298,11 @@ int CTradingDesc::GetMaxLevelMatched (CUniverse &Universe, ETradeServiceTypes iS
 			if (strEquals(sPrefix, UNAVAILABLE_PREFIX))
 				continue;
 
-            //  If we're looking for a description, ignore any entries that
-            //  don't want one.
+			//  If we're looking for a description, ignore any entries that
+			//  don't want one.
 
-            if (bDescriptionOnly && (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
-                continue;
+			if (bDescriptionOnly && (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
+				continue;
 
 			int iLevel;
 			if (m_List[i].pItemType)
@@ -1436,14 +1436,14 @@ bool CTradingDesc::GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes i
 //  Returns information about the given service suitable for creating a human-
 //  readable description.
 
-    {
+	{
 	int i;
 
-    //  Initialize to defaults.
+	//  Initialize to defaults.
 
-    Info.bAvailable = false;
-    Info.bUpdateInstallOnly = true;
-    Info.iMaxLevel = -1;
+	Info.bAvailable = false;
+	Info.bUpdateInstallOnly = true;
+	Info.iMaxLevel = -1;
 
 	//	Loop over the commodity list and find the first entry that matches
 
@@ -1453,22 +1453,22 @@ bool CTradingDesc::GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes i
 			CString sPrefix;
 			int iPriceAdj = m_List[i].PriceAdj.EvalAsInteger(NULL, &sPrefix);
 
-            //  Ignore entries that don't count towards the description
+			//  Ignore entries that don't count towards the description
 
 			if (strEquals(sPrefix, UNAVAILABLE_PREFIX)
-                    || (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
+					|| (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
 				continue;
 
-            //  Found at least one service.
+			//  Found at least one service.
 
-            Info.bAvailable = true;
+			Info.bAvailable = true;
 
-            //  If we don't require a purchase, then clear the flag
+			//  If we don't require a purchase, then clear the flag
 
-            if (!(m_List[i].dwFlags & FLAG_UPGRADE_INSTALL_ONLY))
-                Info.bUpdateInstallOnly = false;
+			if (!(m_List[i].dwFlags & FLAG_UPGRADE_INSTALL_ONLY))
+				Info.bUpdateInstallOnly = false;
 
-            //  Compute the level
+			//  Compute the level
 
 			int iLevel;
 			if (m_List[i].pItemType)
@@ -1481,7 +1481,7 @@ bool CTradingDesc::GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes i
 			}
 
 	return Info.bAvailable;
-    }
+	}
 
 bool CTradingDesc::HasService (CUniverse &Universe, ETradeServiceTypes iService, const SHasServiceOptions &Options) const
 
@@ -1509,7 +1509,7 @@ bool CTradingDesc::HasService (CUniverse &Universe, ETradeServiceTypes iService,
 
 			//	Found it!
 
-            return true;
+			return true;
 			}
 	
 	return false;
@@ -1564,10 +1564,10 @@ bool CTradingDesc::HasServiceDescription (ETradeServiceTypes iService) const
 			CString sPrefix;
 			int iPriceAdj = m_List[i].PriceAdj.EvalAsInteger(NULL, &sPrefix);
 			if (strEquals(sPrefix, UNAVAILABLE_PREFIX)
-                    || (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
+					|| (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
 				continue;
 
-            return true;
+			return true;
 			}
 	
 	return false;

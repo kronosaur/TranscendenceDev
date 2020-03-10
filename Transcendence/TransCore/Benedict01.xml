@@ -82,7 +82,11 @@
 
 					;	Find an enemy station to attack
 
-					(hiddenObj (sysFindObject sourceObj "TAN +enemy; +property:challengeRating[6-7];"))
+					(hiddenObj 
+						(or (sysFindObject sourceObj "TAN +enemy; +property:challengeRating[6];")
+							(sysFindObject sourceObj "TAN +enemy; +property:challengeRating[7];")
+							)
+						)
 					)
 					;	Keep track of player
 					
