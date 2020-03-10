@@ -103,7 +103,7 @@ class CTradingDesc
 		bool GetDeviceRemovePrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
 		inline const CEconomyType *GetEconomyType (void) const { return m_pCurrency; }
 		inline CurrencyValue GetMaxBalance (CSpaceObject *pObj) const { return CalcMaxBalance(pObj); }
-		inline CurrencyValue GetMaxBalance (int iLevel) const { return CalcMaxBalance(iLevel, m_pCurrency); }
+		CurrencyValue GetMaxBalance (int iLevel) const { return (m_iMaxCurrency ? m_iMaxCurrency : CalcMaxBalance(iLevel, m_pCurrency)); }
 		int GetMaxLevelMatched (CUniverse &Universe, ETradeServiceTypes iService, bool bDescriptionOnly = false) const;
 		bool GetRefuelItemAndPrice (const CSpaceObject &Obj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const;
 		inline int GetReplenishCurrency (void) { return m_iReplenishCurrency; }

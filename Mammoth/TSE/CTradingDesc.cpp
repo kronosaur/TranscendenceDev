@@ -268,7 +268,7 @@ CurrencyValue CTradingDesc::CalcMaxBalance (CSpaceObject *pObj, CurrencyValue *r
 //	Computes max balance
 
 	{
-	CurrencyValue iMaxBalance = (m_iMaxCurrency ? m_iMaxCurrency : CalcMaxBalance(pObj->GetLevel(), m_pCurrency));
+	CurrencyValue iMaxBalance = GetMaxBalance(pObj->GetLevel());
 
 	if (retReplenish)
 		{
@@ -1776,7 +1776,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 62)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_pCurrency.Set(Ctx.GetUniverse(), dwLoad);
 		if (m_pCurrency == NULL)
 			m_pCurrency.Set(Ctx.GetUniverse(), DEFAULT_ECONOMY_UNID);
@@ -1785,17 +1785,17 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 		{
 		CString sDummy;
 		sDummy.ReadFromStream(Ctx.pStream);
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 
 		//	Previous versions are always credits
 
 		m_pCurrency.Set(Ctx.GetUniverse(), DEFAULT_ECONOMY_UNID);
 		}
 
-	Ctx.pStream->Read((char *)&m_iMaxCurrency, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iReplenishCurrency, sizeof(DWORD));
+	Ctx.pStream->Read(m_iMaxCurrency);
+	Ctx.pStream->Read(m_iReplenishCurrency);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	if (dwLoad > 0)
 		{
 		m_List.InsertEmpty(dwLoad);
@@ -1805,7 +1805,10 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 			SServiceDesc &Commodity = m_List[i];
 
 			if (Ctx.dwVersion >= 83)
-				Ctx.pStream->Read((char *)&Commodity.iService, sizeof(DWORD));
+				{
+				Ctx.pStream->Read(dwLoad);
+				Commodity.iService = (ETradeServiceTypes)dwLoad;
+				}
 
 			//	Temporarily initialize because we might check it below before we
 			//	can properly load this.
@@ -1815,7 +1818,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 
 			Commodity.sID.ReadFromStream(Ctx.pStream);
 
-			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+			Ctx.pStream->Read(dwLoad);
 			Commodity.pItemType = Ctx.GetUniverse().FindItemType(dwLoad);
 
 			CString sCriteria;
@@ -1844,7 +1847,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 				}
 			else
 				{
-				Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+				Ctx.pStream->Read(dwLoad);
 				Commodity.PriceAdj.SetInteger(dwLoad);
 				}
 
@@ -1854,7 +1857,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 			if (Ctx.dwVersion >= 113)
 				Commodity.sMessageID.ReadFromStream(Ctx.pStream);
 
-			Ctx.pStream->Read((char *)&Commodity.dwFlags, sizeof(DWORD));
+			Ctx.pStream->Read(Commodity.dwFlags);
 
 			//	If necessary we need to load backwards-compatible service
 
@@ -2157,25 +2160,25 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 
 	dwSave = (m_pCurrency ? m_pCurrency->GetUNID() : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
-	pStream->Write((char *)&m_iMaxCurrency, sizeof(DWORD));
-	pStream->Write((char *)&m_iReplenishCurrency, sizeof(DWORD));
+	pStream->Write(m_iMaxCurrency);
+	pStream->Write(m_iReplenishCurrency);
 
 	dwSave = m_List.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	for (i = 0; i < m_List.GetCount(); i++)
 		{
 		const SServiceDesc &Commodity = m_List[i];
 
 		dwSave = Commodity.iService;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
 		Commodity.sID.WriteToStream(pStream);
 
 		dwSave = (Commodity.pItemType ? Commodity.pItemType->GetUNID() : 0);
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
 		//	Criteria is different depending on service
 
@@ -2194,7 +2197,7 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 
 		Commodity.sMessageID.WriteToStream(pStream);
 
-		pStream->Write((char *)&Commodity.dwFlags, sizeof(DWORD));
+		pStream->Write(Commodity.dwFlags);
 		}
 	}
 

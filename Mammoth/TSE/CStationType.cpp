@@ -161,10 +161,13 @@
 #define PROPERTY_AUTO_LEVEL_FREQUENCY			CONSTLIT("autoLevelFrequency")
 #define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
 #define PROPERTY_CHALLENGE_RATING				CONSTLIT("challengeRating")
+#define PROPERTY_CURRENCY						CONSTLIT("currency")
+#define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_ENCOUNTERED_BY_NODE			CONSTLIT("encounteredByNode")
 #define PROPERTY_ENCOUNTERED_TOTAL				CONSTLIT("encounteredTotal")
 #define PROPERTY_HULL_TYPE						CONSTLIT("hullType")
 #define PROPERTY_LEVEL_FREQUENCY				CONSTLIT("levelFrequency")
+#define PROPERTY_MAX_BALANCE					CONSTLIT("maxBalance")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_PRIMARY_WEAPON					CONSTLIT("primaryWeapon")
 #define PROPERTY_PRIMARY_WEAPON_LEVEL			CONSTLIT("primaryWeaponLevel")
@@ -1952,6 +1955,22 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 			return ICCItemPtr(iRating);
 		}
 
+	else if (strEquals(sProperty, PROPERTY_CURRENCY))
+		{
+		if (m_pTrade)
+			return ICCItemPtr(m_pTrade->GetEconomyType()->GetUNID());
+		else
+			return ICCItemPtr::Nil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_CURRENCY_NAME))
+		{
+		if (m_pTrade)
+			return ICCItemPtr(m_pTrade->GetEconomyType()->GetSID());
+		else
+			return ICCItemPtr::Nil();
+		}
+
 	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_BY_NODE))
 		{
 		ICCItemPtr pResult(ICCItem::SymbolTable);
@@ -1978,6 +1997,14 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
 		return ICCItemPtr(GetEncounterDesc().GetLevelFrequency());
+
+	else if (strEquals(sProperty, PROPERTY_MAX_BALANCE))
+		{
+		if (m_pTrade)
+			return CTLispConvert::CreateCurrencyValue(m_pTrade->GetMaxBalance(GetLevel()));
+		else
+			return ICCItemPtr::Nil();
+		}
 
 	else if (strEquals(sProperty, PROPERTY_PRIMARY_WEAPON))
 		{
