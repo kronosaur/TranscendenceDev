@@ -114,11 +114,13 @@
 					})
 			</Text>
 			<Text id="textSummary">
+
 				Deliver cargo to the Victorian at the Commonwealth station in the
 				%destination% system.
 
 				System: %systemName%\n
 				Payment: %payment%
+
 			</Text>
 			<Text id="Briefing">
 

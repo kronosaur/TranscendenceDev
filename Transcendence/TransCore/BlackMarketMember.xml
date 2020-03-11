@@ -41,20 +41,12 @@
 				(block (theList)
 					(if (gr (typ@ gType 'xp) 0)
 						(block (
-							(rank (typ@ gType 'level))
+							(level (typ@ gType 'level))
 							)
 							(setq theList (list
 								(list
 									"Black Market rank"
-									(switch
-										(eq rank 1) "Civilian"
-										(eq rank 2) "Smuggler"
-										(eq rank 3) "Enforcer"
-										(eq rank 4) "Sindikat member"
-										(eq rank 5) "Sindikat lieutenant"
-										(eq rank 6) "Sindikat lord"
-										(cat "ERROR: Black Market rank: " (or rank "Nil"))
-										) 
+									(fmtNoun (typTranslate gType (cat "rank." level)) 1 'titleCapitalize)
 									)
 								))
 							)
@@ -286,7 +278,7 @@
 						(rpgMissionAssignment {
 							missionCriteria: (cat "n +blackMarket; =" (sysGetLevel) ";")
 							noMissionText: (scrTranslate gScreen 'descNoMissions)
-							maxPerStation: 1
+							maxPerStation: (+ 3 (mod (objGetDestiny gSource) 3))
 							})
 					</Action>
 

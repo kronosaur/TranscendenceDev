@@ -440,7 +440,11 @@ PLAYER DATA
 
 			</Text>
             <Text id="core.mapDesc">
-                "Refuels up to level 7 &mdash; Repairs/installs armor up to level 9 &mdash; Installs devices up to level 9 &mdash; Buys and sells illegal and military items"
+
+                Refuels up to level 7 &mdash; Repairs/installs armor up to 
+				level 9 &mdash; Installs devices up to level 9 &mdash; Buys and
+				sells illegal and military items
+
             </Text>
         </Language>
 	</StationType>
