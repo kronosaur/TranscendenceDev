@@ -480,6 +480,7 @@
     <Xml Include="Benedict08.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="BlackMarketMember.xml" />
     <Xml Include="BlackMarketMission00.xml" />
     <Xml Include="BlackMarketMission01.xml" />
     <Xml Include="CommonwealthCenturions.xml" />

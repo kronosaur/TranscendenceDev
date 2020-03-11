@@ -1898,29 +1898,29 @@
 	<!ENTITY efQuantumsphereShot		"0x001001E1">
 	<!ENTITY rsIocrymCommandShipHero	"0x001001E2">
 	<!ENTITY rsIocrymSentinelHero		"0x001001E3">
-    
-    <!-- 01F0-01FF TINKERS -->
+	
+	<!-- 01F0-01FF TINKERS -->
 	
 	<!ENTITY itAmmoBoxXM900 			"0x001001F0">
 	<!ENTITY smTinkerSpace	 			"0x001001F1">
 	<!ENTITY vtTinkerEnhancement		"0x001001F2">
-    
-    <!-- 0200-020F BLACK MARKET -->
-    
+	
+	<!-- 0200-020F BLACK MARKET -->
+	
 	<!ENTITY svBlackMarketBountyHunter	"0x00100200">
-    <!ENTITY baBlackMarketStationObsolete       "0x00100201">
+	<!ENTITY baBlackMarketStationObsolete       "0x00100201">
 	<!ENTITY msBlackMarketDelivery		"0x00100202">
 	<!ENTITY dsBlackMarketDelivery		"0x00100203">
 	<!ENTITY msBlackMarketHotelMeet		"0x00100204">
-    <!ENTITY baBlackMarketStation       "0x00100205">
-    <!ENTITY rsMolotokB				    "0x00100206">
-    <!ENTITY rsMolotokHD			    "0x00100206">	<!-- Backwards compatibility -->
-    <!ENTITY rsMolotokHero			    "0x00100207">
-    <!ENTITY rsMolotokBHero			    "0x00100207">	<!-- Backwards compatibility -->
-    <!ENTITY scMolotokA				    "0x00100208">
-    <!ENTITY rsMolotokA				    "0x00100209">
-    <!ENTITY rsMolotokAHero			    "0x0010020A">
-    <!ENTITY tbBlackMarketBountyHunters	"0x0010020B">
+	<!ENTITY baBlackMarketStation       "0x00100205">
+	<!ENTITY rsMolotokB				    "0x00100206">
+	<!ENTITY rsMolotokHD			    "0x00100206">	<!-- Backwards compatibility -->
+	<!ENTITY rsMolotokHero			    "0x00100207">
+	<!ENTITY rsMolotokBHero			    "0x00100207">	<!-- Backwards compatibility -->
+	<!ENTITY scMolotokA				    "0x00100208">
+	<!ENTITY rsMolotokA				    "0x00100209">
+	<!ENTITY rsMolotokAHero			    "0x0010020A">
+	<!ENTITY tbBlackMarketBountyHunters	"0x0010020B">
 
 	<!-- 0210-022F PENITENTS -->
 	
@@ -2326,7 +2326,7 @@
 	<!ENTITY stHydrogenGasGiantStJohns	"0x00100762">
 	<!ENTITY rsHydrogenGasGiantStJohns	"0x00100763">
 
-    <!-- 1000-FFFF RESERVED: DO NOT USE -->
+	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	
 <CoreLibrary
@@ -2358,6 +2358,7 @@
 	<!-- Black Market -->
 
 	<Module filename="BlackMarket.xml"/>
+	<Module filename="BlackMarketMember.xml"/>
 	<Module filename="BlackMarketMission00.xml"/>
 	<Module filename="BlackMarketMission01.xml"/>
 

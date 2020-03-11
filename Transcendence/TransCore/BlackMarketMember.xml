@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- DOCK SCREENS -->
+
+	<!-- Black Market Promotion -->
+
+	<DockScreen UNID="&dsBlackMarketPromotion;"	nestedScreen="true">
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (desc)
+						(setq gLevel (intBlackMarketPromotion))
+
+						(switch 
+							(ls gLevel 4)
+								(setq desc "Two men with heavy weapons grab you as soon as you come out of the airlock: \"The boss wants to see you!\" They take you inside the station.")
+
+							(setq desc "Two men with heavy weapons walk up to you as you come out of the airlock: \"The boss would like to see you, %sir%. Please follow us.\" They take you inside the station to see Lord Mikho.")
+							)
+
+						(scrSetDesc gScreen desc)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" default="1" cancel="1" key="C">
+						<ShowPane pane="Promotion"/>
+					</Action>
+				</Actions>
+			</Default>
+
+			<Promotion>
+				<OnPaneInit>
+					(block (desc)
+						(switch
+							(eq gLevel 2)
+								(setq desc "You are brought to Lord Mikho's outer office. A young, dark-haired woman in a tight neo-linen suit stands up as you walk in: \"In recognition of your services to the Sindikat, Lord Mikho has decided to promote you to the level of Smuggler. Congratulations and thank you for your loyalty.\"\n\nShe turns her back to you as you are escorted out.")
+
+							(eq gLevel 3)
+								(setq desc "You are brought to Lord Mikho's outer office. A young, dark-haired woman in a tight neo-linen suit smiles as you walk in: \"Lord Mikho has promoted you to the level of Enforcer. Congratulations and thank you for your loyalty.\"\n\nShe shakes hands with you before you leave. You are escorted out.")
+
+							(eq gLevel 4)
+								(setq desc "Lord Mikho is in his office. A young, dark-haired woman sits on the sofa next to him. Lord Mikho speaks: \"Good evening, %name%! Your services to us have been exemplary and the Sindikat has officially decided to make you a member. I am sure that you will not disappoint us.\"")
+
+							(eq gLevel 5)
+								(setq desc "Lord Mikho is in his office. A young, dark-haired woman sits on the sofa next to him. Lord Mikho speaks: \"Good evening, %name%! You have been most useful to us and we have decided to promote you to the rank of Lieutenant in the Sindikat. I am sure that you will not disappoint us.\"")
+
+							(eq gLevel 6)
+								(setq desc "Lord Mikho is waiting for you in his study. \"My dear %name%! Your fame and exploits have made you powerful friends among the Sindikat. I bow before your abilities and extend to you the title of Sindikat Lord!\"")
+							)
+
+						(scrSetDesc gScreen desc)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" default="1" cancel="1" key="C">
+						(block Nil
+							(objSetData gPlayerShip "blackMarketLevel" gLevel)
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Promotion>
+		</Panes>
+	</DockScreen>
+
+</TranscendenceModule>
