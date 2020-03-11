@@ -400,6 +400,12 @@
 			<Text id="descWelcome">
 				You are docked at an armor dealer station.
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys armor and shields (even if damaged). We are not 
+				interested in buying %itemName%.
+
+			</Text>
 
             <Text id="core.mapDesc">"Buys and sells armor and shields &mdash; Installs purchased items &mdash; Buys damaged armor and shields"</Text>
         </Language>
@@ -548,6 +554,12 @@
 
 			<Text id="descWelcome">
 				You are docked at an arms dealer station.
+			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys weapons (even if damaged). We are not 
+				interested in buying %itemName%.
+
 			</Text>
 
             <Text id="core.mapDesc">
@@ -876,6 +888,12 @@
 				delighted to show you some of our newest models."
 
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys autons. We are not 
+				interested in buying %itemName%.
+
+			</Text>
             <Text id="core.mapDesc">"Buys and sells autons"</Text>
         </Language>
 	</StationType>
@@ -1110,7 +1128,13 @@
 				corporations are carried out on this level.
 
 			</Text>
-            <Text id="core.mapDesc">"Buys food, luxuries, meds, and resources"</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food, luxuries, meds, and industrial 
+				resources. We are not interested in buying %itemName%.
+
+			</Text>
+            <Text id="core.mapDesc">"Buys food, luxuries, meds, and industrial resources"</Text>
         </Language>
 	</StationType>
 
@@ -1698,6 +1722,12 @@
 				about the excellent service. You spend 5 credits on drinks.
 			</Text>
 
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food, luxuries, and meds. We are not 
+				interested in buying %itemName%.
+
+			</Text>
             <Text id="core.mapDesc">"Buys food, luxuries, and meds"</Text>
         </Language>
 	</StationType>
@@ -1834,6 +1864,12 @@
 				You are docked at a corporate ice farm on a small asteroid. 
 				Cold and stale air blows out of a wheezing recycler and you 
 				hear the drone of struggling generators and pumps.
+
+			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food and supplies. We are not 
+				interested in buying %itemName%.
 
 			</Text>
             <Text id="core.mapDesc">Sells luxuries &mdash; Buys food and supplies</Text>

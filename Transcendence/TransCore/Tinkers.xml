@@ -422,6 +422,12 @@
 				it didn't take. You must have some other coatings on your armor."
 			</Text>
 
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys damaged items. We are not 
+				interested in buying %itemName%.
+
+			</Text>
             <Text id="core.mapDesc">
                 Fabricates special items &mdash; Repairs/installs armor up to level 8 &mdash; Buys and sells scrap
             </Text>

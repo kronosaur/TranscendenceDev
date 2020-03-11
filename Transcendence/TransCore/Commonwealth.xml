@@ -885,6 +885,12 @@
 				live and work on this station, doing everything from research,
 				to drug manufacturing, to remote medicine.
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food and luxury items. We are not 
+				interested in buying %itemName%.
+
+			</Text>
 
             <Text id="core.mapDesc">"Sells meds &mdash; Buys food and luxuries"</Text>
         </Language>

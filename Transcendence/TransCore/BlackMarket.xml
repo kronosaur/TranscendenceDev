@@ -415,6 +415,12 @@ PLAYER DATA
 				We install illegal or military equipment up to tech level %maxLevel%.
 
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys illegal and military items. We are not 
+				interested in buying %itemName%.
+
+			</Text>
 
 			<Text id="rumor.commonwealthPub">
 
@@ -643,6 +649,12 @@ PLAYER DATA
 		</StaticData>
 		
         <Language>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys illegal and military items. We are not 
+				interested in buying %itemName%.
+
+			</Text>
             <Text id="core.mapDesc">
                 "Refuels up to level 7 &mdash; Repairs/installs armor up to level 9 &mdash; Installs devices up to level 9 &mdash; Buys and sells illegal and military items"
             </Text>

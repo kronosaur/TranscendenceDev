@@ -444,10 +444,17 @@
 			<Text id="dockServices:weaponsAbility">
 				We sell mining equipment up to tech level %maxLevel%.
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food. We are not interested in buying %itemName%.
+
+			</Text>
 
 			<Text id="rumor.intro">
+
 				The colony supervisor is working at his station. The comms channels
 				are quiet and he stops to chat:\n\n
+
 			</Text>
 
 			<String id="rumor.commonwealthMining.1">

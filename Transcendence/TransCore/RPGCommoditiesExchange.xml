@@ -816,7 +816,9 @@
 
 								(switch
 									(= offerPrice 0)
-										(scrTranslate gScreen 'descNotForSale { title:title itemName:(itmGetName thisItem 'plural) })
+										(or (scrTranslate gScreen 'rpg.stationWillNotBuy { title:title stationName:title itemName:(itmGetName thisItem 'plural) })
+												(scrTranslate gScreen 'descNotForSale { title:title itemName:(itmGetName thisItem 'plural) })
+												)
 										
 									(= affordCount 0)
 										(scrTranslate gScreen 'descNotEnoughMoney { title:title itemName:(itmGetName thisItem 'article) })
