@@ -1020,14 +1020,26 @@
 							</Action>
 
 							<Action name="&quot;The merchandise is in my cargo hold.&quot;" default="1" key="M">
-								(block Nil
+								(block (
+									;	Price depends on whether a Black Market station 
+									;	is in the system.
+
+									(priceAdj
+										(switch
+											(sysFindObject Nil "TA +blackMarket; +populated;")
+												90
+
+											110
+											)
+										)
+									)
 									(scrShowPane gScreen "Default")
 									
 									(scrShowSellScreen
 										(lambda (theItem)
 											(switch
 												(itmMatches theItem "*NU +Illegal; -ID; +property:known;")
-													(divide (multiply 90 (itmGetPrice theItem 'credit)) 100)
+													(divide (multiply priceAdj (itmGetPrice theItem 'credit)) 100)
 													
 												Nil
 												)
