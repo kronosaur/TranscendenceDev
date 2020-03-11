@@ -24,7 +24,7 @@
 		<Events>
 			<OnCreate>
 				(switch
-					(!= (objGetData gPlayerShip 'blackMarketLevel) 2)
+					(!= (typ@ &unidBlackMarketMember; 'level) 2)
 						(msnDestroy gSource)
 
 					;	Set up the mission
@@ -75,7 +75,7 @@
 					(= aReason 'success)
 						(block Nil
 							(objRemoveItem gPlayerShip (itmCreate &itBlackMarketContainer; 1))
-							(objIncData gPlayerShip 'blackMarketXP 150)
+							(typInc@ &unidBlackMarketMember; 'xp 150)
 							)
 
 					(= aReason 'failure)

@@ -1921,6 +1921,8 @@
 	<!ENTITY rsMolotokA				    "0x00100209">
 	<!ENTITY rsMolotokAHero			    "0x0010020A">
 	<!ENTITY tbBlackMarketBountyHunters	"0x0010020B">
+	<!ENTITY unidBlackMarketMember		"0x0010020C">
+	<!ENTITY dsBlackMarketBoss			"0x0010020D">
 
 	<!-- 0210-022F PENITENTS -->
 	

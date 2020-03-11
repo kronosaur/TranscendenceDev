@@ -955,6 +955,8 @@
 				;				mission (as returned by rpgCharacterGetInfo). This is passed
 				;				as a field in gData when translating text.
 				;
+				;		noMissionText: Text to show if no missions. [Required]
+				;
 				;		noMissionTextID: Language ID to display if there is no mission
 				;				available at this station. [Required]
 				;
@@ -984,9 +986,11 @@
 						; Otherwise, nothing
 
 						(scrShowScreen gScreen &dsRPGMessage; {
-							desc:(scrTranslate gScreen noMissionTextID {
-								missionGiver: (@ options 'missionGiver)
-								})
+							desc: (or (@ options 'noMissionText)
+									(scrTranslate gScreen noMissionTextID {
+										missionGiver: (@ options 'missionGiver)
+										})
+									)
 							})
 						)
 					)

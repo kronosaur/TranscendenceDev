@@ -1034,6 +1034,7 @@ bool CDesignType::FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, S
 	{
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
+
 	//	Set up
 
 	Ctx.SetEvent(eventGetGlobalPlayerPriceAdj);

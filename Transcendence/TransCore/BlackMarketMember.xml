@@ -2,7 +2,401 @@
 
 <TranscendenceModule>
 
+	<Type unid="&unidBlackMarketMember;">
+		<Properties>
+			<Global id="level">1</Global>
+			<Global id="shieldRewardLevel">1</Global>
+			<Global id="weaponRewardLevel">2</Global>
+			<Global id="xp">0</Global>
+		</Properties>
+
+		<Events>
+			<GetGlobalAchievements>
+				(block (theList)
+					(if (gr (typ@ gType 'xp) 0)
+						(block (
+							(rank (typ@ gType 'level))
+							)
+							(setq theList (list
+								(list
+									"Black Market rank"
+									(switch
+										(eq rank 1) "Civilian"
+										(eq rank 2) "Smuggler"
+										(eq rank 3) "Enforcer"
+										(eq rank 4) "Sindikat member"
+										(eq rank 5) "Sindikat lieutenant"
+										(eq rank 6) "Sindikat lord"
+										(cat "ERROR: Black Market rank: " (or rank "Nil"))
+										) 
+									)
+								))
+							)
+						)
+						
+					theList
+					)
+			</GetGlobalAchievements>
+
+			<GetGlobalPlayerPriceAdj>
+				(block (
+					(rank (typ@ gType 'level))
+					)
+
+					(switch
+						;	Only at Black Market stations
+
+						(not (objHasAttribute aProviderObj 'blackMarket))
+							Nil
+							
+						;	Military items prices depend on rank
+						
+						(and (eq aService 'priceForPlayerToBuy)
+								(itmMatches gItem "* +military")
+								)
+							(switch
+								(ls rank 4)
+									200
+								125
+								)
+								
+						;	No adjustment
+						Nil
+						)
+					)
+			</GetGlobalPlayerPriceAdj>
+			
+			<OnGlobalPlayerBoughtItem>
+				(switch
+					;	If the player bought illegal items from the Black Market then
+					;	we add to XP.
+					
+					(and (objHasAttribute aSellerObj 'blackMarket)
+							(itmHasAttribute gItem 'illegal)
+							)
+						(typInc@ gType 'xp (divide (ecoExchange aPrice aCurrency 'credit) 100))
+					)
+			</OnGlobalPlayerBoughtItem>
+
+			<OnGlobalUniverseLoad>
+				(block (
+					(transition (lambda (oldVar newVar)
+						(if (objGetData gPlayerShip oldVar)
+							(block ()
+								(typSet@ gType newVar (objGetData gPlayerShip oldVar))
+								(objSetData gPlayerShip oldVar Nil)
+								)
+							)
+						))
+					)
+					;	Transition data to properties
+
+					(transition 'blackMarketLevel 'level)
+					(transition 'blackMarketShields 'shieldRewardLevel)
+					(transition 'blackMarketWeapon 'weaponRewardLevel)
+					(transition 'blackMarketXP 'xp)
+					)
+			</OnGlobalUniverseLoad>
+
+			<GetRewardUpgrade>
+				(block (
+					(level (typ@ &unidBlackMarketMember; 'level))
+					(rewardType (@ gData 'type))
+					)
+					(switch
+						(= rewardType 'shields)
+							(switch
+								(geq level 6)
+									{
+										type: 'shields
+										device: (itmCreate &itPlasmaShieldGenerator; 1)
+										}
+
+								(= level 5)
+									{
+										type: 'shields
+										device: (itmCreate &itYoroiMX; 1)
+										}
+
+								(= level 4)
+									{
+										type: 'shields
+										device: (itmCreate &itYoroiS500; 1)
+										}
+
+								(= level 3)
+									{
+										type: 'shields
+										device: (itmCreate &itYoroiS100; 1)
+										}
+
+								{
+									type: 'shields
+									device: (itmCreate &itClass3Deflector; 1)
+									}
+								)
+
+						(= rewardType 'weapon)
+							(switch
+								(geq level 6)
+									{
+										type: 'weapon
+										device: (itmCreate &itRasiermesserLauncher; 1)
+										ammo: (itmCreate &itGotha400Seeker; 50)
+										}
+
+								(= level 5)
+									{
+										type: 'weapon
+										device: (itmCreate &itHanzoBlaster; 1)
+										}
+
+								(= level 4)
+									{
+										type: 'weapon
+										device: (itmCreate &itDragonflyMissileSystem; 1)
+										ammo: (itmCreate &itDragonflyCartridge; 150)
+										}
+
+								{
+									type: 'weapon
+									device: (itmCreate &itMAGLauncher; 1)
+									ammo: (itmCreate &itZG24ClusterMAG; 100)
+									}
+								)
+						)
+					)
+			</GetRewardUpgrade>
+		</Events>
+	</Type>
+
 <!-- DOCK SCREENS -->
+
+	<!-- Black Market Boss -->
+
+	<DockScreen unid="&dsBlackMarketBoss;"
+			nestedScreen="true"
+			inherit="&dsDockScreenBase;"
+			>
+		<InitialPane>
+			(block (
+				(rank (typ@ &unidBlackMarketMember; 'level))
+				)
+				(switch
+					(ls rank 2)
+						'NoAccess
+
+					(ls rank 4)
+						'MemberBoss
+
+					;"LordBoss"
+					'MemberBoss
+					)
+				)
+		</InitialPane>
+
+		<Panes>
+			<MemberBoss descID="descMemberBoss">
+				<Actions>
+					<Action id="actionWantMission" default="1">
+						(rpgMissionAssignment {
+							missionCriteria: (cat "n +blackMarket; =" (sysGetLevel) ";")
+							noMissionText: (scrTranslate gScreen 'descNoMissions)
+							maxPerStation: 1
+							})
+					</Action>
+
+					<Action id="actionWantWeapon">
+						(block (
+							(rank (typ@ &unidBlackMarketMember; 'level))
+							(weaponRewardLevel (typ@ &unidBlackMarketMember; 'weaponRewardLevel))
+							)
+							(if (ls weaponRewardLevel rank)
+								(block (
+									(reward (typFireEvent &unidBlackMarketMember; 'GetRewardUpgrade { type:'weapon }))
+									)
+									(scrSetData gScreen 'reward reward)
+
+									(scrShowPane gScreen 'UpgradeComplete)
+									(scrShowScreen gScreen &dsRPGInstallDeviceFromList; {
+										itemList: (list (@ reward 'device))
+										priceAdj: 0
+										installPriceAdj: 0
+										noSuccessPane: True
+										})
+									)
+								(scrShowPane gScreen 'NoUpgrade)
+								)
+							)
+					</Action>
+
+					<Action id="actionWantShields">
+						(block (
+							(rank (typ@ &unidBlackMarketMember; 'level))
+							(shieldRewardLevel (typ@ &unidBlackMarketMember; 'shieldRewardLevel))
+							)
+							(if (ls shieldRewardLevel rank)
+								(block (
+									(reward (typFireEvent &unidBlackMarketMember; 'GetRewardUpgrade { type:'shields }))
+									)
+									(scrSetData gScreen 'reward reward)
+
+									(scrShowPane gScreen 'UpgradeComplete)
+									(scrShowScreen gScreen &dsRPGInstallDeviceFromList; {
+										itemList: (list (@ reward 'device))
+										priceAdj: 0
+										installPriceAdj: 0
+										noSuccessPane: True
+										})
+									)
+								(scrShowPane gScreen 'NoUpgrade)
+								)
+							)
+					</Action>
+
+					<Action id="actionLeave" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</MemberBoss>
+
+			<LordBoss descID="descLordBoss">
+				<Actions>
+					<Action id="actionLeave" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</LordBoss>
+
+			<NoAccess descID="descNoBoss">
+				<Actions>
+					<Action id="actionContinue" cancel="1" default="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</NoAccess>
+
+			<NoUpgrade descID="descNoUpgrade">
+				<Actions>
+					<Action id="actionContinue" cancel="1" default="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</NoUpgrade>
+
+			<UpgradeComplete>
+				<OnPaneInit>
+					(block (
+						(reward (scrGetData gScreen 'reward))
+						(rewardType (@ reward 'type))
+						)
+						(switch
+							(not (scrGetReturnData gScreen 'installed))
+								(scrSetDescTranslate gScreen 'descInstallCancel)
+
+							(= rewardType 'weapon)
+								(scrSetDescTranslate gScreen 'descInstalledWeapon)
+
+							(scrSetDescTranslate gScreen 'descInstalledShields)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" cancel="1" default="1">
+						(block (
+							(rank (typ@ &unidBlackMarketMember; 'level))
+							)
+							(if (scrGetReturnData gScreen 'installed)
+								(block (
+									(reward (scrGetData gScreen 'reward))
+									(rewardType (@ reward 'type))
+									(ammo (@ reward 'ammo))
+									)
+									(if ammo
+										(objAddItem gPlayerShip ammo)
+										)
+
+									(switch
+										(= rewardType 'shields)
+											(typSet@ &unidBlackMarketMember; 'shieldRewardLevel rank)
+
+										(= rewardType 'weapon)
+											(typSet@ &unidBlackMarketMember; 'weaponRewardLevel rank)
+										)
+									)
+								)
+
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</UpgradeComplete>
+		</Panes>
+
+		<Language>
+			<String id="actionWantMission">"I want a [m]ission."</String>
+			<String id="actionWantWeapon">"I need a better [w]eapon."</String>
+			<String id="actionWantShields">"I need better [s]hields."</String>
+
+			<Text id="descNoMissions">
+
+				The dark-haired woman frowns for a second,
+				"I'm sorry, but we don't have any use for you right now."
+
+			</Text>
+			<Text id="descNoBoss">
+
+				You ask to see the station boss. Everyone turns to stare at you
+				for a second, but then they go about their business and 
+				continue to ignore you.
+
+			</Text>
+			<Text id="descMemberBoss">
+
+				You are escorted to Lord Mikho's outer office. But instead of 
+				finding him there, you see a young, dark-haired woman sitting 
+				at the desk. She looks at you slowly, perhaps trying to 
+				remember your name.
+				
+				"What can I do for you?"
+
+			</Text>
+			<Text id="descLordBoss">
+
+				You try to see Lord Mikho, but he is indisposed.
+
+			</Text>
+			<Text id="descNoUpgrade">
+
+				The dark-haired woman rolls her eyes.
+				
+				"I'm sorry, but you'll just have to do with what you've got."
+
+			</Text>
+			<Text id="descInstallCancel">
+
+				The dark-haired woman frowns in disappointment.
+
+			</Text>
+			<Text id="descInstalledWeapon">
+
+				The dark-haired woman smiles as the crew installs your new 
+				weapon:
+				
+				"Enjoy your new toy."
+			
+			</Text>
+			<Text id="descInstalledShields">
+
+				The dark-haired woman smiles as the crew installs your new 
+				shield generator:
+				
+				"Enjoy your new toy."
+
+			</Text>
+		</Language>
+	</DockScreen>
 
 	<!-- Black Market Promotion -->
 
@@ -58,7 +452,7 @@
 				<Actions>
 					<Action name="Continue" default="1" cancel="1" key="C">
 						(block Nil
-							(objSetData gPlayerShip "blackMarketLevel" gLevel)
+							(typSet@ &unidBlackMarketMember; 'level gLevel)
 							(scrExitScreen gScreen)
 							)
 					</Action>
