@@ -241,6 +241,7 @@ class ICCItemPtr
 		constexpr ICCItemPtr (std::nullptr_t) : m_pPtr(NULL) { }
 
 		explicit ICCItemPtr (ICCItem *pPtr) : m_pPtr(pPtr) { }
+		ICCItemPtr (const ICCItem &Value) : m_pPtr(Value.Reference()) { }
 
 		explicit ICCItemPtr (ICCItem::ValueTypes iType);
 		explicit ICCItemPtr (const CString &sValue);
@@ -260,6 +261,7 @@ class ICCItemPtr
 
 		ICCItemPtr &operator= (const ICCItemPtr &Src);
 		ICCItemPtr &operator= (ICCItem *pSrc);
+		ICCItemPtr &operator= (const ICCItem &Value);
 		operator ICCItem *() const { return m_pPtr; }
 		ICCItem * operator->() const { return m_pPtr; }
 

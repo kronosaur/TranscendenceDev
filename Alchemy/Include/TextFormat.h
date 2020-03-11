@@ -110,13 +110,18 @@ class CCartoucheBlock
 			CG32bitPixel rgbBack = CG32bitPixel(0, 0, 0);
 			};
 
+		struct SPaintOptions
+			{
+			bool bDisabled = false;
+			};
+
 		void Add (const TArray<SCartoucheDesc> &List);
 		void AddCartouche (const CString &sText, CG32bitPixel rgbColor, CG32bitPixel rgbBack);
 		void Format (int cxWidth);
 		RECT GetBounds (void) const;
 		int GetHeight (void) const { return m_cyHeight; }
 		bool IsEmpty (void) const { return m_Data.GetCount() == 0; }
-		void Paint (CG32bitImage &Dest, int x, int y) const;
+		void Paint (CG32bitImage &Dest, int x, int y, const SPaintOptions &Options = SPaintOptions()) const;
 		void SetFont (const CG16bitFont *pFont) { if (m_pFont != pFont) { m_pFont = pFont; Invalidate(); } }
 
 		static void PaintCartouche (CG32bitImage &Dest, int x, int y, const SCartoucheDesc &Desc, const CG16bitFont &Font, DWORD dwAlignment = 0);
@@ -163,12 +168,17 @@ class CIconLabelBlock
 			bool bNewLine = false;
 			};
 
+		struct SPaintOptions
+			{
+			bool bDisabled = false;
+			};
+
 		void Add (const SLabelDesc &Label);
 		void DeleteAll (void) { m_Data.DeleteAll(); Invalidate(); }
 		void Format (int cxWidth);
 		int GetHeight (void) const { return m_cyHeight; }
 		bool IsEmpty (void) const { return m_Data.GetCount() == 0; }
-		void Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText) const;
+		void Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText, const SPaintOptions &Options = SPaintOptions()) const;
 		void SetFont (const CG16bitFont &Font) { if (m_pDefaultFont != &Font) { m_pDefaultFont = &Font; Invalidate(); } }
 
 	private:

@@ -587,6 +587,29 @@ bool CItemListManipulator::Refresh (const CItem &Item, DWORD dwFlags)
 	return SetCursorAtItem(Item);
 	}
 
+bool CItemListManipulator::RefreshAndSortEnabled (const CItem &Item, const CItemCriteria &EnabledItems)
+
+//	Refresh
+//
+//	Refreshes the manipulator from the list and selects
+//	the given item.
+//
+//	Returns TRUE if selection succeeded
+
+	{
+	m_ItemList.SortItems(EnabledItems);
+
+	GenerateViewMap();
+
+	if (Item.GetType() == NULL)
+		{
+		ResetCursor();
+		return true;
+		}
+
+	return SetCursorAtItem(Item);
+	}
+
 void CItemListManipulator::RemoveItemEnhancementAtCursor (DWORD dwID, int iCount)
 
 //	RemoveItemEnhancementAtCursor

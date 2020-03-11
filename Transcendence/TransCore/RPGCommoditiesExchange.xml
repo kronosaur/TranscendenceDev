@@ -666,12 +666,11 @@
 
 		<ListOptions
 				dataFrom=	"player"
-				list=		"*"
+				list=		"*U"
 				>
 			(block (
 				(itemCriteria (scrGetProperty gScreen 'rpg.criteria))
 				)
-				
 				(switch
 					;	If we specify an item criteria, then create a function
 					;	that will filter.
@@ -679,7 +678,7 @@
 					(and itemCriteria
 							(not (eq itemCriteria "*"))
 							)
-						(scrSetListFilter gScreen (lambda (theItem)
+						(scrSet@ gScreen 'enabledFilter (lambda (theItem)
 							(switch
 								(not (itmMatches theItem itemCriteria))
 									Nil
@@ -691,12 +690,12 @@
 					;	If we specify a function, use that
 					
 					(@ gData 'listFilter)
-						(scrSetListFilter gScreen (@ gData 'listFilter))
+						(scrSet@ gScreen 'enabledFilter (@ gData 'listFilter))
 						
 					;	Otherwise, we sell everything listed in our Trade
 					;	directives.
 					
-					(scrSetListFilter gScreen rpgCalcBuyPrice)
+					(scrSet@ gScreen 'enabledFilter rpgCalcBuyPrice)
 					)
 				)
 		</ListOptions>
@@ -713,6 +712,9 @@
 						(currencyUsed (objGetDefaultCurrency gSource))
 						(itemCost
 							(switch
+								(not (scr@ gScreen 'selectionEnabled))
+									Nil
+
 								(@ gData 'priceCalc)
 									(apply (@ gData 'priceCalc) thisItem Nil)
 

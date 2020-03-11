@@ -1560,7 +1560,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_fNoSaleIfUsed = pDesc->GetAttributeBool(NO_SALE_IF_USED_ATTRIB);
 	m_fRandomDamaged = pDesc->GetAttributeBool(CONSTLIT(g_RandomDamagedAttrib));
-	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
+	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB) || m_sName.IsBlank();
 	if (m_fVirtual)
 		m_Frequency = ftNotRandom;
 

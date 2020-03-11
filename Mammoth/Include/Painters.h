@@ -171,6 +171,7 @@ class CItemPainter
 		void Init (const CItem &Item, int cxWidth, const SOptions &Options);
 
 		static constexpr DWORD OPTION_SELECTED =				0x00000010;
+		static constexpr DWORD OPTION_DISABLED =				0x00000080;
 		void Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbTextColor = RGB_NORMAL_TEXT, DWORD dwOptions = 0) const;
 
 	private:
@@ -179,9 +180,9 @@ class CItemPainter
 
 		static void FormatDisplayAttributes (const CVisualPalette &VI, TArray<SDisplayAttribute> &Attribs, const RECT &rcRect, CCartoucheBlock &retBlock, int *retcyHeight = NULL);
 		static void FormatLaunchers (const CVisualPalette &VI, const CMissileItem &MissileItem, const TArray<CItem> &Launchers, const RECT &rcRect, CIconLabelBlock &retLaunchers);
-		static void PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const CItemEnhancement &Enhancement, const RECT &rcRect, CG32bitPixel rgbText, int *retcyHeight = NULL);
-		static void PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText);
-		static void PaintReferenceDamageType (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText);
+		static void PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const CItemEnhancement &Enhancement, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions, int *retcyHeight = NULL);
+		static void PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText, DWORD dwOptions);
+		static void PaintReferenceDamageType (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText, DWORD dwOptions);
 
 		const CVisualPalette &m_VI;
 		const CItem *m_pItem = NULL;

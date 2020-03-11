@@ -153,6 +153,24 @@ ICCItem *CGItemListArea::GetEntryAtCursor (void)
 	return m_pListData->GetEntryAtCursor();
 	}
 
+const CItem &CGItemListArea::GetItem (int iRow) const
+
+//	GetItem
+//
+//	Returns the item at the given row.
+
+	{
+	if (m_pListData == NULL)
+		return CItem::NullItem();
+
+	int iOldPos = m_pListData->GetCursor();
+	m_pListData->SetCursor(iRow);
+	const CItem &Result = m_pListData->GetItemAtCursor();
+	m_pListData->SetCursor(iOldPos);
+
+	return Result;
+	}
+
 bool CGItemListArea::GetNextTab (DWORD *retdwID) const
 
 //	GetNextTab
@@ -299,6 +317,9 @@ void CGItemListArea::InitRowHeight (int iRow, SRowDesc &RowDesc)
 				RowDesc.Painter.Init(m_pListData->GetItemAtCursor(), RectWidth(rcRect), Options);
 
 				RowDesc.cyHeight = RowDesc.Painter.GetHeight();
+
+				if (!m_EnabledItems.IsEmpty())
+					RowDesc.bDisabled = !m_pListData->GetItemAtCursor().MatchesCriteria(m_EnabledItems);
 				}
 
 			break;
@@ -714,8 +735,16 @@ void CGItemListArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 						break;
 
 					case listItem:
-						PaintItem(Dest, m_Rows[iPos], rcItem, bIsCursor);
+						{
+						DWORD dwOptions = 0;
+						if (bIsCursor)
+							dwOptions |= CItemPainter::OPTION_SELECTED;
+						if (m_Rows[iPos].bDisabled)
+							dwOptions |= CItemPainter::OPTION_DISABLED;
+
+						m_Rows[iPos].Painter.Paint(Dest, rcItem.left, rcItem.top, m_rgbTextColor, dwOptions);
 						break;
+						}
 					}
 				}
 
@@ -837,6 +866,18 @@ void CGItemListArea::SelectTab (DWORD dwID)
 		m_iCurTab = iTab;
 		Invalidate();
 		}
+	}
+
+void CGItemListArea::SetEnabledCriteria (const CItemCriteria &Criteria)
+
+//	SetEnabledCriteria
+//
+//	Sets a criteria for which items should be enabled, and sorts all enabled
+//	items to the top.
+
+	{
+	m_EnabledItems = Criteria;
+	ResetCursor();
 	}
 
 void CGItemListArea::SetList (CSpaceObject *pSource)

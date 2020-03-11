@@ -1546,6 +1546,7 @@ class IListData
 		virtual bool MoveCursorForward (void) { return false; }
 		virtual void PaintImageAtCursor (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, Metric rScale) { }
 		virtual void ResetCursor (void) { }
+		virtual void ResetCursor (const CItemCriteria &EnabledItems) { ResetCursor(); }
 		virtual void SetCursor (int iCursor) { }
 		virtual void SetFilter (const CItemCriteria &Filter) { }
 		virtual void SyncCursor (void) { }

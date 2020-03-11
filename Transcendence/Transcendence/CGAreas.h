@@ -360,23 +360,28 @@ class CGItemListArea : public AGArea
 		void DeleteAtCursor (int iCount) { if (m_pListData) m_pListData->DeleteAtCursor(iCount); InitRowDesc(); Invalidate(); }
 		int GetCursor (void) const { return (m_pListData ? m_pListData->GetCursor() : -1); }
 		ICCItem *GetEntryAtCursor (void);
+		const CItem &GetItem (int iRow) const;
 		const CItem &GetItemAtCursor (void) { return (m_pListData ? m_pListData->GetItemAtCursor() : g_DummyItem); }
 		CItemListManipulator &GetItemListManipulator (void) { return (m_pListData ? m_pListData->GetItemListManipulator() : g_DummyItemListManipulator); }
 		IListData *GetList (void) const { return m_pListData; }
 		bool GetNextTab (DWORD *retdwID) const;
 		bool GetPrevTab (DWORD *retdwID) const;
+		int GetRowCount (void) const { return m_Rows.GetCount(); }
 		CSpaceObject *GetSource (void) { return (m_pListData ? m_pListData->GetSource() : NULL); }
 		bool IsCursorValid (void) const { return (m_pListData ? m_pListData->IsCursorValid() : false); }
 		bool IsDisplayAsKnown (void) const { return m_bActualItems; }
+		bool IsEnabled (int iRow) const { return !m_Rows[iRow].bDisabled; }
 		bool MoveCursorBack (void);
 		bool MoveCursorForward (void);
 		void MoveTabToFront (DWORD dwID);
-		void ResetCursor (void) { if (m_pListData) m_pListData->ResetCursor(); InitRowDesc(); Invalidate(); }
+		void ResetCursor (void) { if (m_pListData) m_pListData->ResetCursor(m_EnabledItems); InitRowDesc(); Invalidate(); }
 		void SelectTab (DWORD dwID);
 		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
 		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
 		void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }
 		void SetDisplayAsKnown (bool bValue = true) { m_bActualItems = bValue; InitRowDesc(); Invalidate(); }
+		void SetEnabled (int iRow, bool bEnabled = true) { m_Rows[iRow].bDisabled = !bEnabled; Invalidate(); }
+		void SetEnabledCriteria (const CItemCriteria &Criteria);
 		void SetFilter (const CItemCriteria &Filter) { if (m_pListData) m_pListData->SetFilter(Filter); InitRowDesc(); Invalidate(); }
 		void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
 		void SetIconHeight (int cyHeight) { m_cyIcon = cyHeight; }
@@ -409,11 +414,12 @@ class CGItemListArea : public AGArea
 
 		struct SRowDesc
 			{
-			int yPos;							//	Position of the row (sum of height of previous rows)
-			int cyHeight;						//	Height of this row
+			int yPos = 0;						//	Position of the row (sum of height of previous rows)
+			int cyHeight = 0;					//	Height of this row
+			bool bDisabled = false;				//	Entry is disabled
 
 			CItemPainter Painter;				//	Painter used for the item, which keeps some metrics.
-			CTilePainter CustomPainter;	//	Painter used for custom entries
+			CTilePainter CustomPainter;			//	Painter used for custom entries
 			};
 
 		struct STabDesc
@@ -446,6 +452,7 @@ class CGItemListArea : public AGArea
 
 		IListData *m_pListData = NULL;
 		ListTypes m_iType = listNone;
+		CItemCriteria m_EnabledItems;
 
 		const CVisualPalette &m_VI;
 		const CUIResources *m_pUIRes = NULL;

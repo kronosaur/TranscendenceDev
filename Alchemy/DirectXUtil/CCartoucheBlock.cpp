@@ -93,13 +93,16 @@ RECT CCartoucheBlock::GetBounds (void) const
 	return rcRect;
 	}
 
-void CCartoucheBlock::Paint (CG32bitImage &Dest, int x, int y) const
+void CCartoucheBlock::Paint (CG32bitImage &Dest, int x, int y, const SPaintOptions &Options) const
 
 //	Paint
 //
 //	Paint at the given position.
 
 	{
+	constexpr CG32bitPixel RGB_DISABLED_BACKGROUND(80, 80, 80);
+	constexpr CG32bitPixel RGB_DISABLED_TEXT(0, 0, 0);
+
 	if (!m_bFormatted || m_pFont == NULL)
 		return;
 
@@ -113,14 +116,14 @@ void CCartoucheBlock::Paint (CG32bitImage &Dest, int x, int y) const
 				m_Data[i].cx, 
 				m_Data[i].cy, 
 				RADIUS, 
-				m_Data[i].rgbBack);
+				(Options.bDisabled ? RGB_DISABLED_BACKGROUND : m_Data[i].rgbBack));
 
 		//	Draw the text
 
 		m_pFont->DrawText(Dest, 
 				x + m_Data[i].x + ATTRIB_PADDING_X, 
 				y + m_Data[i].y + ATTRIB_PADDING_Y, 
-				m_Data[i].rgbColor, 
+				(Options.bDisabled ? RGB_DISABLED_TEXT : m_Data[i].rgbColor), 
 				m_Data[i].sText);
 		}
 	}

@@ -113,7 +113,7 @@ void CIconLabelBlock::Format (int cxWidth)
 	m_bFormatted = true;
 	}
 
-void CIconLabelBlock::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText) const
+void CIconLabelBlock::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText, const SPaintOptions &Options) const
 
 //	Paint
 //
@@ -138,7 +138,10 @@ void CIconLabelBlock::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbT
 		if (Entry.pIcon)
 			{
 			int yIcon = yPos + ((m_cyLine - RectHeight(Entry.rcIconSrc)) / 2);
-			Dest.Blt(Entry.rcIconSrc.left, Entry.rcIconSrc.top, RectWidth(Entry.rcIconSrc), RectHeight(Entry.rcIconSrc), *Entry.pIcon, xPos, yIcon);
+			if (Options.bDisabled)
+				CGDraw::BltGray(Dest, xPos, yIcon, *Entry.pIcon, Entry.rcIconSrc.left, Entry.rcIconSrc.top, RectWidth(Entry.rcIconSrc), RectHeight(Entry.rcIconSrc));
+			else
+				Dest.Blt(Entry.rcIconSrc.left, Entry.rcIconSrc.top, RectWidth(Entry.rcIconSrc), RectHeight(Entry.rcIconSrc), *Entry.pIcon, xPos, yIcon);
 
 			xPos += RectWidth(Entry.rcIconSrc) + ICON_MARGIN_X;
 			}

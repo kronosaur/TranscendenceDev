@@ -181,7 +181,7 @@ class CResourceImageCache
 		TSortMap<CString, CG32bitImage> m_Cache;
 	};
 
-void CVisualPalette::DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, DamageTypes iDamageType) const
+void CVisualPalette::DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, DamageTypes iDamageType, bool bGray) const
 
 //	DrawDamageTypeIcon
 //
@@ -191,14 +191,28 @@ void CVisualPalette::DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, Dam
 	if (iDamageType == damageGeneric)
 		return;
 
-	Screen.Blt((int)iDamageType * DAMAGE_TYPE_ICON_WIDTH,
-			0,
-			DAMAGE_TYPE_ICON_WIDTH,
-			DAMAGE_TYPE_ICON_HEIGHT,
-			255,
-			m_Image[imageDamageTypeIcons],
-			x,
-			y);
+	if (bGray)
+		{
+		CGDraw::BltGray(Screen, 
+				x, 
+				y, 
+				m_Image[imageDamageTypeIcons], 
+				(int)iDamageType * DAMAGE_TYPE_ICON_WIDTH, 
+				0, 
+				DAMAGE_TYPE_ICON_WIDTH, 
+				DAMAGE_TYPE_ICON_HEIGHT);
+		}
+	else
+		{
+		Screen.Blt((int)iDamageType * DAMAGE_TYPE_ICON_WIDTH,
+				0,
+				DAMAGE_TYPE_ICON_WIDTH,
+				DAMAGE_TYPE_ICON_HEIGHT,
+				255,
+				m_Image[imageDamageTypeIcons],
+				x,
+				y);
+		}
 	}
 
 void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitImage &Background, CG32bitPixel rgbCenter, DWORD dwFlags, RECT *retrcCenter) const

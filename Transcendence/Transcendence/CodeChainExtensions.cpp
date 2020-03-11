@@ -254,8 +254,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrGetListEntry screen) -> entry",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"scrGetProperty",				fnScrGet,		FN_SCR_GET_PROPERTY,
-			"(scrGetProperty screen property) -> value\n\n"
+		{	"scr@",							fnScrGet,		FN_SCR_GET_PROPERTY,
+			"(scr@ screen property) -> value\n\n"
 			
 			"property\n\n"
 			
@@ -264,6 +264,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'inFirstOnInit"
 			"   'input",
 
+			"is",	0,	},
+
+		{	"scrGetProperty",				fnScrGet,		FN_SCR_GET_PROPERTY,
+			"RENAMED: Used (scr@ ...) instead.",
 			"is",	0,	},
 
 		{	"scrGetScreen",				    fnScrGet,		FN_SCR_GET_SCREEN,
@@ -358,8 +362,19 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrSetListFilter screen filter) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"scrSet@",						fnScrSet,		FN_SCR_SET_PROPERTY,
+			"(scrSet@ screen property value) -> True/Nil\n\n"
+			
+			"property:\n\n"
+			
+			"   'counter value\n"
+			"   'enabledFilter filter\n"
+			"   'showActualItem True|Nil\n",
+
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"scrSetProperty",					fnScrSet,		FN_SCR_SET_PROPERTY,
-			"(scrSetProperty screen property value) -> True/Nil",
+			"RENAMED: Use (scrSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"scrSetReturnData",					fnScrSet,		FN_SCR_RETURN_DATA,

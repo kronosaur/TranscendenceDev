@@ -24,6 +24,7 @@ class CItemListWrapper : public IListData
 		virtual bool MoveCursorBack (void) override { return m_ItemList.MoveCursorBack(); }
 		virtual bool MoveCursorForward (void) override { return m_ItemList.MoveCursorForward(); }
 		virtual void ResetCursor (void) override { m_ItemList.Refresh(CItem(), CItemListManipulator::FLAG_SORT_ITEMS); }
+		virtual void ResetCursor (const CItemCriteria &EnabledItems) override { if (EnabledItems.IsEmpty()) ResetCursor(); else m_ItemList.RefreshAndSortEnabled(CItem(), EnabledItems); }
 		virtual void SetCursor (int iCursor) override { m_ItemList.SetCursor(iCursor); }
 		virtual void SetFilter (const CItemCriteria &Filter) override { m_ItemList.SetFilter(Filter); }
 		virtual void SyncCursor (void) override { m_ItemList.SyncCursor(); }

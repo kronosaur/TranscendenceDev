@@ -946,7 +946,7 @@ void CGDraw::Blt (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &
 		}
 	}
 
-void CGDraw::BltGray (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity)
+void CGDraw::BltGray (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity)
 
 	{
 	if (byOpacity == 0xff)

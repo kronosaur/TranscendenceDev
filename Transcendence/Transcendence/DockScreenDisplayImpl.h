@@ -126,6 +126,7 @@ class CDockScreenList : public IDockScreenDisplay
 		bool FindFilter (const CString &sID, int *retiIndex = NULL) const;
 		bool SelectTab (DWORD dwID, int iFilter = -1);
 		bool SetDefaultTab (const CString &sID);
+		void SetEnabledFilter (const CItemCriteria &EnabledItems);
 
 		CGItemListArea *m_pItemListControl;
 		DWORD m_dwID;

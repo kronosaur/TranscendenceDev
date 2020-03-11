@@ -497,6 +497,7 @@ class CItemList
 		const CItem &GetItem (int iIndex) const { return *m_List[iIndex]; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SortItems (void);
+		void SortItems (const CItemCriteria &SortFirst);
 		void WriteToStream (IWriteStream *pStream);
 
 		static CItemList &Null (void) { return m_Null; }
@@ -529,6 +530,7 @@ class CItemListManipulator
 
 		static constexpr DWORD FLAG_SORT_ITEMS = 0x00000001;
 		bool Refresh (const CItem &Item, DWORD dwFlags = 0);
+		bool RefreshAndSortEnabled (const CItem &Item, const CItemCriteria &EnabledItems);
 
 		bool IsCursorValid (void) const { return (m_iCursor != -1 && m_iCursor < m_ItemList.GetCount()); }
 		bool MoveCursorBack (void);
