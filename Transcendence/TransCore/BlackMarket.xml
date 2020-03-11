@@ -168,6 +168,12 @@ PLAYER DATA
 		
 		<DockScreens>
 			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidBlackMarketMember; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
@@ -381,9 +387,19 @@ PLAYER DATA
 
 		<DockScreens>
 			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidBlackMarketMember; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
+							<Action id="actionTalk">
+								(scrShowScreen gScreen &dsBlackMarketBoss;)
+							</Action>
+
 							<Action id="actionBuyItems" default="1">
 								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
@@ -505,9 +521,13 @@ PLAYER DATA
 		<!-- Dock Screens -->
 		
 		<DockScreens>
-			<Main
-				name=			"Tempus Lab"
-				>
+			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidBlackMarketMember; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>

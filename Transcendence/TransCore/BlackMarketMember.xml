@@ -8,6 +8,32 @@
 			<Global id="shieldRewardLevel">1</Global>
 			<Global id="weaponRewardLevel">2</Global>
 			<Global id="xp">0</Global>
+
+			<DynamicGlobal id="rankIcon">
+				(block (
+					(level (typ@ gType 'level))
+					)
+					(switch
+						(= level 1)
+							(resCreateImageDesc &rsBlackMarketInsignia; 0 256 256 256)
+
+						(= level 2)
+							(resCreateImageDesc &rsBlackMarketInsignia; 256 256 256 256)
+
+						(= level 3)
+							(resCreateImageDesc &rsBlackMarketInsignia; 512 256 256 256)
+
+						(= level 4)
+							(resCreateImageDesc &rsBlackMarketInsignia; 512 0 256 256)
+
+						(= level 5)
+							(resCreateImageDesc &rsBlackMarketInsignia; 256 0 256 256)
+
+						(resCreateImageDesc &rsBlackMarketInsignia; 0 0 256 256)
+						)
+					)
+			</DynamicGlobal>
+
 		</Properties>
 
 		<Events>
@@ -168,6 +194,58 @@
 					)
 			</GetRewardUpgrade>
 		</Events>
+
+		<Language>
+			<Code id="rankDetails">
+				(block (
+					(xp (typ@ gType 'xp))
+					(level (typ@ gType 'level))
+
+					(totalSold (plyGetItemStat gPlayer 'itemsSoldValue "*~wsam +Illegal"))
+					(totalBought (plyGetItemStat gPlayer 'itemsBoughtValue "*~wsam +Illegal"))
+
+					(totalProfit (- totalSold totalBought))
+					)
+					(if (gr xp 0)
+						{
+							title: (fmtNoun (typTranslate gType (cat "rank." level)) 1 'titleCapitalize)
+							largeIcon: (typ@ gType 'rankIcon)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelIllegalsSold)
+									desc: (typTranslate gType 'rtfValue { 
+										value:(fmtCurrency 'credit totalSold) 
+										})
+									}
+								{
+									title: (typTranslate gType (if (geq totalProfit 0) 'labelIllegalsProfit 'labelIllegalsLoss))
+									desc: (typTranslate gType 'rtfValue {
+										value: (fmtCurrency 'credit (if (geq totalProfit 0) totalProfit (- totalProfit)))
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+
+			<Text id="rank.1">civilian(s)</Text>
+			<Text id="rank.2">smuggler(s)</Text>
+			<Text id="rank.3">enforcer(s)</Text>
+			<Text id="rank.4">Sindikat member(s)</Text>
+			<Text id="rank.5">Sindikat lieutenant(s)</Text>
+			<Text id="rank.6">Sindikat lord(s)</Text>
+
+			<Text id="labelIllegalsSold">Illegals Sold:</Text>
+			<Text id="labelIllegalsProfit">Total Profit:</Text>
+			<Text id="labelIllegalsLoss">Loss:</Text>
+
+			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+		</Language>
 	</Type>
 
 <!-- DOCK SCREENS -->
@@ -178,6 +256,12 @@
 			nestedScreen="true"
 			inherit="&dsDockScreenBase;"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidBlackMarketMember; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
 		<InitialPane>
 			(block (
 				(rank (typ@ &unidBlackMarketMember; 'level))
@@ -519,5 +603,9 @@
 			</Text>
 		</Language>
 	</DockScreen>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsBlackMarketInsignia;"		bitmap="Resources\BlackMarketInsignia.jpg" bitmask="Resources\BlackMarketInsigniaMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>
