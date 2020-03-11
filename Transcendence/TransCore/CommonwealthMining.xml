@@ -37,7 +37,7 @@
 		</Properties>
 
 		<Language>
-			<Code id="mining.rankDetails">
+			<Code id="rankDetails">
 				(block (
 					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
 					(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
@@ -238,7 +238,7 @@
 			<Main backgroundID="object">
 				<Display type="detailsPane">
 					<OnDisplayInit>
-						(typTranslate &unidIndependentMiner; 'mining.RankDetails)
+						(typTranslate &unidIndependentMiner; 'rankDetails)
 					</OnDisplayInit>
 				</Display>
 
@@ -735,7 +735,7 @@
 			>
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(typTranslate &unidIndependentMiner; 'mining.RankDetails)
+				(typTranslate &unidIndependentMiner; 'rankDetails)
 			</OnDisplayInit>
 		</Display>
 
@@ -864,7 +864,7 @@
 
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(typTranslate &unidIndependentMiner; 'mining.RankDetails)
+				(typTranslate &unidIndependentMiner; 'rankDetails)
 			</OnDisplayInit>
 		</Display>
 

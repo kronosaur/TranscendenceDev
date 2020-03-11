@@ -204,7 +204,7 @@
 
 			<Text id="rpg.missionTypeDesc">Korolov shipping missions</Text>
 
-			<Code id="escorting.rankDetails">
+			<Code id="rankDetails">
 				(block (
 					(rankID (typ@ gType 'rankID))
 						
@@ -411,7 +411,7 @@
 			<Dispatch>
 				<Display type="detailsPane">
 					<OnDisplayInit>
-						(typTranslate &unidKorolovShipping; 'escorting.rankDetails)
+						(typTranslate &unidKorolovShipping; 'rankDetails)
 					</OnDisplayInit>
 				</Display>
 
