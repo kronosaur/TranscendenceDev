@@ -208,6 +208,10 @@
 	<!ENTITY vtGenericEnhancement		"0x00030140">
 	<!ENTITY rsGenericMissionIcon		"0x00030141">
 
+	<!-- 0180-01CF SOVEREIGNS -->
+
+	<!ENTITY svPlayerAlly				"0x00030180">
+
 	]>
 	
 <CoreLibrary

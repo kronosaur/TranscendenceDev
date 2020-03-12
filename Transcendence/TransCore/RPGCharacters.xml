@@ -196,8 +196,14 @@
 						(not (setq shipObj (objGetObjByID objID)))
 							Nil	;(dbgOutput (sysGetNode) ": Can't find ship object")
 							
-						(objGetProperty shipObj 'ascended)
+						(obj@ shipObj 'ascended)
 							Nil	;(dbgOutput (sysGetNode) ": Ship already ascended")
+
+						;	If the ship is currently a player wingman, then do not ascend;
+						;	the ship will follow the player.
+
+						(obj@ shipObj 'playerWingman)
+							Nil
 							
 						;	Otherwise, ascend the object
 						
@@ -522,7 +528,10 @@
 					(switch
 						;	Dead means dead
 						
-						(= status 'dead)
+						(or (= status 'dead) 
+								(= status 'destroyed) 
+								(= status 'destroyedByPlayer)
+								)
 							Nil
 							
 						;	Otherwise, we're alive and well

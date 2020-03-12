@@ -10,7 +10,7 @@
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, military, pacificDefense"
+			attributes=			"commonwealth, military, pacificDefense, wingmate"
 			inherit=			"&scCenturionX;"
 			character=			"&chRama;"
 			eventHandler=		"&chRama;"

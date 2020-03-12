@@ -12,7 +12,7 @@
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, pacificDefense"
+			attributes=			"commonwealth, pacificDefense, wingmate"
 			inherit=			"&scWolfenC3;"
 			character=			"&chVolkov;"
 			eventHandler=		"&chVolkov;"
