@@ -517,6 +517,7 @@ void CObjectImageArray::CopyImage (CG32bitImage &Dest, int x, int y, int iFrame,
 				*pSource,
 				x,
 				y);
+		Dest.CreateOpenGLTexture();
 		}
 	}
 
@@ -1385,7 +1386,7 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 			//pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
 			//	pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
 			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight);
+				pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight);
 			}
 		else if (bComposite)
 			{
@@ -1459,7 +1460,7 @@ void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, 
 			int iTexQuadWidth = RectWidth(m_rcImage);
 			int iTexQuadHeight = RectHeight(m_rcImage);
 			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, (byOpacity == 0 ? 1.0f : (float)(static_cast<int>(byOpacity) / 255.0f)));
+				pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, (byOpacity == 0 ? 1.0f : (float)(static_cast<int>(byOpacity) / 255.0f)));
 			}
 		else
 			{
@@ -1604,11 +1605,11 @@ void CObjectImageArray::PaintImageWithGlow (CG32bitImage &Dest,
 		int iGQuadWidth = int(RectWidth(m_rcImage) * 1.00);
 		int iGQuadHeight = int(RectHeight(m_rcImage) * 1.00);
 		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iGQuadWidth, iGQuadHeight, x - (iGQuadWidth / 2), y - (iGQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-			pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.0f, 1.0f, 0.0f, fStrength, 0.0f);
+			pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.0f, 1.0f, 0.0f, fStrength, 0.0f);
 		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-			pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight);
+			pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight);
 		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iGQuadWidth, iGQuadHeight, x - (iGQuadWidth / 2), y - (iGQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-			pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.0f, 1.0f, 0.0f, fStrength / 4.5f, 0.0f);
+			pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.0f, 1.0f, 0.0f, fStrength / 4.5f, 0.0f);
 		return;
 	}
 

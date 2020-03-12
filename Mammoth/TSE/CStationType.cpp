@@ -801,7 +801,7 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 
 	retxCenter = xCenter;
 	retyCenter = yCenter;
-
+	pCompositeImage->CreateOpenGLTexture();
 	return pCompositeImage;
 	}
 

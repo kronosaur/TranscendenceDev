@@ -55,6 +55,7 @@ bool CGPNG::Load (IReadBlock &Data, CG32bitImage &Image, CString *retsError)
 		}
 
 	free(pOutput);
+	Image.CreateOpenGLTexture();
 
 	return true;
 	}

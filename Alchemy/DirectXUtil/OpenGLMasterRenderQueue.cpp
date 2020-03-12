@@ -95,31 +95,34 @@ void OpenGLMasterRenderQueue::deinitVAO(void)
 }
 
 void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX,
-	int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight,
+	int posPixelY, int canvasHeight, int canvasWidth, OpenGLTexture *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight,
 	float alphaStrength, float glowR, float glowG, float glowB, float glowA, float glowNoise)
 	{
 	// Note, image is a pointer to the CG32bitPixel* we want to use as a texture. We can use CG32bitPixel->GetPixelArray() to get this pointer.
 	// To get the width and height, we can use pSource->GetWidth() and pSource->GetHeight() respectively.
+	// TODO: This can be called from different threads; we need to make sure that OGL textures are only initialized on a single thread
+	// Note, the texture doesn't need to be initialized until we render, although the texture must be initialized when we generate glow maps
+	// We only need the glow maps at render time, not at add to queue time, so we can defer generation until render time
+	//m_texturesNeedingInitialization.push_back()
 
-	// Check to see if we've rendered that texture before.
-	if (!m_textures.count(image))
-		{
-		// If not, then add that texture to the list on our master render queue.
-		OpenGLTexture *pTextureToUse = new OpenGLTexture(image, texWidth, texHeight);
-		pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
-		m_textures[image] = pTextureToUse;
-		}
+	// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
+	image->initTextureFromOpenGLThread();
+
+	// Generate a glow map for this texture if needed.
+	// TODO: Store the texture quad width and height on the OpenGLTexture object temporarily, so glowmap can be created later
+	if (!image->getGlowMap()) {
+		image->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
+	}
 
 	// Check to see if we have a render queue with that texture already loaded.
-	if (!m_shipRenderQueues.count(m_textures[image]))
+	if (!m_shipRenderQueues.count(image))
 		{
-		OpenGLTexture *pTextureToUse = m_textures[image];
 		// If we don't have a render queue with that texture loaded, then add one.
-		m_shipRenderQueues[pTextureToUse] = new OpenGLInstancedRenderQueue();
+		m_shipRenderQueues[image] = new OpenGLInstancedRenderQueue();
 		}
 	// Add this quad to the render queue.
 	glm::vec4 glow(glowR, glowG, glowB, glowA);
-	m_shipRenderQueues[m_textures[image]]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, texQuadWidth, texQuadHeight, alphaStrength, glow, glowNoise);
+	m_shipRenderQueues[image]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, texQuadWidth, texQuadHeight, alphaStrength, glow, glowNoise);
 	}
 
 void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
@@ -173,14 +176,18 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		m_fDepthLevel = depthLevel;
 	}
 
-	std::array<std::string, 2> lightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions" };
+	std::array<std::string, 2> rayAndLightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions" };
 
-	m_effectRayRenderQueue.setUniforms(lightningUniformNames, float(m_iCurrentTick), glm::ivec2(m_iCanvasWidth, m_iCanvasHeight));
+	m_effectRayRenderQueue.setUniforms(rayAndLightningUniformNames, float(m_iCurrentTick), glm::ivec2(m_iCanvasWidth, m_iCanvasHeight));
 	m_effectRayRenderQueue.Render(m_pRayShader, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
-	m_effectLightningRenderQueue.setUniforms(lightningUniformNames, float(m_iCurrentTick), glm::ivec2(m_iCanvasWidth, m_iCanvasHeight));
+	m_effectLightningRenderQueue.setUniforms(rayAndLightningUniformNames, float(m_iCurrentTick), glm::ivec2(m_iCanvasWidth, m_iCanvasHeight));
 	m_effectLightningRenderQueue.Render(m_pLightningShader, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
 	// Reset the depth level.
 	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;
+
+	// Delete textures scheduled for deletion.
+	if (m_texturesForDeletion.size() > 0)
+		m_texturesForDeletion.clear();
 }
 
 void OpenGLMasterRenderQueue::initializeVAO(void)

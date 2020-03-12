@@ -626,8 +626,10 @@ void CDXScreen::Render (void)
 				delete m_pOpenGLTexture;
 				m_pOGLContext->ackResize();
 				}
-			if (!m_pOpenGLTexture)
-				m_pOpenGLTexture = new OpenGLTexture(pPixelArray, Layer.cxWidth, Layer.cyHeight);
+			if (!m_pOpenGLTexture) {
+				m_pOpenGLTexture = new OpenGLTexture(pPixelArray, Layer.cxWidth, Layer.cyHeight, false);
+				m_pOpenGLTexture->initTextureFromOpenGLThread();
+			}
 			else
 				m_pOpenGLTexture->updateTexture2D(pPixelArray, Layer.cxWidth, Layer.cyHeight);
 		}

@@ -10,6 +10,8 @@
 #define MEDIUM_SQUARE_SIZE					4
 
 CG32bitImage CG32bitImage::m_NullImage;
+bool CG32bitImage::m_bOpenGLInitialized = false;
+std::unique_ptr<OpenGLMasterRenderQueue> CG32bitImage::m_pOGLRenderQueue = nullptr;
 
 CG32bitImage::CG32bitImage (void)
 
@@ -33,8 +35,12 @@ CG32bitImage::~CG32bitImage (void)
 	{
 	CleanUp();
 
-	if (m_pOGLRenderQueue)
-		delete[] m_pOGLRenderQueue;
+	if (m_pOpenGLTexture && m_pOGLRenderQueue)
+		m_pOGLRenderQueue->handOffTextureForDeletion(std::move(m_pOpenGLTexture));
+
+	//if (m_pOGLRenderQueue)
+	//	delete[] m_pOGLRenderQueue;
+
 	}
 
 CG32bitImage &CG32bitImage::operator= (const CG32bitImage &Src)
@@ -378,7 +384,6 @@ bool CG32bitImage::Create (int cxWidth, int cyHeight, EAlphaTypes AlphaType, CG3
 	m_cyHeight = cyHeight;
 	m_AlphaType = AlphaType;
 	ResetClipRect();
-
 	return true;
 	}
 
@@ -681,6 +686,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 				}
 			}
 
+		CreateOpenGLTexture();
 		return true;
 		}
 	catch (...)
@@ -715,6 +721,7 @@ bool CG32bitImage::CreateFromExternalBuffer (void *pBuffer, int cxWidth, int cyH
 	m_AlphaType = AlphaType;
 	ResetClipRect();
 
+	CreateOpenGLTexture();
 	return true;
 	}
 
@@ -760,6 +767,7 @@ bool CG32bitImage::CreateFromFile (const CString &sImageFilespec, const CString 
 
 		//	Done
 
+		CreateOpenGLTexture();
 		return bSuccess;
 		}
 	catch (...)
@@ -823,6 +831,7 @@ bool CG32bitImage::CreateFromImageTransformed (const CG32bitImage &Source, int x
 			DestToSrc,
 			rcDestXForm);
 
+	CreateOpenGLTexture();
 	return true;
 	}
 
@@ -854,6 +863,7 @@ bool CG32bitImage::CreateFromWindowsBMP (IReadStream &Stream)
 		Stream.Read((char *)pDestRow, m_cxWidth * sizeof(DWORD));
 		}
 
+	CreateOpenGLTexture();
 	return true;
 	}
 
@@ -1136,7 +1146,9 @@ void CG32bitImage::InitOpenGL(void)
 	{
 	if (!m_pOGLRenderQueue)
 		{
-		m_pOGLRenderQueue = new OpenGLMasterRenderQueue();
+		m_pOGLRenderQueue = std::make_unique<OpenGLMasterRenderQueue>();
+		//m_pOGLRenderQueue = new OpenGLMasterRenderQueue();
+		m_bOpenGLInitialized = true;
 		}
 	}
 

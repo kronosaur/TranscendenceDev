@@ -306,6 +306,7 @@ class CObjectImageArray
 
 		DWORD m_dwBitmapUNID;				//	UNID of bitmap (0 if none)
 		TSharedPtr<CObjectImage> m_pImage;	//	Image
+		std::unique_ptr<OpenGLTexture> m_pOpenGLTexture;    //  OpenGL texture for this image
 		RECT m_rcImage;
 		int m_iFrameCount;
 		int m_iTicksPerFrame;

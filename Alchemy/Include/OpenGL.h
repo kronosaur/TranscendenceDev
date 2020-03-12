@@ -44,13 +44,13 @@ We'll need a separate texture queue for effects that don't use textures...
 For special effects that use textures (such as glow), what we can do is use a separate instanced render queue that will make use of the glow shader, rendered after the texture itself is done.
 
 */
-
 #include "OpenGLIncludes.h"
 #include "OpenGLTexture.h"
 #include "OpenGLInstancedBatch.h"
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <thread>
 
 /*
 class OpenGLMasterRenderQueue {
@@ -155,7 +155,7 @@ public:
 	void setObjectTextureShader (OpenGLShader *shader) { m_pObjectTextureShader = shader; }
 	OpenGLShader* getObjectTextureShader (void) { return m_pObjectTextureShader; }
 	void addShipToRenderQueue (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY,
-		int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight, float alphaStrength = 1.0,
+		int canvasHeight, int canvasWidth, OpenGLTexture *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight, float alphaStrength = 1.0,
 		float glowR = 0.0, float glowG = 0.0, float glowB = 0.0, float glowA = 0.0, float glowNoise = 0.0);
 	void addRayToEffectRenderQueue (int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
 		int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
@@ -164,6 +164,11 @@ public:
 		int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor, std::tuple<int, int, int> secondaryColor, float seed);
 	void setCurrentTick (int currTick) { m_iCurrentTick = currTick; }
 	void setCanvasDimensions(int width, int height) { m_iCanvasHeight = height; m_iCanvasWidth = width; }
+	void handOffTextureForDeletion(std::shared_ptr<OpenGLTexture> texPtr) {
+		::kernelDebugLogPattern("[OpenGL] Prepping gpu texture at %d for deletion from thread: %d", texPtr.get(), std::this_thread::get_id()); 
+		m_texturesForDeletion.push_back(std::move(texPtr));
+		::kernelDebugLogPattern("[OpenGL] Prepped gpu texture at %d for deletion from thread: %d", texPtr.get(), std::this_thread::get_id());
+	 }
 private:
 	void initializeVAO (void);
 	void deinitVAO (void);
@@ -189,6 +194,8 @@ private:
 	// TODO: CPU images should own corresponding OpenGL textures. We need to permanently map our RAM textures to GPU textures, which means avoiding
 	// the dictionary we have below as CPU memory addresses can change so the dictionary method is not reliable.
 	std::map<GLvoid*, OpenGLTexture*> m_textures;
+	std::vector<std::shared_ptr<OpenGLTexture>> m_texturesForDeletion;
+	//std::vector<std::shared_ptr<OpenGLTexture>> m_texturesNeedingInitialization;
 	float m_fDepthLevel;
 	static const float m_fDepthDelta;
 	static const float m_fDepthStart;

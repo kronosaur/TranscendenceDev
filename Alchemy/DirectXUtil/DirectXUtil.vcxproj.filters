@@ -150,7 +150,7 @@
     <ClInclude Include="..\Include\OpenGLVAO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OpenGLTexture.h">
+    <ClInclude Include="..\Include\OpenGLTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
