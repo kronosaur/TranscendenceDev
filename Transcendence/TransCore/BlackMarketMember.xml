@@ -85,14 +85,29 @@
 			</GetGlobalPlayerPriceAdj>
 			
 			<OnGlobalPlayerBoughtItem>
-				(switch
-					;	If the player bought illegal items from the Black Market then
-					;	we add to XP.
+				(block (
+					(maxXP 1500)
+					)
+					(switch
+						;	If the player bought illegal items from the Black Market then
+						;	we add to XP.
 					
-					(and (objHasAttribute aSellerObj 'blackMarket)
-							(itmHasAttribute gItem 'illegal)
-							)
-						(typInc@ gType 'xp (divide (ecoExchange aPrice aCurrency 'credit) 100))
+						(and (objHasAttribute aSellerObj 'blackMarket)
+								(itmHasAttribute gItem 'illegal)
+								(ls (typ@ gType 'xp) maxXP)
+								)
+							(block (
+								(xpEarned (divide (ecoExchange aPrice aCurrency 'credit) 100))
+								(xpGained 
+									(min 
+										xpEarned 
+										(- maxXP (typ@ gType 'xp))
+										)
+									)
+								)
+								(typInc@ gType 'xp xpGained)
+								)
+						)
 					)
 			</OnGlobalPlayerBoughtItem>
 
