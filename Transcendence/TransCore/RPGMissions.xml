@@ -871,7 +871,11 @@
 								(filter (msnFind gSource "a +deliveryMission;") theMission 
 									(and
 										(not (msnGetProperty theMission 'isCompleted))
-										(eq gSource (objGetObjByID (msnGetData theMission 'destID)))
+										(eq gSource 
+											(objGetObjByID 
+												(or (msn@ theMission 'destID) (msnGetData theMission 'destID))
+												)
+											)
 										)
 									)
 								0))
