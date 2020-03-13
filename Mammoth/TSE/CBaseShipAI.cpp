@@ -577,7 +577,7 @@ void CBaseShipAI::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPai
 //	Paint debug information
 
 	{
-	m_AICtx.DebugPaintInfo(Dest, x, y, Ctx);
+	m_AICtx.DebugPaintInfo(*m_pShip->GetSystem(), Dest, x, y, Ctx);
 	}
 
 void CBaseShipAI::FireOnOrderChanged (void)

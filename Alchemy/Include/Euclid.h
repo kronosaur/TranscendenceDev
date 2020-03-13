@@ -1,3 +1,4 @@
+
 //	Euclid.h
 //
 //	Basic geometry definitions
@@ -9,13 +10,13 @@
 
 typedef double Metric;
 
-const Metric PI = 3.14159265358979;
-const Metric HALF_PI = 0.5 * PI;
-const Metric TAU = 2.0 * PI;
+constexpr Metric PI = 3.14159265358979;
+constexpr Metric HALF_PI = 0.5 * PI;
+constexpr Metric TAU = 2.0 * PI;
 
 const Metric SQRT_3 = sqrt(3.0);
 
-const Metric DBL_INFINITY = 1.7976931348623158e+308;	//	DBL_MAX
+constexpr Metric DBL_INFINITY = 1.7976931348623158e+308;	//	DBL_MAX
 
 class CMath
 	{
@@ -62,12 +63,12 @@ inline Metric mathAngleMod (double rAngle) { if (rAngle >= 0.0) return fmod(rAng
 inline Metric mathAngleModDegrees (double rAngle) { if (rAngle >= 0.0) return fmod(rAngle, 360.0); else return 360.0 - fmod(-rAngle, 360.0); }
 inline Metric mathAngleBearing (Metric rAngle, Metric rOrigin) { Metric rDiff = mathAngleMod(rAngle - rOrigin); return (rDiff > PI ? rDiff - TAU : rDiff); }
 inline Metric mathAngleDiff (double rFrom, double rTo) { return mathAngleMod(rTo - rFrom); }
-inline Metric mathDegreesToRadians (int iAngle) { return iAngle * PI / 180.0; }
-inline Metric mathDegreesToRadians (Metric rDegrees) { return PI * rDegrees / 180.0; }
-inline Metric mathInterpolate (Metric rFrom, Metric rTo, Metric rInterpolate) { return rFrom + (rInterpolate * (rTo - rFrom)); }
+inline constexpr Metric mathDegreesToRadians (int iAngle) { return iAngle * PI / 180.0; }
+inline constexpr Metric mathDegreesToRadians (Metric rDegrees) { return PI * rDegrees / 180.0; }
+inline constexpr Metric mathInterpolate (Metric rFrom, Metric rTo, Metric rInterpolate) { return rFrom + (rInterpolate * (rTo - rFrom)); }
 inline Metric mathLog (Metric rValue, Metric rBase) { return ((rValue > 0.0 && rBase > 0.0) ? (log(rValue) / log(rBase)) : 0.0); }
 inline Metric mathLog2 (Metric rValue) { return (rValue > 0.0 ? (log(rValue) / log(2.0)) : 0.0); }
-inline Metric mathRadiansToDegrees (Metric rRadians) { return 180.0 * rRadians / PI; }
+inline constexpr Metric mathRadiansToDegrees (Metric rRadians) { return 180.0 * rRadians / PI; }
 
 //	2d vector class
 

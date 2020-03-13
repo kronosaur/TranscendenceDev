@@ -27,19 +27,29 @@ class CNavigationPath : public TSEListNode<CNavigationPath>
 		Metric ComputePathLength (CSystem *pSystem) const;
 		CVector ComputePointOnPath (CSystem *pSystem, Metric rDist) const;
 		static CString DebugDescribe (CSpaceObject *pObj, CNavigationPath *pNavPath);
-		void DebugPaintInfo (CG32bitImage &Dest, int x, int y, ViewportTransform &Xform);
+		void DebugPaintInfo (CSystem &System, CG32bitImage &Dest, int x, int y, ViewportTransform &Xform);
 		void DebugPaintInfo (CG32bitImage &Dest, int x, int y, const CMapViewportCtx &Ctx);
 		DWORD GetID (void) const { return m_dwID; }
-		int GetNavPointCount (void) const { return m_iWaypointCount; }
-		CVector GetNavPoint (int iIndex) const;
+		int GetNavPointCount (void) const { return m_Waypoints.GetCount(); }
+		CVector GetNavPoint (int iIndex, Metric *retrDist2 = NULL) const;
 		CVector GetPathEnd (void) const { return GetNavPoint(GetNavPointCount() - 1); }
 		bool Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);
 		void OnReadFromStream (SLoadCtx &Ctx);
 		void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const;
 
 	private:
-		static int ComputePath (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, CVector **retpPoints);
-//		static int ComputePath (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, int iDepth, CVector **retpPoints);
+		static constexpr Metric DEFAULT_NAV_POINT_RADIUS = 24.0 * LIGHT_SECOND;
+		static constexpr Metric DEFAULT_NAV_POINT_RADIUS2 = DEFAULT_NAV_POINT_RADIUS * DEFAULT_NAV_POINT_RADIUS;
+
+		struct SWaypoint
+			{
+			CVector vPos;
+			Metric rRange2 = 0.0;				//	How close to waypoint to count as success
+			};
+
+		void ComputeWaypointRange (void);
+		static int ComputePath (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, TArray<SWaypoint> &retWaypoints, TArray<CVector> *retPointsChecked);
+		static bool IsLineBlocked (CSystem &System, const CVector &vFrom, const CVector &vTo);
 		static bool PathIsClear (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, CSpaceObject **retpEnemy, CVector *retvAway);
 
 		DWORD m_dwID;							//	ID of path
@@ -51,8 +61,11 @@ class CNavigationPath : public TSEListNode<CNavigationPath>
 		int m_iFailures;						//	Count of ships that were destroyed
 
 		CVector m_vStart;						//	Start position
-		int m_iWaypointCount;					//	Number of waypoints (excludes start)
-		CVector *m_Waypoints;					//	Array of waypoints
+		TArray<SWaypoint> m_Waypoints;
+
+#ifdef DEBUG_ASTAR_PATH
+		TArray<CVector> m_PointsChecked;
+#endif
 	};
 
 typedef TSEListNode<CNavigationPath> CNavigationPathNode;

@@ -6394,7 +6394,8 @@ void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 
 		//	Show bounds
 
-		if (Ctx.bShowBounds)
+		if (Ctx.bShowBounds 
+				|| (GetUniverse().GetDebugOptions().IsShowNavPathsEnabled() && BlocksShips()))
 			{
 			CG32bitPixel rgbColor = GetSymbolColor();
 			int xHalf = mathRound(m_rBoundsX / g_KlicksPerPixel);

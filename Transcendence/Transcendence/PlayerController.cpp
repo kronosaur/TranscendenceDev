@@ -54,6 +54,8 @@ CPlayerShipController::~CPlayerShipController (void)
 //	CPlayerShipController destructor
 
 	{
+	if (m_pDebugNavPath)
+		delete m_pDebugNavPath;
 	}
 
 void CPlayerShipController::AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore)
@@ -284,6 +286,36 @@ CString CPlayerShipController::DebugCrashInfo (void)
 		sResult.Append(strPatternSubst(CONSTLIT("m_TargetList[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(m_TargetList[i])));
 
 	return sResult;
+	}
+
+void CPlayerShipController::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+
+//	DebugPaintInfo
+//
+//	Paint debug information.
+
+	{
+#ifdef DEBUG_ASTAR_PATH
+
+	CSystem *pSystem;
+
+	if (m_Universe.GetDebugOptions().IsShowNavPathsEnabled()
+			&& m_pTarget
+			&& (pSystem = m_Universe.GetCurrentSystem()))
+		{
+		if ((m_Universe.GetTicks() % 10) == 0)
+			{
+			if (m_pDebugNavPath)
+				delete m_pDebugNavPath;
+
+			CNavigationPath::Create(pSystem, m_pShip->GetSovereign(), m_pShip->GetPos(), m_pTarget->GetPos(), &m_pDebugNavPath);
+			}
+
+		if (m_pDebugNavPath)
+			m_pDebugNavPath->DebugPaintInfo(*pSystem, Dest, x, y, Ctx.XForm);
+		}
+
+#endif
 	}
 
 void CPlayerShipController::DisplayTranslate (const CString &sID, ICCItem *pData)
