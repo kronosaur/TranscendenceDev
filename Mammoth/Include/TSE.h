@@ -581,7 +581,7 @@ class CSpaceObject
 		void SetCursorAtRandomItem (CItemListManipulator &ItemList, const CItemCriteria &Crit);
 		bool SetItemData (const CItem &Item, const CString &sField, ICCItem *pValue, int iCount, CItem *retItem = NULL, CString *retsError = NULL);
 		bool SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError);
-		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult);
+		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool UseItem (const CItem &Item, CString *retsError = NULL);
 
@@ -1246,7 +1246,7 @@ class CSpaceObject
 		virtual bool CanBlockShips (void) { return false; }
 		virtual bool CanFireOn (CSpaceObject *pObj) const { return true; }
 		virtual DWORD GetClassID (void) const = 0;
-		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const { return NULL; }
+		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL, ICCItemPtr *retpData = NULL) const { return NULL; }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { if (!bAscend) Destroy(removedFromSystem, CDamageSource()); }
 		virtual CDesignType *GetDefaultOverride (void) const { return NULL; }
 		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const;

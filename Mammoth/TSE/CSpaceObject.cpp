@@ -3901,10 +3901,7 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 
 	//	Otherwise, we return the default screen associated with the object
 
-	if (retpData)
-		*retpData = NULL;
-
-	return GetDefaultDockScreen(retsScreen);
+	return GetDefaultDockScreen(retsScreen, retpData);
 	}
 
 ICCItemPtr CSpaceObject::GetGlobalData (const CString &sAttribute) const
@@ -7220,7 +7217,7 @@ void CSpaceObject::SetSovereign (CSovereign *pSovereign)
 		pSystem->FlushEnemyObjectCache();
 	}
 
-bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult)
+bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //

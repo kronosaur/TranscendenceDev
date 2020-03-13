@@ -2732,13 +2732,16 @@ DeviceNames CShip::GetDeviceNameForCategory (ItemCategories iCategory)
 		}
 	}
 
-CDesignType *CShip::GetDefaultDockScreen (CString *retsName) const
+CDesignType *CShip::GetDefaultDockScreen (CString *retsName, ICCItemPtr *retpData) const
 
 //	GetDockScreen
 //
 //	Returns the screen on dock (NULL_STR if none)
 
 	{
+	if (retpData)
+		*retpData = NULL;
+
 	return m_pClass->GetFirstDockScreen(retsName);
 	}
 

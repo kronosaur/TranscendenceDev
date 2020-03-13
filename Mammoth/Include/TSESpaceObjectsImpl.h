@@ -1265,7 +1265,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		//	CSpaceObject virtuals
 		virtual bool CanFireOn (CSpaceObject *pObj) const override { return CanFireOnObjHelper(pObj); }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override;
-		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const override;
+		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL, ICCItemPtr *retpData = NULL) const override;
 		virtual CDesignType *GetDefaultOverride (void) const { return m_pClass->GetDefaultEventHandler(); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) override;
@@ -1619,7 +1619,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 
 		//	CSpaceObject virtuals
 		virtual bool CanFireOn (CSpaceObject *pObj) const override { return CanFireOnObjHelper(pObj); }
-		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const override;
+		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL, ICCItemPtr *retpData = NULL) const override;
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) override;

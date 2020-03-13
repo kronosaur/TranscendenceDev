@@ -22,6 +22,8 @@
 #define SHIPWRECK_UNID_ATTRIB					CONSTLIT("shipwreckID")
 #define NAME_ATTRIB								CONSTLIT("name")
 
+#define LANGID_ABANDONED_SCREEN_DATA			CONSTLIT("core.abandonedScreenData")
+#define LANGID_DOCK_SCREEN_DATA					CONSTLIT("core.dockScreenData")
 #define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
 
 #define PAINT_LAYER_OVERHANG					CONSTLIT("overhang")
@@ -1726,7 +1728,7 @@ int CStation::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice 
 		return m_pType->GetHullDesc().CalcDamageEffectiveness(pAttacker, pWeapon);
 	}
 
-CDesignType *CStation::GetDefaultDockScreen (CString *retsName) const
+CDesignType *CStation::GetDefaultDockScreen (CString *retsName, ICCItemPtr *retpData) const
 
 //	GetDockScreen
 //
@@ -1734,9 +1736,25 @@ CDesignType *CStation::GetDefaultDockScreen (CString *retsName) const
 
 	{
 	if (IsAbandoned() && m_pType->GetAbandonedScreen(retsName))
+		{
+		if (retpData)
+			{
+			if (!Translate(LANGID_ABANDONED_SCREEN_DATA, NULL, *retpData))
+				*retpData = NULL;
+			}
+
 		return m_pType->GetAbandonedScreen(retsName);
+		}
 	else
+		{
+		if (retpData)
+			{
+			if (!Translate(LANGID_DOCK_SCREEN_DATA, NULL, *retpData))
+				*retpData = NULL;
+			}
+
 		return m_pType->GetFirstDockScreen(retsName);
+		}
 	}
 
 Metric CStation::GetGravity (Metric *retrRadius) const
