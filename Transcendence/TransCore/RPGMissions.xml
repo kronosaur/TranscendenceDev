@@ -40,6 +40,10 @@
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
+		<Properties>
+			<Global id="rpg.debug">Nil</Global>
+		</Properties>
+
 		<OnScreenInit>
 			(block Nil
 				; Store the mission object in screen data
@@ -466,8 +470,8 @@
 										(missionObj (@ options 'missionObj))
 										(screenOptions Nil)
 										)
-							
 										(msnSetPlayerTarget missionObj)
+
 										;	Ask the mission if it wants a different screen
 							
 										(setq aScreenType 'InProgressFollowUp)
@@ -712,11 +716,25 @@
 
 		<Events>
 			<GetGlobalDockScreen>
-				(block (missionObj)
+				(block (
+					(activeMissions 
+						(filter (msnFind gSource "aD") theMission 
+							(or (msn@ theMission 'isCompleted)
+
+								;	A mission can set this property to bring up 
+								;	the mission screen when the player docks.
+
+								(msn@ theMission 'rpg.showInProgressOnDock)
+								)
+							)
+						)
+
+					(missionObj (@ activeMissions 0))
+					)
 					(switch
 						; Find any mission that is completed and not yet debriefed
 
-						(setq missionObj (@ (filter (msnFind gSource "aD") theMission (msnGetProperty theMission 'isCompleted)) 0))
+						missionObj
 							{	
 								screen: &dsRPGMission;
 								priority: 4
@@ -853,7 +871,11 @@
 								(filter (msnFind gSource "a +deliveryMission;") theMission 
 									(and
 										(not (msnGetProperty theMission 'isCompleted))
-										(eq gSource (objGetObjByID (msnGetData theMission 'destID)))
+										(eq gSource 
+											(objGetObjByID 
+												(or (msn@ theMission 'destID) (msnGetData theMission 'destID))
+												)
+											)
 										)
 									)
 								0))
@@ -937,6 +959,8 @@
 				;				mission (as returned by rpgCharacterGetInfo). This is passed
 				;				as a field in gData when translating text.
 				;
+				;		noMissionText: Text to show if no missions. [Required]
+				;
 				;		noMissionTextID: Language ID to display if there is no mission
 				;				available at this station. [Required]
 				;
@@ -966,9 +990,11 @@
 						; Otherwise, nothing
 
 						(scrShowScreen gScreen &dsRPGMessage; {
-							desc:(scrTranslate gScreen noMissionTextID {
-								missionGiver: (@ options 'missionGiver)
-								})
+							desc: (or (@ options 'noMissionText)
+									(scrTranslate gScreen noMissionTextID {
+										missionGiver: (@ options 'missionGiver)
+										})
+									)
 							})
 						)
 					)
@@ -995,9 +1021,43 @@
 				;				for the mission source (gSource)
 				
 				(block (
+					(debugAssignment (typGetProperty &dsRPGMission; 'rpg.debug))
+
 					(displayCriteria (@ options 'displayCriteria))
-					theMission newMissions nextMissionTime
+
+					(maxMissions (or (obj@ gSource 'rpg.maxMissions) (@ options 'maxPerStation)))
+					(ownerHasHitLimit
+						(and maxMissions
+							(geq (count (msnFind gSource "*S")) maxMissions)
+							)
+						)
+
+					(missionCriteria (cat (@ options 'missionCriteria) " -special;"))
+					(ownerLimitMissionCriteria (cat missionCriteria " +property:ignoreOwnerLimit;"))
+
+					(newMissions 
+						(if ownerHasHitLimit 
+							(typFind ownerLimitMissionCriteria)
+							(typFind missionCriteria)
+							)
+						)
+
+					theMission nextMissionTime
 					)
+
+					(if debugAssignment
+						(block ()
+							(dbgOutput (objGetName gSource) ": rpgMissionGetAssignment")
+
+							(if ownerHasHitLimit
+								(block ()
+									(dbgOutput (objGetName gSource) ": Owner has no more standard missions.")
+									(dbgOutput (objGetName gSource) ": " ownerLimitMissionCriteria)
+									)
+								(dbgOutput (objGetName gSource) ": " missionCriteria)
+								)
+							)
+						)
 
 					;	Show proper screen
 
@@ -1006,38 +1066,57 @@
 						(and (setq theMission (msnFind gSource (cat "aSP " displayCriteria)))
 								(msnGetProperty theMission 'hasInProgress)
 								)
-							theMission
+							(block ()
+								(if debugAssignment (dbgOutput "Mission active: " (msnGetProperty theMission 'name)))
+								theMission
+								)
 
 						;	If we have an open mission available then return it.
 						(setq theMission (msnFind gSource (cat "oSP " displayCriteria)))
-							theMission
+							(block ()
+								(if debugAssignment (dbgOutput "Mission open: " (msnGetProperty theMission 'name)))
+								theMission
+								)
 
 						;	If the player has too many active missions from other stations, then no new mission
 						(and (@ options 'maxActive)
 								(geq (count (msnFind Nil (cat "a" (@ options 'missionCriteria)))) (@ options 'maxActive))
 								)
-							Nil
+							(block ()
+								(if debugAssignment (dbgOutput "Too many active missions from other stations."))
+								Nil
+								)
 
 						;	Don't give out more than X mission per station
-						(and (@ options 'maxPerStation)
-								(geq (count (msnFind gSource "*S")) (@ options 'maxPerStation))
+						(and ownerHasHitLimit (not newMissions))
+							(block ()
+								(if debugAssignment (dbgOutput "Station has hit maximum missions: " maxMissions))
+								Nil
 								)
-							Nil
 
 						;	If it's not time for a new mission, then nothing
 						(and (setq nextMissionTime (objGetData gSource 'nextMissionTime))
 								(@ options 'intervalPerStation)
 								(gr nextMissionTime (unvGetTick)))
-							Nil
+							(block ()
+								(if debugAssignment (dbgOutput "Not yet time for new mission for this station"))
+								Nil
+								)
 
 						(and (setq nextMissionTime (objGetTypeData gSource 'nextMissionTime))
 								(@ options 'intervalPerType)
 								(gr nextMissionTime (unvGetTick)))
-							Nil
+							(block ()
+								(if debugAssignment (dbgOutput "Not yet time for new mission for this station type"))
+								Nil
+								)
 
 						;	Make a list of available missions.
-						(not (setq newMissions (typFind (cat (@ options 'missionCriteria) " -special;"))))
-							Nil
+						(not newMissions)
+							(block ()
+								(if debugAssignment (dbgOutput "No missions matching criteria"))
+								Nil
+								)
 
 						;	Create a random mission from the list. If we succeed, then return it
 						(setq theMission (msnCreate newMissions gSource))
@@ -1049,11 +1128,15 @@
 								(if (@ options 'intervalPerType)
 									(objSetTypeData gSource 'nextMissionTime (+ (unvGetTick) (@ options 'intervalPerType)))
 									)
+								(if debugAssignment (dbgOutput "Created new mission: " (msnGetProperty theMission 'name)))
 								theMission
 								)
 
 						; Otherwise, nothing
-						Nil
+						(block ()
+							(if debugAssignment (dbgOutput "No missions could be created"))
+							Nil
+							)
 						)
 					)
 				))
@@ -1067,38 +1150,75 @@
 				;
 				;		missionCriteria: Criteria used to create new missions. [Required]
 				
-				(block (newMissions)
+				(block (
+					(debugAssignment (typGetProperty &dsRPGMission; 'rpg.debug))
+
+					(ownerHasHitLimit 
+						(and (@ options 'maxPerStation) 
+							(geq (count (msnFind gSource "*S")) (@ options 'maxPerStation))
+							)
+						)
+
+					(missionCriteria (cat (@ options 'missionCriteria) " +onDockMission;"))
+					(ownerLimitMissionCriteria (cat missionCriteria " +property:ignoreOwnerLimit;"))
+
+					(newMissions 
+						(if ownerHasHitLimit 
+							(typFind ownerLimitMissionCriteria)
+							(typFind missionCriteria)
+							)
+						)
+
+					theMission
+					)
+					(if debugAssignment
+						(dbgOutput (objGetName gSource) ": rpgMissionGetAssignmentOnScreenInit")
+						)
+
 					(switch
 						;	If we have an active/open mission from this station then nothing to
 						;	do. We go through the normal dock screen.
 
 						(@ (msnFind gSource "aoS") 0)
-							True
+							(block ()
+								(if debugAssignment (dbgOutput "Found active/open mission; no need for new mission"))
+								True
+								)
 
 						;	Don't give out more than X mission per station
 								
-						(and (@ options 'maxPerStation) 
-								(geq (count (msnFind gSource "*S")) (@ options 'maxPerStation))
+						(and ownerHasHitLimit (not newMissions))
+							(block ()
+								(if debugAssignment (dbgOutput "Station has hit maximum missions: " (@ options 'maxPerStation)))
+								True
 								)
-							True
 
 						;	See if there are any missions for the ship that we should show directly
 						;	when we dock (as opposed to when the player goes to the bridge).
 						;
 						;	If not, nothing to do.
 
-						(not (setq newMissions (typFind (cat (@ options 'missionCriteria) " +onDockMission;"))))
-							True
+						(not newMissions)
+							(block ()
+								(if debugAssignment (dbgOutput "No missions matching criteria"))
+								True
+								)
 
 						;	Create a random mission from the list. If we fail, then just continue
 						;	as normal.
 
 						(not (setq theMission (msnCreate newMissions gSource)))
-							True
+							(block ()
+								(if debugAssignment (dbgOutput "No missions could be created"))
+								True
+								)
 						
 						;	Otherwise, show the mission screen
 					
-						(scrShowScreen gScreen &dsRPGMission; { missionObj: theMission })
+						(block ()
+							(if debugAssignment (dbgOutput "Created new mission: " (msnGetProperty theMission 'name)))
+							(scrShowScreen gScreen &dsRPGMission; { missionObj: theMission })
+							)
 						)
 					)
 				))

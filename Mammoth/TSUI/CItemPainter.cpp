@@ -268,15 +268,17 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 		return;
 
 	CUniverse &Universe = m_pItem->GetUniverse();
-	const CG16bitFont &LargeBold = m_VI.GetFont(fontLargeBold);
-	const CG16bitFont &Medium = m_VI.GetFont(fontMedium);
-    CG32bitPixel rgbColorTitle = rgbTextColor;
-    CG32bitPixel rgbColorRef = rgbTextColor;
-	CG32bitPixel rgbColorDescSel = CG32bitPixel(200,200,200);
-	CG32bitPixel rgbColorDesc = CG32bitPixel(128,128,128);
-	CG32bitPixel rgbDisadvantage = m_VI.GetColor(colorTextDisadvantage);
 
 	bool bSelected = ((dwOptions & OPTION_SELECTED) ? true : false);
+	bool bDisabled = ((dwOptions & OPTION_DISABLED) ? true : false);
+
+	const CG16bitFont &LargeBold = m_VI.GetFont(fontLargeBold);
+	const CG16bitFont &Medium = m_VI.GetFont(fontMedium);
+    CG32bitPixel rgbColorTitle = (bDisabled ? CG32bitPixel(80, 80, 80) : rgbTextColor);
+    CG32bitPixel rgbColorRef = rgbColorTitle;
+	CG32bitPixel rgbColorDescSel = (bDisabled ? rgbColorTitle : CG32bitPixel(200,200,200));
+	CG32bitPixel rgbColorDesc = (bDisabled ? rgbColorTitle : CG32bitPixel(128,128,128));
+	CG32bitPixel rgbDisadvantage = m_VI.GetColor(colorTextDisadvantage);
 
 	//	Icons size
 
@@ -308,7 +310,7 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 	if (!m_Options.bNoIcon)
 		{
 		int xIcon = (m_Options.bNoPadding ? x : x + ITEM_LEFT_PADDING);
-		DrawItemTypeIcon(Dest, xIcon, y, &ItemType, cxIcon, cyIcon);
+		DrawItemTypeIcon(Dest, xIcon, y, &ItemType, cxIcon, cyIcon, bDisabled);
 		rcDrawRect.left = xIcon + cxIcon + ITEM_TEXT_MARGIN_X;
 		}
 
@@ -340,7 +342,10 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 
 	if (!m_AttribBlock.IsEmpty())
 		{
-		m_AttribBlock.Paint(Dest, rcDrawRect.left, rcDrawRect.top);
+		CCartoucheBlock::SPaintOptions Options;
+		Options.bDisabled = bDisabled;
+
+		m_AttribBlock.Paint(Dest, rcDrawRect.left, rcDrawRect.top, Options);
 		rcDrawRect.top += m_AttribBlock.GetHeight() + ATTRIB_SPACING_Y;
 		}
 
@@ -366,7 +371,8 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 				rcDrawRect.top,
 				iDamageType,
 				sDamageRef,
-                rgbTextColor);
+                rgbColorRef,
+				dwOptions);
 
 		rcDrawRect.top += Medium.GetHeight();
 
@@ -408,7 +414,8 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 				iLevel,
 				iHP,
 				iDamageAdj,
-                rgbTextColor);
+                rgbColorRef,
+				dwOptions);
 
 		rcDrawRect.top += cyHeight;
 
@@ -428,7 +435,7 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 			if (iSpeedBonus == 0)
 				{
 				sBonus = CONSTLIT("too heavy");
-				rgbBonus = rgbDisadvantage;
+				rgbBonus = (bDisabled ? rgbColorRef : rgbDisadvantage);
 				}
 			else if (iSpeedBonus > 0)
 				{
@@ -437,7 +444,7 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 			else
 				{
 				sBonus = strPatternSubst(CONSTLIT("-.%02dc penalty"), -iSpeedBonus);
-				rgbBonus = rgbDisadvantage;
+				rgbBonus = (bDisabled ? rgbColorRef : rgbDisadvantage);
 				}
 
 			//	If we have a different color, then paint with RTF; otherwise,
@@ -491,7 +498,10 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 
 	if (!m_Launchers.IsEmpty())
 		{
-		m_Launchers.Paint(Dest, rcDrawRect.left, rcDrawRect.top, rgbTextColor);
+		CIconLabelBlock::SPaintOptions PaintOptions;
+		PaintOptions.bDisabled = bDisabled;
+
+		m_Launchers.Paint(Dest, rcDrawRect.left, rcDrawRect.top, rgbColorRef, PaintOptions);
 		rcDrawRect.top += m_Launchers.GetHeight();
 		}
 
@@ -522,6 +532,7 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 					pEnhancements->GetEnhancement(i), 
 					rcDrawRect, 
 					(bSelected ? rgbColorDescSel : rgbColorDesc), 
+					dwOptions,
 					&cyHeight);
 
 			rcDrawRect.top += cyHeight;
@@ -529,13 +540,15 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 		}
 	}
 
-void CItemPainter::PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const CItemEnhancement &Enhancement, const RECT &rcRect, CG32bitPixel rgbText, int *retcyHeight)
+void CItemPainter::PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const CItemEnhancement &Enhancement, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions, int *retcyHeight)
 
 //	PaintItemEnhancement
 //
 //	Paints an item enhancement line.
 
 	{
+	bool bDisabled = ((dwOptions & OPTION_DISABLED) ? true : false);
+
 	const CG16bitFont &Medium = VI.GetFont(fontMedium);
 
 	//	Paint the enhancement icon
@@ -548,7 +561,7 @@ void CItemPainter::PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage 
 			return;
 		}
 
-	DrawItemTypeIcon(Dest, rcRect.left, rcRect.top, pEnhancer, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT);
+	DrawItemTypeIcon(Dest, rcRect.left, rcRect.top, pEnhancer, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT, bDisabled);
 
 	//	Figure out the description and attributes
 
@@ -581,19 +594,23 @@ void CItemPainter::PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage 
 
 	//	Enhancement
 
-	AttribBlock.Paint(Dest, rcDesc.left, rcDesc.top + Medium.GetHeight());
+	CCartoucheBlock::SPaintOptions AttribBlockOptions;
+	AttribBlockOptions.bDisabled = bDisabled;
+	AttribBlock.Paint(Dest, rcDesc.left, rcDesc.top + Medium.GetHeight(), AttribBlockOptions);
 
 	if (retcyHeight)
 		*retcyHeight = Max(ENHANCEMENT_ICON_HEIGHT, cyTotalHeight);
 	}
 
-void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText)
+void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText, DWORD dwOptions)
 
 //	PaintReferenceDamageAdj
 //
 //	Paints a line showing damage adjustment.
 
 	{
+	bool bDisabled = ((dwOptions & OPTION_DISABLED) ? true : false);
+
 	struct SEntry
 		{
 		int iDamageType;
@@ -681,7 +698,7 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 
 		//	Draw icon
 
-		VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType);
+		VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType, bDisabled);
 		x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
 
 		//	If we have a bunch of entries with "immune", then compress them
@@ -715,13 +732,15 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 		}
 	}
 
-void CItemPainter::PaintReferenceDamageType (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText)
+void CItemPainter::PaintReferenceDamageType (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText, DWORD dwOptions)
 
 //	PaintReferenceDamageType
 //
 //	Paints a line showing a damageType reference.
 
 	{
+	bool bDisabled = ((dwOptions & OPTION_DISABLED) ? true : false);
+
 	const CG16bitFont &Medium = VI.GetFont(fontMedium);
 
 	//	Paint the icon first
@@ -730,7 +749,7 @@ void CItemPainter::PaintReferenceDamageType (const CVisualPalette &VI, CG32bitIm
 			&& iDamageType != damageGeneric)
 		{
 		//x += DAMAGE_ADJ_SPACING_X;
-		VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType);
+		VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType, bDisabled);
 		x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
 		}
 

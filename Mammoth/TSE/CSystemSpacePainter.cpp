@@ -24,41 +24,22 @@ static int g_iTimingCount = 0;
 static DWORD g_dwTotalTime = 0;
 #endif
 
-class CStarshinePainter : public IThreadPoolTask
+class CSpaceBackgroundPainter : public IThreadPoolTask
 	{
 	public:
 		struct SCtx
 			{
-			SCtx (void) :
-					xDest(0),
-					yDest(0),
-					cxWidth(0),
-					cyHeight(0),
-					pBackground(NULL),
-					xBackground(0),
-					yBackground(0),
-					pMask(NULL),
-					xMask(0),
-					yMask(0),
-					rgbStarshine(0x00, 0x00, 0x00)
-				{ }
+			int xDest = 0;
+			int yDest = 0;
+			int cxWidth = 0;
+			int cyHeight = 0;
 
-			int xDest;
-			int yDest;
-			int cxWidth;
-			int cyHeight;
-
-			const CG32bitImage *pBackground;
-			int xBackground;
-			int yBackground;
-
-			const CG8bitSparseImage *pMask;
-			int xMask;
-			int yMask;
-			CG32bitPixel rgbStarshine;
+			const CG32bitImage *pBackground = NULL;
+			int xBackground = 0;
+			int yBackground = 0;
 			};
 
-		CStarshinePainter (CG32bitImage &Dest, int y, int cyHeight, SCtx &Ctx) :
+		CSpaceBackgroundPainter (CG32bitImage &Dest, int y, int cyHeight, SCtx &Ctx) :
 				m_Dest(Dest),
 				m_y(y),
 				m_cyHeight(cyHeight),
@@ -80,7 +61,40 @@ class CStarshinePainter : public IThreadPoolTask
 						-1,
 						m_Ctx.xBackground,
 						m_Ctx.yBackground + m_y);
+			};
 
+	private:
+		SCtx &m_Ctx;
+		CG32bitImage &m_Dest;
+		int m_y;
+		int m_cyHeight;
+	};
+
+class CStarshinePainter : public IThreadPoolTask
+	{
+	public:
+		struct SCtx
+			{
+			int xDest = 0;
+			int yDest = 0;
+			int cxWidth = 0;
+			int cyHeight = 0;
+
+			const CG8bitSparseImage *pMask = NULL;
+			int xMask = 0;
+			int yMask = 0;
+			CG32bitPixel rgbStarshine = CG32bitPixel(0, 0, 0);
+			};
+
+		CStarshinePainter (CG32bitImage &Dest, int y, int cyHeight, SCtx &Ctx) :
+				m_Dest(Dest),
+				m_y(y),
+				m_cyHeight(cyHeight),
+				m_Ctx(Ctx)
+			{ }
+
+		virtual void Run (void)
+			{
 			if (m_Ctx.pMask)
 				m_Ctx.pMask->MaskFill(m_Dest, 
 						m_Ctx.xDest, 
@@ -247,6 +261,67 @@ void CSystemSpacePainter::GenerateSquareDist (int iTotalCount, int iMinValue, in
 		}
 	}
 
+void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx)
+
+//	PaintSpaceBackground
+//
+//	Paint the system space background without starshine.
+
+	{
+	DEBUG_TRY
+
+	//	If we don't want a starfield then we just clear the rect
+
+	if (Ctx.fNoStarfield)
+		Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), CG32bitPixel(Ctx.rgbStarshineColor, 0xff));
+
+	//	Otherwise, we paint a space background
+
+	else
+		{
+		//	If we haven't yet initialized, do it now
+
+		InitSpaceBackground((pType ? pType->GetBackgroundUNID() : UNID_DEFAULT_SYSTEM_BACKGROUND), Ctx.rgbStarshineColor);
+
+		//	Get the absolute position of the center. This is just to get our
+		//	parallax offset. It's OK if we overflow an integer (because we want
+		//	to wrap around anyways).
+
+		int xCenter = (int)(Ctx.pCenter->GetPos().GetX() / g_KlicksPerPixel);
+		int yCenter = (int)(Ctx.pCenter->GetPos().GetY() / g_KlicksPerPixel);
+
+		//	If we have an system background image, paint that.
+
+		if (m_pBackground && !Ctx.fNoSpaceBackground)
+			PaintSpaceBackground(Dest, xCenter, yCenter, Ctx);
+
+		//	Otherwise we just clear the rect with the space color
+
+		else
+			{
+			if (!m_bInitialized)
+				{
+				CreateStarfield(Dest.GetWidth(), Dest.GetHeight());
+				m_bInitialized = true;
+				}
+
+			//	Compute the proper color
+
+			CG32bitPixel rgbSolid = CG32bitPixel::Blend(CG32bitPixel(0, 0, 0), Ctx.rgbStarshineColor, Ctx.rgbStarshineColor.GetAlpha());
+
+			//	Blank
+
+			Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), rgbSolid);
+
+			//	Paint the star field on top
+
+			PaintStarfield(Dest, Ctx.rcView, xCenter, yCenter, rgbSolid);
+			}
+		}
+
+	DEBUG_CATCH
+	}
+
 void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx)
 
 //	PaintSpaceBackground
@@ -256,41 +331,20 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 	{
 	ASSERT(m_pBackground);
 
-#ifdef DEBUG_PAINT_TIMINGS
-	DWORD dwStart = ::GetTickCount();
-#endif
-
-	CStarshinePainter::SCtx StarshineCtx;
-	StarshineCtx.xDest = Ctx.rcView.left;
-	StarshineCtx.yDest = Ctx.rcView.top;
-	StarshineCtx.cxWidth = RectWidth(Ctx.rcView);
-	StarshineCtx.cyHeight = RectHeight(Ctx.rcView);
+	CSpaceBackgroundPainter::SCtx PainterCtx;
+	PainterCtx.xDest = Ctx.rcView.left;
+	PainterCtx.yDest = Ctx.rcView.top;
+	PainterCtx.cxWidth = RectWidth(Ctx.rcView);
+	PainterCtx.cyHeight = RectHeight(Ctx.rcView);
 
 	//	Compute the background parallax
 
 	int cxImage = m_pBackground->GetWidth();
 	int cyImage = m_pBackground->GetHeight();
 
-	StarshineCtx.pBackground = m_pBackground;
-	StarshineCtx.xBackground = ClockMod(xCenter / 4, cxImage);
-	StarshineCtx.yBackground = ClockMod(-yCenter / 4, cyImage);
-
-	//	Starshine
-
-	if (!Ctx.fNoStarshine
-			&& Ctx.rgbSpaceColor.GetAlpha() != 0
-			&& Ctx.pVolumetricMask)
-		{
-		//	Compute the volumetric mask data
-
-		int xStarCenter = (int)(Ctx.pStar->GetPos().GetX() / g_KlicksPerPixel);
-		int yStarCenter = (int)(Ctx.pStar->GetPos().GetY() / g_KlicksPerPixel);
-
-		StarshineCtx.pMask = Ctx.pVolumetricMask;
-		StarshineCtx.xMask = (Ctx.pVolumetricMask->GetWidth() / 2) + xCenter - (RectWidth(Ctx.rcView) / 2) - xStarCenter;
-		StarshineCtx.yMask = (Ctx.pVolumetricMask->GetHeight() / 2) - yCenter - (RectHeight(Ctx.rcView) / 2) + yStarCenter;
-		StarshineCtx.rgbStarshine = Ctx.rgbSpaceColor;
-		}
+	PainterCtx.pBackground = m_pBackground;
+	PainterCtx.xBackground = ClockMod(xCenter / 4, cxImage);
+	PainterCtx.yBackground = ClockMod(-yCenter / 4, cyImage);
 
 	//	Compute the chunks
 
@@ -303,21 +357,13 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 	while (cyLeft > 0)
 		{
 		int cyHeight = Min((int)cyLeft, cyChunk);
-		Ctx.pThreadPool->AddTask(new CStarshinePainter(Dest, yStart, cyHeight, StarshineCtx));
+		Ctx.pThreadPool->AddTask(new CSpaceBackgroundPainter(Dest, yStart, cyHeight, PainterCtx));
 
 		yStart += cyHeight;
 		cyLeft -= cyHeight;
 		}
 
 	Ctx.pThreadPool->Run();
-
-#ifdef DEBUG_PAINT_TIMINGS
-	g_dwTotalTime += ::GetTickCount() - dwStart;
-	g_iTimingCount++;
-
-	if ((g_iTimingCount % 100) == 0)
-		::kernelDebugLogPattern("Space background time: %d.%02d", g_dwTotalTime / g_iTimingCount, (100 * g_dwTotalTime / g_iTimingCount) % 100);
-#endif
 	}
 
 void CSystemSpacePainter::PaintStarfield (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, CG32bitPixel rgbSpaceColor)
@@ -400,65 +446,69 @@ void CSystemSpacePainter::PaintStarfield (CG32bitImage &Dest, const RECT &rcView
 		}
 	}
 
-void CSystemSpacePainter::PaintViewport (CG32bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx)
+void CSystemSpacePainter::PaintStarshine (CG32bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx)
 
-//	PaintViewport
+//	PaintSpaceBackground
 //
-//	Paint the system space background.
+//	Paint the system space background without starshine.
 
 	{
-	DEBUG_TRY
+	//	If we no starshine, then skip
 
-	//	If we don't want a starfield then we just clear the rect
+	if (Ctx.fNoStarfield || Ctx.fNoSpaceBackground || Ctx.fNoStarshine || Ctx.rgbStarshineColor.GetAlpha() == 0 || !Ctx.pVolumetricMask)
+		return;
 
-	if (Ctx.fNoStarfield)
-		Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), CG32bitPixel(Ctx.rgbSpaceColor, 0xff));
+	//	Get the absolute position of the center. This is just to get our
+	//	parallax offset. It's OK if we overflow an integer (because we want
+	//	to wrap around anyways).
 
-	//	Otherwise, we paint a space background
+	int xCenter = (int)(Ctx.pCenter->GetPos().GetX() / g_KlicksPerPixel);
+	int yCenter = (int)(Ctx.pCenter->GetPos().GetY() / g_KlicksPerPixel);
 
-	else
+	PaintStarshine(Dest, xCenter, yCenter, Ctx);
+	}
+
+void CSystemSpacePainter::PaintStarshine (CG32bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx)
+
+//	PaintStarshine
+//
+//	Paints the starshine mask layer on top.
+
+	{
+	CStarshinePainter::SCtx StarshineCtx;
+	StarshineCtx.xDest = Ctx.rcView.left;
+	StarshineCtx.yDest = Ctx.rcView.top;
+	StarshineCtx.cxWidth = RectWidth(Ctx.rcView);
+	StarshineCtx.cyHeight = RectHeight(Ctx.rcView);
+
+	//	Compute the volumetric mask data
+
+	int xStarCenter = (int)(Ctx.pStar->GetPos().GetX() / g_KlicksPerPixel);
+	int yStarCenter = (int)(Ctx.pStar->GetPos().GetY() / g_KlicksPerPixel);
+
+	StarshineCtx.pMask = Ctx.pVolumetricMask;
+	StarshineCtx.xMask = (Ctx.pVolumetricMask->GetWidth() / 2) + xCenter - (RectWidth(Ctx.rcView) / 2) - xStarCenter;
+	StarshineCtx.yMask = (Ctx.pVolumetricMask->GetHeight() / 2) - yCenter - (RectHeight(Ctx.rcView) / 2) + yStarCenter;
+	StarshineCtx.rgbStarshine = Ctx.rgbStarshineColor;
+
+	//	Compute the chunks
+
+	int cyLeft = RectHeight(Ctx.rcView);
+	int cyChunk = cyLeft / Ctx.pThreadPool->GetThreadCount();
+	int yStart = 0;
+
+	//	Start asynchronous tasks
+
+	while (cyLeft > 0)
 		{
-		//	If we haven't yet initialized, do it now
+		int cyHeight = Min((int)cyLeft, cyChunk);
+		Ctx.pThreadPool->AddTask(new CStarshinePainter(Dest, yStart, cyHeight, StarshineCtx));
 
-		InitSpaceBackground((pType ? pType->GetBackgroundUNID() : UNID_DEFAULT_SYSTEM_BACKGROUND), Ctx.rgbSpaceColor);
-
-		//	Get the absolute position of the center. This is just to get our
-		//	parallax offset. It's OK if we overflow an integer (because we want
-		//	to wrap around anyways).
-
-		int xCenter = (int)(Ctx.pCenter->GetPos().GetX() / g_KlicksPerPixel);
-		int yCenter = (int)(Ctx.pCenter->GetPos().GetY() / g_KlicksPerPixel);
-
-		//	If we have an system background image, paint that.
-
-		if (m_pBackground && !Ctx.fNoSpaceBackground)
-			PaintSpaceBackground(Dest, xCenter, yCenter, Ctx);
-
-		//	Otherwise we just clear the rect with the space color
-
-		else
-			{
-			if (!m_bInitialized)
-				{
-				CreateStarfield(Dest.GetWidth(), Dest.GetHeight());
-				m_bInitialized = true;
-				}
-
-			//	Compute the proper color
-
-			CG32bitPixel rgbSolid = CG32bitPixel::Blend(CG32bitPixel(0, 0, 0), Ctx.rgbSpaceColor, Ctx.rgbSpaceColor.GetAlpha());
-
-			//	Blank
-
-			Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), rgbSolid);
-
-			//	Paint the star field on top
-
-			PaintStarfield(Dest, Ctx.rcView, xCenter, yCenter, rgbSolid);
-			}
+		yStart += cyHeight;
+		cyLeft -= cyHeight;
 		}
 
-	DEBUG_CATCH
+	Ctx.pThreadPool->Run();
 	}
 
 void CSystemSpacePainter::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSystemType *pType, CMapViewportCtx &Ctx)

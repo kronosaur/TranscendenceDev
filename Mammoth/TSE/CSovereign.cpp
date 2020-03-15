@@ -309,6 +309,14 @@ CSovereign::SRelationship *CSovereign::FindRelationship (const CSovereign *pSove
 			&& (pInheritFrom = CSovereign::AsType(GetInheritFrom())))
 		pRel = pInheritFrom->FindRelationship(pSovereign, true);
 
+	//	Next look to see if we have a relationship to an ancestor of the 
+	//	sovereign.
+
+	if (pRel == NULL 
+			&& bCheckParent
+			&& (pInheritFrom = CSovereign::AsType(pSovereign->GetInheritFrom())))
+		pRel = FindRelationship(pInheritFrom, true);
+
 	//	Done
 
 	return pRel;

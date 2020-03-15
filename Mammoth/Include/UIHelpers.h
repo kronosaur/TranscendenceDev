@@ -38,6 +38,27 @@ class CSmallOptionButtonAnimator
 		bool m_bInEditMode = false;
 	};
 
+class CTextAreaAnimator
+	{
+	public:
+		CTextAreaAnimator (IHISession &Session) :
+				m_Session(Session)
+			{ }
+
+		void Create (CAniVScroller &Root, const CString &sID, const CString &sText, int x, int y, int cxWidth, AlignmentStyles iAlign = alignLeft);
+		void SetText (const CString &sText);
+
+	private:
+		IHISession &m_Session;
+
+		CAniVScroller *m_pRoot = NULL;
+		CString m_sID;
+		int m_x = 0;
+		int m_y = 0;
+		int m_cxWidth = 0;
+		AlignmentStyles m_iAlign = alignLeft;
+	};
+
 class CItemDataAnimatron : public IAnimatron
 	{
 	public:

@@ -126,6 +126,7 @@
 
 		scale=				"world"
 		size=				"4"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -148,6 +149,7 @@
 
 		scale=				"world"
 		size=				"4"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -180,6 +182,7 @@
 
 		scale=				"world"
 		size=				"65"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -202,6 +205,7 @@
 
 		scale=				"world"
 		size=				"65"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -234,6 +238,7 @@
 
 		scale=				"world"
 		size=				"250"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -256,6 +261,7 @@
 
 		scale=				"world"
 		size=				"250"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -284,6 +290,7 @@
 
 		scale=				"world"
 		size=				"625"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -306,6 +313,7 @@
 
 		scale=				"world"
 		size=				"625"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
@@ -328,10 +336,11 @@
 
 	<StationType UNID="&stRockyPlanetoidSizeE;"
 		name=				"rocky planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, rocky"
+
 		scale=				"world"
 		size=				"1150"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, rocky"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -342,10 +351,11 @@
 
 	<StationType UNID="&stRockyPlanetoidSizeF;"
 		name=				"rocky planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, rocky"
+
 		scale=				"world"
 		size=				"2050"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, rocky"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -356,10 +366,11 @@
 
 	<StationType UNID="&stRockyPlanetoidSizeG;"
 		name=				"rocky planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, rocky"
+
 		scale=				"world"
 		size=				"4000"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, rocky"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>

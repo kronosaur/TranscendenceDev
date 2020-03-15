@@ -76,11 +76,11 @@
 			level=				"3"
 			value=				"5"
 			mass=				"1"
-			frequency=			"veryrare"
+			frequency=			"rare"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"defective, info, minorItem, weaponDamage"
 
-			description=		"Because of a manufacturing defect, this ROM ionizes any weapon it is intalled on."
+			description=		"Because of a manufacturing defect, this ROM ionizes any weapon it is installed on."
 
 			useScreen=			"&dsRPGUseItemOnDevice;"
 			>

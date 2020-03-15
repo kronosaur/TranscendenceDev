@@ -412,7 +412,7 @@ void CItemListManipulator::GenerateViewMap (void)
 		}
 	}
 
-const CItem &CItemListManipulator::GetItemAtCursor (void)
+const CItem &CItemListManipulator::GetItemAtCursor (void) const
 
 //	GetItemAtCursor
 //
@@ -575,6 +575,29 @@ bool CItemListManipulator::Refresh (const CItem &Item, DWORD dwFlags)
 	{
 	if (dwFlags & FLAG_SORT_ITEMS)
 		m_ItemList.SortItems();
+
+	GenerateViewMap();
+
+	if (Item.GetType() == NULL)
+		{
+		ResetCursor();
+		return true;
+		}
+
+	return SetCursorAtItem(Item);
+	}
+
+bool CItemListManipulator::RefreshAndSortEnabled (const CItem &Item, const CItemCriteria &EnabledItems)
+
+//	Refresh
+//
+//	Refreshes the manipulator from the list and selects
+//	the given item.
+//
+//	Returns TRUE if selection succeeded
+
+	{
+	m_ItemList.SortItems(EnabledItems);
 
 	GenerateViewMap();
 
@@ -865,7 +888,7 @@ bool CItemListManipulator::SetPropertyAtCursor (CSpaceObject *pSource, const CSt
 		NewItem.SetCount(Max(0, Min(iCount, OldItem.GetCount())));
 
 	CItemCtx ItemCtx(&NewItem, pSource);
-	if (NewItem.SetProperty(ItemCtx, sName, pValue, false, retsError) != resultPropertySet)
+	if (NewItem.SetProperty(ItemCtx, sName, pValue, false, retsError) != ESetPropertyResult::set)
 		return false;
 
 	MoveItemTo(NewItem, OldItem);

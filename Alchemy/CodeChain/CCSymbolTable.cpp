@@ -33,7 +33,7 @@ void CCSymbolTable::AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry)
 	((ICCItem *)pOldEntry)->Discard();
 	}
 
-void CCSymbolTable::AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd)
+bool CCSymbolTable::AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd, bool bMustBeNew)
 
 //	AddEntry
 //
@@ -80,7 +80,7 @@ void CCSymbolTable::AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAd
 			{
 			m_pParent->AddEntry(pKey, pTransformed);
 			pTransformed->Discard();
-			return;
+			return true;
 			}
 		else if (error != NOERROR)
 			throw CException(ERR_MEMORY);
@@ -94,6 +94,11 @@ void CCSymbolTable::AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAd
 
 	if (pPrevEntry)
 		pPrevEntry->Discard();
+
+	if (bMustBeNew && pPrevEntry)
+		return false;
+
+	return true;
 	}
 
 ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)

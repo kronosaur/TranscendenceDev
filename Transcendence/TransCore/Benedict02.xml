@@ -26,35 +26,37 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBenedictAndFiona;"
-			name=				"Benedict and Fiona"
+			name=				"Benedict 02: Benedict and Fiona"
 			attributes=			"benedictStoryArc, sistersMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"1"
+			missionArc=			"benedictArc:20"
 
 			maxAppearing=		"1"
 			debriefAfterOutOfSystem="true"
 			failureAfterOutOfSystem="5400"
 			>
-
-		<StaticData>
-			<sequence>20</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block Nil
-					(switch
-						;	This mission only works in the starting system
+			<CanCreate>
+				(switch
+					;	This mission only works in the starting system
 
-						(not (eq (sysGetNode) (objGetProperty gPlayerShip 'startingSystem)))
-							(msnDestroy gSource)
+					(!= (sysGetNode) (objGetProperty gPlayerShip 'startingSystem))
+						Nil
 
-						;	Set up the mission
+					;	If Fiona is dead, mission doesn't show up
+						
+					(not (rpgCharacterIsAliveAndWell &unidFiona;))
+						Nil
+							
+					;	Success!
 
-						(block Nil
-							)
-						)
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>
@@ -79,10 +81,6 @@
 					;	stargate).
 
 					(plyEnableMessage gPlayer 'enabledHints Nil)
-
-					;	Remember that we accepted this mission
-					
-					(benedict_missionAccepted gSource)
 					)
 			</OnAccepted>
 
@@ -145,17 +143,17 @@
 							;	Set the ships so they don't retreat when shields drop
 
 							(shpSetAISetting enemyObj 'ignoreShieldsDown True)
-                            
-                            ;   Atonement only gets a few missiles (otherwise the 
-                            ;   mission is too hard).
-                            
-                            (if (@ enemyDesc 'maxMissiles)
-                                (enum (objGetItems enemyObj "M") theMissiles
-                                    (if (gr (itmGetCount theMissiles) (@ enemyDesc 'maxMissiles))
-                                        (objRemoveItem enemyObj theMissiles (- (itmGetCount theMissiles) (@ enemyDesc 'maxMissiles)))
-                                        )
-                                    )
-                                )
+							
+							;   Atonement only gets a few missiles (otherwise the 
+							;   mission is too hard).
+							
+							(if (@ enemyDesc 'maxMissiles)
+								(enum (objGetItems enemyObj "M") theMissiles
+									(if (gr (itmGetCount theMissiles) (@ enemyDesc 'maxMissiles))
+										(objRemoveItem enemyObj theMissiles (- (itmGetCount theMissiles) (@ enemyDesc 'maxMissiles)))
+										)
+									)
+								)
 
 							;	Add treasure, if necessary
 
@@ -315,21 +313,42 @@
 			</OnCompleted>
 
 			<OnReward>
-				(block Nil
-					;	Give the player a galactic map
-					
-					(if (eq (objGetEquipmentStatus gPlayerShip 'GalacticMap) 'notInstalled)
-						(objChangeEquipmentStatus gPlayerShip 'GalacticMap 'install)
-						)
-						
-					;	Player gets mission to visit Korolov
+				(block (
+					;	Make a list of all Commonwealth Colonies in the New 
+					;	Beyond
 
-					(setq theMission (msnCreate &msBenedictToKorolov; Nil))
-					(if theMission
-						(msnAccept theMission)
+					(colonies
+						(filter (unvFindObject "TA +unid:&stCommonwealthColony;;") theEntry
+							(block (
+								(nodeID (@ theEntry 2))
+								)
+								(and (!= nodeID 'SE)
+									(!= nodeID 'BA)
+									(!= nodeID 'CP)
+									(sysHasAttribute nodeID 'newBeyond)
+									)
+								)
+							)
 						)
-						
-					Nil
+
+					;	Now find the nearest colony to us
+
+					(nearestColonyDesc
+						(map colonies '(reduceMin original) theEntry
+							(sysGetTopologyDistance (sysGetNode) (@ theEntry 2))
+							)
+						)
+					)
+					;	If we found an appropriate colony, remember it.
+
+					(if nearestColonyDesc
+						(block (
+							(nodeID (@ nearestColonyDesc 2))
+							)
+							(typSet@ &msBenedictInNewBeyond; 'stormhoundSystem nodeID)
+							(sysSetKnown nodeID True)
+							)
+						)
 					)
 			</OnReward>
 
@@ -340,21 +359,96 @@
 		
 		<Language>
 			<Text id="Name">
-				Defend Fiona's Freighter
+				Chapter 2: The Woman
 			</Text>
 			<Text id="Summary">
-				(msnTranslate gSource 'textSummary {
-					systemName: (sysGetName)
-					})
-			</Text>
-			<Text id="textSummary">
+				(block (
+					(result (msnGetData gSource 'result))
+					(stormhoundSystem (typ@ &msBenedictInNewBeyond; 'stormhoundSystem))
+					)
+					(switch
+						(= result 'playerDestroyedFreighter)
+							(msnTranslate gSource 'textSummary.playerDestroyedFreighter {
+								systemName: (sysGetName)
+								})
 
-				Meet Fiona's freighter at the stargate and defend it back to the 
-				station.
+						(msn@ gSource 'isFailure)
+							(msnTranslate gSource 'textSummary.failure {
+								systemName: (sysGetName)
+								})
+							
+						(and (msn@ gSource 'isDebriefed) stormhoundSystem)
+							(msnTranslate gSource 'textSummary.next {
+								systemName: (sysGetName stormhoundSystem)
+								})
+
+						(msn@ gSource 'isDebriefed)
+							(msnTranslate gSource 'textSummary.noClue {
+								systemName: (sysGetName)
+								})
+
+						(msnTranslate gSource 'textSummary.active {
+							systemName: (sysGetName)
+							})
+						)
+					)
+			</Text>
+			<Text id="textSummary.active">
+
+				After a brief training regime, Benedict asks you to help a 
+				freighter in trouble.
+
+				Meet the freighter at the stargate and escort it back to the
+				Sisters of Domina.
 					
 				System: %systemName%\n
 				Payment: None
 
+			</Text>
+			<Text id="textSummary.next">
+
+				Fiona, an operative of the Sisters of Domina, has been rescued,
+				but the mystery of why she was attacked remains. Benedict has 
+				left for the %systemName% system to begin his search for 
+				answers.
+
+				Meet him there if you wish to help.
+					
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.noClue">
+
+				Fiona, an operative of the Sisters of Domina, has been rescued,
+				but the mystery of why she was attacked remains.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.playerDestroyedFreighter">
+
+				You have failed. Benedict asked you to defend a freighter, but
+				you ended up destroying it, through either incompetence or 
+				malice.
+
+				No further progress on this storyline is possible.
+
+				System: %systemName%\n
+				Payment: None
+				
+			</Text>
+			<Text id="textSummary.failure">
+
+				You have failed. Benedict asked you to defend a freighter, but
+				it was destroyed and all aboard were killed.
+
+				No further progress on this storyline is possible.
+
+				System: %systemName%\n
+				Payment: None
+				
 			</Text>
 			<Text id="Intro">
 			</Text>
@@ -381,26 +475,32 @@
 			<Text id="Freighter:PenitentDestroyed:5">That got him!</Text>
 			<Text id="SuccessDebrief">
 				(block (
-					(korolovMsn (msnFind "Pa +unid:&msBenedictToKorolov;;"))
+					(stormhoundSystem (typ@ &msBenedictInNewBeyond; 'stormhoundSystem))
 					)
-					(list
+					(append
 						(if (= (msnGetData gSource 'result) 'gotFiona) 
-							{	descID: 'SuccessDebrief1a	}
-							{	descID: 'SuccessDebrief1	}
+							(list {	descID: 'SuccessDebrief1a	})
+							(list {	descID: 'SuccessDebrief1	})
 							)
-						{	descID: 'SuccessDebrief2	labelID: 'actionSuccess2	}
-						{	descID: 'SuccessDebrief3	labelID: 'actionSuccess3	}
-						{	descID: 'SuccessDebrief4
-							data: {
-								systemName: (sysGetName)
-								}
-							}
-						(if korolovMsn
-							{	descID: 'SuccessDebrief5a
+						(list
+							{	descID: 'SuccessDebrief2	labelID: 'actionSuccess2	}
+							{	descID: 'SuccessDebrief3	labelID: 'actionSuccess3	}
+							{	descID: 'SuccessDebrief4
 								data: {
-									targetSystem: (sysGetName (msnGetData korolovMsn 'korolovNodeID))
-									}}
-							{	descID: 'SuccessDebrief5b	}
+									systemName: (sysGetName)
+									}
+								}
+							)
+						(if stormhoundSystem
+							(list
+								{	descID: 'SuccessDebrief5a	labelID: 'actionDebrief5a	}
+								{	descID: 'SuccessDebrief5b	
+									data: {
+										targetSystem: (sysGetName stormhoundSystem)
+										}
+									}
+								)
+							(list {	descID: 'SuccessDebrief6	})
 							)
 						)
 					)
@@ -423,8 +523,8 @@
 			<Text id="SuccessDebrief1a">
 
 				The docking bay swarms with activity. Benedict rushes to look
-				at Fiona in her rejuv tank until cardinal-robed medics pry him
-				away.
+				at the woman in her rejuv tank until cardinal-robed medics pry 
+				him	away.
 
 				The captain of the doomed freighter sits on the deck talking to
 				the abbess:
@@ -448,7 +548,7 @@
 				Benedict looks across the docking bay at the rejuv tank
 				and for the first time you see tears in his eyes.
 
-				"That's Fiona. I should have never let her go," he says, mostly to himself.
+				"That's Fiona. I should've never let her go alone," he says, mostly to himself.
 
 				"Penitents attacked her patrol ship, just as she
 				was about to make a critical discovery. Now her data
@@ -471,16 +571,23 @@
 			<Text id="SuccessDebrief5a">
 
 				"But your task here is done. Your fate is to reach the Galactic
-				Core&#x97;or die trying. I hope I've taught you enough.
+				Core&#x97;or die trying. I hope I've taught you enough."
 
-				"You've shown aptitude for defending ships; if you're interested
-				you can visit Korolov Shipping in the %targetSystem% system.
-				They're always looking for skilled pilots to defend their freighters.
+			</Text>
+			<String id="actionDebrief5a">"[W]hat will you do?"</String>
+			<Text id="SuccessDebrief5b">
+
+				"I have to figure out why Fiona was attacked. I owe her that
+				much.
+
+				"There's a Commonwealth colony in the %targetSystem% system. 
+				That's where Fiona started. With a little luck I'll be able to
+				retrace her steps.
 
 				"Goodbye, %name%! Perhaps I'll see you again someday."
 
 			</Text>
-			<Text id="SuccessDebrief5b">
+			<Text id="SuccessDebrief6">
 
 				"But your task here is done. Your fate is to reach the Galactic
 				Core&#x97;or die trying. I hope I've taught you enough.

@@ -4828,8 +4828,7 @@
 							(switch
 								(eq itemType &itQianlongArchcannon;)
 									(block (recharged)
-										(setq aCharges 256)
-										(setq recharged (objFireItemEvent gPlayerShip gItem "Recharge"))
+										(setq recharged (objFireItemEvent gPlayerShip gItem "Recharge" { charges:256 }))
 
 										(switch
 											(eq recharged 0)
@@ -6334,5 +6333,13 @@
 	<Image UNID="&rsStKatsArcology;"	obsoleteVersion="49"		bitmap="Resources\StKatsArcologyOld.jpg" bitmask="Resources\StKatsArcologyOldMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsStKatsArcologyScreen;" obsoleteVersion="49"		bitmap="Resources\StKatsArcologyScreen.jpg" loadOnUse="true"/>
 	<Image UNID="&rsStKatsArcologySchematic;" obsoleteVersion="49"	bitmap="Resources\StKatsArcologySchematic.jpg" bitmask="Resources\StKatsArcologySchematicMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsCorporateExplorer;"	obsoleteVersion="49" bitmap="Resources\CorporateExplorer.jpg" bitmask="Resources\CorporateExplorerMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsSmallShips1;"		obsoleteVersion="49" bitmap="Resources\SmallShips1.jpg"	bitmask="Resources\SmallShips1Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsMediumShips1;"		obsoleteVersion="49"	bitmap="Resources\MediumShips1.jpg"	bitmask="Resources\MediumShips1Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsMediumShips2;"		obsoleteVersion="49" bitmap="Resources\MediumShips2.jpg"	bitmask="Resources\MediumShips2Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsLargeShips2;"		obsoleteVersion="49"	bitmap="Resources\LargeShips2.jpg"	bitmask="Resources\LargeShips2Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsSungTransport;"		obsoleteVersion="49" bitmap="Resources\SungTransport.jpg"	bitmask="Resources\SungTransportMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsSalvagerNomad;"	obsoleteVersion="49"				bitmap="Resources\SalvagerNomad.jpg"		bitmask="Resources\SalvagerNomadMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

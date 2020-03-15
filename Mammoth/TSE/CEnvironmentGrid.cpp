@@ -40,10 +40,10 @@ static int g_iTimingCount = 0;
 static DWORD g_dwTotalTime = 0;
 #endif
 
-class CTilePainter : public IThreadPoolTask
+class CEnvironmentTilePainter : public IThreadPoolTask
 	{
 	public:
-		CTilePainter (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CEnvironmentGrid *pGrid, int x1, int y1, int x2, int y2) :
+		CEnvironmentTilePainter (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CEnvironmentGrid *pGrid, int x1, int y1, int x2, int y2) :
 				m_Ctx(Ctx),
 				m_Dest(Dest),
 				m_pGrid(pGrid),
@@ -611,7 +611,7 @@ void CEnvironmentGrid::Paint (SViewportPaintCtx &Ctx, CG32bitImage &Dest)
 	while (y < yEnd)
 		{
 		int yChunkEnd = Min(yEnd, y + cyChunk);
-		Ctx.pThreadPool->AddTask(new CTilePainter(Ctx, Dest, this, xStart, y, xEnd, yChunkEnd));
+		Ctx.pThreadPool->AddTask(new CEnvironmentTilePainter(Ctx, Dest, this, xStart, y, xEnd, yChunkEnd));
 
 		y = yChunkEnd;
 		}

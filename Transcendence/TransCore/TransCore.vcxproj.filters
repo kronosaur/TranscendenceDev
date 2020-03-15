@@ -906,5 +906,11 @@
     <Xml Include="MiningPods.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
+    <Xml Include="UndergroundCaverns.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
+    <Xml Include="BlackMarketMember.xml">
+      <Filter>Human Space Library\Black Market</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

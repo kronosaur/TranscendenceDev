@@ -10,13 +10,13 @@
 	
 		Nil: We don't know what the next training task should be.
 		
-		attackCentauri: Attack a Centauri station.
 		attackFirstStation: Attack an enemy station.
 		attackHiddenEnemy: Attack hidden enemy station.
 		explore: Explore worlds and asteroid fields in the system.
 		exploreSystem: Explore all friendly stations.
 		installDevice: Install a device.
 		installSmartCannon: Install SmartCannon.
+		installWMD: Install a WMD weapon.
 		loot: Loot a station.
 		lootHiddenEnemy: Loot hidden enemy.
 		nothing: Nothing more to learn.
@@ -41,52 +41,71 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBenedictTraining;"
-			name=				"Benedict Training"
+			name=				"Benedict 01: Benedict Training"
 			attributes=			"benedictStoryArc, sistersMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"1"
+			missionArc=			"benedictArc:15"
 				 
 			maxAppearing=		"1"
 			noDebrief=			"true"
 			>
+		<Properties>
+			<DynamicData id="rpg.showInProgressOnDock">
+				(msnGetData gSource 'taskCompleted)
+			</DynamicData>
 
-		<StaticData>
-			<sequence>15</sequence>
-		</StaticData>
+			<Data id="declineSmartCannon">Nil</Data>
+		</Properties>
 
 		<Events>
-			<OnCreate>
-				(block Nil
+			<CanCreate>
+				(switch
+					;	This mission only works in the starting system
 
-					(switch
-						;	This mission only works in the starting system
+					(!= (sysGetNode) (objGetProperty gPlayerShip 'startingSystem))
+						Nil
 
-						(not (eq (sysGetNode) (objGetProperty gPlayerShip 'startingSystem)))
-							(msnDestroy gSource)
+					;	Success!
 
-						;	Set up the mission
-
-						(block Nil
-							)
-						)
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>
-				(block (hiddenObj enemyPos enemyType)
+				(block (
+					(sourceObj (objGetObjByID (msn@ gSource 'ownerID)))
+
+					;	Find an enemy station to attack
+
+					(hiddenObj 
+						(or (sysFindObject sourceObj "TAN +enemy; +property:challengeRating[6];")
+							(sysFindObject sourceObj "TAN +enemy; +property:challengeRating[7];")
+							)
+						)
+					)
 					;	Keep track of player
 					
 					(msnRegisterForEvents gSource gPlayerShip)
-					
+
 					;	Create a hidden station somewhere out in the deep
 					;	Pick a random enemy and location
+					
+					(if (not hiddenObj)
+						(block (
+							(enemyType (random (list &stAbbasidOutpost; &stAnarchistGathering; &stUrakOutpost;)))
+							(enemyPos (sysVectorRandom Nil (random 950 1000) 150 "TsA"))
+							)
 							
-					(setq enemyType (random (list &stAbbasidOutpost; &stAnarchistGathering; &stUrakOutpost;)))
-					(setq enemyPos (sysVectorRandom Nil (random 950 1000) 150 "TsA"))
+							;	Create the enemy station
 							
-					;	Create the enemy station
-							
-					(setq hiddenObj (sysCreateStation enemyType enemyPos))
+							(setq hiddenObj (sysCreateStation enemyType enemyPos))
+							)
+						)
 							
 					;	Place treasure on the station (but first remove any existing treasure)
 							
@@ -160,7 +179,7 @@
 											
 										;	Otherwise, we tell the player to attack a different station
 									
-										(setq targetObj (sysFindObject gPlayerShip "TAEN +populated;"))
+										(setq targetObj (sysFindObject gPlayerShip "TAEN +populated; +property:hullType=singleHull; +property:challengeRating[1-4]"))
 											(block Nil
 												(msnRegisterForEvents gSource targetObj)
 												(setq state 'attackFirstStation)
@@ -241,19 +260,6 @@
 										(setq state 'sellLoot)
 										)
 										
-								;	If we're in Eridani and the player has destroyed fewer than 3 Centauri warlord
-								;	stations, then send the player out to destroy one.
-
-								(and (eq (sysGetNode) 'SE)
-										(setq targetObj (sysFindObject gPlayerShip "TAEN +centauriWarlords; +populated; -occupation; -questTarget; -uncharted;"))
-										(ls (count (sysFindObject gPlayerShip "TKE +centauriWarlords; +populated; -occupation; -uncharted;")) 3)
-										)
-									(block Nil
-										(msnIncData gSource 'centauriMissions 1)
-										(msnRegisterForEvents gSource targetObj)
-										(setq state 'attackCentauri)
-										)
-										
 								;	Send the player to explore all friendly stations (until they are all explored)
 								
 								(and (eq (sysGetNode) 'SE)
@@ -262,14 +268,20 @@
 												)
 										)
 									(setq state 'exploreSystem)
+
+								;	If the player does not have a WMD weapon, then tell them to 
+								;	get one.
+
+								(not (objGetItems gPlayerShip "wI +property:damageWMD;"))
+									(setq state 'installWMD)
 									
 								;	Send the player to destroy the hidden station, if it's not yet destroyed
 								
 								(and (setq targetObj (objGetObjByID (msnGetData gSource 'hiddenEnemyID)))
 										(not (objGetProperty targetObj 'abandoned))
 										)
-                                    (block Nil
-									    (setq state 'attackHiddenEnemy)
+									(block Nil
+										(setq state 'attackHiddenEnemy)
 										
 										;	This is a risky mission, so save the game
 										
@@ -290,35 +302,26 @@
 										(not (objGetItems gPlayerShip "wI +unid:&itSmartCannon;"))
 										(not (objGetItems gPlayerShip "wI L:4-"))
 										(setq targetObj (@ (rpgGetInstallerList gPlayerShip foundItem) 0))
+										(not (msn@ gSource 'declineSmartCannon))
 										)
 									(setq state 'installSmartCannon)
 
 								;	Mission to defend a freighter
 
-								(and (setq ownerObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
-										(setq fionaMission (msnCreate &msBenedictAndFiona; ownerObj))
-										)
-									(block Nil
-										
-										;	Current mission is done
-										
-										(msnSuccess gSource)
-										
-										;	Accept Fiona mission
-										
-										(msnAccept fionaMission)
-										(setq state 'fionaMission)
-										
-										;	This is a risky mission, so save the game
-										
-										(msnSetData gSource 'missionCheckpoint True)
-										)
-								
-								;	Nothing else
-								
 								(block Nil
+										
+									;	Current mission is done
+										
 									(msnSuccess gSource)
-									(setq state 'nothing)
+										
+									;	Text for Fiona mission (the actual creation and accept
+									;	happens in code associated with the dialog).
+										
+									(setq state 'fionaMission)
+										
+									;	This is a risky mission, so save the game
+										
+									(msnSetData gSource 'missionCheckpoint True)
 									)
 								)
 								
@@ -344,8 +347,7 @@
 						
 					(if targetObj
 						(switch
-							(or (eq state 'attackCentauri)
-									(eq state 'attackFirstStation)
+							(or (eq state 'attackFirstStation)
 									(eq state 'attackHiddenEnemy)
 									)
 								(objSetShowAsDestination targetObj (list 'showHighlight 'autoClearOnDestroy))
@@ -395,7 +397,7 @@
 							
 						;	Check to see if destroying this object completes a task
 						
-						(and (or (eq state 'attackFirstStation) (eq state 'attackCentauri) (eq state 'attackHiddenEnemy))
+						(and (or (eq state 'attackFirstStation) (eq state 'attackHiddenEnemy))
 								(eq (objGetID aObjDestroyed) (msnGetData gSource 'targetID))
 								)
 							(block Nil
@@ -492,9 +494,14 @@
 							(if	(typGetData &svPlayer; 'tutorialInstalled)
 								(setq taskDone True)
 								)
-								
+
 						(eq state 'installSmartCannon)
 							(if (not (objGetItems gPlayerShip "wU +unid:&itSmartCannon;;"))
+								(setq taskDone True)
+								)
+								
+						(= state 'installWMD)
+							(if (objGetItems gPlayerShip "wI +property:damageWMD")
 								(setq taskDone True)
 								)
 								
@@ -606,7 +613,7 @@
 		
 		<Language>
 			<Text id="Name">
-				"Training Day"
+				Chapter 1: Training Day
 			</Text>
 			<Text id="Summary">
 				(block (
@@ -659,9 +666,29 @@
 						;	We also clear the task completed variable so that we don't
 						;	debrief twice.
 					
-						(append
-							(msnTranslate gSource (cat taskCompleted ":Debrief"))
-							(msnTranslate gSource (cat state ":Begin") data)
+						(block (
+							(debriefText (msnTranslate gSource (cat taskCompleted ":Debrief")))
+							(beginText (msnTranslate gSource (cat state ":Begin") data))
+							)
+							(if (and (= (typeof beginText) 'list)
+									(= (typeof (@ beginText 0)) 'struct)
+									)
+
+								;	If the begin text is a dialog (a list of structs) then we
+								;	need to convert the debrief into dialog format.
+
+								(append
+									{ desc:debriefText }
+									beginText
+									)
+
+								;	Otherwise, normal append
+
+								(append
+									debriefText
+									beginText
+									)
+								)
 							)
 						
 						;	Otherwise, we just describe the current mission
@@ -670,42 +697,7 @@
 						)
 					)
 			</Text>
-			<Text id="attackCentauri:Begin">
-				(if (= (msnGetData gSource 'centauriMissions) 1)
-					(msnTranslate gSource "attackCentauri:Begin:First")
-					(msnTranslate gSource "attackCentauri:Begin:Another")
-					)
-			</Text>
-			<Text id="attackCentauri:Begin:First">
-
-				"I have little respect for Centauri warlords; they're
-				undisciplined and predictable. Still, they've managed to
-				scare half the star system into paying them tribute.
-
-				"Go out to one of their stations. Smash it and loot its
-				remains. It's time for them to be afraid."
-
-			</Text>
-			<Text id="attackCentauri:Begin:Another">
-
-				"We've found another band of warlords for you to attack.
-				Go out there and smash!"
-
-			</Text>
-			<String id="attackCentauri:Debrief">
-
-				"Keep it up and we'll free this system of their filth."
-
-			</String>
-			<Text id="attackCentauri:Summary">
-				Destroy a Centauri station.
-
-				System: %systemName%\n
-				Payment: None
-			</Text>
 			<Text id="attackFirstStation:Begin">
-
-				Benedict greets you as you enter.
 
 				"Every star system has its share of outlaws and warlords.
 				Most people fear them, but you can't afford to.
@@ -917,12 +909,23 @@
 			</Text>
 			<Text id="fionaMission:Begin">
 				(list
-					(msnTranslate gSource "fionaMission:Begin:1")
-					(msnTranslate gSource "fionaMission:Begin:2")
-					(if (objGetItems gPlayerShip "wI +unid:&itSmartCannon;;")
-						(msnTranslate gSource "fionaMission:Begin:3a")
-						(msnTranslate gSource "fionaMission:Begin:3b")
-						)
+					{	desc:(msnTranslate gSource "fionaMission:Begin:1")	}
+					{	desc:(msnTranslate gSource "fionaMission:Begin:2")	}
+					{	desc:(if (objGetItems gPlayerShip "wI +unid:&itSmartCannon;;")
+							(msnTranslate gSource "fionaMission:Begin:3a")
+							(msnTranslate gSource "fionaMission:Begin:3b")
+							)
+						code: 
+							(lambda ()
+								;	Create and Accept Fiona mission
+
+								(block (
+									(fionaMission (msnCreate &msBenedictAndFiona; gSource))
+									)
+									(msnAccept fionaMission)
+									)
+								)
+						}
 					)
 			</Text>
 			<Text id="fionaMission:Begin:1">
@@ -941,10 +944,11 @@
 
 				Benedict continues:
 
-				"Fiona, one of our operatives, is in trouble. We need you to help her.
+				"One of our freighters is in trouble; we don't know very much,
+				but it appears to be under attack.
 
-				"She's on a freighter, coming in to the system.
-				Meet her at the stargate and protect her until she can reach us here."
+				"She'll enter the system soon. Meet her at the stargate and
+				protect her until she can reach us here."
 
 			</Text>
 			<Text id="fionaMission:Begin:3a">
@@ -985,11 +989,51 @@
 				Payment: None
 			</Text>
 			<Text id="installSmartCannon:Begin">
+				(block (
+					;	Store here because we'll need it for the closure below.
 
+					(missionObj gSource)
+					)
+					(list
+						{	desc:(msnTranslate gSource 'installSmartCannon.begin1 gData)
+							actions: (list
+								{	label:(msnTranslate gSource 'actionInstallSmartCannonOK)
+									nextPage:'exitPane
+									}
+								{	label:(msnTranslate gSource 'actionInstallSmartCannonDecline)
+									}
+								)
+							}
+						{	desc:(msnTranslate gSource 'installSmartCannon.decline)
+							code: (lambda ()
+								(block ()
+									(msnSet@ missionObj 'declineSmartCannon True)
+									(msnSetData missionObj 'state Nil)
+									(objClearShowAsDestination (objGetObjByID (msnGetData missionObj 'targetID)))
+									)
+								)
+							}
+						)
+					)
+			</Text>
+			<Text id="installSmartCannon.begin1">
+			
 				"The %item% in your cargo hold is powerful.
 				Go to %target% and have it installed at their dock services."
 
 			</Text>
+			<String id="actionInstallSmartCannonOK">"[O]K"</String>
+			<String id="actionInstallSmartCannonDecline">"[N]o, I don't need it."</String>
+			<Text id="installSmartCannon.decline">
+
+				Benedict shrugs, "Fine. It's your ship. But remember: a weapon 
+				is just a tool. Don't get too attached to one way of doing 
+				things.
+
+				"Come back here when you're ready for more training."
+			
+			</Text>
+
 			<Text id="installSmartCannon:Debrief">
 
 				"Weapons, armor, and most other items need to be properly
@@ -1002,6 +1046,67 @@
 
 				System: %systemName%\n
 				Payment: None
+			</Text>
+			<Text id="installWMD:Begin">
+
+				"Enemy stations are often resistant to standard laser and 
+				kinetic	weapons. You'll need something stronger, like a missile 
+				launcher.
+
+				"Look for a weapon that has WMD damage and install it on your
+				ship."
+
+			</Text>
+			<Text id="installWMD:Debrief">
+				(switch
+					(objGetItems gPlayerShip "lI +disposable; +property:damageWMD")
+						(msnTranslate gSource 'installWMD.debriefDisposable)
+					
+					(objGetItems gPlayerShip "lI +property:damageWMD")
+						(msnTranslate gSource 'installWMD.debriefLauncher)
+
+					(msnTranslate gSource 'installWMD.debriefWeapon)
+					)
+			</Text>
+			<Text id="installWMD.debriefDisposable">
+
+				"That's a good choice. A disposable missile launcher is cheap
+				and effective. The only downside is that you will need to 
+				replaces it once it runs out of missiles.
+
+				"Eventually you'll want to get a full missile launcher, but this
+				is good for now."
+			
+			</Text>
+			<Text id="installWMD.debriefLauncher">
+
+				"That's an excellent choice. A good missile launcher will serve
+				you well in your travels. There's a wide range of missiles
+				available for your model.
+
+				"Still, missiles are expensive, so don't waste them unless you
+				really need them."
+			
+			</Text>
+			<Text id="installWMD.debriefWeapon">
+
+				"That's a good choice. A good weapon that does WMD damage is 
+				cheap and effective against hardened stations.
+
+				"Eventually you'll want to get a full missile launcher, but this
+				is good for now."
+			
+			</Text>
+			<Text id="installWMD:Summary">
+
+				Install a weapon with WMD damage, such as a missile launcher.
+
+				Many stations cannot be harmed with standard lasers or kinetic
+				weapons; they must be attacked with mass-destruction weapons.
+
+				System: %systemName%\n
+				Payment: None
+
 			</Text>
 			<Text id="loot:Begin">
 

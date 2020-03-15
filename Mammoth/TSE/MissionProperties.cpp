@@ -27,13 +27,19 @@
 
 #define REASON_DEBRIEFED						CONSTLIT("debriefed")
 
-TPropertyHandler<CMission> CMission::m_PropertyTable = std::array<TPropertyHandler<CMission>::SPropertyDef, 18> {{
+TPropertyHandler<CMission> CMission::m_PropertyTable = std::array<TPropertyHandler<CMission>::SPropertyDef, 19> {{
 		{
 		"acceptedOn",		"ticks",
 		[](const CMission &Obj, const CString &sProperty) 
 			{
 			return (Obj.m_fAcceptedByPlayer ? ICCItemPtr(Obj.m_dwAcceptedOn) : ICCItemPtr(ICCItem::Nil));
 			},
+		NULL,
+		},
+
+		{
+		"arcName",			"Name of arc",
+		[](const CMission &Obj, const CString &sProperty) {	return ICCItemPtr(Obj.m_sArcTitle); },
 		NULL,
 		},
 

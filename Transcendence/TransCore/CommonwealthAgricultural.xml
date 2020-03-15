@@ -155,6 +155,12 @@
 
 		<Language>
 			<Text id="rpg.missionTypeDesc">Agricultural colony missions</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys supplies and luxury items. We are not 
+				interested in buying %itemName%.
+
+			</Text>
 
 			<Text id="descWelcome">
 				You are inside a C9-class prefabricated agricultural station.

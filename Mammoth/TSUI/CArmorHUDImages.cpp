@@ -123,7 +123,7 @@ bool CArmorHUDImages::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 			int iSegment = GetArmorSegment(Ctx, CreateCtx.Class, pSub);
 			SArmorSegmentImageDesc &ArmorDesc = *m_Segments.SetAt(iSegment);
 
-			if (ALERROR error = ArmorDesc.Image.InitFromXML(Ctx, pSub))
+			if (ALERROR error = ArmorDesc.Image.InitFromXML(Ctx, *pSub))
 				return ComposeLoadError(ERR_ARMOR_DISPLAY_NEEDED, retsError);
 
 			ArmorDesc.sName = pSub->GetAttribute(NAME_ATTRIB);
@@ -138,7 +138,7 @@ bool CArmorHUDImages::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 			}
 		else if (strEquals(pSub->GetTag(), SHIP_IMAGE_TAG))
 			{
-			if (ALERROR error = m_ShipImage.InitFromXML(Ctx, pSub))
+			if (ALERROR error = m_ShipImage.InitFromXML(Ctx, *pSub))
 				return ComposeLoadError(ERR_SHIP_IMAGE_NEEDED, retsError);
 			}
 		else

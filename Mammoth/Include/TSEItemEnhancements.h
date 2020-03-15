@@ -304,7 +304,7 @@ class CRandomEnhancementGenerator
 	public:
 		void EnhanceItem (CItem &Item) const;
 		int GetChance (void) const { return m_iChance; }
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc);
 		bool IsVariant (void) const;
 
 	private:

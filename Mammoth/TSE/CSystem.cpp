@@ -342,7 +342,7 @@ Metric CSystem::CalcApparentSpeedAdj (Metric rSpeed)
 	return Min(MAX_ADJ, rAdj);
 	}
 
-int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
+int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask) const
 
 //	CalculateLightIntensity
 //
@@ -352,47 +352,20 @@ int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpSt
 	{
 	DEBUG_TRY
 
-	int i;
-
 	//	Find the nearest star to the position. We optimize the case where
 	//	there is only a single star in the system.
 
 	int iBestDist;
-	SStarDesc *pBestStar = NULL;
-
-	if (m_Stars.GetCount() == 1)
+	const SStarDesc *pBestStar = FindNearestStar(vPos, &iBestDist);
+	if (pBestStar == NULL)
 		{
-		pBestStar = &m_Stars[0];
-		iBestDist = (int)(vPos.Longest() / LIGHT_SECOND);
-		}
-	else
-		{
-		pBestStar = NULL;
-		iBestDist = 100000000;
+		if (retpStar)
+			*retpStar = NULL;
 
-		for (i = 0; i < m_Stars.GetCount(); i++)
-			{
-			CSpaceObject *pStar = m_Stars[i].pStarObj;
-			CVector vDist = vPos - pStar->GetPos();
+		if (retpVolumetricMask)
+			*retpVolumetricMask = NULL;
 
-			int iDistFromCenter = (int)(vDist.Longest() / LIGHT_SECOND);
-			if (iDistFromCenter < iBestDist)
-				{
-				iBestDist = iDistFromCenter;
-				pBestStar = &m_Stars[i];
-				}
-			}
-
-		if (pBestStar == NULL)
-			{
-			if (retpStar)
-				*retpStar = NULL;
-
-			if (retpVolumetricMask)
-				*retpVolumetricMask = NULL;
-
-			return 0;
-			}
+		return 0;
 		}
 
 	//	Compute the percentage
@@ -505,11 +478,29 @@ CVector CSystem::CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric r
 		}
 	}
 
-CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
+CG32bitPixel CSystem::CalcNearestStarColor (const CVector &vPos, CSpaceObject **retpStar) const
 
-//	CalculateSpaceColor
+//	CalcNearestStarColor
 //
-//	Calculates the color of space from the given object
+//	Computes the space color of the nearest star.
+
+	{
+	const SStarDesc *pBestStar = FindNearestStar(vPos);
+	if (pBestStar == NULL)
+		{
+		if (retpStar) *retpStar = NULL;
+		return CG32bitPixel(0, 0, 0);
+		}
+
+	if (retpStar) *retpStar = pBestStar->pStarObj;
+	return pBestStar->pStarObj->GetSpaceColor();
+	}
+
+CG32bitPixel CSystem::CalcStarshineColor (CSpaceObject *pPOV, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask) const
+
+//	CalcStarshineColor
+//
+//	Calculates the color of starshine for the given object
 
 	{
 	CSpaceObject *pStar;
@@ -580,7 +571,7 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
 
-	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter, &Ctx.pStar, &Ctx.pVolumetricMask);
+	Ctx.rgbStarshineColor = CalcStarshineColor(pCenter, &Ctx.pStar, &Ctx.pVolumetricMask);
 
 	//	Compute the radius of the circle on which we'll show target indicators
 	//	(in pixels)
@@ -607,8 +598,6 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 //	Initializes the volumetric mask for the given star
 
 	{
-	int i;
-
 	Metric rMaxDist = (pStar->GetMaxLightDistance() + 100) * LIGHT_SECOND;
 	int iSize = (int)(2.0 * rMaxDist / g_KlicksPerPixel);
 	VolumetricMask.Create(iSize, iSize, 0xff);
@@ -620,36 +609,22 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 
 	//	Loop over all planets/asteroids and generate a shadow
 
-	for (i = 0; i < GetObjectCount(); i++)
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
+		int iStarAngle;
+		Metric rStarDist;
+
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj == NULL
 				|| pObj->IsDestroyed())
 			{ }
 
-		//	See if we need to do any starlight processing
+		//	Add the shadow, if necessary
 
-		else if (pObj->HasStarlightImage())
+		else if (pObj->HasVolumetricShadow(&iStarAngle, &rStarDist))
 			{
-			//	Compute the angle of the object with respect to the star
-			//	And skip any objects that are outside the star's light radius.
-
-			Metric rStarDist;
-			int iStarAngle = ::VectorToPolar(pObj->GetPos() - pStar->GetPos(), &rStarDist);
-			if (rStarDist > rMaxDist)
-				continue;
-
-			//	Generate an image lit from the proper angle
-
-			pObj->CreateStarlightImage(iStarAngle, rStarDist);
-
-			//	Add the shadow, if necessary
-
-			if (pObj->HasVolumetricShadow())
-				{
-				CVolumetricShadowPainter Painter(pStar, xStar, yStar, iStarAngle, rStarDist, pObj, VolumetricMask);
-				Painter.PaintShadow();
-				}
+			CVolumetricShadowPainter Painter(pStar, xStar, yStar, iStarAngle, rStarDist, pObj, VolumetricMask);
+			Painter.PaintShadow();
 			}
 		}
 	}
@@ -1832,6 +1807,39 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 	return true;
 	}
 
+const CSystem::SStarDesc *CSystem::FindNearestStar (const CVector &vPos, int *retiDist) const
+
+//	FindNearestStar
+//
+//	Returns the nearest star to the position, and optionally the distance in 
+//	light-seconds.
+
+	{
+	if (m_Stars.GetCount() == 0)
+		return NULL;
+
+	const SStarDesc *pBestStar = &m_Stars[0];
+	int iBestDist = (int)(vPos.Longest() / LIGHT_SECOND);
+
+	for (int i = 1; i < m_Stars.GetCount(); i++)
+		{
+		const CSpaceObject *pStar = m_Stars[i].pStarObj;
+		CVector vDist = vPos - pStar->GetPos();
+
+		int iDistFromCenter = (int)(vDist.Longest() / LIGHT_SECOND);
+		if (iDistFromCenter < iBestDist)
+			{
+			iBestDist = iDistFromCenter;
+			pBestStar = &m_Stars[i];
+			}
+		}
+
+	if (retiDist)
+		*retiDist = iBestDist;
+
+	return pBestStar;
+	}
+
 CSpaceObject *CSystem::FindObject (DWORD dwID) const
 
 //	FindObject
@@ -2308,7 +2316,7 @@ bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit
 	return (retTable->GetCount() > 0);
 	}
 
-int CSystem::GetLevel (void)
+int CSystem::GetLevel (void) const
 
 //	GetLevel
 //
@@ -2902,13 +2910,16 @@ void CSystem::MarkImages (void)
 	{
 	DEBUG_TRY
 
-	int i;
-
 	m_Universe.SetLogImageLoad(false);
+
+	//	Set starlight parameters for every object
+
+	if (m_Universe.GetSFXOptions().IsStarshineEnabled())
+		SetStarlightParams();
 
 	//	Mark images for all objects that currently exist in the system.
 
-	for (i = 0; i < GetObjectCount(); i++)
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
 
@@ -2956,7 +2967,7 @@ void CSystem::MarkImages (void)
 	if (pImage)
 		pImage->Mark();
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
 		CEffectCreator &Effect = m_Universe.GetDefaultHitEffect((DamageTypes)i);
 		Effect.MarkImages();
@@ -3212,13 +3223,19 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	if (pPlayerCenter)
 		MainLayer[pPlayerCenter->GetPaintLayer()]->Insert(*pPlayerCenter);
 
-	//	Paint the background
+	//	Paint space background
 
-	m_SpacePainter.PaintViewport(Dest, GetType(), Ctx);
+	CUsePerformanceCounter PaintSpaceTimer(m_Universe, CONSTLIT("paint.spaceBackground"));
+	m_SpacePainter.PaintSpaceBackground(Dest, GetType(), Ctx);
 
 	//	Paint background objects
 
 	ParallaxBackground.Paint(Dest, Ctx);
+
+	//	Paint starshine
+
+	m_SpacePainter.PaintStarshine(Dest, GetType(), Ctx);
+	PaintSpaceTimer.StopCounter();
 
 	//	Paint any space environment (e.g., nebulae)
 
@@ -3358,7 +3375,7 @@ void CSystem::PaintViewportObject (CG32bitImage &Dest, const RECT &rcView, CSpac
 
 	SViewportPaintCtx Ctx;
 	Ctx.pCenter = pCenter;
-	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter);
+	Ctx.rgbStarshineColor = CalcStarshineColor(pCenter);
 	Ctx.XForm = ViewportTransform(pCenter->GetPos(), g_KlicksPerPixel, xCenter, yCenter);
 	Ctx.XFormRel = Ctx.XForm;
 
@@ -4389,6 +4406,44 @@ void CSystem::SetSpaceEnvironment (int xTile, int yTile, CSpaceEnvironmentType *
 	{
 	InitSpaceEnvironment();
 	m_pEnvironment->SetTileType(xTile, yTile, pEnvironment);
+	}
+
+void CSystem::SetStarlightParams (void)
+
+//	SetStarlightParams
+//
+//	Sets starlight parameters for all objects.
+
+	{
+	for (int i = 0; i < m_Stars.GetCount(); i++)
+		{
+		if (m_Stars[i].VolumetricMask.IsEmpty())
+			SetStarlightParams(*m_Stars[i].pStarObj);
+		}
+	}
+
+void CSystem::SetStarlightParams (const CSpaceObject &StarObj)
+
+//	SetStarlightParams
+//
+//	Sets starlight parameters for all objects relative to this star.
+
+	{
+	Metric rMaxDist = (StarObj.GetMaxLightDistance() + 100) * LIGHT_SECOND;
+
+	//	Loop over all planets/asteroids and generate a shadow
+
+	for (int i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj == NULL
+				|| pObj->IsDestroyed())
+			continue;
+
+		//	Set parameters
+
+		pObj->SetStarlightParams(StarObj, rMaxDist);
+		}
 	}
 
 void CSystem::SortByPaintOrder (void)

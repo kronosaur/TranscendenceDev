@@ -22,7 +22,7 @@ ALERROR CImageAndTailEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, 
 	{
 	ALERROR error;
 
-	if (error = m_Image.InitFromXML(Ctx, pDesc))
+	if (error = m_Image.InitFromXML(Ctx, *pDesc))
 		return error;
 
 	m_iLifetime = m_Image.GetFrameCount() * m_Image.GetTicksPerFrame();

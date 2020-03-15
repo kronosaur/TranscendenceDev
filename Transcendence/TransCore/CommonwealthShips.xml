@@ -183,6 +183,9 @@
 						destX="34" destY="103" hpX="55" hpY="105"
 						nameY="74" nameBreakWidth="360" nameDestX="12" nameDestY="0" />
 			</ArmorDisplay>
+
+			<ShieldDisplay shieldLevelEffect="&efShieldHUDDefault;">
+			</ShieldDisplay>
 		</PlayerSettings>
 
 		<!-- AI and Behavior -->
@@ -525,6 +528,9 @@
 						destX="23" destY="97" hpX="55" hpY="97"
 						nameY="74" nameBreakWidth="200" nameDestX="0" nameDestY="8" />
 			</ArmorDisplay>
+
+			<ShieldDisplay shieldLevelEffect="&efShieldHUDDefault;">
+			</ShieldDisplay>
 		</PlayerSettings>
 
 		<!-- AI and Behavior -->
@@ -692,6 +698,9 @@
 						destX="42" destY="103" hpX="55" hpY="107"
 						nameY="74" nameBreakWidth="360" nameDestX="12" nameDestY="0" />
 			</ArmorDisplay>
+
+			<ShieldDisplay shieldLevelEffect="&efShieldHUDDefault;">
+			</ShieldDisplay>
 		</PlayerSettings>
 
 		<!-- AI and Behavior -->
@@ -1473,6 +1482,9 @@
 						destX="24" destY="90" hpX="4" hpY="102"
 						nameY="98" nameBreakWidth="200" nameDestX="0" nameDestY="7" />
 			</ArmorDisplay>
+
+			<ShieldDisplay shieldLevelEffect="&efShieldHUDDefault;">
+			</ShieldDisplay>
 		</PlayerSettings>
 
 		<!-- AI and Behavior -->

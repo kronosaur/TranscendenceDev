@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							48;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					180;
+constexpr DWORD SYSTEM_SAVE_VERSION =					187;
 
 //	Uncomment out the following define when building a stable release
 
@@ -662,4 +662,24 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					180;
 //
 //	180: 1.9 Beta 1
 //		Replace m_WeaponTargets
-
+//
+//	181: 1.9 Beta 1
+//		Remove m_iFireDelay and m_iMissileFireDelay from CShip
+//
+//	182: 1.9 Beta 1
+//		Add m_fAnonymous to CStation
+//
+//	183: 1.9 Beta 1
+//		m_iStarlightImageRotation in CStation
+//
+//	184: 1.9 Beta 1
+//		Add m_iHitPoints to COverlay
+//
+//	185: 1.9 Beta 1
+//		Move m_fAutoCreatedPorts to CSpaceObject (from CShip)
+//
+//	186: 1.9 Beta 1
+//		Add m_Source to CParticleEffect
+//
+//	187: 1.9 Beta 1
+//		Add m_sArcTitle and m_sArcStatus to CMission

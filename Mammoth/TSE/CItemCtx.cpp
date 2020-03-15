@@ -147,6 +147,22 @@ CDeviceClass *CItemCtx::GetDeviceClass (void)
 	return NULL;
 	}
 
+CDeviceItem CItemCtx::GetDeviceItem (void)
+	{
+	if (m_pDevice)
+		return m_pDevice->GetDeviceItem();
+	else
+		{
+		const CItem &Item = GetItem();
+		if (CDeviceItem DeviceItem = Item.AsDeviceItem())
+			return DeviceItem;
+		else if (Item.IsMissile() && ResolveVariant())
+			return m_Weapon.AsDeviceItemOrThrow();
+		else
+			return CItem::NullItem().AsDeviceItem();
+		}
+	}
+
 TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)
 
 //	GetEnhancementStack
@@ -359,5 +375,9 @@ bool CItemCtx::ResolveVariant (void)
 	//	Look through all weapons that can launch this ammo. We pick the first
 	//	weapon (arbitrarily).
 
-	return CDeviceClass::FindWeaponFor(m_pItem->GetType(), &m_pWeapon, &m_iVariant);
+	if (!CDeviceClass::FindWeaponFor(m_pItem->GetType(), &m_pWeapon, &m_iVariant))
+		return false;
+
+	m_Weapon = CItem(m_pWeapon->GetItemType(), 1);
+	return true;
 	}

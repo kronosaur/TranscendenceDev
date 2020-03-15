@@ -254,8 +254,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrGetListEntry screen) -> entry",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"scrGetProperty",				fnScrGet,		FN_SCR_GET_PROPERTY,
-			"(scrGetProperty screen property) -> value\n\n"
+		{	"scr@",							fnScrGet,		FN_SCR_GET_PROPERTY,
+			"(scr@ screen property) -> value\n\n"
 			
 			"property\n\n"
 			
@@ -264,6 +264,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'inFirstOnInit"
 			"   'input",
 
+			"is",	0,	},
+
+		{	"scrGetProperty",				fnScrGet,		FN_SCR_GET_PROPERTY,
+			"RENAMED: Used (scr@ ...) instead.",
 			"is",	0,	},
 
 		{	"scrGetScreen",				    fnScrGet,		FN_SCR_GET_SCREEN,
@@ -358,8 +362,19 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrSetListFilter screen filter) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"scrSet@",						fnScrSet,		FN_SCR_SET_PROPERTY,
+			"(scrSet@ screen property value) -> True/Nil\n\n"
+			
+			"property:\n\n"
+			
+			"   'counter value\n"
+			"   'enabledFilter filter\n"
+			"   'showActualItem True|Nil\n",
+
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"scrSetProperty",					fnScrSet,		FN_SCR_SET_PROPERTY,
-			"(scrSetProperty screen property value) -> True/Nil",
+			"RENAMED: Use (scrSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"scrSetReturnData",					fnScrSet,		FN_SCR_RETURN_DATA,
@@ -1557,39 +1572,8 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
                 return pCC->CreateNil();
 
             const SDockFrame &CurFrame = DockSession.GetCurrentFrame();
-			DWORD dwRootUNID = (CurFrame.pResolvedRoot ? CurFrame.pResolvedRoot->GetUNID() : 0);
-            CString sScreen = CurFrame.sResolvedScreen;
-
-            ICCItem *pResult = pCC->CreateSymbolTable();
-
-			pResult->SetIntegerAt(CONSTLIT("type"), dwRootUNID);
-
-			if (sScreen.IsBlank())
-				{
-                pResult->SetIntegerAt(CONSTLIT("screen"), dwRootUNID);
-				pResult->SetIntegerAt(CONSTLIT("screenType"), dwRootUNID);
-				}
-			else
-				{
-				bool bNotUNID;
-				DWORD dwScreen = strToInt(sScreen, 0, &bNotUNID);
-				if (bNotUNID)
-					{
-					pResult->SetStringAt(CONSTLIT("screen"), sScreen);
-					pResult->SetStringAt(CONSTLIT("screenName"), sScreen);
-					}
-				else
-					{
-					pResult->SetIntegerAt(CONSTLIT("screen"), dwScreen);
-					pResult->SetIntegerAt(CONSTLIT("screenType"), dwScreen);
-					}
-				}
-
-            pResult->SetStringAt(CONSTLIT("pane"), CurFrame.sPane);
-            if (CurFrame.pStoredData)
-                pResult->SetAt(CONSTLIT("data"), CurFrame.pStoredData);
-
-            return pResult;
+			ICCItemPtr pResult = CDockScreenStack::AsCCItem(CurFrame);
+            return pResult->Reference();
             }
 
 		case FN_SCR_IS_ACTION_ENABLED:

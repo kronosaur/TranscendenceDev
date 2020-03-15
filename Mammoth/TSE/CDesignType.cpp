@@ -1034,6 +1034,7 @@ bool CDesignType::FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, S
 	{
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
+
 	//	Set up
 
 	Ctx.SetEvent(eventGetGlobalPlayerPriceAdj);
@@ -2375,6 +2376,16 @@ const CCompositeImageDesc &CDesignType::GetTypeImage (void) const
 	return CCompositeImageDesc::Null();
 	}
 
+const CObjectImageArray &CDesignType::GetTypeSimpleImage (void) const
+
+//	GetTypeSimpleImage
+//
+//	Default implementation
+
+	{
+	return GetTypeImage().GetSimpleImage();
+	}
+
 bool CDesignType::HasAttribute (const CString &sAttrib) const
 
 //	HasAttribute
@@ -2450,7 +2461,7 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 
 		CString sError;
 		CPropertyCompare Compare;
-		if (!Compare.Parse(sProperty, &sError))
+		if (!Compare.Parse(CCodeChainCtx(GetUniverse()), sProperty, &sError))
 			{
 			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
 			return false;

@@ -421,7 +421,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		for (i = 0; i < pLocals->GetCount(); i++)
 			{
 			ICCItem *pLocal;
-			ICCItem *pValue;
+			ICCItemPtr pValue;
 
 			pLocal = pLocals->GetElement(i);
 
@@ -431,7 +431,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			if (pLocal->IsList() && pLocal->GetCount() >= 2)
 				{
 				pVar = pLocal->GetElement(0);
-				pValue = pCC->Eval(pCtx, pLocal->GetElement(1));
+				pValue = ICCItemPtr(pCC->Eval(pCtx, pLocal->GetElement(1)));
 
 				//	If we get an error evaluating, return it
 
@@ -444,7 +444,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 					//	Done
 
-					return pValue;
+					return pValue->Reference();
 					}
 				}
 
@@ -453,15 +453,27 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			else
 				{
 				pVar = pLocal;
-				pValue = pCC->CreateNil();
+				pValue = ICCItemPtr::Nil();
 				}
 
 			//	Add it
 
 			if (pVar->IsIdentifier())
 				{
-				pLocalSymbols->AddEntry(pVar, pValue, true);
-				pValue->Discard();
+				//	We requite the symbol to be unique within the frame (but 
+				//	only in strict/debug mode).
+
+				if (!pLocalSymbols->AddEntry(pVar, pValue, true, pCtx->bStrict))
+					{
+					//	Clean up
+
+					pCtx->pLocalSymbols = pOldSymbols;
+					pLocalSymbols->Discard();
+
+					//	Duplicate local variable.
+
+					return pCC->CreateError(CONSTLIT("Duplicate local variable"), pVar);
+					}
 				}
 			}
 		}

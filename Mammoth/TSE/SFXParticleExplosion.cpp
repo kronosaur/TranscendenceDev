@@ -78,7 +78,7 @@ ALERROR CParticleExplosionEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &
 	CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG);
 	if (pImage)
 		{
-		if (error = m_Image.InitFromXML(Ctx, pImage))
+		if (error = m_Image.InitFromXML(Ctx, *pImage))
 			return error;
 		}
 

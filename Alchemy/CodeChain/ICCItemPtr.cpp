@@ -117,6 +117,20 @@ ICCItemPtr &ICCItemPtr::operator= (ICCItem *pSrc)
 	return *this;
 	}
 
+ICCItemPtr &ICCItemPtr::operator= (const ICCItem &Value)
+	{
+	ICCItem *pOld = m_pPtr;
+
+	m_pPtr = Value.Reference();
+
+	//	Discard at the end, in case Value.m_pPtr == m_pPtr.
+
+	if (pOld)
+		pOld->Discard();
+
+	return *this;
+	}
+
 void ICCItemPtr::Delete (void)
 
 //	Delete

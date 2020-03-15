@@ -105,6 +105,8 @@ CUniverse::~CUniverse (void)
         delete m_StarSystems[i];
     m_StarSystems.DeleteAll();
 
+	m_AscendedObjects.DeleteAll();
+
 	//	Free up various arrays whose cleanup requires m_CC
 
 	m_NamedEffects.CleanUp();
@@ -230,7 +232,7 @@ ALERROR CUniverse::CreateEmptyStarSystem (CSystem **retpSystem)
 	return NOERROR;
 	}
 
-ALERROR CUniverse::CreateMission (CMissionType *pType, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError)
+ALERROR CUniverse::CreateMission (CMissionType &Type, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError)
 
 //	CreateMission
 //
@@ -243,7 +245,7 @@ ALERROR CUniverse::CreateMission (CMissionType *pType, CSpaceObject *pOwner, ICC
 	//	Create the mission object
 
 	CMission *pMission;
-	if (error = CMission::Create(*this, pType, pOwner, pCreateData, &pMission, retsError))
+	if (error = CMission::Create(Type, CreateCtx, &pMission, retsError))
 		return error;
 
 	//	Add the mission 
@@ -296,7 +298,7 @@ ALERROR CUniverse::CreateRandomItem (const CItemCriteria &Crit,
 	return NOERROR;
 	}
 
-ALERROR CUniverse::CreateRandomMission (const TArray<CMissionType *> &Types, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError)
+ALERROR CUniverse::CreateRandomMission (const TArray<CMissionType *> &Types, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError)
 
 //	CreateRandomMission
 //
@@ -309,25 +311,14 @@ ALERROR CUniverse::CreateRandomMission (const TArray<CMissionType *> &Types, CSp
 	{
 	ALERROR error;
 
-	int iSystemLevel = (m_pCurrentSystem ? m_pCurrentSystem->GetLevel() : 1);
-
 	//	Loop until we create a valid mission (we assume that Types has been 
 	//	shuffled).
 
 	for (int i = 0; i < Types.GetCount(); i++)
 		{
-		//	Skip if this mission is not appropriate for this system level. We do
-		//	this here (instead of inside CMissionType::CanBeCreated) becaseu we
-		//	want explicitly created missions to not have a system restriction.
-
-		int iMinLevel, iMaxLevel;
-		Types[i]->GetLevel(&iMinLevel, &iMaxLevel);
-		if (iSystemLevel < iMinLevel || iSystemLevel > iMaxLevel)
-			continue;
-
 		//	Create a random mission. If successful, return.
 
-		if (error = CreateMission(Types[i], pOwner, pCreateData, retpMission, retsError))
+		if (error = CreateMission(*Types[i], CreateCtx, retpMission, retsError))
 			{
 			if (error == ERR_NOTFOUND)
 				continue;
@@ -792,34 +783,6 @@ const CEconomyType &CUniverse::GetCreditCurrency (void) const
 	return *m_pCreditCurrency;
 	}
 
-CMission *CUniverse::GetCurrentMission (void)
-
-//	GetCurrentMission
-//
-//	Returns the current player mission (or NULL)
-
-	{
-	int i;
-	DWORD dwLatestMission = 0;
-	CMission *pCurrentMission = NULL;
-
-	for (i = 0; i < m_AllMissions.GetCount(); i++)
-		{
-		CMission *pMission = m_AllMissions.GetMission(i);
-		if (pMission->IsActive() && pMission->IsPlayerMission())
-			{
-			DWORD dwAcceptedOn = pMission->GetAcceptedOn();
-			if (pCurrentMission == NULL || dwAcceptedOn > dwLatestMission)
-				{
-				pCurrentMission = pMission;
-				dwLatestMission = dwAcceptedOn;
-				}
-			}
-		}
-
-	return pCurrentMission;
-	}
-
 CEffectCreator &CUniverse::GetDefaultFireEffect (DamageTypes iDamage)
 
 //	GetDefaultFireEffect
@@ -844,25 +807,6 @@ CEffectCreator &CUniverse::GetDefaultHitEffect (DamageTypes iDamage)
 		throw CException(ERR_FAIL, CONSTLIT("DamageTypes value out of range."));
 
 	return m_NamedEffects.GetHitEffect(m_Design, iDamage);
-	}
-
-void CUniverse::GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList)
-
-//	GetMissions
-//
-//	Returns a list of missions that match the given criteria
-
-	{
-	int i;
-
-	retList->DeleteAll();
-	for (i = 0; i < m_AllMissions.GetCount(); i++)
-		{
-		CMission *pMission = m_AllMissions.GetMission(i);
-		if (pMission->MatchesCriteria(pSource, Criteria) 
-				&& !pMission->IsDestroyed())
-			retList->Insert(pMission);
-		}
 	}
 
 const CDamageAdjDesc *CUniverse::GetShieldDamageAdj (int iLevel) const
@@ -2246,6 +2190,8 @@ void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 		m_ViewportAnnotations.Init();
 		}
 
+	m_PerformanceCounters.Paint(Dest, rcView, GetNamedFont(fontSRSMessage));
+
 	m_iPaintTick++;
 	}
 
@@ -2368,7 +2314,7 @@ void CUniverse::RefreshCurrentMission (void)
 //	Picks the most recently accepted player mission and refresh the target.
 
 	{
-	CMission *pMission = GetCurrentMission();
+	CMission *pMission = m_AllMissions.FindLatestActivePlayer();
 	if (pMission == NULL)
 		return;
 
@@ -2693,18 +2639,33 @@ void CUniverse::SetHost (IHost *pHost)
 		m_pHost = pHost;
 	}
 
-void CUniverse::SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV)
+void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 
 //	SetNewSystem
 //
 //	Shows the new system before the player appears.
 
 	{
-	int i;
+	if (&NewSystem == m_pCurrentSystem)
+		return;
+
+	if (m_pCurrentSystem)
+		{
+		//	Let all types know that the current system is going away
+		//	(Obviously, we need to call this before we change the current system.
+		//	Note also that at this point the player is already gone.)
+
+		GetMissions().FireOnSystemStopped();
+		GetDesignCollection().FireOnGlobalSystemStopped();
+
+		//  Make sure we've updated current system data to global data.
+
+		GetGlobalObjects().Refresh(m_pCurrentSystem);
+		}
 
 	//	Before we set the POV, delete any old missions
 
-	for (i = 0; i < m_AllMissions.GetCount(); i++)
+	for (int i = 0; i < m_AllMissions.GetCount(); i++)
 		{
 		CMission *pMission = m_AllMissions.GetMission(i);
 
@@ -2719,12 +2680,15 @@ void CUniverse::SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV)
 
 	//	Set the new system
 
-	SetPOV(pPOV);
+	if (pPOV)
+		SetPOV(pPOV);
+	else
+		SetCurrentSystem(&NewSystem);
 
 	//	Replay any commands that might have happened while the player was in a
 	//	different system.
 
-	m_Objects.ReplayCommands(pSystem);
+	m_Objects.ReplayCommands(&NewSystem);
 
 	//	Add a discontinuity to reflect the amount of time spent
 	//	in the stargate
@@ -2739,7 +2703,20 @@ void CUniverse::SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV)
 	//	Clear the POVLRS flag for all objects (so that we don't get the
 	//	"Enemy Ships Detected" message when entering a system
 
-	pSystem->SetPOVLRS(pPOV);
+	if (pPOV)
+		NewSystem.SetPOVLRS(pPOV);
+
+	//	Compute how long (in ticks) it has been since this system has been
+	//	updated.
+
+	int iLastUpdated = NewSystem.GetLastUpdated();
+	DWORD dwElapsedTime = (iLastUpdated > 0 ? ((DWORD)GetTicks() - (DWORD)iLastUpdated) : 0);
+
+	//	Let all types know that we have a new system. Again, this is called 
+	//	before the player has entered the system.
+
+	GetDesignCollection().FireOnGlobalSystemStarted(dwElapsedTime);
+	GetMissions().FireOnSystemStarted(dwElapsedTime);
 	}
 
 void CUniverse::SetPlayer (IPlayerController *pPlayer)

@@ -23,7 +23,7 @@
 			<Global id="rpg.miningXP">0</Global>
 			<Global id="rpg.miningYieldAdj">1.0</Global>
 
-			<Global id="rpg.debugMining">True</Global>
+			<Global id="rpg.debug">Nil</Global>
 
 			<DynamicGlobal id="rpg.newMiningRank">
 				(block (

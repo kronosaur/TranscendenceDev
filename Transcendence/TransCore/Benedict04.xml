@@ -9,41 +9,46 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBenedictInNewBeyond;"
-			name=				"Meet Stormhound"
+			name=				"Benedict 04: Meet Stormhound"
 			attributes=			"benedictStoryArc, commonwealthColony"
+			inherit=			"&baBenedictMission;"
 
 			level=				"1-4"
+			missionArc=			"benedictArc:40"
+
 			maxAppearing=		"1"
 			priority=			"100"
 
 			failureAfterOutOfSystem="5400"
 			debriefAfterOutOfSystem="true"
 			>
-
-		<StaticData>
-			<sequence>40</sequence>
-		</StaticData>
+		<Properties>
+			<Global id="stormhoundSystem">Nil</Global>
+		</Properties>
 
 		<Events>
 			<CanCreate>
 				(switch
-					;	See if the mission is still available
-
-					(not (benedict_isMissionAvailable (objGetType gSource)))
-						Nil
-
 					;	Only if we're in the New Beyond
 						
 					(not (sysHasAttribute 'newBeyond))
+						Nil
+
+					;	If the system property is set, then we can only be 
+					;	created in the given system.
+
+					(and (typ@ gType 'stormhoundSystem)
+							(!= (sysGetNode) (typ@ gType 'stormhoundSystem))
+							)
 						Nil
 							
 					;	If Fiona is dead, mission doesn't show up
 						
 					(not (rpgCharacterIsAliveAndWell &unidFiona;))
 						Nil
-							
+
 					;	If player skipped original Fiona mission, then nothing here.
-						
+
 					(not (msnFind "r +unid:&msBenedictAndFiona;; +property:isSuccess;"))
 						Nil
 
@@ -98,7 +103,6 @@
 					;	Mission accepted
 					
 					(msnRegisterForEvents gSource gPlayerShip)
-					(benedict_missionAccepted gSource)
 					)
 			</OnAccepted>
 
@@ -169,18 +173,63 @@
 		</Events>
 		
 		<Language>
-			<Text id="Name">"Meet Benedict's Informant"</Text>
-			<Text id="Summary">
-				(msnTranslate gSource 'textSummary {
-					systemName: (sysGetName)
-					})
+			<Text id="Name">
+				Chapter 3: Stormhound
 			</Text>
-			<Text id="textSummary">
+			<Text id="Summary">
+				(block (
+					)
+					(switch
+						(msn@ gSource 'isFailure)
+							(msnTranslate gSource 'textSummary.failure {
+								systemName: (sysGetName)
+								})
+							
+						(msn@ gSource 'isDebriefed)
+							(msnTranslate gSource 'textSummary.fiona {
+								systemName: (sysGetName 'SK)
+								})
 
-					Meet Benedict's informant in deep space. Authenticate with the codeword, "Stormhound".
+						(msnTranslate gSource 'textSummary.active {
+							systemName: (sysGetName)
+							})
+						)
+					)
+			</Text>
+			<Text id="textSummary.active">
 
-					System: %systemName%\n
-					Payment: None
+				Benedict uncovers a contact with information about the attack on
+				Fiona, but hostile forces keep trailing him and preventing him 
+				from meeting the informant.
+
+				Benedict asks you to meet the contact on his behalf. He's on a 
+				ship parked out in deep space.
+
+				Authenticate with the codeword, "Stormhound".
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.fiona">
+
+				Benedict's contact, "Stormhound," had a disturbing warning about
+				the Sisters of Domina and their possible involvement in Fiona's
+				attack.
+
+				Fiona is recovering at the University Hospital in St. 
+				Katharine's Star, and Benedict asks you to visit her.
+
+				System: %systemName%\n
+				Payment: None
+			
+			</Text>
+			<Text id="textSummary.failure">
+			
+				You failed to contact Benedict's informant, "Stormhound."
+
+				System: %systemName%\n
+				Payment: None
 
 			</Text>
 			<Text id="FirstIntro">
@@ -309,7 +358,11 @@
 					{
 						id: 'saySisters
 						descID: 'SuccessDebriefC1
+						labelID: 'actionSuccessDebriefC1
 						code: (lambda () (typIncData &unidBenedictStoryArc; 'clues 1))
+						}
+					{
+						descID: 'SuccessDebriefC2
 						}
 					)
 			</Text>
@@ -385,6 +438,16 @@
 
 				Benedict says no more, but the thought seems to trouble him.
 
+			</Text>
+			<String id="actionSuccessDebriefC1">"[W]hat now?"</String>
+			<Text id="SuccessDebriefC2">
+
+				"I don't know. I'll start from the beginning again. Whatever 
+				Fiona was looking for is the key to the whole thing.
+
+				"Go and see her, would you? Maybe she'll remember something useful.
+				She's at the University Hospital in St. Katharine's Star."
+			
 			</Text>
 			<Text id="SuccessMsg">
 				"Mission complete!"

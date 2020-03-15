@@ -94,6 +94,7 @@ class DamageDesc
 		int GetMinDamage (void) const;
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
+		bool HasMiningDamage (void) const { return (m_MiningAdj > 0); }
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
 		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageGeneric); }
 		bool IsEnergyDamage (void) const;
@@ -199,11 +200,15 @@ enum class EDamageHint
 	useMiningOrWMD,						//	Use either mining or WMD
 	useMining,							//	Use mining weapons
 	useWMD,								//	Use WMD
+	useWMDforShip,						//	Use WMD on a ship
 	};
 
 struct SDamageCtx
 	{
 	public:
+		static constexpr int DAMAGE_ADJ_HINT_THRESHOLD = 25;
+		static constexpr int WMD_HINT_THRESHOLD = 40;
+
 		SDamageCtx (void) { }
 		SDamageCtx (CSpaceObject *pObjHitArg, 
 				CWeaponFireDesc *pDescArg, 

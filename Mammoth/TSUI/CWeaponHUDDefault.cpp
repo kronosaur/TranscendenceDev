@@ -12,29 +12,30 @@
 
 #define ERR_WEAPON_DISPLAY_NEEDED			CONSTLIT("invalid <WeaponDisplay> element")
 
-const int DISPLAY_WIDTH =					360;
-const int DISPLAY_HEIGHT =					120;
+constexpr int DISPLAY_WIDTH =					420;
+constexpr int DISPLAY_HEIGHT =					120;
 
-const int PRIMARY_WEAPON_X =				300;
-const int PRIMARY_WEAPON_Y =				80;
-const int MISSILE_WEAPON_X =				300;
-const int MISSILE_WEAPON_Y =				100;
+constexpr int PRIMARY_WEAPON_X =				360;
+constexpr int PRIMARY_WEAPON_Y =				80;
+constexpr int MISSILE_WEAPON_X =				360;
+constexpr int MISSILE_WEAPON_Y =				100;
 
-const int DEVICE_STATUS_HEIGHT =			20;
+constexpr int DEVICE_STATUS_HEIGHT =			20;
 
-const int TARGET_IMAGE_X =					60;
-const int TARGET_IMAGE_Y =					60;
-const int TARGET_NAME_X =					122;
-const int TARGET_NAME_Y =					27;
+constexpr int TARGET_IMAGE_X =					60;
+constexpr int TARGET_IMAGE_Y =					60;
+constexpr int TARGET_NAME_X =					122;
+constexpr int TARGET_NAME_Y =					27;
+constexpr int TARGET_STAT_X =					130;
 
-const int TARGET_MASK_RADIUS =				56;
-const BYTE TARGET_MASK_TRANSPARENCY =		0x60;
+constexpr int TARGET_MASK_RADIUS =				56;
+constexpr BYTE TARGET_MASK_TRANSPARENCY =		0x60;
 
-const int STAT_WIDTH =						52;
+constexpr int STAT_WIDTH =						52;
 
-const CG32bitPixel DISABLED_LABEL_COLOR =	CG32bitPixel(128, 0, 0);
-const CG32bitPixel TARGET_NAME_COLOR =		CG32bitPixel(80, 255, 80);
-const CG32bitPixel DAMAGED_COLOR =			CG32bitPixel(255, 80, 80);
+constexpr CG32bitPixel DISABLED_LABEL_COLOR =	CG32bitPixel(128, 0, 0);
+constexpr CG32bitPixel TARGET_NAME_COLOR =		CG32bitPixel(80, 255, 80);
+constexpr CG32bitPixel DAMAGED_COLOR =			CG32bitPixel(255, 80, 80);
 
 CWeaponHUDDefault::CWeaponHUDDefault (void) :
 		m_bInvalid(true),
@@ -94,7 +95,7 @@ bool CWeaponHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 	if (CXMLElement *pImage = CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG))
 		{
-		if (error = m_BackImage.InitFromXML(Ctx, pImage))
+		if (error = m_BackImage.InitFromXML(Ctx, *pImage))
 			return ComposeLoadError(ERR_WEAPON_DISPLAY_NEEDED, retsError);
 		}
 
@@ -414,7 +415,7 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 		//	We paint various stats horizontally.
 
-		int xStat = x;
+		int xStat = TARGET_STAT_X;
 		int yStat = y;
 
 		//	Paint the range

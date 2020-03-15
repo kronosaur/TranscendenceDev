@@ -48,6 +48,7 @@
 
 		scale=				"world"
 		size=				"4"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -70,6 +71,7 @@
 
 		scale=				"world"
 		size=				"55"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -92,6 +94,7 @@
 
 		scale=				"world"
 		size=				"250"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -114,6 +117,7 @@
 
 		scale=				"world"
 		size=				"625"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -131,10 +135,11 @@
 
 	<StationType UNID="&stMetallicPlanetoidSizeE;"
 		name=				"metallic planetoid"
+		attributes=			"generic, inner, lifeZone,  metallic, outer, planetoid"
+
 		scale=				"world"
 		size=				"1150"
-
-		attributes=			"generic, inner, lifeZone,  metallic, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -145,10 +150,11 @@
 
 	<StationType UNID="&stMetallicPlanetoidSizeF;"
 		name=				"metallic planetoid"
+		attributes=			"generic, inner, lifeZone, metallic, outer, planetoid"
+
 		scale=				"world"
 		size=				"2050"
-
-		attributes=			"generic, inner, lifeZone, metallic, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -159,10 +165,11 @@
 
 	<StationType UNID="&stMetallicPlanetoidSizeG;"
 		name=				"metallic planetoid"
+		attributes=			"generic, inner, lifeZone, metallic, outer, planetoid"
+
 		scale=				"world"
 		size=				"4000"
-
-		attributes=			"generic, inner, lifeZone, metallic, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>

@@ -342,6 +342,21 @@
 	<!ENTITY stOreStonePlanetoidSizeF	"0x00020129">
 	<!ENTITY stOreStonePlanetoidSizeG	"0x0002012A">
 	<!ENTITY baOreStoneAsteroid			"0x0002012B">
+
+	<!-- 0140-015F UNDERGROUND CAVERNS -->
+
+	<!ENTITY baUndergroundCavern		"0x00020140">
+	<!ENTITY rsUndergroundCavernIce		"0x00020141">
+	<!ENTITY rsUndergroundCavernMetallic	"0x00020142">
+	<!ENTITY rsUndergroundCavernPrimordial	"0x00020143">
+	<!ENTITY rsUndergroundCavernRocky	"0x00020144">
+	<!ENTITY rsUndergroundCavernVolcanic	"0x00020145">
+	<!ENTITY baLootCavern				"0x00020146">
+	<!ENTITY ovLootCavernIce			"0x00020147">
+	<!ENTITY ovLootCavernMetallic		"0x00020148">
+	<!ENTITY ovLootCavernPrimordial		"0x00020149">
+	<!ENTITY ovLootCavernRocky			"0x0002014A">
+	<!ENTITY ovLootCavernVolcanic		"0x0002014B">
 	]>
 	
 <CoreLibrary
@@ -372,6 +387,7 @@
 	<Module filename="Stargates.xml"/>
 	<Module filename="Stars.xml"/>
 	<Module filename="StarSystems.xml"/>
+	<Module filename="UndergroundCaverns.xml"/>
 	<Module filename="Volcanic.xml"/>
 	<Module filename="Worlds.xml"/>
 

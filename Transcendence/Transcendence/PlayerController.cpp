@@ -1,6 +1,7 @@
 //	PlayerController.cpp
 //
 //	Implements class to control player's ship
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 #include "Transcendence.h"
@@ -1955,6 +1956,19 @@ void CPlayerShipController::OnDocked (CSpaceObject *pObj)
 	m_bSignalDock = true;
 	}
 
+void CPlayerShipController::OnAcceptedMission (CMission &MissionObj)
+
+//	OnAcceptedMission
+//
+//	We accepted a mission.
+
+	{
+	//	Tell the session so that it shows a mission banner
+
+	if (m_pSession)
+		m_pSession->OnAcceptedMission(MissionObj);
+	}
+
 void CPlayerShipController::OnMissionCompleted (CMission *pMission, bool bSuccess)
 
 //	OnMissionCompleted
@@ -2080,7 +2094,10 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 
 	//	Skip if we don't care about these objects.
 
-	else if (Ctx.pObj == NULL || Ctx.pObj->IsDestroyed() || !m_pShip->IsAngryAt(Ctx.pObj))
+	else if (Ctx.pObj == NULL 
+			|| Ctx.pObj->IsDestroyed() 
+			|| !m_pShip->IsAngryAt(Ctx.pObj)
+			|| Ctx.Attacker.IsAutomatedWeapon())
 		return;
 
 	//	If we have a hint, then show it to the player.
@@ -2091,6 +2108,10 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 			{
 			switch (iHint)
 				{
+				case EDamageHint::useMining:
+					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintMiningNeeded")));
+					break;
+
 				case EDamageHint::useMiningOrWMD:
 					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintMiningOrWMDNeeded")));
 					break;
@@ -2099,8 +2120,8 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintWMDNeeded")));
 					break;
 
-				case EDamageHint::useMining:
-					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintMiningNeeded")));
+				case EDamageHint::useWMDforShip:
+					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintWMDForShipNeeded")));
 					break;
 				}
 			}

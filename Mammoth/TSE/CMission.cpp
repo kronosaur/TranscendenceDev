@@ -64,6 +64,10 @@ void CMission::CloseMission (void)
 
 	GetUniverse().CancelEvent(this, true);
 
+	//	Refresh the summary, if necessary
+
+	RefreshSummary();
+
 	//	If this is a player mission then refresh another player mission
 
 	if (m_fAcceptedByPlayer)
@@ -154,6 +158,11 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 			FireOnSetPlayerTarget(REASON_DEBRIEFED);
 			CloseMission();
 			}
+
+		//	Refresh mission summary so that we get the latest info in the 
+		//	mission screen.
+
+		RefreshSummary();
 		}
 
 	//	Set status for non-player missions
@@ -172,12 +181,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 		}
 	}
 
-ALERROR CMission::Create (CUniverse &Universe,
-						  CMissionType *pType,
-						  CSpaceObject *pOwner,
-						  ICCItem *pCreateData,
-					      CMission **retpMission,
-						  CString *retsError)
+ALERROR CMission::Create (CMissionType &Type, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError)
 
 //	Create
 //
@@ -185,11 +189,12 @@ ALERROR CMission::Create (CUniverse &Universe,
 //	not be created because conditions do not allow it.
 
 	{
+	CUniverse &Universe = Type.GetUniverse();
 	CMission *pMission;
 
 	//	If we cannot encounter this mission, then we fail
 
-	if (!pType->CanBeCreated(Universe.GetMissions(), pOwner, pCreateData))
+	if (!Type.CanBeCreated(Universe.GetMissions(), CreateCtx))
 		return ERR_NOTFOUND;
 
 	//	Create the new object
@@ -201,7 +206,7 @@ ALERROR CMission::Create (CUniverse &Universe,
 		return ERR_MEMORY;
 		}
 
-	pMission->m_pType = pType;
+	pMission->m_pType = &Type;
 
 	//	Initialize
 
@@ -210,14 +215,14 @@ ALERROR CMission::Create (CUniverse &Universe,
 	pMission->m_fDeclined = false;
 	pMission->m_fDebriefed = false;
 	pMission->m_fAcceptedByPlayer = false;
-	pMission->m_pOwner = pOwner;
+	pMission->m_pOwner = CreateCtx.pOwner;
 	pMission->m_pDebriefer = NULL;
 
 	//	NodeID
 
 	CTopologyNode *pNode = NULL;
 	CSystem *pSystem = NULL;
-	if ((pSystem = (pOwner ? pOwner->GetSystem() : Universe.GetCurrentSystem()))
+	if ((pSystem = (CreateCtx.pOwner ? CreateCtx.pOwner->GetSystem() : Universe.GetCurrentSystem()))
 			&& (pNode = pSystem->GetTopology()))
 		pMission->m_sNodeID = pNode->GetID();
 
@@ -236,8 +241,8 @@ ALERROR CMission::Create (CUniverse &Universe,
 	pMission->m_fInOnCreate = true;
 
 	CSpaceObject::SOnCreate OnCreate;
-	OnCreate.pData = pCreateData;
-	OnCreate.pOwnerObj = pOwner;
+	OnCreate.pData = CreateCtx.pCreateData;
+	OnCreate.pOwnerObj = CreateCtx.pOwner;
 	pMission->FireOnCreate(OnCreate);
 
 	pMission->m_fInOnCreate = false;
@@ -258,8 +263,8 @@ ALERROR CMission::Create (CUniverse &Universe,
 
 	//	If we haven't subscribed to the owner, do it now
 
-	if (pOwner && !pOwner->FindEventSubscriber(*pMission))
-		pOwner->AddEventSubscriber(pMission);
+	if (CreateCtx.pOwner && !CreateCtx.pOwner->FindEventSubscriber(*pMission))
+		CreateCtx.pOwner->AddEventSubscriber(pMission);
 
 	//	Mission created
 
@@ -459,6 +464,21 @@ void CMission::FireOnStop (const CString &sReason, ICCItem *pData)
 		}
 	}
 
+const CString &CMission::GetArc (int *retiSequence) const
+
+//	GetArc
+//
+//	Returns the mission arc and sequence.
+
+	{
+	const CString &sArc = m_pType->GetArc();
+
+	if (retiSequence)
+		*retiSequence = m_pType->GetArcSequence();
+
+	return sArc;
+	}
+
 bool CMission::HasSpecialAttribute (const CString &sAttrib) const
 
 //	HasSpecialAttribute
@@ -478,7 +498,7 @@ bool CMission::HasSpecialAttribute (const CString &sAttrib) const
 		return CSpaceObject::HasSpecialAttribute(sAttrib);
 	}
 
-bool CMission::MatchesCriteria (CSpaceObject *pSource, const SCriteria &Criteria)
+bool CMission::MatchesCriteria (const CSpaceObject *pSource, const SCriteria &Criteria) const
 
 //	MatchesCriteria
 //
@@ -762,6 +782,7 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_dwLeftSystemOn
 //	DWORD		m_dwAcceptedOn
 //	DWORD		m_dwCompletedOn
+//	CString		m_sArc
 //	CString		m_sTitle
 //	CString		m_sInstructions
 //	DWORD		Flags
@@ -802,6 +823,15 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read(m_dwCompletedOn);
 	else
 		m_dwCompletedOn = 0;
+
+	if (Ctx.dwVersion >= 187)
+		{
+		m_sArcTitle.ReadFromStream(Ctx.pStream);
+		}
+	else if (!m_pType->GetArc().IsBlank())
+		{
+		TranslateText(CONSTLIT("ArcName"), NULL, &m_sArcTitle);
+		}
 
 	if (Ctx.dwVersion >= 86)
 		{
@@ -895,6 +925,7 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_dwLeftSystemOn
 //	DWORD		m_dwAcceptedOn
 //	DWORD		m_dwCompletedOn
+//	CString		m_sArc
 //	CString		m_sTitle
 //	CString		m_sInstructions
 //	DWORD		Flags
@@ -913,6 +944,7 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write(m_dwAcceptedOn);
 	pStream->Write(m_dwCompletedOn);
 
+	m_sArcTitle.WriteToStream(pStream);
 	m_sTitle.WriteToStream(pStream);
 	m_sInstructions.WriteToStream(pStream);
 
@@ -986,6 +1018,10 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 				retCriteria->bIncludeUnavailable = true;
 				break;
 
+			case 'A':
+				retCriteria->bOnlyMissionArcs = true;
+				break;
+
 			case 'D':
 				retCriteria->bOnlySourceDebriefer = true;
 				break;
@@ -1052,6 +1088,12 @@ bool CMission::RefreshSummary (void)
 	{
 	bool bSuccess = true;
 
+	if (!m_pType->GetArc().IsBlank())
+		{
+		if (!TranslateText(CONSTLIT("ArcName"), NULL, &m_sArcTitle))
+			m_sArcTitle = m_pType->GetName();
+		}
+
 	if (!TranslateText(CONSTLIT("Name"), NULL, &m_sTitle))
 		m_sTitle = m_pType->GetName();
 
@@ -1111,11 +1153,20 @@ bool CMission::SetAccepted (void)
 	if (m_iStatus != statusOpen)
 		return false;
 
+	//	Close out any previous missions in the same arc
+
+	GetUniverse().GetMissions().CloseMissionsInArc(*m_pType);
+
 	//	Remember that we accepted
 
 	m_fAcceptedByPlayer = true;
 	m_dwAcceptedOn = GetUniverse().GetTicks();
 	m_pType->IncAccepted();
+
+	//	Tell the player
+
+	if (CSpaceObject *pPlayerShip = GetUniverse().GetPlayerShip())
+		pPlayerShip->OnAcceptedMission(*this);
 
 	//	Player accepts the mission
 
@@ -1129,7 +1180,7 @@ bool CMission::SetAccepted (void)
 		if (KeepsStats())
 			GetUniverse().GetObjStatsActual(pOwner->GetID()).iPlayerMissionsGiven++;
 
-		//	Let the mission given know
+		//	Let the mission-giver know
 
 		pOwner->FireOnMissionAccepted(this);
 		}

@@ -904,7 +904,11 @@ Metric CSingleShip::GetAverageLevelStrength (int iLevel)
 
 	//	Compute based on the level of the ship relative to the input level.
 
-	Metric rTotal = m_Count.GetAveValueFloat() * ::CalcLevelDiffStrength(m_pShipClass->GetLevel() - iLevel);
+	Metric rCombatLevel = m_pShipClass->GetCombatStrength() / CShipClass::GetStdCombatStrength(m_pShipClass->GetLevel());
+	Metric rTotal = m_Count.GetAveValueFloat() * rCombatLevel * ::CalcLevelDiffStrength(m_pShipClass->GetLevel() - iLevel);
+
+	if (IShipGenerator *pEscorts = m_pShipClass->GetEscorts())
+		rTotal += pEscorts->GetAverageLevelStrength(iLevel);
 
 	//	Add any escorts
 

@@ -227,11 +227,13 @@ class CMenuData
 						  const CString &sLabel,
 						  DWORD dwFlags,
 						  DWORD dwData,
-						  DWORD dwData2 = 0) { AddMenuItem(sKey, sLabel, NULL, NULL_STR, dwFlags, dwData, dwData2); }
+						  DWORD dwData2 = 0) { AddMenuItem(sKey, sLabel, NULL, 0, NULL_STR, NULL_STR, dwFlags, dwData, dwData2); }
 		void AddMenuItem (const CString &sKey,
 						  const CString &sLabel,
 						  const CObjectImageArray *pImage,
+						  int iCount,
 						  const CString &sExtra,
+						  const CString &sHelp,
 						  DWORD dwFlags,
 						  DWORD dwData,
 						  DWORD dwData2 = 0);
@@ -242,8 +244,10 @@ class CMenuData
 		int GetCount (void) const { return m_iCount; }
 		DWORD GetItemData (int iIndex) const { return m_List[iIndex].dwData; }
 		DWORD GetItemData2 (int iIndex) const { return m_List[iIndex].dwData2; }
-		const CObjectImageArray *GetItemImage (int iIndex) const { return m_List[iIndex].pImage; }
+		int GetItemCount (int iIndex) const { return m_List[iIndex].iCount; }
 		const CString &GetItemExtra (int iIndex) const { return m_List[iIndex].sExtra; }
+		const CString &GetItemHelpText (int iIndex) const { return m_List[iIndex].sHelp; }
+		const CObjectImageArray *GetItemImage (int iIndex) const { return m_List[iIndex].pImage; }
 		DWORD GetItemFlags (int iIndex) const { return m_List[iIndex].dwFlags; }
 		const CString &GetItemKey (int iIndex) const { return m_List[iIndex].sKey; }
 		const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
@@ -255,12 +259,14 @@ class CMenuData
 			{
 			CString sKey;
 			CString sLabel;
-			const CObjectImageArray *pImage;
+			const CObjectImageArray *pImage = NULL;
+			int iCount = 0;
 			CString sExtra;
-			DWORD dwFlags;
+			CString sHelp;
+			DWORD dwFlags = 0;
 
-			DWORD dwData;
-			DWORD dwData2;
+			DWORD dwData = 0;
+			DWORD dwData2 = 0;
 			};
 
 		CString m_sTitle;
@@ -950,6 +956,7 @@ class CTranscendenceModel
 
 		ALERROR GetGameStats (CGameStats *retStats);
 
+		void OnExecuteActionDone (void);
 		void OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, SPlayerChangedShipsCtx &Options);
 		void OnPlayerDestroyed (SDestroyCtx &Ctx, CString *retsEpitaph = NULL);
 		void OnPlayerDocked (CSpaceObject *pObj);
@@ -1075,6 +1082,7 @@ class CTranscendenceModel
 		CG32bitImage *m_pCrawlImage;				//	For epilogue/prologue
 		CMusicResource *m_pCrawlSoundtrack;				//	For epilogue/prologue
 		CString m_sCrawlText;						//	For epilogue/prologue
+		bool m_bSaveOnActionDone = false;			//	Save when we're done executing.
 
 		//	Stargate temporaries
 		CTopologyNode *m_pDestNode;					//	While player in gate

@@ -58,6 +58,12 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 					g_pTrans->m_DeviceDisplay.Paint(Screen);
 					}
 
+				if (!m_bShowingSystemMap && g_pTrans->m_State != CTranscendenceWnd::gsDestroyed)
+					{
+					m_Narrative.Update(g_pUniverse->GetFrameTicks());
+					m_Narrative.Paint(Screen, g_pUniverse->GetFrameTicks());
+					}
+
 				if (g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickNone)
 					{
 					SetProgramState(psPaintingMessageDisplay);

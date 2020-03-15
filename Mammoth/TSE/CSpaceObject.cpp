@@ -161,9 +161,6 @@ SInstallItemResultsData INSTALL_ITEM_RESULTS_TABLE[] =
 		{	"replacementRequired",		-1,		4	},
 	};
 
-CSpaceObject *CSpaceObject::m_pObjInUpdate = NULL;
-bool CSpaceObject::m_bObjDestroyed = false;
-
 CString ParseParam (char **ioPos);
 
 CSpaceObject::CSpaceObject (CUniverse &Universe) : 
@@ -230,7 +227,8 @@ CSpaceObject::CSpaceObject (CUniverse &Universe) :
 		m_fCollisionTestNeeded(false),
 		m_fHasDockScreenMaybe(false),
 		m_fAutoClearDestinationOnGate(false),
-		m_f3DExtra(false)
+		m_f3DExtra(false),
+		m_fAutoCreatedPorts(false)
 
 //	CSpaceObject constructor
 
@@ -627,7 +625,7 @@ void CSpaceObject::CalcOverlayPos (COverlayType *pOverlayType, const CVector &vP
 	{
 	Metric rRadius;
 	int iDirection = VectorToPolar(vPos - GetPos(), &rRadius);
-	int iRotationOrigin = ((pOverlayType && pOverlayType->RotatesWithShip()) ? GetRotation() : 0);
+	int iRotationOrigin = ((pOverlayType && pOverlayType->RotatesWithSource(*this)) ? GetRotation() : 0);
 
 	if (retiPosAngle)
 		*retiPosAngle = AngleMod(iDirection - iRotationOrigin);
@@ -1106,6 +1104,26 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
     m_Data.Copy(pSource->m_Data, Options);
 	}
 
+void CSpaceObject::CreateDefaultDockingPorts (void)
+
+//	CreateDefaultDockingPorts
+//
+//	Called to create docking ports on objects that don't already have them. This
+//	can be overridden by subclasses to control port position, etc.
+
+	{
+	if (CDockingPorts *pDockingPorts = GetDockingPorts())
+		{
+		if (pDockingPorts->GetPortCount() == 0)
+			{
+			constexpr int PORT_COUNT = 4;
+			int iRadius = GetHitSizePixels() / 2;
+
+			pDockingPorts->InitPorts(this, PORT_COUNT, iRadius * g_KlicksPerPixel);
+			}
+		}
+	}
+
 CSpaceObject *CSpaceObject::CreateFromClassID (CUniverse &Universe, DWORD dwClass)
 
 //	CreateFromClassID
@@ -1315,6 +1333,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fHasOnOrderChangedEvent =	((dwLoad & 0x00000008) ? true : false);
 	pObj->m_fManualAnchor =				((dwLoad & 0x00000010) ? true : false);
 	pObj->m_f3DExtra =					((dwLoad & 0x00000020) ? true : false);
+	pObj->m_fAutoCreatedPorts =			((dwLoad & 0x00000040) ? true : false);
 
 	//	No need to save the following
 
@@ -1611,11 +1630,6 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 
 	if (retpWreck)
 		*retpWreck = Ctx.pWreck;
-
-	//	See if we are in the middle of update
-
-	if (m_pObjInUpdate == this)
-		m_bObjDestroyed = true;
 
 	//	If resurrection is pending, then clear the destroyed flag. Otherwise, 
 	//	wingmen might leave the player.
@@ -3833,6 +3847,8 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 //	NOTE: Caller must discard *retpData.
 
 	{
+	CDesignType *pLocalScreens = GetType();
+
 	//	First see if any global types override this
 
 	CDockScreenSys::SSelector Screen;
@@ -3845,9 +3861,13 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	if (pOverlays = GetOverlays())
 		{
 		CDockScreenSys::SSelector OverlayScreen;
-		if (pOverlays->FireGetDockScreen(this, &OverlayScreen)
+		CDesignType *pOverlayLocalScreens;
+		if (pOverlays->FireGetDockScreen(this, &OverlayScreen, &pOverlayLocalScreens)
 				&& OverlayScreen.iPriority > Screen.iPriority)
+			{
 			Screen = OverlayScreen;
+			pLocalScreens = pOverlayLocalScreens;
+			}
 		}
 
 	//	Next see if we have an event that handles this
@@ -3855,14 +3875,17 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	CDockScreenSys::SSelector CustomScreen;
 	if (FireGetDockScreen(&CustomScreen)
 			&& CustomScreen.iPriority > Screen.iPriority)
+		{
 		Screen = CustomScreen;
+		pLocalScreens = GetType();
+		}
 
 	//	If an event has overridden the dock screen, then resolve
 	//	the screen now.
 
 	if (Screen.iPriority != -1)
 		{
-		CDesignType *pScreen = GetDesign().ResolveDockScreen(GetType(), Screen.sScreen, retsScreen);
+		CDesignType *pScreen = GetDesign().ResolveDockScreen(pLocalScreens, Screen.sScreen, retsScreen);
 		if (pScreen)
 			{
 			if (retpData)
@@ -4493,6 +4516,17 @@ bool CSpaceObject::HasDockScreen (void) const
 			&& pOverlays->FireGetDockScreen(this))
 		return true;
 
+	//	If we don't have any docking screens so far (not even from overlays) and
+	//	if we don't have any docking ports, then don't bother calling
+	//	<GetGlobalDockScreen>. The performance hit of calling these global 
+	//	events at create time (e.g., on asteroids) is too much.
+
+	if (const CDockingPorts *pDockingPorts = GetDockingPorts())
+		{
+		if (pDockingPorts->GetPortCount() == 0)
+			return false;
+		}
+
 	//	If we still have no screens, we call <GetGlobalDockScreen>, but we're
 	//	only interested in non-override screens. Override screens are screens
 	//	like decontamination screens, which should only show up if the station
@@ -4556,6 +4590,12 @@ bool CSpaceObject::HasMinableItem (void) const
 		const CItem &Item = Search.GetItemAtCursor();
 		if (Item.HasAttribute(CONSTLIT("ore"))
 				|| Item.HasAttribute(CONSTLIT("minable")))
+			return true;
+		}
+
+	if (const COverlayList *pOverlays = GetOverlays())
+		{
+		if (pOverlays->HasMinableItem())
 			return true;
 		}
 
@@ -4635,7 +4675,7 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 
 		CString sError;
 		CPropertyCompare Compare;
-		if (!Compare.Parse(sProperty, &sError))
+		if (!Compare.Parse(CCodeChainCtx(GetUniverse()), sProperty, &sError))
 			{
 			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
 			return false;
@@ -7022,6 +7062,32 @@ void CSpaceObject::SetEventFlags (void)
 	SetHasOnDamageEvent(FindEventHandler(CONSTLIT("OnDamage")));
 	SetHasOnObjDockedEvent(FindEventHandler(CONSTLIT("OnObjDocked")));
 
+	//	See if we have a handler for dock screens.
+
+	if (CDockingPorts *pDockingPorts = GetDockingPorts())
+		{
+		bool bHasGetDockScreen = HasDockScreen();
+
+		//	If we have an event for a dock screen, but we don't have docking ports
+		//	then we create some default ports. This is useful for when overlays or
+		//	event handlers create dock screens.
+
+		if (bHasGetDockScreen && pDockingPorts->GetPortCount() == 0)
+			{
+			CreateDefaultDockingPorts();
+			m_fAutoCreatedPorts = true;
+			}
+
+		//	If we DON'T have dock screens and we auto-created some docking ports,
+		//	then we need to remove them.
+
+		else if (!bHasGetDockScreen && m_fAutoCreatedPorts)
+			{
+			pDockingPorts->DeleteAll(this);
+			m_fAutoCreatedPorts = false;
+			}
+		}
+
 	//	Let subclasses do their bit
 
 	OnSetEventFlags();
@@ -7219,8 +7285,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 //	Update the object
 
 	{
-	SetInUpdateCode();
-
 	//	Update as long as we are not time-stopped.
 
 	if (!Ctx.IsTimeStopped())
@@ -7239,10 +7303,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			//	We could have gotten destroyed here.
 
 			if (IsDestroyed())
-				{
-				ClearInUpdateCode();
 				return;
-				}
 			}
 
 		//	Update object
@@ -7262,20 +7323,14 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			//	necessary.
 
 			if (IsDestroyed())
-				{
-				ClearInUpdateCode();
 				return;
-				}
 			}
 
 		//	Update the specific object subclass.
 
 		OnUpdate(Ctx, g_SecondsPerUpdate);
 		if (IsDestroyed())
-			{
-			ClearInUpdateCode();
 			return;
-			}
 		}
 
 	//	Otherwise, if we're time-stopped we need to update any overlays that
@@ -7320,10 +7375,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 		{
 		m_fHasDockScreenMaybe = (CanObjRequestDock(Ctx.pPlayer) == dockingOK);
 		}
-
-	//	Done
-
-	ClearInUpdateCode();
 	}
 
 void CSpaceObject::UpdateDrag (SUpdateCtx &Ctx, Metric rDragFactor)
@@ -7589,6 +7640,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fHasOnOrderChangedEvent	? 0x00000008 : 0);
 	dwSave |= (m_fManualAnchor				? 0x00000010 : 0);
 	dwSave |= (m_f3DExtra					? 0x00000020 : 0);
+	dwSave |= (m_fAutoCreatedPorts			? 0x00000040 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Write out the opaque data

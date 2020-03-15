@@ -866,10 +866,16 @@ void CTranscendenceWnd::ShowEnableDisablePicker (void)
 				//	Extra
 
 				CString sExtra;
+				if (!pDevice->IsEnabled())
+					sExtra = CONSTLIT("Disabled");
+
+				//	Help
+
+				CString sHelp;
 				if (pDevice->IsEnabled())
-					sExtra = CONSTLIT("[Enter] to disable; [Arrows] to select");
+					sHelp = CONSTLIT("[Enter] to disable; [Arrows] to select");
 				else
-					sExtra = CONSTLIT("[Enter] to enable; [Arrows] to select");
+					sHelp = CONSTLIT("[Enter] to enable; [Arrows] to select");
 
 				//	Key
 
@@ -880,7 +886,9 @@ void CTranscendenceWnd::ShowEnableDisablePicker (void)
 				m_MenuData.AddMenuItem(sKey,
 						sName,
 						&pType->GetImage(),
+						0,
 						sExtra,
+						sHelp,
 						(pDevice->IsEnabled() ? 0 : CMenuData::FLAG_GRAYED),
 						i);
 
@@ -1014,11 +1022,19 @@ void CTranscendenceWnd::ShowUsePicker (void)
 			if (!pType->GetUseDesc(&UseDesc))
 				continue;
 
-			CString sCount;
+			int iCount;
 			if (pType->ShowChargesInUseMenu() && Item.IsKnown())
-				sCount = strFromInt(Item.GetCharges());
+				iCount = Item.GetCharges();
 			else if (Item.GetCount() > 1)
-				sCount = strFromInt(Item.GetCount());
+				iCount = Item.GetCount();
+			else
+				iCount = 0;
+
+			//	Installed
+
+			CString sExtra;
+			if (Item.IsInstalled())
+				sExtra = CONSTLIT("Installed");
 
 			//	Show the key only if the item is identified
 
@@ -1029,8 +1045,6 @@ void CTranscendenceWnd::ShowUsePicker (void)
 			//	Name of item
 
 			CString sName = Item.GetNounPhrase();
-			if (Item.IsInstalled())
-				sName.Append(STR_INSTALLED);
 			sName = strPatternSubst(CONSTLIT("Use %s"), sName);
 
 			//	Add the item
@@ -1038,7 +1052,9 @@ void CTranscendenceWnd::ShowUsePicker (void)
 			m_MenuData.AddMenuItem(sKey,
 					sName,
 					&pType->GetImage(),
-					sCount,
+					iCount,
+					sExtra,
+					NULL_STR,
 					0,
 					SortedList.GetValue(i));
 			}

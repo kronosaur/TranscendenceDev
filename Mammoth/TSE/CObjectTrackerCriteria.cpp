@@ -40,6 +40,10 @@ bool CObjectTrackerCriteria::ParseCriteria (const CString &sCriteria)
 				m_bKnownOnly = true;
 				break;
 
+			case 'U':
+				m_bUnknownOnly = true;
+				break;
+
 			//	We need to skip these values that are handled by CDesignTypeCriteria
 
 			case 'L':

@@ -436,8 +436,8 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 		//	If we're not making progress, then return a hint about what to do.
 
 		if (iHint != EDamageHint::none 
-				&& iDamageAdj <= 25 
-				&& (iDamage == 0 || (m_Hull.GetHitPoints() / iDamage) > WMD_HINT_THRESHOLD))
+				&& iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD 
+				&& (iDamage == 0 || (m_Hull.GetHitPoints() / iDamage) > SDamageCtx::WMD_HINT_THRESHOLD))
 			Ctx.SetHint(iHint);
 
 		//	Return adjusted damage
@@ -685,10 +685,32 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 //	Compute the modifiers for the station
 
 	{
+	constexpr BYTE FADE_OPACITY = 0x80;
+
 	//	Modifiers (such as station damage)
 
 	if (retModifiers)
 		{
+		//	Starlight rotation
+
+		if (HasStarlightImage())
+			{
+			retModifiers->SetRotateImage(m_iStarlightImageRotation);
+			}
+
+		//	Out of plane worlds are faded
+
+		if (m_fFadeImage)
+			{
+			CG32bitPixel rgbColor;
+			if (CSystem *pSystem = GetSystem())
+				rgbColor = pSystem->GetSpaceColor();
+			else
+				rgbColor = CSystemType::DEFAULT_SPACE_COLOR;
+
+			retModifiers->SetFadeColor(rgbColor, FADE_OPACITY);
+			}
+
 		//	System filters
 
 		retModifiers->SetFilters(GetSystemFilters());
@@ -1099,7 +1121,12 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pStation->m_iPaintOrder = pType->GetPaintOrder();
 	pStation->m_fDestroyIfEmpty = false;
 	pStation->m_fIsSegment = CreateCtx.bIsSegment;
+	pStation->m_fAnonymous = pType->IsAnonymous();
 	pStation->Set3DExtra(CreateCtx.bIs3DExtra);
+
+	//	3D Extra objects are always faded
+
+	pStation->m_fFadeImage = CreateCtx.bIs3DExtra;
 
 	//	Set up rotation, if necessary
 
@@ -1151,7 +1178,13 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 	const CNameDesc &Name = pType->GetNameDesc();
 	if (!Name.IsConstant())
+		{
 		pStation->m_sName = Name.GenerateName(&CreateCtx.SystemCtx.NameParams, &pStation->m_dwNameFlags);
+
+		//	NOTE: We leave anonymous alone because maybe we want asteroids to
+		//	have a name for targeting purposes but still not show the name on 
+		//	the map.
+		}
 	else
 		pStation->m_dwNameFlags = 0;
 
@@ -1421,42 +1454,6 @@ void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, const CS
 		}
 	}
 
-void CStation::CreateStarlightImage (int iStarAngle, Metric rStarDist)
-
-//	CreateStarlightImage
-//
-//	Creates an image of the object rotated so it's shadow faces towards 
-//	iStarAngle.
-
-	{
-	//	If we already have a starlight image, then we skip. This can happen if
-	//	we have a double star and overlapping light zones.
-
-	if (!m_StarlightImage.IsEmpty())
-		return;
-
-	//	Figure out the rotation
-
-	int iRotation = iStarAngle - 315;
-
-	//	Get the source image
-
-	int iTick, iVariant;
-	const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
-
-	//	Create a rotated image
-
-	m_StarlightImage.InitFromRotated(Image, iTick, iVariant, iRotation);
-
-	//	Recalculate bounds
-
-	CalcBounds();
-
-	//	While we're here, create the map image
-
-	CreateMapImage();
-	}
-
 void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 
 //	CreateStructuralDestructionEffect
@@ -1720,9 +1717,11 @@ int CStation::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice 
 	{
 	//	First ask the shields, if we have them, and if they are up.
 
-	CInstalledDevice *pShields = GetNamedDevice(devShields);
-	if (pShields && GetShieldLevel() > 0)
+	if (m_Devices.HasShieldsUp())
+		{
+		CInstalledDevice *pShields = GetNamedDevice(devShields);
 		return pShields->GetDamageEffectiveness(pAttacker, pWeapon);
+		}
 	else
 		return m_pType->GetHullDesc().CalcDamageEffectiveness(pAttacker, pWeapon);
 	}
@@ -1782,30 +1781,12 @@ const CObjectImageArray &CStation::GetImage (bool bFade, int *retiTick, int *ret
 //	Returns the image of this station
 
 	{
-	//	If we have a rotated image, use that
+	CCompositeImageModifiers Modifiers;
+	CalcImageModifiers(&Modifiers, retiTick);
 
-	if (!m_StarlightImage.IsEmpty())
-		{
-		if (retiTick)
-			*retiTick = 0;
+	//	Image
 
-		if (retiVariant)
-			*retiVariant = 0;
-
-		return m_StarlightImage;
-		}
-
-	//	Otherwise get the image from the type
-
-	else
-		{
-		CCompositeImageModifiers Modifiers;
-		CalcImageModifiers(&Modifiers, retiTick);
-
-		//	Image
-
-		return m_pType->GetImage(m_ImageSelector, Modifiers, retiVariant);
-		}
+	return m_pType->GetImage(m_ImageSelector, Modifiers, retiVariant);
 	}
 
 Metric CStation::GetInvMass (void) const
@@ -2039,6 +2020,29 @@ IShipGenerator *CStation::GetRandomEncounterTable (int *retiFrequency) const
 	return m_pType->GetEncountersTable();
 	}
 
+int CStation::GetRotation (void) const
+
+//	GetRotation
+//
+//	Returns the current rotation angle.
+
+	{
+	//	For rotated worlds, use the starlight rotation.
+
+	if (HasStarlightImage())
+		return m_iStarlightImageRotation;
+
+	//	Otherwise, see if we have a rotation object
+
+	else if (m_pRotation)
+		return m_pRotation->GetRotationAngle(m_pType->GetRotationDesc());
+
+	//	Otherwise, no rotation
+
+	else
+		return 0;
+	}
+
 CString CStation::GetStargateID (void) const
 
 //	GetStargateID
@@ -2130,6 +2134,25 @@ bool CStation::HasAttribute (const CString &sAttribute) const
 
 	{
 	return m_pType->HasLiteralAttribute(sAttribute);
+	}
+
+bool CStation::HasVolumetricShadow (int *retiStarAngle, Metric *retrStarDist) const
+
+//	HasVolumetricShadow
+//
+//	Returns TRUE if we should create a volumetric shadow for this object.
+
+	{
+	constexpr int DEFAULT_LIGHTING_ANGLE = 315;
+
+	if (m_rStarlightDist > 0.0 && !IsOutOfPlaneObj())
+		{
+		if (retiStarAngle) *retiStarAngle = m_iStarlightImageRotation + DEFAULT_LIGHTING_ANGLE;
+		if (retrStarDist) *retrStarDist = m_rStarlightDist;
+		return true;
+		}
+	else
+		return false;
 	}
 
 bool CStation::ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos)
@@ -2381,8 +2404,11 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 
 	//	If we have mining damage then call OnMining
 
-	if (Ctx.Damage.GetMiningAdj())
-		FireOnMining(Ctx, m_pType->GetAsteroidDesc().GetType());
+	if (Ctx.Damage.HasMiningDamage())
+		{
+		if (!OnMiningDamage(Ctx))
+			return damageDestroyed;
+		}
 
 	//	Adjust the damage based on WMD requirements. Most hull types require
 	//	WMD damage to be hurt.
@@ -2723,6 +2749,29 @@ bool CStation::OnIsImmuneTo (CConditionSet::ETypes iCondition) const
 		default:
 			return false;
 		}
+	}
+
+bool CStation::OnMiningDamage (SDamageCtx &Ctx)
+
+//	OnMiningDamage
+//
+//	We've been hit by mining damage. Returns TRUE if we should continue; FALSE 
+//	if the station was destroyed.
+
+	{
+	//	See if any overlays will handle mining. E.g., if there is an underground 
+	//	vault, then mining is handled by them.
+
+	if (!Ctx.bIgnoreOverlays 
+			&& m_Overlays.OnMiningDamage(*this, m_pType->GetAsteroidDesc().GetType(), Ctx))
+		{ }
+
+	//	Otherwise, fire <OnMining>
+
+	else
+		FireOnMining(Ctx, m_pType->GetAsteroidDesc().GetType());
+
+	return !IsDestroyed();
 	}
 
 void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
@@ -3548,6 +3597,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_iPaintOrder
 //
 //	CIntegralRotation m_pRotation
+//	DWORD		m_iStarlightImageRotation
 //	CTargetList	m_WeaponTargets
 
 	{
@@ -3849,26 +3899,14 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fReconned =			((dwLoad & 0x00000080) ? true : false);
 	m_fFireReconEvent =		((dwLoad & 0x00000100) ? true : false);
 	bool fNoArticle =		((dwLoad & 0x00000200) ? true : false);
-
-	bool bImmutable;
-	if (Ctx.dwVersion < 151)
-		bImmutable =		((dwLoad & 0x00000400) ? true : false);
-	else
-		bImmutable = false;
-
+	bool bImmutable =		(Ctx.dwVersion < 151  ? ((dwLoad & 0x00000400) ? true : false) : false);
 	m_fExplored =			((dwLoad & 0x00000800) ? true : false);
-	//	0x00001000 Unused as of version 160
-	//	0x00002000 Unused as of version 160
+	m_fAnonymous =			(Ctx.dwVersion >= 182 ? ((dwLoad & 0x00001000) ? true : false) : (m_pType->IsAnonymous() && m_sName.IsBlank()));
+	m_fFadeImage =			(Ctx.dwVersion >= 187 ? ((dwLoad & 0x00002000) ? true : false) : false);
 	m_fNoBlacklist =		((dwLoad & 0x00004000) ? true : false);
 	m_fNoConstruction =		((dwLoad & 0x00008000) ? true : false);
 	m_fBlocksShips =		((dwLoad & 0x00010000) ? true : false);
-
-	bool bPaintOverhang;
-	if (Ctx.dwVersion < 177)
-		bPaintOverhang =	((dwLoad & 0x00020000) ? true : false);
-	else
-		bPaintOverhang = false;
-
+	bool bPaintOverhang =	(Ctx.dwVersion < 177  ? ((dwLoad & 0x00020000) ? true : false) : false);
 	m_fShowMapOrbit =		((dwLoad & 0x00040000) ? true : false);
 	m_fDestroyIfEmpty =		((dwLoad & 0x00080000) ? true : false);
 	m_fIsSegment =		    ((dwLoad & 0x00100000) ? true : false);
@@ -3935,6 +3973,9 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		}
 	else
 		m_pRotation = NULL;
+
+	if (Ctx.dwVersion >= 183)
+		Ctx.pStream->Read(m_iStarlightImageRotation);
 
 	//	Weapon targets
 
@@ -4267,6 +4308,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_iPaintOrder
 //
 //	CIntegralRotation	m_pRotation
+//	DWORD		m_iStarlightImageRotation
 //	CTargetList	m_WeaponTargets
 
 	{
@@ -4357,8 +4399,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	//	0x00000200 retired
 	//	0x00000400 retired at 151
 	dwSave |= (m_fExplored ?			0x00000800 : 0);
-	//	0x00001000
-	//	0x00002000
+	dwSave |= (m_fAnonymous ?			0x00001000 : 0);
+	dwSave |= (m_fFadeImage ?			0x00002000 : 0);
 	dwSave |= (m_fNoBlacklist ?			0x00004000 : 0);
 	dwSave |= (m_fNoConstruction ?		0x00008000 : 0);
 	dwSave |= (m_fBlocksShips ?			0x00010000 : 0);
@@ -4379,6 +4421,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 
 	if (m_pRotation)
 		m_pRotation->WriteToStream(pStream);
+
+	pStream->Write(m_iStarlightImageRotation);
 
 	//	Weapon targets
 
@@ -4846,6 +4890,7 @@ void CStation::SetName (const CString &sName, DWORD dwFlags)
 	{
 	m_sName = sName;
 	m_dwNameFlags = dwFlags;
+	m_fAnonymous = false;
 
 	//	Clear cache so we recompute label metrics
 
@@ -4862,6 +4907,41 @@ void CStation::SetStargate (const CString &sDestNode, const CString &sDestEntryP
 	{
 	m_sStargateDestNode = sDestNode;
 	m_sStargateDestEntryPoint = sDestEntryPoint;
+	}
+
+void CStation::SetStarlightParams (const CSpaceObject &StarObj, Metric rLightRadius)
+
+//	SetStarlightParams
+//
+//	Sets the parameters for starlight.
+
+	{
+	constexpr int DEFAULT_LIGHTING_ANGLE = 315;
+
+	//	Only world objects respond to starlight.
+
+	if (GetScale() != scaleWorld)
+		return;
+
+	//	Compute the direction and distance of the star
+
+	Metric rStarDist;
+	int iStarAngle = ::VectorToPolar(GetPos() - StarObj.GetPos(), &rStarDist);
+
+	//	Skip if we're outside the light radius.
+
+	if (rStarDist > rLightRadius)
+		return;
+
+	//	Skip if some other star is closer than this one.
+
+	if (m_rStarlightDist != 0.0 && m_rStarlightDist < rStarDist)
+		return;
+
+	//	Set the parameters
+
+	m_iStarlightImageRotation = iStarAngle - DEFAULT_LIGHTING_ANGLE;
+	m_rStarlightDist = rStarDist;
 	}
 
 void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
@@ -5211,6 +5291,7 @@ bool CStation::ShowMapLabel (int *retcxLabel, int *retcyLabel) const
 					{
 					bHasMapLabel = !sMapLabel.IsBlank() 
 						&& *sMapLabel.GetASCIIZPointer() != '('
+						&& !m_fAnonymous
 						&& iPlanetarySize >= MIN_NAMED_WORLD_SIZE;
 					}
 
@@ -5357,9 +5438,8 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 					|| !Weapon.IsReady())
 				continue;
 
-			CSpaceObject *pTarget = NULL;
-
-			Weapon.Activate(pTarget, m_WeaponTargets);
+			CDeviceClass::SActivateCtx ActivateCtx(NULL, m_WeaponTargets);
+			Weapon.Activate(ActivateCtx);
 			if (IsDestroyed())
 				return false;
 
@@ -5403,7 +5483,7 @@ void CStation::UpdateDestroyedAnimation (void)
 	m_iDestroyedAnimation--;
 	}
 
-bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, const CTargetList &TargetList, bool &iobModified)
+bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, CTargetList &TargetList, bool &iobModified)
 
 //	UpdateDevices
 //
@@ -5449,7 +5529,7 @@ bool CStation::UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCa
 	const CObjectImageArray &Image = GetImage(true);
 
 	m_Overlays.Update(this, Image.GetImageViewportSize(), GetRotation(), &bModified);
-	if (CSpaceObject::IsDestroyedInUpdate())
+	if (IsDestroyed())
 		return false;
 
 	else if (bModified)

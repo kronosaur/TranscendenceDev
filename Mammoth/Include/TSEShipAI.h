@@ -68,30 +68,31 @@ class CAISettings
 
 		CAISettings (void);
 
-		inline bool AscendOnGate (void) const { return m_fAscendOnGate; }
-		inline AICombatStyles GetCombatStyle (void) const { return m_iCombatStyle; }
-		inline int GetFireAccuracy (void) const { return m_iFireAccuracy; }
-		inline int GetFireRangeAdj (void) const { return m_iFireRangeAdj; }
-		inline int GetFireRateAdj (void) const { return m_iFireRateAdj; }
-		inline EFlockingStyles GetFlockingStyle (void) const { return m_iFlockingStyle; }
-		inline Metric GetMinCombatSeparation (void) const { return m_rMinCombatSeparation; }
-		inline int GetPerception (void) const { return m_iPerception; }
+		bool AscendOnGate (void) const { return m_fAscendOnGate; }
+		AICombatStyles GetCombatStyle (void) const { return m_iCombatStyle; }
+		int GetFireAccuracy (void) const { return m_iFireAccuracy; }
+		int GetFireRangeAdj (void) const { return m_iFireRangeAdj; }
+		int GetFireRateAdj (void) const { return m_iFireRateAdj; }
+		EFlockingStyles GetFlockingStyle (void) const { return m_iFlockingStyle; }
+		Metric GetMinCombatSeparation (void) const { return m_rMinCombatSeparation; }
+		int GetPerception (void) const { return m_iPerception; }
 		CString GetValue (const CString &sSetting);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitToDefault (void);
-		inline bool IsAggressor (void) const { return m_fAggressor; }
-		inline bool IsFlocker (void) const { return (m_iFlockingStyle != flockNone); }
-		inline bool IsNonCombatant (void) const { return m_fNonCombatant; }
-		inline bool NoAttackOnThreat (void) const { return m_fNoAttackOnThreat; }
-		inline bool NoDogfights (void) const { return m_fNoDogfights; }
-		inline bool NoFriendlyFire (void) const { return m_fNoFriendlyFire; }
-		inline bool NoFriendlyFireCheck (void) const { return m_fNoFriendlyFireCheck; }
-		inline bool NoNavPaths (void) const { return m_fNoNavPaths; }
-		inline bool NoOrderGiver (void) const { return m_fNoOrderGiver; }
-		inline bool NoShieldRetreat (void) const { return m_fNoShieldRetreat; }
-		inline bool NoTargetsOfOpportunity (void) const { return m_fNoTargetsOfOpportunity; }
+		bool IsAggressor (void) const { return m_fAggressor; }
+		bool IsFlocker (void) const { return (m_iFlockingStyle != flockNone); }
+		bool IsNonCombatant (void) const { return m_fNonCombatant; }
+		bool IsPlayer (void) const { return m_fIsPlayer; }
+		bool NoAttackOnThreat (void) const { return m_fNoAttackOnThreat; }
+		bool NoDogfights (void) const { return m_fNoDogfights; }
+		bool NoFriendlyFire (void) const { return m_fNoFriendlyFire; }
+		bool NoFriendlyFireCheck (void) const { return m_fNoFriendlyFireCheck; }
+		bool NoNavPaths (void) const { return m_fNoNavPaths; }
+		bool NoOrderGiver (void) const { return m_fNoOrderGiver; }
+		bool NoShieldRetreat (void) const { return m_fNoShieldRetreat; }
+		bool NoTargetsOfOpportunity (void) const { return m_fNoTargetsOfOpportunity; }
 		void ReadFromStream (SLoadCtx &Ctx);
-		inline void SetMinCombatSeparation (Metric rValue) { m_rMinCombatSeparation = rValue; }
+		void SetMinCombatSeparation (Metric rValue) { m_rMinCombatSeparation = rValue; }
 		CString SetValue (const CString &sSetting, const CString &sValue);
 		void WriteToStream (IWriteStream *pStream);
 
@@ -123,7 +124,8 @@ class CAISettings
 		DWORD m_fNoNavPaths:1;					//	If TRUE, do not use nav paths
 		DWORD m_fNoAttackOnThreat:1;			//	Do not attack enemies while escorting (unless ordered)
 		DWORD m_fNoTargetsOfOpportunity:1;		//	If TRUE, do not attack targets of opportunity
-		DWORD m_fSpare4:1;
+		DWORD m_fIsPlayer:1;					//	If TRUE, we're controlling the player ship (this is usually
+												//		for debugging only).
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
@@ -183,10 +185,10 @@ class IShipController
 					Item(ItemArg)
 				{ }
 
-			inline DWORD AsInteger (void) const { if (iDataType == dataInteger || iDataType == dataPair) return dwData1; else return 0; }
-			inline DWORD AsInteger2 (void) const { if (iDataType == dataPair) return dwData2; else return 0; }
-			inline const CItem &AsItem (void) const { if (iDataType == dataItem) return Item; else return CItem::NullItem(); }
-			inline bool IsIntegerOrPair (void) const { return (iDataType == dataInteger || iDataType == dataPair); }
+			DWORD AsInteger (void) const { if (iDataType == dataInteger || iDataType == dataPair) return dwData1; else return 0; }
+			DWORD AsInteger2 (void) const { if (iDataType == dataPair) return dwData2; else return 0; }
+			const CItem &AsItem (void) const { if (iDataType == dataItem) return Item; else return CItem::NullItem(); }
+			bool IsIntegerOrPair (void) const { return (iDataType == dataInteger || iDataType == dataPair); }
 
 			EDataTypes iDataType;
 
@@ -324,6 +326,7 @@ class IShipController
 		virtual void SetThrust (bool bThrust) { }
 		virtual void SetPlayerBlacklisted (bool bValue) { }
 		virtual void SetPlayerWingman (bool bIsWingman) { }
+		virtual ESetPropertyResult SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL) { return ESetPropertyResult::notFound; }
 		virtual void WriteToStream (IWriteStream *pStream) { ASSERT(false); }
 
 		virtual void AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false) { }
@@ -338,6 +341,7 @@ class IShipController
 		//	Events
 
 		virtual void OnAbilityChanged (Abilities iAbility, AbilityModifications iChange, bool bNoMessage = false) { }
+		virtual void OnAcceptedMission (CMission &MissionObj) { }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) { }
@@ -376,8 +380,8 @@ class IShipController
 		virtual void OnWreckCreated (CSpaceObject *pWreck) { }
 
 		static EDataTypes GetOrderDataType (OrderTypes iOrder);
-		inline static DWORD GetOrderFlags (OrderTypes iOrder) { return m_OrderTypes[iOrder].dwFlags; }
-		inline static CString GetOrderName (OrderTypes iOrder) { return CString(m_OrderTypes[iOrder].szName); }
+		static DWORD GetOrderFlags (OrderTypes iOrder) { return m_OrderTypes[iOrder].dwFlags; }
+		static CString GetOrderName (OrderTypes iOrder) { return CString(m_OrderTypes[iOrder].szName); }
 		static OrderTypes GetOrderType (const CString &sString);
 		static bool OrderHasTarget (OrderTypes iOrder, bool *retbRequired = NULL);
 		static bool ParseOrderString (const CString &sValue, OrderTypes *retiOrder, IShipController::SData *retData = NULL);

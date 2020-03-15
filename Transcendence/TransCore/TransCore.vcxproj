@@ -480,6 +480,7 @@
     <Xml Include="Benedict08.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="BlackMarketMember.xml" />
     <Xml Include="BlackMarketMission00.xml" />
     <Xml Include="BlackMarketMission01.xml" />
     <Xml Include="CommonwealthCenturions.xml" />
@@ -644,6 +645,7 @@
     </Xml>
     <Xml Include="SungSlaveCamp.xml" />
     <Xml Include="TeratonResearch.xml" />
+    <Xml Include="UndergroundCaverns.xml" />
     <Xml Include="Ventari.xml" />
     <Xml Include="Volkov.xml">
       <SubType>Designer</SubType>

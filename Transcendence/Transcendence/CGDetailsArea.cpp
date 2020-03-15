@@ -8,21 +8,12 @@
 
 CGDetailsArea::CGDetailsArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme) : 
 		m_VI(VI),
-		m_Theme(Theme)
+		m_Theme(Theme),
+		m_Painter(*g_pUniverse, VI, Theme)
 
 //	CGDetailsArea constructor
 
 	{
-	}
-
-void CGDetailsArea::CleanUp (void)
-
-//	CleanUp
-//
-//	Clean up area
-
-	{
-	m_pData.Delete();
 	}
 
 void CGDetailsArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
@@ -34,13 +25,7 @@ void CGDetailsArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	{
 	DEBUG_TRY
 
-	CDetailArea Painter(*g_pUniverse, m_VI, m_Theme);
-	Painter.SetData(m_pData);
-	Painter.SetBackColor(m_rgbBackColor);
-	Painter.SetColor(m_rgbTextColor);
-	Painter.SetTabRegion(m_cyTabRegions);
-
-	Painter.Paint(Dest, rcRect);
+	m_Painter.Paint(Dest, rcRect);
 
 	DEBUG_CATCH
 	}

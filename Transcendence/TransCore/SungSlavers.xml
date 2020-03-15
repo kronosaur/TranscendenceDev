@@ -907,9 +907,9 @@
 			type=				""
 			defaultSovereign=	"&svSung;"
 
-			size=				"240"
-			mass=				"10000"
-			cargoSpace=			"7000"
+			size=				"366"
+			mass=				"16000"
+			cargoSpace=			"30000"
 			thrustRatio=		"0.3"
 			maxSpeed=			"6"
 
@@ -926,7 +926,7 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itParticleBeamWeapon;" omnidirectional="true"/>
+			<Device deviceID="&itParticleBeamWeapon;" omnidirectional="true" posAngle="0" posRadius="100" posZ="10"/>
 			<Device deviceID="&itYoroiS100;"/>
 			<Device deviceID="&it100MWReactor;"/>
 		</Devices>
@@ -948,7 +948,7 @@
 					posX=		"-66"
 					posY=		"0"
 					sizeX=		"60"
-					sizeY=		"30"
+					sizeY=		"40"
 					/>
 			
 			<Compartment name="cargo containers"
@@ -957,7 +957,7 @@
 
 					posX=		"10"
 					posY=		"0"
-					sizeX=		"118"
+					sizeX=		"140"
 					sizeY=		"30"
 					/>
 		</Interior>
@@ -966,11 +966,12 @@
 			<Item	count="2d6"		item="&itXenotiteFuelRod;"/>
 		</Items>
 
-		<Image imageID="&rsSungTransport;" imageWidth="216" imageHeight="216"/>
+		<Image imageID="&rsSungTransportHD;" imageWidth="290" imageHeight="290" rotationCount="120" rotationColumns="12" viewportRatio="0.0475"/>
+		<HeroImage imageID="&rsSungTransportHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="176"	posRadius="80"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
-			<Effect type="thrustMain"		posAngle="-176"	posRadius="80"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="172"	posRadius="94"	posZ="-2"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="-172"	posRadius="94"	posZ="-2"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
 		</Effects>
 
 		<AISettings
@@ -1026,8 +1027,7 @@
 				(if (and (leq (itmGetCharges gItem) 256)
 						(objGetItems gSource "u +LongzhuSphere;"))
 					(block Nil
-						(setq aCharges 256)
-						(objFireItemEvent gSource gItem "Recharge")
+						(objFireItemEvent gSource gItem 'Recharge { charges:256 })
 						(objRemoveItem gSource (itmCreate &itLongzhuSphere; 1))
 						)
 					)
@@ -1036,8 +1036,10 @@
 			<Recharge>
 				; aCharges = amount to recharge
 				; Returns the amount recharged
-				(block (rechargeNeeded)
-					(setq rechargeNeeded (min aCharges (subtract 9999 (itmGetCharges gItem))))
+				(block (
+					(newCharges (@ gData 'charges))
+					(rechargeNeeded (min newCharges (subtract 9999 (itmGetCharges gItem))))
+					)
 					(if (gr rechargeNeeded 0)
 						(shpRechargeItem gSource gItem rechargeNeeded)
 						)
@@ -1163,6 +1165,7 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
+					{	criteria:"w +unid:&itQianlongArchcannon;;"	custom:True		descID:'descCanRecharge	}
 					{	criteria:"Ds L:1-10; -nonEnergyShields;"	enhancement:"+repair:10"	}
 					{	criteria:"Dw L:1-10; +EnergyWeapon;"		enhancement:"+repair:10"	}
 					{	criteria:"s L:1-10; -nonEnergyShields;"		enhancement:"+hpBonus:20"	}
@@ -1183,7 +1186,7 @@
 						;	Recharge Qianlong Archcannon
 						(= (itmGetType dstItem) &itQianlongArchcannon;)
 							(block (recharged)
-								(setq recharged (objFireItemEvent gPlayerShip gItem 'Recharge 256))
+								(setq recharged (objFireItemEvent gPlayerShip dstItem 'Recharge { charges:256 }))
 
 								;	Remove the item from the player's cargo
 								(objRemoveItem gPlayerShip gItem 1)
@@ -1222,6 +1225,11 @@
 
 			</Text>
 			<Text id="descNoFurther">The enhancement has no effect.</Text>
+			<Text id="descCanRecharge">
+				
+				You can use the longzhu sphere to recharge %dstItem%.
+				
+			</Text>
 		</Language>
 	</ItemType>
 
@@ -1740,8 +1748,10 @@
 	<Image UNID="&rsSteelSlaver;"		bitmap="Resources\SteelSlaver.jpg"	bitmask="Resources\SteelSlaverMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsSteelSlaverHero;"	bitmap="Resources\SteelSlaverLarge.jpg"	bitmask="Resources\SteelSlaverLargeMask.bmp"  loadOnUse="true"/>
 
+	<Image UNID="&rsSungTransportHD;"	bitmap="Resources\SungTransportHD.jpg"	bitmask="Resources\SungTransportHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsSungTransportHero;"	bitmap="Resources\SungTransportLarge.jpg"	bitmask="Resources\SungTransportLargeMask.bmp"  loadOnUse="true"/>
+
 	<Image UNID="&rsDragonSlaverImage;"	bitmap="Resources\DragonSlaver.jpg"		bitmask="Resources\DragonSlaverMask.bmp"  loadOnUse="true"/>
-	<Image UNID="&rsSungTransport;"		bitmap="Resources\SungTransport.jpg"	bitmask="Resources\SungTransportMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsWindSlaverHD;"		bitmap="Resources\WindSlaverHD.jpg"		bitmask="Resources\WindSlaverHDMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

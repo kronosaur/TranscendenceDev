@@ -573,7 +573,7 @@ template <class VALUE> class TProbabilityTable
 
 			//	Get the position
 
-			while (m_Table[iPos].iChance <= iRoll)
+			while (iRoll >= m_Table[iPos].iChance)
 				iRoll -= m_Table[iPos++].iChance;
 
 			return iPos;

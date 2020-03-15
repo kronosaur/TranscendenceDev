@@ -10,6 +10,7 @@ static constexpr DWORD FN_TSE_PATTERN =					2;
 static constexpr DWORD FN_TSE_SET_SYSTEM =				3;
 static constexpr DWORD FN_TSE_UPDATE_SYSTEM =			4;
 static constexpr DWORD FN_TSE_AFFINITY_CRITERIA =		5;
+static constexpr DWORD FN_TSE_SET_PLAYER_SHIP =			6;
 
 ICCItem *fnNil (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -24,6 +25,10 @@ static PRIMITIVEPROCDEF g_Library[] =
 			"iv*",	0,	},
 
 		//	These are engine diagnostic functions
+
+		{	"diagSetPlayerShip",			fnTransEngine,		FN_TSE_SET_PLAYER_SHIP,
+			"(diagSetPlayerShip obj) -> True/error",
+			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"diagSetSystem",				fnTransEngine,		FN_TSE_SET_SYSTEM,
 			"(diagSetSystem nodeID) -> True/error",
@@ -201,6 +206,26 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateString(sResult);
 			}
 
+		case FN_TSE_SET_PLAYER_SHIP:
+			{
+			CSpaceObject *pObj = CreateObjFromItem(pArgs->GetElement(0));
+			if (pObj)
+				{
+				//	Setting this will make the object return IsPlayer() -> true.
+				//	This will clear gPlayerShip when the object is destroyed.
+
+				pObj->SetAISettingString(CONSTLIT("isPlayer"), CONSTLIT("true"));
+
+				Universe.SetPlayerShip(pObj);
+				return pCC->CreateTrue();
+				}
+			else
+				{
+				Universe.SetPlayerShip(NULL);
+				return pCC->CreateNil();
+				}
+			}
+
 		case FN_TSE_SET_SYSTEM:
 			{
 			CString sNodeID = pArgs->GetElement(0)->GetStringValue();
@@ -216,7 +241,7 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Set as current system.
 
-			Universe.SetCurrentSystem(pSystem);
+			Universe.SetNewSystem(*pSystem);
 			return pCC->CreateTrue();
 			}
 

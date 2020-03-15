@@ -801,6 +801,7 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 
 		virtual bool CanBeHitBy (const DamageDesc &Damage) override;
 		virtual bool CanMove (void) const { return true; }
+		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerSpace; }
@@ -864,8 +865,9 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 		void SetParticleSpeed (SParticleType *pType, SParticle *pParticle);
 
 		CString m_sName;
-		SParticleArray *m_pFirstGroup;
-		CSpaceObject *m_pAnchor;
+		SParticleArray *m_pFirstGroup = NULL;
+		CSpaceObject *m_pAnchor = NULL;
+		CDamageSource m_Source;					//	Object that caused effect
 	};
 
 class CPOVMarker : public TSpaceObjectImpl<OBJID_CPOVMARKER>
@@ -1106,6 +1108,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool CanThrust (void) const override { return (GetThrust() > 0.0); }
 		virtual bool ClassCanAttack (void) override { return true; }
 		virtual void ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse = CReactorDesc::fuelConsume) override;
+		virtual void CreateDefaultDockingPorts (void) override;
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) override;
 		virtual void DeactivateShields (void) override;
 		virtual CString DebugCrashInfo (void) override;
@@ -1205,6 +1208,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool IsVirtual (void) const override { return m_pClass->IsVirtual(); }
 		virtual void MarkImages (void) override;
 		virtual bool ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos) override;
+		virtual void OnAcceptedMission (CMission &MissionObj) override;
 		virtual void OnAscended (void) override;
 		virtual void OnBounce (CSpaceObject *pBarrierObj, const CVector &vPos) override;
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override;
@@ -1290,6 +1294,14 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual void RevertOrientationChange (void) override;
 
 	private:
+		static constexpr int GATE_ANIMATION_LENGTH =				30;
+
+		static constexpr int FUEL_CHECK_CYCLE =						4;
+		static constexpr int LIFESUPPORT_FUEL_USE_PER_CYCLE =		1;
+		static constexpr int FUEL_GRACE_PERIOD =					30 * 30;
+
+		static constexpr int TRADE_UPDATE_FREQUENCY =				1801;		//	Interval for checking trade
+		static constexpr int INVENTORY_REFRESHED_PER_UPDATE =		20;			//	% of inventory refreshed on each update frequency
 
 		void AccumulateDeviceEnhancementsToArmor (CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void CalcArmorBonus (void);
@@ -1321,9 +1333,13 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
 		void SetTotalArmorHP (int iNewHP);
 		bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }
+		bool UpdateAllDevices (CDeviceClass::SDeviceUpdateCtx &DeviceCtx, CShipUpdateSet &UpdateFlags);
+		bool UpdateConditions (CShipUpdateSet &UpdateFlags);
 		void UpdateDestroyInGate (void);
 		bool UpdateFuel (SUpdateCtx &Ctx, int iTick);
 		void UpdateInactive (void);
+		void UpdateManeuvers (Metric rSecondsPerTick);
+		bool UpdateTriggerAllDevices (CDeviceClass::SActivateCtx &ActivateCtx, CShipUpdateSet &UpdateFlags);
 
 		CShipClass *m_pClass;					//	Ship class
 		IShipController *m_pController;			//	Controller
@@ -1347,8 +1363,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		CCurrencyBlock *m_pMoney;				//	Store of money (may be NULL)
 		CPowerConsumption *m_pPowerUse;			//	Power consumption variables (may be NULL if not tracking fuel)
 
-		int m_iFireDelay:16;					//	Ticks until next fire
-		int m_iMissileFireDelay:16;				//	Ticks until next missile fire
 		int m_iContaminationTimer:16;			//	Ticks left to live
 		int m_iBlindnessTimer:16;				//	Ticks until blindness wears off
 												//	(-1 = permanent)
@@ -1397,9 +1411,9 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		DWORD m_fLRSDisabledByNebula:1;			//	TRUE if LRS is disabled due to environment
 		DWORD m_fShipCompartment:1;				//	TRUE if we're part of another ship (m_pDocked is the root ship)
 		DWORD m_fHasShipCompartments:1;			//	TRUE if we have ship compartment objects attached
-		DWORD m_fAutoCreatedPorts:1;			//	TRUE if we have auto created some docking ports
 		DWORD m_fNameBlanked:1;					//	TRUE if name has been blanked; show generic name
 		DWORD m_fShowMapLabel:1;				//	TRUE if we should show a map label
+		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 
@@ -1495,8 +1509,8 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
 		virtual bool ClassCanAttack (void) override;
 		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, const CShipChallengeDesc &Needed = CShipChallengeDesc()) override;
-		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) override;
 		virtual CString DebugCrashInfo (void) override;
+		virtual const CAsteroidDesc &GetAsteroidDesc (void) const { return m_pType->GetAsteroidDesc(); }
 		virtual CurrencyValue GetBalancedTreasure (void) const { return m_pType->GetBalancedTreasure(); }
         virtual CSpaceObject *GetBase (void) const override { return m_pBase; }
 		virtual Categories GetCategory (void) const override { return catStation; }
@@ -1520,7 +1534,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual int GetLevel (void) const override { return m_pType->GetLevel(); }
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual Metric GetMass (void) const override { return m_rMass; }
-		virtual int GetMaxLightDistance (void) override { return m_pType->GetMaxLightDistance(); }
+		virtual int GetMaxLightDistance (void) const override { return m_pType->GetMaxLightDistance(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CStation"); }
@@ -1532,7 +1546,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual int GetPlanetarySize (void) const override { return (GetScale() == scaleWorld ? m_pType->GetSize() : 0); }
 		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const override;
 		virtual IShipGenerator *GetRandomEncounterTable (int *retiFrequency = NULL) const override;
-		virtual int GetRotation (void) const override { return (m_pRotation ? m_pRotation->GetRotationAngle(m_pType->GetRotationDesc()) : 0); }
+		virtual int GetRotation (void) const override;
 		virtual ScaleTypes GetScale (void) const override { return m_Scale; }
 		virtual CXMLElement *GetScreen (const CString &sName) override { return m_pType->GetScreen(sName); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
@@ -1547,8 +1561,8 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const override { return m_Hull.GetVisibleDamageDesc(Damage); }
 		virtual CDesignType *GetWreckType (void) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
-		virtual bool HasStarlightImage (void) const override { return (GetScale() == scaleWorld); }
-		virtual bool HasVolumetricShadow (void) const override { return (GetScale() == scaleWorld && !IsOutOfPlaneObj()); }
+		virtual bool HasStarlightImage (void) const override { return (m_rStarlightDist > 0.0); }
+		virtual bool HasVolumetricShadow (int *retiStarAngle = NULL, Metric *retrStarDist = NULL) const override;
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
 		virtual bool IsAbandoned (void) const override { return m_Hull.IsAbandoned(); }
 		virtual bool IsActiveStargate (void) const override { return !m_sStargateDestNode.IsBlank() && m_fActive; }
@@ -1594,6 +1608,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void SetMapLabelPos (CMapLabelPainter::EPositions iPos) override { m_MapLabel.CleanUp(); m_MapLabel.SetPos(iPos); m_fMapLabelInitialized = false; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
+		virtual void SetStarlightParams (const CSpaceObject &StarObj, Metric rLightRadius) override;
 		virtual bool ShowMapLabel (int *retcxLabel = NULL, int *retcyLabel = NULL) const override;
         virtual bool ShowMapOrbit (void) const override { return (m_fShowMapOrbit ? true : false); }
         virtual bool ShowStationDamage (void) const override { return m_Hull.IsWrecked(); }
@@ -1637,8 +1652,6 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		static constexpr int MIN_NAMED_WORLD_SIZE = 1000;
 		static constexpr int LARGE_WORLD_SIZE = 5000;
 
-		static constexpr int WMD_HINT_THRESHOLD = 40;
-
 		void AvengeAttack (CSpaceObject *pAttacker);
 		bool Blacklist (CSpaceObject *pObj);
 		int CalcAdjustedDamage (SDamageCtx &Ctx) const;
@@ -1666,13 +1679,14 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnHitByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
+		bool OnMiningDamage (SDamageCtx &Ctx);
 		void PaintSatellites (CG32bitImage &Dest, int x, int y, DWORD dwPaintOptions, SViewportPaintCtx &Ctx) const;
 		void RaiseAlert (CSpaceObject *pTarget);
 		void SetAngry (void);
 		void SetWreckParams (CShipClass *pWreckClass, CShip *pShip = NULL);
 		bool UpdateAttacking (SUpdateCtx &Ctx, int iTick);
 		void UpdateDestroyedAnimation (void);
-		bool UpdateDevices (SUpdateCtx &Ctx, int iTick, const CTargetList &TargetList, bool &iobModified);
+		bool UpdateDevices (SUpdateCtx &Ctx, int iTick, CTargetList &TargetList, bool &iobModified);
 		bool UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCalcDevices);
 		void UpdateReinforcements (int iTick);
 		void UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange);
@@ -1690,6 +1704,9 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		COrbit *m_pMapOrbit = NULL;				//	Orbit to draw on map
 		Metric m_rParallaxDist = 1.0;			//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
 		CPaintOrder::Types m_iPaintOrder = CPaintOrder::none;	//	Paint order instructions
+		int m_iStarlightImageRotation = 0;		//	Rotation of starlight image
+		Metric m_rStarlightDist = 0.0;			//	Distance from nearest star
+		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)
 
 		CString m_sStargateDestNode;			//	Destination node
 		CString m_sStargateDestEntryPoint;		//	Destination entry point
@@ -1733,15 +1750,14 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		DWORD m_fHasMissileDefense:1;			//	If TRUE, at least one device is a missile defense weapon
 		mutable DWORD m_fMapLabelInitialized:1;	//	If TRUE, we've initialized m_MapLabel
 		mutable DWORD m_fMaxAttackDistValid:1;	//	TRUE if m_rMaxAttackDist is valid
-		DWORD m_dwSpare:13;
+		DWORD m_fAnonymous:1;					//	TRUE if world has not been explicitly named
+		DWORD m_fFadeImage:1;					//	If TRUE, fade image in stellar light
+		DWORD m_dwSpare:11;
 
-		//	Wreck image
-		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)
+		//	Cached
 
 		mutable CG32bitImage m_MapImage;		//	Image for the map (if star or world)
 		mutable CMapLabelPainter m_MapLabel;	//	Cached info about map label
-
-		CObjectImageArray m_StarlightImage;		//	Image rotated for proper lighting.
 	};
 
 

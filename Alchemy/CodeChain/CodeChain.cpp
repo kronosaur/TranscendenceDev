@@ -47,14 +47,13 @@ CCodeChain::~CCodeChain (void)
 	CleanUp();
 	}
 
-ICCItem *CCodeChain::Apply (ICCItem *pFunc, ICCItem *pArgs, LPVOID pExternalCtx)
+ICCItemPtr CCodeChain::Apply (const ICCItem &Func, ICCItem &Args, const SRunOptions &Options)
 
 //	Apply
 //
 //	Runs the given function with the given arguments
 
 	{
-	ICCItem *pResult;
 	CEvalContext EvalCtx;
 
 	//	Set up the context
@@ -62,16 +61,24 @@ ICCItem *CCodeChain::Apply (ICCItem *pFunc, ICCItem *pArgs, LPVOID pExternalCtx)
 	EvalCtx.pCC = this;
 	EvalCtx.pLexicalSymbols = m_pGlobalSymbols;
 	EvalCtx.pLocalSymbols = NULL;
-	EvalCtx.pExternalCtx = pExternalCtx;
+	EvalCtx.bStrict = Options.bStrict;
+	EvalCtx.pExternalCtx = Options.pExternalCtx;
 
 	//	Evalute the actual code
 
-	pArgs->SetQuoted();
+	Args.SetQuoted();
 
-	if (pFunc->IsFunction())
-		pResult = pFunc->Execute(&EvalCtx, pArgs);
+	ICCItemPtr pResult;
+	if (Func.IsFunction())
+		{
+		//	We're not yet ready to pull on the const thread in CodeChain:
+
+		ICCItem *pFunc = &const_cast<ICCItem &>(Func);
+
+		pResult = ICCItemPtr(pFunc->Execute(&EvalCtx, &Args));
+		}
 	else
-		pResult = pFunc->Reference();
+		pResult = ICCItemPtr(Func);
 
 	return pResult;
 	}
@@ -1525,7 +1532,7 @@ ICCItem *CCodeChain::PoolUsage (void)
 	return pList;
 	}
 
-ICCItem *CCodeChain::TopLevel (ICCItem *pItem, LPVOID pExternalCtx)
+ICCItemPtr CCodeChain::TopLevel (const ICCItem &Code, const SRunOptions &Options)
 
 //	TopLevel
 //
@@ -1539,11 +1546,16 @@ ICCItem *CCodeChain::TopLevel (ICCItem *pItem, LPVOID pExternalCtx)
 	EvalCtx.pCC = this;
 	EvalCtx.pLexicalSymbols = m_pGlobalSymbols;
 	EvalCtx.pLocalSymbols = NULL;
-	EvalCtx.pExternalCtx = pExternalCtx;
+	EvalCtx.bStrict = Options.bStrict;
+	EvalCtx.pExternalCtx = Options.pExternalCtx;
+
+	//	We're not yet ready to pull on the const thread in CodeChain:
+
+	ICCItem *pCode = &const_cast<ICCItem &>(Code);
 
 	//	Evalute the actual code
 
-	return Eval(&EvalCtx, pItem);
+	return ICCItemPtr(Eval(&EvalCtx, pCode));
 	}
 
 ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)

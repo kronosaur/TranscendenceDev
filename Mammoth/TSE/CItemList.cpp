@@ -174,6 +174,54 @@ void CItemList::SortItems (void)
 	m_List.TakeHandoff(NewList);
 	}
 
+void CItemList::SortItems (const CItemCriteria &SortFirst)
+
+//	SortItems
+//
+//	Sorts items in order:
+//
+//	installed/not-installed
+//	armor/weapon/device/other
+
+	{
+	if (GetCount() == 0)
+		return;
+
+	TSortMap<CString, int> Sort;
+	for (int i = 0; i < GetCount(); i++)
+		{
+		const CItem &Item = GetItem(i);
+		CString sSortKey = Item.CalcSortKey();
+
+		if (Item.MatchesCriteria(SortFirst))
+			Sort.Insert(strPatternSubst(CONSTLIT("0-%s"), sSortKey), i);
+		else
+			Sort.Insert(strPatternSubst(CONSTLIT("1-%s"), sSortKey), i);
+		}
+
+	//	Allocate a new list
+
+	TArray<CItem *> NewList;
+	NewList.GrowToFit(GetCount());
+
+	//	Move the items from the old list to the new list in the new order
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CItem *pSortedItem = m_List[Sort[i]];
+		int iLast = NewList.GetCount() - 1;
+
+		if (iLast >= 0 && NewList[iLast]->IsEqual(*pSortedItem))
+			NewList[iLast]->SetCount(NewList[iLast]->GetCount() + pSortedItem->GetCount());
+		else
+			NewList.Insert(pSortedItem);
+		}
+
+	//	Swap
+
+	m_List.TakeHandoff(NewList);
+	}
+
 void CItemList::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream

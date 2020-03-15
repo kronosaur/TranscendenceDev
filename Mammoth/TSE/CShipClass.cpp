@@ -179,6 +179,8 @@
 #define PROPERTY_ARMOR_ITEM						CONSTLIT("armorItem")
 #define PROPERTY_ARMOR_SPEED_ADJ				CONSTLIT("armorSpeedAdj")
 #define PROPERTY_ARMOR_SPEED_ADJ_PARAM			CONSTLIT("armorSpeedAdj:")
+#define PROPERTY_CHARACTER						CONSTLIT("character")
+#define PROPERTY_CHARACTER_NAME					CONSTLIT("characterName")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
@@ -214,6 +216,7 @@
 #define PROPERTY_VIEWPORT_SIZE					CONSTLIT("viewportSize")
 #define PROPERTY_WEAPON_ITEMS					CONSTLIT("weaponItems")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
+#define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
 #define SPECIAL_ITEM_ATTRIBUTE					CONSTLIT("itemAttribute:")
@@ -2101,15 +2104,17 @@ bool CShipClass::FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) con
 //	Looks for a device slot descriptor
 
 	{
+	SDeviceGenerateCtx Ctx(GetUniverse());
+
 	//	If we have a dedicated device slot object, then use that.
 
 	if (m_pDeviceSlots)
-		return m_pDeviceSlots->FindDefaultDesc(iDev, retDesc);
+		return m_pDeviceSlots->FindDefaultDesc(Ctx, iDev, retDesc);
 
 	//	Otherwise, for backwards compatibility we check the device generator.
 
 	else if (m_pDevices)
-		return m_pDevices->FindDefaultDesc(iDev, retDesc);
+		return m_pDevices->FindDefaultDesc(Ctx, iDev, retDesc);
 
 	//	Otherwise, not found
 
@@ -2123,15 +2128,17 @@ bool CShipClass::FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDes
 //	Looks for a device slot descriptor
 
 	{
+	SDeviceGenerateCtx Ctx(GetUniverse());
+
 	//	If we have a dedicated device slot object, then use that.
 
 	if (m_pDeviceSlots)
-		return m_pDeviceSlots->FindDefaultDesc(pShip, Item, retDesc);
+		return m_pDeviceSlots->FindDefaultDesc(Ctx, pShip, Item, retDesc);
 
 	//	Otherwise, for backwards compatibility we check the device generator.
 
 	else if (m_pDevices)
-		return m_pDevices->FindDefaultDesc(pShip, Item, retDesc);
+		return m_pDevices->FindDefaultDesc(Ctx, pShip, Item, retDesc);
 
 	//	Otherwise, not found
 
@@ -3156,6 +3163,11 @@ void CShipClass::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) 
 //	Returns flags to determine how we merge from inherited types.
 
 	{
+	//	Do not inherit these attributes
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(CONSTLIT("attrib.level")), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(CONSTLIT("attrib.score")), CXMLElement::MERGE_OVERRIDE);
+
 	//	We know how to handle these tags through the inheritance hierarchy.
 
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(COMMUNICATIONS_TAG), CXMLElement::MERGE_OVERRIDE);
@@ -3488,7 +3500,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
     pImage = pDesc->GetContentElementByTag(HERO_IMAGE_TAG);
     if (pImage)
-        if (error = m_HeroImage.InitFromXML(Ctx, pImage))
+        if (error = m_HeroImage.InitFromXML(Ctx, *pImage))
             return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Maneuvering
@@ -3638,7 +3650,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			CXMLElement *pItem = pDriveImages->GetContentElement(i);
 			if (strEquals(pItem->GetTag(), NOZZLE_IMAGE_TAG))
 				{
-				if (error = m_ExhaustImage.InitFromXML(Ctx, pItem))
+				if (error = m_ExhaustImage.InitFromXML(Ctx, *pItem))
 					return ComposeLoadError(Ctx, ERR_BAD_EXHAUST_IMAGE);
 				}
 			else if (strEquals(pItem->GetTag(), NOZZLE_POS_TAG))
@@ -3838,6 +3850,12 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return ICCItemPtr(iSpeedAdj);
 		}
 
+	else if (strEquals(sProperty, PROPERTY_CHARACTER))
+		return (m_Character.GetUNID() ? ICCItemPtr(m_Character.GetUNID()) : ICCItemPtr::Nil());
+		
+	else if (strEquals(sProperty, PROPERTY_CHARACTER_NAME))
+		return (m_Character.GetUNID() ? m_Character->GetStaticData(CONSTLIT("Name")) : ICCItemPtr::Nil());
+		
 	else if (strEquals(sProperty, PROPERTY_CURRENCY))
 		return ICCItemPtr(GetEconomyType()->GetUNID());
 		
@@ -3962,6 +3980,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
 		return ICCItemPtr(GetMaxStructuralHitPoints());
+
+	else if (strEquals(sProperty, PROPERTY_WRECK_TYPE))
+		return (m_WreckDesc.GetWreckType() ? ICCItemPtr(m_WreckDesc.GetWreckType()->GetUNID()) : ICCItemPtr::Nil());
 
 	//	Drive properties
 

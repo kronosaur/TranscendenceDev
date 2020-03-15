@@ -400,6 +400,12 @@
 			<Text id="descWelcome">
 				You are docked at an armor dealer station.
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys armor and shields (even if damaged). We are not 
+				interested in buying %itemName%.
+
+			</Text>
 
             <Text id="core.mapDesc">"Buys and sells armor and shields &mdash; Installs purchased items &mdash; Buys damaged armor and shields"</Text>
         </Language>
@@ -548,6 +554,12 @@
 
 			<Text id="descWelcome">
 				You are docked at an arms dealer station.
+			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys weapons (even if damaged). We are not 
+				interested in buying %itemName%.
+
 			</Text>
 
             <Text id="core.mapDesc">
@@ -876,6 +888,12 @@
 				delighted to show you some of our newest models."
 
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys autons. We are not 
+				interested in buying %itemName%.
+
+			</Text>
             <Text id="core.mapDesc">"Buys and sells autons"</Text>
         </Language>
 	</StationType>
@@ -1002,14 +1020,26 @@
 							</Action>
 
 							<Action name="&quot;The merchandise is in my cargo hold.&quot;" default="1" key="M">
-								(block Nil
+								(block (
+									;	Price depends on whether a Black Market station 
+									;	is in the system.
+
+									(priceAdj
+										(switch
+											(sysFindObject Nil "TA +blackMarket; +populated;")
+												90
+
+											110
+											)
+										)
+									)
 									(scrShowPane gScreen "Default")
 									
 									(scrShowSellScreen
 										(lambda (theItem)
 											(switch
 												(itmMatches theItem "*NU +Illegal; -ID; +property:known;")
-													(divide (multiply 90 (itmGetPrice theItem 'credit)) 100)
+													(divide (multiply priceAdj (itmGetPrice theItem 'credit)) 100)
 													
 												Nil
 												)
@@ -1110,7 +1140,13 @@
 				corporations are carried out on this level.
 
 			</Text>
-            <Text id="core.mapDesc">"Buys food, luxuries, meds, and resources"</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food, luxuries, meds, and industrial 
+				resources. We are not interested in buying %itemName%.
+
+			</Text>
+            <Text id="core.mapDesc">"Buys food, luxuries, meds, and industrial resources"</Text>
         </Language>
 	</StationType>
 
@@ -1698,6 +1734,12 @@
 				about the excellent service. You spend 5 credits on drinks.
 			</Text>
 
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food, luxuries, and meds. We are not 
+				interested in buying %itemName%.
+
+			</Text>
             <Text id="core.mapDesc">"Buys food, luxuries, and meds"</Text>
         </Language>
 	</StationType>
@@ -1715,11 +1757,6 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"150"
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"120"
-			multiHull=			"true"
-			regen=              "1"
-
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtIceAsteroidEjecta;"
 			>
@@ -1759,6 +1796,14 @@
 			<Item chance="50"	count="2d12"	item="&itHogeiSalmon;" />
 		</Items>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itPlasteelPlate;"
+				hitPoints=		"120"
+				regen=			"1"
+				/>
+		
 		<!-- Ships and Defenses -->
 
 		<Ships>
@@ -1831,6 +1876,12 @@
 				You are docked at a corporate ice farm on a small asteroid. 
 				Cold and stale air blows out of a wheezing recycler and you 
 				hear the drone of struggling generators and pumps.
+
+			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food and supplies. We are not 
+				interested in buying %itemName%.
 
 			</Text>
             <Text id="core.mapDesc">Sells luxuries &mdash; Buys food and supplies</Text>
@@ -2110,12 +2161,98 @@
 
 <!-- SHIP CLASSES -->
 
-	<!-- CorporateCruiser -->
+	<!-- Level 8: Corporate Explorer -->
+
+	<ShipClass UNID="&scCorporateExplorer;"
+			manufacturer=		"Rasiermesser"
+			class=				"Svalbard"
+			type=				"explorer"
+			defaultSovereign=	"&svCorporate;"
+
+			attributes=			"capitalShip, corporate, genericClass, majorShip"
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"195"
+			mass=				"4000"
+			cargoSpace=			"1000"
+
+			cyberDefenseLevel=	"8"
+			/>
+
+		<Drive
+			maxSpeed=			"10"
+			thrust=				"5000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3"
+			rotationAccel=		"0.5"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"120"
+					/>
+
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"80"
+
+					posX=		"-61"
+					posY=		"0"
+					sizeX=		"60"
+					sizeY=		"40"
+					/>
+		</Interior>
+
+		<Wreck
+			explosionType=		"&vtThermoExplosion2;"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itQuadroCarbideArmor;"
+			count=				"16"
+			/>
+
+		<Devices>
+			<Device deviceID="&itPlasmaShieldGenerator;"/>
+		</Devices>
+
+		<Items>
+			<Item count="2d12" item="&itPteracniumFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsCorporateExplorerHD;" imageWidth="192" imageHeight="192"	rotationCount="120" rotationColumns="12" viewportRatio="0.025"/>
+		<HeroImage imageID="&rsCorporateExplorerHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"25"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+	</ShipClass>
+
+	<!-- Level 9: Corporate Cruiser -->
 
 	<ShipClass UNID="&scCorporateCruiser;"
 			manufacturer=		"Rasiermesser"
-			class=				"corporate cruiser"
-			type=				""
+			class=				"Eir"
+			type=				"cruiser"
 			defaultSovereign=	"&svCorporate;"
 
 			attributes=			"capitalShip, corporate, genericClass, majorShip"
@@ -2593,4 +2730,9 @@
 	<Image UNID="&rsCorporateCruiserHD;"	bitmap="Resources\CorporateCruiserHD.jpg" bitmask="Resources\CorporateCruiserHDMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCorporateCruiserHero;"	bitmap="Resources\CorporateCruiserLarge.jpg" bitmask="Resources\CorporateCruiserLargeMask.bmp"  loadOnUse="true"/>
 	
+	<Image UNID="&rsCorporateExplorerHD;"	bitmap="Resources\CorporateExplorerHD.jpg" bitmask="Resources\CorporateExplorerHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsCorporateExplorerHero;"	bitmap="Resources\CorporateExplorerLarge.jpg" bitmask="Resources\CorporateExplorerLargeMask.bmp"  loadOnUse="true"/>
+
+	<!-- Deprecate when we re-do Huygens Explorer -->
+
 </TranscendenceModule>

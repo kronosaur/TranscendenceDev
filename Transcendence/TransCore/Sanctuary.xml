@@ -149,6 +149,7 @@
 	<SystemType UNID="&ssSanctuary;"
 				attributes=			"envAir"
 				backgroundID=		"&rsLightNebulaSpace;"
+				spaceColor=			"#282a3c"
 				spaceEnvironmentTileSize=	"large"
 				>
 		<Tables>

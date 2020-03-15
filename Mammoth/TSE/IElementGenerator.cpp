@@ -15,6 +15,7 @@
 #define COUNT_ATTRIB				CONSTLIT("count")
 #define DISTANCE_ATTRIB				CONSTLIT("distance")
 #define DISTANCE_TO_ATTRIB			CONSTLIT("distanceTo")
+#define MAX_COUNT_ATTRIB			CONSTLIT("maxCount")
 
 class CElementGroup : public IElementGenerator
 	{
@@ -83,11 +84,16 @@ class CElementTable : public IElementGenerator
 		struct SEntry
 			{
 			int iChance = 0;
+			int iMaxCount = -1;
 			TUniquePtr<IElementGenerator> Item;
 			};
 
+		int Roll (void) const;
+		int RollAndCheckLimits (TArray<int> &Counts) const;
+
 		TArray<SEntry> m_Table;
 		int m_iTotalChance;
+		bool m_bHasLimits = false;
 	};
 
 //	IElementGenerator ----------------------------------------------------------
@@ -683,16 +689,17 @@ ALERROR CElementTable::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, T
 //	Creates a table generator
 
 	{
-	int i;
 	ALERROR error;
 
 	CElementTable *pEntry = new CElementTable;
 
 	//	Load each of the entries in the group
 
+	pEntry->m_bHasLimits = false;
 	pEntry->m_iTotalChance = 0;
+	int iDefaultMaxCount = pDesc->GetAttributeIntegerBounded(MAX_COUNT_ATTRIB, 0, -1, -1);
 	pEntry->m_Table.InsertEmpty(pDesc->GetContentElementCount());
-	for (i = 0; i < pEntry->m_Table.GetCount(); i++)
+	for (int i = 0; i < pEntry->m_Table.GetCount(); i++)
 		{
 		CXMLElement *pTableDesc = pDesc->GetContentElement(i);
 		if (error = IElementGenerator::CreateFromXML(Ctx, pTableDesc, pEntry->m_Table[i].Item))
@@ -702,7 +709,12 @@ ALERROR CElementTable::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, T
 			}
 
 		pEntry->m_Table[i].iChance = pTableDesc->GetAttributeIntegerBounded(CHANCE_ATTRIB, 0, -1, 1);
+		pEntry->m_Table[i].iMaxCount = pTableDesc->GetAttributeIntegerBounded(MAX_COUNT_ATTRIB, 0, -1, iDefaultMaxCount);
+
 		pEntry->m_iTotalChance += pEntry->m_Table[i].iChance;
+
+		if (pEntry->m_Table[i].iMaxCount != -1)
+			pEntry->m_bHasLimits = true;
 		}
 
 	//	Done
@@ -718,27 +730,107 @@ void CElementTable::Generate (SCtx &Ctx, TArray<SResult> &retResults) const
 //	Generate the entries
 
 	{
-	int i, j;
-
 	if (m_iTotalChance <= 0)
 		return;
 
 	int iCount = m_Count.Roll();
-	for (i = 0; i < iCount; i++)
+	for (int i = 0; i < iCount; i++)
 		{
-		int iRoll = mathRandom(1, m_iTotalChance);
-		for (j = 0; j < m_Table.GetCount(); j++)
+		//	NOTE: If we don't have the appropriate structure to track limits, 
+		//	then we assume no limits.
+
+		if (m_bHasLimits && Ctx.pTableCounts)
 			{
-			const SEntry &Entry = m_Table[j];
-			if (iRoll <= Entry.iChance)
-				{
-				Entry.Item->Generate(Ctx, retResults);
-				break;
-				}
-			else
-				{
-				iRoll -= Entry.iChance;
-				}
+			int iEntry = RollAndCheckLimits(Ctx.pTableCounts->Counts);
+			if (iEntry == -1)
+				return;
+
+			m_Table[iEntry].Item->Generate(Ctx, retResults);
 			}
+		else
+			m_Table[Roll()].Item->Generate(Ctx, retResults);
 		}
+	}
+
+int CElementTable::Roll (void) const
+
+//	Roll
+//
+//	Roll randomly and returns a table entry.
+
+	{
+	int iRoll = mathRandom(1, m_iTotalChance);
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		{
+		const SEntry &Entry = m_Table[i];
+		if (iRoll <= Entry.iChance)
+			return i;
+		else
+			iRoll -= Entry.iChance;
+		}
+
+	//	Should never get here, but if we do, it means that you're dreaming.
+	//	This kick will wake you up...
+
+	throw CException(ERR_FAIL);
+	}
+
+int CElementTable::RollAndCheckLimits (TArray<int> &Counts) const
+
+//	RollAndCheckLimits
+//
+//	Roll on table until we get an entry that has not exceeded limits. If all 
+//	entries have hit their limit, then we return -1.
+
+	{
+	//	Make sure the limits table is initialized.
+
+	if (Counts.GetCount() < m_Table.GetCount())
+		{
+		Counts.DeleteAll();
+		Counts.InsertEmpty(m_Table.GetCount());
+		for (int i = 0; i < Counts.GetCount(); i++)
+			Counts[i] = 0;
+		}
+
+	//	Generate a new table taking the limits into account.
+
+	TArray<int> NewTable;
+	NewTable.InsertEmpty(m_Table.GetCount());
+	int iNewTotal = 0;
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		{
+		if (m_Table[i].iMaxCount == -1 ||
+				Counts[i] < m_Table[i].iMaxCount)
+			{
+			NewTable[i] = m_Table[i].iChance;
+			iNewTotal += m_Table[i].iChance;
+			}
+		else
+			NewTable[i] = 0;
+		}
+
+	if (iNewTotal == 0)
+		return -1;
+
+	//	Roll
+
+	int iRoll = mathRandom(1, iNewTotal);
+	for (int i = 0; i < NewTable.GetCount(); i++)
+		{
+		if (NewTable[i] == 0)
+			continue;
+
+		if (iRoll <= NewTable[i])
+			{
+			Counts[i]++;
+			return i;
+			}
+		else
+			iRoll -= NewTable[i];
+		}
+
+	//	Should never get here.
+
+	throw CException(ERR_FAIL);
 	}

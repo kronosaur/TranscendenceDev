@@ -562,7 +562,12 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 
 	//	Fire
 
-	pWeapon->Activate(*pDevice, pTarget, Ctx.TargetList, &Ctx.bConsumedItems);
+	SActivateCtx ActivateCtx(pTarget, Ctx.TargetList, iFireAngle);
+
+	pWeapon->Activate(*pDevice, ActivateCtx);
+
+	Ctx.bConsumedItems = ActivateCtx.bConsumedItems;
+
 	pDevice->SetTimeUntilReady(m_iRechargeTicks);
 
 	//	Identify

@@ -17,6 +17,14 @@
 
 	<Globals>
 		(block Nil
+			;	Diagnostics Helper Functions -----------------------------------
+
+			(setq diagAssert (lambda (expr errorMsg)
+				(if (not expr)
+					(error errorMsg)
+					)
+				))
+
 			; Internal functions -----------------------------------------------
 
 			(setq intArmorRepairAll (lambda (theShip repairTech minHPPercent)
@@ -816,7 +824,12 @@
 			
 			(setq sysGetStargateLeadingToCore (lambda ()
 				(block (
-					(corewardNode (typGetStaticData (@ (typFind "a") 0) 'defaultCorewardNode))
+					(adventure (@ (typFind "a") 0))
+					(corewardNode 
+						(or (typ@ adventure 'core.defaultCorewardNode) 
+							(typGetStaticData adventure 'defaultCorewardNode)
+							)
+						)
 					)
 					(switch
 						(not corewardNode)

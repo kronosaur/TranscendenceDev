@@ -27,10 +27,13 @@ class CSystemType : public CDesignType
 			evtCount					= 1,
 			};
 
+		//	Matches default space background image: rsDeepSpace (DeepSpaceBackground.jpg)
+		static constexpr CG32bitPixel DEFAULT_SPACE_COLOR = CG32bitPixel(0x1D, 0x1D, 0x22);
+
 		CSystemType (void);
 		virtual ~CSystemType (void);
 
-		inline bool FindEventHandlerSystemType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+		bool FindEventHandlerSystemType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
 			if (!m_CachedEvents[iEvent].pCode)
 				return false;
@@ -42,17 +45,18 @@ class CSystemType : public CDesignType
 		ALERROR FireOnCreate (SSystemCreateCtx &SysCreateCtx, CString *retsError = NULL);
 		bool FireOnObjJumpPosAdj (CSpaceObject *pPos, CVector *iovPos);
 		ALERROR FireSystemCreateCode (SSystemCreateCtx &SysCreateCtx, ICCItem *pCode, const COrbit &OrbitDesc, CString *retsError);
-		inline DWORD GetBackgroundUNID (void) { return m_dwBackgroundUNID; }
-		inline CXMLElement *GetDesc (void) { return m_pDesc; }
-		inline const CImageFilterStack &GetImageFilters (void) const { return m_ImageFilters; }
-		inline const CSpaceObjectCriteria &GetImageFiltersCriteria (void) const { return m_ImageFilterCriteria; }
-		inline const CEnhancementDesc &GetItemEnhancements (void) const { return m_Enhancements; }
-		inline CXMLElement *GetLocalSystemTables (void) { return m_pLocalTables; }
-		inline ETileSize GetSpaceEnvironmentTileSize (void) const { return m_iTileSize; }
-		inline Metric GetSpaceScale (void) const { return m_rSpaceScale; }
-		inline Metric GetTimeScale (void) const { return m_rTimeScale; }
-		inline bool HasExtraEncounters (void) const { return !m_bNoExtraEncounters; }
-		inline bool HasRandomEncounters (void) const { return !m_bNoRandomEncounters; }
+		DWORD GetBackgroundUNID (void) { return m_dwBackgroundUNID; }
+		CXMLElement *GetDesc (void) { return m_pDesc; }
+		const CImageFilterStack &GetImageFilters (void) const { return m_ImageFilters; }
+		const CSpaceObjectCriteria &GetImageFiltersCriteria (void) const { return m_ImageFilterCriteria; }
+		const CEnhancementDesc &GetItemEnhancements (void) const { return m_Enhancements; }
+		CXMLElement *GetLocalSystemTables (void) { return m_pLocalTables; }
+		CG32bitPixel GetSpaceColor (void) const { return m_rgbSpace; }
+		ETileSize GetSpaceEnvironmentTileSize (void) const { return m_iTileSize; }
+		Metric GetSpaceScale (void) const { return m_rSpaceScale; }
+		Metric GetTimeScale (void) const { return m_rTimeScale; }
+		bool HasExtraEncounters (void) const { return !m_bNoExtraEncounters; }
+		bool HasRandomEncounters (void) const { return !m_bNoRandomEncounters; }
 
 		//	CDesignType overrides
 		static CSystemType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemType) ? (CSystemType *)pType : NULL); }
@@ -65,6 +69,7 @@ class CSystemType : public CDesignType
 		virtual void OnMarkImages (void) override;
 
 	private:
+
 		DWORD m_dwBackgroundUNID;
 		Metric m_rSpaceScale;				//	Klicks per pixel
 		Metric m_rTimeScale;				//	Seconds of game time per real time
@@ -72,6 +77,7 @@ class CSystemType : public CDesignType
 		CImageFilterStack m_ImageFilters;	//	Filters on object images
 		CSpaceObjectCriteria m_ImageFilterCriteria;	//	Only if object matches criteria
 		CEnhancementDesc m_Enhancements;	//	Enhancements conferred on items
+		CG32bitPixel m_rgbSpace;			//	Space color (for fading background objects)
 
 		CXMLElement *m_pDesc;				//	System definition
 		CXMLElement *m_pLocalTables;		//	Local system tables

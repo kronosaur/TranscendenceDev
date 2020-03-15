@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define ITEMS_TAG						CONSTLIT("Items")
 #define SATELLITES_TAG					CONSTLIT("Satellites")
 #define SHIPS_TAG						CONSTLIT("Ships")
 #define TRADE_TAG						CONSTLIT("Trade")
@@ -83,6 +84,7 @@ ALERROR CStationCreateOptions::InitFromXML (SSystemCreateCtx &Ctx, const CXMLEle
 
 	//	Additional objects
 
+	m_pItems = XMLDesc.GetContentElementByTag(ITEMS_TAG);
 	m_pSatellites = XMLDesc.GetContentElementByTag(SATELLITES_TAG);
 	m_pShips = XMLDesc.GetContentElementByTag(SHIPS_TAG);
 
@@ -144,6 +146,9 @@ void CStationCreateOptions::Merge (const CStationCreateOptions &Src)
 
 	if (Src.m_bSuppressReinforcements)
 		m_bSuppressReinforcements = true;
+
+	if (Src.m_pItems)
+		m_pItems = Src.m_pItems;
 
 	if (Src.m_pSatellites)
 		m_pSatellites = Src.m_pSatellites;

@@ -101,7 +101,7 @@ bool CShieldHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 	if (m_pShieldEffect.IsEmpty())
 		{
 		if (error = m_Image.InitFromXML(Ctx, 
-				CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG)))
+				*CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG)))
 			return ComposeLoadError(ERR_SHIELD_DISPLAY_NEEDED, retsError);
 		}
 

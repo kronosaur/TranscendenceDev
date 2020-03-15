@@ -95,13 +95,13 @@ bool CReactorHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 	//	Background image
 
 	if (error = m_ReactorImage.InitFromXML(Ctx,
-			CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG)))
+			*CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG)))
 		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
 	//	Power level image
 
 	CXMLElement *pImage = CreateCtx.Desc.GetContentElementByTag(POWER_LEVEL_IMAGE_TAG);
-	if (pImage == NULL || (error = m_PowerLevelImage.InitFromXML(Ctx, pImage)))
+	if (pImage == NULL || (error = m_PowerLevelImage.InitFromXML(Ctx, *pImage)))
 		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
 	m_xPowerLevelImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
@@ -112,7 +112,7 @@ bool CReactorHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 	pImage = CreateCtx.Desc.GetContentElementByTag(POWER_GEN_IMAGE_TAG);
 	if (pImage)
 		{
-		if (error = m_PowerGenImage.InitFromXML(Ctx, pImage))
+		if (error = m_PowerGenImage.InitFromXML(Ctx, *pImage))
 			return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
 		m_xPowerGenImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
@@ -143,7 +143,7 @@ bool CReactorHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 	//	Fuel level image
 
 	pImage = CreateCtx.Desc.GetContentElementByTag(FUEL_LEVEL_IMAGE_TAG);
-	if (pImage == NULL || (error = m_FuelLevelImage.InitFromXML(Ctx, pImage)))
+	if (pImage == NULL || (error = m_FuelLevelImage.InitFromXML(Ctx, *pImage)))
 		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
 	m_xFuelLevelImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
@@ -152,7 +152,7 @@ bool CReactorHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 	//	Low fuel level image
 
 	pImage = CreateCtx.Desc.GetContentElementByTag(FUEL_LOW_LEVEL_IMAGE_TAG);
-	if (pImage == NULL || (error = m_FuelLowLevelImage.InitFromXML(Ctx, pImage)))
+	if (pImage == NULL || (error = m_FuelLowLevelImage.InitFromXML(Ctx, *pImage)))
 		return ComposeLoadError(ERR_REACTOR_DISPLAY_NEEDED, retsError);
 
 	if (error = InitRectFromElement(CreateCtx.Desc.GetContentElementByTag(REACTOR_TEXT_TAG),

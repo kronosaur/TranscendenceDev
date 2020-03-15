@@ -1314,18 +1314,20 @@ class CFileDirectory
 class ILog
 	{
 	public:
-		virtual ALERROR Close (void) = 0;
-		virtual ALERROR Create (BOOL bAppend) = 0;
-		virtual void LogOutput (DWORD dwFlags, char *pszLine, ...) = 0;
-		virtual void LogOutput (DWORD dwFlags, const CString &sLine) = 0;
+		void LogOutput (DWORD dwFlags, char *pszLine, ...) const;
+		void LogOutput (DWORD dwFlags, const CString &sLine) const;
+		virtual void Print (const CString &sLine) const = 0;
+		virtual void Progress (const CString &sLine, int iPercent = -1) const { Print(sLine); }
 	};
 
-class CTextFileLog : public CObject, public ILog
+class CTextFileLog : public ILog
 	{
 	public:
 		CTextFileLog (void);
 		CTextFileLog (const CString &sFilename);
 
+		ALERROR Close (void);
+		ALERROR Create (bool bAppend);
 		CString GetSessionLog (void);
 		void SetFilename (const CString &sFilename);
 		void SetSessionStart (void);
@@ -1333,16 +1335,13 @@ class CTextFileLog : public CObject, public ILog
 
 		//	ILog virtuals
 
-		virtual ALERROR Close (void);
-		virtual ALERROR Create (BOOL bAppend);
-		virtual void LogOutput (DWORD dwFlags, char *pszLine, ...);
-		virtual void LogOutput (DWORD dwFlags, const CString &sLine);
+		virtual void Print (const CString &sLine) const override;
 
 	private:
-		HANDLE m_hFile;
+		HANDLE m_hFile = NULL;
 		CString m_sFilename;
 
-		DWORD m_dwSessionStart;				//	Offset to file at start of session
+		DWORD m_dwSessionStart = 0;			//	Offset to file at start of session
 	};
 
 //	Registry classes

@@ -35,6 +35,7 @@
 			destroyOnDecline=			"false"
 			failureAfterOutOfSystem=	"-1"
 			forceUndockAfterDebrief=	"false"
+			ignoreOwnerLimit=			"false"
 			noDebrief=					"false"
 			noFailureOnOwnerDestroyed=	"false"
 			noInProgress=				"false"

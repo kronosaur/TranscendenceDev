@@ -49,8 +49,8 @@
 					<!-- Trojans of Dante II are metal-rich asteroids -->
 
 					<LocationAttributes attributes="danteTrojans">
-						<Lookup table="AsteroidCompactTrojans50"/>
-						<Lookup table="AsteroidCompactAntiTrojans50"/>
+						<Lookup table="AsteroidCompactTrojans25"/>
+						<Lookup table="AsteroidCompactAntiTrojans25"/>
 					</LocationAttributes>
 				</Group>
 
@@ -160,7 +160,7 @@
 					<!-- Antipode -->
 
 					<LocationAttributes attributes="stJohnAntipode">
-						<Lookup table="AsteroidAntipode100"/>
+						<Lookup table="AsteroidAntipode50"/>
 					</LocationAttributes>
 				</Group>
 
@@ -175,7 +175,9 @@
 
 					<!-- Voerms is in a sparse asteroid belt -->
 
-					<Lookup table="AsteroidBelt100"/>
+					<LocationAttributes attributes="voermsRegion">
+						<Lookup table="AsteroidBelt100"/>
+					</LocationAttributes>
 
 					<!-- Arco Vaugh's base is somewhere around here -->
 
@@ -186,17 +188,19 @@
 					<!-- There are a few other Centauri bases here -->
 
 					<Siblings count="6" angleInc="40-320" radiusInc="-90-90">
-						<Location attributes="centauriBase"/>
+						<Location attributes="voermsRegion"/>
 					</Siblings>
 				</Group>
 
 				<!-- Eldir -->
 
-				<Group distance="1100">
+				<Group distance="1350">
 					<Station type="&stAsteroidEldir;" showOrbit="true"/>
 
+					<Orbitals distance="1d8+8" angle="random">
+						<Location attributes="eldirOrbit"/>
+					</Orbitals>
 				</Group>
-
 			</Orbitals>
 
 			<!-- Create more stargates in case an extension added more links -->
@@ -268,9 +272,20 @@
 				<Station type="&stArcoVaughnHabitat;"/>
 			</RandomLocation>
 
-			<RandomLocation count="2-3" locationCriteria="*centauriBase" exclusionRadius="50">
+			<RandomLocation count="2-3" locationCriteria="*voermsRegion" exclusionRadius="50">
 				<Station type="&stCentauriCamp;"/>
 			</RandomLocation>
+
+			<RandomLocation count="3" locationCriteria="*voermsRegion" exclusionRadius="100">
+				<RandomStation stationCriteria="*enemy; *property:challengeRating[6-7];"	maxCount="1"/>
+			</RandomLocation>
+
+			<!-- Populate Eldir -->
+
+			<RandomLocation count="1" locationCriteria="*eldirOrbit" exclusionRadius="100">
+				<RandomStation stationCriteria="*enemy; *property:challengeRating[7];"/>
+			</RandomLocation>
+
 		</SystemGroup>
 
 		<!-- Lookup Tables -->
@@ -338,7 +353,16 @@
 					<!-- Dry Dock -->
 
 					<Siblings arcInc="-22">
-						<Station type="&stCommonwealthDryDock;" name=": Starton Dry Dock" noMapLabel="true"/>
+						<Station type="&stCommonwealthDryDock;" name=": Starton Dry Dock" noMapLabel="true">
+							<Items>
+								<!-- Make sure there is at least one missile launcher -->
+
+								<RandomItem count="1" 
+									criteria=		"l L:1-3; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+									levelFrequency=	"systemLevel:r|c|cur"
+									/>
+							</Items>
+						</Station>
 					</Siblings>
 
 					<!-- Metropolis Station -->

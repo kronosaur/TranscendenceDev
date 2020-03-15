@@ -28,6 +28,7 @@
 			noRandomEncounters=	"true"
 			noExtraEncounters=	"true"
 			backgroundID=		"&rsRedGiantSpace;"
+			spaceColor=			"#200f0a"
 			>
 
 		<SystemGroup>

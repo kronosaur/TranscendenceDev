@@ -171,6 +171,12 @@
     <ClCompile Include="CLRSHUD.cpp">
       <Filter>Source Files\HUD</Filter>
     </ClCompile>
+    <ClCompile Include="CTilePainter.cpp">
+      <Filter>Source Files\Painters</Filter>
+    </ClCompile>
+    <ClCompile Include="CTextAreaAnimator.cpp">
+      <Filter>Source Files\Painters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

@@ -274,7 +274,7 @@ class CDockPane
 			layoutBottomBar,				//	Thin bottom bar
 			};
 
-		CDockPane (void);
+		CDockPane (CDockScreen &DockScreen);
 		~CDockPane (void);
 
 		void CleanUp (AGScreen *pScreen = NULL);
@@ -288,6 +288,7 @@ class CDockPane
 		bool HandleAction (DWORD dwTag, DWORD dwData);
 		bool HandleChar (char chChar);
 		bool HandleKeyDown (int iVirtKey);
+		bool InExecuteAction (void) const { return m_bInExecuteAction; }
 		ALERROR InitPane (CDockSession &DockSession, CDockScreen &DockScreen, CXMLElement *pPaneDesc, const RECT &rcFullRect);
 		bool SetControlValue (const CString &sID, ICCItem *pValue);
 		void SetCounterValue (int iValue);
@@ -359,21 +360,21 @@ class CDockPane
 		void RenderControlsColumn (void);
 		ALERROR ReportError (const CString &sError);
 
-		CDockScreen *m_pDockScreen;			//	Dock screen object
-		CXMLElement *m_pPaneDesc;			//	XML describing pane
+		CDockScreen &m_DockScreen;			//	Dock screen object
+		CXMLElement *m_pPaneDesc = NULL;	//	XML describing pane
 
-		ELayouts m_iLayout;					//	Layout of controls and actions
-		RECT m_rcControls;					//	Rectangular region for controls
-		RECT m_rcActions;					//	Rectangular region for actions
-		CGFrameArea *m_pContainer;			//	Hold all pane areas
+		ELayouts m_iLayout = layoutNone;	//	Layout of controls and actions
+		RECT m_rcControls = { 0 };			//	Rectangular region for controls
+		RECT m_rcActions = { 0 };			//	Rectangular region for actions
+		CGFrameArea *m_pContainer = NULL;	//	Hold all pane areas
 
 		TArray<SControl> m_Controls;
 		CDockScreenActions m_Actions;
 
 		CString m_sDesc;					//	Current description
-		bool m_bInShowPane;					//	Keep track of re-entrancy
-		bool m_bInExecuteAction;			//	Inside m_Actions.Execute
-		bool m_bDescError;					//	Main description is an error.
+		bool m_bInShowPane = false;			//	Keep track of re-entrancy
+		bool m_bInExecuteAction = false;	//	Inside m_Actions.Execute
+		bool m_bDescError = false;			//	Main description is an error.
 		CString m_sDeferredShowPane;
 	};
 
@@ -454,6 +455,7 @@ class CDockScreen : public IScreenController,
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		void HandleChar (char chChar);
 		void HandleKeyDown (int iVirtKey);
+		bool InExecuteAction (void) const { return m_CurrentPane.InExecuteAction(); }
 		ALERROR InitScreen (CDockSession &DockSession,
 							HWND hWnd, 
 							RECT &rcRect, 
@@ -489,6 +491,7 @@ class CDockScreen : public IScreenController,
         const CDockScreenVisuals &GetDockScreenVisuals (void) const;
 		const CVisualPalette &GetVisuals (void) const { return g_pHI->GetVisuals(); }
 		bool IsCurrentItemValid (void) const { return m_pDisplay->IsCurrentItemValid(); }
+		void OnExecuteActionDone (void);
 		void SelectNextItem (bool *retbMore = NULL);
 		void SelectPrevItem (bool *retbMore = NULL);
 		bool SelectTab (const CString &sID);

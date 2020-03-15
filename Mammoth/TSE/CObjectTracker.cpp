@@ -60,6 +60,9 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CObject
 			if (Criteria.SelectsKnownOnly() && !Basics.fKnown)
 				continue;
 
+			if (Criteria.SelectsUnknownOnly() && Basics.fKnown)
+				continue;
+
 			//	Otherwise, add
 
             AccumulateEntry(*pList, pList->Objects.GetKey(j), Basics, dwFlags, *retResult);

@@ -61,6 +61,8 @@ CAsteroidDesc::SCompositionDesc CAsteroidDesc::COMPOSITION_TABLE[EAsteroidTypeCo
 		},
 	};
 
+const CAsteroidDesc CAsteroidDesc::m_Null;
+
 Metric CAsteroidDesc::CalcBaseMiningSuccess (int iMiningLevel, int iMiningDifficulty)
 
 //	CalcBaseMiningSuccess

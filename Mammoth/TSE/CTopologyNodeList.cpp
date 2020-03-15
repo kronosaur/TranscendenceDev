@@ -182,3 +182,14 @@ void CTopologyNodeList::SaveAndSetMarks (bool bMark, TArray<bool> *retSaved)
 		m_List[i]->SetMarked(bMark);
 		}
 	}
+
+void CTopologyNodeList::SetMarked (bool bMark) const
+
+//	SetMarked
+//
+//	Sets all marks.
+
+	{
+	for (int i = 0; i < m_List.GetCount(); i++)
+		m_List[i]->SetMarked(bMark);
+	}

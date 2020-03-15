@@ -77,6 +77,7 @@
 #define PROPERTY_BALANCE_DAMAGE					CONSTLIT("balanceDamage")
 #define PROPERTY_BALANCE_COST 					CONSTLIT("balanceCost")
 #define PROPERTY_BALANCE_EXCLUDE_COST			CONSTLIT("balanceExcludeCost")
+#define PROPERTY_CAN_FIRE_WHEN_BLIND			CONSTLIT("canFireWhenBlind")
 #define PROPERTY_DAMAGE_180						CONSTLIT("damage")			//	HP damage per 180 ticks
 #define PROPERTY_DAMAGE_PER_PROJECTILE			CONSTLIT("damagePerProjectile")
 #define PROPERTY_DAMAGE_TYPE_ID					CONSTLIT("damageTypeID")
@@ -90,13 +91,13 @@
 #define PROPERTY_MAX_DAMAGE						CONSTLIT("maxDamage")
 #define PROPERTY_MIN_DAMAGE						CONSTLIT("minDamage")
 #define PROPERTY_MULTI_SHOT						CONSTLIT("multiShot")
-#define PROPERTY_CAN_FIRE_WHEN_BLIND			CONSTLIT("canFireWhenBlind")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_REPEATING						CONSTLIT("repeating")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_SHIP_COUNTER_PER_SHOT			CONSTLIT("shipCounterPerShot")
 #define PROPERTY_SINGLE_POINT_ORIGIN			CONSTLIT("singlePointOrigin")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
+#define PROPERTY_STD_MASS						CONSTLIT("stdMass")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
 #define VARIANT_TYPE_COUNTER					CONSTLIT("counter")
@@ -170,36 +171,36 @@ const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
 
 static CWeaponClass::SStdStats STD_WEAPON_STATS[MAX_ITEM_LEVEL] =
 	{
-		//	Damage	Power	        Cost     Ammo Cost   Over	Under
-		{	4,		10,		        350.,       0.6,     0,	    0, },
-		{	5,		20,		        800.,       1.2,     0,	    -20, },
-		{	7,		50,		       1850.,       3.0,     0,     -50, },
-		{	9,		100,	       4000.,       6.0,     0,     -100, },
-		{	12,		200,	       8500.,      12.0,     5,     -170, },
+		//	Damage	   Power	          Cost     Ammo Cost   Over	Under
+		{	   4,	     10,	           350,         0.6,     0,	    0, },
+		{	   5,	     20,	           800,         1.2,     0,	    -20, },
+		{	   7,	     50,	         1'850,         3.0,     0,     -50, },
+		{	   9,	    100,	         4'000,         6.0,     0,     -100, },
+		{	  12,	    200,	         8'500,        12.0,     5,     -170, },
 			
-		{	16,		300,	      18500.,      18.0,     5,     -250, },
-		{	21,		500,	      39000.,      30.0,     5,     -300, },
-		{	27,		1000,	      78500.,      60.0,     10,    -300, },
-		{	35,		2000,	     158000.,     120.0,     10,    -300, },
-		{	46,		3000,	     320000.,     180.0,     10,    -300, },
+		{	  16,	    300,	        18'500,        18.0,     5,     -250, },
+		{	  21,	    500,	        39'000,        30.0,     5,     -300, },
+		{	  27,	  1'000,	        78'500,        60.0,     10,    -300, },
+		{	  35,	  2'000,	       158'000,       120.0,     10,    -300, },
+		{	  46,	  3'000,	       320'000,       180.0,     10,    -300, },
 			
-		{	60,		5000,	     640000.,     300.0,     25,    -300, },
-		{	78,		8000,	    1300000.,     480.0,     25,    -300, },
-		{	101,	12000,	    2700000.,     720.0,     25,    -300, },
-		{	131,	18000,	    5300000.,    1080.0,     100,   -300, },
-		{	170,	28000,	   10600000.,    1680.0,     100,   -300, },
+		{	  60,	  5'000,	       640'000,       300.0,     25,    -300, },
+		{	  78,	  8'000,	     1'300'000,       480.0,     25,    -300, },
+		{	  101,	 12'000,	     2'700'000,       720.0,     25,    -300, },
+		{	  131,	 18'000,	     5'300'000,     1'080.0,     100,   -300, },
+		{	  170,	 28'000,	    10'600'000,     1'680.0,     100,   -300, },
 			
-		{	221,	40000,	   21300000.,    2400.0,     100,   -300, },
-		{	287,	60000,	   42600000.,    3600.0,     200,   -300, },
-		{	373,	90000,	   85200000.,    5400.0,     200,   -300, },
-		{	485,	120000,	  170000000.,    7200.0,     200,   -300, },
-		{	631,	160000,	  341000000.,    9600.0,     200,   -300, },
+		{	  221,	 40'000,	    21'300'000,     2'400.0,     100,   -300, },
+		{	  287,	 60'000,	    42'600'000,     3'600.0,     200,   -300, },
+		{	  373,	 90'000,	    85'200'000,     5'400.0,     200,   -300, },
+		{	  485,	120'000,	   170'000'000,     7'200.0,     200,   -300, },
+		{	  631,	160'000,	   341'000'000,     9'600.0,     200,   -300, },
 			
-		{	820,	220000,	  682000000.,   13200.0,     200,   -300, },
-		{	1066,	300000,	 1400000000.,   18000.0,     200,   -300, },
-		{	1386,	400000,	 2700000000.,   24000.0,     200,   -300, },
-		{	1802,	500000,	 5500000000.,   30000.0,     200,   -300, },
-		{	2343,	600000,	10900000000.,   36000.0,     200,   -300, },
+		{	  820,	220'000,	   682'000'000,    13'200.0,     200,   -300, },
+		{	1'066,	300'000,	 1'400'000'000,    18'000.0,     200,   -300, },
+		{	1'386,	400'000,	 2'700'000'000,    24'000.0,     200,   -300, },
+		{	1'802,	500'000,	 5'500'000'000,    30'000.0,     200,   -300, },
+		{	2'343,	600'000,	10'900'000'000,    36'000.0,     200,   -300, },
 	};
 
 static char *CACHED_EVENTS[CWeaponClass::evtCount] =
@@ -222,7 +223,7 @@ CWeaponClass::~CWeaponClass (void)
 			delete m_ShotData[i].pDesc;
 	}
 
-bool CWeaponClass::Activate (CInstalledDevice &Device, CSpaceObject *pTarget, const CTargetList &TargetList, bool *retbConsumedItems)
+bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 
 //	Activate
 //
@@ -234,8 +235,8 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, CSpaceObject *pTarget, co
 	CSpaceObject &SourceObj = Device.GetSourceOrThrow();
 	const CWeaponFireDesc *pShotDesc = GetWeaponFireDesc(Device);
 
-	if (retbConsumedItems)
-		*retbConsumedItems = false;
+	ActivateCtx.iRepeatingCount = 0;
+	ActivateCtx.bConsumedItems = false;
 
 	//	If not enabled, no firing
 
@@ -247,11 +248,11 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, CSpaceObject *pTarget, co
 
 	//  Set the target to NULL if we're blind and we can't fire when blind
 
-	CSpaceObject *pTargetOrNull = ((!m_bCanFireWhenBlind) && SourceObj.IsBlind()) ? NULL : pTarget;
+	ActivateCtx.pTarget = ((!m_bCanFireWhenBlind) && SourceObj.IsBlind()) ? NULL : ActivateCtx.pTarget;
 
 	//	Fire the weapon
 
-	bool bSuccess = FireWeapon(Device, *pShotDesc, pTargetOrNull, TargetList, 0, retbConsumedItems);
+	bool bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx);
 
 	//	If firing the weapon destroyed the ship, then we bail out
 
@@ -319,27 +320,32 @@ int CWeaponClass::CalcActivateDelay (CItemCtx &ItemCtx) const
 	return GetActivateDelay(ItemCtx);
 	}
 
-int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
+int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 
 //	CalcBalance
 //
-//	Calculates weapon balance relative to level. +100 is 100% overpowered
+//	Calculates weapon balance relative to level. +100 is 100% overpowered.
 
 	{
+	const CItem Item(GetItemType(), 1);
+	const CDeviceItem DeviceItem = Item.AsDeviceItem();
+	if (!DeviceItem)
+		return 0;
+
+	CItemCtx ItemCtx(Item);
+
 	//  Initialize
 
 	retBalance.rBalance = 0.0;
 
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
-	if (pShot == NULL)
+	const CWeaponFireDesc *pShotDesc = GetWeaponFireDesc(DeviceItem, Ammo);
+	if (pShotDesc == NULL)
 		return 0;
-
-	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
 
 	//	Compute the level. For launchers we take either the missile level or the
 	//	launcher level (whichever is higher).
 
-	retBalance.iLevel = CalcLevel(pShot);
+	retBalance.iLevel = CalcLevel(*pShotDesc);
 
 	//  Get the standard stats for this level
 
@@ -348,10 +354,10 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Compute how much damage we do in 180 ticks.
 
-	retBalance.rDamageHP = CalcDamage(*pShot);
-	retBalance.rDamageMult = CalcConfigurationMultiplier(pShot, false);
+	retBalance.rDamageHP = CalcDamage(*pShotDesc);
+	retBalance.rDamageMult = CalcConfigurationMultiplier(pShotDesc, false);
 	Metric rDamagePerShot = retBalance.rDamageMult * retBalance.rDamageHP;
-	Metric rFireDelay = (Metric)Max(GetFireDelay(*pShot), 1);
+	Metric rFireDelay = (Metric)Max(GetFireDelay(*pShotDesc), 1);
 	retBalance.rDamage180 = rDamagePerShot * 180.0 / rFireDelay;
 
 	//  Compute the number of balance points (BP) of the damage. +100 = double
@@ -364,17 +370,18 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	//  adjust our balance. Positive nunmbers mean that the weapon has a lower 
 	//  level than the minimum for its damage type.
 
-	DamageTypes iDamageType = pShot->GetDamageType();
+	DamageTypes iDamageType = pShotDesc->GetDamageType();
 	int iTypeDelta = DamageDesc::GetDamageLevel(iDamageType) - retBalance.iLevel;
 	retBalance.rDamageType = (iTypeDelta >= 0 ? STD_WEAPON_STATS[iTypeDelta].iOverTierAdj : STD_WEAPON_STATS[-iTypeDelta].iUnderTierAdj);
 	retBalance.rBalance += retBalance.rDamageType;
 
 	//  Ammo weapons have the inherent disadvantage of needing ammo
 
-	bool bAmmo = ItemCtx.GetItem().GetType()->IsMissile();
+	bool bAmmo = !Ammo.IsEmpty();
 	bool bUsesAmmo;
-	if (CItemType *pAmmoType = pShot->GetAmmoType())
+	if (CItemType *pAmmoType = pShotDesc->GetAmmoType())
 		{
+		CItemCtx AmmoItemCtx(Ammo);
 		bUsesAmmo = true;
 
 		//  Having ammo is a 100% penalty
@@ -390,7 +397,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 		//  percent cost difference. +1 = ammo is 1% more expensive than 
 		//  standard. -1 = ammo is 1% cheaper than standard.
 
-		Metric rAmmoCost = (Metric)CEconomyType::ExchangeToCredits(pAmmoType->GetCurrencyAndValue(ItemCtx, true));
+		Metric rAmmoCost = (Metric)CEconomyType::ExchangeToCredits(pAmmoType->GetCurrencyAndValue(AmmoItemCtx, true));
 		if (pAmmoType->AreChargesAmmo() && pAmmoType->GetMaxCharges() > 0)
 			rAmmoCost /= (Metric)pAmmoType->GetMaxCharges();
 
@@ -399,7 +406,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 		//  Compute the ammo mass bonus
 
-		Metric rAmmoMass = pAmmoType->GetMassKg(ItemCtx);
+		Metric rAmmoMass = pAmmoType->GetMassKg(AmmoItemCtx);
 		if (pAmmoType->AreChargesAmmo() && pAmmoType->GetMaxCharges() > 0)
 			rAmmoMass /= (Metric)pAmmoType->GetMaxCharges();
 
@@ -424,7 +431,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Tracking weapons are a bonus
 
-	if (IsTracking(DeviceItem, pShot))
+	if (IsTracking(DeviceItem, pShotDesc))
 		{
 		retBalance.rTracking = BALANCE_TRACKING_BONUS;
 		retBalance.rBalance += retBalance.rTracking;
@@ -445,7 +452,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Range
 
-	Metric rRange = Min(MAX_BALANCE_RANGE, pShot->GetMaxRange());
+	Metric rRange = Min(MAX_BALANCE_RANGE, pShotDesc->GetMaxRange());
 	if (rRange >= STD_RANGE)
 		retBalance.rRange = BALANCE_RANGE_OVER_FACTOR * (rRange - STD_RANGE) / LIGHT_SECOND;
 	else
@@ -455,17 +462,17 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Speed
 
-	retBalance.rSpeed = BALANCE_SPEED_FACTOR * (1.0 - pow(pShot->GetRatedSpeed() / LIGHT_SPEED, BALANCE_SPEED_POWER));
+	retBalance.rSpeed = BALANCE_SPEED_FACTOR * (1.0 - pow(pShotDesc->GetRatedSpeed() / LIGHT_SPEED, BALANCE_SPEED_POWER));
 	retBalance.rBalance += retBalance.rSpeed;
 
 	//  Projectile HP and interaction
 
 	retBalance.rProjectileHP = 0.0;
-	if (pShot->GetInteraction() < 100)
-		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100 - pShot->GetInteraction()) / 100.0;
+	if (pShotDesc->GetInteraction() < 100)
+		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100 - pShotDesc->GetInteraction()) / 100.0;
 
-	if (pShot->GetHitPoints() > 0)
-		retBalance.rProjectileHP += BALANCE_HP_FACTOR * pShot->GetHitPoints() / (Metric)Stats.iDamage;
+	if (pShotDesc->GetHitPoints() > 0)
+		retBalance.rProjectileHP += BALANCE_HP_FACTOR * pShotDesc->GetHitPoints() / (Metric)Stats.iDamage;
 
 	retBalance.rBalance += retBalance.rProjectileHP;
 
@@ -489,7 +496,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	if (!bAmmo || !IsLauncher())
 		{
 		Metric rCost = (Metric)CEconomyType::ExchangeToCredits(GetItemType()->GetCurrencyAndValue(ItemCtx, true));
-		Metric rCostDelta = 100.0 * (rCost - Stats.rCost) / Stats.rCost;
+		Metric rCostDelta = 100.0 * (rCost - (Metric)Stats.Cost) / (Metric)Stats.Cost;
 		retBalance.rCost = BALANCE_COST_RATIO * rCostDelta;
 		retBalance.rBalance += retBalance.rCost;
 		}
@@ -532,7 +539,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	//  Radiation
 
 	int iDamage;
-	if (iDamage = pShot->GetSpecialDamage(specialRadiation))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialRadiation))
 		{
 		retBalance.rRadiation = BALANCE_RADIATION;
 		retBalance.rBalance += retBalance.rRadiation;
@@ -540,13 +547,13 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Device disrupt and damage
 
-	if (iDamage = pShot->GetSpecialDamage(specialDeviceDisrupt, DamageDesc::flagSpecialAdj))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialDeviceDisrupt, DamageDesc::flagSpecialAdj))
 		{
 		retBalance.rDeviceDisrupt = BALANCE_DEVICE_DISRUPT_FACTOR * Min(iDamage, 50);
 		retBalance.rBalance += retBalance.rDeviceDisrupt;
 		}
 
-	if (iDamage = pShot->GetSpecialDamage(specialDeviceDamage, DamageDesc::flagSpecialAdj))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialDeviceDamage, DamageDesc::flagSpecialAdj))
 		{
 		retBalance.rDeviceDamage = BALANCE_DEVICE_DAMAGE_FACTOR * Min(iDamage, 50);
 		retBalance.rBalance += retBalance.rDeviceDamage;
@@ -554,7 +561,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Disintegration
 
-	if (iDamage = pShot->GetSpecialDamage(specialDisintegration))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialDisintegration))
 		{
 		retBalance.rDisintegration = BALANCE_DISINTEGRATION;
 		retBalance.rBalance += retBalance.rDisintegration;
@@ -562,7 +569,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Shatter
 
-	if (iDamage = pShot->GetSpecialDamage(specialShatter))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialShatter))
 		{
 		retBalance.rShatter = BALANCE_SHATTER_FACTOR * iDamage;
 		retBalance.rBalance += retBalance.rShatter;
@@ -570,7 +577,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Shield penetrate
 
-	if (iDamage = pShot->GetSpecialDamage(specialShieldPenetrator, DamageDesc::flagSpecialAdj))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialShieldPenetrator, DamageDesc::flagSpecialAdj))
 		{
 		retBalance.rShieldPenetrate = BALANCE_SHIELD_PENETRATE_FACTOR * iDamage;
 		retBalance.rBalance += retBalance.rShieldPenetrate;
@@ -578,7 +585,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Extra shield damage
 
-	if (iDamage = pShot->GetSpecialDamage(specialShieldDisrupt))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialShieldDisrupt))
 		{
 		int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
 		retBalance.rShield = BALANCE_SHIELD_LEVEL_FACTOR * iEffectLevel;
@@ -587,7 +594,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Extra armor damage
 
-	if (iDamage = pShot->GetSpecialDamage(specialArmor))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialArmor))
 		{
 		int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
 		retBalance.rArmor = BALANCE_ARMOR_LEVEL_FACTOR * iEffectLevel;
@@ -596,7 +603,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//	Time stop
 
-	if (iDamage = pShot->GetSpecialDamage(specialTimeStop))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialTimeStop))
 		{
 		int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
 		retBalance.rTimeStop = BALANCE_TIME_STOP_LEVEL_FACTOR * iEffectLevel;
@@ -605,7 +612,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//  Mining
 
-	if (iDamage = pShot->GetSpecialDamage(specialMining, DamageDesc::flagSpecialAdj))
+	if (iDamage = pShotDesc->GetSpecialDamage(specialMining, DamageDesc::flagSpecialAdj))
 		{
 		retBalance.rMining = BALANCE_MINING_FACTOR * iDamage;
 		retBalance.rBalance += retBalance.rMining;
@@ -616,15 +623,15 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	//  All weapons have some degree of WMD, but we only count the ones that 
 	//  have non-default WMD.
 
-	if (pShot->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialLevel))
+	if (pShotDesc->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialLevel))
 		{
-		retBalance.rWMD = BALANCE_WMD_FACTOR * pShot->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialAdj);
+		retBalance.rWMD = BALANCE_WMD_FACTOR * pShotDesc->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialAdj);
 		retBalance.rBalance += retBalance.rWMD;
 		}
 
 	//  Done
 
-	return (int)retBalance.rBalance;
+	return mathRound(retBalance.rBalance);
 	}
 
 CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTargetList &TargetList, Metric *retrDist2, int *retiFireAngle) const
@@ -902,7 +909,7 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 	if (pDevice == NULL)
 		return -1;
 
-	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
+	const CDeviceItem DeviceItem = ItemCtx.GetDeviceItem();
 
 	//	Get the swivel/turret parameters
 
@@ -1033,14 +1040,14 @@ bool CWeaponClass::CalcFireSolution (const CInstalledDevice &Device, CSpaceObjec
 	return true;
 	}
 
-int CWeaponClass::CalcLevel (CWeaponFireDesc *pShot) const
+int CWeaponClass::CalcLevel (const CWeaponFireDesc &ShotDesc) const
 
 //  CalcLevel
 //
 //  Returns the level of the given shot.
 
 	{
-	return Max(1, Min(pShot->GetLevel(), MAX_ITEM_LEVEL));
+	return Max(1, Min(ShotDesc.GetLevel(), MAX_ITEM_LEVEL));
 	}
 
 TArray<CTargetList::STargetResult> CWeaponClass::CalcMIRVFragmentationTargets (CSpaceObject &Source, const CWeaponFireDesc &ShotDesc, int iMaxCount)
@@ -1171,7 +1178,7 @@ int CWeaponClass::CalcReachableFireAngle (const CInstalledDevice &Device, int iD
 		}
 	}
 
-CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CSpaceObject *pSourceTarget, const CTargetList &TargetList, int iRepeatingCount, int &retiFireAngle, bool &retbSetFireAngle) const
+CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, SActivateCtx &ActivateCtx, int &retiFireAngle, bool &retbSetFireAngle) const
 
 //	CalcShotsFired
 //
@@ -1198,7 +1205,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 		//	Get a list of targets
 
-		auto Targets = CalcMIRVTargets(Device, TargetList, Shots.GetCount());
+		auto Targets = CalcMIRVTargets(Device, ActivateCtx.TargetList, Shots.GetCount());
 
 		//	Depending on our linked-fire state, we might not fire if we have no
 		//	targets.
@@ -1246,7 +1253,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 		{
 		CSpaceObject *pTarget;
 
-		if (!CalcSingleTarget(Device, ShotDesc, pSourceTarget, TargetList, iRepeatingCount, retiFireAngle, pTarget, retbSetFireAngle))
+		if (!CalcSingleTarget(Device, ShotDesc, ActivateCtx, retiFireAngle, pTarget, retbSetFireAngle))
 			return CShotArray();
 
 		//	Figure out how many shots to create
@@ -1268,9 +1275,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device, 
 									 const CWeaponFireDesc &ShotDesc, 
-									 CSpaceObject *pSourceTarget, 
-									 const CTargetList &TargetList, 
-									 int iRepeatingCount, 
+									 SActivateCtx &ActivateCtx, 
 									 int &retiFireAngle, 
 									 CSpaceObject *&retpTarget, 
 									 bool &retbSetFireAngle) const
@@ -1287,7 +1292,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 	//	For repeating weapons, we need the target stored in the device
 
-	if (iRepeatingCount != 0)
+	if (ActivateCtx.iRepeatingCount != 0)
 		{
 		CDeviceItem DeviceItem = Device.GetDeviceItem();
 		CSpaceObject &Source = Device.GetSourceOrThrow();
@@ -1337,9 +1342,11 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 			case CDeviceItem::calcControllerTarget:
 				{
 				CSpaceObject &Source = Device.GetSourceOrThrow();
-				retpTarget = pSourceTarget;
+				retpTarget = ActivateCtx.pTarget;
 
-				if (retpTarget)
+				if (ActivateCtx.iFireAngle != -1)
+					retiFireAngle = ActivateCtx.iFireAngle;
+				else if (retpTarget)
 					{
 					Metric rSpeed = ShotDesc.GetInitialSpeed();
 					retiFireAngle = CalcFireAngle(CItemCtx(&Source, &Device), rSpeed, retpTarget);
@@ -1352,7 +1359,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 			case CDeviceItem::calcWeaponTarget:
 				{
-				retpTarget = CalcBestTarget(Device, TargetList, NULL, &retiFireAngle);
+				retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
 				if (retpTarget == NULL)
 					return false;
 
@@ -1859,9 +1866,9 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_HP))
 		*retsValue = strFromInt(pShot->GetHitPoints());
 	else if (strEquals(sField, FIELD_MIN_DAMAGE))
-		*retsValue = strFromInt((int)(CalcConfigurationMultiplier(pShot) * pShot->GetDamage().GetMinDamage()));
+		*retsValue = strFromInt(mathRound(CalcConfigurationMultiplier(pShot) * pShot->GetDamage().GetMinDamage()));
 	else if (strEquals(sField, FIELD_MAX_DAMAGE))
-		*retsValue = strFromInt((int)(CalcConfigurationMultiplier(pShot) * pShot->GetDamage().GetMaxDamage()));
+		*retsValue = strFromInt(mathRound(CalcConfigurationMultiplier(pShot) * pShot->GetDamage().GetMaxDamage()));
 	else if (strEquals(sField, FIELD_DAMAGE_TYPE))
 		*retsValue = strFromInt(pShot->GetDamageType());
 	else if (strEquals(sField, FIELD_FIRE_DELAY))
@@ -1875,7 +1882,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 			return false;
 		}
 	else if (strEquals(sField, FIELD_AVERAGE_DAMAGE))
-		*retsValue = strFromInt((int)(CalcDamagePerShot(*pShot) * 1000.0));
+		*retsValue = strFromInt(mathRound(CalcDamagePerShot(*pShot) * 1000.0));
 	else if (strEquals(sField, FIELD_DAMAGE_180))
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(*pShot);
@@ -1888,14 +1895,13 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		*retsValue = strFromInt(mathRound((GetFireDelay(*pShot) * m_iPowerUse * STD_SECONDS_PER_UPDATE * 1000) / 600.0));
 	else if (strEquals(sField, FIELD_BALANCE))
 		{
-		CItemCtx ItemCtx(Item);
 		SBalance Balance;
-		*retsValue = strFromInt(CalcBalance(ItemCtx, Balance));
+		*retsValue = strFromInt(CalcBalance(Ammo, Balance));
 		}
 	else if (strEquals(sField, FIELD_RANGE))
 		*retsValue = strFromInt(mathRound(pShot->GetMaxRange() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_RECOIL))
-		*retsValue = (m_iRecoil ? strFromInt((int)(m_iRecoil * m_iRecoil * 10 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
+		*retsValue = (m_iRecoil ? strFromInt(mathRound(m_iRecoil * m_iRecoil * 10 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
 	else if (strEquals(sField, FIELD_SPEED))
 		*retsValue = strFromInt(mathRound(100.0 * pShot->GetRatedSpeed() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_VARIANT_COUNT))
@@ -2194,10 +2200,7 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 
 bool CWeaponClass::FireWeapon (CInstalledDevice &Device, 
 							   const CWeaponFireDesc &ShotDesc, 
-							   CSpaceObject *pTarget,
-							   const CTargetList &TargetList, 
-							   int iRepeatingCount,
-							   bool *retbConsumedItems)
+							   SActivateCtx &ActivateCtx)
 
 //	FireWeapon
 //
@@ -2211,13 +2214,13 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	bool bSetFireAngle;
 	int iFireAngle;
-	CShotArray Shots = CalcShotsFired(Device, ShotDesc, pTarget, TargetList, iRepeatingCount, iFireAngle, bSetFireAngle);
+	CShotArray Shots = CalcShotsFired(Device, ShotDesc, ActivateCtx, iFireAngle, bSetFireAngle);
 	if (Shots.GetCount() == 0)
 		return false;
 
 	//	Figure out when happens when we try to consume ammo, etc.
 
-	EFireResults iResult = Consume(DeviceItem, ShotDesc, iRepeatingCount, retbConsumedItems);
+	EFireResults iResult = Consume(DeviceItem, ShotDesc, ActivateCtx.iRepeatingCount, &ActivateCtx.bConsumedItems);
 	switch (iResult)
 		{
 		case resFailure:
@@ -2254,7 +2257,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	//	Increment polarity, if necessary
 
 	int iNewPolarity;
-	if ((iRepeatingCount == GetContinuous(ShotDesc))
+	if ((ActivateCtx.iRepeatingCount == GetContinuous(ShotDesc))
 			&& GetConfiguration(ShotDesc).IncPolarity(GetAlternatingPos(&Device), &iNewPolarity))
 		SetAlternatingPos(&Device, iNewPolarity);
 
@@ -2266,7 +2269,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	//	Create all the shots
 
 	SShotFireResult Result;
-	if (!FireAllShots(Device, ShotDesc, Shots, iRepeatingCount, Result))
+	if (!FireAllShots(Device, ShotDesc, Shots, ActivateCtx.iRepeatingCount, Result))
 		return false;
 
 	//	Sound effect
@@ -2370,7 +2373,11 @@ int CWeaponClass::GetActivateDelay (CItemCtx &ItemCtx) const
 	{
 	const CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
 	if (pShot == NULL)
-		return 0;
+
+		//	If no shot then it could be that we have a launcher with no 
+		//	missiles. In that case we just return the launcher fire rate.
+
+		return m_iFireRate;
 
 	return GetFireDelay(*pShot);
 	}
@@ -2518,7 +2525,7 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 
 		//	See if we have mining capability
 
-		if (pShotDesc->GetDamage().GetMinDamage() > 0)
+		if (pShotDesc->GetDamage().GetMiningDamage() > 0)
 			dwTargetTypes |= CTargetList::typeMinable;
 		}
 
@@ -2584,7 +2591,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	if (pShot == NULL)
 		return CDeviceClass::FindAmmoItemProperty(Ctx, Ammo, sProperty);
 
-	const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
+	const CDeviceItem DeviceItem = Ctx.GetDeviceItem();
+	const CItem AmmoItem = (Ctx.GetItem().IsMissile() ? Ctx.GetItem() : CItem());
 
 	//	Enhancements
 
@@ -2595,7 +2603,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	ICCItem *pResult;
 	if (strEquals(sProperty, PROPERTY_AMMO_TYPES))
 		{
-		if (UsesAmmo())
+		if (UsesAmmo() && !AmmoItem)
 			{
 			pResult = CC.CreateLinkedList();
 			for (i = 0; i < m_ShotData.GetCount(); i++)
@@ -2614,16 +2622,16 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	else if (strEquals(sProperty, PROPERTY_BALANCE))
 		{
 		SBalance Balance;
-		CalcBalance(Ctx, Balance);
+		CalcBalance(AmmoItem, Balance);
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
-		return CC.CreateInteger((int)Balance.rBalance);
+		return CC.CreateInteger(mathRound(Balance.rBalance));
 		}
 	else if (strEquals(sProperty, PROPERTY_BALANCE_DAMAGE))
 		{
 		SBalance Balance;
-		CalcBalance(Ctx, Balance);
+		CalcBalance(AmmoItem, Balance);
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
@@ -2642,7 +2650,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	else if (strEquals(sProperty, PROPERTY_BALANCE_COST))
 		{
 		SBalance Balance;
-		CalcBalance(Ctx, Balance);
+		CalcBalance(AmmoItem, Balance);
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
@@ -2655,18 +2663,18 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		//  Compute cost to compensate for this balance
 
 		Metric rCostDelta = -rBalance / BALANCE_COST_RATIO;
-		Metric rCostCredits = Stats.rCost + (Stats.rCost * rCostDelta / 100.0);
+		Metric rCostCredits = (Metric)Stats.Cost + (Stats.Cost * rCostDelta / 100.0);
 
 		return CC.CreateInteger((int)GetItemType()->GetCurrencyType()->Exchange(NULL, (CurrencyValue)rCostCredits));
 		}
 	else if (strEquals(sProperty, PROPERTY_BALANCE_EXCLUDE_COST))
 		{
 		SBalance Balance;
-		CalcBalance(Ctx, Balance);
+		CalcBalance(AmmoItem, Balance);
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
-		return CC.CreateInteger((int)(Balance.rBalance - Balance.rCost));
+		return CC.CreateInteger(mathRound(Balance.rBalance - Balance.rCost));
 		}
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_180))
 		{
@@ -2689,7 +2697,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		}
 
 	else if (strEquals(sProperty, PROPERTY_EFFECTIVE_RANGE))
-		return CC.CreateInteger((int)(pShot->GetEffectiveRange() / LIGHT_SECOND));
+		return CC.CreateInteger(mathRound(pShot->GetEffectiveRange() / LIGHT_SECOND));
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_ARC))
 		{
@@ -2734,13 +2742,11 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		if (rDelay <= 0.0)
 			return CC.CreateNil();
 
-		return CC.CreateInteger((int)(1000.0 / rDelay));
+		return CC.CreateInteger(mathRound(1000.0 / rDelay));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_LINKED_FIRE_OPTIONS))
 		{
-		const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
-
 		//	Get the options from the device
 
 		DWORD dwOptions = DeviceItem.GetLinkedFireOptions();
@@ -2803,8 +2809,35 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	else if (strEquals(sProperty, PROPERTY_STD_COST))
 		{
-		const SStdStats &Stats = STD_WEAPON_STATS[CalcLevel(pShot) - 1];
-		return CC.CreateDouble(Stats.rCost);
+		if (AmmoItem)
+			{
+			SBalance Balance;
+			CalcBalance(AmmoItem, Balance);
+			if (Balance.iLevel == 0)
+				return CC.CreateNil();
+
+			return CC.CreateInteger(mathRound(Balance.rStdAmmoCost));
+			}
+		else
+			{
+			const SStdStats &Stats = STD_WEAPON_STATS[CalcLevel(*pShot) - 1];
+			return CC.CreateDouble((Metric)Stats.Cost);
+			}
+		}
+
+	else if (strEquals(sProperty, PROPERTY_STD_MASS))
+		{
+		if (AmmoItem)
+			{
+			SBalance Balance;
+			CalcBalance(AmmoItem, Balance);
+			if (Balance.iLevel == 0)
+				return CC.CreateNil();
+
+			return CC.CreateInteger(mathRound(Balance.rStdAmmoMass));
+			}
+		else
+			return CC.CreateNil();
 		}
 
 	//	See if the shot has the property
@@ -3171,7 +3204,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			//	Some weapons fire multiple shots (e.g., Avalanche cannon)
 
 			CString sMult;
-			int iMult = (int)CalcConfigurationMultiplier(pRootShot, false);
+			int iMult = mathRound(CalcConfigurationMultiplier(pRootShot, false));
 			if (iMult != 1)
 				sMult = strPatternSubst(CONSTLIT(" (x%d)"), iMult);
 
@@ -3224,7 +3257,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 			//	Add the multiplier
 
-			int iMult = (int)CalcConfigurationMultiplier(pRootShot);
+			int iMult = mathRound(CalcConfigurationMultiplier(pRootShot));
 			if (iMult > 1)
 				sDamage.Append(strPatternSubst(CONSTLIT(" (x%d)"), iMult));
 
@@ -3270,7 +3303,7 @@ const CWeaponFireDesc *CWeaponClass::GetReferenceShotData (const CWeaponFireDesc
 			//	Area damage counts as multiple hits
 
 			case CWeaponFireDesc::ftArea:
-				iFragments = (int)(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
+				iFragments = mathRound(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
 				break;
 
 			//	Radius damage always hits (if in range)
@@ -3282,7 +3315,7 @@ const CWeaponFireDesc *CWeaponClass::GetReferenceShotData (const CWeaponFireDesc
 
 			default:
 				if (!pFragDesc->pDesc->IsTracking())
-					iFragments = (int)(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
+					iFragments = mathRound(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
 				break;
 			}
 
@@ -3451,7 +3484,7 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 			{
 			//	See if we use an event
 
-			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetDeviceItem(), *pShot, retiAmmoLeft))
 				{ }
 
 			//	If each ammo item uses charges, then we need a different method.
@@ -3504,7 +3537,7 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 
 		if (retiAmmoLeft)
 			{
-			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetDeviceItem(), *pShot, retiAmmoLeft))
 				{ }
 			else
 				*retiAmmoLeft = pDevice->GetCharges(pSource);
@@ -3523,7 +3556,7 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 
 		if (retiAmmoLeft)
 			{
-			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetDeviceItem(), *pShot, retiAmmoLeft))
 				{ }
 			else
 				*retiAmmoLeft = -1;
@@ -3712,7 +3745,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 	//	If the weapon has EMP damage and the target has no shields and is not paralysed then
 	//	this is very effective.
 
-	if (pTarget && pTarget->GetShieldLevel() <= 0 && pShot->GetDamage().GetEMPDamage() > 0)
+	if (pShot->GetDamage().GetEMPDamage() > 0 && pTarget && !pTarget->GetDeviceSystem().HasShieldsUp())
 		{
 		//	If the target is already paralyzed, or if the target is immune
 		//	or is a station (which cannot be paralyzed) then don't use this weapon.
@@ -3728,7 +3761,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 	//	If the weapon has blinding damage and the target is not blind then
 	//	this is very effective
 
-	if (pTarget && pTarget->GetShieldLevel() <= 0 && pShot->GetDamage().GetBlindingDamage() > 0)
+	if (pShot->GetDamage().GetBlindingDamage() > 0 && pTarget && !pTarget->GetDeviceSystem().HasShieldsUp())
 		{
 		//	If the target is already blind, or if the target is immune or is
 		//	a station, then don't bother with this weapon.
@@ -4219,12 +4252,12 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 	int iMinFireArc, iMaxFireArc;
 	CDeviceRotationDesc::ETypes iType = GetRotationType(Device, &iMinFireArc, &iMaxFireArc);
 
-	//	Compute the fire solution
+	//	Compute the fire solution. NOTE: iAim and rDist are always computed, 
+	//	even if we don't have a firing solution.
 
 	int iAim;
 	Metric rDist;
-	if (!CalcFireSolution(Device, Target, &iAim, &rDist))
-		return false;
+	bool bNoFireSolution = !CalcFireSolution(Device, Target, &iAim, &rDist);
 
 	//	Figure out how close we can get
 
@@ -4232,14 +4265,21 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 	if (retiFireAngle)
 		*retiFireAngle = iFireAngle;
 
-	//	Omnidirectional weapons are always aligned
+	//	Area weapons are always aligned (we try even if we don't have a
+	//	firing solution).
 
-	if (iType == CDeviceRotationDesc::rotOmnidirectional)
+	if (pShotDesc->GetType() == CWeaponFireDesc::ftArea)
 		return true;
 
-	//	Area weapons are always aligned
+	//	If we get this far and we don't have a firing solution, then we cannot
+	//	reach the target.
 
-	else if (pShotDesc->GetType() == CWeaponFireDesc::ftArea)
+	else if (bNoFireSolution)
+		return false;
+
+	//	Omnidirectional weapons are always aligned.
+
+	else if (iType == CDeviceRotationDesc::rotOmnidirectional)
 		return true;
 
 	//	Tracking weapons are always aligned.
@@ -4323,7 +4363,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	{
 	CItemCtx Ctx(pShip, pDevice);
-	const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
+	const CDeviceItem DeviceItem = Ctx.GetDeviceItem();
 
 	const CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
 	if (pShot == NULL || pShip == NULL || pDevice == NULL)
@@ -4605,7 +4645,7 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device damage")));
 
 		if (Damage.GetDeviceDisruptDamage() > 0)
-			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device ionize")));
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device ionization")));
 
 		//	Disintegration
 
@@ -5044,14 +5084,13 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			int iContinuous = GetContinuous(*pShot);
 			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
 
+			SActivateCtx ActivateCtx(NULL, Ctx.TargetList);
+
 			if ((dwContinuous % iContinuousDelay) == 0)
 				{
-				FireWeapon(*pDevice,
-					*pShot,
-					NULL,
-					Ctx.TargetList,
-					1 + iContinuous - (dwContinuous / iContinuousDelay),
-					&Ctx.bConsumedItems);
+				ActivateCtx.iRepeatingCount = 1 + iContinuous - (dwContinuous / iContinuousDelay);
+
+				FireWeapon(*pDevice, *pShot, ActivateCtx);
 
 				if (pSource->IsDestroyed())
 					return;

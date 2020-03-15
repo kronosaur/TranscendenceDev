@@ -92,6 +92,19 @@ DWORD CTLispConvert::AsImageDesc (const ICCItem *pItem, RECT *retrcRect)
 	return pItem->GetElement(IMAGE_UNID_INDEX)->GetIntegerValue();
 	}
 
+CSpaceObject *CTLispConvert::AsObject (const ICCItem *pItem)
+
+//	AsObject
+//
+//	Converts to object.
+
+	{
+	if (pItem)
+		return ::CreateObjFromItem(pItem, CCUTIL_FLAG_CHECK_DESTROYED);
+	else
+		return NULL;
+	}
+
 bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector)
 
 //	AsScreen

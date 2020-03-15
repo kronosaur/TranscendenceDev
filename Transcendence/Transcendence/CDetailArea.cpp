@@ -20,7 +20,7 @@
 #define STYLE_STACKED						CONSTLIT("stacked")
 #define STYLE_STATS							CONSTLIT("stats")
 
-bool CDetailArea::Format (const RECT &rcRect)
+bool CDetailArea::Format (const RECT &rcRect) const
 
 //	Format
 //
@@ -62,22 +62,17 @@ bool CDetailArea::Format (const RECT &rcRect)
 	ICCItem *pDetails = m_pData->GetElement(FIELD_DETAILS);
 	if (pDetails)
 		m_Details.Load(pDetails);
+	else
+		m_Details.CleanUp();
 
 	//	We need some fonts
 
 	const CG16bitFont &SubTitle = m_VI.GetFont(fontSubTitle);
 
-	//	Alignment
-
-	CString sAlign = m_pData->GetStringAt(FIELD_ALIGN);
-	if (strEquals(sAlign, ALIGN_BOTTOM))
-		m_iAlignment = alignBottom;
-	else
-		m_iAlignment = alignTop;
-
 	//	Calculate various metrics based on the style
 
 	m_iStyle = GetStyle(m_pData);
+	m_iAlignment = GetAlignment(m_pData);
 	DWORD dwDetailFlags;
 	int cxDetailsFrame;
 	int cyDetailsFrame;
@@ -191,6 +186,25 @@ bool CDetailArea::Format (const RECT &rcRect)
 	return true;
 	}
 
+AlignmentStyles CDetailArea::GetAlignment (ICCItem *pData)
+
+//	GetAlignment
+//
+//	Returns the defined alignment.
+
+	{
+	if (pData)
+		{
+		CString sAlign = pData->GetStringAt(FIELD_ALIGN);
+		if (strEquals(sAlign, ALIGN_BOTTOM))
+			return alignBottom;
+		else
+			return alignTop;
+		}
+	else
+		return alignTop;
+	}
+
 CDetailArea::EStyles CDetailArea::GetStyle (ICCItem *pData)
 
 //	GetStyle
@@ -212,7 +226,7 @@ CDetailArea::EStyles CDetailArea::GetStyle (ICCItem *pData)
 		return styleDefault;
 	}
 
-void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
+void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect) const
 
 //	Paint
 //
@@ -333,7 +347,7 @@ void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	Painter.PaintDisplayFrame(Dest, m_rcFrame);
 	}
 
-void CDetailArea::PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32bitPixel rgbColor)
+void CDetailArea::PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32bitPixel rgbColor) const
 
 //	PaintBackground
 //
@@ -349,7 +363,7 @@ void CDetailArea::PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32b
 			rgbColor);
 	}
 
-void CDetailArea::PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, int cyExtraMargin)
+void CDetailArea::PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, int cyExtraMargin) const
 
 //	PaintBackgroundImage
 //
@@ -428,7 +442,7 @@ void CDetailArea::PaintScaledImage (CG32bitImage &Dest, const RECT &rcDest, cons
 		CGDraw::BltScaled(Dest, rcDest.left, rcDest.top, RectWidth(rcDest), RectHeight(rcDest), *pImage, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
 	}
 
-void CDetailArea::PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale)
+void CDetailArea::PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale) const
 
 //	PaintStackedImage
 //
