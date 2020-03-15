@@ -65,6 +65,7 @@ private:
 
 typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, float, glm::vec3, glm::vec3> OpenGLInstancedBatchLightning;
 typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, glm::ivec3, glm::vec3, glm::vec3, glm::vec3> OpenGLInstancedBatchRay;
+typedef OpenGLInstancedBatch<std::tuple<OpenGLTexture*, OpenGLTexture*, int>, glm::vec2, glm::vec2, glm::vec2, glm::vec2, float, glm::vec4, float> OpenGLInstancedBatchTexture;
 
 class OpenGLContext {
 public:
@@ -119,6 +120,7 @@ public:
 	OpenGLInstancedRenderQueue (void);
 	~OpenGLInstancedRenderQueue (void);
 	// TODO: Allow this function to take an array of textures.
+	void PopulateGlowMaps (OpenGLTexture *texture, unsigned int fbo, OpenGLVAO* vao, OpenGLShader* glowmapShader, int texQuadWidth, int texQuadHeight);
 	void Render (OpenGLShader *shader, OpenGLVAO *vao, OpenGLTexture *texture, float &startingDepth, float incDepth, int currentTick);
 	void RenderNonInstanced (OpenGLShader *shader, OpenGLVAO *vao, OpenGLTexture *texture);
 	void clear (void);
@@ -182,7 +184,7 @@ private:
 	OpenGLShader *m_pRayShader;
 	OpenGLShader *m_pLightningShader;
 	// TODO: Maybe use filenames of texture images as the key rather than pointer to OpenGLTextures? Using pointers as map keys is not reliable.
-	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipRenderQueues;
+	std::map<OpenGLTexture*, OpenGLInstancedBatchTexture*> m_shipRenderQueues;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipEffectTextureRenderQueues;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_effectTextureRenderQueues;
 	OpenGLInstancedBatchRay m_shipEffectRayRenderQueue;

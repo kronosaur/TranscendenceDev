@@ -10,8 +10,8 @@ public:
 	~OpenGLTexture(void);
 	void initTexture2D(int width, int height);
 	void initTexture2D(void* texture, int width, int height);
-	void bindTexture2D(GLenum glTexture) { glActiveTexture(glTexture); glBindTexture(GL_TEXTURE_2D, m_pTextureID[0]); }
-	void unbindTexture2D(void) { glBindTexture(GL_TEXTURE_2D, 0); }
+	void bindTexture2D (GLenum glTexture) const { glActiveTexture(glTexture); glBindTexture(GL_TEXTURE_2D, m_pTextureID[0]); }
+	void unbindTexture2D (void) const { glBindTexture(GL_TEXTURE_2D, 0); }
 	void updateTexture2D(void* texture, int width, int height);
 	void initTextureFromOpenGLThread(void);
 	unsigned int* getTexture(void) { return m_pTextureID; }

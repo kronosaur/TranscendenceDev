@@ -118,11 +118,17 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	if (!m_shipRenderQueues.count(image))
 		{
 		// If we don't have a render queue with that texture loaded, then add one.
-		m_shipRenderQueues[image] = new OpenGLInstancedRenderQueue();
+		m_shipRenderQueues[image] = new OpenGLInstancedBatchTexture();
 		}
 	// Add this quad to the render queue.
-	glm::vec4 glow(glowR, glowG, glowB, glowA);
-	m_shipRenderQueues[image]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, texQuadWidth, texQuadHeight, alphaStrength, glow, glowNoise);
+	glm::vec2 vTexPositions((float)startPixelX / (float)texWidth, (float)startPixelY / (float)texHeight);
+	glm::vec2 vCanvasQuadSizes((float)sizePixelX / (float)canvasWidth, (float)sizePixelY / (float)canvasHeight);
+	glm::vec2 vCanvasPositions((float)posPixelX / (float)canvasWidth, (float)posPixelY / (float)canvasHeight);
+	glm::vec2 vTextureQuadSizes((float)texQuadWidth / (float)texWidth, (float)texQuadHeight / (float)texHeight);
+	glm::vec4 glowColor(glowR, glowG, glowB, glowA);
+
+	m_shipRenderQueues[image]->addObjToRender(vTexPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, alphaStrength, glowColor, glowNoise);
+	//m_shipRenderQueues[image]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, texQuadWidth, texQuadHeight, alphaStrength, glow, glowNoise);
 	}
 
 void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
@@ -169,10 +175,13 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 	for (const auto &p : m_shipRenderQueues)
 	{
 		OpenGLTexture *pTextureToUse = p.first;
-		OpenGLInstancedRenderQueue *pInstancedRenderQueue = p.second;
+		//OpenGLInstancedRenderQueue *pInstancedRenderQueue = p.second;
+		OpenGLInstancedBatchTexture *pInstancedRenderQueue = p.second;
 		// TODO: Set the depths here before rendering. This will ensure that we always render from back to front, which should solve most issues with blending.
 		float depthLevel = m_fDepthLevel;
-		pInstancedRenderQueue->Render(m_pObjectTextureShader, m_pVao, pTextureToUse, depthLevel, m_fDepthDelta, m_iCurrentTick);
+		std::array<std::string, 3> textureUniformNames = { "obj_texture", "glow_map", "current_tick"};
+		pInstancedRenderQueue->setUniforms(textureUniformNames, pTextureToUse, pTextureToUse->getGlowMap(), m_iCurrentTick);
+		pInstancedRenderQueue->Render(m_pObjectTextureShader, depthLevel, m_fDepthDelta, m_iCurrentTick);
 		m_fDepthLevel = depthLevel;
 	}
 

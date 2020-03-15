@@ -6,9 +6,9 @@ layout (location = 2) in vec2 aCanvasQuadSizes;
 layout (location = 3) in vec2 aCanvasPositions;
 layout (location = 4) in vec2 aTexQuadSizes;
 layout (location = 5) in float aAlphaStrength;
-layout (location = 6) in float aDepth;
-layout (location = 7) in vec4 aGlowColor;
-layout (location = 8) in float aGlowNoise;
+layout (location = 6) in vec4 aGlowColor;
+layout (location = 7) in float aGlowNoise;
+layout (location = 8) in float aDepth;
 
 layout (location = 0) out vec2 texture_uv;
 layout (location = 1) out vec2 texture_pos;
