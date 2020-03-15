@@ -527,6 +527,7 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_SET_PROPERTY			21
 #define FN_DESIGN_INC_PROPERTY			22
 #define FN_DESIGN_GET_IMAGE_DESC		23
+#define FN_DESIGN_HAS_PROPERTY			24
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -3638,6 +3639,21 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(typHasEvent unid event) -> True/Nil",
 			"is",	0,	},
 
+		{	"typHasProperty",			fnDesignGet,		FN_DESIGN_HAS_PROPERTY,
+			"(typHasProperty unid property) -> propertyType|Nil\n\n"
+			
+			"propertyType:\n\n"
+			
+			"   'constant\n"
+			"   'data\n"
+			"   'definition\n"
+			"   'dynamicData\n"
+			"   'dynamicGlobal\n"
+			"   'global\n"
+			"   'variant\n",
+
+			"is",	0,	},
+
 		{	"typIncData",				fnDesignGet,		FN_DESIGN_INC_GLOBAL_DATA,
 			"(typIncData unid attrib [increment]) -> new value",
 			"is*",	0,	},
@@ -4719,6 +4735,16 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_DESIGN_HAS_EVENT:
 			return pCC->CreateBool(pType->FindEventHandler(pArgs->GetElement(1)->GetStringValue()));
+
+		case FN_DESIGN_HAS_PROPERTY:
+			{
+			CString sProperty = pArgs->GetElement(1)->GetStringValue();
+			EPropertyType iType = pType->GetPropertyType(*pCtx, sProperty);
+			if (iType == EPropertyType::propNone)
+				return pCC->CreateNil();
+			else
+				return pCC->CreateString(CDesignPropertyDefinitions::GetPropertyTypeID(iType));
+			}
 
 		case FN_DESIGN_INC_GLOBAL_DATA:
 			{

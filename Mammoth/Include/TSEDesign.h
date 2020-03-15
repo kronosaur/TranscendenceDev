@@ -298,6 +298,7 @@ class CDesignType
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType = NULL) const;
+		EPropertyType GetPropertyType (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		const CDesignPropertyDefinitions *GetPropertyDefs (void) const { return (m_pExtra ? &m_pExtra->PropertyDefs : NULL); }
 		int GetPropertyInteger (const CString &sProperty) const;
 		CString GetPropertyString (const CString &sProperty) const;

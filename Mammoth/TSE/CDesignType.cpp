@@ -1974,6 +1974,22 @@ ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 		}
 	}
 
+EPropertyType CDesignType::GetPropertyType (CCodeChainCtx &Ctx, const CString &sProperty) const
+
+//	GetPropertyType
+//
+//	Returns the property type (or propNone if not found).
+
+	{
+	ICCItemPtr pResultPtr;
+	EPropertyType iType;
+
+	if (FindCustomProperty(sProperty, pResultPtr, &iType))
+		return iType;
+	else
+		return EPropertyType::propNone;
+	}
+
 int CDesignType::GetPropertyInteger (const CString &sProperty) const
 
 //	GetPropertyInteger

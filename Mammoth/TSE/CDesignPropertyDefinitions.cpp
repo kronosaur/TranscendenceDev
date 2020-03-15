@@ -78,6 +78,46 @@ bool CDesignPropertyDefinitions::Find (const CString &sProperty, ICCItemPtr &pDa
 	return true;
 	}
 
+CString CDesignPropertyDefinitions::GetPropertyTypeID (EPropertyType iType)
+
+//	GetPropertyTypeID
+//
+//	Returns the property type as an ID.
+
+	{
+	switch (iType)
+		{
+		case EPropertyType::propConstant:
+			return CONSTLIT("constant");
+
+		case EPropertyType::propData:
+		case EPropertyType::propItemData:
+		case EPropertyType::propObjData:
+			return CONSTLIT("data");
+
+		case EPropertyType::propDefinition:
+			return CONSTLIT("definition");
+
+		case EPropertyType::propDynamicData:
+			return CONSTLIT("dynamicData");
+
+		case EPropertyType::propDynamicGlobal:
+			return CONSTLIT("dynamicGlobal");
+
+		case EPropertyType::propEngine:
+			return CONSTLIT("engine");
+
+		case EPropertyType::propGlobal:
+			return CONSTLIT("global");
+
+		case EPropertyType::propVariant:
+			return CONSTLIT("variant");
+
+		default:
+			return NULL_STR;
+		}
+	}
+
 ALERROR CDesignPropertyDefinitions::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc)
 
 //	InitFromXML

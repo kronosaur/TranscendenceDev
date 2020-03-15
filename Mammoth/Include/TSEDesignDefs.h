@@ -56,6 +56,8 @@ class CDesignPropertyDefinitions
 		void InitObjectData (CUniverse &Universe, CSpaceObject &Obj, CAttributeDataBlock &Dest) const;
 		void InitTypeData (CUniverse &Universe, CDesignType &Type) const;
 
+		static CString GetPropertyTypeID (EPropertyType iType);
+
 	private:
 		struct SDef
 			{
