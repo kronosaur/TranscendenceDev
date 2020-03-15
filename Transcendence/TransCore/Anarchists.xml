@@ -26,11 +26,10 @@
 			sovereign=			"&svAnarchists;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"4"
-			canAttack=			"true"
 
 			armorID=			"&itUltraLightTitaniumArmor;"
 			hitPoints=			"50"
-			fireRateAdj=		"40"
+			fireRateAdj=		"30"
 			explosionType=		"&vtKineticExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
 
@@ -57,7 +56,7 @@
 		</ImageVariants>
 
 		<Devices>
-			<Device deviceID="&itRecoillessCannon;"	omnidirectional="true"/>
+			<Device deviceID="&itLaserCannon;"	omnidirectional="true"/>
 		</Devices>
 
 		<Ships>
@@ -91,11 +90,10 @@
 			sovereign=			"&svAnarchists;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"4"
-			canAttack=			"true"
 
 			armorID=			"&itTitaniumArmor;"
 			hitPoints=			"50"
-			fireRateAdj=		"40"
+			fireRateAdj=		"30"
 			explosionType=		"&vtKineticExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
 
@@ -123,7 +121,7 @@
 		</ImageVariants>
 
 		<Devices>
-			<Device deviceID="&itRecoillessCannon;"	omnidirectional="true"/>
+			<Device deviceID="&itLaserCannon;"	omnidirectional="true"/>
 		</Devices>
 
 		<Ships>
@@ -164,11 +162,10 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"4"
 			noMapLabel=			"true"
-			canAttack=			"true"
 
 			armorID=			"&itTitaniumArmor;"
 			hitPoints=			"50"
-			fireRateAdj=		"40"
+			fireRateAdj=		"30"
 			explosionType=		"&vtKineticExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
 			
@@ -185,7 +182,7 @@
 		</ImageVariants>
 
 		<Devices>
-			<Device deviceID="&itRecoillessCannon;"	omnidirectional="true"/>
+			<Device deviceID="&itLaserCannon;"	omnidirectional="true"/>
 		</Devices>
 
 		<Ships>
@@ -220,13 +217,12 @@
 			sovereign=			"&svAnarchists;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itLightPlasteelPlate;"
 			hitPoints=			"250"
             regen=              "5"
-			fireRateAdj=		"80"
+			fireRateAdj=		"30"
 			explosionType=		"&vtKineticExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 
@@ -247,10 +243,12 @@
 		<Image		imageID="&rsAnarchistStations;" imageX="0"   imageY="244" imageWidth="260" imageHeight="260"/>
 
 		<Devices>
-			<Device deviceID="&itPartisanCannon;"	minFireArc="270" maxFireArc="180" posAngle="45"  posRadius="60"/>
-			<Device deviceID="&itPartisanCannon;"	minFireArc="0" maxFireArc="270" posAngle="135"  posRadius="60"/>
-			<Device deviceID="&itPartisanCannon;"	minFireArc="90" maxFireArc="0" posAngle="225"  posRadius="60"/>
-			<Device deviceID="&itPartisanCannon;"	minFireArc="180" maxFireArc="90" posAngle="315"  posRadius="60"/>
+			<Device deviceID="&itLaserCannon;"	posAngle="0"   posRadius="60" posZ="10" fireAngle="0"   fireArc="180"  missileDefense="true"/>
+			<Device deviceID="&itLaserCannon;"	posAngle="60"  posRadius="60" posZ="10" fireAngle="60"  fireArc="180"  missileDefense="true"/>
+			<Device deviceID="&itLaserCannon;"	posAngle="120" posRadius="60" posZ="10" fireAngle="120" fireArc="180"  missileDefense="true"/>
+			<Device deviceID="&itLaserCannon;"	posAngle="180" posRadius="60" posZ="10" fireAngle="180" fireArc="180"  missileDefense="true"/>
+			<Device deviceID="&itLaserCannon;"	posAngle="240" posRadius="60" posZ="10" fireAngle="240" fireArc="180"  missileDefense="true"/>
+			<Device deviceID="&itLaserCannon;"	posAngle="300" posRadius="60" posZ="10" fireAngle="300" fireArc="180"  missileDefense="true"/>
 		</Devices>
 
 		<Ships>

@@ -110,18 +110,20 @@
 		<Language>
 			<Text id="FirstMeetingIntro">
 				(list
-					{
-						desc: (cat
-							"The airlock opens into a wide hall with clean, curved walls and comfortable couches. "
-							"Two large men in fine suits and tactical eyewear stop you firmly.\n\n"
-							
-							"\"This is a private vessel. Unless you need assistance, we insist that you please leave.\""
-							)
-							
-						label: "\"Uh, '[S]tormhound'?\""
-						}
+					{	descID: 'textFirstMeetingIntro1		labelID: 'actionFirstMeetingIntro1 }
 					)
 			</Text>
+			<Text id="textFirstMeetingIntro1">
+
+				The airlock opens into a wide hall with clean, curved walls and 
+				comfortable couches. Two large men in fine suits and tactical 
+				eyewear stop you firmly.
+							
+				"This is a private vessel. Unless you need assistance, we insist
+				that you please leave."
+
+			</Text>
+			<String id="actionFirstMeetingIntro1">"Uh, '[S]tormhound'?"</String>
 
 			<Text id="MeetingIntro">
 

@@ -30,7 +30,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	//	Get the criteria from the command line. Always append 't' because we
 	//	want station types.
 
-	CString sCriteria = strPatternSubst(CONSTLIT("%s t"), pCmdLine->GetAttribute(CRITERIA_ATTRIB));
+	CString sCriteria = strPatternSubst(CONSTLIT("%s; t"), pCmdLine->GetAttribute(CRITERIA_ATTRIB));
 
 	//	Parse it
 

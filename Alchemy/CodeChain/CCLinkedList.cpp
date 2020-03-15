@@ -94,7 +94,7 @@ ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-ICCItem *CCLinkedList::CloneContainer (void)
+ICCItem *CCLinkedList::CloneContainer (void) const
 
 //	CloneContainer
 //
@@ -468,7 +468,7 @@ bool CCLinkedList::HasReferenceTo (ICCItem *pSrc)
 	return false;
 	}
 
-CString CCLinkedList::Print (DWORD dwFlags)
+CString CCLinkedList::Print (DWORD dwFlags) const
 
 //	Print
 //

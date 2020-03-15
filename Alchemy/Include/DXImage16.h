@@ -8,17 +8,17 @@
 class CG16bitPixel
 	{
 	public:
-		static inline DWORD GetBlue8bit (WORD wPixel) { return GetBlue5bit(wPixel) << 3; }
-		static inline DWORD GetGreen8bit (WORD wPixel) { return GetGreen6bit(wPixel) << 2; }
-		static inline DWORD GetRed8bit (WORD wPixel) { return GetRed5bit(wPixel) << 3; }
-		static inline CG32bitPixel PixelToRGB (WORD wPixel) { return CG32bitPixel((BYTE)GetRed8bit(wPixel), (BYTE)GetGreen8bit(wPixel), (BYTE)GetBlue8bit(wPixel)); }
-		static inline WORD RGBToPixel (DWORD dwRed8bit, DWORD dwGreen8bit, DWORD dwBlue8bit) { return (WORD)((dwBlue8bit >> 3) | ((dwGreen8bit >> 2) << 5) | ((dwRed8bit >> 3) << 11)); }
-		static inline WORD RGBToPixel (CG32bitPixel rgbColor) { return RGBToPixel(rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue()); }
+		static DWORD GetBlue8bit (WORD wPixel) { return GetBlue5bit(wPixel) << 3; }
+		static DWORD GetGreen8bit (WORD wPixel) { return GetGreen6bit(wPixel) << 2; }
+		static DWORD GetRed8bit (WORD wPixel) { return GetRed5bit(wPixel) << 3; }
+		static CG32bitPixel PixelToRGB (WORD wPixel) { return CG32bitPixel((BYTE)GetRed8bit(wPixel), (BYTE)GetGreen8bit(wPixel), (BYTE)GetBlue8bit(wPixel)); }
+		static WORD RGBToPixel (DWORD dwRed8bit, DWORD dwGreen8bit, DWORD dwBlue8bit) { return (WORD)((dwBlue8bit >> 3) | ((dwGreen8bit >> 2) << 5) | ((dwRed8bit >> 3) << 11)); }
+		static WORD RGBToPixel (CG32bitPixel rgbColor) { return RGBToPixel(rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue()); }
 
 	private:
-		static inline WORD GetBlue5bit (WORD wPixel) { return (wPixel & 0x1f); }
-		static inline WORD GetGreen6bit (WORD wPixel) { return (wPixel & 0x7e0) >> 5; }
-		static inline WORD GetRed5bit (WORD wPixel) { return (wPixel & 0xf800) >> 11; }
+		static WORD GetBlue5bit (WORD wPixel) { return (wPixel & 0x1f); }
+		static WORD GetGreen6bit (WORD wPixel) { return (wPixel & 0x7e0) >> 5; }
+		static WORD GetRed5bit (WORD wPixel) { return (wPixel & 0xf800) >> 11; }
 
 		WORD m_wPixel;
 	};
@@ -31,8 +31,8 @@ class CG16bitSprite
 
 		ALERROR CreateFromImage (const CG16bitImage &Source);
 		void ColorTransBlt (CG16bitImage &Dest, int xDest, int yDest, int xSrc, int ySrc, int cxWidth, int cyHeight);
-		inline int GetHeight (void) const { return m_cyHeight; }
-		inline int GetWidth (void) const { return m_cxWidth; }
+		int GetHeight (void) const { return m_cyHeight; }
+		int GetWidth (void) const { return m_cxWidth; }
 
 	private:
 		enum SpriteCodes
@@ -80,7 +80,7 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 
 			int d;					//	leftover
 
-			inline bool IsXDominant(void) { return (ax > ay); }
+			bool IsXDominant(void) { return (ax > ay); }
 			};
 
 		typedef void (*DRAWLINEPROC)(SDrawLineCtx *pCtx);
@@ -108,7 +108,7 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 											Metric rScaleX, 
 											Metric rScaleY, 
 											Metric rRotation);
-		inline void Destroy (void) { DeleteData(); }
+		void Destroy (void) { DeleteData(); }
 		void DiscardSurface (void);
 		void SetBlending (WORD wAlpha);
 		void SetTransparentColor (WORD wColor = DEFAULT_TRANSPARENT_COLOR);
@@ -126,13 +126,13 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 		ALERROR CopyToClipboard (void);
 		void ClearMaskBlt (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG16bitImage &Source, int xDest, int yDest, WORD wColor = DEFAULT_TRANSPARENT_COLOR);
 		void DrawDot (int x, int y, WORD wColor, MarkerTypes iMarker);
-		inline void DrawLine (int x1, int y1, int x2, int y2, int iWidth, WORD wColor) { BresenhamLineAA(x1, y1, x2, y2, iWidth, wColor); }
-		inline void DrawLineTrans (int x1, int y1, int x2, int y2, int iWidth, WORD wColor, DWORD dwOpacity) { BresenhamLineAATrans(x1, y1, x2, y2, iWidth, wColor, dwOpacity); }
+		void DrawLine (int x1, int y1, int x2, int y2, int iWidth, WORD wColor) { BresenhamLineAA(x1, y1, x2, y2, iWidth, wColor); }
+		void DrawLineTrans (int x1, int y1, int x2, int y2, int iWidth, WORD wColor, DWORD dwOpacity) { BresenhamLineAATrans(x1, y1, x2, y2, iWidth, wColor, dwOpacity); }
 		void DrawLineProc (SDrawLineCtx *pCtx, DRAWLINEPROC pfProc);
 		void DrawLineProcInit (int x1, int y1, int x2, int y2, SDrawLineCtx *pCtx);
-		inline void DrawBiColorLine (int x1, int y1, int x2, int y2, int iWidth, WORD wColor1, WORD wColor2) { BresenhamLineAAFade(x1, y1, x2, y2, iWidth, wColor1, wColor2); }
-		inline void DrawPixel (int x, int y, WORD wColor) { if (x >= m_rcClip.left && y >= m_rcClip.top && x < m_rcClip.right && y < m_rcClip.bottom) *GetPixel(GetRowStart(y), x) = wColor; }
-		inline void DrawPixelTrans (int x, int y, WORD wColor, BYTE byTrans)
+		void DrawBiColorLine (int x1, int y1, int x2, int y2, int iWidth, WORD wColor1, WORD wColor2) { BresenhamLineAAFade(x1, y1, x2, y2, iWidth, wColor1, wColor2); }
+		void DrawPixel (int x, int y, WORD wColor) { if (x >= m_rcClip.left && y >= m_rcClip.top && x < m_rcClip.right && y < m_rcClip.bottom) *GetPixel(GetRowStart(y), x) = wColor; }
+		void DrawPixelTrans (int x, int y, WORD wColor, BYTE byTrans)
 				{
 				if (x >= m_rcClip.left && y >= m_rcClip.top && x < m_rcClip.right && y < m_rcClip.bottom) 
 					{
@@ -140,12 +140,12 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 					*pPos = BlendPixel(*pPos, wColor, byTrans);
 					}
 				}
-		static inline void DrawPixelTrans (WORD *pPos, WORD wColor, DWORD byTrans)
+		static void DrawPixelTrans (WORD *pPos, WORD wColor, DWORD byTrans)
 				{
 				*pPos = BlendPixel(*pPos, wColor, byTrans);
 				}
-		inline void DrawPlainLine (int x1, int y1, int x2, int y2, WORD wColor) { BresenhamLine(x1, y1, x2, y2, wColor); }
-		inline void DrawText (int x, int y, const CG16bitFont &Font, WORD wColor, CString sText, DWORD dwFlags = 0, int *retx = NULL);
+		void DrawPlainLine (int x1, int y1, int x2, int y2, WORD wColor) { BresenhamLine(x1, y1, x2, y2, wColor); }
+		void DrawText (int x, int y, const CG16bitFont &Font, WORD wColor, CString sText, DWORD dwFlags = 0, int *retx = NULL);
 		void Fill (int x, int y, int cxWidth, int cyHeight, WORD wColor);
 		void FillAlpha (int x, int y, int cxWidth, int cyHeight, DWORD byOpacity);
 		void FillAlphaMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG16bitImage &Source, DWORD byOpacity, int xDest, int yDest);
@@ -159,24 +159,24 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 		void FillTrans (int x, int y, int cxWidth, int cyHeight, WORD wColor, DWORD byOpacity);
 		void FillTransGray (int x, int y, int cxWidth, int cyHeight, WORD wColor, DWORD byOpacity);
 		void FillTransRGB (int x, int y, int cxWidth, int cyHeight, COLORREF rgbValue, int iAlpha);
-		inline BYTE *GetAlphaRow (int iRow) const { return (BYTE *)(m_pAlpha + (iRow * m_iAlphaRowSize)); }
-		inline BYTE *GetAlphaValue (int x, int y) const { return ((BYTE *)(m_pAlpha + y * m_iAlphaRowSize)) + x; }
-		inline WORD GetBackColor (void) const { return m_wBackColor; }
-		inline WORD *GetPixel (WORD *pRowStart, int x) const { return pRowStart + x; }
+		BYTE *GetAlphaRow (int iRow) const { return (BYTE *)(m_pAlpha + (iRow * m_iAlphaRowSize)); }
+		BYTE *GetAlphaValue (int x, int y) const { return ((BYTE *)(m_pAlpha + y * m_iAlphaRowSize)) + x; }
+		WORD GetBackColor (void) const { return m_wBackColor; }
+		WORD *GetPixel (WORD *pRowStart, int x) const { return pRowStart + x; }
 		WORD GetPixelAlpha (int x, int y);
-		inline WORD *GetRowStart (int y) const { return (WORD *)(m_pRGB + y * m_iRGBRowSize); }
-		inline LPDIRECTDRAWSURFACE7 GetSurface (void) const { return m_pSurface; }
+		WORD *GetRowStart (int y) const { return (WORD *)(m_pRGB + y * m_iRGBRowSize); }
+		LPDIRECTDRAWSURFACE7 GetSurface (void) const { return m_pSurface; }
 		static SurfaceTypes GetSurfaceType (LPDIRECTDRAWSURFACE7 pSurface);
-		inline bool HasAlpha (void) const { return (m_pAlpha != NULL); }
-		inline bool HasMask (void) const { return m_bHasMask; }
-		inline bool HasRGB (void) const { return (m_pRGB != NULL); }
+		bool HasAlpha (void) const { return (m_pAlpha != NULL); }
+		bool HasMask (void) const { return m_bHasMask; }
+		bool HasRGB (void) const { return (m_pRGB != NULL); }
 		void IntersectMask (int xMask, int yMask, int cxMask, int cyMask, const CG16bitImage &Mask, int xDest, int yDest);
-		inline bool IsEmpty (void) const { return (m_cxWidth == 0 || m_cyHeight == 0); }
-		inline bool IsSprite (void) const { return m_pSprite != NULL; }
-		inline bool IsTransparent (void) const { return m_pRedAlphaTable != NULL; }
+		bool IsEmpty (void) const { return (m_cxWidth == 0 || m_cyHeight == 0); }
+		bool IsSprite (void) const { return m_pSprite != NULL; }
+		bool IsTransparent (void) const { return m_pRedAlphaTable != NULL; }
 		void MaskedBlt (int xSrc, int ySrc, int cxWidth, int cyHeight, CG16bitImage &Source, int xDest, int yDest);
-		inline BYTE *NextAlphaRow (BYTE *pAlpha) const { return (BYTE *)(((DWORD *)pAlpha) + m_iAlphaRowSize); }
-		inline WORD *NextRow (WORD *pRow) const { return pRow + (m_iRGBRowSize * 2); }
+		BYTE *NextAlphaRow (BYTE *pAlpha) const { return (BYTE *)(((DWORD *)pAlpha) + m_iAlphaRowSize); }
+		WORD *NextRow (WORD *pRow) const { return pRow + (m_iRGBRowSize * 2); }
 		ALERROR ReadFromStream (IReadStream *pStream);
 		ALERROR SaveAsWindowsBMP (const CString &sFilespec);
 		void SetPixelTrans (int x, int y, WORD wColor, DWORD byOpacity);
@@ -185,22 +185,22 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 		void WriteToStream (IWriteStream *pStream);
 		void WriteToWindowsBMP (IWriteStream *pStream);
 
-		static inline BYTE BlendAlpha (BYTE dwOpacity1, BYTE dwOpacity2) { return (BYTE)255 - (BYTE)(((DWORD)(255 - dwOpacity1) * (DWORD)(255 - dwOpacity2)) / 255); }
+		static BYTE BlendAlpha (BYTE dwOpacity1, BYTE dwOpacity2) { return (BYTE)255 - (BYTE)(((DWORD)(255 - dwOpacity1) * (DWORD)(255 - dwOpacity2)) / 255); }
 		static WORD BlendPixel (WORD pxDest, WORD pxSource, DWORD byOpacity);
 		static WORD BlendPixelGray (WORD pxDest, WORD pxSource, DWORD byOpacity);
 		static WORD BlendPixelPM (DWORD pxDest, DWORD pxSource, DWORD byOpacity);
 		static WORD FadeColor (WORD wStart, WORD wEnd, int iFade);
-		static inline WORD DarkenPixel (DWORD pxSource, DWORD byOpacity) { return BlendPixel(RGBValue(0,0,0), (WORD)pxSource, byOpacity); }
-		static inline WORD DesaturateValue (WORD wColor) { return ((GreenValue(wColor) * 59) + (RedValue(wColor) * 30) + (BlueValue(wColor) * 11)) / 255; }
-		static inline WORD LightenPixel (DWORD pxSource, DWORD byOpacity) { return BlendPixel(RGBValue(255,255,255), (WORD)pxSource, byOpacity); }
-		static inline bool IsGrayscaleValue (WORD wColor) { return ((BlueValue(wColor) == GreenValue(wColor)) && (GreenValue(wColor) == RedValue(wColor))); }
-		static inline WORD GrayscaleValue (WORD wValue) { return ((wValue << 8) & 0xf800) | ((wValue << 3) & 0x7c0) | (wValue >> 3); }
-		static inline WORD RGBValue (WORD wRed, WORD wGreen, WORD wBlue) { return ((wRed << 8) & 0xf800) | ((wGreen << 3) & 0x7e0) | (wBlue >> 3); }
-		static inline WORD BlueValue (WORD wColor) { return GetBlueValue(wColor) << 3; }
-		static inline WORD GreenValue (WORD wColor) { return GetGreenValue(wColor) << 2; }
-		static inline WORD RedValue (WORD wColor) { return GetRedValue(wColor) << 3; }
-		static inline DWORD PixelFromRGB (COLORREF rgb) { return (GetBValue(rgb) >> 3) | ((GetGValue(rgb) >> 2) << 5) | ((GetRValue(rgb) >> 3) << 11); }
-		static inline COLORREF RGBFromPixel (WORD wColor) { return RGB(RedValue(wColor), GreenValue(wColor), BlueValue(wColor)); }
+		static WORD DarkenPixel (DWORD pxSource, DWORD byOpacity) { return BlendPixel(RGBValue(0,0,0), (WORD)pxSource, byOpacity); }
+		static WORD DesaturateValue (WORD wColor) { return ((GreenValue(wColor) * 59) + (RedValue(wColor) * 30) + (BlueValue(wColor) * 11)) / 255; }
+		static WORD LightenPixel (DWORD pxSource, DWORD byOpacity) { return BlendPixel(RGBValue(255,255,255), (WORD)pxSource, byOpacity); }
+		static bool IsGrayscaleValue (WORD wColor) { return ((BlueValue(wColor) == GreenValue(wColor)) && (GreenValue(wColor) == RedValue(wColor))); }
+		static WORD GrayscaleValue (WORD wValue) { return ((wValue << 8) & 0xf800) | ((wValue << 3) & 0x7c0) | (wValue >> 3); }
+		static WORD RGBValue (WORD wRed, WORD wGreen, WORD wBlue) { return ((wRed << 8) & 0xf800) | ((wGreen << 3) & 0x7e0) | (wBlue >> 3); }
+		static WORD BlueValue (WORD wColor) { return GetBlueValue(wColor) << 3; }
+		static WORD GreenValue (WORD wColor) { return GetGreenValue(wColor) << 2; }
+		static WORD RedValue (WORD wColor) { return GetRedValue(wColor) << 3; }
+		static DWORD PixelFromRGB (COLORREF rgb) { return (GetBValue(rgb) >> 3) | ((GetGValue(rgb) >> 2) << 5) | ((GetRValue(rgb) >> 3) << 11); }
+		static COLORREF RGBFromPixel (WORD wColor) { return RGB(RedValue(wColor), GreenValue(wColor), BlueValue(wColor)); }
 
 	private:
 		struct RealPixel
@@ -234,21 +234,21 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 
 		void CopyData (const CG16bitImage &Src);
 		void DeleteData (void);
-		inline DWORD DoublePixelFromRGB (COLORREF rgb) { return PixelFromRGB(rgb) | (PixelFromRGB(rgb) << 16); }
-		inline DWORD *GetPixelDW (DWORD *pRowStart, int x, bool *retbOdd) const { *retbOdd = ((x % 2) == 1); return pRowStart + (x / 2); }
+		DWORD DoublePixelFromRGB (COLORREF rgb) { return PixelFromRGB(rgb) | (PixelFromRGB(rgb) << 16); }
+		DWORD *GetPixelDW (DWORD *pRowStart, int x, bool *retbOdd) const { *retbOdd = ((x % 2) == 1); return pRowStart + (x / 2); }
 		RealPixel GetRealPixel (const RECT &rcRange, Metric rX, Metric rY, bool *retbBlack = NULL);
-		static inline WORD GetBlueValue (WORD wPixel) { return (wPixel & 0x1f); }
-		static inline WORD GetGreenValue (WORD wPixel) { return (wPixel & 0x7e0) >> 5; }
-		static inline WORD GetRedValue (WORD wPixel) { return (wPixel & 0xf800) >> 11; }
-		inline DWORD *GetRowStartDW (int y) const { return m_pRGB + y * m_iRGBRowSize; }
-		inline DWORD HighPixelFromRGB (COLORREF rgb) const { return PixelFromRGB(rgb) << 16; }
-		inline bool InClipX (int x) const { return (x >= m_rcClip.left && x < m_rcClip.right); }
-		inline bool InClipY (int y) const { return (y >= m_rcClip.top && y < m_rcClip.bottom); }
+		static WORD GetBlueValue (WORD wPixel) { return (wPixel & 0x1f); }
+		static WORD GetGreenValue (WORD wPixel) { return (wPixel & 0x7e0) >> 5; }
+		static WORD GetRedValue (WORD wPixel) { return (wPixel & 0xf800) >> 11; }
+		DWORD *GetRowStartDW (int y) const { return m_pRGB + y * m_iRGBRowSize; }
+		DWORD HighPixelFromRGB (COLORREF rgb) const { return PixelFromRGB(rgb) << 16; }
+		bool InClipX (int x) const { return (x >= m_rcClip.left && x < m_rcClip.right); }
+		bool InClipY (int y) const { return (y >= m_rcClip.top && y < m_rcClip.bottom); }
 		void InitBMI (BITMAPINFO **retpbi);
-		inline DWORD LowPixelFromRGB (COLORREF rgb) const { return PixelFromRGB(rgb); }
-		inline WORD MakePixel (WORD wRed, WORD wGreen, WORD wBlue) { return (wRed << 11) | (wGreen << 5) | (wBlue); }
-		inline void SetLowPixel (DWORD *pPos, DWORD dwValue) { *pPos = ((*pPos) & 0xFFFF0000) | dwValue; }
-		inline void SetHighPixel (DWORD *pPos, DWORD dwValue) { *pPos = ((*pPos) & 0xFFFF) | dwValue; }
+		DWORD LowPixelFromRGB (COLORREF rgb) const { return PixelFromRGB(rgb); }
+		WORD MakePixel (WORD wRed, WORD wGreen, WORD wBlue) { return (wRed << 11) | (wGreen << 5) | (wBlue); }
+		void SetLowPixel (DWORD *pPos, DWORD dwValue) { *pPos = ((*pPos) & 0xFFFF0000) | dwValue; }
+		void SetHighPixel (DWORD *pPos, DWORD dwValue) { *pPos = ((*pPos) & 0xFFFF) | dwValue; }
 		void SetRealPixel (Metric rX, Metric rY, const RealPixel &Value, bool bNotBlack = false);
 
 		int m_iRGBRowSize;			//	Number of DWORDs in an image row
@@ -451,12 +451,12 @@ class CG16bitFont
 		ALERROR Create (const CString &sTypeface, int iSize, bool bBold = false, bool bItalic = false, bool bUnderline = false);
 		ALERROR CreateFromFont (HFONT hFont);
 		ALERROR CreateFromResource (HINSTANCE hInst, char *pszRes);
-		inline void Destroy (void) { m_FontImage.Destroy(); m_Metrics.DeleteAll(); }
+		void Destroy (void) { m_FontImage.Destroy(); m_Metrics.DeleteAll(); }
 
 		int BreakText (const CString &sText, int cxWidth, TArray<CString> *retLines = NULL, DWORD dwFlags = 0) const;
-		inline void DrawText (CG16bitImage &Dest, int x, int y, WORD wColor, const CString &sText, DWORD dwFlags = 0, int *retx = NULL) const
+		void DrawText (CG16bitImage &Dest, int x, int y, WORD wColor, const CString &sText, DWORD dwFlags = 0, int *retx = NULL) const
 			{ DrawText(Dest, x, y, wColor, 255, sText, dwFlags, retx); }
-		inline void DrawText (CG16bitImage &Dest, const RECT &rcRect, WORD wColor, const CString &sText, int iLineAdj = 0, DWORD dwFlags = 0, int *retcyHeight = NULL) const
+		void DrawText (CG16bitImage &Dest, const RECT &rcRect, WORD wColor, const CString &sText, int iLineAdj = 0, DWORD dwFlags = 0, int *retcyHeight = NULL) const
 			{ DrawText(Dest, rcRect, wColor, 255, sText, iLineAdj, dwFlags, retcyHeight); }
 
 		void DrawText (CG16bitImage &Dest, 
@@ -510,15 +510,15 @@ class CG16bitFont
 							 const SEffectDesc *pEffects,
 							 DWORD dwFlags = 0,
 							 int *retx = NULL) const;
-		inline int GetAscent (void) const { return m_cyAscent; }
-		inline int GetAverageWidth (void) const { return m_cxAveWidth; }
+		int GetAscent (void) const { return m_cyAscent; }
+		int GetAverageWidth (void) const { return m_cxAveWidth; }
 		const CG16bitImage &GetCharacterImage (char chChar = ' ', int *retx = 0, int *rety = 0, int *retcxWidth = 0, int *retcyHeight = 0, int *retcxAdvance = 0) const;
-		inline int GetHeight (void) const { return m_cyHeight; }
-		inline const CString &GetTypeface (void) const { return m_sTypeface; }
-		inline bool IsBold (void) const { return m_bBold; }
-		inline bool IsEmpty (void) const { return m_FontImage.IsEmpty(); }
-		inline bool IsItalic (void) const { return m_bItalic; }
-		inline bool IsUnderline (void) const { return m_bUnderline; }
+		int GetHeight (void) const { return m_cyHeight; }
+		const CString &GetTypeface (void) const { return m_sTypeface; }
+		bool IsBold (void) const { return m_bBold; }
+		bool IsEmpty (void) const { return m_FontImage.IsEmpty(); }
+		bool IsItalic (void) const { return m_bItalic; }
+		bool IsUnderline (void) const { return m_bUnderline; }
 		int MeasureText (const CString &sText, int *retcyHeight = NULL, bool bAlwaysAdvance = false) const;
 		static bool ParseFontDesc (const CString &sDesc, CString *retsTypeface, int *retiSize, bool *retbBold, bool *retbItalic);
 		ALERROR ReadFromStream (IReadStream *pStream);
@@ -609,11 +609,11 @@ class CG16bitBinaryRegion
 		void Fill (CG16bitImage &Dest, int x, int y, WORD wColor) const;
 		void FillTrans (CG16bitImage &Dest, int x, int y, WORD wColor, DWORD byOpacity) const;
 		void GetBounds (RECT *retrcRect) const;
-		inline int GetCount (void) const { return m_iCount; }
-		inline const SRun &GetRun (int iIndex) const { return m_pList[iIndex]; }
+		int GetCount (void) const { return m_iCount; }
+		const SRun &GetRun (int iIndex) const { return m_pList[iIndex]; }
 
 	private:
-		inline SRun &Run (int iIndex) { return m_pList[iIndex]; }
+		SRun &Run (int iIndex) { return m_pList[iIndex]; }
 		void ScanEdge (int X1,
 					   int Y1,
 					   int X2,
@@ -670,7 +670,7 @@ class CG16bitLinePainter
 		ESlopeTypes CalcIntermediates (const CG16bitImage &Image, int x1, int y1, int x2, int y2, int iWidth);
 		void CalcPixelMapping (int x1, int y1, int x2, int y2, double *retrV, double *retrW);
 
-		inline void NextX (int &x, int &y)
+		void NextX (int &x, int &y)
 			{
 			if (m_d >= 0)
 				{
@@ -685,7 +685,7 @@ class CG16bitLinePainter
 			m_rWDown += m_rWDownInc;
 			}
 
-		inline void NextY (int &x, int &y)
+		void NextY (int &x, int &y)
 			{
 			if (m_d >= 0)
 				{
@@ -700,7 +700,7 @@ class CG16bitLinePainter
 			m_rWDown += m_rWDownInc;
 			}
 
-		inline void NextX (int &x, int &y, double &rV, double &rW)
+		void NextX (int &x, int &y, double &rV, double &rW)
 			{
 			if (m_d >= 0)
 				{
@@ -721,7 +721,7 @@ class CG16bitLinePainter
 			rW += m_rWIncX;
 			}
 
-		inline void NextY (int &x, int &y, double &rV, double &rW)
+		void NextY (int &x, int &y, double &rV, double &rW)
 			{
 			if (m_d >= 0)
 				{

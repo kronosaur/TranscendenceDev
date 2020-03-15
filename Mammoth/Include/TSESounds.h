@@ -53,7 +53,7 @@ class CSoundRef
 		inline bool IsNull (void) const { return (m_dwUNID == 0); }
 		ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sAttrib);
 		inline void Mark (void) { if (m_pSound) m_pSound->Mark(); }
-		void PlaySound (CSpaceObject *pSource);
+		void PlaySound (CSpaceObject *pSource) const;
 
 	private:
 		DWORD m_dwUNID;
@@ -73,7 +73,7 @@ class CMusicResource : public CDesignType
 		inline const CString &GetComposedBy (void) const { return m_sComposedBy; }
 		CString GetFilename (void) const { return m_sFilename; }
 		CString GetFilespec (void) const;
-		inline const CAttributeCriteria &GetLocationCriteria (void) const { return m_LocationCriteria; }
+		inline const CAffinityCriteria &GetLocationCriteria (void) const { return m_LocationCriteria; }
 		int GetNextFadePos (int iPos);
 		int GetNextPlayPos (void);
 		inline const CString &GetPerformedBy (void) const { return m_sPerformedBy; }
@@ -108,7 +108,7 @@ class CMusicResource : public CDesignType
 		CString m_sComposedBy;
 		CString m_sPerformedBy;
 		int m_iPriority;				//	Track priority
-		CAttributeCriteria m_LocationCriteria;	//	Play in specific systems
+		CAffinityCriteria m_LocationCriteria;	//	Play in specific systems
 
 		TArray<SSegmentDesc> m_Segments;
 		int m_iNextSegment;				//	Index of last segment played

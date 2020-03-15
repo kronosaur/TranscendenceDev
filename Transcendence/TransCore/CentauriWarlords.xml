@@ -33,8 +33,7 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			allowEnemyDocking=	"true"
-			canAttack=			"true"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
 			level=				"4"
 			multiHull=			"true"
@@ -262,7 +261,6 @@
 			sovereign=			"&svCentauriWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			armorID=			"&itLightPlasteelPlate;"
 			hitPoints=			"50"
@@ -318,7 +316,6 @@
 			sovereign=			"&svCentauriWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"90"
@@ -374,7 +371,6 @@
 			sovereign=			"&svCentauriWarlords;"
 			
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noFriendlyTarget=	"true"
 
 			level=				"2"
@@ -545,7 +541,10 @@
 				(block Nil
 					; Vaughn's armor is resistant to laser and kinetic (only 20% damage gets through)
 					(objEnumItems gSource "aI" theItem
-						(shpEnhanceItem gSource theItem 0x0808)
+						(shpEnhanceItem gSource theItem {
+							enhancement: "+resistDamageTier:laser:20;"
+							type: &itCentauriNanos;
+							})
 						)
 					)
 			</OnCreate>
@@ -675,7 +674,6 @@
 				damage=				"kinetic:1d6+1; momentum:1"
 				fireRate=			"24"
 				missileSpeed=		"40"
-				interaction=		"50"
 				lifetime=			"30"
 				powerUse=			"100"
 
@@ -715,7 +713,6 @@
 				damage=				"kinetic:2d8+1; momentum:1; WMD:5"
 				fireRate=			"16"
 				missileSpeed=		"50"
-				interaction=		"50"
 				lifetime=			"20"
 				powerUse=			"100"
 
@@ -754,7 +751,6 @@
 				damage=				"kinetic:1d3; momentum1"
 				fireRate=			"15"
 				missileSpeed=		"30"
-				interaction=		"30"
 				lifetime=			"30"
 				powerUse=			"10"
 
@@ -793,9 +789,9 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"a &lt;=3"	enhancement:0x0808	}
-					{	criteria:"a &lt;=5"	enhancement:0x0805	}
-					{	criteria:"a &lt;=6"	enhancement:0x0803	}
+					{	criteria:"a &lt;=3"	enhancement:"+resistDamageTier:laser:20;"	}
+					{	criteria:"a &lt;=5"	enhancement:"+resistDamageTier:laser:50;"	}
+					{	criteria:"a &lt;=6"	enhancement:"+resistDamageTier:laser:70;"	}
 					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
 					)
 			</Constant>

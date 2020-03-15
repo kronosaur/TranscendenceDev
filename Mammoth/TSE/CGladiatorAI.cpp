@@ -281,7 +281,7 @@ CString CGladiatorAI::DebugCrashInfo (void)
 	return sResult;
 	}
 
-CSpaceObject *CGladiatorAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CGladiatorAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -321,9 +321,9 @@ void CGladiatorAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 		default:
 			//	Generic reset
 
-			if (m_pDest == Ctx.pObj)
+			if (m_pDest == Ctx.Obj)
 				m_pDest = NULL;
-			if (m_pTarget == Ctx.pObj)
+			if (m_pTarget == Ctx.Obj)
 				m_pTarget = NULL;
 		}
 	}

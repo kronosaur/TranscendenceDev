@@ -141,7 +141,8 @@ void CTranscendenceWnd::CreateCreditsAnimation (IAnimatron **retpAnimatron)
 //	Creates full end credits
 
 	{
-	int i;
+	static constexpr int CREDIT_DURATION = 150;
+
 	CAniSequencer *pSeq = new CAniSequencer;
 	int iTime = 0;
 
@@ -160,10 +161,10 @@ void CTranscendenceWnd::CreateCreditsAnimation (IAnimatron **retpAnimatron)
 			Names,
 			xMidCenter,
 			yMidCenter,
-			150,
+			CREDIT_DURATION,
 			&pAnimation);
 	pSeq->AddTrack(pAnimation, iTime);
-	iTime += 150;
+	iTime += pAnimation->GetDuration();
 
 	Names.DeleteAll();
 	Names.Insert(CONSTLIT("Michael Tangent"));
@@ -171,40 +172,40 @@ void CTranscendenceWnd::CreateCreditsAnimation (IAnimatron **retpAnimatron)
 			Names,
 			xMidCenter,
 			yMidCenter,
-			150,
+			CREDIT_DURATION,
 			&pAnimation);
 	pSeq->AddTrack(pAnimation, iTime);
-	iTime += 150;
+	iTime += pAnimation->GetDuration();
 
 	//	More programming
 
 	Names.DeleteAll();
-	for (i = 0; i < ADDITIONAL_PROGRAMMING_COUNT; i++)
-		Names.Insert(CString(ADDITIONAL_PROGRAMMING[i]));
+	for (int i = 0; i < ADDITIONAL_PROGRAMMING_COUNT; i++)
+		Names.Insert(strPatternSubst(ADDITIONAL_PROGRAMMING[i]));
 
 	m_UIRes.CreateMediumCredit(CONSTLIT("additional programming by"),
 			Names,
 			xMidCenter,
 			yMidCenter,
-			150,
+			CREDIT_DURATION,
 			&pAnimation);
 	pSeq->AddTrack(pAnimation, iTime);
-	iTime += ADDITIONAL_PROGRAMMING_COUNT * 150;
+	iTime += pAnimation->GetDuration();
 
 	//	Special thanks
 
 	Names.DeleteAll();
-	for (i = 0; i < SPECIAL_THANKS_COUNT; i++)
-		Names.Insert(CString(SPECIAL_THANKS[i]));
+	for (int i = 0; i < SPECIAL_THANKS_COUNT; i++)
+		Names.Insert(strPatternSubst(SPECIAL_THANKS[i]));
 
 	m_UIRes.CreateMediumCredit(CONSTLIT("special thanks to"),
 			Names,
 			xMidCenter,
 			yMidCenter,
-			150,
+			CREDIT_DURATION,
 			&pAnimation);
 	pSeq->AddTrack(pAnimation, iTime);
-	iTime += SPECIAL_THANKS_COUNT * 150;
+	iTime += pAnimation->GetDuration();
 
 	//	Thanks to
 
@@ -285,7 +286,7 @@ void CTranscendenceWnd::CreateLongCreditsAnimation (int x, int y, int cyHeight, 
 	//	Add names
 
 	for (i = 0; i < FEEDBACK_COUNT; i++)
-		pAni->AddTextLine(CString(FEEDBACK[i]), 
+		pAni->AddTextLine(strPatternSubst(FEEDBACK[i]), 
 				&m_Fonts.Header, 
 				m_Fonts.rgbTitleColor, 
 				CG16bitFont::AlignCenter,
@@ -295,7 +296,7 @@ void CTranscendenceWnd::CreateLongCreditsAnimation (int x, int y, int cyHeight, 
 
 	pAni->AddTextLine(CONSTLIT("created using"), &m_Fonts.SubTitle, m_Fonts.rgbLightTitleColor, CG16bitFont::AlignCenter, m_Fonts.Title.GetHeight());
 	for (i = 0; i < SOFTWARE_COUNT; i++)
-		pAni->AddTextLine(CString(SOFTWARE[i]), 
+		pAni->AddTextLine(strPatternSubst(SOFTWARE[i]), 
 				&m_Fonts.Header, 
 				m_Fonts.rgbTitleColor, 
 				CG16bitFont::AlignCenter,
@@ -305,7 +306,7 @@ void CTranscendenceWnd::CreateLongCreditsAnimation (int x, int y, int cyHeight, 
 
 	pAni->AddTextLine(CONSTLIT("with inspiration from"), &m_Fonts.SubTitle, m_Fonts.rgbLightTitleColor, CG16bitFont::AlignCenter, m_Fonts.Title.GetHeight());
 	for (i = 0; i < INSPIRATION_COUNT; i++)
-		pAni->AddTextLine(CString(INSPIRATION[i]), 
+		pAni->AddTextLine(strPatternSubst(INSPIRATION[i]), 
 				&m_Fonts.Header, 
 				m_Fonts.rgbTitleColor, 
 				CG16bitFont::AlignCenter,
@@ -749,7 +750,6 @@ void CTranscendenceWnd::CreateShipDescAnimation (CShip *pShip, IAnimatron **retp
 //	Creates animation describing the given ship
 
 	{
-	int i, j;
 	int iDuration = 600;
 	int iInterLineDelay = 1;
 	int iDelay = 0;
@@ -801,20 +801,16 @@ void CTranscendenceWnd::CreateShipDescAnimation (CShip *pShip, IAnimatron **retp
 
 	TArray<SWeaponDesc> WeaponList;
 
-	for (i = 0; i < pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = pShip->GetDevice(i);
-		if (pDevice->IsEmpty())
-			continue;
-
-		if (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher)
+		if (DeviceItem.GetCategory() == itemcatWeapon || DeviceItem.GetCategory() == itemcatLauncher)
 			{
-			CString sName = pDevice->GetClass()->GetItemType()->GetNounPhrase(nounActual | nounCapitalize);
+			CString sName = DeviceItem.GetNounPhrase(nounActual | nounCapitalize | nounNoModifiers);
 
 			//	Look for the weapon in the list
 
 			bool bFound = false;
-			for (j = 0; j < WeaponList.GetCount() && !bFound; j++)
+			for (int j = 0; j < WeaponList.GetCount() && !bFound; j++)
 				if (strEquals(WeaponList[j].sWeaponName, sName))
 					{
 					WeaponList[j].iCount++;
@@ -850,7 +846,7 @@ void CTranscendenceWnd::CreateShipDescAnimation (CShip *pShip, IAnimatron **retp
 		}
 	else
 		{
-		for (i = 0; i < WeaponList.GetCount() && i < 6; i++)
+		for (int i = 0; i < WeaponList.GetCount() && i < 6; i++)
 			{
 			CAniText::Create((WeaponList[i].iCount == 1 ? WeaponList[i].sWeaponName
 						: strPatternSubst(CONSTLIT("%s (x%d)"), WeaponList[i].sWeaponName, WeaponList[i].iCount)),

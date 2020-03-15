@@ -6,7 +6,7 @@
 #include "PreComp.h"
 #include <math.h>
 
-DWORD g_Seed = 0;
+thread_local DWORD g_Seed = 0;
 
 int Kernel::mathAdjust (int iValue, int iPercent)
 
@@ -31,6 +31,21 @@ int Kernel::mathAdjust (int iValue, int iPercent)
 
 		return iWhole + (mathRandom(1, 100) <= iFraction ? 1 : 0);
 		}
+	}
+
+int Kernel::mathAdjustRound (int iValue, int iPercent)
+
+//	mathAdjustRound
+//
+//	Alters iValue such that:
+//
+//	result = (iValue * iPercent) / 100, rounded
+
+	{
+	if (iPercent == 100)
+		return iValue;
+	else
+		return mathRound((iValue * iPercent) / 100.0);
 	}
 
 DWORD Kernel::mathGetSeed (void)

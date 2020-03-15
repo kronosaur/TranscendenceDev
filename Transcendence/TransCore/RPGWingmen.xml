@@ -44,6 +44,9 @@
 		orderJoinPlayer:	Fire this event to order the wingman to join the player. The
 							object will receive an OnWingmanJoinedPlayer event.
 								
+		orderEscortPlayer:	Fire this event to order the wingman escort the player, but
+							not necessarily join.
+								
 		OPTIONS
 		
 		These variables may be set in StaticData to alter the behavior of wingmen.
@@ -95,7 +98,7 @@
 			
 			<Message id="msgBreakAndAttack" name="Break &amp; attack" key="B">
 				<OnShow>
-					(not (find '(goingHome attackingAtWill) (objGetData gSource 'behavior)))
+					(not (find '(attackingAtWill goingHome) (objGetData gSource 'behavior)))
 				</OnShow>
 				
 				<Invoke>
@@ -109,26 +112,15 @@
 				</OnShow>
 
 				<Invoke>
-					(block (behavior)
-						(setq behavior (objGetData gSource "behavior"))
-						(switch
-							(eq behavior 'escorting)
-								(block Nil
-									(objCommunicate gSource gSender 'FormUp)
-									(objSendMessageTranslate gSender gSource 'FormUpAck)
-									)
-
-							(block Nil
-								(objSetData gSource "behavior" 'escorting)
-								(if (or (eq behavior 'attackingTarget) (eq behavior 'attackingAtWill))
-									(objSendMessageTranslate gSender gSource 'CancelAttackAck)
-									(objSendMessageTranslate gSender gSource 'FormUpAck)
-									)
-									
-								(shpCancelOrders gSource)
-								(shpOrder gSource 'follow gPlayerShip)
-								)
+					(block Nil
+						(if (find '(attackingTarget attackingAtWill) (objGetData gSource 'behavior))
+							(objSendMessageTranslate gSender gSource 'CancelAttackAck)
+							(objSendMessageTranslate gSender gSource 'FormUpAck)
 							)
+						(objSetData gSource 'behavior 'escorting)
+							
+						(shpCancelOrders gSource)
+						(shpOrder gSource 'follow gPlayerShip)
 						)
 				</Invoke>
 			</Message>
@@ -240,6 +232,11 @@
 			<Text id="msgRefusesToDowngradeShip">
 
 				%name% refuses to switch to an inferior ship.
+
+			</Text>
+			<Text id="msgRefusesNewShip">
+
+				%name% refuses to switch ships.
 
 			</Text>
 		</Language>
@@ -411,7 +408,7 @@
 							(intOrderBreakAndAttack gSource gPlayerShip Nil)
 							)
 							Nil
-								
+
 						;	Default: return to formation.
 						(block Nil
 							(objSetData gSource 'behavior 'escorting)
@@ -429,6 +426,10 @@
 								(eq behavior 'goingHome)
 								)
 							Nil
+
+						; If we're not the player's wingmate, then just wait
+						(not (obj@ gSource 'playerWingman))
+							'waitForPlayer
 
 						; If we're waiting, stay in this system and wait for the player
 						(or (eq behavior 'waiting)
@@ -473,24 +474,55 @@
 					)
 			</OnTranslateMessage>
 
+			<OrderEscortPlayer>
+				(block ()
+					(objSetData gSource 'behavior 'escorting)
+					(shpOrder gSource 'follow gPlayerShip)
+					)
+			</OrderEscortPlayer>
+			
 			<OrderJoinPlayer>
 				(block Nil
-					(objSetProperty gSource 'playerWingman True)
+					(objSet@ gSource 'playerWingman True)
+
+					(objSetData gSource 'rpg.oldSovereign (obj@ gSource 'sovereign))
+					(objSet@ gSource 'sovereign &svPlayerAlly;)
+
 					(objSetCharacterData gSource 'status 'joined)
 					(objFireEvent gSource "OnWingmanJoinedPlayer")
 					)
 			</OrderJoinPlayer>
 			
 			<OrderLeavePlayer>
-				(block Nil
-					(objSetProperty gSource 'playerWingman Nil)
-					(objSetData gSource "behavior" 'goingHome)
+				(switch
+					;	If the ship is a player wingman, then they have left 
+					;	the player
+
+					(obj@ gSource 'playerWingman)
+						(block Nil
+							(objSet@ gSource 'playerWingman Nil)
+							(if (objGetData gSource 'rpg.oldSovereign)
+								(objSet@ gSource 'sovereign (objGetData gSource 'rpg.oldSovereign))
+								)
+							(objSetData gSource "behavior" 'goingHome)
 					
-					(shpCancelOrders gSource)
-					(shpOrder gSource 'hold 30)
-					(shpOrder gSource 'gate)
+							(shpCancelOrders gSource)
+							(shpOrder gSource 'hold 30)
+							(shpOrder gSource 'gate)
 					
-					(objFireEvent gSource "OnWingmanLeftPlayer")
+							(objFireEvent gSource "OnWingmanLeftPlayer")
+							)
+
+					;	Otherwise, we were only temporarily escorting the 
+					;	player.
+
+					(block ()
+						(objSetData gSource "behavior" 'goingHome)
+					
+						(shpCancelOrders gSource)
+						(shpOrder gSource 'hold 30)
+						(shpOrder gSource 'gate)
+						)
 					)
 			</OrderLeavePlayer>
 
@@ -500,6 +532,12 @@
 				;	better (cost more) than the old one.
 
 				(switch
+					;	If we're not the player's wingmate, then we don't accept
+
+					(not (obj@ gSource 'playerWingman))
+						(objTranslate gSource 'msgRefusesNewShip {
+							name: (objGetName gSource 0)
+							})
 
 					;	If the new ship is cheaper than this ship, then we do not
 					;	allow the upgrade.

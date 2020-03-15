@@ -37,7 +37,7 @@
 						;	class.
 					
 						(scrShowScreen gScreen
-							(objGetProperty gPlayerShip 'shipConfigScreen)
+							(obj@ gPlayerShip 'shipConfigScreen)
 							{ }
 							)
 					</Action>
@@ -167,7 +167,7 @@
 							(thisItem (scrGetItem gScreen))
 							(maxCount (itmGetCount thisItem))
 							(unitPrice (itmGetPrice thisItem))
-							(itemCurrency (itmGetProperty thisItem 'currency))
+							(itemCurrency (itm@ thisItem 'currency))
 
 							;	Compose text that describes the item
 
@@ -205,7 +205,7 @@
 
 							;	Enable/disable actions
 
-							(scrShowAction gScreen 'actionUse (objGetItemProperty gPlayerShip thisItem 'canBeUsed))
+							(scrShowAction gScreen 'actionUse (obj@ gPlayerShip thisItem 'canBeUsed))
 							(scrEnableAction gScreen 'actionJettisonItem (gr maxCount 0))
 							)
 						)
@@ -217,7 +217,7 @@
 							(thisItem (scrGetItem gScreen))
 							)
 							(switch
-								(objGetItemProperty gPlayerShip thisItem 'hasUseScreen)
+								(obj@ gPlayerShip thisItem 'hasUseScreen)
 									(block Nil
 										(scrSetData gScreen 'cursor (scrGetListCursor gScreen))
 										(scrShowItemUseScreen gScreen thisItem)
@@ -314,7 +314,20 @@
 
 			<UseMessage>
 				<OnPaneInit>
-					(scrSetDesc gScreen (plyGetRedirectMessage gPlayer))
+					(block (
+						(theMessage (plyGetRedirectMessage gPlayer))
+						(lastChar (subset theMessage (- (count theMessage) 1)))
+						)
+						(if (or (= lastChar ".")
+								(= lastChar "!")
+								(= lastChar "?")
+								(= lastChar "\"")
+								(= lastChar "'")
+								)
+							(scrSetDesc gScreen theMessage)
+							(scrSetDesc gScreen (cat theMessage "."))
+							)
+						)
 				</OnPaneInit>
 
 				<Actions>
@@ -567,73 +580,100 @@
 <!-- MISSION JOURNAL ===========================================================
 
 	This screen is designed to be opened from the Ship's interior screen. It
-	show the list of active missions for the player.
+	shows the list of active missions for the player.
 
 -->
 
 	<DockScreen UNID="&dsRPGMissionJournal;"
-			type=				"customPicker"
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
 			>
+		<Display type="customPicker"
+				iconWidth="192"
+				iconHeight="96"
+				>
+			<OnDisplayInit>
+				(block (
+					;	Make a list of all mission arcs
 
-		<List
-			rowHeight="32"
-			>
-			(block (missionList)
+					(missionArcs
+						(map (msnFind "*A") theMission {
+							title: (msn@ theMission 'arcName)
+							icon: (or (msn@ theMission 'imageDesc) (resCreateImageDesc &rsGenericMissionIcon; 0 0 64 64))
+							desc: (cat (msn@ theMission 'name) "\n" (scrTranslate gScreen 'textArcStatus (msn@ theMission 'arcStatus)))
+							rowHeight: 96
 
-				; Make a list of active player missions entries. Each entry is a list
-				; with the following elements:
-				;
-				; 0.	The name of the mission
-				; 1.	Nil (this would normally be the icon)
-				; 2.	Nil (this would normally be a short description)
-				; 3.	The mission object
-				; 4.	The time the mission was accepted
+							missionObj: theMission
+							acceptedOn: (msn@ theMission 'acceptedOn)
+							})
+						)
 
-				(setq missionList (map (msnFind "a") theMission
-					(list (msnGetProperty theMission 'name) Nil Nil theMission (msnGetProperty theMission 'acceptedOn))
-					))
+					;	Now a list of all non-mission arc missions
 
-				; Now sort by accepted time (later first)
+					(singleMissions 
+						(map (msnFind "a -property:arc;") theMission {
+							title: (msn@ theMission 'name)
+							icon: (or (msn@ theMission 'imageDesc) (resCreateImageDesc &rsGenericMissionIcon; 0 0 64 64))
+							desc: Nil
+							rowHeight: 64
 
-				(sort missionList 'descending 4)
-				)
-		</List>
+							missionObj: theMission
+							acceptedOn: (msn@ theMission 'acceptedOn)
+							})
+						)
+					)
+
+					; Now sort by accepted time (later first)
+
+					(append
+						(sort missionArcs 'descending 'acceptedOn)
+						(sort singleMissions 'descending 'acceptedOn)
+						)
+					)
+			</OnDisplayInit>
+		</Display>
 
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(block (theEntry theMission)
-						(setq theEntry (scrGetListEntry gScreen))
-						(setq theMission (@ theEntry 3))
-
+					(block (
+						(theEntry (scrGetListEntry gScreen))
+						(theMission (@ theEntry 'missionObj))
+						)
 						(switch
 							(not theEntry)
 								(scrSetDescTranslate gScreen 'descNoMissions)
 
-							(scrSetDesc gScreen (msnGetProperty theMission 'summary))
+							(scrSetDesc gScreen (msn@ theMission 'summary))
 							)
 							
-						(scrShowAction gScreen 'actionRemoveMission (msnGetProperty theMission 'canBeDeleted))
-						(scrShowAction gScreen 'actionSetTarget (typHasEvent (msnGetProperty theMission 'unid) 'OnSetPlayerTarget))
+						(scrShowAction gScreen 'actionRemoveMission (msn@ theMission 'canBeDeleted))
+						(scrShowAction gScreen 'actionSetTarget 
+							(and
+								(msn@ theMission 'isActive)
+								(typHasEvent (msn@ theMission 'unid) 'OnSetPlayerTarget)
+								)
+							)
 						(scrEnableAction gScreen 'actionSetTarget (neq theMission (scrGetData gScreen 'targetMission)))
 						)
 				</OnPaneInit>
 
 				<Actions>
 					<Action id="actionSetTarget" default="1">
-						(block ((theMission (@ (scrGetListEntry gScreen) 3)))
+						(block (
+							(theMission (@ (scrGetListEntry gScreen) 'missionObj))
+							)
 							(msnSetPlayerTarget theMission)
 							(scrSetData gScreen 'targetMission theMission)
 							(scrSetListCursor gScreen (scrGetListCursor gScreen)) ;  Refresh to disable action
 							)
 					</Action>
+
 					<Action id="actionRemoveMission">
-						(block (theEntry theMission)
-							(setq theEntry (scrGetListEntry gScreen))
-							(setq theMission (@ theEntry 3))
-							
+						(block (
+							(theEntry (scrGetListEntry gScreen))
+							(theMission (@ theEntry 'missionObj))
+							)
 							(msnFailure theMission)
 							(scrRefreshScreen gScreen)
 							)
@@ -651,6 +691,11 @@
 			<Text id="actionSetTarget">[S]et Target</Text>
 
 			<Text id="descNoMissions">You have no missions to complete.</Text>
+
+			<Text id="textArcStatus">
+				Chapters Completed: %completed%\n
+				Chapters Left: %left%
+			</Text>
 		</Language>
 	</DockScreen>
 

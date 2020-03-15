@@ -2,151 +2,110 @@
 
 <TranscendenceModule>
 
-	<!-- Captured Borer-class gunship
-
-	EXTRA DATA
-
-	status:				Current ship status:
-							Nil						= no mission yet
-							'captured				= wait until freed
-							'rescueInProgress		= player arrived
-							'free					= done
-	-->
-
-	<ShipClass UNID="&scBorerCaptured;"
-			manufacturer=		"United African States"
-			class=				"Borer"
-			type=				"gunship"
-
-			attributes=			""
-		
-			size=				"31"
-			mass=				"800"
-			thrustRatio=		"4"
-			maxSpeed=			"10"
-			cargoSpace=			"25"
-
-			leavesWreck=		"50"
-			>
-
-		<!-- Configuration -->
-		
-		<Armor
-			armorID=			"&itLightReactiveArmor;"
-			count=				"4"
-			/>
-		
-		<Devices>
-			<Device deviceID="&itMiningLaser;"/>
-		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"3.0"
-			rotationAccel=		"0.5"
-			/>
-
-		<Items>
-			<Item count="1d6" item="&itHelium3FuelRod;"/>
-		</Items>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsBorerHD;" imageX="0" imageY="0" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.005625" />
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="-25"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="122"	posRadius="25"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-122"	posRadius="25"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="25"	rotation="180"/>
-		</Effects>
-		
-		<!-- AI and Behavior -->
-
-		<AISettings
-			fireRateAdj=		"40"
-			fireAccuracy=		"70"
-			perception=			"4"
-			/>
-
-		<Events>
-			<OnCreate>
-				(block Nil
-					(sysAddObjRecurringTimerEvent 61 gSource "OnTimer")
+	<Type unid="&unidIndependentMiner;">
+		<Properties>
+			<DynamicGlobal id="mining.rankIcon">
+				(block (
+					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
 					)
-			</OnCreate>
-
-			<OnTimer>
-				(block (status)
-					(setq status (objGetData gSource "status"))
 					(switch
-						(eq status 'captured)
-							; If the player is in range, then rescue attempt has started
-							(if (leq (objGetDistance gSource gPlayerShip) 50)
-								(block Nil
-									(objSetData gSource "status" 'rescueInProgress)
-									(objSendMessage gPlayerShip gSource
-										(random
-											'(
-												"Mayday mayday mayday! We're under attack!"
-												"Over here! Help us, please!"
-												"Hostiles in the area! Approach with caution!"
-												"Mayday mayday mayday! Hostiles in the area!"
-												)
-											)
-										)
-									)
-								)
+						(= rankID 'novice)
+							(itmGetImageDesc &itTitaniumOre;)
+
+						(= rankID 'digger)
+							(itmGetImageDesc &itMiningLaser;)
+
+						(= rankID 'excavator)
+							(itmGetImageDesc &itClassAExcavationPod;)
+
+						(= rankID 'wildcatter)
+							(itmGetImageDesc &itClassBExcavationPod;)
+
+						(= rankID 'prospector)
+							(itmGetImageDesc &itClassCExcavationPod;)
+
+						(= rankID 'miner)
+							(shpGetImageDesc &scBorer; { rotation:300 })
+
+						(= rankID 'expertMiner)
+							(itmGetImageDesc &itPlasmaTorch;)
+
+						(itmGetImageDesc &itTitaniumOre;)
 						)
 					)
-			</OnTimer>
+			</DynamicGlobal>
+		</Properties>
 
-			<OrderSetCaptured>
-				(block Nil
-					(objSetData gSource "status" 'captured)
-					(shpCancelOrders gSource)
-					(shpOrder gSource 'wait)
-					)
-			</OrderSetCaptured>
+		<Language>
+			<Code id="rankDetails">
+				(block (
+					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+					(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+					(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
 
-			<OrderSetFree>
-				(block (dest)
-					(objSetData gSource "status" 'free)
-
-					; Thanks to player
-					(objSendMessage gPlayerShip gSource
-						(random
-							'(
-								"You're my savior! I owe you one, buddy."
-								"Kacking Centaurians! Can you believe this? Thanks for taking care of them for us!"
-								"We're OK! Thanks for blasting the Centaurians!"
-								"Nice shooting! Those bastards got what was coming to them!"
-								)
+					(totalAsteroids (count (sysFindObject Nil "t +property:canBeMined;")))
+					(exploredAsteroids (count (sysFindObject Nil "t +property:canBeMined; +property:explored;")))
+					(percentExplored
+						(if (gr totalAsteroids 0)
+							(cat (round (* 100 (/ exploredAsteroids totalAsteroids))) "%")
+							"N/A"
 							)
 						)
-
-					; Back to mining colony
-					(setq dest (sysFindObject gSource "TN +commonwealth; +mining; +populated;"))
-					(if (not dest)
-						(setq dest (sysFindObject gSource "TN +commonwealth; +populated;"))
-						)
-
-					(shpCancelOrders gSource)
-					(shpOrder gSource 'wait Nil (random 2 4))
-					(if dest
-						(block Nil
-							(shpOrder gSource 'dock dest)
-							(shpOrder gSource 'wait Nil (random 6 12))
-							)
-						)
-
-					; Then gate
-					(shpOrder gSource 'gate)
 					)
-			</OrderSetFree>
-		</Events>
-	</ShipClass>
+					(if (gr (typGetProperty &unidMiningSkill; 'rpg.miningXP) 0)
+						{
+							title: (fmtNoun (typTranslate gType (cat "rank." rankID)) 1 'titleCapitalize)
+							largeIcon: (typGetProperty gType 'mining.rankIcon)
 
-	<!-- Mining Colony ===================================================== -->
+							details: (list
+								{
+									title: (typTranslate gType 'labelSkill)
+									desc: (typTranslate gType 'rtfSkill {
+										value: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+										})
+									}
+								{
+									title: (typTranslate gType 'labelAsteroidsMined)
+									desc: (typTranslate gType 'rtfAsteroidsMined {
+										value: asteroidsMined
+										})
+									}
+								{
+									title: (typTranslate gType 'labelSystem { systemName:(sysGetName) })
+									desc: (typTranslate gType 'rtfExplored {
+										value: percentExplored
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+
+			<Text id="rank.novice">novice(s)</Text>
+			<Text id="rank.digger">digger(s)</Text>
+			<Text id="rank.excavator">excavator(s)</Text>
+			<Text id="rank.wildcatter">wildcatter(s)</Text>
+			<Text id="rank.prospector">prospector(s)</Text>
+			<Text id="rank.miner">miner(s)</Text>
+			<Text id="rank.expertMiner">expert miner(s)</Text>
+
+			<Text id="labelSkill">Skill:</Text>
+			<Text id="labelAsteroidsMined">Asteroids Mined:</Text>
+			<Text id="labelSystem">%SystemName% System:</Text>
+
+			<RTF id="rtfSkill">				{/rtf {/f:LargeBold;/c:#ffe667; %value% yield}}</RTF>
+			<RTF id="rtfAsteroidsMined">	{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+			<RTF id="rtfExplored">			{/rtf {/f:LargeBold;/c:#ffe667; %value% explored}}</RTF>
+		</Language>
+	</Type>
+
+<!-- STATION TYPES -->
+
+	<!-- Level 1: Mining Colony -->
 
 	<StationType UNID="&stMiningColony;"
 			name=				"Commonwealth mining colony"
@@ -159,14 +118,7 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"300"
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"100"
-			multiHull=			"true"
-			regen=				"1"
-				 
 			fireRateAdj=		"60"
-				 
-			canAttack=			"true"
 			explosionType=		"&vtKineticExplosion2;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
 			>
@@ -193,11 +145,10 @@
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
-			<Sell	criteria="wNU +unid:&itMiningLaser;;" priceAdj="100"	inventoryAdj="100"/>
-			<Sell	criteria="cNU +unid:&itMinersCargoHold;;" priceAdj="100"	inventoryAdj="100"/>
-			<Sell	criteria="*NU +miningEquipment; -Illegal; -NotForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ru|c|cur"/>
-			<Sell	criteria="*NU +Ore; -NotForSale;"	priceAdj="100"/>
-			<Buy	criteria="*NU +Food; -Illegal; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU +miningEquipment; -advanced; -defective; -Illegal; -NotForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ru|c|cur"/>
+			<Sell	criteria="*NU +ore; -defective; -notForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU +minable; -defective; -notForSale;"	priceAdj="100"/>
+			<Buy	criteria="*NU +food; -illegal; -notForSale;"	priceAdj="100"/>
 			
 			<Refuel			criteria="f +BasicFuel; L:1-5;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-5;" priceAdj="100"/>
@@ -217,14 +168,28 @@
 		</Trade>
 
 		<Items>
+			<!-- 
+				NOTE: Explicit spawning is better than inventory refresh (above)
+				because this guarantees that the items will be created, while 
+				inventory refresh is probabilistic.
+			-->
+
+			<Item count="1"	item="&itMinersCargoHold;"/>
+			<Item count="1"	item="&itMiningLaser;"/>
+
 			<RandomItem 
-					criteria=		"* +Ore; -NotStandard; -NotForSale;"
-					level=			"1"
-					levelCurve=		"2"
+					criteria=		"* +ore; -notStandard; -notForSale; | * +minable; -notStandard; -notForSale;"
+					levelFrequency= "systemLevel:ru|c|ur"
 					/>
 		</Items>
 
 		<!-- Configuration -->
+		
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itPlasteelPlate;"
+				hitPoints=		"100"
+				regen=			"1"
+				/>
 		
 		<Devices>
 			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true"/>
@@ -270,7 +235,13 @@
 		<!-- Dock Screens -->
 		
 		<DockScreens>
-			<Main>
+			<Main backgroundID="object">
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidIndependentMiner; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -299,19 +270,21 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &dsCommonwealthMiningInfo;)
+							</Action>
+
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +commonwealthMining; =" (sysGetLevel) ";")
-									noMissionTextID: 'descNoMissions
 									maxPerStation: (+ 1 (modulo (objGetDestiny gSource) 3))
 									intervalPerStation: (+ 5400 (* (objGetDestiny gSource) 10))
+									noMissionTextID: 'descNoMissions
 									})
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -327,7 +300,6 @@
 					</Default>
 				</Panes>
 			</Main>
-
 		</DockScreens>
 
 		<!-- Events and Data -->
@@ -353,6 +325,35 @@
 						)
 					)
 			</OnCreate>
+
+			<GetDockScreen>
+				(block (
+					newRankDesc
+					)
+					(switch
+						;	If station is abandoned, then nothing to do
+					
+						(objIsAbandoned gSource)
+							Nil
+						
+						;	See if the player has been promoted.
+						;	NOTE: Can't advance beyond wildcatter at a mining
+						;	colony; must join IMU.
+
+						(and (ls (typGetProperty &unidMiningSkill; 'rpg.miningRank) 3)
+								(setq newRankDesc (typFireEvent &unidMiningSkill; 'CheckPromotion))
+								)
+							{
+								screen: &dsCommonwealthMiningPromotion;
+								priority: 5
+								}
+
+						;	Let the base class handle any other screen
+
+						(typFireObjEvent &baCommonwealthStation; gSource 'GetDockScreen)
+						)
+					)
+			</GetDockScreen>
 			
 			<GetGlobalAchievements>
 				(rpgMissionAchievements &stMiningColony; "* +commonwealthMining;")
@@ -361,11 +362,7 @@
 			<GetRumors>
 				(append
 					(rpgRumorAdd 'commonwealthPub 1 20 'scan {station: (objGetName gSource)})
-					)
-			</GetRumors>
 
-			<GetGlobalRumors>
-				(append
 					(rpgRumorAdd 'commonwealthMining (make 'sequence 15))
 
 					(if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
@@ -373,14 +370,8 @@
 						(rpgRumorAdd 'commonwealthMining 'freelancer)
 						)
 					)
-			</GetGlobalRumors>
+			</GetRumors>
 
-			<OnContractGenerate>
-				(intGenerateMiningRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-			
 			<OnOreDepositFound>
 				(switch
 					;	If there are no outlaw miners in the system, we send out
@@ -453,699 +444,502 @@
 			<Text id="dockServices:weaponsAbility">
 				We sell mining equipment up to tech level %maxLevel%.
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food. We are not interested in buying %itemName%.
+
+			</Text>
 
 			<Text id="rumor.intro">
+
 				The colony supervisor is working at his station. The comms channels
 				are quiet and he stops to chat:\n\n
+
 			</Text>
 
 			<String id="rumor.commonwealthMining.1">
+
 				"It's calm now, but I've been hearing a lot of military chatter lately."
+
 			</String>
 			<Text id="rumor.commonwealthMining.2">
+
 				"Most people don't care where their metals come from, but let me
 				tell you: plasteel doesn't grow in greenhouses! We have to struggle
 				to mine enough for everyone."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.3">
+
 				"Charon pirates have always been a problem here. They're getting
 				stronger every year. One of these days we're going to have to do
 				something about them."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.4">
+
 				"The Korolov folks are good people; they're a little uptight about
 				schedules and they're big on pomp and medals, but we get along pretty well."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.5">
+
 				"We've had a lot of trouble with the warlords. They come through
 				in gangs and shoot up the place; they take what they need and then leave."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.6">
+
 				"I don't know much about weapons; not as much as you do, anyway.
 				But I know a lot of people who favor the AK15 Partisan. Of course,
 				if you can get your hands on a slam cannon, you're styling."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.7">
+
 				"Heavy metal armor is the best, in my opinion. Ceramic is nice for
 				my dishes, but it will do kack-all against a slam cannon. Ithalium
 				is the best; orthosteel is pretty awesome too. Duralloy lasts almost
 				forever, though."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.8">
+
 				"Have you ever been to the Outer Realm? Out beyond the Sung Slavers,
 				where the Ringers live? It's miner heaven, I bet. I'd like to go out
 				there some day. Just me and a souped-up Borer. The Ferians are there
 				too; I hear they've got mining techniques like you've never seen."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.9">
+
 				"It's not too dangerous from Eridani to St. Kat's. Mostly just pirates
 				to worry about. But deeper in the Ungoverned Territories there are
 				dangers that you cannot imagine. Slavers will jump you out in deep
 				space and boost your body for their slave farms."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.10">
+
 				"The Charon pirates are nasty, but you can handle their gunships.
 				Stay away from their frigates, though."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.11">
+
 				"When a Charon frigate is out hunting you'd best get away. They'll
 				take you down fast without so much as a warning."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.12">
+
 				"Titanium ore is as common as suit-rash. Palladium and plasteel
 				are kack too. If you want a good payday, find an asteroid with cerallox
 				or helium regolith."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.13">
+
 				"Every chump with a mining laser thinks he can mine. But if you want
 				to be a serious miner you need a miner's cargo hold."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.14">
+
 				"Volcanic asteroids are the best for mining. I once found 30 tons
 				of ithalium ore on one! Kept me in vodka and cunnu for a couple of years!"
+
 			</Text>
 			<Text id="rumor.commonwealthMining.15">
+
 				"Ice asteroids are filthy with cerallox. Lots of palladium and
 				plasteel too, though, so they're not always worth the effort."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.pilgrim">
+
 				"So you're going to the Core, huh? Good luck with that! I've known
 				a lot of people heading towards the Core. My best friend's wife left
 				about a year ago. Can't say that anyone's ever returned, though."
+
 			</Text>
 			<Text id="rumor.commonwealthMining.freelancer">
+
 				"So you're a freelancer, huh? Good luck with that! I've known
 				a lot of freelancers and mercs. My best friend's husband was
 				a freelancer for a while. Caught a missile out in Heilong Xing."
+
 			</Text>
 
 			<Text id="rumor.commonwealthPub.1">
+
 				You talk to a group of miners from %station% who try to impress
 				you with their knowledge of helium regolith market prices.
 				You spend 5 credits on drinks.
+
 			</Text>
 
 			<Text id="rpg.missionTypeDesc">Mining colony missions</Text>
 			<Text id="core.mapDesc">
-				Refuels up to level 5 &mdash; Repairs/installs armor up to level 5 &mdash; Installs mining equipment up to level 6 &mdash; Sells ore &mdash; Buys food
+
+				Refuels up to level 5 &mdash; Repairs/installs armor up to 
+				level 5 &mdash; Installs mining equipment up to level 6 &mdash;
+				Sells ore &mdash; Buys food
+
 			</Text>
 		</Language>
 	</StationType>
+
+<!-- DOCK SCREENS -->
+
+	<DockScreen unid="&dsCommonwealthAsteroidInfo;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		<Display type="customPicker"
+				rowHeight="110"
+				iconWidth="110"
+				iconHeight="110"
+				>
+			<OnDisplayInit>
+				(block (
+					(asteroidList (list 'icy 'metallic 'primordial 'rocky 'volcanic))
+					(asteroidImages {
+						icy: (typGetImageDesc &stIceAsteroidSizeC;)
+						metallic: (typGetImageDesc &stMetallicAsteroidSizeC;)
+						primordial: (typGetImageDesc &stPrimordialAsteroidSizeC;)
+						rocky: (typGetImageDesc &stRockyAsteroidSizeC;)
+						volcanic: (typGetImageDesc &stVolcanicAsteroidSizeC;)
+						})
+					)
+					(map asteroidList theType {
+						id: theType
+						title: (scrTranslate gScreen (cat 'asteroidName. theType))
+						icon: (@ asteroidImages theType)
+						desc: (scrTranslate gScreen (cat 'asteroidDesc. theType))
+						hint: (scrTranslate gScreen (cat 'asteroidHint. theType))
+						})
+					)
+			</OnDisplayInit>
+		</Display>
+		
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theEntry (scrGetListEntry gScreen))
+						)
+						(scrSetDesc gScreen (@ theEntry 'hint))
+						)
+				</OnPaneInit>
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="asteroidName.icy">Icy Asteroid</Text>
+			<Text id="asteroidDesc.icy">
+
+				Icy asteroids can be found at the frozen edge of star systems.
+				They are a mix of rock and ice.
+			
+			</Text>
+			<Text id="asteroidHint.icy">
+
+				5% of icy asteroids have resources. The most commonly found are
+				Cobalt-thorium, xenotite, and pteracnium.
+
+				Use a mining laser (drill mining) or a plasma torch (ablative 
+				mining) for best results. Avoid using excavation pods as they 
+				tend to shatter the ice without extracting resources.
+			
+			</Text>
+			<Text id="asteroidName.metallic">Metallic Asteroid</Text>
+			<Text id="asteroidDesc.metallic">
+
+				These asteroids are filled with valuable metals. They are most
+				common around average-sized stars.
+			
+			</Text>
+			<Text id="asteroidHint.metallic">
+
+				10% of metallic asteroids have extractable ores, such as
+				titanium, plasteel, and orthosteel.
+
+				Mining lasers and their ilk are not very effective. Use a plasma
+				torch (ablative mining) or excavation pods (shockwave mining)
+				instead.
+
+			</Text>
+			<Text id="asteroidName.primordial">Primordial Asteroid</Text>
+			<Text id="asteroidDesc.primordial">
+
+				Primordial asteroids are rich in organic compounds, and often
+				contain exotic resources.
+			
+			</Text>
+			<Text id="asteroidHint.primordial">
+
+				8% of primordial asteroids have useful resources. The most 
+				commonly found are cerallox, duranium, and tetramite.
+
+				Use a mining laser (drill mining) or mining charges (explosive
+				mining) for best results. Avoid plasma torches (ablative mining)
+				because they burn away the target ores.
+			
+			</Text>
+			<Text id="asteroidName.rocky">Rocky Asteroid</Text>
+			<Text id="asteroidDesc.rocky">
+
+				Rocky asteroids are common throughout the universe.
+			
+			</Text>
+			<Text id="asteroidHint.rocky">
+
+				10% of rocky asteroids have useful resources. The most commonly
+				found are palladium, gold, and platinum.
+
+				All mining techniques are effective on rocky asteroids.
+			
+			</Text>
+			<Text id="asteroidName.volcanic">Volcanic Asteroid</Text>
+			<Text id="asteroidDesc.volcanic">
+
+				Volcanic asteroids are formed in high-temperature regions when
+				molten lava solidifies.
+
+			
+			</Text>
+			<Text id="asteroidHint.volcanic">
+
+				15% of volcanic asteroids have valuable resources of all kinds.
+				Palladium, gold, cerallox, titanium, and even duranium are all
+				commonly found.
+
+				Use mining charges (explosive mining) or excavation pods
+				(shockwave mining) for best results. Mining lasers (drill 
+				mining) are too weak against volcanic rock.
+			
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<DockScreen unid="&dsCommonwealthMiningInfo;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			backgroundID=		"object"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidIndependentMiner; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(switch
+						(gr (typGetProperty &unidMiningSkill; 'rpg.miningXP) 0)
+							(block (
+								(rank (typGetProperty &unidMiningSkill; 'rpg.miningRank))
+								(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+
+								(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+								(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
+
+								(nextRank (min (+ rank 1) 6))
+								(nextYieldAdj (@ (@ (typGetProperty &unidMiningSkill; 'rpg.miningLevels) nextRank) 'yieldAdj))
+								)
+								(scrSetDescTranslate gScreen (cat "descInfo." rankID) {
+									yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+									nextYieldAdj: (cat "+" (round (* (- nextYieldAdj 1.0) 100)) "%")
+									asteroidsMined: (fmtNumber asteroidsMined)
+									})
+								)
+
+						(scrSetDescTranslate gScreen 'descInfo.unranked)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionAsteroidInfo">
+						(scrShowScreen gScreen &dsCommonwealthAsteroidInfo;)
+					</Action>
+
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="actionAsteroidInfo">[A]steroid Data</Text>
+
+			<Text id="descInfo.unranked">
+
+				Don't sit in a corporate office all day making someone else 
+				rich! Find your fortune as an independent asteroid miner and
+				make yourself rich for a change.
+
+				Asteroid mining requires only two pieces of equipment. You need
+				a mining tool, such as a mining laser, and you need a mining 
+				cargo hold. Both are available for purchase on this station.
+
+			</Text>
+			<Text id="descInfo.novice">
+
+				Based on your experience you are considered a novice at asteroid
+				mining. Keep at it!
+
+				Hit an asteroid with your mining weapon and see if you find any
+				resources. Each time you try, whether you find anything or not,
+				you will increase your experience.
+
+			</Text>
+			<Text id="descInfo.digger">
+				
+				You are recognized as an independent miner with the rank of 
+				Digger.
+
+				Keep mining to gain experience. The next rank is Excavator, in
+				which you will gain a %nextYieldAdj% bonus on mining yield.
+
+			</Text>
+			<Text id="descInfo.excavator">
+				
+				You are recognized as an independent miner with the rank of 
+				Excavator.
+
+				Keep mining to gain experience. The next rank is Wildcatter, in
+				which you will have a %nextYieldAdj% bonus on mining yield.
+
+			</Text>
+			<Text id="descInfo.wildcatter">
+				
+				You are recognized as an independent miner with the rank of 
+				Wildcatter.
+
+				Keep mining to gain experience. The next rank is Prospector, in
+				which you will have a %nextYieldAdj% bonus on mining yield.
+
+			</Text>
+			<Text id="descInfo.prospector">
+				
+				You are recognized as an independent miner with the rank of 
+				Prospector.
+
+				The next rank is Miner, with a %nextYieldAdj% bonus on mining yield.
+
+			</Text>
+			<Text id="descInfo.miner">
+				
+				You are recognized as an independent miner with the rank of 
+				Miner.
+
+				The next rank is Expert Miner, with a %nextYieldAdj% bonus on mining 
+				yield.
+
+			</Text>
+			<Text id="descInfo.expertMiner">
+				
+				You are recognized as an independent miner with the rank of 
+				Expert Miner.
+
+				You have reached the top of your profession.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<DockScreen unid="&dsCommonwealthMiningPromotion;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			backgroundID=		"object"
+			>
+
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidIndependentMiner; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+						(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+						)
+						(scrSetDescTranslate gScreen (cat "descPromotion." rankID) {
+							yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
+							})
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="descPromotion.digger">
+
+				Congratulations, you have gained experience mining asteroids!
+				You are now recognized as a Digger.
+			
+			</Text>
+			<Text id="descPromotion.excavator">
+
+				Congratulations, you have gained experience mining asteroids,
+				and are now recognized as an Excavator.
+
+				You have a +5% yield bonus when mining.
+			
+			</Text>
+			<Text id="descPromotion.wildcatter">
+
+				Congratulations, you have gained experience mining asteroids,
+				and are now recognized as a Wildcatter.
+
+				You have a +10% yield bonus when mining.
+			
+			</Text>
+			<Text id="descPromotion.prospector">
+
+				Congratulations, you have gained experience mining asteroids,
+				and are now recognized as a Prospector.
+
+				You have a +20% yield bonus when mining.
+			
+			</Text>
+			<Text id="descPromotion.miner">
+
+				Congratulations, you have gained experience mining asteroids,
+				and are now recognized as a Miner.
+
+				You have a +35% yield bonus when mining.
+			
+			</Text>
+			<Text id="descPromotion.expertMiner">
+
+				Congratulations, you have gained experience mining asteroids,
+				and are now recognized as an Expert Miner, the highest rank in
+				our profession!
+
+				You have a +50% yield bonus when mining.
+			
+			</Text>
+		</Language>
+	</DockScreen>
 	
-
-	<!-- Mission: Rescue Mining Ship ===========================================
-
-	EXTRA DATA
-
-	reward:			Reward (in credits) for completing mission
-	targetID:		Id of ship to rescue
-	targetCount:	Number of raiders to destroy
-
-	playerHelped:	True if the player destroyed any raiders
-	playerArrived:	True if the player saw the captured miner
-
-	state:			Current state of mission
-			Nil:		Not yet started
-			rescue:		Heading out to rescue miner
-			returning:	Returning to station
-
-	======================================================================== -->
-
-	<MissionType UNID="&msSaveMiningShip;"
-			name=				"Rescue Mining Ship"
-			attributes=			"commonwealthMining"
-
-			level=				"1-5"
-
-			expireTime=			"5400"
-			failureAfterOutOfSystem="5400"
-			>
-
-		<StaticData>
-			<Data id="encounter">
-				(
-					{	}
-					{	min:2	max:3	raiderTypes: (&scCentauriRaider;) }
-					{	min:3	max:4	raiderTypes: (&scCentauriRaider; &scCentauriRaider; &scCentauriHeavyRaider;) }
-					{	min:4	max:6	raiderTypes: (&scCentauriRaider; &scCentauriRaider; &scCentauriHeavyRaider;) }
-					{	min:6	max:8	raiderTypes: (&scCentauriRaider; &scCentauriRaider; &scCentauriHeavyRaider;) }
-					)
-			</Data>
-		</StaticData>
-
-		<Events>
-			<OnCreate>
-				(block Nil
-					(switch
-						;	Reduce chance of mission if player has already completed one
-						(and (msnFind Nil "r +commonwealthMining;")
-								(ls (random 1 100) 33))
-							(msnDestroy gSource)
-
-						;	Set the reward
-						(msnSetData gSource 'reward (+ 100 (* 100 (sysGetLevel))))
-						)
-					)
-			</OnCreate>
-
-			<OnAccepted>
-				(block (
-					(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
-
-					;	Find an appropriate asteroid
-					(asteroidList
-						(filter
-							(subset (shuffle (sysFindObject stationObj "t +asteroid; R:60;")) 0 20)
-							asteroidObj
-							(not (sysFindObject asteroidObj "T +populated; N:60;"))
-							)
-						)
-
-					;	Find a location for the mining ship. If we could not find an asteroid, pick a random location
-					(centerPos (if asteroidList
-						(random asteroidList)
-						(sysVectorRandom stationObj (random 180 300) 60 "T +populated;")
-						))
-
-					;	Get encounter options based on level
-					(encounterEntry (@ (msnGetStaticData gSource 'encounter) (sysGetLevel)))
-
-					;	Number of warlords is based on system level
-					(targetCount (random (@ encounterEntry 'min) (@ encounterEntry 'max)))
-
-					shipObj
-					)
-
-					;	Create the captured mining ship
-					(setq shipObj
-						(sysCreateShip
-							&scBorer;
-							(sysVectorRandom centerPos (random 15 30) 15 "T")
-							&svCommonwealth;
-							)
-						)
-					(objEnumItems shipObj "dI" theDevice (objSetItemProperty shipObj theDevice 'enabled Nil))
-					(shpOrder shipObj 'waitForTarget gPlayerShip 50)
-					(shpOrder shipObj 'fireEvent gSource 'OnPlayerArrived)
-					(shpOrder shipObj 'wait)
-					(objSetIdentified shipObj)
-					(msnRegisterForEvents gSource shipObj)
-					(msnSetData gSource 'targetID (objGetID shipObj))
-
-					;	Place warlords
-					(msnSetData gSource 'targetCount targetCount)
-					(for i 1 targetCount
-						(block (raiderObj)
-							(setq raiderObj (sysCreateShip (random (@ encounterEntry 'raiderTypes)) shipObj &svCentauriWarlords;))
-
-							(shpOrder raiderObj 'patrol shipObj 5)
-							(objSetData raiderObj "00101001_Warlord" True)
-							(msnRegisterForEvents gSource raiderObj)
-							)
-						)
-
-					;	Set mission status
-					(msnSetData gSource 'state 'rescue)
-					)
-			</OnAccepted>
-
-			<OnSetPlayerTarget>
-				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)) 'escort)
-			</OnSetPlayerTarget>
-
-			<OnObjDestroyed>
-				(switch
-					(= (objGetID aObjDestroyed) (msnGetData gSource 'targetID))
-						(msnFailure gSource)
-
-					(objGetData aObjDestroyed "00101001_Warlord")
-						(block Nil
-							(if (and gPlayerShip (= aOrderGiver gPlayerShip))
-								(msnSetData gSource 'playerHelped True)
-								)
-							(if (leq (msnIncData gSource 'targetCount -1) 0)
-								(msnFireEvent gSource 'OnSetFree)
-								)
-							)
-					)
-			</OnObjDestroyed>
-
-			<OnPlayerArrived>
-				(block (
-					(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
-					(targetObj (objGetObjByID (msnGetData gSource 'targetID)))
-					)
-					(msnSetData gSource 'playerArrived True)
-					(objSendMessage gPlayerShip targetObj (msnTranslate gSource (cat "msgHelp:" (random 1 4))))
-					)
-			</OnPlayerArrived>
-
-			<OnSetFree>
-				(block (
-					(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
-					(targetObj (objGetObjByID (msnGetData gSource 'targetID)))
-					)
-
-					;	Enable all devices
-					(objEnumItems targetObj "dI" theDevice (objSetItemProperty targetObj theDevice 'enabled True))
-
-					;	Order the ship to return
-					(shpCancelOrders targetObj)
-					(shpOrder targetObj 'wait Nil (random 2 4))
-					(shpOrder targetObj 'dock stationObj)
-					(shpOrder targetObj 'fireEvent gSource 'OnReturnedToStation)
-					(shpOrder targetObj 'wait Nil (random 6 12))
-					(shpOrder targetObj 'gate)
-
-					(if (msnGetData gSource 'playerHelped)
-						(objSendMessage gPlayerShip targetObj (msnTranslate gSource (cat "msgFree:" (random 1 4))))
-						)
-
-					(msnSetData gSource 'state 'returning)
-					)
-			</OnSetFree>
-
-			<OnReturnedToStation>
-				(msnSuccess gSource)
-			</OnReturnedToStation>
-
-			<OnReward>
-				(rpgMissionRewardPayment (msnGetData gSource 'reward))
-			</OnReward>
-		</Events>
-
-		<Language>
-			<Text id="Name">
-				Rescue Mining Ship
-			</Text>
-			<Text id="Summary">
-				(msnTranslate gSource 'textSummary {
-					stationName: (objGetName (objGetObjByID (msnGetProperty gSource 'ownerID)))
-					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
-					})
-			</Text>
-			<Text id="textSummary">
-				
-				Centauri warlords have captured a mining ship from %stationName%.
-				Your mission is to destroy the warlords and rescue the mining ship.
-
-				System: %systemName%\n
-				Payment: %payment%
-				
-			</Text>
-			
-			<!-- INTRO -->
-			
-			<Text id="FirstIntro">
-				(msnTranslate gSource 'textFirstIntro {
-					stationName: (objGetName (objGetObjByID (msnGetProperty gSource 'ownerID)))
-					})
-			</Text>
-			<Text id="textFirstIntro">
-				
-				The meeting hall is carved deep below the asteroid's surface. The colony supervisor stands
-				on a platform in the center, surrounded by comms equipment and visual displays.
-				He turns his attention towards you as you approach:
-
-				"Welcome to %stationName%! I saw your ship on my displays; she looks like she's armed for combat.
-				How about taking on a mission for us? We could use the help, and there would be payment."
-
-			</Text>
-			<Text id="Intro">
-				(msnTranslate gSource (random (list 'descSupervisor1 'descSupervisor2 'descSupervisor3)) {
-					stationName: (objGetName (objGetObjByID (msnGetProperty gSource 'ownerID)))
-					})
-			</Text>
-			<Text id="descSupervisor1">
-				
-				The colony supervisor stands at the center plugged in to his consoles and display.
-				He turns his attention towards you as you approach:
-				
-				"Welcome to %stationName%! If you're looking for work, I might be able to set you up with something."
-				
-			</Text>
-			<Text id="descSupervisor2">
-				
-				The colony supervisor stands at his station, surveying the status on his displays.
-				He turns his attention towards you as you approach:
-				
-				"Welcome, %name%! We have another mission for you, if you're interested."
-				
-			</Text>
-			<Text id="descSupervisor3">
-				
-				The colony supervisor stands at the center, his hands conducting the consoles and displays.
-				He turns his attention towards you as you approach:
-				
-				"Welcome, %name%! Are you interested in flying a mission for us? There would be payment, of course."
-				
-			</Text>
-			
-			<!-- BRIEFING -->
-
-			<Text id="Briefing">
-				(msnTranslate gSource 'textBriefing {
-					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
-					})
-			</Text>
-			<Text id="textBriefing">
-
-					"Centauri warlords have captured one of our mining ships in this system.
-					We want you to go out there and destroy the raiders that have captured the ship.
-					We'll pay you %reward% if you succeed.
-
-					"Do we have a deal?"
-
-			</Text>
-			<Text id="AcceptReply">
-
-				"We're agreed then. We'll program the miner's location into 
-				your ship's computer. Just follow your directional indicator and 
-				you'll get there. Good luck!"
-
-			</Text>
-			<String id="DeclineReply">
-				"Ah, Hell! What are you doing here then? Stop wasting my time!"
-			</String>
-			<Text id="InProgress">
-
-				"What's wrong? Are those warlords too tough for you? Get back 
-				out there and finish the job!"
-
-			</Text>
-
-			<Text id="SuccessDebrief">
-				(msnTranslate gSource 'textSuccessDebrief {
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
-					})
-			</Text>
-			<Text id="textSuccessDebrief">
-
-				"Great work! Maybe the warlords will think twice before attacking us again.
-				We've deposited %payment% to your account."
-
-			</Text>
-			<Text id="FailureDebrief">
-
-				"You've let us all down! We thought you could handle a few 
-				warlords; I guess we were wrong."
-
-			</Text>
-			<Text id="SuccessMsg">
-				Mission complete!
-			</Text>
-
-			<Text id="msgHelp:1">Mayday mayday mayday! We're under attack!</Text>
-			<Text id="msgHelp:2">Over here! Help us, please!</Text>
-			<Text id="msgHelp:3">Hostiles in the area! Approach with caution!</Text>
-			<Text id="msgHelp:4">Mayday mayday mayday! Hostiles in the area!</Text>
-
-			<Text id="msgFree:1">You're my savior! I owe you one, buddy.</Text>
-			<Text id="msgFree:2">Kacking Centaurians! Can you believe this? Thanks for taking care of them for us!</Text>
-			<Text id="msgFree:3">We're OK! Thanks for blasting the Centaurians!</Text>
-			<Text id="msgFree:4">Nice shooting! Those bastards got what was coming to them!</Text>
-		</Language>
-	</MissionType>
-
-
-	<!-- Mission: Destroy Illegal Miners =======================================
-
-	EXTRA DATA
-
-	reward:			Reward (in credits) for completing mission
-	targetID:		Id of asteroid
-	targetCount:	Number of targets to destroy
-
-	======================================================================== -->
-
-	<MissionType UNID="&msDestroyIllegalMiners;"
-			name=				"Destroy Illegal Miners"
-			attributes=			"commonwealthMining"
-
-			level=				"1-5"
-
-			expireTime=			"5400"
-			failureAfterOutOfSystem="5400"
-			>
-
-		<StaticData>
-			<Data id="encounter">
-				(
-					{	}
-					{	min:1	max:2	shipTypes: (&scBorer; &scBorer; &scHammerhead;) }
-					{	min:2	max:3	shipTypes: (&scBorer; &scBorer; &scHammerhead; &scHammerhead-II; &scBorer-II;) }
-					{	min:3	max:5	shipTypes: (&scBorer; &scBorer; &scHammerhead; &scHammerhead-II; &scBorer-II;) }
-					{	min:5	max:7	shipTypes: (&scBorer; &scBorer; &scHammerhead; &scHammerhead-II; &scBorer-II;) }
-					)
-			</Data>
-		</StaticData>
-
-		<Events>
-			<OnCreate>
-				(block (
-					;	Find an appropriate asteroid
-					(asteroidList
-						(filter
-							(subset (shuffle (sysFindObject aOwnerObj "t +asteroid; R:60;")) 0 20)
-							asteroidObj
-							(not (sysFindObject asteroidObj "T +populated; N:60;"))
-							)
-						)
-
-					asteroidObj
-					)
-
-					(switch
-						;	Not offered as the first commonwealthMining mission
-						(not (msnFind Nil "r +commonwealthMining;"))
-							(msnDestroy gSource)
-
-						(block Nil
-							(if asteroidList
-								(setq asteroidObj (random asteroidList))
-								(block (
-									;	Find the most distant planet
-									(centerStar (sysFindObject gSource "tN +star;"))
-									(farthestPlanet (sysFindObject (if centerStar centerStar aOwnerObj) "tR +isPlanet:true;"))
-
-									;	Pick a random distance beyond the farthest planet
-									(meanDist (if farthestPlanet (sysVectorDistance (objGetPos farthestPlanet)) (random 600 900)))
-
-									(dist (+ meanDist (random -60 60)))
-									)
-									;	Create an asteroid at this distance
-									(setq asteroidObj (sysCreateStation &stMediumAsteroid; (sysVectorRandom Nil dist 60 "t")))
-									)
-								)
-
-							;	If the asteroid does not have a name, name it now
-							(if (or (= (objGetName asteroidObj 0) "")
-									(= (subset (objGetName asteroidObj 0) 0 1) "(")
-									)
-								(objSetName asteroidObj (cat "Asteroid " (random 10000 99999)))
-								)
-
-							(msnSetData gSource 'targetID (objGetID asteroidObj))
-
-							;	Set the reward
-							(msnSetData gSource 'reward (+ 150 (* 150 (sysGetLevel))))
-							)
-						)
-					)
-			</OnCreate>
-
-			<OnAccepted>
-				(block (
-					(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
-					(asteroidObj (objGetObjByID (msnGetData gSource 'targetID)))
-
-					;	Get encounter options based on level
-					(encounterEntry (@ (msnGetStaticData gSource 'encounter) (sysGetLevel)))
-
-					;	Number of warlords is based on system level
-					(targetCount (random (@ encounterEntry 'min) (@ encounterEntry 'max)))
-					)
-
-					;	Place illegal miners
-					(msnSetData gSource 'targetCount targetCount)
-					(for i 1 targetCount
-						(block (shipObj)
-							(setq shipObj (sysCreateShip (random (@ encounterEntry 'shipTypes)) asteroidObj &svOutlawMiners;))
-
-							(shpOrder shipObj 'guard asteroidObj)
-							(objSetData shipObj "00101002_Illegal" True)
-							(msnRegisterForEvents gSource shipObj)
-							)
-						)
-					)
-			</OnAccepted>
-
-			<OnSetPlayerTarget>
-				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)) 'dock)
-			</OnSetPlayerTarget>
-
-			<OnObjDestroyed>
-				(switch
-					(objGetData aObjDestroyed "00101002_Illegal")
-						(block Nil
-							(if (and gPlayerShip (= aOrderGiver gPlayerShip))
-								(msnSetData gSource 'playerHelped True)
-								)
-							(if (leq (msnIncData gSource 'targetCount -1) 0)
-								(msnSuccess gSource)
-								)
-							)
-					)
-			</OnObjDestroyed>
-
-			<OnReward>
-				(rpgMissionRewardPayment (msnGetData gSource 'reward))
-			</OnReward>
-		</Events>
-
-		<Language>
-			<Text id="Name">
-				"Destroy Illegal Miners"
-			</Text>
-			<Text id="Summary">
-				(msnTranslate gSource 'textSummary {
-					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
-					})
-			</Text>
-			<Text id="textSummary">
-				Outlaw miners have staked an illegal claim to an asteroid in the system.
-				Your mission is to terminate their claim.
-
-				System: %systemName%\n
-				Payment: %payment%
-			</Text>
-			
-			<!-- INTRO -->
-			
-			<Text id="FirstIntro">
-				(msnTranslate gSource 'textFirstIntro {
-					stationName: (objGetName (objGetObjByID (msnGetProperty gSource 'ownerID)))
-					})
-			</Text>
-			<Text id="textFirstIntro">
-				
-				The meeting hall is carved deep below the asteroid's surface. The colony supervisor stands
-				on a platform in the center, surrounded by comms equipment and visual displays.
-				He turns his attention towards you as you approach:
-
-				"Welcome to %stationName%! I saw your ship on my displays; she looks like she's armed for combat.
-				How about taking on a mission for us? We could use the help, and there would be payment."
-
-			</Text>
-			<Text id="Intro">
-				(msnTranslate gSource (random (list 'descSupervisor1 'descSupervisor2 'descSupervisor3)) {
-					stationName: (objGetName (objGetObjByID (msnGetProperty gSource 'ownerID)))
-					})
-			</Text>
-			<Text id="descSupervisor1">
-				
-				The colony supervisor stands at the center plugged in to his consoles and display.
-				He turns his attention towards you as you approach:
-				
-				"Welcome to %stationName%! If you're looking for work, I might be able to set you up with something."
-				
-			</Text>
-			<Text id="descSupervisor2">
-				
-				The colony supervisor stands at his station, surveying the status on his displays.
-				He turns his attention towards you as you approach:
-				
-				"Welcome, %name%! We have another mission for you, if you're interested."
-				
-			</Text>
-			<Text id="descSupervisor3">
-				
-				The colony supervisor stands at the center, his hands conducting the consoles and displays.
-				He turns his attention towards you as you approach:
-				
-				"Welcome, %name%! Are you interested in flying a mission for us? There would be payment, of course."
-				
-			</Text>
-			
-			<!-- BRIEFING -->
-			
-			<Text id="Briefing">
-				(msnTranslate gSource 'textBriefing {
-					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)))
-					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
-					})
-			</Text>
-			<Text id="textBriefing">
-
-				"Outlaw miners have staked an illegal claim to %targetName%
-				in this system. We want you to go out there and terminate their claim.
-				We'll pay you %reward% if you succeed.
-
-				"Do we have a deal?"
-
-			</Text>
-			<Text id="AcceptReply">
-
-				"We're agreed then. We'll program the asteroid's location into 
-				your ship's computer. Just follow your directional indicator and 
-				you'll get there. Good luck!"
-
-			</Text>
-			<String id="DeclineReply">
-				"Ah, Hell! What are you doing here then? Stop wasting my time!"
-			</String>
-			<Text id="InProgress">
-
-				"What's wrong? Are those illegals too tough for you? Get back 
-				out there and finish the job!"
-
-			</Text>
-			<Text id="SuccessDebrief">
-				(msnTranslate gSource 'textSuccessDebrief {
-					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
-					})
-			</Text>
-			<Text id="textSuccessDebrief">
-
-				"Great work! Illegal miners are just taking good jobs away from
-				Commonwealth citizens. We've deposited %reward% to your account."
-
-			</Text>
-			<Text id="FailureDebrief">
-
-				"You've let us all down! We thought you could handle a few 
-				illegals; I guess we were wrong."
-
-			</Text>
-			<Text id="SuccessMsg">
-				Mission complete!
-			</Text>
-		</Language>
-	</MissionType>
-
-<!-- GLOBALS -->
-
-	<Globals>
-		(block Nil
-			(setq mneAllTargetsDestroyed (lambda (sourceObj excludeObj)
-				(block (allDestroyed)
-					(setq allDestroyed True)
-					(for i 1 (objGetData sourceObj "targetCount")
-						(block (theTarget)
-							(setq theTarget (objGetObjRefData sourceObj (cat "target" i)))
-							(if (and theTarget (not (eq theTarget excludeObj)))
-								(setq allDestroyed Nil)
-								)
-							)
-						)
-					allDestroyed
-					)
-				))
-			)
-	</Globals>
-
 <!-- RESOURCES -->
 
 	<Image UNID="&rsMiningColonyIce;"			bitmap="Resources\MiningColonyIce.jpg"	bitmask="Resources\MiningColonyIceMask.bmp" 	loadOnUse="true" />

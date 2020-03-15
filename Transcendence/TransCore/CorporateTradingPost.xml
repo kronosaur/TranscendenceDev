@@ -14,7 +14,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"
@@ -66,7 +65,7 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="*NU -Illegal; -NotForSale; -ID;"	priceAdj="100"/>
+			<Sell	criteria="*NU -defective; -Illegal; -NotForSale; -ID;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
@@ -77,12 +76,6 @@
 		</Trade>
 
 		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<OnObjDestroyed>
 				(if (and (eq (objGetData gSource "MissionStatus") "intransit")
 						(eq aObjDestroyed (objGetObjRefData gSource "Transport")))
@@ -130,9 +123,7 @@
 							</Action>
 
 							<Action id="actionBuyItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellItems">

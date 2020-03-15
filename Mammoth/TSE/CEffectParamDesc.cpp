@@ -540,7 +540,7 @@ ALERROR CEffectParamDesc::InitImageFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	m_iType = typeImage;
 	m_pImage = new CObjectImageArray;
-	if (error = m_pImage->InitFromXML(Ctx, pDesc))
+	if (error = m_pImage->InitFromXML(Ctx, *pDesc))
 		{
 		delete m_pImage;
 		m_iType = typeNull;

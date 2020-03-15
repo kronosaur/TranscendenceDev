@@ -5,29 +5,7 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
-const int SCREEN_PADDING_LEFT =		8;
-const int SCREEN_PADDING_RIGHT =	8;
-//const int MAX_SCREEN_WIDTH =		1280 + SCREEN_PADDING_LEFT + SCREEN_PADDING_RIGHT;
-const int MAX_SCREEN_WIDTH =		1024 + SCREEN_PADDING_LEFT + SCREEN_PADDING_RIGHT;
-const int MIN_DESC_PANE_WIDTH =		408;
-
-const int MAX_BACKGROUND_WIDTH =	1500;
-const int MAX_BACKGROUND_HEIGHT =	648;
 const int EXTRA_BACKGROUND_IMAGE =	128;
-
-const int STATUS_BAR_HEIGHT	=		20;
-const int g_cyTitle =				72;
-const int g_cxActionsRegion =		400;
-
-const int g_cyItemTitle =			32;
-const int g_cxItemMargin =			132;
-const int g_cxItemImage =			96;
-const int g_cyItemImage =			96;
-
-const int g_cxStats =				400;
-const int g_cyStats =				30;
-const int g_cxCargoStats =			200;
-const int g_cxCargoStatsLabel =		100;
 
 #define CANVAS_TAG					CONSTLIT("Canvas")
 #define DISPLAY_TAG					CONSTLIT("Display")
@@ -46,7 +24,6 @@ const int g_cxCargoStatsLabel =		100;
 
 #define ALIGN_ATTRIB				CONSTLIT("align")
 #define ANIMATE_ATTRIB				CONSTLIT("animate")
-#define BACKGROUND_ID_ATTRIB		CONSTLIT("backgroundID")
 #define BOTTOM_ATTRIB				CONSTLIT("bottom")
 #define CENTER_ATTRIB				CONSTLIT("center")
 #define COLOR_ATTRIB				CONSTLIT("color")
@@ -75,17 +52,7 @@ const int g_cxCargoStatsLabel =		100;
 #define PROPERTY_IN_FIRST_ON_INIT	CONSTLIT("inFirstOnInit")
 #define PROPERTY_INPUT				CONSTLIT("input")
 
-#define SCREEN_TYPE_ARMOR_SELECTOR		CONSTLIT("armorSelector")
 #define SCREEN_TYPE_CANVAS				CONSTLIT("canvas")
-#define SCREEN_TYPE_CAROUSEL_SELECTOR	CONSTLIT("carouselSelector")
-#define SCREEN_TYPE_CUSTOM_PICKER		CONSTLIT("customPicker")
-#define SCREEN_TYPE_CUSTOM_ITEM_PICKER	CONSTLIT("customItemPicker")
-#define SCREEN_TYPE_DETAILS_PANE		CONSTLIT("detailsPane")
-#define SCREEN_TYPE_DEVICE_SELECTOR		CONSTLIT("deviceSelector")
-#define SCREEN_TYPE_ITEM_PICKER			CONSTLIT("itemPicker")
-#define SCREEN_TYPE_MISC_SELECTOR		CONSTLIT("miscSelector")
-#define SCREEN_TYPE_SUBJUGATE_MINIGAME	CONSTLIT("subjugateMinigame")
-#define SCREEN_TYPE_WEAPONS_SELECTOR	CONSTLIT("weaponsSelector")
 
 #define ALIGN_CENTER				CONSTLIT("center")
 #define ALIGN_RIGHT					CONSTLIT("right")
@@ -94,10 +61,9 @@ const int g_cxCargoStatsLabel =		100;
 #define ALIGN_TOP					CONSTLIT("top")
 #define ALIGN_MIDDLE				CONSTLIT("middle")
 
-#define BAR_COLOR							CG32bitPixel(0, 2, 10)
-
 CDockScreen::CDockScreen (CGameSession &Session) : 
-        m_Session(Session)
+        m_Session(Session),
+		m_CurrentPane(*this)
 
 //	CDockScreen constructor
 
@@ -211,7 +177,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		CGTextArea *pControl = new CGTextArea;
 		pControl->SetFont(pControlFont);
 		pControl->SetColor(rgbControlColor);
-		pControl->SetFontTable(&g_pHI->GetVisuals());
+		pControl->SetFontTable(&GetVisuals());
 
 		CString sAlign = pDesc->GetAttribute(ALIGN_ATTRIB);
 		if (strEquals(sAlign, ALIGN_CENTER))
@@ -341,7 +307,7 @@ void CDockScreen::BltToBackgroundImage (const RECT &rcRect, CG32bitImage *pImage
 	int cxAvail = (RectWidth(rcRect) / 2) + EXTRA_BACKGROUND_IMAGE;
 	int xImage = -Max(0, cxSrc - cxAvail);
 
-    CG32bitImage &ScreenMask = GetVisuals().GetContentMask().GetImage(CONSTLIT("ShowScreen"));
+    CG32bitImage &ScreenMask = GetDockScreenVisuals().GetContentMask().GetImage(CONSTLIT("ShowScreen"));
 	if (!ScreenMask.IsEmpty())
 		{
 		//	Center the mask and align it with the position of the background.
@@ -421,16 +387,14 @@ void CDockScreen::CleanUpScreen (void)
 	m_CurrentPane.CleanUp();
 	m_CurrentPane.ClearDescriptionError();
 
-	if (m_pOnScreenUpdate)
-		{
-		m_pOnScreenUpdate->Discard();
-		m_pOnScreenUpdate = NULL;
-		}
+	m_pOnScreenUpdate = NULL;
+	m_pLocation = NULL;
+	m_pDockSession = NULL;
 
 	DEBUG_CATCH
 	}
 
-ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroundDesc &Desc, const RECT &rcRect, int xOffset)
+ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Desc, const RECT &rcRect, int xOffset)
 
 //	CreateBackgroundImage
 //
@@ -438,22 +402,23 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 //	m_pBackgroundImage and m_bFreeBackgroundImage
 
 	{
-    const CDockScreenVisuals &DockScreenVisuals = GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = GetDockScreenVisuals();
 
-	int cxBackground = m_cxImageBackground;
-	int cyBackground = m_cyImageBackground;
+	RECT rcFrameImage = m_Layout.GetFrameImageRect();
+	int cxBackground = RectWidth(rcFrameImage);
+	int cyBackground = RectHeight(rcFrameImage);
 
 	//	Load the image
 
 	CG32bitImage *pImage = NULL;
-	if (Desc.iType == IDockScreenDisplay::backgroundImage && Desc.dwImageID)
-		pImage = g_pUniverse->GetLibraryBitmap(Desc.dwImageID);
-
-	//	Sometimes (like in the case of item lists) the image is larger than normal
-
-	int cyExtra = 0;
-	if (pImage)
-		cyExtra = Max(pImage->GetHeight() - cyBackground, 0);
+	switch (Desc.iType)
+		{
+		case EDockScreenBackground::image:
+		case EDockScreenBackground::heroImage:
+			if (Desc.dwImageID)
+				pImage = g_pUniverse->GetLibraryBitmap(Desc.dwImageID);
+			break;
+		}
 
 	//	Create a new image for the background
 
@@ -461,10 +426,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 
 	m_pBackgroundImage = new CG32bitImage;
 	m_bFreeBackgroundImage = true;
-	m_pBackgroundImage->Create(cxBackground, cyBackground + cyExtra, CG32bitImage::alpha8);
-
-	if (cyExtra)
-		m_pBackgroundImage->Fill(0, cyBackground, cxBackground, cyExtra, 0);
+	m_pBackgroundImage->Create(cxBackground, cyBackground, CG32bitImage::alpha8);
 
 	//	Load and blt the dock screen background based on the player ship class
 
@@ -478,12 +440,29 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 
 	//	If not image, then we're done
 
-	if (Desc.iType == IDockScreenDisplay::backgroundNone)
+	if (Desc.iType == EDockScreenBackground::none)
 		;
 
 	//	Paint hero object
 
-	else if (Desc.iType == IDockScreenDisplay::backgroundObjHeroImage)
+	else if (Desc.iType == EDockScreenBackground::heroImage)
+		{
+		if (pImage)
+			{
+			BltSystemBackground(g_pUniverse->GetCurrentSystem(), rcRect);
+
+			m_pBackgroundImage->Blt(Desc.rcImage.left,
+					Desc.rcImage.top,
+					RectWidth(Desc.rcImage),
+					RectHeight(Desc.rcImage),
+					255,
+					*pImage,
+					xOffset + m_Layout.GetFrameImageFocusX() - (RectWidth(Desc.rcImage) / 2),
+					m_Layout.GetFrameImageFocusY() - (RectHeight(Desc.rcImage) / 2));
+			}
+		}
+
+	else if (Desc.iType == EDockScreenBackground::objHeroImage)
 		{
 		//	If we have a hero image, then use that
 
@@ -494,8 +473,8 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 
 			BltSystemBackground(Desc.pObj->GetSystem(), rcRect);
 			HeroImage.PaintImage(*m_pBackgroundImage,
-					xOffset + m_xBackgroundFocus,
-					m_yBackgroundFocus,
+					xOffset + m_Layout.GetFrameImageFocusX(),
+					m_Layout.GetFrameImageFocusY(),
 					0,
 					0);
 			}
@@ -508,7 +487,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
             //  less than the entire background).
 
             int cxObjImage = (RectWidth(rcRect) / 2) + EXTRA_BACKGROUND_IMAGE;
-            int cyObjImage = cyBackground + cyExtra;
+            int cyObjImage = cyBackground;
 
             //  Create a temporary image
 
@@ -529,8 +508,8 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 			SViewportPaintCtx Ctx;
             Ctx.pCenter = Desc.pObj;
             Ctx.vCenterPos = Desc.pObj->GetPos();
-            Ctx.xCenter = xOffset + m_xBackgroundFocus;
-            Ctx.yCenter = m_yBackgroundFocus;
+            Ctx.xCenter = xOffset + m_Layout.GetFrameImageFocusX();
+            Ctx.yCenter = m_Layout.GetFrameImageFocusY();
 			Ctx.fNoSelection = true;
             Ctx.fNoDockedShips = true;
             Ctx.fShowSatellites = true;
@@ -543,7 +522,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 
 			CSpaceObject *pBase = Desc.pObj->GetBase();
 			int xPaint, yPaint;
-			if (pBase && Desc.pObj->IsSatelliteSegmentOf(pBase))
+			if (pBase && Desc.pObj->IsSatelliteSegmentOf(*pBase))
 				{
 				Ctx.pObj = pBase;
 				Ctx.XForm.Transform(pBase->GetPos(), &xPaint, &yPaint);
@@ -570,7 +549,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 
     //  Paint a schematic (top-down) image
 
-    else if (Desc.iType == IDockScreenDisplay::backgroundObjSchematicImage)
+    else if (Desc.iType == EDockScreenBackground::objSchematicImage)
         {
         //  LATER: We should call a separate method and allow the developer
         //  to specify separate images.
@@ -579,8 +558,8 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 		if (!HeroImage.IsEmpty())
 			{
 			HeroImage.PaintImage(*m_pBackgroundImage,
-					xOffset + m_xBackgroundFocus,
-					m_yBackgroundFocus,
+					xOffset + m_Layout.GetFrameImageFocusX(),
+					m_Layout.GetFrameImageFocusY(),
 					0,
 					0);
 			}
@@ -608,8 +587,8 @@ void CDockScreen::CreateScreenSetTabs (const IDockScreenDisplay::SInitCtx &Ctx, 
 //	Creates tabs for the screenset.
 
 	{
-	const CVisualPalette &VI = g_pHI->GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = GetVisuals();
+	const CVisualPalette &VI = GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = GetDockScreenVisuals();
 
 	RECT rcRect = Ctx.rcRect;
 	rcRect.left += Options.rcControl.left;
@@ -635,7 +614,7 @@ void CDockScreen::CreateScreenSetTabs (const IDockScreenDisplay::SInitCtx &Ctx, 
 	Ctx.pScreen->AddArea(m_pTabs, rcRect, TAB_AREA_ID);
 	}
 
-ALERROR CDockScreen::CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen, const RECT &rcRect, const RECT &rcInner)
+ALERROR CDockScreen::CreateTitleArea (CDockSession &DockSession, CXMLElement *pDesc, AGScreen *pScreen)
 
 //	CreateTitleArea
 //
@@ -644,33 +623,22 @@ ALERROR CDockScreen::CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen, con
 	{
 	DEBUG_TRY
 
-	const CVisualPalette &VI = g_pHI->GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = GetVisuals();
-
-	int yTop = m_yDisplay;
+	const CVisualPalette &VI = GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = GetDockScreenVisuals();
 
 	//	Add a background bar to the title part
 
 	CGImageArea *pImage = new CGImageArea;
 	pImage->SetBackColor(DockScreenVisuals.GetTitleBackgroundColor());
-	RECT rcArea;
-	rcArea.left = rcRect.left;
-	rcArea.top = yTop - g_cyTitle;
-	rcArea.right = rcRect.right;
-	rcArea.bottom = yTop - STATUS_BAR_HEIGHT;
-	pScreen->AddArea(pImage, rcArea, 0);
+	pScreen->AddArea(pImage, m_Layout.GetTitleBarRect(), 0);
 
 	pImage = new CGImageArea;
 	pImage->SetBackColor(CG32bitPixel::Darken(DockScreenVisuals.GetTitleBackgroundColor(), 200));
-	rcArea.left = rcRect.left;
-	rcArea.top = yTop - STATUS_BAR_HEIGHT;
-	rcArea.right = rcRect.right;
-	rcArea.bottom = yTop;
-	pScreen->AddArea(pImage, rcArea, 0);
+	pScreen->AddArea(pImage, m_Layout.GetStatusBarRect(), 0);
 
 	//	Get the name of this location
 
-	CString sName = GetScreenName(pDesc);
+	CString sName = GetScreenName(DockSession, pDesc);
 
 	//	Add the name as a title to the screen
 
@@ -679,25 +647,14 @@ ALERROR CDockScreen::CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen, con
 	pText->SetFont(&m_pFonts->Title);
 	pText->SetColor(DockScreenVisuals.GetTitleTextColor());
 	pText->AddShadowEffect();
-	rcArea.left = rcRect.left + 8;
-	rcArea.top = yTop - g_cyTitle;
-	rcArea.right = rcRect.right;
-	rcArea.bottom = yTop;
-	pScreen->AddArea(pText, rcArea, 0);
+	pScreen->AddArea(pText, m_Layout.GetTitleRect(), 0);
 
 	//	Add the money area
-
-	int cyOffset = (STATUS_BAR_HEIGHT - m_pFonts->MediumHeavyBold.GetHeight()) / 2;
 
 	m_pCredits = new CGTextArea;
 	m_pCredits->SetFont(&m_pFonts->MediumHeavyBold);
 	m_pCredits->SetColor(DockScreenVisuals.GetTitleTextColor());
-
-	rcArea.left = rcInner.right - g_cxStats;
-	rcArea.top = yTop - STATUS_BAR_HEIGHT + cyOffset;
-	rcArea.right = rcInner.right;
-	rcArea.bottom = rcArea.top + g_cyStats;
-	pScreen->AddArea(m_pCredits, rcArea, 0);
+	pScreen->AddArea(m_pCredits, m_Layout.GetMoneyStatusRect(), 0);
 
 	//	Add the cargo space label
 
@@ -705,24 +662,14 @@ ALERROR CDockScreen::CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen, con
 	pText->SetText(CONSTLIT("Cargo Space:"));
 	pText->SetFont(&m_pFonts->MediumHeavyBold);
 	pText->SetColor(DockScreenVisuals.GetTitleTextColor());
-
-	rcArea.left = rcInner.right - g_cxCargoStats;
-	rcArea.top = yTop - STATUS_BAR_HEIGHT + cyOffset;
-	rcArea.right = rcInner.right;
-	rcArea.bottom = rcArea.top + g_cyStats;
-	pScreen->AddArea(pText, rcArea, 0);
+	pScreen->AddArea(pText, m_Layout.GetCargoStatusLabelRect(), 0);
 
 	//	Add the cargo space area
 
 	m_pCargoSpace = new CGTextArea;
 	m_pCargoSpace->SetFont(&m_pFonts->MediumHeavyBold);
 	m_pCargoSpace->SetColor(DockScreenVisuals.GetTitleTextColor());
-
-	rcArea.left = rcInner.right - g_cxCargoStats + g_cxCargoStatsLabel;
-	rcArea.top = yTop - STATUS_BAR_HEIGHT + cyOffset;
-	rcArea.right = rcInner.right;
-	rcArea.bottom = rcArea.top + g_cyStats;
-	pScreen->AddArea(m_pCargoSpace, rcArea, 0);
+	pScreen->AddArea(m_pCargoSpace, m_Layout.GetCargoStatusRect(), 0);
 
 	UpdateCredits();
 
@@ -770,7 +717,7 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 
 //	GetProperty
 //
-//	Returns the given screen property.
+//	Returns the given screen property, or NULL if not found.
 
 	{
 	//	See if this is a generic property.
@@ -795,10 +742,10 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 	//	Otherwise, Nil
 
 	else
-		return ICCItemPtr(ICCItem::Nil);
+		return NULL;
 	}
 
-bool CDockScreen::SetProperty (const CString &sProperty, ICCItem &Value)
+bool CDockScreen::SetProperty (const CString &sProperty, const ICCItem &Value)
 
 //	SetProperty
 //
@@ -832,9 +779,9 @@ CDesignType *CDockScreen::GetResolvedRoot (CString *retsResolveScreen) const
 	return CurFrame.pResolvedRoot;
 	}
 
-const CDockScreenVisuals &CDockScreen::GetVisuals (void) const
+const CDockScreenVisuals &CDockScreen::GetDockScreenVisuals (void) const
 
-//  GetVisuals
+//  GetDockScreenVisuals
 //
 //  Returns the visuals for this dock screen (from the ship class)
     
@@ -1009,7 +956,7 @@ ALERROR CDockScreen::FireOnScreenInit (CSpaceObject *pSource, ICCItem *pData, CS
 	DEBUG_CATCH
 	}
 
-CString CDockScreen::GetScreenName (CXMLElement *pDesc)
+CString CDockScreen::GetScreenName (CDockSession &DockSession, CXMLElement *pDesc)
 
 //	GetScreenName
 //
@@ -1022,14 +969,14 @@ CString CDockScreen::GetScreenName (CXMLElement *pDesc)
 
 	//	If we have a "core.name" language element, then use that.
 
-	if (Translate(CONSTLIT("core.name"), m_pData, pTitle))
+	if (DockSession.Translate(CONSTLIT("core.name"), m_pData, pTitle))
 		return pTitle->GetStringValue();
 
 	//	If we have nameID= then use that as a translation ID.
 
 	else if (pDesc->FindAttribute(NAME_ID_ATTRIB, &sValue))
 		{
-		if (!Translate(sValue, m_pData, pTitle))
+		if (!DockSession.Translate(sValue, m_pData, pTitle))
 			return strPatternSubst(CONSTLIT("Unknown language ID: %s"), sValue);
 
 		return pTitle->GetStringValue();
@@ -1072,10 +1019,13 @@ void CDockScreen::HandleKeyDown (int iVirtKey)
 
 	if (m_pTabs && iVirtKey == VK_TAB)
 		{
-		if (uiIsShiftDown())
-			SelectTab(m_pTabs->GetPrevTabID());
-		else
-			SelectTab(m_pTabs->GetNextTabID());
+		if (!m_bNoListNavigation)
+			{
+			if (uiIsShiftDown())
+				SelectTab(m_pTabs->GetPrevTabID());
+			else
+				SelectTab(m_pTabs->GetNextTabID());
+			}
 		}
 
 	//	Otherwise, let the display handle it.
@@ -1124,7 +1074,7 @@ ALERROR CDockScreen::InitCodeChain (CTranscendenceWnd *pTrans, CSpaceObject *pSt
 	return NOERROR;
 	}
 
-ALERROR CDockScreen::InitDisplay (CXMLElement *pDisplayDesc, AGScreen *pScreen, const RECT &rcScreen)
+ALERROR CDockScreen::InitDisplay (CXMLElement *pDisplayDesc, AGScreen *pScreen)
 
 //	InitDisplay
 //
@@ -1151,11 +1101,7 @@ ALERROR CDockScreen::InitDisplay (CXMLElement *pDisplayDesc, AGScreen *pScreen, 
 
 	//	Compute the canvas rect for the controls (relative to pScreen)
 
-	RECT rcCanvas;
-	rcCanvas.left = rcScreen.left;
-	rcCanvas.top = m_yDisplay;		//	Just under the title bar
-	rcCanvas.right = rcCanvas.left + m_cxDisplay;
-	rcCanvas.bottom = rcScreen.bottom;
+	RECT rcCanvas = m_Layout.GetCanvasRect();
 
 	//	Create each control
 
@@ -1286,12 +1232,38 @@ void CDockScreen::InitDisplayControlRect (CXMLElement *pDesc, const RECT &rcFram
 	*retrcRect = rcRect;
 	}
 
-ALERROR CDockScreen::InitScreen (HWND hWnd, 
+void CDockScreen::InitOnUpdate (CXMLElement *pDesc)
+
+//	InitOnUpdate
+//
+//	Initializes m_pOnScreenUpdate.
+
+	{
+	if (pDesc == NULL)
+		m_pOnScreenUpdate = NULL;
+
+	else
+		{
+		CCodeChainCtx Ctx(GetUniverse());
+		ICCItemPtr pCode = Ctx.LinkCode(pDesc->GetContentText(0));
+		if (pCode->IsError())
+			{
+			kernelDebugLogPattern("Unable to parse OnScreenUpdate: %s.", pCode->GetStringValue());
+			m_pOnScreenUpdate = NULL;
+			}
+		else
+			{
+			m_pOnScreenUpdate = pCode;
+			}
+		}
+	}
+
+ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
+								 HWND hWnd, 
 								 RECT &rcRect, 
-								 CDockScreenStack &FrameStack,
 								 CExtension *pExtension,
 								 CXMLElement *pDesc, 
-								 const CString &sPane,
+								 const CString &sInitialPane,
 								 ICCItem *pData,
 								 AGScreen **retpScreen,
 								 CString *retsError)
@@ -1300,12 +1272,17 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 //
 //	Initializes the docking screen. Returns an AGScreen object
 //	that has been initialized appropriately.
+//
+//	LATER: We need to separate the computation of state information (e.g.,
+//	executing events, computing panes, etc.) from the initialization of the
+//	screen itself. Eventually, all the state computation should happen inside
+//	CDockSession and this method should just ask CDockSession for the current
+//	state.
 
 	{
 	DEBUG_TRY
 
 	ALERROR error;
-	int i;
 
 	//	Make sure we clean up first
 
@@ -1314,7 +1291,8 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 
 	//	Init some variables
 
-	SDockFrame Frame = FrameStack.GetCurrent();
+	m_pDockSession = &DockSession;
+	const SDockFrame &Frame = DockSession.GetCurrentFrame();
 	m_pLocation = Frame.pLocation;
 	m_pRoot = Frame.pRoot;
 	m_sScreen = Frame.sScreen;
@@ -1354,55 +1332,15 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	if (g_pUniverse->GetSFXOptions().IsDockScreenTransparent())
 		m_pScreen->SetBackgroundColor(CG32bitPixel::Null());
 	else
-		m_pScreen->SetBackgroundColor(GetVisuals().GetWindowBackgroundColor());
+		m_pScreen->SetBackgroundColor(GetDockScreenVisuals().GetWindowBackgroundColor());
 
-	//	Compute RECTs.
-	//
-	//	rRect is the screen-relative area where we will draw the dock screen.
-	//
-	//	m_rcBackground is the full RECT of the background including the title
-	//	bar. This RECT shrinks to fit the background image, and expands up to
-	//	the hard-coded limit.
-	//
-	//	m_rcScreen is RECT limits for the controls.
+	//	Compute metrics
 
-    CG32bitImage &ScreenImage = GetVisuals().GetBackground().GetImage(CONSTLIT("ShowScreen"));
-	int cxMaxBackground = (ScreenImage.IsEmpty() ? MAX_BACKGROUND_WIDTH : ScreenImage.GetWidth());
-	int cyMaxBackground = (ScreenImage.IsEmpty() ? MAX_BACKGROUND_HEIGHT : ScreenImage.GetHeight() + g_cyTitle);
-
-	int cxBackground = Min(cxMaxBackground, RectWidth(rcRect));
-	int cyBackground = Min(cyMaxBackground, RectHeight(rcRect));
-	m_rcBackground.left = (RectWidth(rcRect) - cxBackground) / 2;
-	m_rcBackground.right = m_rcBackground.left + cxBackground;
-
-	//	We center the screen on the display area (below the title)
-
-	m_rcBackground.top = ((RectHeight(rcRect) - (cyBackground - g_cyTitle)) / 2) - g_cyTitle;
-	m_rcBackground.bottom = m_rcBackground.top + cyBackground;
-
-	m_cxImageBackground = cxBackground;
-	m_cyImageBackground = cyBackground - g_cyTitle;
-
-	int cxScreen = Min(MAX_SCREEN_WIDTH, RectWidth(m_rcBackground));
-	int cyScreen = RectHeight(m_rcBackground);
-	m_rcScreen.left = (RectWidth(rcRect) - cxScreen) / 2;
-	m_rcScreen.top = m_rcBackground.top;
-	m_rcScreen.right = m_rcScreen.left + cxScreen;
-	m_rcScreen.bottom = m_rcScreen.top + cyScreen;
-
-	//	Compute the width of the display and the panes
-
-	int cxRightPane = Max(MIN_DESC_PANE_WIDTH, cxScreen / 3);
-
-	//	The main display is starts below the title bar
-
-	m_yDisplay = m_rcScreen.top + g_cyTitle;
-	m_cxDisplay = cxScreen - cxRightPane;
-
-	//	Compute the center of the display
-
-	m_xBackgroundFocus = (cxScreen - cxRightPane) / 2;
-	m_yBackgroundFocus = m_cyImageBackground / 2;
+	if (!m_Layout.Init(rcRect, GetDockScreenVisuals()))
+		{
+		if (retsError) *retsError = CONSTLIT("Unable to initialize layout.");
+		return ERR_FAIL;
+		}
 
 	//	Prepare a display context
 
@@ -1414,18 +1352,13 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	DisplayCtx.pDisplayDesc = m_pDesc->GetContentElementByTag(DISPLAY_TAG);
 	DisplayCtx.pDockScreen = this;
 	DisplayCtx.pRoot = m_pRoot;
-	DisplayCtx.pVI = &g_pHI->GetVisuals();
+	DisplayCtx.pVI = &GetVisuals();
 	DisplayCtx.pFontTable = m_pFonts;
 	DisplayCtx.pLocation = m_pLocation;
 	DisplayCtx.pScreen = m_pScreen;
 
-	DisplayCtx.rcScreen = m_rcScreen;
-	DisplayCtx.rcScreen.top = m_yDisplay;
-
-	DisplayCtx.rcRect.left = m_rcScreen.left + SCREEN_PADDING_LEFT;
-	DisplayCtx.rcRect.top = m_yDisplay;
-	DisplayCtx.rcRect.right = DisplayCtx.rcRect.left + RectWidth(m_rcScreen) - (cxRightPane + SCREEN_PADDING_LEFT + SCREEN_PADDING_RIGHT);
-	DisplayCtx.rcRect.bottom = DisplayCtx.rcScreen.bottom;
+	DisplayCtx.rcScreen = m_Layout.GetContentRect();
+	DisplayCtx.rcRect = m_Layout.GetDisplayRect();
 
 	//	Get any display options (we need to do this first because it may specify
 	//	a background image.
@@ -1437,15 +1370,15 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	//	If we have a deferred background setting, then use that (and reset it
 	//	so that we don't use it again).
 
-	if (m_DeferredBackground.iType != IDockScreenDisplay::backgroundDefault)
+	if (m_DeferredBackground.iType != EDockScreenBackground::default)
 		{
 		DisplayOptions.BackgroundDesc = m_DeferredBackground;
-		m_DeferredBackground.iType = IDockScreenDisplay::backgroundDefault;
+		m_DeferredBackground.iType = EDockScreenBackground::default;
 		}
 
 	//	Creates the title area
 
-	if (error = CreateTitleArea(m_pDesc, m_pScreen, m_rcBackground, m_rcScreen))
+	if (error = CreateTitleArea(DockSession, m_pDesc, m_pScreen))
 		{
 		if (retsError) *retsError = CONSTLIT("Unable to create title area.");
 		return error;
@@ -1455,12 +1388,12 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	//	the latest frame because we could have added a screenset in 
 	//	OnScreenInit above.
 
-	if (FrameStack.GetCurrent().ScreenSet.GetCount() > 0)
+	if (DockSession.GetCurrentFrame().ScreenSet.GetCount() > 0)
 		{
-		const SDockFrame &CurFrame = FrameStack.GetCurrent();
+		const SDockFrame &CurFrame = DockSession.GetCurrentFrame();
 		CreateScreenSetTabs(DisplayCtx, DisplayOptions, CurFrame.ScreenSet, CurFrame.sCurrentTab);
 
-		DisplayOptions.cyTabRegion = GetVisuals().GetTabHeight();
+		DisplayOptions.cyTabRegion = GetDockScreenVisuals().GetTabHeight();
 		}
 
 	//	Get the list of panes for this screen
@@ -1474,44 +1407,9 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 
 	//	Create the main display object based on the type parameter.
 
-	if (DisplayOptions.sType.IsBlank() || strEquals(DisplayOptions.sType, SCREEN_TYPE_CANVAS))
-		m_pDisplay = new CDockScreenNullDisplay(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_ITEM_PICKER))
-		m_pDisplay = new CDockScreenItemList(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_CAROUSEL_SELECTOR))
-		m_pDisplay = new CDockScreenCarousel(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_CUSTOM_PICKER))
-		m_pDisplay = new CDockScreenCustomList(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_CUSTOM_ITEM_PICKER))
-		m_pDisplay = new CDockScreenCustomItemList(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_DETAILS_PANE))
-		m_pDisplay = new CDockScreenDetailsPane(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_ARMOR_SELECTOR))
-		m_pDisplay = new CDockScreenSelector(*this, CGSelectorArea::configArmor);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_DEVICE_SELECTOR))
-		m_pDisplay = new CDockScreenSelector(*this, CGSelectorArea::configDevices);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_MISC_SELECTOR))
-		m_pDisplay = new CDockScreenSelector(*this, CGSelectorArea::configMiscDevices);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_SUBJUGATE_MINIGAME))
-		m_pDisplay = new CDockScreenSubjugate(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_WEAPONS_SELECTOR))
-		m_pDisplay = new CDockScreenSelector(*this, CGSelectorArea::configWeapons);
-	
-	else
-		{
-		if (retsError) *retsError = strPatternSubst(CONSTLIT("ERROR: Invalid display type: %s."), DisplayOptions.sType);
+	m_pDisplay = IDockScreenDisplay::Create(*this, DisplayOptions.sType, retsError);
+	if (m_pDisplay == NULL)
 		return ERR_FAIL;
-		}
 
 	//	Initialize
 
@@ -1528,7 +1426,7 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	if (DisplayCtx.pDisplayDesc
 			&& (DisplayOptions.sType.IsBlank() || strEquals(DisplayOptions.sType, SCREEN_TYPE_CANVAS)))
 		{
-		if (error = InitDisplay(DisplayCtx.pDisplayDesc, m_pScreen, m_rcScreen))
+		if (error = InitDisplay(DisplayCtx.pDisplayDesc, m_pScreen))
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to initialize display.");
 			return error;
@@ -1536,7 +1434,7 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 
 		//	Set any deferred text
 
-		for (i = 0; i < m_DeferredDisplayText.GetCount(); i++)
+		for (int i = 0; i < m_DeferredDisplayText.GetCount(); i++)
 			SetDisplayText(m_DeferredDisplayText.GetKey(i), m_DeferredDisplayText[i]);
 
 		m_DeferredDisplayText.DeleteAll();
@@ -1545,13 +1443,23 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	//	If the screen did not define a background image, then ask the display
 	//	to do so.
 
-	IDockScreenDisplay::SBackgroundDesc BackgroundDesc = DisplayOptions.BackgroundDesc;
-	if (BackgroundDesc.iType == IDockScreenDisplay::backgroundDefault)
+	SDockScreenBackgroundDesc BackgroundDesc = DisplayOptions.BackgroundDesc;
+	if (BackgroundDesc.iType == EDockScreenBackground::default)
 		{
 		m_pDisplay->GetDefaultBackground(&BackgroundDesc);
 
 		//	It's OK if m_pDisplay leaves it as a default. SetBackground (below)
 		//	will handle the default properly.
+		}
+
+	//	If we've got a default background and we're a nested frame, then use the
+	//	background of the previous frame.
+
+	if (BackgroundDesc.iType == EDockScreenBackground::default
+			&& m_pDockSession->GetFrameStack().GetCount() > 1
+			&& m_pDockSession->GetFrameStack().GetCallingFrame().BackgroundDesc.iType != EDockScreenBackground::default)
+		{
+		BackgroundDesc = m_pDockSession->GetFrameStack().GetCallingFrame().BackgroundDesc;
 		}
 
 	//	Create the background area. We do this after the display init because we
@@ -1561,31 +1469,14 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 
 	//	Cache the screen's OnUpdate
 
-	CXMLElement *pOnUpdate = m_pDesc->GetContentElementByTag(ON_SCREEN_UPDATE_TAG);
-	if (pOnUpdate)
-		{
-		CCodeChainCtx Ctx(GetUniverse());
-		ICCItemPtr pCode = Ctx.LinkCode(pOnUpdate->GetContentText(0));
-		if (pCode->IsError())
-			{
-			kernelDebugLogPattern("Unable to parse OnScreenUpdate: %s.", pCode->GetStringValue());
-			m_pOnScreenUpdate = NULL;
-			}
-		else
-			{
-			m_pOnScreenUpdate = pCode->Reference();
-			}
-		}
+	InitOnUpdate(m_pDesc->GetContentElementByTag(ON_SCREEN_UPDATE_TAG));
 
-	//	Show the pane
+	//	Figure out what pane to show
 
-	if (!sPane.IsBlank())
+	CString sPane;
+	if (sInitialPane.IsBlank())
 		{
-		ShowPane(sPane);
-		}
-	else
-		{
-		CString sPane = EvalInitialPane(m_pLocation, pData);
+		sPane = EvalInitialPane(m_pLocation, pData);
 
 		//	If evaluation fails due to an error, then show default
 
@@ -1593,13 +1484,17 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 			sPane = CONSTLIT("Default");
 
 		//	Set the pane for the current frame stack, now that we've figured it out.
+		//	LATER: The method for computing the current pane should be moved to
+		//	the dock session object.
 
-		FrameStack.SetCurrentPane(sPane);
-
-		//	Show it
-
-		ShowPane(sPane);
+		DockSession.SetCurrentPane(sPane);
 		}
+	else
+		sPane = sInitialPane;
+
+	//	Show the pane
+
+	ShowPane(DockSession, sPane);
 
 	//	Done
 
@@ -1630,7 +1525,17 @@ ALERROR CDockScreen::ReportError (const CString &sError)
 	return ERR_FAIL;
 	}
 
-void CDockScreen::OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item)
+void CDockScreen::OnExecuteActionDone (void)
+
+//	OnExecuteActionDone
+//
+//	Called by the pane when it is done executing an action.
+
+	{
+	m_Session.OnExecuteActionDone();
+	}
+
+void CDockScreen::OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const
 
 //	OnModifyItemBegin
 //
@@ -1638,10 +1543,10 @@ void CDockScreen::OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource,
 
 	{
 	if (m_pDisplay)
-		m_pDisplay->OnModifyItemBegin(Ctx, pSource, Item);
+		m_pDisplay->OnModifyItemBegin(Ctx, Source, Item);
 	}
 
-void CDockScreen::OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result)
+void CDockScreen::OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result)
 
 //	OnModifyItemComplete
 //
@@ -1649,7 +1554,7 @@ void CDockScreen::OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSour
 
 	{
 	if (m_pDisplay
-			&& m_pDisplay->OnModifyItemComplete(Ctx, pSource, Result) == IDockScreenDisplay::resultShowPane)
+			&& m_pDisplay->OnModifyItemComplete(Ctx, Source, Result) == IDockScreenDisplay::resultShowPane)
 		{
 		const SDockFrame &CurFrame = g_pUniverse->GetDockSession().GetCurrentFrame();
 
@@ -1686,7 +1591,7 @@ void CDockScreen::OnObjDestroyed (const SDestroyCtx &Ctx)
 			CCCtx.SaveAndDefineSourceVar(m_pLocation);
 			CCCtx.SaveAndDefineDataVar(m_pData);
 
-			CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+			CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
 			CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 			CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 			CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
@@ -1922,7 +1827,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 		}
 	}
 
-void CDockScreen::SetBackground (const IDockScreenDisplay::SBackgroundDesc &Desc)
+void CDockScreen::SetBackground (const SDockScreenBackgroundDesc &Desc)
 
 //	SetBackground
 //
@@ -1934,36 +1839,41 @@ void CDockScreen::SetBackground (const IDockScreenDisplay::SBackgroundDesc &Desc
 	//	If we haven't yet initialized the screen (e.g., we're inside of
 	//	OnScreenInit) then we need to defer this.
 
-	if (m_pScreen == NULL)
+	if (m_pScreen == NULL || m_pDockSession == NULL)
 		{
 		m_DeferredBackground = Desc;
 		return;
 		}
 
+	//	Remember the background description on the stack so that we can access
+	//	it later.
+
+	m_pDockSession->SetBackgroundDesc(Desc);
+
 	//	Use a default, if necessary
 
-	if (Desc.iType == IDockScreenDisplay::backgroundDefault)
+	if (Desc.iType == EDockScreenBackground::default)
 		{
-		IDockScreenDisplay::SBackgroundDesc DefaultDesc;
+		SDockScreenBackgroundDesc DefaultDesc;
 
 		if (DefaultDesc.dwImageID = m_pLocation->GetDefaultBkgnd())
-			DefaultDesc.iType = IDockScreenDisplay::backgroundImage;
+			DefaultDesc.iType = EDockScreenBackground::image;
 		else
 			{
 			DefaultDesc.pObj = m_pLocation;
             if (m_pLocation->IsPlayer())
-			    DefaultDesc.iType = IDockScreenDisplay::backgroundObjSchematicImage;
+			    DefaultDesc.iType = EDockScreenBackground::objSchematicImage;
             else
-			    DefaultDesc.iType = IDockScreenDisplay::backgroundObjHeroImage;
+			    DefaultDesc.iType = EDockScreenBackground::objHeroImage;
 			}
 
-		CreateBackgroundImage(DefaultDesc, m_rcBackground, m_rcScreen.left - m_rcBackground.left);
+		CreateBackgroundImage(DefaultDesc, m_Layout.GetFrameImageRect(), m_Layout.GetContentRect().left - m_Layout.GetFrameImageRect().left);
 		}
 
 	//	Otherwise, create the image with the given descriptor
 
 	else
-		CreateBackgroundImage(Desc, m_rcBackground, m_rcScreen.left - m_rcBackground.left);
+		CreateBackgroundImage(Desc, m_Layout.GetFrameImageRect(), m_Layout.GetContentRect().left - m_Layout.GetFrameImageRect().left);
 
 	//	Create the area
 
@@ -1975,7 +1885,6 @@ void CDockScreen::SetBackground (const IDockScreenDisplay::SBackgroundDesc &Desc
 
 		//	Add the background
 
-		RECT rcBackArea;
 		CGImageArea *pImage = new CGImageArea;
 
 		RECT rcImage;
@@ -1986,15 +1895,10 @@ void CDockScreen::SetBackground (const IDockScreenDisplay::SBackgroundDesc &Desc
 		pImage->SetImage(m_pBackgroundImage, rcImage);
         pImage->SetTransBackground(true);
 
-		rcBackArea.left = m_rcBackground.left;
-		rcBackArea.top = m_yDisplay;
-		rcBackArea.right = rcBackArea.left + RectWidth(m_rcBackground);
-		rcBackArea.bottom = rcBackArea.top + m_pBackgroundImage->GetHeight();
-
 		//	bSendToBack = true because we may have created other areas before 
 		//	this and we need the background to be in back.
 
-		m_pScreen->AddArea(pImage, rcBackArea, IMAGE_AREA_ID, true);
+		m_pScreen->AddArea(pImage, m_Layout.GetFrameImageRect(), IMAGE_AREA_ID, true);
 		}
 
 	DEBUG_CATCH
@@ -2076,7 +1980,7 @@ void CDockScreen::SetLocation (CSpaceObject *pLocation)
 		}
 	}
 
-void CDockScreen::ShowPane (const CString &sName)
+void CDockScreen::ShowPane (CDockSession &DockSession, const CString &sName)
 
 //	ShowPane
 //
@@ -2085,7 +1989,7 @@ void CDockScreen::ShowPane (const CString &sName)
 	{
 	DEBUG_TRY
 
-	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CVisualPalette &VI = GetVisuals();
 
 #ifdef DEBUG_STRING_LEAKS
 	CString::DebugMark();
@@ -2134,18 +2038,15 @@ void CDockScreen::ShowPane (const CString &sName)
 
 	//	Initialize the pane based on the pane descriptor
 
-	RECT rcPane;
-	rcPane.left = m_rcScreen.left;
-	rcPane.right = m_rcScreen.right;
-	rcPane.top = m_yDisplay;
-	rcPane.bottom = m_rcScreen.bottom;
-
-	m_CurrentPane.InitPane(this, pNewPane, rcPane);
+	m_CurrentPane.InitPane(DockSession, *this, pNewPane, m_Layout.GetContentRect());
 
 	//	Update screen
 	//	Show the currently selected item
 
-	m_pDisplay->ShowPane(pNewPane->GetAttributeBool(NO_LIST_NAVIGATION_ATTRIB));
+	m_bNoListNavigation = pNewPane->GetAttributeBool(NO_LIST_NAVIGATION_ATTRIB);
+	m_pDisplay->ShowPane(m_bNoListNavigation);
+	if (m_pTabs)
+		m_pTabs->SetNoNavigation(m_bNoListNavigation);
 
 	UpdateCredits();
 
@@ -2187,7 +2088,11 @@ bool CDockScreen::SelectTab (const CString &sID)
 //	Selects the given tab.
 
 	{
-	const SScreenSetTab *pTabInfo = g_pTrans->GetModel().GetScreenStack().FindTab(sID);
+	ASSERT(m_pDockSession);
+	if (m_pDockSession == NULL)
+		return false;
+
+	const SScreenSetTab *pTabInfo = m_pDockSession->FindTab(sID);
 	if (pTabInfo == NULL)
 		return false;
 
@@ -2205,16 +2110,6 @@ bool CDockScreen::SelectTab (const CString &sID)
 		}
 
 	return true;
-	}
-
-bool CDockScreen::Translate (const CString &sTextID, ICCItem *pData, ICCItemPtr &pResult)
-
-//	Translate
-//
-//	Translate text
-
-	{
-	return g_pTrans->GetModel().ScreenTranslate(sTextID, pData, pResult);
 	}
 
 void CDockScreen::Update (int iTick)
@@ -2242,7 +2137,7 @@ void CDockScreen::Update (int iTick)
 		//	Add a reference to m_pOnScreenUpdate because we might
 		//	reinitialize the screen inside the call.
 
-		ICCItem *pCode = m_pOnScreenUpdate->Reference();
+		ICCItemPtr pCode = m_pOnScreenUpdate;
 
 		//	Execute
 
@@ -2252,13 +2147,10 @@ void CDockScreen::Update (int iTick)
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);
 
-		ICCItem *pResult = Ctx.Run(pCode);
+		ICCItemPtr pResult = Ctx.RunCode(pCode);
 
 		if (pResult->IsError())
 			kernelDebugLogPattern("<OnScreenUpdate>: %s", pResult->GetStringValue());
-
-		Ctx.Discard(pResult);
-		Ctx.Discard(pCode);
 		}
 
 	DEBUG_CATCH

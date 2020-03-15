@@ -57,7 +57,6 @@ class CArmorClass
 			return true;
 			}
 
-        ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		int GetCompleteBonus (void) { return m_iArmorCompleteBonus; }
 		int GetDamageAdjForWeaponLevel (int iLevel);
 		CItemType *GetItemType (void) const { return m_pItemType; }
@@ -70,23 +69,23 @@ class CArmorClass
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
 
 		EDamageResults AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
-		void AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList);
+		void AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDisplayAttribute> *retList) const;
 		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
         bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (CItemCtx &ItemCtx, SUpdateCtx &Ctx, int &iPowerUsed, int &iPowerGenerated) const;
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
-		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx);
+		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const;
 		const CString &GetMassClass (const CItemCtx &ItemCtx) const;
 		int GetPowerOutput (CItemCtx &ItemCtx) const;
 		int GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower = NULL) const;
 		CString GetReference (CItemCtx &Ctx);
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
         Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
-		bool IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage) const;
-		bool IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage);
+		bool IsImmune (const CArmorItem &ArmorItem, SpecialDamageTypes iSpecialDamage) const;
+		bool IsReflective (const CArmorItem &ArmorItem, const DamageDesc &Damage, int *retiChance = NULL) const;
 		bool IsShieldInterfering (CItemCtx &ItemCtx);
-		bool SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, ICCItem &Value, CString *retsError = NULL);
+		ESetPropertyResult SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
 		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);
 		bool UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &Regen, ERegenTypes iRegenType, int iTick);
 
@@ -132,7 +131,7 @@ class CArmorClass
 		int CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance &retBalance) const;
 		Metric CalcBalanceDamageAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceDamageEffectAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
-		Metric CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
+		Metric CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdMass) const;
 		Metric CalcBalancePower (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceRegen (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceRepair (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
@@ -157,6 +156,8 @@ class CArmorClass
 		bool UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
 		bool UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
 
+		static bool IsImmune (const SScalableStats &Stats, const CItemEnhancementStack &Enhancements, SpecialDamageTypes iSpecialDamage);
+
         SScalableStats m_Stats;                 //  Base stats capable of being scaled
 
 		int m_iRepairTech;						//	Tech required to repair
@@ -175,6 +176,7 @@ class CArmorClass
 		int m_iDamageAdjLevel;					//	Level to use for intrinsic damage adj
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
 		CString m_sMassClass;					//	Computed mass class (computed in Bind)
+		int m_iBalanceAdj;						//	Manual adjustment to balance calculation
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
@@ -254,6 +256,8 @@ class CShipArmorDesc
 class CInstalledArmor
 	{
 	public:
+		operator CArmorItem () const { return AsArmorItem(); }
+
 		const CArmorItem AsArmorItem (void) const { return m_pItem->AsArmorItemOrThrow(); }
 		CArmorItem AsArmorItem (void) { return m_pItem->AsArmorItemOrThrow(); }
 		inline EDamageResults AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
@@ -284,7 +288,7 @@ class CInstalledArmor
 		void SetHitPoints (int iHP) { m_iHitPoints = iHP; }
 		void SetSect (int iSect) { m_iSect = iSect; }
 		void ReadFromStream (CSpaceObject &Source, int iSect, SLoadCtx &Ctx);
-		void WriteToStream (IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
 		CSpaceObject *m_pSource = NULL;				//	Installed on this object

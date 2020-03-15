@@ -485,7 +485,7 @@
 			name=				"inert metal sphere"
 			sovereign=			"&svNeutral;"
 			inherit=			"&unidCommonText;"
-			dockScreen=			"Main"
+			abandonedScreen=	"Main"
 
 			scale=				"ship"
 			mobile=				"true"
@@ -554,6 +554,10 @@
 			attributes=			"shipwreck"
 			>
 			
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
+
 		<ImageShipwreck class="&scSungTransport;"/>
 		
 		<Items>

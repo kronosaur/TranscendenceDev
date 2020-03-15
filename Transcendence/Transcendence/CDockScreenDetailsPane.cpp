@@ -16,6 +16,33 @@ ICCItem *CDockScreenDetailsPane::OnGetCurrentListEntry (void) const
 	return m_pControl->GetData();
 	}
 
+bool CDockScreenDetailsPane::OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc)
+
+//	OnGetDefaultBackground
+
+	{
+	if (m_pControl == NULL || m_pControl->GetDetail().IsEmpty())
+		return false;
+
+	//	Different default background based on style.
+
+	switch (m_pControl->GetDetail().GetStyle())
+		{
+		//	Stats use the default background (because they are small enough for 
+		//	the background to show through). We need this for things like mining
+		//	rank stats.
+
+		case CDetailArea::styleStats:
+			return false;
+
+		//	No background
+
+		default:
+			retDesc->iType = EDockScreenBackground::none;
+			return true; 
+		}
+	}
+
 ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError)
 
 //	OnInit
@@ -25,17 +52,17 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 	{
 	DEBUG_TRY
 
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
 	//	Calculate some basic metrics
 
 	RECT rcList = Ctx.rcRect;
-	rcList.left += Options.rcControl.left;
-	rcList.right = rcList.left + RectWidth(Options.rcControl);
-	rcList.top += Options.rcControl.top;
-	rcList.bottom = rcList.top + RectHeight(Options.rcControl);
+	rcList.left += Options.rcDisplay.left;
+	rcList.right = rcList.left + RectWidth(Options.rcDisplay);
+	rcList.top += Options.rcDisplay.top;
+	rcList.bottom = rcList.top + RectHeight(Options.rcDisplay);
 
 	//	Create the picker control
 

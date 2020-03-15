@@ -12,29 +12,30 @@
 
 #define ERR_WEAPON_DISPLAY_NEEDED			CONSTLIT("invalid <WeaponDisplay> element")
 
-const int DISPLAY_WIDTH =					360;
-const int DISPLAY_HEIGHT =					120;
+constexpr int DISPLAY_WIDTH =					420;
+constexpr int DISPLAY_HEIGHT =					120;
 
-const int PRIMARY_WEAPON_X =				300;
-const int PRIMARY_WEAPON_Y =				80;
-const int MISSILE_WEAPON_X =				300;
-const int MISSILE_WEAPON_Y =				100;
+constexpr int PRIMARY_WEAPON_X =				360;
+constexpr int PRIMARY_WEAPON_Y =				80;
+constexpr int MISSILE_WEAPON_X =				360;
+constexpr int MISSILE_WEAPON_Y =				100;
 
-const int DEVICE_STATUS_HEIGHT =			20;
+constexpr int DEVICE_STATUS_HEIGHT =			20;
 
-const int TARGET_IMAGE_X =					60;
-const int TARGET_IMAGE_Y =					60;
-const int TARGET_NAME_X =					122;
-const int TARGET_NAME_Y =					27;
+constexpr int TARGET_IMAGE_X =					60;
+constexpr int TARGET_IMAGE_Y =					60;
+constexpr int TARGET_NAME_X =					122;
+constexpr int TARGET_NAME_Y =					27;
+constexpr int TARGET_STAT_X =					130;
 
-const int TARGET_MASK_RADIUS =				56;
-const BYTE TARGET_MASK_TRANSPARENCY =		0x60;
+constexpr int TARGET_MASK_RADIUS =				56;
+constexpr BYTE TARGET_MASK_TRANSPARENCY =		0x60;
 
-const int STAT_WIDTH =						52;
+constexpr int STAT_WIDTH =						52;
 
-const CG32bitPixel DISABLED_LABEL_COLOR =	CG32bitPixel(128, 0, 0);
-const CG32bitPixel TARGET_NAME_COLOR =		CG32bitPixel(80, 255, 80);
-const CG32bitPixel DAMAGED_COLOR =			CG32bitPixel(255, 80, 80);
+constexpr CG32bitPixel DISABLED_LABEL_COLOR =	CG32bitPixel(128, 0, 0);
+constexpr CG32bitPixel TARGET_NAME_COLOR =		CG32bitPixel(80, 255, 80);
+constexpr CG32bitPixel DAMAGED_COLOR =			CG32bitPixel(255, 80, 80);
 
 CWeaponHUDDefault::CWeaponHUDDefault (void) :
 		m_bInvalid(true),
@@ -80,7 +81,7 @@ void CWeaponHUDDefault::GetBounds (int *retWidth, int *retHeight) const
 	*retHeight = DISPLAY_HEIGHT;
 	}
 
-ALERROR CWeaponHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
+bool CWeaponHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 //	InitFromXML
 //
@@ -88,16 +89,24 @@ ALERROR CWeaponHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass,
 
 	{
 	ALERROR error;
+	SDesignLoadCtx Ctx;
 
 	//	Load the image
 
-	if (error = m_BackImage.InitFromXML(Ctx, 
-			pDesc->GetContentElementByTag(IMAGE_TAG)))
-		return ComposeLoadError(Ctx, ERR_WEAPON_DISPLAY_NEEDED);
+	if (CXMLElement *pImage = CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG))
+		{
+		if (error = m_BackImage.InitFromXML(Ctx, *pImage))
+			return ComposeLoadError(ERR_WEAPON_DISPLAY_NEEDED, retsError);
+		}
+
+	//	Bind
+
+	if (Bind(Ctx) != NOERROR)
+		return ComposeLoadError(Ctx.sError, retsError);
 
 	//	Done
 
-	return NOERROR;
+	return true;
 	}
 
 void CWeaponHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
@@ -142,21 +151,22 @@ void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x
 	CInstalledDevice *pDevice = pShip->GetNamedDevice(iDev);
 	if (pDevice)
 		{
+		CItemCtx ItemCtx(pShip, pDevice);
 		CDeviceClass *pClass = pDevice->GetClass();
 
 		CString sVariant;
 		int iAmmoLeft;
-		pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft);
+		pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft, NULL, true);
 		int iSelectedFireAmmoLeft = pShip->GetAmmoForSelectedLinkedFireWeapons(pDevice);
 		if (iSelectedFireAmmoLeft >= 0)
 			iAmmoLeft = iSelectedFireAmmoLeft;
-		CString sDevName = pClass->GetName();
+		CString sDevName = pDevice->GetItem()->GetNounPhrase(nounDuplicateModifier | nounNoModifiers | nounHUDName);
 
 		//	Paint the bonus
 
 		int cxBonus = 0;
 
-		CString sBonus = pDevice->GetEnhancedDesc(pShip);
+		CString sBonus = pDevice->GetEnhancedDesc();
 		if (!sBonus.IsBlank())
 			{
 			int cyHeight;
@@ -257,9 +267,8 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 	{
 	//	Skip if we don't have a ship
 
-	CShip *pShip;
-	if (Ctx.pSource == NULL
-			|| (pShip = Ctx.pSource->AsShip()) == NULL)
+	CShip *pShip = Ctx.Source.AsShip();
+	if (pShip == NULL)
 		return;
 
 	//	Set up some metrics
@@ -338,7 +347,7 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 	//	Paint the target
 
-	CSpaceObject *pTarget = pShip->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+	CSpaceObject *pTarget = pShip->GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 	if (pTarget)
 		{
 		//	Paint image
@@ -360,8 +369,24 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 			Ctx.fNoRecon = true;
 			Ctx.fNoDockedShips = true;
 			Ctx.fNoSelection = true;
+            Ctx.fShowSatellites = true;
 
-			pTarget->Paint(m_Target, TARGET_IMAGE_X, TARGET_IMAGE_Y, Ctx);
+			int xCenter = TARGET_IMAGE_X;
+			int yCenter = TARGET_IMAGE_Y;
+
+			//	If we've docked with a satellite of a composite object, then we 
+			//	figure out the parent so that we can paint the entire composite.
+
+			CSpaceObject *pBase = pTarget->GetBase();
+			if (pBase && pTarget->IsSatelliteSegmentOf(*pBase))
+				{
+				Ctx.XForm.Transform(pBase->GetPos(), &xCenter, &yCenter);
+				Ctx.pObj = pBase;
+				}
+
+			//	Paint
+
+			Ctx.pObj->Paint(m_Target, xCenter, yCenter, Ctx);
 
 			//	Blt on buffer through the target mask
 
@@ -390,7 +415,7 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 		//	We paint various stats horizontally.
 
-		int xStat = x;
+		int xStat = TARGET_STAT_X;
 		int yStat = y;
 
 		//	Paint the range

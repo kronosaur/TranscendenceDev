@@ -1,6 +1,7 @@
 //	COverlayType.cpp
 //
 //	COverlayType class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -9,30 +10,22 @@
 #define EFFECT_TAG								CONSTLIT("Effect")
 #define HIT_EFFECT_TAG							CONSTLIT("HitEffect")
 #define SHIP_ENERGY_FIELD_TYPE_TAG				CONSTLIT("ShipEnergyFieldType")
+#define UNDERGROUND_TAG							CONSTLIT("Underground")
 
 #define ABSORB_ADJ_ATTRIB						CONSTLIT("absorbAdj")
 #define ALT_EFFECT_ATTRIB						CONSTLIT("altEffect")
-#define COLOR_ATTRIB							CONSTLIT("color")
 #define DISABLE_SHIP_SCREEN_ATTRIB				CONSTLIT("disableShipScreen")
 #define DISARM_ATTRIB							CONSTLIT("disarm")
 #define DRAG_ATTRIB								CONSTLIT("drag")
 #define IGNORE_SHIP_ROTATION_ATTRIB				CONSTLIT("ignoreSourceRotation")
-#define LABEL_ATTRIB							CONSTLIT("label")
-#define MAX_ATTRIB								CONSTLIT("max")
 #define PARALYZE_ATTRIB							CONSTLIT("paralyze")
+#define ROTATE_WITH_SOURCE_ATTRIB				CONSTLIT("rotateWithSource")
 #define SHIELD_OVERLAY_ATTRIB					CONSTLIT("shieldOverlay")
-#define SHOW_ON_MAP_ATTRIB						CONSTLIT("showOnMap")
 #define SPIN_ATTRIB								CONSTLIT("spin")
-#define STYLE_ATTRIB							CONSTLIT("style")
 #define TIME_STOP_ATTRIB						CONSTLIT("timeStop")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 #define BONUS_ADJ_ATTRIB						CONSTLIT("weaponBonusAdj")
 #define WEAPON_SUPPRESS_ATTRIB					CONSTLIT("weaponSuppress")
-
-#define COUNTER_COMMAND_BAR_PROGRESS			CONSTLIT("commandBarProgress")
-#define COUNTER_FLAG							CONSTLIT("flag")
-#define COUNTER_PROGRESS						CONSTLIT("progress")
-#define COUNTER_RADIUS							CONSTLIT("radius")
 
 #define FIELD_WEAPON_SUPPRESS					CONSTLIT("weaponSuppress")
 
@@ -40,9 +33,7 @@
 
 #define SUPPRESS_ALL							CONSTLIT("*")
 
-COverlayType::COverlayType (void) :
-		m_pEffect(NULL),
-		m_pHitEffect(NULL)
+COverlayType::COverlayType (void)
 
 //	COverlayType constructor
 
@@ -68,7 +59,7 @@ bool COverlayType::AbsorbsWeaponFire (CInstalledDevice *pWeapon)
 //	Absorbs weapon fire from the ship
 
 	{
-    int iType = pWeapon->GetDamageType(CItemCtx(NULL, pWeapon));
+	int iType = pWeapon->GetDamageType(CItemCtx(NULL, pWeapon));
 	if (iType != -1 && m_WeaponSuppress.InSet(iType))
 		return true;
 	else
@@ -119,14 +110,12 @@ int COverlayType::GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx)
 //	Returns the amount of damage absorbed
 
 	{
-	int i;
-
 	if (Ctx.Damage.GetDamageType() == damageGeneric)
 		{
 		//	For generic damage, we absorb the min of all other damage types
 
 		int iMin = 100;
-		for (i = 0; i < damageCount; i++)
+		for (int i = 0; i < damageCount; i++)
 			if (m_AbsorbAdj.GetAbsorbAdj((DamageTypes)i) < iMin)
 				iMin = m_AbsorbAdj.GetAbsorbAdj((DamageTypes)i);
 
@@ -134,6 +123,23 @@ int COverlayType::GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx)
 		}
 
 	return (Ctx.iDamage * m_AbsorbAdj.GetAbsorbAdj(Ctx.Damage.GetDamageType())) / 100;
+	}
+
+int COverlayType::GetMaxHitPoints (const CSpaceObject &Source) const
+
+//	GetMaxHitPoints
+//
+//	Returns maximum hit points.
+
+	{
+	if (!m_Underground.IsEmpty())
+		{
+		const CSystem *pSystem = Source.GetSystem();
+		int iLevel = (pSystem ? pSystem->GetLevel() : 1);
+		return m_Underground.GetHitPoints(iLevel);
+		}
+	else
+		return 0;
 	}
 
 int COverlayType::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource)
@@ -230,6 +236,7 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Rotation
 
 	m_fRotateWithShip = !pDesc->GetAttributeBool(IGNORE_SHIP_ROTATION_ATTRIB);
+	m_fRotateWithSource = pDesc->GetAttributeBool(ROTATE_WITH_SOURCE_ATTRIB);
 
 	//	Damage adjustment
 
@@ -257,37 +264,18 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Counter
 
-	CXMLElement *pCounter = pDesc->GetContentElementByTag(COUNTER_TAG);
-	if (pCounter)
+	if (const CXMLElement *pCounter = pDesc->GetContentElementByTag(COUNTER_TAG))
 		{
-		CString sStyle = pCounter->GetAttribute(STYLE_ATTRIB);
-
-		if (strEquals(sStyle, COUNTER_COMMAND_BAR_PROGRESS))
-			m_iCounterType = counterCommandBarProgress;
-
-		else if (strEquals(sStyle, COUNTER_FLAG))
-			m_iCounterType = counterFlag;
-
-		else if (strEquals(sStyle, COUNTER_PROGRESS))
-			m_iCounterType = counterProgress;
-
-		else if (strEquals(sStyle, COUNTER_RADIUS))
-			m_iCounterType = counterRadius;
-
-		else
-			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown counter style: %s"), sStyle));
-
-		m_sCounterLabel = pCounter->GetAttribute(LABEL_ATTRIB);
-		m_iCounterMax = pCounter->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, 100);
-		m_rgbCounterColor = ::LoadRGBColor(pCounter->GetAttribute(COLOR_ATTRIB));
-		m_fShowOnMap = pCounter->GetAttributeBool(SHOW_ON_MAP_ATTRIB);
+		if (ALERROR error = m_Counter.InitFromXML(Ctx, *pCounter))
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
-	else
+
+	//	Underground
+
+	if (const CXMLElement *pUnderground = pDesc->GetContentElementByTag(UNDERGROUND_TAG))
 		{
-		m_iCounterType = counterNone;
-		m_iCounterMax = 0;
-		m_rgbCounterColor = CG32bitPixel::Null();
-		m_fShowOnMap = false;
+		if (ALERROR error = m_Underground.InitFromXML(Ctx, *pUnderground))
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
 	//	Options
@@ -333,4 +321,17 @@ CEffectCreator *COverlayType::OnFindEffectCreator (const CString &sUNID)
 		default:
 			return NULL;
 		}
+	}
+
+bool COverlayType::RotatesWithSource (const CSpaceObject &Source) const
+
+//	RotatesWithSource
+//
+//	Returns TRUE if we rotate along with the source.
+
+	{
+	if (Source.GetCategory() == CSpaceObject::catShip)
+		return (m_fRotateWithShip || m_fRotateWithSource);
+	else
+		return m_fRotateWithSource;
 	}

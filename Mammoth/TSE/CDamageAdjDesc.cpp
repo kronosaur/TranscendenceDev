@@ -460,7 +460,7 @@ ALERROR CDamageAdjDesc::InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAt
 	return NOERROR;
 	}
 
-ALERROR CDamageAdjDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsDefault)
+ALERROR CDamageAdjDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, bool bIsDefault)
 
 //	InitFromXML
 //
@@ -473,7 +473,7 @@ ALERROR CDamageAdjDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bo
 	int i;
 	CString sValue;
 
-	if (pDesc->FindAttribute(HP_BONUS_ATTRIB, &sValue))
+	if (XMLDesc.FindAttribute(HP_BONUS_ATTRIB, &sValue))
 		{
 		if (bIsDefault)
 			{
@@ -484,7 +484,7 @@ ALERROR CDamageAdjDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bo
 		if (error = InitFromHPBonus(Ctx, sValue))
 			return error;
 		}
-	else if (pDesc->FindAttribute(DAMAGE_ADJ_ATTRIB, &sValue))
+	else if (XMLDesc.FindAttribute(DAMAGE_ADJ_ATTRIB, &sValue))
 		{
 		if (error = InitFromDamageAdj(Ctx, sValue, bIsDefault))
 			return error;

@@ -240,7 +240,7 @@ ALERROR OutputTypeTable (DWORD dwAdventureUNID, TSortMap<DWORD, STypeStats> &All
 	return NOERROR;
 	}
 
-void ReadLine (char *pPos, char *pEndPos, TArray<int> *retValues, char **retpPos)
+void ReadLine (const char *pPos, const char *pEndPos, TArray<int> *retValues, const char **retpPos)
 	{
 	while (true)
 		{
@@ -281,8 +281,8 @@ ALERROR LoadDesignTypeStats (DWORD dwAdventureUNID, CDesignTypeStats *retStats)
 		return error;
 		}
 
-	char *pPos = Input.GetPointer(0, -1);
-	char *pEndPos = pPos + Input.GetLength();
+	const char *pPos = Input.GetPointer(0, -1);
+	const char *pEndPos = pPos + Input.GetLength();
 
 	while (pPos < pEndPos)
 		{

@@ -509,7 +509,7 @@ CString CFleetShipAI::DebugCrashInfo (void)
 	return sResult;
 	}
 
-CSpaceObject *CFleetShipAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CFleetShipAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -569,7 +569,7 @@ void CFleetShipAI::ImplementKeepFormation (bool *retbInFormation)
 	m_AICtx.ImplementFormationManeuver(m_pShip, vDest, vDestVel, m_pShip->AlignToRotationAngle(m_pLeader->GetRotation()), retbInFormation);
 	}
 
-DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -643,7 +643,7 @@ DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage,
 			if (GetCurrentOrder() == IShipController::orderEscort && GetCurrentOrderTarget() == pSender)
 				{
 				DWORD dwRes = (resCanBeInFormation | resCanBreakAndAttack);
-				if (pSender->GetTarget(CItemCtx(), FLAG_ACTUAL_TARGET))
+				if (pSender->GetTarget(FLAG_ACTUAL_TARGET))
 					dwRes |= resCanAttack;
 
 				if (m_State == stateAttackTarget
@@ -730,7 +730,7 @@ void CFleetShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	switch (GetCurrentOrder())
 		{
 		case IShipController::orderEscort:
-			if (Ctx.pObj == GetCurrentOrderTarget())
+			if (Ctx.Obj == GetCurrentOrderTarget())
 				{
 				CancelCurrentOrder();
 
@@ -738,9 +738,9 @@ void CFleetShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 				IShipController::OrderTypes iLeaderOrders = IShipController::orderNone;
 				CSpaceObject *pLeaderTarget = NULL;
-				if (Ctx.pObj && Ctx.pObj->GetCategory() == CSpaceObject::catShip)
+				if (Ctx.Obj.GetCategory() == CSpaceObject::catShip)
 					{
-					CShip *pLeader = Ctx.pObj->AsShip();
+					CShip *pLeader = Ctx.Obj.AsShip();
 					if (pLeader)
 						iLeaderOrders = pLeader->GetController()->GetCurrentOrderEx(&pLeaderTarget);
 					}
@@ -776,7 +776,7 @@ void CFleetShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 		case IShipController::orderDestroyTarget:
 		case IShipController::orderPatrol:
 		case IShipController::orderGuard:
-			if (Ctx.pObj == GetCurrentOrderTarget())
+			if (Ctx.Obj == GetCurrentOrderTarget())
 				CancelCurrentOrder();
 			break;
 		}
@@ -787,16 +787,16 @@ void CFleetShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 		{
 		case stateAttackTarget:
 		case stateAttackOnPatrol:
-			if (Ctx.pObj == m_pTarget)
+			if (Ctx.Obj == m_pTarget)
 				SetState(stateNone);
 			break;
 		}
 
 	//	Reset
 
-	if (m_pDest == Ctx.pObj)
+	if (m_pDest == Ctx.Obj)
 		m_pDest = NULL;
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		m_pTarget = NULL;
 	}
 

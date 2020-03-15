@@ -224,17 +224,16 @@
 	<!-- Size A OreStone Asteroid -->
 
 	<StationType UNID="&stOreStoneAsteroidSizeA;"
-		name=				"(oreStone asteroid)"
+		name=				"orestone asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
 		inherit=			"&baOreStoneAsteroid;"
 
 		scale=				"world"
 		size=				"3"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image			imageID="&rsOreStoneAsteroids;" imageX="0" imageY="0" imageWidth="32" imageHeight="32"/>
 			<Image			imageID="&rsOreStoneAsteroids;" imageX="0" imageY="32" imageWidth="32" imageHeight="32"/>
@@ -266,17 +265,16 @@
 	<!-- Size B OreStone Asteroid -->
 
 	<StationType UNID="&stOreStoneAsteroidSizeB;"
-		name=				"(oreStone asteroid)"
+		name=				"orestone asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
 		inherit=			"&baOreStoneAsteroid;"
 
 		scale=				"world"
 		size=				"55"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-
 		<ImageVariants>
 			<Image			imageID="&rsOreStoneAsteroids;" imageX="64" imageY="0" imageWidth="64" imageHeight="64"/>
 			<Image			imageID="&rsOreStoneAsteroids;" imageX="64" imageY="64" imageWidth="64" imageHeight="64"/>
@@ -310,17 +308,16 @@
 	<!-- Size C OreStone Asteroid -->
 
 	<StationType UNID="&stOreStoneAsteroidSizeC;"
-		name=				"(oreStone asteroid)"
+		name=				"oresone asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
 		inherit=			"&baOreStoneAsteroid;"
 
 		scale=				"world"
 		size=				"128"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOreStoneAsteroids;" imageX="0"   imageY="256"   imageWidth="88" imageHeight="88"/>
 			<Image	imageID="&rsOreStoneAsteroids;" imageX="0"   imageY="344"   imageWidth="88" imageHeight="88"/>
@@ -346,17 +343,16 @@
 	<!-- Size D OreStone Asteroid -->
 
 	<StationType UNID="&stOreStoneAsteroidSizeD;"
-		name=				"(oreStone asteroid)"
+		name=				"orestone asteroid"
 		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
 		inherit=			"&baOreStoneAsteroid;"
 
 		scale=				"world"
 		size=				"480"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOreStoneAsteroids;" imageX="264"  imageY="256"   imageWidth="108" imageHeight="108"/>
 			<Image	imageID="&rsOreStoneAsteroids;" imageX="372"  imageY="256"   imageWidth="108" imageHeight="108"/>
@@ -378,17 +374,16 @@
 	<!-- OreStone Planetoid Size E -->
 
 	<StationType UNID="&stOreStonePlanetoidSizeE;"
-		name=				"(oreStone planetoid)"
+		name=				"orestone planetoid"
 		attributes=			"generic, inner, lifeZone, oreStone, outer, planetoid"
 		inherit=			"&baOreStonePlanetoid;"
 
 		scale=				"world"
 		size=				"885"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOreStoneAsteroids;" imageX="320"  imageY="0"	 imageWidth="128" imageHeight="128"/>
 			<Image	imageID="&rsOreStoneAsteroids;" imageX="320"  imageY="128"   imageWidth="128" imageHeight="128"/>
@@ -401,17 +396,16 @@
 	<!-- OreStone Planetoid Size F -->
 
 	<StationType UNID="&stOreStonePlanetoidSizeF;"
-		name=				"(oreStone planetoid)"
+		name=				"orestone planetoid"
 		attributes=			"generic, inner, lifeZone, oreStone, outer, planetoid"
 		inherit=			"&baOreStonePlanetoid;"
 
 		scale=				"world"
 		size=				"2050"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOreStoneAsteroids;" imageX="0"	  imageY="520"   imageWidth="156" imageHeight="156"/>
 			<Image	imageID="&rsOreStoneAsteroids;" imageX="156"  imageY="520"   imageWidth="156" imageHeight="156"/>
@@ -423,17 +417,16 @@
 	<!-- OreStone Planetoid Size G -->
 
 	<StationType UNID="&stOreStonePlanetoidSizeG;"
-		name=				"(oreStone planetoid)"
+		name=				"orestone planetoid"
 		attributes=			"generic, inner, lifeZone, oreStone, outer, planetoid"
 		inherit=			"&baOreStonePlanetoid;"
 
 		scale=				"world"
 		size=				"3750"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOreStoneAsteroids;" imageX="0"    imageY="676"   imageWidth="180" imageHeight="180"/>
 			<Image	imageID="&rsOreStoneAsteroids;" imageX="180"  imageY="676"   imageWidth="180" imageHeight="180"/>
@@ -445,13 +438,17 @@
 
 <!-- BASE CLASSES -->
 
-	<Type unid="&baOreStoneAsteroid;">
+	<StationType unid="&baOreStoneAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="metallic"/>
+
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 30)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
-	</Type>
+	</StationType>
 
 	<Type unid="&baOreStonePlanetoid;">
 	</Type>

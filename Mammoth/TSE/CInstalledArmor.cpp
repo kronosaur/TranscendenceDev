@@ -25,7 +25,7 @@ bool CInstalledArmor::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformance
 //	Accumulate enhancements on devices.
 
 	{
-	if (m_pArmorClass)
+	if (m_pArmorClass == NULL)
 		return false;
 
     return m_pArmorClass->AccumulatePerformance(ItemCtx, Ctx);
@@ -249,7 +249,7 @@ void CInstalledArmor::SetEnhancements (CSpaceObject *pSource, const TSharedPtr<C
 	m_iHitPoints = CArmorClass::CalcMaxHPChange(m_iHitPoints, iOldMaxHP, ArmorItem.GetMaxHP());
 	}
 
-void CInstalledArmor::WriteToStream (IWriteStream *pStream)
+void CInstalledArmor::WriteToStream (IWriteStream *pStream) const
 
 //	WriteToStream
 //

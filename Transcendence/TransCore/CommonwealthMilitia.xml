@@ -144,7 +144,6 @@
 			regen=              "11"
 			shipRegen=			"10"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -163,7 +162,6 @@
 				/>
 
 		<Properties>
-			<Constant		id="rpg.checkMilitaryID">True</Constant>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; +military; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
 		</Properties>
@@ -171,8 +169,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur" noDescription="true"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100" noDescription="true"/>
+			<Sell	criteria="m +commonwealth; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur" noDescription="true"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100" noDescription="true"/>
 
 			<Refuel			criteria="f +BasicFuel; L:3-8;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
@@ -349,6 +347,8 @@
 												(rpgMissionAssignment {
 													missionCriteria: (cat "n +commonwealthMilitiaOC; =" (sysGetLevel) ";")
 													displayCriteria: "n +commonwealthMilitiaOC;"
+
+													rumorInterval: 0
 													noMissionTextID: 'descBarEmpty
 													})
 												)
@@ -419,7 +419,7 @@
 					)
 			</OnCreate>
 
-			<GetGlobalRumors>
+			<GetRumors>
 				(append
 					(rpgRumorAdd 'commonwealthMilitiaOC (make 'sequence 8))
 
@@ -428,7 +428,7 @@
 						(rpgRumorAdd 'commonwealthMilitiaOC (make 'sequence 41 43))
 						)
 					)
-			</GetGlobalRumors>
+			</GetRumors>
 		</Events>
 
 		<Language>
@@ -438,76 +438,104 @@
 			<Text id="actionInformation">[I]nformation</Text>
 
 			<Text id="rumor.commonwealthMilitiaOC.1">
+
 				A man with a prosthetic arm sits next to you:
 				"I've been flying for the militia for years, but I'd much
 				rather be helping the Fleet. No one's seen them in a long time.
 				They must be at the Ares Homeworld by now."
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.2">
+
 				A man and a woman sit next to you. The woman starts a conversation with you:
 				"We're students from St. Katharine's Star! It's so exciting to be
 				here where all the action is! We're writing a doctoral thesis on
 				the role of minority neo-humans on reductive militia policy. Wish us luck!"
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.3">
+
 				An older pilot sits next to you: "Don't underestimate the slavers!
 				We've been fighting them for years and they just keep advancing their
 				technology. There are rumors that they've developed a new archcannon
 				powered by their longzhu spheres."
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.4">
+
 				A woman sits next to you: "My husband is in the Commonwealth Fleet
 				and I haven't seen him for years. Sometimes I get messages from him,
 				but it's never good news."
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.5">
+
 				A young man wearing trendy clothes talks with you: "I think that
 				girl in the flight suit likes me. What do you think?"
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.6">
+
 				A short-haired woman talks to you: "My cousin's best friend says that
 				the CSC Europa got blown up by the Ares. They should pull back the
 				Fleet and have them fight the slavers! You know what I mean? What's the point?"
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.7">
+
 				A dark-skinned woman talks with you: "My best friend went to the
 				Core; it was two years ago, I think. A year later they found her
 				wreckage in the Sanctuary system; she left me a message, but
 				I've never been able to read it."
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.8">
+
 				A tall woman talks to you: "I'm doing research on the Iocrym.
 				It is curious, don't you think, that they haven't returned? A lot of
 				ignorant people think they are preparing to invade, which is ridiculous.
 				They wouldn't travel thousands of light-years just to kill us. Why bother?"
+
 			</Text>
 
 			<Text id="rumor.commonwealthMilitiaOC.21">
+
 				A well-dressed woman sits next to you: "You're heading to the galactic
 				what? I don't know&#x97;sounds like brainwashing to me."
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.22">
+
 				A short, round man sits next to you: "You're going to the Core?
 				Elegant! Maybe you'll get to meet the aliens."
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.23">
+
 				A young woman sits next to you: "Why does Domina compel you to go to
 				the Core? I suppose you won't find out until you get there. Still,
 				it's nice to have a purpose in life."
+
 			</Text>
 
 			<Text id="rumor.commonwealthMilitiaOC.41">
+
 				A well-dressed woman sits next to you: "You're doing what?
 				I don't know&#x97;sounds like a wasted life to me."
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.42">
+
 				A short, round man sits next to you: "You're a merc? Elegant!
 				Have you been in many battles?"
+
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.43">
+
 				A young woman sits next to you: "Must be nice to travel so much.
 				I visited Rigel Aurelius with my parents when I was little, but
 				I don't remember anything."
+
 			</Text>
 
 			<Text id="descWelcome:New">
@@ -555,10 +583,21 @@
 			</Text>
 			<Text id="descNoMissions">
 				(if (= (typGetData &unidCommonwealthMilitia; 'rank) -1)
-					"\"How about getting us a cup of tea or something? That's probably a mission you could handle.\""
-					"\"Sorry, there are no missions currently available.\""
+					(typTranslate &stCommonwealthFortress; 'descNoMissions.blacklisted)
+					(typTranslate &stCommonwealthFortress; 'descNoMissions.normal)
 					)
 			</Text>
+			<Text id="descNoMissions.blacklisted">
+
+				"How about getting us a cup of tea or something? That's probably
+				a mission you could handle."
+
+			</Text>
+			<String id="descNoMissions.normal">
+
+				"Sorry, there are no missions currently available."
+
+			</String>
 			<Text id="descNoOfficersClubAccess">
 
 				Two guards flank the door to the Officers' Club. One of them 
@@ -588,9 +627,26 @@
 				few drinks to pass away the off-duty hours.
 
 			</Text>
-			<Text id="descBarNoMoney">"You sit at the bar, but you don't even have enough money to buy a drink. You feel out of place."</Text>
-			<Text id="descBarBlacklisted">"You spend 5 credits on drinks, but everyone avoids you. You feel out of place here."</Text>
-			<Text id="descBarEmpty">"You spend 5 credits on drinks, but there aren't too many people here that you want to talk to."</Text>
+			<Text id="descBarNoMoney">
+
+				You sit at the bar, but you don't even have enough money to buy 
+				a drink.
+				
+				You feel out of place.
+				
+			</Text>
+			<Text id="descBarBlacklisted">
+			
+				You spend 5 credits on drinks, but everyone avoids you. You feel
+				out of place here.
+				
+			</Text>
+			<Text id="descBarEmpty">
+			
+				You spend 5 credits on drinks, but there aren't too many people 
+				here that you want to talk to.
+				
+			</Text>
 
 			<Text id="descLibraryComputer">
 

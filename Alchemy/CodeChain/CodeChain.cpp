@@ -47,14 +47,13 @@ CCodeChain::~CCodeChain (void)
 	CleanUp();
 	}
 
-ICCItem *CCodeChain::Apply (ICCItem *pFunc, ICCItem *pArgs, LPVOID pExternalCtx)
+ICCItemPtr CCodeChain::Apply (const ICCItem &Func, ICCItem &Args, const SRunOptions &Options)
 
 //	Apply
 //
 //	Runs the given function with the given arguments
 
 	{
-	ICCItem *pResult;
 	CEvalContext EvalCtx;
 
 	//	Set up the context
@@ -62,16 +61,24 @@ ICCItem *CCodeChain::Apply (ICCItem *pFunc, ICCItem *pArgs, LPVOID pExternalCtx)
 	EvalCtx.pCC = this;
 	EvalCtx.pLexicalSymbols = m_pGlobalSymbols;
 	EvalCtx.pLocalSymbols = NULL;
-	EvalCtx.pExternalCtx = pExternalCtx;
+	EvalCtx.bStrict = Options.bStrict;
+	EvalCtx.pExternalCtx = Options.pExternalCtx;
 
 	//	Evalute the actual code
 
-	pArgs->SetQuoted();
+	Args.SetQuoted();
 
-	if (pFunc->IsFunction())
-		pResult = pFunc->Execute(&EvalCtx, pArgs);
+	ICCItemPtr pResult;
+	if (Func.IsFunction())
+		{
+		//	We're not yet ready to pull on the const thread in CodeChain:
+
+		ICCItem *pFunc = &const_cast<ICCItem &>(Func);
+
+		pResult = ICCItemPtr(pFunc->Execute(&EvalCtx, &Args));
+		}
 	else
-		pResult = pFunc->Reference();
+		pResult = ICCItemPtr(Func);
 
 	return pResult;
 	}
@@ -158,25 +165,7 @@ ICCItem *CCodeChain::CreateError (const CString &sError, ICCItem *pData)
 //	pData: Item that caused error.
 
 	{
-	ICCItem *pError;
-	CString sArg;
-	CString sErrorLine;
-
-	//	Convert the argument to a string
-
-	if (pData)
-		{
-		sArg = pData->Print();
-		sErrorLine = strPatternSubst(LITERAL("%s [%s]"), sError, sArg);
-		}
-	else
-		sErrorLine = sError;
-
-	//	Create the error
-
-	pError = CreateString(sErrorLine);
-	pError->SetError();
-	return pError;
+	return ICCItemPtr::Error(sError, pData)->Reference();
 	}
 
 ICCItem *CCodeChain::CreateErrorCode (int iErrorCode)
@@ -520,8 +509,8 @@ ICCItem *CCodeChain::CreateVariant (const CString &sValue)
 //	Parses sValue and returns either an integer, double, or string.
 
 	{
-	char *pPos = sValue.GetASCIIZPointer();
-	char *pPosEnd = pPos + sValue.GetLength();
+	const char *pPos = sValue.GetASCIIZPointer();
+	const char *pPosEnd = pPos + sValue.GetLength();
 
 	//	Skip any leading whitespace
 
@@ -535,7 +524,7 @@ ICCItem *CCodeChain::CreateVariant (const CString &sValue)
 		//	See if this is an integer
 
 		bool bFailed;
-		char *pNumberEnd;
+		const char *pNumberEnd;
 		int iValue = strParseInt(pPos, 0, &pNumberEnd, &bFailed);
 		if (!bFailed && pNumberEnd == pPosEnd)
 			return CreateInteger(iValue);
@@ -919,7 +908,9 @@ ICCItem *CCodeChain::EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem)
 		ICCItem *pNewKey = CreateString(sKey);
 		ICCItem *pNewValue = (pValue ? Eval(pCtx, pValue) : CreateNil());
 
-		pNewTable->AddEntry(pNewKey, pNewValue);
+		if (!pNewValue->IsNil())
+			pNewTable->AddEntry(pNewKey, pNewValue);
+
 		pNewKey->Discard();
 		pNewValue->Discard();
 		}
@@ -1296,6 +1287,49 @@ bool CCodeChain::HasIdentifier (ICCItem *pCode, const CString &sIdentifier)
 		}
 	}
 
+ICCItemPtr CCodeChain::IncValue (ICCItem *pValue, ICCItem *pInc)
+
+//	IncValue
+//
+//	Increments pValue by pInc and returns the result (or an error, if the 
+//	there is an error).
+
+	{
+	//	If current value is not a number, then we cannot increment.
+
+	if (pValue && !pValue->IsNil() && !pValue->IsNumber())
+		return ICCItemPtr(CreateError(CONSTLIT("Cannot increment: Not a number"), pValue));
+
+	//	Make sure increment value is a number.
+
+	else if (pInc && !pInc->IsNil() && !pInc->IsNumber())
+		return ICCItemPtr(CreateError(CONSTLIT("Cannot increment by that value"), pInc));
+
+	//	Otherwise, we're OK.
+
+	else if (pValue == NULL || pValue->IsNil())
+		{
+		if (pInc == NULL || pInc->IsNil())
+			return ICCItemPtr(1);
+		else
+			return ICCItemPtr(pInc->Reference());
+		}
+	else if (pValue->IsInteger())
+		{
+		if (pInc == NULL || pInc->IsNil())
+			return ICCItemPtr(pValue->GetIntegerValue() + 1);
+		else if (pInc->IsInteger())
+			return ICCItemPtr(pValue->GetIntegerValue() + pInc->GetIntegerValue());
+		else
+			return ICCItemPtr(pValue->GetDoubleValue() + pInc->GetDoubleValue());
+		}
+	else
+		{
+		double rInc = (pInc && !pInc->IsNil() ? pInc->GetDoubleValue(): 1.0);
+		return ICCItemPtr(pValue->GetDoubleValue() + rInc);
+		}
+	}
+
 ICCItem *CCodeChain::ListGlobals (void)
 
 //	ListGlobals
@@ -1498,7 +1532,7 @@ ICCItem *CCodeChain::PoolUsage (void)
 	return pList;
 	}
 
-ICCItem *CCodeChain::TopLevel (ICCItem *pItem, LPVOID pExternalCtx)
+ICCItemPtr CCodeChain::TopLevel (const ICCItem &Code, const SRunOptions &Options)
 
 //	TopLevel
 //
@@ -1512,11 +1546,16 @@ ICCItem *CCodeChain::TopLevel (ICCItem *pItem, LPVOID pExternalCtx)
 	EvalCtx.pCC = this;
 	EvalCtx.pLexicalSymbols = m_pGlobalSymbols;
 	EvalCtx.pLocalSymbols = NULL;
-	EvalCtx.pExternalCtx = pExternalCtx;
+	EvalCtx.bStrict = Options.bStrict;
+	EvalCtx.pExternalCtx = Options.pExternalCtx;
+
+	//	We're not yet ready to pull on the const thread in CodeChain:
+
+	ICCItem *pCode = &const_cast<ICCItem &>(Code);
 
 	//	Evalute the actual code
 
-	return Eval(&EvalCtx, pItem);
+	return ICCItemPtr(Eval(&EvalCtx, pCode));
 	}
 
 ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)

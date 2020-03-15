@@ -44,7 +44,7 @@
 						(rpgCharacterCreateShip
 							&unidJuanCarlos;
 							&scEI500JuanCarlos;
-							(sysVectorRandom gSource (random 240 400) 60 "Ts")
+							(sysVectorRandom stationObj (random 240 400) 60 "Ts")
 							{ repairAll:True }
 							)
 						)
@@ -307,7 +307,7 @@
 					(objIsUnderAttack gSource)
 						(typTranslate &unidJuanCarlos; 'RefuseUnderAttack)
 
-					(objIsUnderAttack gSource)
+					(objIsUnderAttack gPlayerShip)
 						(typTranslate &unidJuanCarlos; 'RefusePlayerUnderAttack)
 
 					True

@@ -4,9 +4,12 @@
 //	Copyright (c) 2018 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+#include "Console.h"
 
 #define CODE_ATTRIB							CONSTLIT("code")
 #define CRITERIA_ATTRIB						CONSTLIT("criteria")
+#define INHERITED_ATTRIB					CONSTLIT("inherited")
+#define SCRIPT_ATTRIB						CONSTLIT("script")
 
 #define FIELD_ID							CONSTLIT("id")
 #define FIELD_TEXT							CONSTLIT("text")
@@ -14,18 +17,29 @@
 
 static constexpr int MAX_CODE_LENGTH =		256;
 
+enum class ELanguageOutputTypes
+	{
+	none,
+
+	script,
+	table,
+	};
+
 struct SLanguageTableOptions
 	{
+	ELanguageOutputTypes iType = ELanguageOutputTypes::table;
 	bool bShowCode = false;
+	bool bShowInherited = false;
 	};
 
 void OutputLanguageBlock (CDesignType *pType, const TArray<CString> &Cols, const SLanguageTableOptions &Options);
 void OutputLanguageEntry (CDesignType *pType, const CLanguageDataBlock::SEntryDesc &Entry, const TArray<CString> &Cols, const SLanguageTableOptions &Options);
+void OutputScript (CUniverse &Universe, const TSortMap<CString, CDesignType *> &Table, const SLanguageTableOptions &Options);
+void OutputScriptBlock (const CDesignType &Type, const SLanguageTableOptions &Options);
+void OutputTable (CUniverse &Universe, const TSortMap<CString, CDesignType *> &Table, const SLanguageTableOptions &Options);
 
 void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	{
-	int i;
-
 	//	Get the criteria from the command line.
 
 	CString sCriteria = pCmdLine->GetAttribute(CRITERIA_ATTRIB);
@@ -44,7 +58,13 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	//	Options
 
 	SLanguageTableOptions Options;
+	if (pCmdLine->GetAttributeBool(SCRIPT_ATTRIB))
+		Options.iType = ELanguageOutputTypes::script;
+	else
+		Options.iType = ELanguageOutputTypes::table;
+
 	Options.bShowCode = pCmdLine->GetAttributeBool(CODE_ATTRIB);
+	Options.bShowInherited = pCmdLine->GetAttributeBool(INHERITED_ATTRIB);
 
 	//	Generate a table of all matching types
 
@@ -53,7 +73,7 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	//	Loop over all items for this level and add them to
 	//	a sorted table.
 
-	for (i = 0; i < Universe.GetDesignTypeCount(); i++)
+	for (int i = 0; i < Universe.GetDesignTypeCount(); i++)
 		{
 		CDesignType *pType = Universe.GetDesignType(i);
 		int iLevel = pType->GetLevel();
@@ -82,45 +102,40 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 		return;
 		}
 
-	//	Generate a list of columns to display
+	//	Output
 
-	TArray<CString> Cols;
-	Cols.Insert(FIELD_UNID);
-	Cols.Insert(FIELD_ID);
-	Cols.Insert(FIELD_TEXT);
-
-	//	Output the header
-
-	for (i = 0; i < Cols.GetCount(); i++)
+	switch (Options.iType)
 		{
-		if (i != 0)
-			printf("\t");
+		case ELanguageOutputTypes::script:
+			OutputScript(Universe, Table, Options);
+			break;
 
-		printf(Cols[i].GetASCIIZPointer());
+		default:
+			OutputTable(Universe, Table, Options);
+			break;
 		}
-
-	printf("\n");
-
-	//	Output each row
-
-	for (i = 0; i < Table.GetCount(); i++)
-		{
-		CDesignType *pType = Table[i];
-
-		OutputLanguageBlock(pType, Cols, Options);
-		}
-
-	printf("\n");
 	}
 
 void OutputLanguageBlock (CDesignType *pType, const TArray<CString> &Cols, const SLanguageTableOptions &Options)
 	{
-	int i;
+	//	Get the appropriate block.
 
-	CLanguageDataBlock Language = pType->GetMergedLanguageBlock();
-	for (i = 0; i < Language.GetCount(); i++)
+	const CLanguageDataBlock *pLanguage = NULL;
+	CLanguageDataBlock MergedBlock;
+
+	if (Options.bShowInherited)
 		{
-		CLanguageDataBlock::SEntryDesc Entry = Language.GetEntry(i);
+		MergedBlock = pType->GetMergedLanguageBlock();
+		pLanguage = &MergedBlock;
+		}
+	else
+		pLanguage = &pType->GetLanguageBlock();
+
+	//	Output each entry in the block.
+
+	for (int i = 0; i < pLanguage->GetCount(); i++)
+		{
+		CLanguageDataBlock::SEntryDesc Entry = pLanguage->GetEntry(i);
 
 		//	In code mode we only show entries with code.
 
@@ -171,4 +186,96 @@ void OutputLanguageEntry (CDesignType *pType, const CLanguageDataBlock::SEntryDe
 		else
 			printf("\t");
 		}
+	}
+
+void OutputScript (CUniverse &Universe, const TSortMap<CString, CDesignType *> &Table, const SLanguageTableOptions &Options)
+	{
+	for (int i = 0; i < Table.GetCount(); i++)
+		{
+		const CDesignType &Type = *Table[i];
+
+		CString sTypeName = strPatternSubst(CONSTLIT("%08x: %s"), Type.GetUNID(), strToUpper(Type.GetNounPhrase()));
+		printf("%s\n%s\n\n", (LPSTR)CConsoleFormat::CenterLine(sTypeName), (LPSTR)CConsoleFormat::CenterLine(strRepeat(CONSTLIT("-"), sTypeName.GetLength())));
+
+		OutputScriptBlock(Type, Options);
+		}
+	}
+
+void OutputScriptBlock (const CDesignType &Type, const SLanguageTableOptions &Options)
+	{
+	//	Get the appropriate block.
+
+	const CLanguageDataBlock *pLanguage = NULL;
+	CLanguageDataBlock MergedBlock;
+
+	if (Options.bShowInherited)
+		{
+		MergedBlock = Type.GetMergedLanguageBlock();
+		pLanguage = &MergedBlock;
+		}
+	else
+		pLanguage = &Type.GetLanguageBlock();
+
+	//	Output each entry in the block.
+
+	for (int i = 0; i < pLanguage->GetCount(); i++)
+		{
+		CLanguageDataBlock::SEntryDesc Entry = pLanguage->GetEntry(i);
+
+		if (Options.bShowCode)
+			{
+			if (!Entry.pCode)
+				continue;
+
+			printf("%s\n\n", (LPSTR)CConsoleFormat::CenterLine(Entry.sID));
+
+			CString sCode = CCodeChain::Unlink(Entry.pCode);
+			printf("%s\n\n", (LPSTR)sCode);
+			}
+		else
+			{
+			if (Entry.sText.IsBlank())
+				continue;
+
+			printf("%s\n\n", (LPSTR)CConsoleFormat::CenterLine(Entry.sID));
+
+			TArray<CString> Lines;
+			CConsoleFormat::WrapText(Entry.sText, Lines);
+			for (int j = 0; j < Lines.GetCount(); j++)
+				printf("%s\n", (LPSTR)Lines[j]);
+
+			printf("\n");
+			}
+		}
+	}
+
+void OutputTable (CUniverse &Universe, const TSortMap<CString, CDesignType *> &Table, const SLanguageTableOptions &Options)
+	{
+	TArray<CString> Cols;
+	Cols.Insert(FIELD_UNID);
+	Cols.Insert(FIELD_ID);
+	Cols.Insert(FIELD_TEXT);
+
+	//	Output the header
+
+	for (int i = 0; i < Cols.GetCount(); i++)
+		{
+		if (i != 0)
+			printf("\t");
+
+		printf(Cols[i].GetASCIIZPointer());
+		}
+
+	printf("\n");
+
+	//	Output each row
+
+	for (int i = 0; i < Table.GetCount(); i++)
+		{
+		CDesignType *pType = Table[i];
+
+		OutputLanguageBlock(pType, Cols, Options);
+		}
+
+	printf("\n");
 	}

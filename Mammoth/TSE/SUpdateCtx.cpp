@@ -15,3 +15,7 @@ int SUpdateCtx::GetLightIntensity (CSpaceObject *pObj) const
 	return m_iLightIntensity;
 	}
 
+void SUpdateCtx::OnStartUpdate (CSpaceObject &Obj)
+	{
+	m_bTimeStopped = Obj.IsTimeStopped();
+	}

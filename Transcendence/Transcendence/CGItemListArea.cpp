@@ -73,66 +73,6 @@ void CGItemListArea::AddTab (DWORD dwID, const CString &sLabel)
 	m_cyTabHeight = TAB_HEIGHT;
 	}
 
-int CGItemListArea::CalcRowHeight (int iRow)
-
-//	CalcRowHeight
-//
-//	Returns the height of the given row
-
-	{
-	//	Set the position
-
-	int iOldPos = m_pListData->GetCursor();
-	m_pListData->SetCursor(iRow);
-
-	//	Compute the rect where we're painting (we only care about width)
-
-	RECT rcRect = GetRect();
-
-	//	Compute row height based on type of list
-
-	int cyHeight;
-	switch (m_iType)
-		{
-		case listItem:
-			{
-			//	Get the item
-
-			if (!m_pListData->IsCursorValid())
-				{
-				cyHeight = DEFAULT_ROW_HEIGHT;
-				}
-			else
-				{
-				CUIHelper UIHelper(*g_pHI);
-
-				DWORD dwOptions = 0;
-				if (m_bNoArmorSpeedDisplay)
-					dwOptions |= CUIHelper::OPTION_NO_ARMOR_SPEED_DISPLAY;
-				if (m_bActualItems)
-					dwOptions |= CUIHelper::OPTION_KNOWN;
-
-				cyHeight = UIHelper.CalcItemEntryHeight(m_pListData->GetSource(), m_pListData->GetItemAtCursor(), rcRect, dwOptions);
-				}
-
-			break;
-			}
-
-		case listCustom:
-			cyHeight = m_cyRow;
-			break;
-
-		default:
-			cyHeight = DEFAULT_ROW_HEIGHT;
-			break;
-		}
-
-	//	Done
-
-	m_pListData->SetCursor(iOldPos);
-	return cyHeight;
-	}
-
 void CGItemListArea::CleanUp (void)
 
 //	CleanUp
@@ -211,6 +151,24 @@ ICCItem *CGItemListArea::GetEntryAtCursor (void)
 		return CCodeChain::CreateNil();
 
 	return m_pListData->GetEntryAtCursor();
+	}
+
+const CItem &CGItemListArea::GetItem (int iRow) const
+
+//	GetItem
+//
+//	Returns the item at the given row.
+
+	{
+	if (m_pListData == NULL)
+		return CItem::NullItem();
+
+	int iOldPos = m_pListData->GetCursor();
+	m_pListData->SetCursor(iRow);
+	const CItem &Result = m_pListData->GetItemAtCursor();
+	m_pListData->SetCursor(iOldPos);
+
+	return Result;
 	}
 
 bool CGItemListArea::GetNextTab (DWORD *retdwID) const
@@ -299,8 +257,6 @@ void CGItemListArea::InitRowDesc (void)
 //	Initializes the row descriptors
 
 	{
-	int i;
-
 	m_Rows.DeleteAll();
 	if (m_pListData == NULL || m_pListData->GetCount() == 0)
 		{
@@ -310,21 +266,103 @@ void CGItemListArea::InitRowDesc (void)
 
 	m_Rows.InsertEmpty(m_pListData->GetCount());
 	int y = 0;
-	for (i = 0; i < m_pListData->GetCount(); i++)
+	for (int i = 0; i < m_pListData->GetCount(); i++)
 		{
 		//	Compute the height of the row
 
-		int cyRow = CalcRowHeight(i);
+		InitRowHeight(i, m_Rows[i]);
 
 		//	Add it
 
 		m_Rows[i].yPos = y;
-		m_Rows[i].cyHeight = cyRow;
-
-		y += cyRow;
+		y += m_Rows[i].cyHeight;
 		}
 
 	m_cyTotalHeight = y;
+	}
+
+void CGItemListArea::InitRowHeight (int iRow, SRowDesc &RowDesc)
+
+//	InitRowHeight
+//
+//	Computes the height of the given row
+
+	{
+	//	Set the position
+
+	int iOldPos = m_pListData->GetCursor();
+	m_pListData->SetCursor(iRow);
+
+	//	Compute the rect where we're painting (we only care about width)
+
+	RECT rcRect = GetRect();
+
+	//	Compute row height based on type of list
+
+	switch (m_iType)
+		{
+		case listItem:
+			{
+			//	Get the item
+
+			if (!m_pListData->IsCursorValid())
+				{
+				RowDesc.cyHeight = DEFAULT_ROW_HEIGHT;
+				}
+			else
+				{
+				CItemPainter::SOptions Options;
+				Options.bNoArmorSpeed = m_bNoArmorSpeedDisplay;
+				Options.bDisplayAsKnown = m_bActualItems;
+				RowDesc.Painter.Init(m_pListData->GetItemAtCursor(), RectWidth(rcRect), Options);
+
+				RowDesc.cyHeight = RowDesc.Painter.GetHeight();
+
+				if (!m_EnabledItems.IsEmpty())
+					RowDesc.bDisabled = !m_pListData->GetItemAtCursor().MatchesCriteria(m_EnabledItems);
+				}
+
+			break;
+			}
+
+		case listCustom:
+			{
+			//	Get the item
+
+			if (!m_pListData->IsCursorValid())
+				{
+				RowDesc.cyHeight = m_cyRow;
+				}
+			else
+				{
+				CTilePainter::SInitOptions Options;
+
+				//	If the caller overrides the row height, then we use that. 
+				//	Otherwise, we let the entry painter computer an appropriate
+				//	row height for every row.
+
+				Options.cyDefaultRow = (m_cyRow != 96 ? m_cyRow : 0);
+
+				Options.cxImage = m_cxIcon;
+				Options.cyImage = m_cyIcon;
+				Options.rImageScale = m_rIconScale;
+
+				RowDesc.CustomPainter.Init(m_pListData->GetEntryDescAtCursor(), RectWidth(rcRect), Options);
+
+				RowDesc.cyHeight = RowDesc.CustomPainter.GetHeight();
+				}
+
+			break;
+			}
+
+		default:
+			RowDesc.cyHeight = DEFAULT_ROW_HEIGHT;
+			break;
+		}
+
+	//	Done
+
+	m_pListData->SetCursor(iOldPos);
 	}
 
 bool CGItemListArea::LButtonDown (int x, int y)
@@ -693,12 +731,20 @@ void CGItemListArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 				switch (m_iType)
 					{
 					case listCustom:
-						PaintCustom(Dest, rcItem, bIsCursor);
+						PaintCustom(Dest, m_Rows[iPos], rcItem, bIsCursor);
 						break;
 
 					case listItem:
-						PaintItem(Dest, m_pListData->GetItemAtCursor(), rcItem, bIsCursor);
+						{
+						DWORD dwOptions = 0;
+						if (bIsCursor)
+							dwOptions |= CItemPainter::OPTION_SELECTED;
+						if (m_Rows[iPos].bDisabled)
+							dwOptions |= CItemPainter::OPTION_DISABLED;
+
+						m_Rows[iPos].Painter.Paint(Dest, rcItem.left, rcItem.top, m_rgbTextColor, dwOptions);
 						break;
+						}
 					}
 				}
 
@@ -740,80 +786,32 @@ void CGItemListArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	DEBUG_CATCH
 	}
 
-void CGItemListArea::PaintCustom (CG32bitImage &Dest, const RECT &rcRect, bool bSelected)
+void CGItemListArea::PaintCustom (CG32bitImage &Dest, const SRowDesc &RowDesc, const RECT &rcRect, bool bSelected)
 
 //	PaintCustom
 //
 //	Paints a custom element
 
 	{
-	//	Paint the image
+	CTilePainter::SPaintOptions Options;
+	Options.rgbTitleColor = m_rgbTextColor;
+	Options.rgbDescColor = (bSelected ? RGB_SELECTED_DESC : RGB_NORMAL_DESC);
 
-	m_pListData->PaintImageAtCursor(Dest, rcRect.left, rcRect.top, m_cxIcon, m_cyIcon, m_rIconScale);
-
-	RECT rcDrawRect = rcRect;
-	rcDrawRect.left += m_cxIcon + ITEM_TEXT_MARGIN_X;
-	rcDrawRect.right -= ITEM_TEXT_MARGIN_X;
-	rcDrawRect.top += ITEM_TEXT_MARGIN_Y;
-
-	//	Measure the title and description
-
-	CString sTitle = m_pListData->GetTitleAtCursor();
-	int cyText = m_pFonts->LargeBold.GetHeight();
-
-	CString sDesc = m_pListData->GetDescAtCursor();
-	int iLines = m_pFonts->Medium.BreakText(sDesc, RectWidth(rcDrawRect), NULL, 0);
-	cyText += iLines * m_pFonts->Medium.GetHeight();
-
-	//	Text is vertically centered.
-
-	int yOffset = Max(0, (RectHeight(rcDrawRect) - cyText) / 2);
-
-	//	Paint the title
-
-	int cyHeight;
-	rcDrawRect.top += yOffset;
-	m_pFonts->LargeBold.DrawText(Dest,
-			rcDrawRect,
-			m_pFonts->rgbItemTitle,
-			m_pListData->GetTitleAtCursor(),
-			0,
-			CG16bitFont::SmartQuotes | CG16bitFont::TruncateLine,
-			&cyHeight);
-
-	rcDrawRect.top += cyHeight;
-
-	//	Paint the description
-
-	m_pFonts->Medium.DrawText(Dest, 
-			rcDrawRect,
-			(bSelected ? m_pFonts->rgbItemDescSelected : m_pFonts->rgbItemDesc),
-			m_pListData->GetDescAtCursor(),
-			0,
-			CG16bitFont::SmartQuotes,
-			&cyHeight);
-
-	rcDrawRect.top += cyHeight;
+	RowDesc.CustomPainter.Paint(Dest, rcRect.left, rcRect.top, Options);
 	}
 
-void CGItemListArea::PaintItem (CG32bitImage &Dest, const CItem &Item, const RECT &rcRect, bool bSelected)
+void CGItemListArea::PaintItem (CG32bitImage &Dest, const SRowDesc &RowDesc, const RECT &rcRect, bool bSelected)
 
 //	PaintItem
 //
 //	Paints the item
 
 	{
-	CUIHelper UIHelper(*g_pHI);
-
 	DWORD dwOptions = 0;
 	if (bSelected)
-		dwOptions |= CUIHelper::OPTION_SELECTED;
-	if (m_bNoArmorSpeedDisplay)
-		dwOptions |= CUIHelper::OPTION_NO_ARMOR_SPEED_DISPLAY;
-	if (m_bActualItems)
-		dwOptions |= CUIHelper::OPTION_KNOWN;
+		dwOptions |= CItemPainter::OPTION_SELECTED;
 
-	UIHelper.PaintItemEntry(Dest, m_pListData->GetSource(), Item, rcRect, m_rgbTextColor, dwOptions);
+	RowDesc.Painter.Paint(Dest, rcRect.left, rcRect.top, m_rgbTextColor, dwOptions);
 	}
 
 void CGItemListArea::PaintTab (CG32bitImage &Dest, const STabDesc &Tab, const RECT &rcRect, bool bSelected, bool bHover)
@@ -868,6 +866,18 @@ void CGItemListArea::SelectTab (DWORD dwID)
 		m_iCurTab = iTab;
 		Invalidate();
 		}
+	}
+
+void CGItemListArea::SetEnabledCriteria (const CItemCriteria &Criteria)
+
+//	SetEnabledCriteria
+//
+//	Sets a criteria for which items should be enabled, and sorts all enabled
+//	items to the top.
+
+	{
+	m_EnabledItems = Criteria;
+	ResetCursor();
 	}
 
 void CGItemListArea::SetList (CSpaceObject *pSource)

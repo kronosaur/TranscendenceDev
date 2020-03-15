@@ -91,19 +91,11 @@ class CGalacticMapSession : public IHISession
 	public:
         struct SOptions
             {
-            SOptions (void) :
-                    xCenter(0),
-                    yCenter(0),
-                    iScale(0),
-                    pSelected(NULL),
-                    pCurNode(NULL)
-                { }
-
-            int xCenter;
-            int yCenter;
-            int iScale;                     //  0 = use defaults for everything
-            CTopologyNode *pSelected;
-            CTopologyNode *pCurNode;        //  Node at the time we saved options
+            int xCenter = 0;
+            int yCenter = 0;
+            int iScale = 0;							//  0 = use defaults for everything
+            const CTopologyNode *pSelected = NULL;
+            const CTopologyNode *pCurNode = NULL;	//  Node at the time we saved options
             };
 
         CGalacticMapSession (STranscendenceSessionCtx &CreateCtx, CSystemMapThumbnails &SystemMapThumbnails, SOptions &SavedState);
@@ -124,7 +116,7 @@ class CGalacticMapSession : public IHISession
 
 	private:
         void SaveState (void);
-        void Select (CTopologyNode *pNode, bool bNoSound = false);
+        void Select (const CTopologyNode *pNode, bool bNoSound = false);
         void SetTargetScale (void);
 
         CGameSettings &m_Settings;
@@ -471,7 +463,7 @@ class CModExchangeSession : public IHISession
 class CNewGameSession : public IHISession
 	{
 	public:
-		CNewGameSession (CHumanInterface &HI, CCloudService &Service, const SNewGameSettings &Defaults);
+		CNewGameSession (CHumanInterface &HI, CCloudService &Service, CUniverse &Universe, const SNewGameSettings &Defaults);
 
 		//	IHISession virtuals
 		virtual void OnCleanUp (void) override;
@@ -485,49 +477,44 @@ class CNewGameSession : public IHISession
 		virtual void OnUpdate (bool bTopMost) override;
 
 	private:
-		void AddClassInfo (CShipClass *pClass, const CDeviceDescList &Devices, const CItem &Item, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpAni);
+		void AddClassInfo (const CShipClass &Class, const CDeviceDescList &Devices, const CItem &Item, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpAni);
 		void CmdCancel (void);
+		void CmdChangeDifficulty (void);
 		void CmdChangeGenome (void);
 		void CmdEditName (void);
 		void CmdEditNameCancel (void);
 		void CmdNextShipClass (void);
 		void CmdOK (void);
 		void CmdPrevShipClass (void);
-		void CreatePlayerGenome (GenomeTypes iGenome, int x, int y, int cxWidth);
-		void CreatePlayerName (const CString &sName, int x, int y, int cxWidth);
-		void CreateShipClass (CShipClass *pClass, int x, int y, int cxWidth);
-		void SetPlayerGenome (GenomeTypes iGenome, int x, int y, int cxWidth);
-		void SetPlayerName (const CString &sName, int x, int y, int cxWidth);
-		void SetShipClass (CShipClass *pClass, int x, int y, int cxWidth);
+		void CreateShipClass (const CShipClass &Class, int x, int y, int cxWidth);
+		void CreateShipClassButton (const CString &sID, int x, int y, const CG32bitImage &Image, bool bEnabled);
+		void SetDifficulty (CDifficultyOptions::ELevels iLevel);
+		void SetPlayerGenome (GenomeTypes iGenome);
+		void SetPlayerName (const CString &sName);
+		void SetShipClass (const CShipClass &Class, int x, int y, int cxWidth);
 		void SetShipClassDesc (const CString &sDesc, int x, int y, int cxWidth);
-		void SetShipClassImage (CShipClass *pClass, int x, int y, int cxWidth);
+		void SetShipClassDetails (const CShipClass &Class, int x, int y, int cxWidth);
+		void SetShipClassImage (const CShipClass &Class, int x, int y, int cxWidth);
 		void SetShipClassName (const CString &sName, int x, int y, int cxWidth);
 
 		CCloudService &m_Service;
+		CUniverse &m_Universe;
 		SNewGameSettings m_Settings;
+		CG32bitImage m_Background;
 
 		TSortMap<CString, CShipClass *> m_ShipClasses;
-		int m_iCurShipClass;
-		bool m_bEditingName;
+		int m_iCurShipClass = 0;
 
-		CAniVScroller *m_pRoot;
+		CAniVScroller *m_pRoot = NULL;
 
-		int m_xLeftCol;
-		int m_cxLeftCol;
-		int m_xCenterCol;
-		int m_cxCenterCol;
-		int m_xRightCol;
-		int m_cxRightCol;
+		CSmallOptionButtonAnimator m_PlayerName;
+		CSmallOptionButtonAnimator m_PlayerGenome;
+		CSmallOptionButtonAnimator m_Difficulty;
+		CTextAreaAnimator m_DifficultyDesc;
 
-		int m_xPlayerName;
-		int m_yPlayerName;
-		int m_cxPlayerName;
-		int m_xPlayerGenome;
-		int m_yPlayerGenome;
-		int m_cxPlayerGenome;
-		int m_xShipClass;
-		int m_yShipClass;
-		int m_cxShipClass;
+		int m_xShipClass = 0;
+		int m_yShipClass = 0;
+		int m_cxShipClass = 0;
 	};
 
 class CProfileSession : public IHISession

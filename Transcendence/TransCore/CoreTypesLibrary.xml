@@ -90,6 +90,7 @@
 	<!ENTITY itLaserCannon				"0x0000400D">
 	<!ENTITY itHelium3FuelRod			"0x0000403C">
 	<!ENTITY itTritiumPropulsionUpgrade	"0x0000404B">
+	<!ENTITY itUnknownROM				"0x00004061">
 	<!ENTITY itBallistaCannon			"0x000041A2">
 	
 	<!ENTITY vtWreckEjecta				"0x00005004">
@@ -153,6 +154,7 @@
 	<!ENTITY rsDeepSpace				"0x00030001">
 	<!ENTITY unidCoreCriteria			"0x00030002">
 	<!ENTITY efNullEffect				"0x00030003">
+	<!ENTITY unidEngineText				"0x00030004">
 	
 	<!-- 0020-002F PROJECTILE EFFECTS -->
 	
@@ -201,6 +203,15 @@
 
 	<!ENTITY efTestOrbEffect			"0x00030100">
 
+	<!-- 0140-017F MISCELLANEOUS EFFECTS -->
+
+	<!ENTITY vtGenericEnhancement		"0x00030140">
+	<!ENTITY rsGenericMissionIcon		"0x00030141">
+
+	<!-- 0180-01CF SOVEREIGNS -->
+
+	<!ENTITY svPlayerAlly				"0x00030180">
+
 	]>
 	
 <CoreLibrary
@@ -212,6 +223,7 @@
 
 	<Module filename="CoreCode.xml"/>
 	<Module filename="CoreEffects.xml"/>
+	<Module filename="CoreEngineText.xml"/>
 	<Module filename="CoreExplosions.xml"/>
 	<Module filename="CoreFireEffects.xml"/>
 	<Module filename="CoreHitEffects.xml"/>

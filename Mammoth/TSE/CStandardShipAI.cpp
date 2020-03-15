@@ -127,6 +127,7 @@ CStandardShipAI::CStandardShipAI (void) :
 //	CStandardShipAI constructor
 
 	{
+	m_fUseOrderModules = true;
 	}
 
 CStandardShipAI::~CStandardShipAI (void)
@@ -612,6 +613,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 							&& !pObj->IsIntangible()
 							&& (pObj->CanObjRequestDock() == CSpaceObject::dockingOK)
 							&& !pObj->HasAttribute(FIELD_NO_SALVAGE)
+							&& pObj->GetProperty(FIELD_CORE_NO_SALVAGE)->IsNil()
 							&& pObj->GetData(FIELD_CORE_NO_SALVAGE)->IsNil()
 							&& pObj->GetData(FIELD_SCAVENGE)->IsNil())
 						{
@@ -1719,7 +1721,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 				case IShipController::orderGuard:
 					if (pAttacker->GetBase() == GetBase())
 						{
-						CSpaceObject *pTarget = pAttacker->GetTarget(CItemCtx());
+						CSpaceObject *pTarget = pAttacker->GetTarget();
 						if (pTarget)
 							{
 							SetState(stateAttackingThreat);
@@ -1864,7 +1866,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 		}
 	}
 
-DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	OnCommunicateNotify
 //
@@ -2242,7 +2244,7 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	{
 	//	Alter our goals
 
-	if (Ctx.pObj == m_pDest)
+	if (Ctx.Obj == m_pDest)
 		{
 		switch (m_State)
 			{
@@ -2279,7 +2281,7 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	//	Alter our goals
 
-	if (Ctx.pObj == m_pTarget)
+	if (Ctx.Obj == m_pTarget)
 		{
 		switch (m_State)
 			{
@@ -2319,7 +2321,7 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	//	that appropriately.
 
 	if (GetOrderCount() > 0
-			&& Ctx.pObj == GetCurrentOrderTarget())
+			&& Ctx.Obj == GetCurrentOrderTarget())
 		{
 		//	Deal with the consequences
 
@@ -2374,7 +2376,7 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	//	Otherwise, if we're docked with the object that got destroyed then react
 
-	else if (Ctx.pObj == m_pShip->GetDockedObj())
+	else if (Ctx.Obj == m_pShip->GetDockedObj())
 		{
 		switch (GetCurrentOrder())
 			{
@@ -2401,7 +2403,7 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	//	Clean up debug ship
 
-	if (Ctx.pObj == g_pDebugShip)
+	if (Ctx.Obj == g_pDebugShip)
 		g_pDebugShip = NULL;
 	}
 

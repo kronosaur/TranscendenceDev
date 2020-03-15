@@ -313,7 +313,7 @@ CSpaceObject *CZoanthropeAI::GetBase (void) const
 		}
 	}
 
-CSpaceObject *CZoanthropeAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CZoanthropeAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -455,7 +455,7 @@ void CZoanthropeAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damag
 	DEBUG_CATCH
 	}
 
-DWORD CZoanthropeAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CZoanthropeAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -518,10 +518,10 @@ void CZoanthropeAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	{
 	//	Reset
 
-	if (m_pBase == Ctx.pObj)
+	if (m_pBase == Ctx.Obj)
 		SetState(stateNone);
 
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		SetState(stateNone);
 	}
 

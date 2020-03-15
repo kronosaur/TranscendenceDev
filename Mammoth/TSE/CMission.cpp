@@ -12,26 +12,6 @@
 #define EVENT_ON_SET_PLAYER_TARGET				CONSTLIT("OnSetPlayerTarget")
 #define EVENT_ON_STARTED						CONSTLIT("OnStarted")
 
-#define PROPERTY_ACCEPTED_ON					CONSTLIT("acceptedOn")
-#define PROPERTY_COMPLETED_ON					CONSTLIT("completedOn")
-#define PROPERTY_DEBRIEFER_ID					CONSTLIT("debrieferID")
-#define PROPERTY_IN_PROGRESS					CONSTLIT("inProgress")
-#define PROPERTY_IS_ACTIVE						CONSTLIT("isActive")
-#define PROPERTY_IS_COMPLETED					CONSTLIT("isCompleted")
-#define PROPERTY_IS_DEBRIEFED					CONSTLIT("isDebriefed")
-#define PROPERTY_IS_DECLINED					CONSTLIT("isDeclined")
-#define PROPERTY_IS_FAILURE						CONSTLIT("isFailure")
-#define PROPERTY_IS_INTRO_SHOWN					CONSTLIT("isIntroShown")
-#define PROPERTY_IS_OPEN						CONSTLIT("isOpen")
-#define PROPERTY_IS_RECORDED					CONSTLIT("isRecorded")
-#define PROPERTY_IS_SUCCESS						CONSTLIT("isSuccess")
-#define PROPERTY_IS_UNAVAILABLE					CONSTLIT("isUnavailable")
-#define PROPERTY_NAME							CONSTLIT("name")
-#define PROPERTY_NODE_ID						CONSTLIT("nodeID")
-#define PROPERTY_OWNER_ID						CONSTLIT("ownerID")
-#define PROPERTY_SUMMARY						CONSTLIT("summary")
-#define PROPERTY_UNID							CONSTLIT("unid")
-
 #define REASON_ACCEPTED							CONSTLIT("accepted")
 #define REASON_DEBRIEFED						CONSTLIT("debriefed")
 #define REASON_DESTROYED						CONSTLIT("destroyed")
@@ -84,6 +64,10 @@ void CMission::CloseMission (void)
 
 	GetUniverse().CancelEvent(this, true);
 
+	//	Refresh the summary, if necessary
+
+	RefreshSummary();
+
 	//	If this is a player mission then refresh another player mission
 
 	if (m_fAcceptedByPlayer)
@@ -132,7 +116,8 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 
 			//	Let the player record the mission failure
 
-			pPlayer->OnMissionCompleted(this, false);
+			if (pPlayer)
+				pPlayer->OnMissionCompleted(this, false);
 			}
 
 		//	Mission success
@@ -173,6 +158,11 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 			FireOnSetPlayerTarget(REASON_DEBRIEFED);
 			CloseMission();
 			}
+
+		//	Refresh mission summary so that we get the latest info in the 
+		//	mission screen.
+
+		RefreshSummary();
 		}
 
 	//	Set status for non-player missions
@@ -191,12 +181,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 		}
 	}
 
-ALERROR CMission::Create (CUniverse &Universe,
-						  CMissionType *pType,
-						  CSpaceObject *pOwner,
-						  ICCItem *pCreateData,
-					      CMission **retpMission,
-						  CString *retsError)
+ALERROR CMission::Create (CMissionType &Type, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError)
 
 //	Create
 //
@@ -204,11 +189,12 @@ ALERROR CMission::Create (CUniverse &Universe,
 //	not be created because conditions do not allow it.
 
 	{
+	CUniverse &Universe = Type.GetUniverse();
 	CMission *pMission;
 
 	//	If we cannot encounter this mission, then we fail
 
-	if (!pType->CanBeCreated(Universe.GetMissions(), pOwner, pCreateData))
+	if (!Type.CanBeCreated(Universe.GetMissions(), CreateCtx))
 		return ERR_NOTFOUND;
 
 	//	Create the new object
@@ -220,7 +206,7 @@ ALERROR CMission::Create (CUniverse &Universe,
 		return ERR_MEMORY;
 		}
 
-	pMission->m_pType = pType;
+	pMission->m_pType = &Type;
 
 	//	Initialize
 
@@ -229,14 +215,14 @@ ALERROR CMission::Create (CUniverse &Universe,
 	pMission->m_fDeclined = false;
 	pMission->m_fDebriefed = false;
 	pMission->m_fAcceptedByPlayer = false;
-	pMission->m_pOwner = pOwner;
+	pMission->m_pOwner = CreateCtx.pOwner;
 	pMission->m_pDebriefer = NULL;
 
 	//	NodeID
 
 	CTopologyNode *pNode = NULL;
 	CSystem *pSystem = NULL;
-	if ((pSystem = (pOwner ? pOwner->GetSystem() : Universe.GetCurrentSystem()))
+	if ((pSystem = (CreateCtx.pOwner ? CreateCtx.pOwner->GetSystem() : Universe.GetCurrentSystem()))
 			&& (pNode = pSystem->GetTopology()))
 		pMission->m_sNodeID = pNode->GetID();
 
@@ -255,8 +241,8 @@ ALERROR CMission::Create (CUniverse &Universe,
 	pMission->m_fInOnCreate = true;
 
 	CSpaceObject::SOnCreate OnCreate;
-	OnCreate.pData = pCreateData;
-	OnCreate.pOwnerObj = pOwner;
+	OnCreate.pData = CreateCtx.pCreateData;
+	OnCreate.pOwnerObj = CreateCtx.pOwner;
 	pMission->FireOnCreate(OnCreate);
 
 	pMission->m_fInOnCreate = false;
@@ -277,8 +263,8 @@ ALERROR CMission::Create (CUniverse &Universe,
 
 	//	If we haven't subscribed to the owner, do it now
 
-	if (pOwner && !pOwner->FindEventSubscriber(pMission))
-		pOwner->AddEventSubscriber(pMission);
+	if (CreateCtx.pOwner && !CreateCtx.pOwner->FindEventSubscriber(*pMission))
+		CreateCtx.pOwner->AddEventSubscriber(pMission);
 
 	//	Mission created
 
@@ -478,83 +464,19 @@ void CMission::FireOnStop (const CString &sReason, ICCItem *pData)
 		}
 	}
 
-ICCItem *CMission::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
+const CString &CMission::GetArc (int *retiSequence) const
 
-//	GetProperty
+//	GetArc
 //
-//	Returns a property
+//	Returns the mission arc and sequence.
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
+	const CString &sArc = m_pType->GetArc();
 
-	if (strEquals(sName, PROPERTY_ACCEPTED_ON))
-		return (m_fAcceptedByPlayer ? CC.CreateInteger(m_dwAcceptedOn) : CC.CreateNil());
+	if (retiSequence)
+		*retiSequence = m_pType->GetArcSequence();
 
-	else if (strEquals(sName, PROPERTY_COMPLETED_ON))
-		return (IsCompleted() ? CC.CreateInteger(m_dwCompletedOn) : CC.CreateNil());
-
-	else if (strEquals(sName, PROPERTY_DEBRIEFER_ID))
-		{
-		if (m_pDebriefer.GetID() != OBJID_NULL)
-			return CC.CreateInteger(m_pDebriefer.GetID());
-		else if (m_pOwner.GetID() != OBJID_NULL)
-			return CC.CreateInteger(m_pOwner.GetID());
-		else
-			return CC.CreateNil();
-		}
-
-	else if (strEquals(sName, PROPERTY_IN_PROGRESS))
-		return CC.CreateBool(IsActive() && !IsCompleted());
-
-	else if (strEquals(sName, PROPERTY_IS_ACTIVE))
-		return CC.CreateBool(IsActive());
-
-	else if (strEquals(sName, PROPERTY_IS_COMPLETED))
-		return CC.CreateBool(IsCompleted());
-
-	else if (strEquals(sName, PROPERTY_IS_DEBRIEFED))
-		return CC.CreateBool(m_fDebriefed);
-
-	else if (strEquals(sName, PROPERTY_IS_DECLINED))
-		return CC.CreateBool(m_fDeclined);
-
-	else if (strEquals(sName, PROPERTY_IS_FAILURE))
-		return CC.CreateBool(IsFailure());
-
-	else if (strEquals(sName, PROPERTY_IS_INTRO_SHOWN))
-		return CC.CreateBool(m_fIntroShown);
-
-	else if (strEquals(sName, PROPERTY_IS_OPEN))
-		return CC.CreateBool(m_iStatus == statusOpen);
-
-	else if (strEquals(sName, PROPERTY_IS_RECORDED))
-		return CC.CreateBool(IsRecorded());
-
-	else if (strEquals(sName, PROPERTY_IS_SUCCESS))
-		return CC.CreateBool(IsSuccess());
-
-	else if (strEquals(sName, PROPERTY_IS_UNAVAILABLE))
-		return CC.CreateBool(IsUnavailable());
-
-	else if (strEquals(sName, PROPERTY_NAME))
-		return CC.CreateString(m_sTitle);
-
-	else if (strEquals(sName, PROPERTY_NODE_ID))
-		return (m_sNodeID.IsBlank() ? CC.CreateNil() : CC.CreateString(m_sNodeID));
-
-	else if (strEquals(sName, PROPERTY_OWNER_ID))
-		{
-		if (m_pOwner.GetID() == OBJID_NULL)
-			return CC.CreateNil();
-		else
-			return CC.CreateInteger(m_pOwner.GetID());
-		}
-
-	else if (strEquals(sName, PROPERTY_SUMMARY))
-		return CC.CreateString(m_sInstructions);
-
-	else
-		return CSpaceObject::GetProperty(Ctx, sName);
+	return sArc;
 	}
 
 bool CMission::HasSpecialAttribute (const CString &sAttrib) const
@@ -576,7 +498,7 @@ bool CMission::HasSpecialAttribute (const CString &sAttrib) const
 		return CSpaceObject::HasSpecialAttribute(sAttrib);
 	}
 
-bool CMission::MatchesCriteria (CSpaceObject *pSource, const SCriteria &Criteria)
+bool CMission::MatchesCriteria (const CSpaceObject *pSource, const SCriteria &Criteria) const
 
 //	MatchesCriteria
 //
@@ -789,7 +711,7 @@ void CMission::OnObjDestroyedNotify (SDestroyCtx &Ctx)
 
 	//	If this is the owner then the mission fails
 
-	if (Ctx.pObj->GetID() == m_pOwner.GetID())
+	if (Ctx.Obj.GetID() == m_pOwner.GetID())
 		{
 		//	Mission fails
 
@@ -816,7 +738,7 @@ void CMission::OnObjDestroyedNotify (SDestroyCtx &Ctx)
 			m_pOwner = Ctx.pWreck;
 		}
 
-	if (Ctx.pObj->GetID() == m_pDebriefer.GetID())
+	if (Ctx.Obj.GetID() == m_pDebriefer.GetID())
 		{
 		//	If our debriefer has been destroyed, then remove it.
 		//	(But only if it didn't leave a wreck).
@@ -860,6 +782,7 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_dwLeftSystemOn
 //	DWORD		m_dwAcceptedOn
 //	DWORD		m_dwCompletedOn
+//	CString		m_sArc
 //	CString		m_sTitle
 //	CString		m_sInstructions
 //	DWORD		Flags
@@ -900,6 +823,15 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read(m_dwCompletedOn);
 	else
 		m_dwCompletedOn = 0;
+
+	if (Ctx.dwVersion >= 187)
+		{
+		m_sArcTitle.ReadFromStream(Ctx.pStream);
+		}
+	else if (!m_pType->GetArc().IsBlank())
+		{
+		TranslateText(CONSTLIT("ArcName"), NULL, &m_sArcTitle);
+		}
 
 	if (Ctx.dwVersion >= 86)
 		{
@@ -993,6 +925,7 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_dwLeftSystemOn
 //	DWORD		m_dwAcceptedOn
 //	DWORD		m_dwCompletedOn
+//	CString		m_sArc
 //	CString		m_sTitle
 //	CString		m_sInstructions
 //	DWORD		Flags
@@ -1011,6 +944,7 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write(m_dwAcceptedOn);
 	pStream->Write(m_dwCompletedOn);
 
+	m_sArcTitle.WriteToStream(pStream);
 	m_sTitle.WriteToStream(pStream);
 	m_sInstructions.WriteToStream(pStream);
 
@@ -1038,7 +972,7 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 
 	//	Parse
 
-	char *pPos = sCriteria.GetPointer();
+	const char *pPos = sCriteria.GetPointer();
 	while (*pPos != '\0')
 		{
 		switch (*pPos)
@@ -1082,6 +1016,10 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 
 			case 'u':
 				retCriteria->bIncludeUnavailable = true;
+				break;
+
+			case 'A':
+				retCriteria->bOnlyMissionArcs = true;
 				break;
 
 			case 'D':
@@ -1150,6 +1088,12 @@ bool CMission::RefreshSummary (void)
 	{
 	bool bSuccess = true;
 
+	if (!m_pType->GetArc().IsBlank())
+		{
+		if (!TranslateText(CONSTLIT("ArcName"), NULL, &m_sArcTitle))
+			m_sArcTitle = m_pType->GetName();
+		}
+
 	if (!TranslateText(CONSTLIT("Name"), NULL, &m_sTitle))
 		m_sTitle = m_pType->GetName();
 
@@ -1209,11 +1153,20 @@ bool CMission::SetAccepted (void)
 	if (m_iStatus != statusOpen)
 		return false;
 
+	//	Close out any previous missions in the same arc
+
+	GetUniverse().GetMissions().CloseMissionsInArc(*m_pType);
+
 	//	Remember that we accepted
 
 	m_fAcceptedByPlayer = true;
 	m_dwAcceptedOn = GetUniverse().GetTicks();
 	m_pType->IncAccepted();
+
+	//	Tell the player
+
+	if (CSpaceObject *pPlayerShip = GetUniverse().GetPlayerShip())
+		pPlayerShip->OnAcceptedMission(*this);
 
 	//	Player accepts the mission
 
@@ -1227,7 +1180,7 @@ bool CMission::SetAccepted (void)
 		if (KeepsStats())
 			GetUniverse().GetObjStatsActual(pOwner->GetID()).iPlayerMissionsGiven++;
 
-		//	Let the mission given know
+		//	Let the mission-giver know
 
 		pOwner->FireOnMissionAccepted(this);
 		}
@@ -1394,70 +1347,6 @@ bool CMission::SetPlayerTarget (void)
 	FireOnSetPlayerTarget(REASON_IN_PROGRESS);
 
 	//	Done
-
-	return true;
-	}
-
-bool CMission::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
-
-//	SetProperty
-//
-//	Sets an object property
-
-	{
-	if (strEquals(sName, PROPERTY_IS_DEBRIEFED))
-		{
-		if (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure)
-			{
-			if (!pValue->IsNil())
-				{
-				if (!m_fDebriefed)
-					{
-					m_fDebriefed = true;
-
-					FireOnSetPlayerTarget(REASON_DEBRIEFED);
-					CloseMission();
-					}
-				}
-			else
-				m_fDebriefed = false;
-			}
-		}
-
-	else if (strEquals(sName, PROPERTY_DEBRIEFER_ID))
-		{
-		if (pValue->IsNil())
-			m_pDebriefer.SetID(OBJID_NULL);
-		else
-			m_pDebriefer.SetID(pValue->GetIntegerValue());
-		}
-
-	else if (strEquals(sName, PROPERTY_IS_DECLINED))
-		{
-		if (m_iStatus == statusOpen)
-			m_fDeclined = !pValue->IsNil();
-		}
-
-	else if (strEquals(sName, PROPERTY_IS_INTRO_SHOWN))
-		{
-		if (m_iStatus == statusOpen)
-			m_fIntroShown = !pValue->IsNil();
-		}
-
-	else if (strEquals(sName, PROPERTY_NAME))
-		{
-		if (IsActive())
-			m_sTitle = pValue->GetStringValue();
-		}
-
-	else if (strEquals(sName, PROPERTY_SUMMARY))
-		{
-		if (IsActive())
-			m_sInstructions = pValue->GetStringValue();
-		}
-
-	else
-		return CSpaceObject::SetProperty(sName, pValue, retsError);
 
 	return true;
 	}

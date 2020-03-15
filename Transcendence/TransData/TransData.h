@@ -26,6 +26,46 @@ class CHost : public CUniverse::IHost
 		mutable TArray<CG16bitFont> m_Fonts;
 	};
 
+class CConsole : public ILog
+	{
+	public:
+		virtual void Print (const CString &sLine) const { ClearLine(); printf("%s\n", (LPSTR)sLine); }
+		virtual void Progress (const CString &sLine, int iPercent = -1) const { ClearLine(); printf("%s\r", (LPSTR)sLine); m_iClearCount = sLine.GetLength(); }
+
+	private:
+		void ClearLine (void) const
+			{
+			if (m_iClearCount) 
+				{
+				printf("%s\r", (LPSTR)strRepeat(CONSTLIT(" "), m_iClearCount));
+				m_iClearCount = 0;
+				}
+			}
+
+		mutable int m_iClearCount = 0;
+	};
+
+class ITransDataCommand
+	{
+	public:
+		ITransDataCommand (ILog &Console) :
+				m_Console(Console)
+			{ }
+
+		virtual ~ITransDataCommand (void) { }
+		virtual bool Run (void) { return true; }
+		virtual bool SetOptions (const CXMLElement &CmdLine) { return true; }
+
+	protected:
+		bool Error (const CString &sError) const { m_Console.Print(strPatternSubst(CONSTLIT("ERROR: %s"))); return false; }
+		ILog &GetConsole (void) { return m_Console; }
+		void Print (const CString &sLine) const { m_Console.Print(sLine); }
+		void Progress (const CString &sLine) const { m_Console.Progress(sLine); }
+
+	private:
+		ILog &m_Console;
+	};
+
 //	Used by sim tables
 
 class ItemInfo
@@ -106,6 +146,7 @@ void GenerateItemTable (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateRandomItemTables (CUniverse &Universe, CXMLElement *pCmdLine);
+void GenerateReference (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateShipImage (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateShipImageChart (CUniverse &Universe, CXMLElement *pCmdLine);

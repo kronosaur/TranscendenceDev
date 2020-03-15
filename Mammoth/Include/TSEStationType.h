@@ -10,40 +10,53 @@
 class CStationHullDesc
 	{
 	public:
+		enum EHullTypes
+			{
+			hullUnknown				= -1,
+
+			hullSingle				= 0,	//	Single hull, normal damage
+			hullAsteroid			= 1,	//	Must have either WMD or mining to damage
+			hullMultiple			= 2,	//	Must have WMD to damage
+			hullUnderground			= 3,	//	Must have mining to damage
+			};
+
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		int CalcDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
 		Metric CalcHitsToDestroy (int iLevel) const;
-		inline bool CanBeHit (void) const { return !m_bCannotBeHit; }
-		inline bool CanBeWrecked (void) const { return (!IsImmutable() && GetMaxHitPoints() > 0); }
+		bool CanBeHit (void) const { return !m_bCannotBeHit; }
+		bool CanBeWrecked (void) const { return (!IsImmutable() && GetMaxHitPoints() > 0); }
 		bool FindDataField (const CString &sField, CString *retsValue) const;
-		inline CArmorClass *GetArmorClass (void) const { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
+		CArmorClass *GetArmorClass (void) const { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
 		CItem GetArmorItem (void) const;
 		int GetArmorLevel (void) const;
-		inline int GetHitPoints (void) const { return m_iHitPoints; }
-		inline int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }
-		inline int GetMaxStructuralHP (void) const { return m_iMaxStructuralHP; }
-		inline const CRegenDesc &GetRegenDesc (void) const { return m_Regen; }
-		inline int GetStructuralHP (void) const { return m_iStructuralHP; }
+		int GetHitPoints (void) const { return m_iHitPoints; }
+		EHullTypes GetHullType (void) const { return m_iType; }
+		int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }
+		int GetMaxStructuralHP (void) const { return m_iMaxStructuralHP; }
+		const CRegenDesc &GetRegenDesc (void) const { return m_Regen; }
+		int GetStructuralHP (void) const { return m_iStructuralHP; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bMultiHullDefault = true);
 		ALERROR InitFromStationXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		inline bool IsImmutable (void) const { return m_bImmutable; }
-		inline bool IsMultiHull (void) const { return m_bMultiHull; }
-		inline void SetImmutable (bool bValue = true) { m_bImmutable = bValue; }
+		bool IsImmutable (void) const { return m_bImmutable; }
+		void SetImmutable (bool bValue = true) { m_bImmutable = bValue; }
+
+		static CString GetID (EHullTypes iType);
+		static EHullTypes ParseHullType (const CString &sValue);
 		
 	private:
+		EHullTypes m_iType;					//	Type of hull
 		CItemTypeRef m_pArmor;				//	Armor class
-		int m_iArmorLevel;					//	Armor level (for scalable items)
-		int m_iHitPoints;					//	Hit points at creation time
-		int m_iMaxHitPoints;				//	Max hit points
+		int m_iArmorLevel = 0;				//	Armor level (for scalable items)
+		int m_iHitPoints = 0;				//	Hit points at creation time
+		int m_iMaxHitPoints = 0;			//	Max hit points
 		CRegenDesc m_Regen;					//	Repair rate
 
-		int m_iStructuralHP;				//	Initial structural hit points
-		int m_iMaxStructuralHP;				//	Max structural hp (0 = station is permanent)
+		int m_iStructuralHP = 0;			//	Initial structural hit points
+		int m_iMaxStructuralHP = 0;			//	Max structural hp (0 = station is permanent)
 		
-		bool m_bMultiHull;					//	Must have WMD to damage
-		bool m_bImmutable;					//	Cannot be damaged
-		bool m_bCannotBeHit;				//	Transparent to projectiles
+		bool m_bImmutable = false;			//	Cannot be damaged
+		bool m_bCannotBeHit = false;		//	Transparent to projectiles
 	};
 
 class CStationHull
@@ -51,47 +64,52 @@ class CStationHull
 	public:
 		CStationHull (void);
 
-		inline bool CanBeDestroyed (void) const { return (m_iStructuralHP > 0); }
-		inline bool CanBeHit (void) const { return !m_fCannotBeHit; }
+		bool CanBeDestroyed (void) const { return (m_iStructuralHP > 0); }
+		bool CanBeHit (void) const { return !m_fCannotBeHit; }
 		ICCItem *FindProperty (const CString &sProperty) const;
-		inline int GetArmorLevel (void) const { return m_iArmorLevel; }
-		inline int GetHitPoints (void) const { return m_iHitPoints; }
-		inline int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }
-		inline int GetMaxStructuralHP (void) const { return m_iMaxStructuralHP; }
+		int GetArmorLevel (void) const { return m_iArmorLevel; }
+		int GetHitPoints (void) const { return m_iHitPoints; }
+		CStationHullDesc::EHullTypes GetHullType (void) const { return m_iType; }
+		int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }
+		int GetMaxStructuralHP (void) const { return m_iMaxStructuralHP; }
 		EDamageResults GetPassthroughDefault (void) const;
-		inline int GetStructuralHP (void) const { return m_iStructuralHP; }
+		int GetStructuralHP (void) const { return m_iStructuralHP; }
 		int GetVisibleDamage (void) const;
 		void GetVisibleDamageDesc (SVisibleDamage &Damage) const;
-		inline int IncHitPoints (int iInc) { m_iHitPoints = Max(0, m_iHitPoints + iInc); return m_iHitPoints; }
-		inline int IncStructuralHP (int iInc) { m_iStructuralHP = Max(0, m_iStructuralHP + iInc); return m_iStructuralHP; }
+		int IncHitPoints (int iInc) { m_iHitPoints = Max(0, m_iHitPoints + iInc); return m_iHitPoints; }
+		int IncStructuralHP (int iInc) { m_iStructuralHP = Max(0, m_iStructuralHP + iInc); return m_iStructuralHP; }
 		void Init (const CStationHullDesc &Desc);
-		inline bool IsAbandoned (void) const { return (m_iHitPoints == 0 && !m_fImmutable); }
-		inline bool IsImmutable (void) const { return (m_fImmutable ? true : false); }
-		inline bool IsMultiHull (void) const { return (m_fMultiHull ? true : false); }
-		inline bool IsWrecked (void) const { return (IsAbandoned() && m_iMaxHitPoints > 0); }
+		bool IsAbandoned (void) const { return (m_iHitPoints == 0 && !m_fImmutable); }
+		bool IsImmutable (void) const { return (m_fImmutable ? true : false); }
+		bool IsWrecked (void) const { return (IsAbandoned() && m_iMaxHitPoints > 0); }
 		void ReadFromStream (SLoadCtx &Ctx);
-		inline void SetArmorLevel (int iValue) { m_iArmorLevel = iValue; }
-		inline void SetHitPoints (int iValue) { m_iHitPoints = Max(0, iValue); }
-		inline void SetImmutable (bool bValue = true) { m_fImmutable = bValue; }
-		inline void SetMaxHitPoints (int iValue) { m_iMaxHitPoints = Max(0, iValue); }
-		inline void SetMaxStructuralHP (int iValue) { m_iMaxStructuralHP = Max(0, iValue); }
-		inline void SetMultiHull (bool bValue = true) { m_fMultiHull = bValue; }
+		void SetArmorLevel (int iValue) { m_iArmorLevel = iValue; }
+		void SetHitPoints (int iValue) { m_iHitPoints = Max(0, iValue); }
+		void SetImmutable (bool bValue = true) { m_fImmutable = bValue; }
+		void SetMaxHitPoints (int iValue) { m_iMaxHitPoints = Max(0, iValue); }
+		void SetMaxStructuralHP (int iValue) { m_iMaxStructuralHP = Max(0, iValue); }
+		void SetHullType (CStationHullDesc::EHullTypes iType) { m_iType = iType; }
 		bool SetPropertyIfFound (const CString &sProperty, ICCItem *pValue, CString *retsError);
-		inline void SetStructuralHP (int iValue) { m_iStructuralHP = Max(0, iValue); }
+		void SetStructuralHP (int iValue) { m_iStructuralHP = Max(0, iValue); }
 		void UpdateExtended (const CStationHullDesc &Desc, const CTimeSpan &ExtraTime);
 		bool UpdateRepairDamage (const CStationHullDesc &Desc, int iTick);
 		void WriteToStream (IWriteStream &Stream, CStation *pStation);
 
 	private:
-		int m_iArmorLevel;					//	Armor level (for scalable items)
-		int m_iHitPoints;					//	Total hit points (0 = station abandoned)
-		int m_iMaxHitPoints;				//	Max hit points (0 = station cannot be abandoned)
-		int m_iStructuralHP;				//	Structural hp (0 = station cannot be destroyed)
-		int m_iMaxStructuralHP;				//	Max structural hp
+		static constexpr DWORD HULL_TYPES_MASK =	0x000000f0;
+		static constexpr DWORD HULL_TYPES_SHIFT =	4;
+
+		CStationHullDesc::EHullTypes m_iType = CStationHullDesc::hullUnknown;
+
+		int m_iArmorLevel = 0;				//	Armor level (for scalable items)
+		int m_iHitPoints = 0;				//	Total hit points (0 = station abandoned)
+		int m_iMaxHitPoints = 0;			//	Max hit points (0 = station cannot be abandoned)
+		int m_iStructuralHP = 0;			//	Structural hp (0 = station cannot be destroyed)
+		int m_iMaxStructuralHP = 0;			//	Max structural hp
 		
-		DWORD m_fMultiHull:1;				//	Must have WMD to damage
 		DWORD m_fImmutable:1;				//	Cannot be damaged
 		DWORD m_fCannotBeHit:1;				//	Cannot be hit
+		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
@@ -115,37 +133,38 @@ class CStationEncounterDesc
 			Metric rEnemyExclusionRadius2;
 			};
 
-		int CalcAffinity (CTopologyNode *pNode) const;
+		int CalcAffinity (const CTopologyNode &Node) const;
 		int CalcLevelFromFrequency (void) const;
 		bool InitAsOverride (const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError);
 		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitLevelFrequency (CTopology &Topology);
-		inline bool CanBeRandomlyEncountered (void) const { return (!m_sLevelFrequency.IsBlank() || m_bNumberAppearing); }
+		bool CanBeRandomlyEncountered (void) const { return (!m_sLevelFrequency.IsBlank() || m_bNumberAppearing); }
 		int GetCountOfRandomEncounterLevels (void) const;
-		inline const CTopologyNode::SAttributeCriteria &GetDistanceCriteria (void) const { return m_DistanceCriteria; }
+		const CTopologyAttributeCriteria &GetDistanceCriteria (void) const { return m_DistanceCriteria; }
 		void GetExclusionDesc (SExclusionDesc &Exclusion) const;
-		inline Metric GetExclusionRadius (void) const { return m_rExclusionRadius; }
-		inline Metric GetEnemyExclusionRadius (void) const { return m_rEnemyExclusionRadius; }
+		Metric GetExclusionRadius (void) const { return m_rExclusionRadius; }
+		Metric GetEnemyExclusionRadius (void) const { return m_rEnemyExclusionRadius; }
 		int GetFrequencyByDistance (int iDistance) const;
 		int GetFrequencyByLevel (int iLevel) const;
-		inline const CString &GetLevelFrequency (void) const { return m_sLevelFrequency; }
-		inline const CString &GetLocationCriteria (void) const { return m_sLocationCriteria; }
-		inline int GetMaxAppearing (void) const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
-		inline int GetNumberAppearing (void) const { return (m_bNumberAppearing ? m_NumberAppearing.Roll() : -1); }
-        inline bool HasSystemCriteria (const CTopologyNode::SCriteria **retpCriteria = NULL) const 
-            {
-            if (m_bSystemCriteria) 
-                {
-                if (retpCriteria) 
-                    *retpCriteria = &m_SystemCriteria;
-                return m_bSystemCriteria; 
-                }
-            else
-                return false;
-            }
-		inline bool HasSystemLimit (int *retiLimit = NULL) const { if (retiLimit) *retiLimit = m_iMaxCountInSystem; return (m_iMaxCountInSystem != -1); }
-		inline bool IsUniqueInSystem (void) const { return (m_iMaxCountInSystem == 1); }
+		const CString &GetLevelFrequency (void) const { return m_sLevelFrequency; }
+		const CAffinityCriteria &GetLocationCriteria (void) const { return m_LocationCriteria; }
+		int GetMaxAppearing (void) const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
+		int GetNumberAppearing (void) const { return (m_bNumberAppearing ? m_NumberAppearing.Roll() : -1); }
+		bool HasAutoLevelFrequency (void) const { return m_bAutoLevelFrequency; }
+		bool HasSystemCriteria (const CTopologyNode::SCriteria **retpCriteria = NULL) const 
+			{
+			if (m_bSystemCriteria) 
+				{
+				if (retpCriteria) 
+					*retpCriteria = &m_SystemCriteria;
+				return m_bSystemCriteria; 
+				}
+			else
+				return false;
+			}
+		bool HasSystemLimit (int *retiLimit = NULL) const { if (retiLimit) *retiLimit = m_iMaxCountInSystem; return (m_iMaxCountInSystem != -1); }
+		bool IsUniqueInSystem (void) const { return (m_iMaxCountInSystem == 1); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
@@ -153,12 +172,12 @@ class CStationEncounterDesc
 		bool m_bSystemCriteria = false;				//	If TRUE we have system criteria
 		CTopologyNode::SCriteria m_SystemCriteria;	//	System criteria
 
-		CTopologyNode::SAttributeCriteria m_DistanceCriteria;	//	Criteria for nodes for distance calc
+		CTopologyAttributeCriteria m_DistanceCriteria;	//	Criteria for nodes for distance calc
 		CString m_sDistanceFrequency;				//	Frequency distribution by distance from criteria
 		CString m_sLevelFrequency;					//	String array of frequency distribution by level
-		CAttributeCriteria m_SystemAffinity;		//	Adjust frequency based on number of matches
+		CAffinityCriteria m_SystemAffinity;			//	Adjust frequency based on number of matches
 
-		CString m_sLocationCriteria;				//	Criteria for location
+		CAffinityCriteria m_LocationCriteria;		//	Affinity for a location in a system.
 		Metric m_rExclusionRadius = 0.0;			//	No stations of any kind within this radius
 		Metric m_rEnemyExclusionRadius = 0.0;		//	No enemy stations within this radius
 		bool m_bAutoLevelFrequency = false;			//	We generated m_sLevelFrequency and need to save it.
@@ -178,36 +197,30 @@ class CStationEncounterCtx
 		void AddEncounter (CSystem *pSystem);
 		bool CanBeEncountered (const CStationEncounterDesc &Desc);
 		bool CanBeEncounteredInSystem (CSystem *pSystem, CStationType *pStationType, const CStationEncounterDesc &Desc);
+		TSortMap<CString, int> GetEncounterCountByNode (void) const;
 		int GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc);
 		int GetFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
 		int GetFrequencyForSystem (CSystem *pSystem, CStationType *pStation, const CStationEncounterDesc &Desc);
 		int GetMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc);
 		int GetRequiredForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc);
-		inline int GetTotalCount (void) const { return m_Total.iCount; }
-		inline int GetTotalLimit (void) const { return m_Total.iLimit; }
-		inline int GetTotalMinimum (void) const { return m_Total.iMinimum; }
+		int GetTotalCount (void) const { return m_Total.iCount; }
+		int GetTotalLimit (void) const { return m_Total.iLimit; }
+		int GetTotalMinimum (void) const { return m_Total.iMinimum; }
 		void IncMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc, int iInc = 1);
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Reinit (const CStationEncounterDesc &Desc);
 		void WriteToStream (IWriteStream *pStream);
 
-		static int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &Criteria);
+		static int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria);
 
 	private:
 		struct SEncounterStats
 			{
-			SEncounterStats (void) :
-					iCount(0),
-					iLimit(-1),
-					iMinimum(0),
-                    iNodeCriteria(-1)
-				{ }
+			int iCount = 0;						//	Number of times encountered
+			int iLimit = -1;					//	Encounter limit (-1 = no limit)
+			int iMinimum = 0;					//	Minimum encounters (-1 = no limit)
 
-			int iCount;						//	Number of times encountered
-			int iLimit;						//	Encounter limit (-1 = no limit)
-			int iMinimum;					//	Minimum encounters (-1 = no limit)
-
-            mutable int iNodeCriteria;      //  Cached frequency for node (-1 = unknown)
+			mutable int iNodeCriteria = -1;		//  Cached frequency for node (-1 = unknown)
 			};
 
 		int GetBaseFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
@@ -216,6 +229,50 @@ class CStationEncounterCtx
 		SEncounterStats m_Total;			//	Encounters in entire game
 		TSortMap<int, SEncounterStats> m_ByLevel;	//	Encounters by system level
 		TSortMap<CString, SEncounterStats> m_ByNode;	//	Encounters by topology node
+	};
+
+class CStationCreateOptions
+	{
+	public:
+		bool ForceMapLabel (void) const { return m_bForceMapLabel; }
+		bool ForceMapOrbit (void) const { return m_bForceMapOrbit; }
+		const CString &GetImageVariant (void) const { return m_sImageVariant; }
+		const CXMLElement *GetItemsXML (void) const { return m_pItems; }
+		const CNameDesc &GetNameDesc (void) const { return m_Name; }
+		const CString &GetObjName (void) const { return m_sObjName; }
+		const CXMLElement *GetOnCreateXML (void) const { return m_pOnCreate; }
+		CPaintOrder::Types GetPaintOrder (void) const { return m_iPaintOrder; }
+		const CXMLElement *GetSatellitesXML (void) const { return m_pSatellites; }
+		const CXMLElement *GetShipsXML (void) const { return m_pShips; }
+		const CXMLElement *GetTradeXML (void) const { return m_pTrade; }
+		ALERROR InitFromXML (SSystemCreateCtx &Ctx, const CXMLElement &XMLDesc);
+		void Merge (const CStationCreateOptions &Src);
+		bool MergeFromSimpleXML (const CXMLElement &XMLDesc, CStationCreateOptions *retOld);
+		bool SuppressConstruction (void) const { return m_bSuppressConstruction; }
+		bool SuppressMapLabel (void) const { return m_bSuppressMapLabel; }
+		bool SuppressReinforcements (void) const { return m_bSuppressReinforcements; }
+		
+	private:
+		void CopyOnWrite (bool &bCopied, CStationCreateOptions *retCopy);
+
+		CNameDesc m_Name;
+		CString m_sImageVariant;
+		CString m_sObjName;
+		CPaintOrder::Types m_iPaintOrder = CPaintOrder::none;
+
+		const CXMLElement *m_pOnCreate = NULL;
+
+		const CXMLElement *m_pItems = NULL;
+		const CXMLElement *m_pSatellites = NULL;
+		const CXMLElement *m_pShips = NULL;
+		const CXMLElement *m_pTrade = NULL;
+
+		bool m_bForceMapLabel = false;
+		bool m_bForceMapOrbit = false;
+		bool m_bSuppressConstruction = false;
+		bool m_bSuppressMapLabel = false;
+		bool m_bSuppressMapOrbit = false;
+		bool m_bSuppressReinforcements = false;
 	};
 
 //	CStationType --------------------------------------------------------------
@@ -231,6 +288,113 @@ enum ScaleTypes
 	scaleStructure =				2,
 	scaleShip =						3,
 	scaleFlotsam =					4,
+	};
+
+enum class EAsteroidType
+	{
+	unknown = -1,			//	Unknown composition
+	none = 0,				//	No mining
+
+	icy = 1,
+	metallic = 2,
+	primordial = 3,
+	rocky = 4,
+	volcanic = 5,
+	};
+
+constexpr int EAsteroidTypeCount = 6;
+
+enum class EMiningMethod
+	{
+	unknown = -1,
+
+	ablation = 0,
+	drill = 1,
+	explosion = 2,
+	shockwave = 3,
+	};
+
+constexpr int EMiningMethodCount = 4;
+
+class CAsteroidDesc
+	{
+	public:
+
+		//	Composition (for mining purposes)
+
+		struct SMiningStats
+			{
+			int iSuccessChance = 0;
+			int iMaxOreLevel = 1;
+			Metric rYieldAdj = 1.0;
+			};
+
+		EAsteroidType GetType (void) const { return m_iType; }
+		CString GetTypeLabel (CUniverse &Universe) const;
+		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool IsEmpty (void) const { return (m_bDefault || m_iType == EAsteroidType::unknown); }
+
+		static void CalcMining (int iMiningLevel, int iMiningDifficulty, EAsteroidType iType, const SDamageCtx &DamageCtx, SMiningStats &retMining);
+		static EMiningMethod CalcMiningMethod (const CWeaponFireDesc &Desc);
+		static CString CompositionID (EAsteroidType iType);
+		static int GetDefaultMiningDifficulty (EAsteroidType iType);
+		static const CAsteroidDesc &Null (void) { return m_Null; }
+		static EAsteroidType ParseComposition (const CString &sValue);
+
+	private:
+		struct SCompositionDesc
+			{
+			LPSTR pszID = NULL;
+			int iMiningDifficulty = 0;
+
+			Metric SuccessAdj[EMiningMethodCount] = { 0.0 };
+			Metric YieldAdj[EMiningMethodCount] = { 0.0 };
+			};
+
+		static Metric CalcBaseMiningSuccess (int iMiningLevel, int iMiningDifficulty);
+		static int CalcMaxOreLevel (DamageTypes iDamageType);
+		static const SCompositionDesc &GetCompositionDesc (EAsteroidType iType) { return COMPOSITION_TABLE[static_cast<int>(iType)]; }
+
+		EAsteroidType m_iType = EAsteroidType::unknown;
+		bool m_bDefault = false;
+
+		static TStaticStringTable<TStaticStringEntry<EAsteroidType>, 5> COMPOSITION_INDEX;
+		static SCompositionDesc COMPOSITION_TABLE[EAsteroidTypeCount];
+
+		static const CAsteroidDesc m_Null;
+	};
+
+class CStarDesc
+	{
+	public:
+		Metric GetGravityRadius (void) const { return m_rGravityRadius; }
+		int GetMaxLightDistance (void) const { return m_iMaxLightDistance; }
+		CG32bitPixel GetSpaceColor (void) const { return m_rgbSpaceColor; }
+		bool HasGravity (void) const { return (m_rGravityRadius > 0.0); }
+		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+
+	private:
+		CG32bitPixel m_rgbSpaceColor;					//	Space color
+		int m_iMaxLightDistance = 0;					//	Max distance at which there is no (effective) light from star
+		Metric m_rGravityRadius = 0.0;					//	Gravity radius
+	};
+
+class CStargateDesc
+	{
+	public:
+		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const { retTypesUsed->SetAt(m_pGateEffect.GetUNID(), true); }
+		ALERROR Bind (SDesignLoadCtx &Ctx) { return m_pGateEffect.Bind(Ctx); }
+		const CString &GetDestEntryPoint (void) const { return m_sDestEntryPoint; }
+		const CString &GetDestNodeID (void) const { return m_sDestNodeID; }
+		CEffectCreator *GetGateEffect (void) const { return m_pGateEffect; }
+		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		void MarkImages (void) { if (m_pGateEffect) m_pGateEffect->MarkImages(); }
+
+	private:
+		CString m_sDestNodeID;							//	Dest node
+		CString m_sDestEntryPoint;						//	Dest entry point
+		CEffectCreatorRef m_pGateEffect;				//	Effect when object gates in/out of station
 	};
 
 class CStationType : public CDesignType
@@ -264,107 +428,115 @@ class CStationType : public CDesignType
 		virtual ~CStationType (void);
 		static void Reinit (void);
 
-		inline bool AlertWhenAttacked (void) { return (mathRandom(1, 100) <= m_iAlertWhenAttacked); }
-		inline bool AlertWhenDestroyed (void) { return (mathRandom(1, 100) <= m_iAlertWhenDestroyed); }
-		inline bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
-		inline bool CanAttack (void) const { return (m_fCanAttack ? true : false); }
-		inline bool CanBeEncountered (void) { return m_EncounterRecord.CanBeEncountered(GetEncounterDesc()); }
-		inline bool CanBeEncountered (CSystem *pSystem) { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, GetEncounterDesc()); }
-		inline bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
-		inline bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
-		inline bool CanHitFriends (void) { return (m_fNoFriendlyFire ? false : true); }
-		inline CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
-		inline CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }
+		bool AlertWhenAttacked (void) { return (mathRandom(1, 100) <= m_iAlertWhenAttacked); }
+		bool AlertWhenDestroyed (void) { return (mathRandom(1, 100) <= m_iAlertWhenDestroyed); }
+		bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
+		bool CanAttack (void) const { return (m_fCanAttack ? true : false); }
+		bool CanBeEncountered (void) { return m_EncounterRecord.CanBeEncountered(GetEncounterDesc()); }
+		bool CanBeEncountered (CSystem *pSystem) { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, GetEncounterDesc()); }
+		bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
+		bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
+		bool CanHitFriends (void) const { return (m_fNoFriendlyFire ? false : true); }
+		TSharedPtr<CG32bitImage> CreateFullImage (SGetImageCtx &ImageCtx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, RECT &retrcImage, int &retxCenter, int &retyCenter) const;
+		bool ForceMapLabel (void) const { return m_fForceMapLabel; }
+		void GenerateDevices (int iLevel, CDeviceDescList &Devices) const;
+		CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
+		CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }
+		const CAsteroidDesc &GetAsteroidDesc (void) const;
 		CurrencyValue GetBalancedTreasure (void) const;
-		inline CEffectCreator *GetBarrierEffect (void) { return m_pBarrierEffect; }
-		inline IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }
-		CSovereign *GetControllingSovereign (void);
-		inline DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
-		inline const CShipChallengeDesc &GetDefenderCount (void) const { return m_DefenderCount; }
-		inline CXMLElement *GetDesc (void) { return m_pDesc; }
-		inline CString GetDestNodeID (void) { return m_sStargateDestNode; }
-		inline CString GetDestEntryPoint (void) { return m_sStargateDestEntryPoint; }
-		inline int GetEjectaAdj (void) { return m_iEjectaAdj; }
+		CEffectCreator *GetBarrierEffect (void) { return m_pBarrierEffect; }
+		int GetChallengeRating (void) const;
+		IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }
+		CSovereign *GetControllingSovereign (void) const;
+		DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
+		const CShipChallengeDesc &GetDefenderCount (void) const { return m_DefenderCount; }
+		CXMLElement *GetDesc (void) { return m_pDesc; }
+		CString GetDestNodeID (void) const { return m_Stargate.GetDestNodeID(); }
+		CString GetDestEntryPoint (void) const { return m_Stargate.GetDestEntryPoint(); }
+		int GetEjectaAdj (void) { return m_iEjectaAdj; }
 		CWeaponFireDesc *GetEjectaType (void) { return m_pEjectaType; }
 		const CStationEncounterDesc &GetEncounterDesc (void) const;
-		inline Metric GetEnemyExclusionRadius (void) const { return GetEncounterDesc().GetEnemyExclusionRadius(); }
-		inline void GetExclusionDesc (CStationEncounterDesc::SExclusionDesc &Exclusion) const { GetEncounterDesc().GetExclusionDesc(Exclusion); }
-		inline Metric GetExclusionRadius (void) const { return GetEncounterDesc().GetExclusionRadius(); }
+		Metric GetEnemyExclusionRadius (void) const { return GetEncounterDesc().GetEnemyExclusionRadius(); }
+		void GetExclusionDesc (CStationEncounterDesc::SExclusionDesc &Exclusion) const { GetEncounterDesc().GetExclusionDesc(Exclusion); }
+		Metric GetExclusionRadius (void) const { return GetEncounterDesc().GetExclusionRadius(); }
 		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
-		inline int GetEncounterFrequency (void) { return m_iEncounterFrequency; }
-		inline int GetEncounterMinimum (CTopologyNode *pNode) { return m_EncounterRecord.GetMinimumForNode(pNode, GetEncounterDesc()); }
-		inline CStationEncounterCtx &GetEncounterRecord (void) { return m_EncounterRecord; }
-		inline int GetEncounterRequired (CTopologyNode *pNode) { return m_EncounterRecord.GetRequiredForNode(pNode, GetEncounterDesc()); }
-		inline IShipGenerator *GetEncountersTable (void) { return m_pEncounters; }
-		inline int GetFireRateAdj (void) { return m_iFireRateAdj; }
-		inline CXMLElement *GetFirstDockScreen (void) { return m_pFirstDockScreen.GetDesc(); }
-		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pFirstDockScreen.GetDockScreen(this, retsName); }
-		inline int GetFrequencyByLevel (int iLevel) { return m_EncounterRecord.GetFrequencyByLevel(iLevel, GetEncounterDesc()); }
-		inline int GetFrequencyForNode (CTopologyNode *pNode) { return m_EncounterRecord.GetFrequencyForNode(pNode, this, GetEncounterDesc()); }
-		inline int GetFrequencyForSystem (CSystem *pSystem) { return m_EncounterRecord.GetFrequencyForSystem(pSystem, this, GetEncounterDesc()); }
-		inline CEffectCreator *GetGateEffect (void) { return m_pGateEffect; }
-		inline Metric GetGravityRadius (void) const { return m_rGravityRadius; }
-		inline const CObjectImageArray &GetHeroImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_HeroImage.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
-		inline const CStationHullDesc &GetHullDesc (void) const { return m_HullDesc; }
-		inline const CCompositeImageDesc &GetImage (void) { return m_Image; }
-		inline const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_Image.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
-		inline int GetImageVariants (void) { return m_Image.GetVariantCount(); }
-		inline IShipGenerator *GetInitialShips (void) const { return m_pInitialShips; }
-		Metric GetLevelStrength (int iLevel);
-		inline const CString &GetLocationCriteria (void) const { return GetEncounterDesc().GetLocationCriteria(); }
-		inline Metric GetMass (void) { return m_rMass; }
-		inline Metric GetMaxEffectiveRange (void) { if (m_fCalcMaxAttackDist) CalcMaxAttackDistance(); return m_rMaxAttackDistance; }
-		inline int GetMaxLightDistance (void) { return m_iMaxLightDistance; }
-		inline int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
-		inline const CNameDesc &GetNameDesc (void) const { return m_Name; }
-		inline int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
-		inline Metric GetParallaxDist (void) const { return m_rParallaxDist; }
-		inline IItemGenerator *GetRandomItemTable (void) { return m_pItems; }
+		int GetEncounterFrequency (void) { return m_iEncounterFrequency; }
+		int GetEncounterMinimum (CTopologyNode *pNode) { return m_EncounterRecord.GetMinimumForNode(pNode, GetEncounterDesc()); }
+		CStationEncounterCtx &GetEncounterRecord (void) { return m_EncounterRecord; }
+		int GetEncounterRequired (CTopologyNode *pNode) { return m_EncounterRecord.GetRequiredForNode(pNode, GetEncounterDesc()); }
+		IShipGenerator *GetEncountersTable (void) { return m_pEncounters; }
+		int GetFireRateAdj (void) { return m_iFireRateAdj; }
+		CXMLElement *GetFirstDockScreen (void) { return m_pFirstDockScreen.GetDesc(); }
+		CDesignType *GetFirstDockScreen (CString *retsName) { return m_pFirstDockScreen.GetDockScreen(this, retsName); }
+		int GetFrequencyByLevel (int iLevel) { return m_EncounterRecord.GetFrequencyByLevel(iLevel, GetEncounterDesc()); }
+		int GetFrequencyForNode (CTopologyNode *pNode) { return m_EncounterRecord.GetFrequencyForNode(pNode, this, GetEncounterDesc()); }
+		int GetFrequencyForSystem (CSystem *pSystem) { return m_EncounterRecord.GetFrequencyForSystem(pSystem, this, GetEncounterDesc()); }
+		CEffectCreator *GetGateEffect (void) const { return m_Stargate.GetGateEffect(); }
+		Metric GetGravityRadius (void) const { return m_Star.GetGravityRadius(); }
+		const CObjectImageArray &GetHeroImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_HeroImage.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
+		const CStationHullDesc &GetHullDesc (void) const { return m_HullDesc; }
+		const CCompositeImageDesc &GetImage (void) const { return m_Image; }
+		const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) const { return m_Image.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
+		int GetImageVariants (void) { return m_Image.GetVariantCount(); }
+		IShipGenerator *GetInitialShips (void) const { return m_pInitialShips; }
+		Metric GetLevelStrength (int iLevel) const;
+		const CAffinityCriteria &GetLocationCriteria (void) const { return GetEncounterDesc().GetLocationCriteria(); }
+		Metric GetMass (void) { return m_rMass; }
+		int GetMaxLightDistance (void) const { return m_Star.GetMaxLightDistance(); }
+		int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
+		const CNameDesc &GetNameDesc (void) const { return m_Name; }
+		int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
+		CPaintOrder::Types GetPaintOrder (void) const { return m_iPaintOrder; }
+		Metric GetParallaxDist (void) const { return m_rParallaxDist; }
+		CItem GetPrimaryWeapon (void) const;
+		IItemGenerator *GetRandomItemTable (void) { return m_pItems; }
 		IShipGenerator *GetReinforcementsTable (void);
 		const CIntegralRotationDesc &GetRotationDesc (void);
-		inline CXMLElement *GetSatellitesDesc (void) { return m_pSatellitesDesc; }
-		inline ScaleTypes GetScale (void) const { return m_iScale; }
-		inline int GetSize (void) const { return m_iSize; }
-		inline int GetShipConstructionRate (void) { return m_iShipConstructionRate; }
-		inline const CRegenDesc &GetShipRegenDesc (void) { return m_ShipRegen; }
-		inline CSovereign *GetSovereign (void) const { return m_pSovereign; }
-		inline CG32bitPixel GetSpaceColor (void) { return m_rgbSpaceColor; }
-		inline int GetStealth (void) const { return m_iStealth; }
-		inline int GetTempChance (void) const { return m_iChance; }
-		inline bool HasAnimations (void) const { return (m_pAnimations != NULL); }
-		inline bool HasGravity (void) const { return (m_rGravityRadius > 0.0); }
-		inline bool HasWreckImage (void) const { return m_HullDesc.CanBeWrecked(); }
-		inline void IncEncounterMinimum (CTopologyNode *pNode, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(pNode, GetEncounterDesc(), iInc); }
-		inline bool IsActive (void) { return (m_fInactive ? false : true); }
-		inline bool IsOutOfPlaneObject (void) { return (m_fOutOfPlane ? true : false); }
-		inline bool IsBeacon (void) { return (m_fBeacon ? true : false); }
-		inline bool IsBlacklistEnabled (void) { return (m_fNoBlacklist ? false : true); }
-		inline bool IsDestroyWhenEmpty (void) { return (m_fDestroyWhenEmpty ? true : false); }
-		inline bool IsEnemyDockingAllowed (void) { return (m_fAllowEnemyDocking ? true : false); }
-		inline bool IsMobile (void) const { return (m_fMobile ? true : false); }
-		inline bool IsPaintLayerOverhang (void) const { return (m_fPaintOverhang ? true : false); }
-		inline bool IsRadioactive (void) { return (m_fRadioactive ? true : false); }
-		inline bool IsSign (void) { return (m_fSign ? true : false); }
+		const CXMLElement *GetSatellitesDesc (void) const { return m_pSatellitesDesc; }
+		ScaleTypes GetScale (void) const { return m_iScale; }
+		int GetSize (void) const { return m_iSize; }
+		int GetShipConstructionRate (void) { return m_iShipConstructionRate; }
+		const CRegenDesc &GetShipRegenDesc (void) { return m_ShipRegen; }
+		CSovereign *GetSovereign (void) const { return m_pSovereign; }
+		CG32bitPixel GetSpaceColor (void) const { return m_Star.GetSpaceColor(); }
+		int GetStealth (void) const { return m_iStealth; }
+		int GetTempChance (void) const { return m_iChance; }
+		bool HasAnimations (void) const { return (m_pAnimations != NULL); }
+		bool HasGravity (void) const { return m_Star.HasGravity(); }
+		bool HasWreckImage (void) const { return m_HullDesc.CanBeWrecked(); }
+		void IncEncounterMinimum (CTopologyNode *pNode, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(pNode, GetEncounterDesc(), iInc); }
+		bool IsActive (void) const { return (m_fInactive ? false : true); }
+		bool IsAnonymous (void) const { return (m_fAnonymous ? true : false); }
+		bool IsOutOfPlaneObject (void) { return (m_fOutOfPlane ? true : false); }
+		bool IsBeacon (void) { return (m_fBeacon ? true : false); }
+		bool IsBlacklistEnabled (void) { return (m_fNoBlacklist ? false : true); }
+		bool IsDestroyWhenAbandoned (void) { return (m_fDestroyWhenAbandoned ? true : false); }
+		bool IsDestroyWhenEmpty (void) { return (m_fDestroyWhenEmpty ? true : false); }
+		bool IsEnemyDockingAllowed (void) { return (m_fAllowEnemyDocking ? true : false); }
+		bool IsMobile (void) const { return (m_fMobile ? true : false); }
+		bool IsRadioactive (void) { return (m_fRadioactive ? true : false); }
+		bool IsSign (void) { return (m_fSign ? true : false); }
 		bool IsSizeClass (ESizeClass iClass) const;
-		inline bool IsShipEncounter (void) const { return (m_fShipEncounter ? true : false); }
-		inline bool IsStatic (void) { return (m_fStatic ? true : false); }
-		inline bool IsStationEncounter (void) const { return (m_fStationEncounter ? true : false); }
-		inline bool IsTimeStopImmune (void) const { return (m_fTimeStopImmune ? true : false); }
-		inline bool IsUniqueInSystem (void) const { return GetEncounterDesc().IsUniqueInSystem(); }
-		inline bool IsWall (void) { return (m_fWall ? true : false); }
+		bool IsShipEncounter (void) const { return (m_fShipEncounter ? true : false); }
+		bool IsStatic (void) { return (m_fStatic ? true : false); }
+		bool IsStationEncounter (void) const { return (m_fStationEncounter ? true : false); }
+		bool IsTimeStopImmune (void) const { return (m_fTimeStopImmune ? true : false); }
+		bool IsUniqueInSystem (void) const { return GetEncounterDesc().IsUniqueInSystem(); }
+		bool IsWall (void) { return (m_fWall ? true : false); }
 		void MarkImages (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers);
 		void OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceObject *pObj, const COrbit &Orbit);
+		bool OverrideEncounterDesc (const CXMLElement &Override, CString *retsError = NULL);
 		void PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick);
 		void PaintDevicePositions (CG32bitImage &Dest, int x, int y);
 		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y);
 		void SetImageSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
-		inline void SetEncountered (CSystem *pSystem) { m_EncounterRecord.AddEncounter(pSystem); }
-		inline void SetTempChance (int iChance) { m_iChance = iChance; }
-		inline bool ShowsMapDetails (void) { return (m_fNoMapDetails ? false : true); }
-		inline bool ShowsMapIcon (void) { return (m_fNoMapIcon ? false : true); }
-		inline bool ShowsMapLabel (void) { return (m_fNoMapLabel ? false : true); }
-		inline bool ShowsUnexploredAnnotation (void) const { return (m_fShowsUnexploredAnnotation ? true : false); }
-		inline bool UsesReverseArticle (void) { return (m_fReverseArticle ? true : false); }
+		void SetEncountered (CSystem *pSystem) { m_EncounterRecord.AddEncounter(pSystem); }
+		void SetTempChance (int iChance) { m_iChance = iChance; }
+		bool ShowsMapDetails (void) { return (m_fNoMapDetails ? false : true); }
+		bool ShowsMapIcon (void) { return (m_fNoMapIcon ? false : true); }
+		bool ShowsUnexploredAnnotation (void) const { return (m_fShowsUnexploredAnnotation ? true : false); }
+		bool SuppressMapLabel (void) const { return m_fSuppressMapLabel; }
+		bool UsesReverseArticle (void) { return (m_fReverseArticle ? true : false); }
 
 		//	CDesignType overrides
 		static CStationType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designStationType) ? (CStationType *)pType : NULL); }
@@ -374,16 +546,16 @@ class CStationType : public CDesignType
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CTradingDesc *GetTradingDesc (void) const override { return m_pTrade; }
 		virtual DesignTypes GetType (void) const override { return designStationType; }
-        virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
+		virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
 		static Metric CalcSatelliteHitsToDestroy (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
 		static Metric CalcSatelliteStrength (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
 		static Metric CalcSatelliteTreasureValue (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
-		static inline ScaleTypes LoadScaleType (DWORD dwLoad) { return (ScaleTypes)dwLoad; }
+		static ScaleTypes LoadScaleType (DWORD dwLoad) { return (ScaleTypes)dwLoad; }
 		static ScaleTypes ParseScale (const CString sValue);
 		static ESizeClass ParseSizeClass (const CString sValue);
-		static inline DWORD SaveScaleType (ScaleTypes iScale) { return (DWORD)iScale; }
+		static DWORD SaveScaleType (ScaleTypes iScale) { return (DWORD)iScale; }
 
 	protected:
 		//	CDesignType overrides
@@ -392,7 +564,6 @@ class CStationType : public CDesignType
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
 		virtual void OnInitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const override;
@@ -413,52 +584,54 @@ class CStationType : public CDesignType
 
 		void AddTypesUsedByXML (CXMLElement *pElement, TSortMap<DWORD, bool> *retTypesUsed);
 		Metric CalcBalance (void) const;
+		Metric CalcBalanceHitsAdj (int iLevel) const;
 		Metric CalcDefenderStrength (int iLevel) const;
 		int CalcHitsToDestroy (int iLevel) const;
-		Metric CalcMaxAttackDistance (void);
 		Metric CalcTreasureValue (int iLevel) const;
 		Metric CalcWeaponStrength (int iLevel) const;
-		void InitStationDamage (void);
+		CStationEncounterDesc &GetEncounterDesc (void);
 
-		CXMLElement *m_pDesc;
+		CXMLElement *m_pDesc = NULL;
 
 		//	Basic station descriptors
 
 		CNameDesc m_Name;								//	Name
 		CSovereignRef m_pSovereign;						//	Sovereign
-		ScaleTypes m_iScale;							//	Scale
-		Metric m_rParallaxDist;							//	Parallax distance for background objects
-		mutable int m_iLevel;							//	Station level
-		Metric m_rMass;									//	Mass of station
+		ScaleTypes m_iScale = scaleNone;				//	Scale
+		Metric m_rParallaxDist = 1.0;					//	Parallax distance for background objects
+		mutable int m_iLevel = 0;						//	Station level
+		int m_iChallengeRating = 0;						//	If non-zero, this overrides calculated value
+		Metric m_rMass = 0.0;							//	Mass of station
 														//		For stars, this is in solar masses
 														//		For worlds, this is in Earth masses
 														//		Otherwise, in metric tons
-		int m_iSize;									//	Size
+		int m_iSize = 0;								//	Size
 														//		For stars and worlds, this is in kilometers
 														//		Otherwise, in meters
-		int m_iFireRateAdj;								//	Fire rate adjustment
+		int m_iFireRateAdj = 10;						//	Fire rate adjustment
 
 		//	Armor & Hull
 		CStationHullDesc m_HullDesc;					//	Hull descriptor
-		int m_iStealth;									//	Stealth
+		int m_iStealth = 0;								//	Stealth
 
 		//	Devices
-		int m_iDevicesCount;							//	Number of devices in array
-		CInstalledDevice *m_Devices;					//	Device array
+		IDeviceGenerator *m_pDevices = NULL;			//	Devices for the station
+		CDeviceDescList m_AverageDevices;
 
 		//	Items
-		IItemGenerator *m_pItems;						//	Random item table
-		CTradingDesc *m_pTrade;							//	Trading structure
+		IItemGenerator *m_pItems = NULL;				//	Random item table
+		CTradingDesc *m_pTrade = NULL;					//	Trading structure
 
 		DWORD m_fMobile:1;								//	Station moves
 		DWORD m_fWall:1;								//	Station is a wall
 		DWORD m_fInactive:1;							//	Station starts inactive
+		DWORD m_fDestroyWhenAbandoned:1;				//	Station is destroyed when at 0 hit points
 		DWORD m_fDestroyWhenEmpty:1;					//	Station is destroyed when last item removed
 		DWORD m_fAllowEnemyDocking:1;					//	Station allows enemies to dock
 		DWORD m_fNoFriendlyFire:1;						//	Station cannot hit friends
 		DWORD m_fSign:1;								//	Station is a text sign
-		DWORD m_fBeacon:1;								//	Station is a nav beacon
 
+		DWORD m_fBeacon:1;								//	Station is a nav beacon
 		DWORD m_fRadioactive:1;							//	Station is radioactive
 		DWORD m_fCanAttack:1;							//	Station is active (i.e., will react if attacked)
 		DWORD m_fShipEncounter:1;						//	This is a ship encounter
@@ -466,83 +639,78 @@ class CStationType : public CDesignType
 		DWORD m_fTimeStopImmune:1;						//	TRUE if station is immune to time-stop
 		DWORD m_fNoBlacklist:1;							//	Does not blacklist player if attacked
 		DWORD m_fReverseArticle:1;						//	Use "a" instead of "an" and vice versa
-		DWORD m_fStatic:1;								//	Use CStatic instead of CStation
 
+		DWORD m_fStatic:1;								//	Use CStatic instead of CStation
 		DWORD m_fOutOfPlane:1;							//	Background or foreground object
 		DWORD m_fNoFriendlyTarget:1;					//	Station cannot be hit by friends
 		DWORD m_fVirtual:1;								//	Virtual stations do not show up
-		DWORD m_fPaintOverhang:1;						//	If TRUE, paint in overhang layer
 		DWORD m_fCommsHandlerInit:1;					//	TRUE if comms handler has been initialized
 		DWORD m_fNoMapDetails:1;                        //  If TRUE, do not show in details pane in galactic map
-		DWORD m_fNoMapLabel:1;							//	If TRUE, do not show a label on system map
+		DWORD m_fSuppressMapLabel:1;					//	If TRUE, do not show a label on system map
 		DWORD m_fBuildReinforcements:1;					//	If TRUE, reinforcements are built instead of brought in
 
 		DWORD m_fStationEncounter:1;					//	If TRUE, we're just an encounter wrapper that creates stations
 		DWORD m_fCalcLevel:1;							//	If TRUE, m_iLevel needs to be computed
 		DWORD m_fBalanceValid:1;						//	If TRUE, m_rCombatBalance is valid
 		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
-		DWORD m_fCalcMaxAttackDist:1;					//	If TRUE, we need to compute m_rMaxAttackDistance
-		DWORD m_fSpare6:1;
+		DWORD m_fForceMapLabel:1;						//	If TRUE, show map label, even if we wouldn't by default.
+		DWORD m_fAnonymous:1;							//	If TRUE, object is anonymous world/asteroid/etc.
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 
 		//	Images
 		CCompositeImageDesc m_Image;
 		TArray<DWORD> m_ShipWrecks;						//	Class IDs to use as image (for shipwrecks)
-		int m_iAnimationsCount;							//	Number of animation sections
-		SAnimationSection *m_pAnimations;				//	Animation sections (may be NULL)
+		int m_iAnimationsCount = 0;						//	Number of animation sections
+		SAnimationSection *m_pAnimations = NULL;		//	Animation sections (may be NULL)
 		CCompositeImageDesc m_HeroImage;				//	For use in dock screens and covers
+		CPaintOrder::Types m_iPaintOrder = CPaintOrder::none;	//	Paint layer (if special)
 
 		//	Docking
 		CDockScreenTypeRef m_pFirstDockScreen;			//	First screen (may be NULL)
 		CDockScreenTypeRef m_pAbandonedDockScreen;		//	Screen to use when abandoned (may be NULL)
-		DWORD m_dwDefaultBkgnd;							//	Default background screen
+		DWORD m_dwDefaultBkgnd = 0;						//	Default background screen
 
 		//	Behaviors
-		int m_iAlertWhenAttacked;						//	Chance that station will warn others when attacked
-		int m_iAlertWhenDestroyed;						//	Chance that station will warn others when destroyed
-		Metric m_rMaxAttackDistance;					//	Max range at which station guns attack
+		int m_iAlertWhenAttacked = 0;					//	Chance that station will warn others when attacked
+		int m_iAlertWhenDestroyed = 0;					//	Chance that station will warn others when destroyed
 
 		CCommunicationsHandler m_OriginalCommsHandler;
 		CCommunicationsHandler m_CommsHandler;			//	Communications handler
 
 		//	Random occurrence
-		CStationEncounterDesc m_RandomPlacement;		//	Random encounter information
+		CStationEncounterDesc m_EncounterDesc;			//	Random encounter information
+		TUniquePtr<CStationEncounterDesc> m_pEncounterDescOverride;		//	Random encounter information
 		CStationEncounterCtx m_EncounterRecord;			//	Record of encounters so far
 
 		//	Ships
 		CShipChallengeDesc m_DefenderCount;				//	Station should have this number of ships
-		IShipGenerator *m_pInitialShips;				//	Ships at creation time
-		IShipGenerator *m_pReinforcements;				//	Reinforcements table
-		IShipGenerator *m_pEncounters;					//	Random encounters table
-		int m_iEncounterFrequency;						//	Frequency of random encounter
+		IShipGenerator *m_pInitialShips = NULL;			//	Ships at creation time
+		IShipGenerator *m_pReinforcements = NULL;		//	Reinforcements table
+		IShipGenerator *m_pEncounters = NULL;			//	Random encounters table
+		int m_iEncounterFrequency = ftNotRandom;		//	Frequency of random encounter
 		CRegenDesc m_ShipRegen;							//	Regen for ships docked with us
-		IShipGenerator *m_pConstruction;				//	Ships built by station
-		int m_iShipConstructionRate;					//	Ticks between each construction
-		int m_iMaxConstruction;							//	Stop building when we get this many ships
+		IShipGenerator *m_pConstruction = NULL;			//	Ships built by station
+		int m_iShipConstructionRate = 0;				//	Ticks between each construction
+		int m_iMaxConstruction = 0;						//	Stop building when we get this many ships
 
 		//	Satellites
-		CXMLElement *m_pSatellitesDesc;
+		CXMLElement *m_pSatellitesDesc = NULL;
 
 		//	Explosion
 		CWeaponFireDescRef m_pExplosionType;			//	Explosion to create when station is destroyed
 
 		//	Ejecta
-		int m_iEjectaAdj;								//	Adjustment to probability for ejecta when hit by weapon
+		int m_iEjectaAdj = 0;							//	Adjustment to probability for ejecta when hit by weapon
 														//		0 = no chance of ejecta
 														//		100 = normal chance
 														//		>100 = greater than normal chance
 		CWeaponFireDescRef m_pEjectaType;				//	Type of ejecta generated
 
-		//	Stellar objects
-		CG32bitPixel m_rgbSpaceColor;					//	Space color
-		int m_iMaxLightDistance;						//	Max distance at which there is no (effective) light from star
-		Metric m_rGravityRadius;						//	Gravity radius
-
-		//	Stargates
-		CString m_sStargateDestNode;					//	Dest node
-		CString m_sStargateDestEntryPoint;				//	Dest entry point
-		CEffectCreatorRef m_pGateEffect;				//	Effect when object gates in/out of station
+		//	Special descriptors
+		CAsteroidDesc m_Asteroid;						//	Asteroid parameters
+		CStarDesc m_Star;								//	Star parameters
+		CStargateDesc m_Stargate;						//	Stargate parameters
 
 		//	Miscellaneous
 		CEffectCreatorRef m_pBarrierEffect;				//	Effect when object hits station
@@ -553,7 +721,7 @@ class CStationType : public CDesignType
 		mutable Metric m_rCombatBalance = 0.0;			//	Station power relative to level (1.0 == balanced)
 
 		//	Temporary
-		int m_iChance;									//	Used when computing chance of encounter
+		int m_iChance = 0;								//	Used when computing chance of encounter
 
 		static CIntegralRotationDesc m_DefaultRotation;
 	};

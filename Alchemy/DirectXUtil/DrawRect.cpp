@@ -5,6 +5,25 @@
 
 #include "PreComp.h"
 
+void CGDraw::MaskRoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius)
+
+//	MarkRoundedRect
+//
+//	Mask out anything outside of the given rounded-rect.
+
+	{
+	//	We're lazy, so we generate an off-screen rounded-rect mask. For better
+	//	performance we should operate on the destination directly.
+
+	CG8bitImage Mask;
+	Mask.Create(Dest.GetWidth(), Dest.GetHeight(), 0xff);
+	RoundedRect(Mask, 0, 0, Mask.GetWidth(), Mask.GetHeight(), iRadius, 0);
+
+	//	Now blt throught the mask
+
+	Dest.SetMask(0, 0, Mask.GetWidth(), Mask.GetHeight(), Mask, CG32bitPixel::Null(), 0, 0);
+	}
+
 void CGDraw::OctaRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iCorner, int iLineWidth, CG32bitPixel rgbColor)
 
 //	DrawOctaRectOutline
@@ -167,6 +186,55 @@ void CGDraw::RectOutlineDotted (CG32bitImage &Dest, int x, int y, int cxWidth, i
 	LineDotted(Dest, x, y + cyHeight, x + cxWidth, y + cyHeight, rgbColor);
 	LineDotted(Dest, x, y, x, y + cyHeight, rgbColor);
 	LineDotted(Dest, x + cxWidth, y, x + cxWidth, y + cyHeight, rgbColor);
+	}
+
+void CGDraw::RoundedRect (CG8bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, BYTE Value)
+
+//	RoundedRect
+//
+//	Draws a rounded rect
+
+	{
+	if (iRadius <= 0)
+		{
+		Dest.Fill(x, y, cxWidth, cyHeight, Value);
+		return;
+		}
+
+	//	Generate a set of raster lines for the corner
+
+	int *pSolid = new int [iRadius];
+	BYTE *pEdge = new BYTE [iRadius];
+	RasterizeQuarterCircle8bit(iRadius, pSolid, pEdge, 255);
+
+	//	Fill in each corner
+
+	for (int i = 0; i < iRadius; i++)
+		{
+		int xOffset = iRadius - pSolid[i];
+		int cxLine = cxWidth - (iRadius * 2) + (pSolid[i] * 2);
+
+		//	Top edge
+
+		Dest.FillLine(x + xOffset, y + i, cxLine, Value);
+		Dest.SetPixelTrans(x + xOffset - 1, y + i, Value, pEdge[i]);
+		Dest.SetPixelTrans(x + cxWidth - xOffset, y + i, Value, pEdge[i]);
+
+		//	Bottom edge
+
+		Dest.FillLine(x + xOffset, y + cyHeight - i - 1, cxLine, Value);
+		Dest.SetPixelTrans(x + xOffset - 1, y + cyHeight - i - 1, Value, pEdge[i]);
+		Dest.SetPixelTrans(x + cxWidth - xOffset, y + cyHeight - i - 1, Value, pEdge[i]);
+		}
+
+	//	Fill the center
+
+	Dest.Fill(x, y + iRadius, cxWidth, (cyHeight - 2 * iRadius), Value);
+
+	//	Done
+
+	delete [] pSolid;
+	delete [] pEdge;
 	}
 
 void CGDraw::RoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode)

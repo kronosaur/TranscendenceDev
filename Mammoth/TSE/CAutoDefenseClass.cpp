@@ -130,10 +130,6 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 
 		case trgCriteria:
 			{
-			//	First we set the source
-
-			m_TargetCriteria.SetSource(pSource);
-
 			//	Compute the range
 
 			Metric rBestDist2;
@@ -144,13 +140,13 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 
 			//	Now look for the nearest object
 
-			CSpaceObjectCriteria::SCtx Ctx(m_TargetCriteria);
+			CSpaceObjectCriteria::SCtx Ctx(pSource, m_TargetCriteria);
 			for (int i = 0; i < pSystem->GetObjectCount(); i++)
 				{
 				CSpaceObject *pObj = pSystem->GetObject(i);
 				Metric rDistance2;
 				if (pObj
-						&& (m_TargetCriteria.MatchesCategory(pObj->GetCategory()))
+						&& pObj->MatchesCriteriaCategory(Ctx, m_TargetCriteria)
 						&& ((rDistance2 = (pObj->GetPos() - vSourcePos).Length2()) < rBestDist2)
 						&& pObj->MatchesCriteria(Ctx, m_TargetCriteria)
 						&& !pObj->IsIntangible()
@@ -210,6 +206,36 @@ DamageTypes CAutoDefenseClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) 
 		return pWeapon->GetDamageType(Ctx, Ammo);
 	else
 		return damageGeneric;
+	}
+
+DWORD CAutoDefenseClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
+
+//	GetTargetTypes
+//
+//	Returns the type of targets that we need.
+
+	{
+	switch (m_iTargeting)
+		{
+		case trgMissiles:
+			return CTargetList::typeMissile;
+
+		case trgCriteria:
+			{
+			DWORD dwTargetTypes = 0;
+
+			if (m_TargetCriteria.DeepMatchesCategory(CSpaceObject::catMissile))
+				dwTargetTypes |= CTargetList::typeMissile;
+
+			if (m_TargetCriteria.DeepMatchesCategory(CSpaceObject::catShip | CSpaceObject::catStation))
+				dwTargetTypes |= CTargetList::typeAttacker | CTargetList::typeFortification;
+
+			return dwTargetTypes;
+			}
+
+		default:
+			return 0;
+		}
 	}
 
 ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
@@ -349,7 +375,7 @@ Metric CAutoDefenseClass::GetShotSpeed (CItemCtx &Ctx) const
 	return pWeapon->GetShotSpeed(Ctx);
 	}
 
-bool CAutoDefenseClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice)
+bool CAutoDefenseClass::IsAreaWeapon (const CDeviceItem &DeviceItem) const
 
 //	IsAreaWeapon
 //
@@ -360,7 +386,7 @@ bool CAutoDefenseClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *p
 	if (pWeapon == NULL)
 		return false;
 
-	return pWeapon->IsAreaWeapon(pSource, pDevice);
+	return pWeapon->IsAreaWeapon(DeviceItem);
 	}
 
 void CAutoDefenseClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -519,8 +545,8 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 
 	//	Shoot at target
 
-	int iFireAngle = pWeapon->CalcFireSolution(pDevice, pSource, pTarget);
-	if (iFireAngle == -1)
+	int iFireAngle;
+	if (!pWeapon->CalcFireSolution(*pDevice, *pTarget, &iFireAngle))
 		return;
 
 	//	If friendlies are in the way, don't shoot
@@ -536,8 +562,12 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 
 	//	Fire
 
-	pDevice->SetFireAngle(iFireAngle);
-	pWeapon->Activate(pDevice, pSource, pTarget, &Ctx.bSourceDestroyed, &Ctx.bConsumedItems);
+	SActivateCtx ActivateCtx(pTarget, Ctx.TargetList, iFireAngle);
+
+	pWeapon->Activate(*pDevice, ActivateCtx);
+
+	Ctx.bConsumedItems = ActivateCtx.bConsumedItems;
+
 	pDevice->SetTimeUntilReady(m_iRechargeTicks);
 
 	//	Identify

@@ -106,7 +106,7 @@ DWORD Kernel::utlHashFunctionCase (BYTE *pKey, int iKeyLen)
 	{
 	DWORD initval = 1013;
 	BYTE *k = pKey;
-	register DWORD a,b,c,len;
+	DWORD a,b,c,len;
 
 	//	Set up the internal state
 	len = iKeyLen;
@@ -166,7 +166,7 @@ void Kernel::utlMemSet (LPVOID pDest, DWORD Count, BYTE Value)
 	std::memset(pDest, Value, Count);
 	}
 
-void Kernel::utlMemCopy (char *pSource, char *pDest, DWORD dwCount)
+void Kernel::utlMemCopy (const char *pSource, char *pDest, DWORD dwCount)
 
 //	utlMemCopy
 //

@@ -78,7 +78,7 @@ ALERROR CMemoryWriteStream::Create (void)
 	return NOERROR;
 	}
 
-ALERROR CMemoryWriteStream::Write (char *pData, int iLength, int *retiBytesWritten)
+ALERROR CMemoryWriteStream::Write (const char *pData, int iLength, int *retiBytesWritten)
 
 //	Write
 //

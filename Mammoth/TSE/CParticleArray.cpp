@@ -815,6 +815,21 @@ void CParticleArray::GetBounds (CVector *retvUR, CVector *retvLL)
 		}
 	}
 
+int CParticleArray::GetManeuverRate (SEffectUpdateCtx &Ctx) const
+
+//	GetManeuverRate
+//
+//	Returns the maneuver rate of the shot.
+
+	{
+	if (Ctx.pDamageDesc == NULL)
+		return -1;
+	else if (Ctx.pEnhancements)
+		return Max(Ctx.pDamageDesc->GetManeuverRate(), Ctx.pEnhancements->GetManeuverRate());
+	else
+		return Ctx.pDamageDesc->GetManeuverRate();
+	}
+
 void CParticleArray::Init (int iMaxCount, const CVector &vOrigin)
 
 //	Init
@@ -833,6 +848,19 @@ void CParticleArray::Init (int iMaxCount, const CVector &vOrigin)
 		}
 
 	m_vOrigin = vOrigin;
+	}
+
+bool CParticleArray::IsTrackingTime (SEffectUpdateCtx &Ctx) const
+
+//	IsTrackingTime
+//
+//	Returns TRUE if we should track this tick.
+
+	{
+	return Ctx.pTarget 
+			&& Ctx.pDamageDesc 
+			&& (Ctx.pDamageDesc->IsTrackingTime(Ctx.iTick)
+				|| (Ctx.pEnhancements && Ctx.pEnhancements->IsTracking()));
 	}
 
 void CParticleArray::Move (const CVector &vMove)
@@ -1624,7 +1652,7 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 
 	//	If we're tracking, change velocity to follow target
 
-	if (Ctx.pTarget && Ctx.pDamageDesc && Ctx.pDamageDesc->IsTrackingTime(Ctx.iTick))
+	if (IsTrackingTime(Ctx))
 		UpdateTrackTarget(Desc, Ctx);
 
 	//	Adjust based on style
@@ -2304,7 +2332,7 @@ void CParticleArray::UpdateTrackTarget (const CParticleSystemDesc &Desc, SEffect
 
 	{
 	CSpaceObject *pTarget = Ctx.pTarget;
-	int iManeuverRate = Ctx.pDamageDesc->GetManeuverRate();
+	int iManeuverRate = GetManeuverRate(Ctx);
 	Metric rMaxSpeed = Ctx.pDamageDesc->GetRatedSpeed();
 
 	//	We need to use real coordinates instead of fixed point

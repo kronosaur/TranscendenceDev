@@ -1,0 +1,77 @@
+//	TSEUniverseInlines.h
+//
+//	Transcendence Space Engine
+//	Copyright 2020 Kronosaur Productions, LLC. All Rights Reserved.
+
+#pragma once
+
+class CUsePerformanceCounter
+	{
+	public:
+		CUsePerformanceCounter (CUniverse &Universe, const CString &sID) :
+				m_Universe(Universe),
+				m_sID(sID)
+			{
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+			m_Universe.GetPerformanceCounters().StartCounter(m_sID);
+			m_bRunning = true;
+#endif
+			}
+
+		~CUsePerformanceCounter (void)
+			{
+			StopCounter();
+			}
+
+		void StopCounter (void)
+			{
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+			if (m_bRunning)
+				{
+				m_Universe.GetPerformanceCounters().StopCounter(m_sID);
+				m_bRunning = false;
+				}
+#endif
+			}
+
+	private:
+		CUniverse &m_Universe;
+		CString m_sID;
+		bool m_bRunning = false;
+	};
+
+class CUsePerformanceCounterForEvent
+	{
+	public:
+		CUsePerformanceCounterForEvent (CUniverse &Universe, const CString &sEvent) :
+				m_Universe(Universe),
+				m_sID(strPatternSubst(CONSTLIT("event.%s"), sEvent))
+			{
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+			m_Universe.GetPerformanceCounters().StartCounter(m_sID);
+			m_bRunning = true;
+#endif
+			}
+
+		~CUsePerformanceCounterForEvent (void)
+			{
+			StopCounter();
+			}
+
+		void StopCounter (void)
+			{
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+			if (m_bRunning)
+				{
+				m_Universe.GetPerformanceCounters().StopCounter(m_sID);
+				m_bRunning = false;
+				}
+#endif
+			}
+
+	private:
+		CUniverse &m_Universe;
+		CString m_sID;
+		bool m_bRunning = false;
+	};
+

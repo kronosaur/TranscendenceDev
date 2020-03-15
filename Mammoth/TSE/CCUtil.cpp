@@ -76,7 +76,7 @@ Metric CalcRandomMetric (CCodeChain &CC, ICCItem *pItem)
 		return (pItem->GetIntegerValue() * LIGHT_SECOND);
 	}
 
-bool CreateBinaryFromList (CCodeChain &CC, const CString &sClass, ICCItem *pList, void *pvDest)
+bool CreateBinaryFromList (const CString &sClass, const ICCItem &List, void *pvDest)
 
 //	CreateBinaryFromList
 //
@@ -89,10 +89,10 @@ bool CreateBinaryFromList (CCodeChain &CC, const CString &sClass, ICCItem *pList
 
 	if (!sClass.IsBlank())
 		{
-		if (pList->GetCount() < 1)
+		if (List.GetCount() < 1)
 			return false;
 
-		if (!strEquals(pList->GetElement(0)->GetStringValue(), sClass))
+		if (!strEquals(List.GetElement(0)->GetStringValue(), sClass))
 			return false;
 
 		iStart++;
@@ -101,8 +101,8 @@ bool CreateBinaryFromList (CCodeChain &CC, const CString &sClass, ICCItem *pList
 	//	Load the binary data
 
 	DWORD *pDest = (DWORD *)pvDest;
-	for (int i = iStart; i < pList->GetCount(); i++)
-		*pDest++ = (DWORD)pList->GetElement(i)->GetIntegerValue();
+	for (int i = iStart; i < List.GetCount(); i++)
+		*pDest++ = (DWORD)List.GetElement(i)->GetIntegerValue();
 
 	return true;
 	}
@@ -230,6 +230,12 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 //	Creates an imageDesc from an image
 
 	{
+	//	For now we only support original images.
+
+	DWORD dwUNID = Image.GetBitmapUNID();
+	if (dwUNID == 0)
+		return CC.CreateNil();
+
 	ICCItem *pResult = CC.CreateLinkedList();
 	if (pResult->IsError())
 		return pResult;
@@ -295,7 +301,7 @@ ICCItem *CreateListFromOrbit (CCodeChain &CC, const COrbit &OrbitDesc)
 //	Encodes a COrbit object into a code chain list.
 
 	{
-	return CreateListFromBinary(CLASS_CORBIT, &OrbitDesc, sizeof(OrbitDesc));
+	return OrbitDesc.AsItem()->Reference();
 	}
 
 ICCItem *CreateListFromVector (const CVector &vVector)
@@ -308,7 +314,7 @@ ICCItem *CreateListFromVector (const CVector &vVector)
 	return CreateListFromBinary(NULL_STR, &vVector, sizeof(vVector));
 	}
 
-CSpaceObject *CreateObjFromItem (ICCItem *pItem, DWORD dwFlags)
+CSpaceObject *CreateObjFromItem (const ICCItem *pItem, DWORD dwFlags)
 	{
 	if (pItem == NULL)
 		return NULL;
@@ -356,25 +362,14 @@ bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc)
 	{
 	//	Nil means default orbit
 
-	if (pList == NULL || pList->IsNil())
+	if (pList == NULL)
 		{
 		*retOrbitDesc = COrbit();
 		return true;
 		}
-
-	//	Must be a list
-
-	else if (!pList->IsList())
-		return false;
-
-	//	Load binary from list and check the class
-
 	else
 		{
-		if (!CreateBinaryFromList(CC, CLASS_CORBIT, pList, retOrbitDesc))
-			return false;
-
-		return true;
+		return COrbit::FromItem(*pList, *retOrbitDesc);
 		}
 	}
 
@@ -427,8 +422,8 @@ ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue)
 
 	else
 		{
-		char *pPos = sValue.GetASCIIZPointer();
-		char *pEnd;
+		const char *pPos = sValue.GetASCIIZPointer();
+		const char *pEnd;
 		bool bNull;
 		int iResult = strParseInt(pPos, 0, &pEnd, &bNull);
 		if (!bNull && *pEnd == '\0')
@@ -460,7 +455,7 @@ CVector CreateVectorFromList (CCodeChain &CC, ICCItem *pList)
 	CVector vVec;
 
 	if (pList->IsList())
-		CreateBinaryFromList(CC, NULL_STR, pList, &vVec);
+		CreateBinaryFromList(NULL_STR, *pList, &vVec);
 	else if (pList->IsInteger())
 		{
 		CSpaceObject *pObj = CreateObjFromItem(pList);
@@ -643,7 +638,7 @@ const CEconomyType *GetEconomyTypeFromString (const CString &sCurrency)
 const CEconomyType *GetEconomyTypeFromItem (CCodeChain &CC, ICCItem *pItem)
 	{
 	if (pItem == NULL || pItem->IsNil())
-		return CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+		return &g_pUniverse->GetDefaultCurrency();
 
 	if (pItem->IsInteger())
 		return CEconomyType::AsType(g_pUniverse->FindDesignType(pItem->GetIntegerValue()));
@@ -728,7 +723,7 @@ ICCItem *GetImageDescProperty (CCodeChain &CC, ICCItem *pImageDesc, const CStrin
 		return CC.CreateNil();
 	}
 
-bool GetLinkedFireOptions (ICCItem *pArg, DWORD *retdwOptions, CString *retsError)
+bool GetLinkedFireOptions (const ICCItem *pArg, DWORD *retdwOptions, CString *retsError)
 
 //	GetLinkedFireOptions
 //

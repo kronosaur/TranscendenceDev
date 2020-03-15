@@ -26,26 +26,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -183,10 +183,14 @@
     <Xml Include="..\Extensions\Diagnostics\ItemUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\MissionUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\RPGUnitTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\SystemFunctionTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestArmorClasses.xml" />
+    <Xml Include="..\Extensions\Diagnostics\ItemEnhancementUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestItems.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestMissions.xml" />
+    <Xml Include="..\Extensions\Diagnostics\TestOverlays.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestStationTypes.xml" />
+    <Xml Include="..\Extensions\Diagnostics\TestTSE.xml" />
     <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml" />
     <Xml Include="Abbasid.xml" />
     <Xml Include="Analyzers.xml" />
@@ -196,6 +200,8 @@
     <Xml Include="AntarcticaD01.xml" />
     <Xml Include="AresItems.xml" />
     <Xml Include="AresShips.xml" />
+    <Xml Include="ArmorEnhancementItems.xml" />
+    <Xml Include="ArmorRepairItems.xml" />
     <Xml Include="AsteroidFields.xml" />
     <Xml Include="Barricades.xml" />
     <Xml Include="BattleArenaChallenger.xml" />
@@ -474,6 +480,7 @@
     <Xml Include="Benedict08.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="BlackMarketMember.xml" />
     <Xml Include="BlackMarketMission00.xml" />
     <Xml Include="BlackMarketMission01.xml" />
     <Xml Include="CommonwealthCenturions.xml" />
@@ -505,6 +512,8 @@
     <Xml Include="CommonwealthMilitiaMission03.xml" />
     <Xml Include="CommonwealthMilitiaMission04.xml" />
     <Xml Include="CommonwealthMilitiaMissionSK01.xml" />
+    <Xml Include="CommonwealthMiningMission01.xml" />
+    <Xml Include="CommonwealthMiningMission02.xml" />
     <Xml Include="CommonwealthMission01.xml" />
     <Xml Include="CommonwealthMissionRevenge01.xml" />
     <Xml Include="CommonwealthRonins.xml" />
@@ -513,6 +522,7 @@
     </Xml>
     <Xml Include="CommonwealthStarCarrier.xml" />
     <Xml Include="CompatibilityLibrary.xml" />
+    <Xml Include="CoreEngineText.xml" />
     <Xml Include="CoreFireEffects.xml">
       <SubType>Designer</SubType>
     </Xml>
@@ -534,6 +544,7 @@
     <Xml Include="Debris.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="EridaniStations.xml" />
     <Xml Include="EtaCeti.xml" />
     <Xml Include="FerianMission01.xml" />
     <Xml Include="Ferians.xml">
@@ -542,6 +553,7 @@
     <Xml Include="Fiona.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="FirstContactMonument.xml" />
     <Xml Include="Gaians.xml">
       <SubType>Designer</SubType>
     </Xml>
@@ -587,7 +599,11 @@
     <Xml Include="KSMission03.xml" />
     <Xml Include="KSMissionC01.xml" />
     <Xml Include="KSMissionC02.xml" />
+    <Xml Include="Makayev.xml" />
     <Xml Include="Marauders.xml" />
+    <Xml Include="MiningPods.xml" />
+    <Xml Include="MRAD.xml" />
+    <Xml Include="NewVictoria.xml" />
     <Xml Include="Ore.xml" />
     <Xml Include="OreStone.xml" />
     <Xml Include="Outlaws.xml" />
@@ -599,6 +615,7 @@
     <Xml Include="RaisuStation.xml" />
     <Xml Include="Rama.xml" />
     <Xml Include="RanxEmpire.xml" />
+    <Xml Include="RasiermesserMission01.xml" />
     <Xml Include="RPGCommoditiesExchange.xml" />
     <Xml Include="RPGCommonText.xml" />
     <Xml Include="RPGComponents.xml">
@@ -608,6 +625,7 @@
     <Xml Include="RPGLibrary.xml" />
     <Xml Include="GalaxyLibrary.xml" />
     <Xml Include="RPGMembership.xml" />
+    <Xml Include="RPGMining.xml" />
     <Xml Include="RPGRumors.xml" />
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>
@@ -618,6 +636,7 @@
     <Xml Include="Salvagers.xml" />
     <Xml Include="Sanctuary.xml" />
     <Xml Include="Sapiens.xml" />
+    <Xml Include="ShieldEnhancementItems.xml" />
     <Xml Include="StdMiningEquipment.xml">
       <SubType>Designer</SubType>
     </Xml>
@@ -626,10 +645,12 @@
     </Xml>
     <Xml Include="SungSlaveCamp.xml" />
     <Xml Include="TeratonResearch.xml" />
+    <Xml Include="UndergroundCaverns.xml" />
     <Xml Include="Ventari.xml" />
     <Xml Include="Volkov.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="WeaponEnhancementItems.xml" />
     <Xml Include="Xenophobes.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

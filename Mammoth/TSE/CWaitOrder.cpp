@@ -298,7 +298,7 @@ void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObjec
 	DEBUG_CATCH
 	}
 
-DWORD CWaitOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CWaitOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	OnCommunicate
 //
@@ -350,7 +350,7 @@ void CWaitOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj,
 	//	destroyed, then we leave.
 
 	if (m_fWaitForThreat
-			&& pShip->GetDockedObj() == Ctx.pObj)
+			&& pShip->GetDockedObj() == Ctx.Obj)
 		*retbCancelOrder = true;
 	}
 

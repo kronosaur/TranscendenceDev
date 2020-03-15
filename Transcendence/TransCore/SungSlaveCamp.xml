@@ -20,7 +20,6 @@
 			multiHull=			"true"
 			regen=				"4"
 
-			canAttack=			"true"
 			fireRateAdj=		"80"
 			ejectaType=			"&vtWreckEjecta;"
 			>

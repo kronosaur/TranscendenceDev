@@ -75,10 +75,16 @@
 			multiHull=			"true"
 			fireRateAdj=		"20"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
+
+		<Properties>
+			<!--
+			By default we accept any military ID (even ones from APD or ED).
+			-->
+			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</COnstant>
+		</Properties>
 
 		<!-- Encounter Info -->
 
@@ -184,14 +190,11 @@
 
 						<Actions>
 							<Action id="actionBuyScrap" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellScrap">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionCustomWork">
@@ -262,7 +265,11 @@
 									;	Make immune
 									(objEnumItems gPlayerShip "aI" theItem
 										(block (result)
-											(setq result (shpEnhanceItem gPlayerShip theItem 0x0b00))
+											(setq result (shpEnhanceItem gPlayerShip theItem {
+												enhancement: "+immunity:radiation"
+												type: &itRadiationImmuneCoating;
+												}))
+
 											(switch
 												(or (eq result 0) (eq result 2) (eq result 6) (eq result 7))
 													(setq armorEnhanced (add armorEnhanced 1))
@@ -415,6 +422,12 @@
 				it didn't take. You must have some other coatings on your armor."
 			</Text>
 
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys damaged items. We are not 
+				interested in buying %itemName%.
+
+			</Text>
             <Text id="core.mapDesc">
                 Fabricates special items &mdash; Repairs/installs armor up to level 8 &mdash; Buys and sells scrap
             </Text>
@@ -507,6 +520,14 @@
 				sound=				"&snLaserCannon;"
 				>
 		</Weapon>
+	</ItemType>
+
+	<ItemType UNID="&vtTinkerEnhancement;"
+			name=				"Tinker enhancement"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsTinkerStations;" imageX="0"   imageY="0"   imageWidth="130" imageHeight="130"/>
 	</ItemType>
 
 <!-- DOCK SCREENS -->
@@ -628,7 +649,7 @@
 
 				<Controls>
 					<Text id="desc"/>
-					<ItemListDisplay id="componentsNeeded"/>
+					<ItemListDisplay id="componentsNeeded"	showActualItem="true"/>
 					<Text id="descError"/>
 				</Controls>
 
@@ -1065,7 +1086,16 @@
 			
 			(setq tinkerCreateItem (lambda (theRecipe theCount)
 				(if (@ theRecipe 'enhancement)
-					(itmSetCount (itmSetEnhanced (itmCreate (@ theRecipe 'item) 1) (@ theRecipe 'enhancement)) (or (@ theRecipe 'itemCount) theCount))
+					(itmSetCount 
+						(itmSetEnhanced 
+							(itmCreate (@ theRecipe 'item) 1)
+							{
+								enhancement: (@ theRecipe 'enhancement)
+								type: &vtTinkerEnhancement;
+								}
+							)
+						(or (@ theRecipe 'itemCount) theCount)
+						)
 					(itmCreate (@ theRecipe 'item) (or (@ theRecipe 'itemCount) theCount))
 					)
 				))

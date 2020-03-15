@@ -5,6 +5,60 @@
 
 #pragma once
 
+class CSmallOptionButtonAnimator
+	{
+	public:
+		CSmallOptionButtonAnimator (IHISession &Session) :
+				m_Session(Session)
+			{ }
+
+		void Create (CAniVScroller &Root, const CString &sID, const CString &sLabel, int x, int y, int cxWidth, AlignmentStyles iAlign = alignLeft);
+		bool IsEditing (void) const { return m_bInEditMode; }
+		void SetImage (const CG32bitImage &Image, bool bFreeImage = false);
+		void SetText (const CString &sText);
+		void StartEdit (int cxWidth, const CString &sValue);
+		void StopEdit (CString *retsValue = NULL);
+
+	private:
+		static constexpr int MAJOR_PADDING_BOTTOM =				20;
+		static constexpr int MAJOR_PADDING_HORZ =				20;
+		static constexpr int MAJOR_PADDING_TOP =				20;
+		static constexpr int MAJOR_PADDING_VERT =				20;
+		static constexpr int SMALL_BUTTON_HEIGHT =				48;
+		static constexpr int SMALL_BUTTON_WIDTH =				48;
+
+		IHISession &m_Session;
+
+		CAniVScroller *m_pRoot = NULL;
+		CString m_sID;
+		int m_x = 0;
+		int m_y = 0;
+		int m_cxWidth = 0;
+		AlignmentStyles m_iAlign = alignLeft;
+		bool m_bInEditMode = false;
+	};
+
+class CTextAreaAnimator
+	{
+	public:
+		CTextAreaAnimator (IHISession &Session) :
+				m_Session(Session)
+			{ }
+
+		void Create (CAniVScroller &Root, const CString &sID, const CString &sText, int x, int y, int cxWidth, AlignmentStyles iAlign = alignLeft);
+		void SetText (const CString &sText);
+
+	private:
+		IHISession &m_Session;
+
+		CAniVScroller *m_pRoot = NULL;
+		CString m_sID;
+		int m_x = 0;
+		int m_y = 0;
+		int m_cxWidth = 0;
+		AlignmentStyles m_iAlign = alignLeft;
+	};
+
 class CItemDataAnimatron : public IAnimatron
 	{
 	public:
@@ -148,15 +202,6 @@ class CUIHelper
 		static constexpr DWORD OPTION_SESSION_ADD_EXTENSION_BUTTON =	0x00000004;
 		static constexpr DWORD OPTION_SESSION_NO_HEADER =				0x00000008;
 
-		//	PaintItemEntry
-		static constexpr DWORD OPTION_SELECTED =						0x00000001;
-		static constexpr DWORD OPTION_NO_ICON =							0x00000002;
-		static constexpr DWORD OPTION_TITLE =							0x00000004;
-		static constexpr DWORD OPTION_SMALL_ICON =						0x00000008;		//	Paint icon at 64x64
-		static constexpr DWORD OPTION_NO_PADDING =						0x00000010;		//	No padding around item
-		static constexpr DWORD OPTION_NO_ARMOR_SPEED_DISPLAY =			0x00000020;		//	Do not show bonus/penalty for armor
-		static constexpr DWORD OPTION_KNOWN =							0x00000040;		//	Show items as known
-
 		//	SMenuEntry flags
 		static constexpr DWORD MENU_TEXT =								0x00000001;		//	Show on left-hand text menu
 		static constexpr DWORD MENU_ALIGN_CENTER =						0x00000002;		//	Align center
@@ -181,15 +226,15 @@ class CUIHelper
 
 		CUIHelper (CHumanInterface &HI) : m_HI(HI) { }
 
-		int CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, DWORD dwOptions) const;
-
 		//	OPTION_ITEM_RIGHT_ALIGN
-		void CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
-		void CreateClassInfoCargo (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
-		void CreateClassInfoDeviceSlots (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
-		void CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateClassInfoArmor (const CShipClass &Class, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateClassInfoCargo (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateClassInfoDeviceSlots (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateClassInfoDrive (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
 		void CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidth, DWORD dwOptions, const CString &sExtraDesc, int *retcyHeight, IAnimatron **retpInfo) const;
-		void CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateClassInfoReactor (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		CG32bitImage CreateGlowBackground (void) const;
+		CG32bitImage CreateGlowBackground (int cxWidth, int cyHeight, CG32bitPixel rgbCenter, CG32bitPixel rgbEdge) const;
 		void CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, CString &sDesc, IAnimatron **retpMsg = NULL) const;
 
 		//	OPTION_FRAME_ALIGN_TOP
@@ -208,8 +253,6 @@ class CUIHelper
 								 IAnimatron **retpControl) const;
 		void CreateSessionWaitAnimation (const CString &sID, const CString &sText, IAnimatron **retpControl) const;
 
-		void FormatDisplayAttributes (TArray<SDisplayAttribute> &Attribs, const RECT &rcRect, CCartoucheBlock &retBlock, int *retcyHeight = NULL) const;
-
 		void GenerateDockScreenRTF (const CString &sText, CString *retsRTF) const;
 
 		//	OPTION_ALIGN_BOTTOM
@@ -218,22 +261,15 @@ class CUIHelper
 		//	OPTION_VERTICAL
 		void PaintDisplayAttribs (CG32bitImage &Dest, int x, int y, const TArray<SDisplayAttribute> &Attribs, DWORD dwOptions = 0) const;
 
-		//	OPTION_SELECTED
-		//	OPTION_NO_ICON
-		//	OPTION_TITLE
-		//	OPTION_SMALL_ICON
-		//	OPTION_NO_PADDING
-		//	OPTION_NO_ARMOR_SPEED_DISPLAY
-		//	OPTION_KNOWN
-		void PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions) const;
-		void PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText) const;
-		void PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText) const;
-		void PaintRTFText (CG32bitImage &Dest, const RECT &rcRect, const CString &sRTFText, const CG16bitFont &DefaultFont, CG32bitPixel rgbDefaultColor, int *retcyHeight = NULL) const;
 		void RefreshMenu (IHISession *pSession, IAnimatron *pRoot, const TArray<SMenuEntry> &Menu) const;
 
+		static void PaintRTFText (const CVisualPalette &VI, CG32bitImage &Dest, const RECT &rcRect, const CString &sRTFText, const CG16bitFont &DefaultFont, CG32bitPixel rgbDefaultColor, int *retcyHeight = NULL);
 		static int ScrollAnimationDecay (int iOffset);
 
 	private:
+		static constexpr int ENHANCEMENT_ICON_HEIGHT = 40;
+		static constexpr int ENHANCEMENT_ICON_WIDTH = 40;
+
 		void CreateClassInfoSpecialItem (CItemType *pItemIcon, const CString &sText, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
 		void CreateBarButtons (CAniSequencer *pSeq, const RECT &rcRect, IHISession *pSession, const TArray<SMenuEntry> *pMenu, DWORD dwOptions) const;
 

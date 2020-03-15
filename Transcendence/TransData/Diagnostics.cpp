@@ -4,66 +4,15 @@
 //	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+#include "Diagnostics.h"
 
 void GenerateDiagnostics (CUniverse &Universe, CXMLElement *pCmdLine)
 	{
-	int i;
-	ALERROR error;
-	CString sError;
-	CSovereign *pPlayer = Universe.FindSovereign(g_PlayerSovereignUNID);
+	CConsole Console;
+	CDiagnosticsCommand Command(Universe, Console);
 
-	//	Create all systems.
+	if (!Command.SetOptions(*pCmdLine))
+		return;
 
-	TSortMap<CString, CSystem *> AllSystems;
-	for (i = 0; i < Universe.GetTopologyNodeCount(); i++)
-		{
-		CTopologyNode *pNode = Universe.GetTopologyNode(i);
-
-		//	Do not try to create end game nodes
-
-		if (pNode->IsEndGame())
-			continue;
-
-		//	Create this system
-
-		CSystem *pNewSystem;
-		if (error = Universe.CreateStarSystem(pNode, &pNewSystem, &sError))
-			{
-			printf("Error creating system %s: %s\n", (LPSTR)pNode->GetID(), (LPSTR)sError);
-			return;
-			}
-
-		AllSystems.SetAt(pNode->GetID(), pNewSystem);
-
-		printf("Created %s\n", (LPSTR)pNode->GetSystemName());
-		}
-
-	//	Start diagnostics are always in SE (if available)
-
-	CSystem *pSE = NULL;
-	if (AllSystems.Find(CONSTLIT("SE"), &pSE))
-		{
-		Universe.SetCurrentSystem(pSE);
-		Universe.GetDesignCollection().FireOnGlobalStartDiagnostics();
-		}
-	else
-		printf("WARNING: Unable to find SE. Cannot run <OnGlobalStartDiagnostics>\n");
-
-	//	Now loop over all systems are invoke OnSystemDiagnostics
-
-	for (i = 0; i < AllSystems.GetCount(); i++)
-		{
-		if (AllSystems[i] == pSE)
-			continue;
-
-		Universe.SetCurrentSystem(AllSystems[i]);
-
-		//	System diagnostics
-
-		Universe.GetDesignCollection().FireOnGlobalSystemDiagnostics();
-		}
-
-	//	Fire OnEndDiagnostics
-
-	Universe.GetDesignCollection().FireOnGlobalEndDiagnostics();
+	Command.Run();
 	}

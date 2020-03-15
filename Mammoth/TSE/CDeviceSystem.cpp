@@ -5,15 +5,19 @@
 
 #include "PreComp.h"
 
-CDeviceSystem::CDeviceSystem (void)
+CDeviceSystem CDeviceSystem::m_Null;
+
+CDeviceSystem::CDeviceSystem (DWORD dwFlags)
 
 //	CDeviceSystem constructor
 
 	{
-	int i;
-
-	for (i = 0; i < devNamesCount; i++)
-		m_NamedDevices[i] = -1;
+	if (!(dwFlags & FLAG_NO_NAMED_DEVICES))
+		{
+		m_NamedDevices.InsertEmpty(devNamesCount);
+		for (int i = 0; i < devNamesCount; i++)
+			m_NamedDevices[i] = -1;
+		}
 	}
 
 void CDeviceSystem::AccumulateEnhancementsToArmor (CSpaceObject *pObj, CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
@@ -122,12 +126,13 @@ void CDeviceSystem::CleanUp (void)
 //	Reset
 
 	{
-	int i;
-
 	m_Devices.DeleteAll();
 
-	for (i = 0; i < devNamesCount; i++)
-		m_NamedDevices[i] = -1;
+	if (HasNamedDevices())
+		{
+		for (int i = 0; i < devNamesCount; i++)
+			m_NamedDevices[i] = -1;
+		}
 	}
 
 CInstalledDevice *CDeviceSystem::FindDevice (const CItem &Item)
@@ -236,7 +241,7 @@ int CDeviceSystem::FindNamedIndex (const CItem &Item) const
 //	item is installed. Returns -1 if not installed.
 
 	{
-	if (Item.IsInstalled())
+	if (HasNamedDevices() && Item.IsInstalled())
 		{
 		//	The device slot that this item is installed in is
 		//	stored in the data field.
@@ -283,12 +288,12 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 		{
 		for (int i = 0; i < GetCount(); i++)
 			{
-			LONGLONG iTypeAndVariant = (m_Devices[i].GetLinkedFireOptions() &
+			LONGLONG iTypeAndVariant = (m_Devices[i].GetSlotLinkedFireOptions() &
 				CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[i]).GetItemVariantNumber() : 0xffffffff);
 			iTypeAndVariant = m_Devices[i].GetUNID() | (iTypeAndVariant << 32);
 			if (!m_Devices[i].IsEmpty()
 				&& m_Devices[i].GetCategory() == Category
-				&& m_Devices[i].GetLinkedFireOptions() & dwLinkedFireSelected
+				&& m_Devices[i].GetSlotLinkedFireOptions() & dwLinkedFireSelected
 				&& m_Devices[i].IsEnabled()
 				&& !FireWhenSelectedDeviceTypes.Find(iTypeAndVariant))
 				FireWhenSelectedDeviceTypes.Insert(iTypeAndVariant, i);
@@ -298,15 +303,15 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 	for (int i = 0; i < GetCount(); i++)
 		{
 		int iDevice = ((iDir * i) + iStartingSlot) % GetCount();
-		LONGLONG iTypeAndVariant = (m_Devices[iDevice].GetLinkedFireOptions() &
+		LONGLONG iTypeAndVariant = (m_Devices[iDevice].GetSlotLinkedFireOptions() &
 			CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[iDevice]).GetItemVariantNumber() : 0xffffffff);
 		iTypeAndVariant = m_Devices[iDevice].GetUNID() | (iTypeAndVariant << 32);
 		int iEarliestLkfSelectedItem = -1;
 		FireWhenSelectedDeviceTypes.Find(iTypeAndVariant, &iEarliestLkfSelectedItem);
 		if (!m_Devices[iDevice].IsEmpty() 
 				&& m_Devices[iDevice].GetCategory() == Category
-				&& m_Devices[iDevice].IsSelectable(CItemCtx(pObj, &m_Devices[iDevice]))
-				&& (switchWeapons ? (m_Devices[iDevice].GetLinkedFireOptions() & dwLinkedFireSelected ?
+				&& m_Devices[iDevice].IsSelectable()
+				&& (switchWeapons ? (m_Devices[iDevice].GetSlotLinkedFireOptions() & dwLinkedFireSelected ?
 					iDevice == iEarliestLkfSelectedItem : true) : true))
 			return iDevice;
 		}
@@ -347,6 +352,26 @@ int CDeviceSystem::FindRandomIndex (bool bEnabledOnly) const
 			}
 
 	return -1;
+	}
+
+bool CDeviceSystem::FindWeapon (int *retiIndex) const
+
+//	FindWeapon
+//
+//	Returns TRUE if we have at least one weapon.
+
+	{
+	for (const CInstalledDevice &Device : *this)
+		{
+		if (Device.GetCategory() == itemcatWeapon || Device.GetCategory() == itemcatLauncher)
+			{
+			if (retiIndex)
+				*retiIndex = Device.GetDeviceSlot();
+			return true;
+			}
+		}
+
+	return true;
 	}
 
 bool CDeviceSystem::FindWeaponByItem (const CItem &Item, int *retiIndex, int *retiVariant) const
@@ -403,6 +428,19 @@ bool CDeviceSystem::FindWeaponByItem (const CItem &Item, int *retiIndex, int *re
 		return false;
 	}
 
+void CDeviceSystem::FinishInstall (void)
+
+//	FinishInstall
+//
+//	Call FinishInstall on all devices.
+
+	{
+	for (CInstalledDevice &Device : *this)
+		{
+		Device.FinishInstall();
+		}
+	}
+
 int CDeviceSystem::GetCountByID (const CString &sID) const
 
 //	GetCountByID
@@ -430,13 +468,88 @@ DeviceNames CDeviceSystem::GetNamedFromDeviceIndex (int iIndex) const
 //	Returns the device name from the index.
 
 	{
-	int i;
-
-	for (i = devFirstName; i < devNamesCount; i++)
-		if (m_NamedDevices[i] == iIndex)
-			return (DeviceNames)i;
+	if (HasNamedDevices())
+		{
+		for (int i = devFirstName; i < devNamesCount; i++)
+			if (m_NamedDevices[i] == iIndex)
+				return (DeviceNames)i;
+		}
 
 	return devNone;
+	}
+
+DWORD CDeviceSystem::GetTargetTypes (void) const
+
+//	GetTargetTypes
+//
+//	Returns the set of targets that we need based on our devices.
+
+	{
+	DWORD dwAllTargetTypes = 0;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		const CInstalledDevice &Device = GetDevice(i);
+		if (Device.IsEmpty())
+			continue;
+
+		const CDeviceItem DeviceItem = Device.GetDeviceItem();
+
+		switch (Device.GetCategory())
+			{
+			case itemcatWeapon:
+				{
+				//	Primary weapons and anything linked to the primary weapon count.
+
+				if ((i == m_NamedDevices[devPrimaryWeapon])
+						|| Device.IsLinkedFire(itemcatWeapon))
+					{
+					dwAllTargetTypes |= DeviceItem.GetTargetTypes();
+					}
+					
+				break;
+				}
+
+			case itemcatLauncher:
+				{
+				//	Launcher and anything linked to the launcher count.
+
+				if ((i == m_NamedDevices[devMissileWeapon])
+						|| Device.IsLinkedFire(itemcatLauncher))
+					{
+					dwAllTargetTypes |= DeviceItem.GetTargetTypes();
+					}
+					
+				break;
+				}
+
+			default:
+				{
+				//	Include other non-weapon devices with target requirements. 
+				//	These are usually missile defense devices.
+
+				dwAllTargetTypes |= DeviceItem.GetTargetTypes();
+				break;
+				}
+			}
+		}
+
+	return dwAllTargetTypes;
+	}
+
+bool CDeviceSystem::HasShieldsUp (void) const
+
+//	HasShieldsUp
+//
+//	Returns TRUE if ship has shields > 0 HP. This is cheaper than calculating
+//	the shield level, since we don't have to compute max HP (which sometimes
+//	calls to TLisp).
+
+	{
+	if (CDeviceItem ShieldItem = GetNamedDeviceItem(devShields))
+		return (ShieldItem.GetHP() > 0);
+	else
+		return false;
 	}
 
 bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices)
@@ -447,7 +560,6 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 
 	{
 	int i;
-
 
 	//	Allocate devices
 
@@ -475,39 +587,42 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 
 		//	Assign to named devices
 
-		switch (m_Devices[i].GetCategory())
+		if (HasNamedDevices())
 			{
-			case itemcatWeapon:
-				if (m_NamedDevices[devPrimaryWeapon] == -1
-						&& m_Devices[i].IsSelectable(CItemCtx(pObj, &m_Devices[i])))
-					m_NamedDevices[devPrimaryWeapon] = i;
-				break;
+			switch (m_Devices[i].GetCategory())
+				{
+				case itemcatWeapon:
+					if (m_NamedDevices[devPrimaryWeapon] == -1
+							&& m_Devices[i].IsSelectable())
+						m_NamedDevices[devPrimaryWeapon] = i;
+					break;
 
-			case itemcatLauncher:
-				if (m_NamedDevices[devMissileWeapon] == -1
-						&& m_Devices[i].IsSelectable(CItemCtx(pObj, &m_Devices[i])))
-					m_NamedDevices[devMissileWeapon] = i;
-				break;
+				case itemcatLauncher:
+					if (m_NamedDevices[devMissileWeapon] == -1
+							&& m_Devices[i].IsSelectable())
+						m_NamedDevices[devMissileWeapon] = i;
+					break;
 
-			case itemcatShields:
-				if (m_NamedDevices[devShields] == -1)
-					m_NamedDevices[devShields] = i;
-				break;
+				case itemcatShields:
+					if (m_NamedDevices[devShields] == -1)
+						m_NamedDevices[devShields] = i;
+					break;
 
-			case itemcatDrive:
-				if (m_NamedDevices[devDrive] == -1)
-					m_NamedDevices[devDrive] = i;
-				break;
+				case itemcatDrive:
+					if (m_NamedDevices[devDrive] == -1)
+						m_NamedDevices[devDrive] = i;
+					break;
 
-			case itemcatCargoHold:
-				if (m_NamedDevices[devCargo] == -1)
-					m_NamedDevices[devCargo] = i;
-				break;
+				case itemcatCargoHold:
+					if (m_NamedDevices[devCargo] == -1)
+						m_NamedDevices[devCargo] = i;
+					break;
 
-			case itemcatReactor:
-				if (m_NamedDevices[devReactor] == -1)
-					m_NamedDevices[devReactor] = i;
-				break;
+				case itemcatReactor:
+					if (m_NamedDevices[devReactor] == -1)
+						m_NamedDevices[devReactor] = i;
+					break;
+				}
 			}
 
 		//	Add extra items (we do this at the end because this will
@@ -554,34 +669,45 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 
 	//	Adjust the named devices
 
+	if (HasNamedDevices())
+		{
+		switch (Device.GetCategory())
+			{
+			case itemcatWeapon:
+				if (Device.IsSelectable())
+					m_NamedDevices[devPrimaryWeapon] = iDeviceSlot;
+				break;
+
+			case itemcatLauncher:
+				if (Device.IsSelectable())
+					m_NamedDevices[devMissileWeapon] = iDeviceSlot;
+				break;
+
+			case itemcatShields:
+				m_NamedDevices[devShields] = iDeviceSlot;
+				break;
+
+			case itemcatDrive:
+				m_NamedDevices[devDrive] = iDeviceSlot;
+				break;
+
+			case itemcatCargoHold:
+				m_NamedDevices[devCargo] = iDeviceSlot;
+				break;
+
+			case itemcatReactor:
+				m_NamedDevices[devReactor] = iDeviceSlot;
+				break;
+			}
+		}
+
+	//	Special initialization depending on device type
+
 	switch (Device.GetCategory())
 		{
-		case itemcatWeapon:
-			if (Device.IsSelectable(ItemCtx))
-				m_NamedDevices[devPrimaryWeapon] = iDeviceSlot;
-			break;
-
-		case itemcatLauncher:
-			if (Device.IsSelectable(ItemCtx))
-				m_NamedDevices[devMissileWeapon] = iDeviceSlot;
-			break;
-
 		case itemcatShields:
-			m_NamedDevices[devShields] = iDeviceSlot;
-			//	If we just installed a shield generator, start a 0 energy
+			//	If we just installed a shield generator, start at 0 energy
 			Device.Reset(pObj);
-			break;
-
-		case itemcatDrive:
-			m_NamedDevices[devDrive] = iDeviceSlot;
-			break;
-
-		case itemcatCargoHold:
-			m_NamedDevices[devCargo] = iDeviceSlot;
-			break;
-
-		case itemcatReactor:
-			m_NamedDevices[devReactor] = iDeviceSlot;
 			break;
 		}
 
@@ -632,6 +758,33 @@ bool CDeviceSystem::IsSlotAvailable (ItemCategories iItemCat, int *retiSlot) con
 		}
 	}
 
+bool CDeviceSystem::IsWeaponRepeating (DeviceNames iDev) const
+
+//	IsWeaponRepeating
+//
+//	Returns TRUE if the given weapon is repeating. If iDev == devNone, then we
+//	return TRUE if any weapon is currently repeating.
+
+	{
+	if (iDev == devNone)
+		{
+		for (int i = 0; i < m_Devices.GetCount(); i++)
+			if (!m_Devices[i].IsEmpty() 
+					&& (m_Devices[i].GetCategory() == itemcatWeapon || m_Devices[i].GetCategory() == itemcatLauncher))
+				{
+				if (m_Devices[i].GetContinuousFire() != 0)
+					return true;
+				}
+
+		return false;
+		}
+	else if (const CInstalledDevice *pDevice = GetNamedDevice(iDev))
+		return (pDevice->GetContinuousFire() != 0);
+
+	else
+		return false;
+	}
+
 void CDeviceSystem::MarkImages (void)
 
 //	MarkImages
@@ -675,7 +828,6 @@ void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
 //	Reads all the devices.
 
 	{
-	int i;
 	DWORD dwLoad;
 
 	//	Load count
@@ -686,13 +838,16 @@ void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
 	//	Load the devices
 
 	m_Devices.InsertEmpty(iCount);
-	for (i = 0; i < iCount; i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		m_Devices[i].ReadFromStream(*pObj, Ctx);
 
-		Ctx.pStream->Read(dwLoad);
-		if (dwLoad != 0xffffffff)
-			m_NamedDevices[dwLoad] = i;
+		if (HasNamedDevices())
+			{
+			Ctx.pStream->Read(dwLoad);
+			if (dwLoad != 0xffffffff)
+				m_NamedDevices[dwLoad] = i;
+			}
 
 		if (Ctx.dwVersion < 29)
 			m_Devices[i].SetDeviceSlot(i);
@@ -723,7 +878,7 @@ void CDeviceSystem::ReadyFirstMissile (CSpaceObject *pObj)
 			if (!LinkedDevice.IsEmpty()
 					&& &LinkedDevice != pDevice
 					&& LinkedDevice.GetClass() == pDevice->GetClass()
-					&& LinkedDevice.IsLinkedFire(Ctx, itemcatLauncher))
+					&& LinkedDevice.IsLinkedFire(itemcatLauncher))
 				LinkedDevice.SelectFirstVariant(pObj);
 			}
 		}
@@ -736,6 +891,9 @@ void CDeviceSystem::ReadyFirstWeapon (CSpaceObject *pObj)
 //	Selects the first weapon.
 
 	{
+	if (!HasNamedDevices())
+		return;
+
 	int iNextWeapon = FindNextIndex(pObj, -1, itemcatWeapon);
 	if (iNextWeapon != -1)
 		{
@@ -754,6 +912,9 @@ void CDeviceSystem::ReadyNextLauncher(CSpaceObject *pObj, int iDir)
 //	Select the next launcher.
 
 	{
+	if (!HasNamedDevices())
+		return;
+
 	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devMissileWeapon], itemcatLauncher, iDir, true);
 	if (iNextWeapon != -1)
 		{
@@ -792,7 +953,7 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir, bool bUsedLa
 			if (!LinkedDevice.IsEmpty()
 					&& &LinkedDevice != pDevice
 					&& LinkedDevice.GetClass() == pDevice->GetClass()
-					&& LinkedDevice.IsLinkedFire(Ctx, itemcatLauncher))
+					&& LinkedDevice.IsLinkedFire(itemcatLauncher))
 				LinkedDevice.SelectNextVariant(pObj, iDir);
 			}
 		}
@@ -826,6 +987,9 @@ void CDeviceSystem::ReadyNextWeapon (CSpaceObject *pObj, int iDir)
 //	Select the next weapon.
 
 	{
+	if (!HasNamedDevices())
+		return;
+
 	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devPrimaryWeapon], itemcatWeapon, iDir, true);
 	if (iNextWeapon != -1)
 		{
@@ -845,6 +1009,9 @@ DeviceNames CDeviceSystem::SelectWeapon (CSpaceObject *pObj, int iIndex, int iVa
 //	class for this weapon
 
 	{
+	if (!HasNamedDevices())
+		return devNone;
+
 	CInstalledDevice &Weapon = GetDevice(iIndex);
 
 	if (Weapon.GetCategory() == itemcatWeapon)
@@ -901,8 +1068,24 @@ void CDeviceSystem::SetCursorAtNamedDevice (CItemListManipulator &ItemList, Devi
 //	Set the item list cursor to the given named device
 
 	{
+	if (!HasNamedDevices())
+		return;
+
 	if (m_NamedDevices[iDev] != -1)
 		SetCursorAtDevice(ItemList, m_NamedDevices[iDev]);
+	}
+
+void CDeviceSystem::SetSecondary (bool bValue)
+
+//	SetSecondary
+//
+//	Sets all devices to secondary (or not)
+
+	{
+	for (CInstalledDevice &Device : *this)
+		{
+		Device.SetSecondary(bValue);
+		}
 	}
 
 bool CDeviceSystem::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList, ItemCategories *retiCat)
@@ -940,33 +1123,36 @@ bool CDeviceSystem::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemLis
 
 	//	Adjust named devices list
 
-	switch (DevCat)
+	if (HasNamedDevices())
 		{
-		case itemcatWeapon:
-			if (m_NamedDevices[devPrimaryWeapon] == iDevSlot)
-				m_NamedDevices[devPrimaryWeapon] = FindNextIndex(pObj, iDevSlot, itemcatWeapon);
-			break;
+		switch (DevCat)
+			{
+			case itemcatWeapon:
+				if (m_NamedDevices[devPrimaryWeapon] == iDevSlot)
+					m_NamedDevices[devPrimaryWeapon] = FindNextIndex(pObj, iDevSlot, itemcatWeapon);
+				break;
 
-		case itemcatLauncher:
-			if (m_NamedDevices[devMissileWeapon] == iDevSlot)
-				m_NamedDevices[devMissileWeapon] = FindNextIndex(pObj, iDevSlot, itemcatLauncher);
-			break;
+			case itemcatLauncher:
+				if (m_NamedDevices[devMissileWeapon] == iDevSlot)
+					m_NamedDevices[devMissileWeapon] = FindNextIndex(pObj, iDevSlot, itemcatLauncher);
+				break;
 
-		case itemcatShields:
-			m_NamedDevices[devShields] = -1;
-			break;
+			case itemcatShields:
+				m_NamedDevices[devShields] = -1;
+				break;
 
-		case itemcatDrive:
-			m_NamedDevices[devDrive] = -1;
-			break;
+			case itemcatDrive:
+				m_NamedDevices[devDrive] = -1;
+				break;
 
-		case itemcatCargoHold:
-			m_NamedDevices[devCargo] = -1;
-			break;
+			case itemcatCargoHold:
+				m_NamedDevices[devCargo] = -1;
+				break;
 
-		case itemcatReactor:
-			m_NamedDevices[devReactor] = -1;
-			break;
+			case itemcatReactor:
+				m_NamedDevices[devReactor] = -1;
+				break;
+			}
 		}
 
 	if (retiCat)
@@ -993,8 +1179,60 @@ void CDeviceSystem::WriteToStream (IWriteStream *pStream)
 		{
 		m_Devices[i].WriteToStream(pStream);
 
-		DeviceNames iDev = GetNamedFromDeviceIndex(i);
-		dwSave = (DWORD)((iDev == devNone) ? 0xffffffff : iDev);
-		pStream->Write(dwSave);
+		if (HasNamedDevices())
+			{
+			DeviceNames iDev = GetNamedFromDeviceIndex(i);
+			dwSave = (DWORD)((iDev == devNone) ? 0xffffffff : iDev);
+			pStream->Write(dwSave);
+			}
 		}
 	}
+
+//	CDeviceSystem::iterator ----------------------------------------------------
+
+CDeviceSystem::iterator::iterator (CInstalledDevice *pPos, CInstalledDevice *pEnd) :
+		m_pPos(pPos),
+		m_pEnd(pEnd)
+	{
+	if (m_pPos && m_pEnd)
+		{
+		while (m_pPos < m_pEnd && m_pPos->IsEmpty())
+			m_pPos++;
+		}
+	}
+
+CDeviceSystem::iterator &CDeviceSystem::iterator::operator++ ()
+	{
+	do
+		{
+		m_pPos++;
+		}
+	while (m_pPos < m_pEnd && m_pPos->IsEmpty());
+
+	return *this;
+	}
+
+//	CDeviceSystem::const_iterator ----------------------------------------------------
+
+CDeviceSystem::const_iterator::const_iterator (const CInstalledDevice *pPos, const CInstalledDevice *pEnd) :
+		m_pPos(pPos),
+		m_pEnd(pEnd)
+	{
+	if (m_pPos && m_pEnd)
+		{
+		while (m_pPos < m_pEnd && m_pPos->IsEmpty())
+			m_pPos++;
+		}
+	}
+
+CDeviceSystem::const_iterator &CDeviceSystem::const_iterator::operator++ ()
+	{
+	do
+		{
+		m_pPos++;
+		}
+	while (m_pPos < m_pEnd && m_pPos->IsEmpty());
+
+	return *this;
+	}
+

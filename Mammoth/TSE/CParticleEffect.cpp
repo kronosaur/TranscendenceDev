@@ -130,7 +130,7 @@ ALERROR CParticleEffect::Create (CSystem &System,
 	if (pImage)
 		{
 		pType->iPaintStyle = paintImage;
-		pType->Image.InitFromXML(pImage);
+		pType->Image.InitFromXML(*pImage);
 		}
 
 	//	Miscelleanous settings
@@ -310,6 +310,11 @@ ALERROR CParticleEffect::CreateGeyser (CSystem &System,
 	pParticles->SetObjectDestructionHook();
 	pParticles->m_pAnchor = pAnchor;
 
+	//	Geysers are just effects; they do not block shots. We need this because
+	//	otherwise a mining laser might be block by its own geyser.
+
+	pParticles->SetCannotBeHit();
+
 	//	Create the type based on the descriptor
 
 	SParticleType *pType = new SParticleType;
@@ -446,7 +451,7 @@ void CParticleEffect::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	{
 	//	If our source is destroyed, clear it
 
-	if (Ctx.pObj == m_pAnchor)
+	if (Ctx.Obj == m_pAnchor)
 		m_pAnchor = NULL;
 	}
 
@@ -528,6 +533,7 @@ void CParticleEffect::OnReadFromStream (SLoadCtx &Ctx)
 //
 //	CString		m_sName
 //	DWORD		m_pAnchor (CSpaceObject ref)
+//	CDamageSource	m_Source
 //
 //	DWORD		type: iPaintStyle (or 0xffffffff if no more groups)
 //	Image		type: Image
@@ -557,9 +563,12 @@ void CParticleEffect::OnReadFromStream (SLoadCtx &Ctx)
 	m_sName.ReadFromStream(Ctx.pStream);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pAnchor);
 
+	if (Ctx.dwVersion >= 186)
+		m_Source.ReadFromStream(Ctx);
+
 	DWORD dwLoad;
 	DWORD dwNext;
-	Ctx.pStream->Read((char *)&dwNext, sizeof(DWORD));
+	Ctx.pStream->Read(dwNext);
 	SParticleArray *pLastGroup = NULL;
 	while (dwNext != 0xffffffff)
 		{
@@ -577,26 +586,26 @@ void CParticleEffect::OnReadFromStream (SLoadCtx &Ctx)
 		pGroup->pType->iPaintStyle = dwNext;
 		pGroup->pType->Image.ReadFromStream(Ctx);
 
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		if (Ctx.dwVersion >= 110)
 			pGroup->pType->rgbColor = CG32bitPixel::FromDWORD(dwLoad);
 		else
 			pGroup->pType->rgbColor = CG32bitPixel((WORD)dwLoad);
 
-		Ctx.pStream->Read((char *)&pGroup->pType->iRegenerationTimer, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pGroup->pType->iLifespan, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pGroup->pType->rAveSpeed, sizeof(Metric));
-		Ctx.pStream->Read((char *)&pGroup->pType->iDirection, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pGroup->pType->iDirRange, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&pGroup->pType->rRadius, sizeof(Metric));
-		Ctx.pStream->Read((char *)&pGroup->pType->rHoleRadius, sizeof(Metric));
-		Ctx.pStream->Read((char *)&pGroup->pType->rDampening, sizeof(Metric));
+		Ctx.pStream->Read(pGroup->pType->iRegenerationTimer);
+		Ctx.pStream->Read(pGroup->pType->iLifespan);
+		Ctx.pStream->Read(pGroup->pType->rAveSpeed);
+		Ctx.pStream->Read(pGroup->pType->iDirection);
+		Ctx.pStream->Read(pGroup->pType->iDirRange);
+		Ctx.pStream->Read(pGroup->pType->rRadius);
+		Ctx.pStream->Read(pGroup->pType->rHoleRadius);
+		Ctx.pStream->Read(pGroup->pType->rDampening);
 		DamageDesc Damage;
 		Damage.ReadFromStream(Ctx);
 
 		//	Load type flags
 
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		pGroup->pType->m_fMaxRadius =	((dwLoad & 0x00000001) ? true : false);
 		pGroup->pType->m_fLifespan =	((dwLoad & 0x00000002) ? true : false);
 		pGroup->pType->m_fWake =		((dwLoad & 0x00000004) ? true : false);
@@ -615,24 +624,24 @@ void CParticleEffect::OnReadFromStream (SLoadCtx &Ctx)
 
 		//	Load array of particles
 
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		pGroup->iAlive = dwLoad;
 		pGroup->iCount = dwLoad;
 		pGroup->pParticles = new SParticle [pGroup->iCount];
 
 		for (int i = 0; i < pGroup->iAlive; i++)
 			{
-			Ctx.pStream->Read((char *)&pGroup->pParticles[i].iDestiny, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&pGroup->pParticles[i].iLifeLeft, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&pGroup->pParticles[i].vPos, sizeof(CVector));
-			Ctx.pStream->Read((char *)&pGroup->pParticles[i].vVel, sizeof(CVector));
+			Ctx.pStream->Read(pGroup->pParticles[i].iDestiny);
+			Ctx.pStream->Read(pGroup->pParticles[i].iLifeLeft);
+			pGroup->pParticles[i].vPos.ReadFromStream(*Ctx.pStream);
+			pGroup->pParticles[i].vVel.ReadFromStream(*Ctx.pStream);
 			}
 
 		//	Next
 
 		pGroup->pNext = NULL;
 		pLastGroup = pGroup;
-		Ctx.pStream->Read((char *)&dwNext, sizeof(DWORD));
+		Ctx.pStream->Read(dwNext);
 		}
 	}
 
@@ -910,7 +919,7 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	If we're moving, slow down
 
-	SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
+	UpdateDrag(Ctx, g_SpaceDragFactor);
 	}
 
 void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -1174,6 +1183,7 @@ void CParticleEffect::OnWriteToStream (IWriteStream *pStream)
 //
 //	CString		m_sName
 //	DWORD		m_pAnchor (CSpaceObject ref)
+//	CDamageSource	m_Source
 //
 //	DWORD		type: iPaintStyle (or 0xffffffff if no more groups)
 //	Image		type: Image
@@ -1202,6 +1212,8 @@ void CParticleEffect::OnWriteToStream (IWriteStream *pStream)
 	m_sName.WriteToStream(pStream);
 	WriteObjRefToStream(m_pAnchor, pStream);
 
+	m_Source.WriteToStream(GetSystem(), pStream);
+
 	//	Save each group
 
 	SParticleArray *pGroup = m_pFirstGroup;
@@ -1211,20 +1223,20 @@ void CParticleEffect::OnWriteToStream (IWriteStream *pStream)
 
 		//	Save the type information
 
-		pStream->Write((char *)&pType->iPaintStyle, sizeof(DWORD));
+		pStream->Write(pType->iPaintStyle);
 		pType->Image.WriteToStream(pStream);
 
 		dwSave = pType->rgbColor.AsDWORD();
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
-		pStream->Write((char *)&pType->iRegenerationTimer, sizeof(DWORD));
-		pStream->Write((char *)&pType->iLifespan, sizeof(DWORD));
-		pStream->Write((char *)&pType->rAveSpeed, sizeof(Metric));
-		pStream->Write((char *)&pType->iDirection, sizeof(DWORD));
-		pStream->Write((char *)&pType->iDirRange, sizeof(DWORD));
-		pStream->Write((char *)&pType->rRadius, sizeof(Metric));
-		pStream->Write((char *)&pType->rHoleRadius, sizeof(Metric));
-		pStream->Write((char *)&pType->rDampening, sizeof(Metric));
+		pStream->Write(pType->iRegenerationTimer);
+		pStream->Write(pType->iLifespan);
+		pStream->Write(pType->rAveSpeed);
+		pStream->Write(pType->iDirection);
+		pStream->Write(pType->iDirRange);
+		pStream->Write(pType->rRadius);
+		pStream->Write(pType->rHoleRadius);
+		pStream->Write(pType->rDampening);
 		if (pType->pDamageDesc)
 			pType->pDamageDesc->GetDamage().WriteToStream(pStream);
 		else
@@ -1240,11 +1252,11 @@ void CParticleEffect::OnWriteToStream (IWriteStream *pStream)
 		dwSave |= (pType->m_fRegenerate ?	0x00000008 : 0);
 		dwSave |= (pType->m_fDrag ?			0x00000010 : 0);
 		dwSave |= (pType->pDamageDesc ?		0x00000020 : 0);
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
 		//	Save the array of particles
 
-		pStream->Write((char *)&pGroup->iAlive, sizeof(DWORD));
+		pStream->Write(pGroup->iAlive);
 		int iCount = pGroup->iAlive;
 
 		SParticle *pParticle = pGroup->pParticles;
@@ -1253,10 +1265,10 @@ void CParticleEffect::OnWriteToStream (IWriteStream *pStream)
 			{
 			if (pParticle->IsValid())
 				{
-				pStream->Write((char *)&pParticle->iDestiny, sizeof(DWORD));
-				pStream->Write((char *)&pParticle->iLifeLeft, sizeof(DWORD));
-				pStream->Write((char *)&pParticle->vPos, sizeof(CVector));
-				pStream->Write((char *)&pParticle->vVel, sizeof(CVector));
+				pStream->Write(pParticle->iDestiny);
+				pStream->Write(pParticle->iLifeLeft);
+				pParticle->vPos.WriteToStream(*pStream);
+				pParticle->vVel.WriteToStream(*pStream);
 				
 				iCount--;
 				}
@@ -1273,7 +1285,7 @@ void CParticleEffect::OnWriteToStream (IWriteStream *pStream)
 	//	Mark the end with 0xffffffff
 
 	dwSave = 0xffffffff;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	}
 
 void CParticleEffect::SetParticleSpeed (SParticleType *pType, SParticle *pParticle)

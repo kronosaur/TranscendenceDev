@@ -10,6 +10,7 @@
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_DAMAGE_EVENT							CONSTLIT("OnDamage")
 #define ON_DESTROY_EVENT						CONSTLIT("OnDestroy")
+#define ON_MINING_EVENT							CONSTLIT("OnMining")
 #define ON_OBJ_DESTROYED_EVENT					CONSTLIT("OnObjDestroyed")
 #define ON_UPDATE_EVENT							CONSTLIT("OnUpdate")
 
@@ -18,8 +19,11 @@
 
 #define LIFETIME_ATTRIB							CONSTLIT("lifetime")
 
+#define PROPERTY_ACTIVE							CONSTLIT("active")
 #define PROPERTY_COUNTER						CONSTLIT("counter")
 #define PROPERTY_COUNTER_LABEL					CONSTLIT("counterLabel")
+#define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
 #define PROPERTY_TYPE							CONSTLIT("type")
@@ -28,13 +32,9 @@ const int ANNOTATION_INNER_SPACING_Y =			2;
 const int FLAG_INNER_SPACING_X =				4;
 
 COverlay::COverlay (void) : 
-		m_pType(NULL),
-		m_iCounter(0),
-		m_pPainter(NULL),
-		m_pHitPainter(NULL),
 		m_fDestroyed(false),
 		m_fFading(false),
-		m_pNext(NULL)
+		m_fInactive(false)
 
 //	COverlay constructor
 
@@ -60,10 +60,16 @@ bool COverlay::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 //	Absorbs damage and returns TRUE if any damage is absorbed
 
 	{
+	//	If we're inactive, then nothing
+
+	if (!IsActive())
+		{
+		return false;
+		}
+
 	//	If we absorb damage, then see how much we absorbed
 
-	int iAbsorb = m_pType->GetDamageAbsorbed(pSource, Ctx);
-	if (iAbsorb > 0)
+	else if (int iAbsorb = m_pType->GetDamageAbsorbed(pSource, Ctx))
 		{
 		//	Handle custom damage (this is to give custom damage
 		//	a chance to react to hitting an overlay)
@@ -142,9 +148,12 @@ void COverlay::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotatio
 //	Set bounds
 
 	{
-	switch (m_pType->GetCounterStyle())
+	if (!IsActive())
+		return;
+
+	switch (m_pType->GetCounterDesc().GetType())
 		{
-		case COverlayType::counterRadius:
+		case COverlayCounterDesc::counterRadius:
 			{
 			if (m_iCounter > 0)
 				{
@@ -167,7 +176,7 @@ void COverlay::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotatio
 		//	Offset based on paint position (which requires iScale and iRotation)
 
 		int xOffset, yOffset;
-		CalcOffset(iScale, iRotation, &xOffset, &yOffset);
+		CalcOffset(*pSource, iScale, iRotation, &xOffset, &yOffset);
 
 		::OffsetRect(&rcRect, xOffset, yOffset);
 
@@ -177,7 +186,7 @@ void COverlay::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotatio
 		}
 	}
 
-void COverlay::CalcOffset (int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin) const
+void COverlay::CalcOffset (const CSpaceObject &Source, int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin) const
 
 //	CalcOffset
 //
@@ -191,7 +200,7 @@ void COverlay::CalcOffset (int iScale, int iRotation, int *retxOffset, int *rety
 		{
 		//	Do we rotate with the source?
 
-		int iRotationOrigin = (m_pType->RotatesWithShip() ? iRotation : 0);
+		int iRotationOrigin = (m_pType->RotatesWithSource(Source) ? iRotation : 0);
 		if (retiRotationOrigin)
 			*retiRotationOrigin = iRotationOrigin;
 
@@ -208,7 +217,7 @@ void COverlay::CalcOffset (int iScale, int iRotation, int *retxOffset, int *rety
 		*retyOffset = 0;
 
 		if (retiRotationOrigin)
-			*retiRotationOrigin = (m_pType->RotatesWithShip() ? iRotation : 0);
+			*retiRotationOrigin = (m_pType->RotatesWithSource(Source) ? iRotation : 0);
 		}
 	}
 
@@ -285,6 +294,13 @@ void COverlay::CreateFromType (COverlayType &Type,
 	pField->m_iRotation = iRotation;
 	pField->m_iPosZ = iPosZ;
 	pField->m_iPaintHit = 0;
+	pField->m_iHitPoints = Type.GetMaxHitPoints(Source);
+
+	//	If this is an underground vault, then we start out inactive (the player
+	//	must excavate it).
+
+	if (Type.IsUnderground() && pField->m_iHitPoints > 0)
+		pField->SetActive(Source, false);
 
 	//	Create painters
 
@@ -301,6 +317,12 @@ void COverlay::CreateFromType (COverlayType &Type,
 		}
 
 	pField->m_pHitPainter = NULL;
+
+	//	Initialize data
+
+	Type.InitObjectData(Source, pField->m_Data);
+
+	//	Done
 
 	*retpField = pField;
 	}
@@ -343,6 +365,52 @@ void COverlay::Destroy (CSpaceObject *pSource)
 		}
 	}
 
+bool COverlay::FindCustomProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj, const CString &sProperty, ICCItemPtr &pValue) const
+
+//	FindCustomProperty
+//
+//	Returns a custom property. Returns FALSE if given property is not defined.
+
+	{
+	if (m_pType == NULL)
+		return false;
+
+	EPropertyType iType;
+	ICCItemPtr pResult = m_pType->GetProperty(CCCtx, sProperty, &iType);
+
+	if (iType == EPropertyType::propNone)
+		return false;
+
+	//	If the property is an object property, then we need to look in 
+	//	object data.
+
+	else if (iType == EPropertyType::propVariant || iType == EPropertyType::propData)
+		{
+		pValue = GetData(sProperty);
+		return true;
+		}
+
+	//	If this is a dynamic property, we need to evaluate.
+
+	else if (iType == EPropertyType::propDynamicData)
+		{
+		CCodeChainCtx Ctx(GetUniverse());
+		Ctx.SaveAndDefineSourceVar(&SourceObj);
+		Ctx.SaveAndDefineOverlayID(m_dwID);
+
+		pValue = Ctx.RunCode(pResult);
+		return true;
+		}
+
+	//	Otherwise we have a valid property.
+
+	else
+		{
+		pValue = pResult;
+		return true;
+		}
+	}
+
 void COverlay::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, ICCItem *pData, ICCItem **retpResult)
 
 //	FireCustomEvent
@@ -377,13 +445,16 @@ void COverlay::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, IC
 		*retpResult = GetUniverse().GetCC().CreateNil();
 	}
 
-bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelector &Selector) const
+bool COverlay::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector &Selector) const
 
 //	FireGetDockScreen
 //
 //	Fires GetDockScreen event.
 
 	{
+	if (!IsActive())
+		return false;
+
 	SEventHandlerDesc Event;
 	if (!m_pType->FindEventHandler(EVENT_GET_DOCK_SCREEN, &Event))
 		return false;
@@ -514,6 +585,52 @@ void COverlay::FireOnDestroy (CSpaceObject *pSource)
 		}
 	}
 
+void COverlay::FireOnMining (CSpaceObject &Source, EAsteroidType iType, SDamageCtx &Ctx)
+
+//	FireOnMining
+//
+//	Fire <OnMining> event on overlay
+
+	{
+	SEventHandlerDesc Event;
+	if (!m_pType->FindEventHandler(ON_MINING_EVENT, &Event))
+		return;
+
+	//	Compute some mining stats
+
+	const int iMiningLevel = Ctx.Damage.GetMiningAdj();
+	const int iMiningDifficulty = Source.CalcMiningDifficulty(iType);
+
+	CAsteroidDesc::SMiningStats MiningStats;
+	CAsteroidDesc::CalcMining(iMiningLevel, iMiningDifficulty, iType, Ctx, MiningStats);
+
+	//	Run
+
+	CCodeChainCtx CCX(GetUniverse());
+	CCX.DefineContainingType(this);
+	CCX.SaveAndDefineSourceVar(&Source);
+	CCX.SaveAndDefineOverlayID(m_dwID);
+
+	CCX.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
+	CCX.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+	CCX.DefineSpaceObject(CONSTLIT("aMiner"), Ctx.Attacker.GetObj());
+	CCX.DefineVector(CONSTLIT("aMinePos"), Ctx.vHitPos);
+	CCX.DefineInteger(CONSTLIT("aMineDir"), Ctx.iDirection);
+	CCX.DefineInteger(CONSTLIT("aMineProbability"), iMiningLevel);
+	CCX.DefineInteger(CONSTLIT("aMineDifficulty"), iMiningDifficulty);
+	CCX.DefineString(CONSTLIT("aAsteroidType"), CAsteroidDesc::CompositionID(iType));
+	CCX.DefineInteger(CONSTLIT("aSuccessChance"), MiningStats.iSuccessChance);
+	CCX.DefineInteger(CONSTLIT("aMaxOreLevel"), MiningStats.iMaxOreLevel);
+	CCX.DefineDouble(CONSTLIT("aYieldAdj"), MiningStats.rYieldAdj);
+	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
+	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
+	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+	if (pResult->IsError())
+		Source.ReportEventError(strPatternSubst(CONSTLIT("Overlay OnMining: %s"), pResult->GetStringValue()), pResult);
+	}
+
 void COverlay::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const
 
 //	FireOnObjDestroyed
@@ -532,7 +649,7 @@ void COverlay::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx
 		CCCtx.DefineContainingType(this);
 		CCCtx.SaveAndDefineSourceVar(pSource);
 		CCCtx.SaveAndDefineOverlayID(m_dwID);
-		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
@@ -619,6 +736,9 @@ CConditionSet COverlay::GetConditions (CSpaceObject *pSource) const
 	{
 	CConditionSet Conditions;
 
+	if (!IsActive())
+		return Conditions;
+
 	//	Do we disarm the source?
 
 	if (Disarms(pSource))
@@ -661,6 +781,9 @@ bool COverlay::GetImpact (CSpaceObject *pSource, SImpactDesc &Impact) const
 //	Returns the impact of this overlay.
 
 	{
+	if (!IsActive())
+		return false;
+
 	//	Conditions
 
 	Impact.Conditions = GetConditions(pSource);
@@ -676,7 +799,7 @@ bool COverlay::GetImpact (CSpaceObject *pSource, SImpactDesc &Impact) const
 	return bHasImpact;
 	}
 
-CVector COverlay::GetPos (CSpaceObject *pSource)
+CVector COverlay::GetPos (CSpaceObject *pSource) const
 
 //	GetPos
 //
@@ -685,39 +808,162 @@ CVector COverlay::GetPos (CSpaceObject *pSource)
 	{
 	if (m_iPosRadius)
 		{
-		int iRotationOrigin = (m_pType->RotatesWithShip() ? pSource->GetRotation() : 0);
+		int iRotationOrigin = (m_pType->RotatesWithSource(*pSource) ? pSource->GetRotation() : 0);
 		return pSource->GetPos() + PolarToVector(iRotationOrigin + m_iPosAngle, (Metric)m_iPosRadius * g_KlicksPerPixel);
 		}
 	else
 		return pSource->GetPos();
 	}
 
-ICCItem *COverlay::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, const CString &sName)
+ICCItemPtr COverlay::GetProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj, const CString &sProperty) const
 
 //	GetProperty
 //
 //	Returns a property
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
+	ICCItemPtr pValue;
 
-	if (strEquals(sName, PROPERTY_COUNTER))
-		return CC.CreateInteger(m_iCounter);
+	if (strEquals(sProperty, PROPERTY_ACTIVE))
+		return ICCItemPtr(!m_fInactive);
 
-	else if (strEquals(sName, PROPERTY_COUNTER_LABEL))
-		return CC.CreateString(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterLabel());
+	else if (strEquals(sProperty, PROPERTY_COUNTER))
+		return ICCItemPtr(m_iCounter);
 
-	else if (strEquals(sName, PROPERTY_POS))
-		return CreateListFromVector(GetPos(pSource));
+	else if (strEquals(sProperty, PROPERTY_COUNTER_LABEL))
+		return ICCItemPtr(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterDesc().GetLabel());
 
-	else if (strEquals(sName, PROPERTY_ROTATION))
-		return CC.CreateInteger(GetRotation());
+	else if (strEquals(sProperty, PROPERTY_HP))
+		return ICCItemPtr(m_iHitPoints);
 
-	else if (strEquals(sName, PROPERTY_TYPE))
-		return CC.CreateInteger(GetType()->GetUNID());
+	else if (strEquals(sProperty, PROPERTY_MAX_HP))
+		return ICCItemPtr(m_pType->GetMaxHitPoints(SourceObj));
+
+	else if (strEquals(sProperty, PROPERTY_POS))
+		return ICCItemPtr(CreateListFromVector(GetPos(&SourceObj)));
+
+	else if (strEquals(sProperty, PROPERTY_ROTATION))
+		return ICCItemPtr(GetRotation());
+
+	else if (strEquals(sProperty, PROPERTY_TYPE))
+		return ICCItemPtr(GetType()->GetUNID());
+
+	else if (FindCustomProperty(CCCtx, SourceObj, sProperty, pValue))
+		return pValue;
 
 	else
-		return CC.CreateNil();
+		return ICCItemPtr(ICCItem::Nil);
+	}
+
+bool COverlay::IncCustomProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult)
+
+//	IncCustomProperty
+//
+//	Increment a custom property.
+
+	{
+	if (m_pType == NULL)
+		return false;
+
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+	if (!m_pType->FindCustomProperty(sProperty, pDummy, &iType))
+		return false;
+		
+	switch (iType)
+		{
+		case EPropertyType::propGlobal:
+			pResult = m_pType->IncGlobalData(sProperty, pInc);
+			return true;
+
+		case EPropertyType::propData:
+			pResult = IncData(sProperty, pInc);
+			return true;
+
+		default:
+			return false;
+		}
+	}
+
+bool COverlay::IncProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult)
+
+//	IncProperty
+//
+//	Increments a property. Returns FALSE if we could not increment.
+
+	{
+	CCodeChain &CC = GetUniverse().GetCC();
+
+	if (strEquals(sProperty, PROPERTY_COUNTER))
+		{
+		//	If we're a radius counter, then do unit conversion.
+
+		if (m_pType->GetCounterDesc().GetType() == COverlayCounterDesc::counterRadius)
+			{
+			Metric rOldRadius = m_iCounter * g_KlicksPerPixel;
+			Metric rRadiusInc;
+			if (pInc && !pInc->IsNil())
+				rRadiusInc = ParseDistance(pInc->GetStringValue(), LIGHT_SECOND);
+			else
+				rRadiusInc = LIGHT_SECOND;
+
+			m_iCounter = mathRound((rOldRadius + rRadiusInc) / g_KlicksPerPixel);
+			SourceObj.RefreshBounds();
+			}
+
+		//	Otherwise, take the integer value
+
+		else if (pInc && !pInc->IsNil())
+			m_iCounter += pInc->GetIntegerValue();
+
+		else
+			m_iCounter += 1;
+
+		pResult = ICCItemPtr(m_iCounter);
+		return true;
+		}
+
+	else if (strEquals(sProperty, PROPERTY_HP))
+		{
+		int iInc = 1;
+		if (pInc && !pInc->IsNil())
+			iInc = pInc->GetIntegerValue();
+
+		m_iHitPoints = Min(Max(0, m_iHitPoints + iInc), m_pType->GetMaxHitPoints(SourceObj));
+
+		pResult = ICCItemPtr(m_iHitPoints);
+		return true;
+		}
+
+	//	See if this is a custom property
+
+	else if (IncCustomProperty(SourceObj, sProperty, pInc, pResult))
+		return true;
+
+	else
+		return false;
+	}
+
+bool COverlay::OnMiningDamage (CSpaceObject &Source, EAsteroidType iType, SDamageCtx &Ctx)
+
+//	OnMiningDamage
+//
+//	Handles mining damage. Returns TRUE if the overlay handles the mining
+//	damage.
+
+	{
+	//	If we're an underground vault, then we handle mining
+
+	if (m_pType->IsUnderground())
+		{
+		FireOnMining(Source, iType, Ctx);
+		return true;
+		}
+
+	//	Otherwise, nothing
+
+	else
+		return false;
 	}
 
 void COverlay::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
@@ -727,8 +973,11 @@ void COverlay::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPai
 //	Paint the field. x,y is always the screen coordinates of the object center.
 
 	{
+	if (Ctx.pObj == NULL || !IsActive())
+		return;
+
 	int xOffset, yOffset, iRotationOrigin;
-	CalcOffset(iScale, Ctx.iRotation, &xOffset, &yOffset, &iRotationOrigin);
+	CalcOffset(*Ctx.pObj, iScale, Ctx.iRotation, &xOffset, &yOffset, &iRotationOrigin);
 
 	x = x + xOffset;
 	y = y + yOffset;
@@ -772,32 +1021,86 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 //	Paint field annotations.
 
 	{
-	switch (m_pType->GetCounterStyle())
+	if (Ctx.pObj == NULL)
+		{ }
+
+	//	If we're an underground vault, then we sometimes paint a flag.
+
+	else if (m_pType->IsUnderground())
 		{
-		case COverlayType::counterFlag:
-			PaintCounterFlag(Dest, x, y, strFromInt(m_iCounter), m_sMessage, m_pType->GetCounterColor(), Ctx);
-			break;
-
-		case COverlayType::counterProgress:
+		if (!IsActive() && Ctx.pObj->IsExplored())
 			{
-			int cyHeight;
+			//	Flag
 
-			CG32bitPixel rgbColor = m_pType->GetCounterColor();
-			if (rgbColor.IsNull() && Ctx.pObj)
-				rgbColor = Ctx.pObj->GetSymbolColor();
+			TArray<CString> Text;
+			strDelimit(m_sMessage, '\n', 2, &Text);
+			PaintCounterFlag(Dest, x, y, Text[0], Text[1], Ctx.pObj->GetSymbolColor(), Ctx);
+
+			//	Damage bar
+
+			int iMaxHP = m_pType->GetMaxHitPoints(*Ctx.pObj);
+			int cyHeight;
 
 			CPaintHelper::PaintStatusBar(Dest,
 					x,
 					Ctx.yAnnotations,
 					GetUniverse().GetPaintTick(),
-					rgbColor,
-					(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterLabel()),
-					Min(Max(0, m_iCounter), m_pType->GetCounterMax()),
-					m_pType->GetCounterMax(),
+					Ctx.pObj->GetSymbolColor(),
+					CONSTLIT("Excavating"),
+					m_iHitPoints,
+					iMaxHP,
 					&cyHeight);
 
 			Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
-			break;
+			}
+		}
+
+	//	If inactive, we don't paint anything
+
+	else if (!IsActive())
+		{ }
+
+	//	Otherwise, paint counter anomations
+
+	else
+		{
+		const COverlayCounterDesc &Counter = m_pType->GetCounterDesc();
+
+		switch (Counter.GetType())
+			{
+			case COverlayCounterDesc::counterFlag:
+				PaintCounterFlag(Dest, x, y, strFromInt(m_iCounter), m_sMessage, Counter.GetColor(), Ctx);
+				break;
+
+			case COverlayCounterDesc::counterTextFlag:
+				{
+				TArray<CString> Text;
+				strDelimit(m_sMessage, '\n', 2, &Text);
+				PaintCounterFlag(Dest, x, y, Text[0], Text[1], Counter.GetColor(), Ctx);
+				break;
+				}
+
+			case COverlayCounterDesc::counterProgress:
+				{
+				int cyHeight;
+
+				CG32bitPixel rgbColor = Counter.GetColor();
+				if (rgbColor.IsNull() && Ctx.pObj)
+					rgbColor = Ctx.pObj->GetSymbolColor();
+
+				CPaintHelper::PaintStatusBar(Dest,
+						x,
+						Ctx.yAnnotations,
+						GetUniverse().GetPaintTick(),
+						rgbColor,
+						(!m_sMessage.IsBlank() ? m_sMessage : Counter.GetLabel()),
+						Min(Max(0, m_iCounter), Counter.GetMaxValue()),
+						Counter.GetMaxValue(),
+						&cyHeight);
+
+				Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
+				break;
+				}
 			}
 		}
 	}
@@ -809,11 +1112,16 @@ void COverlay::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaint
 //	Paints overlay background
 
 	{
-	switch (m_pType->GetCounterStyle())
+	if (!IsActive())
+		return;
+
+	const COverlayCounterDesc &Counter = m_pType->GetCounterDesc();
+
+	switch (Counter.GetType())
 		{
-		case COverlayType::counterRadius:
+		case COverlayCounterDesc::counterRadius:
 			{
-			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+			CG32bitPixel rgbColor = Counter.GetColor();
 			if (rgbColor.IsNull() && Ctx.pObj)
 				rgbColor = Ctx.pObj->GetSymbolColor();
 
@@ -884,13 +1192,19 @@ void COverlay::PaintLRSAnnotations (const ViewportTransform &Trans, CG32bitImage
 //	Paints annotations on the LRS
 
 	{
-	switch (m_pType->GetCounterStyle())
+	if (!IsActive())
+		return;
+
+	const COverlayCounterDesc &Counter = m_pType->GetCounterDesc();
+
+	switch (Counter.GetType())
 		{
-		case COverlayType::counterFlag:
+		case COverlayCounterDesc::counterFlag:
+		case COverlayCounterDesc::counterTextFlag:
 			{
 			const CG16bitFont &CounterFont = GetUniverse().GetNamedFont(CUniverse::fontMapLabel);
 
-			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+			CG32bitPixel rgbColor = Counter.GetColor();
 
 			//	We paint the text to the right and vertically centered
 
@@ -912,13 +1226,19 @@ void COverlay::PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, in
 //	Paints annotations on the system map
 
 	{
-	switch (m_pType->GetCounterStyle())
+	if (!IsActive())
+		return;
+
+	const COverlayCounterDesc &Counter = m_pType->GetCounterDesc();
+
+	switch (Counter.GetType())
 		{
-		case COverlayType::counterFlag:
+		case COverlayCounterDesc::counterFlag:
+		case COverlayCounterDesc::counterTextFlag:
 			{
 			const CG16bitFont &CounterFont = GetUniverse().GetNamedFont(CUniverse::fontMapLabel);
 
-			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+			CG32bitPixel rgbColor = Counter.GetColor();
 
 			//	We paint the text to the right and vertically centered
 
@@ -945,6 +1265,7 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 //	DWORD	m_iPosZ
 //	DWORD	m_iDevice
 //	DWORD	Life left
+//	DWORD	m_iHitPoints
 //	CAttributeDataBlock m_Data
 //	DWORD	m_iCounter
 //	CString	m_sMessage
@@ -955,17 +1276,17 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 	{
 	DWORD dwLoad;
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_pType = Ctx.GetUniverse().FindShipEnergyFieldType(dwLoad);
 	if (m_pType == NULL)
 		throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Undefined overlay type: %08x"), dwLoad));
 
 	if (Ctx.dwVersion >= 38)
 		{
-		Ctx.pStream->Read((char *)&m_dwID, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iPosAngle, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iPosRadius, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iRotation, sizeof(DWORD));
+		Ctx.pStream->Read(m_dwID);
+		Ctx.pStream->Read(m_iPosAngle);
+		Ctx.pStream->Read(m_iPosRadius);
+		Ctx.pStream->Read(m_iRotation);
 		}
 	else
 		{
@@ -977,7 +1298,7 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 168)
 		{
-		Ctx.pStream->Read((char *)&m_iPosZ, sizeof(DWORD));
+		Ctx.pStream->Read(m_iPosZ);
 		}
 	else
 		{
@@ -985,23 +1306,28 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 		}
 
 	if (Ctx.dwVersion >= 63)
-		Ctx.pStream->Read((char *)&m_iDevice, sizeof(DWORD));
+		Ctx.pStream->Read(m_iDevice);
 	else
 		m_iDevice = -1;
 
 	if (Ctx.dwVersion >= 124)
-		Ctx.pStream->Read((char *)&m_iTick, sizeof(DWORD));
+		Ctx.pStream->Read(m_iTick);
 	else
 		m_iTick = 0;
 
-	Ctx.pStream->Read((char *)&m_iLifeLeft, sizeof(DWORD));
+	Ctx.pStream->Read(m_iLifeLeft);
+
+	if (Ctx.dwVersion >= 184)
+		Ctx.pStream->Read(m_iHitPoints);
+	else
+		m_iHitPoints = 0;
 
 	if (Ctx.dwVersion >= 39)
 		m_Data.ReadFromStream(Ctx);
 
 	if (Ctx.dwVersion >= 103)
 		{
-		Ctx.pStream->Read((char *)&m_iCounter, sizeof(DWORD));
+		Ctx.pStream->Read(m_iCounter);
 		m_sMessage.ReadFromStream(Ctx.pStream);
 		}
 
@@ -1014,9 +1340,9 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 
 	DWORD dwFlags = 0;
 	if (Ctx.dwVersion >= 101)
-		Ctx.pStream->Read((char *)&dwFlags, sizeof(DWORD));
+		Ctx.pStream->Read(dwFlags);
 
-	//	NOTE: We need to saved the destroyed flag because we defer removal of
+	//	NOTE: We need to save the destroyed flag because we defer removal of
 	//	overlays. There are cases where we set the flag, save the game, and then
 	//	remove the overlay on the first update after load.
 	//
@@ -1025,6 +1351,59 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 
 	m_fDestroyed =	((dwFlags & 0x00000001) ? true : false);
 	m_fFading =		((dwFlags & 0x00000002) ? true : false);
+	m_fInactive =	((dwFlags & 0x00000004) ? true : false);
+	}
+
+void COverlay::SetActive (CSpaceObject &Source, bool bActive)
+
+//	SetActive
+//
+//	Set active or inactive
+
+	{
+	if (bActive != !m_fInactive)
+		{
+		m_fInactive = !bActive;
+
+		//	Activating may enable dock screens, so we need to refresh various
+		//	cached flags on the object.
+
+		Source.SetEventFlags();
+
+		//	Refresh bounds, since the overlay may need to be shown.
+
+		Source.RefreshBounds();
+		}
+	}
+
+bool COverlay::SetCustomProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pValue)
+
+//	SetCustomProperty
+//
+//	Sets a property. Returns TRUE if this was a valid property.
+
+	{
+	if (m_pType == NULL)
+		return false;
+
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+	if (!m_pType->FindCustomProperty(sProperty, pDummy, &iType))
+		return false;
+		
+	switch (iType)
+		{
+		case EPropertyType::propGlobal:
+			m_pType->SetGlobalData(sProperty, pValue);
+			return true;
+
+		case EPropertyType::propData:
+			SetData(sProperty, pValue);
+			return true;
+
+		default:
+			return false;
+		}
 	}
 
 bool COverlay::SetEffectProperty (const CString &sProperty, ICCItem *pValue)
@@ -1049,12 +1428,12 @@ void COverlay::SetPos (CSpaceObject *pSource, const CVector &vPos)
 	{
 	Metric rRadius;
 	int iDirection = VectorToPolar(vPos - pSource->GetPos(), &rRadius);
-	int iRotationOrigin = (m_pType->RotatesWithShip() ? pSource->GetRotation() : 0);
+	int iRotationOrigin = (m_pType->RotatesWithSource(*pSource) ? pSource->GetRotation() : 0);
 	m_iPosAngle = (iDirection + 360 - iRotationOrigin) % 360;
 	m_iPosRadius = (int)(rRadius / g_KlicksPerPixel);
 	}
 
-bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem *pValue)
+bool COverlay::SetProperty (CSpaceObject &Source, const CString &sName, ICCItem *pValue)
 
 //	SetProperty
 //
@@ -1063,15 +1442,19 @@ bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 
-	if (strEquals(sName, PROPERTY_COUNTER))
+	if (strEquals(sName, PROPERTY_ACTIVE))
+		{
+		SetActive(Source, !pValue->IsNil());
+		}
+	else if (strEquals(sName, PROPERTY_COUNTER))
 		{
 		//	If we're a radius counter, then do unit conversion.
 
-		if (m_pType->GetCounterStyle() == COverlayType::counterRadius)
+		if (m_pType->GetCounterDesc().GetType() == COverlayCounterDesc::counterRadius)
 			{
 			Metric rRadius = ParseDistance(pValue->GetStringValue(), LIGHT_SECOND);
 			m_iCounter = mathRound(rRadius / g_KlicksPerPixel);
-			pSource->RefreshBounds();
+			Source.RefreshBounds();
 			}
 
 		//	Otherwise, take the integer value
@@ -1083,14 +1466,22 @@ bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem
 	else if (strEquals(sName, PROPERTY_COUNTER_LABEL))
 		m_sMessage = pValue->GetStringValue();
 
+	else if (strEquals(sName, PROPERTY_HP))
+		m_iHitPoints = Min(Max(0, pValue->GetIntegerValue()), m_pType->GetMaxHitPoints(Source));
+
 	else if (strEquals(sName, PROPERTY_POS))
 		{
 		CVector vPos = CreateVectorFromList(CC, pValue);
-		SetPos(pSource, vPos);
+		SetPos(&Source, vPos);
 		}
 
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		SetRotation(pValue->GetIntegerValue());
+
+	//	See if this is a custom property
+
+	else if (SetCustomProperty(Source, sName, pValue))
+		return true;
 
 	//	If nothing else, ask the painter
 
@@ -1161,7 +1552,7 @@ void COverlay::Update (CSpaceObject *pSource, int iScale, int iRotation, bool *r
 	if (m_pPainter && m_pPainter->UsesOrigin())
 		{
 		int xOffset, yOffset, iRotationOrigin;
-		CalcOffset(iScale, iRotation, &xOffset, &yOffset, &iRotationOrigin);
+		CalcOffset(*pSource, iScale, iRotation, &xOffset, &yOffset, &iRotationOrigin);
 
 		MoveCtx.bUseOrigin = true;
 		MoveCtx.vOrigin = pSource->GetPos() + CVector(xOffset * g_KlicksPerPixel, -yOffset * g_KlicksPerPixel);
@@ -1222,6 +1613,7 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 //	DWORD	m_iDevice
 //	DWORD	m_iTick
 //	DWORD	Life left
+//	DWORD	m_iHitPoints
 //	CAttributeDataBlock m_Data
 //	DWORD	m_iCounter
 //	CString	m_sMessage
@@ -1231,19 +1623,20 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 
 	{
 	DWORD dwSave = m_pType->GetUNID();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	pStream->Write((char *)&m_dwID, sizeof(DWORD));
-	pStream->Write((char *)&m_iPosAngle, sizeof(DWORD));
-	pStream->Write((char *)&m_iPosRadius, sizeof(DWORD));
-	pStream->Write((char *)&m_iRotation, sizeof(DWORD));
-	pStream->Write((char *)&m_iPosZ, sizeof(DWORD));
-	pStream->Write((char *)&m_iDevice, sizeof(DWORD));
-	pStream->Write((char *)&m_iTick, sizeof(DWORD));
-	pStream->Write((char *)&m_iLifeLeft, sizeof(DWORD));
+	pStream->Write(dwSave);
+	pStream->Write(m_dwID);
+	pStream->Write(m_iPosAngle);
+	pStream->Write(m_iPosRadius);
+	pStream->Write(m_iRotation);
+	pStream->Write(m_iPosZ);
+	pStream->Write(m_iDevice);
+	pStream->Write(m_iTick);
+	pStream->Write(m_iLifeLeft);
+	pStream->Write(m_iHitPoints);
 
 	m_Data.WriteToStream(pStream);
 
-	pStream->Write((char *)&m_iCounter, sizeof(DWORD));
+	pStream->Write(m_iCounter);
 	m_sMessage.WriteToStream(pStream);
 
 	CEffectCreator::WritePainterToStream(pStream, m_pPainter);
@@ -1252,6 +1645,6 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 	DWORD dwFlags = 0;
 	dwFlags |= (m_fDestroyed ?	0x00000001 : 0);
 	dwFlags |= (m_fFading ?		0x00000002 : 0);
-	pStream->Write((char *)&dwFlags, sizeof(DWORD));
+	dwFlags |= (m_fInactive ?	0x00000004 : 0);
+	pStream->Write(dwFlags);
 	}
-

@@ -172,16 +172,16 @@
 	<!-- Size A Ovoid Asteroid -->
 
 	<StationType UNID="&stOvoidAsteroidSizeA;"
-		name=				"(ovoid asteroid)"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		inherit=			"&baOvoidAsteroid;"
+
 		scale=				"world"
 		size=				"4"
+		anonymous=			"true"
 
-		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
-
-		ejectaType=			"&vtStoneAsteroidEjecta;"
+		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image			imageID="&rsOvoidAsteroids;" imageX="0" imageY="0" imageWidth="32" imageHeight="32"/>
 			<Image			imageID="&rsOvoidAsteroids;" imageX="0" imageY="32" imageWidth="32" imageHeight="32"/>
@@ -208,27 +208,21 @@
 				<Lookup chance="10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 100)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size B Ovoid Asteroid -->
 
 	<StationType UNID="&stOvoidAsteroidSizeB;"
-		name=				"(ovoid asteroid)"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		inherit=			"&baOvoidAsteroid;"
+
 		scale=				"world"
 		size=				"70"
+		anonymous=			"true"
 
-		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
-
-		ejectaType=			"&vtStoneAsteroidEjecta;"
+		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-
 		<ImageVariants>
 			<Image			imageID="&rsOvoidAsteroids;" imageX="64" imageY="0" imageWidth="64" imageHeight="64"/>
 			<Image			imageID="&rsOvoidAsteroids;" imageX="64" imageY="64" imageWidth="64" imageHeight="64"/>
@@ -257,27 +251,21 @@
 				<Lookup chance="10" count="1d6" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 100)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size C Ovoid Asteroid -->
 
 	<StationType UNID="&stOvoidAsteroidSizeC;"
-		name=				"(ovoid asteroid)"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		inherit=			"&baOvoidAsteroid;"
+
 		scale=				"world"
 		size=				"255"
+		anonymous=			"true"
 
-		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
-
-		ejectaType=			"&vtStoneAsteroidEjecta;"
+		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="0"   imageY="256"   imageWidth="88" imageHeight="88"/>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="0"   imageY="344"   imageWidth="88" imageHeight="88"/>
@@ -298,27 +286,21 @@
 				<Lookup chance="10" count="1d8" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 100)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size D Ovoid Asteroid -->
 
 	<StationType UNID="&stOvoidAsteroidSizeD;"
-		name=				"(ovoid asteroid)"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		inherit=			"&baOvoidAsteroid;"
+
 		scale=				"world"
 		size=				"590"
+		anonymous=			"true"
 
-		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
-
-		ejectaType=			"&vtStoneAsteroidEjecta;"
+		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="264"  imageY="256"   imageWidth="108" imageHeight="108"/>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="264"  imageY="364"   imageWidth="108" imageHeight="108"/>
@@ -335,27 +317,20 @@
 				<Lookup chance="10" count="1d10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 100)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Ovoid Planetoid Size E -->
 
 	<StationType UNID="&stOvoidPlanetoidSizeE;"
-		name=				"(ovoid planetoid)"
-		scale=				"world"
-		size=				"1000"
-
+		name=				"ovoid planetoid"
 		attributes=			"generic, inner, lifeZone, outer, planetoid, ovoid"
 
-		ejectaType=			"&vtStoneAsteroidEjecta;"
+		scale=				"world"
+		size=				"1000"
+		anonymous=			"true"
+
+		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="320"  imageY="0"   imageWidth="128" imageHeight="128"/>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="320"  imageY="128"   imageWidth="128" imageHeight="128"/>
@@ -368,16 +343,15 @@
 	<!-- Ovoid Planetoid Size F -->
 
 	<StationType UNID="&stOvoidPlanetoidSizeF;"
-		name=				"(ovoid planetoid)"
-		scale=				"world"
-		size=				"2450"
-
+		name=				"ovoid planetoid"
 		attributes=			"generic, inner, lifeZone, outer, planetoid, ovoid"
 
-		ejectaType=			"&vtStoneAsteroidEjecta;"
+		scale=				"world"
+		size=				"2450"
+		anonymous=			"true"
+
+		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="0"  imageY="580"   imageWidth="156" imageHeight="156"/>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="156"  imageY="580"   imageWidth="156" imageHeight="156"/>
@@ -389,16 +363,15 @@
 	<!-- Ovoid Planetoid Size G -->
 
 	<StationType UNID="&stOvoidPlanetoidSizeG;"
-		name=				"(ovoid planetoid)"
-		scale=				"world"
-		size=				"3750"
-
+		name=				"ovoid planetoid"
 		attributes=			"generic, inner, lifeZone, outer, ovoid, planetoid"
 
-		ejectaType=			"&vtStoneAsteroidEjecta;"
+		scale=				"world"
+		size=				"3750"
+		anonymous=			"true"
+
+		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-		
 		<ImageVariants>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="0"    imageY="736"   imageWidth="180" imageHeight="180"/>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="180"  imageY="736"   imageWidth="180" imageHeight="180"/>
@@ -408,6 +381,20 @@
 			<Image	imageID="&rsOvoidAsteroids;" imageX="180"  imageY="916"   imageWidth="180" imageHeight="180"/>
 			<Image	imageID="&rsOvoidAsteroids;" imageX="360"  imageY="916"   imageWidth="180" imageHeight="180"/>
 		</ImageVariants>
+	</StationType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&baOvoidAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="icy"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
 	</StationType>
 
 <!-- RESOURCES -->

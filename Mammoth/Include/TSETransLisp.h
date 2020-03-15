@@ -7,6 +7,10 @@
 
 class CInstalledArmor;
 class CInstalledDevice;
+class CItemCtx;
+class COrbit;
+struct SDamageCtx;
+struct SSystemCreateCtx;
 
 //	CodeChain context
 
@@ -36,35 +40,39 @@ class CCodeChainCtx
 		~CCodeChainCtx (void);
 
 		ICCItemPtr Create (ICCItem::ValueTypes iType);
+		ICCItemPtr CreateDebugError (const CString &sError, ICCItem *pValue = NULL) const;
+		ICCItemPtr DebugError (ICCItem *pResult) const;
 		void DefineContainingType (const CDesignType *pType);
 		void DefineContainingType (const CItem &Item);
 		void DefineContainingType (const COverlay *pOverlay);
 		void DefineContainingType (const CSpaceObject *pObj);
-		inline ICCItem *CreateNil (void) { return m_CC.CreateNil(); }
-		inline void DefineBool (const CString &sVar, bool bValue) { m_CC.DefineGlobal(sVar, (bValue ? m_CC.CreateTrue() : m_CC.CreateNil())); }
+		ICCItem *CreateNil (void) { return m_CC.CreateNil(); }
+		void DefineBool (const CString &sVar, bool bValue) { m_CC.DefineGlobal(sVar, (bValue ? m_CC.CreateTrue() : m_CC.CreateNil())); }
 		void DefineDamageCtx (const SDamageCtx &Ctx, int iDamage = -1);
 		void DefineDamageEffects (const CString &sVar, SDamageCtx &Ctx);
-		inline void DefineInteger (const CString &sVar, int iValue) { m_CC.DefineGlobalInteger(sVar, iValue); }
+		void DefineDouble (const CString &sVar, Metric rValue) { ICCItemPtr pValue(rValue); m_CC.DefineGlobal(sVar, pValue); }
+		void DefineInteger (const CString &sVar, int iValue) { m_CC.DefineGlobalInteger(sVar, iValue); }
 		void DefineItem (const CItem &Item);
 		void DefineItem (const CString &sVar, const CItem &Item);
 		void DefineItem (const CString &sVar, CItemCtx &ItemCtx);
 		void DefineItemType (const CString &sVar, const CItemType *pType);
-		inline void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.CreateNil()); }
+		void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.CreateNil()); }
 		void DefineOrbit (const CString &sVar, const COrbit &OrbitDesc);
 		void DefineSource (CSpaceObject *pSource);
-		void DefineSpaceObject (const CString &sVar, CSpaceObject *pObj);
-		inline void DefineString (const CString &sVar, const CString &sValue) { m_CC.DefineGlobalString(sVar, sValue); }
-		inline void DefineVar (const CString &sVar, ICCItem *pValue) { m_CC.DefineGlobal(sVar, pValue); }
+		void DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj);
+		void DefineSpaceObject (const CString &sVar, const CSpaceObject &Obj) { m_CC.DefineGlobalInteger(sVar, (int)&Obj); }
+		void DefineString (const CString &sVar, const CString &sValue) { m_CC.DefineGlobalString(sVar, sValue); }
+		void DefineVar (const CString &sVar, ICCItem *pValue) { m_CC.DefineGlobal(sVar, pValue); }
 		void DefineVector (const CString &sVar, const CVector &vVector);
-		inline void Discard (ICCItem *pItem) { pItem->Discard(); }
+		void Discard (ICCItem *pItem) { pItem->Discard(); }
 		DWORD GetAPIVersion (void) const;
-		inline CG32bitImage *GetCanvas (void) const { return m_pCanvas; }
-		inline CCodeChain &GetCC (void) { return m_CC; }
-		inline CExtension *GetExtension (void) const { return m_pExtension; }
-		inline CItemType *GetItemType (void) const { return m_pItemType; }
-		inline CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
-		inline SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
-		inline CUniverse &GetUniverse (void) const { return m_Universe; }
+		CG32bitImage *GetCanvas (void) const { return m_pCanvas; }
+		CCodeChain &GetCC (void) { return m_CC; }
+		CExtension *GetExtension (void) const { return m_pExtension; }
+		CItemType *GetItemType (void) const { return m_pItemType; }
+		CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
+		SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
+		CUniverse &GetUniverse (void) const { return m_Universe; }
 		ICCItemPtr LinkCode (const CString &sString, CCodeChain::SLinkOptions &Options = CCodeChain::SLinkOptions());
 		void RestoreVars (void);
 		ICCItem *Run (ICCItem *pCode);
@@ -83,21 +91,21 @@ class CCodeChainCtx
 		void SaveAndDefineType (DWORD dwUNID);
 		void SaveItemVar (void);
 		void SaveSourceVar (void);
-		inline void SetDockScreenList (IListData *pListData) { m_pListData = pListData; }
-		inline void SetCanvas (CG32bitImage *pCanvas) { m_pCanvas = pCanvas; }
+		void SetDockScreenList (IListData *pListData) { m_pListData = pListData; }
+		void SetCanvas (CG32bitImage *pCanvas) { m_pCanvas = pCanvas; }
 		void SetEvent (ECodeChainEvents iEvent);
-		inline void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
+		void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
 		void SetGlobalDefineWrapper (CExtension *pExtension);
-		inline void SetItemType (CItemType *pType) { m_pItemType = pType; }
-		inline void SetScreen (void *pScreen) { m_pScreen = pScreen; }
-		inline void SetScreensRoot (CDesignType *pRoot) { m_pScreensRoot = pRoot; }
-		inline void SetSystemCreateCtx (SSystemCreateCtx *pCtx) { m_pSysCreateCtx = pCtx; }
+		void SetItemType (CItemType *pType) { m_pItemType = pType; }
+		void SetScreen (void *pScreen) { m_pScreen = pScreen; }
+		void SetScreensRoot (CDesignType *pRoot) { m_pScreensRoot = pRoot; }
+		void SetSystemCreateCtx (SSystemCreateCtx *pCtx) { m_pSysCreateCtx = pCtx; }
 
 		C3DObjectPos As3DObjectPos (CSpaceObject *pObj, ICCItem *pItem, bool bAsoluteRotation = false);
 		bool AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, bool *retbOmnidirectional = NULL);
 		CInstalledArmor *AsInstalledArmor (CSpaceObject *pObj, ICCItem *pItem) const;
 		CInstalledDevice *AsInstalledDevice (CSpaceObject *pObj, ICCItem *pItem) const;
-		CItem AsItem (ICCItem *pItem) const;
+		CItem AsItem (ICCItem *pItem, bool *retbItemType = NULL) const;
 		CItemType *AsItemType (ICCItem *pItem) const;
 		DWORD AsNameFlags (ICCItem *pItem);
 		CSpaceObject *AsSpaceObject (ICCItem *pItem);
@@ -148,7 +156,7 @@ class CFunctionContextWrapper : public ICCAtom
 	public:
 		CFunctionContextWrapper (ICCItem *pFunction);
 
-		inline void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
+		void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
 
 		//	ICCItem virtuals
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
@@ -157,10 +165,10 @@ class CFunctionContextWrapper : public ICCAtom
 		virtual CString GetStringValue (void) const override { return m_pFunction->GetStringValue(); }
 		virtual ValueTypes GetValueType (void) const override { return Function; }
 		virtual bool IsIdentifier (void) const override { return false; }
-		virtual bool IsFunction (void) override { return true; }
-		virtual bool IsLambdaFunction (void) override { return true; }
-		virtual bool IsPrimitive (void) override { return false; }
-		virtual CString Print (DWORD dwFlags = 0) override { return m_pFunction->Print(dwFlags); }
+		virtual bool IsFunction (void) const override { return true; }
+		virtual bool IsLambdaFunction (void) const override { return true; }
+		virtual bool IsPrimitive (void) const override { return false; }
+		virtual CString Print (DWORD dwFlags = 0) const override { return m_pFunction->Print(dwFlags); }
 		virtual void Reset (void) override { }
 
 	protected:
@@ -177,7 +185,7 @@ class CAddFunctionContextWrapper : public IItemTransform
 	public:
 		CAddFunctionContextWrapper (void) : m_pExtension(NULL) { }
 
-		inline void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
+		void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
 
 		//	IItemTransform
 		virtual ICCItem *Transform (ICCItem *pItem) override;
@@ -191,7 +199,7 @@ class CCXMLWrapper : public ICCAtom
 	public:
 		CCXMLWrapper (CXMLElement *pXML, ICCItem *pRef = NULL);
 
-		inline CXMLElement *GetXMLElement (void) { return m_pXML; }
+		CXMLElement *GetXMLElement (void) { return m_pXML; }
 
 		//	ICCItem virtuals
 
@@ -200,9 +208,9 @@ class CCXMLWrapper : public ICCAtom
 		virtual CString GetTypeOf (void) override { return CONSTLIT("xmlElement"); }
 		virtual ValueTypes GetValueType (void) const override { return Complex; }
 		virtual bool IsIdentifier (void) const override { return false; }
-		virtual bool IsFunction (void) override { return false; }
-		virtual bool IsPrimitive (void) override { return false; }
-		virtual CString Print (DWORD dwFlags = 0) override { return CCString::Print(GetStringValue(), dwFlags); }
+		virtual bool IsFunction (void) const override { return false; }
+		virtual bool IsPrimitive (void) const override { return false; }
+		virtual CString Print (DWORD dwFlags = 0) const override { return CCString::Print(GetStringValue(), dwFlags); }
 		virtual void Reset (void) override { }
 
 	protected:
@@ -239,18 +247,18 @@ class CAttributeDataBlock
 		~CAttributeDataBlock (void);
 
 		void Copy (const CAttributeDataBlock &Src, const TSortMap<CString, STransferDesc> &Options);
-		inline void DeleteAll (void) { CleanUp(); }
+		void DeleteAll (void) { CleanUp(); }
 //		bool FindData (const CString &sAttrib, const CString **retpData = NULL) const;
 		bool FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const;
 		bool FindObjRefData (CSpaceObject *pObj, CString *retsAttrib = NULL) const;
 		ICCItemPtr GetData (int iIndex) const;
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
-		inline const CString &GetDataAttrib (int iIndex) const { return m_Data.GetKey(iIndex); }
-		inline int GetDataCount (void) const { return m_Data.GetCount(); }
+		const CString &GetDataAttrib (int iIndex) const { return m_Data.GetKey(iIndex); }
+		int GetDataCount (void) const { return m_Data.GetCount(); }
 		CSpaceObject *GetObjRefData (const CString &sAttrib) const;
         ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL);
 		bool IsDataNil (const CString &sAttrib) const;
-		inline bool IsEmpty (void) const { return (m_Data.GetCount() == 0 && m_pObjRefData == NULL); }
+		bool IsEmpty (void) const { return (m_Data.GetCount() == 0 && m_pObjRefData == NULL); }
 		bool IsEqual (const CAttributeDataBlock &Src);
 		void LoadObjReferences (CSystem *pSystem);
 		void MergeFrom (const CAttributeDataBlock &Src);
@@ -258,7 +266,7 @@ class CAttributeDataBlock
 		void OnSystemChanged (CSystem *pSystem);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void ReadFromStream (IReadStream *pStream);
-		void SetData (const CString &sAttrib, ICCItem *pItem);
+		void SetData (const CString &sAttrib, const ICCItem *pItem);
 		void SetFromXML (CXMLElement *pData);
 		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj);
 		void WriteToStream (IWriteStream *pStream, CSystem *pSystem = NULL);

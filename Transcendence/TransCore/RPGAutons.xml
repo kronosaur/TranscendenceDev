@@ -107,7 +107,7 @@
 			
 	LANGUAGE
 	
-	Derrived types may define the following language elements:
+	Derived types may define the following language elements:
 	
 	AttackTargetAck: Reply when auton is ordered to attack a valid target.
 	
@@ -180,23 +180,12 @@
 				</OnShow>
 
 				<Invoke>
-					(block (behavior)
-						(setq behavior (objGetData gSource 'behavior))
-						(switch
-							(or (not behavior) (eq behavior 'escorting))
-								(block Nil
-									(objCommunicate gSource gSender 'FormUp)
-									(objSendMessageTranslate gSender gSource 'FormUpAck)
-									)
-
-							(block Nil
-								(objSetData gSource 'behavior 'escorting)
-								(objSendMessageTranslate gSender gSource 'FormUpAck)
-								
-								(shpCancelOrders gSource)
-								(shpOrder gSource 'escort gPlayerShip)
-								)
-							)
+					(block Nil
+						(objSetData gSource 'behavior 'escorting)
+						(objSendMessageTranslate gSender gSource 'FormUpAck)
+						
+						(shpCancelOrders gSource)
+						(shpOrder gSource 'escort gPlayerShip)
 						)
 				</Invoke>
 			</Message>
@@ -300,11 +289,18 @@
 					(autonItem (itmCreate autonType 1))
 					(shieldMaxHP (shpGetShieldMaxHitPoints gSource))
 					(shieldDamage (shpGetShieldDamage gSource))
+					armorDamaged config
 					)
-						
-					;	Store the current armor and devices on the auton
 					
-					(setq autonItem (itmSetData autonItem 'autonConfig {
+					;	Assign a repair ID if there's any armor damage
+					
+					(enum (objGetItems gSource "aI") theArmor
+						(if (gr (objGetArmorDamage gSource theArmor) 0) (setq armorDamaged True))
+						)
+						
+					;	Store the current armor, devices, and status on the auton
+					
+					(setq config {
 						armor: (map (objGetItems gSource "aI") theArmor	{
 							item: (itmSetProperty theArmor 'installed Nil)
 							hp: (subtract (itmGetProperty theArmor 'completeHP) (objGetArmorDamage gSource theArmor))
@@ -326,8 +322,14 @@
 						name: (if (neq (objGetName gSource) (objGetProperty gSource 'name))
 									(rpgSanitizeAutonName (objGetName gSource))
 									)
-						}))
-						
+									
+						repairID: (if armorDamaged (rpgGetNextAutonRepairID))
+						})
+					
+					(if (neq config (rpgGetAutonDefaultConfig autonItem))
+						(setq autonItem (itmSetData autonItem 'autonConfig config))
+						)
+					
 					;	Add one charge on the item for every ton of cargo inside the auton
 					
 					(setq autonItem (itmSetProperty autonItem 'charges
@@ -437,10 +439,7 @@
 					
 					;	Welcome or error message
 					
-					(if (@ gData 'notEnoughSpace)
-						(objSendMessageTranslate sourceObj auton 'ErrNoSpaceToReturn)
-						(objSendMessageTranslate sourceObj auton 'DeployAck)
-						)
+					(objSendMessageTranslate sourceObj auton (or (@ gData 'messageID) 'DeployAck))
 					
 					;	Return the auton created, in case subclasses want to
 					;	modify it.
@@ -467,18 +466,17 @@
 				;	If we returned to a ship or non-gate station, convert back to an item
 				
 				(if (objMatches aGateObj nil "st -stargate;")
-					(block ((autonItem (objFireEvent gSource "ConvertToItem"))
-							(autonShipClass (itmGetStaticData autonItem 'autonShipClass))
-							)
-						(if (gr (itmGetMass autonItem) (objGetCargoSpaceLeft aGateObj))
+					(block (
+						(autonItem (objFireEvent gSource "ConvertToItem"))
+						(autonShipClass (itmGetStaticData autonItem 'autonShipClass))
+						(notEnoughSpace (gr (itmGetMass autonItem) (objGetCargoSpaceLeft aGateObj)))
+						)
+						;	Add to cargo
+						(objAddItem aGateObj autonItem)
 						
-							; If there's not enough space, redeploy with an error message
-							(typFireEvent autonShipClass 'CreateFromItem
-								{ sourceObj:aGateObj type:autonShipClass item:autonItem notEnoughSpace:true }
-								)
-							
-							; Otherwise, add to cargo
-							(objAddItem aGateObj autonItem)
+						;	If there's not enough space, redeploy with an error message
+						(if notEnoughSpace
+							(rpgDeployAutonFromItem aGateObj autonShipClass autonItem 'ErrNoSpaceToReturn)
 							)
 						)
 					)
@@ -644,20 +642,43 @@
 					)
 				))
 				
-			(setq rpgDeployAutonFromItem (lambda (sourceObj autonUNID autonItem)
+			(setq rpgDeployAutonFromItem (lambda (sourceObj autonUNID autonItem messageID)
 				(block Nil
 					;	Let the auton ship class create itself based on the item
 				
-					(typFireEvent autonUNID 'CreateFromItem { sourceObj:sourceObj type:autonUNID item:autonItem })
+					(typFireEvent autonUNID 'CreateFromItem {
+						sourceObj:sourceObj
+						type:autonUNID
+						item:autonItem
+						messageID:messageID
+						})
 				
 					;	Identify and remove the item from the source
 				
 					(itmSetKnown autonItem)
 					(objRemoveItem sourceObj autonItem 1)
+					
+					;	If the item had a repairID, free it
+					
+					(rpgFreeAutonRepairID (@ (itmGetData autonItem 'autonConfig) 'repairID))
+					)
+				))
+			
+			(setq rpgFreeAutonRepairID (lambda (theID)
+				(typSetData &baAutonItemBase; 'freedRepairIDs
+					(append (typGetData &baAutonItemBase; 'freedRepairIDs) theID)
 					)
 				))
 				
 			(setq rpgGetAutonConfig (lambda (autonItem)
+				;	Return the saved config if there is one, otherwise the default for the item type
+				
+				(or (itmGetData autonItem 'autonConfig)
+					(rpgGetAutonDefaultConfig autonItem)
+					)
+				))
+			
+			(setq rpgGetAutonDefaultConfig (lambda (autonItem)
 				;
 				;	We return a struct with the following elements:
 				;
@@ -666,46 +687,74 @@
 				;				item: An item descriptor
 				;				hp: The number of hit points left
 				;
-				;		default: If True, then the auton is identical to its original
-				;				ship class.
-				;
 				;		devices: An array of structs, each struct with the following
 				;				elements:
 				;
 				;				item: An item descriptor
-				
-				(block (savedConfig autonShipClass)
-				
-					(switch
-						;	We've already stored the information, so we just return it.
-						
-						(setq savedConfig (itmGetData autonItem 'autonConfig))
-							savedConfig
-							
-						;	If we have the ship class then we can take information directly
-						;	from it.
-						
-						(setq autonShipClass (itmGetStaticData autonItem 'autonShipClass))
-							{	default: True
-							
-								armor: (map (typGetDataField autonShipClass 'armorItems) Nil theArmor
-									{
-										item: theArmor
-										hp: (itmGetProperty theArmor 'completeHP)
-										}
-									)
+				(block (
+					(autonShipClass (itmGetStaticData autonItem 'autonShipClass))
+					)
+					(if autonShipClass
+						{
+							armor: (map (typGetDataField autonShipClass 'armorItems) Nil theArmor
+								{
+									item: theArmor
+									hp: (itmGetProperty theArmor 'completeHP)
+									}
+								)
 
-								devices: (map (typGetDataField autonShipClass 'deviceItems) Nil theDevice
-									{
-										item: theDevice
-										}
-									)
-								}
-
+							devices: (map (typGetDataField autonShipClass 'deviceItems) Nil theDevice
+								{
+									item: theDevice
+									}
+								)
+							}
+						
 						;	Otherwise, there is nothing we can do.
-
-						Nil
+						
 						)
+					)
+				))
+			
+			(setq rpgGetAutonItemShieldStatus (lambda (theConfig)
+				(block (theStatus)
+					(if (setq theStatus (@ theConfig 'shieldStatus))
+						(block (
+							(regenTime (- (unvGetTick) (@ theStatus 'regenStartTick) ))
+							(hp (+ (@ theStatus 'hp) (* regenTime (@ theStatus 'regen))))
+							(maxHP (@ theStatus 'maxHP))
+							)
+							(if (geq hp maxHP)
+								(setq hp maxHP)
+								(setq hp (int hp))
+								)
+							{
+								hp: hp
+								percent: (divide (* hp 100) maxHP)
+								}
+							)
+							
+						{ percent: 100 }
+						)
+					)
+				))
+			
+			(setq rpgGetNextAutonRepairID (lambda Nil
+				(block (
+					(freedIDs (typGetData &baAutonItemBase; 'freedRepairIDs))
+					nextID
+					)
+					(if freedIDs
+						(block Nil
+							(setq nextID (@ freedIDs 0))
+							(typSetData &baAutonItemBase; 'freedRepairIDs (subset freedIDs 1))
+							)
+						(block Nil
+							(setq nextID (or (typGetData &baAutonItemBase; 'nextRepairID) 1))
+							(typSetData &baAutonItemBase; 'nextRepairID (add nextID 1))
+							)
+						)
+					nextID
 					)
 				))
 				
@@ -738,29 +787,6 @@
 					;	Replace empty string with Nil to reset to default name, otherwise return new name.
 					
 					(if (or (not newName) (eq "" (apply cat (split newName " ")))) Nil (strCapitalize newName))
-					)
-				))
-			
-			(setq rpgGetAutonItemShieldStatus (lambda (theConfig)
-				(block (theStatus)
-					(if (setq theStatus (@ theConfig 'shieldStatus))
-						(block (
-							(regenTime (- (unvGetTick) (@ theStatus 'regenStartTick) ))
-							(hp (+ (@ theStatus 'hp) (* regenTime (@ theStatus 'regen))))
-							(maxHP (@ theStatus 'maxHP))
-							)
-							(if (geq hp maxHP)
-								(setq hp maxHP)
-								(setq hp (int hp))
-								)
-							{
-								hp: hp
-								percent: (divide (* hp 100) maxHP)
-								}
-							)
-							
-						{ percent: 100 }
-						)
 					)
 				))
 			

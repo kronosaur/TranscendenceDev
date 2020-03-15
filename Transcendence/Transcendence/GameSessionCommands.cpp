@@ -116,7 +116,6 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				pPlayer->SetFireMissile(false);
 				}
 			g_pHI->HICommand(CONSTLIT("gamePause"));
-			g_pTrans->DisplayMessage(CONSTLIT("Game paused"));
 			break;
 			}
 
@@ -384,8 +383,41 @@ void CGameSession::ExecuteCommandEnd (CPlayerShipController *pPlayer, CGameKeys:
 
 				g_pTrans->m_bPaused = false;
 				g_pHI->HICommand(CONSTLIT("gameUnpause"));
-				g_pTrans->DisplayMessage(CONSTLIT("Game continues"));
 				}
 			break;
 		}
+	}
+
+void CGameSession::ExecuteCommandRefresh (void)
+	{
+	if (CPlayerShipController *pPlayer = m_Model.GetPlayer())
+		ExecuteCommandRefresh(*pPlayer);
+	}
+
+void CGameSession::ExecuteCommandRefresh (CPlayerShipController &Player)
+
+//	ExecuteCommandRefresh
+//
+//	For stateful commands, set to the correct state based on the key state.
+
+	{
+	const CGameKeys &Keys = m_Settings.GetKeyMap();
+
+	//	If we've changed state due to a key press, then check to see if that key 
+	//	also maps to a command. If it does, then we ignore it for purposes of
+	//	setting state.
+
+	CGameKeys::Keys iCmdTrigger = Keys.GetGameCommand(m_HI.GetLastVirtualKey());
+
+	Player.SetThrust(Keys.IsKeyDown(CGameKeys::keyThrustForward) && iCmdTrigger != CGameKeys::keyThrustForward);
+	Player.SetStopThrust(Keys.IsKeyDown(CGameKeys::keyStop) && iCmdTrigger != CGameKeys::keyStop);
+	Player.SetFireMain(Keys.IsKeyDown(CGameKeys::keyFireWeapon) && iCmdTrigger != CGameKeys::keyFireWeapon);
+	Player.SetFireMissile(Keys.IsKeyDown(CGameKeys::keyFireMissile) && iCmdTrigger != CGameKeys::keyFireMissile);
+
+	if (Keys.IsKeyDown(CGameKeys::keyRotateLeft))
+		Player.SetManeuver(RotateLeft);
+	else if (Keys.IsKeyDown(CGameKeys::keyRotateRight))
+		Player.SetManeuver(RotateRight);
+	else
+		Player.SetManeuver(NoRotation);
 	}

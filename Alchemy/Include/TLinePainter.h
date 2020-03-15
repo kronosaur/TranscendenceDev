@@ -139,7 +139,7 @@ template <class PAINTER, class BLENDER> class TLinePainter32 : public ILinePaint
             }
 
     protected:
-        inline void DRAW_PIXEL (CG32bitPixel *pPos, CG32bitPixel rgbColor)
+        void DRAW_PIXEL (CG32bitPixel *pPos, CG32bitPixel rgbColor)
             {
             if (rgbColor.GetAlpha() == 0)
                 ;
@@ -149,12 +149,12 @@ template <class PAINTER, class BLENDER> class TLinePainter32 : public ILinePaint
                 BLENDER::SetBlendPreMult(pPos, rgbColor);
             }
 
-        inline CG32bitPixel GET_EDGE_PIXEL (Metric rEdge, Metric rV, Metric rW) { return ((PAINTER *)this)->GetEdgePixel(rEdge, rV, rW); }
-        inline CG32bitPixel GET_PIXEL (Metric rV, Metric rW) { return ((PAINTER *)this)->GetPixel(rV, rW); }
+        CG32bitPixel GET_EDGE_PIXEL (Metric rEdge, Metric rV, Metric rW) { return ((PAINTER *)this)->GetEdgePixel(rEdge, rV, rW); }
+        CG32bitPixel GET_PIXEL (Metric rV, Metric rW) { return ((PAINTER *)this)->GetPixel(rV, rW); }
 
         //  Default implementations
 
-        inline CG32bitPixel GetEdgePixel (Metric rEdge, Metric rV, Metric rW)
+        CG32bitPixel GetEdgePixel (Metric rEdge, Metric rV, Metric rW)
             {
             CG32bitPixel rgbColor = GET_PIXEL(rV, rW);
             BYTE byOpacity = (BYTE)(DWORD)(255.0 * (rEdge > 1.0 ? 1.0 : rEdge));
@@ -177,7 +177,7 @@ template <class BLENDER> class TLinePainterSolid : public TLinePainter32<TLinePa
             }
 
     private:
-        inline CG32bitPixel GetPixel (Metric rV, Metric rW) const { return m_rgbColor; }
+        CG32bitPixel GetPixel (Metric rV, Metric rW) const { return m_rgbColor; }
 
         CG32bitPixel m_rgbColor;
 
@@ -205,7 +205,7 @@ class CLinePainter
         void CalcLoopY (int *retx, int *rety, int *retiEnd, int *retiInc);
 		void CalcPixelMapping (int x1, int y1, int x2, int y2, double *retrV, double *retrW);
 
-        inline void CalcPixelMappingX (int x1, int y1, int x2, int y2, double *retrV, double *retrW)
+        void CalcPixelMappingX (int x1, int y1, int x2, int y2, double *retrV, double *retrW)
             {
 			CalcPixelMapping(x1, y1, x2, y2, retrV, retrW);
 
@@ -213,7 +213,7 @@ class CLinePainter
 			*retrW += (-m_iAxisHalfWidth - 1) * m_rWPerY;
             }
 
-        inline void CalcPixelMappingY (int x1, int y1, int x2, int y2, double *retrV, double *retrW)
+        void CalcPixelMappingY (int x1, int y1, int x2, int y2, double *retrV, double *retrW)
             {
 			CalcPixelMapping(x1, y1, x2, y2, retrV, retrW);
 
@@ -221,9 +221,9 @@ class CLinePainter
 			*retrW += (-m_iAxisHalfWidth - 1) * m_rWPerX;
             }
 
-        inline int GetAxisWidth (void) const { return m_iAxisWidth; }
+        int GetAxisWidth (void) const { return m_iAxisWidth; }
 
-        inline bool GetEdgeDown (int w, Metric &rWDown) const
+        bool GetEdgeDown (int w, Metric &rWDown) const
             {
             if (m_rWDown > 0.0 && w >= m_wMin && w < m_wMax)
                 {
@@ -234,7 +234,7 @@ class CLinePainter
                 return false;
             }
 
-        inline bool GetEdgeUp (int w, Metric &rWUp) const
+        bool GetEdgeUp (int w, Metric &rWUp) const
             {
             if (m_rWUp > 0.0 && w >= m_wMin && w < m_wMax)
                 {
@@ -245,23 +245,23 @@ class CLinePainter
                 return false;
             }
 
-        inline int GetPosRowInc (void) const { return m_iPosRowInc; }
+        int GetPosRowInc (void) const { return m_iPosRowInc; }
 
-        inline bool InSolid (int w) const { return (w >= m_wMin && w < m_wMax); }
+        bool InSolid (int w) const { return (w >= m_wMin && w < m_wMax); }
 
-        inline void NextVWX (Metric &rV, Metric &rW) const
+        void NextVWX (Metric &rV, Metric &rW) const
             {
             rV += m_rVPerY;
             rW += m_rWPerY;
             }
 
-        inline void NextVWY (Metric &rV, Metric &rW) const
+        void NextVWY (Metric &rV, Metric &rW) const
             {
             rV += m_rVPerX;
             rW += m_rWPerX;
             }
 
-		inline void NextX (int &x, int &y)
+		void NextX (int &x, int &y)
 			{
 			if (m_d >= 0)
 				{
@@ -276,7 +276,7 @@ class CLinePainter
 			m_rWDown += m_rWDownInc;
 			}
 
-		inline void NextY (int &x, int &y)
+		void NextY (int &x, int &y)
 			{
 			if (m_d >= 0)
 				{
@@ -291,7 +291,7 @@ class CLinePainter
 			m_rWDown += m_rWDownInc;
 			}
 
-		inline void NextX (int &x, int &y, double &rV, double &rW)
+		void NextX (int &x, int &y, double &rV, double &rW)
 			{
 			if (m_d >= 0)
 				{
@@ -312,7 +312,7 @@ class CLinePainter
 			rW += m_rWIncX;
 			}
 
-		inline void NextY (int &x, int &y, double &rV, double &rW)
+		void NextY (int &x, int &y, double &rV, double &rW)
 			{
 			if (m_d >= 0)
 				{

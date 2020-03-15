@@ -30,13 +30,16 @@ class CPlayerGameStats
 		CString GetItemStat (const CString &sStat, ICCItem *pItemCriteria) const;
 		CString GetKeyEventStat (const CString &sStat, const CString &sNodeID, const CDesignTypeCriteria &Crit) const;
         CTimeSpan GetPlayTime (void) const;
-		CString GetStat (const CString &sStat) const;
+		ICCItemPtr GetStat (const CString &sStat) const;
+		CString GetStatString (const CString &sStat) const;
 		DWORD GetSystemEnteredTime (const CString &sNodeID);
         DWORD GetSystemLastVisitedTime (const CString &sNodeID);
+		ICCItemPtr GetSystemStat (const CString &sStat, const CString &sNodeID) const;
 		int IncItemStat (const CString &sStat, DWORD dwUNID, int iInc);
-		inline int IncScore (int iScore) { m_iScore = Max(0, m_iScore + iScore); return m_iScore; }
+		int IncScore (int iScore) { m_iScore = Max(0, m_iScore + iScore); return m_iScore; }
 		int IncStat (const CString &sStat, int iInc = 1);
-        inline void OnFuelConsumed (CSpaceObject *pPlayer, Metric rFuel) { m_rFuelConsumed += rFuel; }
+		int IncSystemStat (const CString &sStat, const CString &sNodeID, int iInc);
+        void OnFuelConsumed (CSpaceObject *pPlayer, Metric rFuel) { m_rFuelConsumed += rFuel; }
 		void OnGameEnd (CSpaceObject *pPlayer);
 		void OnItemBought (const CItem &Item, CurrencyValue iTotalPrice);
 		void OnItemDamaged (const CItem &Item, int iHP);
@@ -53,58 +56,63 @@ class CPlayerGameStats
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
+		static constexpr DWORD INVALID_TIME = 0xffffffff;
+
 		struct SItemTypeStats
 			{
-			int iCountSold;						//	Number of items sold
-			CurrencyValue iValueSold;			//	Total value received for selling (credits)
+			int iCountSold = 0;						//	Number of items sold
+			CurrencyValue iValueSold = 0;			//	Total value received for selling (credits)
 
-			int iCountBought;					//	Number of items bought
-			CurrencyValue iValueBought;			//	Total value spent buying (credits)
+			int iCountBought = 0;					//	Number of items bought
+			CurrencyValue iValueBought = 0;			//	Total value spent buying (credits)
 
-			int iCountInstalled;				//	Number of items currently installed on player ship
-			DWORD dwFirstInstalled;				//	First time item was installed on player ship
-			DWORD dwLastInstalled;				//	Last time item was installed on player ship
-			DWORD dwLastUninstalled;			//	Last time item was uninstalled from player ship
-			DWORD dwTotalInstalledTime;			//	Total time installed
+			int iCountInstalled = 0;				//	Number of items currently installed on player ship
+			DWORD dwFirstInstalled = INVALID_TIME;	//	First time item was installed on player ship
+			DWORD dwLastInstalled = INVALID_TIME;	//	Last time item was installed on player ship
+			DWORD dwLastUninstalled = INVALID_TIME;	//	Last time item was uninstalled from player ship
+			DWORD dwTotalInstalledTime = 0;			//	Total time installed
 
-			int iCountFired;					//	Number of times item (weapon) has been fired by player
-			int iHPDamaged;						//	HP absorbed by this item type when installed on player
+			int iCountMined = 0;					//	Number of items mined by player
+			int iCountFired = 0;					//	Number of times item (weapon) has been fired by player
+			int iHPDamaged = 0;						//	HP absorbed by this item type when installed on player
 			};
 
 		struct SKeyEventStats
 			{
-			EEventTypes iType;					//	Type of event
-			DWORD dwTime;						//	When the event happened
-			DWORD dwObjUNID;					//	UNID of object
-			CString sObjName;					//	For unique objects (e.g., CSCs)
-			DWORD dwObjNameFlags;				//	Flags for the name
-			DWORD dwCauseUNID;					//	The UNID of the sovereign who caused the event
+			EEventTypes iType = eventNone;			//	Type of event
+			DWORD dwTime = 0;						//	When the event happened
+			DWORD dwObjUNID = 0;					//	UNID of object
+			CString sObjName;						//	For unique objects (e.g., CSCs)
+			DWORD dwObjNameFlags = 0;				//	Flags for the name
+			DWORD dwCauseUNID = 0;					//	The UNID of the sovereign who caused the event
 			};
 
 		struct SKeyEventStatsResult
 			{
 			CString sNodeID;
-			SKeyEventStats *pStats;
-			bool bMarked;
+			SKeyEventStats *pStats = NULL;
+			bool bMarked = false;
 			};
 
 		struct SShipClassStats
 			{
-			int iEnemyDestroyed;				//	Number of enemy ships destroyed
-			int iFriendDestroyed;				//	Number of friendly ships destroyed
+			int iEnemyDestroyed = 0;				//	Number of enemy ships destroyed
+			int iFriendDestroyed = 0;				//	Number of friendly ships destroyed
 			};
 
 		struct SStationTypeStats
 			{
-			int iDestroyed;						//	Number of stations destroyed
+			int iDestroyed = 0;						//	Number of stations destroyed
 			};
 
 		struct SSystemStats
 			{
-			DWORD dwFirstEntered;				//	First time this system was entered (0xffffffff = never)
-			DWORD dwLastEntered;				//	Last time this system was entered (0xffffffff = never)
-			DWORD dwLastLeft;					//	Last time this system was left (0xffffffff = never)
-			DWORD dwTotalTime;					//	Total time in system (all visits)
+			DWORD dwFirstEntered = INVALID_TIME;	//	First time this system was entered (0xffffffff = never)
+			DWORD dwLastEntered = INVALID_TIME;		//	Last time this system was entered (0xffffffff = never)
+			DWORD dwLastLeft = INVALID_TIME;		//	Last time this system was left (0xffffffff = never)
+			DWORD dwTotalTime = 0;					//	Total time in system (all visits)
+
+			int iAsteroidsMined = 0;				//	Count of asteroids explored for resources
 			};
 
 		bool AddMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStats> *pEventList, TArray<SKeyEventStatsResult> *retList) const;
@@ -114,7 +122,10 @@ class CPlayerGameStats
 		bool GetMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStatsResult> *retList) const;
 		SShipClassStats *GetShipStats (DWORD dwUNID);
 		SStationTypeStats *GetStationStats (DWORD dwUNID);
-		SSystemStats *GetSystemStats (const CString &sNodeID);
+		const SSystemStats *GetSystemStats (const CString &sNodeID) const;
+		SSystemStats *SetSystemStats (const CString &sNodeID);
+
+		static void WriteTimeValue (CMemoryWriteStream &Output, DWORD dwTime);
 
 		CUniverse &m_Universe;
 		int m_iScore = 0;						//	Total score for player
@@ -163,7 +174,7 @@ class IPlayerController
 		virtual bool GetPropertyString (const CString &sProperty, CString *retsValue) { return false; }
 		virtual CSovereign *GetSovereign (void) const;
 		virtual EUIMode GetUIMode (void) const { return uimodeUnknown; }
-		virtual void OnMessageFromObj (CSpaceObject *pSender, const CString &sMessage) { }
+		virtual void OnMessageFromObj (const CSpaceObject *pSender, const CString &sMessage) { }
 		virtual bool SetPropertyInteger (const CString &sProperty, int iValue) { return false; }
 		virtual bool SetPropertyItemList (const CString &sProperty, const CItemList &ItemList) { return false; }
 		virtual bool SetPropertyString (const CString &sProperty, const CString &sValue) { return false; }

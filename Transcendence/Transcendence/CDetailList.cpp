@@ -12,6 +12,46 @@
 #define FIELD_LARGE_ICON					CONSTLIT("largeIcon")
 #define FIELD_TITLE							CONSTLIT("title")
 
+void CDetailList::AlignRect (const RECT &rcFrame, int cxWidth, int cyHeight, DWORD dwAlign, RECT &rcResult)
+
+//	AlignRect
+//
+//	Aligns a rectangle of the given width and height.
+
+	{
+	if (dwAlign & alignRight)
+		{
+		rcResult.right = rcFrame.right;
+		rcResult.left = rcResult.right - cxWidth;
+		}
+	else if (dwAlign & alignCenter)
+		{
+		rcResult.left = rcFrame.left + (RectWidth(rcFrame) - cxWidth) / 2;
+		rcResult.right = rcResult.left + cxWidth;
+		}
+	else
+		{
+		rcResult.left = rcFrame.left;
+		rcResult.right = rcResult.left + cxWidth;
+		}
+
+	if (dwAlign & alignBottom)
+		{
+		rcResult.bottom = rcFrame.bottom;
+		rcResult.top = rcResult.bottom - cyHeight;
+		}
+	else if (dwAlign & alignMiddle)
+		{
+		rcResult.top = rcFrame.top + (RectHeight(rcFrame) - cyHeight) / 2;
+		rcResult.bottom = rcResult.top + cyHeight;
+		}
+	else
+		{
+		rcResult.top = rcFrame.top;
+		rcResult.bottom = rcResult.top + cyHeight;
+		}
+	}
+
 void CDetailList::CalcColumnRect (const RECT &rcArea, int xCol, int cxCol, int cyCol, DWORD dwFlags, RECT &retCol) const
 
 //	CalcColumnRect
@@ -39,7 +79,7 @@ void CDetailList::CalcColumnRect (const RECT &rcArea, int xCol, int cxCol, int c
 		}
 	}
 
-void CDetailList::CalcColumnRects (const RECT &rcRect, int cxCol, int cyCol1, int cyCol2, DWORD dwFlags, RECT &retCol1, RECT &retCol2) const
+void CDetailList::CalcColumnRects (int cxWidth, int cyHeight, int cxCol, int cyCol1, int cyCol2, DWORD dwFlags, RECT &retCol1, RECT &retCol2) const
 
 //	CalcColumnRects
 //
@@ -52,23 +92,25 @@ void CDetailList::CalcColumnRects (const RECT &rcRect, int cxCol, int cyCol1, in
 
 	int cyArea = Max(cyCol1, cyCol2);
 	RECT rcArea;
-	rcArea.left = rcRect.left;
-	rcArea.right = rcRect.right;
+	rcArea.left = 0;
+	rcArea.right = cxWidth;
+
+	cyHeight = Max(cyHeight, cyArea);
 
 	if (dwFlags & FORMAT_PLACE_BOTTOM)
 		{
-		rcArea.bottom = rcRect.bottom;
-		rcArea.top = rcRect.bottom - cyArea;
+		rcArea.bottom = cyHeight;
+		rcArea.top = cyHeight - cyArea;
 		}
 	else if (dwFlags & FORMAT_PLACE_CENTER)
 		{
-		rcArea.top = rcRect.top + (RectHeight(rcRect) - cyArea) / 2;
+		rcArea.top = (cyHeight - cyArea) / 2;
 		rcArea.bottom = rcArea.top + cyArea;
 		}
 	else
 		{
-		rcArea.top = rcRect.top;
-		rcArea.bottom = rcArea.top + cyArea;
+		rcArea.top = 0;
+		rcArea.bottom = cyArea;
 		}
 
 	//	Now calculate the two columns
@@ -77,7 +119,7 @@ void CDetailList::CalcColumnRects (const RECT &rcRect, int cxCol, int cyCol1, in
 	CalcColumnRect(rcArea, rcArea.right - SPACING_X - cxCol, cxCol, cyCol2, dwFlags, retCol2);
 	}
 
-void CDetailList::Format (const RECT &rcRect, DWORD dwFlags, int *retcyHeight)
+void CDetailList::Format (int cxWidth, int cyHeight, DWORD dwFlags, int *retcyHeight)
 
 //	Format
 //
@@ -85,45 +127,135 @@ void CDetailList::Format (const RECT &rcRect, DWORD dwFlags, int *retcyHeight)
 //	content pane.
 
 	{
-	int i;
-	const CG16bitFont &Medium = m_VI.GetFont(fontMedium);
-	const CG16bitFont &MediumBold = m_VI.GetFont(fontMediumBold);
-
 	//	Short-circuit
 
 	if (m_List.GetCount() == 0)
 		{
-		if (retcyHeight) *retcyHeight = 0;
-		return;
+		if (retcyHeight)
+			*retcyHeight = 0;
 		}
+
+	//	Single column
+
+	else if (dwFlags & FORMAT_SINGLE_COLUMN)
+		{
+		FormatSingleColumn(cxWidth, cyHeight, dwFlags, retcyHeight);
+		}
+
+	//	Two columns
+
+	else
+		{
+		FormatDoubleColumns(cxWidth, cyHeight, dwFlags, retcyHeight);
+		}
+	}
+
+void CDetailList::FormatColumn (int iStart, int iEnd, const RECT &rcRect, DWORD dwFlags)
+
+//	FormatColumn
+//
+//	Formats the given column
+
+	{
+	const CG16bitFont &MediumBold = m_VI.GetFont(fontMediumBold);
+
+	bool bAlignRight;
+	AlignmentStyles iTextAlign;
+
+	//	Left/right alignment depends on flags
+
+	if (dwFlags & FORMAT_ANTI_MIRROR_COLUMNS)
+		{
+		bAlignRight = ((dwFlags & FORMAT_RIGHT_COLUMN) != 0);
+		iTextAlign = (bAlignRight ? alignRight : alignLeft);
+		}
+	else if (dwFlags & FORMAT_MIRROR_COLUMNS)
+		{
+		bAlignRight = ((dwFlags & FORMAT_RIGHT_COLUMN) == 0);
+		iTextAlign = (bAlignRight ? alignRight : alignLeft);
+		}
+	else
+		{
+		bAlignRight = false;
+		iTextAlign = alignLeft;
+		}
+
+	//	Format
+
+	int y = rcRect.top;
+	for (int i = iStart; i < iEnd; i++)
+		{
+		m_List[i].bAlignRight = bAlignRight;
+		m_List[i].Desc.SetAlignment(iTextAlign);
+
+		m_List[i].rcRect.left = rcRect.left;
+		m_List[i].rcRect.right = rcRect.right;
+		m_List[i].rcRect.top = y;
+		m_List[i].rcRect.bottom = y + m_List[i].cyRect;
+
+		//	Position the icon
+
+		if (bAlignRight)
+			AlignRect(m_List[i].rcRect, DETAIL_ICON_WIDTH, DETAIL_ICON_HEIGHT, alignRight | alignTop, m_List[i].rcIcon);
+		else
+			AlignRect(m_List[i].rcRect, DETAIL_ICON_WIDTH, DETAIL_ICON_HEIGHT, alignLeft | alignTop, m_List[i].rcIcon);
+
+		//	The title and description go in a box, vertically centered.
+
+		RECT rcText;
+		int cxText = RectWidth(m_List[i].rcRect) - DETAIL_ICON_WIDTH - SPACING_X;
+		if (bAlignRight)
+			AlignRect(m_List[i].rcRect, cxText, m_List[i].cyText, alignLeft | alignMiddle, rcText);
+		else
+			AlignRect(m_List[i].rcRect, cxText, m_List[i].cyText, alignRight | alignMiddle, rcText);
+
+		//	Position the title and RTF description
+
+		if (!m_List[i].sTitle.IsBlank())
+			{
+			m_List[i].rcTitle = rcText;
+			m_List[i].rcTitle.bottom = rcText.top + MediumBold.GetHeight();
+
+			m_List[i].rcDesc = rcText;
+			m_List[i].rcDesc.top = m_List[i].rcTitle.bottom;
+			}
+		else
+			{
+			m_List[i].rcDesc = rcText;
+			}
+
+		y += m_List[i].cyRect + SPACING_Y;
+		}
+	}
+
+void CDetailList::FormatDoubleColumns (int cxWidth, int cyHeight, DWORD dwFlags, int *retcyHeight)
+
+//	FormatDoubleColumns
+//
+//	Formats two columns side by side.
+
+	{
+	const CG16bitFont &Medium = m_VI.GetFont(fontMedium);
+	const CG16bitFont &MediumBold = m_VI.GetFont(fontMediumBold);
 
 	//	We arrange the details along two columns, aligned to the bottom.
 
-	int cxPane = RectWidth(rcRect);
+	int cxPane = cxWidth;
 	int cxColumn = (cxPane - (3 * SPACING_X)) / 2;
-
-	RECT rcColumn;
-	rcColumn.left = 0;
-	rcColumn.right = cxColumn;
-	rcColumn.top = 0;
-	rcColumn.bottom = RectHeight(rcRect);
 
 	//	The text area is smaller because of the icon.
 
-	RECT rcText = rcColumn;
-	rcText.right -= SPACING_X + DETAIL_ICON_WIDTH;
+	int cxText = cxWidth - SPACING_X - DETAIL_ICON_WIDTH;
 
 	//	First we measure the height of each detail entry.
 
-	for (i = 0; i < m_List.GetCount(); i++)
+	for (int i = 0; i < m_List.GetCount(); i++)
 		{
 		int cyDetails = (!m_List[i].sTitle.IsBlank() ? MediumBold.GetHeight() : 0);
 
 		//	Compute height of description
 
-		RECT rcBounds;
-		m_List[i].Desc.GetBounds(rcText, &rcBounds);
-		cyDetails += RectHeight(rcBounds);
+		cyDetails += m_List[i].Desc.CalcHeight(cxText);
 
 		//	Remember the text height separately.
 
@@ -143,11 +275,11 @@ void CDetailList::Format (const RECT &rcRect, DWORD dwFlags, int *retcyHeight)
 	//	ignore any spacing between entries.
 
 	int cyCol1 = 0;
-	for (i = 0; i < iBreakAt; i++)
+	for (int i = 0; i < iBreakAt; i++)
 		cyCol1 += m_List[i].cyRect;
 
 	int cyCol2 = 0;
-	for (i = iBreakAt; i < m_List.GetCount(); i++)
+	for (int i = iBreakAt; i < m_List.GetCount(); i++)
 		cyCol2 += m_List[i].cyRect;
 
 	int cyMax = Max(cyCol1, cyCol2);
@@ -187,7 +319,7 @@ void CDetailList::Format (const RECT &rcRect, DWORD dwFlags, int *retcyHeight)
 
 	RECT rcCol1;
 	RECT rcCol2;
-	CalcColumnRects(rcRect, cxColumn, cyCol1, cyCol2, dwFlags, rcCol1, rcCol2);
+	CalcColumnRects(cxWidth, cyHeight, cxColumn, cyCol1, cyCol2, dwFlags, rcCol1, rcCol2);
 
 	//	Now format all entries. Start with the first column.
 
@@ -200,49 +332,130 @@ void CDetailList::Format (const RECT &rcRect, DWORD dwFlags, int *retcyHeight)
 		*retcyHeight = cyMax;
 	}
 
-void CDetailList::FormatColumn (int iStart, int iEnd, const RECT &rcRect, DWORD dwFlags)
+void CDetailList::FormatSingleColumn (int cxWidth, int cyHeight, DWORD dwFlags, int *retcyHeight)
 
-//	FormatColumn
+//	FormatSingleColumn
 //
-//	Formats the given column
+//	Formats a single column with labels on the left and text on the right.
 
 	{
-	bool bAlignRight;
-	AlignmentStyles iTextAlign;
+	const CG16bitFont &Medium = m_VI.GetFont(fontMedium);
+	const CG16bitFont &MediumBold = m_VI.GetFont(fontMediumBold);
 
-	//	Left/right alignment depends on flags
+	int cxPane = cxWidth;
+	int cxColumn = (cxPane - SPACING_X) / 2;
+	int cyArea = 0;
 
-	if (dwFlags & FORMAT_ANTI_MIRROR_COLUMNS)
+	//	Start by measuring everything.
+
+	for (int i = 0; i < m_List.GetCount(); i++)
 		{
-		bAlignRight = ((dwFlags & FORMAT_RIGHT_COLUMN) != 0);
-		iTextAlign = (bAlignRight ? alignRight : alignLeft);
+		SDetailEntry &Entry = m_List[i];
+
+		//	Calculate the height of the description
+
+		Entry.cyText = Entry.Desc.CalcHeight(cxColumn);
+		Entry.cyRect = Entry.cyText;
+
+		//	The left column has the icon and title.
+
+		if (Entry.pIcon)
+			Entry.cyRect = Max(Entry.cyRect, DETAIL_ICON_HEIGHT);
+
+		if (!Entry.sTitle.IsBlank())
+			Entry.cyRect = Max(Entry.cyRect, MediumBold.GetHeight());
+
+		//	Compute the total height
+
+		cyArea += Entry.cyRect;
 		}
-	else if (dwFlags & FORMAT_MIRROR_COLUMNS)
-		{
-		bAlignRight = ((dwFlags & FORMAT_RIGHT_COLUMN) == 0);
-		iTextAlign = (bAlignRight ? alignRight : alignLeft);
-		}
+
+	//	Compute the starting y coordinate (in case we're formatting vertically).
+
+	cyHeight = Max(cyHeight, cyArea);
+	int yRow;
+	if (dwFlags & FORMAT_PLACE_BOTTOM)
+		yRow = cyHeight - cyArea;
+
+	else if (dwFlags & FORMAT_PLACE_CENTER)
+		yRow = (cyHeight - cyArea) / 2;
+
 	else
+		yRow = 0;
+
+	//	Format each row
+
+	for (int i = 0; i < m_List.GetCount(); i++)
 		{
-		bAlignRight = false;
-		iTextAlign = alignLeft;
+		SDetailEntry &Entry = m_List[i];
+
+		//	Format the left side.
+
+		RECT rcLeft;
+		rcLeft.top = yRow;
+		rcLeft.left = 0;
+		rcLeft.right = cxColumn;
+		rcLeft.bottom = yRow + Entry.cyRect;
+
+		if (dwFlags & FORMAT_ANTI_MIRROR_COLUMNS)
+			{
+			Entry.rcIcon.left = rcLeft.left;
+			Entry.rcIcon.top = rcLeft.top;
+			Entry.rcIcon.right = Entry.rcIcon.left + DETAIL_ICON_WIDTH;
+			Entry.rcIcon.bottom = Entry.rcIcon.top + DETAIL_ICON_HEIGHT;
+
+			Entry.rcTitle.left = Entry.rcIcon.right + SPACING_X;
+			Entry.rcTitle.top = rcLeft.top;
+			Entry.rcTitle.right = rcLeft.right;
+			Entry.rcTitle.bottom = rcLeft.bottom;
+
+			Entry.bAlignRight = false;
+			}
+		else if (Entry.pIcon)
+			{
+			if (!Entry.sTitle.IsBlank())
+				{
+				int cxTitle = MediumBold.MeasureText(Entry.sTitle);
+
+				Entry.rcIcon.left = rcLeft.right - cxTitle - SPACING_X - DETAIL_ICON_WIDTH;
+				}
+			else
+				{
+				Entry.rcIcon.left = rcLeft.right - DETAIL_ICON_WIDTH;
+				}
+
+			Entry.rcIcon.right = Entry.rcIcon.left + DETAIL_ICON_WIDTH;
+			Entry.rcIcon.top = rcLeft.top;
+			Entry.rcIcon.bottom = Entry.rcIcon.top + DETAIL_ICON_HEIGHT;
+
+			Entry.rcTitle = rcLeft;
+			Entry.bAlignRight = true;
+			}
+		else
+			{
+			Entry.rcTitle = rcLeft;
+			Entry.bAlignRight = true;
+			}
+
+		//	Format the right side
+
+		RECT rcRight;
+		rcRight.top = yRow;
+		rcRight.left = cxWidth - cxColumn;
+		rcRight.right = cxWidth;
+		rcRight.bottom = yRow + Entry.cyRect;
+
+		Entry.rcDesc = rcRight;
+
+		//	Next row
+
+		yRow += Entry.cyRect;
 		}
 
-	//	Format
+	//	Done
 
-	int y = rcRect.top;
-	for (int i = iStart; i < iEnd; i++)
-		{
-		m_List[i].bAlignRight = bAlignRight;
-		m_List[i].Desc.SetAlignment(iTextAlign);
-
-		m_List[i].rcRect.left = rcRect.left;
-		m_List[i].rcRect.right = rcRect.right;
-		m_List[i].rcRect.top = y;
-		m_List[i].rcRect.bottom = y + m_List[i].cyRect;
-
-		y += m_List[i].cyRect + SPACING_Y;
-		}
+	if (retcyHeight)
+		*retcyHeight = cyArea;
 	}
 
 void CDetailList::Load (ICCItem *pDetails)
@@ -252,14 +465,12 @@ void CDetailList::Load (ICCItem *pDetails)
 //	Load details from an TLisp item to an array.
 
 	{
-	int i;
-
 	m_List.DeleteAll();
 
 	if (pDetails == NULL || !pDetails->IsList())
 		return;
 
-	for (i = 0; i < pDetails->GetCount(); i++)
+	for (int i = 0; i < pDetails->GetCount(); i++)
 		{
 		ICCItem *pEntry = pDetails->GetElement(i);
 		if (!pEntry->IsSymbolTable()
@@ -280,14 +491,14 @@ void CDetailList::Load (ICCItem *pDetails)
 		ICCItem *pIcon = pEntry->GetElement(FIELD_ICON);
 		if (pIcon)
 			{
-			DWORD dwIcon = CTLispConvert::AsImageDesc(pIcon, &pNewEntry->rcIcon);
+			DWORD dwIcon = CTLispConvert::AsImageDesc(pIcon, &pNewEntry->rcIconSrc);
 			if (dwIcon)
 				pNewEntry->pIcon = g_pUniverse->GetLibraryBitmap(dwIcon); 
 			}
 		}
 	}
 
-void CDetailList::Paint (CG32bitImage &Dest) const
+void CDetailList::Paint (CG32bitImage &Dest, int x, int y) const
 
 //	PaintDetails
 //
@@ -305,42 +516,30 @@ void CDetailList::Paint (CG32bitImage &Dest) const
 		//	Paint the icon
 
 		if (Entry.pIcon)
-			{
-			if (Entry.bAlignRight)
-				CPaintHelper::PaintScaledImage(Dest, Entry.rcRect.right - DETAIL_ICON_WIDTH, Entry.rcRect.top, DETAIL_ICON_WIDTH, DETAIL_ICON_HEIGHT, *Entry.pIcon, Entry.rcIcon);
-			else
-				CPaintHelper::PaintScaledImage(Dest, Entry.rcRect.left, Entry.rcRect.top, DETAIL_ICON_WIDTH, DETAIL_ICON_HEIGHT, *Entry.pIcon, Entry.rcIcon);
-			}
-
-		//	Paint text
-
-		int yText = Entry.rcRect.top + (Entry.cyRect - Entry.cyText) / 2;
-		DWORD dwTextFlags = (Entry.bAlignRight ? CG16bitFont::AlignRight : 0);
+			CPaintHelper::PaintScaledImage(Dest, x + Entry.rcIcon.left, y + Entry.rcIcon.top, DETAIL_ICON_WIDTH, DETAIL_ICON_HEIGHT, *Entry.pIcon, Entry.rcIconSrc);
 
 		//	Paint the title
 
 		if (!Entry.sTitle.IsBlank())
 			{
-			int xText = (Entry.bAlignRight ? Entry.rcRect.right - DETAIL_ICON_WIDTH - SPACING_X : Entry.rcRect.left + DETAIL_ICON_WIDTH + SPACING_X);
-			MediumBold.DrawText(Dest, xText, yText, m_rgbTextColor, Entry.sTitle, dwTextFlags);
-			yText += MediumBold.GetHeight();
+			DWORD dwTextFlags = (Entry.bAlignRight ? CG16bitFont::AlignRight : 0);
+
+			RECT rcRect;
+			rcRect.left = x + Entry.rcTitle.left;
+			rcRect.top = y + Entry.rcTitle.top;
+			rcRect.right = x + Entry.rcTitle.right;
+			rcRect.bottom = y + Entry.rcTitle.bottom;
+
+			MediumBold.DrawText(Dest, rcRect, m_rgbTextColor, Entry.sTitle, 0, dwTextFlags);
 			}
 
 		//	Paint the description
 
 		RECT rcDesc;
-		if (Entry.bAlignRight)
-			{
-			rcDesc.left = Entry.rcRect.left;
-			rcDesc.right = Entry.rcRect.right - DETAIL_ICON_WIDTH - SPACING_X;
-			}
-		else
-			{
-			rcDesc.left = Entry.rcRect.left + DETAIL_ICON_WIDTH + SPACING_X;
-			rcDesc.right = Entry.rcRect.right;
-			}
-		rcDesc.top = yText;
-		rcDesc.bottom = Entry.rcRect.bottom;
+		rcDesc.left = x + Entry.rcDesc.left;
+		rcDesc.top = y + Entry.rcDesc.top;
+		rcDesc.right = x + Entry.rcDesc.right;
+		rcDesc.bottom = y + Entry.rcDesc.bottom;
 
 		Entry.Desc.Paint(Dest, rcDesc);
 		}

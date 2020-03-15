@@ -8,12 +8,12 @@
 
 	<ShipClass UNID="&scWolfenVolkov;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, pacificDefense"
-			inherit=			"&scWolfen;"
+			attributes=			"commonwealth, pacificDefense, wingmate"
+			inherit=			"&scWolfenC3;"
 			character=			"&chVolkov;"
 			eventHandler=		"&chVolkov;"
 
@@ -245,6 +245,11 @@
 
 	<Type unid="&chVolkov;"
 			inherit=	"&baStdWingmanBase;">
+
+		<StaticData>
+			<Name>Volkov</Name>
+			<Sovereign>&svCommonwealth;</Sovereign>
+		</StaticData>
 
 		<Language>
 			<Text id="ArmorRepaired">			Good! Armor is repaired</Text>

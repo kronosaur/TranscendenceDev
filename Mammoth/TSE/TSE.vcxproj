@@ -25,32 +25,33 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{797712EA-A2B5-4E30-A2F9-5998E90AFECC}</ProjectGuid>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <XPDeprecationWarning>false</XPDeprecationWarning>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -109,6 +110,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -137,6 +140,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -165,6 +170,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -197,6 +204,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -229,6 +238,8 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
+      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -240,6 +251,9 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Include\TSEListImpl.h" />
+    <ClInclude Include="..\Include\TSEOverlays.h" />
+    <ClInclude Include="..\Include\TSESpaceObjectUtil.h" />
     <ClInclude Include="..\Include\TSEAdventureDesc.h" />
     <ClInclude Include="..\Include\TSEArmor.h" />
     <ClInclude Include="..\Include\TSEArtifactAwakening.h" />
@@ -275,6 +289,7 @@
     <ClInclude Include="..\Include\TSEPlayerSettings.h" />
     <ClInclude Include="..\Include\TSEPower.h" />
     <ClInclude Include="..\Include\TSEPropertyHandler.h" />
+    <ClInclude Include="..\Include\TSEResourceDb.h" />
     <ClInclude Include="..\Include\TSEShipAI.h" />
     <ClInclude Include="..\Include\TSEShipClass.h" />
     <ClInclude Include="..\Include\TSEShipCreator.h" />
@@ -288,13 +303,18 @@
     <ClInclude Include="..\Include\TSESystem.h" />
     <ClInclude Include="..\Include\TSESystemMap.h" />
     <ClInclude Include="..\Include\TSESystemType.h" />
+    <ClInclude Include="..\Include\TSETargeting.h" />
     <ClInclude Include="..\Include\TSETopology.h" />
     <ClInclude Include="..\Include\TSETrade.h" />
     <ClInclude Include="..\Include\TSETransLispUtil.h" />
     <ClInclude Include="..\Include\TSEUniverse.h" />
+    <ClInclude Include="..\Include\TSEUniverseInlines.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="..\Include\TSEVersions.h" />
+    <ClInclude Include="..\Include\TSEWeaponClassImpl.h" />
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
+    <ClInclude Include="..\Include\TSEConfigurationDescInlines.h" />
+    <ClInclude Include="SystemCreateImpl.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="GameFileCompatibility.h" />
     <ClInclude Include="LanguageDefs.h" />
@@ -316,9 +336,12 @@
     <ClInclude Include="SFXImpl.h" />
     <ClInclude Include="SFXRayImpl.h" />
     <ClInclude Include="ShipAIImpl.h" />
+    <ClInclude Include="SystemImpl.h" />
     <ClInclude Include="SystemPaintImpl.h" />
+    <ClInclude Include="TargetListImpl.h" />
     <ClInclude Include="TopologyDescImpl.h" />
     <ClInclude Include="TopologyProcessorsImpl.h" />
+    <ClInclude Include="WeaponClassImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C3DObjectPos.cpp" />
@@ -326,6 +349,7 @@
     <ClCompile Include="CAdventureHighScoreList.cpp" />
     <ClCompile Include="CAdventureRecord.cpp" />
     <ClCompile Include="CAISettings.cpp" />
+    <ClCompile Include="CAngleGenerator.cpp" />
     <ClCompile Include="CApproachOrder.cpp" />
     <ClCompile Include="CArmorItem.cpp" />
     <ClCompile Include="CArmorLimits.cpp" />
@@ -334,8 +358,12 @@
     <ClCompile Include="CArtifactAwakening.cpp" />
     <ClCompile Include="CArtifactProgram.cpp" />
     <ClCompile Include="CAscendedObjectList.cpp" />
+    <ClCompile Include="CAsteroidDesc.cpp" />
     <ClCompile Include="CAttackOrder.cpp" />
     <ClCompile Include="CAttackStationOrder.cpp" />
+    <ClCompile Include="CAutoDockCalc.cpp" />
+    <ClCompile Include="CAutoMiningCalc.cpp" />
+    <ClCompile Include="CAutoTargetCalc.cpp" />
     <ClCompile Include="CCargoDesc.cpp" />
     <ClCompile Include="CCircleRadiusDisruptor.cpp" />
     <ClCompile Include="CCommunicationsHandler.cpp">
@@ -359,6 +387,7 @@
     <ClCompile Include="CCompositeImageModifiers.cpp" />
     <ClCompile Include="CCompositeImageType.cpp" />
     <ClCompile Include="CConditionSet.cpp" />
+    <ClCompile Include="CConfigurationDesc.cpp" />
     <ClCompile Include="CContinuousBeam.cpp" />
     <ClCompile Include="CCreatePainterCtx.cpp" />
     <ClCompile Include="CCrewAI.cpp" />
@@ -367,8 +396,10 @@
     <ClCompile Include="CDelaunayStargateGenerator.cpp" />
     <ClCompile Include="CDesignPropertyDefinitions.cpp" />
     <ClCompile Include="CDesignTypeCriteria.cpp" />
+    <ClCompile Include="CDeviceItem.cpp" />
     <ClCompile Include="CDeviceSystem.cpp" />
     <ClCompile Include="CDifferentiatedItem.cpp" />
+    <ClCompile Include="CDifficultyOptions.cpp" />
     <ClCompile Include="CDisplayAttributeDefinitions.cpp" />
     <ClCompile Include="CDockingPorts.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -393,33 +424,41 @@
     <ClCompile Include="CDockSession.cpp" />
     <ClCompile Include="CDriveDesc.cpp" />
     <ClCompile Include="CEffectParamDesc.cpp" />
+    <ClCompile Include="CEngineLanguage.cpp" />
+    <ClCompile Include="CEngineOptions.cpp" />
     <ClCompile Include="CEnhancementDesc.cpp" />
     <ClCompile Include="CExplosionColorizer.cpp" />
     <ClCompile Include="CFailureDesc.cpp" />
     <ClCompile Include="CFireAndSmokePainter.cpp" />
     <ClCompile Include="CFractalTextureLibrary.cpp" />
     <ClCompile Include="CGalacticMapPainter.cpp" />
+    <ClCompile Include="CGateTimerManager.cpp" />
     <ClCompile Include="CGenericType.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CHullDesc.cpp" />
     <ClCompile Include="CHullPointsCalculator.cpp" />
     <ClCompile Include="CImageFilterDesc.cpp" />
     <ClCompile Include="CImageFilterStack.cpp" />
+    <ClCompile Include="CIntegerRangeCriteria.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CItemCriteria.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />
-    <ClCompile Include="CItemPriceTracker.cpp" />
     <ClCompile Include="CItemTypeProbabilityTable.cpp" />
+    <ClCompile Include="CLabelPainter.cpp" />
     <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
     <ClCompile Include="CMapLabelArranger.cpp" />
+    <ClCompile Include="CMapLabelPainter.cpp" />
+    <ClCompile Include="CMissileItem.cpp" />
     <ClCompile Include="CNameDesc.cpp" />
     <ClCompile Include="CNamedEffects.cpp" />
     <ClCompile Include="CNetworkTopologyCreator.cpp" />
     <ClCompile Include="CObjectJoint.cpp" />
     <ClCompile Include="CObjectJointList.cpp" />
     <ClCompile Include="CObjectTrackerCriteria.cpp" />
+    <ClCompile Include="COrbitFocusGenerator.cpp" />
     <ClCompile Include="COverlay.cpp" />
+    <ClCompile Include="COverlayCounterDesc.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />
     <ClCompile Include="CFireEventOrder.cpp" />
@@ -430,7 +469,10 @@
     <ClCompile Include="CImageArranger.cpp" />
     <ClCompile Include="CInstalledDevice.cpp" />
     <ClCompile Include="CIntegralRotation.cpp" />
+    <ClCompile Include="COverlayUndergroundDesc.cpp" />
+    <ClCompile Include="CPaintOrder.cpp" />
     <ClCompile Include="CPerceptionCalc.cpp" />
+    <ClCompile Include="CPerformanceCounters.cpp" />
     <ClCompile Include="CPhysicsContact.cpp" />
     <ClCompile Include="CPhysicsContactResolver.cpp" />
     <ClCompile Include="CPlayerGameStats.cpp" />
@@ -489,19 +531,26 @@
     <ClCompile Include="CShipPerformanceDesc.cpp" />
     <ClCompile Include="CShipStandard.cpp" />
     <ClCompile Include="CShipTable.cpp" />
+    <ClCompile Include="CShipUpdateSet.cpp" />
     <ClCompile Include="CShipwreckDesc.cpp" />
     <ClCompile Include="CShockwaveHitTest.cpp" />
     <ClCompile Include="CEnvironmentGrid.cpp" />
     <ClCompile Include="CMusicResource.cpp" />
+    <ClCompile Include="CShotArray.cpp" />
     <ClCompile Include="CSimpleOrder.cpp" />
     <ClCompile Include="CSimplePathStargateGenerator.cpp" />
+    <ClCompile Include="CSmartSystemCreateOptions.cpp" />
     <ClCompile Include="CSoundResource.cpp" />
     <ClCompile Include="CSpaceObjectAddressResolver.cpp" />
     <ClCompile Include="CSpaceObjectCriteria.cpp" />
     <ClCompile Include="CSpaceObjectItemList.cpp" />
     <ClCompile Include="CSpaceObjectPool.cpp" />
+    <ClCompile Include="CSpaceObjectProperties.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />
+    <ClCompile Include="CStarDesc.cpp" />
+    <ClCompile Include="CStargateDesc.cpp" />
+    <ClCompile Include="CStationCreateOptions.cpp" />
     <ClCompile Include="CStationEncounterCtx.cpp" />
     <ClCompile Include="CStationEncounterDesc.cpp" />
     <ClCompile Include="CStationHull.cpp" />
@@ -510,8 +559,10 @@
     <ClCompile Include="CSystemMapThumbnails.cpp" />
     <ClCompile Include="CSystemSpacePainter.cpp" />
     <ClCompile Include="CSystemEventList.cpp" />
+    <ClCompile Include="CTargetList.cpp" />
     <ClCompile Include="CTimedMissionEvent.cpp" />
     <ClCompile Include="CTLispConvert.cpp" />
+    <ClCompile Include="CTopologyAttributeCriteria.cpp" />
     <ClCompile Include="CTopologyCreateCtx.cpp" />
     <ClCompile Include="CTopologySystemDesc.cpp" />
     <ClCompile Include="CTradingComputer.cpp" />
@@ -556,6 +607,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CDebugOptions.cpp" />
+    <ClCompile Include="DockSessionProperties.cpp" />
     <ClCompile Include="EffectProperties.cpp" />
     <ClCompile Include="Events.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -579,6 +631,9 @@
     <ClCompile Include="IPaintList.cpp" />
     <ClCompile Include="IPlayerController.cpp" />
     <ClCompile Include="IShipController.cpp" />
+    <ClCompile Include="MissileProperties.cpp" />
+    <ClCompile Include="MissionProperties.cpp" />
+    <ClCompile Include="ObjectImageProperties.cpp" />
     <ClCompile Include="SDamageCtx.cpp" />
     <ClCompile Include="SFXDisintegrate.cpp" />
     <ClCompile Include="SFXGlow.cpp" />
@@ -586,6 +641,8 @@
     <ClCompile Include="SFXOrb.cpp" />
     <ClCompile Include="SFXParticleSystem.cpp" />
     <ClCompile Include="SFXRay.cpp" />
+    <ClCompile Include="ShipUpdate.cpp" />
+    <ClCompile Include="SpaceObjectItemProperties.cpp" />
     <ClCompile Include="SUpdateCtx.cpp" />
     <ClCompile Include="XMLLoader.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -722,7 +779,6 @@
     <ClCompile Include="SFXImage.cpp" />
     <ClCompile Include="SFXImageAndTail.cpp" />
     <ClCompile Include="SFXImageFracture.cpp" />
-    <ClCompile Include="SFXLightningShockwave.cpp" />
     <ClCompile Include="SFXMoltenBolt.cpp" />
     <ClCompile Include="SFXParticleCloud.cpp" />
     <ClCompile Include="SFXParticlePattern.cpp" />
@@ -884,7 +940,7 @@
     <ClCompile Include="C3DConversion.cpp" />
     <ClCompile Include="CAStarPathFinder.cpp" />
     <ClCompile Include="CAttackDetector.cpp" />
-    <ClCompile Include="CAttributeCriteria.cpp" />
+    <ClCompile Include="CAffinityCriteria.cpp" />
     <ClCompile Include="CAttributeDataBlock.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>

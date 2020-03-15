@@ -38,6 +38,9 @@
     <Filter Include="Source Files\quickhull">
       <UniqueIdentifier>{ffb19b8e-5a39-4f27-9f14-de1429eb7291}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Console">
+      <UniqueIdentifier>{fcf01d7f-0756-4bf3-a5da-09c5bdf86845}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CArchiver.cpp">
@@ -235,6 +238,15 @@
     <ClCompile Include="CXForm3D.cpp">
       <Filter>Source Files\Euclid</Filter>
     </ClCompile>
+    <ClCompile Include="CHTML.cpp">
+      <Filter>Source Files\Internets</Filter>
+    </ClCompile>
+    <ClCompile Include="CConsoleFormat.cpp">
+      <Filter>Source Files\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="ILog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Crypto.h">
@@ -328,6 +340,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Alchemy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -176,7 +176,7 @@ CString CAutonAI::DebugCrashInfo (void)
 	return sResult;
 	}
 
-CSpaceObject *CAutonAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CAutonAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -193,7 +193,7 @@ CSpaceObject *CAutonAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 		}
 	}
 
-DWORD CAutonAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CAutonAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -291,14 +291,14 @@ void CAutonAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	//	If our target gets destroyed...
 
 	if (m_State == stateAttackingTarget)
-		if (Ctx.pObj == m_pTarget)
+		if (Ctx.Obj == m_pTarget)
 			SetState(stateNone);
 
 	//	Reset
 
-	if (m_pDest == Ctx.pObj)
+	if (m_pDest == Ctx.Obj)
 		m_pDest = NULL;
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		m_pTarget = NULL;
 	}
 

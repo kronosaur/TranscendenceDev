@@ -65,7 +65,36 @@ bool CEnhancementDesc::Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CS
 	return Accumulate(Ctx.GetItem().GetLevel(), Target, EnhancementIDs, pEnhancements);
 	}
 
-ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CEnhancementDesc::Bind (SDesignLoadCtx &Ctx)
+
+//	Bind
+//
+//	Bind design.
+
+	{
+	for (int i = 0; i < m_Enhancements.GetCount(); i++)
+		{
+		SEnhancerDesc &Enhance = m_Enhancements[i];
+
+		//	Bind the type in case it is an item type.
+
+		if (DWORD dwEnhancementType = strToInt(Enhance.sType, 0))
+			{
+			CItemType *pEnhancementType = Ctx.GetUniverse().FindItemTypeBound(Ctx, dwEnhancementType);
+			if (pEnhancementType == NULL)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Unknown enhancement type: %08x"), dwEnhancementType);
+				return ERR_FAIL;
+				}
+
+			Enhance.Enhancement.SetEnhancementType(pEnhancementType);
+			}
+		}
+
+	return NOERROR;
+	}
+
+ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pEnhancerType)
 
 //	InitFromXML
 //
@@ -81,7 +110,7 @@ ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (strEquals(pDesc->GetTag(), ENHANCE_TAG))
 		{
 		m_Enhancements.InsertEmpty(1);
-		if (error = InitFromEnhanceXML(Ctx, pDesc, m_Enhancements[0]))
+		if (error = InitFromEnhanceXML(Ctx, pDesc, pEnhancerType, m_Enhancements[0]))
 			return error;
 		}
 	else
@@ -89,7 +118,7 @@ ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_Enhancements.InsertEmpty(pDesc->GetContentElementCount());
 		for (i = 0; i < pDesc->GetContentElementCount(); i++)
 			{
-			if (error = InitFromEnhanceXML(Ctx, pDesc->GetContentElement(i), m_Enhancements[i]))
+			if (error = InitFromEnhanceXML(Ctx, pDesc->GetContentElement(i), pEnhancerType, m_Enhancements[i]))
 				return error;
 			}
 		}
@@ -97,7 +126,7 @@ ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SEnhancerDesc &Enhance)
+ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pEnhancerType, SEnhancerDesc &Enhance)
 
 //	InitFromEnhanceXML
 //
@@ -106,7 +135,14 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 	{
 	ALERROR error;
 
+	//	The type is either a string or the UNID of an item type. If the latter,
+	//	we use it as the enhancement type. We canonicalize the UNID here, and we
+	//	look up the UNID in Bind.
+
 	Enhance.sType = pDesc->GetAttribute(TYPE_ATTRIB);
+	DWORD dwEnhancementType = strToInt(Enhance.sType, 0);
+	if (dwEnhancementType)
+		Enhance.sType = strPatternSubst(CONSTLIT("0x%08x"), dwEnhancementType);
 
 	//	Load the item criteria
 
@@ -122,6 +158,12 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 	if (error = Enhance.Enhancement.InitFromDesc(Ctx, pDesc->GetAttribute(ENHANCEMENT_ATTRIB)))
 		return error;
 
+	//	If the enhancement type comes from the caller, then use it as a default,
+	//	but this can be overridden via the type= attribute.
+
+	if (pEnhancerType)
+		Enhance.Enhancement.SetEnhancementType(pEnhancerType);
+
 	return NOERROR;
 	}
 
@@ -135,6 +177,18 @@ void CEnhancementDesc::InsertHPBonus (int iBonus)
 	SEnhancerDesc *pEnhance = m_Enhancements.Insert();
 	pEnhance->Criteria.Init(CItemCriteria::ALL);
 	pEnhance->Enhancement.SetModBonus(iBonus);
+	}
+
+void CEnhancementDesc::InsertMissileDefense (void)
+
+//	InsertMissileDefense
+//
+//	Adds a missile defense enhancement.
+
+	{
+	SEnhancerDesc *pEnhance = m_Enhancements.Insert();
+	pEnhance->Criteria.Init(CItemCriteria::ALL);
+	pEnhance->Enhancement.SetModMissileDefense();
 	}
 
 void CEnhancementDesc::SetCriteria (int iEntry, const CItemCriteria &Criteria)
@@ -250,7 +304,7 @@ void CEnhancementDesc::WriteToStream (IWriteStream &Stream) const
 		const SEnhancerDesc &Enhancer = m_Enhancements[i];
 
 		Enhancer.sType.WriteToStream(&Stream);
-		CItem::GenerateCriteria(Enhancer.Criteria).WriteToStream(&Stream);
+		Enhancer.Criteria.AsString().WriteToStream(&Stream);
 		Enhancer.LevelCheck.WriteToStream(Stream);
 		Enhancer.Enhancement.WriteToStream(&Stream);
 		}

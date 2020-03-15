@@ -49,7 +49,7 @@ void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 	DEBUG_CATCH
 	}
 
-DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -75,7 +75,7 @@ DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject
 			return (IsAttacking() ? resAck : resNoAnswer);
 
 		default:
-			return OnCommunicate(pShip, Ctx, pSender, iMessage, pParam1, dwParam2);
+			return OnCommunicate(pShip, Ctx, pSender, iMessage, pParam1, dwParam2, pData);
 		}
 	}
 
@@ -208,12 +208,12 @@ void IOrderModule::ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
 	bool bCancelOrder = false;
 
 	for (i = 0; i < m_iObjCount; i++)
-		if (Ctx.pObj == m_Objs[i])
+		if (Ctx.Obj == m_Objs[i])
 			{
 			//	If this object is a target, and a friendly ship destroyed it, then
 			//	thank the object who helped.
 
-			if (GetTarget() == Ctx.pObj && Ctx.Attacker.IsCausedByFriendOf(pShip) && Ctx.Attacker.GetObj())
+			if (GetTarget() == Ctx.Obj && Ctx.Attacker.IsCausedByFriendOf(pShip) && Ctx.Attacker.GetObj())
 				pShip->Communicate(Ctx.Attacker.GetObj(), msgNiceShooting);
 
 			//	Clear out the variable. We do this first because the derived class

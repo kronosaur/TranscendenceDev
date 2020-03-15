@@ -11,7 +11,6 @@
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"3"
 			multiHull=			"true"
@@ -184,7 +183,7 @@
 							(setq theItem (itmCreate &itDM1500MissileRack; 1))
 
 						;	Find all compatible missiles for this launcher
-						(not (setq missileTypes (itmGetTypes (cat "M +launchedBy:" (itmGetType launcherItem) ";"))))
+						(not (setq missileTypes (itmGetTypes (cat "M +launchedBy:" (itmGetType launcherItem) "; -illegal; -military;"))))
 							(setq theItem (itmCreate &itDM1500MissileRack; 1))
 
 						;	Find a tracking missile of level 3 or less.
@@ -232,7 +231,7 @@
 							Nil
 
 						;	If we currently have raiders, then nothing to do
-						(sysFindObject stationObj "s +centauriWarlords; N:150")
+						(sysFindObject stationObj "sH +centauriWarlords;")
 							Nil
 
 						;	If we've already summoned lots of raiders, then send Arco Vaughn
@@ -476,6 +475,7 @@
 			</SummonRaiders>
 		</Events>
 
+		<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>
 
 		<Language>
 			<!-- Code Points -->

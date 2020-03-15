@@ -28,6 +28,39 @@
 	-->
 
 	<Type UNID="&unidKorolovShipping;">
+		<Properties>
+			<DynamicGlobal id="rank">(or (typGetData gType 'level) 0)</DynamicGlobal>
+			<DynamicGlobal id="rankID">
+				(block (
+					(rank (typ@ gType 'rank))
+					)
+					(switch
+						(= rank -1)
+							'blacklisted
+
+						(@ '(none apprentice journeyman master legend) rank)
+						)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankIcon">
+				(block (
+					(rank (typ@ gType 'rank))
+					)
+					(if (gr rank 0)
+						(resCreateImageDesc
+							&rsKorolovInsignia;
+							(multiply 120 (subtract rank 1))
+							0
+							120
+							120
+							)
+						)
+					)
+			</DynamicGlobal>
+			<Global id="escortSuccessCount">0</Global>
+			<Global id="escortFailureCount">0</Global>
+		</Properties>
+
 		<Events>
 			<GetGlobalAchievements>
 				(append
@@ -170,6 +203,86 @@
 			</Text>
 
 			<Text id="rpg.missionTypeDesc">Korolov shipping missions</Text>
+
+			<Code id="rankDetails">
+				(block (
+					(rankID (typ@ gType 'rankID))
+						
+					(frigatesDestroyed (typGetGlobalData &scCharonFrigateRaider; 'totalDestroyed))
+					(strongholdsDestroyed (typGetGlobalData gType 'recordStrongholds))
+					)
+					(if (and (!= rankID 'none) (!= rankID 'blacklisted))
+						{
+							title: (fmtNoun (typTranslate gType (cat "rank." rankID)) 1 'titleCapitalize)
+							largeIcon: (typ@ gType 'rankIcon)
+
+							details: (append
+								(list
+									{
+										title: (typTranslate gType 'labelTotal)
+										desc: (typTranslate gType 'rtfValue {
+											value: (+ (typ@ gType 'escortSuccessCount) (typ@ gType 'escortFailureCount))
+											})
+										}
+									{
+										title: (typTranslate gType 'labelSuccessRate)
+										desc: (typTranslate gType 'rtfValue {
+											value:
+												(block (
+													(successes (typ@ gType 'escortSuccessCount))
+													(failures (typ@ gType 'escortFailureCount))
+													(total (+ successes failures))
+													)
+													(if (gr total 0)
+														(cat (round (* 100.0 (/ successes total))) "%")
+														"0%"
+														)
+													)
+											})
+										}
+									)
+
+								(if (gr frigatesDestroyed 0)
+									(list
+										{
+											title: (typTranslate gType 'labelFrigatesDestroyed)
+											desc: (typTranslate gType 'rtfValue {
+												value: frigatesDestroyed
+												})
+											}
+										)
+									)
+								(if (gr strongholdsDestroyed 0)
+									(list
+										{
+											title: (typTranslate gType 'labelStrongholdsDestroyed)
+											desc: (typTranslate gType 'rtfValue {
+												value: strongholdsDestroyed
+												})
+											}
+										)
+									)
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+			<Text id="rank.none">apprentice(s)</Text>
+			<Text id="rank.apprentice">apprentice(s)</Text>
+			<Text id="rank.journeyman">journeyman|journeymen</Text>
+			<Text id="rank.master">master(s)</Text>
+			<Text id="rank.legend">legend(s)</Text>
+
+			<Text id="labelTotal">Total Escorts:</Text>
+			<Text id="labelSuccessRate">Success Rate:</Text>
+			<Text id="labelFrigatesDestroyed">Frigates Destroyed:</Text>
+			<Text id="labelStrongholdsDestroyed">Strongholds Destroyed:</Text>
+
+			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+
 		</Language>
 	</Type>
 
@@ -199,7 +312,6 @@
 			regen=              "6"
 			shipRegen=			"6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -217,6 +329,8 @@
 				unique=					"inSystem"
 				/>
 
+		<!-- Properties -->
+
 		<Properties>
 			<Variant id="rpgCharacter.assistantDirector">
 				(rpgCharacterRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
@@ -226,8 +340,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; +basicAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -illegal; -notForSale; -notStandard;"	priceAdj="100"	noDescription="true"/>
+			<Sell	criteria="m +commonwealth; +basicAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -illegal; -notForSale; -notStandard;"	priceAdj="100"	noDescription="true"/>
 
 			<Refuel			criteria="f +BasicFuel; L:1-5;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
@@ -295,6 +409,12 @@
 
 		<DockScreens>
 			<Dispatch>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidKorolovShipping; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
@@ -1050,6 +1170,7 @@
 							(theEntry (scrGetListEntry gScreen))
 							(theMission (@ theEntry 'missionObj))
 							)
+							(scrExitScreen gScreen)
 							(msnAccept theMission)
 							(scrShowScreen gScreen &dsRPGMission; { missionObj:theMission status:'accept })
 							)
@@ -1653,6 +1774,7 @@
 					(switch
 						(= reason 'success)
 							(block Nil
+								(typInc@ &unidKorolovShipping; 'escortSuccessCount 1) 
 								(lnkReplace transRecord 0 (+ (@ transRecord 0) 1))
 								(if (and (= totalMissionsSuccess 10) (= totalMissionsFailed 0))
 									(setq xpBonus 1500)
@@ -1661,6 +1783,7 @@
 
 						(and (= reason 'failure) (msnGetData missionObj 'playerDestroyedFreighter))
 							(block Nil
+								(typInc@ &unidKorolovShipping; 'escortFailureCount 1) 
 								(lnkReplace transRecord 1 (+ (@ transRecord 1) 1))
 								(typSetData &unidKorolovShipping; 'level -1)
 								(typSetData &unidKorolovShipping; 'xp -1)
@@ -1668,6 +1791,7 @@
 
 						(= reason 'failure)
 							(block Nil
+								(typInc@ &unidKorolovShipping; 'escortFailureCount 1) 
 								(lnkReplace transRecord 1 (+ (@ transRecord 1) 1))
 								(setq xpBonus
 									(switch

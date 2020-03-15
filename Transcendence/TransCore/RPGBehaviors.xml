@@ -142,7 +142,7 @@
 						
 						(and (setq oreObj (sysFindObject gSource "TN +minedOre;"))
 								(leq (objGetDistance gSource oreObj) 100)
-								(objGetItems oreObj "t +ore;")
+								(objGetItems oreObj "* +ore; | * +minable;")
 								)
 							(shpOrder gSource 'loot oreObj)
 							

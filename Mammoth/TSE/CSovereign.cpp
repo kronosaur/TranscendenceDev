@@ -277,7 +277,7 @@ bool CSovereign::FindDataField (const CString &sField, CString *retsValue) const
 	return true;
 	}
 
-const CSovereign::SRelationship *CSovereign::FindRelationship (CSovereign *pSovereign, bool bCheckParent) const
+const CSovereign::SRelationship *CSovereign::FindRelationship (const CSovereign *pSovereign, bool bCheckParent) const
 
 //	FindRelationship
 //
@@ -288,7 +288,7 @@ const CSovereign::SRelationship *CSovereign::FindRelationship (CSovereign *pSove
 	return const_cast<CSovereign *>(this)->FindRelationship(pSovereign, bCheckParent);
 	}
 
-CSovereign::SRelationship *CSovereign::FindRelationship (CSovereign *pSovereign, bool bCheckParent)
+CSovereign::SRelationship *CSovereign::FindRelationship (const CSovereign *pSovereign, bool bCheckParent)
 
 //	FindRelationship
 //
@@ -309,6 +309,14 @@ CSovereign::SRelationship *CSovereign::FindRelationship (CSovereign *pSovereign,
 			&& (pInheritFrom = CSovereign::AsType(GetInheritFrom())))
 		pRel = pInheritFrom->FindRelationship(pSovereign, true);
 
+	//	Next look to see if we have a relationship to an ancestor of the 
+	//	sovereign.
+
+	if (pRel == NULL 
+			&& bCheckParent
+			&& (pInheritFrom = CSovereign::AsType(pSovereign->GetInheritFrom())))
+		pRel = FindRelationship(pInheritFrom, true);
+
 	//	Done
 
 	return pRel;
@@ -327,7 +335,7 @@ IPlayerController *CSovereign::GetController (void)
 		return NULL;
 	}
 
-CSovereign::Disposition CSovereign::GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent) const
+CSovereign::Disposition CSovereign::GetDispositionTowards (const CSovereign *pSovereign, bool bCheckParent) const
 
 //	GetDispositionTowards
 //
@@ -470,7 +478,7 @@ CString CSovereign::GetText (MessageTypes iMsg)
 	//	Look up the message in our data table
 
 	CString sString;
-	if (TranslateText(NULL, strFromInt(iMsg), NULL, &sString))
+	if (TranslateText(strFromInt(iMsg), NULL, &sString))
 		return sString;
 
 	//	If we don't already have it, load the default string array
@@ -576,7 +584,7 @@ void CSovereign::InitRelationships (void)
 
 			else if (pRelDesc->FindAttribute(SOVEREIGN_ATTRIB, &sTarget))
 				{
-				CSovereign *pTarget = GetUniverse().FindSovereign(strToInt(sTarget, 0));
+				CSovereign *pTarget = GetUniverse().FindSovereignUnbound(strToInt(sTarget, 0));
 				if (pTarget == NULL)
 					{
 					::kernelDebugLogPattern("[%08x]: Unknown sovereign: %s.", GetUNID(), sTarget);
@@ -1154,19 +1162,8 @@ ALERROR CSovereignRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
-		if (pBaseType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Unknown design type: %08x"), m_dwUNID);
-			return ERR_FAIL;
-			}
-
-		m_pType = CSovereign::AsType(pBaseType);
-		if (m_pType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Specified type is invalid: %08x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+		if (ALERROR error = BindType(Ctx, m_dwUNID, m_pType))
+			return error;
 
 		//	Cannot reference virtual sovereigns
 

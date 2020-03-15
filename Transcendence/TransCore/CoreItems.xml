@@ -19,5 +19,30 @@
 		</AttributeDesc>
 	</Type>
 
+	<!-- Generic Enhancement -->
+
+	<ItemType UNID="&vtGenericEnhancement;"
+			name=				"enhancement"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsItems1;" imageX="288" imageY="768" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<!-- These values are used by intItemEnhanceStatus. -->
+
+			<Text id="itemEnhanceResult.alreadyEnhanced">%ItemName% is already enhanced</Text>
+			<Text id="itemEnhanceResult.damaged"></Text>
+			<Text id="itemEnhanceResult.defectRemoved">%ItemName% has been repaired</Text>
+			<Text id="itemEnhanceResult.defectReplaced"></Text>
+			<Text id="itemEnhanceResult.degraded">%ItemName% has weakened further</Text>
+			<Text id="itemEnhanceResult.enhancementRemoved">%ItemName% has lost its enhancement</Text>
+			<Text id="itemEnhanceResult.enhancementReplaced">(previous enhancement lost)</Text>
+			<Text id="itemEnhanceResult.improved">%ItemName% has been further enhanced</Text>
+			<Text id="itemEnhanceResult.noEffect">The enhancement has no effect</Text>
+			<Text id="itemEnhanceResult.repaired"></Text>
+		</Language>
+	</ItemType>
+
 </TranscendenceModule>
 	

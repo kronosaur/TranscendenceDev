@@ -4,37 +4,7 @@
 
 #include "PreComp.h"
 
-const Metric MAX_AREA_WEAPON_CHECK =	(15.0 * LIGHT_SECOND);
-const Metric MAX_AREA_WEAPON_CHECK2 =	(MAX_AREA_WEAPON_CHECK * MAX_AREA_WEAPON_CHECK);
-const Metric MIN_TARGET_DIST =			(5.0 * LIGHT_SECOND);
-const Metric MIN_TARGET_DIST2 =			(MIN_TARGET_DIST * MIN_TARGET_DIST);
-const Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
-const Metric MIN_STATION_TARGET_DIST2 =	(MIN_STATION_TARGET_DIST * MIN_STATION_TARGET_DIST);
-const Metric HIT_NAV_POINT_DIST =		(8.0 * LIGHT_SECOND);
-const Metric HIT_NAV_POINT_DIST2 =		(HIT_NAV_POINT_DIST * HIT_NAV_POINT_DIST);
-const Metric MAX_TARGET_OF_OPPORTUNITY_RANGE = (20.0 * LIGHT_SECOND);
-const Metric ESCORT_DISTANCE =			(6.0 * LIGHT_SECOND);
-const Metric MAX_ESCORT_DISTANCE =		(12.0 * LIGHT_SECOND);
-const Metric ATTACK_RANGE =				(20.0 * LIGHT_SECOND);
-const Metric CLOSE_RANGE =				(50.0 * LIGHT_SECOND);
-const Metric CLOSE_RANGE2 =				(CLOSE_RANGE * CLOSE_RANGE);
-const Metric MIN_POTENTIAL2 =			(KLICKS_PER_PIXEL * KLICKS_PER_PIXEL * 25.0);
-
-#define MAX_TARGETS						10
-#define MAX_DOCK_DISTANCE				(15.0 * LIGHT_SECOND)
-#define MAX_GATE_DISTANCE				(g_KlicksPerPixel * 32)
-#define DOCKING_APPROACH_DISTANCE		(g_KlicksPerPixel * 200)
-#define DEFAULT_DIST_CHECK				(700.0 * g_KlicksPerPixel)
-#define MIN_FLYBY_SPEED					(2.0 * g_KlicksPerPixel)
-#define MIN_FLYBY_SPEED2				(MIN_FLYBY_SPEED * MIN_FLYBY_SPEED)
-
-#define MAX_DELTA						(2.0 * g_KlicksPerPixel)
-#define MAX_DELTA2						(MAX_DELTA * MAX_DELTA)
-#define MAX_DELTA_VEL					(g_KlicksPerPixel / 2.0)
-#define MAX_DELTA_VEL2					(MAX_DELTA_VEL * MAX_DELTA_VEL)
-#define MAX_DISTANCE					(400 * g_KlicksPerPixel)
-#define MAX_IN_FORMATION_DELTA			(2.0 * g_KlicksPerPixel)
-#define MAX_IN_FORMATION_DELTA2			(MAX_IN_FORMATION_DELTA * MAX_IN_FORMATION_DELTA)
+constexpr int MAX_TARGETS =				10;
 
 #ifdef DEBUG_COMBAT
 #define DEBUG_COMBAT_OUTPUT(x)			if (m_pShip->IsSelected()) m_pShip->GetUniverse().DebugOutput("%d> %s", g_iDebugLine++, x)
@@ -55,7 +25,8 @@ CBaseShipAI::CBaseShipAI (void) :
 		m_fAvoidWalls(false),
 		m_fIsPlayerWingman(false),
 		m_fOldStyleBehaviors(false),
-		m_fPlayerBlacklisted(false)
+		m_fPlayerBlacklisted(false),
+		m_fUseOrderModules(false)
 
 //	CBaseShipAI constructor
 
@@ -190,17 +161,76 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 	//	handle it.
 
 	if (m_fOldStyleBehaviors)
-		{
 		OnBehavior(Ctx);
 
-		//	This method is incompatible with order modules so we just return here.
+	//	Otherwise, if we have an order module, then let it handle behavior
 
-		return;
+	else if (m_pOrderModule)
+		m_pOrderModule->Behavior(m_pShip, m_AICtx);
+
+	//	Otherwise, we need to initialize the order module.
+	//	NOTE: This should never happen because we initialize the order module
+	//	when we add or delete orders.
+
+	else
+		{
+		if (InitOrderModule())
+			m_pOrderModule->Behavior(m_pShip, m_AICtx);
+
+		else if (m_fOldStyleBehaviors)
+			OnBehavior(Ctx);
 		}
 
-	//	If we don't have an order module, see if we can create one from the order
+	//	Done
 
-	if (m_pOrderModule == NULL)
+	m_AICtx.SetSystemUpdateCtx(NULL);
+
+	DEBUG_CATCH
+	}
+
+bool CBaseShipAI::InitOrderModule (void)
+
+//	InitOrderModule
+//
+//	Initializes the order module based on the order. We return TRUE if we are
+//	using an order module; FALSE otherwise.
+
+	{
+	IShipController::OrderTypes iOrder = GetCurrentOrder();
+
+	//	Reset the old style flag because we don't know if the next order
+	//	will have an order module or not.
+
+	m_fOldStyleBehaviors = false;
+
+	//	If we've got an existing order module, then we need to either delete it
+	//	or re-initialize it.
+
+	if (m_pOrderModule)
+		{
+		//	If the current order module handles the current order, then we don't have
+		//	to reallocate everything; we just need to restart it.
+
+		if (m_pOrderModule->GetOrder() == iOrder)
+			{
+			CSpaceObject *pTarget;
+			SData Data;
+			GetCurrentOrderEx(&pTarget, &Data);
+			m_pOrderModule->BehaviorStart(m_pShip, m_AICtx, pTarget, Data);
+			}
+
+		//	Otherwise, we delete the order module and allow it to be recreated.
+
+		else
+			{
+			delete m_pOrderModule;
+			m_pOrderModule = NULL;
+			}
+		}
+
+	//	See if we need to create an order module
+
+	if (m_pOrderModule == NULL && iOrder != IShipController::orderNone)
 		{
 		m_pOrderModule = IOrderModule::Create(iOrder);
 		
@@ -208,42 +238,30 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 		//	style behavior.
 
 		if (m_pOrderModule == NULL)
-			{
 			m_fOldStyleBehaviors = true;
-			OnBehavior(Ctx);
-			return;
+
+		else
+			{
+			//	Tell our descendants to clean up. We need to do this because we don't
+			//	want our descendants to hold on to object pointers (since the order
+			//	module will handle everything, including getting destroyed object
+			//	notifications).
+
+			OnCleanUp();
+
+			//	Initialize order module
+
+			CSpaceObject *pTarget;
+			SData Data;
+			GetCurrentOrderEx(&pTarget, &Data);
+			m_pOrderModule->BehaviorStart(m_pShip, m_AICtx, pTarget, Data);
 			}
-
-		//	Tell our descendants to clean up. We need to do this because we don't
-		//	want our descendants to hold on to object pointers (since the order
-		//	module will handle everything, including getting destroyed object
-		//	notifications).
-
-		OnCleanUp();
-
-		//	Initialize order module
-
-		CSpaceObject *pTarget;
-		SData Data;
-		GetCurrentOrderEx(&pTarget, &Data);
-		m_pOrderModule->BehaviorStart(m_pShip, m_AICtx, pTarget, Data);
-
-		//	NOTE: We might have cancelled the order inside BehaviorStart, so we
-		//	return in that case.
-
-		if (m_pOrderModule == NULL)
-			return;
 		}
 
-	//	Implement orders
+	//	NOTE: We might have cancelled the order inside BehaviorStart, so we
+	//	return FALSE in that case.
 
-	m_pOrderModule->Behavior(m_pShip, m_AICtx);
-
-	//	Done
-
-	m_AICtx.SetSystemUpdateCtx(NULL);
-
-	DEBUG_CATCH
+	return (m_pOrderModule != NULL);
 	}
 
 CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric rRange, CSpaceObject *pExcludeObj)
@@ -582,34 +600,11 @@ void CBaseShipAI::FireOnOrderChanged (void)
 
 	m_AICtx.SetManeuverCounter(0);
 
-	//	Reset the old style flag because we don't know if the next order
-	//	will have an order module or not.
+	//	Initialize the order module. We can't call this for descendants (such as
+	//	CZoanthropeAI that do not use order modules).
 
-	m_fOldStyleBehaviors = false;
-
-	//	Reset the order module
-
-	if (m_pOrderModule)
-		{
-		//	If the current order module handles the current order, then we don't have
-		//	to reallocate everything; we just need to restart it.
-
-		if (m_pOrderModule->GetOrder() == GetCurrentOrder())
-			{
-			CSpaceObject *pTarget;
-			SData Data;
-			GetCurrentOrderEx(&pTarget, &Data);
-			m_pOrderModule->BehaviorStart(m_pShip, m_AICtx, pTarget, Data);
-			}
-
-		//	Otherwise, we delete the order module and allow it to be recreated.
-
-		else
-			{
-			delete m_pOrderModule;
-			m_pOrderModule = NULL;
-			}
-		}
+	if (m_fUseOrderModules)
+		InitOrderModule();
 
 	//	Give descendents a chance
 
@@ -748,90 +743,6 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 		}
 	}
 
-void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles)
-
-//	GetNearestTargets
-//
-//	Returns a list of nearest targets
-
-	{
-	int i;
-	CInstalledDevice *pDevice = ItemCtx.GetDevice();
-	CDeviceClass *pWeapon = ItemCtx.GetDeviceClass();
-
-	//	Get targets, if necessary
-
-	if (TargetingCtx.bRecalcTargets)
-		{
-		TargetingCtx.Targets.DeleteAll();
-
-		//	If we are aggressive, then include ships that haven't fired 
-		//	their weapons recently
-
-		DWORD dwFlags = 0;
-		if (m_AICtx.IsAggressor())
-			dwFlags |= FLAG_INCLUDE_NON_AGGRESSORS;
-
-		//  Include missiles if appropriate
-
-		if (bTargetMissiles)
-			dwFlags |= FLAG_INCLUDE_MISSILES;
-
-		//	First build a list of the nearest enemy ships within
-		//	range of the ship.
-
-		m_pShip->GetNearestVisibleEnemies(MAX_TARGETS,
-				m_AICtx.GetBestWeaponRange(),
-				&TargetingCtx.Targets,
-				GetBase(),
-				dwFlags);
-
-		//	If we've got a target, add it to the list. Sometimes this will be 
-		//	a duplicate, but that's OK.
-
-		CSpaceObject *pTarget = GetTarget(ItemCtx, FLAG_NO_AUTO_TARGET);
-		if (pTarget)
-			TargetingCtx.Targets.Insert(pTarget);
-
-		//	If the player is blacklisted, add her to the list.
-
-		if (m_fPlayerBlacklisted)
-			{
-			pTarget = m_pShip->GetPlayerShip();
-			if (pTarget)
-				TargetingCtx.Targets.Insert(pTarget);
-			}
-
-		TargetingCtx.bRecalcTargets = false;
-		}
-
-	//	Now find a target for the given weapon.
-
-	Metric rMaxRange = pDevice->GetClass()->GetMaxEffectiveRange(m_pShip, pDevice, NULL);
-	Metric rMaxRange2 = rMaxRange * rMaxRange;
-	for (i = 0; i < TargetingCtx.Targets.GetCount(); i++)
-		{
-		int iFireAngle;
-		CSpaceObject *pTarget = TargetingCtx.Targets[i];
-		Metric rDist2 = (pTarget->GetPos() - m_pShip->GetPos()).Length2();
-
-		if (rDist2 < rMaxRange2 
-				&& pDevice->GetWeaponEffectiveness(m_pShip, pTarget) >= 0
-				&& pDevice->IsWeaponAligned(m_pShip, pTarget, NULL, &iFireAngle)
-				&& m_AICtx.CheckForFriendsInLineOfFire(m_pShip, pDevice, pTarget, iFireAngle, rMaxRange))
-			{
-			*retpTarget = pTarget;
-			*retiFireSolution = iFireAngle;
-			return;
-			}
-		}
-
-	//	If we get this far then no target found
-
-	*retpTarget = NULL;
-	*retiFireSolution = -1;
-	}
-
 CSpaceObject *CBaseShipAI::GetOrderGiver (void)
 
 //	GetOrderGiver
@@ -882,7 +793,7 @@ CSpaceObject *CBaseShipAI::GetPlayerOrderGiver (void) const
 		return m_pShip;
 	}
 
-CSpaceObject *CBaseShipAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CBaseShipAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -893,6 +804,51 @@ CSpaceObject *CBaseShipAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 		return m_pOrderModule->GetTarget();
 	else
 		return OnGetTarget(dwFlags);
+	}
+
+CTargetList CBaseShipAI::GetTargetList (void) const
+
+//	GetTargetList
+//
+//	Returns an initialized (though not yet realized) target list, suitable for
+//	weapons to find appropriate targets.
+
+	{
+	CTargetList::STargetOptions Options;
+	
+	//	Range
+
+	Options.rMaxDist = m_AICtx.GetBestWeaponRange();
+
+	//	Include our target
+
+	Options.bIncludeSourceTarget = true;
+
+	//	If we are aggressive, then include ships that haven't fired 
+	//	their weapons recently
+
+	if (m_AICtx.IsAggressor())
+		Options.bIncludeNonAggressors = true;
+
+	//	Include the player if they are blacklisted
+
+	if (m_fPlayerBlacklisted)
+		Options.bIncludePlayer = true;
+
+	//	Always exclude our base (even if it is an enemy)
+
+	Options.pExcludeObj = GetBase();
+
+	//	Include missiles if we have anti-missile defense
+
+	if (m_AICtx.ShootsAllMissiles())
+		Options.bIncludeMissiles = true;
+	else if (m_AICtx.ShootsTargetableMissiles())
+		Options.bIncludeTargetableMissiles = true;
+
+	//	Done
+
+	return CTargetList(*m_pShip, Options);
 	}
 
 void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)
@@ -906,7 +862,7 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 	//	unless they were targeting us.
 
 	if (!pAttacker->IsPlayer() 
-			&& pAttacker->GetTarget(CItemCtx()) != m_pShip)
+			&& pAttacker->GetTarget() != m_pShip)
 		NULL;
 
 	//	If the player hit us (and it seems to be on purpose) then raise an event
@@ -922,7 +878,7 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 		m_pShip->Communicate(pOrderGiver, msgWatchTargets);
 	}
 
-bool CBaseShipAI::IsAngryAt (CSpaceObject *pObj) const
+bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -936,7 +892,7 @@ bool CBaseShipAI::IsAngryAt (CSpaceObject *pObj) const
 
 	//	If we're attacking the object, then we're angry at it.
 
-	if (GetTarget(CItemCtx()) == pObj)
+	if (GetTarget() == pObj)
 		return true;
 
 	//	Are we angry at the player?
@@ -1052,7 +1008,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 	DEBUG_CATCH
 	}
 
-DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -1060,9 +1016,9 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 
 	{
 	if (m_pOrderModule)
-		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2);
+		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 	else
-		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2);
+		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2, pData);
 	}
 
 void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)
@@ -1248,7 +1204,7 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	(we will be updated when we enter the new system).
 
 	if (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate
-			&& Ctx.pObj == GetCurrentOrderTarget())
+			&& Ctx.Obj == GetCurrentOrderTarget())
 		return;
 
 	//	If we're following the player through a gate and the object
@@ -1257,14 +1213,14 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	if (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate
 			&& Ctx.iCause == enteredStargate
-			&& Ctx.pObj->FollowsObjThroughGate(NULL))
+			&& Ctx.Obj.FollowsObjThroughGate(NULL))
 		return;
 
 	//	If we are following an object and it is about to be resurrected,
 	//	then don't cancel the escort order
 
 	if (GetCurrentOrder() == IShipController::orderEscort
-			&& Ctx.pObj == GetCurrentOrderTarget()
+			&& Ctx.Obj == GetCurrentOrderTarget()
 			&& Ctx.bResurrectPending)
 		return;
 
@@ -1282,7 +1238,7 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	delete any that refer to this object.
 
 	bool bChanged;
-	m_Orders.OnObjDestroyed(Ctx.pObj, &bChanged);
+	m_Orders.OnObjDestroyed(&Ctx.Obj, &bChanged);
 	if (bChanged)
 		FireOnOrderChanged();
 	}
@@ -1392,7 +1348,7 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 //	Station has been destroyed
 
 	{
-	ASSERT(!Ctx.pObj->IsDestroyed());
+	ASSERT(!Ctx.Obj.IsDestroyed());
 
 	//	In some cases we ignore the notification because the station still
 	//	exists
@@ -1409,7 +1365,7 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 	//	Remove orders as appropriate
 
 	bool bChanged;
-	m_Orders.OnStationDestroyed(Ctx.pObj, &bChanged);
+	m_Orders.OnStationDestroyed(&Ctx.Obj, &bChanged);
 	if (bChanged)
 		FireOnOrderChanged();
 	}
@@ -1782,22 +1738,18 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 //	Upgrade the ship's weapon with a better one in cargo
 
 	{
-	int i;
-
 	//	Loop over all currently installed weapons
 
 	bool bWeaponsInstalled = false;
-	for (i = 0; i < m_pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = m_pShip->GetDevice(i);
-		if (!pDevice->IsEmpty() 
-				&& pDevice->GetCategory() == itemcatWeapon)
+		if (DeviceItem.GetCategory() == itemcatWeapon)
 			{
 			//	Loop over all uninstalled weapons and see if we can
 			//	find something better than this one.
 
 			CItem BestItem;
-			int iBestLevel = pDevice->GetLevel();
+			int iBestLevel = DeviceItem.GetLevel();
 
 			CItemListManipulator ItemList(m_pShip->GetItemList());
 			while (ItemList.MoveCursorForward())
@@ -1832,17 +1784,19 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 
 			//	If we found a better weapon, upgrade
 
-			if (BestItem.GetType())
+			if (!BestItem.IsEmpty())
 				{
+				int iSlot = DeviceItem.GetInstalledDevice()->GetDeviceSlot();
+
 				//	Uninstall the previous weapon
 
-				m_pShip->SetCursorAtDevice(ItemList, i);
+				m_pShip->SetCursorAtDevice(ItemList, iSlot);
 				m_pShip->RemoveItemAsDevice(ItemList);
 
 				//	Install the new item
 
 				ItemList.SetCursorAtItem(BestItem);
-				m_pShip->InstallItemAsDevice(ItemList, i);
+				m_pShip->InstallItemAsDevice(ItemList, iSlot);
 
 				bWeaponsInstalled = true;
 				}

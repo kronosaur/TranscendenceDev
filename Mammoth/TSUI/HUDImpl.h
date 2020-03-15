@@ -10,17 +10,41 @@
 //	This is the default set of HUDs, created at the dawn of the game. This set
 //	mostly relies on images.
 
+class CAccelerateHUD : public IHUDPainter
+	{
+	public:
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual void Invalidate (void) override { }
+
+	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override { return true; }
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
+		virtual void OnUpdate (SHUDUpdateCtx &Ctx) override;
+
+	private:
+		static constexpr int DISPLAY_HEIGHT = 160;
+		static constexpr int DISPLAY_WIDTH = 160;
+		static constexpr int FADE_START = 150;
+		static constexpr int FADE_TIME = 30;
+		static constexpr int ICON_HEIGHT = 128;
+		static constexpr int ICON_WIDTH = 128;
+
+		bool IsNewMode (CUniverse::EUpdateSpeeds iCurMode, CUniverse::EUpdateSpeeds iNewMode) const;
+
+		CUniverse::EUpdateSpeeds m_iLastMode = CUniverse::updateNone;
+		int m_iLastModeTick = 0;
+	};
+
 class CArmorHUDImages : public IHUDPainter
 	{
 	public:
 		CArmorHUDImages (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
 		virtual void GetBounds (int *retWidth, int *retHeight) const override;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
 		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
@@ -49,7 +73,8 @@ class CArmorHUDImages : public IHUDPainter
 			CG32bitPixel rgbColor;
 			};
 
-		int GetArmorSegment (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) const;
+		ALERROR Bind (SDesignLoadCtx &Ctx);
+		int GetArmorSegment (SDesignLoadCtx &Ctx, const CShipClass &Class, CXMLElement *pDesc) const;
 		void Realize (SHUDPaintCtx &Ctx);
 
 		//	Definitions
@@ -69,15 +94,15 @@ class CArmorHUDShaped : public IHUDPainter
 	public:
 		CArmorHUDShaped (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
 		virtual void GetBounds (int *retWidth, int *retHeight) const override;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
 		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 		void Realize (SHUDPaintCtx &Ctx);
 
 		//	Definitions
@@ -104,22 +129,63 @@ class CArmorHUDShaped : public IHUDPainter
 		CG32bitImage m_Buffer;
 	};
 
+class CLRSHUD : public IHUDPainter
+	{
+	public:
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual void Invalidate (void) override { m_bInvalid = true; }
+
+	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override;
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
+		virtual void OnUpdate (SHUDUpdateCtx &Ctx) override;
+
+	private:
+		static constexpr int MIN_LRS_SIZE =	200;
+		static constexpr int LRS_SCALE =	27;
+		static constexpr int LRS_UPDATE =	5;
+		static constexpr CG32bitPixel RGB_DEFAULT_BACKGROUND =	CG32bitPixel(17, 21, 26);
+
+		void Realize (SHUDUpdateCtx &Ctx);
+
+		int m_iDiameter = 0;				//	Diameter of HUD (pixels)
+		CG8bitImage m_Mask;
+		CG32bitPixel m_rgbBackground = RGB_DEFAULT_BACKGROUND;
+		const CG32bitImage *m_pBackground = NULL;
+		const CG32bitImage *m_pSnow = NULL;
+
+		bool m_bInvalid = true;
+		CG32bitImage m_Buffer;
+	};
+
+class CNullHUD : public IHUDPainter
+	{
+	public:
+		virtual void GetBounds (int *retWidth, int *retHeight) const override { *retWidth = 0; *retHeight = 0; }
+
+	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override { return true; }
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override { }
+
+	private:
+	};
+
 class CReactorHUDDefault : public IHUDPainter
 	{
 	public:
 		CReactorHUDDefault (void);
 		virtual ~CReactorHUDDefault (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
 		virtual void GetBounds (int *retWidth, int *retHeight) const override;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
 		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 		virtual void OnUpdate (SHUDUpdateCtx &Ctx) override;
 
 	private:
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 		void Realize (SHUDPaintCtx &Ctx);
 
 		//	Definitions
@@ -157,11 +223,10 @@ class CShieldHUDDefault : public IHUDPainter
 		CShieldHUDDefault (void);
 		virtual ~CShieldHUDDefault (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
 		virtual void GetBounds (int *retWidth, int *retHeight) const override;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
 
 	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
@@ -173,6 +238,8 @@ class CShieldHUDDefault : public IHUDPainter
 			const CG16bitFont *pFont;
 			CG32bitPixel rgbColor;
 			};
+
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 
 		//	Definitions
 
@@ -192,15 +259,15 @@ class CWeaponHUDDefault : public IHUDPainter
 		CWeaponHUDDefault (void);
 		virtual ~CWeaponHUDDefault (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
 		virtual void GetBounds (int *retWidth, int *retHeight) const override;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
 		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 		void PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x, int y);
 		void PaintStat (int x, int y, const CString &sHeader, const CString &sStat, CG32bitPixel rgbColor);
 		void Realize (SHUDPaintCtx &Ctx);
@@ -229,15 +296,15 @@ class CArmorHUDRingSegments : public IHUDPainter
 	public:
 		CArmorHUDRingSegments (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
 		virtual void GetBounds (int *retWidth, int *retHeight) const override;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
 		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 		void DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledArmor *pArmor, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
 		void DrawIntegrityBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
 		void DrawItemBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sName, const TArray<SDisplayAttribute> &Attribs, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
@@ -278,16 +345,16 @@ class CReactorHUDCircular : public IHUDPainter
 		CReactorHUDCircular (void);
 		virtual ~CReactorHUDCircular (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
 		virtual void GetBounds (int *retWidth, int *retHeight) const override;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
 		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 		virtual void OnUpdate (SHUDUpdateCtx &Ctx) override;
 
 	private:
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 		void PaintChargesGauge (const SReactorStats &Stats);
 		void PaintCounterGauge(CShip * pShip);
 		void PaintFuelGauge(const SReactorStats & Stats, bool bCounterGaugePresent);
@@ -326,15 +393,15 @@ class CWeaponHUDCircular : public IHUDPainter
 		CWeaponHUDCircular (void);
 		virtual ~CWeaponHUDCircular (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
 		virtual void GetBounds (int *retWidth, int *retHeight) const override;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
 		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 		void PaintTarget (SHUDPaintCtx &Ctx, CShip *pShip, CSpaceObject *pTarget);
 		void PaintTargetStat (CG32bitImage &Dest, int x, int y, const CString &sLabel, const CString &sStat);
 		void PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDevice, Metric rAngle);
@@ -374,12 +441,11 @@ class CArmorHUDRectangular : public IHUDPainter
 	public:
 		CArmorHUDRectangular (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
 		virtual void GetBounds (int *retWidth, int *retHeight) const override;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
 		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:

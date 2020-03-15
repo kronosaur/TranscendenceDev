@@ -31,7 +31,6 @@
 			sovereign=			"&svKobolWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedCeralloyArmor;"
@@ -97,6 +96,7 @@
 			type=				""
 			defaultSovereign=	"&svKobolWarlords;"
 
+			size=				"36"
 			mass=				"90"
 			cargoSpace=			"100"
 			thrustRatio=		"9"
@@ -113,7 +113,7 @@
 		</Armor>
 
 		<Devices>
-			<Device deviceID="&itOmniTeV9Blaster;"/>
+			<Device deviceID="&itOmniTeV9Blaster;"	posAngle="0" posRadius="0" posZ="10"/>
 		</Devices>
 
 		<Maneuver
@@ -125,11 +125,12 @@
 			<Item count="2d6" item="&itPteracniumFuelRod;"/>
 		</Items>
 
-		<Image imageID="&rsKobolGunshipOmniHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsKobolGunshipOmniHD;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&rsKobolGunshipOmniHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="158"	posRadius="26"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-158"	posRadius="26"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="164"	posRadius="30"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-164"	posRadius="30"	posZ="0"	rotation="180"/>
 		</Effects>
 		
 		<AISettings
@@ -148,6 +149,7 @@
 			type=				""
 			defaultSovereign=	"&svKobolWarlords;"
 
+			size=				"36"
 			mass=				"90"
 			cargoSpace=			"100"
 			thrustRatio=		"9"
@@ -176,11 +178,12 @@
 			<Item count="2d6" item="&itPteracniumFuelRod;"/>
 		</Items>
 
-		<Image imageID="&rsKobolGunshipDualHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsKobolGunshipDualHD;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&rsKobolGunshipDualHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="158"	posRadius="26"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-158"	posRadius="26"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="164"	posRadius="30"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-164"	posRadius="30"	posZ="0"	rotation="180"/>
 		</Effects>
 		
 		<AISettings
@@ -200,6 +203,7 @@
 			type=				""
 			defaultSovereign=	"&svKobolWarlords;"
 
+			size=				"36"
 			mass=				"90"
 			cargoSpace=			"100"
 			thrustRatio=		"9"
@@ -216,7 +220,7 @@
 		</Armor>
 
 		<Devices>
-			<Device deviceID="&itRasiermesserLauncher;" posAngle="90" posRadius="20">
+			<Device deviceID="&itRasiermesserLauncher;" posAngle="60" posRadius="22" posZ="0">
 				<Items>
 					<Item chance="50"	count="1d12" item="&itGotha400Seeker;"/>
 					<Item				count="4d12" item="&itGotha10Missile;"/>
@@ -233,11 +237,12 @@
 			<Item count="2d6" item="&itPteracniumFuelRod;"/>
 		</Items>
 
-		<Image imageID="&rsKobolGunshipMissilesHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsKobolGunshipMissilesHD;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&rsKobolGunshipMissilesHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="158"	posRadius="26"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-158"	posRadius="26"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="164"	posRadius="30"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-164"	posRadius="30"	posZ="0"	rotation="180"/>
 		</Effects>
 		
 		<AISettings
@@ -253,7 +258,12 @@
 <!-- RESOURCES -->
 
 	<Image UNID="&rsKobolGunshipDualHD;"		bitmap="Resources\KobolGunshipDualHD.jpg"		bitmask="Resources\KobolGunshipDualHDMask.bmp"  	loadOnUse="true"/>
+	<Image UNID="&rsKobolGunshipDualHero;"		bitmap="Resources\KobolGunshipDualLarge.jpg"		bitmask="Resources\KobolGunshipDualLargeMask.bmp"  	loadOnUse="true"/>
+
 	<Image UNID="&rsKobolGunshipMissilesHD;"	bitmap="Resources\KobolGunshipMissilesHD.jpg"	bitmask="Resources\KobolGunshipMissilesHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsKobolGunshipMissilesHero;"	bitmap="Resources\KobolGunshipMissilesLarge.jpg"	bitmask="Resources\KobolGunshipMissilesLargeMask.bmp"  loadOnUse="true"/>
+
 	<Image UNID="&rsKobolGunshipOmniHD;"		bitmap="Resources\KobolGunshipOmniHD.jpg"		bitmask="Resources\KobolGunshipOmniHDMask.bmp"  	loadOnUse="true"/>
+	<Image UNID="&rsKobolGunshipOmniHero;"		bitmap="Resources\KobolGunshipOmniLarge.jpg"		bitmask="Resources\KobolGunshipOmniLargeMask.bmp"  	loadOnUse="true"/>
 
 </TranscendenceModule>

@@ -223,6 +223,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		{
 		printf("  /language             Output language tables.\n");
 		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
+		printf("      /code                 Include code blocks.\n");
 		printf("      /criteria:n           Types to output.\n");
 		}
 	else if (pCmdLine->GetAttributeBool(LOOT_SIM_SWITCH))

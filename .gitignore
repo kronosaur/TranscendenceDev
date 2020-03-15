@@ -68,6 +68,7 @@ bld/
 ## Visual Studio Config files
 
 .vs/config/applicationhost.config
+.vs/slnx.sqlite
 
 # Roslyn cache directories
 *.ide/
@@ -222,3 +223,5 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+/.vs/VSWorkspaceState.json
+/.vs/slnx.sqlite

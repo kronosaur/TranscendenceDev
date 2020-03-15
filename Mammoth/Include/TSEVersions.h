@@ -5,9 +5,9 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							45;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					37;
-constexpr DWORD SYSTEM_SAVE_VERSION =					174;
+constexpr DWORD API_VERSION =							48;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
+constexpr DWORD SYSTEM_SAVE_VERSION =					187;
 
 //	Uncomment out the following define when building a stable release
 
@@ -110,6 +110,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					174;
 //
 //	37: 1.9 Alpha 1
 //		Added m_dwLastAcceptedOn in CMissionType
+//
+//	38: 1.9 Alpha 3
+//		Added m_Difficulty to CUniverse
 
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
@@ -580,7 +583,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					174;
 //		Added m_pEnhancements to CInstalledArmor
 //
 //	153: 1.8 Alpha 4
-//		Added m_WeaponTargets
+//		Added m_WeaponTargetsOld
 //
 //	154: 1.8 Alpha 4
 //		Added sNodeID and flags to CSystemMap::SMapAnnotation
@@ -641,3 +644,42 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					174;
 //
 //	174: 1.9 Alpha 1
 //		Add source to CItem
+//
+//	175: 1.9 Alpha 3
+//		Changes to COrbit
+//
+//	176: 1.9 Alpha 3
+//		m_iType in CStationHull
+//
+//	177: 1.9 Alpha 4
+//		m_iPaintOrder in CStation
+//
+//	178: 1.9 Alpha 5
+//		m_rMaxPlayerDist in CDockingPorts
+//
+//	179: 1.9 Beta 1
+//		iCountMined in CPlayerGameStats
+//
+//	180: 1.9 Beta 1
+//		Replace m_WeaponTargets
+//
+//	181: 1.9 Beta 1
+//		Remove m_iFireDelay and m_iMissileFireDelay from CShip
+//
+//	182: 1.9 Beta 1
+//		Add m_fAnonymous to CStation
+//
+//	183: 1.9 Beta 1
+//		m_iStarlightImageRotation in CStation
+//
+//	184: 1.9 Beta 1
+//		Add m_iHitPoints to COverlay
+//
+//	185: 1.9 Beta 1
+//		Move m_fAutoCreatedPorts to CSpaceObject (from CShip)
+//
+//	186: 1.9 Beta 1
+//		Add m_Source to CParticleEffect
+//
+//	187: 1.9 Beta 1
+//		Add m_sArcTitle and m_sArcStatus to CMission

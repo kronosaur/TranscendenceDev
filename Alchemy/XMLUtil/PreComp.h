@@ -6,4 +6,5 @@
 #pragma once
 
 #include "Alchemy.h"
+#include "Internets.h"
 #include "XMLUtil.h"

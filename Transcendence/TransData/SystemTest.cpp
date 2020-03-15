@@ -566,7 +566,7 @@ bool CSystemTestGenerator::RunSystemTestGame (TSortMap<CString, SSystemInfo> &Al
 				//	If this station is a ship broker, then figure out which 
 				//	ships it has for sale.
 
-				ICCItemPtr pShipList(pObj->GetProperty(CCCtx, CONSTLIT("rpg.shipBrokerInventory")));
+				ICCItemPtr pShipList = pObj->GetProperty(CCCtx, CONSTLIT("rpg.shipBrokerInventory"));
 				if (pShipList && !pShipList->IsNil())
 					ComputeShipBrokerStats(*pObj, *pShipList, *pSystemEntry);
 				}

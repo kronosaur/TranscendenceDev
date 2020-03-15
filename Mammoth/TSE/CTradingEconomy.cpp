@@ -137,7 +137,7 @@ CString CTradingEconomy::GetDescription (void) const
 	//	Short-circuit
 
 	if (List.GetCount() == 0)
-		return NULL_STR;
+		return g_pUniverse->TranslateEngineText(CONSTLIT("averageCommodityPrices"));
 
 	//	Concatenate them all together
 

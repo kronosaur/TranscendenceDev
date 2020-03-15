@@ -323,6 +323,42 @@
     <ClInclude Include="GameFileCompatibility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEResourceDb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESpaceObjectUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEOverlays.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemCreateImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponClassImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEWeaponClassImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSETargeting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetListImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEConfigurationDescInlines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEListImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEUniverseInlines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -412,9 +448,6 @@
     <ClCompile Include="SFXImageFracture.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
-    <ClCompile Include="SFXLightningShockwave.cpp">
-      <Filter>Source Files\SFX</Filter>
-    </ClCompile>
     <ClCompile Include="SFXMoltenBolt.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
@@ -491,9 +524,6 @@
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CAttackDetector.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="CAttributeCriteria.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CAttributeDataBlock.cpp">
@@ -1114,9 +1144,6 @@
     <ClCompile Include="CPowerConsumption.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="SUpdateCtx.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="CFailureDesc.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
@@ -1148,9 +1175,6 @@
       <Filter>Source Files\Stations</Filter>
     </ClCompile>
     <ClCompile Include="CEnhancementDesc.cpp">
-      <Filter>Source Files\Items</Filter>
-    </ClCompile>
-    <ClCompile Include="CItemPriceTracker.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
     <ClCompile Include="CTradingDesc.cpp">
@@ -1255,9 +1279,6 @@
     <ClCompile Include="CConditionSet.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="CMapLabelArranger.cpp">
-      <Filter>Source Files\StarSystem</Filter>
-    </ClCompile>
     <ClCompile Include="CSpaceObjectPool.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -1329,6 +1350,120 @@
     </ClCompile>
     <ClCompile Include="CItemCriteria.cpp">
       <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CIntegerRangeCriteria.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CDeviceItem.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="DockSessionProperties.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoTargetCalc.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoDockCalc.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CTopologyAttributeCriteria.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CAffinityCriteria.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CLabelPainter.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapLabelArranger.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapLabelPainter.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CAngleGenerator.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="COrbitFocusGenerator.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSmartSystemCreateOptions.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CEngineOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CDifficultyOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationCreateOptions.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="SUpdateCtx.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CPaintOrder.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CMissileItem.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectProperties.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="MissionProperties.cpp">
+      <Filter>Source Files\Missions</Filter>
+    </ClCompile>
+    <ClCompile Include="MissileProperties.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="SpaceObjectItemProperties.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CGateTimerManager.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CStarDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CStargateDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CAsteroidDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CEngineLanguage.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoMiningCalc.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CConfigurationDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CTargetList.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CShotArray.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipUpdateSet.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="ShipUpdate.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlayCounterDesc.cpp">
+      <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlayUndergroundDesc.cpp">
+      <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="CPerformanceCounters.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectImageProperties.cpp">
+      <Filter>Source Files\Images</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

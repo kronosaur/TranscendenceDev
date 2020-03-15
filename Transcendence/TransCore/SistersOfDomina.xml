@@ -60,7 +60,6 @@
 			sovereign=			"&svSistersOfDomina;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itPlasteelPlate;"
@@ -211,11 +210,11 @@
 		</DockingPorts>
 
 		<Language>
-			<Text id="actionTalkToAbbess">"[M]atriarch's Chamber"</Text>
-			<Text id="actionDonate">"[D]onate"</Text>
-			<Text id="actionPilgrimsAid">"[P]ilgrim's Aid"</Text>
-			<Text id="actionSanctum">"[S]anctum"</Text>
-			<Text id="actionUndock">"[U]ndock"</Text>
+			<Text id="actionTalkToAbbess">[M]atriarch's Chancery</Text>
+			<Text id="actionDonate">[D]onate</Text>
+			<Text id="actionPilgrimsAid">[P]ilgrim's Aid</Text>
+			<Text id="actionSanctum">[S]anctum</Text>
+			<Text id="actionUndock">[U]ndock</Text>
 			
 			<Text id="Welcome">
 				You are docked at an abbey of the Sisters of Domina.

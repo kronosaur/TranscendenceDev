@@ -103,7 +103,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"TempleDestroyed"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"
@@ -156,10 +155,22 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionGrandHall" default="1">
-								(rpgMissionAssignment {
-									missionCriteria: (cat "n +huariTemple; =" (sysGetLevel) ";")
-									noMissionTextID: 'descNoMissions
-									})
+								(switch
+									;	Sometimes, such as when we use a Penitent ship for a Benedict mission,
+									;	we're not svPlayer. In those cases, we don't get a mission.
+
+									(!= (obj@ gPlayerShip 'sovereign) &svPlayer;)
+										(scrShowScreen gScreen &dsRPGMessage; {
+											desc:(scrTranslate gScreen 'descNoMissions.generic)
+											})
+
+									;	Missions
+
+									(rpgMissionAssignment {
+										missionCriteria: (cat "n +huariTemple; =" (sysGetLevel) ";")
+										noMissionTextID: 'descNoMissions.pilgrim
+										})
+									)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -193,9 +204,14 @@
 				long, colorful clothing swarm around you as you enter. They are curious but shy.
 
 			</Text>
-			<String id="descNoMissions">
+			<String id="descNoMissions.pilgrim">
 
 				"Welcome, pilgrim! All who are peaceful shall be offered peace in return."
+
+			</String>
+			<String id="descNoMissions.generic">
+
+				The Grand Hall is empty.
 
 			</String>
 			<Text id="descTempleDestroyed">
@@ -229,7 +245,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"
@@ -319,10 +334,25 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionGrandHall" default="1">
-								(rpgMissionAssignment {
-									missionCriteria: (cat "n +huariFortress; =" (sysGetLevel) ";")
-									noMissionTextID: 'descNoMissions
-									})
+								(switch
+									;	Sometimes, such as when we use a Penitent ship for a Benedict mission,
+									;	we're not svPlayer. In those cases, we don't get a mission.
+
+									(!= (obj@ gPlayerShip 'sovereign) &svPlayer;)
+										(scrShowScreen gScreen &dsRPGMessage; {
+											desc:(scrTranslate gScreen 'textNoMissionAvailable {
+												governor: (objGetData gSource 'governor)
+												})
+											})
+
+									;	Missions
+
+									(rpgMissionAssignment {
+										missionCriteria: (cat "n +huariFortress; =" (sysGetLevel) ";")
+										noMissionTextID: 'descNoMissions
+										})
+									)
+
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -428,7 +458,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"

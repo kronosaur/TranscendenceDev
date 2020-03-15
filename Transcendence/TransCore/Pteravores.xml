@@ -21,12 +21,7 @@
 			name=				"pteravore lair"
 			sovereign=			"&svPteravores;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
-			multiHull=			"true"
-			armorID=			"&itAdvancedPlasteelPlate;"
-			hitPoints=			"500"
-            regen=              "1.5"
 			stealth=			"10" 
 			fireRateAdj=		"80"
 			explosionType=		"&vtThermoExplosion1;"
@@ -53,6 +48,14 @@
 			<Image	imageID="&rsPteravoreLair;" imageX="270" imageY="0" imageWidth="120" imageHeight="150"/>
 		</ImageVariants>
 
+		<!-- Configuration -->
+		
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itAdvancedPlasteelPlate;"
+				hitPoints=		"500"
+			    regen=			"1.5"
+				/>
+		
 		<Devices>
 			<Device deviceID="&vtPteravoreSporeLauncher;"	omnidirectional="true"/>
 		</Devices>

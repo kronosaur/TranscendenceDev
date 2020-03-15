@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type UNID="&unidEngineText;">
+		<Language>
+
+			<!-- Create Game UI -->
+
+			<Text id="descDifficulty.story">
+
+				Start here to explore the universe. Combat is significantly 
+				easier.
+
+			</Text>
+			<Text id="descDifficulty.normal">
+
+				A balanced experience. Combat is important,	but not too hard.
+
+			</Text>
+			<Text id="descDifficulty.challenge">
+
+				Combat is difficult. You will need experience and ingenuity to
+				survive.
+
+			</Text>
+			<Text id="descDifficulty.permadeath">
+
+				Same as Challenge, but you cannot resurrect when the game ends.
+
+			</Text>
+
+			<!-- Messages for the player -->
+
+			<Text id="msgCyberattackDetected">		Cyberattack detected: %program%</Text>
+			<Text id="msgDeconComplete">			Decontamination complete</Text>
+			<Text id="msgDeviceDamaged">			%ItemName% damaged</Text>
+			<Text id="msgDeviceDamagedOverheat">	%ItemName% damaged by overheating</Text>
+			<Text id="msgDeviceDisabled">			%ItemName% disabled</Text>
+			<Text id="msgDeviceDisabledOverheat">	%ItemName% disabled by overheating</Text>
+			<Text id="msgDeviceEnabled">			%ItemName% enabled</Text>
+			<Text id="msgDeviceIonized">			%ItemName% ionized</Text>
+			<Text id="msgDeviceRepaired">			%ItemName% repaired</Text>
+			<Text id="msgDisabledWeaponReady">		Disabled %itemName% ready</Text>
+			<Text id="msgDockingCanceled">			Docking canceled</Text>
+			<Text id="msgDockingSequenceEngaged">	Docking sequence engaged</Text>
+			<Text id="msgEnemyShipsDetected">		Enemy ships detected</Text>
+			<Text id="msgFuelLow">					Fuel low!</Text>
+			<Text id="msgGravityWarning">			Warning: Deep gravity zone</Text>
+			<Text id="msgHullBreachImminent">		Hull breach imminent!</Text>
+			<Text id="msgLifeSupportWarning1">		Life support failure in 1 second</Text>
+			<Text id="msgLifeSupportWarningN">		Life support failure in %time% seconds</Text>
+			<Text id="msgLRSRepaired">				Long-range scanner repaired</Text>
+			<Text id="msgLRSStillInoperative">		Long-range scanner still inoperative</Text>
+			<Text id="msgMissileReady">				%Missile% ready</Text>
+			<Text id="msgNoLauncher">				No launcher installed</Text>
+			<Text id="msgNoMissiles">				No missiles on board</Text>
+			<Text id="msgNoStargatesInRange">		No stargates in range</Text>
+			<Text id="msgNoStationsInRange">		No stations in range</Text>
+			<Text id="msgNoTargetForFleet">			No target selected</Text>
+			<Text id="msgNoTargetingComputer">		No targeting computer installed</Text>
+			<Text id="msgOutOfFuel">				Out of fuel!</Text>
+			<Text id="msgRadiationDeath">			Radiation Warning: Fatal exposure received</Text>
+			<Text id="msgRadiationWarning1">		Radiation Warning: Fatal exposure in 1 second</Text>
+			<Text id="msgRadiationWarningN">		Radiation Warning: Fatal exposure in %time% seconds</Text>
+			<Text id="msgReactorNoPower">			No power from reactor</Text>
+			<Text id="msgReactorOverloadWarning">	Warning: Reactor overload</Text>
+			<Text id="msgReactorPowerRestored">		Reactor power restored</Text>
+			<Text id="msgShieldFailure">			Shield failure</Text>
+			<Text id="msgSRSRepaired">				Visual display repaired</Text>
+			<Text id="msgTimeContinues">			Time continues</Text>
+			<Text id="msgTimeStillStopped">			Time is still stopped</Text>
+			<Text id="msgTimeStopped">				Time has stopped for you!</Text>
+			<Text id="msgTooFarFromStargate">		Too far from stargate</Text>
+			<Text id="msgWeaponCannotFire">			Weapon cannot fire!</Text>
+			<Text id="msgWeaponExplosion">			Weapon chamber explosion!</Text>
+			<Text id="msgWeaponJammed">				Weapon jammed!</Text>
+			<Text id="msgWeaponMisfire">			Weapon misfire!</Text>
+			<Text id="msgWeaponReady">				%ItemName% ready</Text>
+
+			<!-- Hints for player -->
+
+			<String id="hintEnableDevices">			(press [B] to enable/disable devices)</String>
+			<Text id="hintMiningNeeded">			Use mining weapons to damage buried station</Text>
+			<Text id="hintMiningOreLevelTooHigh">	Use a higher level mining weapon to extract level %oreLevel% resources</Text>
+			<Text id="hintMiningOrWMDNeeded">		Use mining or WMD weapons to damage asteroid station</Text>
+			<Text id="hintWMDNeeded">				Use WMD weapons to damage reinforced station</Text>
+			<Text id="hintWMDForShipNeeded">		Use WMD weapons to damage large ships</Text>
+			<String id="hintRefuel">				(press [S] to access refueling screen)</String>
+
+			<!-- Miscellaneous text -->
+
+			<Text id="asteroidType.icy">			icy</Text>
+			<Text id="asteroidType.metallic">		metallic</Text>
+			<Text id="asteroidType.none">			none</Text>
+			<Text id="asteroidType.primordial">		primordial</Text>
+			<Text id="asteroidType.rocky">			rocky</Text>
+			<Text id="asteroidType.unknown">		unknown</Text>
+			<Text id="asteroidType.volcanic">		volcanic</Text>
+
+			<Text id="averageCommodityPrices">		Average commodity prices</Text>
+		</Language>
+	</Type>
+
+</TranscendenceModule>

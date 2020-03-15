@@ -19,7 +19,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itCeralloyArmor;"
@@ -136,12 +135,6 @@
 					(objSendMessage gPlayerShip rescueObj "Insurance claim processed. Have a better one!")
 					)
 			</OnGlobalResurrect>
-
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
 		</Events>
 
 		<DockScreens>

@@ -12,6 +12,16 @@
 #define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
 #define PROPERTY_REPAIR_LEVEL					CONSTLIT("repairLevel")
 
+void CArmorItem::AccumulateAttributes (TArray<SDisplayAttribute> *retList) const
+
+//	AccumulateAttributes
+//
+//	Accumulate display attributes.
+
+	{
+	GetArmorClass().AccumulateAttributes(*this, retList);
+	}
+
 ICCItemPtr CArmorItem::FindProperty (const CString &sProperty) const
 
 //	FindProperty
@@ -57,7 +67,7 @@ TSharedPtr<CItemEnhancementStack> CArmorItem::GetEnhancementStack (void) const
 	{
 	//	If we have installed armor, then get the enhancement stack from it.
 
-	if (const CInstalledArmor *pInstalled = m_pCItem->GetInstalledArmor())
+	if (const CInstalledArmor *pInstalled = m_Item.GetInstalledArmor())
 		return pInstalled->GetEnhancementStack();
 
 	//	Otherwise, see if we've got a cached enhancement stack
@@ -67,7 +77,7 @@ TSharedPtr<CItemEnhancementStack> CArmorItem::GetEnhancementStack (void) const
 
 	//	Otherwise, we need to create one from mods
 
-	const CItemEnhancement &Mods = m_pCItem->GetMods();
+	const CItemEnhancement &Mods = m_Item.GetMods();
 	if (Mods.IsEmpty())
 		return NULL;
 
@@ -92,7 +102,7 @@ int CArmorItem::GetHP (int *retiMaxHP, bool bUninstalled) const
 	else
 		{
 		int iMaxHP = GetMaxHP();
-		int iDamagedHP = m_pCItem->GetDamagedHP();
+		int iDamagedHP = m_Item.GetDamagedHP();
 
 		if (retiMaxHP) *retiMaxHP = iMaxHP;
 		return Max(0, iMaxHP - iDamagedHP);

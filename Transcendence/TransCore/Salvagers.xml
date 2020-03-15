@@ -121,7 +121,7 @@
 			/>
 		
 		<Devices>
-			<DeviceSlot criteria="w" secondaryWeapon="true" omnidirectional="true"/>
+			<DeviceSlot criteria="w" secondaryWeapon="true" omnidirectional="true" posAngle="0" posRadius="0" posZ="60"/>
 			
 			<Device deviceID="&itTurbolaserCannon;"/>
 		</Devices>
@@ -141,8 +141,8 @@
 					hitPoints=	"25"
 
 					posX=		"-15"
-					posY=		"39"
-					sizeX=		"54"
+					posY=		"59"
+					sizeX=		"60"
 					sizeY=		"30"
 					/>
 			
@@ -151,36 +151,54 @@
 					hitPoints=	"25"
 
 					posX=		"-15"
-					posY=		"-39"
-					sizeX=		"54"
+					posY=		"-59"
+					sizeX=		"60"
 					sizeY=		"30"
 					/>
 		</Interior>
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsSalvagerNomad;" imageWidth="184" imageHeight="184"	viewportSize="230"/>
+		<Image imageID="&rsSalvagerNomadHD;" imageWidth="184" imageHeight="184" rotationCount="120" rotationColumns="12" viewportRatio="0.02"/>
+		<HeroImage imageID="&rsSalvagerNomadHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="140"	posRadius="70"	posZ="-20"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="134"	posRadius="76"	posZ="-20"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-140"	posRadius="70"	posZ="-20"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-134"	posRadius="76"	posZ="-20"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			
-			<Effect type="thrustMain"		posAngle="140"	posRadius="70"	posZ="-7"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="134"	posRadius="76"	posZ="-7"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-140"	posRadius="70"	posZ="-7"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-134"	posRadius="76"	posZ="-7"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			
-			<Effect type="thrustMain"		posAngle="132"	posRadius="66"	posZ="7"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="128"	posRadius="74"	posZ="7"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-132"	posRadius="66"	posZ="7"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-128"	posRadius="74"	posZ="7"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			
-			<Effect type="thrustMain"		posAngle="132"	posRadius="66"	posZ="20"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="128"	posRadius="74"	posZ="20"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-132"	posRadius="66"	posZ="20"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-128"	posRadius="74"	posZ="20"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<!-- Bottom Port Engine -->
+
+			<Effect type="thrustMain"		posAngle="135"	posRadius="70"	posZ="-40"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="135"	posRadius="70"	posZ="-28"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="135"	posRadius="70"	posZ="-16"	rotation="180"	effect="&efMainThrusterLarge;"/>
+
+			<Effect type="thrustMain"		posAngle="131"	posRadius="79"	posZ="-32"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="131"	posRadius="79"	posZ="-20"	rotation="180"	effect="&efMainThrusterLarge;"/>
+
+			<!-- Bottom Starboard Engine -->
+
+			<Effect type="thrustMain"		posAngle="-135"	posRadius="70"	posZ="-40"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-135"	posRadius="70"	posZ="-28"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-135"	posRadius="70"	posZ="-16"	rotation="180"	effect="&efMainThrusterLarge;"/>
+
+			<Effect type="thrustMain"		posAngle="-131"	posRadius="79"	posZ="-32"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-131"	posRadius="79"	posZ="-20"	rotation="180"	effect="&efMainThrusterLarge;"/>
+
+			<!-- Top Port Engine -->
+
+			<Effect type="thrustMain"		posAngle="130"	posRadius="70"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="130"	posRadius="70"	posZ="12"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="130"	posRadius="70"	posZ="24"	rotation="180"	effect="&efMainThrusterLarge;"/>
+
+			<Effect type="thrustMain"		posAngle="125"	posRadius="78"	posZ="6"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="125"	posRadius="78"	posZ="18"	rotation="180"	effect="&efMainThrusterLarge;"/>
+
+			<!-- Top Starboard Engine -->
+
+			<Effect type="thrustMain"		posAngle="-130"	posRadius="70"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-130"	posRadius="70"	posZ="12"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-130"	posRadius="70"	posZ="24"	rotation="180"	effect="&efMainThrusterLarge;"/>
+
+			<Effect type="thrustMain"		posAngle="-125"	posRadius="78"	posZ="6"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-125"	posRadius="78"	posZ="18"	rotation="180"	effect="&efMainThrusterLarge;"/>
+
 		</Effects>
 		
 		<!-- AI and Behavior -->
@@ -195,6 +213,7 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsSalvagerNomad;"				bitmap="Resources\SalvagerNomad.jpg"		bitmask="Resources\SalvagerNomadMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsSalvagerNomadHD;"		bitmap="Resources\SalvagerNomadHD.jpg" bitmask="Resources\SalvagerNomadHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsSalvagerNomadHero;"		bitmap="Resources\SalvagerNomadLarge.jpg" bitmask="Resources\SalvagerNomadLargeMask.bmp" loadOnUse="true"/>
 	
 </TranscendenceModule>

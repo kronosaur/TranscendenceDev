@@ -5,10 +5,46 @@
 
 #pragma once
 
+class CPaintOrder
+	{
+	public:
+		enum Types
+			{
+			error =				0xffffffff,	//	Error parsing
+			none =				0x00000000,	//	No specific paint order
+
+			bringToFront =		0x00000001,	//	Paint in front
+			sendToBack =		0x00000002,	//	Paint behind
+			paintOverhang =		0x00000004,	//	Paint above player ship
+			};
+
+		static Types Parse (const CString &sValue);
+		static CString GetID (Types iType);
+	};
+
+class CLabelPainter
+	{
+	public:
+		void AddLabel (const CString &sText, const CG16bitFont &Font, CG32bitPixel rgbColor, int x, int y);
+		void Paint (CG32bitImage &Dest) const;
+
+	private:
+		struct SLabelDesc
+			{
+			CString sText;
+			const CG16bitFont *pFont = NULL;
+			CG32bitPixel rgbColor;
+			int x = 0;
+			int y = 0;
+			};
+
+		TArray<SLabelDesc> m_Labels;
+	};
+
 struct SViewportPaintCtx
 	{
 	public:
-		inline void Save (void)
+		void Save (void)
 			{
 			SVariants *pFrame = m_SaveStack.Insert();
 
@@ -19,9 +55,11 @@ struct SViewportPaintCtx
 			pFrame->iRotation = iRotation;
 			pFrame->iTick = iTick;
 			pFrame->iVariant = iVariant;
+			pFrame->yAnnotations = yAnnotations;
+			pFrame->rcObjBounds = rcObjBounds;
 			}
 
-		inline void Restore (void)
+		void Restore (void)
 			{
 			int iLastIndex = m_SaveStack.GetCount() - 1;
 			if (iLastIndex >= 0)
@@ -35,6 +73,8 @@ struct SViewportPaintCtx
 				iRotation = pFrame->iRotation;
 				iTick = pFrame->iTick;
 				iVariant = pFrame->iVariant;
+				yAnnotations = pFrame->yAnnotations;
+				rcObjBounds = pFrame->rcObjBounds;
 
 				m_SaveStack.Delete(iLastIndex);
 				}
@@ -62,7 +102,7 @@ struct SViewportPaintCtx
 
 		int iPerception = 4;					//	LATER: Same as CSpaceObject::perceptNormal (but we haven't included it yet).
 		Metric rIndicatorRadius = 0.0;			//	Radius of circle to show target indicators (in pixels)
-		CG32bitPixel rgbSpaceColor = CG32bitPixel::Null();			//	Starshine color
+		CG32bitPixel rgbStarshineColor = CG32bitPixel::Null();			//	Starshine color
 		CSpaceObject *pStar = NULL;				//	Nearest star to POV
 		const CG8bitSparseImage *pVolumetricMask = NULL;	//	Volumetric mask for starshine
 
@@ -82,6 +122,8 @@ struct SViewportPaintCtx
 		bool bShowUnexploredAnnotation = false;
 		bool bShowBounds = false;
 		bool bShowFacingsAngle = false;
+		bool bNo3DExtras = false;
+		bool bInPaintSubordinate = false;
 
 		CSpaceObject *pObj = NULL;				//	Current object being painted
 		RECT rcObjBounds;						//	Object bounds in screen coordinates.
@@ -111,6 +153,8 @@ struct SViewportPaintCtx
 			int iDestiny;
 			int iRotation;
 			int iMaxLength;
+			int yAnnotations;
+			RECT rcObjBounds;
 			};
 
 		//	Stack of modifications
@@ -141,18 +185,21 @@ class CMapViewportCtx
 		CMapViewportCtx (void) { }
 		CMapViewportCtx (CSpaceObject *pCenter, const RECT &rcView, Metric rMapScale);
 
-		inline CSpaceObject *GetCenterObj (void) const { return m_pCenter; }
-		inline const CVector &GetCenterPos (void) const { return m_vCenter; }
-		inline int GetCenterX (void) const { return m_xCenter; }
-		inline int GetCenterY (void) const { return m_yCenter; }
-		inline const RECT &GetViewportRect (void) const { return m_rcView; }
-		inline ViewportTransform &GetXform (void) { return m_Trans; }
+		CSpaceObject *GetCenterObj (void) const { return m_pCenter; }
+		const CVector &GetCenterPos (void) const { return m_vCenter; }
+		int GetCenterX (void) const { return m_xCenter; }
+		int GetCenterY (void) const { return m_yCenter; }
+		CLabelPainter &GetLabelPainter (void) { return m_Labels; }
+		const RECT &GetViewportRect (void) const { return m_rcView; }
+		ViewportTransform &GetXform (void) { return m_Trans; }
 		bool IsInViewport (CSpaceObject *pObj) const;
-		inline bool IsPaintStationImagesEnabled (void) const { return m_bPaintStationImages; }
-		inline bool IsSpaceBackgroundEnabled (void) const { return !m_bNoSpaceBackground; }
-		inline void Set3DMapEnabled (bool bEnabled = true) { m_b3DMap = bEnabled; }
-		inline void SetPaintStationImagesEnabled (bool bEnabled = true) { m_bPaintStationImages = bEnabled; }
-		inline void SetSpaceBackgroundEnabled (bool bEnabled = true) { m_bNoSpaceBackground = !bEnabled; }
+		bool IsPaintStationImagesEnabled (void) const { return m_bPaintStationImages; }
+		bool IsSpaceBackgroundEnabled (void) const { return !m_bNoSpaceBackground; }
+		void Set3DExtrasEnabled (bool bEnabled = true) { m_bShow3DExtras = bEnabled; }
+		void Set3DMapEnabled (bool bEnabled = true) { m_b3DMap = bEnabled; }
+		void SetPaintStationImagesEnabled (bool bEnabled = true) { m_bPaintStationImages = bEnabled; }
+		void SetSpaceBackgroundEnabled (bool bEnabled = true) { m_bNoSpaceBackground = !bEnabled; }
+		bool Show3DExtras (void) const { return m_bShow3DExtras; }
 		void Transform (const CVector &vPos, int *retx, int *rety) const;
 
 	private:
@@ -168,8 +215,11 @@ class CMapViewportCtx
 
 		ViewportTransform m_Trans;			//	Transform
 
+		CLabelPainter m_Labels;		//	List of labels to paint
+
 		bool m_b3DMap = true;				//	Use standard 3D projection
 		bool m_bNoSpaceBackground = false;	//	Do not paint a space background
 		bool m_bPaintStationImages = false;	//	Paint station images
+		bool m_bShow3DExtras = true;		//	Show 3D extras
 	};
 

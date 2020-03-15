@@ -868,7 +868,7 @@
 			; Note: We add this even to asteroids without ore because some scenarios
 			; call for adding ore to existing asteroids
 			<OnMining>
-				(intAsteroidOnMining 100)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -902,7 +902,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 100)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -931,7 +931,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 100)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1004,7 +1004,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 50)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 	</StationType>
@@ -1035,7 +1035,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 50)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 	</StationType>
@@ -1068,7 +1068,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 50)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1097,7 +1097,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 50)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1147,7 +1147,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 30)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 	</StationType>
@@ -1179,7 +1179,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 30)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 	</StationType>
@@ -1210,7 +1210,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 20)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1242,7 +1242,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 20)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1504,7 +1504,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 100)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1542,7 +1542,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 100)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1578,7 +1578,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 50)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1614,7 +1614,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 50)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1649,7 +1649,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 30)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1685,7 +1685,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 30)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1721,7 +1721,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 20)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1757,7 +1757,7 @@
 
 		<Events>
 			<OnMining>
-				(intAsteroidOnMining 20)
+				(intAsteroidOnMining)
 			</OnMining>
 		</Events>
 
@@ -1854,6 +1854,16 @@
 		</LevelTable>
 	</ItemTable>
 	
+	<Type unid="&baOreStoneAsteroidOld;"
+			obsoleteVersion=			"49"
+			>
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</Type>
+
 <!-- RESOURCES -->
 
 	<Image obsoleteVersion="37" UNID="&rsAStar;"					bitmap="Resources\AStar.jpg"				bitmask="Resources\Star1Mask.bmp"   loadOnUse="true"/>

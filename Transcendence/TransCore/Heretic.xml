@@ -235,7 +235,7 @@
 
 		<Armor
 			armorID=			"&itQuadroCarbideArmor;"
-			count=				"24"
+			count=				"12"
 			/>
 		
 		<Devices>
@@ -266,13 +266,14 @@
 					/>
 		</Interior>
 
-		<Image imageID="&rsCorporateExplorer;" imageWidth="192" imageHeight="192" />
+		<Image imageID="&rsCorporateExplorerHD;" imageWidth="192" imageHeight="192"	rotationCount="120" rotationColumns="12" viewportRatio="0.025"/>
+		<HeroImage imageID="&rsCorporateExplorerHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 			<Effect type="thrustMain"		posAngle="-176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 		</Effects>
-		
+
 		<Names definiteArticle="true">Huygens Explorer</Names>
 
 		<AISettings
@@ -304,7 +305,6 @@
 			regen=              "15"
 			shipRegen=			"6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"
@@ -313,8 +313,8 @@
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; -premiumAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
@@ -405,9 +405,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -461,12 +459,11 @@
             regen=              "4"
 			shipRegen=			"6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"
 				 
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 			definiteArticle=	"true"
 			>
 
@@ -571,8 +568,7 @@
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
 			multiHull=			"true"
 			armorID=			"&itDiamondLatticeArmor;"
@@ -621,8 +617,8 @@
 		</Items>
 
 		<Trade currency="rin">
-			<Sell	criteria="*NU +ringerValuable;"		priceAdj="250"/>
-			<Sell	criteria="*NU -ID;"					priceAdj="100"/>
+			<Sell	criteria="*NU +ringerValuable; -defective;"		priceAdj="250"/>
+			<Sell	criteria="*NU -defective; -ID;"					priceAdj="100"/>
 			<Buy	criteria="*NU +ringerValuable;"		priceAdj="200"/>
 			<Buy	criteria="*NU +res; &gt;=4;"		priceAdj="90"/>
 			<ConsumeTrade	criteria="{human.res}"		impact="2"/>
@@ -673,9 +669,7 @@
 									(= (objGetBalance gPlayerShip 'rin) 0)
 										(scrShowPane gScreen 'ExchangeIntro)
 
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -690,9 +684,7 @@
 							<Action id="actionContinue" cancel="1" default="1">
 								(block Nil
 									(scrShowPane gScreen 'Default)
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 						</Actions>
@@ -740,8 +732,7 @@
 			inherit=			"&unidCommonText;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
 			multiHull=			"true"
 			armorID=			"&itLightIthaliumArmor;"
@@ -876,8 +867,7 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
 			multiHull=			"true"
 			armorID=			"&itQuadroCarbideArmor;"
@@ -920,14 +910,6 @@
 			<InstallDevice	criteria="d L:1-11;" priceAdj="120"/>
 			<RemoveDevice	criteria="d L:1-11;" priceAdj="100"/>
 		</Trade>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
 		<DockScreens>
 			<Main>
@@ -995,14 +977,13 @@
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockScreen=			"Main"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
 			armorID=			"&itHeavyTharsisPlate;"
 			hitPoints=			"610"
 			multiHull=			"true"
             regen=              "6"
 
-			canAttack=			"true"
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -1851,64 +1832,11 @@
 
 	<SystemType UNID="&ssHeretic;" 
 			backgroundID=		"&rsLightNebulaSpace;"
+			spaceColor=			"#282a3c"
 			spaceEnvironmentTileSize=	"large"
 			noRandomEncounters=	"true"
 			noExtraEncounters=	"true"
 			>
-
-		<Tables>
-			<!-- Planets and Asteroids -->
-
-			<InnerArcMedium>
-				<Group>
-					<Siblings count="2d20" arcInc="2d205-206" radiusInc="-4-4">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d20" arcInc="2d159-160" radiusInc="-6-6">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d16" arcInc="2d109-110" radiusInc="-8-8">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d12" arcInc="2d49-50" radiusInc="-12-12">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-				</Group>
-			</InnerArcMedium>
-
-			<InnerArcSmall>
-				<Group>
-					<Siblings count="2d12" arcInc="2d105-106" radiusInc="-3-3">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d12" arcInc="2d79-80" radiusInc="-4-4">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d10" arcInc="2d54-55" radiusInc="-6-6">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d8" arcInc="2d24-25" radiusInc="-9-9">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-				</Group>
-			</InnerArcSmall>
-
-			<InnerAsteroid>
-				<Table>
-					<Station chance="45" type="&stMetallicAsteroidSizeA;"/>
-					<Station chance="45" type="&stRockyAsteroidSizeA;"/>
-					<Station chance="5" type="&stMetallicAsteroidSizeB;"/>
-					<Station chance="5" type="&stRockyAsteroidSizeB;"/>
-				</Table>
-			</InnerAsteroid>
-		</Tables>
-
 		<SystemGroup>
 
 			<!-- Star -->
@@ -1941,8 +1869,8 @@
 					<Siblings count="6d4+1" angle="equidistant" radiusInc="-120-120">
 						<Group>
 							<Table>
-								<Lookup chance="75" table="InnerArcSmall"/>
-								<Lookup chance="25" table="InnerArcMedium"/>
+								<Lookup chance="75" table="AsteroidArc25"/>
+								<Lookup chance="25" table="AsteroidArc50"/>
 							</Table>
 
 							<Siblings arcInc="-60-60" radiusInc="8-16">
@@ -1975,6 +1903,7 @@
 			<Orbitals distance="8" scale="light-minute" angle="random">
 				<Group>
 					<Station type="&stRockyPlanetoidSizeE;"
+							name="Heretic II"
 							showOrbit="true"
 							/>
 
@@ -2208,8 +2137,6 @@
 
 	<Image UNID="&rsIocrymManipulator;"	bitmap="Resources\IocrymManipulator.jpg" bitmask="Resources\IocrymManipulatorMask.bmp" loadOnUse="true"/>
 	
-	<Image UNID="&rsCorporateExplorer;"	bitmap="Resources\CorporateExplorer.jpg" bitmask="Resources\CorporateExplorerMask.bmp" loadOnUse="true"/>
-
 	<Image UNID="&rsHereticItems;"		bitmap="Resources\HereticItems.jpg" bitmask="Resources\HereticItemsMask.bmp" />
 
 </TranscendenceModule>

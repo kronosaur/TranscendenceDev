@@ -29,6 +29,7 @@ class CGameFile
 		CGameFile (void);
 		~CGameFile (void);
 
+		ALERROR ClearEndGame (void);
 		ALERROR ClearRegistered (void);
 		ALERROR ClearGameResurrect(void);
 		void Close (void);
@@ -40,9 +41,11 @@ class CGameFile
 		static constexpr DWORD FLAG_VERSION_STRING =	0x00000002;
 		CString GetCreateVersion (DWORD dwFlags = FLAG_VERSION_STRING) const;
 
+		CDifficultyOptions::ELevels GetDifficulty (void) const;
 		CString GetEpitaph (void) const { return CString((char *)m_Header.szEpitaph); }
-		CString GetFilespec (void) const { return m_pFile->GetFilename(); }
+		CString GetFilespec (void) const { return (IsOpen() ? m_pFile->GetFilename() : NULL_STR); }
 		CString GetGameID (void) { return CString(m_Header.szGameID); }
+		DWORD GetLastSavedOn (void) const { return m_dwLastSavedOn; }
 		GenomeTypes GetPlayerGenome (void) const { return (GenomeTypes)m_Header.dwGenome; }
 		CString GetPlayerName (void) const;
 		DWORD GetPlayerShip (void) const { return m_Header.dwPlayerShip; }
@@ -58,6 +61,7 @@ class CGameFile
 		bool IsOpen (void) const { return (m_pFile != NULL); }
 		bool IsRegistered (void) const { return ((m_Header.dwFlags & GAME_FLAG_REGISTERED) ? true : false); }
 		bool IsUniverseValid (void) { return (m_Header.dwUniverse != INVALID_ENTRY); }
+		ALERROR SetDebugMode (bool bValue = true);
 
 		static constexpr DWORD FLAG_NO_UPGRADE =	0x00000001;
 		ALERROR Open (const CString &sFilename, DWORD dwFlags);
@@ -79,6 +83,9 @@ class CGameFile
 			GAME_FLAG_IN_STARGATE =					0x00000004,	//	We are in the middle of entering a stargate
 			GAME_FLAG_REGISTERED =					0x00000008,	//	This is a registered game
 			GAME_FLAG_END_GAME =					0x00000010,	//	This game is done and cannot be continued
+
+			GAME_FLAG_DIFFICULTY_MASK =				0x00000020 | 0x00000040,
+			GAME_FLAG_DIFFICULTY_SHIFT =			5,
 			};
 
 		struct SGameHeader
@@ -133,11 +140,14 @@ class CGameFile
 		ALERROR SaveGameHeader (SGameHeader &Header);
 		void SaveSystemMapToStream (CString *retsStream);
 
-		int m_iRefCount;
+		static DWORD EncodeDifficulty (CDifficultyOptions::ELevels iLevel);
 
-		CDataFile *m_pFile;
+		int m_iRefCount = 0;
+		DWORD m_dwLastSavedOn = 0;					//	Last tick that we saved on this session
 
-		int m_iHeaderID;							//	Entry of header
+		CDataFile *m_pFile = NULL;
+
+		int m_iHeaderID = 0;						//	Entry of header
 		SGameHeader m_Header;						//	Loaded header
 		TSortMap<DWORD, SSystemData> m_SystemMap;	//	Map from system ID to save file ID
 	};

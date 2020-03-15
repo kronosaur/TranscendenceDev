@@ -10,7 +10,7 @@
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, military, pacificDefense"
+			attributes=			"commonwealth, military, pacificDefense, wingmate"
 			inherit=			"&scCenturionX;"
 			character=			"&chRama;"
 			eventHandler=		"&chRama;"
@@ -49,6 +49,11 @@
 
 	<Type unid="&chRama;"
 			inherit=	"&baStdWingmanBase;">
+
+		<StaticData>
+			<Name>Rama</Name>
+			<Sovereign>&svCommonwealth;</Sovereign>
+		</StaticData>
 
 		<Language>
 			<Text id="ArmorRepaired">			My ship's as good as new</Text>

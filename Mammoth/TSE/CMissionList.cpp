@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-bool CMissionList::CanCreateMissionInArc (const CString &sArc, int iSequence) const
+bool CMissionList::CanCreateMissionInArc (const CMissionType &NewMissionType, const CSpaceObject *pSource, const CMission::SCriteria &CreateCriteria) const
 
 //	CreateCreateMissionInArc
 //
@@ -13,6 +13,9 @@ bool CMissionList::CanCreateMissionInArc (const CString &sArc, int iSequence) co
 //	sequence.
 
 	{
+	const CString &sArc = NewMissionType.GetArc();
+	int iSequence = NewMissionType.GetArcSequence();
+
 	//	If we don't have a sequence number, then we can always create the 
 	//	mission.
 
@@ -26,13 +29,32 @@ bool CMissionList::CanCreateMissionInArc (const CString &sArc, int iSequence) co
 		{
 		const CMission &Mission = *m_List[i];
 		const CMissionType &MissionType = *CMissionType::AsType(Mission.GetType());
+
+		//	If this mission is not in the same arc, then it doesn't affect us.
+
 		if (!strEquals(sArc, MissionType.GetArc()))
 			continue;
 
-		//	If we've got an open or active mission, then we can't create a new
-		//	mission in the same arc.
+		//	If we've got a create criteria and this is one of the missions in
+		//	our criteria, then we always allow it. For example, if a mission in
+		//	a mission arc requires the previous mission to be active, then we
+		//	allow it, even if normally we would not allow another mission in the
+		//	same arc to be active.
 
-		if (Mission.IsActive() || Mission.IsOpen())
+		else if (!NewMissionType.GetCreateCriteria().IsBlank()
+				&& Mission.MatchesCriteria(pSource, CreateCriteria))
+			continue;
+
+		//	If we have an open (but not accepted) mission, then we continue.
+		//	Later, if we accept the new mission, we can close out the old one.
+
+		else if (Mission.IsOpen())
+			continue;
+
+		//	If we've got an active mission, then we can't create a new mission 
+		//	in the same arc.
+
+		else if (Mission.IsActive() && !MissionType.AllowsOtherArcMissions())
 			return false;
 
 		//	If we've got a completed mission with a higher sequence number, then
@@ -49,6 +71,41 @@ bool CMissionList::CanCreateMissionInArc (const CString &sArc, int iSequence) co
 	//	If we get this far then we can create a mission.
 
 	return true;
+	}
+
+void CMissionList::CloseMissionsInArc (const CMissionType &NewMissionType)
+
+//	CloseMissionsInArc
+//
+//	If there are any missions in the same arc as NewMissionType and if they are
+//	open (but not accepted) and if they have an older sequence, then close them
+//	out.
+
+	{
+	const CString &sArc = NewMissionType.GetArc();
+	int iSequence = NewMissionType.GetArcSequence();
+
+	//	If we don't have a sequence number, then nothing to do.
+
+	if (iSequence < 0 || sArc.IsBlank())
+		return;
+
+	//	Check to see if we can create the given mission by looking at the 
+	//	current and closed missions.
+
+	for (int i = 0; i < m_List.GetCount(); i++)
+		{
+		CMission &Mission = *m_List[i];
+		const CMissionType &MissionType = *CMissionType::AsType(Mission.GetType());
+
+		//	If this mission is in the same arc and if it is open, and if it has
+		//	an earlier sequence number, then we start it without the player.
+
+		if (Mission.IsOpen() 
+				&& strEquals(sArc, MissionType.GetArc())
+				&& MissionType.GetArcSequence() < iSequence)
+			Mission.SetUnavailable();
+		}
 	}
 
 void CMissionList::Delete (int iIndex)
@@ -92,6 +149,152 @@ void CMissionList::DeleteAll (void)
 		}
 
 	m_List.DeleteAll();
+	}
+
+CMissionList CMissionList::Filter (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const
+
+//	Filter
+//
+//	Filters the list.
+
+	{
+	CMissionList Result;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+		if (pMission->MatchesCriteria(pSource, Criteria) 
+				&& !pMission->IsDestroyed())
+			Result.m_List.Insert(pMission);
+		}
+
+	//	If we only want mission arcs, filter out the list
+
+	if (Criteria.bOnlyMissionArcs)
+		return Result.FilterByArc();
+
+	//	Otherwise, return the full results.
+
+	else
+		return Result;
+	}
+
+CMissionList CMissionList::FilterByArc (void) const
+
+//	FilterByArc
+//
+//	Filters down to one mission (the latest) per mission arc.
+
+	{
+	TSortMap<CString, CMission *> ByArc;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+		int iSequence;
+		const CString &sArc = pMission->GetArc(&iSequence);
+		if (sArc.IsBlank())
+			continue;
+
+		//	Add the mission only if it is the latest in the arc.
+
+		bool bNew;
+		auto ppDest = ByArc.SetAt(sArc, &bNew);
+		if (bNew || (*ppDest)->GetArcSequence() < iSequence)
+			*ppDest = pMission;
+		}
+
+	CMissionList Result;
+	Result.m_List.GrowToFit(ByArc.GetCount());
+
+	for (int i = 0; i < ByArc.GetCount(); i++)
+		Result.Insert(ByArc[i]);
+
+	return Result;
+	}
+
+CMission *CMissionList::FindAcceptedArcChapter (const CString &sTargetArc, const CString &sTargetTitle, CMission *pExclude) const
+
+//	FindAcceptedArcChapter
+//
+//	Finds an accepted mission with the same arc and title.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+
+		if (pMission != pExclude
+				&& strEquals(sTargetArc, pMission->GetArc())
+				&& strEquals(sTargetTitle, pMission->GetTitle())
+				&& pMission->IsPlayerMission())
+			return pMission;
+		}
+
+	return NULL;
+	}
+
+CMission *CMissionList::FindByArc (const CString &sTargetArc) const
+
+//	FindByArc
+//
+//	Returns the latest mission in the given arc.
+
+	{
+	CMission *pLatest = NULL;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+		int iSequence;
+		const CString &sArc = pMission->GetArc(&iSequence);
+		if (!strEquals(sTargetArc, sArc))
+			continue;
+
+		//	Add the mission only if it is the latest in the arc.
+
+		if (pLatest == NULL || pLatest->GetArcSequence() < iSequence)
+			pLatest = pMission;
+		}
+
+	return pLatest;
+	}
+
+CMission *CMissionList::FindHighestPriority (void) const
+
+//	FindHighestPriority
+//
+//	Returns the mission with the highest priority.
+
+	{
+	CMission *pBestMission = NULL;
+	for (int i = 0; i < GetCount(); i++)
+		if (pBestMission == NULL || GetMission(i)->GetPriority() > pBestMission->GetPriority())
+			pBestMission = GetMission(i);
+				
+	return pBestMission;
+	}
+
+CMission *CMissionList::FindLatestActivePlayer (void) const
+
+//	FindLatestActivePlayer
+//
+//	Returns the latest active player mission, or NULL if none is found.
+
+	{
+	CMission *pCurrentMission = NULL;
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+		if (!pMission->IsActive() || !pMission->IsPlayerMission())
+			continue;
+
+		if (pCurrentMission == NULL 
+				|| pMission->GetAcceptedOn() > pCurrentMission->GetAcceptedOn())
+			pCurrentMission = pMission;
+		}
+
+	return pCurrentMission;
 	}
 
 void CMissionList::FireOnSystemStarted (DWORD dwElapsedTime)
@@ -153,6 +356,24 @@ void CMissionList::Insert (CMission *pMission)
 		return;
 
 	m_List.Insert(pMission);
+	}
+
+bool CMissionList::Matches (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const
+
+//	Matches
+//
+//	Returns TRUE if at least one mission on the list matches the criteria.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+		if (pMission->MatchesCriteria(pSource, Criteria) 
+				&& !pMission->IsDestroyed())
+			return true;
+		}
+
+	return false;
 	}
 
 void CMissionList::NotifyOnNewSystem (CSystem *pSystem)

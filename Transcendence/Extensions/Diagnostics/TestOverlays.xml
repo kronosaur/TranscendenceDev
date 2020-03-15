@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidTestOverlays;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					(markerObj (sysCreateStation &stNavBeacon; Nil))
+					(overlayID (objAddOverlay markerObj &ovTestOverlay01;))
+					)
+					;	Unit Tests for Properties
+
+					(diagEval (list
+						{	test:'((@ data 'ovr@) 'counter)					result:600	}
+						{	test:'((@ data 'ovr@) 'diag.def1)				result:17	}
+						{	test:'((@ data 'ovr@) 'diag.const1)				result:7	}
+						{	test:'((@ data 'ovr@) 'diag.global1)			result:11	}
+						{	test:'((@ data 'ovr@) 'diag.variant1)			result:18	}
+						{	test:'((@ data 'ovr@) 'diag.data1)				result:"foo1"	}
+
+						{	test:'((@ data 'ovrSet@) 'diag.global1 101)		result:True	}
+						{	test:'((@ data 'ovr@) 'diag.global1)			result:101	}
+
+						{	test:'((@ data 'ovrSet@) 'diag.data1 'foo2)		result:True	}
+						{	test:'((@ data 'ovr@) 'diag.data1)				result:"foo2"	}
+
+						{	test:'((@ data 'ovrInc@) 'diag.global1)			result:102	}
+						{	test:'((@ data 'ovrInc@) 'diag.global1 10)		result:112	}
+
+						{	test:'((@ data 'ovrSet@) 'diag.data1 0)			result:True	}
+						{	test:'((@ data 'ovrInc@) 'diag.data1 -5)		result:-5	}
+						)
+
+						{
+						ovr@: (lambda (prop) (objGetOverlayProperty markerObj overlayID prop))
+						ovrInc@: (lambda (prop value) (objIncOverlayProperty markerObj overlayID prop value))
+						ovrSet@: (lambda (prop value) (objSetOverlayProperty markerObj overlayID prop value))
+						obj: markerObj
+						overlayID: overlayID
+						})
+
+					(objDestroy markerObj)
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+<!-- TEST DESIGN TYPES -->
+
+	<OverlayType UNID="&ovTestOverlay01;"
+            attributes=         "effect"
+			>
+		<Counter style=	"radius"
+				color=	"#6666cc"
+				/>
+
+		<Properties>
+			<Definition id="diag.def1">17</Definition>
+			<Constant	id="diag.const1">(+ 2 5)</Constant>
+			<Global		id="diag.global1">11</Global>
+			<Variant	id="diag.variant1">(+ 7 11)</Variant>
+			<Data		id="diag.data1">(cat "foo" 1)</Data>
+		</Properties>
+		
+		<Events>
+			<OnCreate>
+				(block ()
+					(objSetOverlayProperty gSource aOverlayID 'counter "600px")
+					)
+			</OnCreate>
+		</Events>
+	</OverlayType>
+	
+</TranscendenceModule>

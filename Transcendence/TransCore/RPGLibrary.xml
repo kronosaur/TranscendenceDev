@@ -115,6 +115,7 @@
 	<!ENTITY baStdArmorRepair			"0x000100B1">
 	<!ENTITY baStdPasteBarrel			"0x000100B2">
 	<!ENTITY baStdDeviceEnhancement		"0x000100B3">
+	<!ENTITY baStdEquipmentItem			"0x000100B4">
 
 	<!-- 00D0-00EF WINGMEN -->
 
@@ -133,6 +134,12 @@
 	<!-- 0120-013F MISC DOCK SCREENS -->
 
 	<!ENTITY dsRPGShipClassViewer		"0x00010120">
+	<!ENTITY dsRPGUseItemOnShields		"0x00010121">
+
+	<!-- 0140-015F MINING -->
+
+	<!ENTITY unidMiningSkill			"0x00010140">
+
 	]>
 	
 <CoreLibrary
@@ -162,6 +169,7 @@
 	<Module filename="RPGDockScreens.xml"/>
 	<Module filename="RPGDockServices.xml"/>
 	<Module filename="RPGMembership.xml"/>
+	<Module filename="RPGMining.xml"/>
 	<Module filename="RPGMissions.xml"/>
 	<Module filename="RPGPlayer.xml"/>
 	<Module filename="RPGRumors.xml"/>

@@ -73,13 +73,13 @@ class CTextBlock
 		CTextBlock (void) { }
 
 		void AddTextSpan (const CString &sText, const STextFormat &Format, bool bEoP = false);
-		inline void DeleteAll (void) { m_Formatted.DeleteAll(); m_Text.DeleteAll(); }
+		void DeleteAll (void) { m_Formatted.DeleteAll(); m_Text.DeleteAll(); }
 		void Format (const SBlockFormatDesc &BlockFormat);
 		void GetBounds (RECT *retrcRect);
-		inline const SFormattedTextSpan &GetFormattedSpan (int iIndex) const { return m_Formatted[iIndex]; }
-		inline int GetFormattedSpanCount (void) const { return m_Formatted.GetCount(); }
+		const SFormattedTextSpan &GetFormattedSpan (int iIndex) const { return m_Formatted[iIndex]; }
+		int GetFormattedSpanCount (void) const { return m_Formatted.GetCount(); }
 		bool InitFromRTF (const CString &RTF, const IFontTable &FontTable, const SBlockFormatDesc &BlockFormat, CString *retsError = NULL);
-		inline bool IsEmpty (void) const { return (m_Formatted.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_Formatted.GetCount() == 0); }
 		void Paint (CG32bitImage &Dest, int x, int y) const;
 
 		static CString Escape (const CString &sText);
@@ -110,12 +110,21 @@ class CCartoucheBlock
 			CG32bitPixel rgbBack = CG32bitPixel(0, 0, 0);
 			};
 
+		struct SPaintOptions
+			{
+			bool bDisabled = false;
+			};
+
 		void Add (const TArray<SCartoucheDesc> &List);
 		void AddCartouche (const CString &sText, CG32bitPixel rgbColor, CG32bitPixel rgbBack);
 		void Format (int cxWidth);
 		RECT GetBounds (void) const;
-		void Paint (CG32bitImage &Dest, int x, int y) const;
-		inline void SetFont (const CG16bitFont *pFont) { if (m_pFont != pFont) { m_pFont = pFont; Invalidate(); } }
+		int GetHeight (void) const { return m_cyHeight; }
+		bool IsEmpty (void) const { return m_Data.GetCount() == 0; }
+		void Paint (CG32bitImage &Dest, int x, int y, const SPaintOptions &Options = SPaintOptions()) const;
+		void SetFont (const CG16bitFont *pFont) { if (m_pFont != pFont) { m_pFont = pFont; Invalidate(); } }
+
+		static void PaintCartouche (CG32bitImage &Dest, int x, int y, const SCartoucheDesc &Desc, const CG16bitFont &Font, DWORD dwAlignment = 0);
 
 	private:
 		static constexpr int ATTRIB_PADDING_X =	4;
@@ -137,7 +146,7 @@ class CCartoucheBlock
 			int cy = 0;
 			};
 
-		inline void Invalidate (void) { m_bFormatted = false; m_cxWidth = 0; m_cyHeight = 0; }
+		void Invalidate (void) { m_bFormatted = false; m_cxWidth = 0; m_cyHeight = 0; }
 
 		TArray<SCartouche> m_Data;
 		const CG16bitFont *m_pFont = NULL;
@@ -145,4 +154,61 @@ class CCartoucheBlock
 		bool m_bFormatted = false;
 		int m_cxWidth = 0;
 		int m_cyHeight = 0;
+	};
+
+class CIconLabelBlock
+	{
+	public:
+		struct SLabelDesc
+			{
+			TSharedPtr<CG32bitImage> pIcon;
+			RECT rcIconSrc = { 0, 0, 0, 0 };
+			CString sText;
+			const CG16bitFont *pFont = NULL;
+			bool bNewLine = false;
+			};
+
+		struct SPaintOptions
+			{
+			bool bDisabled = false;
+			};
+
+		void Add (const SLabelDesc &Label);
+		void DeleteAll (void) { m_Data.DeleteAll(); Invalidate(); }
+		void Format (int cxWidth);
+		int GetHeight (void) const { return m_cyHeight; }
+		bool IsEmpty (void) const { return m_Data.GetCount() == 0; }
+		void Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText, const SPaintOptions &Options = SPaintOptions()) const;
+		void SetFont (const CG16bitFont &Font) { if (m_pDefaultFont != &Font) { m_pDefaultFont = &Font; Invalidate(); } }
+
+	private:
+		static constexpr int ENTRY_SPACING_X = 2;
+		static constexpr int ICON_MARGIN_X = 2;
+		static constexpr int LINE_SPACING_Y = 2;
+
+		struct SLabel
+			{
+			TSharedPtr<CG32bitImage> pIcon;
+			RECT rcIconSrc = { 0 };
+			CString sText;
+			const CG16bitFont *pFont = NULL;
+			bool bNewLine = false;
+
+			int x = 0;
+			int y = 0;
+			int cx = 0;
+			int cy = 0;
+			};
+
+		int CalcLineHeight (void) const;
+		const CG16bitFont *GetFont (const SLabel &Entry) const { return (Entry.pFont ? Entry.pFont : m_pDefaultFont); }
+		void Invalidate (void) { m_bFormatted = false; m_cxWidth = 0; m_cyHeight = 0; }
+
+		TArray<SLabel> m_Data;
+		const CG16bitFont *m_pDefaultFont = NULL;
+
+		bool m_bFormatted = false;
+		int m_cxWidth = 0;
+		int m_cyHeight = 0;
+		int m_cyLine = 0;
 	};

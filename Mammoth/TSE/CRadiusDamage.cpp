@@ -64,6 +64,12 @@ ALERROR CRadiusDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CRadiusDama
 
 	pArea->m_pSovereign = Ctx.Source.GetSovereign();
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pArea, pArea->GetData());
+
 	//	Create a painter instance
 
 	pArea->m_pPainter = Ctx.pDesc->CreateEffectPainter(Ctx);
@@ -278,9 +284,9 @@ void CRadiusDamage::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	Called when another object is destroyed
 
 	{
-	m_Source.OnObjDestroyed(Ctx.pObj);
+	m_Source.OnObjDestroyed(Ctx.Obj);
 
-	if (Ctx.pObj == m_pTarget)
+	if (Ctx.Obj == m_pTarget)
 		m_pTarget = NULL;
 	}
 
@@ -331,7 +337,7 @@ void CRadiusDamage::OnReadFromStream (SLoadCtx &Ctx)
 		if (iBonus != 0)
 			{
 			m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			m_pEnhancements->InsertHPBonus(iBonus);
+			m_pEnhancements->InsertHPBonus(NULL, iBonus);
 			}
 		}
 

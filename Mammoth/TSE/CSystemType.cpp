@@ -13,6 +13,7 @@
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define NO_EXTRA_ENCOUNTERS_ATTRIB				CONSTLIT("noExtraEncounters")
 #define NO_RANDOM_ENCOUNTERS_ATTRIB				CONSTLIT("noRandomEncounters")
+#define SPACE_COLOR_ATTRIB						CONSTLIT("spaceColor")
 #define SPACE_SCALE_ATTRIB						CONSTLIT("spaceScale")
 #define SPACE_ENVIRONMENT_TILE_SIZE_ATTRIB		CONSTLIT("spaceEnvironmentTileSize")
 #define TIME_SCALE_ATTRIB						CONSTLIT("timeScale")
@@ -151,6 +152,9 @@ ALERROR CSystemType::OnBindDesign (SDesignLoadCtx &Ctx)
 //	Bind design
 
 	{
+	if (ALERROR error = m_Enhancements.Bind(Ctx))
+		return error;
+
 	InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
 
 	return NOERROR;
@@ -201,6 +205,8 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	else
 		m_iTileSize = (GetAPIVersion() >= 14 ? sizeSmall : sizeLarge);
 
+	m_rgbSpace = ::LoadRGBColor(pDesc->GetAttribute(SPACE_COLOR_ATTRIB), DEFAULT_SPACE_COLOR);
+
 	//	Options
 
 	m_bNoExtraEncounters = pDesc->GetAttributeBool(NO_EXTRA_ENCOUNTERS_ATTRIB);
@@ -239,7 +245,7 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
 	if (pEnhanceList)
 		{
-		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList))
+		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList, NULL))
 			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 

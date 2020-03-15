@@ -49,7 +49,7 @@ bool CDamageSource::CanHit (CSpaceObject *pTarget) const
 
 	//	If we're deliberately targeting pTarget, then we allow the hit.
 
-	if (pObj->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET) == pTarget)
+	if (pObj->GetTarget(IShipController::FLAG_ACTUAL_TARGET) == pTarget)
 		return true;
 
 	//	Otherwise, pTarget should not be hit by us.
@@ -396,27 +396,27 @@ void CDamageSource::OnLeaveSystem (void)
 
 	{
 	if (m_pSource && !IsObjID())
-		OnObjDestroyed(m_pSource);
+		OnObjDestroyed(*m_pSource);
 
 	if (m_pSecondarySource)
-		OnObjDestroyed(m_pSecondarySource);
+		OnObjDestroyed(*m_pSecondarySource);
 	}
 
-void CDamageSource::OnObjDestroyed (CSpaceObject *pObjDestroyed)
+void CDamageSource::OnObjDestroyed (CSpaceObject &ObjDestroyed)
 
 //	OnObjDestroyed
 //
 //	An object was destroyed
 
 	{
-	if (pObjDestroyed == m_pSource && !IsObjID())
+	if (ObjDestroyed == m_pSource && !IsObjID())
 		{
 		m_sSourceName = m_pSource->GetNamePattern(0, &m_dwSourceNameFlags);
 		m_pSource = (CSpaceObject *)m_pSource->GetID();
 		m_dwFlags |= FLAG_OBJ_ID;
 		}
 
-	if (pObjDestroyed == m_pSecondarySource)
+	if (ObjDestroyed == m_pSecondarySource)
 		m_pSecondarySource = NULL;
 	}
 

@@ -9,6 +9,8 @@
 #define FIELD_FILTER_ALL			CONSTLIT("filterAll")
 #define FIELD_FILTER_SELECTED		CONSTLIT("filterSelected")
 
+#define PROPERTY_ENABLED_FILTER		CONSTLIT("enabledFilter")
+#define PROPERTY_SELECTION_ENABLED	CONSTLIT("selectionEnabled")
 #define PROPERTY_SHOW_ACTUAL_ITEM	CONSTLIT("showActualItem")
 
 const int PICKER_ROW_HEIGHT	=	96;
@@ -136,11 +138,17 @@ ICCItemPtr CDockScreenList::OnGetProperty (const CString &sProperty) const
 //	Returns a property.
 
 	{
-	if (strEquals(sProperty, PROPERTY_SHOW_ACTUAL_ITEM))
+	if (strEquals(sProperty, PROPERTY_SELECTION_ENABLED))
+		{
+		int iCursor = m_pItemListControl->GetCursor();
+		return ICCItemPtr(iCursor != -1 && m_pItemListControl->IsEnabled(iCursor));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_ACTUAL_ITEM))
 		return ICCItemPtr(m_pItemListControl->IsDisplayAsKnown());
 
 	else
-		return ICCItemPtr(ICCItem::Nil);
+		return NULL;
 	}
 
 IDockScreenDisplay::EResults CDockScreenList::OnHandleAction (DWORD dwTag, DWORD dwData)
@@ -334,7 +342,7 @@ ALERROR CDockScreenList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, 
 
 	int i;
 	ALERROR error;
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
@@ -560,14 +568,29 @@ IDockScreenDisplay::EResults CDockScreenList::OnSetLocation (CSpaceObject *pLoca
 	return resultShowPane;
 	}
 
-bool CDockScreenList::OnSetProperty (const CString &sProperty, ICCItem &Value)
+bool CDockScreenList::OnSetProperty (const CString &sProperty, const ICCItem &Value)
 
 //	OnSetProperty
 //
 //	Sets a property
 
 	{
-	if (strEquals(sProperty, PROPERTY_SHOW_ACTUAL_ITEM))
+	if (strEquals(sProperty, PROPERTY_ENABLED_FILTER))
+		{
+		if (Value.IsFunction())
+			{
+			CItemCriteria Filter;
+			Filter.SetFilter(Value);
+			SetEnabledFilter(Filter);
+			}
+		else
+			{
+			CString sFilter = Value.GetStringValue();
+			CItemCriteria Filter(sFilter);
+			SetEnabledFilter(Filter);
+			}
+		}
+	else if (strEquals(sProperty, PROPERTY_SHOW_ACTUAL_ITEM))
 		m_pItemListControl->SetDisplayAsKnown(!Value.IsNil());
 
 	else
@@ -676,4 +699,15 @@ bool CDockScreenList::SetDefaultTab (const CString &sID)
 	//	Done
 
 	return true;
+	}
+
+void CDockScreenList::SetEnabledFilter (const CItemCriteria &EnabledItems)
+
+//	SetEnabledFilter
+//
+//	Filter is an item criteria or a lambda. We enable all items that match the 
+//	filter and disable all other items.
+
+	{
+	m_pItemListControl->SetEnabledCriteria(EnabledItems);
 	}

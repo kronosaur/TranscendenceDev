@@ -748,28 +748,21 @@
 					(block (
 						;	Look for the nearest unknown object
 						
-						(targetObj (@
-							(filter (sysFindObject gSource "Ts -uncharted; S:d;") theObj
-								(and (not (objIsKnown theObj))
-										(objGetProperty theObj 'hasDockingPorts)
-										(or (objCanAttack theObj) (objMatches theObj gSource "G"))
-										)
-								)
-							0))
+						(targetObj (objFireEvent gSource 'GetExploreTarget))
 						)
 						
 						(switch
 							;	If no unknown objects, then say so
 
 							(not targetObj)
-								(objSendMessage gSender gSource (objTranslate gSource 'NoExploreTarget))
+								(objSendMessageTranslate gSender gSource 'NoExploreTarget)
 							
 							;	Otherwise, send the auton to the nearest object
 							
 							(block Nil
 								(objSetData gSource 'behavior 'exploring)
 								(objSetData gSource 'targetID (objGetID targetObj))
-								(objSendMessage gSender gSource (objTranslate gSource 'ExploreAck))
+								(objSendMessageTranslate gSender gSource 'ExploreAck)
 								
 								(shpCancelOrders gSource)
 								(shpOrder gSource 'approach targetObj 75)
@@ -781,6 +774,10 @@
 		</Communications>
 
 		<Events>
+			<GetExploreTarget>
+				(sysFindObject gSource "NsT +property:showMapLabel; -property:known; -uncharted;")
+			</GetExploreTarget>
+			
 			<OnOrdersCompleted>
 				(block (behavior theTarget)
 					(setq behavior (objGetData gSource 'behavior))
@@ -794,14 +791,7 @@
 								
 								;	Look for the nearest unknown object
 						
-								(targetObj (@
-									(filter (sysFindObject gSource "Ts -uncharted; S:d;") theObj
-										(and (not (objIsKnown theObj))
-												(objGetProperty theObj 'hasDockingPorts)
-												(or (objCanAttack theObj) (objMatches theObj gSource "G"))
-												)
-										)
-									0))
+								(targetObj (ObjFireEvent gSource 'GetExploreTarget))
 								)
 								
 								;	Explore object
@@ -823,7 +813,7 @@
 									(not targetObj)
 										(block Nil
 											(objSetData gSource 'behavior 'escorting)
-											(objSendMessage gPlayerShip gSource (objTranslate gSource 'ExplorationDone))
+											(objSendMessageTranslate gPlayerShip gSource 'ExplorationDone)
 											
 											(shpOrder gSource 'escort gPlayerShip)
 											)
@@ -977,7 +967,7 @@
 
 	<ItemType UNID="&itDefectiveAuton;"
 			name=				"defective auton"
-			attributes=			"auton, combatAuton, commonwealth, minorItem, notForSale, omniDefense"
+			attributes=			"auton, combatAuton, commonwealth, defective, minorItem, omniDefense"
 			inherit=			"&baAutonItemBase;"
 			  
 			level=				"4"

@@ -23,7 +23,6 @@
 			regen=              "16"
 			shipRegen=			"4"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion5;"
 			ejectaType=			"&vtWreckEjecta;"
 
@@ -150,6 +149,7 @@
 	<SystemType UNID="&ssSanctuary;"
 				attributes=			"envAir"
 				backgroundID=		"&rsLightNebulaSpace;"
+				spaceColor=			"#282a3c"
 				spaceEnvironmentTileSize=	"large"
 				>
 		<Tables>

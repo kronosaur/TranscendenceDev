@@ -63,6 +63,12 @@ ALERROR CAreaDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CAreaDamage *
 
 	pArea->m_pSovereign = Ctx.Source.GetSovereign();
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pArea, pArea->GetData());
+
 	//	Create a painter instance
 
 	pArea->m_pPainter = Ctx.pDesc->CreateShockwavePainter();
@@ -138,7 +144,7 @@ void CAreaDamage::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	Called when another object is destroyed
 
 	{
-	m_Source.OnObjDestroyed(Ctx.pObj);
+	m_Source.OnObjDestroyed(Ctx.Obj);
 	}
 
 void CAreaDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -191,7 +197,7 @@ void CAreaDamage::OnReadFromStream (SLoadCtx &Ctx)
 		if (iBonus != 0)
 			{
 			m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			m_pEnhancements->InsertHPBonus(iBonus);
+			m_pEnhancements->InsertHPBonus(NULL, iBonus);
 			}
 		}
 

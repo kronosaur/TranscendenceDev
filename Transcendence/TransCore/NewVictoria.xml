@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- STATION TYPES -->
+
+	<!-- Arcology
+	
+	EXTRA DATA
+	
+	totalProduced:		Total number of items produced
+
+	-->
+	
+	<StationType UNID="&stStKatsArcology;"
+			name=				":the Arcology of New Victoria"
+			sovereign=			"&svCommonwealth;"
+			inherit=			"&unidCommonText;"
+
+			attributes=			"arcology, commonwealthCustoms, generic, human, majorStation, populated, stKatsArcology"
+
+			dockScreen=			"&dsStKatsArcology;"
+
+            level=              "7"
+			size=				"5280"
+			immutable=			"true"
+			>
+
+		<Properties>
+			<Constant		id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+			<Constant		id="rpg.showActualItem">True</Constant>
+			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
+			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+		</Properties>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit"	max="2500000">
+			<Sell	criteria="m +commonwealth; -defective; -military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="400" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
+			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
+			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-7;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-7;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-7;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+
+			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
+			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
+
+			<BalanceTrade	criteria="{core.fusionFuel}"		impact="20"/>
+			<BalanceTrade	criteria="{human.basicFood}"	impact="20"/>
+			<BalanceTrade	criteria="{human.lux}"		impact="20"/>
+			<BalanceTrade	criteria="{human.meds}"		impact="20"/>
+			<BalanceTrade	criteria="{human.res}"		impact="20"/>
+			<BalanceTrade	criteria="{core.ore}"			impact="10"/>
+		</Trade>
+		
+		<Items>
+			<RandomItem count="8d10" 
+					criteria=		"ad~r L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					/>
+			<RandomItem count="1d6" 
+					criteria=		"r L:3-7; -alien; -illegal; -military; -notForSale; -notStandard;"	
+					levelFrequency="systemLevel:ru|c|curv"
+					/>
+			
+			<RandomItem count="20" 
+					criteria=		"*~ad -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					levelFrequency=	"systemLevel:ru|c|cur"
+					/>
+					
+			<Item count="1d20" item="&itIncandescentCoffee;"/>
+		</Items>
+
+		<!-- Satellites -->
+
+		<Satellites>
+			<Station type="&stStKatsArcologySegment;"	imageVariant="north"	 xOffset="0"    yOffset="620"	segment="true"/>
+			<Station type="&stStKatsArcologySegment;"	imageVariant="east"	     xOffset="750"  yOffset="-30"	segment="true"/>
+			<Station type="&stStKatsArcologySegment;"	imageVariant="southEast" xOffset="750"  yOffset="-610"	segment="true"/>
+			<Station type="&stStKatsArcologySegment;"	imageVariant="south2"    xOffset="250"  yOffset="-650"	segment="true"/>
+			<Station type="&stStKatsArcologySegment;"	imageVariant="south1"    xOffset="-250" yOffset="-620"	segment="true"/>
+			<Station type="&stStKatsArcologySegment;"	imageVariant="southWest" xOffset="-750" yOffset="-580"	segment="true"/>
+			<Station type="&stStKatsArcologySegment;"	imageVariant="west"      xOffset="-750" yOffset="-30"	segment="true"/>
+		</Satellites>
+		
+		<!-- Image and Effects -->
+
+		<HeroImage imageID="&rsStKatsArcologyHero;" imageX="0" imageY="0" imageWidth="1200" imageHeight="648"/>
+
+		<DockingPorts
+				portAngle=		"0"
+				portCount=		"80"
+				portRadius=		"900"
+
+				viewportSize=	"13333"
+				/>
+
+		<!-- Events and Data -->
+
+		<Events>
+			<OnCreate>
+				(block Nil
+					; Create some visiting ships
+
+					(for i 1 (random 32 48)
+						(block (theShip)
+							(setq theShip (sysCreateShip 
+								&tbStKatsTraffic;
+								(sysVectorPolarOffset gSource (random 0 359) 10)
+								&svCommonwealth;
+								&evStKatsTrafficBehavior;
+								))
+										
+							(setq aDockObj gSource)
+							(objFireEvent theShip "OrderDockAtStKats")
+							)
+						)
+						
+					; Register a callbacks
+					(sysAddObjRecurringTimerEvent 60 gSource "OnProduceProduction")
+					(sysAddObjRecurringTimerEvent 90 gSource "OnTrafficControl")
+					)
+			</OnCreate>
+
+			<OnProduceProduction>
+				(block Nil
+					; Discard any rotted produce
+					(enum (objGetItems gSource "* +FreshFood") theItem
+						(if (eq (itmGetData theItem "status") 'rotted)
+							(block Nil
+								(objRemoveItem gSource theItem)
+								
+								; Rotted items don't count as "produced" so subtract 
+								(objIncData gSource "totalProduced" (subtract 0 (itmGetCount theItem)))
+								)
+							)
+						)
+						
+					; Add fresh produce
+					(if (leq (random 1 100) 5)
+						(block (produceAvail)
+							(setq produceAvail 0)
+							(enum (objGetItems gSource "* +FreshFood") theItem
+								(setq produceAvail (add produceAvail (itmGetCount theItem)))
+								)
+							
+							(if (and (ls produceAvail 20) 
+									(ls (objGetData gSource "totalProduced") 50)
+									)
+								(block (produceCount theMonth theItemUNID expireTime)
+									; Figure out how much to produce
+									(setq produceCount (random 10 20))
+									
+									; Figure out which to produce based on the real
+									; calendar
+									
+									(setq theMonth (item (unvGetRealDate) 1))
+									(switch
+										(leq theMonth 3)
+											(setq theItemUNID &itIncandescentLucuma;)
+											
+										(leq theMonth 6)
+											(setq theItemUNID &itIncandescentPeaches;)
+											
+										(leq theMonth 9)
+											(setq theItemUNID &itIncandescentStrawberries;)
+											
+										(setq theItemUNID &itIncandescentBellFruit;)
+										)
+										
+									; Expire time
+									(setq expireTime (typGetStaticData theItemUNID "expireTime"))
+										
+									(objAddItem gSource 
+										(itmSetData 
+											(itmCreate theItemUNID produceCount)
+											"expireTime"
+											(add (unvGetTick) (random expireTime (add expireTime 1800)))
+											produceCount
+											)
+										)
+										
+									(objIncData gSource "totalProduced" produceCount)
+									)
+								)
+							)
+						)
+					)
+			</OnProduceProduction>
+			
+			<OnTrafficControl>
+				(block (totalShips)
+					; Count the number of ships under traffic control
+					(setq totalShips (count (sysFindObject Nil "s D:0010201F_status")))
+					
+					; If less than the ideal number, new ships jump in
+					(if (ls totalShips 50)
+						(block (theShip theTarget)
+							(setq theShip (sysCreateShip 
+								&tbStKatsTraffic;
+								(random (sysFindObject Nil "G"))
+								&svCommonwealth;
+								&evStKatsTrafficBehavior;
+								))
+								
+							(objFireEvent theShip "OrderEnterSystem")
+							)
+						)
+					)
+			</OnTrafficControl>
+
+			<GetRumors>
+				(append
+					(rpgRumorAdd 'stKatsParliament (make 'sequence 1 5) 20)
+					)
+			</GetRumors>
+		</Events>
+        
+        <Language>
+            <Text id="core.mapDescMain">
+                Capital of the Commonwealth
+            </Text>
+
+			<Text id="rumor.stKatsParliament.1">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+				
+				The minister from Zhang Li makes an impassioned appeal for a 
+				bill funding the construction of three new Commonwealth Star 
+				Carriers.
+
+				She shows pictures of refugees displaced by the Ares, but the 
+				chamber is nearly empty and her energy fades in mid-speech.
+
+			</Text>
+			<Text id="rumor.stKatsParliament.2">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The chamber is nearly full as ministers debate a bill calling 
+				for material support to the Huari people. Those in favor cite 
+				the cruel treatment the Huari have received under the Sung 
+				Slavers.
+				
+				Those opposed recall that the Huari themselves were once 
+				aggressors who killed Commonwealth settlers in the Ungoverned 
+				Territories.
+				
+			</Text>
+			<Text id="rumor.stKatsParliament.3">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The minister from 70 Ophiuchi speaks in the Center Well:
+
+				"...and so I urge my fellow ministers to meet this challenge. 
+				With the appropriations of CP1175 we can finally provide enough 
+				resources to the Militia in order to secure the safety of our 
+				citizens against Marauder tyranny."
+				
+			</Text>
+			<Text id="rumor.stKatsParliament.4">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The minister from Kinder's Star reads a bill commemorating the 
+				death of Militia Colonel Simon Francis Jezerski, who was killed 
+				in the line of duty in a confrontation with the Death Drugs 
+				Cartel.
+
+			</Text>
+			<Text id="rumor.stKatsParliament.5">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The minister from Numerianus speaks in the Center Well:
+
+				"My fellow citizens, if compassion is not enough to compel you 
+				to vote for this bill, then consider the risk that we take by 
+				opposing it. If we do not provide a safe home for our zoanthrope
+				brethren then the Dwarg will happily exploit them."
+				
+			</Text>
+        </Language>
+	</StationType>
+
+	<!-- Arcology Segment -->
+	
+	<StationType UNID="&stStKatsArcologySegment;"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+
+			attributes=			"stKatsArcologySegment"
+
+			immutable=			"true"
+			paintLayer=			"sendToBack"
+			noMapIcon=			"true"
+			>
+
+		<!-- Images and Effects -->
+
+		<ImageVariants>
+			<Image id="north"		imageID="&rsStKatsArcologySegments;" imageX="0"	   imageY="0"     imageWidth="2000" imageHeight="520"  viewportRatio="0.075"/>
+			<Image id="east"		imageID="&rsStKatsArcologySegments;" imageX="1500" imageY="520"   imageWidth="500"  imageHeight="780"  viewportRatio="0.075"/>
+			<Image id="southEast"	imageID="&rsStKatsArcologySegments;" imageX="500"  imageY="920"   imageWidth="500"  imageHeight="380"  viewportRatio="0.075"/>
+			<Image id="south1"		imageID="&rsStKatsArcologySegments;" imageX="500"  imageY="520"   imageWidth="500"  imageHeight="400"  viewportRatio="0.075"/>
+			<Image id="south2"		imageID="&rsStKatsArcologySegments;" imageX="1000" imageY="520"   imageWidth="500"  imageHeight="460"  viewportRatio="0.075"/>
+			<Image id="southWest"	imageID="&rsStKatsArcologySegments;" imageX="1000" imageY="980"   imageWidth="500"  imageHeight="320"  viewportRatio="0.075"/>
+			<Image id="west"		imageID="&rsStKatsArcologySegments;" imageX="0"    imageY="520"   imageWidth="500"  imageHeight="780"  viewportRatio="0.075"/>
+		</ImageVariants>
+
+	</StationType>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsStKatsArcologySegments;"	bitmap="Resources\StKatsArcologySegments.jpg" bitmask="Resources\StKatsArcologySegmentsMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsStKatsArcologyHero;"		bitmap="Resources\StKatsArcologyHero.jpg" bitmask="Resources\StKatsArcologyHeroMask.bmp" loadOnUse="true"/>
+	
+</TranscendenceModule>

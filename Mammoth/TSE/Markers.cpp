@@ -79,7 +79,7 @@ ALERROR CMarker::Create (CSystem &System,
 	return NOERROR;
 	}
 
-ICCItem *CMarker::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
+ICCItem *CMarker::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
 
 //	GetProperty
 //
@@ -101,7 +101,7 @@ ICCItem *CMarker::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
         }
 
 	else
-		return CSpaceObject::GetProperty(Ctx, sName);
+		return CSpaceObject::GetPropertyCompatible(Ctx, sName);
 	}
 
 CSovereign *CMarker::GetSovereign (void) const
@@ -190,7 +190,7 @@ void CMarker::OnReadFromStream (SLoadCtx &Ctx)
     if (bHasMapOrbit)
         {
         m_pMapOrbit = new COrbit;
-        Ctx.pStream->Read((char *)m_pMapOrbit, sizeof(COrbit));
+		m_pMapOrbit->ReadFromStream(Ctx);
         }
     else
         m_pMapOrbit = NULL;
@@ -223,7 +223,7 @@ void CMarker::OnWriteToStream (IWriteStream *pStream)
     //  Write map orbit, if we have one
 
     if (m_pMapOrbit)
-        pStream->Write((char *)m_pMapOrbit, sizeof(COrbit));
+        m_pMapOrbit->WriteToStream(*pStream);
 	}
 
 void CMarker::SetOrbit (const COrbit &Orbit)

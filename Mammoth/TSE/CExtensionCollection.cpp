@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-    22, 175, 152, 225, 141, 246, 246,  58, 133, 242,
-    69, 160, 246, 202, 136,  26,  29, 161, 215,  57,
+    171,  27, 126, 144, 193,  77, 147,  85, 248, 173,
+     84,  45, 111, 120,  29, 161,  54, 114, 224, 192,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -255,6 +255,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	CExtension::SLoadOptions LoadOptions;
 	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+	LoadOptions.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
 
 	//	Make sure the extension is loaded completely.
 
@@ -1516,6 +1517,7 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWO
 		CExtension::SLoadOptions LoadOptions;
 		LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 		LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+		LoadOptions.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
 
 		//	If this extension has been manually disabled, then don't bother with
 		//	the digest because it is expensive. We'll compute it later.
@@ -1611,6 +1613,7 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	Ctx.sResDb = sFilespec;
 	Ctx.pResDb = &Resources;
 	Ctx.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) ? true : false);
+	Ctx.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) ? true : false);
 	Ctx.sErrorFilespec = sFilespec;
 
 	//	Load it.
@@ -1736,6 +1739,7 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	ExtCtx.sResDb = Ctx.sResDb;
 	ExtCtx.pResDb = Ctx.pResDb;
 	ExtCtx.bNoResources = Ctx.bNoResources;
+	ExtCtx.bLoadDiagnostics = Ctx.bLoadDiagnostics;
 	ExtCtx.dwInheritAPIVersion = m_pBase->GetAPIVersion();
 	//	No need to set bBindAsNewGame because it is only useful during Bind.
 	//	AdvCtx.bBindAsNewGame = Ctx.bBindAsNewGame;

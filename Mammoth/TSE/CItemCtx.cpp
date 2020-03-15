@@ -147,35 +147,20 @@ CDeviceClass *CItemCtx::GetDeviceClass (void)
 	return NULL;
 	}
 
-bool CItemCtx::GetEnhancementDisplayAttributes (TArray<SDisplayAttribute> *retList)
-
-//	GetEnhancementDisplayAttributes
-//
-//	Returns a list of display attributes that are currently enhancing the item.
-//	Returns FALSE if there are none.
-
+CDeviceItem CItemCtx::GetDeviceItem (void)
 	{
-	//	Get attributes from the enhancement stack
-
-	const CItemEnhancementStack *pEnhancements = GetEnhancementStack();
-	if (pEnhancements && !pEnhancements->IsEmpty())
-		{
-		pEnhancements->AccumulateAttributes(*this, retList);
-		return (retList->GetCount() > 0);
-		}
-
-	//	Otherwise, if the item is enhanced, then return that
-
-	else if (GetItem().IsEnhanced())
-		{
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+enhanced"), true));
-		return true;
-		}
-
-	//	Otherwise, not enhanced.
-
+	if (m_pDevice)
+		return m_pDevice->GetDeviceItem();
 	else
-		return false;
+		{
+		const CItem &Item = GetItem();
+		if (CDeviceItem DeviceItem = Item.AsDeviceItem())
+			return DeviceItem;
+		else if (Item.IsMissile() && ResolveVariant())
+			return m_Weapon.AsDeviceItemOrThrow();
+		else
+			return CItem::NullItem().AsDeviceItem();
+		}
 	}
 
 TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)
@@ -390,5 +375,9 @@ bool CItemCtx::ResolveVariant (void)
 	//	Look through all weapons that can launch this ammo. We pick the first
 	//	weapon (arbitrarily).
 
-	return CDeviceClass::FindWeaponFor(m_pItem->GetType(), &m_pWeapon, &m_iVariant);
+	if (!CDeviceClass::FindWeaponFor(m_pItem->GetType(), &m_pWeapon, &m_iVariant))
+		return false;
+
+	m_Weapon = CItem(m_pWeapon->GetItemType(), 1);
+	return true;
 	}

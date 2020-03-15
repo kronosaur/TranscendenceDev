@@ -2,16 +2,53 @@
 
 <TranscendenceModule>
 	
+<!-- THE BLACK MARKET -->
+
+	<Sovereign UNID="&svBlackMarket;"
+			name=":the Black Market"
+			adjective="Black Market"
+			demonym=":a Black Market member"
+
+			alignment="neutral"
+			>
+
+		<Events>
+			<GetGlobalDockScreen>
+				(switch
+					; This only applies to Black Market stations and ships
+					(not (objMatches gSource Nil "sTAV +blackMarket;"))
+						Nil
+						
+					; If the ship is radioactive then refuse dock
+					(shpIsRadioactive gPlayerShip)
+						{	screen:&dsRefuseContamination;		priority:10		overrideOnly:true	}
+
+					; If there is a bounty on the player, then the player
+					; has to repay the debt.
+					(objGetData gPlayerShip "blackMarketCrimeCost")
+						{	screen:&dsBlackMarketPayDebt;		priority:8		overrideOnly:true	}
+
+					; If the player does not have a black market ID, then
+					; refuse dock
+					(not (objGetItems gPlayerShip "*+BlackMarketID"))
+						{	screen:&dsBlackMarketRefuseDock;	priority:6		overrideOnly:true	}
+
+					; See if the player is promoted
+					(intBlackMarketPromotion)
+						{	screen:&dsBlackMarketPromotion;		priority:4		overrideOnly:true	}
+						
+					Nil
+					)
+			</GetGlobalDockScreen>
+		</Events>
+	</Sovereign>
+    
 <!--
 
 PLAYER DATA
 
 	blackMarketCrime: Description of player's offense against the Sindikat
 	blackMarketCrimeCost: Price that the player has to pay to stop bounty hunters
-	blackMarketLevel: Black market level (1-6)
-	blackMarketShields: Level at which player got free shields
-	blackMarketWeapon: Level at which player got free weapon
-	blackMarketXP:	Black Market experience points
 	
 -->
 
@@ -35,7 +72,6 @@ PLAYER DATA
 			regen=			    "6"
 			fireRateAdj=		"20"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -132,25 +168,25 @@ PLAYER DATA
 		
 		<DockScreens>
 			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidBlackMarketMember; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionTalk">
-								(block Nil
-									(setq gPrevScreen "Main")
-									(scrShowScreen gScreen "Boss")
-									)
+								(scrShowScreen gScreen &dsBlackMarketBoss;)
 							</Action>
 
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: Nil
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -166,230 +202,15 @@ PLAYER DATA
 					</Default>
 				</Panes>
 			</Main>
-
-			<Boss>
-				<InitialPane>
-					(switch
-						(ls (objGetData gPlayerShip "blackMarketLevel") 2)
-							"NoAccess"
-
-						(ls (objGetData gPlayerShip "blackMarketLevel") 4)
-							"MemberBoss"
-
-						;"LordBoss"
-						"MemberBoss"
-						)
-				</InitialPane>
-
-				<Panes>
-					<MemberBoss descID="descMemberBoss">
-						<Actions>
-							<Action id="actionWantMission" default="1">
-								(rpgMissionAssignment {
-									missionCriteria: (cat "n +blackMarket; =" (sysGetLevel) ";")
-									noMissionTextID: 'descNoMissions
-									maxPerStation: 1
-									})
-							</Action>
-
-							<Action id="actionWantWeapon">
-								(if (ls (objGetData gPlayerShip 'blackMarketWeapon) (objGetData gPlayerShip 'blackMarketLevel))
-									(block (
-										(reward (objFireEvent gSource 'GetRewardUpgrade { type:'weapon }))
-										)
-										(scrSetData gScreen 'reward reward)
-
-										(scrShowPane gScreen 'UpgradeComplete)
-										(scrShowScreen gScreen &dsRPGInstallDeviceFromList; {
-											itemList: (list (@ reward 'device))
-											priceAdj: 0
-											installPriceAdj: 0
-											noSuccessPane: True
-											})
-										)
-									(scrShowPane gScreen 'NoUpgrade)
-									)
-							</Action>
-
-							<Action id="actionWantShields">
-								(if (ls (objGetData gPlayerShip 'blackMarketShields) (objGetData gPlayerShip 'blackMarketLevel))
-									(block (
-										(reward (objFireEvent gSource 'GetRewardUpgrade { type:'shields }))
-										)
-										(scrSetData gScreen 'reward reward)
-
-										(scrShowPane gScreen 'UpgradeComplete)
-										(scrShowScreen gScreen &dsRPGInstallDeviceFromList; {
-											itemList: (list (@ reward 'device))
-											priceAdj: 0
-											installPriceAdj: 0
-											noSuccessPane: True
-											})
-										)
-									(scrShowPane gScreen 'NoUpgrade)
-									)
-							</Action>
-
-							<Action id="actionLeave" cancel="1">
-								(scrShowScreen gScreen 'Main)
-							</Action>
-						</Actions>
-					</MemberBoss>
-
-					<LordBoss descID="descLordBoss">
-						<Actions>
-							<Action id="actionLeave" cancel="1">
-								(scrShowScreen gScreen 'Main)
-							</Action>
-						</Actions>
-					</LordBoss>
-
-					<NoAccess descID="descNoBoss">
-						<Actions>
-							<Action id="actionContinue" cancel="1" default="1">
-								(scrShowScreen gScreen 'Main)
-							</Action>
-						</Actions>
-					</NoAccess>
-
-					<NoUpgrade descID="descNoUpgrade">
-						<Actions>
-							<Action id="actionContinue" cancel="1" default="1">
-								(scrShowScreen gScreen 'Main)
-							</Action>
-						</Actions>
-					</NoUpgrade>
-
-					<UpgradeComplete>
-						<OnPaneInit>
-							(block (
-								(reward (scrGetData gScreen 'reward))
-								(rewardType (@ reward 'type))
-								)
-								(switch
-									(not (scrGetReturnData gScreen 'installed))
-										(scrSetDescTranslate gScreen 'descInstallCancel)
-
-									(= rewardType 'weapon)
-										(scrSetDescTranslate gScreen 'descInstalledWeapon)
-
-									(scrSetDescTranslate gScreen 'descInstalledShields)
-									)
-								)
-						</OnPaneInit>
-
-						<Actions>
-							<Action id="actionContinue" cancel="1" default="1">
-								(block ()
-									(if (scrGetReturnData gScreen 'installed)
-										(block (
-											(reward (scrGetData gScreen 'reward))
-											(rewardType (@ reward 'type))
-											(ammo (@ reward 'ammo))
-											)
-											(if ammo
-												(objAddItem gPlayerShip ammo)
-												)
-
-											(switch
-												(= rewardType 'shields)
-													(objSetData gPlayerShip 'blackMarketShields (objGetData gPlayerShip 'blackMarketLevel))
-
-												(= rewardType 'weapon)
-													(objSetData gPlayerShip 'blackMarketWeapon (objGetData gPlayerShip 'blackMarketLevel))
-												)
-											)
-										)
-
-									(scrShowScreen gScreen 'Main)
-									)
-							</Action>
-						</Actions>
-					</UpgradeComplete>
-				</Panes>
-			</Boss>
 		</DockScreens>
 
 		<!-- Events and Data -->
 		
 		<Events>
-			<GetRewardUpgrade>
-				(block (
-					(level (objGetData gPlayerShip 'blackMarketLevel))
-					(rewardType (@ gData 'type))
-					)
-					(switch
-						(= rewardType 'shields)
-							(switch
-								(geq level 6)
-									{
-										type: 'shields
-										device: (itmCreate &itPlasmaShieldGenerator; 1)
-										}
-
-								(= level 5)
-									{
-										type: 'shields
-										device: (itmCreate &itYoroiMX; 1)
-										}
-
-								(= level 4)
-									{
-										type: 'shields
-										device: (itmCreate &itYoroiS500; 1)
-										}
-
-								(= level 3)
-									{
-										type: 'shields
-										device: (itmCreate &itYoroiS100; 1)
-										}
-
-								{
-									type: 'shields
-									device: (itmCreate &itClass3Deflector; 1)
-									}
-								)
-
-						(= rewardType 'weapon)
-							(switch
-								(geq level 6)
-									{
-										type: 'weapon
-										device: (itmCreate &itRasiermesserLauncher; 1)
-										ammo: (itmCreate &itGotha400Seeker; 50)
-										}
-
-								(= level 5)
-									{
-										type: 'weapon
-										device: (itmCreate &itHanzoBlaster; 1)
-										}
-
-								(= level 4)
-									{
-										type: 'weapon
-										device: (itmCreate &itDragonflyMissileSystem; 1)
-										ammo: (itmCreate &itDragonflyCartridge; 150)
-										}
-
-								{
-									type: 'weapon
-									device: (itmCreate &itMAGLauncher; 1)
-									ammo: (itmCreate &itZG24ClusterMAG; 100)
-									}
-								)
-						)
-					)
-			</GetRewardUpgrade>
-
 			<GetRumors>
-				{
-					attributes: "commonwealthPub"
-					priority: 31
-					textID: 'rumor.commonwealthPub
-					onExitRumor: (lambda (theRumor) (objSetKnown (@ theRumor 'sourceObj)))
-					}
+				(append
+					(rpgRumorAdd 'commonwealthPub Nil 31 'scan)
+					)
 			</GetRumors>
 		</Events>
 		
@@ -401,16 +222,6 @@ PLAYER DATA
 		</StaticData>
 		
 		<Language>
-			<String id="actionWantMission">"I want a [m]ission."</String>
-			<String id="actionWantWeapon">"I need a better [w]eapon."</String>
-			<String id="actionWantShields">"I need better [s]hields."</String>
-
-			<Text id="descNoMissions">
-
-				The dark-haired woman frowns for a second,
-				"I'm sorry, but we don't have any use for you right now."
-
-			</Text>
 			<Text id="descNoInstall">
 
 				We only install illegal or military equipment. We won't install 
@@ -420,6 +231,12 @@ PLAYER DATA
 			<Text id="dockServices:installAbility">
 
 				We install illegal or military equipment up to tech level %maxLevel%.
+
+			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys illegal and military items. We are not 
+				interested in buying %itemName%.
 
 			</Text>
 
@@ -434,50 +251,6 @@ PLAYER DATA
 
 			</Text>
 
-			<Text id="descMemberBoss">
-
-				You are escorted to Lord Mikho's outer office. But instead of 
-				finding him there, you see a young, dark-haired woman sitting 
-				at the desk. She looks at you slowly, perhaps trying to 
-				remember your name.
-				
-				"What can I do for you?"
-
-			</Text>
-			<Text id="descLordBoss">
-
-				You try to see Lord Mikho, but he is indisposed.
-
-			</Text>
-			<Text id="descInstallCancel">
-
-				The dark-haired woman frowns in disappointment.
-
-			</Text>
-			<Text id="descInstalledWeapon">
-
-				The dark-haired woman smiles as the crew installs your new 
-				weapon:
-				
-				"Enjoy your new toy."
-			
-			</Text>
-			<Text id="descInstalledShields">
-
-				The dark-haired woman smiles as the crew installs your new 
-				shield generator:
-				
-				"Enjoy your new toy."
-
-			</Text>
-			<Text id="descNoUpgrade">
-
-				The dark-haired woman rolls her eyes.
-				
-				"I'm sorry, but you'll just have to do with what you've got."
-
-			</Text>
-            
             <Text id="core.mapDesc">
 
                 Refuels up to level 6 &mdash;
@@ -508,7 +281,6 @@ PLAYER DATA
 			shipRegen=			"11"
 			fireRateAdj=		"20"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -615,18 +387,25 @@ PLAYER DATA
 
 		<DockScreens>
 			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidBlackMarketMember; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
+							<Action id="actionTalk">
+								(scrShowScreen gScreen &dsBlackMarketBoss;)
+							</Action>
+
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: Nil
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -654,8 +433,18 @@ PLAYER DATA
 		</StaticData>
 		
         <Language>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys illegal and military items. We are not 
+				interested in buying %itemName%.
+
+			</Text>
             <Text id="core.mapDesc">
-                "Refuels up to level 7 &mdash; Repairs/installs armor up to level 9 &mdash; Installs devices up to level 9 &mdash; Buys and sells illegal and military items"
+
+                Refuels up to level 7 &mdash; Repairs/installs armor up to 
+				level 9 &mdash; Installs devices up to level 9 &mdash; Buys and
+				sells illegal and military items
+
             </Text>
         </Language>
 	</StationType>
@@ -677,7 +466,6 @@ PLAYER DATA
 			multiHull=			"true"
 			regen=			    "1.3"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtKineticExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -737,16 +525,18 @@ PLAYER DATA
 		<!-- Dock Screens -->
 		
 		<DockScreens>
-			<Main
-				name=			"Tempus Lab"
-				>
+			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidBlackMarketMember; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: Nil
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -808,7 +598,7 @@ PLAYER DATA
 			type=				"heavy gunship"
 			defaultSovereign=	"&svBlackMarket;"
 
-			attributes=			"blackMarket, genericClass, outlaws"
+			attributes=			"blackMarket, genericClass, makayev, outlaws"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -884,7 +674,7 @@ PLAYER DATA
 			type=				"heavy gunship"
 			defaultSovereign=	"&svBlackMarket;"
 
-			attributes=			"blackMarket, genericClass, outlaws"
+			attributes=			"blackMarket, genericClass, makayev, outlaws"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -998,9 +788,9 @@ PLAYER DATA
 	<Globals>
 		(block Nil
 			(setq intBlackMarketBuyPrice (lambda (thisItem)
-				(block (cost)
-					(setq cost (itmGetPrice thisItem 'credit))
-
+				(block (
+					(cost (itmGetPrice thisItem 'credit))
+					)
 					(switch
 						; We don't sell items that are damaged or installed
 						(or (itmIsDamaged thisItem) (itmIsInstalled thisItem))
@@ -1008,7 +798,7 @@ PLAYER DATA
 
 						; Military items are priced depending on level
 						(itmHasAttribute thisItem 'Military)
-							(if (ls (objGetData gPlayerShip "blackMarketLevel") 4)
+							(if (ls (typ@ &unidBlackMarketMember; 'level) 4)
 								(multiply cost 2)
 								(divide (multiply cost 125) 100)
 								)
@@ -1047,8 +837,11 @@ PLAYER DATA
 			(setq intBlackMarketPromotion (lambda Nil
 				; Returns level that the player is promoted to (or Nil)
 
-				(block (xp newLevel)
-					(setq xp (objGetData gPlayerShip "blackMarketXP"))
+				(block (
+					(xp (typ@ &unidBlackMarketMember; 'xp))
+					(curLevel (typ@ &unidBlackMarketMember; 'level))
+					newLevel
+					)
 					(switch
 						(geq xp 10000)
 							(setq newLevel 6)
@@ -1069,8 +862,7 @@ PLAYER DATA
 						)
 
 					; Return if different from current level
-					(if (eq (objGetData gPlayerShip "blackMarketLevel") newLevel)
-						Nil
+					(if (!= curLevel newLevel)
 						newLevel
 						)
 					)
@@ -1095,7 +887,7 @@ PLAYER DATA
 							; [I.e., the better the relationship with the BM, the greater the
 							; chance that the BM will allow the player to pay back her debts.]
                     
-							(if (gr (/ totalCrimeCost 100) (objGetData gPlayerShip "blackMarketXP"))
+							(if (gr (/ totalCrimeCost 100) (typ@ &unidBlackMarketMember; 'xp))
 								(block Nil
 									(sovSetDisposition &svBlackMarket; &svPlayer; 'enemy)
 									(sovSetDisposition &svPlayer; &svBlackMarket; 'enemy)
@@ -1109,69 +901,6 @@ PLAYER DATA
 	</Globals>
     
 <!-- DOCK SCREENS -->
-
-	<!-- Black Market Promotion -->
-
-	<DockScreen UNID="&dsBlackMarketPromotion;"	nestedScreen="true">
-		<Panes>
-			<Default>
-				<OnPaneInit>
-					(block (desc)
-						(setq gLevel (intBlackMarketPromotion))
-
-						(switch 
-							(ls gLevel 4)
-								(setq desc "Two men with heavy weapons grab you as soon as you come out of the airlock: \"The boss wants to see you!\" They take you inside the station.")
-
-							(setq desc "Two men with heavy weapons walk up to you as you come out of the airlock: \"The boss would like to see you, %sir%. Please follow us.\" They take you inside the station to see Lord Mikho.")
-							)
-
-						(scrSetDesc gScreen desc)
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
-						<ShowPane pane="Promotion"/>
-					</Action>
-				</Actions>
-			</Default>
-
-			<Promotion>
-				<OnPaneInit>
-					(block (desc)
-						(switch
-							(eq gLevel 2)
-								(setq desc "You are brought to Lord Mikho's outer office. A young, dark-haired woman in a tight neo-linen suit stands up as you walk in: \"In recognition of your services to the Sindikat, Lord Mikho has decided to promote you to the level of Smuggler. Congratulations and thank you for your loyalty.\"\n\nShe turns her back to you as you are escorted out.")
-
-							(eq gLevel 3)
-								(setq desc "You are brought to Lord Mikho's outer office. A young, dark-haired woman in a tight neo-linen suit smiles as you walk in: \"Lord Mikho has promoted you to the level of Enforcer. Congratulations and thank you for your loyalty.\"\n\nShe shakes hands with you before you leave. You are escorted out.")
-
-							(eq gLevel 4)
-								(setq desc "Lord Mikho is in his office. A young, dark-haired woman sits on the sofa next to him. Lord Mikho speaks: \"Good evening, %name%! Your services to us have been exemplary and the Sindikat has officially decided to make you a member. I am sure that you will not disappoint us.\"")
-
-							(eq gLevel 5)
-								(setq desc "Lord Mikho is in his office. A young, dark-haired woman sits on the sofa next to him. Lord Mikho speaks: \"Good evening, %name%! You have been most useful to us and we have decided to promote you to the rank of Lieutenant in the Sindikat. I am sure that you will not disappoint us.\"")
-
-							(eq gLevel 6)
-								(setq desc "Lord Mikho is waiting for you in his study. \"My dear %name%! Your fame and exploits have made you powerful friends among the Sindikat. I bow before your abilities and extend to you the title of Sindikat Lord!\"")
-							)
-
-						(scrSetDesc gScreen desc)
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
-						(block Nil
-							(objSetData gPlayerShip "blackMarketLevel" gLevel)
-							(scrExitScreen gScreen)
-							)
-					</Action>
-				</Actions>
-			</Promotion>
-		</Panes>
-	</DockScreen>
 
 	<!-- Black Market Pay Debt -->
 
@@ -1304,123 +1033,6 @@ PLAYER DATA
 		</Language>
 	</DockScreen>
 	
-<!-- THE BLACK MARKET -->
-
-	<Sovereign UNID="&svBlackMarket;"
-			name=":the Black Market"
-			adjective="Black Market"
-			demonym=":a Black Market member"
-
-			alignment="neutral"
-			>
-
-		<Events>
-			<GetGlobalAchievements>
-				(block (theList)
-					(if (gr (objGetData gPlayerShip "blackMarketXP") 0)
-						(block (rank)
-							(setq rank (objGetData gPlayerShip "blackMarketLevel"))
-							(setq theList (list
-								(list
-									"Black Market rank"
-									(switch
-										(eq rank 1) "Civilian"
-										(eq rank 2) "Smuggler"
-										(eq rank 3) "Enforcer"
-										(eq rank 4) "Sindikat member"
-										(eq rank 5) "Sindikat lieutenant"
-										(eq rank 6) "Sindikat lord"
-										(cat "ERROR: Black Market rank: " (or rank "Nil"))
-										) 
-									)
-								))
-							)
-						)
-						
-					theList
-					)
-			</GetGlobalAchievements>
-
-			<GetGlobalDockScreen>
-				(switch
-					; This only applies to Black Market stations and ships
-					(not (objMatches gSource Nil "sTAV +blackMarket;"))
-						Nil
-						
-					; If the ship is radioactive then refuse dock
-					(shpIsRadioactive gPlayerShip)
-						{	screen:&dsRefuseContamination;		priority:10		overrideOnly:true	}
-
-					; If there is a bounty on the player, then the player
-					; has to repay the debt.
-					(objGetData gPlayerShip "blackMarketCrimeCost")
-						{	screen:&dsBlackMarketPayDebt;		priority:8		overrideOnly:true	}
-
-					; If the player does not have a black market ID, then
-					; refuse dock
-					(not (objGetItems gPlayerShip "*+BlackMarketID"))
-						{	screen:&dsBlackMarketRefuseDock;	priority:6		overrideOnly:true	}
-
-					; See if the player is promoted
-					(intBlackMarketPromotion)
-						{	screen:&dsBlackMarketPromotion;		priority:4		overrideOnly:true	}
-						
-					Nil
-					)
-			</GetGlobalDockScreen>
-			
-			<GetGlobalPlayerPriceAdj>
-				(block (
-					(rank (objGetData gPlayerShip "blackMarketLevel"))
-					)
-
-					(switch
-						;	Only at Black Market stations
-
-						(not (objHasAttribute aProviderObj 'blackMarket))
-							Nil
-							
-						;	Military items prices depend on rank
-						
-						(and (eq aService 'priceForPlayerToBuy)
-								(itmMatches gItem "* +military")
-								)
-							(switch
-								(ls rank 4)
-									200
-								125
-								)
-								
-						;	No adjustment
-						Nil
-						)
-					)
-			</GetGlobalPlayerPriceAdj>
-			
-			<OnGlobalPlayerBoughtItem>
-				(switch
-					;	If the player bought illegal items from the Black Market then
-					;	we add to XP.
-					
-					(and (objHasAttribute aSellerObj 'blackMarket)
-							(itmHasAttribute gItem 'illegal)
-							)
-						(objIncData gPlayerShip 'blackMarketXP (divide (ecoExchange aPrice aCurrency 'credit) 100))
-					)
-			</OnGlobalPlayerBoughtItem>
-
-			<OnGlobalUniverseCreated>
-				(block Nil
-					; Initialize all variables that we need
-					(objSetData gPlayerShip "blackMarketXP" 0)
-					(objSetData gPlayerShip "blackMarketLevel" 1)
-					(objSetData gPlayerShip "blackMarketWeapon" 2)
-					(objSetData gPlayerShip "blackMarketShields" 1)
-					)
-			</OnGlobalUniverseCreated>
-		</Events>
-	</Sovereign>
-    
     <!-- Bounty Hunters 
         Based on code by JohnBWatson. Thank you! -->
 	
@@ -1443,6 +1055,13 @@ PLAYER DATA
 	<Type unid="&baBlackMarketStation;"
 			inherit="&unidCommonText;"
 			>
+		<Properties>
+			<!--
+			By default we do not check military IDs
+			-->
+			<Constant	id="rpg.checkMilitaryID">Nil</COnstant>
+		</Properties>
+
 		<Events>
 			<OnCreate>
 				(if (objGetStaticData gSource 'blackMarket.deployBountyHunters)
@@ -1474,7 +1093,7 @@ PLAYER DATA
 							;	If the player is not part of the Black Market, then she is 
 							;	treated as an enemy.
                     
-							(if (eq (objGetData gPlayerShip "blackMarketXP") 0)
+							(if (= (typ@ &unidBlackMarketMember; 'xp) 0)
 								(block Nil
 									(sovSetDisposition &svBlackMarket; &svPlayer; 'enemy)
 									(sovSetDisposition &svPlayer; &svBlackMarket; 'enemy)
@@ -1520,13 +1139,6 @@ PLAYER DATA
 
 				The docking bay is guarded by two men with heavy weapons.
 				They scan you and then step aside to let you in.
-
-			</Text>
-			<Text id="descNoBoss">
-
-				You ask to see the station boss. Everyone turns to stare at you
-				for a second, but then they go about their business and 
-				continue to ignore you.
 
 			</Text>
 		</Language>

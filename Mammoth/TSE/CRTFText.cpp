@@ -14,6 +14,25 @@ CRTFText::CRTFText (const CString &sText, const IFontTable *pFontTable) :
 	{
 	}
 
+int CRTFText::CalcHeight (int cxWidth) const
+
+//	CalcHeight
+//
+//	Computes the height of the text given a certain width.
+
+	{
+	RECT rcRect;
+	rcRect.left = 0;
+	rcRect.right = cxWidth;
+	rcRect.top = 0;
+	rcRect.bottom = 1000;
+
+	RECT rcBounds;
+	GetBounds(rcRect, &rcBounds);
+
+	return RectHeight(rcBounds);
+	}
+
 void CRTFText::Format (const RECT &rcRect) const
 
 //	Format
@@ -66,7 +85,7 @@ CString CRTFText::GenerateRTFText (const CString &sText, const SAutoRTFOptions &
 		return sText;
 
 	CG32bitPixel rgbColor = Options.rgbQuoteText;
-	CString sCloseQuote = CONSTLIT("”}");
+	CString sCloseQuote = strPatternSubst(CONSTLIT("%&rdquo;}"));
 
 	//	Start with the RTF open
 
@@ -89,7 +108,7 @@ CString CRTFText::GenerateRTFText (const CString &sText, const SAutoRTFOptions &
 				}
 			else
 				{
-				CString sQuoteStart = strPatternSubst(CONSTLIT("{/c:#%02x%02x%02x; “"), rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue());
+				CString sQuoteStart = strPatternSubst(CONSTLIT("{/c:#%02x%02x%02x; %&ldquo;"), rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue());
 				Output.Write(sQuoteStart.GetASCIIZPointer(), sQuoteStart.GetLength());
 				bInQuotes = true;
 				}

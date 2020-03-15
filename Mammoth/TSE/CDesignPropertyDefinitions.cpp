@@ -21,6 +21,8 @@
 #define DYNAMIC_DATA_TAG						CONSTLIT("DynamicData")
 #define DYNAMIC_GLOBAL_TAG						CONSTLIT("DynamicGlobal")
 #define GLOBAL_TAG								CONSTLIT("Global")
+#define ITEM_DATA_TAG							CONSTLIT("ItemData")
+#define OBJ_DATA_TAG							CONSTLIT("ObjData")
 #define VARIANT_TAG								CONSTLIT("Variant")
 
 #define ID_ATTRIB								CONSTLIT("id")
@@ -91,6 +93,14 @@ ALERROR CDesignPropertyDefinitions::InitFromXML (SDesignLoadCtx &Ctx, const CXML
 //	<DynamicData...>: Evaluate at get-time on object
 
 	{
+	//	Item types can define properties for themselves (the item) and in some
+	//	cases, for objects (e.g., shot objects created by a weapon). Because of
+	//	this we sometimes need to distinguish between item and object.
+
+	bool bIsItemType = (Ctx.pType->GetType() == designItemType);
+
+	//	Load all properties
+
 	for (int i = 0; i < Desc.GetContentElementCount(); i++)
 		{
 		const CXMLElement &Item = *Desc.GetContentElement(i);
@@ -101,7 +111,12 @@ ALERROR CDesignPropertyDefinitions::InitFromXML (SDesignLoadCtx &Ctx, const CXML
 		if (strEquals(Item.GetTag(), CONSTANT_TAG))
 			iType = EPropertyType::propConstant;
 		else if (strEquals(Item.GetTag(), DATA_TAG))
-			iType = EPropertyType::propData;
+			{
+			if (bIsItemType)
+				iType = EPropertyType::propItemData;
+			else
+				iType = EPropertyType::propData;
+			}
 		else if (strEquals(Item.GetTag(), DEFINITION_TAG))
 			iType = EPropertyType::propDefinition;
 		else if (strEquals(Item.GetTag(), DYNAMIC_DATA_TAG))
@@ -110,6 +125,10 @@ ALERROR CDesignPropertyDefinitions::InitFromXML (SDesignLoadCtx &Ctx, const CXML
 			iType = EPropertyType::propDynamicGlobal;
 		else if (strEquals(Item.GetTag(), GLOBAL_TAG))
 			iType = EPropertyType::propGlobal;
+		else if (strEquals(Item.GetTag(), ITEM_DATA_TAG) && bIsItemType)
+			iType = EPropertyType::propItemData;
+		else if (strEquals(Item.GetTag(), OBJ_DATA_TAG) && bIsItemType)
+			iType = EPropertyType::propObjData;
 		else if (strEquals(Item.GetTag(), VARIANT_TAG))
 			iType = EPropertyType::propVariant;
 		else
@@ -198,6 +217,7 @@ void CDesignPropertyDefinitions::InitItemData (CUniverse &Universe, CItem &Item)
 		switch (m_Defs[i].iType)
 			{
 			case EPropertyType::propData:
+			case EPropertyType::propItemData:
 			case EPropertyType::propVariant:
 				{
 				if (m_Defs[i].pCode)
@@ -235,6 +255,7 @@ void CDesignPropertyDefinitions::InitObjectData (CUniverse &Universe, CSpaceObje
 		switch (m_Defs[i].iType)
 			{
 			case EPropertyType::propData:
+			case EPropertyType::propObjData:
 			case EPropertyType::propVariant:
 				{
 				if (m_Defs[i].pCode)
@@ -256,7 +277,7 @@ void CDesignPropertyDefinitions::InitObjectData (CUniverse &Universe, CSpaceObje
 		}
 	}
 
-void CDesignPropertyDefinitions::InitTypeData (CUniverse &Universe, CAttributeDataBlock &Dest) const
+void CDesignPropertyDefinitions::InitTypeData (CUniverse &Universe, CDesignType &Type) const
 
 //	InitTypeData
 //
@@ -264,6 +285,7 @@ void CDesignPropertyDefinitions::InitTypeData (CUniverse &Universe, CAttributeDa
 
 	{
 	CCodeChainCtx CCCtx(Universe);
+	CCCtx.DefineContainingType(&Type);
 
 	for (int i = 0; i < m_Defs.GetCount(); i++)
 		{
@@ -282,7 +304,7 @@ void CDesignPropertyDefinitions::InitTypeData (CUniverse &Universe, CAttributeDa
 						}
 
 					if (!pResult->IsNil())
-						Dest.SetData(m_Defs.GetKey(i), pResult);
+						Type.SetGlobalData(m_Defs.GetKey(i), pResult);
 					}
 
 				break;

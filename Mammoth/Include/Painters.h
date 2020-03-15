@@ -50,6 +50,157 @@ class CHoverDescriptionPainter
 		mutable CTextBlock m_DescriptionRTF;	//	Rich text to draw
 	};
 
+class CTilePainter
+	{
+	public:
+
+		struct SInitOptions
+			{
+			int cyDefaultRow = 0;			//	Default row height
+
+			int cxImage = 96;				//	Force icon to fit
+			int cyImage = 96;				//	Force icon to fit
+			Metric rImageScale = 1.0;		//	If not 1.0, then use this to scale icon
+
+			const CG16bitFont *pTitleFont = NULL;
+			const CG16bitFont *pDescFont = NULL;
+			};
+
+		struct SPaintOptions
+			{
+			CG32bitPixel rgbTitleColor = RGB_NORMAL_TITLE;
+			CG32bitPixel rgbDescColor = RGB_NORMAL_DESC;
+			};
+
+		CTilePainter (const CVisualPalette &VI = g_pHI->GetVisuals()) :
+				m_VI(VI)
+			{ }
+
+		int GetHeight (void) const { return m_cyHeight; }
+		void Init (const CTileData &Entry, int cxWidth, const SInitOptions &Options);
+		bool IsEmpty (void) const { return (m_cxWidth == 0);}
+
+		void Paint (CG32bitImage &Dest, int x, int y, const SPaintOptions &Options) const;
+
+	private:
+		static constexpr int PADDING_X = 8;
+		static constexpr int PADDING_Y = 8;
+
+		static constexpr CG32bitPixel RGB_NORMAL_DESC =							CG32bitPixel(128,128,128);
+		static constexpr CG32bitPixel RGB_NORMAL_TITLE =						CG32bitPixel(220,220,220);	//	H:0   S:0   B:86
+
+		void PaintImage (CG32bitImage &Dest, int x, int y) const;
+
+		const CVisualPalette &m_VI;
+		CTileData m_Entry;
+		SInitOptions m_Options;
+
+		//	Computed after Init
+
+		int m_cxWidth = 0;
+		int m_cyHeight = 0;
+		RECT m_rcText = { 0 };
+	};
+
+class CItemPainter
+	{
+	public:
+		static constexpr int ATTRIB_PADDING_X =					4;
+		static constexpr int ATTRIB_PADDING_Y =					1;
+		static constexpr int ATTRIB_SPACING_X =					2;
+		static constexpr int ATTRIB_SPACING_Y =					2;
+		static constexpr int DAMAGE_ADJ_ICON_WIDTH =			16;
+		static constexpr int DAMAGE_ADJ_ICON_HEIGHT =			16;
+		static constexpr int DAMAGE_ADJ_ICON_SPACING_X =		2;
+		static constexpr int DAMAGE_ADJ_SPACING_X =				6;
+		static constexpr int DAMAGE_TYPE_ICON_WIDTH =			16;
+		static constexpr int DAMAGE_TYPE_ICON_HEIGHT =			16;
+		static constexpr int DEFAULT_WIDTH =					200;
+		static constexpr int ENHANCEMENT_ICON_HEIGHT =			40;
+		static constexpr int ENHANCEMENT_ICON_WIDTH =			40;
+		static constexpr int ICON_HEIGHT =						96;
+		static constexpr int ICON_WIDTH =						96;
+		static constexpr int ITEM_DEFAULT_HEIGHT =				96;
+		static constexpr int ITEM_LEFT_PADDING =				8;
+		static constexpr int ITEM_RIGHT_PADDING =				8;
+		static constexpr int ITEM_TEXT_MARGIN_Y =				4;
+		static constexpr int ITEM_TEXT_MARGIN_X =				4;
+		static constexpr int ITEM_TEXT_MARGIN_BOTTOM =			10;
+		static constexpr int ITEM_TITLE_EXTRA_MARGIN =			4;
+		static constexpr int LAUNCHER_ICON_HEIGHT =				16;
+		static constexpr int LAUNCHER_ICON_WIDTH =				16;
+		static constexpr int SMALL_ICON_HEIGHT =				64;
+		static constexpr int SMALL_ICON_WIDTH =					64;
+
+		static constexpr DWORD OPTION_DISPLAY_AS_KNOWN =		0x00000001;
+		static constexpr DWORD OPTION_NO_ARMOR_SPEED =			0x00000002;
+		static constexpr DWORD OPTION_NO_ICON =					0x00000004;
+		static constexpr DWORD OPTION_NO_PADDING =				0x00000008;
+		static constexpr DWORD OPTION_SMALL_ICON =				0x00000020;
+		static constexpr DWORD OPTION_TITLE =					0x00000040;
+
+		static constexpr CG32bitPixel RGB_NORMAL_TEXT =						CG32bitPixel(220,220,220);	//	H:0   S:0   B:86
+		static constexpr CG32bitPixel RGB_MODIFIER_NORMAL_BACKGROUND =		CG32bitPixel(101,101,101);	//	H:0   S:0   B:40
+		static constexpr CG32bitPixel RGB_MODIFIER_NORMAL_TEXT =			CG32bitPixel(220,220,220);	//	H:0   S:0   B:86
+
+		struct SOptions
+			{
+			SOptions (void) { }
+			SOptions (DWORD dwOptions) :
+					bDisplayAsKnown((dwOptions & OPTION_DISPLAY_AS_KNOWN) ? true : false),
+					bNoArmorSpeed((dwOptions & OPTION_NO_ARMOR_SPEED) ? true : false),
+					bNoIcon((dwOptions & OPTION_NO_ICON) ? true : false),
+					bNoPadding((dwOptions & OPTION_NO_PADDING) ? true : false),
+					bSmallIcon((dwOptions & OPTION_SMALL_ICON) ? true : false),
+					bTitle((dwOptions & OPTION_TITLE) ? true : false)
+				{ }
+
+			bool bDisplayAsKnown = false;
+			bool bNoArmorSpeed = false;
+			bool bNoIcon = false;
+			bool bNoPadding = false;
+			bool bSmallIcon = false;
+			bool bTitle = false;
+			};
+
+		CItemPainter (const CVisualPalette &VI = g_pHI->GetVisuals()) :
+				m_VI(VI)
+			{ }
+
+		int GetHeight (void) const { return m_cyHeight; }
+		void Init (const CItem &Item, int cxWidth, const SOptions &Options);
+
+		static constexpr DWORD OPTION_SELECTED =				0x00000010;
+		static constexpr DWORD OPTION_DISABLED =				0x00000080;
+		void Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbTextColor = RGB_NORMAL_TEXT, DWORD dwOptions = 0) const;
+
+	private:
+		int CalcItemEntryHeight (int cxWidth) const;
+		void InitMetrics (int cxWidth);
+
+		static void FormatDisplayAttributes (const CVisualPalette &VI, TArray<SDisplayAttribute> &Attribs, const RECT &rcRect, CCartoucheBlock &retBlock, int *retcyHeight = NULL);
+		static void FormatLaunchers (const CVisualPalette &VI, const CMissileItem &MissileItem, const TArray<CItem> &Launchers, const RECT &rcRect, CIconLabelBlock &retLaunchers);
+		static void PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const CItemEnhancement &Enhancement, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions, int *retcyHeight = NULL);
+		static void PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText, DWORD dwOptions);
+		static void PaintReferenceDamageType (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText, DWORD dwOptions);
+
+		const CVisualPalette &m_VI;
+		const CItem *m_pItem = NULL;
+		SOptions m_Options;
+
+		//	Computed after Init
+
+		CCartoucheBlock m_AttribBlock;		//	Formatted attributes
+		CIconLabelBlock m_Launchers;		//	Formatted list of launchers
+
+		int m_cxWidth = 0;
+		int m_cyHeight = 0;
+
+		int m_cxIcon = 0;
+		int m_cyIcon = 0;
+		RECT m_rcDraw = { 0 };				//	Rect where text goes
+	};
+
 class CStargateEffectPainter
 	{
 	public:
@@ -105,6 +256,7 @@ class CStargateEffectPainter
 		Metric m_rGlowVel;
 		Metric m_rGlowRadius;
 	};
+
 class CAutomataEffectPainter
 	{
 	public:

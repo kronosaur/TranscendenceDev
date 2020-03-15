@@ -42,15 +42,16 @@
 	<!-- Size A Metallic Asteroid -->
 
 	<StationType UNID="&stMetallicAsteroidSizeA;"
-		name=				"(metallic asteroid)"
+		name=				"metallic asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		inherit=			"&baMetallicAsteroid;"
+
 		scale=				"world"
 		size=				"4"
-
-		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsMetallicAsteroidSizeA;"/>
 
 		<Items>
@@ -59,27 +60,21 @@
 				<Lookup chance="10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 30)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size B Metallic Asteroid -->
 
 	<StationType UNID="&stMetallicAsteroidSizeB;"
-		name=				"(metallic asteroid)"
+		name=				"metallic asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		inherit=			"&baMetallicAsteroid;"
+
 		scale=				"world"
 		size=				"55"
-
-		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-
 		<ImageLookup imageID="&rsMetallicAsteroidSizeB;"/>
 		
 		<Items>
@@ -88,26 +83,21 @@
 				<Lookup chance="10" count="1d6" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 30)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size C Metallic Asteroid -->
 
 	<StationType UNID="&stMetallicAsteroidSizeC;"
-		name=				"(metallic asteroid)"
+		name=				"metallic asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		inherit=			"&baMetallicAsteroid;"
+
 		scale=				"world"
 		size=				"250"
-
-		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsMetallicAsteroidSizeC;"/>
 
 		<Items>
@@ -116,26 +106,21 @@
 				<Lookup chance="10" count="1d8" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 30)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size D Metallic Asteroid -->
 
 	<StationType UNID="&stMetallicAsteroidSizeD;"
-		name=				"(metallic asteroid)"
+		name=				"metallic asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		inherit=			"&baMetallicAsteroid;"
+
 		scale=				"world"
 		size=				"625"
-
-		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsMetallicAsteroidSizeD;"/>
 
 		<Items>
@@ -144,22 +129,17 @@
 				<Lookup chance="10" count="1d10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 30)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Metallic Planetoid Size E -->
 
 	<StationType UNID="&stMetallicPlanetoidSizeE;"
-		name=				"(metallic planetoid)"
+		name=				"metallic planetoid"
+		attributes=			"generic, inner, lifeZone,  metallic, outer, planetoid"
+
 		scale=				"world"
 		size=				"1150"
-
-		attributes=			"generic, inner, lifeZone,  metallic, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -169,11 +149,12 @@
 	<!-- Metallic Planetoid Size F -->
 
 	<StationType UNID="&stMetallicPlanetoidSizeF;"
-		name=				"(metallic planetoid)"
+		name=				"metallic planetoid"
+		attributes=			"generic, inner, lifeZone, metallic, outer, planetoid"
+
 		scale=				"world"
 		size=				"2050"
-
-		attributes=			"generic, inner, lifeZone, metallic, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
@@ -183,15 +164,30 @@
 	<!-- Metallic Planetoid Size G -->
 
 	<StationType UNID="&stMetallicPlanetoidSizeG;"
-		name=				"(metallic planetoid)"
+		name=				"metallic planetoid"
+		attributes=			"generic, inner, lifeZone, metallic, outer, planetoid"
+
 		scale=				"world"
 		size=				"4000"
-
-		attributes=			"generic, inner, lifeZone, metallic, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtMetallicAsteroidEjecta;"
 		>
 		<ImageLookup imageID="&rsMetallicPlanetoidSizeG;"/>
+	</StationType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&baMetallicAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="metallic"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
 	</StationType>
 
 <!-- RESOURCES -->

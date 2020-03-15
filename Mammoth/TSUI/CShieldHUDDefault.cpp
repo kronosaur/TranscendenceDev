@@ -77,7 +77,7 @@ void CShieldHUDDefault::GetBounds (int *retWidth, int *retHeight) const
 	*retHeight = DISPLAY_HEIGHT;
 	}
 
-ALERROR CShieldHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
+bool CShieldHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 //	InitFromXML
 //
@@ -85,14 +85,15 @@ ALERROR CShieldHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass,
 
 	{
 	ALERROR error;
+	SDesignLoadCtx Ctx;
 
 	//	Load the new shield effect
 
 	if (error = m_pShieldEffect.LoadEffect(Ctx,
-			strPatternSubst(CONSTLIT("%d:p:s"), pClass->GetUNID()),
-			pDesc->GetContentElementByTag(SHIELD_EFFECT_TAG),
-			pDesc->GetAttribute(SHIELD_EFFECT_ATTRIB)))
-		return error;
+			strPatternSubst(CONSTLIT("%d:p:s"), CreateCtx.Class.GetUNID()),
+			CreateCtx.Desc.GetContentElementByTag(SHIELD_EFFECT_TAG),
+			CreateCtx.Desc.GetAttribute(SHIELD_EFFECT_ATTRIB)))
+		return ComposeLoadError(Ctx.sError, retsError);
 
 	//	If we don't have the new effect, load the backwards compatibility
 	//	image.
@@ -100,11 +101,16 @@ ALERROR CShieldHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass,
 	if (m_pShieldEffect.IsEmpty())
 		{
 		if (error = m_Image.InitFromXML(Ctx, 
-				pDesc->GetContentElementByTag(IMAGE_TAG)))
-			return ComposeLoadError(Ctx, ERR_SHIELD_DISPLAY_NEEDED);
+				*CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG)))
+			return ComposeLoadError(ERR_SHIELD_DISPLAY_NEEDED, retsError);
 		}
 
-	return NOERROR;
+	//	Bind
+
+	if (Bind(Ctx) != NOERROR)
+		return ComposeLoadError(Ctx.sError, retsError);
+
+	return true;
 	}
 
 void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
@@ -140,9 +146,8 @@ void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 
 	//	Skip if we don't have a ship
 
-	CShip *pShip;
-	if (Ctx.pSource == NULL
-			|| (pShip = Ctx.pSource->AsShip()) == NULL)
+	CShip *pShip = Ctx.Source.AsShip();
+	if (pShip == NULL)
 		return;
 
 	CItemListManipulator ItemList(pShip->GetItemList());
@@ -243,7 +248,7 @@ void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 		//	Paint the modifiers
 
 		TArray<SDisplayAttribute> Attribs;
-		if (ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
+		if (pShield->GetItem()->AccumulateEnhancementDisplayAttributes(Attribs))
 			{
 			CUIHelper Helper(*g_pHI);
 

@@ -226,13 +226,16 @@ CInstalledDevice *CCodeChainCtx::AsInstalledDevice (CSpaceObject *pObj, ICCItem 
 	return pDevice;
 	}
 
-CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
+CItem CCodeChainCtx::AsItem (ICCItem *pItem, bool *retbItemType) const
 
 //	AsItem
 //
 //	Get an item
 
 	{
+	if (retbItemType)
+		*retbItemType = false;
+
 	if (pItem == NULL || pItem->IsNil())
 		return CItem();
 
@@ -247,6 +250,9 @@ CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
 		CItemType *pType = GetUniverse().FindItemType(pItem->GetIntegerValue());
 		if (pType == NULL)
 			return CItem();
+
+		if (retbItemType)
+			*retbItemType = true;
 
 		return CItem(pType, 1);
 		}
@@ -318,6 +324,8 @@ CSpaceObject *CCodeChainCtx::AsSpaceObject (ICCItem *pItem)
 	try
 		{
 		pObj = reinterpret_cast<CSpaceObject *>(pItem->GetIntegerValue());
+		if (pObj && ((DWORD)pObj->GetCategory() & ~CSpaceObject::catMask))
+			pObj = NULL;
 		}
 	catch (...)
 		{
@@ -397,6 +405,32 @@ ICCItemPtr CCodeChainCtx::Create (ICCItem::ValueTypes iType)
 		throw CException(ERR_MEMORY);
 
 	return pValue;
+	}
+
+ICCItemPtr CCodeChainCtx::CreateDebugError (const CString &sError, ICCItem *pValue) const
+
+//	CreateDebugError
+//
+//	Creates an error in debug mode or Nil otherwise.
+
+	{
+	if (m_Universe.InDebugMode())
+		return ICCItemPtr(CCodeChain::CreateError(sError, pValue));
+	else
+		return ICCItemPtr(ICCItem::Nil);
+	}
+
+ICCItemPtr CCodeChainCtx::DebugError (ICCItem *pResult) const
+
+//	DebugError
+//
+//	Swallows errors unless in debug mode.
+
+	{
+	if (pResult->IsError() && !m_Universe.InDebugMode())
+		return ICCItemPtr(ICCItem::Nil);
+	else
+		return ICCItemPtr(pResult->Reference());
 	}
 
 void CCodeChainCtx::DefineDamageCtx (const SDamageCtx &Ctx, int iDamage)
@@ -544,7 +578,7 @@ void CCodeChainCtx::DefineSource (CSpaceObject *pSource)
 	DefineGlobalSpaceObject(m_CC, STR_G_SOURCE, pSource);
 	}
 
-void CCodeChainCtx::DefineSpaceObject (const CString &sVar, CSpaceObject *pObj)
+void CCodeChainCtx::DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj)
 
 //	DefineSpaceObject
 //
@@ -552,7 +586,7 @@ void CCodeChainCtx::DefineSpaceObject (const CString &sVar, CSpaceObject *pObj)
 
 	{
 	if (pObj)
-		m_CC.DefineGlobalInteger(sVar, (int)pObj);
+		DefineSpaceObject(sVar, *pObj);
 	else
 		{
 		ICCItem *pValue = m_CC.CreateNil();
@@ -672,15 +706,8 @@ ICCItem *CCodeChainCtx::Run (ICCItem *pCode)
 //	(which must be discarded by the caller)
 
 	{
-	DEBUG_TRY
-
-	AddFrame();
-	ICCItem *pResult = m_CC.TopLevel(pCode, this);
-	RemoveFrame();
-
-	return pResult;
-
-	DEBUG_CATCH
+	ICCItemPtr pResult = RunCode(pCode);
+	return pResult->Reference();
 	}
 
 ICCItem *CCodeChainCtx::Run (const SEventHandlerDesc &Event)
@@ -713,8 +740,12 @@ ICCItemPtr CCodeChainCtx::RunCode (ICCItem *pCode)
 	{
 	DEBUG_TRY
 
+	CCodeChain::SRunOptions Options;
+	Options.pExternalCtx = this;
+	Options.bStrict = GetUniverse().InDebugMode();
+
 	AddFrame();
-	ICCItemPtr pResult = ICCItemPtr(m_CC.TopLevel(pCode, this));
+	ICCItemPtr pResult = m_CC.TopLevel(*pCode, Options);
 	RemoveFrame();
 
 	return pResult;
@@ -751,26 +782,8 @@ ICCItem *CCodeChainCtx::RunLambda (ICCItem *pCode)
 //	and returns a result (which must be discarded by the caller)
 
 	{
-	DEBUG_TRY
-
-	AddFrame();
-
-	//	If this is a lambda expression, then eval as if
-	//	it were an expression with no arguments
-
-	ICCItem *pResult;
-	if (pCode->IsFunction())
-		pResult = m_CC.Apply(pCode, m_CC.CreateNil(), this);
-	else
-		pResult = m_CC.TopLevel(pCode, this);
-
-	//	Done
-
-	RemoveFrame();
-
-	return pResult;
-
-	DEBUG_CATCH
+	ICCItemPtr pResult = RunLambdaCode(pCode);
+	return pResult->Reference();
 	}
 
 ICCItemPtr CCodeChainCtx::RunLambdaCode (ICCItem *pCode, ICCItem *pArgs)
@@ -782,6 +795,10 @@ ICCItemPtr CCodeChainCtx::RunLambdaCode (ICCItem *pCode, ICCItem *pArgs)
 	{
 	DEBUG_TRY
 
+	CCodeChain::SRunOptions Options;
+	Options.pExternalCtx = this;
+	Options.bStrict = GetUniverse().InDebugMode();
+
 	AddFrame();
 
 	//	If this is a lambda expression, then eval as if
@@ -789,9 +806,9 @@ ICCItemPtr CCodeChainCtx::RunLambdaCode (ICCItem *pCode, ICCItem *pArgs)
 
 	ICCItemPtr pResult;
 	if (pCode->IsFunction())
-		pResult = ICCItemPtr(m_CC.Apply(pCode, (pArgs ? pArgs : m_CC.CreateNil()), this));
+		pResult = m_CC.Apply(*pCode, (pArgs ? *pArgs : *ICCItemPtr::Nil()), Options);
 	else
-		pResult = ICCItemPtr(m_CC.TopLevel(pCode, this));
+		pResult = m_CC.TopLevel(*pCode, Options);
 
 	//	Done
 

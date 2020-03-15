@@ -179,6 +179,8 @@
 #define PROPERTY_ARMOR_ITEM						CONSTLIT("armorItem")
 #define PROPERTY_ARMOR_SPEED_ADJ				CONSTLIT("armorSpeedAdj")
 #define PROPERTY_ARMOR_SPEED_ADJ_PARAM			CONSTLIT("armorSpeedAdj:")
+#define PROPERTY_CHARACTER						CONSTLIT("character")
+#define PROPERTY_CHARACTER_NAME					CONSTLIT("characterName")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
@@ -214,6 +216,7 @@
 #define PROPERTY_VIEWPORT_SIZE					CONSTLIT("viewportSize")
 #define PROPERTY_WEAPON_ITEMS					CONSTLIT("weaponItems")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
+#define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
 #define SPECIAL_ITEM_ATTRIBUTE					CONSTLIT("itemAttribute:")
@@ -560,6 +563,8 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 		if (pWeapon == NULL)
 			continue;
 
+		const CDeviceItem DeviceItem = Desc.Item.AsDeviceItem();
+
 		//	If this is a launcher then we need to figure out the best available
 		//	variant.
 
@@ -600,7 +605,7 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 		else
 			iDeviceCoverage = 0;
 
-		int iWeaponCoverage = pWeapon->GetFireArc(CItemCtx());
+		int iWeaponCoverage = DeviceItem.GetFireArc();
 
 		if (bCanTrack)
 			iWeaponCoverage = Max(iWeaponCoverage, 180);
@@ -1784,7 +1789,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 
 	else if (strEquals(sField, FIELD_INSTALL_DEVICE_MAX_LEVEL))
 		{
-		int iMaxLevel = (m_pTrade ? m_pTrade->GetMaxLevelMatched(serviceInstallDevice) : -1);
+		int iMaxLevel = (m_pTrade ? m_pTrade->GetMaxLevelMatched(GetUniverse(), serviceInstallDevice) : -1);
 		*retsValue = (iMaxLevel != -1 ? strFromInt(iMaxLevel) : NULL_STR);
 		}
 	else if (strEquals(sField, FIELD_MANUFACTURER))
@@ -1876,7 +1881,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 			{
 			*retsValue = pPlayer->GetStartingNode();
 			if (retsValue->IsBlank())
-				*retsValue = GetUniverse().GetCurrentAdventureDesc()->GetStartingNodeID();
+				*retsValue = GetUniverse().GetCurrentAdventureDesc().GetStartingNodeID();
 			}
 		else
 			*retsValue = NULL_STR;
@@ -1953,7 +1958,10 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		*retsValue = strFromInt(10 * iRatio);
 		}
 	else if (strEquals(sField, FIELD_TREASURE_VALUE))
-		*retsValue = strFromInt(m_pItems ? (int)(m_pItems->GetAverageValue(GetLevel())) : 0);
+		{
+		SItemAddCtx AddItemCtx(GetUniverse());
+		*retsValue = strFromInt(m_pItems ? (int)(m_pItems->GetAverageValue(AddItemCtx, GetLevel())) : 0);
+		}
 
 	else if (strEquals(sField, FIELD_WRECK_CHANCE))
 		*retsValue = strFromInt(m_WreckDesc.GetWreckChance());
@@ -2096,15 +2104,17 @@ bool CShipClass::FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) con
 //	Looks for a device slot descriptor
 
 	{
+	SDeviceGenerateCtx Ctx(GetUniverse());
+
 	//	If we have a dedicated device slot object, then use that.
 
 	if (m_pDeviceSlots)
-		return m_pDeviceSlots->FindDefaultDesc(iDev, retDesc);
+		return m_pDeviceSlots->FindDefaultDesc(Ctx, iDev, retDesc);
 
 	//	Otherwise, for backwards compatibility we check the device generator.
 
 	else if (m_pDevices)
-		return m_pDevices->FindDefaultDesc(iDev, retDesc);
+		return m_pDevices->FindDefaultDesc(Ctx, iDev, retDesc);
 
 	//	Otherwise, not found
 
@@ -2118,22 +2128,24 @@ bool CShipClass::FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDes
 //	Looks for a device slot descriptor
 
 	{
+	SDeviceGenerateCtx Ctx(GetUniverse());
+
 	//	If we have a dedicated device slot object, then use that.
 
 	if (m_pDeviceSlots)
-		return m_pDeviceSlots->FindDefaultDesc(pShip, Item, retDesc);
+		return m_pDeviceSlots->FindDefaultDesc(Ctx, pShip, Item, retDesc);
 
 	//	Otherwise, for backwards compatibility we check the device generator.
 
 	else if (m_pDevices)
-		return m_pDevices->FindDefaultDesc(pShip, Item, retDesc);
+		return m_pDevices->FindDefaultDesc(Ctx, pShip, Item, retDesc);
 
 	//	Otherwise, not found
 
 	return false;
 	}
 
-void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags)
+void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags) const
 
 //	GenerateDevices
 //
@@ -2338,9 +2350,9 @@ const CEconomyType *CShipClass::GetEconomyType (void) const
 	if (pCurrency)
 		return pCurrency;
 
-	//	Otherwise, default to credits
+	//	Otherwise, default currency
 
-	return CEconomyType::AsType(GetUniverse().FindDesignType(DEFAULT_ECONOMY_UNID));
+	return &GetUniverse().GetDefaultCurrency();
 	}
 
 CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip) const
@@ -2508,7 +2520,7 @@ CString CShipClass::GetGenericName (DWORD *retdwFlags) const
 		}
 	}
 
-const CObjectImageArray &CShipClass::GetHeroImage (void)
+const CObjectImageArray &CShipClass::GetHeroImage (void) const
 
 //  GetHeroImage
 //
@@ -2876,7 +2888,7 @@ const CShipStandard &CShipClass::GetStandard (void) const
 		return CShipStandard::GetDefaults();
 	}
 
-CCurrencyAndValue CShipClass::GetTradePrice (CSpaceObject *pObj, bool bActual) const
+CCurrencyAndValue CShipClass::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 
 //	GetTradePrice
 //
@@ -3151,6 +3163,11 @@ void CShipClass::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) 
 //	Returns flags to determine how we merge from inherited types.
 
 	{
+	//	Do not inherit these attributes
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(CONSTLIT("attrib.level")), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(CONSTLIT("attrib.score")), CXMLElement::MERGE_OVERRIDE);
+
 	//	We know how to handle these tags through the inheritance hierarchy.
 
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(COMMUNICATIONS_TAG), CXMLElement::MERGE_OVERRIDE);
@@ -3224,26 +3241,26 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Bind sovereign
 
 	if (error = m_pDefaultSovereign.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Image
 
 	if (error = m_Image.OnDesignLoadComplete(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
     if (error = m_HeroImage.OnDesignLoadComplete(Ctx))
-        goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Now that we have the image we can bind the rotation desc, because it needs
 	//	the rotation count, etc.
 
 	if (error = m_RotationDesc.Bind(Ctx, m_Image.GetSimpleImage()))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Thruster effects
 
 	if (error = m_Effects.Bind(Ctx, m_Image.GetSimpleImage()))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Drive images
 
@@ -3254,7 +3271,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 		m_ExhaustImage.SetRotationCount(iRotationCount);
 		if (error = m_ExhaustImage.OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 		for (i = 0; i < m_Exhaust.GetCount(); i++)
 			m_Exhaust[i].PosCalc.InitComplete(iRotationCount, iScale, 180);
@@ -3263,31 +3280,31 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Hull
 
 	if (error = m_Hull.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
     if (error = m_Armor.Bind(Ctx))
-        goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_WreckDesc.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	More
 
 	if (error = m_EventHandler.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_Character.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_CharacterClass.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_pDefaultScreen.Bind(Ctx, GetLocalScreens()))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pTrade)
 		if (error = m_pTrade->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	If we own the player settings, then bind them. Otherwise, we clear the
     //  pointer so that we can resolve at run-time.
@@ -3298,7 +3315,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
     if (m_fOwnPlayerSettings)
         {
 		if (error = m_pPlayerSettings->Bind(Ctx, this))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
         }
     else
         m_pPlayerSettings = NULL;
@@ -3317,21 +3334,21 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	if (m_pItems)
 		if (error = m_pItems->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pDeviceSlots)
 		if (error = m_pDeviceSlots->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pDevices)
 		if (error = m_pDevices->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Escorts
 
 	if (m_pEscorts)
 		if (error = m_pEscorts->OnDesignLoadComplete(Ctx))
-			return error;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Generate an average set of devices.
 	//
@@ -3366,26 +3383,12 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Bind structures
 
 	if (error = m_Interior.BindDesign(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
     //  Compute performance based on average devices
 
     CalcPerformance();
 
-	return NOERROR;
-
-Fail:
-
-	return ComposeLoadError(Ctx, Ctx.sError);
-	}
-
-ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
-
-//	OnFinishBindDesign
-//
-//	All types bound.
-
-	{
 	//	Compute score and level
 
 	if (!m_fScoreOverride)
@@ -3428,8 +3431,6 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 			&& m_Hull.HasArmorLimits()
 			&& m_Hull.GetArmorLimits().CanInstallArmor(CItem(m_Armor.GetSegment(0).GetArmorClass()->GetItemType(), 1)) != CArmorLimits::resultOK)
 		::kernelDebugLogPattern("WARNING: %s armor not compatible with ship class %s (%08x)", m_Armor.GetSegment(0).GetArmorClass()->GetName(), GetNounPhrase(), GetUNID());
-
-	//	Done
 
 	return NOERROR;
 	}
@@ -3499,7 +3500,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
     pImage = pDesc->GetContentElementByTag(HERO_IMAGE_TAG);
     if (pImage)
-        if (error = m_HeroImage.InitFromXML(Ctx, pImage))
+        if (error = m_HeroImage.InitFromXML(Ctx, *pImage))
             return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Maneuvering
@@ -3649,7 +3650,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			CXMLElement *pItem = pDriveImages->GetContentElement(i);
 			if (strEquals(pItem->GetTag(), NOZZLE_IMAGE_TAG))
 				{
-				if (error = m_ExhaustImage.InitFromXML(Ctx, pItem))
+				if (error = m_ExhaustImage.InitFromXML(Ctx, *pItem))
 					return ComposeLoadError(Ctx, ERR_BAD_EXHAUST_IMAGE);
 				}
 			else if (strEquals(pItem->GetTag(), NOZZLE_POS_TAG))
@@ -3849,6 +3850,12 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return ICCItemPtr(iSpeedAdj);
 		}
 
+	else if (strEquals(sProperty, PROPERTY_CHARACTER))
+		return (m_Character.GetUNID() ? ICCItemPtr(m_Character.GetUNID()) : ICCItemPtr::Nil());
+		
+	else if (strEquals(sProperty, PROPERTY_CHARACTER_NAME))
+		return (m_Character.GetUNID() ? m_Character->GetStaticData(CONSTLIT("Name")) : ICCItemPtr::Nil());
+		
 	else if (strEquals(sProperty, PROPERTY_CURRENCY))
 		return ICCItemPtr(GetEconomyType()->GetUNID());
 		
@@ -3974,6 +3981,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
 		return ICCItemPtr(GetMaxStructuralHitPoints());
 
+	else if (strEquals(sProperty, PROPERTY_WRECK_TYPE))
+		return (m_WreckDesc.GetWreckType() ? ICCItemPtr(m_WreckDesc.GetWreckType()->GetUNID()) : ICCItemPtr::Nil());
+
 	//	Drive properties
 
 	else if (strEquals(sProperty, PROPERTY_THRUST_TO_WEIGHT))
@@ -4050,7 +4060,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		Items.InsertEmpty(SampleItems.GetCount());
 		for (int i = 0; i < SampleItems.GetCount(); i++)
 			{
-			Items[i] = SampleItems.GetItem(i).GetNounPhrase(CItemCtx());
+			Items[i] = SampleItems.GetItem(i).GetNounPhrase();
 			}
 
 		return ICCItemPtr(strJoin(Items, CONSTLIT("oxfordComma")));
@@ -4261,7 +4271,7 @@ void CShipClass::Paint (CG32bitImage &Dest,
 						int iTick,
 						bool bThrusting,
 						bool bRadioactive,
-						DWORD byInvisible)
+						DWORD byInvisible) const
 
 //	Paint
 //
@@ -4403,7 +4413,7 @@ void CShipClass::PaintThrust (CG32bitImage &Dest,
 							  const ViewportTransform &Trans, 
 							  int iDirection, 
 							  int iTick,
-							  bool bInFrontOnly)
+							  bool bInFrontOnly) const
 
 //	PaintThrust
 //

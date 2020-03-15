@@ -1,6 +1,7 @@
 //	PlayerController.cpp
 //
 //	Implements class to control player's ship
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 #include "Transcendence.h"
@@ -9,9 +10,6 @@
 
 #define CMD_PLAYER_COMBAT_ENDED					CONSTLIT("playerCombatEnded")
 #define CMD_PLAYER_COMBAT_STARTED				CONSTLIT("playerCombatStarted")
-
-#define STR_NO_TARGET_FOR_FLEET					CONSTLIT("No target selected")
-#define STR_NO_TARGETING_COMPUTER				CONSTLIT("No targeting computer installed")
 
 const Metric MAX_IN_COMBAT_RANGE =				LIGHT_SECOND * 30.0;
 const int UPDATE_HELP_TIME =					31;
@@ -31,6 +29,11 @@ const DWORD DAMAGE_BAR_TIMER =					30 * 5;
 
 #define MAX_GATE_DISTANCE						(g_KlicksPerPixel * 150.0)
 #define MAX_STARGATE_HELP_RANGE					(g_KlicksPerPixel * 256.0)
+
+#define FIELD_ID								CONSTLIT("id")
+#define FIELD_ORE_LEVEL							CONSTLIT("oreLevel")
+
+#define HINT_MINING_NEED_BETTER_WEAPON			CONSTLIT("mining.needBetterWeapon")
 
 #define PROPERTY_CHARACTER_CLASS				CONSTLIT("characterClass")
 
@@ -103,14 +106,12 @@ bool CPlayerShipController::AreAllDevicesEnabled (void)
 //	are disabled.
 
 	{
-	int i;
-
-	for (i = 0; i < m_pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = m_pShip->GetDevice(i);
-		if (pDevice && !pDevice->IsEmpty() && pDevice->CanBeDisabled(CItemCtx(m_pShip, pDevice)))
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (Device.CanBeDisabled(CItemCtx(m_pShip, &Device)))
 			{
-			if (!pDevice->IsEnabled())
+			if (!Device.IsEnabled())
 				return false;
 			}
 		}
@@ -199,7 +200,7 @@ void CPlayerShipController::CancelDocking (void)
 		{
 		m_pStation->Undock(m_pShip);
 		m_pStation = NULL;
-		m_pTrans->DisplayMessage(CONSTLIT("Docking canceled"));
+		DisplayTranslate(CONSTLIT("msgDockingCanceled"));
 		}
 	}
 
@@ -237,7 +238,7 @@ void CPlayerShipController::Communications (CSpaceObject *pObj,
 			if (m_pTarget)
 				m_pShip->Communicate(pObj, msgAttack, m_pTarget);
 			else
-				m_pTrans->DisplayMessage(STR_NO_TARGET_FOR_FLEET);
+				DisplayTranslate(CONSTLIT("msgNoTargetForFleet"));
 
 			break;
 			}
@@ -255,15 +256,12 @@ void CPlayerShipController::ClearFireAngle (void)
 //	Clears the fire angle of weapon and launcher
 
 	{
-	int i;
-
-	for (i = 0; i < m_pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = m_pShip->GetDevice(i);
-		if (!pDevice->IsEmpty()
-				&& (pDevice->GetCategory() == itemcatWeapon 
-					|| pDevice->GetCategory() == itemcatLauncher))
-			pDevice->SetFireAngle(-1);
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if ((Device.GetCategory() == itemcatWeapon 
+					|| Device.GetCategory() == itemcatLauncher))
+			Device.SetFireAngle(-1);
 		}
 	}
 
@@ -288,6 +286,29 @@ CString CPlayerShipController::DebugCrashInfo (void)
 	return sResult;
 	}
 
+void CPlayerShipController::DisplayTranslate (const CString &sID, ICCItem *pData)
+
+//	DisplayTranslate
+//
+//	Displays a translated message.
+
+	{
+	m_pTrans->DisplayMessage(Translate(sID, pData));
+	}
+
+void CPlayerShipController::DisplayTranslate (const CString &sID, const CString &sVar, const CString &sValue)
+
+//	DisplayTranslate
+//
+//	Displays a translated message with a replaceable parameter.
+
+	{
+	ICCItemPtr pData(ICCItem::SymbolTable);
+	pData->SetStringAt(sVar, sValue);
+
+	DisplayTranslate(sID, pData);
+	}
+
 void CPlayerShipController::Dock (void)
 
 //	Dock
@@ -299,9 +320,8 @@ void CPlayerShipController::Dock (void)
 
 	if (m_pStation)
 		{
-		m_pStation->Undock(m_pShip);
-		m_pStation = NULL;
-		m_pTrans->DisplayMessage(CONSTLIT("Docking canceled"));
+		Undock();
+		DisplayTranslate(CONSTLIT("msgDockingCanceled"));
 		return;
 		}
 
@@ -320,7 +340,7 @@ void CPlayerShipController::Dock (void)
 		iDockPort = -1;
 	else
 		{
-		m_pTrans->DisplayMessage(CONSTLIT("No stations in range"));
+		DisplayTranslate(CONSTLIT("msgNoStationsInRange"));
 		return;
 		}
 
@@ -364,14 +384,12 @@ void CPlayerShipController::EnableAllDevices (bool bEnable)
 //	Enables or disables all devices
 
 	{
-	int i;
-
-	for (i = 0; i < m_pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = m_pShip->GetDevice(i);
-		if (pDevice && !pDevice->IsEmpty() && pDevice->CanBeDisabled(CItemCtx(m_pShip, pDevice)) && pDevice->IsEnabled() != bEnable)
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (Device.CanBeDisabled(CItemCtx(m_pShip, &Device)) && Device.IsEnabled() != bEnable)
 			{
-			m_pShip->EnableDevice(i, bEnable);
+			m_pShip->EnableDevice(Device.GetDeviceSlot(), bEnable);
 
 			//	Note: We will get called at OnDeviceEnabledDisabled for each
 			//	device that we touch.
@@ -450,12 +468,12 @@ ICCItem *CPlayerShipController::FindProperty (const CString &sProperty)
 //  Returns the given property, or NULL if not found. Caller is responsible for
 //  discarding the result if not NULL.
 
-    {
+	{
 	if (strEquals(sProperty, PROPERTY_CHARACTER_CLASS))
 		return (m_pCharacterClass ? CCodeChain::CreateInteger(m_pCharacterClass->GetUNID()) : CCodeChain::CreateNil());
 	else
 		return m_Stats.FindProperty(sProperty);
-    }
+	}
 
 void CPlayerShipController::Gate (void)
 
@@ -500,9 +518,9 @@ void CPlayerShipController::Gate (void)
 	if (pStation == NULL)
 		{
 		if (bGateNearby)
-			m_pTrans->DisplayMessage(CONSTLIT("Too far from stargate"));
+			DisplayTranslate(CONSTLIT("msgTooFarFromStargate"));
 		else
-			m_pTrans->DisplayMessage(CONSTLIT("No stargates in range"));
+			DisplayTranslate(CONSTLIT("msgNoStargatesInRange"));
 		return;
 		}
 
@@ -632,62 +650,6 @@ IShipController::OrderTypes CPlayerShipController::GetOrder (int iIndex, CSpaceO
 		}
 	}
 
-void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles)
-
-//	GetNearestTargets
-//
-//	Returns a list of nearest targets
-
-	{
-	int i;
-	CInstalledDevice *pDevice = ItemCtx.GetDevice();
-	CDeviceClass *pWeapon = ItemCtx.GetDeviceClass();
-
-	//	Get targets, if necessary
-
-	if (TargetingCtx.bRecalcTargets)
-		{
-		TargetingCtx.Targets.DeleteAll();
-
-		//	The principal target is always first.
-
-		CSpaceObject *pMainTarget = GetTarget(ItemCtx, FLAG_NO_AUTO_TARGET);
-		if (pMainTarget)
-			TargetingCtx.Targets.Insert(pMainTarget);
-
-		//	Get other targets
-
-		DWORD dwFlags = bTargetMissiles ? (FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS | FLAG_INCLUDE_MISSILES)
-			: (FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS);
-		int iMaxTargets = 10;
-		m_pShip->GetNearestVisibleEnemies(iMaxTargets,
-				MAX_AUTO_TARGET_DISTANCE,
-				&TargetingCtx.Targets,
-				pMainTarget,
-				dwFlags);
-
-		TargetingCtx.bRecalcTargets = false;
-		}
-
-	//	Now find a target for the given weapon.
-
-	for (i = 0; i < TargetingCtx.Targets.GetCount(); i++)
-		{
-		int iFireAngle;
-		if (pWeapon->IsWeaponAligned(m_pShip, pDevice, TargetingCtx.Targets[i], NULL, &iFireAngle))
-			{
-			*retpTarget = TargetingCtx.Targets[i];
-			*retiFireSolution = iFireAngle;
-			return;
-			}
-		}
-
-	//	If we get this far then no target found
-
-	*retpTarget = NULL;
-	*retiFireSolution = -1;
-	}
-
 bool CPlayerShipController::HasCommsTarget (void)
 
 //	HasCommsTarget
@@ -745,6 +707,13 @@ void CPlayerShipController::Init (CTranscendenceWnd *pTrans)
 
 	m_bDockPortIndicators = (strEquals(pTrans->GetSettings().GetString(CGameSettings::dockPortIndicator), SETTING_ENABLED)
 			|| strEquals(pTrans->GetSettings().GetString(CGameSettings::dockPortIndicator), SETTING_TRUE));
+
+	//	If we saved while docked, we undock ourselves. This can happen if we 
+	//	call (gamSave) from inside a dock screen. But since we don't save our
+	//	dock state, we need to undock when we come back.
+
+	if (m_pStation)
+		Undock();
 	}
 
 void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdate)
@@ -783,7 +752,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 		if (pObj 
 				&& pObj->CanBeHit()
 				&& !pObj->IsDestroyed()
-                && (pObj->GetCategory() == CSpaceObject::catShip || pObj->GetCategory() == CSpaceObject::catStation)
+				&& (pObj->GetCategory() == CSpaceObject::catShip || pObj->GetCategory() == CSpaceObject::catStation)
 				&& !pObj->IsAttached()
 				&& pObj != m_pShip)
 			{
@@ -795,7 +764,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 			//	we're looking for friendly targets
 
 			int iMainKey = -1;
-			if ((iTargetType == targetEnemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanAttack()))
+			if ((iTargetType == targetEnemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanBeAttacked()))
 				{
 				if (iTargetType == targetEnemies)
 					{
@@ -804,7 +773,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 					}
 				else
 					{
-					if (pObj->CanAttack() || pObj->SupportsDockingFast())
+					if (pObj->CanBeAttacked() || pObj->SupportsDockingFast())
 						{
 						if (pObj->GetScale() == scaleShip || pObj->GetScale() == scaleStructure)
 							iMainKey = 0;
@@ -902,7 +871,7 @@ void CPlayerShipController::InsuranceClaim (void)
 	DEBUG_CATCH
 	}
 
-bool CPlayerShipController::IsAngryAt (CSpaceObject *pObj) const
+bool CPlayerShipController::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -936,20 +905,20 @@ void CPlayerShipController::OnAbilityChanged (Abilities iAbility, AbilityModific
 				//	If we're in a nebula, then we're still blind.
 
 				if (m_pShip->IsLRSBlind())
-					m_pTrans->DisplayMessage(CONSTLIT("Long-range scanner still inoperative"));
+					DisplayTranslate(CONSTLIT("msgLRSStillInoperative"));
 				else
-					m_pTrans->DisplayMessage(CONSTLIT("Long-range scanner repaired"));
+					DisplayTranslate(CONSTLIT("msgLRSRepaired"));
 				}
 			break;
 
 		case ablShortRangeScanner:
 			if (iChange == ablRepair && !bNoMessage)
-				m_pTrans->DisplayMessage(CONSTLIT("Visual display repaired"));
+				DisplayTranslate(CONSTLIT("msgSRSRepaired"));
 			break;
 		}
 	}
 
-DWORD CPlayerShipController::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CPlayerShipController::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	OnCommunicate
 //
@@ -960,8 +929,29 @@ DWORD CPlayerShipController::OnCommunicate (CSpaceObject *pSender, MessageTypes 
 		{
 		case msgDockingSequenceEngaged:
 			pSender->Highlight();
-			m_pTrans->DisplayMessage(CONSTLIT("Docking sequence engaged"));
+			DisplayTranslate(CONSTLIT("msgDockingSequenceEngaged"));
 			return resAck;
+
+		case msgOnAsteroidExplored:
+			m_Stats.IncSystemStat(CONSTLIT("asteroidsMined"), NULL_STR, 1);
+			return resAck;
+
+		case msgOnPlayerHint:
+			{
+			if (pData == NULL)
+				return resNoAnswer;
+
+			CString sHintID = pData->GetStringAt(FIELD_ID);
+			if (strEquals(sHintID, HINT_MINING_NEED_BETTER_WEAPON))
+				{
+				if (m_UIMsgs.ShowMessage(m_Universe, uimsgMiningDamageTypeHint, pSender))
+					DisplayTranslate(CONSTLIT("hintMiningOreLevelTooHigh"), pData);
+				}
+			else
+				return resNoAnswer;
+
+			return resAck;
+			}
 
 		default:
 			{
@@ -1064,7 +1054,7 @@ void CPlayerShipController::OnDamaged (const CDamageSource &Cause, CInstalledArm
 
 	if (pArmor->GetHitPoints() < (iMaxArmorHP / 4) && Damage.CausesSRSFlash())
 		{
-		m_pTrans->DisplayMessage(CONSTLIT("Hull breach imminent!"));
+		DisplayTranslate(CONSTLIT("msgHullBreachImminent"));
 		m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_HULL_BREACH_ALARM));
 		}
 
@@ -1126,8 +1116,8 @@ void CPlayerShipController::OnDestroyed (SDestroyCtx &Ctx)
 	CString sEpitaph;
 	g_pTrans->GetModel().OnPlayerDestroyed(Ctx, &sEpitaph);
 
-    if (m_pSession)
-        m_pSession->OnPlayerDestroyed(Ctx, sEpitaph);
+	if (m_pSession)
+		m_pSession->OnPlayerDestroyed(Ctx, sEpitaph);
 
 	DEBUG_CATCH
 	}
@@ -1148,17 +1138,15 @@ void CPlayerShipController::OnDeviceEnabledDisabled (int iDev, bool bEnable, boo
 		if (!bEnable)
 			{
 			if (m_UIMsgs.IsEnabled(uimsgEnableDeviceHint))
-				m_pTrans->DisplayMessage(CONSTLIT("(press [B] to enable/disable devices)"));
+				DisplayTranslate(CONSTLIT("hintEnableDevices"));
 
 			if (!bSilent)
-				m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s disabled"),
-						pDevice->GetClass()->GetName())));
+				DisplayTranslate(CONSTLIT("msgDeviceDisabled"), CONSTLIT("itemName"), pDevice->GetClass()->GetName());
 			}
 		else
 			{
 			if (!bSilent)
-				m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s enabled"),
-						pDevice->GetClass()->GetName())));
+				DisplayTranslate(CONSTLIT("msgDeviceEnabled"), CONSTLIT("itemName"), pDevice->GetClass()->GetName());
 			}
 		}
 
@@ -1175,43 +1163,46 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 	switch (iEvent)
 		{
 		case CDeviceClass::statusDisruptionRepaired:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s repaired"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceRepaired"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 
 		case CDeviceClass::failDamagedByDisruption:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s damaged"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
-
 		case CDeviceClass::failWeaponJammed:
-			m_pTrans->DisplayMessage(CONSTLIT("Weapon jammed!"));
+			DisplayTranslate(CONSTLIT("msgWeaponJammed"));
 			break;
 
 		case CDeviceClass::failWeaponMisfire:
-			m_pTrans->DisplayMessage(CONSTLIT("Weapon misfire!"));
+			DisplayTranslate(CONSTLIT("msgWeaponMisfire"));
+			break;
+
+		case CDeviceClass::failWeaponNoFire:
+			DisplayTranslate(CONSTLIT("msgWeaponCannotFire"));
 			break;
 
 		case CDeviceClass::failWeaponExplosion:
-			m_pTrans->DisplayMessage(CONSTLIT("Weapon chamber explosion!"));
+			DisplayTranslate(CONSTLIT("msgWeaponExplosion"));
 			break;
 
 		case CDeviceClass::failShieldFailure:
-			m_pTrans->DisplayMessage(CONSTLIT("Shield failure"));
+			DisplayTranslate(CONSTLIT("msgShieldFailure"));
 			break;
 
 		case CDeviceClass::failDeviceHitByDamage:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s damaged"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 
 		case CDeviceClass::failDeviceHitByDisruption:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s ionized"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceIonized"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 
 		case CDeviceClass::failDeviceOverheat:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s damaged by overheating"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceDamagedOverheat"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 
 		case CDeviceClass::failDeviceDisabledByOverheat:
-			m_pTrans->DisplayMessage(strCapitalize(strPatternSubst(CONSTLIT("%s disabled by overheating"), pDev->GetClass()->GetName())));
+			DisplayTranslate(CONSTLIT("msgDeviceDisabledOverheat"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
 			break;
 		}
 	}
@@ -1223,7 +1214,7 @@ void CPlayerShipController::OnEnemyShipsDetected (void)
 //	Enemy ships
 
 	{
-	m_pTrans->DisplayMessage(CONSTLIT("Enemy ships detected"));
+	DisplayTranslate(CONSTLIT("msgEnemyShipsDetected"));
 	m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_ENEMY_SHIP_ALARM));
 	}
 
@@ -1233,13 +1224,13 @@ void CPlayerShipController::OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUse
 //
 //  Fuel consumed
 
-    {
+	{
 	//	We track fuel consumption (but not fuel drain, such as from pteravores).
 	//	Bioships use fuel consumption to track growth.
 
 	if (iUse == CReactorDesc::fuelConsume)
 		m_Stats.OnFuelConsumed(m_pShip, rFuel);
-    }
+	}
 
 void CPlayerShipController::OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend)
 
@@ -1278,17 +1269,17 @@ void CPlayerShipController::OnOverlayConditionChanged (CConditionSet::ETypes iCo
 			//	Time stopped
 
 			if (iChange == CConditionSet::cndAdded)
-				m_pTrans->DisplayMessage(CONSTLIT("Time has stopped for you!"));
+				DisplayTranslate(CONSTLIT("msgTimeStopped"));
 
 			//	If we're no longer time-stopped
 
 			else if (!m_pShip->IsTimeStopped())
-				m_pTrans->DisplayMessage(CONSTLIT("Time continues"));
+				DisplayTranslate(CONSTLIT("msgTimeContinues"));
 
 			//	Otherwise, time is still stopped
 
 			else
-				m_pTrans->DisplayMessage(CONSTLIT("Time is still stopped"));
+				DisplayTranslate(CONSTLIT("msgTimeStillStopped"));
 
 			break;
 			}
@@ -1317,7 +1308,7 @@ void CPlayerShipController::OnPaintSRSEnhancements (CG32bitImage &Dest, SViewpor
 		if (m_pTarget == NULL)
 			PaintDebugLineOfFire(Ctx, Dest);
 		else if (m_pTarget->GetCategory() == CSpaceObject::catShip)
-			PaintDebugLineOfFire(Ctx, Dest, m_pTarget);
+			PaintDebugLineOfFire(Ctx, Dest, *m_pTarget);
 		}
 
 	//	Paint the docking target, if necessary
@@ -1338,6 +1329,9 @@ void CPlayerShipController::OnPaintSRSEnhancements (CG32bitImage &Dest, SViewpor
 	else if (m_pAutoTarget 
 			&& m_bShowAutoTarget)
 		PaintTargetingReticle(Ctx, Dest, m_pAutoTarget);
+
+	else if (m_pAutoMining)
+		PaintTargetingReticle(Ctx, Dest, const_cast<CSpaceObject *>(m_pAutoMining));
 
 	//	If necessary, show damage bar
 
@@ -1401,7 +1395,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 
 			if (iSeq == -1)
 				{
-				m_pTrans->DisplayMessage(CONSTLIT("Out of fuel!"));
+				DisplayTranslate(CONSTLIT("msgOutOfFuel"));
 
 				//	Stop
 
@@ -1416,8 +1410,9 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			else if ((iSeq % 15) == 0)
 				{
 				if (m_UIMsgs.IsEnabled(uimsgRefuelHint))
-					m_pTrans->DisplayMessage(CONSTLIT("(press [S] to access refueling screen)"));
-				m_pTrans->DisplayMessage(CONSTLIT("Fuel low!"));
+					DisplayTranslate(CONSTLIT("hintRefuel"));
+
+				DisplayTranslate(CONSTLIT("msgFuelLow"));
 				if ((iSeq % 30) == 0)
 					m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_FUEL_LOW_ALARM));
 				}
@@ -1432,14 +1427,14 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			if (iSecondsLeft > 10 && ((iSecondsLeft % 5) != 0))
 				NULL;
 			else if (iSecondsLeft > 1)
-				m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Life support failure in %d seconds"), iSecondsLeft));
+				DisplayTranslate(CONSTLIT("msgLifeSupportWarningN"), CONSTLIT("time"), strFromInt(iSecondsLeft));
 			else if (iSecondsLeft == 1)
-				m_pTrans->DisplayMessage(CONSTLIT("Life support failure in 1 second"));
+				DisplayTranslate(CONSTLIT("msgLifeSupportWarning1"));
 			break;
 			}
 
 		case statusRadiationCleared:
-			m_pTrans->DisplayMessage(CONSTLIT("Decontamination complete"));
+			DisplayTranslate(CONSTLIT("msgDeconComplete"));
 			break;
 
 		case statusRadiationWarning:
@@ -1453,11 +1448,11 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 				if (iSecondsLeft > 10 && ((iSecondsLeft % 5) != 0))
 					NULL;
 				else if (iSecondsLeft > 1)
-					m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Radiation Warning: Fatal exposure in %d seconds"), iSecondsLeft));
+					DisplayTranslate(CONSTLIT("msgRadiationWarningN"), CONSTLIT("time"), strFromInt(iSecondsLeft));
 				else if (iSecondsLeft == 1)
-					m_pTrans->DisplayMessage(CONSTLIT("Radiation Warning: Fatal exposure in 1 second"));
+					DisplayTranslate(CONSTLIT("msgRadiationWarning1"));
 				else
-					m_pTrans->DisplayMessage(CONSTLIT("Radiation Warning: Fatal exposure received"));
+					DisplayTranslate(CONSTLIT("msgRadiationDeath"));
 
 				if ((iTicksLeft % 150) == 0)
 					m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_RADIATION_ALARM));
@@ -1474,7 +1469,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 
 			if ((iSeq % 6) == 0)
 				{
-				m_pTrans->DisplayMessage(CONSTLIT("Warning: Reactor overload"));
+				DisplayTranslate(CONSTLIT("msgReactorOverloadWarning"));
 				if ((iSeq % 24) == 0)
 					m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_REACTOR_OVERLOAD_ALARM));
 				}
@@ -1482,7 +1477,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			}
 
 		case statusReactorPowerFailure:
-			m_pTrans->DisplayMessage(CONSTLIT("No power from reactor"));
+			DisplayTranslate(CONSTLIT("msgReactorNoPower"));
 
 			SetThrust(false);
 			SetManeuver(NoRotation);
@@ -1491,7 +1486,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			break;
 
 		case statusReactorRestored:
-			m_pTrans->DisplayMessage(CONSTLIT("Reactor power restored"));
+			DisplayTranslate(CONSTLIT("msgReactorPowerRestored"));
 			break;
 		}
 
@@ -1525,7 +1520,7 @@ void CPlayerShipController::OnStationDestroyed (const SDestroyCtx &Ctx)
 //	A station has been destroyed
 
 	{
-	bool bIsMajorStation = Ctx.pObj->HasAttribute(CONSTLIT("majorStation"));
+	bool bIsMajorStation = Ctx.Obj.HasAttribute(CONSTLIT("majorStation"));
 
 	//	If we are the cause of the destruction and then record stat
 
@@ -1537,26 +1532,26 @@ void CPlayerShipController::OnStationDestroyed (const SDestroyCtx &Ctx)
 		//	NOTE: Here we care about enemy instead of angry.
 
 		if (bIsMajorStation)
-			m_Stats.OnKeyEvent((Ctx.pObj->IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
-					Ctx.pObj,
+			m_Stats.OnKeyEvent((Ctx.Obj.IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
+					&Ctx.Obj,
 					Ctx.Attacker.GetSovereignUNID());
 		}
 
 	//	Otherwise, record the event if this is a major station
 
 	else if (bIsMajorStation)
-		m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, Ctx.pObj, Ctx.Attacker.GetSovereignUNID());
+		m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, &Ctx.Obj, Ctx.Attacker.GetSovereignUNID());
 
 	//	If the station was targeted, then clear the target
 
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		{
 		SetTarget(NULL);
-        if (m_pSession)
-            m_pSession->OnTargetChanged(m_pTarget);
+		if (m_pSession)
+			m_pSession->OnTargetChanged(m_pTarget);
 		}
 
-	if (m_pAutoDamage == Ctx.pObj)
+	if (m_pAutoDamage == Ctx.Obj)
 		{
 		m_pAutoDamage->ClearShowDamageBar();
 		m_pAutoDamage = NULL;
@@ -1614,39 +1609,73 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 
 			if (rDist2 < DIST2)
 				{
-				PaintDebugLineOfFire(Ctx, Dest, pObj);
+				PaintDebugLineOfFire(Ctx, Dest, *pObj);
 				}
 			}
 		}
 	}
 
-void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject *pTarget) const
+void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject &TargetObj) const
 
 //	PaintDebugLineOfFire
 //
-//	Paints debug info for pTarget's line of fire.
+//	Paints the line for fire for all weapons on the ship.
 
 	{
-	int i;
-
-	static const Metric DEFAULT_DIST_CHECK = 700.0 * g_KlicksPerPixel;
-	static const CG32bitPixel RGB_BLOCKED(255, 0, 0);
-	static const CG32bitPixel RGB_CLEAR(0, 255, 255);
-
-	CShip *pShip = pTarget->AsShip();
+	CShip *pShip = TargetObj.AsShip();
 	if (pShip == NULL)
 		return;
 
 	CInstalledDevice *pDevice = pShip->GetNamedDevice(devPrimaryWeapon);
-	if (pDevice == NULL)
+	if (pDevice && !pDevice->IsSecondaryWeapon())
+		PaintDebugLineOfFire(Ctx, Dest, TargetObj, *pDevice);
+
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
+		{
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (Device.IsSecondaryWeapon())
+			PaintDebugLineOfFire(Ctx, Dest, TargetObj, Device);
+		}
+	}
+
+void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject &TargetObj, CInstalledDevice &Weapon) const
+
+//	PaintDebugLineOfFire
+//
+//	Paints debug info the the given object and weapon.
+
+	{
+	static const Metric DEFAULT_DIST_CHECK = 700.0 * g_KlicksPerPixel;
+	static const CG32bitPixel RGB_BLOCKED(255, 0, 0);
+	static const CG32bitPixel RGB_CLEAR(0, 255, 255);
+
+	CShip *pShip = TargetObj.AsShip();
+	if (pShip == NULL)
 		return;
+
+	const CDeviceItem DeviceItem = Weapon.GetItem()->AsDeviceItem();
+
+	//	Compute the fire direction of the weapon.
+
+	int iDir = Weapon.GetFireAngle();
+	CWeaponClass *pWeapon = Weapon.GetClass()->AsWeaponClass();
+	if (pWeapon)
+		{
+		int iWeaponMinFireArc, iWeaponMaxFireArc;
+		switch (pWeapon->GetRotationType(DeviceItem, &iWeaponMinFireArc, &iWeaponMaxFireArc))
+			{
+			case CDeviceRotationDesc::rotSwivel:
+				iDir = AngleMiddle(iWeaponMinFireArc, iWeaponMaxFireArc);
+				break;
+			}
+		}
 
 	//	First, we compute the line of fire algorithm and highlight the first 
 	//	object that blocks us.
 
-	int iDir = pShip->GetRotation();
+	iDir = AngleMod(pShip->GetRotation() + iDir);
 	CSpaceObject *pBlock = NULL;
-	if (!pShip->IsLineOfFireClear(pDevice, NULL, iDir, Max(pDevice->GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK), &pBlock))
+	if (!pShip->IsLineOfFireClear(&Weapon, NULL, iDir, Max(Weapon.GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK), &pBlock))
 		{
 		int x, y;
 		Ctx.XForm.Transform(pBlock->GetPos(), &x, &y);
@@ -1656,7 +1685,7 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 
 	//	Paint the line of fire that we're testing.
 
-	CVector vStart = pDevice->GetPos(pShip);
+	CVector vStart = Weapon.GetPos(pShip);
 	int xStart, yStart;
 	Ctx.XForm.Transform(vStart, &xStart, &yStart);
 
@@ -1667,16 +1696,21 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 	CGDraw::LineDotted(Dest, xStart, yStart, xEnd, yEnd, CG32bitPixel(255, 255, 0, 128));
 
 	//	Paint the path that a shot would take if fired right now.
+	//
+	//	We show this relative to the player, which makes it a little easier to
+	//	visualize. But in the actual algorithm (inside IsLineOfFireClear) we 
+	//	compute the path in absolute terms and adjust the position of objects
+	//	(including the player) based on their velocities.
 
-	Metric rSpeed = pDevice->GetShotSpeed(CItemCtx(pShip, pDevice));
-	CVector vVel = pShip->GetVel() + PolarToVector(iDir, rSpeed);
+	Metric rSpeed = Weapon.GetShotSpeed(CItemCtx(pShip, &Weapon));
+	CVector vVel = pShip->GetVel() + PolarToVector(iDir, rSpeed) - m_pShip->GetVel();
 	CVector vPos = vStart;
 
 	CG32bitPixel rgbPath = (pBlock ? RGB_BLOCKED : RGB_CLEAR);
 
 	int xPrev, yPrev;
 	Ctx.XForm.Transform(vStart, &xPrev, &yPrev);
-	for (i = 0; i < 10; i++)
+	for (int i = 0; i < 10; i++)
 		{
 		vPos = vPos + (g_SecondsPerUpdate * vVel);
 
@@ -1797,8 +1831,8 @@ EManeuverTypes CPlayerShipController::GetManeuver (void)
 	{
 	if (m_ManeuverController.IsManeuverActive())
 		return m_ManeuverController.GetManeuver(m_pShip);
-    else
-	    return m_iManeuver;
+	else
+		return m_iManeuver;
 	}
 
 bool CPlayerShipController::GetThrust (void)
@@ -1827,7 +1861,7 @@ bool CPlayerShipController::GetDeviceActivate (void)
 	return m_bActivate;
 	}
 
-CSpaceObject *CPlayerShipController::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CPlayerShipController::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -1857,28 +1891,59 @@ CSpaceObject *CPlayerShipController::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags
 
 		m_iAutoTargetTick = iTick;
 
-		//	Make sure the fire angle is set to -1 if we don't have a target.
-		//	Otherwise, we will keep firing at the wrong angle after we destroy
-		//	a target.
+		//	If we have an auto target, return it.
 
-		if (m_pAutoTarget == NULL)
-			{
-			CInstalledDevice *pDevice = m_pShip->GetNamedDevice(devPrimaryWeapon);
-			if (pDevice)
-				pDevice->SetFireAngle(-1);
+		if (m_pAutoTarget && !m_pAutoTarget->IsDestroyed())
+			return m_pAutoTarget;
 
-			pDevice = m_pShip->GetNamedDevice(devMissileWeapon);
-			if (pDevice)
-				pDevice->SetFireAngle(-1);
-			}
+		//	If we have a mining target, then use that instead.
 
-		return ((m_pAutoTarget && !m_pAutoTarget->IsDestroyed()) ? m_pAutoTarget : NULL);
+		else if (m_pAutoMining 
+					&& !m_pAutoMining->IsDestroyed()
+					&& pDeviceItem
+					&& pDeviceItem->IsMiningWeapon())
+			return const_cast<CSpaceObject *>(m_pAutoMining);
+
+		//	Otherwise, no target
+
+		else
+			return NULL;
 		}
 
 	//	Otherwise, no target
 
 	else
 		return NULL;
+	}
+
+CTargetList CPlayerShipController::GetTargetList (void) const
+
+//	GetTargetList
+//
+//	Returns a target list suitable for weapons looking for targets.
+
+	{
+	CTargetList::STargetOptions Options;
+
+	Options.rMaxDist = MAX_AUTO_TARGET_DISTANCE;
+	Options.bIncludeNonAggressors = true;
+	Options.bIncludeStations = true;
+	Options.bIncludeSourceTarget = true;
+	Options.bNoLineOfFireCheck = true;
+
+	//	Include targeting requirements from weapons
+
+	DWORD dwTargetTypes = m_pShip->GetDeviceSystem().GetTargetTypes();
+
+	if (dwTargetTypes & CTargetList::typeMissile)
+		Options.bIncludeMissiles = true;
+
+	if (dwTargetTypes & CTargetList::typeMinable)
+		Options.bIncludeMinable = true;
+
+	//	Done
+
+	return CTargetList(*m_pShip, Options);
 	}
 
 void CPlayerShipController::OnDocked (CSpaceObject *pObj)
@@ -1889,6 +1954,19 @@ void CPlayerShipController::OnDocked (CSpaceObject *pObj)
 	//	inside this event.
 
 	m_bSignalDock = true;
+	}
+
+void CPlayerShipController::OnAcceptedMission (CMission &MissionObj)
+
+//	OnAcceptedMission
+//
+//	We accepted a mission.
+
+	{
+	//	Tell the session so that it shows a mission banner
+
+	if (m_pSession)
+		m_pSession->OnAcceptedMission(MissionObj);
 	}
 
 void CPlayerShipController::OnMissionCompleted (CMission *pMission, bool bSuccess)
@@ -1916,36 +1994,6 @@ void CPlayerShipController::OnNewSystem (CSystem *pSystem)
 	{
 	}
 
-void CPlayerShipController::OnObjDamaged (const SDamageCtx &Ctx)
-
-//	OnObjDamaged
-//
-//	We damaged an object
-
-	{
-	//	Skip if we're dead
-
-	if (m_pShip == NULL || m_pShip->IsDestroyed())
-		return;
-
-	//	Remember that we caused damage to this object (but only if it is an 
-	//	enemy station or a capital ship of some sort).
-
-	if (Ctx.pObj 
-			&& !Ctx.pObj->IsDestroyed()
-			&& m_pShip->IsAngryAt(Ctx.pObj)
-			&& (Ctx.pObj->GetCategory() == CSpaceObject::catStation
-				|| Ctx.pObj->IsMultiHull()))
-		{
-		if (m_pAutoDamage)
-			m_pAutoDamage->ClearShowDamageBar();
-
-		m_pAutoDamage = Ctx.pObj;
-		m_pAutoDamage->SetShowDamageBar();
-		m_dwAutoDamageExpire = m_Universe.GetTicks() + DAMAGE_BAR_TIMER;
-		}
-	}
-
 void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 //	OnObjDestroyed
@@ -1959,9 +2007,9 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	NOTE: We don't care about stations here because those will be
 	//	handled in OnStationDestroyed
 
-	if (Ctx.pObj->GetCategory() == CSpaceObject::catShip)
+	if (Ctx.Obj.GetCategory() == CSpaceObject::catShip)
 		{
-		bool bIsMajorShip = Ctx.pObj->HasAttribute(CONSTLIT("majorShip"));
+		bool bIsMajorShip = Ctx.Obj.HasAttribute(CONSTLIT("majorShip"));
 
 		if (Ctx.Attacker.IsCausedByPlayer())
 			{
@@ -1971,20 +2019,20 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 				{
 			//	NOTE: Here we care about enemy instead of angry.
 
-				m_Stats.OnKeyEvent((Ctx.pObj->IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
-						Ctx.pObj,
+				m_Stats.OnKeyEvent((Ctx.Obj.IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
+						&Ctx.Obj,
 						Ctx.Attacker.GetSovereignUNID());
 				}
 			}
 		else if (bIsMajorShip)
-			m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, Ctx.pObj, Ctx.Attacker.GetSovereignUNID());
+			m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, &Ctx.Obj, Ctx.Attacker.GetSovereignUNID());
 		}
 
 	//	If the object we're docked with got destroyed, then undock
 
-	if (m_pStation == Ctx.pObj || Ctx.pObj->IsPlayerDocked())
+	if (m_pStation == Ctx.Obj || Ctx.Obj.IsPlayerDocked())
 		{
-		if (Ctx.pObj->IsPlayerDocked())
+		if (Ctx.Obj.IsPlayerDocked())
 			g_pTrans->GetModel().ExitScreenSession(true);
 
 		m_pStation = NULL;
@@ -1992,24 +2040,27 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	//	Clear out some variables
 
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		{
 		m_pTarget = NULL;
 		ClearFireAngle();
-        if (m_pSession)
-            m_pSession->OnTargetChanged(m_pTarget);
+		if (m_pSession)
+			m_pSession->OnTargetChanged(m_pTarget);
 		}
 
-	if (m_pDestination == Ctx.pObj)
+	if (m_pDestination == Ctx.Obj)
 		m_pDestination = NULL;
 
-	if (m_pAutoDock == Ctx.pObj)
+	if (m_pAutoDock == Ctx.Obj)
 		m_pAutoDock = NULL;
 
-	if (m_pAutoTarget == Ctx.pObj)
+	if (m_pAutoTarget == Ctx.Obj)
 		m_pAutoTarget = NULL;
 
-	if (m_pAutoDamage == Ctx.pObj)
+	if (m_pAutoMining == Ctx.Obj)
+		m_pAutoMining = NULL;
+
+	if (m_pAutoDamage == Ctx.Obj)
 		{
 		m_pAutoDamage->ClearShowDamageBar();
 		m_pAutoDamage = NULL;
@@ -2018,13 +2069,77 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	Clear out the target list
 
 	int iIndex;
-	if (m_TargetList.FindByValue(Ctx.pObj, &iIndex))
+	if (m_TargetList.FindByValue(&Ctx.Obj, &iIndex))
 		m_TargetList.Delete(iIndex);
 
 	//	Let the UI deal with destroyed objects
 
 	if (m_pSession)
 		m_pSession->OnObjDestroyed(Ctx);
+	}
+
+void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
+
+//	OnObjHit
+//
+//	We hit an object.
+
+	{
+	EDamageHint iHint;
+
+	//	Skip if we're dead
+
+	if (m_pShip == NULL || m_pShip->IsDestroyed())
+		return;
+
+	//	Skip if we don't care about these objects.
+
+	else if (Ctx.pObj == NULL 
+			|| Ctx.pObj->IsDestroyed() 
+			|| !m_pShip->IsAngryAt(Ctx.pObj)
+			|| Ctx.Attacker.IsAutomatedWeapon())
+		return;
+
+	//	If we have a hint, then show it to the player.
+
+	else if ((iHint = Ctx.GetHint()) != EDamageHint::none)
+		{
+		if (m_UIMsgs.ShowMessage(m_Universe, uimsgStationDamageHint, Ctx.pObj))
+			{
+			switch (iHint)
+				{
+				case EDamageHint::useMining:
+					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintMiningNeeded")));
+					break;
+
+				case EDamageHint::useMiningOrWMD:
+					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintMiningOrWMDNeeded")));
+					break;
+
+				case EDamageHint::useWMD:
+					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintWMDNeeded")));
+					break;
+
+				case EDamageHint::useWMDforShip:
+					m_pShip->SendMessage(Ctx.pObj, Translate(CONSTLIT("hintWMDForShipNeeded")));
+					break;
+				}
+			}
+		}
+
+	//	Remember that we caused damage to this object (but only if it is an 
+	//	enemy station or a capital ship of some sort).
+
+	else if (Ctx.pObj->GetCategory() == CSpaceObject::catStation
+				|| Ctx.pObj->IsMultiHull())
+		{
+		if (m_pAutoDamage)
+			m_pAutoDamage->ClearShowDamageBar();
+
+		m_pAutoDamage = Ctx.pObj;
+		m_pAutoDamage->SetShowDamageBar();
+		m_dwAutoDamageExpire = m_Universe.GetTicks() + DAMAGE_BAR_TIMER;
+		}
 	}
 
 void CPlayerShipController::OnProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
@@ -2037,7 +2152,7 @@ void CPlayerShipController::OnProgramDamage (CSpaceObject *pHacker, const Progra
 	if (pHacker)
 		pHacker->Highlight();
 
-	m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Cyberattack detected: %s"), Program.sProgramName));
+	DisplayTranslate(CONSTLIT("msgCyberattackDetected"), CONSTLIT("program"), Program.sProgramName);
 	}
 
 void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
@@ -2049,25 +2164,15 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 	{
 	DEBUG_TRY
 
-	//	Remember the AutoTarget. NOTE: We need to check again to see if the
-	//	target is destroyed because it could have gotten destroyed after it
-	//	was picked.
+	//	Remember the AutoTarget.
 
-	if (Ctx.pTargetObj && !Ctx.pTargetObj->IsDestroyed())
-		{
-		m_pAutoTarget = Ctx.pTargetObj;
-		if (Ctx.bNeedsAutoTarget)
-			m_bShowAutoTarget = true;
-		else
-			m_bShowAutoTarget = false;
-		}
-	else
-		{
-		m_pAutoTarget = NULL;
-		m_bShowAutoTarget = false;
-		}
+	m_pAutoTarget = const_cast<CSpaceObject *>(Ctx.AutoTarget.GetAutoTarget());
+	m_bShowAutoTarget = Ctx.AutoTarget.IsAutoTargetNeeded();
+	m_bTargetOutOfRange = Ctx.AutoTarget.IsPlayerTargetOutOfRange();
 
-	m_bTargetOutOfRange = Ctx.bPlayerTargetOutOfRange;
+	//	Remember auto mining, if necessary
+
+	m_pAutoMining = Ctx.AutoMining.GetAutoTarget();
 
 	//	Compute the AutoDock target.
 	//
@@ -2096,17 +2201,11 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 	//	Otherwise, if we are close to a port then we use that.
 
-	else if (Ctx.pDockingObj && !Ctx.pDockingObj->IsDestroyed())
+	else if (m_pAutoDock = const_cast<CSpaceObject *>(Ctx.AutoDock.GetDockObj()))
 		{
-		m_pAutoDock = Ctx.pDockingObj;
-		m_iAutoDockPort = Ctx.iDockingPort;
-		m_vAutoDockPort = Ctx.vDockingPort;
+		m_iAutoDockPort = Ctx.AutoDock.GetDockingPortIndex();
+		m_vAutoDockPort = Ctx.AutoDock.GetDockingPortPos();
 		}
-
-	//	Otherwise, nothing to dock with
-
-	else
-		m_pAutoDock = NULL;
 
 	//	Notify the game controller when we transition in/out of combat.
 	//
@@ -2150,7 +2249,7 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 		if ((iTicks % 150) == 0)
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("Warning: Deep gravity zone"));
+			DisplayTranslate(CONSTLIT("msgGravityWarning"));
 			m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_GRAVITY_ALARM));
 			}
 		}
@@ -2175,8 +2274,8 @@ void CPlayerShipController::OnWeaponStatusChanged (void)
 //	Weapon status has changed
 
 	{
-    if (m_pSession)
-        m_pSession->OnWeaponStatusChanged();
+	if (m_pSession)
+		m_pSession->OnWeaponStatusChanged();
 	}
 
 void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
@@ -2222,7 +2321,7 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pShip);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pStation);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
-	CSystem::ReadObjRefFromStream(Ctx, &m_pDestination);
+	CSystem::ReadObjRefFromStream(Ctx, &m_pDestination, true);
 
 	if (Ctx.dwVersion >= 100)
 		{
@@ -2325,7 +2424,7 @@ void CPlayerShipController::ReadyNextMissile (int iDir)
 	if (pLauncher)
 		{
 		if (pLauncher->GetValidVariantCount(m_pShip) == 0)
-			m_pTrans->DisplayMessage(CONSTLIT("No missiles on board"));
+			DisplayTranslate(CONSTLIT("msgNoMissiles"));
 		else
 			{
 			CString sVariant;
@@ -2333,14 +2432,15 @@ void CPlayerShipController::ReadyNextMissile (int iDir)
 			pLauncher->GetSelectedVariantInfo(m_pShip, &sVariant, &iAmmoLeft);
 			if (sVariant.IsBlank())
 				sVariant = pLauncher->GetName();
-			m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("%s ready"), sVariant));
+
+			DisplayTranslate(CONSTLIT("msgMissileReady"), CONSTLIT("missile"), sVariant);
 			}
 
-        if (m_pSession)
-            m_pSession->OnWeaponStatusChanged();
+		if (m_pSession)
+			m_pSession->OnWeaponStatusChanged();
 		}
 	else
-		m_pTrans->DisplayMessage(CONSTLIT("No launcher installed"));
+		DisplayTranslate(CONSTLIT("msgNoLauncher"));
 	}
 
 void CPlayerShipController::ReadyNextWeapon (int iDir)
@@ -2354,9 +2454,9 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 	CInstalledDevice *pNewWeapon = pCurWeapon;
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
-	DWORD bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetLinkedFireOptions() & dwLinkedFireSelected : 0x0;
-	DWORD bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
-		&& (pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
+	DWORD bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected : 0x0;
+	DWORD bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
+		&& (pNewWeapon->GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
 			: true)) : 0x0;
 
 	//	Keep switching until we find a weapon that is not disabled
@@ -2368,9 +2468,9 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 		{
 		m_pShip->ReadyNextWeapon(iDir);
 		pNewWeapon = m_pShip->GetNamedDevice(devPrimaryWeapon);
-		bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetLinkedFireOptions() & dwLinkedFireSelected : 0x0;
-		bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
-			&& (pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
+		bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected : 0x0;
+		bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
+			&& (pNewWeapon->GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
 				: true)) : 0x0;
 		}
 	
@@ -2378,7 +2478,7 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 			&& pCurWeapon
 			&& pNewWeapon != pCurWeapon
 			&& (bCurWeaponLkfSelected ? (bNextWeaponLkfSelected ? 
-		(pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? 
+		(pNewWeapon->GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? 
 			(CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() != CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber() || pNewWeapon->GetUNID() != pCurWeapon->GetUNID()) :
 			pNewWeapon->GetUNID() != pCurWeapon->GetUNID()) : !pNewWeapon->IsEnabled()) : !pNewWeapon->IsEnabled()));
 
@@ -2388,19 +2488,19 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 		{
 		//	There is a delay in activation (except for linkedFire='whenSelected' guns)
 
-		if (!(pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected))
+		if (!(pNewWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 			m_pShip->SetFireDelay(pNewWeapon);
 
 		//	Feedback to player
 
 		if (pNewWeapon->IsEnabled())
-			m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("%s ready"), strCapitalize(pNewWeapon->GetName())));
+			DisplayTranslate(CONSTLIT("msgWeaponReady"), CONSTLIT("itemName"), pNewWeapon->GetName());
 		else
-			m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Disabled %s selected"), pNewWeapon->GetName()));
+			DisplayTranslate(CONSTLIT("msgDisabledWeaponReady"), CONSTLIT("itemName"), pNewWeapon->GetName());
 		}
 
-    if (m_pSession)
-        m_pSession->OnWeaponStatusChanged();
+	if (m_pSession)
+		m_pSession->OnWeaponStatusChanged();
 	}
 
 void CPlayerShipController::Reset (void)
@@ -2417,8 +2517,8 @@ void CPlayerShipController::Reset (void)
 	if (m_pTarget)
 		{
 		SetTarget(NULL);
-        if (m_pSession)
-            m_pSession->OnTargetChanged(m_pTarget);
+		if (m_pSession)
+			m_pSession->OnTargetChanged(m_pTarget);
 		}
 
 	//	Clear destination
@@ -2443,6 +2543,7 @@ void CPlayerShipController::Reset (void)
 		}
 
 	m_pAutoDock = NULL;
+	m_pAutoMining = NULL;
 	m_pAutoTarget = NULL;
 	m_bSignalDock = false;
 	m_bTargetOutOfRange = false;
@@ -2461,7 +2562,7 @@ void CPlayerShipController::SelectNearestTarget (void)
 
 	if (!m_pShip->HasTargetingComputer())
 		{
-		m_pTrans->DisplayMessage(STR_NO_TARGETING_COMPUTER);
+		DisplayTranslate(CONSTLIT("msgNoTargetingComputer"));
 		return;
 		}
 
@@ -2560,14 +2661,14 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 
 	if (!m_pShip->HasTargetingComputer())
 		{
-		m_pTrans->DisplayMessage(STR_NO_TARGETING_COMPUTER);
+		DisplayTranslate(CONSTLIT("msgNoTargetingComputer"));
 		return;
 		}
 
 	//	If a friendly is already selected, then cycle
 	//	to the next friendly.
 
-	if (m_pTarget && !(m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanAttack()))
+	if (m_pTarget && !(m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanBeAttacked()))
 		{
 		InitTargetList(targetFriendlies, true);
 
@@ -2628,14 +2729,14 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 
 	if (!m_pShip->HasTargetingComputer())
 		{
-		m_pTrans->DisplayMessage(STR_NO_TARGETING_COMPUTER);
+		DisplayTranslate(CONSTLIT("msgNoTargetingComputer"));
 		return;
 		}
 
 	//	If an enemy target is already selected, then cycle
 	//	to the next enemy.
 
-	if (m_pTarget && m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanAttack())
+	if (m_pTarget && m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanBeAttacked())
 		{
 		InitTargetList(targetEnemies, true);
 
@@ -2755,7 +2856,7 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	//	Old ship stops tracking fuel (otherwise, it would run out)
 
 	pOldShip->TrackFuel(false);
-    pOldShip->TrackMass(false);
+	pOldShip->TrackMass(false);
 
 	//	Transfer cargo from the old ship to the new one
 
@@ -2781,7 +2882,7 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	//
 	//	NOTE: This transfers equipment such as targeting computers that are 
 	//	installed on the ship. It does not include (not should it include) 
-	//	abilities/equipment confered by devices or enhancements.
+	//	abilities/equipment conferred by devices or enhancements.
 
 	if (Options.bTransferEquipment)
 		{
@@ -2821,6 +2922,11 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	pNewShip->TrackFuel();
 	pNewShip->TrackMass();
 
+	//	Transfer event registrations
+
+	pNewShip->AddEventSubscribers(pOldShip->GetEventSubscribers());
+	pOldShip->RemoveAllEventSubscribers();
+
 	//	Reset all other settings
 
 	SetTarget(NULL);
@@ -2833,10 +2939,10 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	SetFireMissile(false);
 	m_bActivate = false;
 
-    //  Tell the ships that we've switched
+	//  Tell the ships that we've switched
 
-    pOldShip->FireOnPlayerLeftShip(pNewShip);
-    pNewShip->FireOnPlayerEnteredShip(pOldShip);
+	pOldShip->FireOnPlayerLeftShip(pNewShip);
+	pNewShip->FireOnPlayerEnteredShip(pOldShip);
 
 	//	Tell the model that we changed ships
 
@@ -2844,8 +2950,8 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 
 	//	Update displays
 
-    if (m_pSession)
-        m_pSession->OnPlayerChangedShips(pOldShip);
+	if (m_pSession)
+		m_pSession->OnPlayerChangedShips(pOldShip);
 
 	return NOERROR;
 	}
@@ -2854,7 +2960,19 @@ void CPlayerShipController::Undock (void)
 	{
 	if (m_pStation)
 		{
-		m_pShip->Undock();
+		//	If we're docked, then let the ship undock us.
+
+		if (m_pShip->GetDockedObj())
+			m_pShip->Undock();
+
+		//	Otherwise, we're in the middle of docking, so tell the station to
+		//	cancel docking (the ship does not yet have m_pDocked set).
+
+		else
+			m_pStation->Undock(m_pShip);
+
+		//	Done
+
 		m_pStation = NULL;
 		}
 	}
@@ -3000,7 +3118,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 		if (rSpeed > 0.9 * m_pShip->GetMaxSpeed())
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("(press [A] to engage autopilot and accelerate time)"));
+			m_pTrans->DisplayMessage(CONSTLIT("(press [A] to accelerate time)"));
 			m_iLastHelpTick = iTick;
 			return;
 			}

@@ -33,7 +33,7 @@ void CCSymbolTable::AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry)
 	((ICCItem *)pOldEntry)->Discard();
 	}
 
-void CCSymbolTable::AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd)
+bool CCSymbolTable::AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd, bool bMustBeNew)
 
 //	AddEntry
 //
@@ -80,7 +80,7 @@ void CCSymbolTable::AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAd
 			{
 			m_pParent->AddEntry(pKey, pTransformed);
 			pTransformed->Discard();
-			return;
+			return true;
 			}
 		else if (error != NOERROR)
 			throw CException(ERR_MEMORY);
@@ -94,6 +94,11 @@ void CCSymbolTable::AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAd
 
 	if (pPrevEntry)
 		pPrevEntry->Discard();
+
+	if (bMustBeNew && pPrevEntry)
+		return false;
+
+	return true;
 	}
 
 ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
@@ -149,7 +154,7 @@ ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
 	return pNewTable;
 	}
 
-ICCItem *CCSymbolTable::CloneContainer (void)
+ICCItem *CCSymbolTable::CloneContainer (void) const
 
 //	CloneContainer
 //
@@ -264,7 +269,7 @@ void CCSymbolTable::DeleteAll (CCodeChain *pCC, bool bLambdaOnly)
 		}
 	}
 
-void CCSymbolTable::DeleteEntry (CCodeChain *pCC, ICCItem *pKey)
+void CCSymbolTable::DeleteEntry (ICCItem *pKey)
 
 //	DeleteEntry
 //
@@ -574,7 +579,7 @@ ICCItem *CCSymbolTable::LookupByOffset (CCodeChain *pCC, int iOffset)
 		return pCC->CreateErrorCode(CCRESULT_NOTFOUND);
 	}
 
-CString CCSymbolTable::Print (DWORD dwFlags)
+CString CCSymbolTable::Print (DWORD dwFlags) const
 
 //	Print
 //

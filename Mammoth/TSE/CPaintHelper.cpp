@@ -135,7 +135,7 @@ void CPaintHelper::PaintArrowText (CG32bitImage &Dest, int x, int y, int iDirect
 	DEBUG_CATCH
 	}
 
-void CPaintHelper::PaintScaledImage (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, CG32bitImage &Src, const RECT &rcSrc, Metric rScale)
+void CPaintHelper::PaintScaledImage (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, const CG32bitImage &Src, const RECT &rcSrc, Metric rScale)
 
 //	PaintScaledImage
 //

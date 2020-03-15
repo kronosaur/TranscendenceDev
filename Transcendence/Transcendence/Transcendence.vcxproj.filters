@@ -227,9 +227,6 @@
     <ClCompile Include="CHighScoreDisplay.cpp">
       <Filter>Source Files\Intro Session</Filter>
     </ClCompile>
-    <ClCompile Include="CLRSDisplay.cpp">
-      <Filter>Source Files\Displays</Filter>
-    </ClCompile>
     <ClCompile Include="CGItemListDisplayArea.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
@@ -304,6 +301,15 @@
     </ClCompile>
     <ClCompile Include="CGTabArea.cpp">
       <Filter>Source Files\Displays</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenLayout.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CNarrativeDisplay.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerControllerProperties.cpp">
+      <Filter>Source Files\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

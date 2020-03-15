@@ -7,6 +7,50 @@
 
 const SDockFrame CDockScreenStack::m_NullFrame;
 
+ICCItemPtr CDockScreenStack::AsCCItem (const SDockFrame &Frame)
+
+//	AsCCItem
+//
+//	Encodes a frame as an item.
+
+	{
+	DWORD dwRootUNID = (Frame.pResolvedRoot ? Frame.pResolvedRoot->GetUNID() : 0);
+    CString sScreen = Frame.sResolvedScreen;
+
+    ICCItemPtr pResult(ICCItem::SymbolTable);
+
+	pResult->SetIntegerAt(CONSTLIT("type"), dwRootUNID);
+	if (Frame.pResolvedRoot)
+		pResult->SetStringAt(CONSTLIT("typeEntity"), Frame.pResolvedRoot->GetEntityName());
+
+	if (sScreen.IsBlank())
+		{
+        pResult->SetIntegerAt(CONSTLIT("screen"), dwRootUNID);
+		pResult->SetIntegerAt(CONSTLIT("screenType"), dwRootUNID);
+		}
+	else
+		{
+		bool bNotUNID;
+		DWORD dwScreen = strToInt(sScreen, 0, &bNotUNID);
+		if (bNotUNID)
+			{
+			pResult->SetStringAt(CONSTLIT("screen"), sScreen);
+			pResult->SetStringAt(CONSTLIT("screenName"), sScreen);
+			}
+		else
+			{
+			pResult->SetIntegerAt(CONSTLIT("screen"), dwScreen);
+			pResult->SetIntegerAt(CONSTLIT("screenType"), dwScreen);
+			}
+		}
+
+    pResult->SetStringAt(CONSTLIT("pane"), Frame.sPane);
+    if (Frame.pStoredData)
+        pResult->SetAt(CONSTLIT("data"), Frame.pStoredData);
+
+    return pResult;
+	}
+
 void CDockScreenStack::DeleteAll (void)
 
 //	DeleteAll
@@ -16,22 +60,6 @@ void CDockScreenStack::DeleteAll (void)
 	{
 	while (!IsEmpty())
 		Pop();
-	}
-
-const SScreenSetTab *CDockScreenStack::FindTab (const CString &sID) const
-
-//	FindTab
-//
-//	Returns the tab by ID.
-
-	{
-	const SDockFrame &Current = GetCurrent();
-
-	for (int i = 0; i < Current.ScreenSet.GetCount(); i++)
-		if (strEquals(sID, Current.ScreenSet[i].sID))
-			return &Current.ScreenSet[i];
-
-	return NULL;
 	}
 
 const SDockFrame &CDockScreenStack::GetCurrent (void) const
@@ -46,50 +74,6 @@ const SDockFrame &CDockScreenStack::GetCurrent (void) const
 
 	int iTop = m_Stack.GetCount() - 1;
 	return m_Stack[iTop];
-	}
-
-ICCItem *CDockScreenStack::GetData (const CString &sAttrib)
-
-//	GetData
-//
-//	Returns data for the given attribute. The caller is responsible for 
-//	discarding this data.
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	if (IsEmpty())
-		return CC.CreateNil();
-
-	ICCItem *pResult = NULL;
-	ICCItem *pKey = CC.CreateString(sAttrib);
-
-	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 1];
-	if (Frame.pStoredData)
-		{
-		pResult = Frame.pStoredData->Lookup(&CC, pKey);
-		if (pResult->IsError())
-			{
-			pResult->Discard();
-			pResult = NULL;
-			}
-		}
-
-	if (pResult == NULL && Frame.pInitialData)
-		{
-		pResult = Frame.pInitialData->Lookup(&CC, pKey);
-		if (pResult->IsError())
-			{
-			pResult->Discard();
-			pResult = NULL;
-			}
-		}
-
-	pKey->Discard();
-
-	if (pResult == NULL)
-		pResult = CC.CreateNil();
-
-	return pResult;
 	}
 
 const CString &CDockScreenStack::GetDisplayData (const CString &sID)
@@ -108,29 +92,6 @@ const CString &CDockScreenStack::GetDisplayData (const CString &sID)
 		return NULL_STR;
 
 	return *pValue;
-	}
-
-ICCItem *CDockScreenStack::GetReturnData (const CString &sAttrib)
-
-//	GetReturnData
-//
-//	Returns data for the given attribute. The caller is responsible for 
-//	discarding this data.
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	if (IsEmpty())
-		return CC.CreateNil();
-
-	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 1];
-	if (Frame.pReturnData)
-		{
-		ICCItem *pResult = Frame.pReturnData->GetElement(sAttrib);
-		if (pResult)
-			return pResult->Reference();
-		}
-
-	return CC.CreateNil();
 	}
 
 void CDockScreenStack::Push (const SDockFrame &Frame)
@@ -185,6 +146,20 @@ void CDockScreenStack::ResolveCurrent (const SDockFrame &ResolvedFrame)
 		}
 	}
 
+void CDockScreenStack::SetBackgroundDesc (const SDockScreenBackgroundDesc &BackgroundDesc)
+
+//	SetBackgroundDesc
+//
+//	Sets the current background descriptor
+
+	{
+	if (!IsEmpty())
+		{
+		int iTop = m_Stack.GetCount() - 1;
+		m_Stack[iTop].BackgroundDesc = BackgroundDesc;
+		}
+	}
+
 void CDockScreenStack::SetCurrent (const SDockFrame &NewFrame, SDockFrame *retPrevFrame)
 
 //	SetCurrent
@@ -220,85 +195,6 @@ void CDockScreenStack::SetCurrentPane (const CString &sPane)
 		}
 	}
 
-void CDockScreenStack::IncData (const CString &sAttrib, ICCItem *pValue, ICCItem **retpResult)
-
-//	IncData
-//
-//	Increments data
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	if (IsEmpty())
-		{
-		if (retpResult) *retpResult = CC.CreateNil();
-		return;
-		}
-
-    //  If pValue is NULL, we default to 1. We add ref no matter what so that
-    //  we can discard unconditionally.
-
-    if (pValue == NULL)
-        pValue = CC.CreateInteger(1);
-    else
-        pValue->Reference();
-
-    //  If the entry is currently blank, then we just take the increment.
-
-	ICCItem *pOriginal = GetData(sAttrib);
-    ICCItem *pResult = NULL;
-    if (pOriginal->IsNil())
-        pResult = pValue->Reference();
-
-    //  Otherwise, we need to get the data value
-
-    else
-        {
-        if (pOriginal->IsDouble() || pValue->IsDouble())
-            pResult = CC.CreateDouble(pOriginal->GetDoubleValue() + pValue->GetDoubleValue());
-        else
-            pResult = CC.CreateInteger(pOriginal->GetIntegerValue() + pValue->GetIntegerValue());
-        }
-
-    pOriginal->Discard();
-
-    //  Store
-
-	SetData(sAttrib, pResult);
-
-    //  Done
-
-    if (retpResult)
-        *retpResult = pResult;
-    else
-        pResult->Discard();
-
-    pValue->Discard();
-	}
-
-void CDockScreenStack::SetData (const CString &sAttrib, ICCItem *pData)
-
-//	SetData
-//
-//	Sets data associated with the current frame
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	if (IsEmpty())
-		return;
-
-	//	If necessary, create the stored data block
-
-	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 1];
-	if (!Frame.pStoredData)
-		Frame.pStoredData = ICCItemPtr(ICCItem::SymbolTable);
-
-	//	Add the entry
-
-	ICCItem *pKey = CC.CreateString(sAttrib);
-	Frame.pStoredData->AddEntry(pKey, pData);
-	pKey->Discard();
-	}
-
 void CDockScreenStack::SetDisplayData (const CString &sID, const CString &sData)
 
 //	SetDisplayData
@@ -326,76 +222,3 @@ void CDockScreenStack::SetLocation (CSpaceObject *pLocation)
 		m_Stack[i].pLocation = pLocation;
 	}
 
-void CDockScreenStack::SetReturnData (const CString &sAttrib, ICCItem *pData)
-
-//	SetReturnData
-//
-//	Sets data associated with previous frame.
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	if (m_Stack.GetCount() < 2)
-		return;
-
-	//	If necessary, create the stored data block
-
-	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 2];
-	if (!Frame.pReturnData)
-		Frame.pReturnData = ICCItemPtr(ICCItem::SymbolTable);
-
-	//	Add the entry
-
-	Frame.pReturnData->SetAt(sAttrib, pData);
-	}
-
-void CDockScreenStack::SetScreenSet (const ICCItem &ScreenSet)
-
-//	SetScreenSet
-//
-//	Sets the current screen set.
-//
-//	We expect ScreenSet to be an array of structs; each struc has the following
-//	fields:
-//
-//		id: ID of the tab (if Nil, we assign one)
-//		label: User-visible tab name
-//		screen: Screen to navigate to
-//		pane: Pane to navigate to
-//		data: Data
-
-	{
-	if (IsEmpty())
-		return;
-
-	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 1];
-	Frame.ScreenSet.DeleteAll();
-
-	Frame.ScreenSet.GrowToFit(ScreenSet.GetCount());
-	for (int i = 0; i < ScreenSet.GetCount(); i++)
-		{
-		const ICCItem &Entry = *ScreenSet.GetElement(i);
-		if (Entry.IsNil())
-			continue;
-
-		SScreenSetTab &NewTab = *Frame.ScreenSet.Insert();
-		NewTab.sID = Entry.GetStringAt(CONSTLIT("id"), strPatternSubst(CONSTLIT("tab.%d"), i));
-		NewTab.sName = Entry.GetStringAt(CONSTLIT("label"), strPatternSubst(CONSTLIT("Tab %d"), i));
-		NewTab.sScreen = Entry.GetStringAt(CONSTLIT("screen"));
-		NewTab.sPane = Entry.GetStringAt(CONSTLIT("pane"));
-		ICCItem *pData = Entry.GetElement(CONSTLIT("data"));
-		if (pData)
-			NewTab.pData = ICCItemPtr(pData->Reference());
-
-		ICCItem *pEnabled = Entry.GetElement(CONSTLIT("enabled"));
-		if (pEnabled && pEnabled->IsNil() && Frame.ScreenSet.GetCount() > 1)
-			NewTab.bEnabled = false;
-		}
-
-	//	For now we assume that the current screen is the first screen in the 
-	//	screen set.
-
-	if (Frame.ScreenSet.GetCount() > 0)
-		Frame.sCurrentTab = Frame.ScreenSet[0].sID;
-	else
-		Frame.sCurrentTab = NULL_STR;
-	}

@@ -52,7 +52,7 @@ CGalacticMapSystemDetails::CGalacticMapSystemDetails (const CVisualPalette &VI, 
     {
     }
 
-bool CGalacticMapSystemDetails::CreateDetailsPane (CTopologyNode *pNode, IAnimatron **retpAni)
+bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, IAnimatron **retpAni)
 
 //  CreateDetailsPane
 //
@@ -65,7 +65,7 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (CTopologyNode *pNode, IAnimat
     //  Get the list of objects at this node
 
     TSortMap<CString, SObjDesc> Objs;
-    GetObjList(pNode, Objs);
+    GetObjList(Node, Objs);
 
     //  Create a sequencer which will be the root pane.
 
@@ -83,7 +83,7 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (CTopologyNode *pNode, IAnimat
     //  Add system information
 
     int cyHeader;
-    CreateSystemHeader(pRoot, pNode, &cyHeader);
+    CreateSystemHeader(pRoot, Node, &cyHeader);
 
 	//	Now that we know the size of the text, resize
 
@@ -99,7 +99,7 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (CTopologyNode *pNode, IAnimat
 
     //  Create a listbox which will hold all stations in the system.
 
-	if (Objs.GetCount() > 0 && pNode->IsKnown())
+	if (Objs.GetCount() > 0 && Node.IsKnown())
 		{
 		CAniListBox *pList;
 		m_VI.CreateListBox(pRoot, ID_STATION_LIST, rcList.left, rcList.top, RectWidth(rcList), RectHeight(rcList), 0, &pList);
@@ -266,25 +266,35 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
     if (Obj.fShowDestroyed)
         Modifiers.SetStationDamage(true);
 
-    int iVariant;
-    const CObjectImageArray &FullImage = Obj.pType->GetTypeImage().GetImage(ImageCtx, Obj.ImageSel, Modifiers, &iVariant);
-    CG32bitImage *pBmpImage = (FullImage.IsLoaded() ? &FullImage.GetImage(CONSTLIT("Galactic map")) : NULL);
-	RECT rcBmpImage = FullImage.GetImageRect(0, iVariant);
-    if (pBmpImage == NULL)
-        {
-        CStationType *pStationType = CStationType::AsType(Obj.pType);
-        if (pStationType == NULL)
-            return false;
+	TSharedPtr<CG32bitImage> pBmpImage;
+	RECT rcBmpImage;
+	if (CStationType *pStationType = CStationType::AsType(Obj.pType))
+		{
+		int xCenter, yCenter;
+		pBmpImage = pStationType->CreateFullImage(ImageCtx, Obj.ImageSel, Modifiers, rcBmpImage, xCenter, yCenter);
+		if (!pBmpImage)
+			{
+			//  If we can't find the standard image, see if we have a hero image.
 
-        //  If we can't find the standard image, see if we have a hero image.
+			int iVariant;
+			const CObjectImageArray &HeroImage = pStationType->GetHeroImage(CCompositeImageSelector(), Modifiers, &iVariant);
+			if (!HeroImage.IsLoaded())
+				return false;
 
-        const CObjectImageArray &HeroImage = pStationType->GetHeroImage(CCompositeImageSelector(), Modifiers, &iVariant);
-        pBmpImage = (HeroImage.IsLoaded() ? &HeroImage.GetImage(CONSTLIT("Galactic map")) : NULL);
-        if (pBmpImage == NULL)
-            return false;
+			pBmpImage = TSharedPtr<CG32bitImage>(HeroImage.GetImage(CONSTLIT("Galactic map")).AddRef());
+			rcBmpImage = HeroImage.GetImageRect(0, iVariant);
+			}
+		}
+	else
+		{
+		int iVariant;
+		const CObjectImageArray &FullImage = Obj.pType->GetTypeImage().GetImage(ImageCtx, Obj.ImageSel, Modifiers, &iVariant);
+		if (!FullImage.IsLoaded())
+			return false;
 
-        rcBmpImage = HeroImage.GetImageRect(0, iVariant);
-        }
+		pBmpImage = TSharedPtr<CG32bitImage>(FullImage.GetImage(CONSTLIT("Galactic map")).AddRef());
+		rcBmpImage = FullImage.GetImageRect(0, iVariant);
+		}
 
     int iSize = Max(RectWidth(rcBmpImage), RectHeight(rcBmpImage));
     if (iSize <= 0)
@@ -317,7 +327,7 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
     return true;
     }
 
-void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, CTopologyNode *pTopology, int *retcyHeight) const
+void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, const CTopologyNode &Node, int *retcyHeight) const
 
 //  CreateSystemHeader
 //
@@ -325,7 +335,7 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
 
     {
 	SSystemHeader Header;
-	GetSystemHeaderData(pTopology, Header);
+	GetSystemHeaderData(Node, Header);
 
     const CG16bitFont &TitleFont = m_VI.GetFont(fontHeader);
     const CG16bitFont &DescFont = m_VI.GetFont(fontMedium);
@@ -394,6 +404,17 @@ void CGalacticMapSystemDetails::GetObjAttribs (const CObjectTracker::SObjEntry &
 //	Returns attributes for the object.
 
 	{
+	//	Blacklisted
+
+	if (Obj.fPlayerBlacklisted)
+		{
+		CCartoucheBlock::SCartoucheDesc *pEntry = retAttribs.Insert();
+		pEntry->sText = CONSTLIT("blacklisted");
+
+		pEntry->rgbBack = m_VI.GetColor(colorAreaDisadvantage);
+		pEntry->rgbColor = m_VI.GetColor(colorTextDisadvantage);
+		}
+
 	//	Add currency
 
 	CTradingDesc *pTrade = Obj.pType->GetTradingDesc();
@@ -410,7 +431,7 @@ void CGalacticMapSystemDetails::GetObjAttribs (const CObjectTracker::SObjEntry &
 		}
 	}
 
-bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CString, SObjDesc> &Results) const
+bool CGalacticMapSystemDetails::GetObjList (const CTopologyNode &Node, TSortMap<CString, SObjDesc> &Results) const
 
 //  GetObjList
 //
@@ -427,7 +448,7 @@ bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CStri
     //  Get the list of objects at this node
 
     TArray<CObjectTracker::SObjEntry> Objs;
-    g_pUniverse->GetGlobalObjects().GetGalacticMapObjects(pNode, Objs);
+    g_pUniverse->GetGlobalObjects().GetGalacticMapObjects(Node, Objs);
     if (Objs.GetCount() == 0)
         return false;
 
@@ -444,24 +465,23 @@ bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CStri
 		if (Objs[i].fEnemy && Objs[i].fShowDestroyed)
 			iDispSort = 4;
 
-		//	Friendly stations show first
-
-		else if (Objs[i].fFriendly)
-			iDispSort = 1;
-
-		//	Next are neutral stations
+		//	Friendly/neutral stations show first.
+		//
+		//	NOTE: We used to show neutral stations after all friendly ones, but
+		//	that caused things like Eternity Port to sort after all small 
+		//	friendly stations.
 
 		else if (!Objs[i].fEnemy)
-			iDispSort = 2;
+			iDispSort = 1;
 
 		//	And then enemy stations
 
 		else
 			iDispSort = 3;
 
-        //  Higher level stations go first
+        //  Higher level stations go first (but only for enemy stations)
 
-        int iLevelSort = (MAX_ITEM_LEVEL + 1 - Objs[i].pType->GetLevel());
+        int iLevelSort = (iDispSort == 1 ? 0 : (MAX_ITEM_LEVEL + 1 - Objs[i].pType->GetLevel()));
 
 		//	Size is next
 
@@ -494,7 +514,7 @@ bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CStri
     return true;
     }
 
-void CGalacticMapSystemDetails::GetSystemHeaderData (CTopologyNode *pNode, SSystemHeader &Header) const
+void CGalacticMapSystemDetails::GetSystemHeaderData (const CTopologyNode &Node, SSystemHeader &Header) const
 
 //	GetSystemHeaderData
 //
@@ -504,20 +524,20 @@ void CGalacticMapSystemDetails::GetSystemHeaderData (CTopologyNode *pNode, SSyst
 	//	Title is either the system name or "Unknown" if we don't know about this
 	//	system.
 
-	if (pNode->IsKnown())
-		Header.sTitle = pNode->GetSystemName();
+	if (Node.IsKnown())
+		Header.sTitle = Node.GetSystemName();
 	else
 		Header.sTitle = CONSTLIT("Unknown");
 
 	//	Compuse import/export data
 
-	if (pNode->IsKnown())
-		Header.sDetails = pNode->GetTradingEconomy().GetDescription();
+	if (Node.IsKnown())
+		Header.sDetails = Node.GetTradingEconomy().GetDescription();
 
     //  Compose a string indicating when we visited.
 
     CString sVisit;
-    DWORD dwLastVisit = pNode->GetLastVisitedTime();
+    DWORD dwLastVisit = Node.GetLastVisitedTime();
     if (dwLastVisit == 0xffffffff)
         sVisit = CONSTLIT("You've never visited this system.");
     else if (dwLastVisit == (DWORD)g_pUniverse->GetTicks())
@@ -540,13 +560,13 @@ void CGalacticMapSystemDetails::GetSystemHeaderData (CTopologyNode *pNode, SSyst
 		//	System level
 
 		CCartoucheBlock::SCartoucheDesc *pEntry = Header.Attribs.Insert();
-		pEntry->sText = strPatternSubst(CONSTLIT("Level %d"), pNode->GetLevel());
+		pEntry->sText = strPatternSubst(CONSTLIT("Level %d"), Node.GetLevel());
 		pEntry->rgbBack = RGB_MODIFIER_NORMAL_BACKGROUND;
 		pEntry->rgbColor = RGB_MODIFIER_NORMAL_TEXT;
 
 		//	Details
 
-		Header.sDetails = strPatternSubst(CONSTLIT("%s\n%s: %s"), Header.sDetails, pNode->GetID(), pNode->GetAttributes());
+		Header.sDetails = strPatternSubst(CONSTLIT("%s\n%s: %s"), Header.sDetails, Node.GetID(), Node.GetAttributes());
 		}
 	}
 
