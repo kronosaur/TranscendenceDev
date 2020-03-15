@@ -75,7 +75,7 @@ class CPaintHelper
 
 		static void PaintArrow (CG32bitImage &Dest, int x, int y, int iDirection, CG32bitPixel rgbColor);
 		static void PaintArrowText (CG32bitImage &Dest, int x, int y, int iDirection, const CString &sText, const CG16bitFont &Font, CG32bitPixel rgbColor);
-		static void PaintScaledImage (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, CG32bitImage &Src, const RECT &rcSrc, Metric rScale = 1.0);
+		static void PaintScaledImage (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, const CG32bitImage &Src, const RECT &rcSrc, Metric rScale = 1.0);
 		static void PaintStatusBar (CG32bitImage &Dest, int x, int y, int iTick, CG32bitPixel rgbColor, const CString &sLabel, int iPos, int iMaxPos = 100, int *retcyHeight = NULL);
 		static void PaintTargetHighlight (CG32bitImage &Dest, int x, int y, int iTick, int iRadius, int iRingSpacing, int iDelay, CG32bitPixel rgbColor);
 	};
@@ -92,6 +92,7 @@ class CRTFText
 
 		CRTFText (const CString &sText = NULL_STR, const IFontTable *pFontTable = NULL);
 
+		int CalcHeight (int cxWidth) const;
 		void Format (const RECT &rcRect) const;
 		void GetBounds (const RECT &rcRect, RECT *retrcRect) const;
 		void Paint (CG32bitImage &Dest, const RECT &rcRect) const;

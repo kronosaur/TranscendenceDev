@@ -46,7 +46,7 @@
 		<Encounter
 				systemCriteria=			"+urakSpace;"
 				systemAffinity=			"+envAir; -envFire;"
-				levelFrequency=			"-cuv- ----- ----- ----- -----"
+				levelFrequency=			"rcuv- ----- ----- ----- -----"
 
 				locationCriteria=		"-innerSystem, -void"
 				enemyExclusionRadius=	"50"
@@ -101,10 +101,6 @@
 			sovereign=			"&svUrakWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
-			multiHull=			"true"
-			armorID=			"&itUrakArmorLight;"
-			hitPoints=			"120"
-            regen=              "1"
 			fireRateAdj=		"60"
 			explosionType=		"&vtKineticExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -117,7 +113,7 @@
 		<Encounter
 				systemCriteria=			"+urakSpace;"
 				systemAffinity=			"+envAir; -envFire;"
-				levelFrequency=			"--cuv ----- ----- ----- -----"
+				levelFrequency=			"-vcuv ----- ----- ----- -----"
 
 				locationCriteria=		"+outerSystem"
 				enemyExclusionRadius=	"50"
@@ -125,6 +121,14 @@
 
 		<Image			imageID="&rsStations3;" imageX="0" imageY="608" imageWidth="192" imageHeight="192"/>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itUrakArmorLight;"
+				hitPoints=		"120"
+				regen=			"1"
+				/>
+		
 		<Devices>
 			<Device deviceID="&itUrakHowitzer;" omnidirectional="true"/>
 		</Devices>
@@ -190,7 +194,7 @@
 		<Encounter
 				systemCriteria=			"+urakSpace;"
 				systemAffinity=			"+envAir; -envFire;"
-				levelFrequency=			"---cu v---- ----- ----- -----"
+				levelFrequency=			"--vcu v---- ----- ----- -----"
 
 				locationCriteria=		"-innerSystem, -void"
 				enemyExclusionRadius=	"60"

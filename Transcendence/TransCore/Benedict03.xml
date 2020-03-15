@@ -15,7 +15,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBenedictToKorolov;"
-			name=				"Benedict to Korolov"
+			name=				"Benedict 03: Visit Korolov Shipping"
 			attributes=			""
 
 			level=				"1"
@@ -23,11 +23,6 @@
 			maxAppearing=		"1"
 			noDebrief=			"true"
 			>
-
-		<StaticData>
-			<sequence>25</sequence>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(block (korolovDesc)
@@ -61,7 +56,6 @@
 			<OnAccepted>
 				(block Nil
 					(msnRegisterForEvents gSource gPlayerShip)
-					(benedict_missionAccepted gSource)
 					)
 			</OnAccepted>
 
@@ -83,7 +77,7 @@
 		
 		<Language>
 			<Text id="Name">
-				"Visit Korolov Shipping"
+				Visit Korolov Shipping
 			</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
@@ -92,14 +86,14 @@
 			</Text>
 			<Text id="textSummary">
 
-					Travel to the %systemName% system and visit Korolov Shipping.
+				Travel to the %systemName% system and visit Korolov Shipping.
 
-					System: %systemName%\n
-					Payment: None
+				System: %systemName%\n
+				Payment: None
 
 			</Text>
 			<Text id="SuccessMsg">
-				"Mission complete!"
+				Mission complete!
 			</Text>
 		</Language>
 	</MissionType>

@@ -186,7 +186,9 @@ bool CDriveClass::FindDataField (const CString &sField, CString *retsValue)
 //	Returns meta-data
 
 	{
-    const SScalableStats *pDesc = GetDesc(CItemCtx());
+	CItem Item(GetItemType(), 1);
+	const CDeviceItem DeviceItem = Item.AsDeviceItem();
+    const SScalableStats *pDesc = GetDesc(DeviceItem);
     if (pDesc == NULL)
         return false;
 

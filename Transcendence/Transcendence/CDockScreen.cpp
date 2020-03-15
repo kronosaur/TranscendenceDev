@@ -62,7 +62,8 @@ const int EXTRA_BACKGROUND_IMAGE =	128;
 #define ALIGN_MIDDLE				CONSTLIT("middle")
 
 CDockScreen::CDockScreen (CGameSession &Session) : 
-        m_Session(Session)
+        m_Session(Session),
+		m_CurrentPane(*this)
 
 //	CDockScreen constructor
 
@@ -1522,6 +1523,16 @@ ALERROR CDockScreen::ReportError (const CString &sError)
 	::kernelDebugLogString(sNewError);
 
 	return ERR_FAIL;
+	}
+
+void CDockScreen::OnExecuteActionDone (void)
+
+//	OnExecuteActionDone
+//
+//	Called by the pane when it is done executing an action.
+
+	{
+	m_Session.OnExecuteActionDone();
 	}
 
 void CDockScreen::OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const

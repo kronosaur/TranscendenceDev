@@ -17,27 +17,33 @@ class CDetailList
 		static constexpr DWORD FORMAT_PLACE_CENTER =		0x00000008;	//	Area placed at center of rect
 		static constexpr DWORD FORMAT_ANTI_MIRROR_COLUMNS =	0x00000010;	//	Detail icons are outside
 		static constexpr DWORD FORMAT_MIRROR_COLUMNS =		0x00000020;	//	Detail icons are on center line
+		static constexpr DWORD FORMAT_SINGLE_COLUMN =		0x00000040;	//	Single column
 
 		CDetailList (const CVisualPalette &VI) : m_VI(VI)
 			{ }
 
-		void Format (const RECT &rcRect, DWORD dwFlags = 0, int *retcyHeight = NULL);
+		void CleanUp (void) { m_List.DeleteAll(); }
+		void Format (int cxWidth, int cyHeight = 0, DWORD dwFlags = 0, int *retcyHeight = NULL);
 		void Load (ICCItem *pDetails);
-		void Paint (CG32bitImage &Dest) const;
-        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+		void Paint (CG32bitImage &Dest, int x, int y) const;
+		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		
 	private:
 		struct SDetailEntry
 			{
 			CString sTitle;
 			CG32bitImage *pIcon = NULL;
-			RECT rcIcon = { 0, 0, 0, 0 };
+			RECT rcIconSrc = { 0 };
 			CRTFText Desc;
 
 			bool bAlignRight = false;
-			RECT rcRect = { 0, 0, 0, 0 };
+			RECT rcRect = { 0 };
 			int cyText = 0;
 			int cyRect = 0;
+
+			RECT rcIcon = { 0 };					//	Where to paint icon
+			RECT rcTitle = { 0 };					//	Where to paint title
+			RECT rcDesc = { 0 };					//	Where to paint description
 			};
 
 		static constexpr int SPACING_X = 8;
@@ -48,28 +54,46 @@ class CDetailList
 		static constexpr DWORD FORMAT_LEFT_COLUMN =			0x00000000;
 		static constexpr DWORD FORMAT_RIGHT_COLUMN =		0x10000000;
 
-		void CalcColumnRects (const RECT &rcRect, int cxCol, int cyCol1, int cyCol2, DWORD dwFlags, RECT &retCol1, RECT &retCol2) const;
+		void CalcColumnRects (int cxWidth, int cyHeight, int cxCol, int cyCol1, int cyCol2, DWORD dwFlags, RECT &retCol1, RECT &retCol2) const;
 		void CalcColumnRect (const RECT &rcArea, int xCol, int cxCol, int cyCol, DWORD dwFlags, RECT &retCol) const;
 		void FormatColumn (int iStart, int iEnd, const RECT &rcRect, DWORD dwFlags);
+		void FormatDoubleColumns (int cxWidth, int cyHeight, DWORD dwFlags = 0, int *retcyHeight = NULL);
+		void FormatSingleColumn (int cxWidth, int cyHeight, DWORD dwFlags = 0, int *retcyHeight = NULL);
+
+		static void AlignRect (const RECT &rcFrame, int cxWidth, int cyHeight, DWORD dwAlign, RECT &rcResult);
 
 		const CVisualPalette &m_VI;
-        CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
 		TArray<SDetailEntry> m_List;
 	};
 
 class CDetailArea
 	{
 	public:
+		enum EStyles
+			{
+			styleDefault,
+			styleStacked,
+			styleFull,
+			styleStats,
+			};
+
 		CDetailArea (CUniverse &Universe, const CVisualPalette &VI, const CDockScreenVisuals &Theme) :
 				m_Universe(Universe),
 				m_VI(VI),
-				m_Theme(Theme)
+				m_Theme(Theme),
+				m_Details(VI)
 			{ }
 
-		void Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData);
-        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBack = rgbColor; }
-        void SetColor (CG32bitPixel rgbColor) { m_rgbText = rgbColor; }
-		void SetTabRegion (int cyHeight) { m_cyTabRegion = cyHeight; }
+		AlignmentStyles GetAlignment (void) const { return GetAlignment(m_pData); }
+		ICCItem *GetData (void) const { return m_pData; }
+		bool IsEmpty (void) const { return (!m_pData || m_pData->IsNil()); }
+		EStyles GetStyle (void) const { return GetStyle(m_pData); }
+		void Paint (CG32bitImage &Dest, const RECT &rcRect) const;
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBack = rgbColor; }
+		void SetColor (CG32bitPixel rgbColor) { m_rgbText = rgbColor; }
+		void SetData (ICCItem *pData) { m_pData = pData; m_bFormatted = false; }
+		void SetTabRegion (int cyHeight) { m_cyTabRegion = cyHeight; m_bFormatted = false; }
 
 	private:
 		static constexpr int BORDER_RADIUS = 4;
@@ -79,27 +103,44 @@ class CDetailArea
 		static constexpr int SPACING_Y = 8;
 		static constexpr int BACKGROUND_IMAGE_MARGIN_Y = 24;
 
-		enum EStyles
-			{
-			styleDefault,
-			styleStacked,
-			styleFull,
-			};
+		static constexpr CG32bitPixel RGB_BADGE = CG32bitPixel(255, 255, 255, 25);
 
-		EStyles GetStyle (ICCItem *pData);
-		void PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32bitPixel rgbColor);
-		void PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, int cyExtraMargin = 0);
-		void PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale = 1.0);
+		bool Format (const RECT &rcRect) const;
+		static AlignmentStyles GetAlignment (ICCItem *pData);
+		static EStyles GetStyle (ICCItem *pData);
+		void PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32bitPixel rgbColor) const;
+		void PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, int cyExtraMargin = 0) const;
+		void PaintBadgeImage (CG32bitImage &Dest, const RECT &rcDest) const;
+		void PaintScaledImage (CG32bitImage &Dest, const RECT &rcDest, const ICCItem &ImageDesc) const;
+		void PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale = 1.0) const;
 
 		CUniverse &m_Universe;
 		const CVisualPalette &m_VI;
 		const CDockScreenVisuals &m_Theme;
+
+		ICCItemPtr m_pData;
 
 		CG32bitPixel m_rgbText = CG32bitPixel(255, 255, 255);
 		CG32bitPixel m_rgbBack = CG32bitPixel(0, 0, 0);
 		int m_cxLargeIcon = DEFAULT_LARGE_ICON_WIDTH;
 		int m_cyLargeIcon = DEFAULT_LARGE_ICON_HEIGHT;
 		int m_cyTabRegion = 0;
+
+		mutable bool m_bFormatted = false;
+
+		//	These are derived from m_pData
+
+		mutable EStyles m_iStyle = styleDefault;
+		mutable CString m_sTitle;
+		mutable CDetailList m_Details;
+		mutable AlignmentStyles m_iAlignment = alignTop;
+
+		//	These are computed in format
+
+		mutable RECT m_rcFrame = { 0 };
+		mutable RECT m_rcDetails = { 0 };
+		mutable RECT m_rcIcon = { 0 };
+		mutable RECT m_rcTitle = { 0 };
 	};
 
 class CGCarouselArea : public AGArea
@@ -124,8 +165,8 @@ class CGCarouselArea : public AGArea
 		bool MoveCursorBack (void);
 		bool MoveCursorForward (void);
 		void ResetCursor (void) { if (m_pListData) m_pListData->ResetCursor(); Invalidate(); }
-        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }
 		void SetList (ICCItem *pList);
 		bool SetStyle (const CString &sStyle);
@@ -171,8 +212,8 @@ class CGCarouselArea : public AGArea
 
 		const CVisualPalette &m_VI;
 		const CDockScreenVisuals &m_Theme;
-        CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
-        CG32bitPixel m_rgbBackColor = CG32bitPixel(0, 0, 0);
+		CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbBackColor = CG32bitPixel(0, 0, 0);
 		CG32bitPixel m_rgbDisabledText = CG32bitPixel(128,128,128);
 		int m_xOffset = 0;								//	Painting offset for smooth scroll
 		int m_xFirst = 0;								//	coord of first row relative to list rect
@@ -191,36 +232,22 @@ class CGDetailsArea : public AGArea
 	public:
 		CGDetailsArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme);
 
-		void CleanUp (void);
-		ICCItem *GetData (void) const { return m_pData; }
-		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
-		void SetData (ICCItem *pList) { m_pData = pList; }
-		void SetTabRegion (int cyHeight) { m_cyTabRegions = cyHeight; Invalidate(); }
+		void CleanUp (void) { m_Painter.SetData(NULL); }
+		ICCItem *GetData (void) const { return m_Painter.GetData(); }
+		const CDetailArea &GetDetail (void) const { return m_Painter; }
+		void SetBackColor (CG32bitPixel rgbColor) { m_Painter.SetBackColor(rgbColor); }
+		void SetColor (CG32bitPixel rgbColor) { m_Painter.SetColor(rgbColor); }
+		void SetData (ICCItem *pList) { m_Painter.SetData(pList); }
+		void SetTabRegion (int cyHeight) { m_Painter.SetTabRegion(cyHeight); Invalidate(); }
 
 		//	AGArea virtuals
 
 		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
 
 	private:
-		static const int BORDER_RADIUS = 4;
-		static const int SPACING_X = 8;
-		static const int SPACING_Y = 8;
-		static const int LARGE_ICON_HEIGHT = 320;
-		static const int LARGE_ICON_WIDTH = 320;
-		static const int DETAIL_ICON_HEIGHT = 48;
-		static const int DETAIL_ICON_WIDTH = 48;
-
-		ICCItemPtr m_pData;
-
 		const CVisualPalette &m_VI;
 		const CDockScreenVisuals &m_Theme;
-        CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
-        CG32bitPixel m_rgbBackColor = CG32bitPixel(0, 0, 0);
-		CG32bitPixel m_rgbDisabledText = CG32bitPixel(128,128,128);
-		int m_cxLargeIcon = LARGE_ICON_WIDTH;			//	Large content icon
-		int m_cyLargeIcon = LARGE_ICON_HEIGHT;			//	Large content icon
-		int m_cyTabRegions = 0;
+		CDetailArea m_Painter;
 	};
 
 class CGDrawArea : public AGArea
@@ -247,8 +274,8 @@ class CGItemDisplayArea : public AGArea
 	public:
 		CGItemDisplayArea (void);
 
-        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
-        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
+		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
 		void SetItem (CSpaceObject *pSource, const CItem &Item) { m_pSource = pSource; m_Item = Item; Invalidate(); }
 		void SetText (const CString &sTitle, const CString &sDesc) { m_sTitle = sTitle; m_sDesc = sDesc; Invalidate(); }
 
@@ -263,8 +290,8 @@ class CGItemDisplayArea : public AGArea
 		CString m_sTitle;					//	If no item
 		CString m_sDesc;					//	If no item
 
-        CG32bitPixel m_rgbTextColor;
-        CG32bitPixel m_rgbBackColor;
+		CG32bitPixel m_rgbTextColor;
+		CG32bitPixel m_rgbBackColor;
 
 		CItemPainter m_ItemPainter;			//	Used to paint item
 	};
@@ -275,8 +302,9 @@ class CGItemListDisplayArea : public AGArea
 		CGItemListDisplayArea (void);
 
 		bool InitFromDesc (ICCItem *pDesc);
-        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+		void SetDisplayAsKnown (bool bValue = true) { m_bActualItems = bValue; Invalidate(); }
 		void SetItemList (CSpaceObject *pSource, const CItemList &ItemList);
 		void SetText (const CString &sTitle, const CString &sDesc) { m_sTitle = sTitle; m_sDesc = sDesc; m_ItemList.DeleteAll(); Invalidate(); }
 
@@ -308,6 +336,8 @@ class CGItemListDisplayArea : public AGArea
 		CG32bitPixel m_rgbTextColor;
 		CG32bitPixel m_rgbBackColor;
 
+		bool m_bActualItems = false;			//	Show actual items, even if unknown
+
 		//	Initialized on Justify
 
 		int m_cxBox;
@@ -330,23 +360,28 @@ class CGItemListArea : public AGArea
 		void DeleteAtCursor (int iCount) { if (m_pListData) m_pListData->DeleteAtCursor(iCount); InitRowDesc(); Invalidate(); }
 		int GetCursor (void) const { return (m_pListData ? m_pListData->GetCursor() : -1); }
 		ICCItem *GetEntryAtCursor (void);
+		const CItem &GetItem (int iRow) const;
 		const CItem &GetItemAtCursor (void) { return (m_pListData ? m_pListData->GetItemAtCursor() : g_DummyItem); }
 		CItemListManipulator &GetItemListManipulator (void) { return (m_pListData ? m_pListData->GetItemListManipulator() : g_DummyItemListManipulator); }
 		IListData *GetList (void) const { return m_pListData; }
 		bool GetNextTab (DWORD *retdwID) const;
 		bool GetPrevTab (DWORD *retdwID) const;
+		int GetRowCount (void) const { return m_Rows.GetCount(); }
 		CSpaceObject *GetSource (void) { return (m_pListData ? m_pListData->GetSource() : NULL); }
 		bool IsCursorValid (void) const { return (m_pListData ? m_pListData->IsCursorValid() : false); }
 		bool IsDisplayAsKnown (void) const { return m_bActualItems; }
+		bool IsEnabled (int iRow) const { return !m_Rows[iRow].bDisabled; }
 		bool MoveCursorBack (void);
 		bool MoveCursorForward (void);
 		void MoveTabToFront (DWORD dwID);
-		void ResetCursor (void) { if (m_pListData) m_pListData->ResetCursor(); InitRowDesc(); Invalidate(); }
+		void ResetCursor (void) { if (m_pListData) m_pListData->ResetCursor(m_EnabledItems); InitRowDesc(); Invalidate(); }
 		void SelectTab (DWORD dwID);
-        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
-        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
+		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
 		void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }
 		void SetDisplayAsKnown (bool bValue = true) { m_bActualItems = bValue; InitRowDesc(); Invalidate(); }
+		void SetEnabled (int iRow, bool bEnabled = true) { m_Rows[iRow].bDisabled = !bEnabled; Invalidate(); }
+		void SetEnabledCriteria (const CItemCriteria &Criteria);
 		void SetFilter (const CItemCriteria &Filter) { if (m_pListData) m_pListData->SetFilter(Filter); InitRowDesc(); Invalidate(); }
 		void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
 		void SetIconHeight (int cyHeight) { m_cyIcon = cyHeight; }
@@ -379,10 +414,12 @@ class CGItemListArea : public AGArea
 
 		struct SRowDesc
 			{
-			int yPos;							//	Position of the row (sum of height of previous rows)
-			int cyHeight;						//	Height of this row
+			int yPos = 0;						//	Position of the row (sum of height of previous rows)
+			int cyHeight = 0;					//	Height of this row
+			bool bDisabled = false;				//	Entry is disabled
 
 			CItemPainter Painter;				//	Painter used for the item, which keeps some metrics.
+			CTilePainter CustomPainter;			//	Painter used for custom entries
 			};
 
 		struct STabDesc
@@ -397,28 +434,31 @@ class CGItemListArea : public AGArea
 			bool bDisabled;
 			};
 
-		static const int DEFAULT_ROW_HEIGHT =				96;
-		static const int ICON_WIDTH =						96;
-		static const int ICON_HEIGHT =						96;
+		static constexpr int DEFAULT_ROW_HEIGHT =			96;
+		static constexpr int ICON_WIDTH =					96;
+		static constexpr int ICON_HEIGHT =					96;
 
+		static constexpr CG32bitPixel RGB_SELECTED_DESC =	CG32bitPixel(200,200,200);
+		static constexpr CG32bitPixel RGB_NORMAL_DESC =		CG32bitPixel(128,128,128);
 
 		void InitRowHeight (int iRow, SRowDesc &RowDesc);
 		void InitRowDesc (void);
 		int FindRow (int y);
 		bool FindTab (DWORD dwID, int *retiIndex = NULL) const;
 		bool HitTestTabs (int x, int y, int *retiTab);
-		void PaintCustom (CG32bitImage &Dest, const RECT &rcRect, bool bSelected);
+		void PaintCustom (CG32bitImage &Dest, const SRowDesc &RowDesc, const RECT &rcRect, bool bSelected);
 		void PaintItem (CG32bitImage &Dest, const SRowDesc &RowDesc, const RECT &rcRect, bool bSelected);
 		void PaintTab (CG32bitImage &Dest, const STabDesc &Tab, const RECT &rcRect, bool bSelected, bool bHover);
 
 		IListData *m_pListData = NULL;
 		ListTypes m_iType = listNone;
+		CItemCriteria m_EnabledItems;
 
 		const CVisualPalette &m_VI;
 		const CUIResources *m_pUIRes = NULL;
 		const SFontTable *m_pFonts = NULL;
-        CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
-        CG32bitPixel m_rgbBackColor = CG32bitPixel(0, 0, 0);
+		CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbBackColor = CG32bitPixel(0, 0, 0);
 		int m_iOldCursor = -1;					//	Cursor pos
 		int m_yOffset = 0;						//	Painting offset for smooth scroll
 		int m_yFirst = 0;						//	coord of first row relative to list rect
@@ -505,7 +545,7 @@ class CGSelectorArea : public AGArea
 			configNone,
 
 			configArmor,
-            configDevices,
+			configDevices,
 			configMiscDevices,
 			configWeapons,
 			};
@@ -521,13 +561,13 @@ class CGSelectorArea : public AGArea
 			movePrev,						//	Move to previous region
 			};
 
-        struct SOptions
-            {
-            EConfigurations iConfig = configDevices;
-            CItemCriteria ItemCriteria = CItemCriteria(CItemCriteria::ALL);
-            bool bNoEmptySlots = false;
-            bool bAlwaysShowShields = false;
-            };
+		struct SOptions
+			{
+			EConfigurations iConfig = configDevices;
+			CItemCriteria ItemCriteria = CItemCriteria(CItemCriteria::ALL);
+			bool bNoEmptySlots = false;
+			bool bAlwaysShowShields = false;
+			};
 
 		CGSelectorArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme);
 		~CGSelectorArea (void);
@@ -541,11 +581,11 @@ class CGSelectorArea : public AGArea
 		bool MoveCursor (EDirections iDir);
 		void Refresh (void);
 		void ResetCursor (void) { m_iCursor = -1; Invalidate(); }
-        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		void SetCursor (int iIndex) { m_iCursor = iIndex; Invalidate(); }
 		void SetRegions (CSpaceObject *pSource, const SOptions &Options);
-        void SetSlotNameAtCursor (const CString &sName);
+		void SetSlotNameAtCursor (const CString &sName);
 		void SetTabRegion (int cyHeight) { m_cyTabRegion = cyHeight; }
 		void SyncCursor (void) { if (m_iCursor != -1 && m_iCursor >= m_Regions.GetCount()) m_iCursor = m_Regions.GetCount() - 1; }
 
@@ -583,7 +623,7 @@ class CGSelectorArea : public AGArea
 			CItemCtx *pItemCtx;				//	Item represented (may be NULL)
 			DeviceNames iSlotType;			//	Type of slot (if empty)
 			CString sSlotID;				//	ID of slot (may be NULL_STR)
-            CString sSlotName;              //  If empty
+			CString sSlotName;              //  If empty
 
 			int iSlotPosIndex;				//	Position index
 			RECT rcRect;					//	Location of region (always relative to the center
@@ -606,16 +646,16 @@ class CGSelectorArea : public AGArea
 
 		const CVisualPalette &m_VI;
 		const CDockScreenVisuals &m_Theme;
-        CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
-        CG32bitPixel m_rgbBackColor;
+		CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbBackColor;
 		int m_cyTabRegion = 0;
 
 		CSpaceObject *m_pSource = NULL;
-        CItemCriteria m_Criteria;
+		CItemCriteria m_Criteria;
 		EConfigurations m_iConfig = configNone;
-        bool m_bNoEmptySlots = false;		//  Do not show empty slots
-        bool m_bAlwaysShowShields = false;	//  Always show shields in armor selected, even
-                                            //      if not part of criteria
+		bool m_bNoEmptySlots = false;		//  Do not show empty slots
+		bool m_bAlwaysShowShields = false;	//  Always show shields in armor selected, even
+											//      if not part of criteria
 
 		TArray<SEntry> m_Regions;
 		int m_iCursor = -1;
@@ -633,8 +673,8 @@ class CGTabArea : public AGArea
 		const CString &GetNextTabID (void) const;
 		const CString &GetPrevTabID (void) const;
 		const CString &GetTabID (int iIndex) const { return m_Tabs[iIndex].sID; }
-        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
-        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
+		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
 		void SetCurTab (const CString &sID);
 		void SetNoNavigation (bool bValue = true) { m_bNoNavigation = bValue; }
 
@@ -668,7 +708,7 @@ class CGTabArea : public AGArea
 		bool m_bNoNavigation = false;
 
 		int m_cyTabHeight = DEFAULT_TAB_HEIGHT;
-        CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
-        CG32bitPixel m_rgbBackColor = CG32bitPixel(0, 0, 0);
+		CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbBackColor = CG32bitPixel(0, 0, 0);
 	};
 

@@ -99,6 +99,8 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 
 #define ORDER_DOCKED							CONSTLIT("docked")
 
+#define PROPERTY_CORE_MINING_DIFFICULTY			CONSTLIT("core.miningDifficulty")
+
 #define SPECIAL_CHARACTER						CONSTLIT("character:")
 #define SPECIAL_DATA							CONSTLIT("data:")
 #define SPECIAL_IS_PLANET						CONSTLIT("isPlanet:")
@@ -159,9 +161,6 @@ SInstallItemResultsData INSTALL_ITEM_RESULTS_TABLE[] =
 		{	"replacementRequired",		-1,		9	},
 		{	"replacementRequired",		-1,		4	},
 	};
-
-CSpaceObject *CSpaceObject::m_pObjInUpdate = NULL;
-bool CSpaceObject::m_bObjDestroyed = false;
 
 CString ParseParam (char **ioPos);
 
@@ -229,7 +228,8 @@ CSpaceObject::CSpaceObject (CUniverse &Universe) :
 		m_fCollisionTestNeeded(false),
 		m_fHasDockScreenMaybe(false),
 		m_fAutoClearDestinationOnGate(false),
-		m_f3DExtra(false)
+		m_f3DExtra(false),
+		m_fAutoCreatedPorts(false)
 
 //	CSpaceObject constructor
 
@@ -626,7 +626,7 @@ void CSpaceObject::CalcOverlayPos (COverlayType *pOverlayType, const CVector &vP
 	{
 	Metric rRadius;
 	int iDirection = VectorToPolar(vPos - GetPos(), &rRadius);
-	int iRotationOrigin = ((pOverlayType && pOverlayType->RotatesWithShip()) ? GetRotation() : 0);
+	int iRotationOrigin = ((pOverlayType && pOverlayType->RotatesWithSource(*this)) ? GetRotation() : 0);
 
 	if (retiPosAngle)
 		*retiPosAngle = AngleMod(iDirection - iRotationOrigin);
@@ -654,6 +654,20 @@ int CSpaceObject::CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed)
 
 	CVector vInterceptPoint = vPos + vVel * rTimeToIntercept;
 	return VectorToPolar(vInterceptPoint);
+	}
+
+int CSpaceObject::CalcMiningDifficulty (EAsteroidType iType) const
+
+//	CalcMiningDifficulty
+//
+//	Compute mining difficult based on asteroid (0-100).
+
+	{
+	ICCItemPtr pValue = GetTypeProperty(CCodeChainCtx(GetUniverse()), PROPERTY_CORE_MINING_DIFFICULTY);
+	if (!pValue->IsNil())
+		return Max(0, Min(pValue->GetIntegerValue(), 100));
+
+	return CAsteroidDesc::GetDefaultMiningDifficulty(iType);
 	}
 
 DWORD CSpaceObject::CalcSRSVisibility (SViewportPaintCtx &Ctx) const
@@ -1091,6 +1105,26 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
     m_Data.Copy(pSource->m_Data, Options);
 	}
 
+void CSpaceObject::CreateDefaultDockingPorts (void)
+
+//	CreateDefaultDockingPorts
+//
+//	Called to create docking ports on objects that don't already have them. This
+//	can be overridden by subclasses to control port position, etc.
+
+	{
+	if (CDockingPorts *pDockingPorts = GetDockingPorts())
+		{
+		if (pDockingPorts->GetPortCount() == 0)
+			{
+			constexpr int PORT_COUNT = 4;
+			int iRadius = GetHitSizePixels() / 2;
+
+			pDockingPorts->InitPorts(this, PORT_COUNT, iRadius * g_KlicksPerPixel);
+			}
+		}
+	}
+
 CSpaceObject *CSpaceObject::CreateFromClassID (CUniverse &Universe, DWORD dwClass)
 
 //	CreateFromClassID
@@ -1300,6 +1334,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fHasOnOrderChangedEvent =	((dwLoad & 0x00000008) ? true : false);
 	pObj->m_fManualAnchor =				((dwLoad & 0x00000010) ? true : false);
 	pObj->m_f3DExtra =					((dwLoad & 0x00000020) ? true : false);
+	pObj->m_fAutoCreatedPorts =			((dwLoad & 0x00000040) ? true : false);
 
 	//	No need to save the following
 
@@ -1363,6 +1398,10 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 		pObj->m_fHasOnAttackedByPlayerEvent = pObj->FindEventHandler(CONSTLIT("OnAttackedByPlayer"));
 		pObj->m_fHasOnOrderChangedEvent = pObj->FindEventHandler(CONSTLIT("OnOrderChanged"));
 		}
+
+	//	Set event flags in case any events got added
+
+	pObj->SetEventFlags();
 
 	//	Done
 
@@ -1592,11 +1631,6 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 
 	if (retpWreck)
 		*retpWreck = Ctx.pWreck;
-
-	//	See if we are in the middle of update
-
-	if (m_pObjInUpdate == this)
-		m_bObjDestroyed = true;
 
 	//	If resurrection is pending, then clear the destroyed flag. Otherwise, 
 	//	wingmen might leave the player.
@@ -2807,7 +2841,7 @@ void CSpaceObject::FireOnLoad (SLoadCtx &Ctx)
 		}
 	}
 
-void CSpaceObject::FireOnMining (const SDamageCtx &Ctx)
+void CSpaceObject::FireOnMining (const SDamageCtx &Ctx, EAsteroidType iType)
 
 //	FireOnMining
 //
@@ -2815,25 +2849,51 @@ void CSpaceObject::FireOnMining (const SDamageCtx &Ctx)
 
 	{
 	SEventHandlerDesc Event;
+	if (!FindEventHandler(ON_MINING_EVENT, &Event))
+		return;
 
-	if (FindEventHandler(ON_MINING_EVENT, &Event))
-		{
-		CCodeChainCtx CCCtx(GetUniverse());
-		CCCtx.DefineContainingType(this);
-		CCCtx.SaveAndDefineSourceVar(this);
-		CCCtx.DefineSpaceObject(CONSTLIT("aMiner"), Ctx.Attacker.GetObj());
-		CCCtx.DefineVector(CONSTLIT("aMinePos"), Ctx.vHitPos);
-		CCCtx.DefineInteger(CONSTLIT("aMineDir"), Ctx.iDirection);
-		CCCtx.DefineInteger(CONSTLIT("aMineProbability"), Ctx.Damage.GetMiningAdj());
-		CCCtx.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
-		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+	//	Compute some mining values:
+	//
+	//	Mining difficulty 0-100, based on properties or default value
+	//		from asteroid type
+	//
+	//	Max ore level, based on damage type
+	//
+	//	Chance of success
+	//
+	//	Yield, based on mining level, asteroid type, and weapon type.
 
-		ICCItem *pResult = CCCtx.Run(Event);
-		if (pResult->IsError())
-			ReportEventError(ON_MINING_EVENT, pResult);
-		CCCtx.Discard(pResult);
-		}
+	//	Figure out the mining difficulty.
+
+	const int iMiningLevel = Ctx.Damage.GetMiningAdj();
+	const int iMiningDifficulty = CalcMiningDifficulty(iType);
+
+	CAsteroidDesc::SMiningStats MiningStats;
+	CAsteroidDesc::CalcMining(iMiningLevel, iMiningDifficulty, iType, Ctx, MiningStats);
+
+	//	Run
+
+	CCodeChainCtx CCX(GetUniverse());
+	CCX.DefineContainingType(this);
+	CCX.SaveAndDefineSourceVar(this);
+	CCX.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
+	CCX.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+	CCX.DefineSpaceObject(CONSTLIT("aMiner"), Ctx.Attacker.GetObj());
+	CCX.DefineVector(CONSTLIT("aMinePos"), Ctx.vHitPos);
+	CCX.DefineInteger(CONSTLIT("aMineDir"), Ctx.iDirection);
+	CCX.DefineInteger(CONSTLIT("aMineProbability"), iMiningLevel);
+	CCX.DefineInteger(CONSTLIT("aMineDifficulty"), iMiningDifficulty);
+	CCX.DefineString(CONSTLIT("aAsteroidType"), CAsteroidDesc::CompositionID(iType));
+	CCX.DefineInteger(CONSTLIT("aSuccessChance"), MiningStats.iSuccessChance);
+	CCX.DefineInteger(CONSTLIT("aMaxOreLevel"), MiningStats.iMaxOreLevel);
+	CCX.DefineDouble(CONSTLIT("aYieldAdj"), MiningStats.rYieldAdj);
+	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
+	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
+	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_MINING_EVENT, pResult);
 	}
 
 void CSpaceObject::FireOnMissionAccepted (CMission *pMission)
@@ -3788,6 +3848,8 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 //	NOTE: Caller must discard *retpData.
 
 	{
+	CDesignType *pLocalScreens = GetType();
+
 	//	First see if any global types override this
 
 	CDockScreenSys::SSelector Screen;
@@ -3800,9 +3862,13 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	if (pOverlays = GetOverlays())
 		{
 		CDockScreenSys::SSelector OverlayScreen;
-		if (pOverlays->FireGetDockScreen(this, &OverlayScreen)
+		CDesignType *pOverlayLocalScreens;
+		if (pOverlays->FireGetDockScreen(this, &OverlayScreen, &pOverlayLocalScreens)
 				&& OverlayScreen.iPriority > Screen.iPriority)
+			{
 			Screen = OverlayScreen;
+			pLocalScreens = pOverlayLocalScreens;
+			}
 		}
 
 	//	Next see if we have an event that handles this
@@ -3810,14 +3876,17 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	CDockScreenSys::SSelector CustomScreen;
 	if (FireGetDockScreen(&CustomScreen)
 			&& CustomScreen.iPriority > Screen.iPriority)
+		{
 		Screen = CustomScreen;
+		pLocalScreens = GetType();
+		}
 
 	//	If an event has overridden the dock screen, then resolve
 	//	the screen now.
 
 	if (Screen.iPriority != -1)
 		{
-		CDesignType *pScreen = GetDesign().ResolveDockScreen(GetType(), Screen.sScreen, retsScreen);
+		CDesignType *pScreen = GetDesign().ResolveDockScreen(pLocalScreens, Screen.sScreen, retsScreen);
 		if (pScreen)
 			{
 			if (retpData)
@@ -4298,13 +4367,13 @@ void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *ret
 
 	//	Include stations
 
-	bool bIncludeStations = ((dwFlags & CSpaceObjectTargetList::FLAG_INCLUDE_STATIONS) ? true : false);
+	bool bIncludeStations = ((dwFlags & CTargetList::FLAG_INCLUDE_STATIONS) ? true : false);
 
 	//	If a ship has fired its weapon after this time, then it counts
 	//	as an aggressor
 
 	int iAggressorThreshold;
-	if (dwFlags & CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS)
+	if (dwFlags & CTargetList::FLAG_INCLUDE_NON_AGGRESSORS)
 		iAggressorThreshold = -1;
 	else
 		iAggressorThreshold = GetUniverse().GetTicks() - AGGRESSOR_THRESHOLD;
@@ -4448,6 +4517,17 @@ bool CSpaceObject::HasDockScreen (void) const
 			&& pOverlays->FireGetDockScreen(this))
 		return true;
 
+	//	If we don't have any docking screens so far (not even from overlays) and
+	//	if we don't have any docking ports, then don't bother calling
+	//	<GetGlobalDockScreen>. The performance hit of calling these global 
+	//	events at create time (e.g., on asteroids) is too much.
+
+	if (const CDockingPorts *pDockingPorts = GetDockingPorts())
+		{
+		if (pDockingPorts->GetPortCount() == 0)
+			return false;
+		}
+
 	//	If we still have no screens, we call <GetGlobalDockScreen>, but we're
 	//	only interested in non-override screens. Override screens are screens
 	//	like decontamination screens, which should only show up if the station
@@ -4492,6 +4572,31 @@ bool CSpaceObject::HasFuelItem (void)
 		{
 		const CItem &Item = Search.GetItemAtCursor();
 		if (Item.GetType()->IsFuel())
+			return true;
+		}
+
+	return false;
+	}
+
+bool CSpaceObject::HasMinableItem (void) const
+
+//	HasMinableItem
+//
+//	Returns TRUE if the object has any minable items.
+
+	{
+	CItemListManipulator Search(const_cast<CSpaceObject *>(this)->GetItemList());
+	while (Search.MoveCursorForward())
+		{
+		const CItem &Item = Search.GetItemAtCursor();
+		if (Item.HasAttribute(CONSTLIT("ore"))
+				|| Item.HasAttribute(CONSTLIT("minable")))
+			return true;
+		}
+
+	if (const COverlayList *pOverlays = GetOverlays())
+		{
+		if (pOverlays->HasMinableItem())
 			return true;
 		}
 
@@ -4571,7 +4676,7 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 
 		CString sError;
 		CPropertyCompare Compare;
-		if (!Compare.Parse(sProperty, &sError))
+		if (!Compare.Parse(CCodeChainCtx(GetUniverse()), sProperty, &sError))
 			{
 			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
 			return false;
@@ -5054,6 +5159,7 @@ bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItem
 				return true;
 
 			case EPropertyType::propData:
+			case EPropertyType::propObjData:
 				pResult = IncData(sProperty, pInc);
 				return true;
 
@@ -6424,7 +6530,7 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 
 	CString sName;
 	if (IsIdentified())
-		sName = GetNounPhrase(0);
+		sName = GetNounPhrase(nounTitleCapitalize);
 	else if (Ctx.pCenter == NULL)
 		sName = CONSTLIT("Unknown Object");
 	else if (Ctx.pCenter->IsEnemy(this))
@@ -6957,6 +7063,32 @@ void CSpaceObject::SetEventFlags (void)
 	SetHasOnDamageEvent(FindEventHandler(CONSTLIT("OnDamage")));
 	SetHasOnObjDockedEvent(FindEventHandler(CONSTLIT("OnObjDocked")));
 
+	//	See if we have a handler for dock screens.
+
+	if (CDockingPorts *pDockingPorts = GetDockingPorts())
+		{
+		bool bHasGetDockScreen = HasDockScreen();
+
+		//	If we have an event for a dock screen, but we don't have docking ports
+		//	then we create some default ports. This is useful for when overlays or
+		//	event handlers create dock screens.
+
+		if (bHasGetDockScreen && pDockingPorts->GetPortCount() == 0)
+			{
+			CreateDefaultDockingPorts();
+			m_fAutoCreatedPorts = true;
+			}
+
+		//	If we DON'T have dock screens and we auto-created some docking ports,
+		//	then we need to remove them.
+
+		else if (!bHasGetDockScreen && m_fAutoCreatedPorts)
+			{
+			pDockingPorts->DeleteAll(this);
+			m_fAutoCreatedPorts = false;
+			}
+		}
+
 	//	Let subclasses do their bit
 
 	OnSetEventFlags();
@@ -7154,8 +7286,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 //	Update the object
 
 	{
-	SetInUpdateCode();
-
 	//	Update as long as we are not time-stopped.
 
 	if (!Ctx.IsTimeStopped())
@@ -7174,10 +7304,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			//	We could have gotten destroyed here.
 
 			if (IsDestroyed())
-				{
-				ClearInUpdateCode();
 				return;
-				}
 			}
 
 		//	Update object
@@ -7197,20 +7324,14 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			//	necessary.
 
 			if (IsDestroyed())
-				{
-				ClearInUpdateCode();
 				return;
-				}
 			}
 
 		//	Update the specific object subclass.
 
 		OnUpdate(Ctx, g_SecondsPerUpdate);
 		if (IsDestroyed())
-			{
-			ClearInUpdateCode();
 			return;
-			}
 		}
 
 	//	Otherwise, if we're time-stopped we need to update any overlays that
@@ -7240,6 +7361,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			&& !Ctx.pPlayer->IsDestroyed()
 			&& this != Ctx.pPlayer)
 		{
+		Ctx.AutoMining.Update(*Ctx.pPlayer, *this);
 		Ctx.AutoTarget.Update(*Ctx.pPlayer, *this);
 		}
 
@@ -7254,10 +7376,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 		{
 		m_fHasDockScreenMaybe = (CanObjRequestDock(Ctx.pPlayer) == dockingOK);
 		}
-
-	//	Done
-
-	ClearInUpdateCode();
 	}
 
 void CSpaceObject::UpdateDrag (SUpdateCtx &Ctx, Metric rDragFactor)
@@ -7523,6 +7641,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fHasOnOrderChangedEvent	? 0x00000008 : 0);
 	dwSave |= (m_fManualAnchor				? 0x00000010 : 0);
 	dwSave |= (m_f3DExtra					? 0x00000020 : 0);
+	dwSave |= (m_fAutoCreatedPorts			? 0x00000040 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Write out the opaque data

@@ -100,7 +100,7 @@
 
 	<ShipClass UNID="&scWolfenPlayer;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 
 			attributes=			"commonwealth, pacificDefense, playerClass, startingClass, 00200000_PlayerShip"

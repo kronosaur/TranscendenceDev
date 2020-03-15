@@ -96,7 +96,7 @@ class CGroupOfGenerators : public IItemGenerator
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -133,7 +133,7 @@ class CLevelTableOfItemGenerators : public IItemGenerator
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -167,7 +167,7 @@ class CLocationCriteriaTableOfItemGenerators : public IItemGenerator
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -200,7 +200,7 @@ class CLookup : public IItemGenerator
 		virtual int GetGeneratorCount (void) override { return ((m_pTable && m_pTable->GetGenerator()) ? 1 : 0); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -228,7 +228,7 @@ class CRandomItems : public IItemGenerator
 		virtual int GetItemTypeCount (void) override { return m_iCount; }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -263,7 +263,7 @@ class CSingleItem : public IItemGenerator
 		virtual int GetItemTypeCount (void) override { return 1; }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 		static CurrencyValue CalcItemValue (CItemType *pType);
@@ -289,7 +289,7 @@ class CTableOfGenerators : public IItemGenerator
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -321,7 +321,7 @@ int IItemGenerator::CalcLocationAffinity (SItemAddCtx &Ctx, const CAffinityCrite
 		return Criteria.CalcWeight([](const CString &sAttrib) { return false; });
 	}
 
-ALERROR IItemGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IItemGenerator **retpGenerator)
+ALERROR IItemGenerator::CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, IItemGenerator **retpGenerator)
 
 //	CreateFromXML
 //
@@ -742,7 +742,7 @@ bool CGroupOfGenerators::HasItemAttribute (const CString &sAttrib) const
 	return false;
 	}
 
-ALERROR CGroupOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CGroupOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -916,7 +916,7 @@ bool CSingleItem::HasItemAttribute (const CString &sAttrib) const
 	return false;
 	}
 
-ALERROR CSingleItem::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CSingleItem::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1144,7 +1144,7 @@ bool CLevelTableOfItemGenerators::HasItemAttribute (const CString &sAttrib) cons
 	return false;
 	}
 
-ALERROR CLevelTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CLevelTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1371,7 +1371,7 @@ bool CLocationCriteriaTableOfItemGenerators::HasItemAttribute (const CString &sA
 	return false;
 	}
 
-ALERROR CLocationCriteriaTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CLocationCriteriaTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1486,7 +1486,7 @@ bool CLookup::HasItemAttribute (const CString &sAttrib) const
 	return m_pTable->HasItemAttribute(sAttrib);
 	}
 
-ALERROR CLookup::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CLookup::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1668,7 +1668,7 @@ bool CTableOfGenerators::HasItemAttribute (const CString &sAttrib) const
 	return false;
 	}
 
-ALERROR CTableOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CTableOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -2154,7 +2154,7 @@ void CRandomItems::InitTable (SDesignLoadCtx &Ctx, const CString &sLevelFrequenc
 	delete [] pTable;
 	}
 
-ALERROR CRandomItems::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CRandomItems::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -2208,7 +2208,7 @@ ALERROR CRandomItems::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	InitFromXML
 //

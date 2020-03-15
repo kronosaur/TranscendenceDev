@@ -553,7 +553,7 @@
 
 	<ShipClass UNID="&scWolfenPlayerL3;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 
 			attributes=			"commonwealth, corporate, pacificDefense, playerClass, shipBroker"
@@ -592,7 +592,7 @@
 
 	<ShipClass UNID="&scWolfenPlayerL6A;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 
 			attributes=			"commonwealth, corporate, pacificDefense, playerClass, shipBroker"
@@ -634,7 +634,7 @@
 
 	<ShipClass UNID="&scWolfenPlayerL6B;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 
 			attributes=			"commonwealth, corporate, pacificDefense, playerClass, shipBroker"
@@ -676,7 +676,7 @@
 
 	<ShipClass UNID="&scWolfenPlayerL6C;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 
 			attributes=			"commonwealth, corporate, military, pacificDefense, playerClass, shipBroker"

@@ -658,23 +658,23 @@
 		</Trade>
 		
 		<Items>
-			<RandomItem count="1d10" 
+			<RandomItem count="18-25" 
 				criteria=		"a L:1-8; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
-			<RandomItem count="1d10" 
+			<RandomItem count="8-10" 
 				criteria=		"scv L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
-			<RandomItem count="1d6" 
-				criteria=		"r -illegal; -military; -notForSale; -notStandard; L:3-7;"
+			<RandomItem count="4-6" 
+				criteria=		"r L:3-7; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
-			<RandomItem count="1d10" 
+			<RandomItem count="10-12" 
 				criteria=		"d~scvr L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
-			<RandomItem count="1d8"
+			<RandomItem count="5-10"
 				criteria=		"u +armorRepair; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
@@ -884,6 +884,12 @@
 				You are in the docking bay of %objName%. Medical professionals
 				live and work on this station, doing everything from research,
 				to drug manufacturing, to remote medicine.
+			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food and luxury items. We are not 
+				interested in buying %itemName%.
+
 			</Text>
 
             <Text id="core.mapDesc">"Sells meds &mdash; Buys food and luxuries"</Text>

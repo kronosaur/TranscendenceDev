@@ -9,17 +9,6 @@
 #define BEGIN_EXCEPTION_HANDLER		try
 #define END_EXCEPTION_HANDLER		catch (...) { g_pHI->GetScreenMgr().StopDX(); throw; }
 
-#define ARMOR_DISPLAY_WIDTH					360
-#define ARMOR_DISPLAY_HEIGHT				136
-#define ARMOR_DISPLAY_MARGIN_X				8
-#define ARMOR_DISPLAY_MARGIN_Y				8
-
-#define REACTOR_DISPLAY_HEIGHT				64
-#define REACTOR_DISPLAY_WIDTH				256
-
-#define TARGET_DISPLAY_WIDTH				360
-#define TARGET_DISPLAY_HEIGHT				120
-
 #define INVOKE_DISPLAY_WIDTH				200
 #define INVOKE_DISPLAY_HEIGHT				300
 
@@ -65,22 +54,8 @@
 #define SO_BETA_FORMATION					CONSTLIT("Beta formation")
 #define SO_GAMMA_FORMATION					CONSTLIT("Gamma formation")
 
-const int g_WeaponStatusWidth = 350;
-const int g_WeaponStatusHeight = 32;
-
 const int g_MessageDisplayWidth = 400;
 const int g_MessageDisplayHeight = 32;
-
-const int g_iScaleCount = 2;
-const int g_iStellarScale = 0;
-const int g_iPlanetaryScale = 1;
-
-const int MAP_ZOOM_SPEED =					16;
-
-const int LRS_UPDATE_DELAY =				5;
-const int MIN_LRS_SIZE =					200;
-const int LRS_SCALE =						27;
-const CG32bitPixel RGB_LRS_BACKGROUND =		CG32bitPixel(17, 21, 26);
 
 void CTranscendenceWnd::Autopilot (bool bTurnOn)
 
@@ -95,7 +70,6 @@ void CTranscendenceWnd::Autopilot (bool bTurnOn)
 			{
 			if (GetPlayer()->GetShip()->HasAutopilot())
 				{
-				DisplayMessage(CONSTLIT("Autopilot engaged"));
 				m_bAutopilot = true;
 				}
 			else
@@ -103,10 +77,8 @@ void CTranscendenceWnd::Autopilot (bool bTurnOn)
 			}
 		else
 			{
-			DisplayMessage(CONSTLIT("Autopilot disengaged"));
 			m_bAutopilot = false;
 			}
-
 		}
 	}
 
@@ -435,18 +407,7 @@ ALERROR CTranscendenceWnd::InitDisplays (void)
 	//
 	//	LATER: These should be obtained form the player ship.
 
-	m_pSRSSnow = g_pUniverse->GetLibraryBitmap(g_SRSSnowImageUNID, CDesignCollection::FLAG_IMAGE_LOCK);
-
-	//	Create LRS
-
-	int iLRSDiameter = Max(MIN_LRS_SIZE, LRS_SCALE * RectHeight(m_rcScreen) / 100);
-	rcRect.left = m_rcScreen.right - iLRSDiameter;
-	rcRect.top = 0;
-	rcRect.right = rcRect.left + iLRSDiameter;
-	rcRect.bottom = rcRect.top + iLRSDiameter;
-	m_LRSDisplay.Init(GetPlayer(), rcRect);
-	m_LRSDisplay.SetSnowImage(m_pSRSSnow);
-	m_LRSDisplay.SetBackgroundColor(RGB_LRS_BACKGROUND);
+	m_pSRSSnow = g_pUniverse->GetLibraryBitmap(UNID_SRS_SNOW_PATTERN, CDesignCollection::FLAG_IMAGE_LOCK);
 
 	//	Create the message display
 
@@ -487,29 +448,6 @@ ALERROR CTranscendenceWnd::InitDisplays (void)
 	m_DeviceDisplay.Init(GetPlayer(), rcRect);
 
 	return NOERROR;
-	}
-
-void CTranscendenceWnd::PaintLRS (void)
-
-//	PaintLRS
-//
-//	Paint the long-range scanner
-
-	{
-	DEBUG_TRY
-
-	CG32bitImage &Screen = g_pHI->GetScreen();
-
-	//	Update the LRS every 10 ticks
-
-	if ((m_iTick % LRS_UPDATE_DELAY) == 0)
-		m_LRSDisplay.Update();
-
-	//	Blt the LRS
-
-	m_LRSDisplay.Paint(Screen);
-
-	DEBUG_CATCH
 	}
 
 void CTranscendenceWnd::PaintMainScreenBorder (CG32bitPixel rgbColor)
@@ -928,10 +866,16 @@ void CTranscendenceWnd::ShowEnableDisablePicker (void)
 				//	Extra
 
 				CString sExtra;
+				if (!pDevice->IsEnabled())
+					sExtra = CONSTLIT("Disabled");
+
+				//	Help
+
+				CString sHelp;
 				if (pDevice->IsEnabled())
-					sExtra = CONSTLIT("[Enter] to disable; [Arrows] to select");
+					sHelp = CONSTLIT("[Enter] to disable; [Arrows] to select");
 				else
-					sExtra = CONSTLIT("[Enter] to enable; [Arrows] to select");
+					sHelp = CONSTLIT("[Enter] to enable; [Arrows] to select");
 
 				//	Key
 
@@ -942,7 +886,9 @@ void CTranscendenceWnd::ShowEnableDisablePicker (void)
 				m_MenuData.AddMenuItem(sKey,
 						sName,
 						&pType->GetImage(),
+						0,
 						sExtra,
+						sHelp,
 						(pDevice->IsEnabled() ? 0 : CMenuData::FLAG_GRAYED),
 						i);
 
@@ -1076,11 +1022,19 @@ void CTranscendenceWnd::ShowUsePicker (void)
 			if (!pType->GetUseDesc(&UseDesc))
 				continue;
 
-			CString sCount;
+			int iCount;
 			if (pType->ShowChargesInUseMenu() && Item.IsKnown())
-				sCount = strFromInt(Item.GetCharges());
+				iCount = Item.GetCharges();
 			else if (Item.GetCount() > 1)
-				sCount = strFromInt(Item.GetCount());
+				iCount = Item.GetCount();
+			else
+				iCount = 0;
+
+			//	Installed
+
+			CString sExtra;
+			if (Item.IsInstalled())
+				sExtra = CONSTLIT("Installed");
 
 			//	Show the key only if the item is identified
 
@@ -1091,8 +1045,6 @@ void CTranscendenceWnd::ShowUsePicker (void)
 			//	Name of item
 
 			CString sName = Item.GetNounPhrase();
-			if (Item.IsInstalled())
-				sName.Append(STR_INSTALLED);
 			sName = strPatternSubst(CONSTLIT("Use %s"), sName);
 
 			//	Add the item
@@ -1100,7 +1052,9 @@ void CTranscendenceWnd::ShowUsePicker (void)
 			m_MenuData.AddMenuItem(sKey,
 					sName,
 					&pType->GetImage(),
-					sCount,
+					iCount,
+					sExtra,
+					NULL_STR,
 					0,
 					SortedList.GetValue(i));
 			}

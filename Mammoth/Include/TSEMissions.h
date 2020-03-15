@@ -30,6 +30,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 			bool bOnlySourceOwner = false;		//	Source must be owner
 			bool bOnlySourceDebriefer = false;	//	Source must be debriefer
 			bool bPriorityOnly = false;			//	Return highest priority mission
+			bool bOnlyMissionArcs = false;		//	Only mission arc missions (latest only)
 
 			TArray<CString> AttribsRequired;	//	Required attributes
 			TArray<CString> AttribsNotAllowed;	//	Exclude objects with these attributes
@@ -39,30 +40,30 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 
 		CMission (CUniverse &Universe);
 
-		static ALERROR Create (CUniverse &Universe,
-							   CMissionType *pType,
-							   CSpaceObject *pOwner,
-							   ICCItem *pCreateData,
-							   CMission **retpMission,
-							   CString *retsError);
+		static ALERROR Create (CMissionType &Type, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError = NULL);
 
 		void FireCustomEvent (const CString &sEvent, ICCItem *pData);
-		inline bool CleanNonPlayer (void) const { return m_pType->CleanNonPlayer(); }
-		inline DWORD GetAcceptedOn (void) const { return m_dwAcceptedOn; }
-		inline int GetPriority (void) const { return m_pType->GetPriority(); }
-		inline bool IsAccepted (void) const { return (m_iStatus == statusAccepted); }
-		inline bool IsActive (void) const { return (m_iStatus == statusAccepted || (!m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure))); }
-		inline bool IsClosed (void) const { return (!IsActive() && IsCompleted()); }
-		inline bool IsCompleted (void) const { return (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure || m_iStatus == statusSuccess || m_iStatus == statusFailure); }
-		inline bool IsCompletedNonPlayer (void) const { return (m_iStatus == statusSuccess || m_iStatus == statusFailure); }
-		inline bool IsFailure (void) const { return (m_iStatus == statusFailure || m_iStatus == statusPlayerFailure); }
-		inline bool IsOpen (void) const { return (m_iStatus == statusOpen); }
-		inline bool IsPlayerMission (void) const { return m_fAcceptedByPlayer; }
-		inline bool IsRecorded (void) const { return (m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure)); }
-		inline bool IsSuccess (void) const { return (m_iStatus == statusSuccess || m_iStatus == statusPlayerSuccess); }
-		inline bool IsUnavailable (void) const { return (m_iStatus == statusClosed || m_iStatus == statusSuccess || m_iStatus == statusFailure); }
-		inline bool KeepsStats (void) const { return m_pType->KeepsStats(); }
-		bool MatchesCriteria (CSpaceObject *pSource, const SCriteria &Criteria);
+		bool CleanNonPlayer (void) const { return m_pType->CleanNonPlayer(); }
+		DWORD GetAcceptedOn (void) const { return m_dwAcceptedOn; }
+		const CString &GetArc (int *retiSequence = NULL) const;
+		int GetArcSequence (void) const { return m_pType->GetArcSequence(); }
+		const CString &GetArcTitle (void) const { return m_sArcTitle; }
+		const CMissionType &GetMissionType (void) const { return *m_pType; }
+		int GetPriority (void) const { return m_pType->GetPriority(); }
+		const CString &GetTitle (void) const { return m_sTitle; }
+		bool IsAccepted (void) const { return (m_iStatus == statusAccepted); }
+		bool IsActive (void) const { return (m_iStatus == statusAccepted || (!m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure))); }
+		bool IsClosed (void) const { return (!IsActive() && IsCompleted()); }
+		bool IsCompleted (void) const { return (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure || m_iStatus == statusSuccess || m_iStatus == statusFailure); }
+		bool IsCompletedNonPlayer (void) const { return (m_iStatus == statusSuccess || m_iStatus == statusFailure); }
+		bool IsFailure (void) const { return (m_iStatus == statusFailure || m_iStatus == statusPlayerFailure); }
+		bool IsOpen (void) const { return (m_iStatus == statusOpen); }
+		bool IsPlayerMission (void) const { return m_fAcceptedByPlayer; }
+		bool IsRecorded (void) const { return (m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure)); }
+		bool IsSuccess (void) const { return (m_iStatus == statusSuccess || m_iStatus == statusPlayerSuccess); }
+		bool IsUnavailable (void) const { return (m_iStatus == statusClosed || m_iStatus == statusSuccess || m_iStatus == statusFailure); }
+		bool KeepsStats (void) const { return m_pType->KeepsStats(); }
+		bool MatchesCriteria (const CSpaceObject *pSource, const SCriteria &Criteria) const;
 		void OnPlayerEnteredSystem (CSpaceObject *pPlayer);
 		bool RefreshSummary (void);
 		bool Reward (ICCItem *pData, ICCItem **retpResult = NULL);
@@ -80,6 +81,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 
 		virtual CMission *AsMission (void) override { return this; }
 		virtual Categories GetCategory (void) const override { return catMission; }
+		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const override { return m_pType->GetImage(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_pType->GetName(); }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual bool HasAttribute (const CString &sAttribute) const override { return m_pType->HasLiteralAttribute(sAttribute); }
@@ -129,6 +131,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 											//		times out when out of the system).
 		DWORD m_dwCompletedOn;				//	Tick on which mission was completed
 
+		CString m_sArcTitle;				//	Arc title (if any)
 		CString m_sTitle;					//	Mission title
 		CString m_sInstructions;			//	Current instructions
 
@@ -155,16 +158,27 @@ class CMissionList
 
 		~CMissionList (void) { DeleteAll(); }
 
-		bool CanCreateMissionInArc (const CString &sArc, int iSequence) const;
+		const CMission &operator [] (int iIndex) const { return *m_List[iIndex]; }
+		CMission &operator [] (int iIndex) { return *m_List[iIndex]; }
+
+		bool CanCreateMissionInArc (const CMissionType &NewMissionType, const CSpaceObject *pSource, const CMission::SCriteria &CreateCriteria) const;
+		void CloseMissionsInArc (const CMissionType &NewMissionType);
 		void Delete (int iIndex);
 		void Delete (CMission *pMission);
 		void DeleteAll (void);
+		CMissionList Filter (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const;
+		CMissionList FilterByArc (void) const;
+		CMission *FindAcceptedArcChapter (const CString &sTargetArc, const CString &sTargetTitle, CMission *pExclude = NULL) const;
+		CMission *FindByArc (const CString &sTargetArc) const;
+		CMission *FindLatestActivePlayer (void) const;
+		CMission *FindHighestPriority (void) const;
 		void FireOnSystemStarted (DWORD dwElapsedTime);
 		void FireOnSystemStopped (void);
-		inline int GetCount (void) const { return m_List.GetCount(); }
-		inline CMission *GetMission (int iIndex) const { return m_List[iIndex]; }
+		int GetCount (void) const { return m_List.GetCount(); }
+		CMission *GetMission (int iIndex) const { return m_List[iIndex]; }
 		CMission *GetMissionByID (DWORD dwID) const;
 		void Insert (CMission *pMission);
+		bool Matches (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const;
 		void NotifyOnNewSystem (CSystem *pSystem);
 		void NotifyOnPlayerEnteredSystem (CSpaceObject *pPlayerShip);
 		ALERROR ReadFromStream (SLoadCtx &Ctx, CString *retsError);

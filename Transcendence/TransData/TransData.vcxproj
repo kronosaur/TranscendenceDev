@@ -334,6 +334,8 @@
     <ClCompile Include="CReferenceEntry.cpp" />
     <ClCompile Include="CReferenceLibrary.cpp" />
     <ClCompile Include="CReferenceSection.cpp" />
+    <ClCompile Include="CDiagnosticsCommand.cpp" />
+    <ClCompile Include="CRunDiagnostics.cpp" />
     <ClCompile Include="CSimViewer.cpp" />
     <ClCompile Include="CWeaponBenchmarkCtx.cpp" />
     <ClCompile Include="Diagnostics.cpp" />
@@ -470,6 +472,7 @@
     <ClCompile Include="WorldImageChart.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Diagnostics.h" />
     <ClInclude Include="ItemBenchmarks.h" />
     <ClInclude Include="PreComp.h" />
     <ClInclude Include="Reference.h" />

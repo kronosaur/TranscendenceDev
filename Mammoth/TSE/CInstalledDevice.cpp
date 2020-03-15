@@ -160,6 +160,25 @@ int CInstalledDevice::GetActivateDelay (CSpaceObject *pSource) const
 	return m_iActivateDelay;
 	}
 
+bool CInstalledDevice::GetCachedMaxHP (int &retiMaxHP) const
+
+//	GetCachedMaxHP
+//
+//	Returns TRUE if we have a cached max hp.
+
+	{
+	if (m_pSource == NULL)
+		return false;
+
+	DWORD dwNow = m_pSource->GetUniverse().GetTicks();
+	DWORD dwCachedTime = (DWORD)MAKELONG((WORD)m_iTimeUntilReady, (WORD)m_iFireAngle);
+	if (dwCachedTime != dwNow)
+		return false;
+
+	retiMaxHP = (int)MAKELONG((WORD)m_iMinFireArc, (WORD)m_iMaxFireArc);
+	return true;
+	}
+
 CString CInstalledDevice::GetEnhancedDesc (void)
 
 //	GetEnhancedDesc
@@ -527,6 +546,8 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 	if (pDeviceClass == NULL)
 		return;
 
+	const CDeviceItem DeviceItem = Device.Item.AsDeviceItem();
+
 	//	If this is a weapon, then we can take some settings from the weapon.
 
 	bool bWeaponIsOmnidirectional = false;
@@ -535,13 +556,13 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 	CWeaponClass *pWeapon = pDeviceClass->AsWeaponClass();
 	if (pWeapon)
 		{
-		switch (pWeapon->GetRotationType(CItemCtx(), &iWeaponMinFireArc, &iWeaponMaxFireArc))
+		switch (pWeapon->GetRotationType(DeviceItem, &iWeaponMinFireArc, &iWeaponMaxFireArc))
 			{
-			case CDeviceClass::rotOmnidirectional:
+			case CDeviceRotationDesc::rotOmnidirectional:
 				bWeaponIsOmnidirectional = true;
 				break;
 
-			case CDeviceClass::rotSwivel:
+			case CDeviceRotationDesc::rotSwivel:
 				break;
 
 			default:
@@ -841,6 +862,28 @@ int CInstalledDevice::IncCharges (CSpaceObject *pSource, int iChange)
 	return ItemList.GetItemAtCursor().GetCharges();
 	}
 
+void CInstalledDevice::SetCachedMaxHP (int iMaxHP)
+
+//	SetCachedMaxHP
+//
+//	For shields we cache max HP when calculated by script.
+
+	{
+	if (m_pSource == NULL)
+		return;
+
+	//	Store the tick on which we cache it in these two 16-bit fields.
+
+	DWORD dwNow = m_pSource->GetUniverse().GetTicks();
+	m_iTimeUntilReady = (short)LOWORD(dwNow);
+	m_iFireAngle = (short)HIWORD(dwNow);
+
+	//	Store the hit points in these two 16-bit fields
+
+	m_iMinFireArc = (short)LOWORD((DWORD)iMaxHP);
+	m_iMaxFireArc = (short)HIWORD((DWORD)iMaxHP);
+	}
+
 void CInstalledDevice::SetCharges (CSpaceObject *pSource, int iCharges)
 
 //	SetCharges
@@ -996,7 +1039,7 @@ void CInstalledDevice::SetLinkedFireOptions (DWORD dwOptions)
 		m_fLinkedFireNever = true;
 	}
 
-ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
+ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
 
 //	SetProperty
 //
@@ -1007,7 +1050,7 @@ ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString 
 	if (IsEmpty())
 		{
 		if (retsError) *retsError = CONSTLIT("No device installed.");
-		return resultPropertyError;
+		return ESetPropertyResult::error;
 		}
 
 	//	Figure out what to set
@@ -1026,7 +1069,7 @@ ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString 
         if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntCapacitor, pValue->GetIntegerValue()))
             {
             if (retsError) *retsError = CONSTLIT("Unable to set capacitor value.");
-			return resultPropertyError;
+			return ESetPropertyResult::error;
             }
         }
 
@@ -1049,7 +1092,7 @@ ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString 
 			if (m_pClass->IsExternal() && !bSetExternal)
 				{
 				if (retsError) *retsError = CONSTLIT("Device is natively external and cannot be made internal.");
-				return resultPropertyError;
+				return ESetPropertyResult::error;
 				}
 
 			SetExternal(bSetExternal);
@@ -1103,7 +1146,7 @@ ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString 
 		else
 			{
 			if (retsError) *retsError = CONSTLIT("Invalid fireArc parameter.");
-			return resultPropertyError;
+			return ESetPropertyResult::error;
 			}
 		}
 
@@ -1115,7 +1158,7 @@ ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString 
 		if (!::GetLinkedFireOptions(pValue, &dwOptions, retsError))
 			{
 			if (retsError) *retsError = CONSTLIT("Invalid linked-fire option.");
-			return resultPropertyError;
+			return ESetPropertyResult::error;
 			}
 
 		//	Set
@@ -1150,7 +1193,7 @@ ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString 
 		else
 			{
 			if (retsError) *retsError = CONSTLIT("Invalid angle and radius");
-			return resultPropertyError;
+			return ESetPropertyResult::error;
 			}
 
 		//	Set it
@@ -1174,7 +1217,7 @@ ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString 
         if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntTemperature, pValue->GetIntegerValue()))
             {
             if (retsError) *retsError = CONSTLIT("Unable to set temperature value.");
-			return resultPropertyError;
+			return ESetPropertyResult::error;
             }
         }
 	else if (strEquals(sName, PROPERTY_SHOT_SEPARATION_SCALE))
@@ -1188,7 +1231,7 @@ ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString 
 	else
 		return m_pClass->SetItemProperty(Ctx, sName, pValue, retsError);
 
-	return resultPropertySet;
+	return ESetPropertyResult::set;
 	}
 
 void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList)

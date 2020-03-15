@@ -1,10 +1,12 @@
 //	CStationType.cpp
 //
 //	CStationType class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
 #define ANIMATIONS_TAG							CONSTLIT("Animations")
+#define ASTEROID_TAG							CONSTLIT("Asteroid")
 #define COMMUNICATIONS_TAG						CONSTLIT("Communications")
 #define COMPOSITE_TAG							CONSTLIT("ImageComposite")
 #define CONSTRUCTION_TAG						CONSTLIT("Construction")
@@ -36,19 +38,19 @@
 #define ALERT_WHEN_ATTACKED_ATTRIB				CONSTLIT("alertWhenAttacked")
 #define ALERT_WHEN_DESTROYED_ATTRIB				CONSTLIT("alertWhenDestroyed")
 #define ALLOW_ENEMY_DOCKING_ATTRIB				CONSTLIT("allowEnemyDocking")
+#define ANONYMOUS_ATTRIB						CONSTLIT("anonymous")
 #define BACKGROUND_PLANE_ATTRIB					CONSTLIT("backgroundPlane")
 #define BARRIER_EFFECT_ATTRIB					CONSTLIT("barrierEffect")
 #define BEACON_ATTRIB							CONSTLIT("beacon")
 #define BUILD_REINFORCEMENTS_ATTRIB				CONSTLIT("buildReinforcements")
 #define CAN_ATTACK_ATTRIB						CONSTLIT("canAttack")
 #define CHALLENGE_ATTRIB						CONSTLIT("challenge")
+#define CHALLENGE_RATING_ATTRIB					CONSTLIT("challengeRating")
 #define CHANCE_ATTRIB							CONSTLIT("chance")
 #define CONSTRUCTION_RATE_ATTRIB				CONSTLIT("constructionRate")
 #define CONTROLLING_SOVEREIGN_ATTRIB			CONSTLIT("controllingSovereign")
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define DEFAULT_BACKGROUND_ID_ATTRIB			CONSTLIT("defaultBackgroundID")
-#define DEST_ENTRY_POINT_ATTRIB					CONSTLIT("destEntryPoint")	
-#define DEST_NODE_ATTRIB						CONSTLIT("destNodeID")
 #define DESTROY_WHEN_ABANDONED_ATTRIB			CONSTLIT("destroyWhenAbandoned")
 #define DESTROY_WHEN_EMPTY_ATTRIB				CONSTLIT("destroyWhenEmpty")
 #define DOCK_SCREEN_ATTRIB						CONSTLIT("dockScreen")
@@ -59,8 +61,6 @@
 #define EXPLOSION_TYPE_ATTRIB					CONSTLIT("explosionType")
 #define FIRE_RATE_ADJ_ATTRIB					CONSTLIT("fireRateAdj")
 #define FREQUENCY_ATTRIB						CONSTLIT("frequency")
-#define GATE_EFFECT_ATTRIB						CONSTLIT("gateEffect")
-#define GRAVITY_RADIUS_ATTRIB					CONSTLIT("gravityRadius")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define IGNORE_FRIENDLY_FIRE_ATTRIB				CONSTLIT("ignoreFriendlyFire")
 #define IMAGE_VARIANT_ATTRIB					CONSTLIT("imageVariant")
@@ -72,7 +72,6 @@
 #define MASS_ATTRIB								CONSTLIT("mass")
 #define MAX_CONSTRUCTION_ATTRIB					CONSTLIT("maxConstruction")
 #define MAX_HIT_POINTS_ATTRIB					CONSTLIT("maxHitPoints")
-#define MAX_LIGHT_DISTANCE						CONSTLIT("maxLightRadius")
 #define MAX_STRUCTURAL_HIT_POINTS_ATTRIB		CONSTLIT("maxStructuralHitPoints")
 #define MIN_SHIPS_ATTRIB						CONSTLIT("minShips")
 #define MOBILE_ATTRIB							CONSTLIT("mobile")
@@ -100,7 +99,6 @@
 #define SIGN_ATTRIB								CONSTLIT("sign")
 #define SIZE_ATTRIB								CONSTLIT("size")
 #define SOVEREIGN_ATTRIB						CONSTLIT("sovereign")
-#define SPACE_COLOR_ATTRIB						CONSTLIT("spaceColor")
 #define STANDING_COUNT_ATTRIB					CONSTLIT("standingCount")
 #define STEALTH_ATTRIB							CONSTLIT("stealth")
 #define STRUCTURAL_HIT_POINTS_ATTRIB			CONSTLIT("structuralHitPoints")
@@ -159,16 +157,24 @@
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
 #define FIELD_WEAPON_STRENGTH					CONSTLIT("weaponStrength")			//	Strength of weapons (100 = level weapon @ 1/4 fire rate).
 
+#define PROPERTY_ASTEROID_TYPE					CONSTLIT("asteroidType")
 #define PROPERTY_AUTO_LEVEL_FREQUENCY			CONSTLIT("autoLevelFrequency")
+#define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
+#define PROPERTY_CHALLENGE_RATING				CONSTLIT("challengeRating")
+#define PROPERTY_CURRENCY						CONSTLIT("currency")
+#define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_ENCOUNTERED_BY_NODE			CONSTLIT("encounteredByNode")
 #define PROPERTY_ENCOUNTERED_TOTAL				CONSTLIT("encounteredTotal")
+#define PROPERTY_HULL_TYPE						CONSTLIT("hullType")
 #define PROPERTY_LEVEL_FREQUENCY				CONSTLIT("levelFrequency")
+#define PROPERTY_MAX_BALANCE					CONSTLIT("maxBalance")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_PRIMARY_WEAPON					CONSTLIT("primaryWeapon")
 #define PROPERTY_PRIMARY_WEAPON_LEVEL			CONSTLIT("primaryWeaponLevel")
 #define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
+#define PROPERTY_STD_TREASURE					CONSTLIT("stdTreasure")
 #define PROPERTY_SYSTEM_CRITERIA				CONSTLIT("systemCriteria")
 #define PROPERTY_TREASURE_DESIRED_VALUE			CONSTLIT("treasureDesiredValue")
 #define PROPERTY_TREASURE_DESIRED_VALUE_LOOP_COUNT	CONSTLIT("treasureDesiredValueLoopCount")
@@ -190,7 +196,7 @@
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 
-const Metric TREASURE_BALACE_POWER =			0.7;
+static constexpr Metric TREASURE_BALANCE_POWER =			0.7;
 
 struct SSizeData
 	{
@@ -226,42 +232,47 @@ static SSizeData SIZE_DATA[] =
 
 struct SStdStationDesc
 	{
-	CurrencyValue dwTreasureValue;			//	Std value of treasure at this level
+	Metric rChallenge = 0.0;					//	Std challenge rating at this level
+	CurrencyValue dwTreasureValue = 0;			//	Std value of treasure at this level
 	};
 
-static SStdStationDesc STD_STATION_DATA[] =
+//	STD_STATION_DATA
+//
+//	Challenge is computed as std treasure value / 375.0.
+
+static const SStdStationDesc STD_STATION_DATA[] =
 	{
-		{	0,		},
+		{	         0.0,	            0,	},
 
-		{	750,	},
-		{	1000,	},
-		{	1500,	},
-		{	2000,	},
-		{	4000,	},
+		{	         2.0,	          750,	},
+		{	         2.7,	        1'000,	},
+		{	         4.0,	        1'500,	},
+		{	         5.3,	        2'000,	},
+		{	        10.7,	        4'000,	},
 
-		{	8000,	},
-		{	16000,	},
-		{	32000,	},
-		{	64000,	},
-		{	128000,	},
+		{	        21.3,	        8'000,	},
+		{	        42.7,	       16'000,	},
+		{	        85.3,	       32'000,	},
+		{	       171,		       64'000,	},
+		{	       341,		      128'000,	},
 
-		{	256000,	},
-		{	512000,	},
-		{	1000000,	},
-		{	2000000,	},
-		{	4100000,	},
+		{	       683,		      256'000,	},
+		{	     1'365,		      512'000,	},
+		{	     2'667,		    1'000'000,	},
+		{	     5'333,		    2'000'000,	},
+		{	    10'933,		    4'100'000,	},
 
-		{	8200000,	},
-		{	16400000,	},
-		{	32800000,	},
-		{	65500000,	},
-		{	131000000,	},
+		{	    21'867,		    8'200'000,	},
+		{	    43'733,		   16'400'000,	},
+		{	    87'467,		   32'800'000,	},
+		{	   174'667,		   65'500'000,	},
+		{	   349'333,		  131'000'000,	},
 
-		{	262000000,	},
-		{	524000000,	},
-		{	1000000000,	},
-		{	2100000000,	},
-		{	4200000000,	},
+		{	   698'667,		  262'000'000,	},
+		{	 1'397'333,		  524'000'000,	},
+		{	 2'666'667,		1'000'000'000,	},
+		{	 5'600'000,		2'100'000'000,	},
+		{	11'200'000,		4'200'000'000,	},
 	};
 
 CIntegralRotationDesc CStationType::m_DefaultRotation;
@@ -334,11 +345,24 @@ Metric CStationType::CalcBalance (void) const
 		if (iLevel <= 0 || iLevel > MAX_TECH_LEVEL)
 			return 0.0;
 
-		m_rCombatBalance = (CalcDefenderStrength(iLevel) + CalcWeaponStrength(iLevel)) / 3.5;
-		m_rCombatBalance *= Min(2.0, sqrt((Metric)CalcHitsToDestroy(iLevel) / 50.0));
+		m_rCombatBalance = GetLevelStrength(iLevel);
 		}
 
 	return m_rCombatBalance;
+	}
+
+Metric CStationType::CalcBalanceHitsAdj (int iLevel) const
+
+//	CalcBalanceHitsAdj
+//
+//	Calculate adjustments to balance based on how many hits the station can
+//	withstand.
+
+	{
+	static constexpr Metric BALANCE_STD_HITS_TO_DESTROY = 25.0;
+	static constexpr Metric MAX_HITS_ADJ = 2.0;
+
+	return Min(MAX_HITS_ADJ, sqrt((Metric)CalcHitsToDestroy(iLevel) / BALANCE_STD_HITS_TO_DESTROY));
 	}
 
 Metric CStationType::CalcDefenderStrength (int iLevel) const
@@ -413,7 +437,7 @@ Metric CStationType::CalcSatelliteHitsToDestroy (CXMLElement *pSatellites, int i
 	else if (strEquals(sTag, STATION_TAG))
 		{
 		CStationType *pStationType = g_pUniverse->FindStationType((DWORD)pSatellites->GetAttributeInteger(TYPE_ATTRIB));
-		if (pStationType == NULL || !pStationType->CanAttack())
+		if (pStationType == NULL || (!pStationType->CanAttack() && !pSatellites->GetAttributeBool(SEGMENT_ATTRIB)))
 			return 0.0;
 
 		rTotalHits += (rChanceAdj * pStationType->CalcHitsToDestroy(iLevel));
@@ -641,6 +665,9 @@ Metric CStationType::CalcWeaponStrength (int iLevel) const
 //	1.0 = level weapon at 1/4 fire rate.
 
 	{
+	static constexpr Metric MULTI_WEAPON_BONUS = 1.25;
+	static constexpr Metric MULTI_WEAPON_BONUS_THRESHOLD = 0.8;
+
 	//	Start by adding up all weapons.
 
 	Metric rTotal = 0.0;
@@ -653,9 +680,15 @@ Metric CStationType::CalcWeaponStrength (int iLevel) const
 
 		int iDevLevel = DeviceItem.GetLevel();
 
+		//	Adjust if directional.
+
+		Metric rFireArcAdj = m_AverageDevices.GetFireArc(i) / 360.0;
+		if (i != 0 && rFireArcAdj <= MULTI_WEAPON_BONUS_THRESHOLD)
+			rFireArcAdj = Min(rFireArcAdj * MULTI_WEAPON_BONUS, 1.0);
+
 		//	Lower level weapons count less; higher level weapons count more.
 
-		rTotal += ::CalcLevelDiffStrength(iDevLevel - iLevel);
+		rTotal += rFireArcAdj * ::CalcLevelDiffStrength(iDevLevel - iLevel);
 		}
 
 	//	Adjust for fire rate. Double the fire rate means double the strength.
@@ -801,8 +834,8 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 	retrcImage.right = RectWidth(rcBounds);
 	retrcImage.bottom = RectHeight(rcBounds);
 
-    retxCenter = xCenter;
-    retyCenter = yCenter;
+	retxCenter = xCenter;
+	retyCenter = yCenter;
 
 	return pCompositeImage;
 	}
@@ -816,33 +849,33 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 	{
 	if (m_HullDesc.FindDataField(sField, retsValue))
 		return true;
-    else if (strEquals(sField, FIELD_ABANDONED_DOCK_SCREEN))
-        *retsValue = m_pAbandonedDockScreen.GetStringUNID(const_cast<CStationType *>(this));
-    else if (strEquals(sField, FIELD_BALANCE))
-        *retsValue = strFromInt((int)(CalcBalance() * 100.0));
-    else if (strEquals(sField, FIELD_CATEGORY))
-        {
-        if (!CanBeEncounteredRandomly())
-            *retsValue = CONSTLIT("04-Not Random");
-        else if (HasLiteralAttribute(CONSTLIT("debris")))
-            *retsValue = CONSTLIT("03-Debris");
-        else if (HasLiteralAttribute(CONSTLIT("enemy")))
-            *retsValue = CONSTLIT("02-Enemy");
-        else if (HasLiteralAttribute(CONSTLIT("friendly")))
-            *retsValue = CONSTLIT("01-Friendly");
-        else
-            *retsValue = CONSTLIT("04-Not Random");
-        }
-    else if (strEquals(sField, FIELD_DEFENDER_STRENGTH))
-        *retsValue = strFromInt((int)(100.0 * CalcDefenderStrength(GetLevel())));
-    else if (strEquals(sField, FIELD_DOCK_SCREEN))
-        *retsValue = m_pFirstDockScreen.GetStringUNID(const_cast<CStationType *>(this));
-    else if (strEquals(sField, FIELD_LEVEL))
-        *retsValue = strFromInt(GetLevel());
-    else if (strEquals(sField, FIELD_LOCATION_CRITERIA))
-        *retsValue = GetLocationCriteria().AsString();
-    else if (strEquals(sField, FIELD_NAME))
-        *retsValue = GetNounPhrase();
+	else if (strEquals(sField, FIELD_ABANDONED_DOCK_SCREEN))
+		*retsValue = m_pAbandonedDockScreen.GetStringUNID(const_cast<CStationType *>(this));
+	else if (strEquals(sField, FIELD_BALANCE))
+		*retsValue = strFromInt((int)(CalcBalance() * 100.0));
+	else if (strEquals(sField, FIELD_CATEGORY))
+		{
+		if (!CanBeEncounteredRandomly())
+			*retsValue = CONSTLIT("04-Not Random");
+		else if (HasLiteralAttribute(CONSTLIT("debris")))
+			*retsValue = CONSTLIT("03-Debris");
+		else if (HasLiteralAttribute(CONSTLIT("enemy")))
+			*retsValue = CONSTLIT("02-Enemy");
+		else if (HasLiteralAttribute(CONSTLIT("friendly")))
+			*retsValue = CONSTLIT("01-Friendly");
+		else
+			*retsValue = CONSTLIT("04-Not Random");
+		}
+	else if (strEquals(sField, FIELD_DEFENDER_STRENGTH))
+		*retsValue = strFromInt((int)(100.0 * CalcDefenderStrength(GetLevel())));
+	else if (strEquals(sField, FIELD_DOCK_SCREEN))
+		*retsValue = m_pFirstDockScreen.GetStringUNID(const_cast<CStationType *>(this));
+	else if (strEquals(sField, FIELD_LEVEL))
+		*retsValue = strFromInt(GetLevel());
+	else if (strEquals(sField, FIELD_LOCATION_CRITERIA))
+		*retsValue = GetLocationCriteria().AsString();
+	else if (strEquals(sField, FIELD_NAME))
+		*retsValue = GetNounPhrase();
 	else if (strEquals(sField, FIELD_FIRE_RATE_ADJ))
 		*retsValue = strFromInt(10000 / m_iFireRateAdj);
 	else if (strEquals(sField, FIELD_HITS_TO_DESTROY))
@@ -871,7 +904,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 		*retsValue = CONSTLIT("none");
 		}
 	else if (strEquals(sField, FIELD_MAX_LIGHT_RADIUS))
-		*retsValue = strFromInt(m_iMaxLightDistance);
+		*retsValue = strFromInt(GetMaxLightDistance());
 	else if (strEquals(sField, FIELD_SATELLITE_STRENGTH))
 		*retsValue = strFromInt((m_pSatellitesDesc ? (int)(100.0 * CalcSatelliteStrength(m_pSatellitesDesc, GetLevel())) : 0));
 	else if (strEquals(sField, FIELD_SIZE))
@@ -908,9 +941,25 @@ void CStationType::GenerateDevices (int iLevel, CDeviceDescList &Devices) const
 		Ctx.iLevel = iLevel;
 		Ctx.pRoot = m_pDevices;
 		Ctx.pResult = &Devices;
+		Ctx.bNoDefaultPos = true;
 
 		m_pDevices->AddDevices(Ctx);
 		}
+	}
+
+const CAsteroidDesc &CStationType::GetAsteroidDesc (void) const
+
+//	GetAsteroidDesc
+//
+//	Returns the asteroid descriptor.
+
+	{
+	if (!m_Asteroid.IsEmpty())
+		return m_Asteroid;
+	else if (const CStationType *pParent = CStationType::AsType(GetInheritFrom()))
+		return pParent->GetAsteroidDesc();
+	else
+		return m_Asteroid;
 	}
 
 CurrencyValue CStationType::GetBalancedTreasure (void) const
@@ -921,7 +970,31 @@ CurrencyValue CStationType::GetBalancedTreasure (void) const
 //	balance against its difficulty.
 
 	{
-	return (CurrencyValue)(pow(CalcBalance(), TREASURE_BALACE_POWER) * (Metric)STD_STATION_DATA[GetLevel()].dwTreasureValue);
+	return (CurrencyValue)(pow(CalcBalance(), TREASURE_BALANCE_POWER) * (Metric)STD_STATION_DATA[GetLevel()].dwTreasureValue);
+	}
+
+int CStationType::GetChallengeRating (void) const
+
+//	GetChallengeRating
+//
+//	An integer value representing the combat strength of the station.
+
+	{
+	//	If we have an explicit CR, return that.
+
+	if (m_iChallengeRating)
+		return m_iChallengeRating;
+
+	//	Otherwise, compute it.
+
+	else
+		{
+		static constexpr Metric CHALLENGE_RATING_K1 = 1.25;
+
+		Metric rChallenge = pow(CalcBalance(), TREASURE_BALANCE_POWER) * STD_STATION_DATA[GetLevel()].rChallenge;
+
+		return Max(1, mathRound(mathLog(rChallenge, CHALLENGE_RATING_K1)));
+		}
 	}
 
 CCommunicationsHandler *CStationType::GetCommsHandler (void)
@@ -1023,7 +1096,7 @@ int CStationType::GetLevel (int *retiMinLevel, int *retiMaxLevel) const
 	return m_iLevel;
 	}
 
-Metric CStationType::GetLevelStrength (int iLevel)
+Metric CStationType::GetLevelStrength (int iLevel) const
 
 //	GetLevelStrength
 //
@@ -1031,19 +1104,14 @@ Metric CStationType::GetLevelStrength (int iLevel)
 //	1.0 = station with level appropriate weapon and 25 hits to destroy.
 
 	{
-	Metric rTotal = 0.0;
+	static constexpr Metric BALANCE_STD_DEFENDERS_PER_STATION = 3.5;
 
-	//	Strength is based on weapons and ships
+	Metric rHitsAdj = CalcBalanceHitsAdj(iLevel);
 
-	rTotal = CalcWeaponStrength(iLevel) + CalcDefenderStrength(iLevel);
+	Metric rWeaponStrength = rHitsAdj * CalcWeaponStrength(iLevel);
+	Metric rDefenderStrength = CalcDefenderStrength(iLevel);
 
-	//	Adjust by armor. 1.0 = 25 hits to destroy.
-
-	rTotal *= (CalcHitsToDestroy(iLevel) / 25.0);
-
-	//	Done
-
-	return rTotal;
+	return (rWeaponStrength + rDefenderStrength) / BALANCE_STD_DEFENDERS_PER_STATION;
 	}
 
 CString CStationType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
@@ -1165,8 +1233,7 @@ void CStationType::MarkImages (const CCompositeImageSelector &Selector, const CC
 	if (m_pEjectaType)
 		m_pEjectaType->MarkImages();
 
-	if (m_pGateEffect)
-		m_pGateEffect->MarkImages();
+	m_Stargate.MarkImages();
 
 	//	NOTE: We don't bother marking the hero image because we don't need it
 	//	to paint the main screen. [We only needed when docking, and it's OK to
@@ -1192,6 +1259,7 @@ void CStationType::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags
 	{
 	//	We know how to handle these tags through the inheritance hierarchy.
 
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(ASTEROID_TAG), CXMLElement::MERGE_OVERRIDE);
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(COMMUNICATIONS_TAG), CXMLElement::MERGE_OVERRIDE);
 	}
 
@@ -1246,7 +1314,8 @@ void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pEjectaType.GetUNID(), true);
 	retTypesUsed->SetAt(m_pBarrierEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pControllingSovereign.GetUNID(), true);
-	retTypesUsed->SetAt(m_pGateEffect.GetUNID(), true);
+
+	m_Stargate.AddTypesUsed(retTypesUsed);
 	}
 
 ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
@@ -1348,7 +1417,7 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_pBarrierEffect.Bind(Ctx))
 		goto Fail;
 
-	if (error = m_pGateEffect.Bind(Ctx))
+	if (error = m_Stargate.Bind(Ctx))
 		goto Fail;
 
 	//	Virtual objects always get some settings by default
@@ -1419,6 +1488,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Initialize basic info
 
 	m_iLevel = pDesc->GetAttributeIntegerBounded(LEVEL_ATTRIB, 1, MAX_SYSTEM_LEVEL, 0);
+	m_iChallengeRating = pDesc->GetAttributeIntegerBounded(CHALLENGE_RATING_ATTRIB, 1, -1, 0);
 	m_fCalcLevel = (m_iLevel == 0);
 	m_fBalanceValid = false;
 
@@ -1441,11 +1511,12 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fBeacon = pDesc->GetAttributeBool(BEACON_ATTRIB);
 	m_fRadioactive = pDesc->GetAttributeBool(RADIOACTIVE_ATTRIB);
 	m_fNoMapIcon = pDesc->GetAttributeBool(NO_MAP_ICON_ATTRIB);
-    m_fNoMapDetails = pDesc->GetAttributeBool(NO_MAP_DETAILS_ATTRIB);
+	m_fNoMapDetails = pDesc->GetAttributeBool(NO_MAP_DETAILS_ATTRIB);
 	m_fTimeStopImmune = pDesc->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);
 	m_fCanAttack = pDesc->GetAttributeBool(CAN_ATTACK_ATTRIB);
 	m_fReverseArticle = pDesc->GetAttributeBool(REVERSE_ARTICLE_ATTRIB);
 	m_fNoBlacklist = (pDesc->GetAttributeBool(NO_BLACKLIST_ATTRIB) || pDesc->GetAttributeBool(IGNORE_FRIENDLY_FIRE_ATTRIB));
+	m_fAnonymous = pDesc->GetAttributeBool(ANONYMOUS_ATTRIB);
 	m_iAlertWhenAttacked = pDesc->GetAttributeInteger(ALERT_WHEN_ATTACKED_ATTRIB);
 	m_iAlertWhenDestroyed = pDesc->GetAttributeInteger(ALERT_WHEN_DESTROYED_ATTRIB);
 	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
@@ -1687,7 +1758,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			if (pSection->GetContentElementCount() > 0)
 				{
 				CXMLElement *pImage = pSection->GetContentElement(0);
-				if (error = m_pAnimations[i].m_Image.InitFromXML(Ctx, pImage))
+				if (error = m_pAnimations[i].m_Image.InitFromXML(Ctx, *pImage))
 					return ComposeLoadError(Ctx, CONSTLIT("Unable to load animation image"));
 				}
 			}
@@ -1830,24 +1901,16 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	else
 		m_iEjectaAdj = 0;
 
-	//	Stellar objects
+	//	Special object descriptors
 
-	m_rgbSpaceColor = ::LoadRGBColor(pDesc->GetAttribute(SPACE_COLOR_ATTRIB));
-	m_iMaxLightDistance = pDesc->GetAttributeIntegerBounded(MAX_LIGHT_DISTANCE, 1, -1, 500);
+	if (error = m_Asteroid.InitFromStationTypeXML(Ctx, *pDesc))
+		return ComposeLoadError(Ctx, Ctx.sError);
 
-	int iGravity;
-	if (pDesc->FindAttributeInteger(GRAVITY_RADIUS_ATTRIB, &iGravity))
-		m_rGravityRadius = iGravity * LIGHT_SECOND;
-	else
-		m_rGravityRadius = 0.0;
+	if (error = m_Star.InitFromStationTypeXML(Ctx, *pDesc))
+		return ComposeLoadError(Ctx, Ctx.sError);
 
-	//	Stargates
-
-	m_sStargateDestNode = pDesc->GetAttribute(DEST_NODE_ATTRIB);
-	m_sStargateDestEntryPoint = pDesc->GetAttribute(DEST_ENTRY_POINT_ATTRIB);
-
-	if (error = m_pGateEffect.LoadUNID(Ctx, pDesc->GetAttribute(GATE_EFFECT_ATTRIB)))
-		return error;
+	if (error = m_Stargate.InitFromStationTypeXML(Ctx, *pDesc))
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Miscellaneous
 
@@ -1868,8 +1931,45 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 
-	if (strEquals(sProperty, PROPERTY_AUTO_LEVEL_FREQUENCY))
+	if (strEquals(sProperty, PROPERTY_ASTEROID_TYPE))
+		{
+		auto iType = GetAsteroidDesc().GetType();
+		if (iType == EAsteroidType::none)
+			return ICCItemPtr::Nil();
+		else
+			return ICCItemPtr(CAsteroidDesc::CompositionID(iType));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_AUTO_LEVEL_FREQUENCY))
 		return (GetEncounterDesc().HasAutoLevelFrequency() ? ICCItemPtr(GetEncounterDesc().GetLevelFrequency()) : ICCItemPtr(ICCItem::Nil));
+
+	else if (strEquals(sProperty, PROPERTY_CAN_BE_MINED))
+		return ICCItemPtr(ShowsUnexploredAnnotation());
+
+	else if (strEquals(sProperty, PROPERTY_CHALLENGE_RATING))
+		{
+		int iRating = GetChallengeRating();
+		if (iRating <= 0)
+			return ICCItemPtr::Nil();
+		else
+			return ICCItemPtr(iRating);
+		}
+
+	else if (strEquals(sProperty, PROPERTY_CURRENCY))
+		{
+		if (m_pTrade)
+			return ICCItemPtr(m_pTrade->GetEconomyType()->GetUNID());
+		else
+			return ICCItemPtr::Nil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_CURRENCY_NAME))
+		{
+		if (m_pTrade)
+			return ICCItemPtr(m_pTrade->GetEconomyType()->GetSID());
+		else
+			return ICCItemPtr::Nil();
+		}
 
 	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_BY_NODE))
 		{
@@ -1883,8 +1983,28 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_TOTAL))
 		return ICCItemPtr(m_EncounterRecord.GetTotalCount());
 
+	else if (strEquals(sProperty, PROPERTY_HULL_TYPE))
+		{
+		if (IsShipEncounter())
+			return ICCItemPtr::Nil();
+		else if (m_HullDesc.IsImmutable())
+			return ICCItemPtr(CONSTLIT("immutable"));
+		else if (m_HullDesc.GetHullType() == CStationHullDesc::hullUnknown)
+			return ICCItemPtr::Nil();
+		else
+			return ICCItemPtr(CStationHullDesc::GetID(m_HullDesc.GetHullType()));
+		}
+
 	else if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
 		return ICCItemPtr(GetEncounterDesc().GetLevelFrequency());
+
+	else if (strEquals(sProperty, PROPERTY_MAX_BALANCE))
+		{
+		if (m_pTrade)
+			return CTLispConvert::CreateCurrencyValue(m_pTrade->GetMaxBalance(GetLevel()));
+		else
+			return ICCItemPtr::Nil();
+		}
 
 	else if (strEquals(sProperty, PROPERTY_PRIMARY_WEAPON))
 		{
@@ -1911,10 +2031,18 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 		return m_pSovereign->GetProperty(Ctx, PROPERTY_NAME);
 		}
+	else if (strEquals(sProperty, PROPERTY_STD_TREASURE))
+		{
+		Metric rTreasure = (Metric)GetBalancedTreasure();
+		if (rTreasure <= 0.0)
+			return ICCItemPtr::Nil();
+
+		return ICCItemPtr(rTreasure);
+		}
 	else if (strEquals(sProperty, PROPERTY_SYSTEM_CRITERIA))
 		{
-        const CTopologyNode::SCriteria *pSystemCriteria;
-        if (!GetEncounterDesc().HasSystemCriteria(&pSystemCriteria))
+		const CTopologyNode::SCriteria *pSystemCriteria;
+		if (!GetEncounterDesc().HasSystemCriteria(&pSystemCriteria))
 			return ICCItemPtr(ICCItem::Nil);
 
 		if (pSystemCriteria->AttribCriteria.IsEmpty())

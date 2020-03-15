@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define CODE_TAG								CONSTLIT("Code")
 #define MESSAGE_TAG								CONSTLIT("Message")
 #define RTF_TAG									CONSTLIT("RTF")
 #define STRING_TAG								CONSTLIT("String")
@@ -306,11 +307,13 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 		//	Read the text
 
-		if (strEquals(pItem->GetTag(), TEXT_TAG))
+		bool bForceCode = false;
+		if (strEquals(pItem->GetTag(), TEXT_TAG) 
+				|| (bForceCode = strEquals(pItem->GetTag(), CODE_TAG)))
 			{
 			//	If this is code, then link it.
 
-			if (IsCode(pItem->GetContentText(0)))
+			if (bForceCode || IsCode(pItem->GetContentText(0)))
 				{
 				//	Link the code
 

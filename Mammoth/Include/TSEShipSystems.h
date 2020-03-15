@@ -168,8 +168,11 @@ class CDeviceSystem
 		const CInstalledDevice &GetDevice (int iIndex) const { return m_Devices[iIndex]; }
 		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
 		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
+		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return GetDevice(m_NamedDevices[iDev]).GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
 		int GetNamedIndex (DeviceNames iDev) const { return (HasNamedDevices() ? m_NamedDevices[iDev] : -1); }
+		DWORD GetTargetTypes (void) const;
 		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
+		bool HasShieldsUp (void) const;
 		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices = 0);
 		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1, bool bInCreate = false, int *retiDeviceSlot = NULL);
 		bool IsEmpty (void) const { return (m_Devices.GetCount() == 0); }
@@ -186,6 +189,7 @@ class CDeviceSystem
 		DeviceNames SelectWeapon (CSpaceObject *pObj, int iIndex, int iVariant);
 		void SetCursorAtDevice (CItemListManipulator &ItemList, int iIndex) const;
 		void SetCursorAtNamedDevice (CItemListManipulator &ItemList, DeviceNames iDev) const;
+		void SetSecondary (bool bValue = true);
 		bool Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList, ItemCategories *retiCat = NULL);
         void WriteToStream (IWriteStream *pStream);
 
@@ -749,6 +753,35 @@ class CPowerConsumption
 
 		DWORD m_fOutOfFuel:1;				//	TRUE if ship is out of fuel
 		DWORD m_fOutOfPower:1;				//	TRUE if reactor generating no power
+	};
+
+//	CShipUpdateSet ------------------------------------------------------------
+
+class CShipUpdateSet
+	{
+	public:
+		enum EUpdateTypes
+			{
+			//	These values are not persisted. Insert new values in alpha order
+			//	and update numbers and count.
+
+			armorBonus		= 0,
+			armorStatus		= 1,
+			bounds			= 2,
+			cargo			= 3,
+			deviceBonus		= 4,
+			overlays		= 5,
+			performance		= 6,
+			weaponStatus	= 7,
+
+			count			= 8,
+			};
+
+		bool IsSet (EUpdateTypes iType) const { return m_bSet[iType]; }
+		void Set (EUpdateTypes iType, bool bValue = true);
+
+	private:
+		bool m_bSet[EUpdateTypes::count] = { false };
 	};
 
 //  CShipPerformanceDesc ------------------------------------------------------

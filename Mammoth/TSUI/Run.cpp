@@ -521,7 +521,9 @@ LONG CHumanInterface::WMKeyDown (int iVirtKey, DWORD dwKeyData)
 
 		//	Pass it to the session
 
+		m_iLastVirtualKey = iVirtKey;
 		m_pCurSession->HIKeyDown(iVirtKey, dwKeyData);
+		m_iLastVirtualKey = 0;
 
 		//	If we're dead, then exit
 
@@ -563,14 +565,17 @@ LONG CHumanInterface::WMLButtonDblClick (int x, int y, DWORD dwFlags)
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;
-
 		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
+
+		m_iLastVirtualKey = VK_LBUTTON;
 		m_pCurSession->HILButtonDblClick(xLocal, yLocal, dwFlags);
+		m_iLastVirtualKey = 0;
 		}
 
     m_bLButtonDown = true;
 	return 0;
 	}
+
 LONG CHumanInterface::WMLButtonDown (int x, int y, DWORD dwFlags)
 
 //	WMLButtonDown
@@ -583,9 +588,11 @@ LONG CHumanInterface::WMLButtonDown (int x, int y, DWORD dwFlags)
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;
-
 		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
+
+		m_iLastVirtualKey = VK_LBUTTON;
 		m_pCurSession->HILButtonDown(xLocal, yLocal, dwFlags);
+		m_iLastVirtualKey = 0;
 		}
 
     m_bLButtonDown = true;
@@ -625,14 +632,17 @@ LONG CHumanInterface::WMMButtonDblClick (int x, int y, DWORD dwFlags)
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;
-
 		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
+
+		m_iLastVirtualKey = VK_MBUTTON;
 		m_pCurSession->HIMButtonDblClick(xLocal, yLocal, dwFlags);
+		m_iLastVirtualKey = 0;
 		}
 
     m_bMButtonDown = true;
 	return 0;
 	}
+
 LONG CHumanInterface::WMMButtonDown (int x, int y, DWORD dwFlags)
 
 //	WMMButtonDown
@@ -645,9 +655,11 @@ LONG CHumanInterface::WMMButtonDown (int x, int y, DWORD dwFlags)
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;
-
 		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
+
+		m_iLastVirtualKey = VK_MBUTTON;
 		m_pCurSession->HIMButtonDown(xLocal, yLocal, dwFlags);
+		m_iLastVirtualKey = 0;
 		}
 
     m_bMButtonDown = true;
@@ -770,9 +782,11 @@ LONG CHumanInterface::WMRButtonDown (int x, int y, DWORD dwFlags)
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;
-
 		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
+
+		m_iLastVirtualKey = VK_RBUTTON;
 		m_pCurSession->HIRButtonDown(xLocal, yLocal, dwFlags);
+		m_iLastVirtualKey = 0;
 		}
 
     m_bRButtonDown = true;

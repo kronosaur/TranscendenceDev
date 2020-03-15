@@ -6,7 +6,7 @@
 #include "PreComp.h"
 #include <math.h>
 
-DWORD g_Seed = 0;
+thread_local DWORD g_Seed = 0;
 
 int Kernel::mathAdjust (int iValue, int iPercent)
 

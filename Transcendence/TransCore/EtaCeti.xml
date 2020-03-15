@@ -7,6 +7,7 @@
 	<SystemType UNID="&ssEtaCeti;"
 				attributes=			"envAir"
 				backgroundID=		"&rsRedGiantSpace;"
+				spaceColor=			"#200f0a"
 				>
 		<SystemGroup>
 			<Lookup table="IceNebulaSystem"/>

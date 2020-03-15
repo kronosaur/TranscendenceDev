@@ -6,74 +6,129 @@
 #pragma once
 
 class CHeadsUpDisplay
-    {
-    public:
-        CHeadsUpDisplay (CHumanInterface &HI, CTranscendenceModel &Model) :
-                m_HI(HI),
-                m_Model(Model),
-                m_pArmorPainter(NULL),
-                m_pShieldsPainter(NULL),
-                m_iSelection(-1),
-                m_pReactorPainter(NULL),
-                m_pWeaponsPainter(NULL)
-            { }
+	{
+	public:
+		CHeadsUpDisplay (CHumanInterface &HI, CTranscendenceModel &Model) :
+				m_HI(HI),
+				m_Model(Model)
+			{ }
 
-        inline ~CHeadsUpDisplay (void) { CleanUp(); }
+		CHeadsUpDisplay (const CHeadsUpDisplay &Src) = delete;
+		CHeadsUpDisplay (CHeadsUpDisplay &&Src) = delete;
 
-        void CleanUp (void);
-        void GetClearHorzRect (RECT *retrcRect) const;
-        bool Init (const RECT &rcRect);
-        void Invalidate (EHUDTypes iHUD = hudNone);
-        void Paint (CG32bitImage &Screen, bool bInDockScreen = false);
-        void SetArmorSelection (int iSelection);
-        void Update (int iTick);
+		~CHeadsUpDisplay (void) { CleanUp(); }
 
-    private:
-        CHumanInterface &m_HI;
-        CTranscendenceModel &m_Model;
-        RECT m_rcScreen;
+		CHeadsUpDisplay &operator= (const CHeadsUpDisplay &Src) = delete;
+		CHeadsUpDisplay &operator= (CHeadsUpDisplay &&Src) = delete;
 
-        //  Armor/Shields Display
+		void CleanUp (void);
+		void GetClearHorzRect (RECT *retrcRect) const;
+		bool Init (const RECT &rcRect, CString *retsError = NULL);
+		void Invalidate (EHUDTypes iHUD = hudNone);
+		void Paint (CG32bitImage &Screen, int iTick, bool bInDockScreen = false);
+		void SetArmorSelection (int iSelection);
+		void Update (int iTick);
 
-		IHUDPainter *m_pArmorPainter;
-		IHUDPainter *m_pShieldsPainter;
-        int m_iSelection;                   //  Selected armor seg (or -1)
+	private:
+		bool CreateHUD (EHUDTypes iHUD, const CShipClass &SourceClass, const RECT &rcScreen, CString *retsError = NULL);
+		void InvalidateHUD (EHUDTypes iHUD) { if (m_pHUD[iHUD]) m_pHUD[iHUD]->Invalidate(); }
+		void PaintHUD (EHUDTypes iHUD, CG32bitImage &Screen, SHUDPaintCtx &PaintCtx) const;
 
-        //  Reactor Display
+		CHumanInterface &m_HI;
+		CTranscendenceModel &m_Model;
+		RECT m_rcScreen;
 
-        IHUDPainter *m_pReactorPainter;
+		//	HUDs
 
-        //  Weapons Display
+		TUniquePtr<IHUDPainter> m_pHUD[hudCount];
+		int m_iSelection = -1;						//  Selected armor seg (or -1)
+	};
 
-        IHUDPainter *m_pWeaponsPainter;
-    };
+enum class ENarrativeDisplayStyle
+	{
+	none,
+
+	missionAccept,
+	};
+
+class CNarrativeDisplay
+	{
+	public:
+		CNarrativeDisplay (CHumanInterface &HI) :
+				m_HI(HI),
+				m_Painter(HI.GetVisuals())
+			{ }
+
+		void Init (const RECT &rcRect);
+		void Paint (CG32bitImage &Screen, int iTick) const;
+		void Show (ENarrativeDisplayStyle iStyle, const CTileData &Data);
+		void Update (int iTick);
+
+	private:
+		static constexpr int FADE_IN_TIME = 5;
+		static constexpr int NORMAL_TIME = 300;
+		static constexpr int FADE_OUT_TIME = 15;
+		static constexpr int DISPLAY_WIDTH = 600;
+		static constexpr int DISPLAY_HEIGHT = 96;
+		static constexpr int IMAGE_WIDTH = 192;
+		static constexpr int IMAGE_HEIGHT = 96;
+		static constexpr int MARGIN_X = 20;
+		static constexpr int MARGIN_Y = 20;
+
+		static constexpr CG32bitPixel RGB_BACKGROUND_COLOR = CG32bitPixel(80, 80, 80);
+		static constexpr BYTE BACKGROUND_OPACITY = 0x40;
+		static constexpr int BACKGROUND_CORNER_RADIUS = 4;
+
+		enum EStates
+			{
+			stateNone,
+
+			stateStart,
+			stateFadeIn,
+			stateNormal,
+			stateFadeOut,
+			};
+
+		CHumanInterface &m_HI;
+
+		CTilePainter m_Painter;
+
+		EStates m_iState = stateNone;
+		int m_iStartTick = 0;
+		BYTE m_byOpacity = 0;
+
+		CG32bitImage m_Buffer;
+		RECT m_rcRect = { 0 };
+		RECT m_rcIcon = { 0 };
+		RECT m_rcText = { 0 };
+	};
 
 class CSystemMapDisplay
-    {
-    public:
-        CSystemMapDisplay (CHumanInterface &HI, CTranscendenceModel &Model, CHeadsUpDisplay &HUD);
+	{
+	public:
+		CSystemMapDisplay (CHumanInterface &HI, CTranscendenceModel &Model, CHeadsUpDisplay &HUD);
 
-        bool HandleKeyDown (int iVirtKey, DWORD dwKeyData);
-        bool HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
-        bool Init (const RECT &rcRect);
-        void OnHideMap (void);
-        void OnShowMap (void);
-        void Paint (CG32bitImage &Screen);
+		bool HandleKeyDown (int iVirtKey, DWORD dwKeyData);
+		bool HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
+		bool Init (const RECT &rcRect);
+		void OnHideMap (void);
+		void OnShowMap (void);
+		void Paint (CG32bitImage &Screen);
 
-    private:
-        enum EConstants
-            {
-            MAP_SCALE_COUNT = 4,
-            };
+	private:
+		enum EConstants
+			{
+			MAP_SCALE_COUNT = 4,
+			};
 
-        Metric GetScaleKlicksPerPixel (int iScale) const;
+		Metric GetScaleKlicksPerPixel (int iScale) const;
 
-        CHumanInterface &m_HI;
-        CTranscendenceModel &m_Model;
-        CHeadsUpDisplay &m_HUD;
-        RECT m_rcScreen;
+		CHumanInterface &m_HI;
+		CTranscendenceModel &m_Model;
+		CHeadsUpDisplay &m_HUD;
+		RECT m_rcScreen;
 
-        CMapScaleCounter m_Scale;           //  Track current map scale
-        CMapLegendPainter m_HelpPainter;
-    };
+		CMapScaleCounter m_Scale;           //  Track current map scale
+		CMapLegendPainter m_HelpPainter;
+	};
 

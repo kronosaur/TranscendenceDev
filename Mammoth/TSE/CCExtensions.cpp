@@ -30,6 +30,7 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_DEBUG_GET				7
 #define FN_DEBUG_SET				8
 #define FN_DEBUG_BREAK				9
+#define FN_DEBUG_SET_PERFORMANCE_COUNTER	10
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -209,8 +210,6 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_HAS_ABILITY			101
 #define FN_OBJ_TRANSLATE			102
 #define FN_OBJ_GET_STARGATE_ID		103
-#define FN_OBJ_SET_PROPERTY			104
-#define FN_OBJ_GET_PROPERTY			105
 #define FN_OBJ_DEVICE_LINKED_FIRE_OPTIONS	106
 #define FN_OBJ_ARMOR_CRITICALITY	107
 #define FN_OBJ_SET_ITEM_PROPERTY	108
@@ -527,6 +526,7 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_GET_NAME				20
 #define FN_DESIGN_SET_PROPERTY			21
 #define FN_DESIGN_INC_PROPERTY			22
+#define FN_DESIGN_GET_IMAGE_DESC		23
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -653,7 +653,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"*",	PPFLAG_SIDEEFFECTS, },
 
-		{	"dbgGet",					fnDebug,		FN_DEBUG_GET,
+		{	"dbgGet",						fnDebug,		FN_DEBUG_GET,
 			"(dbgGet property) -> value\n\n"
 			
 			"property:\n\n"
@@ -694,6 +694,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showNodeInfo True/Nil\n",
 
 			"sv",	PPFLAG_SIDEEFFECTS, },
+
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+		{	"dbgSetPerformanceCounter",		fnDebug,			FN_DEBUG_SET_PERFORMANCE_COUNTER,
+			"(dbgSetPerformanceCounter counter [True|Nil]) -> True/Nil\n"
+			"(dbgSetPerformanceCounter \"*\" [True|Nil]) -> True/Nil\n"
+			"(dbgSetPerformanceCounter \"?\") -> List of counters",
+
+			"s*",	PPFLAG_SIDEEFFECTS, },
+#endif
 
 		{	"getAPIVersion",				fnDebug,		FN_API_VERSION,
 			"(getAPIVersion) -> version",
@@ -833,8 +842,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetPrice item|type [currency]) -> price of a single item",
 			"v*",	0,	},
 
-		{	"itmGetProperty",				fnItemGet,		FN_ITEM_PROPERTY,
-			"(itmGetProperty item|type property) -> value\n\n"
+		{	"itm@",							fnItemGet,		FN_ITEM_PROPERTY,
+			"(itm@ item|type property) -> value\n\n"
 			
 			"property (instance)\n\n"
 			"   'canBeUsed\n"
@@ -918,6 +927,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'valueBonusPerCharge\n"
 			"   'weaponTypes\n",
 
+			"vs",	0,	},
+
+		{	"itmGetProperty",				fnItemGet,		FN_ITEM_PROPERTY,
+			"RENAMED: Use (itm@ ...) instead.",
 			"vs",	0,	},
 
 		{	"itmGetStaticData",				fnItemGet,		FN_ITEM_GET_STATIC_DATA,
@@ -1030,8 +1043,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmSetKnown type|item [True/Nil]) -> True/Nil",
 			"v*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"itmSetProperty",				fnItemSet,		FN_ITEM_PROPERTY,
-			"(itmSetProperty item property value) -> item\n\n"
+		{	"itmSet@",						fnItemSet,		FN_ITEM_PROPERTY,
+			"(itmSet@ item property value) -> item\n\n"
 			
 			"property\n\n"
 			
@@ -1043,6 +1056,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'level level"
 			"   'shotSeparationScale separation\n",
 
+			"vs*",	0,	},
+
+		{	"itmSetProperty",				fnItemSet,		FN_ITEM_PROPERTY,
+			"RENAMED: Use (itmSet@ ...) instead.",
 			"vs*",	0,	},
 
 		{	"itmSetReference",				fnItemGet,		FN_ITEM_SET_REFERENCE,
@@ -1797,36 +1814,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"objGetItemProperty",			fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
-			"(objGetItemProperty obj item property) -> value\n\n"
-
-			"property (install/remove)\n\n"
-
-			"   'installDevicePrice   Price to install the given device\n"
-			"   'installDeviceStatus  {canInstall, price, descID, upgradeOnly}\n"
-			"   'installItemStatus    {canInstall, price, descID, upgradeOnly}\n"
-			"   'removeDevicePrice    Price to remove the given device\n"
-			"   'removeItemStatus     {canRemove, price, descID, upgradeOnly}\n"
-			"\n"
-
-			"property (device)\n\n"
-
-			"   'capacitor\n"
-			"   'enabled\n"
-			"   'linkedFireOptions\n"
-			"   'pos\n"
-			"   'secondary\n"
-			"   'temperature\n"
-			"\n"
-
-			"property (armor)\n\n"
-
-			"   'completeSet     True if part of a complete set\n"
-			"   'hp              Current hit points\n"
-			"   'primeSegment    True if first segment in a set\n"
-			"\n"
-			
-			"All properties for itmGetProperty are also valid.",
-
+			"RENAMED: Use (obj@ obj item property) instead.",
 			"ivs",	0,	},
 
 		{	"objGetItems",					fnObjItemOld,		FN_OBJ_ENUM_ITEMS,
@@ -1895,8 +1883,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetOverlayPos obj overlayID) -> vector",
 			"ii",	0,	},
 
-		{	"objGetOverlayProperty",			fnObjGet,		FN_OBJ_GET_OVERLAY_PROPERTY,
-			"(objGetOverlayProperty obj overlayID property) -> value\n\n"
+		{	"ovr@",						fnObjGet,		FN_OBJ_GET_OVERLAY_PROPERTY,
+			"(ovr@ obj overlayID property) -> value\n\n"
 			
 			"property\n\n"
 			
@@ -1906,6 +1894,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'rotation\n"
 			"   'type\n"
 			,
+			"iis",	0,	},
+
+		{	"objGetOverlayProperty",			fnObjGet,		FN_OBJ_GET_OVERLAY_PROPERTY,
+			"RENAMED: Use (ovr@ ...) instead.",
 			"iis",	0,	},
 
 		{	"objGetOverlayRotation",	fnObjGet,		FN_OBJ_GET_OVERLAY_ROTATION,
@@ -1928,8 +1920,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetPos obj) -> vector",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objGetProperty",				fnObjGet,		FN_OBJ_GET_PROPERTY,
-			"(objGetProperty obj property) -> value\n\n"
+		{	"obj@",							fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
+			"(obj@ obj property) -> value\n\n"
 
 			"property (all)\n\n"
 
@@ -2070,8 +2062,37 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'style -> 'smallCross\n"
 			"\n"
-			"NOTE: All type properties (accessed via typGetProperty) are also valid object properties.",
+			"(obj@ obj item property) -> value\n\n"
 
+			"property (install/remove)\n\n"
+
+			"   'installDevicePrice   Price to install the given device\n"
+			"   'installDeviceStatus  {canInstall, price, descID, upgradeOnly}\n"
+			"   'installItemStatus    {canInstall, price, descID, upgradeOnly}\n"
+			"   'removeDevicePrice    Price to remove the given device\n"
+			"   'removeItemStatus     {canRemove, price, descID, upgradeOnly}\n"
+			"\n"
+			"property (device)\n\n"
+
+			"   'capacitor\n"
+			"   'enabled\n"
+			"   'linkedFireOptions\n"
+			"   'pos\n"
+			"   'secondary\n"
+			"   'temperature\n"
+			"\n"
+			"property (armor)\n\n"
+
+			"   'completeSet     True if part of a complete set\n"
+			"   'hp              Current hit points\n"
+			"   'primeSegment    True if first segment in a set\n"
+			"\n"
+			"NOTE: All type properties (accessed via typ@) are also valid object properties.",
+
+			"i*s",	0,	},
+
+		{	"objGetProperty",				fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
+			"RENAMED: Use (obj@ ...) instead.",
 			"is",	0,	},
 
 		{	"objGetRefuelItemAndPrice",		fnObjGet,		FN_OBJ_GET_REFUEL_ITEM,	
@@ -2164,12 +2185,20 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objIncOverlayData obj overlayID attrib [increment]) -> new value",
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objIncOverlayProperty",		fnObjGet,		FN_OBJ_INC_OVERLAY_PROPERTY,
-			"(objIncOverlayProperty obj overlayID property [increment]) -> new value",
+		{	"ovrInc@",						fnObjGet,		FN_OBJ_INC_OVERLAY_PROPERTY,
+			"(ovrInc@ obj overlayID property [increment]) -> new value",
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"objIncOverlayProperty",		fnObjGet,		FN_OBJ_INC_OVERLAY_PROPERTY,
+			"RENAMED: Use (ovrInc@ ...) instead.",
+			"iis*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objInc@",				fnObjSet,		FN_OBJ_INC_PROPERTY,
+			"(objInc@ obj property [increment]) -> new value",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"objIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
-			"(objIncProperty obj property [increment]) -> new value",
+			"RENAMED: Use (objInc@ ...) instead.",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIncVel",					fnObjSet,		FN_OBJ_INCREMENT_VELOCITY,	
@@ -2294,23 +2323,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivsv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetItemProperty",			fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
-			"(objSetItemProperty obj item property value [count]) -> item\n\n"
-			
-			"property\n\n"
-
-			"   'charges charges\n"
-			"   'cycleFire [True|Nil]"
-			"   'damaged [True|Nil]\n"
-			"   'disrupted [True|Nil|ticks]\n"
-			"   'enabled [True|Nil|'silentDisabled|'silentEnabled]\n"
-			"   'fireArc Nil|(min max)|'omnidirectional\n"
-			"   'hp hitPoints\n"
-			"   'incCharges charges\n"
-			"   'linkedFireOptions list-of-options\n"
-			"   'pos (angle radius [z])\n"
-			"   'secondary [True|Nil]"
-			"   'unknownTypeIndex [integer|Nil]",
-
+			"RENAMED: Use (objSet@ obj item ...) instead.",
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetKnown",					fnObjGetOld,		FN_OBJ_SET_KNOWN,
@@ -2349,8 +2362,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objSetOverlayPos obj overlayID pos)",
 			"iiv",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objSetOverlayProperty",			fnObjGet,		FN_OBJ_SET_OVERLAY_PROPERTY,
-			"(objSetOverlayProperty obj overlayID property value)\n\n"
+		{	"ovrSet@",					fnObjGet,		FN_OBJ_SET_OVERLAY_PROPERTY,
+			"(ovrSet@ obj overlayID property value)\n\n"
 			
 			"property:\n\n"
 			
@@ -2361,6 +2374,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"iisv",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"objSetOverlayProperty",			fnObjGet,		FN_OBJ_SET_OVERLAY_PROPERTY,
+			"RENAMED: Use (ovrSet@ ...) instead.",
+			"iisv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"objSetOverlayRotation",		fnObjGet,		FN_OBJ_SET_OVERLAY_ROTATION,
 			"(objSetOverlayRotation obj overlayID rotation)",
 			"iii",	PPFLAG_SIDEEFFECTS,	},
@@ -2369,8 +2386,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objSetPos obj vector [rotation])",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objSetProperty",				fnObjSet,		FN_OBJ_SET_PROPERTY,
-			"(objSetProperty obj property value) -> True/Nil\n\n"
+		{	"objSet@",						fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
+			"(objSet@ obj property value) -> True/Nil\n\n"
 			
 			"property (ships)\n\n"
 
@@ -2411,8 +2428,29 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'shipReinforcementEnabled True|Nil\n"
 			"   'showMapLabel True|Nil\n"
 			"   'sovereign type\n"
-			"   'structuralHP hitPoints",
+			"   'structuralHP hitPoints\n"
+			"\n"
+			"(objSet@ obj item property value [count]) -> item\n\n"
+			
+			"property\n\n"
 
+			"   'charges charges\n"
+			"   'cycleFire [True|Nil]"
+			"   'damaged [True|Nil]\n"
+			"   'disrupted [True|Nil|ticks]\n"
+			"   'enabled [True|Nil|'silentDisabled|'silentEnabled]\n"
+			"   'fireArc Nil|(min max)|'omnidirectional\n"
+			"   'hp hitPoints\n"
+			"   'incCharges charges\n"
+			"   'linkedFireOptions list-of-options\n"
+			"   'pos (angle radius [z])\n"
+			"   'secondary [True|Nil]"
+			"   'unknownTypeIndex [integer|Nil]",
+
+			"i*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSetProperty",				fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
+			"RENAMED: Use (objSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetShowAsDestination",			fnObjSet,		FN_OBJ_SET_AS_DESTINATION,
@@ -2512,7 +2550,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	-----------------
 
 		{	"msnAccept",					fnMissionSet,		FN_MISSION_ACCEPTED,
-			"(msnAccept missionObj)",
+			"(msnAccept missionObj) -> True/Nil",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnAddTimerEvent",				fnMissionSet,		FN_MISSION_ADD_TIMER,
@@ -2542,7 +2580,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is",	0,	},
 
 		{	"msnCanCreate",					fnMission,			FN_MISSION_CAN_CREATE,
-			"(msnCanCreate unid [owner [data]]) -> True|Nil",
+			"(msnCanCreate unid [owner [data|options]]) -> True|Nil\n\n"
+			
+			"options:\n\n"
+			
+			"   'noMissionArcCheck: Do not check if in correct sequence.\n"
+			"   'noSystemLevelCheck: Do not check if correct system level.\n",
+
 			"v*",	0,	},
 
 		{	"msnCreate",					fnMission,			FN_MISSION_CREATE,
@@ -2559,7 +2603,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnFailure",				fnMissionSet,		FN_MISSION_FAILURE,
-			"(msnFailure missionObj [data])",
+			"(msnFailure missionObj [data]) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnFind",						fnMission,			FN_MISSION_FIND,
@@ -2593,8 +2637,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnGetObjRefData missionObj attrib) -> obj",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"msnGetProperty",				fnObjGet,		FN_OBJ_GET_PROPERTY,
-			"(msnGetProperty missionObj property) -> value\n\n"
+		{	"msn@",							fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
+			"(msn@ missionObj property) -> value\n\n"
 			
 			"property\n\n"
 			
@@ -2630,6 +2674,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"is",	0,	},
 
+		{	"msnGetProperty",				fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
+			"RENAMED: Use (msn@ ...) instead.",
+			"is",	0,	},
+
 		{	"msnGetStaticData",				fnObjData,		FN_OBJ_GET_STATIC_DATA,
 			"(msnGetStaticData missionObj attrib) -> data",
 			NULL,	0,	},
@@ -2642,8 +2690,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnIncData missionObj attrib [increment]) -> new value",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"msnInc@",						fnObjSet,		FN_OBJ_INC_PROPERTY,
+			"(msnInc@ obj property [increment]) -> new value",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"msnIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
-			"(msnIncProperty obj property [increment]) -> new value",
+			"RENAMED: Use (msnInc@ ...) instead.",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnRefreshSummary",			fnMissionSet,		FN_MISSION_REFRESH_SUMMARY,
@@ -2670,8 +2722,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnSetPlayerTarget missionObj)",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"msnSetProperty",				fnObjSet,		FN_OBJ_SET_PROPERTY,
-			"(msnSetProperty obj property value) -> True/Nil\n\n"
+		{	"msnSet@",						fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
+			"(msnSet@ obj property value) -> True/Nil\n\n"
 			
 			"property\n\n"
 
@@ -2684,6 +2736,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"msnSetProperty",				fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
+			"RENAMED: Use (msnSet@ ...) instead.",
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"msnSetTypeData",				fnObjData,		FN_OBJ_SET_GLOBAL_DATA,
 			"(msnSetTypeData missionObj attrib data)",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
@@ -2693,7 +2749,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnSuccess",				fnMissionSet,		FN_MISSION_SUCCESS,
-			"(msnSuccess missionObj [data])",
+			"(msnSuccess missionObj [data]) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnTranslate",					fnObjGet,		FN_OBJ_TRANSLATE,
@@ -3000,8 +3056,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysGetObjectByName [source] name) -> obj",
 			"*s",	0,	},
 
-		{	"sysGetProperty",	fnSystemGet,	FN_SYS_GET_PROPERTY,
-			"(sysGetProperty [nodeID] property) -> value\n\n"
+		{	"sys@",							fnSystemGet,	FN_SYS_GET_PROPERTY,
+			"(sys@ [nodeID] property) -> value\n\n"
 			
 			"property:\n\n"
 			
@@ -3013,6 +3069,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'name              The name of the system\n"
 			"   'pos               Node position on map (x y)",
 
+			"*s",	0,	},
+
+		{	"sysGetProperty",	fnSystemGet,	FN_SYS_GET_PROPERTY,
+			"RENAMED: Use (sys@ ...) instead.",
 			"*s",	0,	},
 
 		{	"sysGetPOV",					fnSystemGet,	FN_SYS_GET_POV,
@@ -3171,21 +3231,25 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysSetKnown",					fnSystemGet,	FN_SYS_SET_KNOWN,
-			"(sysSetKNown [nodeID] [True/Nil]) -> True/Nil",
+			"(sysSetKnown [nodeID] [True/Nil]) -> True/Nil",
 			"*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysSetPOV",					fnSystemGet,	FN_SYS_SET_POV,
 			"(sysSetPOV obj|vector) -> True/Nil",
 			"v",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"sysSetProperty",	fnSystemGet,	FN_SYS_SET_PROPERTY,
-			"(sysSetProperty [nodeID] property value) -> True/Nil\n\n"
+		{	"sysSet@",						fnSystemGet,	FN_SYS_SET_PROPERTY,
+			"(sysSet@ [nodeID] property value) -> True/Nil\n\n"
 			
 			"property:\n\n"
 
 			"   'known             Known to player\n"
 			"   'pos               Node position on map (x y)",
 
+			"*sv",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"sysSetProperty",	fnSystemGet,	FN_SYS_SET_PROPERTY,
+			"RENAMED: Use (sysSet@ ...) instead.",
 			"*sv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysStartTime",					fnSystemMisc,	FN_SYS_START_TIME,
@@ -3488,12 +3552,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"",
 			"is",	0,	},
 
+		{	"typGetImageDesc",				fnDesignGet,		FN_DESIGN_GET_IMAGE_DESC,
+			"(typGetImageDesc unid [options]) -> imageDesc",
+			"i*",	0,	},
+
 		{	"typGetName",					fnDesignGet,		FN_DESIGN_GET_NAME,
 			"(typGetName unid [flags]) -> name",
 			"i*",	0,	},
 
-		{	"typGetProperty",				fnDesignGet,		FN_DESIGN_GET_PROPERTY,
-			"(typGetProperty unid property) -> value\n\n"
+		{	"typ@",							fnDesignGet,		FN_DESIGN_GET_PROPERTY,
+			"(typ@ unid property) -> value\n\n"
 			
 			"property (all):\n\n"
 			
@@ -3550,6 +3618,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"is",	0,	},
 
+		{	"typGetProperty",				fnDesignGet,		FN_DESIGN_GET_PROPERTY,
+			"RENAMED: Use (typ@ ...) instead.",
+			"is",	0,	},
+
 		{	"typGetStaticData",				fnDesignGet,		FN_DESIGN_GET_STATIC_DATA,
 			"(typGetStaticData unid attrib) -> data",
 			"is",	0,	},
@@ -3570,8 +3642,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(typIncData unid attrib [increment]) -> new value",
 			"is*",	0,	},
 
+		{	"typInc@",			fnDesignGet,		FN_DESIGN_INC_PROPERTY,
+			"(typInc@ unid property [increment]) -> True/Nil",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"typIncProperty",			fnDesignGet,		FN_DESIGN_INC_PROPERTY,
-			"(typIncProperty unid property [increment]) -> True/Nil",
+			"RENAMED: Use (typInc@ ...) instead.",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typMarkImages",				fnDesignGet,		FN_DESIGN_MARK_IMAGES,
@@ -3586,8 +3662,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(typSetData unid attrib data) -> True/Nil",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"typSet@",					fnDesignGet,		FN_DESIGN_SET_PROPERTY,
+			"(typSet@ unid property data) -> True/Nil",
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"typSetProperty",			fnDesignGet,		FN_DESIGN_SET_PROPERTY,
-			"(typSetProperty unid property data) -> True/Nil",
+			"RENAMED: Use (typSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typTranslate",				fnDesignGet,		FN_DESIGN_TRANSLATE,
@@ -3679,6 +3759,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   K                  Killed objects only\n"
 			"   L:x-y;             Objects of level x to y\n"
 			"   P                  Only objects known to the player\n"
+			"   U                  Only objects unknown to the player\n"
 			"   V                  Include virtual objects\n"
 			"   +/-{attrib}        Require/exclude types with given attribute\n"
 			"   +/-unid:{unid}     Require/exclude types of given unid\n"
@@ -3708,13 +3789,17 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(unvGetExtensionData scope attrib) -> data",
 			"ss",	0,	},
 
-		{	"unvGetProperty",				fnUniverseGet,	FN_UNIVERSE_GET_PROPERTY,
-			"(unvGetProperty property)\n\n"
+		{	"unv@",							fnUniverseGet,	FN_UNIVERSE_GET_PROPERTY,
+			"(unv@ property)\n\n"
 				
 			"   'apiVersion        Engine API version\n"
 			"   'defaultCurrency   Default currency\n"
 			"   'minAPIVersion     Lowest API version used by extensions\n",
 
+			"s",	0,	},
+
+		{	"unvGetProperty",				fnUniverseGet,	FN_UNIVERSE_GET_PROPERTY,
+			"RENAMED: Use (unv@ ...) instead.",
 			"s",	0,	},
 
 		{	"unvGetRealDate",				fnUniverseGet,	FN_UNIVERSE_REAL_DATE,
@@ -3808,15 +3893,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	--------------------
 
 		{	"objSetSovereign",				fnObjSetOld,		FN_OBJ_SOVEREIGN,
-			"DEPRECATED: Use (objSetProperty obj 'sovereign sovereign) instead.",
+			"DEPRECATED: Use (objSet@ obj 'sovereign sovereign) instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetSovereign",				fnObjGetOld,		FN_OBJ_SOVEREIGN,
-			"DEPRECATED: Use (objGetProperty obj 'sovereign) instead.",
+			"DEPRECATED: Use (obj@ obj 'sovereign) instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetDestiny",				fnObjGetOld,		FN_OBJ_DESTINY,
-			"DEPRECATED: Use (objGetProperty obj 'destiny) instead.",
+			"DEPRECATED: Use (obj@ obj 'destiny) instead.",
 			NULL,	0,	},
 
 		{	"unvFindObj",					fnUniverseGet,		FN_UNIVERSE_FIND_OBJ,
@@ -3824,11 +3909,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"*s",	0,	},
 
 		{	"objGetDefaultCurrency",		fnObjGet,		FN_OBJ_DEFAULT_CURRENCY,
-			"DEPRECATED: Use (objGetProperty obj 'currency) instead.",
+			"DEPRECATED: Use (obj@ obj 'currency) instead.",
 			"i",	0,	},
 
 		{	"itmGetDefaultCurrency",		fnItemTypeGet,	FN_ITEM_DEFAULT_CURRENCY,
-			"DEPRECATED: Use (itmGetProperty item 'currency) instead.",
+			"DEPRECATED: Use (itm@ item 'currency) instead.",
 			"v",	0,	},
 
 		{	"shpCanInstallArmor",			fnShipSet,			FN_SHIP_CAN_INSTALL_ARMOR,
@@ -3840,11 +3925,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iv",	0,	},
 
 		{	"shpSetPlayerWingman",			fnShipSet,		FN_SHIP_PLAYER_WINGMAN,
-			"DEPRECATED: Use (objSetProperty ship 'playerWingman ...) instead.",
+			"DEPRECATED: Use (objSet@ ship 'playerWingman ...) instead.",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"armGetHitPoints",				fnArmGet,		FN_ARM_HITPOINTS,
-			"DEPRECATED: Use (itmGetProperty item 'maxHP) instead.",
+			"DEPRECATED: Use (itm@ item 'maxHP) instead.",
 			"v",	0,	},
 
 		{	"armGetName",					fnArmGet,		FN_ARM_NAME,
@@ -3852,55 +3937,55 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0,	},
 
 		{	"objIsUnderAttack",				fnObjGetOld,		FN_OBJ_IS_UNDER_ATTACK,
-			"DEPRECATED: Use objGetProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"armIsRadiationImmune",			fnArmGet,		FN_ARM_IS_RADIATION_IMMUNE,
-			"DEPRECATED: Use itmGetProperty instead.",
+			"DEPRECATED: Use itm@ instead.",
 			"v",	0,	},
 
 		{	"objIsAbandoned",				fnObjGetOld,		FN_OBJ_IS_ABANDONED,
-			"DEPRECATED: Use objGetProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"staGetMaxStructuralHP",		fnStationGet,		FN_STATION_MAX_STRUCTURAL_HP,
-			"DEPRECATED: Use objGetProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			"i",	0,	},
 
 		{	"staGetStructuralHP",			fnStationGetOld,	FN_STATION_STRUCTURAL_HP,
-			"DEPRECATED: Use objGetProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"staSetStructuralHP",			fnStationSetOld,	FN_STATION_STRUCTURAL_HP,
-			"DEPRECATED: Use objSetProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIsDeviceEnabled",			fnObjGet,		FN_OBJ_IS_DEVICE_ENABLED,
-			"DEPRECATED: Use objGetItemProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			"iv",	0,	},
 
 		{	"objSetDevicePos",				fnObjSet,		FN_OBJ_DEVICE_POS,
-			"DEPRECATED: Use objSetItemProperty instead.",
+			"DEPRECATED: Use objSet@ instead.",
 			"ivv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetDevicePos",				fnObjGet,		FN_OBJ_DEVICE_POS,
-			"DEPRECATED: Use objGetItemProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			"iv",	0,	},
 
 		{	"objGetDeviceFireArc",			fnObjGet,		FN_OBJ_DEVICE_FIRE_ARC,
-			"DEPRECATED: Use objGetItemProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			"iv",	0,	},
 
 		{	"objGetDeviceLinkedFireOptions",	fnObjGet,		FN_OBJ_DEVICE_LINKED_FIRE_OPTIONS,
-			"DEPRECATED: Use objGetItemProperty instead.",
+			"DEPRECATED: Use obj@ instead.",
 			"iv",	0,	},
 
 		{	"objSetDeviceFireArc",			fnObjSet,		FN_OBJ_DEVICE_FIRE_ARC,
-			"DEPRECATED: Use objSetItemProperty instead.",
+			"DEPRECATED: Use objSet@ instead.",
 			"ivv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetDeviceLinkedFireOptions",	fnObjSet,		FN_OBJ_DEVICE_LINKED_FIRE_OPTIONS,
-			"DEPRECATED: Use objSetItemProperty instead.",
+			"DEPRECATED: Use objSet@ instead.",
 			"ivv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmAtCursor",					fnItemList,		0,
@@ -3908,7 +3993,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0,	},
 
 		{	"itmGetCharges",				fnItemGet,		FN_ITEM_CHARGES,
-			"DEPRECATED: Use (itmGetProperty item 'charges) instead.",
+			"DEPRECATED: Use (itm@ item 'charges) instead.",
 			"v",	0,	},
 
 		{	"itmGetGlobalData",				fnItemGet,		FN_ITEM_GET_GLOBAL_DATA,
@@ -3948,15 +4033,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vs",	0,	},
 
 		{	"itmIsDamaged",					fnItemGet,		FN_ITEM_DAMAGED,
-			"DEPRECATED: Use (itmGetProperty item 'damaged) instead",
+			"DEPRECATED: Use (itm@ item 'damaged) instead",
 			"v",	0,	},
 
 		{	"itmSetCharges",				fnItemSet,		FN_ITEM_CHARGES,
-			"DEPRECATED: Use (itmSetProperty item 'charges ...) instead",
+			"DEPRECATED: Use (itmSet@ item 'charges ...) instead",
 			"vi",	0,	},
 
 		{	"itmSetDamaged",				fnItemSet,		FN_ITEM_DAMAGED,
-			"DEPRECATED: Use (itmSetProperty item 'damaged ...) instead",
+			"DEPRECATED: Use (itmSet@ item 'damaged ...) instead",
 			"v*",	0,	},
 
 		{	"shpAddEnergyField",			fnShipSetOld,		FN_SHIP_ADD_ENERGY_FIELD,
@@ -3964,7 +4049,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpDamageItem",				fnShipSetOld,		FN_SHIP_DAMAGE_ITEM,
-			"DEPRECATED: Use (objSetItemProperty obj item 'damaged ...) instead",
+			"DEPRECATED: Use (objSet@ obj item 'damaged ...) instead",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpEnhanceSRS",				fnShipGetOld,		FN_SHIP_ENHANCE_SRS,
@@ -3992,7 +4077,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIncItemCharges",			fnObjSet,		FN_OBJ_INC_ITEM_CHARGES,
-			"DEPRECATED: Use (objSetItemProperty obj item 'incCharges ...) instead",
+			"DEPRECATED: Use (objSet@ obj item 'incCharges ...) instead",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallAutopilot",			fnShipGetOld,		FN_SHIP_INSTALL_AUTOPILOT,
@@ -4079,7 +4164,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpRechargeItem",				fnShipSetOld,		FN_SHIP_RECHARGE_ITEM,
-			"DEPRECATED: Use (objSetItemProperty obj item 'incCharges ...) instead",
+			"DEPRECATED: Use (objSet@ obj item 'incCharges ...) instead",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpSetGlobalData",				fnShipClass,	FN_SHIP_SET_GLOBAL_DATA,
@@ -4087,7 +4172,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetItemCharges",			fnObjSet,		FN_OBJ_SET_ITEM_CHARGES,
-			"DEPRECATED: Use (objSetItemProperty obj item 'charges ...) instead",
+			"DEPRECATED: Use (objSet@ obj item 'charges ...) instead",
 			"ivi*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetStaticDataForStationType",fnObjData,		FN_OBJ_GET_STATIC_DATA_FOR_STATION_TYPE,
@@ -4287,6 +4372,34 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Invalid property"), pValue);
 				else
 					return pCC->CreateError(sError);
+				}
+
+			return pCC->CreateTrue();
+			}
+
+		case FN_DEBUG_SET_PERFORMANCE_COUNTER:
+			{
+			CString sCounter = pArgs->GetElement(0)->GetStringValue();
+			bool bEnabled = (pArgs->GetElement(1) ? !pArgs->GetElement(1)->IsNil() : true);
+
+			CPerformanceCounters &Counters = pCtx->GetUniverse().GetPerformanceCounters();
+
+			if (strEquals(sCounter, CONSTLIT("*")))
+				{
+				Counters.SetEnabled(bEnabled);
+				}
+			else if (strEquals(sCounter, CONSTLIT("?")))
+				{
+				ICCItemPtr pResult(ICCItem::List);
+				for (int i = 0; i < Counters.GetCount(); i++)
+					pResult->AppendString(Counters.GetCounterID(i));
+
+				return pResult->Reference();
+				}
+			else
+				{
+				if (!Counters.SetEnabled(sCounter, bEnabled))
+					return pCC->CreateNil();
 				}
 
 			return pCC->CreateTrue();
@@ -4506,9 +4619,9 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
-        case FN_DESIGN_ADD_TIMER:
-        case FN_DESIGN_ADD_RECURRING_TIMER:
-            {
+		case FN_DESIGN_ADD_TIMER:
+		case FN_DESIGN_ADD_RECURRING_TIMER:
+			{
 			int iTime = pArgs->GetElement(1)->GetIntegerValue();
 			if (iTime < 0 || (iTime == 0 && dwData == FN_DESIGN_ADD_RECURRING_TIMER))
 				return pCC->CreateError(CONSTLIT("Invalid recurring time"), pArgs->GetElement(1));
@@ -4532,9 +4645,9 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pCtx->GetUniverse().AddEvent(pEvent);
 
 			return pCC->CreateTrue();
-            }
+			}
 
-        case FN_DESIGN_CANCEL_TIMER:
+		case FN_DESIGN_CANCEL_TIMER:
 			return pCC->CreateBool(pCtx->GetUniverse().CancelEvent(pType, pArgs->GetElement(1)->GetStringValue(), pCtx->InEvent(eventDoEvent)));
 
 		case FN_DESIGN_FIRE_OBJ_EVENT:
@@ -4566,6 +4679,14 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_DESIGN_GET_GLOBAL_DATA:
 			return pType->GetGlobalData(pArgs->GetElement(1)->GetStringValue())->Reference();
+
+		case FN_DESIGN_GET_IMAGE_DESC:
+			{
+			const CCompositeImageDesc &CompImage = pType->GetTypeImage();
+			const CObjectImageArray &Image = CompImage.GetImage(SGetImageCtx(pCtx->GetUniverse()), CCompositeImageSelector(), CCompositeImageModifiers());
+
+			return CreateListFromImage(*pCC, Image);
+			}
 
 		case FN_DESIGN_GET_NAME:
 			{
@@ -4602,8 +4723,8 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_DESIGN_INC_GLOBAL_DATA:
 			{
 			CString sAttrib = pArgs->GetElement(1)->GetStringValue();
-            ICCItem *pValue = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
-            return pType->IncGlobalData(sAttrib, pValue)->Reference();
+			ICCItem *pValue = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
+			return pType->IncGlobalData(sAttrib, pValue)->Reference();
 			}
 
 		case FN_DESIGN_INC_PROPERTY:
@@ -4815,8 +4936,8 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateString(CLanguage::ComposeNounPhrase(sName, iCount, NULL_STR, dwNameFlags, dwFlags));
 			}
 
-        case FN_NUMBER:
-            {
+		case FN_NUMBER:
+			{
 			if (pArgs->GetCount() == 1)
 				return pCC->CreateString(CLanguage::ComposeNumber(CLanguage::numberInteger, pArgs->GetElement(0)->GetIntegerValue()));
 			else
@@ -4827,7 +4948,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1)));
 				}
-            }
+			}
 
 		case FN_POWER:
 			return pCC->CreateString(CLanguage::ComposeNumber(CLanguage::numberPower, pArgs->GetElement(0)->GetDoubleValue()));
@@ -5045,9 +5166,8 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_ITEM_DAMAGE_TYPE:
 			{
 			int iDamageType;
-			CDeviceClass *pClass = pType->GetDeviceClass();
-			if (pClass)
-				iDamageType = pClass->GetDamageType(CItemCtx());
+			if (const CDeviceItem DeviceItem = Item.AsDeviceItem())
+				iDamageType = DeviceItem.GetWeaponDamageType();
 			else
 				iDamageType = -1;
 
@@ -5407,12 +5527,12 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CString sError;
 			CItemCtx ItemCtx(&Item);
-			ESetPropertyResults iResult = Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), bOnType, &sError);
+			ESetPropertyResult iResult = Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), bOnType, &sError);
 
 			switch (iResult)
 				{
-				case resultPropertyError:
-				case resultPropertyNotFound:
+				case ESetPropertyResult::error:
+				case ESetPropertyResult::notFound:
 					if (sError.IsBlank())
 						return pCC->CreateNil();
 					else
@@ -5728,6 +5848,29 @@ ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	else
 		iMessage = GetMessageFromID(pArgs->GetElement(2)->GetStringValue());
 
+	//	Optional args
+
+	CSpaceObject *pParam1 = NULL;
+	ICCItem *pData = NULL;
+	if (pArgs->GetCount() > 3)
+		{
+		ICCItem *pArg3 = pArgs->GetElement(3);
+		if (pArg3->IsSymbolTable())
+			pData = pArg3;
+		else
+			pParam1 = CreateObjFromItem(pArg3);
+		}
+
+	DWORD dwParam2 = 0;
+	if (pArgs->GetCount() > 4)
+		{
+		ICCItem *pArg4 = pArgs->GetElement(4);
+		if (pData == NULL && pArg4->IsSymbolTable())
+			pData = pArg4;
+		else
+			dwParam2 = (DWORD)pArg4->GetIntegerValue();
+		}
+
 	//	If this is not a built-in comms message, then see if it as the ID of a 
 	//	comms message.
 
@@ -5746,25 +5889,18 @@ ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		return pCC->CreateTrue();
 		}
 
-	//	Optional args
+	//	Otherwise, this is a built-in comms message
 
-	CSpaceObject *pParam1 = NULL;
-	if (pArgs->GetCount() > 3)
-		pParam1 = CreateObjFromItem(pArgs->GetElement(3));
-
-	DWORD dwParam2 = 0;
-	if (pArgs->GetCount() > 4)
-		dwParam2 = (DWORD)pArgs->GetElement(4)->GetIntegerValue();
-
-	//	Done
-
-	DWORD dwResult = pSender->Communicate(pObj, (MessageTypes)iMessage, pParam1, dwParam2);
-	if (dwResult == resNoAnswer)
-		return pCC->CreateNil();
-	else if (dwResult == resAck)
-		return pCC->CreateTrue();
 	else
-		return pCC->CreateInteger(dwResult);
+		{
+		DWORD dwResult = pSender->Communicate(pObj, (MessageTypes)iMessage, pParam1, dwParam2, pData);
+		if (dwResult == resNoAnswer)
+			return pCC->CreateNil();
+		else if (dwResult == resAck)
+			return pCC->CreateTrue();
+		else
+			return pCC->CreateInteger(dwResult);
+		}
 	}
 
 ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
@@ -6219,7 +6355,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pSection->GetSect() >= pClass->GetHullSectionCount())
 				return pCC->CreateNil();
 
-            DWORD dwCritical = pClass->GetHullSection(pSection->GetSect()).GetCriticalArea();
+			DWORD dwCritical = pClass->GetHullSection(pSection->GetSect()).GetCriticalArea();
 			if (dwCritical & CShipClass::sectCritical)
 				return pCC->CreateString(CONSTLIT("critical"));
 			else
@@ -6243,25 +6379,25 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_ARMOR_REPAIR_PRICE:
 			{
-            int iArg = 1;
+			int iArg = 1;
 
-            //  If we have more than 3 args then we expect the second arg to be
-            //  the object that has the armor.
+			//  If we have more than 3 args then we expect the second arg to be
+			//  the object that has the armor.
 
-            CSpaceObject *pSource = NULL;
-            if (pArgs->GetCount() > 3)
-                pSource = CreateObjFromItem(pArgs->GetElement(iArg++));
+			CSpaceObject *pSource = NULL;
+			if (pArgs->GetCount() > 3)
+				pSource = CreateObjFromItem(pArgs->GetElement(iArg++));
 
-            //  Get the armor item
+			//  Get the armor item
 
 			CItem Item(pCtx->AsItem(pArgs->GetElement(iArg++)));
 			if (Item.GetType() == NULL)
 				return pCC->CreateNil();
 
-            //  Get HP to repair
+			//  Get HP to repair
 
-            ICCItem *pHPToRepair = pArgs->GetElement(iArg++);
-            int iHPToRepair = ((!pHPToRepair->IsNil() || pSource == NULL) ? pHPToRepair->GetIntegerValue() : -1);
+			ICCItem *pHPToRepair = pArgs->GetElement(iArg++);
+			int iHPToRepair = ((!pHPToRepair->IsNil() || pSource == NULL) ? pHPToRepair->GetIntegerValue() : -1);
 
 			//	Ask the object
 
@@ -6581,19 +6717,19 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_DEVICE_FIRE_ARC:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("fireArc"));
+			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("fireArc"))->Reference();
 			}
 
 		case FN_OBJ_DEVICE_LINKED_FIRE_OPTIONS:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("linkedFireOptions"));
+			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("linkedFireOptions"))->Reference();
 			}
 
 		case FN_OBJ_DEVICE_POS:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("pos"));
+			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("pos"))->Reference();
 			}
 
 		case FN_OBJ_DOCKED_AT:
@@ -6715,19 +6851,26 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_GET_ITEM_PROPERTY:
 			{
-			//	Get the item
+			if (pArgs->GetCount() == 3)
+				{
+				//	Get the item
 
-			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			if (Item.GetType() == NULL)
-				return pCC->CreateNil();
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (Item.GetType() == NULL)
+					return pCC->CreateNil();
 
-			//	Get the property
+				//	Get the property
 
-			CString sProperty = pArgs->GetElement(2)->GetStringValue();
+				CString sProperty = pArgs->GetElement(2)->GetStringValue();
 
-			//	Get it
+				//	Get it
 
-			return pObj->GetItemProperty(*pCtx, Item, sProperty);
+				return pObj->GetItemProperty(*pCtx, Item, sProperty)->Reference();
+				}
+			else
+				{
+				return pObj->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue())->Reference();
+				}
 			}
 
 		case FN_OBJ_GET_NAMED_ITEM:
@@ -6749,7 +6892,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				if (strEquals(sName, NAMED_ITEM_SELECTED_WEAPON))
 					{
-					CItem theItem = pShip->GetNamedDeviceItem(devPrimaryWeapon);
+					CItem theItem = pShip->GetNamedItem(devPrimaryWeapon);
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(theItem);
@@ -6759,7 +6902,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					}
 				else if (strEquals(sName, NAMED_ITEM_SELECTED_LAUNCHER))
 					{
-					CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
+					CItem theItem = pShip->GetNamedItem(devMissileWeapon);
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(theItem);
@@ -6789,7 +6932,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 								}
 							else
 								{
-								CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
+								CItem theItem = pShip->GetNamedItem(devMissileWeapon);
 								if (theItem.GetType())
 									{
 									ICCItem *pItem = CreateListFromItem(theItem);
@@ -6841,12 +6984,12 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_GET_OVERLAYS:
 			{
-            //  See if we have a criteria
+			//  See if we have a criteria
 
 			DWORD dwType = 0;
-            CDesignTypeCriteria Criteria;
-            if (pArgs->GetCount() >= 2)
-                {
+			CDesignTypeCriteria Criteria;
+			if (pArgs->GetCount() >= 2)
+				{
 				if (pArgs->GetElement(1)->IsInteger())
 					{
 					dwType = pArgs->GetElement(1)->GetIntegerValue();
@@ -6860,16 +7003,16 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 					Criteria.IncludeType(designOverlayType);
 					}
-                }
+				}
 
-            //  Get the list of overlays
+			//  Get the list of overlays
 
 			TArray<COverlay *> List;
 			pObj->GetOverlayList(&List);
 
-            //  Generate result 
+			//  Generate result 
 
-            ICCItem *pResult = NULL;
+			ICCItem *pResult = NULL;
 
 			for (int i = 0; i < List.GetCount(); i++)
 				{
@@ -6878,22 +7021,22 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (dwType != 0 && List[i]->GetType()->GetUNID() != dwType)
 					continue;
 
-                //  If we don't match the criteria, skip
+				//  If we don't match the criteria, skip
 
-                if (!Criteria.IsEmpty() && !List[i]->GetType()->MatchesCriteria(Criteria))
-                    continue;
+				if (!Criteria.IsEmpty() && !List[i]->GetType()->MatchesCriteria(Criteria))
+					continue;
 
-                //  Create a list if necessary
+				//  Create a list if necessary
 
-                if (pResult == NULL)
-                    pResult = pCC->CreateLinkedList();
+				if (pResult == NULL)
+					pResult = pCC->CreateLinkedList();
 
-                //  Add to list
+				//  Add to list
 
-                pResult->AppendInteger(List[i]->GetID());
+				pResult->AppendInteger(List[i]->GetID());
 				}
 
-            return (pResult ? pResult : pCC->CreateNil());
+			return (pResult ? pResult : pCC->CreateNil());
 			}
 
 		case FN_OBJ_GET_OVERLAY_TYPE:
@@ -6929,9 +7072,6 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			return pCC->CreateInteger(iPriceAdj);
 			}
-
-		case FN_OBJ_GET_PROPERTY:
-			return pObj->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue())->Reference();
 
 		case FN_OBJ_GET_REFUEL_ITEM:
 			{
@@ -6971,8 +7111,8 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_GET_SELL_PRICE:
 			{
 			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
-            if (Item.IsEmpty())
-                return pCC->CreateNil();
+			if (Item.IsEmpty())
+				return pCC->CreateNil();
 
 			ICCItem *pOptions = pArgs->GetElement(2);
 			bool bActual = CTLispConvert::AsOption(pOptions, CONSTLIT("actual"));
@@ -7135,11 +7275,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
 			CString sAttrib = pArgs->GetElement(2)->GetStringValue();
 
-            COverlayList *pOverlays = pObj->GetOverlays();
-            if (pOverlays == NULL)
-                return pCC->CreateNil();
+			COverlayList *pOverlays = pObj->GetOverlays();
+			if (pOverlays == NULL)
+				return pCC->CreateNil();
 
-            return pOverlays->IncData(dwID, sAttrib, (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL))->Reference();
+			return pOverlays->IncData(dwID, sAttrib, (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL))->Reference();
 			}
 
 		case FN_OBJ_INC_OVERLAY_PROPERTY:
@@ -7147,9 +7287,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
 			CString sAttrib = pArgs->GetElement(2)->GetStringValue();
 
-            COverlayList *pOverlays = pObj->GetOverlays();
-            if (pOverlays == NULL)
-                return pCC->CreateNil();
+			COverlayList *pOverlays = pObj->GetOverlays();
+			if (pOverlays == NULL)
+				return pCC->CreateNil();
 
 			ICCItemPtr pResult;
 			if (!pOverlays->IncProperty(*pObj, dwID, sAttrib, pArgs->GetElement(3), pResult))
@@ -7878,7 +8018,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				CVector vPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
 				Metric rRadius;
 				int iDirection = VectorToPolar(vPos - pObj->GetPos(), &rRadius);
-				int iRotationOrigin = (pField->RotatesWithShip() ? pObj->GetRotation() : 0);
+				int iRotationOrigin = (pField->RotatesWithSource(*pObj) ? pObj->GetRotation() : 0);
 				iPosAngle = AngleMod(iDirection - iRotationOrigin);
 				iPosRadius = (int)(rRadius / g_KlicksPerPixel);
 
@@ -8188,8 +8328,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pResult;
 			ICCItem *pData = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
 			pObj->FireCustomEvent(pArgs->GetElement(1)->GetStringValue(), eventObjFireEvent, pData, &pResult);
-            if (pResult->IsError() && pCtx->GetUniverse().InDebugMode())
-                ::kernelDebugLogPattern("[%s %s]: %s", pObj->GetNounPhrase(), pArgs->GetElement(1)->GetStringValue(), pResult->GetStringValue());
+			if (pResult->IsError() && pCtx->GetUniverse().InDebugMode())
+				::kernelDebugLogPattern("[%s %s]: %s", pObj->GetNounPhrase(), pArgs->GetElement(1)->GetStringValue(), pResult->GetStringValue());
 			return pResult;
 			}
 
@@ -8267,20 +8407,25 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_FIRE_WEAPON:
 			{
+			constexpr Metric MAX_TARGET_RANGE =	(24.0 * LIGHT_SECOND);
+
 			CInstalledDevice *pDevice = pCtx->AsInstalledDevice(pObj, pArgs->GetElement(1));
 			if (pDevice == NULL)
 				return pCC->CreateError(CONSTLIT("Item is not an installed device on object"), pArgs->GetElement(1));
 
 			CItemCtx WeaponCtx(pObj, pDevice);
 
+			CTargetList TargetList;
+			CTargetList::STargetOptions Options;
+			Options.bIncludeNonAggressors = true;
+			Options.rMaxDist = MAX_TARGET_RANGE;
+			TargetList.Init(*pObj, Options);
+
 			CSpaceObject *pTarget = CreateObjFromItem(pArgs->GetElement(2));
 
-			if (pTarget) pTarget->SetDestructionNotify();
-			pDevice->SetFireAngle(-1);
-			pDevice->SetTarget(pTarget);
+			if (pTarget) 
+				pTarget->SetDestructionNotify();
 
-			bool bSourceDestroyed = false;
-			bool bConsumedItems = false;
 			bool bSuccess = false;
 
 			bool ReadyToFire;
@@ -8291,6 +8436,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ReadyToFire = true;
 
 			// Save the variables changed in OnFireWeapon first.
+
 			if (ReadyToFire)
 				{
 				ICCItem *p_OldFireAngle = pCC->LookupGlobal(CONSTLIT("aFireAngle"), pCtx);
@@ -8301,7 +8447,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *p_OldWeaponBonus = pCC->LookupGlobal(CONSTLIT("aWeaponBonus"), pCtx);
 				ICCItem *p_OldWeaponType = pCC->LookupGlobal(CONSTLIT("aWeaponType"), pCtx);
 
-				bSuccess = pDevice->Activate(pObj, pTarget, &bSourceDestroyed, &bConsumedItems);
+				CDeviceClass::SActivateCtx ActivateCtx(pTarget, TargetList);
+				bSuccess = pDevice->Activate(ActivateCtx);
 
 				pCtx->DefineInteger(CONSTLIT("aFireAngle"), p_OldFireAngle->GetIntegerValue());
 				pCtx->DefineVector(CONSTLIT("aFirePos"), vOldFirePos);
@@ -8311,7 +8458,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pCtx->DefineItemType(CONSTLIT("aWeaponType"), pCtx->AsItem(p_OldWeaponType).GetType());
 				}
 
-			if (bSourceDestroyed)
+			if (pObj->IsDestroyed())
 				return pCC->CreateTrue();
 
 			if (bSuccess)
@@ -8700,32 +8847,52 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_SET_ITEM_PROPERTY:
 			{
-			//	Get the item
-
-			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			if (Item.GetType() == NULL)
-				return pCC->CreateNil();
-
-			//	Get the property
-
-			CString sProperty = pArgs->GetElement(2)->GetStringValue();
-			ICCItem *pValue = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
-			int iCount = (pArgs->GetCount() > 4 ? Max(0, pArgs->GetElement(4)->GetIntegerValue()) : 1);
-
-			//	Set it
-
-			CString sError;
-			if (!pObj->SetItemProperty(Item, sProperty, pValue, iCount, &Item, &sError))
+			if (pArgs->GetCount() > 3)
 				{
-				if (sError.IsBlank())
+				//	Get the item
+
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (Item.GetType() == NULL)
 					return pCC->CreateNil();
-				else
-					return pCC->CreateError(sError);
+
+				//	Get the property
+
+				CString sProperty = pArgs->GetElement(2)->GetStringValue();
+				ICCItem *pValue = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
+				int iCount = (pArgs->GetCount() > 4 ? Max(0, pArgs->GetElement(4)->GetIntegerValue()) : 1);
+
+				//	Set it
+
+				CString sError;
+				if (!pObj->SetItemProperty(Item, sProperty, pValue, iCount, &Item, &sError))
+					{
+					if (sError.IsBlank())
+						return pCC->CreateNil();
+					else
+						return pCC->CreateError(sError);
+					}
+
+				//	Return the newly changed item
+
+				return CreateListFromItem(Item);
 				}
+			else if (pArgs->GetCount() == 3)
+				{
+				CString sError;
+				if (!pObj->SetProperty(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2), &sError))
+					{
+					if (sError.IsBlank())
+						return pCC->CreateError(CONSTLIT("Invalid property"), pArgs->GetElement(1));
+					else
+						return pCC->CreateError(sError);
+					}
 
-			//	Return the newly changed item
-
-			return CreateListFromItem(Item);
+				return pCC->CreateTrue();
+				}
+			else
+				{
+				return pCC->CreateError(CONSTLIT("Insufficient arguments."));
+				}
 			}
 
 		case FN_OBJ_SET_EVENT_HANDLER:
@@ -8743,20 +8910,6 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pObj->SetOverride(pType);
 				}
 			return pCC->CreateTrue();
-
-		case FN_OBJ_SET_PROPERTY:
-			{
-			CString sError;
-			if (!pObj->SetProperty(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2), &sError))
-				{
-				if (sError.IsBlank())
-					return pCC->CreateError(CONSTLIT("Invalid property"), pArgs->GetElement(1));
-				else
-					return pCC->CreateError(sError);
-				}
-
-			return pCC->CreateTrue();
-			}
 
 		case FN_OBJ_SET_TRADE_DESC:
 			{
@@ -9199,7 +9352,6 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	ALERROR error;
-	int i, j;
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
@@ -9213,20 +9365,32 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get arguments
 
-			CSpaceObject *pOwner = CreateObjFromItem(pArgs->GetElement(1));
-			ICCItem *pData = pArgs->GetElement(2);
+			CMissionType::SCreateCtx CreateCtx;
+			CreateCtx.iLevel = (pCtx->GetUniverse().GetCurrentSystem() ? pCtx->GetUniverse().GetCurrentSystem()->GetLevel() : 1);
+			CreateCtx.pOwner = CreateObjFromItem(pArgs->GetElement(1));
+			CreateCtx.pCreateData = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
+
+			//	Set some options
+
+			if (CreateCtx.pCreateData)
+				{
+				CreateCtx.bNoMissionArcCheck = CreateCtx.pCreateData->GetBooleanAt(CONSTLIT("noMissionArcCheck"));
+				CreateCtx.bNoSystemLevelCheck = CreateCtx.pCreateData->GetBooleanAt(CONSTLIT("noSystemLevelCheck"));
+				}
 
 			//	See if we can create the mission
 
-			return pCC->CreateBool(pType->CanBeCreated(pCtx->GetUniverse().GetMissions(), pOwner, pData));
+			return pCC->CreateBool(pType->CanBeCreated(pCtx->GetUniverse().GetMissions(), CreateCtx));
 			}
 
 		case FN_MISSION_CREATE:
 			{
 			//	Get arguments
 
-			CSpaceObject *pOwner = CreateObjFromItem(pArgs->GetElement(1));
-			ICCItem *pData = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
+			CMissionType::SCreateCtx CreateCtx;
+			CreateCtx.iLevel = (pCtx->GetUniverse().GetCurrentSystem() ? pCtx->GetUniverse().GetCurrentSystem()->GetLevel() : 1);
+			CreateCtx.pOwner = CreateObjFromItem(pArgs->GetElement(1));
+			CreateCtx.pCreateData = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
 
 			//	If we have a list of missions, then we need to choose one 
 			//	randomly.
@@ -9256,7 +9420,7 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				CString sError;
 				CMission *pMission;
-				if (error = pCtx->GetUniverse().CreateRandomMission(Missions, pOwner, pData, &pMission, &sError))
+				if (error = pCtx->GetUniverse().CreateRandomMission(Missions, CreateCtx, &pMission, &sError))
 					{
 					//	ERR_NOTFOUND means that conditions do not allow for the
 					//	mission to be created. This is not technically an error; it
@@ -9284,9 +9448,17 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pType == NULL)
 					return pCC->CreateError(CONSTLIT("Unknown mission type"), pArgs->GetElement(0));
 
+				//	We're creating this mission type explicitly, so we don't do certain
+				//	checks (such as system level).
+
+				CreateCtx.bNoMissionArcCheck = true;
+				CreateCtx.bNoSystemLevelCheck = true;
+
+				//	Create the mission
+
 				CString sError;
 				CMission *pMission;
-				if (error = pCtx->GetUniverse().CreateMission(pType, pOwner, pData, &pMission, &sError))
+				if (error = pCtx->GetUniverse().CreateMission(*pType, CreateCtx, &pMission, &sError))
 					{
 					//	ERR_NOTFOUND means the mission refused to be created,
 					//	so we return Nil.
@@ -9326,39 +9498,31 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (!CMission::ParseCriteria(sCriteria, &Criteria))
 				return pCC->CreateError(CONSTLIT("Unable to parse criteria"), pArgs->GetElement(1));
 
-			//	Get list of missions
+			//	Get list of missions that match criteria
 
-			TArray<CMission *> List;
-			pCtx->GetUniverse().GetMissions(pSource, Criteria, &List);
+			CMissionList List = pCtx->GetUniverse().GetMissions().Filter(pSource, Criteria);
 			if (List.GetCount() == 0)
 				return pCC->CreateNil();
 
+			//	Return a single mission
+
 			if (Criteria.bPriorityOnly)
 				{
-				//	Return a single mission
-
-				int bestPriority = -1;
-				j = 0;
-				for (i = 0; i < List.GetCount(); i++)
-					if (List[i]->GetPriority() > bestPriority)
-						{
-						j = i;
-						bestPriority = List[i]->GetPriority();
-						}
-				
-				return pCC->CreateInteger((int)List[j]);
+				CMission *pBestMission = List.FindHighestPriority();
+				return pCC->CreateInteger((int)pBestMission);
 				}
+
+			//	Create a list to return
+
 			else
 				{
-				//	Create a list to return
-
 				ICCItem *pResult = pCC->CreateLinkedList();
 				if (pResult->IsError())
 					return pResult;
 
 				CCLinkedList *pList = (CCLinkedList *)pResult;
-				for (i = 0; i < List.GetCount(); i++)
-					pList->AppendInteger((int)List[i]);
+				for (int i = 0; i < List.GetCount(); i++)
+					pList->AppendInteger((int)List.GetMission(i));
 
 				//	Done
 
@@ -11945,7 +12109,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pItemType == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
 
-            CString sError;
+			CString sError;
 			CWeaponFireDesc *pDesc = pItemType->GetWeaponFireDesc(CItemCtx(), &sError);
 			if (pDesc == NULL)
 				return pCC->CreateError(sError, pArgs->GetElement(0));

@@ -47,6 +47,7 @@
 #define ID_INTRO_HELP_PERFORMANCE				CONSTLIT("idIntroHelp")
 #define ID_PLAYER_BAR_PERFORMANCE				CONSTLIT("idPlayerBar")
 #define ID_SHIP_DESC_PERFORMANCE				CONSTLIT("idShipDescPerformance")
+#define ID_TEXT_PERFORMANCE						CONSTLIT("idTextMessage")
 #define ID_TITLES_PERFORMANCE					CONSTLIT("idTitles")
 #define ID_NEWS_PERFORMANCE						CONSTLIT("idNews")
 #define ID_SOUNDTRACK_TITLE_PERFORMANCE			CONSTLIT("idSoundtrackTitle")
@@ -82,11 +83,12 @@ void CIntroSession::CancelCurrentState (void)
 	{
 	switch (GetState())
 		{
-		case isIntroHelp:
+		case isBlankThenRandom:
 		case isCredits:
 		case isHighScores:
-		case isBlankThenRandom:
+		case isIntroHelp:
 		case isNews:
+		case isTextMessage:
 		case isWaitingForHighScores:
 			SetState(isShipStats);
 			break;
@@ -284,7 +286,7 @@ void CIntroSession::CreateIntroShips (DWORD dwNewShipClass, DWORD dwSovereign, C
 	g_pUniverse->MarkLibraryBitmaps();
 	g_pUniverse->SweepLibraryBitmaps();
 
-	g_pTrans->m_iLastShipCreated = g_pTrans->m_iTick;
+	g_pTrans->m_iLastShipCreated = g_pUniverse->GetTicks();
 
 	DEBUG_CATCH
 	}
@@ -361,12 +363,49 @@ void CIntroSession::CreateIntroSystem (void)
 
 	g_pUniverse->SetSound(false);
 
-	g_pTrans->m_iTick = 0;
-	g_pTrans->m_iLastShipCreated = g_pTrans->m_iTick;
+	g_pTrans->m_iLastShipCreated = g_pUniverse->GetTicks();
 
 	//	Initialize the system
 
 	g_pUniverse->MarkLibraryBitmaps();
+	}
+
+void CIntroSession::CreateTextPerformance (const CString &sText)
+
+//	CreateTextPerformance
+//
+//	Create the appropriate performance.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+	CReanimator &Reanimator = GetReanimator();
+
+	if (m_dwTextPerformance)
+		Reanimator.DeletePerformance(m_dwTextPerformance);
+
+	RECT rcCenter;
+	VI.GetWidescreenRect(&rcCenter);
+
+	CAniSequencer *pSeq = new CAniSequencer;
+
+	//	Figure out the position
+
+	int xMidCenter = rcCenter.left + RectWidth(rcCenter) / 2;
+	int yMidCenter = rcCenter.bottom - RectHeight(rcCenter) / 3;
+
+	CAniText *pText = new CAniText;
+	pText->SetPropertyVector(CONSTLIT("position"), CVector((Metric)xMidCenter, (Metric)yMidCenter));
+	pText->SetPropertyColor(CONSTLIT("color"), VI.GetColor(colorTextHighlight));
+	pText->SetPropertyString(CONSTLIT("text"), sText);
+
+	pText->SetPropertyFont(CONSTLIT("font"), &VI.GetFont(fontSubTitle));
+	pText->SetFontFlags(CG16bitFont::AlignCenter);
+
+	pSeq->AddTrack(pText, 0);
+
+	//	Add performance
+
+	m_dwTextPerformance = Reanimator.AddPerformance(pSeq, ID_TEXT_PERFORMANCE);
 	}
 
 void CIntroSession::InitShipTable (TSortMap<int, CShipClass *> &List, bool bAll)
@@ -594,6 +633,47 @@ void CIntroSession::CreateSoundtrackTitleAnimation (CMusicResource *pTrack, IAni
 	*retpAni = pSeq;
 	}
 
+void CIntroSession::ExecuteCommand (const CString &sCommand)
+
+//	ExecuteCommand
+//
+//	Executes the given command.
+
+	{
+	const char *pPos = sCommand.GetASCIIZPointer();
+
+	if (*pPos == '~')
+		{
+		g_pUniverse->FireOnGlobalIntroCommand(strSubString(sCommand, 1));
+		CancelCurrentState();
+		}
+	else if (*pPos == '\"')
+		{
+		CreateTextPerformance(strSubString(sCommand, 1));
+		SetState(isTextMessage);
+		}
+	else
+		{
+		CShip *pShip = g_pUniverse->GetPOV()->AsShip();
+		DWORD dwSovereign = (pShip ? pShip->GetSovereign()->GetUNID() : 0);
+
+		//	Parse the string into a ship class
+
+		CShipClass *pClass = g_pUniverse->FindShipClassByName(sCommand);
+		if (pClass == NULL)
+			{
+			SetState(isShipStats);
+			return;
+			}
+
+		//	Destroy and create
+
+		g_pTrans->DestroyPOVIntroShips();
+		CreateIntroShips(pClass->GetUNID(), dwSovereign);
+		CancelCurrentState();
+		}
+	}
+
 bool CIntroSession::HandleCommandBoxChar (char chChar, DWORD dwKeyData)
 
 //	HandleCommandBoxChar
@@ -620,33 +700,8 @@ bool CIntroSession::HandleCommandBoxChar (char chChar, DWORD dwKeyData)
 		//	VK_RETURN
 
 		case '\015':
-			{
-			if (strStartsWith(g_pTrans->m_sCommand, CONSTLIT("~")))
-				{
-				g_pUniverse->FireOnGlobalIntroCommand(strSubString(g_pTrans->m_sCommand, 1));
-				CancelCurrentState();
-				break;
-				}
-
-			CShip *pShip = g_pUniverse->GetPOV()->AsShip();
-			DWORD dwSovereign = (pShip ? pShip->GetSovereign()->GetUNID() : 0);
-
-			//	Parse the string into a ship class
-
-			CShipClass *pClass = g_pUniverse->FindShipClassByName(g_pTrans->m_sCommand);
-			if (pClass == NULL)
-				{
-				SetState(isShipStats);
-				break;
-				}
-
-			//	Destroy and create
-
-			g_pTrans->DestroyPOVIntroShips();
-			CreateIntroShips(pClass->GetUNID(), dwSovereign);
-			CancelCurrentState();
+			ExecuteCommand(g_pTrans->m_sCommand);
 			break;
-			}
 
 		//	VK_ESCAPE
 
@@ -1607,6 +1662,13 @@ void CIntroSession::SetState (EStates iState)
 			break;
 			}
 
+		case isTextMessage:
+			{
+			StopAnimations();
+			Reanimator.StartPerformance(m_dwTextPerformance);
+			break;
+			}
+
 		case isWaitingForHighScores:
 			StopAnimations();
 			break;
@@ -1659,6 +1721,7 @@ void CIntroSession::StopAnimations (void)
 	Reanimator.StopPerformance(ID_SHIP_DESC_PERFORMANCE);
 	Reanimator.StopPerformance(ID_TITLES_PERFORMANCE);
 	Reanimator.StopPerformance(ID_NEWS_PERFORMANCE);
+	Reanimator.StopPerformance(ID_TEXT_PERFORMANCE);
 	m_HighScoreDisplay.StopPerformance();
 	}
 
@@ -1719,7 +1782,7 @@ void CIntroSession::Update (void)
 
 	//	If the same ship has been here for a while, then create a new ship
 
-	if (g_pTrans->m_iTick - g_pTrans->m_iLastShipCreated > MAX_TIME_WITH_ONE_SHIP)
+	if ((int)g_pUniverse->GetTicks() - g_pTrans->m_iLastShipCreated > MAX_TIME_WITH_ONE_SHIP)
 		{
 		CShip *pShip = g_pUniverse->GetPOV()->AsShip();
 		if (pShip)
@@ -1736,7 +1799,6 @@ void CIntroSession::Update (void)
 	if (!g_pTrans->m_bPaused)
 		{
 		g_pUniverse->Update(Ctx);
-		g_pTrans->m_iTick++;
 		}
 
 	//	Slight HACK: If the current POV is not a ship, then create a new one

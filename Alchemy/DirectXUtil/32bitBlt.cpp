@@ -946,7 +946,7 @@ void CGDraw::Blt (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &
 		}
 	}
 
-void CGDraw::BltGray (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity)
+void CGDraw::BltGray (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity)
 
 	{
 	if (byOpacity == 0xff)
@@ -1013,8 +1013,22 @@ void CGDraw::BltMask0 (CG32bitImage &Dest, int xDest, int yDest, const CG32bitIm
 void CGDraw::BltScaled (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
 
 	{
-	CFilterNormal Filter;
-	Filter.BltScaled(Dest, xDest, yDest, cxDest, cyDest, Src, xSrc, ySrc, cxSrc, cySrc);
+	switch (Src.GetAlphaType())
+		{
+		case CG32bitImage::alphaNone:
+			{
+			CFilterNormal Filter;
+			Filter.BltScaled(Dest, xDest, yDest, cxDest, cyDest, Src, xSrc, ySrc, cxSrc, cySrc);
+			break;
+			}
+
+		default:
+			{
+			CFilterBlend Filter;
+			Filter.BltScaled(Dest, xDest, yDest, cxDest, cyDest, Src, xSrc, ySrc, cxSrc, cySrc);
+			break;
+			}
+		}
 	}
 
 void CGDraw::BltShimmer (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity, DWORD dwSeed)

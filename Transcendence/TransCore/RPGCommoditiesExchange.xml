@@ -47,7 +47,9 @@
 			nestedScreen=		"true"
 			>
 		<Properties>
+			<Variant id="rpg.buyCriteria">(@ gData 'buyCriteria)</Variant>
 			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.sellCriteria">(@ gData 'sellCriteria)</Variant>
 			<Variant id="rpg.showActualItem">(or (objGetProperty gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
@@ -64,6 +66,7 @@
 				<Actions>
 					<Action id="actionBuyItems" default="1">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
+							rpg.criteria: (scrGetProperty gScreen 'rpg.buyCriteria)
 							rpg.checkMilitaryID: (scrGetProperty gScreen 'rpg.checkMilitaryID)
 							rpg.sourceObj: (scrGetProperty gScreen 'rpg.sourceObj)
 							})
@@ -71,6 +74,7 @@
 
 					<Action id="actionSellItems">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
+							rpg.criteria: (scrGetProperty gScreen 'rpg.sellCriteria)
 							rpg.sourceObj: (scrGetProperty gScreen 'rpg.sourceObj)
 							})
 					</Action>
@@ -156,36 +160,19 @@
 					)
 				
 					(switch
-						;	If we specify an item criteria, then create a function
-						;	that will filter.
-					
-						(and itemCriteria
-								(neq itemCriteria "*")
-								)
-							(scrSetListFilter gScreen (lambda (theItem)
-								(switch
-									(not (itmMatches theItem itemCriteria))
-										Nil
-								
-									(rpgCalcSellPrice theItem)
-									)
-								))
-							
 						;	If we specify a function, use that
 					
 						(@ gData 'listFilter)
 							(scrSetListFilter gScreen (@ gData 'listFilter))
 						
-						;	If we want to hide installables, then we need to add some
-						;	user-selectable filters.
+						;	Backwards compatibility
 					
-						(not (@ gData 'showInstallables))
-							(rpgCreateBuyItemTabs)
-					
-						;	Otherwise, we sell everything listed in our Trade
-						;	directives.
-					
-						(scrSetListFilter gScreen rpgCalcSellPrice)
+						(@ gData 'showInstallables)
+							(scrSetListFilter gScreen rpgCalcSellPrice)
+
+						;	Categorize items into tabs
+
+						(rpgCreateBuyItemTabs itemCriteria)
 						)
 
 					;	We set the underlying engine property based on inputs.
@@ -328,8 +315,27 @@
 								(if tradeData
 									(cat "\n\n" (@ tradeData 'sellRecommendation))
 									)
-								
 								)
+							)
+
+						;	Warnings
+
+						(switch
+							(and (itmMatches thisItem "M")
+									(not (objGetItemProperty gPlayerShip thisItem 'canBeFired))
+									)
+								(scrSetControlValueTranslate gScreen 'descWarning 'warningLauncherNeeded {
+									itemName: (itmGetName thisItem '(short plural))
+									launcherName: (itmGetName (@ (itmGetProperty thisItem 'weaponTypes) 0) 'article)
+									})
+
+							(and (itmMatches thisItem "m")
+									(not (objGetItemProperty gPlayerShip thisItem 'canBeFired))
+									)
+								(scrSetControlValueTranslate gScreen 'descWarning 'warningWeaponNeeded {
+									itemName: (itmGetName thisItem '(short plural))
+									launcherName: (itmGetName (@ (itmGetProperty thisItem 'weaponTypes) 0) 'article)
+									})
 							)
 							
 						;	Remember some computed values
@@ -349,6 +355,11 @@
 						(scrEnableAction gScreen 'actionBuy (gr maxCount 0))
 						)
 				</OnPaneInit>
+				
+				<Controls>
+					<Text id="desc"/>
+					<Text id="descWarning" style="warning"/>
+				</Controls>
 				
 				<Actions>
 					<Action id="actionBuy" default="1">
@@ -533,11 +544,11 @@
 		</Panes>
 		
 		<Language>
-			<Text id="actionBuy">"[B]uy"</Text>
-			<Text id="actionBuyAndInstall">"Buy &amp; [I]nstall"</Text>
-			<Text id="actionBuyOnly">"[B]uy Only"</Text>
-			<Text id="actionShowInstallables">"[S]how Dock Service Items"</Text>
-			<Text id="actionHideInstallables">"[H]ide Dock Service Items"</Text>
+			<Text id="actionBuy">[B]uy</Text>
+			<Text id="actionBuyAndInstall">Buy &amp; [I]nstall</Text>
+			<Text id="actionBuyOnly">[B]uy Only</Text>
+			<Text id="actionShowInstallables">[S]how Dock Service Items</Text>
+			<Text id="actionHideInstallables">[H]ide Dock Service Items</Text>
 			
 			<Text id="descItemStats">
 				(if (@ gData 'max)
@@ -563,12 +574,12 @@
 				\n\nYou have %itemName% in your cargo hold.
 			</Text>
 			<Text id="descBuyOrInstall">
-				(cat
-					(@ gData 'installDesc) "\n\n"
+
+				%installDesc%
 					
-					"Do you wish to buy and install it for " (@ gData 'installValue) ", "
-					"or do you wish to only buy it for " (@ gData 'buyValue) "?"
-					)
+				Do you wish to buy and install it for %installValue%,
+				or do you wish to only buy it for %buyValue%?
+
 			</Text>
 			<Text id="descNotForSale">
 				\n\nThis item is not for sale.
@@ -577,40 +588,39 @@
 				\n\nYou need %militaryID% to buy this item.
 			</Text>
 			<Text id="descNotEnoughMoney">
-				(cat
-					"\n\nYou do not have enough " (@ gData 'currency) " to purchase any."
-					)
+				\n\nYou do not have enough %currency% to purchase any.
 			</Text>
 			<Text id="descNotEnoughMoneyToInstall">
-				(cat
-					(@ gData 'installDesc) "\n\n"
+
+				%installDesc%
 					
-					"Unfortunately, you cannot afford the installation cost. "
-					"Do you wish to buy it without installation for " (@ gData 'value) "?"
-					)
+				Unfortunately, you cannot afford the installation cost.
+				Do you wish to buy it without installation for %value%?
+
 			</Text>
 			<Text id="descNotEnoughRoom">
 				\n\nUnfortunately, you cannot fit any in your cargo hold.
 			</Text>
 			<Text id="descNotEnoughMoneyForAll">
-				(cat
-					"\n\nYou have enough " (@ gData 'currency) " to buy " (@ gData 'value) "."
-					)
+				\n\nYou have enough %currency% to buy %value%.
 			</Text>
 			<Text id="descNotEnoughRoomForAll">
-				(cat
-					"\n\nYou have enough room in your cargo hold to carry " (@ gData 'value) "."
-					)
+				\n\nYou have enough room in your cargo hold to carry %value%.
 			</Text>
 			<Text id="descBuyQuantity">
-				(cat
-					"How many items do you wish to purchase at " (@ gData 'value) " each?"
-					)
+				How many items do you wish to purchase at %value% each?
 			</Text>
 			<Text id="descInstallationSuccessful">
 				(cat 
 					(itmGetName (@ gData 'item) 0x01) " installed successfully."
 					)
+			</Text>
+
+			<Text id="warningLauncherNeeded">
+				You must install %launcherName% to fire %itemName%.
+			</Text>
+			<Text id="warningWeaponNeeded">
+				You must install %launcherName% to use %itemName%.
 			</Text>
 			
 			<Text id="errorNoItemsToBuy">There are no items available for sale.</Text>
@@ -650,17 +660,17 @@
 			nestedScreen=		"true"
 			>
 		<Properties>
+			<Variant id="rpg.criteria">(@ gData 'criteria)</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 
 		<ListOptions
 				dataFrom=	"player"
-				list=		"*"
+				list=		"*U"
 				>
 			(block (
 				(itemCriteria (scrGetProperty gScreen 'rpg.criteria))
 				)
-				
 				(switch
 					;	If we specify an item criteria, then create a function
 					;	that will filter.
@@ -668,7 +678,7 @@
 					(and itemCriteria
 							(not (eq itemCriteria "*"))
 							)
-						(scrSetListFilter gScreen (lambda (theItem)
+						(scrSet@ gScreen 'enabledFilter (lambda (theItem)
 							(switch
 								(not (itmMatches theItem itemCriteria))
 									Nil
@@ -680,12 +690,12 @@
 					;	If we specify a function, use that
 					
 					(@ gData 'listFilter)
-						(scrSetListFilter gScreen (@ gData 'listFilter))
+						(scrSet@ gScreen 'enabledFilter (@ gData 'listFilter))
 						
 					;	Otherwise, we sell everything listed in our Trade
 					;	directives.
 					
-					(scrSetListFilter gScreen rpgCalcBuyPrice)
+					(scrSet@ gScreen 'enabledFilter rpgCalcBuyPrice)
 					)
 				)
 		</ListOptions>
@@ -702,6 +712,9 @@
 						(currencyUsed (objGetDefaultCurrency gSource))
 						(itemCost
 							(switch
+								(not (scr@ gScreen 'selectionEnabled))
+									Nil
+
 								(@ gData 'priceCalc)
 									(apply (@ gData 'priceCalc) thisItem Nil)
 
@@ -803,7 +816,9 @@
 
 								(switch
 									(= offerPrice 0)
-										(scrTranslate gScreen 'descNotForSale { title:title itemName:(itmGetName thisItem 'plural) })
+										(or (scrTranslate gScreen 'rpg.stationWillNotBuy { title:title stationName:title itemName:(itmGetName thisItem 'plural) })
+												(scrTranslate gScreen 'descNotForSale { title:title itemName:(itmGetName thisItem 'plural) })
+												)
 										
 									(= affordCount 0)
 										(scrTranslate gScreen 'descNotEnoughMoney { title:title itemName:(itmGetName thisItem 'article) })
@@ -850,6 +865,13 @@
 							)
 							
 							(switch
+								;	Confirm
+
+								(and (itmMatches thisItem "m")
+										(objGetItemProperty gPlayerShip thisItem 'canBeFired)
+										)
+									(scrShowPane gScreen 'ConfirmSell)
+
 								;	Ask for quantity, if necessary
 								
 								(gr maxCount 1)
@@ -871,6 +893,47 @@
 					</Action>
 				</Actions>
 			</Default>
+
+			<ConfirmSell>
+				<OnPaneInit>
+					(block (
+						(thisItem (scrGetItem gScreen))
+						)
+						(switch
+							(itmMatches thisItem "m")
+								(scrSetDescTranslate gScreen 'warningSellAmmo {
+									itemName: (itmGetName thisItem 'plural)
+									})
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionYes" default="1">
+						(block (
+							(thisItem (scrGetItem gScreen))
+							(maxCount (scrGetData gScreen 'maxCount))
+							(itemCost (scrGetData gScreen 'itemCost))
+							(sourceObj (or (scrGetProperty gScreen 'rpg.sourceObj) gSource))
+							)
+							(switch
+								(gr maxCount 1)
+									(scrShowPane gScreen 'SellQuantity)
+
+								(block Nil
+									(rpgSellItems 1 itemCost sourceObj)
+									(scrSetReturnData gScreen 'sold True)
+									(scrShowPane gScreen 'Default)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionNo" cancel="1">
+						(scrShowPane gScreen 'Default)
+					</Action>
+				</Actions>
+			</ConfirmSell>
 
 			<SellQuantity
 					showCounter=	"true">
@@ -976,6 +1039,13 @@
 			<Text id="descSellQuantity">
 				How many items do you wish to sell at %value% each?
 			</Text>
+
+			<Text id="warningSellAmmo">
+			
+				%ItemName% are used by one of your weapons. Are you sure you 
+				want to sell?
+
+			</Text>
 		</Language>
 	</DockScreen>
 
@@ -1014,10 +1084,15 @@
 				(objGetSellPrice gSource thisItem)
 				))
 
-			(setq rpgCreateBuyItemTabs (lambda ()
-				(block ()
+			(setq rpgCreateBuyItemTabs (lambda (criteria)
+				(block (
+					(theCriteria criteria)
+					)
 					(scrAddListFilter gScreen 'filterGeneral "General" (lambda (theItem)
 						(switch
+							(and theCriteria (not (itmMatches theItem theCriteria)))
+								Nil
+
 							(itmMatches theItem "adm")
 								Nil
 											
@@ -1027,6 +1102,9 @@
 									
 					(scrAddListFilter gScreen 'filterInstallable "Devices &amp; Armor" (lambda (theItem)
 						(switch
+							(and theCriteria (not (itmMatches theItem theCriteria)))
+								Nil
+
 							(itmMatches theItem "ad")
 								(rpgCalcSellPrice theItem)
 							)
@@ -1034,12 +1112,23 @@
 							
 					(scrAddListFilter gScreen 'filterAmmo "Ammo" (lambda (theItem)
 						(switch
+							(and theCriteria (not (itmMatches theItem theCriteria)))
+								Nil
+
 							(itmMatches theItem "m")
 								(rpgCalcSellPrice theItem)
 							)
 						))
-							
-					(scrAddListFilter gScreen 'filterAll "All" rpgCalcSellPrice)
+
+					(if theCriteria							
+						(scrAddListFilter gScreen 'filterAll "All" (lambda (theItem)
+							(if (itmMatches theItem theCriteria)
+									(rpgCalcSellPrice theItem)
+								)
+							))
+
+						(scrAddListFilter gScreen 'filterAll "All" rpgCalcSellPrice)
+						)
 					)
 				))
 

@@ -8,11 +8,11 @@
 #include <array>
 #include <functional>
 
-enum ESetPropertyResults
+enum class ESetPropertyResult
 	{
-	resultPropertySet,
-	resultPropertyNotFound,
-	resultPropertyError,
+	set,
+	notFound,
+	error,
 	};
 
 template <class OBJ>

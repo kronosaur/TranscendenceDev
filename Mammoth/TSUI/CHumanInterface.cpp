@@ -234,6 +234,11 @@ void CHumanInterface::ClosePopupSession (void)
 	//	Recompute paint order
 
 	CalcBackgroundSessions();
+
+	//	Tell the session that it has been activated.
+
+	if (m_pCurSession)
+		m_pCurSession->HIActivate();
 	}
 
 bool CHumanInterface::Create (void)
@@ -571,6 +576,11 @@ ALERROR CHumanInterface::OpenPopupSession (IHISession *pSession, CString *retsEr
 
 	if (m_pCurSession->IsCursorShown())
 		::ShowCursor(true);
+
+	//	Tell the old session that it has been deactivated
+
+	if (pOldSession)
+		pOldSession->HIDeactivate();
 
 	return NOERROR;
 	}

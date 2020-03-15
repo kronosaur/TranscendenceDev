@@ -38,6 +38,7 @@ class CG8bitImage : public TImagePlane<CG8bitImage>
 		void FillLine (int x, int y, int cxWidth, BYTE Value) { Fill(x, y, cxWidth, 1, Value); }
 		void SetPixel (int x, int y, BYTE Value) 
 			{ if (x >= m_rcClip.left && y >= m_rcClip.top && x < m_rcClip.right && y < m_rcClip.bottom) *GetPixelPos(x, y) = Value; }
+		void SetPixelTrans (int x, int y, BYTE Value, BYTE byOpacity);
 
 		//	Debug
 

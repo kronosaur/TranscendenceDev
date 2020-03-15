@@ -554,6 +554,10 @@
 			attributes=			"shipwreck"
 			>
 			
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
+
 		<ImageShipwreck class="&scSungTransport;"/>
 		
 		<Items>

@@ -109,7 +109,7 @@ class CArmorItem : public CDifferentiatedItem
 			Metric rCost = 0.0;					//	Balance from cost
 			};
 
-		inline operator bool () const;
+		inline explicit operator bool () const;
 		operator const CItem & () const { return m_Item; }
 		operator CItem & () { return m_Item; }
 
@@ -148,15 +148,24 @@ class CDeviceItem : public CDifferentiatedItem
 	{
 	public:
 
-		inline operator bool () const;
+		enum ECalcTargetTypes
+			{
+			calcNoTarget,
+			calcControllerTarget,
+			calcWeaponTarget,
+			};
+
+		inline explicit operator bool () const;
 		operator const CItem & () const { return m_Item; }
 		operator CItem & () { return m_Item; }
 
 		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
+		ECalcTargetTypes CalcTargetType (void) const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);
 		inline int GetDeviceSlot (void) const;
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
+		int GetFireArc (void) const;
 		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
 		inline const CInstalledDevice *GetInstalledDevice (void) const;
 		inline CInstalledDevice *GetInstalledDevice (void);
@@ -164,11 +173,17 @@ class CDeviceItem : public CDifferentiatedItem
 		Metric GetMaxEffectiveRange (CSpaceObject *pTarget = NULL) const;
 		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		inline DWORD GetTargetTypes (void) const;
+		DamageTypes GetWeaponDamageType (void) const;
 		inline int GetWeaponEffectiveness (CSpaceObject *pTarget) const;
+		inline const CWeaponFireDesc *GetWeaponFireDesc (void) const;
+		inline const CWeaponFireDesc *GetWeaponFireDesc (const CItem &Ammo) const;
 		inline bool IsAreaWeapon (void) const;
-		bool IsMissileDefenseWeapon (void) const;
-		bool IsTargetableMissileDefenseWeapon (void) const;
+		inline bool IsEnabled (void) const;
+		inline bool IsMiningWeapon (void) const;
+		inline bool IsTrackingWeapon (void) const;
 		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
+		inline bool NeedsAutoTarget (int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const;
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 
 	private:
@@ -187,7 +202,7 @@ class CMissileItem : public CDifferentiatedItem
 	{
 	public:
 		
-		inline operator bool () const;
+		inline explicit operator bool () const;
 		operator const CItem & () const { return m_Item; }
 		operator CItem & () { return m_Item; }
 
@@ -244,7 +259,7 @@ class CItem
 		~CItem (void);
 		CItem &operator= (const CItem &Copy);
 
-		operator bool () const { return (m_pItemType != NULL); }
+		explicit operator bool () const { return (m_pItemType != NULL); }
 
 		bool AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const;
 		DWORD AddEnhancement (const CItemEnhancement &Enhancement);
@@ -353,7 +368,7 @@ class CItem
 		void SetKnown (bool bKnown = true) const;
         bool SetLevel (int iLevel, CString *retsError = NULL);
 		void SetPrepareUninstalled (void);
-		ESetPropertyResults SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError = NULL);
+		ESetPropertyResult SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError = NULL);
 		void SetUnknownIndex (int iIndex);
 		void SetVariantNumber (int iVariantCounter);
 
@@ -482,6 +497,7 @@ class CItemList
 		const CItem &GetItem (int iIndex) const { return *m_List[iIndex]; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SortItems (void);
+		void SortItems (const CItemCriteria &SortFirst);
 		void WriteToStream (IWriteStream *pStream);
 
 		static CItemList &Null (void) { return m_Null; }
@@ -514,6 +530,7 @@ class CItemListManipulator
 
 		static constexpr DWORD FLAG_SORT_ITEMS = 0x00000001;
 		bool Refresh (const CItem &Item, DWORD dwFlags = 0);
+		bool RefreshAndSortEnabled (const CItem &Item, const CItemCriteria &EnabledItems);
 
 		bool IsCursorValid (void) const { return (m_iCursor != -1 && m_iCursor < m_ItemList.GetCount()); }
 		bool MoveCursorBack (void);
@@ -526,7 +543,7 @@ class CItemListManipulator
 		void ClearInstalledAtCursor (void);
 		void DeleteAtCursor (int iCount);
 		void DeleteMarkedItems (void);
-		const CItem &GetItemAtCursor (void);
+		const CItem &GetItemAtCursor (void) const;
 		CItem *GetItemPointerAtCursor (void);
 		bool IsItemPointerValid (const CItem *pItem) const;
 		void MarkDeleteAtCursor (int iCount);
@@ -579,6 +596,7 @@ class CItemCtx
 		CArmorClass *GetArmorClass (void) const;
 		CInstalledDevice *GetDevice (void);
 		CDeviceClass *GetDeviceClass (void);
+		CDeviceItem GetDeviceItem (void);
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void);
 		const CItemEnhancementStack &GetEnhancements (void) { const CItemEnhancementStack *pStack = GetEnhancementStack(); if (pStack) return *pStack; else return *m_pNullEnhancements; }
 		const CItem &GetItem (void) const;
@@ -609,6 +627,7 @@ class CItemCtx
 		CDeviceClass *m_pWeapon = NULL;			//	This is the weapon that uses the given item
 		int m_iVariant = -1;					//	NOTE: In this case, m_pItem may be either a
 												//	missile or the weapon.
+		CItem m_Weapon;
 
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Only used if we need to cons one up
 
@@ -672,7 +691,7 @@ class CItemTypeProbabilityTable
 class IItemGenerator
 	{
 	public:
-		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IItemGenerator **retpGenerator);
+		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, IItemGenerator **retpGenerator);
 		static ALERROR CreateLookupTable (SDesignLoadCtx &Ctx, DWORD dwUNID, IItemGenerator **retpGenerator);
 		static ALERROR CreateRandomItemTable (CUniverse &Universe,
 											  const CItemCriteria &Crit, 
@@ -690,7 +709,7 @@ class IItemGenerator
 		virtual int GetItemTypeCount (void) { return 0; }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const { return CItemTypeProbabilityTable(); }
 		virtual bool HasItemAttribute (const CString &sAttrib) const { return false; }
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 
 	protected:

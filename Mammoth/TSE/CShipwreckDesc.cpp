@@ -565,15 +565,13 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 //	Initialize from XML
 
 	{
-	ALERROR error;
-
-	CXMLElement *pWreck = pDesc->GetContentElementByTag(WRECK_TAG);
+	const CXMLElement *pWreck = pDesc->GetContentElementByTag(WRECK_TAG);
 	if (pWreck == NULL)
 		pWreck = pDesc;
 
 	//	Miscellaneous
 
-	if (pDesc->FindAttributeInteger(LEAVES_WRECK_ATTRIB, &m_iLeavesWreck))
+	if (pWreck->FindAttributeInteger(LEAVES_WRECK_ATTRIB, &m_iLeavesWreck))
 		m_iLeavesWreck = Max(0, m_iLeavesWreck);
 	else
 		{
@@ -584,17 +582,17 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 		m_iLeavesWreck = Max(0, Min((int)(5.0 * pow(rHullMass, 0.45)), 100));
 		}
 
-	if (error = m_pWreckType.LoadUNID(Ctx, pDesc->GetAttribute(WRECK_TYPE_ATTRIB)))
+	if (ALERROR error = m_pWreckType.LoadUNID(Ctx, pWreck->GetAttribute(WRECK_TYPE_ATTRIB)))
 		return error;
 
-	m_bRadioactiveWreck = pDesc->GetAttributeBool(RADIOACTIVE_WRECK_ATTRIB);
-	m_iStructuralHP = pDesc->GetAttributeIntegerBounded(STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, -1);
+	m_bRadioactiveWreck = pWreck->GetAttributeBool(RADIOACTIVE_WRECK_ATTRIB);
+	m_iStructuralHP = pWreck->GetAttributeIntegerBounded(STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, -1);
 	if (m_iStructuralHP == -1)
-		m_iStructuralHP = pDesc->GetAttributeIntegerBounded(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, 0);
+		m_iStructuralHP = pWreck->GetAttributeIntegerBounded(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, 0);
 
 	//	Explosion
 
-	if (error = m_pExplosionType.LoadUNID(Ctx, pDesc->GetAttribute(EXPLOSION_TYPE_ATTRIB)))
+	if (ALERROR error = m_pExplosionType.LoadUNID(Ctx, pWreck->GetAttribute(EXPLOSION_TYPE_ATTRIB)))
 		return error;
 
 	//	Done

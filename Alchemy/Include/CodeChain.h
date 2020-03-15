@@ -193,7 +193,7 @@ class ICCItem : public CObject
 		void SetIntegerAt (const CString &sKey, int iValue);
 		void SetStringAt (const CString &sKey, const CString &sValue);
 
-		virtual void AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) { }
+		virtual bool AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false, bool bMustBeNew = false) { return true; }
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) { ASSERT(false); }
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) { }
 		virtual void DeleteEntry (ICCItem *pKey) { }
@@ -241,6 +241,7 @@ class ICCItemPtr
 		constexpr ICCItemPtr (std::nullptr_t) : m_pPtr(NULL) { }
 
 		explicit ICCItemPtr (ICCItem *pPtr) : m_pPtr(pPtr) { }
+		ICCItemPtr (const ICCItem &Value) : m_pPtr(Value.Reference()) { }
 
 		explicit ICCItemPtr (ICCItem::ValueTypes iType);
 		explicit ICCItemPtr (const CString &sValue);
@@ -260,6 +261,7 @@ class ICCItemPtr
 
 		ICCItemPtr &operator= (const ICCItemPtr &Src);
 		ICCItemPtr &operator= (ICCItem *pSrc);
+		ICCItemPtr &operator= (const ICCItem &Value);
 		operator ICCItem *() const { return m_pPtr; }
 		ICCItem * operator->() const { return m_pPtr; }
 
@@ -276,6 +278,10 @@ class ICCItemPtr
 			{
 			*this = Src;
 			}
+
+		static ICCItemPtr Error (const CString &sError, ICCItem *pData = NULL);
+		static ICCItemPtr Nil (void) { return ICCItemPtr(ICCItem::Nil); }
+		static ICCItemPtr True (void) { return ICCItemPtr(ICCItem::True); }
 
 	private:
 		ICCItem *m_pPtr;
@@ -720,7 +726,7 @@ class CCAtomTable : public ICCAtom
 		virtual CString Print (DWORD dwFlags = 0) const override;
 		virtual void Reset (void) override;
 
-		virtual void AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd = false) override;
+		virtual bool AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd = false, bool bMustBeNew = false) override;
 		virtual ICCItem *ListSymbols (CCodeChain *pCC) override;
 		virtual ICCItem *Lookup (CCodeChain *pCC, ICCItem *pAtom) override;
 		virtual ICCItem *LookupEx (CCodeChain *pCC, ICCItem *pAtom, bool *retbFound) override;
@@ -769,7 +775,7 @@ class CCSymbolTable : public ICCList
 		//	Symbols
 
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) override;
-		virtual void AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) override;
+		virtual bool AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false, bool bMustBeNew = false) override;
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) override;
 		virtual void DeleteEntry (ICCItem *pKey) override;
 		virtual int FindOffset (CCodeChain *pCC, ICCItem *pKey) override;
@@ -842,11 +848,12 @@ class CConsPool
 class CEvalContext
 	{
 	public:
-		CCodeChain *pCC;
-		ICCItem *pLexicalSymbols;
-		ICCItem *pLocalSymbols;
+		CCodeChain *pCC = NULL;
+		ICCItem *pLexicalSymbols = NULL;
+		ICCItem *pLocalSymbols = NULL;
+		bool bStrict = false;
 
-		LPVOID pExternalCtx;
+		LPVOID pExternalCtx = NULL;
 	};
 
 //	This is the main CodeChain context
@@ -861,6 +868,13 @@ class CCodeChain
 
 			int iLinked = 0;				//	Returns number of characters we parsed.
 			int iCurLine = 1;				//	Updated to return current line.
+			};
+
+		struct SRunOptions
+			{
+			LPVOID pExternalCtx = NULL;
+
+			bool bStrict = false;			//	Extra checking (generally for debug mode)
 			};
 
 		CCodeChain (void);
@@ -908,13 +922,14 @@ class CCodeChain
 
 		//	Evaluation and parsing routines
 
-		ICCItem *Apply (ICCItem *pFunc, ICCItem *pArgs, LPVOID pExternalCtx);
+		ICCItemPtr Apply (const ICCItem &Func, ICCItem &Args, const SRunOptions &Options);
 		ICCItem *GetNil (void) { return &m_Nil; }
 		ICCItem *GetTrue (void) { return &m_True; }
 		ICCItem *Eval (CEvalContext *pEvalCtx, ICCItem *pItem);
 		static ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
+		static ICCItemPtr LinkCode (const CString &sString, SLinkOptions &Options = SLinkOptions()) { return ICCItemPtr(Link(sString, Options)); }
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
-		ICCItem *TopLevel (ICCItem *pItem, LPVOID pExternalCtx);
+		ICCItemPtr TopLevel (const ICCItem &Code, const SRunOptions &Options);
 		static CString Unlink (ICCItem *pItem);
 
 		//	Extensions

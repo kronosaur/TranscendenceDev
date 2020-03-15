@@ -4,13 +4,18 @@
 
 #include "PreComp.h"
 
+#define IMAGE_TAG								CONSTLIT("Image")
+
+#define ALLOW_ARC_MISSIONS_ATTRIB				CONSTLIT("allowArcMissions")
 #define ALLOW_PLAYER_DELETE_ATTRIB				CONSTLIT("allowPlayerDelete")
 #define AUTO_ACCEPT_ATTRIB						CONSTLIT("autoAccept")
+#define CREATE_CRITERIA_ATTRIB					CONSTLIT("createCriteria")
 #define DEBRIEF_AFTER_OUT_OF_SYSTEM_ATTRIB		CONSTLIT("debriefAfterOutOfSystem")
 #define DESTROY_ON_DECLINE_ATTRIB				CONSTLIT("destroyOnDecline")
 #define EXPIRE_TIME_ATTRIB						CONSTLIT("expireTime")
 #define FAILURE_AFTER_OUT_OF_SYSTEM_ATTRIB		CONSTLIT("failureAfterOutOfSystem")
 #define FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB		CONSTLIT("forceUndockAfterDebrief")
+#define IGNORE_STATION_LIMIT_ATTRIB				CONSTLIT("ignoreOwnerLimit")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define MAX_APPEARING_ATTRIB					CONSTLIT("maxAppearing")
 #define MISSION_ARC_ATTRIB						CONSTLIT("missionArc")
@@ -32,6 +37,9 @@
 #define FIELD_MIN_LEVEL							CONSTLIT("minLevel")
 #define FIELD_NAME								CONSTLIT("name")
 
+#define PROPERTY_ARC							CONSTLIT("arc")
+#define PROPERTY_ARC_SEQUENCE					CONSTLIT("arcSequence")
+#define PROPERTY_ARC_STATUS						CONSTLIT("arcStatus")
 #define PROPERTY_AUTO_ACCEPT					CONSTLIT("autoAccept")
 #define PROPERTY_CAN_BE_DECLINED				CONSTLIT("canBeDeclined")
 #define PROPERTY_CAN_BE_DELETED					CONSTLIT("canBeDeleted")
@@ -39,6 +47,8 @@
 #define PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF		CONSTLIT("forceUndockAfterDebrief")
 #define PROPERTY_HAS_DEBRIEF					CONSTLIT("hasDebrief")
 #define PROPERTY_HAS_IN_PROGRESS				CONSTLIT("hasInProgress")
+#define PROPERTY_IGNORE_STATION_LIMIT			CONSTLIT("ignoreOwnerLimit")
+#define PROPERTY_IMAGE_DESC						CONSTLIT("imageDesc")
 #define PROPERTY_MAX_APPEARING					CONSTLIT("maxAppearing")
 #define PROPERTY_PRIORITY						CONSTLIT("priority")
 #define PROPERTY_TOTAL_ACCEPTED					CONSTLIT("totalAccepted")
@@ -69,30 +79,179 @@ ICCItemPtr CMissionType::AutoAcceptAsItem (EMissionAutoAccept iAutoAccept)
 		}
 	}
 
-bool CMissionType::CanBeCreated (const CMissionList &AllMissions, CSpaceObject *pOwner, ICCItem *pCreateData) const
+CMissionType::SArcStatus CMissionType::CalcArcStatus (void) const
+
+//	CalcArcStatus
+//
+//	Computes the progress on this mission arc.
+
+	{
+	struct SEntry
+		{
+		TArray<const CMission *> Missions;
+		};
+
+	CUniverse &Universe = GetUniverse();
+	SArcStatus Status;
+
+	if (m_sArc.IsBlank())
+		return Status;
+
+	//	If there are multiple missions with the same title, then we count them
+	//	as the same for "chapter" purposes.
+
+	TSortMap<CString, TSortMap<const CMissionType *, SEntry>> ChapterList;
+
+	int iMissionTypeCount = Universe.GetDesignCollection().GetCount(designMissionType);
+	for (int i = 0; i < iMissionTypeCount; i++)
+		{
+		const CMissionType *pMissionType = CMissionType::AsType(Universe.GetDesignCollection().GetEntry(designMissionType, i));
+		if (!strEquals(pMissionType->m_sArc, m_sArc))
+			continue;
+
+		CString sTitle = pMissionType->GetTitle();
+		auto pList = ChapterList.SetAt(sTitle);
+		auto pEntry = pList->SetAt(pMissionType);
+		}
+
+	const CMissionList &Missions = Universe.GetMissions();
+	for (int i = 0; i < Missions.GetCount(); i++)
+		{
+		const CMission &Mission = Missions[i];
+		if (!strEquals(Mission.GetArc(), m_sArc))
+			continue;
+
+		const CMissionType &MissionType = Mission.GetMissionType();
+		auto pList = ChapterList.GetAt(MissionType.GetTitle());
+		if (!pList)
+			continue;
+
+		auto pEntry = pList->GetAt(&MissionType);
+		pEntry->Missions.Insert(&Mission);
+		}
+
+	//	The total number of chapters in the mission arc is equal to the total
+	//	number of unique mission titles.
+
+	Status.iTotal = ChapterList.GetCount();
+
+	//	Find the latest mission that's been created in this arc.
+
+	const CMission *pLatest = Missions.FindByArc(m_sArc);
+
+	//	Now loop over all chapters and count the number that have been completed.
+
+	for (int i = 0; i < ChapterList.GetCount(); i++)
+		{
+		const auto &MissionTypes = ChapterList[i];
+
+		//	First figure out if all the mission types in this chapter are before
+		//	the latest.
+
+		bool bBeforeLatest;
+		if (pLatest)
+			{
+			bBeforeLatest = true;
+			for (int j = 0; j < MissionTypes.GetCount(); j++)
+				{
+				if (MissionTypes.GetKey(j)->GetArcSequence() >= pLatest->GetArcSequence())
+					{
+					bBeforeLatest = false;
+					break;
+					}
+				}
+			}
+		else
+			bBeforeLatest = false;
+
+		//	Now see if any/all of the missions in this chapter have been 
+		//	completed (recorded).
+
+		bool bAtLeastOneNotCompleted = false;
+		bool bAtLeastOneCompleted = false;
+		for (int j = 0; j < MissionTypes.GetCount(); j++)
+			{
+			const auto &Entry = MissionTypes[j];
+			for (int k = 0; k < Entry.Missions.GetCount(); k++)
+				if (Entry.Missions[k]->IsRecorded())
+					bAtLeastOneCompleted = true;
+				else
+					bAtLeastOneNotCompleted = true;
+			}
+
+		//	If all missions have been completed, then we count this chapter as
+		//	being completed.
+
+		if (bAtLeastOneCompleted && !bAtLeastOneNotCompleted)
+			Status.iCompleted++;
+
+		//	If we're already past this chapter and if we've completed any of the
+		//	missions, then we count it as completed.
+
+		else if (bAtLeastOneCompleted && bBeforeLatest)
+			Status.iCompleted++;
+
+		//	Otherwise, if we're at or ahead of the latest mission, then we count
+		//	this as a chapter that's still left.
+
+		else if (!bBeforeLatest)
+			Status.iLeft++;
+
+		//	Otherwise, this chapter was skipped
+
+		else
+			Status.iSkipped++;
+		}
+
+	//	Done
+
+	return Status;
+	}
+
+bool CMissionType::CanBeCreated (const CMissionList &AllMissions, SCreateCtx &CreateCtx) const
 
 //	CanBeCreated
 //
 //	Returns TRUE if we can create this mission.
-//
-//	NOTE: We don't check to see if the mission is appropriate to the system 
-//	level here because we want to allow explicitly created missions. Instead
-//	we check for system level inside CUniverse::CreateRandomMission.
 
 	{
 	if (!CanBeEncountered())
 		return false;
 
+	//	Skip if this mission is not appropriate for this system level.
+
+	if (!CreateCtx.bNoSystemLevelCheck)
+		{
+		int iMinLevel, iMaxLevel;
+		GetLevel(&iMinLevel, &iMaxLevel);
+		if (CreateCtx.iLevel < iMinLevel || CreateCtx.iLevel > iMaxLevel)
+			return false;
+		}
+
+	//	If we have create criteria, then make sure we match
+
+	CMission::SCriteria CreateCriteria;
+	if (!m_sCreateCriteria.IsBlank())
+		{
+		if (!CMission::ParseCriteria(m_sCreateCriteria, &CreateCriteria))
+			return false;
+
+		if (!AllMissions.Matches(CreateCtx.pOwner, CreateCriteria))
+			return false;
+		}
+
 	//	If this is part of a mission arc, then see if we can create it.
 
-	TArray<CMission *> MissionArc;
-	if (!m_sArc.IsBlank() 
-			&& !AllMissions.CanCreateMissionInArc(m_sArc, m_iArcSequence))
-		return false;
+	if (!CreateCtx.bNoMissionArcCheck)
+		{
+		if (!m_sArc.IsBlank() 
+				&& !AllMissions.CanCreateMissionInArc(*this, CreateCtx.pOwner, CreateCriteria))
+			return false;
+		}
 
 	//	Fire <CanCreate>
 
-	if (!FireCanCreate(pOwner, pCreateData))
+	if (!FireCanCreate(CreateCtx.pOwner, CreateCtx.pCreateData))
 		return false;
 
 	return true;
@@ -153,6 +312,35 @@ bool CMissionType::FindDataField (const CString &sField, CString *retsValue) con
 	return true;
 	}
 
+const CObjectImageArray &CMissionType::GetImage (void) const
+
+//	GetImage
+//
+//	Returns mission image.
+
+	{
+	if (!m_Image.IsEmpty())
+		return m_Image;
+	else if (GetInheritFrom())
+		return GetInheritFrom()->GetTypeSimpleImage();
+	else
+		return CObjectImageArray::Null();
+	}
+
+CString CMissionType::GetTitle (void) const
+
+//	GetTitle
+//
+//	Returns the mission title.
+
+	{
+	CString sTitle;
+	if (TranslateText(CONSTLIT("Name"), NULL, &sTitle))
+		return sTitle;
+
+	return GetName();
+	}
+
 void CMissionType::IncAccepted (void)
 
 //	IncAccepted
@@ -164,6 +352,18 @@ void CMissionType::IncAccepted (void)
 	m_dwLastAcceptedOn = GetUniverse().GetTicks();
 	}
 
+void CMissionType::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
+
+//	OnAccumulateXMLMergeFlags
+//
+//	Returns flags to determine how we merge from inherited types.
+
+	{
+	//	We know how to handle these tags through the inheritance hierarchy.
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(IMAGE_TAG), CXMLElement::MERGE_OVERRIDE);
+	}
+
 ALERROR CMissionType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 //	OnBindDesign
@@ -171,6 +371,9 @@ ALERROR CMissionType::OnBindDesign (SDesignLoadCtx &Ctx)
 //	Bind design
 
 	{
+	if (ALERROR error = m_Image.OnDesignLoadComplete(Ctx))
+		return error;
+
 	m_CachedEvents.Init(this, CACHED_EVENTS);
 
 	//	For missions that are part of an arc, we track the first mission in the
@@ -216,6 +419,15 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fForceUndockAfterDebrief = pDesc->GetAttributeBool(FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB);
 	m_fAllowDelete = pDesc->GetAttributeBool(ALLOW_PLAYER_DELETE_ATTRIB);
 	m_fDestroyOnDecline = pDesc->GetAttributeBool(DESTROY_ON_DECLINE_ATTRIB);
+	m_fIgnoreStationLimit = pDesc->GetAttributeBool(IGNORE_STATION_LIMIT_ATTRIB);
+
+	//	Image
+
+	if (const CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG))
+		{
+		if (error = m_Image.InitFromXML(Ctx, *pImage))
+			return ComposeLoadError(Ctx, CONSTLIT("Unable to load image"));
+		}
 
 	//	Mission creation
 
@@ -231,6 +443,9 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = m_MaxAppearing.LoadFromXML(sAttrib))
 			return ComposeLoadError(Ctx, CONSTLIT("Invalid maxAppearing parameter."));
 		}
+
+	m_sCreateCriteria = pDesc->GetAttribute(CREATE_CRITERIA_ATTRIB);
+	m_bAllowOtherArcMissions = pDesc->GetAttribute(ALLOW_ARC_MISSIONS_ATTRIB);
 
 	m_iMaxAppearing = (m_MaxAppearing.IsEmpty() ? -1 : m_MaxAppearing.Roll());
 	m_iAccepted = 0;
@@ -309,7 +524,30 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 
-	if (strEquals(sProperty, PROPERTY_AUTO_ACCEPT))
+	if (strEquals(sProperty, PROPERTY_ARC))
+		return (m_sArc.IsBlank() ? ICCItemPtr::Nil() : ICCItemPtr(m_sArc));
+
+	else if (strEquals(sProperty, PROPERTY_ARC_SEQUENCE))
+		return (m_sArc.IsBlank() ? ICCItemPtr::Nil() : ICCItemPtr(m_iArcSequence));
+
+	else if (strEquals(sProperty, PROPERTY_ARC_STATUS))
+		{
+		if (m_sArc.IsBlank())
+			return ICCItemPtr::Nil();
+		else
+			{
+			SArcStatus Status = CalcArcStatus();
+
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetIntegerAt(CONSTLIT("total"), Status.iTotal);
+			pResult->SetIntegerAt(CONSTLIT("completed"), Status.iCompleted);
+			pResult->SetIntegerAt(CONSTLIT("left"), Status.iLeft);
+
+			return pResult;
+			}
+		}
+
+	else if (strEquals(sProperty, PROPERTY_AUTO_ACCEPT))
 		return AutoAcceptAsItem(m_iAutoAccept);
 
 	else if (strEquals(sProperty, PROPERTY_CAN_BE_DECLINED))
@@ -329,6 +567,12 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_HAS_IN_PROGRESS))
 		return ICCItemPtr(HasInProgress());
+
+	else if (strEquals(sProperty, PROPERTY_IGNORE_STATION_LIMIT))
+		return ICCItemPtr(m_fIgnoreStationLimit ? true : false);
+
+	else if (strEquals(sProperty, PROPERTY_IMAGE_DESC))
+		return ICCItemPtr(CreateListFromImage(CC, GetImage()));
 
 	else if (strEquals(sProperty, PROPERTY_PRIORITY))
 		return ICCItemPtr(GetPriority());

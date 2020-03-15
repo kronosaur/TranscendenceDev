@@ -116,7 +116,27 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 	{
 	//	Damage requires mass destruction power
 
-    Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+	int iDamageAdj = Ctx.Damage.GetMassDestructionAdj();
+    Ctx.iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
+
+	//	If we don't have WMD and we're not making much progress, then show a hint.
+
+	if (iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD)
+		{
+		if (Ctx.iDamage == 0)
+			Ctx.SetHint(EDamageHint::useWMDforShip);
+		else
+			{
+			int iHP;
+			GetHitPoints(*pShip, Desc, &iHP);
+
+			if ((iHP / Ctx.iDamage) > SDamageCtx::WMD_HINT_THRESHOLD)
+				Ctx.SetHint(EDamageHint::useWMDforShip);
+			}
+		}
+
+	//	If no damage, then we're done.
+
     if (Ctx.iDamage == 0)
         return damageArmorHit;
 

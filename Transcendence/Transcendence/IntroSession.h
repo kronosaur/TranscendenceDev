@@ -11,7 +11,7 @@ class CHighScoreDisplay
 		CHighScoreDisplay (void);
 		~CHighScoreDisplay (void);
 
-		inline bool HasHighScores (void) const { return (m_pHighScoreList && m_pHighScoreList->GetCount() > 0); }
+		bool HasHighScores (void) const { return (m_pHighScoreList && m_pHighScoreList->GetCount() > 0); }
 		bool IsPerformanceRunning (void);
 		void SelectNext (void);
 		void SelectPrev (void);
@@ -23,7 +23,7 @@ class CHighScoreDisplay
 		void CreatePerformance (CReanimator &Reanimator, const CString &sPerformanceID, const RECT &rcRect, CAdventureHighScoreList *pHighScoreList, IAnimatron **retpAnimatron);
 		void DeletePerformance (void);
 		int GetCurrentScrollPos (void);
-		inline bool IsPerformanceCreated (void) const { return (m_dwPerformance != 0); }
+		bool IsPerformanceCreated (void) const { return (m_dwPerformance != 0); }
 		void ScrollToPos (int iPos);
 
 		CAdventureHighScoreList *m_pHighScoreList;
@@ -58,6 +58,7 @@ class CIntroSession : public IHISession
 			isEnterCommand,
 			isNews,
 			isWaitingForHighScores,
+			isTextMessage,
 			};
 
 		CIntroSession (STranscendenceSessionCtx &CreateCtx, EStates iInitialState) : IHISession(*CreateCtx.pHI),
@@ -92,12 +93,15 @@ class CIntroSession : public IHISession
 		void CreateIntroSystem (void);
 		void CreateIntroShips (DWORD dwNewShipClass = 0, DWORD dwSovereign = 0, CSpaceObject *pShipDestroyed = NULL);
 		ALERROR CreateRandomShip (CSystem *pSystem, DWORD dwClass, CSovereign *pSovereign, CShip **retpShip);
+		void CreateTextPerformance (const CString &sText);
 		void InitShipTable (TSortMap<int, CShipClass *> &List, bool bAll = false);
 		void OrderAttack (CShip *pShip, CSpaceObject *pTarget);
 
 		void CancelCurrentState (void);
 		void CreateSoundtrackTitleAnimation (CMusicResource *pTrack, IAnimatron **retpAni);
-		inline EStates GetState (void) const { return m_iState; }
+
+		EStates GetState (void) const { return m_iState; }
+		void ExecuteCommand (const CString &sCommand);
 		bool HandleCommandBoxChar (char chChar, DWORD dwKeyData);
 		bool HandleChar (char chChar, DWORD dwKeyData);
 		void OnPOVSet (CSpaceObject *pObj);
@@ -126,6 +130,7 @@ class CIntroSession : public IHISession
         RECT m_rcMainExpanded;              //  Full screen
 
 		CHighScoreDisplay m_HighScoreDisplay;
+		DWORD m_dwTextPerformance = 0;
 
 		TSortMap<int, CShipClass *> m_ShipList;
 		bool m_bShowAllShips;				//	If FALSE, we only show the lower half (by score)
@@ -138,7 +143,7 @@ class CIntroShipController : public IShipController
 		CIntroShipController (IShipController *pDelegate);
 		virtual ~CIntroShipController (void);
 
-		inline void SetShip (CShip *pShip) { m_pShip = pShip; }
+		void SetShip (CShip *pShip) { m_pShip = pShip; }
 
 		virtual void AccumulateCrewMetrics (SCrewMetrics &Metrics) override { m_pDelegate->AccumulateCrewMetrics(Metrics); }
 		virtual void Behavior (SUpdateCtx &Ctx) override { m_pDelegate->Behavior(Ctx); }
@@ -164,9 +169,9 @@ class CIntroShipController : public IShipController
 		virtual bool GetReverseThrust (void) override { return m_pDelegate->GetReverseThrust(); }
 		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
 		virtual bool GetStopThrust (void) override { return m_pDelegate->GetStopThrust(); }
-		virtual CSpaceObject *GetTarget (DWORD dwFlags) const override { return m_pDelegate->GetTarget(dwFlags); }
+		virtual CSpaceObject *GetTarget (const CDeviceItem *pDeviceItem = NULL, DWORD dwFlags = 0) const override { return m_pDelegate->GetTarget(pDeviceItem, dwFlags); }
+		virtual CTargetList GetTargetList (void) const override { return m_pDelegate->GetTargetList(); }
 		virtual bool GetThrust (void) override { return m_pDelegate->GetThrust(); }
-		virtual void GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) override { m_pDelegate->GetWeaponTarget(UpdateCtx, WeaponItem, retpTarget, retiFireSolution); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override { return m_pDelegate->IsAngryAt(pObj); }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override { return m_pDelegate->SetAISettingInteger(sSetting, iValue); }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override { return m_pDelegate->SetAISettingString(sSetting, sValue); }
@@ -185,8 +190,9 @@ class CIntroShipController : public IShipController
 		//	Events
 
 		virtual void OnAbilityChanged (Abilities iAbility, AbilityModifications iChange, bool bNoMessage = false) override { m_pDelegate->OnAbilityChanged(iAbility, iChange, bNoMessage); }
+		virtual void OnAcceptedMission (CMission &MissionObj) override { m_pDelegate->OnAcceptedMission(MissionObj); }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override { m_pDelegate->OnAttacked(pAttacker, Damage); }
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override { return m_pDelegate->OnCommunicate(pSender, iMessage, pParam1, dwParam2); }
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override { return m_pDelegate->OnCommunicate(pSender, iMessage, pParam1, dwParam2, pData); }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override { m_pDelegate->OnComponentChanged(iComponent); }
 		virtual void OnDamaged (const CDamageSource &Cause, CInstalledArmor *pArmor, const DamageDesc &Damage, int iDamage) override { m_pDelegate->OnDamaged(Cause, pArmor, Damage, iDamage); }
 		virtual void OnDeviceEnabledDisabled (int iDev, bool bEnabled, bool bSilent = false) override { m_pDelegate->OnDeviceEnabledDisabled(iDev, bEnabled, bSilent); }

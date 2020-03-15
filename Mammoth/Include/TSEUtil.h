@@ -576,7 +576,7 @@ enum DestructionTypes
 class CDamageSource
 	{
 	public:
-		CDamageSource (void) : m_pSource(NULL), m_iCause(removedFromSystem), m_dwFlags(0), m_pSecondarySource(NULL) { }
+		CDamageSource (void) { }
 		CDamageSource (CSpaceObject *pSource, DestructionTypes iCause = killedByDamage, CSpaceObject *pSecondarySource = NULL, const CString &sSourceName = NULL_STR, DWORD dwSourceFlags = 0);
 
 		bool CanHit (CSpaceObject *pTarget) const;
@@ -628,14 +628,14 @@ class CDamageSource
 		bool IsObjPointer (void) const { return (m_pSource && !IsObjID()); }
 		bool IsObjID (void) const { return ((m_dwFlags & FLAG_OBJ_ID) == FLAG_OBJ_ID); }
 
-		CSpaceObject *m_pSource;
-		DestructionTypes m_iCause;
-		DWORD m_dwFlags;
+		CSpaceObject *m_pSource = NULL;
+		DestructionTypes m_iCause = removedFromSystem;
+		DWORD m_dwFlags = 0;
 
 		CString m_sSourceName;
-		DWORD m_dwSourceNameFlags;
+		DWORD m_dwSourceNameFlags = 0;
 
-		CSpaceObject *m_pSecondarySource;
+		CSpaceObject *m_pSecondarySource = NULL;
 
 		static CDamageSource m_Null;
 	};
@@ -764,10 +764,17 @@ class CRandomEntryResults
 class IElementGenerator
 	{
 	public:
+		struct STableStats
+			{
+			TArray<int> Counts;
+			};
+
 		struct SCtx
 			{
 			const CTopology *pTopology = NULL;
 			const CTopologyNode *pNode = NULL;
+
+			STableStats *pTableCounts = NULL;
 			};
 
 		struct SResult
@@ -1490,6 +1497,32 @@ class CDeviceStorage
 
 //	IListData ------------------------------------------------------------------
 
+class CTileData
+	{
+	public:
+		const CString &GetDesc (void) const { return m_sDesc; }
+		int GetHeight (void) const { return m_cyHeight; }
+		const CG32bitImage *GetImage (void) const { return m_pImage; }
+		Metric GetImageScale (void) const { return m_rImageScale; }
+		const RECT &GetImageSrc (void) const { return m_rcImageSrc; }
+		const CString &GetTitle (void) const { return m_sTitle; }
+		void SetDesc (const CString &sValue) { m_sDesc = sValue; }
+		void SetHeight (int iValue) { m_cyHeight = iValue; }
+		void SetImage (const CG32bitImage *pImage, const RECT &rcImageSrc, Metric rImageScale = 1.0)
+			{ m_pImage = pImage; m_rcImageSrc = rcImageSrc; m_rImageScale = rImageScale; }
+		void SetTitle (const CString &sValue) { m_sTitle = sValue; }
+
+	private:
+		CString m_sTitle;
+		CString m_sDesc;
+
+		const CG32bitImage *m_pImage = NULL;
+		RECT m_rcImageSrc = { 0 };
+		Metric m_rImageScale = 1.0;
+
+		int m_cyHeight = 0;
+	};
+
 extern const CItem g_DummyItem;
 extern CItemListManipulator g_DummyItemListManipulator;
 
@@ -1501,17 +1534,19 @@ class IListData
 		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) { return false; }
 		virtual int GetCount (void) const { return 0; }
 		virtual int GetCursor (void) const { return -1; }
-		virtual CString GetDescAtCursor (void) { return NULL_STR; }
-		virtual ICCItem *GetEntryAtCursor (void) { return CCodeChain::CreateNil(); }
-		virtual const CItem &GetItemAtCursor (void) { return g_DummyItem; }
+		virtual CString GetDescAtCursor (void) const { return NULL_STR; }
+		virtual ICCItem *GetEntryAtCursor (void) const { return CCodeChain::CreateNil(); }
+		virtual CTileData GetEntryDescAtCursor (void) const { return CTileData(); }
+		virtual const CItem &GetItemAtCursor (void) const { return g_DummyItem; }
 		virtual CItemListManipulator &GetItemListManipulator (void) { return g_DummyItemListManipulator; }
-		virtual CSpaceObject *GetSource (void) { return NULL; }
-		virtual CString GetTitleAtCursor (void) { return NULL_STR; }
+		virtual CSpaceObject *GetSource (void) const { return NULL; }
+		virtual CString GetTitleAtCursor (void) const { return NULL_STR; }
 		virtual bool IsCursorValid (void) const { return false; }
 		virtual bool MoveCursorBack (void) { return false; }
 		virtual bool MoveCursorForward (void) { return false; }
 		virtual void PaintImageAtCursor (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, Metric rScale) { }
 		virtual void ResetCursor (void) { }
+		virtual void ResetCursor (const CItemCriteria &EnabledItems) { ResetCursor(); }
 		virtual void SetCursor (int iCursor) { }
 		virtual void SetFilter (const CItemCriteria &Filter) { }
 		virtual void SyncCursor (void) { }

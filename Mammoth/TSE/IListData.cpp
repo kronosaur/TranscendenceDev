@@ -8,6 +8,7 @@
 #define FIELD_DESC							CONSTLIT("desc")
 #define FIELD_ICON							CONSTLIT("icon")
 #define FIELD_ICON_SCALE					CONSTLIT("iconScale")
+#define FIELD_ROW_HEIGHT					CONSTLIT("rowHeight")
 #define FIELD_TITLE							CONSTLIT("title")
 
 const CItem g_DummyItem;
@@ -64,7 +65,7 @@ CListWrapper::CListWrapper (ICCItem *pList) :
 	{
 	}
 
-CString CListWrapper::GetDescAtCursor (void)
+CString CListWrapper::GetDescAtCursor (void) const
 
 //	GetDescAtCursor
 //
@@ -90,7 +91,7 @@ CString CListWrapper::GetDescAtCursor (void)
 	return NULL_STR;
 	}
 
-ICCItem *CListWrapper::GetEntryAtCursor (void)
+ICCItem *CListWrapper::GetEntryAtCursor (void) const
 
 //	GetEntryAtCursor
 //
@@ -102,6 +103,34 @@ ICCItem *CListWrapper::GetEntryAtCursor (void)
 
 	ICCItem *pItem = m_pList->GetElement(m_iCursor);
 	return pItem->Reference();
+	}
+
+CTileData CListWrapper::GetEntryDescAtCursor (void) const
+
+//	GetEntryDescAtCursor
+//
+//	Returns the list entry.
+
+	{
+	CTileData Entry;
+
+	if (!IsCursorValid())
+		return Entry;
+
+	ICCItem *pItem = m_pList->GetElement(m_iCursor);
+
+	Entry.SetTitle(GetTitleAtCursor());
+	Entry.SetDesc(GetDescAtCursor());
+
+	RECT rcImageSrc;
+	Metric rImageScale;
+	DWORD dwUNID = GetImageDescAtCursor(&rcImageSrc, &rImageScale);
+	if (dwUNID)
+		Entry.SetImage(g_pUniverse->GetLibraryBitmap(dwUNID), rcImageSrc, rImageScale);
+
+	Entry.SetHeight(pItem->GetIntegerAt(FIELD_ROW_HEIGHT));
+
+	return Entry;
 	}
 
 DWORD CListWrapper::GetImageDescAtCursor (RECT *retrcImage, Metric *retrScale) const
@@ -148,7 +177,7 @@ DWORD CListWrapper::GetImageDescAtCursor (RECT *retrcImage, Metric *retrScale) c
 	return CTLispConvert::AsImageDesc(pIcon, retrcImage);
 	}
 
-CString CListWrapper::GetTitleAtCursor (void)
+CString CListWrapper::GetTitleAtCursor (void) const
 
 //	GetTitleAtCursor
 //

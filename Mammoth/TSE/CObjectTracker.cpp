@@ -60,6 +60,9 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CObject
 			if (Criteria.SelectsKnownOnly() && !Basics.fKnown)
 				continue;
 
+			if (Criteria.SelectsUnknownOnly() && Basics.fKnown)
+				continue;
+
 			//	Otherwise, add
 
             AccumulateEntry(*pList, pList->Objects.GetKey(j), Basics, dwFlags, *retResult);
@@ -509,9 +512,9 @@ void CObjectTracker::GetTradingObjects (const CTopologyNode *pNode, TArray<SObjE
             {
             const SObjBasics &ObjData = pList->Objects[j];
 
-            //  We only care about friendly objects.
+            //  We only care about living friendly objects.
 
-            if (ObjData.fEnemy)
+            if (ObjData.fEnemy || ObjData.fShowDestroyed)
 				continue;
 
             //  Add the object to the result

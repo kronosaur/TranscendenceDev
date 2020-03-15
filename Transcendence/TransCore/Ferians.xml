@@ -100,11 +100,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
-			armorID=			"&itAdvancedPlasteelPlate;"
-			hitPoints=			"500"
-            regen=              "10"
-			multiHull=			"true"
-				 
 			ignoreFriendlyFire=	"true"
 			explosionType=		"&vtThermoExplosion1;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
@@ -131,6 +126,14 @@
 			<Item count="4d12"	item="&itChronimiumGas;" />
 		</Items>
 
+		<!-- Configuration -->
+		
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itAdvancedPlasteelPlate;"
+				hitPoints=		"500"
+			    regen=			"10"
+				/>
+		
 		<!-- Ships and Defenses -->
 		
 		<Ships>

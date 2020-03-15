@@ -729,7 +729,7 @@
 			attributes=			"ArmorEnhance; MinorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
-			description=		"Dust activated by dyons immunizes armor against ion effects that disable or damage a ship's systems."
+			description=		"Dust activated by dyons immunizes armor against ionization effects such as blinding, EMP, and device ionization."
 
 			useScreen=			"&dsRPGUseItemOnArmor;"
 			data=				"ioneffectimmune"
@@ -745,7 +745,7 @@
 
 		<Language>
 			<Text id="descResultIntro">
-				The barrel contains dyon dust, which immunizes your armor against disabling ion effects.
+				The barrel contains dyon dust, which immunizes your armor against ionization effects.
 			</Text>
 		</Language>
 	</ItemType>

@@ -159,6 +159,7 @@ class CObjectImage : public CDesignType
 		virtual void OnAccumulateStats (SStats &Stats) const { Stats.dwGraphicsMemory += GetMemoryUsage(); }
 		virtual void OnClearMark (void) override { m_bMarked = false; }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual void OnSweep (void) override;
 		virtual void OnUnbindDesign (void) override;
@@ -189,6 +190,10 @@ class CObjectImage : public CDesignType
 		CG32bitImage *m_pHitMask = NULL;		//	NULL if not loaded
 		CG32bitImage *m_pShadowMask = NULL;		//	NULL if not loaded
 		mutable bool m_bLoadError = false;		//	If TRUE, load failed
+
+		//	Property table
+
+		static TPropertyHandler<CObjectImage> m_PropertyTable;
 	};
 
 class CObjectImageArray
@@ -204,6 +209,8 @@ class CObjectImageArray
 		CObjectImageArray (void);
 		CObjectImageArray (const CObjectImageArray &Source);
 		~CObjectImageArray (void);
+
+		explicit operator bool () const { return !IsEmpty(); }
 		CObjectImageArray &operator= (const CObjectImageArray &Source);
 
 		ALERROR Init (CUniverse &Universe, DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow = false);
@@ -212,8 +219,9 @@ class CObjectImageArray
 		ALERROR InitFromBitmap (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap, int xOffset = 0, int yOffset = 0);
 		ALERROR InitFromFrame (const CObjectImageArray &Source, int iTick, int iRotationIndex);
 		ALERROR InitFromRotated (const CObjectImageArray &Source, int iTick, int iVariant, int iRotation);
-		ALERROR InitFromXML (CXMLElement *pDesc);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1);
+		ALERROR InitFromRotated (const CObjectImageArray &Source, const RECT &rcSrc, int iRotation);
+		ALERROR InitFromXML (const CXMLElement &Desc);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, bool bResolveNow = false, int iDefaultRotationCount = 1);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
 		bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int iTick, int iRotation, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) const;
@@ -435,11 +443,12 @@ class CCompositeImageModifiers
 		void Apply (SGetImageCtx &Ctx, CObjectImageArray *retImage) const;
 		const CImageFilterStack *GetFilters (void) const { return m_pFilters; }
 		int GetRotation (void) const { return m_iRotation; }
-		bool IsEmpty (void) const { return (m_wFadeOpacity == 0 && !m_bStationDamage && m_pFilters == NULL); }
+		bool IsEmpty (void) const { return (m_wFadeOpacity == 0 && !m_bStationDamage && m_pFilters == NULL && m_iRotateImage == 0); }
 		bool ReturnFullImage (void) const { return m_bFullImage; }
 		void SetFadeColor (CG32bitPixel rgbColor, DWORD dwOpacity) { m_rgbFadeColor = rgbColor; m_wFadeOpacity = (WORD)dwOpacity; }
 		void SetFilters (const CImageFilterStack *pFilters) { m_pFilters = pFilters; }
 		void SetFullImage (bool bValue = true) { m_bFullImage = bValue; }
+		void SetRotateImage (int iRotation) { m_iRotateImage = iRotation; }
 		void SetRotation (int iRotation) { m_iRotation = AngleMod(iRotation); }
 		void SetStationDamage (bool bValue = true) { m_bStationDamage = bValue; }
 
@@ -449,6 +458,7 @@ class CCompositeImageModifiers
 		CG32bitImage *CreateCopy (CObjectImageArray *pImage, RECT *retrcNewImage) const;
 
 		int m_iRotation = 0;				//	Rotation
+		int m_iRotateImage = 0;				//	Rotate image
 		const CImageFilterStack *m_pFilters = NULL;
 		CG32bitPixel m_rgbFadeColor = 0;	//	Apply a wash on top of image
 		WORD m_wFadeOpacity = 0;			//		0 = no wash

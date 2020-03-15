@@ -493,7 +493,7 @@ IEffectPainter *CWeaponFireDesc::CreateEffectPainter (SShotCreateCtx &CreateCtx)
 	return m_pEffect.CreatePainter(PainterCtx);
 	}
 
-void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir)
+void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir) const
 
 //	CreateFireEffect
 //
@@ -507,7 +507,7 @@ void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource,
 		//	Create a painter.
 
 		CCreatePainterCtx Ctx;
-		Ctx.SetWeaponFireDesc(this);
+		Ctx.SetWeaponFireDesc(const_cast<CWeaponFireDesc *>(this));
 
 		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, &GetUniverse().GetDefaultFireEffect(m_Damage.GetDamageType()));
 		if (pPainter == NULL)
@@ -797,7 +797,10 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 	//	See if this is one of the special damage properties
 
 	else if ((iSpecial = DamageDesc::ConvertPropertyToSpecialDamageTypes(sProperty)) != specialNone)
-		return CC.CreateInteger(GetSpecialDamage(iSpecial));
+		{
+		int iDamage = GetSpecialDamage(iSpecial);
+		return (iDamage ? CC.CreateInteger(iDamage) : CC.CreateNil());
+		}
 
 	//	Check the damage structure
 
@@ -1690,6 +1693,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_fCanDamageSource = false;
 	m_fAutoTarget = false;
 	m_fTargetRequired = false;
+	m_fMIRV = false;
 	m_InitialDelay.SetConstant(0);
 
 	//	Hit criteria
@@ -1833,6 +1837,11 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	m_fTargetRequired = pDesc->GetAttributeBool(TARGET_REQUIRED_ATTRIB);
 	m_InitialDelay.LoadFromXML(pDesc->GetAttribute(INITIAL_DELAY_ATTRIB));
 
+	//	Configuration
+
+	if (ALERROR error = m_Configuration.InitFromWeaponClassXML(Ctx, *pDesc, CConfigurationDesc::ctUnknown))
+		return error;
+
 	//	Fire rate
 
 	int iFireRateSecs = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ATTRIB, 0, -1, -1);
@@ -1908,7 +1917,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 			CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG);
 			if (pImage)
-				if (error = SetOldEffects().Image.InitFromXML(Ctx, pImage))
+				if (error = SetOldEffects().Image.InitFromXML(Ctx, *pImage))
 					return error;
 
 			m_fDirectional = pDesc->GetAttributeBool(DIRECTIONAL_ATTRIB);
@@ -1926,7 +1935,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 				Exhaust.rExhaustDrag = pExhaust->GetAttributeInteger(EXHAUST_DRAG_ATTRIB) / 100.0;
 
 				CXMLElement *pImage = pExhaust->GetContentElementByTag(IMAGE_TAG);
-				if (error = Exhaust.ExhaustImage.InitFromXML(Ctx, pImage))
+				if (error = Exhaust.ExhaustImage.InitFromXML(Ctx, *pImage))
 					return error;
 				}
 
@@ -2066,6 +2075,10 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	else if (m_iManeuverability == 0 && m_iManeuverRate > 0)
 		m_iManeuverability = 1;
 
+	//	MIRV
+
+	m_fMIRV = pDesc->GetAttributeBool(MULTI_TARGET_ATTRIB);
+
 	//	Load continuous and passthrough
 
 	m_iContinuous = pDesc->GetAttributeIntegerBounded(BEAM_CONTINUOUS_ATTRIB, 0, -1, -1);
@@ -2145,8 +2158,8 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 		//	Set MIRV flag
 
-		pNewDesc->bMIRV = (pFragDesc->GetAttributeBool(MULTI_TARGET_ATTRIB) 
-				|| pDesc->GetAttributeBool(FRAGMENT_TARGET_ATTRIB));
+		if (pDesc->GetAttributeBool(FRAGMENT_TARGET_ATTRIB))
+			pNewDesc->pDesc->m_fMIRV = true;
 		}
 
 	//	If we have fragments, then set proximity appropriately
@@ -2534,6 +2547,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_fTargetable = Src.m_fTargetable;
 	m_fDefaultInteraction = Src.m_fDefaultInteraction;
 	m_fDefaultHitPoints = Src.m_fDefaultHitPoints;
+	m_fMIRV = Src.m_fMIRV;
 
     m_pEffect = Src.m_pEffect;
     m_pHitEffect = Src.m_pHitEffect;
@@ -2576,10 +2590,6 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 		//	Set the fragment count
 
         pNewDesc->Count = pSrcFragment->Count;
-
-		//	Set MIRV flag
-
-        pNewDesc->bMIRV = pSrcFragment->bMIRV;
 		}
 
     //  Cached values

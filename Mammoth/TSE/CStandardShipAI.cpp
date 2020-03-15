@@ -1866,7 +1866,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 		}
 	}
 
-DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	OnCommunicateNotify
 //

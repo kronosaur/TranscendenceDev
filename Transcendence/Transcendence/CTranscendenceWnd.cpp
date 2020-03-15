@@ -58,7 +58,6 @@ void CTranscendenceWnd::CleanUpPlayerShip (void)
 	{
 	DEBUG_TRY
 
-	m_LRSDisplay.CleanUp();
 	m_DeviceDisplay.CleanUp();
 	m_MenuDisplay.CleanUp();
 	m_PickerDisplay.CleanUp();
@@ -691,7 +690,6 @@ ALERROR CTranscendenceWnd::StartGame (void)
 	m_bAutopilot = false;
 	m_CurrentPicker = pickNone;
 	m_CurrentMenu = menuNone;
-	m_iTick = 0;
 
 	return NOERROR;
 	}

@@ -371,7 +371,7 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 //	attributes--enhancements are added later by the caller.
 
 	{
-	int i;
+	const CEngineOptions &Options = GetUniverse().GetEngineOptions();
     const SScalableStats &Stats = GetScaledStats(ArmorItem);
 
 	//	If we require a higher level to repair
@@ -383,10 +383,10 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 
 	if (Stats.fRadiationImmune)
 		{
-		if (Stats.iLevel < RADIATION_IMMUNE_LEVEL)
+		if (!Options.HidesArmorImmunity(specialRadiation))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("radiation immune")));
 		}
-	else if (Stats.iLevel >= RADIATION_IMMUNE_LEVEL)
+	else if (Options.HidesArmorImmunity(specialRadiation))
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("radiation vulnerable")));
 
 	//	If we're immune to blinding/EMP/device damage, then collapse
@@ -400,8 +400,8 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 			&& (Stats.iEMPDamageAdj == 0)
 			&& (Stats.iDeviceDamageAdj < 100))
 		{
-		if (Stats.iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
-			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ionize immune")));
+		if (!Options.HidesArmorImmunity(specialEMP))
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ionization immune")));
 
 		bCheckedBlind = true;
 		bCheckedEMP = true;
@@ -414,17 +414,17 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 		{
 		if (Stats.iBlindingDamageAdj == 0)
 			{
-			if (Stats.iLevel < BLIND_IMMUNE_LEVEL)
+			if (!Options.HidesArmorImmunity(specialBlinding))
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("blind immune")));
 			}
 		else if (Stats.iBlindingDamageAdj < 100)
 			{
-			if (Stats.iLevel < BLIND_IMMUNE_LEVEL)
+			if (!Options.HidesArmorImmunity(specialBlinding))
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("blind resistant")));
 			else
 				retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("blind vulnerable")));
 			}
-		else if (Stats.iLevel >= BLIND_IMMUNE_LEVEL)
+		else if (Options.HidesArmorImmunity(specialBlinding))
 			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("blind vulnerable")));
 		}
 
@@ -434,17 +434,17 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 		{
 		if (Stats.iEMPDamageAdj == 0)
 			{
-			if (Stats.iLevel < EMP_IMMUNE_LEVEL)
+			if (!Options.HidesArmorImmunity(specialEMP))
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("EMP immune")));
 			}
 		else if (Stats.iEMPDamageAdj < 100)
 			{
-			if (Stats.iLevel < EMP_IMMUNE_LEVEL)
+			if (!Options.HidesArmorImmunity(specialEMP))
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("EMP resistant")));
 			else
 				retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("EMP vulnerable")));
 			}
-		else if (Stats.iLevel >= EMP_IMMUNE_LEVEL)
+		else if (Options.HidesArmorImmunity(specialEMP))
 			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("EMP vulnerable")));
 		}
 
@@ -452,33 +452,38 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 
 	if (!bCheckedDevice)
 		{
-		if (Stats.iDeviceDamageAdj < 100)
+		if (Stats.iDeviceDamageAdj == 0)
 			{
-			if (Stats.iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
-				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device protect")));
+			if (!Options.HidesArmorImmunity(specialDeviceDamage))
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device-ionization immune")));
 			}
-		else if (Stats.iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL)
-			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("device vulnerable")));
+		else if (Stats.iDeviceDamageAdj < 100)
+			{
+			if (!Options.HidesArmorImmunity(specialDeviceDamage))
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device-ionization resistant")));
+			}
+		else if (Options.HidesArmorImmunity(specialDeviceDamage))
+			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("device-ionization vulnerable")));
 		}
 
 	//	Disintegration
 
 	if (Stats.fDisintegrationImmune)
 		{
-		if (Stats.iLevel < DISINTEGRATION_IMMUNE_LEVEL)
+		if (!Options.HidesArmorImmunity(specialDisintegration))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("disintegration immune")));
 		}
-	else if (Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL)
+	else if (Options.HidesArmorImmunity(specialDisintegration))
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("disintegration vulnerable")));
 
 	//	Shatter
 
 	if (Stats.fShatterImmune)
 		{
-		if (Stats.iLevel < SHATTER_IMMUNE_LEVEL)
+		if (!Options.HidesArmorImmunity(specialShatter))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shatter immune")));
 		}
-	else if (Stats.iLevel >= SHATTER_IMMUNE_LEVEL)
+	else if (Options.HidesArmorImmunity(specialShatter))
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("shatter vulnerable")));
 
 	//	Shield interference
@@ -519,7 +524,7 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 
 	//	Per damage-type bonuses
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
 		if (m_Reflective.InSet((DamageTypes)i))
 			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflect"), GetDamageShortName((DamageTypes)i))));
@@ -2612,7 +2617,7 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, const ICCItem &Value, CString *retsError)
+ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, const ICCItem &Value, CString *retsError)
 
 //	SetItemProperty
 //
@@ -2633,7 +2638,7 @@ ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, co
 			if (pShip == NULL)
 				{
 				if (retsError) *retsError = CONSTLIT("Not yet implemented.");
-				return resultPropertyError;
+				return ESetPropertyResult::error;
 				}
 
 			iHP = Max(0, Min(iHP, ArmorItem.GetMaxHP()));
@@ -2665,7 +2670,7 @@ ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, co
 			if (pShip == NULL)
 				{
 				if (retsError) *retsError = CONSTLIT("Not yet implemented.");
-				return resultPropertyError;
+				return ESetPropertyResult::error;
 				}
 
 			if (iChange < 0)
@@ -2697,7 +2702,7 @@ ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, co
         //  Set the level
 
         if (!Item.SetLevel(Value.GetIntegerValue(), retsError))
-			return resultPropertyError;
+			return ESetPropertyResult::error;
 
         //  Set armor HP
 
@@ -2713,10 +2718,10 @@ ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, co
 	else
 		{
 		*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sProperty);
-		return resultPropertyNotFound;
+		return ESetPropertyResult::notFound;
 		}
 
-	return resultPropertySet;
+	return ESetPropertyResult::set;
 	}
 
 void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified)

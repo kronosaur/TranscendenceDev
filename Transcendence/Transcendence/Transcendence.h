@@ -227,11 +227,13 @@ class CMenuData
 						  const CString &sLabel,
 						  DWORD dwFlags,
 						  DWORD dwData,
-						  DWORD dwData2 = 0) { AddMenuItem(sKey, sLabel, NULL, NULL_STR, dwFlags, dwData, dwData2); }
+						  DWORD dwData2 = 0) { AddMenuItem(sKey, sLabel, NULL, 0, NULL_STR, NULL_STR, dwFlags, dwData, dwData2); }
 		void AddMenuItem (const CString &sKey,
 						  const CString &sLabel,
 						  const CObjectImageArray *pImage,
+						  int iCount,
 						  const CString &sExtra,
+						  const CString &sHelp,
 						  DWORD dwFlags,
 						  DWORD dwData,
 						  DWORD dwData2 = 0);
@@ -242,8 +244,10 @@ class CMenuData
 		int GetCount (void) const { return m_iCount; }
 		DWORD GetItemData (int iIndex) const { return m_List[iIndex].dwData; }
 		DWORD GetItemData2 (int iIndex) const { return m_List[iIndex].dwData2; }
-		const CObjectImageArray *GetItemImage (int iIndex) const { return m_List[iIndex].pImage; }
+		int GetItemCount (int iIndex) const { return m_List[iIndex].iCount; }
 		const CString &GetItemExtra (int iIndex) const { return m_List[iIndex].sExtra; }
+		const CString &GetItemHelpText (int iIndex) const { return m_List[iIndex].sHelp; }
+		const CObjectImageArray *GetItemImage (int iIndex) const { return m_List[iIndex].pImage; }
 		DWORD GetItemFlags (int iIndex) const { return m_List[iIndex].dwFlags; }
 		const CString &GetItemKey (int iIndex) const { return m_List[iIndex].sKey; }
 		const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
@@ -255,12 +259,14 @@ class CMenuData
 			{
 			CString sKey;
 			CString sLabel;
-			const CObjectImageArray *pImage;
+			const CObjectImageArray *pImage = NULL;
+			int iCount = 0;
 			CString sExtra;
-			DWORD dwFlags;
+			CString sHelp;
+			DWORD dwFlags = 0;
 
-			DWORD dwData;
-			DWORD dwData2;
+			DWORD dwData = 0;
+			DWORD dwData2 = 0;
 			};
 
 		CString m_sTitle;
@@ -432,7 +438,7 @@ class CButtonBarDisplay
 		void OnMouseMove (int x, int y);
 		void Paint (CG32bitImage &Dest);
 		void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
-        void SetRect (const RECT &rcRect) { m_rcRect = rcRect;  ComputeButtonRects();  }
+		void SetRect (const RECT &rcRect) { m_rcRect = rcRect;  ComputeButtonRects();  }
 		void Update (void);
 
 	private:
@@ -527,36 +533,6 @@ class CPlayerDisplay
 		CG32bitImage m_IconImage;
 		CG32bitImage m_Buffer;
 		const SFontTable *m_pFonts;
-	};
-
-class CLRSDisplay
-	{
-	public:
-		CLRSDisplay (void) :
-				m_rgbBackground(CG32bitPixel(0, 0, 0)),
-				m_pBackground(NULL),
-				m_pSnow(NULL)
-			{ }
-
-		void CleanUp (void);
-		const RECT &GetRect (void) { return m_rcRect; }
-		ALERROR Init (CPlayerShipController *pPlayer, const RECT &rcRect);
-		void Paint (CG32bitImage &Dest);
-		void SetBackgroundColor (CG32bitPixel rgbColor) { m_rgbBackground = rgbColor; }
-		void SetBackgroundImage (const CG32bitImage *pImage) { m_pBackground = pImage; }
-		void SetSnowImage (const CG32bitImage *pSnow) { m_pSnow = pSnow; }
-		void Update (void);
-
-	private:
-		CPlayerShipController *m_pPlayer;
-
-		RECT m_rcRect;
-		int m_iDiameter;					//	Diameter of scanner in pixels
-		CG32bitImage m_Buffer;
-		CG8bitImage m_Mask;
-		CG32bitPixel m_rgbBackground;
-		const CG32bitImage *m_pBackground;
-		const CG32bitImage *m_pSnow;
 	};
 
 class CCommandLineDisplay
@@ -691,8 +667,8 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void OnStargateSystemReady (void);
 		void PlayerEndGame (void);
 		void PlayerEnteredGate (CSystem *pSystem, 
-							    CTopologyNode *pDestNode,
-							    const CString &sDestEntryPoint);
+								CTopologyNode *pDestNode,
+								const CString &sDestEntryPoint);
 		void RedirectDisplayMessage (bool bRedirect = true);
 		void UpdateDeviceCounterDisplay (void) { m_DeviceDisplay.Invalidate(); }
 
@@ -785,7 +761,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void ComputeScreenSize (void);
 		void PaintDebugLines (void);
 		void PaintFrameRate (void);
-		void PaintLRS (void);
 		void PaintMainScreenBorder (CG32bitPixel rgbColor);
 		void PaintSnow (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight);
 		void PaintSRSSnow (void);
@@ -844,7 +819,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		bool m_bPausedStep;					//	Step one frame
 		char m_chKeyDown;					//	Processed a WM_KEYDOWN (skip WM_CHAR)
 		bool m_bDockKeyDown;				//	Used to de-bounce dock key (so holding down 'D' does not select a dock action).
-		int m_iTick;
 		AGScreen *m_pCurrentScreen;
 		MenuTypes m_CurrentMenu;
 		CMenuData m_MenuData;
@@ -905,7 +879,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		CG32bitImage *m_pSRSSnow;			//	SRS snow image
 
 		CDeviceCounterDisplay m_DeviceDisplay;	//	Device counter display
-		CLRSDisplay m_LRSDisplay;			//	LRS display
 		CMessageDisplay m_MessageDisplay;	//	Message display object
 		CMenuDisplay m_MenuDisplay;			//	Menu display
 		CPickerDisplay m_PickerDisplay;		//	Picker display
@@ -959,7 +932,7 @@ class CTranscendencePlayer : public IPlayerController
 		//	IPlayerController interface
 
 		virtual ICCItem *CreateGlobalRef (CCodeChain &CC) override { return CC.CreateInteger((int)m_pPlayer); }
-        virtual CPlayerGameStats *GetGameStats (void) const override { return &m_pPlayer->GetGameStats(); }
+		virtual CPlayerGameStats *GetGameStats (void) const override { return &m_pPlayer->GetGameStats(); }
 		virtual GenomeTypes GetGenome (void) const override;
 		virtual CString GetName (void) const override;
 		virtual EUIMode GetUIMode (void) const override;
@@ -983,6 +956,7 @@ class CTranscendenceModel
 
 		ALERROR GetGameStats (CGameStats *retStats);
 
+		void OnExecuteActionDone (void);
 		void OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, SPlayerChangedShipsCtx &Options);
 		void OnPlayerDestroyed (SDestroyCtx &Ctx, CString *retsEpitaph = NULL);
 		void OnPlayerDocked (CSpaceObject *pObj);
@@ -991,8 +965,8 @@ class CTranscendenceModel
 		void OnPlayerTraveledThroughGate (void);
 		CDockSession &GetDockSession (void) { return m_Universe.GetDockSession(); }
 		const CDockSession &GetDockSession (void) const { return m_Universe.GetDockSession(); }
-        CDockScreenStack &GetScreenStack (void) { return m_Universe.GetDockSession().GetFrameStack(); }
-        const CDockScreenStack &GetScreenStack (void) const { return m_Universe.GetDockSession().GetFrameStack(); }
+		CDockScreenStack &GetScreenStack (void) { return m_Universe.GetDockSession().GetFrameStack(); }
+		const CDockScreenStack &GetScreenStack (void) const { return m_Universe.GetDockSession().GetFrameStack(); }
 		ALERROR EndGame (void);
 		ALERROR EndGame (const CString &sReason, const CString &sEpitaph, int iScoreChange = 0);
 		ALERROR EndGameClose (CString *retsError = NULL);
@@ -1007,7 +981,7 @@ class CTranscendenceModel
 		int GetLastHighScore (void) { return m_iLastHighScore; }
 		const SFileVersionInfo &GetProgramVersion (void) const { return m_Version; }
 		void GetScreenSession (SDockFrame *retFrame);
-        CSystemMapThumbnails &GetSystemMapThumbnails (void) { return m_SystemMapThumbnails; }
+		CSystemMapThumbnails &GetSystemMapThumbnails (void) { return m_SystemMapThumbnails; }
 		bool InScreenSession (void) const { return GetDockSession().InSession(); }
 		bool IsGalacticMapAvailable (CString *retsError = NULL);
 		void RecordFinalScore (const CString &sEpitaph, const CString &sEndGameReason, bool bEscaped);
@@ -1085,7 +1059,7 @@ class CTranscendenceModel
 		bool m_bForceTDB;							//	Use TDB even if XML files exist
 		bool m_bNoSound;							//	No sound
 		bool m_bNoMissionCheckpoint;				//	Do not save game on mission accept
-        bool m_bNoCollectionLoad;                   //  Do not load collection
+		bool m_bNoCollectionLoad;                   //  Do not load collection
 		bool m_bForcePermadeath;					//	Replace resurrection with final stats
 
 		CGameFile m_GameFile;
@@ -1097,8 +1071,8 @@ class CTranscendenceModel
 		CHighScoreList m_HighScoreList;
 		int m_iLastHighScore;						//	Index to last high-score
 
-        //  Caches
-        CSystemMapThumbnails m_SystemMapThumbnails;
+		//  Caches
+		CSystemMapThumbnails m_SystemMapThumbnails;
 
 		//	Temporaries
 		CDesignType *m_pResurrectType;				//	DesignType that will handle resurrect (or NULL)
@@ -1108,6 +1082,7 @@ class CTranscendenceModel
 		CG32bitImage *m_pCrawlImage;				//	For epilogue/prologue
 		CMusicResource *m_pCrawlSoundtrack;				//	For epilogue/prologue
 		CString m_sCrawlText;						//	For epilogue/prologue
+		bool m_bSaveOnActionDone = false;			//	Save when we're done executing.
 
 		//	Stargate temporaries
 		CTopologyNode *m_pDestNode;					//	While player in gate
@@ -1138,7 +1113,7 @@ class CTranscendenceController : public IHIController, public IExtraSettingsHand
 			}
 
 		CCommandLineDisplay &GetDebugConsole (void) { return m_DebugConsole; }
-        CGameSession *GetGameSession (void) { return m_pGameSession; }
+		CGameSession *GetGameSession (void) { return m_pGameSession; }
 		const CGameKeys &GetKeyMap (void) const { return m_Settings.GetKeyMap(); }
 		const CTranscendenceModel &GetModel (void) const { return m_Model; }
 		CTranscendenceModel &GetModel (void) { return m_Model; }
@@ -1218,7 +1193,7 @@ class CTranscendenceController : public IHIController, public IExtraSettingsHand
 
 		CGameSettings m_Settings;
 
-        CGameSession *m_pGameSession = NULL;	//  Keep a pointer so we can call it directly.
+		CGameSession *m_pGameSession = NULL;	//  Keep a pointer so we can call it directly.
 	};
 
 //	Utility functions

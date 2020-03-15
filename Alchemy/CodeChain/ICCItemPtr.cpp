@@ -117,6 +117,20 @@ ICCItemPtr &ICCItemPtr::operator= (ICCItem *pSrc)
 	return *this;
 	}
 
+ICCItemPtr &ICCItemPtr::operator= (const ICCItem &Value)
+	{
+	ICCItem *pOld = m_pPtr;
+
+	m_pPtr = Value.Reference();
+
+	//	Discard at the end, in case Value.m_pPtr == m_pPtr.
+
+	if (pOld)
+		pOld->Discard();
+
+	return *this;
+	}
+
 void ICCItemPtr::Delete (void)
 
 //	Delete
@@ -128,6 +142,33 @@ void ICCItemPtr::Delete (void)
 		m_pPtr->Discard();
 
 	m_pPtr = NULL;
+	}
+
+ICCItemPtr ICCItemPtr::Error (const CString &sError, ICCItem *pData)
+
+//	Error
+//
+//	Creates an error
+
+	{
+	CString sArg;
+	CString sErrorLine;
+
+	//	Convert the argument to a string
+
+	if (pData)
+		{
+		sArg = pData->Print();
+		sErrorLine = strPatternSubst(CONSTLIT("%s [%s]"), sError, sArg);
+		}
+	else
+		sErrorLine = sError;
+
+	//	Create the error
+
+	ICCItemPtr pError(sErrorLine);
+	pError->SetError();
+	return pError;
 	}
 
 bool ICCItemPtr::Load (const CString &sCode, CString *retsError)

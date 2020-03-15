@@ -57,6 +57,24 @@ class CFilterBackColor : public TBlt<CFilterBackColor>
 		CG32bitPixel m_rgbBackColor;
 	};
 
+class CFilterBlend : public TBlt<CFilterBlend>
+	{
+	public:
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+			{
+			BYTE byAlpha = rgbSrc.GetAlpha();
+
+			if (byAlpha == 0x00)
+				return *pDest;
+
+			else if (byAlpha == 0xff)
+				return rgbSrc;
+
+			else
+				return CG32bitPixel::Blend(*pDest, rgbSrc, byAlpha);
+			}
+	};
+
 class CFilterTrans : public TBlt<CFilterTrans>
 	{
 	public:

@@ -31,11 +31,6 @@ const int MAX_THREAD_COUNT =					16;
 
 #define SEPARATION_CRITERIA						CONSTLIT("sTA")
 
-int g_iGateTimer = 0;
-int g_iGateTimerTick = -1;
-int g_cxStarField = -1;
-int g_cyStarField = -1;
-
 const CG32bitPixel g_rgbSpaceColor = CG32bitPixel(0,0,8);
 const Metric g_MetersPerKlick = 1000.0;
 const Metric MAP_VERTICAL_ADJUST =						1.4;
@@ -58,7 +53,7 @@ CSystem::CSystem (CUniverse &Universe, CTopologyNode *pTopology) :
 		m_pTopology(pTopology),
 		m_pEnvironment(NULL),
 		m_iTick(0),
-        m_iNextEncounter(0),
+		m_iNextEncounter(0),
 		m_iTimeStopped(0),
 		m_rKlicksPerPixel(KLICKS_PER_PIXEL),
 		m_rTimeScale(TIME_SCALE),
@@ -347,7 +342,7 @@ Metric CSystem::CalcApparentSpeedAdj (Metric rSpeed)
 	return Min(MAX_ADJ, rAdj);
 	}
 
-int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
+int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask) const
 
 //	CalculateLightIntensity
 //
@@ -357,47 +352,20 @@ int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpSt
 	{
 	DEBUG_TRY
 
-	int i;
-
 	//	Find the nearest star to the position. We optimize the case where
 	//	there is only a single star in the system.
 
 	int iBestDist;
-	SStarDesc *pBestStar = NULL;
-
-	if (m_Stars.GetCount() == 1)
+	const SStarDesc *pBestStar = FindNearestStar(vPos, &iBestDist);
+	if (pBestStar == NULL)
 		{
-		pBestStar = &m_Stars[0];
-		iBestDist = (int)(vPos.Longest() / LIGHT_SECOND);
-		}
-	else
-		{
-		pBestStar = NULL;
-		iBestDist = 100000000;
+		if (retpStar)
+			*retpStar = NULL;
 
-		for (i = 0; i < m_Stars.GetCount(); i++)
-			{
-			CSpaceObject *pStar = m_Stars[i].pStarObj;
-			CVector vDist = vPos - pStar->GetPos();
+		if (retpVolumetricMask)
+			*retpVolumetricMask = NULL;
 
-			int iDistFromCenter = (int)(vDist.Longest() / LIGHT_SECOND);
-			if (iDistFromCenter < iBestDist)
-				{
-				iBestDist = iDistFromCenter;
-				pBestStar = &m_Stars[i];
-				}
-			}
-
-		if (pBestStar == NULL)
-			{
-			if (retpStar)
-				*retpStar = NULL;
-
-			if (retpVolumetricMask)
-				*retpVolumetricMask = NULL;
-
-			return 0;
-			}
+		return 0;
 		}
 
 	//	Compute the percentage
@@ -510,11 +478,29 @@ CVector CSystem::CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric r
 		}
 	}
 
-CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
+CG32bitPixel CSystem::CalcNearestStarColor (const CVector &vPos, CSpaceObject **retpStar) const
 
-//	CalculateSpaceColor
+//	CalcNearestStarColor
 //
-//	Calculates the color of space from the given object
+//	Computes the space color of the nearest star.
+
+	{
+	const SStarDesc *pBestStar = FindNearestStar(vPos);
+	if (pBestStar == NULL)
+		{
+		if (retpStar) *retpStar = NULL;
+		return CG32bitPixel(0, 0, 0);
+		}
+
+	if (retpStar) *retpStar = pBestStar->pStarObj;
+	return pBestStar->pStarObj->GetSpaceColor();
+	}
+
+CG32bitPixel CSystem::CalcStarshineColor (CSpaceObject *pPOV, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask) const
+
+//	CalcStarshineColor
+//
+//	Calculates the color of starshine for the given object
 
 	{
 	CSpaceObject *pStar;
@@ -585,7 +571,7 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
 
-	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter, &Ctx.pStar, &Ctx.pVolumetricMask);
+	Ctx.rgbStarshineColor = CalcStarshineColor(pCenter, &Ctx.pStar, &Ctx.pVolumetricMask);
 
 	//	Compute the radius of the circle on which we'll show target indicators
 	//	(in pixels)
@@ -612,8 +598,6 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 //	Initializes the volumetric mask for the given star
 
 	{
-	int i;
-
 	Metric rMaxDist = (pStar->GetMaxLightDistance() + 100) * LIGHT_SECOND;
 	int iSize = (int)(2.0 * rMaxDist / g_KlicksPerPixel);
 	VolumetricMask.Create(iSize, iSize, 0xff);
@@ -625,36 +609,22 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 
 	//	Loop over all planets/asteroids and generate a shadow
 
-	for (i = 0; i < GetObjectCount(); i++)
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
+		int iStarAngle;
+		Metric rStarDist;
+
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj == NULL
 				|| pObj->IsDestroyed())
 			{ }
 
-		//	See if we need to do any starlight processing
+		//	Add the shadow, if necessary
 
-		else if (pObj->HasStarlightImage())
+		else if (pObj->HasVolumetricShadow(&iStarAngle, &rStarDist))
 			{
-			//	Compute the angle of the object with respect to the star
-			//	And skip any objects that are outside the star's light radius.
-
-			Metric rStarDist;
-			int iStarAngle = ::VectorToPolar(pObj->GetPos() - pStar->GetPos(), &rStarDist);
-			if (rStarDist > rMaxDist)
-				continue;
-
-			//	Generate an image lit from the proper angle
-
-			pObj->CreateStarlightImage(iStarAngle, rStarDist);
-
-			//	Add the shadow, if necessary
-
-			if (pObj->HasVolumetricShadow())
-				{
-				CVolumetricShadowPainter Painter(pStar, xStar, yStar, iStarAngle, rStarDist, pObj, VolumetricMask);
-				Painter.PaintShadow();
-				}
+			CVolumetricShadowPainter Painter(pStar, xStar, yStar, iStarAngle, rStarDist, pObj, VolumetricMask);
+			Painter.PaintShadow();
 			}
 		}
 	}
@@ -1455,7 +1425,7 @@ ALERROR CSystem::CreateStargate (CStationType *pType,
 	}
 
 ALERROR CSystem::CreateStation (CStationType *pType,
-							    CDesignType *pEventHandler,
+								CDesignType *pEventHandler,
 								CVector &vPos,
 								CSpaceObject **retpStation)
 
@@ -1673,45 +1643,33 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			//	For multitargets, we need to find a target 
 			//	for each fragment
 
-			if (pFragDesc->bMIRV && pMissileSource)
+			if (pFragDesc->pDesc->IsMIRV() && pMissileSource)
 				{
-				CSpaceObjectTargetList TargetList;
-				TargetList.InitWithNearestVisibleEnemies(*pMissileSource, 
-						iFragmentCount, 
-						MAX_MIRV_TARGET_RANGE, 
-						NULL, 
-						CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObjectTargetList::FLAG_INCLUDE_STATIONS);
-				int iFound = TargetList.GetList().GetCount();
-				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
+				TArray<CTargetList::STargetResult> TargetList = CWeaponClass::CalcMIRVFragmentationTargets(*pMissileSource, *pFragDesc->pDesc, iFragmentCount);
+				int iFound = TargetList.GetCount();
 
 				if (iFound > 0)
 					{
 					for (i = 0; i < iFragmentCount; i++)
 						{
-						CSpaceObject *pTarget = TargetList.GetList()[i % iFound];
-						Targets[i] = pTarget;
-
-						//	Calculate direction to fire in
-
-						CVector vTarget = pTarget->GetPos() - Ctx.vPos;
-						Metric rTimeToIntercept = CalcInterceptTime(vTarget, pTarget->GetVel(), rSpeed);
-						CVector vInterceptPoint = vTarget + pTarget->GetVel() * rTimeToIntercept;
+						auto &Target = TargetList[i % iFound];
+						Targets[i] = Target.pObj;
 
 						//	If fragments can maneuver, then fire angle jitters a bit.
 
 						if (pFragDesc->pDesc->IsTracking())
-							Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-45, 45));
+							Angles[i] = AngleMod(Target.iFireAngle + mathRandom(-45, 45));
 
 						//	If we've got multiple fragments to the same target, then
 						//	jitter a bit.
 
 						else if (i >= iFound)
-							Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-6, 6));
+							Angles[i] = AngleMod(Target.iFireAngle + mathRandom(-6, 6));
 
 						//	Otherwise, head straight for the target
 
 						else
-							Angles[i] = VectorToPolar(vInterceptPoint, NULL);
+							Angles[i] = Target.iFireAngle;
 						}
 					}
 
@@ -1728,7 +1686,7 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			//	(unless we are MIRVed)
 
 			CVector vInitVel;
-			if (!pFragDesc->bMIRV)
+			if (!pFragDesc->pDesc->IsMIRV())
 				vInitVel = Ctx.vVel;
 
 			//	If we don't want to create all fragments, we randomly delete 
@@ -1761,16 +1719,16 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 			for (i = 0; i < iFragmentCount; i++)
 				{
-                //  If we're only creating a fraction of fragments, then skip some.
+				//  If we're only creating a fraction of fragments, then skip some.
 
-                if (Angles[i] < 0)
-                    continue;
+				if (Angles[i] < 0)
+					continue;
 
-                //  Generate initial speed (this might be random for each fragment)
+				//  Generate initial speed (this might be random for each fragment)
 
 				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 
-                //  Create the fragment
+				//  Create the fragment
 
 				SShotCreateCtx FragCtx;
 				FragCtx.pDesc = pFragDesc->pDesc;
@@ -1849,6 +1807,39 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 	return true;
 	}
 
+const CSystem::SStarDesc *CSystem::FindNearestStar (const CVector &vPos, int *retiDist) const
+
+//	FindNearestStar
+//
+//	Returns the nearest star to the position, and optionally the distance in 
+//	light-seconds.
+
+	{
+	if (m_Stars.GetCount() == 0)
+		return NULL;
+
+	const SStarDesc *pBestStar = &m_Stars[0];
+	int iBestDist = (int)(vPos.Longest() / LIGHT_SECOND);
+
+	for (int i = 1; i < m_Stars.GetCount(); i++)
+		{
+		const CSpaceObject *pStar = m_Stars[i].pStarObj;
+		CVector vDist = vPos - pStar->GetPos();
+
+		int iDistFromCenter = (int)(vDist.Longest() / LIGHT_SECOND);
+		if (iDistFromCenter < iBestDist)
+			{
+			iBestDist = iDistFromCenter;
+			pBestStar = &m_Stars[i];
+			}
+		}
+
+	if (retiDist)
+		*retiDist = iBestDist;
+
+	return pBestStar;
+	}
+
 CSpaceObject *CSystem::FindObject (DWORD dwID) const
 
 //	FindObject
@@ -1904,7 +1895,7 @@ CSpaceObject *CSystem::FindObjectWithOrbit (const COrbit &Orbit) const
 //
 //  Returns an object that shows the given orbit
 
-    {
+	{
 	int i;
 
 	for (i = 0; i < GetObjectCount(); i++)
@@ -1912,15 +1903,15 @@ CSpaceObject *CSystem::FindObjectWithOrbit (const COrbit &Orbit) const
 		CSpaceObject *pObj = GetObject(i);
 		const COrbit *pOrbit;
 		if (pObj 
-                && !pObj->IsDestroyed()
-                && pObj->ShowMapOrbit()
-                && (pOrbit = pObj->GetMapOrbit())
+				&& !pObj->IsDestroyed()
+				&& pObj->ShowMapOrbit()
+				&& (pOrbit = pObj->GetMapOrbit())
 				&& (*pOrbit == Orbit))
 			return pObj;
 		}
 
 	return NULL;
-    }
+	}
 
 bool CSystem::FindObjectName (const CSpaceObject *pObj, CString *retsName)
 
@@ -2325,7 +2316,7 @@ bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit
 	return (retTable->GetCount() > 0);
 	}
 
-int CSystem::GetLevel (void)
+int CSystem::GetLevel (void) const
 
 //	GetLevel
 //
@@ -2919,13 +2910,16 @@ void CSystem::MarkImages (void)
 	{
 	DEBUG_TRY
 
-	int i;
-
 	m_Universe.SetLogImageLoad(false);
+
+	//	Set starlight parameters for every object
+
+	if (m_Universe.GetSFXOptions().IsStarshineEnabled())
+		SetStarlightParams();
 
 	//	Mark images for all objects that currently exist in the system.
 
-	for (i = 0; i < GetObjectCount(); i++)
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
 
@@ -2973,7 +2967,7 @@ void CSystem::MarkImages (void)
 	if (pImage)
 		pImage->Mark();
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
 		CEffectCreator &Effect = m_Universe.GetDefaultHitEffect((DamageTypes)i);
 		Effect.MarkImages();
@@ -3229,13 +3223,19 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	if (pPlayerCenter)
 		MainLayer[pPlayerCenter->GetPaintLayer()]->Insert(*pPlayerCenter);
 
-	//	Paint the background
+	//	Paint space background
 
-	m_SpacePainter.PaintViewport(Dest, GetType(), Ctx);
+	CUsePerformanceCounter PaintSpaceTimer(m_Universe, CONSTLIT("paint.spaceBackground"));
+	m_SpacePainter.PaintSpaceBackground(Dest, GetType(), Ctx);
 
 	//	Paint background objects
 
 	ParallaxBackground.Paint(Dest, Ctx);
+
+	//	Paint starshine
+
+	m_SpacePainter.PaintStarshine(Dest, GetType(), Ctx);
+	PaintSpaceTimer.StopCounter();
 
 	//	Paint any space environment (e.g., nebulae)
 
@@ -3374,7 +3374,7 @@ void CSystem::PaintViewportObject (CG32bitImage &Dest, const RECT &rcView, CSpac
 
 	SViewportPaintCtx Ctx;
 	Ctx.pCenter = pCenter;
-	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter);
+	Ctx.rgbStarshineColor = CalcStarshineColor(pCenter);
 	Ctx.XForm = ViewportTransform(pCenter->GetPos(), g_KlicksPerPixel, xCenter, yCenter);
 	Ctx.XFormRel = Ctx.XForm;
 
@@ -3753,19 +3753,10 @@ void CSystem::PlaceInGate (CSpaceObject *pObj, CSpaceObject *pGate)
 	//	We keep on incrementing the timer as long as we are creating ships
 	//	in the same tick. [But only if we're not creating the system.]
 
-	if (!m_fInCreate)
-		{
-		if (m_iTick != g_iGateTimerTick)
-			{
-			g_iGateTimer = 0;
-			g_iGateTimerTick = m_iTick;
-			}
-
-		pShip->SetInGate(pGate, g_iGateTimer);
-		g_iGateTimer += mathRandom(11, 22);
-		}
-	else
+	if (m_fInCreate)
 		pShip->SetInGate(pGate, 0);
+	else
+		pShip->SetInGate(pGate, m_GateTimer.GetTick(pGate->GetID(), m_Universe.GetTicks()));
 
 	DEBUG_CATCH
 	}
@@ -4416,6 +4407,44 @@ void CSystem::SetSpaceEnvironment (int xTile, int yTile, CSpaceEnvironmentType *
 	m_pEnvironment->SetTileType(xTile, yTile, pEnvironment);
 	}
 
+void CSystem::SetStarlightParams (void)
+
+//	SetStarlightParams
+//
+//	Sets starlight parameters for all objects.
+
+	{
+	for (int i = 0; i < m_Stars.GetCount(); i++)
+		{
+		if (m_Stars[i].VolumetricMask.IsEmpty())
+			SetStarlightParams(*m_Stars[i].pStarObj);
+		}
+	}
+
+void CSystem::SetStarlightParams (const CSpaceObject &StarObj)
+
+//	SetStarlightParams
+//
+//	Sets starlight parameters for all objects relative to this star.
+
+	{
+	Metric rMaxDist = (StarObj.GetMaxLightDistance() + 100) * LIGHT_SECOND;
+
+	//	Loop over all planets/asteroids and generate a shadow
+
+	for (int i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj == NULL
+				|| pObj->IsDestroyed())
+			continue;
+
+		//	Set parameters
+
+		pObj->SetStarlightParams(StarObj, rMaxDist);
+		}
+	}
+
 void CSystem::SortByPaintOrder (void)
 
 //	SortByPaintOrder
@@ -4658,7 +4687,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	target.
 
 	if (Ctx.pPlayer)
+		{
+		Ctx.AutoMining.Init(*Ctx.pPlayer);
 		Ctx.AutoTarget.Init(*Ctx.pPlayer);
+		}
 
 	//	Add all objects to the grid so that we can do faster
 	//	hit tests
@@ -4755,10 +4787,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		CSpaceObject *pObj = GetObject(i);
 
 		if (pObj 
-                && !pObj->IsDestroyed()
-                && pObj->CanMove()
+				&& !pObj->IsDestroyed()
+				&& pObj->CanMove()
 				&& !pObj->IsSuspended()
-                && !pObj->IsTimeStopped())
+				&& !pObj->IsTimeStopped())
 			{
 			//	Move the objects
 

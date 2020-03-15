@@ -6,8 +6,7 @@
 
 #define EVENT_ON_REMOVE_AT_DOCK_SERVICES		CONSTLIT("OnRemoveAtDockServices")
 
-COverlayList::COverlayList (void) :
-		m_pFirst(NULL)
+COverlayList::COverlayList (void)
 
 //	COverlayList constructor
 
@@ -301,7 +300,7 @@ COverlay *COverlayList::FindField (DWORD dwID)
 	return NULL;
 	}
 
-bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector) const
+bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector, CDesignType **retpLocalScreens) const
 
 //	FireGetDockScreen
 //
@@ -309,6 +308,7 @@ bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSy
 //	discard retpData.
 
 	{
+	CDesignType *pBestLocalScreens = NULL;
 	CDockScreenSys::SSelector BestScreen;
 	BestScreen.iPriority = -1;
 
@@ -329,7 +329,10 @@ bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSy
 				//	See if this is better than previous.
 
 				else if (OverlayScreen.iPriority > BestScreen.iPriority)
+					{
 					BestScreen = OverlayScreen;
+					pBestLocalScreens = pField->GetType();
+					}
 				}
 			}
 
@@ -341,6 +344,9 @@ bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSy
 
 	if (retSelector)
 		*retSelector = BestScreen;
+
+	if (retpLocalScreens)
+		*retpLocalScreens = pBestLocalScreens;
 
 	return true;
 	}
@@ -496,7 +502,7 @@ void COverlayList::GetListOfCommandPaneCounters (TArray<COverlay *> *retList)
 
 		if (!pField->IsDestroyed()
 				&& (pType = pField->GetType())
-				&& pType->GetCounterStyle() == COverlayType::counterCommandBarProgress)
+				&& pType->GetCounterDesc().GetType() == COverlayCounterDesc::counterCommandBarProgress)
 			retList->Insert(pField);
 
 		pField = pField->GetNext();
@@ -623,13 +629,37 @@ int COverlayList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSour
 	return iBonus;
 	}
 
+bool COverlayList::HasMinableItem (void) const
+
+//	HasMinableItem
+//
+//	Returns TRUE if we have an overlay that can be mined. This is generally
+//	used to determine mining targets.
+
+	{
+	const COverlay *pOverlay = m_pFirst;
+	while (pOverlay)
+		{
+		//	Not active means that it is still buried and that mining will help
+		//	to uncover it.
+
+		if (!pOverlay->IsActive() 
+				&& pOverlay->GetType()->IsUnderground())
+			return true;
+
+		pOverlay = pOverlay->GetNext();
+		}
+
+	return false;
+	}
+
 ICCItemPtr COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue)
 
 //  IncData
 //
 //  Increment data
 
-    {
+	{
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
@@ -639,10 +669,10 @@ ICCItemPtr COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *p
 		pField = pField->GetNext();
 		}
 
-    //  If we get this far, then we couldn't find it, so we just return nil
+	//  If we get this far, then we couldn't find it, so we just return nil
 
 	return ICCItemPtr(ICCItem::Nil);
-    }
+	}
 
 bool COverlayList::IncProperty (CSpaceObject &SourceObj, DWORD dwID, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult)
 
@@ -683,6 +713,29 @@ void COverlayList::OnConditionsChanged (CSpaceObject *pSource)
 		for (i = 0; i < Removed.GetCount(); i++)
 			pSource->OnOverlayConditionChanged(Removed[i], CConditionSet::cndRemoved);
 		}
+	}
+
+bool COverlayList::OnMiningDamage (CSpaceObject &Source, EAsteroidType iType, SDamageCtx &Ctx)
+
+//	OnMiningDamage
+//
+//	Handle mining damage. Returns TRUE if the overlays handled it.
+
+	{
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed())
+			{
+			if (pField->OnMiningDamage(Source, iType, Ctx))
+				//	We only handle one underground vault
+				return true;
+			}
+
+		pField = pField->GetNext();
+		}
+
+	return false;
 	}
 
 void COverlayList::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
@@ -780,7 +833,7 @@ void COverlayList::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource)
 	{
 	DWORD dwCount;
 
-	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
+	Ctx.pStream->Read(dwCount);
 	COverlay *pPrevField = NULL;
 	while (dwCount)
 		{
@@ -942,7 +995,7 @@ bool COverlayList::SetProperty (CSpaceObject *pSource, DWORD dwID, const CString
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
-			return pField->SetProperty(pSource, sName, pValue);
+			return pField->SetProperty(*pSource, sName, pValue);
 
 		pField = pField->GetNext();
 		}
@@ -1002,7 +1055,7 @@ void COverlayList::Update (CSpaceObject *pSource, int iScale, int iRotation, boo
 
 			//	If the source got destroyed, then we're done
 
-			if (CSpaceObject::IsDestroyedInUpdate())
+			if (pSource->IsDestroyed())
 				return;
 			}
 
@@ -1060,7 +1113,7 @@ void COverlayList::UpdateTimeStopped (CSpaceObject *pSource, int iScale, int iRo
 
 			//	If the source got destroyed, then we're done
 
-			if (CSpaceObject::IsDestroyedInUpdate())
+			if (pSource->IsDestroyed())
 				return;
 			}
 
@@ -1102,7 +1155,7 @@ void COverlayList::WriteToStream (IWriteStream *pStream)
 		pField = pField->GetNext();
 		}
 
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	pField = m_pFirst;
 	while (pField)
 		{

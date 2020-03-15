@@ -171,6 +171,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CAccelerateHUD.cpp" />
     <ClCompile Include="CArmorHUDImages.cpp" />
     <ClCompile Include="CArmorHUDRectangular.cpp" />
     <ClCompile Include="CArmorHUDRingSegments.cpp" />
@@ -188,6 +189,9 @@
     </ClCompile>
     <ClCompile Include="CItemPainter.cpp" />
     <ClCompile Include="CListCollectionTask.cpp" />
+    <ClCompile Include="CTextAreaAnimator.cpp" />
+    <ClCompile Include="CTilePainter.cpp" />
+    <ClCompile Include="CLRSHUD.cpp" />
     <ClCompile Include="CMapLegendPainter.cpp" />
     <ClCompile Include="CMapScaleCounter.cpp" />
     <ClCompile Include="CMCIMixer.cpp" />

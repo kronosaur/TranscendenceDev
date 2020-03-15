@@ -110,6 +110,7 @@ class CDockScreenStack
 		SDockFrame &GetCallingFrame (void) { return (m_Stack.GetCount() < 2 ? const_cast<SDockFrame &>(m_NullFrame) : m_Stack[m_Stack.GetCount() - 2]); }
 		SDockFrame &GetCurrent (void) { ASSERT(!IsEmpty()); return (IsEmpty() ? const_cast<SDockFrame &>(m_NullFrame) : m_Stack[m_Stack.GetCount() - 1]); }
 		const SDockFrame &GetCurrent (void) const;
+		const SDockFrame &GetFrame (int iIndex) const { return m_Stack[iIndex]; }
 		bool IsEmpty (void) const { return (m_Stack.GetCount() == 0); }
 		void Push (const SDockFrame &Frame);
 		void Pop (void);
@@ -119,6 +120,8 @@ class CDockScreenStack
 		void SetCurrentPane (const CString &sPane);
 		void SetDisplayData (const CString &sID, const CString &sData);
 		void SetLocation (CSpaceObject *pLocation);
+
+		static ICCItemPtr AsCCItem (const SDockFrame &Frame);
 
 	private:
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
@@ -143,6 +146,7 @@ class CDockSession
 		CDockScreenStack &GetFrameStack (void) { return m_DockFrames; }
 		const CDockScreenStack &GetFrameStack (void) const { return m_DockFrames; }
 		ICCItemPtr GetProperty (const CString &sProperty) const;
+		ICCItemPtr GetPropertyFrameStack (void) const;
 		ICCItemPtr GetReturnData (const CString &sAttrib) const;
 		IDockScreenUI &GetUI (void) const { return *m_pDockScreenUI; }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }

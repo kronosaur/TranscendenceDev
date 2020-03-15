@@ -77,6 +77,37 @@ class CDebugOptions
 		bool m_bVerboseCreate = false;
 	};
 
+class CPerformanceCounters
+	{
+	public:
+		struct SCounter
+			{
+			DWORD dwStartTime = 0;
+
+			int iTotalCalls = 0;
+			int iTotalTime = 0;
+
+			bool bEnabled = false;
+			};
+
+		int GetCount (void) const { return m_Counters.GetCount(); }
+		const SCounter &GetCounter (int iIndex) const { return m_Counters[iIndex]; }
+		const CString &GetCounterID (int iIndex) const { return m_Counters.GetKey(iIndex); }
+		void Paint (CG32bitImage &Dest, const RECT &rcRect, const CG16bitFont &Font) const;
+		void SetEnabled (bool bEnabled = true) { m_bEnabled = bEnabled; }
+		bool SetEnabled (const CString &sID, bool bEnabled = true);
+		void StartCounter (const CString &sID) { if (m_bEnabled) StartTimer(sID); }
+		void StopCounter (const CString &sID) { if (m_bEnabled) StopTimer(sID); }
+
+	private:
+		bool IsAnyCounterEnabled (void) const;
+		void StartTimer (const CString &sID);
+		void StopTimer (const CString &sID);
+
+		TSortMap<CString, SCounter> m_Counters;
+		bool m_bEnabled = false;
+	};
+
 //	SFX Options ----------------------------------------------------------------
 
 class CSFXOptions
@@ -119,6 +150,26 @@ class CSFXOptions
 		bool m_bStarGlow;					//	Show star glow in system map
 		bool m_bStarshine;					//	Show starshine effect
 		bool m_bDockScreenTransparent;		//	Show SRS behind dock screen
+	};
+
+//	Engine Strings -------------------------------------------------------------
+
+class CEngineLanguage
+	{
+	public:
+		CEngineLanguage (const CDesignCollection &Design) :
+				m_Design(Design)
+			{ }
+
+		const CString &GetAsteroidTypeLabel (EAsteroidType iType) const;
+		CString Translate (const CString &sID, ICCItem *pData = NULL) const;
+		void Reinit (void);
+
+	private:
+		const CDesignCollection &m_Design;
+
+		mutable const CDesignType *m_pEngineText = NULL;
+		mutable CString m_AsteroidTypeLabel[EAsteroidTypeCount];
 	};
 
 //	Named Painters -------------------------------------------------------------
@@ -200,12 +251,24 @@ class CUniverse
 				virtual CG32bitPixel GetColor (const CString &sColor) const { return CG32bitPixel(255, 255, 255); }
 				virtual const CG16bitFont &GetFont (const CString &sFont) const { const CG16bitFont *pFont; if (!FindFont(sFont, &pFont)) return CG16bitFont::GetDefault(); return *pFont; }
 				virtual void LogOutput (const CString &sLine) const { ::kernelDebugLogString(sLine); }
+				virtual void OnSaveGame (void) const { }
 			};
 
 		class INotifications
 			{
 			public:
 				virtual void OnObjDestroyed (SDestroyCtx &Ctx) { }
+			};
+
+		enum EUpdateSpeeds
+			{
+			updateNone,
+
+			updateNormal,
+			updateAccelerated,
+			updatePaused,
+			updateSingleFrame,
+			updateSlowMotion,
 			};
 
 		struct SInitDesc
@@ -257,7 +320,7 @@ class CUniverse
 			fontPlanetoidMapLabel =		5,
 			fontWorldMapLabel =			6,
 
-			fontCount =					75,
+			fontCount =					7,
 			};
 
 		CUniverse (void);
@@ -281,11 +344,11 @@ class CUniverse
 		bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pType, sEvent, bInDoEvent); }
 		ALERROR CreateEmptyStarSystem (CSystem **retpSystem);
 		DWORD CreateGlobalID (void) { return m_dwNextID++; }
-		ALERROR CreateMission (CMissionType *pType, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError);
+		ALERROR CreateMission (CMissionType &Type, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError);
 		ALERROR CreateRandomItem (const CItemCriteria &Crit, 
 								  const CString &sLevelFrequency,
 								  CItem *retItem);
-		ALERROR CreateRandomMission (const TArray<CMissionType *> &Types, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError);
+		ALERROR CreateRandomMission (const TArray<CMissionType *> &Types, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError);
 		IShipController *CreateShipController (const CString &sAI);
 		ALERROR CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		ALERROR CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
@@ -314,7 +377,6 @@ class CUniverse
 		const CAdventureDesc &GetCurrentAdventureDesc (void) const { return m_Design.GetAdventureDesc(); }
 		CAdventureDesc &GetCurrentAdventureDesc (void) { return m_Design.GetAdventureDesc(); }
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
-		CMission *GetCurrentMission (void);
 		const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
 		const CEconomyType &GetCreditCurrency (void) const;
 		const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
@@ -327,6 +389,7 @@ class CUniverse
 		CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
 		CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
 		CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
+		const CEngineLanguage &GetEngineLanguage (void) const { return m_Language; }
 		const CEngineOptions &GetEngineOptions (void) const { return m_EngineOptions; }
 		CExtensionCollection &GetExtensionCollection (void) { return m_Extensions; }
 		CString GetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib);
@@ -336,14 +399,16 @@ class CUniverse
         CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
         const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
 		IHost *GetHost (void) const { return m_pHost; }
+		EUpdateSpeeds GetLastUpdateSpeed (void) const { return m_iLastUpdateSpeed; }
 		CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
 		int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
+		const CMissionList &GetMissions (void) const { return m_AllMissions; }
 		CMissionList &GetMissions (void) { return m_AllMissions; }
-		void GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList);
 		const CG16bitFont &GetNamedFont (ENamedFonts iFont) { return *m_FontTable[iFont]; }
 		IEffectPainter &GetNamedPainter (CNamedEffects::ETypes iPainter) { return m_NamedEffects.GetPainter(m_Design, iPainter); }
 		const CObjectStats::SEntry &GetObjStats (DWORD dwObjID) const { return m_ObjStats.GetEntry(dwObjID); }
 		CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
+		CPerformanceCounters &GetPerformanceCounters (void) { return m_PerformanceCounters; }
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
 		void GetRandomLevelEncounter (int iLevel, CDesignType **retpType, IShipGenerator **retpTable, CSovereign **retpBaseSovereign);
 		CString GetResourceDb (void) { return m_sResourceDb; }
@@ -379,7 +444,7 @@ class CUniverse
 		void SetDifficultyLevel (CDifficultyOptions::ELevels iLevel) { m_Difficulty.SetLevel(iLevel); }
 		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
-		void SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV);
+		void SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV = NULL);
 		bool SetPOV (CSpaceObject *pPOV);
 		void SetPlayerShip (CSpaceObject *pPlayer);
 		void SetRegistered (bool bRegistered = true) { m_bRegistered = bRegistered; }
@@ -388,7 +453,7 @@ class CUniverse
 		void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
 		CTimeSpan StopGameTime (void);
-		CString TranslateEngineText (const CString &sID, ICCItem *pData = CCodeChain::CreateNil()) const;
+		CString TranslateEngineText (const CString &sID, ICCItem *pData = NULL) const { return m_Language.Translate(sID, pData); }
 		void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }
 		static CString ValidatePlayerName (const CString &sName);
 
@@ -434,6 +499,7 @@ class CUniverse
 		IPlayerController::EUIMode GetCurrentUIMode (void) const { return (m_pPlayer ? m_pPlayer->GetUIMode() : IPlayerController::uimodeUnknown); }
 		const CDifficultyOptions &GetDifficulty (void) const { return m_Difficulty; }
 		CDifficultyOptions::ELevels GetDifficultyLevel (void) const { return m_Difficulty.GetLevel(); }
+		DWORD GetFrameTicks (void) const { return m_dwFrame; }
 		int GetPaintTick (void) { return m_iPaintTick; }
 		CSpaceObject *GetPOV (void) const { return m_pPOV; }
 		IPlayerController *GetPlayer (void) const { return m_pPlayer; }
@@ -480,7 +546,7 @@ class CUniverse
 		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
 		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale);
 		void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
-		void Update (SSystemUpdateCtx &Ctx);
+		bool Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode = updateNormal);
 		void UpdateExtended (void);
 
 		void DebugOutput (char *pszLine, ...);
@@ -514,6 +580,7 @@ class CUniverse
 		ALERROR InitTopology (DWORD dwStartingMap, CString *retsError);
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);
+		void UpdateTick (SSystemUpdateCtx &Ctx);
 		void UpdateMissions (int iTick, CSystem *pSystem);
 		void UpdateSovereigns (int iTick, CSystem *pSystem);
 
@@ -565,14 +632,18 @@ class CUniverse
 		CEngineOptions m_EngineOptions;
 		CSFXOptions m_SFXOptions;
 		CDebugOptions m_DebugOptions;
+		CPerformanceCounters m_PerformanceCounters;
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;
+		EUpdateSpeeds m_iLastUpdateSpeed = updateNone;
+		DWORD m_dwFrame = 0;
 
 		//	Cached singletons
 
 		mutable const CEconomyType *m_pCreditCurrency = NULL;
 		CNamedEffects m_NamedEffects;
+		CEngineLanguage m_Language;
 
 		//	Debugging structures
 

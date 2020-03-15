@@ -1560,7 +1560,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_fNoSaleIfUsed = pDesc->GetAttributeBool(NO_SALE_IF_USED_ATTRIB);
 	m_fRandomDamaged = pDesc->GetAttributeBool(CONSTLIT(g_RandomDamagedAttrib));
-	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
+	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB) || m_sName.IsBlank();
 	if (m_fVirtual)
 		m_Frequency = ftNotRandom;
 
@@ -1585,7 +1585,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		if (strEquals(pSubDesc->GetTag(), IMAGE_TAG))
 			{
-			if (error = m_Image.InitFromXML(Ctx, pSubDesc))
+			if (error = m_Image.InitFromXML(Ctx, *pSubDesc))
 				return ComposeLoadError(Ctx, CONSTLIT("Unable to load image"));
 			}
 
@@ -1830,8 +1830,8 @@ bool CItemType::OnSetTypeProperty (const CString &sProperty, const ICCItem &Valu
 	CItem Item(this, 1);
 	CItemCtx ItemCtx(Item);
 
-	ESetPropertyResults iResult = Item.SetProperty(ItemCtx, sProperty, &Value, true);
-	return (iResult == resultPropertySet);
+	ESetPropertyResult iResult = Item.SetProperty(ItemCtx, sProperty, &Value, true);
+	return (iResult == ESetPropertyResult::set);
 	}
 
 bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const

@@ -421,7 +421,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		for (i = 0; i < pLocals->GetCount(); i++)
 			{
 			ICCItem *pLocal;
-			ICCItem *pValue;
+			ICCItemPtr pValue;
 
 			pLocal = pLocals->GetElement(i);
 
@@ -431,7 +431,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			if (pLocal->IsList() && pLocal->GetCount() >= 2)
 				{
 				pVar = pLocal->GetElement(0);
-				pValue = pCC->Eval(pCtx, pLocal->GetElement(1));
+				pValue = ICCItemPtr(pCC->Eval(pCtx, pLocal->GetElement(1)));
 
 				//	If we get an error evaluating, return it
 
@@ -444,7 +444,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 					//	Done
 
-					return pValue;
+					return pValue->Reference();
 					}
 				}
 
@@ -453,15 +453,27 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			else
 				{
 				pVar = pLocal;
-				pValue = pCC->CreateNil();
+				pValue = ICCItemPtr::Nil();
 				}
 
 			//	Add it
 
 			if (pVar->IsIdentifier())
 				{
-				pLocalSymbols->AddEntry(pVar, pValue, true);
-				pValue->Discard();
+				//	We requite the symbol to be unique within the frame (but 
+				//	only in strict/debug mode).
+
+				if (!pLocalSymbols->AddEntry(pVar, pValue, true, pCtx->bStrict))
+					{
+					//	Clean up
+
+					pCtx->pLocalSymbols = pOldSymbols;
+					pLocalSymbols->Discard();
+
+					//	Duplicate local variable.
+
+					return pCC->CreateError(CONSTLIT("Duplicate local variable"), pVar);
+					}
 				}
 			}
 		}
@@ -2630,7 +2642,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	//	Loop over all elements of the list
 
 	int iBestItem = -1;
-	int iAccumulate = 0;
+	double rAccumulate = 0;
 	int iCount = 0;
 	for (i = 0; i < pSource->GetCount(); i++)
 		{
@@ -2660,25 +2672,25 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 		else if (bReduceMax)
 			{
-			int iValue = pMapped->GetIntegerValue();
-			if (iBestItem == -1 || iValue > iAccumulate)
+			double rValue = pMapped->GetDoubleValue();
+			if (iBestItem == -1 || rValue > rAccumulate)
 				{
 				iBestItem = i;
-				iAccumulate = iValue;
+				rAccumulate = rValue;
 				}
 			}
 		else if (bReduceMin)
 			{
-			int iValue = pMapped->GetIntegerValue();
-			if (iBestItem == -1 || iValue < iAccumulate)
+			double rValue = pMapped->GetDoubleValue();
+			if (iBestItem == -1 || rValue < rAccumulate)
 				{
 				iBestItem = i;
-				iAccumulate = iValue;
+				rAccumulate = rValue;
 				}
 			}
 		else if (bReduceAverage || bReduceSum)
 			{
-			iAccumulate += pMapped->GetIntegerValue();
+			rAccumulate += pMapped->GetDoubleValue();
 			iCount++;
 			}
 		else if (bReduceUnique)
@@ -2737,22 +2749,27 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 		if (bOriginal)
 			return pSource->GetElement(iBestItem)->Reference();
+		else if (rAccumulate == floor(rAccumulate))
+			return pCC->CreateInteger((int)rAccumulate);
 		else
-			return pCC->CreateInteger(iAccumulate);
+			return pCC->CreateDouble(rAccumulate);
 		}
 	else if (bReduceSum)
 		{
 		if (iCount == 0)
 			return pCC->CreateNil();
 
-		return pCC->CreateInteger(iAccumulate);
+		else if (rAccumulate == floor(rAccumulate))
+			return pCC->CreateInteger((int)rAccumulate);
+		else
+			return pCC->CreateDouble(rAccumulate);
 		}
 	else if (bReduceAverage)
 		{
 		if (iCount == 0)
 			return pCC->CreateNil();
 
-		return pCC->CreateInteger(iAccumulate / iCount);
+		return pCC->CreateDouble(rAccumulate / iCount);
 		}
 	else if (bReduceUnique)
 		{

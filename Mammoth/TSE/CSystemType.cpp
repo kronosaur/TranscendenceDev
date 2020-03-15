@@ -13,6 +13,7 @@
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define NO_EXTRA_ENCOUNTERS_ATTRIB				CONSTLIT("noExtraEncounters")
 #define NO_RANDOM_ENCOUNTERS_ATTRIB				CONSTLIT("noRandomEncounters")
+#define SPACE_COLOR_ATTRIB						CONSTLIT("spaceColor")
 #define SPACE_SCALE_ATTRIB						CONSTLIT("spaceScale")
 #define SPACE_ENVIRONMENT_TILE_SIZE_ATTRIB		CONSTLIT("spaceEnvironmentTileSize")
 #define TIME_SCALE_ATTRIB						CONSTLIT("timeScale")
@@ -203,6 +204,8 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		}
 	else
 		m_iTileSize = (GetAPIVersion() >= 14 ? sizeSmall : sizeLarge);
+
+	m_rgbSpace = ::LoadRGBColor(pDesc->GetAttribute(SPACE_COLOR_ATTRIB), DEFAULT_SPACE_COLOR);
 
 	//	Options
 

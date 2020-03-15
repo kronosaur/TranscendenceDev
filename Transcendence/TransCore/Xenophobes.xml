@@ -69,10 +69,6 @@
 		</Ships>
 
 		<Events>
-			<OnMining>
-				(intAsteroidOnMining 100)
-			</OnMining>
-
 			<GetRumors>
 				{
 					attributes: "commonwealthPub"

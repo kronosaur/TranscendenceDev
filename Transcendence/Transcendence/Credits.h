@@ -263,7 +263,7 @@ static constexpr char *INSPIRATION[] =
 	"Across Realtime",
 	"The Art of Game Design",
 	"The Book of the New Sun",
-	"BSG",
+	"Battlestar Galactica",
 	"A Canticle for Leibowitz",
 	"Castles of Steel",
 	"Crystal Express",
@@ -275,15 +275,15 @@ static constexpr char *INSPIRATION[] =
 	"Dwarf Fortress",
 	"Firefly",
 	"A Fire Upon the Deep",
-	"GEB",
+	"G%&ouml;edel, Escher, Bach",
 	"Graphics Gems",
 	"Graphics Programming Black Book",
-	"GTA 4",
 	"Neuromancer",
 	"Robotron 2084",
 	"Sister Alice",
 	"Star Blazers",
 	"Ultima Series",
+	"Uplift Universe",
 	"Wing Commander",
 	"",
 	"and",
@@ -295,13 +295,13 @@ static constexpr int INSPIRATION_COUNT = (sizeof(INSPIRATION) / sizeof(INSPIRATI
 
 static constexpr char *SOFTWARE[] =
 	{
-	"Adobe® Photoshop®",
-	"Caligari trueSpace®",
+	"Adobe%&reg; Photoshop%&reg;",
+	"Caligari trueSpace%&reg;",
 	"Hexarc",
-	"Intel® JPEG Library",
+	"Intel%&reg; JPEG Library",
 	"LodePNG",
 	"Luminous",
-	"Microsoft® Visual Studio®",
+	"Microsoft%&reg; Visual Studio%&reg;",
 	"zlib"
 	};
 

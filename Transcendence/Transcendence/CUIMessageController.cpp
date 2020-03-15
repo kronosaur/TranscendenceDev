@@ -33,6 +33,8 @@ static SUIMessageData g_MessageData[uimsgCount] =
 		{	CONSTDEF("galacticMapHint"),		FLAG_IS_HINT,	},
 		{	CONSTDEF("mouseManeuverHint"),		FLAG_IS_HINT,	},
 		{	CONSTDEF("keyboardManeuverHint"),	FLAG_IS_HINT,	},
+		{	CONSTDEF("stationDamageHint"),		FLAG_IS_HINT,	},
+		{	CONSTDEF("miningDamageTypeHint"),	FLAG_IS_HINT,	},
 	};
 
 CUIMessageController::CUIMessageController (void)
@@ -40,11 +42,38 @@ CUIMessageController::CUIMessageController (void)
 //	CUIMessageController constructor
 
 	{
-	utlMemSet(m_bMsgEnabled, sizeof(m_bMsgEnabled), 0);
-	SetEnabled(uimsgAllHints);
 	}
 
-UIMessageTypes CUIMessageController::Find (const CString &sMessageName)
+bool CUIMessageController::CanShow (CUniverse &Universe, UIMessageTypes iMsg, const CSpaceObject *pMsgObj) const
+
+//	CanShow
+//
+//	Returns TRUE if we can show the given hint.
+
+	{
+	const SMsgEntry &Msg = m_Messages[iMsg];
+
+	if (!Msg.bEnabled)
+		return false;
+
+	if (pMsgObj)
+		{
+		if (Msg.dwLastObjID == pMsgObj->GetID()
+				&& !IsTime(Universe.GetFrameTicks(), Msg.dwLastShown, OBJ_MSG_INTERVAL))
+			return false;
+		}
+	else
+		{
+		if (!IsTime(Universe.GetFrameTicks(), Msg.dwLastShown, OBJ_MSG_INTERVAL))
+			return false;
+		}
+
+	//	Show it
+
+	return true;
+	}
+
+UIMessageTypes CUIMessageController::Find (const CString &sMessageName) const
 
 //	Find
 //
@@ -76,6 +105,17 @@ bool CUIMessageController::IsHint (UIMessageTypes iMsg)
 	return ((g_MessageData[iMsg].dwFlags & FLAG_IS_HINT) ? true : false);
 	}
 
+void CUIMessageController::OnMessageShown (CUniverse &Universe, UIMessageTypes iMsg, const CSpaceObject *pMsgObj)
+
+//	OnMessageShown
+//
+//	Message has been shown to player, so we update our timer.
+
+	{
+	m_Messages[iMsg].dwLastShown = Universe.GetFrameTicks();
+	m_Messages[iMsg].dwLastObjID = (pMsgObj ? pMsgObj->GetID() : 0);
+	}
+
 void CUIMessageController::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream
@@ -102,7 +142,7 @@ void CUIMessageController::ReadFromStream (SLoadCtx &Ctx)
 	//	certain message).
 
 	for (i = 0; i < Min((int)uimsgCount, (int)dwLoad); i++)
-		m_bMsgEnabled[i] = (pLoad[i] ? true : false);
+		m_Messages[i].bEnabled = (pLoad[i] ? true : false);
 
 	//	NOTE: If uimsgCount increases between version, that's OK because
 	//	we initialize m_bMsgEnabled properly in the constructor.
@@ -124,17 +164,17 @@ void CUIMessageController::SetEnabled (UIMessageTypes iMsg, bool bEnabled)
 	if (iMsg == uimsgAllMessages)
 		{
 		for (i = 0; i < uimsgCount; i++)
-			m_bMsgEnabled[i] = bEnabled;
+			m_Messages[i].bEnabled = bEnabled;
 		}
 	else if (iMsg == uimsgAllHints)
 		{
 		for (i = 0; i < uimsgCount; i++)
 			if (IsHint((UIMessageTypes)i))
-				m_bMsgEnabled[i] = bEnabled;
+				m_Messages[i].bEnabled = bEnabled;
 
 		//	We keep track of whether any hint is enabled
 
-		m_bMsgEnabled[uimsgAllHints] = bEnabled;
+		m_Messages[uimsgAllHints].bEnabled = bEnabled;
 		}
 	else if (iMsg == uimsgEnabledHints)
 		{
@@ -143,32 +183,32 @@ void CUIMessageController::SetEnabled (UIMessageTypes iMsg, bool bEnabled)
 			//	Re-enable hints, but only if we have some hints left.
 
 			for (i = 0; i < uimsgCount; i++)
-				if (IsHint((UIMessageTypes)i) && m_bMsgEnabled[i])
+				if (IsHint((UIMessageTypes)i) && m_Messages[i].bEnabled)
 					{
-					m_bMsgEnabled[uimsgAllHints] = true;
+					m_Messages[uimsgAllHints].bEnabled = true;
 					break;
 					}
 			}
 		else
-			m_bMsgEnabled[uimsgAllHints] = false;
+			m_Messages[uimsgAllHints].bEnabled = false;
 		}
 	else
 		{
-		m_bMsgEnabled[iMsg] = bEnabled;
+		m_Messages[iMsg].bEnabled = bEnabled;
 
 		//	We keep track of whether any hint is enabled
 
 		if (IsHint(iMsg))
 			{
 			if (bEnabled)
-				m_bMsgEnabled[uimsgAllHints] = true;
-			else if (m_bMsgEnabled[uimsgAllHints])
+				m_Messages[uimsgAllHints].bEnabled = true;
+			else if (m_Messages[uimsgAllHints].bEnabled)
 				{
-				m_bMsgEnabled[uimsgAllHints] = false;
+				m_Messages[uimsgAllHints].bEnabled = false;
 				for (i = 0; i < uimsgCount; i++)
-					if (IsHint((UIMessageTypes)i) && m_bMsgEnabled[i])
+					if (IsHint((UIMessageTypes)i) && m_Messages[i].bEnabled)
 						{
-						m_bMsgEnabled[uimsgAllHints] = true;
+						m_Messages[uimsgAllHints].bEnabled = true;
 						break;
 						}
 				}
@@ -176,15 +216,28 @@ void CUIMessageController::SetEnabled (UIMessageTypes iMsg, bool bEnabled)
 		}
 	}
 
-void CUIMessageController::WriteToStream (IWriteStream *pStream)
+bool CUIMessageController::ShowMessage (CUniverse &Universe, UIMessageTypes iMsg, const CSpaceObject *pMsgObj)
+
+//	ShowMessage
+//
+//	If the message can be shown, we return TRUE and set the last shown state.
+//	Otherwise, we return FALSE.
+
+	{
+	if (!CanShow(Universe, iMsg, pMsgObj))
+		return false;
+
+	OnMessageShown(Universe, iMsg, pMsgObj);
+	return true;
+	}
+
+void CUIMessageController::WriteToStream (IWriteStream *pStream) const
 
 //	WriteToStream
 //
 //	Write out to the save file
 
 	{
-	int i;
-
 	//	Write the count of messages
 
 	DWORD dwSave = uimsgCount;
@@ -195,8 +248,8 @@ void CUIMessageController::WriteToStream (IWriteStream *pStream)
 
 	int iArraySize = AlignUp(uimsgCount, sizeof(DWORD));
 	BYTE *pSave = new BYTE [iArraySize];
-	for (i = 0; i < uimsgCount; i++)
-		pSave[i] = (m_bMsgEnabled[i] ? 1 : 0);
+	for (int i = 0; i < uimsgCount; i++)
+		pSave[i] = (m_Messages[i].bEnabled ? 1 : 0);
 
 	//	Save
 

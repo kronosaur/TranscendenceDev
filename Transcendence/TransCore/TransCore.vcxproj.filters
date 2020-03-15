@@ -894,5 +894,23 @@
     <Xml Include="NewVictoria.xml">
       <Filter>Human Space Library\St Katharines</Filter>
     </Xml>
+    <Xml Include="Makayev.xml">
+      <Filter>Human Space Library\Corporate Hierarchy</Filter>
+    </Xml>
+    <Xml Include="RPGMining.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="CoreEngineText.xml">
+      <Filter>Core Types</Filter>
+    </Xml>
+    <Xml Include="MiningPods.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
+    <Xml Include="UndergroundCaverns.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
+    <Xml Include="BlackMarketMember.xml">
+      <Filter>Human Space Library\Black Market</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

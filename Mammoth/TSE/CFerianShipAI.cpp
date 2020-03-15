@@ -418,7 +418,7 @@ CSpaceObject *CFerianShipAI::FindRandomAsteroid (void)
 		return Table[mathRandom(0, iCount-1)];
 	}
 
-CSpaceObject *CFerianShipAI::GetTarget (DWORD dwFlags) const
+CSpaceObject *CFerianShipAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -501,7 +501,7 @@ bool CFerianShipAI::InRangeOfThreat (CSpaceObject **retpThreat)
 	return false;
 	}
 
-DWORD CFerianShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CFerianShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //

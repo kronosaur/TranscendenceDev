@@ -230,6 +230,12 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 //	Creates an imageDesc from an image
 
 	{
+	//	For now we only support original images.
+
+	DWORD dwUNID = Image.GetBitmapUNID();
+	if (dwUNID == 0)
+		return CC.CreateNil();
+
 	ICCItem *pResult = CC.CreateLinkedList();
 	if (pResult->IsError())
 		return pResult;
@@ -308,7 +314,7 @@ ICCItem *CreateListFromVector (const CVector &vVector)
 	return CreateListFromBinary(NULL_STR, &vVector, sizeof(vVector));
 	}
 
-CSpaceObject *CreateObjFromItem (ICCItem *pItem, DWORD dwFlags)
+CSpaceObject *CreateObjFromItem (const ICCItem *pItem, DWORD dwFlags)
 	{
 	if (pItem == NULL)
 		return NULL;

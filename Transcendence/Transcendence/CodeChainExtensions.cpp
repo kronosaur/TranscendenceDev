@@ -50,6 +50,8 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 #define FN_PLY_IS_MESSAGE_ENABLED	22
 #define FN_PLY_INC_SCORE			23
 #define FN_PLY_INC_ITEM_STAT		24
+#define FN_PLY_GET_SYSTEM_STAT		25
+#define FN_PLY_INC_SYSTEM_STAT		26
 
 ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnPlyGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -252,8 +254,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrGetListEntry screen) -> entry",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"scrGetProperty",				fnScrGet,		FN_SCR_GET_PROPERTY,
-			"(scrGetProperty screen property) -> value\n\n"
+		{	"scr@",							fnScrGet,		FN_SCR_GET_PROPERTY,
+			"(scr@ screen property) -> value\n\n"
 			
 			"property\n\n"
 			
@@ -262,6 +264,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'inFirstOnInit"
 			"   'input",
 
+			"is",	0,	},
+
+		{	"scrGetProperty",				fnScrGet,		FN_SCR_GET_PROPERTY,
+			"RENAMED: Used (scr@ ...) instead.",
 			"is",	0,	},
 
 		{	"scrGetScreen",				    fnScrGet,		FN_SCR_GET_SCREEN,
@@ -356,8 +362,19 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrSetListFilter screen filter) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"scrSet@",						fnScrSet,		FN_SCR_SET_PROPERTY,
+			"(scrSet@ screen property value) -> True/Nil\n\n"
+			
+			"property:\n\n"
+			
+			"   'counter value\n"
+			"   'enabledFilter filter\n"
+			"   'showActualItem True|Nil\n",
+
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"scrSetProperty",					fnScrSet,		FN_SCR_SET_PROPERTY,
-			"(scrSetProperty screen property value) -> True/Nil",
+			"RENAMED: Use (scrSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"scrSetReturnData",					fnScrSet,		FN_SCR_RETURN_DATA,
@@ -526,6 +543,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"stat:\n\n"
 			
+			"   'asteroidsMined\n"
 			"   'bestEnemyShipDestroyed\n"
 			"   'enemyShipsDestroyed\n"
 			"   'enemyStationsDestroyed\n"
@@ -537,6 +555,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'systemsVisited",
 
 			"is",	0,	},
+
+		{	"plyGetSystemStat",					fnPlyGet,			FN_PLY_GET_SYSTEM_STAT,
+			"(plyGetSystemStat player stat [nodeID]) -> value\n\n"
+			
+			"stat:\n\n"
+			
+			"   'asteroidsMined",
+
+			"is*",	0,	},
 
 		{	"plyIncItemStat",					fnPlySet,			FN_PLY_INC_ITEM_STAT,
 			"(plyIncItemStat player stat item|type [inc]) -> value\n\n"
@@ -556,6 +583,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"plyIncScore",					fnPlySet,			FN_PLY_INC_SCORE,
 			"(plyIncScore player scoreInc) -> score",
 			"ii",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"plyIncSystemStat",					fnPlySet,			FN_PLY_INC_SYSTEM_STAT,
+			"(plyInSystemStat player stat [nodeID] [inc]) -> value\n\n"
+			
+			"stat:\n\n"
+			
+			"   'asteroidsMined",
+
+			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"plyMessage",					fnPlySetOld,		FN_PLY_MESSAGE,
 			"(plyMessage player message) -> True/Nil",
@@ -1058,11 +1094,17 @@ ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_PLY_GET_STAT:
 			{
-			CString sResult = pPlayer->GetStat(pArgs->GetElement(1)->GetStringValue());
-			if (!sResult.IsBlank())
-				pResult = pCC->Link(sResult);
-			else
-				pResult = pCC->CreateNil();
+			CString sStat = pArgs->GetElement(1)->GetStringValue();
+			pResult = pPlayer->GetGameStats().GetStat(sStat)->Reference();
+			break;
+			}
+
+		case FN_PLY_GET_SYSTEM_STAT:
+			{
+			CString sStat = pArgs->GetElement(1)->GetStringValue();
+			CString sNodeID = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetStringValue() : NULL_STR);
+
+			pResult = pPlayer->GetGameStats().GetSystemStat(sStat, sNodeID)->Reference();
 			break;
 			}
 
@@ -1079,6 +1121,7 @@ ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		default:
 			ASSERT(FALSE);
 			pResult = pCC->CreateNil();
+			break;
 		}
 
 	return pResult;
@@ -1306,6 +1349,23 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			break;
 			}
 
+		case FN_PLY_INC_SYSTEM_STAT:
+			{
+			int iArg = 1;
+			CString sStat = pArgs->GetElement(iArg++)->GetStringValue();
+
+			CString sNodeID;
+			if (pArgs->GetCount() > iArg && pArgs->GetElement(iArg)->IsIdentifier())
+				sNodeID = pArgs->GetElement(iArg++)->GetStringValue();
+
+			int iInc = 1;
+			if (pArgs->GetCount() > iArg)
+				iInc = pArgs->GetElement(iArg++)->GetIntegerValue();
+
+			int iResult = pPlayer->GetGameStats().IncSystemStat(sStat, sNodeID, iInc);
+			return pCC->CreateInteger(iResult);
+			}
+
 		case FN_PLY_RECORD_BUY_ITEM:
 		case FN_PLY_RECORD_SELL_ITEM:
 			{
@@ -1512,39 +1572,8 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
                 return pCC->CreateNil();
 
             const SDockFrame &CurFrame = DockSession.GetCurrentFrame();
-			DWORD dwRootUNID = (CurFrame.pResolvedRoot ? CurFrame.pResolvedRoot->GetUNID() : 0);
-            CString sScreen = CurFrame.sResolvedScreen;
-
-            ICCItem *pResult = pCC->CreateSymbolTable();
-
-			pResult->SetIntegerAt(CONSTLIT("type"), dwRootUNID);
-
-			if (sScreen.IsBlank())
-				{
-                pResult->SetIntegerAt(CONSTLIT("screen"), dwRootUNID);
-				pResult->SetIntegerAt(CONSTLIT("screenType"), dwRootUNID);
-				}
-			else
-				{
-				bool bNotUNID;
-				DWORD dwScreen = strToInt(sScreen, 0, &bNotUNID);
-				if (bNotUNID)
-					{
-					pResult->SetStringAt(CONSTLIT("screen"), sScreen);
-					pResult->SetStringAt(CONSTLIT("screenName"), sScreen);
-					}
-				else
-					{
-					pResult->SetIntegerAt(CONSTLIT("screen"), dwScreen);
-					pResult->SetIntegerAt(CONSTLIT("screenType"), dwScreen);
-					}
-				}
-
-            pResult->SetStringAt(CONSTLIT("pane"), CurFrame.sPane);
-            if (CurFrame.pStoredData)
-                pResult->SetAt(CONSTLIT("data"), CurFrame.pStoredData);
-
-            return pResult;
+			ICCItemPtr pResult = CDockScreenStack::AsCCItem(CurFrame);
+            return pResult->Reference();
             }
 
 		case FN_SCR_IS_ACTION_ENABLED:

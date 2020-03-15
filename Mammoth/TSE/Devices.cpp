@@ -657,27 +657,6 @@ bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, i
 	return true;
 	}
 
-int CDeviceClass::GetFireArc (CItemCtx &Ctx) const
-
-//	GetFireArc
-//
-//	Returns the fire arc for swivel weapons and turrets.
-
-	{
-	int iMinArc, iMaxArc;
-	switch (GetRotationType(Ctx, &iMinArc, &iMaxArc))
-		{
-		case rotOmnidirectional:
-			return 360;
-
-		case rotSwivel:
-			return AngleRange(iMinArc, iMaxArc);
-
-		default:
-			return 0;
-		}
-	}
-
 ItemCategories CDeviceClass::GetItemCategory (DeviceNames iDev)
 
 //	GetItemCategory
@@ -838,7 +817,7 @@ Metric CDeviceClass::OnGetScaledCostAdj (CItemCtx &Ctx) const
 
     //  We use weapon price increases as a guide.
 
-    return CWeaponClass::GetStdStats(iLevel).rCost / CWeaponClass::GetStdStats(m_pItemType->GetLevel()).rCost;
+    return (Metric)CWeaponClass::GetStdStats(iLevel).Cost / (Metric)CWeaponClass::GetStdStats(m_pItemType->GetLevel()).Cost;
     }
 
 ALERROR CDeviceClass::ParseLinkedFireOptions (SDesignLoadCtx &Ctx, const CString &sDesc, DWORD *retdwOptions)
@@ -905,7 +884,7 @@ int CDeviceClass::ParseVariantFromPropertyName (const CString &sName, CString *r
 	return -1;
 	}
 
-ESetPropertyResults CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
+ESetPropertyResult CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
 
 //	SetItemProperty
 //
@@ -914,6 +893,6 @@ ESetPropertyResults CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString 
 
 	{
 	*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
-	return resultPropertyNotFound;
+	return ESetPropertyResult::notFound;
 	}
 

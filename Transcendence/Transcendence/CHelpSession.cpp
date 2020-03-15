@@ -23,7 +23,7 @@ static SHelpLine g_szHelp[] =
 		{ "[Shift]",	"Fire missile launcher (if installed)",			NULL },
 		{ "[S]",		"Ship's status (refuel, view cargo, jettison)",	NULL },
 		{ "[M]",		"Show map of entire system",					NULL },
-		{ "[A]",		"Engage autopilot",								NULL },
+		{ "[A]",		"Accelerate time",								NULL },
 		{ "[D]",		"Dock with nearest station",					NULL },
 		{ "[G]",		"Enter stargate",								NULL },
 		{ "[U]",		"Use item",										NULL },

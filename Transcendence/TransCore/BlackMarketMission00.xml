@@ -150,22 +150,28 @@
 
 			</Text>
 			<Text id="IllegalsSale">
+
 				You exchange the merchandise for the money at the dock. As they
 				are about to leave, one of the brothers hands you an identification
 				chip and says:
 
 				"You probably won't find us here again, but use this at a black
 				market station if you want to do more business."
+
 			</Text>
 			<Text id="IllegalsFine">
+
 				The brothers pull out badges and guns.
 				"You are under arrest for the attempted sale of illegal merchandise.
 				Normally you could be imprisoned for your crimes, but we're going to
 				let you go with just a 1000 credit fine."
+
 			</Text>
 			<Text id="IllegalsPrison">
+
 				The brothers pull out badges and guns.
 				"You are under arrest for the attempted sale of illegal merchandise."
+
 			</Text>
 
 			<String id="actionOffer">"[I] have some on my ship!"</String>

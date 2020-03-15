@@ -192,6 +192,12 @@
     <ClCompile Include="CReferenceEntry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CDiagnosticsCommand.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CRunDiagnostics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -210,6 +216,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Reference.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Diagnostics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

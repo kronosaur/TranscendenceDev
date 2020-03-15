@@ -109,7 +109,7 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 					break;
 
 				case specialDeviceDamage:
-					retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+device protect"), true));
+					retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+device-ionization immune"), true));
 					break;
 
 				case specialDisintegration:

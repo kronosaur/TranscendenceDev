@@ -96,7 +96,7 @@ static char *g_pszDamageResults[damageResultCount] =
 	"shattered",
 	};
 
-static char *g_pszMessageID[] =
+static char *g_pszMessageID[msgCount] =
 	{
 	"",							//	0
 	"AttackTarget",				//	msgAttack
@@ -122,6 +122,9 @@ static char *g_pszMessageID[] =
 	"DestroyedByFriendlyFire",	//	msgDestroyedByFriendlyFire
 	"DestroyedByHostileFire",	//	msgDestroyedByHostileFire
 	"BaseDestroyedByTarget",	//	msgBaseDestroyedByTarget
+
+	"core.onAsteroidExplored",	//	msgOnAsteroidExplored
+	"core.onPlayerHint",		//	msgOnPlayerHint
 	};
 
 #define MESSAGE_ID_COUNT			(sizeof(g_pszMessageID) / sizeof(g_pszMessageID[0]))

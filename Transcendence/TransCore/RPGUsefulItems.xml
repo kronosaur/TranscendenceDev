@@ -163,9 +163,13 @@
 			nestedScreen=		"true"
 			name=				"=(itmGetName (or (@ gData 'useItem) gItem) 'capitalize)"
 			>
+		<Properties>
+			<Global id="rpg.debug">Nil</Global>
+		</Properties>
 
 		<OnScreenInit>
 			(block (
+				(debug (typ@ &dsRPGUseItemBase; 'rpg.debug))
 				(useItemSaved (or (@ gData 'useItem) gItem))
 				(useItem (@ (filter (objGetItems gPlayerShip '*) theItem (itmIsEqual theItem useItemSaved)) 0))
 
@@ -301,6 +305,7 @@
 			<Default>
 				<OnPaneInit>
 					(block (
+						(debug (typ@ &dsRPGUseItemBase; 'rpg.debug))
 						(useItem (@ (filter (objGetItems gPlayerShip '*) theItem (itmIsEqual theItem (scrGetData gScreen 'useItem))) 0))
 						(theShip gPlayerShip)
 						(dstItem (scrGetItem gScreen))
@@ -322,7 +327,9 @@
 
 						;	Initialise the screen set if necessary
 						)
-						;(dbgOutput "useInfo: " useInfo)
+						(if debug
+							(print "useInfo: " useInfo)
+							)
 
 						;	Set the description
 						(scrSetControlValue gScreen 'useItem {
@@ -517,6 +524,7 @@
 
 			<CanUseOnItem>
 				(block (
+					(debug (typ@ &dsRPGUseItemBase; 'rpg.debug))
 					(dstItem (@ gData 'itemToUseOn))
 					(shipObj (@ gData 'shipObj))
 					(armorNoun (cat (objGetArmorName shipObj dstItem) " " (itmGetName dstItem 'noModifiers)))
@@ -540,7 +548,9 @@
 					(armorHP (objGetItemProperty shipObj dstItem 'hp))
 					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
 					)
-					;(dbgOutput repairDesc)
+					(if debug
+						(print "CanUseOnItem: repairDesc: " repairDesc)
+						)
 					(switch
 						;	Armor repair items only work on armor
 						(not (itmMatches dstItem "a"))
@@ -629,6 +639,7 @@
 
 			<OnUseOnItem>
 				(block (
+					(debug (typ@ &dsRPGUseItemBase; 'rpg.debug))
 					(dstItem (@ gData 'itemToUseOn))
 					(shipObj (@ gData 'shipObj))
 					(repairDesc 
@@ -649,8 +660,9 @@
 
 					resultDesc hpRepaired
 					)
-
-					;(dbgOutput repairDesc)
+					(if debug
+						(print "CanUseOnItem: repairDesc: " repairDesc)
+						)
 
 					(switch
 						(not (itmMatches dstItem "a"))
@@ -839,6 +851,7 @@
 		<Events>
 			<CanUseOnItem>
 				(block (
+					(debug (typ@ &dsRPGUseItemBase; 'rpg.debug))
 					(dstItem (@ gData 'itemToUseOn))
 					(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
 					(enhancementInfo (rpgFindItemInTable dstItem (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
@@ -847,6 +860,18 @@
 						dstItem: (itmGetName dstItem '(demonstrative noModifiers))
 						})
 					)
+					(if debug
+						(switch
+							(not (itmMatches dstItem useCriteria))
+								(print "CanUseOnItem: " (itmGetName dstItem 0) " does not match criteria: " useCriteria)
+								
+							(not enhancementInfo)
+								(print "CanUseOnItem: Unable to find enhancement info in rpg.enhancementTable: " (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable)))
+								
+							(print "CanUseOnItem: enhancementInfo: " enhancementInfo)
+							)
+						)
+						
 					(switch
 						(not (itmMatches dstItem useCriteria))
 							Nil
@@ -858,6 +883,15 @@
 									useItem: (itmGetName gItem)
 									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
 									})
+								}
+								
+						(not enhancementInfo)
+							Nil
+							
+						(@ enhancementInfo 'custom)
+							{
+								canUse: True
+								desc: (itmTranslate gItem (@ enhancementInfo 'descID) trData)
 								}
 
 						(@ enhancementInfo 'repair)

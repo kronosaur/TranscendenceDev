@@ -157,7 +157,7 @@ class CFilterColorizeEntry : public IImageEntry
 class CImageEntry : public IImageEntry
 	{
 	public:
-        inline ALERROR InitSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1) { return m_Image.InitFromXML(Ctx, pDesc, bResolveNow, iDefaultRotationCount); }
+        inline ALERROR InitSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1) { return m_Image.InitFromXML(Ctx, *pDesc, bResolveNow, iDefaultRotationCount); }
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true); }
         virtual IImageEntry *Clone (void) override;
@@ -1599,7 +1599,7 @@ ALERROR CImageEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLEl
 
 	//	Initialize the image
 
-	if (error = m_Image.InitFromXML(Ctx, pDesc))
+	if (error = m_Image.InitFromXML(Ctx, *pDesc))
 		return error;
 
 	return NOERROR;

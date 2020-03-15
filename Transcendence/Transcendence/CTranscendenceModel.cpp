@@ -959,7 +959,20 @@ void CTranscendenceModel::ExitScreenSession (bool bForceUndock)
 		//	If necessary, checkpoint the game.
 
 		if (pLocation && !pLocation->IsPlayer() && m_Universe.GetDifficulty().SaveOnUndock())
-			SaveGame(CGameFile::FLAG_CHECKPOINT);
+			{
+			//	If we're in the middle of a script, then we wait until the 
+			//	script is done before saving because the script made set some
+			//	additional state that we want to capture.
+			//
+			//	For example, we exit a screen before calling <OnAcceptUndock>.
+			//	If we were to save now, we would lose all the changes made in 
+			//	<OnAcceptUndock>.
+
+			if (pSession->GetDockScreen().InExecuteAction())
+				m_bSaveOnActionDone = true;
+			else
+				SaveGame(CGameFile::FLAG_CHECKPOINT);
+			}
 		}
 
 	DEBUG_CATCH
@@ -1544,6 +1557,23 @@ void CTranscendenceModel::MarkGateFollowers (CSystem *pSystem)
 		}
 	}
 
+void CTranscendenceModel::OnExecuteActionDone (void)
+
+//	OnExecuteActionDone
+//
+//	This method is called when we're done executing a dock screen action.
+
+	{
+	if (m_bSaveOnActionDone)
+		{
+		//	We treat this as a mission checkpoint because we want to disable
+		//	this autosave under the same circumstances (debug mode, etc.).
+
+		SaveGame(CGameFile::FLAG_CHECKPOINT | CGameFile::FLAG_ACCEPT_MISSION);
+		m_bSaveOnActionDone = false;
+		}
+	}
+
 void CTranscendenceModel::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, SPlayerChangedShipsCtx &Options)
 
 //	OnPlayerChangedShips
@@ -1882,38 +1912,15 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 			}
 		}
 
-	//	Let all types know that the current system is going away
-	//	(Obviously, we need to call this before we change the current system.
-	//	Note also that at this point the player is already gone.)
-
-	m_Universe.GetMissions().FireOnSystemStopped();
-	m_Universe.GetDesignCollection().FireOnGlobalSystemStopped();
-
 	//	Set the new system
 
-	m_Universe.SetNewSystem(pNewSystem, pStart);
+	m_Universe.SetNewSystem(*pNewSystem, pStart);
 
 	//	Move any henchmen through the stargate (note: we do this here because
 	//	we need to remove the henchmen out of the old system before we save).
 
 	SetProgramState(psStargateTransferringGateFollowers);
 	TransferGateFollowers(m_pOldSystem, pNewSystem, pStart);
-
-    //  Make sure we've updated current system data to global data.
-
-    m_Universe.GetGlobalObjects().Refresh(m_pOldSystem);
-
-	//	Compute how long (in ticks) it has been since this system has been
-	//	updated.
-
-	int iLastUpdated = pNewSystem->GetLastUpdated();
-	DWORD dwElapsedTime = (iLastUpdated > 0 ? ((DWORD)m_Universe.GetTicks() - (DWORD)iLastUpdated) : 0);
-
-	//	Let all types know that we have a new system. Again, this is called 
-	//	before the player has entered the system.
-
-	m_Universe.GetDesignCollection().FireOnGlobalSystemStarted(dwElapsedTime);
-	m_Universe.GetMissions().FireOnSystemStarted(dwElapsedTime);
 
 	//	Garbage-collect images and load those for the new system
 

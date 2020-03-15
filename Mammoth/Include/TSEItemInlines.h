@@ -323,14 +323,55 @@ inline CSpaceObject *CDeviceItem::GetSource (void) const
 		return NULL;
 	}
 
+inline DWORD CDeviceItem::GetTargetTypes (void) const
+	{
+	return GetType().GetDeviceClass()->GetTargetTypes(*this);
+	}
+
 inline int CDeviceItem::GetWeaponEffectiveness (CSpaceObject *pTarget) const
 	{
 	return GetType().GetDeviceClass()->GetWeaponEffectiveness(*this, pTarget);
 	}
 
+inline const CWeaponFireDesc *CDeviceItem::GetWeaponFireDesc (void) const
+	{
+	return GetType().GetDeviceClass()->GetWeaponFireDesc(*this, CItem());
+	}
+
+inline const CWeaponFireDesc *CDeviceItem::GetWeaponFireDesc (const CItem &Ammo) const
+	{
+	return GetType().GetDeviceClass()->GetWeaponFireDesc(*this, Ammo);
+	}
+
 inline bool CDeviceItem::IsAreaWeapon (void) const
 	{
 	return GetType().GetDeviceClass()->IsAreaWeapon(*this);
+	}
+
+inline bool CDeviceItem::IsEnabled (void) const
+	{
+	if (const CInstalledDevice *pDevice = GetInstalledDevice())
+		return pDevice->IsEnabled();
+	else
+		return false;
+	}
+
+inline bool CDeviceItem::IsMiningWeapon (void) const
+	{
+	if (const CWeaponFireDesc *pShot = GetWeaponFireDesc())
+		return (pShot->GetDamage().GetMiningDamage() > 0);
+	else
+		return false;
+	}
+
+inline bool CDeviceItem::IsTrackingWeapon (void) const
+	{
+	return GetType().GetDeviceClass()->IsTrackingWeapon(*this);
+	}
+
+inline bool CDeviceItem::NeedsAutoTarget (int *retiMinFireArc, int *retiMaxFireArc) const
+	{
+	return GetType().GetDeviceClass()->NeedsAutoTarget(*this, retiMinFireArc, retiMaxFireArc);
 	}
 
 //	CInstalledDevice Inlines ---------------------------------------------------

@@ -68,7 +68,7 @@
 
 			<FillLocations
 					percentFull=		"80" 
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; -asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -103,6 +103,7 @@
 	<SystemType UNID="&ssEarthSpaceAsteroids;"
 				attributes=			"envEarth"
 				backgroundID=		"&rsRockyAsteroidSpace;"
+				spaceColor=			"#1e1912"
 				>
 		<SystemGroup>
 			<Lookup table="AsteroidBeltSystem"/>
@@ -121,7 +122,7 @@
 
 			<FillLocations
 					percentFull=		"80"
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; +asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -156,6 +157,7 @@
 	<SystemType UNID="&ssEarthSpaceAsteroidArcs;"
 				attributes=			"envEarth"
 				backgroundID=		"&rsRockyAsteroidSpace;"
+				spaceColor=			"#1e1912"
 				>
 		<SystemGroup>
 			<Lookup table="AsteroidArcBeltSystem"/>
@@ -174,7 +176,7 @@
 
 			<FillLocations
 					percentFull=		"80"
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; +asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -263,6 +265,7 @@
 	<SystemType UNID="&ssEarthSpaceDesert;"
 				attributes=			"envFire"
 				backgroundID=		"&rsBrightStarSpace;"
+				spaceColor=			"#1c150f"
 				>
 		<SystemGroup>
 			<Lookup table="DesertSystem"/>
@@ -281,7 +284,7 @@
 
 			<FillLocations
 					percentFull=		"80" 
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; -asteroidBase;" 
 					percentEnemies=		"70"
 					separateEnemies=	"true"
 					/>
@@ -316,6 +319,7 @@
 	<SystemType UNID="&ssEarthSpaceIceAsteroids;"
 				attributes=			"envAir"
 				backgroundID=		"&rsRedDwarfSpace;"
+				spaceColor=			"#10131d"
 				>
 		<SystemGroup>
 			<Lookup table="IceAsteroidSystem"/>
@@ -369,6 +373,7 @@
 	<SystemType UNID="&ssEarthSpaceMetallic;"
 				attributes=			"envEarth"
 				backgroundID=		"&rsRockyAsteroidSpace;"
+				spaceColor=			"#1e1912"
 				>
 		<SystemGroup>
 			<Lookup table="MetallicSystem"/>
@@ -387,7 +392,7 @@
 
 			<FillLocations
 					percentFull=		"80"
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; +asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -422,6 +427,7 @@
 	<SystemType UNID="&ssEarthSpaceNebulae;"
 				attributes=			"envAir"
 				backgroundID=		"&rsLightNebulaSpace;"
+				spaceColor=			"#282a3c"
 				spaceEnvironmentTileSize=	"large"
 				>
 		<SystemGroup>
@@ -441,7 +447,7 @@
 
 			<FillLocations
 					percentFull=		"80" 
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; -asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -476,6 +482,7 @@
 	<SystemType UNID="&ssEarthSpacePrimordial;"
 				attributes=			"envWater"
 				backgroundID=		"&rsPrimordialNebulaSpace;"
+				spaceColor=			"#2f2d18"
 				>
 		<SystemGroup>
 			<Lookup table="PrimordialSystem"/>
@@ -494,7 +501,7 @@
 
 			<FillLocations
 					percentFull=		"80" 
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; -asteroidBase;" 
 					percentEnemies=		"65"
 					separateEnemies=	"true"
 					/>
@@ -529,6 +536,7 @@
 	<SystemType UNID="&ssEarthSpaceRedDwarf;"
 				attributes=			"envAir"
 				backgroundID=		"&rsRedDwarfSpace;"
+				spaceColor=			"#10131d"
 				>
 		<SystemGroup>
 			<Lookup table="RedDwarfSystem"/>
@@ -582,6 +590,7 @@
 	<SystemType UNID="&ssEarthSpaceVolcanic;"
 				attributes=			"envFire"
 				backgroundID=		"&rsRedGiantSpace;"
+				spaceColor=			"#200f0a"
 				>
 		<SystemGroup>
 			<Lookup table="VolcanicSystem"/>
@@ -635,6 +644,7 @@
 	<SystemType UNID="&ssEarthSpaceVolcanicAsteroids;"
 				attributes=			"envFire"
 				backgroundID=		"&rsRedGiantSpace;"
+				spaceColor=			"#200f0a"
 				>
 		<SystemGroup>
 			<Lookup table="VolcanicAsteroidSystem"/>
@@ -653,7 +663,7 @@
 
 			<FillLocations
 					percentFull=		"80"
-					stationCriteria=	"!primary; !debris;" 
+					stationCriteria=	"!primary; !debris; +asteroidBase;" 
 					percentEnemies=		"75"
 					separateEnemies=	"true"
 					/>

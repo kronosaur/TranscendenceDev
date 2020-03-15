@@ -20,6 +20,7 @@
 #define CMD_BACK_TO_INTRO						CONSTLIT("uiBackToIntro")
 
 #define ID_CTRL_TITLE							CONSTLIT("ctrlTitle")
+#define ID_DIFFICULTY_DESC						CONSTLIT("idDifficultyDesc")
 #define ID_SECTION_PLAYER_GENOME				CONSTLIT("sectionPlayerGenome")
 #define ID_SECTION_PLAYER_NAME					CONSTLIT("sectionPlayerName")
 #define ID_PLAYER_GENOME						CONSTLIT("idPlayerGenome")
@@ -81,12 +82,14 @@ const int SPECIAL_DRIVE =						102;
 const int SPECIAL_CARGO =						103;
 const int SPECIAL_DEVICE_SLOTS =				104;
 
-CNewGameSession::CNewGameSession (CHumanInterface &HI, CCloudService &Service, const SNewGameSettings &Defaults) : IHISession(HI),
+CNewGameSession::CNewGameSession (CHumanInterface &HI, CCloudService &Service, CUniverse &Universe, const SNewGameSettings &Defaults) : IHISession(HI),
 		m_Service(Service),
+		m_Universe(Universe),
 		m_Settings(Defaults),
 		m_PlayerGenome(*this),
 		m_PlayerName(*this),
-		m_Difficulty(*this)
+		m_Difficulty(*this),
+		m_DifficultyDesc(*this)
 
 //	CNewGameSession constructor
 
@@ -420,7 +423,7 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 
 	//	Generate a list of ship classes
 
-	CAdventureDesc &Adventure = g_pUniverse->GetCurrentAdventureDesc();
+	CAdventureDesc &Adventure = m_Universe.GetCurrentAdventureDesc();
 	if (Adventure.IsNull())
 		{
 		*retsError = ERR_NO_ADVENTURE;
@@ -479,13 +482,25 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 
 	//	Create the difficulty option
 
+	int xDifficulty = xBar + (cxBar / 2) + (SMALL_BUTTON_WIDTH / 2);
 	m_Difficulty.Create(*m_pRoot, 
 			CMD_CHANGE_DIFFICULTY, 
 			STR_DIFFICULTY, 
-			xBar + (cxBar / 2) - SMALL_BUTTON_WIDTH - MAJOR_PADDING_HORZ / 2, 
+			xDifficulty - cxColumn, 
 			yBar, 
 			cxColumn, 
+			alignRight);
+
+	int yBaseline = yBar + VI.GetFont(fontMediumBold).GetHeight() + VI.GetFont(fontSubTitle).GetAscent();
+	int yTextDesc = yBaseline - VI.GetFont(fontMedium).GetAscent() - VI.GetFont(fontMedium).GetHeight();
+	m_DifficultyDesc.Create(*m_pRoot,
+			ID_DIFFICULTY_DESC,
+			NULL_STR,
+			xDifficulty + MAJOR_PADDING_HORZ / 2,
+			yTextDesc,
+			cxColumn / 2,
 			alignLeft);
+
 	SetDifficulty(m_Settings.iDifficulty);
 
 	//	Create the player genome
@@ -610,18 +625,22 @@ void CNewGameSession::SetDifficulty (CDifficultyOptions::ELevels iLevel)
 		{
 		case CDifficultyOptions::lvlStory:
 			m_Difficulty.SetImage(VI.GetImage(imageDifficultyStory));
+			m_DifficultyDesc.SetText(m_Universe.TranslateEngineText(CONSTLIT("descDifficulty.story")));
 			break;
 
 		case CDifficultyOptions::lvlNormal:
 			m_Difficulty.SetImage(VI.GetImage(imageDifficultyNormal));
+			m_DifficultyDesc.SetText(m_Universe.TranslateEngineText(CONSTLIT("descDifficulty.normal")));
 			break;
 
 		case CDifficultyOptions::lvlPermadeath:
 			m_Difficulty.SetImage(VI.GetImage(imageDifficultyPermadeath));
+			m_DifficultyDesc.SetText(m_Universe.TranslateEngineText(CONSTLIT("descDifficulty.permadeath")));
 			break;
 
 		default:
 			m_Difficulty.SetImage(VI.GetImage(imageDifficultyChallenge));
+			m_DifficultyDesc.SetText(m_Universe.TranslateEngineText(CONSTLIT("descDifficulty.challenge")));
 			break;
 		}
 	}
@@ -660,7 +679,7 @@ void CNewGameSession::SetShipClass (const CShipClass &Class, int x, int y, int c
 //	Sets the ship class
 
 	{
-	g_pUniverse->SetLogImageLoad(false);
+	m_Universe.SetLogImageLoad(false);
 
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
@@ -683,7 +702,7 @@ void CNewGameSession::SetShipClass (const CShipClass &Class, int x, int y, int c
 	SetShipClassDetails(Class, x, yLine, cxWidth);
 	yLine += SHIP_IMAGE_HEIGHT;
 
-	g_pUniverse->SetLogImageLoad(true);
+	m_Universe.SetLogImageLoad(true);
 	}
 
 void CNewGameSession::SetShipClassDesc (const CString &sDesc, int x, int y, int cxWidth)
@@ -772,19 +791,19 @@ void CNewGameSession::SetShipClassDetails (const CShipClass &Class, int x, int y
 
 	//	Add armor
 
-	RightSide.Insert(CONSTLIT("03"), CItem(g_pUniverse->GetItemType(0), SPECIAL_ARMOR));
+	RightSide.Insert(CONSTLIT("03"), CItem(m_Universe.GetItemType(0), SPECIAL_ARMOR));
 
 	//	Add reactor
 
-	LeftSide.Insert(CONSTLIT("01"), CItem(g_pUniverse->GetItemType(0), SPECIAL_REACTOR));
+	LeftSide.Insert(CONSTLIT("01"), CItem(m_Universe.GetItemType(0), SPECIAL_REACTOR));
 
 	//	Add engines
 
-	LeftSide.Insert(CONSTLIT("02"), CItem(g_pUniverse->GetItemType(0), SPECIAL_DRIVE));
+	LeftSide.Insert(CONSTLIT("02"), CItem(m_Universe.GetItemType(0), SPECIAL_DRIVE));
 
 	//	Add cargo
 
-	LeftSide.Insert(CONSTLIT("03"), CItem(g_pUniverse->GetItemType(0), SPECIAL_CARGO));
+	LeftSide.Insert(CONSTLIT("03"), CItem(m_Universe.GetItemType(0), SPECIAL_CARGO));
 
 	//	Add misc devices
 
@@ -798,7 +817,7 @@ void CNewGameSession::SetShipClassDetails (const CShipClass &Class, int x, int y
 
 	//	Add device slots
 
-	LeftSide.Insert(CONSTLIT("05"), CItem(g_pUniverse->GetItemType(0), SPECIAL_DEVICE_SLOTS));
+	LeftSide.Insert(CONSTLIT("05"), CItem(m_Universe.GetItemType(0), SPECIAL_DEVICE_SLOTS));
 
 	//	Set the ship class info. All weapons go to the right of the ship image
 

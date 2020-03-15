@@ -17,6 +17,31 @@ const Metric SQRT_3 = sqrt(3.0);
 
 const Metric DBL_INFINITY = 1.7976931348623158e+308;	//	DBL_MAX
 
+class CMath
+	{
+	public:
+		static constexpr Metric AdjustChance (Metric rChance, Metric rAdj)
+
+		//	AdjustChance
+		//
+		//	rChance is a probability from 0 to 1.0 and rAdj is a positive number 
+		//	representing the number of tries for the chance.
+		//
+		//	For example, if rAdj = 2.0, then we return a probability equal to the chance
+		//	that we succeed at rChance in 2 tries.
+
+			{
+			if (rChance <= 0.0 || rAdj <= 0.0)
+				return 0.0;
+			else if (rChance >= 1.0)
+				return 1.0;
+			else
+				return 1.0 - pow(1.0 - rChance, rAdj);
+			}
+
+		static int Round (Metric rValue) { return mathRound(rValue); }
+	};
+
 //	Angles
 
 bool AngleInArc (int iAngle, int iMinAngle, int iMaxAngle);

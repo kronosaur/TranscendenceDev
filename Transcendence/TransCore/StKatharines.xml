@@ -23,7 +23,7 @@
 			mass=				"5"
 			frequency=			"notrandom"
 			numberAppearing=	"1d12"
-			attributes=			"Consumable; consumerGood, Food; FreshFood; Lux; Specialty"
+			attributes=			"consumable, consumerGood, food, freshFood, lux, skExports, specialty"
 
 			description=		"Fresh strawberries are a delicacy found only near living worlds."
 			>
@@ -57,7 +57,7 @@
 			mass=				"5"
 			frequency=			"notrandom"
 			numberAppearing=	"1d12"
-			attributes=			"Consumable; consumerGood, Food; FreshFood; Lux; Specialty"
+			attributes=			"consumable, consumerGood, food, freshFood, lux, skExports, specialty"
 
 			description=		"White peaches are a delicacy found only near living worlds."
 			>
@@ -91,7 +91,7 @@
 			mass=				"5"
 			frequency=			"notrandom"
 			numberAppearing=	"1d12"
-			attributes=			"Consumable; consumerGood, Food; FreshFood; Lux; Specialty"
+			attributes=			"consumable, consumerGood, food, freshFood, lux, skExports, specialty"
 
 			description=		"Bellfruits are a delicacy found only near living worlds."
 			>
@@ -125,7 +125,7 @@
 			mass=				"5"
 			frequency=			"notrandom"
 			numberAppearing=	"1d12"
-			attributes=			"Consumable; consumerGood, Food; FreshFood; Lux; Specialty"
+			attributes=			"consumable, consumerGood, food, freshFood, lux, skExports, specialty"
 
 			description=		"Lucumas are a delicious fruit found only near living worlds."
 			>
@@ -159,7 +159,7 @@
 			mass=				"1"
 			frequency=			"notrandom"
 			numberAppearing=	"1d12"
-			attributes=			"Consumable; consumerGood, Food; Lux; Specialty"
+			attributes=			"consumable, consumerGood, food, lux, skExports, specialty"
 
 			description=		"Coffee beans from the tropical regions of the planet Incandescent are famous throughout Human Space."
 			>
@@ -318,7 +318,9 @@
 			<Default descID="descCommerceQuarter">
 				<Actions>
 					<Action id="actionCommoditiesExchange" default="1">
-						(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
+						(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
+							rpg.buyCriteria: "* -skExports;"
+							})
 					</Action>
 					
 					<Action id="actionIncandescentExports">
@@ -339,7 +341,7 @@
 				<Actions>
 					<Action name="Buy Items" default="1" key="B">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-							rpg.criteria: "* +food; +specialty;"
+							rpg.criteria: "* +skExports;"
 							})
 					</Action>
 
@@ -613,6 +615,7 @@
 				noRandomEncounters=	"true"
 				noExtraEncounters=	"true"
 				backgroundID=		"&rsBrightStarSpace;"
+				spaceColor=			"#1c150f"
 				>
 
 		<Tables>

@@ -35,13 +35,7 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"78"
-			armorID=			"&itLightPlasteelPlate;"
-			hitPoints=			"40"
-			multiHull=			"true"
-			regen=				"1"
-
 			fireRateAdj=		"30"
-
 			explosionType=		"&vtKineticExplosion1;"
 			ejectaType=			"&vtIceAsteroidEjecta;"
 			>
@@ -69,6 +63,12 @@
 
 		<!-- Configuration -->
 
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itLightPlasteelPlate;"
+				hitPoints=		"40"
+				regen=			"1"
+				/>
+		
 		<Devices>
 			<Device deviceID="&itBlaster;"	omnidirectional="true"/>
 		</Devices>
