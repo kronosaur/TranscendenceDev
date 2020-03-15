@@ -423,7 +423,8 @@
 			<Item count="2d6" item="&itXenotiteFuelRod;"/>
 		</Items>
 
-		<Image imageID="&rsMediumShips3;" imageX="672" imageY="0" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsDwargMasterHD;" imageWidth="96" imageHeight="96" rotationCount="120" rotationColumns="12" viewportRatio="0.01"/>
+		<HeroImage imageID="&rsDwargMasterHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="180"	posRadius="43"	posZ="0"	rotation="180"/>
@@ -845,6 +846,10 @@
 	
 	<Image UNID="&rsDwargBehemothHD;"		bitmap="Resources\DwargBehemothHD.jpg"	bitmask="Resources\DwargBehemothHDMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsDwargBehemothHero;"		bitmap="Resources\DwargBehemothLarge.jpg"	bitmask="Resources\DwargBehemothLargeMask.bmp" 	loadOnUse="true" />
+
+	<Image UNID="&rsDwargMasterHD;"			bitmap="Resources\DwargMasterHD.jpg"	bitmask="Resources\DwargMasterHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&rsDwargMasterHero;"		bitmap="Resources\DwargMasterLarge.jpg"	bitmask="Resources\DwargMasterLargeMask.bmp" 	loadOnUse="true" />
+
 	<Image UNID="&rsZoanthropeRaiderHD;"	bitmap="Resources\ZoanthropeRaiderHD.jpg"	bitmask="Resources\ZoanthropeRaiderHDMask.bmp" 	loadOnUse="true" />
 
 </TranscendenceModule>
