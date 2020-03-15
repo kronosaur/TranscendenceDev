@@ -60,7 +60,8 @@
 			<Default>
 				<OnPaneInit>
 					(block (
-						(firstMeeting (not (typGetData (objGetProperty gSource 'character) 'firstPlayerMeetingTime)))
+						(charType (objGetProperty gSource 'character))
+						(firstMeeting (not (or (typ@ charType 'char.firstMeetingOn) (typGetData charType 'firstPlayerMeetingTime))))
 						)
 
 						(rpgPagePaneInit gScreen 
@@ -131,10 +132,10 @@
 
 	These functions use the following global variables on character types:
 
-	firstPlayerMeetingTime: Tick of player's first meeting with character.
+	char.firstMeetingOn: Tick of player's first meeting with character.
 			Nil if the player has never met face to face.
 
-	lastestPlayerMeetingTime: Tick of most recent meeting with character.
+	char.latestMeetingOn: Tick of most recent meeting with character.
 
 	lastNodeID: Character's last known position. Nil means unknown.
 
@@ -480,7 +481,7 @@
 					(setq rel (rpgCharacterGetRel charType))
 
 					(switch
-						(not (typGetData charType 'firstPlayerMeetingTime))
+						(not (or (typ@ charType 'char.firstMeetingOn) (typGetData charType 'firstPlayerMeetingTime)))
 							Nil
 
 						(or (eq rel 'nemesis)
@@ -542,10 +543,18 @@
 				))
 
 			(setq rpgCharacterSetMeeting (lambda (charType)
-				(block Nil
-					(typSetData charType 'latestPlayerMeetingTime (unvGetTick))
-					(if (not (typGetData charType 'firstPlayerMeetingTime))
-						(typSetData charType 'firstPlayerMeetingTime (unvGetTick))
+				(if (typHasProperty charType 'char.firstMeetingOn)
+					(block ()
+						(typSet@ charType 'char.latestMeetingOn (unvGetTick))
+						(if (not (typ@ charType 'char.firstMeetingOn))
+							(typSet@ charType 'char.firstMeetingOn (unvGetTick))
+							)
+						)
+					(block ()
+						(typSetData charType 'latestPlayerMeetingTime (unvGetTick))
+						(if (not (typGetData charType 'firstPlayerMeetingTime))
+							(typSetData charType 'firstPlayerMeetingTime (unvGetTick))
+							)
 						)
 					)
 				))
