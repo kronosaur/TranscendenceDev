@@ -2088,6 +2088,7 @@
 	<!-- 03D0-03EF DEATH DRUGS CARTEL -->
 
 	<!ENTITY rsMethEnforcerHD			"0x001003D0">
+	<!ENTITY rsMethEnforcerHero			"0x001003D1">
 
 	<!-- 03F0-040F CENTAURI WARLORDS -->
 

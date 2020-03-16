@@ -398,13 +398,11 @@
 			attributes=			"dwarg,genericClass"
 			>
 
-		<Armor>
-			<ArmorSection start="315" span="90" armorID="&itDwargCatoptricArmor;" />
-			<ArmorSection start="225" span="90" armorID="&itDwargCatoptricArmor;" />
-			<ArmorSection start="135" span="90" armorID="&itDwargCatoptricArmor;" />
-			<ArmorSection start="45"  span="90" armorID="&itDwargCatoptricArmor;" />
-		</Armor>
-
+		<Armor
+			armorID=			"&itDwargCatoptricArmor;"
+			count=				"4"
+			/>
+		
 		<Devices>
 			<Device deviceID="&itDwargCnidocystCannon;" omnidirectional="true">
 				<Items>

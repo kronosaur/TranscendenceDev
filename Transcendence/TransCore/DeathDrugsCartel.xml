@@ -107,6 +107,7 @@
 
 		<Language>
 			<Text id="rumor.commonwealthPub">
+
 				An old man talks to you:
 
 				"I don't trust the corporate medlabs&mdash;they talk about drug
@@ -114,6 +115,7 @@
 				to the Death Labs&mdash;what's the worst they can do? Kill me?"
 
 				You spend 5 credits to buy him a drink.
+
 			</Text>
 		</Language>
 	</StationType>
@@ -129,20 +131,19 @@
 			defaultSovereign=	"&svDeathDrugsCartel;"
 
 			mass=				"70"
-			cargoSpace=			"10"
+			cargoSpace=			"100"
 			thrustRatio=		"7"
 			maxSpeed=			"20"
 
 			attributes=			"deathDrugsCartel,genericClass"
 			>
 
-		<Armor>
-			<ArmorSection start="270" span="180" armorID="&itPolyceramicPlate;" areaSet="0,2,3,7" />
-			<ArmorSection start="90"  span="180" armorID="&itPolyceramicPlate;" areaSet="1,4" />
-		</Armor>
-
+		<Armor
+			armorID=			"&itPolyceramicPlate;"
+			count=				"4"
+			/>
+		
 		<Devices>
-			<!-- <Device deviceID="&itSlamCannon;" minFireArc="345" maxFireArc="15"/>-->
 			<Device deviceID="&itSlamCannon;"/>
 		</Devices>
 
@@ -151,10 +152,13 @@
 			rotationAccel=		"1.0"
 			/>
 
-		<Image imageID="&rsMethEnforcerHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsMethEnforcerHD;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&rsMethEnforcerHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="18"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="21"	posZ="-5"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="21"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="21"	posZ="5"	rotation="180"/>
 		</Effects>
 		
 		<AISettings
@@ -171,5 +175,6 @@
 <!-- RESOURCES -->
 
 	<Image UNID="&rsMethEnforcerHD;"				bitmap="Resources\MethEnforcerHD.jpg"		bitmask="Resources\MethEnforcerHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsMethEnforcerHero;"				bitmap="Resources\MethEnforcerLarge.jpg"		bitmask="Resources\MethEnforcerLargeMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>
