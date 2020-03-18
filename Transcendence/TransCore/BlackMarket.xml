@@ -867,36 +867,6 @@ PLAYER DATA
 						)
 					)
 				))
-
-			(setq intBlackMarketOnDestroy (lambda (cost)
-				(block Nil
-					; Destroy items on the station
-					(rpgDestroyItems gSource)
-
-					; Player is tracked
-					(if (and gPlayerShip (eq aOrderGiver gPlayerShip))
-						(block (totalCrimeCost)
-							(setq totalCrimeCost (objIncData gPlayerShip "blackMarketCrimeCost" cost))
-							(if (objGetData gPlayerShip "blackMarketCrime")
-								(objSetData gPlayerShip "blackMarketCrime" "multiple offenses against the Sindikat")
-								(objSetData gPlayerShip "blackMarketCrime" (cat "the destruction of " (objGetName gSource 4)))
-								)
-								
-							; If the cost of the player's crime is more than the equivalent
-							; current experience level, then the Black Market becomes an enemy.
-							; [I.e., the better the relationship with the BM, the greater the
-							; chance that the BM will allow the player to pay back her debts.]
-                    
-							(if (gr (/ totalCrimeCost 100) (typ@ &unidBlackMarketMember; 'xp))
-								(block Nil
-									(sovSetDisposition &svBlackMarket; &svPlayer; 'enemy)
-									(sovSetDisposition &svPlayer; &svBlackMarket; 'enemy)
-    								)
-	    						)
-							)
-						)
-					)
-				))
 			)
 	</Globals>
     
