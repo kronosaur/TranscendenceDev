@@ -1580,6 +1580,67 @@ bool CDesignCollection::OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLEl
 	return true;
 	}
 
+bool CDesignCollection::ParseShipClassUNID (const CString &sType, CShipClass **retpClass) const
+
+//	ParseShipClassUNID
+//
+//	Parses an UNID for a ship class.
+
+	{
+	DWORD dwUNID;
+	if (!ParseUNID(sType, &dwUNID))
+		return false;
+
+	const CShipClass *pClass = CShipClass::AsType(FindEntry(dwUNID));
+	if (!pClass)
+		return false;
+
+	if (retpClass)
+		*retpClass = const_cast<CShipClass *>(pClass);
+
+	return true;
+	}
+
+bool CDesignCollection::ParseUNID (const CString &sType, DWORD *retdwUNID) const
+
+//	ParseUNID
+//
+//	Parses an UNID as either a number or an entity.
+
+	{
+	DWORD dwUNID = strParseInt(sType.GetASCIIZPointer(), 0);
+	if (dwUNID)
+		{
+		if (retdwUNID)
+			*retdwUNID = dwUNID;
+
+		return true;
+		}
+	else
+		{
+		for (int i = 0; i < m_BoundExtensions.GetCount(); i++)
+			{
+			bool bFound;
+			CString sValue = m_BoundExtensions[i]->GetEntities()->ResolveExternalEntity(sType, &bFound);
+			if (bFound)
+				{
+				DWORD dwUNID = strParseInt(sValue.GetASCIIZPointer(), 0);
+				if (dwUNID)
+					{
+					if (retdwUNID)
+						*retdwUNID = dwUNID;
+
+					return true;
+					}
+				else
+					return false;
+				}
+			}
+
+		return false;
+		}
+	}
+
 void CDesignCollection::ReadDynamicTypes (SUniverseLoadCtx &Ctx)
 
 //	ReadDynamicTypes

@@ -1358,6 +1358,8 @@ class CDesignCollection
 		bool IsRegisteredGame (void);
 		void MarkGlobalImages (void);
 		void NotifyTopologyInit (void);
+		bool ParseShipClassUNID (const CString &sType, CShipClass **retpClass = NULL) const;
+		bool ParseUNID (const CString &sType, DWORD *retdwUNID = NULL) const;
 		void ReadDynamicTypes (SUniverseLoadCtx &Ctx);
 		void Reinit (void);
 		void SweepImages (void);

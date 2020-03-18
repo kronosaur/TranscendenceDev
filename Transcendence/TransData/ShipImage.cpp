@@ -10,15 +10,13 @@ const int Y_MARGIN = 50;
 
 void GenerateShipImage (CUniverse &Universe, CXMLElement *pCmdLine)
 	{
-	int i;
-
 	//	Ship to output
 
 	CString sUNID = pCmdLine->GetAttribute(CONSTLIT("unid"));
-	CShipClass *pClass = g_pUniverse->FindShipClass(strToInt(sUNID, 0));
-	if (pClass == NULL)
+	CShipClass *pClass;
+	if (!Universe.GetDesignCollection().ParseShipClassUNID(sUNID, &pClass))
 		{
-		printf("Unknown ship class: %s\n", sUNID.GetASCIIZPointer());
+		printf("Unknown ship class: %s\n", (LPSTR)sUNID);
 		return;
 		}
 
@@ -92,7 +90,7 @@ void GenerateShipImage (CUniverse &Universe, CXMLElement *pCmdLine)
 	//	Paint
 
 	SViewportPaintCtx Ctx;
-	for (i = 0; i < iRotationCount; i++)
+	for (int i = 0; i < iRotationCount; i++)
 		{
 		CViewportPaintCtxSmartSave Save(Ctx);
 
