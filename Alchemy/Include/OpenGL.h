@@ -51,6 +51,7 @@ For special effects that use textures (such as glow), what we can do is use a se
 #include <map>
 #include <algorithm>
 #include <thread>
+#include <mutex>
 
 /*
 class OpenGLMasterRenderQueue {
@@ -206,5 +207,6 @@ private:
 	unsigned int m_iCanvasHeight;
 	unsigned int fbo;
 	unsigned int rbo;
+	std::mutex m_shipRenderQueueAddMutex;
 
 };

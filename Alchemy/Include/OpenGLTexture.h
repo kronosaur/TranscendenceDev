@@ -1,10 +1,22 @@
 #pragma once
 #include "OpenGLIncludes.h"
 #include "OpenGLVAO.h"
+#include <set>
+
+// Helper class to define bounds
+class QuadBounds {
+public:
+	QuadBounds(int upleft_X, int upleft_Y, int downright_X, int downright_Y) {
+		value = std::make_tuple(upleft_X, upleft_Y, downright_X, downright_Y
+		);
+	}
+	~QuadBounds(void) { };
+private:
+	std::tuple<int, int, int, int> value;
+};
 
 class OpenGLTexture {
 public:
-	OpenGLTexture(void) { }
 	OpenGLTexture(void* texture, int width, int height, bool isOpaque);
 	OpenGLTexture(int width, int height);
 	~OpenGLTexture(void);
@@ -23,6 +35,7 @@ private:
 	unsigned int pboID[2];
 	unsigned int m_iWidth;
 	unsigned int m_iHeight;
+	std::set<QuadBounds> m_pCompletedGlowmapTiles;
 	GLint m_pixelFormat;
 	GLint m_pixelType;
 	void* m_pTextureToInitFrom = nullptr;

@@ -57,6 +57,7 @@ public:
 		}
 	};
 	void InitVAO(void) {
+		if (!m_pVao && m_bIsInitialized) {
 			// First, we need to initialize the quad's vertices. Create a single VAO that will
 			// be the basis for all of our quads rendered using this queue.
 			float fSize = 0.5f;
@@ -84,9 +85,9 @@ public:
 			std::vector<std::vector<float>> vbos{ vertices };
 			std::vector<std::vector<unsigned int>> ebos{ indices };
 
-			m_pVao = new OpenGLVAO(vbos, ebos);
-			unsigned int iVAOID = m_pVao->getVAO()[0];
-			unsigned int *instancedVBO = m_pVao->getinstancedVBO();
+			m_pVao = std::make_unique<OpenGLVAO>(vbos, ebos);
+			unsigned int iVAOID = m_pVao.get()->getVAO()[0];
+			unsigned int *instancedVBO = m_pVao.get()->getinstancedVBO();
 			glBindVertexArray(iVAOID);
 			glGenBuffers(m_numShaderArgs + 1, &instancedVBO[0]);
 			// We need to initialize a vertex array pointer for each shader argument we want to handle, and one more for depth
@@ -105,6 +106,7 @@ public:
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindVertexArray(0);
+		}
 	};
 	void DebugRender() {
 		// Print out the elements of each array.
@@ -116,6 +118,7 @@ public:
 		}
 	};
 	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick) {
+		InitVAO();
 		if (m_iNumObjectsToRender > 0)
 		{
 			for (int i = 0; i < m_iNumObjectsToRender; i++)
@@ -123,8 +126,8 @@ public:
 				m_depthsFloat.insert(m_depthsFloat.end(), startingDepth);
 				startingDepth -= incDepth;
 			}
-			unsigned int iVAOID = m_pVao->getVAO()[0];
-			unsigned int *instancedVBO = m_pVao->getinstancedVBO();
+			unsigned int iVAOID = m_pVao.get()->getVAO()[0];
+			unsigned int *instancedVBO = m_pVao.get()->getinstancedVBO();
 			glBindVertexArray(iVAOID);
 			// iteratively work through all shader arguments
 			for (int argIndex = 0; argIndex < m_numShaderArgs; argIndex++) {
@@ -238,7 +241,9 @@ private:
 			m_paramElemCounts[currentShaderArg] = getGLElemCount(a1);
 			m_paramGLTypes[currentShaderArg] = getGLType(a1);
 			if ((currentShaderArg + 1) >= m_numShaderArgs) {
-				InitVAO();
+				// TODO: Move this to something in the Render phase; due to OpenGL threading issues
+				// We should initialize the VAO separately, maybe do it during rendering if we haven't done it already
+				//InitVAO();
 				m_bIsInitialized = true;
 			}
 		}
@@ -260,7 +265,7 @@ private:
 
 	// Internal variables
 	bool m_bIsInitialized;
-	OpenGLVAO* m_pVao;
+	std::unique_ptr<OpenGLVAO> m_pVao = nullptr;
 	std::array<std::unique_ptr<ContainerBase>, sizeof...(shaderArgs)> m_shaderParameterVectors; // TODO: replace with a std::array
 	std::array<GLenum, sizeof...(shaderArgs)> m_paramGLTypes; // the GL type - GL_FLOAT or GL_INT - of each parameter
 	std::array<int, sizeof...(shaderArgs)> m_paramElemCounts; // number of elements in each parameter

@@ -1,5 +1,6 @@
 #include "OpenGL.h"
 #include "PreComp.h"
+#include <mutex>
 
 const float OpenGLMasterRenderQueue::m_fDepthDelta = 0.000001f; // Up to one million different depth levels
 const float OpenGLMasterRenderQueue::m_fDepthStart = 0.999998f; // Up to one million different depth levels
@@ -106,13 +107,15 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	//m_texturesNeedingInitialization.push_back()
 
 	// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
-	image->initTextureFromOpenGLThread();
+//	image->initTextureFromOpenGLThread();
 
 	// Generate a glow map for this texture if needed.
 	// TODO: Store the texture quad width and height on the OpenGLTexture object temporarily, so glowmap can be created later
-	if (!image->getGlowMap()) {
-		image->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
-	}
+//	if (!image->getGlowMap()) {
+		//image->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
+	//}
+
+	const std::lock_guard<std::mutex> lock(m_shipRenderQueueAddMutex);
 
 	// Check to see if we have a render queue with that texture already loaded.
 	if (!m_shipRenderQueues.count(image))
@@ -171,6 +174,15 @@ void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int
 
 void OpenGLMasterRenderQueue::renderAllQueues(void)
 {
+	// Delete textures scheduled for deletion.
+	if (m_texturesForDeletion.size() > 0)
+		for (const std::shared_ptr<OpenGLTexture> textureToDelete : m_texturesForDeletion) {
+			// If any value exists here, delete it from m_shipRenderQueues if it exists there
+			if (m_shipRenderQueues.find(textureToDelete.get()) != m_shipRenderQueues.end()) {
+				m_shipRenderQueues.erase(textureToDelete.get());
+			}
+		}
+	m_texturesForDeletion.clear();
 	// For each render queue in the ships render queue, render that render queue. We need to set the texture and do a glBindTexture before doing so.
 	for (const auto &p : m_shipRenderQueues)
 	{
@@ -178,11 +190,25 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		//OpenGLInstancedRenderQueue *pInstancedRenderQueue = p.second;
 		OpenGLInstancedBatchTexture *pInstancedRenderQueue = p.second;
 		// TODO: Set the depths here before rendering. This will ensure that we always render from back to front, which should solve most issues with blending.
-		float depthLevel = m_fDepthLevel;
-		std::array<std::string, 3> textureUniformNames = { "obj_texture", "glow_map", "current_tick"};
-		pInstancedRenderQueue->setUniforms(textureUniformNames, pTextureToUse, pTextureToUse->getGlowMap(), m_iCurrentTick);
-		pInstancedRenderQueue->Render(m_pObjectTextureShader, depthLevel, m_fDepthDelta, m_iCurrentTick);
-		m_fDepthLevel = depthLevel;
+
+		// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
+		pTextureToUse->initTextureFromOpenGLThread();
+
+		// Generate a glow map for this texture if needed.
+		// TODO: Store the texture quad width and height on the OpenGLTexture object temporarily, so glowmap can be created later
+		if (!pTextureToUse->getGlowMap()) {
+			::kernelDebugLogPattern("[OpenGL] Creating glowmap for texture %d", pTextureToUse);
+			pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, glm::vec2(float(10), float(10)));
+		}
+
+		// If we can't get a glowmap then this texture is blank; do not render it
+		if (pTextureToUse->getGlowMap()) {
+			float depthLevel = m_fDepthLevel;
+			std::array<std::string, 3> textureUniformNames = { "obj_texture", "glow_map", "current_tick" };
+			pInstancedRenderQueue->setUniforms(textureUniformNames, pTextureToUse, pTextureToUse->getGlowMap(), m_iCurrentTick);
+			pInstancedRenderQueue->Render(m_pObjectTextureShader, depthLevel, m_fDepthDelta, m_iCurrentTick);
+			m_fDepthLevel = depthLevel;
+		}
 	}
 
 	std::array<std::string, 2> rayAndLightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions" };
@@ -193,10 +219,6 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 	m_effectLightningRenderQueue.Render(m_pLightningShader, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
 	// Reset the depth level.
 	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;
-
-	// Delete textures scheduled for deletion.
-	if (m_texturesForDeletion.size() > 0)
-		m_texturesForDeletion.clear();
 }
 
 void OpenGLMasterRenderQueue::initializeVAO(void)
