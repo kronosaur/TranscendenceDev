@@ -1822,6 +1822,7 @@
 	<!ENTITY rsXenophobeDefender		"0x00100140">
 	<!ENTITY rsXenophobeFighterHD		"0x00100141">
 	<!ENTITY smXenophobeSpace			"0x00100142">
+	<!ENTITY rsXenophobeDefenderHero	"0x00100143">
 	
 	<!-- 0150-015F HUARI EMPIRE -->
 	

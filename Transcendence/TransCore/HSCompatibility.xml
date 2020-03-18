@@ -1386,7 +1386,7 @@
 			dockingPorts=		"10"
 			ignoreFriendlyFire=	"true"
 
-            level=              "4"
+			level=              "4"
 			multiHull=			"true"
 			armorID=			"&itPlasteelPlate;"
 			maxHitPoints=		"630"
@@ -1816,11 +1816,11 @@
 
 		</DockScreens>
 
-        <Language>
-            <Text id="core.mapDescMain">
-                "Hires freighter escorts"
-            </Text>
-        </Language>
+		<Language>
+			<Text id="core.mapDescMain">
+				"Hires freighter escorts"
+			</Text>
+		</Language>
 	</StationType>
 
 
@@ -2434,7 +2434,7 @@
 	
 	<StationType unid="&baBlackMarketStationObsolete;"
 			obsoleteVersion="1">
-    </StationType>
+	</StationType>
 
 	<StationType unid="&baCommonwealthStationObsolete;"
 			obsoleteVersion="1"
@@ -5430,7 +5430,7 @@
 			virtual=			"true"
 			definiteArticle=	"true"
 			
-            level=              "7"
+			level=              "7"
 			size=				"5000"
 			attributes=			"commonwealthCustoms, dockObj, human, majorStation, stKatsArcology"
 			>
@@ -5628,11 +5628,11 @@
 					)
 			</GetRumors>
 		</Events>
-        
-        <Language>
-            <Text id="core.mapDescMain">
-                "Capital of the Commonwealth"
-            </Text>
+		
+		<Language>
+			<Text id="core.mapDescMain">
+				"Capital of the Commonwealth"
+			</Text>
 
 			<Text id="rumor.stKatsParliament.1">
 
@@ -5699,7 +5699,7 @@
 				brethren then the Dwarg will happily exploit them."
 				
 			</Text>
-        </Language>
+		</Language>
 	</StationType>
 	
 	<!-- Arcology Segment Base -->
@@ -6340,6 +6340,7 @@
 	<Image UNID="&rsMediumShips2;"		obsoleteVersion="49" bitmap="Resources\MediumShips2.jpg"	bitmask="Resources\MediumShips2Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsLargeShips2;"		obsoleteVersion="49"	bitmap="Resources\LargeShips2.jpg"	bitmask="Resources\LargeShips2Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsSungTransport;"		obsoleteVersion="49" bitmap="Resources\SungTransport.jpg"	bitmask="Resources\SungTransportMask.bmp"  loadOnUse="true"/>
-	<Image UNID="&rsSalvagerNomad;"	obsoleteVersion="49"				bitmap="Resources\SalvagerNomad.jpg"		bitmask="Resources\SalvagerNomadMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsSalvagerNomad;"		obsoleteVersion="49"				bitmap="Resources\SalvagerNomad.jpg"		bitmask="Resources\SalvagerNomadMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsXenophobeDefender;"	obsoleteVersion="49"		bitmap="Resources\XenophobeDefender.jpg"		bitmask="Resources\XenophobeDefenderMask.bmp"	loadOnUse="true"/>
 
 </TranscendenceModule>
