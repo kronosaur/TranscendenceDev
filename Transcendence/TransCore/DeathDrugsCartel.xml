@@ -130,6 +130,7 @@
 			type=				"enforcer"
 			defaultSovereign=	"&svDeathDrugsCartel;"
 
+			size=				"35"
 			mass=				"70"
 			cargoSpace=			"100"
 			thrustRatio=		"7"

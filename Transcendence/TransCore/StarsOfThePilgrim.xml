@@ -118,6 +118,11 @@
 		</Properties>
 		
 		<EncounterOverrides>
+			<!-- NOTE: We have 1 guaranteed station (in BA), so this will 
+				usually be a second guaranteed station. -->
+
+			<Encounter unid="&stBlackMarketStation;"	minAppearing="1"/>
+
 			<Encounter unid="&stRasiermesserFactory;"	minAppearing="1"/>
 			<Encounter unid="&stTinkerGathering;"		minAppearing="1"/>
 		</EncounterOverrides>

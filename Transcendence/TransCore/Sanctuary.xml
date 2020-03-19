@@ -192,6 +192,12 @@
 				</Siblings>
 			</RandomLocation>
 
+			<!-- Black Market Station -->
+
+			<RandomLocation locationCriteria="+outerSystem; +planetary">
+				<Station type="&stBlackMarketShipyard;"/>
+			</RandomLocation>
+
 			<!-- Random Stations -->
 
 			<FillLocations

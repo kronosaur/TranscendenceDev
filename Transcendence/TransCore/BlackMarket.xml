@@ -85,6 +85,8 @@ PLAYER DATA
 
 				locationCriteria=		"+planetary"
 				enemyExclusionRadius=	"50"
+
+				unique=					"inSystem"
 				/>
 
 		<!-- Trade and Items -->
@@ -294,6 +296,8 @@ PLAYER DATA
 
 				locationCriteria=		"+planetary"
 				enemyExclusionRadius=	"50"
+
+				unique=					"inSystem"
 				/>
 
 		<!-- Trade and Items -->
