@@ -118,11 +118,12 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	const std::lock_guard<std::mutex> lock(m_shipRenderQueueAddMutex);
 
 	// Check to see if we have a render queue with that texture already loaded.
+	ASSERT(image);
 	if (!m_shipRenderQueues.count(image))
-		{
+	{
 		// If we don't have a render queue with that texture loaded, then add one.
 		m_shipRenderQueues[image] = new OpenGLInstancedBatchTexture();
-		}
+	}
 	// Add this quad to the render queue.
 	glm::vec2 vTexPositions((float)startPixelX / (float)texWidth, (float)startPixelY / (float)texHeight);
 	glm::vec2 vCanvasQuadSizes((float)sizePixelX / (float)canvasWidth, (float)sizePixelY / (float)canvasHeight);
@@ -174,7 +175,8 @@ void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int
 
 void OpenGLMasterRenderQueue::renderAllQueues(void)
 {
-	// Delete textures scheduled for deletion.
+	// For each render queue in the ships render queue, render that render queue. We need to set the texture and do a glBindTexture before doing so.
+		// Delete textures scheduled for deletion.
 	if (m_texturesForDeletion.size() > 0)
 		for (const std::shared_ptr<OpenGLTexture> textureToDelete : m_texturesForDeletion) {
 			// If any value exists here, delete it from m_shipRenderQueues if it exists there
@@ -183,7 +185,6 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 			}
 		}
 	m_texturesForDeletion.clear();
-	// For each render queue in the ships render queue, render that render queue. We need to set the texture and do a glBindTexture before doing so.
 	for (const auto &p : m_shipRenderQueues)
 	{
 		OpenGLTexture *pTextureToUse = p.first;
@@ -195,20 +196,17 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		pTextureToUse->initTextureFromOpenGLThread();
 
 		// Generate a glow map for this texture if needed.
-		// TODO: Store the texture quad width and height on the OpenGLTexture object temporarily, so glowmap can be created later
+		// TODO: Glow map creation seems to be causing flickering issues, maybe we can move this elsewhere?
+		// Maybe we aren't cleaning up properly?
 		if (!pTextureToUse->getGlowMap()) {
-			::kernelDebugLogPattern("[OpenGL] Creating glowmap for texture %d", pTextureToUse);
 			pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, glm::vec2(float(10), float(10)));
 		}
 
-		// If we can't get a glowmap then this texture is blank; do not render it
-		if (pTextureToUse->getGlowMap()) {
-			float depthLevel = m_fDepthLevel;
-			std::array<std::string, 3> textureUniformNames = { "obj_texture", "glow_map", "current_tick" };
-			pInstancedRenderQueue->setUniforms(textureUniformNames, pTextureToUse, pTextureToUse->getGlowMap(), m_iCurrentTick);
-			pInstancedRenderQueue->Render(m_pObjectTextureShader, depthLevel, m_fDepthDelta, m_iCurrentTick);
-			m_fDepthLevel = depthLevel;
-		}
+		float depthLevel = m_fDepthLevel;
+		std::array<std::string, 3> textureUniformNames = { "obj_texture", "glow_map", "current_tick" };
+		pInstancedRenderQueue->setUniforms(textureUniformNames, pTextureToUse, pTextureToUse->getGlowMap() ? pTextureToUse->getGlowMap() : pTextureToUse, m_iCurrentTick);
+		pInstancedRenderQueue->Render(m_pObjectTextureShader, depthLevel, m_fDepthDelta, m_iCurrentTick);
+		m_fDepthLevel = depthLevel;
 	}
 
 	std::array<std::string, 2> rayAndLightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions" };

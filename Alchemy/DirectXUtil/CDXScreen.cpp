@@ -637,6 +637,8 @@ void CDXScreen::Render (void)
 		{
 			Layer.BackBuffer.InitOpenGL();
 			m_pOGLContext->testTextures(m_pOpenGLTexture);
+			// Set a pointer to the canvas in the Master Render Queue, so we only render textures if we are rendering with that as the DEST
+			Layer.BackBuffer.GetMasterRenderQueue()->setPointerToCanvas(&Layer.BackBuffer);
 			Layer.BackBuffer.GetMasterRenderQueue()->setCanvasDimensions(Layer.BackBuffer.GetWidth(), Layer.BackBuffer.GetHeight());
 			Layer.BackBuffer.GetMasterRenderQueue()->renderAllQueues();
 			//Layer.BackBuffer.GetInstancedRenderQueue()->Render(Layer.BackBuffer.GetInstancedRenderQueue()->getShader(), Layer.BackBuffer.GetInstancedRenderQueue()->getVAO());

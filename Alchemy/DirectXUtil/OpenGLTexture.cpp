@@ -3,7 +3,6 @@
 
 OpenGLTexture::OpenGLTexture(int width, int height)
 {
-	::kernelDebugLogPattern("[OpenGL] Creating blank textures in thread %d of size %d, %d", std::this_thread::get_id(), width, height);
 	m_iHeight = height;
 	m_iWidth = width;
 	//initTexture2D(width, height);
@@ -52,7 +51,6 @@ void OpenGLTexture::initTexture2D(int width, int height)
 
 OpenGLTexture::OpenGLTexture (void* texture, int width, int height, bool isOpaque)
 	{
-	::kernelDebugLogPattern("[OpenGL] Creating blank textures in thread %d of size %d, %d", std::this_thread::get_id(), width, height);
 	m_iHeight = height;
 	m_iWidth = width;
 	m_pTextureToInitFrom = texture;
@@ -68,7 +66,6 @@ OpenGLTexture::OpenGLTexture (void* texture, int width, int height, bool isOpaqu
 
 void OpenGLTexture::initTexture2D (GLvoid* texture, int width, int height)
 	{
-	::kernelDebugLogPattern("[OpenGL] Initializing texture of size %d, %d from source %d...", width, height, texture);
 	int iNumOfChannels = 4;
 	int iDataSize = width * height * iNumOfChannels;
 	glGetInternalformativ(GL_TEXTURE_2D, GL_RGBA8, GL_TEXTURE_IMAGE_FORMAT, 1, &m_pixelFormat);
@@ -147,23 +144,13 @@ void OpenGLTexture::updateTexture2D (GLvoid* texture, int width, int height)
 
 OpenGLTexture::~OpenGLTexture ()
 	{
-	::kernelDebugLogPattern("[OpenGL] Deleting textures with addrs: %d, from thread: %d", this, std::this_thread::get_id());
 	auto t1 = &m_pTextureID[0];
 	auto t2 = &pboID[0];
-	::kernelDebugLogPattern("[OpenGL] Deleting textures with addrs: %d, %d, %d, from thread: %d", int(t1), int(t2), this, std::this_thread::get_id());
 	if (pboID[0] != 0 && pboID[1] != 0) {
 		glDeleteBuffers(2, &pboID[0]);
-		::kernelDebugLogPattern("[OpenGL] Deleted pbo for textures with addrs: %d, %d, %d, from thread: %d", int(t1), int(t2), this, std::this_thread::get_id());
 	}
 	if (m_pTextureID[0] != 0) {
 		glDeleteTextures(1, &m_pTextureID[0]);
-		::kernelDebugLogPattern("[OpenGL] Deleted gpu info for textures with addrs: %d, %d, %d, from thread: %d", int(t1), int(t2), this, std::this_thread::get_id());
-	}
-	if (m_pGlowMap) {
-		::kernelDebugLogPattern("[OpenGL] Glowmap is at %d", int(m_pGlowMap.get()));
-	}
-	else {
-		::kernelDebugLogPattern("[OpenGL] No glowmap for this texture at %d", int(m_pGlowMap.get()));
 	}
 	m_iHeight = 0;
 	m_iWidth = 0;
@@ -175,7 +162,6 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao,
 	// Vertical pass
 	if (m_iWidth > 0 && m_iHeight > 0)
 	{
-		::kernelDebugLogPattern("[OpenGL] Creating glowmap with quad %d, %d, from texture %d", int(texQuadSize[0]), int(texQuadSize[1]), this);
 		OpenGLTexture pTempTexture = OpenGLTexture(m_iWidth, m_iHeight);
 		pTempTexture.initTextureFromOpenGLThread();
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);

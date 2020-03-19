@@ -517,7 +517,6 @@ void CObjectImageArray::CopyImage (CG32bitImage &Dest, int x, int y, int iFrame,
 				*pSource,
 				x,
 				y);
-		Dest.CreateOpenGLTexture();
 		}
 	}
 
@@ -1370,6 +1369,7 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 		{
 
 		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
+		// TODO: Only render using OpenGL if the destination image is a render canvas, else proceed as if OpenGL is not enabled
  		OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
 		if (pSource == NULL)
 			return;
@@ -1384,7 +1384,7 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 			y -= m_pRotationOffset[iRotation % m_iRotationCount].y;
 			}
 
-		if (pRenderQueue)
+		if (pRenderQueue && (&(Dest) == pRenderQueue->getPointerToCanvas()))
 			{
 			int iCanvasHeight = Dest.GetHeight();
 			int iCanvasWidth = Dest.GetWidth();
@@ -1460,7 +1460,7 @@ void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, 
 			y -= m_pRotationOffset[iRotation % m_iRotationCount].y;
 			}
 
-		if (pRenderQueue)
+		if (pRenderQueue && (&(Dest) == pRenderQueue->getPointerToCanvas()))
 			{
 			int iCanvasHeight = Dest.GetHeight();
 			int iCanvasWidth = Dest.GetWidth();
@@ -1583,7 +1583,7 @@ void CObjectImageArray::PaintImageWithGlow (CG32bitImage &Dest,
 	{
 	//  First, check to see if we're using OpenGL - if we are, then paint a glow quad underneath the texture quad
 	OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
-	if (pRenderQueue && m_pImage)
+	if (pRenderQueue && m_pImage && (&(Dest) == pRenderQueue->getPointerToCanvas()))
 	{
 		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
 		if (pSource == NULL)

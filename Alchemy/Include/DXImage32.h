@@ -216,7 +216,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		//  OpenGL functions
 		OpenGLMasterRenderQueue *GetMasterRenderQueue (void) const { return m_pOGLRenderQueue.get(); }
 		//OpenGLMasterRenderQueue *GetMasterRenderQueue(void) const { return m_pOGLRenderQueue; }
-		OpenGLTexture *GetOpenGLTexture (void) const { return m_pOpenGLTexture.get(); }
+		OpenGLTexture *GetOpenGLTexture(void) { if (!m_pOpenGLTexture) { CreateOpenGLTexture(); } return m_pOpenGLTexture.get(); }
 		void InitOpenGL (void);
 		//void SetCurrentTickForShaders (int currTick) { if (m_pOGLRenderQueue) m_pOGLRenderQueue->setCurrentTick(currTick); }
 		void SetCurrentTickForShaders(int currTick) { if (m_pOGLRenderQueue) m_pOGLRenderQueue.get()->setCurrentTick(currTick); }

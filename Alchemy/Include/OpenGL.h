@@ -168,10 +168,10 @@ public:
 	void setCurrentTick (int currTick) { m_iCurrentTick = currTick; }
 	void setCanvasDimensions(int width, int height) { m_iCanvasHeight = height; m_iCanvasWidth = width; }
 	void handOffTextureForDeletion(std::shared_ptr<OpenGLTexture> texPtr) {
-		::kernelDebugLogPattern("[OpenGL] Prepping gpu texture at %d for deletion from thread: %d", texPtr.get(), std::this_thread::get_id()); 
 		m_texturesForDeletion.push_back(std::move(texPtr));
-		::kernelDebugLogPattern("[OpenGL] Prepped gpu texture at %d for deletion from thread: %d", texPtr.get(), std::this_thread::get_id());
 	 }
+	void setPointerToCanvas(void* canvas) { m_pCanvas = canvas; }
+	void *getPointerToCanvas() { return m_pCanvas; }
 private:
 	void initializeVAO (void);
 	void deinitVAO (void);
@@ -208,5 +208,6 @@ private:
 	unsigned int fbo;
 	unsigned int rbo;
 	std::mutex m_shipRenderQueueAddMutex;
+	void* m_pCanvas;
 
 };
