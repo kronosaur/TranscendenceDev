@@ -17,6 +17,8 @@
 #define FIELD_FIRE_RATE_ADJ					CONSTLIT("fireRateAdj")
 #define FIELD_HP							CONSTLIT("hp")
 #define FIELD_LEVEL							CONSTLIT("level")
+#define FIELD_MAX_COUNT						CONSTLIT("maxCount")
+#define FIELD_MIN_COUNT						CONSTLIT("minCount")
 #define FIELD_NAME							CONSTLIT("name")
 #define FIELD_TOTAL_COUNT					CONSTLIT("totalCount")
 
@@ -128,7 +130,9 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	CDesignTypeStats TotalCount;
 	if (pCmdLine->GetAttributeBool(FIELD_TOTAL_COUNT)
-			|| pCmdLine->GetAttributeBool(FIELD_COUNT_DISTRIBUTION))
+			|| pCmdLine->GetAttributeBool(FIELD_COUNT_DISTRIBUTION)
+			|| pCmdLine->GetAttributeBool(FIELD_MAX_COUNT)
+			|| pCmdLine->GetAttributeBool(FIELD_MIN_COUNT))
 		{
 		if (error = LoadDesignTypeStats(Universe.GetDesignCollection().GetAdventureUNID(), &TotalCount))
 			return;
@@ -177,6 +181,16 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 					SDesignTypeInfo *pInfo = TotalCount.GetAt(pType->GetUNID());
 					double rCount = (pInfo ? pInfo->rPerGameMeanCount : 0.0);
 					printf("%.2f", rCount);
+					}
+				else if (strEquals(sField, FIELD_MAX_COUNT))
+					{
+					SDesignTypeInfo *pInfo = TotalCount.GetAt(pType->GetUNID());
+					printf("%d", pInfo->iPerGameMaxCount);
+					}
+				else if (strEquals(sField, FIELD_MIN_COUNT))
+					{
+					SDesignTypeInfo *pInfo = TotalCount.GetAt(pType->GetUNID());
+					printf("%d", pInfo->iPerGameMinCount);
 					}
 				else if (strEquals(sField, FIELD_COUNT_DISTRIBUTION))
 					{
