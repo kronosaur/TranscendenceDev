@@ -2320,9 +2320,9 @@ bool CStationType::OverrideEncounterDesc (const CXMLElement &Override, CString *
 
 	{
 	if (!m_pEncounterDescOverride)
-		m_pEncounterDescOverride.Set(new CStationEncounterDesc(m_EncounterDesc));
+		m_pEncounterDescOverride.Set(new CStationEncounterDesc);
 
-	if (!m_pEncounterDescOverride->InitAsOverride(*m_pEncounterDescOverride, Override, retsError))
+	if (!m_pEncounterDescOverride->InitAsOverride(m_EncounterDesc, Override, retsError))
 		return false;
 
 	return true;
