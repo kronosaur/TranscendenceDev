@@ -6,11 +6,12 @@
 
 CItemEnhancement CItemEnhancement::m_Null;
 
-static TStaticStringTable<TStaticStringEntry<EnhanceItemStatus>, 13> ENHANCE_ITEM_STATUS_TABLE = {
+static TStaticStringTable<TStaticStringEntry<EnhanceItemStatus>, 14> ENHANCE_ITEM_STATUS_TABLE = {
 	"alreadyEnhanced",			eisAlreadyEnhanced,
 	"cantReplaceDefect",		eisCantReplaceDefect,
 	"cantReplaceEnhancement",	eisCantReplaceEnhancement,
 	"damaged",					eisItemDamaged,
+	"defectOK",					eisDefectOK,
 	"defectRemoved",			eisRepaired,
 	"defectReplaced",			eisDefectReplaced,
 	"degraded",					eisWorse,
@@ -562,7 +563,7 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 				{
 				*this = Enhancement;	//	Take expireTime, etc.
 				SetModBonus(iNewBonus);
-				return eisOK;
+				return (Enhancement.IsDisadvantage() ? eisDefectOK : eisOK);
 				}
 			else
 				return eisNoEffect;
@@ -576,9 +577,10 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 		//	For all others, take the enhancement
 
 		else
+			{
 			*this = Enhancement;
-
-		return eisOK;
+			return (Enhancement.IsDisadvantage() ? eisDefectOK : eisOK);
+			}
 		}
 
 	//	If already enhanced

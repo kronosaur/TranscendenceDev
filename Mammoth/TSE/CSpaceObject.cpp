@@ -903,12 +903,12 @@ CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &It
 
 	//	If <CanEnhanceItem> worked, then we're done.
 
-	if (Result.iResult != eisUnknown)
+	else if (Result.iResult != eisUnknown)
 		return Result;
 
 	//	Get the enhancement to confer
 
-	if (!EnhancementItem.GetEnhancementConferred(*this, TargetItem, Result, retsError))
+	else if (!EnhancementItem.GetEnhancementConferred(*this, TargetItem, Result, retsError))
 		{
 		Result.iResult = eisUnknown;
 		return Result;
@@ -916,7 +916,7 @@ CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &It
 
 	//	If no mod, nothing to do (but Result.sDesc might explain what happened).
 
-	if (Result.Enhancement.IsEmpty())
+	else if (Result.Enhancement.IsEmpty())
 		{
 		Result.iResult = eisNoEffect;
 		return Result;

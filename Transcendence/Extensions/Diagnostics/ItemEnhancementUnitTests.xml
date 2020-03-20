@@ -93,6 +93,92 @@
 									(objRemoveItem gPlayerShip theItem)
 									)												result:'ignore	}
 
+						;	Shield Enhancement ROM -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itNephrenP25; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itEnhanceShieldsROM;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(itmGetProperty 
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'hp
+										)											result:120	}
+
+						{	test:'(@ (objCanEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itEnhanceShieldsROM;
+										)
+									'resultCode
+									)												result:'alreadyEnhanced	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itEnhanceShieldsROM;
+										)
+									'resultCode
+									)												result:'alreadyEnhanced	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Shield Ionize ROM ------------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itNephrenP25; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objCanEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itShieldIonizeROM;
+										)
+									'resultCode
+									)												result:'damaged	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itShieldIonizeROM;
+										)
+									'resultCode
+									)												result:'damaged	}
+
+						{	test:'(itmGetProperty 
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'disrupted
+										)											result:9000	}
+
+						{	test:'(@ (objCanEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itShieldIonizeROM;
+										)
+									'resultCode
+									)												result:'noEffect	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itShieldIonizeROM;
+										)
+									'resultCode
+									)												result:'noEffect	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
 						;	Silicarb Field Crystal -------------------------------------------------
 
 						{	test:'(objAddItem gPlayerShip 
@@ -110,7 +196,7 @@
 						{	test:'(itmGetProperty 
 										(@ (objGetItems gPlayerShip "sU") 0)
 										'hp
-										)											result:'110	}
+										)											result:110	}
 
 						{	test:'(@ (objEnhanceItem 
 										gPlayerShip
@@ -123,7 +209,7 @@
 						{	test:'(itmGetProperty 
 										(@ (objGetItems gPlayerShip "sU") 0)
 										'hp
-										)											result:'120	}
+										)											result:120	}
 
 						{	test:'(objAddItem gPlayerShip 
 									(itmCreate &itMammoth25Deflector; 1)
@@ -275,7 +361,7 @@
 										&itDecayedEtheriumCrystal;
 										)
 									'resultCode
-									)												result:'ok	}
+									)												result:'defectOK	}
 
 						{	test:'(objGetItemProperty
 									gPlayerShip

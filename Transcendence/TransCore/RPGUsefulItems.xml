@@ -854,6 +854,10 @@
 					(debug (typ@ &dsRPGUseItemBase; 'rpg.debug))
 					(dstItem (@ gData 'itemToUseOn))
 					(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
+
+					;	NOTE: enhancementInfo is optional, because sometimes we handle everything
+					;	inside CanEnhanceItem and OnEnhanceItem.
+
 					(enhancementInfo (rpgFindItemInTable dstItem (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
 					(trData {
 						useItem: (itmGetName gItem 'article)
@@ -885,9 +889,6 @@
 									})
 								}
 								
-						(not enhancementInfo)
-							Nil
-							
 						(@ enhancementInfo 'custom)
 							{
 								canUse: True
@@ -900,7 +901,7 @@
 								desc: (itmTranslate gItem 'descUsageRepair trData)
 								}
 
-						(not (@ enhancementInfo 'enhancement))
+						(and enhancementInfo (not (@ enhancementInfo 'enhancement)))
 							{
 								canUse: Nil
 								desc: 
@@ -909,10 +910,27 @@
 										)
 								}
 
-						{
-							canUse: True
-							desc: (itmTranslate gItem 'descUsageOK trData)
-							}
+						(block (
+							(result (objCanEnhanceItem gPlayerShip dstItem gItem))
+							(resultCode (@ result 'resultCode))
+							)
+							(if debug
+								(print "CanUseOnItem: objCanEnhanceItem result: " result)
+								)
+
+							(switch
+								(find '(alreadyEnhanced noEffect) resultCode)
+									{
+										canUse: Nil
+										desc: (itmTranslate gItem (cat "descUsage." resultCode) trData)
+										}
+
+								{
+									canUse: True
+									desc: (itmTranslate gItem (cat "descUsage." resultCode) trData)
+									}
+								)
+							)
 						)
 					)
 			</CanUseOnItem>
@@ -1030,26 +1048,40 @@
 		</Events>
 
 		<Language>
-			<Text id="descResult.ok">Your %dstItem% has been enhanced.</Text>
-			<Text id="descResult.alreadyEnhanced">Your %dstItem% does not need the enhancement.</Text>
-			<Text id="descResult.cantReplaceDefect">But it has no effect on your %targetItemName% because it is already defective.</Text>
-			<Text id="descResult.cantReplaceEnhancement">But it has no effect on your %targetItemName% because it is already enhanced.</Text>
-			<Text id="descResult.defectRemoved">The enhancement has repaired a defect on your %dstItem%.</Text>
-			<Text id="descResult.damaged">Your %dstItem% was damaged.</Text>
-			<Text id="descResult.defectReplaced">Your %dstItem% has weakened further.</Text>
-			<Text id="descResult.degraded">Your %dstItem% has weakened further.</Text>
-			<Text id="descResult.enhancementRemoved">Your %dstItem% has lost its previous enhancement.</Text>
-			<Text id="descResult.enhancementReplaced">Your %dstItem% has been enhanced, but has lost its previous enhancement.</Text>
-			<Text id="descResult.improved">Your %dstItem% has been further enhanced.</Text>
-			<Text id="descResult.noEffect">The enhancement has no effect.</Text>
-			<Text id="descResult.repaired">Your %dstItem% has been repaired.</Text>
+			<Text id="descResult.ok">						Your %dstItem% has been enhanced.</Text>
+			<Text id="descResult.alreadyEnhanced">			Your %dstItem% does not need the enhancement.</Text>
+			<Text id="descResult.cantReplaceDefect">		But it has no effect on your %targetItemName% because it is already defective.</Text>
+			<Text id="descResult.cantReplaceEnhancement">	But it has no effect on your %targetItemName% because it is already enhanced.</Text>
+			<Text id="descResult.damaged">					Your %dstItem% was damaged.</Text>
+			<Text id="descResult.defectOK">					Your %dstItem% has been weakened.</Text>
+			<Text id="descResult.defectRemoved">			The enhancement has repaired a defect on your %dstItem%.</Text>
+			<Text id="descResult.defectReplaced">			Your %dstItem% has weakened further.</Text>
+			<Text id="descResult.degraded">					Your %dstItem% has weakened further.</Text>
+			<Text id="descResult.enhancementRemoved">		Your %dstItem% has lost its previous enhancement.</Text>
+			<Text id="descResult.enhancementReplaced">		Your %dstItem% has been enhanced, but has lost its previous enhancement.</Text>
+			<Text id="descResult.improved">					Your %dstItem% has been further enhanced.</Text>
+			<Text id="descResult.noEffect">					The enhancement has no effect.</Text>
+			<Text id="descResult.repaired">					Your %dstItem% has been repaired.</Text>
 
-			<Text id="descUsageOK">You can use %useItem% on %dstItem%.</Text>
-			<Text id="descUsageRepair">You can use %useItem% to repair %dstItem%.</Text>
-			<Text id="descUsageUnknown">This appears to be some kind of device upgrade. You can use it on %dstItem%.</Text>
+			<Text id="descUsage.ok">						You can use %useItem% on %dstItem%.</Text>
+			<Text id="descUsage.alreadyEnhanced">			%DstItem% is already enhanced; %UseItem% will have no effect.</Text>
+			<Text id="descUsage.cantReplaceDefect">			You can use %useItem% on %dstItem%.</Text>
+			<Text id="descUsage.cantReplaceEnhancement">	You can use %useItem% on %dstItem%.</Text>
+			<Text id="descUsage.damaged">					You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="descUsage.defectOK">					You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="descUsage.defectRemoved">				You can use %useItem% on %dstItem%.</Text>
+			<Text id="descUsage.defectReplaced">			You can use %useItem% on %dstItem%.</Text>
+			<Text id="descUsage.degraded">					You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="descUsage.enhancementRemoved">		You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="descUsage.enhancementReplaced">		You can use %useItem% on %dstItem%.</Text>
+			<Text id="descUsage.improved">					You can use %useItem% on %dstItem%.</Text>
+			<Text id="descUsage.noEffect">					%UseItem% will have no effect on %dstItem%.</Text>
+			<Text id="descUsage.repaired">					You can use %useItem% on %dstItem%.</Text>
 
-			<Text id="descResultTooAdvanced">Unfortunately, your device is too advanced to be upgraded.</Text>
-			<Text id="descResultTooPrimitive">Unfortunately, your device is too primitive for the upgrade.</Text>
+			<Text id="descUsageRepair">						You can use %useItem% to repair %dstItem%.</Text>
+			<Text id="descUsageUnknown">					This appears to be some kind of device upgrade. You can use it on %dstItem%.</Text>
+			<Text id="descResultTooAdvanced">				Unfortunately, your device is too advanced to be upgraded.</Text>
+			<Text id="descResultTooPrimitive">				Unfortunately, your device is too primitive for the upgrade.</Text>
 		</Language>
 	</Type>
 
