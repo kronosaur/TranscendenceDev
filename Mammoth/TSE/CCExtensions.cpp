@@ -528,6 +528,7 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_INC_PROPERTY			22
 #define FN_DESIGN_GET_IMAGE_DESC		23
 #define FN_DESIGN_HAS_PROPERTY			24
+#define FN_DESIGN_FIRE_OBJ_ITEM_EVENT	25
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -3395,8 +3396,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typFireObjEvent",					fnDesignGet,		FN_DESIGN_FIRE_OBJ_EVENT,
-			"(typFireObjEvent unid obj event) -> result of event",
-			"iis",	PPFLAG_SIDEEFFECTS,	},
+			"(typFireObjEvent unid obj event [data]) -> result of event",
+			"iis*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"typFireObjItemEvent",				fnDesignGet,		FN_DESIGN_FIRE_OBJ_ITEM_EVENT,
+			"(typFireObjItemEvent unid obj item event [data]) -> result of event",
+			"iivs*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typGetData",				fnDesignGet,		FN_DESIGN_GET_GLOBAL_DATA,
 			"(typGetData unid attrib) -> data",
@@ -4678,6 +4683,23 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pResult;
 			pType->FireObjCustomEvent(sEvent, pObj, pData, &pResult);
 			return pResult;
+			}
+
+		case FN_DESIGN_FIRE_OBJ_ITEM_EVENT:
+			{
+			CSpaceObject *pObj = CreateObjFromItem(pArgs->GetElement(1));
+			if (pObj == NULL)
+				return pCC->CreateNil();
+
+			CItem Item = pCtx->AsItem(pArgs->GetElement(2));
+			if (Item.IsEmpty())
+				return pCC->CreateNil();
+
+			CString sEvent = pArgs->GetElement(3)->GetStringValue();
+			ICCItem *pData = (pArgs->GetCount() >= 4 ? pArgs->GetElement(4) : NULL);
+
+			ICCItemPtr pResult = pType->FireObjItemCustomEvent(sEvent, pObj, Item, pData);
+			return pResult->Reference();
 			}
 
 		case FN_DESIGN_FIRE_TYPE_EVENT:
@@ -8363,6 +8385,9 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			ICCItem *pResult;
 			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
+			if (Item.IsEmpty())
+				return pCC->CreateNil();
+
 			ICCItem *pData = (pArgs->GetCount() >= 4 ? pArgs->GetElement(3) : NULL);
 
 			pObj->FireCustomItemEvent(pArgs->GetElement(2)->GetStringValue(), Item, pData, &pResult);

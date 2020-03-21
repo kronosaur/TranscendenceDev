@@ -1131,6 +1131,35 @@ void CDesignType::FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj,
 		}
 	}
 
+ICCItemPtr CDesignType::FireObjItemCustomEvent (const CString &sEvent, CSpaceObject *pObj, const CItem &Item, ICCItem *pData)
+
+//	FireObjItemCustomEvent
+//
+//	Fires a named event.
+
+	{
+	CCodeChainCtx Ctx(GetUniverse());
+
+	SEventHandlerDesc Event;
+	if (FindEventHandler(sEvent, &Event))
+		{
+		Ctx.DefineContainingType(this);
+		Ctx.SaveAndDefineSourceVar(pObj);
+		Ctx.SaveAndDefineItemVar(Item);
+		Ctx.SaveAndDefineDataVar(pData);
+
+		ICCItemPtr pResult = Ctx.RunCode(Event);
+		if (pResult->IsError())
+			pObj->ReportEventError(sEvent, pResult);
+
+		return pResult;
+		}
+	else
+		{
+		return ICCItemPtr::Nil();
+		}
+	}
+
 ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError)
 
 //	FireOnGlobalDockPaneInit
