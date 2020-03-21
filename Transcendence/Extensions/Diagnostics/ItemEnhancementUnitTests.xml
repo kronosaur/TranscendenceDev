@@ -128,6 +128,19 @@
 									'resultCode
 									)												result:'alreadyEnhanced	}
 
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										{	enhancement:"-hpBonus:10"	type:&itEnhanceShieldsROM; }
+										)
+									'resultCode
+									)												result:'enhancementRemoved	}
+
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "sU") 0)
+									'enhancement
+									)												result:Nil	}
+
 						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
 									(objRemoveItem gPlayerShip theItem)
 									)												result:'ignore	}

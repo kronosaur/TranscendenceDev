@@ -794,7 +794,11 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithDisadvantage (const CIte
 					return eisNoEffect;
 
 				SetModBonus(iNewBonus);
-				return eisWorse;
+				
+				if (iNewBonus)
+					return eisWorse;
+				else
+					return eisEnhancementRemoved;
 				}
 			else
 				return eisNoEffect;
@@ -2291,7 +2295,13 @@ void CItemEnhancement::SetModBonus (int iBonus)
 
 	{
 	if (iBonus == 0)
-		m_dwMods = 0;
+		{
+		//	Clear out the enhancement. We need to do this so that when we combine
+		//	enhancements, applying a disadvantage on an advantage removes the
+		//	enhancement.
+
+		*this = CItemEnhancement();
+		}
 	else if (iBonus > 0)
 		m_dwMods = EncodeAX(etHPBonus, 0, iBonus);
 	else
