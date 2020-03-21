@@ -1629,16 +1629,23 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objEnhanceItem",		fnObjSet,		FN_OBJ_ENHANCE_ITEM,
-			"(objEnhanceItem obj item enhancementType|item) -> result\n\n"
+			"(objEnhanceItem obj item enhancementType|item|enhancementDesc) -> result\n\n"
 			
+			"enhancementDesc:\n\n"
+			
+			"   enhancement: enhancement code/desc (required)\n"
+
+			"   lifetime: (in ticks)\n"
+			"   type: item causing enhancement\n"
+			"\n"
 			"result:\n\n"
 			
 			"   resultCode: Result of enhancement\n"
 			"   desc: Explanation of result (optional)\n"
 			"   enhancement: Enhancement applied (optional)\n"
 			"   id: Enhancement ID (optional)\n"
-			"   lifetime: Lifetime in ticks (optional)\n\n"
-			
+			"   lifetime: Lifetime in ticks (optional)\n"
+			"\n"
 			"resultCode:\n\n"
 			
 			"   'ok: Enhancement applied\n"
@@ -8355,20 +8362,55 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (!ItemList.SetCursorAtItem(TargetItem))
 				return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
 
-			//	Enhancement item
+			//	If we have a struct, then we assume an enhancement descriptor.
 
-			CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
+			if (pArgs->GetElement(2)->IsSymbolTable())
+				{
+				CItem::SEnhanceItemResult Result;
+				CString sError;
+				if (Result.Enhancement.InitFromDesc(pCtx->GetUniverse(), *pArgs->GetElement(2), &sError) != NOERROR)
+					return pCC->CreateError(sError);
 
-			//	Do it
+				//	If no mod, nothing to do.
 
-			CItem::SEnhanceItemResult Result;
-			CString sError;
-			if (!pObj->EnhanceItem(ItemList, EnhancementItem, Result, &sError))
-				return pCC->CreateError(sError);
+				if (Result.Enhancement.IsEmpty())
+					Result.iResult = eisNoEffect;
 
-			//	Encode result
+				//	Otherwise, enhance
 
-			return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
+				else
+					{
+					DWORD dwID;
+					Result.iResult = pObj->EnhanceItem(ItemList, Result.Enhancement, &dwID);
+					Result.Enhancement.SetID(dwID);
+					}
+
+				//	Encode result
+
+				return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
+				}
+
+			//	Otherwise, we expect an item or item type
+
+			else
+				{
+				//	Enhancement item
+
+				CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
+				if (EnhancementItem.IsEmpty())
+					return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(2));
+
+				//	Do it
+
+				CItem::SEnhanceItemResult Result;
+				CString sError;
+				if (!pObj->EnhanceItem(ItemList, EnhancementItem, Result, &sError))
+					return pCC->CreateError(sError);
+
+				//	Encode result
+
+				return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
+				}
 			}
 
 		case FN_OBJ_FIRE_EVENT:
