@@ -2332,6 +2332,10 @@
 	<!ENTITY stHydrogenGasGiantStJohns	"0x00100762">
 	<!ENTITY rsHydrogenGasGiantStJohns	"0x00100763">
 
+	<!-- 0780-079F QUANTUM CPU -->
+
+	<!ENTITY baQuantumCPUShieldProgram	"0x00100780">
+
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	

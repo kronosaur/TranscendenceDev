@@ -176,10 +176,10 @@
 				(cargoCriteria 
 					(switch
 						(itmIsKnown useItem)
-							(itmGetProperty useItem 'rpg.useCriteria)
+							(itm@ useItem 'rpg.useCriteria)
 
-						(or (itmGetProperty useItem 'rpg.unknownUseCriteria)
-							(itmGetProperty useItem 'rpg.useCriteria)
+						(or (itm@ useItem 'rpg.unknownUseCriteria)
+							(itm@ useItem 'rpg.useCriteria)
 							)
 						)
 					)
@@ -317,10 +317,10 @@
 						(cargoCriteria 
 							(switch
 								(itmIsKnown useItem)
-									(itmGetProperty useItem 'rpg.useCriteria)
+									(itm@ useItem 'rpg.useCriteria)
 
-								(or (itmGetProperty useItem 'rpg.unknownUseCriteria)
-									(itmGetProperty useItem 'rpg.useCriteria)
+								(or (itm@ useItem 'rpg.unknownUseCriteria)
+									(itm@ useItem 'rpg.useCriteria)
 									)
 								)
 							)
@@ -334,7 +334,7 @@
 						;	Set the description
 						(scrSetControlValue gScreen 'useItem {
 							title: (itmGetName useItem '(titleCapitalize countOnly))
-							desc: (itmGetProperty useItem 'description)
+							desc: (itm@ useItem 'description)
 							})
 
 						(if (not (scrGetData gScreen 'hideCurrent))
@@ -408,7 +408,7 @@
 						)
 						(scrSetControlValue gScreen 'useItem {
 							title: (itmGetName (itmSetCount useItem 1) '(titleCapitalize countOnly))
-							desc: (itmGetProperty useItem 'description)
+							desc: (itm@ useItem 'description)
 							})
 
 						(if (not (scrGetData gScreen 'hideCurrent))
@@ -539,7 +539,7 @@
 											'descUsageOK4
 						))
 					(repairDesc 
-						(or (rpgFindItemInTable dstItem (itmGetProperty gItem 'rpg.repairTable))
+						(or (rpgFindItemInTable dstItem (itm@ gItem 'rpg.repairTable))
 							{
 								repairHP: (eval (itmGetStaticData gItem 'repairHP))
 								minLevel: (max 1 (- (itmGetLevel gItem) 3))
@@ -547,9 +547,9 @@
 								}
 							)
 						)
-					(armorLevel (itmGetProperty dstItem 'repairLevel))
-					(armorHP (objGetItemProperty shipObj dstItem 'hp))
-					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
+					(armorLevel (itm@ dstItem 'repairLevel))
+					(armorHP (obj@ shipObj dstItem 'hp))
+					(maxArmorHP (obj@ shipObj dstItem 'maxHP))
 					)
 					(if debug
 						(print "CanUseOnItem: repairDesc: " repairDesc)
@@ -646,7 +646,7 @@
 					(dstItem (@ gData 'targetItem))
 					(shipObj (@ gData 'shipObj))
 					(repairDesc 
-						(or (rpgFindItemInTable dstItem (itmGetProperty gItem 'rpg.repairTable))
+						(or (rpgFindItemInTable dstItem (itm@ gItem 'rpg.repairTable))
 							{
 								repairHP: (eval (itmGetStaticData gItem 'repairHP))
 								minLevel: (max 1 (- (itmGetLevel gItem) 3))
@@ -658,9 +658,9 @@
 						(itmTranslate gItem 'rpg.useResultIntro)
 						(itmTranslate gItem 'descResultIntro)
 						))
-					(armorLevel (itmGetProperty dstItem 'repairLevel))
-					(armorHP (objGetItemProperty shipObj dstItem 'hp))
-					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
+					(armorLevel (itm@ dstItem 'repairLevel))
+					(armorHP (obj@ shipObj dstItem 'hp))
+					(maxArmorHP (obj@ shipObj dstItem 'maxHP))
 
 					(consumeItem True)
 
@@ -735,9 +735,9 @@
 										(block (
 											(damageCaused (/ (* repair (random 20 100)) 100))
 											)
-											(setq dstItem (objSetItemProperty shipObj dstItem 'incHP (- damageCaused)))
-											(if (and (not (itmGetProperty dstItem 'installed))
-													(= (itmGetProperty dstItem 'hp) 0)
+											(setq dstItem (objSet@ shipObj dstItem 'incHP (- damageCaused)))
+											(if (and (not (itm@ dstItem 'installed))
+													(= (itm@ dstItem 'hp) 0)
 													)
 												(block ()
 													(objRemoveItem shipObj dstItem)
@@ -753,7 +753,7 @@
 
 								(block ()
 									(setq hpRepaired (min (- maxArmorHP armorHP) repair))
-									(objSetItemProperty shipObj dstItem 'incHP repair)
+									(objSet@ shipObj dstItem 'incHP repair)
 									(setq resultDesc 'descResultRepaired)
 										
 									;	How much of the kit did we use?
@@ -859,12 +859,12 @@
 				(block (
 					(debug (typ@ &dsRPGUseItemBase; 'rpg.debug))
 					(dstItem (@ gData 'targetItem))
-					(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
+					(useCriteria (itm@ gItem 'rpg.useCriteria))
 
 					;	NOTE: enhancementInfo is optional, because sometimes we handle everything
 					;	inside CanEnhanceItem and OnEnhanceItem.
 
-					(enhancementInfo (rpgFindItemInTable dstItem (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
+					(enhancementInfo (rpgFindItemInTable dstItem (or (itm@ gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
 					(trData {
 						useItem: (itmGetName gItem 'article)
 						dstItem: (itmGetName dstItem '(demonstrative noModifiers))
@@ -876,7 +876,7 @@
 								(print "CanUseOnItem: " (itmGetName dstItem 0) " does not match criteria: " useCriteria)
 								
 							(not enhancementInfo)
-								(print "CanUseOnItem: Unable to find enhancement info in rpg.enhancementTable: " (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable)))
+								(print "CanUseOnItem: Unable to find enhancement info in rpg.enhancementTable: " (or (itm@ gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable)))
 								
 							(print "CanUseOnItem: enhancementInfo: " enhancementInfo)
 							)
@@ -921,29 +921,19 @@
 						(block (
 							(result (objCanEnhanceItem gPlayerShip dstItem gItem))
 							(resultCode (@ result 'resultCode))
+
+							(canUse (or
+								(not (find '(alreadyEnhanced noEffect) resultCode))
+								(itm@ gItem 'rpg.alwaysAllowUse)
+								))
 							)
-							(if debug
-								(print "CanUseOnItem: objCanEnhanceItem result: " result)
-								)
-
-							(switch
-								(find '(alreadyEnhanced noEffect) resultCode)
-									{
-										canUse: Nil
-										desc: (or (@ result 'desc)
-												(itmTranslate gItem (cat "rpg.canUse." resultCode) trData)
-												(itmTranslate gItem (cat "descUsage." resultCode) trData)
-												)
-										}
-
-								{
-									canUse: True
-									desc: (or (@ result 'desc)
-											(itmTranslate gItem (cat "rpg.canUse." resultCode) trData)
-											(itmTranslate gItem (cat "descUsage." resultCode) trData)
-											)
-									}
-								)
+							{
+								canUse: canUse
+								desc: (or (@ result 'desc)
+										(itmTranslate gItem (cat "rpg.canUse." resultCode) trData)
+										(itmTranslate gItem (cat "descUsage." resultCode) trData)
+										)
+								}
 							)
 						)
 					)
@@ -1005,7 +995,7 @@
 						;	due to level) and the desc field explains why.
 
 						(setq enhancementInfo (rpgFindItemInTable dstItem 
-								(or (itmGetProperty gItem 'rpg.enhancementTable)
+								(or (itm@ gItem 'rpg.enhancementTable)
 									(itmGetStaticData gItem 'enhancementTable)
 									)
 								))
@@ -1144,8 +1134,8 @@
 	<ItemType unid="&baStdEquipmentItem;">
 		<Invoke>
 			(block (
-				(theEquipment (itmGetProperty gItem 'rpg.equipment))
-				(repairEquipment (itmGetProperty gItem 'rpg.alternateEquipment))
+				(theEquipment (itm@ gItem 'rpg.equipment))
+				(repairEquipment (itm@ gItem 'rpg.alternateEquipment))
 
 				(equipmentStatus (objGetEquipmentStatus gSource theEquipment))
 				)
@@ -1292,7 +1282,7 @@
 						;	due to level) and the desc field explains why.
 
 						(setq enhancementInfo (rpgFindItemInTable dstItem 
-								(or (itmGetProperty gItem 'rpg.enhancementTable) 
+								(or (itm@ gItem 'rpg.enhancementTable) 
 									(itmGetStaticData gItem 'enhancementTable)
 									)
 								))
