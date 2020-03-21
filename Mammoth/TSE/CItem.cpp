@@ -1333,7 +1333,7 @@ CString CItem::GetEnhancedDesc (void) const
 	return sResult;
 	}
 
-bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError) const
+bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, const CString &sMode, SEnhanceItemResult &retResult, CString *retsError) const
 
 //	GetEnhancementConferred
 //
@@ -1387,6 +1387,7 @@ bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem 
 		ICCItemPtr pTargetItem(::CreateListFromItem(TargetItem));
 		ICCItemPtr pData(ICCItem::SymbolTable);
 		pData->SetAt(CONSTLIT("targetItem"), pTargetItem);
+		pData->SetStringAt(CONSTLIT("mode"), sMode);
 
 		Ctx.SaveAndDefineDataVar(pData);
 
@@ -1412,6 +1413,7 @@ bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem 
 			retResult.Enhancement.SetEnhancementType(GetType());
 
 		retResult.sDesc = pResult->GetStringAt(CONSTLIT("desc"));
+		retResult.bDoNotConsume = pResult->GetBooleanAt(CONSTLIT("doNotConsume"));
 
 		//	Done
 

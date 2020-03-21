@@ -542,6 +542,9 @@ ICCItemPtr CSpaceObject::AsCCItem (CCodeChainCtx &Ctx, const CItem::SEnhanceItem
 	if (!Result.sDesc.IsBlank())
 		pResult->SetStringAt(CONSTLIT("desc"), Result.sDesc);
 
+	if (Result.bDoNotConsume)
+		pResult->SetBooleanAt(CONSTLIT("doNotConsume"), true);
+
 	return pResult;
 	}
 
@@ -892,7 +895,8 @@ CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &It
 
 	const CItem &TargetItem = ItemList.GetItemAtCursor();
 
-	//	See if we have an explicit event
+	//	See if we have an explicit event. FireCanEnhanceItem returns FALSE if
+	//	there is an error.
 
 	CItem::SEnhanceItemResult Result;
 	if (!EnhancementItem.FireCanEnhanceItem(*this, TargetItem, Result, retsError))
@@ -908,7 +912,7 @@ CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &It
 
 	//	Get the enhancement to confer
 
-	else if (!EnhancementItem.GetEnhancementConferred(*this, TargetItem, Result, retsError))
+	else if (!EnhancementItem.GetEnhancementConferred(*this, TargetItem, CONSTLIT("canEnhance"), Result, retsError))
 		{
 		Result.iResult = eisUnknown;
 		return Result;
@@ -1059,18 +1063,18 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
 //	change ships)
 
 	{
-    int i;
+	int i;
 
-    //  Ask our object for a list of data fields that we DO NOT want to copy.
-    //  We only ask our class because it should be the only thing that stores
-    //  per-ship data. All other uses should store data in other places, such
-    //  as overlays, items, etc.
-    //
-    //  [The other exception is non-player ships, which often have event
-    //  handlers that store state, but those are not player ships.]
+	//  Ask our object for a list of data fields that we DO NOT want to copy.
+	//  We only ask our class because it should be the only thing that stores
+	//  per-ship data. All other uses should store data in other places, such
+	//  as overlays, items, etc.
+	//
+	//  [The other exception is non-player ships, which often have event
+	//  handlers that store state, but those are not player ships.]
 
 	SEventHandlerDesc Event;
-    TSortMap<CString, CAttributeDataBlock::STransferDesc> Options;
+	TSortMap<CString, CAttributeDataBlock::STransferDesc> Options;
 	if (FindEventHandler(ON_DATA_TRANSFER_EVENT, &Event))
 		{
 		CCodeChainCtx Ctx(GetUniverse());
@@ -1081,27 +1085,27 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_DATA_TRANSFER_EVENT, pResult);
-        else if (pResult->IsSymbolTable())
-            {
-            for (i = 0; i < pResult->GetCount(); i++)
-                {
-                CAttributeDataBlock::STransferDesc *pDesc = Options.SetAt(pResult->GetKey(i));
-                CString sOption = pResult->GetElement(i)->GetStringValue();
-                if (strEquals(sOption, CONSTLIT("ignore")))
-                    pDesc->iOption = CAttributeDataBlock::transIgnore;
-                else if (strEquals(sOption, CONSTLIT("copy")))
-                    pDesc->iOption = CAttributeDataBlock::transCopy;
-                else
-                	kernelDebugLogPattern("Unknown transfer option: %s", sOption);
-                }
-            }
+		else if (pResult->IsSymbolTable())
+			{
+			for (i = 0; i < pResult->GetCount(); i++)
+				{
+				CAttributeDataBlock::STransferDesc *pDesc = Options.SetAt(pResult->GetKey(i));
+				CString sOption = pResult->GetElement(i)->GetStringValue();
+				if (strEquals(sOption, CONSTLIT("ignore")))
+					pDesc->iOption = CAttributeDataBlock::transIgnore;
+				else if (strEquals(sOption, CONSTLIT("copy")))
+					pDesc->iOption = CAttributeDataBlock::transCopy;
+				else
+					kernelDebugLogPattern("Unknown transfer option: %s", sOption);
+				}
+			}
 
 		Ctx.Discard(pResult);
 		}
 
-    //  Copy
+	//  Copy
 
-    m_Data.Copy(pSource->m_Data, Options);
+	m_Data.Copy(pSource->m_Data, Options);
 	}
 
 void CSpaceObject::CreateDefaultDockingPorts (void)
@@ -1767,7 +1771,7 @@ bool CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, const CItem &Enh
 
 	//	Get the enhancement to confer
 
-	if (!EnhancementItem.GetEnhancementConferred(*this, ItemList.GetItemAtCursor(), retResult, retsError))
+	if (!EnhancementItem.GetEnhancementConferred(*this, ItemList.GetItemAtCursor(), CONSTLIT("onEnhance"), retResult, retsError))
 		return false;
 
 	//	If no mod, nothing to do.
@@ -2173,7 +2177,7 @@ void CSpaceObject::FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject
 		{
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
-        Ctx.SaveAndDefineDataVar(NULL);
+		Ctx.SaveAndDefineDataVar(NULL);
 		Ctx.DefineSpaceObject(CONSTLIT("aShipObj"), pShip);
 
 		ICCItem *pResult = Ctx.Run(Event);
@@ -3298,7 +3302,7 @@ void CSpaceObject::FireOnPlayerEnteredShip (CSpaceObject *pOldShip)
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
-        Ctx.DefineSpaceObject(CONSTLIT("aOldShip"), pOldShip);
+		Ctx.DefineSpaceObject(CONSTLIT("aOldShip"), pOldShip);
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
@@ -3352,7 +3356,7 @@ void CSpaceObject::FireOnPlayerLeftShip (CSpaceObject *pNewShip)
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
-        Ctx.DefineSpaceObject(CONSTLIT("aNewShip"), pNewShip);
+		Ctx.DefineSpaceObject(CONSTLIT("aNewShip"), pNewShip);
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())

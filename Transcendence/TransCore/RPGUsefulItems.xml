@@ -309,8 +309,8 @@
 						(useItem (@ (filter (objGetItems gPlayerShip '*) theItem (itmIsEqual theItem (scrGetData gScreen 'useItem))) 0))
 						(theShip gPlayerShip)
 						(dstItem (scrGetItem gScreen))
-						(useInfo (itmFireEvent useItem 'CanUseOnItem {
-								itemToUseOn: dstItem
+						(useInfo (objFireItemEvent theShip useItem 'CanUseOnItem {
+								targetItem: dstItem
 								shipObj: theShip
 								} ))
 
@@ -378,8 +378,8 @@
 							result
 							)
 							;	Use the item
-							(setq result (itmFireEvent useItem 'OnUseOnItem {
-								itemToUseOn: dstItem
+							(setq result (objFireItemEvent theShip useItem 'OnUseOnItem {
+								targetItem: dstItem
 								shipObj: theShip
 								}))
 
@@ -528,7 +528,7 @@
 			<CanUseOnItem>
 				(block (
 					(debug (typ@ &dsRPGUseItemBase; 'rpg.debug))
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					(shipObj (@ gData 'shipObj))
 					(armorNoun (cat (objGetArmorName shipObj dstItem) " " (itmGetName dstItem 'noModifiers)))
 					(skillLevel (typGetData &baStdArmorRepair; 'skillLevel))
@@ -643,7 +643,7 @@
 			<OnUseOnItem>
 				(block (
 					(debug (typ@ &dsRPGUseItemBase; 'rpg.debug))
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					(shipObj (@ gData 'shipObj))
 					(repairDesc 
 						(or (rpgFindItemInTable dstItem (itmGetProperty gItem 'rpg.repairTable))
@@ -858,7 +858,7 @@
 			<CanUseOnItem>
 				(block (
 					(debug (typ@ &dsRPGUseItemBase; 'rpg.debug))
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
 
 					;	NOTE: enhancementInfo is optional, because sometimes we handle everything
@@ -930,14 +930,16 @@
 								(find '(alreadyEnhanced noEffect) resultCode)
 									{
 										canUse: Nil
-										desc: (or (itmTranslate gItem (cat "rpg.canUse." resultCode) trData)
+										desc: (or (@ result 'desc)
+												(itmTranslate gItem (cat "rpg.canUse." resultCode) trData)
 												(itmTranslate gItem (cat "descUsage." resultCode) trData)
 												)
 										}
 
 								{
 									canUse: True
-									desc: (or (itmTranslate gItem (cat "rpg.canUse." resultCode) trData)
+									desc: (or (@ result 'desc)
+											(itmTranslate gItem (cat "rpg.canUse." resultCode) trData)
 											(itmTranslate gItem (cat "descUsage." resultCode) trData)
 											)
 									}
@@ -952,9 +954,11 @@
 				;	This event is called by objCanEnhanceItem and objEnhanceItem
 				;	to figure out what enhancement will be applied.
 				;
+				;	gSource: The object on which we are enhancing
 				;	gItem: The item doing the enhancing
 				;
 				;	gData
+				;		mode: Either 'canEnhance or 'onEnhance
 				;		targetItem: The item being enhanced.
 				;
 				;	RETURN
@@ -1023,7 +1027,7 @@
 
 			<OnUseOnItem>
 				(block (
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					(trData {
 						itemName: (itmGetName gItem 'article)
 						targetItemName: (itmGetName dstItem 'noModifiers)
@@ -1040,7 +1044,10 @@
 
 					;	Remove and identify the item
 
-					(objRemoveItem gPlayerShip gItem 1)
+					(if (not (@ result 'doNotConsume))
+						(objRemoveItem gPlayerShip gItem 1)
+						)
+
 					(itmSetKnown gItem)
 
 					;	Describe what happened
@@ -1213,7 +1220,7 @@
 		<Events>
 			<CanUseOnItem>
 				(block (
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					)
 					(switch
 						(not (itmMatches dstItem "a"))
@@ -1305,7 +1312,7 @@
 
 			<OnUseOnItem>
 				(block (
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					result
 					)
 					;	Apply the enhancement
