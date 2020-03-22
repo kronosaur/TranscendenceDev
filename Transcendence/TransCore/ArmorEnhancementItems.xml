@@ -859,4 +859,48 @@
 		</Language>
 	</ItemType>
 
+<!-- DIAGNOSTICS -->
+
+	<Type unid="&diagArmorEnhancements;">
+		<Events>
+			<OnGlobalRunDiagnostics>
+				(block ()
+
+					;	Set up a player ship
+
+					(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+					(if (not gPlayerShip)
+						(error "Unable to create player ship.")
+						)
+					(shpOrder gPlayerShip 'hold)
+
+					;	Unit Tests for Item Enhancements
+
+					(diagEval (list
+
+						;	Ablative Armor Coating -----------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itHardenedReactiveArmor;
+									)												result:'ignore	}
+
+						{	test:'(objAddItem gPlayerShip 
+									&itAblativeArmorCoating;
+									)												result:'ignore	}
+
+						{	test:'(@ (objFireItemEvent gPlayerShip 
+										(itmCreate &itAblativeArmorCoating; 1) 
+										'CanUseOnItem
+										{
+											targetItem: (itmCreate &itHardenedReactiveArmor; 1)
+											shipObj: gPlayerShip
+											})
+									'canUse)										result:True	}
+						))
+					)
+				
+			</OnGlobalRunDiagnostics>
+		</Events>
+	</Type>
+
 </TranscendenceModule>
