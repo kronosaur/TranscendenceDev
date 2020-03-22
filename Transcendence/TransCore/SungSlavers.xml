@@ -1198,7 +1198,7 @@
 								)
 
 						;	Call default handler
-						(typFireEvent &baStdDeviceEnhancement; 'OnUseOnItem gData)
+						(typFireObjItemEvent &baStdDeviceEnhancement; gSource gItem 'CanUseOnItem gData)
 						)
 					)
 			</OnUseOnItem>
