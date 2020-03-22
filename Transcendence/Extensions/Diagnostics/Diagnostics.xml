@@ -4,7 +4,7 @@
 	[
 	<!ENTITY unidExtension				"0xA0010000">
 	<!ENTITY unidCoverImage				"0xA0010001">
-	<!ENTITY unidDiagnostics			"0xA0010002">
+	<!ENTITY unidDiagnosticsCompatible	"0xA0010002">
 	<!ENTITY unidItemUnitTests			"0xA0010003">
 	<!ENTITY unidRPGUnitTests			"0xA0010004">
 	<!ENTITY unidTopologyTests			"0xA0010005">
@@ -91,7 +91,7 @@
 
 <!-- DIAGNOSTICS -->
 
-	<Type unid="&unidDiagnostics;">
+	<Type unid="&unidDiagnosticsCompatible;">
 		<Events>
 			<OnGlobalStartDiagnostics>
 				(block ()
@@ -112,20 +112,6 @@
 					; (diagDebugOreTable)
 					)
 			</OnGlobalSystemDiagnostics>
-
-			<OnGlobalEndDiagnostics>
-				(block (
-					(totalTests (or (typGetData &unidDiagnostics; 'totalTests) 0))
-					(totalFailures (or (typGetData &unidDiagnostics; 'totalFailures) 0))
-					)
-					(print "Total Tests: " (fmtNumber totalTests))
-					(print "Failed Tests: " (fmtNumber totalFailures) "\n")
-
-					(if (gr totalFailures 0)
-						(error "One or more tests failed.")
-						)
-					)
-			</OnGlobalEndDiagnostics>
 		</Events>
 	</Type>
 
@@ -443,55 +429,6 @@
 								(error (cat "Installation failed: " (itmGetName installedItem 0) "."))
 								)
 							)
-					)
-				)
-			))
-
-		(setq diagRun (lambda (testList)
-			(block ()
-				(enum testList theTest
-					(if theTest
-						(errBlock (theError)
-							(typIncData &unidDiagnostics; 'totalTests)
-							(theTest)
-
-							(block ()
-								(print "ERROR: " theError)
-								(typIncData &unidDiagnostics; 'totalFailures)
-								)
-							)
-						)
-					)
-				)
-			))
-
-		(setq diagEval (lambda (testList data)
-			(enum testList theTest
-				(if theTest
-					(block (
-						(testResult (eval (@ theTest 'test)))
-						)
-						(typIncData &unidDiagnostics; 'totalTests)
-
-						(switch
-							;	If we don't care about the test result, then we just execute
-
-							(= (@ theTest 'result) 'ignore)
-								testResult
-
-							;	If the test succeeds, then we're good
-
-							(= testResult (@ theTest 'result))
-								True
-
-							;	Failed
-
-							(block ()
-								(print "ERROR: " (@ theTest 'test) " - " testResult " [expected " (@ theTest 'result) "]")
-								(typIncData &unidDiagnostics; 'totalFailures)
-								)
-							)
-						)
 					)
 				)
 			))

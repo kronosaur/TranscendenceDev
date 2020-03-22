@@ -912,5 +912,8 @@
     <Xml Include="BlackMarketMember.xml">
       <Filter>Human Space Library\Black Market</Filter>
     </Xml>
+    <Xml Include="CoreDiagnostics.xml">
+      <Filter>Core Types</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
