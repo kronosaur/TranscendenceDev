@@ -227,6 +227,41 @@
 				)
 			))
 
+		(setq diagTestEnhanceCombine (lambda (itemType enhance1 enhance2)
+			(block (
+				result1 result2
+				)
+				(if (= enhance1 'damaged)
+					(objAddItem gPlayerShip (itmSet@ itemType 'damaged True))
+
+					(block ()
+						(objAddItem gPlayerShip itemType)
+						
+						(setq result1 
+							(objEnhanceItem gPlayerShip 
+								(@ (objGetItems gPlayerShip (cat "*U +unid:" itemType ";")) 0)
+								enhance1
+								)
+							)
+						(if (and (!= (@ result1 'resultCode) 'ok) (!= (@ result1 'resultCode) 'defectOK))
+							(error "Unexpected result: " result1)
+							)
+						)
+					)
+
+				(setq result2
+					(objEnhanceItem gPlayerShip 
+						(@ (objGetItems gPlayerShip (cat "*U +unid:" itemType ";")) 0)
+						enhance2
+						)
+					)
+
+				(objRemoveItem gPlayerShip (@ (objGetItems gPlayerShip (cat "*U +unid:" itemType ";")) 0))
+
+				result2
+				)
+			))
+
 		(setq diagTestMeteorsteel (lambda ()
 			(block ()
 				(diagRun (list

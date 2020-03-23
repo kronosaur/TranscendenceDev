@@ -1086,13 +1086,15 @@
 
 			<Text id="rpg.canUse.ok">						You can use %useItem% on %dstItem%.</Text>
 			<Text id="rpg.canUse.alreadyEnhanced">			%DstItem% is already enhanced; %UseItem% will have no effect.</Text>
-			<Text id="rpg.canUse.cantReplaceDefect">		You can use %useItem% on %dstItem%.</Text>
-			<Text id="rpg.canUse.cantReplaceEnhancement">	You can use %useItem% on %dstItem%.</Text>
+			<Text id="rpg.canUse.cantReplaceDefect">		%DstItem% is defective; %UseItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	%DstItem% is already enhanced; %UseItem% will have no effect.</Text>
 			<Text id="rpg.canUse.damaged">					You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.defectImproved">			You can use %useItem% on %dstItem%.</Text>
 			<Text id="rpg.canUse.defectOK">					You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
 			<Text id="rpg.canUse.defectRemoved">			You can use %useItem% on %dstItem%.</Text>
 			<Text id="rpg.canUse.defectReplaced">			You can use %useItem% on %dstItem%.</Text>
 			<Text id="rpg.canUse.degraded">					You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.enhancementDegraded">		You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
 			<Text id="rpg.canUse.enhancementRemoved">		You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
 			<Text id="rpg.canUse.enhancementReplaced">		You can use %useItem% on %dstItem%.</Text>
 			<Text id="rpg.canUse.improved">					You can use %useItem% on %dstItem%.</Text>
@@ -1106,10 +1108,12 @@
 			<Text id="rpg.useResult.cantReplaceDefect">		But it has no effect on your %targetItemName% because it is already defective.</Text>
 			<Text id="rpg.useResult.cantReplaceEnhancement">But it has no effect on your %targetItemName% because it is already enhanced.</Text>
 			<Text id="rpg.useResult.damaged">				Your %dstItem% was damaged.</Text>
+			<Text id="rpg.useResult.defectImproved">		The defect on your %dstItem% has been partially repaired.</Text>
 			<Text id="rpg.useResult.defectOK">				Your %dstItem% has been weakened.</Text>
 			<Text id="rpg.useResult.defectRemoved">			The enhancement has repaired a defect on your %dstItem%.</Text>
-			<Text id="rpg.useResult.defectReplaced">		Your %dstItem% has weakened further.</Text>
+			<Text id="rpg.useResult.defectReplaced">		The enhancement has replaced the previous defect on your %dstItem%.</Text>
 			<Text id="rpg.useResult.degraded">				Your %dstItem% has weakened further.</Text>
+			<Text id="rpg.useResult.enhancementDegraded">	Your %dstItem%'s enhancement has weakened.</Text>
 			<Text id="rpg.useResult.enhancementRemoved">	Your %dstItem% has lost its previous enhancement.</Text>
 			<Text id="rpg.useResult.enhancementReplaced">	Your %dstItem% has been enhanced, but has lost its previous enhancement.</Text>
 			<Text id="rpg.useResult.improved">				Your %dstItem% has been further enhanced.</Text>
@@ -1252,7 +1256,7 @@
 							(resultCode (@ result 'resultCode))
 
 							(canUse (or
-								(not (find '(alreadyEnhanced noEffect) resultCode))
+								(not (find '(alreadyEnhanced cantReplaceDefect cantReplaceEnhancement noEffect) resultCode))
 								(itm@ gItem 'rpg.alwaysAllowUse)
 								))
 							)
@@ -1352,8 +1356,8 @@
 					{
 						desc: (join 
 								(list
-									(or (itmTranslate gItem 'descResultIntro)
-										(itmTranslate gItem 'rpg.useResultIntro)
+									(or (itmTranslate gItem 'rpg.useResultIntro)
+										(itmTranslate gItem 'descResultIntro)
 										)
 									(or (@ result 'desc)
 										(itmTranslate gItem (cat "rpg.useResult." (@ result 'resultCode)))
@@ -1370,13 +1374,15 @@
 		<Language>
 			<Text id="rpg.canUse.ok">						You can use %useItem% on %dstItem%.</Text>
 			<Text id="rpg.canUse.alreadyEnhanced">			%DstItem% is already enhanced; %UseItem% will have no effect.</Text>
-			<Text id="rpg.canUse.cantReplaceDefect">		You can use %useItem% on %dstItem%.</Text>
-			<Text id="rpg.canUse.cantReplaceEnhancement">	You can use %useItem% on %dstItem%.</Text>
+			<Text id="rpg.canUse.cantReplaceDefect">		%DstItem% is defective; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	%DstItem% is already enhanced; %UseItem% will have no effect.</Text>
 			<Text id="rpg.canUse.damaged">					You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.defectImproved">			You can use %useItem% on %dstItem%.</Text>
 			<Text id="rpg.canUse.defectOK">					You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
 			<Text id="rpg.canUse.defectRemoved">			You can use %useItem% on %dstItem%.</Text>
 			<Text id="rpg.canUse.defectReplaced">			You can use %useItem% on %dstItem%.</Text>
 			<Text id="rpg.canUse.degraded">					You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.enhancementDegraded">		You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
 			<Text id="rpg.canUse.enhancementRemoved">		You can use %useItem% on %dstItem%, but it's probably not a good idea.</Text>
 			<Text id="rpg.canUse.enhancementReplaced">		You can use %useItem% on %dstItem%.</Text>
 			<Text id="rpg.canUse.improved">					You can use %useItem% on %dstItem%.</Text>
@@ -1389,9 +1395,11 @@
 			<Text id="rpg.useResult.alreadyEnhanced">		But your armor does not need the enhancement.</Text>
 			<Text id="rpg.useResult.cantReplaceDefect">		But it has no effect on your armor because it is already defective.</Text>
 			<Text id="rpg.useResult.cantReplaceEnhancement">But it has no effect on your armor because it is already enhanced.</Text>
+			<Text id="rpg.useResult.defectImproved">		It seems to have partially repaired the defect.</Text>
 			<Text id="rpg.useResult.defectRemoved">			It seems to have restored your armor.</Text>
-			<Text id="rpg.useResult.defectReplaced"></Text>
+			<Text id="rpg.useResult.defectReplaced">		The new enhancement has replaced the previous defect.</Text>
 			<Text id="rpg.useResult.degraded">				Your armor has weakened further.</Text>
+			<Text id="rpg.useResult.enhancementDegraded">	Your armor's enhancement has decreased.</Text>
 			<Text id="rpg.useResult.enhancementRemoved">	Your armor has lost its enhancement.</Text>
 			<Text id="rpg.useResult.enhancementReplaced">	Unfortunately, your armor has lost its previous enhancement.</Text>
 			<Text id="rpg.useResult.improved">				Your armor has been further enhanced.</Text>

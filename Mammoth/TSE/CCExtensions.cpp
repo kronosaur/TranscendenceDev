@@ -1651,6 +1651,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'ok: Enhancement applied\n"
 			"   'alreadyEnhanced: Already has this exact enhancement\n"
 			"   'damaged: Device was damaged\n"
+			"   'defectOK: Defect applied\n"
 			"   'defectRemoved: Existing defective removed\n"
 			"   'defectReplaced: Existing defective replaced with defective mod\n"
 			"   'degraded: Enhancement kept, but made worse\n"
@@ -8398,7 +8399,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
 				if (EnhancementItem.IsEmpty())
-					return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(2));
+					return pCC->CreateError(CONSTLIT("Invalid enhancement item"), pArgs->GetElement(2));
 
 				//	Do it
 

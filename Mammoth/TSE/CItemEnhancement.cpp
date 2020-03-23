@@ -6,15 +6,17 @@
 
 CItemEnhancement CItemEnhancement::m_Null;
 
-static TStaticStringTable<TStaticStringEntry<EnhanceItemStatus>, 14> ENHANCE_ITEM_STATUS_TABLE = {
+static TStaticStringTable<TStaticStringEntry<EnhanceItemStatus>, 16> ENHANCE_ITEM_STATUS_TABLE = {
 	"alreadyEnhanced",			eisAlreadyEnhanced,
 	"cantReplaceDefect",		eisCantReplaceDefect,
 	"cantReplaceEnhancement",	eisCantReplaceEnhancement,
 	"damaged",					eisItemDamaged,
+	"defectImproved",			eisDefectBetter,
 	"defectOK",					eisDefectOK,
 	"defectRemoved",			eisRepaired,
 	"defectReplaced",			eisDefectReplaced,
 	"degraded",					eisWorse,
+	"enhancementDegraded",		eisEnhancementWorse,
 	"enhancementRemoved",		eisEnhancementRemoved,
 	"enhancementReplaced",		eisEnhancementReplaced,
 	"improved",					eisBetter,
@@ -458,10 +460,11 @@ bool CItemEnhancement::CanBeCombinedWith (const CItemEnhancement &NewEnhancement
 	else if (GetType() == etNone || NewEnhancement.GetType() == etNone)
 		return true;
 
-	//	Regeneration can cure any disadvantage
+	//	Regeneration can cure any disadvantage and replaces any other 
+	//	enhancement.
 
 	else if ((NewEnhancement.GetType() == etRegenerate || NewEnhancement.GetType() == etHealerRegenerate)
-			&& !NewEnhancement.IsDisadvantage() && IsDisadvantage())
+			&& !NewEnhancement.IsDisadvantage())
 		return true;
 
 	//	Otherwise, it depends on the enhancement type
@@ -622,13 +625,11 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 				{
 				if (!CombineExpireTime(Enhancement))
 					return eisNoEffect;
-				else
-					{
-					//	A disadvantage removes an advantage
 
-					*this = CItemEnhancement();
-					return eisEnhancementRemoved;
-					}
+				//	A disadvantage removes an advantage
+
+				*this = CItemEnhancement();
+				return eisEnhancementRemoved;
 				}
 			}
 		else
@@ -667,11 +668,44 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 				return eisNoEffect;
 			}
 
+		case etRegenerate:
+		case etHealerRegenerate:
+			{
+			//	If a different type, then we replace
+
+			if (GetType() != etRegenerate && GetType() != etHealerRegenerate)
+				{
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
+				return eisEnhancementReplaced;
+				}
+
+			//	Std regen cannot be overridden
+
+			else if (GetDataX() == 0)
+				return eisNoEffect;
+
+			//	Std regen always overrides, and if regen is better, then we
+			//	override.
+
+			else if (Enhancement.GetDataX() == 0
+					|| Enhancement.GetDataX() > GetDataX())
+				{
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
+				return eisBetter;
+				}
+			else
+				return eisNoEffect;
+			}
+
 		//	If this is the same type of enhancement and it is better,
 		//	then take it (otherwise, no effect)
 
-		case etRegenerate:
-		case etHealerRegenerate:
 		case etResist:
 		case etResistEnergy:
 		case etResistMatter:
@@ -701,6 +735,14 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 				}
 			else
 				return eisNoEffect;
+			}
+
+		case etReflect:
+			{
+			if (Enhancement.GetDamageTypeField() != GetDamageTypeField())
+				return eisCantReplaceEnhancement;
+			else
+				return eisAlreadyEnhanced;
 			}
 
 		case etSpeed:
@@ -796,12 +838,26 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithDisadvantage (const CIte
 				SetModBonus(iNewBonus);
 				
 				if (iNewBonus)
-					return eisWorse;
+					return eisEnhancementWorse;
 				else
 					return eisEnhancementRemoved;
 				}
 			else
 				return eisNoEffect;
+			}
+
+		case etRegenerate:
+		case etHealerRegenerate:
+		case etReflect:
+		case etResist:
+		case etResistEnergy:
+		case etResistMatter:
+		case etResistByLevel:
+		case etResistByDamage:
+		case etResistByDamage2:
+			{
+			*this = CItemEnhancement();
+			return eisEnhancementRemoved;
 			}
 
 		default:
@@ -827,7 +883,21 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CIte
 				return eisNoEffect;
 
 			m_dwMods = Enhancement.m_dwMods;
-			return eisRepaired;
+			return eisDefectReplaced;
+			}
+
+		case etReflect:
+			{
+			if (Enhancement.GetDamageTypeField() == GetDamageTypeField())
+				{
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				*this = CItemEnhancement();
+				return eisRepaired;
+				}
+			else
+				return eisCantReplaceDefect;
 			}
 
 		//	If the enhancement is the opposite of the disadvantage
@@ -841,14 +911,13 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CIte
 		case etResistByDamage:
 		case etResistByDamage2:
 		case etResistHPBonus:
-		case etReflect:
 		case etSpeed:
 		case etSpeedOld:
 			{
 			if (!CombineExpireTime(Enhancement))
 				return eisNoEffect;
 
-			m_dwMods = Enhancement.m_dwMods;
+			*this = CItemEnhancement();
 			return eisRepaired;
 			}
 
@@ -862,7 +931,7 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CIte
 					return eisNoEffect;
 
 				SetModBonus(iNewBonus);
-				return (GetHPBonus() >= 0 ? eisRepaired : eisBetter);
+				return (GetHPBonus() >= 0 ? eisRepaired : eisDefectBetter);
 				}
 			else
 				return eisNoEffect;
@@ -1813,7 +1882,12 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			else if (iValue < 0)
 				SetModCode(EncodeAX(etHPBonus | etDisadvantage, 0, -iValue));
 			else if (iValue == 0)
-				SetModCode(Encode12(etStrengthen));
+				{
+				if (bDisadvantage)
+					SetModCode(Encode12(etStrengthen | etDisadvantage));
+				else
+					SetModCode(Encode12(etStrengthen));
+				}
 			else if (iValue <= 1000)
 				SetModCode(EncodeAX(etHPBonus, 0, iValue));
 			else

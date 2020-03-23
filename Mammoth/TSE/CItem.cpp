@@ -637,6 +637,10 @@ bool CItem::FireCanEnhanceItem (const CSpaceObject &TargetObj, const CItem &Targ
 //	and retResult.iResult is eisUnknown.
 //
 //	If we get an error, we return FALSE.
+//
+//	LATER: This should not require TargetObj. We need to be able to call this
+//	from an item call (e.g., something like itmEnhance). Instead, we should take
+//	an optional object pointer.
 
 	{
 	retResult = SEnhanceItemResult();
@@ -870,6 +874,10 @@ bool CItem::FireOnEnhanceItem (const CSpaceObject &TargetObj, const CItem &Targe
 //	and retResult.iResult is eisUnknown.
 //
 //	If we get an error, we return FALSE.
+//
+//	LATER: This should not require TargetObj. We need to be able to call this
+//	from an item call (e.g., something like itmEnhance). Instead, we should take
+//	an optional object pointer.
 
 	{
 	retResult = SEnhanceItemResult();
