@@ -28,6 +28,7 @@ public:
 	void initTextureFromOpenGLThread(void);
 	unsigned int* getTexture(void) { return m_pTextureID; }
 	OpenGLTexture *GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, OpenGLShader* shader, glm::vec2 texQuadSize);
+	OpenGLTexture *GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, OpenGLShader* shader, std::tuple<int, int>texQuadSize, std::tuple<int, int>texStartPoint);
 	OpenGLTexture *getGlowMap(void) { return m_pGlowMap.get(); }
 
 private:

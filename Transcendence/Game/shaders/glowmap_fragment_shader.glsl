@@ -3,9 +3,10 @@ out vec4 FragColor;
   
 layout (location = 0) in vec3 ourColor;
 layout (location = 1) in vec2 TexCoord;
+layout (location = 2) in vec2 quadSize;
 
 uniform sampler2D ourTexture;
-uniform vec2 quadSize;
+//uniform vec2 quadSize;
 uniform int kernelSize;
 uniform int use_x_axis;
 uniform int second_pass;

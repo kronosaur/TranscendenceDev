@@ -185,22 +185,15 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 			}
 		}
 	m_texturesForDeletion.clear();
+
 	for (const auto &p : m_shipRenderQueues)
 	{
 		OpenGLTexture *pTextureToUse = p.first;
+		// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
+		pTextureToUse->initTextureFromOpenGLThread();
 		//OpenGLInstancedRenderQueue *pInstancedRenderQueue = p.second;
 		OpenGLInstancedBatchTexture *pInstancedRenderQueue = p.second;
 		// TODO: Set the depths here before rendering. This will ensure that we always render from back to front, which should solve most issues with blending.
-
-		// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
-		pTextureToUse->initTextureFromOpenGLThread();
-
-		// Generate a glow map for this texture if needed.
-		// TODO: Glow map creation seems to be causing flickering issues, maybe we can move this elsewhere?
-		// Maybe we aren't cleaning up properly?
-		if (!pTextureToUse->getGlowMap()) {
-			pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, glm::vec2(float(10), float(10)));
-		}
 
 		float depthLevel = m_fDepthLevel;
 		std::array<std::string, 3> textureUniformNames = { "obj_texture", "glow_map", "current_tick" };
@@ -217,6 +210,18 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 	m_effectLightningRenderQueue.Render(m_pLightningShader, m_fDepthLevel, m_fDepthDelta, m_iCurrentTick);
 	// Reset the depth level.
 	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;
+
+
+	for (const auto &p : m_shipRenderQueues)
+	{
+		OpenGLTexture *pTextureToUse = p.first;
+
+		// Generate a glow map for this texture if needed.
+		// Glow map must be done in different block after actual rendering because otherwise it causes flickering issues
+		if (!pTextureToUse->getGlowMap()) {
+			pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, glm::vec2(float(150), float(150)));
+		}
+	}
 }
 
 void OpenGLMasterRenderQueue::initializeVAO(void)

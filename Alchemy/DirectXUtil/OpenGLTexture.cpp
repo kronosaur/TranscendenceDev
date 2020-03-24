@@ -183,7 +183,9 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao,
 		int rotationMatrixLocation = glGetUniformLocation(shader->id(), "rotationMatrix");
 		glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
 		glUniform1i(glGetUniformLocation(shader->id(), "ourTexture"), 0);
-		glUniform2f(glGetUniformLocation(shader->id(), "quadSize"), texQuadSize[0], texQuadSize[1]);
+		glUniform2f(glGetUniformLocation(shader->id(), "aTexStartPoint"), 600.0f, 600.0f);
+		glUniform2f(glGetUniformLocation(shader->id(), "aTexQuadSizes"), texQuadSize[0], texQuadSize[1]);
+		glUniform2i(glGetUniformLocation(shader->id(), "aTexTotalSize"), m_iWidth, m_iHeight);
 		glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::min(25, std::max(3, int(std::min(texQuadSize[0], texQuadSize[1]) / 10))));
 		glUniform1i(glGetUniformLocation(shader->id(), "use_x_axis"), GL_TRUE);
 		glUniform1i(glGetUniformLocation(shader->id(), "second_pass"), GL_FALSE);
@@ -222,4 +224,73 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao,
 
 	}
 
+
+OpenGLTexture* OpenGLTexture::GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, OpenGLShader* shader, std::tuple<int, int> texQuadSize, std::tuple<int, int> texStartPoint)
+{
+	// Generate a glow map. Kernel is a multivariate gaussian.
+	if (m_iWidth > 0 && m_iHeight > 0)
+	{
+		// Vertical pass
+		// First, create a texture with the same size as the output.
+		OpenGLTexture pTempTexture = OpenGLTexture(m_iWidth, m_iHeight);
+		pTempTexture.initTextureFromOpenGLThread();
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pTempTexture.getTexture()[0], 0);
+		unsigned int rbo;
+		glGenRenderbuffers(1, &rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_iWidth, m_iHeight);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			::kernelDebugLogPattern("[OpenGL] Framebuffer is not complete p1");
+		// Render to the new texture
+		glViewport(0, 0, m_iWidth, m_iHeight); // Set the viewport size to fill the window
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		shader->bind();
+		glm::mat4 rotationMatrix = glm::mat4(glm::vec4(1.0, 0.0, 0.0, 0.0), glm::vec4(0.0, 1.0, 0.0, 0.0), glm::vec4(0.0, 0.0, 1.0, 0.0), glm::vec4(0.0, 0.0, 0.0, 1.0));
+		int rotationMatrixLocation = glGetUniformLocation(shader->id(), "rotationMatrix");
+		glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
+		glUniform1i(glGetUniformLocation(shader->id(), "ourTexture"), 0);
+		glUniform2f(glGetUniformLocation(shader->id(), "aTexStartPoint"), float(std::get<0>(texStartPoint)), float(std::get<1>(texStartPoint)));
+		glUniform2f(glGetUniformLocation(shader->id(), "aTexQuadSizes"), float(std::get<0>(texQuadSize)), float(std::get<1>(texQuadSize)));
+		glUniform2i(glGetUniformLocation(shader->id(), "aTexTotalSize"), m_iWidth, m_iHeight);
+		glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::min(25, std::max(3, int(std::min(float(std::get<0>(texQuadSize)), float(std::get<1>(texQuadSize))) / 10))));
+		glUniform1i(glGetUniformLocation(shader->id(), "use_x_axis"), GL_TRUE);
+		glUniform1i(glGetUniformLocation(shader->id(), "second_pass"), GL_FALSE);
+
+		this->bindTexture2D(GL_TEXTURE0);
+		glBindVertexArray((vao->getVAO())[0]);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		// Second pass
+		m_pGlowMap = std::make_unique<OpenGLTexture>(m_iWidth, m_iHeight);
+		m_pGlowMap.get()->initTextureFromOpenGLThread();
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_pGlowMap->getTexture()[0], 0);
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			::kernelDebugLogPattern("[OpenGL] Framebuffer is not complete p2");
+		// Render to the new texture
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUniform1i(glGetUniformLocation(shader->id(), "use_x_axis"), GL_FALSE);
+		glUniform1i(glGetUniformLocation(shader->id(), "second_pass"), GL_TRUE);
+
+		pTempTexture.bindTexture2D(GL_TEXTURE0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		// Clean up
+		glBindVertexArray(0); // Unbind our Vertex Array Object
+		this->unbindTexture2D();
+		shader->unbind(); // Unbind our shader
+		// Unbind the frame buffer and delete our rbo
+		glDeleteRenderbuffers(1, &rbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		return m_pGlowMap.get();
+	}
+	else {
+		return nullptr;
+	}
+
+}
 
