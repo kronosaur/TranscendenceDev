@@ -529,6 +529,19 @@
 							(level (intBlackMarketPromotion))
 							)
 							(typSet@ &unidBlackMarketMember; 'level level)
+
+							;	If the player reaches level 3 (Enforcer) 
+							;	then they become friends with the Black Market
+
+							(if (= level 3)
+								(block ()
+									(sovSetDisposition &svBlackMarket; &svPlayer; 'friend)
+									(sovSetDisposition &svPlayer; &svBlackMarket; 'friend)
+									)
+								)
+
+							;	Done
+
 							(scrExitScreen gScreen)
 							)
 					</Action>
