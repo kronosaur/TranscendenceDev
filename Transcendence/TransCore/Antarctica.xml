@@ -186,6 +186,18 @@
 					(rpgDestroyItems aWreckObj)
 					)
 			</OnDestroy>
+			
+			<GetDockScreen>
+				(switch
+					;	If the player does not have a military ID, then
+					;	refuse dock
+					
+					(not (objGetItems gPlayerShip "*+MilitaryID"))
+						{	screen:&dsFleetRefuseDock;	priority:6		overrideOnly:true	}
+					
+					Nil
+					)
+			</GetDockScreen>
 		</Events>
 
 		<Language>
@@ -195,7 +207,12 @@
 
 			<Text id="descWelcome">You are in the docking bay of the CSC Antarctica.</Text>
 			<Text id="descNoMissions">
-				LATER: No missions available.
+				
+				A Fleet officer blocks the door.
+				
+				"I don't know who you think you are, mate, but aren't our crew, so
+				you'd better get off our ship."
+				
 			</Text>
 		</Language>
 	</ShipClass>

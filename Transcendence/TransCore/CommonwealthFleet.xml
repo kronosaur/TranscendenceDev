@@ -1067,25 +1067,40 @@ PLAYER DATA
 
 	<!-- Fleet only allows docking with military ID	-->
 
-	<DockScreen UNID="&dsFleetRefuseDock;"	nestedScreen="true">
+	<DockScreen UNID="&dsFleetRefuseDock;"	
+			inherit=		"&dsDockScreenBase;"
+			nestedScreen=	"true"
+			>
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(scrSetDesc gScreen 
-						(cat "As you exit the docking ramp, Commonwealth troopers train their weapons on you:\n\n\"This is a military "
-							 (if (objIsShip gSource) "ship" "installation")
-							 ", civie!\""
-							 )
-						)
+					(scrSetDescTranslate gScreen 'textBlocked {
+						location: (if (objIsShip gSource)
+							(scrTranslate gScreen 'nounShip)
+							(scrTranslate gScreen 'nounInstallation)
+							)
+						})
 				</OnPaneInit>
 
 				<Actions>
-					<Action name="Undock" default="1" cancel="1" key="U">
+					<Action id="actionUndock" default="1" cancel="1">
 						(scrExitScreen gScreen 'forceUndock)
 					</Action>
 				</Actions>
 			</Default>
 		</Panes>
+		<Language>
+			<Text id="textBlocked">
+				
+				As you exit the docking ramp, Commonwealth troopers train their 
+				weapons on you:
+				
+				"This is a military %location%, civie!"
+				
+			</Text>
+			<Text id="nounShip">ship</Text>
+			<Text id="nounInstallation">installation</Text>
+		</Language>
 	</DockScreen>
 
 	<!-- Fleet Promotion -->
