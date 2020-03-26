@@ -373,10 +373,10 @@
 
 			attributes=			"ares,genericClass"
 			   
-			mass=				"210"
+			mass=				"600"
 			thrustRatio=		"5"
 			maxSpeed=			"20"
-			cargoSpace=			"50"
+			cargoSpace=			"200"
 			>
 
 		<!-- Configuration -->
