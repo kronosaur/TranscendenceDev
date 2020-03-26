@@ -6374,5 +6374,6 @@
 	<Image UNID="&rsSungTransport;"		obsoleteVersion="49" bitmap="Resources\SungTransport.jpg"	bitmask="Resources\SungTransportMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsSalvagerNomad;"		obsoleteVersion="49"				bitmap="Resources\SalvagerNomad.jpg"		bitmask="Resources\SalvagerNomadMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsXenophobeDefender;"	obsoleteVersion="49"		bitmap="Resources\XenophobeDefender.jpg"		bitmask="Resources\XenophobeDefenderMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsRanxDreadnought;"	obsoleteVersion="49"		bitmap="Resources\RanxDreadnought.jpg"		bitmask="Resources\RanxDreadnoughtMask.bmp"	loadOnUse="true"/>
 
 </TranscendenceModule>

@@ -294,7 +294,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsRanxDreadnought;" imageX="0" imageY="0" imageWidth="280" imageHeight="280" viewportRatio="0.0475"/>
+		<Image imageID="&rsRanxDreadnoughtHD;"	imageWidth="280" imageHeight="280"	rotationCount="120" rotationColumns="12" viewportRatio="0.0475"/>
+		<HeroImage imageID="&rsRanxDreadnoughtHero;" imageWidth="320" imageHighet="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="175"	posRadius="134"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
@@ -461,7 +462,9 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsRanxDreadnought;"			bitmap="Resources\RanxDreadnought.jpg"		bitmask="Resources\RanxDreadnoughtMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsRanxDreadnoughtHD;"		bitmap="Resources\RanxDreadnoughtHD.jpg" bitmask="Resources\RanxDreadnoughtHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsRanxDreadnoughtHero;"	bitmap="Resources\RanxDreadnoughtLarge.jpg" bitmask="Resources\RanxDreadnoughtLargeMask.bmp" loadOnUse="true"/>
+
 	<Image UNID="&rsRanxGunshipHD;"				bitmap="Resources\RanxGunshipHD.jpg"		bitmask="Resources\RanxGunshipHDMask.bmp"  	loadOnUse="true"/>
 
 </TranscendenceModule>

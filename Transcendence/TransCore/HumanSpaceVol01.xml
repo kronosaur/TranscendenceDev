@@ -1817,6 +1817,7 @@
 	<!ENTITY rsSteelSlaverHero			"0x00100128">
 	<!ENTITY rsSteelSlaver				"0x00100129">
 	<!ENTITY rsSungTransportHero		"0x0010012A">
+	<!ENTITY rsEarthSlaverHero			"0x0010012B">
 	
 	<!-- 0140-014F XENOPHOBES -->
 	
@@ -2121,6 +2122,7 @@
 
 	<!ENTITY rsRanxGunshipHD			"0x00100450">
 	<!ENTITY smRanxSpace				"0x00100451">
+	<!ENTITY rsRanxDreadnoughtHero		"0x00100452">
 
 	<!-- 0470-048F FERIANS -->
 
