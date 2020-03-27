@@ -1426,3 +1426,37 @@ CString CLanguage::ParseVar (char *pPos, SVarInfo &retVarInfo, char **retpPos)
 
 	return sVar;
 	}
+
+bool CLanguage::ValidateTranslation (const CString &sText)
+
+//	ValidateTranslation
+//
+//	Make sure that we don't have any untranslated fields. Returns TRUE if we're
+//	OK.
+
+	{
+	const char *pPos = sText.GetASCIIZPointer();
+	bool bPercent = false;
+
+	while (*pPos != '\0')
+		{
+		//	If the last character was a percent, then make sure it is not 
+		//	followed by a character.
+
+		if (bPercent)
+			{
+			if (*pPos == '%' || strIsAlphaNumeric(pPos))
+				return false;
+
+			bPercent = false;
+			}
+		else if (*pPos == '%')
+			{
+			bPercent = true;
+			}
+
+		pPos++;
+		}
+
+	return true;
+	}

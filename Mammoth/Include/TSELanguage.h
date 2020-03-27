@@ -110,6 +110,7 @@ class CLanguage
 		static DWORD ParseNounFlags (const CString &sValue);
 		static CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, SNounDesc *retDesc = NULL);
 		static ENumberFormatTypes ParseNumberFormat (const CString &sValue);
+		static bool ValidateTranslation (const CString &sText);
 
 	private:
 		struct SVarInfo

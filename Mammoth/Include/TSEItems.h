@@ -251,6 +251,7 @@ class CItem
 			EnhanceItemStatus iResult = eisUnknown;
 			CItemEnhancement Enhancement;
 			CString sDesc;
+			CString sNextScreen;
 			bool bDoNotConsume = false;
 			};
 

@@ -148,42 +148,48 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Properties>
-			<Constant id="rpg.useCriteria">"a"</Constant>
-		</Properties>
-
 		<Events>
-			<OnUseOnItem>
+			<CanEnhanceItem>
 				(block (
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					)
-					(setq dstItem (objSetItemProperty gPlayerShip dstItem 'incHP (- (rollDice 3 6 0))))
+					{
+						resultCode: 'damaged
+						desc: (itmTranslate gItem 'descUsage {
+							useItem: (itmGetName gItem 'article)
+							dstItem: (itmGetName dstItem 'noModifiers)
+							})
+						}
+					)
+			</CanEnhanceItem>
 
-					;	Remove the armor paste from the player's cargo
-					(objRemoveItem gPlayerShip gItem 1)
-
-					;	Identify the item
-					(itmSetKnown gItem)
+			<OnEnhanceItem>
+				(block (
+					(dstItem (@ gData 'targetItem))
+					)
+					(setq dstItem (objSet@ gSource dstItem 'incHP (- (rollDice 3 6 0))))
 
 					;	If the armor was destroyed, then we remove it too.
 
-					(if (and (not (itmGetProperty dstItem 'installed))
-							(= (itmGetProperty dstItem 'hp) 0)
+					(if (and (not (itm@ dstItem 'installed))
+							(= (itm@ dstItem 'hp) 0)
 							)
 						(block ()
-							(objRemoveItem gPlayerShip dstItem)
+							(objRemoveItem gSource dstItem)
 
 							{
+								resultCode: 'damaged
 								desc: (itmTranslate gItem 'descResultDestroyed)
 								}
 							)
 
 						{
+							resultCode: 'damaged
 							desc: (itmTranslate gItem 'descResult)
 							}
 						)
 					)
-			</OnUseOnItem>
+			</OnEnhanceItem>
 		</Events>
 
 		<Language>
@@ -197,6 +203,11 @@
 
 				Unfortunately, the barrel contained an organic acid that eats
 				through most metals. The armor segment has been destroyed.
+
+			</Text>
+			<Text id="descUsage">
+
+				Using organic acid will damage the %dstItem%.
 
 			</Text>
 		</Language>
@@ -227,63 +238,82 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Properties>
-			<Constant id="rpg.useCriteria">"a"</Constant>
-		</Properties>
-
 		<Events>
-			<OnUseOnItem>
+			<CanEnhanceItem>
+				(switch
+					(not (itm@ (@ gData 'targetItem) 'installed))
+						{	
+							resultCode: 'noEffect 
+							}
+
+					(not (objGetCondition gSource 'radioactive))
+						{
+							resultCode: 'noEffect
+							desc: (itmTranslate gItem 'rpg.canUse.notRadioactive)
+							}
+
+					{
+						resultCode: 'ok
+						desc: (itmTranslate gItem 'rpg.canUse.decon)
+						}
+					)
+			</CanEnhanceItem>
+
+			<OnEnhanceItem>
 				(block (
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					resultID
 					)
 
 					(switch
-						;	If applied on a loose segment, then no effect
+						(not (itm@ dstItem 'installed))
+							{
+								resultCode: 'noEffect
+								nextScreen: 'exitScreen
+								}
 
-						(not (itmGetProperty dstItem 'installed))
-							(setq resultID 'descResultNoEffect)
+						(not (objGetCondition gSource 'radioactive))
+							{
+								resultCode: 'noEffect
+								desc: (itmTranslate gItem 'rpg.useResult.notRadioactive)
+								nextScreen: 'exitScreen
+								}
 
-						;	If ship is radioactive, then we decontaminate
-
-						(shpIsRadioactive gPlayerShip)
-							(block Nil
-								(shpDecontaminate gPlayerShip)
-								(setq resultID 'descResultDecontaminated)
-								)
-
-						(setq resultID 'descResultNotNeeded)
+						(block ()
+							(shpDecontaminate gSource)
+							{
+								resultCode: 'ok
+								desc: (itmTranslate gItem 'rpg.useResult.decon)
+								nextScreen: 'exitScreen
+								}
+							)
 						)
-
-					(objRemoveItem gPlayerShip gItem 1)
-					(itmSetKnown gItem)
-					{
-						nextScreen: 'exitScreen
-						desc: (itmTranslate gItem resultID {
-							dstItem: (itmGetName dstItem)
-							})
-						}
 					)
-			</OnUseOnItem>
+			</OnEnhanceItem>
 		</Events>
 
 		<Language>
-			<Text id="descResultDecontaminated">
+			<Text id="rpg.canUse.decon">
+
+				Using this barrel of gel will decontaminate your ship.
+
+			</Text>
+			<Text id="rpg.useResult.decon">
 
 				The barrel was filled with a decontamination gel. Your ship has 
 				been decontaminated.
 
 			</Text>
-			<Text id="descResultNotNeeded">
+			<Text id="rpg.canUse.notRadioactive">
+
+				Your ship is not radioactive, so the gel will not have any 
+				effect.
+
+			</Text>
+			<Text id="rpg.useResult.notRadioactive">
 
 				The barrel was filled with a decontamination gel. Since your 
 				ship is not radioactive, the gel had no effect.
-
-			</Text>
-			<Text id="descResultNoEffect">
-
-				The barrel was filled with a decontamination gel. It had no 
-				effect on the %dstItem% because it is not radioactive.
 
 			</Text>
 		</Language>
@@ -481,68 +511,131 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Properties>
-			<Constant id="rpg.useCriteria">"a"</Constant>
-		</Properties>
-
 		<Events>
-			<OnUseOnItem>
+			<CanEnhanceItem>
 				(block (
-					(dstItem (@ gData 'itemToUseOn))
-					resultID
+					(dstItem (@ gData 'targetItem))
+					(trData {
+						dstItem: (itmGetName dstItem 'noModifiers)
+						})
 					)
 					(switch
-						;	Already contaminated
-						(shpIsRadioactive gPlayerShip)
-							(setq resultID 'descResultAlreadyContaminated)
+						(objGetCondition gSource 'radioactive)
+							{
+								resultCode: 'noEffect
+								desc: (itmTranslate gItem 'rpg.canUse.alreadyRadioactive trData)
+								}
 
-						;	Applied to an installed armor segment with radiation immunity
-						(and (itmMatches dstItem "aI") (shpIsRadiationImmune gPlayerShip dstItem))
-							(setq resultID 'descResultImmune)
+						(and (itmMatches dstItem "aI") (shpIsRadiationImmune gSource dstItem))
+							{
+								resultCode: 'noEffect
+								desc: (itmTranslate gItem 'rpg.canUse.immune trData)
+								}
 
-						(block Nil
-							(if (itmMatches dstItem "aI")
-								(setq resultID 'descResultContaminated)
-								(setq resultID 'descResultContaminatedCargo)
-								)
-							(shpMakeRadioactive gPlayerShip)
-							)
-						)
+						(itmMatches dstItem "aI")
+							{
+								resultCode: 'damaged
+								desc: (itmTranslate gItem 'rpg.canUse.contaminateArmor trData)
+								}
 
-						(objRemoveItem gPlayerShip gItem 1)
-						(itmSetKnown gItem)
 						{
-							nextScreen: 'forceUndock
-							desc: (typTranslate &itRadioactiveWaste; resultID)
+							resultCode: 'damaged
+							desc: (itmTranslate gItem 'rpg.canUse.contaminateCargo trData)
 							}
 						)
 					)
-			</OnUseOnItem>
+			</CanEnhanceItem>
+
+			<OnEnhanceItem>
+				(block (
+					(dstItem (@ gData 'targetItem))
+					(trData {
+						dstItem: (itmGetName dstItem 'noModifiers)
+						})
+					)
+					(switch
+						(objGetCondition gSource 'radioactive)
+							{
+								resultCode: 'noEffect
+								desc: (itmTranslate gItem 'rpg.useResult.alreadyRadioactive trData)
+								}
+
+						(and (itmMatches dstItem "aI") (shpIsRadiationImmune gSource dstItem))
+							{
+								resultCode: 'noEffect
+								desc: (itmTranslate gItem 'rpg.useResult.immune trData)
+								}
+
+						(itmMatches dstItem "aI")
+							(block ()
+								(shpMakeRadioactive gSource)
+								{
+									resultCode: 'damaged
+									desc: (itmTranslate gItem 'rpg.useResult.contaminateArmor trData)
+									nextScreen: 'forceUndock
+									}
+								)
+
+						(block ()
+							(shpMakeRadioactive gSource)
+							{
+								resultCode: 'damaged
+								desc: (itmTranslate gItem 'rpg.useResult.contaminateCargo trData)
+								nextScreen: 'forceUndock
+								}
+							)
+						)
+					)
+			</OnEnhanceItem>
 		</Events>
 
 		<Language>
-			<Text id="descResultAlreadyContaminated">
+			<Text id="rpg.canUse.alreadyRadioactive">
+
+				Your ship is already contaminated, so opening this barrel will
+				have no effect.
+
+			</Text>
+			<Text id="rpg.useResult.alreadyRadioactive">
 
 				The barrel contained radioactive waste. Your ship is already
 				radioactive; the waste has no further effect.
 
 			</Text>
-			<Text id="descResultContaminated">
+			<Text id="rpg.canUse.contaminateArmor">
+
+				Opening the barrel of radioactive waste will contaminate your
+				ship.
+
+			</Text>
+			<Text id="rpg.useResult.contaminateArmor">
 
 				The barrel contained radioactive waste. Your ship has been
 				contaminated.
 
 			</Text>
-			<Text id="descResultImmune">
+			<Text id="rpg.canUse.contaminateCargo">
 
-				The barrel contained radioactive waste. Fortunately, your armor
-				is immune to radiation. The waste has no effect.
+				Opening the barrel of radioactive waste will contaminate your
+				ship.
 
 			</Text>
-			<Text id="descResultContaminatedCargo">
+			<Text id="rpg.useResult.contaminateCargo">
 
 				The barrel contained radioactive waste which just emptied inside
 				your cargo hold. Your ship has been contaminated.
+
+			</Text>
+			<Text id="rpg.canUse.immune">
+
+				This %dstItem% is immune to radiation. The barrel will have no 
+				effect.
+
+			</Text>
+			<Text id="rpg.useResult.immune">
+
+				The barrel contained radioactive waste. Fortunately, your armor
+				is immune to radiation. The waste has no effect.
 
 			</Text>
 		</Language>
@@ -911,7 +1004,111 @@
 										'damageAdj
 										)
 									'particle)										result:75	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Organic Acid ---------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objCanEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itOrganicAcid;
+										)
+									'resultCode)									result:'damaged	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itOrganicAcid;
+										)
+									'resultCode)									result:'damaged	}
+
+						{	test:'(ls 
+									(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") 0)
+										'hp
+										)
+									(itm@ &itPlasteelPlate; 'hp)
+									)												result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Decon Gel ------------------------------------------
+
+						{	test:'(shpMakeRadioactive gPlayerShip)					result:True	}
+
+						{	test:'(@ (objCanEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itDeconGel;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itDeconGel;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(objGetCondition gPlayerShip 'radioactive)		result:Nil	}
+
+						{	test:'(@ (objCanEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itDeconGel;
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itDeconGel;
+										)
+									'resultCode)									result:'noEffect	}
+
+						;	Radioactive Waste ----------------------------------
+
+						{	test:'(@ (objCanEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itRadioactiveWaste;
+										)
+									'resultCode)									result:'damaged	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itRadioactiveWaste;
+										)
+									'resultCode)									result:'damaged	}
+
+						{	test:'(objGetCondition gPlayerShip 'radioactive)		result:True	}
+
+						{	test:'(@ (objCanEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itRadioactiveWaste;
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itRadioactiveWaste;
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itDeconGel;
+										)
+									'resultCode)									result:'ok	}
+
 						))
+
+					;	Done
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
 					)
 				
 			</OnGlobalRunDiagnostics>

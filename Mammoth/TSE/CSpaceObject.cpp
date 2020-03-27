@@ -526,6 +526,13 @@ ICCItemPtr CSpaceObject::AsCCItem (CCodeChainCtx &Ctx, const CItem::SEnhanceItem
 //	Encode as a structure.
 
 	{
+	//	In debug mode, validate that we've got a proper translation
+
+	if (Ctx.GetUniverse().InDebugMode() && !CLanguage::ValidateTranslation(Result.sDesc))
+		return ICCItemPtr::Error(strPatternSubst(CONSTLIT("Missing translation: %s"), Result.sDesc));
+
+	//	Encode in a struct
+
 	ICCItemPtr pResult(ICCItem::SymbolTable);
 	pResult->SetStringAt(CONSTLIT("resultCode"), CItemEnhancement::EnhanceItemStatusToString(Result.iResult));
 
@@ -541,6 +548,9 @@ ICCItemPtr CSpaceObject::AsCCItem (CCodeChainCtx &Ctx, const CItem::SEnhanceItem
 
 	if (!Result.sDesc.IsBlank())
 		pResult->SetStringAt(CONSTLIT("desc"), Result.sDesc);
+
+	if (!Result.sNextScreen.IsBlank())
+		pResult->SetStringAt(CONSTLIT("nextScreen"), Result.sNextScreen);
 
 	if (Result.bDoNotConsume)
 		pResult->SetBooleanAt(CONSTLIT("doNotConsume"), true);

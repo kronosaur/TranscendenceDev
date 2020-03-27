@@ -1117,50 +1117,52 @@
 		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<Events>
-			<OnUseOnItem>
+			<OnEnhanceItem>
 				(block (
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					)
 					(switch
 						;	Recharge Qianlong Archcannon
+
 						(= (itmGetType dstItem) &itQianlongArchcannon;)
 							(block (recharged)
-								(setq recharged (objFireItemEvent gPlayerShip dstItem 'Recharge { charges:256 }))
-
-								;	Remove the item from the player's cargo
-								(objRemoveItem gPlayerShip gItem 1)
+								(setq recharged (objFireItemEvent gSource dstItem 'Recharge { charges:256 }))
 
 								(if (= recharged 0)
-									(itmTranslate gItem 'descNoRecharge)
-									(itmTranslate gItem 'descRecharge)
+									{
+										resultCode: 'noEffect
+										desc: (itmTranslate gItem 'descNoRecharge)
+										}
+
+									{
+										resultCode: 'ok
+										desc: (itmTranslate gItem 'descRecharge)
+										}
 									)
 								)
 
-						;	Call default handler
-						(typFireObjItemEvent &baStdDeviceEnhancement; gSource gItem 'CanUseOnItem gData)
+						;	Default handler
+
+						Nil
 						)
 					)
-			</OnUseOnItem>
+			</OnEnhanceItem>
 		</Events>
 
 		<Language>
 			<Text id="descResultIntro">
 
-				The longzhu sphere glows with stored power and the %dstItem%
-				hums with new energy.
+				The longzhu sphere glows with stored power.
 
 			</Text>
 			<Text id="descNoRecharge">
 
-				The longzhu sphere glows with stored power but the Qianlong
-				archcannon is unaffected.
+				But the Qianlong archcannon is already at full charge.
 
 			</Text>
 			<Text id="descRecharge">
 
-				The longzhu sphere glows with stored power and the Qianlong
-				archcannon hums with new energy. Your Qianlong archcannon has
-				been recharged.
+				Your Qianlong archcannon has been recharged.
 
 			</Text>
 			<Text id="descNoFurther">The enhancement has no effect.</Text>

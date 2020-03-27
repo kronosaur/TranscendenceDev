@@ -79,7 +79,7 @@
 		<Language>
 			<Text id="rpg.useResultIntro">The ROM improves a shield's energy density.</Text>
 
-			<Text id="msgCannotEnhance">The ROM cannot enhance %dstItem%.</Text>
+			<Text id="msgCannotEnhance">The ROM cannot enhance this %dstItem%.</Text>
 			<Text id="msgTooAlien">Shield generator is too alien for the ROM to enhance.</Text>
 		</Language>
 	</ItemType>
@@ -428,8 +428,8 @@
 			<Text id="rpg.useResultIntro">
 				The crystal is decayed etherium, which degrades a shield's resistance to ion damage.
 			</Text>
-			<Text id="rpg.useResult.tooAdvanced">Fortunately, %dstItem% is too advanced to be affected.</Text>
-			<Text id="rpg.useResult.tooPrimitive">Fortunately, %dstItem% is too primitive to be affected.</Text>
+			<Text id="rpg.useResult.tooAdvanced">Fortunately, the %dstItem% is too advanced to be affected.</Text>
+			<Text id="rpg.useResult.tooPrimitive">Fortunately, the %dstItem% is too primitive to be affected.</Text>
 		</Language>
 	</ItemType>
 
@@ -665,6 +665,13 @@
 		</Properties>
 
 		<Language>
+			<Text id="rpg.canUse.ok">						You can install %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; Installing the crystal will have no effect.</Text>
+			<Text id="rpg.canUse.noEffect">					The crystal will have no effect on this %dstItem%.</Text>
+			<Text id="rpg.canUse.repaired">					You can use %useItem% to repair this %dstItem%.</Text>
+
+			<Text id="rpg.canUse.unknown">					The crystal can modulate energy fields. You can install it on this %dstItem%.</Text>
+
 			<Text id="rpg.useResult.ok">					The %dstItem% is more powerful.</Text>
 			<Text id="rpg.useResult.alreadyEnhanced">		The %dstItem% does not benefit from the crystal.</Text>
 			<Text id="rpg.useResult.defectOK">				The %dstItem% is weaker.</Text>
@@ -676,15 +683,8 @@
 			<Text id="rpg.useResult.noEffect">				The crystal has no effect.</Text>
 			<Text id="rpg.useResult.repaired">				The %dstItem% has been repaired.</Text>
 
-			<Text id="rpg.useResult.tooAdvanced">			Unfortunately, %dstItem% is too advanced to be upgraded.</Text>
-			<Text id="rpg.useResult.tooPrimitive">			Unfortunately, %dstItem% is too primitive for the upgrade.</Text>
-
-			<Text id="rpg.canUse.ok">						You can install %useItem% on %dstItem%.</Text>
-			<Text id="rpg.canUse.alreadyEnhanced">			%DstItem% is already enhanced; Installing the crystal will have no effect.</Text>
-			<Text id="rpg.canUse.noEffect">					The crystal will have no effect on %dstItem%.</Text>
-			<Text id="rpg.canUse.repaired">					You can use %useItem% to repair %dstItem%.</Text>
-
-			<Text id="rpg.canUse.unknown">					The crystal can modulate energy fields. You can install it on %dstItem%.</Text>
+			<Text id="rpg.useResult.tooAdvanced">			Unfortunately, this %dstItem% is too advanced to be upgraded.</Text>
+			<Text id="rpg.useResult.tooPrimitive">			Unfortunately, this %dstItem% is too primitive for the upgrade.</Text>
 		</Language>
 	</Type>
 
