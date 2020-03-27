@@ -915,5 +915,8 @@
     <Xml Include="CoreDiagnostics.xml">
       <Filter>Core Types</Filter>
     </Xml>
+    <Xml Include="Pilgrim.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
