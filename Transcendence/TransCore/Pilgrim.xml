@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<Type UNID="&unidPilgrimClass;">
+		<Properties>
+			<DynamicGlobal id="level">
+				(block (
+					(level (typGetGlobalData &stDomina; 'level))
+					)
+					(switch
+						;	If we have a level, then that's the level
+						
+						level
+							level
+							
+						;	If we're a Pilgrim, then we're at least level 1.
+						
+						(= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+							1
+							
+						;	Otherwise Nil
+						)
+					)
+			</DynamicGlobal>
+		</Properties>
+		
+		<Language>
+			<Code id="rankDetails">
+				(block (
+					(level (typ@ gType 'level))
+					)
+					(if level
+						{
+							title: (fmtNoun (typTranslate gType (cat "rank." level)) 1 'titleCapitalize)
+							largeIcon: (typ@ gType 'rankIcon)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelIllegalsSold)
+									desc: (typTranslate gType 'rtfValue { 
+										value:(fmtCurrency 'credit totalSold) 
+										})
+									}
+								{
+									title: (typTranslate gType (if (geq totalProfit 0) 'labelIllegalsProfit 'labelIllegalsLoss))
+									desc: (typTranslate gType 'rtfValue {
+										value: (fmtCurrency 'credit (if (geq totalProfit 0) totalProfit (- totalProfit)))
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+			
+			<Text id="rank.1">civilian(s)</Text>
+			<Text id="rank.2">smuggler(s)</Text>
+			<Text id="rank.3">enforcer(s)</Text>
+			<Text id="rank.4">Sindikat member(s)</Text>
+			<Text id="rank.5">Sindikat lieutenant(s)</Text>
+			<Text id="rank.6">Sindikat lord(s)</Text>
+		</Language>
+	</Type>
+
+</TranscendenceModule>

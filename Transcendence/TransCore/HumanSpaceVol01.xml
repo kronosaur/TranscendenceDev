@@ -2555,6 +2555,7 @@
 
 	<!-- Sisters of Domina -->
 
+	<Module filename="Pilgrim.xml"/>
 	<Module filename="Sanctuary.xml"/>
 	<Module filename="SistersOfDomina.xml"/>
 
