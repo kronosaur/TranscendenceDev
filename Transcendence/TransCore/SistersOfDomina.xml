@@ -249,10 +249,10 @@
 			<Text id="descAbbessAdvice5">"\"Do not let Domina's brilliance blind you to the strength and worth of mere humans.\""</Text>
 			<Text id="descAbbessAdvice6">"\"Domina controls you, but it's up to you to keep your humanity. Always remember that.\""</Text>
 			<Text id="descAbbessAdvice7">"\"The universe is dark and lonely; I do not envy your task.\""</Text>
-            
-            <Text id="core.mapDesc">
-                "Contemplation and communion"
-            </Text>
+			
+			<Text id="core.mapDesc">
+				"Contemplation and communion"
+			</Text>
 		</Language>
 	</StationType>
 	
@@ -1011,7 +1011,8 @@
 									itemName: (itmGetName theItem 'demonstrative)
 									}))
 							
-							;	Otherwise, the item gives us no 
+							;	Otherwise, the item gives us no benefit, but we show the custom
+							;	text.
 							
 							(scrSetDesc gScreen (typTranslate &dsDominaDonateItem; 'DonateGenericDesc))
 							)
@@ -1568,6 +1569,78 @@
 	
 	<Globals>
 		(block Nil
+			(setq domGetDonationDesc (lambda (theItem)
+				(block (entry)
+					(switch
+					
+						;	First check to see if the item itself has a donation entry
+						
+						(setq entry (eval (or (itmGetStaticData theItem 'sisters.donation) (itmGetStaticData theItem '00182001_Donation))))
+							entry
+						
+						;	If the item doesn't tell us anything then look for an entry
+						;	in the donation table
+
+						(block Nil
+							(setq table (typGetStaticData &stSistersOfDomina; "DonationTable"))
+							(enumwhile table (not entry) thisEntry
+								(switch
+									; If the criteria in the table is Nil, then we always match. This
+									; is for the last (default) entry.
+									(not (setq criteria (@ thisEntry 0)))
+										(setq entry thisEntry)
+
+									; If the criteria is an integer, then we see if this is the UNID
+									; of the item.
+									(isint criteria)
+										(if (eq (itmGetType theItem) criteria)
+											(setq entry thisEntry)
+											)
+
+									; If the criteria matches, then we have an entry
+									(itmMatches theItem criteria)
+										(setq entry thisEntry)
+									)
+								)
+							)
+						)
+						
+					;	Convert from old style descriptors
+					
+					(switch
+						(= (typeof entry) 'list)
+							(block ()
+							
+								;	Evaluate functions, if necessary
+								
+								(enum '(1 2 3) var
+									(block (
+										(value (@ entry var))
+										)
+										(errBlock (err)
+											(if (= (typeOf (eval value)) 'list) (set@ entry var (eval (eval value))))
+											(printTo 'log (cat "Domina donation error: " err))
+											)
+										)
+									)
+									
+								;	Map to a structure
+					
+								{
+									pattern: (@ entry 0)
+									sistersAtt: (@ entry 1)
+									dominaRel: (@ entry 2)
+									desc: (@ entry 3)
+									}
+								)
+								
+						;	Otherwise, already a structure
+						
+						entry
+						)
+					)
+				))
+	
 			(setq domGetDonationEntry (lambda (theItem)
 				(block (entry)
 					(switch
