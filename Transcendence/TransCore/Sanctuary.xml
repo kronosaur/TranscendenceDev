@@ -76,6 +76,12 @@
 		
 		<DockScreens>
 			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidPilgrimClass; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
