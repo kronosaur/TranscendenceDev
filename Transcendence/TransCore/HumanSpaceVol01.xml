@@ -1616,6 +1616,7 @@
 	<!ENTITY rsHandOfDominaHero			"0x00100036">
 	<!ENTITY dsDominaPowersHelp			"0x00100037">
 	<!ENTITY rsSistersRanks				"0x00100038">
+	<!ENTITY tbSistersDonation			"0x00100039">
 	
 	<!-- 0040-005F CORPORATE HIERARCHY -->
 	
@@ -2558,6 +2559,7 @@
 
 	<Module filename="Pilgrim.xml"/>
 	<Module filename="Sanctuary.xml"/>
+	<Module filename="SistersDonate.xml"/>
 	<Module filename="SistersOfDomina.xml"/>
 
 	<!-- St. Katharine's Star -->

@@ -639,6 +639,7 @@
     <Xml Include="Sanctuary.xml" />
     <Xml Include="Sapiens.xml" />
     <Xml Include="ShieldEnhancementItems.xml" />
+    <Xml Include="SistersDonate.xml" />
     <Xml Include="StdMiningEquipment.xml">
       <SubType>Designer</SubType>
     </Xml>

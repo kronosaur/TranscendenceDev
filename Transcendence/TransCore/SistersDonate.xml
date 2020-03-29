@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- DOCK SCREENS -->
+
+	<!-- Domina Donate Item
+
+	-->
+
+	<DockScreen UNID="&dsDominaDonateItem;"
+			type=				"itemPicker"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"*U"
+			>
+			(scrSet@ gScreen 'enabledFilter (lambda (theItem)
+				(block (
+					(entry (domGetDonationDesc theItem))
+					)
+					(or (!= (@ entry 'sistersAtt) 0)
+						(!= (@ entry 'dominaRel) 0)
+						)
+					)
+				))
+		</ListOptions>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theItem (scrGetItem gScreen))
+						(donationEntry (domGetDonationDesc theItem))
+						)
+						(dbgOutput donationEntry)
+						(setq gMaxCount (itmGetCount theItem))
+								
+						(scrEnableAction gScreen 'actionDonateItem (scr@ gScreen 'selectionEnabled))
+						
+						(switch
+							(not theItem)
+								(block Nil
+									(scrEnableAction gScreen 'actionDonateItem Nil)
+									(scrSetDesc gScreen (typTranslate &dsDominaDonateItem; 'NoItemsDesc))
+									)
+									
+							(not donationEntry)
+								(scrSetDesc gScreen (typTranslate &dsDominaDonateItem; 'DonateGenericDesc))
+								
+							;	If the item increases Domina relationship, say so
+							
+							(gr (@ donationEntry 'dominaRel) 0)
+								(scrSetDesc gScreen (typTranslate &dsDominaDonateItem; 'DonateDominaItemDesc {
+									itemName: (itmGetName theItem 'demonstrative)
+									}))
+								
+							;	If this helps the Sisters, say so
+							
+							(!= (@ donationEntry 'sistersAtt) 0)
+								(scrSetDesc gScreen (typTranslate &dsDominaDonateItem; 'DonateUsefulItemDesc {
+									itemName: (itmGetName theItem 'demonstrative)
+									}))
+							
+							;	Otherwise, the item gives us no benefit, but we show the custom
+							;	text.
+							
+							(scrSetDesc gScreen 
+								(or (@ donationEntry 'desc)
+									(typTranslate &dsDominaDonateItem; 'DonateGenericDesc)
+									)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonateItem" default="1">
+						(switch
+							(gr gMaxCount 1)
+								(scrShowPane gScreen "Quantity")
+
+							(eq gMaxCount 1)
+								(block Nil
+									(scrSetData gScreen 'itemDonated (scrRemoveItem gScreen 1))
+									(scrShowPane gScreen "Donate")
+									)
+							)
+					</Action>
+
+					<Action id="actionLeave" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>					
+			</Default>
+
+			<Quantity descID="descHowMany"
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block Nil
+						(scrSetCounter gScreen gMaxCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonate" default="1">
+						(block (count)
+							(setq count (scrGetCounter gScreen))
+							(if (gr count gMaxCount)
+								(scrSetCounter gScreen gMaxCount)
+								(block Nil
+									(scrSetData gScreen 'itemDonated (scrRemoveItem gScreen count))
+									(scrShowPane gScreen "Donate")
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						<ShowPane pane="Default"/>
+					</Action>
+				</Actions>
+			</Quantity>
+
+			<Donate noListNavigation="true">
+				<OnPaneInit>
+					(block (
+						(theItem (scrGetData gScreen 'itemDonated))
+
+						(entry (domGetDonationDesc theItem))
+						(att (@ entry 'sistersAtt))
+						(rel (@ entry 'dominaRel))
+						(desc (@ entry 'desc))
+						)
+						;	Deal with the entry that we found
+
+						(switch
+
+							;	This should never happen, but we have it just in case
+
+							(not entry)
+								(scrSetDescTranslate gScreen 'descDonate.nothing)
+
+							;	If the entry has no increase in att or rel, then we output the message
+							;	from the entry (in quotes)
+
+							(and (eq att 0) (eq rel 0))
+								(scrSetDesc gScreen (cat "\"" desc "\""))
+
+							;	Otherwise, do more calculations
+
+							(block (
+								;	Compute the total value of the donation. Note that we use objGetBuyPrice
+								;	so that items like fresh fruit are computed correctly. Also, our TradeDesc
+								;	indicates that the Sisters pay actual price for items.
+								
+								(totalValue (multiply (objGetBuyPrice gSource theItem) (itmGetCount theItem)))
+
+								;	Calculate the increase in attitude
+								
+								(incAtt
+									(switch
+										(= att 0)
+											0
+
+										;	If -1, then each item counts for +1 attitude
+
+										(= att -1)
+											(itmGetCount theItem)
+
+										;	Otherwise, depends on the value of the item. 
+										;	We use a stochastic round so that the player is not
+										;	penalized for donating fractions of a point.
+
+										(round 'stochastic (/ totalValue att))
+										)
+									)
+
+								;	Calculate the increase in relationship
+								
+								(incRel
+									(switch
+										(or (= rel 0)
+												(!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+												)
+											0
+
+										(multiply (itmGetCount theItem) rel)
+										)
+									)
+
+								;	Calculate bonus text
+								
+								(bonusText
+									(switch
+										(and (gr incAtt 0) (gr incRel 0))
+											(scrTranslate gScreen 'descDonate.dominaAndAbbey)
+											
+										(gr incRel 0)
+											(scrTranslate gScreen 'descDonate.dominaOnly)
+											
+										(gr incAtt 0)
+											(scrTranslate gScreen 'descDonate.abbeyOnly)
+										)
+									)
+								)
+
+								;	Display the appropriate message
+
+								(switch
+									;	If we donated rotted food, then special message
+
+									(and (itmMatches theItem "* +FreshFood;") (= totalValue 0))
+										(scrSetDescTranslate gScreen descDonate.rottenFood)
+									
+									;	If donation is not enough, then disappointed message
+
+									(and (= incRel 0) (= incAtt 0))
+										(scrSetDescTranslate gScreen descDonate.nothing)
+
+									;	Otherwise, message specified in table
+
+									(scrSetDesc gScreen (cat "\"" desc "\n\n" bonusText))
+									)
+
+								;	Increase attitude and relationship
+
+								(objIncData gPlayerShip "sistersAttitude" incAtt)
+								(if (gr incRel 0)
+									(domGainXP incRel)
+									)
+								
+								;	Record stats
+								
+								(switch
+									(eq incRel 0)
+										Nil
+										
+									(itmMatches theItem "* +Slaves;")
+										(typIncGlobalData &stDomina; "slavesOffered" (itmGetCount theItem))
+										
+									(typIncGlobalData &stDomina; "psionicsOffered" (itmGetCount theItem))
+									)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" cancel="1" default="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Donate>
+		</Panes>
+		
+		<Language>
+			<Text id="actionDonate">[D]onate</Text>
+			<Text id="actionDonateItem">[D]onate this Item</Text>
+
+			<Text id="DonateDominaItemDesc">
+
+				"You can donate %itemName% to strengthen your connection to
+				Domina."
+
+			</Text>
+			<Text id="DonateUsefulItemDesc">
+
+				"You can donate %itemName% to support the abbey. In turn we will
+				be able to help you on your travels."
+
+			</Text>
+			<String id="DonateGenericDesc">
+
+				"This is not an appropriate contribution to Domina's cause.
+
+				"Some items are imbued with resonant energies that can help you
+				commune with Domina. Seek those out and donate them to 
+				strengthen your connection to her."
+
+			</String>
+			<Text id="NoItemsDesc">
+
+				"We are grateful for your good intentions, but you have no items 
+				to donate.
+
+				"Some items are imbued with resonant energies that can help you
+				commune with Domina. Seek those out and donate them to 
+				strengthen your connection to her."
+
+			</Text>
+
+			<Text id="descHowMany">How many items do you wish to donate?</Text>
+
+			<Text id="descDonate.nothing">
+
+				"We thank you for your donation and your good intentions. 
+				Go in peace."
+			
+			</Text>
+			<Text id="descDonate.rottenFood">
+			
+				"Such an offering is hardly fitting! Uncloud your mind before 
+				communing with Domina."
+
+			</Text>
+			<String id="descDonate.abbeyOnly">
+
+				"You've helped to support our abbey."
+
+			</String>
+			<String id="descDonate.dominaOnly">
+
+				"Your relationship to Domina is stronger."
+
+			</String>
+			<Text id="descDonate.dominaAndAbbey">
+
+				"Your relationship to Domina is stronger and you've helped to 
+				support our abbey."
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- TABLES -->
+
+	<Type unid="&tbSistersDonation;">
+		<Properties>
+			<Definition id="table">
+				(list
+
+					; Level 1-2
+
+					{	itemType:&itCarvedPrayerStone;		sistersAtt:0		dominaRel:30	desc:"We thank you for your offering. These beautiful stones are a fitting tribute to Domina's grace and power." }
+
+					; Level 3-4
+
+					{	itemType:&itNeuralProcessor;		sistersAtt:0		dominaRel:48	desc:"We thank you for your offering. These sophisticated devices will help us commune with Domina." }
+					{	itemType:&itJewelOfContemplation;	sistersAtt:0		dominaRel:48	desc:"We thank you for your offering. These beautiful jewels are a fitting tribute to Domina's grace and power." }
+					{	itemType:&itAbbasidThanogram;		sistersAtt:0		dominaRel:64	desc:"The souls in these receptacles deserve to rejoin Domina. The flesh will perish, but the eternal soul returns to its maker." }
+
+					; Level 5-6
+
+					{	itemType:&itSlaveCoffin;			sistersAtt:-1		dominaRel:40	desc:"We will take care of these lost children and teach them the way of Domina. Trust your fate to Domina." }
+					{	itemType:&itOpticalKnowledgeArray;	sistersAtt:0		dominaRel:80	desc:"We thank you for your offering. These intricate devices will help us with our communion." }
+					{	itemType:&itDeathCube;				sistersAtt:-1		dominaRel:180	desc:"The souls in these receptacles deserve to rejoin Domina. The flesh will perish, but the eternal soul returns to its maker." }
+
+					; Level 7-8
+
+					{	itemType:&itCDMArchive;				sistersAtt:-1		dominaRel:270	desc:"The souls in these receptacles deserve to rejoin Domina. The flesh will perish, but the eternal soul returns to its maker." }
+
+					; Level 9-10
+
+					{	itemType:&itHierolithCrystal;		sistersAtt:-1		dominaRel:360	desc:"We thank you for your offering. These beautiful crystals are a fitting tribute to Domina's grace and power." }
+
+					; Other
+
+					{	itemType:&itCashCardGold;			sistersAtt:500		dominaRel:0		descID:'donate.food }
+					{	itemType:&itCashCardPlatinum;		sistersAtt:500		dominaRel:0		descID:'donate.food }
+					{	criteria:"ad +Illegal;"				sistersAtt:0		dominaRel:0		descID:'donate.nothing	}
+					{	criteria:"*+HaloGem;"				sistersAtt:-1		dominaRel:270	descID:'donate.haloGem	}
+					{	criteria:"*+Meds;"					sistersAtt:500		dominaRel:0		descID:'donate.meds		}
+					{	criteria:"*+Illegal;"				sistersAtt:0		dominaRel:0		descID:'donate.illegal	}
+					{	criteria:"*+Lux;"					sistersAtt:2000		dominaRel:0		descID:'donate.lux		}
+					{	criteria:"*+Food;"					sistersAtt:1000		dominaRel:0		descID:'donate.food		}
+					{	criteria:"f"						sistersAtt:750		dominaRel:0		descID:'donate.fuel		}
+					{										sistersAtt:0		dominaRel:0		descID:'donate.nothing	}
+					)
+			</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="donate.fuel">
+
+				"We thank you for your sacrifice. Seek us when you are in need 
+				of sustenance."
+			
+			</Text>
+			<Text id="donate.food">
+
+				"We thank you for your sacrifice. Seek us when you are in need 
+				of sustenance."
+			
+			</Text>
+			<Text id="donate.haloGem">
+
+				"We thank you for your offering. These beautiful gems are a 
+				fitting tribute to Domina's grace and power."
+			
+			</Text>
+			<Text id="donate.illegal">
+
+				"This kind of poison is not an appropriate contribution to 
+				Domina's cause. Cleanse yourself of its influence."
+			
+			</Text>
+			<Text id="donate.lux">
+
+				"We thank you for your sacrifice. Seek us when you are in need 
+				of peace."
+
+			</Text>
+			<Text id="donate.meds">
+
+				"We thank you for your sacrifice. Seek us when you are in need 
+				of healing."
+
+			</Text>
+			<Text id="donate.nothing">
+
+				"This is not an appropriate contribution to Domina's cause.
+
+				"Some items are imbued with resonant energies that can help you
+				commune with Domina. Seek those out and donate them to 
+				strengthen your connection to her."
+
+			</Text>
+		</Language>
+	</Type>
+
+<!-- GLOBALS -->
+	
+	<Globals>
+		(block Nil
+			(setq domGetDonationDesc (lambda (theItem)
+				(block (entry)
+					(switch
+						(not theItem)
+							Nil
+					
+						;	First check to see if the item itself has a donation entry
+						
+						(setq entry (eval (or (itmGetStaticData theItem 'sisters.donation) (itmGetStaticData theItem '00182001_Donation))))
+							entry
+						
+						;	If the item doesn't tell us anything then look for an entry
+						;	in the donation table
+
+						(block (
+							(table (typ@ &tbSistersDonation; 'table))
+							)
+							(enumwhile table (not entry) theEntry
+								(switch
+									;	If we specify an item type, then see if this is the UNID.
+
+									(@ theEntry 'itemType)
+										(if (= (itmGetType theItem) (@ theEntry 'itemType))
+											(setq entry theEntry)
+											)
+
+									;	If we have a criteria, then see if it matches
+
+									(@ theEntry 'criteria)
+										(if (itmMatches theItem (@ theEntry 'criteria))
+											(setq entry theEntry)
+											)
+
+									;	Otherwise, we always match (this is for the last, default
+									;	entry.
+
+									(setq entry theEntry)
+									)
+								)
+							)
+						)
+						
+					;	Convert from old style descriptors
+					
+					(switch
+						(= (typeof entry) 'list)
+							(block ()
+							
+								;	Evaluate functions, if necessary
+								
+								(enum '(1 2 3) var
+									(block (
+										(value (@ entry var))
+										)
+										(errBlock (err)
+											(if (= (typeOf (eval value)) 'list) (set@ entry var (eval (eval value))))
+											(printTo 'log (cat "Domina donation error: " err))
+											)
+										)
+									)
+									
+								;	Map to a structure
+					
+								{
+									pattern: (@ entry 0)
+									sistersAtt: (@ entry 1)
+									dominaRel: (@ entry 2)
+									desc: (@ entry 3)
+									}
+								)
+								
+						;	See if we need to translate
+
+						(@ entry 'descID)
+							(struct entry {
+								desc: 
+									(switch
+										(@ entry 'translateType)
+											(typTranslate (@ entry 'translateType) (@ entry 'descID))
+
+										(typTranslate &tbSistersDonation; (@ entry 'descID))
+										)
+								})
+						
+						entry
+						)
+					)
+				))
+	
+			(setq domGetDonationEntry (lambda (theItem)
+				(block (entry)
+					(switch
+					
+						;	First check to see if the item itself has a donation entry
+						
+						(setq entry (eval (or (itmGetStaticData theItem 'sisters.donation) (itmGetStaticData theItem '00182001_Donation))))
+							entry
+						
+						;	If the item doesn't tell us anything then look for an entry
+						;	in the donation table
+
+						(block Nil
+							(setq table (typGetStaticData &stSistersOfDomina; "DonationTable"))
+							(enumwhile table (not entry) thisEntry
+								(switch
+									; If the criteria in the table is Nil, then we always match. This
+									; is for the last (default) entry.
+									(not (setq criteria (@ thisEntry 0)))
+										(setq entry thisEntry)
+
+									; If the criteria is an integer, then we see if this is the UNID
+									; of the item.
+									(isint criteria)
+										(if (eq (itmGetType theItem) criteria)
+											(setq entry thisEntry)
+											)
+
+									; If the criteria matches, then we have an entry
+									(itmMatches theItem criteria)
+										(setq entry thisEntry)
+									)
+								)
+							)
+						)
+					)
+				))
+			)
+	</Globals>
+
+</TranscendenceModule>

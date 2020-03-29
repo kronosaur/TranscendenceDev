@@ -918,5 +918,8 @@
     <Xml Include="Pilgrim.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
+    <Xml Include="SistersDonate.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
