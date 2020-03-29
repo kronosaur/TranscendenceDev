@@ -342,22 +342,9 @@
 		<Properties>
 			<Definition id="table">
 				(list
-
-					; Level 5-6
-
-					{	itemType:&itDeathCube;				sistersAtt:-1		dominaRel:180	desc:"The souls in these receptacles deserve to rejoin Domina. The flesh will perish, but the eternal soul returns to its maker." }
-
-					; Level 7-8
-
-					{	itemType:&itCDMArchive;				sistersAtt:-1		dominaRel:270	desc:"The souls in these receptacles deserve to rejoin Domina. The flesh will perish, but the eternal soul returns to its maker." }
-
-					; Level 9-10
-
-
 					{	itemType:&itCashCardGold;			sistersAtt:500		dominaRel:0		descID:'donate.food }
 					{	itemType:&itCashCardPlatinum;		sistersAtt:500		dominaRel:0		descID:'donate.food }
 					{	criteria:"f"						sistersAtt:750		dominaRel:0		descID:'donate.fuel		}
-					{	criteria:"*+HaloGem;"				sistersAtt:-1		dominaRel:270	descID:'donate.haloGem	}
 					{	criteria:"*+Meds;"					sistersAtt:500		dominaRel:0		descID:'donate.meds		}
 					{	criteria:"*+Lux;"					sistersAtt:2000		dominaRel:0		descID:'donate.lux		}
 					{	criteria:"*+Food;"					sistersAtt:1000		dominaRel:0		descID:'donate.food		}
@@ -378,12 +365,6 @@
 
 				"We thank you for your sacrifice. Seek us when you are in need 
 				of sustenance."
-			
-			</Text>
-			<Text id="donate.haloGem">
-
-				"We thank you for your offering. These beautiful gems are a 
-				fitting tribute to Domina's grace and power."
 			
 			</Text>
 			<Text id="donate.illegal">

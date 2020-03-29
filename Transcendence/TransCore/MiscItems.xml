@@ -171,8 +171,21 @@
 			description=		"This rare optical cube contains the memory patterns of a denizen of the Concatenated Digital Metropolis."
 			>
 
-		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="sisters.donateAtt">-1</Definition>
+			<Definition id="sisters.donateRel">270</Definition>
+		</Properties>
 
+		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+		
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				"The souls in these receptacles deserve to rejoin Domina. The 
+				flesh will perish, but the eternal soul returns to its maker."
+				
+			</Text>
+		</Language>
 	</ItemType>
 
 	<!-- itCentauriRice -->
@@ -281,7 +294,21 @@
 			description=		"The thoughts and memories of a human being are encoded into this holographic cube. These mementos of the dead were popular last century."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateAtt">-1</Definition>
+			<Definition id="sisters.donateRel">180</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+		
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				"The souls in these receptacles deserve to rejoin Domina. The 
+				flesh will perish, but the eternal soul returns to its maker."
+		
+			</Text>
+		</Language>
 
 	</ItemType>
 
@@ -1246,22 +1273,22 @@
 			<Text id="sisters.donateDesc">
 				(typTranslate gType (cat "sisters.donateDesc." (mod (divide (unvGetTick) 18000) 5)))
 			</Text>
-			<String id="sisters.donateDesc.0">
+			<Text id="sisters.donateDesc.0">
 
 				"We prefer the version in which Han shoots first."
 
-			</String>
+			</Text>
 			<Text id="sisters.donateDesc.1">
 
 				"These space operas should not distract you from your real 
 				mission."
 
 			</Text>
-			<String id="sisters.donateDesc.2">
+			<Text id="sisters.donateDesc.2">
 
 				"These works of fiction cannot help us."
 
-			</String>
+			</Text>
 			<Text id="sisters.donateDesc.3">
 
 				"A tale about a quasi-religious order following a mysterious 
