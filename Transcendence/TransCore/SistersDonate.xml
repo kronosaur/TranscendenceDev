@@ -484,7 +484,8 @@
 								;	Map to a structure
 					
 								{
-									pattern: (@ entry 0)
+									itemType: (if (isint (@ entry 0)) (@ entry 0))
+									criteria: (if (not (isInt (@ entry 0))) (@ entry 0))
 									sistersAtt: (@ entry 1)
 									dominaRel: (@ entry 2)
 									desc: (@ entry 3)
@@ -504,38 +505,18 @@
 				))
 	
 			(setq domGetDonationEntry (lambda (theItem)
-				(block (entry)
+				(block (
+					(entry (domGetDonationDesc theItem))
+					)
 					(switch
-					
-						;	First check to see if the item itself has a donation entry
-						
-						(setq entry (eval (or (itmGetStaticData theItem 'sisters.donation) (itmGetStaticData theItem '00182001_Donation))))
-							entry
-						
-						;	If the item doesn't tell us anything then look for an entry
-						;	in the donation table
+						(not entry)
+							Nil
 
-						(block Nil
-							(setq table (typGetStaticData &stSistersOfDomina; "DonationTable"))
-							(enumwhile table (not entry) thisEntry
-								(switch
-									; If the criteria in the table is Nil, then we always match. This
-									; is for the last (default) entry.
-									(not (setq criteria (@ thisEntry 0)))
-										(setq entry thisEntry)
-
-									; If the criteria is an integer, then we see if this is the UNID
-									; of the item.
-									(isint criteria)
-										(if (eq (itmGetType theItem) criteria)
-											(setq entry thisEntry)
-											)
-
-									; If the criteria matches, then we have an entry
-									(itmMatches theItem criteria)
-										(setq entry thisEntry)
-									)
-								)
+						(list
+							(or (@ entry 'itemType) (@ entry 'criteria))
+							(@ entry 'sistersAtt)
+							(@ entry 'dominaRel)
+							(@ entry 'desc)
 							)
 						)
 					)

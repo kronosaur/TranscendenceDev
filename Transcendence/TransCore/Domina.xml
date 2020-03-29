@@ -25,72 +25,18 @@
 						;	Otherwise, we return status
 
 						{
-							rank: rank
-							rankNoun: (typTranslate &svDomina; 'nounRank { rank:rank gender:(plyGetGenome gPlayer) })
+							rank: (typ@ &unidPilgrimClass; 'level)
+							rankNoun: (typ@ &unidPilgrimClass; 'rankNoun)
 							}
 						)
 					)
 			</GetPlayerStatus>
-
-			<GetGlobalAchievements>
-				(block (theList level psionicsOffered slavesOffered)
-					(setq level (typGetGlobalData &stDomina; "level"))
-					(setq psionicsOffered (typGetGlobalData &stDomina; "psionicsOffered"))
-					(setq slavesOffered (typGetGlobalData &stDomina; "slavesOffered"))
-					
-					(if (and level (gr level 0))
-						(setq theList (list
-							(list
-								"Domina relationship"
-								(fmtNoun (typTranslate &svDomina; 'nounRank { rank:level gender:(plyGetGenome gPlayer) }) 1 '(capitalize))
-								)
-							))
-						)
-						
-					(if (and (gr level 0) 
-							(not (typGetGlobalData &stDomina; "invokeCount"))
-							)
-						(setq theList (append theList (list
-							(list "Never invoked powers of Domina" Nil "conducts")
-							)))
-						)
-						
-					(if psionicsOffered
-						(setq theList (append theList (list
-							(list "Psionics offered to Domina" psionicsOffered "missions &amp; activities")
-							)))
-						)
-
-					(if slavesOffered
-						(setq theList (append theList (list
-							(list "Slaves offered to Domina" slavesOffered "missions &amp; activities")
-							)))
-						)
-
-					theList
-					)
-			</GetGlobalAchievements>
 		</Events>
 
 		<Language>
 			<Text id="nounRank">
-				(typTranslate &svDomina; (cat "rank." (@ gData 'rank)) gData)
+				(typTranslate &unidPilgrimClass; 'nounRankPattern gData)
 			</Text>
-			<Text id="rank.1">:a novice</Text>
-			<Text id="rank.2">:an acolyte</Text>
-			<Text id="rank.3">:an adept</Text>
-			<Text id="rank.4">:a curate</Text>
-			<Text id="rank.5">:a canon</Text>
-			<Text id="rank.6">
-				(switch
-					(= (@ gData 'gender) 'humanMale)
-						(typTranslate &svDomina; 'rank.6.humanMale)
-
-					(typTranslate &svDomina; 'rank.6.humanFemale)
-					)
-			</Text>
-			<Text id="rank.6.humanMale">:a patriarch</Text>
-			<Text id="rank.6.humanFemale">:a matriarch</Text>
 		</Language>
 	</Sovereign>
 

@@ -4,6 +4,18 @@
 	
 	<Type UNID="&unidPilgrimClass;">
 		<Properties>
+			<Definition id="levelTable">
+				(list
+					Nil
+					{	level:1		xp:0	}
+					{	level:2		xp:250	}
+					{	level:3		xp:500	}
+					{	level:4		xp:1000	}
+					{	level:5		xp:2000	}
+					{	level:6		xp:4000	}
+					)
+			</Definition>
+
 			<DynamicGlobal id="level">
 				(block (
 					(level (typGetGlobalData &stDomina; 'level))
@@ -49,6 +61,35 @@
 					)
 			</DynamicGlobal>
 
+			<DynamicGlobal id="nextLevel">
+				(block (
+					(levelTable (typ@ gType 'levelTable))
+					(level (typ@ gType 'level))
+					(nextLevel (+ level 1))
+
+					(xp (typ@ gType 'xp))
+					(prevXP (@ (@ levelTable level) 'xp))
+					(nextXP (@ (@ levelTable nextLevel) 'xp))
+					(totalXPToNextLevel (- nextXP prevXP))
+					(curXPAtLevel (- xp prevXP))
+					)
+					(switch
+						(= level 6)
+							Nil
+
+						{
+							nextLevel: nextLevel
+							nextXP: nextXP
+							progress: (round (* 100.0 (/ curXPAtLevel totalXPToNextLevel)))
+							}
+						)
+					)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="rankNoun">
+				(typTranslate gType 'nounRankPattern { rank:(typ@ gType 'level) gender:(plyGetGenome gPlayer) })
+			</DynamicGlobal>
+
 			<DynamicGlobal id="sistersRel">
 				(or (objGetData gPlayerShip 'sistersAttitude) 0)
 			</DynamicGlobal>
@@ -57,15 +98,59 @@
 				(typGetGlobalData &stDomina; 'xp)
 			</DynamicGlobal>
 		</Properties>
+
+		<Events>
+			<GetGlobalAchievements>
+				(block (
+					(level (typ@ gType 'level))
+					(psionicsOffered (typGetGlobalData &stDomina; "psionicsOffered"))
+					(slavesOffered (typGetGlobalData &stDomina; "slavesOffered"))
+
+					theList 
+					)
+					(if (and level (gr level 0))
+						(setq theList (list
+							(list
+								"Domina relationship"
+								(fmtNoun (typ@ &unidPilgrimClass; 'rankNoun) 1 '(capitalize))
+								)
+							))
+						)
+						
+					(if (and (gr level 0) 
+							(not (typGetGlobalData &stDomina; "invokeCount"))
+							)
+						(setq theList (append theList (list
+							(list "Never invoked powers of Domina" Nil "conducts")
+							)))
+						)
+						
+					(if psionicsOffered
+						(setq theList (append theList (list
+							(list "Psionics offered to Domina" psionicsOffered "missions &amp; activities")
+							)))
+						)
+
+					(if slavesOffered
+						(setq theList (append theList (list
+							(list "Slaves offered to Domina" slavesOffered "missions &amp; activities")
+							)))
+						)
+
+					theList
+					)
+			</GetGlobalAchievements>
+		</Events>
 		
 		<Language>
 			<Code id="rankDetails">
 				(block (
 					(level (typ@ gType 'level))
+					(nextLevel (typ@ gType 'nextLevel))
 					)
 					(if level
 						{
-							title: (fmtNoun (typTranslate gType (cat "rank." level)) 1 'titleCapitalize)
+							title: (fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
 							largeIcon: (typ@ gType 'levelIcon)
 
 							details: (list
@@ -75,6 +160,16 @@
 										value:(fmtNumber (typ@ gType 'xp))
 										})
 									}
+								(if nextLevel
+									{
+										title: (typTranslate gType 'labelProgress {
+											nextLevel: (fmtNoun (typTranslate gType 'nounRankPattern { rank:(@ nextLevel 'nextLevel) gender:(plyGetGenome gPlayer) }) 1 'titleCapitalize)
+											})
+										desc: (typTranslate gType 'rtfValue { 
+											value: (cat (@ nextLevel 'progress) "%")
+											})
+										}
+									)
 								{
 									title: (typTranslate gType 'labelSistersAttitude)
 									desc: (typTranslate gType 'rtfValue {
@@ -89,21 +184,26 @@
 						)
 					)
 			</Code>
-			
-			<Text id="rank.1">novice(s)</Text>
-			<Text id="rank.2">acolyte(s)</Text>
-			<Text id="rank.3">adept(s)</Text>
-			<Text id="rank.4">curate(s)</Text>
-			<Text id="rank.5">canon(s)</Text>
+
+			<Code id="nounRankPattern">
+				(typTranslate gType (cat "rank." (@ gData 'rank)) gData)
+			</Code>
+
+			<Text id="rank.1">:a novice(s)</Text>
+			<Text id="rank.2">:an acolyte(s)</Text>
+			<Text id="rank.3">:an adept(s)</Text>
+			<Text id="rank.4">:a curate(s)</Text>
+			<Text id="rank.5">:a canon(s)</Text>
 			<Text id="rank.6">
-				(or (typTranslate gType (cat "rank.6." (plyGetGenome gPlayer)))
+				(or (typTranslate gType (cat "rank.6." (@ gData 'gender)))
 					(typTranslate gType "rank.6.humanFemale")
 					)
 			</Text>
-			<Text id="rank.6.humanMale">patriarch(s)</Text>
-			<Text id="rank.6.humanFemale">matriarch(s)</Text>
+			<Text id="rank.6.humanMale">:a patriarch(s)</Text>
+			<Text id="rank.6.humanFemale">:a matriarch(s)</Text>
 
 			<Text id="labelDominaConnection">Domina XP:</Text>
+			<Text id="labelProgress">Progress to %nextLevel%:</Text>
 			<Text id="labelSistersAttitude">Sisters Relationship:</Text>
 
 			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
