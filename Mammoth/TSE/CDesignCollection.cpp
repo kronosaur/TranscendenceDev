@@ -565,9 +565,9 @@ const CDesignType *CDesignCollection::FindEntry (DWORD dwUNID) const
 		return NULL;
 
 #ifdef DEBUG
-	if (!pType->IsBound())
+	if (!m_bInBindDesign && !pType->IsBound())
 		{
-		DebugBreak();
+		throw CException(ERR_FAIL);
 		}
 #endif
 
@@ -586,9 +586,9 @@ CDesignType *CDesignCollection::FindEntry (DWORD dwUNID)
 		return NULL;
 
 #ifdef DEBUG
-	if (!pType->IsBound())
+	if (!m_bInBindDesign && !pType->IsBound())
 		{
-		DebugBreak();
+		throw CException(ERR_FAIL);
 		}
 #endif
 

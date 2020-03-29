@@ -86,6 +86,7 @@
 							(eq gMaxCount 1)
 								(block Nil
 									(scrSetData gScreen 'itemDonated (scrRemoveItem gScreen 1))
+									(objFireItemEvent gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
 									(scrShowPane gScreen "Donate")
 									)
 							)
@@ -114,6 +115,7 @@
 								(scrSetCounter gScreen gMaxCount)
 								(block Nil
 									(scrSetData gScreen 'itemDonated (scrRemoveItem gScreen count))
+									(objFireItemEvent gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
 									(scrShowPane gScreen "Donate")
 									)
 								)
@@ -435,8 +437,13 @@
 					
 						;	First check to see if the item itself has a donation entry
 						
-						(setq entry (eval (or (itmGetStaticData theItem 'sisters.donation) (itmGetStaticData theItem '00182001_Donation))))
-							entry
+						(setq entry (or
+								(itm@ theItem 'sisters.donate)
+								(eval (or (itmGetStaticData theItem 'sisters.donation) (itmGetStaticData theItem '00182001_Donation)))
+								))
+							(struct entry {
+								translateType: (itmGetType theItem)
+								})
 						
 						;	If the item doesn't tell us anything then look for an entry
 						;	in the donation table
