@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>v
 
 <TranscendenceModule>
 
@@ -15,8 +15,20 @@
 			description=		"A beautiful prayer stone cut out of a crystal of some sort; the symbol of Domina is carved on one face."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateRel">30</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
 
+		<Language>
+			<Text id="sisters.donateDesc">
+
+				We thank you for your offering. These beautiful stones are a 
+				fitting tribute to Domina's grace and power.
+			
+			</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Jewel of Contemplation -->
@@ -32,7 +44,20 @@
 			description=		"A heavy, pure crystal set in a platinum band; the symbol of Domina is inscribed on one face."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateRel">48</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				We thank you for your offering. These beautiful jewels are a 
+				fitting tribute to Domina's grace and power.
+			
+			</Text>
+		</Language>
 
 	</ItemType>
 
@@ -49,7 +74,21 @@
 			description=		"These hyperdense crystals are formed inside black holes; they resonate with transcendent consciousness."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateAtt">-1</Definition>
+			<Definition id="sisters.donateRel">360</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				We thank you for your offering. These beautiful crystals are a 
+				fitting tribute to Domina's grace and power.
+
+			</Text>
+		</Language>
 
 	</ItemType>
 

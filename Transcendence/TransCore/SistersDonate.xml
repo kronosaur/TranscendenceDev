@@ -151,7 +151,10 @@
 							;	from the entry (in quotes)
 
 							(and (eq att 0) (eq rel 0))
-								(scrSetDesc gScreen (cat "\"" desc "\""))
+								(if desc
+									(scrSetDesc gScreen desc)
+									(scrSetDescTranslate gScreen 'descDonate.nothing)
+									)
 
 							;	Otherwise, do more calculations
 
@@ -222,11 +225,13 @@
 									;	If donation is not enough, then disappointed message
 
 									(and (= incRel 0) (= incAtt 0))
-										(scrSetDescTranslate gScreen descDonate.nothing)
+										(scrSetDescTranslate gScreen 'descDonate.nothing)
 
 									;	Otherwise, message specified in table
 
-									(scrSetDesc gScreen (cat "\"" desc "\n\n" bonusText))
+									(scrSetDesc gScreen 
+										(cat (or desc (scrTranslate gScreen 'descDonate.default)) "\n\n" bonusText)
+										)
 									)
 
 								;	Increase attitude and relationship
@@ -241,9 +246,6 @@
 								(switch
 									(eq incRel 0)
 										Nil
-										
-									(itmMatches theItem "* +Slaves;")
-										(typIncGlobalData &stDomina; "slavesOffered" (itmGetCount theItem))
 										
 									(typIncGlobalData &stDomina; "psionicsOffered" (itmGetCount theItem))
 									)
@@ -298,6 +300,11 @@
 
 			<Text id="descHowMany">How many items do you wish to donate?</Text>
 
+			<String id="descDonate.default">
+
+				"We thank you for your offering."
+			
+			</String>
 			<Text id="descDonate.nothing">
 
 				"We thank you for your donation and your good intentions. 
@@ -312,18 +319,18 @@
 			</Text>
 			<String id="descDonate.abbeyOnly">
 
-				"You've helped to support our abbey."
+				You've helped to support the Sisters.
 
 			</String>
 			<String id="descDonate.dominaOnly">
 
-				"Your relationship to Domina is stronger."
+				Your relationship to Domina is stronger.
 
 			</String>
 			<Text id="descDonate.dominaAndAbbey">
 
-				"Your relationship to Domina is stronger and you've helped to 
-				support our abbey."
+				Your relationship to Domina is stronger and you've helped to 
+				support the Sisters.
 
 			</Text>
 		</Language>
@@ -336,20 +343,8 @@
 			<Definition id="table">
 				(list
 
-					; Level 1-2
-
-					{	itemType:&itCarvedPrayerStone;		sistersAtt:0		dominaRel:30	desc:"We thank you for your offering. These beautiful stones are a fitting tribute to Domina's grace and power." }
-
-					; Level 3-4
-
-					{	itemType:&itNeuralProcessor;		sistersAtt:0		dominaRel:48	desc:"We thank you for your offering. These sophisticated devices will help us commune with Domina." }
-					{	itemType:&itJewelOfContemplation;	sistersAtt:0		dominaRel:48	desc:"We thank you for your offering. These beautiful jewels are a fitting tribute to Domina's grace and power." }
-					{	itemType:&itAbbasidThanogram;		sistersAtt:0		dominaRel:64	desc:"The souls in these receptacles deserve to rejoin Domina. The flesh will perish, but the eternal soul returns to its maker." }
-
 					; Level 5-6
 
-					{	itemType:&itSlaveCoffin;			sistersAtt:-1		dominaRel:40	desc:"We will take care of these lost children and teach them the way of Domina. Trust your fate to Domina." }
-					{	itemType:&itOpticalKnowledgeArray;	sistersAtt:0		dominaRel:80	desc:"We thank you for your offering. These intricate devices will help us with our communion." }
 					{	itemType:&itDeathCube;				sistersAtt:-1		dominaRel:180	desc:"The souls in these receptacles deserve to rejoin Domina. The flesh will perish, but the eternal soul returns to its maker." }
 
 					; Level 7-8
@@ -358,19 +353,15 @@
 
 					; Level 9-10
 
-					{	itemType:&itHierolithCrystal;		sistersAtt:-1		dominaRel:360	desc:"We thank you for your offering. These beautiful crystals are a fitting tribute to Domina's grace and power." }
-
-					; Other
 
 					{	itemType:&itCashCardGold;			sistersAtt:500		dominaRel:0		descID:'donate.food }
 					{	itemType:&itCashCardPlatinum;		sistersAtt:500		dominaRel:0		descID:'donate.food }
-					{	criteria:"ad +Illegal;"				sistersAtt:0		dominaRel:0		descID:'donate.nothing	}
+					{	criteria:"f"						sistersAtt:750		dominaRel:0		descID:'donate.fuel		}
 					{	criteria:"*+HaloGem;"				sistersAtt:-1		dominaRel:270	descID:'donate.haloGem	}
 					{	criteria:"*+Meds;"					sistersAtt:500		dominaRel:0		descID:'donate.meds		}
-					{	criteria:"*+Illegal;"				sistersAtt:0		dominaRel:0		descID:'donate.illegal	}
 					{	criteria:"*+Lux;"					sistersAtt:2000		dominaRel:0		descID:'donate.lux		}
 					{	criteria:"*+Food;"					sistersAtt:1000		dominaRel:0		descID:'donate.food		}
-					{	criteria:"f"						sistersAtt:750		dominaRel:0		descID:'donate.fuel		}
+					{	criteria:"*~ad +Illegal; -ID;"		sistersAtt:0		dominaRel:0		descID:'donate.illegal	}
 					{										sistersAtt:0		dominaRel:0		descID:'donate.nothing	}
 					)
 			</Definition>
@@ -430,20 +421,34 @@
 	<Globals>
 		(block Nil
 			(setq domGetDonationDesc (lambda (theItem)
-				(block (entry)
+				(block (
+					(customAtt (itm@ theItem 'sisters.donateAtt))
+					(customRel (itm@ theItem 'sisters.donateRel))
+					(customDesc (typTranslate (itmGetType theItem) 'sisters.donateDesc))
+
+					entry
+					)
 					(switch
 						(not theItem)
 							Nil
 					
-						;	First check to see if the item itself has a donation entry
-						
-						(setq entry (or
-								(itm@ theItem 'sisters.donate)
-								(eval (or (itmGetStaticData theItem 'sisters.donation) (itmGetStaticData theItem '00182001_Donation)))
-								))
-							(struct entry {
-								translateType: (itmGetType theItem)
+						;	First check to see if the item itself defines the 
+						;	donation parameters
+
+						(or customAtt customRel customDesc)
+							(setq entry {
+								itemType: (itmGetType theItem)
+								sistersAtt: (or customAtt 0)
+								dominaRel: (or customRel 0)
+								desc: customDesc
 								})
+
+						;	Backwards compatibility
+
+						(setq entry 
+								(eval (or (itmGetStaticData theItem 'sisters.donation) (itmGetStaticData theItem '00182001_Donation)))
+								)
+							True
 						
 						;	If the item doesn't tell us anything then look for an entry
 						;	in the donation table
@@ -509,13 +514,7 @@
 
 						(@ entry 'descID)
 							(struct entry {
-								desc: 
-									(switch
-										(@ entry 'translateType)
-											(typTranslate (@ entry 'translateType) (@ entry 'descID))
-
-										(typTranslate &tbSistersDonation; (@ entry 'descID))
-										)
+								desc: (typTranslate &tbSistersDonation; (@ entry 'descID))
 								})
 						
 						entry

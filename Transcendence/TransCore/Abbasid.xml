@@ -191,8 +191,20 @@
 			description=		"This is a neural network initialized from the cerebral patterns of one or more Scholars of Abbasid. The legal, ethical, and moral knowledge of the Abbasid is contained and interpreted by these constructs."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateRel">64</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
 
+		<Language>
+			<Text id="sisters.donateDesc">
+
+				"The souls in these receptacles deserve to rejoin Domina. The 
+				flesh will perish, but the eternal soul returns to its maker."
+
+			</Text>
+		</Language>
 	</ItemType>
 
 <!-- RESOURCES -->
