@@ -324,16 +324,7 @@
 										(= att 0)
 											0
 
-										;	If -1, then each item counts for +1 attitude
-
-										(= att -1)
-											(itmGetCount theItem)
-
-										;	Otherwise, depends on the value of the item. 
-										;	We use a stochastic round so that the player is not
-										;	penalized for donating fractions of a point.
-
-										(round 'stochastic (/ totalValue att))
+										1
 										)
 									)
 
@@ -388,7 +379,6 @@
 
 								;	Increase attitude and relationship
 
-								(objIncData gPlayerShip "sistersAttitude" incAtt)
 								(if (gr incRel 0)
 									(domGainXP incRel)
 									)

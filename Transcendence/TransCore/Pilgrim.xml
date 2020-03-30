@@ -186,7 +186,7 @@
 			<Text id="labelAidBudget">Pilgrims' Aid Budget:</Text>
 
 			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
-			<RTF id="rtfLevelValue">{/rtf {/f:LargeBold;/c:#ffe667; Level %value%}}</RTF>
+			<RTF id="rtfLevelValue">{/rtf {/f:LargeBold;/c:#ffe667; Tier %value%}}</RTF>
 		</Language>
 	</Type>
 

@@ -6,7 +6,6 @@
 
 	PLAYER DATA
 	
-	sistersAttitude: Abstract measure of the sisters' attitude towards the player
 	sistersLastDonation:	Time at which the player donated last (Nil if never)
 	sistersStory:	State of story-telling
 	slaveReward:	Number of slaves for which player has already been rewarded
@@ -32,6 +31,9 @@
 			<Global id="totalDonations">0</Global>
 			<Global id="totalTithe">0</Global>
 			<Global id="investmentGain">0</Global>
+			
+			<Definition id="contemplateIntervalInSeconds">600</Definition>
+			<Global id="lastContemplateTime"></Global>
 		</Properties>
 
 		<Events>
@@ -57,9 +59,14 @@
 			<OnItemDonatedToSisters>
 				(block (
 					(totalValue (multiply (objGetBuyPrice gSource gItem) (itmGetCount gItem)))
+					(entry (domGetDonationDesc gItem))
 					)
-					(typInc@ gType 'totalDonations totalValue)
-					(typInc@ gType 'balance totalValue)
+					(if (!= (@ entry 'sistersAtt) 0)
+						(block ()
+							(typInc@ gType 'totalDonations totalValue)
+							(typInc@ gType 'balance totalValue)
+							)
+						)
 					)
 			</OnItemDonatedToSisters>
 
@@ -235,10 +242,6 @@
 					<Default>
 						<OnPaneInit>
 							(block Nil
-								(if (not (objGetData gPlayerShip "sistersAttitude"))
-									(objSetData gPlayerShip "sistersAttitude" 0)
-									)
-
 								(if (objGetData gSource "freeSanctum")
 									(scrSetDesc gScreen (objTranslate gSource 'WelcomeFreeSanctum))
 									(scrSetDesc gScreen (objTranslate gSource 'Welcome))
@@ -344,27 +347,28 @@
 			<Default>
 				<OnPaneInit>
 					(block (
-						(attitude (objGetData gPlayerShip 'sistersAttitude))
+						(balance (typ@ &svSistersOfDomina; 'balance))
 						(level (domInitRelationship))
 						)
-						
 						(switch
 						
 							;	If the player has not donated to the Sisters, then they
 							;	cannot contemplate.
 							
-							(and (or (not attitude) (ls attitude 1))
+							(and (= balance 0)
 									(not (objGetData gSource 'freeSanctum))
 									)
 								(block Nil
-									(scrSetDesc gScreen (typTranslate &dsSistersSanctum; "SanctumClosed"))
+									(scrSetDescTranslate gScreen 'SanctumClosed)
 									(scrEnableAction gScreen 'actionContemplate Nil)
 									)
 							
 							;	Otherwise, we allow contemplation
 							
 							(block Nil
-								(scrSetDesc gScreen (typTranslate &dsSistersSanctum; (cat "SanctumIntro:" level)))
+								(scrSetDescTranslate gScreen (cat "SanctumIntro:" level) {
+									rank: (fmtNoun (typ@ &unidPilgrimClass; 'levelNoun) 1 'article)
+									})
 								(scrEnableAction gScreen 'actionContemplate True)
 								)
 							)
@@ -375,11 +379,11 @@
 					<Action id="actionContemplate" default="1">
 						(block (
 							(roll (random 1 100))
+							
+							(lastContemplateTime (typ@ &svSistersOfDomina; 'lastContemplateTime))
+							(intervalInTicks (* (typ@ &svSistersOfDomina; 'contemplateIntervalInSeconds) 60))
+							(nextContemplateTime (if lastContemplateTime (+ lastContemplateTime intervalInTicks) 0))
 							)
-							
-							;	Consume 1 attitude point
-							
-							(objIncData gPlayerShip 'sistersAttitude -1)
 							
 							;	If we have a free sanctum pass then we always get the stargate
 							;	option.
@@ -397,8 +401,13 @@
 							
 								;	If we're not a Pilgrim, we always get nothing
 								
-								(not (eq (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;))
-									(scrShowPane gScreen "Nothing")
+								(!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+									(scrShowPane gScreen 'Nothing)
+									
+								;	If interval has not passed, then nothing
+								
+								(ls (unvGetTick) nextContemplateTime)
+									(scrShowPane gScreen 'Nothing)
 							
 								;	10% of the time, Domina reveals stations in the system
 								
@@ -407,6 +416,7 @@
 										(enum (sysFindObject gPlayerShip "Ts -uncharted;") obj
 											(objSetKnown obj)
 											)
+										(typSet@ &svSistersOfDomina; 'lastContemplateTime (unvGetTick))
 										(scrShowPane gScreen "MappedSystem")
 										)
 							
@@ -418,6 +428,7 @@
 										(stargateObj (sysGetStargateLeadingToCore))
 										systemMessage
 										)
+										(typSet@ &svSistersOfDomina; 'lastContemplateTime (unvGetTick))
 										
 										(switch
 										
@@ -452,12 +463,16 @@
 								(leq roll 70)
 									(block Nil
 										(domGainXP (random 20 10 10))
+										(typSet@ &svSistersOfDomina; 'lastContemplateTime (unvGetTick))
 										(scrShowPane gScreen "DominaRelationship")
 										)
 							
 								;	30% of the time, nothing happens.
-								
-								(scrShowPane gScreen "Nothing")
+
+								(block ()
+									(typSet@ &svSistersOfDomina; 'lastContemplateTime (unvGetTick))
+									(scrShowPane gScreen "Nothing")
+									)
 								)
 							)
 					</Action>
@@ -561,7 +576,6 @@
 						)
 					)
 			</Text>
-			
 			<Text id="SanctumClosed">
 
 				You are in the sanctum of the Sisters of Domina. Tools and 
@@ -573,7 +587,6 @@
 				can make to help us defray the cost."
 
 			</Text>
-			
 			<Text id="SanctumIntro:0">
 
 				You are in the sanctum of the Sisters of Domina. The plasteel 
@@ -584,60 +597,62 @@
 
 			</Text>
 			<Text id="SanctumIntro:1">
-				(cat
-					"You are in the sanctum of the Sisters of Domina. "
-					"The plasteel walls that surround you are micro-engraved with the revelation of Domina.\n\n"
+
+				You are in the sanctum of the Sisters of Domina. The plasteel 
+				walls that surround you are micro-engraved with the revelation 
+				of Domina.
 					
-					"You are a novice in the service of Domina and have access to first-tier powers. "
-					(if (typGetGlobalData &stDomina; "xp")
-						(cat "The strength of your connection to Domina is: " (typGetGlobalData &stDomina; "xp") ".")
-						)
-					)
+				You are %rank% in the service of Domina and have access to 
+				first-tier powers.
+				
 			</Text>
 			<Text id="SanctumIntro:2">
-				(cat
-					"You are in the sanctum of the Sisters of Domina. "
-					"The plasteel walls that surround you are micro-engraved with the revelation of Domina.\n\n"
+				
+				You are in the sanctum of the Sisters of Domina. The plasteel 
+				walls that surround you are micro-engraved with the revelation 
+				of Domina.
 					
-					"You are an acolyte in the service of Domina and have access to second-tier powers. "
-					"The strength of your connection to Domina is: " (typGetGlobalData &stDomina; "xp") "."
-					)
+				You are %rank% in the service of Domina and have access to 
+				second-tier powers.
+				
 			</Text>
 			<Text id="SanctumIntro:3">
-				(cat
-					"You are in the sanctum of the Sisters of Domina. "
-					"A faint glow emanates from the micro-engraved plasteel walls and you feel a peaceful presence.\n\n"
+
+				You are in the sanctum of the Sisters of Domina. A faint glow 
+				emanates from the micro-engraved plasteel walls and you feel a 
+				peaceful presence.
 					
-					"You are an adept in the service of Domina and have access to third-tier powers. "
-					"The strength of your connection to Domina is: " (typGetGlobalData &stDomina; "xp") "."
-					)
+				You are %rank% in the service of Domina and have access to 
+				third-tier powers.
+				
 			</Text>
 			<Text id="SanctumIntro:4">
-				(cat
-					"You are in the sanctum of the Sisters of Domina. "
-					"A faint glow emanates from the micro-engraved plasteel walls and you feel a peaceful presence.\n\n"
+
+				You are in the sanctum of the Sisters of Domina. A faint glow 
+				emanates from the micro-engraved plasteel walls and you feel a 
+				peaceful presence.
 					
-					"You are a curate in the service of Domina and have access to fourth-tier powers. "
-					"The strength of your connection to Domina is: " (typGetGlobalData &stDomina; "xp") "."
-					)
+				You are %rank% in the service of Domina and have access to 
+				fourth-tier powers.
+				
 			</Text>
 			<Text id="SanctumIntro:5">
-				(cat
-					"You are in the sanctum of the Sisters of Domina. "
-					"You feel the presence of Domina within and around you.\n\n"
+				
+				You are in the sanctum of the Sisters of Domina. You feel the 
+				presence of Domina within and around you.
 					
-					"You are a canon in the service of Domina and have access to fifth-tier powers. "
-					"The strength of your connection to Domina is: " (typGetGlobalData &stDomina; "xp") "."
-					)
+				You are %rank% in the service of Domina and have access to 
+				fifth-tier powers.
+
 			</Text>
 			<Text id="SanctumIntro:6">
-				(cat
-					"You are in the sanctum of the Sisters of Domina. "
-					"You feel the presence of Domina within and around you.\n\n"
+				
+				You are in the sanctum of the Sisters of Domina. You feel the 
+				presence of Domina within and around you.
 					
-					"You are a " (if (eq (plyGetGenome gPlayer) 'humanMale) "patriarch" "matriarch") " in the service of Domina and have access to fifth-tier powers. "
-					"The strength of your connection to Domina is: " (typGetGlobalData &stDomina; "xp") "."
-					)
+				You are %rank% in the service of Domina and have access to 
+				fifth-tier powers.
+				
 			</Text>
 		</Language>
 	</DockScreen>
@@ -651,13 +666,23 @@
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(if (and (gr (plyGetCredits gPlayer) 0) 
-							(leq (objGetData gPlayerShip "sistersAttitude") 0))
-						(scrSetDesc gScreen "\"Forgive us, child, but we cannot allow your ship to contaminate our shrine.\"")
-						(block Nil
-							(scrSetDesc gScreen "\"Your vessel has been purified. Devote your life to Domina and your spirit shall be similarly cleansed.\"")
-							(objIncData gPlayerShip "sistersAttitude" -1)
+					(switch
+						;	If the player has more money than we do, then we refuse dock
+						
+						(gr (plyGetCredits gPlayer) (typ@ &svSistersOfDomina; 'balance))
+							(scrSetDescTranslate gScreen 'descCantDock)
+							
+						;	Sisters must have at least 250 credits
+						
+						(ls (typ@ &svSistersOfDomina; 'balance) 250)
+							(scrSetDescTranslate gScreen 'descCantDock)
+							
+						;	Decontaminate
+						
+						(block ()
+							(typInc@ &svSistersOfDomina; 'balance -250)
 							(shpDecontaminate gPlayerShip)
+							(scrSetDescTranslate gScreen 'descDecon)
 							)
 						)
 				</OnPaneInit>
@@ -669,6 +694,21 @@
 				</Actions>
 			</Default>
 		</Panes>
+	
+		<Language>
+			<Text id="descCantDock">
+				
+				"Forgive us, child, but we cannot allow your ship to contaminate
+				our shrine."
+				
+			</Text>
+			<Text id="descDecon">
+				
+				"Your vessel has been purified. Devote your life to Domina and 
+				your spirit shall be similarly cleansed."
+				
+			</Text>
+		</Language>
 	</DockScreen>
 
 <!-- SHIP CLASSES -->

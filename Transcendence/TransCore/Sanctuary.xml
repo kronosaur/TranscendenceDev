@@ -88,13 +88,7 @@
 				<Panes>
 					<Default>
 						<OnPaneInit>
-							(block Nil
-								(if (not (objGetData gPlayerShip "sistersAttitude"))
-									(objSetData gPlayerShip "sistersAttitude" 0)
-									)
-
-								(scrSetDesc gScreen (objTranslate gSource 'descWelcome))
-								)
+							(scrSetDesc gScreen (objTranslate gSource 'descWelcome))
 						</OnPaneInit>
 
 						<Actions>
