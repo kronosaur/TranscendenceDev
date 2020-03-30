@@ -9,6 +9,7 @@
 	<StationType UNID="&stCathedralOfDomina;"
 			name=				"Cathedral of Domina"
 			sovereign=			"&svSistersOfDomina;"
+			inherit=			"&baSistersStation;"
 
 			attributes=			"envAir, envAvoidsFire, friendly, generic, human, majorStation, populated, religious, sistersOfDomina"
 				 

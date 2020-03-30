@@ -7,12 +7,12 @@
 			<Definition id="levelTable">
 				(list
 					Nil
-					{	level:1		xp:0	}
-					{	level:2		xp:250	}
-					{	level:3		xp:500	}
-					{	level:4		xp:1000	}
-					{	level:5		xp:2000	}
-					{	level:6		xp:4000	}
+					{	level:1		xp:0		icon:(resCreateImageDesc &rsSistersRanks; 0 0 256 256) }
+					{	level:2		xp:250		icon:(resCreateImageDesc &rsSistersRanks; 256 0 256 256) }
+					{	level:3		xp:500		icon:(resCreateImageDesc &rsSistersRanks; 512 0 256 256) }
+					{	level:4		xp:1000		icon:(resCreateImageDesc &rsSistersRanks; 0 256 256 256) }
+					{	level:5		xp:2000		icon:(resCreateImageDesc &rsSistersRanks; 256 256 256 256) }
+					{	level:6		xp:4000		icon:(resCreateImageDesc &rsSistersRanks; 512 256 256 256) }
 					)
 			</Definition>
 
@@ -38,27 +38,14 @@
 
 			<DynamicGlobal id="levelIcon">
 				(block (
-					(level (typ@ gType 'level))
+					(levelTable (typ@ gType 'levelTable))
 					)
-					(switch
-						(= level 1)
-							(resCreateImageDesc &rsSistersRanks; 0 0 256 256)
-
-						(= level 2)
-							(resCreateImageDesc &rsSistersRanks; 256 0 256 256)
-
-						(= level 3)
-							(resCreateImageDesc &rsSistersRanks; 512 0 256 256)
-
-						(= level 4)
-							(resCreateImageDesc &rsSistersRanks; 0 256 256 256)
-
-						(= level 5)
-							(resCreateImageDesc &rsSistersRanks; 256 256 256 256)
-
-						(resCreateImageDesc &rsSistersRanks; 512 256 256 256)
-						)
+					(@ (@ levelTable (typ@ gType 'level)) 'icon)
 					)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="levelNoun">
+				(typTranslate gType 'nounRankPattern { rank:(typ@ gType 'level) gender:(plyGetGenome gPlayer) })
 			</DynamicGlobal>
 
 			<DynamicGlobal id="nextLevel">
@@ -86,10 +73,6 @@
 					)
 			</DynamicGlobal>
 
-			<DynamicGlobal id="rankNoun">
-				(typTranslate gType 'nounRankPattern { rank:(typ@ gType 'level) gender:(plyGetGenome gPlayer) })
-			</DynamicGlobal>
-
 			<DynamicGlobal id="sistersRel">
 				(or (objGetData gPlayerShip 'sistersAttitude) 0)
 			</DynamicGlobal>
@@ -112,7 +95,7 @@
 						(setq theList (list
 							(list
 								"Domina relationship"
-								(fmtNoun (typ@ &unidPilgrimClass; 'rankNoun) 1 '(capitalize))
+								(fmtNoun (typ@ &unidPilgrimClass; 'levelNoun) 1 '(capitalize))
 								)
 							))
 						)
@@ -150,7 +133,7 @@
 					)
 					(if level
 						{
-							title: (fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
+							title: (fmtNoun (typ@ gType 'levelNoun) 1 'titleCapitalize)
 							largeIcon: (typ@ gType 'levelIcon)
 
 							details: (list

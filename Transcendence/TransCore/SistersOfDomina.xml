@@ -2,6 +2,32 @@
 
 <TranscendenceModule>
 
+<!-- SISTERS OF DOMINA
+
+	PLAYER DATA
+	
+	sistersAttitude: Abstract measure of the sisters' attitude towards the player
+	sistersLastDonation:	Time at which the player donated last (Nil if never)
+	sistersStory:	State of story-telling
+	slaveReward:	Number of slaves for which player has already been rewarded
+	slaveSales:		Proceeds from slave sales
+	slavesFreed:	Number of slaves freed to commonwealth authorities
+	
+-->
+
+	<Sovereign UNID="&svSistersOfDomina;"
+			name=":the Sisters of Domina"
+			shortName=":the Sisters"
+			adjective="Sister"
+			demonym=":a Sister(s)"
+			plural="true"
+
+			alignment="constructive chaos"
+			>
+	</Sovereign>
+	
+<!-- ITEM TYPES -->
+	
 	<!-- Prayer Stone -->
 
 	<ItemType UNID="&itCarvedPrayerStone;"
@@ -91,12 +117,16 @@
 		</Language>
 
 	</ItemType>
+	
+<!-- ENCOUNTERS -->
 
 	<!-- Sisters of Domina -->
 
 	<StationType UNID="&stSistersOfDomina;"
 			name=				":the Sisters of Domina|Sisters of Domina"
 			sovereign=			"&svSistersOfDomina;"
+			inherit=			"&baSistersStation;"
+			   
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
@@ -243,6 +273,8 @@
 			</Text>
 		</Language>
 	</StationType>
+	
+<!-- DOCK SCREENS -->
 	
 	<!-- Sanctum Screen 
 	
@@ -1087,47 +1119,6 @@
 		</Panes>
 	</DockScreen>
 
-<!-- SISTERS OF DOMINA
-
-	PLAYER DATA
-	
-	sistersAttitude: Abstract measure of the sisters' attitude towards the player
-	sistersLastDonation:	Time at which the player donated last (Nil if never)
-	sistersStory:	State of story-telling
-	slaveReward:	Number of slaves for which player has already been rewarded
-	slaveSales:		Proceeds from slave sales
-	slavesFreed:	Number of slaves freed to commonwealth authorities
-	
--->
-
-	<Sovereign UNID="&svSistersOfDomina;"
-			name=":the Sisters of Domina"
-			shortName=":the Sisters"
-			adjective="Sister"
-			demonym=":a Sister(s)"
-			plural="true"
-
-			alignment="constructive chaos"
-			>
-
-		<Events>
-			<GetGlobalDockScreen>
-				(switch
-					; This only applies to stations of the Sisters.
-					(not (objMatches gSource Nil "sTAV +sistersOfDomina;"))
-						Nil
-
-					; If the player ship is radioactive, then we need to
-					; decontaminate.
-					(shpIsRadioactive gPlayerShip)
-						{	screen:&dsSistersDecon;			priority:10		overrideOnly:true	}
-						
-					Nil
-					)
-			</GetGlobalDockScreen>
-		</Events>
-	</Sovereign>
-	
 <!-- SHIP CLASSES -->
 	
 	<!-- Level 5: Hand of Domina Hospital Ship -->
@@ -1224,6 +1215,31 @@
 			/>
 
 	</ShipClass>
+	
+<!-- BASE CLASSES -->
+	
+	<Type unid="&baSistersStation;"
+			inherit="&unidCommonText;"
+			>
+		<Events>
+			<GetDockScreen>
+				(switch
+					;	This only applies to active station
+					
+					(obj@ gSource 'abandoned)
+						Nil
+
+					;	If the player ship is radioactive, then we need to
+					;	decontaminate.
+					
+					(shpIsRadioactive gPlayerShip)
+						{	screen:&dsSistersDecon;			priority:10		overrideOnly:true	}
+						
+					Nil
+					)
+			</GetDockScreen>
+		</Events>
+	</Type>
 
 <!-- RESOURCES -->
 

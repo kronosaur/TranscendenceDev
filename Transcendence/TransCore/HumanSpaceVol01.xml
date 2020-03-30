@@ -1617,6 +1617,7 @@
 	<!ENTITY dsDominaPowersHelp			"0x00100037">
 	<!ENTITY rsSistersRanks				"0x00100038">
 	<!ENTITY tbSistersDonation			"0x00100039">
+	<!ENTITY baSistersStation			"0x0010003A">
 	
 	<!-- 0040-005F CORPORATE HIERARCHY -->
 	
