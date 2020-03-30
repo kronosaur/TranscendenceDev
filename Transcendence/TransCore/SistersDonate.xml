@@ -134,8 +134,8 @@
 
 			<Text id="descHowMuch">
 
-				"We are devoutly grateful for your generosity. How many credits
-				do you wish to donate?"
+				"We're collecting donations to the Pilgrims' Aid fund. How many
+				credits do you wish to give?"
 
 			</Text>
 			<Text id="descNoMoney">
@@ -461,7 +461,7 @@
 			</Text>
 			<String id="descDonate.abbeyOnly">
 
-				You've helped to support the Sisters.
+				You've contributed to the Pilgrims' Aid budget.
 
 			</String>
 			<String id="descDonate.dominaOnly">
@@ -471,8 +471,8 @@
 			</String>
 			<Text id="descDonate.dominaAndAbbey">
 
-				Your relationship to Domina is stronger and you've helped to 
-				support the Sisters.
+				Your relationship to Domina is stronger and you've contributed
+				to the Pilgrims' Aid budget.
 
 			</Text>
 		</Language>
