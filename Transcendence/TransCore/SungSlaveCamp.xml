@@ -242,7 +242,27 @@
 			description=		"The Sung Slavers of Jiang's Star transport their slaves in life-support canisters that keep their captive occupants in biological suspension."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateAtt">-1</Definition>
+			<Definition id="sisters.donateRel">40</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnItemDonatedToSisters>
+				(typIncGlobalData &stDomina; 'slavesOffered (itmGetCount gItem))
+			</OnItemDonatedToSisters>
+		</Events>
+
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				"We will take care of these lost children and teach them the way
+				of Domina. Trust your fate to Domina."
+			
+			</Text>
+		</Language>
 	</ItemType>
 
 <!-- DOCK SCREENS -->

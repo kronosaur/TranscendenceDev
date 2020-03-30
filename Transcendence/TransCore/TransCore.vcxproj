@@ -611,6 +611,7 @@
     <Xml Include="Penitents.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="Pilgrim.xml" />
     <Xml Include="Pteravores.xml" />
     <Xml Include="QuantumCPU.xml" />
     <Xml Include="RaisuStation.xml" />
@@ -638,6 +639,8 @@
     <Xml Include="Sanctuary.xml" />
     <Xml Include="Sapiens.xml" />
     <Xml Include="ShieldEnhancementItems.xml" />
+    <Xml Include="SistersDonate.xml" />
+    <Xml Include="SistersPilgrimsAid.xml" />
     <Xml Include="StdMiningEquipment.xml">
       <SubType>Designer</SubType>
     </Xml>

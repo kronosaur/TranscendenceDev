@@ -402,8 +402,14 @@ bool CLanguageDataBlock::IsCode (const CString &sText) const
 
 	//	Skip any leading whitespace
 
+	int iLeadingLNs = 0;
 	while (pPos < pPosEnd && strIsWhitespace(pPos))
+		{
+		if (*pPos == '\n')
+			iLeadingLNs++;
+
 		pPos++;
+		}
 
 	if (pPos == pPosEnd)
 		return false;
@@ -418,6 +424,12 @@ bool CLanguageDataBlock::IsCode (const CString &sText) const
 
 	else if (*pPos == '\"')
 		{
+		//	If we have at least two lines of whitespace, then we assume this
+		//	is a block of text.
+
+		if (iLeadingLNs >= 2)
+			return false;
+
 		//	If we have any embedded CRLFs then we assume that this is a
 		//	paragraph of text with quotes instead of a quoted string (the latter
 		//	needs to be treated as code).

@@ -1,0 +1,669 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- DOCK SCREENS -->
+
+	<!-- Donate Screen
+	
+	-->
+	
+	<DockScreen unid="&dsSistersDonate;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(scrSetDesc gScreen (typTranslate &dsSistersDonate; 'Welcome))
+				</OnPaneInit>
+			
+				<Actions>
+					<Action id="actionDonateCredits">
+						(scrShowScreen gScreen &dsDominaTithe;)
+					</Action>
+					<Action id="actionDonateItem">
+						(scrShowScreen gScreen &dsDominaDonateItem;)
+					</Action>
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="actionDonateCredits">Donate [C]redits</Text>
+			<Text id="actionDonateItem">Donate [I]tem</Text>
+			
+			<Text id="Welcome">
+
+				"Domina cannot help us without our participation. Certain items 
+				are useful to her in maintaining her connection with us. 
+				And, of course, we use your donations in our own efforts.
+					
+				"Please donate generously; your sacrifices will be rewarded."
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Domina Tithe Screen
+
+	-->
+
+	<DockScreen UNID="&dsDominaTithe;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block (
+						(maxCount (plyGetCredits gPlayer))
+						)
+						(scrEnableAction gScreen 'actionDonate (gr maxCount 0))
+						(if (gr maxCount 0)
+							(scrSetDescTranslate gScreen 'descHowMuch)
+							(scrSetDescTranslate gScreen 'descNoMoney)
+							)
+							
+						(scrSetCounter gScreen maxCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonate" default="1">
+						(block (
+							(count (scrGetCounter gScreen))
+							(maxCount (plyGetCredits gPlayer))
+							)
+							(switch
+								(= count 0)
+									(scrExitScreen gScreen)
+
+								(gr count maxCount)
+									(scrSetCounter gScreen maxCount)
+									
+								(block ()
+
+									;	Donation
+
+									(plyCharge gPlayer count)
+									(typFireEvent &svSistersOfDomina; 'OnMoneyDonatedToSisters {
+										value: count
+										})
+
+									(scrShowPane gScreen 'Thanks)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+
+			<Thanks descID="descThanks">
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Thanks>
+		</Panes>
+		
+		<Language>
+			<Text id="actionDonate">[D]onate</Text>
+
+			<Text id="descHowMuch">
+
+				"We're collecting donations to the Pilgrims' Aid fund. How many
+				credits do you wish to give?"
+
+			</Text>
+			<Text id="descNoMoney">
+
+				"We are devoutly grateful for your good intentions. 
+				Unfortunately, you have no credits to give."
+
+			</Text>
+			<Text id="descThanks">
+
+				"Thank you for your generous contribution. Your faithful 
+				support enables us to help the truly needy. May the blessings 
+				of Domina illuminate your way."
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Domina Donate Item
+
+	-->
+
+	<DockScreen UNID="&dsDominaDonateItem;"
+			type=				"itemPicker"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"*U"
+			>
+			(scrSet@ gScreen 'enabledFilter (lambda (theItem)
+				(block (
+					(entry (domGetDonationDesc theItem))
+					)
+					(or (!= (@ entry 'sistersAtt) 0)
+						(!= (@ entry 'dominaRel) 0)
+						)
+					)
+				))
+		</ListOptions>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theItem (scrGetItem gScreen))
+						(donationEntry (domGetDonationDesc theItem))
+						)
+						(dbgOutput donationEntry)
+						(setq gMaxCount (itmGetCount theItem))
+								
+						(scrEnableAction gScreen 'actionDonateItem (scr@ gScreen 'selectionEnabled))
+						
+						(switch
+							(not theItem)
+								(block Nil
+									(scrEnableAction gScreen 'actionDonateItem Nil)
+									(scrSetDesc gScreen (typTranslate &dsDominaDonateItem; 'NoItemsDesc))
+									)
+									
+							(not donationEntry)
+								(scrSetDesc gScreen (typTranslate &dsDominaDonateItem; 'DonateGenericDesc))
+								
+							;	If the item increases Domina relationship, say so
+							
+							(gr (@ donationEntry 'dominaRel) 0)
+								(scrSetDesc gScreen (typTranslate &dsDominaDonateItem; 'DonateDominaItemDesc {
+									itemName: (itmGetName theItem 'demonstrative)
+									}))
+								
+							;	If this helps the Sisters, say so
+							
+							(!= (@ donationEntry 'sistersAtt) 0)
+								(scrSetDesc gScreen (typTranslate &dsDominaDonateItem; 'DonateUsefulItemDesc {
+									itemName: (itmGetName theItem 'demonstrative)
+									}))
+							
+							;	Otherwise, the item gives us no benefit, but we show the custom
+							;	text.
+							
+							(scrSetDesc gScreen 
+								(or (@ donationEntry 'desc)
+									(typTranslate &dsDominaDonateItem; 'DonateGenericDesc)
+									)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonateItem" default="1">
+						(switch
+							(gr gMaxCount 1)
+								(scrShowPane gScreen "Quantity")
+
+							(eq gMaxCount 1)
+								(block Nil
+									(scrSetData gScreen 'itemDonated (scrRemoveItem gScreen 1))
+									(objFireItemEvent gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
+									(typFireObjItemEvent &svSistersOfDomina; gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
+									(scrShowPane gScreen "Donate")
+									)
+							)
+					</Action>
+
+					<Action id="actionLeave" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>					
+			</Default>
+
+			<Quantity descID="descHowMany"
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block Nil
+						(scrSetCounter gScreen gMaxCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonate" default="1">
+						(block (count)
+							(setq count (scrGetCounter gScreen))
+							(if (gr count gMaxCount)
+								(scrSetCounter gScreen gMaxCount)
+								(block Nil
+									(scrSetData gScreen 'itemDonated (scrRemoveItem gScreen count))
+									(objFireItemEvent gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
+									(typFireObjItemEvent &svSistersOfDomina; gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
+									(scrShowPane gScreen "Donate")
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						<ShowPane pane="Default"/>
+					</Action>
+				</Actions>
+			</Quantity>
+
+			<Donate noListNavigation="true">
+				<OnPaneInit>
+					(block (
+						(theItem (scrGetData gScreen 'itemDonated))
+
+						(entry (domGetDonationDesc theItem))
+						(att (@ entry 'sistersAtt))
+						(rel (@ entry 'dominaRel))
+						(desc (@ entry 'desc))
+						)
+						;	Deal with the entry that we found
+
+						(switch
+
+							;	This should never happen, but we have it just in case
+
+							(not entry)
+								(scrSetDescTranslate gScreen 'descDonate.nothing)
+
+							;	If the entry has no increase in att or rel, then we output the message
+							;	from the entry (in quotes)
+
+							(and (eq att 0) (eq rel 0))
+								(if desc
+									(scrSetDesc gScreen desc)
+									(scrSetDescTranslate gScreen 'descDonate.nothing)
+									)
+
+							;	Otherwise, do more calculations
+
+							(block (
+								;	Compute the total value of the donation. Note that we use objGetBuyPrice
+								;	so that items like fresh fruit are computed correctly. Also, our TradeDesc
+								;	indicates that the Sisters pay actual price for items.
+								
+								(totalValue (multiply (objGetBuyPrice gSource theItem) (itmGetCount theItem)))
+
+								;	Calculate the increase in attitude
+								
+								(incAtt
+									(switch
+										(= att 0)
+											0
+
+										1
+										)
+									)
+
+								;	Calculate the increase in relationship
+								
+								(incRel
+									(switch
+										(or (= rel 0)
+												(!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+												)
+											0
+
+										(multiply (itmGetCount theItem) rel)
+										)
+									)
+
+								;	Calculate bonus text
+								
+								(bonusText
+									(switch
+										(and (gr incAtt 0) (gr incRel 0))
+											(scrTranslate gScreen 'descDonate.dominaAndAbbey)
+											
+										(gr incRel 0)
+											(scrTranslate gScreen 'descDonate.dominaOnly)
+											
+										(gr incAtt 0)
+											(scrTranslate gScreen 'descDonate.abbeyOnly)
+										)
+									)
+								)
+
+								;	Display the appropriate message
+
+								(switch
+									;	If we donated rotted food, then special message
+
+									(and (itmMatches theItem "* +FreshFood;") (= totalValue 0))
+										(scrSetDescTranslate gScreen descDonate.rottenFood)
+									
+									;	If donation is not enough, then disappointed message
+
+									(and (= incRel 0) (= incAtt 0))
+										(scrSetDescTranslate gScreen 'descDonate.nothing)
+
+									;	Otherwise, message specified in table
+
+									(scrSetDesc gScreen 
+										(cat (or desc (scrTranslate gScreen 'descDonate.default)) "\n\n" bonusText)
+										)
+									)
+
+								;	Increase attitude and relationship
+
+								(if (gr incRel 0)
+									(domGainXP incRel)
+									)
+								
+								;	Record stats
+								
+								(switch
+									(eq incRel 0)
+										Nil
+										
+									(typIncGlobalData &stDomina; "psionicsOffered" (itmGetCount theItem))
+									)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" cancel="1" default="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Donate>
+		</Panes>
+		
+		<Language>
+			<Text id="actionDonate">[D]onate</Text>
+			<Text id="actionDonateItem">[D]onate this Item</Text>
+
+			<Text id="DonateDominaItemDesc">
+
+				"You can donate %itemName% to strengthen your connection to
+				Domina."
+
+			</Text>
+			<Text id="DonateUsefulItemDesc">
+
+				"You can donate %itemName% to support the abbey. In turn we will
+				be able to help you on your travels."
+
+			</Text>
+			<String id="DonateGenericDesc">
+
+				"This is not an appropriate contribution to Domina's cause.
+
+				"Some items are imbued with resonant energies that can help you
+				commune with Domina. Seek those out and donate them to 
+				strengthen your connection to her."
+
+			</String>
+			<Text id="NoItemsDesc">
+
+				"We are grateful for your good intentions, but you have no items 
+				to donate.
+
+				"Some items are imbued with resonant energies that can help you
+				commune with Domina. Seek those out and donate them to 
+				strengthen your connection to her."
+
+			</Text>
+
+			<Text id="descHowMany">How many items do you wish to donate?</Text>
+
+			<String id="descDonate.default">
+
+				"We thank you for your offering."
+			
+			</String>
+			<Text id="descDonate.nothing">
+
+				"We thank you for your donation and your good intentions. 
+				Go in peace."
+			
+			</Text>
+			<Text id="descDonate.rottenFood">
+			
+				"Such an offering is hardly fitting! Uncloud your mind before 
+				communing with Domina."
+
+			</Text>
+			<String id="descDonate.abbeyOnly">
+
+				You've contributed to the Pilgrims' Aid budget.
+
+			</String>
+			<String id="descDonate.dominaOnly">
+
+				Your relationship to Domina is stronger.
+
+			</String>
+			<Text id="descDonate.dominaAndAbbey">
+
+				Your relationship to Domina is stronger and you've contributed
+				to the Pilgrims' Aid budget.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- TABLES -->
+
+	<Type unid="&tbSistersDonation;">
+		<Properties>
+			<Definition id="table">
+				(list
+					{	itemType:&itCashCardGold;			sistersAtt:500		dominaRel:0		descID:'donate.food }
+					{	itemType:&itCashCardPlatinum;		sistersAtt:500		dominaRel:0		descID:'donate.food }
+					{	criteria:"f"						sistersAtt:750		dominaRel:0		descID:'donate.fuel		}
+					{	criteria:"*+Meds;"					sistersAtt:500		dominaRel:0		descID:'donate.meds		}
+					{	criteria:"*+Lux;"					sistersAtt:2000		dominaRel:0		descID:'donate.lux		}
+					{	criteria:"*+Food;"					sistersAtt:1000		dominaRel:0		descID:'donate.food		}
+					{	criteria:"*~ad +Illegal; -ID;"		sistersAtt:0		dominaRel:0		descID:'donate.illegal	}
+					{										sistersAtt:0		dominaRel:0		descID:'donate.nothing	}
+					)
+			</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="donate.fuel">
+
+				"We thank you for your sacrifice. Seek us when you are in need 
+				of sustenance."
+			
+			</Text>
+			<Text id="donate.food">
+
+				"We thank you for your sacrifice. Seek us when you are in need 
+				of sustenance."
+			
+			</Text>
+			<Text id="donate.illegal">
+
+				"This kind of poison is not an appropriate contribution to 
+				Domina's cause. Cleanse yourself of its influence."
+			
+			</Text>
+			<Text id="donate.lux">
+
+				"We thank you for your sacrifice. Seek us when you are in need 
+				of peace."
+
+			</Text>
+			<Text id="donate.meds">
+
+				"We thank you for your sacrifice. Seek us when you are in need 
+				of healing."
+
+			</Text>
+			<Text id="donate.nothing">
+
+				"This is not an appropriate contribution to Domina's cause.
+
+				"Some items are imbued with resonant energies that can help you
+				commune with Domina. Seek those out and donate them to 
+				strengthen your connection to her."
+
+			</Text>
+		</Language>
+	</Type>
+
+<!-- GLOBALS -->
+	
+	<Globals>
+		(block Nil
+			(setq domGetDonationDesc (lambda (theItem)
+				(block (
+					(customAtt (itm@ theItem 'sisters.donateAtt))
+					(customRel (itm@ theItem 'sisters.donateRel))
+					(customDesc (typTranslate (itmGetType theItem) 'sisters.donateDesc))
+
+					entry
+					)
+					(switch
+						(not theItem)
+							Nil
+					
+						;	First check to see if the item itself defines the 
+						;	donation parameters
+
+						(or customAtt customRel customDesc)
+							(setq entry {
+								itemType: (itmGetType theItem)
+								sistersAtt: (or customAtt 0)
+								dominaRel: (or customRel 0)
+								desc: customDesc
+								})
+
+						;	Backwards compatibility
+
+						(setq entry 
+								(eval (or (itmGetStaticData theItem 'sisters.donation) (itmGetStaticData theItem '00182001_Donation)))
+								)
+							True
+						
+						;	If the item doesn't tell us anything then look for an entry
+						;	in the donation table
+
+						(block (
+							(table (typ@ &tbSistersDonation; 'table))
+							)
+							(enumwhile table (not entry) theEntry
+								(switch
+									;	If we specify an item type, then see if this is the UNID.
+
+									(@ theEntry 'itemType)
+										(if (= (itmGetType theItem) (@ theEntry 'itemType))
+											(setq entry theEntry)
+											)
+
+									;	If we have a criteria, then see if it matches
+
+									(@ theEntry 'criteria)
+										(if (itmMatches theItem (@ theEntry 'criteria))
+											(setq entry theEntry)
+											)
+
+									;	Otherwise, we always match (this is for the last, default
+									;	entry.
+
+									(setq entry theEntry)
+									)
+								)
+							)
+						)
+						
+					;	Convert from old style descriptors
+					
+					(switch
+						(= (typeof entry) 'list)
+							(block ()
+							
+								;	Evaluate functions, if necessary
+								
+								(enum '(1 2 3) var
+									(block (
+										(value (@ entry var))
+										)
+										(errBlock (err)
+											(if (= (typeOf (eval value)) 'list) (set@ entry var (eval (eval value))))
+											(printTo 'log (cat "Domina donation error: " err))
+											)
+										)
+									)
+									
+								;	Map to a structure
+					
+								{
+									itemType: (if (isint (@ entry 0)) (@ entry 0))
+									criteria: (if (not (isInt (@ entry 0))) (@ entry 0))
+									sistersAtt: (@ entry 1)
+									dominaRel: (@ entry 2)
+									desc: (@ entry 3)
+									}
+								)
+								
+						;	See if we need to translate
+
+						(@ entry 'descID)
+							(struct entry {
+								desc: (typTranslate &tbSistersDonation; (@ entry 'descID))
+								})
+						
+						entry
+						)
+					)
+				))
+	
+			(setq domGetDonationEntry (lambda (theItem)
+				(block (
+					(entry (domGetDonationDesc theItem))
+					)
+					(switch
+						(not entry)
+							Nil
+
+						(list
+							(or (@ entry 'itemType) (@ entry 'criteria))
+							(@ entry 'sistersAtt)
+							(@ entry 'dominaRel)
+							(@ entry 'desc)
+							)
+						)
+					)
+				))
+			)
+	</Globals>
+
+</TranscendenceModule>

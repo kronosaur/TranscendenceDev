@@ -729,7 +729,7 @@
 	<StationType UNID="&stSistersResearchHeretic;"
 			name=				"St. Josephine mission"
 			sovereign=			"&svSistersOfDomina;"
-			inherit=			"&unidCommonText;"
+			inherit=			"&baSistersStation;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			ignoreFriendlyFire=	"true"
@@ -765,6 +765,8 @@
 
 		<Trade currency="credit">
 			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100" actualPrice="true"/>
+
+			<Refuel			criteria="f +basicFuel; L:1-10;" priceAdj="100"/>
 		</Trade>
 
 		<DockScreens>

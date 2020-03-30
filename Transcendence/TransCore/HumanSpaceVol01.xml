@@ -1615,6 +1615,9 @@
 	<!ENTITY rsCathedralOfDomina		"0x00100035">
 	<!ENTITY rsHandOfDominaHero			"0x00100036">
 	<!ENTITY dsDominaPowersHelp			"0x00100037">
+	<!ENTITY rsSistersRanks				"0x00100038">
+	<!ENTITY tbSistersDonation			"0x00100039">
+	<!ENTITY baSistersStation			"0x0010003A">
 	
 	<!-- 0040-005F CORPORATE HIERARCHY -->
 	
@@ -2278,6 +2281,7 @@
 
 	<!ENTITY baDominaPower				"0x00100640">
 	<!ENTITY vtIngenuityEnhancement		"0x00100641">
+	<!ENTITY baHaloGem					"0x00100642">
 
 	<!-- 0660-06BF COMMONWEALTH FLEET III -->
 
@@ -2555,8 +2559,11 @@
 
 	<!-- Sisters of Domina -->
 
+	<Module filename="Pilgrim.xml"/>
 	<Module filename="Sanctuary.xml"/>
+	<Module filename="SistersDonate.xml"/>
 	<Module filename="SistersOfDomina.xml"/>
+	<Module filename="SistersPilgrimsAid.xml"/>
 
 	<!-- St. Katharine's Star -->
 

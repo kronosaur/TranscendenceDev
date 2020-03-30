@@ -258,17 +258,36 @@
 	</ItemType>
 	
 <!-- HALO GEMS -->
+	
+	<ItemType unid="&baHaloGem;">
+		<Properties>
+			<Definition id="sisters.donateAtt">-1</Definition>
+			<Definition id="sisters.donateRel">270</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				"We thank you for your offering. These beautiful gems are a 
+				fitting tribute to Domina's grace and power."
+			
+			</Text>
+		</Language>
+	</ItemType>
 
 	<!-- Gem of Despair -->
 
 	<ItemType UNID="&itGemOfDespair;"
 			name=				"gem(s) of despair"
+			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
+			inherit=			"&baHaloGem;"
+			
 			level=				"7"
-			value=				"2000"
-			mass=				"1"
 			frequency=			"veryrare"
 			unknownType=		"&itUnknownHaloGem;"
-			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
+			
+			value=				"2000"
+			mass=				"1"
 
 			description=		"These gems are used by the Halo Races, though their exact purpose is unknown. The dark-energies embedded in the gem have an influence over spacetime that is not yet fully understood."
 			>
@@ -304,13 +323,16 @@
 
 	<ItemType UNID="&itGemOfContrition;"
 			name=				"gem(s) of contrition"
+			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
+			inherit=			"&baHaloGem;"
+			
 			level=				"8"
-			value=				"5000"
-			mass=				"1"
 			frequency=			"veryrare"
 			unknownType=		"&itUnknownHaloGem;"
-			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
 
+			value=				"5000"
+			mass=				"1"
+			
 			description=		"These gems are used by the Halo Races, though their exact purpose is unknown. The dark-energies embedded in the gem have an influence over spacetime that is not yet fully understood."
 			>
 
@@ -339,13 +361,16 @@
 
 	<ItemType UNID="&itGemOfSacrifice;"
 			name=				"gem(s) of sacrifice"
+			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
+			inherit=			"&baHaloGem;"
+			
 			level=				"12"
-			value=				"10000"
-			mass=				"1"
 			frequency=			"veryrare"
 			unknownType=		"&itUnknownHaloGem;"
-			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
 
+			value=				"10000"
+			mass=				"1"
+			
 			description=		"These gems are used by the Halo Races, though their exact purpose is unknown. The dark-energies embedded in the gem have an influence over spacetime that is not yet fully understood."
 			>
 

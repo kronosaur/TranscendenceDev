@@ -94,6 +94,9 @@
     <Filter Include="Human Space Library\Encounters">
       <UniqueIdentifier>{b33ac3ac-3346-4d8b-b1b3-ef7b253a1f89}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Human Space Library\Pilgrim">
+      <UniqueIdentifier>{0d3a5fa3-c89f-4ca2-b785-232965a589d5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Transcendence.xml" />
@@ -242,9 +245,6 @@
       <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="Code.xml">
-      <Filter>Human Space Library\Miscellaneous</Filter>
-    </None>
-    <None Include="Domina.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
     <None Include="DwargRaiders.xml">
@@ -396,6 +396,9 @@
     </None>
     <None Include="StdEffects.xml">
       <Filter>Human Space Library\Items</Filter>
+    </None>
+    <None Include="Domina.xml">
+      <Filter>Human Space Library\Pilgrim</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -914,6 +917,15 @@
     </Xml>
     <Xml Include="CoreDiagnostics.xml">
       <Filter>Core Types</Filter>
+    </Xml>
+    <Xml Include="SistersDonate.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
+    <Xml Include="Pilgrim.xml">
+      <Filter>Human Space Library\Pilgrim</Filter>
+    </Xml>
+    <Xml Include="SistersPilgrimsAid.xml">
+      <Filter>Human Space Library\Sisters</Filter>
     </Xml>
   </ItemGroup>
 </Project>

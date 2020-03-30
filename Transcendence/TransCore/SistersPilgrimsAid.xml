@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- DOCK SCREENS -->
+
+	<!-- Pilgrims' Aid Screen
+
+	-->
+
+	<DockScreen UNID="&dsSistersDockServices;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(switch
+						(= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+							(scrSetDesc gScreen (typTranslate &dsSistersDockServices; 'Welcome))
+
+						(block ()							
+							(scrSetDesc gScreen (typTranslate &dsSistersDockServices; 'WelcomeNonPilgrim))
+
+							;	Help on Domina powers only available to pilgrims
+
+							(scrEnableAction gScreen 'actionPowersHelp Nil)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionRefuel">
+						(block (
+							(fuelToUse (objGetRefuelItemAndPrice gSource gPlayerShip))
+							(fuelItem (@ fuelToUse 0))
+							(fuelCost (@ fuelToUse 1))
+
+							(fuelNeededCount (shpGetFuelNeeded gPlayerShip fuelItem))
+
+							(balance (typ@ &svSistersOfDomina; 'balance))
+							(fuelAffordCount (min fuelNeededCount (divide balance fuelCost)))
+							(affordCost (* fuelAffordCount fuelCost))
+							)
+							(switch
+								(not fuelToUse)
+									(scrSetData gScreen 'message 'descNoFuelAvailable)
+
+								(= fuelNeededCount 0)
+									(scrSetData gScreen 'message 'descNoFuelNeeded)
+
+								(gr (plyGetCredits gPlayer) balance)
+									(scrSetData gScreen 'message 'descTooRich)
+
+								(= fuelAffordCount 0)
+									(scrSetData gScreen 'message 'descCantAffordFuel)
+
+								(block ()
+									(shpRefuelFromItem gPlayerShip (itmSetCount fuelItem fuelAffordCount))
+									(typInc@ &svSistersOfDomina; 'balance (- affordCost))
+
+									(scrSetData gScreen 'message 'descShipRefueled)
+									)
+								)
+
+							(scrShowPane gScreen 'MessagePane)
+							)
+					</Action>
+
+					<Action id="actionRepairArmor">
+						(block (
+							(balance (typ@ &svSistersOfDomina; 'balance))
+							(armorDesc
+								(map (objGetItems gPlayerShip "aI") theItem
+									(block (
+										(maxHP (obj@ gPlayerShip theItem 'maxHP))
+										(hp (obj@ gPlayerShip theItem 'hp))
+										(damage (- maxHP hp))
+										(costToRepair (* damage (itm@ theItem 'repairCost)))
+										)
+										{
+											armorItem: theItem
+											repairNeeded: (gr damage 0)
+											repairPossible: (leq (itmGetLevel theItem) 12)
+											repairAffordable: (leq costToRepair balance)
+											costToRepair: costToRepair
+											}
+										)
+									)
+								)
+							(repairNeeded (filter armorDesc theEntry (@ theEntry 'repairNeeded)))
+							(repairPossible (filter armorDesc theEntry (@ theEntry 'repairPossible)))
+							(canAffordAtLeastOne (filter armorDesc theEntry (@ theEntry 'repairAffordable)))
+							)
+							(switch
+								(not repairNeeded)
+									(scrSetData gScreen 'message 'descNoRepairNeeded)
+									
+								(not repairPossible)
+									(scrSetData gScreen 'message 'descCantRepair)
+									
+								(gr (plyGetCredits gPlayer) balance)
+									(scrSetData gScreen 'message 'descTooRich)
+
+								(not canAffordAtLeastOne)
+									(scrSetData gScreen 'message 'descCantAffordRepair)
+									
+								(block ()
+									(enum armorDesc theEntry
+										(if (and (@ theEntry 'repairNeeded) 
+												(@ theEntry 'repairPossible)
+												(leq (@ theEntry 'costToRepair) balance)
+												)
+											(block ()
+												(objRepairArmor gPlayerShip (@ theEntry 'armorItem))
+												(setq balance (- balance (@ theEntry 'costToRepair)))
+												)
+											)
+										)
+										
+									(typSet@ &svSistersOfDomina; 'balance balance)
+									(scrSetData gScreen 'message 'descArmorRepaired)
+									)
+								)
+
+							(scrShowPane gScreen 'MessagePane)
+							)
+					</Action>
+
+					<Action id="actionPowersHelp">
+						(scrShowScreen gScreen &dsDominaPowersHelp;)
+					</Action>
+
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+
+			<RepairArmor descID="RepairArmorDesc">
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						<ShowPane pane="Default"/>
+					</Action>
+				</Actions>
+			</RepairArmor>
+
+			<NoDamage descID="NoDamageDesc">
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						<ShowPane pane="Default"/>
+					</Action>
+				</Actions>
+			</NoDamage>
+
+			<UnableToRepair descID="UnableToRepairDesc">
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						<ShowPane pane="Default"/>
+					</Action>
+				</Actions>
+			</UnableToRepair>
+
+			<TooRich descID="TooRichDesc">
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</TooRich>
+
+			<MessagePane>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen (scrGetData gScreen 'message))
+				</OnPaneInit>
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</MessagePane>
+		</Panes>
+		
+		<Language>
+			<Text id="actionPowersHelp">Domina [P]owers</Text>
+
+			<Text id="Welcome">
+
+				"Welcome, Pilgrim! Your journey to the Galactic Core will be 
+				long and arduous but we are here to help those of pure spirit 
+				and in true need."
+
+			</Text>
+			<Text id="WelcomeNonPilgrim">
+
+				"Welcome! Domina asks that we help those in need. Our powers in 
+				the material world are at your service."
+
+			</Text>
+
+			<Text id="descNoFueldAvailable">
+
+				"Sadly, we do not have any fuel compatible with your vessel."
+
+			</Text>
+			<Text id="descNoFuelNeeded">
+
+				"Your vessel does not need any fuel."
+			
+			</Text>
+			<Text id="descTooRich">
+
+				"Your personal funds exceed our own. It is the wish of Domina 
+				that we help only those truly in need."
+			
+			</Text>
+			<Text id="descCantAffordFuel">
+
+				"Our abbey has fallen on hard times and we cannot afford to help
+				you. Please consider donating funds or items when you are able."
+			
+			</Text>
+			<Text id="descShipRefueled">
+
+				"Your vessel has been refueled. Go in peace and spread the
+				teachings of Domina."
+			
+			</Text>
+			<Text id="descNoRepairNeeded">
+				
+				"Your vessel is undamaged. There is no need for repairs."
+				
+			</Text>
+			<Text id="descCantRepair">
+
+				"The damage to your vessel is beyond our capability to repair. 
+				Open yourself to Domina and leave your worthless ship behind."
+
+			</Text>
+			<Text id="descCantAffordRepair">
+
+				"Our abbey has fallen on hard times and we cannot afford to help
+				you. Please consider donating funds or items when you are able."
+			
+			</Text>
+			<Text id="descArmorRepaired">
+
+				"Your vessel has been repaired as best as we could manage. 
+				Devote your life to Domina and your spirit shall be similarly 
+				healed."
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Domina Powers Help -->
+
+	<DockScreen unid="&dsDominaPowersHelp;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+
+		<Display type="customPicker"
+				rowHeight="64"
+				>
+			<OnDisplayInit>
+				(map (typFind "p +domina;") thePower
+					(block (
+						(status (typFireEvent thePower 'GetInvokeStatus))
+						(rank (typGetStaticData thePower 'rank))
+						)
+						{
+						title: (typGetProperty thePower 'name)
+						desc: (switch
+							(= status 'tooHighLevel)
+								(scrTranslate gScreen 'textNotAvailable)
+
+							(= status 'cooldown)
+								(scrTranslate gScreen 'textCooldown)
+
+							(or (typTranslate thePower 'power.lineDesc)
+								(scrTranslate gScreen 'textReadyToInvoke)
+								)
+							)
+					
+						powerType: thePower
+						rank: rank
+						rankNoun: (typTranslate &unidPilgrimClass; 'nounRankPattern { rank:rank gender:(plyGetGenome gPlayer) })
+						status: status
+						}
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+		
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theEntry (scrGetListEntry gScreen))
+						(thePower (@ theEntry 'powerType))
+						(status (@ theEntry 'status))
+						)
+						(scrSetControlValue gScreen 'powerDesc
+							(scrTranslate gScreen 'descPower {
+								powerName: (typGetProperty thePower 'name)
+								powerDesc: (typTranslate thePower 'power.desc)
+								})
+							)
+
+						(switch
+							(= status 'tooHighLevel)
+								(scrSetDescTranslate gScreen 'descTooHighLevel {
+									rankNeeded: (fmtNoun (@ theEntry 'rankNoun) 1 'article)
+									})
+
+							(= status 'cooldown)
+								(scrSetDescTranslate gScreen 'descCooldown)
+
+							(scrSetDescTranslate gScreen 'descInvokeHelp {
+								key: (uiKeyLabel 'InvokePower)
+								})
+							)
+						)
+				</OnPaneInit>
+
+				<Controls>
+					<Text id="powerDesc"/>
+					<Text id="desc"/>
+				</Controls>
+
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<String id="descPower">
+				{/rtf {/f:LargeBold;/c:#d9ecff; %powerName%}\n{/f:Medium;/lineSpacing:0; %powerDesc%}}
+			</String>
+			<Text id="descTooHighLevel">
+
+				You must be %rankNeeded% in the service of Domina before you can
+				invoke this power.
+
+				You can strengthen your relationship with Domina by contemplating
+				and by donating items to commune with her.
+
+			</Text>
+			<Text id="descCooldown">
+
+				You must wait for this power to be recharged.
+
+			</Text>
+			<Text id="descInvokeHelp">
+
+				Use the [%key%] key to invoke the powers of Domain.
+				
+			</Text>
+			<Text id="textNotAvailable">Not available</Text>
+			<Text id="textCooldown">Recharging</Text>
+			<Text id="textReadyToInvoke">Ready to invoke</Text>
+		</Language>
+	</DockScreen>
+
+</TranscendenceModule>

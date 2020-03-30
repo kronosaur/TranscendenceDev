@@ -171,8 +171,21 @@
 			description=		"This rare optical cube contains the memory patterns of a denizen of the Concatenated Digital Metropolis."
 			>
 
-		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="sisters.donateAtt">-1</Definition>
+			<Definition id="sisters.donateRel">270</Definition>
+		</Properties>
 
+		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+		
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				"The souls in these receptacles deserve to rejoin Domina. The 
+				flesh will perish, but the eternal soul returns to its maker."
+				
+			</Text>
+		</Language>
 	</ItemType>
 
 	<!-- itCentauriRice -->
@@ -281,7 +294,21 @@
 			description=		"The thoughts and memories of a human being are encoded into this holographic cube. These mementos of the dead were popular last century."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateAtt">-1</Definition>
+			<Definition id="sisters.donateRel">180</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+		
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				"The souls in these receptacles deserve to rejoin Domina. The 
+				flesh will perish, but the eternal soul returns to its maker."
+		
+			</Text>
+		</Language>
 
 	</ItemType>
 
@@ -542,14 +569,21 @@
 			description=		"The traffic in human cadavers is common in the Outer Realm. Many people believe that Teratons use human cadavers for strange experiments."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateAtt">-1</Definition>
+			<Definition id="sisters.donateRel">240</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="sisters.donation">
-				;			attd	rel		text
-				'(Nil		-1		240		"This empty vessel may nevertheless possess a connection to the soul it once housed. Domina will use it to gather her flock.")
-			</Data>
-		</StaticData>
+		<Language>
+			<Text id="sisters.donateDesc">
+
+				"This empty vessel may nevertheless possess a connection to the 
+				soul it once housed. Domina will use it to gather her flock."
+
+			</Text>
+		</Language>
 	</ItemType>
 
 	<!-- itHydrogenGas -->
@@ -902,7 +936,20 @@
 			description=		"Neural processors are key components in AI systems."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateRel">48</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				"We thank you for your offering. These sophisticated devices will
+				help us commune with Domina."
+
+			</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Neuranase -->
@@ -995,7 +1042,20 @@
 			description=		"This quantum-optical system is used to store and process large amounts of information."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateRel">80</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="sisters.donateDesc">
+
+				"We thank you for your offering. These intricate devices will 
+				help us with our communion."
+
+			</Text>
+		</Language>
 	</ItemType>
 
 	<!-- itLiquidOxygen -->
@@ -1209,22 +1269,39 @@
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="sisters.donation">
-				;				attd	rel
-				(list	Nil		0		0
+		<Language>
+			<Text id="sisters.donateDesc">
+				(typTranslate gType (cat "sisters.donateDesc." (mod (divide (unvGetTick) 18000) 5)))
+			</Text>
+			<Text id="sisters.donateDesc.0">
 
-				;	text
-					(random (list
-						"We thank you for your donation, but we prefer the version in which Han shoots first."
-						"We thank you for your donation; these space operas should not distract you from your real mission."
-						"We thank you for your good intentions, but these works of fiction cannot help us."
-						"We thank you for your good intentions, but a tale about a quasi-religious order following a mysterious all-powerful force has no relevance to our mission."
-						"We thank you for your good intentions; may Domina be with you. Always."
-						))
-					)
-			</Data>
-		</StaticData>
+				"We prefer the version in which Han shoots first."
+
+			</Text>
+			<Text id="sisters.donateDesc.1">
+
+				"These space operas should not distract you from your real 
+				mission."
+
+			</Text>
+			<Text id="sisters.donateDesc.2">
+
+				"These works of fiction cannot help us."
+
+			</Text>
+			<Text id="sisters.donateDesc.3">
+
+				"A tale about a quasi-religious order following a mysterious 
+				all-powerful force has no relevance to our mission."
+
+			</Text>
+			<Text id="sisters.donateDesc.4">
+
+				"We thank you for your good intentions; may Domina be with you.
+				Always."
+
+			</Text>
+		</Language>
 	</ItemType>
 
 <!-- TTTTT -->
@@ -1312,8 +1389,8 @@
 	</ItemType>
 	
 	<OverlayType UNID="&ovUraniumWasteCheck;"
-            attributes=         "behavior"
-            >
+			attributes=         "behavior"
+			>
 		<Events>
 			<OnUpdate>
 				; Create a barrel of waste every 90 cycles (45 seconds)
