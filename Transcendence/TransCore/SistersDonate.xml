@@ -4,6 +4,156 @@
 
 <!-- DOCK SCREENS -->
 
+	<!-- Donate Screen
+	
+	-->
+	
+	<DockScreen unid="&dsSistersDonate;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(scrSetDesc gScreen (typTranslate &dsSistersDonate; 'Welcome))
+				</OnPaneInit>
+			
+				<Actions>
+					<Action id="actionDonateCredits">
+						(scrShowScreen gScreen &dsDominaTithe;)
+					</Action>
+					<Action id="actionDonateItem">
+						(scrShowScreen gScreen &dsDominaDonateItem;)
+					</Action>
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="actionDonateCredits">Donate [C]redits</Text>
+			<Text id="actionDonateItem">Donate [I]tem</Text>
+			
+			<Text id="Welcome">
+
+				"Domina cannot help us without our participation. Certain items 
+				are useful to her in maintaining her connection with us. 
+				And, of course, we use your donations in our own efforts.
+					
+				"Please donate generously; your sacrifices will be rewarded."
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Domina Tithe Screen
+
+	-->
+
+	<DockScreen UNID="&dsDominaTithe;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block (
+						(maxCount (plyGetCredits gPlayer))
+						)
+						(scrEnableAction gScreen 'actionDonate (gr maxCount 0))
+						(if (gr maxCount 0)
+							(scrSetDescTranslate gScreen 'descHowMuch)
+							(scrSetDescTranslate gScreen 'descNoMoney)
+							)
+							
+						(scrSetCounter gScreen maxCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonate" default="1">
+						(block (
+							(count (scrGetCounter gScreen))
+							(maxCount (plyGetCredits gPlayer))
+							)
+							(switch
+								(= count 0)
+									(scrExitScreen gScreen)
+
+								(gr count maxCount)
+									(scrSetCounter gScreen maxCount)
+									
+								(block ()
+
+									;	Donation
+
+									(plyCharge gPlayer count)
+									(typFireEvent &svSistersOfDomina; 'OnMoneyDonatedToSisters {
+										value: count
+										})
+
+									(scrShowPane gScreen 'Thanks)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+
+			<Thanks descID="descThanks">
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Thanks>
+		</Panes>
+		
+		<Language>
+			<Text id="actionDonate">[D]onate</Text>
+
+			<Text id="descHowMuch">
+
+				"We are devoutly grateful for your generosity. How many credits
+				do you wish to donate?"
+
+			</Text>
+			<Text id="descNoMoney">
+
+				"We are devoutly grateful for your good intentions. 
+				Unfortunately, you have no credits to give."
+
+			</Text>
+			<Text id="descThanks">
+
+				"Thank you for your generous contribution. Your faithful 
+				support enables us to help the truly needy. May the blessings 
+				of Domina illuminate your way."
+
+			</Text>
+		</Language>
+	</DockScreen>
+
 	<!-- Domina Donate Item
 
 	-->
@@ -87,6 +237,7 @@
 								(block Nil
 									(scrSetData gScreen 'itemDonated (scrRemoveItem gScreen 1))
 									(objFireItemEvent gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
+									(typFireObjItemEvent &svSistersOfDomina; gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
 									(scrShowPane gScreen "Donate")
 									)
 							)
@@ -116,6 +267,7 @@
 								(block Nil
 									(scrSetData gScreen 'itemDonated (scrRemoveItem gScreen count))
 									(objFireItemEvent gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
+									(typFireObjItemEvent &svSistersOfDomina; gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
 									(scrShowPane gScreen "Donate")
 									)
 								)
