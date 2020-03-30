@@ -74,55 +74,62 @@
 					</Action>
 
 					<Action id="actionRepairArmor">
-						(if (and (gr (plyGetCredits gPlayer) 0)
-								(leq (objGetData gPlayerShip "sistersAttitude") 0))
-							(scrShowPane gScreen "TooRich")
-							(block (armorSeg repaired noDamage)
-								(setq repaired Nil)
-								(setq noDamage True)
-								(for armorSeg 0 (subtract (shpGetArmorCount gPlayerShip) 1)
-									(block (type damage maxHP)
-										(setq type (objGetArmorType gPlayerShip armorSeg))
-										(setq damage (objGetArmorDamage gPlayerShip armorSeg))
-										(if (gr damage 0) (setq noDamage Nil))
-										(setq maxHP (shpGetArmorMaxHitPoints gPlayerShip armorSeg))
+						(block (
+							(balance (typ@ &svSistersOfDomina; 'balance))
+							(armorDesc
+								(map (objGetItems gPlayerShip "aI") theItem
+									(block (
+										(maxHP (obj@ gPlayerShip theItem 'maxHP))
+										(hp (obj@ gPlayerShip theItem 'hp))
+										(damage (- maxHP hp))
+										(costToRepair (* damage (itm@ theItem 'repairCost)))
+										)
+										{
+											armorItem: theItem
+											repairNeeded: (gr damage 0)
+											repairPossible: (leq (itmGetLevel theItem) 12)
+											repairAffordable: (leq costToRepair balance)
+											costToRepair: costToRepair
+											}
+										)
+									)
+								)
+							(repairNeeded (filter armorDesc theEntry (@ theEntry 'repairNeeded)))
+							(repairPossible (filter armorDesc theEntry (@ theEntry 'repairPossible)))
+							(canAffordAtLeastOne (filter armorDesc theEntry (@ theEntry 'repairAffordable)))
+							)
+							(switch
+								(not repairNeeded)
+									(scrSetData gScreen 'message 'descNoRepairNeeded)
+									
+								(not repairPossible)
+									(scrSetData gScreen 'message 'descCantRepair)
+									
+								(gr (plyGetCredits gPlayer) balance)
+									(scrSetData gScreen 'message 'descTooRich)
 
-										(switch
-											; No need to repair if no damage
-											(eq damage 0)
-												Nil
-
-											; If armor needs higher tech to repair, we can't do anything
-											(gr (armGetRepairTech type) 9)
-												Nil
-
-											; Can't repair if damage is too much
-											(ls (subtract maxHP damage) (divide maxHP 4))
-												Nil
-
-											; Repair
-											(block Nil
-												(objRepairArmor gPlayerShip armorSeg)
-												(setq repaired True)
+								(not canAffordAtLeastOne)
+									(scrSetData gScreen 'message 'descCantAffordRepair)
+									
+								(block ()
+									(enum armorDesc theEntry
+										(if (and (@ theEntry 'repairNeeded) 
+												(@ theEntry 'repairPossible)
+												(leq (@ theEntry 'costToRepair) balance)
+												)
+											(block ()
+												(objRepairArmor gPlayerShip (@ theEntry 'armorItem))
+												(setq balance (- balance (@ theEntry 'costToRepair)))
 												)
 											)
 										)
-									)
-
-								(switch
-									repaired
-										(block Nil
-											(objSetData gPlayerShip "sistersAttitude" 
-												(subtract (objGetData gPlayerShip "sistersAttitude") 1))
-											(scrShowPane gScreen "RepairArmor")
-											)
-
-									noDamage
-										(scrShowPane gScreen "NoDamage")
-
-									(scrShowPane gScreen "UnableToRepair")
+										
+									(typSet@ &svSistersOfDomina; 'balance balance)
+									(scrSetData gScreen 'message 'descArmorRepaired)
 									)
 								)
+
+							(scrShowPane gScreen 'MessagePane)
 							)
 					</Action>
 
@@ -225,26 +232,28 @@
 				teachings of Domina."
 			
 			</Text>
-			<String id="NoDamageDesc">
+			<Text id="descNoRepairNeeded">
+				
 				"Your vessel is undamaged. There is no need for repairs."
-			</String>
-			<Text id="RepairArmorDesc">
+				
+			</Text>
+			<Text id="descCantRepair">
+
+				"The damage to your vessel is beyond our capability to repair. 
+				Open yourself to Domina and leave your worthless ship behind."
+
+			</Text>
+			<Text id="descCantAffordRepair">
+
+				"Our abbey has fallen on hard times and we cannot afford to help
+				you. Please consider donating funds or items when you are able."
+			
+			</Text>
+			<Text id="descArmorRepaired">
 
 				"Your vessel has been repaired as best as we could manage. 
 				Devote your life to Domina and your spirit shall be similarly 
 				healed."
-
-			</Text>
-			<Text id="TooRichDesc">
-
-				"Please forgive us, but it is the wish of Domina that we 
-				help only those truly in need."
-
-			</Text>
-			<Text id="UnableToRepairDesc">
-
-				"The damage to your vessel is beyond our capability to repair. 
-				Open yourself to Domina and leave your worthless ship behind."
 
 			</Text>
 		</Language>
