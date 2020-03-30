@@ -73,10 +73,6 @@
 					)
 			</DynamicGlobal>
 
-			<DynamicGlobal id="sistersRel">
-				(or (objGetData gPlayerShip 'sistersAttitude) 0)
-			</DynamicGlobal>
-
 			<DynamicGlobal id="xp">
 				(typGetGlobalData &stDomina; 'xp)
 			</DynamicGlobal>
@@ -138,9 +134,9 @@
 
 							details: (list
 								{
-									title: (typTranslate gType 'labelDominaConnection)
-									desc: (typTranslate gType 'rtfValue { 
-										value:(fmtNumber (typ@ gType 'xp))
+									title: (typTranslate gType 'labelDominaPowers)
+									desc: (typTranslate gType 'rtfLevelValue { 
+										value: level
 										})
 									}
 								(if nextLevel
@@ -154,9 +150,9 @@
 										}
 									)
 								{
-									title: (typTranslate gType 'labelSistersAttitude)
+									title: (typTranslate gType 'labelAidBudget)
 									desc: (typTranslate gType 'rtfValue {
-										value: (fmtNumber (typ@ gType 'sistersRel))
+										value: (fmtCurrency 'credit (typ@ &svSistersOfDomina; 'balance))
 										})
 									}
 								)
@@ -185,11 +181,12 @@
 			<Text id="rank.6.humanMale">:a patriarch(s)</Text>
 			<Text id="rank.6.humanFemale">:a matriarch(s)</Text>
 
-			<Text id="labelDominaConnection">Domina XP:</Text>
+			<Text id="labelDominaPowers">Domina Powers:</Text>
 			<Text id="labelProgress">Progress to %nextLevel%:</Text>
-			<Text id="labelSistersAttitude">Sisters Relationship:</Text>
+			<Text id="labelAidBudget">Pilgrims' Aid Budget:</Text>
 
 			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+			<RTF id="rtfLevelValue">{/rtf {/f:LargeBold;/c:#ffe667; Level %value%}}</RTF>
 		</Language>
 	</Type>
 

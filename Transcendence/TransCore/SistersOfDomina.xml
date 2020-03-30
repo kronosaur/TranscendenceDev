@@ -24,6 +24,54 @@
 
 			alignment="constructive chaos"
 			>
+		<Properties>
+			<Definition id="gainPerPeriod">0.01</Definition>
+			<Definition id="periodInSeconds">60</Definition>
+
+			<Global id="balance">0</Global>
+			<Global id="totalDonations">0</Global>
+			<Global id="totalTithe">0</Global>
+			<Global id="investmentGain">0</Global>
+		</Properties>
+
+		<Events>
+			<OnGlobalUpdate>
+				(switch
+					(!= (mod (divide (unvGetTick) 30) (typ@ gType 'periodInSeconds)) 0)
+						Nil
+
+					(gr (typ@ gType 'balance) 1000000)
+						Nil
+
+					(block (
+						(balance (typ@ gType 'balance))
+						(rate (typ@ gType 'gainPerPeriod))
+						(gain (round (* balance rate)))
+						)
+						(typInc@ gType 'investmentGain gain)
+						(typInc@ gType 'balance gain)
+						)
+					)
+			</OnGlobalUpdate>
+
+			<OnItemDonatedToSisters>
+				(block (
+					(totalValue (multiply (objGetBuyPrice gSource gItem) (itmGetCount gItem)))
+					)
+					(typInc@ gType 'totalDonations totalValue)
+					(typInc@ gType 'balance totalValue)
+					)
+			</OnItemDonatedToSisters>
+
+			<OnMoneyDonatedToSisters>
+				(block (
+					(totalValue (@ gData 'value))
+					)
+					(typInc@ gType 'totalTithe totalValue)
+					(typInc@ gType 'balance totalValue)
+					)
+			</OnMoneyDonatedToSisters>
+		</Events>
 	</Sovereign>
 	
 <!-- ITEM TYPES -->
@@ -171,6 +219,8 @@
 
 		<Trade currency="credit">
 			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100" actualPrice="true"/>
+
+			<Refuel			criteria="f +basicFuel; L:1-10;" priceAdj="100"/>
 		</Trade>
 
 		<DockScreens>
@@ -236,7 +286,7 @@
 		<Language>
 			<Text id="actionTalkToAbbess">[M]atriarch's Chancery</Text>
 			<Text id="actionDonate">[D]onate</Text>
-			<Text id="actionPilgrimsAid">[P]ilgrim's Aid</Text>
+			<Text id="actionPilgrimsAid">[P]ilgrims' Aid</Text>
 			<Text id="actionSanctum">[S]anctum</Text>
 			<Text id="actionUndock">[U]ndock</Text>
 			
@@ -592,7 +642,7 @@
 		</Language>
 	</DockScreen>
 
-	<!-- Pilgrim's Aid Screen
+	<!-- Pilgrims' Aid Screen
 
 	-->
 
@@ -600,6 +650,11 @@
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
 
 		<Panes>
 			<Default>
@@ -620,17 +675,39 @@
 
 				<Actions>
 					<Action id="actionRefuel">
-						(if (and (gr (plyGetCredits gPlayer) 0) 
-								(leq (objGetData gPlayerShip "sistersAttitude") 0))
-							(scrShowPane gScreen "TooRich")
-							(block (count itemsToUse)
-								(setq count (shpGetFuelNeeded gPlayerShip (itmCreate &itHelium3FuelRod; 1)))
-								(setq itemsToUse (itmCreate &itHelium3FuelRod; count))
-								(shpRefuelFromItem gPlayerShip itemsToUse)
-								(objSetData gPlayerShip "sistersAttitude" 
-								(subtract (objGetData gPlayerShip "sistersAttitude") 1))
-								(scrShowPane gScreen "RefuelShip")
+						(block (
+							(fuelToUse (objGetRefuelItemAndPrice gSource gPlayerShip))
+							(fuelItem (@ fuelToUse 0))
+							(fuelCost (@ fuelToUse 1))
+
+							(fuelNeededCount (shpGetFuelNeeded gPlayerShip fuelItem))
+
+							(balance (typ@ &svSistersOfDomina; 'balance))
+							(fuelAffordCount (min fuelNeededCount (divide balance fuelCost)))
+							(affordCost (* fuelAffordCount fuelCost))
+							)
+							(switch
+								(not fuelToUse)
+									(scrSetData gScreen 'message 'descNoFuelAvailable)
+
+								(= fuelNeededCount 0)
+									(scrSetData gScreen 'message 'descNoFuelNeeded)
+
+								(gr (plyGetCredits gPlayer) balance)
+									(scrSetData gScreen 'message 'descTooRich)
+
+								(= fuelAffordCount 0)
+									(scrSetData gScreen 'message 'descCantAffordFuel)
+
+								(block ()
+									(shpRefuelFromItem gPlayerShip (itmSetCount fuelItem fuelAffordCount))
+									(typInc@ &svSistersOfDomina; 'balance (- affordCost))
+
+									(scrSetData gScreen 'message 'descShipRefueled)
+									)
 								)
+
+							(scrShowPane gScreen 'MessagePane)
 							)
 					</Action>
 
@@ -697,14 +774,6 @@
 				</Actions>
 			</Default>
 
-			<RefuelShip descID="RefuelShipDesc">
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						<ShowPane pane="Default"/>
-					</Action>
-				</Actions>
-			</RefuelShip>
-
 			<RepairArmor descID="RepairArmorDesc">
 				<Actions>
 					<Action id="actionContinue" default="1" cancel="1">
@@ -736,6 +805,17 @@
 					</Action>
 				</Actions>
 			</TooRich>
+
+			<MessagePane>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen (scrGetData gScreen 'message))
+				</OnPaneInit>
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</MessagePane>
 		</Panes>
 		
 		<Language>
@@ -755,15 +835,37 @@
 
 			</Text>
 
+			<Text id="descNoFueldAvailable">
+
+				"Sadly, we do not have any fuel compatible with your vessel."
+
+			</Text>
+			<Text id="descNoFuelNeeded">
+
+				"Your vessel does not need any fuel."
+			
+			</Text>
+			<Text id="descTooRich">
+
+				"Your personal funds exceed our own. It is the wish of Domina 
+				that we help only those truly in need."
+			
+			</Text>
+			<Text id="descCantAffordFuel">
+
+				"Our abbey has fallen on hard times and we cannot afford to help
+				you. Please consider donating funds or items when you are able."
+			
+			</Text>
+			<Text id="descShipRefueled">
+
+				"Your vessel has been refueled. Go in peace and spread the
+				teachings of Domina."
+			
+			</Text>
 			<String id="NoDamageDesc">
 				"Your vessel is undamaged. There is no need for repairs."
 			</String>
-			<Text id="RefuelShipDesc">
-
-				"Your vessel has been refueled. Go in peace and spread the 
-				teachings of Domina."
-
-			</Text>
 			<Text id="RepairArmorDesc">
 
 				"Your vessel has been repaired as best as we could manage. 
@@ -907,6 +1009,12 @@
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -915,14 +1023,7 @@
 			
 				<Actions>
 					<Action id="actionDonateCredits">
-						(switch
-							(and (setq lastDonation (objGetData gPlayerShip "sistersLastDonation"))
-									(leq (subtract (unvGetTick) lastDonation) 1000)
-									)
-								(scrShowPane gScreen "NotNeeded")
-
-							(scrShowScreen gScreen &dsDominaTithe;)
-							)
+						(scrShowScreen gScreen &dsDominaTithe;)
 					</Action>
 					<Action id="actionDonateItem">
 						(scrShowScreen gScreen &dsDominaDonateItem;)
@@ -932,23 +1033,11 @@
 					</Action>
 				</Actions>
 			</Default>
-			
-			<NotNeeded>
-				<OnPaneInit>
-					(scrSetDesc gScreen (typTranslate &dsSistersDonate; 'NotNeededDesc))
-				</OnPaneInit>
-				
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						(scrShowPane gScreen "Default")
-					</Action>
-				</Actions>
-			</NotNeeded>
 		</Panes>
 		
 		<Language>
-			<Text id="actionDonateCredits">"Donate [C]redits"</Text>
-			<Text id="actionDonateItem">"Donate [I]tem"</Text>
+			<Text id="actionDonateCredits">Donate [C]redits</Text>
+			<Text id="actionDonateItem">Donate [I]tem</Text>
 			
 			<Text id="Welcome">
 
@@ -957,14 +1046,6 @@
 				And, of course, we use your donations in our own efforts.
 					
 				"Please donate generously; your sacrifices will be rewarded."
-
-			</Text>
-			
-			<Text id="NotNeededDesc">
-
-				"Thank you for your consideration, but we have sufficient 
-				money for our needs. We would appreciate more useful items, 
-				however."
 
 			</Text>
 		</Language>
@@ -978,113 +1059,93 @@
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
 
 		<Panes>
 			<Default
 					showCounter=	"true">
 
 				<OnPaneInit>
-					(block Nil
-						(setq gMaxCount (plyGetCredits gPlayer))
-						(scrEnableAction gScreen 'actionDonate (gr gMaxCount 0))
-						(if (gr gMaxCount 0)
-							(scrSetDesc gScreen "\"We are devoutly grateful for your generosity. How many credits do you wish to donate?\"")
-							(scrSetDesc gScreen "\"We are devoutly grateful for your good intentions. Unfortunately, you have no credits to give.\"")
+					(block (
+						(maxCount (plyGetCredits gPlayer))
+						)
+						(scrEnableAction gScreen 'actionDonate (gr maxCount 0))
+						(if (gr maxCount 0)
+							(scrSetDescTranslate gScreen 'descHowMuch)
+							(scrSetDescTranslate gScreen 'descNoMoney)
 							)
 							
-						(scrSetCounter gScreen gMaxCount)
+						(scrSetCounter gScreen maxCount)
 						)
 				</OnPaneInit>
 
 				<Actions>
-					<Action id="actionDonate" name="Donate" default="1" key="D">
-						(block (count)
-							(setq count (scrGetCounter gScreen))
+					<Action id="actionDonate" default="1">
+						(block (
+							(count (scrGetCounter gScreen))
+							(maxCount (plyGetCredits gPlayer))
+							)
 							(switch
-								(eq count 0)
+								(= count 0)
 									(scrExitScreen gScreen)
 
-								(gr count gMaxCount)
-									(scrSetCounter gScreen gMaxCount)
+								(gr count maxCount)
+									(scrSetCounter gScreen maxCount)
 									
-								(block (donationCounts tithe totalLevels minDonation netWorth)
-									; Compute the player's net worth
-									(setq netWorth (plyGetCredits gPlayer))
-									(setq netWorth (add netWorth 1000))
+								(block ()
 
-									(setq totalLevels 0)
-									(objEnumItems gPlayerShip "dI" theItem
-										(setq netWorth (add netWorth (itmGetPrice theItem 'credit)))
-										)
+									;	Donation
 
-									; Tithe is 10% of net worth (but no less than 1000 credits)
-									(setq tithe (max 1000 (divide (intRoundUp netWorth 100) 10)))
+									(plyCharge gPlayer count)
+									(typFireEvent &svSistersOfDomina; 'OnMoneyDonatedToSisters {
+										value: count
+										})
 
-									; Charge
-									(setq gCost count)
-									(plyCharge gPlayer gCost)
-
-									(if (geq gCost tithe)
-										(setq donationCounts True)
-										)
-
-									; For each 10% of total that the player donates, increate
-									; the sisters' attitude by 1.
-									(if donationCounts
-										(block Nil
-											(objIncData gPlayerShip 'sistersAttitude (divide gCost tithe))
-
-											; Remember when we donated
-											(objSetData gPlayerShip "sistersLastDonation" (unvGetTick))
-
-											; Show thanks
-											(scrShowPane gScreen "Thanks")
-											)
-
-										; Else, not as grateful
-										(scrShowPane gScreen "NotEnough")
-										)
+									(scrShowPane gScreen 'Thanks)
 									)
 								)
 							)
 					</Action>
 
-					<Action name="Cancel" cancel="1" key="C">
+					<Action id="actionCancel" cancel="1">
 						(scrExitScreen gScreen)
 					</Action>
-
 				</Actions>
 			</Default>
 
 			<Thanks descID="descThanks">
 				<Actions>
-					<Action name="Continue" default="1" key="C" cancel="1">
+					<Action id="actionContinue" default="1" cancel="1">
 						(scrExitScreen gScreen)
 					</Action>
 				</Actions>
 			</Thanks>
-
-			<NotEnough descID="descNotEnough">
-				<Actions>
-					<Action name="Continue" default="1" key="C" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-				</Actions>
-			</NotEnough>
 		</Panes>
 		
 		<Language>
+			<Text id="actionDonate">[D]onate</Text>
+
+			<Text id="descHowMuch">
+
+				"We are devoutly grateful for your generosity. How many credits
+				do you wish to donate?"
+
+			</Text>
+			<Text id="descNoMoney">
+
+				"We are devoutly grateful for your good intentions. 
+				Unfortunately, you have no credits to give."
+
+			</Text>
 			<Text id="descThanks">
 
 				"Thank you for your generous contribution. Your faithful 
 				support enables us to help the truly needy. May the blessings 
 				of Domina illuminate your way."
-
-			</Text>
-			<Text id="descNotEnough">
-
-				"Thank you for your token contribution. May Domina's influence 
-				open your heart."
 
 			</Text>
 		</Language>
