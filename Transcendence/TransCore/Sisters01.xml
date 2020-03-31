@@ -16,6 +16,19 @@
 
 			level=						"1-10"
 			>
+		<Properties>
+			<!--
+				status:
+
+					'destroyTarget: Target must be destroyed
+					'lootTarget: Player must loot the target
+					
+			-->
+			<Data id="status">'destroyTarget</Data>
+
+			<Data id="targetID"></Data>
+			<Data id="treasureItem"></Data>
+		</Properties>
 
 		<Events>
 			<!-- CREATE MISSION -->
@@ -35,9 +48,9 @@
 					(!= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
 						Nil
 						
-					;	Must be an enemy station nearby
+					;	Must be an enemy station in the system
 					
-					(not (sysFindObject aOwnerObj "TAE"))
+					(not (sysFindObject aOwnerObj "TAE +populated; -questTarget; -uncharted;"))
 						Nil
 						
 					;	Can create
@@ -60,121 +73,49 @@
 				;	gData: Arbitrary data passed in to msnCreate
 				;	aOwnerObj: Object that created the mission (or nil)
 
-				(block (enemyStations)
+				(block (
+					(enemyStations (sysFindObject aOwnerObj "TAE +populated; -questTarget; -uncharted; -sungSlaveCamp;"))
+					(enemyStationsWithTreasure (filter enemyStations theObj
+						(objGetItems theObj "*U +communion;")
+						))
 
+					(targetObj (or (random enemyStationsWithTreasure) (random enemyStations)))
+					)
 					(switch
 
-						; Get a list of enemy stations in the region. If we cannot find any
-						; suitable targets then we don't have a mission.
+						;	If we don't have a target station, we don't have a mission
 
-						(not (setq enemyStations (sysFindObject aOwnerObj "TAE +populated; -questTarget; -uncharted; N:450;")))
+						(not targetObj)
 							(msnDestroy gSource)
 
-						; Otherwise we can create a mission
+						;	Set up the mission
 
-						(block (targetObj)
+						(block (
+							(itemToFind (@ (objGetItems targetObj "*U +communion;") 0))
+							)
 
-							; Pick a random enemy station to destroy
-							(setq targetObj (seededRandom (objGetDestiny aOwnerObj) enemyStations))
+							;	If there is no appropriate treasure on the station,
+							;	add some.
 
-							; Remember it
-							(msnSetData gSource 'targetID (objGetID targetObj))
-
-							; Register for events so we know when the target is destroyed
-							(msnRegisterForEvents gSource targetObj)
-
-							; Remember the type of enemy
-							(switch
-								(objHasAttribute targetObj "centauriWarlords")
-									(msnSetData gSource 'targetType 'centauriWarlords)
-
-								(msnSetData gSource 'targetType 'miscEnemy)
+							(if (not itemToFind)
+								(block ()
+									(setq itemToFind (itmCreateRandom "* +communion;" "systemLevel:vvr|c|urv"))
+									(objAddItem targetObj itemToFind)
+									)
 								)
 
-							; Compute reward
-							(msnSetData gSource 'reward (add 200 (multiply (objGetLevel targetObj) 100)))
+							;	Prepare mission
 
-							; Remember the station master
-							(msnSetData gSource 'stationMasterInfo (rpgCharacterGetInfo aOwnerObj 'stationMaster))
+							(msnSet@ gSource 'targetID (objGetID targetObj))
+							(msnRegisterForEvents gSource targetObj)
+
+							(msnSet@ gSource 'treasureItem itemToFind)
 							)
 						)
 					)
 			</OnCreate>
 
 			<!-- BRIEFING, ACCEPTING, DECLINING -->
-
-			<OnCanBrief>
-
-				;	Called just before the player is briefed on the mission. We
-				;	can return true to indicate the mission should proceed. Or
-				;	we can return a text string to explain why the mission is 
-				;	not currently available.
-				;
-				;	gSource: Mission object.
-
-			</OnCanBrief>
-
-			<OnGetNextScreen>
-
-				;	Called during dock screens to control briefing and 
-				;	debriefing.
-				;
-				;	gSource: Mission object.
-				;	aScreenType:
-				;		'NoBriefing
-				;		'AcceptFollowUp
-				;		'DeclineFollowUp
-				;		'InProgressFollowUp
-				;		'SuccessFollowUp
-				;		'FailureFollowUp
-				;
-				;	The event may return a struct indicating the next screen to
-				;	show. The struct has the following fields:
-				;
-				;	nextScreen: The screen to show after debrief, OR
-				;		'forceUndock
-				;	nextScreenData: Data to pass to scrShowScreen.
-
-			</OnGetNextScreen>
-
-			<OnAccepted>
-
-				;	Called if the player accepts the mission.
-				;
-				;	gSource: Mission object.
-
-			</OnAccepted>
-
-			<OnAcceptedUndock>
-
-				;	Called after the player undocks after having accepted the
-				;	mission. 
-				;
-				;	gSource: Mission object.
-				;	aDockTarget: Object that we were docked with.
-
-			</OnAcceptedUndock>
-
-			<OnDeclined>
-
-				;	Called if the player rejects the mission. The mission is 
-				;	already running (OnStarted has been called).
-				;
-				;	gSource is mission object.
-
-			</OnDeclined>
-
-			<!-- RUNNING THE MISSION -->
-
-			<OnStarted>
-
-				;	Called when the mission starts. This is called if the 
-				;	mission	starts running (either because the player accepted 
-				;	or some other reason).
-				;
-				;	gSource: Mission object.
-
-			</OnStarted>
 
 			<OnSetPlayerTarget>
 
@@ -191,28 +132,20 @@
 				;		'newSystem: Player is in a new system
 				;		'success: Mission completed successfully
 
-				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)))
+				(block (
+					(status (msn@ gSource 'status))
+					)
+					(switch
+						(= status 'destroyTarget)
+							(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)))
+
+						(= status 'lootTarget)
+							(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)) 'dock)
+
+						(rpgSetTarget gSource aReason)
+						)
 
 			</OnSetPlayerTarget>
-
-			<OnInProgress>
-
-				;	If the player docks with the mission-giver before the 
-				;	mission is complete, we get this event to help us compute
-				;	any values needed for the InProgress text.
-				;
-				;	gSource: Mission object.
-
-			</OnInProgress>
-
-			<OnInProgressUndock>
-
-				;	Called after the player undocks after getting the InProgress
-				;	message.
-				;
-				;	gSource: Mission object.
-
-			</OnInProgressUndock>
 
 			<OnObjDestroyed>
 
@@ -246,61 +179,32 @@
 				;	aWreckObj: Wreck left behind (may be nil)
 				
 				(switch
-					(eq (objGetID aObjDestroyed) (msnGetData gSource 'targetID))
-						(msnSuccess gSource)
+					(= (objGetID aObjDestroyed) (msn@ gSource 'targetID))
+						(block ()
+							(msnSet@ gSource 'status 'lootTarget)
+							(msnSetPlayerTarget gSource)
+							)
 					)
 			</OnObjDestroyed>
 
-			<OnObjDocked>
-
-				;	Called when an object docks with another object. Call
-				;	msnRegisterForEvents on the object to receive this event.
-				;
-				;	gSource: Mission object.
-				;	aObjDocked: Object that docked
-				;	aDockTarget: Object that it docked with
-
-			</OnObjDocked>
-
-			<OnObjEnteredGate>
-
-				;	Called when an object enters a stargate. Call 
-				;	msnRegisterForEvents on the object to receive this event.
-				;
-				;	NOTE: After this call, you will also receive an 
-				;	OnObjDestroyed event on the object.
-				;
-				;	gSource: Mission object.
-				;	aObj: Object that entered the gate
-				;	aGateObj: Gate object
-				;	aDestNodeID: Destinate system (may be nil)
-				;	aDestEntryPoint: Gate name in other system (may be nil)
-
-			</OnObjEnteredGate>
-
 			<OnUpdate>
-
-				;	This event is called once every 30 ticks while the mission
-				;	is active.
-				;
-				;	gSource: Mission object.
-
+				(block (
+					(status (msn@ gSource 'status))
+					)
+					(switch
+						(= status 'lootTarget)
+							(block (
+								(targetObj (objGetObjByID (msn@ gSource 'targetID)))
+								)
+								(if (not (objGetItems targetObj "*U +communion;"))
+									(msnSuccess gSource)
+									)
+								)
+						)
+					)
 			</OnUpdate>
 
 			<!-- MISSION COMPLETE -->
-
-			<OnCanDebrief>
-
-				;	After the mission has completed (successfully or not) we 
-				;	call this event to see if we are ready to debrief. The event
-				;	can return true to indicate that a debrief should proceed
-				;	as normal, or it can return a text string to display to the
-				;	player explaining why debriefing cannot happen yet.
-				;
-				;	Generally we use this when we want to wait for an NPC
-				;	to complete some task (e.g., dock) before debriefing.
-
-			</OnCanDebrief>
 
 			<OnCompleted>
 
@@ -330,40 +234,7 @@
 				;		'forceUndock
 				;	nextScreenData: Data to pass to scrShowScreen.
 
-				(rpgMissionRewardPayment (msnGetData gSource 'reward))
-
 			</OnReward>
-
-			<OnDebriefed>
-
-				;	Called after the player has been debriefed.
-				;
-				;	gSource: Mission object.
-
-			</OnDebriefed>
-
-			<OnDebriefedUndock>
-			
-				;	Called after the player has undocked after a debriefing, but
-				;	only if forceUndockAfterDebrief="true" is set or if we
-				;	'forceUndock in the dialog tree.
-				;
-				;	gSource: Mission object.
-
-			</OnDebriefedUndock>
-
-			<OnDestroy>
-
-				;	Called when mission object is destroyed (generally only 
-				;	non-player missions are removed when the player changes 
-				;	system. Player missions are not normally destroyed).
-				;
-				;	gSource: Mission object.
-				;
-				;	NOTE: No need to unregister for events because we 
-				;	automatically unregister when the mission is complete.
-
-			</OnDestroy>
 		</Events>
 
 		<Language>
@@ -371,108 +242,111 @@
 			<!-- Code Points -->
 
 			<Text id="Summary">
-				(cat
-					(msnTranslate gSource 'descSummary {
-						targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
-						systemName: (sysGetName)
-						})
-					"\n\n"
-					(typTranslate &dsRPGMission; 'mission.rewardSummary {
-						systemName: (sysGetName)
-						payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
-						})
-					)
+				(msnTranslate gSource 'textSummary {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					itemName: (itmGetName (msn@ gSource 'treasureItem) 'actual)
+					systemName: (sysGetName)
+					})
 			</Text>
-
 			<Text id="Intro">
-				(msnTranslate gSource 'textIntro {
-					gender: (@ (msnGetData gSource 'stationMasterInfo) 'gender)
+				(msnTranslate gSource 'textIntro1 {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					itemName: (itmGetName (msn@ gSource 'treasureItem) '(actual article))
 					})
 			</Text>
-
 			<Text id="Briefing">
-				(msnTranslate gSource (cat "Briefing:" (msnGetData gSource 'targetType)) {
-					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) '(capitalize article))
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+				(msnTranslate gSource 'textBriefing1 {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
 					})
 			</Text>
-
+			<Text id="AcceptReply">
+				(msnTranslate gSource 'textAccept1 {
+					})
+			</Text>
+			<String id="DeclineReply">
+				(msnTranslate gSource 'textDecline1 {
+					})
+			</String>
+			<Text id="InProgress">
+				(msnTranslate gSource (cat 'textInProgress. (msn@ gSource 'status)) {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					itemName: (itmGetName (msn@ gSource 'treasureItem) 'actual)
+					})
+			</Text>
 			<Text id="SuccessDebrief">
-				(msnTranslate gSource (cat "SuccessDebrief:" (msnGetData gSource 'targetType)) {
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+				(msnTranslate gSource 'textSuccessDebrief1 {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					itemName: (itmGetName (msn@ gSource 'treasureItem) 'actual)
 					})
 			</Text>
 
 			<!-- Text -->
 
 			<Text id="Name">
-				Destroy Threat to Commonwealth Habitat
+				Recover a Lost Artifact
 			</Text>
-			<Text id="descSummary">
-				Your mission is to destroy %targetName% in the %systemName% system.
-			</Text>
-			<Text id="textIntro">
+			<Text id="textSummary">
 
-				The station master stands at %his:gender% console. Managers and 
-				supervisors swarm around %him:gender% dealing with various crises.
-				%He:gender%	turns %his:gender% attention towards you:
-
-				"We could use your help, %brother%. You've got a ship with a 
-				good punch and we got something that needs punching. We'll pay 
-				you, of course."
+				Your mission is to destroy %targetName% in the %systemName% system and
+				recover a lost %itemName%.
 
 			</Text>
-			<Text id="Briefing:centauriWarlords">
+			<Text id="textIntro1">
 
-				"A band of Centauri warlords has been harassing this station recently.
-				We've discovered the location of their base and we want you to go there
-				and destroy them. If you succeed we'll pay you %payment%. Will you help us?"
+				The abbess greets you:
 
-			</Text>
-
-			<Text id="Briefing:miscEnemy">
-
-				"%targetName% nearby has been attacking us recently. We want you to destroy them!
-				If you succeed we'll pay you %payment%. Will you help us?"
+				"Welcome, pilgrim! Your journey will be arduous, but I think I 
+				can help you. Some rare items are imbued with resonant energies 
+				that can help you to commune with Domina and strengthen your 
+				connection to her."
 
 			</Text>
-			<Text id="AcceptReply">
+			<Text id="textBriefing1">
 
-				"Thank you! I knew we could count on you. We'll program the 
-				target into your ship's computer. Just follow the arrow on your 
-				screen and you'll get there. Good luck!"
+				"There's %itemName% is in this system, and if you were to 
+				bring it to us, we would be able to strengthen your connection
+				to Domina.
 
-			</Text>
-			<String id="DeclineReply">
-				"Ah, Hell! What are you doing here then? Stop wasting my time!"
-			</String>
-			<Text id="InProgress">
+				"Unfortunately, it is locked away in %targetName% nearby. You'll
+				have to destroy the station to obtain it.
 
-				"What's wrong? You said you could handle this mission! Get back 
-				out there and finish the job!"
+				"Will you undertake this quest?"
 
 			</Text>
-			<Text id="SuccessDebrief:centauriWarlords">
+			<Text id="textAccept1">
 
-				"Great work! Maybe the warlords will think twice before attacking us again.
-				We've deposited %payment% to your account."
+				"We will give the coordinates to your computer. Go with Domina!"
+			
+			</Text>
+			<Text id="textDecline1">
+
+				"I understand. Let Domina counsel you, and return if you've 
+				mustered the strength to continue."
+			
+			</Text>
+			<Text id="textInProgress.destroyTarget">
+
+				"Your target is %targetName%. Destroy it and take back the 
+				artifact."
 
 			</Text>
-			<Text id="SuccessDebrief:miscEnemy">
+			<Text id="textInProgress.lootTarget">
 
-				"Great work! Now we can live in peace.
-				We've deposited %payment% to your account."
+				"Well done, %name%. Now dock with the remains and bring back
+				the %itemName%."
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+
+				"You've done well, %name%. The %itemName% will improve your
+				connection to Domina.
+
+				"Donate it to us and we will effect the transformation."
 
 			</Text>
 			<Text id="SuccessMsg">
 				Mission complete!
 			</Text>
-			<String id="AlreadyDebriefed">
-				"Welcome back! Thanks for the great work last time."
-			</String>
-			<String id="Unavailable">
-				"Sorry, there are no missions available."
-			</String>
 		</Language>
 	</MissionType>
 
