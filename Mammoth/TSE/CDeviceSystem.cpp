@@ -905,7 +905,7 @@ void CDeviceSystem::ReadyFirstWeapon (CSpaceObject *pObj)
 		}
 	}
 
-void CDeviceSystem::ReadyNextLauncher(CSpaceObject *pObj, int iDir)
+void CDeviceSystem::ReadyNextLauncher (CSpaceObject *pObj, int iDir)
 
 //	ReadyNextLauncher
 //

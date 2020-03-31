@@ -103,6 +103,9 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define SPEED_HALF								CONSTLIT("half")
 #define SPEED_QUARTER							CONSTLIT("quarter")
 
+#define STR_NEXT								CONSTLIT("next")
+#define STR_PREV								CONSTLIT("prev")
+
 const CG32bitPixel RGB_MAP_LABEL =				CG32bitPixel(255, 217, 128);
 const CG32bitPixel RGB_LRS_LABEL =				CG32bitPixel(165, 140, 83);
 
@@ -7498,64 +7501,105 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		if (pValue->IsNil())
 			return true;
 
-		CInstalledDevice *pLauncher = GetNamedDevice(devMissileWeapon);
-		if (pLauncher == NULL)
+		//	"Next" means select the next missile
+
+		else if (strEquals(pValue->GetStringValue(), STR_NEXT))
 			{
-			*retsError = CONSTLIT("No launcher installed.");
-			return false;
-			}
-
-		CCodeChainCtx Ctx(GetUniverse());
-		CItem Item = Ctx.AsItem(pValue);
-		CItemListManipulator ShipItems(GetItemList());
-		if (!ShipItems.SetCursorAtItem(Item))
-			{
-			*retsError = CONSTLIT("Item is not on ship.");
-			return false;
-			}
-
-		//	If the item is the same as the launcher then it means that the
-		//	launcher has no ammo. In this case, we succeed.
-
-		if (Item.GetType() == pLauncher->GetItem()->GetType())
+			ReadyNextMissile(1);
 			return true;
-
-		//	Otherwise we figure out what ammo variant this is.
-
-		int iVariant = pLauncher->GetClass()->GetAmmoVariant(Item.GetType());
-		if (iVariant == -1)
-			{
-			*retsError = CONSTLIT("Item is not compatible with launcher.");
-			return false;
 			}
 
-		SelectWeapon(m_Devices.GetNamedIndex(devMissileWeapon), iVariant);
-		return true;
+		//	"Prev" means select the previous missile
+
+		else if (strEquals(pValue->GetStringValue(), STR_PREV))
+			{
+			ReadyNextMissile(-1);
+			return true;
+			}
+
+		//	Otherwise, we expect an item
+
+		else
+			{
+			CInstalledDevice *pLauncher = GetNamedDevice(devMissileWeapon);
+			if (pLauncher == NULL)
+				{
+				*retsError = CONSTLIT("No launcher installed.");
+				return false;
+				}
+
+			CCodeChainCtx Ctx(GetUniverse());
+			CItem Item = Ctx.AsItem(pValue);
+			CItemListManipulator ShipItems(GetItemList());
+			if (!ShipItems.SetCursorAtItem(Item))
+				{
+				*retsError = CONSTLIT("Item is not on ship.");
+				return false;
+				}
+
+			//	If the item is the same as the launcher then it means that the
+			//	launcher has no ammo. In this case, we succeed.
+
+			if (Item.GetType() == pLauncher->GetItem()->GetType())
+				return true;
+
+			//	Otherwise we figure out what ammo variant this is.
+
+			int iVariant = pLauncher->GetClass()->GetAmmoVariant(Item.GetType());
+			if (iVariant == -1)
+				{
+				*retsError = CONSTLIT("Item is not compatible with launcher.");
+				return false;
+				}
+
+			SelectWeapon(m_Devices.GetNamedIndex(devMissileWeapon), iVariant);
+			return true;
+			}
 		}
 	else if (strEquals(sName, PROPERTY_SELECTED_WEAPON))
 		{
-
 		//	Nil means that we don't want to make a change
 
 		if (pValue->IsNil())
 			return true;
 
-		CCodeChainCtx Ctx(GetUniverse());
-		int iDev;
-		if (!FindInstalledDeviceSlot(Ctx.AsItem(pValue), &iDev))
+		//	"Next" means select the next weapon
+
+		else if (strEquals(pValue->GetStringValue(), STR_NEXT))
 			{
-			*retsError = CONSTLIT("Item is not an installed device on ship.");
-			return false;
+			ReadyNextWeapon(1);
+			return true;
 			}
 
-		if (m_Devices.GetDevice(iDev).GetCategory() != itemcatWeapon)
+		//	"Prev" means select the previous weapon
+
+		else if (strEquals(pValue->GetStringValue(), STR_PREV))
 			{
-			*retsError = CONSTLIT("Item is not a weapon.");
-			return false;
+			ReadyNextWeapon(-1);
+			return true;
 			}
 
-		SelectWeapon(iDev, 0);
-		return true;
+		//	Otherwise, we expect an item value
+
+		else
+			{
+			CCodeChainCtx Ctx(GetUniverse());
+			int iDev;
+			if (!FindInstalledDeviceSlot(Ctx.AsItem(pValue), &iDev))
+				{
+				*retsError = CONSTLIT("Item is not an installed device on ship.");
+				return false;
+				}
+
+			if (m_Devices.GetDevice(iDev).GetCategory() != itemcatWeapon)
+				{
+				*retsError = CONSTLIT("Item is not a weapon.");
+				return false;
+				}
+
+			SelectWeapon(iDev, 0);
+			return true;
+			}
 		}
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
 		{
