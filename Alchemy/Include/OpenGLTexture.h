@@ -1,19 +1,42 @@
 #pragma once
 #include "OpenGLIncludes.h"
 #include "OpenGLVAO.h"
-#include <set>
+#include <unordered_set >
 
 // Helper class to define bounds
 class QuadBounds {
 public:
-	QuadBounds(int upleft_X, int upleft_Y, int downright_X, int downright_Y) {
-		value = std::make_tuple(upleft_X, upleft_Y, downright_X, downright_Y
-		);
-	}
+	QuadBounds(float upleft_X, float upleft_Y, float size_X, float size_Y): value(std::make_tuple(upleft_X, upleft_Y, size_X, size_Y)) {};
 	~QuadBounds(void) { };
+	friend bool operator == (const QuadBounds& lhs, const QuadBounds& rhs) {
+		return (std::get<0>(lhs.value) == std::get<0>(rhs.value) && std::get<1>(lhs.value) == std::get<1>(rhs.value) && std::get<2>(lhs.value) == std::get<2>(rhs.value) && std::get<3>(lhs.value) == std::get<3>(rhs.value));
+	}
+	size_t getHash() const {
+		return std::hash<float>{}(std::get<0>(value)) ^
+			(std::hash<float>{}(std::get<1>(value)) << 1) ^
+			(std::hash<float>{}(std::get<2>(value)) << 2) ^
+			(std::hash<float>{}(std::get<3>(value)) << 3);
+	}
+	std::tuple<float, float, float, float> getValue() const { return value; }
 private:
-	std::tuple<int, int, int, int> value;
+	std::tuple<float, float, float, float> value;
 };
+
+class QBEquals {
+public:
+	size_t operator()(const QuadBounds &qb1, const QuadBounds &qb2) const {
+		return qb1.getHash() == qb2.getHash();
+	};
+};
+
+
+class QBHash {
+public:
+	size_t operator()(const QuadBounds &quadBounds) const {
+		return quadBounds.getHash();
+	};
+};
+
 
 class OpenGLTexture {
 public:
@@ -28,7 +51,7 @@ public:
 	void initTextureFromOpenGLThread(void);
 	unsigned int* getTexture(void) { return m_pTextureID; }
 	OpenGLTexture *GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, OpenGLShader* shader, glm::vec2 texQuadSize);
-	OpenGLTexture *GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, OpenGLShader* shader, std::tuple<int, int>texQuadSize, std::tuple<int, int>texStartPoint);
+	OpenGLTexture *GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, OpenGLShader* shader, const std::tuple<float, float>texQuadSize, const std::tuple<float, float>texStartPoint);
 	OpenGLTexture *getGlowMap(void) { return m_pGlowMap.get(); }
 
 private:
@@ -36,7 +59,7 @@ private:
 	unsigned int pboID[2];
 	unsigned int m_iWidth;
 	unsigned int m_iHeight;
-	std::set<QuadBounds> m_pCompletedGlowmapTiles;
+	std::unordered_set <QuadBounds, QBHash, QBEquals> m_pCompletedGlowmapTiles;
 	GLint m_pixelFormat;
 	GLint m_pixelType;
 	void* m_pTextureToInitFrom = nullptr;

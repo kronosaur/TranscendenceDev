@@ -24,7 +24,7 @@ void main()
 	fixedCanvPos = fixedCanvPos + positionOffset;
 	vec2 texPos2dWrite = vec2(aPos[0] * fixedTexSize[0] * 2.0, -aPos[1] * fixedTexSize[1] * 2.0) + fixedCanvPos;
 
-    gl_Position = vec4(texPos2dWrite, 0.1, 1.0);
+    gl_Position = vec4(texPos2dWrite[0], texPos2dWrite[1], 0.1, 1.0);
 	TexCoord = texPos2dRead;
     ourColor = aColor;
 	quadSize = aTexQuadSizes;

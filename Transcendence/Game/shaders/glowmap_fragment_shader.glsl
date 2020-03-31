@@ -76,6 +76,7 @@ vec4 getGlowBoundaries_variable(float epsilon, vec2 texture_uv, sampler2D obj_te
 	float percent_std_dev = 0.66;
     vec2 onePixel = vec2(1.0, 1.0) / texture_size;
     vec2 quadSize_float = quadSize / texture_size;
+	// TODO: Determine quad_index in the vertex shader
     vec2 quad_index = vec2(float(int(texture_uv[0] / quadSize_float[0])), float(int(texture_uv[1] / quadSize_float[1])));
     int center = int(kernel_size / 2);
 	vec4 glowBoundaries = vec4(0.0, 0.0, 0.0, 0.0);

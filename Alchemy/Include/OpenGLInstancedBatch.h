@@ -117,7 +117,7 @@ public:
 			}
 		}
 	};
-	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick) {
+	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue=true) {
 		InitVAO();
 		if (m_iNumObjectsToRender > 0)
 		{
@@ -154,7 +154,9 @@ public:
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindVertexArray(0);
 		}
-		clear();
+		if (clearRenderQueue) {
+			clear();
+		}
 	};
 	void addObjToRender(shaderArgs ... shaderArgsList) {
 		addObjToRenderHelper(0, shaderArgsList...);
@@ -165,6 +167,10 @@ public:
 	void setCanvasDimensions(std::tuple<int, int> canvasDimensions) { m_canvasDimensions = canvasDimensions; }
 	void setUniformValues(std::tuple<uniformArgs...> uniformValues) { m_uniformValues = m_uniformValues; }
 	void setUniformNames(std::array<std::string, sizeof...(uniformArgs)> uniformNames) { m_uniformNames = uniformNames; }
+	ContainerBase* getParameterForObject(int paramIndex) {
+		// Note that this container must be cast manually to the correct value.
+		return m_shaderParameterVectors[paramIndex].get();
+	}
 private:
 	// BEGIN DEBUG ONLY FUNCTIONS
 	//void print_all(shaderArgs const&... shaderArgSet) {

@@ -173,12 +173,9 @@ public:
 	void setPointerToCanvas(void* canvas) { m_pCanvas = canvas; }
 	void *getPointerToCanvas() { return m_pCanvas; }
 private:
-	void initializeVAO (void);
-	void deinitVAO (void);
 	void initializeCanvasVAO (void);
 	void deinitCanvasVAO (void);
 	void clear (void);
-	OpenGLVAO* m_pVao;
 	OpenGLVAO* m_pCanvasVAO;
 	OpenGLShader *m_pObjectTextureShader;
 	OpenGLShader *m_pGlowmapShader;

@@ -225,11 +225,19 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao,
 	}
 
 
-OpenGLTexture* OpenGLTexture::GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, OpenGLShader* shader, std::tuple<int, int> texQuadSize, std::tuple<int, int> texStartPoint)
+OpenGLTexture* OpenGLTexture::GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, OpenGLShader* shader, const std::tuple<float, float> texQuadSize, const std::tuple<float, float> texStartPoint)
 {
 	// Generate a glow map. Kernel is a multivariate gaussian.
-	if (m_iWidth > 0 && m_iHeight > 0)
+	auto quadBounds = QuadBounds(std::get<0>(texStartPoint), std::get<1>(texStartPoint), std::get<0>(texQuadSize), std::get<1>(texQuadSize));
+	bool tileAlreadyRendered = m_pCompletedGlowmapTiles.find(quadBounds) != m_pCompletedGlowmapTiles.end();
+	if (!m_pGlowMap) {
+		m_pGlowMap = std::make_unique<OpenGLTexture>(m_iWidth, m_iHeight);
+		m_pGlowMap.get()->initTextureFromOpenGLThread();
+	}
+	if (m_iWidth > 0 && m_iHeight > 0 && !tileAlreadyRendered)
 	{
+		// TODO: Instead of what we are doing right now, we should render the entire texture in one go with instanced rendering in two passes;
+		// that will have much better performance.
 		// Vertical pass
 		// First, create a texture with the same size as the output.
 		OpenGLTexture pTempTexture = OpenGLTexture(m_iWidth, m_iHeight);
@@ -251,12 +259,18 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, 
 		shader->bind();
 		glm::mat4 rotationMatrix = glm::mat4(glm::vec4(1.0, 0.0, 0.0, 0.0), glm::vec4(0.0, 1.0, 0.0, 0.0), glm::vec4(0.0, 0.0, 1.0, 0.0), glm::vec4(0.0, 0.0, 0.0, 1.0));
 		int rotationMatrixLocation = glGetUniformLocation(shader->id(), "rotationMatrix");
+
+		float texStartPoint_x = std::get<0>(texStartPoint) * m_iWidth;
+		float texStartPoint_y = std::get<1>(texStartPoint) * m_iHeight;
+		float texQuadSize_x = std::get<0>(texQuadSize) * m_iWidth;
+		float texQuadSize_y = std::get<1>(texStartPoint) * m_iHeight;
+
 		glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
 		glUniform1i(glGetUniformLocation(shader->id(), "ourTexture"), 0);
-		glUniform2f(glGetUniformLocation(shader->id(), "aTexStartPoint"), float(std::get<0>(texStartPoint)), float(std::get<1>(texStartPoint)));
-		glUniform2f(glGetUniformLocation(shader->id(), "aTexQuadSizes"), float(std::get<0>(texQuadSize)), float(std::get<1>(texQuadSize)));
+		glUniform2f(glGetUniformLocation(shader->id(), "aTexStartPoint"), texStartPoint_x, texStartPoint_y);
+		glUniform2f(glGetUniformLocation(shader->id(), "aTexQuadSizes"), texQuadSize_x, texQuadSize_y);
 		glUniform2i(glGetUniformLocation(shader->id(), "aTexTotalSize"), m_iWidth, m_iHeight);
-		glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::min(25, std::max(3, int(std::min(float(std::get<0>(texQuadSize)), float(std::get<1>(texQuadSize))) / 10))));
+		glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::min(25, std::max(3, int(std::min(texQuadSize_x, texQuadSize_y) / 10))));
 		glUniform1i(glGetUniformLocation(shader->id(), "use_x_axis"), GL_TRUE);
 		glUniform1i(glGetUniformLocation(shader->id(), "second_pass"), GL_FALSE);
 
@@ -265,8 +279,6 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// Second pass
-		m_pGlowMap = std::make_unique<OpenGLTexture>(m_iWidth, m_iHeight);
-		m_pGlowMap.get()->initTextureFromOpenGLThread();
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_pGlowMap->getTexture()[0], 0);
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 			::kernelDebugLogPattern("[OpenGL] Framebuffer is not complete p2");
@@ -286,6 +298,8 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, 
 		// Unbind the frame buffer and delete our rbo
 		glDeleteRenderbuffers(1, &rbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		m_pCompletedGlowmapTiles.insert(quadBounds);
+
 		return m_pGlowMap.get();
 	}
 	else {
