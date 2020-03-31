@@ -358,6 +358,7 @@ class CDeviceClass
 		virtual ESetPropertyResult SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError);
 		virtual bool ShowActivationDelayCounter (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) { }
+		virtual bool UsesLauncherControls (void) const { return false; }
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 
 		static DWORD CombineLinkedFireOptions (DWORD dwSrc1, DWORD dwSrc2);

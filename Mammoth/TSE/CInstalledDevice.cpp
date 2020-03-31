@@ -489,7 +489,13 @@ bool CInstalledDevice::IsLinkedFire (ItemCategories iTriggerCat) const
 	else if (iTriggerCat == itemcatNone)
 		return true;
 	else
-		return (GetClass()->GetCategory() == iTriggerCat);
+		{
+		ItemCategories iNewItemCategory = GetClass()->GetCategory();
+		if (GetClass()->UsesLauncherControls() && iNewItemCategory == itemcatWeapon)
+			iNewItemCategory = itemcatLauncher;
+
+		return (iNewItemCategory == iTriggerCat);
+		}
 	}
 
 bool CInstalledDevice::IsSelectable (void) const

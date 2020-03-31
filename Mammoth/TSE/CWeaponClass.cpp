@@ -42,6 +42,7 @@
 #define SHIP_COUNTER_PER_SHOT_ATTRIB			CONSTLIT("shipCounterPerShot")
 #define TARGET_STATIONS_ONLY_ATTRIB				CONSTLIT("targetStationsOnly")
 #define TYPE_ATTRIB								CONSTLIT("type")
+#define USES_LAUNCHER_CONTROLS_ATTRIB			CONSTLIT("usesLauncherControls")
 
 #define COUNTER_TYPE_TEMPERATURE				CONSTLIT("temperature")
 #define COUNTER_TYPE_CAPACITOR					CONSTLIT("capacitor")
@@ -1694,6 +1695,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_iCounterPerShot = pDesc->GetAttributeIntegerBounded(SHIP_COUNTER_PER_SHOT_ATTRIB, 0, -1, 0);
 	pWeapon->m_bBurstTracksTargets = pDesc->GetAttributeBool(BURST_TRACKS_TARGETS_ATTRIB);
 	pWeapon->m_bCanFireWhenBlind = pDesc->GetAttributeBool(CAN_FIRE_WHEN_BLIND_ATTRIB);
+	pWeapon->m_bUsesLauncherControls = pDesc->GetAttributeBool(USES_LAUNCHER_CONTROLS_ATTRIB);
 
 	//	Configuration
 
@@ -5224,6 +5226,16 @@ bool CWeaponClass::UpdateTemperature (CItemCtx &ItemCtx, const CWeaponFireDesc &
 		*retiFailureMode = iFailure;
 
 	return true;
+	}
+
+bool CWeaponClass::UsesLauncherControls (void) const
+
+//	UsesLauncherControls
+//
+//	Returns TRUE if weapon is selected and fired as a launcher instead of a primary gun (but isn't a launcher)
+
+	{
+	return m_bUsesLauncherControls;
 	}
 
 bool CWeaponClass::ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice)
