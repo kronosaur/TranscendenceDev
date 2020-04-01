@@ -930,5 +930,8 @@
     <Xml Include="Sisters01.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
+    <Xml Include="SistersSanctum.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

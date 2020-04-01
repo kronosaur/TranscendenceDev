@@ -642,6 +642,7 @@
     <Xml Include="Sisters01.xml" />
     <Xml Include="SistersDonate.xml" />
     <Xml Include="SistersPilgrimsAid.xml" />
+    <Xml Include="SistersSanctum.xml" />
     <Xml Include="StdMiningEquipment.xml">
       <SubType>Designer</SubType>
     </Xml>

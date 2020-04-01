@@ -1618,6 +1618,8 @@
 	<!ENTITY rsSistersRanks				"0x00100038">
 	<!ENTITY tbSistersDonation			"0x00100039">
 	<!ENTITY baSistersStation			"0x0010003A">
+	<!ENTITY dsSistersOffer				"0x0010003B">
+	<!ENTITY dsSistersPromotion			"0x0010003C">
 	
 	<!-- 0040-005F CORPORATE HIERARCHY -->
 	
@@ -2572,6 +2574,7 @@
 	<Module filename="SistersDonate.xml"/>
 	<Module filename="SistersOfDomina.xml"/>
 	<Module filename="SistersPilgrimsAid.xml"/>
+	<Module filename="SistersSanctum.xml"/>
 
 	<!-- St. Katharine's Star -->
 

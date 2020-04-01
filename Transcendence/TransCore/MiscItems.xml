@@ -172,7 +172,6 @@
 			>
 
 		<Properties>
-			<Definition id="sisters.donateAtt">-1</Definition>
 			<Definition id="sisters.donateRel">270</Definition>
 		</Properties>
 
@@ -181,8 +180,12 @@
 		<Language>
 			<Text id="sisters.donateDesc">
 				
-				"The souls in these receptacles deserve to rejoin Domina. The 
-				flesh will perish, but the eternal soul returns to its maker."
+				You hear a voice in your head but can't understand the words. 
+				You feel joy and sadness, triumph and failure, surprise and
+				regret.
+
+				Eventually, all those feelings fade and you're left with the
+				comfortable presence of Domina.
 				
 			</Text>
 		</Language>
@@ -295,7 +298,6 @@
 			>
 
 		<Properties>
-			<Definition id="sisters.donateAtt">-1</Definition>
 			<Definition id="sisters.donateRel">180</Definition>
 		</Properties>
 
@@ -304,8 +306,13 @@
 		<Language>
 			<Text id="sisters.donateDesc">
 				
-				"The souls in these receptacles deserve to rejoin Domina. The 
-				flesh will perish, but the eternal soul returns to its maker."
+				In your mind you see a house beneath the wide open skies of a
+				planet&mdash;probably Earth. A woman waves through a window; she
+				is happy for you, but her face is sad. You try to walk towards 
+				the house, but your legs won't move.
+
+				You look down and see that you're back in the sanctum. You feel
+				the presence of Domina.
 		
 			</Text>
 		</Language>
@@ -570,7 +577,6 @@
 			>
 
 		<Properties>
-			<Definition id="sisters.donateAtt">-1</Definition>
 			<Definition id="sisters.donateRel">240</Definition>
 		</Properties>
 
@@ -579,8 +585,11 @@
 		<Language>
 			<Text id="sisters.donateDesc">
 
-				"This empty vessel may nevertheless possess a connection to the 
-				soul it once housed. Domina will use it to gather her flock."
+				You sense the presence of Domina examining the cadaver. You 
+				imagine her hand reaching into the skull and kneading the brain
+				like a lump of putty.
+
+				When you open your eyes, the cadaver is gone.
 
 			</Text>
 		</Language>
@@ -945,8 +954,8 @@
 		<Language>
 			<Text id="sisters.donateDesc">
 				
-				"We thank you for your offering. These sophisticated devices will
-				help us commune with Domina."
+				You feel the presence of Domina examining the neural processor.
+				She wrings out every last quantum bit of information.
 
 			</Text>
 		</Language>
@@ -1051,8 +1060,8 @@
 		<Language>
 			<Text id="sisters.donateDesc">
 
-				"We thank you for your offering. These intricate devices will 
-				help us with our communion."
+				You feel the presence of Domina examining the knowledge array.
+				She wrings out every last quantum bit of information.
 
 			</Text>
 		</Language>

@@ -28,7 +28,6 @@
 			<Definition id="periodInSeconds">60</Definition>
 
 			<Global id="balance">0</Global>
-			<Global id="totalDonations">0</Global>
 			<Global id="totalTithe">0</Global>
 			<Global id="investmentGain">0</Global>
 			
@@ -55,20 +54,6 @@
 						)
 					)
 			</OnGlobalUpdate>
-
-			<OnItemDonatedToSisters>
-				(block (
-					(totalValue (multiply (objGetBuyPrice gSource gItem) (itmGetCount gItem)))
-					(entry (domGetDonationDesc gItem))
-					)
-					(if (!= (@ entry 'sistersAtt) 0)
-						(block ()
-							(typInc@ gType 'totalDonations totalValue)
-							(typInc@ gType 'balance totalValue)
-							)
-						)
-					)
-			</OnItemDonatedToSisters>
 
 			<OnMoneyDonatedToSisters>
 				(block (
@@ -101,15 +86,6 @@
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
-
-		<Language>
-			<Text id="sisters.donateDesc">
-
-				"We thank you for your offering. These beautiful stones are a 
-				fitting tribute to Domina's grace and power."
-			
-			</Text>
-		</Language>
 	</ItemType>
 
 	<!-- Jewel of Contemplation -->
@@ -130,16 +106,6 @@
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
-
-		<Language>
-			<Text id="sisters.donateDesc">
-				
-				"We thank you for your offering. These beautiful jewels are a 
-				fitting tribute to Domina's grace and power."
-			
-			</Text>
-		</Language>
-
 	</ItemType>
 
 	<!-- Hierolith Crystal -->
@@ -156,21 +122,10 @@
 			>
 
 		<Properties>
-			<Definition id="sisters.donateAtt">-1</Definition>
 			<Definition id="sisters.donateRel">360</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
-
-		<Language>
-			<Text id="sisters.donateDesc">
-				
-				"We thank you for your offering. These beautiful crystals are a 
-				fitting tribute to Domina's grace and power."
-
-			</Text>
-		</Language>
-
 	</ItemType>
 	
 <!-- ENCOUNTERS -->
@@ -264,7 +219,7 @@
 								(scrShowScreen gScreen &dsSistersDockServices;)
 							</Action>
 							<Action id="actionDonate">
-								(scrShowScreen gScreen &dsSistersDonate;)
+								(scrShowScreen gScreen &dsDominaTithe;)
 							</Action>
 							<Action id="actionUndock" cancel="1">
 								<Exit/>
@@ -366,11 +321,9 @@
 	
 <!-- DOCK SCREENS -->
 	
-	<!-- Sanctum Screen 
-	
-	-->
-	
-	<DockScreen unid="&dsSistersSanctum;"
+	<!-- Sisters Donate -->
+
+	<DockScreen UNID="&dsDominaTithe;"
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
@@ -381,315 +334,130 @@
 		</Display>
 
 		<Panes>
-			<Default>
+			<Default
+					showCounter=	"true">
+
 				<OnPaneInit>
 					(block (
-						(balance (typ@ &svSistersOfDomina; 'balance))
-						(level (domInitRelationship))
+						(maxCount (plyGetCredits gPlayer))
 						)
-						(switch
-						
-							;	If the player has not donated to the Sisters, then they
-							;	cannot contemplate.
-							
-							(and (= balance 0)
-									(not (objGetData gSource 'freeSanctum))
-									)
-								(block Nil
-									(scrSetDescTranslate gScreen 'SanctumClosed)
-									(scrEnableAction gScreen 'actionContemplate Nil)
-									)
-							
-							;	Otherwise, we allow contemplation
-							
-							(block Nil
-								(scrSetDescTranslate gScreen (cat "SanctumIntro:" level) {
-									rank: (fmtNoun (typ@ &unidPilgrimClass; 'levelNoun) 1 'article)
-									})
-								(scrEnableAction gScreen 'actionContemplate True)
-								)
+						(scrEnableAction gScreen 'actionDonate (gr maxCount 0))
+						(if (gr maxCount 0)
+							(scrSetDescTranslate gScreen 'descHowMuch)
+							(scrSetDescTranslate gScreen 'descNoMoney)
 							)
+							
+						(scrSetCounter gScreen maxCount)
 						)
 				</OnPaneInit>
-			
-				<Actions>
-					<Action id="actionContemplate" default="1">
-						(block (
-							(roll (random 1 100))
-							
-							(lastContemplateTime (typ@ &svSistersOfDomina; 'lastContemplateTime))
-							(intervalInTicks (* (typ@ &svSistersOfDomina; 'contemplateIntervalInSeconds) 60))
-							(nextContemplateTime (if lastContemplateTime (+ lastContemplateTime intervalInTicks) 0))
-							)
-							
-							;	If we have a free sanctum pass then we always get the stargate
-							;	option.
-							
-							(if (objGetData gSource 'freeSanctum)
-								(block Nil
-									(setq roll 40)
-									(objSetData gSource 'freeSanctum Nil)
-									)
-								)
-							
-							;	Figure out what happened
-							
-							(switch
-							
-								;	If we're not a Pilgrim, we always get nothing
-								
-								(!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
-									(scrShowPane gScreen 'Nothing)
-									
-								;	If interval has not passed, then nothing
-								
-								(ls (unvGetTick) nextContemplateTime)
-									(scrShowPane gScreen 'Nothing)
-							
-								;	10% of the time, Domina reveals stations in the system
-								
-								(leq roll 10)
-									(block Nil
-										(enum (sysFindObject gPlayerShip "Ts -uncharted;") obj
-											(objSetKnown obj)
-											)
-										(typSet@ &svSistersOfDomina; 'lastContemplateTime (unvGetTick))
-										(scrShowPane gScreen "MappedSystem")
-										)
-							
-								;	30% of the time, Domina reveals the stargate that leads
-								;	to the Core.
-								
-								(leq roll 40)
-									(block (
-										(stargateObj (sysGetStargateLeadingToCore))
-										systemMessage
-										)
-										(typSet@ &svSistersOfDomina; 'lastContemplateTime (unvGetTick))
-										
-										(switch
-										
-											;	If we get a stargate result, then tell the player to
-											;	follow the stargate.
-											
-											stargateObj
-												(block Nil
-													(objSetKnown stargateObj)
-													(scrSetData gScreen 'stargateID (objGetID stargateObj))
-													(scrShowPane gScreen "StargateRevealed")
-													)
-													
-											;	Otherwise, see if the system has some text to explain where
-											;	to go. We need this for the Heretic system.
-											
-											(setq systemMessage (typTranslate (sysGetSystemType) 'sisters.dominaRevealStargate))
-												(block Nil
-													(scrSetData gScreen 'stargateID Nil)
-													(scrSetData gScreen 'stargateText systemMessage)
-													(scrShowPane gScreen "StargateRevealed")
-													)
-											
-											;	Otherwise, nothing
-											
-											(scrShowPane gScreen "Nothing")
-											)
-										)
-							
-								;	30% of the time we gain Domina relationship.
-							
-								(leq roll 70)
-									(block Nil
-										(domGainXP (random 20 10 10))
-										(typSet@ &svSistersOfDomina; 'lastContemplateTime (unvGetTick))
-										(scrShowPane gScreen "DominaRelationship")
-										)
-							
-								;	30% of the time, nothing happens.
 
+				<Actions>
+					<Action id="actionDonate" default="1">
+						(block (
+							(count (scrGetCounter gScreen))
+							(maxCount (plyGetCredits gPlayer))
+							)
+							(switch
+								(= count 0)
+									(scrExitScreen gScreen)
+
+								(gr count maxCount)
+									(scrSetCounter gScreen maxCount)
+									
 								(block ()
-									(typSet@ &svSistersOfDomina; 'lastContemplateTime (unvGetTick))
-									(scrShowPane gScreen "Nothing")
+
+									;	Donation
+
+									(plyCharge gPlayer count)
+									(typFireEvent &svSistersOfDomina; 'OnMoneyDonatedToSisters {
+										value: count
+										})
+
+									(scrShowPane gScreen 'Thanks)
 									)
 								)
 							)
 					</Action>
-					<Action id="actionDone" default="1" cancel="1">
+
+					<Action id="actionCancel" cancel="1">
 						(scrExitScreen gScreen)
 					</Action>
 				</Actions>
 			</Default>
-			
-			<MappedSystem>
-				<OnPaneInit>
-					(scrSetDesc gScreen (typTranslate &dsSistersSanctum; "MappedSystemDesc"))
-				</OnPaneInit>
-				
+
+			<Thanks descID="descThanks">
 				<Actions>
-					<Action id="actionDone" default="1" cancel="1">
+					<Action id="actionContinue" default="1" cancel="1">
 						(scrExitScreen gScreen)
 					</Action>
 				</Actions>
-			</MappedSystem>
-			
-			<StargateRevealed>
-				<OnPaneInit>
-					(if (scrGetData gScreen 'stargateID)
-						(scrSetDesc gScreen (typTranslate &dsSistersSanctum; "StargateRevealedDesc"))
-						(scrSetDesc gScreen (scrGetData gScreen 'stargateText))
-						)
-				</OnPaneInit>
-				
-				<Actions>
-					<Action id="actionDone" default="1" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-				</Actions>
-			</StargateRevealed>
-			
-			<DominaRelationship>
-				<OnPaneInit>
-					(scrSetDesc gScreen (typTranslate &dsSistersSanctum; "DominaRelationshipDesc"))
-				</OnPaneInit>
-				
-				<Actions>
-					<Action id="actionDone" default="1" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-				</Actions>
-			</DominaRelationship>
-			
-			<Nothing>
-				<OnPaneInit>
-					(scrSetDesc gScreen (typTranslate &dsSistersSanctum; "NothingDesc"))
-				</OnPaneInit>
-				
-				<Actions>
-					<Action id="actionDone" default="1" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-				</Actions>
-			</Nothing>
+			</Thanks>
 		</Panes>
 		
 		<Language>
-			<Text id="actionContemplate">"[C]ontemplate"</Text>
+			<Text id="actionDonate">[D]onate</Text>
+
+			<Text id="descHowMuch">
+
+				"We're collecting donations to the Pilgrims' Aid fund. How many
+				credits do you wish to give?"
+
+			</Text>
+			<Text id="descNoMoney">
+
+				"We are devoutly grateful for your good intentions. 
+				Unfortunately, you have no credits to give."
+
+			</Text>
+			<Text id="descThanks">
+
+				"Thank you for your generous contribution. Your faithful 
+				support enables us to help the truly needy. May the blessings 
+				of Domina illuminate your way."
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Sisters Promotion -->
+
+	<DockScreen unid="&dsSistersPromotion;"
+			nestedScreen="true"
+			inherit="&dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen 'textPromotion {
+						rank: (fmtNoun (typ@ &unidPilgrimClass; 'levelNoun) 1 'article)
+						tier: (typ@ &unidPilgrimClass; 'levelTier)
+						})
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block ()
+							(typSet@ &unidPilgrimClass; 'nextLevelNotification Nil)
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="textPromotion">
 			
-			<Text id="DominaRelationshipDesc">
+				You feel a stronger connection to Domina.
 
-				Your disembodied mind hurtles through space. Stars dance like 
-				fireflies, and nebulous veils part to reveal a fragment of the 
-				Eternal Pattern.
-					
-				You feel the blessing of Domina upon you. She urges you to 
-				continue your journey to the Galactic Core.
+				You are now %rank% and have access to %tier% powers.
 
-			</Text>
-			<Text id="MappedSystemDesc">
-
-				Images and patterns dance in your head like spinning galaxies.
-				You see with the eyes of Domina but the visions blast your brain 
-				like a nova.
-					
-				When you recover from your reverie you remember only some mundane 
-				information about the position of stations in this star system.
-
-			</Text>
-			<Text id="NothingDesc">
-
-				Your contemplation ends as your rational mind considers 
-				the impossibility of communicating across the light-years.
-
-			</Text>
-			<Text id="StargateRevealedDesc">
-				(block (
-					(stargateObj (objGetObjByID (scrGetData gScreen 'stargateID)))
-					)
-					(cat
-						"A connection with Domina is denied to you, but your brief attempt "
-						"points the way to your destiny's end.\n\n"
-						
-						"Step through the " (objGetName stargateObj) " to the next system "
-						"and you will be one step nearer to your goal."
-						)
-					)
-			</Text>
-			<Text id="SanctumClosed">
-
-				You are in the sanctum of the Sisters of Domina. Tools and 
-				scaffolding fill the room and various cardinal-robed techs work 
-				to repair the micro-engraved plasteel walls.
-					
-				One of the sisters oversees the work: "Sorry, but the sanctum 
-				is closed for maintenance. We would appreciate any donation you 
-				can make to help us defray the cost."
-
-			</Text>
-			<Text id="SanctumIntro:0">
-
-				You are in the sanctum of the Sisters of Domina. The plasteel 
-				walls that surround you are micro-engraved with the revelation 
-				of Domina.
-					
-				You close your eyes and open your thoughts, but no one answers.
-
-			</Text>
-			<Text id="SanctumIntro:1">
-
-				You are in the sanctum of the Sisters of Domina. The plasteel 
-				walls that surround you are micro-engraved with the revelation 
-				of Domina.
-					
-				You are %rank% in the service of Domina and have access to 
-				first-tier powers.
-				
-			</Text>
-			<Text id="SanctumIntro:2">
-				
-				You are in the sanctum of the Sisters of Domina. The plasteel 
-				walls that surround you are micro-engraved with the revelation 
-				of Domina.
-					
-				You are %rank% in the service of Domina and have access to 
-				second-tier powers.
-				
-			</Text>
-			<Text id="SanctumIntro:3">
-
-				You are in the sanctum of the Sisters of Domina. A faint glow 
-				emanates from the micro-engraved plasteel walls and you feel a 
-				peaceful presence.
-					
-				You are %rank% in the service of Domina and have access to 
-				third-tier powers.
-				
-			</Text>
-			<Text id="SanctumIntro:4">
-
-				You are in the sanctum of the Sisters of Domina. A faint glow 
-				emanates from the micro-engraved plasteel walls and you feel a 
-				peaceful presence.
-					
-				You are %rank% in the service of Domina and have access to 
-				fourth-tier powers.
-				
-			</Text>
-			<Text id="SanctumIntro:5">
-				
-				You are in the sanctum of the Sisters of Domina. You feel the 
-				presence of Domina within and around you.
-					
-				You are %rank% in the service of Domina and have access to 
-				fifth-tier powers.
-
-			</Text>
-			<Text id="SanctumIntro:6">
-				
-				You are in the sanctum of the Sisters of Domina. You feel the 
-				presence of Domina within and around you.
-					
-				You are %rank% in the service of Domina and have access to 
-				fifth-tier powers.
-				
 			</Text>
 		</Language>
 	</DockScreen>

@@ -264,15 +264,6 @@
 			<Definition id="sisters.donateAtt">-1</Definition>
 			<Definition id="sisters.donateRel">270</Definition>
 		</Properties>
-
-		<Language>
-			<Text id="sisters.donateDesc">
-				
-				"We thank you for your offering. These beautiful gems are a 
-				fitting tribute to Domina's grace and power."
-			
-			</Text>
-		</Language>
 	</ItemType>
 
 	<!-- Gem of Despair -->
