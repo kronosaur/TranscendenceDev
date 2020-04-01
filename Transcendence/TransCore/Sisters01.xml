@@ -144,7 +144,7 @@
 
 						(rpgSetTarget gSource aReason)
 						)
-
+					)
 			</OnSetPlayerTarget>
 
 			<OnObjDestroyed>
@@ -257,16 +257,17 @@
 			<Text id="Briefing">
 				(msnTranslate gSource 'textBriefing1 {
 					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					itemName: (itmGetName (msn@ gSource 'treasureItem) '(actual article))
 					})
 			</Text>
 			<Text id="AcceptReply">
 				(msnTranslate gSource 'textAccept1 {
 					})
 			</Text>
-			<String id="DeclineReply">
+			<Text id="DeclineReply">
 				(msnTranslate gSource 'textDecline1 {
 					})
-			</String>
+			</Text>
 			<Text id="InProgress">
 				(msnTranslate gSource (cat 'textInProgress. (msn@ gSource 'status)) {
 					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
@@ -351,4 +352,3 @@
 	</MissionType>
 
 </TranscendenceModule>
-
