@@ -237,7 +237,8 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, 
 	if (m_iWidth > 0 && m_iHeight > 0 && !tileAlreadyRendered)
 	{
 		// TODO: Instead of what we are doing right now, we should render the entire texture in one go with instanced rendering in two passes;
-		// that will have much better performance.
+		// that will have much better performance. What we can do is make it so that we paint one quad onto the texture, using the current vertex
+		// shader, but we do subdivision (gridding) in the fragment shader stage. We need to supply the quad size there.
 		// Vertical pass
 		// First, create a texture with the same size as the output.
 		OpenGLTexture pTempTexture = OpenGLTexture(m_iWidth, m_iHeight);
@@ -260,17 +261,18 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, 
 		glm::mat4 rotationMatrix = glm::mat4(glm::vec4(1.0, 0.0, 0.0, 0.0), glm::vec4(0.0, 1.0, 0.0, 0.0), glm::vec4(0.0, 0.0, 1.0, 0.0), glm::vec4(0.0, 0.0, 0.0, 1.0));
 		int rotationMatrixLocation = glGetUniformLocation(shader->id(), "rotationMatrix");
 
-		float texStartPoint_x = std::get<0>(texStartPoint) * m_iWidth;
-		float texStartPoint_y = std::get<1>(texStartPoint) * m_iHeight;
-		float texQuadSize_x = std::get<0>(texQuadSize) * m_iWidth;
-		float texQuadSize_y = std::get<1>(texStartPoint) * m_iHeight;
+		float texStartPoint_x = std::get<0>(texStartPoint);// * m_iWidth;
+		float texStartPoint_y = std::get<1>(texStartPoint);// *m_iHeight;
+		float texQuadSize_x = std::get<0>(texQuadSize);// *m_iWidth;
+		float texQuadSize_y = std::get<1>(texQuadSize);// *m_iHeight;
+		::kernelDebugLogPattern("[OpenGL] size=%d x %d, pos=%d, %d", int(texQuadSize_x), int(texQuadSize_y), int(texStartPoint_x), int(texStartPoint_y));
 
 		glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
 		glUniform1i(glGetUniformLocation(shader->id(), "ourTexture"), 0);
 		glUniform2f(glGetUniformLocation(shader->id(), "aTexStartPoint"), texStartPoint_x, texStartPoint_y);
 		glUniform2f(glGetUniformLocation(shader->id(), "aTexQuadSizes"), texQuadSize_x, texQuadSize_y);
-		glUniform2i(glGetUniformLocation(shader->id(), "aTexTotalSize"), m_iWidth, m_iHeight);
-		glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::min(25, std::max(3, int(std::min(texQuadSize_x, texQuadSize_y) / 10))));
+		//glUniform2i(glGetUniformLocation(shader->id(), "aTexTotalSize"), m_iWidth, m_iHeight);
+		glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::min(25, std::max(3, int(std::min(texQuadSize_x * m_iWidth, texQuadSize_y * m_iHeight) / 10))));
 		glUniform1i(glGetUniformLocation(shader->id(), "use_x_axis"), GL_TRUE);
 		glUniform1i(glGetUniformLocation(shader->id(), "second_pass"), GL_FALSE);
 

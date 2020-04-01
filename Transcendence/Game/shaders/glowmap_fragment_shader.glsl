@@ -1,9 +1,8 @@
 #version 410 core
 out vec4 FragColor;
   
-layout (location = 0) in vec3 ourColor;
-layout (location = 1) in vec2 TexCoord;
-layout (location = 2) in vec2 quadSize;
+layout (location = 0) in vec2 TexCoord;
+layout (location = 1) in vec2 quadSize;
 
 uniform sampler2D ourTexture;
 //uniform vec2 quadSize;
@@ -47,7 +46,7 @@ vec4 gaussianBlur(float epsilon, vec2 texture_uv, sampler2D obj_texture, vec2 te
 {
 	float percent_std_dev = 0.66;
     vec2 onePixel = vec2(1.0, 1.0) / texture_size;
-    vec2 quadSize_float = quadSize / texture_size;
+    vec2 quadSize_float = quadSize;// / texture_size;
     vec2 quad_index = vec2(float(int(texture_uv[0] / quadSize_float[0])), float(int(texture_uv[1] / quadSize_float[1])));
     int center = int(kernel_size / 2);
 	vec4 gaussianBlurValue = vec4(0.0, 0.0, 0.0, 0.0);
@@ -75,7 +74,7 @@ vec4 getGlowBoundaries_variable(float epsilon, vec2 texture_uv, sampler2D obj_te
 {
 	float percent_std_dev = 0.66;
     vec2 onePixel = vec2(1.0, 1.0) / texture_size;
-    vec2 quadSize_float = quadSize / texture_size;
+    vec2 quadSize_float = quadSize;// / texture_size;
 	// TODO: Determine quad_index in the vertex shader
     vec2 quad_index = vec2(float(int(texture_uv[0] / quadSize_float[0])), float(int(texture_uv[1] / quadSize_float[1])));
     int center = int(kernel_size / 2);
