@@ -190,19 +190,14 @@
 
 		<!-- Image and Effects -->
 
-		<Image			imageID="&rsStations1;" imageX="384" imageY="512" imageWidth="128" imageHeight="128"/>
-		<HeroImage		imageID="&rsSistersShrineHero;" imageWidth="324" imageHeight="528"/>
+		<Image			imageID="&rsSistersAbbey;" imageWidth="224" imageHeight="330" viewportRatio="0.0325"/>
+		<HeroImage		imageID="&rsSistersShrineHero;" imageWidth="400" imageHeight="650"/>
 		
-		<DockingPorts>
-			<Port x="0"		y="90" />
-			<Port x="0"		y="-90" />
-			<Port x="60"	y="60" />
-			<Port x="60"	y="-60" />
-			<Port x="90"	y="0" />
-			<Port x="-90"	y="0" />
-			<Port x="-60"	y="60" />
-			<Port x="-60"	y="-60" />
-		</DockingPorts>
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"135"
+				portAngle=		"-5"
+				/>
 
 		<!-- Dock Screen -->
 
@@ -677,9 +672,11 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsHandOfDomina;"		bitmap="Resources\HandOfDomina.jpg" bitmask="Resources\HandOfDominaMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsHandOfDomina;"			bitmap="Resources\HandOfDomina.jpg" bitmask="Resources\HandOfDominaMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsHandOfDominaHero;"		bitmap="Resources\HandOfDominaLarge.jpg" bitmask="Resources\HandOfDominaLargeMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsSistersShrineBkgnd;" bitmap="Resources\SistersShrine.jpg" loadOnUse="true" />
-	<Image UNID="&rsSistersShrineHero;" bitmap="Resources\SistersShrineHero.jpg" bitmask="Resources\SistersShrineHeroMask.bmp" loadOnUse="true" />
+
+	<Image UNID="&rsSistersAbbey;"			bitmap="Resources\SistersAbbey.jpg" bitmask="Resources\SistersAbbeyMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsSistersShrineBkgnd;"	bitmap="Resources\SistersShrine.jpg" loadOnUse="true" />
+	<Image UNID="&rsSistersShrineHero;"		bitmap="Resources\SistersShrineHero.jpg" bitmask="Resources\SistersShrineHeroMask.bmp" loadOnUse="true" />
 
 </TranscendenceModule>

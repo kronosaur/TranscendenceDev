@@ -1620,6 +1620,7 @@
 	<!ENTITY baSistersStation			"0x0010003A">
 	<!ENTITY dsSistersOffer				"0x0010003B">
 	<!ENTITY dsSistersPromotion			"0x0010003C">
+	<!ENTITY rsSistersAbbey				"0x0010003D">
 	
 	<!-- 0040-005F CORPORATE HIERARCHY -->
 	
