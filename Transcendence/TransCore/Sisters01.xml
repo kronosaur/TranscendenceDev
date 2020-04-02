@@ -342,7 +342,7 @@
 				"You've done well, %name%. The %itemName% will improve your
 				connection to Domina.
 
-				"Donate it to us and we will effect the transformation."
+				"Go to our sanctum and offer the item to Domina."
 
 			</Text>
 			<Text id="SuccessMsg">

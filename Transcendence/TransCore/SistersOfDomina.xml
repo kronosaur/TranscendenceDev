@@ -161,13 +161,13 @@
 				unique=					"inSystem"
 				/>
 
-		<Image			imageID="&rsStations1;" imageX="384" imageY="512" imageWidth="128" imageHeight="128"/>
-		<HeroImage		imageID="&rsSistersShrineHero;" imageWidth="324" imageHeight="528"/>
-		
-		<Ships>
-			<Lookup count="1d2" table="&tbCommDefenders;"/>
-			<Lookup count="1d3" table="&tbCommPrivateCrafts;"/>
-		</Ships>
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100" actualPrice="true"/>
+
+			<Refuel			criteria="f +basicFuel; L:1-10;" priceAdj="100"/>
+		</Trade>
 
 		<Items>
 			<Table count="1d6">
@@ -179,11 +179,32 @@
 			</Table>
 		</Items>
 
-		<Trade currency="credit">
-			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100" actualPrice="true"/>
+		<!-- Configuration -->
 
-			<Refuel			criteria="f +basicFuel; L:1-10;" priceAdj="100"/>
-		</Trade>
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Lookup count="1d2" table="&tbCommDefenders;"/>
+			<Lookup count="1d3" table="&tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&rsStations1;" imageX="384" imageY="512" imageWidth="128" imageHeight="128"/>
+		<HeroImage		imageID="&rsSistersShrineHero;" imageWidth="324" imageHeight="528"/>
+		
+		<DockingPorts>
+			<Port x="0"		y="90" />
+			<Port x="0"		y="-90" />
+			<Port x="60"	y="60" />
+			<Port x="60"	y="-60" />
+			<Port x="90"	y="0" />
+			<Port x="-90"	y="0" />
+			<Port x="-60"	y="60" />
+			<Port x="-60"	y="-60" />
+		</DockingPorts>
+
+		<!-- Dock Screen -->
 
 		<DockScreens>
 			<Main>
@@ -230,16 +251,21 @@
 			</Main>
 		</DockScreens>
 
-		<DockingPorts>
-			<Port x="0"		y="90" />
-			<Port x="0"		y="-90" />
-			<Port x="60"	y="60" />
-			<Port x="60"	y="-60" />
-			<Port x="90"	y="0" />
-			<Port x="-90"	y="0" />
-			<Port x="-60"	y="60" />
-			<Port x="-60"	y="-60" />
-		</DockingPorts>
+		<!-- Events and Data -->
+
+		<Events>
+			<GetRumors>
+				(block (communionItem)
+					(append
+						(if (setq communionItem (random (objGetItems gPlayerShip "*U +communion;")))
+							(rpgRumorAdd 'sistersMission 'offerItem 100 nil {
+								itemName: (itmGetName communionItem 'article)
+								})
+							)
+						)
+					)
+			</GetRumors>
+		</Events>
 
 		<Language>
 			<Text id="actionTalkToAbbess">[M]atriarch's Chancery</Text>
@@ -313,6 +339,17 @@
 				"The universe is dark and lonely; I do not envy your task."
 				
 			</Text>
+
+			<Text id="rumor.sistersMission.offerItem">
+
+				The abbess greets you as you enter:
+
+				"Welcome, %name%! You have %itemName% in your cargo hold. That
+				would make a wonderful offering to Domina. Go to our sanctum
+				and make an offering."
+
+			</Text>
+
 			<Text id="core.mapDesc">
 				Contemplation and communion
 			</Text>
