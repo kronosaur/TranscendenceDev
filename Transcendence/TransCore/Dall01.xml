@@ -377,7 +377,6 @@
 			>
 
 		<Properties>
-			<Definition id="sisters.donateAtt">-1</Definition>
 			<Definition id="sisters.donateRel">200</Definition>
 		</Properties>
 
@@ -471,7 +470,11 @@
 			
 			<Text id="sisters.donateDesc">
 			
-				"This is a remarkable item! Domina will be very pleased!"
+				A thunderclap knocks you down, and you hear an alien voice in 
+				your head. Images of destruction and death fly through your 
+				mind, leaving a dull pain behind.
+
+				When you open your eyes, the sphere is gone.
 				
 			</Text>
 

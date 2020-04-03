@@ -841,8 +841,6 @@
 	GLOBAL DATA
 	
 
-	gainLevel:			If not Nil, then the player has gained a level
-	
 	invokeCount:		Number of times player has invoked a power
 
 	lastInvokeTime{n}:	Ticks at which player last invoked a power of level n
@@ -971,7 +969,7 @@
 					(if (gr newLevel level)
 						(block Nil
 							(typSetGlobalData &stDomina; "level" newLevel)
-							(typSetGlobalData &stDomina; "gainLevel" level)
+							(typSet@ &unidPilgrimClass; 'nextLevelNotification level)
 							(setq level newLevel)
 							)
 						)

@@ -16,6 +16,8 @@
 					)
 			</Definition>
 
+			<Global id="nextLevelNotification"></Global>
+
 			<DynamicGlobal id="level">
 				(block (
 					(level (typGetGlobalData &stDomina; 'level))
@@ -46,6 +48,10 @@
 
 			<DynamicGlobal id="levelNoun">
 				(typTranslate gType 'nounRankPattern { rank:(typ@ gType 'level) gender:(plyGetGenome gPlayer) })
+			</DynamicGlobal>
+
+			<DynamicGlobal id="levelTier">
+				(typTranslate gType (cat 'tier. (typ@ gType 'level)))
 			</DynamicGlobal>
 
 			<DynamicGlobal id="nextLevel">
@@ -180,6 +186,13 @@
 			</Text>
 			<Text id="rank.6.humanMale">:a patriarch(s)</Text>
 			<Text id="rank.6.humanFemale">:a matriarch(s)</Text>
+
+			<Text id="tier.1">first-tier</Text>
+			<Text id="tier.2">second-tier</Text>
+			<Text id="tier.3">third-tier</Text>
+			<Text id="tier.4">fourth-tier</Text>
+			<Text id="tier.5">fifth-tier</Text>
+			<Text id="tier.6">sixth-tier</Text>
 
 			<Text id="labelDominaPowers">Domina Powers:</Text>
 			<Text id="labelProgress">Progress to %nextLevel%:</Text>

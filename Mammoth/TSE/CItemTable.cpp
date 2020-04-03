@@ -1839,7 +1839,7 @@ ALERROR CRandomItems::Create (CUniverse &Universe,
 	CRandomItems *pGenerator = new CRandomItems;
 	pGenerator->m_Criteria = Crit;
 	pGenerator->m_sLevelFrequency = sLevelFrequency;
-	pGenerator->m_bDynamicLevelFrequency = false;
+	pGenerator->m_bDynamicLevelFrequency = (strFind(sLevelFrequency, CONSTLIT(":")) != -1);
 	pGenerator->m_iDynamicLevel = 0;
 	pGenerator->m_iDamaged = 0;
 	pGenerator->m_iLevel = 0;
@@ -1848,10 +1848,13 @@ ALERROR CRandomItems::Create (CUniverse &Universe,
 	pGenerator->m_iCount = 0;
 	pGenerator->m_Table = NULL;
 
-	SDesignLoadCtx LoadCtx(Universe);
-	pGenerator->InitTable(LoadCtx, sLevelFrequency);
-	if (pGenerator->m_iCount == 0)
-		return ERR_FAIL;
+	if (!pGenerator->m_bDynamicLevelFrequency)
+		{
+		SDesignLoadCtx LoadCtx(Universe);
+		pGenerator->InitTable(LoadCtx, sLevelFrequency);
+		if (pGenerator->m_iCount == 0)
+			return ERR_FAIL;
+		}
 
 	//	Done
 
