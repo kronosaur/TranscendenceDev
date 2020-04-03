@@ -261,9 +261,22 @@
 	
 	<ItemType unid="&baHaloGem;">
 		<Properties>
-			<Definition id="sisters.donateAtt">-1</Definition>
 			<Definition id="sisters.donateRel">270</Definition>
 		</Properties>
+
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				You see the gem through Domina's eyes and watch as it unwraps 
+				itself, like a tightly wound ball of paper unfolding into a 
+				complex three-dimensional structure. 
+
+				The structure glows and hums with power, and you feel your
+				connection to Domina strengthen. When you open your eyes, the
+				vision, and the gem, are gone.
+
+			</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Gem of Despair -->
@@ -412,37 +425,6 @@
 	</ItemType>
 
 <!-- Miscellaneous ROMS -->
-
-	<!-- Autopilot ROM -->
-
-	<ItemType UNID="&itAutopilotROM;"
-			name=				"autopilot ROM"
-			attributes=			"info, minorItem, shipEquipment"
-			inherit=			"&baStdEquipmentItem;"
-
-			level=				"1"
-			frequency=			"uncommon"
-
-			value=				"50"
-			mass=				"1"
-			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-
-			description=		"This program allows the ship's captain to rest while the ship maintains a steady course."
-			>
-
-		<Properties>
-			<Constant id="rpg.equipment">'autopilot</Constant>
-		</Properties>
-
-		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
-
-		<Language>
-			<Text id="rpg.equipmentInstalled">Autopilot installed</Text>
-			<Text id="rpg.equipmentNoEffect">Ship already has an autopilot</Text>
-			<Text id="rpg.equipmentRedundant">Installed redundant autopilot</Text>
-			<Text id="rpg.equipmentRepaired">Autopilot repaired</Text>
-		</Language>
-	</ItemType>
 
 	<!-- Cash Card, Blue -->
 
