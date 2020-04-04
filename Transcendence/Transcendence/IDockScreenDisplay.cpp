@@ -570,9 +570,19 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgrou
 
 		else if (strEquals(sType, TYPE_HERO))
 			{
-			retDesc->iType = EDockScreenBackground::objHeroImage;
-			retDesc->pObj = CreateObjFromItem(pDesc->GetElement(FIELD_OBJ));
-			if (retDesc->pObj == NULL)
+			if (const ICCItem* pObj = pDesc->GetElement(FIELD_OBJ))
+				{
+				retDesc->iType = EDockScreenBackground::objHeroImage;
+				retDesc->pObj = CreateObjFromItem(pObj);
+				if (retDesc->pObj == NULL)
+					return false;
+				}
+			else if (const ICCItem* pImageDesc = pDesc->GetElement(FIELD_IMAGE))
+				{
+				retDesc->iType = EDockScreenBackground::heroImage;
+				retDesc->dwImageID = CTLispConvert::AsImageDesc(pImageDesc, &retDesc->rcImage);
+				}
+			else
 				return false;
 			}
 		else if (strEquals(sType, TYPE_IMAGE))
@@ -582,6 +592,9 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgrou
 			ICCItem *pImage = pDesc->GetElement(FIELD_IMAGE);
 			if (pImage == NULL)
 				return false;
+
+			else if (pImage->IsList())
+				retDesc->dwImageID = CTLispConvert::AsImageDesc(pImage, &retDesc->rcImage);
 
 			else if (pImage->IsInteger())
 				retDesc->dwImageID = pImage->GetIntegerValue();
