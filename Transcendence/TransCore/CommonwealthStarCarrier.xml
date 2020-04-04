@@ -19,11 +19,11 @@
 
 		<Names>:the CSC America</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 320 0 320 240)
-			</Data>
-		</StaticData>
+			</Definition>
+		</Properties>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -55,11 +55,13 @@
 
 		<Names>:the CSC Arctica</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 960 0 320 240)
-			</Data>
+			</Definition>
+		</Properties>
 
+		<StaticData>
 			<Data id="csc.giftTable">
 				(	; donation	item						count	unique
 					(10000		&itPlasmaShieldGenerator;	1		'Gift1)
@@ -101,11 +103,11 @@
 
 		<Names>:the CSC Asia</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 0 240 320 240)
-			</Data>
-		</StaticData>
+			</Definition>
+		</Properties>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -134,11 +136,11 @@
 
 		<Names>:the CSC Atlantica</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 320 240 320 240)
-			</Data>
-		</StaticData>
+			</Definition>
+		</Properties>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -168,11 +170,11 @@
 
 		<Names>:the CSC India</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 0 480 320 240)
-			</Data>
-		</StaticData>
+			</Definition>
+		</Properties>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -202,11 +204,11 @@
 
 		<Names>:the CSC Pacifica</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 320 480 320 240)
-			</Data>
-		</StaticData>
+			</Definition>
+		</Properties>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -239,11 +241,13 @@
 
 		<Names>:the CSC Sahara</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 640 480 320 240)
-			</Data>
+			</Definition>
+		</Properties>
 
+		<StaticData>
 			<Data id="csc.giftTable">
 				(	; donation	item						count	unique
 					(10000		&itMammoth100Deflector;		1		'Gift1)
@@ -286,6 +290,16 @@
 			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, EI, fleetLaw, majorShip"
 			inherit=			"&baCSCBase;"
 			>
+		<Properties>
+			<DynamicData id="csc.emblemDesc">
+				{
+					type: 'image
+					image: (or (obj@ gSource 'csc.emblem) (eval (objGetStaticData gSource 'csc.emblem)))
+					align: '(center middle)
+					padding-bottom: 100
+					}
+			</DynamicData>
+		</Properties>
 
 		<!-- Hull -->
 
@@ -382,9 +396,12 @@
 		This class defines a standard CSC hospital ship (support ship).	
 		Descendants from this class must define the following data elements:
 
-		STATIC DATA
+		PROPERTIES
 
 		csc.emblem: Code to generate the ship's emblem.
+
+		STATIC DATA
+
 		csc.giftTable: Table of items to give as gifts.
 
 		LANGUAGE
@@ -447,12 +464,10 @@
 		<!-- Dock Screens -->
 
 		<DockScreens>
-			<Main backgroundID="none">
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
+			<Main>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
 				
 				<Panes>
 					<Default>
@@ -497,14 +512,10 @@
 
 			<Bridge
 				name=			"Bridge"
-				backgroundID=	"none"
 				>
-
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
 				
 				<Panes>
 					<Default>
@@ -524,14 +535,10 @@
 
 			<Infirmary
 				name=			"Infirmary"
-				backgroundID=	"none"
 				>
-
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
 				
 				<Panes>
 					<Default descID="descInfirmary">
@@ -808,9 +815,9 @@
 		This class defines a standard CSC Task Force ship (an active CSC on
 		patrol in the Outer Realm).
 
-		Descendants from this class must define the following data elementss:
+		Descendants from this class must define the following data elements:
 
-		STATIC DATA
+		PROPERTIES
 
 		csc.emblem: Code to generate the ship's emblem.
 
@@ -874,13 +881,11 @@
 		<!-- Dock Screens -->
 
 		<DockScreens>
-			<Main backgroundID="none">
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
-
+			<Main>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
+				
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -916,14 +921,10 @@
 
 			<Bridge
 				name=			"Bridge"
-				backgroundID=	"none"
 				>
-
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
 				
 				<Panes>
 					<Default>
@@ -943,14 +944,10 @@
 
 			<FlightDeck
 				name=			"Flight Deck"
-				backgroundID=	"none"
 				>
-
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
 				
 				<Panes>
 					<Default>
