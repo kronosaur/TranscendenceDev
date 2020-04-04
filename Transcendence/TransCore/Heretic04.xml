@@ -14,6 +14,7 @@
 			attributes=		"sistersMission, hereticMission"
 
 			level=			"10"
+			priority=		"10"
 
 			maxAppearing=	"1"
 			>
@@ -463,8 +464,8 @@
 			<Port x="92"	y="-33" />
 			<Port x="42"	y="-85" />
 		</DockingPorts>
-        
-        <Language>
+		
+		<Language>
 			<Text id="actionBegin">[B]egin Neurohack</Text>
 			<Text id="actionDoneSpecial">Do[n]e</Text>
 			<Text id="actionEnter">[E]nter Chamber</Text>
@@ -573,9 +574,9 @@
 			</Text>
 
 			<Text id="core.mapDesc">
-                Alien structure
-            </Text>
-        </Language>
+				Alien structure
+			</Text>
+		</Language>
 	</StationType>
 
 </TranscendenceModule>

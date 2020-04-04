@@ -214,8 +214,8 @@
 						<OnPaneInit>
 							(block Nil
 								(if (objGetData gSource "freeSanctum")
-									(scrSetDesc gScreen (objTranslate gSource 'WelcomeFreeSanctum))
-									(scrSetDesc gScreen (objTranslate gSource 'Welcome))
+									(scrSetDescTranslate gScreen 'WelcomeFreeSanctum)
+									(scrSetDescTranslate gScreen 'Welcome)
 									)
 								)
 						</OnPaneInit>
