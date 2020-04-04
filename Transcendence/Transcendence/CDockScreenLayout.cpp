@@ -6,6 +6,53 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
+void CDockScreenLayout::CalcBackgroundImagePos (const SDockScreenBackgroundDesc &Desc, const CG32bitImage &Image, DWORD dwDefaultAlignment, int &retX, int &retY) const
+
+//	CalcBackgroundImagePos
+//
+//	Computes the upper-left corner position of the background image.
+
+	{
+	const RECT &rcRect = GetFrameImageRect();
+	const int xOffset = GetContentRect().left - GetFrameImageRect().left;
+	const int cxFrameHalf = GetFrameImageFocusX();
+	const int cyFrameHalf = GetFrameImageFocusY();
+	const int cxFrame = 2 * cxFrameHalf;
+	const int cyFrame = 2 * cyFrameHalf;
+
+	const int xFrameLeft = xOffset;
+	const int xFrameRight = xFrameLeft + cxFrame;
+	const int yFrameTop = 0;
+	const int yFrameBottom = yFrameTop + cyFrame;
+
+	const int cxImage = (RectWidth(Desc.rcImage) ? RectWidth(Desc.rcImage) : Image.GetWidth());
+	const int cyImage = (RectHeight(Desc.rcImage) ? RectHeight(Desc.rcImage) : Image.GetHeight());
+	const DWORD dwAlign = (Desc.dwImageAlign ? Desc.dwImageAlign : dwDefaultAlignment);
+
+	const int cxBlock = cxImage + Desc.rcImagePadding.left + Desc.rcImagePadding.right;
+	const int cyBlock = cyImage + Desc.rcImagePadding.top + Desc.rcImagePadding.bottom;
+
+	int xBlock;
+	int yBlock;
+
+	if (dwAlign & alignCenter)
+		xBlock = xFrameLeft + (cxFrame - cxBlock) / 2;
+	else if (dwAlign & alignRight)
+		xBlock = xFrameRight - cxBlock;
+	else
+		xBlock = xFrameLeft;
+
+	if (dwAlign & alignMiddle)
+		yBlock = yFrameTop + (cyFrame - cyBlock) / 2;
+	else if (dwAlign & alignBottom)
+		yBlock = yFrameBottom - cyBlock;
+	else
+		yBlock = yFrameTop;
+
+	retX = xBlock + Desc.rcImagePadding.left;
+	retY = yBlock + Desc.rcImagePadding.top;
+	}
+
 bool CDockScreenLayout::Init (const RECT &rcScreen, const CDockScreenVisuals &Visuals)
 
 //	Init

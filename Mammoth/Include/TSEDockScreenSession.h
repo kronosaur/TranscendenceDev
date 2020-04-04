@@ -55,6 +55,9 @@ struct SDockScreenBackgroundDesc
 	DWORD dwImageID = 0;				//	UNID to use (if iType == backgroundImage)
 	RECT rcImage = { 0 };				//	Source image rect (if 0, use entire image)
 	CSpaceObject *pObj = NULL;			//	Object to query (if iType == backgroundObjXXX)
+
+	RECT rcImagePadding = { 0 };
+	DWORD dwImageAlign = 0;				//	AlignmentStyles
 	};
 
 struct SScreenSetTab

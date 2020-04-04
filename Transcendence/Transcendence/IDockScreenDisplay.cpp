@@ -34,12 +34,24 @@
 #define TYPE_ATTRIB					CONSTLIT("type")
 #define WIDTH_ATTRIB				CONSTLIT("width")
 
+#define ALIGN_CENTER				CONSTLIT("center")
+#define ALIGN_RIGHT					CONSTLIT("right")
+#define ALIGN_LEFT					CONSTLIT("left")
+#define ALIGN_BOTTOM				CONSTLIT("bottom")
+#define ALIGN_TOP					CONSTLIT("top")
+#define ALIGN_MIDDLE				CONSTLIT("middle")
+
 #define DATA_FROM_PLAYER			CONSTLIT("player")
 #define DATA_FROM_SOURCE			CONSTLIT("source")
 #define DATA_FROM_STATION			CONSTLIT("station")
 
+#define FIELD_ALIGN					CONSTLIT("align")
 #define FIELD_IMAGE					CONSTLIT("image")
 #define FIELD_OBJ					CONSTLIT("obj")
+#define FIELD_PADDING_BOTTOM		CONSTLIT("padding-bottom")
+#define FIELD_PADDING_LEFT			CONSTLIT("padding-left")
+#define FIELD_PADDING_RIGHT			CONSTLIT("padding-right")
+#define FIELD_PADDING_TOP			CONSTLIT("padding-top")
 #define FIELD_TYPE					CONSTLIT("type")
 
 #define PROPERTY_LIST_SOURCE		CONSTLIT("listSource")
@@ -548,6 +560,42 @@ void IDockScreenDisplay::OnShowPane (bool bNoListNavigation)
 	SelectArmor(-1); 
 	}
 
+bool IDockScreenDisplay::ParseAlign (const ICCItem &Align, DWORD *retdwAlign)
+
+//	ParseAlign
+//
+//	Parse alignment.
+
+	{
+	DWORD dwAlign = 0;
+
+	for (int i = 0; i < Align.GetCount(); i++)
+		{
+		const ICCItem *pEntry = Align.GetElement(i);
+		CString sValue = pEntry->GetStringValue();
+
+		if (strEquals(sValue, ALIGN_LEFT))
+			dwAlign |= alignLeft;
+		else if (strEquals(sValue, ALIGN_RIGHT))
+			dwAlign |= alignRight;
+		else if (strEquals(sValue, ALIGN_CENTER))
+			dwAlign |= alignCenter;
+		else if (strEquals(sValue, ALIGN_TOP))
+			dwAlign |= alignTop;
+		else if (strEquals(sValue, ALIGN_BOTTOM))
+			dwAlign |= alignBottom;
+		else if (strEquals(sValue, ALIGN_MIDDLE))
+			dwAlign |= alignMiddle;
+		else
+			return false;
+		}
+
+	if (retdwAlign)
+		*retdwAlign = dwAlign;
+
+	return true;
+	}
+
 bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgroundDesc *retDesc)
 
 //	ParseBackroundDesc
@@ -589,7 +637,7 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgrou
 			{
 			retDesc->iType = EDockScreenBackground::image;
 
-			ICCItem *pImage = pDesc->GetElement(FIELD_IMAGE);
+			const ICCItem *pImage = pDesc->GetElement(FIELD_IMAGE);
 			if (pImage == NULL)
 				return false;
 
@@ -622,6 +670,28 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgrou
 			}
 		else
 			return false;
+
+		//	Optional alignment
+
+		if (const ICCItem *pAlign = pDesc->GetElement(FIELD_ALIGN))
+			{
+			if (!ParseAlign(*pAlign, &retDesc->dwImageAlign))
+				return false;
+			}
+
+		//	Optional padding
+
+		if (const ICCItem *pPadding = pDesc->GetElement(FIELD_PADDING_BOTTOM))
+			retDesc->rcImagePadding.bottom = pPadding->GetIntegerValue();
+
+		if (const ICCItem *pPadding = pDesc->GetElement(FIELD_PADDING_LEFT))
+			retDesc->rcImagePadding.left = pPadding->GetIntegerValue();
+
+		if (const ICCItem *pPadding = pDesc->GetElement(FIELD_PADDING_RIGHT))
+			retDesc->rcImagePadding.right = pPadding->GetIntegerValue();
+
+		if (const ICCItem *pPadding = pDesc->GetElement(FIELD_PADDING_TOP))
+			retDesc->rcImagePadding.top = pPadding->GetIntegerValue();
 		}
 
 	//	Otherwise, we can't parse.
