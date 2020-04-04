@@ -96,7 +96,7 @@
 		<!-- Image and Effects -->
 
 		<Image			imageID="&rsPointJuno;"		imageWidth="420" imageHeight="460" viewportRatio="0.0425"/>
-		<HeroImage		imageID="&rsPointJunoHero;" imageWidth="712" imageHeight="528"/>
+		<HeroImage		imageID="&rsPointJunoHero;" imageWidth="800" imageHeight="650"/>
 
 		<DockingPorts
 				portCount=		"10"
