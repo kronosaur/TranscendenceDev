@@ -164,11 +164,17 @@ void CItemPainter::FormatLaunchers (const CVisualPalette &VI, const CMissileItem
 	for (int i = 0; i < Launchers.GetCount(); i++)
 		{
 		const CItem &Launcher = Launchers[i];
-		CIconLabelBlock::SLabelDesc NewEntry;
+
+		//	Skip virtual launchers
+
+		if (Launcher.IsVirtual())
+			continue;
 
 		//	Generate a launcher icon.
 
 		const CObjectImageArray &Image = Launchers[i].GetImage();
+
+		CIconLabelBlock::SLabelDesc NewEntry;
 		NewEntry.pIcon = TSharedPtr<CG32bitImage>(new CG32bitImage);
 		NewEntry.pIcon->Create(LAUNCHER_ICON_WIDTH, LAUNCHER_ICON_HEIGHT, CG32bitImage::alpha8, CG32bitPixel::Null());
 		Image.PaintScaledImage(*NewEntry.pIcon, 0, 0, 0, 0, LAUNCHER_ICON_WIDTH, LAUNCHER_ICON_HEIGHT, CObjectImageArray::FLAG_UPPER_LEFT);
