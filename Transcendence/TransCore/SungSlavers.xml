@@ -1236,7 +1236,7 @@
 			value=				"35"
 			mass=				"10"
 			frequency=			"common"
-			numberAppearing=	"20d40"
+			numberAppearing=	"10d40"
 			attributes=			"Consumable; Missile; NotForSale; sungSlavers"
 
 			description=		"This energy cartridge is used by the Nandao bolt cannon."

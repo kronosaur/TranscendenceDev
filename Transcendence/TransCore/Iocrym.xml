@@ -89,10 +89,10 @@
 	<ItemType UNID="&itQuantumsphereShell;"
 			name=				"Quantumsphere shell"
 			level=				"13"
-			value=				"1000"
+			value=				"2000"
 			mass=				"500"
 			frequency=			"rare"
-			numberAppearing=	"20d40"
+			numberAppearing=	"10d20"
 			attributes=			"Alien; Consumable; Iocrym; Missile"
 
 			description=		"This receptacle contains the fierce energies that power the quantumsphere disintegrator."

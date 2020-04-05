@@ -425,7 +425,7 @@
 			  
 			level=				"7"
 			frequency=			"common"
-			numberAppearing=	"1d20"
+			numberAppearing=	"72-120"
 
 			value=				"120"
 			mass=				"50"

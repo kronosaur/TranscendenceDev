@@ -680,7 +680,7 @@
 			mass=				"20"
 			attributes=			"Consumable; Dwarg; Missile; NotForSale; NotStandard"
 			frequency=			"uncommon"
-			numberAppearing=	"2d12"
+			numberAppearing=	"40-60"
 
 			description=		"Used by the Dwarg, cnidocyst nodules are guided missiles that paralyze their targets when they hit."
 

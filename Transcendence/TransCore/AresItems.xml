@@ -443,11 +443,11 @@
 	<ItemType UNID="&itMicronuke;"
 			name=				"Ares micronuke"
 			level=				"8"
-			value=				"60"
+			value=				"150"
 			mass=				"10"
 			attributes=			"Ares; Consumable; Military; Missile; NotForSale;"
 			frequency=			"common"
-			numberAppearing=	"12d20"
+			numberAppearing=	"20d20"
 
 			description=		"The compact warheads detonate into an expanding shockwave of thermonuclear damage. They require a launcher."
 
@@ -520,11 +520,11 @@
 	<ItemType UNID="&itWarhammerNuke;"
 			name=				"Ares Warhammer nuke"
 			level=				"9"
-			value=				"150"
+			value=				"500"
 			mass=				"20"
 			attributes=			"Ares; Consumable; Military; Missile; NotForSale;"
 			frequency=			"rare"
-			numberAppearing=	"1d6"
+			numberAppearing=	"20d20"
 
 			description=		"These long-range thermonuclear missiles are fired by Ares launchers."
 
