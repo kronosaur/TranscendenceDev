@@ -2987,6 +2987,8 @@ void CSpaceObject::FireOnObjDestroyed (const SDestroyCtx &Ctx)
 //	Fire OnObjDestroyed event
 
 	{
+	DEBUG_TRY
+
 	SEventHandlerDesc Event;
 
 	if (FindEventHandler(ON_OBJ_DESTROYED_EVENT, &Event))
@@ -3006,6 +3008,8 @@ void CSpaceObject::FireOnObjDestroyed (const SDestroyCtx &Ctx)
 			ReportEventError(ON_OBJ_DESTROYED_EVENT, pResult);
 		CCCtx.Discard(pResult);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSpaceObject::FireOnObjDocked (CSpaceObject *pObj, CSpaceObject *pDockTarget)

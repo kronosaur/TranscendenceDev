@@ -109,7 +109,7 @@ void CSpaceObjectList::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
 //	Notify all objects in the list that another object was destroyed.
 
 	{
-	int i;
+	DEBUG_TRY
 
 	if (GetCount() > 0)
 		{
@@ -118,13 +118,15 @@ void CSpaceObjectList::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
 
  		TArray<CSpaceObject *> List(m_List);
 
-		for (i = 0; i < List.GetCount(); i++)
+		for (int i = 0; i < List.GetCount(); i++)
 			{
 			CSpaceObject *pObj = List[i];
 			if (!pObj->IsDestroyed())
 				pObj->OnObjDestroyedNotify(Ctx);
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSpaceObjectList::NotifyOnObjDocked (CSpaceObject *pDockingObj, CSpaceObject *pDockTarget)

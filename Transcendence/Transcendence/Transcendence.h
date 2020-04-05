@@ -38,7 +38,11 @@ extern CTranscendenceWnd *g_pTrans;
 
 #define TICKS_BEFORE_GATE					34
 #define TICKS_AFTER_GATE					30
+#ifdef DEBUG
+#define TICKS_AFTER_DESTROYED				12000
+#else
 #define TICKS_AFTER_DESTROYED				120
+#endif
 
 struct SCreateTrans
 	{

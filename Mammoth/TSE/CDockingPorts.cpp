@@ -780,9 +780,13 @@ void CDockingPorts::OnDockObjDestroyed (CSpaceObject *pOwner, const SDestroyCtx 
 //	require a subscription. E.g., it is called when a station is destroyed.
 
 	{
+	DEBUG_TRY
+
 	for (int i = 0; i < m_iPortCount; i++)
 		if (m_pPort[i].pObj != NULL)
 			m_pPort[i].pObj->FireOnDockObjDestroyed(pOwner, Ctx);
+
+	DEBUG_CATCH
 	}
 
 void CDockingPorts::OnNewSystem (CSystem *pNewSystem)
