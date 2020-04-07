@@ -1607,6 +1607,7 @@
 				levelFrequency=			"uuurr v---- ----- ----- -----"
 
 				locationCriteria=		"*"
+				unique=					"inSystem"
 				/>
 
 		<Names definiteArticle="true">Beta Gemini Hotel; Honoku-Tomashi Hotel; Manchurian Oriental Hotel;
