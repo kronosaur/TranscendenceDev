@@ -80,13 +80,14 @@ class CDockingPorts
 			int iRotation;						//	Rotation of ship at dock
 			};
 
+		int CalcMaxRadiusPixels (void) const;
 		void CleanUp (void);
 		void Copy (const CDockingPorts &Src);
 		CVector GetPortPos (const CSpaceObject *pOwner, const SDockingPort &Port, CSpaceObject *pShip, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const;
 		CVector GetPortPosAtRotation (int iOwnerRotation, int iScale, int iPort, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const;
 		int GetScale (int iScale = -1) const { return (m_iScale > 0 ? m_iScale : iScale); }
-		void InitXYPortPos (const CSpaceObject *pOwner, int iScale = -1, int *retiMaxRadius = NULL) const;
-		void InitXYPortPos (int iRotation, int iScale, int *retiMaxRadius = NULL) const;
+		void InitXYPortPos (const CSpaceObject *pOwner, int iScale = -1) const;
+		void InitXYPortPos (int iRotation, int iScale) const;
 		bool IsDocked (const CSpaceObject *pObj, int *retiPort = NULL) const;
 		bool IsDockedOrDocking (const CSpaceObject *pObj) const;
 		bool ShipsNearPort (CSpaceObject *pOwner, CSpaceObject *pRequestingObj, const CVector &vPortPos);
