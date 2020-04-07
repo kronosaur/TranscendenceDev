@@ -187,8 +187,8 @@
 					<Station weight="15" type="&stIceFarm;"/>
 					<Station weight="10" type="&stArmorDealer;"/>
 					<Station weight="10" type="&stArmsDealer;"/>
-					<Station weight="10" type="&stSistersOfDomina;"/>
-					<Station weight="5"  type="&stHotel;"/>
+					<Station weight="10" type="&stSistersOfDomina;" optional="true"/>
+					<Station weight="5"  type="&stHotel;" optional="true"/>
 					<Station weight="5"  type="&stArmsDealerRasiermesser;"/>
 					<Station weight="5"  type="&stArmsDealerMakayev;"/>
 				</Table>
@@ -199,18 +199,18 @@
 					<Station weight="20" type="&stCorporateEnclave;"/>
 					<Station weight="20" type="&stCommonwealthResidentials;"/>
 					<Station weight="15" type="&stFuelDepot;"/>
-					<Station weight="15" type="&stHotel;"/>
+					<Station weight="15" type="&stHotel;" optional="true"/>
 					<Station weight="10" type="&stContainerHabitat;"/>
 					<Station weight="10" type="&stCommonwealthSlums;"/>
 					<Station weight="10" type="&stArmorDealer;"/>
 					<Station weight="10" type="&stArmsDealer;"/>
 					<Station weight="10" type="&stManufacturingPlant;"/>
-					<Station weight="5"  type="&stTinkerGathering;"/>
+					<Station weight="5"  type="&stTinkerGathering;" optional="true"/>
 					<Station weight="5"  type="&stCommonwealthDryDock;"/>
 					<Station weight="5"  type="&stArmsDealerRasiermesser;"/>
 					<Station weight="5"  type="&stArmsDealerMakayev;"/>
 					<Station weight="5"  type="&stInsuranceCompany;"/>
-					<Station weight="5"  type="&stSistersOfDomina;"/>
+					<Station weight="5"  type="&stSistersOfDomina;" optional="true"/>
 					<Station weight="2"  type="&stArmsDealerBushido;"/>
 				</Table>
 			</FriendlyStations>
@@ -301,8 +301,8 @@
 					
 					<Orbitals count="9" distance="54" angle="equidistant">
 						<Table>
-							<Station chance="5"  type="&stSistersOfDomina;"/>
-							<Station chance="5"  type="&stHotel;"/>
+							<Station chance="5"  type="&stSistersOfDomina;" optional="true"/>
+							<Station chance="5"  type="&stHotel;" optional="true"/>
 							<Station chance="15" type="&stCorporateEnclave;"/>
 							<Station chance="10" type="&stFuelDepot;"/>
 							<Station chance="20" type="&stCommonwealthResidentials;" noMapLabel="true"/>
@@ -462,7 +462,7 @@
 			<!-- Populate Fulgent Region -->
 
 			<RandomLocation locationCriteria="*fulgentOrbit" noWarnings="true">
-				<Station type="&stSistersOfDomina;" />
+				<Station type="&stSistersOfDomina;" optional="true"/>
 				<Station chance="25" type="&stFuelDepot;" />
 				<Lookup chance="25" table="FriendlyOuterStations" />
 				<Lookup chance="25" table="FriendlyOuterStations" />
