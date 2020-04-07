@@ -114,6 +114,7 @@
 #define NO_WARNINGS_ATTRIB				CONSTLIT("noWarnings")
 #define OBJ_NAME_ATTRIB					CONSTLIT("objName")
 #define OFFSET_ATTRIB					CONSTLIT("offset")
+#define OPTIONAL_ATTRIB					CONSTLIT("optional")
 #define ORDERS_ATTRIB					CONSTLIT("orders")
 #define OVERLAP_CHECK_ATTRIB			CONSTLIT("overlapCheck")
 #define PAINT_LAYER_ATTRIB				CONSTLIT("paintLayer")
@@ -4718,7 +4719,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 
 	//	Since this is an explicit creation of a station, ignore limits
 
-	CreateCtx.bIgnoreLimits = true;
+	CreateCtx.bIgnoreLimits = !pDesc->GetAttribute(OPTIONAL_ATTRIB);
 
 	//	Sovereign override
 
