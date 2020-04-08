@@ -85,6 +85,7 @@
 #define PROPERTY_REFLECT						CONSTLIT("reflect")
 #define PROPERTY_REGEN							CONSTLIT("regen")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
+#define PROPERTY_SHIELD_DISRUPT					CONSTLIT("shieldDisrupt")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
@@ -2130,6 +2131,9 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return ICCItemPtr(IsImmune(Stats, Enhancements, specialShatter));
 
+	else if (strEquals(sName, PROPERTY_SHIELD_DISRUPT))
+		return ICCItemPtr(IsShieldInterfering(Ctx));
+
 	else if (strEquals(sName, PROPERTY_STD_COST))
 		{
 		CArmorItem::SBalance Balance;
@@ -2544,7 +2548,7 @@ bool CArmorClass::IsImmune (const CArmorItem &ArmorItem, SpecialDamageTypes iSpe
 	return IsImmune(Stats, Enhancements, iSpecialDamage);
 	}
 
-bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx)
+bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx) const
 
 //	IsShieldInterfering
 //

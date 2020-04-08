@@ -1126,7 +1126,7 @@
 										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
 										&itRegeneratingNanos;
 										)
-									'resultCode)									result:'defectOK	}
+									'resultCode)									result:'ok	}
 
 						{	test:'(itm@ 
 										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
@@ -1134,6 +1134,211 @@
 										)											result:1	}
 
 						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	EMP Immunity Coating -------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itEMPImmuneCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'empImmune
+										)											result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Particle Reflect Coating ---------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itParticleReflectCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'reflect
+										)											result:{ particle:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Ion Resistance Coating -----------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itIonResistCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)											
+							result: {
+								laser:40				kinetic:40
+								particle:100 			blast:100
+								ion:50					thermo:100
+								positron:100 			plasma:100 
+								antimatter:100			nano:100 
+								graviton:125			singularity:125 
+								darkAcid:200			darkSteel:200
+								darkLightning:300		darkFire:300
+								}
+							}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Meteorsteel Dust -----------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itShieldInterfereCoating;
+										)
+									'resultCode)									result:'defectOK	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'shieldDisrupt
+										)											result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Dyon Dust ------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itIonEffectImmuneCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'blindingImmune
+										)											result:True	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'deviceDamageImmune
+										)											result:True	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'deviceDisruptImmune
+										)											result:True	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'empImmune
+										)											result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Ion Reflect Coating --------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itIonReflectCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'reflect
+										)											result:{ ion:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Ithalium Paste -------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itThermoResistCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)											
+							result: {
+								laser:40				kinetic:40
+								particle:100 			blast:100
+								ion:100					thermo:50
+								positron:100 			plasma:100 
+								antimatter:100			nano:100 
+								graviton:125			singularity:125 
+								darkAcid:200			darkSteel:200
+								darkLightning:300		darkFire:300
+								}
+							}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Orthosteel Nanos -----------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itLightOrthoSteel;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itLightOrthoSteel;;") 0)
+										&itCarbonWeaver2Coating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itLightOrthoSteel;;") 0)
+										'maxHP
+										)											result:217	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itLightOrthoSteel;") theItem
 										(objRemoveItem gPlayerShip theItem)
 										)											result:'ignore	}
 
