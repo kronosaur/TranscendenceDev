@@ -85,7 +85,7 @@
 #define PROPERTY_REFLECT						CONSTLIT("reflect")
 #define PROPERTY_REGEN							CONSTLIT("regen")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
-#define PROPERTY_SHIELD_DISRUPT					CONSTLIT("shieldDisrupt")
+#define PROPERTY_SHIELD_DISRUPT					CONSTLIT("shieldInterference")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
 #define PROPERTY_STEALTH						CONSTLIT("stealth")

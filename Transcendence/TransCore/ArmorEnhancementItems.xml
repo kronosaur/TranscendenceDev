@@ -26,12 +26,12 @@
 			>
 
 		<Properties>
-			<Constant id="rpg.enhancementTable">
+			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-10"	enhancement:"+resistDamageClass:laser:50"	}
-					{	criteria:"a"		descID:'tooAdvanced	}
+					{	criteria:"a L:1-10"		enhancement:"+resistDamageClass:laser:50"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
 					)
-			</Constant>
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -65,12 +65,12 @@
 			>
 
 		<Properties>
-			<Constant id="rpg.enhancementTable">
+			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-10"	enhancement:"+resistDamageClass:kinetic:50"	}
-					{	criteria:"a"		descID:'tooAdvanced	}
+					{	criteria:"a L:1-10"		enhancement:"+resistDamageClass:kinetic:50"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
 					)
-			</Constant>
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -106,15 +106,15 @@
 			>
 
 		<Properties>
-			<Constant id="rpg.enhancementTable">
+			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-3"	enhancement:0x0105	}
-					{	criteria:"a L:4-6"	enhancement:0x0103	}
-					{	criteria:"a L:7-9"	enhancement:0x0102	}
-					{	criteria:"a L:10"	enhancement:0x0101	}
-					{	criteria:"a"		descID:'tooAdvanced	}
+					{	criteria:"a L:1-3"		enhancement:"+hpBonus:50"	}
+					{	criteria:"a L:4-6"		enhancement:"+hpBonus:30"	}
+					{	criteria:"a L:7-9"		enhancement:"+hpBonus:20"	}
+					{	criteria:"a L:10"		enhancement:"+hpBonus:10"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
 					)
-			</Constant>
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -341,11 +341,16 @@
 			sortName=			"particle resistance coating, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resist:particle:50"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x0925</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -373,7 +378,12 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+hpBonus"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+hpBonus"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -407,7 +417,12 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+reflect:laser"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+reflect:laser"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -442,11 +457,16 @@
 			sortName=			"anti-radiation coating, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+immunity:radiation"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">"+immunity:radiation"</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -476,11 +496,16 @@
 			sortName=			"degenerating nanos, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"-decay"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x8200</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -663,16 +688,16 @@
 			sortName=			"regenerating nanos, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
-
 		<Properties>
-			<Constant id="rpg.enhancementTable">
+			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a &lt;=10"	enhancement:0x0200	}
-					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
+					{	criteria:"a L:1-10"		enhancement:"+regen"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
 					)
-			</Constant>
+			</Definition>
 		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -704,11 +729,16 @@
 			sortName=			"monopole dust, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+immunity:emp"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x0b20</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -736,7 +766,12 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+reflect:particle"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+reflect:particle"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -771,11 +806,16 @@
 			sortName=			"ion resistance coating, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resist:ion:50"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x0945</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -805,11 +845,16 @@
 			sortName=			"meteorsteel dust, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"-shieldInterference"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x8c00</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -841,11 +886,16 @@
 			sortName=			"dyon dust, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+immunity:ionEffects"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x0c00</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -875,7 +925,12 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+reflect:ion"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+reflect:ion"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -908,11 +963,16 @@
 			sortName=			"ithalium paste, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resist:thermo:50"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x0955</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -949,9 +1009,10 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"a &lt;=6"	enhancement:Nil	descID:'TooPrimitive	}
-					{	criteria:"a &lt;=10"	enhancement:0x0105	}
-					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
+					{	criteria:"a L:1-6"		descID:'TooPrimitive	}
+					{	criteria:"a L:7-9"		enhancement:"+hpBonus:50"	}
+					{	criteria:"a L:10-12"	enhancement:"+hpBonus:30"	}
+					{	criteria:"a L:13-"		descID:'TooAdvanced	}
 					)
 			</Constant>
 		</Properties>
@@ -1225,7 +1286,7 @@
 
 						{	test:'(itm@ 
 										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
-										'shieldDisrupt
+										'shieldInterference
 										)											result:True	}
 
 						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
