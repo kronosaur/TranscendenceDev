@@ -17,6 +17,7 @@ class CArmorClass
 	{
 	public:
 		static constexpr int TICKS_PER_UPDATE = 10;
+		static constexpr int DEFAULT_DECAY_PER_180 = 4;
 
 		enum ECachedHandlers
 			{
@@ -136,6 +137,7 @@ class CArmorClass
 		Metric CalcBalanceRegen (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceRepair (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceSpecial (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
+		Metric CalcDecay180 (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		ICCItemPtr FindItemProperty (const CArmorItem &ArmorItem, const CString &sProperty) const;
 		void GenerateScaledStats (void);
         inline int GetDamageAdj (const CArmorItem &ArmorItem, DamageTypes iDamage) const;

@@ -1074,6 +1074,27 @@
 										(objRemoveItem gPlayerShip theItem)
 										)											result:'ignore	}
 
+						;	Degenerating Nanos ---------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itDegeneratingNanos;
+										)
+									'resultCode)									result:'defectOK	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'decay
+										)											result:0.2	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
 						;	Reflective Armor Coating ---------------------------
 
 						{	test:'(objAddItem gPlayerShip 
@@ -1095,7 +1116,7 @@
 										(objRemoveItem gPlayerShip theItem)
 										)											result:'ignore	}
 
-						;	Degenerating Nanos ---------------------------------
+						;	Regenerating Nanos ---------------------------------
 
 						{	test:'(objAddItem gPlayerShip 
 									&itPlasteelPlate;
@@ -1103,14 +1124,14 @@
 
 						{	test:'(@ (objEnhanceItem gPlayerShip
 										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
-										&itReflectiveArmorCoating;
+										&itRegeneratingNanos;
 										)
-									'resultCode)									result:'ok	}
+									'resultCode)									result:'defectOK	}
 
 						{	test:'(itm@ 
 										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
-										'reflect
-										)											result:{ laser:95 }	}
+										'regen
+										)											result:1	}
 
 						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
 										(objRemoveItem gPlayerShip theItem)
