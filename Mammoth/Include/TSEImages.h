@@ -310,6 +310,7 @@ class CObjectImageArray
 		void GenerateGlowImage (int iRotation) const;
 		void GenerateScaledImages (int iRotation, int cxWidth, int cyHeight) const;
 		CG32bitImage *GetHitMask (void) const;
+		std::tuple<int, int> GetNumColsAndRows(void) const;
 		bool ValidateImageSize (int cxWidth, int cyHeight) const;
 
 		DWORD m_dwBitmapUNID;				//	UNID of bitmap (0 if none)

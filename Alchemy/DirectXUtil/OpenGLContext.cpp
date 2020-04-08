@@ -321,15 +321,13 @@ void OpenGLContext::testTextures (OpenGLTexture* texture)
 	texture->bindTexture2D(GL_TEXTURE0);
 
 	glBindVertexArray((vaos[0]->getVAO())[0]); // Bind our Vertex Array Object
-											   //glDrawArrays(GL_TRIANGLES, 0, 6); // Draw our square
+
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0); // Unbind our Vertex Array Object
 	texture->unbindTexture2D();
 
 	pShader->unbind(); // Unbind our shader
 
-					   //	unsigned char pixel[3];
-					   //	glReadPixels(1, 1, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
 }
 
 void OpenGLContext::swapBuffers (HWND hwnd)

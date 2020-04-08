@@ -413,6 +413,63 @@ void CObjectImageArray::ComputeSourceXY (int iTick, int iRotation, int *retxSrc,
 		}
 	}
 
+std::tuple<int, int> CObjectImageArray::GetNumColsAndRows(void) const 
+	{
+	int iNumCols, iNumRows;
+	if (m_iFrameCount > 0 && m_iTicksPerFrame > 0)
+	{
+		//	If we've got multi-row animations, then we deal with that.
+
+		if (m_iFramesPerRow != m_iFrameCount)
+		{
+			iNumCols = m_iFramesPerRow;
+			iNumRows = m_iFrameCount / m_iFramesPerRow;
+		}
+
+		//	If we've got multi-column rotations, then we need to deal with that.
+
+		else if (m_iRotationCount != m_iFramesPerColumn)
+		{
+			iNumCols = m_iRotationCount / m_iFramesPerColumn;
+			iNumRows = m_iFramesPerColumn;
+		}
+
+		//	Otherwise, we expect a single column per frame
+
+		else
+		{
+			iNumCols = m_iFrameCount;
+			iNumRows = m_iRotationCount;
+		}
+	}
+
+	//	If we've got multi-column rotations but no animations, then we just
+	//	compute the proper column
+
+	else if (m_iRotationCount != m_iFramesPerColumn)
+	{
+		iNumCols = m_iRotationCount / m_iFramesPerColumn;
+		iNumRows = m_iFramesPerColumn;
+	}
+
+	//	Otherwise, a single columne
+
+	else if (m_iRotationCount > 0)
+	{
+		iNumCols = 1;
+		iNumRows = m_iRotationCount;
+	}
+
+	//	Otherwise, it's simple
+
+	else
+	{
+		iNumCols = 1;
+		iNumRows = 1;
+	}
+	return std::make_tuple(iNumCols, iNumRows);
+}
+
 void CObjectImageArray::ComputeRotationOffsets (void)
 
 //	ComputeRotationOffsets
@@ -1392,10 +1449,12 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 			int iQuadHeight = RectHeight(m_rcImage);
 			int iTexQuadWidth = RectWidth(m_rcImage);
 			int iTexQuadHeight = RectHeight(m_rcImage);
+			auto[iNumRows, iNumCols] = GetNumColsAndRows();
 			//pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
 			//	pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
-			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-				pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight);
+			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight,
+ iCanvasWidth,
+				pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, iNumRows, iNumCols, m_rcImage.left, m_rcImage.top);
 			}
 		else if (bComposite)
 			{
@@ -1468,8 +1527,10 @@ void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, 
 			int iQuadHeight = RectHeight(m_rcImage) * 2;
 			int iTexQuadWidth = RectWidth(m_rcImage);
 			int iTexQuadHeight = RectHeight(m_rcImage);
-			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-				pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, (byOpacity == 0 ? 1.0f : (float)(static_cast<int>(byOpacity) / 255.0f)));
+			auto[iNumRows, iNumCols] = GetNumColsAndRows();
+			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight,
+ iCanvasWidth,
+				pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, iNumRows, iNumCols, m_rcImage.left, m_rcImage.top, (byOpacity == 0 ? 1.0f : (float)(static_cast<int>(byOpacity) / 255.0f)));
 			}
 		else
 			{
@@ -1613,12 +1674,16 @@ void CObjectImageArray::PaintImageWithGlow (CG32bitImage &Dest,
 		int iTexQuadHeight = RectHeight(m_rcImage);
 		int iGQuadWidth = int(RectWidth(m_rcImage) * 1.00);
 		int iGQuadHeight = int(RectHeight(m_rcImage) * 1.00);
-		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iGQuadWidth, iGQuadHeight, x - (iGQuadWidth / 2), y - (iGQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-			pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.0f, 1.0f, 0.0f, fStrength, 0.0f);
-		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-			pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight);
-		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iGQuadWidth, iGQuadHeight, x - (iGQuadWidth / 2), y - (iGQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-			pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.0f, 1.0f, 0.0f, fStrength / 4.5f, 0.0f);
+		auto[iNumRows, iNumCols] = GetNumColsAndRows();
+		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iGQuadWidth, iGQuadHeight, x - (iGQuadWidth / 2), y - (iGQuadHeight / 2), iCanvasHeight,
+ iCanvasWidth,
+			pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, iNumRows, iNumCols, m_rcImage.left, m_rcImage.top, 1.0f, 0.0f, 1.0f, 0.0f, fStrength, 0.0f);
+		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight,
+ iCanvasWidth,
+			pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, iNumRows, iNumCols, m_rcImage.left, m_rcImage.top);
+		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iGQuadWidth, iGQuadHeight, x - (iGQuadWidth / 2), y - (iGQuadHeight / 2), iCanvasHeight,
+ iCanvasWidth,
+			pSource->GetOpenGLTexture(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, iNumRows, iNumCols, m_rcImage.left, m_rcImage.top, 1.0f, 0.0f, 1.0f, 0.0f, fStrength / 4.5f, 0.0f);
 		return;
 	}
 

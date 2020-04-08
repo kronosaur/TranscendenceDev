@@ -15,7 +15,7 @@ void main()
     vec2 texPositionOffset = vec2(fixedTexSize[0], fixedTexSize[1]) / 1.0;
     vec2 fixedTexPos = vec2(aTexStartPoint[0], aTexStartPoint[1]);
 	vec2 quarterPos = (vec2(aPos[0], aPos[1]) / 2) + vec2(0.5, 0.5);
-	vec2 texPos2dRead = vec2(quarterPos[0] * fixedTexSize[0], -quarterPos[1] * fixedTexSize[1]) + fixedTexPos;
+	vec2 texPos2dRead = vec2(quarterPos[0] * fixedTexSize[0], quarterPos[1] * fixedTexSize[1]) + fixedTexPos;
 
     // Write coords span from -1 to 1
 	vec2 positionOffset = vec2(texPositionOffset[0], -texPositionOffset[1]) * 1.0f;
@@ -24,7 +24,7 @@ void main()
 	vec2 texPos2dWrite = vec2(aPos[0] * fixedTexSize[0] * 1.0, -aPos[1] * fixedTexSize[1] * 1.0) + fixedCanvPos;
 
     gl_Position = vec4(texPos2dWrite[0], texPos2dWrite[1], 0.1, 1.0);
-	TexCoord = texPos2dRead;
+	TexCoord = vec2(texPos2dRead[0], 1.0 - texPos2dRead[1]);
 	gridSquareSize = aTexQuadSizes;
     //TexCoord = aTexCoord;
 }

@@ -95,9 +95,13 @@ void OpenGLMasterRenderQueue::deinitCanvasVAO(void)
 	delete[] m_pCanvasVAO;
 }
 
-void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX,
-	int posPixelY, int canvasHeight, int canvasWidth, OpenGLTexture *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight,
-	float alphaStrength, float glowR, float glowG, float glowB, float glowA, float glowNoise)
+void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX,
+ int sizePixelY,
+
+ int posPixelX,
+	int posPixelY, int canvasHeight, int canvasWidth, OpenGLTexture *image,
+ int texWidth, int texHeight,
+ int texQuadWidth, int texQuadHeight, int numFramesPerRow, int numFramesPerCol, int spriteSheetStartX, int spriteSheetStartY, float alphaStrength, float glowR, float glowG, float glowB, float glowA, float glowNoise)
 	{
 	// Note, image is a pointer to the CG32bitPixel* we want to use as a texture. We can use CG32bitPixel->GetPixelArray() to get this pointer.
 	// To get the width and height, we can use pSource->GetWidth() and pSource->GetHeight() respectively.
@@ -126,10 +130,22 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	}
 	// Add this quad to the render queue.
 	glm::vec2 vTexPositions((float)startPixelX / (float)texWidth, (float)startPixelY / (float)texHeight);
+	glm::vec2 vSpriteSheetPositions((float)spriteSheetStartX / (float)texWidth, (float)spriteSheetStartY / (float)texHeight);
 	glm::vec2 vCanvasQuadSizes((float)sizePixelX / (float)canvasWidth, (float)sizePixelY / (float)canvasHeight);
 	glm::vec2 vCanvasPositions((float)posPixelX / (float)canvasWidth, (float)posPixelY / (float)canvasHeight);
 	glm::vec2 vTextureQuadSizes((float)texQuadWidth / (float)texWidth, (float)texQuadHeight / (float)texHeight);
 	glm::vec4 glowColor(glowR, glowG, glowB, glowA);
+
+	// TODO: Initialize a glowmap tile request here, and save it in the MRQ. We consume this when we generate textures, to render glowmaps.
+	//auto glowmapTile = GlowmapTile(vTexPositions[0], vTexPositions[1], vTextureQuadSizes[0], vTextureQuadSizes[1], float(numFramesPerRow), float(numFramesPerCol));
+	image->requestGlowmapTile(vSpriteSheetPositions[0], vSpriteSheetPositions[1], float(numFramesPerRow * vTextureQuadSizes[0]), float(numFramesPerCol * vTextureQuadSizes[1]), vTextureQuadSizes[0], vTextureQuadSizes[1]);
+//	if (!m_glowmapTiles.count(image)) {
+//		m_glowmapTiles.insert({ image, std::vector<GlowmapTile>({glowmapTile}) });
+//	}
+//	else {
+//		m_glowmapTiles[image].push_back(glowmapTile);
+//	}
+
 
 	m_shipRenderQueues[image]->addObjToRender(vTexPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, alphaStrength, glowColor, glowNoise);
 	//m_shipRenderQueues[image]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, texQuadWidth, texQuadHeight, alphaStrength, glow, glowNoise);
@@ -200,6 +216,7 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		pInstancedRenderQueue->setUniforms(textureUniformNames, pTextureToUse, pTextureToUse->getGlowMap() ? pTextureToUse->getGlowMap() : pTextureToUse, m_iCurrentTick);
 		pInstancedRenderQueue->Render(m_pObjectTextureShader, depthLevel, m_fDepthDelta, m_iCurrentTick, false);
 		m_fDepthLevel = depthLevel;
+		pInstancedRenderQueue->clear();
 	}
 
 	std::array<std::string, 2> rayAndLightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions" };
@@ -213,22 +230,12 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 
 	for (const auto &p : m_shipRenderQueues)
 	{
-		OpenGLTexture *pTextureToUse = p.first;
-		OpenGLInstancedBatchTexture *pInstancedRenderQueue = p.second;
-
 		// Generate a glow map for this texture if needed.
 		// Glow map must be done in different block after actual rendering because otherwise it causes flickering issues
-		auto texture_coords_vector = getTextureCoordinates(pInstancedRenderQueue)->getValues();
-		auto texture_sizes_vector = getTextureSizes(pInstancedRenderQueue)->getValues();
-		for (std::size_t i = 0; i < texture_coords_vector.size(); i++) {
-			auto texture_coords = texture_coords_vector[i];
-			auto texture_size = texture_sizes_vector[i];
-			// TODO: Pass in vec2s rather than complicated tuples...
-			std::tuple<float, float> texture_coord_tuple = std::make_tuple<float, float>(std::move(texture_coords[0]), std::move(texture_coords[1]));
-			std::tuple<float, float> texture_size_tuple = std::make_tuple<float, float>(std::move(texture_size[0]), std::move(texture_size[1]));
-			pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, texture_size_tuple, texture_coord_tuple);
-		}
-		pInstancedRenderQueue->clear();
+		OpenGLTexture *pTextureToUse = p.first;
+		//auto glowmapTile = p.second;
+
+		pTextureToUse->populateGlowmaps(fbo, m_pCanvasVAO, m_pGlowmapShader);
 	}
 }
 
