@@ -109,8 +109,9 @@
 			<Constant id="rpg.enhancementTable">
 				'(
 					{	criteria:"a L:1-3"	enhancement:0x0105	}
-					{	criteria:"a L:4-5"	enhancement:0x0103	}
-					{	criteria:"a L:6"	enhancement:0x0101	}
+					{	criteria:"a L:4-6"	enhancement:0x0103	}
+					{	criteria:"a L:7-9"	enhancement:0x0102	}
+					{	criteria:"a L:10"	enhancement:0x0101	}
 					{	criteria:"a"		descID:'tooAdvanced	}
 					)
 			</Constant>
@@ -1004,6 +1005,112 @@
 										'damageAdj
 										)
 									'particle)										result:75	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Particle Resistance Coating ------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itParticleResistCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)											
+							result: {
+								laser:40				kinetic:40
+								particle:50 			blast:100
+								ion:100					thermo:100
+								positron:100 			plasma:100 
+								antimatter:100			nano:100 
+								graviton:125			singularity:125 
+								darkAcid:200			darkSteel:200
+								darkLightning:300		darkFire:300
+								}
+							}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Plasteel Nanos -------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itPlasteelNanos;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'maxHP
+										)											result:88	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itPlasteelNanos;
+										)
+									'resultCode)									result:'improved	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'maxHP
+										)											result:96	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Reflective Armor Coating ---------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itReflectiveArmorCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'reflect
+										)											result:{ laser:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Degenerating Nanos ---------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itReflectiveArmorCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'reflect
+										)											result:{ laser:95 }	}
 
 						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
 										(objRemoveItem gPlayerShip theItem)
