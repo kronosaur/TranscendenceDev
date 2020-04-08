@@ -1370,90 +1370,34 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 	else
 		Explosion.pDesc = m_pClass->GetExplosionType(this);
 
+	//	If we don't have a valid explosion type, then pick a default.
+	//	(This should never happen, but just in case.)
+
+	if (!Explosion.pDesc)
+		{
+		Explosion.pDesc = GetUniverse().FindWeaponFireDesc(strFromInt(UNID_KINETIC_EXPLOSION_1, false));
+		if (!Explosion.pDesc)
+			return;
+		}
+
 	//	Explosion
 
-	if (Explosion.pDesc)
+	SShotCreateCtx ShotCtx;
+
+	ShotCtx.pDesc = Explosion.pDesc;
+	if (Explosion.iBonus != 0)
 		{
-		SShotCreateCtx ShotCtx;
-
-		ShotCtx.pDesc = Explosion.pDesc;
-		if (Explosion.iBonus != 0)
-			{
-			ShotCtx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			ShotCtx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
-			}
-
-		ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
-		ShotCtx.vPos = GetPos();
-		ShotCtx.vVel = GetVel();
-		ShotCtx.iDirection = GetRotation();
-		ShotCtx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
-
-		GetSystem()->CreateWeaponFire(ShotCtx);
+		ShotCtx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
+		ShotCtx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
 		}
 
-	//	Otherwise, if no defined explosion, we create a default one
+	ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
+	ShotCtx.vPos = GetPos();
+	ShotCtx.vVel = GetVel();
+	ShotCtx.iDirection = GetRotation();
+	ShotCtx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
 
-	else
-		{
-		DWORD dwEffectID;
-
-		//	If this is a large ship, use a large explosion
-
-		if (RectWidth(GetImage().GetImageRect()) > 64)
-			dwEffectID = g_LargeExplosionUNID;
-		else
-			dwEffectID = g_ExplosionUNID;
-
-		CEffectCreator *pEffect = GetUniverse().FindEffectType(dwEffectID);
-		if (pEffect)
-			pEffect->CreateEffect(GetSystem(),
-					Ctx.pWreck,
-					GetPos(),
-					GetVel(),
-					0);
-
-		//	Particles
-
-		CObjectImageArray Image;
-		RECT rcRect;
-		rcRect.left = 0;
-		rcRect.top = 0;
-		rcRect.right = 4;
-		rcRect.bottom = 4;
-		Image.Init(GetUniverse(),
-				g_ShipExplosionParticlesUNID,
-				rcRect,
-				8,
-				3);
-
-		CParticleEffect::CreateExplosion(*GetSystem(),
-				//pWreck,
-				NULL,
-				GetPos(),
-				GetVel(),
-				mathRandom(1, 50),
-				LIGHT_SPEED * 0.25,
-				0,
-				300,
-				Image,
-				NULL);
-
-		//	HACK: No image means paint smoke particles
-
-		CObjectImageArray Dummy;
-		CParticleEffect::CreateExplosion(*GetSystem(),
-				//pWreck,
-				NULL,
-				GetPos(),
-				GetVel(),
-				mathRandom(25, 150),
-				LIGHT_SPEED * 0.1,
-				20 + mathRandom(10, 30),
-				45,
-				Dummy,
-				NULL);
-		}
+	GetSystem()->CreateWeaponFire(ShotCtx);
 
 	//	Always play default sound
 

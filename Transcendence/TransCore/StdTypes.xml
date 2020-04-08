@@ -4,16 +4,6 @@
 	
 <!-- EFFECT TYPES ========================================================= -->
 
-	<Effect UNID="&efLargeExplosion1;">
-		<Image imageID="&rsLargeExplosions;" 
-				imageX="0" 
-				imageY="0" 
-				imageWidth="128" 
-				imageHeight="128"
-				imageFrameCount="16"
-				imageTicksPerFrame="2"/>
-	</Effect>
-
 	<Effect UNID="&efMediumExplosion1;">
 		<Image imageID="&rsMediumExplosions;" 
 				imageX="0" 
@@ -79,14 +69,8 @@
 	<Image UNID="&rsEndGameEscaped;"	bitmap="Resources\GameOverEscape.jpg"			loadOnUse="true" />
 	<Image UNID="&rsEndGameDestroyed;"	bitmap="Resources\GameOver.jpg"				loadOnUse="true" />
 
-	<Image UNID="&rsShipInterior;"		bitmap="Resources\ShipInterior.jpg"			loadOnUse="true" />
-
-	<Image UNID="&rsMediumShips3;"	bitmap="Resources\MediumShips3.jpg"	bitmask="Resources\MediumShips3Mask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsMediumShips4;"	bitmap="Resources\MediumShips4.jpg"	bitmask="Resources\MediumShips4Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsLargeShips1;"	bitmap="Resources\LargeShips1.jpg"	bitmask="Resources\LargeShips1Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsTenhoveHD;"		bitmap="Resources\TenhoveHD.jpg" 	bitmask="Resources\TenhoveHDMask.bmp" loadOnUse="true"/>
-
-	<Image UNID="&rsLargeExplosions;" bitmap="Resources\LargeExplosions.jpg" bitmask="Resources\LargeExplosionsMask.bmp" loadOnUse="true"/>
 
 	<Image UNID="&rsStations1;"		bitmap="Resources\Stations1.jpg"		bitmask="Resources\Stations1Mask.bmp"  />
 	<Image UNID="&rsStations2;"		bitmap="Resources\Stations2.jpg"		bitmask="Resources\Stations2Mask.bmp"  />
@@ -98,7 +82,6 @@
 	<Image UNID="&rsStations8;"		bitmap="Resources\Stations8.jpg"		bitmask="Resources\Stations8Mask.bmp"  />
 	<Image UNID="&rsStations9;"		bitmap="Resources\Stations9.jpg"		bitmask="Resources\Stations9Mask.bmp"  />
 
-	<Image UNID="&rsStargate;"		bitmap="Resources\Stargates1.jpg"		bitmask="Resources\Stargates1Mask.bmp"  />
 	<Image UNID="&rsNavBeacon;"		bitmap="Resources\NavBeacon.jpg"		bitmask="Resources\NavBeaconMask.bmp" NoPM="true"/>
 	<Image UNID="&rsLogBuoy;"		bitmap="Resources\LogBuoy.jpg"		bitmask="Resources\LogBuoyMask.bmp"  loadOnUse="true"/>
 

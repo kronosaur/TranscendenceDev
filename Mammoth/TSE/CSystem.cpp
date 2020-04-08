@@ -2955,14 +2955,6 @@ void CSystem::MarkImages (void)
 	//	We mark some default effects, which are very commonly used (e.g., for
 	//	ship explosions).
 
-	CEffectCreator *pEffect = m_Universe.FindEffectType(g_LargeExplosionUNID);
-	if (pEffect)
-		pEffect->MarkImages();
-
-	pEffect = m_Universe.FindEffectType(g_ExplosionUNID);
-	if (pEffect)
-		pEffect->MarkImages();
-
 	TSharedPtr<CObjectImage> pImage = m_Universe.FindLibraryImage(g_ShipExplosionParticlesUNID);
 	if (pImage)
 		pImage->Mark();

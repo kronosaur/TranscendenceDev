@@ -667,22 +667,6 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	m_iHitPoints = 0;
 
-#if 0
-	//	If the missile has 10+ hp, then we create an effect when
-	//	it gets destroyed.
-
-	if (m_pDesc->GetHitPoints() >= 10)
-		{
-		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_ExplosionUNID);
-		if (pEffect)
-			pEffect->CreateEffect(GetSystem(),
-					NULL,
-					GetPos(),
-					CVector(),
-					0);
-		}
-#endif
-
 	//	If we've got a vapor trail, then we stick around until the trail is gone,
 	//	but otherwise we're destroyed.
 

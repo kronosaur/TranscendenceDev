@@ -165,8 +165,6 @@ static constexpr DWORD UNID_ANTIMATTER_EXPLOSION_1 =	0x00030030;
 static constexpr DWORD UNID_GRAVITON_EXPLOSION_1 =		0x00030034;
 
 static constexpr DWORD g_ExplosionUNID =				0x00009001;	//	efMediumExplosion1
-static constexpr DWORD g_LargeExplosionUNID =			0x00009002;	//	efLargeExplosion1
-static constexpr DWORD g_HitEffectUNID =				0x00009003;	//	efSmallExplosion1
 static constexpr DWORD g_ShieldEffectUNID =				0x00009004;	//	efShieldHit1
 static constexpr DWORD g_StargateInUNID =				0x00009005;	//	efStargateIn
 static constexpr DWORD g_StargateOutUNID =				0x00009006;	//	efStargateOut
@@ -177,7 +175,6 @@ static constexpr DWORD MEDIUM_STATION_DAMAGE_UNID =		0x0000900F;	//	efMediumStat
 static constexpr DWORD DEFAULT_SHIP_SCREEN_UNID =		0x0000A001;	//	dsShipInterior
 
 static constexpr DWORD g_DamageImageUNID =				0x0000F001;	//	rsMediumDamage
-static constexpr DWORD SHIP_INTERIOR_IMAGE_UNID =		0x0000F002;	//	rsShipInterior
 static constexpr DWORD g_LRSImageUNID =					0x0000F006;	//	rsZubrinLRS
 static constexpr DWORD UNID_TARGETING_HUD_BACKGROUND =	0x0000F007;	//	rsZubrinTargeting
 static constexpr DWORD UNID_SRS_SNOW_PATTERN =			0x0000F008;	//	rsSRSSnow
