@@ -5322,10 +5322,13 @@ bool CStation::ShowMapLabel (int *retcxLabel, int *retcyLabel) const
 					if (m_MapImage.IsEmpty())
 						CreateMapImage();
 
-					if (iPlanetarySize < LARGE_WORLD_SIZE)
+					if (iPlanetarySize < WORLD_SIZE)
 						m_MapLabel.SetLabel(sMapLabel, GetUniverse().GetNamedFont(CUniverse::fontPlanetoidMapLabel));
-					else
+					else if (iPlanetarySize < LARGE_WORLD_SIZE)
 						m_MapLabel.SetLabel(sMapLabel, GetUniverse().GetNamedFont(CUniverse::fontWorldMapLabel));
+					else
+						m_MapLabel.SetLabel(sMapLabel, GetUniverse().GetNamedFont(CUniverse::fontLargeWorldMapLabel));
+
 					m_MapLabel.SetPos(-m_MapLabel.GetFont().MeasureText(sMapLabel) / 2, m_MapImage.GetHeight() / 2);
 					}
 				else

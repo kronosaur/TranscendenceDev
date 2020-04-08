@@ -517,7 +517,7 @@
 			<Orbitals distance="360-400" angle="30-75">
 				<Group>
 					<Primary>
-						<Station type="&stHydrogenGasGiantSizeM;" name="Zheling Iv" showOrbit="true"/>
+						<Station type="&stHydrogenGasGiantSizeM;" name="Zheling IV" showOrbit="true"/>
 					</Primary>
 
 					<ZAdjust inclination="random" rotation="alignedRandom" excludeLocations="true">

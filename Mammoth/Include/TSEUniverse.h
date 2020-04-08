@@ -319,8 +319,9 @@ class CUniverse
 			fontSRSObjCounter =			4,	//	Font for counter labels
 			fontPlanetoidMapLabel =		5,
 			fontWorldMapLabel =			6,
+			fontLargeWorldMapLabel =	7,
 
-			fontCount =					7,
+			fontCount =					8,
 			};
 
 		CUniverse (void);

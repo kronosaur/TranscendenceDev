@@ -58,7 +58,8 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 	"Header",				//	SRS object message
 	"Small",				//	SRS object counter: 10 pixels
 	"MediumBold",			//	Planetoid map label
-	"HeaderBold",			//	World map label
+	"LargeBold",			//	World map label
+	"HeaderBold",			//	Large world map label
 	};
 
 CUniverse::CUniverse (void) : 
