@@ -767,14 +767,14 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itQianlongArchcannon;">
+			<Device deviceID="&itQianlongArchcannon;" posAngle="0" posRadius="60" posZ="0">
 				<Items>
 					<Item count="1d4" item="&itLongzhuSphere;"/>
 				</Items>
 			</Device>
 			<Device deviceID="&itCyberDeckLowerShields;"/>
-			<Device deviceID="&itParticleBeamWeapon;" enhancement="0x0105" secondaryWeapon="true" minFireArc="350" maxFireArc="190" posAngle="50" posRadius="50" posZ="-3"/>
-			<Device deviceID="&itParticleBeamWeapon;" enhancement="0x0105" secondaryWeapon="true" minFireArc="170" maxFireArc="10" posAngle="310" posRadius="50" posZ="-3"/>
+			<Device deviceID="&itParticleBeamWeapon;" enhancement="0x0105" posAngle="50"  posRadius="60" posZ="-5" fireAngle="90" fireArc="200" secondaryWeapon="true"/>
+			<Device deviceID="&itParticleBeamWeapon;" enhancement="0x0105" posAngle="-50" posRadius="60" posZ="-5" fireAngle="-90"  fireArc="200" secondaryWeapon="true"/>
 			<Device deviceID="&itDragonShields;"/>
 		</Devices>
 
@@ -808,11 +808,12 @@
 			</Table>
 		</Items>
 
-		<Image imageID="&rsDragonSlaverImage;" imageX="0" imageY="0" imageWidth="128" imageHeight="128"/>
+		<Image imageID="&rsDragonSlaverHD;" imageWidth="128" imageHeight="128" rotationCount="120" rotationColumns="12" viewportRatio="0.01375"/>
+		<HeroImage imageID="&rsDragonSlaverHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="90"	posRadius="12"	posZ="0"	rotation="180"	sendToBack="*"/>
-			<Effect type="thrustMain"		posAngle="-90"	posRadius="12"	posZ="0"	rotation="180"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="110"	posRadius="18"	posZ="0"	rotation="180"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="-110"	posRadius="18"	posZ="0"	rotation="180"	sendToBack="*"/>
 		</Effects>
 
 		<AISettings
@@ -1695,7 +1696,9 @@
 	<Image UNID="&rsSungTransportHD;"	bitmap="Resources\SungTransportHD.jpg"	bitmask="Resources\SungTransportHDMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsSungTransportHero;"	bitmap="Resources\SungTransportLarge.jpg"	bitmask="Resources\SungTransportLargeMask.bmp"  loadOnUse="true"/>
 
-	<Image UNID="&rsDragonSlaverImage;"	bitmap="Resources\DragonSlaver.jpg"		bitmask="Resources\DragonSlaverMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsDragonSlaverHD;"	bitmap="Resources\DragonSlaverHD.jpg"		bitmask="Resources\DragonSlaverHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsDragonSlaverHero;"	bitmap="Resources\DragonSlaverLarge.jpg"		bitmask="Resources\DragonSlaverLargeMask.bmp"  loadOnUse="true"/>
+
 	<Image UNID="&rsWindSlaverHD;"		bitmap="Resources\WindSlaverHD.jpg"		bitmask="Resources\WindSlaverHDMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>
