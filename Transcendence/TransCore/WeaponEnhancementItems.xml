@@ -86,6 +86,9 @@
 			>
 
 		<Properties>
+			<Definition id="enhance.minLevel">1</Definition>
+			<Definition id="enhance.maxLevel">6</Definition>
+
 			<Constant id="rpg.useCriteria">"w~l"</Constant>
 		</Properties>
 
@@ -113,7 +116,7 @@
 					(trdata { weapon:(itmGetName targetItem 'noModifiers) } )
 					)
 					(switch
-						(gr (itmGetProperty targetItem 'level) 6)
+						(gr (itmGetProperty targetItem 'level) (itm@ gItem 'enhance.maxLevel))
 							{
 								resultCode: 'noEffect
 								effect: 'tooAdvanced

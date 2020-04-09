@@ -211,6 +211,14 @@
 			inherit="&baStdDeviceEnhancement;"
 			>
 		<Properties>
+			<DynamicGlobal id="enhance.maxLevel">
+				(typ@ gType 'quantum.maxLevel)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="enhance.minLevel">
+				(typ@ gType 'quantum.minLevel)
+			</DynamicGlobal>
+
 			<Definition id="rpg.useCriteria">"s"</Definition>
 		</Properties>
 

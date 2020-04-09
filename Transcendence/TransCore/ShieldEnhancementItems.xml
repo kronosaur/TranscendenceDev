@@ -26,7 +26,7 @@
 				'(
 					{	criteria:"Ds L:1-5;"				enhancement:"+repair:5"	}
 					{	criteria:"s L:1-5;"					enhancement:"+hpBonus"	}
-					{	criteria:"s"						descID:'tooAdvanced	}
+					{	criteria:"s L:6-"					descID:'tooAdvanced	}
 					)
 			</Constant>
 		</Properties>
@@ -67,7 +67,7 @@
 					{	criteria:"s +nonEnergyShields;"			descID:'msgCannotEnhance	}
 					{	criteria:"Ds L:1-6;"					enhancement:"+repair:10"	}
 					{	criteria:"s L:1-6;"						enhancement:"+hpBonus:20"	}
-					{	criteria:"s"							descID:'tooAdvanced	}
+					{	criteria:"s L:7-"							descID:'tooAdvanced	}
 					)
 			</Constant>
 
