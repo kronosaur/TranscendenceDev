@@ -851,6 +851,45 @@
 
 	<Type UNID="&baStdDeviceEnhancement;">
 		<Properties>
+			<DynamicGlobal id="enhance.maxLevel">
+				(block (
+					(enhancementTable (itm@ gType 'rpg.enhancementTable))
+
+					(maxLevelPerEntry
+						(map enhancementTable 'excludeNil theEntry
+							(if (and (@ theEntry 'criteria) (@ theEntry 'enhancement))
+								(map (itmGetTypes (@ theEntry 'criteria)) 'reduceMax theItem
+									(itmGetLevel theItem)
+									)
+								)
+							)
+						)
+						
+					(maxLevel (map maxLevelPerEntry 'reduceMax theLevel theLevel))
+					)
+					maxLevel
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="enhance.minLevel">
+				(block (
+					(enhancementTable (itm@ gType 'rpg.enhancementTable))
+
+					(minLevelPerEntry
+						(map enhancementTable 'excludeNil theEntry
+							(if (and (@ theEntry 'criteria) (@ theEntry 'enhancement))
+								(map (itmGetTypes (@ theEntry 'criteria)) 'reduceMin theItem
+									(itmGetLevel theItem)
+									)
+								)
+							)
+						)
+						
+					(minLevel (map minLevelPerEntry 'reduceMin theLevel theLevel))
+					)
+					minLevel
+					)
+			</DynamicGlobal>
+			
 			<Constant id="rpg.useCriteria">"d"</Constant>
 		</Properties>
 
@@ -1265,7 +1304,6 @@
 					minLevel
 					)
 			</DynamicGlobal>
-			
 			
 			<Constant id="rpg.useCriteria">"a"</Constant>
 		</Properties>

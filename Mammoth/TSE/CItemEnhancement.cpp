@@ -2031,6 +2031,11 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 	else if (strEquals(sID, CONSTLIT("resistMatter")))
 		SetModResistMatter(iValue);
 
+	//	Shield interference
+
+	else if (strEquals(sID, CONSTLIT("shieldInterference")))
+		m_dwMods = Encode12(etDisadvantage | etImmunityIonEffects);
+
 	//	Speed bonus
 
 	else if (strEquals(sID, CONSTLIT("speed")))

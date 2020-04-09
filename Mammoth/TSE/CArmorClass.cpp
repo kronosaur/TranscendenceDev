@@ -68,6 +68,7 @@
 #define PROPERTY_BALANCE_ADJ					CONSTLIT("balanceAdj")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
 #define PROPERTY_DAMAGE_ADJ						CONSTLIT("damageAdj")
+#define PROPERTY_DECAY							CONSTLIT("decay")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
@@ -84,6 +85,7 @@
 #define PROPERTY_REFLECT						CONSTLIT("reflect")
 #define PROPERTY_REGEN							CONSTLIT("regen")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
+#define PROPERTY_SHIELD_DISRUPT					CONSTLIT("shieldInterference")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
@@ -1347,6 +1349,29 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const
 		Ctx.iDamage = Ctx.iDamage / 2;
 	}
 
+Metric CArmorClass::CalcDecay180(const CArmorItem& ArmorItem, const SScalableStats& Stats) const
+
+//	CalcDecay180
+//
+//	Returns the decay rate.
+
+	{
+	Metric rDecay = 0.0;
+
+	if (!Stats.Decay.IsEmpty())
+		rDecay = Stats.Decay.GetHPPer180(TICKS_PER_UPDATE);
+
+	const CItemEnhancementStack &Enhancements = ArmorItem.GetEnhancements();
+	if (Enhancements.IsDecaying())
+		{
+		CRegenDesc Decay;
+		Decay.Init(DEFAULT_DECAY_PER_180);
+		rDecay += Decay.GetHPPer180(TICKS_PER_UPDATE);
+		}
+
+	return rDecay;
+	}
+
 int CArmorClass::CalcIntegrity (int iHP, int iMaxHP)
 
 //	CalcIntegrity
@@ -2044,6 +2069,9 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 	else if (strEquals(sName, PROPERTY_DAMAGE_ADJ))
 		return ICCItemPtr(Stats.DamageAdj.GetDamageAdjProperty(&Enhancements));
 
+	else if (strEquals(sName, PROPERTY_DECAY))
+		return ICCItemPtr(CalcDecay180(ArmorItem, Stats));
+
 	else if (strEquals(sName, PROPERTY_DEVICE_DAMAGE_IMMUNE))
 		return ICCItemPtr(IsImmune(Stats, Enhancements, specialDeviceDamage));
 
@@ -2102,6 +2130,9 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return ICCItemPtr(IsImmune(Stats, Enhancements, specialShatter));
+
+	else if (strEquals(sName, PROPERTY_SHIELD_DISRUPT))
+		return ICCItemPtr(IsShieldInterfering(Ctx));
 
 	else if (strEquals(sName, PROPERTY_STD_COST))
 		{
@@ -2517,7 +2548,7 @@ bool CArmorClass::IsImmune (const CArmorItem &ArmorItem, SpecialDamageTypes iSpe
 	return IsImmune(Stats, Enhancements, iSpecialDamage);
 	}
 
-bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx)
+bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx) const
 
 //	IsShieldInterfering
 //
@@ -2857,7 +2888,7 @@ bool CArmorClass::UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, i
 	CRegenDesc DecayWithMod;
 	if (Enhancements.IsDecaying())
 		{
-		DecayWithMod.Init(4);
+		DecayWithMod.Init(DEFAULT_DECAY_PER_180);
 		DecayWithMod.Add(Stats.Decay);
 		pDecay = &DecayWithMod;
 		}

@@ -26,12 +26,12 @@
 			>
 
 		<Properties>
-			<Constant id="rpg.enhancementTable">
+			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-10"	enhancement:"+resistDamageClass:laser:50"	}
-					{	criteria:"a"		descID:'tooAdvanced	}
+					{	criteria:"a L:1-10"		enhancement:"+resistDamageClass:laser:50"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
 					)
-			</Constant>
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -65,12 +65,12 @@
 			>
 
 		<Properties>
-			<Constant id="rpg.enhancementTable">
+			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-10"	enhancement:"+resistDamageClass:kinetic:50"	}
-					{	criteria:"a"		descID:'tooAdvanced	}
+					{	criteria:"a L:1-10"		enhancement:"+resistDamageClass:kinetic:50"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
 					)
-			</Constant>
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -106,14 +106,15 @@
 			>
 
 		<Properties>
-			<Constant id="rpg.enhancementTable">
+			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-3"	enhancement:0x0105	}
-					{	criteria:"a L:4-5"	enhancement:0x0103	}
-					{	criteria:"a L:6"	enhancement:0x0101	}
-					{	criteria:"a"		descID:'tooAdvanced	}
+					{	criteria:"a L:1-3"		enhancement:"+hpBonus:50"	}
+					{	criteria:"a L:4-6"		enhancement:"+hpBonus:30"	}
+					{	criteria:"a L:7-9"		enhancement:"+hpBonus:20"	}
+					{	criteria:"a L:10"		enhancement:"+hpBonus:10"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
 					)
-			</Constant>
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -340,11 +341,16 @@
 			sortName=			"particle resistance coating, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resist:particle:50"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x0925</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -372,7 +378,12 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+hpBonus"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+hpBonus"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -406,7 +417,12 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+reflect:laser"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+reflect:laser"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -441,11 +457,16 @@
 			sortName=			"anti-radiation coating, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+immunity:radiation"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">"+immunity:radiation"</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -475,11 +496,16 @@
 			sortName=			"degenerating nanos, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"-decay"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x8200</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -662,16 +688,16 @@
 			sortName=			"regenerating nanos, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
-
 		<Properties>
-			<Constant id="rpg.enhancementTable">
+			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a &lt;=10"	enhancement:0x0200	}
-					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
+					{	criteria:"a L:1-10"		enhancement:"+regen"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
 					)
-			</Constant>
+			</Definition>
 		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -703,11 +729,16 @@
 			sortName=			"monopole dust, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+immunity:emp"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x0b20</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -735,7 +766,12 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+reflect:particle"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+reflect:particle"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -770,11 +806,16 @@
 			sortName=			"ion resistance coating, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resist:ion:50"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x0945</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -804,11 +845,16 @@
 			sortName=			"meteorsteel dust, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"-shieldInterference"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x8c00</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -840,11 +886,16 @@
 			sortName=			"dyon dust, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+immunity:ionEffects"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x0c00</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -874,7 +925,12 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+reflect:ion"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+reflect:ion"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -907,11 +963,16 @@
 			sortName=			"ithalium paste, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resist:thermo:50"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x0955</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="rpg.useResultIntro">
@@ -948,9 +1009,10 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"a &lt;=6"	enhancement:Nil	descID:'TooPrimitive	}
-					{	criteria:"a &lt;=10"	enhancement:0x0105	}
-					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
+					{	criteria:"a L:1-6"		descID:'TooPrimitive	}
+					{	criteria:"a L:7-9"		enhancement:"+hpBonus:50"	}
+					{	criteria:"a L:10-12"	enhancement:"+hpBonus:30"	}
+					{	criteria:"a L:13-"		descID:'TooAdvanced	}
 					)
 			</Constant>
 		</Properties>
@@ -1006,6 +1068,338 @@
 									'particle)										result:75	}
 
 						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Particle Resistance Coating ------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itParticleResistCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)											
+							result: {
+								laser:40				kinetic:40
+								particle:50 			blast:100
+								ion:100					thermo:100
+								positron:100 			plasma:100 
+								antimatter:100			nano:100 
+								graviton:125			singularity:125 
+								darkAcid:200			darkSteel:200
+								darkLightning:300		darkFire:300
+								}
+							}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Plasteel Nanos -------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itPlasteelNanos;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'maxHP
+										)											result:88	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itPlasteelNanos;
+										)
+									'resultCode)									result:'improved	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'maxHP
+										)											result:96	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Degenerating Nanos ---------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itDegeneratingNanos;
+										)
+									'resultCode)									result:'defectOK	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'decay
+										)											result:0.2	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Reflective Armor Coating ---------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itReflectiveArmorCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'reflect
+										)											result:{ laser:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Regenerating Nanos ---------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itRegeneratingNanos;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'regen
+										)											result:1	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	EMP Immunity Coating -------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itEMPImmuneCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'empImmune
+										)											result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Particle Reflect Coating ---------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itParticleReflectCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'reflect
+										)											result:{ particle:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Ion Resistance Coating -----------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itIonResistCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)											
+							result: {
+								laser:40				kinetic:40
+								particle:100 			blast:100
+								ion:50					thermo:100
+								positron:100 			plasma:100 
+								antimatter:100			nano:100 
+								graviton:125			singularity:125 
+								darkAcid:200			darkSteel:200
+								darkLightning:300		darkFire:300
+								}
+							}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Meteorsteel Dust -----------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itShieldInterfereCoating;
+										)
+									'resultCode)									result:'defectOK	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'shieldInterference
+										)											result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Dyon Dust ------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itIonEffectImmuneCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'blindingImmune
+										)											result:True	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'deviceDamageImmune
+										)											result:True	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'deviceDisruptImmune
+										)											result:True	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'empImmune
+										)											result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Ion Reflect Coating --------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itIonReflectCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'reflect
+										)											result:{ ion:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Ithalium Paste -------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itThermoResistCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)											
+							result: {
+								laser:40				kinetic:40
+								particle:100 			blast:100
+								ion:100					thermo:50
+								positron:100 			plasma:100 
+								antimatter:100			nano:100 
+								graviton:125			singularity:125 
+								darkAcid:200			darkSteel:200
+								darkLightning:300		darkFire:300
+								}
+							}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Orthosteel Nanos -----------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itLightOrthoSteel;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itLightOrthoSteel;;") 0)
+										&itCarbonWeaver2Coating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itLightOrthoSteel;;") 0)
+										'maxHP
+										)											result:217	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itLightOrthoSteel;") theItem
 										(objRemoveItem gPlayerShip theItem)
 										)											result:'ignore	}
 
