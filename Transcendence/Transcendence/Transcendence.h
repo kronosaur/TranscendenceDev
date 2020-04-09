@@ -708,25 +708,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 			esEpitaph,
 			};
 
-		enum MenuTypes
-			{
-			menuNone,
-			menuGame,
-			menuSelfDestructConfirm,
-			menuCommsTarget,
-			menuComms,
-			menuCommsSquadron,
-			menuInvoke,
-			};
-
-		enum PickerTypes
-			{
-			pickNone,
-			pickUsableItem,
-			pickPower,
-			pickEnableDisableItem,
-			};
-
 		struct SPreferences
 			{
 			bool bMusicOn;
