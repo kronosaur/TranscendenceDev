@@ -80,8 +80,8 @@ public:
 	bool pollResize () { return m_bResized; };
 	void renderScene (void);
 	void testRender ();
-	void testShaders ();
-	void testTextures (OpenGLTexture *texture);
+	void renderCanvasBackground ();
+	void renderCanvasBackgroundFromTexture (OpenGLTexture *texture);
 	void prepSquareCanvas ();
 	void prepTextureCanvas ();
 	void prepTestScene ();

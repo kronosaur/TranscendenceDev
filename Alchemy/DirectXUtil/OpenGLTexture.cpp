@@ -5,15 +5,10 @@ OpenGLTexture::OpenGLTexture(int width, int height)
 {
 	m_iHeight = height;
 	m_iWidth = width;
-	//initTexture2D(width, height);
 	m_isOpaque = false;
 	m_pTextureID[0] = 0;
 	pboID[0] = 0;
 	pboID[1] = 0;
-	//auto t1 = &m_pTextureID[0];
-	//auto t2 = &pboID[0];
-	//::kernelDebugLogPattern("[OpenGL] Created blank textures with addrs: %d, %d in thread %d", int(t1), int(t2), std::this_thread::get_id());
-	// TODO: Check when textures have weird height or width values; something is corrupting the memory
 }
 
 void OpenGLTexture::initTexture2D(int width, int height)
@@ -54,14 +49,10 @@ OpenGLTexture::OpenGLTexture (void* texture, int width, int height, bool isOpaqu
 	m_iHeight = height;
 	m_iWidth = width;
 	m_pTextureToInitFrom = texture;
-	//initTexture2D(texture, width, height);
 	m_isOpaque = isOpaque;
 	m_pTextureID[0] = 0;
 	pboID[0] = 0;
 	pboID[1] = 0;
-	//auto t1 = &m_pTextureID[0];
-	//auto t2 = &pboID[0];
-	//::kernelDebugLogPattern("[OpenGL] Created filled textures with addrs: %d, %d in thread %d", int(t1), int(t2), std::this_thread::get_id());
 	}
 
 void OpenGLTexture::initTexture2D (GLvoid* texture, int width, int height)
@@ -261,12 +252,12 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, 
 		glm::mat4 rotationMatrix = glm::mat4(glm::vec4(1.0, 0.0, 0.0, 0.0), glm::vec4(0.0, 1.0, 0.0, 0.0), glm::vec4(0.0, 0.0, 1.0, 0.0), glm::vec4(0.0, 0.0, 0.0, 1.0));
 		int rotationMatrixLocation = glGetUniformLocation(shader->id(), "rotationMatrix");
 
-		float texStartPoint_x = texStartPoint[0];// * m_iWidth;
-		float texStartPoint_y = texStartPoint[1];// *m_iHeight;
-		float texQuadSize_x = texQuadSize[0];// *m_iWidth;
-		float texQuadSize_y = texQuadSize[1];// *m_iHeight;
-		float texGridSize_x = texGridSize[0];// *m_iHeight;
-		float texGridSize_y = texGridSize[1];// *m_iHeight;
+		float texStartPoint_x = texStartPoint[0];
+		float texStartPoint_y = texStartPoint[1];
+		float texQuadSize_x = texQuadSize[0];
+		float texQuadSize_y = texQuadSize[1];
+		float texGridSize_x = texGridSize[0];
+		float texGridSize_y = texGridSize[1];
 		::kernelDebugLogPattern("[OpenGL] size=%d x %d, pos=%d, %d", int(texQuadSize_x), int(texQuadSize_y), int(texStartPoint_x), int(texStartPoint_y));
 
 		glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);

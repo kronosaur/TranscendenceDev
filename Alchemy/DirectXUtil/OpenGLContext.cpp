@@ -229,9 +229,9 @@ void OpenGLContext::testRender ()
 	green = fmod((green + 0.1f), 1.0f);
 	}
 
-void OpenGLContext::testShaders ()
+void OpenGLContext::renderCanvasBackground ()
 	{
-
+	// TODO: Remove this function
 	// Create our new shader
 	
 	// Set up our perspective matrix
@@ -268,17 +268,13 @@ void OpenGLContext::testShaders ()
 	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 
 	glBindVertexArray((vaos[0]->getVAO())[0]); // Bind our Vertex Array Object
-	//glDrawArrays(GL_TRIANGLES, 0, 6); // Draw our square
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0); // Unbind our Vertex Array Object
 
 	pShader->unbind(); // Unbind our shader
-
-//	unsigned char pixel[3];
-//	glReadPixels(1, 1, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
 	}
 
-void OpenGLContext::testTextures (OpenGLTexture* texture)
+void OpenGLContext::renderCanvasBackgroundFromTexture (OpenGLTexture* texture)
 {
 
 	// Create our new shader
@@ -294,29 +290,25 @@ void OpenGLContext::testTextures (OpenGLTexture* texture)
 	glViewport(0, 0, m_iWindowWidth, m_iWindowHeight); // Set the viewport size to fill the window
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // Clear required buffers
 
-																				// Set up model and view matrices
-																				// glm::mat4(1.0f) seems to make an identity matrix?
-																				// View matrix translates 5 units back into the scene
+	// Set up model and view matrices
+	// glm::mat4(1.0f) seems to make an identity matrix?
+	// View matrix translates 5 units back into the scene
 
-	//glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
 	// Model matrix rotates by 45 degrees
 	static float rotation = 180.0f;
 	glm::mat4 rotationMatrix = glm::mat4(glm::vec4(-1.0, 0.0, 0.0, 0.0), glm::vec4(0.0, -1.0, 0.0, 0.0), glm::vec4(0.0, 0.0, 1.0, 0.0), glm::vec4(0.0, 0.0, 0.0, 1.0));
-	//glm::mat4 rotationMatrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-	//rotation += 1.0f;
+
 
 	OpenGLShader* pShader = vaos[0]->getShader();
 	pShader->bind(); // Bind our shader
 					 // TODO: Put the rest of these thingies into the VAO class...
 					 // Get the location of the matrix variables inside our shaders
-	//int projectionMatrixLocation = glGetUniformLocation(pShader->id(), "projectionMatrix");
-	//int viewMatrixLocation = glGetUniformLocation(pShader->id(), "viewMatrix");
+
 	int rotationMatrixLocation = glGetUniformLocation(pShader->id(), "rotationMatrix");
 	glUniform1i(glGetUniformLocation(pShader->id(), "ourTexture"), 0);
 
 	// Send our matrices into the shader variables
-	//glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-	//glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 	glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
 	texture->bindTexture2D(GL_TEXTURE0);
 

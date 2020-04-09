@@ -47,7 +47,6 @@ OpenGLMasterRenderQueue::~OpenGLMasterRenderQueue(void)
 void OpenGLMasterRenderQueue::initializeCanvasVAO()
 {
 	// Prepare the background canvas.
-	//OpenGLShader* pTestShader = new OpenGLShader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
 
 	float fSize = 1.0f;
 	float posZ = 0.999999f;
@@ -96,30 +95,17 @@ void OpenGLMasterRenderQueue::deinitCanvasVAO(void)
 }
 
 void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX,
- int sizePixelY,
-
- int posPixelX,
-	int posPixelY, int canvasHeight, int canvasWidth, OpenGLTexture *image,
- int texWidth, int texHeight,
- int texQuadWidth, int texQuadHeight, int numFramesPerRow, int numFramesPerCol, int spriteSheetStartX, int spriteSheetStartY, float alphaStrength, float glowR, float glowG, float glowB, float glowA, float glowNoise)
+ int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, OpenGLTexture *image, int texWidth, int texHeight, 
+	int texQuadWidth, int texQuadHeight, int numFramesPerRow, int numFramesPerCol, int spriteSheetStartX, int spriteSheetStartY, float alphaStrength,
+	float glowR, float glowG, float glowB, float glowA, float glowNoise)
 	{
 	// Note, image is a pointer to the CG32bitPixel* we want to use as a texture. We can use CG32bitPixel->GetPixelArray() to get this pointer.
 	// To get the width and height, we can use pSource->GetWidth() and pSource->GetHeight() respectively.
-	// TODO: This can be called from different threads; we need to make sure that OGL textures are only initialized on a single thread
-	// Note, the texture doesn't need to be initialized until we render, although the texture must be initialized when we generate glow maps
-	// We only need the glow maps at render time, not at add to queue time, so we can defer generation until render time
-	//m_texturesNeedingInitialization.push_back()
+	// Note that we don't initialize the textures here, but instead do it when we render - this is because this function can be called by
+	// different threads, but it's a very bad idea to run OpenGL on multiple threads at the same time - so texture initialization (which involves
+	// OpenGL function calls) must all be done on the OpenGL thread
 
-	// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
-//	image->initTextureFromOpenGLThread();
-
-	// Generate a glow map for this texture if needed.
-	// TODO: Store the texture quad width and height on the OpenGLTexture object temporarily, so glowmap can be created later
-//	if (!image->getGlowMap()) {
-		//image->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
-	//}
-
-	const std::lock_guard<std::mutex> lock(m_shipRenderQueueAddMutex);
+	const std::unique_lock<std::mutex> lock(m_shipRenderQueueAddMutex);
 
 	// Check to see if we have a render queue with that texture already loaded.
 	ASSERT(image);
@@ -136,19 +122,10 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	glm::vec2 vTextureQuadSizes((float)texQuadWidth / (float)texWidth, (float)texQuadHeight / (float)texHeight);
 	glm::vec4 glowColor(glowR, glowG, glowB, glowA);
 
-	// TODO: Initialize a glowmap tile request here, and save it in the MRQ. We consume this when we generate textures, to render glowmaps.
-	//auto glowmapTile = GlowmapTile(vTexPositions[0], vTexPositions[1], vTextureQuadSizes[0], vTextureQuadSizes[1], float(numFramesPerRow), float(numFramesPerCol));
+	// Initialize a glowmap tile request here, and save it in the MRQ. We consume this when we generate textures, to render glowmaps.
 	image->requestGlowmapTile(vSpriteSheetPositions[0], vSpriteSheetPositions[1], float(numFramesPerRow * vTextureQuadSizes[0]), float(numFramesPerCol * vTextureQuadSizes[1]), vTextureQuadSizes[0], vTextureQuadSizes[1]);
-//	if (!m_glowmapTiles.count(image)) {
-//		m_glowmapTiles.insert({ image, std::vector<GlowmapTile>({glowmapTile}) });
-//	}
-//	else {
-//		m_glowmapTiles[image].push_back(glowmapTile);
-//	}
-
 
 	m_shipRenderQueues[image]->addObjToRender(vTexPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, alphaStrength, glowColor, glowNoise);
-	//m_shipRenderQueues[image]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, texQuadWidth, texQuadHeight, alphaStrength, glow, glowNoise);
 	}
 
 void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
@@ -165,11 +142,6 @@ void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPi
 	glm::ivec3 styles(iColorTypes, iOpacityTypes, iTexture);
 
 	m_effectRayRenderQueue.addObjToRender(sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, vPrimaryColor, vSecondaryColor);
-
-	//m_effectRayRenderQueue->addObjToRender(sizePixelX, sizePixelY, posPixelX, posPixelY, canvasSizeX, canvasSizeY, rotation, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture,
-	//	vPrimaryColor, vSecondaryColor, iIntensity, waveCyclePos, opacityAdj);
-	//m_effectRayRenderQueue->addObjToRender(200, 200, 500, 500, 1024, 768, 0, 1, 1, 1, 1, 1,
-		//glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0, 0.0, 1.0), 255, 0);
 	}
 
 void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
@@ -183,10 +155,6 @@ void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int
 	glm::ivec2 shapes(iWidthAdjType, iReshape);
 
 	m_effectLightningRenderQueue.addObjToRender(sizeAndPosition, rotation, shapes, seed, vPrimaryColor, vSecondaryColor);
-	//m_effectLightningRenderQueue->addObjToRender(sizePixelX, sizePixelY, posPixelX, posPixelY, canvasSizeX, canvasSizeY, rotation, iWidthAdjType, iReshape,
-	//	vPrimaryColor, vSecondaryColor, seed);
-	//m_effectRayRenderQueue->addObjToRender(200, 200, 500, 500, 1024, 768, 0, 1, 1, 1, 1, 1,
-		//glm::vec3(1.0, 1.0, 1.0), glm::vec3(1.0, 0.0, 1.0), 255, 0);
 }
 
 void OpenGLMasterRenderQueue::renderAllQueues(void)
@@ -207,7 +175,6 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		OpenGLTexture *pTextureToUse = p.first;
 		// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
 		pTextureToUse->initTextureFromOpenGLThread();
-		//OpenGLInstancedRenderQueue *pInstancedRenderQueue = p.second;
 		OpenGLInstancedBatchTexture *pInstancedRenderQueue = p.second;
 		// TODO: Set the depths here before rendering. This will ensure that we always render from back to front, which should solve most issues with blending.
 
@@ -233,8 +200,6 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		// Generate a glow map for this texture if needed.
 		// Glow map must be done in different block after actual rendering because otherwise it causes flickering issues
 		OpenGLTexture *pTextureToUse = p.first;
-		//auto glowmapTile = p.second;
-
 		pTextureToUse->populateGlowmaps(fbo, m_pCanvasVAO, m_pGlowmapShader);
 	}
 }
