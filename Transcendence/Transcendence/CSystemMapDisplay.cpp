@@ -16,6 +16,7 @@ const int SCREEN_BORDER_Y = 10;
 
 static CMapLegendPainter::SScaleEntry LEGEND_SCALE[] =
     {
+        {   25,         "light-minutes",  LIGHT_MINUTE },
         {   800,        "light-seconds",  LIGHT_SECOND },
         {   400,        "light-seconds",  LIGHT_SECOND },
         {   200,        "light-seconds",  LIGHT_SECOND },
@@ -23,6 +24,7 @@ static CMapLegendPainter::SScaleEntry LEGEND_SCALE[] =
         {   50,         "light-seconds",  LIGHT_SECOND },
         {   25,         "light-seconds",  LIGHT_SECOND },
         {   10,         "light-seconds",  LIGHT_SECOND },
+        {   5,          "light-seconds",  LIGHT_SECOND },
     };
 
 const int LEGEND_SCALE_COUNT = (sizeof(LEGEND_SCALE) / sizeof(LEGEND_SCALE[0]));
@@ -117,7 +119,7 @@ bool CSystemMapDisplay::Init (const RECT &rcRect)
     if (pSystem == NULL)
         return false;
 
-    m_Scale.Init(100, 25, 200);
+    m_Scale.Init(DEFAULT_ZOOM, MIN_ZOOM, MAX_ZOOM);
 
     m_HelpPainter.SetWidth(HELP_PANE_WIDTH);
     m_HelpPainter.SetTitle(pSystem->GetName());

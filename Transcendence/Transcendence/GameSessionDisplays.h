@@ -116,10 +116,9 @@ class CSystemMapDisplay
 		void Paint (CG32bitImage &Screen);
 
 	private:
-		enum EConstants
-			{
-			MAP_SCALE_COUNT = 4,
-			};
+		static constexpr int DEFAULT_ZOOM = 100;
+		static constexpr int MIN_ZOOM = 10;
+		static constexpr int MAX_ZOOM = 400;
 
 		Metric GetScaleKlicksPerPixel (int iScale) const;
 
