@@ -93,6 +93,7 @@ void CGameSession::HideMenu (void)
 
 		case menuComms:
 			g_pTrans->HideCommsMenu();
+			m_pCurrentComms = NULL;
 			break;
 
 		case menuCommsTarget:
