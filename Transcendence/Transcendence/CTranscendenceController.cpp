@@ -136,6 +136,7 @@
 #define CMD_UI_SHOW_MOD_EXCHANGE				CONSTLIT("uiShowModExchange")
 #define CMD_UI_SHOW_PROFILE						CONSTLIT("uiShowProfile")
 #define CMD_UI_SHOW_SETTINGS    				CONSTLIT("uiShowSettings")
+#define CMD_UI_SHOW_STATION_LIST   				CONSTLIT("uiShowStationList")
 #define CMD_UI_SIGN_OUT							CONSTLIT("uiSignOut")
 #define CMD_UI_START_EPILOGUE					CONSTLIT("uiStartEpilogue")
 #define CMD_UI_START_GAME						CONSTLIT("uiStartGame")
@@ -1449,6 +1450,14 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
         if (error = m_HI.OpenPopupSession(new CKeyboardMapSession(m_HI, m_Service, m_Settings)))
             return error;
         }
+
+	//	Show station list
+
+	else if (strEquals(sCmd, CMD_UI_SHOW_STATION_LIST))
+		{
+		if (m_pGameSession)
+			m_pGameSession->ShowStationList();
+		}
 
 	//	Volume controls
 

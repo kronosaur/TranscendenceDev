@@ -6,7 +6,7 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
-#define STR_HELP_DESC						CONSTLIT("Scroll wheel to zoom map\n[H] to toggle HUD on/off")
+#define STR_HELP_DESC						CONSTLIT("Scroll wheel to zoom map\n[L] to show station list\n[H] to toggle HUD on/off")
 
 const Metric SCALE_100 = g_AU / 400.0;
 const int MAP_ZOOM_SPEED =					16;
@@ -66,6 +66,11 @@ bool CSystemMapDisplay::HandleKeyDown (int iVirtKey, DWORD dwKeyData)
 		case 'H':
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			pPlayer->SetMapHUD(!pPlayer->IsMapHUDActive());
+			break;
+
+		case 'L':
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			m_HI.HICommand(CONSTLIT("uiShowStationList"));
 			break;
 
 		case VK_SUBTRACT:

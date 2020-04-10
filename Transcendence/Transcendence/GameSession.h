@@ -22,6 +22,7 @@ class CGameSession : public IHISession
 			menuGame,						//	Game menu
 			menuInvoke,						//	Invoke power
 			menuSelfDestructConfirm,		//	Confirm self-destruct
+			menuSystemStations,				//	List of stations in system
 			menuUseItem,					//	Choose item to use
 			};
 
@@ -29,8 +30,9 @@ class CGameSession : public IHISession
 
 		void ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Keys iCommand);
 		void ExecuteCommandEnd (CPlayerShipController *pPlayer, CGameKeys::Keys iCommand);
-		void ShowSystemMap (bool bShow = true);
 		void ShowSelfDestructMenu (void);
+		void ShowStationList (void);
+		void ShowSystemMap (bool bShow = true);
 
 		//  Notifications from player ship, etc.
 
@@ -137,6 +139,7 @@ class CGameSession : public IHISession
 
 		bool m_bShowingSystemMap;           //  If TRUE, show map
 		CSystemMapDisplay m_SystemMap;      //  Helps to paint the system map
+		CSystemStationsMenu m_SystemStationsMenu;
 		CGalacticMapSession::SOptions m_GalacticMapSettings;
 
 		//	Other displays

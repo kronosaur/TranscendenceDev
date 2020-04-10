@@ -430,6 +430,10 @@ void CGameSession::PaintMenu (CG32bitImage &Screen)
 		case menuUseItem:
 			g_pTrans->m_PickerDisplay.Paint(Screen);
 			break;
+
+		case menuSystemStations:
+			OnPaintReanimator(Screen);
+			break;
 		}
 	}
 

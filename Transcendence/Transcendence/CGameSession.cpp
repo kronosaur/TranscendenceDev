@@ -6,6 +6,8 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
+#define ID_SYSTEM_STATIONS 						CONSTLIT("idSystemStations")
+
 CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*CreateCtx.pHI),
 		m_Settings(*CreateCtx.pSettings),
         m_Model(*CreateCtx.pModel),
@@ -16,6 +18,7 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
         m_HUD(*CreateCtx.pHI, *CreateCtx.pModel),
         m_bShowingSystemMap(false),
         m_SystemMap(*CreateCtx.pHI, *CreateCtx.pModel, m_HUD),
+		m_SystemStationsMenu(*CreateCtx.pHI, *CreateCtx.pModel, *this),
 		m_Narrative(*CreateCtx.pHI),
 		m_CurrentMenu(menuNone),
 		m_pCurrentComms(NULL),
@@ -102,6 +105,10 @@ void CGameSession::HideMenu (void)
 
 		case menuDebugConsole:
 			m_DebugConsole.SetEnabled(false);
+			break;
+
+		case menuSystemStations:
+			m_SystemStationsMenu.Hide();
 			break;
 		}
 
@@ -527,6 +534,10 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 				return false;
 			break;
 
+		case menuSystemStations:
+			m_SystemStationsMenu.Show(m_rcScreen, ID_SYSTEM_STATIONS);
+			break;
+
 		case menuUseItem:
 			if (!g_pTrans->ShowUsePicker())
 				return false;
@@ -545,6 +556,16 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 	m_CurrentMenu = iMenu;
 
 	return true;
+	}
+
+void CGameSession::ShowStationList (void)
+
+//	ShowStationList
+//
+//	Shows the list of known stations.
+
+	{
+	ShowMenu(menuSystemStations);
 	}
 
 void CGameSession::ShowSystemMap (bool bShow)

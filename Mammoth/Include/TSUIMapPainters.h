@@ -8,9 +8,19 @@
 class CGalacticMapSystemDetails
     {
     public:
+		struct SOptions
+			{
+			IAniCommand *pListener = NULL;		//	Notify on events
+			CString sOnSelectionChangedCmd;
+			DWORD dwOnSelectionChangedData = 0;
+
+			bool bIncludeStargates = false;
+			bool bNoCollapseByType = false;
+			};
+
         CGalacticMapSystemDetails (const CVisualPalette &VI, CReanimator &Reanimator, const RECT &rcPane);
 
-        bool CreateDetailsPane (const CTopologyNode &Node, IAnimatron **retpAni);
+        bool CreateDetailsPane (const CTopologyNode &Node, const SOptions &Options, IAnimatron **retpAni, IAnimatron **retpList = NULL);
 
     private:
         struct SObjDesc
@@ -31,7 +41,7 @@ class CGalacticMapSystemDetails
 		bool CreateObjIcon (const CObjectTracker::SObjEntry &Obj, CG32bitImage **retpIcon);
         void CreateSystemHeader (CAniSequencer *pContainer, const CTopologyNode &Node, int *retcyHeight) const;
 		void GetObjAttribs (const CObjectTracker::SObjEntry &Obj, TArray<CCartoucheBlock::SCartoucheDesc> &retAttribs) const;
-        bool GetObjList (const CTopologyNode &Node, TSortMap<CString, SObjDesc> &Results) const;
+        bool GetObjList (const CTopologyNode &Node, TSortMap<CString, SObjDesc> &Results, const SOptions &Options) const;
 		void GetSystemHeaderData (const CTopologyNode &Node, SSystemHeader &Header) const;
 
         const CVisualPalette &m_VI;

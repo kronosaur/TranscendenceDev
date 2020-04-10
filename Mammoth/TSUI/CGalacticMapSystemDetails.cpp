@@ -7,6 +7,9 @@
 
 #define ID_STATION_LIST                         CONSTLIT("idStationList")
 
+#define EVENT_ON_DOUBLE_CLICK					CONSTLIT("onDoubleClick")
+#define EVENT_ON_SELECTION_CHANGED				CONSTLIT("onSelectionChanged")
+
 #define PROP_COLOR								CONSTLIT("color")
 #define PROP_ENABLED							CONSTLIT("enabled")
 #define PROP_FADE_EDGE_HEIGHT					CONSTLIT("fadeEdgeHeight")
@@ -52,7 +55,7 @@ CGalacticMapSystemDetails::CGalacticMapSystemDetails (const CVisualPalette &VI, 
     {
     }
 
-bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, IAnimatron **retpAni)
+bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, const SOptions &Options, IAnimatron **retpAni, IAnimatron **retpList)
 
 //  CreateDetailsPane
 //
@@ -60,12 +63,10 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, IA
 //  if we fail to create the pane.
 
     {
-    int i;
-
     //  Get the list of objects at this node
 
     TSortMap<CString, SObjDesc> Objs;
-    GetObjList(Node, Objs);
+    GetObjList(Node, Objs, Options);
 
     //  Create a sequencer which will be the root pane.
 
@@ -107,7 +108,7 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, IA
 		//  Add all the stations in the node
 
 		int y = MAJOR_PADDING_TOP;
-		for (i = 0; i < Objs.GetCount(); i++)
+		for (int i = 0; i < Objs.GetCount(); i++)
 			{
 			//	Generate a record for the object
 
@@ -118,6 +119,17 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, IA
 			pList->AddEntry(strFromInt(Objs[i].ObjData.dwObjID), pEntry);
 			y += cyHeight + INTER_LINE_SPACING;
 			}
+
+		//	Register for events
+
+		if (Options.pListener)
+			{
+			if (!Options.sOnSelectionChangedCmd.IsBlank())
+				pList->AddListener(EVENT_ON_SELECTION_CHANGED, Options.pListener, Options.sOnSelectionChangedCmd, Options.dwOnSelectionChangedData);
+			}
+
+		if (retpList)
+			*retpList = pList;
 		}
 
 	//	If no objects, then shrink the pane 
@@ -125,6 +137,9 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, IA
 	else
 		{
 		pFrame->SetPropertyVector(PROP_SCALE, CVector(RectWidth(m_rcPane), cyHeader + 1));
+
+		if (retpList)
+			*retpList = NULL;
 		}
 
     //  Done
@@ -431,7 +446,7 @@ void CGalacticMapSystemDetails::GetObjAttribs (const CObjectTracker::SObjEntry &
 		}
 	}
 
-bool CGalacticMapSystemDetails::GetObjList (const CTopologyNode &Node, TSortMap<CString, SObjDesc> &Results) const
+bool CGalacticMapSystemDetails::GetObjList (const CTopologyNode &Node, TSortMap<CString, SObjDesc> &Results, const SOptions &Options) const
 
 //  GetObjList
 //
@@ -456,6 +471,11 @@ bool CGalacticMapSystemDetails::GetObjList (const CTopologyNode &Node, TSortMap<
 
     for (i = 0; i < Objs.GetCount(); i++)
         {
+		//	Skip stargates unless we want them.
+
+		if (!Options.bIncludeStargates && Objs[i].fIsStargate)
+			continue;
+
         //  Sort stations into groups
 
         int iDispSort;
@@ -496,7 +516,11 @@ bool CGalacticMapSystemDetails::GetObjList (const CTopologyNode &Node, TSortMap<
         //  Generate a sort string. We want stations with the same type and name
         //  to be collapsed into a single entry.
 
-        CString sSort = strPatternSubst(CONSTLIT("%d-%02d-%05d-%s-%08x-%s-%s"), iDispSort, iLevelSort, iSizeSort, Objs[i].sName, Objs[i].pType->GetUNID(), sAbandoned, Objs[i].sNotes);
+        CString sSort;
+		if (Options.bNoCollapseByType)
+			sSort = strPatternSubst(CONSTLIT("%d-%02d-%05d-%s-%08x-%s-%s"), iDispSort, iLevelSort, iSizeSort, Objs[i].sName, Objs[i].dwObjID, sAbandoned, Objs[i].sNotes);
+		else
+			sSort = strPatternSubst(CONSTLIT("%d-%02d-%05d-%s-%08x-%s-%s"), iDispSort, iLevelSort, iSizeSort, Objs[i].sName, Objs[i].pType->GetUNID(), sAbandoned, Objs[i].sNotes);
 
         //  Add to our result list
 

@@ -358,7 +358,7 @@ void CGalacticMapSession::Select (const CTopologyNode *pNode, bool bNoSound)
         CGalacticMapSystemDetails Details(m_HI.GetVisuals(), GetReanimator(), rcPane);
 
         IAnimatron *pAni;
-        Details.CreateDetailsPane(*pNode, &pAni);
+        Details.CreateDetailsPane(*pNode, CGalacticMapSystemDetails::SOptions(), &pAni);
 
     	StartPerformance(pAni, ID_DETAILS, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
         }

@@ -1897,6 +1897,11 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
 		else if (Ctx.bEnemy)
 			return CONSTLIT("Hostile");
 
+		//	Stargate
+
+		else if (Ctx.bIsStargate)
+			return CONSTLIT("Stargate");
+
 		//  Otherwise, we report no services.
 
 		else

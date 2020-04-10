@@ -2258,11 +2258,6 @@ bool CStation::IsShownInGalacticMap (void) const
     if (!m_pType->ShowsMapIcon() || m_pType->SuppressMapLabel())
         return false;
 
-    //  Skip stargates, which we don't need to show in the details pane
-
-    if (IsStargate())
-        return false;
-
     //  Show it
 
     return true;

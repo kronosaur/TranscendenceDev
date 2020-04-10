@@ -311,6 +311,9 @@
     <ClCompile Include="PlayerControllerProperties.cpp">
       <Filter>Source Files\Player</Filter>
     </ClCompile>
+    <ClCompile Include="CSystemStationsMenu.cpp">
+      <Filter>Source Files\Game Session</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BackgroundTasks.h">

@@ -192,15 +192,10 @@ class CDesignType
 
 		struct SMapDescriptionCtx
 			{
-			SMapDescriptionCtx (void) :
-					bShowDestroyed(false),
-					bEnemy(false),
-					bFriend(false)
-				{ }
-
-			bool bShowDestroyed;
-			bool bEnemy;
-			bool bFriend;
+			bool bShowDestroyed = false;
+			bool bEnemy = false;
+			bool bFriend = false;
+			bool bIsStargate = false;
 			};
 
 		struct SStats
