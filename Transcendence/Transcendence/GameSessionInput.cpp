@@ -6,6 +6,9 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
+#define CMD_CONFIRM							110
+#define CMD_CANCEL							111
+
 void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 
 //  OnChar
@@ -34,16 +37,16 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 			{
 			CPlayerShipController *pPlayer = m_Model.GetPlayer();
 			if (pPlayer == NULL)
-				return;
+				{ }
 
 			//	Handle debug console
 
-			if (m_DebugConsole.OnChar(chChar, dwKeyData))
-				return;
+			else if (m_DebugConsole.OnChar(chChar, dwKeyData))
+				{ }
 
 			//	If we're paused, then check for unpause key
 
-			if (g_pTrans->m_bPaused)
+			else if (g_pTrans->m_bPaused)
 				{
 				if (chChar == ' ')
 					{
@@ -52,13 +55,11 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 					}
 				else
 					ExecuteCommandEnd(pPlayer, CGameKeys::keyPause);
-
-				return;
 				}
 
 			//	If we're in a menu, handle it
 
-			if (g_pTrans->m_CurrentMenu != CTranscendenceWnd::menuNone)
+			else if (IsInMenuCompatible())
 				{
 				//	Ignore repeat keys (because otherwise we might accidentally
 				//	select a menu item from keeping a key pressed too long).
@@ -75,28 +76,28 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 					DWORD dwData = g_pTrans->m_MenuData.GetItemData(iIndex);
 					DWORD dwData2 = g_pTrans->m_MenuData.GetItemData2(iIndex);
 
-					switch (g_pTrans->m_CurrentMenu)
+					switch (m_CurrentMenu)
 						{
-						case CTranscendenceWnd::menuGame:
+						case menuGame:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 							if (g_pTrans->DoGameMenuCommand(dwData))
 								DismissMenu();
 							break;
 
-						case CTranscendenceWnd::menuSelfDestructConfirm:
+						case menuSelfDestructConfirm:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 							g_pTrans->DoSelfDestructConfirmCommand(dwData);
 							DismissMenu();
 							break;
 
-						case CTranscendenceWnd::menuComms:
+						case menuComms:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
 							g_pTrans->DoCommsMenu(dwData);
 							DismissMenu();
 							m_pCurrentComms = NULL;
 							break;
 
-						case CTranscendenceWnd::menuCommsTarget:
+						case menuCommsTarget:
 							{
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 
@@ -109,26 +110,25 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 							break;
 							}
 
-						case CTranscendenceWnd::menuCommsSquadron:
+						case menuCommsSquadron:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
 							g_pTrans->DoCommsSquadronMenu(g_pTrans->m_MenuData.GetItemLabel(iIndex), (MessageTypes)dwData, dwData2);
 							DismissMenu();
 							m_pCurrentComms = NULL;
 							break;
 
-						case CTranscendenceWnd::menuInvoke:
+						case menuInvoke:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
 							g_pTrans->DoInvocation((CPower *)dwData);
 							DismissMenu();
 							break;
 						}
 					}
-				return;
 				}
 
 			//	If we're in a picker, handle it
 
-			if (g_pTrans->m_CurrentPicker != CTranscendenceWnd::pickNone)
+			else if (IsInPickerCompatible())
 				{
 				CString sKey = CString(&chChar, 1);
 				DWORD dwData;
@@ -146,15 +146,15 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 					}
 				else if (bHotKey)
 					{
-					switch (g_pTrans->m_CurrentPicker)
+					switch (m_CurrentMenu)
 						{
-						case CTranscendenceWnd::pickUsableItem:
+						case menuUseItem:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
 							g_pTrans->DoUseItemCommand(dwData);
 							DismissMenu();
 							break;
 
-						case CTranscendenceWnd::pickEnableDisableItem:
+						case menuEnableDevice:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
 							pPlayer->SetUIMessageEnabled(uimsgEnableDeviceHint, false);
 							g_pTrans->DoEnableDisableItemCommand(dwData);
@@ -162,8 +162,6 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 							break;
 						}
 					}
-
-				return;
 				}
 
 			break;
@@ -264,7 +262,7 @@ void CGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 
 			//	Handle menu, if it is up
 
-			else if (g_pTrans->m_CurrentMenu != CTranscendenceWnd::menuNone)
+			else if (IsInMenuCompatible())
 				{
 				if (iVirtKey == VK_ESCAPE)
 					{
@@ -274,8 +272,8 @@ void CGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 				else
 					{
 					CGameKeys::Keys iCommand = m_Settings.GetKeyMap().GetGameCommand(dwTVirtKey);
-					if ((iCommand == CGameKeys::keyInvokePower && g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuInvoke)
-							|| (iCommand == CGameKeys::keyCommunications && g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuCommsTarget))
+					if ((iCommand == CGameKeys::keyInvokePower && m_CurrentMenu == menuInvoke)
+							|| (iCommand == CGameKeys::keyCommunications && m_CurrentMenu == menuCommsTarget))
 						{
 						g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 						HideMenu();
@@ -285,19 +283,19 @@ void CGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 
 			//	Handle picker
 
-			else if (g_pTrans->m_CurrentPicker != CTranscendenceWnd::pickNone)
+			else if (IsInPickerCompatible())
 				{
 				if (iVirtKey == VK_RETURN)
 					{
-					switch (g_pTrans->m_CurrentPicker)
+					switch (m_CurrentMenu)
 						{
-						case CTranscendenceWnd::pickUsableItem:
+						case menuUseItem:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
 							g_pTrans->DoUseItemCommand(g_pTrans->m_MenuData.GetItemData(g_pTrans->m_PickerDisplay.GetSelection()));
 							DismissMenu();
 							break;
 
-						case CTranscendenceWnd::pickEnableDisableItem:
+						case menuEnableDevice:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
 							pPlayer->SetUIMessageEnabled(uimsgEnableDeviceHint, false);
 							g_pTrans->DoEnableDisableItemCommand(g_pTrans->m_MenuData.GetItemData(g_pTrans->m_PickerDisplay.GetSelection()));
@@ -326,8 +324,8 @@ void CGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 				else
 					{
 					CGameKeys::Keys iCommand = m_Settings.GetKeyMap().GetGameCommand(dwTVirtKey);
-					if ((iCommand == CGameKeys::keyEnableDevice && g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickEnableDisableItem)
-							|| (iCommand == CGameKeys::keyUseItem && g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickUsableItem))
+					if ((iCommand == CGameKeys::keyEnableDevice && m_CurrentMenu == menuEnableDevice)
+							|| (iCommand == CGameKeys::keyUseItem && m_CurrentMenu == menuUseItem))
 						{
 						g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 						HideMenu();
@@ -489,7 +487,7 @@ void CGameSession::OnKeyUp (int iVirtKey, DWORD dwKeyData)
 
 			//  Handle key
 
-			if (g_pTrans->m_CurrentMenu != CTranscendenceWnd::menuNone
+			if (m_CurrentMenu != menuNone
 					&& iVirtKey >= 'A' && iVirtKey < 'Z')
 				NULL;
 
@@ -1075,4 +1073,22 @@ void CGameSession::SetMouseAimEnabled (bool bEnabled)
 	CPlayerShipController *pPlayer = m_Model.GetPlayer();
 	if (pPlayer)
 		pPlayer->OnMouseAimSetting(m_bMouseAim);
+	}
+
+void CGameSession::ShowSelfDestructMenu (void)
+
+//	ShowSelfDestructMenu
+//
+//	Shows the self-destruct menu.
+
+	{
+	g_pTrans->DisplayMessage(CONSTLIT("Warning: Self-Destruct Activated"));
+
+	g_pTrans->m_MenuData.SetTitle(CONSTLIT("Self-Destruct"));
+	g_pTrans->m_MenuData.RemoveAll();
+	g_pTrans->m_MenuData.AddMenuItem(CONSTLIT("1"), CONSTLIT("Confirm"), 0, CMD_CONFIRM);
+	g_pTrans->m_MenuData.AddMenuItem(CONSTLIT("2"), CONSTLIT("Cancel"), 0, CMD_CANCEL);
+	g_pTrans->m_MenuDisplay.Invalidate();
+
+	m_CurrentMenu = menuSelfDestructConfirm;
 	}

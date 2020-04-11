@@ -64,7 +64,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 					m_Narrative.Paint(Screen, g_pUniverse->GetFrameTicks());
 					}
 
-				if (g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickNone)
+				if (!IsInPickerCompatible())
 					{
 					SetProgramState(psPaintingMessageDisplay);
 					g_pTrans->m_MessageDisplay.Paint(Screen);
@@ -72,20 +72,12 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				SetProgramState(psAnimating);
 
-				if (g_pTrans->m_CurrentMenu != CTranscendenceWnd::menuNone)
-					g_pTrans->m_MenuDisplay.Paint(Screen);
-				if (g_pTrans->m_CurrentPicker != CTranscendenceWnd::pickNone)
-					g_pTrans->m_PickerDisplay.Paint(Screen);
+				PaintMenu(Screen);
 				m_DebugConsole.Paint(Screen);
 
 				//	If we're in a HUD menu, run quarter speed
 
-				bool bSlowMotion = (g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuCommsTarget
-						|| g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuComms
-						|| g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuCommsSquadron
-						|| g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuInvoke
-						|| g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickUsableItem
-						|| g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickEnableDisableItem);
+				bool bSlowMotion = (m_CurrentMenu != menuNone);
 
 #ifdef DEBUG_LINE_OF_FIRE
 				if (GetPlayer())
@@ -415,6 +407,31 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 	DEBUG_CATCH
     }
+
+void CGameSession::PaintMenu (CG32bitImage &Screen)
+
+//	PaintMenu
+//
+//	Paints the current menu.
+
+	{
+	switch (m_CurrentMenu)
+		{
+		case menuComms:
+		case menuCommsSquadron:
+		case menuCommsTarget:
+		case menuGame:
+		case menuInvoke:
+		case menuSelfDestructConfirm:
+			g_pTrans->m_MenuDisplay.Paint(Screen);
+			break;
+
+		case menuEnableDevice:
+		case menuUseItem:
+			g_pTrans->m_PickerDisplay.Paint(Screen);
+			break;
+		}
+	}
 
 void CGameSession::PaintSRS (CG32bitImage &Screen)
 

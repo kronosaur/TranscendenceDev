@@ -75,16 +75,8 @@
 
 							(targetObj (seededRandom (objGetDestiny aOwnerObj) enemyStations))
 							(targetLevel (objGetLevel targetObj))
-							)
 
-							;	Remember target
-
-							(msnSetData gSource 'targetID (objGetID targetObj))
-							(msnRegisterForEvents gSource targetObj)
-
-							;	Compute reward
-
-							(msnSetData gSource 'reward 
+							(rewardInCredits
 								(switch
 									(ls targetLevel 1)
 										500
@@ -95,6 +87,15 @@
 									(@ '(0 500 1000 2000 4000 8000 15000 30000 65000 130000 250000) targetLevel)
 									)
 								)
+							)
+
+							;	Remember target and reward
+
+							(msnSetData gSource 'targetID (objGetID targetObj))
+							(msnRegisterForEvents gSource targetObj)
+
+							(msnSetData gSource 'reward rewardInCredits)
+							(msnSetData gSource 'rewardInRin (ecoExchange rewardInCredits 'credit 'rin))
 							)
 						)
 					)
@@ -139,14 +140,14 @@
 				(msnTranslate gSource 'descSummary {
 					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
 					systemName: (sysGetName)
-					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					reward: (fmtCurrency 'rin (msnGetData gSource 'rewardInRin))
 					})
 			</Text>
 			<Text id="Intro">
 				(block (
 					(data {
 						targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
-						reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+						reward: (fmtCurrency 'rin (msnGetData gSource 'rewardInRin))
 						})
 					)
 					(list
@@ -159,7 +160,7 @@
 					{	descID: 'textBriefing1
 						data: {
 							targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
-							reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+							reward: (fmtCurrency 'rin (msnGetData gSource 'rewardInRin))
 							}
 						}
 					)
@@ -187,7 +188,7 @@
 				(list
 					{	descID: 'textSuccessDebrief1	 
 						data: {
-							reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+							reward: (fmtCurrency 'rin (msnGetData gSource 'rewardInRin))
 							}
 						}
 					)

@@ -708,25 +708,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 			esEpitaph,
 			};
 
-		enum MenuTypes
-			{
-			menuNone,
-			menuGame,
-			menuSelfDestructConfirm,
-			menuCommsTarget,
-			menuComms,
-			menuCommsSquadron,
-			menuInvoke,
-			};
-
-		enum PickerTypes
-			{
-			pickNone,
-			pickUsableItem,
-			pickPower,
-			pickEnableDisableItem,
-			};
-
 		struct SPreferences
 			{
 			bool bMusicOn;
@@ -781,14 +762,15 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void DoInvocation (CPower *pPower);
 		void DoUseItemCommand (DWORD dwData);
 		DWORD GetCommsStatus (void);
+		void HideCommsMenu (void);
 		void HideCommsTargetMenu (CSpaceObject *pExlude = NULL);
 		void ShowCommsMenu (CSpaceObject *pObj);
-		void ShowCommsSquadronMenu (void);
-		void ShowCommsTargetMenu (void);
-		void ShowEnableDisablePicker (void);
-		void ShowInvokeMenu (void);
+		bool ShowCommsSquadronMenu (void);
+		bool ShowCommsTargetMenu (void);
+		bool ShowEnableDisablePicker (void);
+		bool ShowInvokeMenu (void);
 		void ShowGameMenu (void);
-		void ShowUsePicker (void);
+		bool ShowUsePicker (void);
 
 		void SetGameCreated (bool bValue = true) { m_bGameCreated = bValue; }
 		bool IsGameCreated (void) { return m_bGameCreated; }
@@ -824,9 +806,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		char m_chKeyDown;					//	Processed a WM_KEYDOWN (skip WM_CHAR)
 		bool m_bDockKeyDown;				//	Used to de-bounce dock key (so holding down 'D' does not select a dock action).
 		AGScreen *m_pCurrentScreen;
-		MenuTypes m_CurrentMenu;
 		CMenuData m_MenuData;
-		PickerTypes m_CurrentPicker;
 
 		int m_iCountdown;					//	Miscellaneous timer
 		CSpaceObject *m_pMenuObj;			//	Object during menu selection
