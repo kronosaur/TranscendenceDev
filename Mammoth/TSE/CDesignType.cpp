@@ -954,8 +954,6 @@ void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
 //	Fires GetGlobalAchievements event
 
 	{
-	int i;
-
 	SEventHandlerDesc Event;
 	if (FindEventHandler(GET_GLOBAL_ACHIEVEMENTS_EVENT, &Event))
 		{
@@ -971,28 +969,8 @@ void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
 		if (pResult->IsError())
 			ReportEventError(GET_GLOBAL_ACHIEVEMENTS_EVENT, pResult);
 
-		else if (pResult->IsNil())
-			;
-
-		else if (pResult->IsSymbolTable())
-			Stats.Insert(this, pResult);
-
-		else if (pResult->IsList() && pResult->GetCount() > 0)
-			{
-			//	If we have a list of lists, then we have 
-			//	a list of achievements
-
-			if (pResult->GetElement(0)->IsList() || pResult->GetElement(0)->IsSymbolTable())
-				{
-				for (i = 0; i < pResult->GetCount(); i++)
-					Stats.Insert(this, pResult->GetElement(i));
-				}
-
-			//	Otherwise, we have a single achievement
-
-			else
-				Stats.Insert(this, pResult);
-			}
+		else
+			Stats.InsertFromCCItem(*this, *pResult);
 		}
 	}
 
