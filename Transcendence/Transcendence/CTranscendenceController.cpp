@@ -126,6 +126,7 @@
 #define CMD_UI_CHANGE_PASSWORD					CONSTLIT("uiChangePassword")
 #define CMD_UI_EXIT								CONSTLIT("uiExit")
 #define CMD_UI_GET_COLLECTION					CONSTLIT("uiGetCollection")
+#define CMD_UI_HIDE_STATION_LIST   				CONSTLIT("uiHideStationList")
 #define CMD_UI_MUSIC_VOLUME_DOWN				CONSTLIT("uiMusicVolumeDown")
 #define CMD_UI_MUSIC_VOLUME_UP					CONSTLIT("uiMusicVolumeUp")
 #define CMD_UI_RESET_PASSWORD					CONSTLIT("uiResetPassword")
@@ -1456,7 +1457,13 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 	else if (strEquals(sCmd, CMD_UI_SHOW_STATION_LIST))
 		{
 		if (m_pGameSession)
-			m_pGameSession->ShowStationList();
+			m_pGameSession->ShowStationList(true);
+		}
+
+	else if (strEquals(sCmd, CMD_UI_HIDE_STATION_LIST))
+		{
+		if (m_pGameSession)
+			m_pGameSession->ShowStationList(false);
 		}
 
 	//	Volume controls

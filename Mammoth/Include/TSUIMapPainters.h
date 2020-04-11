@@ -11,11 +11,16 @@ class CGalacticMapSystemDetails
 		struct SOptions
 			{
 			IAniCommand *pListener = NULL;		//	Notify on events
+			CString sOnDoubleClickCmd;
+			DWORD dwOnDoubleClickData = 0;
 			CString sOnSelectionChangedCmd;
 			DWORD dwOnSelectionChangedData = 0;
 
+			CString sHeaderExtra;
+
 			bool bIncludeStargates = false;
 			bool bNoCollapseByType = false;
+			bool bNoLastVisitTime = false;
 			};
 
         CGalacticMapSystemDetails (const CVisualPalette &VI, CReanimator &Reanimator, const RECT &rcPane);
@@ -39,10 +44,10 @@ class CGalacticMapSystemDetails
 
 		void CreateObjEntry (const SObjDesc &Obj, int yPos, int cxWidth, IAnimatron **retpAni, int *retcyHeight);
 		bool CreateObjIcon (const CObjectTracker::SObjEntry &Obj, CG32bitImage **retpIcon);
-        void CreateSystemHeader (CAniSequencer *pContainer, const CTopologyNode &Node, int *retcyHeight) const;
+        void CreateSystemHeader (CAniSequencer *pContainer, const CTopologyNode &Node, const SOptions &Options, int *retcyHeight) const;
 		void GetObjAttribs (const CObjectTracker::SObjEntry &Obj, TArray<CCartoucheBlock::SCartoucheDesc> &retAttribs) const;
         bool GetObjList (const CTopologyNode &Node, TSortMap<CString, SObjDesc> &Results, const SOptions &Options) const;
-		void GetSystemHeaderData (const CTopologyNode &Node, SSystemHeader &Header) const;
+		void GetSystemHeaderData (const CTopologyNode &Node, const SOptions &Options, SSystemHeader &Header) const;
 
         const CVisualPalette &m_VI;
         CReanimator &m_Reanimator;

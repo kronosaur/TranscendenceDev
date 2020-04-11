@@ -334,6 +334,11 @@ bool CAniListBox::HandleKeyDown (int iVirtKey, DWORD dwKeyData)
 
 	switch (iVirtKey)
 		{
+		case VK_RETURN:
+			if (iSelection != -1)
+				RaiseEvent(EVENT_ON_DOUBLE_CLICK);
+			return true;
+
 		case VK_DOWN:
 			if (iSelection + 1 < iCount)
 				Select(iSelection + 1);

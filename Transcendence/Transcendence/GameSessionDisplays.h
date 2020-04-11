@@ -137,6 +137,7 @@ class CSystemStationsMenu : IAniCommand
 		CSystemStationsMenu (CHumanInterface &HI, CTranscendenceModel &Model, IHISession &Session);
 
 		void Hide (void);
+		void SetAsDestination (void);
 		bool Show (const RECT &rcRect, const CString &sID);
 
 		//	IAniCommand

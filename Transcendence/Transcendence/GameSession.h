@@ -31,7 +31,7 @@ class CGameSession : public IHISession
 		void ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Keys iCommand);
 		void ExecuteCommandEnd (CPlayerShipController *pPlayer, CGameKeys::Keys iCommand);
 		void ShowSelfDestructMenu (void);
-		void ShowStationList (void);
+		void ShowStationList (bool bShow = true);
 		void ShowSystemMap (bool bShow = true);
 
 		//  Notifications from player ship, etc.

@@ -6,6 +6,9 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
+#define CMD_UI_HIDE_STATION_LIST   				CONSTLIT("uiHideStationList")
+
+#define EVENT_ON_DOUBLE_CLICK					CONSTLIT("onDoubleClick")
 #define EVENT_ON_SELECTION_CHANGED				CONSTLIT("onSelectionChanged")
 
 #define PROP_SELECTION_ID						CONSTLIT("selectionID")
@@ -95,7 +98,12 @@ void CSystemStationsMenu::OnAniCommand (const CString &sID, const CString &sEven
 	if (!pSystem)
 		return;
 
-	if (strEquals(sCmd, EVENT_ON_SELECTION_CHANGED))
+	if (strEquals(sCmd, EVENT_ON_DOUBLE_CLICK))
+		{
+		SetAsDestination();
+		m_HI.HICommand(CMD_UI_HIDE_STATION_LIST);
+		}
+	else if (strEquals(sCmd, EVENT_ON_SELECTION_CHANGED))
 		{
 		//	The ID of the entry is the object ID.
 
@@ -107,6 +115,46 @@ void CSystemStationsMenu::OnAniCommand (const CString &sID, const CString &sEven
 
 		HighlightObject(*pSystem, strToInt(sObjID, 0));
 		}
+	}
+
+void CSystemStationsMenu::SetAsDestination (void)
+
+//	SetAsDestination
+//
+//	Marks the currently selected station as a destination.
+
+	{
+	CSystem *pSystem = m_Model.GetUniverse().GetCurrentSystem();
+	if (!pSystem)
+		return;
+
+	CSpaceObject *pPlayerShip = m_Model.GetUniverse().GetPlayerShip();
+	if (!pPlayerShip)
+		return;
+
+	//	The ID of the entry is the object ID.
+
+	CString sObjID = m_pList->GetPropertyString(PROP_SELECTION_ID);
+	if (sObjID.IsBlank())
+		return;
+
+	//	Get the object
+
+	CSpaceObject *pObj = pSystem->FindObject(strToInt(sObjID, 0));
+	if (!pObj)
+		return;
+
+	//	Autoclear depending on the nature of the object.
+
+	CSpaceObject::SPlayerDestinationOptions Options;
+	if (pObj->IsStargate())
+		Options.bAutoClearOnGate = true;
+	else if (pPlayerShip->IsEnemy(pObj) && pObj->CanBeAttacked())
+		Options.bAutoClearOnDestroy = true;
+	else
+		Options.bAutoClearOnDock = true;
+
+	pObj->SetPlayerDestination(Options);
 	}
 
 bool CSystemStationsMenu::Show (const RECT &rcRect, const CString &sID)
@@ -144,7 +192,12 @@ bool CSystemStationsMenu::Show (const RECT &rcRect, const CString &sID)
 	CGalacticMapSystemDetails::SOptions Options;
 	Options.bIncludeStargates = true;
 	Options.bNoCollapseByType = true;
+	Options.bNoLastVisitTime = true;
+
+	Options.sHeaderExtra = Universe.GetEngineLanguage().Translate(CONSTLIT("uiStationListHelp"));
+
 	Options.pListener = this;
+	Options.sOnDoubleClickCmd = EVENT_ON_DOUBLE_CLICK;
 	Options.sOnSelectionChangedCmd = EVENT_ON_SELECTION_CHANGED;
 
 	IAnimatron *pAni;

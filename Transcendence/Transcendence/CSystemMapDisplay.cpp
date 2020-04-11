@@ -6,8 +6,6 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
-#define STR_HELP_DESC						CONSTLIT("Scroll wheel to zoom map\n[L] to show station list\n[H] to toggle HUD on/off")
-
 const Metric SCALE_100 = g_AU / 400.0;
 const int MAP_ZOOM_SPEED =					16;
 const int HELP_PANE_WIDTH = 280;
@@ -128,7 +126,7 @@ bool CSystemMapDisplay::Init (const RECT &rcRect)
 
     m_HelpPainter.SetWidth(HELP_PANE_WIDTH);
     m_HelpPainter.SetTitle(pSystem->GetName());
-    m_HelpPainter.SetDesc(STR_HELP_DESC);
+    m_HelpPainter.SetDesc(m_Model.GetUniverse().GetEngineLanguage().Translate(CONSTLIT("uiSystemMapHelp")));
 
     m_HelpPainter.SetScale(GetScaleKlicksPerPixel(m_Scale.GetScale()));
 

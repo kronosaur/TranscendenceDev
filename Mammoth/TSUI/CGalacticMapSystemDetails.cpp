@@ -84,7 +84,7 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, co
     //  Add system information
 
     int cyHeader;
-    CreateSystemHeader(pRoot, Node, &cyHeader);
+    CreateSystemHeader(pRoot, Node, Options, &cyHeader);
 
 	//	Now that we know the size of the text, resize
 
@@ -124,6 +124,9 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, co
 
 		if (Options.pListener)
 			{
+			if (!Options.sOnDoubleClickCmd.IsBlank())
+				pList->AddListener(EVENT_ON_DOUBLE_CLICK, Options.pListener, Options.sOnDoubleClickCmd, Options.dwOnDoubleClickData);
+
 			if (!Options.sOnSelectionChangedCmd.IsBlank())
 				pList->AddListener(EVENT_ON_SELECTION_CHANGED, Options.pListener, Options.sOnSelectionChangedCmd, Options.dwOnSelectionChangedData);
 			}
@@ -342,7 +345,7 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
     return true;
     }
 
-void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, const CTopologyNode &Node, int *retcyHeight) const
+void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, const CTopologyNode &Node, const SOptions &Options, int *retcyHeight) const
 
 //  CreateSystemHeader
 //
@@ -350,7 +353,7 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, c
 
     {
 	SSystemHeader Header;
-	GetSystemHeaderData(Node, Header);
+	GetSystemHeaderData(Node, Options, Header);
 
     const CG16bitFont &TitleFont = m_VI.GetFont(fontHeader);
     const CG16bitFont &DescFont = m_VI.GetFont(fontMedium);
@@ -538,7 +541,7 @@ bool CGalacticMapSystemDetails::GetObjList (const CTopologyNode &Node, TSortMap<
     return true;
     }
 
-void CGalacticMapSystemDetails::GetSystemHeaderData (const CTopologyNode &Node, SSystemHeader &Header) const
+void CGalacticMapSystemDetails::GetSystemHeaderData (const CTopologyNode &Node, const SOptions &Options, SSystemHeader &Header) const
 
 //	GetSystemHeaderData
 //
@@ -561,21 +564,34 @@ void CGalacticMapSystemDetails::GetSystemHeaderData (const CTopologyNode &Node, 
     //  Compose a string indicating when we visited.
 
     CString sVisit;
-    DWORD dwLastVisit = Node.GetLastVisitedTime();
-    if (dwLastVisit == 0xffffffff)
-        sVisit = CONSTLIT("You've never visited this system.");
-    else if (dwLastVisit == (DWORD)g_pUniverse->GetTicks())
-        sVisit = CONSTLIT("You are currently in this system.");
-    else
-        {
-		CTimeSpan Span = g_pUniverse->GetElapsedGameTimeAt(g_pUniverse->GetTicks()) - g_pUniverse->GetElapsedGameTimeAt(dwLastVisit);
-        sVisit = strPatternSubst(CONSTLIT("Last visited %s ago."), Span.Format(NULL_STR));
-        }
+	if (!Options.bNoLastVisitTime)
+		{
+		DWORD dwLastVisit = Node.GetLastVisitedTime();
+		if (dwLastVisit == 0xffffffff)
+			sVisit = CONSTLIT("You've never visited this system.");
+		else if (dwLastVisit == (DWORD)g_pUniverse->GetTicks())
+			sVisit = CONSTLIT("You are currently in this system.");
+		else
+			{
+			CTimeSpan Span = g_pUniverse->GetElapsedGameTimeAt(g_pUniverse->GetTicks()) - g_pUniverse->GetElapsedGameTimeAt(dwLastVisit);
+			sVisit = strPatternSubst(CONSTLIT("Last visited %s ago."), Span.Format(NULL_STR));
+			}
 
-	if (!Header.sDetails.IsBlank())
-		Header.sDetails = strPatternSubst(CONSTLIT("%s\n%s"), Header.sDetails, sVisit);
-	else
-		Header.sDetails = sVisit;
+		if (!Header.sDetails.IsBlank())
+			Header.sDetails = strPatternSubst(CONSTLIT("%s\n%s"), Header.sDetails, sVisit);
+		else
+			Header.sDetails = sVisit;
+		}
+
+	//	Add extra info
+
+	if (!Options.sHeaderExtra.IsBlank())
+		{
+		if (!Header.sDetails.IsBlank())
+			Header.sDetails = strPatternSubst(CONSTLIT("%s\n%s"), Header.sDetails, Options.sHeaderExtra);
+		else
+			Header.sDetails = Options.sHeaderExtra;
+		}
 
 	//	Add debug information, if necessary
 

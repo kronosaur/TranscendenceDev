@@ -558,14 +558,17 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 	return true;
 	}
 
-void CGameSession::ShowStationList (void)
+void CGameSession::ShowStationList (bool bShow)
 
 //	ShowStationList
 //
 //	Shows the list of known stations.
 
 	{
-	ShowMenu(menuSystemStations);
+	if (bShow)
+		ShowMenu(menuSystemStations);
+	else
+		HideMenu();
 	}
 
 void CGameSession::ShowSystemMap (bool bShow)
