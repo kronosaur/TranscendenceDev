@@ -82,7 +82,7 @@ class CCodeChainCtx
 		bool RunEvalString (const CString &sString, bool bPlain, CString *retsResult);
 		ICCItem *RunLambda (ICCItem *pCode);
 		ICCItemPtr RunLambdaCode (ICCItem *pCode, ICCItem *pArgs = NULL);
-		void SaveAndDefineDataVar (ICCItem *pData);
+		void SaveAndDefineDataVar (const ICCItem *pData);
 		void SaveAndDefineItemVar (const CItem &Item);
 		void SaveAndDefineItemVar (CItemCtx &ItemCtx);
 		void SaveAndDefineOverlayID (DWORD dwID);

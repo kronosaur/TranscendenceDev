@@ -37,7 +37,7 @@ void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 	pEntry->pCode = NULL;
 	}
 
-ICCItemPtr CLanguageDataBlock::ComposeCCItem (ICCItem *pValue, ICCItem *pData) const
+ICCItemPtr CLanguageDataBlock::ComposeCCItem (ICCItem *pValue, const ICCItem *pData) const
 
 //	ComposeCCItem
 //
@@ -80,7 +80,7 @@ ICCItemPtr CLanguageDataBlock::ComposeCCItem (ICCItem *pValue, ICCItem *pData) c
 		return ICCItemPtr(pValue->Reference());
 	}
 
-bool CLanguageDataBlock::ComposeCCResult (ETranslateResult iResult, ICCItem *pData, const TArray<CString> &List, const CString &sText, ICCItem *pCCResult, ICCItemPtr &retResult) const
+bool CLanguageDataBlock::ComposeCCResult (ETranslateResult iResult, const ICCItem *pData, const TArray<CString> &List, const CString &sText, ICCItem *pCCResult, ICCItemPtr &retResult) const
 
 //	ComposeCCResult
 //
@@ -125,7 +125,7 @@ bool CLanguageDataBlock::ComposeCCResult (ETranslateResult iResult, ICCItem *pDa
 		}
 	}
 
-CLanguageDataBlock::ETranslateResult CLanguageDataBlock::ComposeResult (ICCItem *pResult, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult) const
+CLanguageDataBlock::ETranslateResult CLanguageDataBlock::ComposeResult (ICCItem *pResult, const ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult) const
 
 //	ComposeResult
 //
@@ -726,7 +726,7 @@ bool CLanguageDataBlock::TranslateText (const CDesignType &Type, const CString &
 	return ComposeTextResult(iResult, List, retsText);
 	}
 
-const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CString &sID, ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText, CString *retsText) const
+const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CString &sID, const ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText, CString *retsText) const
 
 //	TranslateTry
 //

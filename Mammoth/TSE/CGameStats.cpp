@@ -1,6 +1,7 @@
 //	CGameStats.cpp
 //
 //	CGameStats object
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -56,8 +57,11 @@ CString CGameStats::GetTextValue (CDesignType &Type, const CString &sIDField, co
 	const ICCItem *pItem = Entry.GetElement(sIDField);
 	if (pItem && !pItem->IsNil())
 		{
+		//	NOTE: We pass the entry as data so that it can be used by the
+		//	translation code.
+
 		CString sText;
-		if (!Type.TranslateText(pItem->GetStringValue(), NULL, &sText))
+		if (!Type.TranslateText(pItem->GetStringValue(), &Entry, &sText))
 			return NULL_STR;
 
 		return sText;

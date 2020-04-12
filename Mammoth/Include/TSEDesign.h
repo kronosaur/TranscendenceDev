@@ -333,11 +333,11 @@ class CDesignType
 		void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
 		void Sweep (void) { OnSweep(); }
 		void TopologyInitialized (void) { OnTopologyInitialized(); }
-		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
-		bool Translate (const CSpaceObject &Obj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
-		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const;
-		bool TranslateText (const CSpaceObject &Obj, const CString &sID, ICCItem *pData, CString *retsText) const;
-		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
+		bool Translate (const CString &sID, const ICCItem *pData, ICCItemPtr &retResult) const;
+		bool Translate (const CSpaceObject &Obj, const CString &sID, const ICCItem *pData, ICCItemPtr &retResult) const;
+		bool TranslateText (const CString &sID, const ICCItem *pData, CString *retsText) const;
+		bool TranslateText (const CSpaceObject &Obj, const CString &sID, const ICCItem *pData, CString *retsText) const;
+		bool TranslateText (const CItem &Item, const CString &sID, const ICCItem *pData, CString *retsText) const;
 
 		static CString GetTypeChar (DesignTypes iType);
 
@@ -1398,6 +1398,7 @@ class CDesignCollection
 		CArmorMassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
 		CGlobalEventCache *m_EventsCache[evtCount];
+		TSortMap<CString, TArray<CDesignType *>> m_PropertyCache;
 		CAdventureDesc m_EmptyAdventure;
 
 		//	Dynamic design types

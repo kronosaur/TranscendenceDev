@@ -94,7 +94,7 @@ class CLanguage
 			};
 
 		static int CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecimal);
-		static CString Compose (const CString &sString, ICCItem *pArgs);
+		static CString Compose (const CString &sString, const ICCItem *pArgs);
 		static CString ComposeGenderedWord (const CString &sWord, GenomeTypes iGender);
 		static CString ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags);
 		static CString ComposeNumber (ENumberFormatTypes iFormat, int iNumber);
@@ -121,8 +121,8 @@ class CLanguage
 			bool bDone = false;
 			};
 
-		static CString ComposeCharacterReference (CUniverse &Universe, const CString &sCharacter, const CString &sField, ICCItem *pData);
-		static CString ComposeGenderedWordHelper (CUniverse &Universe, const CString &sWord, const CString &sField, ICCItem *pData);
+		static CString ComposeCharacterReference (CUniverse &Universe, const CString &sCharacter, const CString &sField, const ICCItem *pData);
+		static CString ComposeGenderedWordHelper (CUniverse &Universe, const CString &sWord, const CString &sField, const ICCItem *pData);
 		static CString ParseVar (char *pPos, SVarInfo &retVarInfo, char **retpPos);
 	};
 
@@ -140,7 +140,7 @@ class CLanguageDataBlock
 			{
 			const CSpaceObject *pSource = NULL;
 			const CItem *pItem = NULL;
-			ICCItem *pData = NULL;
+			const ICCItem *pData = NULL;
 			};
 
 		CLanguageDataBlock (void) { }
@@ -180,15 +180,15 @@ class CLanguageDataBlock
 			};
 
 		inline void CleanUp (void) { DeleteAll(); }
-		ICCItemPtr ComposeCCItem (ICCItem *pValue, ICCItem *pData) const;
-		bool ComposeCCResult (ETranslateResult iResult, ICCItem *pData, const TArray<CString> &List, const CString &sText, ICCItem *pCCResult, ICCItemPtr &retResult) const;
-		ETranslateResult ComposeResult (ICCItem *pResult, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
+		ICCItemPtr ComposeCCItem (ICCItem *pValue, const ICCItem *pData) const;
+		bool ComposeCCResult (ETranslateResult iResult, const ICCItem *pData, const TArray<CString> &List, const CString &sText, ICCItem *pCCResult, ICCItemPtr &retResult) const;
+		ETranslateResult ComposeResult (ICCItem *pResult, const ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
 		bool ComposeTextResult (ETranslateResult iResult, const TArray<CString> &List, CString *retsText) const;
 		void Copy (const CLanguageDataBlock &Src);
 		bool IsCode (const CString &sText) const;
 		CString ParseTextBlock (const CString &sText) const;
 		ETranslateResult TranslateEval (const CDesignType &Type, const CString &sID, const SParams &Params, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
-		const SEntry *TranslateTry (const CString &sID, ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText = NULL, CString *retsText = NULL) const;
+		const SEntry *TranslateTry (const CString &sID, const ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText = NULL, CString *retsText = NULL) const;
 
 		TSortMap<CString, SEntry> m_Data;
 	};
