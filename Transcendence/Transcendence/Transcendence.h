@@ -107,6 +107,7 @@ struct SNewGameSettings
 
 	bool bFullCreate = false;					//	If TRUE, create all systems
 	bool bDefaultPlayerName = false;			//	If TRUE, this is a default player name
+	bool bDifficultyLocked = false;				//	If TRUE, player cannot change difficulty
 	};
 
 struct SAdventureSettings

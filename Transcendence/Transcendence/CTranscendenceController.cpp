@@ -862,7 +862,6 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		SNewGameSettings Defaults;
 		Defaults.sPlayerName = m_Settings.GetString(CGameSettings::playerName);
 		Defaults.iPlayerGenome = ParseGenomeID(m_Settings.GetString(CGameSettings::playerGenome));
-		Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
 		Defaults.dwPlayerShip = (DWORD)m_Settings.GetInteger(CGameSettings::playerShipClass);
 
 		//	If the player name is NULL then we come up with a better idea
@@ -888,8 +887,15 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		//	Validate difficulty
 
-		if (Defaults.iDifficulty == CDifficultyOptions::lvlUnknown)
-			Defaults.iDifficulty = CDifficultyOptions::lvlStory;
+		Defaults.iDifficulty = m_Model.GetUniverse().GetCurrentAdventureDesc().GetDifficulty();
+		if (Defaults.iDifficulty != CDifficultyOptions::lvlUnknown)
+			Defaults.bDifficultyLocked = true;
+		else
+			{
+			Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
+			if (Defaults.iDifficulty == CDifficultyOptions::lvlUnknown)
+				Defaults.iDifficulty = CDifficultyOptions::lvlStory;
+			}
 
 		//	New game screen
 

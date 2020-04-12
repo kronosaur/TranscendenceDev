@@ -14,6 +14,7 @@ class CSmallOptionButtonAnimator
 
 		void Create (CAniVScroller &Root, const CString &sID, const CString &sLabel, int x, int y, int cxWidth, AlignmentStyles iAlign = alignLeft);
 		bool IsEditing (void) const { return m_bInEditMode; }
+		void SetEnabled (bool bEnable = true);
 		void SetImage (const CG32bitImage &Image, bool bFreeImage = false);
 		void SetText (const CString &sText);
 		void StartEdit (int cxWidth, const CString &sValue);
