@@ -1649,9 +1649,10 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 
 		static constexpr CG32bitPixel RGB_MINING_MARKER_UNEXPORED = CG32bitPixel(128, 128, 128);
 
-		static constexpr int MIN_NAMED_WORLD_SIZE = 1000;
-		static constexpr int WORLD_SIZE = 5000;
-		static constexpr int LARGE_WORLD_SIZE = 25000;
+		static constexpr int MIN_NAMED_WORLD_SIZE = 1000;	//	Roughly the size of Ceres
+		static constexpr int WORLD_SIZE = 5000;				//	Roughly the size of Mercury
+		static constexpr int LARGE_WORLD_SIZE = 25000;		//	Roughly twice the size of Earth
+															//		(Half the size of Neptune)
 
 		void AvengeAttack (CSpaceObject *pAttacker);
 		bool Blacklist (CSpaceObject *pObj);

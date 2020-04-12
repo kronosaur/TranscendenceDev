@@ -6667,7 +6667,7 @@ void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, in
 	{
 	OnPaintMap(Ctx, Dest, x, y);
 
-	if (IsPlayerDestination() || (IsHighlighted() && !m_sHighlightText.IsBlank()))
+	if (IsPlayerDestination() || (IsHighlighted() && !m_sHighlightText.IsBlank()) || IsSelected())
 		{
 		int iTick = GetUniverse().GetPaintTick();
 		int iRadius = 10;

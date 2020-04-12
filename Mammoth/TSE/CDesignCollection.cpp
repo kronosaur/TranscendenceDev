@@ -16,6 +16,8 @@
 
 #define GET_TYPE_SOURCE_EVENT					CONSTLIT("GetTypeSource")
 
+#define PROPERTY_CORE_GAME_STATS				CONSTLIT("core.gameStats")
+
 static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 	{
 		"GetGlobalAchievements",
@@ -44,6 +46,13 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 
 		"OnGlobalUpdate",
 	};
+
+static constexpr char *CACHED_PROPERTIES[] =
+	{
+		"core.gameStats",
+	};
+
+static constexpr int CACHED_PROPERTIES_COUNT = (sizeof(CACHED_PROPERTIES) / sizeof(CACHED_PROPERTIES[0]));
 
 CDesignCollection::CDesignCollection (void) :
 		m_Base(true)	//	m_Base owns its types and will free them at the end
@@ -404,8 +413,6 @@ void CDesignCollection::CacheGlobalEvents (CDesignType *pType)
 	{
 	DEBUG_TRY
 
-	int i, j;
-
 	const CEventHandler *pEvents;
 	TSortMap<CString, SEventHandlerDesc> FullEvents;
 	pType->GetEventHandlers(&pEvents, &FullEvents);
@@ -414,25 +421,39 @@ void CDesignCollection::CacheGlobalEvents (CDesignType *pType)
 		SEventHandlerDesc Event;
 		Event.pExtension = pType->GetExtension();
 
-		for (i = 0; i < pEvents->GetCount(); i++)
+		for (int i = 0; i < pEvents->GetCount(); i++)
 			{
 			CString sEvent = pEvents->GetEvent(i, &Event.pCode);
 
-			for (j = 0; j < evtCount; j++)
+			for (int j = 0; j < evtCount; j++)
 				if (m_EventsCache[j]->Insert(pType, sEvent, Event))
 					break;
 			}
 		}
 	else
 		{
-		for (i = 0; i < FullEvents.GetCount(); i++)
+		for (int i = 0; i < FullEvents.GetCount(); i++)
 			{
 			CString sEvent = FullEvents.GetKey(i);
 			const SEventHandlerDesc &Event = FullEvents[i];
 
-			for (j = 0; j < evtCount; j++)
+			for (int j = 0; j < evtCount; j++)
 				if (m_EventsCache[j]->Insert(pType, sEvent, Event))
 					break;
+			}
+		}
+
+	//	Cache global properties
+
+	for (int i = 0; i < CACHED_PROPERTIES_COUNT; i++)
+		{
+		CString sProperty(CACHED_PROPERTIES[i]);
+
+		ICCItemPtr pResult;
+		if (pType->FindCustomProperty(sProperty, pResult))
+			{
+			auto *pList = m_PropertyCache.SetAt(sProperty);
+			pList->Insert(pType);
 			}
 		}
 
@@ -670,9 +691,30 @@ void CDesignCollection::FireGetGlobalAchievements (CGameStats &Stats)
 //	Fire event to fill achievements
 
 	{
-	int i;
+	//	Add achievements from core.gameStats property.
 
-	for (i = 0; i < m_EventsCache[evtGetGlobalAchievements]->GetCount(); i++)
+	auto *pList = m_PropertyCache.GetAt(PROPERTY_CORE_GAME_STATS);
+	if (pList)
+		{
+		for (int i = 0; i < pList->GetCount(); i++)
+			{
+			CDesignType *pType = pList->GetAt(i);
+
+			ICCItemPtr pResult;
+			if (pType->FindCustomProperty(PROPERTY_CORE_GAME_STATS, pResult)
+					&& !pResult->IsNil())
+				{
+				if (pResult->IsError())
+					pType->ReportEventError(PROPERTY_CORE_GAME_STATS, pResult);
+				else
+					Stats.InsertFromCCItem(*pType, *pResult);
+				}
+			}
+		}
+
+	//	Add achievements from <GetGlobalAchievements>
+
+	for (int i = 0; i < m_EventsCache[evtGetGlobalAchievements]->GetCount(); i++)
 		{
 		CDesignType *pType = m_EventsCache[evtGetGlobalAchievements]->GetEntry(i);
 
@@ -2029,6 +2071,8 @@ void CDesignCollection::Unbind (void)
 
 	for (int i = 0; i < evtCount; i++)
 		m_EventsCache[i]->DeleteAll();
+
+	m_PropertyCache.DeleteAll();
 
 	m_pTopology = NULL;
 	m_pAdventureExtension = NULL;

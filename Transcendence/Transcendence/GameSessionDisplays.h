@@ -131,3 +131,32 @@ class CSystemMapDisplay
 		CMapLegendPainter m_HelpPainter;
 	};
 
+class CSystemStationsMenu : IAniCommand
+	{
+	public:
+		CSystemStationsMenu (CHumanInterface &HI, CTranscendenceModel &Model, IHISession &Session);
+
+		void Hide (void);
+		void SetAsDestination (void);
+		bool Show (const RECT &rcRect, const CString &sID);
+
+		//	IAniCommand
+
+		virtual void OnAniCommand (const CString &sID, const CString &sEvent, const CString &sCmd, DWORD dwData) override;
+
+	private:
+		static constexpr int DETAIL_PANE_PADDING_RIGHT = 10;
+		static constexpr int DETAIL_PANE_HEIGHT = 512;
+		static constexpr int DETAIL_PANE_WIDTH = 512;
+
+		void HighlightObject (CSystem &System, DWORD dwObjID);
+		void UnhighlightObject (CSystem &System);
+
+		CHumanInterface &m_HI;
+		CTranscendenceModel &m_Model;
+		IHISession &m_Session;
+
+		CString m_sID;						//	ID of the performance
+		IAnimatron *m_pList = NULL;			//	List
+		DWORD m_dwCurObjID = 0;				//	Currently selected object ID
+	};

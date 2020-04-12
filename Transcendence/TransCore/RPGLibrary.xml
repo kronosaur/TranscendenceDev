@@ -140,6 +140,9 @@
 
 	<!ENTITY unidMiningSkill			"0x00010140">
 
+	<!-- 0160-017F PLAYER -->
+
+	<!ENTITY unidPlayer					"0x00010160">
 	]>
 	
 <CoreLibrary

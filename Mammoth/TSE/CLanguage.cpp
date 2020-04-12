@@ -70,7 +70,7 @@ int CLanguage::CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecima
 		return CalcMetricNumber(rNumber / 1000.0, retiWhole, retiDecimal) + 1;
 	}
 
-CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
+CString CLanguage::Compose (const CString &sString, const ICCItem *pArgs)
 
 //	Compose
 //
@@ -257,7 +257,7 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 	return sOutput;
 	}
 
-CString CLanguage::ComposeCharacterReference (CUniverse &Universe, const CString &sCharacter, const CString &sField, ICCItem *pData)
+CString CLanguage::ComposeCharacterReference (CUniverse &Universe, const CString &sCharacter, const CString &sField, const ICCItem *pData)
 
 //	ComposeCharacterReference
 //
@@ -339,7 +339,7 @@ CString CLanguage::ComposeGenderedWord (const CString &sWord, GenomeTypes iGende
 	return pEntry->pszText[iGender];
 	}
 
-CString CLanguage::ComposeGenderedWordHelper (CUniverse &Universe, const CString &sWord, const CString &sField, ICCItem *pData)
+CString CLanguage::ComposeGenderedWordHelper (CUniverse &Universe, const CString &sWord, const CString &sField, const ICCItem *pData)
 
 //	ComposeGenderedWordHelper
 //

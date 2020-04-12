@@ -1526,7 +1526,8 @@ class CObjectTracker
 					fFriendly(false),
 					fEnemy(false),
 					fInactive(false),
-					fPlayerBlacklisted(false)
+					fPlayerBlacklisted(false),
+					fIsStargate(false)
 				{ }
 
 			CTopologyNode *pNode = NULL;
@@ -1544,6 +1545,7 @@ class CObjectTracker
 			DWORD fEnemy:1;
 			DWORD fInactive:1;				//	pObj->IsInactive()
 			DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
+			DWORD fIsStargate:1;			//	TRUE if this is a stargate
 			};
 
 		struct SBackgroundObjEntry
@@ -1609,7 +1611,8 @@ class CObjectTracker
 					fFriendly(false),
 					fEnemy(false),
 					fInactive(false),
-					fPlayerBlacklisted(false)
+					fPlayerBlacklisted(false),
+					fIsStargate(false)
 				{ }
 
 			void DeleteExtra (void)
@@ -1634,7 +1637,7 @@ class CObjectTracker
 			DWORD fEnemy:1;
 			DWORD fInactive:1;				//	TRUE if pObj->IsInactive()
 			DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
-			DWORD fSpare8:1;
+			DWORD fIsStargate:1;			//	TRUE if this is a stargate
 
 			DWORD dwSpare:24;
 

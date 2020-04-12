@@ -718,15 +718,13 @@ void CUniverse::GenerateGameStats (CGameStats &Stats)
 	{
 	DEBUG_TRY
 
-	int i;
-
 	//	Ask all design types to generate game stats
 
 	m_Design.FireGetGlobalAchievements(Stats);
 
 	//	Add all extensions
 
-	for (i = 0; i < m_Design.GetExtensionCount(); i++)
+	for (int i = 0; i < m_Design.GetExtensionCount(); i++)
 		{
 		CExtension *pExtension = m_Design.GetExtension(i);
 

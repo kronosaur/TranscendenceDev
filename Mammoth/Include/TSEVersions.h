@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							48;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					187;
+constexpr DWORD SYSTEM_SAVE_VERSION =					188;
 
 //	Uncomment out the following define when building a stable release
 
@@ -683,3 +683,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					187;
 //
 //	187: 1.9 Beta 1
 //		Add m_sArcTitle and m_sArcStatus to CMission
+//
+//	188: 1.9 Beta 1
+//		m_fIsStargate in CObjectTracker::SObjEntry

@@ -333,6 +333,15 @@ void CGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 					}
 				}
 
+			else if (m_CurrentMenu == menuSystemStations)
+				{
+				if (iVirtKey == VK_ESCAPE)
+					{
+					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+					HideMenu();
+					}
+				}
+
 			//	In normal game mode, the Esc key is hard-coded (it cannot be re-mapped).
 
 			else if (iVirtKey == VK_ESCAPE)

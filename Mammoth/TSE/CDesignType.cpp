@@ -106,6 +106,7 @@
 #define PROPERTY_API_VERSION					CONSTLIT("apiVersion")
 #define PROPERTY_ATTRIBUTES						CONSTLIT("attributes")
 #define PROPERTY_CLASS							CONSTLIT("class")
+#define PROPERTY_CORE_GAME_STATS				CONSTLIT("core.gameStats")
 #define PROPERTY_DEFAULT_CURRENCY				CONSTLIT("defaultCurrency")
 #define PROPERTY_DEFAULT_CURRENCY_EXCHANGE		CONSTLIT("defaultCurrencyExchange")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
@@ -954,46 +955,20 @@ void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
 //	Fires GetGlobalAchievements event
 
 	{
-	int i;
-
 	SEventHandlerDesc Event;
-	if (FindEventHandler(GET_GLOBAL_ACHIEVEMENTS_EVENT, &Event))
-		{
-		CCodeChainCtx Ctx(GetUniverse());
-		Ctx.DefineContainingType(this);
+	if (!FindEventHandler(GET_GLOBAL_ACHIEVEMENTS_EVENT, &Event))
+		return;
 
-		//	Run code
-		
-		ICCItemPtr pResult = Ctx.RunCode(Event);
+	CCodeChainCtx CCX(GetUniverse());
+	CCX.DefineContainingType(this);
+	ICCItemPtr pResult = CCX.RunCode(Event);
 
-		//	Interpret result
+	//	Add to our stats, if valid.
 
-		if (pResult->IsError())
-			ReportEventError(GET_GLOBAL_ACHIEVEMENTS_EVENT, pResult);
-
-		else if (pResult->IsNil())
-			;
-
-		else if (pResult->IsSymbolTable())
-			Stats.Insert(this, pResult);
-
-		else if (pResult->IsList() && pResult->GetCount() > 0)
-			{
-			//	If we have a list of lists, then we have 
-			//	a list of achievements
-
-			if (pResult->GetElement(0)->IsList() || pResult->GetElement(0)->IsSymbolTable())
-				{
-				for (i = 0; i < pResult->GetCount(); i++)
-					Stats.Insert(this, pResult->GetElement(i));
-				}
-
-			//	Otherwise, we have a single achievement
-
-			else
-				Stats.Insert(this, pResult);
-			}
-		}
+	if (pResult->IsError())
+		ReportEventError(GET_GLOBAL_ACHIEVEMENTS_EVENT, pResult);
+	else
+		Stats.InsertFromCCItem(*this, *pResult);
 	}
 
 bool CDesignType::FireGetGlobalDockScreen (const SEventHandlerDesc &Event, const CSpaceObject *pObj, CDockScreenSys::SSelector &Selector) const
@@ -1896,6 +1871,11 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
 
 		else if (Ctx.bEnemy)
 			return CONSTLIT("Hostile");
+
+		//	Stargate
+
+		else if (Ctx.bIsStargate)
+			return CONSTLIT("Stargate");
 
 		//  Otherwise, we report no services.
 
@@ -3051,7 +3031,7 @@ bool CDesignType::Translate (const CDesignType &Type, const CString &sID, const 
 	return false;
 	}
 
-bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+bool CDesignType::Translate (const CString &sID, const ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //
@@ -3064,7 +3044,7 @@ bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &ret
 	return Translate(*this, sID, Params, retResult);
 	}
 
-bool CDesignType::Translate (const CSpaceObject &Source, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+bool CDesignType::Translate (const CSpaceObject &Source, const CString &sID, const ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //
@@ -3112,7 +3092,7 @@ bool CDesignType::TranslateText (const CDesignType &Type, const CString &sID, co
 	return false;
 	}
 
-bool CDesignType::TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const
+bool CDesignType::TranslateText (const CString &sID, const ICCItem *pData, CString *retsText) const
 
 //	TranslateText
 //
@@ -3125,7 +3105,7 @@ bool CDesignType::TranslateText (const CString &sID, ICCItem *pData, CString *re
 	return TranslateText(*this, sID, Params, retsText);
 	}
 	
-bool CDesignType::TranslateText (const CSpaceObject &Source, const CString &sID, ICCItem *pData, CString *retsText) const
+bool CDesignType::TranslateText (const CSpaceObject &Source, const CString &sID, const ICCItem *pData, CString *retsText) const
 
 //	Translate
 //
@@ -3139,7 +3119,7 @@ bool CDesignType::TranslateText (const CSpaceObject &Source, const CString &sID,
 	return TranslateText(*this, sID, Params, retsText);
 	}
 	
-bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const
+bool CDesignType::TranslateText (const CItem &Item, const CString &sID, const ICCItem *pData, CString *retsText) const
 
 //	Translate
 //

@@ -30,6 +30,17 @@
 
 			</Text>
 
+			<!-- UI Text -->
+
+			<Text id="uiStationListHelp">			Press [Enter] to set as destination.</Text>
+			<Text id="uiSystemMapHelp">
+
+				Scroll wheel to zoom map\n
+				[L] to show station list\n
+				[H] to toggle HUD on/off
+				
+			</Text>
+
 			<!-- Messages for the player -->
 
 			<Text id="msgCyberattackDetected">		Cyberattack detected: %program%</Text>
