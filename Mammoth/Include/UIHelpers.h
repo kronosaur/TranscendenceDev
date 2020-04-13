@@ -210,6 +210,7 @@ class CUIHelper
 		static constexpr DWORD MENU_ALIGN_RIGHT =						0x00000008;		//	Align right
 		static constexpr DWORD MENU_HIDDEN =							0x00000010;
 		static constexpr DWORD MENU_DISABLED =							0x00000020;
+		static constexpr DWORD MENU_IGNORE_DOUBLE_CLICK =				0x00000040;		//	Ignore double-click on button
 
 		struct SMenuEntry
 			{

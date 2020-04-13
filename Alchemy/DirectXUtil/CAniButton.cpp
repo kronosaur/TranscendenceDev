@@ -24,6 +24,9 @@ const int INDEX_ENABLED =						4;
 const int INDEX_CHECKED =						5;
 #define PROP_CHECKED							CONSTLIT("checked")
 
+const int INDEX_IGNORE_DOUBLE_CLICK =			6;
+#define PROP_IGNORE_DOUBLE_CLICK				CONSTLIT("ignoreDoubleClick")
+
 #define EVENT_ON_CLICK							CONSTLIT("onClick")
 
 #define PROP_COLOR								CONSTLIT("color")
@@ -54,6 +57,7 @@ CAniButton::CAniButton (EButtonTypes iType) :
 	m_Properties.SetString(PROP_TEXT, NULL_STR);
 	m_Properties.SetBool(PROP_ENABLED, true);
 	m_Properties.SetBool(PROP_CHECKED, false);
+	m_Properties.SetBool(PROP_IGNORE_DOUBLE_CLICK, false);
 
 	IAnimatron *pStyle = new CAniRect;
 	pStyle->SetPropertyColor(PROP_COLOR, CG32bitPixel(255, 255, 255));
@@ -140,7 +144,7 @@ void CAniButton::HandleLButtonDblClick (int x, int y, DWORD dwFlags, bool *retbC
 
 	{
 	*retbFocus = false;
-	m_bDown = m_Properties[INDEX_ENABLED].GetBool();
+	m_bDown = m_Properties[INDEX_ENABLED].GetBool() && !m_Properties[INDEX_IGNORE_DOUBLE_CLICK].GetBool();
 	*retbCapture = m_bDown;
 	}
 
