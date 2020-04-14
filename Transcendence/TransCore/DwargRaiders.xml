@@ -267,7 +267,9 @@
 		<Image			imageID="&rsStations6;" imageX="0" imageY="896" imageWidth="256" imageHeight="256"/>
 
 		<Devices>
-			<Device deviceID="&itDwargBehemothCannon;"	posAngle="0" posRadius="0" posZ="50"/>
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="45"  posRadius="30" posZ="40" maxFireRange="2"/>
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="-70" posRadius="30" posZ="40" maxFireRange="2"/>
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="160" posRadius="30" posZ="40" maxFireRange="2"/>
 			
 			<Device deviceID="&itDwargXiphonCannon;"	posAngle="45"  posRadius="90"  posZ="0" fireArc="180" />
 			<Device deviceID="&itDwargBehemothCannon;"	posAngle="-15" posRadius="90" posZ="0" fireArc="180" />
