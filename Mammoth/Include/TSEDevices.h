@@ -555,7 +555,8 @@ class CInstalledDevice
 		int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }
 		int GetMinFireArc (void) const { return m_iMinFireArc; }
 		int GetMaxFireArc (void) const { return m_iMaxFireArc; }
-		Metric GetMaxFireRange(void) const { return (m_iMaxFireRange == 0 ? g_InfiniteDistance : LIGHT_SECOND * m_iMaxFireRange); }
+		Metric GetMaxFireRange (void) const { return (m_iMaxFireRange == 0 ? g_InfiniteDistance : LIGHT_SECOND * m_iMaxFireRange); }
+		int GetMaxFireRangeLS (void) const { return m_iMaxFireRange; }
 		COverlay *GetOverlay (void) const { return m_pOverlay; }
 		int GetPosAngle (void) const { return m_iPosAngle; }
 		int GetPosRadius (void) const { return m_iPosRadius; }

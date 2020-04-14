@@ -3046,13 +3046,26 @@ Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, const CInstall
 	if (pShot == NULL)
 		return 0.0;
 
+	//	Compute the range based on weapon characteristics.
+
+	Metric rRange;
 	if (pTarget && !pTarget->CanThrust())
 		{
 		Metric rSpeed = pShot->GetAveSpeed();
-		return (rSpeed * (pShot->GetMaxLifetime() * 90 / 100)) + (128.0 * g_KlicksPerPixel);
+		rRange = (rSpeed * (pShot->GetMaxLifetime() * 90 / 100)) + (128.0 * g_KlicksPerPixel);
 		}
 	else
-		return pShot->GetEffectiveRange();
+		rRange = pShot->GetEffectiveRange();
+
+	//	If the device slot has range limits, apply them
+
+	if (pDevice)
+		{
+		if (int iMaxFireRange = pDevice->GetMaxFireRangeLS())
+			rRange = Min(rRange, iMaxFireRange * LIGHT_SECOND);
+		}
+
+	return rRange;
 	}
 
 Metric CWeaponClass::GetMaxRange (CItemCtx &ItemCtx)

@@ -30,7 +30,6 @@
 #define FATE_ATTRIB								CONSTLIT("fate")
 #define FIRE_ANGLE_ATTRIB						CONSTLIT("fireAngle")
 #define FIRE_ARC_ATTRIB							CONSTLIT("fireArc")
-#define FIRE_RANGE_ATTRIB						CONSTLIT("fireRange")
 #define HP_BONUS_ATTRIB							CONSTLIT("hpBonus")
 #define ID_ATTRIB								CONSTLIT("id")
 #define ITEM_ATTRIB								CONSTLIT("item")
@@ -270,7 +269,7 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		retDesc->b3DPosition = false;
 		}
 
-	retDesc->iMaxFireRange = pDesc->GetAttributeIntegerBounded(FIRE_RANGE_ATTRIB, 1, -1, 0);
+	retDesc->iMaxFireRange = pDesc->GetAttributeIntegerBounded(MAX_FIRE_RANGE_ATTRIB, 1, -1, 0);
 	retDesc->rShotSeparationScale = pDesc->GetAttributeDoubleBounded(SHOT_SEPARATION_SCALE_ATTRIB, -1.0, 1.0, 1.0);
 
 	retDesc->bExternal = pDesc->GetAttributeBool(EXTERNAL_ATTRIB);
@@ -411,12 +410,16 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 
 		//	Slot descriptor overrides
 
+		if (SlotDesc.iMaxFireRange)
+			Desc.iMaxFireRange = SlotDesc.iMaxFireRange;
+		else
+			Desc.iMaxFireRange = m_iMaxFireRange;
+
 		if (bUseSlotDesc)
 			{
 			Desc.bCannotBeEmpty = SlotDesc.bCannotBeEmpty;
 			Desc.bExternal = SlotDesc.bExternal;
 			Desc.iFate = SlotDesc.iFate;
-			Desc.iMaxFireRange = SlotDesc.iMaxFireRange;
 			Desc.rShotSeparationScale = SlotDesc.rShotSeparationScale;
 			}
 		else
@@ -424,7 +427,6 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			Desc.bCannotBeEmpty = m_bCannotBeEmpty;
 			Desc.bExternal = m_bExternal;
 			Desc.iFate = m_iFate;
-			Desc.iMaxFireRange = m_iMaxFireRange;
 			Desc.rShotSeparationScale = m_rShotSeparationScale;
 			}
 
@@ -631,6 +633,7 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_bDefaultPos = true;
 		}
 
+	m_iMaxFireRange = pDesc->GetAttributeIntegerBounded(MAX_FIRE_RANGE_ATTRIB, 1, -1, 0);
 	m_rShotSeparationScale = pDesc->GetAttributeDoubleBounded(SHOT_SEPARATION_SCALE_ATTRIB, -1.0, 1.0, 1.0);
 
 	//	Load fire arc attributes
@@ -673,7 +676,6 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_bExternal = pDesc->GetAttributeBool(EXTERNAL_ATTRIB);
 	m_bCannotBeEmpty = pDesc->GetAttributeBool(CANNOT_BE_EMPTY_ATTRIB);
-	m_iMaxFireRange = pDesc->GetAttributeIntegerBounded(MAX_FIRE_RANGE_ATTRIB, 1, -1, 0);
 
 	//	Fate
 
