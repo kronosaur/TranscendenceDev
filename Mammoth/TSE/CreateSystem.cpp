@@ -305,13 +305,6 @@ CString GetXMLObjID (const CXMLElement &Obj);
 void DumpDebugStack (SSystemCreateCtx *pCtx);
 void DumpDebugStackTop (SSystemCreateCtx *pCtx);
 void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPlace, COrbit *retOrbit);
-ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
-									const CString &sCriteria,
-									const CString &sLocationAttribs,
-									const CVector &vPos,
-									bool bIncludeAll,
-									TArray<CStationTableCache::SEntry> **retpTable,
-									bool *retbAddToCache);
 ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocationCriteria *retCriteria);
 bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric rRadius);
 ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CXMLElement &XMLDesc, const COrbit &OrbitDesc);
@@ -489,7 +482,7 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 							 CStationType **retpType,
 							 SStationTypeTableStats *pTypeStats = NULL,
 							 int iMaxCountPerType = -1,
-							 TArray<CStationTableCache::SEntry> **retpTable = NULL)
+							 const CStationEncounterTable **retpTable = NULL)
 
 //	ChooseRandomStation
 //
@@ -497,9 +490,6 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 //	of the system and to the given criteria.
 
 	{
-	ALERROR error;
-	int i;
-
 	//	Generate a description of the table that we are about to generate
 	//	to see if we've already got this table in the cache.
 
@@ -511,18 +501,29 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 
 	//	If this table is not cached then generate it.
 
-	bool bFreeTable = false;
-	TArray<CStationTableCache::SEntry> *pTable;
-	if (!pCtx->StationTables.FindTable(sTableDesc, &pTable))
+	const CStationEncounterTable *pTable = NULL;
+	CStationEncounterTable NewTable;
+	bool bInCache = false;
+	if (!(pTable = pCtx->StationTables.FindTable(sTableDesc)))
 		{
 		bool bAddToCache;
-		if (error = GenerateRandomStationTable(pCtx, sCriteria, sLocationAttribs, vPos, bIncludeAll, &pTable, &bAddToCache))
-			return error;
+		CStationEncounterTable::SInitCtx Options;
+		Options.sCriteria = sCriteria;
+		Options.sLocationAttribs = sLocationAttribs;
+		Options.sExtraLocationAttribs = pCtx->sLocationAttribs;
+		Options.vPos = vPos;
+		Options.bIncludeAll = bIncludeAll;
+
+		if (!NewTable.Init(pCtx->System, Options, &pCtx->sError, &bAddToCache))
+			return ERR_FAIL;
 
 		if (bAddToCache)
-			pCtx->StationTables.AddTable(sTableDesc, pTable);
+			{
+			pTable = pCtx->StationTables.AddTable(sTableDesc, NewTable);
+			bInCache = true;
+			}
 		else
-			bFreeTable = true;
+			pTable = &NewTable;
 		}
 
 	//	Add to stats
@@ -533,9 +534,10 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 	//	Now generate a probability table and add all the entries
 
 	TProbabilityTable<CStationType *> Table;
-	for (i = 0; i < pTable->GetCount(); i++)
+	Table.GrowToFit(pTable->GetCount());
+	for (int i = 0; i < pTable->GetCount(); i++)
 		{
-		const CStationTableCache::SEntry &Entry = pTable->GetAt(i);
+		const CStationEncounterTable::SEntry &Entry = pTable->GetAt(i);
 
 		//	Make sure we can still encounter this type. [If we've already created
 		//	a system-unique object then it will still be in the cached tables.]
@@ -582,14 +584,12 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 	//	we only return it if we add it to the cache (otherwise, it will get freed).
 
 	if (retpTable)
-		*retpTable = (!bFreeTable ? pTable : NULL);
+		*retpTable = (bInCache ? pTable : NULL);
 
 	//	Short-circuit
 
 	if (Table.GetCount() == 0)
 		{
-		if (bFreeTable)
-			delete pTable;
 		STATION_PLACEMENT_OUTPUT("   no appropriate station found for this location\n");
 		return ERR_NOTFOUND;
 		}
@@ -615,10 +615,6 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 			(*pExisting) += 1;
 		}
 
-	//	Free
-
-	if (bFreeTable)
-		delete pTable;
 	return NOERROR;
 	}
 
@@ -834,7 +830,7 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 		//	Now look for the most appropriate station to place at the location
 
 		CStationType *pType;
-		TArray<CStationTableCache::SEntry> *pStationTable;
+		const CStationEncounterTable *pStationTable;
 		if (error = ChooseRandomStation(pCtx, 
 				sStationCriteria, 
 				Loc.GetAttributes(),
@@ -3443,147 +3439,6 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPla
 	//	Done
 
 	*retOrbit = NewOrbit;
-	}
-
-ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
-									const CString &sCriteria,
-									const CString &sLocationAttribs,
-									const CVector &vPos,
-									bool bIncludeAll,
-									TArray<CStationTableCache::SEntry> **retpTable,
-									bool *retbAddToCache)
-
-//	GenerateRandomStationTable
-//
-//	Returns an array of station type matching the given criteria and sets the
-//	temp value to the chance.
-
-	{
-	ALERROR error;
-	int i;
-
-	//	Loop over all station types
-
-	int iLevel = pCtx->System.GetLevel();
-	int iCount = pCtx->GetUniverse().GetStationTypeCount();
-
-	//	Initialize the table
-	//
-	//	If we're including all it usually means that we're by-passing the normal
-	//	encounter probabilities and going straight by station criteria.
-	//	(We do this, e.g., to create random asteroids of appropriate type.)
-
-	if (bIncludeAll)
-		{
-		//	If we're including all, then we ignore the levelFrequency property
-		//	of a type.
-
-		for (i = 0; i < iCount; i++)
-			pCtx->GetUniverse().GetStationType(i)->SetTempChance(1000);
-		}
-	else
-		{
-		for (i = 0; i < iCount; i++)
-			{
-			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-			pType->SetTempChance((1000 / ftCommon) * pType->GetFrequencyForSystem(&pCtx->System));
-			}
-		}
-
-	//	Loop over each part of the criteria and refine the table
-
-	if (!strEquals(sCriteria, MATCH_ALL))
-		{
-		//	Parse station criteria if we've got it.
-
-		CAffinityCriteria StationCriteria;
-		if (error = StationCriteria.Parse(sCriteria, &pCtx->sError))
-			return error;
-
-		for (i = 0; i < iCount; i++)
-			{
-			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-			if (pType->GetTempChance())
-				{
-				int iAdj = pType->CalcAffinity(StationCriteria);
-				pType->SetTempChance((pType->GetTempChance() * iAdj) / 1000);
-				}
-			}
-		}
-
-	//	Loop over each station type and adjust for the location that
-	//	we want to create the station at
-
-	if (!strEquals(sLocationAttribs, MATCH_ALL))
-		{
-		for (i = 0; i < iCount; i++)
-			{
-			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-			if (pType->GetTempChance())
-				{
-				const CAffinityCriteria &LocationCriteria = pType->GetLocationCriteria();
-				int iAdj = pCtx->System.CalcLocationAffinity(LocationCriteria, pCtx->sLocationAttribs, vPos);
-				pType->SetTempChance((pType->GetTempChance() * iAdj) / 1000);
-				}
-			}
-		}
-
-	//	Check to see if any of the selected stations has priority (because of node
-	//	minimums). If so, then we need to zero out any other stations.
-
-	bool bPrioritizeRequiredEncounters = false;
-	if (pCtx->pTopologyNode)
-		{
-		for (i = 0; i < iCount; i++)
-			{
-			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-
-			//	If we need a minimum number of stations in this node, then we
-			//	prioritize these types.
-
-			if (pType->GetTempChance() > 0
-					&& pType->GetEncounterRequired(pCtx->pTopologyNode) > 0)
-				{
-				bPrioritizeRequiredEncounters = true;
-				break;
-				}
-			}
-
-		//	If we're prioritizing required encounters, then zero-out any probabilities
-		//	for non-required types
-
-		if (bPrioritizeRequiredEncounters)
-			{
-			for (i = 0; i < iCount; i++)
-				{
-				CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-				if (pType->GetEncounterRequired(pCtx->pTopologyNode) == 0)
-					pType->SetTempChance(0);
-				}
-			}
-		}
-
-	//	Now that we've initialized all the types, return the ones with a non-zero
-	//	chance.
-
-	TArray<CStationTableCache::SEntry> *pTable = new TArray<CStationTableCache::SEntry>;
-	for (i = 0; i < iCount; i++)
-		{
-		CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-		if (pType->GetTempChance())
-			{
-			CStationTableCache::SEntry *pEntry = pTable->Insert();
-			pEntry->pType = pType;
-			pEntry->iChance = pType->GetTempChance();
-			}
-		}
-
-	//	Done
-
-	*retpTable = pTable;
-	*retbAddToCache = !bPrioritizeRequiredEncounters;
-
-	return NOERROR;
 	}
 
 ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocationCriteria *retCriteria)
