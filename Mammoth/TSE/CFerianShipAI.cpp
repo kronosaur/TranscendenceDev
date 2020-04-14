@@ -404,8 +404,11 @@ CSpaceObject *CFerianShipAI::FindRandomAsteroid (void)
 
 			if (rDistance2 < rCloseDist2)
 				{
-				Table[iCount++] = pObj;
-				Table[iCount++] = pObj;
+				if (iCount < MAX_RANDOM_COUNT)
+					Table[iCount++] = pObj;
+
+				if (iCount < MAX_RANDOM_COUNT)
+					Table[iCount++] = pObj;
 				}
 			}
 		}

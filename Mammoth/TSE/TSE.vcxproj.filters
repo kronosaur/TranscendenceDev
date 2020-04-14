@@ -1465,5 +1465,8 @@
     <ClCompile Include="ObjectImageProperties.cpp">
       <Filter>Source Files\Images</Filter>
     </ClCompile>
+    <ClCompile Include="CStationEncounterTable.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

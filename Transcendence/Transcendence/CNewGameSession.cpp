@@ -490,6 +490,7 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 			yBar, 
 			cxColumn, 
 			alignRight);
+	m_Difficulty.SetEnabled(!m_Settings.bDifficultyLocked);
 
 	int yBaseline = yBar + VI.GetFont(fontMediumBold).GetHeight() + VI.GetFont(fontSubTitle).GetAscent();
 	int yTextDesc = yBaseline - VI.GetFont(fontMedium).GetAscent() - VI.GetFont(fontMedium).GetHeight();

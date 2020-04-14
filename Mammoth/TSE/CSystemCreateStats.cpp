@@ -266,7 +266,7 @@ void CSystemCreateStats::AddLabelExpansion (const CString &sAttributes, const CS
 		AddEntryPermutations(NULL_STR, Permutable, 0);
 	}
 
-void CSystemCreateStats::AddStationTable (CSystem *pSystem, const CString &sStationCriteria, const CString &sLocationAttribs, TArray<CStationTableCache::SEntry> &Table)
+void CSystemCreateStats::AddStationTable (CSystem *pSystem, const CString &sStationCriteria, const CString &sLocationAttribs, const CStationEncounterTable &Table)
 
 //	AddStationTable
 //
@@ -322,7 +322,7 @@ void CSystemCreateStats::AddStationTable (CSystem *pSystem, const CString &sStat
 		}
 	}
 
-bool CSystemCreateStats::FindEncounterTable (TArray<CStationTableCache::SEntry> &Src, SEncounterTable **retpTable)
+bool CSystemCreateStats::FindEncounterTable (const CStationEncounterTable &Src, SEncounterTable **retpTable)
 
 //	FindEncounterTable
 //

@@ -553,6 +553,7 @@
     <ClCompile Include="CStationCreateOptions.cpp" />
     <ClCompile Include="CStationEncounterCtx.cpp" />
     <ClCompile Include="CStationEncounterDesc.cpp" />
+    <ClCompile Include="CStationEncounterTable.cpp" />
     <ClCompile Include="CStationHull.cpp" />
     <ClCompile Include="CStationHullDesc.cpp" />
     <ClCompile Include="CStationTableCache.cpp" />

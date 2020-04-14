@@ -158,7 +158,7 @@ class COrbit
 		Metric m_rPos = 0.0;			//	Obj position in orbit (radians)
 	};
 
-class CStationTableCache
+class CStationEncounterTable
 	{
 	public:
 		struct SEntry
@@ -167,19 +167,47 @@ class CStationTableCache
 			int iChance;
 			};
 
-		CStationTableCache (void) : m_iCacheHits(0), m_iCacheMisses(0) { }
-		~CStationTableCache (void) { DeleteAll(); }
+		struct SInitCtx
+			{
+			CString sCriteria;				//	Station criteria
+			CString sLocationAttribs;		//	Attributes for current location
+			CString sExtraLocationAttribs;	//	Attributes for current location
+			CVector vPos;					//	Position where we're creating station
 
-		void AddTable (const CString &sDesc, TArray<SEntry> *pTable) { m_Cache.Insert(sDesc, pTable); }
+			bool bIncludeAll = false;
+			};
+
+		const SEntry &operator [] (int iIndex) const { return m_Table[iIndex]; }
+		SEntry &operator [] (int iIndex) { return m_Table[iIndex]; }
+
+		void DeleteAll (void) { m_Table.DeleteAll(); }
+		const SEntry &GetAt (int iIndex) const { return m_Table[iIndex]; }
+		int GetCount (void) const { return m_Table.GetCount(); }
+		bool Init (CSystem &System, const SInitCtx &Options, CString *retsError = NULL, bool *retbAddToCache = NULL);
+		void Insert (CStationType &Type, int iChance)
+			{
+			SEntry *pEntry = m_Table.Insert();
+			pEntry->pType = &Type;
+			pEntry->iChance = iChance;
+			}
+
+	private:
+		TArray<SEntry> m_Table;
+	};
+
+class CStationTableCache
+	{
+	public:
+		const CStationEncounterTable *AddTable (const CString &sDesc, CStationEncounterTable &Table);
 		void DeleteAll (void);
-		bool FindTable (const CString &sDesc, TArray<SEntry> **retpTable);
+		const CStationEncounterTable *FindTable (const CString &sDesc) const;
 		int GetCacheHitRate (void) const;
 		int GetCacheSize (void) const { return m_Cache.GetCount(); }
 
 	private:
-		TSortMap<CString, TArray<SEntry> *> m_Cache;
-		int m_iCacheHits;
-		int m_iCacheMisses;
+		TSortMap<CString, TUniquePtr<CStationEncounterTable>> m_Cache;
+		mutable int m_iCacheHits = 0;
+		mutable int m_iCacheMisses = 0;
 	};
 
 class CSystemCreateStats
@@ -218,7 +246,7 @@ class CSystemCreateStats
 		void AddLabel (const CString &sAttributes);
 		void AddFillLocationsTable (CSystem *pSystem, const TProbabilityTable<int> &LocationTable, const CString &sStationCriteria);
 		void AddPermuteAttrib (const CString &sAttrib) { m_PermuteAttribs.Insert(sAttrib); }
-		void AddStationTable (CSystem *pSystem, const CString &sStationCriteria, const CString &sLocationAttribs, TArray<CStationTableCache::SEntry> &Table);
+		void AddStationTable (CSystem *pSystem, const CString &sStationCriteria, const CString &sLocationAttribs, const CStationEncounterTable &Table);
 		const SEncounterTable &GetEncounterTable (int iIndex) const { return m_EncounterTables[iIndex]; }
 		int GetEncounterTableCount (void) const { return m_EncounterTables.GetCount(); }
 		const SFillLocationsTable &GetFillLocationsTable (int iIndex) const { return m_FillLocationsTables[iIndex]; }
@@ -239,7 +267,7 @@ class CSystemCreateStats
 		void AddEntryPermutations (const CString &sPrefix, const TArray<CString> &Attribs, int iPos);
 		void AddLabelAttributes (const CString &sAttributes);
 		void AddLabelExpansion (const CString &sAttributes, const CString &sPrefix = NULL_STR);
-		bool FindEncounterTable (TArray<CStationTableCache::SEntry> &Src, SEncounterTable **retpTable);
+		bool FindEncounterTable (const CStationEncounterTable &Src, SEncounterTable **retpTable);
 
 		//	Label stats
 

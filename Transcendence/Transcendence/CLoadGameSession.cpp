@@ -224,6 +224,7 @@ ALERROR CLoadGameSession::OnInit (CString *retsError)
 	CUIHelper::SMenuEntry *pEntry = Menu.Insert();
 	pEntry->sCommand = CMD_DELETE_FILE;
 	pEntry->sLabel = CONSTLIT("Send game to Windows Recycle Bin");
+	pEntry->dwFlags |= CUIHelper::MENU_IGNORE_DOUBLE_CLICK;
 
 	IAnimatron *pTitle;
 	Helper.CreateSessionTitle(this, m_Service, CONSTLIT("Load Game"), &Menu, CUIHelper::OPTION_SESSION_OK_BUTTON, &pTitle);

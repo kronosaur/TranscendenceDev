@@ -53,6 +53,7 @@ class CAdventureDesc : public CDesignType
 		DWORD GetBackgroundUNID (void) const { return m_dwBackgroundUNID; }
 		const CEconomyType &GetDefaultCurrency (void) const;
 		CString GetDesc (void);
+		CDifficultyOptions::ELevels GetDifficulty (void) const { return m_iForceDifficulty; }
 		const CXMLElement &GetEncounterOverrideXML (void) const { return m_EncounterOverridesXML; }
 		const CEngineOptions &GetEngineOptions (void) const { return m_EngineOptions; }
 		DWORD GetExtensionUNID (void) const { return m_dwExtensionUNID; }
@@ -94,6 +95,7 @@ class CAdventureDesc : public CDesignType
 
 		CEngineOptions m_EngineOptions;			//	Options for engine behavior
 		CXMLElement m_EncounterOverridesXML;
+		CDifficultyOptions::ELevels m_iForceDifficulty = CDifficultyOptions::lvlUnknown;
 
 		CEconomyTypeRef m_pDefaultCurrency;		//	Default currency (mostly used for UI)
 

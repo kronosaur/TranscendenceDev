@@ -14,6 +14,7 @@ class CSmallOptionButtonAnimator
 
 		void Create (CAniVScroller &Root, const CString &sID, const CString &sLabel, int x, int y, int cxWidth, AlignmentStyles iAlign = alignLeft);
 		bool IsEditing (void) const { return m_bInEditMode; }
+		void SetEnabled (bool bEnable = true);
 		void SetImage (const CG32bitImage &Image, bool bFreeImage = false);
 		void SetText (const CString &sText);
 		void StartEdit (int cxWidth, const CString &sValue);
@@ -209,6 +210,7 @@ class CUIHelper
 		static constexpr DWORD MENU_ALIGN_RIGHT =						0x00000008;		//	Align right
 		static constexpr DWORD MENU_HIDDEN =							0x00000010;
 		static constexpr DWORD MENU_DISABLED =							0x00000020;
+		static constexpr DWORD MENU_IGNORE_DOUBLE_CLICK =				0x00000040;		//	Ignore double-click on button
 
 		struct SMenuEntry
 			{

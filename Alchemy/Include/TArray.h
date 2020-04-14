@@ -551,6 +551,11 @@ template <class VALUE> class TProbabilityTable
 
 		int GetTotalChance (void) const { return m_iTotalChance; }
 
+		void GrowToFit (int iCount)
+			{
+			m_Table.GrowToFit(iCount);
+			}
+
 		void Insert (const VALUE &NewValue, int iChance)
 			{
 			ASSERT(iChance >= 0);
