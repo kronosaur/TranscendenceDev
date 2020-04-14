@@ -1501,7 +1501,20 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CStation *AsStation (void) override { return this; }
 		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) override;
 		virtual bool CanAttack (void) const override;
-		virtual bool CanBeAttacked (void) const override { return (m_Hull.GetHitPoints() > 0 || CanAttack() || (m_fIsSegment && m_Hull.GetStructuralHP() > 0)); }
+		virtual bool CanBeAttacked (void) const override 
+			{
+			//	This handles the case (e.g.,) of Abbasid walls, which are 
+			//	destroyed when abandoned. We essentially treat the walls as part
+			//	of the station.
+			//
+			//	We want the walls to be targetable as long as the station is 
+			//	alive.
+
+			if (m_pType->IsDestroyWhenAbandoned())
+				return (CanAttack() || (m_Hull.GetHitPoints() > 0 && GetBase() && !GetBase()->IsAbandoned())); 
+			else
+				return (m_Hull.GetHitPoints() > 0 || CanAttack()); 
+			}
 		virtual bool CanBeDestroyed (void) override { return m_Hull.CanBeDestroyed(); }
 		virtual bool CanBeMined (void) const override { return (m_pType->ShowsUnexploredAnnotation() && !IsOutOfPlaneObj()); }
 		virtual bool CanBlock (CSpaceObject *pObj) override;
