@@ -35,6 +35,7 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_iMinFireArc(0),
 		m_iMaxFireArc(0),
 		m_iShotSeparationScale(32767),
+		m_iMaxFireRange(0),
 
 		m_iTimeUntilReady(0),
 		m_iFireAngle(0),
@@ -339,6 +340,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 	m_fExternal = Desc.bExternal;
 	m_fCannotBeEmpty = Desc.bCannotBeEmpty;
 	m_iShotSeparationScale = (unsigned int)(Desc.rShotSeparationScale * 32767);
+	m_iMaxFireRange = Desc.iMaxFireRange;
 
 	SetLinkedFireOptions(Desc.dwLinkedFireOptions);
 	SetFate(Desc.iFate);
@@ -450,6 +452,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 		m_f3DPosition = Desc.b3DPosition;
 		m_fCannotBeEmpty = Desc.bCannotBeEmpty;
 		m_iShotSeparationScale = (unsigned int)(Desc.rShotSeparationScale * 32767);
+		m_iMaxFireRange = Desc.iMaxFireRange;
 
 		SetFate(Desc.iFate);
 
@@ -637,7 +640,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 //	DWORD		device: low = m_iSlotPosIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
 //	DWORD		device: low = m_iActivateDelay; hi = m_iPosZ
-//	DWORD		device: low = m_iShotSeparationScale; hi = UNUSED
+//	DWORD		device: low = m_iShotSeparationScale; hi = m_iMaxFireRange
 //	DWORD		device: flags
 //
 //	CItemEnhancementStack
@@ -760,10 +763,12 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 		{
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 		m_iShotSeparationScale = (int)LOWORD(dwLoad);
+		m_iMaxFireRange = (int)HIWORD(dwLoad);
 		}
 	else
 		{
 		m_iShotSeparationScale = 32767;
+		m_iMaxFireRange = 0;
 		}
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
@@ -1356,7 +1361,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //	DWORD		device: low = m_iSlotIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
 //	DWORD		device: low = m_iActivateDelay; hi = m_iPosZ
-//	DWORD		device: low = m_iShotSeparationScale; hi = UNUSED
+//	DWORD		device: low = m_iShotSeparationScale; hi = m_iMaxFireRange
 //	DWORD		device: flags
 //
 //	CItemEnhancementStack
@@ -1399,7 +1404,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave = MAKELONG(m_iActivateDelay, m_iPosZ);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	dwSave = MAKELONG(m_iShotSeparationScale, 0);
+	dwSave = MAKELONG(m_iShotSeparationScale, m_iMaxFireRange);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	dwSave = 0;

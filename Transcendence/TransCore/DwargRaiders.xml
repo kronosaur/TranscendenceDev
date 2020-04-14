@@ -267,12 +267,16 @@
 		<Image			imageID="&rsStations6;" imageX="0" imageY="896" imageWidth="256" imageHeight="256"/>
 
 		<Devices>
-			<Device deviceID="&itDwargXiphonCannon;"	posAngle="45" posRadius="84"  minFireArc="315" maxFireArc="135" />
-			<Device deviceID="&itDwargBehemothCannon;"	posAngle="344" posRadius="89" minFireArc="254" maxFireArc="74" />
-			<Device deviceID="&itDwargXiphonCannon;"	posAngle="295" posRadius="87" minFireArc="205" maxFireArc="25" />
-			<Device deviceID="&itDwargBehemothCannon;"	posAngle="220" posRadius="93" minFireArc="130" maxFireArc="310" />
-			<Device deviceID="&itDwargXiphonCannon;"	posAngle="155" posRadius="86" minFireArc="65"  maxFireArc="245" />
-			<Device deviceID="&itDwargBehemothCannon;"	posAngle="112" posRadius="80" minFireArc="22"  maxFireArc="202" />
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="45"  posRadius="30" posZ="40" maxFireRange="2"/>
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="-70" posRadius="30" posZ="40" maxFireRange="2"/>
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="160" posRadius="30" posZ="40" maxFireRange="2"/>
+			
+			<Device deviceID="&itDwargXiphonCannon;"	posAngle="45"  posRadius="90"  posZ="0" fireArc="180" />
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="-15" posRadius="90" posZ="0" fireArc="180" />
+			<Device deviceID="&itDwargXiphonCannon;"	posAngle="-70" posRadius="90" posZ="0" fireAngle="295" fireArc="180" />
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="225" posRadius="90" posZ="0" fireAngle="220" fireArc="180" />
+			<Device deviceID="&itDwargXiphonCannon;"	posAngle="150" posRadius="90" posZ="0" fireAngle="155" fireArc="180" />
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="105" posRadius="90" posZ="0" fireAngle="112" fireArc="180" />
 		</Devices>
 
 		<Ships>

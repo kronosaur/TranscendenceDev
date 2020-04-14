@@ -266,6 +266,36 @@ void CGDraw::CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32
 	Circle(Dest, x, y, iRadius, ColorRamp, iBlendMode, true);
 	}
 
+void CGDraw::CircleOutline (CG32bitImage &Dest, int x, int y, int iRadius, int iLineWidth, CG32bitPixel rgbColor)
+
+//	CirculeOutline
+//
+//	Draws a circle outline.
+
+	{
+	constexpr int SEGMENT_COUNT = 64;
+	constexpr Metric rInc = 2.0 * PI / SEGMENT_COUNT;
+
+	Metric rAngle = rInc;
+	CVector vCenter(x, y);
+	int xLast = x + iRadius;
+	int yLast = y;
+
+	for (int i = 0; i < SEGMENT_COUNT; i++)
+		{
+		CVector vPos = vCenter + PolarToVectorRadians(rAngle, iRadius);
+		int xPos = mathRound(vPos.GetX());
+		int yPos = mathRound(vPos.GetY());
+
+		Line(Dest, xLast, yLast, xPos, yPos, iLineWidth, rgbColor);
+
+		xLast = xPos;
+		yLast = yPos;
+
+		rAngle += rInc;
+		}
+	}
+
 void CGDraw::RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, CG32bitPixel rgbColor)
 
 //	RingGlowing

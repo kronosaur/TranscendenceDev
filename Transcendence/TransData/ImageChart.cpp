@@ -660,8 +660,8 @@ void InitStationTypeImage (SEntryDesc &Entry, CStationType *pStationType)
 		return;
 		}
 
-    int xOffset = (RectWidth(rcImage) / 2) - xCenter;
-    int yOffset = (RectHeight(rcImage) / 2) - yCenter;
+    int xOffset = rcImage.left + (RectWidth(rcImage) / 2) - xCenter;
+    int yOffset = rcImage.top + (RectHeight(rcImage) / 2) - yCenter;
 
 	Entry.pCompositeImageArray = new CObjectImageArray;
 	Entry.pCompositeImageArray->InitFromBitmap(Entry.pCompositeImage, rcImage, 0, 0, false, xOffset, yOffset);

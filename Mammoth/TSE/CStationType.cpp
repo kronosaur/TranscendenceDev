@@ -2393,6 +2393,14 @@ void CStationType::PaintDevicePositions (CG32bitImage &Dest, int x, int y)
 			CVector vDir = PolarToVector(iFireAngle, ARC_RADIUS);
 			CGDraw::Line(Dest, xCenter, yCenter, xCenter + (int)vDir.GetX(), yCenter - (int)vDir.GetY(), 1, rgbLine);
 			}
+
+		//	If short-range, draw range circle
+
+		if (DeviceDesc.iMaxFireRange)
+			{
+			int iRadius = mathRound(DeviceDesc.iMaxFireRange * LIGHT_SECOND / g_KlicksPerPixel);
+			CGDraw::CircleOutline(Dest, xCenter, yCenter, iRadius, 1, rgbLine);
+			}
 		}
 	}
 

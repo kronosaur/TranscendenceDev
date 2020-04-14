@@ -40,6 +40,7 @@
 #define MAX_COUNT_ATTRIB						CONSTLIT("maxCount")
 #define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
 #define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
+#define MAX_FIRE_RANGE_ATTRIB					CONSTLIT("maxFireRange")
 #define MISSILE_DEFENSE_ATTRIB					CONSTLIT("missileDefense")
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define SECONDARY_WEAPON_ATTRIB					CONSTLIT("secondaryWeapon")
@@ -93,6 +94,7 @@ class CSingleDevice : public IDeviceGenerator
 		bool m_bOmnidirectional = false;		//	This slot has a turret
 		int m_iMinFireArc = 0;					//	This slot swivels
 		int m_iMaxFireArc = 0;
+		int m_iMaxFireRange = 0;				//	Max effective fire range (light-seconds)
 		bool m_bDefaultFireArc = false;			//	This slot does not define swivel
 
 		DWORD m_dwLinkedFireOptions = 0;		//	This slot has linked-fire properties
@@ -267,6 +269,7 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		retDesc->b3DPosition = false;
 		}
 
+	retDesc->iMaxFireRange = pDesc->GetAttributeIntegerBounded(MAX_FIRE_RANGE_ATTRIB, 1, -1, 0);
 	retDesc->rShotSeparationScale = pDesc->GetAttributeDoubleBounded(SHOT_SEPARATION_SCALE_ATTRIB, -1.0, 1.0, 1.0);
 
 	retDesc->bExternal = pDesc->GetAttributeBool(EXTERNAL_ATTRIB);
@@ -405,31 +408,27 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			Desc.b3DPosition = SlotDesc.b3DPosition;
 			}
 
-		if (bUseSlotDesc)
-			Desc.rShotSeparationScale = SlotDesc.rShotSeparationScale;
+		//	Slot descriptor overrides
+
+		if (SlotDesc.iMaxFireRange)
+			Desc.iMaxFireRange = SlotDesc.iMaxFireRange;
 		else
-			Desc.rShotSeparationScale = m_rShotSeparationScale;
-
-		//	External
+			Desc.iMaxFireRange = m_iMaxFireRange;
 
 		if (bUseSlotDesc)
-			Desc.bExternal = SlotDesc.bExternal;
-		else
-			Desc.bExternal = m_bExternal;
-
-		//	Cannot be empty
-
-		if (bUseSlotDesc)
+			{
 			Desc.bCannotBeEmpty = SlotDesc.bCannotBeEmpty;
-		else
-			Desc.bCannotBeEmpty = m_bCannotBeEmpty;
-
-		//	Fate
-
-		if (bUseSlotDesc)
+			Desc.bExternal = SlotDesc.bExternal;
 			Desc.iFate = SlotDesc.iFate;
+			Desc.rShotSeparationScale = SlotDesc.rShotSeparationScale;
+			}
 		else
+			{
+			Desc.bCannotBeEmpty = m_bCannotBeEmpty;
+			Desc.bExternal = m_bExternal;
 			Desc.iFate = m_iFate;
+			Desc.rShotSeparationScale = m_rShotSeparationScale;
+			}
 
 		//	Set the device fire arc appropriately.
 
@@ -634,6 +633,7 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_bDefaultPos = true;
 		}
 
+	m_iMaxFireRange = pDesc->GetAttributeIntegerBounded(MAX_FIRE_RANGE_ATTRIB, 1, -1, 0);
 	m_rShotSeparationScale = pDesc->GetAttributeDoubleBounded(SHOT_SEPARATION_SCALE_ATTRIB, -1.0, 1.0, 1.0);
 
 	//	Load fire arc attributes
