@@ -69,7 +69,6 @@
 	<Image UNID="&rsEndGameEscaped;"	bitmap="Resources\GameOverEscape.jpg"			loadOnUse="true" />
 	<Image UNID="&rsEndGameDestroyed;"	bitmap="Resources\GameOver.jpg"				loadOnUse="true" />
 
-	<Image UNID="&rsLargeShips1;"	bitmap="Resources\LargeShips1.jpg"	bitmask="Resources\LargeShips1Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsTenhoveHD;"		bitmap="Resources\TenhoveHD.jpg" 	bitmask="Resources\TenhoveHDMask.bmp" loadOnUse="true"/>
 
 	<Image UNID="&rsStations1;"		bitmap="Resources\Stations1.jpg"		bitmask="Resources\Stations1Mask.bmp"  />

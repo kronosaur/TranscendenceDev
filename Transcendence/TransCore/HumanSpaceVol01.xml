@@ -1889,6 +1889,7 @@
 	
 	<!ENTITY rsVentariDestroyer			"0x00100190">
 	<!ENTITY smVentariSpace				"0x00100191">
+	<!ENTITY rsVentariDestroyerHero		"0x00100192">
 	
 	<!-- 01A0-01BF EARTH INDUSTRIES CORPORATION -->
 	
@@ -2280,6 +2281,7 @@
 	<!-- 0620-063F GAIAN TERRAFORMERS -->
 
 	<!ENTITY smGaianSpace				"0x00100620">
+	<!ENTITY rsGaianProcessorHero		"0x00100621">
 
 	<!-- 0640-065F DOMINA -->
 
