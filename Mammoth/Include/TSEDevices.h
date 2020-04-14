@@ -429,6 +429,7 @@ struct SDeviceDesc
 	bool bOmnidirectional = false;				//	Slot turret
 	int iMinFireArc = 0;						//	Slot swivel
 	int iMaxFireArc = 0;
+	int iMaxFireRange = 0;						//	Slot range restriction (light-seconds)
 
 	DWORD dwLinkedFireOptions = 0;				//	Slot linked-fire options
 	bool bSecondary = false;
@@ -554,6 +555,7 @@ class CInstalledDevice
 		int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }
 		int GetMinFireArc (void) const { return m_iMinFireArc; }
 		int GetMaxFireArc (void) const { return m_iMaxFireArc; }
+		Metric GetMaxFireRange(void) const { return (m_iMaxFireRange == 0 ? g_InfiniteDistance : LIGHT_SECOND * m_iMaxFireRange); }
 		COverlay *GetOverlay (void) const { return m_pOverlay; }
 		int GetPosAngle (void) const { return m_iPosAngle; }
 		int GetPosRadius (void) const { return m_iPosRadius; }
@@ -712,7 +714,7 @@ class CInstalledDevice
 		int m_iMaxFireArc:16;					//	Max angle of fire arc (degrees)
 
 		int m_iShotSeparationScale:16;			//	Scaled by 32767. Governs scaling of shot separation for dual etc weapons
-		DWORD m_dwSpare1:16;
+		int m_iMaxFireRange:16;					//	Max effective fire range (in light-seconds); 0 = no limit
 
 		int m_iTimeUntilReady:16;				//	Timer counting down until ready to activate
 		int m_iFireAngle:16;					//	Last fire angle
