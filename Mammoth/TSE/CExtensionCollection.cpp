@@ -624,7 +624,7 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 
 		//	If this extension does not extend the adventure, then skip.
 
-		if (pAdventure && !pBest->CanExtend(pAdventure))
+		if (pAdventure && !pBest->CanExtend(pAdventure, API_VERSION))
 			continue;
 
 		//	If we get this far, then we can add this extension
@@ -781,7 +781,7 @@ void CExtensionCollection::ComputeCompatibilityLibraries (CExtension *pAdventure
 
 			//	If this extension does not extend the adventure, then skip.
 
-			if (pAdventure && !ExtensionList[j]->CanExtend(pAdventure))
+			if (pAdventure && !ExtensionList[j]->CanExtend(pAdventure, API_VERSION))
 				continue;
 
 			//	Compute the best extension out of the list.

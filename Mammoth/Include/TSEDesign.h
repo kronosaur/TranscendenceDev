@@ -871,7 +871,7 @@ class CExtension
 		static ALERROR CreateExtensionStub (const CString &sFilespec, EFolderTypes iFolder, DWORD dwFlags, CExtension **retpExtension, CString *retsError);
 
 		void AccumulateStats (SStats &Stats) const;
-		bool CanExtend (CExtension *pAdventure) const;
+		bool CanExtend (CExtension *pAdventure, DWORD dwAPIVersion) const;
 		bool CanHaveAdventureDesc (void) const;
 		void CleanUp (void);
 		void CreateIcon (int cxWidth, int cyHeight, CG32bitImage **retpIcon) const;
@@ -964,6 +964,7 @@ class CExtension
 		CTimeDate m_ModifiedTime;			//	Timedate of extension file
 		CIntegerIP m_Digest;				//	Digest (for registered files)
 		DWORD m_dwAPIVersion;				//	Version of API that we're using
+		DWORD m_dwObsoleteVersion = 0;		//	If >0, do not offer this extension at this API or higher
 		CExternalEntityTable *m_pEntities;	//	Entities defined by this extension
 		CString m_sDisabledReason;			//	Reason why extension is disabled
 
