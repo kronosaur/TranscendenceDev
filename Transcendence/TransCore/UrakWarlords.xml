@@ -302,7 +302,7 @@
 
 			attributes=			"capitalShip, genericClass, urak"
 
-			size=				"160"
+			size=				"174"
 			mass=				"11000"
 			thrustRatio=		"1"
 			maxSpeed=			"10"
@@ -322,9 +322,9 @@
 		
 		<Devices>
 			<Device deviceID="&itUrakHowitzer;"									 minFireArc="330" maxFireArc="30"  posAngle="0"   posRadius="56" posZ="25"/>
-			<Device deviceID="&itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="90"  maxFireArc="270" posAngle="180" posRadius="24" posZ="34"/>
-			<Device deviceID="&itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="350" maxFireArc="170" posAngle="30"  posRadius="20" posZ="34"/>
-			<Device deviceID="&itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="190" maxFireArc="10"  posAngle="330" posRadius="20" posZ="34"/>
+			<Device deviceID="&itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="90"  maxFireArc="270" posAngle="180" posRadius="30" posZ="30"/>
+			<Device deviceID="&itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="350" maxFireArc="170" posAngle="30"  posRadius="30" posZ="30"/>
+			<Device deviceID="&itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="190" maxFireArc="10"  posAngle="-30" posRadius="30" posZ="30"/>
 			<Device deviceID="&it100MWReactor;"/>
 		</Devices>
 
@@ -360,7 +360,8 @@
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsUrakDestroyer;" imageWidth="180" imageHeight="180"/>
+		<Image imageID="&rsUrakDestroyerHD;" imageWidth="180" imageHeight="180"	rotationCount="120" rotationColumns="12" viewportRatio="0.02375"/>
+		<Image imageID="&rsUrakDestroyerHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="155"	posRadius="28"	posZ="-10"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
@@ -571,7 +572,8 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsUrakDestroyer;"		bitmap="Resources\UrakDestroyer.jpg" 	bitmask="Resources\UrakDestroyerMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsUrakDestroyerHD;"	bitmap="Resources\UrakDestroyerHD.jpg" 	bitmask="Resources\UrakDestroyerHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsUrakDestroyerHero;"	bitmap="Resources\UrakDestroyerLarge.jpg" 	bitmask="Resources\UrakDestroyerLargeMask.bmp" loadOnUse="true"/>
 
 	<Image UNID="&rsUrakSentinelHD;"	bitmap="Resources\UrakSentinelHD.jpg" 	bitmask="Resources\UrakSentinelHDMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsUrakSentinelHero;"	bitmap="Resources\UrakSentinelLarge.jpg" 	bitmask="Resources\UrakSentinelLargeMask.bmp" loadOnUse="true"/>
