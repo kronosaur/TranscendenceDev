@@ -192,6 +192,7 @@
 #define PROPERTY_HAS_VARIANTS					CONSTLIT("hasVariants")
 #define PROPERTY_HULL_POINTS					CONSTLIT("hullPoints")
 #define PROPERTY_HULL_VALUE						CONSTLIT("hullValue")
+#define PROPERTY_IMAGE_ROTATION_COUNT			CONSTLIT("imageRotationCount")
 #define PROPERTY_LAUNCHER_ITEM					CONSTLIT("launcherItem")
 #define PROPERTY_MAX_ARMOR_CLASS				CONSTLIT("maxArmorClass")
 #define PROPERTY_MAX_ARMOR_CLASS_NAME			CONSTLIT("maxArmorClassName")
@@ -3884,6 +3885,11 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		{
 		CHullPointsCalculator Calc(*this, GetStandard());
 		return ICCItemPtr(mathRound(Calc.GetTotalPoints() * 10.0));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_IMAGE_ROTATION_COUNT))
+		{
+		return ICCItemPtr(m_Image.GetSimpleImage().GetRotationCount());
 		}
 
 	else if (strEquals(sProperty, PROPERTY_LAUNCHER_ITEM))
