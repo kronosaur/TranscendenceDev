@@ -478,24 +478,6 @@ CVector CSystem::CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric r
 		}
 	}
 
-CG32bitPixel CSystem::CalcNearestStarColor (const CVector &vPos, CSpaceObject **retpStar) const
-
-//	CalcNearestStarColor
-//
-//	Computes the space color of the nearest star.
-
-	{
-	const SStarDesc *pBestStar = FindNearestStar(vPos);
-	if (pBestStar == NULL)
-		{
-		if (retpStar) *retpStar = NULL;
-		return CG32bitPixel(0, 0, 0);
-		}
-
-	if (retpStar) *retpStar = pBestStar->pStarObj;
-	return pBestStar->pStarObj->GetSpaceColor();
-	}
-
 CG32bitPixel CSystem::CalcStarshineColor (CSpaceObject *pPOV, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask) const
 
 //	CalcStarshineColor
@@ -1819,23 +1801,22 @@ const CSystem::SStarDesc *CSystem::FindNearestStar (const CVector &vPos, int *re
 		return NULL;
 
 	const SStarDesc *pBestStar = &m_Stars[0];
-	int iBestDist = (int)(vPos.Longest() / LIGHT_SECOND);
+	Metric rBestDist2 = (vPos - pBestStar->pStarObj->GetPos()).Length2();
 
 	for (int i = 1; i < m_Stars.GetCount(); i++)
 		{
 		const CSpaceObject *pStar = m_Stars[i].pStarObj;
-		CVector vDist = vPos - pStar->GetPos();
+		Metric rDist2 = (vPos - pStar->GetPos()).Length2();
 
-		int iDistFromCenter = (int)(vDist.Longest() / LIGHT_SECOND);
-		if (iDistFromCenter < iBestDist)
+		if (rDist2 < rBestDist2)
 			{
-			iBestDist = iDistFromCenter;
+			rBestDist2 = rDist2;
 			pBestStar = &m_Stars[i];
 			}
 		}
 
 	if (retiDist)
-		*retiDist = iBestDist;
+		*retiDist = mathRound(sqrt(rBestDist2) / LIGHT_SECOND);
 
 	return pBestStar;
 	}
