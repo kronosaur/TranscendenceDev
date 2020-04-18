@@ -518,21 +518,9 @@ void CShip::CalcDeviceBonus (void)
 		if (pSystemEnhancements)
 			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
 
-		//	Deal with class specific stuff
+		//	Add enhancements from overlays
 
-		switch (Device.GetCategory())
-			{
-			case itemcatLauncher:
-			case itemcatWeapon:
-				{
-				//	Overlays add a bonus
-
-				int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
-				if (iBonus != 0)
-					pEnhancements->InsertHPBonus(NULL, iBonus);
-				break;
-				}
-			}
+		m_Overlays.AccumulateEnhancements(*this, DeviceItem, EnhancementIDs, *pEnhancements);
 
 		//	Set the bonuses
 		//	Note that these include any bonuses conferred by item enhancements

@@ -8,6 +8,7 @@
 #define COUNTER_TAG								CONSTLIT("Counter")
 #define EFFECT_WHEN_HIT_TAG						CONSTLIT("EffectWhenHit")
 #define EFFECT_TAG								CONSTLIT("Effect")
+#define ENHANCE_ABILITIES_TAG					CONSTLIT("EnhancementAbilities")
 #define HIT_EFFECT_TAG							CONSTLIT("HitEffect")
 #define SHIP_ENERGY_FIELD_TYPE_TAG				CONSTLIT("ShipEnergyFieldType")
 #define UNDERGROUND_TAG							CONSTLIT("Underground")
@@ -176,6 +177,9 @@ ALERROR COverlayType::OnBindDesign (SDesignLoadCtx &Ctx)
 	{
 	ALERROR error;
 
+	if (error = m_Enhancements.Bind(Ctx))
+		return error;
+
 	if (m_pEffect)
 		if (error = m_pEffect->BindDesign(Ctx))
 			return error;
@@ -237,6 +241,15 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_fRotateWithShip = !pDesc->GetAttributeBool(IGNORE_SHIP_ROTATION_ATTRIB);
 	m_fRotateWithSource = pDesc->GetAttributeBool(ROTATE_WITH_SOURCE_ATTRIB);
+
+	//	Enhancements conferred
+
+	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
+	if (pEnhanceList)
+		{
+		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList, NULL))
+			return error;
+		}
 
 	//	Damage adjustment
 

@@ -186,6 +186,46 @@ void COverlay::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotatio
 		}
 	}
 
+bool COverlay::AccumulateEnhancements (CSpaceObject &Source, CDeviceItem &DeviceItem, TArray<CString> &EnhancementIDs, CItemEnhancementStack &Enhancements)
+
+//	AccumulateEnhancements
+//
+//	Accumulates enhancements for the given device to the stack. Returns TRUE if
+//	any enhancements were added.
+
+	{
+	if (!IsActive())
+		return false;
+	else
+		{
+		bool bEnhanced = false;
+
+		//	Accumulate our enhancement list
+
+		if (m_pType->GetEnhancementsConferred().Accumulate(1, DeviceItem, EnhancementIDs, &Enhancements))
+			bEnhanced = true;
+
+		//	Convert weapon bonus to an enhancement.
+
+		switch (DeviceItem.GetCategory())
+			{
+			case itemcatLauncher:
+			case itemcatWeapon:
+				{
+				if (int iWeaponBonus = m_pType->GetWeaponBonus(DeviceItem.GetInstalledDevice(), &Source))
+					{
+					Enhancements.InsertHPBonus(NULL, iWeaponBonus);
+					bEnhanced = true;
+					}
+
+				break;
+				}
+			}
+
+		return bEnhanced;
+		}
+	}
+
 void COverlay::CalcOffset (const CSpaceObject &Source, int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin) const
 
 //	CalcOffset
