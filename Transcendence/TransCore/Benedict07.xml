@@ -1157,7 +1157,7 @@
 								)
 							)
 							
-						(objSetShowAsDestination gSource Nil 'autoclear)
+						(objSetShowAsDestination gSource 'autoclear)
 						)
 				</Invoke>
 			</Message>
