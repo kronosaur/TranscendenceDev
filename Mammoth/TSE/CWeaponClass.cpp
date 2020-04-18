@@ -3304,9 +3304,13 @@ const CWeaponFireDesc *CWeaponClass::GetReferenceShotData (const CWeaponFireDesc
 
 	{
 	const CWeaponFireDesc *pBestShot = pShot;
-	Metric rBestDamage = 0.0;	//	Fragments always take precedence
+
+	//	NOTE: We want fragment damage to take precendence. And we start with
+	//	best damage type as generic in case we have generic-damage fragments.
+
+	Metric rBestDamage = 0.0;
 	int iBestFragments = 1;
-	DamageTypes iBestDamageType = damageLaser;
+	DamageTypes iBestDamageType = damageGeneric;
 
 	CWeaponFireDesc::SFragmentDesc *pFragDesc = pShot->GetFirstFragment();
 	while (pFragDesc)

@@ -6483,5 +6483,12 @@
 	<Image UNID="&rsStargate;"			obsoleteVersion="49" bitmap="Resources\Stargates1.jpg"		bitmask="Resources\Stargates1Mask.bmp"  />
 	<Image UNID="&rsShipInterior;"		obsoleteVersion="49" bitmap="Resources\ShipInterior.jpg"			loadOnUse="true" />
 	<Image UNID="&rsLargeExplosions;"	obsoleteVersion="49" bitmap="Resources\LargeExplosions.jpg" bitmask="Resources\LargeExplosionsMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsVentariDestroyer;"	obsoleteVersion="49" bitmap="Resources\VentariDestroyer.jpg" bitmask="Resources\VentariDestroyerMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsLargeShips1;"		obsoleteVersion="49" bitmap="Resources\LargeShips1.jpg"	bitmask="Resources\LargeShips1Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsUrakDestroyer;"		obsoleteVersion="49" bitmap="Resources\UrakDestroyer.jpg" 	bitmask="Resources\UrakDestroyerMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsHeliotropeFrigate;"	obsoleteVersion="49"			bitmap="Resources\HeliotropeFrigate.jpg"		bitmask="Resources\HeliotropeFrigateMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsFerianWarrior;"		obsoleteVersion="49"		bitmap="Resources\FerianWarrior.jpg"	bitmask="Resources\FerianWarriorMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsXenophobeWorldship;"	obsoleteVersion="49"		bitmap="Resources\XenophobeWorldship.jpg"		bitmask="Resources\XenophobeWorldshipMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsXenophobeArk;"		obsoleteVersion="49"		bitmap="Resources\XenophobeArk.jpg"				bitmask="Resources\XenophobeArkMask.bmp"  		loadOnUse="true"/>
 
 </TranscendenceModule>

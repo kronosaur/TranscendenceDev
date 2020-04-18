@@ -851,7 +851,6 @@ class CSystem
 		void AddToDeleteList (CSpaceObject *pObj);
 		ALERROR AddToSystem (CSpaceObject *pObj, int *retiIndex);
 		bool AscendObject (CSpaceObject *pObj, CString *retsError = NULL);
-		CG32bitPixel CalcNearestStarColor (const CVector &vPos, CSpaceObject **retpStar = NULL) const;
 		int CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL) const;
 		CVector CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric rDistance, const CSpaceObject *pEncounterBase = NULL) const;
 		void CancelTimedEvent (CSpaceObject *pSource, bool bInDoEvent = false);

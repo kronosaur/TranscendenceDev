@@ -2196,7 +2196,7 @@ bool CStation::IsBlacklisted (const CSpaceObject *pObj) const
 	
 	{
 	if (pObj)
-		return (pObj->IsPlayer() && m_Blacklist.IsBlacklisted());
+		return (m_Blacklist.IsBlacklisted() && pObj->GetSovereign() && pObj->GetSovereign()->IsPlayer());
 	else
 		return m_Blacklist.IsBlacklisted();
 	}

@@ -197,7 +197,7 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itSunflareCannon;"/>
+			<Device deviceID="&itSunflareCannon;" posAngle="0" posRadius="56" posZ="0"/>
 			<Device deviceID="&itSolonShieldGenerator;"/>
 		</Devices>
 
@@ -229,7 +229,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsHeliotropeFrigate;" imageWidth="120" imageHeight="120"/>
+		<Image imageID="&rsHeliotropeFrigateHD;"	imageWidth="120" imageHeight="120"	rotationCount="120" rotationColumns="12" viewportRatio="0.01375"/>
+		<HeroImage imageID="&rsHeliotropeFrigateHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="180"	posRadius="48"	posZ="-25"	rotation="180"/>
@@ -470,7 +471,9 @@
 
 	<!-- Resources -->
 
-	<Image UNID="&rsHeliotropeFrigate;"				bitmap="Resources\HeliotropeFrigate.jpg"		bitmask="Resources\HeliotropeFrigateMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsHeliotropeFrigateHD;"			bitmap="Resources\HeliotropeFrigateHD.jpg"		bitmask="Resources\HeliotropeFrigateHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsHeliotropeFrigateHero;"			bitmap="Resources\HeliotropeFrigateLarge.jpg"		bitmask="Resources\HeliotropeFrigateLargeMask.bmp"  loadOnUse="true"/>
+
 	<Image UNID="&rsHeliotropeGunshipHD;"			bitmap="Resources\HeliotropeGunshipHD.jpg"		bitmask="Resources\HeliotropeGunshipHDMask.bmp"  loadOnUse="true"/>
 	
 </TranscendenceModule>

@@ -1757,6 +1757,7 @@
 	<!ENTITY rsUrakSentinelHD			"0x001000D1">
 	<!ENTITY smUrakSpace				"0x001000D2">
 	<!ENTITY rsUrakSentinelHero			"0x001000D3">
+	<!ENTITY rsUrakDestroyerHero		"0x001000D4">
 	
 	<!-- 00E0-00EF BATTLE ARENA MAXIMUS -->
 	
@@ -1775,6 +1776,7 @@
 	<!ENTITY rsHeliotropeFrigate		"0x001000F0">
 	<!ENTITY rsHeliotropeGunshipHD		"0x001000F1">
 	<!ENTITY smHeliotropeSpace			"0x001000F2">
+	<!ENTITY rsHeliotropeFrigateHero	"0x001000F3">
 	
 	<!-- 0100-011F CHARON PIRATES AND MARAUDERS -->
 	
@@ -1832,6 +1834,8 @@
 	<!ENTITY rsXenophobeFighterHD		"0x00100141">
 	<!ENTITY smXenophobeSpace			"0x00100142">
 	<!ENTITY rsXenophobeDefenderHero	"0x00100143">
+	<!ENTITY rsXenophobeWorldshipHero	"0x00100144">
+	<!ENTITY rsXenophobeArkHero			"0x00100145">
 	
 	<!-- 0150-015F HUARI EMPIRE -->
 	
@@ -1889,6 +1893,7 @@
 	
 	<!ENTITY rsVentariDestroyer			"0x00100190">
 	<!ENTITY smVentariSpace				"0x00100191">
+	<!ENTITY rsVentariDestroyerHero		"0x00100192">
 	
 	<!-- 01A0-01BF EARTH INDUSTRIES CORPORATION -->
 	
@@ -2142,6 +2147,7 @@
 	<!ENTITY smFerianSpace				"0x00100476">
 	<!ENTITY baFerianStation			"0x00100477">
 	<!ENTITY msFerian01					"0x00100478">
+	<!ENTITY rsFerianWarriorHero		"0x00100479">
 
 	<!-- 0490-04AF HIMAL SEPERATISTS -->
 
@@ -2280,6 +2286,7 @@
 	<!-- 0620-063F GAIAN TERRAFORMERS -->
 
 	<!ENTITY smGaianSpace				"0x00100620">
+	<!ENTITY rsGaianProcessorHero		"0x00100621">
 
 	<!-- 0640-065F DOMINA -->
 

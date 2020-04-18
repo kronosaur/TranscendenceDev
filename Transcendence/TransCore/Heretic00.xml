@@ -81,7 +81,7 @@
 											}))
 
 										(objSetProperty theTarget 'known True)
-										(objSetShowAsDestination theTarget Nil 'autoclear)
+										(objSetShowAsDestination theTarget 'autoclear)
 										(msnSetData gSource 'status 'distressSignal)
 										(msnCreate &msHereticIocrymAttackMsg; theTarget)
 										)
@@ -116,7 +116,7 @@
 								(sysFindObject Nil "sN +iocrymCommandShip;")
 								))
 							;	Figure out how many sentinels we should send
-							(theCount (+ (msnGetData gSource 'squadronSize) (random 0 1)))
+							(theCount (msnGetData gSource 'squadronSize))
 							)
 							(for i 1 theCount
 								(block (attackerObj)
@@ -221,6 +221,23 @@
 							)
 					)
 			</OnObjDestroyed>
+
+			<OnCompleted>
+				(block (
+					(targetObj (objGetObjByID (msnGetData gSource 'targetID)))
+					)
+					;	Remove any blocker missions
+					(if targetObj
+						(enum (msnFind targetObj "S +unid:&msHereticIocrymAttackMsg;;") theMission
+							(msnDestroy theMission)
+							)
+						)
+
+					;	Clear the destination target
+					(objClearShowAsDestination targetObj)
+					(msnSetData gSource 'targetID Nil)
+					)
+			</OnCompleted>
 
 			<OnGlobalSystemStarted>
 				(switch

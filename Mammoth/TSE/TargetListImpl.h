@@ -25,6 +25,7 @@ class CTargetListSelector
 				{
 				if (m_Perception.CanBeTargeted(&Obj, rDist2)
 						&& !Obj.IsUnreal()
+						&& m_Source.IsAngryAt(&Obj)
 						&& Obj != m_Options.pExcludeObj)
 					{
 					if (retiType) *retiType = CTargetList::typeMissile;
