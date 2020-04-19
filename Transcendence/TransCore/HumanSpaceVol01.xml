@@ -2293,6 +2293,8 @@
 	<!ENTITY baDominaPower				"0x00100640">
 	<!ENTITY vtIngenuityEnhancement		"0x00100641">
 	<!ENTITY baHaloGem					"0x00100642">
+	<!ENTITY itGemOfFury				"0x00100643">
+	<!ENTITY ovGemOfFury				"0x00100644">
 
 	<!-- 0660-06BF COMMONWEALTH FLEET III -->
 
@@ -2534,6 +2536,7 @@
 	<Module filename="ArmorEnhancementItems.xml"/>
 	<Module filename="ArmorRepairItems.xml"/>
 	<Module filename="Barricades.xml"/>
+	<Module filename="HaloGems.xml"/>
 	<Module filename="MiningPods.xml"/>
 	<Module filename="MiscItems.xml"/>
 	<Module filename="QuantumCPU.xml"/>

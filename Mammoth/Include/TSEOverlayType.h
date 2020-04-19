@@ -73,6 +73,7 @@ class COverlayType : public CDesignType
 		int GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx);
 		Metric GetDrag (void) const { return m_rDrag; }
 		CEffectCreator *GetEffectCreator (void) const { return m_pEffect; }
+		const CEnhancementDesc &GetEnhancementsConferred (void) const { return m_Enhancements; }
 		CEffectCreator *GetHitEffectCreator (void) const { return m_pHitEffect; }
 		int GetMaxHitPoints (const CSpaceObject &Source) const;
 		const COverlayUndergroundDesc &GetUndergroundDesc (void) const { return m_Underground; }
@@ -100,6 +101,7 @@ class COverlayType : public CDesignType
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 
 	private:
+		CEnhancementDesc m_Enhancements;		//	Enhancements conferred
 		CDamageAdjDesc m_AbsorbAdj;				//	Damage absorbed by the field
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
 		CDamageAdjDesc m_BonusAdj;				//	Bonus to weapon damage (by damage type)

@@ -210,7 +210,10 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 			break;
 
 		case etPowerEfficiency:
-			retList->Insert(SDisplayAttribute(iDisplayType, (IsDisadvantage() ? CONSTLIT("-drain") : CONSTLIT("+efficient")), true));
+			if (IsDisadvantage())
+				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("-power drain %d%%"), 10 * GetLevel()), true));
+			else
+				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("+power save %d%%"), 10 * Min(GetLevel(), 9)), true));
 			break;
 
 		case etSpeed:

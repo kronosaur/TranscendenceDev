@@ -145,7 +145,7 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pT
 	//	See if we can enhance the target device
 
 	if (Device.IsDeviceWorking())
-		bEnhanced = m_Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
+		bEnhanced = m_Enhancements.Accumulate(Device.GetItem().GetLevel(), *pTarget->GetItem(), *pEnhancements, &EnhancementIDs);
 
 	//	Let sub-classes add their own
 
@@ -169,7 +169,7 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *p
 	//	See if we can enhance the target device
 
 	if (Device.IsDeviceWorking())
-		bEnhanced = m_Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
+		bEnhanced = m_Enhancements.Accumulate(Device.GetItem().GetLevel(), *pTarget->GetItem(), *pEnhancements, &EnhancementIDs);
 
 	//	Let sub-classes add their own
 

@@ -443,7 +443,7 @@ bool CEnhancerClass::OnAccumulateEnhancements (CItemCtx &Device, CInstalledArmor
 
 	//	New style
 
-	return pStats->Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
+	return pStats->Enhancements.Accumulate(Device.GetItem().GetLevel(), *pTarget->GetItem(), *pEnhancements, &EnhancementIDs);
 	}
 
 bool CEnhancerClass::OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
@@ -464,5 +464,5 @@ bool CEnhancerClass::OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevic
 
 	//	New style
 
-	return pStats->Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
+	return pStats->Enhancements.Accumulate(Device.GetItem().GetLevel(), *pTarget->GetItem(), *pEnhancements, &EnhancementIDs);
 	}

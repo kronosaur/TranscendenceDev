@@ -79,7 +79,7 @@ bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray
 	//	Slot enhancements
 
 	if (!m_SlotEnhancements.IsEmpty())
-		bEnhanced = m_SlotEnhancements.Accumulate(CItemCtx(pSource, const_cast<CInstalledDevice *>(this)), *GetItem(), EnhancementIDs, pEnhancements);
+		bEnhanced = m_SlotEnhancements.Accumulate(GetLevel(), *GetItem(), *pEnhancements, &EnhancementIDs);
 
 	return bEnhanced;
 	}

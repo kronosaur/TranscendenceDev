@@ -625,27 +625,20 @@ void CStation::CalcDeviceBonus (void)
 		//	Add enhancements from system
 
 		if (pSystemEnhancements)
-			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
+			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), *pEnhancements, &EnhancementIDs);
 
 		//	Deal with class specific stuff
+
+		m_Overlays.AccumulateEnhancements(*this, DeviceItem, EnhancementIDs, *pEnhancements);
+
+		//	Cache some properties
 
 		switch (Device.GetCategory())
 			{
 			case itemcatLauncher:
 			case itemcatWeapon:
-				{
-				//	Cache some properties
-
 				m_fArmed = true;
-
-				//	Overlays add a bonus
-
-				int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
-				if (iBonus != 0)
-					pEnhancements->InsertHPBonus(NULL, iBonus);
-
 				break;
-				}
 			}
 
 		//	Set the bonuses

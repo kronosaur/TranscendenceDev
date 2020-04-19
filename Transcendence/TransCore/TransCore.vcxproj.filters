@@ -933,5 +933,8 @@
     <Xml Include="SistersSanctum.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
+    <Xml Include="HaloGems.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
