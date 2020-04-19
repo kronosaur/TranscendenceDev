@@ -107,7 +107,7 @@
 
 		<Invoke key="F">
 			(block Nil
-				(objAddOverlay gSource &sfStrengthen; 600)
+				(objAddOverlay gSource &ovGemOfFury; 600)
 				(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 
 				; Remove the item from the player's list
@@ -119,7 +119,7 @@
 		</Invoke>
 
 		<Language>
-			<String id="msgResult">"Use this time to right your wrongs..."</String>
+			<String id="msgResult">"Fury always comes with a cost..."</String>
 		</Language>
 	</ItemType>
 
@@ -186,6 +186,26 @@
 		</Language>
 	</ItemType>
 	
+<!-- OVERLAY TYPES -->
+	
+	<OverlayType UNID="&ovGemOfFury;"
+            attributes=     "dominaPower, effect, temporary"
+			>
+		<EnhancementAbilities>
+			<Enhancement type="&itGemOfFury;" criteria="w" enhancement="+hpBonus:100;"/>
+			<Enhancement type="&itGemOfFury;" criteria="w" enhancement="-efficient:100;"/>
+		</EnhancementAbilities>
+			
+		<Effect>
+			<Starburst
+					spikeCount=		"20"
+					spikeLength=	"4d8"
+					primaryColor=	"#ff80ff"
+					secondaryColor=	"#ff00ff"
+					/>
+		</Effect>
+	</OverlayType>
+
 <!-- BASE CLASSES -->
 
 	<ItemType unid="&baHaloGem;">
