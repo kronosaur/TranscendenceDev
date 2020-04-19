@@ -86,6 +86,43 @@
 		</Language>
 	</ItemType>
 
+	<!-- Level 9: Gem of Fury -->
+
+	<ItemType UNID="&itGemOfFury;"
+			name=				"gem(s) of fury"
+			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
+			inherit=			"&baHaloGem;"
+			
+			level=				"9"
+			frequency=			"veryrare"
+			unknownType=		"&itUnknownHaloGem;"
+
+			value=				"10000"
+			mass=				"1"
+			
+			description=		"These gems are used by the Halo Races, though their exact purpose is unknown. The dark-energies embedded in the gem have an influence over spacetime that is not yet fully understood."
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="576" imageWidth="96" imageHeight="96"/>
+
+		<Invoke key="F">
+			(block Nil
+				(objAddOverlay gSource &sfStrengthen; 600)
+				(objSendMessage gSource Nil (typTranslate gType 'msgResult))
+
+				; Remove the item from the player's list
+				(objRemoveItem gSource gItem 1)
+
+				; Identify the item
+				(itmSetKnown gItem)
+				)
+		</Invoke>
+
+		<Language>
+			<String id="msgResult">"Use this time to right your wrongs..."</String>
+		</Language>
+	</ItemType>
+
 	<!-- Level 12: Gem of Sacrificce -->
 
 	<ItemType UNID="&itGemOfSacrifice;"
@@ -97,7 +134,7 @@
 			frequency=			"veryrare"
 			unknownType=		"&itUnknownHaloGem;"
 
-			value=				"10000"
+			value=				"50000"
 			mass=				"1"
 			
 			description=		"These gems are used by the Halo Races, though their exact purpose is unknown. The dark-energies embedded in the gem have an influence over spacetime that is not yet fully understood."
