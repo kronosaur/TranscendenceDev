@@ -371,7 +371,7 @@ void CShip::CalcArmorBonus (void)
 			//	Enhancements from the system.
 
 			if (pSystemEnhancements)
-				pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
+				pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), *pEnhancements, &EnhancementIDs);
 
 			//	Set the enhancement stack
 
@@ -516,7 +516,7 @@ void CShip::CalcDeviceBonus (void)
 		//	Add enhancements from system
 
 		if (pSystemEnhancements)
-			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
+			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), *pEnhancements, &EnhancementIDs);
 
 		//	Add enhancements from overlays
 

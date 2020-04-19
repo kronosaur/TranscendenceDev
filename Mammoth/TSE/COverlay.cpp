@@ -200,9 +200,14 @@ bool COverlay::AccumulateEnhancements (CSpaceObject &Source, CDeviceItem &Device
 		{
 		bool bEnhanced = false;
 
-		//	Accumulate our enhancement list
+		//	Accumulate our enhancement list. We don't pass the EnhancementIDs array
+		//	because we allow multiple overlays to take effect. Note that some 
+		//	overlays have multiple enhancements with the same type and if we 
+		//	pass in EnhancementIDs then only one enhancement will work. If we
+		//	want to prevent duplicate overlay enhancements then we should do the
+		//	check here, not inside CEnhancementDesc::Accumulate.
 
-		if (m_pType->GetEnhancementsConferred().Accumulate(1, DeviceItem, EnhancementIDs, &Enhancements))
+		if (m_pType->GetEnhancementsConferred().Accumulate(1, DeviceItem, Enhancements))
 			bEnhanced = true;
 
 		//	Convert weapon bonus to an enhancement.

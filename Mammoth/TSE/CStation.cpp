@@ -625,7 +625,7 @@ void CStation::CalcDeviceBonus (void)
 		//	Add enhancements from system
 
 		if (pSystemEnhancements)
-			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
+			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), *pEnhancements, &EnhancementIDs);
 
 		//	Deal with class specific stuff
 

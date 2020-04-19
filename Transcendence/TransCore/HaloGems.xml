@@ -107,7 +107,7 @@
 
 		<Invoke key="F">
 			(block Nil
-				(objAddOverlay gSource &ovGemOfFury; 600)
+				(objAddOverlay gSource &ovGemOfFury; 3000)
 				(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 
 				; Remove the item from the player's list
