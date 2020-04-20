@@ -195,21 +195,21 @@ class CStationEncounterCtx
 	{
 	public:
 		void AddEncounter (CSystem *pSystem);
-		bool CanBeEncountered (const CStationEncounterDesc &Desc);
-		bool CanBeEncounteredInSystem (CSystem *pSystem, CStationType *pStationType, const CStationEncounterDesc &Desc);
+		bool CanBeEncountered (const CStationEncounterDesc &Desc) const;
+		bool CanBeEncounteredInSystem (CSystem *pSystem, const CStationType *pStationType, const CStationEncounterDesc &Desc) const;
 		TSortMap<CString, int> GetEncounterCountByNode (void) const;
-		int GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc);
-		int GetFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
-		int GetFrequencyForSystem (CSystem *pSystem, CStationType *pStation, const CStationEncounterDesc &Desc);
-		int GetMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc);
-		int GetRequiredForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc);
+		int GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc) const;
+		int GetFrequencyForNode (CTopologyNode *pNode, const CStationType *pStation, const CStationEncounterDesc &Desc) const;
+		int GetFrequencyForSystem (CSystem *pSystem, const CStationType *pStation, const CStationEncounterDesc &Desc) const;
+		int GetMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc) const;
+		int GetRequiredForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc) const;
 		int GetTotalCount (void) const { return m_Total.iCount; }
 		int GetTotalLimit (void) const { return m_Total.iLimit; }
 		int GetTotalMinimum (void) const { return m_Total.iMinimum; }
 		void IncMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc, int iInc = 1);
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Reinit (const CStationEncounterDesc &Desc);
-		void WriteToStream (IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream) const;
 
 		static int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria);
 
@@ -223,8 +223,8 @@ class CStationEncounterCtx
 			mutable int iNodeCriteria = -1;		//  Cached frequency for node (-1 = unknown)
 			};
 
-		int GetBaseFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
-		int GetCountInSystem (CSystem *pSystem, CStationType *pStationType) const;
+		int GetBaseFrequencyForNode (CTopologyNode *pNode, const CStationType *pStation, const CStationEncounterDesc &Desc) const;
+		int GetCountInSystem (CSystem *pSystem, const CStationType *pStationType) const;
 
 		SEncounterStats m_Total;			//	Encounters in entire game
 		TSortMap<int, SEncounterStats> m_ByLevel;	//	Encounters by system level
@@ -432,8 +432,8 @@ class CStationType : public CDesignType
 		bool AlertWhenDestroyed (void) { return (mathRandom(1, 100) <= m_iAlertWhenDestroyed); }
 		bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
 		bool CanAttack (void) const { return (m_fCanAttack ? true : false); }
-		bool CanBeEncountered (void) { return m_EncounterRecord.CanBeEncountered(GetEncounterDesc()); }
-		bool CanBeEncountered (CSystem *pSystem) { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, GetEncounterDesc()); }
+		bool CanBeEncountered (void) const { return m_EncounterRecord.CanBeEncountered(GetEncounterDesc()); }
+		bool CanBeEncountered (CSystem *pSystem) const { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, GetEncounterDesc()); }
 		bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
 		bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
 		bool CanHitFriends (void) const { return (m_fNoFriendlyFire ? false : true); }
