@@ -4575,7 +4575,10 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
     CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
 	CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
-	if (!pDesc->FindAttributeInteger(ROTATION_ATTRIB, &CreateCtx.iRotation))
+	CString sAngle;
+	if (pDesc->FindAttribute(ROTATION_ATTRIB, &sAngle))
+		CreateCtx.iRotation = CAngleGenerator::GenerateSingle(*pCtx, OrbitDesc, sAngle);
+	else
 		CreateCtx.iRotation = -1;
 
 	int iParallax = pDesc->GetAttributeIntegerBounded(BACKGROUND_PLANE_ATTRIB, 1, -1, 100);
