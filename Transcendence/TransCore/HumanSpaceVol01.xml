@@ -1827,6 +1827,11 @@
 	<!ENTITY rsSungTransportHero		"0x0010012A">
 	<!ENTITY rsEarthSlaverHero			"0x0010012B">
 	<!ENTITY rsDragonSlaverHero			"0x0010012C">
+	<!ENTITY rsSungKeep					"0x0010012D">
+	<!ENTITY rsSungSlaveQuarters		"0x0010012E">
+	<!ENTITY stSungSlaveQuarters3		"0x0010012F">
+	<!ENTITY stSungSlaveQuarters4		"0x00100130">
+	<!ENTITY stSungSlaveQuarters5		"0x00100131">
 	
 	<!-- 0140-014F XENOPHOBES -->
 	

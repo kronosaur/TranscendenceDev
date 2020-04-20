@@ -177,6 +177,52 @@ ALERROR CAngleGenerator::Generate (SSystemCreateCtx &Ctx, const CString &sAngle,
 	return NOERROR;
 	}
 
+int CAngleGenerator::GenerateSingle (SSystemCreateCtx &Ctx, const COrbit &OrbitDesc, const CString &sAngle)
+
+//	GenerateSingle
+//
+//	Generates a single angle.
+//
+//	SYNTAX
+//
+//	"n"							Literal angle (degrees)
+//	"orbitPos:n"				Angle n relative to orbit position
+//	"random"					Random angle (0-359)
+
+	{
+	if (sAngle.IsBlank())
+		return 0;
+
+	//	Separate value after colon
+
+	const char *pString = sAngle.GetASCIIZPointer();
+	const char *pColon = pString;
+	while (pColon && *pColon != ':' && *pColon != '\0')
+		pColon++;
+
+	CString sKeyword;
+	CString sValue;
+	if (pColon && *pColon == ':')
+		{
+		sKeyword = CString(pString, pColon - pString);
+		sValue = CString(pColon+1);
+		}
+	else
+		sKeyword = sAngle;
+
+	//	Interpret
+
+	if (strEquals(sKeyword, CONSTLIT("orbitPos")))
+		{
+		int iAngleInc = strToInt(sValue, 0);
+		return AngleMod(mathRound(mathRadiansToDegrees(OrbitDesc.GetObjectAngle())) + iAngleInc);
+		}
+	else if (strEquals(sKeyword, CONSTLIT("random")))
+		return mathRandom(0, 359);
+	else
+		return strToInt(sKeyword, 0);
+	}
+
 ALERROR CAngleGenerator::Init (SSystemCreateCtx &Ctx, int iCount, const CString &sValue, Metric rDefault, int iJitter)
 
 //	Init
