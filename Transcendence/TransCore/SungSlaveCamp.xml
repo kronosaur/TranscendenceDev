@@ -56,49 +56,16 @@
 				<Station type="&stSungDefenseSat1;"/>
 			</Orbitals>
 
-			<Orbitals count="12" distance="8" angle="equidistant:0" overlapCheck="none">
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="180"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="210"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="240"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="270"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="300"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="330"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="0"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="30"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="60"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="90"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="120"/>
-				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="150"/>
+			<Orbitals count="3d2" distance="8" angle="equidistant:0" overlapCheck="none">
+				<Station type="&stSungSlaveQuarters3;"	rotation="orbitPos:180"/>
 			</Orbitals>
 
-			<Orbitals count="12" distance="10" angle="equidistant:15" overlapCheck="none">
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="180"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="210"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="240"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="270"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="300"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="330"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="0"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="30"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="60"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="90"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="120"/>
-				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="150"/>
+			<Orbitals count="4d2" distance="10" angle="equidistant:15" overlapCheck="none">
+				<Station type="&stSungSlaveQuarters4;"	rotation="orbitPos:180"/>
 			</Orbitals>
 
-			<Orbitals count="12" distance="12" angle="equidistant:0" overlapCheck="none">
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="180"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="210"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="240"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="270"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="300"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="330"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="0"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="30"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="60"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="90"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="120"/>
-				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="150"/>
+			<Orbitals count="5d2" distance="12" angle="equidistant:-15" overlapCheck="none">
+				<Station type="&stSungSlaveQuarters5;"	rotation="orbitPos:180"/>
 			</Orbitals>
 		</Satellites>
 
