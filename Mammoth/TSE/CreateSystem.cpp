@@ -308,6 +308,7 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPla
 ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocationCriteria *retCriteria);
 bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric rRadius);
 ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CXMLElement &XMLDesc, const COrbit &OrbitDesc);
+SSystemCreateCtx::EOverlapCheck ParseCheckOverlap (const CString &sValue);
 inline void PopDebugStack (SSystemCreateCtx *pCtx) { if (pCtx->GetUniverse().InDebugMode()) pCtx->DebugStack.Pop(); }
 inline void PushDebugStack (SSystemCreateCtx *pCtx, const CString &sLine) { if (pCtx->GetUniverse().InDebugMode()) pCtx->DebugStack.Push(sLine); }
 
@@ -1486,6 +1487,13 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 	bool bNoOverlap = pObj->GetAttributeBool(NO_OVERLAP_ATTRIB);
 	int iExclusionRadius = pObj->GetAttributeIntegerBounded(EXCLUSION_RADIUS_ATTRIB, 0, -1, 0);
 
+	//	Check overlap
+
+	CString sCheck;
+	SSystemCreateCtx::EOverlapCheck iOldOverlapCheck = pCtx->iOverlapCheck;
+	if (pObj->FindAttribute(OVERLAP_CHECK_ATTRIB, &sCheck))
+		pCtx->iOverlapCheck = ParseCheckOverlap(sCheck);
+
 	//	Calculate the number of objects
 
 	int i, j;
@@ -1800,6 +1808,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 	//	Done
 
 	pCtx->ZAdjust = OldZAdjust;
+	pCtx->iOverlapCheck = iOldOverlapCheck;
 	PopDebugStack(pCtx);
 
 	return NOERROR;
@@ -2101,6 +2110,17 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 	return NOERROR;
 	}
 
+SSystemCreateCtx::EOverlapCheck ParseCheckOverlap (const CString &sValue)
+	{
+	if (CXMLElement::IsBoolTrueValue(sValue)
+			|| strEquals(sValue, CONSTLIT("planetoids")))
+		return SSystemCreateCtx::checkOverlapPlanets;
+	else if (strEquals(sValue, CONSTLIT("asteroids")))
+		return SSystemCreateCtx::checkOverlapAsteroids;
+	else
+		return SSystemCreateCtx::checkOverlapNone;
+	}
+
 ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, const CXMLElement *pSatellites, const COrbit &OrbitDesc)
 
 //	CreateSatellites
@@ -2121,15 +2141,7 @@ ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, const 
 	SSystemCreateCtx::EOverlapCheck iOldOverlap = pCtx->iOverlapCheck;
 	CString sCheck;
 	if (pSatellites->FindAttribute(OVERLAP_CHECK_ATTRIB, &sCheck))
-		{
-		if (CXMLElement::IsBoolTrueValue(sCheck)
-				|| strEquals(sCheck, CONSTLIT("planetoids")))
-			pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapPlanets;
-		else if (strEquals(sCheck, CONSTLIT("asteroids")))
-			pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapAsteroids;
-		else
-			pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapNone;
-		}
+		pCtx->iOverlapCheck = ParseCheckOverlap(sCheck);
 	else
 		pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapNone;
 

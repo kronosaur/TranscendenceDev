@@ -1687,6 +1687,9 @@
 	
 <!-- RESOURCES -->
 
+	<Image UNID="&rsSungKeep;"			bitmap="Resources\SungKeep.jpg"	bitmask="Resources\SungKeepMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsSungSlaveQuarters;"	bitmap="Resources\SungSlaveQuarters.jpg"	bitmask="Resources\SungSlaveQuartersMask.bmp"  loadOnUse="true"/>
+
 	<Image UNID="&rsEarthSlaverHD;"		bitmap="Resources\EarthSlaverHD.jpg"	bitmask="Resources\EarthSlaverHDMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsEarthSlaverHero;"	bitmap="Resources\EarthSlaverLarge.jpg"	bitmask="Resources\EarthSlaverLargeMask.bmp"  loadOnUse="true"/>
 

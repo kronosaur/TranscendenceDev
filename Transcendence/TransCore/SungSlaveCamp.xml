@@ -13,8 +13,8 @@
 			attributes=			"enemy, envAir, envEarth, envFire, envWater, generic, human, populated, sungSlaveCamp, sungSlavers"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
+			size=				"328"
 			armorID=			"&itSungArmor;"
 			hitPoints=			"150"
 			multiHull=			"true"
@@ -52,23 +52,53 @@
 		</Devices>
 
 		<Satellites overlapCheck="asteroids">
-			<Orbitals count="6" distance="9" angle="equidistant">
+			<Orbitals count="6" distance="15" angle="equidistant">
 				<Station type="&stSungDefenseSat1;"/>
 			</Orbitals>
 
-			<Orbitals count="3d2" distance="3" angle="equidistant">
-				<Station type="&stSungSlaveQuarters1;"/>
+			<Orbitals count="12" distance="8" angle="equidistant:0" overlapCheck="none">
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="180"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="210"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="240"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="270"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="300"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="330"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="0"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="30"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="60"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="90"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="120"/>
+				<Station chance="40" type="&stSungSlaveQuarters3;"	rotation="150"/>
 			</Orbitals>
 
-			<Orbitals count="4d2" distance="5" angle="equidistant">
-				<Table>
-					<Station chance="50" type="&stSungSlaveQuarters1;"/>
-					<Station chance="50" type="&stSungSlaveQuarters2;"/>
-				</Table>
+			<Orbitals count="12" distance="10" angle="equidistant:15" overlapCheck="none">
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="180"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="210"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="240"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="270"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="300"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="330"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="0"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="30"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="60"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="90"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="120"/>
+				<Station chance="50" type="&stSungSlaveQuarters4;"	rotation="150"/>
 			</Orbitals>
 
-			<Orbitals count="5d2" distance="7" angle="random">
-				<Station type="&stSungSlaveQuarters2;"/>
+			<Orbitals count="12" distance="12" angle="equidistant:0" overlapCheck="none">
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="180"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="210"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="240"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="270"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="300"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="330"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="0"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="30"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="60"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="90"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="120"/>
+				<Station chance="60" type="&stSungSlaveQuarters5;"	rotation="150"/>
 			</Orbitals>
 		</Satellites>
 
@@ -84,7 +114,13 @@
 
 		<!-- Image and Effects -->
 
-		<Image			imageID="&rsStations4;" imageX="0" imageY="192" imageWidth="128" imageHeight="128"/>
+		<Image			imageID="&rsSungKeep;" imageWidth="260" imageHeight="260" viewportRatio="0.02"/>
+
+		<DockingPorts
+				portAngle=		"30"
+				portCount=		"8"
+				portRadius=		"140"
+				/>
 
 		<!-- Events and Data -->
 
@@ -203,6 +239,144 @@
 			<Image			imageID="&rsStations4;" imageX="224" imageY="64" imageWidth="32" imageHeight="32"/>
 			<Image			imageID="&rsStations4;" imageX="224" imageY="96" imageWidth="32" imageHeight="32"/>
 		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+		<!-- Events and Data -->
+
+		<InitialData>
+			<sungSlave>True</sungSlave>
+		</InitialData>
+
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at a ruined structure once housing slaves.
+				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Sung Slave Quarters -->
+
+	<StationType UNID="&stSungSlaveQuarters3;"
+			name=				"Sung slave quarters|Sung slave quarters"
+			sovereign=			"&svSungSlaves;"
+
+			attributes=			"sungSlaveQuarters"
+
+			dockScreen=			"&dsSungSlaveQuarters;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			mass=				"3000"
+			armorID=			"&itUltraLightTitaniumArmor;"
+			hitPoints=			"30"
+			structuralHitPoints="10"
+
+			noMapLabel=			"true"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsSungSlaveQuarters;" imageX="0" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+		<!-- Events and Data -->
+
+		<InitialData>
+			<sungSlave>True</sungSlave>
+		</InitialData>
+
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at a ruined structure once housing slaves.
+				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Sung Slave Quarters -->
+
+	<StationType UNID="&stSungSlaveQuarters4;"
+			name=				"Sung slave quarters|Sung slave quarters"
+			sovereign=			"&svSungSlaves;"
+
+			attributes=			"sungSlaveQuarters"
+
+			dockScreen=			"&dsSungSlaveQuarters;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			mass=				"3000"
+			armorID=			"&itUltraLightTitaniumArmor;"
+			hitPoints=			"30"
+			structuralHitPoints="10"
+
+			noMapLabel=			"true"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsSungSlaveQuarters;" imageX="100" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+		<!-- Events and Data -->
+
+		<InitialData>
+			<sungSlave>True</sungSlave>
+		</InitialData>
+
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at a ruined structure once housing slaves.
+				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Sung Slave Quarters -->
+
+	<StationType UNID="&stSungSlaveQuarters5;"
+			name=				"Sung slave quarters|Sung slave quarters"
+			sovereign=			"&svSungSlaves;"
+
+			attributes=			"sungSlaveQuarters"
+
+			dockScreen=			"&dsSungSlaveQuarters;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			mass=				"3000"
+			armorID=			"&itUltraLightTitaniumArmor;"
+			hitPoints=			"30"
+			structuralHitPoints="10"
+
+			noMapLabel=			"true"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsSungSlaveQuarters;" imageX="200" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
 
 		<DockingPorts
 				portCount=		"2"

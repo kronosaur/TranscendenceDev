@@ -140,6 +140,7 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
+			size=				"245"
 			multiHull=			"true"
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"160"
