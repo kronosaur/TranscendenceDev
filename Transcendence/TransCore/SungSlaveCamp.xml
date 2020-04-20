@@ -57,15 +57,15 @@
 			</Orbitals>
 
 			<Orbitals count="3d2" distance="8" angle="equidistant:0" overlapCheck="none">
-				<Station type="&stSungSlaveQuarters3;"	rotation="orbitPos:180"/>
+				<Station type="&stSungSlaveQuarters;"	imageVariant="quarters1" rotation="orbitPos:180"/>
 			</Orbitals>
 
 			<Orbitals count="4d2" distance="10" angle="equidistant:15" overlapCheck="none">
-				<Station type="&stSungSlaveQuarters4;"	rotation="orbitPos:180"/>
+				<Station type="&stSungSlaveQuarters;"	imageVariant="quarters2" rotation="orbitPos:180"/>
 			</Orbitals>
 
 			<Orbitals count="5d2" distance="12" angle="equidistant:-15" overlapCheck="none">
-				<Station type="&stSungSlaveQuarters5;"	rotation="orbitPos:180"/>
+				<Station type="&stSungSlaveQuarters;"	imageVariant="quarters3" rotation="orbitPos:180"/>
 			</Orbitals>
 		</Satellites>
 
@@ -128,7 +128,7 @@
 
 	<!-- Sung Slave Quarters -->
 
-	<StationType UNID="&stSungSlaveQuarters1;"
+	<StationType UNID="&stSungSlaveQuarters;"
 			name=				"Sung slave quarters|Sung slave quarters"
 			sovereign=			"&svSungSlaves;"
 
@@ -136,58 +136,6 @@
 
 			dockScreen=			"&dsSungSlaveQuarters;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			mass=				"3000"
-			armorID=			"&itUltraLightTitaniumArmor;"
-			hitPoints=			"35"
-			multiHull=			"true"
-			structuralHitPoints="30"
-
-			noMapLabel=			"true"
-			ejectaType=			"&vtWreckEjecta;"
-			>
-
-		<!-- Image and Effects -->
-
-		<ImageVariants>
-			<Image			imageID="&rsStations4;" imageX="192" imageY="32" imageWidth="32" imageHeight="32"/>
-			<Image			imageID="&rsStations4;" imageX="192" imageY="64" imageWidth="32" imageHeight="32"/>
-			<Image			imageID="&rsStations4;" imageX="192" imageY="96" imageWidth="32" imageHeight="32"/>
-		</ImageVariants>
-
-		<DockingPorts
-				portCount=		"2"
-				portRadius=		"24"
-				maxDist=		"3"
-				/>
-
-		<!-- Events and Data -->
-
-		<InitialData>
-			<sungSlave>True</sungSlave>
-		</InitialData>
-
-		<Language>
-			<Text id="core.abandonedStationDesc">
-
-				You are docked at a ruined structure once housing slaves.
-				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
-
-			</Text>
-		</Language>
-	</StationType>
-
-	<!-- Sung Slave Quarters -->
-
-	<StationType UNID="&stSungSlaveQuarters2;"
-			name=				"Sung slave quarters|Sung slave quarters"
-			sovereign=			"&svSungSlaves;"
-
-			attributes=			"sungSlaveQuarters"
-
-			dockScreen=			"&dsSungSlaveQuarters;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
 
 			mass=				"3000"
 			armorID=			"&itUltraLightTitaniumArmor;"
@@ -201,149 +149,10 @@
 		<!-- Image and Effects -->
 
 		<ImageVariants>
-			<Image			imageID="&rsStations4;" imageX="224" imageY="0"  imageWidth="32" imageHeight="32"/>
-			<Image			imageID="&rsStations4;" imageX="224" imageY="32" imageWidth="32" imageHeight="32"/>
-			<Image			imageID="&rsStations4;" imageX="224" imageY="64" imageWidth="32" imageHeight="32"/>
-			<Image			imageID="&rsStations4;" imageX="224" imageY="96" imageWidth="32" imageHeight="32"/>
+			<Image id="quarters1"	imageID="&rsSungSlaveQuarters;" imageX="0"   imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
+			<Image id="quarters2"	imageID="&rsSungSlaveQuarters;" imageX="100" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
+			<Image id="quarters3"	imageID="&rsSungSlaveQuarters;" imageX="200" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
 		</ImageVariants>
-
-		<DockingPorts
-				portCount=		"2"
-				portRadius=		"24"
-				maxDist=		"3"
-				/>
-
-		<!-- Events and Data -->
-
-		<InitialData>
-			<sungSlave>True</sungSlave>
-		</InitialData>
-
-		<Language>
-			<Text id="core.abandonedStationDesc">
-
-				You are docked at a ruined structure once housing slaves.
-				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
-
-			</Text>
-		</Language>
-	</StationType>
-
-	<!-- Sung Slave Quarters -->
-
-	<StationType UNID="&stSungSlaveQuarters3;"
-			name=				"Sung slave quarters|Sung slave quarters"
-			sovereign=			"&svSungSlaves;"
-
-			attributes=			"sungSlaveQuarters"
-
-			dockScreen=			"&dsSungSlaveQuarters;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			mass=				"3000"
-			armorID=			"&itUltraLightTitaniumArmor;"
-			hitPoints=			"30"
-			structuralHitPoints="10"
-
-			noMapLabel=			"true"
-			ejectaType=			"&vtWreckEjecta;"
-			>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsSungSlaveQuarters;" imageX="0" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
-
-		<DockingPorts
-				portCount=		"2"
-				portRadius=		"24"
-				maxDist=		"3"
-				/>
-
-		<!-- Events and Data -->
-
-		<InitialData>
-			<sungSlave>True</sungSlave>
-		</InitialData>
-
-		<Language>
-			<Text id="core.abandonedStationDesc">
-
-				You are docked at a ruined structure once housing slaves.
-				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
-
-			</Text>
-		</Language>
-	</StationType>
-
-	<!-- Sung Slave Quarters -->
-
-	<StationType UNID="&stSungSlaveQuarters4;"
-			name=				"Sung slave quarters|Sung slave quarters"
-			sovereign=			"&svSungSlaves;"
-
-			attributes=			"sungSlaveQuarters"
-
-			dockScreen=			"&dsSungSlaveQuarters;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			mass=				"3000"
-			armorID=			"&itUltraLightTitaniumArmor;"
-			hitPoints=			"30"
-			structuralHitPoints="10"
-
-			noMapLabel=			"true"
-			ejectaType=			"&vtWreckEjecta;"
-			>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsSungSlaveQuarters;" imageX="100" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
-
-		<DockingPorts
-				portCount=		"2"
-				portRadius=		"24"
-				maxDist=		"3"
-				/>
-
-		<!-- Events and Data -->
-
-		<InitialData>
-			<sungSlave>True</sungSlave>
-		</InitialData>
-
-		<Language>
-			<Text id="core.abandonedStationDesc">
-
-				You are docked at a ruined structure once housing slaves.
-				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
-
-			</Text>
-		</Language>
-	</StationType>
-
-	<!-- Sung Slave Quarters -->
-
-	<StationType UNID="&stSungSlaveQuarters5;"
-			name=				"Sung slave quarters|Sung slave quarters"
-			sovereign=			"&svSungSlaves;"
-
-			attributes=			"sungSlaveQuarters"
-
-			dockScreen=			"&dsSungSlaveQuarters;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			mass=				"3000"
-			armorID=			"&itUltraLightTitaniumArmor;"
-			hitPoints=			"30"
-			structuralHitPoints="10"
-
-			noMapLabel=			"true"
-			ejectaType=			"&vtWreckEjecta;"
-			>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsSungSlaveQuarters;" imageX="200" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
 
 		<DockingPorts
 				portCount=		"2"
