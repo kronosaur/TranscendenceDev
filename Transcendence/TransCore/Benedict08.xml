@@ -78,6 +78,10 @@
 					(stormhoundObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
 					(targetObj (objGetObjByID (msnGetData gSource 'targetID)))
 					)
+					;	Place a Gem of Fury on the station
+
+					(objAddItem targetObj (itmCreate &itGemOfFury; 1))
+
 					;	Order the Changeling to orbit the station (let the player destroy the station)
 					
 					(shpCancelOrders stormhoundObj)
@@ -349,7 +353,7 @@
 					{	descID: 'textRescue13	}
 					{	descID: 'textRescue14	}
 					{	descID: 'textRescue15	}
-					{	descID: 'textRescue16				nextPage: 'forceUndock
+					{	descID: 'textRescue16				nextPage: 'exitScreen
 
 						code: (lambda ()
 							(block (
