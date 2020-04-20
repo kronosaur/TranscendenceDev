@@ -3513,7 +3513,7 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 	for (j = 0; j < pCtx->System.GetObjectCount(); j++)
 		{
 		CSpaceObject *pObj = pCtx->System.GetObject(j);
-		if (pObj == NULL || pObj->IsDestroyed())
+		if (pObj == NULL || pObj->IsDestroyed() || pObj->IsOutOfPlaneObj())
 			continue;
 
 		//	Check to see if we're too close to an active station

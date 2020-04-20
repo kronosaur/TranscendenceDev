@@ -6415,6 +6415,109 @@
 			</OnOrdersCompleted>
 		</Events>
 	</ShipClass>
+	
+	<StationType UNID="&stSungSlaveQuarters1;"
+			obsoleteVersion=	"49"
+			name=				"Sung slave quarters|Sung slave quarters"
+			sovereign=			"&svSungSlaves;"
+
+			attributes=			"sungSlaveQuarters"
+
+			dockScreen=			"&dsSungSlaveQuarters;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			mass=				"3000"
+			armorID=			"&itUltraLightTitaniumArmor;"
+			hitPoints=			"35"
+			multiHull=			"true"
+			structuralHitPoints="30"
+
+			noMapLabel=			"true"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<Image			imageID="&rsStations4;" imageX="192" imageY="32" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsStations4;" imageX="192" imageY="64" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsStations4;" imageX="192" imageY="96" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+		<!-- Events and Data -->
+
+		<InitialData>
+			<sungSlave>True</sungSlave>
+		</InitialData>
+
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at a ruined structure once housing slaves.
+				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Sung Slave Quarters -->
+
+	<StationType UNID="&stSungSlaveQuarters2;"
+			obsoleteVersion=	"49"
+			name=				"Sung slave quarters|Sung slave quarters"
+			sovereign=			"&svSungSlaves;"
+
+			attributes=			"sungSlaveQuarters"
+
+			dockScreen=			"&dsSungSlaveQuarters;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+
+			mass=				"3000"
+			armorID=			"&itUltraLightTitaniumArmor;"
+			hitPoints=			"30"
+			structuralHitPoints="10"
+
+			noMapLabel=			"true"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<Image			imageID="&rsStations4;" imageX="224" imageY="0"  imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsStations4;" imageX="224" imageY="32" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsStations4;" imageX="224" imageY="64" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsStations4;" imageX="224" imageY="96" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+		<!-- Events and Data -->
+
+		<InitialData>
+			<sungSlave>True</sungSlave>
+		</InitialData>
+
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at a ruined structure once housing slaves.
+				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
+
+			</Text>
+		</Language>
+	</StationType>
 
 	<!-- Old Effects -->
 	
