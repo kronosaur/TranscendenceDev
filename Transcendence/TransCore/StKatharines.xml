@@ -449,7 +449,7 @@
 
 			<!-- Populate Radiant Region -->
 
-			<RandomLocation count="2-3" locationCriteria="*radiantOrbit">
+			<RandomLocation count="2-3" locationCriteria="*radiantOrbit" noWarnings="true">
 				<Lookup table="FriendlyStations" />
 			</RandomLocation>
 

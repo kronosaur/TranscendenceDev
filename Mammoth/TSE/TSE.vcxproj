@@ -301,6 +301,8 @@
     <ClInclude Include="..\Include\TSESpaceObjectsEnum.h" />
     <ClInclude Include="..\Include\TSEStationType.h" />
     <ClInclude Include="..\Include\TSESystem.h" />
+    <ClInclude Include="..\Include\TSESystemCreate.h" />
+    <ClInclude Include="..\Include\TSESystemDefs.h" />
     <ClInclude Include="..\Include\TSESystemMap.h" />
     <ClInclude Include="..\Include\TSESystemType.h" />
     <ClInclude Include="..\Include\TSETargeting.h" />
