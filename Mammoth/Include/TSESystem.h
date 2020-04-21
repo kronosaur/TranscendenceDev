@@ -12,6 +12,7 @@
 #include "TSEObjectJoints.h"
 #include "TSESystemDefs.h"
 #include "TSESystemCreate.h"
+#include "TSESystemRandomEncounters.h"
 
 //	CNavigationPath
 
@@ -422,11 +423,6 @@ class CSystem
 		ALERROR CreateLookup (SSystemCreateCtx *pCtx, const CString &sTable, const COrbit &OrbitDesc, CXMLElement *pSubTables);
 		ALERROR CreateMarker (CXMLElement *pDesc, const COrbit &oOrbit, CMarker **retpObj);
 		ALERROR CreateParticles (CXMLElement *pDesc, const COrbit &oOrbit, CParticleEffect **retpObj);
-		ALERROR CreateRandomEncounter (IShipGenerator *pTable, 
-									   CSpaceObject *pBase,
-									   CSovereign *pBaseSovereign,
-									   CSpaceObject *pTarget,
-									   CSpaceObject *pGate = NULL);
 		ALERROR CreateShip (DWORD dwClassID,
 							IShipController *pController,
 							CDesignType *pOverride,
@@ -608,6 +604,8 @@ class CSystem
 		static void ReadSovereignRefFromStream (SLoadCtx &Ctx, CSovereign **retpSovereign);
 
 	private:
+		static constexpr int LEVEL_ENCOUNTER_CHANCE = 10;
+
 		struct SStarDesc
 			{
 			SStarDesc (void) : 
@@ -636,7 +634,6 @@ class CSystem
 		CG32bitPixel CalcStarshineColor (CSpaceObject *pPOV, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL) const;
 		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
 		void CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &VolumetricMask);
-		void ComputeRandomEncounters (void);
 		void ComputeStars (void);
 		ALERROR CreateStationInt (SSystemCreateCtx *pCtx,
 								  CStationType *pType,
@@ -688,14 +685,14 @@ class CSystem
 
 		DWORD m_fNoRandomEncounters:1;			//	TRUE if no random encounters in this system
 		DWORD m_fInCreate:1;					//	TRUE if system in being created
-		DWORD m_fEncounterTableValid:1;			//	TRUE if m_pEncounterObj is valid
 		DWORD m_fUseDefaultTerritories:1;		//	TRUE if we should use defaults for innerZone, lifeZone, outerZone
 		DWORD m_fEnemiesInLRS:1;				//	TRUE if we found enemies in last LRS update
 		DWORD m_fEnemiesInSRS:1;				//	TRUE if we found enemies in last SRS update
 		DWORD m_fPlayerUnderAttack:1;			//	TRUE if at least one object has player as target
 		DWORD m_fLocationsBlocked:1;			//	TRUE if we're already computed overlapping locations
-
 		DWORD m_fFlushEventHandlers:1;			//	TRUE if we need to flush m_EventHandlers
+
+		DWORD m_fSpare1:1;
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
@@ -709,7 +706,9 @@ class CSystem
 		//	Support structures
 
 		CThreadPool *m_pThreadPool;				//	Thread pool for painting
-		CSpaceObjectList m_EncounterObjs;		//	List of objects that generate encounters
+		CRandomEncounterObjTable m_EncounterObjTable;
+		CRandomEncounterTypeTable m_EncounterTypeTable;
+
 		TArray<SStarDesc> m_Stars;				//	List of stars in the system
 		CSpaceObjectGrid m_ObjGrid;				//	Grid to help us hit test
 		CSpaceObjectList m_DeletedObjects;		//	List of objects deleted in the current update

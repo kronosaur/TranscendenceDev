@@ -111,8 +111,8 @@ class IShipGenerator
 
 		virtual ~IShipGenerator (void) { }
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
-		virtual void CreateShips (SShipCreateCtx &Ctx) { }
-		virtual Metric GetAverageLevelStrength (int iLevel) { return 0.0; }
+		virtual void CreateShips (SShipCreateCtx &Ctx) const { }
+		virtual Metric GetAverageLevelStrength (int iLevel) const { return 0.0; }
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual ALERROR ValidateForRandomEncounter (void) { return NOERROR; }

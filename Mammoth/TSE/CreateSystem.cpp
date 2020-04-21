@@ -3757,7 +3757,6 @@ ALERROR CSystem::CreateEmpty (CUniverse &Universe, CTopologyNode *pTopology, CSy
 
 	pSystem->m_pType = NULL;
 	pSystem->m_iNextEncounter = pSystem->m_iTick + mathRandom(500, 2500);
-	pSystem->m_fEncounterTableValid = false;
 
 	//	Done
 

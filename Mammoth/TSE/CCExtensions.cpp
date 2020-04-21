@@ -12036,7 +12036,8 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pTable == NULL)
 					return pCC->CreateNil();
 
-				pSystem->CreateRandomEncounter(pTable, NULL, pEncounter->GetSovereign(), pTarget);
+				CRandomEncounterDesc Encounter(*pTable, *pEncounter, pEncounter->GetSovereign());
+				Encounter.Create(*pSystem, pTarget, pGate);
 				return pCC->CreateTrue();
 				}
 

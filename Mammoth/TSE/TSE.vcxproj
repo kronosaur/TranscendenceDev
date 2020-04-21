@@ -304,6 +304,7 @@
     <ClInclude Include="..\Include\TSESystemCreate.h" />
     <ClInclude Include="..\Include\TSESystemDefs.h" />
     <ClInclude Include="..\Include\TSESystemMap.h" />
+    <ClInclude Include="..\Include\TSESystemRandomEncounters.h" />
     <ClInclude Include="..\Include\TSESystemType.h" />
     <ClInclude Include="..\Include\TSETargeting.h" />
     <ClInclude Include="..\Include\TSETopology.h" />
@@ -480,6 +481,9 @@
     <ClCompile Include="CPlayerGameStats.cpp" />
     <ClCompile Include="CPowerConsumption.cpp" />
     <ClCompile Include="CPropertyCompare.cpp" />
+    <ClCompile Include="CRandomEncounterDesc.cpp" />
+    <ClCompile Include="CRandomEncounterObjTable.cpp" />
+    <ClCompile Include="CRandomEncounterTypeTable.cpp" />
     <ClCompile Include="CRandomTopologyCreator.cpp" />
     <ClCompile Include="CRangeTypeEvent.cpp" />
     <ClCompile Include="CRotationDesc.cpp" />

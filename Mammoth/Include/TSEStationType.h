@@ -134,6 +134,7 @@ class CStationEncounterDesc
 			};
 
 		int CalcAffinity (const CTopologyNode &Node) const;
+		int CalcFrequencyForNode (const CTopologyNode &Node) const;
 		int CalcLevelFromFrequency (void) const;
 		bool InitAsOverride (const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError);
 		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
@@ -211,7 +212,7 @@ class CStationEncounterCtx
 		void Reinit (const CStationEncounterDesc &Desc);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		static int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria);
+		static int CalcDistanceToCriteria (const CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria);
 
 	private:
 		struct SEncounterStats

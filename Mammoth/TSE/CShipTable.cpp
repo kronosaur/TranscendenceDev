@@ -41,8 +41,8 @@ class CLevelTableOfShipGenerators : public IShipGenerator
 	public:
 		virtual ~CLevelTableOfShipGenerators (void) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual void CreateShips (SShipCreateCtx &Ctx) override;
-		virtual Metric GetAverageLevelStrength (int iLevel) override;
+		virtual void CreateShips (SShipCreateCtx &Ctx) const override;
+		virtual Metric GetAverageLevelStrength (int iLevel) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR ValidateForRandomEncounter (void) override;
@@ -57,21 +57,21 @@ class CLevelTableOfShipGenerators : public IShipGenerator
 
 			IShipGenerator *pEntry;
 			CString sLevelFrequency;
-			int iChance;
+			mutable int iChance;
 			};
 
 		DiceRange m_Count;
 		TArray<SEntry> m_Table;
-		int m_iComputedLevel;
-		int m_iTotalChance;
+		mutable int m_iComputedLevel;
+		mutable int m_iTotalChance;
 	};
 
 class CLookupShipTable : public IShipGenerator
 	{
 	public:
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual void CreateShips (SShipCreateCtx &Ctx) override;
-		virtual Metric GetAverageLevelStrength (int iLevel) override { return m_Count.GetAveValueFloat() * m_pTable->GetAverageLevelStrength(iLevel); }
+		virtual void CreateShips (SShipCreateCtx &Ctx) const override;
+		virtual Metric GetAverageLevelStrength (int iLevel) const override { return m_Count.GetAveValueFloat() * m_pTable->GetAverageLevelStrength(iLevel); }
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
@@ -90,8 +90,8 @@ class CSingleShip : public IShipGenerator
 		CSingleShip (void);
 		virtual ~CSingleShip (void);
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual void CreateShips (SShipCreateCtx &Ctx) override;
-		virtual Metric GetAverageLevelStrength (int iLevel) override;
+		virtual void CreateShips (SShipCreateCtx &Ctx) const override;
+		virtual Metric GetAverageLevelStrength (int iLevel) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR ValidateForRandomEncounter (void) override;
@@ -101,7 +101,7 @@ class CSingleShip : public IShipGenerator
 						 CSovereign *pSovereign,
 						 const CVector &vPos,
 						 CSpaceObject *pExitGate,
-						 CShip **retpShip = NULL);
+						 CShip **retpShip = NULL) const;
 
 		DiceRange m_Count;							//	Number of ships to create
 		int m_iMaxCountInSystem;					//	Do not exceed this number of ship of this class in system (or -1)
@@ -130,8 +130,8 @@ class CTableOfShipGenerators : public IShipGenerator
 		CTableOfShipGenerators (void) : m_iTotalChance(0) { }
 		virtual ~CTableOfShipGenerators (void);
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual void CreateShips (SShipCreateCtx &Ctx) override;
-		virtual Metric GetAverageLevelStrength (int iLevel) override;
+		virtual void CreateShips (SShipCreateCtx &Ctx) const override;
+		virtual Metric GetAverageLevelStrength (int iLevel) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR ValidateForRandomEncounter (void) override;
@@ -159,8 +159,8 @@ class CGroupOfShipGenerators : public IShipGenerator
 		CGroupOfShipGenerators (void) : m_Table(NULL) { }
 		virtual ~CGroupOfShipGenerators (void);
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual void CreateShips (SShipCreateCtx &Ctx) override;
-		virtual Metric GetAverageLevelStrength (int iLevel) override;
+		virtual void CreateShips (SShipCreateCtx &Ctx) const override;
+		virtual Metric GetAverageLevelStrength (int iLevel) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR ValidateForRandomEncounter (void) override;
@@ -340,7 +340,7 @@ void CLevelTableOfShipGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesU
 			m_Table[i].pEntry->AddTypesUsed(retTypesUsed);
 	}
 
-void CLevelTableOfShipGenerators::CreateShips (SShipCreateCtx &Ctx)
+void CLevelTableOfShipGenerators::CreateShips (SShipCreateCtx &Ctx) const
 
 //	CreateShips
 //
@@ -392,7 +392,7 @@ void CLevelTableOfShipGenerators::CreateShips (SShipCreateCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-Metric CLevelTableOfShipGenerators::GetAverageLevelStrength (int iLevel)
+Metric CLevelTableOfShipGenerators::GetAverageLevelStrength (int iLevel) const
 
 //	GetAverageLevelStrength
 //
@@ -509,7 +509,7 @@ void CLookupShipTable::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		m_pTable->AddTypesUsed(retTypesUsed);
 	}
 
-void CLookupShipTable::CreateShips (SShipCreateCtx &Ctx)
+void CLookupShipTable::CreateShips (SShipCreateCtx &Ctx) const
 
 //	CreateShip
 //
@@ -618,7 +618,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 							  CSovereign *pSovereign,
 							  const CVector &vPos,
 							  CSpaceObject *pExitGate,
-							  CShip **retpShip)
+							  CShip **retpShip) const
 
 //	CreateShip
 //
@@ -811,7 +811,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 	DEBUG_CATCH_MSG1("Crash in CSingleShip::CreateShips: ship class: %08x", m_pShipClass.GetUNID());
 	}
 
-void CSingleShip::CreateShips (SShipCreateCtx &Ctx)
+void CSingleShip::CreateShips (SShipCreateCtx &Ctx) const
 
 //	CreateShips
 //
@@ -891,7 +891,7 @@ void CSingleShip::CreateShips (SShipCreateCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-Metric CSingleShip::GetAverageLevelStrength (int iLevel)
+Metric CSingleShip::GetAverageLevelStrength (int iLevel) const
 
 //	GetAverageLevelStrength
 //
@@ -1148,7 +1148,7 @@ void CTableOfShipGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 			m_Table[i].pEntry->AddTypesUsed(retTypesUsed);
 	}
 
-void CTableOfShipGenerators::CreateShips (SShipCreateCtx &Ctx)
+void CTableOfShipGenerators::CreateShips (SShipCreateCtx &Ctx) const
 
 //	CreateShips
 //
@@ -1179,7 +1179,7 @@ void CTableOfShipGenerators::CreateShips (SShipCreateCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-Metric CTableOfShipGenerators::GetAverageLevelStrength (int iLevel)
+Metric CTableOfShipGenerators::GetAverageLevelStrength (int iLevel) const
 
 //	GetAverageLevelStrength
 //
@@ -1309,7 +1309,7 @@ void CGroupOfShipGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 			m_Table[i].pEntry->AddTypesUsed(retTypesUsed);
 	}
 
-void CGroupOfShipGenerators::CreateShips (SShipCreateCtx &Ctx)
+void CGroupOfShipGenerators::CreateShips (SShipCreateCtx &Ctx) const
 
 //	CreateShips
 //
@@ -1333,7 +1333,7 @@ void CGroupOfShipGenerators::CreateShips (SShipCreateCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-Metric CGroupOfShipGenerators::GetAverageLevelStrength (int iLevel)
+Metric CGroupOfShipGenerators::GetAverageLevelStrength (int iLevel) const
 
 //	GetAverageLevelStrength
 //

@@ -975,62 +975,6 @@ ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 		return ICCItemPtr(ICCItem::Nil);
 	}
 
-void CUniverse::GetRandomLevelEncounter (int iLevel, 
-										 CDesignType **retpType,
-										 IShipGenerator **retpTable, 
-										 CSovereign **retpBaseSovereign)
-
-//	GetRandomLevelEncounter
-//
-//	Returns a random encounter appropriate for the given level
-
-	{
-	int i;
-
-	iLevel--;	//	m_LevelEncounterTable is 0-based
-	if (iLevel < 0 || iLevel >= m_LevelEncounterTables.GetCount())
-		{
-		*retpType = NULL;
-		*retpTable = NULL;
-		*retpBaseSovereign = NULL;
-		return;
-		}
-
-	//	Get the level table
-
-	const TArray<SLevelEncounter> &Table = m_LevelEncounterTables[iLevel];
-
-	//	Compute the totals for the table
-
-	int iTotal = 0;
-	for (i = 0; i < Table.GetCount(); i++)
-		iTotal += Table[i].iWeight;
-
-	if (iTotal == 0)
-		{
-		*retpType = NULL;
-		*retpTable = NULL;
-		*retpBaseSovereign = NULL;
-		return;
-		}
-
-	//	Pick a random entry
-
-	int iRoll = mathRandom(0, iTotal - 1);
-	int iPos = 0;
-
-	//	Get the position
-
-	while (Table[iPos].iWeight <= iRoll)
-		iRoll -= Table[iPos++].iWeight;
-
-	//	Done
-
-	*retpType = Table[iPos].pType;
-	*retpTable = Table[iPos].pTable;
-	*retpBaseSovereign = Table[iPos].pBaseSovereign;
-	}
-
 ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 //	Init
@@ -1450,12 +1394,6 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 	//	be encountered) we distribute them randomly across all topology nodes.
 
 	if (error = InitRequiredEncounters(retsError))
-		return error;
-
-	//	Init encounter tables (this must be done AFTER InitTopoloy because it
-	//	some station encounters specify a topology node).
-
-	if (error = InitLevelEncounterTables())
 		return error;
 
 	return NOERROR;

@@ -34,7 +34,7 @@ void CStationEncounterCtx::AddEncounter (CSystem *pSystem)
 		}
 	}
 
-int CStationEncounterCtx::CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria)
+int CStationEncounterCtx::CalcDistanceToCriteria (const CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria)
 
 //	CalcDistanceToCriteria
 //
@@ -126,38 +126,7 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, const C
 	const SEncounterStats *pStats = const_cast<CStationEncounterCtx *>(this)->m_ByNode.SetAt(pNode->GetID());
 	if (pStats->iNodeCriteria == -1)
 		{
-		//  Initialized based on level
-
-		pStats->iNodeCriteria = Desc.GetFrequencyByLevel(pNode->GetLevel());
-
-		//	If we have system criteria, then make sure we are allowed to be in
-		//  this system.
-
-		const CTopologyNode::SCriteria *pSystemCriteria;
-		if (pStats->iNodeCriteria > 0 && Desc.HasSystemCriteria(&pSystemCriteria))
-			{
-			//  Compute the criteria for this node and cache it.
-
-			CTopologyNode::SCriteriaCtx Ctx(pNode->GetTopology());
-			if (!pNode->MatchesCriteria(Ctx, *pSystemCriteria))
-				pStats->iNodeCriteria = 0;
-			}
-
-		//	Adjust based on distance criteria.
-
-		if (pStats->iNodeCriteria > 0 && !Desc.GetDistanceCriteria().IsEmpty())
-			{
-			int iDist = CalcDistanceToCriteria(pNode, Desc.GetDistanceCriteria());
-			pStats->iNodeCriteria = pStats->iNodeCriteria * Desc.GetFrequencyByDistance(iDist) / ftCommon;
-			}
-
-		//	Adjust based on affinity
-
-		int iAffinity;
-		if (pStats->iNodeCriteria > 0 && (iAffinity = Desc.CalcAffinity(*pNode)) < ftCommon)
-			{
-			pStats->iNodeCriteria = pStats->iNodeCriteria * iAffinity / ftCommon;
-			}
+		pStats->iNodeCriteria = Desc.CalcFrequencyForNode(*pNode);
 		}
 
 	//  Return cached value

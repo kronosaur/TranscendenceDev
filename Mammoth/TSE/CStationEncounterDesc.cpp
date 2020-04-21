@@ -46,6 +46,52 @@ int CStationEncounterDesc::CalcAffinity (const CTopologyNode &Node) const
 	return (ftCommon * iWeight / 1000);
 	}
 
+int CStationEncounterDesc::CalcFrequencyForNode (const CTopologyNode &Node) const
+
+//	CalcFrequencyForNode
+//
+//	Computes the base chance for this station to appear at the given node,
+//	excluding any limits.
+
+	{
+	//  Initialized based on level
+
+	int iFreq = GetFrequencyByLevel(Node.GetLevel());
+
+	//	If we have system criteria, then make sure we are allowed to be in
+	//  this system.
+
+	const CTopologyNode::SCriteria *pSystemCriteria;
+	if (iFreq > 0 && HasSystemCriteria(&pSystemCriteria))
+		{
+		//  Compute the criteria for this node and cache it.
+
+		CTopologyNode::SCriteriaCtx Ctx(Node.GetTopology());
+		if (!Node.MatchesCriteria(Ctx, *pSystemCriteria))
+			iFreq = 0;
+		}
+
+	//	Adjust based on distance criteria.
+
+	if (iFreq > 0 && !GetDistanceCriteria().IsEmpty())
+		{
+		int iDist = CStationEncounterCtx::CalcDistanceToCriteria(&Node, GetDistanceCriteria());
+		iFreq = iFreq * GetFrequencyByDistance(iDist) / ftCommon;
+		}
+
+	//	Adjust based on affinity
+
+	int iAffinity;
+	if (iFreq > 0 && (iAffinity = CalcAffinity(Node)) < ftCommon)
+		{
+		iFreq = iFreq * iAffinity / ftCommon;
+		}
+
+	//	Done
+
+	return iFreq;
+	}
+
 int CStationEncounterDesc::CalcLevelFromFrequency (void) const
 
 //	CalcLevelFromFrequency
