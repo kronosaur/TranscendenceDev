@@ -440,7 +440,7 @@
 
 			<!-- Populate Redglow Region -->
 
-			<RandomLocation locationCriteria="*redglowOrbit">
+			<RandomLocation locationCriteria="*redglowOrbit" noWarnings="true">
 				<Station type="&stIocrymMonument;" />
 				<Station type="&stFuelDepot;" />
 				<Lookup chance="55" table="FriendlyStations" />

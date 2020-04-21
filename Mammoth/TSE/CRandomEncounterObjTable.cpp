@@ -5,7 +5,32 @@
 
 #include "PreComp.h"
 
-CRandomEncounterDesc CRandomEncounterObjTable::CalcEncounter (CSystem &System, CSpaceObject &PlayerObj) const
+ICCItemPtr CRandomEncounterObjTable::AsCCItem (const CSystem &System) const
+
+//	AsCCItem
+//
+//	Output the table as an item (generally for debugging purposes).
+
+	{
+	RealizeAllObjs(System);
+	if (m_AllObjs.GetCount() == 0)
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pResult(ICCItem::List);
+	for (int i = 0; i < m_AllObjs.GetCount(); i++)
+		{
+		ICCItemPtr pEntry(ICCItem::SymbolTable);
+		pEntry->SetIntegerAt(CONSTLIT("objID"), m_AllObjs[i].pBase->GetID());
+		pEntry->SetIntegerAt(CONSTLIT("type"), m_AllObjs[i].pBase->GetType()->GetUNID());
+		pEntry->SetIntegerAt(CONSTLIT("frequency"), m_AllObjs[i].iFreq);
+
+		pResult->Append(pEntry);
+		}
+
+	return pResult;
+	}
+
+CRandomEncounterDesc CRandomEncounterObjTable::CalcEncounter (const CSystem &System, CSpaceObject &PlayerObj) const
 
 //	CalcEncounter
 //
@@ -30,7 +55,7 @@ CRandomEncounterDesc CRandomEncounterObjTable::CalcEncounter (CSystem &System, C
 		return CRandomEncounterDesc(*pResult->pBase);
 	}
 
-TProbabilityTable<const CRandomEncounterObjTable::SEntry *> CRandomEncounterObjTable::CalcEncounterTable (CSystem &System, CSpaceObject &PlayerObj) const
+TProbabilityTable<const CRandomEncounterObjTable::SEntry *> CRandomEncounterObjTable::CalcEncounterTable (const CSystem &System, CSpaceObject &PlayerObj) const
 
 //	CalcEncounterTable
 //
@@ -63,7 +88,7 @@ TProbabilityTable<const CRandomEncounterObjTable::SEntry *> CRandomEncounterObjT
 	return Table;
 	}
 
-void CRandomEncounterObjTable::RealizeAllObjs (CSystem &System) const
+void CRandomEncounterObjTable::RealizeAllObjs (const CSystem &System) const
 
 //	RealizeAllObjs
 //

@@ -5,7 +5,31 @@
 
 #include "PreComp.h"
 
-CRandomEncounterDesc CRandomEncounterTypeTable::CalcEncounter (CSystem &System, CSpaceObject &PlayerObj) const
+ICCItemPtr CRandomEncounterTypeTable::AsCCItem (const CSystem &System) const
+
+//	AsCCItem
+//
+//	Output the table as an item (generally for debugging purposes).
+
+	{
+	Realize(System);
+	if (m_Table.IsEmpty())
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pResult(ICCItem::List);
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		{
+		ICCItemPtr pEntry(ICCItem::SymbolTable);
+		pEntry->SetIntegerAt(CONSTLIT("type"), m_Table[i].pType->GetUNID());
+		pEntry->SetIntegerAt(CONSTLIT("frequency"), m_Table.GetChance(i));
+
+		pResult->Append(pEntry);
+		}
+
+	return pResult;
+	}
+
+CRandomEncounterDesc CRandomEncounterTypeTable::CalcEncounter (const CSystem &System, CSpaceObject &PlayerObj) const
 
 //	CalcEncounter
 //
@@ -28,7 +52,7 @@ CRandomEncounterDesc CRandomEncounterTypeTable::CalcEncounter (CSystem &System, 
 		return CRandomEncounterDesc(*Result.pType, Result.pBaseSovereign);
 	}
 
-void CRandomEncounterTypeTable::Realize (CSystem &System) const
+void CRandomEncounterTypeTable::Realize (const CSystem &System) const
 
 //	Realize
 //

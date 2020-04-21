@@ -1486,5 +1486,8 @@
     <ClCompile Include="CRandomEncounterTypeTable.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
+    <ClCompile Include="SystemProperties.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

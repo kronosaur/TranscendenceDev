@@ -515,6 +515,9 @@ class CSystem
 			}
 		void GetObjectsInBox (const CVector &vUR, const CVector &vLL, CSpaceObjectList &Result) { m_ObjGrid.GetObjectsInBox(vUR, vLL, Result); }
 		CSpaceObject *GetPlayerShip (void) const;
+		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
+		const CRandomEncounterObjTable &GetRandomEncounterObjTable (void) const { return m_EncounterObjTable; }
+		const CRandomEncounterTypeTable &GetRandomEncounterTypeTable (void) const { return m_EncounterTypeTable; }
 		static DWORD GetSaveVersion (void);
 		CG32bitPixel GetSpaceColor (void) const { return (m_pType ? m_pType->GetSpaceColor() : CSystemType::DEFAULT_SPACE_COLOR); }
 		Metric GetSpaceScale (void) const { return m_rKlicksPerPixel; }
@@ -522,12 +525,13 @@ class CSystem
 		int GetTileSize (void) const;
 		Metric GetTimeScale (void) const { return m_rTimeScale; }
 		CTopologyNode *GetTopology (void) const { return m_pTopology; }
-		CSystemType *GetType (void) { return m_pType; }
+		CSystemType *GetType (void) const { return m_pType; }
 		CSpaceEnvironmentType *GetSpaceEnvironment (int xTile, int yTile);
 		CSpaceEnvironmentType *GetSpaceEnvironment (const CVector &vPos, int *retxTile = NULL, int *retyTile = NULL);
 		CTopologyNode *GetStargateDestination (const CString &sStargate, CString *retsEntryPoint);
 		CUniverse &GetUniverse (void) const { return m_Universe; }
 		bool HasAttribute (const CVector &vPos, const CString &sAttrib) const;
+		bool HasRandomEncounters (void) const { return !m_fNoRandomEncounters; }
 		CSpaceObject *HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, bool bExcludeWorlds, CVector *retvHitPos = NULL);
 		CSpaceObject *HitTest (CSpaceObject *pExclude, const CVector &vPos, bool bExcludeWorlds);
 		bool IsCreationInProgress (void) const { return (m_fInCreate ? true : false); }
@@ -718,7 +722,9 @@ class CSystem
 		CPhysicsContactResolver m_ContactResolver;	//	Resolves physics contacts
 		CGateTimerManager m_GateTimer;			//	Assign delay when ships exit a gate
 
-		static const Metric g_MetersPerKlick;
+		//	Property table
+
+		static TPropertyHandler<CSystem> m_PropertyTable;
 	};
 
 inline CUniverse &SSystemCreateCtx::GetUniverse (void) { return System.GetUniverse(); }

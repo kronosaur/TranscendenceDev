@@ -28,7 +28,8 @@ class CRandomEncounterDesc
 class CRandomEncounterObjTable
 	{
 	public:
-		CRandomEncounterDesc CalcEncounter (CSystem &System, CSpaceObject &PlayerObj) const;
+		ICCItemPtr AsCCItem (const CSystem &System) const;
+		CRandomEncounterDesc CalcEncounter (const CSystem &System, CSpaceObject &PlayerObj) const;
 		void Invalidate (void) { m_bValid = false; }
 
 	private:
@@ -41,8 +42,8 @@ class CRandomEncounterObjTable
 			int iFreq = 0;
 			};
 
-		TProbabilityTable<const SEntry *> CalcEncounterTable (CSystem &System, CSpaceObject &PlayerObj) const;
-		void RealizeAllObjs (CSystem &System) const;
+		TProbabilityTable<const SEntry *> CalcEncounterTable (const CSystem &System, CSpaceObject &PlayerObj) const;
+		void RealizeAllObjs (const CSystem &System) const;
 
 		mutable TArray<SEntry> m_AllObjs;
 		mutable bool m_bValid = false;
@@ -51,7 +52,8 @@ class CRandomEncounterObjTable
 class CRandomEncounterTypeTable
 	{
 	public:
-		CRandomEncounterDesc CalcEncounter (CSystem &System, CSpaceObject &PlayerObj) const;
+		ICCItemPtr AsCCItem (const CSystem &System) const;
+		CRandomEncounterDesc CalcEncounter (const CSystem &System, CSpaceObject &PlayerObj) const;
 
 	private:
 		struct SEntry
@@ -61,7 +63,7 @@ class CRandomEncounterTypeTable
 			CSovereign *pBaseSovereign = NULL;
 			};
 
-		void Realize (CSystem &System) const;
+		void Realize (const CSystem &System) const;
 
 		mutable TProbabilityTable<SEntry> m_Table;
 		mutable bool m_bValid = false;
