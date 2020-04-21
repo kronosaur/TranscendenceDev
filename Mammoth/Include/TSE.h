@@ -1134,6 +1134,7 @@ class CSpaceObject
 		virtual CSpaceObject *GetDestination (void) const { return NULL; }
 		virtual CInstalledDevice *GetDevice (int iDev) { return NULL; }
 		virtual int GetDeviceCount (void) const { return 0; }
+		virtual CDeviceItem GetDeviceItem (int iDev) const { return CItem().AsDeviceItem(); }
 		virtual CStationType *GetEncounterInfo (void) { return NULL; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const { return NULL; }
 		virtual int GetLastFireTime (void) const { return 0; }

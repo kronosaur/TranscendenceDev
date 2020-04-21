@@ -1163,9 +1163,7 @@ void CPlayerShipController::OnDeviceEnabledDisabled (int iDev, bool bEnable, boo
 	{
 	DEBUG_TRY
 
-	CInstalledDevice *pDevice = m_pShip->GetDevice(iDev);
-	if (pDevice 
-			&& !pDevice->IsEmpty())
+	if (CDeviceItem DeviceItem = m_pShip->GetDeviceItem(iDev))
 		{
 		if (!bEnable)
 			{
@@ -1173,12 +1171,12 @@ void CPlayerShipController::OnDeviceEnabledDisabled (int iDev, bool bEnable, boo
 				DisplayTranslate(CONSTLIT("hintEnableDevices"));
 
 			if (!bSilent)
-				DisplayTranslate(CONSTLIT("msgDeviceDisabled"), CONSTLIT("itemName"), pDevice->GetClass()->GetName());
+				DisplayTranslate(CONSTLIT("msgDeviceDisabled"), CONSTLIT("itemName"), DeviceItem.GetNounPhrase(nounShort | nounNoModifiers));
 			}
 		else
 			{
 			if (!bSilent)
-				DisplayTranslate(CONSTLIT("msgDeviceEnabled"), CONSTLIT("itemName"), pDevice->GetClass()->GetName());
+				DisplayTranslate(CONSTLIT("msgDeviceEnabled"), CONSTLIT("itemName"), DeviceItem.GetNounPhrase(nounShort | nounNoModifiers));
 			}
 		}
 
@@ -1192,14 +1190,18 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 //	Device has failed in some way
 
 	{
+	ASSERT(pDev);
+	CDeviceItem DeviceItem = pDev->GetDeviceItem();
+	CString sItemName = DeviceItem.GetNounPhrase(nounShort | nounNoModifiers);
+
 	switch (iEvent)
 		{
 		case CDeviceClass::statusDisruptionRepaired:
-			DisplayTranslate(CONSTLIT("msgDeviceRepaired"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceRepaired"), CONSTLIT("itemName"), sItemName);
 			break;
 
 		case CDeviceClass::failDamagedByDisruption:
-			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), sItemName);
 			break;
 		case CDeviceClass::failWeaponJammed:
 			DisplayTranslate(CONSTLIT("msgWeaponJammed"));
@@ -1222,19 +1224,19 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 			break;
 
 		case CDeviceClass::failDeviceHitByDamage:
-			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), sItemName);
 			break;
 
 		case CDeviceClass::failDeviceHitByDisruption:
-			DisplayTranslate(CONSTLIT("msgDeviceIonized"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceIonized"), CONSTLIT("itemName"), sItemName);
 			break;
 
 		case CDeviceClass::failDeviceOverheat:
-			DisplayTranslate(CONSTLIT("msgDeviceDamagedOverheat"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceDamagedOverheat"), CONSTLIT("itemName"), sItemName);
 			break;
 
 		case CDeviceClass::failDeviceDisabledByOverheat:
-			DisplayTranslate(CONSTLIT("msgDeviceDisabledOverheat"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceDisabledOverheat"), CONSTLIT("itemName"), sItemName);
 			break;
 		}
 	}
@@ -2463,7 +2465,7 @@ void CPlayerShipController::ReadyNextMissile (int iDir)
 			int iAmmoLeft;
 			pLauncher->GetSelectedVariantInfo(m_pShip, &sVariant, &iAmmoLeft);
 			if (sVariant.IsBlank())
-				sVariant = pLauncher->GetName();
+				sVariant = pLauncher->GetDeviceItem().GetNounPhrase(nounShort | nounNoModifiers);
 
 			DisplayTranslate(CONSTLIT("msgMissileReady"), CONSTLIT("missile"), sVariant);
 			}
@@ -2525,10 +2527,11 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 
 		//	Feedback to player
 
+		CString sItemName = pNewWeapon->GetDeviceItem().GetNounPhrase(nounShort | nounNoModifiers);
 		if (pNewWeapon->IsEnabled())
-			DisplayTranslate(CONSTLIT("msgWeaponReady"), CONSTLIT("itemName"), pNewWeapon->GetName());
+			DisplayTranslate(CONSTLIT("msgWeaponReady"), CONSTLIT("itemName"), sItemName);
 		else
-			DisplayTranslate(CONSTLIT("msgDisabledWeaponReady"), CONSTLIT("itemName"), pNewWeapon->GetName());
+			DisplayTranslate(CONSTLIT("msgDisabledWeaponReady"), CONSTLIT("itemName"), sItemName);
 		}
 
 	if (m_pSession)
