@@ -6519,6 +6519,174 @@
 		</Language>
 	</StationType>
 
+	<!-- Sung Fortress -->
+
+	<StationType UNID="&stSungFortressOld;"
+			obsoleteVersion=	"49"
+			name=				"Sung fortress(es)"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"400"
+            regen=              "11"
+			explosionType=		"&vtBlastExplosion4;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"enemy, envAir, envEarth, envFire, envWater, generic, human, majorStation, populated, sungSlavers"
+			>
+		<Image			imageID="&rsStations4;" imageX="0" imageY="192" imageWidth="128" imageHeight="128"/>
+
+		<Ships>
+			<Table>
+				<Ship chance="30"	count="2d6" class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				<Group chance="60">
+					<Ship			count="1"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+					<Ship			count="2d4"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+				<Ship chance="10"	count="1d4"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+			</Table>
+		</Ships>
+
+		<Reinforcements minShips="3">
+			<Table>
+				<Ship chance="75"	count="1d4"	class="&scWindSlaver;"	orders="patrol" patrolDist="20"/>
+				<Ship chance="25"	count="1d2"	class="&scSteelSlaver;"	orders="patrol" patrolDist="20"/>
+			</Table>
+		</Reinforcements>
+
+		<Items>
+			<Lookup					count="1d4"	table="&trStationSupplies;" />
+			<Lookup					count="1"	table="&trConsumables6;"/>
+			<Lookup					count="1"	table="&trMinorItem6;"/>
+			<Table chance="75">
+				<Lookup chance="40" count="1" table="&trConsumables7;"/>
+				<Lookup chance="40" count="1" table="&trMinorItem7;"/>
+				<Lookup chance="20" count="1" table="&trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<Encounters frequency="common">
+			<Ship   count="1d4"	class="&scWindSlaver;" orders="attack"/>
+		</Encounters>
+
+		<Satellites>
+			<Station type="&stSungNEWallOld;" xOffset="64" yOffset="64"	segment="true"/>
+			<Station type="&stSungNWWallOld;" xOffset="-64" yOffset="64"	segment="true"/>
+			<Station type="&stSungSWWallOld;" xOffset="-64" yOffset="-64"	segment="true"/>
+			<Station type="&stSungSEWallOld;" xOffset="64" yOffset="-64"	segment="true"/>
+		</Satellites>
+
+	</StationType>
+
+	<!-- Sung Walls -->
+
+	<StationType UNID="&stSungNWWallOld;"
+			obsoleteVersion=	"49"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"120"
+			structuralHitPoints="100"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<Image			imageID="&rsStations5;" imageX="0" imageY="0" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true"/>
+		</Devices>
+
+	</StationType>
+
+	<StationType UNID="&stSungNEWallOld;"
+			obsoleteVersion=	"49"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"120"
+			structuralHitPoints="100"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<Image			imageID="&rsStations5;" imageX="128" imageY="0" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true"/>
+		</Devices>
+
+	</StationType>
+
+	<StationType UNID="&stSungSEWallOld;"
+			obsoleteVersion=	"49"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"120"
+			structuralHitPoints="100"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<Image			imageID="&rsStations5;" imageX="128" imageY="128" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true"/>
+		</Devices>
+
+	</StationType>
+
+	<StationType UNID="&stSungSWWallOld;"
+			obsoleteVersion=	"49"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"120"
+			structuralHitPoints="100"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<Image			imageID="&rsStations5;" imageX="0" imageY="128" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true"/>
+		</Devices>
+
+	</StationType>
+
 	<!-- Old Effects -->
 	
 	<Effect UNID="&efLargeExplosion1;"	obsoleteVersion="49">

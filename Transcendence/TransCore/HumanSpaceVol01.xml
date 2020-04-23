@@ -1041,11 +1041,11 @@
 
 	<!ENTITY rsSistersShrineBkgnd		"0x0018F001">
 
-	<!ENTITY stSungFortress				"0x00192001">
-	<!ENTITY stSungNWWall				"0x00192002">
-	<!ENTITY stSungNEWall				"0x00192003">
-	<!ENTITY stSungSEWall				"0x00192004">
-	<!ENTITY stSungSWWall				"0x00192005">
+	<!ENTITY stSungFortressOld			"0x00192001">
+	<!ENTITY stSungNWWallOld			"0x00192002">
+	<!ENTITY stSungNEWallOld			"0x00192003">
+	<!ENTITY stSungSEWallOld			"0x00192004">
+	<!ENTITY stSungSWWallOld			"0x00192005">
 	<!ENTITY stSungCitadel				"0x00192006">
 	<!ENTITY stSungSlaveCamp			"0x00192007">
 	<!ENTITY stSungSlaveQuarters1		"0x00192008">
@@ -1830,6 +1830,13 @@
 	<!ENTITY rsSungKeep					"0x0010012D">
 	<!ENTITY rsSungSlaveQuarters		"0x0010012E">
 	<!ENTITY stSungSlaveQuarters		"0x0010012F">
+	<!ENTITY stSungFortress				"0x00100130">
+	<!ENTITY baSungFortressWall			"0x00100131">
+	<!ENTITY stSungFortressWallNE		"0x00100132">
+	<!ENTITY stSungFortressWallNW		"0x00100133">
+	<!ENTITY stSungFortressWallSE		"0x00100134">
+	<!ENTITY stSungFortressWallSW		"0x00100135">
+	<!ENTITY rsSungFortress				"0x00100136">
 	
 	<!-- 0140-014F XENOPHOBES -->
 	
@@ -2606,6 +2613,7 @@
 
 	<!-- Sung Slavers -->
 	
+	<Module filename="SungFortress.xml"/>
 	<Module filename="SungSlaveCamp.xml"/>
 	<Module filename="SungSlavers.xml"/>
 

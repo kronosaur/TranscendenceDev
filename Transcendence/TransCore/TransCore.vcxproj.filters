@@ -936,5 +936,8 @@
     <Xml Include="HaloGems.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
+    <Xml Include="SungFortress.xml">
+      <Filter>Human Space Library\Sung Slavers</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
