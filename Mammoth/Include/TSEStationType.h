@@ -584,11 +584,21 @@ class CStationType : public CDesignType
 			CObjectImageArray m_Image;
 			};
 
+		struct SSatImageDesc
+			{
+			CStationType *pType = NULL;
+			const CObjectImageArray *pImage = NULL;
+			CCompositeImageSelector Selector;
+			int xOffset = 0;
+			int yOffset = 0;
+			};
+
 		void AddTypesUsedByXML (CXMLElement *pElement, TSortMap<DWORD, bool> *retTypesUsed);
 		Metric CalcBalance (void) const;
 		Metric CalcBalanceHitsAdj (int iLevel) const;
 		Metric CalcDefenderStrength (int iLevel) const;
 		int CalcHitsToDestroy (int iLevel) const;
+		TArray<SSatImageDesc> CalcSegmentDesc (void) const;
 		Metric CalcTreasureValue (int iLevel) const;
 		Metric CalcWeaponStrength (int iLevel) const;
 		CStationEncounterDesc &GetEncounterDesc (void);

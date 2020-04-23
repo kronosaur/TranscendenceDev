@@ -8,7 +8,6 @@
 #define STATION_TAG						CONSTLIT("Station")
 
 #define IMAGE_VARIANT_ATTRIB			CONSTLIT("imageVariant")
-#define SEGMENT_ATTRIB					CONSTLIT("segment")
 #define TYPE_ATTRIB						CONSTLIT("type")
 #define X_OFFSET_ATTRIB					CONSTLIT("xOffset")
 #define Y_OFFSET_ATTRIB					CONSTLIT("yOffset")
