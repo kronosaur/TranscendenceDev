@@ -194,6 +194,8 @@
 			name=				"Sung fortress(es)"
 			sovereign=			"&svSung;"
 			inherit=			"&stSungFortress;"
+
+			attributes=			"enemy, human, majorStation, populated, sungSlavers"
 			>
 
 		<Encounter/>
