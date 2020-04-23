@@ -433,6 +433,7 @@ class CStationType : public CDesignType
 		bool AlertWhenDestroyed (void) { return (mathRandom(1, 100) <= m_iAlertWhenDestroyed); }
 		bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
 		bool CanAttack (void) const { return (m_fCanAttack ? true : false); }
+		bool CanAttackIndependently (void) const { return (m_fNoIndependentAttack ? false : true); }
 		bool CanBeEncountered (void) const { return m_EncounterRecord.CanBeEncountered(GetEncounterDesc()); }
 		bool CanBeEncountered (CSystem *pSystem) const { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, GetEncounterDesc()); }
 		bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
@@ -656,7 +657,7 @@ class CStationType : public CDesignType
 		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
 		DWORD m_fForceMapLabel:1;						//	If TRUE, show map label, even if we wouldn't by default.
 		DWORD m_fAnonymous:1;							//	If TRUE, object is anonymous world/asteroid/etc.
-		DWORD m_fSpare7:1;
+		DWORD m_fNoIndependentAttack:1;					//	If TRUE, we only attack if our base is alive.
 		DWORD m_fSpare8:1;
 
 		//	Images

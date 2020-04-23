@@ -80,6 +80,7 @@
 #define NO_BLACKLIST_ATTRIB						CONSTLIT("noBlacklist")
 #define NO_FRIENDLY_FIRE_ATTRIB					CONSTLIT("noFriendlyFire")
 #define NO_FRIENDLY_TARGET_ATTRIB				CONSTLIT("noFriendlyTarget")
+#define NO_INDEPENDENT_ATTACK_ATTRIB			CONSTLIT("noIndependentAttack")
 #define NO_MAP_DETAILS_ATTRIB					CONSTLIT("noMapDetails")
 #define NO_MAP_ICON_ATTRIB						CONSTLIT("noMapIcon")
 #define NO_MAP_LABEL_ATTRIB						CONSTLIT("noMapLabel")
@@ -1503,6 +1504,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fWall = pDesc->GetAttributeBool(WALL_ATTRIB);
 	m_fNoFriendlyFire = pDesc->GetAttributeBool(NO_FRIENDLY_FIRE_ATTRIB);
 	m_fNoFriendlyTarget = pDesc->GetAttributeBool(NO_FRIENDLY_TARGET_ATTRIB);
+	m_fNoIndependentAttack = pDesc->GetAttributeBool(NO_INDEPENDENT_ATTACK_ATTRIB);
 	m_fInactive = pDesc->GetAttributeBool(INACTIVE_ATTRIB);
 	m_fDestroyWhenAbandoned = pDesc->GetAttributeBool(DESTROY_WHEN_ABANDONED_ATTRIB);
 	m_fDestroyWhenEmpty = pDesc->GetAttributeBool(DESTROY_WHEN_EMPTY_ATTRIB);

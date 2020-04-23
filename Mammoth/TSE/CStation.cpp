@@ -4185,7 +4185,8 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		//	Update attacks
 
-		if (m_fArmed && !m_pType->IsVirtual())
+		if (m_fArmed && !m_pType->IsVirtual()
+				&& (m_pType->CanAttackIndependently() || (m_pBase && !m_pBase->IsAbandoned())))
 			{
 			if (!UpdateAttacking(Ctx, iTick))
 				return;
