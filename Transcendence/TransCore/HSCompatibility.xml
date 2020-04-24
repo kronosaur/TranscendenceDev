@@ -6573,17 +6573,17 @@
 		</Encounters>
 
 		<Satellites>
-			<Station type="&stSungNEWallOld;" xOffset="64" yOffset="64"	segment="true"/>
-			<Station type="&stSungNWWallOld;" xOffset="-64" yOffset="64"	segment="true"/>
-			<Station type="&stSungSWWallOld;" xOffset="-64" yOffset="-64"	segment="true"/>
-			<Station type="&stSungSEWallOld;" xOffset="64" yOffset="-64"	segment="true"/>
+			<Station type="&stSungNEWall;" xOffset="64" yOffset="64"	segment="true"/>
+			<Station type="&stSungNWWall;" xOffset="-64" yOffset="64"	segment="true"/>
+			<Station type="&stSungSWWall;" xOffset="-64" yOffset="-64"	segment="true"/>
+			<Station type="&stSungSEWall;" xOffset="64" yOffset="-64"	segment="true"/>
 		</Satellites>
 
 	</StationType>
 
 	<!-- Sung Walls -->
 
-	<StationType UNID="&stSungNWWallOld;"
+	<StationType UNID="&stSungNWWall;"
 			obsoleteVersion=	"49"
 			name=				"Sung defense tower"
 			sovereign=			"&svSung;"
@@ -6609,7 +6609,7 @@
 
 	</StationType>
 
-	<StationType UNID="&stSungNEWallOld;"
+	<StationType UNID="&stSungNEWall;"
 			obsoleteVersion=	"49"
 			name=				"Sung defense tower"
 			sovereign=			"&svSung;"
@@ -6635,7 +6635,7 @@
 
 	</StationType>
 
-	<StationType UNID="&stSungSEWallOld;"
+	<StationType UNID="&stSungSEWall;"
 			obsoleteVersion=	"49"
 			name=				"Sung defense tower"
 			sovereign=			"&svSung;"
@@ -6661,7 +6661,7 @@
 
 	</StationType>
 
-	<StationType UNID="&stSungSWWallOld;"
+	<StationType UNID="&stSungSWWall;"
 			obsoleteVersion=	"49"
 			name=				"Sung defense tower"
 			sovereign=			"&svSung;"

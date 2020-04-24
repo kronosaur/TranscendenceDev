@@ -1042,10 +1042,10 @@
 	<!ENTITY rsSistersShrineBkgnd		"0x0018F001">
 
 	<!ENTITY stSungFortressOld			"0x00192001">
-	<!ENTITY stSungNWWallOld			"0x00192002">
-	<!ENTITY stSungNEWallOld			"0x00192003">
-	<!ENTITY stSungSEWallOld			"0x00192004">
-	<!ENTITY stSungSWWallOld			"0x00192005">
+	<!ENTITY stSungNWWall				"0x00192002">
+	<!ENTITY stSungNEWall				"0x00192003">
+	<!ENTITY stSungSEWall				"0x00192004">
+	<!ENTITY stSungSWWall				"0x00192005">
 	<!ENTITY stSungCitadel				"0x00192006">
 	<!ENTITY stSungSlaveCamp			"0x00192007">
 	<!ENTITY stSungSlaveQuarters1		"0x00192008">
