@@ -3262,7 +3262,6 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 		int y;
 		};
 
-	int i;
 	Metric rKlicksPerPixel = rScale;
 
 	//	Options
@@ -3276,7 +3275,7 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	CVector vLL[CPerceptionCalc::RANGE_ARRAY_SIZE];
 	Metric rMaxDist2[CPerceptionCalc::RANGE_ARRAY_SIZE];
 
-	for (i = 0; i < CPerceptionCalc::RANGE_ARRAY_SIZE; i++)
+	for (int i = 0; i < CPerceptionCalc::RANGE_ARRAY_SIZE; i++)
 		{
 		Metric rRange = CPerceptionCalc::GetRange(i);
 
@@ -3340,26 +3339,41 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	//	(We do two passes for painting, so we need to keep the object in a 
 	//	smaller list.)
 
+	TArray<SPaintEntry> WorldList(100);
 	TArray<SPaintEntry> PaintList(100);
 
 	m_fEnemiesInLRS = false;
 	bool bNewEnemies = false;
-	for (i = 0; i < GetObjectCount(); i++)
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
-		if (pObj == NULL)
+		if (pObj == NULL 
+				|| pObj->IsHidden()
+				|| pObj->IsVirtual()
+				|| (!bShow3DExtras && pObj->Is3DExtra()))
 			continue;
 
-		int iRange;
-		if (!pObj->IsHidden()
-				&& !pObj->IsVirtual()
-				&& (bShow3DExtras || !pObj->Is3DExtra())
-				&& pObj->InBox(vLargeUR, vLargeLL))
+		if (pObj->InBox(vLargeUR, vLargeLL))
 			{
-			if ((pObj->GetScale() == scaleStar 
-					|| pObj->GetScale() == scaleWorld 
-					|| ((iRange = pObj->GetDetectionRangeIndex(iPerception)) < CPerceptionCalc::RANGE_ARRAY_SIZE
-						&& pCenter->GetDistance2(pObj) <= rMaxDist2[iRange])))
+			int iRange;
+
+			if (pObj->GetScale() == scaleStar || pObj->GetScale() == scaleWorld)
+				{
+				//	Add to the list
+
+				SPaintEntry *pEntry = WorldList.Insert();
+				pEntry->pObj = pObj;
+
+				//	Figure out the position of the object in pixels
+
+				Trans.Transform(pObj->GetPos(), &pEntry->x, &pEntry->y);
+
+				//	This object is now in the LRS
+
+				pObj->SetPOVLRS();
+				}
+			else if ((iRange = pObj->GetDetectionRangeIndex(iPerception)) < CPerceptionCalc::RANGE_ARRAY_SIZE
+						&& pCenter->GetDistance2(pObj) <= rMaxDist2[iRange])
 				{
 				//	Add to the list
 
@@ -3400,16 +3414,28 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 			}
 		}
 
-	//	First we paint the background part of all objects
+	//	First we paint all worlds
 
-	for (i = 0; i < PaintList.GetCount(); i++)
+	for (int i = 0; i < WorldList.GetCount(); i++)
+		{
+		WorldList[i].pObj->PaintLRSBackground(Dest, WorldList[i].x, WorldList[i].y, Trans);
+		}
+
+	//	Next we paint the background part of all other objects
+
+	for (int i = 0; i < PaintList.GetCount(); i++)
 		{
 		PaintList[i].pObj->PaintLRSBackground(Dest, PaintList[i].x, PaintList[i].y, Trans);
 		}
 
 	//	Then we paint the foreground part
 
-	for (i = 0; i < PaintList.GetCount(); i++)
+	for (int i = 0; i < WorldList.GetCount(); i++)
+		{
+		WorldList[i].pObj->PaintLRSForeground(Dest, WorldList[i].x, WorldList[i].y, Trans);
+		}
+
+	for (int i = 0; i < PaintList.GetCount(); i++)
 		{
 		PaintList[i].pObj->PaintLRSForeground(Dest, PaintList[i].x, PaintList[i].y, Trans);
 		}
