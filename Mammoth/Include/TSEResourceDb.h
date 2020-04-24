@@ -58,7 +58,7 @@ class CResourceDb
 		ALERROR OpenDb (void);
 		ALERROR LoadImageFileAndMask (const CString &sImageFilename, const CString &sMaskFilename, TUniquePtr<CG32bitImage> &pImage, bool bPreMult = false, CString *retsError = NULL);
 		ALERROR LoadPNGFile (const CString &sImageFilename, TUniquePtr<CG32bitImage> &pImage, CString *retsError = NULL);
-		ALERROR ReadEntry (const CString &sFilespec, CString *retsData);
+		ALERROR ReadEntry (const CString &sFilespec, CString *retsData, CString *retsError = NULL);
 
 		int m_iVersion;
 		bool m_bGameFileInDb;
