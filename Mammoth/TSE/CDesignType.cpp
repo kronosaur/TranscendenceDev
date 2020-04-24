@@ -454,6 +454,7 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 				return error;
 
 			pType->m_dwUNID = dwUNID;
+			pType->m_dwObsoleteVersion = pDesc->GetAttributeIntegerBounded(OBSOLETE_VERSION_ATTRIB, 0, -1, 0);
 
 			if (!pDesc->FindAttribute(ATTRIBUTES_ATTRIB, &pType->m_sAttributes))
 				pType->m_sAttributes = pDesc->GetAttribute(MODIFIERS_ATTRIB);
