@@ -886,38 +886,35 @@ ICCItem *CCodeChain::EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem)
 //	(or an error).
 
 	{
-	int i;
-
 	CCSymbolTable *pTable = dynamic_cast<CCSymbolTable *>(pItem);
 	if (pTable == NULL)
 		return CreateError(CONSTLIT("Not a structure"), pItem);
 
-	ICCItem *pNew = CreateSymbolTable();
+	ICCItemPtr pNew(CreateSymbolTable());
 	if (pNew->IsError())
-		return pNew;
-
-	CCSymbolTable *pNewTable = dynamic_cast<CCSymbolTable *>(pNew);
+		return pNew->Reference();
 
 	//	Loop over all key/value pairs
 
-	for (i = 0; i < pTable->GetCount(); i++)
+	for (int i = 0; i < pTable->GetCount(); i++)
 		{
 		CString sKey = pTable->GetKey(i);
 		ICCItem *pValue = pTable->GetElement(i);
+		if (!pValue)
+			continue;
 
-		ICCItem *pNewKey = CreateString(sKey);
-		ICCItem *pNewValue = (pValue ? Eval(pCtx, pValue) : CreateNil());
+		ICCItemPtr pNewValue(Eval(pCtx, pValue));
+		if (pCtx->bStrict && pNewValue->IsError())
+			return pNewValue->Reference();
 
+		ICCItemPtr pNewKey(CreateString(sKey));
 		if (!pNewValue->IsNil())
-			pNewTable->AddEntry(pNewKey, pNewValue);
-
-		pNewKey->Discard();
-		pNewValue->Discard();
+			pNew->AddEntry(pNewKey, pNewValue);
 		}
 
 	//	Done
 
-	return pNewTable;
+	return pNew->Reference() ;
 	}
 
 ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CString &sArgValidation)
