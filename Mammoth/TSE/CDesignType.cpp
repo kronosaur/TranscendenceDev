@@ -2547,7 +2547,10 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_UNID))
 		{
-		DWORD dwUNID = strToInt(strSubString(sAttrib, SPECIAL_UNID.GetLength()), 0);
+		DWORD dwUNID;
+		if (!GetUniverse().GetDesignCollection().ParseUNID(strSubString(sAttrib, SPECIAL_UNID.GetLength()), &dwUNID))
+			return false;
+
 		return (GetUNID() == dwUNID);
 		}
 	else
