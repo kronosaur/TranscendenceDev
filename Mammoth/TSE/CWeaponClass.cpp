@@ -647,7 +647,7 @@ CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTar
 	CDeviceItem DeviceItem = Device.GetDeviceItem();
 
 	bool bCheckLineOfFire = !TargetList.NoLineOfFireCheck();
-	bool bCheckRange = !TargetList.NoRangeCheck();
+	bool bCheckRange = !TargetList.NoRangeCheck() || (Device.GetMaxFireRangeLS() != 0);
 	DWORD dwTargetTypes = DeviceItem.GetTargetTypes();
 
 	Metric rMaxRange = DeviceItem.GetMaxEffectiveRange();
