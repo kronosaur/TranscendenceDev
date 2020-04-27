@@ -181,6 +181,7 @@ class CDeviceSystem
 		bool IsWeaponRepeating (DeviceNames iDev = devNone) const;
 		void MarkImages (void);
 		bool OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause, const CDamageSource &Attacker);
+		void OnSubordinateDestroyed (CSpaceObject &SubordinateObj, const CString &sSubordinateID);
         void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
 		void ReadyFirstMissile (CSpaceObject *pObj);
 		void ReadyFirstWeapon (CSpaceObject *pObj);

@@ -9102,7 +9102,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (pSubordinate && !pSubordinate->IsDestroyed())
 				{
-				pObj->AddSubordinate(pSubordinate);
+				pObj->AddSubordinate(*pSubordinate);
 				pResult = pCC->CreateTrue();
 				}
 			else

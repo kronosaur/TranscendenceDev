@@ -838,6 +838,24 @@ bool CDeviceSystem::OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause,
 	return true;
 	}
 
+void CDeviceSystem::OnSubordinateDestroyed (CSpaceObject &SubordinateObj, const CString &sSubordinateID)
+
+//	OnSubordinateDestroyed
+//
+//	The given subordinate was destroyed. If any of our devices are associated
+//	with that subordinate, then we need to destroy or disable them.
+
+	{
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		{
+		CInstalledDevice &Device = m_Devices[i];
+		if (!Device.IsEmpty() && Device.IsOnSegment() && strEquals(sSubordinateID, Device.GetSegmentID()))
+			{
+			Device.SetEnabled(Device.GetSource(), false);
+			}
+		}
+	}
+
 void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
 
 //	ReadFromStream

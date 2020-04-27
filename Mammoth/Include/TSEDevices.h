@@ -432,7 +432,7 @@ struct SDeviceDesc
 
 	DWORD dwLinkedFireOptions = 0;				//	Slot linked-fire options
 	bool bSecondary = false;
-
+	bool bOnSegment = false;					//	Slot is (logically) on segment with ID = sID
 	bool bExternal = false;						//	Slot is external
 	bool bCannotBeEmpty = false;				//	Slot cannot be empty
 	ItemFates iFate = fateNone;					//	Fate of device when ship destroyed
@@ -561,6 +561,7 @@ class CInstalledDevice
 		int GetPosRadius (void) const { return m_iPosRadius; }
 		int GetPosZ (void) const { return m_iPosZ; }
 		int GetRotation (void) const { return AngleMiddle(m_iMinFireArc, m_iMaxFireArc); }
+		const CString &GetSegmentID (void) const { return (m_fOnSegment ? m_sID : NULL_STR); }
 		const CEnhancementDesc &GetSlotEnhancements (void) const { return m_SlotEnhancements; }
 		double GetShotSeparationScale(void) const { return (double)m_iShotSeparationScale / 32767.0; }
 		int GetSlotPosIndex (void) const { return m_iSlotPosIndex; }
@@ -575,6 +576,7 @@ class CInstalledDevice
 		bool IsExternal (void) const { return m_fExternal; }
 		bool IsLastActivateSuccessful (void) const { return m_fLastActivateSuccessful; }
 		bool IsOmniDirectional (void) const { return (m_fOmniDirectional ? true : false); }
+		bool IsOnSegment (void) const { return (m_fOnSegment ? true : false); }
 		bool IsOptimized (void) const { return m_fOptimized; }
 		bool IsOverdrive (void) const { return m_fOverdrive; }
 		bool IsReady (void) const { return (m_iTimeUntilReady == 0); }
@@ -752,6 +754,7 @@ class CInstalledDevice
 		DWORD m_fCycleFire :1;					//	If TRUE, then cycle fire through weapons of same type and linked fire settings
 
 		DWORD m_fCanTargetMissiles:1;			//	If TRUE, then this weapon can fire at hostile missiles as well as ships
+		DWORD m_fOnSegment:1;					//	If TRUE, then device logically belongs to the segment specified by m_sID.
 
-		DWORD m_dwSpare2:7;
+		DWORD m_dwSpare2:6;
 	};

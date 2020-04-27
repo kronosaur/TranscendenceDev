@@ -1475,7 +1475,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		bool IsNameSet (void) const;
 		bool IsReconned (void) { return (m_fReconned ? true : false); }
 		void SetActive (void) { m_fActive = true; }
-		void SetBase (CSpaceObject *pBase) { m_pBase = pBase; }
+		void SetBase (CSpaceObject &BaseObj, const CString &sSubordinateID = NULL_STR) { m_pBase = &BaseObj; m_sSubordinateID = sSubordinateID; }
 		void SetFireReconEvent (void) { m_fFireReconEvent = true; }
 		void SetFlotsamImage (CItemType *pItemType);
 		void SetForceMapLabel (bool bValue = true) { m_fForceMapLabel = bValue; }
@@ -1497,7 +1497,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 
 		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifetime, DWORD *retdwID = NULL) override;
 		using CSpaceObject::AddOverlay;
-		virtual void AddSubordinate (CSpaceObject *pSubordinate) override;
+		virtual void AddSubordinate (CSpaceObject &SubordinateObj, const CString &sSubordinateID = NULL_STR) override;
 		virtual CTradingDesc *AllocTradeDescOverride (void) override;
 		virtual CStation *AsStation (void) override { return this; }
 		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) override;
@@ -1569,6 +1569,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CString GetStargateID (void) const override;
 		virtual int GetStealth (void) const override;
 		virtual Metric GetStellarMass (void) const override { return (GetScale() == scaleStar ? m_rMass : 0.0); }
+		virtual const CString &GetSubordinateID (void) const override { return m_sSubordinateID; }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
@@ -1735,6 +1736,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		CDockingPorts m_DockingPorts;			//	Docking ports
 
 		CSpaceObject *m_pBase = NULL;			//	If we're a subordinate, this points to our base
+		CString m_sSubordinateID;				//	If we're a subordinate, this is our ID
 		CSpaceObjectList m_Subordinates;		//	List of subordinates
 		CSpaceObjectList m_Targets;				//	Targets to destroy (by our ships)
 		CTargetList m_WeaponTargets;			//	Targets to destroy (by our weapons)

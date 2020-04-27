@@ -4486,7 +4486,7 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 	//	If this is a satellite, then add it as a subordinate
 
 	if (pStation && pCtx->pStation && (pStation->CanAttack() || CreateCtx.bIsSegment))
-		pCtx->pStation->AddSubordinate(pStation);
+		pCtx->pStation->AddSubordinate(*pStation, CreateCtx.sID);
 
 	//	Create any satellites of the station
 
@@ -4572,6 +4572,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	CreateCtx.bCreateSatellites = !pDesc->GetAttributeBool(NO_SATELLITES_ATTRIB);
 	CreateCtx.pExtraData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
     CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
+	CreateCtx.sID = pDesc->GetAttribute(ID_ATTRIB);
 	CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
 	CString sAngle;

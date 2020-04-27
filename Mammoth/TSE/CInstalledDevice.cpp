@@ -63,7 +63,8 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_fLinkedFireNever(false),
 		m_fLinkedFireSelectedVariants(false),
 		m_fCycleFire(false),
-		m_fCanTargetMissiles(false)
+		m_fCanTargetMissiles(false),
+		m_fOnSegment(false)
 	{
 	}
 
@@ -328,6 +329,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 
 	{
 	m_sID = Desc.sID;
+	m_fOnSegment = Desc.bOnSegment;
 
 	m_fOmniDirectional = Desc.bOmnidirectional;
 	m_iMinFireArc = Desc.iMinFireArc;
@@ -799,6 +801,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	m_fLinkedFireSelectedVariants = ((dwLoad & 0x00800000) ? true : false);
 	m_fCycleFire =		((dwLoad & 0x01000000) ? true : false);
 	m_fCanTargetMissiles =	((dwLoad & 0x02000000) ? true : false);
+	m_fOnSegment =			((dwLoad & 0x04000000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -1434,6 +1437,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fLinkedFireSelectedVariants ? 0x00800000 : 0);
 	dwSave |= (m_fCycleFire ?			0x01000000 : 0);
 	dwSave |= (m_fCanTargetMissiles ?	0x02000000 : 0);
+	dwSave |= (m_fOnSegment ?			0x04000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
