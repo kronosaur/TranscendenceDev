@@ -6687,6 +6687,94 @@
 
 	</StationType>
 
+	<!-- Sung Citadel -->
+
+	<StationType UNID="&stSungCitadelOld;"
+			obsoleteVersion=	"50"
+			name=				"Sung citadel"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"1500"
+            regen=              "11"
+			fireRateAdj=		"20"
+			explosionType=		"&vtThermoExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"enemy, human, majorStation, populated, sungSlavers"
+			>
+
+		<!-- Encounter Info -->
+
+		<Image			imageID="&rsStations6;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+
+		<Devices>
+			<Device deviceID="&itCyberDeckLowerShields;"/>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true" posAngle="40"  posRadius="120"/>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true" posAngle="145" posRadius="125"/>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true" posAngle="270" posRadius="90"/>
+		</Devices>
+
+		<Ships>
+			<Table>
+				<Group chance="60">
+					<Ship			count="1"	class="&scEarthSlaver;"		orders="patrol" patrolDist="30"/>
+					<Ship			count="1d2"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+					<Ship			count="1d3"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+				<Group chance="30">
+					<Ship			count="1"	class="&scEarthSlaver;"		orders="patrol" patrolDist="30"/>
+					<Ship			count="1d6"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+				<Group chance="10">
+					<Ship			count="1d4"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+					<Ship			count="1d6"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+			</Table>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Table>
+				<Ship chance="50"	count="1d3"	class="&scWindSlaver;"	orders="patrol" patrolDist="20"/>
+				<Ship chance="30"	count="1d2"	class="&scSteelSlaver;"	orders="patrol" patrolDist="20"/>
+				<Ship chance="20"	count="1"	class="&scEarthSlaver;"	orders="patrol" patrolDist="30"/>
+			</Table>
+		</Reinforcements>
+
+		<Items>
+			<Item chance="80"		count="1d4" item="&itLongzhuSphere;"/>
+			<Lookup					count="1d4"	table="&trStationSupplies;" />
+			<Lookup					count="1"	table="&trConsumables6;"/>
+			<Lookup					count="1"	table="&trMinorItem6;"/>
+			<Table>
+				<Lookup chance="45" count="1" table="&trConsumables7;"/>
+				<Lookup chance="30" count="1" table="&trMinorItem7;"/>
+				<Lookup chance="25" count="1" table="&trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<Encounters frequency="common">
+			<Table>
+				<Ship chance="30"	count="2d3" class="&scWindSlaver;"		orders="attack"/>
+				<Group chance="60">
+					<Ship			count="1"	class="&scSteelSlaver;"		orders="attack"/>
+					<Ship			count="1d4"	class="&scWindSlaver;"		orders="attack"/>
+				</Group>
+				<Ship chance="10"	count="1d4"	class="&scSteelSlaver;"		orders="attack"/>
+			</Table>
+		</Encounters>
+
+		<Satellites overlapCheck="asteroids">
+			<Orbitals count="8" distance="14" angle="equidistant">
+				<Station type="&stSungDefenseSat1;"/>
+			</Orbitals>
+		</Satellites>
+
+	</StationType>
+
 	<!-- Old Effects -->
 	
 	<Effect UNID="&efLargeExplosion1;"	obsoleteVersion="49">
