@@ -7320,7 +7320,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 		//	If this ship is ordered to guard then it counts as a subordinate
 
 		if (bIsSubordinate && Ctx.pBase && !Ctx.pBase->IsEnemy(this))
-			Ctx.pBase->AddSubordinate(this);
+			Ctx.pBase->AddSubordinate(*this);
 		}
 	}
 

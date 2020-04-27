@@ -240,6 +240,7 @@ struct SObjCreateCtx
 	int iRotation = -1;						//	-1 = default rotation
 	Metric rParallax = 1.0;					//	Parallax
 
+	CString sID;							//	Optional object ID
 	const CLocationDef *pLoc = NULL;		//	Optional location (may be NULL)
 	const COrbit *pOrbit = NULL;			//	Optional orbit (may be NULL)
 	CXMLElement *pExtraData = NULL;			//	Extra data for object (may be NULL)

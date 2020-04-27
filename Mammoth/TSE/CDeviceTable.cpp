@@ -44,6 +44,7 @@
 #define MISSILE_DEFENSE_ATTRIB					CONSTLIT("missileDefense")
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define SECONDARY_WEAPON_ATTRIB					CONSTLIT("secondaryWeapon")
+#define SEGMENT_ID_ATTRIB						CONSTLIT("segmentID")
 #define SHOT_SEPARATION_SCALE_ATTRIB			CONSTLIT("shotSeparationScale")
 #define SLOT_ID_ATTRIB							CONSTLIT("slotID")
 #define TABLE_ATTRIB							CONSTLIT("table")
@@ -100,7 +101,7 @@ class CSingleDevice : public IDeviceGenerator
 		DWORD m_dwLinkedFireOptions = 0;		//	This slot has linked-fire properties
 		bool m_bDefaultLinkedFire = false;		//	This slot does not define linked-fire
 		bool m_bSecondary = false;				//	Secondary weapon (for AI)
-
+		bool m_bOnSegment = false;				//	Device is (logically) on segment (m_sSlotID)
 		bool m_bExternal = false;				//	This slot is external
 		bool m_bCannotBeEmpty = false;			//	This slot cannot be empty
 		ItemFates m_iFate = fateNone;			//	What happens to item when ship is destroyed
@@ -389,6 +390,17 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 		SDeviceDesc SlotDesc;
 		bool bUseSlotDesc = FindSlot(Ctx, Desc.Item, SlotDesc);
 
+		if (SlotDesc.bOnSegment)
+			{
+			Desc.bOnSegment = true;
+			Desc.sID = SlotDesc.sID;
+			}
+		else if (m_bOnSegment)
+			{
+			Desc.bOnSegment = true;
+			Desc.sID = m_sSlotID;
+			}
+
 		//	Set the device position appropriately, either from the <Device> element,
 		//	from the slot descriptor at the root, or from defaults.
 
@@ -518,7 +530,7 @@ bool CSingleDevice::FindSlot (SDeviceGenerateCtx &Ctx, const CItem &Item, SDevic
 
 	//	If we have a slot ID, then we need to look for that slot.
 
-	else if (!m_sSlotID.IsBlank())
+	else if (!m_sSlotID.IsBlank() && !m_bOnSegment)
 		{
 		if (!Ctx.pRoot->FindDefaultDesc(Ctx, *Ctx.pResult, m_sSlotID, &retSlotDesc))
 			{
@@ -611,8 +623,12 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_iDamaged = pDesc->GetAttributeInteger(DAMAGED_ATTRIB);
     m_Level.LoadFromXML(pDesc->GetAttribute(LEVEL_ATTRIB));
-	m_sSlotID = pDesc->GetAttribute(SLOT_ID_ATTRIB);
 	m_iCharges = pDesc->GetAttributeIntegerBounded(CHARGES_ATTRIB, 0, -1, 0);
+
+	if (pDesc->FindAttribute(SEGMENT_ID_ATTRIB, &m_sSlotID))
+		m_bOnSegment = true;
+	else
+		m_sSlotID = pDesc->GetAttribute(SLOT_ID_ATTRIB);
 
 	//	Load device position attributes
 
