@@ -650,6 +650,7 @@
     <Xml Include="Stormhound.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="SungCitadel.xml" />
     <Xml Include="SungFortress.xml" />
     <Xml Include="SungSlaveCamp.xml" />
     <Xml Include="TeratonResearch.xml" />

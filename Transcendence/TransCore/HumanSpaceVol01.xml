@@ -1046,7 +1046,7 @@
 	<!ENTITY stSungNEWall				"0x00192003">
 	<!ENTITY stSungSEWall				"0x00192004">
 	<!ENTITY stSungSWWall				"0x00192005">
-	<!ENTITY stSungCitadel				"0x00192006">
+	<!ENTITY stSungCitadelOld			"0x00192006">
 	<!ENTITY stSungSlaveCamp			"0x00192007">
 	<!ENTITY stSungSlaveQuarters1		"0x00192008">
 	<!ENTITY stSungSlaveQuarters2		"0x00192009">
@@ -1837,6 +1837,11 @@
 	<!ENTITY stSungFortressWallSE		"0x00100134">
 	<!ENTITY stSungFortressWallSW		"0x00100135">
 	<!ENTITY rsSungFortress				"0x00100136">
+
+	<!ENTITY rsSungCitadel				"0x00100137">
+	<!ENTITY stSungCitadel				"0x00100138">
+	<!ENTITY stSungCitadelInnerWall		"0x00100139">
+	<!ENTITY stSungCitadelOuterWall		"0x0010013A">
 	
 	<!-- 0140-014F XENOPHOBES -->
 	
@@ -2613,6 +2618,7 @@
 
 	<!-- Sung Slavers -->
 	
+	<Module filename="SungCitadel.xml"/>
 	<Module filename="SungFortress.xml"/>
 	<Module filename="SungSlaveCamp.xml"/>
 	<Module filename="SungSlavers.xml"/>

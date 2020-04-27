@@ -939,5 +939,8 @@
     <Xml Include="SungFortress.xml">
       <Filter>Human Space Library\Sung Slavers</Filter>
     </Xml>
+    <Xml Include="SungCitadel.xml">
+      <Filter>Human Space Library\Sung Slavers</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
