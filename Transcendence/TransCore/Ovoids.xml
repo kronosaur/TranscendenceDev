@@ -6,6 +6,98 @@
 	
 	<SystemPartTable unid="&tbOvoidTables;">
 		
+		<!-- ASTEROID FIELDS -->
+
+		<OvoidAsteroidBelt12>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt12Pattern">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+
+					<_Location			table="OvoidLabel"/>
+				</_Morphology>
+			</Lookup>
+		</OvoidAsteroidBelt12>
+
+		<OvoidAsteroidBelt25>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt25Pattern">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+
+					<_Location			table="OvoidLabel"/>
+				</_Morphology>
+			</Lookup>
+		</OvoidAsteroidBelt25>
+
+		<OvoidAsteroidBelt50>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt50Pattern">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+
+					<_Location			table="OvoidLabel"/>
+				</_Morphology>
+			</Lookup>
+		</OvoidAsteroidBelt50>
+
+		<OvoidAsteroidBelt100>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt100Pattern">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+
+					<_Location			table="OvoidLabel"/>
+				</_Morphology>
+			</Lookup>
+		</OvoidAsteroidBelt100>
+
+		<OvoidAsteroidBelt200>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt200Pattern">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+
+					<_Location			table="OvoidLabel"/>
+				</_Morphology>
+			</Lookup>
+		</OvoidAsteroidBelt200>
+
+		<!-- COMPONENTS -->
+
+		<OvoidSizeA>
+			<Table>
+				<Station chance="80" type="&stOvoidAsteroidSizeA1;"/>
+				<Station chance="15" type="&stOvoidAsteroidSizeA2;"/>
+				<Station chance="5" type="&stOvoidAsteroidSizeA3;"/>
+			</Table>
+		</OvoidSizeA>
+
+		<OvoidSizeB>
+			<Table>
+				<Station chance="70" type="&stOvoidAsteroidSizeB1;"/>
+				<Station chance="30" type="&stOvoidAsteroidSizeB2;"/>
+			</Table>
+		</OvoidSizeB>
+
+		<OvoidSizeC>
+			<Station type="&stOvoidAsteroidSizeC;"/>
+		</OvoidSizeC>
+
+		<OvoidSizeD>
+			<Station type="&stOvoidAsteroidSizeD;"/>
+		</OvoidSizeD>
+
 	</SystemPartTable>
 	
 <!-- ASTEROIDS & PLANETS -->

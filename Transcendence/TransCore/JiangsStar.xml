@@ -96,19 +96,19 @@
 
 						<!-- Asura I -->
 
-						<Group distance="22">
+						<Group distance="32">
 							<Station type="&stScoriaPlanetoidSizeE;" name="Rahu" showMapLabel="true"/>
 						</Group>
 
 						<!-- Asura II -->
 
-						<Group distance="45">
+						<Group distance="55">
 							<Station type="&stRockyPlanetoidSizeG;" name="Bali" showMapLabel="true"/>
 						</Group>
 
 						<!-- Asura III -->
 
-						<Group distance="80">
+						<Group distance="90">
 							<Station type="&stIcePlanetoidSizeG;" name="Vemacitrin" showMapLabel="true"/>
 						</Group>
 					</Orbitals>
@@ -117,24 +117,42 @@
 				<!-- Outer Ice Belt -->
 
 				<Group distance="1100">
-					<Orbitals count="4-6" distance="10-14" angle="equidistant">
-						<Station type="&stOvoidAsteroidSizeD;"/>
+					<LocationAttributes attributes="ovoidBelt">
+						<Lookup table="OvoidAsteroidBelt50"/>
+					</LocationAttributes>
+
+					<Orbitals count="4-6" distance="12-16" angle="equidistant">
+						<Lookup table="OvoidSizeD"/>
 					</Orbitals>
 
-					<ZAdjust zOffset="-30">
+					<Orbitals count="8-12" distance="24-32" angle="equidistant">
+						<Lookup table="OvoidSizeB"/>
+					</Orbitals>
+
+					<ZAdjust zOffset="-20">
 						<Orbitals count="4-6" distance="8-12" angle="equidistant">
-							<Station type="&stOvoidAsteroidSizeC;"/>
+							<Lookup table="OvoidSizeC"/>
 						</Orbitals>
 					</ZAdjust>
 
-					<ZAdjust zOffset="30">
+					<ZAdjust zOffset="20">
 						<Orbitals count="4-6" distance="8-12" angle="equidistant">
-							<Station type="&stOvoidAsteroidSizeC;"/>
+							<Lookup table="OvoidSizeC"/>
 						</Orbitals>
 					</ZAdjust>
 				</Group>
 			</Orbitals>
 
+			<!-- Outer Planetoids -->
+
+			<Orbitals count="3-5" distance="1500" angle="random" eccentricity="10-20" rotation="random" exclusionRadius="100">
+				<Table>
+					<Lookup chance="60" table="IcePlanetoidPrimary"/>
+					<Lookup chance="30" table="RockyPlanetoidPrimary"/>
+					<Lookup chance="10" table="ScoriaPlanetoidPrimary"/>
+				</Table>
+			</Orbitals>
+				
 			<!-- Create ore deposits -->
 			
 			<Code>
@@ -145,17 +163,32 @@
 
 			<Lookup table="HumanSpaceStargates"/>
 
-			<!-- Primary Station (60% chance) -->
+			<!-- Place a Sung Citadel. In the future, this should be the Palace 
+				of the Sung. -->
 
-			<RandomLocation probability="60" locationCriteria="++lifeZone; *planet">
-				<RandomStation stationCriteria="*friendly; *primary"/>
+			<RandomLocation locationCriteria="++lifeZone; *planet" exclusionRadius="150">
+				<Group>
+					<Station type="&stSungCitadel;" name=": Ganden Sung"/>
+
+					<Orbitals count="5" distance="50" angle="equidistant">
+						<Station type="&stSungFortress;"/>
+					</Orbitals>
+				</Group>
 			</RandomLocation>
 
-			<!-- Random Stations -->
+			<!-- Random Sung Stations -->
 
 			<FillLocations
-					percentFull=		"80"
-					stationCriteria=	"!primary; !debris;" 
+					percentFull=		"40"
+					stationCriteria=	"*sungSlavers;" 
+					separateEnemies=	"true"
+					/>
+
+			<!-- Remaining Stations -->
+
+			<FillLocations
+					percentFull=		"60"
+					stationCriteria=	"!primary; !debris; !sungSlavers; !huari;" 
 					percentEnemies=		"75"
 					separateEnemies=	"true"
 					/>

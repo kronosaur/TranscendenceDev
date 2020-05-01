@@ -1841,7 +1841,7 @@
 	<!ENTITY stSungCitadel				"0x00100138">
 	<!ENTITY stSungCitadelInnerWall		"0x00100139">
 	<!ENTITY stSungCitadelOuterWall		"0x0010013A">
-	
+
 	<!-- 0140-014F XENOPHOBES -->
 	
 	<!ENTITY rsXenophobeDefender		"0x00100140">
