@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- JIANG'S STAR SYSTEM TYPE -->
+
+	<SystemType UNID="&ssJiangsStar;"
+				attributes=			"envFire"
+				backgroundID=		"&rsRedGiantSpace;"
+				spaceColor=			"#200f0a"
+				>
+		<SystemGroup>
+
+			<!-- Jiang's Star System -->
+
+			<Code>
+				(trnCreateStarAndZones aOrbit &stRedGiantStar; {
+					metallicComp:	'(60 40 30)
+					organicComp:	'(10 10 20)
+					rockyComp:		'(30 50 40)
+					waterComp:		'( 0  0 10)
+					})
+			</Code>
+				
+			<AddAttribute attributes="redGiantSystem"/>
+
+			<!-- Worlds -->
+
+			<Orbitals angle="incrementing:30-330">
+
+				<!-- Vulcanoid Belt -->
+
+				<Group distance="150">
+					<LocationAttributes attributes="kalasutraVulcanoids">
+						<Lookup	table="ScoriaAsteroidBelt200"/>
+					</LocationAttributes>
+				</Group>
+
+				<!-- Kalasutra -->
+
+				<Group distance="280">
+					<Lookup table="DesertPrimary"/>
+				</Group>
+
+				<!-- Raurava -->
+
+				<Group distance="400">
+					<Lookup table="StandardPlanetoidMorphology">
+						<_PlanetType>
+							<Station type="&stScoriaPlanetoidSizeE;" name="Raurava" showOrbit="true" showMapLabel="true"/>
+						</_PlanetType>
+						<_PlanetLabel>
+							<Label attributes="planet, planetary, planetoid, rauravaOrbit, rauravaRegion, scoria"/>
+						</_PlanetLabel>
+					</Lookup>
+
+					<LocationAttributes attributes="rauravaTrojans, rauravaRegion">
+						<Table>
+							<Lookup chance="60" table="ScoriaAsteroidTrojans50"/>
+							<Lookup chance="30" table="ScoriaAsteroidTrojans100"/>
+							<Lookup chance="10" table="ScoriaAsteroidTrojans25"/>
+						</Table>
+						<Table>
+							<Lookup chance="60" table="ScoriaAsteroidAntiTrojans50"/>
+							<Lookup chance="30" table="ScoriaAsteroidAntiTrojans100"/>
+							<Lookup chance="10" table="ScoriaAsteroidAntiTrojans25"/>
+						</Table>
+					</LocationAttributes>
+				</Group>
+
+				<!-- Sanjiva -->
+
+				<Group distance="540">
+					<LocationAttributes attributes="sanjivaOrbit, sanjivaRegion">
+						<Lookup table="DesertPrimary"/>
+					</LocationAttributes>
+				</Group>
+
+				<!-- Asura -->
+
+				<Group distance="700">
+					<Station type="&stHydrogenGasGiantSizeM;" name="Asura" showOrbit="true"/>
+				
+					<Orbitals count="2d2" distance="2d6+20" angle="equidistant">
+						<Location attributes="asuraOrbit, asuraRegion"/>
+					</Orbitals>
+
+					<LocationAttributes attributes="asuraRegion, asuraTrojans">
+						<Lookup table="AsteroidTrojans100"/>
+						<Lookup table="AsteroidAntiTrojans100"/>
+					</LocationAttributes>
+
+					<!-- Moons of Asura -->
+
+					<Orbitals angle="incrementing:45-315">
+
+						<!-- Asura I -->
+
+						<Group distance="22">
+							<Station type="&stScoriaPlanetoidSizeE;" name="Rahu" showMapLabel="true"/>
+						</Group>
+
+						<!-- Asura II -->
+
+						<Group distance="45">
+							<Station type="&stRockyPlanetoidSizeG;" name="Bali" showMapLabel="true"/>
+						</Group>
+
+						<!-- Asura III -->
+
+						<Group distance="80">
+							<Station type="&stIcePlanetoidSizeG;" name="Vemacitrin" showMapLabel="true"/>
+						</Group>
+					</Orbitals>
+				</Group>
+
+				<!-- Outer Ice Belt -->
+
+				<Group distance="1100">
+					<Orbitals count="4-6" distance="10-14" angle="equidistant">
+						<Station type="&stOvoidAsteroidSizeD;"/>
+					</Orbitals>
+
+					<ZAdjust zOffset="-30">
+						<Orbitals count="4-6" distance="8-12" angle="equidistant">
+							<Station type="&stOvoidAsteroidSizeC;"/>
+						</Orbitals>
+					</ZAdjust>
+
+					<ZAdjust zOffset="30">
+						<Orbitals count="4-6" distance="8-12" angle="equidistant">
+							<Station type="&stOvoidAsteroidSizeC;"/>
+						</Orbitals>
+					</ZAdjust>
+				</Group>
+			</Orbitals>
+
+			<!-- Create ore deposits -->
+			
+			<Code>
+				(trnCreateOreDeposits (random (list 0 1 1 1 1 1 2 2)))
+			</Code>
+
+			<!-- Place the two stargates -->
+
+			<Lookup table="HumanSpaceStargates"/>
+
+			<!-- Primary Station (60% chance) -->
+
+			<RandomLocation probability="60" locationCriteria="++lifeZone; *planet">
+				<RandomStation stationCriteria="*friendly; *primary"/>
+			</RandomLocation>
+
+			<!-- Random Stations -->
+
+			<FillLocations
+					percentFull=		"80"
+					stationCriteria=	"!primary; !debris;" 
+					percentEnemies=		"75"
+					separateEnemies=	"true"
+					/>
+
+			<!-- Random Debris -->
+
+			<RandomLocation probability="50" locationCriteria="++outerSystem; ++asteroids">
+				<Orbitals count="1d6" distance="1d8+6" angle="random">
+					<RandomStation stationCriteria="*debris"/>
+				</Orbitals>
+			</RandomLocation>
+
+			<FillLocations
+					percentFull=		"50"
+					stationCriteria=	"*debris"
+					/>
+
+			<!-- Void Encounters -->
+
+			<Orbitals count="1d12" distance="3d200+240" angle="random" exclusionRadius="100">
+				<Table>
+					<RandomStation chance="80" stationCriteria="*debris"/>
+					<RandomStation chance="18" stationCriteria="*enemy" locationAttribs="void"/>
+					<RandomStation chance="2"  stationCriteria="*friendly; !debris; !primary" locationAttribs="void"/>
+				</Table>
+			</Orbitals>
+		</SystemGroup>
+	</SystemType>
+
+</TranscendenceModule>

@@ -1837,7 +1837,6 @@
 	<!ENTITY stSungFortressWallSE		"0x00100134">
 	<!ENTITY stSungFortressWallSW		"0x00100135">
 	<!ENTITY rsSungFortress				"0x00100136">
-
 	<!ENTITY rsSungCitadel				"0x00100137">
 	<!ENTITY stSungCitadel				"0x00100138">
 	<!ENTITY stSungCitadelInnerWall		"0x00100139">
@@ -2376,6 +2375,10 @@
 	
 	<!ENTITY msSisters01				"0x001007A0">
 
+	<!-- 07D0-07FF JIANG'S STAR -->
+
+	<!ENTITY ssJiangsStar				"0x001007D0">
+
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	
@@ -2618,6 +2621,7 @@
 
 	<!-- Sung Slavers -->
 	
+	<Module filename="JiangsStar.xml"/>
 	<Module filename="SungCitadel.xml"/>
 	<Module filename="SungFortress.xml"/>
 	<Module filename="SungSlaveCamp.xml"/>
