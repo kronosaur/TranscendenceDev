@@ -4309,6 +4309,8 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) 
 			&& IsAngryAt(pPlayerShip))
 		return CG32bitPixel(255, 80, 80);
+	else if (!pPlayerShip && pPlayer && IsEnemy(*pPlayer))
+		return CG32bitPixel(255, 80, 80);
 	else if (GetCategory() == CSpaceObject::catShip)
 		return CG32bitPixel(80, 255, 80);
 	else
@@ -5516,6 +5518,21 @@ bool CSpaceObject::IsDestinyTime (int iCycle, int iOffset)
  
 	{
 	return (((GetUniverse().GetTicks() + GetDestiny()) % iCycle) == iOffset);
+	}
+
+bool CSpaceObject::IsEnemy (const CSovereign &Sovereign) const
+
+//	IsEnemy
+//
+//	Returns TRUE if the given object is our enemy
+
+	{
+	const CSovereign *pOurSovereign = GetSovereign();
+
+	if (pOurSovereign == NULL)
+		return false;
+	else
+		return pOurSovereign->IsEnemy(Sovereign);
 	}
 
 bool CSpaceObject::IsEnemy (const CSpaceObject *pObj) const

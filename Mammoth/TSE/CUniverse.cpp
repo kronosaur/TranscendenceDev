@@ -935,7 +935,7 @@ CString CUniverse::GetPlayerName (void) const
 	return m_pPlayer->GetName();
 	}
 
-CSovereign *CUniverse::GetPlayerSovereign (void) const
+CSovereign *CUniverse::GetPlayerSovereign (void)
 
 //	GetPlayerSovereign
 //
@@ -947,7 +947,22 @@ CSovereign *CUniverse::GetPlayerSovereign (void) const
 	else if (m_pPlayer)
 		return m_pPlayer->GetSovereign();
 	else
-		return NULL;
+		return FindSovereign(g_PlayerSovereignUNID);
+	}
+
+const CSovereign *CUniverse::GetPlayerSovereign (void) const
+
+//	GetPlayerSovereign
+//
+//	Returns the player's sovereign
+
+	{
+	if (m_pPlayerShip)
+		return m_pPlayerShip->GetSovereign();
+	else if (m_pPlayer)
+		return m_pPlayer->GetSovereign();
+	else
+		return FindSovereign(g_PlayerSovereignUNID);
 	}
 
 ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)

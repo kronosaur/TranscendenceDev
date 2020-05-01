@@ -506,7 +506,8 @@ class CUniverse
 		GenomeTypes GetPlayerGenome (void) const;
 		CString GetPlayerName (void) const;
 		CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
-		CSovereign *GetPlayerSovereign (void) const;
+		const CSovereign *GetPlayerSovereign (void) const;
+		CSovereign *GetPlayerSovereign (void);
 		DWORD GetTicks (void) { return (DWORD)m_iTick; }
 
 		void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); m_DynamicImageLibrary.ClearMarks();  }
