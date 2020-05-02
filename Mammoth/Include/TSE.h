@@ -777,6 +777,7 @@ class CSpaceObject
 		bool IsCreated (void) const { return m_fOnCreateCalled; }
 		bool IsDestinyTime (int iCycle, int iOffset = 0);
 		bool IsDestroyed (void) const { return (m_fDestroyed ? true : false); }
+		bool IsEnemy (const CSovereign &Sovereign) const;
 		bool IsEnemy (const CSpaceObject *pObj) const;
 		bool IsEnemy (const CDamageSource &Obj) const;
 		bool IsEnemyInRange (Metric rMaxRange, bool bIncludeStations = false);
