@@ -281,7 +281,7 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 	else if (strEquals(sName, PROPERTY_MASS))
 		return CC.CreateInteger((int)GetMass());
 
-    else if (strEquals(sName, PROPERTY_NAME_PATTERN))
+	else if (strEquals(sName, PROPERTY_NAME_PATTERN))
 		{
 		ICCItem *pResult = CC.CreateSymbolTable();
 		DWORD dwFlags;

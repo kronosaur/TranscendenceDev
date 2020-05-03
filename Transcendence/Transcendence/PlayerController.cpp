@@ -2131,12 +2131,13 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 	else if (Ctx.pObj == NULL 
 			|| Ctx.pObj->IsDestroyed() 
 			|| !m_pShip->IsAngryAt(Ctx.pObj)
+			|| !Ctx.pObj->CanBeAttacked()
 			|| Ctx.Attacker.IsAutomatedWeapon())
 		return;
 
 	//	If we have a hint, then show it to the player.
 
-	else if ((iHint = Ctx.GetHint()) != EDamageHint::none)
+	else if ((iHint = Ctx.GetHint()) != EDamageHint::none && Ctx.Attacker.IsPlayer())
 		{
 		if (m_UIMsgs.ShowMessage(m_Universe, uimsgStationDamageHint, Ctx.pObj))
 			{

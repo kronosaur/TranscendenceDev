@@ -333,12 +333,12 @@ void CMissile::CreateFragments (const CVector &vPos)
 			&& !m_pDesc->IsMIRVFragment())
 		return;
 
-    //  If we triggering inside an object, then we only create half the number
-    //  of fragments (as if it hit on the surface).
+	//  If we triggering inside an object, then we only create half the number
+	//  of fragments (as if it hit on the surface).
 
-    int iFraction = 100;
-    if (m_pHit && m_pHit->PointInObject(m_pHit->GetPos(), vPos))
-        iFraction = 50;
+	int iFraction = 100;
+	if (m_pHit && m_pHit->PointInObject(m_pHit->GetPos(), vPos))
+		iFraction = 50;
 
 	//	If there is an event, then let it handle the fragmentation
 
@@ -1106,8 +1106,8 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		//	Accelerate, if necessary
 
-        if ((iTick % 10) == 0)
-            m_pDesc->ApplyAcceleration(this);
+		if ((iTick % 10) == 0)
+			m_pDesc->ApplyAcceleration(this);
 
 		//	If we can choose new targets, see if we need one now
 

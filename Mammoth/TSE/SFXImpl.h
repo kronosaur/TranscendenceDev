@@ -1126,7 +1126,7 @@ class CSequencerEffect : public TSpaceObjectImpl<OBJID_CSEQUENCEREFFECT>
 
 	protected:
 		//	CSpaceObject virtuals
-		virtual bool CanHit (CSpaceObject *pObj) override { return false; }
+		virtual bool CanHit (CSpaceObject *pObj) const override { return false; }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CSequencerEffect"); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
