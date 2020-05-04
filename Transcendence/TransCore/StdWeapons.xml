@@ -4453,47 +4453,23 @@
 					shape=			"tapered"
 					primaryColor=	"#ff9900"
 					secondaryColor=	"#c93400"
-					length=			"12"
-					width=			"6"
-					xformRotation=	"15"
 					>
+			
 				<Events>
 					<GetParameters>
 						(block (damageHP primaryColor secondaryColor)
 							(setq damageHP (@ gData 'damageHP))
 
 							{
-								length:	(mathScale damageHP	5 64 16 64 50)
-								width: (mathScale damageHP 5 64 6 24 50)
-								intensity: 10
+								length:	(mathScale damageHP 5 64 60 220 50)
+								width: (mathScale damageHP 5 64 6 14 50)
+								intensity: 30
 								}
 							)
 					</GetParameters>
 				</Events>
 			</Ray>
-			
-			<Ray
-					style=			"smooth"
-					shape=			"tapered"
-					primaryColor=	"#ff9900"
-					secondaryColor=	"#c93400"
-					xformRotation=	"-15"
-					>
-				<Events>
-					<GetParameters>
-						(block (damageHP primaryColor secondaryColor)
-							(setq damageHP (@ gData 'damageHP))
 
-							{
-								length:	(mathScale damageHP	5 64 16 64 50)
-								width: (mathScale damageHP 5 64 6 24 50)
-								intensity: 10
-								}
-							)
-					</GetParameters>
-				</Events>
-			</Ray>
-			
 			<Ray
 					style=			"smooth"
 					shape=			"tapered"
@@ -4507,8 +4483,8 @@
 							(setq damageHP (@ gData 'damageHP))
 
 							{
-								length:	(mathScale damageHP 5 64 30 110 50)
-								width: (mathScale damageHP 5 64 12 44 50)
+								length:	(mathScale damageHP 5 64 20 75 50)
+								width: (mathScale damageHP 5 64 12 28 50)
 								intensity: 30
 								}
 							)
