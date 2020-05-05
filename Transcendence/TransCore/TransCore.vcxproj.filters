@@ -951,5 +951,8 @@
     <Xml Include="Ovoids.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
+    <Xml Include="ContainerHabitat.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

@@ -522,6 +522,7 @@
     </Xml>
     <Xml Include="CommonwealthStarCarrier.xml" />
     <Xml Include="CompatibilityLibrary.xml" />
+    <Xml Include="ContainerHabitat.xml" />
     <Xml Include="CoreDiagnostics.xml" />
     <Xml Include="CoreEngineText.xml" />
     <Xml Include="CoreFireEffects.xml">
