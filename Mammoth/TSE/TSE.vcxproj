@@ -450,6 +450,7 @@
     <ClCompile Include="CLabelPainter.cpp" />
     <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
+    <ClCompile Include="CLocationSelectionTable.cpp" />
     <ClCompile Include="CMapLabelArranger.cpp" />
     <ClCompile Include="CMapLabelPainter.cpp" />
     <ClCompile Include="CMissileItem.cpp" />

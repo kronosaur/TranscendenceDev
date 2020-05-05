@@ -1329,8 +1329,8 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 
 	//	Generate a list of all locations that match the given criteria.
 
-	TProbabilityTable<int> Table;
-	if (!pCtx->System.GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, rExclusionRadius, &Table))
+	CLocationSelectionTable Table = pCtx->System.GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, rExclusionRadius);
+	if (!Table)
 		{
 		if (pCtx->GetUniverse().InDebugMode()
 				&& !pDesc->GetAttributeBool(NO_WARNINGS_ATTRIB))
@@ -1363,10 +1363,11 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 		{
 		COrbit NewOrbit;
 
-		//	If we're out of labels then that's OK
-
-		if (Table.IsEmpty())
+		const CLocationDef *pLoc = Table.GetRandom();
+		if (!pLoc)
 			{
+			//	If we're out of labels then that's OK
+
 			if (pCtx->GetUniverse().InDebugMode()
 					&& !pDesc->GetAttributeBool(NO_WARNINGS_ATTRIB))
 				{
@@ -1379,32 +1380,31 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 			return NOERROR;
 			}
 
-		//	Pick a random location from our table
-
-		int iRollPos = Table.RollPos();
-		int iLocID = Table[iRollPos];
-		CLocationDef &Loc = pCtx->System.GetLocation(iLocID);
-
 		//	Create a superset of location attributes
 
-		pCtx->sLocationAttribs = ::AppendModifiers(sSavedLocationAttribs, Loc.GetAttributes());
+		pCtx->sLocationAttribs = ::AppendModifiers(sSavedLocationAttribs, pLoc->GetAttributes());
 
 		//	Create the object
 
 		DWORD dwSavedLastObjID = pCtx->dwLastObjID;
 		pCtx->dwLastObjID = 0;
 
-		if (error = CreateSystemObject(pCtx, pDesc->GetContentElement(i % iChildCount), Loc.GetOrbit()))
+		if (error = CreateSystemObject(pCtx, pDesc->GetContentElement(i % iChildCount), pLoc->GetOrbit()))
 			return error;
 
 		//	If we actually created an object, then remove the label
 
-		pCtx->System.SetLocationObjID(iLocID, pCtx->dwLastObjID);
+		if (pCtx->dwLastObjID)
+			{
+			Table.Fill(*pLoc, pCtx->dwLastObjID);
+
+			//	If we have more locations to choose, remove locations that are too close.
+
+			if (i + 1 < iCount && rExclusionRadius > 0.0)
+				Table.DeleteInRange(*pLoc, rExclusionRadius);
+			}
+
 		pCtx->dwLastObjID = dwSavedLastObjID;
-
-		//	Also remove from our table
-
-		Table.Delete(iRollPos);
 
 #ifdef DEBUG_STATION_EXCLUSION_ZONE
 		::kernelDebugLogPattern("CreateObjectAtRandomLocation: Created %s",
@@ -4178,13 +4178,13 @@ ALERROR CSystem::CreateMarker (CXMLElement *pDesc, const COrbit &oOrbit, CMarker
 	if (!sEntryPoint.IsBlank())
 		NameObject(sEntryPoint, *pMarker);
 
-    //  Show the orbit, if necessary
+	//  Show the orbit, if necessary
 	//	(But not if we duplicate an existing orbit. This is what allows us to show
 	//	orbits on asteroid belt lines.)
 
-    if (pDesc->GetAttributeBool(SHOW_ORBIT_ATTRIB)
+	if (pDesc->GetAttributeBool(SHOW_ORBIT_ATTRIB)
 			&& !FindObjectWithOrbit(oOrbit))
-        pMarker->SetOrbit(oOrbit);
+		pMarker->SetOrbit(oOrbit);
 
 	//	Done
 
@@ -4571,7 +4571,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	CreateCtx.pOrbit = &OrbitDesc;
 	CreateCtx.bCreateSatellites = !pDesc->GetAttributeBool(NO_SATELLITES_ATTRIB);
 	CreateCtx.pExtraData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
-    CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
+	CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
 	CreateCtx.sID = pDesc->GetAttribute(ID_ATTRIB);
 	CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 

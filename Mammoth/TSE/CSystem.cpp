@@ -2085,6 +2085,89 @@ int CSystem::GetEmptyLocationCount (void)
 	return EmptyLocations.GetCount();
 	}
 
+CLocationSelectionTable CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion)
+
+//	GetEmptyLocations
+//
+//	Returns a table of empty locations matching the given criteria.
+
+	{
+	CLocationSelectionTable Result(*this);
+
+	//	Check labels for overlap
+
+	BlockOverlappingLocations();
+
+	//	See if we need to check for distance from center
+
+	CVector vCenter;
+	bool bCheckMin = (Criteria.rMinDist != 0.0);
+	bool bCheckMax = (Criteria.rMaxDist != 0.0);
+	Metric rMinDist2;
+	Metric rMaxDist2;
+	if (bCheckMin || bCheckMax)
+		{
+		vCenter = CenterOrbitDesc.GetObjectPos();
+		rMinDist2 = Criteria.rMinDist * Criteria.rMinDist;
+		rMaxDist2 = Criteria.rMaxDist * Criteria.rMaxDist;
+		}
+	else
+		{
+		rMinDist2 = 0.0;
+		rMaxDist2 = 0.0;
+		}
+
+	//	Loop over all locations and add as appropriate
+
+	for (int i = 0; i < m_Locations.GetCount(); i++)
+		{
+		CLocationDef &Loc = m_Locations.GetLocation(i);
+
+		//	Skip locations that are not empty.
+
+		if (!Loc.IsEmpty())
+			continue;
+
+		//	Compute the probability based on attributes
+
+		int iChance = CalcLocationAffinity(Loc, Criteria.AttribCriteria);
+		if (iChance == 0)
+			continue;
+
+		//	If we need to check distance, do it now
+
+		if (bCheckMin || bCheckMax)
+			{
+			CVector vDist = Loc.GetOrbit().GetObjectPos() - vCenter;
+			Metric rDist2 = vDist.Length2();
+
+			if (bCheckMin && rDist2 < rMinDist2)
+				continue;
+			else if (bCheckMax && rDist2 > rMaxDist2)
+				continue;
+			}
+
+		//	Make sure the area is clear
+
+		if (pStationToPlace)
+			{
+			if (!IsExclusionZoneClear(Loc.GetOrbit().GetObjectPos(), *pStationToPlace))
+				continue;
+			}
+		else if (rMinExclusion > 0.0)
+			{
+			if (!IsExclusionZoneClear(Loc.GetOrbit().GetObjectPos(), rMinExclusion))
+				continue;
+			}
+
+		//	Add to the table
+
+		Result.Insert(i, iChance);
+		}
+
+	return Result;
+	}
+
 bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion, TProbabilityTable<int> *retTable)
 
 //	GetEmptyLocations
