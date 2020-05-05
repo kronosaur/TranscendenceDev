@@ -171,6 +171,14 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 			return *this;
 			}
 
+		TArray<VALUE> &operator= (TArray<VALUE> &&Src)
+			{
+			DeleteAll();
+			m_pBlock = Src.m_pBlock;
+			Src.m_pBlock = NULL;
+			return *this;
+			}
+
 		const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
 		VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
 
@@ -197,11 +205,14 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 
 		void DeleteAll (void)
 			{
-			VALUE *pElement = (VALUE *)GetBytes();
-			for (int i = 0; i < GetCount(); i++, pElement++)
-				pElement->VALUE::~VALUE();
+			if (m_pBlock)
+				{
+				VALUE *pElement = (VALUE *)GetBytes();
+				for (int i = 0; i < GetCount(); i++, pElement++)
+					pElement->VALUE::~VALUE();
 
-			CleanUpBlock();
+				CleanUpBlock();
+				}
 			}
 
 		void DeleteValue (const VALUE &ToDelete)

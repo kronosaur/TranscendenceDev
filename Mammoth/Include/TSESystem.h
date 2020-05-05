@@ -591,6 +591,7 @@ class CSystem
 
 		bool FindRandomLocation (const SLocationCriteria &Criteria, DWORD dwFlags, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, int *retiLocID);
 		int GetEmptyLocationCount (void);
+		CLocationSelectionTable GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion);
 		bool GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion, TProbabilityTable<int> *retTable);
 		bool GetEmptyLocations (TArray<int> *retList) { return m_Locations.GetEmptyLocations(retList); }
 		const CLocationDef &GetLocation (int iLocID) const { return m_Locations.GetLocation(iLocID); }

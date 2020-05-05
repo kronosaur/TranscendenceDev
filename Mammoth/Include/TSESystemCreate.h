@@ -158,6 +158,31 @@ struct SLocationCriteria
 	Metric rMaxDist = 0.0;					//	Maximum distance from source
 	};
 
+class CLocationSelectionTable
+	{
+	public:
+		CLocationSelectionTable (CSystem &System) :
+				m_System(System)
+			{ }
+
+		explicit operator bool () const { return !IsEmpty(); }
+
+		void DeleteAll (void) { m_Table.DeleteAll(); }
+		void DeleteInRange (const CVector &vCenter, Metric rRadius);
+		void DeleteInRange (const CLocationDef &Loc, Metric rRadius) { DeleteInRange(Loc.GetOrbit().GetObjectPos(), rRadius); }
+		void Fill (const CLocationDef &Loc, DWORD dwObjID);
+		int GetCount (void) const { return m_Table.GetCount(); }
+		const CLocationDef *GetRandom (void) const;
+		void Insert (int iIndex, int iProbability) { m_Table.Insert(iIndex, iProbability); }
+		bool IsEmpty (void) const { return m_Table.IsEmpty(); }
+
+	private:
+		int FindIndex (const CLocationDef &LocToFind) const;
+
+		CSystem &m_System;
+		TProbabilityTable<int> m_Table;
+	};
+
 struct SZAdjust
 	{
 	CString sInclination;					//	Override inclination attrib
