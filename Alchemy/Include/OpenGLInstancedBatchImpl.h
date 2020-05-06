@@ -1,0 +1,54 @@
+#pragma once
+#include "OpenGLInstancedBatch.h"
+
+class OpenGLInstancedBatchRenderRequestTexture : public OpenGLInstancedBatchRenderRequest<glm::vec2, glm::vec2, glm::vec2, glm::vec2, float, glm::vec4, float> {
+public:
+	OpenGLInstancedBatchRenderRequestTexture(
+		glm::vec2 texPositions,
+		glm::vec2 canvasQuadSizes,
+		glm::vec2 canvasPositions,
+		glm::vec2 textureQuadSizes,
+		float alphaStrength,
+		glm::vec4 glowColor,
+		float glowNoise) : OpenGLInstancedBatchRenderRequest{ texPositions, canvasQuadSizes, canvasPositions, textureQuadSizes, alphaStrength, glowColor, glowNoise } {};
+	OpenGLVAO& getVAOForInstancedBatchType() override { if (!vao) { vao = std::move(setUpVAO()); } return *(vao.get()); }
+	int getRenderRequestSize() override { return sizeof(*this); }
+private:
+	static std::unique_ptr<OpenGLVAO> vao;
+};
+
+class OpenGLInstancedBatchRenderRequestRay : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, glm::ivec2, glm::ivec3, glm::vec3, glm::vec3, glm::vec3> {
+public:
+	OpenGLInstancedBatchRenderRequestRay(
+		glm::vec4 sizeAndPosition,
+		float rotation,
+		glm::ivec2 shapes,
+		glm::ivec3 styles,
+		glm::vec3 intensitiesAndCycles,
+		glm::vec3 primaryColor,
+		glm::vec3 secondaryColor) : OpenGLInstancedBatchRenderRequest{ sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, primaryColor, secondaryColor } {};
+	OpenGLVAO& getVAOForInstancedBatchType() override { if (!vao) { vao = std::move(setUpVAO()); } return *(vao.get()); }
+	int getRenderRequestSize() override { return sizeof(*this); }
+private:
+	static std::unique_ptr<OpenGLVAO> vao;
+};
+
+class OpenGLInstancedBatchRenderRequestLightning : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, glm::ivec2, float, glm::vec3, glm::vec3> {
+public:
+	OpenGLInstancedBatchRenderRequestLightning(
+		glm::vec4 sizeAndPosition,
+		float rotation,
+		glm::ivec2 shapes,
+		float seed,
+		glm::vec3 primaryColor,
+		glm::vec3 secondaryColor) : OpenGLInstancedBatchRenderRequest{ sizeAndPosition, rotation, shapes, seed, primaryColor, secondaryColor } {};
+	OpenGLVAO& getVAOForInstancedBatchType() override { if (!vao) { vao = std::move(setUpVAO()); } return *(vao.get()); }
+	int getRenderRequestSize() override { return sizeof(*this); }
+private:
+	static std::unique_ptr<OpenGLVAO> vao;
+};
+
+
+typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestLightning, std::tuple<float, glm::vec2>> OpenGLInstancedBatchLightning;
+typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestRay, std::tuple<float, glm::vec2>> OpenGLInstancedBatchRay;
+typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestTexture, std::tuple<OpenGLTexture*, OpenGLTexture*, int>> OpenGLInstancedBatchTexture;

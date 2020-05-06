@@ -1,4 +1,5 @@
 #include "OpenGL.h"
+#include "OpenGLInstancedBatchImpl.h"
 #include "PreComp.h"
 #include <mutex>
 
@@ -6,13 +7,7 @@ const float OpenGLMasterRenderQueue::m_fDepthDelta = 0.000001f; // Up to one mil
 const float OpenGLMasterRenderQueue::m_fDepthStart = 0.999998f; // Up to one million different depth levels
 
 namespace {
-	ContainerTyped<glm::vec2>* getTextureCoordinates(OpenGLInstancedBatchTexture *instancedBatchTexture) {
-		return reinterpret_cast<ContainerTyped<glm::vec2>*>(instancedBatchTexture->getParameterForObject(0));
-	}
 
-	ContainerTyped<glm::vec2>* getTextureSizes(OpenGLInstancedBatchTexture *instancedBatchTexture) {
-		return reinterpret_cast<ContainerTyped<glm::vec2>*>(instancedBatchTexture->getParameterForObject(3));
-	}
 } // namespace 
 
 OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
@@ -29,7 +24,6 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	m_pObjectTextureShader = new OpenGLShader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
 	m_pRayShader = new OpenGLShader("./shaders/ray_vertex_shader.glsl", "./shaders/ray_fragment_shader.glsl");
 	m_pLightningShader = new OpenGLShader("./shaders/lightning_vertex_shader.glsl", "./shaders/lightning_fragment_shader.glsl");
-
 }
 
 OpenGLMasterRenderQueue::~OpenGLMasterRenderQueue(void)
@@ -104,7 +98,6 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	// Note that we don't initialize the textures here, but instead do it when we render - this is because this function can be called by
 	// different threads, but it's a very bad idea to run OpenGL on multiple threads at the same time - so texture initialization (which involves
 	// OpenGL function calls) must all be done on the OpenGL thread
-
 	const std::unique_lock<std::mutex> lock(m_shipRenderQueueAddMutex);
 
 	// Check to see if we have a render queue with that texture already loaded.
@@ -114,6 +107,7 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 		// If we don't have a render queue with that texture loaded, then add one.
 		m_shipRenderQueues[image] = new OpenGLInstancedBatchTexture();
 	}
+
 	// Add this quad to the render queue.
 	glm::vec2 vTexPositions((float)startPixelX / (float)texWidth, (float)startPixelY / (float)texHeight);
 	glm::vec2 vSpriteSheetPositions((float)spriteSheetStartX / (float)texWidth, (float)spriteSheetStartY / (float)texHeight);
@@ -125,7 +119,7 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	// Initialize a glowmap tile request here, and save it in the MRQ. We consume this when we generate textures, to render glowmaps.
 	image->requestGlowmapTile(vSpriteSheetPositions[0], vSpriteSheetPositions[1], float(numFramesPerRow * vTextureQuadSizes[0]), float(numFramesPerCol * vTextureQuadSizes[1]), vTextureQuadSizes[0], vTextureQuadSizes[1]);
 
-	m_shipRenderQueues[image]->addObjToRender(vTexPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, alphaStrength, glowColor, glowNoise);
+	m_shipRenderQueues[image]->addObjToRender(OpenGLInstancedBatchRenderRequestTexture(vTexPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, alphaStrength, glowColor, glowNoise));
 	}
 
 void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
@@ -141,7 +135,7 @@ void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPi
 	glm::vec3 intensitiesAndCycles(float(iIntensity), waveCyclePos, float(opacityAdj) / 255.0f);
 	glm::ivec3 styles(iColorTypes, iOpacityTypes, iTexture);
 
-	m_effectRayRenderQueue.addObjToRender(sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, vPrimaryColor, vSecondaryColor);
+	m_effectRayRenderQueue.addObjToRender(OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, vPrimaryColor, vSecondaryColor));
 	}
 
 void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
@@ -154,7 +148,7 @@ void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int
 		(float)posPixelX / (float)canvasSizeX, (float)posPixelY / (float)canvasSizeY);
 	glm::ivec2 shapes(iWidthAdjType, iReshape);
 
-	m_effectLightningRenderQueue.addObjToRender(sizeAndPosition, rotation, shapes, seed, vPrimaryColor, vSecondaryColor);
+	m_effectLightningRenderQueue.addObjToRender(OpenGLInstancedBatchRenderRequestLightning(sizeAndPosition, rotation, shapes, seed, vPrimaryColor, vSecondaryColor));
 }
 
 void OpenGLMasterRenderQueue::renderAllQueues(void)

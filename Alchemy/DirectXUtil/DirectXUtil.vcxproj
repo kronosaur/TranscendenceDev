@@ -275,6 +275,7 @@
     <ClInclude Include="..\Include\OpenGL.h" />
     <ClInclude Include="..\Include\OpenGLIncludes.h" />
     <ClInclude Include="..\Include\OpenGLInstancedBatch.h" />
+    <ClInclude Include="..\Include\OpenGLInstancedBatchImpl.h" />
     <ClInclude Include="..\Include\OpenGLShader.h" />
     <ClInclude Include="..\Include\OpenGLTexture.h" />
     <ClInclude Include="..\Include\OpenGLVAO.h" />
@@ -580,6 +581,7 @@
     <ClCompile Include="IAnimatron.cpp" />
     <ClCompile Include="PropertyAnimators.cpp" />
     <ClCompile Include="CTextBlock.cpp" />
+    <ClCompile Include="OpenGLInstancedBatchImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graphics\Graphics.vcxproj">

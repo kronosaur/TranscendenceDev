@@ -46,7 +46,7 @@ For special effects that use textures (such as glow), what we can do is use a se
 */
 #include "OpenGLIncludes.h"
 #include "OpenGLTexture.h"
-#include "OpenGLInstancedBatch.h"
+#include "OpenGLInstancedBatchImpl.h"
 #include <vector>
 #include <map>
 #include <algorithm>
@@ -64,9 +64,9 @@ private:
 };
 */
 
-typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, float, glm::vec3, glm::vec3> OpenGLInstancedBatchLightning;
-typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, glm::ivec3, glm::vec3, glm::vec3, glm::vec3> OpenGLInstancedBatchRay;
-typedef OpenGLInstancedBatch<std::tuple<OpenGLTexture*, OpenGLTexture*, int>, glm::vec2, glm::vec2, glm::vec2, glm::vec2, float, glm::vec4, float> OpenGLInstancedBatchTexture;
+//typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, float, glm::vec3, glm::vec3> OpenGLInstancedBatchLightning;
+//typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, glm::ivec3, glm::vec3, glm::vec3, glm::vec3> OpenGLInstancedBatchRay;
+//typedef OpenGLInstancedBatch<std::tuple<OpenGLTexture*, OpenGLTexture*, int>, glm::vec2, glm::vec2, glm::vec2, glm::vec2, float, glm::vec4, float> OpenGLInstancedBatchTexture;
 
 class OpenGLContext {
 public:

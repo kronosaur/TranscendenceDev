@@ -36,147 +36,129 @@ private:
 
 template <typename arg1, typename ... arg2> class OpenGLInstancedBatch;
 
-// First typename is a tuple type that contains all uniforms
-// Second and onwards are shader arguments
-template<typename ... uniformArgs, typename ... shaderArgs> class OpenGLInstancedBatch <std::tuple<uniformArgs...>, shaderArgs...> {
+template <typename ... shaderArgs>
+class OpenGLInstancedBatchRenderRequest {
+	// Abstract class describing a render request for an OpenGLInstancedBatch.
+	// The objective is to move all functions and all information regarding shader arguments here; the OpenGLInstancedBatch shouldn't know anything about how many shader args there are.
+	// We should store depth as a unique shader argument, separate from the rest.
+	// Note, uniforms are not handled here, as "shader arguments" includes all inputs to a shader that are NOT uniforms.
+	// We may want to make this a template class, and typedef specific versions just as we do with OpenGLInstancedBatch.
+	// We can even make this a class template, and have specific render request types inherit from (specializations of) this template,
+	// e.g. OpenGLInstancedBatchTextureRenderRequest inherits from OpenGLInstancedBatchRenderRequest<foo, bar, ...>
+	//template <typename uniformArgs, typename ... shaderArgs>
+	//friend class OpenGLInstancedBatch;
 public:
-	OpenGLInstancedBatch(void) {
-		m_iNumObjectsToRender = 0;
-		m_bIsInitialized = false;
-	};
-	~OpenGLInstancedBatch(void) {
-		clear();
-	};
-	void clear(void) {
-		m_depthsFloat.clear();
-		m_iNumObjectsToRender = 0;
-		for (int i = 0; i < int(m_shaderParameterVectors.size()); i++) {
-			if (m_shaderParameterVectors[i].get()) {
-				m_shaderParameterVectors[i].get()->clear();
-			}
-		}
-	};
-	void InitVAO(void) {
-		if (!m_pVao && m_bIsInitialized) {
-			// First, we need to initialize the quad's vertices. Create a single VAO that will
-			// be the basis for all of our quads rendered using this queue.
-			float fSize = 0.5f;
-			float posZ = 0.9f; // TODO(heliogenesis): Fix this
-
-			std::vector<float> vertices{
-				fSize, fSize, posZ,
-				fSize, -fSize, posZ,
-				-fSize, -fSize, posZ,
-				-fSize, fSize, posZ,
-			};
-
-			std::vector<float> colors{
-				1.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f,
-				0.0f, 0.0f, 1.0f,
-				1.0f, 1.0f, 1.0f
-			};
-
-			std::vector<unsigned int> indices{
-				0, 1, 3,
-				1, 2, 3
-			};
-
-			std::vector<std::vector<float>> vbos{ vertices };
-			std::vector<std::vector<unsigned int>> ebos{ indices };
-
-			m_pVao = std::make_unique<OpenGLVAO>(vbos, ebos);
-			unsigned int iVAOID = m_pVao.get()->getVAO()[0];
-			unsigned int *instancedVBO = m_pVao.get()->getinstancedVBO();
-			glBindVertexArray(iVAOID);
-			glGenBuffers(m_numShaderArgs + 1, &instancedVBO[0]);
-			// We need to initialize a vertex array pointer for each shader argument we want to handle, and one more for depth
-			// Depth must be the LAST argument passed to our shader for this instanced batch class to work
-			for (int argIndex = 0; argIndex < m_numShaderArgs; argIndex++) {
-				glEnableVertexAttribArray(argIndex + 1);
-				glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[argIndex]);
-				setGLVertexAttribPointer((GLuint)argIndex + 1, m_paramElemCounts[argIndex], m_paramGLTypes[argIndex], m_paramSizes[argIndex]);
-				glVertexAttribDivisor(argIndex + 1, 1);
-			}
-			// Depth
-			glEnableVertexAttribArray(m_numShaderArgs + 1);
-			glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[m_numShaderArgs]);
-			setGLVertexAttribPointer((GLuint)m_numShaderArgs + 1, 1, GL_FLOAT, sizeof(float));
-			glVertexAttribDivisor(m_numShaderArgs + 1, 1);
-
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glBindVertexArray(0);
-		}
-	};
-	void DebugRender() {
-		// Print out the elements of each array.
-		for (int i = 0; i < m_numShaderArgs; i++) {
-			std::cout << "On shader argument " << i;
-			for (int j = 0; j < m_iNumObjectsToRender; j++) {
-				//std::cout << static_cast<ContainerTyped<int>*>(m_shaderParameterVectors[i].get())->getValues()[j];
-			}
-		}
-	};
-	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue=true) {
-		InitVAO();
-		if (m_iNumObjectsToRender > 0)
-		{
-			for (int i = 0; i < m_iNumObjectsToRender; i++)
-			{
-				m_depthsFloat.insert(m_depthsFloat.end(), startingDepth);
-				startingDepth -= incDepth;
-			}
-			unsigned int iVAOID = m_pVao.get()->getVAO()[0];
-			unsigned int *instancedVBO = m_pVao.get()->getinstancedVBO();
-			glBindVertexArray(iVAOID);
-			// iteratively work through all shader arguments
-			for (int argIndex = 0; argIndex < m_numShaderArgs; argIndex++) {
-				glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[argIndex]);
-				glBufferData(GL_ARRAY_BUFFER, m_paramSizes[argIndex] * m_iNumObjectsToRender, static_cast<ContainerTyped<int>*>(m_shaderParameterVectors[argIndex].get())->getValues().data(), GL_STATIC_DRAW);
-			}
-			glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[m_numShaderArgs]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(int) * m_iNumObjectsToRender, m_depthsFloat.data(), GL_STATIC_DRAW);
-			shader->bind();
-			//int uniformArgIndex = 0;
-			//set uniforms
-			m_iNumTexturesBound = 0;
-			std::apply
-			(
-				[this, shader](uniformArgs const&... tupleArgs)
-			{
-				//std::make_tuple(setUniformValue(shader, uniformArgIndex, tupleArgs)...);
-				setGLUniformValues(shader, 0, tupleArgs...);
-				//uniformArgIndex++;
-			}, m_uniformValues
-			);
-			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_iNumObjectsToRender);
-			shader->unbind();
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glBindVertexArray(0);
-		}
-		if (clearRenderQueue) {
-			clear();
-		}
-	};
-	void addObjToRender(shaderArgs ... shaderArgsList) {
-		addObjToRenderHelper(0, shaderArgsList...);
-		m_iNumObjectsToRender += 1;
-	};
-	int getNumObjectsToRender(void) { return m_iNumObjectsToRender; }
-	void setUniforms(std::array<std::string, sizeof...(uniformArgs)> uniformNames, uniformArgs... uniformValues) { m_uniformNames = uniformNames; m_uniformValues = std::make_tuple(uniformValues...); }
-	void setCanvasDimensions(std::tuple<int, int> canvasDimensions) { m_canvasDimensions = canvasDimensions; }
-	void setUniformValues(std::tuple<uniformArgs...> uniformValues) { m_uniformValues = m_uniformValues; }
-	void setUniformNames(std::array<std::string, sizeof...(uniformArgs)> uniformNames) { m_uniformNames = uniformNames; }
-	ContainerBase* getParameterForObject(int paramIndex) {
-		// Note that this container must be cast manually to the correct value.
-		return m_shaderParameterVectors[paramIndex].get();
+	OpenGLInstancedBatchRenderRequest(shaderArgs ... shaderArgsList) {
+		setShaderArguments(shaderArgsList...);
 	}
+	~OpenGLInstancedBatchRenderRequest() {};
+	void setShaderArguments(shaderArgs ... shaderArgsList) {
+		m_shaderArgs = std::make_tuple(shaderArgsList...);
+	}
+	std::unique_ptr<OpenGLVAO> setUpVAO() {
+		// Set up the VAO
+		// First, we need to initialize the quad's vertices. Create a single VAO that will
+		// be the basis for all of our quads rendered using this queue.
+		float fSize = 0.5f;
+		float posZ = 0.9f; // TODO(heliogenesis): Fix this
+
+		std::vector<float> vertices{
+			fSize, fSize, posZ,
+			fSize, -fSize, posZ,
+			-fSize, -fSize, posZ,
+			-fSize, fSize, posZ,
+		};
+
+		std::vector<float> colors{
+			1.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 1.0f,
+			1.0f, 1.0f, 1.0f
+		};
+
+		std::vector<unsigned int> indices{
+			0, 1, 3,
+			1, 2, 3
+		};
+
+		std::vector<std::vector<float>> vbos{ vertices };
+		std::vector<std::vector<unsigned int>> ebos{ indices };
+
+		std::unique_ptr<OpenGLVAO> pVao = std::make_unique<OpenGLVAO>(vbos, ebos);
+		unsigned int iVAOID = pVao.get()->getVAO()[0];
+		unsigned int *instancedVBO = pVao.get()->getinstancedVBO();
+		glBindVertexArray(iVAOID);
+		glGenBuffers(1, &instancedVBO[0]);
+		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
+		// We need to initialize a vertex array pointer for each shader argument we want to handle, and one more for depth
+		// Depth must be the LAST argument passed to our shader for this instanced batch class to work
+		auto paramElemCounts = getShaderArgumentElementCounts();
+		auto paramGLTypes = getShaderArgumentTypes();
+		auto paramSizes = getShaderArgumentSizes();
+		auto paramLocations = getShaderArgumentLocations();
+		auto renderRequestSize = getRenderRequestSize();
+		int currArgPos = int(&m_depth) - int(this);
+		std::cout << currArgPos;
+
+		for (int argIndex = 0; argIndex < m_numShaderArgs; argIndex++) {
+			glEnableVertexAttribArray(argIndex + 1);
+			setGLVertexAttribPointer((GLuint)argIndex + 1, paramElemCounts[argIndex], paramGLTypes[argIndex], renderRequestSize, paramLocations[argIndex]);
+			glVertexAttribDivisor(argIndex + 1, 1);
+			currArgPos += paramSizes[argIndex];
+		}
+		// Depth
+		glEnableVertexAttribArray(m_numShaderArgs + 1);
+		setGLVertexAttribPointer((GLuint)m_numShaderArgs + 1, 1, GL_FLOAT, renderRequestSize, int(&m_depth) - int(this));
+		glVertexAttribDivisor(m_numShaderArgs + 1, 1);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		return pVao;
+	};
+	virtual OpenGLVAO& getVAOForInstancedBatchType() = 0;
+	virtual int getRenderRequestSize() = 0;
+	//virtual std::vector<void*> getShaderArgumentPtrs(); // Returns a vector of pointers to the shader arguments, which are all private variables unique to each inheriting class
+	std::vector<GLint> getShaderArgumentSizes() {
+		std::vector<GLint> shaderArgumentSizes;
+		std::apply
+		(
+			[this, &shaderArgumentSizes](shaderArgs const&... tupleArgs)
+		{
+			getShaderArgumentSizesHelper(shaderArgumentSizes, tupleArgs...);
+		}, m_shaderArgs
+		);
+		return shaderArgumentSizes;
+	};
+	std::vector<int> getShaderArgumentTypes() {
+		std::vector<int> shaderArgumentTypes;
+		std::apply
+		(
+			[this, &shaderArgumentTypes](shaderArgs const&... tupleArgs)
+		{
+			getShaderArgumentTypesHelper(shaderArgumentTypes, tupleArgs...);
+		}, m_shaderArgs
+		);
+		return shaderArgumentTypes;
+	};
+	std::vector<GLenum> getShaderArgumentElementCounts() {
+		std::vector<GLenum> shaderArgumentElementCounts;
+		std::apply
+		(
+			[this, &shaderArgumentElementCounts](shaderArgs const&... tupleArgs)
+		{
+			getShaderArgumentElementCountsHelper(shaderArgumentElementCounts, tupleArgs...);
+		}, m_shaderArgs
+		);
+		return shaderArgumentElementCounts;
+	};
+	void set_depth(float depth) {
+		m_depth = depth;
+	}
+	//virtual std::vector<GLenum> getShaderArgumentTypes();
 private:
-	// BEGIN DEBUG ONLY FUNCTIONS
-	//void print_all(shaderArgs const&... shaderArgSet) {
-	//	((os << args), ...);
-	//}
-	// END DEBUG ONLY FUNCTIONS
+	// Unfortunately, C++ doesn't support reflections at this time. So, we have to have a function to return a tuple containing all shader args here.
+	// This is implemented on a per-render request basis.
+	//virtual static const std::size_t m_numShaderArgs;
 
 	// Function to get the gl type of a glm type (e.g. GL_FLOAT, GL_INT, etc)
 	GLenum const getGLType(const int &arg) { return GL_INT; }
@@ -204,6 +186,144 @@ private:
 	int const getGLElemCount(const glm::ivec3 &arg) { return 3; }
 	int const getGLElemCount(const glm::ivec4 &arg) { return 4; }
 
+	std::vector<int> getShaderArgumentLocations() {
+		std::vector<int> shaderArgumentLocations;
+		std::apply
+		(
+			[this, &shaderArgumentLocations](shaderArgs const&... tupleArgs)
+		{
+			getShaderArgumentLocationsHelper(shaderArgumentLocations, tupleArgs...);
+		}, m_shaderArgs
+		);
+		return shaderArgumentLocations;
+	};
+
+	template<typename firstArg, typename ... otherShaderArgs> void getShaderArgumentLocationsHelper(std::vector<int>& outputVector, firstArg &a1, otherShaderArgs& ... rest) {
+		outputVector.push_back(int(&a1) - int(this));
+		getShaderArgumentLocationsHelper(outputVector, rest...);
+	};
+	template<typename firstArg> void getShaderArgumentLocationsHelper(std::vector<int>& outputVector, firstArg &a1) {
+		outputVector.push_back(int(&a1) - int(this));
+	};
+
+	template<typename firstArg, typename ... otherShaderArgs> void getShaderArgumentSizesHelper(std::vector<GLint>& outputVector, firstArg a1, otherShaderArgs ... rest) {
+		outputVector.push_back(sizeof(a1));
+		getShaderArgumentSizesHelper(outputVector, rest...);
+	};
+	template<typename firstArg> void getShaderArgumentSizesHelper(std::vector<GLint>& outputVector, firstArg a1) {
+		outputVector.push_back(sizeof(a1));
+	};
+	template<typename firstArg, typename ... otherShaderArgs> void getShaderArgumentElementCountsHelper(std::vector<GLenum>& outputVector, firstArg a1, otherShaderArgs ... rest) {
+		outputVector.push_back(getGLElemCount(a1));
+		getShaderArgumentElementCountsHelper(outputVector, rest...);
+	};
+	template<typename firstArg> void getShaderArgumentElementCountsHelper(std::vector<GLenum>& outputVector, firstArg a1) {
+		outputVector.push_back(getGLElemCount(a1));
+	};
+	template<typename firstArg, typename ... otherShaderArgs> void getShaderArgumentTypesHelper(std::vector<int>& outputVector, firstArg a1, otherShaderArgs ... rest) {
+		outputVector.push_back(getGLType(a1));
+		getShaderArgumentTypesHelper(outputVector, rest...);
+	};
+	template<typename firstArg> void getShaderArgumentTypesHelper(std::vector<int>& outputVector, firstArg a1) {
+		outputVector.push_back(getGLType(a1));
+	};
+
+	//std::size_t const getNumShaderArgs() { return sizeof...(shaderArgs); }
+
+	void setGLVertexAttribPointer(GLuint argIndex, GLint size, GLenum type, GLsizei stride, int currArgPos) {
+		if (type == GL_FLOAT) {
+			glVertexAttribPointer((GLuint)argIndex, size, type, GL_FALSE, stride, (void*)currArgPos);
+		}
+		else {
+			glVertexAttribIPointer((GLuint)argIndex, size, type, stride, (void*)currArgPos);
+		}
+	}
+	// TODO: We cannot use Tuple because it is not standard order (the ordering of the arguments is not predictable).
+	// We can use a POD struct with a function that returns the contents as a tuple to allow us to use these functions above.
+	// Unlike a true POD struct we will have constructors for this struct.
+	// See https://stackoverflow.com/questions/2543205/define-a-struct-inside-a-class-in-c
+	std::tuple<shaderArgs...> m_shaderArgs;
+	float m_depth = 0.0;
+	static const std::size_t m_numShaderArgs = sizeof...(shaderArgs); // TODO: Move to implementations of this abstract class, also test that this works!!!!
+};
+
+// First typename is a tuple type that contains all uniforms
+// Second and onwards are shader arguments
+template<typename shaderRenderRequest, typename ... uniformArgs> class OpenGLInstancedBatch <shaderRenderRequest, std::tuple<uniformArgs...>> {
+public:
+	OpenGLInstancedBatch(void) {
+	};
+	~OpenGLInstancedBatch(void) {
+		clear();
+	};
+	void clear(void) {
+		m_depthsFloat.clear();
+		m_renderRequests.clear();
+	};
+	/*
+	void DebugRender() {
+		// Print out the elements of each array.
+		for (int i = 0; i < m_numShaderArgs; i++) {
+			std::cout << "On shader argument " << i;
+			for (int j = 0; j < m_iNumObjectsToRender; j++) {
+				//std::cout << static_cast<ContainerTyped<int>*>(m_shaderParameterVectors[i].get())->getValues()[j];
+			}
+		}
+	};
+	*/
+	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue=true) {
+		int iNumObjectsToRender = m_renderRequests.size();
+		if (iNumObjectsToRender > 0)
+		{
+			for (int i = 0; i < iNumObjectsToRender; i++)
+			{
+				m_renderRequests[i].set_depth(startingDepth);
+				startingDepth -= incDepth;
+			}
+			OpenGLVAO &vao = m_renderRequests[0].getVAOForInstancedBatchType();
+			unsigned int iVAOID = vao.getVAO()[0];
+			unsigned int *instancedVBO = vao.getinstancedVBO();
+			glBindVertexArray(iVAOID);
+			glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(shaderRenderRequest) * iNumObjectsToRender, &m_renderRequests.front(), GL_STATIC_DRAW);
+			shader->bind();
+			//int uniformArgIndex = 0;
+			//set uniforms
+			m_iNumTexturesBound = 0;
+			std::apply
+			(
+				[this, shader](uniformArgs const&... tupleArgs)
+			{
+				//std::make_tuple(setUniformValue(shader, uniformArgIndex, tupleArgs)...);
+				setGLUniformValues(shader, 0, tupleArgs...);
+				//uniformArgIndex++;
+			}, m_uniformValues
+			);
+			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, iNumObjectsToRender);
+			shader->unbind();
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindVertexArray(0);
+		}
+		if (clearRenderQueue) {
+			clear();
+		}
+	};
+	//void RenderOneNonInstanced(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue = true) {
+
+	//}
+	void addObjToRender(shaderRenderRequest renderRequest) {
+		m_renderRequests.push_back(renderRequest);
+	};
+	int getNumObjectsToRender(void) { return m_renderRequests.size(); }
+	void setUniforms(std::array<std::string, sizeof...(uniformArgs)> uniformNames, uniformArgs... uniformValues) { m_uniformNames = uniformNames; m_uniformValues = std::make_tuple(uniformValues...); }
+	void setCanvasDimensions(std::tuple<int, int> canvasDimensions) { m_canvasDimensions = canvasDimensions; }
+	void setUniformValues(std::tuple<uniformArgs...> uniformValues) { m_uniformValues = m_uniformValues; }
+	void setUniformNames(std::array<std::string, sizeof...(uniformArgs)> uniformNames) { m_uniformNames = uniformNames; }
+	ContainerBase* getParameterForObject(int paramIndex) {
+		// Note that this container must be cast manually to the correct value.
+		return m_shaderParameterVectors[paramIndex].get();
+	}
+private:
 	// Functions to manage uniforms
 	template<typename firstUniformArg, typename ... otherUniformArgs> void setGLUniformValues(const OpenGLShader* shader, int uniformArgIndex, firstUniformArg firstUniformValue, otherUniformArgs...rest) {
 		setGLUniformValue(shader, uniformArgIndex, firstUniformValue);
@@ -239,48 +359,13 @@ private:
 		}
 	}
 
-	// Helper functions for handling parameter packs
-	template<typename firstArg> void initInstancedBatchArg(int currentShaderArg, firstArg a1) {
-		if (!m_bIsInitialized) {
-			m_shaderParameterVectors[currentShaderArg] = std::make_unique<ContainerTyped<firstArg>>();
-			m_paramSizes[currentShaderArg] = sizeof(a1);
-			m_paramElemCounts[currentShaderArg] = getGLElemCount(a1);
-			m_paramGLTypes[currentShaderArg] = getGLType(a1);
-			if ((currentShaderArg + 1) >= m_numShaderArgs) {
-				// TODO: Move this to something in the Render phase; due to OpenGL threading issues
-				// We should initialize the VAO separately, maybe do it during rendering if we haven't done it already
-				//InitVAO();
-				m_bIsInitialized = true;
-			}
-		}
-	};
-	template<typename firstArg, typename ... otherShaderArgs> void addObjToRenderHelper(int currentShaderArg, firstArg a1, otherShaderArgs ... rest) {
-		// Initialize shader parameter container if needed
-		initInstancedBatchArg(currentShaderArg, a1);
-		ContainerTyped<firstArg>* pShaderParameterVector = static_cast<ContainerTyped<firstArg>*>(m_shaderParameterVectors[currentShaderArg].get());
-		pShaderParameterVector->getValues().push_back(a1);
-		addObjToRenderHelper(currentShaderArg + 1, rest...);
-	};
-	template<typename firstArg> void addObjToRenderHelper(int currentShaderArg, firstArg a1) {
-		initInstancedBatchArg(currentShaderArg, a1);
-		ContainerTyped<firstArg>* pShaderParameterVector = static_cast<ContainerTyped<firstArg>*>(m_shaderParameterVectors[currentShaderArg].get());
-		pShaderParameterVector->getValues().push_back(a1);
-	};
-	template<typename firstArg, typename ... otherShaderArgs> void CreateVAOHelper(firstArg a1, otherShaderArgs ... rest);
-	template<typename firstArg> void CreateVAOHelper(firstArg a1);
-
 	// Internal variables
 	bool m_bIsInitialized;
-	std::unique_ptr<OpenGLVAO> m_pVao = nullptr;
-	std::array<std::unique_ptr<ContainerBase>, sizeof...(shaderArgs)> m_shaderParameterVectors; // TODO: replace with a std::array
-	std::array<GLenum, sizeof...(shaderArgs)> m_paramGLTypes; // the GL type - GL_FLOAT or GL_INT - of each parameter
-	std::array<int, sizeof...(shaderArgs)> m_paramElemCounts; // number of elements in each parameter
-	std::array<int, sizeof...(shaderArgs)> m_paramSizes; // size of each param in *BYTES*
+	std::vector<shaderRenderRequest> m_renderRequests;
 	std::vector<float> m_depthsFloat;
-	int m_iNumObjectsToRender;
 	std::array<std::string, sizeof...(uniformArgs)> m_uniformNames;
 	std::tuple<uniformArgs...> m_uniformValues;
 	std::tuple<int, int> m_canvasDimensions;
 	int m_iNumTexturesBound;
-	static const std::size_t m_numShaderArgs = sizeof...(shaderArgs);
 };
+
