@@ -1428,9 +1428,14 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 
 	//	Create the main display object based on the type parameter.
 
-	m_pDisplay = IDockScreenDisplay::Create(*this, DisplayOptions.sType, retsError);
+	m_pDisplay = IDockScreenDisplay::Create(*this, DisplayOptions.sType, &sError);
 	if (m_pDisplay == NULL)
-		return ERR_FAIL;
+		{
+		m_pDisplay = IDockScreenDisplay::Create(*this, NULL_STR);
+		ReportError(sError);
+
+		//	Continue
+		}
 
 	//	Initialize
 

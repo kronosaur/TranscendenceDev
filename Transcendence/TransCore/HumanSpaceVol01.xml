@@ -2443,6 +2443,7 @@
 	<Module filename="CommonwealthMissionRevenge01.xml"/>
 	<Module filename="CommonwealthRonins.xml"/>
 	<Module filename="CommonwealthShips.xml"/>
+	<Module filename="ContainerHabitat.xml"/>
 
 	<!-- Commonwealth Fleet -->
 
