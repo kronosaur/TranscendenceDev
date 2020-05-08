@@ -1398,10 +1398,19 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 			{
 			Table.Fill(*pLoc, pCtx->dwLastObjID);
 
-			//	If we have more locations to choose, remove locations that are too close.
+			//	If necessary, block any locations within our exclusion radius so that
+			//	any future stations are not placed here.
 
-			if (i + 1 < iCount && rExclusionRadius > 0.0)
-				Table.DeleteInRange(*pLoc, rExclusionRadius);
+			if (rExclusionRadius > 0.0)
+				{
+				pCtx->System.GetLocations().FillInRange(pLoc->GetOrbit().GetObjectPos(), rExclusionRadius);
+
+				//	If we have more locations to choose, remove locations that
+				//	were removed above.
+
+				if (i + 1 < iCount)
+					Table.DeleteBlocked();
+				}
 			}
 
 		pCtx->dwLastObjID = dwSavedLastObjID;

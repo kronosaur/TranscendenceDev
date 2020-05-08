@@ -149,6 +149,7 @@ class CLocationList
 	{
 	public:
 		void FillCloseLocations (void);
+		void FillInRange (const CVector &vPos, Metric rExclusionRadius);
 		void FillOverlappingWith (CSpaceObject *pObj);
 		int GetCount (void) { return m_List.GetCount(); }
 		bool GetEmptyLocations (TArray<int> *retList);
@@ -499,6 +500,7 @@ class CSystem
 		int GetLastUpdated (void) { return m_iLastUpdated; }
 		int GetLevel (void) const;
 		const CLocationList &GetLocations (void) const { return m_Locations; }
+		CLocationList &GetLocations (void) { return m_Locations; }
 		CSpaceObject *GetNamedObject (const CString &sName);
 		const CString &GetName (void) const { return m_sName; }
 		CNavigationPath *GetNavPath (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);
