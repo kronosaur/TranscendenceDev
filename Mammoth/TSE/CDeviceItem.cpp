@@ -65,17 +65,16 @@ CDeviceItem::ECalcTargetTypes CDeviceItem::CalcTargetType (void) const
 		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (dwLinkedFireOptions
 			& CDeviceClass::lkfSelectedVariant ? GetVariantNumber() == CItemCtx(pSource, pSelectedLauncher).GetItemVariantNumber() : true) : false;
 
-		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) 
-			|| (((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) 
-							&& (pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == Weapon.GetUNID()) && bPrimaryWeaponCheckVariant) : false)
-							)
-						&& (Weapon.GetCategory() == itemcatWeapon))
-					|| (!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) 
-							&& (pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == Weapon.GetUNID()) && bSelectedLauncherCheckVariant) : false))
-						&& (Weapon.GetCategory() == itemcatLauncher)))
-				&& (dwLinkedFireOptions & dwLinkedFireSelected) 
-				&& pSource->IsPlayer()
-				))
+		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
+			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
+			(pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == Weapon.GetUNID()) && bPrimaryWeaponCheckVariant) : false))
+				&& ((Weapon.GetCategory() == itemcatWeapon) && !Weapon.UsesLauncherControls())) ||
+				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
+			(pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == Weapon.GetUNID()) && bSelectedLauncherCheckVariant) : false))
+				&& ((Weapon.GetCategory() == itemcatLauncher) || Weapon.UsesLauncherControls()))) &&
+			(dwLinkedFireOptions & dwLinkedFireSelected) &&
+			pSource->IsPlayer()
+			))
 			{
 			return calcNoTarget;
 			}

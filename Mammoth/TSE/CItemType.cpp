@@ -118,6 +118,7 @@
 #define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
 #define PROPERTY_ROLE							CONSTLIT("role")
+#define PROPERTY_USE_SCREEN						CONSTLIT("useScreen")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
 
@@ -583,6 +584,9 @@ ICCItemPtr CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CStrin
 
 	else if (strEquals(sProperty, PROPERTY_ROLE))
 		return (!m_sRole.IsBlank() ? ICCItemPtr(m_sRole) : ICCItemPtr(ICCItem::Nil));
+
+	else if (strEquals(sProperty, PROPERTY_USE_SCREEN))
+		return (m_pUseScreen.GetUNID() ? ICCItemPtr(m_pUseScreen.GetUNID()) : ICCItemPtr::Nil());
 
 	else if (strEquals(sProperty, PROPERTY_VALUE_BONUS_PER_CHARGE))
 		return ICCItemPtr(GetValueBonusPerCharge());

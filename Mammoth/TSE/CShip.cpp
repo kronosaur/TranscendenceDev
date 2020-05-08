@@ -46,6 +46,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_ARMOR_COUNT					CONSTLIT("armorCount")
 #define PROPERTY_AUTO_TARGET					CONSTLIT("autoTarget")
 #define PROPERTY_AVAILABLE_DEVICE_SLOTS			CONSTLIT("availableDeviceSlots")
+#define PROPERTY_AVAILABLE_LAUNCHER_SLOTS		CONSTLIT("availableLauncherSlots")
 #define PROPERTY_AVAILABLE_NON_WEAPON_SLOTS		CONSTLIT("availableNonWeaponSlots")
 #define PROPERTY_AVAILABLE_WEAPON_SLOTS			CONSTLIT("availableWeaponSlots")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
@@ -102,6 +103,9 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define SPEED_FULL								CONSTLIT("full")
 #define SPEED_HALF								CONSTLIT("half")
 #define SPEED_QUARTER							CONSTLIT("quarter")
+
+#define STR_NEXT								CONSTLIT("next")
+#define STR_PREV								CONSTLIT("prev")
 
 const CG32bitPixel RGB_MAP_LABEL =				CG32bitPixel(255, 217, 128);
 const CG32bitPixel RGB_LRS_LABEL =				CG32bitPixel(165, 140, 83);
@@ -367,7 +371,7 @@ void CShip::CalcArmorBonus (void)
 			//	Enhancements from the system.
 
 			if (pSystemEnhancements)
-				pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
+				pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), *pEnhancements, &EnhancementIDs);
 
 			//	Set the enhancement stack
 
@@ -512,23 +516,11 @@ void CShip::CalcDeviceBonus (void)
 		//	Add enhancements from system
 
 		if (pSystemEnhancements)
-			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
+			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), *pEnhancements, &EnhancementIDs);
 
-		//	Deal with class specific stuff
+		//	Add enhancements from overlays
 
-		switch (Device.GetCategory())
-			{
-			case itemcatLauncher:
-			case itemcatWeapon:
-				{
-				//	Overlays add a bonus
-
-				int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
-				if (iBonus != 0)
-					pEnhancements->InsertHPBonus(NULL, iBonus);
-				break;
-				}
-			}
+		m_Overlays.AccumulateEnhancements(*this, DeviceItem, EnhancementIDs, *pEnhancements);
 
 		//	Set the bonuses
 		//	Note that these include any bonuses conferred by item enhancements
@@ -558,14 +550,14 @@ void CShip::CalcDeviceBonus (void)
 	DEBUG_CATCH
 	}
 
-int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const
+int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *retiLauncherSlots) const
 
 //	CalcDeviceSlotsInUse
 //
 //	Returns the number of device slots being used
 
 	{
-	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon);
+	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon, retiLauncherSlots);
 	}
 
 CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot)
@@ -599,12 +591,14 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 	bool bIsWeapon = (iCategory == itemcatWeapon || iCategory == itemcatLauncher);
 	bool bIsMisc = (iCategory == itemcatMiscDevice);
+	bool bIsLauncher = iCategory == itemcatLauncher;
 
 	//	Count the number of slots being used up currently
 
 	int iWeapons;
+	int iLaunchers;
 	int iNonWeapons;
-	int iAll = CalcDeviceSlotsInUse(&iWeapons, &iNonWeapons);
+	int iAll = CalcDeviceSlotsInUse(&iWeapons, &iNonWeapons, &iLaunchers);
 
 	//	See how many slots we would need to free in order to install this 
 	//	device.
@@ -618,13 +612,19 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			&& (Hull.GetMaxNonWeapons() < Hull.GetMaxDevices())
 				? ((iNonWeapons + iSlotsRequired) - Hull.GetMaxNonWeapons())
 				: 0);
+	int iLauncherSlotsNeeded = (bIsLauncher
+			&& (Hull.GetMaxLaunchers() < Hull.GetMaxDevices())
+				? ((iLaunchers + 1) - Hull.GetMaxLaunchers())
+				: 0);
 
 	//	See if if this is a device with an assigned slot (like a shield generator
 	//	or cargo hold, etc.) and the slot is in use, then we need to replace it.
+	//  If it is a launcher, also check to see if the ship only allows for one launcher.
 
 	int iSingletonSlot;
-	if (IsSingletonDevice(iCategory)
+	if ((IsSingletonDevice(iCategory)
 			&& !IsDeviceSlotAvailable(iCategory, &iSingletonSlot))
+			&& (iCategory == itemcatLauncher ? (Hull.GetMaxLaunchers() == 1) : true))
 		{
 		if (retiSlot)
 			*retiSlot = iSingletonSlot;
@@ -633,9 +633,17 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 		int iSlotsFreed = m_Devices.GetDevice(iSingletonSlot).GetClass()->GetSlotsRequired();
 
+		//  Launcher slots work differently, in that a launcher either takes one launcher slot or zero.
+		//  They still require weapon slots as with any other weapon, which is handled independently.
+
+		int iLauncherSlotsFreed = m_Devices.GetDevice(iSingletonSlot).GetCategory() == itemcatLauncher ? 1 : 0;
+
 		if (iCategory == itemcatLauncher
 				&& (iWeaponSlotsNeeded - iSlotsFreed > 0))
 			return insNoWeaponSlotsLeft;
+		else if (iCategory == itemcatLauncher
+				&& (iLauncherSlotsNeeded - iLauncherSlotsFreed > 0))
+			return insNoLauncherSlotsLeft;
 		else if (iCategory != itemcatLauncher
 				&& (iNonWeaponSlotsNeeded - iSlotsFreed > 0))
 			return insNoNonWeaponSlotsLeft;
@@ -647,7 +655,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 		switch (iCategory)
 			{
 			case itemcatLauncher:
-				return insReplaceLauncher;
+				if (Hull.GetMaxLaunchers() == 1)
+					return insReplaceLauncher;
 
 			case itemcatReactor:
 				return insReplaceReactor;
@@ -678,6 +687,7 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 	if (iAllSlotsNeeded <= 0
 			&& iWeaponSlotsNeeded <= 0
 			&& iNonWeaponSlotsNeeded <= 0
+			&& iLauncherSlotsNeeded <= 0
 			&& iSuggestedSlot == -1)
 		return insOK;
 
@@ -692,14 +702,17 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 		if (!pDevice->IsEmpty())
 			{
 			bool bThisIsWeapon = (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher);
+			bool bThisIsLauncher = (pDevice->GetCategory() == itemcatLauncher);
 			bool bThisIsMisc = (pDevice->GetCategory() == itemcatMiscDevice);
 			int iAllSlotsFreed = pDevice->GetClass()->GetSlotsRequired();
 			int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed	: 0);
 			int iNonWeaponSlotsFreed = (!bThisIsWeapon ? iAllSlotsFreed : 0);
+			int iLauncherSlotsFreed = (bThisIsLauncher ? 1 : 0);
 
 			if (iAllSlotsFreed >= iAllSlotsNeeded
 					&& iWeaponSlotsFreed >= iWeaponSlotsNeeded
-					&& iNonWeaponSlotsFreed >= iNonWeaponSlotsNeeded)
+					&& iNonWeaponSlotsFreed >= iNonWeaponSlotsNeeded
+					&& iLauncherSlotsFreed >= iLauncherSlotsNeeded)
 				iSlotToReplace = iSuggestedSlot;
 			}
 		}
@@ -718,44 +731,49 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			{
 			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 
-			bool bThisIsWeapon = (Device.GetCategory() == itemcatWeapon || Device.GetCategory() == itemcatLauncher);
-			bool bThisIsMisc = (Device.GetCategory() == itemcatMiscDevice);
-			int iAllSlotsFreed = Device.GetClass()->GetSlotsRequired();
-			int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed	: 0);
-			int iNonWeaponSlotsFreed = (!bThisIsWeapon ? iAllSlotsFreed : 0);
+			if (!Device.IsEmpty())
+				{
+				bool bThisIsWeapon = (Device.GetCategory() == itemcatWeapon || Device.GetCategory() == itemcatLauncher);
+				bool bThisIsLauncher = (pDevice->GetCategory() == itemcatLauncher);
+				bool bThisIsMisc = (Device.GetCategory() == itemcatMiscDevice);
+				int iAllSlotsFreed = Device.GetClass()->GetSlotsRequired();
+				int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed : 0);
+				int iNonWeaponSlotsFreed = (!bThisIsWeapon ? iAllSlotsFreed : 0);
+				int iLauncherSlotsFreed = (bThisIsLauncher ? 1 : 0);
 
-			int iThisType;
-			if (bThisIsMisc)
-				iThisType = 3;
-			else if (bThisIsWeapon)
-				iThisType = 2;
-			else
-				iThisType = 1;
+				int iThisType;
+				if (bThisIsMisc)
+					iThisType = 3;
+				else if (bThisIsWeapon)
+					iThisType = 2;
+				else
+					iThisType = 1;
 
-			int iThisLevel = Device.GetLevel();
+				int iThisLevel = Device.GetLevel();
 
-			//	We never recommend replacing an identical item
+				//	We never recommend replacing an identical item
 
-			if (Item.IsEqual(DeviceItem, CItem::FLAG_IGNORE_INSTALLED))
-				continue;
+				if (Item.IsEqual(DeviceItem, CItem::FLAG_IGNORE_INSTALLED))
+					continue;
 
-			//	See if uninstalling this device would be enough; if not, then
-			//	don't bother.
-
-			if (iAllSlotsFreed < iAllSlotsNeeded
+				//	See if uninstalling this device would be enough; if not, then
+				//	don't bother.
+				if (iAllSlotsFreed < iAllSlotsNeeded
 					|| iWeaponSlotsFreed < iWeaponSlotsNeeded
-					|| iNonWeaponSlotsFreed < iNonWeaponSlotsNeeded)
-				continue;
+					|| iNonWeaponSlotsFreed < iNonWeaponSlotsNeeded
+					|| iLauncherSlotsFreed < iLauncherSlotsNeeded)
+					continue;
 
-			//	See if removing this device is better than removing another one.
+				//	See if removing this device is better than removing another one.
 
-			if (iSlotToReplace == -1
+				if (iSlotToReplace == -1
 					|| (iThisType > iBestType)
 					|| (iThisType == iBestType && iThisLevel < iBestLevel))
-				{
-				iSlotToReplace = Device.GetDeviceSlot();
-				iBestType = iThisType;
-				iBestLevel = iThisLevel;
+					{
+					iSlotToReplace = Device.GetDeviceSlot();
+					iBestType = iThisType;
+					iBestLevel = iThisLevel;
+					}
 				}
 			}
 		}
@@ -769,6 +787,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 		return insReplaceOther;
 		}
+	else if (iLauncherSlotsNeeded > 0)
+		return insNoLauncherSlotsLeft;
 	else if (iWeaponSlotsNeeded > 0)
 		return insNoWeaponSlotsLeft;
 	else if (iNonWeaponSlotsNeeded > 0)
@@ -1338,90 +1358,34 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 	else
 		Explosion.pDesc = m_pClass->GetExplosionType(this);
 
+	//	If we don't have a valid explosion type, then pick a default.
+	//	(This should never happen, but just in case.)
+
+	if (!Explosion.pDesc)
+		{
+		Explosion.pDesc = GetUniverse().FindWeaponFireDesc(strFromInt(UNID_KINETIC_EXPLOSION_1, false));
+		if (!Explosion.pDesc)
+			return;
+		}
+
 	//	Explosion
 
-	if (Explosion.pDesc)
+	SShotCreateCtx ShotCtx;
+
+	ShotCtx.pDesc = Explosion.pDesc;
+	if (Explosion.iBonus != 0)
 		{
-		SShotCreateCtx ShotCtx;
-
-		ShotCtx.pDesc = Explosion.pDesc;
-		if (Explosion.iBonus != 0)
-			{
-			ShotCtx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			ShotCtx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
-			}
-
-		ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
-		ShotCtx.vPos = GetPos();
-		ShotCtx.vVel = GetVel();
-		ShotCtx.iDirection = GetRotation();
-		ShotCtx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
-
-		GetSystem()->CreateWeaponFire(ShotCtx);
+		ShotCtx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
+		ShotCtx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
 		}
 
-	//	Otherwise, if no defined explosion, we create a default one
+	ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
+	ShotCtx.vPos = GetPos();
+	ShotCtx.vVel = GetVel();
+	ShotCtx.iDirection = GetRotation();
+	ShotCtx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
 
-	else
-		{
-		DWORD dwEffectID;
-
-		//	If this is a large ship, use a large explosion
-
-		if (RectWidth(GetImage().GetImageRect()) > 64)
-			dwEffectID = g_LargeExplosionUNID;
-		else
-			dwEffectID = g_ExplosionUNID;
-
-		CEffectCreator *pEffect = GetUniverse().FindEffectType(dwEffectID);
-		if (pEffect)
-			pEffect->CreateEffect(GetSystem(),
-					Ctx.pWreck,
-					GetPos(),
-					GetVel(),
-					0);
-
-		//	Particles
-
-		CObjectImageArray Image;
-		RECT rcRect;
-		rcRect.left = 0;
-		rcRect.top = 0;
-		rcRect.right = 4;
-		rcRect.bottom = 4;
-		Image.Init(GetUniverse(),
-				g_ShipExplosionParticlesUNID,
-				rcRect,
-				8,
-				3);
-
-		CParticleEffect::CreateExplosion(*GetSystem(),
-				//pWreck,
-				NULL,
-				GetPos(),
-				GetVel(),
-				mathRandom(1, 50),
-				LIGHT_SPEED * 0.25,
-				0,
-				300,
-				Image,
-				NULL);
-
-		//	HACK: No image means paint smoke particles
-
-		CObjectImageArray Dummy;
-		CParticleEffect::CreateExplosion(*GetSystem(),
-				//pWreck,
-				NULL,
-				GetPos(),
-				GetVel(),
-				mathRandom(25, 150),
-				LIGHT_SPEED * 0.1,
-				20 + mathRandom(10, 30),
-				45,
-				Dummy,
-				NULL);
-		}
+	GetSystem()->CreateWeaponFire(ShotCtx);
 
 	//	Always play default sound
 
@@ -2732,13 +2696,16 @@ DeviceNames CShip::GetDeviceNameForCategory (ItemCategories iCategory)
 		}
 	}
 
-CDesignType *CShip::GetDefaultDockScreen (CString *retsName) const
+CDesignType *CShip::GetDefaultDockScreen (CString *retsName, ICCItemPtr *retpData) const
 
 //	GetDockScreen
 //
 //	Returns the screen on dock (NULL_STR if none)
 
 	{
+	if (retpData)
+		*retpData = NULL;
+
 	return m_pClass->GetFirstDockScreen(retsName);
 	}
 
@@ -3078,6 +3045,13 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		int iAll = CalcDeviceSlotsInUse();
 
 		return CC.CreateInteger(m_pClass->GetHullDesc().GetMaxDevices() - iAll);
+		}
+	else if (strEquals(sName, PROPERTY_AVAILABLE_LAUNCHER_SLOTS))
+		{
+		int iLauncher;
+		int iAll = CalcDeviceSlotsInUse(NULL, NULL, &iLauncher);
+
+		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxLaunchers() - iLauncher, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
 		}
 	else if (strEquals(sName, PROPERTY_AVAILABLE_NON_WEAPON_SLOTS))
 		{
@@ -7345,7 +7319,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 		//	If this ship is ordered to guard then it counts as a subordinate
 
 		if (bIsSubordinate && Ctx.pBase && !Ctx.pBase->IsEnemy(this))
-			Ctx.pBase->AddSubordinate(this);
+			Ctx.pBase->AddSubordinate(*this);
 		}
 	}
 
@@ -7494,64 +7468,105 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		if (pValue->IsNil())
 			return true;
 
-		CInstalledDevice *pLauncher = GetNamedDevice(devMissileWeapon);
-		if (pLauncher == NULL)
+		//	"Next" means select the next missile
+
+		else if (strEquals(pValue->GetStringValue(), STR_NEXT))
 			{
-			*retsError = CONSTLIT("No launcher installed.");
-			return false;
-			}
-
-		CCodeChainCtx Ctx(GetUniverse());
-		CItem Item = Ctx.AsItem(pValue);
-		CItemListManipulator ShipItems(GetItemList());
-		if (!ShipItems.SetCursorAtItem(Item))
-			{
-			*retsError = CONSTLIT("Item is not on ship.");
-			return false;
-			}
-
-		//	If the item is the same as the launcher then it means that the
-		//	launcher has no ammo. In this case, we succeed.
-
-		if (Item.GetType() == pLauncher->GetItem()->GetType())
+			ReadyNextMissile(1);
 			return true;
-
-		//	Otherwise we figure out what ammo variant this is.
-
-		int iVariant = pLauncher->GetClass()->GetAmmoVariant(Item.GetType());
-		if (iVariant == -1)
-			{
-			*retsError = CONSTLIT("Item is not compatible with launcher.");
-			return false;
 			}
 
-		SelectWeapon(m_Devices.GetNamedIndex(devMissileWeapon), iVariant);
-		return true;
+		//	"Prev" means select the previous missile
+
+		else if (strEquals(pValue->GetStringValue(), STR_PREV))
+			{
+			ReadyNextMissile(-1);
+			return true;
+			}
+
+		//	Otherwise, we expect an item
+
+		else
+			{
+			CInstalledDevice *pLauncher = GetNamedDevice(devMissileWeapon);
+			if (pLauncher == NULL)
+				{
+				*retsError = CONSTLIT("No launcher installed.");
+				return false;
+				}
+
+			CCodeChainCtx Ctx(GetUniverse());
+			CItem Item = Ctx.AsItem(pValue);
+			CItemListManipulator ShipItems(GetItemList());
+			if (!ShipItems.SetCursorAtItem(Item))
+				{
+				*retsError = CONSTLIT("Item is not on ship.");
+				return false;
+				}
+
+			//	If the item is the same as the launcher then it means that the
+			//	launcher has no ammo. In this case, we succeed.
+
+			if (Item.GetType() == pLauncher->GetItem()->GetType())
+				return true;
+
+			//	Otherwise we figure out what ammo variant this is.
+
+			int iVariant = pLauncher->GetClass()->GetAmmoVariant(Item.GetType());
+			if (iVariant == -1)
+				{
+				*retsError = CONSTLIT("Item is not compatible with launcher.");
+				return false;
+				}
+
+			SelectWeapon(m_Devices.GetNamedIndex(devMissileWeapon), iVariant);
+			return true;
+			}
 		}
 	else if (strEquals(sName, PROPERTY_SELECTED_WEAPON))
 		{
-
 		//	Nil means that we don't want to make a change
 
 		if (pValue->IsNil())
 			return true;
 
-		CCodeChainCtx Ctx(GetUniverse());
-		int iDev;
-		if (!FindInstalledDeviceSlot(Ctx.AsItem(pValue), &iDev))
+		//	"Next" means select the next weapon
+
+		else if (strEquals(pValue->GetStringValue(), STR_NEXT))
 			{
-			*retsError = CONSTLIT("Item is not an installed device on ship.");
-			return false;
+			ReadyNextWeapon(1);
+			return true;
 			}
 
-		if (m_Devices.GetDevice(iDev).GetCategory() != itemcatWeapon)
+		//	"Prev" means select the previous weapon
+
+		else if (strEquals(pValue->GetStringValue(), STR_PREV))
 			{
-			*retsError = CONSTLIT("Item is not a weapon.");
-			return false;
+			ReadyNextWeapon(-1);
+			return true;
 			}
 
-		SelectWeapon(iDev, 0);
-		return true;
+		//	Otherwise, we expect an item value
+
+		else
+			{
+			CCodeChainCtx Ctx(GetUniverse());
+			int iDev;
+			if (!FindInstalledDeviceSlot(Ctx.AsItem(pValue), &iDev))
+				{
+				*retsError = CONSTLIT("Item is not an installed device on ship.");
+				return false;
+				}
+
+			if (m_Devices.GetDevice(iDev).GetCategory() != itemcatWeapon)
+				{
+				*retsError = CONSTLIT("Item is not a weapon.");
+				return false;
+				}
+
+			SelectWeapon(iDev, 0);
+			return true;
+			}
 		}
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
 		{

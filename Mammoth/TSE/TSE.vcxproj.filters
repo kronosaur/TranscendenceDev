@@ -359,6 +359,15 @@
     <ClInclude Include="..\Include\TSEUniverseInlines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSESystemCreate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESystemDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESystemRandomEncounters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1464,6 +1473,24 @@
     </ClCompile>
     <ClCompile Include="ObjectImageProperties.cpp">
       <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationEncounterTable.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CRandomEncounterObjTable.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CRandomEncounterDesc.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CRandomEncounterTypeTable.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemProperties.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CLocationSelectionTable.cpp">
+      <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

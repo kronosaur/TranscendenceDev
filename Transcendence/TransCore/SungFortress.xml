@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- ENCOUNTERS -->
+
+	<!-- Level 5: Sung Fortress -->
+
+	<StationType UNID="&stSungFortress;"
+			name=				"Sung fortress(es)"
+			sovereign=			"&svSung;"
+
+			attributes=			"enemy, envAir, envEarth, envFire, envWater, generic, human, majorStation, populated, sungSlavers"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"328"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"400"
+			multiHull=			"true"
+            regen=              "11"
+
+			explosionType=		"&vtBlastExplosion4;"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+sungSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"---vc uu--- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"100"
+				/>
+
+		<!-- Treasure and Items -->
+
+		<Items>
+			<Lookup					count="1d4"	table="&trStationSupplies;" />
+			<Lookup					count="1"	table="&trConsumables6;"/>
+			<Lookup					count="1"	table="&trMinorItem6;"/>
+			<Table chance="75">
+				<Lookup chance="40" count="1" table="&trConsumables7;"/>
+				<Lookup chance="40" count="1" table="&trMinorItem7;"/>
+				<Lookup chance="20" count="1" table="&trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<!-- Configuration -->
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Table>
+				<Ship chance="30"	count="2d6" class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				<Group chance="60">
+					<Ship			count="1"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+					<Ship			count="2d4"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+				<Ship chance="10"	count="1d4"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+			</Table>
+		</Ships>
+
+		<Reinforcements minShips="3">
+			<Table>
+				<Ship chance="75"	count="1d4"	class="&scWindSlaver;"	orders="patrol" patrolDist="20"/>
+				<Ship chance="25"	count="1d2"	class="&scSteelSlaver;"	orders="patrol" patrolDist="20"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Satellites -->
+
+		<Satellites>
+			<Station type="&stSungFortressWallNW;" xOffset="-99" yOffset="59"	segment="true"/>
+			<Station type="&stSungFortressWallNE;" xOffset="59"  yOffset="99"	segment="true"/>
+			<Station type="&stSungFortressWallSE;" xOffset="99"  yOffset="-59"	segment="true"/>
+			<Station type="&stSungFortressWallSW;" xOffset="-59" yOffset="-99"	segment="true"/>
+		</Satellites>
+
+		<!-- Images and Effects -->
+
+		<Image			imageID="&rsSungFortress;" imageX="384" imageY="0" imageWidth="260" imageHeight="260" viewportRatio="0.02"/>
+
+		<DockingPorts
+				portAngle=		"75"
+				portCount=		"8"
+				portRadius=		"140"
+				/>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Ship   count="1d4"	class="&scWindSlaver;" orders="attack"/>
+		</Encounters>
+	</StationType>
+
+<!-- STATION TYPES -->
+
+	<StationType UNID="&stSungFortressWallNW;"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			inherit=			"&baSungFortressWall;"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			destroyWhenAbandoned="true"
+			noIndependentAttack="true"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	posX="-44" posY="-48" posZ="0"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Images and Effects -->
+
+		<Image			imageID="&rsSungFortress;" imageX="0" imageY="0" imageWidth="152" imageHeight="232"/>
+
+	</StationType>
+
+	<StationType UNID="&stSungFortressWallNE;"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			inherit=			"&baSungFortressWall;"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			destroyWhenAbandoned="true"
+			noIndependentAttack="true"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	posX="20" posY="-56" posZ="0" omnidirectional="true"/>
+		</Devices>
+
+		<!-- Images and Effects -->
+
+		<Image			imageID="&rsSungFortress;" imageX="152" imageY="0" imageWidth="232" imageHeight="152"/>
+
+	</StationType>
+
+	<StationType UNID="&stSungFortressWallSW;"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			inherit=			"&baSungFortressWall;"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			destroyWhenAbandoned="true"
+			noIndependentAttack="true"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	posX="-23" posY="0" posZ="0" omnidirectional="true"/>
+		</Devices>
+
+		<!-- Images and Effects -->
+
+		<Image			imageID="&rsSungFortress;" imageX="0" imageY="232" imageWidth="232" imageHeight="152"/>
+
+	</StationType>
+
+	<StationType UNID="&stSungFortressWallSE;"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			inherit=			"&baSungFortressWall;"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			destroyWhenAbandoned="true"
+			noIndependentAttack="true"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	posX="42" posY="-15" posZ="0" omnidirectional="true"/>
+		</Devices>
+
+		<!-- Images and Effects -->
+
+		<Image			imageID="&rsSungFortress;" imageX="232" imageY="152" imageWidth="152" imageHeight="232"/>
+
+	</StationType>
+
+<!-- BASE TYPES -->
+
+	<StationType unid="&baSungFortressWall;">
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itSungArmor;"
+				hitPoints=		"220"
+				regen=			"0"
+				/>
+
+	</StationType>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsSungFortress;"			bitmap="Resources\SungFortress.jpg"	bitmask="Resources\SungFortressMask.bmp"  loadOnUse="true"/>
+
+</TranscendenceModule>

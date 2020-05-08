@@ -22,6 +22,7 @@ class CGameSession : public IHISession
 			menuGame,						//	Game menu
 			menuInvoke,						//	Invoke power
 			menuSelfDestructConfirm,		//	Confirm self-destruct
+			menuSystemStations,				//	List of stations in system
 			menuUseItem,					//	Choose item to use
 			};
 
@@ -29,6 +30,8 @@ class CGameSession : public IHISession
 
 		void ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Keys iCommand);
 		void ExecuteCommandEnd (CPlayerShipController *pPlayer, CGameKeys::Keys iCommand);
+		void ShowSelfDestructMenu (void);
+		void ShowStationList (bool bShow = true);
 		void ShowSystemMap (bool bShow = true);
 
 		//  Notifications from player ship, etc.
@@ -91,6 +94,22 @@ class CGameSession : public IHISession
 		void ExecuteCommandRefresh (CPlayerShipController &Player);
 		void HideMenu (void);
 		void InitUI (void);
+		bool IsInPickerCompatible (void) const
+			{
+			return (m_CurrentMenu == menuEnableDevice || m_CurrentMenu == menuUseItem);
+			}
+
+		bool IsInMenuCompatible (void) const 
+			{
+			return (m_CurrentMenu == menuComms 
+					|| m_CurrentMenu == menuCommsSquadron 
+					|| m_CurrentMenu == menuCommsTarget 
+					|| m_CurrentMenu == menuGame 
+					|| m_CurrentMenu == menuInvoke 
+					|| m_CurrentMenu == menuSelfDestructConfirm);
+			}
+
+		void PaintMenu (CG32bitImage &Screen);
 		void PaintSRS (CG32bitImage &Screen);
 		void SetMouseAimEnabled (bool bEnabled = true);
 		bool ShowMenu (EMenuTypes iMenu);
@@ -120,6 +139,7 @@ class CGameSession : public IHISession
 
 		bool m_bShowingSystemMap;           //  If TRUE, show map
 		CSystemMapDisplay m_SystemMap;      //  Helps to paint the system map
+		CSystemStationsMenu m_SystemStationsMenu;
 		CGalacticMapSession::SOptions m_GalacticMapSettings;
 
 		//	Other displays

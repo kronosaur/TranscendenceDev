@@ -192,15 +192,10 @@ class CDesignType
 
 		struct SMapDescriptionCtx
 			{
-			SMapDescriptionCtx (void) :
-					bShowDestroyed(false),
-					bEnemy(false),
-					bFriend(false)
-				{ }
-
-			bool bShowDestroyed;
-			bool bEnemy;
-			bool bFriend;
+			bool bShowDestroyed = false;
+			bool bEnemy = false;
+			bool bFriend = false;
+			bool bIsStargate = false;
 			};
 
 		struct SStats
@@ -251,6 +246,7 @@ class CDesignType
 		bool FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		int FireGetGlobalResurrectPotential (void);
 		void FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
+		ICCItemPtr FireObjItemCustomEvent (const CString &sEvent, CSpaceObject *pObj, const CItem &Item, ICCItem *pData = NULL);
 		ALERROR FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError);
 		bool FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event);
 		void FireOnGlobalIntroCommand (const SEventHandlerDesc &Event, const CString &sCommand);
@@ -298,6 +294,7 @@ class CDesignType
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType = NULL) const;
+		EPropertyType GetPropertyType (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		const CDesignPropertyDefinitions *GetPropertyDefs (void) const { return (m_pExtra ? &m_pExtra->PropertyDefs : NULL); }
 		int GetPropertyInteger (const CString &sProperty) const;
 		CString GetPropertyString (const CString &sProperty) const;
@@ -336,11 +333,11 @@ class CDesignType
 		void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
 		void Sweep (void) { OnSweep(); }
 		void TopologyInitialized (void) { OnTopologyInitialized(); }
-		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
-		bool Translate (const CSpaceObject &Obj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
-		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const;
-		bool TranslateText (const CSpaceObject &Obj, const CString &sID, ICCItem *pData, CString *retsText) const;
-		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
+		bool Translate (const CString &sID, const ICCItem *pData, ICCItemPtr &retResult) const;
+		bool Translate (const CSpaceObject &Obj, const CString &sID, const ICCItem *pData, ICCItemPtr &retResult) const;
+		bool TranslateText (const CString &sID, const ICCItem *pData, CString *retsText) const;
+		bool TranslateText (const CSpaceObject &Obj, const CString &sID, const ICCItem *pData, CString *retsText) const;
+		bool TranslateText (const CItem &Item, const CString &sID, const ICCItem *pData, CString *retsText) const;
 
 		static CString GetTypeChar (DesignTypes iType);
 
@@ -874,7 +871,7 @@ class CExtension
 		static ALERROR CreateExtensionStub (const CString &sFilespec, EFolderTypes iFolder, DWORD dwFlags, CExtension **retpExtension, CString *retsError);
 
 		void AccumulateStats (SStats &Stats) const;
-		bool CanExtend (CExtension *pAdventure) const;
+		bool CanExtend (CExtension *pAdventure, DWORD dwAPIVersion) const;
 		bool CanHaveAdventureDesc (void) const;
 		void CleanUp (void);
 		void CreateIcon (int cxWidth, int cyHeight, CG32bitImage **retpIcon) const;
@@ -967,6 +964,7 @@ class CExtension
 		CTimeDate m_ModifiedTime;			//	Timedate of extension file
 		CIntegerIP m_Digest;				//	Digest (for registered files)
 		DWORD m_dwAPIVersion;				//	Version of API that we're using
+		DWORD m_dwObsoleteVersion = 0;		//	If >0, do not offer this extension at this API or higher
 		CExternalEntityTable *m_pEntities;	//	Entities defined by this extension
 		CString m_sDisabledReason;			//	Reason why extension is disabled
 
@@ -1357,6 +1355,8 @@ class CDesignCollection
 		bool IsRegisteredGame (void);
 		void MarkGlobalImages (void);
 		void NotifyTopologyInit (void);
+		bool ParseShipClassUNID (const CString &sType, CShipClass **retpClass = NULL) const;
+		bool ParseUNID (const CString &sType, DWORD *retdwUNID = NULL) const;
 		void ReadDynamicTypes (SUniverseLoadCtx &Ctx);
 		void Reinit (void);
 		void SweepImages (void);
@@ -1399,6 +1399,7 @@ class CDesignCollection
 		CArmorMassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
 		CGlobalEventCache *m_EventsCache[evtCount];
+		TSortMap<CString, TArray<CDesignType *>> m_PropertyCache;
 		CAdventureDesc m_EmptyAdventure;
 
 		//	Dynamic design types

@@ -17,6 +17,12 @@
 
 		<Names>:the CSC Terra</Names>
 
+		<Properties>	
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &rsFleetEmblems; 960 480 320 240)
+			</Definition>
+		</Properties>
+
 		<!-- Configuration -->
 		
 		<Armor
@@ -66,17 +72,15 @@
 		<!-- Dock Screens -->
 
 		<DockScreens>
-			<Main backgroundID="none">
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(resCreateImageDesc &rsFleetEmblems; 960 480 320 240)
-					</Image>
-				</Display>
-
+			<Main>
 				<OnScreenInit>
-					(rpgMissionAssignmentOnScreenInit {
-						missionCriteria: (cat "n +cscTerra; =" (sysGetLevel) ";")
-						})
+					(block ()
+						(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+
+						(rpgMissionAssignmentOnScreenInit {
+							missionCriteria: (cat "n +cscTerra; =" (sysGetLevel) ";")
+							})
+						)
 				</OnScreenInit>
 				
 				<Panes>

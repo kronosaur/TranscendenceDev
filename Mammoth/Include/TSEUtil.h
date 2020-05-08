@@ -443,13 +443,8 @@ class CCurrencyBlock
 
 struct SEventHandlerDesc
 	{
-    SEventHandlerDesc (void) :
-            pExtension(NULL),
-            pCode(NULL)
-        { }
-
-	CExtension *pExtension;
-	ICCItem *pCode;
+	CExtension *pExtension = NULL;
+	ICCItem *pCode = NULL;
 	};
 
 class CEventHandler

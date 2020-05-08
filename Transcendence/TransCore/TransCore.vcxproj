@@ -459,7 +459,7 @@
     <None Include="Stars.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Ovoids.xml">
+    <None Include="OvoidsCompatibility.xml">
       <SubType>Designer</SubType>
     </None>
     <Xml Include="Benedict04.xml">
@@ -522,6 +522,8 @@
     </Xml>
     <Xml Include="CommonwealthStarCarrier.xml" />
     <Xml Include="CompatibilityLibrary.xml" />
+    <Xml Include="ContainerHabitat.xml" />
+    <Xml Include="CoreDiagnostics.xml" />
     <Xml Include="CoreEngineText.xml" />
     <Xml Include="CoreFireEffects.xml">
       <SubType>Designer</SubType>
@@ -558,6 +560,7 @@
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="GroupIAsteroids.xml" />
+    <Xml Include="HaloGems.xml" />
     <Xml Include="Heliotropes.xml" />
     <Xml Include="Heretic00.xml" />
     <Xml Include="Heretic01.xml" />
@@ -590,6 +593,7 @@
     </Xml>
     <Xml Include="HumanTech.xml" />
     <Xml Include="Jenna.xml" />
+    <Xml Include="JiangsStar.xml" />
     <Xml Include="KobolWarlords.xml" />
     <Xml Include="KorolovFreighters.xml" />
     <Xml Include="Kronosaurus.xml" />
@@ -607,9 +611,11 @@
     <Xml Include="Ore.xml" />
     <Xml Include="OreStone.xml" />
     <Xml Include="Outlaws.xml" />
+    <Xml Include="Ovoids.xml" />
     <Xml Include="Penitents.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="Pilgrim.xml" />
     <Xml Include="Pteravores.xml" />
     <Xml Include="QuantumCPU.xml" />
     <Xml Include="RaisuStation.xml" />
@@ -636,13 +642,20 @@
     <Xml Include="Salvagers.xml" />
     <Xml Include="Sanctuary.xml" />
     <Xml Include="Sapiens.xml" />
+    <Xml Include="Scoria.xml" />
     <Xml Include="ShieldEnhancementItems.xml" />
+    <Xml Include="Sisters01.xml" />
+    <Xml Include="SistersDonate.xml" />
+    <Xml Include="SistersPilgrimsAid.xml" />
+    <Xml Include="SistersSanctum.xml" />
     <Xml Include="StdMiningEquipment.xml">
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="Stormhound.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="SungCitadel.xml" />
+    <Xml Include="SungFortress.xml" />
     <Xml Include="SungSlaveCamp.xml" />
     <Xml Include="TeratonResearch.xml" />
     <Xml Include="UndergroundCaverns.xml" />

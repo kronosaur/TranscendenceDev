@@ -166,7 +166,7 @@
 								)
 							)
 							
-						(objSetShowAsDestination gSource Nil 'autoclear)
+						(objSetShowAsDestination gSource 'autoclear)
 						)
 				</Invoke>
 			</Message>
@@ -477,6 +477,7 @@
 			<OrderEscortPlayer>
 				(block ()
 					(objSetData gSource 'behavior 'escorting)
+					(shpCancelOrders gSource)
 					(shpOrder gSource 'follow gPlayerShip)
 					)
 			</OrderEscortPlayer>
@@ -487,6 +488,7 @@
 
 					(objSetData gSource 'rpg.oldSovereign (obj@ gSource 'sovereign))
 					(objSet@ gSource 'sovereign &svPlayerAlly;)
+					(shpCancelOrders gSource)
 
 					(objSetCharacterData gSource 'status 'joined)
 					(objFireEvent gSource "OnWingmanJoinedPlayer")

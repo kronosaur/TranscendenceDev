@@ -14,12 +14,18 @@
 	<MissionType UNID="&msCommonwealthRevenge01;"
 			name=						"Avenge Destroyed Station"
 			attributes=					"commonwealth, triage"
+			inherit=					"&unidCommonText;"
 
 			level=						"1-10"
 
 			destroyOnDecline=			"true"
 			noFailureOnOwnerDestroyed=	"true"
 			>
+		<Properties>
+			<Global id="core.gameStats"></Global>
+
+			<Data id="targetNamePattern"></Data>
+		</Properties>
 
 		<Events>
 			<!-- CREATE MISSION -->
@@ -41,6 +47,7 @@
 					(targetLevel (objGetProperty targetObj 'level))
 					)
 					(msnSetData gSource 'targetID (@ gData 'targetID))
+					(msnSet@ gSource 'targetNamePattern (obj@ targetObj 'namePattern))
 					(msnRegisterForEvents gSource targetObj)
 
 					;	Compute reward
@@ -83,6 +90,35 @@
 			</OnObjDestroyed>
 
 			<!-- MISSION COMPLETE -->
+
+			<OnCompleted>
+				(block (
+					(ownerObj (objGetObjByID (msn@ gSource 'ownerID)))
+					)
+					;	Store achievement (either success or failure). Note that 
+					;	this mission can be run multiple times, so we append
+					;	each instance's result.
+
+					(typSet@ gType 'core.gameStats (append (typ@ gType 'core.gameStats)
+						(list
+							{	
+								sectionID: 'achievementsAndRegrets
+								descID: (switch
+									(= aReason 'success)
+										'achievementDesc.success 
+
+									'achievementDesc.failure
+									)
+
+								stationName: (objGetName ownerObj 'article)
+								targetName: (fmtNoun (msn@ gSource 'targetNamePattern) 1 'article)
+								}
+							)
+						))
+
+					(dbgOutput (typ@ gType 'core.gameStats))
+					)
+			</OnCompleted>
 
 			<OnReward>
 
@@ -229,6 +265,13 @@
 			</Text>
 			<Text id="SuccessMsg">
 				Mission complete!
+			</Text>
+
+			<Text id="achievementDesc.success">
+				Avenged destruction of %stationName%
+			</Text>
+			<Text id="achievementDesc.failure">
+				Failed to avenge destruction of %stationName%
 			</Text>
 		</Language>
 	</MissionType>

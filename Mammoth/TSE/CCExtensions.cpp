@@ -527,6 +527,8 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_SET_PROPERTY			21
 #define FN_DESIGN_INC_PROPERTY			22
 #define FN_DESIGN_GET_IMAGE_DESC		23
+#define FN_DESIGN_HAS_PROPERTY			24
+#define FN_DESIGN_FIRE_OBJ_ITEM_EVENT	25
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -1627,21 +1629,29 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objEnhanceItem",		fnObjSet,		FN_OBJ_ENHANCE_ITEM,
-			"(objEnhanceItem obj item enhancementType|item) -> result\n\n"
+			"(objEnhanceItem obj item enhancementType|item|enhancementDesc) -> result\n\n"
 			
+			"enhancementDesc:\n\n"
+			
+			"   enhancement: enhancement code/desc (required)\n"
+
+			"   lifetime: (in ticks)\n"
+			"   type: item causing enhancement\n"
+			"\n"
 			"result:\n\n"
 			
 			"   resultCode: Result of enhancement\n"
 			"   desc: Explanation of result (optional)\n"
 			"   enhancement: Enhancement applied (optional)\n"
 			"   id: Enhancement ID (optional)\n"
-			"   lifetime: Lifetime in ticks (optional)\n\n"
-			
+			"   lifetime: Lifetime in ticks (optional)\n"
+			"\n"
 			"resultCode:\n\n"
 			
 			"   'ok: Enhancement applied\n"
 			"   'alreadyEnhanced: Already has this exact enhancement\n"
 			"   'damaged: Device was damaged\n"
+			"   'defectOK: Defect applied\n"
 			"   'defectRemoved: Existing defective removed\n"
 			"   'defectReplaced: Existing defective replaced with defective mod\n"
 			"   'degraded: Enhancement kept, but made worse\n"
@@ -2403,8 +2413,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'playerBlacklisted True|Nil\n"
 			"   'playerWingman True|Nil\n"
 			"   'rotation angle\n"
-			"   'selectedMissile type|item\n"
-			"   'selectedWeapon type|item\n"
+			"   'selectedMissile type|item|'next|'prev\n"
+			"   'selectedWeapon type|item|'next|'prev\n"
 			"   'showMapLabel True|Nil\n"
 			"   'sovereign type\n"
 			"\n"
@@ -3394,8 +3404,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typFireObjEvent",					fnDesignGet,		FN_DESIGN_FIRE_OBJ_EVENT,
-			"(typFireObjEvent unid obj event) -> result of event",
-			"iis",	PPFLAG_SIDEEFFECTS,	},
+			"(typFireObjEvent unid obj event [data]) -> result of event",
+			"iis*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"typFireObjItemEvent",				fnDesignGet,		FN_DESIGN_FIRE_OBJ_ITEM_EVENT,
+			"(typFireObjItemEvent unid obj item event [data]) -> result of event",
+			"iivs*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typGetData",				fnDesignGet,		FN_DESIGN_GET_GLOBAL_DATA,
 			"(typGetData unid attrib) -> data",
@@ -3636,6 +3650,21 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"typHasEvent",				fnDesignGet,		FN_DESIGN_HAS_EVENT,
 			"(typHasEvent unid event) -> True/Nil",
+			"is",	0,	},
+
+		{	"typHasProperty",			fnDesignGet,		FN_DESIGN_HAS_PROPERTY,
+			"(typHasProperty unid property) -> propertyType|Nil\n\n"
+			
+			"propertyType:\n\n"
+			
+			"   'constant\n"
+			"   'data\n"
+			"   'definition\n"
+			"   'dynamicData\n"
+			"   'dynamicGlobal\n"
+			"   'global\n"
+			"   'variant\n",
+
 			"is",	0,	},
 
 		{	"typIncData",				fnDesignGet,		FN_DESIGN_INC_GLOBAL_DATA,
@@ -4664,6 +4693,23 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pResult;
 			}
 
+		case FN_DESIGN_FIRE_OBJ_ITEM_EVENT:
+			{
+			CSpaceObject *pObj = CreateObjFromItem(pArgs->GetElement(1));
+			if (pObj == NULL)
+				return pCC->CreateNil();
+
+			CItem Item = pCtx->AsItem(pArgs->GetElement(2));
+			if (Item.IsEmpty())
+				return pCC->CreateNil();
+
+			CString sEvent = pArgs->GetElement(3)->GetStringValue();
+			ICCItem *pData = (pArgs->GetCount() >= 4 ? pArgs->GetElement(4) : NULL);
+
+			ICCItemPtr pResult = pType->FireObjItemCustomEvent(sEvent, pObj, Item, pData);
+			return pResult->Reference();
+			}
+
 		case FN_DESIGN_FIRE_TYPE_EVENT:
 			{
 			CString sEvent = pArgs->GetElement(1)->GetStringValue();
@@ -4719,6 +4765,16 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_DESIGN_HAS_EVENT:
 			return pCC->CreateBool(pType->FindEventHandler(pArgs->GetElement(1)->GetStringValue()));
+
+		case FN_DESIGN_HAS_PROPERTY:
+			{
+			CString sProperty = pArgs->GetElement(1)->GetStringValue();
+			EPropertyType iType = pType->GetPropertyType(*pCtx, sProperty);
+			if (iType == EPropertyType::propNone)
+				return pCC->CreateNil();
+			else
+				return pCC->CreateString(CDesignPropertyDefinitions::GetPropertyTypeID(iType));
+			}
 
 		case FN_DESIGN_INC_GLOBAL_DATA:
 			{
@@ -8307,20 +8363,55 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (!ItemList.SetCursorAtItem(TargetItem))
 				return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
 
-			//	Enhancement item
+			//	If we have a struct, then we assume an enhancement descriptor.
 
-			CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
+			if (pArgs->GetElement(2)->IsSymbolTable())
+				{
+				CItem::SEnhanceItemResult Result;
+				CString sError;
+				if (Result.Enhancement.InitFromDesc(pCtx->GetUniverse(), *pArgs->GetElement(2), &sError) != NOERROR)
+					return pCC->CreateError(sError);
 
-			//	Do it
+				//	If no mod, nothing to do.
 
-			CItem::SEnhanceItemResult Result;
-			CString sError;
-			if (!pObj->EnhanceItem(ItemList, EnhancementItem, Result, &sError))
-				return pCC->CreateError(sError);
+				if (Result.Enhancement.IsEmpty())
+					Result.iResult = eisNoEffect;
 
-			//	Encode result
+				//	Otherwise, enhance
 
-			return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
+				else
+					{
+					DWORD dwID;
+					Result.iResult = pObj->EnhanceItem(ItemList, Result.Enhancement, &dwID);
+					Result.Enhancement.SetID(dwID);
+					}
+
+				//	Encode result
+
+				return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
+				}
+
+			//	Otherwise, we expect an item or item type
+
+			else
+				{
+				//	Enhancement item
+
+				CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
+				if (EnhancementItem.IsEmpty())
+					return pCC->CreateError(CONSTLIT("Invalid enhancement item"), pArgs->GetElement(2));
+
+				//	Do it
+
+				CItem::SEnhanceItemResult Result;
+				CString sError;
+				if (!pObj->EnhanceItem(ItemList, EnhancementItem, Result, &sError))
+					return pCC->CreateError(sError);
+
+				//	Encode result
+
+				return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
+				}
 			}
 
 		case FN_OBJ_FIRE_EVENT:
@@ -8337,6 +8428,9 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			ICCItem *pResult;
 			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
+			if (Item.IsEmpty())
+				return pCC->CreateNil();
+
 			ICCItem *pData = (pArgs->GetCount() >= 4 ? pArgs->GetElement(3) : NULL);
 
 			pObj->FireCustomItemEvent(pArgs->GetElement(2)->GetStringValue(), Item, pData, &pResult);
@@ -9008,7 +9102,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (pSubordinate && !pSubordinate->IsDestroyed())
 				{
-				pObj->AddSubordinate(pSubordinate);
+				pObj->AddSubordinate(*pSubordinate);
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11942,7 +12036,8 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pTable == NULL)
 					return pCC->CreateNil();
 
-				pSystem->CreateRandomEncounter(pTable, NULL, pEncounter->GetSovereign(), pTarget);
+				CRandomEncounterDesc Encounter(*pTable, *pEncounter, pEncounter->GetSovereign());
+				Encounter.Create(*pSystem, pTarget, pGate);
 				return pCC->CreateTrue();
 				}
 
@@ -13250,30 +13345,33 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_GET_PROPERTY:
 			{
-			CTopologyNode *pNode;
-			int iArg = 0;
-
 			//	If we have more than one arg, then the first arg is
 			//	the node ID.
 
-			if (pArgs->GetCount() == 1)
-				{
-				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
-				if (pNode == NULL)
-					return pCC->CreateNil();
-				}
-			else
-				{
+			int iArg = 0;
+			CTopologyNode *pNode = NULL;
+			if (pArgs->GetCount() > 1)
 				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
-				if (pNode == NULL)
-					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
-				}
 
 			CString sProperty = pArgs->GetElement(iArg++)->GetStringValue();
 
-			//	Get the property
+			//	If we have a node, then use that.
 
-			return pNode->GetProperty(sProperty)->Reference();
+			if (pNode)
+				{
+				return pNode->GetProperty(sProperty)->Reference();
+				}
+
+			//	Otherwise, we ask the current system.
+
+			else
+				{
+				CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
+				if (pSystem == NULL)
+					return StdErrorNoSystem(*pCC);
+
+				return pSystem->GetProperty(*pCtx, sProperty)->Reference();
+				}
 			}
 
 		case FN_SYS_GET_POV:

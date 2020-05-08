@@ -84,6 +84,12 @@
 
 		<Names>:the CSC Antarctica</Names>
 
+		<Properties>
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &rsFleetEmblems; 640 0 320 240)
+			</Definition>
+		</Properties>
+
 		<!-- Configuration -->
 		
 		<Armor
@@ -131,17 +137,15 @@
 		<!-- Dock Screens -->
 
 		<DockScreens>
-			<Main backgroundID="none">
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(resCreateImageDesc &rsFleetEmblems; 640 0 320 240)
-					</Image>
-				</Display>
-
+			<Main>
 				<OnScreenInit>
-					(rpgMissionAssignmentOnScreenInit {
-						missionCriteria: (cat "n +antarcticaMission; =" (sysGetLevel) ";")
-						})
+					(block ()
+						(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+
+						(rpgMissionAssignmentOnScreenInit {
+							missionCriteria: (cat "n +antarcticaMission; =" (sysGetLevel) ";")
+							})
+						)
 				</OnScreenInit>
 
 				<Panes>
@@ -186,6 +190,18 @@
 					(rpgDestroyItems aWreckObj)
 					)
 			</OnDestroy>
+			
+			<GetDockScreen>
+				(switch
+					;	If the player does not have a military ID, then
+					;	refuse dock
+					
+					(not (objGetItems gPlayerShip "*+MilitaryID"))
+						{	screen:&dsFleetRefuseDock;	priority:6		overrideOnly:true	}
+					
+					Nil
+					)
+			</GetDockScreen>
 		</Events>
 
 		<Language>
@@ -195,7 +211,12 @@
 
 			<Text id="descWelcome">You are in the docking bay of the CSC Antarctica.</Text>
 			<Text id="descNoMissions">
-				LATER: No missions available.
+				
+				A Fleet officer blocks the door.
+				
+				"I don't know who you think you are, mate, but aren't our crew, so
+				you'd better get off our ship."
+				
 			</Text>
 		</Language>
 	</ShipClass>

@@ -301,7 +301,10 @@
     <ClInclude Include="..\Include\TSESpaceObjectsEnum.h" />
     <ClInclude Include="..\Include\TSEStationType.h" />
     <ClInclude Include="..\Include\TSESystem.h" />
+    <ClInclude Include="..\Include\TSESystemCreate.h" />
+    <ClInclude Include="..\Include\TSESystemDefs.h" />
     <ClInclude Include="..\Include\TSESystemMap.h" />
+    <ClInclude Include="..\Include\TSESystemRandomEncounters.h" />
     <ClInclude Include="..\Include\TSESystemType.h" />
     <ClInclude Include="..\Include\TSETargeting.h" />
     <ClInclude Include="..\Include\TSETopology.h" />
@@ -447,6 +450,7 @@
     <ClCompile Include="CLabelPainter.cpp" />
     <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
+    <ClCompile Include="CLocationSelectionTable.cpp" />
     <ClCompile Include="CMapLabelArranger.cpp" />
     <ClCompile Include="CMapLabelPainter.cpp" />
     <ClCompile Include="CMissileItem.cpp" />
@@ -478,6 +482,9 @@
     <ClCompile Include="CPlayerGameStats.cpp" />
     <ClCompile Include="CPowerConsumption.cpp" />
     <ClCompile Include="CPropertyCompare.cpp" />
+    <ClCompile Include="CRandomEncounterDesc.cpp" />
+    <ClCompile Include="CRandomEncounterObjTable.cpp" />
+    <ClCompile Include="CRandomEncounterTypeTable.cpp" />
     <ClCompile Include="CRandomTopologyCreator.cpp" />
     <ClCompile Include="CRangeTypeEvent.cpp" />
     <ClCompile Include="CRotationDesc.cpp" />
@@ -553,6 +560,7 @@
     <ClCompile Include="CStationCreateOptions.cpp" />
     <ClCompile Include="CStationEncounterCtx.cpp" />
     <ClCompile Include="CStationEncounterDesc.cpp" />
+    <ClCompile Include="CStationEncounterTable.cpp" />
     <ClCompile Include="CStationHull.cpp" />
     <ClCompile Include="CStationHullDesc.cpp" />
     <ClCompile Include="CStationTableCache.cpp" />
@@ -644,6 +652,7 @@
     <ClCompile Include="ShipUpdate.cpp" />
     <ClCompile Include="SpaceObjectItemProperties.cpp" />
     <ClCompile Include="SUpdateCtx.cpp" />
+    <ClCompile Include="SystemProperties.cpp" />
     <ClCompile Include="XMLLoader.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>

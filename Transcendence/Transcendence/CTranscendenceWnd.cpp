@@ -33,8 +33,6 @@ CTranscendenceWnd::CTranscendenceWnd (HWND hWnd, CTranscendenceController *pTC) 
 		m_pCurrentScreen(NULL),
 		m_bAutopilot(false),
 		m_dwIntroShipClass(0),
-		m_CurrentMenu(menuNone),
-		m_CurrentPicker(pickNone),
 		m_pIntroSystem(NULL),
 		m_pStargateEffect(NULL),
 		m_pMenuObj(NULL),
@@ -688,8 +686,6 @@ ALERROR CTranscendenceWnd::StartGame (void)
 	m_bPaused = false;
 	m_bPausedStep = false;
 	m_bAutopilot = false;
-	m_CurrentPicker = pickNone;
-	m_CurrentMenu = menuNone;
 
 	return NOERROR;
 	}

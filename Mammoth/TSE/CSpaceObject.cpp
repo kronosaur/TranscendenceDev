@@ -146,6 +146,7 @@ SInstallItemResultsData INSTALL_ITEM_RESULTS_TABLE[] =
 		{	"noDeviceSlotsLeft",		-1,		2	},
 		{	"noNonWeaponSlotsLeft",		-1,		13	},
 		{	"noWeaponSlotsLeft",		-1,		12	},
+		{	"noLauncherSlotsLeft",		-1,		15	},
 		{	"notInstallable",			-1,		1	},
 		{	"reactorIncompatible",		-1,		11	},
 		{	"reactorOverload",			-1,		-1	},
@@ -526,6 +527,13 @@ ICCItemPtr CSpaceObject::AsCCItem (CCodeChainCtx &Ctx, const CItem::SEnhanceItem
 //	Encode as a structure.
 
 	{
+	//	In debug mode, validate that we've got a proper translation
+
+	if (Ctx.GetUniverse().InDebugMode() && !CLanguage::ValidateTranslation(Result.sDesc))
+		return ICCItemPtr::Error(strPatternSubst(CONSTLIT("Missing translation: %s"), Result.sDesc));
+
+	//	Encode in a struct
+
 	ICCItemPtr pResult(ICCItem::SymbolTable);
 	pResult->SetStringAt(CONSTLIT("resultCode"), CItemEnhancement::EnhanceItemStatusToString(Result.iResult));
 
@@ -541,6 +549,12 @@ ICCItemPtr CSpaceObject::AsCCItem (CCodeChainCtx &Ctx, const CItem::SEnhanceItem
 
 	if (!Result.sDesc.IsBlank())
 		pResult->SetStringAt(CONSTLIT("desc"), Result.sDesc);
+
+	if (!Result.sNextScreen.IsBlank())
+		pResult->SetStringAt(CONSTLIT("nextScreen"), Result.sNextScreen);
+
+	if (Result.bDoNotConsume)
+		pResult->SetBooleanAt(CONSTLIT("doNotConsume"), true);
 
 	return pResult;
 	}
@@ -892,7 +906,8 @@ CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &It
 
 	const CItem &TargetItem = ItemList.GetItemAtCursor();
 
-	//	See if we have an explicit event
+	//	See if we have an explicit event. FireCanEnhanceItem returns FALSE if
+	//	there is an error.
 
 	CItem::SEnhanceItemResult Result;
 	if (!EnhancementItem.FireCanEnhanceItem(*this, TargetItem, Result, retsError))
@@ -903,12 +918,12 @@ CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &It
 
 	//	If <CanEnhanceItem> worked, then we're done.
 
-	if (Result.iResult != eisUnknown)
+	else if (Result.iResult != eisUnknown)
 		return Result;
 
 	//	Get the enhancement to confer
 
-	if (!EnhancementItem.GetEnhancementConferred(*this, TargetItem, Result, retsError))
+	else if (!EnhancementItem.GetEnhancementConferred(*this, TargetItem, CONSTLIT("canEnhance"), Result, retsError))
 		{
 		Result.iResult = eisUnknown;
 		return Result;
@@ -916,7 +931,7 @@ CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &It
 
 	//	If no mod, nothing to do (but Result.sDesc might explain what happened).
 
-	if (Result.Enhancement.IsEmpty())
+	else if (Result.Enhancement.IsEmpty())
 		{
 		Result.iResult = eisNoEffect;
 		return Result;
@@ -1059,18 +1074,18 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
 //	change ships)
 
 	{
-    int i;
+	int i;
 
-    //  Ask our object for a list of data fields that we DO NOT want to copy.
-    //  We only ask our class because it should be the only thing that stores
-    //  per-ship data. All other uses should store data in other places, such
-    //  as overlays, items, etc.
-    //
-    //  [The other exception is non-player ships, which often have event
-    //  handlers that store state, but those are not player ships.]
+	//  Ask our object for a list of data fields that we DO NOT want to copy.
+	//  We only ask our class because it should be the only thing that stores
+	//  per-ship data. All other uses should store data in other places, such
+	//  as overlays, items, etc.
+	//
+	//  [The other exception is non-player ships, which often have event
+	//  handlers that store state, but those are not player ships.]
 
 	SEventHandlerDesc Event;
-    TSortMap<CString, CAttributeDataBlock::STransferDesc> Options;
+	TSortMap<CString, CAttributeDataBlock::STransferDesc> Options;
 	if (FindEventHandler(ON_DATA_TRANSFER_EVENT, &Event))
 		{
 		CCodeChainCtx Ctx(GetUniverse());
@@ -1081,27 +1096,27 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_DATA_TRANSFER_EVENT, pResult);
-        else if (pResult->IsSymbolTable())
-            {
-            for (i = 0; i < pResult->GetCount(); i++)
-                {
-                CAttributeDataBlock::STransferDesc *pDesc = Options.SetAt(pResult->GetKey(i));
-                CString sOption = pResult->GetElement(i)->GetStringValue();
-                if (strEquals(sOption, CONSTLIT("ignore")))
-                    pDesc->iOption = CAttributeDataBlock::transIgnore;
-                else if (strEquals(sOption, CONSTLIT("copy")))
-                    pDesc->iOption = CAttributeDataBlock::transCopy;
-                else
-                	kernelDebugLogPattern("Unknown transfer option: %s", sOption);
-                }
-            }
+		else if (pResult->IsSymbolTable())
+			{
+			for (i = 0; i < pResult->GetCount(); i++)
+				{
+				CAttributeDataBlock::STransferDesc *pDesc = Options.SetAt(pResult->GetKey(i));
+				CString sOption = pResult->GetElement(i)->GetStringValue();
+				if (strEquals(sOption, CONSTLIT("ignore")))
+					pDesc->iOption = CAttributeDataBlock::transIgnore;
+				else if (strEquals(sOption, CONSTLIT("copy")))
+					pDesc->iOption = CAttributeDataBlock::transCopy;
+				else
+					kernelDebugLogPattern("Unknown transfer option: %s", sOption);
+				}
+			}
 
 		Ctx.Discard(pResult);
 		}
 
-    //  Copy
+	//  Copy
 
-    m_Data.Copy(pSource->m_Data, Options);
+	m_Data.Copy(pSource->m_Data, Options);
 	}
 
 void CSpaceObject::CreateDefaultDockingPorts (void)
@@ -1767,7 +1782,7 @@ bool CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, const CItem &Enh
 
 	//	Get the enhancement to confer
 
-	if (!EnhancementItem.GetEnhancementConferred(*this, ItemList.GetItemAtCursor(), retResult, retsError))
+	if (!EnhancementItem.GetEnhancementConferred(*this, ItemList.GetItemAtCursor(), CONSTLIT("onEnhance"), retResult, retsError))
 		return false;
 
 	//	If no mod, nothing to do.
@@ -2173,7 +2188,7 @@ void CSpaceObject::FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject
 		{
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
-        Ctx.SaveAndDefineDataVar(NULL);
+		Ctx.SaveAndDefineDataVar(NULL);
 		Ctx.DefineSpaceObject(CONSTLIT("aShipObj"), pShip);
 
 		ICCItem *pResult = Ctx.Run(Event);
@@ -2972,6 +2987,8 @@ void CSpaceObject::FireOnObjDestroyed (const SDestroyCtx &Ctx)
 //	Fire OnObjDestroyed event
 
 	{
+	DEBUG_TRY
+
 	SEventHandlerDesc Event;
 
 	if (FindEventHandler(ON_OBJ_DESTROYED_EVENT, &Event))
@@ -2991,6 +3008,8 @@ void CSpaceObject::FireOnObjDestroyed (const SDestroyCtx &Ctx)
 			ReportEventError(ON_OBJ_DESTROYED_EVENT, pResult);
 		CCCtx.Discard(pResult);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSpaceObject::FireOnObjDocked (CSpaceObject *pObj, CSpaceObject *pDockTarget)
@@ -3298,7 +3317,7 @@ void CSpaceObject::FireOnPlayerEnteredShip (CSpaceObject *pOldShip)
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
-        Ctx.DefineSpaceObject(CONSTLIT("aOldShip"), pOldShip);
+		Ctx.DefineSpaceObject(CONSTLIT("aOldShip"), pOldShip);
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
@@ -3352,7 +3371,7 @@ void CSpaceObject::FireOnPlayerLeftShip (CSpaceObject *pNewShip)
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
-        Ctx.DefineSpaceObject(CONSTLIT("aNewShip"), pNewShip);
+		Ctx.DefineSpaceObject(CONSTLIT("aNewShip"), pNewShip);
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
@@ -3901,10 +3920,7 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 
 	//	Otherwise, we return the default screen associated with the object
 
-	if (retpData)
-		*retpData = NULL;
-
-	return GetDefaultDockScreen(retsScreen);
+	return GetDefaultDockScreen(retsScreen, retpData);
 	}
 
 ICCItemPtr CSpaceObject::GetGlobalData (const CString &sAttribute) const
@@ -4292,6 +4308,8 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 		return CG32bitPixel(0, 192, 0);
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) 
 			&& IsAngryAt(pPlayerShip))
+		return CG32bitPixel(255, 80, 80);
+	else if (!pPlayerShip && pPlayer && IsEnemy(*pPlayer))
 		return CG32bitPixel(255, 80, 80);
 	else if (GetCategory() == CSpaceObject::catShip)
 		return CG32bitPixel(80, 255, 80);
@@ -4734,10 +4752,6 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 	{
 	DEBUG_TRY_OBJ_LOOP
 
-	//	Get the interaction of this object
-
-	int iInteraction = GetInteraction();
-
 	//	Get the list of objects that intersect the object
 
 	SSpaceObjectGridEnumerator i;
@@ -4783,14 +4797,6 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 		if (!CanHit(pObj)
 				|| !pObj->CanBeHitBy(Damage)
 				|| pObj == this)
-			continue;
-
-		//	Skip if we do not interact with this object.
-
-		int iInteractChance;
-		if (iInteraction < 100
-				&& (iInteractChance = Max(iInteraction, pObj->GetInteraction())) < 100
-				&& mathRandom(1, 100) > iInteractChance)
 			continue;
 
 		//	Step towards this object and see if we hit it. Start by computing 
@@ -4891,10 +4897,6 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 	const Metric OBJ_RADIUS_ADJ = 0.25;
 
-	//	Get the interaction of this object
-
-	int iInteraction = GetInteraction();
-
 	//	Get the list of objects that intersect the object
 
 	SSpaceObjectGridEnumerator i;
@@ -4925,14 +4927,6 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 		if (!CanHit(pObj)
 				|| !pObj->CanBeHitBy(Damage)
 				|| pObj == this)
-			continue;
-
-		//	Skip if we do not interact with this object.
-
-		int iInteractChance;
-		if (iInteraction < 100
-				&& (iInteractChance = Max(iInteraction, pObj->GetInteraction())) < 100
-				&& mathRandom(1, 100) > iInteractChance)
 			continue;
 
 		//	Step towards this object and see if we hit it. Start by computing 
@@ -5171,24 +5165,6 @@ bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItem
 
 	else
 		return false;
-	}
-
-bool CSpaceObject::InteractsWith (int iInteraction) const
-
-//	InteractsWith
-//
-//	Returns TRUE if this object interacts with an object of the given interaciton.
-//	NOTE: This is random, so the same call twice might return different results.
-
-	{
-	if (iInteraction >= 100)
-		return true;
-
-	iInteraction = Max(iInteraction, GetInteraction());
-	if (iInteraction >= 100)
-		return true;
-
-	return (iInteraction > 0 && mathRandom(1, 100) <= iInteraction);
 	}
 
 bool CSpaceObject::IsAngryAt (const CDamageSource &Obj) const
@@ -5500,6 +5476,21 @@ bool CSpaceObject::IsDestinyTime (int iCycle, int iOffset)
  
 	{
 	return (((GetUniverse().GetTicks() + GetDestiny()) % iCycle) == iOffset);
+	}
+
+bool CSpaceObject::IsEnemy (const CSovereign &Sovereign) const
+
+//	IsEnemy
+//
+//	Returns TRUE if the given object is our enemy
+
+	{
+	const CSovereign *pOurSovereign = GetSovereign();
+
+	if (pOurSovereign == NULL)
+		return false;
+	else
+		return pOurSovereign->IsEnemy(Sovereign);
 	}
 
 bool CSpaceObject::IsEnemy (const CSpaceObject *pObj) const
@@ -6011,7 +6002,38 @@ bool CSpaceObject::MatchesCriteriaCategory (CSpaceObjectCriteria::SCtx &Ctx, con
 	return false;
 	}
 
-bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, CWeaponFireDesc *pDesc)
+bool CSpaceObject::MissileCanInteract (const CSpaceObject &Obj, int iInteraction, const CSpaceObject *pTarget)
+
+//	MissileCanInteract
+//
+//	Returns TRUE if we can hit the given object with the given interaction value
+//	and the given target.
+
+	{
+	//	Interaction of -1 means that the object is a ship or station, which can
+	//	always be hit.
+
+	int iObjInteraction = Obj.GetInteraction();
+	if (iObjInteraction < 0)
+		return true;
+
+	//	Combine the interaction values.
+
+	int iResultInteraction;
+	if (pTarget && pTarget == Obj)
+		iResultInteraction = Max(iInteraction, iObjInteraction);
+	else
+		iResultInteraction = Min(iInteraction, iObjInteraction);
+
+	if (iResultInteraction >= 100)
+		return true;
+	else if (iResultInteraction <= 0)
+		return false;
+	else
+		return (mathRandom(1, 100) <= iResultInteraction);
+	}
+
+bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &Source, CWeaponFireDesc *pDesc) const
 
 //	MissileCanHitObj
 //
@@ -6394,7 +6416,8 @@ void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 
 		//	Show bounds
 
-		if (Ctx.bShowBounds)
+		if (Ctx.bShowBounds 
+				|| (GetUniverse().GetDebugOptions().IsShowNavPathsEnabled() && BlocksShips()))
 			{
 			CG32bitPixel rgbColor = GetSymbolColor();
 			int xHalf = mathRound(m_rBoundsX / g_KlicksPerPixel);
@@ -6650,7 +6673,7 @@ void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, in
 	{
 	OnPaintMap(Ctx, Dest, x, y);
 
-	if (IsPlayerDestination() || (IsHighlighted() && !m_sHighlightText.IsBlank()))
+	if (IsPlayerDestination() || (IsHighlighted() && !m_sHighlightText.IsBlank()) || IsSelected())
 		{
 		int iTick = GetUniverse().GetPaintTick();
 		int iRadius = 10;
@@ -7219,7 +7242,7 @@ void CSpaceObject::SetSovereign (CSovereign *pSovereign)
 		pSystem->FlushEnemyObjectCache();
 	}
 
-bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult)
+bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //

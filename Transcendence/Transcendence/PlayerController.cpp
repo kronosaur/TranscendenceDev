@@ -54,6 +54,8 @@ CPlayerShipController::~CPlayerShipController (void)
 //	CPlayerShipController destructor
 
 	{
+	if (m_pDebugNavPath)
+		delete m_pDebugNavPath;
 	}
 
 void CPlayerShipController::AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore)
@@ -284,6 +286,36 @@ CString CPlayerShipController::DebugCrashInfo (void)
 		sResult.Append(strPatternSubst(CONSTLIT("m_TargetList[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(m_TargetList[i])));
 
 	return sResult;
+	}
+
+void CPlayerShipController::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+
+//	DebugPaintInfo
+//
+//	Paint debug information.
+
+	{
+#ifdef DEBUG_ASTAR_PATH
+
+	CSystem *pSystem;
+
+	if (m_Universe.GetDebugOptions().IsShowNavPathsEnabled()
+			&& m_pTarget
+			&& (pSystem = m_Universe.GetCurrentSystem()))
+		{
+		if ((m_Universe.GetTicks() % 10) == 0)
+			{
+			if (m_pDebugNavPath)
+				delete m_pDebugNavPath;
+
+			CNavigationPath::Create(pSystem, m_pShip->GetSovereign(), m_pShip->GetPos(), m_pTarget->GetPos(), &m_pDebugNavPath);
+			}
+
+		if (m_pDebugNavPath)
+			m_pDebugNavPath->DebugPaintInfo(*pSystem, Dest, x, y, Ctx.XForm);
+		}
+
+#endif
 	}
 
 void CPlayerShipController::DisplayTranslate (const CString &sID, ICCItem *pData)
@@ -1131,9 +1163,7 @@ void CPlayerShipController::OnDeviceEnabledDisabled (int iDev, bool bEnable, boo
 	{
 	DEBUG_TRY
 
-	CInstalledDevice *pDevice = m_pShip->GetDevice(iDev);
-	if (pDevice 
-			&& !pDevice->IsEmpty())
+	if (CDeviceItem DeviceItem = m_pShip->GetDeviceItem(iDev))
 		{
 		if (!bEnable)
 			{
@@ -1141,12 +1171,12 @@ void CPlayerShipController::OnDeviceEnabledDisabled (int iDev, bool bEnable, boo
 				DisplayTranslate(CONSTLIT("hintEnableDevices"));
 
 			if (!bSilent)
-				DisplayTranslate(CONSTLIT("msgDeviceDisabled"), CONSTLIT("itemName"), pDevice->GetClass()->GetName());
+				DisplayTranslate(CONSTLIT("msgDeviceDisabled"), CONSTLIT("itemName"), DeviceItem.GetNounPhrase(nounShort | nounNoModifiers));
 			}
 		else
 			{
 			if (!bSilent)
-				DisplayTranslate(CONSTLIT("msgDeviceEnabled"), CONSTLIT("itemName"), pDevice->GetClass()->GetName());
+				DisplayTranslate(CONSTLIT("msgDeviceEnabled"), CONSTLIT("itemName"), DeviceItem.GetNounPhrase(nounShort | nounNoModifiers));
 			}
 		}
 
@@ -1160,14 +1190,18 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 //	Device has failed in some way
 
 	{
+	ASSERT(pDev);
+	CDeviceItem DeviceItem = pDev->GetDeviceItem();
+	CString sItemName = DeviceItem.GetNounPhrase(nounShort | nounNoModifiers);
+
 	switch (iEvent)
 		{
 		case CDeviceClass::statusDisruptionRepaired:
-			DisplayTranslate(CONSTLIT("msgDeviceRepaired"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceRepaired"), CONSTLIT("itemName"), sItemName);
 			break;
 
 		case CDeviceClass::failDamagedByDisruption:
-			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), sItemName);
 			break;
 		case CDeviceClass::failWeaponJammed:
 			DisplayTranslate(CONSTLIT("msgWeaponJammed"));
@@ -1190,19 +1224,19 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 			break;
 
 		case CDeviceClass::failDeviceHitByDamage:
-			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), sItemName);
 			break;
 
 		case CDeviceClass::failDeviceHitByDisruption:
-			DisplayTranslate(CONSTLIT("msgDeviceIonized"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceIonized"), CONSTLIT("itemName"), sItemName);
 			break;
 
 		case CDeviceClass::failDeviceOverheat:
-			DisplayTranslate(CONSTLIT("msgDeviceDamagedOverheat"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceDamagedOverheat"), CONSTLIT("itemName"), sItemName);
 			break;
 
 		case CDeviceClass::failDeviceDisabledByOverheat:
-			DisplayTranslate(CONSTLIT("msgDeviceDisabledOverheat"), CONSTLIT("itemName"), pDev->GetClass()->GetName());
+			DisplayTranslate(CONSTLIT("msgDeviceDisabledOverheat"), CONSTLIT("itemName"), sItemName);
 			break;
 		}
 	}
@@ -2097,12 +2131,13 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 	else if (Ctx.pObj == NULL 
 			|| Ctx.pObj->IsDestroyed() 
 			|| !m_pShip->IsAngryAt(Ctx.pObj)
+			|| !Ctx.pObj->CanBeAttacked()
 			|| Ctx.Attacker.IsAutomatedWeapon())
 		return;
 
 	//	If we have a hint, then show it to the player.
 
-	else if ((iHint = Ctx.GetHint()) != EDamageHint::none)
+	else if ((iHint = Ctx.GetHint()) != EDamageHint::none && Ctx.Attacker.IsPlayer())
 		{
 		if (m_UIMsgs.ShowMessage(m_Universe, uimsgStationDamageHint, Ctx.pObj))
 			{
@@ -2431,7 +2466,7 @@ void CPlayerShipController::ReadyNextMissile (int iDir)
 			int iAmmoLeft;
 			pLauncher->GetSelectedVariantInfo(m_pShip, &sVariant, &iAmmoLeft);
 			if (sVariant.IsBlank())
-				sVariant = pLauncher->GetName();
+				sVariant = pLauncher->GetDeviceItem().GetNounPhrase(nounShort | nounNoModifiers);
 
 			DisplayTranslate(CONSTLIT("msgMissileReady"), CONSTLIT("missile"), sVariant);
 			}
@@ -2493,10 +2528,11 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 
 		//	Feedback to player
 
+		CString sItemName = pNewWeapon->GetDeviceItem().GetNounPhrase(nounShort | nounNoModifiers);
 		if (pNewWeapon->IsEnabled())
-			DisplayTranslate(CONSTLIT("msgWeaponReady"), CONSTLIT("itemName"), pNewWeapon->GetName());
+			DisplayTranslate(CONSTLIT("msgWeaponReady"), CONSTLIT("itemName"), sItemName);
 		else
-			DisplayTranslate(CONSTLIT("msgDisabledWeaponReady"), CONSTLIT("itemName"), pNewWeapon->GetName());
+			DisplayTranslate(CONSTLIT("msgDisabledWeaponReady"), CONSTLIT("itemName"), sItemName);
 		}
 
 	if (m_pSession)

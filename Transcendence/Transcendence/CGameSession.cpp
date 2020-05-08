@@ -6,6 +6,8 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
+#define ID_SYSTEM_STATIONS 						CONSTLIT("idSystemStations")
+
 CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*CreateCtx.pHI),
 		m_Settings(*CreateCtx.pSettings),
         m_Model(*CreateCtx.pModel),
@@ -16,6 +18,7 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
         m_HUD(*CreateCtx.pHI, *CreateCtx.pModel),
         m_bShowingSystemMap(false),
         m_SystemMap(*CreateCtx.pHI, *CreateCtx.pModel, m_HUD),
+		m_SystemStationsMenu(*CreateCtx.pHI, *CreateCtx.pModel, *this),
 		m_Narrative(*CreateCtx.pHI),
 		m_CurrentMenu(menuNone),
 		m_pCurrentComms(NULL),
@@ -92,41 +95,20 @@ void CGameSession::HideMenu (void)
 			return;
 
 		case menuComms:
-			g_pTrans->HideCommsTargetMenu(NULL);
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
-			break;
-
-		case menuCommsSquadron:
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
+			g_pTrans->HideCommsMenu();
+			m_pCurrentComms = NULL;
 			break;
 
 		case menuCommsTarget:
 			g_pTrans->HideCommsTargetMenu(m_pCurrentComms);
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
 			break;
 
 		case menuDebugConsole:
 			m_DebugConsole.SetEnabled(false);
 			break;
 
-		case menuEnableDevice:
-			g_pTrans->m_CurrentPicker = CTranscendenceWnd::pickNone;
-			break;
-
-		case menuGame:
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
-			break;
-
-		case menuInvoke:
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
-			break;
-
-		case menuSelfDestructConfirm:
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
-			break;
-
-		case menuUseItem:
-			g_pTrans->m_CurrentPicker = CTranscendenceWnd::pickNone;
+		case menuSystemStations:
+			m_SystemStationsMenu.Hide();
 			break;
 		}
 
@@ -524,15 +506,13 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuCommsSquadron:
-			g_pTrans->ShowCommsSquadronMenu();
-			if (g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuNone)
+			if (!g_pTrans->ShowCommsSquadronMenu())
 				return false;
 			break;
 
 		case menuCommsTarget:
 			pPlayer->SetUIMessageEnabled(uimsgCommsHint, false);
-			g_pTrans->ShowCommsTargetMenu();
-			if (g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuNone)
+			if (!g_pTrans->ShowCommsTargetMenu())
 				return false;
 			break;
 
@@ -541,8 +521,7 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuEnableDevice:
-			g_pTrans->ShowEnableDisablePicker();
-			if (g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickNone)
+			if (!g_pTrans->ShowEnableDisablePicker())
 				return false;
 			break;
 
@@ -551,14 +530,16 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuInvoke:
-			g_pTrans->ShowInvokeMenu();
-			if (g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuNone)
+			if (!g_pTrans->ShowInvokeMenu())
 				return false;
 			break;
 
+		case menuSystemStations:
+			m_SystemStationsMenu.Show(m_rcScreen, ID_SYSTEM_STATIONS);
+			break;
+
 		case menuUseItem:
-			g_pTrans->ShowUsePicker();
-			if (g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickNone)
+			if (!g_pTrans->ShowUsePicker())
 				return false;
 			break;
 
@@ -575,6 +556,19 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 	m_CurrentMenu = iMenu;
 
 	return true;
+	}
+
+void CGameSession::ShowStationList (bool bShow)
+
+//	ShowStationList
+//
+//	Shows the list of known stations.
+
+	{
+	if (bShow)
+		ShowMenu(menuSystemStations);
+	else
+		HideMenu();
 	}
 
 void CGameSession::ShowSystemMap (bool bShow)

@@ -14,8 +14,8 @@
 				 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			defaultBackgroundID="&rsIocrymMonumentScreen;"
 
+			size=				"223"
 			multiHull=			"true"
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"160"
@@ -26,7 +26,8 @@
 			attributes=			"commonwealth, commonwealthCustoms, friendly, generic, human, majorStation, monument, populated"
 			>
 
-		<Image imageID="&rsIocrymMonument;" imageWidth="160" imageHeight="236"/>
+		<Image imageID="&rsIocrymMonument;" imageWidth="208" imageHeight="260"/>
+		<HeroImage imageID="&rsIocrymMonumentScreen;" imageWidth="950" imageHeight="650"/>
 		
 		<Ships>
 			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
@@ -139,16 +140,10 @@
 			</Main>
 		</DockScreens>
 
-		<DockingPorts>
-			<Port x="-36"	y="80" />
-			<Port x="-87"	y="40" />
-			<Port x="-92"	y="-33" />
-			<Port x="-42"	y="-85" />
-			<Port x="36"	y="80" />
-			<Port x="87"	y="40" />
-			<Port x="92"	y="-33" />
-			<Port x="42"	y="-85" />
-		</DockingPorts>
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"130"
+				/>
 
 		<Events>
 			<GetRumors>
@@ -357,7 +352,7 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsIocrymMonument;"	bitmap="Resources\FirstContactMonument.jpg" bitmask="Resources\FirstContactMonumentMask.bmp"  loadOnUse="true"/>
-	<Image UNID="&rsIocrymMonumentScreen;"		bitmap="Resources\FirstContactMonumentScreen.jpg" loadOnUse="true"/>
+	<Image UNID="&rsIocrymMonument;"			bitmap="Resources\FirstContactMonument.jpg" bitmask="Resources\FirstContactMonumentMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsIocrymMonumentScreen;"		bitmap="Resources\FirstContactMonumentScreen.jpg" bitmask="Resources\FirstContactMonumentScreenMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

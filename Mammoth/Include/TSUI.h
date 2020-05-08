@@ -165,6 +165,8 @@ class IHISession : public IHICommand, public IAniCommand
 		void RegisterPerformanceEvent (IAnimatron *pAni, const CString &sEvent, const CString &sCmd);
 
 		//	Reanimator interface
+		virtual CReanimator &GetReanimator (void) { return m_Reanimator; }
+
 		void AddPerformance (IAnimatron *pAni, const CString &sID) { m_Reanimator.AddPerformance(pAni, sID); }
 		void DeleteElement (const CString &sID) { m_Reanimator.DeleteElement(sID); }
 		IAnimatron *GetElement (const CString &sID) const { return m_Reanimator.GetElement(sID); }
@@ -196,7 +198,6 @@ class IHISession : public IHICommand, public IAniCommand
 			CString sEvent;
 			};
 
-		virtual CReanimator &GetReanimator (void) { return m_Reanimator; }
 		virtual void OnActivate (void) { }
 		virtual void OnAnimate (CG32bitImage &Screen, bool bTopMost) { DefaultOnAnimate(Screen, bTopMost); }
 		virtual void OnChar (char chChar, DWORD dwKeyData) { }

@@ -63,6 +63,7 @@
 
 						{	test:'(objSet@ gTestStation1 'diag.global2a 15)			result:True	}
 						{	test:'(objInc@ gTestStation1 'diag.global2a 7)			result:22	}
+						{	test:'(typ@ (objGetType gTestStation1) 'diag.global2a)	result:22	}
 						{	test:'(obj@ gTestStation1 'diag.global2a)				result:22	}
 						))
 

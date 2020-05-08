@@ -29,8 +29,13 @@
 					gender: 'genderFemale
 					}
 			</Constant>
-
 		</Properties>
+
+		<!-- Encounter Info -->
+		
+		<Encounter
+				exclusionRadius="80"
+				/>
 
 		<ImageVariants>
 			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>

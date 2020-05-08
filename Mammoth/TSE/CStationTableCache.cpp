@@ -5,6 +5,18 @@
 
 #include "PreComp.h"
 
+const CStationEncounterTable *CStationTableCache::AddTable (const CString &sDesc, CStationEncounterTable &Table)
+
+//	AddTable
+//
+//	Moves the table to the cache.
+
+	{
+	auto pDestTable = m_Cache.SetAt(sDesc);
+	(*pDestTable).Set(new CStationEncounterTable(std::move(Table)));
+	return *pDestTable;
+	}
+
 void CStationTableCache::DeleteAll (void)
 
 //	DeleteAll
@@ -12,15 +24,10 @@ void CStationTableCache::DeleteAll (void)
 //	Delete all entries
 
 	{
-	int i;
-
-	for (i = 0; i < m_Cache.GetCount(); i++)
-		delete m_Cache[i];
-
 	m_Cache.DeleteAll();
 	}
 
-bool CStationTableCache::FindTable (const CString &sDesc, TArray<SEntry> **retpTable)
+const CStationEncounterTable *CStationTableCache::FindTable (const CString &sDesc) const
 
 //	GetTable
 //
@@ -31,14 +38,17 @@ bool CStationTableCache::FindTable (const CString &sDesc, TArray<SEntry> **retpT
 //	or write.
 
 	{
-	if (m_Cache.Find(sDesc, retpTable))
+	auto pTable = m_Cache.GetAt(sDesc);
+	if (pTable)
 		{
 		m_iCacheHits++;
-		return true;
+		return *pTable;
 		}
-
-	m_iCacheMisses++;
-	return false;
+	else
+		{
+		m_iCacheMisses++;
+		return NULL;
+		}
 	}
 
 int CStationTableCache::GetCacheHitRate (void) const

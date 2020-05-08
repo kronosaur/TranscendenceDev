@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-    171,  27, 126, 144, 193,  77, 147,  85, 248, 173,
-     84,  45, 111, 120,  29, 161,  54, 114, 224, 192,
+    197, 133, 255,  52, 247,  20, 170, 145,  79, 254,
+    210, 177,  60,  55, 128,  50,  15, 113, 130,  88,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -624,7 +624,7 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 
 		//	If this extension does not extend the adventure, then skip.
 
-		if (pAdventure && !pBest->CanExtend(pAdventure))
+		if (pAdventure && !pBest->CanExtend(pAdventure, API_VERSION))
 			continue;
 
 		//	If we get this far, then we can add this extension
@@ -781,7 +781,7 @@ void CExtensionCollection::ComputeCompatibilityLibraries (CExtension *pAdventure
 
 			//	If this extension does not extend the adventure, then skip.
 
-			if (pAdventure && !ExtensionList[j]->CanExtend(pAdventure))
+			if (pAdventure && !ExtensionList[j]->CanExtend(pAdventure, API_VERSION))
 				continue;
 
 			//	Compute the best extension out of the list.

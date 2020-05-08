@@ -196,6 +196,7 @@ class CWeaponClass : public CDeviceClass
 		virtual bool SelectFirstVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *pDevice, int iDir = 1) override;
 		virtual bool SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel) override;
+		virtual bool UsesLauncherControls (void) const override;
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 
 	protected:
@@ -350,6 +351,7 @@ class CWeaponClass : public CDeviceClass
 		bool m_bBurstTracksTargets;				//  If the weapon is continuous, whether or not to track the target during the entire burst
 
 		bool m_bCharges;						//	TRUE if weapon has charges instead of ammo
+		bool m_bUsesLauncherControls;			//  TRUE if weapon is selected/fired as a launcher instead of as a primary gun
 
 		CounterTypes m_Counter;					//	Counter type
 		int m_iCounterUpdateRate;				//	Ticks to update counter

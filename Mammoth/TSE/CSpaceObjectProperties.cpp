@@ -63,7 +63,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 3> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 4> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -80,8 +80,15 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 		"canBeAttacked",	"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.CanBeAttacked()); },
 		NULL,
+		},
+
+		{
+		"canBeHitByFriends",	"True|Nil",
+		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.CanBeHitByFriends()); },
+		[](CSpaceObject &Obj, const CString &sProperty, const ICCItem &Value, CString *retsError) { Obj.SetNoFriendlyTarget(Value.IsNil()); return true; },
 		}
-	}};
+		
+		}};
 
 ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const
 
@@ -274,7 +281,7 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 	else if (strEquals(sName, PROPERTY_MASS))
 		return CC.CreateInteger((int)GetMass());
 
-    else if (strEquals(sName, PROPERTY_NAME_PATTERN))
+	else if (strEquals(sName, PROPERTY_NAME_PATTERN))
 		{
 		ICCItem *pResult = CC.CreateSymbolTable();
 		DWORD dwFlags;
@@ -438,7 +445,16 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 //	Sets an object property
 
 	{
-	if (strEquals(sName, PROPERTY_IDENTIFIED))
+	CString sError;
+	bool bSuccess;
+	if ((bSuccess = m_BasePropertyTable.SetProperty(*this, sName, *pValue, &sError)) || !sError.IsBlank())
+		{
+		if (!bSuccess && retsError)
+			*retsError = sError;
+
+		return bSuccess;
+		}
+	else if (strEquals(sName, PROPERTY_IDENTIFIED))
 		{
 		SetIdentified(!pValue->IsNil());
 		return true;

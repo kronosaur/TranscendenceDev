@@ -16,6 +16,7 @@
 			attributes=		"commonwealthSettlement"
 
 			level=			"10"
+			priority=		"10"
 
 			maxAppearing=	"1"
 			>

@@ -1,6 +1,7 @@
 //	CGameStats.cpp
 //
 //	CGameStats object
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -43,7 +44,7 @@ void CGameStats::GetEntry (int iIndex, CString *retsStatName, CString *retsStatV
 		}
 	}
 
-CString CGameStats::GetTextValue (CDesignType *pType, const CString &sIDField, const CString &sTextField, ICCItem *pEntry)
+CString CGameStats::GetTextValue (CDesignType &Type, const CString &sIDField, const CString &sTextField, const ICCItem &Entry)
 
 //	GetTextValue
 //
@@ -53,11 +54,14 @@ CString CGameStats::GetTextValue (CDesignType *pType, const CString &sIDField, c
 	{
 	//	If we have an ID to a language entry, use that.
 
-	ICCItem *pItem = pEntry->GetElement(sIDField);
+	const ICCItem *pItem = Entry.GetElement(sIDField);
 	if (pItem && !pItem->IsNil())
 		{
+		//	NOTE: We pass the entry as data so that it can be used by the
+		//	translation code.
+
 		CString sText;
-		if (!pType->TranslateText(pItem->GetStringValue(), NULL, &sText))
+		if (!Type.TranslateText(pItem->GetStringValue(), &Entry, &sText))
 			return NULL_STR;
 
 		return sText;
@@ -65,7 +69,7 @@ CString CGameStats::GetTextValue (CDesignType *pType, const CString &sIDField, c
 
 	//	Otherwise, we expect the text to be in a field.
 
-	pItem = pEntry->GetElement(sTextField);
+	pItem = Entry.GetElement(sTextField);
 	if (pItem == NULL || pItem->IsNil())
 		return NULL_STR;
 	else if (pItem->IsInteger())
@@ -74,31 +78,31 @@ CString CGameStats::GetTextValue (CDesignType *pType, const CString &sIDField, c
 		return pItem->GetStringValue();
 	}
 
-void CGameStats::Insert (CDesignType *pType, ICCItem *pAchievement)
+void CGameStats::Insert (CDesignType &Type, const ICCItem &Achievement)
 
 //	Insert
 //
 //	Insert a ICCItem stat
 
 	{
-	if (pAchievement == NULL || pAchievement->IsNil())
+	if (Achievement.IsNil())
 		;
-	else if (pAchievement->IsSymbolTable())
+	else if (Achievement.IsSymbolTable())
 		{
-		CString sName = GetTextValue(pType, FIELD_DESC_ID, FIELD_DESC, pAchievement);
-		CString sValue = GetTextValue(pType, FIELD_VALUE_ID, FIELD_VALUE, pAchievement);
-		CString sSection = GetTextValue(pType, FIELD_SECTION_ID, FIELD_SECTION, pAchievement);
-		CString sSort = ParseAchievementSort(pAchievement->GetElement(FIELD_SORT));
+		CString sName = GetTextValue(Type, FIELD_DESC_ID, FIELD_DESC, Achievement);
+		CString sValue = GetTextValue(Type, FIELD_VALUE_ID, FIELD_VALUE, Achievement);
+		CString sSection = GetTextValue(Type, FIELD_SECTION_ID, FIELD_SECTION, Achievement);
+		CString sSort = ParseAchievementSort(Achievement.GetElement(FIELD_SORT));
 
 		if (!sName.IsBlank())
 			Insert(sName, sValue, sSection, sSort);
 		}
-	else if (pAchievement->GetCount() > 0)
+	else if (Achievement.GetCount() > 0)
 		{
-		CString sName = pAchievement->GetElement(0)->GetStringValue();
-		CString sValue = ParseAchievementValue(pAchievement->GetElement(1));
-		CString sSection = ParseAchievementSection(pAchievement->GetElement(2));
-		CString sSort = ParseAchievementSort(pAchievement->GetElement(3));
+		CString sName = Achievement.GetElement(0)->GetStringValue();
+		CString sValue = ParseAchievementValue(Achievement.GetElement(1));
+		CString sSection = ParseAchievementSection(Achievement.GetElement(2));
+		CString sSort = ParseAchievementSort(Achievement.GetElement(3));
 
 		if (!sName.IsBlank())
 			Insert(sName, sValue, sSection, sSort);
@@ -123,6 +127,37 @@ void CGameStats::Insert (const CString &sStatName, const CString &sStatValue, co
 	pNew->sSortKey = strPatternSubst(CONSTLIT("%s/%s"),
 			sSection,
 			(sSortKey.IsBlank() ? sStatName : sSortKey));
+	}
+
+void CGameStats::InsertFromCCItem (CDesignType &Type, const ICCItem &Entry)
+
+//	InsertFromCCItem
+//
+//	Inserts from a value returned by <GetGlobalAchievements>.
+
+	{
+	if (Entry.IsNil())
+		;
+
+	else if (Entry.IsSymbolTable())
+		Insert(Type, Entry);
+
+	else if (Entry.IsList() && Entry.GetCount() > 0)
+		{
+		//	If we have a list of lists, then we have 
+		//	a list of achievements
+
+		if (Entry.GetElement(0)->IsList() || Entry.GetElement(0)->IsSymbolTable())
+			{
+			for (int i = 0; i < Entry.GetCount(); i++)
+				Insert(Type, *Entry.GetElement(i));
+			}
+
+		//	Otherwise, we have a single achievement
+
+		else
+			Insert(Type, Entry);
+		}
 	}
 
 ALERROR CGameStats::LoadFromStream (IReadStream *pStream)
@@ -162,7 +197,7 @@ ALERROR CGameStats::LoadFromStream (IReadStream *pStream)
 	return NOERROR;
 	}
 
-CString CGameStats::ParseAchievementSection (ICCItem *pItem)
+CString CGameStats::ParseAchievementSection (const ICCItem *pItem)
 	{
 	if (pItem == NULL)
 		return NULL_STR;
@@ -172,7 +207,7 @@ CString CGameStats::ParseAchievementSection (ICCItem *pItem)
 		return pItem->GetStringValue();
 	}
 
-CString CGameStats::ParseAchievementSort (ICCItem *pItem)
+CString CGameStats::ParseAchievementSort (const ICCItem *pItem)
 	{
 	if (pItem == NULL)
 		return NULL_STR;
@@ -184,7 +219,7 @@ CString CGameStats::ParseAchievementSort (ICCItem *pItem)
 		return pItem->GetStringValue();
 	}
 
-CString CGameStats::ParseAchievementValue (ICCItem *pItem)
+CString CGameStats::ParseAchievementValue (const ICCItem *pItem)
 	{
 	if (pItem == NULL)
 		return NULL_STR;

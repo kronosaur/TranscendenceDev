@@ -328,6 +328,19 @@ ALERROR LoadDesignTypeStats (DWORD dwAdventureUNID, CDesignTypeStats *retStats)
 				else
 					iPercent = 0;
 
+				if (i == 0)
+					{
+					pInfo->iPerGameMinCount = iValue;
+					pInfo->iPerGameMaxCount = iValue;
+					}
+				else
+					{
+					if (iValue < pInfo->iPerGameMinCount)
+						pInfo->iPerGameMinCount = iValue;
+					else if (iValue > pInfo->iPerGameMaxCount)
+						pInfo->iPerGameMaxCount = iValue;
+					}
+
 				sDist.Append(strPatternSubst(CONSTLIT("%d (%d%%) "), iValue, iPercent));
 				}
 

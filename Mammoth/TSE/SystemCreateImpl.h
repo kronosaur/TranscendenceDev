@@ -14,6 +14,7 @@ class CAngleGenerator
 		ALERROR InitFromRotation (SSystemCreateCtx &Ctx, const CXMLElement &XMLDesc, int iCount, Metric rDefault = 0.0);
 
 		static ALERROR Generate (SSystemCreateCtx &Ctx, const CString &sAngle, int iCount, Metric *pAngles, int iJitter = 0);
+		static int GenerateSingle (SSystemCreateCtx &Ctx, const COrbit &OrbitDesc, const CString &sAngle);
 
 	private:
 		static constexpr int RANDOM_ANGLE_MAX_TRIES = 20;

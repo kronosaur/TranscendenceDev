@@ -1041,12 +1041,12 @@
 
 	<!ENTITY rsSistersShrineBkgnd		"0x0018F001">
 
-	<!ENTITY stSungFortress				"0x00192001">
+	<!ENTITY stSungFortressOld			"0x00192001">
 	<!ENTITY stSungNWWall				"0x00192002">
 	<!ENTITY stSungNEWall				"0x00192003">
 	<!ENTITY stSungSEWall				"0x00192004">
 	<!ENTITY stSungSWWall				"0x00192005">
-	<!ENTITY stSungCitadel				"0x00192006">
+	<!ENTITY stSungCitadelOld			"0x00192006">
 	<!ENTITY stSungSlaveCamp			"0x00192007">
 	<!ENTITY stSungSlaveQuarters1		"0x00192008">
 	<!ENTITY stSungSlaveQuarters2		"0x00192009">
@@ -1615,6 +1615,12 @@
 	<!ENTITY rsCathedralOfDomina		"0x00100035">
 	<!ENTITY rsHandOfDominaHero			"0x00100036">
 	<!ENTITY dsDominaPowersHelp			"0x00100037">
+	<!ENTITY rsSistersRanks				"0x00100038">
+	<!ENTITY tbSistersDonation			"0x00100039">
+	<!ENTITY baSistersStation			"0x0010003A">
+	<!ENTITY dsSistersOffer				"0x0010003B">
+	<!ENTITY dsSistersPromotion			"0x0010003C">
+	<!ENTITY rsSistersAbbey				"0x0010003D">
 	
 	<!-- 0040-005F CORPORATE HIERARCHY -->
 	
@@ -1736,6 +1742,7 @@
 	<!ENTITY rsAresCommune				"0x001000B7">
 	<!ENTITY rsAresShipyard				"0x001000B8">
 	<!ENTITY rsTundraHero				"0x001000B9">
+	<!ENTITY rsChasmHero				"0x001000BA">
 	
 	<!-- 00C0-00CF SALVAGERS -->
 	
@@ -1750,6 +1757,7 @@
 	<!ENTITY rsUrakSentinelHD			"0x001000D1">
 	<!ENTITY smUrakSpace				"0x001000D2">
 	<!ENTITY rsUrakSentinelHero			"0x001000D3">
+	<!ENTITY rsUrakDestroyerHero		"0x001000D4">
 	
 	<!-- 00E0-00EF BATTLE ARENA MAXIMUS -->
 	
@@ -1768,6 +1776,7 @@
 	<!ENTITY rsHeliotropeFrigate		"0x001000F0">
 	<!ENTITY rsHeliotropeGunshipHD		"0x001000F1">
 	<!ENTITY smHeliotropeSpace			"0x001000F2">
+	<!ENTITY rsHeliotropeFrigateHero	"0x001000F3">
 	
 	<!-- 0100-011F CHARON PIRATES AND MARAUDERS -->
 	
@@ -1816,12 +1825,31 @@
 	<!ENTITY rsSteelSlaverHero			"0x00100128">
 	<!ENTITY rsSteelSlaver				"0x00100129">
 	<!ENTITY rsSungTransportHero		"0x0010012A">
-	
+	<!ENTITY rsEarthSlaverHero			"0x0010012B">
+	<!ENTITY rsDragonSlaverHero			"0x0010012C">
+	<!ENTITY rsSungKeep					"0x0010012D">
+	<!ENTITY rsSungSlaveQuarters		"0x0010012E">
+	<!ENTITY stSungSlaveQuarters		"0x0010012F">
+	<!ENTITY stSungFortress				"0x00100130">
+	<!ENTITY baSungFortressWall			"0x00100131">
+	<!ENTITY stSungFortressWallNE		"0x00100132">
+	<!ENTITY stSungFortressWallNW		"0x00100133">
+	<!ENTITY stSungFortressWallSE		"0x00100134">
+	<!ENTITY stSungFortressWallSW		"0x00100135">
+	<!ENTITY rsSungFortress				"0x00100136">
+	<!ENTITY rsSungCitadel				"0x00100137">
+	<!ENTITY stSungCitadel				"0x00100138">
+	<!ENTITY stSungCitadelInnerWall		"0x00100139">
+	<!ENTITY stSungCitadelOuterWall		"0x0010013A">
+
 	<!-- 0140-014F XENOPHOBES -->
 	
 	<!ENTITY rsXenophobeDefender		"0x00100140">
 	<!ENTITY rsXenophobeFighterHD		"0x00100141">
 	<!ENTITY smXenophobeSpace			"0x00100142">
+	<!ENTITY rsXenophobeDefenderHero	"0x00100143">
+	<!ENTITY rsXenophobeWorldshipHero	"0x00100144">
+	<!ENTITY rsXenophobeArkHero			"0x00100145">
 	
 	<!-- 0150-015F HUARI EMPIRE -->
 	
@@ -1879,6 +1907,7 @@
 	
 	<!ENTITY rsVentariDestroyer			"0x00100190">
 	<!ENTITY smVentariSpace				"0x00100191">
+	<!ENTITY rsVentariDestroyerHero		"0x00100192">
 	
 	<!-- 01A0-01BF EARTH INDUSTRIES CORPORATION -->
 	
@@ -2005,6 +2034,7 @@
 	<!ENTITY rsZoanthropeRaiderHD		"0x001002D2">
 	<!ENTITY rsDwargBehemothHero		"0x001002D3">
 	<!ENTITY smDwargSpace				"0x001002D4">
+	<!ENTITY rsDwargMasterHero			"0x001002D5">
 
 	<!-- 02F0-030F RINGERS -->
 
@@ -2087,6 +2117,7 @@
 	<!-- 03D0-03EF DEATH DRUGS CARTEL -->
 
 	<!ENTITY rsMethEnforcerHD			"0x001003D0">
+	<!ENTITY rsMethEnforcerHero			"0x001003D1">
 
 	<!-- 03F0-040F CENTAURI WARLORDS -->
 
@@ -2117,6 +2148,7 @@
 
 	<!ENTITY rsRanxGunshipHD			"0x00100450">
 	<!ENTITY smRanxSpace				"0x00100451">
+	<!ENTITY rsRanxDreadnoughtHero		"0x00100452">
 
 	<!-- 0470-048F FERIANS -->
 
@@ -2129,6 +2161,7 @@
 	<!ENTITY smFerianSpace				"0x00100476">
 	<!ENTITY baFerianStation			"0x00100477">
 	<!ENTITY msFerian01					"0x00100478">
+	<!ENTITY rsFerianWarriorHero		"0x00100479">
 
 	<!-- 0490-04AF HIMAL SEPERATISTS -->
 
@@ -2267,11 +2300,15 @@
 	<!-- 0620-063F GAIAN TERRAFORMERS -->
 
 	<!ENTITY smGaianSpace				"0x00100620">
+	<!ENTITY rsGaianProcessorHero		"0x00100621">
 
 	<!-- 0640-065F DOMINA -->
 
 	<!ENTITY baDominaPower				"0x00100640">
 	<!ENTITY vtIngenuityEnhancement		"0x00100641">
+	<!ENTITY baHaloGem					"0x00100642">
+	<!ENTITY itGemOfFury				"0x00100643">
+	<!ENTITY ovGemOfFury				"0x00100644">
 
 	<!-- 0660-06BF COMMONWEALTH FLEET III -->
 
@@ -2304,6 +2341,7 @@
 	<!ENTITY itWeaponEfficiencyROM		"0x001006C8">
 	<!ENTITY itIonReflectCoating		"0x001006C9">
 	<!ENTITY itShieldIonizeROM			"0x001006CA">
+	<!ENTITY diagArmorEnhancements		"0x001006CB">
 
 	<!-- 0700-073F COMMONWEALTH III -->
 
@@ -2328,6 +2366,18 @@
 	<!ENTITY stAsteroidEldir			"0x00100761">
 	<!ENTITY stHydrogenGasGiantStJohns	"0x00100762">
 	<!ENTITY rsHydrogenGasGiantStJohns	"0x00100763">
+
+	<!-- 0780-079F QUANTUM CPU -->
+
+	<!ENTITY baQuantumCPUShieldProgram	"0x00100780">
+	
+	<!-- 07A0-07CF SISTERS OF DOMINA MISSIONS -->
+	
+	<!ENTITY msSisters01				"0x001007A0">
+
+	<!-- 07D0-07FF JIANG'S STAR -->
+
+	<!ENTITY ssJiangsStar				"0x001007D0">
 
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
@@ -2393,6 +2443,7 @@
 	<Module filename="CommonwealthMissionRevenge01.xml"/>
 	<Module filename="CommonwealthRonins.xml"/>
 	<Module filename="CommonwealthShips.xml"/>
+	<Module filename="ContainerHabitat.xml"/>
 
 	<!-- Commonwealth Fleet -->
 
@@ -2504,6 +2555,7 @@
 	<Module filename="ArmorEnhancementItems.xml"/>
 	<Module filename="ArmorRepairItems.xml"/>
 	<Module filename="Barricades.xml"/>
+	<Module filename="HaloGems.xml"/>
 	<Module filename="MiningPods.xml"/>
 	<Module filename="MiscItems.xml"/>
 	<Module filename="QuantumCPU.xml"/>
@@ -2534,18 +2586,26 @@
 	<!-- Misc -->
 
 	<Module filename="Code.xml"/>
-	<Module filename="Domina.xml"/>
 	<Module filename="HSCompatibility.xml"/>
 	<Module filename="HumanTech.xml"/>
 	<Module filename="StdDockScreens.xml"/>
 	<Module filename="StdPlayerShips.xml"/>
 	<Module filename="StdSovereigns.xml"/>
 	<Module filename="StdTypes.xml"/>
+	
+	<!-- Pilgrim -->
 
+	<Module filename="Domina.xml"/>
+	<Module filename="Pilgrim.xml"/>
+	
 	<!-- Sisters of Domina -->
 
 	<Module filename="Sanctuary.xml"/>
+	<Module filename="Sisters01.xml"/>
+	<Module filename="SistersDonate.xml"/>
 	<Module filename="SistersOfDomina.xml"/>
+	<Module filename="SistersPilgrimsAid.xml"/>
+	<Module filename="SistersSanctum.xml"/>
 
 	<!-- St. Katharine's Star -->
 
@@ -2562,6 +2622,9 @@
 
 	<!-- Sung Slavers -->
 	
+	<Module filename="JiangsStar.xml"/>
+	<Module filename="SungCitadel.xml"/>
+	<Module filename="SungFortress.xml"/>
 	<Module filename="SungSlaveCamp.xml"/>
 	<Module filename="SungSlavers.xml"/>
 

@@ -56,53 +56,6 @@ ALERROR CUniverse::InitDeviceStorage (CString *retsError)
 	return NOERROR;
 	}
 
-ALERROR CUniverse::InitLevelEncounterTables (void)
-
-//	InitLevelEncounterTables
-//
-//	Initializes the m_LevelEncounterTables array based on the encounter
-//	tables of all the stations for each level.
-
-	{
-	m_LevelEncounterTables.DeleteAll();
-	m_LevelEncounterTables.InsertEmpty(MAX_ITEM_LEVEL);
-
-	for (int i = 1; i <= MAX_ITEM_LEVEL; i++)
-		{
-		//	NOTE: m_LevelEncounterTables is 0 based. I.e., level 1 will be 
-		//	index 0 in the table.
-
-		TArray<SLevelEncounter> &Table = m_LevelEncounterTables[i - 1];
-
-		for (int j = 0; j < GetStationTypeCount(); j++)
-			{
-			CStationType *pType = GetStationType(j);
-
-			//	Figure out the frequency of an encounter from this station based
-			//	on the frequency of the station at this level and the frequency
-			//	of encounters for this station.
-
-			int iEncounterFreq = pType->GetEncounterFrequency();
-			int iStationFreq = pType->GetFrequencyByLevel(i);
-			int iFreq = iEncounterFreq * iStationFreq / ftCommon;
-
-			//	Add to the table
-
-			if (iFreq > 0)
-				{
-				SLevelEncounter *pEntry = Table.Insert();
-
-				pEntry->pType = pType;
-				pEntry->iWeight = iFreq;
-				pEntry->pBaseSovereign = pType->GetSovereign();
-				pEntry->pTable = pType->GetEncountersTable();
-				}
-			}
-		}
-
-	return NOERROR;
-	}
-
 ALERROR CUniverse::SaveDeviceStorage (void)
 
 //	SaveDeviceStorage

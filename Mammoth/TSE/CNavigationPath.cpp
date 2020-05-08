@@ -11,7 +11,7 @@ const Metric MIN_SPEED2 =						(MIN_SPEED * MIN_SPEED);
 const Metric MAX_SAFE_DIST =					(60.0 * LIGHT_SECOND);
 const Metric MAX_SAFE_DIST2 =					(MAX_SAFE_DIST * MAX_SAFE_DIST);
 const Metric AVOID_DIST =						(MAX_SAFE_DIST + (10.0 * LIGHT_SECOND));
-const Metric EXTRA_DIST =						(10.0 * LIGHT_SECOND);
+const Metric EXTRA_DIST =						(5.0 * LIGHT_SECOND);
 
 CNavigationPath::CNavigationPath (void) :
 		m_dwID(0),
@@ -19,9 +19,7 @@ CNavigationPath::CNavigationPath (void) :
 		m_iStartIndex(-1),
 		m_iEndIndex(-1),
 		m_iSuccesses(0),
-		m_iFailures(0),
-		m_iWaypointCount(0),
-		m_Waypoints(NULL)
+		m_iFailures(0)
 
 //	CNavigationPath constructor
 
@@ -33,23 +31,20 @@ CNavigationPath::~CNavigationPath (void)
 //	CNavigationPath destructor
 
 	{
-	if (m_Waypoints)
-		delete [] m_Waypoints;
 	}
 
-int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, CVector **retpPoints)
+int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, TArray<SWaypoint> &retWaypoints, TArray<CVector> *retPointsChecked)
 
 //	ComputePath
 //
 //	This uses an A* algorithm to find a path from one place to another
 
 	{
-	int i;
 	CAStarPathFinder AStar;
 
 	//	Add the obstacles that we need to avoid
 
-	for (i = 0; i < pSystem->GetObjectCount(); i++)
+	for (int i = 0; i < pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
 		CSovereign *pObjSovereign;
@@ -88,7 +83,8 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 			CVector vLL;
 			pObj->GetBoundingRect(&vUR, &vLL);
 
-			//	Add a little extra space around obstacles
+			//	Add a little extra space around obstacles so that we don't have 
+			//	to be too precise following the nav path.
 
 			CVector vExtra(EXTRA_DIST, EXTRA_DIST);
 			vUR = vUR + vExtra;
@@ -106,83 +102,29 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 
 	CVector *pPathList;
 	int iPathCount = AStar.FindPath(vFrom, vTo, &pPathList);
+
+#ifdef DEBUG_ASTAR_PATH
+	if (retPointsChecked)
+		*retPointsChecked = AStar.GetDebugPointsChecked();
+#endif
+
+	retWaypoints.DeleteAll();
 	if (iPathCount <= 0)
 		{
-		*retpPoints = new CVector;
-		(*retpPoints)[0] = vTo;
-		return 1;
+		retWaypoints.InsertEmpty(1);
+		retWaypoints[0].vPos = vTo;
 		}
 	else
 		{
-		*retpPoints = pPathList;
-		return iPathCount;
+		retWaypoints.InsertEmpty(iPathCount);
+		for (int i = 0; i < retWaypoints.GetCount(); i++)
+			retWaypoints[i].vPos = pPathList[i];
+
+		delete pPathList;
 		}
+
+	return retWaypoints.GetCount();
 	}
-
-#if 0
-int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, int iDepth, CVector **retpPoints)
-
-//	ComputePath
-//
-//	This is a recursive function that returns a set of points that define a safe path
-//	between the two given points.
-//
-//	We return an allocated array of CVectors in retpPoints
-
-	{
-	int i;
-
-	//	If we're very close to our destination, then the best option is a direct path
-	//	If the path is clear, then a direct path is also the best option.
-
-	CSpaceObject *pEnemy;
-	CVector vAway;
-	if (iDepth >= MAX_PATH_RECURSION
-			|| ((vTo - vFrom).Length2() <= MAX_SAFE_DIST2)
-			|| PathIsClear(pSystem, pSovereign, vFrom, vTo, &pEnemy, &vAway))
-		{
-		(*retpPoints) = new CVector;
-		(*retpPoints)[0] = vTo;
-		return 1;
-		}
-
-	//	Otherwise, we deflect the path at the enemy base and recurse for the
-	//	two path segments.
-
-	else
-		{
-		//	Compute the mid-point
-
-		CVector vMidPoint = pEnemy->GetPos() + (AVOID_DIST * vAway);
-
-		//	Recurse
-
-		CVector *pLeftPoints;
-		int iLeftCount = ComputePath(pSystem, pSovereign, vFrom, vMidPoint, iDepth+1, &pLeftPoints);
-
-		CVector *pRightPoints;
-		int iRightCount = ComputePath(pSystem, pSovereign, vMidPoint, vTo, iDepth+1, &pRightPoints);
-
-		//	Compose the two paths together
-
-		int iCount = iLeftCount + iRightCount;
-		ASSERT(iCount > 0);
-		(*retpPoints) = new CVector [iCount];
-
-		int iPos = 0;
-		for (i = 0; i < iLeftCount; i++)
-			(*retpPoints)[iPos++] = pLeftPoints[i];
-
-		for (i = 0; i < iRightCount; i++)
-			(*retpPoints)[iPos++] = pRightPoints[i];
-
-		delete [] pLeftPoints;
-		delete [] pRightPoints;
-
-		return iCount;
-		}
-	}
-#endif
 
 Metric CNavigationPath::ComputePathLength (CSystem *pSystem) const
 
@@ -195,10 +137,10 @@ Metric CNavigationPath::ComputePathLength (CSystem *pSystem) const
 	Metric rDist = 0.0;
 	CVector vPos = m_vStart;
 
-	for (i = 0; i < m_iWaypointCount; i++)
+	for (i = 0; i < m_Waypoints.GetCount(); i++)
 		{
-		rDist += (m_Waypoints[i] - vPos).Length();
-		vPos = m_Waypoints[i];
+		rDist += (m_Waypoints[i].vPos - vPos).Length();
+		vPos = m_Waypoints[i].vPos;
 		}
 
 	return rDist;
@@ -214,9 +156,9 @@ CVector CNavigationPath::ComputePointOnPath (CSystem *pSystem, Metric rDist) con
 	CVector vPos = m_vStart;
 	int iWaypoint = 0;
 
-	while (rDist > 0.0 && iWaypoint < m_iWaypointCount)
+	while (rDist > 0.0 && iWaypoint < m_Waypoints.GetCount())
 		{
-		CVector vLeg = m_Waypoints[iWaypoint] - vPos;
+		CVector vLeg = m_Waypoints[iWaypoint].vPos - vPos;
 
 		Metric rLength;
 		CVector vNormal = vLeg.Normal(&rLength);
@@ -226,12 +168,73 @@ CVector CNavigationPath::ComputePointOnPath (CSystem *pSystem, Metric rDist) con
 		else
 			{
 			rDist -= rLength;
-			vPos = m_Waypoints[iWaypoint];
+			vPos = m_Waypoints[iWaypoint].vPos;
 			iWaypoint++;
 			}
 		}
 
 	return vPos;
+	}
+
+void CNavigationPath::ComputeWaypointRange (void)
+
+//	ComputeWaypointRange
+//
+//	Computes how close we need to be to each waypoint to call it success.
+//	We don't want it to be too close or else ships will struggle to maneuver,
+//	but if it is too far away, they won't follow the path closely enough.
+
+	{
+	constexpr Metric MAX_DIST = DEFAULT_NAV_POINT_RADIUS;
+	constexpr Metric MAX_DIST2 = MAX_DIST * MAX_DIST;
+	constexpr Metric MIN_DIST = 4.0 * LIGHT_SECOND;
+	constexpr Metric MIN_DIST2 = MIN_DIST * MIN_DIST;
+	constexpr Metric ANGLE_THRESHOLD = mathDegreesToRadians(30);
+	constexpr Metric PATH_FRACTION = 0.5;
+
+	CVector vPrev = m_vStart;
+
+	for (int i = 0; i < m_Waypoints.GetCount(); i++)
+		{
+		//	See if we've got three points to compare.
+
+		if (i + 1 < m_Waypoints.GetCount())
+			{
+			//	Figure out the length from the previous waypoint to this 
+			//	waypoint, and the bearing from the previous waypoint to this
+			//	waypoint.
+
+			CVector vFrom = m_Waypoints[i].vPos - vPrev;
+			Metric rFromDist;
+			Metric rFromAngle = vFrom.Polar(&rFromDist);
+
+			//	Figure out the same for the path from this waypoint to the next
+			//	waypoint.
+
+			CVector vTo = m_Waypoints[i + 1].vPos - m_Waypoints[i].vPos;
+			Metric rToDist;
+			Metric rToAngle = vTo.Polar(&rToDist);
+
+			//	If this is a sharp angle (> 30 degrees) then we use the minimum
+			//	distance.
+
+			if (mathAngleDiff(rFromAngle, rToAngle) > ANGLE_THRESHOLD)
+				m_Waypoints[i].rRange2 = MIN_DIST2;
+
+			//	Otherwise, we take a fraction of the minimum length
+
+			else
+				{
+				Metric rDist = Max(MIN_DIST, Min(PATH_FRACTION * Min(rFromDist, rToDist), MAX_DIST));
+				m_Waypoints[i].rRange2 = rDist * rDist;
+				}
+			}
+
+		//	Else, if this is the last point, then the max distance is OK.
+
+		else
+			m_Waypoints[i].rRange2 = MAX_DIST2;
+		}
 	}
 
 void CNavigationPath::Create (CSystem *pSystem, CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd, CNavigationPath **retpPath)
@@ -244,20 +247,28 @@ void CNavigationPath::Create (CSystem *pSystem, CSovereign *pSovereign, CSpaceOb
 	ASSERT(pStart);
 	ASSERT(pEnd);
 
+	CUniverse &Universe = pSystem->GetUniverse();
+
 	CVector vStart = pStart->GetPos();
 	CVector vEnd = pEnd->GetPos();
 
 	CNavigationPath *pNewPath = new CNavigationPath;
-	pNewPath->m_dwID = pSystem->GetUniverse().CreateGlobalID();
+	pNewPath->m_dwID = Universe.CreateGlobalID();
 	pNewPath->m_pSovereign = pSovereign;
 	pNewPath->m_iStartIndex = pStart->GetID();
 	pNewPath->m_iEndIndex = pEnd->GetID();
 
+#ifdef DEBUG_ASTAR_PATH
+	TArray<CVector> *retPointsChecked = &pNewPath->m_PointsChecked;
+#else
+	TArray<CVector> *retPointsChecked = NULL;
+#endif
+
 	//	Compute the path
 
 	pNewPath->m_vStart = vStart;
-	pNewPath->m_iWaypointCount = ComputePath(pSystem, pSovereign, vStart, vEnd, &pNewPath->m_Waypoints);
-	ASSERT(pNewPath->m_iWaypointCount > 0);
+	ComputePath(pSystem, pSovereign, vStart, vEnd, pNewPath->m_Waypoints, retPointsChecked);
+	pNewPath->ComputeWaypointRange();
 
 	//	Done
 
@@ -271,17 +282,25 @@ void CNavigationPath::Create (CSystem *pSystem, CSovereign *pSovereign, const CV
 //	Creates a path from vStart to vEnd
 
 	{
+	CUniverse &Universe = pSystem->GetUniverse();
+
 	CNavigationPath *pNewPath = new CNavigationPath;
-	pNewPath->m_dwID = pSystem->GetUniverse().CreateGlobalID();
+	pNewPath->m_dwID = Universe.CreateGlobalID();
 	pNewPath->m_pSovereign = pSovereign;
 	pNewPath->m_iStartIndex = -1;
 	pNewPath->m_iEndIndex = -1;
 
+#ifdef DEBUG_ASTAR_PATH
+	TArray<CVector> *retPointsChecked = &pNewPath->m_PointsChecked;
+#else
+	TArray<CVector> *retPointsChecked = NULL;
+#endif
+
 	//	Compute the path
 
 	pNewPath->m_vStart = vStart;
-	pNewPath->m_iWaypointCount = ComputePath(pSystem, pSovereign, vStart, vEnd, &pNewPath->m_Waypoints);
-	ASSERT(pNewPath->m_iWaypointCount > 0);
+	ComputePath(pSystem, pSovereign, vStart, vEnd, pNewPath->m_Waypoints, retPointsChecked);
+	pNewPath->ComputeWaypointRange();
 
 	//	Done
 
@@ -352,33 +371,61 @@ CString CNavigationPath::DebugDescribe (CSpaceObject *pObj, CNavigationPath *pNa
 		}
 	}
 
-void CNavigationPath::DebugPaintInfo (CG32bitImage &Dest, int x, int y, ViewportTransform &Xform)
+void CNavigationPath::DebugPaintInfo (CSystem &System, CG32bitImage &Dest, int x, int y, ViewportTransform &Xform)
 
 //	DebugPaintInfo
 //
 //	Paint the nav path
 
 	{
-	int i;
+	CVector vFrom = m_vStart;
+
 	int xFrom;
 	int yFrom;
+	Xform.Transform(vFrom, &xFrom, &yFrom);
 
-	Xform.Transform(m_vStart, &xFrom, &yFrom);
-	for (i = 0; i < m_iWaypointCount; i++)
+	for (int i = 0; i < m_Waypoints.GetCount(); i++)
 		{
+#ifdef DEBUG_ASTAR_PATH
+		//	See if this line passes through any blocking objects.
+
+		CG32bitPixel rgbLine;
+		if (IsLineBlocked(System, vFrom, m_Waypoints[i].vPos))
+			rgbLine = CG32bitPixel(255, 0, 0);
+		else
+			rgbLine = CG32bitPixel(0, 255, 0);
+#else
+		constexpr CG32bitPixel rgbLine = CG32bitPixel(0, 255, 0);
+#endif
+			
+		//	Paint
+
 		int xTo;
 		int yTo;
-
-		Xform.Transform(m_Waypoints[i], &xTo, &yTo);
+		Xform.Transform(m_Waypoints[i].vPos, &xTo, &yTo);
 
 		Dest.DrawLine(xFrom, yFrom,
 				xTo, yTo,
 				3,
-				CG32bitPixel(0,255,0));
+				rgbLine);
 
+		//	Next
+
+		vFrom = m_Waypoints[i].vPos;
 		xFrom = xTo;
 		yFrom = yTo;
 		}
+
+#ifdef DEBUG_ASTAR_PATH
+	for (int i = 0; i < m_PointsChecked.GetCount(); i++)
+		{
+		int xPos;
+		int yPos;
+		Xform.Transform(m_PointsChecked[i], &xPos, &yPos);
+
+		Dest.DrawDot(xPos, yPos, CG32bitPixel(0, 255, 0), markerMediumCross);
+		}
+#endif
 	}
 
 void CNavigationPath::DebugPaintInfo (CG32bitImage &Dest, int x, int y, const CMapViewportCtx &Ctx)
@@ -393,12 +440,12 @@ void CNavigationPath::DebugPaintInfo (CG32bitImage &Dest, int x, int y, const CM
 	int yFrom;
 
 	Ctx.Transform(m_vStart, &xFrom, &yFrom);
-	for (i = 0; i < m_iWaypointCount; i++)
+	for (i = 0; i < m_Waypoints.GetCount(); i++)
 		{
 		int xTo;
 		int yTo;
 
-		Ctx.Transform(m_Waypoints[i], &xTo, &yTo);
+		Ctx.Transform(m_Waypoints[i].vPos, &xTo, &yTo);
 
 		Dest.DrawLine(xFrom, yFrom,
 				xTo, yTo,
@@ -410,7 +457,7 @@ void CNavigationPath::DebugPaintInfo (CG32bitImage &Dest, int x, int y, const CM
 		}
 	}
 
-CVector CNavigationPath::GetNavPoint (int iIndex) const
+CVector CNavigationPath::GetNavPoint (int iIndex, Metric *retrDist2) const
 
 //	GetNavPoint
 //
@@ -421,15 +468,53 @@ CVector CNavigationPath::GetNavPoint (int iIndex) const
 		{
 		CSpaceObject *pStart = g_pUniverse->FindObject(m_iStartIndex);
 		if (pStart)
+			{
+			if (retrDist2)
+				*retrDist2 = DEFAULT_NAV_POINT_RADIUS2;
+
 			return pStart->GetPos();
+			}
 		else
-			return m_Waypoints[0];
+			{
+			if (retrDist2)
+				*retrDist2 = m_Waypoints[0].rRange2;
+
+			return m_Waypoints[0].vPos;
+			}
 		}
 	else
 		{
-		iIndex = Min(iIndex, m_iWaypointCount - 1);
-		return m_Waypoints[iIndex];
+		iIndex = Min(iIndex, m_Waypoints.GetCount() - 1);
+
+		if (retrDist2)
+			*retrDist2 = m_Waypoints[iIndex].rRange2;
+
+		return m_Waypoints[iIndex].vPos;
 		}
+	}
+
+bool CNavigationPath::IsLineBlocked (CSystem &System, const CVector &vFrom, const CVector &vTo)
+
+//	IsLineBlocked
+//
+//	Returns TRUE if the given line intersects any object that blocks ships.
+
+	{
+	for (int i = 0; i < System.GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = System.GetObject(i);
+		if (pObj == NULL || pObj->IsDestroyed() || !pObj->BlocksShips())
+			continue;
+
+		CVector vDiag = pObj->GetBoundsDiag();
+		CVector vUR = pObj->GetPos() + vDiag;
+		CVector vLL = pObj->GetPos() - vDiag;
+
+		if (CAStarPathFinder::LineIntersectsRect(vFrom, vTo, vUR, vLL))
+			return true;
+		}
+
+	return false;
 	}
 
 bool CNavigationPath::Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd)
@@ -439,10 +524,6 @@ bool CNavigationPath::Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSp
 //	Returns TRUE if this path matches the request
 
 	{
-#ifdef DEBUG_ASTAR_PATH
-	return false;
-#endif
-
 	if (pSovereign && m_pSovereign && pSovereign != m_pSovereign)
 		return false;
 
@@ -476,25 +557,29 @@ void CNavigationPath::OnReadFromStream (SLoadCtx &Ctx)
 //	CVector		Waypoints
 
 	{
-	Ctx.pStream->Read((char *)&m_dwID, sizeof(DWORD));
+	Ctx.pStream->Read(m_dwID);
 	CSystem::ReadSovereignRefFromStream(Ctx, &m_pSovereign);
-	Ctx.pStream->Read((char *)&m_iStartIndex, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iEndIndex, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iSuccesses, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iFailures, sizeof(DWORD));
+	Ctx.pStream->Read(m_iStartIndex);
+	Ctx.pStream->Read(m_iEndIndex);
+	Ctx.pStream->Read(m_iSuccesses);
+	Ctx.pStream->Read(m_iFailures);
 
 	if (Ctx.dwVersion >= 13)
-		Ctx.pStream->Read((char *)&m_vStart, sizeof(CVector));
+		m_vStart.ReadFromStream(*Ctx.pStream);
 	
 	DWORD dwCount;
-	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	m_iWaypointCount = (int)dwCount;
+	Ctx.pStream->Read(dwCount);
 
 	if (dwCount)
 		{
-		m_Waypoints = new CVector [dwCount];
-		Ctx.pStream->Read((char *)m_Waypoints, sizeof(CVector) * dwCount);
+		m_Waypoints.InsertEmpty(dwCount);
+		for (int i = 0; i < m_Waypoints.GetCount(); i++)
+			m_Waypoints[i].vPos.ReadFromStream(*Ctx.pStream);
 		}
+
+	//	We don't store waypoint ranges, so we recompute here.
+
+	ComputeWaypointRange();
 	}
 
 void CNavigationPath::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const
@@ -515,18 +600,20 @@ void CNavigationPath::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) 
 //	CVector		Waypoints
 
 	{
-	pStream->Write((char *)&m_dwID, sizeof(DWORD));
+	pStream->Write(m_dwID);
 	pSystem->WriteSovereignRefToStream(m_pSovereign, pStream);
-	pStream->Write((char *)&m_iStartIndex, sizeof(DWORD));
-	pStream->Write((char *)&m_iEndIndex, sizeof(DWORD));
+	pStream->Write(m_iStartIndex);
+	pStream->Write(m_iEndIndex);
 
-	pStream->Write((char *)&m_iSuccesses, sizeof(DWORD));
-	pStream->Write((char *)&m_iFailures, sizeof(DWORD));
+	pStream->Write(m_iSuccesses);
+	pStream->Write(m_iFailures);
 
-	pStream->Write((char *)&m_vStart, sizeof(CVector));
-	pStream->Write((char *)&m_iWaypointCount, sizeof(DWORD));
-	if (m_iWaypointCount)
-		pStream->Write((char *)m_Waypoints, sizeof(CVector) * m_iWaypointCount);
+	m_vStart.WriteToStream(*pStream);
+
+	DWORD dwSave = m_Waypoints.GetCount();
+	pStream->Write(dwSave);
+	for (int i = 0; i < m_Waypoints.GetCount(); i++)
+		m_Waypoints[i].vPos.WriteToStream(*pStream);
 	}
 
 bool CNavigationPath::PathIsClear (CSystem *pSystem,

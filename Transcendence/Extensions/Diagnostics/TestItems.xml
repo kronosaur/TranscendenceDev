@@ -124,4 +124,39 @@
 				/>
 	</ItemType>
 
+	<ItemType UNID="&itTestWeaponSideMounted;"
+			name=				"side-mounted weapon"
+			attributes=			"testItem"
+			  
+			level=				"3"
+			frequency=			"rare"
+
+			value=				"1000"
+			mass=				"3000"
+			  
+			description=		"Test weapon: side-mounted"
+			>
+
+		<Image imageID="&rsItemsNAMI1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+				linkedFire=			"always"
+
+				damage=				"thermo:1d12; momentum:3; WMD:4"
+				fireRate=			"40"
+				missileSpeed=		"50"
+				lifetime=			"120"
+				hitPoints=			"10"
+				powerUse=			"12"
+				recoil=				"2"
+
+				effect=				"&efThermoShellDefault;"
+				sound=				"&snRecoillessCannon;"
+				>
+		</Weapon>
+	</ItemType>
+
+
+
 </TranscendenceModule>

@@ -10,7 +10,6 @@ constexpr Metric CLOSE_RANGE =				(50.0 * LIGHT_SECOND);
 constexpr Metric DEFAULT_DIST_CHECK =		(700.0 * KLICKS_PER_PIXEL);
 constexpr Metric DOCKING_APPROACH_DISTANCE = (200.0 * KLICKS_PER_PIXEL);
 constexpr Metric ESCORT_DISTANCE =			(6.0 * LIGHT_SECOND);
-constexpr Metric HIT_NAV_POINT_DIST =		(24.0 * LIGHT_SECOND);
 constexpr Metric MAX_DELTA =				(2.0 * KLICKS_PER_PIXEL);
 const Metric MAX_DELTA_VEL =			(g_KlicksPerPixel / 2.0);
 constexpr Metric MAX_DISTANCE =				(400 * KLICKS_PER_PIXEL);
@@ -28,7 +27,6 @@ const Metric MAX_HEADING_DELTA_V =		g_KlicksPerPixel;
 const Metric MAX_HEADING_DELTA_V2 =		MAX_HEADING_DELTA_V * MAX_HEADING_DELTA_V;
 
 constexpr Metric CLOSE_RANGE2 =				(CLOSE_RANGE * CLOSE_RANGE);
-constexpr Metric HIT_NAV_POINT_DIST2 =		(HIT_NAV_POINT_DIST * HIT_NAV_POINT_DIST);
 constexpr Metric MAX_DELTA2 =				(MAX_DELTA * MAX_DELTA);
 const Metric MAX_DELTA_VEL2 =			(MAX_DELTA_VEL * MAX_DELTA_VEL);
 constexpr Metric MAX_IN_FORMATION_DELTA2 =	(MAX_IN_FORMATION_DELTA * MAX_IN_FORMATION_DELTA);
@@ -1572,7 +1570,8 @@ void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestinati
 
 	//	Figure out our next point along the path
 
-	CVector vTarget = m_pNavPath->GetNavPoint(m_iNavPathPos) - pShip->GetPos();
+	Metric rMinDist2;
+	CVector vTarget = m_pNavPath->GetNavPoint(m_iNavPathPos, &rMinDist2) - pShip->GetPos();
 	Metric rTargetDist2 = vTarget.Length2();
 
 	//	If we've hit a wall, back up a little bit
@@ -1592,7 +1591,7 @@ void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestinati
 		//	Are we at our target? If so, then we move on to
 		//	the next nav point
 
-		if (rTargetDist2 < HIT_NAV_POINT_DIST2)
+		if (rTargetDist2 < rMinDist2)
 			{
 			//	If we're at the last nav point, then we've reached our
 			//	destination.

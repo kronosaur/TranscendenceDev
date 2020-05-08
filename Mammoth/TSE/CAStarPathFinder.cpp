@@ -93,12 +93,16 @@ void CAStarPathFinder::AddToList (SNodeRoot &pRoot, SNode *pNew, SNode *pAddAfte
 		{
 		pNew->pNext = pRoot;
 		pNew->pPrev = NULL;
+		if (pRoot)
+			pRoot->pPrev = pNew;
 		pRoot = pNew;
 		}
 	else
 		{
 		pNew->pNext = pAddAfter->pNext;
 		pNew->pPrev = pAddAfter;
+		if (pAddAfter->pNext)
+			pAddAfter->pNext->pPrev = pNew;
 		pAddAfter->pNext = pNew;
 		}
 	}
@@ -148,13 +152,11 @@ void CAStarPathFinder::CollapsePath (TArray<SNode *> &Path, int iStart, int iEnd
 //	Removes superflous nodes in Path
 
 	{
-	int i;
-
 	if (iEnd <= iStart + 1)
 		return;
 	else if (IsPathClear(Path[iStart]->vPos, Path[iEnd]->vPos))
 		{
-		for (i = iStart + 1; i < iEnd; i++)
+		for (int i = iStart + 1; i < iEnd; i++)
 			Path[i] = NULL;
 		}
 	else
@@ -199,7 +201,7 @@ void CAStarPathFinder::CreateInOpenList (const CVector &vEnd, SNode *pCurrent, i
 
 	//	See if the node is blocked
 
-	if (!IsPointClear(vPos))
+	if (!IsPathClear(pCurrent->vPos, vPos))
 		return;
 
 	//	Create a new node
@@ -267,8 +269,6 @@ int CAStarPathFinder::FindPath (const CVector &vStart, const CVector &vEnd, CVec
 //	Returns a path that avoids all obstacles
 
 	{
-	int i;
-
 #ifdef DEBUG_ASTAR_PERF
 	DWORD dwStartTime = ::GetTickCount();
 #endif
@@ -330,7 +330,7 @@ int CAStarPathFinder::FindPath (const CVector &vStart, const CVector &vEnd, CVec
 					return -1;
 
 				CVector *pResult = new CVector [iCount];
-				for (i = 0; i < iCount; i++)
+				for (int i = 0; i < iCount; i++)
 					pResult[i] = pReversed[iCount - i - 1];
 
 				delete [] pReversed;
@@ -356,18 +356,14 @@ int CAStarPathFinder::FindPath (const CVector &vStart, const CVector &vEnd, CVec
 #endif
 			AddToClosedList(pCurrent);
 
-			for (i = 0; i < ADJACENT_NODE_COUNT; i++)
+			for (int i = 0; i < ADJACENT_NODE_COUNT; i++)
 				CreateInOpenList(vEnd, pCurrent, ADJACENT_NODE_DIR_X[i], ADJACENT_NODE_DIR_Y[i]);
 			}
 
 		iLoopCount++;
 
 #ifdef DEBUG_ASTAR_PATH
-		//	Create a nav beacon so we know the path
-		CStationType *pType = g_pUniverse->FindStationType(0x2004);
-		CStation *pBeacon;
-		g_pUniverse->GetCurrentSystem()->CreateStation(pType, NULL, pCurrent->vPos, (CSpaceObject **)&pBeacon);
-		pBeacon->SetName(strPatternSubst(CONSTLIT("Path %d"), iLoopCount));
+		m_PointsChecked.Insert(pCurrent->vPos);
 #endif
 		}
 

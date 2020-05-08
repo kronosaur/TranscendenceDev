@@ -454,6 +454,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CSystemMapDisplay.cpp" />
+    <ClCompile Include="CSystemStationsMenu.cpp" />
     <ClCompile Include="CTranscendenceController.cpp" />
     <ClCompile Include="CTranscendenceModel.cpp" />
     <ClCompile Include="CTranscendencePlayer.cpp" />

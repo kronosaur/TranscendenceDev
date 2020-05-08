@@ -251,6 +251,8 @@ class CItem
 			EnhanceItemStatus iResult = eisUnknown;
 			CItemEnhancement Enhancement;
 			CString sDesc;
+			CString sNextScreen;
+			bool bDoNotConsume = false;
 			};
 
 		CItem (void);
@@ -302,7 +304,7 @@ class CItem
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (void) const;
-		bool GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
+		bool GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, const CString &sMode, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
 		inline const CObjectImageArray &GetImage (void) const;
 		int GetInstallCost (void) const;

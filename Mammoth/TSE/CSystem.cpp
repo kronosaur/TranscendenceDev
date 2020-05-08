@@ -7,45 +7,37 @@
 #include "math.h"
 #include "SystemPaintImpl.h"
 
-#define ENHANCED_SRS_BLOCK_SIZE			6
+constexpr int ENHANCED_SRS_BLOCK_SIZE =			6;
 
-#define LEVEL_ENCOUNTER_CHANCE			10
+constexpr Metric MAX_ENCOUNTER_DIST	=			30.0 * LIGHT_MINUTE;
+constexpr Metric MAX_MIRV_TARGET_RANGE =		50.0 * LIGHT_SECOND;
 
-const Metric MAX_ENCOUNTER_DIST	=				30.0 * LIGHT_MINUTE;
-const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
+constexpr Metric GRAVITY_WARNING_THRESHOLD =	40.0;	//	Acceleration value at which we start warning
+constexpr Metric TIDAL_KILL_THRESHOLD =			7250.0;	//	Acceleration at which we get ripped apart
 
-const Metric GRAVITY_WARNING_THRESHOLD =		40.0;	//	Acceleration value at which we start warning
-const Metric TIDAL_KILL_THRESHOLD =				7250.0;	//	Acceleration at which we get ripped apart
+constexpr BYTE MAX_SPACE_OPACITY =				128;
 
-const BYTE MAX_SPACE_OPACITY =					128;
+constexpr int MAX_THREAD_COUNT =				16;
 
-const int MAX_THREAD_COUNT =					16;
+#define ON_CREATE_EVENT							CONSTLIT("OnCreate")
+#define ON_OBJ_JUMP_POS_ADJ						CONSTLIT("OnObjJumpPosAdj")
 
-#define ON_CREATE_EVENT					CONSTLIT("OnCreate")
-#define ON_OBJ_JUMP_POS_ADJ				CONSTLIT("OnObjJumpPosAdj")
-
-#define SPECIAL_ATTRIB_INNER_SYSTEM		CONSTLIT("innerSystem")
-#define SPECIAL_ATTRIB_LIFE_ZONE		CONSTLIT("lifeZone")
-#define SPECIAL_ATTRIB_NEAR_STATIONS	CONSTLIT("nearStations")
-#define SPECIAL_ATTRIB_OUTER_SYSTEM		CONSTLIT("outerSystem")
+#define SPECIAL_ATTRIB_INNER_SYSTEM				CONSTLIT("innerSystem")
+#define SPECIAL_ATTRIB_LIFE_ZONE				CONSTLIT("lifeZone")
+#define SPECIAL_ATTRIB_NEAR_STATIONS			CONSTLIT("nearStations")
+#define SPECIAL_ATTRIB_OUTER_SYSTEM				CONSTLIT("outerSystem")
 
 #define SEPARATION_CRITERIA						CONSTLIT("sTA")
 
-const CG32bitPixel g_rgbSpaceColor = CG32bitPixel(0,0,8);
-const Metric g_MetersPerKlick = 1000.0;
-const Metric MAP_VERTICAL_ADJUST =						1.4;
+constexpr CG32bitPixel RGB_GRID_LINE =			CG32bitPixel(65, 68, 77);
 
-const CG32bitPixel RGB_GRID_LINE =						CG32bitPixel(65, 68, 77);
+constexpr int GRID_SIZE =						256;
+const Metric CELL_SIZE =						(512.0 * g_KlicksPerPixel);
+const Metric CELL_BORDER =						(128.0 * g_KlicksPerPixel);
 
-const Metric BACKGROUND_OBJECT_FACTOR =					4.0;
+const Metric SAME_POS_THRESHOLD2 =				(g_KlicksPerPixel * g_KlicksPerPixel);
 
-const int GRID_SIZE =									256;
-const Metric CELL_SIZE =								(512.0 * g_KlicksPerPixel);
-const Metric CELL_BORDER =								(128.0 * g_KlicksPerPixel);
-
-const Metric SAME_POS_THRESHOLD2 =						(g_KlicksPerPixel * g_KlicksPerPixel);
-
-const Metric MAP_GRID_SIZE =							3000.0 * LIGHT_SECOND;
+constexpr Metric MAP_GRID_SIZE =				3000.0 * LIGHT_SECOND;
 
 CSystem::CSystem (CUniverse &Universe, CTopologyNode *pTopology) : 
 		m_Universe(Universe),
@@ -60,7 +52,6 @@ CSystem::CSystem (CUniverse &Universe, CTopologyNode *pTopology) :
 		m_iLastUpdated(-1),
 		m_fNoRandomEncounters(false),
 		m_fInCreate(false),
-		m_fEncounterTableValid(false),
 		m_fUseDefaultTerritories(true),
 		m_fEnemiesInLRS(false),
 		m_fEnemiesInSRS(false),
@@ -478,24 +469,6 @@ CVector CSystem::CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric r
 		}
 	}
 
-CG32bitPixel CSystem::CalcNearestStarColor (const CVector &vPos, CSpaceObject **retpStar) const
-
-//	CalcNearestStarColor
-//
-//	Computes the space color of the nearest star.
-
-	{
-	const SStarDesc *pBestStar = FindNearestStar(vPos);
-	if (pBestStar == NULL)
-		{
-		if (retpStar) *retpStar = NULL;
-		return CG32bitPixel(0, 0, 0);
-		}
-
-	if (retpStar) *retpStar = pBestStar->pStarObj;
-	return pBestStar->pStarObj->GetSpaceColor();
-	}
-
 CG32bitPixel CSystem::CalcStarshineColor (CSpaceObject *pPOV, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask) const
 
 //	CalcStarshineColor
@@ -675,35 +648,6 @@ void CSystem::CancelTimedEvent (CDesignType *pSource, const CString &sEvent, boo
 		}
 	}
 
-void CSystem::ComputeRandomEncounters (void)
-
-//	ComputeRandomEncounters
-//
-//	Creates the table that lists all objects in the system that
-//	can generate random encounters
-
-	{
-	int i;
-
-	if (m_fEncounterTableValid)
-		return;
-
-	m_EncounterObjs.DeleteAll();
-	if (!m_fNoRandomEncounters)
-		{
-		for (i = 0; i < GetObjectCount(); i++)
-			{
-			CSpaceObject *pObj = GetObject(i);
-
-			if (pObj 
-					&& pObj->HasRandomEncounters())
-				m_EncounterObjs.Add(pObj);
-			}
-		}
-
-	m_fEncounterTableValid = true;
-	}
-
 void CSystem::ComputeStars (void)
 
 //	ComputeStars
@@ -866,7 +810,6 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 	if (dwLoad & 0x00000002)
 		Ctx.pStream->Read((char *)&Ctx.dwVersion, sizeof(DWORD));
 	Ctx.pSystem->m_fUseDefaultTerritories =	((dwLoad & 0x00000004) ? false : true);
-	Ctx.pSystem->m_fEncounterTableValid = false;
 	Ctx.pSystem->m_fEnemiesInLRS =			((dwLoad & 0x00000008) ? false : true);
 	Ctx.pSystem->m_fEnemiesInSRS =			((dwLoad & 0x00000010) ? false : true);
 	Ctx.pSystem->m_fPlayerUnderAttack =		((dwLoad & 0x00000020) ? false : true);
@@ -1104,45 +1047,6 @@ ALERROR CSystem::CreateLocation (const CString &sID, const COrbit &Orbit, const 
 	return NOERROR;
 	}
 
-ALERROR CSystem::CreateRandomEncounter (IShipGenerator *pTable, 
-										CSpaceObject *pBase,
-										CSovereign *pBaseSovereign,
-										CSpaceObject *pTarget,
-										CSpaceObject *pGate)
-
-//	CreateRandomEncounter
-//
-//	Creates a random ship encounter
-
-	{
-	ASSERT(pTable);
-
-	SShipCreateCtx Ctx;
-	Ctx.pSystem = this;
-	Ctx.pBase = pBase;
-	Ctx.pBaseSovereign = pBaseSovereign;
-	Ctx.pTarget = pTarget;
-
-	//	Figure out where the encounter will come from
-
-	if (pGate && pGate->IsActiveStargate())
-		Ctx.pGate = pGate;
-	else if (pGate)
-		{
-		Ctx.vPos = pGate->GetPos();
-		Ctx.PosSpread = DiceRange(2, 1, 2);
-		}
-	else if (pTarget)
-		//	Exclude uncharted stargates
-		Ctx.pGate = pTarget->GetNearestStargate(true);
-
-	//	Generate ship
-
-	pTable->CreateShips(Ctx);
-
-	return NOERROR;
-	}
-
 ALERROR CSystem::CreateShip (DWORD dwClassID,
 							 IShipController *pController,
 							 CDesignType *pOverride,
@@ -1323,54 +1227,6 @@ ALERROR CSystem::CreateShipwreck (CShipClass *pClass,
 	return NOERROR;
 	}
 
-void GenerateSquareDist (int iTotalCount, int iMinValue, int iMaxValue, int *Dist)
-
-//	GenerateSquareDist
-//
-//	Generates buckets such that:
-//
-//	1. The sum of the buckets = iTotalCount
-//	2. Each bucket has units proportional to the square of its index value
-//
-//	Dist must be allocated to at least iMaxValue + 1
-
-	{
-	int i;
-
-	//	First generate a square distribution
-
-	int iTotalProb = 0;
-	for (i = 0; i < iMaxValue + 1; i++)
-		{
-		if (i >= iMinValue)
-			Dist[i] = i * i;
-		else
-			Dist[i] = 0;
-
-		iTotalProb += Dist[i];
-		}
-
-	ASSERT(iTotalProb > 0);
-	if (iTotalProb == 0)
-		return;
-
-	//	Scale the distribution to the total count
-
-	int iLeft = iTotalCount;
-	for (i = 0; i < iMaxValue + 1; i++)
-		{
-		int iNumerator = Dist[i] * iTotalCount;
-		int iBucketCount = iNumerator / iTotalProb;
-		int iBucketCountRemainder = iNumerator % iTotalProb;
-		if (mathRandom(0, iTotalProb - 1) < iBucketCountRemainder)
-			iBucketCount++;
-
-		iBucketCount = Min(iBucketCount, iLeft);
-		Dist[i] = iBucketCount;
-		iLeft -= iBucketCount;
-		}
-	}
-
 ALERROR CSystem::CreateStargate (CStationType *pType,
 								 CVector &vPos,
 								 const CString &sStargateID,
@@ -1488,7 +1344,8 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 
 	//	Recompute encounter table
 
-	m_fEncounterTableValid = false;
+	if (pStation->HasRandomEncounters())
+		m_EncounterObjTable.Invalidate();
 
 	//	Done
 
@@ -1819,23 +1676,22 @@ const CSystem::SStarDesc *CSystem::FindNearestStar (const CVector &vPos, int *re
 		return NULL;
 
 	const SStarDesc *pBestStar = &m_Stars[0];
-	int iBestDist = (int)(vPos.Longest() / LIGHT_SECOND);
+	Metric rBestDist2 = (vPos - pBestStar->pStarObj->GetPos()).Length2();
 
 	for (int i = 1; i < m_Stars.GetCount(); i++)
 		{
 		const CSpaceObject *pStar = m_Stars[i].pStarObj;
-		CVector vDist = vPos - pStar->GetPos();
+		Metric rDist2 = (vPos - pStar->GetPos()).Length2();
 
-		int iDistFromCenter = (int)(vDist.Longest() / LIGHT_SECOND);
-		if (iDistFromCenter < iBestDist)
+		if (rDist2 < rBestDist2)
 			{
-			iBestDist = iDistFromCenter;
+			rBestDist2 = rDist2;
 			pBestStar = &m_Stars[i];
 			}
 		}
 
 	if (retiDist)
-		*retiDist = iBestDist;
+		*retiDist = mathRound(sqrt(rBestDist2) / LIGHT_SECOND);
 
 	return pBestStar;
 	}
@@ -2227,6 +2083,89 @@ int CSystem::GetEmptyLocationCount (void)
 	TArray<int> EmptyLocations;
 	m_Locations.GetEmptyLocations(&EmptyLocations);
 	return EmptyLocations.GetCount();
+	}
+
+CLocationSelectionTable CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion)
+
+//	GetEmptyLocations
+//
+//	Returns a table of empty locations matching the given criteria.
+
+	{
+	CLocationSelectionTable Result(*this);
+
+	//	Check labels for overlap
+
+	BlockOverlappingLocations();
+
+	//	See if we need to check for distance from center
+
+	CVector vCenter;
+	bool bCheckMin = (Criteria.rMinDist != 0.0);
+	bool bCheckMax = (Criteria.rMaxDist != 0.0);
+	Metric rMinDist2;
+	Metric rMaxDist2;
+	if (bCheckMin || bCheckMax)
+		{
+		vCenter = CenterOrbitDesc.GetObjectPos();
+		rMinDist2 = Criteria.rMinDist * Criteria.rMinDist;
+		rMaxDist2 = Criteria.rMaxDist * Criteria.rMaxDist;
+		}
+	else
+		{
+		rMinDist2 = 0.0;
+		rMaxDist2 = 0.0;
+		}
+
+	//	Loop over all locations and add as appropriate
+
+	for (int i = 0; i < m_Locations.GetCount(); i++)
+		{
+		CLocationDef &Loc = m_Locations.GetLocation(i);
+
+		//	Skip locations that are not empty.
+
+		if (!Loc.IsEmpty())
+			continue;
+
+		//	Compute the probability based on attributes
+
+		int iChance = CalcLocationAffinity(Loc, Criteria.AttribCriteria);
+		if (iChance == 0)
+			continue;
+
+		//	If we need to check distance, do it now
+
+		if (bCheckMin || bCheckMax)
+			{
+			CVector vDist = Loc.GetOrbit().GetObjectPos() - vCenter;
+			Metric rDist2 = vDist.Length2();
+
+			if (bCheckMin && rDist2 < rMinDist2)
+				continue;
+			else if (bCheckMax && rDist2 > rMaxDist2)
+				continue;
+			}
+
+		//	Make sure the area is clear
+
+		if (pStationToPlace)
+			{
+			if (!IsExclusionZoneClear(Loc.GetOrbit().GetObjectPos(), *pStationToPlace))
+				continue;
+			}
+		else if (rMinExclusion > 0.0)
+			{
+			if (!IsExclusionZoneClear(Loc.GetOrbit().GetObjectPos(), rMinExclusion))
+				continue;
+			}
+
+		//	Add to the table
+
+		Result.Insert(i, iChance);
+		}
+
+	return Result;
 	}
 
 bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion, TProbabilityTable<int> *retTable)
@@ -2955,14 +2894,6 @@ void CSystem::MarkImages (void)
 	//	We mark some default effects, which are very commonly used (e.g., for
 	//	ship explosions).
 
-	CEffectCreator *pEffect = m_Universe.FindEffectType(g_LargeExplosionUNID);
-	if (pEffect)
-		pEffect->MarkImages();
-
-	pEffect = m_Universe.FindEffectType(g_ExplosionUNID);
-	if (pEffect)
-		pEffect->MarkImages();
-
 	TSharedPtr<CObjectImage> pImage = m_Universe.FindLibraryImage(g_ShipExplosionParticlesUNID);
 	if (pImage)
 		pImage->Mark();
@@ -3415,7 +3346,6 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 		int y;
 		};
 
-	int i;
 	Metric rKlicksPerPixel = rScale;
 
 	//	Options
@@ -3429,7 +3359,7 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	CVector vLL[CPerceptionCalc::RANGE_ARRAY_SIZE];
 	Metric rMaxDist2[CPerceptionCalc::RANGE_ARRAY_SIZE];
 
-	for (i = 0; i < CPerceptionCalc::RANGE_ARRAY_SIZE; i++)
+	for (int i = 0; i < CPerceptionCalc::RANGE_ARRAY_SIZE; i++)
 		{
 		Metric rRange = CPerceptionCalc::GetRange(i);
 
@@ -3493,26 +3423,41 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	//	(We do two passes for painting, so we need to keep the object in a 
 	//	smaller list.)
 
+	TArray<SPaintEntry> WorldList(100);
 	TArray<SPaintEntry> PaintList(100);
 
 	m_fEnemiesInLRS = false;
 	bool bNewEnemies = false;
-	for (i = 0; i < GetObjectCount(); i++)
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
-		if (pObj == NULL)
+		if (pObj == NULL 
+				|| pObj->IsHidden()
+				|| pObj->IsVirtual()
+				|| (!bShow3DExtras && pObj->Is3DExtra()))
 			continue;
 
-		int iRange;
-		if (!pObj->IsHidden()
-				&& !pObj->IsVirtual()
-				&& (bShow3DExtras || !pObj->Is3DExtra())
-				&& pObj->InBox(vLargeUR, vLargeLL))
+		if (pObj->InBox(vLargeUR, vLargeLL))
 			{
-			if ((pObj->GetScale() == scaleStar 
-					|| pObj->GetScale() == scaleWorld 
-					|| ((iRange = pObj->GetDetectionRangeIndex(iPerception)) < CPerceptionCalc::RANGE_ARRAY_SIZE
-						&& pCenter->GetDistance2(pObj) <= rMaxDist2[iRange])))
+			int iRange;
+
+			if (pObj->GetScale() == scaleStar || pObj->GetScale() == scaleWorld)
+				{
+				//	Add to the list
+
+				SPaintEntry *pEntry = WorldList.Insert();
+				pEntry->pObj = pObj;
+
+				//	Figure out the position of the object in pixels
+
+				Trans.Transform(pObj->GetPos(), &pEntry->x, &pEntry->y);
+
+				//	This object is now in the LRS
+
+				pObj->SetPOVLRS();
+				}
+			else if ((iRange = pObj->GetDetectionRangeIndex(iPerception)) < CPerceptionCalc::RANGE_ARRAY_SIZE
+						&& pCenter->GetDistance2(pObj) <= rMaxDist2[iRange])
 				{
 				//	Add to the list
 
@@ -3553,16 +3498,28 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 			}
 		}
 
-	//	First we paint the background part of all objects
+	//	First we paint all worlds
 
-	for (i = 0; i < PaintList.GetCount(); i++)
+	for (int i = 0; i < WorldList.GetCount(); i++)
+		{
+		WorldList[i].pObj->PaintLRSBackground(Dest, WorldList[i].x, WorldList[i].y, Trans);
+		}
+
+	//	Next we paint the background part of all other objects
+
+	for (int i = 0; i < PaintList.GetCount(); i++)
 		{
 		PaintList[i].pObj->PaintLRSBackground(Dest, PaintList[i].x, PaintList[i].y, Trans);
 		}
 
 	//	Then we paint the foreground part
 
-	for (i = 0; i < PaintList.GetCount(); i++)
+	for (int i = 0; i < WorldList.GetCount(); i++)
+		{
+		WorldList[i].pObj->PaintLRSForeground(Dest, WorldList[i].x, WorldList[i].y, Trans);
+		}
+
+	for (int i = 0; i < PaintList.GetCount(); i++)
 		{
 		PaintList[i].pObj->PaintLRSForeground(Dest, PaintList[i].x, PaintList[i].y, Trans);
 		}
@@ -4030,7 +3987,7 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 	//	Invalidate encounter table cache
 
 	if (Ctx.Obj.HasRandomEncounters())
-		m_fEncounterTableValid = false;
+		m_EncounterObjTable.Invalidate();
 
 	//	If this was a star then recalc the list of stars
 
@@ -5071,15 +5028,6 @@ void CSystem::UpdateRandomEncounters (void)
 //	Updates random encounters
 
 	{
-	struct SEncounter
-		{
-		int iWeight;
-		CSpaceObject *pObj;
-		IShipGenerator *pTable;
-		};
-
-	int i;
-
 	if (m_fNoRandomEncounters)
 		return;
 
@@ -5089,90 +5037,26 @@ void CSystem::UpdateRandomEncounters (void)
 	if (pPlayer == NULL || pPlayer->IsDestroyed())
 		return;
 
-	IShipGenerator *pTable = NULL;
-	CSpaceObject *pBase = NULL;
-	CDesignType *pType = NULL;
-	CSovereign *pBaseSovereign = NULL;
-
 	//	Some percent of the time we generate a generic level encounter; the rest of the
 	//	time, the encounter is based on the stations in this system.
 
 	if (mathRandom(1, 100) <= LEVEL_ENCOUNTER_CHANCE)
-		m_Universe.GetRandomLevelEncounter(GetLevel(), &pType, &pTable, &pBaseSovereign);
-	else
 		{
-		//	Compute the list of all objects that have encounters (and cache it)
-
-		ComputeRandomEncounters();
-
-		//	Allocate and fill-in the table
-
-		if (m_EncounterObjs.GetCount() > 0)
+		if (CRandomEncounterDesc Encounter = m_EncounterTypeTable.CalcEncounter(*this, *pPlayer))
 			{
-			SEncounter *pMainTable = new SEncounter [m_EncounterObjs.GetCount()];
-			int iCount = 0;
-			int iTotal = 0;
-			for (i = 0; i < m_EncounterObjs.GetCount(); i++)
-				{
-				CSpaceObject *pObj = m_EncounterObjs.GetObj(i);
-
-				//	Get frequency and (optionally) table
-
-				int iFreq;
-				IShipGenerator *pTable = pObj->GetRandomEncounterTable(&iFreq);
-
-				//	Adjust frequency to account for the player's distance from the object
-
-				Metric rDist = Max(LIGHT_MINUTE, pPlayer->GetDistance(pObj));
-				Metric rDistAdj = (rDist <= MAX_ENCOUNTER_DIST ? LIGHT_MINUTE / rDist : 0.0);
-				iFreq = (int)(iFreq * 10.0 * rDistAdj);
-
-				//	Add to table
-
-				if (iFreq > 0)
-					{
-					pMainTable[iCount].iWeight = iFreq;
-					pMainTable[iCount].pObj = pObj;
-					pMainTable[iCount].pTable = pTable;
-
-					iTotal += iFreq;
-					iCount++;
-					}
-				}
-
-			//	Pick a random entry in the table
-
-			if (iTotal > 0)
-				{
-				int iRoll = mathRandom(0, iTotal - 1);
-				int iPos = 0;
-
-				//	Get the position
-
-				while (pMainTable[iPos].iWeight <= iRoll)
-					iRoll -= pMainTable[iPos++].iWeight;
-
-				//	Done
-
-				pTable = pMainTable[iPos].pTable;
-				pBase = pMainTable[iPos].pObj;
-				if (pBase)
-					pType = pBase->GetType();
-				}
-
-			delete [] pMainTable;
+			Encounter.Create(*this, pPlayer);
 			}
 		}
 
-	//	If we've got a table, then create the random encounter
+	//	Otherwise, create encounter based on existing objects
 
-	if (pTable)
-		CreateRandomEncounter(pTable, pBase, pBaseSovereign, pPlayer);
-
-	//	Otherwise, fire the OnRandomEncounter event
-
-	else if (pType)
-		pType->FireOnRandomEncounter(pBase);
+	else
+		{
+		if (CRandomEncounterDesc Encounter = m_EncounterObjTable.CalcEncounter(*this, *pPlayer))
+			{
+			Encounter.Create(*this, pPlayer);
+			}
+		}
 
 	//	Next encounter
 

@@ -51,6 +51,7 @@ const CG32bitPixel RGB_MODIFIER_NORMAL_TEXT =			CG32bitPixel(220,220,220);	//	H:
 #define PROP_ENABLED							CONSTLIT("enabled")
 #define PROP_FILL_TYPE							CONSTLIT("fillType")
 #define PROP_FONT								CONSTLIT("font")
+#define PROP_IGNORE_DOUBLE_CLICK				CONSTLIT("ignoreDoubleClick")
 #define PROP_LINE_COLOR							CONSTLIT("lineColor")
 #define PROP_LINE_PADDING						CONSTLIT("linePadding")
 #define PROP_LINE_TYPE							CONSTLIT("lineType")
@@ -942,6 +943,9 @@ void CUIHelper::RefreshMenu (IHISession *pSession, IAnimatron *pRoot, const TArr
 
 		if (Entry.dwFlags & MENU_DISABLED)
 			pButton->SetPropertyBool(PROP_ENABLED, false);
+
+		if (Entry.dwFlags & MENU_IGNORE_DOUBLE_CLICK)
+			pButton->SetPropertyBool(PROP_IGNORE_DOUBLE_CLICK, true);
 
 		//	Register for command
 

@@ -92,6 +92,7 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
     pEntry->fEnemy = ObjData.fEnemy;
 	pEntry->fInactive = ObjData.fInactive;
 	pEntry->fPlayerBlacklisted = ObjData.fPlayerBlacklisted;
+	pEntry->fIsStargate = ObjData.fIsStargate;
 
 	if (ObjData.pExtra)
 		{
@@ -122,6 +123,7 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
         Ctx.bShowDestroyed = pEntry->fShowDestroyed;
         Ctx.bEnemy = pEntry->fEnemy;
         Ctx.bFriend = pEntry->fFriendly;
+		Ctx.bIsStargate = pEntry->fIsStargate;
 
         pEntry->sNotes = pEntry->pType->GetMapDescription(Ctx);
         if (pEntry->sNotes.IsBlank())
@@ -665,6 +667,11 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                         pObjData->fInactive =		((dwLoad & 0x00000040) ? true : false);
                         pObjData->fPlayerBlacklisted = ((dwLoad & 0x00000080) ? true : false);
 
+						if (Ctx.dwSystemVersion >= 188)
+							pObjData->fIsStargate =		((dwLoad & 0x00000100) ? true : false);
+						else
+							pObjData->fIsStargate = pType->HasAttribute(CONSTLIT("stargate"));
+
                         //  Extra, if we've got it
 
                         if (dwLoad & 0x00000001)
@@ -957,6 +964,7 @@ void CObjectTracker::Refresh (const CSpaceObject &Obj, SObjBasics &ObjData, cons
     ObjData.fShowInMap = Obj.IsShownInGalacticMap();
 	ObjData.fInactive = Obj.IsInactive();
 	ObjData.fPlayerBlacklisted = (pPlayer && !Obj.IsEnemy(pPlayer) && Obj.IsAngryAt(pPlayer));
+	ObjData.fIsStargate = Obj.IsStargate();
 
     //  Track our disposition relative to the player
 
@@ -1298,6 +1306,7 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
                 dwSave |= (ObjData.fEnemy				? 0x00000020 : 0);
                 dwSave |= (ObjData.fInactive			? 0x00000040 : 0);
                 dwSave |= (ObjData.fPlayerBlacklisted	? 0x00000080 : 0);
+				dwSave |= (ObjData.fIsStargate			? 0x00000100 : 0);
 			    pStream->Write((char *)&dwSave, sizeof(DWORD));
 
                 //  If we have extra data, save that

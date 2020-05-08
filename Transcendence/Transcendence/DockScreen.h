@@ -117,6 +117,7 @@ class IDockScreenDisplay
 
 		static bool GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retOptions, CString *retsError);
 		static bool ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgroundDesc *retDesc);
+		static bool ParseAlign (const ICCItem &Align, DWORD *retdwAlign = NULL);
 
 	protected:
 		virtual EResults OnAddListFilter (const CString &sID, const CString &sLabel, const CItemCriteria &Filter) { return resultNone; }
@@ -394,6 +395,7 @@ class CDockScreenLayout
 		static constexpr int TITLE_HEIGHT =				72;
 		static constexpr int TITLE_PADDING_LEFT =		8;
 
+		void CalcBackgroundImagePos (const SDockScreenBackgroundDesc &Desc, const CG32bitImage &Image, DWORD dwDefaultAlignment, int &retX, int &retY) const;
 		RECT GetCanvasRect (void) const;
 		RECT GetCargoStatusLabelRect (void) const;
 		RECT GetCargoStatusRect (void) const;

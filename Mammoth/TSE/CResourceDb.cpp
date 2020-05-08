@@ -541,8 +541,12 @@ ALERROR CResourceDb::LoadImage (const CString &sFolder, const CString &sFilename
 				sFilespec = sFilename;
 
 			CString sData;
-			if (error = ReadEntry(sFilespec, &sData))
+			CString sError;
+			if (error = ReadEntry(sFilespec, &sData, &sError))
+				{
+				kernelDebugLogPattern("ReadEntry: %s", sError);
 				return error;
+				}
 
 			CString sType = pathGetExtension(sFilespec);
 			if (strEquals(sType, CONSTLIT("jpg")))
@@ -1004,7 +1008,7 @@ ALERROR CResourceDb::LoadSound (CSoundMgr &SoundMgr, const CString &sFolder, con
 	return NOERROR;
 	}
 
-ALERROR CResourceDb::ReadEntry (const CString &sFilespec, CString *retsData)
+ALERROR CResourceDb::ReadEntry (const CString &sFilespec, CString *retsData, CString *retsError)
 
 //	ReadEntry
 //
@@ -1019,10 +1023,26 @@ ALERROR CResourceDb::ReadEntry (const CString &sFilespec, CString *retsData)
 
 	SResourceEntry *pEntry = m_ResourceMap.GetAt(sFilespec);
 	if (pEntry == NULL)
+		{
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find TDB resource: %s"), sFilespec);
 		return ERR_FAIL;
+		}
 
 	if (error = m_pDb->ReadEntry(pEntry->iEntryID, retsData))
+		{
+		switch (error)
+			{
+			case ERR_MEMORY:
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Out of memory reading TDB resource: %s"), sFilespec);
+				break;
+
+			default:
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Error reading TDB resource: %s"), sFilespec);
+				break;
+			}
+
 		return error;
+		}
 
 	//	If this is a compressed entry, we need to uncompress it.
 
@@ -1032,10 +1052,16 @@ ALERROR CResourceDb::ReadEntry (const CString &sFilespec, CString *retsData)
 
 		CMemoryWriteStream Output;
 		if (error = Output.Create())
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Out of memory allocating block for decompression: %s"), sFilespec);
 			return ERR_FAIL;
+			}
 
 		if (!::zipDecompress(Input, compressionZlib, Output))
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to decompress resource: %s"), sFilespec);
 			return ERR_FAIL;
+			}
 
 		*retsData = CString(Output.GetPointer(), Output.GetLength());
 		}

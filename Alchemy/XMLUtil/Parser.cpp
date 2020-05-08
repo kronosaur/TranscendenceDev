@@ -305,6 +305,7 @@ ALERROR ParseElement (ParserCtx *pCtx, CXMLElement **retpElement)
 
 	//	Parse the tag name
 
+	int iOpenTagLine = pCtx->iLine;
 	if (ParseToken(pCtx) != tkText)
 		{
 		pCtx->sError = LITERAL("element tag expected");
@@ -496,7 +497,7 @@ ALERROR ParseElement (ParserCtx *pCtx, CXMLElement **retpElement)
 		if (ParseToken(pCtx) != tkText
 				|| strCompareAbsolute(pCtx->sToken, pElement->GetTag()) != 0)
 			{
-			pCtx->sError = LITERAL("close tag does not match open");
+			pCtx->sError = strPatternSubst(CONSTLIT("close tag </%s> does not match open <%s> on line %d"), pCtx->sToken, pElement->GetTag(), iOpenTagLine);
 			delete pElement;
 			return ERR_FAIL;
 			}
@@ -505,7 +506,7 @@ ALERROR ParseElement (ParserCtx *pCtx, CXMLElement **retpElement)
 
 		if (ParseToken(pCtx) != tkTagClose)
 			{
-			pCtx->sError = LITERAL("close tag expected");
+			pCtx->sError = strPatternSubst(CONSTLIT("close tag expected for element <%s> on line %d"), pElement->GetTag(), iOpenTagLine);
 			delete pElement;
 			return ERR_FAIL;
 			}

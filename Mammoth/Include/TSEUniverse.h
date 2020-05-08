@@ -319,8 +319,9 @@ class CUniverse
 			fontSRSObjCounter =			4,	//	Font for counter labels
 			fontPlanetoidMapLabel =		5,
 			fontWorldMapLabel =			6,
+			fontLargeWorldMapLabel =	7,
 
-			fontCount =					7,
+			fontCount =					8,
 			};
 
 		CUniverse (void);
@@ -410,7 +411,6 @@ class CUniverse
 		CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
 		CPerformanceCounters &GetPerformanceCounters (void) { return m_PerformanceCounters; }
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
-		void GetRandomLevelEncounter (int iLevel, CDesignType **retpType, IShipGenerator **retpTable, CSovereign **retpBaseSovereign);
 		CString GetResourceDb (void) { return m_sResourceDb; }
 		CCriticalSection &GetSem (void) { return m_cs; }
 		CSFXOptions &GetSFXOptions (void) { return m_SFXOptions; }
@@ -506,7 +506,8 @@ class CUniverse
 		GenomeTypes GetPlayerGenome (void) const;
 		CString GetPlayerName (void) const;
 		CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
-		CSovereign *GetPlayerSovereign (void) const;
+		const CSovereign *GetPlayerSovereign (void) const;
+		CSovereign *GetPlayerSovereign (void);
 		DWORD GetTicks (void) { return (DWORD)m_iTick; }
 
 		void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); m_DynamicImageLibrary.ClearMarks();  }
@@ -575,7 +576,6 @@ class CUniverse
 		ALERROR InitCodeChainPrimitives (void);
 		ALERROR InitDeviceStorage (CString *retsError);
 		ALERROR InitFonts (void);
-		ALERROR InitLevelEncounterTables (void);
 		ALERROR InitRequiredEncounters (CString *retsError);
 		ALERROR InitTopology (DWORD dwStartingMap, CString *retsError);
 		void SetHost (IHost *pHost);
@@ -592,7 +592,6 @@ class CUniverse
 
 		CString m_sResourceDb;					//	Resource database
 
-		TArray<TArray<SLevelEncounter>> m_LevelEncounterTables;	//	Array of SLevelEncounter arrays
 		bool m_bBasicInit = false;				//	TRUE if we've initialized CodeChain, etc.
 
 		//	Game instance data

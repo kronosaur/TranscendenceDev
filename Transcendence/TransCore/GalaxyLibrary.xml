@@ -241,17 +241,17 @@
 	<!ENTITY stStarClassA5				"0x0002007A">
 	<!ENTITY stStarClassA0				"0x0002007B">
 	
-	<!-- 0080-008F OVOID ASTEROIDS -->
+	<!-- 0080-008F OVOID ASTEROIDS (OLD SCALE) -->
 	
 	<!ENTITY rsOvoidAsteroids			"0x00020080">
-	<!ENTITY stOvoidAsteroidSizeA		"0x00020081">
-	<!ENTITY stOvoidAsteroidSizeB		"0x00020082">
-	<!ENTITY stOvoidAsteroidSizeC		"0x00020083">
-	<!ENTITY stOvoidAsteroidSizeD		"0x00020084">
-	<!ENTITY stOvoidPlanetoidSizeE		"0x00020085">
-	<!ENTITY stOvoidPlanetoidSizeF		"0x00020086">
-	<!ENTITY stOvoidPlanetoidSizeG		"0x00020087">
-	<!ENTITY tbOvoidTables				"0x00020088">
+	<!ENTITY stOvoidAsteroidSizeAComp	"0x00020081">
+	<!ENTITY stOvoidAsteroidSizeBComp	"0x00020082">
+	<!ENTITY stOvoidAsteroidSizeCComp	"0x00020083">
+	<!ENTITY stOvoidAsteroidSizeDComp	"0x00020084">
+	<!ENTITY stOvoidPlanetoidSizeEComp	"0x00020085">
+	<!ENTITY stOvoidPlanetoidSizeFComp	"0x00020086">
+	<!ENTITY stOvoidPlanetoidSizeGComp	"0x00020087">
+	<!ENTITY tbOvoidTablesComp			"0x00020088">
 	<!ENTITY baOvoidAsteroid			"0x00020089">
 	
 	<!-- 0090-00AF SYSTEM BACKGROUNDS -->
@@ -357,6 +357,34 @@
 	<!ENTITY ovLootCavernPrimordial		"0x00020149">
 	<!ENTITY ovLootCavernRocky			"0x0002014A">
 	<!ENTITY ovLootCavernVolcanic		"0x0002014B">
+
+	<!-- 0160-017F SCORIA ASTEROIDS -->
+
+	<!ENTITY tbScoriaTables				"0x00020160">
+	<!ENTITY baScoriaAsteroid			"0x00020161">
+	<!ENTITY rsScoriaAsteroids			"0x00020162">
+	<!ENTITY stScoriaAsteroidSizeA1		"0x00020163">
+	<!ENTITY stScoriaAsteroidSizeA2		"0x00020164">
+	<!ENTITY stScoriaAsteroidSizeA3		"0x00020165">
+	<!ENTITY stScoriaAsteroidSizeA4		"0x00020166">
+	<!ENTITY stScoriaAsteroidSizeB1		"0x00020167">
+	<!ENTITY stScoriaAsteroidSizeB2		"0x00020168">
+	<!ENTITY stScoriaAsteroidSizeC1		"0x00020169">
+	<!ENTITY stScoriaAsteroidSizeC2		"0x0002016A">
+	<!ENTITY stScoriaAsteroidSizeD		"0x0002016B">
+	<!ENTITY baScoriaPlanetoid			"0x0002016C">
+	<!ENTITY stScoriaPlanetoidSizeE		"0x0002016D">
+
+	<!-- 0180-019F OVOID ASTEROIDS -->
+
+	<!ENTITY tbOvoidTables				"0x00020180">
+	<!ENTITY stOvoidAsteroidSizeA1		"0x00020181">
+	<!ENTITY stOvoidAsteroidSizeA2		"0x00020182">
+	<!ENTITY stOvoidAsteroidSizeA3		"0x00020183">
+	<!ENTITY stOvoidAsteroidSizeB1		"0x00020184">
+	<!ENTITY stOvoidAsteroidSizeB2		"0x00020185">
+	<!ENTITY stOvoidAsteroidSizeC		"0x00020186">
+	<!ENTITY stOvoidAsteroidSizeD		"0x00020187">
 	]>
 	
 <CoreLibrary
@@ -381,9 +409,11 @@
 	<Module filename="Ore.xml"/>
 	<Module filename="OreStone.xml"/>
 	<Module filename="Ovoids.xml"/>
+	<Module filename="OvoidsCompatibility.xml"/>
 	<Module filename="Neurohack.xml"/>
 	<Module filename="Primordial.xml"/>
 	<Module filename="Rocky.xml"/>
+	<Module filename="Scoria.xml"/>
 	<Module filename="Stargates.xml"/>
 	<Module filename="Stars.xml"/>
 	<Module filename="StarSystems.xml"/>

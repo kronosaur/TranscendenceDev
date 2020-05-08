@@ -157,6 +157,7 @@ class CHullDesc
 		int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
 		int GetMaxCounter(void) const { return m_iMaxCounter; }
 		int GetMaxDevices (void) const { return m_iMaxDevices; }
+		int GetMaxLaunchers (void) const { return m_iMaxLaunchers; }
 		int GetMaxNonWeapons (void) const { return m_iMaxNonWeapons; }
 		int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
 		int GetMaxWeapons (void) const { return m_iMaxWeapons; }
@@ -193,6 +194,7 @@ class CHullDesc
 		int m_iMaxDevices = 0;				//	Max number of devices
 		int m_iMaxWeapons = 0;				//	Max number of weapon devices (including launchers)
 		int m_iMaxNonWeapons = 0;			//	Max number of non-weapon devices
+		int m_iMaxLaunchers = 0;			//	Max number of launchers
 
 		Metric m_rExtraPoints = 0.0;		//	Extra point to calculate hull value
 

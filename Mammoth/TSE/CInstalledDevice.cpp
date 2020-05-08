@@ -35,6 +35,7 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_iMinFireArc(0),
 		m_iMaxFireArc(0),
 		m_iShotSeparationScale(32767),
+		m_iMaxFireRange(0),
 
 		m_iTimeUntilReady(0),
 		m_iFireAngle(0),
@@ -62,7 +63,8 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_fLinkedFireNever(false),
 		m_fLinkedFireSelectedVariants(false),
 		m_fCycleFire(false),
-		m_fCanTargetMissiles(false)
+		m_fCanTargetMissiles(false),
+		m_fOnSegment(false)
 	{
 	}
 
@@ -78,7 +80,7 @@ bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray
 	//	Slot enhancements
 
 	if (!m_SlotEnhancements.IsEmpty())
-		bEnhanced = m_SlotEnhancements.Accumulate(CItemCtx(pSource, const_cast<CInstalledDevice *>(this)), *GetItem(), EnhancementIDs, pEnhancements);
+		bEnhanced = m_SlotEnhancements.Accumulate(GetLevel(), *GetItem(), *pEnhancements, &EnhancementIDs);
 
 	return bEnhanced;
 	}
@@ -327,6 +329,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 
 	{
 	m_sID = Desc.sID;
+	m_fOnSegment = Desc.bOnSegment;
 
 	m_fOmniDirectional = Desc.bOmnidirectional;
 	m_iMinFireArc = Desc.iMinFireArc;
@@ -339,6 +342,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 	m_fExternal = Desc.bExternal;
 	m_fCannotBeEmpty = Desc.bCannotBeEmpty;
 	m_iShotSeparationScale = (unsigned int)(Desc.rShotSeparationScale * 32767);
+	m_iMaxFireRange = Desc.iMaxFireRange;
 
 	SetLinkedFireOptions(Desc.dwLinkedFireOptions);
 	SetFate(Desc.iFate);
@@ -450,6 +454,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 		m_f3DPosition = Desc.b3DPosition;
 		m_fCannotBeEmpty = Desc.bCannotBeEmpty;
 		m_iShotSeparationScale = (unsigned int)(Desc.rShotSeparationScale * 32767);
+		m_iMaxFireRange = Desc.iMaxFireRange;
 
 		SetFate(Desc.iFate);
 
@@ -489,7 +494,13 @@ bool CInstalledDevice::IsLinkedFire (ItemCategories iTriggerCat) const
 	else if (iTriggerCat == itemcatNone)
 		return true;
 	else
-		return (GetClass()->GetCategory() == iTriggerCat);
+		{
+		ItemCategories iNewItemCategory = GetClass()->GetCategory();
+		if (GetClass()->UsesLauncherControls() && iNewItemCategory == itemcatWeapon)
+			iNewItemCategory = itemcatLauncher;
+
+		return (iNewItemCategory == iTriggerCat);
+		}
 	}
 
 bool CInstalledDevice::IsSelectable (void) const
@@ -631,7 +642,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 //	DWORD		device: low = m_iSlotPosIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
 //	DWORD		device: low = m_iActivateDelay; hi = m_iPosZ
-//	DWORD		device: low = m_iShotSeparationScale; hi = UNUSED
+//	DWORD		device: low = m_iShotSeparationScale; hi = m_iMaxFireRange
 //	DWORD		device: flags
 //
 //	CItemEnhancementStack
@@ -754,10 +765,12 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 		{
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 		m_iShotSeparationScale = (int)LOWORD(dwLoad);
+		m_iMaxFireRange = (int)HIWORD(dwLoad);
 		}
 	else
 		{
 		m_iShotSeparationScale = 32767;
+		m_iMaxFireRange = 0;
 		}
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
@@ -788,6 +801,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	m_fLinkedFireSelectedVariants = ((dwLoad & 0x00800000) ? true : false);
 	m_fCycleFire =		((dwLoad & 0x01000000) ? true : false);
 	m_fCanTargetMissiles =	((dwLoad & 0x02000000) ? true : false);
+	m_fOnSegment =			((dwLoad & 0x04000000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -1350,7 +1364,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //	DWORD		device: low = m_iSlotIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
 //	DWORD		device: low = m_iActivateDelay; hi = m_iPosZ
-//	DWORD		device: low = m_iShotSeparationScale; hi = UNUSED
+//	DWORD		device: low = m_iShotSeparationScale; hi = m_iMaxFireRange
 //	DWORD		device: flags
 //
 //	CItemEnhancementStack
@@ -1393,7 +1407,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave = MAKELONG(m_iActivateDelay, m_iPosZ);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	dwSave = MAKELONG(m_iShotSeparationScale, 0);
+	dwSave = MAKELONG(m_iShotSeparationScale, m_iMaxFireRange);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	dwSave = 0;
@@ -1423,6 +1437,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fLinkedFireSelectedVariants ? 0x00800000 : 0);
 	dwSave |= (m_fCycleFire ?			0x01000000 : 0);
 	dwSave |= (m_fCanTargetMissiles ?	0x02000000 : 0);
+	dwSave |= (m_fOnSegment ?			0x04000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);

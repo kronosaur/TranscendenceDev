@@ -411,12 +411,24 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 	//	Load the image
 
 	CG32bitImage *pImage = NULL;
+	int cxImage = 0;
+	int cyImage = 0;
 	switch (Desc.iType)
 		{
 		case EDockScreenBackground::image:
 		case EDockScreenBackground::heroImage:
 			if (Desc.dwImageID)
+				{
 				pImage = g_pUniverse->GetLibraryBitmap(Desc.dwImageID);
+
+				cxImage = RectWidth(Desc.rcImage);
+				if (cxImage == 0)
+					cxImage = pImage->GetWidth();
+
+				cyImage = RectHeight(Desc.rcImage);
+				if (cyImage == 0)
+					cyImage = pImage->GetHeight();
+				}
 			break;
 		}
 
@@ -451,14 +463,17 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 			{
 			BltSystemBackground(g_pUniverse->GetCurrentSystem(), rcRect);
 
+			int xImage, yImage;
+			m_Layout.CalcBackgroundImagePos(Desc, *pImage, alignCenter | alignMiddle, xImage, yImage);
+
 			m_pBackgroundImage->Blt(Desc.rcImage.left,
 					Desc.rcImage.top,
-					RectWidth(Desc.rcImage),
-					RectHeight(Desc.rcImage),
+					cxImage,
+					cyImage,
 					255,
 					*pImage,
-					xOffset + m_Layout.GetFrameImageFocusX() - (RectWidth(Desc.rcImage) / 2),
-					m_Layout.GetFrameImageFocusY() - (RectHeight(Desc.rcImage) / 2));
+					xImage,
+					yImage);
 			}
 		}
 
@@ -568,14 +583,20 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 	//	If we have an image with a mask, just blt the masked image
 
 	else if (pImage && pImage->GetAlphaType() != CG32bitImage::alphaNone)
-		m_pBackgroundImage->Blt(0, 0, pImage->GetWidth(), pImage->GetHeight(), 255, *pImage, xOffset, 0);
+		{
+		int xImage, yImage;
+		m_Layout.CalcBackgroundImagePos(Desc, *pImage, alignLeft | alignTop, xImage, yImage);
+		m_pBackgroundImage->Blt(Desc.rcImage.left, Desc.rcImage.top, cxImage, cyImage, 255, *pImage, xImage, yImage);
+		}
 
 	//	If we have an image with no mask, then we need to create our own mask.
 	//	If the image is larger than the space, then it is flush right with 
 	//	the center line. Otherwise, it is flush left.
 
 	else if (pImage)
-		BltToBackgroundImage(rcRect, pImage, 0, 0, pImage->GetWidth(), pImage->GetHeight());
+		{
+		BltToBackgroundImage(rcRect, pImage, Desc.rcImage.left, Desc.rcImage.top, cxImage, cyImage);
+		}
 
 	return NOERROR;
 	}
@@ -1407,9 +1428,14 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 
 	//	Create the main display object based on the type parameter.
 
-	m_pDisplay = IDockScreenDisplay::Create(*this, DisplayOptions.sType, retsError);
+	m_pDisplay = IDockScreenDisplay::Create(*this, DisplayOptions.sType, &sError);
 	if (m_pDisplay == NULL)
-		return ERR_FAIL;
+		{
+		m_pDisplay = IDockScreenDisplay::Create(*this, NULL_STR);
+		ReportError(sError);
+
+		//	Continue
+		}
 
 	//	Initialize
 

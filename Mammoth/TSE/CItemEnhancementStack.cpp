@@ -66,9 +66,9 @@ void CItemEnhancementStack::AccumulateAttributes (const CItem &Item, TArray<SDis
 
 	int iPowerAdj = GetPowerAdj();
 	if (iPowerAdj > 100)
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-drain"), true));
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-power drain"), true));
 	else if (iPowerAdj < 100)
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+efficient"), true));
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+power save"), true));
 
 	//	Enhancements to fire rate
 

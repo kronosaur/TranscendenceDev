@@ -7,28 +7,35 @@
 	This screen is used to show simple dialog.
 
 	gData is a list of paneDesc. Each paneDesc has the following fields:
+
+		descID: The ID of the text for the pane. If not provided, we look for 
+				a desc field.
+				
+		data: If present, this data is used when translating any ID for the 
+				pane.
 	
-		desc: The description to show for the pane. [This should be literal text
-				after translation.]
+		labelID: This field indicates that we should have a single action to
+				advance to the next pane. This is the label for the action.
+				[Valid only if actions is Nil.] Alternatively, we look for a
+				label field.
+				
+		nextPage: The next pane to advance to, by ID. If this value is Nil, then
+				we exit the screen. If this is the special value 'forceUndock
+				then we exit and undock.
+		
+		code: This is a lambda function to execute when we advance to the
+				next pane. [Valid only if acitons is Nil.]
 				
 		actions: This is a list of actionDesc structures representing the set
 				of actions for this pane.
 		
-		nextLabel: This field indicates that we should have a single action to
-				advance to the next pane. This is the label for the action.
-				[Valid only if actions is Nil.]
-				
-		nextCode: This is a lambda function to execute when we advance to the
-				next pane.
-				[Valid only if acitons is Nil.]
-				
 		id: An optional identifier for the pane.
 				
 	An actionDesc structure has the following fields:
 	
-		label: The label for the action. This is required.
+		labelID: The label for the action. This is required.
 		
-		nextPane: The next pane to advance to, by ID. If this value is Nil, then
+		nextPage: The next pane to advance to, by ID. If this value is Nil, then
 				we exit the screen. If this is the special value 'forceUndock
 				then we exit and undock.
 		
@@ -37,9 +44,9 @@
 				
 	Alternatively, gData is a struct with the following options:
 	
-		dialog: A list of paneDesc (as above)
-		
 		dialogID: A text ID to translate to obtain the dialog.
+
+		dialog: A list of paneDesc (as above), if dialogID is missing.
 		
 		translateType: The type to use for translating dialogID and any IDs 
 				inside the dialog.

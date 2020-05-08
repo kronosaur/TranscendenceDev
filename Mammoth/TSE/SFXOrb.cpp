@@ -1431,10 +1431,10 @@ bool COrbEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int
 //	Returns TRUE if the given point is in the image
 
 	{
-	//	We only intersect if we are inside a box around the center of 1/2 the
-	//	width (since a lot of the width is taken up by glow effects).
+	//	We only intersect if we are inside a box around the center of the orb
+	//	(which is based on the intensity).
 
-	int iSize = (m_iRadius / 2);
+	int iSize = (m_iRadius * m_iIntensity / 120);
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 

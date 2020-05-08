@@ -94,8 +94,7 @@ class CItemLevelCriteria
 class CEnhancementDesc
 	{
 	public:
-		bool Accumulate (int iLevel, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
-		bool Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
+		bool Accumulate (int iLevel, const CItem &Target, CItemEnhancementStack &Enhancements, TArray<CString> *pEnhancementIDs = NULL) const;
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pEnhancerType);
 		void InsertHPBonus (int iBonus);
@@ -358,6 +357,7 @@ class CDeviceClass
 		virtual ESetPropertyResult SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError);
 		virtual bool ShowActivationDelayCounter (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) { }
+		virtual bool UsesLauncherControls (void) const { return false; }
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 
 		static DWORD CombineLinkedFireOptions (DWORD dwSrc1, DWORD dwSrc2);
@@ -428,10 +428,11 @@ struct SDeviceDesc
 	bool bOmnidirectional = false;				//	Slot turret
 	int iMinFireArc = 0;						//	Slot swivel
 	int iMaxFireArc = 0;
+	int iMaxFireRange = 0;						//	Slot range restriction (light-seconds)
 
 	DWORD dwLinkedFireOptions = 0;				//	Slot linked-fire options
 	bool bSecondary = false;
-
+	bool bOnSegment = false;					//	Slot is (logically) on segment with ID = sID
 	bool bExternal = false;						//	Slot is external
 	bool bCannotBeEmpty = false;				//	Slot cannot be empty
 	ItemFates iFate = fateNone;					//	Fate of device when ship destroyed
@@ -553,11 +554,14 @@ class CInstalledDevice
 		int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }
 		int GetMinFireArc (void) const { return m_iMinFireArc; }
 		int GetMaxFireArc (void) const { return m_iMaxFireArc; }
+		Metric GetMaxFireRange (void) const { return (m_iMaxFireRange == 0 ? g_InfiniteDistance : LIGHT_SECOND * m_iMaxFireRange); }
+		int GetMaxFireRangeLS (void) const { return m_iMaxFireRange; }
 		COverlay *GetOverlay (void) const { return m_pOverlay; }
 		int GetPosAngle (void) const { return m_iPosAngle; }
 		int GetPosRadius (void) const { return m_iPosRadius; }
 		int GetPosZ (void) const { return m_iPosZ; }
 		int GetRotation (void) const { return AngleMiddle(m_iMinFireArc, m_iMaxFireArc); }
+		const CString &GetSegmentID (void) const { return (m_fOnSegment ? m_sID : NULL_STR); }
 		const CEnhancementDesc &GetSlotEnhancements (void) const { return m_SlotEnhancements; }
 		double GetShotSeparationScale(void) const { return (double)m_iShotSeparationScale / 32767.0; }
 		int GetSlotPosIndex (void) const { return m_iSlotPosIndex; }
@@ -572,6 +576,7 @@ class CInstalledDevice
 		bool IsExternal (void) const { return m_fExternal; }
 		bool IsLastActivateSuccessful (void) const { return m_fLastActivateSuccessful; }
 		bool IsOmniDirectional (void) const { return (m_fOmniDirectional ? true : false); }
+		bool IsOnSegment (void) const { return (m_fOnSegment ? true : false); }
 		bool IsOptimized (void) const { return m_fOptimized; }
 		bool IsOverdrive (void) const { return m_fOverdrive; }
 		bool IsReady (void) const { return (m_iTimeUntilReady == 0); }
@@ -711,7 +716,7 @@ class CInstalledDevice
 		int m_iMaxFireArc:16;					//	Max angle of fire arc (degrees)
 
 		int m_iShotSeparationScale:16;			//	Scaled by 32767. Governs scaling of shot separation for dual etc weapons
-		DWORD m_dwSpare1:16;
+		int m_iMaxFireRange:16;					//	Max effective fire range (in light-seconds); 0 = no limit
 
 		int m_iTimeUntilReady:16;				//	Timer counting down until ready to activate
 		int m_iFireAngle:16;					//	Last fire angle
@@ -749,6 +754,7 @@ class CInstalledDevice
 		DWORD m_fCycleFire :1;					//	If TRUE, then cycle fire through weapons of same type and linked fire settings
 
 		DWORD m_fCanTargetMissiles:1;			//	If TRUE, then this weapon can fire at hostile missiles as well as ships
+		DWORD m_fOnSegment:1;					//	If TRUE, then device logically belongs to the segment specified by m_sID.
 
-		DWORD m_dwSpare2:7;
+		DWORD m_dwSpare2:6;
 	};

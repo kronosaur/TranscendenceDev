@@ -18,7 +18,7 @@ const Metric WALL_RANGE2 =				(WALL_RANGE * WALL_RANGE);
 const Metric GRAVITY_WELL_RANGE =		(KLICKS_PER_PIXEL * 800.0);
 const Metric GRAVITY_WELL_RANGE2 =		(GRAVITY_WELL_RANGE * GRAVITY_WELL_RANGE);
 
-const Metric MAX_NAV_START_DIST =		(20.0 * LIGHT_SECOND);
+const Metric MAX_NAV_START_DIST =		(12.0 * LIGHT_SECOND);
 const Metric MAX_NAV_START_DIST2 =		(MAX_NAV_START_DIST * MAX_NAV_START_DIST);
 
 const DWORD NAV_PATH_ID_OWNED =			0xffffffff;
@@ -594,6 +594,7 @@ bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 					|| (pObj->GetCategory() == CSpaceObject::catStation
 						&& pObj->GetScale() == scaleStructure
 						&& !pObj->IsIntangible()
+						&& !pObj->BlocksShips()
 						&& pObj->CanObjRequestDock(pShip)
 						&& (pObj->IsFriend(pShip) || !pObj->CanAttack()))))
 			{
@@ -941,7 +942,7 @@ void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage
 	DEBUG_CATCH
 	}
 
-void CAIBehaviorCtx::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CAIBehaviorCtx::DebugPaintInfo (CSystem &System, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	DebugPaintInfo
 //
@@ -949,7 +950,7 @@ void CAIBehaviorCtx::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewport
 
 	{
 	if (m_pNavPath && g_pUniverse->GetDebugOptions().IsShowNavPathsEnabled())
-		m_pNavPath->DebugPaintInfo(Dest, x, y, Ctx.XForm);
+		m_pNavPath->DebugPaintInfo(System, Dest, x, y, Ctx.XForm);
 	}
 
 bool CAIBehaviorCtx::IsBeingAttacked (DWORD dwThreshold) const 

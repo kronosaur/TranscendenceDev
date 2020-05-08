@@ -203,6 +203,7 @@ class CPlayerShipController : public IShipController
 		virtual void CancelDocking (void) override;
 		virtual bool CancelOrder (int iIndex) override;
 		virtual CString DebugCrashInfo (void) override;
+		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual ICCItem *FindProperty (const CString &sProperty) override;
 		virtual CString GetAISettingString (const CString &sSetting) override;
 		virtual CString GetClass (void) override { return CONSTLIT("player"); }
@@ -339,6 +340,8 @@ class CPlayerShipController : public IShipController
 
 		CSpaceObject *m_pAutoDamage = NULL;			//	Show damage bar for this object
 		DWORD m_dwAutoDamageExpire = 0;				//	Stop showing on this tick
+
+		CNavigationPath *m_pDebugNavPath = NULL;
 
 		static TPropertyHandler<CPlayerShipController> m_PropertyTable;
 

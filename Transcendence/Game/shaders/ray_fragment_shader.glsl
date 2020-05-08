@@ -48,11 +48,13 @@ int widthAdjOval = 4;
 int widthAdjTaper = 5;
 int widthAdjCone = 6;
 int widthAdjWhiptail = 7;
+int widthAdjSword = 8;
 
 // Copy of EOpacityTypes enum from SFXRay.cpp
 int opacityGlow = 1;
 int opacityGrainy = 2;
 int opacityTaperedGlow = 3;
+int opacityTaperedExponentialGlow = 4;
 
 
 //  Classic Perlin 3D Noise 
@@ -146,12 +148,28 @@ float widthDiamond(float rInputValue)
     return (1.0 - abs(rInputValue));
 }
 
+float widthSword(float rInputValue)
+    {
+    // Just like taper, but with triangular rather than circular head from head to peak
+    float rQuadHalfLength = 1.0;
+    float rSwordFraction = 5.0;
+    float rPeakDistance = ((2.0 * rQuadHalfLength) / (rSwordFraction / 1.0));
+    float rPeakPoint = rQuadHalfLength - rPeakDistance;
+    float rTipCoord = ((rPeakPoint - rInputValue) / rPeakDistance);
+    bool inTipPortion = rQuadHalfLength - rInputValue < rPeakDistance;
+    float rTipWidth = (1.0 - abs(rTipCoord)) * float(inTipPortion);
+    // Tapered from peak onwards
+    float rTaperedDY = (2.0 * rQuadHalfLength) - rPeakDistance;
+    float rTaperedWidth = ((rInputValue - (-rQuadHalfLength)) / rTaperedDY) * float(!inTipPortion);
+    return rTaperedWidth + max(rTipWidth, 0);
+    }
+
 float widthTapered(float rInputValue)
 {
     // Circular from head to peak
     float rQuadHalfLength = 1.0;
     float rTaperFraction = 8.0;
-    float rPeakDistance = ((2.0 * rQuadHalfLength) / (rTaperFraction / 2.0));
+    float rPeakDistance = ((2.0 * rQuadHalfLength) / (rTaperFraction / 1.0));
     float rPeakPoint = rQuadHalfLength - rPeakDistance;
     float rCircleCoord = ((rPeakPoint - rInputValue) / rPeakDistance);
     bool inCircularPortion = rQuadHalfLength - rInputValue < rPeakDistance;
@@ -159,7 +177,6 @@ float widthTapered(float rInputValue)
     // Tapered from peak onwards
     float rTaperedDY = (2.0 * rQuadHalfLength) - rPeakDistance;
     float rTaperedWidth = ((rInputValue - (-rQuadHalfLength)) / rTaperedDY) * float(!inCircularPortion);
-    float wtf = ((rInputValue - (-rQuadHalfLength)));
     return rTaperedWidth + max(rCircleWidth, 0);
 }
 
@@ -303,6 +320,38 @@ float calcOpacityTaperedGlow(float rWidthCount, float rIntensity, float distance
     return (useSolid * taperComponent) + (useNonSolid * outerGlow);
 }
 
+float calcOpacityTaperedExponentialGlow(float rWidthCount, float rIntensity, float distanceFromCenter_w, float coordinate_l)
+{
+    float SOLID_FACTOR = 0.004;
+    float MIN_GLOW_LEVEL = 0.6;
+    float GLOW_FACTOR = 0.004;
+    float rLengthCount = 1.0;
+    
+    float rPeakPoint = SOLID_FACTOR * rIntensity * rWidthCount;
+    // Fade out linearly after the 1/3 point
+    float rMinFadePoint = 0.0; // TODO: fix this to 300 pixels
+    float rFadePoint = max(rMinFadePoint, 0.3);
+    float rTaperInc = max(0.0, 1.0 / (2.0 - rFadePoint));
+    
+    // Solid from center to peak plus taper
+    // If before the fade point lengthwise, and before the peak point widthwise, then solid
+    float useSolid = float(distanceFromCenter_w < rPeakPoint);// && (coordinate_l < rFadePoint));
+    
+    // Otherwise, if after the fade point lengthwise, decrease by taperInc
+    float taperComponent = (1.0 - (max(0.0, rFadePoint - coordinate_l)) * rTaperInc);
+    
+    
+    // Decay exponentially to edge
+    float useNontaperedOpacity = float(coordinate_l < rFadePoint);
+    float useNonSolid = float(distanceFromCenter_w >= rPeakPoint);
+    float rGlowLevel = MIN_GLOW_LEVEL + (rIntensity * GLOW_FACTOR);
+    float rGlowInc = max(0.0f, 1.0f / (rWidthCount - rPeakPoint)) * (distanceFromCenter_w - rPeakPoint);
+    float rGlow = 1.0;
+    float outerGlow = rGlowLevel * (rGlow - rGlowInc) * (rGlow - rGlowInc) * taperComponent * taperComponent;
+    
+    return (useSolid * taperComponent * taperComponent) + (useNonSolid * outerGlow);
+}
+
 void main(void)
 {
     float center_point = 0.0; // Remember to remove this in the real shader!!
@@ -328,6 +377,7 @@ void main(void)
     float coneWidth = widthCone(real_texcoord[0]);
     float diamondWidth = widthDiamond(real_texcoord[0]);
     float ovalWidth = widthOval(real_texcoord[0]);
+    float swordWidth = widthSword(real_texcoord[0]);
     float straightWidth = 1.0;
     
     float taperAdjTop = (
@@ -338,7 +388,8 @@ void main(void)
         (taperWidth * float(reshape == widthAdjTaper)) + 
         (ovalWidth * float(reshape == widthAdjOval)) + 
         (jaggedWidthTop * float(reshape == widthAdjJagged)) + 
-        (whiptailWidthTop * float(reshape == widthAdjWhiptail))
+        (whiptailWidthTop * float(reshape == widthAdjWhiptail)) +
+		(swordWidth * float(reshape == widthAdjSword))
     );
     float taperAdjBottom = (
         (straightWidth * float(reshape == widthAdjStraight)) + 
@@ -348,7 +399,8 @@ void main(void)
         (taperWidth * float(reshape == widthAdjTaper)) + 
         (ovalWidth * float(reshape == widthAdjOval)) + 
         (jaggedWidthBottom * float(reshape == widthAdjJagged)) + 
-        (whiptailWidthBottom * float(reshape == widthAdjWhiptail))
+        (whiptailWidthBottom * float(reshape == widthAdjWhiptail)) +
+		(swordWidth * float(reshape == widthAdjSword))
     );
     
     float widthAdjTop = (
@@ -359,7 +411,8 @@ void main(void)
         (taperWidth * float(widthAdjType == widthAdjTaper)) + 
         (ovalWidth * float(widthAdjType == widthAdjOval)) + 
         (jaggedWidthTop * float(widthAdjType == widthAdjJagged)) + 
-        (whiptailWidthTop * float(widthAdjType == widthAdjWhiptail))
+        (whiptailWidthTop * float(widthAdjType == widthAdjWhiptail)) +
+		(swordWidth * float(widthAdjType == widthAdjSword))
     );
     float widthAdjBottom = (
         (straightWidth * float(widthAdjType == widthAdjStraight)) + 
@@ -369,7 +422,8 @@ void main(void)
         (taperWidth * float(widthAdjType == widthAdjTaper)) + 
         (ovalWidth * float(widthAdjType == widthAdjOval)) + 
         (jaggedWidthBottom * float(widthAdjType == widthAdjJagged)) + 
-        (whiptailWidthBottom * float(widthAdjType == widthAdjWhiptail))
+        (whiptailWidthBottom * float(widthAdjType == widthAdjWhiptail)) +
+		(swordWidth * float(widthAdjType == widthAdjSword))
     );
     
     float limitTop = taperAdjTop * widthAdjTop;
@@ -382,13 +436,18 @@ void main(void)
     float bottomOpacityGlow = calcOpacityGlow(limitBottom, intensity, distanceFromCenter);
     float topOpacityTaperedGlow = calcOpacityTaperedGlow(limitTop, intensity, distanceFromCenter, real_texcoord[0]);
     float bottomOpacityTaperedGlow = calcOpacityTaperedGlow(limitBottom, intensity, distanceFromCenter, real_texcoord[0]);
+    float topOpacityTaperedExponentialGlow = calcOpacityTaperedExponentialGlow(limitTop, intensity, distanceFromCenter, real_texcoord[0]);
+    float bottomOpacityTaperedExponentialGlow = calcOpacityTaperedExponentialGlow(limitBottom, intensity, distanceFromCenter, real_texcoord[0]);
+	
     float topOpacity = (
         (topOpacityGlow * float(opacity == opacityGlow)) + 
-        (topOpacityTaperedGlow * float(opacity == opacityTaperedGlow))
+        (topOpacityTaperedGlow * float(opacity == opacityTaperedGlow)) +
+        (topOpacityTaperedExponentialGlow * float(opacity == opacityTaperedExponentialGlow))
     ) * opacityAdj;
     float bottomOpacity = (
         (bottomOpacityGlow * float(opacity == opacityGlow)) + 
-        (bottomOpacityTaperedGlow * float(opacity == opacityTaperedGlow))
+        (bottomOpacityTaperedGlow * float(opacity == opacityTaperedGlow)) +
+        (bottomOpacityTaperedExponentialGlow * float(opacity == opacityTaperedExponentialGlow))
     ) * opacityAdj;
     //vec4 colorGlowTop = vec4(topOpacityGlow, topOpacityGlow, topOpacityGlow, topOpacityGlow) * float(pixelInUpperBounds);
     //vec4 colorGlowBottom = vec4(bottomOpacityGlow, bottomOpacityGlow, bottomOpacityGlow, bottomOpacityGlow) * float(pixelInLowerBounds);

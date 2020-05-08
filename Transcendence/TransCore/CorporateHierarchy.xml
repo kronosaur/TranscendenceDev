@@ -1607,6 +1607,7 @@
 				levelFrequency=			"uuurr v---- ----- ----- -----"
 
 				locationCriteria=		"*"
+				unique=					"inSystem"
 				/>
 
 		<Names definiteArticle="true">Beta Gemini Hotel; Honoku-Tomashi Hotel; Manchurian Oriental Hotel;
@@ -2528,16 +2529,26 @@
 					)
 				))
 
-			(setq intMakayevArmorEnhancement (lambda Nil
-				(random (list
-					{	enhancement:"+hpBonus:10"			type:&itPlasteelNanos;	}
-					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
-					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
-					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
-					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
-					{	enhancement:"+hpBonus:40"			type:&itPlasteelNanos;	}
-					{	enhancement:"+immunity:radiation"	type:&itRadiationImmuneCoating;	}
-					{	enhancement:"+immunity:ionEffects"	type:&itIonEffectImmuneCoating; }
+			(setq intMakayevArmorEnhancement (lambda (theItem)
+				(random (append 
+					(list
+						{	enhancement:"+hpBonus:10"			type:&itPlasteelNanos;	}
+						{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+						{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+						{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+						{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+						{	enhancement:"+hpBonus:40"			type:&itPlasteelNanos;	}
+						)
+					(if (not (itm@ theItem 'radiationImmune))
+						(list
+							{	enhancement:"+immunity:radiation"	type:&itRadiationImmuneCoating;	}
+							)
+						)
+					(if (not (itm@ theItem 'empImmune))
+						(list
+							{	enhancement:"+immunity:ionEffects"	type:&itIonEffectImmuneCoating; }
+							)
+						)
 					))
 				))
 
@@ -2562,7 +2573,7 @@
 						(= damageType 'laser)		&itLaserAmplifier;
 						(= damageType 'kinetic)		&itKineticUpgrade;
 						(= damageType 'particle)	&itParticleUpgrade;
-						(= damageType 'bast)		&itBlastUpgrade;
+						(= damageType 'blast)		&itBlastUpgrade;
 						(= damageType 'ion)			&itIonUpgrade;
 						(= damageType 'thermo)		&itThermoUpgrade;
 						)

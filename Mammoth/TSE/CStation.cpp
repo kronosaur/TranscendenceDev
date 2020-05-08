@@ -22,6 +22,8 @@
 #define SHIPWRECK_UNID_ATTRIB					CONSTLIT("shipwreckID")
 #define NAME_ATTRIB								CONSTLIT("name")
 
+#define LANGID_ABANDONED_SCREEN_DATA			CONSTLIT("core.abandonedScreenData")
+#define LANGID_DOCK_SCREEN_DATA					CONSTLIT("core.dockScreenData")
 #define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
 
 #define PAINT_LAYER_OVERHANG					CONSTLIT("overhang")
@@ -56,6 +58,7 @@
 #define PROPERTY_SHOW_MAP_ORBIT					CONSTLIT("showMapOrbit")
 #define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
 #define PROPERTY_STRUCTURAL_HP					CONSTLIT("structuralHP")
+#define PROPERTY_SUBORDINATE_ID					CONSTLIT("subordinateID")
 #define PROPERTY_SUBORDINATES					CONSTLIT("subordinates")
 #define PROPERTY_SUPERIOR						CONSTLIT("superior")
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
@@ -273,25 +276,25 @@ void CStation::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, i
 	CalcDeviceBonus();
 	}
 
-void CStation::AddSubordinate (CSpaceObject *pSubordinate)
+void CStation::AddSubordinate (CSpaceObject &SubordinateObj, const CString &sSubordinateID)
 
 //	AddSubordinate
 //
 //	Add this object to our list of subordinates
 
 	{
-	m_Subordinates.Add(pSubordinate);
+	m_Subordinates.Add(&SubordinateObj);
 
 	//	HACK: If we're adding a station, set it to point back to us
 
-	CStation *pSatellite = pSubordinate->AsStation();
+	CStation *pSatellite = SubordinateObj.AsStation();
 	if (pSatellite)
-		pSatellite->SetBase(this);
+		pSatellite->SetBase(*this, sSubordinateID);
 
 	//	Recalc bounds, if necessary
 
 	CPaintOrder::Types iPaintOrder;
-	if (pSubordinate->IsSatelliteSegmentOf(*this, &iPaintOrder)
+	if (SubordinateObj.IsSatelliteSegmentOf(*this, &iPaintOrder)
 			&& iPaintOrder != CPaintOrder::none)
 		CalcBounds();
 	}
@@ -623,27 +626,20 @@ void CStation::CalcDeviceBonus (void)
 		//	Add enhancements from system
 
 		if (pSystemEnhancements)
-			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
+			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), *pEnhancements, &EnhancementIDs);
 
 		//	Deal with class specific stuff
+
+		m_Overlays.AccumulateEnhancements(*this, DeviceItem, EnhancementIDs, *pEnhancements);
+
+		//	Cache some properties
 
 		switch (Device.GetCategory())
 			{
 			case itemcatLauncher:
 			case itemcatWeapon:
-				{
-				//	Cache some properties
-
 				m_fArmed = true;
-
-				//	Overlays add a bonus
-
-				int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
-				if (iBonus != 0)
-					pEnhancements->InsertHPBonus(NULL, iBonus);
-
 				break;
-				}
 			}
 
 		//	Set the bonuses
@@ -1726,7 +1722,7 @@ int CStation::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice 
 		return m_pType->GetHullDesc().CalcDamageEffectiveness(pAttacker, pWeapon);
 	}
 
-CDesignType *CStation::GetDefaultDockScreen (CString *retsName) const
+CDesignType *CStation::GetDefaultDockScreen (CString *retsName, ICCItemPtr *retpData) const
 
 //	GetDockScreen
 //
@@ -1734,9 +1730,25 @@ CDesignType *CStation::GetDefaultDockScreen (CString *retsName) const
 
 	{
 	if (IsAbandoned() && m_pType->GetAbandonedScreen(retsName))
+		{
+		if (retpData)
+			{
+			if (!Translate(LANGID_ABANDONED_SCREEN_DATA, NULL, *retpData))
+				*retpData = NULL;
+			}
+
 		return m_pType->GetAbandonedScreen(retsName);
+		}
 	else
+		{
+		if (retpData)
+			{
+			if (!Translate(LANGID_DOCK_SCREEN_DATA, NULL, *retpData))
+				*retpData = NULL;
+			}
+
 		return m_pType->GetFirstDockScreen(retsName);
+		}
 	}
 
 Metric CStation::GetGravity (Metric *retrRadius) const
@@ -1971,6 +1983,14 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 		return CC.CreateString(sGateID);
 		}
 
+	else if (strEquals(sName, PROPERTY_SUBORDINATE_ID))
+		{
+		if (!m_sSubordinateID.IsBlank())
+			return CC.CreateString(m_sSubordinateID);
+		else
+			return CC.CreateNil();
+		}
+
 	else if (strEquals(sName, PROPERTY_SUBORDINATES))
 		{
 		if (GetSubordinateCount() == 0)
@@ -2178,7 +2198,7 @@ bool CStation::IsBlacklisted (const CSpaceObject *pObj) const
 	
 	{
 	if (pObj)
-		return (pObj->IsPlayer() && m_Blacklist.IsBlacklisted());
+		return (m_Blacklist.IsBlacklisted() && pObj->GetSovereign() && pObj->GetSovereign()->IsPlayer());
 	else
 		return m_Blacklist.IsBlacklisted();
 	}
@@ -2238,11 +2258,6 @@ bool CStation::IsShownInGalacticMap (void) const
 	//	the map clean (not because it is not an interesting station).
 
     if (!m_pType->ShowsMapIcon() || m_pType->SuppressMapLabel())
-        return false;
-
-    //  Skip stargates, which we don't need to show in the details pane
-
-    if (IsStargate())
         return false;
 
     //  Show it
@@ -2854,7 +2869,14 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	//	Remove from the subordinate list. No need to take action because the 
 	//	ship/turret will communicate if we need to avenge.
 
-	m_Subordinates.Delete(&Ctx.Obj);
+	if (m_Subordinates.Delete(&Ctx.Obj))
+		{
+		//	See if we have any weapons associated with this subordinate
+
+		const CString &sSubordinateID = Ctx.Obj.GetSubordinateID();
+		if (!sSubordinateID.IsBlank())
+			m_Devices.OnSubordinateDestroyed(Ctx.Obj, sSubordinateID);
+		}
 	}
 
 bool CStation::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos)
@@ -3580,6 +3602,9 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		port: pObj (CSpaceObject ref)
 //	Vector		port: vPos
 //
+//	DWORD		m_pBase
+//	CString		m_sSubordinateID
+//
 //	DWORD		No of subordinates
 //	DWORD		subordinate (CSpaceObject ref)
 //
@@ -3797,6 +3822,9 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		{
 		m_pBase = NULL;
 		}
+
+	if (Ctx.dwVersion >= 189)
+		m_sSubordinateID.ReadFromStream(Ctx.pStream);
 
 	m_Subordinates.ReadFromStream(Ctx);
 	m_Targets.ReadFromStream(Ctx);
@@ -4179,7 +4207,8 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		//	Update attacks
 
-		if (m_fArmed && !m_pType->IsVirtual())
+		if (m_fArmed && !m_pType->IsVirtual()
+				&& (m_pType->CanAttackIndependently() || (m_pBase && !m_pBase->IsAbandoned())))
 			{
 			if (!UpdateAttacking(Ctx, iTick))
 				return;
@@ -4290,7 +4319,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //	Vector		port: vPos
 //
 //	DWORD		m_pBase
-//
+//	CString		m_sSubordinateID
+//	
 //	DWORD		No of subordinates
 //	DWORD		subordinate (CSpaceObject ref)
 //
@@ -4347,6 +4377,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	m_DockingPorts.WriteToStream(this, pStream);
 
 	GetSystem()->WriteObjRefToStream(m_pBase, pStream, this);
+	m_sSubordinateID.WriteToStream(pStream);
 	m_Subordinates.WriteToStream(GetSystem(), pStream);
 	m_Targets.WriteToStream(GetSystem(), pStream);
 
@@ -5304,10 +5335,13 @@ bool CStation::ShowMapLabel (int *retcxLabel, int *retcyLabel) const
 					if (m_MapImage.IsEmpty())
 						CreateMapImage();
 
-					if (iPlanetarySize < LARGE_WORLD_SIZE)
+					if (iPlanetarySize < WORLD_SIZE)
 						m_MapLabel.SetLabel(sMapLabel, GetUniverse().GetNamedFont(CUniverse::fontPlanetoidMapLabel));
-					else
+					else if (iPlanetarySize < LARGE_WORLD_SIZE)
 						m_MapLabel.SetLabel(sMapLabel, GetUniverse().GetNamedFont(CUniverse::fontWorldMapLabel));
+					else
+						m_MapLabel.SetLabel(sMapLabel, GetUniverse().GetNamedFont(CUniverse::fontLargeWorldMapLabel));
+
 					m_MapLabel.SetPos(-m_MapLabel.GetFont().MeasureText(sMapLabel) / 2, m_MapImage.GetHeight() / 2);
 					}
 				else

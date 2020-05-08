@@ -395,7 +395,7 @@
 						{	test:'(itm@ &itKM500Missile; 'damageWormhole)			result:Nil	}
 						))
 
-					;	Unit Tests on Armor Damage
+					;	Unit Tests on Armor Damage -----------------------------
 
 					(diagRun (list
 
@@ -521,7 +521,244 @@
 							)
 						))
 
-					;	Unit Tests on Missile Properties
+					;	Unit Tests on Weapon Installtion and Switching ---------
+
+					(diagRun (list
+
+						;	Set up
+
+						(lambda ()
+							(block (i)
+								(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+								(if (not gPlayerShip)
+									(error "Unable to create player ship.")
+									)
+								(shpOrder gPlayerShip 'hold)
+								)
+							)
+
+						;	Some tests
+
+						(lambda ()
+							(block (
+								result
+								)
+								;	Start with a single recoilless cannon and switch weapons
+
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "1: Expected recoilless cannon.")
+									)
+
+								(if (obj@ gPlayerShip 'selectedMissile)
+									(error "1: Expected no missile launcher.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "1: After select next, expected recoilless cannon.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "1: After select prev, expected recoilless cannon.")
+									)
+
+								;	Now add a second weapon.
+
+								(objAddItem gPlayerShip (itmCreate &itLaserCannon; 1))
+								(if (not (shpInstallDevice gPlayerShip (itmCreate &itLaserCannon; 1)))
+									(error "2: Unable to install laser cannon.")
+									)
+
+								;	NOTE: Because this is an AI ship, we recompute the best weapon after
+								;	the installation, and we end up with the recoilless cannon.
+
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error (cat "2: Expected recoilless cannon: " (itmGetName (obj@ gPlayerShip 'selectedWeapon) Nil)))
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itLaserCannon;)
+									(error "2: After select next, expected laser cannon.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "2: After select next, expected recoilless cannon.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itLaserCannon;)
+									(error "2: After select prev, expected laser cannon.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "2: After select prev, expected recoilless cannon.")
+									)
+
+								;	Add a missile launcher
+
+								(objAddItem gPlayerShip (itmCreate &itNAMIMissileLauncher; 1))
+								(if (not (shpInstallDevice gPlayerShip (itmCreate &itNAMIMissileLauncher; 1)))
+									(error "3: Unable to install NAMI missile launcher.")
+									)
+
+								(if (obj@ gPlayerShip 'selectedMissile)
+									(error "3: Unexpected missile.")
+									)
+
+								(objAddItem gPlayerShip (itmCreate &itKM100Missile; 10))
+								(objSet@ gPlayerShip 'selectedMissile 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM100Missile;)
+									(error "3: After select next, expected KM100.")
+									)
+
+								(objSet@ gPlayerShip 'selectedMissile 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM100Missile;)
+									(error "3: After select prev, expected KM100.")
+									)
+
+								(objAddItem gPlayerShip (itmCreate &itKM500Missile; 10))
+								(objSet@ gPlayerShip 'selectedMissile 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM500Missile;)
+									(error "3: After select next, expected KM500.")
+									)
+
+								(objSet@ gPlayerShip 'selectedMissile 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM100Missile;)
+									(error "3: After select next, expected KM100.")
+									)
+
+								(objSet@ gPlayerShip 'selectedMissile 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM500Missile;)
+									(error "3: After select next, expected KM500.")
+									)
+
+								(objSet@ gPlayerShip 'selectedMissile 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM100Missile;)
+									(error "3: After select next, expected KM100.")
+									)
+
+								;	Try to install a second missile launcher
+
+								(objAddItem gPlayerShip (itmCreate &itMAGLauncher; 1))
+								(setq result (objCanInstallItem gPlayerShip (itmCreate &itMAGLauncher; 1)))
+								(if (not (@ result 0))
+									(error "4: Cannot install MAG launcher.")
+									)
+
+								(if (!= (@ result 1) 'replacementRequired)
+									(error (cat "4: Unexpected result code: " (@ result 1)))
+									)
+
+								(if (not (shpInstallDevice gPlayerShip (itmCreate &itMAGLauncher; 1)))
+									(error "4: Unable to install MAG launcher.")
+									)
+
+								(if (obj@ gPlayerShip 'selectedMissile)
+									(error "4: Unexpected missile.")
+									)
+
+								(objAddItem gPlayerShip (itmCreate &it400HexageneMAG; 10))
+								(objSet@ gPlayerShip 'selectedMissile 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &it400HexageneMAG;)
+									(error "4: After select next, expected 400 Hexagene MAG.")
+									)
+
+								;	Add a side-mounted weapon
+
+								(objAddItem gPlayerShip (itmCreate &itTestWeaponSideMounted; 1))
+								(setq result (objCanInstallItem gPlayerShip (itmCreate &itTestWeaponSideMounted; 1)))
+								(if (not (@ result 0))
+									(error "5: Cannot install side-mounted weapon.")
+									)
+
+								(if (!= (@ result 1) 'ok)
+									(error (cat "5: Unexpected result code: " (@ result 1)))
+									)
+
+								(if (not (shpInstallDevice gPlayerShip (itmCreate &itTestWeaponSideMounted; 1)))
+									(error "5: Unable to install side-mounted weapon.")
+									)
+
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error (cat "5: Expected recoilless cannon: " (itmGetName (obj@ gPlayerShip 'selectedWeapon) Nil)))
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itLaserCannon;)
+									(error "5: After select next, expected laser cannon.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "5: After select next, expected recoilless cannon.")
+									)
+
+								;	Add 2 more weapons
+
+								(objAddItem gPlayerShip (itmCreate &itLightRecoillessCannon; 3))
+								(for i 1 2
+									(block ()
+										(setq result (objCanInstallItem gPlayerShip (itmCreate &itLightRecoillessCannon; 1)))
+										(if (not (@ result 0))
+											(error "6: Cannot install light recoilless cannon.")
+											)
+
+										(if (!= (@ result 1) 'ok)
+											(error (cat "6: Unexpected result code: [" i "] = " (@ result 1)))
+											)
+
+										(if (not (shpInstallDevice gPlayerShip (itmCreate &itLightRecoillessCannon; 1)))
+											(error "6: Unable to install light recoilless cannon.")
+											)
+										)
+									)
+
+								;	Now we're full
+
+								(objAddItem gPlayerShip (itmCreate &itBlaster; 1))
+								(setq result (objCanInstallItem gPlayerShip (itmCreate &itBlaster; 1)))
+								(if (not (@ result 0))
+									(error "7: Cannot install blaster.")
+									)
+
+								(if (!= (@ result 1) 'replacementRequired)
+									(error (cat "7: Unexpected result code: " (@ result 1)))
+									)
+
+								(if (not (shpInstallDevice gPlayerShip (itmCreate &itBlaster; 1)))
+									(error "7: Unable to install blaster.")
+									)
+
+								(setq result
+									(map (objGetItems gPlayerShip "wI") theItem
+										(itmGetType theItem)
+										)
+									)
+
+								(if (!= result (list &itLaserCannon; &itMAGLauncher; &itTestWeaponSideMounted; &itLightRecoillessCannon; &itLightRecoillessCannon; &itBlaster;))
+									(error (cat "7: Unexpected list: " 
+										(map result theType
+											(unvEntity theType)
+											)
+										))
+									)
+								)
+							)
+
+						;	Clean up
+
+						(lambda ()
+							(block ()
+								(objDestroy gPlayerShip)
+								(setq gPlayerShip Nil)
+								)
+							)
+						))
+
+					;	Unit Tests on Missile Properties -----------------------
 
 					(block (i)
 						(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))

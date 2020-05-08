@@ -37,7 +37,7 @@ void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 	pEntry->pCode = NULL;
 	}
 
-ICCItemPtr CLanguageDataBlock::ComposeCCItem (ICCItem *pValue, ICCItem *pData) const
+ICCItemPtr CLanguageDataBlock::ComposeCCItem (ICCItem *pValue, const ICCItem *pData) const
 
 //	ComposeCCItem
 //
@@ -80,7 +80,7 @@ ICCItemPtr CLanguageDataBlock::ComposeCCItem (ICCItem *pValue, ICCItem *pData) c
 		return ICCItemPtr(pValue->Reference());
 	}
 
-bool CLanguageDataBlock::ComposeCCResult (ETranslateResult iResult, ICCItem *pData, const TArray<CString> &List, const CString &sText, ICCItem *pCCResult, ICCItemPtr &retResult) const
+bool CLanguageDataBlock::ComposeCCResult (ETranslateResult iResult, const ICCItem *pData, const TArray<CString> &List, const CString &sText, ICCItem *pCCResult, ICCItemPtr &retResult) const
 
 //	ComposeCCResult
 //
@@ -125,7 +125,7 @@ bool CLanguageDataBlock::ComposeCCResult (ETranslateResult iResult, ICCItem *pDa
 		}
 	}
 
-CLanguageDataBlock::ETranslateResult CLanguageDataBlock::ComposeResult (ICCItem *pResult, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult) const
+CLanguageDataBlock::ETranslateResult CLanguageDataBlock::ComposeResult (ICCItem *pResult, const ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult) const
 
 //	ComposeResult
 //
@@ -402,8 +402,14 @@ bool CLanguageDataBlock::IsCode (const CString &sText) const
 
 	//	Skip any leading whitespace
 
+	int iLeadingLNs = 0;
 	while (pPos < pPosEnd && strIsWhitespace(pPos))
+		{
+		if (*pPos == '\n')
+			iLeadingLNs++;
+
 		pPos++;
+		}
 
 	if (pPos == pPosEnd)
 		return false;
@@ -418,6 +424,12 @@ bool CLanguageDataBlock::IsCode (const CString &sText) const
 
 	else if (*pPos == '\"')
 		{
+		//	If we have at least two lines of whitespace, then we assume this
+		//	is a block of text.
+
+		if (iLeadingLNs >= 2)
+			return false;
+
 		//	If we have any embedded CRLFs then we assume that this is a
 		//	paragraph of text with quotes instead of a quoted string (the latter
 		//	needs to be treated as code).
@@ -714,7 +726,7 @@ bool CLanguageDataBlock::TranslateText (const CDesignType &Type, const CString &
 	return ComposeTextResult(iResult, List, retsText);
 	}
 
-const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CString &sID, ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText, CString *retsText) const
+const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CString &sID, const ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText, CString *retsText) const
 
 //	TranslateTry
 //

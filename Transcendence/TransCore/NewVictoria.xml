@@ -322,6 +322,448 @@
 
 	</StationType>
 
+<!-- DOCK SCREENS -->
+
+	<!-- Arcology -->
+
+	<DockScreen UNID="&dsStKatsArcology;"
+			inherit=			"&dsDockScreenBase;"
+			>
+		
+		<Panes>
+			<Default descID="descWelcome">
+				<Actions>
+					<Action id="actionParliament">
+						(scrShowScreen gScreen &dsStKatsArcologyParliament;)
+					</Action>
+
+					<Action id="actionCommerce">
+						(scrShowScreen gScreen &dsStKatsArcologyCommerce;)
+					</Action>
+
+					<Action id="actionUniversity">
+						(scrShowScreen gScreen &dsStKatsArcologyUniversity;)
+					</Action>
+
+					<Action id="actionArts">
+						(scrShowScreen gScreen &dsStKatsArcologyArts;)
+					</Action>
+
+					<Action id="actionDockServices">
+						(rpgDockServices gPlayerShip {
+							checkMilitaryID: True
+							})
+					</Action>
+
+					<Action id="actionUndock" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		<Language>
+			<Text id="actionParliament">[P]arliament Quarter</Text>
+			<Text id="actionCommerce">[C]ommerce Quarter</Text>
+			<Text id="actionUniversity">U[n]iversity Quarter</Text>
+			<Text id="actionArts">[A]rts Quarter</Text>
+
+			<Text id="descWelcome">Welcome to the Arcology of New Victoria!</Text>
+		</Language>
+	</DockScreen>
+	
+	<!-- Parliament Quarter -->
+	
+	<DockScreen UNID="&dsStKatsArcologyParliament;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+
+		<HeroImage imageID="&rsStKatsArcologyHero;"		imageX="0" imageY="1944" imageWidth="1200" imageHeight="648"/>
+
+		<Panes>
+			<Default descID="descParliamentQuarter">
+				<Actions>
+					<Action id="actionParliament" default="1">
+						(rpgMissionAssignment {
+							missionCriteria: "n +stKatsParliament; =4;"
+							displayCriteria: "n +stKatsParliament;"
+							noMissionTextID: 'descParliamentEmpty
+							maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
+							intervalPerStation: (random 2400 3600)
+							})
+					</Action>
+					
+					<Action id="actionMilitia">
+						(switch
+							(not (milCanEnterCC))
+								(scrShowScreen gScreen &dsRPGMessage; { desc: (scrTranslate gScreen 'descAccessDenied) })
+
+							(= (typGetData &unidCommonwealthMilitia; 'rank) -1)
+								(scrShowScreen gScreen &dsRPGMessage; { desc: (scrTranslate gScreen 'descTooManyFailures) })
+
+							(rpgMissionAssignment {
+								missionCriteria: (cat "n +stKatsMilitia; =" (sysGetLevel) ";")
+								displayCriteria: "n +stKatsMilitia;"
+								noMissionTextID: 'descNoMissions
+								maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
+								intervalPerStation: (random 3600 5400)
+								})
+							)
+					</Action>
+
+					<Action id="actionLeave" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="actionParliament">[P]arliament</Text>
+			<Text id="actionMilitia">[M]ilitia Headquarters</Text>
+			<Text id="actionLeave">[L]eave</Text>
+
+			<Text id="descParliamentQuarter">
+
+				You are in the Parliament Quarter. Well-dressed men and women 
+				walk along the wide avenues of the quarter,	making their way to
+				jobs in the Commonwealth government.
+
+			</Text>
+			<Text id="descParliamentEmpty">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The hall is currently empty.
+
+			</Text>
+			<String id="descNoMissions">
+			
+				"Sorry, there are no missions currently available."
+				
+			</String>
+			<String id="descTooManyFailures">
+			
+				"How about getting us a cup of tea or something? That's probably
+				a mission you could handle."
+				
+			</String>
+			<Text id="descAccessDenied">
+
+				Two guards flank the door to the Headquarters. One of them 
+				checks your ID against a computer list:
+
+				"Sorry, %sir%, only experienced captains are allowed inside."
+
+			</Text>
+		</Language>
+	</DockScreen>
+	
+	<!-- Commerce Quarter -->
+	
+	<DockScreen UNID="&dsStKatsArcologyCommerce;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+
+		<HeroImage imageID="&rsStKatsArcologyHero;"		imageX="0" imageY="2592" imageWidth="1200" imageHeight="648"/>
+
+		<Panes>
+			<Default descID="descCommerceQuarter">
+				<Actions>
+					<Action id="actionCommoditiesExchange" default="1">
+						(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
+							rpg.buyCriteria: "* -skExports;"
+							})
+					</Action>
+					
+					<Action id="actionIncandescentExports">
+						<ShowPane pane="IncandescentExports"/>
+					</Action>
+					
+					<Action id="actionBuyShip">
+						(scrShowScreen gScreen &dsRPGShipBroker;)
+					</Action>
+
+					<Action id="actionLeave" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+			
+			<IncandescentExports descID="descIncandescentExports">
+				<Actions>
+					<Action name="Buy Items" default="1" key="B">
+						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
+							rpg.criteria: "* +skExports;"
+							})
+					</Action>
+
+					<Action id="actionLeave" cancel="1">
+						(scrShowPane gScreen 'Default)
+					</Action>
+				</Actions>
+			</IncandescentExports>
+		</Panes>
+
+		<Language>
+			<Text id="actionIncandescentExports">[I]ncandescent Exports</Text>
+			<Text id="actionLeave">[L]eave</Text>
+
+			<Text id="descCommerceQuarter">
+
+				The Commerce Quarter is filled with sharp-dressed people and glowing
+				advertisements. A massive bioluminescent screen shows prices in front
+				of the Commodities Exchange, while smaller signs point to boutique
+				store fronts.
+
+			</Text>
+			<Text id="descIncandescentExports">
+
+				Welcome to Incandescent Exports, specializing in selling unique items
+				up from the surface of the planet.
+
+			</Text>
+		</Language>
+	</DockScreen>
+	
+	<!-- University Quarter
+	
+	GLOBAL DATA (on stStKatsArcology)
+	
+	-->
+
+	<DockScreen UNID="&dsStKatsArcologyUniversity;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+
+		<HeroImage imageID="&rsStKatsArcologyHero;"		imageX="0" imageY="1296" imageWidth="1200" imageHeight="648"/>
+
+		<Panes>
+			<Default descID="descUniversityQuarter">
+				<Actions>
+					<Action id="actionEngineering" default="1">
+						<ShowPane pane="Engineering"/>
+					</Action>
+					
+					<Action id="actionUniversityTaikon">
+						(rpgMissionAssignment {
+							missionCriteria: (cat "n +stKatsTaikon; =" (sysGetLevel) ";")
+							displayCriteria: "n +stKatsTaikon;"
+							noMissionTextID: 'descTaikonEmpty
+							})
+					</Action>
+					
+					<Action id="actionUniversityHospital">
+						(rpgMissionAssignment {
+							missionCriteria: (cat "n +stKatsHospital; =" (sysGetLevel) ";")
+							displayCriteria: "n +stKatsHospital;"
+							noMissionTextID: 'descHospitalEmpty
+							})
+					</Action>
+
+					<Action id="actionLeave" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+			
+			<Engineering>
+				<OnPaneInit>
+					(block (roll course)
+						; Pick a random item to enhance
+						(setq roll (modulo (objGetDestiny gSource) 3))
+						(switch
+							(eq roll 0)
+								(block Nil
+									(setq gItem (random (objGetItems gPlayerShip "vI &lt;7 -alien;")))
+									(setq course "starship engines")
+									)
+							(eq roll 1)
+								(block Nil
+									(setq gItem (random (objGetItems gPlayerShip "rI &lt;7 -alien;")))
+									(setq course "starship reactors") 
+									)
+							(eq roll 2)
+								(block Nil
+									(setq gItem (random (objGetItems gPlayerShip "sI &lt;7 -alien; -nonEnergyShields;")))
+									(setq course "shield generators")
+									)
+							(setq gItem Nil)
+							)
+							
+						(if (itmIsEnhanced gItem) (setq gItem Nil))
+						
+						(setq gCost (intRoundUp (divide (multiply 20 (itmGetPrice gItem 'credit)) 100) 10))
+
+						(scrSetDesc gScreen
+							"You enter a large computer-controlled engineering lab filled with students. "
+							"A professor approaches you:\n\n"
+							"\"Our project this semester is on " course "."
+							(if gItem
+								(cat " For " gCost " credits we can "
+									(if (itmIsDamaged gItem)
+										"repair"
+										"enhance"
+										)
+									" your ship's " (itmGetName gItem 0x80) "."
+									(if (ls (plyGetCredits gPlayer) gCost)
+										" Unfortunately, you cannot afford the cost."
+										""
+										)
+									)
+								""
+								)
+							"\""
+							)
+							
+						(scrShowAction gScreen 0 gItem)
+						(scrEnableAction gScreen 0 (geq (plyGetCredits gPlayer) gCost))
+						(scrSetActionLabel gScreen 0
+							(switch
+								(itmMatches gItem "v")
+									"Enhance Drive"
+								(itmMatches gItem "r")
+									"Enhance Reactor"
+								(itmMatches gItem "s")
+									"Enhance Shields"
+								"Enhance"
+								)
+							"E"
+							)
+						)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action name="Enhance ???" key="E">
+						(block Nil
+							(switch
+								(not gItem)
+									Nil
+									
+								(itmIsDamaged gItem)
+									(block Nil
+										(shpRepairItem gPlayerShip gItem)
+										(setq gResult (cat "Your " (itmGetName gItem 0x81) " has been repaired."))
+										)
+										
+								(block (result theEnhancement theType)
+									(switch
+										(itmMatches gItem "s")
+											(block ()
+												(setq theEnhancement (random '(0x0101 0x0102 0x0102 0x0103 0x0104 0x0905 0x0915 0x0925 0x0935 0x0F02 0x0F02)))
+												(setq theType &vtUniversityEnhancement;)
+												)
+
+										(setq theEnhancement 0x0001)
+										)
+									
+									(setq result (shpEnhanceItem gPlayerShip gItem {
+										enhancement: theEnhancement
+										type: theType
+										}))
+									(setq gResult (intItemEnhanceStatus result (cat "Your " (itmGetName gItem 0x80) " is more powerful") (itmGetName gItem 0x80)))
+									)
+								)
+								
+							(plyCharge gPlayer gCost)
+							(scrShowPane gScreen "EnhanceSuccess")
+							)
+					</Action>
+					
+					<Action id="actionLeave" cancel="1">
+						<ShowPane pane="Default"/>
+					</Action>
+				</Actions>
+			</Engineering>
+			
+			<EnhanceSuccess>
+				<OnPaneInit>
+					(scrSetDesc gScreen gResult)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						<ShowPane pane="Default"/>
+					</Action>
+				</Actions>
+			</EnhanceSuccess>
+		</Panes>
+		
+		<Language>
+			<Text id="actionDone">[D]one</Text>
+			<Text id="actionEngineering">School of [E]ngineering</Text>
+			<Text id="actionUniversityHospital">[U]niversity Hospital</Text>
+			<Text id="actionUniversityTaikon">[T]aikon School of Exploration</Text>
+			<Text id="actionLeave">[L]eave</Text>
+			
+			<Text id="descUniversityQuarter">
+
+				The schools that make up the University of New Victoria are strung along
+				the spine of the arcology. Students and professors make their way along
+				the wide avenues.
+
+			</Text>
+			<Text id="descTaikonEmpty">
+
+				You enter the Taikon School of Exploration. Several students are working
+				at various terminals, but no one appears interested in talking with you.
+
+			</Text>
+			<Text id="descHospitalEmpty">
+
+				You enter the brightly lit central garden of the New Victoria University Hospital.
+				Recovering patients sit on articulated gurneys, while doctors and medtechs pass through,
+				heads buried in datapads.
+
+			</Text>
+		</Language>
+	</DockScreen>
+	
+	<!-- Arts Quarter -->
+
+	<DockScreen UNID="&dsStKatsArcologyArts;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+
+		<HeroImage imageID="&rsStKatsArcologyHero;"		imageX="0" imageY="648" imageWidth="1200" imageHeight="648"/>
+
+		<Panes>
+			<Default descID="descArtsQuarter">
+				<Actions>
+					<Action id="actionVictorianClub" default="1">
+						(scrShowScreen gScreen "&dsCommonwealthNightclub;")
+					</Action>
+
+					<Action id="actionLeave" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="actionVictorianClub">The [V]ictorian Nightclub</Text>
+			<Text id="actionLeave">[L]eave</Text>
+
+			<Text id="descArtsQuarter">
+				The trendy scene of the Arts Quarter draws tourists from all 
+				over Human Space.
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<ItemType UNID="&vtUniversityEnhancement;"
+			name=				"St. Katharine University enhancement"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsItems1;" imageX="288" imageY="768" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
 <!-- RESOURCES -->
 
 	<Image UNID="&rsStKatsArcologySegments;"	bitmap="Resources\StKatsArcologySegments.jpg" bitmask="Resources\StKatsArcologySegmentsMask.bmp"  loadOnUse="true"/>

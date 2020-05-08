@@ -720,6 +720,9 @@ ICCItem *CCodeChainCtx::Run (const SEventHandlerDesc &Event)
 	{
 	DEBUG_TRY
 
+	if (!Event.pCode)
+		return m_CC.CreateNil();
+
 	CExtension *pOldExtension = m_pExtension;
 	m_pExtension = Event.pExtension;
 
@@ -762,6 +765,9 @@ ICCItemPtr CCodeChainCtx::RunCode (const SEventHandlerDesc &Event)
 
 	{
 	DEBUG_TRY
+
+	if (!Event.pCode)
+		return ICCItemPtr::Nil();
 
 	CExtension *pOldExtension = m_pExtension;
 	m_pExtension = Event.pExtension;
@@ -858,7 +864,7 @@ bool CCodeChainCtx::RunEvalString (const CString &sString, bool bPlain, CString 
 		}
 	}
 
-void CCodeChainCtx::SaveAndDefineDataVar (ICCItem *pData)
+void CCodeChainCtx::SaveAndDefineDataVar (const ICCItem *pData)
 
 //	SaveAndDefineDataVar
 //
@@ -869,7 +875,7 @@ void CCodeChainCtx::SaveAndDefineDataVar (ICCItem *pData)
 		m_pOldData = m_CC.LookupGlobal(STR_G_DATA, this);
 
 	if (pData)
-		DefineVar(STR_G_DATA, pData);
+		DefineVar(STR_G_DATA, const_cast<ICCItem *>(pData));
 	else
 		DefineNil(STR_G_DATA);
 	}

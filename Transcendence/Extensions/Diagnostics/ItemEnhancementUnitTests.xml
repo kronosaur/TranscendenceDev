@@ -93,6 +93,105 @@
 									(objRemoveItem gPlayerShip theItem)
 									)												result:'ignore	}
 
+						;	Shield Enhancement ROM -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itNephrenP25; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itEnhanceShieldsROM;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(itmGetProperty 
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'hp
+										)											result:120	}
+
+						{	test:'(@ (objCanEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itEnhanceShieldsROM;
+										)
+									'resultCode
+									)												result:'alreadyEnhanced	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itEnhanceShieldsROM;
+										)
+									'resultCode
+									)												result:'alreadyEnhanced	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										{	enhancement:"-hpBonus:10"	type:&itEnhanceShieldsROM; }
+										)
+									'resultCode
+									)												result:'enhancementRemoved	}
+
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "sU") 0)
+									'enhancement
+									)												result:Nil	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Shield Ionize ROM ------------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itNephrenP25; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objCanEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itShieldIonizeROM;
+										)
+									'resultCode
+									)												result:'damaged	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itShieldIonizeROM;
+										)
+									'resultCode
+									)												result:'damaged	}
+
+						{	test:'(itmGetProperty 
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'disrupted
+										)											result:9000	}
+
+						{	test:'(@ (objCanEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itShieldIonizeROM;
+										)
+									'resultCode
+									)												result:'noEffect	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itShieldIonizeROM;
+										)
+									'resultCode
+									)												result:'noEffect	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
 						;	Silicarb Field Crystal -------------------------------------------------
 
 						{	test:'(objAddItem gPlayerShip 
@@ -110,7 +209,7 @@
 						{	test:'(itmGetProperty 
 										(@ (objGetItems gPlayerShip "sU") 0)
 										'hp
-										)											result:'110	}
+										)											result:110	}
 
 						{	test:'(@ (objEnhanceItem 
 										gPlayerShip
@@ -123,7 +222,7 @@
 						{	test:'(itmGetProperty 
 										(@ (objGetItems gPlayerShip "sU") 0)
 										'hp
-										)											result:'120	}
+										)											result:120	}
 
 						{	test:'(objAddItem gPlayerShip 
 									(itmCreate &itMammoth25Deflector; 1)
@@ -275,7 +374,7 @@
 										&itDecayedEtheriumCrystal;
 										)
 									'resultCode
-									)												result:'ok	}
+									)												result:'defectOK	}
 
 						{	test:'(objGetItemProperty
 									gPlayerShip
@@ -664,6 +763,274 @@
 						{	test:'(objGetEquipmentStatus gPlayerShip 
 									'tradingComputer
 									)												result:'ready	}
+
+						;	Test for combination of enhancements based on the following table:
+						;
+						;	https://ministry.kronosaur.com/record.hexm?id=87852
+						;
+						;	DAMAGE RESIST ROW ----------------------------------
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+resist:laser:50" }
+										{ enhancement:"+resist:laser:50" }
+										)
+									'resultCode)									result:'alreadyEnhanced	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+resist:laser:30" }
+										{ enhancement:"+resist:laser:50" }
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+resist:laser:80" }
+										{ enhancement:"+resist:laser:50" }
+										)
+									'resultCode)									result:'improved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+resistDamageClass:laser:30" }
+										{ enhancement:"+resist:laser:50" }
+										)
+									'resultCode)									result:'cantReplaceEnhancement	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-resist:laser:150" }
+										{ enhancement:"+resist:laser:50" }
+										)
+									'resultCode)									result:'defectRemoved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-resistDamageClass:laser:150" }
+										{ enhancement:"+resist:laser:50" }
+										)
+									'resultCode)									result:'cantReplaceDefect	}
+
+						;	HP BONUS ROW ---------------------------------------
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+hpBonus" }
+										{ enhancement:"+hpBonus" }
+										)
+									'resultCode)									result:'improved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+hpBonus:30" }
+										{ enhancement:"+hpBonus" }
+										)
+									'resultCode)									result:'improved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+hpBonus" }
+										{ enhancement:"+hpBonus:5" }
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+hpBonus" }
+										{ enhancement:"+hpBonus:30" }
+										)
+									'resultCode)									result:'improved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-hpBonus" }
+										{ enhancement:"+hpBonus" }
+										)
+									'resultCode)									result:'defectRemoved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-hpBonus:30" }
+										{ enhancement:"+hpBonus" }
+										)
+									'resultCode)									result:'defectImproved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-hpBonus:10" }
+										{ enhancement:"+hpBonus:30" }
+										)
+									'resultCode)									result:'defectRemoved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-resist:laser:150" }
+										{ enhancement:"+hpBonus" }
+										)
+									'resultCode)									result:'cantReplaceDefect	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-resist:laser:150" }
+										{ enhancement:"+hpBonus:30" }
+										)
+									'resultCode)									result:'cantReplaceDefect	}
+
+						;	IMMUNITY ROW ---------------------------------------
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+immunity:radiation" }
+										{ enhancement:"+immunity:radiation" }
+										)
+									'resultCode)									result:'alreadyEnhanced	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+immunity:ionEffects" }
+										{ enhancement:"+immunity:radiation" }
+										)
+									'resultCode)									result:'cantReplaceEnhancement	}
+
+						;	REFLECT ROW ----------------------------------------
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+reflect:laser" }
+										{ enhancement:"+reflect:laser" }
+										)
+									'resultCode)									result:'alreadyEnhanced	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+reflect:ion" }
+										{ enhancement:"+reflect:laser" }
+										)
+									'resultCode)									result:'cantReplaceEnhancement	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-reflect:laser" }
+										{ enhancement:"+reflect:laser" }
+										)
+									'resultCode)									result:'defectRemoved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-reflect:ion" }
+										{ enhancement:"+reflect:laser" }
+										)
+									'resultCode)									result:'cantReplaceDefect	}
+
+						;	REGEN ROW ------------------------------------------
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+regen:10" }
+										{ enhancement:"+regen:10" }
+										)
+									'resultCode)									result:'alreadyEnhanced	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+regen:5" }
+										{ enhancement:"+regen:10" }
+										)
+									'resultCode)									result:'improved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+immunity:radiation" }
+										{ enhancement:"+regen:10" }
+										)
+									'resultCode)									result:'enhancementReplaced	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-decay" }
+										{ enhancement:"+regen:10" }
+										)
+									'resultCode)									result:'defectReplaced	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"-hpBonus:20" }
+										{ enhancement:"+regen:10" }
+										)
+									'resultCode)									result:'defectReplaced	}
+
+						;	REPAIR ROW -----------------------------------------
+
+						{	test:'(@ (diagTestEnhanceCombine &itClass3Deflector; 
+										'damaged
+										{ enhancement:"+repair:10" }
+										)
+									'resultCode)									result:'repaired	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itClass3Deflector; 
+										'damaged
+										{ enhancement:"+repair:1" }
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itClass3Deflector; 
+										{ enhancement:"+hpBonus:10" }
+										{ enhancement:"+repair:10" }
+										)
+									'resultCode)									result:'noEffect	}
+
+						;	EFFICIENCY ROW -------------------------------------
+
+						{	test:'(@ (diagTestEnhanceCombine &itClass3Deflector; 
+										{ enhancement:"+efficient:10" }
+										{ enhancement:"+efficient:20" }
+										)
+									'resultCode)									result:'improved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itClass3Deflector; 
+										{ enhancement:"+efficient:20" }
+										{ enhancement:"+efficient:10" }
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itClass3Deflector; 
+										{ enhancement:"+hpBonus:10" }
+										{ enhancement:"+efficient:20" }
+										)
+									'resultCode)									result:'cantReplaceEnhancement	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itClass3Deflector; 
+										{ enhancement:"-efficient:20" }
+										{ enhancement:"+efficient:20" }
+										)
+									'resultCode)									result:'defectRemoved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itClass3Deflector; 
+										{ enhancement:"-hpBonus:10" }
+										{ enhancement:"+efficient:20" }
+										)
+									'resultCode)									result:'cantReplaceDefect	}
+
+						;	SPEED ROW ------------------------------------------
+
+						{	test:'(@ (diagTestEnhanceCombine &itSlamCannon; 
+										{ enhancement:"+speed:90" }
+										{ enhancement:"+speed:80" }
+										)
+									'resultCode)									result:'improved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itSlamCannon; 
+										{ enhancement:"+speed:70" }
+										{ enhancement:"+speed:80" }
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itSlamCannon; 
+										{ enhancement:"+hpBonus:10" }
+										{ enhancement:"+speed:80" }
+										)
+									'resultCode)									result:'cantReplaceEnhancement	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itSlamCannon; 
+										{ enhancement:"-speed:110" }
+										{ enhancement:"+speed:80" }
+										)
+									'resultCode)									result:'defectRemoved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itSlamCannon; 
+										{ enhancement:"-speed:110" }
+										{ enhancement:"+speed:80" }
+										)
+									'resultCode)									result:'defectRemoved	}
+
+						{	test:'(@ (diagTestEnhanceCombine &itSlamCannon; 
+										{ enhancement:"-hpBonus:10" }
+										{ enhancement:"+speed:80" }
+										)
+									'resultCode)									result:'cantReplaceDefect	}
+
+						;	DAMAGE VULNERABILITY ROW ---------------------------
+
+						{	test:'(@ (diagTestEnhanceCombine &itPlasteelPlate; 
+										{ enhancement:"+resist:laser:50" }
+										{ enhancement:"-resist:laser:150" }
+										)
+									'resultCode)									result:'enhancementRemoved	}
 						))
 
 					;	Armor paste iterations

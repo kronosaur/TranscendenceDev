@@ -91,6 +91,7 @@
 #define CMD_GAME_REVERT							CONSTLIT("gameRevert")
 #define CMD_GAME_SELECT_ADVENTURE				CONSTLIT("gameSelectAdventure")
 #define CMD_GAME_SELECT_SAVE_FILE				CONSTLIT("gameSelectSaveFile")
+#define CMD_GAME_SELF_DESTRUCT					CONSTLIT("gameSelfDestruct")
 #define CMD_GAME_STARGATE_SYSTEM_READY			CONSTLIT("gameStargateSystemReady")
 #define CMD_GAME_UNPAUSE						CONSTLIT("gameUnpause")
 
@@ -125,6 +126,7 @@
 #define CMD_UI_CHANGE_PASSWORD					CONSTLIT("uiChangePassword")
 #define CMD_UI_EXIT								CONSTLIT("uiExit")
 #define CMD_UI_GET_COLLECTION					CONSTLIT("uiGetCollection")
+#define CMD_UI_HIDE_STATION_LIST   				CONSTLIT("uiHideStationList")
 #define CMD_UI_MUSIC_VOLUME_DOWN				CONSTLIT("uiMusicVolumeDown")
 #define CMD_UI_MUSIC_VOLUME_UP					CONSTLIT("uiMusicVolumeUp")
 #define CMD_UI_RESET_PASSWORD					CONSTLIT("uiResetPassword")
@@ -135,6 +137,7 @@
 #define CMD_UI_SHOW_MOD_EXCHANGE				CONSTLIT("uiShowModExchange")
 #define CMD_UI_SHOW_PROFILE						CONSTLIT("uiShowProfile")
 #define CMD_UI_SHOW_SETTINGS    				CONSTLIT("uiShowSettings")
+#define CMD_UI_SHOW_STATION_LIST   				CONSTLIT("uiShowStationList")
 #define CMD_UI_SIGN_OUT							CONSTLIT("uiSignOut")
 #define CMD_UI_START_EPILOGUE					CONSTLIT("uiStartEpilogue")
 #define CMD_UI_START_GAME						CONSTLIT("uiStartGame")
@@ -860,7 +863,6 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		SNewGameSettings Defaults;
 		Defaults.sPlayerName = m_Settings.GetString(CGameSettings::playerName);
 		Defaults.iPlayerGenome = ParseGenomeID(m_Settings.GetString(CGameSettings::playerGenome));
-		Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
 		Defaults.dwPlayerShip = (DWORD)m_Settings.GetInteger(CGameSettings::playerShipClass);
 
 		//	If the player name is NULL then we come up with a better idea
@@ -886,8 +888,15 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		//	Validate difficulty
 
-		if (Defaults.iDifficulty == CDifficultyOptions::lvlUnknown)
-			Defaults.iDifficulty = CDifficultyOptions::lvlStory;
+		Defaults.iDifficulty = m_Model.GetUniverse().GetCurrentAdventureDesc().GetDifficulty();
+		if (Defaults.iDifficulty != CDifficultyOptions::lvlUnknown)
+			Defaults.bDifficultyLocked = true;
+		else
+			{
+			Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
+			if (Defaults.iDifficulty == CDifficultyOptions::lvlUnknown)
+				Defaults.iDifficulty = CDifficultyOptions::lvlStory;
+			}
 
 		//	New game screen
 
@@ -1032,6 +1041,12 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 			m_HI.OpenPopupSession(new CMessageSession(m_HI, ERR_CANT_LOAD_GAME, NULL_STR, CMD_NULL));
 			return NOERROR;
 			}
+		}
+
+	else if (strEquals(sCmd, CMD_GAME_SELF_DESTRUCT))
+		{
+		if (m_pGameSession)
+			m_pGameSession->ShowSelfDestructMenu();
 		}
 
 	//	Load an old game
@@ -1443,6 +1458,20 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
         if (error = m_HI.OpenPopupSession(new CKeyboardMapSession(m_HI, m_Service, m_Settings)))
             return error;
         }
+
+	//	Show station list
+
+	else if (strEquals(sCmd, CMD_UI_SHOW_STATION_LIST))
+		{
+		if (m_pGameSession)
+			m_pGameSession->ShowStationList(true);
+		}
+
+	else if (strEquals(sCmd, CMD_UI_HIDE_STATION_LIST))
+		{
+		if (m_pGameSession)
+			m_pGameSession->ShowStationList(false);
+		}
 
 	//	Volume controls
 

@@ -87,6 +87,21 @@ void CSmallOptionButtonAnimator::Create (CAniVScroller &Root, const CString &sID
 	Root.AddLine(pButton);
 	}
 
+void CSmallOptionButtonAnimator::SetEnabled (bool bEnable)
+
+//	SetEnabled
+//
+//	Enable/disable button.
+
+	{
+	if (m_pRoot == NULL)
+		return;
+
+	IAnimatron *pButton;
+	if (m_pRoot->FindElement(m_sID, &pButton))
+		pButton->SetPropertyBool(PROP_ENABLED, bEnable);
+	}
+
 void CSmallOptionButtonAnimator::SetImage (const CG32bitImage &Image, bool bFreeImage)
 
 //	SetImage

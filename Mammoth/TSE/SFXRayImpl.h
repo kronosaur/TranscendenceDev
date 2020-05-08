@@ -60,8 +60,9 @@ private:
 		shapeStraight = 3,
 		shapeTapered = 4,
 		shapeCone = 5,
+		shapeSword = 6,
 
-		shapeMax = 5,
+		shapeMax = 6,
 	};
 
 	enum ERayStyles
@@ -90,6 +91,7 @@ private:
 		opacityGlow,
 		opacityGrainy,
 		opacityTaperedGlow,
+		opacityTaperedExponentialGlow,
 	};
 
 	enum EWidthAdjTypes
@@ -102,6 +104,7 @@ private:
 		widthAdjTapered,
 		widthAdjCone,
 		widthAdjWhiptail,
+		widthAdjSword,
 	};
 
 	void CalcCone(TArray<Metric> &AdjArray);
@@ -110,11 +113,15 @@ private:
 	int CalcLength(SViewportPaintCtx &Ctx) const;
 	void CalcOval(TArray<Metric> &AdjArray);
 	void CalcRandomWaves(TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
+	void CalcSword(TArray<Metric> &AdjArray);
 	void CalcTaper(TArray<Metric> &AdjArray);
 	void CalcWaves(TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength, Metric rDecay, Metric rCyclePos);
 	void CleanUpIntermediates(void);
 	ILinePainter *CreateRenderer(int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos = 0.0);
 	void PaintRay(CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, int iRotationDegrees, SViewportPaintCtx &Ctx);
+
+	static void CalcTaperedGlow(int Width, int iLength, int iIntensity, Metric rTaperFraction, OpacityPlane &retGlow);
+	static void CalcTaperedExponentialGlow(int Width, int iLength, int iIntensity, Metric rTaperFraction, OpacityPlane &retGlow);
 
 	CEffectCreator *m_pCreator;
 
@@ -141,6 +148,7 @@ private:
 	template<typename T> friend class CRayRasterizer;
 	friend class CLightningBundlePainter;
 };
+
 
 template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRasterizer<BLENDER>, BLENDER>
     {

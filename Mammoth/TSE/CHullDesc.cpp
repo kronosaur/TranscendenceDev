@@ -18,6 +18,7 @@
 #define MAX_COUNTER_ATTRIB						CONSTLIT("maxCounter")
 #define MAX_DEVICES_ATTRIB						CONSTLIT("maxDevices")
 #define MAX_NON_WEAPONS_ATTRIB					CONSTLIT("maxNonWeapons")
+#define MAX_LAUNCHERS_ATTRIB					CONSTLIT("maxLaunchers")
 #define MAX_REACTOR_POWER_ATTRIB				CONSTLIT("maxReactorPower")
 #define MAX_WEAPONS_ATTRIB						CONSTLIT("maxWeapons")
 #define SIZE_ATTRIB								CONSTLIT("size")
@@ -90,6 +91,7 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	m_iMaxDevices = pHull->GetAttributeIntegerBounded(MAX_DEVICES_ATTRIB, 0, -1, -1);
 	m_iMaxWeapons = pHull->GetAttributeIntegerBounded(MAX_WEAPONS_ATTRIB, 0, m_iMaxDevices, m_iMaxDevices);
 	m_iMaxNonWeapons = pHull->GetAttributeIntegerBounded(MAX_NON_WEAPONS_ATTRIB, 0, m_iMaxDevices, m_iMaxDevices);
+	m_iMaxLaunchers = pHull->GetAttributeIntegerBounded(MAX_LAUNCHERS_ATTRIB, 0, m_iMaxDevices, 1);
 
 	//	Miscellaneous defensive systems.
 

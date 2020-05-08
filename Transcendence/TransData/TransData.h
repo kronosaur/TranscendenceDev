@@ -104,14 +104,11 @@ class StationInfo
 
 struct SDesignTypeInfo
 	{
-	SDesignTypeInfo (void) :
-			rPerGameMedianCount(0.0),
-			rPerGameMeanCount(0.0)
-		{ }
-
-	double rPerGameMedianCount;				//	Median encountered per game
-	double rPerGameMeanCount;				//	Mean encountered per game
-	CString sDistribution;					//	"1 (5%); 2 (10%); 3 (70%); 4 (10%); 5 (5%)"
+	double rPerGameMedianCount = 0.0;				//	Median encountered per game
+	double rPerGameMeanCount = 0.0;					//	Mean encountered per game
+	int iPerGameMinCount = 0;						//	Minimum ever encountered in a game
+	int iPerGameMaxCount = 0;						//	Maximum ever encountered in a game
+	CString sDistribution;							//	"1 (5%); 2 (10%); 3 (70%); 4 (10%); 5 (5%)"
 	};
 
 typedef TSortMap<DWORD, SDesignTypeInfo> CDesignTypeStats;

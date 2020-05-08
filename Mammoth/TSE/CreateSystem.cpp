@@ -114,6 +114,7 @@
 #define NO_WARNINGS_ATTRIB				CONSTLIT("noWarnings")
 #define OBJ_NAME_ATTRIB					CONSTLIT("objName")
 #define OFFSET_ATTRIB					CONSTLIT("offset")
+#define OPTIONAL_ATTRIB					CONSTLIT("optional")
 #define ORDERS_ATTRIB					CONSTLIT("orders")
 #define OVERLAP_CHECK_ATTRIB			CONSTLIT("overlapCheck")
 #define PAINT_LAYER_ATTRIB				CONSTLIT("paintLayer")
@@ -304,16 +305,10 @@ CString GetXMLObjID (const CXMLElement &Obj);
 void DumpDebugStack (SSystemCreateCtx *pCtx);
 void DumpDebugStackTop (SSystemCreateCtx *pCtx);
 void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPlace, COrbit *retOrbit);
-ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
-									const CString &sCriteria,
-									const CString &sLocationAttribs,
-									const CVector &vPos,
-									bool bIncludeAll,
-									TArray<CStationTableCache::SEntry> **retpTable,
-									bool *retbAddToCache);
 ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocationCriteria *retCriteria);
 bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric rRadius);
 ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CXMLElement &XMLDesc, const COrbit &OrbitDesc);
+SSystemCreateCtx::EOverlapCheck ParseCheckOverlap (const CString &sValue);
 inline void PopDebugStack (SSystemCreateCtx *pCtx) { if (pCtx->GetUniverse().InDebugMode()) pCtx->DebugStack.Pop(); }
 inline void PushDebugStack (SSystemCreateCtx *pCtx, const CString &sLine) { if (pCtx->GetUniverse().InDebugMode()) pCtx->DebugStack.Push(sLine); }
 
@@ -488,7 +483,7 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 							 CStationType **retpType,
 							 SStationTypeTableStats *pTypeStats = NULL,
 							 int iMaxCountPerType = -1,
-							 TArray<CStationTableCache::SEntry> **retpTable = NULL)
+							 const CStationEncounterTable **retpTable = NULL)
 
 //	ChooseRandomStation
 //
@@ -496,9 +491,6 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 //	of the system and to the given criteria.
 
 	{
-	ALERROR error;
-	int i;
-
 	//	Generate a description of the table that we are about to generate
 	//	to see if we've already got this table in the cache.
 
@@ -510,18 +502,29 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 
 	//	If this table is not cached then generate it.
 
-	bool bFreeTable = false;
-	TArray<CStationTableCache::SEntry> *pTable;
-	if (!pCtx->StationTables.FindTable(sTableDesc, &pTable))
+	const CStationEncounterTable *pTable = NULL;
+	CStationEncounterTable NewTable;
+	bool bInCache = false;
+	if (!(pTable = pCtx->StationTables.FindTable(sTableDesc)))
 		{
 		bool bAddToCache;
-		if (error = GenerateRandomStationTable(pCtx, sCriteria, sLocationAttribs, vPos, bIncludeAll, &pTable, &bAddToCache))
-			return error;
+		CStationEncounterTable::SInitCtx Options;
+		Options.sCriteria = sCriteria;
+		Options.sLocationAttribs = sLocationAttribs;
+		Options.sExtraLocationAttribs = pCtx->sLocationAttribs;
+		Options.vPos = vPos;
+		Options.bIncludeAll = bIncludeAll;
+
+		if (!NewTable.Init(pCtx->System, Options, &pCtx->sError, &bAddToCache))
+			return ERR_FAIL;
 
 		if (bAddToCache)
-			pCtx->StationTables.AddTable(sTableDesc, pTable);
+			{
+			pTable = pCtx->StationTables.AddTable(sTableDesc, NewTable);
+			bInCache = true;
+			}
 		else
-			bFreeTable = true;
+			pTable = &NewTable;
 		}
 
 	//	Add to stats
@@ -532,9 +535,10 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 	//	Now generate a probability table and add all the entries
 
 	TProbabilityTable<CStationType *> Table;
-	for (i = 0; i < pTable->GetCount(); i++)
+	Table.GrowToFit(pTable->GetCount());
+	for (int i = 0; i < pTable->GetCount(); i++)
 		{
-		const CStationTableCache::SEntry &Entry = pTable->GetAt(i);
+		const CStationEncounterTable::SEntry &Entry = pTable->GetAt(i);
 
 		//	Make sure we can still encounter this type. [If we've already created
 		//	a system-unique object then it will still be in the cached tables.]
@@ -581,14 +585,12 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 	//	we only return it if we add it to the cache (otherwise, it will get freed).
 
 	if (retpTable)
-		*retpTable = (!bFreeTable ? pTable : NULL);
+		*retpTable = (bInCache ? pTable : NULL);
 
 	//	Short-circuit
 
 	if (Table.GetCount() == 0)
 		{
-		if (bFreeTable)
-			delete pTable;
 		STATION_PLACEMENT_OUTPUT("   no appropriate station found for this location\n");
 		return ERR_NOTFOUND;
 		}
@@ -614,10 +616,6 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 			(*pExisting) += 1;
 		}
 
-	//	Free
-
-	if (bFreeTable)
-		delete pTable;
 	return NOERROR;
 	}
 
@@ -833,7 +831,7 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 		//	Now look for the most appropriate station to place at the location
 
 		CStationType *pType;
-		TArray<CStationTableCache::SEntry> *pStationTable;
+		const CStationEncounterTable *pStationTable;
 		if (error = ChooseRandomStation(pCtx, 
 				sStationCriteria, 
 				Loc.GetAttributes(),
@@ -1331,8 +1329,8 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 
 	//	Generate a list of all locations that match the given criteria.
 
-	TProbabilityTable<int> Table;
-	if (!pCtx->System.GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, rExclusionRadius, &Table))
+	CLocationSelectionTable Table = pCtx->System.GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, rExclusionRadius);
+	if (!Table)
 		{
 		if (pCtx->GetUniverse().InDebugMode()
 				&& !pDesc->GetAttributeBool(NO_WARNINGS_ATTRIB))
@@ -1365,10 +1363,11 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 		{
 		COrbit NewOrbit;
 
-		//	If we're out of labels then that's OK
-
-		if (Table.IsEmpty())
+		const CLocationDef *pLoc = Table.GetRandom();
+		if (!pLoc)
 			{
+			//	If we're out of labels then that's OK
+
 			if (pCtx->GetUniverse().InDebugMode()
 					&& !pDesc->GetAttributeBool(NO_WARNINGS_ATTRIB))
 				{
@@ -1381,32 +1380,31 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 			return NOERROR;
 			}
 
-		//	Pick a random location from our table
-
-		int iRollPos = Table.RollPos();
-		int iLocID = Table[iRollPos];
-		CLocationDef &Loc = pCtx->System.GetLocation(iLocID);
-
 		//	Create a superset of location attributes
 
-		pCtx->sLocationAttribs = ::AppendModifiers(sSavedLocationAttribs, Loc.GetAttributes());
+		pCtx->sLocationAttribs = ::AppendModifiers(sSavedLocationAttribs, pLoc->GetAttributes());
 
 		//	Create the object
 
 		DWORD dwSavedLastObjID = pCtx->dwLastObjID;
 		pCtx->dwLastObjID = 0;
 
-		if (error = CreateSystemObject(pCtx, pDesc->GetContentElement(i % iChildCount), Loc.GetOrbit()))
+		if (error = CreateSystemObject(pCtx, pDesc->GetContentElement(i % iChildCount), pLoc->GetOrbit()))
 			return error;
 
 		//	If we actually created an object, then remove the label
 
-		pCtx->System.SetLocationObjID(iLocID, pCtx->dwLastObjID);
+		if (pCtx->dwLastObjID)
+			{
+			Table.Fill(*pLoc, pCtx->dwLastObjID);
+
+			//	If we have more locations to choose, remove locations that are too close.
+
+			if (i + 1 < iCount && rExclusionRadius > 0.0)
+				Table.DeleteInRange(*pLoc, rExclusionRadius);
+			}
+
 		pCtx->dwLastObjID = dwSavedLastObjID;
-
-		//	Also remove from our table
-
-		Table.Delete(iRollPos);
 
 #ifdef DEBUG_STATION_EXCLUSION_ZONE
 		::kernelDebugLogPattern("CreateObjectAtRandomLocation: Created %s",
@@ -1488,6 +1486,13 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 
 	bool bNoOverlap = pObj->GetAttributeBool(NO_OVERLAP_ATTRIB);
 	int iExclusionRadius = pObj->GetAttributeIntegerBounded(EXCLUSION_RADIUS_ATTRIB, 0, -1, 0);
+
+	//	Check overlap
+
+	CString sCheck;
+	SSystemCreateCtx::EOverlapCheck iOldOverlapCheck = pCtx->iOverlapCheck;
+	if (pObj->FindAttribute(OVERLAP_CHECK_ATTRIB, &sCheck))
+		pCtx->iOverlapCheck = ParseCheckOverlap(sCheck);
 
 	//	Calculate the number of objects
 
@@ -1803,6 +1808,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 	//	Done
 
 	pCtx->ZAdjust = OldZAdjust;
+	pCtx->iOverlapCheck = iOldOverlapCheck;
 	PopDebugStack(pCtx);
 
 	return NOERROR;
@@ -2104,6 +2110,17 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 	return NOERROR;
 	}
 
+SSystemCreateCtx::EOverlapCheck ParseCheckOverlap (const CString &sValue)
+	{
+	if (CXMLElement::IsBoolTrueValue(sValue)
+			|| strEquals(sValue, CONSTLIT("planetoids")))
+		return SSystemCreateCtx::checkOverlapPlanets;
+	else if (strEquals(sValue, CONSTLIT("asteroids")))
+		return SSystemCreateCtx::checkOverlapAsteroids;
+	else
+		return SSystemCreateCtx::checkOverlapNone;
+	}
+
 ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, const CXMLElement *pSatellites, const COrbit &OrbitDesc)
 
 //	CreateSatellites
@@ -2124,15 +2141,7 @@ ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, const 
 	SSystemCreateCtx::EOverlapCheck iOldOverlap = pCtx->iOverlapCheck;
 	CString sCheck;
 	if (pSatellites->FindAttribute(OVERLAP_CHECK_ATTRIB, &sCheck))
-		{
-		if (CXMLElement::IsBoolTrueValue(sCheck)
-				|| strEquals(sCheck, CONSTLIT("planetoids")))
-			pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapPlanets;
-		else if (strEquals(sCheck, CONSTLIT("asteroids")))
-			pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapAsteroids;
-		else
-			pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapNone;
-		}
+		pCtx->iOverlapCheck = ParseCheckOverlap(sCheck);
 	else
 		pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapNone;
 
@@ -3444,147 +3453,6 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPla
 	*retOrbit = NewOrbit;
 	}
 
-ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
-									const CString &sCriteria,
-									const CString &sLocationAttribs,
-									const CVector &vPos,
-									bool bIncludeAll,
-									TArray<CStationTableCache::SEntry> **retpTable,
-									bool *retbAddToCache)
-
-//	GenerateRandomStationTable
-//
-//	Returns an array of station type matching the given criteria and sets the
-//	temp value to the chance.
-
-	{
-	ALERROR error;
-	int i;
-
-	//	Loop over all station types
-
-	int iLevel = pCtx->System.GetLevel();
-	int iCount = pCtx->GetUniverse().GetStationTypeCount();
-
-	//	Initialize the table
-	//
-	//	If we're including all it usually means that we're by-passing the normal
-	//	encounter probabilities and going straight by station criteria.
-	//	(We do this, e.g., to create random asteroids of appropriate type.)
-
-	if (bIncludeAll)
-		{
-		//	If we're including all, then we ignore the levelFrequency property
-		//	of a type.
-
-		for (i = 0; i < iCount; i++)
-			pCtx->GetUniverse().GetStationType(i)->SetTempChance(1000);
-		}
-	else
-		{
-		for (i = 0; i < iCount; i++)
-			{
-			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-			pType->SetTempChance((1000 / ftCommon) * pType->GetFrequencyForSystem(&pCtx->System));
-			}
-		}
-
-	//	Loop over each part of the criteria and refine the table
-
-	if (!strEquals(sCriteria, MATCH_ALL))
-		{
-		//	Parse station criteria if we've got it.
-
-		CAffinityCriteria StationCriteria;
-		if (error = StationCriteria.Parse(sCriteria, &pCtx->sError))
-			return error;
-
-		for (i = 0; i < iCount; i++)
-			{
-			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-			if (pType->GetTempChance())
-				{
-				int iAdj = pType->CalcAffinity(StationCriteria);
-				pType->SetTempChance((pType->GetTempChance() * iAdj) / 1000);
-				}
-			}
-		}
-
-	//	Loop over each station type and adjust for the location that
-	//	we want to create the station at
-
-	if (!strEquals(sLocationAttribs, MATCH_ALL))
-		{
-		for (i = 0; i < iCount; i++)
-			{
-			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-			if (pType->GetTempChance())
-				{
-				const CAffinityCriteria &LocationCriteria = pType->GetLocationCriteria();
-				int iAdj = pCtx->System.CalcLocationAffinity(LocationCriteria, pCtx->sLocationAttribs, vPos);
-				pType->SetTempChance((pType->GetTempChance() * iAdj) / 1000);
-				}
-			}
-		}
-
-	//	Check to see if any of the selected stations has priority (because of node
-	//	minimums). If so, then we need to zero out any other stations.
-
-	bool bPrioritizeRequiredEncounters = false;
-	if (pCtx->pTopologyNode)
-		{
-		for (i = 0; i < iCount; i++)
-			{
-			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-
-			//	If we need a minimum number of stations in this node, then we
-			//	prioritize these types.
-
-			if (pType->GetTempChance() > 0
-					&& pType->GetEncounterRequired(pCtx->pTopologyNode) > 0)
-				{
-				bPrioritizeRequiredEncounters = true;
-				break;
-				}
-			}
-
-		//	If we're prioritizing required encounters, then zero-out any probabilities
-		//	for non-required types
-
-		if (bPrioritizeRequiredEncounters)
-			{
-			for (i = 0; i < iCount; i++)
-				{
-				CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-				if (pType->GetEncounterRequired(pCtx->pTopologyNode) == 0)
-					pType->SetTempChance(0);
-				}
-			}
-		}
-
-	//	Now that we've initialized all the types, return the ones with a non-zero
-	//	chance.
-
-	TArray<CStationTableCache::SEntry> *pTable = new TArray<CStationTableCache::SEntry>;
-	for (i = 0; i < iCount; i++)
-		{
-		CStationType *pType = pCtx->GetUniverse().GetStationType(i);
-		if (pType->GetTempChance())
-			{
-			CStationTableCache::SEntry *pEntry = pTable->Insert();
-			pEntry->pType = pType;
-			pEntry->iChance = pType->GetTempChance();
-			}
-		}
-
-	//	Done
-
-	*retpTable = pTable;
-	*retbAddToCache = !bPrioritizeRequiredEncounters;
-
-	return NOERROR;
-	}
-
 ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocationCriteria *retCriteria)
 
 //	GetLocationCriteria
@@ -3645,7 +3513,7 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 	for (j = 0; j < pCtx->System.GetObjectCount(); j++)
 		{
 		CSpaceObject *pObj = pCtx->System.GetObject(j);
-		if (pObj == NULL || pObj->IsDestroyed())
+		if (pObj == NULL || pObj->IsDestroyed() || pObj->IsOutOfPlaneObj())
 			continue;
 
 		//	Check to see if we're too close to an active station
@@ -3889,7 +3757,6 @@ ALERROR CSystem::CreateEmpty (CUniverse &Universe, CTopologyNode *pTopology, CSy
 
 	pSystem->m_pType = NULL;
 	pSystem->m_iNextEncounter = pSystem->m_iTick + mathRandom(500, 2500);
-	pSystem->m_fEncounterTableValid = false;
 
 	//	Done
 
@@ -4311,13 +4178,13 @@ ALERROR CSystem::CreateMarker (CXMLElement *pDesc, const COrbit &oOrbit, CMarker
 	if (!sEntryPoint.IsBlank())
 		NameObject(sEntryPoint, *pMarker);
 
-    //  Show the orbit, if necessary
+	//  Show the orbit, if necessary
 	//	(But not if we duplicate an existing orbit. This is what allows us to show
 	//	orbits on asteroid belt lines.)
 
-    if (pDesc->GetAttributeBool(SHOW_ORBIT_ATTRIB)
+	if (pDesc->GetAttributeBool(SHOW_ORBIT_ATTRIB)
 			&& !FindObjectWithOrbit(oOrbit))
-        pMarker->SetOrbit(oOrbit);
+		pMarker->SetOrbit(oOrbit);
 
 	//	Done
 
@@ -4619,7 +4486,7 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 	//	If this is a satellite, then add it as a subordinate
 
 	if (pStation && pCtx->pStation && (pStation->CanAttack() || CreateCtx.bIsSegment))
-		pCtx->pStation->AddSubordinate(pStation);
+		pCtx->pStation->AddSubordinate(*pStation, CreateCtx.sID);
 
 	//	Create any satellites of the station
 
@@ -4704,10 +4571,14 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	CreateCtx.pOrbit = &OrbitDesc;
 	CreateCtx.bCreateSatellites = !pDesc->GetAttributeBool(NO_SATELLITES_ATTRIB);
 	CreateCtx.pExtraData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
-    CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
+	CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
+	CreateCtx.sID = pDesc->GetAttribute(ID_ATTRIB);
 	CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
-	if (!pDesc->FindAttributeInteger(ROTATION_ATTRIB, &CreateCtx.iRotation))
+	CString sAngle;
+	if (pDesc->FindAttribute(ROTATION_ATTRIB, &sAngle))
+		CreateCtx.iRotation = CAngleGenerator::GenerateSingle(*pCtx, OrbitDesc, sAngle);
+	else
 		CreateCtx.iRotation = -1;
 
 	int iParallax = pDesc->GetAttributeIntegerBounded(BACKGROUND_PLANE_ATTRIB, 1, -1, 100);
@@ -4718,7 +4589,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 
 	//	Since this is an explicit creation of a station, ignore limits
 
-	CreateCtx.bIgnoreLimits = true;
+	CreateCtx.bIgnoreLimits = !pDesc->GetAttribute(OPTIONAL_ATTRIB);
 
 	//	Sovereign override
 

@@ -1981,6 +1981,9 @@
 
 								(eq resultCode 'noNonWeaponSlotsLeft)
 									(setq desc (translate installerObj 'rpg.cannotInstallDeviceBecauseLackOfNonWeaponSlots trData))
+	
+								(eq resultCode 'noLauncherSlotsLeft)
+									(setq desc (translate installerObj 'rpg.cannotInstallDeviceBecauseLackOfLauncherSlots trData))
 
 								(eq resultCode 'tooMuchCargo)
 									(setq desc (translate installerObj 'rpg.cannotInstallBecauseTooMuchCargo trData))

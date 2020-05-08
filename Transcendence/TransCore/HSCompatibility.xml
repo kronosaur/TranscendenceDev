@@ -1386,7 +1386,7 @@
 			dockingPorts=		"10"
 			ignoreFriendlyFire=	"true"
 
-            level=              "4"
+			level=              "4"
 			multiHull=			"true"
 			armorID=			"&itPlasteelPlate;"
 			maxHitPoints=		"630"
@@ -1816,11 +1816,11 @@
 
 		</DockScreens>
 
-        <Language>
-            <Text id="core.mapDescMain">
-                "Hires freighter escorts"
-            </Text>
-        </Language>
+		<Language>
+			<Text id="core.mapDescMain">
+				"Hires freighter escorts"
+			</Text>
+		</Language>
 	</StationType>
 
 
@@ -2434,7 +2434,7 @@
 	
 	<StationType unid="&baBlackMarketStationObsolete;"
 			obsoleteVersion="1">
-    </StationType>
+	</StationType>
 
 	<StationType unid="&baCommonwealthStationObsolete;"
 			obsoleteVersion="1"
@@ -2655,6 +2655,38 @@
 				(objRemoveItem gSource gItem 1)
 				)
 		</Invoke>
+	</ItemType>
+
+	<!-- Autopilot ROM -->
+
+	<ItemType UNID="&itAutopilotROM;"
+			obsoleteVersion=	"49"
+			name=				"autopilot ROM"
+			attributes=			"info, minorItem, shipEquipment"
+			inherit=			"&baStdEquipmentItem;"
+
+			level=				"1"
+			frequency=			"uncommon"
+
+			value=				"50"
+			mass=				"1"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+
+			description=		"This program allows the ship's captain to rest while the ship maintains a steady course."
+			>
+
+		<Properties>
+			<Constant id="rpg.equipment">'autopilot</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="rpg.equipmentInstalled">Autopilot installed</Text>
+			<Text id="rpg.equipmentNoEffect">Ship already has an autopilot</Text>
+			<Text id="rpg.equipmentRedundant">Installed redundant autopilot</Text>
+			<Text id="rpg.equipmentRepaired">Autopilot repaired</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Centauri Commandship (Obsolete) -->
@@ -3648,6 +3680,96 @@
 
 			(setq miningScanObj (lambda (asteroidObj podType)
 				Nil
+				))
+				
+			;	This function has been moved to a base class for all Black Market stations.
+			
+			(setq intBlackMarketOnDestroy (lambda (cost)
+				(block Nil
+					; Destroy items on the station
+					(rpgDestroyItems gSource)
+
+					; Player is tracked
+					(if (and gPlayerShip (eq aOrderGiver gPlayerShip))
+						(block (totalCrimeCost)
+							(setq totalCrimeCost (objIncData gPlayerShip "blackMarketCrimeCost" cost))
+							(if (objGetData gPlayerShip "blackMarketCrime")
+								(objSetData gPlayerShip "blackMarketCrime" "multiple offenses against the Sindikat")
+								(objSetData gPlayerShip "blackMarketCrime" (cat "the destruction of " (objGetName gSource 4)))
+								)
+								
+							; If the cost of the player's crime is more than the equivalent
+							; current experience level, then the Black Market becomes an enemy.
+							; [I.e., the better the relationship with the BM, the greater the
+							; chance that the BM will allow the player to pay back her debts.]
+                    
+							(if (gr (/ totalCrimeCost 100) (typ@ &unidBlackMarketMember; 'xp))
+								(block Nil
+									(sovSetDisposition &svBlackMarket; &svPlayer; 'enemy)
+									(sovSetDisposition &svPlayer; &svBlackMarket; 'enemy)
+    								)
+	    						)
+							)
+						)
+					)
+				))
+				
+			;	No longer needed with new enhancement UI
+				
+			(setq intEnhanceWeaponUse (lambda (newMods damageType successText maxLevel)
+				(block (notFound)
+					(if (not maxLevel) (setq maxLevel 10))
+					; Install
+					(setq notFound True)
+					(objEnumItems gSource "w~lI" theItem
+						(block (weaponItem)
+							(setq weaponItem theItem)
+							(if (and 
+									notFound 
+									(or (not damageType) (eq (itmGetDamageType weaponItem) damageType))
+									(eq (shpGetItemDeviceName gSource weaponItem) 0)
+									)
+								(block Nil
+									(switch
+										; If the weapon is too advanced, it doesn't work
+										(gr (itmGetLevel weaponItem) maxLevel)
+											(objSendMessage gSource Nil (cat "Your " (itmGetName weaponItem 32) " is too advanced to be optimized"))
+												
+										; If the item is damaged, we repair it
+										(and (itmIsDamaged weaponItem) (ls newMods 0x8000))
+											(block Nil
+												(shpRepairItem gSource theItem)
+												(objSendMessage gSource Nil (cat (itmGetName weaponItem 33) " has been repaired"))
+												)
+
+										; Enhance the weapon
+										(block (result)
+											(setq result (shpEnhanceItem gSource theItem {
+												enhancement: newMods
+												type: gType
+												}))
+
+											(objSendMessage gSource Nil (intItemEnhanceStatus result (cat "Your " (itmGetName weaponItem 32) " " successText) (cat "your " (itmGetName weaponItem 32))))
+											)
+										)
+									(setq notFound Nil)
+									)
+								)
+							)
+						)
+
+					; Item is identified
+
+					(itmSetKnown gItem)
+
+					; If we did not find a weapon to enhance, then no effect. Otherwise
+					; we consume the item
+
+					(if notFound
+						(objSendMessage gSource Nil "The enhancement has no effect")
+						(objRemoveItem gSource gItem 1)
+						)
+					)
 				))
 
 			; Aliases for backwards compatibility ------------------------------
@@ -5430,7 +5552,7 @@
 			virtual=			"true"
 			definiteArticle=	"true"
 			
-            level=              "7"
+			level=              "7"
 			size=				"5000"
 			attributes=			"commonwealthCustoms, dockObj, human, majorStation, stKatsArcology"
 			>
@@ -5628,11 +5750,11 @@
 					)
 			</GetRumors>
 		</Events>
-        
-        <Language>
-            <Text id="core.mapDescMain">
-                "Capital of the Commonwealth"
-            </Text>
+		
+		<Language>
+			<Text id="core.mapDescMain">
+				"Capital of the Commonwealth"
+			</Text>
 
 			<Text id="rumor.stKatsParliament.1">
 
@@ -5699,7 +5821,7 @@
 				brethren then the Dwarg will happily exploit them."
 				
 			</Text>
-        </Language>
+		</Language>
 	</StationType>
 	
 	<!-- Arcology Segment Base -->
@@ -6294,6 +6416,377 @@
 		</Events>
 	</ShipClass>
 	
+	<StationType UNID="&stSungSlaveQuarters1;"
+			obsoleteVersion=	"49"
+			name=				"Sung slave quarters|Sung slave quarters"
+			sovereign=			"&svSungSlaves;"
+
+			attributes=			"sungSlaveQuarters"
+
+			dockScreen=			"&dsSungSlaveQuarters;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			mass=				"3000"
+			armorID=			"&itUltraLightTitaniumArmor;"
+			hitPoints=			"35"
+			multiHull=			"true"
+			structuralHitPoints="30"
+
+			noMapLabel=			"true"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<Image			imageID="&rsStations4;" imageX="192" imageY="32" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsStations4;" imageX="192" imageY="64" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsStations4;" imageX="192" imageY="96" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+		<!-- Events and Data -->
+
+		<InitialData>
+			<sungSlave>True</sungSlave>
+		</InitialData>
+
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at a ruined structure once housing slaves.
+				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Sung Slave Quarters -->
+
+	<StationType UNID="&stSungSlaveQuarters2;"
+			obsoleteVersion=	"49"
+			name=				"Sung slave quarters|Sung slave quarters"
+			sovereign=			"&svSungSlaves;"
+
+			attributes=			"sungSlaveQuarters"
+
+			dockScreen=			"&dsSungSlaveQuarters;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+
+			mass=				"3000"
+			armorID=			"&itUltraLightTitaniumArmor;"
+			hitPoints=			"30"
+			structuralHitPoints="10"
+
+			noMapLabel=			"true"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<Image			imageID="&rsStations4;" imageX="224" imageY="0"  imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsStations4;" imageX="224" imageY="32" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsStations4;" imageX="224" imageY="64" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsStations4;" imageX="224" imageY="96" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+		<!-- Events and Data -->
+
+		<InitialData>
+			<sungSlave>True</sungSlave>
+		</InitialData>
+
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at a ruined structure once housing slaves.
+				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Sung Fortress -->
+
+	<StationType UNID="&stSungFortressOld;"
+			obsoleteVersion=	"49"
+			name=				"Sung fortress(es)"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"400"
+            regen=              "11"
+			explosionType=		"&vtBlastExplosion4;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"enemy, envAir, envEarth, envFire, envWater, human, majorStation, populated, sungSlavers"
+			>
+		<Image			imageID="&rsStations4;" imageX="0" imageY="192" imageWidth="128" imageHeight="128"/>
+
+		<Ships>
+			<Table>
+				<Ship chance="30"	count="2d6" class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				<Group chance="60">
+					<Ship			count="1"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+					<Ship			count="2d4"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+				<Ship chance="10"	count="1d4"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+			</Table>
+		</Ships>
+
+		<Reinforcements minShips="3">
+			<Table>
+				<Ship chance="75"	count="1d4"	class="&scWindSlaver;"	orders="patrol" patrolDist="20"/>
+				<Ship chance="25"	count="1d2"	class="&scSteelSlaver;"	orders="patrol" patrolDist="20"/>
+			</Table>
+		</Reinforcements>
+
+		<Items>
+			<Lookup					count="1d4"	table="&trStationSupplies;" />
+			<Lookup					count="1"	table="&trConsumables6;"/>
+			<Lookup					count="1"	table="&trMinorItem6;"/>
+			<Table chance="75">
+				<Lookup chance="40" count="1" table="&trConsumables7;"/>
+				<Lookup chance="40" count="1" table="&trMinorItem7;"/>
+				<Lookup chance="20" count="1" table="&trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<Encounters frequency="common">
+			<Ship   count="1d4"	class="&scWindSlaver;" orders="attack"/>
+		</Encounters>
+
+		<Satellites>
+			<Station type="&stSungNEWall;" xOffset="64" yOffset="64"	segment="true"/>
+			<Station type="&stSungNWWall;" xOffset="-64" yOffset="64"	segment="true"/>
+			<Station type="&stSungSWWall;" xOffset="-64" yOffset="-64"	segment="true"/>
+			<Station type="&stSungSEWall;" xOffset="64" yOffset="-64"	segment="true"/>
+		</Satellites>
+
+	</StationType>
+
+	<!-- Sung Walls -->
+
+	<StationType UNID="&stSungNWWall;"
+			obsoleteVersion=	"49"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"120"
+			structuralHitPoints="100"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<Image			imageID="&rsStations5;" imageX="0" imageY="0" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true"/>
+		</Devices>
+
+	</StationType>
+
+	<StationType UNID="&stSungNEWall;"
+			obsoleteVersion=	"49"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"120"
+			structuralHitPoints="100"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<Image			imageID="&rsStations5;" imageX="128" imageY="0" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true"/>
+		</Devices>
+
+	</StationType>
+
+	<StationType UNID="&stSungSEWall;"
+			obsoleteVersion=	"49"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"120"
+			structuralHitPoints="100"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<Image			imageID="&rsStations5;" imageX="128" imageY="128" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true"/>
+		</Devices>
+
+	</StationType>
+
+	<StationType UNID="&stSungSWWall;"
+			obsoleteVersion=	"49"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			mass=				"50000"
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"120"
+			structuralHitPoints="100"
+			fireRateAdj=		"30"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<Image			imageID="&rsStations5;" imageX="0" imageY="128" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true"/>
+		</Devices>
+
+	</StationType>
+
+	<!-- Sung Citadel -->
+
+	<StationType UNID="&stSungCitadelOld;"
+			obsoleteVersion=	"50"
+			name=				"Sung citadel"
+			sovereign=			"&svSung;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			multiHull=			"true"
+			armorID=			"&itSungArmor;"
+			hitPoints=			"1500"
+            regen=              "11"
+			fireRateAdj=		"20"
+			explosionType=		"&vtThermoExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"enemy, human, majorStation, populated, sungSlavers"
+			>
+
+		<!-- Encounter Info -->
+
+		<Image			imageID="&rsStations6;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+
+		<Devices>
+			<Device deviceID="&itCyberDeckLowerShields;"/>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true" posAngle="40"  posRadius="120"/>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true" posAngle="145" posRadius="125"/>
+			<Device deviceID="&itParticleBeamWeapon;"	omnidirectional="true" posAngle="270" posRadius="90"/>
+		</Devices>
+
+		<Ships>
+			<Table>
+				<Group chance="60">
+					<Ship			count="1"	class="&scEarthSlaver;"		orders="patrol" patrolDist="30"/>
+					<Ship			count="1d2"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+					<Ship			count="1d3"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+				<Group chance="30">
+					<Ship			count="1"	class="&scEarthSlaver;"		orders="patrol" patrolDist="30"/>
+					<Ship			count="1d6"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+				<Group chance="10">
+					<Ship			count="1d4"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+					<Ship			count="1d6"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+			</Table>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Table>
+				<Ship chance="50"	count="1d3"	class="&scWindSlaver;"	orders="patrol" patrolDist="20"/>
+				<Ship chance="30"	count="1d2"	class="&scSteelSlaver;"	orders="patrol" patrolDist="20"/>
+				<Ship chance="20"	count="1"	class="&scEarthSlaver;"	orders="patrol" patrolDist="30"/>
+			</Table>
+		</Reinforcements>
+
+		<Items>
+			<Item chance="80"		count="1d4" item="&itLongzhuSphere;"/>
+			<Lookup					count="1d4"	table="&trStationSupplies;" />
+			<Lookup					count="1"	table="&trConsumables6;"/>
+			<Lookup					count="1"	table="&trMinorItem6;"/>
+			<Table>
+				<Lookup chance="45" count="1" table="&trConsumables7;"/>
+				<Lookup chance="30" count="1" table="&trMinorItem7;"/>
+				<Lookup chance="25" count="1" table="&trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<Encounters frequency="common">
+			<Table>
+				<Ship chance="30"	count="2d3" class="&scWindSlaver;"		orders="attack"/>
+				<Group chance="60">
+					<Ship			count="1"	class="&scSteelSlaver;"		orders="attack"/>
+					<Ship			count="1d4"	class="&scWindSlaver;"		orders="attack"/>
+				</Group>
+				<Ship chance="10"	count="1d4"	class="&scSteelSlaver;"		orders="attack"/>
+			</Table>
+		</Encounters>
+
+		<Satellites overlapCheck="asteroids">
+			<Orbitals count="8" distance="14" angle="equidistant">
+				<Station type="&stSungDefenseSat1;"/>
+			</Orbitals>
+		</Satellites>
+
+	</StationType>
+
+	<!-- Old Effects -->
+	
+	<Effect UNID="&efLargeExplosion1;"	obsoleteVersion="49">
+		<Image imageID="&rsLargeExplosions;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="128" 
+				imageHeight="128"
+				imageFrameCount="16"
+				imageTicksPerFrame="2"/>
+	</Effect>
+
 	<!-- Old Image -->
 
 	<Image UNID="&rsEI100Image;"	obsoleteVersion="40" bitmap="Resources\EI100.jpg" 		bitmask="Resources\EI100Mask.bmp" loadOnUse="true"/>
@@ -6338,8 +6831,23 @@
 	<Image UNID="&rsSmallShips1;"		obsoleteVersion="49" bitmap="Resources\SmallShips1.jpg"	bitmask="Resources\SmallShips1Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsMediumShips1;"		obsoleteVersion="49"	bitmap="Resources\MediumShips1.jpg"	bitmask="Resources\MediumShips1Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsMediumShips2;"		obsoleteVersion="49" bitmap="Resources\MediumShips2.jpg"	bitmask="Resources\MediumShips2Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsMediumShips3;"		obsoleteVersion="49" bitmap="Resources\MediumShips3.jpg"	bitmask="Resources\MediumShips3Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsMediumShips4;"		obsoleteVersion="49" bitmap="Resources\MediumShips4.jpg"	bitmask="Resources\MediumShips4Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsLargeShips2;"		obsoleteVersion="49"	bitmap="Resources\LargeShips2.jpg"	bitmask="Resources\LargeShips2Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsSungTransport;"		obsoleteVersion="49" bitmap="Resources\SungTransport.jpg"	bitmask="Resources\SungTransportMask.bmp"  loadOnUse="true"/>
-	<Image UNID="&rsSalvagerNomad;"	obsoleteVersion="49"				bitmap="Resources\SalvagerNomad.jpg"		bitmask="Resources\SalvagerNomadMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsSalvagerNomad;"		obsoleteVersion="49"				bitmap="Resources\SalvagerNomad.jpg"		bitmask="Resources\SalvagerNomadMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsXenophobeDefender;"	obsoleteVersion="49"		bitmap="Resources\XenophobeDefender.jpg"		bitmask="Resources\XenophobeDefenderMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsRanxDreadnought;"	obsoleteVersion="49"		bitmap="Resources\RanxDreadnought.jpg"		bitmask="Resources\RanxDreadnoughtMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsDragonSlaverImage;"	obsoleteVersion="49" bitmap="Resources\DragonSlaver.jpg"		bitmask="Resources\DragonSlaverMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsStargate;"			obsoleteVersion="49" bitmap="Resources\Stargates1.jpg"		bitmask="Resources\Stargates1Mask.bmp"  />
+	<Image UNID="&rsShipInterior;"		obsoleteVersion="49" bitmap="Resources\ShipInterior.jpg"			loadOnUse="true" />
+	<Image UNID="&rsLargeExplosions;"	obsoleteVersion="49" bitmap="Resources\LargeExplosions.jpg" bitmask="Resources\LargeExplosionsMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsVentariDestroyer;"	obsoleteVersion="49" bitmap="Resources\VentariDestroyer.jpg" bitmask="Resources\VentariDestroyerMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsLargeShips1;"		obsoleteVersion="49" bitmap="Resources\LargeShips1.jpg"	bitmask="Resources\LargeShips1Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsUrakDestroyer;"		obsoleteVersion="49" bitmap="Resources\UrakDestroyer.jpg" 	bitmask="Resources\UrakDestroyerMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsHeliotropeFrigate;"	obsoleteVersion="49"			bitmap="Resources\HeliotropeFrigate.jpg"		bitmask="Resources\HeliotropeFrigateMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsFerianWarrior;"		obsoleteVersion="49"		bitmap="Resources\FerianWarrior.jpg"	bitmask="Resources\FerianWarriorMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsXenophobeWorldship;"	obsoleteVersion="49"		bitmap="Resources\XenophobeWorldship.jpg"		bitmask="Resources\XenophobeWorldshipMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsXenophobeArk;"		obsoleteVersion="49"		bitmap="Resources\XenophobeArk.jpg"				bitmask="Resources\XenophobeArkMask.bmp"  		loadOnUse="true"/>
 
 </TranscendenceModule>

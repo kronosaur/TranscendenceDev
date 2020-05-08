@@ -637,6 +637,10 @@ bool CItem::FireCanEnhanceItem (const CSpaceObject &TargetObj, const CItem &Targ
 //	and retResult.iResult is eisUnknown.
 //
 //	If we get an error, we return FALSE.
+//
+//	LATER: This should not require TargetObj. We need to be able to call this
+//	from an item call (e.g., something like itmEnhance). Instead, we should take
+//	an optional object pointer.
 
 	{
 	retResult = SEnhanceItemResult();
@@ -870,6 +874,10 @@ bool CItem::FireOnEnhanceItem (const CSpaceObject &TargetObj, const CItem &Targe
 //	and retResult.iResult is eisUnknown.
 //
 //	If we get an error, we return FALSE.
+//
+//	LATER: This should not require TargetObj. We need to be able to call this
+//	from an item call (e.g., something like itmEnhance). Instead, we should take
+//	an optional object pointer.
 
 	{
 	retResult = SEnhanceItemResult();
@@ -900,22 +908,26 @@ bool CItem::FireOnEnhanceItem (const CSpaceObject &TargetObj, const CItem &Targe
 
 		return false;
 		}
-
-	CString sResultCode = pResult->GetStringAt(CONSTLIT("resultCode"));
-	retResult.iResult = CItemEnhancement::AsEnhanceItemStatus(sResultCode);
-	if (retResult.iResult == eisUnknown)
+	else if (pResult->IsNil())
 		{
-		if (retsError)
-			*retsError = strPatternSubst(CONSTLIT("[%08x %s] <OnEnhanceItem> Unknown resultCode: %s"), GetType()->GetUNID(), GetNounPhrase(), sResultCode);
-
-		return false;
+		retResult.iResult = eisUnknown;
+		return true;
 		}
+	else
+		{
+		CString sResultCode = pResult->GetStringAt(CONSTLIT("resultCode"));
+		retResult.iResult = CItemEnhancement::AsEnhanceItemStatus(sResultCode);
+		if (retResult.iResult == eisUnknown)
+			{
+			if (retsError)
+				*retsError = strPatternSubst(CONSTLIT("[%08x %s] <OnEnhanceItem> Unknown resultCode: %s"), GetType()->GetUNID(), GetNounPhrase(), sResultCode);
 
-	retResult.sDesc = pResult->GetStringAt(CONSTLIT("desc"));
+			return false;
+			}
 
-	//	Done
-
-	return true;
+		retResult.sDesc = pResult->GetStringAt(CONSTLIT("desc"));
+		return true;
+		}
 	}
 
 void CItem::FireOnInstall (CSpaceObject *pSource) const
@@ -1333,7 +1345,7 @@ CString CItem::GetEnhancedDesc (void) const
 	return sResult;
 	}
 
-bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError) const
+bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, const CString &sMode, SEnhanceItemResult &retResult, CString *retsError) const
 
 //	GetEnhancementConferred
 //
@@ -1387,6 +1399,7 @@ bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem 
 		ICCItemPtr pTargetItem(::CreateListFromItem(TargetItem));
 		ICCItemPtr pData(ICCItem::SymbolTable);
 		pData->SetAt(CONSTLIT("targetItem"), pTargetItem);
+		pData->SetStringAt(CONSTLIT("mode"), sMode);
 
 		Ctx.SaveAndDefineDataVar(pData);
 
@@ -1412,6 +1425,8 @@ bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem 
 			retResult.Enhancement.SetEnhancementType(GetType());
 
 		retResult.sDesc = pResult->GetStringAt(CONSTLIT("desc"));
+		retResult.sNextScreen = pResult->GetStringAt(CONSTLIT("nextScreen"));
+		retResult.bDoNotConsume = pResult->GetBooleanAt(CONSTLIT("doNotConsume"));
 
 		//	Done
 

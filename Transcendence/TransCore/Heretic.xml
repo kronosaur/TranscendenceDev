@@ -727,134 +727,27 @@
 	<!-- St. Josephine Mission -->
 
 	<StationType UNID="&stSistersResearchHeretic;"
-			name=				"St. Josephine mission"
+			name=				":the St. Josephine mission"
 			sovereign=			"&svSistersOfDomina;"
-			inherit=			"&unidCommonText;"
+			inherit=			"&stSistersOfDomina;"
+			   
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			ignoreFriendlyFire=	"true"
-
+			   
 			multiHull=			"true"
 			armorID=			"&itLightIthaliumArmor;"
 			hitPoints=			"470"
 			regen=              "4"
 			ejectaType=			"&vtWreckEjecta;"
+			ignoreFriendlyFire=	"true"
 
 			attributes=			"friendly, hereticStation, human, majorStation, populated, religious, sistersOfDomina"
-
-			definiteArticle=	"true"
 			>
 
-		<Image			imageID="&rsStations1;" imageX="384" imageY="512" imageWidth="128" imageHeight="128"/>
-		<HeroImage		imageID="&rsSistersShrineHero;" imageWidth="324" imageHeight="528"/>
+		<!-- Encounter Info -->
 
-		<Ships>
-			<Lookup count="1d2" table="&tbCommDefenders;"/>
-			<Lookup count="1d3" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Items>
-			<Table count="1d6">
-				<Lookup chance="25" count="1d3" table="&trConsumables6;"/>
-				<Lookup chance="25" count="1"	table="&trConsumables7;"/>
-				<Lookup chance="25" count="1"	table="&trMinorItem2;"/>
-				<Lookup chance="15" count="1"	table="&trMinorItem3;"/>
-				<Lookup chance="10" count="1"	table="&trMajorItem2;"/>
-			</Table>
-		</Items>
-
-		<Trade currency="credit">
-			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100" actualPrice="true"/>
-		</Trade>
-
-		<DockScreens>
-			<Main>
-				<Panes>
-					<Default>
-						<OnPaneInit>
-							(block Nil
-								(if (not (objGetData gPlayerShip "sistersAttitude"))
-									(objSetData gPlayerShip "sistersAttitude" 0)
-									)
-
-								(if (objGetData gSource "freeSanctum")
-									(scrSetDescTranslate gScreen 'descWelcomeFreeSanctum)
-									(scrSetDescTranslate gScreen 'descWelcome)
-									)
-								)
-						</OnPaneInit>
-
-						<Actions>
-							<Action id="actionTalkToAbbess" default="1">
-								(rpgMissionAssignment {
-									missionCriteria: (cat "n +sistersMission; =" (sysGetLevel) ";")
-									noMissionTextID: 'descNothingToTalkAbout
-									})
-							</Action>
-							<Action id="actionSanctum">
-								(scrShowScreen gScreen &dsSistersSanctum;)
-							</Action>
-							<Action id="actionPilgrimsAid">
-								(scrShowScreen gScreen &dsSistersDockServices;)
-							</Action>
-							<Action id="actionDonate">
-								(scrShowScreen gScreen &dsSistersDonate;)
-							</Action>
-							<Action id="actionUndock" cancel="1">
-								<Exit/>
-							</Action>
-						</Actions>
-					</Default>
-				</Panes>
-			</Main>
-		</DockScreens>
-
-		<DockingPorts>
-			<Port x="0"		y="90" />
-			<Port x="0"		y="-90" />
-			<Port x="60"	y="60" />
-			<Port x="60"	y="-60" />
-			<Port x="90"	y="0" />
-			<Port x="-90"	y="0" />
-			<Port x="-60"	y="60" />
-			<Port x="-60"	y="-60" />
-		</DockingPorts>
-
-        <Language>
-			<Text id="actionTalkToAbbess">"[M]atriarch's Chancery"</Text>
-			<Text id="actionPilgrimsAid">"[P]ilgrim's Aid"</Text>
-			<Text id="actionSanctum">"[S]anctum"</Text>
-
-			<Text id="descWelcome">
-
-				You are docked at an abbey of the Sisters of Domina.
-				A woman wearing a flowing red robe approaches you,
-
-				"How may I help you, child?"
-
-			</Text>
-			<Text id="descWelcomeFreeSanctum">
-
-				You are docked at an abbey of the Sisters of Domina.
-				A woman wearing a flowing red robe is before you.
-
-				"Take your ease here before you go, or seek guidance at our Sanctum.
-				May the blessings of Domina protect you."
-
-			</Text>
-			<Text id="descNothingToTalkAbout">
-
-				You enter the abbess's spartan office and chat with her.
-				She leaves you with a small piece of advice:
-
-				The universe is dark and lonely; I do not envy your task.
-
-			</Text>
-
-            <Text id="core.mapDesc">
-                Contemplation and communion
-            </Text>
-        </Language>
+		<Encounter/>
+		
 	</StationType>
 
 	<!-- TVX-1 -->

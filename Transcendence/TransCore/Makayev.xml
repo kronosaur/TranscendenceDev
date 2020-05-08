@@ -66,7 +66,7 @@
 					criteria=		"a L:1-7; +Makayev; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
-					enhancement=	"=(intMakayevArmorEnhancement)"
+					enhancement=	"=(intMakayevArmorEnhancement gItem)"
 					/>
 
 			<LevelTable count="1-8">
@@ -236,7 +236,7 @@
 					criteria=		"a L:1-10; +Makayev; -NotForSale;"
 					levelFrequency=	"systemLevel:uc|c|crv"
 					enhanced=		"20"
-					enhancement=	"=(intMakayevArmorEnhancement)"
+					enhancement=	"=(intMakayevArmorEnhancement gItem)"
 					/>
 
 			<RandomItem count="2d3"
@@ -250,7 +250,7 @@
 					criteria=		"a L:1-10; +Makayev; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
-					enhancement=	"=(intMakayevArmorEnhancement)"
+					enhancement=	"=(intMakayevArmorEnhancement gItem)"
 					/>
 
 			<RandomItem count="1d4"

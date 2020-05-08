@@ -52,6 +52,7 @@
 #define FOLDER_ATTRIB							CONSTLIT("folder")
 #define HIDDEN_ATTRIB							CONSTLIT("hidden")
 #define NAME_ATTRIB								CONSTLIT("name")
+#define OBSOLETE_VERSION_ATTRIB					CONSTLIT("obsoleteVersion")
 #define OPTIONAL_ATTRIB							CONSTLIT("optional")
 #define PRIVATE_ATTRIB							CONSTLIT("private")
 #define RELEASE_ATTRIB							CONSTLIT("release")
@@ -202,7 +203,7 @@ void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD d
 		}
 	}
 
-bool CExtension::CanExtend (CExtension *pAdventure) const
+bool CExtension::CanExtend (CExtension *pAdventure, DWORD dwAPIVersion) const
 
 //	CanExtend
 //
@@ -218,6 +219,12 @@ bool CExtension::CanExtend (CExtension *pAdventure) const
 	//	load-time, for obvious reasons.
 
 	if (pAdventure->GetMinExtensionAPIVersion() > GetAPIVersion())
+		return false;
+
+	//	If this extension is obsolete at the given API version, then we exclude
+	//	it.
+
+	if (m_dwObsoleteVersion && dwAPIVersion >= m_dwObsoleteVersion)
 		return false;
 
 	//	If our extend list is empty then we extend everything. However, if an
@@ -640,6 +647,8 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 
 	if (pExtension->m_dwAPIVersion > API_VERSION)
 		pExtension->SetDisabled(strPatternSubst(CONSTLIT("Requires a newer version of %s"), fileGetProductName()));
+
+	pExtension->m_dwObsoleteVersion = pDesc->GetAttributeIntegerBounded(OBSOLETE_VERSION_ATTRIB, 0, -1, 0);
 
 	//	Release
 

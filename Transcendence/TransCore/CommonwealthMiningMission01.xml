@@ -154,23 +154,30 @@
 					(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
 					(targetObj (objGetObjByID (msnGetData gSource 'targetID)))
 					)
+					(switch
+						(not targetObj)
+							Nil
+							
+						(block ()
+						
+							;	Enable all devices
+							(objEnumItems targetObj "dI" theDevice (objSetItemProperty targetObj theDevice 'enabled True))
 
-					;	Enable all devices
-					(objEnumItems targetObj "dI" theDevice (objSetItemProperty targetObj theDevice 'enabled True))
+							;	Order the ship to return
+							(shpCancelOrders targetObj)
+							(shpOrder targetObj 'wait Nil (random 2 4))
+							(shpOrder targetObj 'dock stationObj)
+							(shpOrder targetObj 'fireEvent gSource 'OnReturnedToStation)
+							(shpOrder targetObj 'wait Nil (random 6 12))
+							(shpOrder targetObj 'gate)
 
-					;	Order the ship to return
-					(shpCancelOrders targetObj)
-					(shpOrder targetObj 'wait Nil (random 2 4))
-					(shpOrder targetObj 'dock stationObj)
-					(shpOrder targetObj 'fireEvent gSource 'OnReturnedToStation)
-					(shpOrder targetObj 'wait Nil (random 6 12))
-					(shpOrder targetObj 'gate)
+							(if (msnGetData gSource 'playerHelped)
+								(objSendMessage gPlayerShip targetObj (msnTranslate gSource (cat "msgFree:" (random 1 4))))
+								)
 
-					(if (msnGetData gSource 'playerHelped)
-						(objSendMessage gPlayerShip targetObj (msnTranslate gSource (cat "msgFree:" (random 1 4))))
+							(msnSetData gSource 'state 'returning)
+							)
 						)
-
-					(msnSetData gSource 'state 'returning)
 					)
 			</OnSetFree>
 

@@ -95,6 +95,31 @@ void COverlayList::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRot
 		}
 	}
 
+bool COverlayList::AccumulateEnhancements (CSpaceObject &Source, CDeviceItem &Device, TArray<CString> &EnhancementIDs, CItemEnhancementStack &Enhancements)
+
+//	AccumulateEnhancements
+//
+//	Adds enhancements to the given device to the enhancement stack. Returns TRUE
+//	if any enhancements were added.
+
+	{
+	bool bAdded = false;
+
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed())
+			{
+			if (pField->AccumulateEnhancements(Source, Device, EnhancementIDs, Enhancements))
+				bAdded = true;
+			}
+
+		pField = pField->GetNext();
+		}
+
+	return bAdded;
+	}
+
 void COverlayList::AddField (CSpaceObject &Source, 
 							 COverlayType &Type,
 							 int iPosAngle,
@@ -606,27 +631,6 @@ COverlayType *COverlayList::GetType (DWORD dwID)
 		}
 
 	return NULL;
-	}
-
-int COverlayList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource)
-
-//	GetWeaponBonus
-//
-//	Returns the weapon bonus conferred by the fields
-
-	{
-	int iBonus = 0;
-
-	COverlay *pField = m_pFirst;
-	while (pField)
-		{
-		if (!pField->IsDestroyed())
-			iBonus += pField->GetType()->GetWeaponBonus(pDevice, pSource);
-
-		pField = pField->GetNext();
-		}
-
-	return iBonus;
 	}
 
 bool COverlayList::HasMinableItem (void) const

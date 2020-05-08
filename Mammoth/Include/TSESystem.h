@@ -10,8 +10,9 @@
 #include "TSEEvents.h"
 #include "TSEPhysics.h"
 #include "TSEObjectJoints.h"
-
-const int MIN_PLANET_SIZE = 1000;			//	Size at which a world is considered planetary size
+#include "TSESystemDefs.h"
+#include "TSESystemCreate.h"
+#include "TSESystemRandomEncounters.h"
 
 //	CNavigationPath
 
@@ -27,19 +28,29 @@ class CNavigationPath : public TSEListNode<CNavigationPath>
 		Metric ComputePathLength (CSystem *pSystem) const;
 		CVector ComputePointOnPath (CSystem *pSystem, Metric rDist) const;
 		static CString DebugDescribe (CSpaceObject *pObj, CNavigationPath *pNavPath);
-		void DebugPaintInfo (CG32bitImage &Dest, int x, int y, ViewportTransform &Xform);
+		void DebugPaintInfo (CSystem &System, CG32bitImage &Dest, int x, int y, ViewportTransform &Xform);
 		void DebugPaintInfo (CG32bitImage &Dest, int x, int y, const CMapViewportCtx &Ctx);
 		DWORD GetID (void) const { return m_dwID; }
-		int GetNavPointCount (void) const { return m_iWaypointCount; }
-		CVector GetNavPoint (int iIndex) const;
+		int GetNavPointCount (void) const { return m_Waypoints.GetCount(); }
+		CVector GetNavPoint (int iIndex, Metric *retrDist2 = NULL) const;
 		CVector GetPathEnd (void) const { return GetNavPoint(GetNavPointCount() - 1); }
 		bool Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);
 		void OnReadFromStream (SLoadCtx &Ctx);
 		void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const;
 
 	private:
-		static int ComputePath (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, CVector **retpPoints);
-//		static int ComputePath (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, int iDepth, CVector **retpPoints);
+		static constexpr Metric DEFAULT_NAV_POINT_RADIUS = 24.0 * LIGHT_SECOND;
+		static constexpr Metric DEFAULT_NAV_POINT_RADIUS2 = DEFAULT_NAV_POINT_RADIUS * DEFAULT_NAV_POINT_RADIUS;
+
+		struct SWaypoint
+			{
+			CVector vPos;
+			Metric rRange2 = 0.0;				//	How close to waypoint to count as success
+			};
+
+		void ComputeWaypointRange (void);
+		static int ComputePath (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, TArray<SWaypoint> &retWaypoints, TArray<CVector> *retPointsChecked);
+		static bool IsLineBlocked (CSystem &System, const CVector &vFrom, const CVector &vTo);
 		static bool PathIsClear (CSystem *pSystem, CSovereign *pSovereign, const CVector &vFrom, const CVector &vTo, CSpaceObject **retpEnemy, CVector *retvAway);
 
 		DWORD m_dwID;							//	ID of path
@@ -51,8 +62,11 @@ class CNavigationPath : public TSEListNode<CNavigationPath>
 		int m_iFailures;						//	Count of ships that were destroyed
 
 		CVector m_vStart;						//	Start position
-		int m_iWaypointCount;					//	Number of waypoints (excludes start)
-		CVector *m_Waypoints;					//	Array of waypoints
+		TArray<SWaypoint> m_Waypoints;
+
+#ifdef DEBUG_ASTAR_PATH
+		TArray<CVector> m_PointsChecked;
+#endif
 	};
 
 typedef TSEListNode<CNavigationPath> CNavigationPathNode;
@@ -81,262 +95,6 @@ class CSystemEventHandler : public TSEListNode<CSystemEventHandler>
 typedef TSEListNode<CSystemEventHandler> CSystemEventHandlerNode;
 
 //	System
-
-class COrbit
-	{
-	public:
-		COrbit (void) { }
-		COrbit (const CVector &vCenter, Metric rRadius, Metric rPos = 0.0);
-
-		bool operator== (const COrbit &Src) const;
-
-		ICCItemPtr AsItem (void) const;
-		const Metric &GetEccentricity (void) const { return m_rEccentricity; }
-		const CVector3D &GetFocus3D (void) const { return m_vFocus; }
-		CVector GetFocus (void) const { return CVector(m_vFocus.GetX(), m_vFocus.GetY()); }
-		const Metric &GetInclination (void) const { return m_rInclination; }
-		const Metric &GetObjectAngle (void) const { return m_rPos; }
-		CVector GetObjectPos (Metric *retrZ = NULL) const { return GetPoint(m_rPos, retrZ); }
-		CVector3D GetObjectPos3D (void) const;
-		CVector GetPoint (Metric rAngle, Metric *retrZ = NULL) const;
-		CVector GetPointAndRadius (Metric rAngle, Metric *retrRadius) const;
-		CVector GetPointCircular (Metric rAngle) const;
-		const Metric &GetRotation (void) const { return m_rRotation; }
-		const Metric &GetSemiMajorAxis (void) const { return m_rSemiMajorAxis; }
-		bool IsNull (void) const { return (m_rSemiMajorAxis == 0.0); }
-		void Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor);
-        void PaintHD (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor, CGDraw::EBlendModes iMode = CGDraw::blendNormal) const;
-		void ReadFromStream (SLoadCtx &Ctx);
-		void SetEccentricity (Metric rValue) { m_rEccentricity = rValue; }
-		void SetFocus (const CVector &vCenter) { m_vFocus = CVector3D(vCenter.GetX(), vCenter.GetY(), 0.0); }
-		void SetFocus (const CVector3D &vCenter) { m_vFocus = vCenter; }
-		void SetInclination (Metric rValue) { m_rInclination = rValue; }
-		void SetObjectAngle (Metric rValue) { m_rPos = rValue; }
-		void SetRotation (Metric rValue) { m_rRotation = rValue; }
-		void SetSemiMajorAxis (Metric rValue) { m_rSemiMajorAxis = rValue; }
-		void WriteToStream (IWriteStream &Stream) const;
-
-		static bool FromItem (const ICCItem &Item, COrbit &retOrbit);
-		static Metric RandomAngle (void) { return mathDegreesToRadians(mathRandom(0,3599) / 10.0); }
-		static Metric ZToParallax (Metric rZ);
-
-	private:
-		static constexpr Metric CAMERA_DIST = LIGHT_SECOND * 60.0;
-
-		struct SSerialized
-			{
-			CVector vFocus;
-			Metric rEccentricity = 0.0;
-			Metric rSemiMajorAxis = 0.0;
-			Metric rRotation = 0.0;
-			Metric rPos = 0.0;
-			Metric rInclination = 0.0;
-			Metric rFocusZ = 0.0;
-			};
-
-        CG32bitPixel GetColorAtRadiusHD (CG32bitPixel rgbColor, Metric rRadius) const;
-
-		CVector3D m_vFocus;				//	Focus of orbit
-		Metric m_rEccentricity = 0.0;	//	Ellipse eccentricity
-		Metric m_rSemiMajorAxis = 0.0;	//	Semi-major axis
-		Metric m_rRotation = 0.0;		//	Angle of rotation (radians)
-		Metric m_rInclination = 0.0;	//	Angle of inclination (radians)
-
-		Metric m_rPos = 0.0;			//	Obj position in orbit (radians)
-	};
-
-class CStationTableCache
-	{
-	public:
-		struct SEntry
-			{
-			CStationType *pType;
-			int iChance;
-			};
-
-		CStationTableCache (void) : m_iCacheHits(0), m_iCacheMisses(0) { }
-		~CStationTableCache (void) { DeleteAll(); }
-
-		void AddTable (const CString &sDesc, TArray<SEntry> *pTable) { m_Cache.Insert(sDesc, pTable); }
-		void DeleteAll (void);
-		bool FindTable (const CString &sDesc, TArray<SEntry> **retpTable);
-		int GetCacheHitRate (void) const;
-		int GetCacheSize (void) const { return m_Cache.GetCount(); }
-
-	private:
-		TSortMap<CString, TArray<SEntry> *> m_Cache;
-		int m_iCacheHits;
-		int m_iCacheMisses;
-	};
-
-class CSystemCreateStats
-	{
-	public:
-		struct SEncounterTable
-			{
-			int iLevel;
-			CSystemType *pSystemType;
-			CString sStationCriteria;
-			TArray<CString> LabelAttribs;
-			int iCount;
-			TProbabilityTable<CStationType *> Table;
-
-			bool bHasStation;
-			};
-
-		struct SFillLocationsTable
-			{
-			int iLevel;
-			CString sNodeID;
-			CString sSystemName;
-			CSystemType *pSystemType;
-			CString sSystemAttribs;
-			CString sStationCriteria;
-			TProbabilityMap<CStationType *> SystemProb;			//	Probability for each station, considering only system attribs
-			TProbabilityMap<CStationType *> FillProb;			//	Probability including stationCriteria in <FillLocations>
-			TProbabilityMap<CStationType *> LocationProb;		//	Probability including available locations
-
-			int iCount;
-			};
-
-		CSystemCreateStats (void);
-		~CSystemCreateStats (void);
-
-		void AddLabel (const CString &sAttributes);
-		void AddFillLocationsTable (CSystem *pSystem, const TProbabilityTable<int> &LocationTable, const CString &sStationCriteria);
-		void AddPermuteAttrib (const CString &sAttrib) { m_PermuteAttribs.Insert(sAttrib); }
-		void AddStationTable (CSystem *pSystem, const CString &sStationCriteria, const CString &sLocationAttribs, TArray<CStationTableCache::SEntry> &Table);
-		const SEncounterTable &GetEncounterTable (int iIndex) const { return m_EncounterTables[iIndex]; }
-		int GetEncounterTableCount (void) const { return m_EncounterTables.GetCount(); }
-		const SFillLocationsTable &GetFillLocationsTable (int iIndex) const { return m_FillLocationsTables[iIndex]; }
-		int GetFillLocationsTableCount (void) const { return m_FillLocationsTables.GetCount(); }
-		int GetLabelAttributesCount (void) { return m_LabelAttributeCounts.GetCount(); }
-		void GetLabelAttributes (int iIndex, CString *retsAttribs, int *retiCount);
-		int GetTotalLabelCount (void) { return m_iLabelCount; }
-		void SetPermute (bool bValue = true) { m_bPermute = bValue; }
-
-	private:
-		struct SLabelAttributeEntry
-			{
-			CString sAttributes;
-			int iCount;
-			};
-
-		void AddEntry (const CString &sAttributes);
-		void AddEntryPermutations (const CString &sPrefix, const TArray<CString> &Attribs, int iPos);
-		void AddLabelAttributes (const CString &sAttributes);
-		void AddLabelExpansion (const CString &sAttributes, const CString &sPrefix = NULL_STR);
-		bool FindEncounterTable (TArray<CStationTableCache::SEntry> &Src, SEncounterTable **retpTable);
-
-		//	Label stats
-
-		bool m_bPermute;
-		int m_iLabelCount;
-		CSymbolTable m_LabelAttributeCounts;
-		TArray<CString> m_PermuteAttribs;
-
-		//	Encounter tables
-
-		TArray<SEncounterTable> m_EncounterTables;
-		TSortMap<CString, SFillLocationsTable> m_FillLocationsTables;
-	};
-
-class CSystemCreateEvents
-	{
-	public:
-		void AddDeferredEvent (CSpaceObject *pObj, CExtension *pExtension, const CXMLElement *pEventCode);
-		ALERROR FireDeferredEvent (const CString &sEvent, CString *retsError);
-
-	private:
-		struct SEventDesc
-			{
-			CSpaceObject *pObj;
-			CExtension *pExtension;
-			const CXMLElement *pEventCode;
-			};
-
-		TArray<SEventDesc> m_Events;
-	};
-
-struct SLocationCriteria
-	{
-	SLocationCriteria (void) { }
-	explicit SLocationCriteria (const CAffinityCriteria &Criteria) :
-			AttribCriteria(Criteria)
-		{ }
-
-	CAffinityCriteria AttribCriteria;		//	Attribute criteria
-	Metric rMinDist = 0.0;					//	Minimum distance from source
-	Metric rMaxDist = 0.0;					//	Maximum distance from source
-	};
-
-struct SZAdjust
-	{
-	CString sInclination;					//	Override inclination attrib
-	CString sRotation;						//	Override rotation attrib
-	DiceRange ZOffset;						//	Override Z position (in scale units)
-	Metric rScale = LIGHT_SECOND;			//	Scale units
-
-	bool bIgnoreLocations = false;			//	Do not adjust locations
-	};
-
-struct SStationTypeTableStats
-	{
-	TSortMap<CStationType *, int> Counts;
-	};
-
-struct SSystemCreateCtx
-	{
-	enum EOverlapCheck 
-		{
-		checkOverlapNone,					//	Don't worry about overlaps
-		checkOverlapPlanets,				//	Don't overlap planets (> 1,000 km)
-		checkOverlapAsteroids,				//	Don't overlap asteroids or planets
-		};
-
-	SSystemCreateCtx (CSystem &SystemArg);
-
-	CSystem &GetSystem (void) { return System; }
-	inline CUniverse &GetUniverse (void);
-
-	//	Context
-
-	CExtension *pExtension = NULL;			//	Extension from which the current desc came
-	CTopologyNode *pTopologyNode = NULL;	//	Topology node
-	CSystem &System;						//	System that we're creating
-
-	TArray<CXMLElement *> LocalTables;		//	Stack of local tables
-	TSortMap<CString, CString> NameParams;	//	Parameters passed in to CNameDesc
-	CString sLabelAttribs;					//	Inherited label attributes
-
-	//	Options
-
-	bool bHasStationCreate = false;			//	TRUE if we've defined some create options
-	CStationCreateOptions StationCreate;	//	Options for creating a station
-
-	SZAdjust ZAdjust;						//	Adjust Z
-	EOverlapCheck iOverlapCheck = checkOverlapNone;	//	If TRUE, we adjust locations to avoid overlapping an existing object
-	bool bIs3DExtra = false;				//	Objects are optional 3D extras
-
-	//	Stats
-
-	CSystemCreateStats *pStats = NULL;		//	System creation stats (may be NULL)
-	CSystemCreateEvents Events;				//	System deferred events
-	TArray<CString> DebugStack;				//	Stack of directives
-
-	//	Temps and working vars while creating
-
-	CString sError;							//	Creation error
-	CString sLocationAttribs;				//	Current location attribs
-	TArray<CString> Variants;				//	List of variants set with <Variant> directive
-	CSpaceObject *pStation = NULL;			//	Root station when creating satellites
-	DWORD dwLastObjID = 0;					//	Object created in last call
-											//	NOTE: This is an ID in case the object gets deleted.
-	TSortMap<CString, IElementGenerator::STableStats> TableStats;
-	TSortMap<CString, SStationTypeTableStats> RandomStationStats;
-
-	CStationTableCache StationTables;		//	Cached station tables
-	};
 
 struct SSystemUpdateCtx
 	{
@@ -387,39 +145,6 @@ class CMoveCtx
 		int m_iAlloc;
 	};
 
-class CLocationDef
-	{
-	public:
-		CLocationDef (void) { }
-
-		bool CanBeBlocked (void) const;
-		const CString &GetAttributes (void) const { return m_sAttributes; }
-		DWORD GetObjID (void) const { return m_dwObjID; }
-		const COrbit &GetOrbit (void) const { return m_OrbitDesc; }
-		bool HasAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
-		bool IsBlocked (void) const { return m_bBlocked; }
-		bool IsEmpty (void) const { return (m_dwObjID == 0 && !m_bBlocked); }
-		bool IsRequired (void) const { return m_bRequired; }
-		void SetAttributes (const CString &sAttribs) { m_sAttributes = sAttribs; }
-		void SetBlocked (bool bBlocked = true) { m_bBlocked = bBlocked; }
-		void SetID (const CString &sID) { m_sID = sID; }
-		void SetObjID (DWORD dwObjID) { m_dwObjID = dwObjID; }
-		void SetOrbit (const COrbit &Orbit) { m_OrbitDesc = Orbit; }
-		void SetRequired (bool bValue = true) { m_bRequired = bValue; }
-		void ReadFromStream (SLoadCtx &Ctx);
-		void WriteToStream (IWriteStream *pStream);
-
-	private:
-		CString m_sID;						//	May be blank
-		COrbit m_OrbitDesc;
-		CString m_sAttributes;
-
-		DWORD m_dwObjID = 0;				//	Object created at this location (or 0)
-
-		bool m_bRequired = false;			//	If TRUE, location cannot be blocked
-		bool m_bBlocked = false;			//	If TRUE, this location is too close to another
-	};
-
 class CLocationList
 	{
 	public:
@@ -446,46 +171,6 @@ class CLocationList
 		mutable TSortMap<DWORD, int> m_ObjIndex;	//	Map from Obj ID to location definition//
 
 		bool m_bMinDistCheck = false;		//	If TRUE, then we've checked all locations for min distance
-	};
-
-class CTerritoryDef
-	{
-	public:
-		CTerritoryDef (void);
-
-		void AddAttributes (const CString &sAttribs);
-		void AddRegion (const COrbit &Orbit, Metric rMinRadius, Metric rMaxRadius);
-		static ALERROR CreateFromXML (CXMLElement *pDesc, const COrbit &OrbitDesc, CTerritoryDef **retpTerritory);
-		const CString &GetAttributes (void) const { return m_sAttributes; }
-		const CString &GetCriteria (void) { return m_sCriteria; }
-		bool HasAttribute (const CString &sAttrib);
-		bool HasAttribute (const CVector &vPos, const CString &sAttrib);
-		bool IsMarked (void) { return m_bMarked; }
-		bool PointInTerritory (const CVector &vPos);
-		void ReadFromStream (SLoadCtx &Ctx);
-		void SetCriteria (const CString &sCriteria) { m_sCriteria = sCriteria; }
-		void SetMarked (bool bMarked = true) { m_bMarked = bMarked; }
-		void WriteToStream (IWriteStream *pStream);
-
-	private:
-		struct SRegion
-			{
-			COrbit OrbitDesc;
-			Metric rMinRadius;
-			Metric rMaxRadius;
-
-			Metric rMinRadius2;				//	Computed
-			Metric rMaxRadius2;				//	Computed
-			};
-
-		bool MatchesCriteria (TArray<int> &Exclude, const CVector &vPos, const CString &sCriteria);
-
-		CString m_sID;
-		TArray<SRegion> m_Regions;
-		CString m_sCriteria;
-		CString m_sAttributes;
-
-		bool m_bMarked;						//	Temporary mark
 	};
 
 class CTerritoryList
@@ -678,34 +363,6 @@ class CGateTimerManager
 		TSortMap<DWORD, int> m_Timers;
 	};
 
-struct SObjCreateCtx
-	{
-	SObjCreateCtx (SSystemCreateCtx &SystemCtxArg) :
-			SystemCtx(SystemCtxArg)
-		{ }
-
-	SSystemCreateCtx &SystemCtx;			//	System create context
-	CVector vPos;							//	Create at this position. This should
-											//		always be set properly, even if orbit
-											//		or location is also provided.
-	CVector vVel;							//	Initial velocity.
-	int iRotation = -1;						//	-1 = default rotation
-	Metric rParallax = 1.0;					//	Parallax
-
-	const CLocationDef *pLoc = NULL;		//	Optional location (may be NULL)
-	const COrbit *pOrbit = NULL;			//	Optional orbit (may be NULL)
-	CXMLElement *pExtraData = NULL;			//	Extra data for object (may be NULL)
-	CDesignType *pEventHandler = NULL;		//	Event handler for object
-	CSovereign *pSovereign = NULL;			//	Optional sovereign (may be NULL)
-	CShipClass *pWreckClass = NULL;			//	Optional for creating wrecks (may be NULL)
-	CShip *pWreckShip = NULL;				//	Optional for creating wrecks (may be NULL)
-
-	bool bCreateSatellites = false;			//	If TRUE, create satellites
-    bool bIsSegment = false;				//  If TRUE, we're a satellite segment
-	bool bIgnoreLimits = false;				//	If TRUE, create even if we exceed limits
-	bool bIs3DExtra = false;				//	If TRUE, this is an optional effect
-	};
-
 class CSystem
 	{
 	public:
@@ -766,11 +423,6 @@ class CSystem
 		ALERROR CreateLookup (SSystemCreateCtx *pCtx, const CString &sTable, const COrbit &OrbitDesc, CXMLElement *pSubTables);
 		ALERROR CreateMarker (CXMLElement *pDesc, const COrbit &oOrbit, CMarker **retpObj);
 		ALERROR CreateParticles (CXMLElement *pDesc, const COrbit &oOrbit, CParticleEffect **retpObj);
-		ALERROR CreateRandomEncounter (IShipGenerator *pTable, 
-									   CSpaceObject *pBase,
-									   CSovereign *pBaseSovereign,
-									   CSpaceObject *pTarget,
-									   CSpaceObject *pGate = NULL);
 		ALERROR CreateShip (DWORD dwClassID,
 							IShipController *pController,
 							CDesignType *pOverride,
@@ -810,7 +462,6 @@ class CSystem
 		void AddToDeleteList (CSpaceObject *pObj);
 		ALERROR AddToSystem (CSpaceObject *pObj, int *retiIndex);
 		bool AscendObject (CSpaceObject *pObj, CString *retsError = NULL);
-		CG32bitPixel CalcNearestStarColor (const CVector &vPos, CSpaceObject **retpStar = NULL) const;
 		int CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL) const;
 		CVector CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric rDistance, const CSpaceObject *pEncounterBase = NULL) const;
 		void CancelTimedEvent (CSpaceObject *pSource, bool bInDoEvent = false);
@@ -832,7 +483,7 @@ class CSystem
 		CSpaceObject *EnumObjectsInBoxPointGetNext (SSpaceObjectGridEnumerator &i) const { return m_ObjGrid.EnumGetNextInBoxPoint(i); }
 		CSpaceObject *FindObject (DWORD dwID) const;
 		CSpaceObject *FindObjectInRange (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria()) const;
-        CSpaceObject *FindObjectWithOrbit (const COrbit &Orbit) const;
+		CSpaceObject *FindObjectWithOrbit (const COrbit &Orbit) const;
 		bool FindObjectName (const CSpaceObject *pObj, CString *retsName = NULL);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CWeaponFireDesc *pDesc, const CDamageSource &Source);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
@@ -864,6 +515,9 @@ class CSystem
 			}
 		void GetObjectsInBox (const CVector &vUR, const CVector &vLL, CSpaceObjectList &Result) { m_ObjGrid.GetObjectsInBox(vUR, vLL, Result); }
 		CSpaceObject *GetPlayerShip (void) const;
+		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
+		const CRandomEncounterObjTable &GetRandomEncounterObjTable (void) const { return m_EncounterObjTable; }
+		const CRandomEncounterTypeTable &GetRandomEncounterTypeTable (void) const { return m_EncounterTypeTable; }
 		static DWORD GetSaveVersion (void);
 		CG32bitPixel GetSpaceColor (void) const { return (m_pType ? m_pType->GetSpaceColor() : CSystemType::DEFAULT_SPACE_COLOR); }
 		Metric GetSpaceScale (void) const { return m_rKlicksPerPixel; }
@@ -871,12 +525,13 @@ class CSystem
 		int GetTileSize (void) const;
 		Metric GetTimeScale (void) const { return m_rTimeScale; }
 		CTopologyNode *GetTopology (void) const { return m_pTopology; }
-		CSystemType *GetType (void) { return m_pType; }
+		CSystemType *GetType (void) const { return m_pType; }
 		CSpaceEnvironmentType *GetSpaceEnvironment (int xTile, int yTile);
 		CSpaceEnvironmentType *GetSpaceEnvironment (const CVector &vPos, int *retxTile = NULL, int *retyTile = NULL);
 		CTopologyNode *GetStargateDestination (const CString &sStargate, CString *retsEntryPoint);
 		CUniverse &GetUniverse (void) const { return m_Universe; }
 		bool HasAttribute (const CVector &vPos, const CString &sAttrib) const;
+		bool HasRandomEncounters (void) const { return !m_fNoRandomEncounters; }
 		CSpaceObject *HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, bool bExcludeWorlds, CVector *retvHitPos = NULL);
 		CSpaceObject *HitTest (CSpaceObject *pExclude, const CVector &vPos, bool bExcludeWorlds);
 		bool IsCreationInProgress (void) const { return (m_fInCreate ? true : false); }
@@ -936,6 +591,7 @@ class CSystem
 
 		bool FindRandomLocation (const SLocationCriteria &Criteria, DWORD dwFlags, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, int *retiLocID);
 		int GetEmptyLocationCount (void);
+		CLocationSelectionTable GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion);
 		bool GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion, TProbabilityTable<int> *retTable);
 		bool GetEmptyLocations (TArray<int> *retList) { return m_Locations.GetEmptyLocations(retList); }
 		const CLocationDef &GetLocation (int iLocID) const { return m_Locations.GetLocation(iLocID); }
@@ -953,6 +609,8 @@ class CSystem
 		static void ReadSovereignRefFromStream (SLoadCtx &Ctx, CSovereign **retpSovereign);
 
 	private:
+		static constexpr int LEVEL_ENCOUNTER_CHANCE = 10;
+
 		struct SStarDesc
 			{
 			SStarDesc (void) : 
@@ -981,7 +639,6 @@ class CSystem
 		CG32bitPixel CalcStarshineColor (CSpaceObject *pPOV, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL) const;
 		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
 		void CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &VolumetricMask);
-		void ComputeRandomEncounters (void);
 		void ComputeStars (void);
 		ALERROR CreateStationInt (SSystemCreateCtx *pCtx,
 								  CStationType *pType,
@@ -1033,14 +690,14 @@ class CSystem
 
 		DWORD m_fNoRandomEncounters:1;			//	TRUE if no random encounters in this system
 		DWORD m_fInCreate:1;					//	TRUE if system in being created
-		DWORD m_fEncounterTableValid:1;			//	TRUE if m_pEncounterObj is valid
 		DWORD m_fUseDefaultTerritories:1;		//	TRUE if we should use defaults for innerZone, lifeZone, outerZone
 		DWORD m_fEnemiesInLRS:1;				//	TRUE if we found enemies in last LRS update
 		DWORD m_fEnemiesInSRS:1;				//	TRUE if we found enemies in last SRS update
 		DWORD m_fPlayerUnderAttack:1;			//	TRUE if at least one object has player as target
 		DWORD m_fLocationsBlocked:1;			//	TRUE if we're already computed overlapping locations
-
 		DWORD m_fFlushEventHandlers:1;			//	TRUE if we need to flush m_EventHandlers
+
+		DWORD m_fSpare1:1;
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
@@ -1054,7 +711,9 @@ class CSystem
 		//	Support structures
 
 		CThreadPool *m_pThreadPool;				//	Thread pool for painting
-		CSpaceObjectList m_EncounterObjs;		//	List of objects that generate encounters
+		CRandomEncounterObjTable m_EncounterObjTable;
+		CRandomEncounterTypeTable m_EncounterTypeTable;
+
 		TArray<SStarDesc> m_Stars;				//	List of stars in the system
 		CSpaceObjectGrid m_ObjGrid;				//	Grid to help us hit test
 		CSpaceObjectList m_DeletedObjects;		//	List of objects deleted in the current update
@@ -1064,7 +723,9 @@ class CSystem
 		CPhysicsContactResolver m_ContactResolver;	//	Resolves physics contacts
 		CGateTimerManager m_GateTimer;			//	Assign delay when ships exit a gate
 
-		static const Metric g_MetersPerKlick;
+		//	Property table
+
+		static TPropertyHandler<CSystem> m_PropertyTable;
 	};
 
 inline CUniverse &SSystemCreateCtx::GetUniverse (void) { return System.GetUniverse(); }

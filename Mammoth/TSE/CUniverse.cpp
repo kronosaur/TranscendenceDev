@@ -58,7 +58,8 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 	"Header",				//	SRS object message
 	"Small",				//	SRS object counter: 10 pixels
 	"MediumBold",			//	Planetoid map label
-	"HeaderBold",			//	World map label
+	"LargeBold",			//	World map label
+	"HeaderBold",			//	Large world map label
 	};
 
 CUniverse::CUniverse (void) : 
@@ -717,15 +718,13 @@ void CUniverse::GenerateGameStats (CGameStats &Stats)
 	{
 	DEBUG_TRY
 
-	int i;
-
 	//	Ask all design types to generate game stats
 
 	m_Design.FireGetGlobalAchievements(Stats);
 
 	//	Add all extensions
 
-	for (i = 0; i < m_Design.GetExtensionCount(); i++)
+	for (int i = 0; i < m_Design.GetExtensionCount(); i++)
 		{
 		CExtension *pExtension = m_Design.GetExtension(i);
 
@@ -936,7 +935,7 @@ CString CUniverse::GetPlayerName (void) const
 	return m_pPlayer->GetName();
 	}
 
-CSovereign *CUniverse::GetPlayerSovereign (void) const
+CSovereign *CUniverse::GetPlayerSovereign (void)
 
 //	GetPlayerSovereign
 //
@@ -948,7 +947,22 @@ CSovereign *CUniverse::GetPlayerSovereign (void) const
 	else if (m_pPlayer)
 		return m_pPlayer->GetSovereign();
 	else
-		return NULL;
+		return FindSovereign(g_PlayerSovereignUNID);
+	}
+
+const CSovereign *CUniverse::GetPlayerSovereign (void) const
+
+//	GetPlayerSovereign
+//
+//	Returns the player's sovereign
+
+	{
+	if (m_pPlayerShip)
+		return m_pPlayerShip->GetSovereign();
+	else if (m_pPlayer)
+		return m_pPlayer->GetSovereign();
+	else
+		return FindSovereign(g_PlayerSovereignUNID);
 	}
 
 ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
@@ -974,62 +988,6 @@ ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 
 	else
 		return ICCItemPtr(ICCItem::Nil);
-	}
-
-void CUniverse::GetRandomLevelEncounter (int iLevel, 
-										 CDesignType **retpType,
-										 IShipGenerator **retpTable, 
-										 CSovereign **retpBaseSovereign)
-
-//	GetRandomLevelEncounter
-//
-//	Returns a random encounter appropriate for the given level
-
-	{
-	int i;
-
-	iLevel--;	//	m_LevelEncounterTable is 0-based
-	if (iLevel < 0 || iLevel >= m_LevelEncounterTables.GetCount())
-		{
-		*retpType = NULL;
-		*retpTable = NULL;
-		*retpBaseSovereign = NULL;
-		return;
-		}
-
-	//	Get the level table
-
-	const TArray<SLevelEncounter> &Table = m_LevelEncounterTables[iLevel];
-
-	//	Compute the totals for the table
-
-	int iTotal = 0;
-	for (i = 0; i < Table.GetCount(); i++)
-		iTotal += Table[i].iWeight;
-
-	if (iTotal == 0)
-		{
-		*retpType = NULL;
-		*retpTable = NULL;
-		*retpBaseSovereign = NULL;
-		return;
-		}
-
-	//	Pick a random entry
-
-	int iRoll = mathRandom(0, iTotal - 1);
-	int iPos = 0;
-
-	//	Get the position
-
-	while (Table[iPos].iWeight <= iRoll)
-		iRoll -= Table[iPos++].iWeight;
-
-	//	Done
-
-	*retpType = Table[iPos].pType;
-	*retpTable = Table[iPos].pTable;
-	*retpBaseSovereign = Table[iPos].pBaseSovereign;
 	}
 
 ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
@@ -1451,12 +1409,6 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 	//	be encountered) we distribute them randomly across all topology nodes.
 
 	if (error = InitRequiredEncounters(retsError))
-		return error;
-
-	//	Init encounter tables (this must be done AFTER InitTopoloy because it
-	//	some station encounters specify a topology node).
-
-	if (error = InitLevelEncounterTables())
 		return error;
 
 	return NOERROR;

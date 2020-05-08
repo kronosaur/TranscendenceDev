@@ -236,6 +236,10 @@ ALERROR CMission::Create (CMissionType &Type, CMissionType::SCreateCtx &CreateCt
 
 	pMission->SetEventFlags();
 
+	//	Initialize data properties (we need to do this before OnCreate)
+
+	Type.InitObjectData(*pMission, pMission->GetData());
+
 	//	Fire OnCreate
 
 	pMission->m_fInOnCreate = true;

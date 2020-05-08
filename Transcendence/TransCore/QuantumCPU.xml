@@ -31,216 +31,101 @@
 	<!-- Level 5: Defective Shield Optimizer Cube -->
 
 	<ItemType UNID="&itDefectiveShieldOptimizer;"
-			name=				"ShieldPower v1.0 algorithm cube"
+			name=				"ShieldOverdrive v1.0 algorithm cube"
+			attributes=			"defective, info, minorItem, quantumProgram, shieldDamage"
+			inherit=			"&baQuantumCPUShieldProgram;"
+
 			level=				"5"
-			value=				"5"
-			mass=				"50"
 			frequency=			"rare"
 			unknownType=		"&itUnknownMnemonicCube;"
-			attributes=			"defective, info, minorItem, quantumProgram, shieldDamage"
 
-			description=		"The first version of the ShieldPower algorithm is promising but contains significant bugs."
+			value=				"5"
+			mass=				"50"
+			useScreen=			"&dsRPGUseItemOnShields;"
+
+			description=		"The first version of the ShieldOverdrive algorithm is promising but contains significant bugs."
 			>
+
+		<Properties>
+
+			<!-- This property tells &baStdDeviceEnhancement; that we should
+				enable the Use action even if the result might be noEffect. We 
+				need this because the effect is random and not consistent 
+				between canEnhance and onEnhance. -->
+
+			<Definition id="rpg.alwaysAllowUse">True</Definition>
+
+			<DynamicGlobal id="quantum.enhancement">
+				;	This cube only works 50% of the time.
+
+				(if (leq (random 1 100) 50)
+					"+hpBonus:20"
+					"-hpBonus:20"
+					)
+			</DynamicGlobal>
+
+			<Definition id="quantum.minLevel">4</Definition>
+			<Definition id="quantum.maxLevel">9</Definition>
+			<Definition id="quantum.noRepair">True</Definition>
+			<Definition id="quantum.repair">True</Definition>
+		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(block (
-				(shieldItem (@ (objGetItems gSource "sI") 0))
-				(consumeItem True)
-				)
-				(switch
-					;	No Quantum CPU
-
-					(not (progHasQuantumCPU gSource))
-						(block ()
-							(objSendMessage gSource Nil (typTranslate gType 'msgQuantumCPURequired))
-							(setq consumeItem Nil)
-							)
-
-					;	No shield generator
-
-					(not shieldItem)
-						(objSendMessage gSource Nil (typTranslate gType 'msgNoShields))
-						
-					;	Non-energy shields cannot be enhanced
-
-					(itmMatches shieldItem "s +nonEnergyShields")
-						(objSendMessage gSource Nil 
-							(typTranslate gType 'msgCannotEnhance { 
-								itemName:(itmGetName shieldItem '(article short))
-								})
-							)
-
-					;	If the shield generator is not advanced enough, then nothing happens
-
-					(ls (itmGetLevel shieldItem) 4)
-						(objSendMessage gSource Nil (typTranslate gType 'msgTooPrimitive))
-
-					;	If the shield generator is too advanced, then nothing happens
-
-					(gr (itmGetLevel shieldItem) 9)
-						(objSendMessage gSource Nil (typTranslate gType 'msgTooAdvanced))
-
-					;	If the item is damaged, we cannot do anything
-
-					(itmIsDamaged shieldItem)
-						(objSendMessage gSource Nil (typTranslate gType 'msgTooDamaged))
-
-					;	10% chance of enhancing the shield generator
-
-					(leq (random 1 100) 10)
-						(block (result)
-							(setq result (shpEnhanceItem gSource shieldItem {
-								enhancement: "+hpBonus:20"
-								type: gType
-								}))
-
-							(objSendMessage gSource Nil 
-								(intItemEnhanceStatus result
-									(typTranslate gType 'msgSuccess)
-									(typTranslate gType 'nounShieldGenerator)
-									)
-								)
-							)
-
-					;	Otherwise, a bug
-
-					(block (result)
-						(setq result (shpEnhanceItem gSource shieldItem {
-							enhancement: "-hpBonus:20"
-							type: gType
-							}))
-
-						(objSendMessage gSource Nil 
-							(intItemEnhanceStatus result
-								(typTranslate gType 'msgShieldError)
-								(typTranslate gType 'nounShieldGenerator)
-								)
-							)
-						)
-					)
-
-				;	Consume the cube
-
-				(if consumeItem
-					(block ()
-						(itmSetKnown gItem)
-						(objRemoveItem gSource gItem 1)
-						)
-					)
-				)
-		</Invoke>
-
 		<Language>
-			<Text id="msgQuantumCPURequired">Quantum CPU required</Text>
-			<Text id="msgNoShields">Shield generator required</Text>
-			<Text id="msgCannotEnhance">The algorithm cannot enhance %itemName%</Text>
-			<Text id="msgTooAdvanced">Shield generator is too advanced for ShieldPower algorithm</Text>
-			<Text id="msgTooDamaged">Shield generator is too damaged for optimization</Text>
-			<Text id="msgTooPrimitive">Shield generator is too primitive for ShieldPower algorithm</Text>
-			<Text id="msgShieldError">ShieldPower: qbit indeterminacy exception [#!800A410!]</Text>
-			<Text id="msgSuccess">Your shields are more powerful</Text>
-			<Text id="nounShieldGenerator">shield generator</Text>
+			<Text id="rpg.useResultIntro">
+				The cube runs a shield optimization program.
+			</Text>
+
+			<!-- We can't guarantee the outcome, so all possibilities use the
+				same message. -->
+
+			<Text id="rpg.canUse.ok">						You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.alreadyEnhanced">			You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.cantReplaceDefect">		You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.defectOK">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.defectRemoved">			You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.defectReplaced">			You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.degraded">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.enhancementRemoved">		You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.enhancementReplaced">		You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.improved">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.noEffect">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
 		</Language>
 	</ItemType>
 
 	<!-- Level 5: Shield Optimizer Cube -->
 
 	<ItemType UNID="&itShieldOptimizer;"
-			name=				"ShieldPower v3.1.8 algorithm cube"
+			name=				"ShieldOverdrive v3.1.8 algorithm cube"
+			attributes=			"info, minorItem, quantumProgram, shieldEnhance"
+			inherit=			"&baQuantumCPUShieldProgram;"
+
 			level=				"5"
-			value=				"1000"
-			mass=				"50"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownMnemonicCube;"
-			attributes=			"info, minorItem, quantumProgram, shieldEnhance"
+
+			value=				"1000"
+			mass=				"50"
+			useScreen=			"&dsRPGUseItemOnShields;"
 
 			description=		"This algorithm enhances shield generators of technology levels 4 through 9."
 			>
 
+		<Properties>
+			<Definition id="quantum.enhancement">"+hpBonus:20"</Definition>
+			<Definition id="quantum.minLevel">4</Definition>
+			<Definition id="quantum.maxLevel">9</Definition>
+			<Definition id="quantum.repair">True</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(block (
-				(shieldItem (@ (objGetItems gSource "sI") 0))
-				(consumeItem True)
-				)
-				(switch
-					;	No Quantum CPU
-
-					(not (progHasQuantumCPU gSource))
-						(block ()
-							(objSendMessage gSource Nil (typTranslate gType 'msgQuantumCPURequired))
-							(setq consumeItem Nil)
-							)
-
-					;	No shield generator
-
-					(not shieldItem)
-						(objSendMessage gSource Nil (typTranslate gType 'msgNoShields))
-						
-					;	Non-energy shields cannot be enhanced
-
-					(itmMatches shieldItem "s +nonEnergyShields")
-						(objSendMessage gSource Nil (typTranslate gType 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
-
-					;	If the shield generator is not advanced enough, then nothing happens
-
-					(ls (itmGetLevel shieldItem) 4)
-						(objSendMessage gSource Nil (typTranslate gType 'msgTooPrimitive))
-
-					;	If the shield generator is too advanced, then nothing happens
-
-					(gr (itmGetLevel shieldItem) 9)
-						(objSendMessage gSource Nil (typTranslate gType 'msgTooAdvanced))
-
-					;	If the item is damaged, we repair it
-
-					(itmIsDamaged shieldItem)
-						(block Nil
-							(shpRepairItem gSource shieldItem)
-							(objSendMessage gSource Nil (typTranslate gType 'msgShieldsRepaired))
-							)
-
-					;	Shields enhanced
-
-					(block (result)
-						(setq result (shpEnhanceItem gSource shieldItem {
-							enhancement: "+hpBonus:20"
-							type: gType
-							}))
-
-						(objSendMessage gSource Nil 
-							(intItemEnhanceStatus result 
-								(typTranslate gType 'msgSuccess)
-								(typTranslate gType 'nounShieldGenerator)
-								)
-							)
-						)
-					)
-
-				;	Consume the cube
-
-				(if consumeItem
-					(block ()
-						(itmSetKnown gItem)
-						(objRemoveItem gSource gItem 1)
-						)
-					)
-				)
-		</Invoke>
-
 		<Language>
-			<Text id="msgQuantumCPURequired">Quantum CPU required</Text>
-			<Text id="msgNoShields">Shield generator required</Text>
-			<Text id="msgCannotEnhance">The algorithm cannot enhance %itemName%</Text>
-			<Text id="msgTooAdvanced">Shield generator is too advanced for ShieldPower algorithm</Text>
-			<Text id="msgShieldsRepaired">Shield generator has been repaired</Text>
-			<Text id="msgTooPrimitive">Shield generator is too primitive for ShieldPower algorithm</Text>
-			<Text id="msgShieldError">ShieldPower: qbit indeterminacy exception [#!800A410!]</Text>
-			<Text id="msgSuccess">Your shields are more powerful</Text>
-			<Text id="nounShieldGenerator">shield generator</Text>
+			<Text id="rpg.useResultIntro">
+				The cube runs a shield optimization program.
+			</Text>
 		</Language>
 	</ItemType>
 
@@ -290,100 +175,201 @@
 
 	<ItemType UNID="&itShieldPowerSaver;"
 			name=				"ShieldEfficiency v1.2.5 algorithm cube"
+			attributes=			"info, minorItem, quantumProgram, shieldEnhance"
+			inherit=			"&baQuantumCPUShieldProgram;"
+
 			level=				"6"
-			value=				"1500"
-			mass=				"50"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownMnemonicCube;"
-			attributes=			"info, minorItem, quantumProgram, shieldEnhance"
+
+			value=				"1500"
+			mass=				"50"
+			useScreen=			"&dsRPGUseItemOnShields;"
 
 			description=		"This algorithm increases the efficiency of shield generators of technology levels 4 through 9."
 			>
 
+		<Properties>
+			<Definition id="quantum.enhancement">"+efficient:20"</Definition>
+			<Definition id="quantum.minLevel">4</Definition>
+			<Definition id="quantum.maxLevel">9</Definition>
+			<Definition id="quantum.repair">True</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(block (
-				(shieldItem (@ (objGetItems gSource "sI") 0))
-				(consumeItem True)
-				)
+		<Language>
+			<Text id="rpg.useResultIntro">
+				The cube runs a shield optimization program.
+			</Text>
+		</Language>
+	</ItemType>
+
+<!-- BASE CLASSES -->
+
+	<Type unid="&baQuantumCPUShieldProgram;"
+			inherit="&baStdDeviceEnhancement;"
+			>
+		<Properties>
+			<DynamicGlobal id="enhance.maxLevel">
+				(typ@ gType 'quantum.maxLevel)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="enhance.minLevel">
+				(typ@ gType 'quantum.minLevel)
+			</DynamicGlobal>
+
+			<Definition id="rpg.useCriteria">"s"</Definition>
+		</Properties>
+
+		<Events>
+			<CanUseOnItem>
+
+				;	This event is called by dsRPGUseItemBase to figure out 
+				;	whether to enable the Use button.
+				;
+				;	gSource: The object on which we are enhancing
+				;	gItem: The item doing the enhancing
+				;
+				;	gData
+				;		targetItem: The item being enhanced.
+				;
+				;	RETURN
+				;		Nil: Cannot use on the item
+				;
+				;		descriptor:
+				;			canUse: True/Nil
+				;			desc: Explanation of what will happen if used
+				;				(or why it cannot be used).
+
 				(switch
 					;	No Quantum CPU
 
 					(not (progHasQuantumCPU gSource))
-						(block ()
-							(objSendMessage gSource Nil (typTranslate gType 'msgQuantumCPURequired))
-							(setq consumeItem Nil)
+						{
+							canUse: Nil
+							desc: (typTranslate gType 'msgQuantumCPURequired)
+							}
+
+					;	Call base class
+
+					(typFireObjItemEvent &baStdDeviceEnhancement; gSource gItem 'CanUseOnItem gData)
+					)
+
+			</CanUseOnItem>
+
+			<GetEnhancement>
+
+				;	Called from objCanEnhanceItem and objEnhanceItem. This is
+				;	normally implemented by baStdDeviceEnhancement (which uses 
+				;	rpg.enhancementTable), but we need some custom logic.
+				;
+				;	gSource: The object on which we are enhancing
+				;	gItem: The item doing the enhancing
+				;
+				;	gData
+				;		mode: Either 'canEnhance or 'onEnhance
+				;		targetItem: The item being enhanced.
+				;
+				;	RETURN
+				;		Nil: Cannot enhance target (no effect)
+				;		'repair: Target item should be repaired
+				;
+				;		enhancement description:
+				;			enhancement: Enhancement code/desc (required)
+				;			lifetime: Duration of enhancement (ticks). Nil or -1
+				;				means permanent.
+				;			type: Item type of enhancement (only if different
+				;				from gItem).
+				;			desc: Explanation for result
+
+				(block (
+					(targetItem (@ gData 'targetItem))
+					(trPrefix 
+						(if (= (@ gData 'mode) 'canEnhance)
+							"rpg.canUse."
+							"rpg.useResult."
 							)
+						)
+					(trData {
+						useItem: (itmGetName gItem 'article)
+						dstItem: (itmGetName targetItem 'noModifiers)
+						})
+					)
+					(switch
+						;	Must have a quantum CPU.
+						;
+						;	NOTE: The player UI does not get this far because it uses
+						;	CanUseOnItem to get the message. But when using a cube
+						;	programmatically (e.g., by the AI) then we need this check.
 
-					;	No shield generator
+						(not (progHasQuantumCPU gSource))
+							Nil
 
-					(not shieldItem)
-						(objSendMessage gSource Nil (typTranslate gType 'msgNoShields))
-						
-					;	Non-energy shields cannot be enhanced
+						;	Non-energy shields cannot be enhanced
 
-					(itmMatches shieldItem "s +nonEnergyShields")
-						(objSendMessage gSource Nil (typTranslate gType 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
+						(itmMatches targetItem "s +nonEnergyShields")
+							{
+								enhancement: Nil
+								desc: (typTranslate gType (cat trPrefix 'cannotEnhance) trData)
+								}
 
-					;	If the shield generator is not advanced enough, then nothing happens
+						;	If the shield generator is not advanced enough, then nothing happens
 
-					(ls (itmGetLevel shieldItem) 4)
-						(objSendMessage gSource Nil (typTranslate gType 'msgTooPrimitive))
+						(ls (itmGetLevel targetItem) (typ@ gType 'quantum.minLevel))
+							{
+								enhancement: Nil
+								desc: (typTranslate gType (cat trPrefix 'tooPrimitive) trData)
+								}
 
-					;	If the shield generator is too advanced, then nothing happens
+						;	If the shield generator is too advanced, then nothing happens
 
-					(gr (itmGetLevel shieldItem) 9)
-						(objSendMessage gSource Nil (typTranslate gType 'msgTooAdvanced))
+						(gr (itmGetLevel targetItem) (typ@ gType 'quantum.maxLevel))
+							{
+								enhancement: Nil
+								desc: (typTranslate gType (cat trPrefix 'tooAdvanced) trData)
+								}
 
-					;	If the item is damaged, we repair it
+						;	If the item is damaged, we repair it
 
-					(itmIsDamaged shieldItem)
-						(block Nil
-							(shpRepairItem gSource shieldItem)
-							(objSendMessage gSource Nil (typTranslate gType 'msgShieldsRepaired))
-							)
-
-					;	Shields enhanced
-
-					(block (result)
-						(setq result (shpEnhanceItem gSource shieldItem {
-							enhancement: "+efficient:20"
-							type: gType
-							}))
-						
-						(objSendMessage gSource Nil 
-							(intItemEnhanceStatus result 
-								(typTranslate gType 'msgSuccess)
-								(typTranslate gType 'nounShieldGenerator)
+						(itmIsDamaged targetItem)
+							(if (typ@ gType 'quantum.noRepair)
+								{
+									enhancement: Nil
+									desc: (typTranslate gType (cat trPrefix 'cannotRepair) trData)
+									}
+								'repair
 								)
-							)
+
+						;	Shields enhanced
+
+						{
+							enhancement: (typ@ gType 'quantum.enhancement)
+							}
 						)
 					)
-
-				;	Consume the cube
-
-				(if consumeItem
-					(block ()
-						(itmSetKnown gItem)
-						(objRemoveItem gSource gItem 1)
-						)
-					)
-				)
-		</Invoke>
+			</GetEnhancement>
+		</Events>
 
 		<Language>
-			<Text id="msgQuantumCPURequired">Quantum CPU required</Text>
-			<Text id="msgNoShields">Shield generator required</Text>
-			<Text id="msgCannotEnhance">The algorithm cannot enhance %itemName%</Text>
-			<Text id="msgTooAdvanced">Shield generator is too advanced for ShieldPower algorithm</Text>
-			<Text id="msgShieldsRepaired">Shield generator has been repaired</Text>
-			<Text id="msgTooPrimitive">Shield generator is too primitive for ShieldPower algorithm</Text>
-			<Text id="msgShieldError">ShieldPower: qbit indeterminacy exception [#!800A410!]</Text>
-			<Text id="msgSuccess">Your shields are more efficient</Text>
-			<Text id="nounShieldGenerator">shield generator</Text>
+			<Text id="rpg.noTargetItem">					No shield generator installed.</Text>
+			<Text id="rpg.noTargetItemUnknown">				This algorithm cube works on shield generators, but no appropriate device could be found.</Text>
+
+			<Text id="rpg.canUse.cannotEnhance">			The algorithm cube only works on energy shields.</Text>
+			<Text id="rpg.canUse.cannotRepair">				The %dstItem% is damaged and cannot be optimized by the algorithm cube.</Text>
+			<Text id="rpg.canUse.tooAdvanced">				The %dstItem% is too advanced for the algorithm cube.</Text>
+			<Text id="rpg.canUse.tooPrimitive">				The %dstItem% is too primitive for the algorithm cube.</Text>
+			<Text id="rpg.canUse.unknown">					This algorithm cube works on shield generators. You can use it on %dstItem%.</Text>
+
+			<Text id="rpg.useResult.cannotEnhance">			The program halts with an error: The %dstItem% is not an energy shield.</Text>
+			<Text id="rpg.useResult.cannotRepair">			The program halts with an error: The %dstItem% is damaged and cannot be optimized.</Text>
+			<Text id="rpg.useResult.defectOK">				The program halts with an error: qbit indeterminacy exception [#!800A410].</Text>
+			<Text id="rpg.useResult.tooAdvanced">			The program halts with an error: The %dstItem% is too advanced.</Text>
+			<Text id="rpg.useResult.tooPrimitive">			The program halts with an error: The %dstItem% is too primitive.</Text>
+
+			<Text id="msgQuantumCPURequired">				You must install a quantum CPU on your ship before you can use a mnemonic cube.</Text>
 		</Language>
-	</ItemType>
+	</Type>
 
 <!-- GLOBALS -->
 

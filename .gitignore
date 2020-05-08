@@ -42,6 +42,7 @@ Mammoth/TSUI/HexarcKeys.h
 *.iobj
 *.ipdb
 *.dtbcache
+*.dtbcache.v2
 
 # Build results
 [Dd]ebug/

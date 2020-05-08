@@ -202,6 +202,7 @@
 	<!-- 0100-0139 DIAGNOSTICS AND DEBUGGING -->
 
 	<!ENTITY efTestOrbEffect			"0x00030100">
+	<!ENTITY unidDiagnostics			"0x00030101">
 
 	<!-- 0140-017F MISCELLANEOUS EFFECTS -->
 
@@ -222,6 +223,7 @@
 		>
 
 	<Module filename="CoreCode.xml"/>
+	<Module filename="CoreDiagnostics.xml"/>
 	<Module filename="CoreEffects.xml"/>
 	<Module filename="CoreEngineText.xml"/>
 	<Module filename="CoreExplosions.xml"/>

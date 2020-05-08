@@ -1532,7 +1532,7 @@
 
 		<Weapon
 				configuration=		"spread3"
-				fireRate=			"30"
+				fireRate=			"40"
 				powerUse=			"30"
 				multiTarget=		"true"
 				>
@@ -2721,7 +2721,7 @@
 			  
 			level=				"3"
 			frequency=			"uncommon"
-			numberAppearing=	"48-72"
+			numberAppearing=	"24-36"
 
 			value=				"20"
 			mass=				"40"
@@ -2752,7 +2752,7 @@
 			  
 			level=				"3"
 			frequency=			"common"
-			numberAppearing=	"48-72"
+			numberAppearing=	"24-36"
 
 			value=				"20"
 			mass=				"20"
@@ -2816,7 +2816,7 @@
 			  
 			level=				"4"
 			frequency=			"uncommon"
-			numberAppearing=	"48-72"
+			numberAppearing=	"24-36"
 
 			value=				"50"
 			mass=				"40"
@@ -2848,7 +2848,7 @@
 			  
 			level=				"7"
 			frequency=			"uncommon"
-			numberAppearing=	"24-36"
+			numberAppearing=	"48-72"
 
 			value=				"150"
 			mass=				"40"
@@ -2897,7 +2897,7 @@
 			  
 			level=				"3"
 			frequency=			"common"
-			numberAppearing=	"96-144"
+			numberAppearing=	"48-72"
 
 			value=				"12"
 			mass=				"20"
@@ -2930,7 +2930,7 @@
 			  
 			level=				"4"
 			frequency=			"common"
-			numberAppearing=	"96-144"
+			numberAppearing=	"48-72"
 
 			value=				"30"
 			mass=				"20"
@@ -2963,7 +2963,7 @@
 			  
 			level=				"5"
 			frequency=			"common"
-			numberAppearing=	"96-144"
+			numberAppearing=	"48-72"
 
 			value=				"45"
 			mass=				"30"
@@ -3040,7 +3040,7 @@
 			  
 			level=				"6"
 			frequency=			"uncommon"
-			numberAppearing=	"96-144"
+			numberAppearing=	"72-120"
 
 			value=				"90"
 			mass=				"30"
@@ -3084,7 +3084,7 @@
 			  
 			level=				"7"
 			frequency=			"uncommon"
-			numberAppearing=	"48-72"
+			numberAppearing=	"72-120"
 
 			value=				"120"
 			mass=				"30"
@@ -3119,7 +3119,7 @@
 			frequency=			"uncommon"
 			numberAppearing=	"48-72"
 
-			value=				"180"
+			value=				"300"
 			mass=				"30"
 			  
 			description=		"The only military variant of the popular MAG series is this thermonuclear variant."
@@ -3165,7 +3165,7 @@
 			  
 			level=				"5"
 			frequency=			"common"
-			numberAppearing=	"160-240"
+			numberAppearing=	"320-480"
 
 			value=				"6"
 			mass=				"10"
@@ -3196,7 +3196,7 @@
 			  
 			level=				"6"
 			frequency=			"common"
-			numberAppearing=	"160-240"
+			numberAppearing=	"480-720"
 
 			value=				"9"
 			mass=				"10"
@@ -3227,7 +3227,7 @@
 			  
 			level=				"7"
 			frequency=			"uncommon"
-			numberAppearing=	"160-240"
+			numberAppearing=	"480-720"
 
 			value=				"15"
 			mass=				"12"
@@ -3258,7 +3258,7 @@
 			  
 			level=				"9"
 			frequency=			"rare"
-			numberAppearing=	"160-240"
+			numberAppearing=	"320-480"
 
 			value=				"60"
 			mass=				"15"
@@ -3302,7 +3302,7 @@
 			  
 			level=				"7"
 			frequency=			"common"
-			numberAppearing=	"48-72"
+			numberAppearing=	"96-144"
 
 			value=				"90"
 			mass=				"70"
@@ -3356,7 +3356,7 @@
 			frequency=			"uncommon"
 			numberAppearing=	"48-72"
 
-			value=				"180"
+			value=				"240"
 			mass=				"70"
 			  
 			description=		"The CRM500 is a tracking thermonuclear mine deployed by the NAMI mine launcher."
@@ -3439,7 +3439,7 @@
 			  
 			level=				"9"
 			frequency=			"common"
-			numberAppearing=	"48-72"
+			numberAppearing=	"72-120"
 
 			value=				"600"
 			mass=				"30"
@@ -3473,9 +3473,9 @@
 			  
 			level=				"9"
 			frequency=			"rare"
-			numberAppearing=	"36-54"
+			numberAppearing=	"72-120"
 
-			value=				"300"
+			value=				"350"
 			mass=				"50"
 			  
 			description=		"The M2 is a heavy siege weapon launched by the NAMI heavy launcher. It is designed to attack capital ships and stations."
@@ -3544,9 +3544,9 @@
 			  
 			level=				"9"
 			frequency=			"uncommon"
-			numberAppearing=	"36-54"
+			numberAppearing=	"72-120"
 
-			value=				"400"
+			value=				"500"
 			mass=				"120"
 			  
 			description=		"Soon after launch, the S3 Medusa explodes to reveal a dozen independently-tracking thermonuclear missiles. The S3 requires the NAMI heavy launcher."
@@ -3638,9 +3638,9 @@
 			  
 			level=				"10"
 			frequency=			"rare"
-			numberAppearing=	"24-36"
+			numberAppearing=	"48-72"
 
-			value=				"450"
+			value=				"600"
 			mass=				"50"
 			  
 			description=		"The M5 Nemesis missile is an upgraded version of the M2. It requires the NAMI heavy launcher."
@@ -3749,9 +3749,9 @@
 			  
 			level=				"6"
 			frequency=			"common"
-			numberAppearing=	"10d20"
+			numberAppearing=	"12d20"
 
-			value=				"15"
+			value=				"40"
 			mass=				"50"
 			  
 			description=		"This is a cartridge for the Dragonfly missile system. Each cartridge contains three micro-missiles."
@@ -3787,7 +3787,7 @@
 			  
 			level=				"8"
 			frequency=			"uncommon"
-			numberAppearing=	"8d12"
+			numberAppearing=	"12d12"
 
 			value=				"300"
 			mass=				"40"
@@ -4453,47 +4453,23 @@
 					shape=			"tapered"
 					primaryColor=	"#ff9900"
 					secondaryColor=	"#c93400"
-					length=			"12"
-					width=			"6"
-					xformRotation=	"15"
 					>
+			
 				<Events>
 					<GetParameters>
 						(block (damageHP primaryColor secondaryColor)
 							(setq damageHP (@ gData 'damageHP))
 
 							{
-								length:	(mathScale damageHP	5 64 16 64 50)
-								width: (mathScale damageHP 5 64 6 24 50)
-								intensity: 10
+								length:	(mathScale damageHP 5 64 60 220 50)
+								width: (mathScale damageHP 5 64 6 14 50)
+								intensity: 30
 								}
 							)
 					</GetParameters>
 				</Events>
 			</Ray>
-			
-			<Ray
-					style=			"smooth"
-					shape=			"tapered"
-					primaryColor=	"#ff9900"
-					secondaryColor=	"#c93400"
-					xformRotation=	"-15"
-					>
-				<Events>
-					<GetParameters>
-						(block (damageHP primaryColor secondaryColor)
-							(setq damageHP (@ gData 'damageHP))
 
-							{
-								length:	(mathScale damageHP	5 64 16 64 50)
-								width: (mathScale damageHP 5 64 6 24 50)
-								intensity: 10
-								}
-							)
-					</GetParameters>
-				</Events>
-			</Ray>
-			
 			<Ray
 					style=			"smooth"
 					shape=			"tapered"
@@ -4507,8 +4483,8 @@
 							(setq damageHP (@ gData 'damageHP))
 
 							{
-								length:	(mathScale damageHP 5 64 30 110 50)
-								width: (mathScale damageHP 5 64 12 44 50)
+								length:	(mathScale damageHP 5 64 20 75 50)
+								width: (mathScale damageHP 5 64 12 28 50)
 								intensity: 30
 								}
 							)
