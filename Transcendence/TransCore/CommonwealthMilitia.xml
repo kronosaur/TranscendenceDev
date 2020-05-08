@@ -13,8 +13,8 @@
 
 			Nil:		Civilian				Never successfully completed a mission
 			1			Lieutenant				Completed at least one mission
-			2			Major
-			3			Colonel
+			2			Captain
+			3			Major
 
 			-1			Player has failed too many missions
 
@@ -38,6 +38,51 @@
 	-->
 
 	<Type UNID="&unidCommonwealthMilitia;">
+		<Properties>
+			<Definition id="rankTable">
+				(list
+					{	rank:Nil	id:'volunteer	icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0   0 256 256)	}
+					{	rank:1		id:'lieutenant	icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia; 256   0 256 256)	}
+					{	rank:2		id:'captain		icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia; 512   0 256 256)	}
+					{	rank:3		id:'major		icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0 256 256 256)	}
+					)
+			</Definition>
+			<DynamicGlobal id="rank">(typGetData gType 'rank)</DynamicGlobal>
+			<DynamicGlobal id="rankID">
+				(block (
+					(rank (typ@ gType 'rank))
+					)
+					(switch
+						(not rank)
+							(if (msnFind "r +commonwealthMilitia;")
+								'volunteer
+								)
+
+						(= rank -1)
+							'blacklisted
+
+						(@ (@ (typ@ gType 'rankTable) rank) 'id)
+						)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankIcon">
+				(block (
+					(rank (or (typ@ gType 'rank) 0))
+					(rankTable (typ@ gType 'rankTable))
+					)
+					(switch
+						(= rank -1)
+							Nil
+
+						(@ (@ rankTable rank) 'icon)
+						)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankNoun">
+				(typTranslate gType (cat "rank." (typ@ gType 'rankID)) { gender:(plyGetGenome gPlayer) })
+			</DynamicGlobal>
+		</Properties>
+
 		<Events>
 			<GetGlobalAchievements>
 				(append
@@ -96,6 +141,48 @@
 		</Events>
 
 		<Language>
+			<Code id="rankDetails">
+				(block (
+					(rankID (typ@ gType 'rankID))
+					(successList (plyGetKeyEventStat gPlayer 'missionSuccess Nil "* +commonwealthMilitia;"))
+					(failureList (plyGetKeyEventStat gPlayer 'missionFailure Nil "* +commonwealthMilitia;"))
+					)
+					(if rankID
+						{
+							title: (fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
+							largeIcon: (typ@ gType 'rankIcon)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelSuccesses)
+									desc: (typTranslate gType 'rtfValue { 
+										value: (count successList)
+										})
+									}
+								{
+									title: (typTranslate gType 'labelFailures)
+									desc: (typTranslate gType 'rtfValue {
+										value: (count failureList)
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+			<Text id="rank.blacklisted">:an outcast(s)</Text>
+			<Text id="rank.volunteer">:a volunteer(s)</Text>
+			<Text id="rank.lieutenant">:a lieutenant(s)</Text>
+			<Text id="rank.captain">:a captain(s)</Text>
+			<Text id="rank.major">:a major(s)</Text>
+
+			<Text id="labelSuccesses">Mission Successes:</Text>
+			<Text id="labelFailures">Mission Failures:</Text>
+			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+
 			<Text id="PlayerRank">
 				(block (
 					(rank (typGetData &unidCommonwealthMilitia; 'rank))
@@ -225,6 +312,12 @@
 
 		<DockScreens>
 			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthMilitia; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -1040,5 +1133,6 @@
 <!-- RESOURCES -->
 
 	<Image UNID="&rsCommonwealthMilitiaFortress;"			bitmap="Resources\CommonwealthMilitiaFortress.jpg" bitmask="Resources\CommonwealthMilitiaFortressMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsCommonwealthMilitiaInsignia;"			bitmap="Resources\CommonwealthMilitiaInsignia.jpg" bitmask="Resources\CommonwealthMilitiaInsigniaMask.bmp" loadOnUse="true"/>
 	
 </TranscendenceModule>
