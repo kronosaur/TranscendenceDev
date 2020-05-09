@@ -15,7 +15,7 @@
 
 	<MissionType UNID="&msCMstKatsDestroyThreat;"
 			name=			"Destroy Threat"
-			attributes=		"stKatsMilitia"
+			attributes=		"commonwealthMilitia, rank0, rank1, stKatsMilitia"
 
 			level=			"4"
 
@@ -24,6 +24,19 @@
 			>
 
 		<Events>
+			<CanCreate>
+				(switch
+					;	Only in SK
+
+					(!= (sysGetNode) 'SK)
+						Nil
+
+					;	OK
+
+					True
+					)
+			</CanCreate>
+
 			<OnCreate>
 				(block (enemyStations)
 					(switch

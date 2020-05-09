@@ -377,6 +377,11 @@
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidCommonwealthMilitia; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
 
 		<HeroImage imageID="&rsStKatsArcologyHero;"		imageX="0" imageY="1944" imageWidth="1200" imageHeight="648"/>
 
@@ -394,20 +399,24 @@
 					</Action>
 					
 					<Action id="actionMilitia">
-						(switch
-							(not (milCanEnterCC))
-								(scrShowScreen gScreen &dsRPGMessage; { desc: (scrTranslate gScreen 'descAccessDenied) })
+						(block (
+							(rank (typ@ &unidCommonwealthMilitia; 'rank))
+							)
+							(switch
+								(not (milCanEnterCC))
+									(scrShowScreen gScreen &dsRPGMessage; { desc: (scrTranslate gScreen 'descAccessDenied) })
 
-							(= (typGetData &unidCommonwealthMilitia; 'rank) -1)
-								(scrShowScreen gScreen &dsRPGMessage; { desc: (scrTranslate gScreen 'descTooManyFailures) })
+								(= rank -1)
+									(scrShowScreen gScreen &dsRPGMessage; { desc: (scrTranslate gScreen 'descTooManyFailures) })
 
-							(rpgMissionAssignment {
-								missionCriteria: (cat "n +stKatsMilitia; =" (sysGetLevel) ";")
-								displayCriteria: "n +stKatsMilitia;"
-								noMissionTextID: 'descNoMissions
-								maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
-								intervalPerStation: (random 3600 5400)
-								})
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +stKatsMilitia; +rank" (int rank) ";")
+									displayCriteria: "n +stKatsMilitia;"
+									noMissionTextID: 'descNoMissions
+									maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
+									intervalPerStation: (random 3600 5400)
+									})
+								)
 							)
 					</Action>
 
