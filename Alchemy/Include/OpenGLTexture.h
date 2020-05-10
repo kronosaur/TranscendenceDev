@@ -1,7 +1,7 @@
 #pragma once
 #include "OpenGLIncludes.h"
 #include "OpenGLVAO.h"
-#include <unordered_set >
+#include <unordered_set>
 
 // Helper class to define bounds
 class GlowmapTile {

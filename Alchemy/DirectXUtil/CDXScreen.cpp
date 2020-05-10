@@ -4,6 +4,10 @@
 //	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+#ifdef OPENGL_FPS_COUNTER_ENABLE
+#include <chrono>
+#include <ctime>
+#endif
 
 #pragma comment(lib, "d3d9.lib")
 
@@ -584,6 +588,11 @@ void CDXScreen::Render (void)
 
 	{
 	int i;
+#ifdef OPENGL_FPS_COUNTER_ENABLE
+	static std::chrono::time_point<std::chrono::steady_clock> last_frame_finished;
+	static int last_frame_graphics_time;
+	static int last_frame_finished_time;
+#endif
 
 	//	If we're using GDI, then just blt. This DOES NOT use the DirectX stack,
 	//	so things like the Steam Overlay will not work.
@@ -603,9 +612,18 @@ void CDXScreen::Render (void)
 	//	If we're using OpenGL, then do some stuff...
 	else if (m_bUseOpenGL)
 		{
+#ifdef OPENGL_FPS_COUNTER_ENABLE
+		auto start = std::chrono::high_resolution_clock::now();
+#endif
 		HDC hDC = ::GetDC(m_hWnd);
 		SLayer &Layer = m_Layers[m_PaintOrder[0]];
 		CG32bitPixel *pPixelArray = Layer.BackBuffer.GetPixelArray();
+#ifdef OPENGL_FPS_COUNTER_ENABLE
+		char szBuffer[256];
+		int iLen = wsprintf(szBuffer, "Time between frames: %d (%d in graphics) (ms)",
+			last_frame_finished_time,
+			last_frame_graphics_time);
+#endif
 		while(!m_bOpenGLAttached)
 			{
 			// Use a while loop and sleep in order to avoid a weird race condition where OpenGL initializes before
@@ -620,7 +638,7 @@ void CDXScreen::Render (void)
 			}
 		::ReleaseDC(m_hWnd, hDC);
 		if (pPixelArray)
-		{
+			{
 			if (m_pOGLContext->pollResize())
 				{
 				delete m_pOpenGLTexture;
@@ -629,12 +647,16 @@ void CDXScreen::Render (void)
 			if (!m_pOpenGLTexture) {
 				m_pOpenGLTexture = new OpenGLTexture(pPixelArray, Layer.cxWidth, Layer.cyHeight, false);
 				m_pOpenGLTexture->initTextureFromOpenGLThread();
-			}
-			else
+				}
+			else {
+#ifdef OPENGL_FPS_COUNTER_ENABLE
+				Layer.BackBuffer.DrawText(300, 20, Layer.BackBuffer.GetMasterRenderQueue()->getOpenGLIndicatorFont(), CG32bitPixel(80, 80, 80), CString(szBuffer, iLen));
+#endif
 				m_pOpenGLTexture->updateTexture2D(pPixelArray, Layer.cxWidth, Layer.cyHeight);
-		}
+				}
+			}
 		if (m_pOpenGLTexture)
-		{
+			{
 			Layer.BackBuffer.InitOpenGL();
 			m_pOGLContext->renderCanvasBackgroundFromTexture(m_pOpenGLTexture);
 			// Set a pointer to the canvas in the Master Render Queue, so we only render textures if we are rendering with that as the DEST
@@ -644,9 +666,17 @@ void CDXScreen::Render (void)
 			//Layer.BackBuffer.GetInstancedRenderQueue()->Render(Layer.BackBuffer.GetInstancedRenderQueue()->getShader(), Layer.BackBuffer.GetInstancedRenderQueue()->getVAO());
 			//delete m_pOpenGLTexture;
 			//m_pOpenGLTexture = NULL;
-		}
-		else
+			}
+		else {
 			m_pOGLContext->renderCanvasBackground();
+			}
+#ifdef OPENGL_FPS_COUNTER_ENABLE
+		std::vector<char> dummy(4);
+		glReadPixels(10, 10, 1, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, &(dummy.front()));
+		last_frame_finished_time = int(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - last_frame_finished).count());
+		last_frame_finished = std::chrono::high_resolution_clock::now();
+		last_frame_graphics_time = int(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count());
+#endif
 		}
 
 

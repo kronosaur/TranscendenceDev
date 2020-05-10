@@ -52,6 +52,7 @@ For special effects that use textures (such as glow), what we can do is use a se
 #include <algorithm>
 #include <thread>
 #include <mutex>
+//#define OPENGL_FPS_COUNTER_ENABLE // Uncomment this line to enable the OpenGL FPS counter (which specifically notes how much time is spent in graphics)
 
 /*
 class OpenGLMasterRenderQueue {
@@ -174,6 +175,11 @@ public:
 	 }
 	void setPointerToCanvas(void* canvas) { m_pCanvas = canvas; }
 	void *getPointerToCanvas() { return m_pCanvas; }
+#ifdef OPENGL_FPS_COUNTER_ENABLE
+	CG16bitFont& getOpenGLIndicatorFont() {
+		return *(m_pOpenGLIndicatorFont.get());
+	}
+#endif
 private:
 	void initializeCanvasVAO (void);
 	void deinitCanvasVAO (void);
@@ -209,5 +215,14 @@ private:
 	unsigned int rbo;
 	std::mutex m_shipRenderQueueAddMutex;
 	void* m_pCanvas;
+#ifdef OPENGL_FPS_COUNTER_ENABLE
+	std::unique_ptr<CG16bitFont> m_pOpenGLIndicatorFont;
+
+	//OpenGLInstancedBatchRay m_FPSCounterRayRenderQueue;
+	//std::chrono::duration<double> last_frame_time;
+	//void DrawHex7Digit(float pos_x, float pos_y, int num) {
+//		const float bar_width = 0.002;
+//	}
+#endif
 
 };

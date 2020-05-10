@@ -3159,7 +3159,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	CUsePerformanceCounter PaintSpaceTimer(m_Universe, CONSTLIT("paint.spaceBackground"));
 	m_SpacePainter.PaintSpaceBackground(Dest, GetType(), Ctx);
 
-	//	Paint background objects
+	//	Paint background objects - this can involve OpenGL, since this is an object painter
 
 	ParallaxBackground.Paint(Dest, Ctx);
 
@@ -3168,29 +3168,30 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	m_SpacePainter.PaintStarshine(Dest, GetType(), Ctx);
 	PaintSpaceTimer.StopCounter();
 
-	//	Paint any space environment (e.g., nebulae)
+	//	Paint any space environment (e.g., nebulae) - CPU
 
 	if (m_pEnvironment)
 		m_pEnvironment->Paint(Ctx, Dest);
 
-	//	Paint all the objects by layer
-
+	//	Paint all the objects by layer, use OpenGL for these
+	//  We should organize the render queue to render one layer at a time
+	//  See GameSessionAnimate.cpp (CGameSession::OnAnimate) for dockscreens, HUD and intro.
 	for (int i = 0; i < layerCount; i++)
 		MainLayer[i]->Paint(Dest, Ctx);
 
-	//	Paint all joints
+	//	Paint all joints - this is a simple line draw; we can leave this in CPU or move to OpenGL (prefer OpenGL so we have three phases that all use OpenGL)
 
 	m_Joints.Paint(Dest, Ctx);
 
-	//	Paint foreground objects
+	//	Paint foreground objects, use OpenGL for these (since this is an object painter)
 
 	ParallaxForeground.Paint(Dest, Ctx);
 
-	//	Paint all the enhanced display markers
+	//	Paint all the enhanced display markers - CPU
 
 	EnhancedDisplay.Paint(Dest, Ctx);
 
-	//	Let the POV paint any other enhanced displays
+	//	Let the POV paint any other enhanced displays - CPU
 
 	pCenter->PaintSRSEnhancements(Dest, Ctx);
 	if (pAnnotations)

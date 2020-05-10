@@ -253,7 +253,6 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, 
 		float texQuadSize_y = texQuadSize[1];
 		float texGridSize_x = texGridSize[0];
 		float texGridSize_y = texGridSize[1];
-		::kernelDebugLogPattern("[OpenGL] size=%d x %d, pos=%d, %d", int(texQuadSize_x), int(texQuadSize_y), int(texStartPoint_x), int(texStartPoint_y));
 
 		glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
 		glUniform1i(glGetUniformLocation(shader->id(), "ourTexture"), 0);

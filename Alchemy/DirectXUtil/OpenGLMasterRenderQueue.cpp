@@ -24,6 +24,10 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	m_pObjectTextureShader = new OpenGLShader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
 	m_pRayShader = new OpenGLShader("./shaders/ray_vertex_shader.glsl", "./shaders/ray_fragment_shader.glsl");
 	m_pLightningShader = new OpenGLShader("./shaders/lightning_vertex_shader.glsl", "./shaders/lightning_fragment_shader.glsl");
+#ifdef OPENGL_FPS_COUNTER_ENABLE
+	m_pOpenGLIndicatorFont = std::make_unique<CG16bitFont>();
+	m_pOpenGLIndicatorFont->Create(CONSTLIT("Arial"), -16);
+#endif
 }
 
 OpenGLMasterRenderQueue::~OpenGLMasterRenderQueue(void)
@@ -105,6 +109,7 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	if (!m_shipRenderQueues.count(image))
 	{
 		// If we don't have a render queue with that texture loaded, then add one.
+		// Note, we clear after every render, in order to prevent seg fault issues; also creating an instanced batch is not very expensive anymore.
 		m_shipRenderQueues[image] = new OpenGLInstancedBatchTexture();
 	}
 
@@ -196,6 +201,7 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		OpenGLTexture *pTextureToUse = p.first;
 		pTextureToUse->populateGlowmaps(fbo, m_pCanvasVAO, m_pGlowmapShader);
 	}
+	m_shipRenderQueues.clear();
 }
 
 void OpenGLMasterRenderQueue::clear(void)

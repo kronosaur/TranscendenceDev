@@ -156,10 +156,6 @@ public:
 	}
 	//virtual std::vector<GLenum> getShaderArgumentTypes();
 private:
-	// Unfortunately, C++ doesn't support reflections at this time. So, we have to have a function to return a tuple containing all shader args here.
-	// This is implemented on a per-render request basis.
-	//virtual static const std::size_t m_numShaderArgs;
-
 	// Function to get the gl type of a glm type (e.g. GL_FLOAT, GL_INT, etc)
 	GLenum const getGLType(const int &arg) { return GL_INT; }
 	GLenum const getGLType(const glm::ivec1 &arg) { return GL_INT; }
@@ -187,6 +183,7 @@ private:
 	int const getGLElemCount(const glm::ivec4 &arg) { return 4; }
 
 	std::vector<int> getShaderArgumentLocations() {
+		// We need this function because Tuple is not standard order (the ordering of the arguments is not predictable).
 		std::vector<int> shaderArgumentLocations;
 		std::apply
 		(
@@ -228,8 +225,6 @@ private:
 		outputVector.push_back(getGLType(a1));
 	};
 
-	//std::size_t const getNumShaderArgs() { return sizeof...(shaderArgs); }
-
 	void setGLVertexAttribPointer(GLuint argIndex, GLint size, GLenum type, GLsizei stride, int currArgPos) {
 		if (type == GL_FLOAT) {
 			glVertexAttribPointer((GLuint)argIndex, size, type, GL_FALSE, stride, (void*)currArgPos);
@@ -238,17 +233,13 @@ private:
 			glVertexAttribIPointer((GLuint)argIndex, size, type, stride, (void*)currArgPos);
 		}
 	}
-	// TODO: We cannot use Tuple because it is not standard order (the ordering of the arguments is not predictable).
-	// We can use a POD struct with a function that returns the contents as a tuple to allow us to use these functions above.
-	// Unlike a true POD struct we will have constructors for this struct.
-	// See https://stackoverflow.com/questions/2543205/define-a-struct-inside-a-class-in-c
+
 	std::tuple<shaderArgs...> m_shaderArgs;
 	float m_depth = 0.0;
 	static const std::size_t m_numShaderArgs = sizeof...(shaderArgs); // TODO: Move to implementations of this abstract class, also test that this works!!!!
 };
 
-// First typename is a tuple type that contains all uniforms
-// Second and onwards are shader arguments
+// Second typename is a tuple type that contains all uniforms
 template<typename shaderRenderRequest, typename ... uniformArgs> class OpenGLInstancedBatch <shaderRenderRequest, std::tuple<uniformArgs...>> {
 public:
 	OpenGLInstancedBatch(void) {
@@ -260,17 +251,6 @@ public:
 		m_depthsFloat.clear();
 		m_renderRequests.clear();
 	};
-	/*
-	void DebugRender() {
-		// Print out the elements of each array.
-		for (int i = 0; i < m_numShaderArgs; i++) {
-			std::cout << "On shader argument " << i;
-			for (int j = 0; j < m_iNumObjectsToRender; j++) {
-				//std::cout << static_cast<ContainerTyped<int>*>(m_shaderParameterVectors[i].get())->getValues()[j];
-			}
-		}
-	};
-	*/
 	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue=true) {
 		int iNumObjectsToRender = m_renderRequests.size();
 		if (iNumObjectsToRender > 0)
@@ -287,16 +267,13 @@ public:
 			glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(shaderRenderRequest) * iNumObjectsToRender, &m_renderRequests.front(), GL_STATIC_DRAW);
 			shader->bind();
-			//int uniformArgIndex = 0;
 			//set uniforms
 			m_iNumTexturesBound = 0;
 			std::apply
 			(
 				[this, shader](uniformArgs const&... tupleArgs)
 			{
-				//std::make_tuple(setUniformValue(shader, uniformArgIndex, tupleArgs)...);
 				setGLUniformValues(shader, 0, tupleArgs...);
-				//uniformArgIndex++;
 			}, m_uniformValues
 			);
 			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, iNumObjectsToRender);
@@ -328,11 +305,9 @@ private:
 	template<typename firstUniformArg, typename ... otherUniformArgs> void setGLUniformValues(const OpenGLShader* shader, int uniformArgIndex, firstUniformArg firstUniformValue, otherUniformArgs...rest) {
 		setGLUniformValue(shader, uniformArgIndex, firstUniformValue);
 		setGLUniformValues(shader, uniformArgIndex + 1, rest...);
-		std::cout << "Adding argument " << uniformArgIndex << " to uniforms...";
 	}
 	template<typename firstUniformArg> void setGLUniformValues(const OpenGLShader* shader, int uniformArgIndex, firstUniformArg firstUniformValue) {
 		setGLUniformValue(shader, uniformArgIndex, firstUniformValue);
-		std::cout << "Adding argument " << uniformArgIndex << " to uniforms...";
 	}
 	void setGLUniformValue(const OpenGLShader* shader, int uniformArgIndex, const int tupleArg) { glUniform1i(glGetUniformLocation(shader->id(), m_uniformNames[uniformArgIndex].c_str()), tupleArg); }
 	void setGLUniformValue(const OpenGLShader* shader, int uniformArgIndex, const glm::ivec1 tupleArg) { glUniform1i(glGetUniformLocation(shader->id(), m_uniformNames[uniformArgIndex].c_str()), tupleArg[0]); }
@@ -348,15 +323,6 @@ private:
 		glUniform1i(glGetUniformLocation(shader->id(), m_uniformNames[uniformArgIndex].c_str()), m_iNumTexturesBound);
 		tupleArg->bindTexture2D(GL_TEXTURE0 + m_iNumTexturesBound);
 		m_iNumTexturesBound += 1;
-	}
-
-	void setGLVertexAttribPointer(GLuint argIndex, GLint size, GLenum type, GLsizei stride) {
-		if (type == GL_FLOAT) {
-			glVertexAttribPointer((GLuint)argIndex, size, type, GL_FALSE, stride, (void*)0);
-		}
-		else {
-			glVertexAttribIPointer((GLuint)argIndex, size, type, stride, (void*)0);
-		}
 	}
 
 	// Internal variables
