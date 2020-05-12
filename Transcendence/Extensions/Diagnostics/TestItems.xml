@@ -28,6 +28,8 @@
 
 			<DynamicData id="test.dynamicData1">1</DynamicData>
 			<DynamicData id="test.dynamicData2">(+ 2 2)</DynamicData>
+
+			<Constant id="disrupted">'testing</Constant>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="672" imageWidth="96" imageHeight="96"/>

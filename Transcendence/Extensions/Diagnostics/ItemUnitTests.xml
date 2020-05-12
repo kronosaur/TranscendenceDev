@@ -153,6 +153,9 @@
 						{	test:'(itm@ &itTestArmorScaled; 'test.dynamicData1)	result:1	}
 						{	test:'(itm@ &itTestArmorScaled; 'test.dynamicData2)	result:4	}
 
+						;	NOTE: Custom properties override engine properties.
+						{	test:'(itm@ &itTestArmorScaled; 'disrupted)			result:'testing	}
+
 						;	Item Properties ------------------------------------
 
 						{	test:'(itm@ &itWeaponSpeedROM; 'known)				result:Nil	}

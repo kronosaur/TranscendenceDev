@@ -1359,6 +1359,7 @@ class CSpaceObject
 			SEffectNode *pNext;
 			};
 
+		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const;
 		void InitItemEvents (void) { m_ItemEvents.Init(this); m_fItemEventsValid = true; }
 		void UpdateEffects (void);
 

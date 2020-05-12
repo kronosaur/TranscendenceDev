@@ -47,11 +47,13 @@
 	<!ENTITY unidTestStationType		"0xA0010104">
 	<!ENTITY unidTestArmorClass			"0xA0010105">
 	<!ENTITY stTestStation1				"0xA0010106">
+	<!ENTITY stTestStation2				"0xA0010107">
 
 	<!-- 0140-017F TEST OVERLAYS -->
 
 	<!ENTITY unidTestOverlays			"0xA0010140">
 	<!ENTITY ovTestOverlay01			"0xA0010141">
+	<!ENTITY ovTestOverlay02			"0xA0010142">
 
 	<!-- 0180-01CF TEST TSE -->
 

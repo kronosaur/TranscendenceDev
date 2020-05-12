@@ -523,6 +523,49 @@ void CItem::Extra (void)
 		m_pExtra = new SExtra;
 	}
 
+bool CItem::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const
+
+//	FindCustomProperty
+//
+//	Finds a custom property.
+
+	{
+	if (IsEmpty())
+		return false;
+
+	EPropertyType iType;
+	if (!m_pItemType->FindCustomProperty(sProperty, pResult, &iType))
+		return false;
+
+	switch (iType)
+		{
+		case EPropertyType::propData:
+		case EPropertyType::propItemData:
+		case EPropertyType::propVariant:
+			pResult = GetDataAsItem(sProperty);
+			return true;
+
+		case EPropertyType::propDynamicData:
+			{
+			CCodeChainCtx RunCtx(GetUniverse());
+
+			RunCtx.SetItemType(GetType());
+			RunCtx.DefineContainingType(m_pItemType);
+			RunCtx.SaveAndDefineSourceVar(GetSource());
+			RunCtx.SaveAndDefineItemVar(*this);
+
+			pResult = RunCtx.RunCode(pResult);
+			return true;
+			}
+
+		case EPropertyType::propObjData:
+			return false;
+
+		default:
+			return true;
+		}
+	}
+
 bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsError) const
 
 //	FireCanBeInstalled
@@ -1737,11 +1780,15 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItemPtr pResult;
-	EPropertyType iPropType;
 	int i;
 
 	if (m_pItemType == NULL)
 		return CC.CreateNil();
+
+	//	Handle custom properties first.
+
+	else if (FindCustomProperty(sProperty, pResult))
+		return pResult->Reference();
 
 	//	First we handle all properties that are specific to the item instance.
 
@@ -1909,35 +1956,8 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 	//	will also get any design type properties and will check the old-style
 	//	data fields.
 
-	if (pResult = GetType()->FindItemTypeBaseProperty(CCCtx, sProperty, &iPropType))
-		{
-		switch (iPropType)
-			{
-			case EPropertyType::propData:
-			case EPropertyType::propItemData:
-			case EPropertyType::propVariant:
-				return GetDataAsItem(sProperty)->Reference();
-
-			case EPropertyType::propDynamicData:
-				{
-				CCodeChainCtx RunCtx(GetUniverse());
-
-				RunCtx.SetItemType(GetType());
-				RunCtx.DefineContainingType(m_pItemType);
-				RunCtx.SaveAndDefineSourceVar(Ctx.GetSource());
-				RunCtx.SaveAndDefineItemVar(*this);
-
-				ICCItemPtr pValue = RunCtx.RunCode(pResult);
-				return pValue->Reference();
-				}
-
-			case EPropertyType::propObjData:
-				return CC.CreateNil();
-
-			default:
-				return pResult->Reference();
-			}
-		}
+	if (pResult = GetType()->FindItemTypeBaseProperty(CCCtx, sProperty))
+		return pResult->Reference();
 
 	//	Otherwise, we've got nothing
 

@@ -459,6 +459,7 @@ class CItem
 
 		void AccumulateCustomAttributes (TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
 		void Extra (void);
+		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const;
         int GetScalableLevel (void) const { return (m_pExtra ? (int)m_pExtra->m_dwLevel : 0); }
 		int GetValue (bool bActual = false) const;
 		bool IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const;

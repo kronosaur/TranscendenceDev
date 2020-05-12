@@ -5131,20 +5131,14 @@ bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItem
 //	Increment the given property.
 
 	{
-	//	First see if our sub-classes handle this property
+	CDesignType *pType = GetType();
 
-	if (OnIncProperty(sProperty, pInc, pResult))
-		return true;
+	//	See if this is a custom property
 
-	//	See if this is a custom property, we set data
-
-	else if (CDesignType *pType = GetType())
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+	if (pType && pType->FindCustomProperty(sProperty, pDummy, &iType))
 		{
-		ICCItemPtr pDummy;
-		EPropertyType iType;
-		if (!pType->FindCustomProperty(sProperty, pDummy, &iType))
-			return false;
-
 		switch (iType)
 			{
 			case EPropertyType::propGlobal:
@@ -5161,10 +5155,34 @@ bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItem
 			}
 		}
 
-	//	Not handled
+	//	Otherwise, see if our sub-classes handle this property
+
+	else if (OnIncProperty(sProperty, pInc, pResult))
+		return true;
+
+	//	Lastly, see if we can increment this ourselves.
 
 	else
-		return false;
+		{
+		pResult = GetProperty(sProperty);
+		if (!pResult->IsNumber())
+			return false;
+
+		ICCItemPtr pDefaultInc(1);
+		if (pInc == NULL || pInc->IsNil())
+			pInc = pDefaultInc;
+
+		if (pResult->IsDouble() || pInc->IsDouble())
+			pResult = ICCItemPtr(pResult->GetDoubleValue() + pInc->GetDoubleValue());
+		else
+			pResult = ICCItemPtr(pResult->GetIntegerValue() + pInc->GetIntegerValue());
+
+		CString sError;
+		if (!SetProperty(sProperty, pResult, &sError))
+			pResult = ICCItemPtr::Error(sError);
+
+		return true;
+		}
 	}
 
 bool CSpaceObject::IsAngryAt (const CDamageSource &Obj) const
