@@ -954,5 +954,8 @@
     <Xml Include="ContainerHabitat.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
+    <Xml Include="RPGMissionTemplate01.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
