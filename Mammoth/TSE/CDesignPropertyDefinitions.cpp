@@ -263,6 +263,8 @@ void CDesignPropertyDefinitions::InitItemData (CUniverse &Universe, CItem &Item)
 				if (m_Defs[i].pCode)
 					{
 					CCodeChainCtx CCCtx(Universe);
+					CCCtx.DefineContainingType(Item);
+					CCCtx.DefineItem(Item);
 
 					ICCItemPtr pResult = CCCtx.RunCode(m_Defs[i].pCode);
 					if (pResult->IsError())
@@ -289,6 +291,7 @@ void CDesignPropertyDefinitions::InitObjectData (CUniverse &Universe, CSpaceObje
 
 	{
 	CCodeChainCtx CCCtx(Universe);
+	bool bInitialized = false;
 
 	for (int i = 0; i < m_Defs.GetCount(); i++)
 		{
@@ -300,6 +303,13 @@ void CDesignPropertyDefinitions::InitObjectData (CUniverse &Universe, CSpaceObje
 				{
 				if (m_Defs[i].pCode)
 					{
+					if (!bInitialized)
+						{
+						CCCtx.DefineContainingType(&Obj);
+						CCCtx.DefineSource(&Obj);
+						bInitialized = true;
+						}
+
 					ICCItemPtr pResult = CCCtx.RunCode(m_Defs[i].pCode);
 					if (pResult->IsError())
 						{
