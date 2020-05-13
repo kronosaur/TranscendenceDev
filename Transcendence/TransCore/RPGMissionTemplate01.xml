@@ -7,6 +7,14 @@
 			failureAfterOutOfSystem="1800"
 			>
 		<Properties>
+			<!-- alwaysLeaveWreck
+			
+				Define as True to set the principal target to always leave a
+				wreck.
+
+				-->
+			<Definition id="alwaysLeaveWreck">Nil</Definition>
+
 			<!-- reward
 			
 				Override this to compute a reward when the mission is created.
@@ -79,11 +87,12 @@
 
 			<OnAccepted>
 				(block (
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
 					(destObj (objGetObjByID (msn@ gSource 'destID)))
 					(targetDesc (msn@ gSource 'targetDesc))
 
 					;	Compute the angle from the gate to our station
-					(angleToStation (sysVectorAngle (sysVectorSubtract aOwnerObj destObj)))
+					(angleToStation (sysVectorAngle (sysVectorSubtract stationObj destObj)))
 
 					;	Pick a random course angle (from the perspective of the destination)
 					(courseAngle (mod 'degrees 
@@ -103,7 +112,7 @@
 					;	position from the mission station.
 					(playerTravelTime 
 						(round (* (msn@ gSource 'timeAdj)
-							(sysCalcTravelTime (sysVectorDistance interceptPos aOwnerObj) (shpGetMaxSpeed gPlayerShip))
+							(sysCalcTravelTime (sysVectorDistance interceptPos stationObj) (shpGetMaxSpeed gPlayerShip))
 							))
 						)
 
@@ -121,11 +130,13 @@
 					(setq targetObj (sysCreateShip (@ targetDesc 'type) freighterPos (@ targetDesc 'sovereign)))
 					(shpOrder targetObj 'gate destObj)
 
+					(objSet@ targetObj 'alwaysLeaveWreck (msn@ gSource 'alwaysLeaveWreck))
+
 					;	Create any escorts
 
 					(enum (@ targetDesc 'escorts) theEntry
 						(block (escortObj)
-							(setq escortObj (sysCreateShip (@ theEntry 'type) (@ targetDesc 'sovereign)))
+							(setq escortObj (sysCreateShip (@ theEntry 'type) freighterPos (@ targetDesc 'sovereign)))
 							(shpOrder escortObj 'escort targetObj)
 							)
 						)
