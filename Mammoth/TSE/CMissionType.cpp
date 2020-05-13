@@ -44,6 +44,7 @@
 #define PROPERTY_CAN_BE_DECLINED				CONSTLIT("canBeDeclined")
 #define PROPERTY_CAN_BE_DELETED					CONSTLIT("canBeDeleted")
 #define PROPERTY_DESTROY_ON_DECLINE				CONSTLIT("destroyOnDecline")
+#define PROPERTY_EXPIRE_TIME					CONSTLIT("expireTime")
 #define PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF		CONSTLIT("forceUndockAfterDebrief")
 #define PROPERTY_HAS_DEBRIEF					CONSTLIT("hasDebrief")
 #define PROPERTY_HAS_IN_PROGRESS				CONSTLIT("hasInProgress")
@@ -558,6 +559,9 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_DESTROY_ON_DECLINE))
 		return ICCItemPtr(m_fDestroyOnDecline ? true : false);
+
+	else if (strEquals(sProperty, PROPERTY_EXPIRE_TIME))
+		return (m_iExpireTime == -1 ? ICCItemPtr::Nil() : ICCItemPtr(m_iExpireTime));
 
 	else if (strEquals(sProperty, PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF))
 		return ICCItemPtr(ForceUndockAfterDebrief());
