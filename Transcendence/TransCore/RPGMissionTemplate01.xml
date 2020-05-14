@@ -58,6 +58,7 @@
 
 			<Data id="destID"></Data>
 			<Data id="targetID"></Data>
+			<Data id="targetPos"></Data>
 		</Properties>
 
 		<Events>
@@ -80,21 +81,17 @@
 					;	from us.
 
 					(destObj (random (sysFindObject aOwnerObj "G R:300; -uncharted;")))
-					)
-					(msnSet@ gSource 'destID (objGetID destObj))
-					)
-			</OnCreate>
 
-			<OnAccepted>
-				(block (
-					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
-					(destObj (objGetObjByID (msn@ gSource 'destID)))
+					;	Pick target
+
 					(targetDesc (msn@ gSource 'targetDesc))
 
 					;	Compute the angle from the gate to our station
-					(angleToStation (sysVectorAngle (sysVectorSubtract stationObj destObj)))
+
+					(angleToStation (sysVectorAngle (sysVectorSubtract aOwnerObj destObj)))
 
 					;	Pick a random course angle (from the perspective of the destination)
+
 					(courseAngle (mod 'degrees 
 						(+ angleToStation 
 							(* (random '(-1 1))	(random 30 60))
@@ -106,28 +103,46 @@
 					;	angle. This is the projected interception point; the distance away from
 					;	the destination is proportional to the time that the player will have to
 					;	destroy the transport.
+
 					(interceptPos (sysVectorPolarOffset destObj courseAngle (@ targetDesc 'distToGate)))
 
 					;	Compute the time that it will take the player to reach the intercept
 					;	position from the mission station.
+
 					(playerTravelTime 
 						(round (* (msn@ gSource 'timeAdj)
-							(sysCalcTravelTime (sysVectorDistance interceptPos stationObj) (shpGetMaxSpeed gPlayerShip))
+							(sysCalcTravelTime (sysVectorDistance interceptPos aOwnerObj) (shpGetMaxSpeed gPlayerShip))
 							))
 						)
 
 					;	Compute the distance that the target will travel in that time
+
 					(targetSpeed (typ@ (@ targetDesc 'type) 'maxSpeed))
 					(freighterDist (sysCalcTravelDistance targetSpeed playerTravelTime))
 
 					;	Now compute a position for the freighter
+
 					(freighterPos (sysVectorPolarOffset destObj courseAngle (+ (@ targetDesc 'distToGate) freighterDist)))
+					)
+					;	Store these calculations
+
+					(msnSet@ gSource 'destID (objGetID destObj))
+					(msnSet@ gSource 'targetPos freighterPos)
+					)
+			</OnCreate>
+
+			<OnAccepted>
+				(block (
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+					(destObj (objGetObjByID (msn@ gSource 'destID)))
+					(targetDesc (msn@ gSource 'targetDesc))
+					(targetPos (msn@ gSource 'targetPos))
 
 					targetObj 
 					)
 					;	Create the freighter and order it to gate
 
-					(setq targetObj (sysCreateShip (@ targetDesc 'type) freighterPos (@ targetDesc 'sovereign)))
+					(setq targetObj (sysCreateShip (@ targetDesc 'type) targetPos (@ targetDesc 'sovereign)))
 					(shpOrder targetObj 'gate destObj)
 
 					(objSet@ targetObj 'alwaysLeaveWreck (msn@ gSource 'alwaysLeaveWreck))
@@ -155,16 +170,12 @@
 			<OnObjDestroyed>
 				(switch
 					(= (objGetID aObjDestroyed) (msn@ gSource 'targetID))
-						(msnSuccess gSource)
+						(if aDestroy
+							(msnSuccess gSource)
+							(msnFailure gSource)
+							)
 					)
 			</OnObjDestroyed>
-
-			<OnObjEnteredGate>
-				(switch
-					(= (objGetID aObj) (msn@ gSource 'targetID))
-						(msnFailure gSource)
-					)
-			</OnObjEnteredGate>
 		</Events>
 	</MissionType>
 
