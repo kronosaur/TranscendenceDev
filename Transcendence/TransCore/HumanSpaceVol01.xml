@@ -2064,6 +2064,7 @@
 	<!ENTITY rsZulu2Hero				"0x00100339">
 	<!ENTITY rsHammerheadHero			"0x0010033A">
 	<!ENTITY rsHammerhead2Hero			"0x0010033B">
+	<!ENTITY rsBorerHero				"0x0010033C">
 
 	<!-- 0370-038F AUTONS -->
 
@@ -2350,11 +2351,12 @@
 	<!ENTITY scWolfenC2					"0x00100701">
 	<!ENTITY scWolfenC3					"0x00100702">
 	<!ENTITY vtUniversityEnhancement	"0x00100703">
-
 	<!ENTITY stStKatsArcology			"0x00100704">
 	<!ENTITY stStKatsArcologySegment	"0x00100705">
 	<!ENTITY rsStKatsArcologySegments	"0x00100706">
 	<!ENTITY evStKatsTrafficBehavior	"0x00100707">
+	<!ENTITY scBorerStock				"0x00100708">
+	<!ENTITY scBorerIIStock				"0x00100709">
 
 	<!-- 0740-075F RASIERMESSER -->
 
