@@ -41,17 +41,6 @@ void OpenGLInstancedRenderQueue::RenderNonInstanced(OpenGLShader *shader, OpenGL
 	clear();
 	}
 
-void OpenGLInstancedRenderQueue::PopulateGlowMaps(OpenGLTexture *texture, unsigned int fbo, OpenGLVAO* vao, OpenGLShader* glowmapShader, int texQuadWidth, int texQuadHeight) {
-	// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
-	texture->initTextureFromOpenGLThread();
-
-	// Generate a glow map for this texture if needed.
-	// TODO: Store the texture quad width and height on the OpenGLTexture object temporarily, so glowmap can be created later
-	if (!texture->getGlowMap()) {
-		texture->GenerateGlowMap(fbo, vao, glowmapShader, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
-	}
-}
-
 void OpenGLInstancedRenderQueue::Render(OpenGLShader *shader, OpenGLVAO *quad, OpenGLTexture *texture, float &startingDepth, float incDepth, int currentTick)
 	{
 	// TODO(heliogenesis): Allow usage of an array of textures.

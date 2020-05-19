@@ -6,7 +6,6 @@ uniform vec2 aTexQuadSizes;
 layout (location = 0) in vec3 aPos;
 
 layout (location = 0) out vec2 TexCoord;
-layout (location = 1) out vec2 gridSquareSize;
 
 void main()
 {
@@ -25,6 +24,5 @@ void main()
 
     gl_Position = vec4(texPos2dWrite[0], texPos2dWrite[1], 0.1, 1.0);
 	TexCoord = vec2(texPos2dRead[0], 1.0 - texPos2dRead[1]);
-	gridSquareSize = aTexQuadSizes;
     //TexCoord = aTexCoord;
 }

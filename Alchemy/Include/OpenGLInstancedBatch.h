@@ -326,7 +326,6 @@ private:
 	}
 
 	// Internal variables
-	bool m_bIsInitialized;
 	std::vector<shaderRenderRequest> m_renderRequests;
 	std::vector<float> m_depthsFloat;
 	std::array<std::string, sizeof...(uniformArgs)> m_uniformNames;

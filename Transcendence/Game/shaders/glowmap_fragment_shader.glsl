@@ -2,8 +2,8 @@
 out vec4 FragColor;
   
 layout (location = 0) in vec2 TexCoord;
-layout (location = 1) in vec2 gridSquareSize;
 
+uniform vec2 gridSquareSize;
 uniform sampler2D ourTexture;
 uniform int kernelSize;
 uniform int use_x_axis;
@@ -41,32 +41,10 @@ float getSumGauss(int kernel_size)
 	return sum_gauss;
 }
 
-vec4 gaussianBlur(float epsilon, vec2 texture_uv, sampler2D obj_texture, vec2 texture_size, int kernel_size, float sum_gauss, bool using_x_axis)
-{
-	float percent_std_dev = 0.66;
-    vec2 onePixel = vec2(1.0, 1.0) / texture_size;
-    vec2 quadSize_float = gridSquareSize;// / texture_size;
-    vec2 quad_index = vec2(float(int(texture_uv[0] / quadSize_float[0])), float(int(texture_uv[1] / quadSize_float[1])));
-    int center = int(kernel_size / 2);
-	vec4 gaussianBlurValue = vec4(0.0, 0.0, 0.0, 0.0);
-	for (int i = 0; i < kernel_size; i++)
-	{
-	    float sample_point = float(i - center);
-		float gauss_val = gaussian(float(i), float(center), float(kernel_size) * percent_std_dev);
-		vec2 offsetX = vec2(onePixel[0] * sample_point, onePixel[1] * 0.0);
-		vec2 offsetY = vec2(onePixel[0] * 0.0, onePixel[1] * sample_point);
-        vec2 offset0 = (float(using_x_axis) * offsetX) + (float(!using_x_axis) * offsetY);
-        vec2 texCoords0 =  vec2(texture_uv[0], texture_uv[1]) + offset0;
-        float texAlpha0 = float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[3]);
-        bool texInBounds0 = (abs(int(texCoords0[0] / quadSize_float[0]) - quad_index[0]) < epsilon) && (abs(int(texCoords0[1] / quadSize_float[1]) - quad_index[1]) < epsilon) && texCoords0[0] > 0.0f && texCoords0[0] < 1.0f && texCoords0[1] > 0.0f && texCoords0[1] < 1.0f;
-        float sampleR = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[0])) * (gauss_val / sum_gauss) * float(texInBounds0);
-		float sampleG = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[1])) * (gauss_val / sum_gauss) * float(texInBounds0);
-		float sampleB = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[2])) * (gauss_val / sum_gauss) * float(texInBounds0);
-		float sampleA = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[3])) * (gauss_val / sum_gauss) * float(texInBounds0);
-		gaussianBlurValue = (vec4(sampleR, sampleG, sampleB, sampleA) + gaussianBlurValue);
-	}
-	return gaussianBlurValue;
-	
+ivec2 getPixelGridSquare(vec2 coords) {
+    int x_coord = int(coords[0] / gridSquareSize[0]);
+	int y_coord = int(coords[1] / gridSquareSize[1]);
+	return ivec2(x_coord, y_coord);
 }
 
 vec4 getGlowBoundaries_variable(float epsilon, vec2 texture_uv, sampler2D obj_texture, vec2 texture_size, int kernel_size, float sum_gauss, bool using_x_axis, bool additive)
@@ -74,8 +52,7 @@ vec4 getGlowBoundaries_variable(float epsilon, vec2 texture_uv, sampler2D obj_te
 	float percent_std_dev = 0.66;
     vec2 onePixel = vec2(1.0, 1.0) / texture_size;
     vec2 quadSize_float = gridSquareSize;// / texture_size;
-	// TODO: Determine quad_index in the vertex shader
-    vec2 quad_index = vec2(float(int(texture_uv[0] / quadSize_float[0])), float(int(texture_uv[1] / quadSize_float[1])));
+	ivec2 quad_index = getPixelGridSquare(texture_uv);
     int center = int(kernel_size / 2);
 	vec4 glowBoundaries = vec4(0.0, 0.0, 0.0, 0.0);
 	for (int i = 0; i < kernel_size; i++)
@@ -87,7 +64,7 @@ vec4 getGlowBoundaries_variable(float epsilon, vec2 texture_uv, sampler2D obj_te
         vec2 offset0 = (float(using_x_axis) * offsetX) + (float(!using_x_axis) * offsetY);
         vec2 texCoords0 =  vec2(texture_uv[0], texture_uv[1]) + offset0;
         float texAlpha0 = float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[3]);
-        bool texInBounds0 = (abs(int(texCoords0[0] / quadSize_float[0]) - quad_index[0]) < epsilon) && (abs(int(texCoords0[1] / quadSize_float[1]) - quad_index[1]) < epsilon) && texCoords0[0] > 0.0f && texCoords0[0] < 1.0f && texCoords0[1] > 0.0f && texCoords0[1] < 1.0f;
+        bool texInBounds0 = getPixelGridSquare(texCoords0) == quad_index && texCoords0[0] > 0.0f && texCoords0[0] < 1.0f && texCoords0[1] > 0.0f && texCoords0[1] < 1.0f;
         float sampleR = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[0])) * (gauss_val / sum_gauss) * float(texInBounds0);
 		float sampleG = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[1])) * (gauss_val / sum_gauss) * float(texInBounds0);
 		float sampleB = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[2])) * (gauss_val / sum_gauss) * float(texInBounds0);
