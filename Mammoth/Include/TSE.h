@@ -734,6 +734,7 @@ class CSpaceObject
 		CDesignType *GetOverride (void) { return m_pOverride; }
 		CSpaceObject *GetPlayerShip (void) const { return (m_pSystem ? m_pSystem->GetPlayerShip() : NULL); }
 		const CVector &GetPos (void) const { return m_vPos; }
+		CVector GetDrawPos(const SViewportPaintCtx& Ctx) const { return Ctx.InterpolateForDrawing(GetOldPos(), GetPos()); };
 		CSovereign *GetSovereignToDefend (void) const;
 		DWORD GetSovereignUNID (void) const { CSovereign *pSovereign = GetSovereign(); return (pSovereign ? pSovereign->GetUNID() : 0); }
 		ICCItemPtr GetStaticData (const CString &sAttrib);

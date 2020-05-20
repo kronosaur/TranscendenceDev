@@ -582,7 +582,9 @@ void CParticleSystemEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 	if (m_bUseObjectCenter)
 		{
 		if (Ctx.pObj)
-			Ctx.XForm.Transform(Ctx.pObj->GetPos(), &xPaint, &yPaint);
+			{
+			Ctx.XForm.Transform(Ctx.pObj->GetDrawPos(Ctx), &xPaint, &yPaint);
+			}
 		else
 			{
 			//	If we don't have an object then we use the viewport center. This

@@ -1712,7 +1712,7 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 	if (!pShip->IsLineOfFireClear(&Weapon, NULL, iDir, Max(Weapon.GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK), &pBlock))
 		{
 		int x, y;
-		Ctx.XForm.Transform(pBlock->GetPos(), &x, &y);
+		Ctx.XForm.Transform(pBlock->GetDrawPos(Ctx), &x, &y);
 
 		CGDraw::Arc(Dest, x, y, 60, 0, 0, 1, RGB_BLOCKED);
 		}
@@ -1801,7 +1801,7 @@ void CPlayerShipController::PaintTargetingReticle (SViewportPaintCtx &Ctx, CG32b
 
 	{
 	int x, y;
-	Ctx.XForm.Transform(pTarget->GetPos(), &x, &y);
+	Ctx.XForm.Transform(pTarget->GetDrawPos(Ctx), &x, &y);
 
 	CG32bitPixel rgbColor = pTarget->GetSymbolColor();
 	int iSize = 8;

@@ -546,7 +546,8 @@ class CSystem
 		CVector OnJumpPosAdj (CSpaceObject *pObj, const CVector &vPos);
 		void OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options);
 		void OnStationDestroyed (SDestroyCtx &Ctx);
-		void PaintViewport (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags, SViewportAnnotations *pAnnotations = NULL);
+		void PaintViewport (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags,
+	                        double dFrameInterpolation, SViewportAnnotations *pAnnotations = NULL);
 		void PaintViewportGrid (CMapViewportCtx &Ctx, CG32bitImage &Dest, Metric rGridSize);
 		void PaintViewportObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, CSpaceObject *pObj);
 		void PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rScale, DWORD dwFlags, bool *retbNewEnemies);
@@ -639,7 +640,7 @@ class CSystem
 		CSystem (CUniverse &Universe, CTopologyNode *pTopology);
 
 		CG32bitPixel CalcStarshineColor (CSpaceObject *pPOV, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL) const;
-		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
+		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags, double dFrameInterpolation);
 		void CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &VolumetricMask);
 		void ComputeStars (void);
 		ALERROR CreateStationInt (SSystemCreateCtx *pCtx,

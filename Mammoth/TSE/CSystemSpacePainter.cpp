@@ -287,8 +287,8 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, CSystemType 
 		//	parallax offset. It's OK if we overflow an integer (because we want
 		//	to wrap around anyways).
 
-		int xCenter = (int)(Ctx.pCenter->GetPos().GetX() / g_KlicksPerPixel);
-		int yCenter = (int)(Ctx.pCenter->GetPos().GetY() / g_KlicksPerPixel);
+		int xCenter = (int)(Ctx.pCenter->GetDrawPos(Ctx).GetX() / g_KlicksPerPixel);
+		int yCenter = (int)(Ctx.pCenter->GetDrawPos(Ctx).GetY() / g_KlicksPerPixel);
 
 		//	If we have an system background image, paint that.
 
@@ -462,8 +462,8 @@ void CSystemSpacePainter::PaintStarshine (CG32bitImage &Dest, CSystemType *pType
 	//	parallax offset. It's OK if we overflow an integer (because we want
 	//	to wrap around anyways).
 
-	int xCenter = (int)(Ctx.pCenter->GetPos().GetX() / g_KlicksPerPixel);
-	int yCenter = (int)(Ctx.pCenter->GetPos().GetY() / g_KlicksPerPixel);
+	int xCenter = (int)(Ctx.pCenter->GetDrawPos(Ctx).GetX() / g_KlicksPerPixel);
+	int yCenter = (int)(Ctx.pCenter->GetDrawPos(Ctx).GetY() / g_KlicksPerPixel);
 
 	PaintStarshine(Dest, xCenter, yCenter, Ctx);
 	}

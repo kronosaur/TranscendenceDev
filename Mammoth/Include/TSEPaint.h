@@ -80,6 +80,11 @@ struct SViewportPaintCtx
 				}
 			}
 
+		CVector InterpolateForDrawing(const CVector& vOldPos, const CVector& vPos) const
+			{
+			return vOldPos + dFrameInterpolation * (vPos - vOldPos);
+			}
+
 		//	Viewport metrics
 
 		CSpaceObject *pCenter = NULL;			//	Center object (viewport perspective)
@@ -91,6 +96,8 @@ struct SViewportPaintCtx
 												//		Screen viewport coordinates has positive-Y down.
 		ViewportTransform XFormRel;				//	In the case of effects, this Xform has been translated
 												//		to offset for the effect position
+
+		double dFrameInterpolation;
 
 		CVector vDiagonal;						//	Length of 1/2 viewport diagonal (in global coordinates).
 		CVector vUR;							//	upper-right and lower-left of viewport in global

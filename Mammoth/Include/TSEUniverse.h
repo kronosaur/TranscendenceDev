@@ -600,6 +600,7 @@ class CUniverse
 		bool m_bResurrectMode = false;			//	If TRUE, this session is a game resurrect
 		int m_iTick = 1;						//	Ticks since beginning of time
 		int m_iPaintTick = 1;					//	Advances only when we paint a frame
+		double m_dFrameInterpolation = 0.;      //  How far to interpolate between the old and new positions.
 		CDifficultyOptions m_Difficulty;		//	Difficulty level
 		CGameTimeKeeper m_Time;					//	Game time tracker
 		CSpaceObject *m_pPOV = NULL;			//	Point of view

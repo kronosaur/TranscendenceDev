@@ -253,10 +253,10 @@ void CObjectJoint::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx) const
 		case jointSpine:
 			{
 			int xFrom, yFrom;
-			Ctx.XForm.Transform(m_P1.pObj->GetPos(), &xFrom, &yFrom);
+			Ctx.XForm.Transform(m_P1.pObj->GetDrawPos(Ctx), &xFrom, &yFrom);
 
 			int xTo, yTo;
-			Ctx.XForm.Transform(m_P2.pObj->GetPos(), &xTo, &yTo);
+			Ctx.XForm.Transform(m_P2.pObj->GetDrawPos(Ctx), &xTo, &yTo);
 
 			Dest.DrawLine(xFrom, yFrom, xTo, yTo, 2, CG32bitPixel(255, 255, 128));
 			break;

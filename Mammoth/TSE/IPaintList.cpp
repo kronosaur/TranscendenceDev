@@ -22,7 +22,7 @@ void CDepthPaintList::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx) const
 			//	Figure out the position of the object in pixels
 
 			int x, y;
-			Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
+			Ctx.XForm.Transform(pObj->GetDrawPos(Ctx), &x, &y);
 
 			//	Paint the object in the viewport
 
@@ -79,7 +79,7 @@ void CMarkerPaintList::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx) const
 			//	relative to the center of the screen
 
 			int x, y;
-			Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
+			Ctx.XForm.Transform(pObj->GetDrawPos(Ctx), &x, &y);
 			x = x - Ctx.xCenter;
 			y = y - Ctx.yCenter;
 
@@ -182,7 +182,7 @@ void CParallaxPaintList::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx) cons
 		//	Figure out the position of the object in pixels
 
 		int x, y;
-		Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
+		Ctx.XForm.Transform(pObj->GetDrawPos(Ctx), &x, &y);
 
 		//	Paint the object in the viewport
 
@@ -201,6 +201,7 @@ void CParallaxPaintList::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx) cons
 	Ctx.XFormRel = Ctx.XForm;
 	}
 
+
 void CUnorderedPaintList::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx) const
 
 //	Paint
@@ -217,7 +218,7 @@ void CUnorderedPaintList::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx) con
 			//	Figure out the position of the object in pixels
 
 			int x, y;
-			Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
+			Ctx.XForm.Transform(pObj->GetDrawPos(Ctx), &x, &y);
 
 			//	Paint the object in the viewport
 
