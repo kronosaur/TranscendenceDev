@@ -47,29 +47,29 @@ ivec2 getPixelGridSquare(vec2 coords) {
 	return ivec2(x_coord, y_coord);
 }
 
-vec4 getGlowBoundaries_variable(float epsilon, vec2 texture_uv, sampler2D obj_texture, vec2 texture_size, int kernel_size, float sum_gauss, bool using_x_axis, bool additive)
+vec4 getGlowBoundaries_variable(float epsilon, vec2 texture_uv, sampler2D obj_texture, vec2 texture_size, int glow_size, float sum_gauss, bool using_x_axis, bool additive)
 {
 	float percent_std_dev = 0.66;
     vec2 onePixel = vec2(1.0, 1.0) / texture_size;
     vec2 quadSize_float = gridSquareSize;// / texture_size;
 	ivec2 quad_index = getPixelGridSquare(texture_uv);
-    int center = int(kernel_size / 2);
+    int center = int(glow_size / 2);
 	vec4 glowBoundaries = vec4(0.0, 0.0, 0.0, 0.0);
-	for (int i = 0; i < kernel_size; i++)
+	for (int i = 0; i < glow_size; i++)
 	{
 	    float sample_point = float(i - center);
-		float gauss_val = gaussian(float(i), float(center), float(kernel_size) * percent_std_dev);
+		float gauss_val = gaussian(float(i), float(center), float(glow_size) * percent_std_dev);
 		vec2 offsetX = vec2(onePixel[0] * sample_point, onePixel[1] * 0.0);
 		vec2 offsetY = vec2(onePixel[0] * 0.0, onePixel[1] * sample_point);
         vec2 offset0 = (float(using_x_axis) * offsetX) + (float(!using_x_axis) * offsetY);
         vec2 texCoords0 =  vec2(texture_uv[0], texture_uv[1]) + offset0;
-        float texAlpha0 = float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[3]);
+        float texAlpha0 = float(texture(obj_texture, texCoords0)[3]);
         bool texInBounds0 = getPixelGridSquare(texCoords0) == quad_index && texCoords0[0] > 0.0f && texCoords0[0] < 1.0f && texCoords0[1] > 0.0f && texCoords0[1] < 1.0f;
-        float sampleR = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[0])) * (gauss_val / sum_gauss) * float(texInBounds0);
-		float sampleG = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[1])) * (gauss_val / sum_gauss) * float(texInBounds0);
-		float sampleB = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[2])) * (gauss_val / sum_gauss) * float(texInBounds0);
-		float sampleA = min(1.0, float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[3] > epsilon)) * (gauss_val / sum_gauss) * float(texInBounds0);
-		sampleA = (float(!additive) * sampleA) + (float(additive) * (sampleA * texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset0)[3]));
+        float sampleR = min(1.0, float(texture(obj_texture, texCoords0)[0])) * (gauss_val / sum_gauss) * float(texInBounds0);
+		float sampleG = min(1.0, float(texture(obj_texture, texCoords0)[1])) * (gauss_val / sum_gauss) * float(texInBounds0);
+		float sampleB = min(1.0, float(texture(obj_texture, texCoords0)[2])) * (gauss_val / sum_gauss) * float(texInBounds0);
+		float sampleA = min(1.0, float(texture(obj_texture, texCoords0)[3] > epsilon)) * (gauss_val / sum_gauss) * float(texInBounds0);
+		sampleA = (float(!additive) * sampleA) + (float(additive) * (sampleA * texture(obj_texture, texCoords0)[3]));
 		glowBoundaries = (vec4(sampleR, sampleG, sampleB, sampleA) + glowBoundaries);
 	}
 	return vec4(glowBoundaries[0], glowBoundaries[1], glowBoundaries[2], min(1.0, 2.0 * glowBoundaries[3]));
