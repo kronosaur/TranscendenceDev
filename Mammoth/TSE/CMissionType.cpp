@@ -583,10 +583,12 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_MAX_APPEARING))
 		{
-		if (m_iMaxAppearing != -1)
+		if (m_iMaxAppearing == -1)
+			return ICCItemPtr(ICCItem::Nil);
+		else if (m_MaxAppearing.IsConstant())
 			return ICCItemPtr(m_iMaxAppearing);
 		else
-			return ICCItemPtr(ICCItem::Nil);
+			return ICCItemPtr(strPatternSubst(CONSTLIT("%d-%d"), m_MaxAppearing.GetMinValue(), m_MaxAppearing.GetMaxValue()));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_TOTAL_ACCEPTED))
