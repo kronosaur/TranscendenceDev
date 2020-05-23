@@ -134,6 +134,7 @@ class CStationEncounterDesc
 			};
 
 		int CalcAffinity (const CTopologyNode &Node) const;
+		int CalcFrequencyForNode (const CTopologyNode &Node) const;
 		int CalcLevelFromFrequency (void) const;
 		bool InitAsOverride (const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError);
 		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
@@ -195,23 +196,23 @@ class CStationEncounterCtx
 	{
 	public:
 		void AddEncounter (CSystem *pSystem);
-		bool CanBeEncountered (const CStationEncounterDesc &Desc);
-		bool CanBeEncounteredInSystem (CSystem *pSystem, CStationType *pStationType, const CStationEncounterDesc &Desc);
+		bool CanBeEncountered (const CStationEncounterDesc &Desc) const;
+		bool CanBeEncounteredInSystem (CSystem *pSystem, const CStationType *pStationType, const CStationEncounterDesc &Desc) const;
 		TSortMap<CString, int> GetEncounterCountByNode (void) const;
-		int GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc);
-		int GetFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
-		int GetFrequencyForSystem (CSystem *pSystem, CStationType *pStation, const CStationEncounterDesc &Desc);
-		int GetMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc);
-		int GetRequiredForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc);
+		int GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc) const;
+		int GetFrequencyForNode (CTopologyNode *pNode, const CStationType *pStation, const CStationEncounterDesc &Desc) const;
+		int GetFrequencyForSystem (CSystem *pSystem, const CStationType *pStation, const CStationEncounterDesc &Desc) const;
+		int GetMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc) const;
+		int GetRequiredForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc) const;
 		int GetTotalCount (void) const { return m_Total.iCount; }
 		int GetTotalLimit (void) const { return m_Total.iLimit; }
 		int GetTotalMinimum (void) const { return m_Total.iMinimum; }
 		void IncMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc, int iInc = 1);
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Reinit (const CStationEncounterDesc &Desc);
-		void WriteToStream (IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream) const;
 
-		static int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria);
+		static int CalcDistanceToCriteria (const CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria);
 
 	private:
 		struct SEncounterStats
@@ -223,8 +224,8 @@ class CStationEncounterCtx
 			mutable int iNodeCriteria = -1;		//  Cached frequency for node (-1 = unknown)
 			};
 
-		int GetBaseFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
-		int GetCountInSystem (CSystem *pSystem, CStationType *pStationType) const;
+		int GetBaseFrequencyForNode (CTopologyNode *pNode, const CStationType *pStation, const CStationEncounterDesc &Desc) const;
+		int GetCountInSystem (CSystem *pSystem, const CStationType *pStationType) const;
 
 		SEncounterStats m_Total;			//	Encounters in entire game
 		TSortMap<int, SEncounterStats> m_ByLevel;	//	Encounters by system level
@@ -432,8 +433,9 @@ class CStationType : public CDesignType
 		bool AlertWhenDestroyed (void) { return (mathRandom(1, 100) <= m_iAlertWhenDestroyed); }
 		bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
 		bool CanAttack (void) const { return (m_fCanAttack ? true : false); }
-		bool CanBeEncountered (void) { return m_EncounterRecord.CanBeEncountered(GetEncounterDesc()); }
-		bool CanBeEncountered (CSystem *pSystem) { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, GetEncounterDesc()); }
+		bool CanAttackIndependently (void) const { return (m_fNoIndependentAttack ? false : true); }
+		bool CanBeEncountered (void) const { return m_EncounterRecord.CanBeEncountered(GetEncounterDesc()); }
+		bool CanBeEncountered (CSystem *pSystem) const { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, GetEncounterDesc()); }
 		bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
 		bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
 		bool CanHitFriends (void) const { return (m_fNoFriendlyFire ? false : true); }
@@ -582,11 +584,21 @@ class CStationType : public CDesignType
 			CObjectImageArray m_Image;
 			};
 
+		struct SSatImageDesc
+			{
+			CStationType *pType = NULL;
+			const CObjectImageArray *pImage = NULL;
+			CCompositeImageSelector Selector;
+			int xOffset = 0;
+			int yOffset = 0;
+			};
+
 		void AddTypesUsedByXML (CXMLElement *pElement, TSortMap<DWORD, bool> *retTypesUsed);
 		Metric CalcBalance (void) const;
 		Metric CalcBalanceHitsAdj (int iLevel) const;
 		Metric CalcDefenderStrength (int iLevel) const;
 		int CalcHitsToDestroy (int iLevel) const;
+		TArray<SSatImageDesc> CalcSegmentDesc (void) const;
 		Metric CalcTreasureValue (int iLevel) const;
 		Metric CalcWeaponStrength (int iLevel) const;
 		CStationEncounterDesc &GetEncounterDesc (void);
@@ -655,7 +667,7 @@ class CStationType : public CDesignType
 		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
 		DWORD m_fForceMapLabel:1;						//	If TRUE, show map label, even if we wouldn't by default.
 		DWORD m_fAnonymous:1;							//	If TRUE, object is anonymous world/asteroid/etc.
-		DWORD m_fSpare7:1;
+		DWORD m_fNoIndependentAttack:1;					//	If TRUE, we only attack if our base is alive.
 		DWORD m_fSpare8:1;
 
 		//	Images

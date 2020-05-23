@@ -309,8 +309,22 @@ ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocati
 bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric rRadius);
 ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CXMLElement &XMLDesc, const COrbit &OrbitDesc);
 SSystemCreateCtx::EOverlapCheck ParseCheckOverlap (const CString &sValue);
-inline void PopDebugStack (SSystemCreateCtx *pCtx) { if (pCtx->GetUniverse().InDebugMode()) pCtx->DebugStack.Pop(); }
-inline void PushDebugStack (SSystemCreateCtx *pCtx, const CString &sLine) { if (pCtx->GetUniverse().InDebugMode()) pCtx->DebugStack.Push(sLine); }
+inline void PopDebugStack (SSystemCreateCtx *pCtx) 
+	{
+	if (pCtx->GetUniverse().InDebugMode()) 
+		{
+		CString sLine = pCtx->DebugStack.Pop();
+		pCtx->GetUniverse().GetPerformanceCounters().StopCounter(strPatternSubst(CONSTLIT("create.%s"), strWord(sLine, 0)));
+		}
+	}
+inline void PushDebugStack (SSystemCreateCtx *pCtx, const CString &sLine)
+	{
+	if (pCtx->GetUniverse().InDebugMode())
+		{
+		pCtx->GetUniverse().GetPerformanceCounters().StartCounter(strPatternSubst(CONSTLIT("create.%s"), strWord(sLine, 0)));
+		pCtx->DebugStack.Push(sLine);
+		}
+	}
 
 //	Helper functions
 
@@ -406,6 +420,7 @@ ALERROR ChooseRandomLocation (SSystemCreateCtx *pCtx,
 
 	{
 	STATION_PLACEMENT_OUTPUT("ChooseRandomLocation\n");
+	CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.ChooseRandomLocation"));
 
 	//	Choose a random location
 
@@ -491,6 +506,8 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 //	of the system and to the given criteria.
 
 	{
+	CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.ChooseRandomStation"));
+
 	//	Generate a description of the table that we are about to generate
 	//	to see if we've already got this table in the cache.
 
@@ -654,6 +671,7 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 	int i;
 
 	STATION_PLACEMENT_OUTPUT("DistributeStationsAtRandomLocations\n");
+	CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.FillLocations"));
 
 	//	Load location criteria
 
@@ -1049,6 +1067,8 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 				SiblingOrbit.SetObjectAngle(COrbit::RandomAngle());
 				SiblingOrbit.SetInclination(Inclination.GetValue(i));
 
+				CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.objectInArcDistribution"));
+
 				if (error = CreateSystemObject(pCtx, 
 						pObj->GetContentElement(0), 
 						SiblingOrbit))
@@ -1073,6 +1093,8 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 				SiblingOrbit.SetSemiMajorAxis(OrbitDesc.GetSemiMajorAxis() + (rWidthFactor * mathRandomGaussian()));
 				SiblingOrbit.SetObjectAngle(COrbit::RandomAngle());
 				SiblingOrbit.SetInclination(Inclination.GetValue(i));
+
+				CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.objectInArcDistribution"));
 
 				if (error = CreateSystemObject(pCtx, 
 						pObj->GetContentElement(0), 
@@ -1120,6 +1142,8 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 			SiblingOrbit.SetObjectAngle(OrbitDesc.GetObjectAngle() + rAngleOffset);
 			SiblingOrbit.SetInclination(Inclination.GetValue(i));
 			
+			CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.objectInArcDistribution"));
+
 			if (error = CreateSystemObject(pCtx, 
 					pObj->GetContentElement(0), 
 					SiblingOrbit))
@@ -1230,14 +1254,14 @@ ALERROR CreateLocationCriteriaTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc,
 
 	{
 	ALERROR error;
-	int i;
+	CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.calcLocationCriteriaTable"));
 
 	//	First we generate a table of probabilities
 
 	TArray<int> ProbTable;
 	ProbTable.InsertEmpty(pDesc->GetContentElementCount());
 	int iTotalChance = 0;
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+	for (int i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
 		CXMLElement *pEntry = pDesc->GetContentElement(i);
 
@@ -1263,13 +1287,15 @@ ALERROR CreateLocationCriteriaTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc,
 		iTotalChance += ProbTable[i];
 		}
 
+	PerfCounter.StopCounter();
+
 	//	Now roll a probability
 
 	if (iTotalChance == 0)
 		return NOERROR;
 
 	int iRoll = mathRandom(1, iTotalChance);
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+	for (int i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
 		iRoll -= ProbTable[i];
 		if (iRoll <= 0)
@@ -1329,8 +1355,8 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 
 	//	Generate a list of all locations that match the given criteria.
 
-	TProbabilityTable<int> Table;
-	if (!pCtx->System.GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, rExclusionRadius, &Table))
+	CLocationSelectionTable Table = pCtx->System.GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, rExclusionRadius);
+	if (!Table)
 		{
 		if (pCtx->GetUniverse().InDebugMode()
 				&& !pDesc->GetAttributeBool(NO_WARNINGS_ATTRIB))
@@ -1363,10 +1389,11 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 		{
 		COrbit NewOrbit;
 
-		//	If we're out of labels then that's OK
-
-		if (Table.IsEmpty())
+		const CLocationDef *pLoc = Table.GetRandom();
+		if (!pLoc)
 			{
+			//	If we're out of labels then that's OK
+
 			if (pCtx->GetUniverse().InDebugMode()
 					&& !pDesc->GetAttributeBool(NO_WARNINGS_ATTRIB))
 				{
@@ -1379,32 +1406,40 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 			return NOERROR;
 			}
 
-		//	Pick a random location from our table
-
-		int iRollPos = Table.RollPos();
-		int iLocID = Table[iRollPos];
-		CLocationDef &Loc = pCtx->System.GetLocation(iLocID);
-
 		//	Create a superset of location attributes
 
-		pCtx->sLocationAttribs = ::AppendModifiers(sSavedLocationAttribs, Loc.GetAttributes());
+		pCtx->sLocationAttribs = ::AppendModifiers(sSavedLocationAttribs, pLoc->GetAttributes());
 
 		//	Create the object
 
 		DWORD dwSavedLastObjID = pCtx->dwLastObjID;
 		pCtx->dwLastObjID = 0;
 
-		if (error = CreateSystemObject(pCtx, pDesc->GetContentElement(i % iChildCount), Loc.GetOrbit()))
+		if (error = CreateSystemObject(pCtx, pDesc->GetContentElement(i % iChildCount), pLoc->GetOrbit()))
 			return error;
 
 		//	If we actually created an object, then remove the label
 
-		pCtx->System.SetLocationObjID(iLocID, pCtx->dwLastObjID);
+		if (pCtx->dwLastObjID)
+			{
+			Table.Fill(*pLoc, pCtx->dwLastObjID);
+
+			//	If necessary, block any locations within our exclusion radius so that
+			//	any future stations are not placed here.
+
+			if (rExclusionRadius > 0.0)
+				{
+				pCtx->System.GetLocations().FillInRange(pLoc->GetOrbit().GetObjectPos(), rExclusionRadius);
+
+				//	If we have more locations to choose, remove locations that
+				//	were removed above.
+
+				if (i + 1 < iCount)
+					Table.DeleteBlocked();
+				}
+			}
+
 		pCtx->dwLastObjID = dwSavedLastObjID;
-
-		//	Also remove from our table
-
-		Table.Delete(iRollPos);
 
 #ifdef DEBUG_STATION_EXCLUSION_ZONE
 		::kernelDebugLogPattern("CreateObjectAtRandomLocation: Created %s",
@@ -3239,6 +3274,8 @@ ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const C
 
 	//	Create
 
+	CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.objectInVariantsTable"));
+
 	if (error = CreateSystemObject(pCtx, pFound, OrbitDesc))
 		return error;
 	
@@ -3757,7 +3794,6 @@ ALERROR CSystem::CreateEmpty (CUniverse &Universe, CTopologyNode *pTopology, CSy
 
 	pSystem->m_pType = NULL;
 	pSystem->m_iNextEncounter = pSystem->m_iTick + mathRandom(500, 2500);
-	pSystem->m_fEncounterTableValid = false;
 
 	//	Done
 
@@ -3837,6 +3873,8 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 		{
 		try
 			{
+			CUsePerformanceCounter PerfCounter(Ctx.GetUniverse(), CONSTLIT("create.function.rootObject"));
+
 			error = CreateSystemObject(&Ctx,
 					pPrimary,
 					COrbit());
@@ -4179,13 +4217,13 @@ ALERROR CSystem::CreateMarker (CXMLElement *pDesc, const COrbit &oOrbit, CMarker
 	if (!sEntryPoint.IsBlank())
 		NameObject(sEntryPoint, *pMarker);
 
-    //  Show the orbit, if necessary
+	//  Show the orbit, if necessary
 	//	(But not if we duplicate an existing orbit. This is what allows us to show
 	//	orbits on asteroid belt lines.)
 
-    if (pDesc->GetAttributeBool(SHOW_ORBIT_ATTRIB)
+	if (pDesc->GetAttributeBool(SHOW_ORBIT_ATTRIB)
 			&& !FindObjectWithOrbit(oOrbit))
-        pMarker->SetOrbit(oOrbit);
+		pMarker->SetOrbit(oOrbit);
 
 	//	Done
 
@@ -4430,6 +4468,8 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 //	Creates a station of the given type
 
 	{
+	CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.Station"));
+
 	ALERROR error;
 	CSpaceObject *pStation = NULL;
 
@@ -4487,7 +4527,7 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 	//	If this is a satellite, then add it as a subordinate
 
 	if (pStation && pCtx->pStation && (pStation->CanAttack() || CreateCtx.bIsSegment))
-		pCtx->pStation->AddSubordinate(pStation);
+		pCtx->pStation->AddSubordinate(*pStation, CreateCtx.sID);
 
 	//	Create any satellites of the station
 
@@ -4572,7 +4612,8 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	CreateCtx.pOrbit = &OrbitDesc;
 	CreateCtx.bCreateSatellites = !pDesc->GetAttributeBool(NO_SATELLITES_ATTRIB);
 	CreateCtx.pExtraData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
-    CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
+	CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
+	CreateCtx.sID = pDesc->GetAttribute(ID_ATTRIB);
 	CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
 	CString sAngle;

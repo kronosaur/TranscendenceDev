@@ -193,20 +193,12 @@
 	<StationType UNID="&stSungFortressInHuaramarca;"
 			name=				"Sung fortress(es)"
 			sovereign=			"&svSung;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
+			inherit=			"&stSungFortress;"
 
-			multiHull=			"true"
-			armorID=			"&itSungArmor;"
-			hitPoints=			"400"
-			regen=              "11"
-			explosionType=		"&vtBlastExplosion4;"
-			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"enemy, envAir, envEarth, envFire, envWater, human, majorStation, populated, sungSlavers"
+			attributes=			"enemy, human, majorStation, populated, sungSlavers"
 			>
 
-		<Image			imageID="&rsStations4;" imageX="0" imageY="192" imageWidth="128" imageHeight="128"/>
+		<Encounter/>
 
 		<Ships>
 			<Ship					count="1"	class="&scDragonSlaver;"	orders="patrol" patrolDist="20"/>
@@ -223,24 +215,7 @@
 			</Table>
 		</Ships>
 
-		<Items>
-			<Lookup					count="1d4" table="&trStationSupplies;" />
-			<Lookup					count="1d2" table="&trConsumables5;"/>
-			<Lookup					count="1d2" table="&trMinorItem5;"/>
-			<Table>
-				<Lookup chance="40" count="1" table="&trConsumables6;"/>
-				<Lookup chance="40" count="1" table="&trMinorItem6;"/>
-				<Lookup chance="20" count="1" table="&trMajorItem6;"/>
-			</Table>
-		</Items>
-
-		<Satellites>
-			<Station type="&stSungNEWall;" xOffset="64" yOffset="64"/>
-			<Station type="&stSungNWWall;" xOffset="-64" yOffset="64"/>
-			<Station type="&stSungSWWall;" xOffset="-64" yOffset="-64"/>
-			<Station type="&stSungSEWall;" xOffset="64" yOffset="-64"/>
-		</Satellites>
-
+		<Encounters/>
 	</StationType>
 
 </TranscendenceModule>

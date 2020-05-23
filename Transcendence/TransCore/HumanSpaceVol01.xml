@@ -1041,12 +1041,12 @@
 
 	<!ENTITY rsSistersShrineBkgnd		"0x0018F001">
 
-	<!ENTITY stSungFortress				"0x00192001">
+	<!ENTITY stSungFortressOld			"0x00192001">
 	<!ENTITY stSungNWWall				"0x00192002">
 	<!ENTITY stSungNEWall				"0x00192003">
 	<!ENTITY stSungSEWall				"0x00192004">
 	<!ENTITY stSungSWWall				"0x00192005">
-	<!ENTITY stSungCitadel				"0x00192006">
+	<!ENTITY stSungCitadelOld			"0x00192006">
 	<!ENTITY stSungSlaveCamp			"0x00192007">
 	<!ENTITY stSungSlaveQuarters1		"0x00192008">
 	<!ENTITY stSungSlaveQuarters2		"0x00192009">
@@ -1830,7 +1830,18 @@
 	<!ENTITY rsSungKeep					"0x0010012D">
 	<!ENTITY rsSungSlaveQuarters		"0x0010012E">
 	<!ENTITY stSungSlaveQuarters		"0x0010012F">
-	
+	<!ENTITY stSungFortress				"0x00100130">
+	<!ENTITY baSungFortressWall			"0x00100131">
+	<!ENTITY stSungFortressWallNE		"0x00100132">
+	<!ENTITY stSungFortressWallNW		"0x00100133">
+	<!ENTITY stSungFortressWallSE		"0x00100134">
+	<!ENTITY stSungFortressWallSW		"0x00100135">
+	<!ENTITY rsSungFortress				"0x00100136">
+	<!ENTITY rsSungCitadel				"0x00100137">
+	<!ENTITY stSungCitadel				"0x00100138">
+	<!ENTITY stSungCitadelInnerWall		"0x00100139">
+	<!ENTITY stSungCitadelOuterWall		"0x0010013A">
+
 	<!-- 0140-014F XENOPHOBES -->
 	
 	<!ENTITY rsXenophobeDefender		"0x00100140">
@@ -2015,6 +2026,7 @@
 	<!ENTITY msCMDestroyThreat			"0x001002B3">
 	<!ENTITY msCMEscortSuperFreighter	"0x001002B4">
 	<!ENTITY msCMstKatsDestroyThreat	"0x001002B5">
+	<!ENTITY rsCommonwealthMilitiaInsignia	"0x001002B6">
 
 	<!-- 02D0-02EF DWARG RAIDERS -->
 
@@ -2024,6 +2036,7 @@
 	<!ENTITY rsDwargBehemothHero		"0x001002D3">
 	<!ENTITY smDwargSpace				"0x001002D4">
 	<!ENTITY rsDwargMasterHero			"0x001002D5">
+	<!ENTITY rsZoanthropeRaiderHero		"0x001002D6">
 
 	<!-- 02F0-030F RINGERS -->
 
@@ -2052,6 +2065,7 @@
 	<!ENTITY rsZulu2Hero				"0x00100339">
 	<!ENTITY rsHammerheadHero			"0x0010033A">
 	<!ENTITY rsHammerhead2Hero			"0x0010033B">
+	<!ENTITY rsBorerHero				"0x0010033C">
 
 	<!-- 0370-038F AUTONS -->
 
@@ -2338,11 +2352,12 @@
 	<!ENTITY scWolfenC2					"0x00100701">
 	<!ENTITY scWolfenC3					"0x00100702">
 	<!ENTITY vtUniversityEnhancement	"0x00100703">
-
 	<!ENTITY stStKatsArcology			"0x00100704">
 	<!ENTITY stStKatsArcologySegment	"0x00100705">
 	<!ENTITY rsStKatsArcologySegments	"0x00100706">
 	<!ENTITY evStKatsTrafficBehavior	"0x00100707">
+	<!ENTITY scBorerStock				"0x00100708">
+	<!ENTITY scBorerIIStock				"0x00100709">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2363,6 +2378,10 @@
 	<!-- 07A0-07CF SISTERS OF DOMINA MISSIONS -->
 	
 	<!ENTITY msSisters01				"0x001007A0">
+
+	<!-- 07D0-07FF JIANG'S STAR -->
+
+	<!ENTITY ssJiangsStar				"0x001007D0">
 
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
@@ -2428,6 +2447,7 @@
 	<Module filename="CommonwealthMissionRevenge01.xml"/>
 	<Module filename="CommonwealthRonins.xml"/>
 	<Module filename="CommonwealthShips.xml"/>
+	<Module filename="ContainerHabitat.xml"/>
 
 	<!-- Commonwealth Fleet -->
 
@@ -2606,6 +2626,9 @@
 
 	<!-- Sung Slavers -->
 	
+	<Module filename="JiangsStar.xml"/>
+	<Module filename="SungCitadel.xml"/>
+	<Module filename="SungFortress.xml"/>
 	<Module filename="SungSlaveCamp.xml"/>
 	<Module filename="SungSlavers.xml"/>
 

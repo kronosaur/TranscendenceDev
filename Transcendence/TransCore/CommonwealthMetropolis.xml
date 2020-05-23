@@ -525,6 +525,30 @@
 							)
 					</Action>
 
+					<Action id="actionMilitiaHQ">
+						(block (
+							(rank (typ@ &unidCommonwealthMilitia; 'rank))
+							)
+							(switch
+								(= rank -1)
+									(scrShowScreen gScreen &dsRPGMessage; { desc: (scrTranslate gScreen 'descTooManyFailures) })
+
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +metropolisMilitia; +rank" (int rank) ";")
+									displayCriteria: "n +metropolisMilitia;"
+									noMissionText: (scrTranslate gScreen 'descNoMissions)
+									maxPerStation: 1
+						
+									rankDetails: (typTranslate &unidCommonwealthMilitia; 'rankDetails)
+									})
+								)
+							)
+					</Action>
+
+					<Action id="actionCentralPlaza">
+						<ShowPane pane="CentralPlaza"/>
+					</Action>
+
 					<Action id="actionCommoditiesExchange" default="1">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 					</Action>
@@ -533,10 +557,6 @@
 						(rpgDockServices gPlayerShip {
 							checkMilitaryID: True
 							})
-					</Action>
-
-					<Action id="actionCentralPlaza">
-						<ShowPane pane="CentralPlaza"/>
 					</Action>
 
 					<Action id="actionBuyShip">
@@ -656,6 +676,7 @@
 
 		<Language>
 			<Text id="actionInformation">[I]nformation</Text>
+			<Text id="actionMilitiaHQ">[M]ilitia Headquarters</Text>
 			<Text id="actionCentralPlaza">Central [P]laza</Text>
 			<Text id="actionTrafalgarPub">Trafalgar [P]ub</Text>
 			<Text id="actionVictorianClub">The [V]ictorian Nightclub</Text>
@@ -678,6 +699,17 @@
 				You are in the central hub of this station, a busy area where 
 				trendy shops mix with high-end residences.
 
+			</Text>
+			<Text id="descNoMissions">
+			
+				"Sorry, there are no missions currently available."
+				
+			</Text>
+			<Text id="descTooManyFailures">
+			
+				"How about getting us a cup of tea or something? That's probably
+				a mission you could handle."
+				
 			</Text>
 		</Language>
 	</DockScreen>

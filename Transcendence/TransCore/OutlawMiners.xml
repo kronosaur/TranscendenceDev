@@ -686,12 +686,7 @@
 			defaultSovereign=	"&svOutlawMiners;"
 
 			attributes=			"genericClass, outlawMiners"
-			   
-			size=				"31"
-			mass=				"800"
-			thrustRatio=		"4"
-			maxSpeed=			"10"
-			cargoSpace=			"25"
+			inherit=			"&scBorerStock;"
 			>
 
 		<!-- Configuration -->
@@ -704,22 +699,6 @@
 		<Devices>
 			<Device deviceID="&itMiningLaser;"/>
 		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"3.0"
-			rotationAccel=		"0.5"
-			/>
-
-		<!-- Image and Effects -->
-		
-		<Image imageID="&rsBorerHD;" imageX="0" imageY="0" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.005625" />
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="-25"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="122"	posRadius="25"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-122"	posRadius="25"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="25"	rotation="180"/>
-		</Effects>
 
 		<!-- AI and Behavior -->
 		
@@ -762,18 +741,13 @@
 			defaultSovereign=	"&svOutlawMiners;"
 
 			attributes=			"genericClass, outlawMiners"
-		
-			size=				"31"
-			mass=				"800"
-			thrustRatio=		"6"
-			maxSpeed=			"10"
-			cargoSpace=			"25"
+			inherit=			"&scBorerIIStock;"
 			>
 
 		<!-- Configuration -->
 		
 		<Armor
-			armorID=			"&itReactiveArmor;"
+			armorID=			"&itHeavyReactiveArmor;"
 			count=				"4"
 			/>
 		
@@ -782,25 +756,9 @@
 			<Device deviceID="&itClass1Deflector;"/>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"5.0"
-			rotationAccel=		"0.8"
-			/>
-
 		<Items>
 			<Item count="1d6" item="&itHelium3FuelRod;"/>
 		</Items>
-
-		<!-- Image and Effects -->
-		
-		<Image imageID="&rsBorerHD;" imageX="0" imageY="0" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.005625" />
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="-25"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="122"	posRadius="25"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-122"	posRadius="25"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="25"	rotation="180"/>
-		</Effects>
 
 		<!-- AI and Behavior -->
 		
@@ -1309,7 +1267,5 @@
 
 	<Image UNID="&rsHammerhead2HD;"			bitmap="Resources\Hammerhead2HD.jpg" bitmask="Resources\Hammerhead2HDMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsHammerhead2Hero;"		bitmap="Resources\Hammerhead2Large.jpg"			bitmask="Resources\Hammerhead2LargeMask.bmp"  loadOnUse="true"/>
-
-	<Image UNID="&rsBorerHD;"				bitmap="Resources\BorerHD.jpg" bitmask="Resources\BorerHDMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

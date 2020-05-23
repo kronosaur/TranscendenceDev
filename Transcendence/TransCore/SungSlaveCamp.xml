@@ -100,7 +100,7 @@
 				;	Count the number of slave quarters in the area
 
 				(objSetData gSource "totalSlaveCount" 
-					(count (sysFindObject gSource "T:sungSlaveQuarters; N:8;"))
+					(count (sysFindObject gSource "T:sungSlaveQuarters; N:15;"))
 					)
 			</OnCreate>
 
@@ -176,144 +176,6 @@
 		</Language>
 	</StationType>
 
-	<!-- Sung Slave Quarters -->
-
-	<StationType UNID="&stSungSlaveQuarters3;"
-			name=				"Sung slave quarters|Sung slave quarters"
-			sovereign=			"&svSungSlaves;"
-
-			attributes=			"sungSlaveQuarters"
-
-			dockScreen=			"&dsSungSlaveQuarters;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			mass=				"3000"
-			armorID=			"&itUltraLightTitaniumArmor;"
-			hitPoints=			"30"
-			structuralHitPoints="10"
-
-			noMapLabel=			"true"
-			ejectaType=			"&vtWreckEjecta;"
-			>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsSungSlaveQuarters;" imageX="0" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
-
-		<DockingPorts
-				portCount=		"2"
-				portRadius=		"24"
-				maxDist=		"3"
-				/>
-
-		<!-- Events and Data -->
-
-		<InitialData>
-			<sungSlave>True</sungSlave>
-		</InitialData>
-
-		<Language>
-			<Text id="core.abandonedStationDesc">
-
-				You are docked at a ruined structure once housing slaves.
-				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
-
-			</Text>
-		</Language>
-	</StationType>
-
-	<!-- Sung Slave Quarters -->
-
-	<StationType UNID="&stSungSlaveQuarters4;"
-			name=				"Sung slave quarters|Sung slave quarters"
-			sovereign=			"&svSungSlaves;"
-
-			attributes=			"sungSlaveQuarters"
-
-			dockScreen=			"&dsSungSlaveQuarters;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			mass=				"3000"
-			armorID=			"&itUltraLightTitaniumArmor;"
-			hitPoints=			"30"
-			structuralHitPoints="10"
-
-			noMapLabel=			"true"
-			ejectaType=			"&vtWreckEjecta;"
-			>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsSungSlaveQuarters;" imageX="100" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
-
-		<DockingPorts
-				portCount=		"2"
-				portRadius=		"24"
-				maxDist=		"3"
-				/>
-
-		<!-- Events and Data -->
-
-		<InitialData>
-			<sungSlave>True</sungSlave>
-		</InitialData>
-
-		<Language>
-			<Text id="core.abandonedStationDesc">
-
-				You are docked at a ruined structure once housing slaves.
-				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
-
-			</Text>
-		</Language>
-	</StationType>
-
-	<!-- Sung Slave Quarters -->
-
-	<StationType UNID="&stSungSlaveQuarters5;"
-			name=				"Sung slave quarters|Sung slave quarters"
-			sovereign=			"&svSungSlaves;"
-
-			attributes=			"sungSlaveQuarters"
-
-			dockScreen=			"&dsSungSlaveQuarters;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			mass=				"3000"
-			armorID=			"&itUltraLightTitaniumArmor;"
-			hitPoints=			"30"
-			structuralHitPoints="10"
-
-			noMapLabel=			"true"
-			ejectaType=			"&vtWreckEjecta;"
-			>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsSungSlaveQuarters;" imageX="200" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
-
-		<DockingPorts
-				portCount=		"2"
-				portRadius=		"24"
-				maxDist=		"3"
-				/>
-
-		<!-- Events and Data -->
-
-		<InitialData>
-			<sungSlave>True</sungSlave>
-		</InitialData>
-
-		<Language>
-			<Text id="core.abandonedStationDesc">
-
-				You are docked at a ruined structure once housing slaves.
-				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
-
-			</Text>
-		</Language>
-	</StationType>
-
 <!-- ITEM TYPES -->
 
 	<!-- Slave Coffin -->
@@ -349,7 +211,7 @@
 				Seeing your concern, the abbess explains:
 
 				"Don't worry, they are unharmed. Domina will free their minds 
-				and give them to a normal life."
+				and give them a normal life."
 
 				You feel your connection to Domina strengthening, but when the
 				lasers stop you see that the coffin is gone.
@@ -410,7 +272,7 @@
 
 							;	Get all the slave quarters
 
-							(slaves (sysFindObject slaverObj "T:sungSlaveQuarters; N:8;"))
+							(slaves (sysFindObject slaverObj "T:sungSlaveQuarters; N:15;"))
 
 							;	Count how many are still alive
 

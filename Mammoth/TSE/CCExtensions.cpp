@@ -9102,7 +9102,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (pSubordinate && !pSubordinate->IsDestroyed())
 				{
-				pObj->AddSubordinate(pSubordinate);
+				pObj->AddSubordinate(*pSubordinate);
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -12036,7 +12036,8 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pTable == NULL)
 					return pCC->CreateNil();
 
-				pSystem->CreateRandomEncounter(pTable, NULL, pEncounter->GetSovereign(), pTarget);
+				CRandomEncounterDesc Encounter(*pTable, *pEncounter, pEncounter->GetSovereign());
+				Encounter.Create(*pSystem, pTarget, pGate);
 				return pCC->CreateTrue();
 				}
 
@@ -13344,30 +13345,33 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_GET_PROPERTY:
 			{
-			CTopologyNode *pNode;
-			int iArg = 0;
-
 			//	If we have more than one arg, then the first arg is
 			//	the node ID.
 
-			if (pArgs->GetCount() == 1)
-				{
-				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
-				if (pNode == NULL)
-					return pCC->CreateNil();
-				}
-			else
-				{
+			int iArg = 0;
+			CTopologyNode *pNode = NULL;
+			if (pArgs->GetCount() > 1)
 				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
-				if (pNode == NULL)
-					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
-				}
 
 			CString sProperty = pArgs->GetElement(iArg++)->GetStringValue();
 
-			//	Get the property
+			//	If we have a node, then use that.
 
-			return pNode->GetProperty(sProperty)->Reference();
+			if (pNode)
+				{
+				return pNode->GetProperty(sProperty)->Reference();
+				}
+
+			//	Otherwise, we ask the current system.
+
+			else
+				{
+				CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
+				if (pSystem == NULL)
+					return StdErrorNoSystem(*pCC);
+
+				return pSystem->GetProperty(*pCtx, sProperty)->Reference();
+				}
 			}
 
 		case FN_SYS_GET_POV:

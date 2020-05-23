@@ -165,6 +165,7 @@ class CDeviceSystem
 		int GetCount (void) const { return m_Devices.GetCount(); }
 		int GetCountByID (const CString &sID) const;
 		CInstalledDevice &GetDevice (int iIndex) { return m_Devices[iIndex]; }
+		CDeviceItem GetDeviceItem (int iIndex) const { if (!m_Devices[iIndex].IsEmpty()) return m_Devices[iIndex].GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
 		const CInstalledDevice &GetDevice (int iIndex) const { return m_Devices[iIndex]; }
 		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
 		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
@@ -180,6 +181,7 @@ class CDeviceSystem
 		bool IsWeaponRepeating (DeviceNames iDev = devNone) const;
 		void MarkImages (void);
 		bool OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause, const CDamageSource &Attacker);
+		void OnSubordinateDestroyed (CSpaceObject &SubordinateObj, const CString &sSubordinateID);
         void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
 		void ReadyFirstMissile (CSpaceObject *pObj);
 		void ReadyFirstWeapon (CSpaceObject *pObj);

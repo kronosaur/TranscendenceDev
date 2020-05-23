@@ -8,6 +8,7 @@
 				(block (
 					(markerObj (sysCreateStation &stNavBeacon; Nil))
 					(overlayID (objAddOverlay markerObj &ovTestOverlay01;))
+					(overlay2ID (objAddOverlay markerObj &ovTestOverlay02;))
 					)
 					;	Unit Tests for Properties
 
@@ -30,6 +31,22 @@
 
 						{	test:'((@ data 'ovrSet@) 'diag.data1 0)			result:True	}
 						{	test:'((@ data 'ovrInc@) 'diag.data1 -5)		result:-5	}
+
+						{	test:'(ovr@ (@ data 'obj) (@ data 'overlay2ID)
+									'hp
+									)										result:17	}
+						{	test:'(ovrSet@ (@ data 'obj) (@ data 'overlay2ID)
+									'hp 19
+									)										result:True	}
+						{	test:'(ovr@ (@ data 'obj) (@ data 'overlay2ID)
+									'hp
+									)										result:19	}
+						{	test:'(ovrInc@ (@ data 'obj) (@ data 'overlay2ID)
+									'hp 4
+									)										result:23	}
+						{	test:'(ovr@ (@ data 'obj) (@ data 'overlay2ID)
+									'hp
+									)										result:23	}
 						)
 
 						{
@@ -38,6 +55,7 @@
 						ovrSet@: (lambda (prop value) (objSetOverlayProperty markerObj overlayID prop value))
 						obj: markerObj
 						overlayID: overlayID
+						overlay2ID: overlay2ID
 						})
 
 					(objDestroy markerObj)
@@ -70,6 +88,18 @@
 					)
 			</OnCreate>
 		</Events>
+	</OverlayType>
+	
+	<OverlayType UNID="&ovTestOverlay02;"
+            attributes=         "effect"
+			>
+		<Counter style=	"radius"
+				color=	"#6666cc"
+				/>
+
+		<Properties>
+			<Data id="hp">17</Data>
+		</Properties>
 	</OverlayType>
 	
 </TranscendenceModule>

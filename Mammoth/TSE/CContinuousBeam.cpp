@@ -305,7 +305,6 @@ bool CContinuousBeam::HitTestSegment (SSegment &Segment, CVector *retvHitPos)
 			CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
 			if (!CanHit(pObj)
 					|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
-					|| !pObj->InteractsWith(iInteraction)
 					|| pObj == this)
 				continue;
 
@@ -382,7 +381,6 @@ bool CContinuousBeam::HitTestSegment (SSegment &Segment, CVector *retvHitPos)
 			CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
 			if (!CanHit(pObj)
 					|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
-					|| !pObj->InteractsWith(iInteraction)
 					|| pObj == this)
 				continue;
 

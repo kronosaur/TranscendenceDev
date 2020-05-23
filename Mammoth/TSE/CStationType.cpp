@@ -80,6 +80,7 @@
 #define NO_BLACKLIST_ATTRIB						CONSTLIT("noBlacklist")
 #define NO_FRIENDLY_FIRE_ATTRIB					CONSTLIT("noFriendlyFire")
 #define NO_FRIENDLY_TARGET_ATTRIB				CONSTLIT("noFriendlyTarget")
+#define NO_INDEPENDENT_ATTACK_ATTRIB			CONSTLIT("noIndependentAttack")
 #define NO_MAP_DETAILS_ATTRIB					CONSTLIT("noMapDetails")
 #define NO_MAP_ICON_ATTRIB						CONSTLIT("noMapIcon")
 #define NO_MAP_LABEL_ATTRIB						CONSTLIT("noMapLabel")
@@ -636,6 +637,70 @@ Metric CStationType::CalcSatelliteTreasureValue (CXMLElement *pSatellites, int i
 	return rTotal;
 	}
 
+TArray<CStationType::SSatImageDesc> CStationType::CalcSegmentDesc (void) const
+
+//	CalcSegmentDesc
+//
+//	Returns an array of segment images.
+
+	{
+	if (const CXMLElement *pSatellites = GetSatellitesDesc())
+		{
+		SSelectorInitCtx InitCtx;
+
+		TArray<SSatImageDesc> Result;
+
+		for (int i = 0; i < pSatellites->GetContentElementCount(); i++)
+			{
+			const CXMLElement *pSatDesc = pSatellites->GetContentElement(i);
+			if (!pSatDesc->FindAttribute(SEGMENT_ATTRIB)
+					|| !strEquals(STATION_TAG, pSatDesc->GetTag()))
+				continue;
+
+			//	Get the type of the satellite
+
+			CStationType *pSatType = GetUniverse().FindStationType(pSatDesc->GetAttributeInteger(TYPE_ATTRIB));
+			if (pSatType == NULL)
+				continue;
+
+			//	Prepare the image for the satellite
+
+			SSatImageDesc *pSatImage = Result.Insert();
+			pSatImage->pType = pSatType;
+			pSatType->SetImageSelector(InitCtx, &pSatImage->Selector);
+
+			//	If we have an image variant, then set it
+
+			CString sVariant;
+			if (pSatDesc->FindAttribute(IMAGE_VARIANT_ATTRIB, &sVariant))
+				{
+				IImageEntry *pRoot = pSatType->GetImage().GetRoot();
+				DWORD dwID = (pRoot ? pRoot->GetID() : DEFAULT_SELECTOR_ID);
+				int iVariant = pSatType->GetImage().GetVariantByID(sVariant);
+
+				if (iVariant != -1)
+					{
+					pSatImage->Selector.DeleteAll();
+					pSatImage->Selector.AddVariant(dwID, iVariant);
+					}
+				}
+
+			pSatImage->pImage = &pSatType->GetImage(pSatImage->Selector, CCompositeImageModifiers());
+
+			//	Now get the offset
+
+			pSatImage->xOffset = pSatDesc->GetAttributeInteger(X_OFFSET_ATTRIB);
+			pSatImage->yOffset = pSatDesc->GetAttributeInteger(Y_OFFSET_ATTRIB);
+			}
+
+		return Result;
+		}
+	else
+		{
+		return TArray<SSatImageDesc>();
+		}
+	}
+
 Metric CStationType::CalcTreasureValue (int iLevel) const
 
 //	CalcTreasureValue
@@ -707,88 +772,14 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 //	Returns an image of the station, including any satellite segments.
 
 	{
-	struct SSatImageDesc
-		{
-		const CObjectImageArray *pImage;
-		CCompositeImageSelector Selector;
-		int xOffset;
-		int yOffset;
-		};
+	//	Get the main image
 
-	SSelectorInitCtx InitCtx;
 	int iVariant;
 	const CObjectImageArray *pMainImage = &GetImage(Selector, Modifiers, &iVariant);
 
-	//	Loop over all satellites and get metrics
+	//	Compute any segment images
 
-	RECT rcBounds;
-	TArray<SSatImageDesc> SatImages;
-	if (const CXMLElement *pSatellites = GetSatellitesDesc())
-		{
-		RECT rcMainImage = pMainImage->GetImageRect();
-		rcBounds.left = -(RectWidth(rcMainImage) / 2);
-		rcBounds.top = -(RectHeight(rcMainImage) / 2);
-		rcBounds.right = rcBounds.left + RectWidth(rcMainImage);
-		rcBounds.bottom = rcBounds.top + RectHeight(rcMainImage);
-
-		for (int i = 0; i < pSatellites->GetContentElementCount(); i++)
-			{
-			const CXMLElement *pSatDesc = pSatellites->GetContentElement(i);
-			if (!pSatDesc->FindAttribute(SEGMENT_ATTRIB)
-					|| !strEquals(STATION_TAG, pSatDesc->GetTag()))
-				continue;
-
-			//	Get the type of the satellite
-
-			CStationType *pSatType = GetUniverse().FindStationType(pSatDesc->GetAttributeInteger(TYPE_ATTRIB));
-			if (pSatType == NULL)
-				continue;
-
-			//	Prepare the image for the satellite
-
-			SSatImageDesc *pSatImage = SatImages.Insert();
-			pSatType->SetImageSelector(InitCtx, &pSatImage->Selector);
-
-			//	If we have an image variant, then set it
-
-			CString sVariant;
-			if (pSatDesc->FindAttribute(IMAGE_VARIANT_ATTRIB, &sVariant))
-				{
-				IImageEntry *pRoot = pSatType->GetImage().GetRoot();
-				DWORD dwID = (pRoot ? pRoot->GetID() : DEFAULT_SELECTOR_ID);
-				int iVariant = pSatType->GetImage().GetVariantByID(sVariant);
-
-				if (iVariant != -1)
-					{
-					pSatImage->Selector.DeleteAll();
-					pSatImage->Selector.AddVariant(dwID, iVariant);
-					}
-				}
-
-			pSatImage->pImage = &pSatType->GetImage(pSatImage->Selector, CCompositeImageModifiers());
-
-			//	Now get the offset
-
-			pSatImage->xOffset = pSatDesc->GetAttributeInteger(X_OFFSET_ATTRIB);
-			pSatImage->yOffset = pSatDesc->GetAttributeInteger(Y_OFFSET_ATTRIB);
-
-			//	Compute the satellite rect
-
-			RECT rcSatImage = pSatImage->pImage->GetImageRect();
-			RECT rcSatBounds;
-			rcSatBounds.left = pSatImage->xOffset - (RectWidth(rcSatImage) / 2);
-			rcSatBounds.top = -pSatImage->yOffset - (RectHeight(rcSatImage) / 2);
-			rcSatBounds.right = rcSatBounds.left + RectWidth(rcSatImage);
-			rcSatBounds.bottom = rcSatBounds.top + RectHeight(rcSatImage);
-
-			//	Increase the size of the bounds
-
-			rcBounds.left = Min(rcBounds.left, rcSatBounds.left);
-			rcBounds.right = Max(rcBounds.right, rcSatBounds.right);
-			rcBounds.top = Min(rcBounds.top, rcSatBounds.top);
-			rcBounds.bottom = Max(rcBounds.bottom, rcSatBounds.bottom);
-			}
-		}
+	TArray<SSatImageDesc> SatImages = CalcSegmentDesc();
 
 	//	If no segments, then we just return the basic image
 
@@ -811,33 +802,69 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 		return TSharedPtr<CG32bitImage>(pBmpImage->AddRef());
 		}
 
-	//	Create an image that will hold the composite
+	//	Otherwise, we need to composite all segments together with the main 
+	//	image.
 
-	TSharedPtr<CG32bitImage> pCompositeImage(new CG32bitImage);
-	pCompositeImage->Create(RectWidth(rcBounds), RectHeight(rcBounds), CG32bitImage::alpha8, CG32bitPixel::Null());
-	int xCenter = -rcBounds.left;
-	int yCenter = -rcBounds.top;
+	else
+		{
+		//	Loop over all satellites and get metrics
 
-	//	Paint the main image
+		RECT rcMainImage = pMainImage->GetImageRect();
+		RECT rcBounds;
+		rcBounds.left = -(RectWidth(rcMainImage) / 2);
+		rcBounds.top = -(RectHeight(rcMainImage) / 2);
+		rcBounds.right = rcBounds.left + RectWidth(rcMainImage);
+		rcBounds.bottom = rcBounds.top + RectHeight(rcMainImage);
 
-	pMainImage->PaintImage(*pCompositeImage, xCenter, yCenter, 0, Modifiers.GetRotation(), true);
+		for (int i = 0; i < SatImages.GetCount(); i++)
+			{
+			const SSatImageDesc &SatImage = SatImages[i];
 
-	//	Paint all the satellites
+			//	Compute the satellite rect
 
-	for (int i = 0; i < SatImages.GetCount(); i++)
-		SatImages[i].pImage->PaintImage(*pCompositeImage, xCenter + SatImages[i].xOffset, yCenter - SatImages[i].yOffset, 0, 0, true);
+			RECT rcSatImage = SatImage.pImage->GetImageRect();
+			RECT rcSatBounds;
+			rcSatBounds.left = SatImage.xOffset - (RectWidth(rcSatImage) / 2);
+			rcSatBounds.top = -SatImage.yOffset - (RectHeight(rcSatImage) / 2);
+			rcSatBounds.right = rcSatBounds.left + RectWidth(rcSatImage);
+			rcSatBounds.bottom = rcSatBounds.top + RectHeight(rcSatImage);
 
-	//	Now return the composite image
+			//	Increase the size of the bounds
 
-	retrcImage.left = 0;
-	retrcImage.top = 0;
-	retrcImage.right = RectWidth(rcBounds);
-	retrcImage.bottom = RectHeight(rcBounds);
+			rcBounds.left = Min(rcBounds.left, rcSatBounds.left);
+			rcBounds.right = Max(rcBounds.right, rcSatBounds.right);
+			rcBounds.top = Min(rcBounds.top, rcSatBounds.top);
+			rcBounds.bottom = Max(rcBounds.bottom, rcSatBounds.bottom);
+			}
 
-	retxCenter = xCenter;
-	retyCenter = yCenter;
+		//	Create an image that will hold the composite
 
-	return pCompositeImage;
+		TSharedPtr<CG32bitImage> pCompositeImage(new CG32bitImage);
+		pCompositeImage->Create(RectWidth(rcBounds), RectHeight(rcBounds), CG32bitImage::alpha8, CG32bitPixel::Null());
+		int xCenter = -rcBounds.left;
+		int yCenter = -rcBounds.top;
+
+		//	Paint the main image
+
+		pMainImage->PaintImage(*pCompositeImage, xCenter, yCenter, 0, Modifiers.GetRotation(), true);
+
+		//	Paint all the satellites
+
+		for (int i = 0; i < SatImages.GetCount(); i++)
+			SatImages[i].pImage->PaintImage(*pCompositeImage, xCenter + SatImages[i].xOffset, yCenter - SatImages[i].yOffset, 0, 0, true);
+
+		//	Now return the composite image
+
+		retrcImage.left = 0;
+		retrcImage.top = 0;
+		retrcImage.right = RectWidth(rcBounds);
+		retrcImage.bottom = RectHeight(rcBounds);
+
+		retxCenter = xCenter;
+		retyCenter = yCenter;
+
+		return pCompositeImage;
+		}
 	}
 
 bool CStationType::FindDataField (const CString &sField, CString *retsValue) const
@@ -1503,6 +1530,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fWall = pDesc->GetAttributeBool(WALL_ATTRIB);
 	m_fNoFriendlyFire = pDesc->GetAttributeBool(NO_FRIENDLY_FIRE_ATTRIB);
 	m_fNoFriendlyTarget = pDesc->GetAttributeBool(NO_FRIENDLY_TARGET_ATTRIB);
+	m_fNoIndependentAttack = pDesc->GetAttributeBool(NO_INDEPENDENT_ATTACK_ATTRIB);
 	m_fInactive = pDesc->GetAttributeBool(INACTIVE_ATTRIB);
 	m_fDestroyWhenAbandoned = pDesc->GetAttributeBool(DESTROY_WHEN_ABANDONED_ATTRIB);
 	m_fDestroyWhenEmpty = pDesc->GetAttributeBool(DESTROY_WHEN_EMPTY_ATTRIB);
@@ -2402,6 +2430,14 @@ void CStationType::PaintDevicePositions (CG32bitImage &Dest, int x, int y)
 			CGDraw::CircleOutline(Dest, xCenter, yCenter, iRadius, 1, rgbLine);
 			}
 		}
+
+	//	If we have satellites, recurse
+
+	TArray<SSatImageDesc> SatImages = CalcSegmentDesc();
+	for (int i = 0; i < SatImages.GetCount(); i++)
+		{
+		SatImages[i].pType->PaintDevicePositions(Dest, x + SatImages[i].xOffset, y - SatImages[i].yOffset);
+		}
 	}
 
 void CStationType::PaintDockPortPositions (CG32bitImage &Dest, int x, int y)
@@ -2431,6 +2467,14 @@ void CStationType::PaintDockPortPositions (CG32bitImage &Dest, int x, int y)
 	//	Paint all ports
 
 	Ports.DebugPaint(Dest, x, y, iStationRotation, iScale);
+
+	//	If we have satellites, recurse
+
+	TArray<SSatImageDesc> SatImages = CalcSegmentDesc();
+	for (int i = 0; i < SatImages.GetCount(); i++)
+		{
+		SatImages[i].pType->PaintDockPortPositions(Dest, x + SatImages[i].xOffset, y - SatImages[i].yOffset);
+		}
 	}
 
 ScaleTypes CStationType::ParseScale (const CString sValue)

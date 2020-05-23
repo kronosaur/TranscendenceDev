@@ -58,6 +58,7 @@
 #define PROPERTY_SHOW_MAP_ORBIT					CONSTLIT("showMapOrbit")
 #define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
 #define PROPERTY_STRUCTURAL_HP					CONSTLIT("structuralHP")
+#define PROPERTY_SUBORDINATE_ID					CONSTLIT("subordinateID")
 #define PROPERTY_SUBORDINATES					CONSTLIT("subordinates")
 #define PROPERTY_SUPERIOR						CONSTLIT("superior")
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
@@ -275,25 +276,25 @@ void CStation::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, i
 	CalcDeviceBonus();
 	}
 
-void CStation::AddSubordinate (CSpaceObject *pSubordinate)
+void CStation::AddSubordinate (CSpaceObject &SubordinateObj, const CString &sSubordinateID)
 
 //	AddSubordinate
 //
 //	Add this object to our list of subordinates
 
 	{
-	m_Subordinates.Add(pSubordinate);
+	m_Subordinates.Add(&SubordinateObj);
 
 	//	HACK: If we're adding a station, set it to point back to us
 
-	CStation *pSatellite = pSubordinate->AsStation();
+	CStation *pSatellite = SubordinateObj.AsStation();
 	if (pSatellite)
-		pSatellite->SetBase(this);
+		pSatellite->SetBase(*this, sSubordinateID);
 
 	//	Recalc bounds, if necessary
 
 	CPaintOrder::Types iPaintOrder;
-	if (pSubordinate->IsSatelliteSegmentOf(*this, &iPaintOrder)
+	if (SubordinateObj.IsSatelliteSegmentOf(*this, &iPaintOrder)
 			&& iPaintOrder != CPaintOrder::none)
 		CalcBounds();
 	}
@@ -1982,6 +1983,14 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 		return CC.CreateString(sGateID);
 		}
 
+	else if (strEquals(sName, PROPERTY_SUBORDINATE_ID))
+		{
+		if (!m_sSubordinateID.IsBlank())
+			return CC.CreateString(m_sSubordinateID);
+		else
+			return CC.CreateNil();
+		}
+
 	else if (strEquals(sName, PROPERTY_SUBORDINATES))
 		{
 		if (GetSubordinateCount() == 0)
@@ -2323,11 +2332,11 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	//	If this is a momentum attack then we are pushed
 
-	int iMomentum;
-	if (!IsAnchored() && (iMomentum = Ctx.Damage.GetMomentumDamage()))
+	Metric rImpulse;
+	if (!IsAnchored() && Ctx.Damage.HasImpulseDamage(&rImpulse))
 		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -10 * iMomentum * iMomentum);
-		Accelerate(vAccel, g_MomentumConstant);
+		CVector vAccel = PolarToVector(Ctx.iDirection, -rImpulse);
+		Accelerate(vAccel, 1.0);
 		ClipSpeed(0.25 * LIGHT_SPEED);
 		}
 
@@ -2860,7 +2869,14 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	//	Remove from the subordinate list. No need to take action because the 
 	//	ship/turret will communicate if we need to avenge.
 
-	m_Subordinates.Delete(&Ctx.Obj);
+	if (m_Subordinates.Delete(&Ctx.Obj))
+		{
+		//	See if we have any weapons associated with this subordinate
+
+		const CString &sSubordinateID = Ctx.Obj.GetSubordinateID();
+		if (!sSubordinateID.IsBlank())
+			m_Devices.OnSubordinateDestroyed(Ctx.Obj, sSubordinateID);
+		}
 	}
 
 bool CStation::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos)
@@ -3586,6 +3602,9 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		port: pObj (CSpaceObject ref)
 //	Vector		port: vPos
 //
+//	DWORD		m_pBase
+//	CString		m_sSubordinateID
+//
 //	DWORD		No of subordinates
 //	DWORD		subordinate (CSpaceObject ref)
 //
@@ -3803,6 +3822,9 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		{
 		m_pBase = NULL;
 		}
+
+	if (Ctx.dwVersion >= 189)
+		m_sSubordinateID.ReadFromStream(Ctx.pStream);
 
 	m_Subordinates.ReadFromStream(Ctx);
 	m_Targets.ReadFromStream(Ctx);
@@ -4185,7 +4207,8 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		//	Update attacks
 
-		if (m_fArmed && !m_pType->IsVirtual())
+		if (m_fArmed && !m_pType->IsVirtual()
+				&& (m_pType->CanAttackIndependently() || (m_pBase && !m_pBase->IsAbandoned())))
 			{
 			if (!UpdateAttacking(Ctx, iTick))
 				return;
@@ -4296,7 +4319,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //	Vector		port: vPos
 //
 //	DWORD		m_pBase
-//
+//	CString		m_sSubordinateID
+//	
 //	DWORD		No of subordinates
 //	DWORD		subordinate (CSpaceObject ref)
 //
@@ -4353,6 +4377,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	m_DockingPorts.WriteToStream(this, pStream);
 
 	GetSystem()->WriteObjRefToStream(m_pBase, pStream, this);
+	m_sSubordinateID.WriteToStream(pStream);
 	m_Subordinates.WriteToStream(GetSystem(), pStream);
 	m_Targets.WriteToStream(GetSystem(), pStream);
 

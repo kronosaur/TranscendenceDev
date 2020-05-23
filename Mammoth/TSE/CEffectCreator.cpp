@@ -596,14 +596,15 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 
 		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
-			::kernelDebugLogPattern("EffectType %x GetParameters: %s", GetUNID(), pResult->GetStringValue());
+			GetUniverse().LogOutput(strPatternSubst(CONSTLIT("EffectType %x GetParameters: %s"), GetUNID(), pResult->GetStringValue()));
+
 		else if (pResult->IsSymbolTable())
 			{
 			for (i = 0; i < pResult->GetCount(); i++)
 				pPainter->SetParamFromItem(Ctx, pResult->GetKey(i), pResult->GetElement(i));
 			}
 		else
-			::kernelDebugLogPattern("EffectType %x GetParameters: Expected struct result.", GetUNID());
+			GetUniverse().LogOutput(strPatternSubst(CONSTLIT("EffectType %x GetParameters: Expected struct result."), GetUNID()));
 		}
 
 	//	If we don't have an event and if we have a parameters item, then set 

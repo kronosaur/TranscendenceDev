@@ -51,6 +51,12 @@
 				)
 		</OnScreenInit>
 
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(@ gData 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
 		<InitialPane>
 			(block (
 				(missionObj (scrGetData gScreen 'missionObj))
@@ -967,12 +973,13 @@
 				;		displayCriteria: If non-Nil, then we show open/active missions 
 				;				that match this criteria. Otherwise, we show all missions
 				;				for the mission source (gSource)
+				;
+				;		rankDetails: Rank details pane
 				
 				(block (
 					(noMissionTextID (@ options 'noMissionTextID))
 					theMission theRumor
 					)
-
 					;	Show proper screen
 
 					(switch
@@ -981,6 +988,7 @@
 							(scrShowScreen gScreen &dsRPGMission; {
 								missionObj: theMission
 								missionGiver: (@ options 'missionGiver)
+								rankDetails: (@ options 'rankDetails)
 								})
 
 						;	Check if we can show a rumor instead
@@ -995,6 +1003,8 @@
 										missionGiver: (@ options 'missionGiver)
 										})
 									)
+
+							rankDetails: (@ options 'rankDetails)
 							})
 						)
 					)

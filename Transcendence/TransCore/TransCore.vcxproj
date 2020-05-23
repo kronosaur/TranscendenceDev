@@ -459,7 +459,7 @@
     <None Include="Stars.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Ovoids.xml">
+    <None Include="OvoidsCompatibility.xml">
       <SubType>Designer</SubType>
     </None>
     <Xml Include="Benedict04.xml">
@@ -522,6 +522,7 @@
     </Xml>
     <Xml Include="CommonwealthStarCarrier.xml" />
     <Xml Include="CompatibilityLibrary.xml" />
+    <Xml Include="ContainerHabitat.xml" />
     <Xml Include="CoreDiagnostics.xml" />
     <Xml Include="CoreEngineText.xml" />
     <Xml Include="CoreFireEffects.xml">
@@ -592,6 +593,7 @@
     </Xml>
     <Xml Include="HumanTech.xml" />
     <Xml Include="Jenna.xml" />
+    <Xml Include="JiangsStar.xml" />
     <Xml Include="KobolWarlords.xml" />
     <Xml Include="KorolovFreighters.xml" />
     <Xml Include="Kronosaurus.xml" />
@@ -609,6 +611,7 @@
     <Xml Include="Ore.xml" />
     <Xml Include="OreStone.xml" />
     <Xml Include="Outlaws.xml" />
+    <Xml Include="Ovoids.xml" />
     <Xml Include="Penitents.xml">
       <SubType>Designer</SubType>
     </Xml>
@@ -629,6 +632,7 @@
     <Xml Include="GalaxyLibrary.xml" />
     <Xml Include="RPGMembership.xml" />
     <Xml Include="RPGMining.xml" />
+    <Xml Include="RPGMissionTemplate01.xml" />
     <Xml Include="RPGRumors.xml" />
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>
@@ -639,6 +643,7 @@
     <Xml Include="Salvagers.xml" />
     <Xml Include="Sanctuary.xml" />
     <Xml Include="Sapiens.xml" />
+    <Xml Include="Scoria.xml" />
     <Xml Include="ShieldEnhancementItems.xml" />
     <Xml Include="Sisters01.xml" />
     <Xml Include="SistersDonate.xml" />
@@ -650,6 +655,8 @@
     <Xml Include="Stormhound.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="SungCitadel.xml" />
+    <Xml Include="SungFortress.xml" />
     <Xml Include="SungSlaveCamp.xml" />
     <Xml Include="TeratonResearch.xml" />
     <Xml Include="UndergroundCaverns.xml" />

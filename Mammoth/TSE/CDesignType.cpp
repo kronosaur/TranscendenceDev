@@ -454,6 +454,7 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 				return error;
 
 			pType->m_dwUNID = dwUNID;
+			pType->m_dwObsoleteVersion = pDesc->GetAttributeIntegerBounded(OBSOLETE_VERSION_ATTRIB, 0, -1, 0);
 
 			if (!pDesc->FindAttribute(ATTRIBUTES_ATTRIB, &pType->m_sAttributes))
 				pType->m_sAttributes = pDesc->GetAttribute(MODIFIERS_ATTRIB);
@@ -816,6 +817,29 @@ bool CDesignType::FindDataField (const CString &sField, CString *retsValue) cons
 		return false;
 
 	return true;
+	}
+
+bool CDesignType::FindEngineProperty (CCodeChainCtx &CCX, const CString &sProperty, ICCItemPtr &pResult) const
+
+//	FindEngineProperty
+//
+//	Returns an engine property (FALSE if not found).
+
+	{
+	//	Let our subclass handle it.
+
+	if (pResult = OnGetProperty(CCX, sProperty))
+		return true;
+
+	//	If not, then see if we handle it.
+
+	else if (pResult = FindBaseProperty(CCX, sProperty))
+		return true;
+
+	//	Nobody handled it, so not found
+
+	else
+		return false;
 	}
 
 bool CDesignType::FindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent) const
@@ -1949,8 +1973,6 @@ ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 //	Returns the value of the given property. We return a CC item.
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult;
 	ICCItemPtr pResultPtr;
 
 	//	Check to see if this is a custom property.
@@ -1958,20 +1980,12 @@ ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 	if (FindCustomProperty(sProperty, pResultPtr, retiType))
 		return pResultPtr;
 
-	//	Let our subclass handle it.
+	//	Else, engine property
 
-	else if (pResultPtr = OnGetProperty(Ctx, sProperty))
+	else if (FindEngineProperty(Ctx, sProperty, pResultPtr))
 		{
 		if (retiType) *retiType = EPropertyType::propEngine;
 		return pResultPtr;
-		}
-
-	//	If not, then see if we handle it.
-
-	else if (pResult = FindBaseProperty(Ctx, sProperty))
-		{
-		if (retiType) *retiType = EPropertyType::propEngine;
-		return ICCItemPtr(pResult);
 		}
 
 	//	Nobody handled it, so just return Nil
@@ -2546,7 +2560,10 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_UNID))
 		{
-		DWORD dwUNID = strToInt(strSubString(sAttrib, SPECIAL_UNID.GetLength()), 0);
+		DWORD dwUNID;
+		if (!GetUniverse().GetDesignCollection().ParseUNID(strSubString(sAttrib, SPECIAL_UNID.GetLength()), &dwUNID))
+			return false;
+
 		return (GetUNID() == dwUNID);
 		}
 	else

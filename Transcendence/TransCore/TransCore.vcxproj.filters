@@ -196,9 +196,6 @@
     <None Include="Mining.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Ovoids.xml">
-      <Filter>Transcendence Galaxy Library</Filter>
-    </None>
     <None Include="Neurohack.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
@@ -399,6 +396,9 @@
     </None>
     <None Include="Domina.xml">
       <Filter>Human Space Library\Pilgrim</Filter>
+    </None>
+    <None Include="OvoidsCompatibility.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -935,6 +935,27 @@
     </Xml>
     <Xml Include="HaloGems.xml">
       <Filter>Human Space Library\Items</Filter>
+    </Xml>
+    <Xml Include="SungFortress.xml">
+      <Filter>Human Space Library\Sung Slavers</Filter>
+    </Xml>
+    <Xml Include="SungCitadel.xml">
+      <Filter>Human Space Library\Sung Slavers</Filter>
+    </Xml>
+    <Xml Include="JiangsStar.xml">
+      <Filter>Human Space Library\Sung Slavers</Filter>
+    </Xml>
+    <Xml Include="Scoria.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
+    <Xml Include="Ovoids.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
+    <Xml Include="ContainerHabitat.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate01.xml">
+      <Filter>RPG Library</Filter>
     </Xml>
   </ItemGroup>
 </Project>

@@ -4309,6 +4309,8 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) 
 			&& IsAngryAt(pPlayerShip))
 		return CG32bitPixel(255, 80, 80);
+	else if (!pPlayerShip && pPlayer && IsEnemy(*pPlayer))
+		return CG32bitPixel(255, 80, 80);
 	else if (GetCategory() == CSpaceObject::catShip)
 		return CG32bitPixel(80, 255, 80);
 	else
@@ -4750,10 +4752,6 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 	{
 	DEBUG_TRY_OBJ_LOOP
 
-	//	Get the interaction of this object
-
-	int iInteraction = GetInteraction();
-
 	//	Get the list of objects that intersect the object
 
 	SSpaceObjectGridEnumerator i;
@@ -4799,14 +4797,6 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 		if (!CanHit(pObj)
 				|| !pObj->CanBeHitBy(Damage)
 				|| pObj == this)
-			continue;
-
-		//	Skip if we do not interact with this object.
-
-		int iInteractChance;
-		if (iInteraction < 100
-				&& (iInteractChance = Max(iInteraction, pObj->GetInteraction())) < 100
-				&& mathRandom(1, 100) > iInteractChance)
 			continue;
 
 		//	Step towards this object and see if we hit it. Start by computing 
@@ -4907,10 +4897,6 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 	const Metric OBJ_RADIUS_ADJ = 0.25;
 
-	//	Get the interaction of this object
-
-	int iInteraction = GetInteraction();
-
 	//	Get the list of objects that intersect the object
 
 	SSpaceObjectGridEnumerator i;
@@ -4941,14 +4927,6 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 		if (!CanHit(pObj)
 				|| !pObj->CanBeHitBy(Damage)
 				|| pObj == this)
-			continue;
-
-		//	Skip if we do not interact with this object.
-
-		int iInteractChance;
-		if (iInteraction < 100
-				&& (iInteractChance = Max(iInteraction, pObj->GetInteraction())) < 100
-				&& mathRandom(1, 100) > iInteractChance)
 			continue;
 
 		//	Step towards this object and see if we hit it. Start by computing 
@@ -5153,20 +5131,14 @@ bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItem
 //	Increment the given property.
 
 	{
-	//	First see if our sub-classes handle this property
+	CDesignType *pType = GetType();
 
-	if (OnIncProperty(sProperty, pInc, pResult))
-		return true;
+	//	See if this is a custom property
 
-	//	See if this is a custom property, we set data
-
-	else if (CDesignType *pType = GetType())
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+	if (pType && pType->FindCustomProperty(sProperty, pDummy, &iType))
 		{
-		ICCItemPtr pDummy;
-		EPropertyType iType;
-		if (!pType->FindCustomProperty(sProperty, pDummy, &iType))
-			return false;
-
 		switch (iType)
 			{
 			case EPropertyType::propGlobal:
@@ -5183,28 +5155,34 @@ bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItem
 			}
 		}
 
-	//	Not handled
+	//	Otherwise, see if our sub-classes handle this property
+
+	else if (OnIncProperty(sProperty, pInc, pResult))
+		return true;
+
+	//	Lastly, see if we can increment this ourselves.
 
 	else
-		return false;
-	}
+		{
+		pResult = GetProperty(sProperty);
+		if (!pResult->IsNumber())
+			return false;
 
-bool CSpaceObject::InteractsWith (int iInteraction) const
+		ICCItemPtr pDefaultInc(1);
+		if (pInc == NULL || pInc->IsNil())
+			pInc = pDefaultInc;
 
-//	InteractsWith
-//
-//	Returns TRUE if this object interacts with an object of the given interaciton.
-//	NOTE: This is random, so the same call twice might return different results.
+		if (pResult->IsDouble() || pInc->IsDouble())
+			pResult = ICCItemPtr(pResult->GetDoubleValue() + pInc->GetDoubleValue());
+		else
+			pResult = ICCItemPtr(pResult->GetIntegerValue() + pInc->GetIntegerValue());
 
-	{
-	if (iInteraction >= 100)
+		CString sError;
+		if (!SetProperty(sProperty, pResult, &sError))
+			pResult = ICCItemPtr::Error(sError);
+
 		return true;
-
-	iInteraction = Max(iInteraction, GetInteraction());
-	if (iInteraction >= 100)
-		return true;
-
-	return (iInteraction > 0 && mathRandom(1, 100) <= iInteraction);
+		}
 	}
 
 bool CSpaceObject::IsAngryAt (const CDamageSource &Obj) const
@@ -5516,6 +5494,21 @@ bool CSpaceObject::IsDestinyTime (int iCycle, int iOffset)
  
 	{
 	return (((GetUniverse().GetTicks() + GetDestiny()) % iCycle) == iOffset);
+	}
+
+bool CSpaceObject::IsEnemy (const CSovereign &Sovereign) const
+
+//	IsEnemy
+//
+//	Returns TRUE if the given object is our enemy
+
+	{
+	const CSovereign *pOurSovereign = GetSovereign();
+
+	if (pOurSovereign == NULL)
+		return false;
+	else
+		return pOurSovereign->IsEnemy(Sovereign);
 	}
 
 bool CSpaceObject::IsEnemy (const CSpaceObject *pObj) const
@@ -6027,7 +6020,38 @@ bool CSpaceObject::MatchesCriteriaCategory (CSpaceObjectCriteria::SCtx &Ctx, con
 	return false;
 	}
 
-bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, CWeaponFireDesc *pDesc)
+bool CSpaceObject::MissileCanInteract (const CSpaceObject &Obj, int iInteraction, const CSpaceObject *pTarget)
+
+//	MissileCanInteract
+//
+//	Returns TRUE if we can hit the given object with the given interaction value
+//	and the given target.
+
+	{
+	//	Interaction of -1 means that the object is a ship or station, which can
+	//	always be hit.
+
+	int iObjInteraction = Obj.GetInteraction();
+	if (iObjInteraction < 0)
+		return true;
+
+	//	Combine the interaction values.
+
+	int iResultInteraction;
+	if (pTarget && pTarget == Obj)
+		iResultInteraction = Max(iInteraction, iObjInteraction);
+	else
+		iResultInteraction = Min(iInteraction, iObjInteraction);
+
+	if (iResultInteraction >= 100)
+		return true;
+	else if (iResultInteraction <= 0)
+		return false;
+	else
+		return (mathRandom(1, 100) <= iResultInteraction);
+	}
+
+bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &Source, CWeaponFireDesc *pDesc) const
 
 //	MissileCanHitObj
 //

@@ -13,8 +13,8 @@
 
 			Nil:		Civilian				Never successfully completed a mission
 			1			Lieutenant				Completed at least one mission
-			2			Major
-			3			Colonel
+			2			Captain
+			3			Major
 
 			-1			Player has failed too many missions
 
@@ -38,15 +38,60 @@
 	-->
 
 	<Type UNID="&unidCommonwealthMilitia;">
+		<Properties>
+			<Definition id="rankTable">
+				(list
+					{	rank:Nil	id:'volunteer	icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0   0 256 256)	}
+					{	rank:1		id:'lieutenant	icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia; 256   0 256 256)	}
+					{	rank:2		id:'captain		icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia; 512   0 256 256)	}
+					{	rank:3		id:'major		icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0 256 256 256)	}
+					)
+			</Definition>
+			<DynamicGlobal id="rank">(typGetData gType 'rank)</DynamicGlobal>
+			<DynamicGlobal id="rankID">
+				(block (
+					(rank (typ@ gType 'rank))
+					)
+					(switch
+						(not rank)
+							(if (msnFind "r +commonwealthMilitia;")
+								'volunteer
+								)
+
+						(= rank -1)
+							'blacklisted
+
+						(@ (@ (typ@ gType 'rankTable) rank) 'id)
+						)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankIcon">
+				(block (
+					(rank (or (typ@ gType 'rank) 0))
+					(rankTable (typ@ gType 'rankTable))
+					)
+					(switch
+						(= rank -1)
+							Nil
+
+						(@ (@ rankTable rank) 'icon)
+						)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankNoun">
+				(typTranslate gType (cat "rank." (typ@ gType 'rankID)) { gender:(plyGetGenome gPlayer) })
+			</DynamicGlobal>
+		</Properties>
+
 		<Events>
 			<GetGlobalAchievements>
 				(append
 					;	Rank
-					(if  (typGetData &unidCommonwealthMilitia; 'rank)
+					(if  (typ@ gType 'rank)
 						(list
 							(list
 								"Commonwealth militia rank"
-								(typTranslate &unidCommonwealthMilitia; 'PlayerRank)
+								(fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
 								)
 							)
 						)
@@ -69,7 +114,7 @@
 						(or (not rank) (leq rank 0))
 							-1
 
-						;	Some items only available to majors
+						;	Some items only available to captains
 						(or (eq (itmGetType gItem) &itXM900Missile;)
 								(eq (itmGetType gItem) &itStarCannon;)
 								)
@@ -96,21 +141,47 @@
 		</Events>
 
 		<Language>
-			<Text id="PlayerRank">
+			<Code id="rankDetails">
 				(block (
-					(rank (typGetData &unidCommonwealthMilitia; 'rank))
+					(rankID (typ@ gType 'rankID))
+					(successList (plyGetKeyEventStat gPlayer 'missionSuccess Nil "* +commonwealthMilitia;"))
+					(failureList (plyGetKeyEventStat gPlayer 'missionFailure Nil "* +commonwealthMilitia;"))
 					)
-					(switch
-						(not rank) "No rank"
-						(= rank -1) "Blacklisted"
-						(= rank 0) "None"
-						(= rank 1) "Lieutenant"
-						(= rank 2) "Major"
-						(= rank 3) "Colonel"
-						(cat "ERROR: Militia rank: " rank)
+					(if rankID
+						{
+							title: (fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
+							largeIcon: (typ@ gType 'rankIcon)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelSuccesses)
+									desc: (typTranslate gType 'rtfValue { 
+										value: (count successList)
+										})
+									}
+								{
+									title: (typTranslate gType 'labelFailures)
+									desc: (typTranslate gType 'rtfValue {
+										value: (count failureList)
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
 						)
 					)
-			</Text>
+			</Code>
+			<Text id="rank.blacklisted">:an outcast(s)</Text>
+			<Text id="rank.volunteer">:a volunteer(s)</Text>
+			<Text id="rank.lieutenant">:a lieutenant(s)</Text>
+			<Text id="rank.captain">:a captain(s)</Text>
+			<Text id="rank.major">:a major(s)</Text>
+
+			<Text id="labelSuccesses">Mission Successes:</Text>
+			<Text id="labelFailures">Mission Failures:</Text>
+			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
 
 			<Text id="rpg.missionTypeDesc">Commonwealth militia missions</Text>
 		</Language>
@@ -225,6 +296,12 @@
 
 		<DockScreens>
 			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthMilitia; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -327,14 +404,14 @@
 											(gr (objGetData gSource 'NextBarEncounter) (unvGetTick))
 												(scrShowScreen gScreen &dsRPGMessage; { textID:'descBarEmpty })
 
-											;	If the player is a major, they can meet Jenna
+											;	If the player is a captain, they can meet Jenna
 											(and (= rank 2)
 												(not (typGetGlobalData &chJenna; 'status))
 												(leq (random 1 100) 60)
 												)
 												(scrShowScreen gScreen &dsRPGWingmanEncounter; {wingman: &chJenna;})
 
-											;	If the player is a colonel, then another chance for a henchman
+											;	If the player is a major, then another chance for a henchman
 											(and (= rank 3)
 												(not (typGetGlobalData &chRama; 'status))
 												(leq (random 1 100) 80)
@@ -541,35 +618,35 @@
 			<Text id="descWelcome:New">
 
 				You are in the main hall of a Commonwealth Militia Fortress. 
-				Squadron captains rush through the hall reading mission 
+				Squadron leaders rush through the hall reading mission 
 				briefings and weapons manifests. You feel out of place here.
 
 			</Text>
 			<Text id="descWelcome:Blacklisted">
 
 				You are in the main hall of a Commonwealth Militia Fortress.
-				Squadron captains rush through the hall reading mission 
+				Squadron leaders rush through the hall reading mission 
 				briefings and weapons manifests. You feel out of place here.
 
 			</Text>
 			<Text id="descWelcome:1">
 
 				You are in the main hall of a Commonwealth Militia Fortress.
-				Squadron captains rush through the hall reading mission 
+				Squadron leaders rush through the hall reading mission 
 				briefings and weapons manifests.
 
 			</Text>
 			<Text id="descWelcome:2">
 
 				You are in the main hall of a Commonwealth Militia Fortress.
-				Squadron captains rush through the hall on various missions; 
+				Squadron leaders rush through the hall on various missions; 
 				several stop to say hello to you. You feel like you belong.
 
 			</Text>
 			<Text id="descWelcome:3">
 
 				You are in the main hall of a Commonwealth Militia Fortress.
-				Squadron captains rush through the hall on various missions, 
+				Squadron leaders rush through the hall on various missions, 
 				each one stops to salute you as you pass.
 
 			</Text>
@@ -578,7 +655,7 @@
 				Two guards flank the door to the Command Center. One of them 
 				checks your ID against a computer list:
 
-				"Sorry, %sir%, only experienced captains are allowed inside."
+				"Sorry, %sir%, only experienced pilots are allowed inside."
 
 			</Text>
 			<Text id="descNoMissions">
@@ -897,6 +974,11 @@
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidCommonwealthMilitia; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
 
 		<Panes>
 			<Default>
@@ -931,21 +1013,27 @@
 
 		<Language>
 			<Text id="Promotion:1">
+
 				"Your success on this mission has brought you great respect.
 				It is my privilege to bestow upon you the rank of lieutenant
 				in service to the Commonwealth Militia."
 
 				General Powell hands you a military ID chip.
+
 			</Text>
 			<Text id="Promotion:2">
+
 				"Your skills on this mission have brought you great admiration.
 				It is my honor to present you with the Commonwealth Medal of Distinction
-				and to promote you to the rank of major. Congratulations!"
+				and to promote you to the rank of captain. Congratulations!"
+
 			</Text>
 			<Text id="Promotion:3">
+
 				"Your bravery has brought great honor to you and to the Militia.
 				It is my honor to present you with the Commonwealth Medal of Honor
-				and to promote you to the rank of colonel. Congratulations!"
+				and to promote you to the rank of major. Congratulations!"
+
 			</Text>
 		</Language>
 	</DockScreen>
@@ -1040,5 +1128,6 @@
 <!-- RESOURCES -->
 
 	<Image UNID="&rsCommonwealthMilitiaFortress;"			bitmap="Resources\CommonwealthMilitiaFortress.jpg" bitmask="Resources\CommonwealthMilitiaFortressMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsCommonwealthMilitiaInsignia;"			bitmap="Resources\CommonwealthMilitiaInsignia.jpg" bitmask="Resources\CommonwealthMilitiaInsigniaMask.bmp" loadOnUse="true"/>
 	
 </TranscendenceModule>

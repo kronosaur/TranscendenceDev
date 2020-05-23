@@ -249,15 +249,6 @@ template <class KEY, class VALUE> class TSortMap
 		const VALUE &operator [] (int iIndex) const { return GetValue(iIndex); }
 		VALUE &operator [] (int iIndex) { return GetValue(iIndex); }
 
-		TSortMap<KEY, VALUE> &operator= (const TSortMap<KEY, VALUE> &Obj)
-			{
-			m_iOrder = Obj.m_iOrder;
-			m_Index = Obj.m_Index;
-			m_Array = Obj.m_Array;
-			m_Free = Obj.m_Free;
-			return *this;
-			}
-
 		void Delete (int iIndex)
 			{
 			ASSERT(iIndex >= 0 && iIndex < m_Index.GetCount());

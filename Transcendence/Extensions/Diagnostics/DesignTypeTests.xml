@@ -63,7 +63,23 @@
 
 						{	test:'(objSet@ gTestStation1 'diag.global2a 15)			result:True	}
 						{	test:'(objInc@ gTestStation1 'diag.global2a 7)			result:22	}
+						{	test:'(typ@ (objGetType gTestStation1) 'diag.global2a)	result:22	}
 						{	test:'(obj@ gTestStation1 'diag.global2a)				result:22	}
+
+						;	NOTE: custom properties should override built-in engine properties
+						;	(otherwise, we might inadvertently break something when adding new
+						;	engine properties.)
+						{	test:'(setq gTestStation2 (sysCreateStation &stTestStation2; Nil))		result:'ignore	}
+						{	test:'(typ@ &stTestStation2; 'canBeMined)				result:'testing	}
+						{	test:'(obj@ gTestStation2 'canBeMined)					result:'testing	}
+						{	test:'(obj@ gTestStation2 'maxStructuralHP)					result:100	}
+						{	test:'(obj@ gTestStation2 'structuralHP)					result:100	}
+						{	test:'(objSet@ gTestStation2 'structuralHP 10)					result:True	}
+						{	test:'(obj@ gTestStation2 'structuralHP)				result:10	}
+						{	test:'(objInc@ gTestStation2 'structuralHP 10)			result:20	}
+						{	test:'(obj@ gTestStation2 'structuralHP)				result:20	}
+						{	test:'(obj@ gTestStation2 'hitPoints)					result:70	}
+						{	test:'(objInc@ gTestStation2 'hitPoints 10)				result:80	}
 						))
 
 					;	Unit Tests for Criteria
@@ -162,6 +178,26 @@
 			>
 		<Properties>
 			<Data id="diag.data2">11</Data>
+		</Properties>
+	</StationType>
+
+	<StationType UNID="&stTestStation2;"
+			name=				"(flotsam)"
+			sovereign=			"&svNeutral;"
+			inherit=			"&unidTestBaseType;"
+
+			scale=				"ship"
+			mobile=				"true"
+			mass=				"1"
+			noMapIcon=			"true"
+
+			armorID=			"&itReinforcedTitanium1;"
+			structuralHitPoints="100"
+			>
+		<Properties>
+			<Global id="canBeMined">'testing</Global>
+
+			<Data id="hitPoints">70</Data>
 		</Properties>
 	</StationType>
 

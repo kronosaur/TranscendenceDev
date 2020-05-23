@@ -869,7 +869,10 @@ ICCItemPtr COverlay::GetProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj,
 	{
 	ICCItemPtr pValue;
 
-	if (strEquals(sProperty, PROPERTY_ACTIVE))
+	if (FindCustomProperty(CCCtx, SourceObj, sProperty, pValue))
+		return pValue;
+
+	else if (strEquals(sProperty, PROPERTY_ACTIVE))
 		return ICCItemPtr(!m_fInactive);
 
 	else if (strEquals(sProperty, PROPERTY_COUNTER))
@@ -892,9 +895,6 @@ ICCItemPtr COverlay::GetProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj,
 
 	else if (strEquals(sProperty, PROPERTY_TYPE))
 		return ICCItemPtr(GetType()->GetUNID());
-
-	else if (FindCustomProperty(CCCtx, SourceObj, sProperty, pValue))
-		return pValue;
 
 	else
 		return ICCItemPtr(ICCItem::Nil);
@@ -939,7 +939,12 @@ bool COverlay::IncProperty (CSpaceObject &SourceObj, const CString &sProperty, I
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 
-	if (strEquals(sProperty, PROPERTY_COUNTER))
+	//	See if this is a custom property
+
+	if (IncCustomProperty(SourceObj, sProperty, pInc, pResult))
+		return true;
+
+	else if (strEquals(sProperty, PROPERTY_COUNTER))
 		{
 		//	If we're a radius counter, then do unit conversion.
 
@@ -979,11 +984,6 @@ bool COverlay::IncProperty (CSpaceObject &SourceObj, const CString &sProperty, I
 		pResult = ICCItemPtr(m_iHitPoints);
 		return true;
 		}
-
-	//	See if this is a custom property
-
-	else if (IncCustomProperty(SourceObj, sProperty, pInc, pResult))
-		return true;
 
 	else
 		return false;
@@ -1487,7 +1487,12 @@ bool COverlay::SetProperty (CSpaceObject &Source, const CString &sName, ICCItem 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 
-	if (strEquals(sName, PROPERTY_ACTIVE))
+	//	See if this is a custom property
+
+	if (SetCustomProperty(Source, sName, pValue))
+		return true;
+
+	else if (strEquals(sName, PROPERTY_ACTIVE))
 		{
 		SetActive(Source, !pValue->IsNil());
 		}
@@ -1522,11 +1527,6 @@ bool COverlay::SetProperty (CSpaceObject &Source, const CString &sName, ICCItem 
 
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		SetRotation(pValue->GetIntegerValue());
-
-	//	See if this is a custom property
-
-	else if (SetCustomProperty(Source, sName, pValue))
-		return true;
 
 	//	If nothing else, ask the painter
 

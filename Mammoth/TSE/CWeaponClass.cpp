@@ -647,7 +647,7 @@ CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTar
 	CDeviceItem DeviceItem = Device.GetDeviceItem();
 
 	bool bCheckLineOfFire = !TargetList.NoLineOfFireCheck();
-	bool bCheckRange = !TargetList.NoRangeCheck();
+	bool bCheckRange = !TargetList.NoRangeCheck() || (Device.GetMaxFireRangeLS() != 0);
 	DWORD dwTargetTypes = DeviceItem.GetTargetTypes();
 
 	Metric rMaxRange = DeviceItem.GetMaxEffectiveRange();
@@ -691,6 +691,7 @@ TArray<CTargetList::STargetResult> CWeaponClass::CalcMIRVTargets (CInstalledDevi
 
 	bool bCheckLineOfFire = !TargetList.NoLineOfFireCheck();
 	bool bCheckRange = !TargetList.NoRangeCheck();
+	DWORD dwTargetTypes = DeviceItem.GetTargetTypes();
 
 	Metric rMaxRange = DeviceItem.GetMaxEffectiveRange();
 	Metric rMaxRange2 = rMaxRange * rMaxRange;
@@ -703,6 +704,7 @@ TArray<CTargetList::STargetResult> CWeaponClass::CalcMIRVTargets (CInstalledDevi
 		Metric rDist2 = TargetList.GetTargetDist2(i);
 
 		if ((!bCheckRange || rDist2 < rMaxRange2)
+				&& (TargetList.GetTargetType(i) & dwTargetTypes)
 				&& DeviceItem.GetWeaponEffectiveness(pTarget) >= 0
 				&& IsTargetReachable(Device, *pTarget, -1, &iFireAngle)
 				&& (!bCheckLineOfFire || SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange)))

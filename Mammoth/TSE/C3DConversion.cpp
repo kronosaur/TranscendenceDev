@@ -162,7 +162,7 @@ void C3DConversion::CalcPolar (int iScale, const CVector &vPos, int iZ, Metric *
 
 	Metric rY = (-(rZ * g_rK1 * rD) - (rYp * rZ * g_rK2) - (2.0 * rYp)) / rDen;
 	Metric rYg = rY * g_rK2 - rZ * g_rK1;
-	Metric rX = (rYp == 0.0 ? rXp : rXp * rYg / rYp);
+	Metric rX = (rYp == 0.0 ? rXp / rScale : rXp * rYg / rYp);
 
 	rY = rY * rScale;
 	rX = rX * rScale;

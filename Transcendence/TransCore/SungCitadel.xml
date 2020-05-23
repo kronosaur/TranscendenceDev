@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- ENCOUNTERS -->
+
+	<!-- Level 6: Sung Citadel -->
+
+	<StationType UNID="&stSungCitadel;"
+			name=				"Sung citadel"
+			sovereign=			"&svSung;"
+
+			attributes=			"enemy, envAir, envEarth, envFire, envWater, generic, human, majorStation, populated, sungSlavers"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			level=				"7"
+			size=				"440"
+			armorID=			"&itHeavySungArmor;"
+			hitPoints=			"1500"
+			multiHull=			"true"
+            regen=              "11"
+
+			fireRateAdj=		"20"
+			explosionType=		"&vtThermoExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+sungSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"----v urv-- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"100"
+				/>
+
+		<!-- Treasure and Items -->
+
+		<Items>
+			<Item chance="80"		count="1d4" item="&itLongzhuSphere;"/>
+			<Lookup					count="1d4"	table="&trStationSupplies;" />
+			<Lookup					count="1"	table="&trConsumables6;"/>
+			<Lookup					count="1"	table="&trMinorItem6;"/>
+			<Table>
+				<Lookup chance="45" count="1" table="&trConsumables7;"/>
+				<Lookup chance="30" count="1" table="&trMinorItem7;"/>
+				<Lookup chance="25" count="1" table="&trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itCyberDeckLowerShields;"/>
+
+			<!-- Inner Wall -->
+
+			<Device segmentID="inner45"  deviceID="&itParticleBeamWeapon;"	posAngle="21"  posRadius="220" posZ="30"	omnidirectional="true" missileDefense="true" maxFireRange="10"/>
+			<Device segmentID="inner45"  deviceID="&itParticleBeamWeapon;"	posAngle="39"  posRadius="220" posZ="30"	omnidirectional="true" missileDefense="true" maxFireRange="10"/>
+
+			<Device segmentID="inner135" deviceID="&itParticleBeamWeapon;"	posAngle="111" posRadius="220" posZ="30"	omnidirectional="true" missileDefense="true" maxFireRange="10"/>
+			<Device segmentID="inner135" deviceID="&itParticleBeamWeapon;"	posAngle="129" posRadius="220" posZ="30"	omnidirectional="true" missileDefense="true" maxFireRange="10"/>
+
+			<Device segmentID="inner225" deviceID="&itParticleBeamWeapon;"	posAngle="201" posRadius="220" posZ="30"	omnidirectional="true" missileDefense="true" maxFireRange="10"/>
+			<Device segmentID="inner225" deviceID="&itParticleBeamWeapon;"	posAngle="219" posRadius="220" posZ="30"	omnidirectional="true" missileDefense="true" maxFireRange="10"/>
+
+			<Device segmentID="inner315" deviceID="&itParticleBeamWeapon;"	posAngle="291" posRadius="220" posZ="30"	omnidirectional="true" missileDefense="true" maxFireRange="10"/>
+			<Device segmentID="inner315" deviceID="&itParticleBeamWeapon;"	posAngle="309" posRadius="220" posZ="30"	omnidirectional="true" missileDefense="true" maxFireRange="10"/>
+
+			<!-- Outer Wall -->
+
+			<Device segmentID="outer0"   deviceID="&itParticleBeamWeapon;"	posAngle="15"  posRadius="292" posZ="70"		omnidirectional="true" />
+			<Device segmentID="outer60"  deviceID="&itParticleBeamWeapon;"	posAngle="75"  posRadius="292" posZ="70"		omnidirectional="true" />
+			<Device segmentID="outer120" deviceID="&itParticleBeamWeapon;"	posAngle="135" posRadius="292" posZ="70"		omnidirectional="true" />
+			<Device segmentID="outer180" deviceID="&itParticleBeamWeapon;"	posAngle="195" posRadius="292" posZ="70"		omnidirectional="true" />
+			<Device segmentID="outer240" deviceID="&itParticleBeamWeapon;"	posAngle="255" posRadius="292" posZ="70"		omnidirectional="true" />
+			<Device segmentID="outer300" deviceID="&itParticleBeamWeapon;"	posAngle="315" posRadius="292" posZ="70"		omnidirectional="true" />
+
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Table>
+				<Group chance="60">
+					<Ship			count="1"	class="&scEarthSlaver;"		orders="patrol" patrolDist="30"/>
+					<Ship			count="1d2"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+					<Ship			count="1d3"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+				<Group chance="30">
+					<Ship			count="1"	class="&scEarthSlaver;"		orders="patrol" patrolDist="30"/>
+					<Ship			count="1d6"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+				<Group chance="10">
+					<Ship			count="1d4"	class="&scSteelSlaver;"		orders="patrol" patrolDist="20"/>
+					<Ship			count="1d6"	class="&scWindSlaver;"		orders="patrol" patrolDist="20"/>
+				</Group>
+			</Table>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Table>
+				<Ship chance="50"	count="1d3"	class="&scWindSlaver;"	orders="patrol" patrolDist="20"/>
+				<Ship chance="30"	count="1d2"	class="&scSteelSlaver;"	orders="patrol" patrolDist="20"/>
+				<Ship chance="20"	count="1"	class="&scEarthSlaver;"	orders="patrol" patrolDist="30"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Satellites -->
+
+		<Satellites>
+			<Station id="inner45"	type="&stSungCitadelInnerWall;"	imageVariant="angle45"	xOffset="124"  yOffset="62"		segment="true"/>
+			<Station id="inner135"	type="&stSungCitadelInnerWall;"	imageVariant="angle135"	xOffset="-62"  yOffset="124"	segment="true"/>
+			<Station id="inner225"	type="&stSungCitadelInnerWall;"	imageVariant="angle225"	xOffset="-124" yOffset="-62"	segment="true"/>
+			<Station id="inner315"	type="&stSungCitadelInnerWall;"	imageVariant="angle315"	xOffset="62"   yOffset="-124"	segment="true"/>
+
+			<Station id="outer0"	type="&stSungCitadelOuterWall;"	imageVariant="angle0"	xOffset="248"  yOffset="62"		segment="true"/>
+			<Station id="outer60"	type="&stSungCitadelOuterWall;"	imageVariant="angle60"	xOffset="62"   yOffset="217"	segment="true"/>
+			<Station id="outer120"	type="&stSungCitadelOuterWall;"	imageVariant="angle120"	xOffset="-186" yOffset="155"	segment="true"/>
+			<Station id="outer180"	type="&stSungCitadelOuterWall;"	imageVariant="angle180"	xOffset="-248" yOffset="-62"	segment="true"/>
+			<Station id="outer240"	type="&stSungCitadelOuterWall;"	imageVariant="angle240"	xOffset="-62"  yOffset="-217"	segment="true"/>
+			<Station id="outer300"	type="&stSungCitadelOuterWall;"	imageVariant="angle300"	xOffset="186"  yOffset="-155"	segment="true"/>
+		</Satellites>
+
+		<!-- Images and Effects -->
+
+		<Image			imageID="&rsSungCitadel;" imageX="1116" imageY="0" imageWidth="372" imageHeight="372" viewportRatio="0.0325"/>
+
+		<DockingPorts
+				portAngle=		"52"
+				portCount=		"8"
+				portRadius=		"190"
+				/>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Table>
+				<Ship chance="30"	count="2d3" class="&scWindSlaver;"		orders="attack"/>
+				<Group chance="60">
+					<Ship			count="1"	class="&scSteelSlaver;"		orders="attack"/>
+					<Ship			count="1d4"	class="&scWindSlaver;"		orders="attack"/>
+				</Group>
+				<Ship chance="10"	count="1d4"	class="&scSteelSlaver;"		orders="attack"/>
+			</Table>
+		</Encounters>
+	</StationType>
+
+<!-- STATION TYPES -->
+
+	<StationType UNID="&stSungCitadelInnerWall;"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+
+			mass=				"100000"
+
+			noMapLabel=			"true"
+			noFriendlyTarget=	"true"
+			destroyWhenAbandoned="true"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itSungArmor;"
+				hitPoints=		"340"
+				regen=			"1"
+				/>
+
+		<!-- Images and Effects -->
+
+		<ImageVariants>
+			<Image id="angle45"		imageID="&rsSungCitadel;"	imageX="0"	 imageY="310" imageWidth="248"	imageHeight="372"	viewportRatio="0.045"/>
+			<Image id="angle135"	imageID="&rsSungCitadel;"	imageX="496" imageY="372" imageWidth="372"	imageHeight="248"	viewportRatio="0.045"/>
+			<Image id="angle225"	imageID="&rsSungCitadel;"	imageX="248" imageY="310" imageWidth="248"	imageHeight="372"	viewportRatio="0.045"/>
+			<Image id="angle315"	imageID="&rsSungCitadel;"	imageX="868" imageY="372" imageWidth="372"	imageHeight="248"	viewportRatio="0.045"/>
+		</ImageVariants>
+
+	</StationType>
+
+	<StationType UNID="&stSungCitadelOuterWall;"
+			name=				"Sung defense tower"
+			sovereign=			"&svSung;"
+
+			mass=				"100000"
+
+			noMapLabel=			"true"
+			noFriendlyTarget=	"true"
+			destroyWhenAbandoned="true"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itSungArmor;"
+				hitPoints=		"220"
+				regen=			"1"
+				/>
+
+		<!-- Images and Effects -->
+
+		<ImageVariants>
+			<Image id="angle0"		imageID="&rsSungCitadel;"	imageX="992" imageY="0"   imageWidth="124"	imageHeight="372"	viewportRatio="0.045"/>
+			<Image id="angle60"		imageID="&rsSungCitadel;"	imageX="496" imageY="186" imageWidth="372"	imageHeight="186"	viewportRatio="0.045"/>
+			<Image id="angle120"	imageID="&rsSungCitadel;"	imageX="0"   imageY="0"   imageWidth="248"	imageHeight="310"	viewportRatio="0.045"/>
+			<Image id="angle180"	imageID="&rsSungCitadel;"	imageX="868" imageY="0"   imageWidth="124"	imageHeight="372"	viewportRatio="0.045"/>
+			<Image id="angle240"	imageID="&rsSungCitadel;"	imageX="496" imageY="0"   imageWidth="372"	imageHeight="186"	viewportRatio="0.045"/>
+			<Image id="angle300"	imageID="&rsSungCitadel;"	imageX="248" imageY="0"   imageWidth="248"	imageHeight="310"	viewportRatio="0.045"/>
+		</ImageVariants>
+
+	</StationType>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsSungCitadel;"			bitmap="Resources\SungCitadel.jpg"	bitmask="Resources\SungCitadelMask.bmp"  loadOnUse="true"/>
+
+</TranscendenceModule>

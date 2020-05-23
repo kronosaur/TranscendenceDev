@@ -36,6 +36,12 @@
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(@ gData 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -290,11 +296,18 @@
 						)
 
 					(switch
+						(not theRumor)
+							Nil
+
 						(@ options 'rumorGiver)
 							(set@ theRumor 'rumorGiver (@ options 'rumorGiver))
 
 						(@ options 'missionGiver)
 							(set@ theRumor 'rumorGiver (@ options 'missionGiver))
+						)
+
+					(if (and theRumor (@ options 'rankDetails))
+						(set@ theRumor 'rankDetails (@ options 'rankDetails))
 						)
 
 					theRumor
