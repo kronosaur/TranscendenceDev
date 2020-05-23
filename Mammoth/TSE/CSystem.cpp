@@ -4669,6 +4669,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	hit tests
 
 	m_ObjGrid.Init(this, Ctx);
+	Ctx.ForceResolver.BeginUpdate();
 
 	//	Fire timed events
 	//	NOTE: We only do this if we have a player because otherwise, some
@@ -4749,6 +4750,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 				Ctx.PlayerObjs.Insert(pObj);
 			}
 		}
+
+	//	Update object velocity based on forces
+
+	Ctx.ForceResolver.Update(*this, SystemCtx.rSecondsPerTick);
 
 	//	Move all objects. Note: We always move last because we want to
 	//	paint right after a move. Otherwise, when a laser/missile hits
