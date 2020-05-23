@@ -36,6 +36,10 @@ enum SpecialDamageTypes
 class DamageDesc
 	{
 	public:
+		static constexpr Metric IMPULSE_BASE =	5.0;
+		static constexpr Metric IMPULSE_FACTOR = 10.0;
+		static constexpr Metric IMPULSE_SCALE = 0.1;
+
 		enum Flags 
 			{
 			flagAverageDamage =		0x00000001,
@@ -59,8 +63,6 @@ class DamageDesc
 		DamageDesc (void) { }
 		DamageDesc (DamageTypes iType, const DiceRange &Damage) : m_iType(iType),
 				m_Damage(Damage),
-				m_iBonus(0),
-				m_iCause(killedByDamage),
 				m_EMPDamage(0),
 				m_MomentumDamage(0),
 				m_RadiationDamage(0),
@@ -68,9 +70,6 @@ class DamageDesc
 				m_DeviceDisruptDamage(0),
 				m_BlindingDamage(0),
 				m_SensorDamage(0),
-				m_ShieldDamage(0),
-				m_ArmorDamage(0),
-				m_TimeStopDamage(0),
 				m_WormholeDamage(0),
 				m_FuelDamage(0),
 				m_fNoSRSFlash(0),
@@ -79,8 +78,7 @@ class DamageDesc
 				m_MassDestructionAdj(0),
 				m_MiningAdj(0),
 				m_ShatterDamage(0),
-				m_ShieldPenetratorAdj(0),
-				m_dwSpare2(0)
+				m_ShieldPenetratorAdj(0)
 			{ }
 
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
@@ -94,6 +92,7 @@ class DamageDesc
 		int GetMinDamage (void) const;
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
+		bool HasImpulseDamage (Metric *retrImpulse = NULL) const;
 		bool HasMiningDamage (void) const { return (m_MiningAdj > 0); }
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
 		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageGeneric); }
@@ -123,7 +122,7 @@ class DamageDesc
 		int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
 		int GetMiningDamage (void) const { return m_MiningAdj; }
 		int GetMiningWMDAdj (void);
-		int GetMomentumDamage (void) const { return (int)m_MomentumDamage; }
+		//int GetMomentumDamage (void) const { return (int)m_MomentumDamage; }
 		int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
 		int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
 		int GetShieldDamageLevel (void) const { return (int)m_ShieldDamage; }
@@ -141,17 +140,17 @@ class DamageDesc
 
 	private:
 		void AddBonus (int iBonus) { m_iBonus += iBonus; }
+		static int ConvertOldMomentum (int iValue);
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
 		ALERROR ParseTerm (SDesignLoadCtx &Ctx, char *pPos, CString *retsKeyword, CString *retsValue, char **retpPos);
 
-		DamageTypes m_iType;					//	Type of damage
+		DamageTypes m_iType = damageGeneric;	//	Type of damage
 		DiceRange m_Damage;						//	Amount of damage
-		int m_iBonus;							//	Bonus to damage (%)
-		DestructionTypes m_iCause;				//	Cause of damage
+		int m_iBonus = 0;						//	Bonus to damage (%)
+		DestructionTypes m_iCause = killedByDamage;		//	Cause of damage
 
 		//	Extra damage
 		DWORD m_EMPDamage:3;					//	Ion (paralysis) damage
-		DWORD m_MomentumDamage:3;				//	Momentum damage
 		DWORD m_RadiationDamage:3;				//	Radiation damage
 		DWORD m_DeviceDisruptDamage:3;			//	Disrupt devices damage
 		DWORD m_BlindingDamage:3;				//	Optical sensor damage
@@ -160,20 +159,20 @@ class DamageDesc
 		DWORD m_FuelDamage:3;					//	Drain fuel
 		DWORD m_DisintegrationDamage:3;			//	Disintegration damage
 		DWORD m_ShieldPenetratorAdj:3;			//	Shield penetrator damage	shieldPenetrate:n
+		DWORD m_MassDestructionAdj:3;			//	Adj for mass destruction
 
 		DWORD m_fNoSRSFlash:1;					//	If TRUE, damage should not cause SRS flash
 		DWORD m_fAutomatedWeapon:1;				//	TRUE if this damage is caused by automated weapon
 
 		DWORD m_DeviceDamage:3;					//	Damage to devices
-		DWORD m_MassDestructionAdj:3;			//	Adj for mass destruction
 		DWORD m_MiningAdj:3;					//	Adj for mining capability
 		DWORD m_ShatterDamage:3;				//	Shatter damage
-		DWORD m_dwSpare2:20;
+		DWORD m_dwSpare2:23;
 
-		BYTE m_ShieldDamage;					//	Shield damage (level)	shield:level
-		BYTE m_ArmorDamage;						//	Armor damage (level)
-		BYTE m_TimeStopDamage;					//	Time stop (level)
-		BYTE m_Spare3;
+		BYTE m_ShieldDamage = 0;				//	Shield damage (level)	shield:level
+		BYTE m_ArmorDamage = 0;					//	Armor damage (level)
+		BYTE m_TimeStopDamage = 0;				//	Time stop (level)
+		INT8 m_MomentumDamage = 0;				//	Impulse/Tractor (100 to -100)
 	};
 
 enum EDamageResults
