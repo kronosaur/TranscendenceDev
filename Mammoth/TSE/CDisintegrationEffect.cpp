@@ -258,7 +258,8 @@ void CDisintegrationEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	If we're moving, slow down
 
-	UpdateDrag(Ctx, g_SpaceDragFactor);
+	if (!GetVel().IsNull())
+		AddDrag(g_SpaceDragFactor);
 
 	DEBUG_CATCH
 	}

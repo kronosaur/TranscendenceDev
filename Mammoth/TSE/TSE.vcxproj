@@ -479,6 +479,7 @@
     <ClCompile Include="CPerformanceCounters.cpp" />
     <ClCompile Include="CPhysicsContact.cpp" />
     <ClCompile Include="CPhysicsContactResolver.cpp" />
+    <ClCompile Include="CPhysicsForceResolver.cpp" />
     <ClCompile Include="CPlayerGameStats.cpp" />
     <ClCompile Include="CPowerConsumption.cpp" />
     <ClCompile Include="CPropertyCompare.cpp" />
@@ -650,6 +651,7 @@
     <ClCompile Include="SFXParticleSystem.cpp" />
     <ClCompile Include="SFXRay.cpp" />
     <ClCompile Include="ShipUpdate.cpp" />
+    <ClCompile Include="CPhysicsForceDesc.cpp" />
     <ClCompile Include="SpaceObjectItemProperties.cpp" />
     <ClCompile Include="SUpdateCtx.cpp" />
     <ClCompile Include="SystemProperties.cpp" />

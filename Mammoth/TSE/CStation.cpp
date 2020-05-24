@@ -2335,9 +2335,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	Metric rImpulse;
 	if (!IsAnchored() && Ctx.Damage.HasImpulseDamage(&rImpulse))
 		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -rImpulse);
-		Accelerate(vAccel, 1.0);
-		ClipSpeed(0.25 * LIGHT_SPEED);
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
 		}
 
 	//	Let our shield generators take a crack at it
@@ -4243,8 +4242,8 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	If we're moving, slow down
 
-	if (!IsAnchored())
-		UpdateDrag(Ctx, g_SpaceDragFactor);
+	if (!IsAnchored() && !GetVel().IsNull())
+		AddDrag(g_SpaceDragFactor);
 
 	//	Overlays
 

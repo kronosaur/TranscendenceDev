@@ -641,9 +641,8 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 	Metric rImpulse;
 	if (Ctx.Damage.HasImpulseDamage(&rImpulse))
 		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -rImpulse);
-		Accelerate(vAccel, 1.0);
-		ClipSpeed(GetMaxSpeed());
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
 		}
 
 	//	Create a hit effect

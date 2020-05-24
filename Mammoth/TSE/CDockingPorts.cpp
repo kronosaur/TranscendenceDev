@@ -1283,7 +1283,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 
 		//	Accelerate
 
-		pShip->Accelerate(vDeltaV * pShip->GetMass() / 10000.0, g_SecondsPerUpdate);
+		pShip->AddForce(vDeltaV * pShip->GetMass() / 10000.0);
 		pShip->ClipSpeed(rSpeed);
 		}
 

@@ -4331,9 +4331,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	if (Ctx.Damage.HasImpulseDamage(&rImpulse) 
 			&& !IsAnchored())
 		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -rImpulse);
-		Accelerate(vAccel, 1.0);
-		ClipSpeed(GetMaxSpeed());
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
 		}
 
 	//	Let our shield generators take a crack at it
