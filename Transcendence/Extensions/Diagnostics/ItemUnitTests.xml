@@ -237,6 +237,7 @@
 						{	test:'(itm@ &itLaserCannon; 'tracking)				result:Nil	}
 
 						{	test:'(itm@ &itLaserCannon; 'damageArmorLevel)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageAttract)				result:Nil	}
 						{	test:'(itm@ &itLaserCannon; 'damageBlinding)			result:Nil	}
 						{	test:'(itm@ &itLaserCannon; 'damageDeviceDestroy)		result:Nil	}
 						{	test:'(itm@ &itLaserCannon; 'damageDeviceDisrupt)		result:Nil	}
@@ -246,6 +247,7 @@
 						{	test:'(itm@ &itLaserCannon; 'damageMining)				result:Nil	}
 						{	test:'(itm@ &itLaserCannon; 'damageMomentum)			result:Nil	}
 						{	test:'(itm@ &itLaserCannon; 'damageRadiation)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageRepel)				result:Nil	}
 						{	test:'(itm@ &itLaserCannon; 'damageSensor)				result:Nil	}
 						{	test:'(itm@ &itLaserCannon; 'damageShatter)				result:Nil	}
 						{	test:'(itm@ &itLaserCannon; 'damageShieldLevel)			result:Nil	}
@@ -326,6 +328,7 @@
 						{	test:'(itm@ &itNAMIMissileLauncher; 'tracking)				result:Nil	}
 
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageArmorLevel)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageAttract)				result:Nil	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageBlinding)			result:Nil	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDeviceDestroy)		result:Nil	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDeviceDisrupt)		result:Nil	}
@@ -335,6 +338,7 @@
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageMining)				result:Nil	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageMomentum)			result:4	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageRadiation)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageRepel)				result:37	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageSensor)				result:Nil	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShatter)				result:Nil	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShieldLevel)			result:Nil	}
@@ -379,6 +383,7 @@
 						{	test:'(itm@ &itKM500Missile; 'stdInteraction)			result:100	}
 						{	test:'(itm@ &itKM500Missile; 'tracking)				result:True	}
 
+						{	test:'(itm@ &itKM500Missile; 'damageAttract)			result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'damageArmorLevel)			result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'damageBlinding)			result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'damageDeviceDestroy)		result:Nil	}
@@ -389,6 +394,7 @@
 						{	test:'(itm@ &itKM500Missile; 'damageMining)				result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'damageMomentum)			result:4	}
 						{	test:'(itm@ &itKM500Missile; 'damageRadiation)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageRepel)				result:37	}
 						{	test:'(itm@ &itKM500Missile; 'damageSensor)				result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'damageShatter)			result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'damageShieldLevel)		result:Nil	}

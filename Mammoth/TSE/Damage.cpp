@@ -101,6 +101,8 @@ SSpecialDamageData SPECIAL_DAMAGE_DATA[] =
 		{	"shieldPenetrate",	"damageShieldPenetrate" },
 
 		{	"timeStop",			"damageTimeStop" },
+		{	"attract",			"damageAttract" },
+		{	"repel",			"damageRepel" },
 
 		{	NULL,				NULL }
 	};
@@ -230,6 +232,17 @@ int DamageDesc::ConvertOldMomentum (int iValue)
 
 	Metric rImpulse = 250 * iValue * iValue;
 	return mathRound(mathLog((rImpulse / IMPULSE_FACTOR) + 1, IMPULSE_BASE) / IMPULSE_SCALE);
+	}
+
+int DamageDesc::ConvertToOldMomentum (int iValue)
+
+//	ConvertToOldMomentum
+//
+//	Converts from 0-100 to 0-7.
+
+	{
+	Metric rImpulse = IMPULSE_FACTOR * pow(IMPULSE_BASE, Absolute(iValue) * IMPULSE_SCALE) - 1.0;
+	return mathRound(sqrt(rImpulse / 250.0));
 	}
 
 SpecialDamageTypes DamageDesc::ConvertToSpecialDamageTypes (const CString &sValue)
@@ -415,6 +428,9 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) co
 		case specialArmor:
 			return m_ArmorDamage;
 
+		case specialAttract:
+			return (m_MomentumDamage < 0 ? -m_MomentumDamage : 0);
+
 		case specialBlinding:
 			return m_BlindingDamage;
 
@@ -437,10 +453,13 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) co
 			return ((dwFlags & flagSpecialAdj) ? GetMiningAdj() : m_MiningAdj);
 
 		case specialMomentum:
-			return m_MomentumDamage;
+			return (m_MomentumDamage > 0 ? ConvertToOldMomentum(m_MomentumDamage) : 0);
 
 		case specialRadiation:
 			return m_RadiationDamage;
+
+		case specialRepel:
+			return (m_MomentumDamage > 0 ? m_MomentumDamage : 0);
 
 		case specialShatter:
 			return m_ShatterDamage;
@@ -509,6 +528,10 @@ void DamageDesc::SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel)
 	{
 	switch (iSpecial)
 		{
+		case specialAttract:
+			m_MomentumDamage = -Max(0, Min(iLevel, MAX_STRENGTH));
+			break;
+
 		case specialArmor:
 			m_ArmorDamage = Max(1, Min(iLevel, MAX_ITEM_LEVEL));
 			break;
@@ -542,11 +565,15 @@ void DamageDesc::SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel)
 			break;
 
 		case specialMomentum:
-			m_MomentumDamage = Max(-MAX_STRENGTH, Min(iLevel, MAX_STRENGTH));
+			m_MomentumDamage = ConvertOldMomentum(Max(0, Min(iLevel, MAX_INTENSITY)));
 			break;
 
 		case specialRadiation:
 			m_RadiationDamage = Max(0, Min(iLevel, MAX_INTENSITY));
+			break;
+
+		case specialRepel:
+			m_MomentumDamage = Max(0, Min(iLevel, MAX_STRENGTH));
 			break;
 
 		case specialShatter:
@@ -807,8 +834,6 @@ ALERROR DamageDesc::LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, 
 			m_EMPDamage = (DWORD)Min(iCount, MAX_INTENSITY);
 		else if (strEquals(sType, GetSpecialDamageName(specialRadiation)))
 			m_RadiationDamage = (DWORD)Min(iCount, MAX_BINARY);
-		else if (strEquals(sType, GetSpecialDamageName(specialMomentum)))
-			m_MomentumDamage = ConvertOldMomentum(Min(iCount, MAX_INTENSITY));
 		else if (strEquals(sType, GetSpecialDamageName(specialDisintegration)))
 			m_DisintegrationDamage = (DWORD)Min(iCount, MAX_INTENSITY);
 		else if (strEquals(sType, GetSpecialDamageName(specialDeviceDisrupt)))
@@ -848,10 +873,12 @@ ALERROR DamageDesc::LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, 
 
 		//	These special damage types translate to momentum
 
-		else if (strEquals(sType, SPECIAL_DAMAGE_REPEL))
-			m_MomentumDamage = Min(iCount, MAX_STRENGTH);
-		else if (strEquals(sType, SPECIAL_DAMAGE_ATTRACT))
+		else if (strEquals(sType, GetSpecialDamageName(specialMomentum)))
+			m_MomentumDamage = ConvertOldMomentum(Min(iCount, MAX_INTENSITY));
+		else if (strEquals(sType, GetSpecialDamageName(specialAttract)))
 			m_MomentumDamage = -Min(iCount, MAX_STRENGTH);
+		else if (strEquals(sType, GetSpecialDamageName(specialRepel)))
+			m_MomentumDamage = Min(iCount, MAX_STRENGTH);
 		else
 			return ERR_FAIL;
 		}

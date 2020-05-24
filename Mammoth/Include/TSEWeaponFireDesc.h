@@ -31,6 +31,8 @@ enum SpecialDamageTypes
 	specialShieldPenetrator	= 15,
 
 	specialTimeStop			= 16,
+	specialAttract			= 17,
+	specialRepel			= 18,
 	};
 
 class DamageDesc
@@ -141,6 +143,7 @@ class DamageDesc
 	private:
 		void AddBonus (int iBonus) { m_iBonus += iBonus; }
 		static int ConvertOldMomentum (int iValue);
+		static int ConvertToOldMomentum (int iValue);
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
 		ALERROR ParseTerm (SDesignLoadCtx &Ctx, char *pPos, CString *retsKeyword, CString *retsValue, char **retpPos);
 
