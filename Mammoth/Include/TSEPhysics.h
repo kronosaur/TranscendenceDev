@@ -81,3 +81,41 @@ class CPhysicsContactResolver
 
 		TArray<CPhysicsContact> m_Contacts;
 	};
+
+class CPhysicsForceResolver
+	{
+	public:
+		struct SForceDesc
+			{
+			CSpaceObject *pObj = NULL;
+			CVector vForce;						//	Absolute acceleration
+			CVector vLimitedForce;				//	Accelerate only if below max speed.
+			Metric rDragFactor = 1.0;			//	Final velocity gets multiplied by this.
+			};
+
+		int AllocDesc (CSpaceObject &Obj);
+		void BeginUpdate (void);
+		const SForceDesc &GetConstDesc (int iIndex) const { return m_Forces[iIndex]; }
+		SForceDesc &GetDesc (int iIndex) { return m_Forces[iIndex]; }
+		void Update (CSystem &System, const Metric rSecondsPerUpdate);
+
+	private:
+		static constexpr int DEFAULT_ALLOC = 200;
+		static constexpr Metric MIN_DRAG_SPEED2 = 1000.0;
+
+		TArray<SForceDesc> m_Forces;
+	};
+
+class CPhysicsForceDesc
+	{
+	public:
+		void AddDrag (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, Metric rDragFactor);
+		void AddForce (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, const CVector &vForce);
+		void AddForceLimited (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, const CVector &vForce);
+		void Clear (void) { m_iIndex = -1; }
+		
+	private:
+		CPhysicsForceResolver::SForceDesc &GetDesc (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj);
+
+		int m_iIndex = -1;
+	};

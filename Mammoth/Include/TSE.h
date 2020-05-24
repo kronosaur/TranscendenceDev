@@ -889,8 +889,13 @@ class CSpaceObject
 		virtual Metric GetMaxSpeed (void) const { return (IsAnchored() ? 0.0 : MAX_SYSTEM_SPEED); }
 		virtual bool IsAnchored (void) const { return IsManuallyAnchored(); }
 
-		void Accelerate (const CVector &vPush, Metric rSeconds);
+		void Accelerate (const CVector &vForce, Metric rSeconds);
 		void AccelerateStop (Metric rPush, Metric rSeconds);
+		void AddDrag (Metric rDragFactor);
+		void AddForce (const CVector &vForce);
+		void AddForceFromDeltaV (const CVector &vDeltaV);
+		void AddForceLimited (const CVector &vForce);
+		void ClearForceDesc (void) { m_ForceDesc.Clear(); }
 		void ClipSpeed (Metric rMaxSpeed) { m_vVel.Clip(rMaxSpeed); }
 		const CVector &DeltaV (const CVector &vDelta) { m_vVel = m_vVel + vDelta; return m_vVel; }
 		const CVector &GetOldPos (void) const { return m_vOldPos; }
@@ -1342,7 +1347,6 @@ class CSpaceObject
 		void SetInDamageCode (void) { m_fInDamage = true; }
 		void SetNoFriendlyFire (void) { m_fNoFriendlyFire = true; }
 		void SetNonLinearMove (bool bValue = true) { m_fNonLinearMove = bValue; }
-		void UpdateDrag (SUpdateCtx &Ctx, Metric rDragFactor);
 		void UpdateTrade (SUpdateCtx &Ctx, int iInventoryRefreshed);
 		void UpdateTradeExtended (const CTimeSpan &ExtraTime);
 
@@ -1388,6 +1392,7 @@ class CSpaceObject
 		CDesignType *m_pOverride;				//	Override event handler
 		CSpaceObjectList m_SubscribedObjs;		//	List of objects to notify when something happens
 		CObjectJoint *m_pFirstJoint;			//	List of joints
+		CPhysicsForceDesc m_ForceDesc;			//	Temporary; valid only inside Update.
 
 		int m_iControlsFrozen:8;				//	Object will not respond to controls
 		int m_iSpare:24;

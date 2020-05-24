@@ -188,7 +188,7 @@ void CManeuverController::UpdateMoveTo (SUpdateCtx &Ctx, CShip *pShip)
 	if (bCloseEnough)
 		{
 		if (!pShip->IsParalyzed())
-			pShip->Accelerate(vDeltaV * pShip->GetMass() / 2000.0, g_SecondsPerUpdate);
+			pShip->AddForce(vDeltaV * pShip->GetMass() / 2000.0);
 
 		m_iManeuver = NoRotation;
 		m_bThrust = false;

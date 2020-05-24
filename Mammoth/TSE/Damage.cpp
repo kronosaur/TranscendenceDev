@@ -13,6 +13,7 @@
 #define LIFETIME_ATTRIB							CONSTLIT("lifetime")
 
 #define SPECIAL_DAMAGE_ARMOR					CONSTLIT("armor")
+#define SPECIAL_DAMAGE_ATTRACT					CONSTLIT("attract")
 #define SPECIAL_DAMAGE_BLINDING					CONSTLIT("blinding")
 #define SPECIAL_DAMAGE_DEVICE					CONSTLIT("device")
 #define SPECIAL_DAMAGE_DEVICE_DISRUPT			CONSTLIT("deviceDisrupt")
@@ -23,6 +24,7 @@
 #define SPECIAL_DAMAGE_MOMENTUM					CONSTLIT("momentum")
 #define SPECIAL_DAMAGE_RADIATION				CONSTLIT("radiation")
 #define SPECIAL_DAMAGE_REFLECT					CONSTLIT("reflect")
+#define SPECIAL_DAMAGE_REPEL					CONSTLIT("repel")
 #define SPECIAL_DAMAGE_SENSOR					CONSTLIT("sensor")
 #define SPECIAL_DAMAGE_SHATTER					CONSTLIT("shatter")
 #define SPECIAL_DAMAGE_SHIELD					CONSTLIT("shield")
@@ -37,6 +39,7 @@ const int DEFAULT_DEVICE_DISRUPT_TIME =			(30 * g_TicksPerSecond);
 
 const int MAX_INTENSITY =						7;
 const int MAX_BINARY =							1;
+constexpr int MAX_STRENGTH =					100;
 
 const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
 
@@ -213,6 +216,20 @@ void DamageDesc::AddEnhancements (const CItemEnhancementStack *pEnhancements)
 	//	Add special damage
 
 	pEnhancements->ApplySpecialDamage(this);
+	}
+
+int DamageDesc::ConvertOldMomentum (int iValue)
+
+//	ConvertOldMomentum
+//
+//	Converts from 0-7 to 0-100.
+
+	{
+	if (iValue == 0)
+		return 0;
+
+	Metric rImpulse = 250 * iValue * iValue;
+	return mathRound(mathLog((rImpulse / IMPULSE_FACTOR) + 1, IMPULSE_BASE) / IMPULSE_SCALE);
 	}
 
 SpecialDamageTypes DamageDesc::ConvertToSpecialDamageTypes (const CString &sValue)
@@ -460,6 +477,29 @@ CString DamageDesc::GetSpecialDamageName (SpecialDamageTypes iSpecial)
 	return CString(SPECIAL_DAMAGE_DATA[iSpecial].pszSpecial, -1, TRUE);
 	}
 
+bool DamageDesc::HasImpulseDamage (Metric *retrImpulse) const
+
+//	HasMomentumDamage
+//
+//	Returns TRUE if we have momuntum damage and optionally returns the size of
+//	the force/second (impulse, positive is a push away from source; negative is 
+//	a pull).
+
+	{
+	if (m_MomentumDamage)
+		{
+		if (retrImpulse)
+			{
+			Metric rStrength = IMPULSE_FACTOR * (pow(IMPULSE_BASE, IMPULSE_SCALE * Absolute(m_MomentumDamage)) - 1.0);
+			*retrImpulse = (m_MomentumDamage > 0 ? rStrength : -rStrength);
+			}
+
+		return true;
+		}
+
+	return false;
+	}
+
 void DamageDesc::SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel)
 
 //	SetSpecialDamage
@@ -502,7 +542,7 @@ void DamageDesc::SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel)
 			break;
 
 		case specialMomentum:
-			m_MomentumDamage = Max(0, Min(iLevel, MAX_INTENSITY));
+			m_MomentumDamage = Max(-MAX_STRENGTH, Min(iLevel, MAX_STRENGTH));
 			break;
 
 		case specialRadiation:
@@ -768,7 +808,7 @@ ALERROR DamageDesc::LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, 
 		else if (strEquals(sType, GetSpecialDamageName(specialRadiation)))
 			m_RadiationDamage = (DWORD)Min(iCount, MAX_BINARY);
 		else if (strEquals(sType, GetSpecialDamageName(specialMomentum)))
-			m_MomentumDamage = (DWORD)Min(iCount, MAX_INTENSITY);
+			m_MomentumDamage = ConvertOldMomentum(Min(iCount, MAX_INTENSITY));
 		else if (strEquals(sType, GetSpecialDamageName(specialDisintegration)))
 			m_DisintegrationDamage = (DWORD)Min(iCount, MAX_INTENSITY);
 		else if (strEquals(sType, GetSpecialDamageName(specialDeviceDisrupt)))
@@ -805,6 +845,13 @@ ALERROR DamageDesc::LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, 
 			m_MiningAdj = (DWORD)Min(iCount, MAX_INTENSITY);
 		else if (strEquals(sType, GetSpecialDamageName(specialShatter)))
 			m_ShatterDamage = (DWORD)Min(iCount, MAX_INTENSITY);
+
+		//	These special damage types translate to momentum
+
+		else if (strEquals(sType, SPECIAL_DAMAGE_REPEL))
+			m_MomentumDamage = Min(iCount, MAX_STRENGTH);
+		else if (strEquals(sType, SPECIAL_DAMAGE_ATTRACT))
+			m_MomentumDamage = -Min(iCount, MAX_STRENGTH);
 		else
 			return ERR_FAIL;
 		}
@@ -947,21 +994,23 @@ void DamageDesc::ReadFromStream (SLoadCtx &Ctx)
 	{
 	DWORD dwLoad;
 
-	Ctx.pStream->Read((char *)&m_iType, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
+	m_iType = (DamageTypes)dwLoad;
+
 	m_Damage.ReadFromStream(Ctx);
-	Ctx.pStream->Read((char *)&m_iBonus, sizeof(DWORD));
+	Ctx.pStream->Read(m_iBonus);
 
 	if (Ctx.dwVersion >= 18)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_iCause = (DestructionTypes)dwLoad;
 		}
 	else
 		m_iCause = killedByDamage;
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_EMPDamage = dwLoad & 0x07;
-	m_MomentumDamage = (dwLoad >> 3) & 0x07;
+	BYTE byOldMomentumDamage = (Ctx.dwVersion < 190 ? ((dwLoad >> 3) & 0x07) : 0);
 	m_RadiationDamage = (dwLoad >> 6) & 0x07;
 	m_DeviceDisruptDamage = (dwLoad >> 9) & 0x07;
 	m_BlindingDamage = (dwLoad >> 12) & 0x07;
@@ -985,7 +1034,7 @@ void DamageDesc::ReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 18 && ((dwLoad >> 30) & 0x01))
 		m_iCause = killedByWeaponMalfunction;
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_DeviceDamage = dwLoad & 0x07;
 	m_MassDestructionAdj = (dwLoad >> 3) & 0x07;
 	m_MiningAdj = (dwLoad >> 6) & 0x07;
@@ -994,11 +1043,16 @@ void DamageDesc::ReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 73)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_ShieldDamage = (BYTE)(dwLoad & 0xff);
 		m_ArmorDamage = (BYTE)((dwLoad & 0xff00) >> 8);
 		m_TimeStopDamage = (BYTE)((dwLoad & 0xff0000) >> 16);
 		}
+
+	if (Ctx.dwVersion >= 190)
+		m_MomentumDamage = (INT8)(BYTE)((dwLoad & 0xff000000) >> 24);
+	else
+		m_MomentumDamage = ConvertOldMomentum(byOldMomentumDamage);
 	}
 
 int DamageDesc::RollDamage (void) const
@@ -1040,15 +1094,15 @@ void DamageDesc::WriteToStream (IWriteStream *pStream) const
 	{
 	DWORD dwSave;
 
-	pStream->Write((char *)&m_iType, sizeof(DWORD));
+	pStream->Write(m_iType);
 	m_Damage.WriteToStream(pStream);
-	pStream->Write((char *)&m_iBonus, sizeof(DWORD));
+	pStream->Write(m_iBonus);
 
 	dwSave = m_iCause;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	dwSave = m_EMPDamage;
-	dwSave |= m_MomentumDamage << 3;
+	//	Spare: dwSave |= m_MomentumDamage << 3;
 	dwSave |= m_RadiationDamage << 6;
 	dwSave |= m_DeviceDisruptDamage << 9;
 	dwSave |= m_BlindingDamage << 12;
@@ -1059,16 +1113,16 @@ void DamageDesc::WriteToStream (IWriteStream *pStream) const
 	dwSave |= m_DisintegrationDamage << 27;
 	dwSave |= m_fNoSRSFlash << 30;
 	dwSave |= m_fAutomatedWeapon << 31;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	dwSave = m_DeviceDamage;
 	dwSave |= m_MassDestructionAdj << 3;
 	dwSave |= m_MiningAdj << 6;
 	dwSave |= m_ShatterDamage << 9;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
-	dwSave = (m_TimeStopDamage << 16) | (m_ArmorDamage << 8) | m_ShieldDamage;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	dwSave = ((BYTE)m_MomentumDamage << 24) | (m_TimeStopDamage << 16) | (m_ArmorDamage << 8) | m_ShieldDamage;
+	pStream->Write(dwSave);
 	}
 
 //	DamageTypeSet --------------------------------------------------------------

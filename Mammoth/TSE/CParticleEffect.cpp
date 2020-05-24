@@ -919,7 +919,8 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	If we're moving, slow down
 
-	UpdateDrag(Ctx, g_SpaceDragFactor);
+	if (!GetVel().IsNull())
+		AddDrag(g_SpaceDragFactor);
 	}
 
 void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)

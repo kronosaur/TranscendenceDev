@@ -496,6 +496,7 @@ class CSystem
 		CString GetAttribsAtPos (const CVector &vPos);
 		void GetDebugInfo (SDebugInfo &Info) const;
 		CEnvironmentGrid *GetEnvironmentGrid (void) { InitSpaceEnvironment(); return m_pEnvironment; }
+		CPhysicsForceResolver &GetForceResolver (void) { return m_ForceResolver; }
 		DWORD GetID (void) { return m_dwID; }
 		int GetLastUpdated (void) { return m_iLastUpdated; }
 		int GetLevel (void) const;
@@ -723,6 +724,7 @@ class CSystem
 		CSystemSpacePainter m_SpacePainter;		//	Paints space background
 		CMapGridPainter m_GridPainter;			//	Structure to paint a grid
 		CPhysicsContactResolver m_ContactResolver;	//	Resolves physics contacts
+		CPhysicsForceResolver m_ForceResolver;	//	Resolves physics forces
 		CGateTimerManager m_GateTimer;			//	Assign delay when ships exit a gate
 
 		//	Property table

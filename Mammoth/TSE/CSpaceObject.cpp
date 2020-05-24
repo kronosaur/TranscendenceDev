@@ -396,6 +396,55 @@ void CSpaceObject::AddEventSubscribers (const CSpaceObjectList &Objs)
 		}
 	}
 
+void CSpaceObject::AddDrag (Metric rDragFactor)
+
+//	AddDrag
+//
+//	Adds a drag factor.
+
+	{
+	if (!m_pSystem || IsAnchored())
+		return;
+
+	m_ForceDesc.AddDrag(m_pSystem->GetForceResolver(), *this, rDragFactor);
+	}
+
+void CSpaceObject::AddForce (const CVector &vForce)
+
+//	AddForce
+//
+//	Adds an acceleration force to the system's force resolver.
+
+	{
+	if (!m_pSystem || IsAnchored())
+		return;
+
+	m_ForceDesc.AddForce(m_pSystem->GetForceResolver(), *this, vForce);
+	}
+
+void CSpaceObject::AddForceFromDeltaV (const CVector &vDeltaV)
+
+//	AddForceFromDeltaV
+//
+//	Adds a force that will result in the given delta-V.
+
+	{
+	AddForce(vDeltaV * (GetMass() / 1000.0));
+	}
+
+void CSpaceObject::AddForceLimited (const CVector &vForce)
+
+//	AddForceLimited
+//
+//	Adds an acceleration force to the system's force resolver.
+
+	{
+	if (!m_pSystem || IsAnchored())
+		return;
+
+	m_ForceDesc.AddForceLimited(m_pSystem->GetForceResolver(), *this, vForce);
+	}
+
 EnhanceItemStatus CSpaceObject::AddItemEnhancement (const CItem &itemToEnhance, 
 													CItemType *pEnhancement, 
 													int iLifetime, 
@@ -7416,25 +7465,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 		{
 		m_fHasDockScreenMaybe = (CanObjRequestDock(Ctx.pPlayer) == dockingOK);
 		}
-	}
-
-void CSpaceObject::UpdateDrag (SUpdateCtx &Ctx, Metric rDragFactor)
-
-//	UpdateDrag
-//
-//	Slow down the update based on drag factor.
-
-	{
-	if (GetVel().IsNull())
-		;
-
-	//	If we're moving really slowly, force to 0. We do this so that we can optimize calculations
-	//	and not have to compute wreck movement down to infinitesimal distances.
-
-	else if (GetVel().Length2() < g_MinSpeed2)
-		SetVel(NullVector);
-	else
-		SetVel(CVector(GetVel().GetX() * rDragFactor, GetVel().GetY() * rDragFactor));
 	}
 
 void CSpaceObject::UpdateEffects (void)

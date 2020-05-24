@@ -638,12 +638,11 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	//	If this is a momentum attack then we are pushed
 
-	int iMomentum;
-	if (iMomentum = Ctx.Damage.GetMomentumDamage())
+	Metric rImpulse;
+	if (Ctx.Damage.HasImpulseDamage(&rImpulse))
 		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -10 * iMomentum * iMomentum);
-		Accelerate(vAccel, g_MomentumConstant);
-		ClipSpeed(GetMaxSpeed());
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
 		}
 
 	//	Create a hit effect

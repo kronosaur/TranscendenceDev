@@ -1550,6 +1550,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual Metric GetMass (void) const override { return m_rMass; }
 		virtual int GetMaxLightDistance (void) const override { return m_pType->GetMaxLightDistance(); }
+		virtual Metric GetMaxSpeed (void) const { return (IsAnchored() ? 0.0 : 0.25 * LIGHT_SPEED); }
 		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CStation"); }
