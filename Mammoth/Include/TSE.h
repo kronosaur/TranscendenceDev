@@ -263,7 +263,6 @@ struct SUpdateCtx
 		CSpaceObject *pPlayer = NULL;				//	The player
 		TArray<CSpaceObject *> PlayerObjs;			//	List of player objects, if pPlayer == NULL
 		SViewportAnnotations *pAnnotations = NULL;	//	Extra structure to deliver to PaintViewport
-		CPhysicsForceResolver ForceResolver;		//	Accumulate acceleration/drag forces
 
 		CAutoDockCalc AutoDock;						//	Used to compute nearest docking port
 		CAutoMiningCalc AutoMining;					//	Used to compute nearest minable asteroid
@@ -890,9 +889,10 @@ class CSpaceObject
 		virtual Metric GetMaxSpeed (void) const { return (IsAnchored() ? 0.0 : MAX_SYSTEM_SPEED); }
 		virtual bool IsAnchored (void) const { return IsManuallyAnchored(); }
 
-		void Accelerate (CPhysicsForceResolver &ForceResolver, const CVector &vForce) { m_ForceDesc.AddForce(ForceResolver, *this, vForce); }
-		void Accelerate (const CVector &vPush, Metric rSeconds);
+		void Accelerate (const CVector &vForce, Metric rSeconds);
 		void AccelerateStop (Metric rPush, Metric rSeconds);
+		void AddForce (const CVector &vForce);
+		void AddForceLimited (const CVector &vForce);
 		void ClearForceDesc (void) { m_ForceDesc.Clear(); }
 		void ClipSpeed (Metric rMaxSpeed) { m_vVel.Clip(rMaxSpeed); }
 		const CVector &DeltaV (const CVector &vDelta) { m_vVel = m_vVel + vDelta; return m_vVel; }

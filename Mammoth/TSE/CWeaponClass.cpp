@@ -2286,8 +2286,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	if (Result.bRecoil)
 		{
 		CVector vAccel = Result.vRecoil.Normal() * (Metric)(-10 * m_iRecoil * m_iRecoil);
-		Source.Accelerate(vAccel, g_MomentumConstant);
-		Source.ClipSpeed(Source.GetMaxSpeed());
+		Source.AddForce((g_MomentumConstant / g_SecondsPerUpdate) * vAccel);
 		}
 
 	//	Done!

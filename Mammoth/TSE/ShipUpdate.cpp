@@ -616,12 +616,7 @@ void CShip::UpdateManeuvers (Metric rSecondsPerTick)
 		{
 		CVector vAccel = PolarToVector(GetRotation(), GetThrust());
 
-		Accelerate(vAccel, rSecondsPerTick);
-
-		//	Check to see if we're exceeding the ship's speed limit. If we
-		//	are then adjust the speed
-
-		ClipSpeed(GetMaxSpeed());
+		AddForceLimited(vAccel);
 		}
 	else if (m_pController->GetStopThrust())
 		{

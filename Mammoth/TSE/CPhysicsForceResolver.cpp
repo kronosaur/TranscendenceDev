@@ -81,5 +81,6 @@ void CPhysicsForceResolver::Update (CSystem &System, const Metric rSecondsPerUpd
 
 		vVel.Clip(rMaxSpeed);
 		pObj->SetVel(vVel);
+		pObj->ClearForceDesc();
 		}
 	}

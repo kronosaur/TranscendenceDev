@@ -396,6 +396,32 @@ void CSpaceObject::AddEventSubscribers (const CSpaceObjectList &Objs)
 		}
 	}
 
+void CSpaceObject::AddForce (const CVector &vForce)
+
+//	AddForce
+//
+//	Adds an acceleration force to the system's force resolver.
+
+	{
+	if (!m_pSystem)
+		return;
+
+	m_ForceDesc.AddForce(m_pSystem->GetForceResolver(), *this, vForce);
+	}
+
+void CSpaceObject::AddForceLimited (const CVector &vForce)
+
+//	AddForceLimited
+//
+//	Adds an acceleration force to the system's force resolver.
+
+	{
+	if (!m_pSystem)
+		return;
+
+	m_ForceDesc.AddForceLimited(m_pSystem->GetForceResolver(), *this, vForce);
+	}
+
 EnhanceItemStatus CSpaceObject::AddItemEnhancement (const CItem &itemToEnhance, 
 													CItemType *pEnhancement, 
 													int iLifetime, 

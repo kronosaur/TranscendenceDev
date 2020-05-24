@@ -436,7 +436,7 @@ CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest
 		{
 		if (!pShip->IsParalyzed())
 			{
-			pShip->Accelerate(vDeltaV * pShip->GetMass() / 2000.0, g_SecondsPerUpdate);
+			pShip->AddForce(vDeltaV * pShip->GetMass() / 2000.0);
 
 #ifdef DEBUG_ATTACK_TARGET_MANEUVERS
 			pShip->SetDebugVector(vDeltaV.Normal() * 100. * g_KlicksPerPixel);
@@ -1647,7 +1647,7 @@ void CAIBehaviorCtx::ImplementFormationManeuver (CShip *pShip, const CVector vDe
 	if (bCloseEnough)
 		{
 		if (!pShip->IsParalyzed())
-			pShip->Accelerate(vDeltaV * pShip->GetMass() / 2000.0, g_SecondsPerUpdate);
+			pShip->AddForce(vDeltaV * pShip->GetMass() / 2000.0);
 
 		ImplementTurnTo(pShip, iDestFacing);
 		}
@@ -1984,12 +1984,12 @@ void CAIBehaviorCtx::ImplementStop (CShip *pShip)
 		CVector vAccel = PolarToVector(iAngle, -rThrust);
 
 		if (!pShip->IsParalyzed())
-			pShip->Accelerate(vAccel, g_SecondsPerUpdate);
+			pShip->AddForce(vAccel);
 		}
 	else
 		{
 		if (!pShip->IsParalyzed())
-			pShip->Accelerate(-pShip->GetVel() * pShip->GetMass() / 2000.0, g_SecondsPerUpdate);
+			pShip->AddForce(-pShip->GetVel() * pShip->GetMass() / 2000.0);
 		}
 	}
 
