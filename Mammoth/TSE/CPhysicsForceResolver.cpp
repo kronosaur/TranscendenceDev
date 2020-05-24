@@ -27,7 +27,6 @@ void CPhysicsForceResolver::BeginUpdate (void)
 //	Starts update
 
 	{
-	m_Forces.DeleteAll();
 	m_Forces.GrowToFit(DEFAULT_ALLOC);
 	}
 
@@ -46,41 +45,70 @@ void CPhysicsForceResolver::Update (CSystem &System, const Metric rSecondsPerUpd
 		{
 		const SForceDesc &Desc = m_Forces[i];
 		CSpaceObject *pObj = Desc.pObj;
-		const Metric rMass = pObj->GetMass();
-		if (rMass <= 0.0)
+		if (pObj->IsDestroyed() || pObj->IsAnchored())
+			{
+			pObj->ClearForceDesc();
 			continue;
-
-		//	Compute a factor incorporating mass.
-		//	NOTE: The original code multiplies force by 1000, ostensibly
-		//	because we want to convert to klicks per second. But since velocity
-		//	is already in klicks per second, the logic is difficult to discern.
-		//	We leave it here for backwards compatibility.
-
-		Metric rFactor = rSecondsPerUpdate * 1000.0 / rMass;
-
-		//	Accelerate with the unlimited forces first.
+			}
 
 		CVector vVel = pObj->GetVel();
-		if (!Desc.vForce.IsNull())
-			vVel = vVel + (Desc.vForce * rFactor);
+		Metric rMaxSpeed = pObj->GetMaxSpeed();
+		Metric rClipSpeed = -1.0;
 
-		//	If we also have limited forces, handle those.
+		//	Apply forces
 
-		Metric rMaxSpeed;
-		if (!Desc.vLimitedForce.IsNull())
+		const Metric rMass = pObj->GetMass();
+		if (rMass >= 0.0)
 			{
-			//	We use epsilon because we don't want round-off error to make
-			//	the speed creep up.
+			//	Compute a factor incorporating mass.
+			//	NOTE: The original code multiplies force by 1000, ostensibly
+			//	because we want to convert to klicks per second. But since velocity
+			//	is already in klicks per second, the logic is difficult to discern.
+			//	We leave it here for backwards compatibility.
 
-			rMaxSpeed = Max(pObj->GetMaxSpeed(), vVel.Length() - EPSILON_SPEED);
+			Metric rFactor = rSecondsPerUpdate * 1000.0 / rMass;
 
-			vVel = vVel + (Desc.vLimitedForce * rFactor);
+			//	Accelerate with the unlimited forces first.
+
+			if (!Desc.vForce.IsNull())
+				vVel = vVel + (Desc.vForce * rFactor);
+
+			//	If we also have limited forces, handle those.
+
+			if (!Desc.vLimitedForce.IsNull())
+				{
+				//	We use epsilon because we don't want round-off error to make
+				//	the speed creep up.
+
+				rClipSpeed = Min(Max(rMaxSpeed, vVel.Length() - EPSILON_SPEED), LIGHT_SPEED);
+
+				vVel = vVel + (Desc.vLimitedForce * rFactor);
+				}
+			else
+				rClipSpeed = LIGHT_SPEED;
 			}
-		else
-			rMaxSpeed = LIGHT_SPEED;
 
-		vVel.Clip(rMaxSpeed);
+		//	Apply drag
+
+		if (Desc.rDragFactor < 1.0)
+			{
+			if (vVel.IsNull())
+				;
+
+			//	If we're moving really slowly, force to 0.
+
+			else if (vVel.Length2() < MIN_DRAG_SPEED2)
+				vVel = CVector();
+			else
+				vVel = CVector(vVel.GetX() * Desc.rDragFactor, vVel.GetY() * Desc.rDragFactor);
+			}
+
+		if (rClipSpeed >= 0.0)
+			vVel.Clip(rClipSpeed);
+
 		pObj->SetVel(vVel);
 		pObj->ClearForceDesc();
 		}
+
+	m_Forces.DeleteAll();
 	}

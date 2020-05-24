@@ -87,7 +87,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		//	Slow down
 
-		UpdateDrag(Ctx, g_SpaceDragFactor);
+		AddDrag(g_SpaceDragFactor);
 
 		if (m_iParalysisTimer > 0)
 			m_iParalysisTimer--;
@@ -117,8 +117,16 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		COverlay::SImpactDesc Impact;
 		m_Overlays.GetImpact(this, Impact);
 
-		SetVel(CVector(GetVel().GetX() * Impact.rDrag, GetVel().GetY() * Impact.rDrag));
+		AddDrag(Impact.rDrag);
 		}
+
+	//	If we're exceeding our maximum speed, then add a drag factor. This can
+	//	happen if we're pushed beyond our max.
+
+	const Metric rMaxSpeed = GetMaxSpeed();
+	const Metric rMaxSpeed2 = rMaxSpeed * rMaxSpeed;
+	if (GetVel().Length2() > rMaxSpeed2)
+		AddDrag(g_SpaceDragFactor);
 
 	//	Update armor
 
@@ -189,10 +197,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 			Metric rDrag = pEnvironment->GetDragFactor();
 			if (!m_fShipCompartment && rDrag != 1.0)
-				{
-				SetVel(CVector(GetVel().GetX() * rDrag,
-					GetVel().GetY() * rDrag));
-				}
+				AddDrag(rDrag);
 
 			//	Update
 

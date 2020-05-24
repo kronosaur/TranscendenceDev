@@ -5,6 +5,21 @@
 
 #include "PreComp.h"
 
+void CPhysicsForceDesc::AddDrag (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, Metric rDragFactor)
+
+//	AddDrag
+//
+//	Adds a drag factor (< 1.0) which will be multiplied by velocity to 
+//	decrease it.
+
+	{
+	auto &Desc = GetDesc(ForceResolver, Obj);
+	if (Desc.rDragFactor < 1.0)
+		Desc.rDragFactor = Min(Desc.rDragFactor, rDragFactor);
+	else
+		Desc.rDragFactor = rDragFactor;
+	}
+
 void CPhysicsForceDesc::AddForce (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, const CVector &vForce)
 
 //	AddForce

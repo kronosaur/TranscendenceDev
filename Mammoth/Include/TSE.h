@@ -891,7 +891,9 @@ class CSpaceObject
 
 		void Accelerate (const CVector &vForce, Metric rSeconds);
 		void AccelerateStop (Metric rPush, Metric rSeconds);
+		void AddDrag (Metric rDragFactor);
 		void AddForce (const CVector &vForce);
+		void AddForceFromDeltaV (const CVector &vDeltaV);
 		void AddForceLimited (const CVector &vForce);
 		void ClearForceDesc (void) { m_ForceDesc.Clear(); }
 		void ClipSpeed (Metric rMaxSpeed) { m_vVel.Clip(rMaxSpeed); }
@@ -1345,7 +1347,6 @@ class CSpaceObject
 		void SetInDamageCode (void) { m_fInDamage = true; }
 		void SetNoFriendlyFire (void) { m_fNoFriendlyFire = true; }
 		void SetNonLinearMove (bool bValue = true) { m_fNonLinearMove = bValue; }
-		void UpdateDrag (SUpdateCtx &Ctx, Metric rDragFactor);
 		void UpdateTrade (SUpdateCtx &Ctx, int iInventoryRefreshed);
 		void UpdateTradeExtended (const CTimeSpan &ExtraTime);
 

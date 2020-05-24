@@ -90,6 +90,7 @@ class CPhysicsForceResolver
 			CSpaceObject *pObj = NULL;
 			CVector vForce;						//	Absolute acceleration
 			CVector vLimitedForce;				//	Accelerate only if below max speed.
+			Metric rDragFactor = 1.0;			//	Final velocity gets multiplied by this.
 			};
 
 		int AllocDesc (CSpaceObject &Obj);
@@ -100,6 +101,7 @@ class CPhysicsForceResolver
 
 	private:
 		static constexpr int DEFAULT_ALLOC = 200;
+		static constexpr Metric MIN_DRAG_SPEED2 = 1000.0;
 
 		TArray<SForceDesc> m_Forces;
 	};
@@ -107,9 +109,9 @@ class CPhysicsForceResolver
 class CPhysicsForceDesc
 	{
 	public:
+		void AddDrag (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, Metric rDragFactor);
 		void AddForce (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, const CVector &vForce);
 		void AddForceLimited (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, const CVector &vForce);
-		void AddDrag (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, Metric rDragFactor);
 		void Clear (void) { m_iIndex = -1; }
 		
 	private:
