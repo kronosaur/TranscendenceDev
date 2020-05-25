@@ -1815,10 +1815,11 @@ void CWeaponClass::FailureExplosion (CItemCtx &ItemCtx, const CWeaponFireDesc &S
 		return;
 
 	SDamageCtx DamageCtx(pSource,
-			const_cast<CWeaponFireDesc *>(&ShotDesc),
+			const_cast<CWeaponFireDesc &>(ShotDesc),
 			NULL,
 			CDamageSource(pSource, killedByWeaponMalfunction),
 			pSource,
+			0.0,
 			AngleMod(pDevice->GetPosAngle() + mathRandom(0, 30) - 15),
 			pDevice->GetPos(pSource));
 

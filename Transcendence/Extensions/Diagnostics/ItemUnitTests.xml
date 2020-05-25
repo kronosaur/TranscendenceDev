@@ -402,6 +402,18 @@
 						{	test:'(itm@ &itKM500Missile; 'damageTimeStop)			result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'damageWMD)				result:5	}
 						{	test:'(itm@ &itKM500Missile; 'damageWormhole)			result:Nil	}
+
+						;	Fading Items ---------------------------------------
+
+						{	test:'(itm@ &itLaserCannon; "damageDescAt:0.0")			result:"laser:1d4;"	}
+						{	test:'(itm@ &itLaserCannon; "damageDescAt:0.5")			result:"laser:1d4;"	}
+						{	test:'(itm@ &itLaserCannon; "damageDescAt:1.0")			result:"laser:1d4;"	}
+
+						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.0")	result:"kinetic:2d12; repel:20;"	}
+						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.25")	result:"kinetic:2d12; repel:15;"	}
+						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.5")	result:"kinetic:1d12; repel:10;"	}
+						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.75")	result:"kinetic:1d12; repel:5;"	}
+						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:1.0")	result:"kinetic:0;"	}
 						))
 
 					;	Unit Tests on Armor Damage -----------------------------

@@ -729,10 +729,11 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 							if (mathRandom(1, 1000) < (iDensity * iSpeed))
 								{
 								SDamageCtx DamageCtx(pObj,
-										pType->pDamageDesc,
+										*pType->pDamageDesc,
 										NULL,
 										CDamageSource(this, killedByDamage),
 										this,
+										0.0,
 										VectorToPolar(vDeltaV),
 										pObj->GetPos());
 

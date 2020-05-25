@@ -84,6 +84,7 @@ class DamageDesc
 			{ }
 
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
+		CString AsString (void) const;
 		bool CausesSRSFlash (void) const { return (m_fNoSRSFlash ? false : true); }
 		ICCItem *FindProperty (const CString &sName) const;
 		DestructionTypes GetCause (void) const { return m_iCause; }
@@ -96,6 +97,7 @@ class DamageDesc
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
 		bool HasImpulseDamage (Metric *retrImpulse = NULL) const;
 		bool HasMiningDamage (void) const { return (m_MiningAdj > 0); }
+		void InterpolateTo (const DamageDesc &End, Metric rSlider);
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
 		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageGeneric); }
 		bool IsEnergyDamage (void) const;
@@ -124,7 +126,6 @@ class DamageDesc
 		int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
 		int GetMiningDamage (void) const { return m_MiningAdj; }
 		int GetMiningWMDAdj (void);
-		//int GetMomentumDamage (void) const { return (int)m_MomentumDamage; }
 		int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
 		int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
 		int GetShieldDamageLevel (void) const { return (int)m_ShieldDamage; }
@@ -144,8 +145,10 @@ class DamageDesc
 		void AddBonus (int iBonus) { m_iBonus += iBonus; }
 		static int ConvertOldMomentum (int iValue);
 		static int ConvertToOldMomentum (int iValue);
+		static int InterpolateValue (int iFrom, int iTo, Metric rSlider);
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
 		ALERROR ParseTerm (SDesignLoadCtx &Ctx, char *pPos, CString *retsKeyword, CString *retsValue, char **retpPos);
+		static void WriteValue (CMemoryWriteStream &Stream, const CString &sField, int iValue);
 
 		DamageTypes m_iType = damageGeneric;	//	Type of damage
 		DiceRange m_Damage;						//	Amount of damage
@@ -213,10 +216,11 @@ struct SDamageCtx
 
 		SDamageCtx (void) { }
 		SDamageCtx (CSpaceObject *pObjHitArg, 
-				CWeaponFireDesc *pDescArg, 
+				CWeaponFireDesc &DescArg, 
 				const CItemEnhancementStack *pEnhancementsArg, 
 				CDamageSource &AttackerArg, 
 				CSpaceObject *pCauseArg, 
+				Metric rAge,
 				int iDirectionArg, 
 				const CVector &vHitPosArg,
 				int iDamageArg = -1);
@@ -509,6 +513,7 @@ class CWeaponFireDesc
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		void ApplyAcceleration (CSpaceObject *pMissile) const;
 		Metric CalcDamage (DWORD dwDamageFlags = 0) const;
+		DamageDesc CalcDamageDesc (const CItemEnhancementStack *pEnhancements, const CDamageSource &Attacker, Metric rAge) const;
 		bool CanAutoTarget (void) const { return (m_fAutoTarget ? true : false); }
 		bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
 		bool CanHit (CSpaceObject *pObj) const;
@@ -663,6 +668,7 @@ class CWeaponFireDesc
 		CItemTypeRef m_pAmmoType;				//	item type for this ammo
 		FireTypes m_iFireType = ftMissile;		//	beam or missile
 		DamageDesc m_Damage;					//	Damage per shot
+		DamageDesc m_DamageAtMaxRange;			//	If specified, damage decays with range to this value.
 		CConfigurationDesc m_Configuration;		//	Configuration (empty = default)
 		int m_iContinuous = -1;					//	repeat for this number of frames (-1 = default)
 		int m_iContinuousFireDelay = -1;		//	Ticks between continuous fire shots (-1 = default)

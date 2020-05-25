@@ -363,10 +363,11 @@ void CMissile::CreateFragments (const CVector &vPos)
 	//	Create the hit effect
 
 	SDamageCtx DamageCtx(NULL,
-			m_pDesc,
+			*m_pDesc,
 			m_pEnhancements,
 			m_Source,
 			this,
+			0.0,
 			mathRandom(0, 359),
 			vPos);
 
@@ -488,6 +489,20 @@ void CMissile::DetonateNow (CSpaceObject *pHit)
 
 	{
 	m_fDetonate = true;
+	}
+
+Metric CMissile::GetAge (void) const
+
+//	GetAge
+//
+//	Returns the age of the missile as a fraction of its lifetime (0-1.0).
+
+	{
+	int iTotalLife = m_iTick + m_iLifeLeft;
+	if (iTotalLife > 0)
+		return (Metric)m_iTick / (Metric)iTotalLife;
+	else
+		return 0.0;
 	}
 
 CSpaceObject::Categories CMissile::GetCategory (void) const
@@ -1264,10 +1279,11 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			else if (m_iHitDir != -1)
 				{
 				SDamageCtx DamageCtx(m_pHit,
-						m_pDesc,
+						*m_pDesc,
 						m_pEnhancements,
 						m_Source,
 						this,
+						GetAge(),
 						AngleMod(m_iHitDir + mathRandom(0, 30) - 15),
 						m_vHitPos);
 

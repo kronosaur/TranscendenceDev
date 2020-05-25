@@ -6,15 +6,17 @@
 #include "PreComp.h"
 
 SDamageCtx::SDamageCtx (CSpaceObject *pObjHitArg, 
-						CWeaponFireDesc *pDescArg, 
+						CWeaponFireDesc &DescArg, 
 						const CItemEnhancementStack *pEnhancementsArg,
 						CDamageSource &AttackerArg,
 						CSpaceObject *pCauseArg,
+						Metric rAgeArg,
 						int iDirectionArg,
 						const CVector &vHitPosArg,
 						int iDamageArg) :
 		pObj(pObjHitArg),
-		pDesc(pDescArg),
+		pDesc(&DescArg),
+		Damage(DescArg.CalcDamageDesc(pEnhancementsArg, AttackerArg, rAgeArg)),
 		iDirection(iDirectionArg),
 		vHitPos(vHitPosArg),
 		pCause(pCauseArg),
@@ -27,15 +29,6 @@ SDamageCtx::SDamageCtx (CSpaceObject *pObjHitArg,
 //	All such calls should go through this constructor.
 
 	{
-	//	Initialize damage structure
-
-	Damage = pDescArg->GetDamage();
-	if (pEnhancementsArg)
-		Damage.AddEnhancements(pEnhancementsArg);
-	Damage.SetCause(AttackerArg.GetCause());
-	if (AttackerArg.IsAutomatedWeapon())
-		Damage.SetAutomatedWeapon();
-
 	//	Roll damage
 
 	if (iDamage == -1)
