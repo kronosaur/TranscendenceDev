@@ -615,7 +615,7 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 				{
 				CString sKey = pObj->GetDesiredCommsKey();
 				if (sKey.IsBlank() || KeyMap.GetAt(sKey) != NULL)
-					sKey = CMenuDisplay::GetHotKeyFromOrdinal(&iNextKey, KeyMap);
+					sKey = CMenuDisplayOld::GetHotKeyFromOrdinal(&iNextKey, KeyMap);
 
 				if (!sKey.IsBlank())
 					{
@@ -646,7 +646,7 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 				{
 				CString sKey = pObj->GetDesiredCommsKey();
 				if (sKey.IsBlank() || KeyMap.GetAt(sKey) != NULL)
-					sKey = CMenuDisplay::GetHotKeyFromOrdinal(&iNextKey, KeyMap);
+					sKey = CMenuDisplayOld::GetHotKeyFromOrdinal(&iNextKey, KeyMap);
 
 				if (!sKey.IsBlank())
 					{
@@ -751,7 +751,7 @@ bool CTranscendenceWnd::ShowInvokeMenu (void)
 				if (sKey.GetLength() == 2)
 					iOrdinal += 9;
 
-				sKey = CMenuDisplay::GetHotKeyFromOrdinal(&iOrdinal, KeyMap);
+				sKey = CMenuDisplayOld::GetHotKeyFromOrdinal(&iOrdinal, KeyMap);
 				}
 
 			//	Add the menu. (We check again to see if the key is valid

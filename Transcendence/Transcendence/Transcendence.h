@@ -279,11 +279,11 @@ class CMenuData
 		Entry m_List[MAX_MENU_ITEMS];
 	};
 
-class CMenuDisplay
+class CMenuDisplayOld
 	{
 	public:
-		CMenuDisplay (void);
-		~CMenuDisplay (void);
+		CMenuDisplayOld (void);
+		~CMenuDisplayOld (void);
 
 		void CleanUp (void);
 		const RECT &GetRect (void) { return m_rcRect; }
@@ -865,7 +865,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 
 		CDeviceCounterDisplay m_DeviceDisplay;	//	Device counter display
 		CMessageDisplay m_MessageDisplay;	//	Message display object
-		CMenuDisplay m_MenuDisplay;			//	Menu display
+		CMenuDisplayOld m_MenuDisplay;			//	Menu display
 		CPickerDisplay m_PickerDisplay;		//	Picker display
 
 		CGameStats m_LastStats;				//	Last game stats

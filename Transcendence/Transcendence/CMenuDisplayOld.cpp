@@ -1,6 +1,6 @@
-//	CMenuDisplay.cpp
+//	CMenuDisplayOld.cpp
 //
-//	CMenuDisplay class
+//	CMenuDisplayOld class
 
 #include "PreComp.h"
 #include "Transcendence.h"
@@ -8,23 +8,23 @@
 #define BLOCK_WIDTH							18
 #define BLOCK_HEIGHT						18
 
-CMenuDisplay::CMenuDisplay (void) : m_pMenu(NULL),
+CMenuDisplayOld::CMenuDisplayOld (void) : m_pMenu(NULL),
 		m_bInvalid(true)
 
-//	CMenuDisplay constructor
+//	CMenuDisplayOld constructor
 
 	{
 	}
 
-CMenuDisplay::~CMenuDisplay (void)
+CMenuDisplayOld::~CMenuDisplayOld (void)
 
-//	CMenuDisplay destructor
+//	CMenuDisplayOld destructor
 
 	{
 	CleanUp();
 	}
 
-void CMenuDisplay::CleanUp (void)
+void CMenuDisplayOld::CleanUp (void)
 
 //	CleanUp
 //
@@ -34,7 +34,7 @@ void CMenuDisplay::CleanUp (void)
 	m_pMenu = NULL;
 	}
 
-void CMenuDisplay::ComputeMenuRect (RECT *retrcRect)
+void CMenuDisplayOld::ComputeMenuRect (RECT *retrcRect)
 
 //	ComputeMenuRect
 //
@@ -50,7 +50,7 @@ void CMenuDisplay::ComputeMenuRect (RECT *retrcRect)
 	retrcRect->bottom = retrcRect->top + cyHeight;
 	}
 
-CString CMenuDisplay::GetHotKeyFromOrdinal (int *ioOrdinal, const TSortMap<CString, bool> &Exclude)
+CString CMenuDisplayOld::GetHotKeyFromOrdinal (int *ioOrdinal, const TSortMap<CString, bool> &Exclude)
 
 //	GetHotKeyFromOrdinal
 //
@@ -83,7 +83,7 @@ CString CMenuDisplay::GetHotKeyFromOrdinal (int *ioOrdinal, const TSortMap<CStri
 	return sKey;
 	}
 
-ALERROR CMenuDisplay::Init (CMenuData *pMenu, const RECT &rcRect)
+ALERROR CMenuDisplayOld::Init (CMenuData *pMenu, const RECT &rcRect)
 
 //	Init
 //
@@ -106,7 +106,7 @@ ALERROR CMenuDisplay::Init (CMenuData *pMenu, const RECT &rcRect)
 	return NOERROR;
 	}
 
-void CMenuDisplay::Paint (CG32bitImage &Dest)
+void CMenuDisplayOld::Paint (CG32bitImage &Dest)
 
 //	Paint
 //
@@ -138,7 +138,7 @@ void CMenuDisplay::Paint (CG32bitImage &Dest)
 	DEBUG_CATCH
 	}
 
-void CMenuDisplay::Update (void)
+void CMenuDisplayOld::Update (void)
 
 //	Update
 //
