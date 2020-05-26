@@ -285,9 +285,40 @@ public:
 			clear();
 		}
 	};
-	//void RenderOneNonInstanced(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue = true) {
-
-	//}
+	void RenderAllNonInstanced(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue = true) {
+		int iNumObjectsToRender = m_renderRequests.size();
+		if (iNumObjectsToRender > 0)
+		{
+			OpenGLVAO &vao = m_renderRequests[0].getVAOForInstancedBatchType();
+			unsigned int iVAOID = vao.getVAO()[0];
+			unsigned int *instancedVBO = vao.getinstancedVBO();
+			glBindVertexArray(iVAOID);
+			glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
+			shader->bind();
+			//set uniforms
+			m_iNumTexturesBound = 0;
+			std::apply
+			(
+				[this, shader](uniformArgs const&... tupleArgs)
+			{
+				setGLUniformValues(shader, 0, tupleArgs...);
+			}, m_uniformValues
+			);
+			for (int i = 0; i < iNumObjectsToRender; i++)
+			{
+				m_renderRequests[i].set_depth(startingDepth);
+				startingDepth -= incDepth;
+				glBufferData(GL_ARRAY_BUFFER, sizeof(shaderRenderRequest), &m_renderRequests[i], GL_STATIC_DRAW);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			}
+			shader->unbind();
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindVertexArray(0);
+		}
+		if (clearRenderQueue) {
+			clear();
+		}
+	};
 	void addObjToRender(shaderRenderRequest renderRequest) {
 		m_renderRequests.push_back(renderRequest);
 	};
