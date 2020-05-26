@@ -69,6 +69,8 @@ private:
 //typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, glm::ivec3, glm::vec3, glm::vec3, glm::vec3> OpenGLInstancedBatchRay;
 //typedef OpenGLInstancedBatch<std::tuple<OpenGLTexture*, OpenGLTexture*, int>, glm::vec2, glm::vec2, glm::vec2, glm::vec2, float, glm::vec4, float> OpenGLInstancedBatchTexture;
 
+const int NUM_OPENGL_OBJECT_LAYERS = 6;
+
 class OpenGLContext {
 public:
 	OpenGLContext (void) { };
@@ -116,41 +118,6 @@ protected:
 	HWND m_windowID;
 };
 
-class OpenGLInstancedRenderQueue {
-	// Contains all the objects to render for a single given texture.
-public:
-	OpenGLInstancedRenderQueue (void);
-	~OpenGLInstancedRenderQueue (void);
-	// TODO: Allow this function to take an array of textures.
-	void PopulateGlowMaps (OpenGLTexture *texture, unsigned int fbo, OpenGLVAO* vao, OpenGLShader* glowmapShader, int texQuadWidth, int texQuadHeight);
-	void Render (OpenGLShader *shader, OpenGLVAO *vao, OpenGLTexture *texture, float &startingDepth, float incDepth, int currentTick);
-	void RenderNonInstanced (OpenGLShader *shader, OpenGLVAO *vao, OpenGLTexture *texture);
-	void clear (void);
-	// TODO: pass the canvas height and widths as uniforms
-	void addObjToRender (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, int texHeight, int texWidth,
-		int texQuadWidth, int texQuadHeight, float alphaStrength, glm::vec4 glow, float glowNoise);
-	void addObjToRender (float startFX, float startFY, float sizeFX, float sizeFY, float posFX, float posFY);
-	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
-	void setShader (OpenGLShader *shader) { m_pShader = shader; }
-	OpenGLShader* getShader (void) { return m_pShader; }
-	void setTexture (OpenGLTexture *texture) { m_pTexture = texture; }
-	OpenGLTexture* getTexture (void) { return m_pTexture; }
-	int getNumObjectsToRender (void) { return m_iNumObjectsToRender; }
-private:
-
-	int m_iNumObjectsToRender = 0;
-	std::vector<glm::vec2> m_texturePositionsFloat;
-	std::vector<glm::vec2> m_quadSizesFloat;
-	std::vector<glm::vec2> m_canvasPositionsFloat;
-	std::vector<glm::vec2> m_textureSizesFloat;
-	std::vector<float> m_alphaStrengthsFloat;
-	std::vector<float> m_depthsFloat;
-	std::vector<glm::vec4> m_glowColorFloat;
-	std::vector<float> m_glowNoiseFactorFloat;
-	OpenGLShader* m_pShader;
-	OpenGLTexture* m_pTexture;
-};
-
 class OpenGLMasterRenderQueue {
 public:
 	OpenGLMasterRenderQueue (void);
@@ -191,8 +158,6 @@ private:
 	OpenGLShader *m_pLightningShader;
 	// TODO: Maybe use filenames of texture images as the key rather than pointer to OpenGLTextures? Using pointers as map keys is not reliable.
 	std::map<OpenGLTexture*, OpenGLInstancedBatchTexture*> m_shipRenderQueues;
-	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipEffectTextureRenderQueues;
-	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_effectTextureRenderQueues;
 	OpenGLInstancedBatchRay m_shipEffectRayRenderQueue;
 	OpenGLInstancedBatchRay m_effectRayRenderQueue;
 	OpenGLInstancedBatchLightning m_effectLightningRenderQueue;

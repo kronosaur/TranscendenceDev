@@ -537,7 +537,6 @@
     </ClCompile>
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="OpenGLContext.cpp" />
-    <ClCompile Include="OpenGLInstancedRenderQueue.cpp" />
     <ClCompile Include="OpenGLMasterRenderQueue.cpp" />
     <ClCompile Include="OpenGLShader.cpp" />
     <ClCompile Include="OpenGLTexture.cpp" />
