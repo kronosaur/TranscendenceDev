@@ -21,6 +21,7 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
 		m_SystemStationsMenu(*CreateCtx.pHI, *CreateCtx.pModel, *this),
 		m_Narrative(*CreateCtx.pHI),
 		m_CurrentMenu(menuNone),
+		m_MenuDisplay(*CreateCtx.pHI),
 		m_pCurrentComms(NULL),
         m_iDamageFlash(0),
 		m_bIgnoreButtonUp(false),
@@ -251,6 +252,7 @@ ALERROR CGameSession::OnInit (CString *retsError)
 	InitUI();
     m_HUD.Init(m_rcScreen);
     m_SystemMap.Init(m_rcScreen);
+	m_MenuDisplay.Init(m_rcScreen);
 
     RECT rcCenter;
     m_HUD.GetClearHorzRect(&rcCenter);
@@ -526,7 +528,8 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuGame:
-			g_pTrans->ShowGameMenu();
+			m_MenuDisplay.Show(CreateGameMenu(), CMenuDisplay::posCenter);
+			//g_pTrans->ShowGameMenu();
 			break;
 
 		case menuInvoke:

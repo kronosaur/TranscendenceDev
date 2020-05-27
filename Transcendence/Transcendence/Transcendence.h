@@ -228,12 +228,14 @@ class CMenuData
 
 		CMenuData (void);
 
-		void AddMenuItem (const CString &sKey,
+		void AddMenuItem (const CString &sID,
+						  const CString &sKey,
 						  const CString &sLabel,
-						  DWORD dwFlags,
-						  DWORD dwData,
-						  DWORD dwData2 = 0) { AddMenuItem(sKey, sLabel, NULL, 0, NULL_STR, NULL_STR, dwFlags, dwData, dwData2); }
-		void AddMenuItem (const CString &sKey,
+						  DWORD dwFlags = 0,
+						  DWORD dwData = 0,
+						  DWORD dwData2 = 0) { AddMenuItem(sID, sKey, sLabel, NULL, 0, NULL_STR, NULL_STR, dwFlags, dwData, dwData2); }
+		void AddMenuItem (const CString &sID,
+						  const CString &sKey,
 						  const CString &sLabel,
 						  const CObjectImageArray *pImage,
 						  int iCount,
@@ -252,16 +254,19 @@ class CMenuData
 		int GetItemCount (int iIndex) const { return m_List[iIndex].iCount; }
 		const CString &GetItemExtra (int iIndex) const { return m_List[iIndex].sExtra; }
 		const CString &GetItemHelpText (int iIndex) const { return m_List[iIndex].sHelp; }
+		const CString &GetItemID (int iIndex) const { return m_List[iIndex].sID; }
 		const CObjectImageArray *GetItemImage (int iIndex) const { return m_List[iIndex].pImage; }
 		DWORD GetItemFlags (int iIndex) const { return m_List[iIndex].dwFlags; }
 		const CString &GetItemKey (int iIndex) const { return m_List[iIndex].sKey; }
 		const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
 		const CString &GetTitle (void) { return m_sTitle; }
+		bool IsEmpty (void) const { return m_iCount == 0; }
 		void RemoveAll (void) { m_iCount = 0; }
 
 	private:
 		struct Entry
 			{
+			CString sID;
 			CString sKey;
 			CString sLabel;
 			const CObjectImageArray *pImage = NULL;

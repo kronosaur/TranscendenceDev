@@ -57,6 +57,21 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 					ExecuteCommandEnd(pPlayer, CGameKeys::keyPause);
 				}
 
+			//	Game menu
+
+			else if (m_CurrentMenu == menuGame)
+				{
+				//	Ignore repeat keys (because otherwise we might accidentally
+				//	select a menu item from keeping a key pressed too long).
+
+				if (bKeyRepeat)
+					return;
+
+				//	Let the menu handle the key
+
+				m_MenuDisplay.OnChar(chChar, dwKeyData);
+				}
+
 			//	If we're in a menu, handle it
 
 			else if (IsInMenuCompatible())
@@ -79,7 +94,7 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 					switch (m_CurrentMenu)
 						{
 						case menuGame:
-							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+							GetUniverse().PlaySound(NULL, GetUniverse().FindSound(UNID_DEFAULT_SELECT));
 							if (g_pTrans->DoGameMenuCommand(dwData))
 								DismissMenu();
 							break;

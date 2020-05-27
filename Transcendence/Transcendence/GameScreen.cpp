@@ -513,7 +513,8 @@ void CTranscendenceWnd::ShowCommsMenu (CSpaceObject *pObj)
 			CString sKey;
 
 			if (m_pMenuObj->IsCommsMessageValidFrom(pShip, i, &sName, &sKey))
-				m_MenuData.AddMenuItem(sKey,
+				m_MenuData.AddMenuItem(NULL_STR,
+						sKey,
 						sName,
 						CMenuData::FLAG_SORT_BY_KEY,
 						i);
@@ -619,7 +620,8 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 
 				if (!sKey.IsBlank())
 					{
-					m_MenuData.AddMenuItem(sKey,
+					m_MenuData.AddMenuItem(NULL_STR,
+							sKey,
 							pObj->GetNounPhrase(),
 							CMenuData::FLAG_SORT_BY_KEY,
 							(DWORD)pObj);
@@ -650,7 +652,8 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 
 				if (!sKey.IsBlank())
 					{
-					m_MenuData.AddMenuItem(sKey,
+					m_MenuData.AddMenuItem(NULL_STR,
+							sKey,
 							pObj->GetNounPhrase(),
 							CMenuData::FLAG_SORT_BY_KEY,
 							(DWORD)pObj);
@@ -759,7 +762,7 @@ bool CTranscendenceWnd::ShowInvokeMenu (void)
 
 			if (!sKey.IsBlank())
 				{
-				m_MenuData.AddMenuItem(
+				m_MenuData.AddMenuItem(NULL_STR,
 						sKey,
 						pPower->GetName(),
 						CMenuData::FLAG_SORT_BY_KEY,
@@ -848,7 +851,8 @@ bool CTranscendenceWnd::ShowEnableDisablePicker (void)
 
 			//	Add the item
 
-			m_MenuData.AddMenuItem(sKey,
+			m_MenuData.AddMenuItem(NULL_STR,
+					sKey,
 					sName,
 					&pType->GetImage(),
 					0,
@@ -1011,7 +1015,8 @@ bool CTranscendenceWnd::ShowUsePicker (void)
 
 		//	Add the item
 
-		m_MenuData.AddMenuItem(sKey,
+		m_MenuData.AddMenuItem(NULL_STR,
+				sKey,
 				sName,
 				&pType->GetImage(),
 				iCount,

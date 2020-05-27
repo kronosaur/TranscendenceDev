@@ -57,7 +57,7 @@ class CGameSession : public IHISession
 		virtual void OnAnimate (CG32bitImage &Screen, bool bTopMost) override;
 		virtual void OnChar (char chChar, DWORD dwKeyData) override;
 		virtual void OnCleanUp (void);
-		virtual ALERROR OnCommand (const CString &sCmd, void *pData = NULL) override { return NOERROR; }
+		virtual ALERROR OnCommand (const CString &sCmd, void *pData = NULL) override;
 		virtual ALERROR OnInit (CString *retsError) override;
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData) override;
 		virtual void OnKeyUp (int iVirtKey, DWORD dwKeyData) override;
@@ -89,6 +89,7 @@ class CGameSession : public IHISession
 		void PaintSoundtrackTitles (CG32bitImage &Dest);
 
 	private:
+		CMenuData CreateGameMenu (void) const;
 		void DismissMenu (void);
 		void ExecuteCommandRefresh (void);
 		void ExecuteCommandRefresh (CPlayerShipController &Player);
@@ -129,11 +130,15 @@ class CGameSession : public IHISession
 		//	HUD state
 
 		CHeadsUpDisplay m_HUD;              //  Paint the HUD
-		EMenuTypes m_CurrentMenu;			//	Current menu being displayed
-		CSpaceObject *m_pCurrentComms;		//	Object that we're currently communicating with
 		int m_iDamageFlash;					//	0 = no flash; odd = recover; even = flash;
 		bool m_bIgnoreButtonUp;				//	If we closed a menu on button down, ignore button up
 		bool m_bIgnoreMouseMove;			//	Ignore mouse move, for purposes of enabling mouse flight
+
+		//	Menu state
+
+		EMenuTypes m_CurrentMenu;			//	Current menu being displayed
+		CMenuDisplay m_MenuDisplay;			//	Menu
+		CSpaceObject *m_pCurrentComms;		//	Object that we're currently communicating with
 
 		//	Map state
 

@@ -12,7 +12,8 @@ CMenuData::CMenuData (void) : m_iCount(0)
 	{
 	}
 
-void CMenuData::AddMenuItem (const CString &sKey,
+void CMenuData::AddMenuItem (const CString &sID,
+							 const CString &sKey,
 							 const CString &sLabel,
 							 const CObjectImageArray *pImage,
 							 int iCount,
@@ -53,6 +54,7 @@ void CMenuData::AddMenuItem (const CString &sKey,
 
 	//	Add item
 
+	m_List[iPos].sID = sID;
 	m_List[iPos].sKey = sKey;
 	m_List[iPos].sLabel = sLabel;
 	m_List[iPos].dwData = dwData;

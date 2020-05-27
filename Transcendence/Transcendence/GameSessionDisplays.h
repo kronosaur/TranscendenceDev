@@ -44,6 +44,43 @@ class CHeadsUpDisplay
 		int m_iSelection = -1;						//  Selected armor seg (or -1)
 	};
 
+class CMenuDisplay
+	{
+	public:
+		enum EPositions
+			{
+			posNone,
+
+			posCenter,
+			posRight,
+			posLeft,
+			};
+
+		CMenuDisplay (CHumanInterface &HI) :
+				m_HI(HI)
+			{ }
+
+		void Hide (void) { }
+		void Init (const RECT &rcScreen);
+		bool OnChar (char chChar, DWORD dwKeyData);
+		void Paint (CG32bitImage &Screen, int iTick) const;
+		void Show (const CMenuData &Data, EPositions iPosition);
+
+	private:
+		void DoCommand (int iIndex);
+		void Realize (void) const;
+
+		CHumanInterface &m_HI;
+		CMenuData m_Data;
+		int m_iSelection = -1;
+
+		RECT m_rcScreen = { 0 };					//	Rect of entire screen
+		RECT m_rcRect = { 0 };						//	Rect of menu
+
+		mutable CG32bitImage m_Buffer;
+		mutable bool m_bInvalid = true;
+	};
+
 enum class ENarrativeDisplayStyle
 	{
 	none,

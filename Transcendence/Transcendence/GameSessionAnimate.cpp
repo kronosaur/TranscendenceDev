@@ -417,10 +417,13 @@ void CGameSession::PaintMenu (CG32bitImage &Screen)
 	{
 	switch (m_CurrentMenu)
 		{
+		case menuGame:
+			m_MenuDisplay.Paint(Screen, 0);
+			break;
+
 		case menuComms:
 		case menuCommsSquadron:
 		case menuCommsTarget:
-		case menuGame:
 		case menuInvoke:
 		case menuSelfDestructConfirm:
 			g_pTrans->m_MenuDisplay.Paint(Screen);
