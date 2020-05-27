@@ -93,12 +93,6 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 
 					switch (m_CurrentMenu)
 						{
-						case menuGame:
-							GetUniverse().PlaySound(NULL, GetUniverse().FindSound(UNID_DEFAULT_SELECT));
-							if (g_pTrans->DoGameMenuCommand(dwData))
-								DismissMenu();
-							break;
-
 						case menuSelfDestructConfirm:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 							g_pTrans->DoSelfDestructConfirmCommand(dwData);

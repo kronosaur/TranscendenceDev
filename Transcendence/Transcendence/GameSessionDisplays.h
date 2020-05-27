@@ -56,8 +56,9 @@ class CMenuDisplay
 			posLeft,
 			};
 
-		CMenuDisplay (CHumanInterface &HI) :
-				m_HI(HI)
+		CMenuDisplay (CHumanInterface &HI, CTranscendenceModel &Model) :
+				m_HI(HI),
+				m_Model(Model)
 			{ }
 
 		void Hide (void) { }
@@ -71,6 +72,7 @@ class CMenuDisplay
 		void Realize (void) const;
 
 		CHumanInterface &m_HI;
+		CTranscendenceModel &m_Model;
 		CMenuData m_Data;
 		int m_iSelection = -1;
 

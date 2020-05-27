@@ -21,7 +21,7 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
 		m_SystemStationsMenu(*CreateCtx.pHI, *CreateCtx.pModel, *this),
 		m_Narrative(*CreateCtx.pHI),
 		m_CurrentMenu(menuNone),
-		m_MenuDisplay(*CreateCtx.pHI),
+		m_MenuDisplay(*CreateCtx.pHI, *CreateCtx.pModel),
 		m_pCurrentComms(NULL),
         m_iDamageFlash(0),
 		m_bIgnoreButtonUp(false),

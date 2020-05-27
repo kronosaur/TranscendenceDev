@@ -21,6 +21,7 @@ void CMenuDisplay::DoCommand (int iIndex)
 	if (sID.IsBlank())
 		return;
 
+	m_Model.GetUniverse().PlaySound(NULL, m_Model.GetUniverse().FindSound(UNID_DEFAULT_SELECT));
 	pSession->HICommand(sID);
 	}
 
