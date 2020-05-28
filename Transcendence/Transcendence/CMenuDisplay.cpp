@@ -37,8 +37,8 @@ int CMenuDisplay::HitTest (int x, int y) const
 
 	//	Convert to coordinates relative to upper-left corner of first entry.
 
-	x -= m_rcRect.left + MENU_BORDER_RADIUS;
-	y -= m_rcRect.top + MENU_BORDER_RADIUS;
+	x -= m_rcRect.left + m_xFirstEntry;
+	y -= m_rcRect.top + m_yFirstEntry;
 
 	//	If we're too far left or right, then no hit
 
@@ -169,12 +169,31 @@ void CMenuDisplay::Realize (void) const
 	//	Paint background
 
 	CGDraw::RoundedRect(m_Buffer, 0, 0, RectWidth(m_rcRect), RectHeight(m_rcRect), MENU_BORDER_RADIUS, rgbBackground, CGDraw::blendCompositeNormal);
+
+	//	Paint the title bar
+
+	if (const CString &sTitle = m_Data.GetTitle())
+		{
+		CGDraw::RoundedRect(m_Buffer, 0, 0, RectWidth(m_rcRect), m_cyEntry + MENU_BORDER_RADIUS, MENU_BORDER_RADIUS, VI.GetColor(colorAreaDialogTitle));
+
+		int cxTitle = MenuFont.MeasureText(sTitle);
+		int xTitle = (RectWidth(m_rcRect) - cxTitle) / 2;
+		int yTitle = MENU_BORDER_RADIUS;
+		MenuFont.DrawText(m_Buffer, 
+				xTitle, 
+				yTitle, 
+				VI.GetColor(colorTextNormal), 
+				m_Data.GetTitle());
+		}
+
+	//	Outline pane.
+
 	CGDraw::RoundedRectOutline(m_Buffer, 0, 0, RectWidth(m_rcRect), RectHeight(m_rcRect), MENU_BORDER_RADIUS, MENU_BORDER_WIDTH, rgbText);
 
 	//	Paint each entry.
 
-	int xEntry = MENU_BORDER_RADIUS;
-	int yEntry = MENU_BORDER_RADIUS;
+	int xEntry = m_xFirstEntry;
+	int yEntry = m_yFirstEntry;
 	for (int i = 0; i < m_Data.GetCount(); i++)
 		{
 		//	Highlight hover
@@ -189,23 +208,42 @@ void CMenuDisplay::Realize (void) const
 		int xText = xEntry + (m_cxEntry - cxText) / 2;
 		int yText = yEntry + MENU_ITEM_VPADDING;
 
-		MenuFont.DrawText(m_Buffer, 
-				xText, 
-				yText, 
-				(m_bDown && m_iHover == i ? rgbTextBright : rgbText), 
-				m_Data.GetItemLabel(i));
+		CG32bitPixel rgbColor = (m_bDown && m_iHover == i ? rgbTextBright : rgbText);
+
+		if (m_Data.GetItemAcceleratorPos(i) != -1)
+			{
+			CDrawText::WithAccelerator(m_Buffer,
+					xText,
+					yText,
+					m_Data.GetItemLabel(i),
+					m_Data.GetItemAcceleratorPos(i),
+					MenuFont,
+					rgbColor,
+					VI.GetColor(colorAreaAccelerator));
+			}
+		else
+			{
+			MenuFont.DrawText(m_Buffer, 
+					xText, 
+					yText, 
+					(m_bDown && m_iHover == i ? rgbTextBright : rgbText), 
+					m_Data.GetItemLabel(i));
+			}
 
 		//	Paint the key
 
-		if (const CString &sKey = m_Data.GetItemKey(i))
+		if (!m_bHideShortCutKeys)
 			{
-			CInputKeyPainter KeyPainter;
-			KeyPainter.Init(sKey, MenuFont.GetHeight(), VI.GetFont(fontLarge));
-			KeyPainter.SetBackColor(VI.GetColor(colorTextNormal));
-			KeyPainter.SetTextColor(VI.GetColor(colorAreaDeep));
-			int xKey = xText - (MENU_ITEM_HPADDING + KeyPainter.GetWidth());
-			int yKey = yText;
-			KeyPainter.Paint(m_Buffer, xKey, yKey);
+			if (const CString &sKey = m_Data.GetItemKey(i))
+				{
+				CInputKeyPainter KeyPainter;
+				KeyPainter.Init(sKey, MenuFont.GetHeight(), VI.GetFont(fontLarge));
+				KeyPainter.SetBackColor(VI.GetColor(colorTextNormal));
+				KeyPainter.SetTextColor(VI.GetColor(colorAreaDeep));
+				int xKey = xText - (MENU_ITEM_HPADDING + KeyPainter.GetWidth());
+				int yKey = yText;
+				KeyPainter.Paint(m_Buffer, xKey, yKey);
+				}
 			}
 
 		yEntry += m_cyEntry;
@@ -216,7 +254,7 @@ void CMenuDisplay::Realize (void) const
 	m_bInvalid = false;
 	}
 
-void CMenuDisplay::Show (const CMenuData &Data, EPositions iPosition)
+void CMenuDisplay::Show (const CMenuData &Data, const SOptions &Options)
 
 //	Show
 //
@@ -227,18 +265,29 @@ void CMenuDisplay::Show (const CMenuData &Data, EPositions iPosition)
 	const CG16bitFont &MenuFont = VI.GetFont(fontHeader);
 
 	m_Data = Data;
+	m_bHideShortCutKeys = Options.bHideShortCutKeys;
 
 	//	Compute some metrics
 
 	m_cxEntry = MENU_ITEM_WIDTH;
 	m_cyEntry = MenuFont.GetHeight() + 2 * MENU_ITEM_VPADDING;
 
+	int cyTitle = (m_Data.GetTitle() ? m_cyEntry : 0);
+
 	int cxMenu = m_cxEntry + 2 * MENU_BORDER_RADIUS;
-	int cyMenu = (m_Data.GetCount() * m_cyEntry) + 2 * MENU_BORDER_RADIUS;
+	int cyMenu = cyTitle + (m_Data.GetCount() * m_cyEntry) + 2 * MENU_BORDER_RADIUS;
+
+	//	Position
+
 	m_rcRect.left = m_rcScreen.left + (RectWidth(m_rcScreen) - cxMenu) / 2;
 	m_rcRect.right = m_rcRect.left + cxMenu;
 	m_rcRect.top = m_rcScreen.top + (RectHeight(m_rcScreen) - cyMenu) / 2;
 	m_rcRect.bottom = m_rcRect.top + cyMenu;
+
+	//	First entry is after the title
+
+	m_xFirstEntry = MENU_BORDER_RADIUS;
+	m_yFirstEntry = MENU_BORDER_RADIUS + cyTitle;
 
 	m_bInvalid = true;
 	m_iHover = -1;

@@ -24,16 +24,16 @@ CMenuData CGameSession::CreateGameMenu (void) const
 	{
 	CMenuData MenuData;
 	MenuData.SetTitle(CONSTLIT("Transcendence"));
-	MenuData.AddMenuItem(CMD_UI_SHOW_HELP, CONSTLIT("1"), CONSTLIT("Help [F1]"));
-	MenuData.AddMenuItem(CMD_GAME_END_SAVE, CONSTLIT("2"), CONSTLIT("Save & Quit"));
-	MenuData.AddMenuItem(CMD_GAME_SELF_DESTRUCT, CONSTLIT("3"), CONSTLIT("Self-Destruct"));
+	MenuData.AddMenuItem(CMD_UI_SHOW_HELP, CONSTLIT("1"), CONSTLIT("[H]elp"));
+	MenuData.AddMenuItem(CMD_GAME_END_SAVE, CONSTLIT("2"), CONSTLIT("[S]ave & Quit"));
+	MenuData.AddMenuItem(CMD_GAME_SELF_DESTRUCT, CONSTLIT("3"), CONSTLIT("Self-[D]estruct"));
 
 	//	Debug mode includes more special functions
 
 	if (GetUniverse().InDebugMode())
 		{
-		MenuData.AddMenuItem(CMD_GAME_REVERT, CONSTLIT("9"), CONSTLIT("Revert"));
-		MenuData.AddMenuItem(CMD_GAME_END_DELETE, CONSTLIT("0"), CONSTLIT("Delete & Quit"));
+		MenuData.AddMenuItem(CMD_GAME_REVERT, CONSTLIT("9"), CONSTLIT("[R]evert"));
+		MenuData.AddMenuItem(CMD_GAME_END_DELETE, CONSTLIT("0"), CONSTLIT("Delete & [Q]uit"));
 		}
 
 	return MenuData;
@@ -48,8 +48,8 @@ CMenuData CGameSession::CreateSelfDestructMenu (void) const
 	{
 	CMenuData MenuData;
 	MenuData.SetTitle(CONSTLIT("Self-Destruct"));
-	MenuData.AddMenuItem(CMD_GAME_SELF_DESTRUCT_CONFIRM, CONSTLIT("1"), CONSTLIT("Confirm"));
-	MenuData.AddMenuItem(CMD_GAME_SELF_DESTRUCT_CANCEL, CONSTLIT("2"), CONSTLIT("Cancel"));
+	MenuData.AddMenuItem(CMD_GAME_SELF_DESTRUCT_CONFIRM, CONSTLIT("1"), CONSTLIT("[C]onfirm"));
+	MenuData.AddMenuItem(CMD_GAME_SELF_DESTRUCT_CANCEL, CONSTLIT("2"), CONSTLIT("Ca[n]cel"));
 
 	return MenuData;
 	}

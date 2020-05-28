@@ -249,6 +249,7 @@ class CMenuData
 		int FindItemByKey (const CString &sKey);
 		bool FindItemData (const CString &sKey, DWORD *retdwData = NULL, DWORD *retdwData2 = NULL);
 		int GetCount (void) const { return m_iCount; }
+		int GetItemAcceleratorPos (int iIndex) const { return m_List[iIndex].iAcceleratorPos; }
 		DWORD GetItemData (int iIndex) const { return m_List[iIndex].dwData; }
 		DWORD GetItemData2 (int iIndex) const { return m_List[iIndex].dwData2; }
 		int GetItemCount (int iIndex) const { return m_List[iIndex].iCount; }
@@ -259,7 +260,7 @@ class CMenuData
 		DWORD GetItemFlags (int iIndex) const { return m_List[iIndex].dwFlags; }
 		const CString &GetItemKey (int iIndex) const { return m_List[iIndex].sKey; }
 		const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
-		const CString &GetTitle (void) { return m_sTitle; }
+		const CString &GetTitle (void) const { return m_sTitle; }
 		bool IsEmpty (void) const { return m_iCount == 0; }
 		void RemoveAll (void) { m_iCount = 0; }
 
@@ -269,6 +270,8 @@ class CMenuData
 			CString sID;
 			CString sKey;
 			CString sLabel;
+			CString sAccelerator;
+			int iAcceleratorPos = -1;
 			const CObjectImageArray *pImage = NULL;
 			int iCount = 0;
 			CString sExtra;

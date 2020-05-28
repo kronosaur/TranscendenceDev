@@ -522,8 +522,14 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuGame:
-			m_MenuDisplay.Show(CreateGameMenu(), CMenuDisplay::posCenter);
+			{
+			CMenuDisplay::SOptions Options;
+			Options.iPos = CMenuDisplay::posCenter;
+			Options.bHideShortCutKeys = true;
+
+			m_MenuDisplay.Show(CreateGameMenu(), Options);
 			break;
+			}
 
 		case menuInvoke:
 			if (!g_pTrans->ShowInvokeMenu())
@@ -531,8 +537,14 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuSelfDestructConfirm:
-			m_MenuDisplay.Show(CreateSelfDestructMenu(), CMenuDisplay::posCenter);
+			{
+			CMenuDisplay::SOptions Options;
+			Options.iPos = CMenuDisplay::posCenter;
+			Options.bHideShortCutKeys = true;
+
+			m_MenuDisplay.Show(CreateSelfDestructMenu(), Options);
 			break;
+			}
 
 		case menuSystemStations:
 			m_SystemStationsMenu.Show(m_rcScreen, ID_SYSTEM_STATIONS);

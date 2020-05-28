@@ -212,3 +212,9 @@ class CIconLabelBlock
 		int m_cyHeight = 0;
 		int m_cyLine = 0;
 	};
+
+class CDrawText
+	{
+	public:
+		static void WithAccelerator (CG32bitImage &Dest, int x, int y, const CString &sText, int iAcceleratorPos, const CG16bitFont &Font, CG32bitPixel rgbTextColor, CG32bitPixel rgbAcceleratorColor);
+	};
