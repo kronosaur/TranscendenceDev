@@ -172,50 +172,6 @@ void CTranscendenceWnd::DoEnableDisableItemCommand (DWORD dwData)
 		}
 	}
 
-bool CTranscendenceWnd::DoGameMenuCommand (DWORD dwCmd)
-
-//	DoGameMenuCommand
-//
-//	Do game menu
-
-	{
-	switch (dwCmd)
-		{
-		case CMD_DELETE:
-			g_pHI->HICommand(CONSTLIT("gameEndDelete"));
-
-			//	Kill the session
-
-			return false;
-
-		case CMD_PAUSE:
-			g_pHI->HICommand(CONSTLIT("uiShowHelp"));
-			return true;
-
-		case CMD_REVERT:
-			g_pHI->HICommand(CONSTLIT("gameRevert"));
-			return false;
-
-		case CMD_SAVE:
-			g_pHI->HICommand(CONSTLIT("gameEndSave"));
-
-			//	FALSE means don't try to dismiss the menu because the session has
-			//	been killed.
-
-			return false;
-
-		case CMD_SELF_DESTRUCT:
-			g_pHI->HICommand(CONSTLIT("gameSelfDestruct"));
-
-			//	We return FALSE because we're putting up a new menu.
-
-			return false;
-
-		default:
-			return true;
-		}
-	}
-
 void CTranscendenceWnd::DoInvocation (CPower *pPower)
 
 //	DoInvocation
@@ -232,24 +188,6 @@ void CTranscendenceWnd::DoInvocation (CPower *pPower)
 			DisplayMessage(sError);
 			kernelDebugLogString(sError);
 			}
-		}
-	}
-
-void CTranscendenceWnd::DoSelfDestructConfirmCommand (DWORD dwCmd)
-
-//	DoSelfDestructConfirmCommand
-//
-//	Confirm self destruct
-
-	{
-	switch (dwCmd)
-		{
-		case CMD_CONFIRM:
-			GetPlayer()->GetShip()->Destroy(killedBySelf, CDamageSource(NULL, killedBySelf));
-			break;
-
-		case CMD_CANCEL:
-			break;
 		}
 	}
 
@@ -882,30 +820,6 @@ bool CTranscendenceWnd::ShowEnableDisablePicker (void)
 	m_PickerDisplay.Invalidate();
 	m_PickerDisplay.SetHelpText(NULL_STR);
 	return true;
-	}
-
-void CTranscendenceWnd::ShowGameMenu (void)
-
-//	ShowGameMenu
-//
-//	Show the game menu
-
-	{
-	m_MenuData.SetTitle(CONSTLIT("Transcendence"));
-	m_MenuData.RemoveAll();
-	m_MenuData.AddMenuItem(CONSTLIT("1"), CONSTLIT("Help [F1]"), 0, CMD_PAUSE);
-	m_MenuData.AddMenuItem(CONSTLIT("2"), CONSTLIT("Save & Quit"), 0, CMD_SAVE);
-	m_MenuData.AddMenuItem(CONSTLIT("3"), CONSTLIT("Self-Destruct"), 0, CMD_SELF_DESTRUCT);
-
-	//	Debug mode includes more special functions
-
-	if (g_pUniverse->InDebugMode())
-		{
-		m_MenuData.AddMenuItem(CONSTLIT("9"), CONSTLIT("Revert"), 0, CMD_REVERT);
-		m_MenuData.AddMenuItem(CONSTLIT("0"), CONSTLIT("Delete & Quit"), 0, CMD_DELETE);
-		}
-
-	m_MenuDisplay.Invalidate();
 	}
 
 bool CTranscendenceWnd::ShowUsePicker (void)

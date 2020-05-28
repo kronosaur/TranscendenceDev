@@ -487,12 +487,6 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 	if (pPlayer == NULL)
 		return false;
 
-	//	Can't do anything if we're currently showing a menu. Need to dismiss
-	//	first.
-
-	if (m_CurrentMenu != menuNone)
-		return false;
-
 	//	Bring up the menu
 
 	switch (iMenu)
@@ -529,12 +523,15 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 
 		case menuGame:
 			m_MenuDisplay.Show(CreateGameMenu(), CMenuDisplay::posCenter);
-			//g_pTrans->ShowGameMenu();
 			break;
 
 		case menuInvoke:
 			if (!g_pTrans->ShowInvokeMenu())
 				return false;
+			break;
+
+		case menuSelfDestructConfirm:
+			m_MenuDisplay.Show(CreateSelfDestructMenu(), CMenuDisplay::posCenter);
 			break;
 
 		case menuSystemStations:

@@ -30,7 +30,6 @@ class CGameSession : public IHISession
 
 		void ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Keys iCommand);
 		void ExecuteCommandEnd (CPlayerShipController *pPlayer, CGameKeys::Keys iCommand);
-		void ShowSelfDestructMenu (void);
 		void ShowStationList (bool bShow = true);
 		void ShowSystemMap (bool bShow = true);
 
@@ -90,6 +89,7 @@ class CGameSession : public IHISession
 
 	private:
 		CMenuData CreateGameMenu (void) const;
+		CMenuData CreateSelfDestructMenu (void) const;
 		void DismissMenu (void);
 		void ExecuteCommandRefresh (void);
 		void ExecuteCommandRefresh (CPlayerShipController &Player);
@@ -100,14 +100,17 @@ class CGameSession : public IHISession
 			return (m_CurrentMenu == menuEnableDevice || m_CurrentMenu == menuUseItem);
 			}
 
+		bool IsInMenu (void) const
+			{
+			return (m_CurrentMenu == menuGame || m_CurrentMenu == menuSelfDestructConfirm);
+			}
+
 		bool IsInMenuCompatible (void) const 
 			{
 			return (m_CurrentMenu == menuComms 
 					|| m_CurrentMenu == menuCommsSquadron 
 					|| m_CurrentMenu == menuCommsTarget 
-					|| m_CurrentMenu == menuGame 
-					|| m_CurrentMenu == menuInvoke 
-					|| m_CurrentMenu == menuSelfDestructConfirm);
+					|| m_CurrentMenu == menuInvoke);
 			}
 
 		void PaintMenu (CG32bitImage &Screen);

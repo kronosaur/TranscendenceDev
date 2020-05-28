@@ -59,7 +59,7 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 
 			//	Game menu
 
-			else if (m_CurrentMenu == menuGame)
+			else if (IsInMenu())
 				{
 				//	Ignore repeat keys (because otherwise we might accidentally
 				//	select a menu item from keeping a key pressed too long).
@@ -93,12 +93,6 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 
 					switch (m_CurrentMenu)
 						{
-						case menuSelfDestructConfirm:
-							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-							g_pTrans->DoSelfDestructConfirmCommand(dwData);
-							DismissMenu();
-							break;
-
 						case menuComms:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
 							g_pTrans->DoCommsMenu(dwData);
@@ -266,6 +260,21 @@ void CGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 					CGameKeys::Keys iCommand = m_Settings.GetKeyMap().GetGameCommand(dwTVirtKey);
 					if (iCommand == CGameKeys::keyShowConsole)
 						ExecuteCommand(pPlayer, iCommand);
+					}
+				}
+
+			//	Game menu
+
+			else if (IsInMenu())
+				{
+				if (iVirtKey == VK_ESCAPE)
+					{
+					GetUniverse().PlaySound(NULL, GetUniverse().FindSound(UNID_DEFAULT_SELECT));
+					HideMenu();
+					}
+				else
+					{
+					m_MenuDisplay.OnKeyDown(iVirtKey, dwKeyData);
 					}
 				}
 
@@ -560,7 +569,11 @@ void CGameSession::OnLButtonDblClick (int x, int y, DWORD dwFlags)
 			if (pPlayer == NULL)
 				break;
 
-			if (InMenu())
+			if (IsInMenu())
+				{
+				m_MenuDisplay.OnLButtonDblClick(x, y, dwFlags);
+				}
+			else if (InMenu())
 				{
 				switch (m_CurrentMenu)
 					{
@@ -629,7 +642,11 @@ void CGameSession::OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture
 
 			//	If in a menu, let the menu handle it.
 
-			if (InMenu())
+			if (IsInMenu())
+				{
+				m_MenuDisplay.OnLButtonDown(x, y, dwFlags);
+				}
+			else if (InMenu())
 				{
 				switch (m_CurrentMenu)
 					{
@@ -691,8 +708,9 @@ void CGameSession::OnLButtonUp (int x, int y, DWORD dwFlags)
 
 			//	If in a menu, let the menu handle it.
 
-			if (InMenu())
+			if (IsInMenu())
 				{
+				m_MenuDisplay.OnLButtonUp(x, y, dwFlags);
 				}
 
 			//	If we used to be in a menu, but we closed in a button down, then 
@@ -826,7 +844,11 @@ void CGameSession::OnMouseMove (int x, int y, DWORD dwFlags)
 
 			//	If we're in a menu, let the menu handle it
 
-			if (InMenu())
+			if (IsInMenu())
+				{
+				m_MenuDisplay.OnMouseMove(x, y);
+				}
+			else if (InMenu())
 				{
 				switch (m_CurrentMenu)
 					{
@@ -1093,20 +1115,3 @@ void CGameSession::SetMouseAimEnabled (bool bEnabled)
 		pPlayer->OnMouseAimSetting(m_bMouseAim);
 	}
 
-void CGameSession::ShowSelfDestructMenu (void)
-
-//	ShowSelfDestructMenu
-//
-//	Shows the self-destruct menu.
-
-	{
-	g_pTrans->DisplayMessage(CONSTLIT("Warning: Self-Destruct Activated"));
-
-	g_pTrans->m_MenuData.SetTitle(CONSTLIT("Self-Destruct"));
-	g_pTrans->m_MenuData.RemoveAll();
-	g_pTrans->m_MenuData.AddMenuItem(CONSTLIT("1"), CONSTLIT("Confirm"), 0, CMD_CONFIRM);
-	g_pTrans->m_MenuData.AddMenuItem(CONSTLIT("2"), CONSTLIT("Cancel"), 0, CMD_CANCEL);
-	g_pTrans->m_MenuDisplay.Invalidate();
-
-	m_CurrentMenu = menuSelfDestructConfirm;
-	}
