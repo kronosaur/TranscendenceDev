@@ -467,5 +467,8 @@
     <ClCompile Include="OpenGLInstancedBatchImpl.cpp">
       <Filter>Source Files\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="OpenGLRenderLayer.cpp">
+      <Filter>Source Files\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

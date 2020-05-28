@@ -118,6 +118,31 @@ protected:
 	HWND m_windowID;
 };
 
+class OpenGLRenderLayer {
+public:
+	OpenGLRenderLayer(void) {};
+	~OpenGLRenderLayer(void);
+	void addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY,
+		int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, OpenGLTexture *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight,
+		int numFramesPerRow, int numFramesPerCol, int spriteSheetStartX, int spriteSheetStartY, float alphaStrength = 1.0, float glowR = 0.0, float glowG = 0.0,
+		float glowB = 0.0, float glowA = 0.0, float glowNoise = 0.0);
+	void addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
+		int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
+		std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj);
+	void addLightningToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
+		int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor, std::tuple<int, int, int> secondaryColor, float seed);
+	void renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader,
+		OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, unsigned int fbo, OpenGLVAO* canvasVAO);
+private:
+	void clear();
+
+	std::map<OpenGLTexture*, OpenGLInstancedBatchTexture*> m_texRenderBatches;
+	OpenGLInstancedBatchRay m_rayRenderBatch;
+	OpenGLInstancedBatchLightning m_lightningRenderBatch;
+	std::mutex m_texRenderQueueAddMutex;
+	std::vector<std::shared_ptr<OpenGLTexture>> m_texturesForDeletion;
+};
+
 class OpenGLMasterRenderQueue {
 public:
 	OpenGLMasterRenderQueue (void);
@@ -126,10 +151,9 @@ public:
 	void setObjectTextureShader (OpenGLShader *shader) { m_pObjectTextureShader = shader; }
 	OpenGLShader* getObjectTextureShader (void) { return m_pObjectTextureShader; }
 	void addShipToRenderQueue (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY,
- int posPixelX,
-
- int posPixelY,
-		int canvasHeight, int canvasWidth, OpenGLTexture *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight, int numFramesPerRow, int numFramesPerCol, int spriteSheetStartX, int spriteSheetStartY, float alphaStrength = 1.0, float glowR = 0.0, float glowG = 0.0, float glowB = 0.0, float glowA = 0.0, float glowNoise = 0.0);
+ int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, OpenGLTexture *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight, 
+		int numFramesPerRow, int numFramesPerCol, int spriteSheetStartX, int spriteSheetStartY, float alphaStrength = 1.0, float glowR = 0.0, float glowG = 0.0, 
+		float glowB = 0.0, float glowA = 0.0, float glowNoise = 0.0);
 	void addRayToEffectRenderQueue (int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
 		int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
 		std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj);
