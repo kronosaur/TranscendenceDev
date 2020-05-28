@@ -44,6 +44,72 @@ class CHeadsUpDisplay
 		int m_iSelection = -1;						//  Selected armor seg (or -1)
 	};
 
+class CMenuDisplay
+	{
+	public:
+		enum EPositions
+			{
+			posNone,
+
+			posCenter,
+			posRight,
+			posLeft,
+			};
+
+		struct SOptions
+			{
+			EPositions iPos = posCenter;
+			bool bHideShortCutKeys = false;
+			};
+
+		CMenuDisplay (CHumanInterface &HI, CTranscendenceModel &Model) :
+				m_HI(HI),
+				m_Model(Model)
+			{ }
+
+		void Hide (void) { m_Buffer.Delete(); m_bInvalid = true; }
+		void Init (const RECT &rcScreen);
+		bool OnChar (char chChar, DWORD dwKeyData);
+		bool OnKeyDown (int iVirtKey, DWORD dwKeyData) { return false; }
+		bool OnLButtonDblClick (int x, int y, DWORD dwFlags) { return OnLButtonDown(x, y, dwFlags); }
+		bool OnLButtonDown (int x, int y, DWORD dwFlags);
+		bool OnLButtonUp (int x, int y, DWORD dwFlags);
+		bool OnMouseMove (int x, int y);
+		void Paint (CG32bitImage &Screen, int iTick) const;
+		void Show (const CMenuData &Data, const SOptions &Options = SOptions());
+
+	private:
+		static constexpr BYTE MENU_BACKGROUND_OPACITY =	200;
+		static constexpr int MENU_BORDER_RADIUS =		4;
+		static constexpr int MENU_BORDER_WIDTH =		1;
+
+		static constexpr int MENU_ITEM_WIDTH =			300;
+		static constexpr int MENU_ITEM_VPADDING =		4;
+		static constexpr int MENU_ITEM_HPADDING =		4;
+
+		void DoCommand (int iIndex);
+		int HitTest (int x, int y) const;
+		void Realize (void) const;
+
+		CHumanInterface &m_HI;
+		CTranscendenceModel &m_Model;
+		CMenuData m_Data;
+
+		bool m_bHideShortCutKeys = false;			//	Do not show short-cut if using accelerators
+		RECT m_rcScreen = { 0 };					//	Rect of entire screen
+		RECT m_rcRect = { 0 };						//	Rect of menu
+		int m_xFirstEntry = 0;
+		int m_yFirstEntry = 0;
+		int m_cxEntry = 0;							//	Width of a single entry
+		int m_cyEntry = 0;							//	Height of a single entry
+
+		int m_iHover = -1;							//	Entry that we're hovering over (or -1)
+		bool m_bDown = false;						//	TRUE if mouse is down over menu.
+
+		mutable CG32bitImage m_Buffer;
+		mutable bool m_bInvalid = true;
+	};
+
 enum class ENarrativeDisplayStyle
 	{
 	none,

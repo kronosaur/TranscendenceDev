@@ -314,6 +314,12 @@
     <ClCompile Include="CMenuDisplayOld.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
+    <ClCompile Include="CMenuDisplay.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSessionMenus.cpp">
+      <Filter>Source Files\Game Session</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BackgroundTasks.h">

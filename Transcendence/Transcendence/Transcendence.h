@@ -228,12 +228,14 @@ class CMenuData
 
 		CMenuData (void);
 
-		void AddMenuItem (const CString &sKey,
+		void AddMenuItem (const CString &sID,
+						  const CString &sKey,
 						  const CString &sLabel,
-						  DWORD dwFlags,
-						  DWORD dwData,
-						  DWORD dwData2 = 0) { AddMenuItem(sKey, sLabel, NULL, 0, NULL_STR, NULL_STR, dwFlags, dwData, dwData2); }
-		void AddMenuItem (const CString &sKey,
+						  DWORD dwFlags = 0,
+						  DWORD dwData = 0,
+						  DWORD dwData2 = 0) { AddMenuItem(sID, sKey, sLabel, NULL, 0, NULL_STR, NULL_STR, dwFlags, dwData, dwData2); }
+		void AddMenuItem (const CString &sID,
+						  const CString &sKey,
 						  const CString &sLabel,
 						  const CObjectImageArray *pImage,
 						  int iCount,
@@ -247,23 +249,29 @@ class CMenuData
 		int FindItemByKey (const CString &sKey);
 		bool FindItemData (const CString &sKey, DWORD *retdwData = NULL, DWORD *retdwData2 = NULL);
 		int GetCount (void) const { return m_iCount; }
+		int GetItemAcceleratorPos (int iIndex) const { return m_List[iIndex].iAcceleratorPos; }
 		DWORD GetItemData (int iIndex) const { return m_List[iIndex].dwData; }
 		DWORD GetItemData2 (int iIndex) const { return m_List[iIndex].dwData2; }
 		int GetItemCount (int iIndex) const { return m_List[iIndex].iCount; }
 		const CString &GetItemExtra (int iIndex) const { return m_List[iIndex].sExtra; }
 		const CString &GetItemHelpText (int iIndex) const { return m_List[iIndex].sHelp; }
+		const CString &GetItemID (int iIndex) const { return m_List[iIndex].sID; }
 		const CObjectImageArray *GetItemImage (int iIndex) const { return m_List[iIndex].pImage; }
 		DWORD GetItemFlags (int iIndex) const { return m_List[iIndex].dwFlags; }
 		const CString &GetItemKey (int iIndex) const { return m_List[iIndex].sKey; }
 		const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
-		const CString &GetTitle (void) { return m_sTitle; }
+		const CString &GetTitle (void) const { return m_sTitle; }
+		bool IsEmpty (void) const { return m_iCount == 0; }
 		void RemoveAll (void) { m_iCount = 0; }
 
 	private:
 		struct Entry
 			{
+			CString sID;
 			CString sKey;
 			CString sLabel;
+			CString sAccelerator;
+			int iAcceleratorPos = -1;
 			const CObjectImageArray *pImage = NULL;
 			int iCount = 0;
 			CString sExtra;
@@ -757,8 +765,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 
 		void DoCommsMenu (int iIndex);
 		void DoCommsSquadronMenu (const CString &sName, MessageTypes iOrder, DWORD dwData2);
-		bool DoGameMenuCommand (DWORD dwCmd);
-		void DoSelfDestructConfirmCommand (DWORD dwCmd);
 		void DoEnableDisableItemCommand (DWORD dwData);
 		void DoInvocation (CPower *pPower);
 		void DoUseItemCommand (DWORD dwData);
@@ -770,7 +776,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		bool ShowCommsTargetMenu (void);
 		bool ShowEnableDisablePicker (void);
 		bool ShowInvokeMenu (void);
-		void ShowGameMenu (void);
 		bool ShowUsePicker (void);
 
 		void SetGameCreated (bool bValue = true) { m_bGameCreated = bValue; }

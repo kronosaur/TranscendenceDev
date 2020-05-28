@@ -1498,5 +1498,8 @@
     <ClCompile Include="CPhysicsForceResolver.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
+    <ClCompile Include="CInputKeyPainter.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

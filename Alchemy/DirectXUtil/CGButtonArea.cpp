@@ -250,14 +250,7 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 		else if (m_iAccelerator != -1)
 			{
-			char *pPos = m_sLabel.GetASCIIZPointer();
-			int x = xPaint;
-
-			if (m_iAccelerator > 0)
-				Dest.DrawText(x, yPaint, *m_pLabelFont, m_rgbLabelColor, CString(pPos, m_iAccelerator, true), 0, &x);
-
-			Dest.DrawText(x, yPaint, *m_pLabelFont, m_rgbAccelColor, CString(pPos + m_iAccelerator, 1, true), 0, &x);
-			Dest.DrawText(x, yPaint, *m_pLabelFont, m_rgbLabelColor, CString(pPos + m_iAccelerator + 1, m_sLabel.GetLength() - m_iAccelerator - 1, true));
+			CDrawText::WithAccelerator(Dest, xPaint, yPaint, m_sLabel, m_iAccelerator, *m_pLabelFont, m_rgbLabelColor, m_rgbAccelColor);
 			}
 		else
 			Dest.DrawText(xPaint,
