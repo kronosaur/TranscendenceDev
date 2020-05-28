@@ -79,6 +79,7 @@ class CMenuDisplay
 
 		static constexpr int MENU_ITEM_WIDTH =			300;
 		static constexpr int MENU_ITEM_VPADDING =		4;
+		static constexpr int MENU_ITEM_HPADDING =		4;
 
 		void DoCommand (int iIndex);
 		int HitTest (int x, int y) const;

@@ -195,6 +195,19 @@ void CMenuDisplay::Realize (void) const
 				(m_bDown && m_iHover == i ? rgbTextBright : rgbText), 
 				m_Data.GetItemLabel(i));
 
+		//	Paint the key
+
+		if (const CString &sKey = m_Data.GetItemKey(i))
+			{
+			CInputKeyPainter KeyPainter;
+			KeyPainter.Init(sKey, MenuFont.GetHeight(), VI.GetFont(fontLarge));
+			KeyPainter.SetBackColor(VI.GetColor(colorTextNormal));
+			KeyPainter.SetTextColor(VI.GetColor(colorAreaDeep));
+			int xKey = xText - (MENU_ITEM_HPADDING + KeyPainter.GetWidth());
+			int yKey = yText;
+			KeyPainter.Paint(m_Buffer, xKey, yKey);
+			}
+
 		yEntry += m_cyEntry;
 		}
 
