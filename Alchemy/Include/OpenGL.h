@@ -122,15 +122,10 @@ class OpenGLRenderLayer {
 public:
 	OpenGLRenderLayer(void) {};
 	~OpenGLRenderLayer(void);
-	void addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY,
-		int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, OpenGLTexture *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight,
-		int numFramesPerRow, int numFramesPerCol, int spriteSheetStartX, int spriteSheetStartY, float alphaStrength = 1.0, float glowR = 0.0, float glowG = 0.0,
-		float glowB = 0.0, float glowA = 0.0, float glowNoise = 0.0);
-	void addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
-		int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
-		std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj);
-	void addLightningToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
-		int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor, std::tuple<int, int, int> secondaryColor, float seed);
+	void addShipToRenderQueue(glm::vec2 vTexPositions, glm::vec2 vSpriteSheetPositions, glm::vec2 vCanvasQuadSizes, glm::vec2 vCanvasPositions,
+		glm::vec2 vTextureQuadSizes, glm::vec4 glowColor, float alphaStrength, float glowNoise, int numFramesPerRow, int numFramesPerCol, OpenGLTexture* image);
+	void addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, glm::vec3 intensitiesAndCycles, glm::ivec3 styles, float rotation);
+	void addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, float rotation, float seed);
 	void renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader,
 		OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, unsigned int fbo, OpenGLVAO* canvasVAO);
 private:
@@ -181,6 +176,7 @@ private:
 	OpenGLShader *m_pRayShader;
 	OpenGLShader *m_pLightningShader;
 	// TODO: Maybe use filenames of texture images as the key rather than pointer to OpenGLTextures? Using pointers as map keys is not reliable.
+	OpenGLRenderLayer exampleRenderLayer;
 	std::map<OpenGLTexture*, OpenGLInstancedBatchTexture*> m_shipRenderQueues;
 	OpenGLInstancedBatchRay m_shipEffectRayRenderQueue;
 	OpenGLInstancedBatchRay m_effectRayRenderQueue;
