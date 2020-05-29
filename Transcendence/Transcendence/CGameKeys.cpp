@@ -73,18 +73,18 @@ const int CGameKeys::DEFAULT_MAP_COUNT = (sizeof(DEFAULT_MAP) / sizeof(DEFAULT_M
 
 struct SGameKeyData
 	{
-    enum EFlags
-        {
-        FLAG_HIDDEN =       0x00000001,
-        FLAG_DEBUG_ONLY =   0x00000002,
+	enum EFlags
+		{
+		FLAG_HIDDEN =       0x00000001,
+		FLAG_DEBUG_ONLY =   0x00000002,
 		FLAG_STATEFULL =	0x00000004,		//	Tracks when key is down vs. up (thrust, fire, etc.).
 		FLAG_NO_REPEAT =	0x00000008,		//	Ignore repeated keys
 		FLAG_XY_INPUT =		0x00000010,		//	Can only be mapped to an XY input (e.g., move position)
-        };
+		};
 
 	char *pszName;
-    char *pszLabel;
-    DWORD dwFlags;
+	char *pszLabel;
+	DWORD dwFlags;
 	};
 
 SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
@@ -181,13 +181,13 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 const int GAME_KEY_DATA_COUNT = (sizeof(g_GameKeyData) / sizeof(g_GameKeyData[0]));
 
 CGameKeys::CGameKeys (void) :
-        m_bModified(false)
+		m_bModified(false)
 
 //	CGameKeys constructor
 
 	{
 	ASSERT(GAME_KEY_DATA_COUNT == CGameKeys::keyCount);
-    SetLayout(layoutDefault);
+	SetLayout(layoutDefault);
 
 	for (int i = 0; i < 256; i++)
 		m_CustomMap[i] = keyNone;
@@ -209,33 +209,33 @@ void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result) const
 //
 //  Returns a list of all commands and their key bindings.
 
-    {
-    int i;
+	{
+	int i;
 
 	TSortMap<int, int> CmdToIndex;
 
-    Result.DeleteAll();
-    Result.GrowToFit(keyCount);
+	Result.DeleteAll();
+	Result.GrowToFit(keyCount);
 
-    for (i = 0; i < keyCount; i++)
-        {
-        const SGameKeyData &Data = g_GameKeyData[i];
+	for (i = 0; i < keyCount; i++)
+		{
+		const SGameKeyData &Data = g_GameKeyData[i];
 
-        //  If no name, or if it is hidden, then we skip
+		//  If no name, or if it is hidden, then we skip
 
-        if (Data.pszName == NULL
-                || (Data.dwFlags & SGameKeyData::FLAG_HIDDEN))
-            continue;
+		if (Data.pszName == NULL
+				|| (Data.dwFlags & SGameKeyData::FLAG_HIDDEN))
+			continue;
 
-        //  Add the command
+		//  Add the command
 
-        SCommandKeyDesc *pNewCmd = Result.Insert();
-        pNewCmd->iCmd = (Keys)i;
-        pNewCmd->sCmdID = CString(Data.pszName);
-        if (Data.pszLabel)
-            pNewCmd->sCmdLabel = CString(Data.pszLabel);
-        else
-            pNewCmd->sCmdLabel = CONSTLIT("(unknown)");
+		SCommandKeyDesc *pNewCmd = Result.Insert();
+		pNewCmd->iCmd = (Keys)i;
+		pNewCmd->sCmdID = CString(Data.pszName);
+		if (Data.pszLabel)
+			pNewCmd->sCmdLabel = CString(Data.pszLabel);
+		else
+			pNewCmd->sCmdLabel = CONSTLIT("(unknown)");
 
 		CmdToIndex.SetAt(i, Result.GetCount() - 1);
 		}
@@ -261,7 +261,7 @@ void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result) const
 			pBinding->sKeyID = CVirtualKeyData::GetKeyID(i);
 			}
 		}
-    }
+	}
 
 CGameKeys::Keys CGameKeys::GetGameCommand (const CString &sCmd)
 
@@ -285,21 +285,21 @@ CGameKeys::Keys CGameKeys::GetGameCommandFromChar (char chChar) const
 //
 //  Returns game command from character
 
-    {
-    const DWORD VK_FIRST_NUMBER = 0x30;
-    const DWORD VK_FIRST_LETTER = 0x41;
+	{
+	const DWORD VK_FIRST_NUMBER = 0x30;
+	const DWORD VK_FIRST_LETTER = 0x41;
 
-    //  Convert from character to virtual key code
+	//  Convert from character to virtual key code
 
-    if (chChar >= '0' && chChar <= '9')
-        return GetGameCommand(VK_FIRST_NUMBER + (DWORD)(chChar - '0'));
-    else if (chChar >= 'A' && chChar <= 'Z')
-        return GetGameCommand(VK_FIRST_LETTER + (DWORD)(chChar - 'A'));
-    else if (chChar >= 'a' && chChar <= 'z')
-        return GetGameCommand(VK_FIRST_LETTER + (DWORD)(chChar - 'a'));
-    else
-        return keyError;
-    }
+	if (chChar >= '0' && chChar <= '9')
+		return GetGameCommand(VK_FIRST_NUMBER + (DWORD)(chChar - '0'));
+	else if (chChar >= 'A' && chChar <= 'Z')
+		return GetGameCommand(VK_FIRST_LETTER + (DWORD)(chChar - 'A'));
+	else if (chChar >= 'a' && chChar <= 'z')
+		return GetGameCommand(VK_FIRST_LETTER + (DWORD)(chChar - 'a'));
+	else
+		return keyError;
+	}
 
 DWORD CGameKeys::GetKey (Keys iCommand) const
 
@@ -307,25 +307,25 @@ DWORD CGameKeys::GetKey (Keys iCommand) const
 //
 //  Returns the virtual key mapped to the given command.
 
-    {
+	{
 	int i;
 
 	for (i = 0; i < 256; i++)
-        if (m_iMap[i] == iCommand)
-            {
-            //  If this is a non-standard key, then skip it because
-            //  we won't be able to see it in the keyboard UI.
+		if (m_iMap[i] == iCommand)
+			{
+			//  If this is a non-standard key, then skip it because
+			//  we won't be able to see it in the keyboard UI.
 
-            if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
-                continue;
+			if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
+				continue;
 
-            //  Found it
+			//  Found it
 
-            return i;
-            }
+			return i;
+			}
 
-    return CVirtualKeyData::INVALID_VIRT_KEY;
-    }
+	return CVirtualKeyData::INVALID_VIRT_KEY;
+	}
 
 char CGameKeys::GetKeyIfChar (Keys iCommand) const
 
@@ -355,19 +355,19 @@ CString CGameKeys::GetLayoutID (ELayouts iLayout)
 //
 //  Returns the layout ID (which is used to identify a layout in XML).
 
-    {
-    switch (iLayout)
-        {
-        case layoutDefault:
-            return LAYOUT_DEFAULT;
+	{
+	switch (iLayout)
+		{
+		case layoutDefault:
+			return LAYOUT_DEFAULT;
 
-        case layoutCustom:
-            return LAYOUT_CUSTOM;
+		case layoutCustom:
+			return LAYOUT_CUSTOM;
 
-        default:
-            return NULL_STR;
-        }
-    }
+		default:
+			return NULL_STR;
+		}
+	}
 
 CGameKeys::ELayouts CGameKeys::GetLayoutFromID (const CString &sLayoutID)
 
@@ -376,14 +376,14 @@ CGameKeys::ELayouts CGameKeys::GetLayoutFromID (const CString &sLayoutID)
 //  Parses a layout ID and return a layout. Returns layoutNone if we cannot
 //  recognize the ID.
 
-    {
-    if (sLayoutID.IsBlank() || strEquals(sLayoutID, LAYOUT_DEFAULT))
-        return layoutDefault;
-    else if (strEquals(sLayoutID, LAYOUT_CUSTOM))
-        return layoutCustom;
-    else
-        return layoutNone;
-    }
+	{
+	if (sLayoutID.IsBlank() || strEquals(sLayoutID, LAYOUT_DEFAULT))
+		return layoutDefault;
+	else if (strEquals(sLayoutID, LAYOUT_CUSTOM))
+		return layoutCustom;
+	else
+		return layoutNone;
+	}
 
 CString CGameKeys::GetLayoutName (ELayouts iLayout) const
 
@@ -391,19 +391,19 @@ CString CGameKeys::GetLayoutName (ELayouts iLayout) const
 //
 //  Returns the human readable name of the layout.
 
-    {
-    switch (iLayout)
-        {
-        case layoutDefault:
-            return CONSTLIT("Default");
+	{
+	switch (iLayout)
+		{
+		case layoutDefault:
+			return CONSTLIT("Default");
 
-        case layoutCustom:
-            return CONSTLIT("Custom");
+		case layoutCustom:
+			return CONSTLIT("Custom");
 
-        default:
-            return CONSTLIT("(Unknown)");
-        }
-    }
+		default:
+			return CONSTLIT("(Unknown)");
+		}
+	}
 
 bool CGameKeys::IsKeyMapped (int iVirtKey, Keys iCommand) const
 
@@ -413,20 +413,20 @@ bool CGameKeys::IsKeyMapped (int iVirtKey, Keys iCommand) const
 
 	{
 	for (int i = 0; i < 256; i++)
-        if (m_iMap[i] == iCommand)
-            {
-            //  If this is a non-standard key, then skip it because
-            //  we won't be able to see it in the keyboard UI.
+		if (m_iMap[i] == iCommand)
+			{
+			//  If this is a non-standard key, then skip it because
+			//  we won't be able to see it in the keyboard UI.
 
-            if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
-                continue;
+			if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
+				continue;
 
-            //  Found it
+			//  Found it
 
-            return true;
-            }
+			return true;
+			}
 
-    return false;
+	return false;
 	}
 
 bool CGameKeys::IsKeyDown (Keys iCommand) const
@@ -438,21 +438,21 @@ bool CGameKeys::IsKeyDown (Keys iCommand) const
 
 	{
 	for (int i = 0; i < 256; i++)
-        if (m_iMap[i] == iCommand)
-            {
-            //  If this is a non-standard key, then skip it because
-            //  we won't be able to see it in the keyboard UI.
+		if (m_iMap[i] == iCommand)
+			{
+			//  If this is a non-standard key, then skip it because
+			//  we won't be able to see it in the keyboard UI.
 
-            if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
-                continue;
+			if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
+				continue;
 
-            //  Found it
+			//  Found it
 
-            if (::uiIsKeyDown(i))
+			if (::uiIsKeyDown(i))
 				return true;
-            }
+			}
 
-    return false;
+	return false;
 	}
 
 bool CGameKeys::IsNonRepeatCommand (Keys iCommand) const
@@ -463,7 +463,7 @@ bool CGameKeys::IsNonRepeatCommand (Keys iCommand) const
 
 	{
 	ASSERT(iCommand > 0 && iCommand < keyCount);
-    const SGameKeyData &Data = g_GameKeyData[iCommand];
+	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_NO_REPEAT ? true : false);
 	}
 
@@ -475,7 +475,7 @@ bool CGameKeys::IsStatefulCommand (Keys iCommand) const
 
 	{
 	ASSERT(iCommand > 0 && iCommand < keyCount);
-    const SGameKeyData &Data = g_GameKeyData[iCommand];
+	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_STATEFULL ? true : false);
 	}
 
@@ -488,22 +488,22 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 	{
 	int i;
 
-    //  For backwards compatibility, we assume a custom layout if we don't
-    //  have a layout specified.
+	//  For backwards compatibility, we assume a custom layout if we don't
+	//  have a layout specified.
 
-    ELayouts iLayout = layoutCustom;
-    bool bCompatible = true;
+	ELayouts iLayout = layoutCustom;
+	bool bCompatible = true;
 
-    //  Load the layout
+	//  Load the layout
 
-    CString sLayout;
-    if (pDesc->FindAttribute(LAYOUT_ATTRIB, &sLayout))
-        {
-        iLayout = GetLayoutFromID(sLayout);
-        if (iLayout == layoutNone)
-            iLayout = layoutDefault;
-        bCompatible = false;
-        }
+	CString sLayout;
+	if (pDesc->FindAttribute(LAYOUT_ATTRIB, &sLayout))
+		{
+		iLayout = GetLayoutFromID(sLayout);
+		if (iLayout == layoutNone)
+			iLayout = layoutDefault;
+		bCompatible = false;
+		}
 
 	//	Load the map into a separate array so that we can detect
 	//	duplicates
@@ -540,25 +540,25 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 		}
 
 	//	Copy to our custom map (we initialize to default for any key not 
-    //  specified in the XML).
+	//  specified in the XML).
 
 	for (i = 0; i < 256; i++)
 		m_CustomMap[i] = keyNone;
 
-    if (bCompatible)
-        {
-	    for (i = 0; i < DEFAULT_MAP_COUNT; i++)
-		    m_CustomMap[DEFAULT_MAP[i].iVirtKey] = DEFAULT_MAP[i].iGameKey;
-        }
+	if (bCompatible)
+		{
+		for (i = 0; i < DEFAULT_MAP_COUNT; i++)
+			m_CustomMap[DEFAULT_MAP[i].iVirtKey] = DEFAULT_MAP[i].iGameKey;
+		}
 
 	for (i = 0; i < 256; i++)
 		if (iNewMap[i] != keyError)
 			m_CustomMap[i] = iNewMap[i];
 
-    //  Set the layout
+	//  Set the layout
 
-    SetLayout(iLayout);
-    m_bModified = false;
+	SetLayout(iLayout);
+	m_bModified = false;
 
 	return NOERROR;
 	}
@@ -569,33 +569,33 @@ void CGameKeys::SetGameKey (const CString &sKeyID, Keys iCommand)
 //
 //  Binds the command to the given key (in the custom layout only).
 
-    {
+	{
 	int i;
 
-    DWORD dwVirtKey = CVirtualKeyData::GetKey(sKeyID);
-    if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
-        return;
+	DWORD dwVirtKey = CVirtualKeyData::GetKey(sKeyID);
+	if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
+		return;
 
 	//	If we're trying to change the default layout, switch over to the custom
 	//	layout.
 
 	if (m_iLayout == layoutDefault)
 		{
-        for (i = 0; i < 256; i++)
-            m_CustomMap[i] = m_iMap[i];
+		for (i = 0; i < 256; i++)
+			m_CustomMap[i] = m_iMap[i];
 
 		m_iLayout = layoutCustom;
 		}
 
 	//	Update the key
 
-    m_CustomMap[(dwVirtKey < 256 ? dwVirtKey : 0)] = iCommand;
-    m_iMap[(dwVirtKey < 256 ? dwVirtKey : 0)] = iCommand;
+	m_CustomMap[(dwVirtKey < 256 ? dwVirtKey : 0)] = iCommand;
+	m_iMap[(dwVirtKey < 256 ? dwVirtKey : 0)] = iCommand;
 
 	//	Need to save out
 
-    m_bModified = true;
-    }
+	m_bModified = true;
+	}
 
 void CGameKeys::SetLayout (ELayouts iLayout)
 
@@ -603,29 +603,29 @@ void CGameKeys::SetLayout (ELayouts iLayout)
 //
 //  Switches to the given layout
 
-    {
-    int i;
+	{
+	int i;
 
-    switch (iLayout)
-        {
-        case layoutDefault:
-            SetLayoutFromStatic(DEFAULT_MAP, DEFAULT_MAP_COUNT);
-            break;
+	switch (iLayout)
+		{
+		case layoutDefault:
+			SetLayoutFromStatic(DEFAULT_MAP, DEFAULT_MAP_COUNT);
+			break;
 
-        case layoutCustom:
-            for (i = 0; i < 256; i++)
-                m_iMap[i] = m_CustomMap[i];
-            break;
+		case layoutCustom:
+			for (i = 0; i < 256; i++)
+				m_iMap[i] = m_CustomMap[i];
+			break;
 
-        default:
-            //  Unknown layout, so do nothing
+		default:
+			//  Unknown layout, so do nothing
 
-            return;
-        }
+			return;
+		}
 
-    m_iLayout = iLayout;
-    m_bModified = true;
-    }
+	m_iLayout = iLayout;
+	m_bModified = true;
+	}
 
 void CGameKeys::SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount)
 
@@ -633,15 +633,15 @@ void CGameKeys::SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCou
 //
 //  Sets the current layout from the given mapping
 
-    {
-    int i;
+	{
+	int i;
 
 	for (i = 0; i < 256; i++)
 		m_iMap[i] = keyNone;
 
 	for (i = 0; i < iLayoutCount; i++)
 		m_iMap[pLayout[i].iVirtKey] = pLayout[i].iGameKey;
-    }
+	}
 
 ALERROR CGameKeys::WriteAsXML (IWriteStream *pOutput)
 
