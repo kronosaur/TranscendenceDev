@@ -109,13 +109,9 @@ class CGameKeys
 			keyPrevWeapon =				79,
 			keyPrevMissile =			80,
 			keyShowGalacticMap =		81,
+			keyAimShip =				82,
 
-			keyCount =					82,
-			};
-
-		enum ESpecialVirtKeys
-			{
-			VK_NUMPAD_ENTER =			0xE0,
+			keyCount =					83,
 			};
 
 		struct SBindingDesc

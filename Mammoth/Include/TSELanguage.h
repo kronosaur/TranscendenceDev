@@ -224,9 +224,11 @@ class CVirtualKeyData
 	public:
 		static constexpr DWORD FLAG_NON_STANDARD =			0x00000001;	//	Not available in keyboard UI
 		static constexpr DWORD FLAG_SPECIAL_KEY =			0x00000002;	//	Custom VK code
+		static constexpr DWORD FLAG_XY_INPUT =				0x00000004;	//	XY input (e.g., mouse position or joystick)
 
-		static constexpr DWORD INVALID_VIRT_KEY = 0xFFFFFFFF;
-		static constexpr DWORD VK_NUMPAD_ENTER = 0xE0;
+		static constexpr DWORD INVALID_VIRT_KEY =			0xFFFFFFFF;
+		static constexpr DWORD VK_MOUSE_MOVE =				0x07;
+		static constexpr DWORD VK_NUMPAD_ENTER =			0xE0;
 
 		static DWORD GetKey (const CString &sKey);
 		static DWORD GetKeyFlags (DWORD dwVirtKey);

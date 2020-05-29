@@ -15,7 +15,7 @@ CVirtualKeyData::SVirtKeyData CVirtualKeyData::m_VirtKeyData[] =
 		{	"MButton",	NULL,   0	},
 		{	NULL,	NULL,   0	},
 		{	NULL,	NULL,   0	},
-		{	NULL,	NULL,   0	},
+		{	"MouseMove",	NULL,   FLAG_XY_INPUT | FLAG_SPECIAL_KEY	},
 
 		{	"Backspace",	"Backspace",   0	},
 		{	"Tab",			"Tab",   0	},
@@ -274,7 +274,7 @@ CVirtualKeyData::SVirtKeyData CVirtualKeyData::m_VirtKeyData[] =
 		{	NULL,	NULL,   0	},
 
 		//	0xE0 - 0xEF
-		//	NOTE: These are normally reserved for OEMs, so we use them fo special
+		//	NOTE: These are normally reserved for OEMs, so we use them for special
 		//	keys which don't have their own VK code (such as Numpad Enter).
 
 		{	"NumpadEnter",	NULL,   FLAG_SPECIAL_KEY	},

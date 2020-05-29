@@ -79,6 +79,7 @@ struct SGameKeyData
         FLAG_DEBUG_ONLY =   0x00000002,
 		FLAG_STATEFULL =	0x00000004,		//	Tracks when key is down vs. up (thrust, fire, etc.).
 		FLAG_NO_REPEAT =	0x00000008,		//	Ignore repeated keys
+		FLAG_XY_INPUT =		0x00000010,		//	Can only be mapped to an XY input (e.g., move position)
         };
 
 	char *pszName;
@@ -174,6 +175,7 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 		{	"PreviousWeapon",           "Select Previous Weapon",       SGameKeyData::FLAG_NO_REPEAT | SGameKeyData::FLAG_HIDDEN	},
 		{	"PreviousMissile",          "Select Previous Missile",      SGameKeyData::FLAG_NO_REPEAT | SGameKeyData::FLAG_HIDDEN	},
 		{	"ShowGalacticMap",          "Stargate Map",                 SGameKeyData::FLAG_NO_REPEAT },
+		{	"AimShip",					"Aim Ship",						SGameKeyData::FLAG_XY_INPUT },
 	};
 
 const int GAME_KEY_DATA_COUNT = (sizeof(g_GameKeyData) / sizeof(g_GameKeyData[0]));
