@@ -14,7 +14,7 @@ OpenGLRenderLayer::~OpenGLRenderLayer(void)
 }
 
 void OpenGLRenderLayer::addShipToRenderQueue(glm::vec2 vTexPositions, glm::vec2 vSpriteSheetPositions, glm::vec2 vCanvasQuadSizes, glm::vec2 vCanvasPositions, glm::vec2 vTextureQuadSizes, glm::vec4 glowColor, float alphaStrength,
-											 float glowNoise, int numFramesPerRow, int numFramesPerCol, OpenGLTexture* image)
+											 float glowNoise, int numFramesPerRow, int numFramesPerCol, OpenGLTexture* image, float startingDepth)
 {
 	// Note, image is a pointer to the CG32bitPixel* we want to use as a texture. We can use CG32bitPixel->GetPixelArray() to get this pointer.
 	// To get the width and height, we can use pSource->GetWidth() and pSource->GetHeight() respectively.
@@ -40,17 +40,23 @@ void OpenGLRenderLayer::addShipToRenderQueue(glm::vec2 vTexPositions, glm::vec2 
 	}
 
 	// Add this quad to the render queue.
-	m_texRenderBatches[image]->addObjToRender(OpenGLInstancedBatchRenderRequestTexture(vTexPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, alphaStrength, glowColor, glowNoise));
+	auto renderRequest = OpenGLInstancedBatchRenderRequestTexture(vTexPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, alphaStrength, glowColor, glowNoise);
+	renderRequest.set_depth(startingDepth);
+	m_texRenderBatches[image]->addObjToRender(renderRequest);
 }
 
-void OpenGLRenderLayer::addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, glm::vec3 intensitiesAndCycles, glm::ivec3 styles, float rotation)
+void OpenGLRenderLayer::addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, glm::vec3 intensitiesAndCycles, glm::ivec3 styles, float rotation, float startingDepth)
 {
-	m_rayRenderBatch.addObjToRender(OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, vPrimaryColor, vSecondaryColor));
+	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, vPrimaryColor, vSecondaryColor);
+	renderRequest.set_depth(startingDepth);
+	m_rayRenderBatch.addObjToRender(renderRequest);
 }
 
-void OpenGLRenderLayer::addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, float rotation, float seed)
+void OpenGLRenderLayer::addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, float rotation, float seed, float startingDepth)
 {
-	m_lightningRenderBatch.addObjToRender(OpenGLInstancedBatchRenderRequestLightning(sizeAndPosition, rotation, shapes, seed, vPrimaryColor, vSecondaryColor));
+	auto renderRequest = OpenGLInstancedBatchRenderRequestLightning(sizeAndPosition, rotation, shapes, seed, vPrimaryColor, vSecondaryColor);
+	renderRequest.set_depth(startingDepth);
+	m_lightningRenderBatch.addObjToRender(renderRequest);
 }
 
 void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader, OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, unsigned int fbo, OpenGLVAO* canvasVAO)

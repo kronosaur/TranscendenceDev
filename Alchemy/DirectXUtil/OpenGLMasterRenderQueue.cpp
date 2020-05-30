@@ -110,7 +110,8 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	image->requestGlowmapTile(vSpriteSheetPositions[0], vSpriteSheetPositions[1], float(numFramesPerRow * vTextureQuadSizes[0]), float(numFramesPerCol * vTextureQuadSizes[1]), vTextureQuadSizes[0], vTextureQuadSizes[1]);
 
 	m_pActiveRenderLayer->addShipToRenderQueue(vTexPositions, vSpriteSheetPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, glowColor, alphaStrength,
-		glowNoise, numFramesPerRow, numFramesPerCol, image);
+		glowNoise, numFramesPerRow, numFramesPerCol, image, m_fDepthLevel);
+	m_fDepthLevel -= m_fDepthDelta;
 	}
 
 void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
@@ -126,7 +127,8 @@ void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPi
 	glm::vec3 intensitiesAndCycles(float(iIntensity), waveCyclePos, float(opacityAdj) / 255.0f);
 	glm::ivec3 styles(iColorTypes, iOpacityTypes, iTexture);
 
-	m_pActiveRenderLayer->addRayToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, intensitiesAndCycles, styles, rotation);
+	m_pActiveRenderLayer->addRayToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, intensitiesAndCycles, styles, rotation, m_fDepthLevel);
+	m_fDepthLevel -= m_fDepthDelta;
 	}
 
 void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
@@ -139,7 +141,8 @@ void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int
 		(float)posPixelX / (float)canvasSizeX, (float)posPixelY / (float)canvasSizeY);
 	glm::ivec2 shapes(iWidthAdjType, iReshape);
 
-	m_pActiveRenderLayer->addLightningToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, rotation, seed);
+	m_pActiveRenderLayer->addLightningToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, rotation, seed, m_fDepthLevel);
+	m_fDepthLevel -= m_fDepthDelta;
 }
 
 void OpenGLMasterRenderQueue::renderAllQueues(void)

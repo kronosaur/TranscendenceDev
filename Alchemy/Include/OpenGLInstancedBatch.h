@@ -251,15 +251,19 @@ public:
 		m_depthsFloat.clear();
 		m_renderRequests.clear();
 	};
-	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue=true) {
+	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue=true, bool manuallySetDepth=true) {
 		int iNumObjectsToRender = m_renderRequests.size();
 		if (iNumObjectsToRender > 0)
 		{
-			for (int i = 0; i < iNumObjectsToRender; i++)
+			if (!manuallySetDepth)
 			{
-				m_renderRequests[i].set_depth(startingDepth);
-				startingDepth -= incDepth;
+				for (int i = 0; i < iNumObjectsToRender; i++)
+				{
+					m_renderRequests[i].set_depth(startingDepth);
+					startingDepth -= incDepth;
+				}
 			}
+
 			OpenGLVAO &vao = m_renderRequests[0].getVAOForInstancedBatchType();
 			unsigned int iVAOID = vao.getVAO()[0];
 			unsigned int *instancedVBO = vao.getinstancedVBO();
