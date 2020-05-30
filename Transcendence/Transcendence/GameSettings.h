@@ -15,9 +15,10 @@ class CGameKeys
 			layoutNone =                -1,
 
 			layoutDefault =             0,  //  Default layout
-			layoutCustom =              1,  //  Configured by player
+			layoutWASD =				1,  //  WASD
+			layoutCustom =              2,  //  Configured by player
 
-			layoutCount =               2,
+			layoutCount =               3,
 			};
 
 		enum Keys
@@ -110,8 +111,9 @@ class CGameKeys
 			keyPrevMissile =			80,
 			keyShowGalacticMap =		81,
 			keyAimShip =				82,
+			keyInteract =				83,
 
-			keyCount =					83,
+			keyCount =					84,
 			};
 
 		struct SBindingDesc
@@ -138,11 +140,11 @@ class CGameKeys
 		DWORD GetKey (Keys iCommand) const;
 		ELayouts GetLayout (void) const { return m_iLayout; }
 		CString GetLayoutName (ELayouts iLayout) const;
-		bool IsKeyMapped (int iVirtKey, Keys iCommand) const;
 		bool IsKeyDown (Keys iCommand) const;
 		bool IsModified (void) const { return m_bModified; }
-		bool IsNonRepeatCommand (Keys iCommand) const;
-		bool IsStatefulCommand (Keys iCommand) const;
+		static bool IsNonRepeatCommand (Keys iCommand);
+		static bool IsStatefulCommand (Keys iCommand);
+		static bool IsXYInputCommand (Keys iCommand);
 		ALERROR ReadFromXML (CXMLElement *pDesc);
 		void SetGameKey (const CString &sKeyID, Keys iCommand);
 		void SetLayout (ELayouts iLayout);
@@ -158,19 +160,26 @@ class CGameKeys
 			CGameKeys::Keys iGameKey;
 			};
 
+		void InitCommandToKeyMap (void) const;
 		void SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount);
 
 		static CString GetLayoutID (ELayouts iLayout);
 		static ELayouts GetLayoutFromID (const CString &sLayoutID);
 
-		ELayouts m_iLayout;                 //  Current layout to use
-		Keys m_iMap[256];                   //  Current mappings
+		ELayouts m_iLayout = layoutNone;	//  Current layout to use
+		Keys m_iMap[256];                   //  Current mappings (key to command)
 
 		Keys m_CustomMap[256];
-		bool m_bModified;                   //  TRUE if modified since we loaded
+		bool m_bModified = false;			//  TRUE if modified since we loaded
+
+		mutable DWORD m_CommandToKeyMap[keyCount];	//	Map from a command to a key
+		mutable bool m_bCommandMapValid = false;	//	TRUE if m_CommandToKeyMap is valid
 
 		static const SKeyMapEntry DEFAULT_MAP[];
 		static const int DEFAULT_MAP_COUNT;
+
+		static const SKeyMapEntry WASD_MAP[];
+		static const int WASD_MAP_COUNT;
 	};
 
 //	Game settings class -------------------------------------------------------

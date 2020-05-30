@@ -14,6 +14,7 @@
 #define CMD_PREV_LAYOUT 						CONSTLIT("cmdPrevLayout")
 
 #define CMD_RESET_DEFAULT 						CONSTLIT("cmdResetDefault")
+#define CMD_RESET_WASD							CONSTLIT("cmdResetWASD")
 #define CMD_CLEAR_BINDING 						CONSTLIT("cmdClearBinding")
 
 #define ID_CTRL_TITLE							CONSTLIT("ctrlTitle")
@@ -238,6 +239,30 @@ void CKeyboardMapSession::ArrangeCommandLabels (const RECT &rcRect, const RECT &
 		}
 	}
 
+bool CKeyboardMapSession::CanBindKey (int iKeyIndex, CGameKeys::Keys iCmd) const
+
+//	CanBindKey
+//
+//	Returns TRUE if we can bind the key to the given command.
+
+	{
+	//	Can't bind reserved keys
+
+	if (m_Keys[iKeyIndex].dwFlags & FLAG_RESERVED)
+		return false;
+
+	//	If this command requires an XY position, then we need a virtual key with
+	//	XY input (e.g., joystick, mouse).
+
+	if (CGameKeys::IsXYInputCommand(iCmd)
+			&& !(CVirtualKeyData::GetKeyFlags(m_Keys[iKeyIndex].dwVirtKey) & CVirtualKeyData::FLAG_XY_INPUT))
+		return false;
+
+	//	Binding allowed
+
+	return true;
+	}
+
 void CKeyboardMapSession::CmdClearBinding (void)
 
 //	CmdClearBinding
@@ -290,14 +315,14 @@ void CKeyboardMapSession::CmdPrevLayout (void)
 		}
 	}
 
-void CKeyboardMapSession::CmdResetDefault (void)
+void CKeyboardMapSession::CmdResetDefault (CGameKeys::ELayouts iLayout)
 
 //	CmdResetDefault
 //
 //	Resets the bindings to default
 
 	{
-	m_Settings.GetKeyMap().SetLayout(CGameKeys::layoutDefault);
+	m_Settings.GetKeyMap().SetLayout(iLayout);
 	InitBindings();
 	m_iSelectedCommand = -1;
 	UpdateMenu();
@@ -573,7 +598,9 @@ ALERROR CKeyboardMapSession::OnCommand (const CString &sCmd, void *pData)
 	else if (strEquals(sCmd, CMD_PREV_LAYOUT))
 		CmdPrevLayout();
 	else if (strEquals(sCmd, CMD_RESET_DEFAULT))
-		CmdResetDefault();
+		CmdResetDefault(CGameKeys::layoutDefault);
+	else if (strEquals(sCmd, CMD_RESET_WASD))
+		CmdResetDefault(CGameKeys::layoutWASD);
 	else if (strEquals(sCmd, CMD_CLEAR_BINDING))
 		CmdClearBinding();
 
@@ -623,7 +650,11 @@ ALERROR CKeyboardMapSession::OnInit (CString *retsError)
 	TArray<CUIHelper::SMenuEntry> Menu;
 	CUIHelper::SMenuEntry *pEntry = Menu.Insert();
 	pEntry->sCommand = CMD_RESET_DEFAULT;
-	pEntry->sLabel = CONSTLIT("Reset to default");
+	pEntry->sLabel = CONSTLIT("Reset to default layout");
+
+	pEntry = Menu.Insert();
+	pEntry->sCommand = CMD_RESET_WASD;
+	pEntry->sLabel = CONSTLIT("Reset to WASD layout");
 
 	pEntry = Menu.Insert();
 	pEntry->sCommand = CMD_CLEAR_BINDING;
@@ -711,7 +742,7 @@ void CKeyboardMapSession::OnLButtonDown (int x, int y, DWORD dwFlags, bool *retb
 
 				if (Result.iKeyIndex != -1
 						&& Result.iKeyIndex != Command.iKeyBinding
-						&& !(m_Keys[Result.iKeyIndex].dwFlags & FLAG_RESERVED))
+						&& CanBindKey(Result.iKeyIndex, Command.iCmd))
 					{
 					CGameKeys::Keys iCmd = Command.iCmd;
 					m_Settings.GetKeyMap().SetGameKey(m_Keys[Result.iKeyIndex].sKeyID, Command.iCmd);
@@ -724,20 +755,6 @@ void CKeyboardMapSession::OnLButtonDown (int x, int y, DWORD dwFlags, bool *retb
 					//  Reload mappings
 
 					InitBindings();
-
-					//  NOTE: The list of commands does not change within a session, so the
-					//  command index should be the same.
-#if 0
-					//  Find the index of the command and keep it selected
-
-					m_iSelectedCommand = -1;
-					for (i = 0; i < m_Commands.GetCount(); i++)
-						if (m_Commands[i].iCmd == iCmd)
-							{
-							m_iSelectedCommand = i;
-							break;
-							}
-#endif
 					}
 				}
 
@@ -791,9 +808,9 @@ void CKeyboardMapSession::OnMouseMove (int x, int y, DWORD dwFlags)
 
 		if (m_iSelectedCommand != -1 && Result.bInKey)
 			{
-			//  Not if this is a reserved key (which cannot be bound)
+			//  Only if key can be bound
 
-			if (!(m_Keys[Result.iKeyIndex].dwFlags & FLAG_RESERVED))
+			if (CanBindKey(Result.iKeyIndex, m_Commands[m_iSelectedCommand].iCmd))
 				m_iHoverKey = Result.iKeyIndex;
 			else
 				m_iHoverKey = -1;
@@ -1041,6 +1058,10 @@ void CKeyboardMapSession::UpdateMenu (void)
 	IAnimatron *pItem = GetElement(CMD_RESET_DEFAULT);
 	if (pItem)
 		pItem->SetPropertyBool(PROP_ENABLED, m_Settings.GetKeyMap().GetLayout() != CGameKeys::layoutDefault);
+
+	pItem = GetElement(CMD_RESET_WASD);
+	if (pItem)
+		pItem->SetPropertyBool(PROP_ENABLED, m_Settings.GetKeyMap().GetLayout() != CGameKeys::layoutWASD);
 
 	pItem = GetElement(CMD_CLEAR_BINDING);
 	if (pItem)

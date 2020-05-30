@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 #include "Transcendence.h"
+#include "DefaultKeyMappings.h"
 
 #define COMMAND_ATTRIB						CONSTLIT("command")
 #define KEY_ATTRIB							CONSTLIT("key")
@@ -11,65 +12,6 @@
 
 #define LAYOUT_DEFAULT                      CONSTLIT("default")
 #define LAYOUT_CUSTOM                       CONSTLIT("custom")
-
-//	Default Key Mapping
-//
-//	NOTES
-//
-//	* Do not use F12 as it causes a break when running with a debugger
-
-const CGameKeys::SKeyMapEntry CGameKeys::DEFAULT_MAP[] =
-	{
-		{	'A',				CGameKeys::keyAutopilot },
-		{	'B',				CGameKeys::keyEnableDevice },
-		{	'C',				CGameKeys::keyCommunications },
-		{	'D',				CGameKeys::keyDock },
-		//	'E' unused
-		{	'F',				CGameKeys::keyTargetNextFriendly },
-		{	'G',				CGameKeys::keyEnterGate },
-		//	'H' unused
-		{	'I',				CGameKeys::keyInvokePower },
-		{	'J',				CGameKeys::keyRotateLeft },
-		{	'K',				CGameKeys::keyThrustForward },
-		{	'L',				CGameKeys::keyRotateRight },
-		{	'M',				CGameKeys::keyShowMap },
-		{	'N',				CGameKeys::keyShowGalacticMap },
-		//	'O' unused
-		{	'P',				CGameKeys::keyPause },
-		{	'Q',				CGameKeys::keySquadronCommands },
-		{	'R',				CGameKeys::keyClearTarget },
-		{	'S',				CGameKeys::keyShipStatus },
-		{	'T',				CGameKeys::keyTargetNextEnemy },
-		{	'U',				CGameKeys::keyUseItem },
-		//	'V' unused
-		{	'W',				CGameKeys::keyNextWeapon },
-		//	'X' unused
-		//	'Y' unused
-		//	'Z' unused
-
-		{	VK_LBUTTON,			CGameKeys::keyFireWeapon },
-		{	VK_RBUTTON,			CGameKeys::keyThrustForward },
-
-		{	VK_CONTROL,			CGameKeys::keyFireWeapon },
-		{	VK_DOWN,			CGameKeys::keyThrustForward },
-		{	VK_LEFT,			CGameKeys::keyRotateLeft },
-		{	VK_OEM_PERIOD,		CGameKeys::keyStop },
-		{	VK_PAUSE,			CGameKeys::keyPause },
-		{	VK_RETURN,			CGameKeys::keyFireMissile },
-		{	VK_RIGHT,			CGameKeys::keyRotateRight },
-		{	VK_SHIFT,			CGameKeys::keyFireMissile },
-		{	VK_SPACE,			CGameKeys::keyFireWeapon },
-		{	VK_TAB,				CGameKeys::keyNextMissile },
-		{	VK_UP,				CGameKeys::keyThrustForward },
-
-		{	VK_F1,				CGameKeys::keyShowHelp },
-		{	VK_F2,				CGameKeys::keyShowGameStats },
-		{	VK_F7,				CGameKeys::keyVolumeDown },
-		{	VK_F8,				CGameKeys::keyVolumeUp },
-		{	VK_F9,				CGameKeys::keyShowConsole },
-	};
-
-const int CGameKeys::DEFAULT_MAP_COUNT = (sizeof(DEFAULT_MAP) / sizeof(DEFAULT_MAP[0]));
 
 struct SGameKeyData
 	{
@@ -176,6 +118,7 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 		{	"PreviousMissile",          "Select Previous Missile",      SGameKeyData::FLAG_NO_REPEAT | SGameKeyData::FLAG_HIDDEN	},
 		{	"ShowGalacticMap",          "Stargate Map",                 SGameKeyData::FLAG_NO_REPEAT },
 		{	"AimShip",					"Aim Ship",						SGameKeyData::FLAG_XY_INPUT },
+		{	"Interact",					"Interact with Object",			SGameKeyData::FLAG_NO_REPEAT },
 	};
 
 const int GAME_KEY_DATA_COUNT = (sizeof(g_GameKeyData) / sizeof(g_GameKeyData[0]));
@@ -308,23 +251,8 @@ DWORD CGameKeys::GetKey (Keys iCommand) const
 //  Returns the virtual key mapped to the given command.
 
 	{
-	int i;
-
-	for (i = 0; i < 256; i++)
-		if (m_iMap[i] == iCommand)
-			{
-			//  If this is a non-standard key, then skip it because
-			//  we won't be able to see it in the keyboard UI.
-
-			if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
-				continue;
-
-			//  Found it
-
-			return i;
-			}
-
-	return CVirtualKeyData::INVALID_VIRT_KEY;
+	InitCommandToKeyMap();
+	return m_CommandToKeyMap[iCommand];
 	}
 
 char CGameKeys::GetKeyIfChar (Keys iCommand) const
@@ -335,18 +263,13 @@ char CGameKeys::GetKeyIfChar (Keys iCommand) const
 //	Otherwise we return 0.
 
 	{
-	int i;
+	InitCommandToKeyMap();
+	DWORD dwVirtKey = m_CommandToKeyMap[iCommand];
 
-	for (i = 0; i < 256; i++)
-		if (m_iMap[i] == iCommand)
-			{
-			if (i >= 'A' && i <= 'Z')
-				return (char)i;
-			else
-				return '\0';
-			}
-
-	return '\0';
+	if (dwVirtKey >= 'A' && dwVirtKey <= 'Z')
+		return (char)dwVirtKey;
+	else
+		return '\0';
 	}
 
 CString CGameKeys::GetLayoutID (ELayouts iLayout)
@@ -405,28 +328,38 @@ CString CGameKeys::GetLayoutName (ELayouts iLayout) const
 		}
 	}
 
-bool CGameKeys::IsKeyMapped (int iVirtKey, Keys iCommand) const
+void CGameKeys::InitCommandToKeyMap (void) const
 
-//	IsKeyMapped
+//	InitCommandToKeyMap
 //
-//	Returns TRUE if the given virtual key maps to the given command.
+//	Generate a map from command to key.
 
 	{
+	if (m_bCommandMapValid)
+		return;
+
+	for (int i = 0; i < keyCount; i++)
+		m_CommandToKeyMap[i] = CVirtualKeyData::INVALID_VIRT_KEY;
+
 	for (int i = 0; i < 256; i++)
-		if (m_iMap[i] == iCommand)
-			{
-			//  If this is a non-standard key, then skip it because
-			//  we won't be able to see it in the keyboard UI.
+		{
+		//  If this is a non-standard key, then skip it because
+		//  we won't be able to see it in the keyboard UI.
 
-			if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
-				continue;
+		if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
+			continue;
 
-			//  Found it
+		int iCommand = m_iMap[i];
+		if (iCommand == keyNone || iCommand == keyError)
+			continue;
 
-			return true;
-			}
+		//  Set the key if not already set
 
-	return false;
+		if (m_CommandToKeyMap[iCommand] == CVirtualKeyData::INVALID_VIRT_KEY)
+			m_CommandToKeyMap[iCommand] = i;
+		}
+
+	m_bCommandMapValid = true;
 	}
 
 bool CGameKeys::IsKeyDown (Keys iCommand) const
@@ -437,25 +370,15 @@ bool CGameKeys::IsKeyDown (Keys iCommand) const
 //	multiple keys mapped to the same command.
 
 	{
-	for (int i = 0; i < 256; i++)
-		if (m_iMap[i] == iCommand)
-			{
-			//  If this is a non-standard key, then skip it because
-			//  we won't be able to see it in the keyboard UI.
+	InitCommandToKeyMap();
+	DWORD dwVirtKey = m_CommandToKeyMap[iCommand];
+	if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
+		return false;
 
-			if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
-				continue;
-
-			//  Found it
-
-			if (::uiIsKeyDown(i))
-				return true;
-			}
-
-	return false;
+	return ::uiIsKeyDown(dwVirtKey);
 	}
 
-bool CGameKeys::IsNonRepeatCommand (Keys iCommand) const
+bool CGameKeys::IsNonRepeatCommand (Keys iCommand)
 
 //	IsNonRepeatCommand
 //
@@ -467,7 +390,7 @@ bool CGameKeys::IsNonRepeatCommand (Keys iCommand) const
 	return (Data.dwFlags & SGameKeyData::FLAG_NO_REPEAT ? true : false);
 	}
 
-bool CGameKeys::IsStatefulCommand (Keys iCommand) const
+bool CGameKeys::IsStatefulCommand (Keys iCommand)
 
 //	IsStatefulCommand
 //
@@ -477,6 +400,18 @@ bool CGameKeys::IsStatefulCommand (Keys iCommand) const
 	ASSERT(iCommand > 0 && iCommand < keyCount);
 	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_STATEFULL ? true : false);
+	}
+
+bool CGameKeys::IsXYInputCommand (Keys iCommand)
+
+//	IsXYInputCommand
+//
+//	Returns TRUE if this command needs XY input.
+
+	{
+	ASSERT(iCommand > 0 && iCommand < keyCount);
+	const SGameKeyData &Data = g_GameKeyData[iCommand];
+	return (Data.dwFlags & SGameKeyData::FLAG_XY_INPUT ? true : false);
 	}
 
 ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
@@ -595,6 +530,7 @@ void CGameKeys::SetGameKey (const CString &sKeyID, Keys iCommand)
 	//	Need to save out
 
 	m_bModified = true;
+	m_bCommandMapValid = false;
 	}
 
 void CGameKeys::SetLayout (ELayouts iLayout)
@@ -604,16 +540,18 @@ void CGameKeys::SetLayout (ELayouts iLayout)
 //  Switches to the given layout
 
 	{
-	int i;
-
 	switch (iLayout)
 		{
 		case layoutDefault:
 			SetLayoutFromStatic(DEFAULT_MAP, DEFAULT_MAP_COUNT);
 			break;
 
+		case layoutWASD:
+			SetLayoutFromStatic(WASD_MAP, WASD_MAP_COUNT);
+			break;
+
 		case layoutCustom:
-			for (i = 0; i < 256; i++)
+			for (int i = 0; i < 256; i++)
 				m_iMap[i] = m_CustomMap[i];
 			break;
 
@@ -625,6 +563,7 @@ void CGameKeys::SetLayout (ELayouts iLayout)
 
 	m_iLayout = iLayout;
 	m_bModified = true;
+	m_bCommandMapValid = false;
 	}
 
 void CGameKeys::SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount)
@@ -641,6 +580,8 @@ void CGameKeys::SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCou
 
 	for (i = 0; i < iLayoutCount; i++)
 		m_iMap[pLayout[i].iVirtKey] = pLayout[i].iGameKey;
+
+	m_bCommandMapValid = false;
 	}
 
 ALERROR CGameKeys::WriteAsXML (IWriteStream *pOutput)

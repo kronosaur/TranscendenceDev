@@ -739,6 +739,7 @@
     <ClInclude Include="BackgroundTasks.h" />
     <ClInclude Include="CGAreas.h" />
     <ClInclude Include="Credits.h" />
+    <ClInclude Include="DefaultKeyMappings.h" />
     <ClInclude Include="DockScreen.h" />
     <ClInclude Include="DockScreenDisplayImpl.h" />
     <ClInclude Include="DockScreenSubjugate.h" />

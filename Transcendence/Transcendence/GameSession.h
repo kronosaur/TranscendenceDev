@@ -113,6 +113,8 @@ class CGameSession : public IHISession
 					|| m_CurrentMenu == menuInvoke);
 			}
 
+		bool IsMouseAimConfigured (void) const;
+
 		void PaintMenu (CG32bitImage &Screen);
 		void PaintSRS (CG32bitImage &Screen);
 		void SetMouseAimEnabled (bool bEnabled = true);

@@ -367,6 +367,9 @@ class CGateTimerManager
 class CSystem
 	{
 	public:
+		static constexpr Metric MAX_GATE_RANGE =		150.0 * KLICKS_PER_PIXEL;
+		static constexpr Metric MAX_GATE_HELP_RANGE =	256.0 * KLICKS_PER_PIXEL;
+
 		//	Other defines
 
 		enum LayerEnum
@@ -532,6 +535,7 @@ class CSystem
 		CSpaceEnvironmentType *GetSpaceEnvironment (int xTile, int yTile);
 		CSpaceEnvironmentType *GetSpaceEnvironment (const CVector &vPos, int *retxTile = NULL, int *retyTile = NULL);
 		CTopologyNode *GetStargateDestination (const CString &sStargate, CString *retsEntryPoint);
+		CSpaceObject *GetStargateInRange (const CVector &vPos, CSpaceObject **retpStargateNearby = NULL) const;
 		CUniverse &GetUniverse (void) const { return m_Universe; }
 		bool HasAttribute (const CVector &vPos, const CString &sAttrib) const;
 		bool HasRandomEncounters (void) const { return !m_fNoRandomEncounters; }

@@ -9,6 +9,17 @@
 #define CMD_CONFIRM							110
 #define CMD_CANCEL							111
 
+bool CGameSession::IsMouseAimConfigured (void) const
+
+//	IsMouseAimConfigured
+//
+//	Returns TRUE if key mappings are configured to aim using mouse.
+
+	{
+	return (!m_Settings.GetBoolean(CGameSettings::noMouseAim)
+			&& m_Settings.GetKeyMap().GetKey(CGameKeys::keyAimShip) == CVirtualKeyData::VK_MOUSE_MOVE);
+	}
+
 void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 
 //  OnChar
@@ -867,7 +878,10 @@ void CGameSession::OnMouseMove (int x, int y, DWORD dwFlags)
 			//	Otherwise, enable mouse aim
 
 			else if (g_pHI->HasMouseMoved(x, y))
-				SetMouseAimEnabled(true);
+				{
+				if (!IsMouseAimEnabled() && IsMouseAimConfigured())
+					SetMouseAimEnabled(true);
+				}
 
 			break;
 			}
@@ -1099,11 +1113,6 @@ void CGameSession::SetMouseAimEnabled (bool bEnabled)
 //	want mouse aiming to be either enabled or disabled.
 
 	{
-	//	If settings has disabled mouse aim, then nothing to do.
-
-	if (m_Settings.GetBoolean(CGameSettings::noMouseAim))
-		return;
-
 	//	Set it
 
 	m_bMouseAim = bEnabled;

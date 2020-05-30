@@ -27,9 +27,6 @@ const DWORD HIT_THRESHOLD_EXIT =				150;
 
 const DWORD DAMAGE_BAR_TIMER =					30 * 5;
 
-#define MAX_GATE_DISTANCE						(g_KlicksPerPixel * 150.0)
-#define MAX_STARGATE_HELP_RANGE					(g_KlicksPerPixel * 256.0)
-
 #define FIELD_ID								CONSTLIT("id")
 #define FIELD_ORE_LEVEL							CONSTLIT("oreLevel")
 
@@ -518,47 +515,23 @@ void CPlayerShipController::Gate (void)
 
 	//	Find the stargate closest to the ship
 
-	int i;
-	Metric rBestDist2 = MAX_GATE_DISTANCE * MAX_GATE_DISTANCE;
-	Metric rNearbyDist2 = 4.0 * MAX_STARGATE_HELP_RANGE * MAX_STARGATE_HELP_RANGE;
-	CSpaceObject *pStation = NULL;
-	bool bGateNearby = false;
-	for (i = 0; i < pSystem->GetObjectCount(); i++)
+	CSpaceObject *pStargateNearby;
+	CSpaceObject *pStargate = pSystem->GetStargateInRange(m_pShip->GetPos(), &pStargateNearby);
+
+	//	Reqest gate
+
+	if (pStargate)
+		pStargate->RequestGate(m_pShip);
+
+	//	Else, not found
+
+	else
 		{
-		CSpaceObject *pObj = pSystem->GetObject(i);
-
-		if (pObj 
-				&& pObj->SupportsGating()
-				&& !pObj->IsIntangible()
-				&& pObj != m_pShip)
-			{
-			CVector vDist = pObj->GetPos() - m_pShip->GetPos();
-			Metric rDist2 = vDist.Length2();
-
-			if (rDist2 < rBestDist2)
-				{
-				rBestDist2 = rDist2;
-				pStation = pObj;
-				}
-			else if (rDist2 < rNearbyDist2)
-				bGateNearby = true;
-			}
-		}
-
-	//	If we did not find a station then we're done
-
-	if (pStation == NULL)
-		{
-		if (bGateNearby)
+		if (pStargateNearby)
 			DisplayTranslate(CONSTLIT("msgTooFarFromStargate"));
 		else
 			DisplayTranslate(CONSTLIT("msgNoStargatesInRange"));
-		return;
 		}
-
-	//	Otherwise, request gating
-
-	pStation->RequestGate(m_pShip);
 	}
 
 void CPlayerShipController::GenerateGameStats (CGameStats &Stats, bool bGameOver)
@@ -3167,7 +3140,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 		{
 		if (!bEnemiesInRange
 				&& !m_pSession->InSystemMap()
-				&& m_pShip->IsStargateInRange(MAX_STARGATE_HELP_RANGE))
+				&& m_pShip->IsStargateInRange(CSystem::MAX_GATE_HELP_RANGE))
 			{
 			m_pTrans->DisplayMessage(CONSTLIT("(press [G] over stargate to travel to next system)"));
 			m_iLastHelpTick = iTick;

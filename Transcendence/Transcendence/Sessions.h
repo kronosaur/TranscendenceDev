@@ -271,10 +271,11 @@ class CKeyboardMapSession : public IHISession
 			};
 
 		void ArrangeCommandLabels (const RECT &rcRect, const RECT &rcKeyboard);
+		bool CanBindKey (int iKeyIndex, CGameKeys::Keys iCmd) const;
 		void CmdClearBinding (void);
 		void CmdNextLayout (void);
 		void CmdPrevLayout (void);
-		void CmdResetDefault (void);
+		void CmdResetDefault (CGameKeys::ELayouts iLayout);
 		void CreateDeviceSelector (void);
 		void InitBindings (void);
 		void InitCommands (void);

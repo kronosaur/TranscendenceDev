@@ -152,7 +152,7 @@ void CGameSession::InitUI (void)
 	switch (m_iUI)
 		{
 		case uiPilot:
-			m_bMouseAim = !m_Settings.GetBoolean(CGameSettings::noMouseAim);
+			m_bMouseAim = IsMouseAimConfigured();
 			break;
 
 		case uiCommand:

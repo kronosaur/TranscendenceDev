@@ -58,6 +58,31 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				}
 			break;
 
+		case CGameKeys::keyInteract:
+			if (pPlayer->DockingInProgress())
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
+				g_pTrans->Autopilot(false);
+				pPlayer->Dock();
+				}
+			else if (pPlayer->GetShip()->IsParalyzed()
+					|| pPlayer->GetShip()->IsOutOfPlaneObj()
+					|| pPlayer->GetShip()->IsTimeStopped())
+				{ }
+			else if (GetUniverse().GetCurrentSystem()->GetStargateInRange(pPlayer->GetShip()->GetPos()))
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
+				g_pTrans->Autopilot(false);
+				pPlayer->Gate();
+				}
+			else
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
+				g_pTrans->Autopilot(false);
+				pPlayer->Dock();
+				}
+			break;
+
 		case CGameKeys::keyTargetNextFriendly:
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			pPlayer->SelectNextFriendly(1);
