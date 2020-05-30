@@ -3089,6 +3089,8 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	MainLayer[layerEffects] = &MainEffects;
 	MainLayer[layerOverhang] = &MainOverhang;
 
+	auto pOpenGLRenderQueue = Dest.GetMasterRenderQueue();
+
 	//	Add all objects to one of the above layers, as appropriate.
 
 	for (int i = 0; i < GetObjectCount(); i++)
@@ -3160,7 +3162,9 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	m_SpacePainter.PaintSpaceBackground(Dest, GetType(), Ctx);
 
 	//	Paint background objects - this can involve OpenGL, since this is an object painter
-
+	if (pOpenGLRenderQueue) {
+		pOpenGLRenderQueue->setActiveRenderLayer(0);
+	}
 	ParallaxBackground.Paint(Dest, Ctx);
 
 	//	Paint starshine
@@ -3176,15 +3180,21 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Paint all the objects by layer, use OpenGL for these
 	//  We should organize the render queue to render one layer at a time
 	//  See GameSessionAnimate.cpp (CGameSession::OnAnimate) for dockscreens, HUD and intro.
-	for (int i = 0; i < layerCount; i++)
+	for (int i = 0; i < layerCount; i++) {
+		if (pOpenGLRenderQueue) {
+			pOpenGLRenderQueue->setActiveRenderLayer(1 + i);
+		}
 		MainLayer[i]->Paint(Dest, Ctx);
+	}
 
 	//	Paint all joints - this is a simple line draw; we can leave this in CPU or move to OpenGL (prefer OpenGL so we have three phases that all use OpenGL)
 
 	m_Joints.Paint(Dest, Ctx);
 
 	//	Paint foreground objects, use OpenGL for these (since this is an object painter)
-
+	if (pOpenGLRenderQueue) {
+		pOpenGLRenderQueue->setActiveRenderLayer(1 + layerCount);
+	}
 	ParallaxForeground.Paint(Dest, Ctx);
 
 	//	Paint all the enhanced display markers - CPU

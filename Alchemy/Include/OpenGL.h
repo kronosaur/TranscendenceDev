@@ -69,7 +69,9 @@ private:
 //typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, glm::ivec3, glm::vec3, glm::vec3, glm::vec3> OpenGLInstancedBatchRay;
 //typedef OpenGLInstancedBatch<std::tuple<OpenGLTexture*, OpenGLTexture*, int>, glm::vec2, glm::vec2, glm::vec2, glm::vec2, float, glm::vec4, float> OpenGLInstancedBatchTexture;
 
-const int NUM_OPENGL_OBJECT_LAYERS = 6;
+const int NUM_OPENGL_MAIN_OBJECT_LAYERS = 6;
+const int NUM_OPENGL_FOREGROUND_OBJECT_LAYERS = 1;
+const int NUM_OPENGL_BACKGROUND_OBJECT_LAYERS = 1;
 
 class OpenGLContext {
 public:
@@ -128,6 +130,7 @@ public:
 	void addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, float rotation, float seed);
 	void renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader,
 		OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, unsigned int fbo, OpenGLVAO* canvasVAO);
+	void GenerateGlowmaps(unsigned int fbo, OpenGLVAO *canvasVAO, OpenGLShader* glowmapShader);
 private:
 	void clear();
 
@@ -136,6 +139,7 @@ private:
 	OpenGLInstancedBatchLightning m_lightningRenderBatch;
 	std::mutex m_texRenderQueueAddMutex;
 	std::vector<std::shared_ptr<OpenGLTexture>> m_texturesForDeletion;
+	std::vector<OpenGLTexture*> m_texturesNeedingGlowmaps;
 };
 
 class OpenGLMasterRenderQueue {
@@ -161,6 +165,7 @@ public:
 	 }
 	void setPointerToCanvas(void* canvas) { m_pCanvas = canvas; }
 	void *getPointerToCanvas() { return m_pCanvas; }
+	void setActiveRenderLayer(int iRenderLayer) { m_pActiveRenderLayer = &m_renderLayers[iRenderLayer]; }
 #ifdef OPENGL_FPS_COUNTER_ENABLE
 	CG16bitFont& getOpenGLIndicatorFont() {
 		return *(m_pOpenGLIndicatorFont.get());
@@ -176,12 +181,8 @@ private:
 	OpenGLShader *m_pRayShader;
 	OpenGLShader *m_pLightningShader;
 	// TODO: Maybe use filenames of texture images as the key rather than pointer to OpenGLTextures? Using pointers as map keys is not reliable.
-	OpenGLRenderLayer exampleRenderLayer;
-	std::map<OpenGLTexture*, OpenGLInstancedBatchTexture*> m_shipRenderQueues;
-	OpenGLInstancedBatchRay m_shipEffectRayRenderQueue;
-	OpenGLInstancedBatchRay m_effectRayRenderQueue;
-	OpenGLInstancedBatchLightning m_effectLightningRenderQueue;
-	OpenGLInstancedBatchLightning m_shipEffectLightningRenderQueue;
+	OpenGLRenderLayer* m_pActiveRenderLayer;
+	std::vector<OpenGLRenderLayer> m_renderLayers = std::vector<OpenGLRenderLayer>(NUM_OPENGL_MAIN_OBJECT_LAYERS + NUM_OPENGL_FOREGROUND_OBJECT_LAYERS + NUM_OPENGL_BACKGROUND_OBJECT_LAYERS);
 	//OpenGLInstancedRenderQueue* m_shipEffectOrbRenderQueues;
 	//OpenGLInstancedRenderQueue* m_effectOrbRenderQueues;
 	// TODO: CPU images should own corresponding OpenGL textures. We need to permanently map our RAM textures to GPU textures, which means avoiding

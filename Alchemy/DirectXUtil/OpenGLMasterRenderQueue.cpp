@@ -25,6 +25,7 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	m_pObjectTextureShader = new OpenGLShader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
 	m_pRayShader = new OpenGLShader("./shaders/ray_vertex_shader.glsl", "./shaders/ray_fragment_shader.glsl");
 	m_pLightningShader = new OpenGLShader("./shaders/lightning_vertex_shader.glsl", "./shaders/lightning_fragment_shader.glsl");
+	m_pActiveRenderLayer = &m_renderLayers[0];
 #ifdef OPENGL_FPS_COUNTER_ENABLE
 	m_pOpenGLIndicatorFont = std::make_unique<CG16bitFont>();
 	m_pOpenGLIndicatorFont->Create(CONSTLIT("Arial"), -16);
@@ -108,7 +109,7 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	// Initialize a glowmap tile request here, and save it in the MRQ. We consume this when we generate textures, to render glowmaps.
 	image->requestGlowmapTile(vSpriteSheetPositions[0], vSpriteSheetPositions[1], float(numFramesPerRow * vTextureQuadSizes[0]), float(numFramesPerCol * vTextureQuadSizes[1]), vTextureQuadSizes[0], vTextureQuadSizes[1]);
 
-	exampleRenderLayer.addShipToRenderQueue(vTexPositions, vSpriteSheetPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, glowColor, alphaStrength,
+	m_pActiveRenderLayer->addShipToRenderQueue(vTexPositions, vSpriteSheetPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, glowColor, alphaStrength,
 		glowNoise, numFramesPerRow, numFramesPerCol, image);
 	}
 
@@ -125,7 +126,7 @@ void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPi
 	glm::vec3 intensitiesAndCycles(float(iIntensity), waveCyclePos, float(opacityAdj) / 255.0f);
 	glm::ivec3 styles(iColorTypes, iOpacityTypes, iTexture);
 
-	exampleRenderLayer.addRayToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, intensitiesAndCycles, styles, rotation);
+	m_pActiveRenderLayer->addRayToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, intensitiesAndCycles, styles, rotation);
 	}
 
 void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
@@ -138,13 +139,18 @@ void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int
 		(float)posPixelX / (float)canvasSizeX, (float)posPixelY / (float)canvasSizeY);
 	glm::ivec2 shapes(iWidthAdjType, iReshape);
 
-	exampleRenderLayer.addLightningToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, rotation, seed);
+	m_pActiveRenderLayer->addLightningToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, rotation, seed);
 }
 
 void OpenGLMasterRenderQueue::renderAllQueues(void)
 {
-	exampleRenderLayer.renderAllQueues(m_fDepthLevel, m_fDepthDelta, m_iCurrentTick, glm::ivec2(m_iCanvasWidth, m_iCanvasHeight), m_pObjectTextureShader,
-		m_pRayShader, m_pLightningShader, m_pGlowmapShader, fbo, m_pCanvasVAO);
+	for (OpenGLRenderLayer &renderLayer : m_renderLayers) {
+		renderLayer.renderAllQueues(m_fDepthLevel, m_fDepthDelta, m_iCurrentTick, glm::ivec2(m_iCanvasWidth, m_iCanvasHeight), m_pObjectTextureShader,
+			m_pRayShader, m_pLightningShader, m_pGlowmapShader, fbo, m_pCanvasVAO);
+	}
+	for (OpenGLRenderLayer &renderLayer : m_renderLayers) {
+		renderLayer.GenerateGlowmaps(fbo, m_pCanvasVAO, m_pGlowmapShader);
+	}
 	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;
 }
 
