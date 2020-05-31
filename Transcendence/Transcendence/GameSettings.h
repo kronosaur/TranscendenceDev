@@ -134,7 +134,7 @@ class CGameKeys
 		CGameKeys (void);
 
 		void GetCommands (TArray<SCommandKeyDesc> &Result) const;
-		Keys GetGameCommand (DWORD dwVirtKey) const { return m_iMap[(dwVirtKey < 256 ? dwVirtKey : 0)]; }
+		Keys GetGameCommand (DWORD dwVirtKey) const { InitKeyMap(); return m_KeyToCommandMap[(dwVirtKey < 256 ? dwVirtKey : 0)]; }
 		Keys GetGameCommandFromChar (char chChar) const;
 		char GetKeyIfChar (Keys iCommand) const;
 		DWORD GetKey (Keys iCommand) const;
@@ -160,20 +160,25 @@ class CGameKeys
 			CGameKeys::Keys iGameKey;
 			};
 
-		void InitCommandToKeyMap (void) const;
+		void ClearKey (TArray<DWORD> Map[], DWORD dwVirtKey);
+		void ClearKeyMap (TArray<DWORD> Map[]);
+		int GetKeyMappedToCommandCount (Keys iCommand) const { return m_CommandMap[iCommand].GetCount(); }
+		DWORD GetKeyMappedToCommand (Keys iCommand, int iKeyIndex) const { return m_CommandMap[iCommand].GetAt(iKeyIndex); }
+		void InitKeyMap (void) const;
 		void SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount);
 
 		static CString GetLayoutID (ELayouts iLayout);
 		static ELayouts GetLayoutFromID (const CString &sLayoutID);
 
-		ELayouts m_iLayout = layoutNone;	//  Current layout to use
-		Keys m_iMap[256];                   //  Current mappings (key to command)
+		ELayouts m_iLayout = layoutNone;			//  Current layout to use
+		TArray<DWORD> m_CommandMap[keyCount];		//	Current map from command to ordered array of virtual keys for that command
 
-		Keys m_CustomMap[256];
-		bool m_bModified = false;			//  TRUE if modified since we loaded
+		TArray<DWORD> m_SavedCommandMap[keyCount];	//	Last defined custom map (to switch between default and custom)
 
-		mutable DWORD m_CommandToKeyMap[keyCount];	//	Map from a command to a key
-		mutable bool m_bCommandMapValid = false;	//	TRUE if m_CommandToKeyMap is valid
+		bool m_bModified = false;					//  TRUE if modified since we loaded
+
+		mutable Keys m_KeyToCommandMap[256];		//	Map from virtual key to command
+		mutable bool m_bKeyMapValid = false;		//	TRUE if m_KeyToCommandMap is valid
 
 		static const SKeyMapEntry DEFAULT_MAP[];
 		static const int DEFAULT_MAP_COUNT;

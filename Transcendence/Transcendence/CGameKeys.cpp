@@ -123,17 +123,44 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 
 const int GAME_KEY_DATA_COUNT = (sizeof(g_GameKeyData) / sizeof(g_GameKeyData[0]));
 
-CGameKeys::CGameKeys (void) :
-		m_bModified(false)
+CGameKeys::CGameKeys (void)
 
 //	CGameKeys constructor
 
 	{
 	ASSERT(GAME_KEY_DATA_COUNT == CGameKeys::keyCount);
 	SetLayout(layoutDefault);
+	}
 
-	for (int i = 0; i < 256; i++)
-		m_CustomMap[i] = keyNone;
+void CGameKeys::ClearKey (TArray<DWORD> Map[], DWORD dwVirtKey)
+
+//	ClearKey
+//
+//	Removes the key from the mappings.
+
+	{
+	for (int i = 0; i < keyCount; i++)
+		{
+		for (int j = 0; j < Map[i].GetCount(); j++)
+			{
+			if (Map[i][j] == dwVirtKey)
+				{
+				Map[i].Delete(j);
+				j--;
+				}
+			}
+		}
+	}
+
+void CGameKeys::ClearKeyMap (TArray<DWORD> Map[])
+
+//	ClearKeyMap
+//
+//	Clears the map of commands.
+
+	{
+	for (int i = 0; i < keyCount; i++)
+		Map[i].DeleteAll();
 	}
 
 CString CGameKeys::GetCommandID (Keys iCommand)
@@ -153,14 +180,10 @@ void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result) const
 //  Returns a list of all commands and their key bindings.
 
 	{
-	int i;
-
-	TSortMap<int, int> CmdToIndex;
-
 	Result.DeleteAll();
 	Result.GrowToFit(keyCount);
 
-	for (i = 0; i < keyCount; i++)
+	for (int i = 0; i < keyCount; i++)
 		{
 		const SGameKeyData &Data = g_GameKeyData[i];
 
@@ -180,28 +203,13 @@ void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result) const
 		else
 			pNewCmd->sCmdLabel = CONSTLIT("(unknown)");
 
-		CmdToIndex.SetAt(i, Result.GetCount() - 1);
-		}
+		//	Add the mappings
 
-	//	Now add all bindings
-
-	for (i = 0; i < 256; i++)
-		{
-		if (m_iMap[i] != keyNone)
+		for (int j = 0; j < GetKeyMappedToCommandCount((Keys)i); j++)
 			{
-			//	Find the command
-
-			int *pIndex = CmdToIndex.GetAt(m_iMap[i]);
-			if (pIndex == NULL)
-				continue;
-
-			SCommandKeyDesc &Cmd = Result[*pIndex];
-
-			//	Add the key
-
-			SBindingDesc *pBinding = Cmd.Keys.Insert();
-			pBinding->dwVirtKey = (DWORD)i;
-			pBinding->sKeyID = CVirtualKeyData::GetKeyID(i);
+			SBindingDesc *pBinding = pNewCmd->Keys.Insert();
+			pBinding->dwVirtKey = GetKeyMappedToCommand((Keys)i, j);
+			pBinding->sKeyID = CVirtualKeyData::GetKeyID(pBinding->dwVirtKey);
 			}
 		}
 	}
@@ -213,9 +221,7 @@ CGameKeys::Keys CGameKeys::GetGameCommand (const CString &sCmd)
 //	Returns game command from string
 
 	{
-	int i;
-
-	for (i = 0; i < CGameKeys::keyCount; i++)
+	for (int i = 0; i < CGameKeys::keyCount; i++)
 		if (strEquals(sCmd, CString(g_GameKeyData[i].pszName, -1, true)))
 			return (CGameKeys::Keys)i;
 
@@ -248,11 +254,11 @@ DWORD CGameKeys::GetKey (Keys iCommand) const
 
 //  GetKey
 //
-//  Returns the virtual key mapped to the given command.
+//  Returns the virtual key mapped to the given command. If there are multiple
+//	keys bound to the same command, we return the first key.
 
 	{
-	InitCommandToKeyMap();
-	return m_CommandToKeyMap[iCommand];
+	return (m_CommandMap[iCommand].GetCount() > 0 ? m_CommandMap[iCommand].GetAt(0) : CVirtualKeyData::INVALID_VIRT_KEY);
 	}
 
 char CGameKeys::GetKeyIfChar (Keys iCommand) const
@@ -263,8 +269,7 @@ char CGameKeys::GetKeyIfChar (Keys iCommand) const
 //	Otherwise we return 0.
 
 	{
-	InitCommandToKeyMap();
-	DWORD dwVirtKey = m_CommandToKeyMap[iCommand];
+	DWORD dwVirtKey = GetKey(iCommand);
 
 	if (dwVirtKey >= 'A' && dwVirtKey <= 'Z')
 		return (char)dwVirtKey;
@@ -328,38 +333,37 @@ CString CGameKeys::GetLayoutName (ELayouts iLayout) const
 		}
 	}
 
-void CGameKeys::InitCommandToKeyMap (void) const
+void CGameKeys::InitKeyMap (void) const
 
-//	InitCommandToKeyMap
+//	InitKeyMap
 //
-//	Generate a map from command to key.
+//	Initialize a map from key to command.
 
 	{
-	if (m_bCommandMapValid)
+	if (m_bKeyMapValid)
 		return;
 
-	for (int i = 0; i < keyCount; i++)
-		m_CommandToKeyMap[i] = CVirtualKeyData::INVALID_VIRT_KEY;
+	//	Clear out all keys
 
 	for (int i = 0; i < 256; i++)
+		m_KeyToCommandMap[i] = keyNone;
+
+	//	Loop over all commands and add its keys
+
+	for (int i = 0; i < keyCount; i++)
 		{
-		//  If this is a non-standard key, then skip it because
-		//  we won't be able to see it in the keyboard UI.
+		Keys iCmd = (Keys)i;
+		for (int j = 0; j < GetKeyMappedToCommandCount(iCmd); j++)
+			{
+			DWORD dwVirtKey = GetKeyMappedToCommand(iCmd, j);
+			if (dwVirtKey > 255)
+				continue;
 
-		if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
-			continue;
-
-		int iCommand = m_iMap[i];
-		if (iCommand == keyNone || iCommand == keyError)
-			continue;
-
-		//  Set the key if not already set
-
-		if (m_CommandToKeyMap[iCommand] == CVirtualKeyData::INVALID_VIRT_KEY)
-			m_CommandToKeyMap[iCommand] = i;
+			m_KeyToCommandMap[dwVirtKey] = iCmd;
+			}
 		}
 
-	m_bCommandMapValid = true;
+	m_bKeyMapValid = true;
 	}
 
 bool CGameKeys::IsKeyDown (Keys iCommand) const
@@ -370,8 +374,7 @@ bool CGameKeys::IsKeyDown (Keys iCommand) const
 //	multiple keys mapped to the same command.
 
 	{
-	InitCommandToKeyMap();
-	DWORD dwVirtKey = m_CommandToKeyMap[iCommand];
+	DWORD dwVirtKey = GetKey(iCommand);
 	if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
 		return false;
 
@@ -421,13 +424,11 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 //	Read the key map from XML
 
 	{
-	int i;
-
 	//  For backwards compatibility, we assume a custom layout if we don't
 	//  have a layout specified.
 
 	ELayouts iLayout = layoutCustom;
-	bool bCompatible = true;
+	ClearKeyMap(m_SavedCommandMap);
 
 	//  Load the layout
 
@@ -437,17 +438,28 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 		iLayout = GetLayoutFromID(sLayout);
 		if (iLayout == layoutNone)
 			iLayout = layoutDefault;
-		bCompatible = false;
+		}
+
+	//	If loading old settings, then we initialize with the default map and
+	//	override as appropriate
+
+	else
+		{
+		for (int i = 0; i < DEFAULT_MAP_COUNT; i++)
+			{
+			auto &KeyList = m_SavedCommandMap[DEFAULT_MAP[i].iGameKey];
+			KeyList.Insert(DEFAULT_MAP[i].iVirtKey);
+			}
 		}
 
 	//	Load the map into a separate array so that we can detect
 	//	duplicates
 
 	Keys iNewMap[256];
-	for (i = 0; i < 256; i++)
+	for (int i = 0; i < 256; i++)
 		iNewMap[i] = keyError;
 
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+	for (int i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
 		CXMLElement *pMap = pDesc->GetContentElement(i);
 		
@@ -472,23 +484,12 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 			}
 
 		iNewMap[dwVirtKey] = iCommand;
+
+		//	Insert at the beginning because we want saved settings to override
+		//	any defaults.
+
+		m_SavedCommandMap[iCommand].Insert(dwVirtKey, 0);
 		}
-
-	//	Copy to our custom map (we initialize to default for any key not 
-	//  specified in the XML).
-
-	for (i = 0; i < 256; i++)
-		m_CustomMap[i] = keyNone;
-
-	if (bCompatible)
-		{
-		for (i = 0; i < DEFAULT_MAP_COUNT; i++)
-			m_CustomMap[DEFAULT_MAP[i].iVirtKey] = DEFAULT_MAP[i].iGameKey;
-		}
-
-	for (i = 0; i < 256; i++)
-		if (iNewMap[i] != keyError)
-			m_CustomMap[i] = iNewMap[i];
 
 	//  Set the layout
 
@@ -505,32 +506,39 @@ void CGameKeys::SetGameKey (const CString &sKeyID, Keys iCommand)
 //  Binds the command to the given key (in the custom layout only).
 
 	{
-	int i;
-
 	DWORD dwVirtKey = CVirtualKeyData::GetKey(sKeyID);
 	if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
 		return;
 
-	//	If we're trying to change the default layout, switch over to the custom
+	//	If we're trying to change a default layout, switch over to the custom
 	//	layout.
 
-	if (m_iLayout == layoutDefault)
+	if (m_iLayout != layoutCustom)
 		{
-		for (i = 0; i < 256; i++)
-			m_CustomMap[i] = m_iMap[i];
+		for (int i = 0; i < keyCount; i++)
+			m_SavedCommandMap[i] = m_CommandMap[i];
 
 		m_iLayout = layoutCustom;
 		}
 
-	//	Update the key
+	//	Clear the old key
 
-	m_CustomMap[(dwVirtKey < 256 ? dwVirtKey : 0)] = iCommand;
-	m_iMap[(dwVirtKey < 256 ? dwVirtKey : 0)] = iCommand;
+	ClearKey(m_CommandMap, dwVirtKey);
+	ClearKey(m_SavedCommandMap, dwVirtKey);
+
+	//	Update the key (and add at the beginning of the array because we want
+	//	this key to take precedence.
+
+	if (iCommand != keyNone)
+		{
+		m_CommandMap[iCommand].Insert(dwVirtKey, 0);
+		m_SavedCommandMap[iCommand].Insert(dwVirtKey, 0);
+		}
 
 	//	Need to save out
 
 	m_bModified = true;
-	m_bCommandMapValid = false;
+	m_bKeyMapValid = false;
 	}
 
 void CGameKeys::SetLayout (ELayouts iLayout)
@@ -551,8 +559,8 @@ void CGameKeys::SetLayout (ELayouts iLayout)
 			break;
 
 		case layoutCustom:
-			for (int i = 0; i < 256; i++)
-				m_iMap[i] = m_CustomMap[i];
+			for (int i = 0; i < keyCount; i++)
+				m_CommandMap[i] = m_SavedCommandMap[i];
 			break;
 
 		default:
@@ -563,7 +571,7 @@ void CGameKeys::SetLayout (ELayouts iLayout)
 
 	m_iLayout = iLayout;
 	m_bModified = true;
-	m_bCommandMapValid = false;
+	m_bKeyMapValid = false;
 	}
 
 void CGameKeys::SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount)
@@ -573,15 +581,12 @@ void CGameKeys::SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCou
 //  Sets the current layout from the given mapping
 
 	{
-	int i;
+	ClearKeyMap(m_CommandMap);
 
-	for (i = 0; i < 256; i++)
-		m_iMap[i] = keyNone;
+	for (int i = 0; i < iLayoutCount; i++)
+		m_CommandMap[pLayout[i].iGameKey].Insert(pLayout[i].iVirtKey);
 
-	for (i = 0; i < iLayoutCount; i++)
-		m_iMap[pLayout[i].iVirtKey] = pLayout[i].iGameKey;
-
-	m_bCommandMapValid = false;
+	m_bKeyMapValid = false;
 	}
 
 ALERROR CGameKeys::WriteAsXML (IWriteStream *pOutput)
@@ -592,7 +597,6 @@ ALERROR CGameKeys::WriteAsXML (IWriteStream *pOutput)
 
 	{
 	ALERROR error;
-	int i;
 
 	//	Open tag
 
@@ -603,20 +607,22 @@ ALERROR CGameKeys::WriteAsXML (IWriteStream *pOutput)
 
 	//	Write out the custom map
 
-	for (i = 0; i < 256; i++)
-		if (m_CustomMap[i] != keyNone)
+	for (int i = 0; i < keyCount; i++)
+		{
+		for (int j = 0; j < m_SavedCommandMap[i].GetCount(); j++)
 			{
-			CString sKey = CVirtualKeyData::GetKeyID(i);
+			CString sKey = CVirtualKeyData::GetKeyID(m_SavedCommandMap[i][j]);
 			if (sKey.IsBlank())
 				sKey = strPatternSubst(CONSTLIT("0x%02x"), i);
 
 			sData = strPatternSubst(CONSTLIT("\t\t<Map key=\"%s\" command=\"%s\"/>\r\n"),
 					sKey,
-					CString(g_GameKeyData[m_CustomMap[i]].pszName, -1, true));
+					CString(g_GameKeyData[i].pszName, -1, true));
 
 			if (error = pOutput->Write(sData.GetPointer(), sData.GetLength(), NULL))
 				return error;
 			}
+		}
 
 	//	Close tag
 
