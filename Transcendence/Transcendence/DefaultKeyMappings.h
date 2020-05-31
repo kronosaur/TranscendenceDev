@@ -22,9 +22,9 @@ const CGameKeys::SKeyMapEntry CGameKeys::DEFAULT_MAP[] =
 		{	'G',				CGameKeys::keyEnterGate },
 		//	'H' unused
 		{	'I',				CGameKeys::keyInvokePower },
-		{	'J',				CGameKeys::keyRotateLeft },
-		{	'K',				CGameKeys::keyThrustForward },
-		{	'L',				CGameKeys::keyRotateRight },
+		//	'J' unused
+		//	'K' unused
+		//	'L' unused
 		{	'M',				CGameKeys::keyShowMap },
 		{	'N',				CGameKeys::keyShowGalacticMap },
 		//	'O' unused

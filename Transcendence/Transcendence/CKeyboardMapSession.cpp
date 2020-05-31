@@ -9,9 +9,7 @@
 #define ALIGN_CENTER							CONSTLIT("center")
 
 #define CMD_CLOSE_SESSION						CONSTLIT("cmdCloseSession")
-#define CMD_NEXT_LAYOUT 						CONSTLIT("cmdNextLayout")
 #define CMD_OK_SESSION							CONSTLIT("cmdOKSession")
-#define CMD_PREV_LAYOUT 						CONSTLIT("cmdPrevLayout")
 
 #define CMD_RESET_DEFAULT 						CONSTLIT("cmdResetDefault")
 #define CMD_RESET_WASD							CONSTLIT("cmdResetWASD")
@@ -63,9 +61,13 @@ const CKeyboardMapSession::SDeviceData CKeyboardMapSession::DEVICE_DATA[] =
 
 			37,						//	Cols
 			6,						//	Rows
-			50,						//	x offset
-			60,						//	y offset
+			9,						//	Offset
+			0,						//	Offset
+
+			0,						//	x offset
+			0,						//	y offset
 			},
+#if 0
 		{
 			deviceNumpad,			//	Device type
 			"Number Pad",			//	Name
@@ -74,9 +76,13 @@ const CKeyboardMapSession::SDeviceData CKeyboardMapSession::DEVICE_DATA[] =
 
 			8,						//	Cols
 			5,						//	Rows
+			0,						//	Offset
+			0,						//	Offset
+
 			0,						//	x offset
-			30,						//	y offset
+			0,						//	y offset
 			},
+#endif
 		{
 			deviceMouse,			//	Device type
 			"Mouse",				//	Name
@@ -85,8 +91,11 @@ const CKeyboardMapSession::SDeviceData CKeyboardMapSession::DEVICE_DATA[] =
 
 			7,						//	Cols
 			5,						//	Rows
+			0,						//	Offset
+			1,						//	Offset
+
 			0,						//	x offset
-			45,						//	y offset
+			0,						//	y offset
 			},
 	};
 
@@ -279,42 +288,6 @@ void CKeyboardMapSession::CmdClearBinding (void)
 		}
 	}
 
-void CKeyboardMapSession::CmdNextLayout (void)
-
-//  CmdNextLayout
-//
-//  Select the next device
-
-	{
-	if (m_iDevice < DEVICE_DATA_COUNT - 1)
-		{
-		m_iDevice++;
-		InitDevice(DEVICE_DATA[m_iDevice]);
-		InitBindings();
-		m_iSelectedCommand = -1;
-		UpdateDeviceSelector();
-		UpdateMenu();
-		}
-	}
-
-void CKeyboardMapSession::CmdPrevLayout (void)
-
-//  CmdPrevLayout
-//
-//  Select the previous device
-
-	{
-	if (m_iDevice > 0)
-		{
-		m_iDevice--;
-		InitDevice(DEVICE_DATA[m_iDevice]);
-		InitBindings();
-		m_iSelectedCommand = -1;
-		UpdateDeviceSelector();
-		UpdateMenu();
-		}
-	}
-
 void CKeyboardMapSession::CmdResetDefault (CGameKeys::ELayouts iLayout)
 
 //	CmdResetDefault
@@ -326,65 +299,6 @@ void CKeyboardMapSession::CmdResetDefault (CGameKeys::ELayouts iLayout)
 	InitBindings();
 	m_iSelectedCommand = -1;
 	UpdateMenu();
-	}
-
-void CKeyboardMapSession::CreateDeviceSelector (void)
-
-//  CreateDeviceSelector
-//
-//  Create arrows to select a layout
-
-	{
-	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
-
-	//  Create a sequencer to hold all controls
-
-	CAniSequencer *pRoot;
-	CAniSequencer::Create(CVector(m_rcRect.left, m_rcRect.top), &pRoot);
-	int y = MAJOR_PADDING_TOP;
-
-	//	Create buttons to select the layout
-
-	int xCenter = (RectWidth(m_rcRect) / 2);
-	int xHalfSpacing = SMALL_SPACING_HORZ / 2;
-
-	IAnimatron *pLeftButton;
-	VI.CreateImageButtonSmall(NULL, 
-			CMD_PREV_LAYOUT, 
-			xCenter - xHalfSpacing - SMALL_BUTTON_WIDTH, 
-			y,
-			&VI.GetImage(imageSmallLeftIcon),
-			0,
-			&pLeftButton);
-
-	RegisterPerformanceEvent(pLeftButton, EVENT_ON_CLICK, CMD_PREV_LAYOUT);
-	pRoot->AddTrack(pLeftButton, 0);
-
-	IAnimatron *pRightButton;
-	VI.CreateImageButtonSmall(NULL, 
-			CMD_NEXT_LAYOUT, 
-			xCenter + xHalfSpacing, 
-			y,
-			&VI.GetImage(imageSmallRightIcon),
-			0,
-			&pRightButton);
-
-	RegisterPerformanceEvent(pRightButton, EVENT_ON_CLICK, CMD_NEXT_LAYOUT);
-	pRoot->AddTrack(pRightButton, 0);
-
-	//	Label
-
-	IAnimatron *pLabel = new CAniText;
-	pLabel->SetID(ID_LAYOUT_LABEL);
-	pLabel->SetPropertyVector(PROP_POSITION, CVector(0.0, y + SMALL_BUTTON_HEIGHT + SMALL_SPACING_VERT));
-	pLabel->SetPropertyVector(PROP_SCALE, CVector(RectWidth(m_rcRect), 100.0));
-	pLabel->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
-	pLabel->SetPropertyFont(PROP_FONT, &SubTitleFont);
-	pLabel->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_CENTER);
-
-	pRoot->AddTrack(pLabel, 0);
-	StartPerformance(pRoot, ID_SETTINGS, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 	}
 
 bool CKeyboardMapSession::HitTest (int x, int y, STargetCtx &Ctx)
@@ -493,7 +407,7 @@ void CKeyboardMapSession::InitBindings (void)
 
 	int cxBoundsSpacing = Max(0, (int)Min(m_rcRect.right - rcKeyboard.right, rcKeyboard.left - m_rcRect.left) - (LABEL_COLUMN_SPACING * m_cxKeyCol));
 	RECT rcBounds = m_rcRect;
-	rcBounds.top += MAJOR_PADDING_TOP + SMALL_BUTTON_HEIGHT + SMALL_SPACING_VERT + VI.GetFont(fontSubTitle).GetHeight();
+	rcBounds.top += MAJOR_PADDING_TOP;// + SMALL_BUTTON_HEIGHT + SMALL_SPACING_VERT + VI.GetFont(fontSubTitle).GetHeight();
 	rcBounds.left = m_rcRect.left + cxBoundsSpacing;
 	rcBounds.right = m_rcRect.right - cxBoundsSpacing;
 	ArrangeCommandLabels(rcBounds, rcKeyboard);
@@ -527,9 +441,9 @@ void CKeyboardMapSession::InitCommands (void)
 		}
 	}
 
-void CKeyboardMapSession::InitDevice (const SDeviceData &Device)
+void CKeyboardMapSession::InitDeviceLayout (const SDeviceData &Device)
 
-//	InitDevice
+//	InitDeviceLayout
 //
 //	Initializes the given device. NOTE: We assume that m_cxKeyCol and m_cyKeyRow
 //	are initialized.
@@ -582,6 +496,51 @@ void CKeyboardMapSession::InitDevice (const SDeviceData &Device)
 		}
 	}
 
+void CKeyboardMapSession::InitKeys (void)
+
+//	InitKeys
+//
+//	Initialize m_Keys and m_KeyIDToIndex arrays.
+
+	{
+	//	We combine the three devices into a single one. First we compute the 
+	//	total size of the combined device.
+
+	SDeviceData CombinedDevice;
+	for (int i = 0; i < DEVICE_DATA_COUNT; i++)
+		{
+		const SDeviceData &Device = DEVICE_DATA[i];
+
+		CombinedDevice.iCols = Max(CombinedDevice.iCols, Device.iColOffset + Device.iCols);
+		CombinedDevice.iRows = Max(CombinedDevice.iRows, Device.iRowOffset + Device.iRows);
+
+		CombinedDevice.iKeyCount += Device.iKeyCount;
+		}
+
+	TArray<SKeyData> AllKeys;
+	AllKeys.GrowToFit(CombinedDevice.iKeyCount);
+
+	for (int i = 0; i < DEVICE_DATA_COUNT; i++)
+		{
+		const SDeviceData &Device = DEVICE_DATA[i];
+
+		for (int j = 0; j < Device.iKeyCount; j++)
+			{
+			SKeyData *pNewKey = AllKeys.Insert();
+			*pNewKey = Device.pKeys[j];
+
+			pNewKey->xCol += Device.iColOffset;
+			pNewKey->yRow += Device.iRowOffset;
+			}
+		}
+
+	CombinedDevice.pKeys = &AllKeys[0];
+
+	//	Initialize
+
+	InitDeviceLayout(CombinedDevice);
+	}
+
 ALERROR CKeyboardMapSession::OnCommand (const CString &sCmd, void *pData)
 
 //  OnCommand
@@ -593,10 +552,6 @@ ALERROR CKeyboardMapSession::OnCommand (const CString &sCmd, void *pData)
 		m_HI.ClosePopupSession();
 	else if (strEquals(sCmd, CMD_OK_SESSION))
 		m_HI.ClosePopupSession();
-	else if (strEquals(sCmd, CMD_NEXT_LAYOUT))
-		CmdNextLayout();
-	else if (strEquals(sCmd, CMD_PREV_LAYOUT))
-		CmdPrevLayout();
 	else if (strEquals(sCmd, CMD_RESET_DEFAULT))
 		CmdResetDefault(CGameKeys::layoutDefault);
 	else if (strEquals(sCmd, CMD_RESET_WASD))
@@ -628,18 +583,12 @@ ALERROR CKeyboardMapSession::OnInit (CString *retsError)
 
 	//	Initialize device
 
-	m_iDevice = 0;
-	InitDevice(DEVICE_DATA[m_iDevice]);
+	InitKeys();
 
 	//	Initialize bindings between keys and commands
 
 	InitBindings();
 	m_iSelectedCommand = -1;
-
-	//	Buttons to switch to different devices
-
-	CreateDeviceSelector();
-	UpdateDeviceSelector();
 
 	//	State
 
@@ -701,14 +650,6 @@ void CKeyboardMapSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 		case VK_RETURN:
 		case VK_ESCAPE:
 			m_HI.ClosePopupSession();
-			break;
-
-		case VK_LEFT:
-			CmdPrevLayout();
-			break;
-
-		case VK_RIGHT:
-			CmdNextLayout();
 			break;
 		}
 	}
@@ -1022,30 +963,6 @@ void CKeyboardMapSession::PaintKey (CG32bitImage &Screen, const SKeyDesc &Key, C
 		KeyFont.DrawText(Screen, Key.rcRect, rgbText, Key.sLabel, 0, CG16bitFont::AlignCenter | CG16bitFont::AlignMiddle);
 	else
 		SmallKeyFont.DrawText(Screen, Key.rcRect, rgbText, Key.sLabel, 0, CG16bitFont::AlignCenter | CG16bitFont::AlignMiddle);
-	}
-
-void CKeyboardMapSession::UpdateDeviceSelector (void)
-
-//	UpdateDeviceSelector
-//
-//	Updates the device selector
-
-	{
-	//  Set the new label
-
-	IAnimatron *pLabel = GetElement(ID_LAYOUT_LABEL);
-	if (pLabel)
-		pLabel->SetPropertyString(PROP_TEXT, CString(DEVICE_DATA[m_iDevice].pszLabel));
-
-	//  Enable/disable next/prev button
-
-	IAnimatron *pNext = GetElement(CMD_NEXT_LAYOUT);
-	if (pNext)
-		pNext->SetPropertyBool(PROP_ENABLED, m_iDevice < DEVICE_DATA_COUNT - 1);
-
-	IAnimatron *pPrev = GetElement(CMD_PREV_LAYOUT);
-	if (pPrev)
-		pPrev->SetPropertyBool(PROP_ENABLED, m_iDevice > 0);
 	}
 
 void CKeyboardMapSession::UpdateMenu (void)

@@ -222,15 +222,18 @@ class CKeyboardMapSession : public IHISession
 
 		struct SDeviceData
 			{
-			EDeviceTypes iDevice;			//	Device type
-			char *pszLabel;					//	Label for the device (e.g., keyboard, mouse, controller)
-			const SKeyData *pKeys;			//	Keys available to map
-			int iKeyCount;					//	Number of keys in map
+			EDeviceTypes iDevice = deviceNone;	//	Device type
+			char *pszLabel = NULL;				//	Label for the device (e.g., keyboard, mouse, controller)
+			const SKeyData *pKeys = NULL;		//	Keys available to map
+			int iKeyCount = 0;					//	Number of keys in map
 
-			int iCols;						//	Columns
-			int iRows;						//	Rows
-			int xOffset;
-			int yOffset;
+			int iCols = 0;						//	Size in columns
+			int iRows = 0;						//	Size in rows
+			int iColOffset = 0;					//	Offset when combining with other devices
+			int iRowOffset = 0;
+
+			int xOffset = 0;
+			int yOffset = 0;
 			};
 
 		struct SKeyDesc
@@ -273,16 +276,13 @@ class CKeyboardMapSession : public IHISession
 		void ArrangeCommandLabels (const RECT &rcRect, const RECT &rcKeyboard);
 		bool CanBindKey (int iKeyIndex, CGameKeys::Keys iCmd) const;
 		void CmdClearBinding (void);
-		void CmdNextLayout (void);
-		void CmdPrevLayout (void);
 		void CmdResetDefault (CGameKeys::ELayouts iLayout);
-		void CreateDeviceSelector (void);
 		void InitBindings (void);
 		void InitCommands (void);
-		void InitDevice (const SDeviceData &Device);
+		void InitDeviceLayout (const SDeviceData &Device);
+		void InitKeys (void);
 		bool HitTest (int x, int y, STargetCtx &Ctx);
 		void PaintKey (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, CG32bitPixel rgbText, bool bFlash);
-		void UpdateDeviceSelector (void);
 		void UpdateMenu (void);
 
 		CCloudService &m_Service;
@@ -302,7 +302,6 @@ class CKeyboardMapSession : public IHISession
 		TSortMap<CString, int> m_KeyIDToIndex;
 
 		bool m_bEditable;                   //  TRUE if we can edit this layout
-		int m_iDevice;						//	Selected device
 		int m_iHoverKey;                    //  Hovering over this key (edit mode only)
 		int m_iHoverCommand;                //  Hovering over this command
 		int m_iSelectedCommand;             //  Command selected
