@@ -277,12 +277,15 @@ class CKeyboardMapSession : public IHISession
 		bool CanBindKey (int iKeyIndex, CGameKeys::Keys iCmd) const;
 		void CmdClearBinding (void);
 		void CmdResetDefault (CGameKeys::ELayouts iLayout);
+		void CloseSession (void);
 		void InitBindings (void);
 		void InitCommands (void);
 		void InitDeviceLayout (const SDeviceData &Device);
 		void InitKeys (void);
 		bool HitTest (int x, int y, STargetCtx &Ctx);
-		void PaintKey (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, CG32bitPixel rgbText, bool bFlash);
+		void PaintKey (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, CG32bitPixel rgbText, bool bFlash) const;
+		void PaintKeyBackground (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, bool bFlash) const;
+		void PaintKeyLabel (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbText) const;
 		void UpdateMenu (void);
 
 		CCloudService &m_Service;

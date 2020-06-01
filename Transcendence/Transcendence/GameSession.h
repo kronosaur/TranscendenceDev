@@ -41,6 +41,7 @@ class CGameSession : public IHISession
 		void OnArmorSelected (int iSelection) { m_HUD.SetArmorSelection(iSelection); }
 		void OnDamageFlash (void) { m_iDamageFlash = Min(2, m_iDamageFlash + 2); }
 		void OnExecuteActionDone (void) { m_Model.OnExecuteActionDone(); }
+		void OnKeyboardMappingChanged (void);
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
 		void OnPlayerChangedShips (CSpaceObject *pOldShip) { InitUI(); m_HUD.Init(m_rcScreen); g_pTrans->InitDisplays(); }
 		void OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph);

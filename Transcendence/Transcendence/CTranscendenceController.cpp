@@ -98,6 +98,8 @@
 #define CMD_MODEL_INIT_DONE						CONSTLIT("modelInitDone")
 #define CMD_MODEL_NEW_GAME_CREATED				CONSTLIT("modelNewGameCreated")
 
+#define CMD_ON_KEYBOARD_MAPPING_CHANGED			CONSTLIT("onKeyboardMappingChanged")
+
 #define CMD_PLAYER_COMBAT_ENDED					CONSTLIT("playerCombatEnded")
 #define CMD_PLAYER_COMBAT_STARTED				CONSTLIT("playerCombatStarted")
 #define CMD_PLAYER_UNDOCKED						CONSTLIT("playerUndocked")
@@ -2013,6 +2015,14 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		m_Model.GetUniverse().GetExtensionCollection().SetExtensionEnabled(dwUNID, true);
 
 		//	Callers are expected to reload the collection
+		}
+
+	//	Notify that keyboard mappings have changed.
+
+	else if (strEquals(sCmd, CMD_ON_KEYBOARD_MAPPING_CHANGED))
+		{
+		if (m_pGameSession)
+			m_pGameSession->OnKeyboardMappingChanged();
 		}
 
 	//	Exit

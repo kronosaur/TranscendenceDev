@@ -16,7 +16,8 @@ bool CGameSession::IsMouseAimConfigured (void) const
 //	Returns TRUE if key mappings are configured to aim using mouse.
 
 	{
-	return (!m_Settings.GetBoolean(CGameSettings::noMouseAim)
+	return (m_iUI == uiPilot
+			&& !m_Settings.GetBoolean(CGameSettings::noMouseAim)
 			&& m_Settings.GetKeyMap().GetKey(CGameKeys::keyAimShip) == CVirtualKeyData::VK_MOUSE_MOVE);
 	}
 
@@ -675,12 +676,6 @@ void CGameSession::OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture
 					}
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	If paused, then we're done
 
 			else if (g_pTrans->m_bPaused)
@@ -732,12 +727,6 @@ void CGameSession::OnLButtonUp (int x, int y, DWORD dwFlags)
 				m_bIgnoreButtonUp = false;
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	Command.
 
 			else
@@ -776,12 +765,6 @@ void CGameSession::OnMButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture
 				{
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	If paused, then we're done
 
 			else if (g_pTrans->m_bPaused)
@@ -817,12 +800,6 @@ void CGameSession::OnMButtonUp (int x, int y, DWORD dwFlags)
 			//	Ignore if in a menu
 
 			if (InMenu())
-				{
-				}
-
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
 				{
 				}
 
@@ -1043,12 +1020,6 @@ void CGameSession::OnRButtonDown (int x, int y, DWORD dwFlags)
 				{
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	If paused, then we're done
 
 			else if (g_pTrans->m_bPaused)
@@ -1084,12 +1055,6 @@ void CGameSession::OnRButtonUp (int x, int y, DWORD dwFlags)
 			//	If nore if in a menu
 
 			if (InMenu())
-				{
-				}
-
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
 				{
 				}
 

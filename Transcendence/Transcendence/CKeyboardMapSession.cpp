@@ -15,6 +15,8 @@
 #define CMD_RESET_WASD							CONSTLIT("cmdResetWASD")
 #define CMD_CLEAR_BINDING 						CONSTLIT("cmdClearBinding")
 
+#define CMD_ON_KEYBOARD_MAPPING_CHANGED			CONSTLIT("onKeyboardMappingChanged")
+
 #define ID_CTRL_TITLE							CONSTLIT("ctrlTitle")
 #define ID_LAYOUT_LABEL							CONSTLIT("idLayoutLabel")
 #define ID_SETTINGS								CONSTLIT("idSettings")
@@ -270,6 +272,17 @@ bool CKeyboardMapSession::CanBindKey (int iKeyIndex, CGameKeys::Keys iCmd) const
 	//	Binding allowed
 
 	return true;
+	}
+
+void CKeyboardMapSession::CloseSession (void)
+
+//	CloseSession
+//
+//	Closes the session.
+
+	{
+	m_HI.HICommand(CMD_ON_KEYBOARD_MAPPING_CHANGED);
+	m_HI.ClosePopupSession();
 	}
 
 void CKeyboardMapSession::CmdClearBinding (void)
@@ -549,9 +562,9 @@ ALERROR CKeyboardMapSession::OnCommand (const CString &sCmd, void *pData)
 
 	{
 	if (strEquals(sCmd, CMD_CLOSE_SESSION))
-		m_HI.ClosePopupSession();
+		CloseSession();
 	else if (strEquals(sCmd, CMD_OK_SESSION))
-		m_HI.ClosePopupSession();
+		CloseSession();
 	else if (strEquals(sCmd, CMD_RESET_DEFAULT))
 		CmdResetDefault(CGameKeys::layoutDefault);
 	else if (strEquals(sCmd, CMD_RESET_WASD))
@@ -649,7 +662,7 @@ void CKeyboardMapSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 		{
 		case VK_RETURN:
 		case VK_ESCAPE:
-			m_HI.ClosePopupSession();
+			CloseSession();
 			break;
 		}
 	}
@@ -810,7 +823,7 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 
 		//  Draw the key
 
-		PaintKey(Screen, Key, (Key.iCmdBinding != -1 ? rgbBoundKey : rgbUnboundKey), rgbText, i == m_iFlashKey);
+		PaintKeyBackground(Screen, Key, (Key.iCmdBinding != -1 ? rgbBoundKey : rgbUnboundKey), i == m_iFlashKey);
 		}
 
 	//  Paint all the commands
@@ -877,6 +890,24 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 		for (j = 0; j < Command.Line.GetCount() - 1; j++)
 			Screen.DrawLine(Command.Line[j].x, Command.Line[j].y, Command.Line[j + 1].x, Command.Line[j + 1].y, LINE_WIDTH, rgbHoverColor);
 		}
+
+	//	Paint key labels so that they go on top of any lines.
+
+	for (i = 0; i < m_Keys.GetCount(); i++)
+		{
+		const SKeyDesc &Key = m_Keys[i];
+
+		//  Skip if this key is the hover key (we paint it last)
+
+		if ((m_iHoverCommand != -1 && m_iHoverCommand == Key.iCmdBinding)
+				|| (m_iSelectedCommand != -1 && m_iSelectedCommand == Key.iCmdBinding)
+				|| (m_iHoverKey != -1 && m_iHoverKey == i))
+			continue;
+
+		//  Draw the key
+
+		PaintKeyLabel(Screen, Key, rgbText);
+		}
 	}
 
 void CKeyboardMapSession::OnReportHardCrash (CString *retsMessage)
@@ -899,16 +930,25 @@ void CKeyboardMapSession::OnUpdate (bool bTopMost)
 	m_iTick++;
 	}
 
-void CKeyboardMapSession::PaintKey (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, CG32bitPixel rgbText, bool bFlash)
+void CKeyboardMapSession::PaintKey (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, CG32bitPixel rgbText, bool bFlash) const
 
-//  PaintKey
+//	PaintKey
+//
+//	Paint key and label.
+
+	{
+	PaintKeyBackground(Screen, Key, rgbBack, bFlash);
+	PaintKeyLabel(Screen, Key, rgbText);
+	}
+
+void CKeyboardMapSession::PaintKeyBackground (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, bool bFlash) const
+
+//  PaintKeyBackground
 //
 //  Paint a key
 
 	{
 	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &KeyFont = VI.GetFont(fontMediumHeavyBold);
-	const CG16bitFont &SmallKeyFont = VI.GetFont(fontSmall);
 
 	//	Flash?
 
@@ -918,6 +958,18 @@ void CKeyboardMapSession::PaintKey (CG32bitImage &Screen, const SKeyDesc &Key, C
 	//  Draw the key
 
 	CGDraw::RoundedRect(Screen, Key.rcRect.left, Key.rcRect.top, RectWidth(Key.rcRect), RectHeight(Key.rcRect), KEY_CORNER_RADIUS, rgbBack);
+	}
+
+void CKeyboardMapSession::PaintKeyLabel (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbText) const
+
+//	PaintKeyLabel
+//
+//	Paints the label for the given key.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+	const CG16bitFont &KeyFont = VI.GetFont(fontMediumHeavyBold);
+	const CG16bitFont &SmallKeyFont = VI.GetFont(fontSmall);
 
 	//  Draw the key label
 
