@@ -10,8 +10,9 @@
 #define KEY_ATTRIB							CONSTLIT("key")
 #define LAYOUT_ATTRIB						CONSTLIT("layout")
 
-#define LAYOUT_DEFAULT                      CONSTLIT("default")
 #define LAYOUT_CUSTOM                       CONSTLIT("custom")
+#define LAYOUT_DEFAULT                      CONSTLIT("default")
+#define LAYOUT_WASD							CONSTLIT("wasd")
 
 struct SGameKeyData
 	{
@@ -289,6 +290,9 @@ CString CGameKeys::GetLayoutID (ELayouts iLayout)
 		case layoutDefault:
 			return LAYOUT_DEFAULT;
 
+		case layoutWASD:
+			return LAYOUT_WASD;
+
 		case layoutCustom:
 			return LAYOUT_CUSTOM;
 
@@ -309,6 +313,8 @@ CGameKeys::ELayouts CGameKeys::GetLayoutFromID (const CString &sLayoutID)
 		return layoutDefault;
 	else if (strEquals(sLayoutID, LAYOUT_CUSTOM))
 		return layoutCustom;
+	else if (strEquals(sLayoutID, LAYOUT_WASD))
+		return layoutWASD;
 	else
 		return layoutNone;
 	}
@@ -327,6 +333,9 @@ CString CGameKeys::GetLayoutName (ELayouts iLayout) const
 
 		case layoutCustom:
 			return CONSTLIT("Custom");
+
+		case layoutWASD:
+			return CONSTLIT("WASD");
 
 		default:
 			return CONSTLIT("(Unknown)");
