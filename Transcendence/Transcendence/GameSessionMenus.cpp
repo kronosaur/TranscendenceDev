@@ -28,7 +28,7 @@ CMenuData CGameSession::CreateGameMenu (void) const
 	MenuData.AddMenuItem(CMD_UI_SHOW_HELP, CONSTLIT("1"), CONSTLIT("[H]elp"));
 	MenuData.AddMenuItem(CMD_GAME_END_SAVE, CONSTLIT("2"), CONSTLIT("[S]ave & Exit Game"));
 	MenuData.AddMenuItem(CMD_GAME_SELF_DESTRUCT, CONSTLIT("3"), CONSTLIT("Self-[D]estruct"));
-	MenuData.AddMenuItem(CMD_UI_SHOW_SETTINGS, NULL_STR, CONSTLIT("[O]ptions"));
+	MenuData.AddMenuItem(CMD_UI_SHOW_SETTINGS, NULL_STR, CONSTLIT("Keyb[o]ard Settings"));
 
 	//	Debug mode includes more special functions
 

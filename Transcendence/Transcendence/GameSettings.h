@@ -139,6 +139,7 @@ class CGameKeys
 		char GetKeyIfChar (Keys iCommand) const;
 		DWORD GetKey (Keys iCommand) const;
 		ELayouts GetLayout (void) const { return m_iLayout; }
+		bool IsKeyBound (Keys iCommand) const { return GetKey(iCommand) != CVirtualKeyData::INVALID_VIRT_KEY; }
 		bool IsKeyDown (Keys iCommand) const;
 		bool IsModified (void) const { return m_bModified; }
 		static bool IsNonRepeatCommand (Keys iCommand);

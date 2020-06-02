@@ -294,6 +294,7 @@ class CKeyboardMapSession : public IHISession
 		void InitCommands (void);
 		void InitDeviceLayout (const SDeviceData &Device);
 		void InitKeys (void);
+		bool IsCommandRequired (CGameKeys::Keys iCmd) const;
 		bool HitTest (int x, int y, STargetCtx &Ctx);
 		void PaintKey (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, CG32bitPixel rgbText, bool bFlash) const;
 		void PaintKeyBackground (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, bool bFlash) const;

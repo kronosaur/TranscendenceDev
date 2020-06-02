@@ -290,6 +290,7 @@ void CKeyboardMapSession::CmdClearBinding (void)
 		const SCommandDesc &Command = m_Commands[m_iSelectedCommand];
 		m_Settings.GetKeyMap().SetGameKey(m_Keys[Command.iKeyBinding].sKeyID, CGameKeys::keyNone);
 		m_iMode = modeNormal;
+		m_iSelectedCommand = -1;
 
 		InitBindings();
 		UpdateMenu();
@@ -592,6 +593,55 @@ void CKeyboardMapSession::InitKeys (void)
 	InitDeviceLayout(CombinedDevice);
 	}
 
+bool CKeyboardMapSession::IsCommandRequired (CGameKeys::Keys iCmd) const
+
+//	IsCommandRequired
+//
+//	Returns TRUE if this command needs to be bound, given the other command
+//	bindings.
+
+	{
+	const CGameKeys &KeyMap = m_Settings.GetKeyMap();
+
+	switch (iCmd)
+		{
+		//	AimShip is required if we don't already have at least one of the
+		//	turning keys mapped.
+
+		case CGameKeys::keyAimShip:
+			return (!KeyMap.IsKeyBound(CGameKeys::keyRotateLeft) && !KeyMap.IsKeyBound(CGameKeys::keyRotateRight));
+
+		//	Rotate left is required if rotate right is bound (and vice versa).
+
+		case CGameKeys::keyRotateLeft:
+			return KeyMap.IsKeyBound(CGameKeys::keyRotateRight);
+
+		case CGameKeys::keyRotateRight:
+			return KeyMap.IsKeyBound(CGameKeys::keyRotateLeft);
+
+		//	Separate dock and gate commands not required if we have interact.
+
+		case CGameKeys::keyDock:
+		case CGameKeys::keyEnterGate:
+			return !KeyMap.IsKeyBound(CGameKeys::keyInteract);
+
+		//	Interact is not required if we have either dock or gate
+
+		case CGameKeys::keyInteract:
+			return (!KeyMap.IsKeyBound(CGameKeys::keyDock) && !KeyMap.IsKeyBound(CGameKeys::keyEnterGate));
+
+		//	Squadron command is not required (since we can access via comms)
+
+		case CGameKeys::keySquadronCommands:
+			return false;
+
+		//	Most commands need to be bound.
+
+		default:
+			return true;
+		}
+	}
+
 ALERROR CKeyboardMapSession::OnCommand (const CString &sCmd, void *pData)
 
 //  OnCommand
@@ -675,7 +725,7 @@ ALERROR CKeyboardMapSession::OnInit (CString *retsError)
 	CUIHelper Helper(m_HI);
 	IAnimatron *pTitle;
 	DWORD dwOptions = CUIHelper::OPTION_SESSION_OK_BUTTON;
-	Helper.CreateSessionTitle(this, m_Service, CONSTLIT("Settings & Options"), &Menu, dwOptions, &pTitle);
+	Helper.CreateSessionTitle(this, m_Service, CONSTLIT("Keyboard Settings"), &Menu, dwOptions, &pTitle);
 	StartPerformance(pTitle, ID_CTRL_TITLE, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 
 	UpdateMenu();
@@ -993,7 +1043,7 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 			rgbBack = rgbSelected;
 		else if (i == m_iHoverCommand)
 			rgbBack = rgbHoverColor;
-		else if (bEditable && Command.sKeyBinding.IsBlank())
+		else if (bEditable && Command.sKeyBinding.IsBlank() && IsCommandRequired(Command.iCmd))
 			rgbBack = VI.GetColor(colorTextDockWarning);
 		else
 			rgbBack = rgbBoundKey;
