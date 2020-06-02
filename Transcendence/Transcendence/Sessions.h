@@ -287,6 +287,7 @@ class CKeyboardMapSession : public IHISession
 		bool CanBindKey (int iKeyIndex, CGameKeys::Keys iCmd) const;
 		void CmdClearBinding (void);
 		void CmdResetDefault (CGameKeys::ELayouts iLayout);
+		void CmdRevert (void);
 		void CmdSetCommand (void);
 		void CloseSession (void);
 		void InitBindings (void);
@@ -304,6 +305,8 @@ class CKeyboardMapSession : public IHISession
 		TArray<SKeyDesc> m_Keys;
 		TArray<SCommandDesc> m_Commands;
 		RECT m_rcRect = { 0 };
+
+		CGameKeys m_SavedKeyMap;			//	In case we need to revert
 
 		//  Keyboard metrics (valid after OnInit)
 

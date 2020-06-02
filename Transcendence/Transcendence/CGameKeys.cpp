@@ -319,7 +319,7 @@ CGameKeys::ELayouts CGameKeys::GetLayoutFromID (const CString &sLayoutID)
 		return layoutNone;
 	}
 
-CString CGameKeys::GetLayoutName (ELayouts iLayout) const
+CString CGameKeys::GetLayoutName (ELayouts iLayout)
 
 //  GetLayoutName
 //

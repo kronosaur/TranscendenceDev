@@ -311,6 +311,21 @@ void CKeyboardMapSession::CmdResetDefault (CGameKeys::ELayouts iLayout)
 	UpdateMenu();
 	}
 
+void CKeyboardMapSession::CmdRevert (void)
+
+//	CmdRevert
+//
+//	Revert to mapping when we started.
+
+	{
+	m_Settings.GetKeyMap() = m_SavedKeyMap;
+	InitBindings();
+	m_iMode = modeNormal;
+	m_iSelectedCommand = -1;
+	m_iSelectedKey = -1;
+	UpdateMenu();
+	}
+
 void CKeyboardMapSession::CmdSetCommand (void)
 
 //	CmdSetCommand
@@ -318,7 +333,12 @@ void CKeyboardMapSession::CmdSetCommand (void)
 //	Sets the mode to command set.
 
 	{
-	if (m_iSelectedKey != -1)
+	if (m_iMode != modeNormal)
+		{
+		m_iMode = modeNormal;
+		UpdateMenu();
+		}
+	else if (m_iSelectedKey != -1)
 		{
 		if (m_iMode != modeSetCommand)
 			{
@@ -443,6 +463,7 @@ void CKeyboardMapSession::InitBindings (void)
 	rcBounds.top += MAJOR_PADDING_TOP + VI.GetFont(fontHeader).GetHeight();
 	rcBounds.left = m_rcRect.left + cxBoundsSpacing;
 	rcBounds.right = m_rcRect.right - cxBoundsSpacing;
+	rcBounds.bottom -= MAJOR_PADDING_TOP + VI.GetFont(fontHeader).GetHeight();
 	ArrangeCommandLabels(rcBounds, rcKeyboard);
 	}
 
@@ -579,7 +600,10 @@ ALERROR CKeyboardMapSession::OnCommand (const CString &sCmd, void *pData)
 
 	{
 	if (strEquals(sCmd, CMD_CLOSE_SESSION))
+		{
+		CmdRevert();
 		CloseSession();
+		}
 	else if (strEquals(sCmd, CMD_OK_SESSION))
 		CloseSession();
 	else if (strEquals(sCmd, CMD_RESET_DEFAULT))
@@ -603,6 +627,10 @@ ALERROR CKeyboardMapSession::OnInit (CString *retsError)
 	{
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	VI.GetWidescreenRect(&m_rcRect);
+
+	//	Remember the original key mapping, in case we need to revert
+
+	m_SavedKeyMap = m_Settings.GetKeyMap();
 
 	//	Load the commands. The set of commands don't change during the session.
 
@@ -646,7 +674,7 @@ ALERROR CKeyboardMapSession::OnInit (CString *retsError)
 
 	CUIHelper Helper(m_HI);
 	IAnimatron *pTitle;
-	DWORD dwOptions = CUIHelper::OPTION_SESSION_OK_BUTTON | CUIHelper::OPTION_SESSION_NO_CANCEL_BUTTON;
+	DWORD dwOptions = CUIHelper::OPTION_SESSION_OK_BUTTON;
 	Helper.CreateSessionTitle(this, m_Service, CONSTLIT("Settings & Options"), &Menu, dwOptions, &pTitle);
 	StartPerformance(pTitle, ID_CTRL_TITLE, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 
@@ -678,8 +706,17 @@ void CKeyboardMapSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 
 	switch (iVirtKey)
 		{
-		case VK_RETURN:
 		case VK_ESCAPE:
+			if (m_iMode != modeNormal)
+				CmdSetCommand();
+			else
+				{
+				CmdRevert();
+				CloseSession();
+				}
+			break;
+
+		case VK_RETURN:
 			CloseSession();
 			break;
 		}
@@ -1032,10 +1069,19 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 		PaintKeyLabel(Screen, Key, rgbText);
 		}
 
+	//	Paint the layout name
+
+	RECT rcLayoutName = m_rcRect;
+	rcLayoutName.top += MAJOR_PADDING_TOP;
+	rcLayoutName.left = m_rcRect.left + (RectWidth(m_rcRect) - MODE_HELP_WIDTH) / 2;
+	rcLayoutName.right = rcLayoutName.left + MODE_HELP_WIDTH;
+
+	HeaderFont.DrawText(Screen, rcLayoutName, VI.GetColor(colorTextNormal), CGameKeys::GetLayoutName(m_Settings.GetKeyMap().GetLayout()), 0, CG16bitFont::AlignCenter);
+
 	//	Paint mode help
 
 	RECT rcModeHelp = m_rcRect;
-	rcModeHelp.top += MAJOR_PADDING_TOP;
+	rcModeHelp.top = m_rcRect.bottom - (MAJOR_PADDING_TOP + HeaderFont.GetHeight());
 	rcModeHelp.left = m_rcRect.left + (RectWidth(m_rcRect) - MODE_HELP_WIDTH) / 2;
 	rcModeHelp.right = rcModeHelp.left + MODE_HELP_WIDTH;
 
@@ -1176,7 +1222,12 @@ void CKeyboardMapSession::UpdateMenu (void)
 	pItem = GetElement(CMD_SET_COMMAND);
 	if (pItem)
 		{
-		if (m_iSelectedKey != -1)
+		if (m_iMode != modeNormal)
+			{
+			pItem->SetPropertyString(PROP_TEXT, CONSTLIT("Cancel"));
+			pItem->SetPropertyBool(PROP_ENABLED, true);
+			}
+		else if (m_iSelectedKey != -1)
 			{
 			pItem->SetPropertyString(PROP_TEXT, CONSTLIT("Bind key to..."));
 			pItem->SetPropertyBool(PROP_ENABLED, m_iMode != modeSetCommand);
