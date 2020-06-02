@@ -14,6 +14,7 @@
 #define CMD_RESET_DEFAULT 						CONSTLIT("cmdResetDefault")
 #define CMD_RESET_WASD							CONSTLIT("cmdResetWASD")
 #define CMD_CLEAR_BINDING 						CONSTLIT("cmdClearBinding")
+#define CMD_SET_COMMAND 						CONSTLIT("cmdSetCommand")
 
 #define CMD_ON_KEYBOARD_MAPPING_CHANGED			CONSTLIT("onKeyboardMappingChanged")
 
@@ -105,14 +106,7 @@ const int CKeyboardMapSession::DEVICE_DATA_COUNT = (sizeof(DEVICE_DATA) / sizeof
 
 CKeyboardMapSession::CKeyboardMapSession (CHumanInterface &HI, CCloudService &Service, CGameSettings &Settings) : IHISession(HI),
 		m_Service(Service),
-		m_Settings(Settings),
-		m_bEditable(false),
-		m_iHoverKey(-1),
-		m_iHoverCommand(-1),
-		m_iSelectedCommand(-1),
-		m_iTick(0),
-		m_iFlashKey(-1),
-		m_iFlashUntil(0)
+		m_Settings(Settings)
 
 //  CKeyboardMapSession constructor
 
@@ -296,6 +290,8 @@ void CKeyboardMapSession::CmdClearBinding (void)
 		{
 		const SCommandDesc &Command = m_Commands[m_iSelectedCommand];
 		m_Settings.GetKeyMap().SetGameKey(m_Keys[Command.iKeyBinding].sKeyID, CGameKeys::keyNone);
+		m_iMode = modeNormal;
+
 		InitBindings();
 		UpdateMenu();
 		}
@@ -310,8 +306,35 @@ void CKeyboardMapSession::CmdResetDefault (CGameKeys::ELayouts iLayout)
 	{
 	m_Settings.GetKeyMap().SetLayout(iLayout);
 	InitBindings();
+	m_iMode = modeNormal;
 	m_iSelectedCommand = -1;
+	m_iSelectedKey = -1;
 	UpdateMenu();
+	}
+
+void CKeyboardMapSession::CmdSetCommand (void)
+
+//	CmdSetCommand
+//
+//	Sets the mode to command set.
+
+	{
+	if (m_iSelectedKey != -1)
+		{
+		if (m_iMode != modeSetCommand)
+			{
+			m_iMode = modeSetCommand;
+			UpdateMenu();
+			}
+		}
+	else if (m_iSelectedCommand != -1)
+		{
+		if (m_iMode != modeSetKey)
+			{
+			m_iMode = modeSetKey;
+			UpdateMenu();
+			}
+		}
 	}
 
 bool CKeyboardMapSession::HitTest (int x, int y, STargetCtx &Ctx)
@@ -420,7 +443,7 @@ void CKeyboardMapSession::InitBindings (void)
 
 	int cxBoundsSpacing = Max(0, (int)Min(m_rcRect.right - rcKeyboard.right, rcKeyboard.left - m_rcRect.left) - (LABEL_COLUMN_SPACING * m_cxKeyCol));
 	RECT rcBounds = m_rcRect;
-	rcBounds.top += MAJOR_PADDING_TOP;// + SMALL_BUTTON_HEIGHT + SMALL_SPACING_VERT + VI.GetFont(fontSubTitle).GetHeight();
+	rcBounds.top += MAJOR_PADDING_TOP + VI.GetFont(fontHeader).GetHeight();
 	rcBounds.left = m_rcRect.left + cxBoundsSpacing;
 	rcBounds.right = m_rcRect.right - cxBoundsSpacing;
 	ArrangeCommandLabels(rcBounds, rcKeyboard);
@@ -571,6 +594,8 @@ ALERROR CKeyboardMapSession::OnCommand (const CString &sCmd, void *pData)
 		CmdResetDefault(CGameKeys::layoutWASD);
 	else if (strEquals(sCmd, CMD_CLEAR_BINDING))
 		CmdClearBinding();
+	else if (strEquals(sCmd, CMD_SET_COMMAND))
+		CmdSetCommand();
 
 	return NOERROR;
 	}
@@ -602,10 +627,7 @@ ALERROR CKeyboardMapSession::OnInit (CString *retsError)
 
 	InitBindings();
 	m_iSelectedCommand = -1;
-
-	//	State
-
-	m_bEditable = true;
+	m_iSelectedKey = -1;
 
 	//	Set up a menu
 
@@ -617,6 +639,10 @@ ALERROR CKeyboardMapSession::OnInit (CString *retsError)
 	pEntry = Menu.Insert();
 	pEntry->sCommand = CMD_RESET_WASD;
 	pEntry->sLabel = CONSTLIT("Reset to WASD layout");
+
+	pEntry = Menu.Insert();
+	pEntry->sCommand = CMD_SET_COMMAND;
+	pEntry->sLabel = CONSTLIT("Bind key to command...");
 
 	pEntry = Menu.Insert();
 	pEntry->sCommand = CMD_CLEAR_BINDING;
@@ -674,32 +700,92 @@ void CKeyboardMapSession::OnLButtonDown (int x, int y, DWORD dwFlags, bool *retb
 //  Handle mouse click
 
 	{
-	//  If not editable, nothing to do
+	//	Figure out where we clicked.
 
-	if (!m_bEditable)
-		return;
+	STargetCtx HitResult;
+	bool bHit = HitTest(x, y, HitResult);
 
-	//  If we've got a selection, then we might be clicking on a new key
+	//	Depends on mode
 
-	else if (m_iSelectedCommand != -1)
+	switch (m_iMode)
 		{
-		STargetCtx Result;
-		if (HitTest(x, y, Result))
-			{
-			//  If we clicked on a key, then we remap
+		case modeSetCommand:
 
-			if (Result.bInKey)
+			//	If we clicked away, then we cancel setting the command.
+
+			if (!bHit || m_iSelectedKey == -1)
+				{
+				m_iMode = modeNormal;
+				m_iSelectedCommand = -1;
+				m_iSelectedKey = -1;
+				}
+
+			//	If we clicked on a command then we assign the key to the command.
+
+			else if (!HitResult.bInKey && HitResult.iCmdIndex != -1)
+				{
+				const SCommandDesc &NewCommand = m_Commands[HitResult.iCmdIndex];
+
+				//  If this is a new binding, set it
+
+				if ((m_iSelectedCommand == -1 || m_Commands[m_iSelectedCommand].iCmd != NewCommand.iCmd)
+						&& CanBindKey(m_iSelectedKey, NewCommand.iCmd))
+					{
+					CGameKeys::Keys iCmd = NewCommand.iCmd;
+					m_Settings.GetKeyMap().SetGameKey(m_Keys[m_iSelectedKey].sKeyID, iCmd);
+
+					//  Clear the old key
+
+					if (NewCommand.iKeyBinding != -1)
+						m_Settings.GetKeyMap().SetGameKey(m_Keys[NewCommand.iKeyBinding].sKeyID, CGameKeys::keyNone);
+
+					//  Reload mappings
+
+					InitBindings();
+
+					//	Return to normal
+
+					m_iMode = modeNormal;
+					m_iSelectedCommand = HitResult.iCmdIndex;
+					}
+				}
+
+			//	If we clicked on a different key, then we cancel.
+
+			else
+				{
+				m_iMode = modeNormal;
+				m_iSelectedCommand = HitResult.iCmdIndex;
+				m_iSelectedKey = HitResult.iKeyIndex;
+				}
+
+			break;
+
+		case modeSetKey:
+
+			//	If we clicked away, then we cancel setting a key.
+
+			if (!bHit || m_iSelectedCommand == -1)
+				{
+				m_iMode = modeNormal;
+				m_iSelectedCommand = -1;
+				m_iSelectedKey = -1;
+				}
+
+			//	If we clicked on a key then we assign the key to the command.
+
+			else if (HitResult.bInKey)
 				{
 				const SCommandDesc &Command = m_Commands[m_iSelectedCommand];
 
 				//  If this is a new binding, set it
 
-				if (Result.iKeyIndex != -1
-						&& Result.iKeyIndex != Command.iKeyBinding
-						&& CanBindKey(Result.iKeyIndex, Command.iCmd))
+				if (HitResult.iKeyIndex != -1
+						&& HitResult.iKeyIndex != Command.iKeyBinding
+						&& CanBindKey(HitResult.iKeyIndex, Command.iCmd))
 					{
 					CGameKeys::Keys iCmd = Command.iCmd;
-					m_Settings.GetKeyMap().SetGameKey(m_Keys[Result.iKeyIndex].sKeyID, Command.iCmd);
+					m_Settings.GetKeyMap().SetGameKey(m_Keys[HitResult.iKeyIndex].sKeyID, Command.iCmd);
 
 					//  Clear the old key
 
@@ -709,30 +795,37 @@ void CKeyboardMapSession::OnLButtonDown (int x, int y, DWORD dwFlags, bool *retb
 					//  Reload mappings
 
 					InitBindings();
+
+					//	Return to normal
+
+					m_iMode = modeNormal;
+					m_iSelectedKey = HitResult.iKeyIndex;
 					}
 				}
 
-			//  Otherwise, if we click on a different command, then we need
-			//  to select that command.
+			//	If we clicked on a different command, then we cancel.
 
 			else
 				{
-				m_iSelectedCommand = Result.iCmdIndex;
+				m_iMode = modeNormal;
+				m_iSelectedCommand = HitResult.iCmdIndex;
+				m_iSelectedKey = HitResult.iKeyIndex;
 				}
-			}
-		else
-			m_iSelectedCommand = -1;
-		}
 
-	//  Otherwise, select
+			break;
 
-	else
-		{
-		STargetCtx Result;
-		if (HitTest(x, y, Result))
-			m_iSelectedCommand = Result.iCmdIndex;
-		else
-			m_iSelectedCommand = -1;
+		default:
+			if (bHit)
+				{
+				m_iSelectedCommand = HitResult.iCmdIndex;
+				m_iSelectedKey = HitResult.iKeyIndex;
+				}
+			else
+				{
+				m_iSelectedKey = -1;
+				m_iSelectedCommand = -1;
+				}
+			break;
 		}
 
 	UpdateMenu();
@@ -754,36 +847,53 @@ void CKeyboardMapSession::OnMouseMove (int x, int y, DWORD dwFlags)
 //  Handle mouse move
 
 	{
-	STargetCtx Result;
-	if (HitTest(x, y, Result))
+	STargetCtx HitResult;
+	bool bHit = HitTest(x, y, HitResult);
+
+	switch (m_iMode)
 		{
-		//  If we've got a selection and this is a key, then we show the
-		//  hover key.
-
-		if (m_iSelectedCommand != -1 && Result.bInKey)
-			{
-			//  Only if key can be bound
-
-			if (CanBindKey(Result.iKeyIndex, m_Commands[m_iSelectedCommand].iCmd))
-				m_iHoverKey = Result.iKeyIndex;
-			else
+		case modeSetCommand:
+			if (bHit 
+					&& HitResult.iCmdIndex != -1
+					&& CanBindKey(m_iSelectedKey, m_Commands[HitResult.iCmdIndex].iCmd))
+				{
+				m_iHoverCommand = HitResult.iCmdIndex;
 				m_iHoverKey = -1;
+				}
+			else
+				{
+				m_iHoverCommand = -1;
+				m_iHoverKey = -1;
+				}
+			break;
 
-			m_iHoverCommand = -1;
-			}
+		case modeSetKey:
+			if (bHit 
+					&& HitResult.iKeyIndex != -1
+					&& CanBindKey(HitResult.iKeyIndex, m_Commands[m_iSelectedCommand].iCmd))
+				{
+				m_iHoverCommand = HitResult.iCmdIndex;
+				m_iHoverKey = (m_iHoverCommand == -1 ? HitResult.iKeyIndex : -1);
+				}
+			else
+				{
+				m_iHoverCommand = -1;
+				m_iHoverKey = -1;
+				}
+			break;
 
-		//  Otherwise, we select the whole command
-
-		else
-			{
-			m_iHoverKey = -1;
-			m_iHoverCommand = Result.iCmdIndex;
-			}
-		}
-	else
-		{
-		m_iHoverKey = -1;
-		m_iHoverCommand = -1;
+		default:
+			if (bHit)
+				{
+				m_iHoverCommand = HitResult.iCmdIndex;
+				m_iHoverKey = (m_iHoverCommand == -1 ? HitResult.iKeyIndex : -1);
+				}
+			else
+				{
+				m_iHoverCommand = -1;
+				m_iHoverKey = -1;
+				}
+			break;
 		}
 	}
 
@@ -794,23 +904,37 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 //  Paint session
 
 	{
-	int i, j;
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	const CG16bitFont &LabelFont = VI.GetFont(fontMedium);
+	const CG16bitFont &HeaderFont = VI.GetFont(fontHeader);
+	bool bEditable = true;
 
-	CG32bitPixel rgbEditable = CG32bitPixel::Darken(VI.GetColor(colorTextHighlight), 220);
-	CG32bitPixel rgbBoundKey = (m_bEditable ? rgbEditable : CG32bitPixel::Darken(VI.GetColor(colorTextNormal), 220));
+	CG32bitPixel rgbBoundKey = CG32bitPixel::Darken(VI.GetColor(colorTextHighlight), 220);
 	CG32bitPixel rgbUnboundKey = CG32bitPixel::Darken(VI.GetColor(colorTextNormal), 128);
 	CG32bitPixel rgbText = VI.GetColor(colorAreaDialog);
-	CG32bitPixel rgbHoverColor = VI.GetColor(colorTextQuote);
-	CG32bitPixel rgbSelected = VI.GetColor(colorAreaDialogHighlight);
+
+	CG32bitPixel rgbHoverColor;
+	CG32bitPixel rgbSelected;
+	switch (m_iMode)
+		{
+		case modeSetCommand:
+		case modeSetKey:
+			rgbHoverColor = VI.GetColor(colorTextQuote);
+			rgbSelected = VI.GetColor(colorAreaDialogHighlight);
+			break;
+
+		default:
+			rgbHoverColor = VI.GetColor(colorTextQuote);
+			rgbSelected = VI.GetColor(colorTextAltHighlight);
+			break;
+		}
 
 	RECT rcCenter;
 	VI.DrawSessionBackground(Screen, CG32bitImage(), CG32bitPixel(), CVisualPalette::OPTION_SESSION_DLG_BACKGROUND, &rcCenter);
 
 	//  Paint all keys
 
-	for (i = 0; i < m_Keys.GetCount(); i++)
+	for (int i = 0; i < m_Keys.GetCount(); i++)
 		{
 		const SKeyDesc &Key = m_Keys[i];
 
@@ -818,7 +942,8 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 
 		if ((m_iHoverCommand != -1 && m_iHoverCommand == Key.iCmdBinding)
 				|| (m_iSelectedCommand != -1 && m_iSelectedCommand == Key.iCmdBinding)
-				|| (m_iHoverKey != -1 && m_iHoverKey == i))
+				|| (m_iHoverKey == i)
+				|| (m_iSelectedKey == i))
 			continue;
 
 		//  Draw the key
@@ -828,7 +953,7 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 
 	//  Paint all the commands
 
-	for (i = 0; i < m_Commands.GetCount(); i++)
+	for (int i = 0; i < m_Commands.GetCount(); i++)
 		{
 		const SCommandDesc &Command = m_Commands[i];
 
@@ -839,12 +964,12 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 			rgbBack = rgbSelected;
 		else if (i == m_iHoverCommand)
 			rgbBack = rgbHoverColor;
-		else if (m_bEditable && Command.sKeyBinding.IsBlank())
+		else if (bEditable && Command.sKeyBinding.IsBlank())
 			rgbBack = VI.GetColor(colorTextDockWarning);
 		else
 			rgbBack = rgbBoundKey;
 
-		CG32bitPixel rgbLine = (m_bEditable ? VI.GetColor(colorTextHighlight) : VI.GetColor(colorTextNormal));
+		CG32bitPixel rgbLine = (bEditable ? VI.GetColor(colorTextHighlight) : VI.GetColor(colorTextNormal));
 		CG32bitPixel rgbLabel = VI.GetColor(colorAreaDialog);
 
 		//  Draw command box and label
@@ -856,7 +981,7 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 
 		if (m_iHoverCommand != i)
 			{
-			for (j = 0; j < Command.Line.GetCount() - 1; j++)
+			for (int j = 0; j < Command.Line.GetCount() - 1; j++)
 				Screen.DrawLine(Command.Line[j].x, Command.Line[j].y, Command.Line[j + 1].x, Command.Line[j + 1].y, LINE_WIDTH, rgbLine);
 			}
 		}
@@ -870,14 +995,20 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 		if (Command.iKeyBinding != -1)
 			PaintKey(Screen, m_Keys[Command.iKeyBinding], rgbSelected, rgbText, Command.iKeyBinding == m_iFlashKey);
 
-		for (j = 0; j < Command.Line.GetCount() - 1; j++)
+		for (int j = 0; j < Command.Line.GetCount() - 1; j++)
 			Screen.DrawLine(Command.Line[j].x, Command.Line[j].y, Command.Line[j + 1].x, Command.Line[j + 1].y, LINE_WIDTH, rgbSelected);
 		}
 
-	if (m_iHoverKey != -1)
+	if (m_iSelectedKey != -1)
+		{
+		const SKeyDesc &Key = m_Keys[m_iSelectedKey];
+		PaintKey(Screen, m_Keys[m_iSelectedKey], rgbSelected, rgbText, m_iSelectedKey == m_iFlashKey);
+		}
+
+	if (m_iHoverKey != -1 && m_iSelectedKey != m_iHoverKey)
 		{
 		const SKeyDesc &Key = m_Keys[m_iHoverKey];
-		PaintKey(Screen, m_Keys[m_iHoverKey], rgbSelected, rgbText, m_iHoverKey == m_iFlashKey);
+		PaintKey(Screen, m_Keys[m_iHoverKey], rgbHoverColor, rgbText, m_iHoverKey == m_iFlashKey);
 		}
 
 	if (m_iHoverCommand != -1 && m_iSelectedCommand != m_iHoverCommand)
@@ -887,13 +1018,13 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 		if (Command.iKeyBinding != -1)
 			PaintKey(Screen, m_Keys[Command.iKeyBinding], rgbHoverColor, rgbText, Command.iKeyBinding == m_iFlashKey);
 
-		for (j = 0; j < Command.Line.GetCount() - 1; j++)
+		for (int j = 0; j < Command.Line.GetCount() - 1; j++)
 			Screen.DrawLine(Command.Line[j].x, Command.Line[j].y, Command.Line[j + 1].x, Command.Line[j + 1].y, LINE_WIDTH, rgbHoverColor);
 		}
 
 	//	Paint key labels so that they go on top of any lines.
 
-	for (i = 0; i < m_Keys.GetCount(); i++)
+	for (int i = 0; i < m_Keys.GetCount(); i++)
 		{
 		const SKeyDesc &Key = m_Keys[i];
 
@@ -907,6 +1038,24 @@ void CKeyboardMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 		//  Draw the key
 
 		PaintKeyLabel(Screen, Key, rgbText);
+		}
+
+	//	Paint mode help
+
+	RECT rcModeHelp = m_rcRect;
+	rcModeHelp.top += MAJOR_PADDING_TOP;
+	rcModeHelp.left = m_rcRect.left + (RectWidth(m_rcRect) - MODE_HELP_WIDTH) / 2;
+	rcModeHelp.right = rcModeHelp.left + MODE_HELP_WIDTH;
+
+	switch (m_iMode)
+		{
+		case modeSetCommand:
+			HeaderFont.DrawText(Screen, rcModeHelp, rgbSelected, CONSTLIT("Click on a command to bind it to the key"), 0, CG16bitFont::AlignCenter);
+			break;
+
+		case modeSetKey:
+			HeaderFont.DrawText(Screen, rcModeHelp, rgbSelected, CONSTLIT("Click on a key to bind it to the command"), 0, CG16bitFont::AlignCenter);
+			break;
 		}
 	}
 
@@ -1031,6 +1180,26 @@ void CKeyboardMapSession::UpdateMenu (void)
 	pItem = GetElement(CMD_RESET_WASD);
 	if (pItem)
 		pItem->SetPropertyBool(PROP_ENABLED, m_Settings.GetKeyMap().GetLayout() != CGameKeys::layoutWASD);
+
+	pItem = GetElement(CMD_SET_COMMAND);
+	if (pItem)
+		{
+		if (m_iSelectedKey != -1)
+			{
+			pItem->SetPropertyString(PROP_TEXT, CONSTLIT("Bind key to..."));
+			pItem->SetPropertyBool(PROP_ENABLED, m_iMode != modeSetCommand);
+			}
+		else if (m_iSelectedCommand != -1)
+			{
+			pItem->SetPropertyString(PROP_TEXT, CONSTLIT("Bind command to..."));
+			pItem->SetPropertyBool(PROP_ENABLED, m_iMode != modeSetKey);
+			}
+		else
+			{
+			pItem->SetPropertyString(PROP_TEXT, CONSTLIT("Bind key"));
+			pItem->SetPropertyBool(PROP_ENABLED, false);
+			}
+		}
 
 	pItem = GetElement(CMD_CLEAR_BINDING);
 	if (pItem)

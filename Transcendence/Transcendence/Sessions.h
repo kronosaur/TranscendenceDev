@@ -184,6 +184,14 @@ class CKeyboardMapSession : public IHISession
 		virtual void OnUpdate (bool bTopMost) override;
 
 	private:
+
+		enum EModes
+			{
+			modeNormal,						//	Clicking doesn't change anything
+			modeSetCommand,					//	Click on a command to assign to selected key.
+			modeSetKey,						//	Click on a key to assign to selected command.
+			};
+
 		enum EKeySymbols
 			{
 			symbolNone,
@@ -273,10 +281,13 @@ class CKeyboardMapSession : public IHISession
 			bool bInKey;                    //  In key (otherwise, in command)
 			};
 
+		static constexpr int MODE_HELP_WIDTH = 800;
+
 		void ArrangeCommandLabels (const RECT &rcRect, const RECT &rcKeyboard);
 		bool CanBindKey (int iKeyIndex, CGameKeys::Keys iCmd) const;
 		void CmdClearBinding (void);
 		void CmdResetDefault (CGameKeys::ELayouts iLayout);
+		void CmdSetCommand (void);
 		void CloseSession (void);
 		void InitBindings (void);
 		void InitCommands (void);
@@ -292,25 +303,26 @@ class CKeyboardMapSession : public IHISession
 		CGameSettings &m_Settings;
 		TArray<SKeyDesc> m_Keys;
 		TArray<SCommandDesc> m_Commands;
-		RECT m_rcRect;
+		RECT m_rcRect = { 0 };
 
 		//  Keyboard metrics (valid after OnInit)
 
-		int m_xKeyboard;                    //  Position of keyboard
-		int m_yKeyboard;
-		int m_cxKeyboard;                   //  Size of keyboard
-		int m_cyKeyboard;
-		int m_cxKeyCol;                     //  Size of a key column (half the size of a key row)
-		int m_cyKeyRow;                     //  Height of a key
+		int m_xKeyboard = 0;				//  Position of keyboard
+		int m_yKeyboard = 0;
+		int m_cxKeyboard = 0;				//  Size of keyboard
+		int m_cyKeyboard = 0;
+		int m_cxKeyCol = 0;					//  Size of a key column (half the size of a key row)
+		int m_cyKeyRow = 0;					//  Height of a key
 		TSortMap<CString, int> m_KeyIDToIndex;
 
-		bool m_bEditable;                   //  TRUE if we can edit this layout
-		int m_iHoverKey;                    //  Hovering over this key (edit mode only)
-		int m_iHoverCommand;                //  Hovering over this command
-		int m_iSelectedCommand;             //  Command selected
-		int m_iTick;
-		int m_iFlashKey;					//	Index of key (in m_Keys) to flash
-		int m_iFlashUntil;					//	Stop flashing on this tick
+		EModes m_iMode = modeNormal;		//	Current edit mode
+		int m_iHoverKey = -1;				//  Hovering over this key (edit mode only)
+		int m_iSelectedKey = -1;			//	Key selected
+		int m_iHoverCommand = -1;			//  Hovering over this command
+		int m_iSelectedCommand = -1;		//  Command selected
+		int m_iTick = 0;
+		int m_iFlashKey = -1;				//	Index of key (in m_Keys) to flash
+		int m_iFlashUntil = 0;				//	Stop flashing on this tick
 
 		static const SDeviceData DEVICE_DATA[];
 		static const int DEVICE_DATA_COUNT;
