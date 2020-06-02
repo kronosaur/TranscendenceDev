@@ -122,7 +122,6 @@ void CKeyboardMapSession::ArrangeCommandLabels (const RECT &rcRect, const RECT &
 	{
 	bool bDirectLine = false;
 
-	int i;
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	const CG16bitFont &LabelFont = VI.GetFont(fontMedium);
 
@@ -136,7 +135,7 @@ void CKeyboardMapSession::ArrangeCommandLabels (const RECT &rcRect, const RECT &
 
 	TArray<CLabelArranger::SLabelDesc> Labels;
 	Labels.InsertEmpty(m_Commands.GetCount());
-	for (i = 0; i < m_Commands.GetCount(); i++)
+	for (int i = 0; i < m_Commands.GetCount(); i++)
 		{
 		Labels[i].sLabel = m_Commands[i].sLabel;
 		Labels[i].cxWidth = m_Commands[i].cxLabel + cxLabelSpacing;
@@ -166,7 +165,7 @@ void CKeyboardMapSession::ArrangeCommandLabels (const RECT &rcRect, const RECT &
 
 	//  Now initialize the command positions
 
-	for (i = 0; i < m_Commands.GetCount(); i++)
+	for (int i = 0; i < m_Commands.GetCount(); i++)
 		{
 		m_Commands[i].rcRect = Labels[i].rcRect;
 		m_Commands[i].rcRect.bottom -= cyLabelSpacing;
@@ -177,7 +176,7 @@ void CKeyboardMapSession::ArrangeCommandLabels (const RECT &rcRect, const RECT &
 
 	if (bDirectLine)
 		{
-		for (i = 0; i < m_Commands.GetCount(); i++)
+		for (int i = 0; i < m_Commands.GetCount(); i++)
 			{
 			SCommandDesc &Command = m_Commands[i];
 			if (Command.iKeyBinding != -1)
@@ -204,7 +203,7 @@ void CKeyboardMapSession::ArrangeCommandLabels (const RECT &rcRect, const RECT &
 		}
 	else
 		{
-		for (i = 0; i < m_Commands.GetCount(); i++)
+		for (int i = 0; i < m_Commands.GetCount(); i++)
 			{
 			SCommandDesc &Command = m_Commands[i];
 			if (Command.iKeyBinding != -1)
@@ -344,14 +343,13 @@ bool CKeyboardMapSession::HitTest (int x, int y, STargetCtx &Ctx)
 //  Set if we've clicked on an element.
 
 	{
-	int i;
 	POINT pt;
 	pt.x = x;
 	pt.y = y;
 
 	//  Check all keys
 
-	for (i = 0; i < m_Keys.GetCount(); i++)
+	for (int i = 0; i < m_Keys.GetCount(); i++)
 		{
 		const SKeyDesc &Key = m_Keys[i];
 		if (PtInRect(&Key.rcRect, pt))
@@ -365,7 +363,7 @@ bool CKeyboardMapSession::HitTest (int x, int y, STargetCtx &Ctx)
 
 	//  Check all commands
 
-	for (i = 0; i < m_Commands.GetCount(); i++)
+	for (int i = 0; i < m_Commands.GetCount(); i++)
 		{
 		const SCommandDesc &Command = m_Commands[i];
 		if (PtInRect(&Command.rcRect, pt))
@@ -390,12 +388,11 @@ void CKeyboardMapSession::InitBindings (void)
 //	and InitDevice have been called.
 
 	{
-	int i, j;
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
 	//  Reset keyboard to remove bindings
 
-	for (i = 0; i < m_Keys.GetCount(); i++)
+	for (int i = 0; i < m_Keys.GetCount(); i++)
 		m_Keys[i].iCmdBinding = -1;
 
 	//  Load commands. NOTE: These do not change from session to session, so 
@@ -405,14 +402,14 @@ void CKeyboardMapSession::InitBindings (void)
 	m_Settings.GetKeyMap().GetCommands(Commands);
 	ASSERT(Commands.GetCount() == m_Commands.GetCount());
 
-	for (i = 0; i < Commands.GetCount(); i++)
+	for (int i = 0; i < Commands.GetCount(); i++)
 		{
 		m_Commands[i].sKeyBinding = NULL_STR;
 		m_Commands[i].iKeyBinding = -1;
 
 		//	See if we have a binding to one of the keys on this device.
 
-		for (j = 0; j < Commands[i].Keys.GetCount(); j++)
+		for (int j = 0; j < Commands[i].Keys.GetCount(); j++)
 			{
 			const CGameKeys::SBindingDesc &Binding = Commands[i].Keys[j];
 			int *pKey = m_KeyIDToIndex.GetAt(Binding.sKeyID);
@@ -456,7 +453,6 @@ void CKeyboardMapSession::InitCommands (void)
 //	Initializes the list of commands.
 
 	{
-	int i;
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	const CG16bitFont &LabelFont = VI.GetFont(fontMedium);
 
@@ -467,7 +463,7 @@ void CKeyboardMapSession::InitCommands (void)
 
 	m_Commands.DeleteAll();
 	m_Commands.GrowToFit(Commands.GetCount());
-	for (i = 0; i < Commands.GetCount(); i++)
+	for (int i = 0; i < Commands.GetCount(); i++)
 		{
 		int iCmdIndex = m_Commands.GetCount();
 		SCommandDesc *pNewCmd = m_Commands.Insert();
@@ -485,8 +481,6 @@ void CKeyboardMapSession::InitDeviceLayout (const SDeviceData &Device)
 //	are initialized.
 
 	{
-	int i;
-
 	//	Center the keyboard on the screen
 
 	m_cxKeyboard = (Device.iCols * m_cxKeyCol) - KEY_SPACING;
@@ -502,7 +496,7 @@ void CKeyboardMapSession::InitDeviceLayout (const SDeviceData &Device)
 
 	m_Keys.InsertEmpty(Device.iKeyCount);
 	m_KeyIDToIndex.GrowToFit(Device.iKeyCount);
-	for (i = 0; i < m_Keys.GetCount(); i++)
+	for (int i = 0; i < m_Keys.GetCount(); i++)
 		{
 		if (Device.pKeys[i].pszKeyID)
 			{
@@ -671,10 +665,8 @@ void CKeyboardMapSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 	//	Flash the key
 
 #ifdef DEBUG_KEYMAP
-	int i;
-
 	DWORD dwTVirtKey = CGameKeys::TranslateVirtKey(iVirtKey, dwKeyData);
-	for (i = 0; i < m_Keys.GetCount(); i++)
+	for (int i = 0; i < m_Keys.GetCount(); i++)
 		if (m_Keys[i].dwVirtKey == dwTVirtKey)
 			{
 			m_iFlashKey = i;
