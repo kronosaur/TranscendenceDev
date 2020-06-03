@@ -1134,7 +1134,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 	else if (strEquals(sCmd, CMD_GAME_END_DELETE))
 		{
 		if (error = m_Model.EndGameDelete(&sError))
-			g_pTrans->DisplayMessage(sError);
+			m_pGameSession->DisplayMessage(sError);
 
 		//	Back to intro screen
 
@@ -1170,7 +1170,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 	else if (strEquals(sCmd, CMD_GAME_END_SAVE))
 		{
 		if (error = m_Model.EndGameSave(&sError))
-			g_pTrans->DisplayMessage(sError);
+			m_pGameSession->DisplayMessage(sError);
 
 		//	Back to intro screen
 
@@ -1204,7 +1204,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		{
 		CString sFilename = m_Model.GetGameFile().GetFilespec();
 		if (error = m_Model.EndGameNoSave(&sError))
-			g_pTrans->DisplayMessage(sError);
+			m_pGameSession->DisplayMessage(sError);
 
 		//	Back to intro screen
 
@@ -1388,7 +1388,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		if (!m_Model.IsGalacticMapAvailable(&sError))
 			{
-			g_pTrans->DisplayMessage(sError);
+			m_pGameSession->DisplayMessage(sError);
 			return NOERROR;
 			}
 
@@ -1475,7 +1475,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		if (--iVolume >= 0)
 			{
 			SetOptionInteger(CGameSettings::musicVolume, iVolume);
-			g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
+			m_pGameSession->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
 			}
 		}
 	else if (strEquals(sCmd, CMD_UI_MUSIC_VOLUME_UP))
@@ -1484,7 +1484,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		if (++iVolume <= 10)
 			{
 			SetOptionInteger(CGameSettings::musicVolume, iVolume);
-			g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
+			m_pGameSession->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
 			}
 		}
 	else if (strEquals(sCmd, CMD_UI_VOLUME_DOWN))
@@ -1493,7 +1493,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		if (--iVolume >= 0)
 			{
 			SetOptionInteger(CGameSettings::soundVolume, iVolume);
-			g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
+			m_pGameSession->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
 			}
 		}
 	else if (strEquals(sCmd, CMD_UI_VOLUME_UP))
@@ -1502,7 +1502,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		if (++iVolume <= 10)
 			{
 			SetOptionInteger(CGameSettings::soundVolume, iVolume);
-			g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
+			m_pGameSession->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
 			}
 		}
 

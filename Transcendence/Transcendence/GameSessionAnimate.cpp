@@ -67,7 +67,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				if (!IsInPickerCompatible())
 					{
 					SetProgramState(psPaintingMessageDisplay);
-					g_pTrans->m_MessageDisplay.Paint(Screen);
+					m_MessageDisplay.Paint(Screen);
 					}
 
 				SetProgramState(psAnimating);
@@ -193,7 +193,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 						m_HUD.Invalidate(hudTargeting);
 					}
 
-				g_pTrans->m_MessageDisplay.Update();
+				m_MessageDisplay.Update();
 
 				//	Figure out how long it took to update
 
@@ -254,13 +254,14 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Update the universe (at 1/4 rate)
 
 				g_pUniverse->Update(UpdateCtx, CUniverse::updateSlowMotion);
-				g_pTrans->m_MessageDisplay.Update();
+				m_MessageDisplay.Update();
 				m_CurrentDock.Update(g_pUniverse->GetFrameTicks());
 
 				//	Never let message redirection last beyond a frame. We do 
 				//	this in case a mod forgets to reset it.
 
-				g_pTrans->RedirectDisplayMessage(false);
+				if (auto pPlayer = g_pTrans->GetPlayer())
+					pPlayer->RedirectDisplayMessage(false);
 
 				//	Note: We need to invalidate the whole screen because we're
 				//	flipping between two buffers and we need to make sure both
@@ -281,7 +282,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
                 m_HUD.Update(g_pUniverse->GetFrameTicks());
                 m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
 
-				g_pTrans->m_MessageDisplay.Paint(Screen);
+				m_MessageDisplay.Paint(Screen);
 				g_pTrans->m_DeviceDisplay.Paint(Screen);
 
 				//	Debug information
@@ -302,7 +303,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Update the universe
 
 				g_pUniverse->Update(UpdateCtx);
-				g_pTrans->m_MessageDisplay.Update();
+				m_MessageDisplay.Update();
 
 				if (--g_pTrans->m_iCountdown == 0)
 					{
@@ -344,7 +345,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
                 m_HUD.Update(g_pUniverse->GetFrameTicks());
                 m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
 
-				g_pTrans->m_MessageDisplay.Paint(Screen);
+				m_MessageDisplay.Paint(Screen);
 				g_pTrans->m_DeviceDisplay.Paint(Screen);
 
 				//	Debug information
@@ -365,7 +366,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Update the universe
 
 				g_pUniverse->Update(UpdateCtx);
-				g_pTrans->m_MessageDisplay.Update();
+				m_MessageDisplay.Update();
 
 				if (--g_pTrans->m_iCountdown == 0)
 					{

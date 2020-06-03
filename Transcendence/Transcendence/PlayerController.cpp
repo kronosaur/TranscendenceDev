@@ -346,6 +346,29 @@ void CPlayerShipController::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SV
 #endif
 	}
 
+void CPlayerShipController::DisplayMessage (const CString &sMessage)
+
+//	DisplayMessage
+//
+//	Displays a message to the UI.
+
+	{
+	//	If messages redirected, then save them.
+
+	if (m_bRedirectMessages)
+		m_sRedirectMessage.Append(sMessage);
+		
+	//	If the game session is not set up yet, we save the message for later.
+
+	else if (!m_pSession)
+		m_SavedMessages.Insert(sMessage);
+
+	//	Otherwise, display.
+
+	else
+		m_pSession->DisplayMessage(sMessage);
+	}
+
 void CPlayerShipController::DisplayTranslate (const CString &sID, ICCItem *pData)
 
 //	DisplayTranslate
@@ -353,7 +376,7 @@ void CPlayerShipController::DisplayTranslate (const CString &sID, ICCItem *pData
 //	Displays a translated message.
 
 	{
-	m_pTrans->DisplayMessage(Translate(sID, pData));
+	DisplayMessage(Translate(sID, pData));
 	}
 
 void CPlayerShipController::DisplayTranslate (const CString &sID, const CString &sVar, const CString &sValue)
@@ -409,7 +432,7 @@ void CPlayerShipController::Dock (void)
 	CString sError;
 	if (!m_pShip->FireCanDockAsPlayer(pStation, &sError))
 		{
-		m_pTrans->DisplayMessage(sError);
+		DisplayMessage(sError);
 		return;
 		}
 
@@ -1044,7 +1067,7 @@ DWORD CPlayerShipController::OnCommunicate (CSpaceObject *pSender, MessageTypes 
 				if (pSender)
 					pSender->Highlight(sMessage);
 				else
-					m_pTrans->DisplayMessage(sMessage);
+					DisplayMessage(sMessage);
 				}
 
 			return resNoAnswer;
@@ -1825,6 +1848,24 @@ void CPlayerShipController::PaintTargetingReticle (SViewportPaintCtx &Ctx, CG32b
 
 	Dest.FillLine(x + cxHorz, y, iSize, rgbColor);
 	Dest.FillLine(x - cxHorz - iSize, y, iSize, rgbColor);
+	}
+
+void CPlayerShipController::RedirectDisplayMessage (bool bRedirect)
+
+//	RedirectDisplayMessage
+//
+//	Redirects a display message.
+
+	{
+	if (bRedirect)
+		{
+		m_bRedirectMessages = true;
+		m_sRedirectMessage = NULL_STR;
+		}
+	else
+		{
+		m_bRedirectMessages = false;
+		}
 	}
 
 bool CPlayerShipController::ToggleEnableDevice (int iDeviceIndex)
@@ -2659,6 +2700,26 @@ void CPlayerShipController::SetFireMissile (bool bFire)
 	m_pShip->SetWeaponTriggered(devMissileWeapon, bFire);
 	}
 
+void CPlayerShipController::SetGameSession (CGameSession *pSession)
+
+//	SetGameSession
+//
+//	Sets the game session.
+
+	{
+	m_pSession = pSession;
+
+	//	If we have saved messages, output now.
+
+	if (m_pSession)
+		{
+		for (int i = 0; i < m_SavedMessages.GetCount(); i++)
+			DisplayMessage(m_SavedMessages[i]);
+
+		m_SavedMessages.DeleteAll();
+		}
+	}
+
 void CPlayerShipController::SetTarget (CSpaceObject *pTarget)
 
 //	SetTarget
@@ -3091,7 +3152,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 	if (m_UIMsgs.IsEnabled(uimsgMouseManeuverHint)
 			&& m_pSession->IsMouseAimEnabled())
 		{
-		m_pTrans->DisplayMessage(CONSTLIT("(click [Right-Button] to thrust forward)"));
+		DisplayMessage(CONSTLIT("(click [Right-Button] to thrust forward)"));
 		m_iLastHelpTick = iTick;
 		return;
 		}
@@ -3099,7 +3160,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 	if (m_UIMsgs.IsEnabled(uimsgKeyboardManeuverHint)
 			&& !m_pSession->IsMouseAimEnabled())
 		{
-		m_pTrans->DisplayMessage(CONSTLIT("(press [Up Arrow] to thrust forward)"));
+		DisplayMessage(CONSTLIT("(press [Up Arrow] to thrust forward)"));
 		m_iLastHelpTick = iTick;
 		return;
 		}
@@ -3113,7 +3174,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 				&& !m_pSession->InSystemMap()
 				&& m_pAutoDock)
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("(press [D] to dock with stations and wrecks)"));
+			DisplayMessage(CONSTLIT("(press [D] to dock with stations and wrecks)"));
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3133,7 +3194,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 				&& bHasUsableItems
 				&& (m_iLastHelpUseTick == 0 || (iTick - m_iLastHelpUseTick) > 9000))
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("(press [U] to use items in your cargo hold)"));
+			DisplayMessage(CONSTLIT("(press [U] to use items in your cargo hold)"));
 			m_iLastHelpTick = iTick;
 			m_iLastHelpUseTick = iTick;
 			return;
@@ -3144,7 +3205,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 	if (m_UIMsgs.IsEnabled(uimsgMapHint) && !bEnemiesInRange)
 		{
-		m_pTrans->DisplayMessage(CONSTLIT("(press [M] to see a map of the system)"));
+		DisplayMessage(CONSTLIT("(press [M] to see a map of the system)"));
 		m_iLastHelpTick = iTick;
 		return;
 		}
@@ -3158,7 +3219,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 		if (rSpeed > 0.9 * m_pShip->GetMaxSpeed())
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("(press [A] to accelerate time)"));
+			DisplayMessage(CONSTLIT("(press [A] to accelerate time)"));
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3173,7 +3234,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 				&& !m_pSession->InSystemMap()
 				&& m_pShip->IsStargateInRange(CSystem::MAX_GATE_HELP_RANGE))
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("(press [G] over stargate to travel to next system)"));
+			DisplayMessage(CONSTLIT("(press [G] over stargate to travel to next system)"));
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3186,7 +3247,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 		if (!bEnemiesInRange
 				&& HasCommsTarget())
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("(press [C] to communicate)"));
+			DisplayMessage(CONSTLIT("(press [C] to communicate)"));
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3199,7 +3260,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 		if (!bEnemiesInRange &&
 				m_pShip->GetMissileCount() > 1)
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("(press [Tab] to switch missiles)"));
+			DisplayMessage(CONSTLIT("(press [Tab] to switch missiles)"));
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3213,7 +3274,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 				&& m_pShip->GetMissileCount() > 0 
 				&& (m_iLastHelpFireMissileTick == 0 || (iTick - m_iLastHelpFireMissileTick) > 9000))
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("(press [Shift] to fire missiles)"));
+			DisplayMessage(CONSTLIT("(press [Shift] to fire missiles)"));
 			m_iLastHelpTick = iTick;
 			m_iLastHelpFireMissileTick = iTick;
 			return;
@@ -3227,7 +3288,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 			&& !bEnemiesInRange
 			&& IsGalacticMapAvailable())
 		{
-		m_pTrans->DisplayMessage(CONSTLIT("(press [N] to see the stargate network)"));
+		DisplayMessage(CONSTLIT("(press [N] to see the stargate network)"));
 		m_iLastHelpTick = iTick;
 		return;
 		}

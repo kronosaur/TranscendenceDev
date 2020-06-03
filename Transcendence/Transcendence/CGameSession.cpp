@@ -19,6 +19,7 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
         m_bShowingSystemMap(false),
         m_SystemMap(*CreateCtx.pHI, *CreateCtx.pModel, m_HUD),
 		m_SystemStationsMenu(*CreateCtx.pHI, *CreateCtx.pModel, *this),
+		m_MessageDisplay(*CreateCtx.pHI),
 		m_Narrative(*CreateCtx.pHI),
 		m_CurrentMenu(menuNone),
 		m_MenuDisplay(*CreateCtx.pHI, *CreateCtx.pModel),
@@ -246,6 +247,7 @@ ALERROR CGameSession::OnInit (CString *retsError)
     m_HUD.Init(m_rcScreen);
     m_SystemMap.Init(m_rcScreen);
 	m_MenuDisplay.Init(m_rcScreen);
+	m_MessageDisplay.Init(m_rcScreen);
 
     RECT rcCenter;
     m_HUD.GetClearHorzRect(&rcCenter);
@@ -256,6 +258,12 @@ ALERROR CGameSession::OnInit (CString *retsError)
 
 	if (IsMouseAimEnabled())
 		SyncMouseToPlayerShip();
+
+	//	Welcome
+
+	const CString &sWelcome = GetUniverse().GetCurrentAdventureDesc().GetWelcomeMessage();
+	if (!sWelcome.IsBlank())
+		DisplayMessage(sWelcome);
 
     return NOERROR;
     }
@@ -343,7 +351,7 @@ void CGameSession::OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph)
 	if (strEquals(strWord(sMsg, 0), CONSTLIT("was")))
 		sMsg = strSubString(sMsg, 4, -1);
 	sMsg.Capitalize(CString::capFirstLetter);
-	g_pTrans->DisplayMessage(sMsg);
+	DisplayMessage(sMsg);
     m_HUD.Invalidate(hudArmor);
 
 	//	If we are insured, then set our state so that we come back to life

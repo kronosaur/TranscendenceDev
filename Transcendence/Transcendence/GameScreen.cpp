@@ -89,10 +89,10 @@ void CTranscendenceWnd::DisplayMessage (CString sMessage)
 //	Display a message for the player
 
 	{
-	if (m_bRedirectDisplayMessage)
-		m_sRedirectMessage.Append(sMessage);
-	else
-		m_MessageDisplay.DisplayMessage(sMessage, m_Fonts.rgbTitleColor);
+	if (auto pPlayer = GetPlayer())
+		{
+		pPlayer->DisplayMessage(sMessage);
+		}
 	}
 
 void CTranscendenceWnd::DoCommsMenu (int iIndex)
@@ -318,18 +318,6 @@ ALERROR CTranscendenceWnd::InitDisplays (void)
 	//	LATER: These should be obtained form the player ship.
 
 	m_pSRSSnow = g_pUniverse->GetLibraryBitmap(UNID_SRS_SNOW_PATTERN, CDesignCollection::FLAG_IMAGE_LOCK);
-
-	//	Create the message display
-
-	rcRect.left = (RectWidth(m_rcScreen) - g_MessageDisplayWidth) / 2;
-	rcRect.right = rcRect.left + g_MessageDisplayWidth;
-	rcRect.top = m_rcScreen.bottom - (RectHeight(m_rcScreen) / 3);
-	rcRect.bottom = rcRect.top + 4 * g_MessageDisplayHeight;
-	m_MessageDisplay.SetRect(rcRect);
-	m_MessageDisplay.SetFont(&m_Fonts.Header);
-	m_MessageDisplay.SetBlinkTime(15);
-	m_MessageDisplay.SetSteadyTime(150);
-	m_MessageDisplay.SetFadeTime(30);
 
 	//	Initialize some displays (these need to be done after we've
 	//	created the universe).

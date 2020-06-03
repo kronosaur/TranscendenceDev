@@ -124,6 +124,7 @@ class CPlayerShipController : public IShipController
 		bool CanShowShipStatus (void);
 		void Communications (CSpaceObject *pObj, MessageTypes iMsg, DWORD dwData = 0, DWORD *iodwFormationPlace = NULL);
 		void CycleTarget (int iDir = 1);
+		void DisplayMessage (const CString &sMessage);
 		void Dock (void);
 		bool DockingInProgress (void) { return m_pStation != NULL; }
 		UIMessageTypes FindUIMessage (const CString &sName) { return m_UIMsgs.Find(sName); }
@@ -141,6 +142,7 @@ class CPlayerShipController : public IShipController
 		CString GetKeyEventStat (const CString &sStat, const CString &sNodeID, const CDesignTypeCriteria &Crit) const { return m_Stats.GetKeyEventStat(sStat, sNodeID, Crit); }
 		GenomeTypes GetPlayerGenome (void) const { return m_iGenome; }
 		CString GetPlayerName (void) const { return m_sName; }
+		const CString &GetRedirectMessage (void) const { return m_sRedirectMessage; }
 		int GetResurrectCount (void) const { return ::strToInt(m_Stats.GetStatString(CONSTLIT("resurrectCount")), 0); }
 		int GetScore (void) { return ::strToInt(m_Stats.GetStatString(CONSTLIT("score")), 0); }
 		CSpaceObject *GetSelectedTarget (void) { return m_pTarget; }
@@ -164,8 +166,9 @@ class CPlayerShipController : public IShipController
 		CurrencyValue Payment (DWORD dwEconUNID, CurrencyValue iCredits) { return m_Credits.IncCredits(dwEconUNID, iCredits); }
 		void ReadyNextWeapon (int iDir = 1);
 		void ReadyNextMissile (int iDir = 1);
+		void RedirectDisplayMessage (bool bRedirect);
 		void SetCharacterClass (CGenericType *pClass) { m_pCharacterClass = pClass; }
-		void SetGameSession (CGameSession *pSession) { m_pSession = pSession; }
+		void SetGameSession (CGameSession *pSession);
 		void SetGenome (GenomeTypes iGenome) { m_iGenome = iGenome; }
 		void SetMapHUD (bool bActive) { m_bMapHUD = bActive; }
 		void SetMouseAimAngle (int iAngle) { m_ManeuverController.CmdMouseAim(iAngle); }
@@ -341,6 +344,10 @@ class CPlayerShipController : public IShipController
 
 		CSpaceObject *m_pAutoDamage = NULL;			//	Show damage bar for this object
 		DWORD m_dwAutoDamageExpire = 0;				//	Stop showing on this tick
+
+		bool m_bRedirectMessages = false;			//	If TRUE, redirect display messages
+		CString m_sRedirectMessage;
+		TArray<CString> m_SavedMessages;			//	Messages saved while game session not set up
 
 		CNavigationPath *m_pDebugNavPath = NULL;
 

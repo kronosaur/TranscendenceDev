@@ -77,7 +77,7 @@ ALERROR CGameSession::OnCommand (const CString &sCmd, void *pData)
 		}
 	else if (strEquals(sCmd, CMD_GAME_SELF_DESTRUCT))
 		{
-		g_pTrans->DisplayMessage(CONSTLIT("Warning: Self-Destruct Activated"));
+		DisplayMessage(CONSTLIT("Warning: Self-Destruct Activated"));
 
 		ShowMenu(menuSelfDestructConfirm);
 		}

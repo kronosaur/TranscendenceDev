@@ -1177,7 +1177,7 @@ ICCItem *fnPlyGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_PLY_REDIRECT_MESSAGE:
 			{
-			const CString &sMsg = pPlayer->GetTrans()->GetRedirectMessage();
+			const CString &sMsg = pPlayer->GetRedirectMessage();
 			if (!sMsg.IsBlank())
 				pResult = pCC->CreateString(sMsg);
 			else
@@ -1503,7 +1503,7 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			else
 				sText = CLanguage::Compose(pArgs->GetElement(1)->GetStringValue(), NULL);
 
-			pPlayer->GetTrans()->DisplayMessage(sText);
+			pPlayer->DisplayMessage(sText);
 
 			pArgs->Discard();
 			pResult = pCC->CreateTrue();
@@ -1514,7 +1514,7 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			{
 			bool bRedirect = !pArgs->GetElement(1)->IsNil();
 			pArgs->Discard();
-			pPlayer->GetTrans()->RedirectDisplayMessage(bRedirect);
+			pPlayer->RedirectDisplayMessage(bRedirect);
 			pResult = pCC->CreateTrue();
 			break;
 			}

@@ -77,9 +77,11 @@ class CGameSession : public IHISession
 
 		//	Helpers
 
+		void DisplayMessage (const CString &sMessage) { m_MessageDisplay.DisplayMessage(sMessage); }
 		CDockScreen &GetDockScreen (void) { return m_CurrentDock; }
 		CGalacticMapSession::SOptions &GetGalacticMapSettings (void) { return m_GalacticMapSettings; }
 		CGameSettings &GetGameSettings (void) { return m_Settings; }
+		CMessageDisplay &GetMessageDisplay (void) { return m_MessageDisplay; }
 		IPlayerController::EUIMode GetUIMode (void) const;
 		CUniverse &GetUniverse (void) const { return m_Model.GetUniverse(); }
 		bool InMenu (void) { return (m_CurrentMenu != menuNone); }
@@ -155,6 +157,7 @@ class CGameSession : public IHISession
 
 		//	Other displays
 
+		CMessageDisplay m_MessageDisplay;
 		CNarrativeDisplay m_Narrative;
 
 		//	Dock screen state
