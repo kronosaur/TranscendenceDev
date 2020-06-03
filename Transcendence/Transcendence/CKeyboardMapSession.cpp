@@ -635,6 +635,15 @@ bool CKeyboardMapSession::IsCommandRequired (CGameKeys::Keys iCmd) const
 		case CGameKeys::keySquadronCommands:
 			return false;
 
+		//	Clear target is not required if cycle target is bound (and vice 
+		//	versa).
+
+		case CGameKeys::keyCycleTarget:
+			return !KeyMap.IsKeyBound(CGameKeys::keyClearTarget);
+
+		case CGameKeys::keyClearTarget:
+			return !KeyMap.IsKeyBound(CGameKeys::keyCycleTarget);
+
 		//	Most commands need to be bound.
 
 		default:

@@ -902,12 +902,6 @@ void CGameSession::OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 					}
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	If paused, then we're done
 
 			else if (g_pTrans->m_bPaused)
@@ -921,55 +915,58 @@ void CGameSession::OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 				CGameKeys::Keys iCommand = m_Settings.GetKeyMap().GetGameCommand(VK_MBUTTON);
 				switch (iCommand)
 					{
+					case CGameKeys::keyCycleTarget:
+						if (iDelta > 0)
+							{
+							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+							pPlayer->CycleTarget(-1);
+							}
+						else
+							{
+							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+							pPlayer->CycleTarget(1);
+							}
+						break;
+
 					case CGameKeys::keyTargetNextFriendly:
 					case CGameKeys::keyTargetPrevFriendly:
-						{
 						if (iDelta > 0)
 							ExecuteCommand(pPlayer, CGameKeys::keyTargetPrevFriendly);
 						else
 							ExecuteCommand(pPlayer, CGameKeys::keyTargetNextFriendly);
 						break;
-						}
 
 					case CGameKeys::keyTargetNextEnemy:
 					case CGameKeys::keyTargetPrevEnemy:
-						{
 						if (iDelta > 0)
 							ExecuteCommand(pPlayer, CGameKeys::keyTargetPrevEnemy);
 						else
 							ExecuteCommand(pPlayer, CGameKeys::keyTargetNextEnemy);
 						break;
-						}
 
 					case CGameKeys::keyNextWeapon:
 					case CGameKeys::keyPrevWeapon:
-						{
 						if (iDelta > 0)
 							ExecuteCommand(pPlayer, CGameKeys::keyPrevWeapon);
 						else
 							ExecuteCommand(pPlayer, CGameKeys::keyNextWeapon);
 						break;
-						}
 
 					case CGameKeys::keyNextMissile:
 					case CGameKeys::keyPrevMissile:
-						{
 						if (iDelta > 0)
 							ExecuteCommand(pPlayer, CGameKeys::keyPrevMissile);
 						else
 							ExecuteCommand(pPlayer, CGameKeys::keyNextMissile);
 						break;
-						}
 
 					case CGameKeys::keyVolumeDown:
 					case CGameKeys::keyVolumeUp:
-						{
 						if (iDelta > 0)
 							ExecuteCommand(pPlayer, CGameKeys::keyVolumeUp);
 						else
 							ExecuteCommand(pPlayer, CGameKeys::keyVolumeDown);
 						break;
-						}
 					}
 				}
 

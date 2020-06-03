@@ -12,7 +12,7 @@ CVirtualKeyData::SVirtKeyData CVirtualKeyData::m_VirtKeyData[] =
 		{	"LButton",	NULL,   0	},
 		{	"RButton",	NULL,   0	},
 		{	NULL,	NULL,   0	},
-		{	"MButton",	NULL,   0	},
+		{	"MButton",		NULL,	FLAG_SCROLL_INPUT	},
 		{	NULL,	NULL,   0	},
 		{	NULL,	NULL,   0	},
 		{	"MouseMove",	NULL,   FLAG_XY_INPUT | FLAG_SPECIAL_KEY	},

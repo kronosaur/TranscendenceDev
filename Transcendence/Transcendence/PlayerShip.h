@@ -123,6 +123,7 @@ class CPlayerShipController : public IShipController
 
 		bool CanShowShipStatus (void);
 		void Communications (CSpaceObject *pObj, MessageTypes iMsg, DWORD dwData = 0, DWORD *iodwFormationPlace = NULL);
+		void CycleTarget (int iDir = 1);
 		void Dock (void);
 		bool DockingInProgress (void) { return m_pStation != NULL; }
 		UIMessageTypes FindUIMessage (const CString &sName) { return m_UIMsgs.Find(sName); }

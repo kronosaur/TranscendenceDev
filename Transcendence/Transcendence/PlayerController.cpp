@@ -264,6 +264,37 @@ void CPlayerShipController::ClearFireAngle (void)
 		}
 	}
 
+void CPlayerShipController::CycleTarget (int iDir)
+
+//	CycleTarget
+//
+//	Cycles between enemy target, friendly target, and no target.
+
+	{
+	if (!m_pTarget)
+		{
+		if (iDir == 0)
+			SelectNextTarget();
+		}
+	else if (m_pShip->IsAngryAt(m_pTarget))
+		{
+		if (iDir == 0)
+			{
+			SetTarget(NULL);
+			SelectNextFriendly();
+			}
+		else
+			SelectNextTarget(iDir);
+		}
+	else
+		{
+		if (iDir == 0)
+			SetTarget(NULL);
+		else
+			SelectNextFriendly(iDir);
+		}
+	}
+
 CString CPlayerShipController::DebugCrashInfo (void)
 
 //	DebugCrashInfo

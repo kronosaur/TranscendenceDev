@@ -112,8 +112,9 @@ class CGameKeys
 			keyShowGalacticMap =		81,
 			keyAimShip =				82,
 			keyInteract =				83,
+			keyCycleTarget =			84,
 
-			keyCount =					84,
+			keyCount =					85,
 			};
 
 		struct SBindingDesc

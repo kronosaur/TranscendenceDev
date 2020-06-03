@@ -83,6 +83,21 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				}
 			break;
 
+		case CGameKeys::keyCycleTarget:
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			pPlayer->CycleTarget(0);
+			break;
+
+		case CGameKeys::keyTargetNextEnemy:
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			pPlayer->SelectNextTarget(1);
+			break;
+
+		case CGameKeys::keyTargetPrevEnemy:
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			pPlayer->SelectNextTarget(-1);
+			break;
+
 		case CGameKeys::keyTargetNextFriendly:
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			pPlayer->SelectNextFriendly(1);
@@ -91,6 +106,11 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 		case CGameKeys::keyTargetPrevFriendly:
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			pPlayer->SelectNextFriendly(-1);
+			break;
+
+		case CGameKeys::keyClearTarget:
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			pPlayer->SetTarget(NULL);
 			break;
 
 		case CGameKeys::keyEnterGate:
@@ -154,27 +174,12 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				}
 			break;
 
-		case CGameKeys::keyClearTarget:
-			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-			pPlayer->SetTarget(NULL);
-			break;
-
 		case CGameKeys::keyShipStatus:
 			if (pPlayer->CanShowShipStatus())
 				{
 				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 				m_Model.ShowShipScreen();
 				}
-			break;
-
-		case CGameKeys::keyTargetNextEnemy:
-			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-			pPlayer->SelectNextTarget(1);
-			break;
-
-		case CGameKeys::keyTargetPrevEnemy:
-			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-			pPlayer->SelectNextTarget(-1);
 			break;
 
 		case CGameKeys::keyUseItem:

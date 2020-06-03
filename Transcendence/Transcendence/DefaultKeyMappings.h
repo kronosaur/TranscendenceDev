@@ -42,6 +42,7 @@ const CGameKeys::SKeyMapEntry CGameKeys::DEFAULT_MAP[] =
 
 		{	CVirtualKeyData::VK_MOUSE_MOVE,			CGameKeys::keyAimShip },
 		{	VK_LBUTTON,			CGameKeys::keyFireWeapon },
+		{	VK_MBUTTON,			CGameKeys::keyCycleTarget },
 		{	VK_RBUTTON,			CGameKeys::keyThrustForward },
 
 		{	VK_CONTROL,			CGameKeys::keyFireWeapon },
@@ -94,6 +95,7 @@ const CGameKeys::SKeyMapEntry CGameKeys::WASD_MAP[] =
 		{	'Z',				CGameKeys::keyShowMap },
 
 		{	VK_LBUTTON,			CGameKeys::keyFireWeapon },
+		{	VK_MBUTTON,			CGameKeys::keyCycleTarget },
 		{	VK_RBUTTON,			CGameKeys::keyFireMissile },
 
 		//	VK_CONTROL unused
