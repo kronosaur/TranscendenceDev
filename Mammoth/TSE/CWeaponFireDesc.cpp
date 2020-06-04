@@ -24,6 +24,7 @@
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define EXHAUST_RATE_ATTRIB						CONSTLIT("creationRate")
 #define DAMAGE_ATTRIB							CONSTLIT("damage")
+#define DAMAGE_AT_MAX_RANGE_ATTRIB				CONSTLIT("damageAtMaxRange")
 #define DIRECTIONAL_ATTRIB						CONSTLIT("directional")
 #define EXHAUST_DRAG_ATTRIB						CONSTLIT("drag")
 #define EFFECT_ATTRIB							CONSTLIT("effect")
@@ -104,6 +105,7 @@
 #define ON_DESTROY_SHOT_EVENT					CONSTLIT("OnDestroyShot")
 #define ON_FRAGMENT_EVENT						CONSTLIT("OnFragment")
 
+#define PROPERTY_DAMAGE_DESC_AT_PREFIX			CONSTLIT("damageDescAt:")
 #define PROPERTY_INTERACTION					CONSTLIT("interaction")
 #define PROPERTY_LIFETIME						CONSTLIT("lifetime")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
@@ -268,6 +270,30 @@ Metric CWeaponFireDesc::CalcDamage (DWORD dwDamageFlags) const
 				return GetDamage().GetDamageValue(dwDamageFlags);
 			}
 		}
+	}
+
+DamageDesc CWeaponFireDesc::CalcDamageDesc (const CItemEnhancementStack *pEnhancements, const CDamageSource &Attacker, Metric rAge) const
+
+//	CalcDamageDesc
+//
+//	Computes a damage descriptor when we hit something.
+
+	{
+	DamageDesc Damage = GetDamage();
+
+	//	If damage changes with age, we alter it here.
+
+	if (!m_DamageAtMaxRange.IsEmpty())
+		Damage.InterpolateTo(m_DamageAtMaxRange, rAge);
+
+	if (pEnhancements)
+		Damage.AddEnhancements(pEnhancements);
+
+	Damage.SetCause(Attacker.GetCause());
+	if (Attacker.IsAutomatedWeapon())
+		Damage.SetAutomatedWeapon();
+
+	return Damage;
 	}
 
 int CWeaponFireDesc::CalcDefaultHitPoints (void) const
@@ -779,7 +805,20 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 
 	//	We handle some properties
 
-	if (strEquals(sProperty, PROPERTY_INTERACTION))
+	if (strStartsWith(sProperty, PROPERTY_DAMAGE_DESC_AT_PREFIX))
+		{
+		CString sSlider = strSubString(sProperty, PROPERTY_DAMAGE_DESC_AT_PREFIX.GetLength());
+		Metric rSlider = strToDouble(sSlider, -1.0);
+		if (rSlider < 0.0 || rSlider > 1.0)
+			return CC.CreateError(CONSTLIT("Value must be in range 0.0 to 1.0."));
+
+		DamageDesc Result = m_Damage;
+		if (!m_DamageAtMaxRange.IsEmpty())
+			Result.InterpolateTo(m_DamageAtMaxRange, rSlider);
+
+		return CC.CreateString(Result.AsString());
+		}
+	else if (strEquals(sProperty, PROPERTY_INTERACTION))
 		return CC.CreateInteger(GetInteraction());
 
 	else if (strEquals(sProperty, PROPERTY_LIFETIME))
@@ -1751,6 +1790,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	//	Load damage
 
 	m_Damage = Damage;
+	m_DamageAtMaxRange = DamageDesc();
 
 	//	Fragments
 
@@ -2114,6 +2154,16 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		{
 		Ctx.sError = strPatternSubst(CONSTLIT("Invalid damage specification: %s"), pDesc->GetAttribute(DAMAGE_ATTRIB));
 		return error;
+		}
+
+	CString sDamageAtMaxRange;
+	if (pDesc->FindAttribute(DAMAGE_AT_MAX_RANGE_ATTRIB, &sDamageAtMaxRange))
+		{
+		if (error = m_DamageAtMaxRange.LoadFromXML(Ctx, sDamageAtMaxRange))
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid damage specification: %s"), pDesc->GetAttribute(DAMAGE_AT_MAX_RANGE_ATTRIB));
+			return error;
+			}
 		}
 
 	//	Fragments
@@ -2486,6 +2536,11 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     Metric rAdj = (Metric)Scaled.iDamage / Base.iDamage;
     m_Damage = Src.m_Damage;
     m_Damage.ScaleDamage(rAdj);
+	if (!Src.m_DamageAtMaxRange.IsEmpty())
+		{
+		m_DamageAtMaxRange = Src.m_DamageAtMaxRange;
+		m_DamageAtMaxRange.ScaleDamage(rAdj);
+		}
 
 	//	Power scales proportionally
 

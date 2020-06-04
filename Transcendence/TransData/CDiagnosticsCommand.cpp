@@ -9,12 +9,33 @@
 bool CDiagnosticsCommand::Run (void)
 	{
 	CRunDiagnostics Diagnostics(m_Universe);
+	bool bShowSystemCreateDetails = false;
+	if (bShowSystemCreateDetails)
+		m_Universe.GetPerformanceCounters().SetEnabled();
 
 	CString sError;
 	if (!Diagnostics.Start(&GetConsole(), &sError))
 		return Error(sError);
 
 	//	Output system create performance
+
+	if (bShowSystemCreateDetails)
+		{
+		const auto &AllCounters = m_Universe.GetPerformanceCounters();
+		for (int i = 0; i < AllCounters.GetCount(); i++)
+			{
+			auto &Counter = AllCounters.GetCounter(i);
+			if (strStartsWith(AllCounters.GetCounterID(i), CONSTLIT("create.")))
+				{
+				double rTime = Counter.iTotalTime / (double)Counter.iTotalCalls;
+				Print(strPatternSubst(CONSTLIT("%s: %s calls @ %s ms [%s ms total]"), 
+					AllCounters.GetCounterID(i), 
+					strFormatInteger(Counter.iTotalCalls, -1, FORMAT_THOUSAND_SEPARATOR), 
+					strFromDouble(rTime, 2),
+					strFormatInteger(Counter.iTotalTime, -1, FORMAT_THOUSAND_SEPARATOR)));
+				}
+			}
+		}
 
 	auto &Perf = Diagnostics.GetSystemCreatePerformance();
 	Print(strPatternSubst(CONSTLIT("SYSTEMS CREATED: %d"), Perf.iSystemsCreated));

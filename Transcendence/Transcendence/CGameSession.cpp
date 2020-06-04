@@ -21,6 +21,7 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
 		m_SystemStationsMenu(*CreateCtx.pHI, *CreateCtx.pModel, *this),
 		m_Narrative(*CreateCtx.pHI),
 		m_CurrentMenu(menuNone),
+		m_MenuDisplay(*CreateCtx.pHI, *CreateCtx.pModel),
 		m_pCurrentComms(NULL),
         m_iDamageFlash(0),
 		m_bIgnoreButtonUp(false),
@@ -251,6 +252,7 @@ ALERROR CGameSession::OnInit (CString *retsError)
 	InitUI();
     m_HUD.Init(m_rcScreen);
     m_SystemMap.Init(m_rcScreen);
+	m_MenuDisplay.Init(m_rcScreen);
 
     RECT rcCenter;
     m_HUD.GetClearHorzRect(&rcCenter);
@@ -485,12 +487,6 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 	if (pPlayer == NULL)
 		return false;
 
-	//	Can't do anything if we're currently showing a menu. Need to dismiss
-	//	first.
-
-	if (m_CurrentMenu != menuNone)
-		return false;
-
 	//	Bring up the menu
 
 	switch (iMenu)
@@ -526,13 +522,29 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuGame:
-			g_pTrans->ShowGameMenu();
+			{
+			CMenuDisplay::SOptions Options;
+			Options.iPos = CMenuDisplay::posCenter;
+			Options.bHideShortCutKeys = true;
+
+			m_MenuDisplay.Show(CreateGameMenu(), Options);
 			break;
+			}
 
 		case menuInvoke:
 			if (!g_pTrans->ShowInvokeMenu())
 				return false;
 			break;
+
+		case menuSelfDestructConfirm:
+			{
+			CMenuDisplay::SOptions Options;
+			Options.iPos = CMenuDisplay::posCenter;
+			Options.bHideShortCutKeys = true;
+
+			m_MenuDisplay.Show(CreateSelfDestructMenu(), Options);
+			break;
+			}
 
 		case menuSystemStations:
 			m_SystemStationsMenu.Show(m_rcScreen, ID_SYSTEM_STATIONS);

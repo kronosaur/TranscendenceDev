@@ -168,6 +168,7 @@ class CLocationSelectionTable
 		explicit operator bool () const { return !IsEmpty(); }
 
 		void DeleteAll (void) { m_Table.DeleteAll(); }
+		void DeleteBlocked (void);
 		void DeleteInRange (const CVector &vCenter, Metric rRadius);
 		void DeleteInRange (const CLocationDef &Loc, Metric rRadius) { DeleteInRange(Loc.GetOrbit().GetObjectPos(), rRadius); }
 		void Fill (const CLocationDef &Loc, DWORD dwObjID);

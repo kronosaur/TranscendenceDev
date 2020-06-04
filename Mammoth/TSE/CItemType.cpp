@@ -498,7 +498,7 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 	return true;
 	}
 
-ICCItemPtr CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType) const
+ICCItemPtr CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	FindItemTypeBaseProperty
 //
@@ -513,9 +513,6 @@ ICCItemPtr CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CStrin
 	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItemPtr pResultPtr;
 	int i;
-
-	if (retiType)
-		*retiType = EPropertyType::propEngine;
 
 	if (strEquals(sProperty, PROPERTY_CATEGORY))
 		return ICCItemPtr(GetItemCategoryID(GetCategory()));
@@ -607,9 +604,6 @@ ICCItemPtr CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CStrin
 
 	else if (ICCItem *pResult = FindBaseProperty(Ctx, sProperty))
 		return ICCItemPtr(pResult);
-
-	else if (FindCustomProperty(sProperty, pResultPtr, retiType))
-		return pResultPtr;
 
 	else
 		return NULL;

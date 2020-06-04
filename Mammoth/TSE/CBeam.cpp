@@ -57,6 +57,20 @@ void CBeam::CreateReflection (const CVector &vPos, int iDirection, CMissile **re
 	{
 	}
 
+Metric CBeam::GetAge (void) const
+
+//	GetAge
+//
+//	Returns the age of the shot as a fraction of its lifetime (0-1.0).
+
+	{
+	int iTotalLife = m_iTick + m_iLifeLeft;
+	if (iTotalLife > 0)
+		return (Metric)m_iTick / (Metric)iTotalLife;
+	else
+		return 0.0;
+	}
+
 CString CBeam::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 
 //	GetName
@@ -230,10 +244,11 @@ void CBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	Tell the object hit that it has been damaged
 
 		SDamageCtx DamageCtx(m_pHit,
-				m_pDesc,
+				*m_pDesc,
 				pEnhancements,
 				m_Source,
 				this,
+				GetAge(),
 				AngleMod(m_iHitDir + mathRandom(0, 30) - 15),
 				m_vPaintTo);
 

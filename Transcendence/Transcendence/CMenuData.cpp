@@ -12,7 +12,8 @@ CMenuData::CMenuData (void) : m_iCount(0)
 	{
 	}
 
-void CMenuData::AddMenuItem (const CString &sKey,
+void CMenuData::AddMenuItem (const CString &sID,
+							 const CString &sKey,
 							 const CString &sLabel,
 							 const CObjectImageArray *pImage,
 							 int iCount,
@@ -30,6 +31,13 @@ void CMenuData::AddMenuItem (const CString &sKey,
 	ASSERT(m_iCount < MAX_MENU_ITEMS);
 	if (m_iCount == MAX_MENU_ITEMS)
 		return;
+
+	//	See if the label has an accelerator
+
+	CString sCleanLabel;
+	CString sAccelerator;
+	int iAcceleratorPos;
+	CLanguage::ParseLabelDesc(sLabel, &sCleanLabel, &sAccelerator, &iAcceleratorPos);
 
 	//	If we have a key, sort by key. Otherwise, we
 	//	add it at the end.
@@ -53,8 +61,11 @@ void CMenuData::AddMenuItem (const CString &sKey,
 
 	//	Add item
 
+	m_List[iPos].sID = sID;
 	m_List[iPos].sKey = sKey;
-	m_List[iPos].sLabel = sLabel;
+	m_List[iPos].sLabel = sCleanLabel;
+	m_List[iPos].sAccelerator = sAccelerator;
+	m_List[iPos].iAcceleratorPos = iAcceleratorPos;
 	m_List[iPos].dwData = dwData;
 	m_List[iPos].dwData2 = dwData2;
 	m_List[iPos].iCount = iCount;
@@ -74,7 +85,8 @@ int CMenuData::FindItemByKey (const CString &sKey)
 
 	{
 	for (int i = 0; i < m_iCount; i++)
-		if (strEquals(sKey, m_List[i].sKey))
+		if (strEquals(sKey, m_List[i].sKey)
+				|| strEquals(sKey, m_List[i].sAccelerator))
 			return i;
 
 	return -1;

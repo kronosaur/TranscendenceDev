@@ -143,6 +143,10 @@
 	<!-- 0160-017F PLAYER -->
 
 	<!ENTITY unidPlayer					"0x00010160">
+
+	<!-- 0180-01BF MISSION TEMPLATE -->
+
+	<!ENTITY baInterceptMission			"0x00010180">
 	]>
 	
 <CoreLibrary
@@ -173,6 +177,7 @@
 	<Module filename="RPGDockServices.xml"/>
 	<Module filename="RPGMembership.xml"/>
 	<Module filename="RPGMining.xml"/>
+	<Module filename="RPGMissionTemplate01.xml"/>
 	<Module filename="RPGMissions.xml"/>
 	<Module filename="RPGPlayer.xml"/>
 	<Module filename="RPGRumors.xml"/>

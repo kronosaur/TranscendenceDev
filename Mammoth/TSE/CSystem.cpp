@@ -4665,6 +4665,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	hit tests
 
 	m_ObjGrid.Init(this, Ctx);
+	m_ForceResolver.BeginUpdate();
 
 	//	Fire timed events
 	//	NOTE: We only do this if we have a player because otherwise, some
@@ -4745,6 +4746,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 				Ctx.PlayerObjs.Insert(pObj);
 			}
 		}
+
+	//	Update object velocity based on forces
+
+	m_ForceResolver.Update(*this, SystemCtx.rSecondsPerTick);
 
 	//	Move all objects. Note: We always move last because we want to
 	//	paint right after a move. Otherwise, when a laser/missile hits
@@ -4955,8 +4960,6 @@ void CSystem::UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj)
 //	Accelerates objects around high-gravity fields
 
 	{
-	int i;
-
 	//	Compute the acceleration due to gravity at the scale radius
 	//	(in kilometers per second-squared).
 
@@ -4989,7 +4992,7 @@ void CSystem::UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj)
 	CSpaceObjectList Objs;
 	GetObjectsInBox(pGravityObj->GetPos(), rMaxDist, Objs);
 
-	for (i = 0; i < Objs.GetCount(); i++)
+	for (int i = 0; i < Objs.GetCount(); i++)
 		{
 		//	Skip objects not affected by gravity
 
@@ -5022,8 +5025,8 @@ void CSystem::UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj)
 
 		//	Accelerate towards the center
 
-		pObj->DeltaV(g_SecondsPerUpdate * rAccel * vDist / sqrt(rDist2));
-		pObj->ClipSpeed(LIGHT_SPEED);
+		CVector vUnit = vDist / sqrt(rDist2);
+		pObj->AddForceFromDeltaV(rAccel * vUnit);
 
 		//	If this is the player, then gravity warning
 

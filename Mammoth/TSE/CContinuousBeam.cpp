@@ -229,14 +229,28 @@ EDamageResults CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHi
 
 	{
 	SDamageCtx DamageCtx(pHit,
-			m_pDesc,
+			*m_pDesc,
 			m_pEnhancements,
 			m_Source,
 			this,
+			GetAge(),
 			AngleMod(iHitDir + mathRandom(0, 30) - 15),
 			vHitPos);
 
 	return pHit->Damage(DamageCtx);
+	}
+
+Metric CContinuousBeam::GetAge (void) const
+
+//	GetAge
+//
+//	Returns the age of the shot as a fraction of its lifetime (0-1.0).
+
+	{
+	if (m_iLifetime > 0)
+		return (Metric)Min(m_iTick, m_iLifetime) / (Metric)m_iLifetime;
+	else
+		return 0.0;
 	}
 
 CString CContinuousBeam::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const

@@ -91,7 +91,6 @@
 #define CMD_GAME_REVERT							CONSTLIT("gameRevert")
 #define CMD_GAME_SELECT_ADVENTURE				CONSTLIT("gameSelectAdventure")
 #define CMD_GAME_SELECT_SAVE_FILE				CONSTLIT("gameSelectSaveFile")
-#define CMD_GAME_SELF_DESTRUCT					CONSTLIT("gameSelfDestruct")
 #define CMD_GAME_STARGATE_SYSTEM_READY			CONSTLIT("gameStargateSystemReady")
 #define CMD_GAME_UNPAUSE						CONSTLIT("gameUnpause")
 
@@ -1041,12 +1040,6 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 			m_HI.OpenPopupSession(new CMessageSession(m_HI, ERR_CANT_LOAD_GAME, NULL_STR, CMD_NULL));
 			return NOERROR;
 			}
-		}
-
-	else if (strEquals(sCmd, CMD_GAME_SELF_DESTRUCT))
-		{
-		if (m_pGameSession)
-			m_pGameSession->ShowSelfDestructMenu();
 		}
 
 	//	Load an old game

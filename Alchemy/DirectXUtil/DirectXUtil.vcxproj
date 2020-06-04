@@ -352,6 +352,7 @@
     <ClCompile Include="CAniCartoucheBlock.cpp" />
     <ClCompile Include="CCartoucheBlock.cpp" />
     <ClCompile Include="CCloudGenerator.cpp" />
+    <ClCompile Include="CDrawText.cpp" />
     <ClCompile Include="CDXBackgroundBlt.cpp" />
     <ClCompile Include="CDXMatrix.cpp" />
     <ClCompile Include="CFrameRateCounter.cpp" />

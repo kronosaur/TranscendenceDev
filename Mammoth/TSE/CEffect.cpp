@@ -212,7 +212,8 @@ void CEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	If we're moving, slow down
 
-	UpdateDrag(Ctx, g_SpaceDragFactor);
+	if (!GetVel().IsNull())
+		AddDrag(g_SpaceDragFactor);
 
 	//	Give the painter a chance to update
 

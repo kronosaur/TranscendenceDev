@@ -469,6 +469,8 @@
     </ClCompile>
     <ClCompile Include="OpenGLRenderLayer.cpp">
       <Filter>Source Files\OpenGL</Filter>
+    <ClCompile Include="CDrawText.cpp">
+      <Filter>Source Files\TextFormat</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

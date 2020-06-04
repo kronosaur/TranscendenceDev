@@ -729,10 +729,11 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 							if (mathRandom(1, 1000) < (iDensity * iSpeed))
 								{
 								SDamageCtx DamageCtx(pObj,
-										pType->pDamageDesc,
+										*pType->pDamageDesc,
 										NULL,
 										CDamageSource(this, killedByDamage),
 										this,
+										0.0,
 										VectorToPolar(vDeltaV),
 										pObj->GetPos());
 
@@ -919,7 +920,8 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	If we're moving, slow down
 
-	UpdateDrag(Ctx, g_SpaceDragFactor);
+	if (!GetVel().IsNull())
+		AddDrag(g_SpaceDragFactor);
 	}
 
 void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)

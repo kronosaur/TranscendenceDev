@@ -30,7 +30,7 @@
 						;	only for level 2 and above; Mission 01 has a higher 
 						;	priority, so it always gets selected.
 
-						{	test:'(msnGetProperty 
+						{	test:'(msn@ 
 								(rpgMissionGetAssignment {
 									missionCriteria:"n +testMission; -testMissionArc;"
 									})
@@ -43,7 +43,7 @@
 						;	but that mission cannot be created in Eridani (level 1 system)
 						;	so this returns Nil.
 
-						{	test:'(msnGetProperty 
+						{	test:'(msn@ 
 								(rpgMissionGetAssignment {
 									missionCriteria:"n +testMission; -testMissionArc; L:4-6;"
 									})
@@ -55,7 +55,7 @@
 						;	When creating a mission for a mission arc, only the first 
 						;	mission (in sequence) will be available.
 
-						{	test:'(msnGetProperty 
+						{	test:'(msn@ 
 								(rpgMissionGetAssignment {
 									missionCriteria:"n +testMissionArc;"
 									})

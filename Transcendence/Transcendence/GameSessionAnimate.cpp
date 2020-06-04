@@ -77,6 +77,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				//	If we're in a HUD menu, run quarter speed
 
+				bool bUIPause = (m_CurrentMenu == menuGame || m_CurrentMenu == menuSelfDestructConfirm);
 				bool bSlowMotion = (m_CurrentMenu != menuNone);
 
 #ifdef DEBUG_LINE_OF_FIRE
@@ -168,6 +169,8 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 					else
 						iUpdateMode = CUniverse::updatePaused;
 					}
+				else if (bUIPause)
+					iUpdateMode = CUniverse::updatePaused;
 				else if (bSlowMotion)
 					iUpdateMode = CUniverse::updateSlowMotion;
 				else if (g_pTrans->m_bAutopilot)
@@ -417,12 +420,15 @@ void CGameSession::PaintMenu (CG32bitImage &Screen)
 	{
 	switch (m_CurrentMenu)
 		{
+		case menuGame:
+		case menuSelfDestructConfirm:
+			m_MenuDisplay.Paint(Screen, 0);
+			break;
+
 		case menuComms:
 		case menuCommsSquadron:
 		case menuCommsTarget:
-		case menuGame:
 		case menuInvoke:
-		case menuSelfDestructConfirm:
 			g_pTrans->m_MenuDisplay.Paint(Screen);
 			break;
 

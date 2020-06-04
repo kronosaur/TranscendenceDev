@@ -90,6 +90,50 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 		
 		}};
 
+bool CSpaceObject::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const
+
+//	FindCustomProperty
+//
+//	Finds and evaluates a custom property.
+
+	{
+	if (CDesignType *pType = GetType())
+		{
+		EPropertyType iType;
+		if (!pType->FindCustomProperty(sProperty, pResult, &iType))
+			return false;
+
+		//	If the property is an object property, then we need to look in 
+		//	object data.
+
+		if (iType == EPropertyType::propVariant 
+				|| iType == EPropertyType::propData
+				|| iType == EPropertyType::propObjData)
+			{
+			pResult = GetData(sProperty);
+			return true;
+			}
+
+		//	If this is a dynamic property, we need to evaluate.
+
+		else if (iType == EPropertyType::propDynamicData)
+			{
+			CCodeChainCtx CCX(GetUniverse());
+			CCX.SaveAndDefineSourceVar(this);
+
+			pResult = CCX.RunCode(pResult);
+			return true;
+			}
+
+		//	Otherwise we have a valid property.
+
+		else
+			return true;
+		}
+	else
+		return false;
+	}
+
 ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const
 
 //	GetProperty
@@ -97,7 +141,16 @@ ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProper
 //	Returns the property.
 
 	{
-	if (ICCItemPtr pValue = OnFindProperty(CCX, sProperty))
+	ICCItemPtr pValue;
+
+	//	Always start with custom properties because they override built-in 
+	//	properties. [We need this in case we add a new engine property that
+	//	conflicts with a custom propertie. We don't want old code to break.]
+
+	if (FindCustomProperty(sProperty, pValue))
+		return pValue;
+
+	else if (pValue = OnFindProperty(CCX, sProperty))
 		return pValue;
 
 	else if (m_BasePropertyTable.FindProperty(*this, sProperty, pValue))
@@ -394,8 +447,16 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 	else if (strEquals(sName, PROPERTY_UNDER_ATTACK))
 		return CC.CreateBool(IsUnderAttack());
 
+	else if (const CDesignType *pType = GetType())
+		{
+		ICCItemPtr pValue;
+		if (pType->FindEngineProperty(Ctx, sName, pValue))
+			return pValue->Reference();
+
+		return CC.CreateNil();
+		}
 	else
-		return GetTypeProperty(Ctx, sName)->Reference();
+		return CC.CreateNil();
 	}
 
 ICCItemPtr CSpaceObject::GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const

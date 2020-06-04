@@ -99,6 +99,7 @@ class CBeam : public TSpaceObjectImpl<OBJID_CBEAM>
 
 	private:
 		void ComputeOffsets (void);
+		Metric GetAge (void) const;
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		int m_iBonus;							//	Bonus damage
@@ -214,6 +215,7 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 
 		void AddSegment (const CVector &vPos, const CVector &vVel, int iDamage);
 		EDamageResults DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir);
+		Metric GetAge (void) const;
 		bool HitTestSegment (SSegment &Segment, CVector *retvHitPos);
 		void PaintSegment (CG32bitImage &Dest, const CVector &vFrom, const CVector &vTo, SViewportPaintCtx &Ctx) const;
 		void UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Metric *retrMaxBoundsX, Metric *retrMaxBoundsY);
@@ -569,6 +571,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 
 		int ComputeVaporTrail (void);
 		void CreateFragments (const CVector &vPos);
+		Metric GetAge (void) const;
 		int GetManeuverRate (void) const;
 		bool IsTracking (void) const;
 		bool IsTrackingTime (int iTick) const;
@@ -1550,6 +1553,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual Metric GetMass (void) const override { return m_rMass; }
 		virtual int GetMaxLightDistance (void) const override { return m_pType->GetMaxLightDistance(); }
+		virtual Metric GetMaxSpeed (void) const { return (IsAnchored() ? 0.0 : 0.25 * LIGHT_SPEED); }
 		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CStation"); }

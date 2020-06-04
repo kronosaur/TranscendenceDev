@@ -6711,10 +6711,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CDamageSource Attacker = GetDamageSourceArg(*pCC, pArgs->GetElement(2));
 			SDamageCtx DamageCtx(pObj,
-					pDesc,
+					*pDesc,
 					NULL,
 					Attacker,
 					Attacker.GetObj(),
+					0.0,
 					AngleMod(iDir + mathRandom(0, 30) - 15),
 					vHitPos);
 
@@ -12220,10 +12221,11 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int iDir = pArgs->GetElement(3)->GetIntegerValue();
 
 			SDamageCtx DamageCtx(pObj,
-					pDesc,
+					*pDesc,
 					NULL,
 					CDamageSource(),
 					NULL,
+					0.0,
 					iDir,
 					vHitPos);
 

@@ -28,6 +28,8 @@
 
 			<DynamicData id="test.dynamicData1">1</DynamicData>
 			<DynamicData id="test.dynamicData2">(+ 2 2)</DynamicData>
+
+			<Constant id="disrupted">'testing</Constant>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="672" imageWidth="96" imageHeight="96"/>
@@ -63,6 +65,36 @@
 				powerUse=		"2000"
 				/>
 
+	</ItemType>
+
+	<ItemType UNID="&itTestWeaponFading;"
+			name=				"fading weapon"
+			attributes=			"testItem"
+
+			level=				"5"
+			frequency=			"common"
+
+			value=				"1000"
+			mass=				"3000"
+
+			description=		"Test weapon: fading."
+			>
+
+		<Image imageID="&rsItemsNAMI1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"kinetic:2d12; repel:20;"
+				damageAtMaxRange=	"kinetic:1;	repel:0;"
+				fireRate=			"16"
+				missileSpeed=		"50"
+				lifetime=			"60"
+				powerUse=			"10"
+
+				effect=				"&efKineticBoltDefault;"
+				sound=				"&snRecoillessCannon;"
+				/>
 	</ItemType>
 
 	<ItemType UNID="&itTestWeaponRelativistic;"

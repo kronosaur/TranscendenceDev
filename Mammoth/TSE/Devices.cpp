@@ -858,17 +858,17 @@ int CDeviceClass::ParseVariantFromPropertyName (const CString &sName, CString *r
 
 //	ParseVariantFromPropertyName
 //
-//	If the name ends in :nn then nn is the variant. We also return the parsed
+//	If the name ends in /nn then nn is the variant. We also return the parsed
 //	property name (without the variant).
 
 	{
-	//	Look for a :nn suffix specifying a variant
+	//	Look for a /nn suffix specifying a variant
 
 	const char *pStart = sName.GetASCIIZPointer();
 	const char *pPos = pStart;
 	while (*pPos != '\0')
 		{
-		if (*pPos == ':')
+		if (*pPos == '/')
 			{
 			if (retsName)
 				*retsName = CString(pStart, (int)(pPos - pStart));

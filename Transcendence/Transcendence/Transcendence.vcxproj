@@ -435,6 +435,7 @@
     <ClCompile Include="CKeyboardMapSession.cpp" />
     <ClCompile Include="CLoadGameWithSignInTask.cpp" />
     <ClCompile Include="CManeuverController.cpp" />
+    <ClCompile Include="CMenuDisplay.cpp" />
     <ClCompile Include="CNarrativeDisplay.cpp" />
     <ClCompile Include="CodeChainExtensions.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -478,6 +479,7 @@
     <ClCompile Include="GameSessionAnimate.cpp" />
     <ClCompile Include="GameSessionCommands.cpp" />
     <ClCompile Include="GameSessionInput.cpp" />
+    <ClCompile Include="GameSessionMenus.cpp" />
     <ClCompile Include="IDockScreenDisplay.cpp" />
     <ClCompile Include="Main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -570,7 +572,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CGNeurohackArea.cpp" />
-    <ClCompile Include="CMenuDisplay.cpp">
+    <ClCompile Include="CMenuDisplayOld.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">Disabled</Optimization>

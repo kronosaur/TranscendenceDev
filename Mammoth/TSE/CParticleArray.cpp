@@ -2000,10 +2000,11 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 				//	Do damage
 
 				SDamageCtx DamageCtx(pObj,
-						Ctx.pDamageDesc,
+						*Ctx.pDamageDesc,
 						Ctx.pEnhancements,
 						Ctx.Attacker,
 						Ctx.pObj,
+						0.0,
 						VectorToPolar(pHit->vHitPos - pObj->GetPos()),
 						pHit->vHitPos,
 						iDamage);

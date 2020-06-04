@@ -5,6 +5,24 @@
 
 #include "PreComp.h"
 
+void CLocationSelectionTable::DeleteBlocked (void)
+
+//	DeleteBlocked
+//
+//	Delete any locations that are blocked.
+
+	{
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		{
+		const CLocationDef &Loc = m_System.GetLocation(m_Table[i]);
+		if (Loc.IsBlocked())
+			{
+			m_Table.Delete(i);
+			i--;
+			}
+		}
+	}
+
 void CLocationSelectionTable::DeleteInRange (const CVector &vCenter, Metric rRadius)
 
 //	DeleteInRange

@@ -396,6 +396,55 @@ void CSpaceObject::AddEventSubscribers (const CSpaceObjectList &Objs)
 		}
 	}
 
+void CSpaceObject::AddDrag (Metric rDragFactor)
+
+//	AddDrag
+//
+//	Adds a drag factor.
+
+	{
+	if (!m_pSystem || IsAnchored())
+		return;
+
+	m_ForceDesc.AddDrag(m_pSystem->GetForceResolver(), *this, rDragFactor);
+	}
+
+void CSpaceObject::AddForce (const CVector &vForce)
+
+//	AddForce
+//
+//	Adds an acceleration force to the system's force resolver.
+
+	{
+	if (!m_pSystem || IsAnchored())
+		return;
+
+	m_ForceDesc.AddForce(m_pSystem->GetForceResolver(), *this, vForce);
+	}
+
+void CSpaceObject::AddForceFromDeltaV (const CVector &vDeltaV)
+
+//	AddForceFromDeltaV
+//
+//	Adds a force that will result in the given delta-V.
+
+	{
+	AddForce(vDeltaV * (GetMass() / 1000.0));
+	}
+
+void CSpaceObject::AddForceLimited (const CVector &vForce)
+
+//	AddForceLimited
+//
+//	Adds an acceleration force to the system's force resolver.
+
+	{
+	if (!m_pSystem || IsAnchored())
+		return;
+
+	m_ForceDesc.AddForceLimited(m_pSystem->GetForceResolver(), *this, vForce);
+	}
+
 EnhanceItemStatus CSpaceObject::AddItemEnhancement (const CItem &itemToEnhance, 
 													CItemType *pEnhancement, 
 													int iLifetime, 
@@ -5131,20 +5180,14 @@ bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItem
 //	Increment the given property.
 
 	{
-	//	First see if our sub-classes handle this property
+	CDesignType *pType = GetType();
 
-	if (OnIncProperty(sProperty, pInc, pResult))
-		return true;
+	//	See if this is a custom property
 
-	//	See if this is a custom property, we set data
-
-	else if (CDesignType *pType = GetType())
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+	if (pType && pType->FindCustomProperty(sProperty, pDummy, &iType))
 		{
-		ICCItemPtr pDummy;
-		EPropertyType iType;
-		if (!pType->FindCustomProperty(sProperty, pDummy, &iType))
-			return false;
-
 		switch (iType)
 			{
 			case EPropertyType::propGlobal:
@@ -5161,10 +5204,34 @@ bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItem
 			}
 		}
 
-	//	Not handled
+	//	Otherwise, see if our sub-classes handle this property
+
+	else if (OnIncProperty(sProperty, pInc, pResult))
+		return true;
+
+	//	Lastly, see if we can increment this ourselves.
 
 	else
-		return false;
+		{
+		pResult = GetProperty(sProperty);
+		if (!pResult->IsNumber())
+			return false;
+
+		ICCItemPtr pDefaultInc(1);
+		if (pInc == NULL || pInc->IsNil())
+			pInc = pDefaultInc;
+
+		if (pResult->IsDouble() || pInc->IsDouble())
+			pResult = ICCItemPtr(pResult->GetDoubleValue() + pInc->GetDoubleValue());
+		else
+			pResult = ICCItemPtr(pResult->GetIntegerValue() + pInc->GetIntegerValue());
+
+		CString sError;
+		if (!SetProperty(sProperty, pResult, &sError))
+			pResult = ICCItemPtr::Error(sError);
+
+		return true;
+		}
 	}
 
 bool CSpaceObject::IsAngryAt (const CDamageSource &Obj) const
@@ -7398,25 +7465,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 		{
 		m_fHasDockScreenMaybe = (CanObjRequestDock(Ctx.pPlayer) == dockingOK);
 		}
-	}
-
-void CSpaceObject::UpdateDrag (SUpdateCtx &Ctx, Metric rDragFactor)
-
-//	UpdateDrag
-//
-//	Slow down the update based on drag factor.
-
-	{
-	if (GetVel().IsNull())
-		;
-
-	//	If we're moving really slowly, force to 0. We do this so that we can optimize calculations
-	//	and not have to compute wreck movement down to infinitesimal distances.
-
-	else if (GetVel().Length2() < g_MinSpeed2)
-		SetVel(NullVector);
-	else
-		SetVel(CVector(GetVel().GetX() * rDragFactor, GetVel().GetY() * rDragFactor));
 	}
 
 void CSpaceObject::UpdateEffects (void)

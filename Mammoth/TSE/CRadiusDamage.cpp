@@ -168,10 +168,11 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		//	Setup context
 
 		SDamageCtx DamageCtx(pObj,
-				m_pDesc,
+				*m_pDesc,
 				m_pEnhancements,
 				m_Source,
 				this,
+				0.0,
 				AngleMod(iAngle + 180),
 				vHitPos,
 				iDamage);

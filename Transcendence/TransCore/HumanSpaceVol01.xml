@@ -2026,6 +2026,7 @@
 	<!ENTITY msCMDestroyThreat			"0x001002B3">
 	<!ENTITY msCMEscortSuperFreighter	"0x001002B4">
 	<!ENTITY msCMstKatsDestroyThreat	"0x001002B5">
+	<!ENTITY rsCommonwealthMilitiaInsignia	"0x001002B6">
 
 	<!-- 02D0-02EF DWARG RAIDERS -->
 
@@ -2035,6 +2036,7 @@
 	<!ENTITY rsDwargBehemothHero		"0x001002D3">
 	<!ENTITY smDwargSpace				"0x001002D4">
 	<!ENTITY rsDwargMasterHero			"0x001002D5">
+	<!ENTITY rsZoanthropeRaiderHero		"0x001002D6">
 
 	<!-- 02F0-030F RINGERS -->
 
@@ -2063,6 +2065,7 @@
 	<!ENTITY rsZulu2Hero				"0x00100339">
 	<!ENTITY rsHammerheadHero			"0x0010033A">
 	<!ENTITY rsHammerhead2Hero			"0x0010033B">
+	<!ENTITY rsBorerHero				"0x0010033C">
 
 	<!-- 0370-038F AUTONS -->
 
@@ -2349,11 +2352,12 @@
 	<!ENTITY scWolfenC2					"0x00100701">
 	<!ENTITY scWolfenC3					"0x00100702">
 	<!ENTITY vtUniversityEnhancement	"0x00100703">
-
 	<!ENTITY stStKatsArcology			"0x00100704">
 	<!ENTITY stStKatsArcologySegment	"0x00100705">
 	<!ENTITY rsStKatsArcologySegments	"0x00100706">
 	<!ENTITY evStKatsTrafficBehavior	"0x00100707">
+	<!ENTITY scBorerStock				"0x00100708">
+	<!ENTITY scBorerIIStock				"0x00100709">
 
 	<!-- 0740-075F RASIERMESSER -->
 

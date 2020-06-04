@@ -68,6 +68,31 @@ class CImageArranger
 		int m_cyMaxHeight;
 	};
 
+class CInputKeyPainter
+	{
+	public:
+		int GetHeight (void) const { return m_cyHeight; }
+		int GetWidth (void) const { return m_cxWidth; }
+		void Init (const CString &sKey, int cyHeight, const CG16bitFont &Font, int cxWidth = -1);
+		void Paint (CG32bitImage &Dest, int x, int y);
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		void SetTextColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+
+	private:
+		static constexpr int DEFAULT_HEIGHT = 24;
+		static constexpr int HORZ_PADDING = 4;
+		static constexpr int BORDER_RADIUS = 4;
+		static constexpr int BORDER_WIDTH = 1;
+
+		CString m_sKey;						//	Key label
+		int m_cxWidth = 0;					//	Width of block
+		int m_cyHeight = 0;					//	Height of block
+		int m_cxKey = 0;					//	Width of key in current font
+		const CG16bitFont *m_pFont = NULL;	//	Font to use
+		CG32bitPixel m_rgbBackColor = CG32bitPixel(0, 0, 0);
+		CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
+	};
+
 class CPaintHelper
 	{
 	public:

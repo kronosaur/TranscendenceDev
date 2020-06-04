@@ -616,6 +616,7 @@ class CString : public CObject
 		CString (const CString &pString);
 		CString &operator= (const CString &pString);
 		operator LPSTR () const { return GetASCIIZPointer(); }
+		explicit operator bool () const { return !IsBlank(); }
 		bool operator== (const CString &sValue) const;
 		bool operator!= (const CString &sValue) const;
 

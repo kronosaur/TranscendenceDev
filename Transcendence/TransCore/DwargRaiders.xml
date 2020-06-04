@@ -345,6 +345,7 @@
 			defaultSovereign=	"&svDwargRaiders;"
 			inherit=			"&baZoanthropeBase;"
 
+			size=				"27"
 			mass=				"25"
 			cargoSpace=			"5"
 			thrustRatio=		"6.5"
@@ -355,11 +356,11 @@
 			explosionType=		"&vtKineticExplosion2;"
 			>
 
-		<Armor>
-			<ArmorSection start="270" span="180" armorID="&itDwargChitonArmor;" />
-			<ArmorSection start="90"  span="180" armorID="&itDwargChitonArmor;" />
-		</Armor>
-
+		<Armor
+			armorID=			"&itDwargChitonArmor;"
+			count=				"2"
+			/>
+		
 		<Devices>
 			<Device deviceID="&itDwargXiphonCannon;"/>
 		</Devices>
@@ -369,10 +370,11 @@
 			rotationAccel=		"2.0"
 			/>
 
-		<Image imageID="&rsZoanthropeRaiderHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsZoanthropeRaiderHD;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.00375"/>
+		<HeroImage imageID="&rsZoanthropeRaiderHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="4"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="2"	posZ="0"	rotation="180"/>
 		</Effects>
 
 		<AISettings
@@ -853,5 +855,6 @@
 	<Image UNID="&rsDwargMasterHero;"		bitmap="Resources\DwargMasterLarge.jpg"	bitmask="Resources\DwargMasterLargeMask.bmp" 	loadOnUse="true" />
 
 	<Image UNID="&rsZoanthropeRaiderHD;"	bitmap="Resources\ZoanthropeRaiderHD.jpg"	bitmask="Resources\ZoanthropeRaiderHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&rsZoanthropeRaiderHero;"	bitmap="Resources\ZoanthropeRaiderLarge.jpg"	bitmask="Resources\ZoanthropeRaiderLargeMask.bmp" 	loadOnUse="true" />
 
 </TranscendenceModule>

@@ -149,6 +149,7 @@ class CLocationList
 	{
 	public:
 		void FillCloseLocations (void);
+		void FillInRange (const CVector &vPos, Metric rExclusionRadius);
 		void FillOverlappingWith (CSpaceObject *pObj);
 		int GetCount (void) { return m_List.GetCount(); }
 		bool GetEmptyLocations (TArray<int> *retList);
@@ -495,10 +496,12 @@ class CSystem
 		CString GetAttribsAtPos (const CVector &vPos);
 		void GetDebugInfo (SDebugInfo &Info) const;
 		CEnvironmentGrid *GetEnvironmentGrid (void) { InitSpaceEnvironment(); return m_pEnvironment; }
+		CPhysicsForceResolver &GetForceResolver (void) { return m_ForceResolver; }
 		DWORD GetID (void) { return m_dwID; }
 		int GetLastUpdated (void) { return m_iLastUpdated; }
 		int GetLevel (void) const;
 		const CLocationList &GetLocations (void) const { return m_Locations; }
+		CLocationList &GetLocations (void) { return m_Locations; }
 		CSpaceObject *GetNamedObject (const CString &sName);
 		const CString &GetName (void) const { return m_sName; }
 		CNavigationPath *GetNavPath (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);
@@ -721,6 +724,7 @@ class CSystem
 		CSystemSpacePainter m_SpacePainter;		//	Paints space background
 		CMapGridPainter m_GridPainter;			//	Structure to paint a grid
 		CPhysicsContactResolver m_ContactResolver;	//	Resolves physics contacts
+		CPhysicsForceResolver m_ForceResolver;	//	Resolves physics forces
 		CGateTimerManager m_GateTimer;			//	Assign delay when ships exit a gate
 
 		//	Property table
