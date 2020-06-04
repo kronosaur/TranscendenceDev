@@ -91,13 +91,24 @@
 
 			<!-- Hints for player -->
 
-			<String id="hintEnableDevices">			(press [B] to enable/disable devices)</String>
+			<Text id="hintAutopilot">				Accelerate time</Text>
+			<Text id="hintCommunications">			Communicate</Text>
+			<Text id="hintDock">					Dock with stations and wrecks</Text>
+			<Text id="hintEnableDevices">			Enable/disable devices</Text>
+			<Text id="hintEnterGate">				Enter stargate to travel to next system</Text>
+			<Text id="hintFireMissile">				Fire missile</Text>
+			<Text id="hintNextMissile">				Switch missiles</Text>
+			<Text id="hintRefuel">					Access refueling screen</Text>
+			<Text id="hintShowGalacticMap">			See the stargate network</Text>
+			<Text id="hintShowMap">					See a map of the system</Text>
+			<Text id="hintThrust">					Thrust forward</Text>
+			<Text id="hintUseItem">					Use an item in your cargo hold</Text>
+
 			<Text id="hintMiningNeeded">			Use mining weapons to damage buried station</Text>
 			<Text id="hintMiningOreLevelTooHigh">	Use a higher level mining weapon to extract level %oreLevel% resources</Text>
 			<Text id="hintMiningOrWMDNeeded">		Use mining or WMD weapons to damage asteroid station</Text>
 			<Text id="hintWMDNeeded">				Use WMD weapons to damage reinforced station</Text>
 			<Text id="hintWMDForShipNeeded">		Use WMD weapons to damage large ships</Text>
-			<String id="hintRefuel">				(press [S] to access refueling screen)</String>
 
 			<!-- Miscellaneous text -->
 

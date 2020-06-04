@@ -118,8 +118,8 @@ class CMessageDisplay
 			{ }
 
 		void ClearAll (void);
-		void DisplayCommandHint (DWORD dwVirtKey, const CString &sMessage);
-		void DisplayMessage (CString sMessage);
+		void DisplayCommandHint (DWORD dwVirtKey, const CString &sMessage) { AddMessage(dwVirtKey, sMessage); }
+		void DisplayMessage (const CString &sMessage) { AddMessage(CVirtualKeyData::INVALID_VIRT_KEY, sMessage); }
 		void Init (const RECT &rcScreen);
 		void Paint (CG32bitImage &Dest);
 		void Update (void);
@@ -131,6 +131,7 @@ class CMessageDisplay
 
 		static constexpr int DISPLAY_WIDTH = 400;
 		static constexpr int DISPLAY_HEIGHT = 128;
+		static constexpr int INNER_PADDING_HORZ = 4;
 
 		static constexpr int MESSAGE_QUEUE_SIZE = 5;
 
@@ -154,16 +155,13 @@ class CMessageDisplay
 			mutable int x = -1;				//	Location of message (-1 = not yet computed)
 			};
 
+		void AddMessage (DWORD dwVirtKey, const CString &sMessage);
 		int Next (int iPos) { return ((iPos + 1) % MESSAGE_QUEUE_SIZE); }
 		void PaintMessage (CG32bitImage &Dest, const SMessage &Msg, int y, CG32bitPixel rgbColor) const;
 		int Prev (int iPos) { return ((iPos + MESSAGE_QUEUE_SIZE - 1) % MESSAGE_QUEUE_SIZE); }
 
 		CHumanInterface &m_HI;
 		RECT m_rcRect = { 0 };
-
-		int m_iBlinkTime = DEFAULT_BLINK_TIME;
-		int m_iSteadyTime = DEFAULT_STEADY_TIME;
-		int m_iFadeTime = DEFAULT_FADE_TIME;
 
 		int m_iFirstMessage = 0;
 		int m_iNextMessage = 0;

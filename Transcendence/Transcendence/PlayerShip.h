@@ -118,12 +118,12 @@ class CPlayerShipController : public IShipController
 		CPlayerShipController (CUniverse &Universe);
 		~CPlayerShipController (void);
 
-		void Cargo (void);
 		CurrencyValue Charge (DWORD dwEconUNID, CurrencyValue iCredits) { return m_Credits.IncCredits(dwEconUNID, -iCredits); }
 
 		bool CanShowShipStatus (void);
 		void Communications (CSpaceObject *pObj, MessageTypes iMsg, DWORD dwData = 0, DWORD *iodwFormationPlace = NULL);
 		void CycleTarget (int iDir = 1);
+		void DisplayCommandHint (CGameKeys::Keys iCmd, const CString &sMessage);
 		void DisplayMessage (const CString &sMessage);
 		void Dock (void);
 		bool DockingInProgress (void) { return m_pStation != NULL; }

@@ -2369,6 +2369,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	m_Universe.SetLogImageLoad(false);
 	CString sError;
 	error = pSession->GetDockScreen().InitScreen(m_Universe.GetDockSession(),
+			*GetPlayer(),
 			m_HI.GetHWND(),
 			g_pTrans->m_rcMainScreen,
 			pExtension,

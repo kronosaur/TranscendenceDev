@@ -346,6 +346,23 @@ void CPlayerShipController::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SV
 #endif
 	}
 
+void CPlayerShipController::DisplayCommandHint (CGameKeys::Keys iCmd, const CString &sMessage)
+
+//	DisplayCommandHint
+//
+//	Displays a hint.
+
+	{
+	if (!m_pSession)
+		return;
+
+	DWORD dwVirtKey = m_pTrans->GetSettings().GetKeyMap().GetKey(iCmd);
+	if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
+		return;
+
+	m_pSession->GetMessageDisplay().DisplayCommandHint(dwVirtKey, sMessage);
+	}
+
 void CPlayerShipController::DisplayMessage (const CString &sMessage)
 
 //	DisplayMessage
@@ -1195,7 +1212,7 @@ void CPlayerShipController::OnDeviceEnabledDisabled (int iDev, bool bEnable, boo
 		if (!bEnable)
 			{
 			if (m_UIMsgs.IsEnabled(uimsgEnableDeviceHint))
-				DisplayTranslate(CONSTLIT("hintEnableDevices"));
+				DisplayCommandHint(CGameKeys::keyEnableDevice, Translate(CONSTLIT("hintEnableDevices")));
 
 			if (!bSilent)
 				DisplayTranslate(CONSTLIT("msgDeviceDisabled"), CONSTLIT("itemName"), DeviceItem.GetNounPhrase(nounShort | nounNoModifiers));
@@ -1471,7 +1488,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			else if ((iSeq % 15) == 0)
 				{
 				if (m_UIMsgs.IsEnabled(uimsgRefuelHint))
-					DisplayTranslate(CONSTLIT("hintRefuel"));
+					DisplayCommandHint(CGameKeys::keyShipStatus, Translate(CONSTLIT("hintRefuel")));
 
 				DisplayTranslate(CONSTLIT("msgFuelLow"));
 				if ((iSeq % 30) == 0)
@@ -3146,9 +3163,9 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 	bool bEnemiesInRange = m_pShip->IsEnemyInRange(MAX_IN_COMBAT_RANGE, true);
 
-	//	If mouse aim is enabled and player has never thrusted, tell them about
-	//	right-mouse click.
+	//	Tell player about thrusting
 
+#if 0
 	if (m_UIMsgs.IsEnabled(uimsgMouseManeuverHint)
 			&& m_pSession->IsMouseAimEnabled())
 		{
@@ -3156,11 +3173,11 @@ void CPlayerShipController::UpdateHelp (int iTick)
 		m_iLastHelpTick = iTick;
 		return;
 		}
+#endif
 
-	if (m_UIMsgs.IsEnabled(uimsgKeyboardManeuverHint)
-			&& !m_pSession->IsMouseAimEnabled())
+	if (m_UIMsgs.IsEnabled(uimsgKeyboardManeuverHint))
 		{
-		DisplayMessage(CONSTLIT("(press [Up Arrow] to thrust forward)"));
+		DisplayCommandHint(CGameKeys::keyThrustForward, Translate(CONSTLIT("hintThrust")));
 		m_iLastHelpTick = iTick;
 		return;
 		}
@@ -3174,7 +3191,11 @@ void CPlayerShipController::UpdateHelp (int iTick)
 				&& !m_pSession->InSystemMap()
 				&& m_pAutoDock)
 			{
-			DisplayMessage(CONSTLIT("(press [D] to dock with stations and wrecks)"));
+			if (m_pTrans->GetSettings().GetKeyMap().IsKeyBound(CGameKeys::keyInteract))
+				DisplayCommandHint(CGameKeys::keyInteract, Translate(CONSTLIT("hintDock")));
+			else
+				DisplayCommandHint(CGameKeys::keyDock, Translate(CONSTLIT("hintDock")));
+
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3194,7 +3215,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 				&& bHasUsableItems
 				&& (m_iLastHelpUseTick == 0 || (iTick - m_iLastHelpUseTick) > 9000))
 			{
-			DisplayMessage(CONSTLIT("(press [U] to use items in your cargo hold)"));
+			DisplayCommandHint(CGameKeys::keyUseItem, Translate(CONSTLIT("hintUseItem")));
 			m_iLastHelpTick = iTick;
 			m_iLastHelpUseTick = iTick;
 			return;
@@ -3205,7 +3226,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 	if (m_UIMsgs.IsEnabled(uimsgMapHint) && !bEnemiesInRange)
 		{
-		DisplayMessage(CONSTLIT("(press [M] to see a map of the system)"));
+		DisplayCommandHint(CGameKeys::keyShowMap, Translate(CONSTLIT("hintShowMap")));
 		m_iLastHelpTick = iTick;
 		return;
 		}
@@ -3219,7 +3240,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 		if (rSpeed > 0.9 * m_pShip->GetMaxSpeed())
 			{
-			DisplayMessage(CONSTLIT("(press [A] to accelerate time)"));
+			DisplayCommandHint(CGameKeys::keyAutopilot, Translate(CONSTLIT("hintAutopilot")));
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3234,7 +3255,11 @@ void CPlayerShipController::UpdateHelp (int iTick)
 				&& !m_pSession->InSystemMap()
 				&& m_pShip->IsStargateInRange(CSystem::MAX_GATE_HELP_RANGE))
 			{
-			DisplayMessage(CONSTLIT("(press [G] over stargate to travel to next system)"));
+			if (m_pTrans->GetSettings().GetKeyMap().IsKeyBound(CGameKeys::keyInteract))
+				DisplayCommandHint(CGameKeys::keyInteract, Translate(CONSTLIT("hintEnterGate")));
+			else
+				DisplayCommandHint(CGameKeys::keyEnterGate, Translate(CONSTLIT("hintEnterGate")));
+
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3247,7 +3272,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 		if (!bEnemiesInRange
 				&& HasCommsTarget())
 			{
-			DisplayMessage(CONSTLIT("(press [C] to communicate)"));
+			DisplayCommandHint(CGameKeys::keyCommunications, Translate(CONSTLIT("hintCommunications")));
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3260,7 +3285,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 		if (!bEnemiesInRange &&
 				m_pShip->GetMissileCount() > 1)
 			{
-			DisplayMessage(CONSTLIT("(press [Tab] to switch missiles)"));
+			DisplayCommandHint(CGameKeys::keyNextMissile, Translate(CONSTLIT("hintNextMissile")));
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3274,7 +3299,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 				&& m_pShip->GetMissileCount() > 0 
 				&& (m_iLastHelpFireMissileTick == 0 || (iTick - m_iLastHelpFireMissileTick) > 9000))
 			{
-			DisplayMessage(CONSTLIT("(press [Shift] to fire missiles)"));
+			DisplayCommandHint(CGameKeys::keyFireMissile, Translate(CONSTLIT("hintFireMissile")));
 			m_iLastHelpTick = iTick;
 			m_iLastHelpFireMissileTick = iTick;
 			return;
@@ -3288,7 +3313,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 			&& !bEnemiesInRange
 			&& IsGalacticMapAvailable())
 		{
-		DisplayMessage(CONSTLIT("(press [N] to see the stargate network)"));
+		DisplayCommandHint(CGameKeys::keyShowGalacticMap, Translate(CONSTLIT("hintShowGalacticMap")));
 		m_iLastHelpTick = iTick;
 		return;
 		}

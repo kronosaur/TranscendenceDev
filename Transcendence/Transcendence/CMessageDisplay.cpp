@@ -21,9 +21,9 @@ void CMessageDisplay::ClearAll (void)
 	m_cySmoothScroll = 0;
 	}
 
-void CMessageDisplay::DisplayMessage (CString sMessage)
+void CMessageDisplay::AddMessage (DWORD dwVirtKey, const CString &sMessage)
 
-//	DisplayMessage
+//	AddMessage
 //
 //	Display a new message in the given color
 
@@ -63,31 +63,14 @@ void CMessageDisplay::DisplayMessage (CString sMessage)
 	//	Remember the message
 
 	m_Messages[m_iNextMessage].sMessage = sMessage;
+	m_Messages[m_iNextMessage].dwVirtKey = dwVirtKey;
 	m_Messages[m_iNextMessage].rgbColor = VI.GetColor(colorTextHighlight);
 	m_Messages[m_iNextMessage].x = -1;
 
 	//	Start at the appropriate state
 
-	if (m_iBlinkTime > 0)
-		{
-		m_Messages[m_iNextMessage].iState = stateBlinking;
-		m_Messages[m_iNextMessage].iTick = m_iBlinkTime;
-		}
-	else if (m_iSteadyTime > 0)
-		{
-		m_Messages[m_iNextMessage].iState = stateSteady;
-		m_Messages[m_iNextMessage].iTick = m_iSteadyTime;
-		}
-	else if (m_iFadeTime > 0)
-		{
-		m_Messages[m_iNextMessage].iState = stateFading;
-		m_Messages[m_iNextMessage].iTick = m_iFadeTime;
-		}
-	else
-		{
-		m_Messages[m_iNextMessage].iState = stateNormal;
-		m_Messages[m_iNextMessage].iTick = 0;
-		}
+	m_Messages[m_iNextMessage].iState = stateBlinking;
+	m_Messages[m_iNextMessage].iTick = DEFAULT_BLINK_TIME;
 
 	//	Point to next message
 
@@ -156,7 +139,7 @@ void CMessageDisplay::Paint (CG32bitImage &Dest)
 
 				case stateFading:
 					{
-					int iFade = (iAge + AGE_FADE_OFFSET) * 1000 * m_Messages[iMsg].iTick / (m_iFadeTime * AGE_FADE_TOTAL);
+					int iFade = (iAge + AGE_FADE_OFFSET) * 1000 * m_Messages[iMsg].iTick / (DEFAULT_FADE_TIME * AGE_FADE_TOTAL);
 					rgbColor = CG32bitPixel(
 							iFade * m_Messages[iMsg].rgbColor.GetRed() / 1000,
 							iFade * m_Messages[iMsg].rgbColor.GetGreen() / 1000,
@@ -200,6 +183,24 @@ void CMessageDisplay::PaintMessage (CG32bitImage &Dest, const SMessage &Msg, int
 	if (Msg.dwVirtKey != CVirtualKeyData::INVALID_VIRT_KEY)
 		{
 		CInputKeyPainter KeyPainter;
+		KeyPainter.Init(Msg.dwVirtKey, Font.GetHeight(), Font, VI.GetFont(fontLarge));
+		KeyPainter.SetBackColor(Msg.rgbColor);
+		KeyPainter.SetTextColor(VI.GetColor(colorAreaDeep));
+
+		if (Msg.x == -1)
+			{
+			int cxWidth = KeyPainter.GetWidth() + INNER_PADDING_HORZ + Font.MeasureText(Msg.sMessage, NULL);
+			Msg.x = m_rcRect.left + (RectWidth(m_rcRect) - cxWidth) / 2;
+			}
+
+		//	Paint
+
+		KeyPainter.Paint(Dest, Msg.x, y + m_cySmoothScroll);
+		Dest.DrawText(Msg.x + KeyPainter.GetWidth() + INNER_PADDING_HORZ,
+				y + m_cySmoothScroll, 
+				Font, 
+				rgbColor, 
+				Msg.sMessage);
 		}
 
 	//	Otherwise, basic message.
@@ -244,23 +245,13 @@ void CMessageDisplay::Update (void)
 				switch (m_Messages[iMsg].iState)
 					{
 					case stateBlinking:
-						if (m_iSteadyTime > 0)
-							{
-							m_Messages[iMsg].iState = stateSteady;
-							m_Messages[iMsg].iTick = m_iSteadyTime;
-							}
-						else
-							m_Messages[iMsg].iState = stateClear;
+						m_Messages[iMsg].iState = stateSteady;
+						m_Messages[iMsg].iTick = DEFAULT_STEADY_TIME;
 						break;
 
 					case stateSteady:
-						if (m_iFadeTime > 0)
-							{
-							m_Messages[iMsg].iState = stateFading;
-							m_Messages[iMsg].iTick = m_iFadeTime;
-							}
-						else
-							m_Messages[iMsg].iState = stateClear;
+						m_Messages[iMsg].iState = stateFading;
+						m_Messages[iMsg].iTick = DEFAULT_FADE_TIME;
 						break;
 
 					case stateFading:

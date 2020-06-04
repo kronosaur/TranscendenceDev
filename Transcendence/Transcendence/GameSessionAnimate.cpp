@@ -36,6 +36,8 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
             case CTranscendenceWnd::gsInGame:
 			case CTranscendenceWnd::gsDestroyed:
 				{
+				CPlayerShipController *pPlayer = m_Model.GetPlayer();
+
 				DWORD dwStartTimer;
 				if (m_Settings.GetBoolean(CGameSettings::debugVideo))
 					dwStartTimer = ::GetTickCount();
@@ -48,7 +50,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				SetProgramState(psPaintingLRS);
 
-				bool bShowMapHUD = (g_pTrans->GetPlayer() && g_pTrans->GetPlayer()->IsMapHUDActive());
+				bool bShowMapHUD = (pPlayer && pPlayer->IsMapHUDActive());
 				if (!m_bShowingSystemMap || bShowMapHUD)
 					{
                     m_HUD.Update(g_pUniverse->GetFrameTicks());
@@ -102,7 +104,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
                 //  Paint the mouse cursor, if necessary
 
-                if (g_pTrans->GetPlayer() 
+                if (pPlayer 
 						&& !InMenu()
 						&& IsMouseAimEnabled())
                     {
@@ -125,7 +127,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
                     else
                         iMouseAimAngle = -1;
 
-                    g_pTrans->GetPlayer()->SetMouseAimAngle(iMouseAimAngle);
+                    pPlayer->SetMouseAimAngle(iMouseAimAngle);
                     }
 
 				//	Figure out how long it took to paint
@@ -186,11 +188,13 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				if (iUpdateMode != CUniverse::updatePaused)
 					{
-					if (g_pTrans->GetPlayer())
-						g_pTrans->GetPlayer()->Update(g_pUniverse->GetFrameTicks());
+					if (pPlayer)
+						{
+						pPlayer->Update(g_pUniverse->GetFrameTicks());
 
-					if (g_pTrans->GetPlayer() && g_pTrans->GetPlayer()->GetSelectedTarget())
-						m_HUD.Invalidate(hudTargeting);
+						if (pPlayer->GetSelectedTarget())
+							m_HUD.Invalidate(hudTargeting);
+						}
 					}
 
 				m_MessageDisplay.Update();
@@ -260,7 +264,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Never let message redirection last beyond a frame. We do 
 				//	this in case a mod forgets to reset it.
 
-				if (auto pPlayer = g_pTrans->GetPlayer())
+				if (auto pPlayer = m_Model.GetPlayer())
 					pPlayer->RedirectDisplayMessage(false);
 
 				//	Note: We need to invalidate the whole screen because we're
@@ -459,11 +463,11 @@ void CGameSession::PaintSRS (CG32bitImage &Screen)
 	bool bBlind = false;
 	bool bShowMapHUD = false;
 	CShip *pShip = NULL;
-	if (g_pTrans->GetPlayer())
+	if (auto pPlayer = m_Model.GetPlayer())
 		{
-		pShip = g_pTrans->GetPlayer()->GetShip();
+		pShip = pPlayer->GetShip();
 		bBlind = pShip->IsBlind();
-		bShowMapHUD = g_pTrans->GetPlayer()->IsMapHUDActive();
+		bShowMapHUD = pPlayer->IsMapHUDActive();
 
 		if (pShip->IsSRSEnhanced())
 			dwViewportFlags |= CSystem::VWP_ENHANCED_DISPLAY;

@@ -321,6 +321,178 @@ void CGDraw::RoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyH
 		}
 	}
 
+void CGDraw::RoundedRectBottom (CG8bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, BYTE Value)
+
+//	RoundedRectBottom
+//
+//	Draws a rounded rect
+
+	{
+	if (iRadius <= 0)
+		{
+		Dest.Fill(x, y, cxWidth, cyHeight, Value);
+		return;
+		}
+
+	//	Generate a set of raster lines for the corner
+
+	int *pSolid = new int [iRadius];
+	BYTE *pEdge = new BYTE [iRadius];
+	RasterizeQuarterCircle8bit(iRadius, pSolid, pEdge, 255);
+
+	//	Fill in each corner
+
+	for (int i = 0; i < iRadius; i++)
+		{
+		int xOffset = iRadius - pSolid[i];
+		int cxLine = cxWidth - (iRadius * 2) + (pSolid[i] * 2);
+
+		//	Bottom edge
+
+		Dest.FillLine(x + xOffset, y + cyHeight - i - 1, cxLine, Value);
+		Dest.SetPixelTrans(x + xOffset - 1, y + cyHeight - i - 1, Value, pEdge[i]);
+		Dest.SetPixelTrans(x + cxWidth - xOffset, y + cyHeight - i - 1, Value, pEdge[i]);
+		}
+
+	//	Fill the center
+
+	Dest.Fill(x, y, cxWidth, (cyHeight - iRadius), Value);
+
+	//	Done
+
+	delete [] pSolid;
+	delete [] pEdge;
+	}
+
+void CGDraw::RoundedRectBottom (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor)
+
+//	RoundedRectBottom
+//
+//	Draws a rounded rect
+
+	{
+	if (iRadius <= 0)
+		{
+		Dest.Fill(x, y, cxWidth, cyHeight, rgbColor);
+		return;
+		}
+
+	//	Generate a set of raster lines for the corner
+
+	int *pSolid = new int [iRadius];
+	BYTE *pEdge = new BYTE [iRadius];
+	RasterizeQuarterCircle8bit(iRadius, pSolid, pEdge, 255);
+
+	//	Fill in each corner
+
+	for (int i = 0; i < iRadius; i++)
+		{
+		int xOffset = iRadius - pSolid[i];
+		int cxLine = cxWidth - (iRadius * 2) + (pSolid[i] * 2);
+
+		//	Bottom edge
+
+		Dest.FillLine(x + xOffset, y + cyHeight - i - 1, cxLine, rgbColor);
+		Dest.SetPixelTrans(x + xOffset - 1, y + cyHeight - i - 1, rgbColor, pEdge[i]);
+		Dest.SetPixelTrans(x + cxWidth - xOffset, y + cyHeight - i - 1, rgbColor, pEdge[i]);
+		}
+
+	//	Fill the center
+
+	Dest.Fill(x, y, cxWidth, (cyHeight - iRadius), rgbColor);
+
+	//	Done
+
+	delete [] pSolid;
+	delete [] pEdge;
+	}
+
+void CGDraw::RoundedRectTop (CG8bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, BYTE Value)
+
+//	RoundedRectTop
+//
+//	Draws a rounded rect
+
+	{
+	if (iRadius <= 0)
+		{
+		Dest.Fill(x, y, cxWidth, cyHeight, Value);
+		return;
+		}
+
+	//	Generate a set of raster lines for the corner
+
+	int *pSolid = new int [iRadius];
+	BYTE *pEdge = new BYTE [iRadius];
+	RasterizeQuarterCircle8bit(iRadius, pSolid, pEdge, 255);
+
+	//	Fill in each corner
+
+	for (int i = 0; i < iRadius; i++)
+		{
+		int xOffset = iRadius - pSolid[i];
+		int cxLine = cxWidth - (iRadius * 2) + (pSolid[i] * 2);
+
+		//	Top edge
+
+		Dest.FillLine(x + xOffset, y + i, cxLine, Value);
+		Dest.SetPixelTrans(x + xOffset - 1, y + i, Value, pEdge[i]);
+		Dest.SetPixelTrans(x + cxWidth - xOffset, y + i, Value, pEdge[i]);
+		}
+
+	//	Fill the center
+
+	Dest.Fill(x, y + iRadius, cxWidth, (cyHeight - iRadius), Value);
+
+	//	Done
+
+	delete [] pSolid;
+	delete [] pEdge;
+	}
+
+void CGDraw::RoundedRectTop (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor)
+
+//	RoundedRectTop
+//
+//	Draws a rounded rect
+
+	{
+	if (iRadius <= 0)
+		{
+		Dest.Fill(x, y, cxWidth, cyHeight, rgbColor);
+		return;
+		}
+
+	//	Generate a set of raster lines for the corner
+
+	int *pSolid = new int [iRadius];
+	BYTE *pEdge = new BYTE [iRadius];
+	RasterizeQuarterCircle8bit(iRadius, pSolid, pEdge, 255);
+
+	//	Fill in each corner
+
+	for (int i = 0; i < iRadius; i++)
+		{
+		int xOffset = iRadius - pSolid[i];
+		int cxLine = cxWidth - (iRadius * 2) + (pSolid[i] * 2);
+
+		//	Top edge
+
+		Dest.FillLine(x + xOffset, y + i, cxLine, rgbColor);
+		Dest.SetPixelTrans(x + xOffset - 1, y + i, rgbColor, pEdge[i]);
+		Dest.SetPixelTrans(x + cxWidth - xOffset, y + i, rgbColor, pEdge[i]);
+		}
+
+	//	Fill the center
+
+	Dest.Fill(x, y + iRadius, cxWidth, (cyHeight - iRadius), rgbColor);
+
+	//	Done
+
+	delete [] pSolid;
+	delete [] pEdge;
+	}
+
 void CGDraw::RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, int iLineWidth, CG32bitPixel rgbColor)
 
 //	RoundedRectOutline

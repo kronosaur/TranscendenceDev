@@ -94,6 +94,7 @@ struct SFontTable
 
 #include "CGAreas.h"
 #include "DockScreen.h"
+#include "GameSettings.h"
 #include "PlayerShip.h"
 
 //	Intro
@@ -609,7 +610,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		inline CHighScoreList *GetHighScoreListOld (void);
 		inline CTranscendenceModel &GetModel (void);
 		void GetMousePos (POINT *retpt);
-		inline CPlayerShipController *GetPlayer (void);
 		CReanimator &GetReanimator (void) { return m_Reanimator; }
 		inline CGameSettings &GetSettings (void);
 		const CUIResources &GetUIRes (void) { return m_UIRes; }
@@ -673,6 +673,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void CreateShipDescAnimation (CShip *pShip, IAnimatron **retpAnimatron);
 		void CreateTitleAnimation (IAnimatron **retpAnimatron);
 		DWORD GetIntroShipClass (void) { return m_dwIntroShipClass; }
+		inline CPlayerShipController *GetPlayer (void);
 		void DestroyAllIntroShips(void);
 		void DestroyPOVIntroShips (void);
 		void DisplayMessage (CString sMessage);
@@ -835,8 +836,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 	friend class CTranscendenceController;
 	friend class CTranscendenceModel;
 	};
-
-#include "GameSettings.h"
 
 //	Transcendence data model class --------------------------------------------
 
