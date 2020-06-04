@@ -94,7 +94,7 @@ void OpenGLMasterRenderQueue::deinitCanvasVAO(void)
 	delete[] m_pCanvasVAO;
 }
 
-void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX,
+void OpenGLMasterRenderQueue::addTextureToRenderQueue(int startPixelX, int startPixelY, int sizePixelX,
  int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, OpenGLTexture *image, int texWidth, int texHeight, 
 	int texQuadWidth, int texQuadHeight, int numFramesPerRow, int numFramesPerCol, int spriteSheetStartX, int spriteSheetStartY, float alphaStrength,
 	float glowR, float glowG, float glowB, float glowA, float glowNoise)
@@ -109,7 +109,7 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 	// Initialize a glowmap tile request here, and save it in the MRQ. We consume this when we generate textures, to render glowmaps.
 	image->requestGlowmapTile(vSpriteSheetPositions[0], vSpriteSheetPositions[1], float(numFramesPerRow * vTextureQuadSizes[0]), float(numFramesPerCol * vTextureQuadSizes[1]), vTextureQuadSizes[0], vTextureQuadSizes[1]);
 
-	m_pActiveRenderLayer->addShipToRenderQueue(vTexPositions, vSpriteSheetPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, glowColor, alphaStrength,
+	m_pActiveRenderLayer->addTextureToRenderQueue(vTexPositions, vSpriteSheetPositions, vCanvasQuadSizes, vCanvasPositions, vTextureQuadSizes, glowColor, alphaStrength,
 		glowNoise, numFramesPerRow, numFramesPerCol, image, m_fDepthLevel);
 	m_fDepthLevel -= m_fDepthDelta;
 	}
