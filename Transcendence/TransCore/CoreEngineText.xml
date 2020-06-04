@@ -97,6 +97,7 @@
 			<Text id="hintEnableDevices">			Enable/disable devices</Text>
 			<Text id="hintEnterGate">				Enter stargate to travel to next system</Text>
 			<Text id="hintFireMissile">				Fire missile</Text>
+			<Text id="hintFireWeapon">				Fire weapon</Text>
 			<Text id="hintNextMissile">				Switch missiles</Text>
 			<Text id="hintRefuel">					Access refueling screen</Text>
 			<Text id="hintShowGalacticMap">			See the stargate network</Text>

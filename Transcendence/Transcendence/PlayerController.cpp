@@ -11,7 +11,7 @@
 #define CMD_PLAYER_COMBAT_ENDED					CONSTLIT("playerCombatEnded")
 #define CMD_PLAYER_COMBAT_STARTED				CONSTLIT("playerCombatStarted")
 
-const Metric MAX_IN_COMBAT_RANGE =				LIGHT_SECOND * 30.0;
+const Metric MAX_IN_COMBAT_RANGE =				LIGHT_SECOND * 50.0;
 const int UPDATE_HELP_TIME =					31;
 const Metric MAX_AUTO_TARGET_DISTANCE =			LIGHT_SECOND * 30.0;
 const Metric MAX_DOCK_DISTANCE =				KLICKS_PER_PIXEL * 256.0;
@@ -474,7 +474,7 @@ void CPlayerShipController::Dock (void)
 	SetManeuver(NoRotation);
 	SetThrust(false);
 
-	SetUIMessageEnabled(uimsgDockHint, false);
+	SetUIMessageFollowed(uimsgDockHint);
 	}
 
 void CPlayerShipController::EnableAllDevices (bool bEnable)
@@ -1211,7 +1211,7 @@ void CPlayerShipController::OnDeviceEnabledDisabled (int iDev, bool bEnable, boo
 		{
 		if (!bEnable)
 			{
-			if (m_UIMsgs.IsEnabled(uimsgEnableDeviceHint))
+			if (m_UIMsgs.ShowMessage(m_Universe, uimsgEnableDeviceHint))
 				DisplayCommandHint(CGameKeys::keyEnableDevice, Translate(CONSTLIT("hintEnableDevices")));
 
 			if (!bSilent)
@@ -1324,7 +1324,7 @@ void CPlayerShipController::OnEnterGate (CTopologyNode *pDestNode, const CString
 
 	//	Reset help
 
-	SetUIMessageEnabled(uimsgGateHint, false);
+	SetUIMessageFollowed(uimsgGateHint);
 
 	//	Let the model handle everything
 
@@ -1487,7 +1487,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 
 			else if ((iSeq % 15) == 0)
 				{
-				if (m_UIMsgs.IsEnabled(uimsgRefuelHint))
+				if (m_UIMsgs.ShowMessage(m_Universe, uimsgRefuelHint))
 					DisplayCommandHint(CGameKeys::keyShipStatus, Translate(CONSTLIT("hintRefuel")));
 
 				DisplayTranslate(CONSTLIT("msgFuelLow"));
@@ -2451,8 +2451,6 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	m_bUnderAttack =			((dwLoad & 0x00000001) ? true : false);
 	m_bMapHUD =					((dwLoad & 0x00001000) ? true : false);
 	m_iLastHelpTick = 0;
-	m_iLastHelpUseTick = 0;
-	m_iLastHelpFireMissileTick = 0;
 
 	//	Message controller
 
@@ -3165,21 +3163,31 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 	//	Tell player about thrusting
 
-#if 0
-	if (m_UIMsgs.IsEnabled(uimsgMouseManeuverHint)
-			&& m_pSession->IsMouseAimEnabled())
-		{
-		DisplayMessage(CONSTLIT("(click [Right-Button] to thrust forward)"));
-		m_iLastHelpTick = iTick;
-		return;
-		}
-#endif
-
-	if (m_UIMsgs.IsEnabled(uimsgKeyboardManeuverHint))
+	if (m_UIMsgs.ShowMessage(m_Universe, uimsgKeyboardManeuverHint))
 		{
 		DisplayCommandHint(CGameKeys::keyThrustForward, Translate(CONSTLIT("hintThrust")));
 		m_iLastHelpTick = iTick;
 		return;
+		}
+
+	//	If we've never entered a gate, and there is a gate nearby
+	//	and we're not in the middle of anything, then tell the player.
+
+	if (m_UIMsgs.IsEnabled(uimsgGateHint))
+		{
+		if (!bEnemiesInRange
+				&& !m_pSession->InSystemMap()
+				&& m_pShip->IsStargateInRange(CSystem::MAX_GATE_HELP_RANGE)
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgGateHint))
+			{
+			if (m_pTrans->GetSettings().GetKeyMap().IsKeyBound(CGameKeys::keyInteract))
+				DisplayCommandHint(CGameKeys::keyInteract, Translate(CONSTLIT("hintEnterGate")));
+			else
+				DisplayCommandHint(CGameKeys::keyEnterGate, Translate(CONSTLIT("hintEnterGate")));
+
+			m_iLastHelpTick = iTick;
+			return;
+			}
 		}
 
 	//	If we've never docked and we're near a dockable station, then tell
@@ -3189,7 +3197,10 @@ void CPlayerShipController::UpdateHelp (int iTick)
 		{
 		if (!bEnemiesInRange
 				&& !m_pSession->InSystemMap()
-				&& m_pAutoDock)
+				&& m_pAutoDock
+				&& !m_pStation
+				&& !m_pShip->IsStargateInRange(CSystem::MAX_GATE_HELP_RANGE)
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgDockHint))
 			{
 			if (m_pTrans->GetSettings().GetKeyMap().IsKeyBound(CGameKeys::keyInteract))
 				DisplayCommandHint(CGameKeys::keyInteract, Translate(CONSTLIT("hintDock")));
@@ -3213,53 +3224,40 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 		if (!m_pSession->InSystemMap()
 				&& bHasUsableItems
-				&& (m_iLastHelpUseTick == 0 || (iTick - m_iLastHelpUseTick) > 9000))
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgUseItemHint))
 			{
 			DisplayCommandHint(CGameKeys::keyUseItem, Translate(CONSTLIT("hintUseItem")));
 			m_iLastHelpTick = iTick;
-			m_iLastHelpUseTick = iTick;
 			return;
 			}
 		}
 
 	//	If we've never used the map, and then tell the player about the map
 
-	if (m_UIMsgs.IsEnabled(uimsgMapHint) && !bEnemiesInRange)
+	if (m_UIMsgs.IsEnabled(uimsgMapHint))
 		{
-		DisplayCommandHint(CGameKeys::keyShowMap, Translate(CONSTLIT("hintShowMap")));
-		m_iLastHelpTick = iTick;
-		return;
-		}
-
-	//	If we've never used autopilot, and we're not in the middle of
-	//	anything, then tell the player about autopilot
-
-	if (m_UIMsgs.IsEnabled(uimsgAutopilotHint) && !bEnemiesInRange && m_pShip->HasAutopilot())
-		{
-		Metric rSpeed = m_pShip->GetVel().Length();
-
-		if (rSpeed > 0.9 * m_pShip->GetMaxSpeed())
+		if (!bEnemiesInRange
+				&& !m_pSession->InSystemMap()
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgMapHint))
 			{
-			DisplayCommandHint(CGameKeys::keyAutopilot, Translate(CONSTLIT("hintAutopilot")));
+			DisplayCommandHint(CGameKeys::keyShowMap, Translate(CONSTLIT("hintShowMap")));
 			m_iLastHelpTick = iTick;
 			return;
 			}
 		}
 
-	//	If we've never entered a gate, and there is a gate nearby
-	//	and we're not in the middle of anything, then tell the player.
+	//	If we've never used autopilot, and we're not in the middle of
+	//	anything, then tell the player about autopilot
 
-	if (m_UIMsgs.IsEnabled(uimsgGateHint))
+	if (m_UIMsgs.IsEnabled(uimsgAutopilotHint))
 		{
-		if (!bEnemiesInRange
-				&& !m_pSession->InSystemMap()
-				&& m_pShip->IsStargateInRange(CSystem::MAX_GATE_HELP_RANGE))
+		if (!bEnemiesInRange 
+				&& m_pShip->HasAutopilot()
+				&& m_pShip->GetVel().Length() > 0.9 * m_pShip->GetMaxSpeed()
+				&& !g_pTrans->InAutopilot()
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgAutopilotHint))
 			{
-			if (m_pTrans->GetSettings().GetKeyMap().IsKeyBound(CGameKeys::keyInteract))
-				DisplayCommandHint(CGameKeys::keyInteract, Translate(CONSTLIT("hintEnterGate")));
-			else
-				DisplayCommandHint(CGameKeys::keyEnterGate, Translate(CONSTLIT("hintEnterGate")));
-
+			DisplayCommandHint(CGameKeys::keyAutopilot, Translate(CONSTLIT("hintAutopilot")));
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3270,7 +3268,8 @@ void CPlayerShipController::UpdateHelp (int iTick)
 	if (m_UIMsgs.IsEnabled(uimsgCommsHint))
 		{
 		if (!bEnemiesInRange
-				&& HasCommsTarget())
+				&& HasCommsTarget()
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgCommsHint))
 			{
 			DisplayCommandHint(CGameKeys::keyCommunications, Translate(CONSTLIT("hintCommunications")));
 			m_iLastHelpTick = iTick;
@@ -3282,10 +3281,24 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 	if (m_UIMsgs.IsEnabled(uimsgSwitchMissileHint))
 		{
-		if (!bEnemiesInRange &&
-				m_pShip->GetMissileCount() > 1)
+		if (!bEnemiesInRange
+				&& m_pShip->GetMissileCount() > 1
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgSwitchMissileHint))
 			{
 			DisplayCommandHint(CGameKeys::keyNextMissile, Translate(CONSTLIT("hintNextMissile")));
+			m_iLastHelpTick = iTick;
+			return;
+			}
+		}
+
+	//	If we've never fired a weapon and we're under attack, tell the player.
+
+	if (m_UIMsgs.IsEnabled(uimsgFireWeaponHint))
+		{
+		if (bEnemiesInRange
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgFireWeaponHint))
+			{
+			DisplayCommandHint(CGameKeys::keyFireWeapon, Translate(CONSTLIT("hintFireWeapon")));
 			m_iLastHelpTick = iTick;
 			return;
 			}
@@ -3297,25 +3310,27 @@ void CPlayerShipController::UpdateHelp (int iTick)
 		{
 		if (bEnemiesInRange
 				&& m_pShip->GetMissileCount() > 0 
-				&& (m_iLastHelpFireMissileTick == 0 || (iTick - m_iLastHelpFireMissileTick) > 9000))
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgFireMissileHint))
 			{
 			DisplayCommandHint(CGameKeys::keyFireMissile, Translate(CONSTLIT("hintFireMissile")));
 			m_iLastHelpTick = iTick;
-			m_iLastHelpFireMissileTick = iTick;
 			return;
 			}
 		}
 
 	//	If we've never used the galactic map, and then tell the player about the map
 
-	if (m_UIMsgs.IsEnabled(uimsgGalacticMapHint) 
-			&& !m_UIMsgs.IsEnabled(uimsgGateHint)
-			&& !bEnemiesInRange
-			&& IsGalacticMapAvailable())
+	if (m_UIMsgs.IsEnabled(uimsgGalacticMapHint))
 		{
-		DisplayCommandHint(CGameKeys::keyShowGalacticMap, Translate(CONSTLIT("hintShowGalacticMap")));
-		m_iLastHelpTick = iTick;
-		return;
+		if (!bEnemiesInRange
+				&& IsGalacticMapAvailable()
+				&& m_Stats.HasVisitedMultipleSystems()
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgGalacticMapHint))
+			{
+			DisplayCommandHint(CGameKeys::keyShowGalacticMap, Translate(CONSTLIT("hintShowGalacticMap")));
+			m_iLastHelpTick = iTick;
+			return;
+			}
 		}
 	}
 

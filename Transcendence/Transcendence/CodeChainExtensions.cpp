@@ -1186,7 +1186,7 @@ ICCItem *fnPlyGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		case FN_PLY_SHOW_HELP_REFUEL:
-			pPlayer->SetUIMessageEnabled(uimsgRefuelHint, false);
+			pPlayer->SetUIMessageFollowed(uimsgRefuelHint);
 			pResult = pCC->CreateTrue();
 			break;
 

@@ -938,7 +938,7 @@ bool CTranscendenceWnd::ShowUsePicker (void)
 
 	//	Otherwise, show picker
 
-	GetPlayer()->SetUIMessageEnabled(uimsgUseItemHint, false);
+	GetPlayer()->SetUIMessageFollowed(uimsgUseItemHint);
 	m_PickerDisplay.ResetSelection();
 	m_PickerDisplay.SetHelpText(CONSTLIT("[Enter] to use; [Arrows] to select"));
 	m_PickerDisplay.Invalidate();

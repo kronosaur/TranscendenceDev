@@ -548,7 +548,7 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuCommsTarget:
-			pPlayer->SetUIMessageEnabled(uimsgCommsHint, false);
+			pPlayer->SetUIMessageFollowed(uimsgCommsHint);
 			if (!g_pTrans->ShowCommsTargetMenu())
 				return false;
 			break;

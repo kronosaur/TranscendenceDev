@@ -35,8 +35,9 @@ enum UIMessageTypes
 	uimsgKeyboardManeuverHint =		14,
 	uimsgStationDamageHint =		15,
 	uimsgMiningDamageTypeHint =		16,
+	uimsgFireWeaponHint =			17,
 
-	uimsgCount =					17,
+	uimsgCount =					18,
 	};
 
 class CUIMessageController
@@ -47,17 +48,17 @@ class CUIMessageController
 		bool CanShow (CUniverse &Universe, UIMessageTypes iMsg, const CSpaceObject *pMsgObj = NULL) const;
 		UIMessageTypes Find (const CString &sMessageName) const;
 		bool IsEnabled (UIMessageTypes iMsg) const { return m_Messages[iMsg].bEnabled; }
+		void OnHintFollowed (UIMessageTypes iMsg, DWORD dwTick = 0);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetEnabled (UIMessageTypes iMsg, bool bEnabled = true);
 		bool ShowMessage (CUniverse &Universe, UIMessageTypes iMsg, const CSpaceObject *pMsgObj = NULL);
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
-		static constexpr DWORD OBJ_MSG_INTERVAL = 240;
-
 		struct SMsgEntry
 			{
 			bool bEnabled = true;				//	Hint is enabled
+			int iHintFollowedCount = 0;			//	How many times the player has followed this hint
 			DWORD dwLastShown = 0;				//	Frame Tick on which we last showed
 												//		this hint.
 			DWORD dwLastObjID = 0;				//	Last obj that we showed hint for.
@@ -185,6 +186,7 @@ class CPlayerShipController : public IShipController
 		void SetShip (CShip *pShip) { m_pShip = pShip; }
 		void SetStopThrust (bool bStop) { m_bStopThrust = bStop; }
 		void SetUIMessageEnabled (UIMessageTypes iMsg, bool bEnabled = true) { m_UIMsgs.SetEnabled(iMsg, bEnabled); }
+		void SetUIMessageFollowed (UIMessageTypes iMsg) { m_UIMsgs.OnHintFollowed(iMsg, m_Universe.GetFrameTicks()); }
 		ALERROR SwitchShips (CShip *pNewShip, SPlayerChangedShipsCtx &Options);
 		void Undock (void);
 		void Update (int iTick);
@@ -305,8 +307,6 @@ class CPlayerShipController : public IShipController
 		DWORD m_dwWreckObjID = OBJID_NULL;			//	WreckObjID (temp while we resurrect)
 
 		int m_iLastHelpTick = 0;
-		int m_iLastHelpUseTick = 0;
-		int m_iLastHelpFireMissileTick = 0;
 
 		CManeuverController m_ManeuverController;
 		EManeuverTypes m_iManeuver = NoRotation;
