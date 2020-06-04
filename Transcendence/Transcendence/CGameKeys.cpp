@@ -37,7 +37,7 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 		{	"Autopilot",            "Accelerate Time",				SGameKeyData::FLAG_NO_REPEAT },
 		{	"EnableDevices",        "Enable/Disable Devices",       SGameKeyData::FLAG_NO_REPEAT },
 		{	"Communications",       "Communications",               SGameKeyData::FLAG_NO_REPEAT },
-		{	"Dock",                 "Request Dock",                 SGameKeyData::FLAG_NO_REPEAT },
+		{	"Dock",                 "Dock",			                SGameKeyData::FLAG_NO_REPEAT },
 		{	"TargetNextFriendly",   "Target Next Friendly",         0 },
 		{	"EnterGate",            "Enter Stargate",               SGameKeyData::FLAG_NO_REPEAT },
 		{	"InvokePower",          "Invoke Power",                 SGameKeyData::FLAG_NO_REPEAT },
@@ -119,7 +119,7 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 		{	"PreviousMissile",          "Select Previous Missile",      SGameKeyData::FLAG_NO_REPEAT | SGameKeyData::FLAG_HIDDEN	},
 		{	"ShowGalacticMap",          "Stargate Map",                 SGameKeyData::FLAG_NO_REPEAT },
 		{	"AimShip",					"Aim Ship",						SGameKeyData::FLAG_XY_INPUT },
-		{	"Interact",					"Interact with Object",			SGameKeyData::FLAG_NO_REPEAT },
+		{	"Interact",					"Dock or Enter Stargate",		SGameKeyData::FLAG_NO_REPEAT },
 		{	"CycleTarget",				"Cycle Target",					SGameKeyData::FLAG_NO_REPEAT },
 	};
 
@@ -175,7 +175,7 @@ CString CGameKeys::GetCommandID (Keys iCommand)
 	return CString(g_GameKeyData[iCommand].pszName, -1, true);
 	}
 
-void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result) const
+void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result, bool bIncludeDebug) const
 
 //  GetCommands
 //
@@ -193,6 +193,11 @@ void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result) const
 
 		if (Data.pszName == NULL
 				|| (Data.dwFlags & SGameKeyData::FLAG_HIDDEN))
+			continue;
+
+		//	If debug only, skip unless desired.
+
+		if (!bIncludeDebug && (Data.dwFlags & SGameKeyData::FLAG_DEBUG_ONLY))
 			continue;
 
 		//  Add the command

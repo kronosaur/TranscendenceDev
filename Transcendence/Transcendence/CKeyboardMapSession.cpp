@@ -420,7 +420,7 @@ void CKeyboardMapSession::InitBindings (void)
 	//	they should match when we initialized.
 
 	TArray<CGameKeys::SCommandKeyDesc> Commands;
-	m_Settings.GetKeyMap().GetCommands(Commands);
+	m_Settings.GetKeyMap().GetCommands(Commands, m_Settings.GetBoolean(CGameSettings::debugMode));
 	ASSERT(Commands.GetCount() == m_Commands.GetCount());
 
 	for (int i = 0; i < Commands.GetCount(); i++)
@@ -481,7 +481,7 @@ void CKeyboardMapSession::InitCommands (void)
 	//  Load commands
 
 	TArray<CGameKeys::SCommandKeyDesc> Commands;
-	m_Settings.GetKeyMap().GetCommands(Commands);
+	m_Settings.GetKeyMap().GetCommands(Commands, m_Settings.GetBoolean(CGameSettings::debugMode));
 
 	m_Commands.DeleteAll();
 	m_Commands.GrowToFit(Commands.GetCount());

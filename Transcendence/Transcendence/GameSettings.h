@@ -134,7 +134,7 @@ class CGameKeys
 
 		CGameKeys (void);
 
-		void GetCommands (TArray<SCommandKeyDesc> &Result) const;
+		void GetCommands (TArray<SCommandKeyDesc> &Result, bool bIncludeDebug) const;
 		Keys GetGameCommand (DWORD dwVirtKey) const { InitKeyMap(); return m_KeyToCommandMap[(dwVirtKey < 256 ? dwVirtKey : 0)]; }
 		Keys GetGameCommandFromChar (char chChar) const;
 		char GetKeyIfChar (Keys iCommand) const;
