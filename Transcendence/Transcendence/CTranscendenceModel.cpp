@@ -677,7 +677,7 @@ ALERROR CTranscendenceModel::EndGameDestroyed (bool *retbResurrected)
 			CString sError;
 			if (m_pResurrectType->FireOnGlobalResurrect(&sError) != NOERROR)
 				{
-				g_pTrans->DisplayMessage(sError);
+				m_Universe.DebugOutput(sError);
 				kernelDebugLogString(sError);
 				}
 			}
@@ -1673,7 +1673,7 @@ void CTranscendenceModel::OnPlayerDocked (CSpaceObject *pObj)
 	if (pSession == NULL)
 		return;
 			
-	g_pTrans->ClearMessage();
+	pSession->GetMessageDisplay().ClearAll();
 
 	//	See if the object wants to redirect us. In that case, m_pStation
 	//	will remain the original object, but gSource and m_pLocation in the
@@ -1688,7 +1688,7 @@ void CTranscendenceModel::OnPlayerDocked (CSpaceObject *pObj)
 		{
 		m_pPlayer->Undock();
 
-		g_pTrans->DisplayMessage(sError);
+		m_pPlayer->DisplayMessage(sError);
 		::kernelDebugLogString(sError);
 		return;
 		}
@@ -1777,7 +1777,7 @@ void CTranscendenceModel::OnPlayerExitedGate (void)
 
 	//	Welcome message
 
-	g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Welcome to the %s system!"), pNewSystem->GetName()));
+	m_pPlayer->DisplayMessage(strPatternSubst(CONSTLIT("Welcome to the %s system!"), pNewSystem->GetName()));
 
 	//	Update our stats, etc.
 
@@ -1870,7 +1870,7 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 				{
 				sError = strPatternSubst(CONSTLIT("%s [%s (%x)]"), sError, m_pDestNode->GetSystemName(), dwSystemID);
 
-				g_pTrans->DisplayMessage(sError);
+				m_pPlayer->DisplayMessage(sError);
 				kernelDebugLogString(sError);
 				throw CException(ERR_FAIL, sError);
 				}
@@ -2369,6 +2369,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	m_Universe.SetLogImageLoad(false);
 	CString sError;
 	error = pSession->GetDockScreen().InitScreen(m_Universe.GetDockSession(),
+			*GetPlayer(),
 			m_HI.GetHWND(),
 			g_pTrans->m_rcMainScreen,
 			pExtension,
@@ -2423,7 +2424,7 @@ void CTranscendenceModel::ShowShipScreen (void)
 	CString sError;
 	if (!ShowShipScreen(NULL, pRoot, sScreen, NULL_STR, NULL, &sError))
 		{
-		g_pTrans->DisplayMessage(sError);
+		m_pPlayer->DisplayMessage(sError);
 		::kernelDebugLogString(sError);
 		return;
 		}

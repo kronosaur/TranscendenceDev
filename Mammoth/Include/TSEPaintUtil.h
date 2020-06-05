@@ -73,8 +73,9 @@ class CInputKeyPainter
 	public:
 		int GetHeight (void) const { return m_cyHeight; }
 		int GetWidth (void) const { return m_cxWidth; }
+		void Init (DWORD dwVirtKey, int cyHeight, const CG16bitFont &LargeFont, const CG16bitFont &SmallFont);
 		void Init (const CString &sKey, int cyHeight, const CG16bitFont &Font, int cxWidth = -1);
-		void Paint (CG32bitImage &Dest, int x, int y);
+		void Paint (CG32bitImage &Dest, int x, int y) const;
 		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
 		void SetTextColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 
@@ -84,6 +85,27 @@ class CInputKeyPainter
 		static constexpr int BORDER_RADIUS = 4;
 		static constexpr int BORDER_WIDTH = 1;
 
+		enum EKeyTypes
+			{
+			keyLabel,
+
+			keyArrowDown,
+			keyArrowLeft,
+			keyArrowRight,
+			keyArrowUp,
+			keyMouseMove,
+
+			keyLeftMouseButton,
+			keyRightMouseButton,
+			keyScrollWheel,
+			};
+
+		void PaintArrowSymbol (CG32bitImage &Dest, int x, int y) const;
+		void PaintBackground (CG32bitImage &Dest, int x, int y) const;
+		void PaintLabel (CG32bitImage &Dest, int x, int y) const;
+		void PaintMouse (CG32bitImage &Dest, int x, int y) const;
+
+		EKeyTypes m_iType = keyLabel;
 		CString m_sKey;						//	Key label
 		int m_cxWidth = 0;					//	Width of block
 		int m_cyHeight = 0;					//	Height of block

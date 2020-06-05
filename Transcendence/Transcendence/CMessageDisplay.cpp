@@ -9,21 +9,6 @@
 #define AGE_FADE_OFFSET								4
 #define AGE_FADE_TOTAL								(MAX_AGE_FADE + AGE_FADE_OFFSET)
 
-CMessageDisplay::CMessageDisplay (void) :
-		m_pFont(NULL),
-		m_iBlinkTime(0),
-		m_iSteadyTime(0),
-		m_iFadeTime(0),
-		m_iFirstMessage(0),
-		m_iNextMessage(0),
-		m_cySmoothScroll(0)
-
-//	CMessageDisplay constructor
-
-	{
-	ZeroMemory(&m_rcRect, sizeof(m_rcRect));
-	}
-
 void CMessageDisplay::ClearAll (void)
 
 //	ClearAll
@@ -36,13 +21,16 @@ void CMessageDisplay::ClearAll (void)
 	m_cySmoothScroll = 0;
 	}
 
-void CMessageDisplay::DisplayMessage (CString sMessage, CG32bitPixel rgbColor)
+void CMessageDisplay::AddMessage (DWORD dwVirtKey, const CString &sMessage)
 
-//	DisplayMessage
+//	AddMessage
 //
 //	Display a new message in the given color
 
 	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+	const CG16bitFont &Font = VI.GetFont(fontHeader);
+
 	//	Don't accept duplicate messages
 
 	if (m_iNextMessage != m_iFirstMessage)
@@ -60,53 +48,47 @@ void CMessageDisplay::DisplayMessage (CString sMessage, CG32bitPixel rgbColor)
 
 	//	If there are already messages here, then smooth scroll
 
-	if (m_pFont)
+	int iCount = 0;
+	int iMsg = Prev(m_iNextMessage);
+	while (Next(iMsg) != m_iFirstMessage)
 		{
-		int iCount = 0;
-		int iMsg = Prev(m_iNextMessage);
-		while (Next(iMsg) != m_iFirstMessage)
-			{
-			if (m_Messages[iMsg].iState != stateClear)
-				iCount++;
-			iMsg = Prev(iMsg);
-			}
-
-		if (iCount > 0)
-			m_cySmoothScroll = -m_pFont->GetHeight();
+		if (m_Messages[iMsg].iState != stateClear)
+			iCount++;
+		iMsg = Prev(iMsg);
 		}
+
+	if (iCount > 0)
+		m_cySmoothScroll = -Font.GetHeight();
 
 	//	Remember the message
 
 	m_Messages[m_iNextMessage].sMessage = sMessage;
-	m_Messages[m_iNextMessage].rgbColor = rgbColor;
+	m_Messages[m_iNextMessage].dwVirtKey = dwVirtKey;
+	m_Messages[m_iNextMessage].rgbColor = VI.GetColor(colorTextHighlight);
 	m_Messages[m_iNextMessage].x = -1;
 
 	//	Start at the appropriate state
 
-	if (m_iBlinkTime > 0)
-		{
-		m_Messages[m_iNextMessage].iState = stateBlinking;
-		m_Messages[m_iNextMessage].iTick = m_iBlinkTime;
-		}
-	else if (m_iSteadyTime > 0)
-		{
-		m_Messages[m_iNextMessage].iState = stateSteady;
-		m_Messages[m_iNextMessage].iTick = m_iSteadyTime;
-		}
-	else if (m_iFadeTime > 0)
-		{
-		m_Messages[m_iNextMessage].iState = stateFading;
-		m_Messages[m_iNextMessage].iTick = m_iFadeTime;
-		}
-	else
-		{
-		m_Messages[m_iNextMessage].iState = stateNormal;
-		m_Messages[m_iNextMessage].iTick = 0;
-		}
+	m_Messages[m_iNextMessage].iState = stateBlinking;
+	m_Messages[m_iNextMessage].iTick = DEFAULT_BLINK_TIME;
 
 	//	Point to next message
 
 	m_iNextMessage = Next(m_iNextMessage);
+	}
+
+void CMessageDisplay::Init (const RECT &rcScreen)
+
+//	Init
+//
+//	Initialize. NOTE: It is OK to display a message before Init is called. This
+//	initialization is only to compute display metrics.
+
+	{
+	m_rcRect.left = rcScreen.left + (RectWidth(rcScreen) - DISPLAY_WIDTH) / 2;
+	m_rcRect.right = m_rcRect.left + DISPLAY_WIDTH;
+	m_rcRect.top = rcScreen.bottom - (RectHeight(rcScreen) / 3);
+	m_rcRect.bottom = m_rcRect.top + DISPLAY_HEIGHT;
 	}
 
 void CMessageDisplay::Paint (CG32bitImage &Dest)
@@ -116,10 +98,8 @@ void CMessageDisplay::Paint (CG32bitImage &Dest)
 //	Paint the message
 
 	{
-	//	Can't do anything without a fond
-
-	if (m_pFont == NULL)
-		return;
+	const CVisualPalette &VI = m_HI.GetVisuals();
+	const CG16bitFont &Font = VI.GetFont(fontHeader);
 
 	bool bSkip = false;
 	if (m_cySmoothScroll != 0)
@@ -159,7 +139,7 @@ void CMessageDisplay::Paint (CG32bitImage &Dest)
 
 				case stateFading:
 					{
-					int iFade = (iAge + AGE_FADE_OFFSET) * 1000 * m_Messages[iMsg].iTick / (m_iFadeTime * AGE_FADE_TOTAL);
+					int iFade = (iAge + AGE_FADE_OFFSET) * 1000 * m_Messages[iMsg].iTick / (DEFAULT_FADE_TIME * AGE_FADE_TOTAL);
 					rgbColor = CG32bitPixel(
 							iFade * m_Messages[iMsg].rgbColor.GetRed() / 1000,
 							iFade * m_Messages[iMsg].rgbColor.GetGreen() / 1000,
@@ -168,27 +148,14 @@ void CMessageDisplay::Paint (CG32bitImage &Dest)
 					}
 				}
 
-			//	If we haven't yet figured out the position of the message
-			//	calculate it now
-
-			if (m_Messages[iMsg].x == -1)
-				{
-				int cxWidth = m_pFont->MeasureText(m_Messages[iMsg].sMessage, NULL);
-				m_Messages[iMsg].x = m_rcRect.left + (RectWidth(m_rcRect) - cxWidth) / 2;
-				}
-
-			y += m_pFont->GetHeight();
+			y += Font.GetHeight();
 			iAge = Max(0, iAge - 1);
 
 			//	Draw the message centered
 
 			if (!bSkip)
 				{
-				Dest.DrawText(m_Messages[iMsg].x,
-						y + m_cySmoothScroll, 
-						*m_pFont, 
-						rgbColor, 
-						m_Messages[iMsg].sMessage);
+				PaintMessage(Dest, m_Messages[iMsg], y + m_cySmoothScroll, rgbColor);
 
 				if (m_cySmoothScroll != 0)
 					m_cySmoothScroll = Min(0, m_cySmoothScroll + 4);
@@ -198,6 +165,64 @@ void CMessageDisplay::Paint (CG32bitImage &Dest)
 			}
 
 		iMsg = Prev(iMsg);
+		}
+	}
+
+void CMessageDisplay::PaintMessage (CG32bitImage &Dest, const SMessage &Msg, int y, CG32bitPixel rgbColor) const
+
+//	PaintMessage
+//
+//	Paints a single message line.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+	const CG16bitFont &Font = VI.GetFont(fontHeader);
+
+	//	If we have a key to paint, we go through a different path
+
+	if (Msg.dwVirtKey != CVirtualKeyData::INVALID_VIRT_KEY)
+		{
+		CInputKeyPainter KeyPainter;
+		KeyPainter.Init(Msg.dwVirtKey, Font.GetHeight(), Font, VI.GetFont(fontLarge));
+		KeyPainter.SetBackColor(Msg.rgbColor);
+		KeyPainter.SetTextColor(VI.GetColor(colorAreaDeep));
+
+		if (Msg.x == -1)
+			{
+			int cxWidth = KeyPainter.GetWidth() + INNER_PADDING_HORZ + Font.MeasureText(Msg.sMessage, NULL);
+			Msg.x = m_rcRect.left + (RectWidth(m_rcRect) - cxWidth) / 2;
+			}
+
+		//	Paint
+
+		KeyPainter.Paint(Dest, Msg.x, y + m_cySmoothScroll);
+		Dest.DrawText(Msg.x + KeyPainter.GetWidth() + INNER_PADDING_HORZ,
+				y + m_cySmoothScroll, 
+				Font, 
+				rgbColor, 
+				Msg.sMessage);
+		}
+
+	//	Otherwise, basic message.
+
+	else
+		{
+		//	If we haven't yet figured out the position of the message
+		//	calculate it now
+
+		if (Msg.x == -1)
+			{
+			int cxWidth = Font.MeasureText(Msg.sMessage, NULL);
+			Msg.x = m_rcRect.left + (RectWidth(m_rcRect) - cxWidth) / 2;
+			}
+
+		//	Paint
+
+		Dest.DrawText(Msg.x,
+				y + m_cySmoothScroll, 
+				Font, 
+				rgbColor, 
+				Msg.sMessage);
 		}
 	}
 
@@ -220,23 +245,13 @@ void CMessageDisplay::Update (void)
 				switch (m_Messages[iMsg].iState)
 					{
 					case stateBlinking:
-						if (m_iSteadyTime > 0)
-							{
-							m_Messages[iMsg].iState = stateSteady;
-							m_Messages[iMsg].iTick = m_iSteadyTime;
-							}
-						else
-							m_Messages[iMsg].iState = stateClear;
+						m_Messages[iMsg].iState = stateSteady;
+						m_Messages[iMsg].iTick = DEFAULT_STEADY_TIME;
 						break;
 
 					case stateSteady:
-						if (m_iFadeTime > 0)
-							{
-							m_Messages[iMsg].iState = stateFading;
-							m_Messages[iMsg].iTick = m_iFadeTime;
-							}
-						else
-							m_Messages[iMsg].iState = stateClear;
+						m_Messages[iMsg].iState = stateFading;
+						m_Messages[iMsg].iTick = DEFAULT_FADE_TIME;
 						break;
 
 					case stateFading:

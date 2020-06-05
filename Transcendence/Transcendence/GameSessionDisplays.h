@@ -110,6 +110,66 @@ class CMenuDisplay
 		mutable bool m_bInvalid = true;
 	};
 
+class CMessageDisplay
+	{
+	public:
+		CMessageDisplay (CHumanInterface &HI) :
+				m_HI(HI)
+			{ }
+
+		void ClearAll (void);
+		void DisplayCommandHint (DWORD dwVirtKey, const CString &sMessage) { AddMessage(dwVirtKey, sMessage); }
+		void DisplayMessage (const CString &sMessage) { AddMessage(CVirtualKeyData::INVALID_VIRT_KEY, sMessage); }
+		void Init (const RECT &rcScreen);
+		void Paint (CG32bitImage &Dest);
+		void Update (void);
+
+	private:
+		static constexpr int DEFAULT_BLINK_TIME = 15;
+		static constexpr int DEFAULT_STEADY_TIME = 150;
+		static constexpr int DEFAULT_FADE_TIME = 30;
+
+		static constexpr int DISPLAY_WIDTH = 400;
+		static constexpr int DISPLAY_HEIGHT = 128;
+		static constexpr int INNER_PADDING_HORZ = 4;
+
+		static constexpr int MESSAGE_QUEUE_SIZE = 5;
+
+		enum State
+			{
+			stateClear,						//	Blank (stays permanently)
+			stateNormal,					//	Normal (stays permanently)
+			stateBlinking,					//	Blinking (for m_iBlinkTime)
+			stateSteady,					//	Normal (for m_iSteadyTime)
+			stateFading						//	Fade to black (for m_iFadeTime)
+			};
+
+		struct SMessage
+			{
+			CString sMessage;				//	Message to paint
+			DWORD dwVirtKey = CVirtualKeyData::INVALID_VIRT_KEY;	//	UI key hint (optional)
+			State iState = stateNormal;		//	current state (blinking, etc)
+			int iTick = 0;					//	Tick count for this message
+			CG32bitPixel rgbColor;			//	Color to paint
+
+			mutable int x = -1;				//	Location of message (-1 = not yet computed)
+			};
+
+		void AddMessage (DWORD dwVirtKey, const CString &sMessage);
+		int Next (int iPos) { return ((iPos + 1) % MESSAGE_QUEUE_SIZE); }
+		void PaintMessage (CG32bitImage &Dest, const SMessage &Msg, int y, CG32bitPixel rgbColor) const;
+		int Prev (int iPos) { return ((iPos + MESSAGE_QUEUE_SIZE - 1) % MESSAGE_QUEUE_SIZE); }
+
+		CHumanInterface &m_HI;
+		RECT m_rcRect = { 0 };
+
+		int m_iFirstMessage = 0;
+		int m_iNextMessage = 0;
+		SMessage m_Messages[MESSAGE_QUEUE_SIZE];
+
+		int m_cySmoothScroll = 0;
+	};
+
 enum class ENarrativeDisplayStyle
 	{
 	none,

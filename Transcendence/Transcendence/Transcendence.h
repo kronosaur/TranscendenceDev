@@ -94,6 +94,7 @@ struct SFontTable
 
 #include "CGAreas.h"
 #include "DockScreen.h"
+#include "GameSettings.h"
 #include "PlayerShip.h"
 
 //	Intro
@@ -114,63 +115,6 @@ struct SAdventureSettings
 	{
 	CExtension *pAdventure;						//	Adventure to create
 	TArray<CExtension *> Extensions;			//	List of extensions
-	};
-
-class CMessageDisplay
-	{
-	public:
-		CMessageDisplay (void);
-
-		void ClearAll (void);
-		void DisplayMessage (CString sMessage, CG32bitPixel rgbColor);
-		void Paint (CG32bitImage &Dest);
-		void Update (void);
-
-		void SetBlinkTime (int iTime) { m_iBlinkTime = iTime; }
-		void SetFadeTime (int iTime) { m_iFadeTime = iTime; }
-		void SetFont (CG16bitFont *pFont) { m_pFont = pFont; }
-		void SetRect (RECT &rcRect) { m_rcRect = rcRect; }
-		void SetSteadyTime (int iTime) { m_iSteadyTime = iTime; }
-
-	private:
-		enum Constants
-			{
-			MESSAGE_QUEUE_SIZE = 5,
-			};
-
-		enum State
-			{
-			stateClear,						//	Blank (stays permanently)
-			stateNormal,					//	Normal (stays permanently)
-			stateBlinking,					//	Blinking (for m_iBlinkTime)
-			stateSteady,					//	Normal (for m_iSteadyTime)
-			stateFading						//	Fade to black (for m_iFadeTime)
-			};
-
-		struct SMessage
-			{
-			CString sMessage;				//	Message to paint
-			int x;							//	Location of message
-			State iState;					//	current state (blinking, etc)
-			int iTick;						//	Tick count for this message
-			CG32bitPixel rgbColor;					//	Color to paint
-			};
-
-		int Next (int iPos) { return ((iPos + 1) % MESSAGE_QUEUE_SIZE); }
-		int Prev (int iPos) { return ((iPos + MESSAGE_QUEUE_SIZE - 1) % MESSAGE_QUEUE_SIZE); }
-
-		RECT m_rcRect;
-
-		CG16bitFont *m_pFont;				//	Font to use (not owned)
-		int m_iBlinkTime;
-		int m_iSteadyTime;
-		int m_iFadeTime;
-
-		int m_iFirstMessage;
-		int m_iNextMessage;
-		SMessage m_Messages[MESSAGE_QUEUE_SIZE];
-
-		int m_cySmoothScroll;
 	};
 
 #define MAX_SCORES			100
@@ -658,9 +602,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 
 		void Autopilot (bool bTurnOn);
 		void CleanUpPlayerShip (void);
-		inline void ClearMessage (void);
 		void DebugConsoleOutput (const CString &sOutput);
-		void DisplayMessage (CString sMessage);
 		void DoCommand (DWORD dwCmd);
 		const CString &GetCrashInfo (void) { return m_sCrashInfo; }
 		inline bool GetDebugGame (void);
@@ -668,9 +610,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		inline CHighScoreList *GetHighScoreListOld (void);
 		inline CTranscendenceModel &GetModel (void);
 		void GetMousePos (POINT *retpt);
-		inline CPlayerShipController *GetPlayer (void);
 		CReanimator &GetReanimator (void) { return m_Reanimator; }
-		const CString &GetRedirectMessage (void) { return m_sRedirectMessage; }
 		inline CGameSettings &GetSettings (void);
 		const CUIResources &GetUIRes (void) { return m_UIRes; }
 		bool InAutopilot (void) { return m_bAutopilot; }
@@ -682,7 +622,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void PlayerEnteredGate (CSystem *pSystem, 
 								CTopologyNode *pDestNode,
 								const CString &sDestEntryPoint);
-		void RedirectDisplayMessage (bool bRedirect = true);
 		void UpdateDeviceCounterDisplay (void) { m_DeviceDisplay.Invalidate(); }
 
 		//	CUniverse::IHost
@@ -734,8 +673,10 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void CreateShipDescAnimation (CShip *pShip, IAnimatron **retpAnimatron);
 		void CreateTitleAnimation (IAnimatron **retpAnimatron);
 		DWORD GetIntroShipClass (void) { return m_dwIntroShipClass; }
+		inline CPlayerShipController *GetPlayer (void);
 		void DestroyAllIntroShips(void);
 		void DestroyPOVIntroShips (void);
+		void DisplayMessage (CString sMessage);
 		void OnAccountChanged (const CMultiverseModel &Multiverse);
 		void OnCommandIntro (const CString &sCmd, void *pData);
 		void OnDblClickIntro (int x, int y, DWORD dwFlags);
@@ -816,8 +757,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 
 		int m_iCountdown;					//	Miscellaneous timer
 		CSpaceObject *m_pMenuObj;			//	Object during menu selection
-		bool m_bRedirectDisplayMessage;		//	Redirect display msg to dock screen
-		CString m_sRedirectMessage;			//	Redirected message
 
 		//	Loading screen
 		CString m_sBackgroundError;
@@ -869,7 +808,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		CG32bitImage *m_pSRSSnow;			//	SRS snow image
 
 		CDeviceCounterDisplay m_DeviceDisplay;	//	Device counter display
-		CMessageDisplay m_MessageDisplay;	//	Message display object
 		CMenuDisplayOld m_MenuDisplay;			//	Menu display
 		CPickerDisplay m_PickerDisplay;		//	Picker display
 
@@ -898,8 +836,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 	friend class CTranscendenceController;
 	friend class CTranscendenceModel;
 	};
-
-#include "GameSettings.h"
 
 //	Transcendence data model class --------------------------------------------
 
@@ -1206,11 +1142,6 @@ const int GAME_STAT_POSITION_END = -6;
 void SelectGameStat (IAnimatron *pAni, int iStatPos, int cxWidth, int iDuration = durationInfinite);
 
 //	Inlines
-
-inline void CTranscendenceWnd::ClearMessage (void)
-	{
-	m_MessageDisplay.ClearAll();
-	}
 
 inline bool CTranscendenceWnd::GetDebugGame (void) 
 	{
