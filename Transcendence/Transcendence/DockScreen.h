@@ -459,6 +459,7 @@ class CDockScreen : public IScreenController,
 		void HandleKeyDown (int iVirtKey);
 		bool InExecuteAction (void) const { return m_CurrentPane.InExecuteAction(); }
 		ALERROR InitScreen (CDockSession &DockSession,
+							CPlayerShipController &Player,
 							HWND hWnd, 
 							RECT &rcRect, 
 							CExtension *pExtension,

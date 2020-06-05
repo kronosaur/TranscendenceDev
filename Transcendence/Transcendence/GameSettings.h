@@ -15,9 +15,10 @@ class CGameKeys
 			layoutNone =                -1,
 
 			layoutDefault =             0,  //  Default layout
-			layoutCustom =              1,  //  Configured by player
+			layoutWASD =				1,  //  WASD
+			layoutCustom =              2,  //  Configured by player
 
-			layoutCount =               2,
+			layoutCount =               3,
 			};
 
 		enum Keys
@@ -109,13 +110,11 @@ class CGameKeys
 			keyPrevWeapon =				79,
 			keyPrevMissile =			80,
 			keyShowGalacticMap =		81,
+			keyAimShip =				82,
+			keyInteract =				83,
+			keyCycleTarget =			84,
 
-			keyCount =					82,
-			};
-
-		enum ESpecialVirtKeys
-			{
-			VK_NUMPAD_ENTER =			0xE0,
+			keyCount =					85,
 			};
 
 		struct SBindingDesc
@@ -135,18 +134,18 @@ class CGameKeys
 
 		CGameKeys (void);
 
-		void GetCommands (TArray<SCommandKeyDesc> &Result) const;
-		Keys GetGameCommand (DWORD dwVirtKey) const { return m_iMap[(dwVirtKey < 256 ? dwVirtKey : 0)]; }
+		void GetCommands (TArray<SCommandKeyDesc> &Result, bool bIncludeDebug) const;
+		Keys GetGameCommand (DWORD dwVirtKey) const { InitKeyMap(); return m_KeyToCommandMap[(dwVirtKey < 256 ? dwVirtKey : 0)]; }
 		Keys GetGameCommandFromChar (char chChar) const;
 		char GetKeyIfChar (Keys iCommand) const;
 		DWORD GetKey (Keys iCommand) const;
 		ELayouts GetLayout (void) const { return m_iLayout; }
-		CString GetLayoutName (ELayouts iLayout) const;
-		bool IsKeyMapped (int iVirtKey, Keys iCommand) const;
+		bool IsKeyBound (Keys iCommand) const { return GetKey(iCommand) != CVirtualKeyData::INVALID_VIRT_KEY; }
 		bool IsKeyDown (Keys iCommand) const;
 		bool IsModified (void) const { return m_bModified; }
-		bool IsNonRepeatCommand (Keys iCommand) const;
-		bool IsStatefulCommand (Keys iCommand) const;
+		static bool IsNonRepeatCommand (Keys iCommand);
+		static bool IsStatefulCommand (Keys iCommand);
+		static bool IsXYInputCommand (Keys iCommand);
 		ALERROR ReadFromXML (CXMLElement *pDesc);
 		void SetGameKey (const CString &sKeyID, Keys iCommand);
 		void SetLayout (ELayouts iLayout);
@@ -154,6 +153,7 @@ class CGameKeys
 
 		static CString GetCommandID (Keys iCommand);
 		static CGameKeys::Keys GetGameCommand (const CString &sCmd);
+		static CString GetLayoutName (ELayouts iLayout);
 
 	private:
 		struct SKeyMapEntry
@@ -162,19 +162,31 @@ class CGameKeys
 			CGameKeys::Keys iGameKey;
 			};
 
+		void ClearKey (TArray<DWORD> Map[], DWORD dwVirtKey);
+		void ClearKeyMap (TArray<DWORD> Map[]);
+		int GetKeyMappedToCommandCount (Keys iCommand) const { return m_CommandMap[iCommand].GetCount(); }
+		DWORD GetKeyMappedToCommand (Keys iCommand, int iKeyIndex) const { return m_CommandMap[iCommand].GetAt(iKeyIndex); }
+		void InitKeyMap (void) const;
 		void SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount);
 
 		static CString GetLayoutID (ELayouts iLayout);
 		static ELayouts GetLayoutFromID (const CString &sLayoutID);
 
-		ELayouts m_iLayout;                 //  Current layout to use
-		Keys m_iMap[256];                   //  Current mappings
+		ELayouts m_iLayout = layoutNone;			//  Current layout to use
+		TArray<DWORD> m_CommandMap[keyCount];		//	Current map from command to ordered array of virtual keys for that command
 
-		Keys m_CustomMap[256];
-		bool m_bModified;                   //  TRUE if modified since we loaded
+		TArray<DWORD> m_SavedCommandMap[keyCount];	//	Last defined custom map (to switch between default and custom)
+
+		bool m_bModified = false;					//  TRUE if modified since we loaded
+
+		mutable Keys m_KeyToCommandMap[256];		//	Map from virtual key to command
+		mutable bool m_bKeyMapValid = false;		//	TRUE if m_KeyToCommandMap is valid
 
 		static const SKeyMapEntry DEFAULT_MAP[];
 		static const int DEFAULT_MAP_COUNT;
+
+		static const SKeyMapEntry WASD_MAP[];
+		static const int WASD_MAP_COUNT;
 	};
 
 //	Game settings class -------------------------------------------------------

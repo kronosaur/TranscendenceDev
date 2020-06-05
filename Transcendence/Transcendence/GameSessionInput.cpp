@@ -9,6 +9,18 @@
 #define CMD_CONFIRM							110
 #define CMD_CANCEL							111
 
+bool CGameSession::IsMouseAimConfigured (void) const
+
+//	IsMouseAimConfigured
+//
+//	Returns TRUE if key mappings are configured to aim using mouse.
+
+	{
+	return (m_iUI == uiPilot
+			&& !m_Settings.GetBoolean(CGameSettings::noMouseAim)
+			&& m_Settings.GetKeyMap().GetKey(CGameKeys::keyAimShip) == CVirtualKeyData::VK_MOUSE_MOVE);
+	}
+
 void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 
 //  OnChar
@@ -159,7 +171,7 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 
 						case menuEnableDevice:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
-							pPlayer->SetUIMessageEnabled(uimsgEnableDeviceHint, false);
+							pPlayer->SetUIMessageFollowed(uimsgEnableDeviceHint);
 							g_pTrans->DoEnableDisableItemCommand(dwData);
 							DismissMenu();
 							break;
@@ -315,7 +327,7 @@ void CGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 
 						case menuEnableDevice:
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
-							pPlayer->SetUIMessageEnabled(uimsgEnableDeviceHint, false);
+							pPlayer->SetUIMessageFollowed(uimsgEnableDeviceHint);
 							g_pTrans->DoEnableDisableItemCommand(g_pTrans->m_MenuData.GetItemData(g_pTrans->m_PickerDisplay.GetSelection()));
 							DismissMenu();
 							break;
@@ -583,7 +595,7 @@ void CGameSession::OnLButtonDblClick (int x, int y, DWORD dwFlags)
 						if (g_pTrans->m_PickerDisplay.LButtonDown(x, y))
 							{
 							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
-							pPlayer->SetUIMessageEnabled(uimsgEnableDeviceHint, false);
+							pPlayer->SetUIMessageFollowed(uimsgEnableDeviceHint);
 							g_pTrans->DoEnableDisableItemCommand(g_pTrans->m_MenuData.GetItemData(g_pTrans->m_PickerDisplay.GetSelection()));
 							DismissMenu();
 
@@ -664,12 +676,6 @@ void CGameSession::OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture
 					}
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	If paused, then we're done
 
 			else if (g_pTrans->m_bPaused)
@@ -721,12 +727,6 @@ void CGameSession::OnLButtonUp (int x, int y, DWORD dwFlags)
 				m_bIgnoreButtonUp = false;
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	Command.
 
 			else
@@ -765,12 +765,6 @@ void CGameSession::OnMButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture
 				{
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	If paused, then we're done
 
 			else if (g_pTrans->m_bPaused)
@@ -806,12 +800,6 @@ void CGameSession::OnMButtonUp (int x, int y, DWORD dwFlags)
 			//	Ignore if in a menu
 
 			if (InMenu())
-				{
-				}
-
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
 				{
 				}
 
@@ -867,7 +855,10 @@ void CGameSession::OnMouseMove (int x, int y, DWORD dwFlags)
 			//	Otherwise, enable mouse aim
 
 			else if (g_pHI->HasMouseMoved(x, y))
-				SetMouseAimEnabled(true);
+				{
+				if (!IsMouseAimEnabled() && IsMouseAimConfigured())
+					SetMouseAimEnabled(true);
+				}
 
 			break;
 			}
@@ -911,12 +902,6 @@ void CGameSession::OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 					}
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	If paused, then we're done
 
 			else if (g_pTrans->m_bPaused)
@@ -930,55 +915,58 @@ void CGameSession::OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 				CGameKeys::Keys iCommand = m_Settings.GetKeyMap().GetGameCommand(VK_MBUTTON);
 				switch (iCommand)
 					{
+					case CGameKeys::keyCycleTarget:
+						if (iDelta > 0)
+							{
+							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+							pPlayer->CycleTarget(-1);
+							}
+						else
+							{
+							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+							pPlayer->CycleTarget(1);
+							}
+						break;
+
 					case CGameKeys::keyTargetNextFriendly:
 					case CGameKeys::keyTargetPrevFriendly:
-						{
 						if (iDelta > 0)
 							ExecuteCommand(pPlayer, CGameKeys::keyTargetPrevFriendly);
 						else
 							ExecuteCommand(pPlayer, CGameKeys::keyTargetNextFriendly);
 						break;
-						}
 
 					case CGameKeys::keyTargetNextEnemy:
 					case CGameKeys::keyTargetPrevEnemy:
-						{
 						if (iDelta > 0)
 							ExecuteCommand(pPlayer, CGameKeys::keyTargetPrevEnemy);
 						else
 							ExecuteCommand(pPlayer, CGameKeys::keyTargetNextEnemy);
 						break;
-						}
 
 					case CGameKeys::keyNextWeapon:
 					case CGameKeys::keyPrevWeapon:
-						{
 						if (iDelta > 0)
 							ExecuteCommand(pPlayer, CGameKeys::keyPrevWeapon);
 						else
 							ExecuteCommand(pPlayer, CGameKeys::keyNextWeapon);
 						break;
-						}
 
 					case CGameKeys::keyNextMissile:
 					case CGameKeys::keyPrevMissile:
-						{
 						if (iDelta > 0)
 							ExecuteCommand(pPlayer, CGameKeys::keyPrevMissile);
 						else
 							ExecuteCommand(pPlayer, CGameKeys::keyNextMissile);
 						break;
-						}
 
 					case CGameKeys::keyVolumeDown:
 					case CGameKeys::keyVolumeUp:
-						{
 						if (iDelta > 0)
 							ExecuteCommand(pPlayer, CGameKeys::keyVolumeUp);
 						else
 							ExecuteCommand(pPlayer, CGameKeys::keyVolumeDown);
 						break;
-						}
 					}
 				}
 
@@ -1029,12 +1017,6 @@ void CGameSession::OnRButtonDown (int x, int y, DWORD dwFlags)
 				{
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	If paused, then we're done
 
 			else if (g_pTrans->m_bPaused)
@@ -1073,12 +1055,6 @@ void CGameSession::OnRButtonUp (int x, int y, DWORD dwFlags)
 				{
 				}
 
-			//	If mouse aiming not enabled, nothing to do
-
-			else if (!IsMouseAimEnabled())
-				{
-				}
-
 			//	Command
 
 			else
@@ -1099,11 +1075,6 @@ void CGameSession::SetMouseAimEnabled (bool bEnabled)
 //	want mouse aiming to be either enabled or disabled.
 
 	{
-	//	If settings has disabled mouse aim, then nothing to do.
-
-	if (m_Settings.GetBoolean(CGameSettings::noMouseAim))
-		return;
-
 	//	Set it
 
 	m_bMouseAim = bEnabled;

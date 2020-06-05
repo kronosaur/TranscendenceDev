@@ -1134,6 +1134,31 @@ CString CPlayerGameStats::GetStatString (const CString &sStat) const
 		return NULL_STR;
 	}
 
+bool CPlayerGameStats::HasVisitedMultipleSystems (void) const
+
+//	HasVisitedMultipleSystem
+//
+//	Returns TRUE if we've visited more than one system.
+
+	{
+	CMapIterator i;
+	int iCount = 0;
+	m_SystemStats.Reset(i);
+	while (m_SystemStats.HasMore(i))
+		{
+		SSystemStats *pStats;
+		const CString &sNodeID = m_SystemStats.GetNext(i, &pStats);
+
+		if (pStats->dwLastEntered != INVALID_TIME)
+			{
+			if (++iCount > 1)
+				return true;
+			}
+		}
+
+	return (iCount + m_iExtraSystemsVisited) > 1;
+	}
+
 CPlayerGameStats::SStationTypeStats *CPlayerGameStats::GetStationStats (DWORD dwUNID)
 
 //	GetStationStats

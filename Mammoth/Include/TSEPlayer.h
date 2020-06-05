@@ -35,6 +35,7 @@ class CPlayerGameStats
 		DWORD GetSystemEnteredTime (const CString &sNodeID);
         DWORD GetSystemLastVisitedTime (const CString &sNodeID);
 		ICCItemPtr GetSystemStat (const CString &sStat, const CString &sNodeID) const;
+		bool HasVisitedMultipleSystems (void) const;
 		int IncItemStat (const CString &sStat, DWORD dwUNID, int iInc);
 		int IncScore (int iScore) { m_iScore = Max(0, m_iScore + iScore); return m_iScore; }
 		int IncStat (const CString &sStat, int iInc = 1);

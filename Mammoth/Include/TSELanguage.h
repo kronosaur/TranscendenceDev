@@ -224,21 +224,26 @@ class CVirtualKeyData
 	public:
 		static constexpr DWORD FLAG_NON_STANDARD =			0x00000001;	//	Not available in keyboard UI
 		static constexpr DWORD FLAG_SPECIAL_KEY =			0x00000002;	//	Custom VK code
+		static constexpr DWORD FLAG_XY_INPUT =				0x00000004;	//	XY input (e.g., mouse position or joystick)
+		static constexpr DWORD FLAG_SCROLL_INPUT =			0x00000008;	//	Scroll wheel
 
-		static constexpr DWORD INVALID_VIRT_KEY = 0xFFFFFFFF;
-		static constexpr DWORD VK_NUMPAD_ENTER = 0xE0;
+		static constexpr DWORD INVALID_VIRT_KEY =			0xFFFFFFFF;
+		static constexpr DWORD VK_MOUSE_MOVE =				0x07;
+		static constexpr DWORD VK_NUMPAD_ENTER =			0xE0;
 
 		static DWORD GetKey (const CString &sKey);
 		static DWORD GetKeyFlags (DWORD dwVirtKey);
 		static CString GetKeyID (DWORD dwVirtKey);
 		static CString GetKeyLabel (DWORD dwVirtKey);
+		static CString GetKeyName (DWORD dwVirtKey);
 		static DWORD TranslateVirtKey (DWORD dwVirtKey, DWORD dwKeyData);
 
 	private:
 		struct SVirtKeyData
 			{
-			char *pszName;
-			char *pszLabel;
+			char *pszID;								//	Key ID (not human-readable)
+			char *pszLabel;								//	Label on key caps (same as pszName, if NULL)
+			char *pszName;								//	Name of key when describe in text (same as pszLabel, if NULL)
 			DWORD dwFlags;
 			};
 

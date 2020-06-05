@@ -316,6 +316,10 @@ class CGDraw
 		static void RectOutlineDotted (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, CG32bitPixel rgbColor);
 		static void RoundedRect (CG8bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, BYTE Value);
 		static void RoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+		static void RoundedRectBottom (CG8bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, BYTE Value);
+		static void RoundedRectBottom (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor);
+		static void RoundedRectTop (CG8bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, BYTE Value);
+		static void RoundedRectTop (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor);
 		static void RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, int iLineWidth, CG32bitPixel rgbColor);
         static void TriangleCorner (CG32bitImage &Dest, int x, int y, int iDir, int iSize, CG32bitPixel rgbColor);
 
