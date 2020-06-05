@@ -13,6 +13,7 @@
 #define CMD_GAME_SELF_DESTRUCT_CANCEL			CONSTLIT("gameSelfDestructCancel")
 #define CMD_GAME_SELF_DESTRUCT_CONFIRM			CONSTLIT("gameSelfDestructConfirm")
 
+#define CMD_UI_SHOW_GAME_STATS					CONSTLIT("uiShowGameStats")
 #define CMD_UI_SHOW_HELP						CONSTLIT("uiShowHelp")
 #define CMD_UI_SHOW_SETTINGS    				CONSTLIT("uiShowSettings")
 
@@ -25,10 +26,11 @@ CMenuData CGameSession::CreateGameMenu (void) const
 	{
 	CMenuData MenuData;
 	MenuData.SetTitle(CONSTLIT("Transcendence"));
-	MenuData.AddMenuItem(CMD_UI_SHOW_HELP, CONSTLIT("1"), CONSTLIT("[H]elp"));
-	MenuData.AddMenuItem(CMD_GAME_END_SAVE, CONSTLIT("2"), CONSTLIT("[S]ave & Exit Game"));
-	MenuData.AddMenuItem(CMD_GAME_SELF_DESTRUCT, CONSTLIT("3"), CONSTLIT("Self-[D]estruct"));
-	MenuData.AddMenuItem(CMD_UI_SHOW_SETTINGS, NULL_STR, CONSTLIT("Keyb[o]ard Settings"));
+	MenuData.AddMenuItem(CMD_UI_SHOW_HELP,			CONSTLIT("1"),	CONSTLIT("[H]elp"));
+	MenuData.AddMenuItem(CMD_UI_SHOW_GAME_STATS,	NULL_STR,		CONSTLIT("[G]ame Stats"));
+	MenuData.AddMenuItem(CMD_GAME_END_SAVE,			CONSTLIT("2"),	CONSTLIT("[S]ave & Exit Game"));
+	MenuData.AddMenuItem(CMD_GAME_SELF_DESTRUCT,	CONSTLIT("3"),	CONSTLIT("Self-[D]estruct"));
+	MenuData.AddMenuItem(CMD_UI_SHOW_SETTINGS,		NULL_STR,		CONSTLIT("Keyb[o]ard Settings"));
 
 	//	Debug mode includes more special functions
 
@@ -94,6 +96,11 @@ ALERROR CGameSession::OnCommand (const CString &sCmd, void *pData)
 			return ERR_FAIL;
 
 		pPlayer->GetShip()->Destroy(killedBySelf, CDamageSource(NULL, killedBySelf));
+		}
+	else if (strEquals(sCmd, CMD_UI_SHOW_GAME_STATS))
+		{
+		m_HI.HICommand(sCmd);
+		DismissMenu();
 		}
 	else if (strEquals(sCmd, CMD_UI_SHOW_HELP))
 		{

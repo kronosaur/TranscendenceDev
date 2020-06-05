@@ -1440,7 +1440,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 	else if (strEquals(sCmd, CMD_UI_SHOW_HELP))
 		{
 		DisplayMultiverseStatus(NULL_STR);
-		CHelpSession *pSession = new CHelpSession(m_HI);
+		CHelpSession *pSession = new CHelpSession(m_HI, m_Settings);
 		if (error = m_HI.OpenPopupSession(pSession))
 			return error;
 		}

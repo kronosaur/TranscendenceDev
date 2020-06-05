@@ -93,6 +93,7 @@ class CInputKeyPainter
 			keyArrowLeft,
 			keyArrowRight,
 			keyArrowUp,
+			keyMouseMove,
 
 			keyLeftMouseButton,
 			keyRightMouseButton,

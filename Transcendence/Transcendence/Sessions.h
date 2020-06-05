@@ -151,7 +151,9 @@ class CGalacticMapSession : public IHISession
 class CHelpSession : public IHISession
 	{
 	public:
-		CHelpSession (CHumanInterface &HI) : IHISession(HI) { }
+		CHelpSession (CHumanInterface &HI, CGameSettings &Settings) : IHISession(HI),
+				m_Settings(Settings)
+			{ }
 
 		//	IHISession virtuals
 		virtual void OnCleanUp (void) override;
@@ -163,8 +165,30 @@ class CHelpSession : public IHISession
 		virtual void OnUpdate (bool bTopMost) override;
 
 	private:
+		struct SHelpLine
+			{
+			CGameKeys::Keys iCmd = CGameKeys::keyNone;
+			CGameKeys::Keys iCmd2 = CGameKeys::keyNone;
+			DWORD dwVirtKey = CVirtualKeyData::INVALID_VIRT_KEY;
+			char *szDesc = NULL;
+			};
+
+		static constexpr int PANE_WIDTH = 580;
+		static constexpr int PANE_HEIGHT = 340;
+		static constexpr int KEY_SIZE = 28;
+		static constexpr int KEY_PADDING_HORZ = 2;
+		static constexpr int INNER_PADDING_HORZ = 4;
+		static constexpr int INNER_PADDING_VERT = 2;
+
+		void PaintControls (CG32bitImage &Dest, const RECT &rcRect, int *retcyHeight = NULL) const;
+		void PaintEntry (CG32bitImage &Dest, int x, int y, int cxWidth, const SHelpLine &Entry, int *retcyHeight) const;
+
+		CGameSettings &m_Settings;
 		CG32bitImage m_HelpImage;
 		int m_iHelpPage;
+
+		static const SHelpLine m_HelpDesc[];
+		static const int HELP_LINE_COUNT;
 	};
 
 class CKeyboardMapSession : public IHISession

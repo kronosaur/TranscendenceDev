@@ -49,7 +49,6 @@ const CGameKeys::SKeyMapEntry CGameKeys::DEFAULT_MAP[] =
 		{	VK_DOWN,			CGameKeys::keyStop },
 		{	VK_LEFT,			CGameKeys::keyRotateLeft },
 		{	VK_PAUSE,			CGameKeys::keyPause },
-		{	VK_RETURN,			CGameKeys::keyFireMissile },
 		{	VK_RIGHT,			CGameKeys::keyRotateRight },
 		{	VK_SHIFT,			CGameKeys::keyFireMissile },
 		{	VK_SPACE,			CGameKeys::keyFireWeapon },

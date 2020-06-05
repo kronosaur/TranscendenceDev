@@ -14,6 +14,12 @@ void CInputKeyPainter::Init (DWORD dwVirtKey, int cyHeight, const CG16bitFont &L
 	{
 	switch (dwVirtKey)
 		{
+		case CVirtualKeyData::VK_MOUSE_MOVE:
+			m_iType = keyMouseMove;
+			m_cyHeight = cyHeight;
+			m_cxWidth = 3 * cyHeight / 4;
+			break;
+
 		case VK_LBUTTON:
 			m_iType = keyLeftMouseButton;
 			m_cyHeight = cyHeight;
@@ -30,6 +36,30 @@ void CInputKeyPainter::Init (DWORD dwVirtKey, int cyHeight, const CG16bitFont &L
 			m_iType = keyRightMouseButton;
 			m_cyHeight = cyHeight;
 			m_cxWidth = 3 * cyHeight / 4;
+			break;
+
+		case VK_DOWN:
+			m_iType = keyArrowDown;
+			m_cyHeight = cyHeight;
+			m_cxWidth = cyHeight;
+			break;
+
+		case VK_LEFT:
+			m_iType = keyArrowLeft;
+			m_cyHeight = cyHeight;
+			m_cxWidth = cyHeight;
+			break;
+
+		case VK_RIGHT:
+			m_iType = keyArrowRight;
+			m_cyHeight = cyHeight;
+			m_cxWidth = cyHeight;
+			break;
+
+		case VK_UP:
+			m_iType = keyArrowUp;
+			m_cyHeight = cyHeight;
+			m_cxWidth = cyHeight;
 			break;
 
 		default:
@@ -151,6 +181,7 @@ void CInputKeyPainter::PaintBackground (CG32bitImage &Dest, int x, int y) const
 		case keyLeftMouseButton:
 		case keyRightMouseButton:
 		case keyScrollWheel:
+		case keyMouseMove:
 			break;
 
 		default:
@@ -179,6 +210,7 @@ void CInputKeyPainter::PaintLabel (CG32bitImage &Dest, int x, int y) const
 		case keyLeftMouseButton:
 		case keyRightMouseButton:
 		case keyScrollWheel:
+		case keyMouseMove:
 			PaintMouse(Dest, x, y);
 			break;
 
@@ -218,7 +250,7 @@ void CInputKeyPainter::PaintMouse (CG32bitImage &Dest, int x, int y) const
 	//	Paint the lower part of the mouse
 
 	Dest.Fill(x, y, LOWER_WIDTH, UPPER_HEIGHT, m_rgbTextColor);
-	CGDraw::RoundedRectBottom(Dest, x, y + UPPER_HEIGHT, LOWER_WIDTH, LOWER_HEIGHT, MOUSE_RADIUS, rgbMouse);
+	CGDraw::RoundedRectBottom(Dest, x, y + UPPER_HEIGHT, LOWER_WIDTH, LOWER_HEIGHT, MOUSE_RADIUS, (m_iType == keyMouseMove ? m_rgbBackColor : rgbMouse));
 
 	//	Paint the button part
 
@@ -238,6 +270,11 @@ void CInputKeyPainter::PaintMouse (CG32bitImage &Dest, int x, int y) const
 			Dest.Fill(x, y, SMALL_BUTTON_WIDTH, BUTTON_SIZE, rgbMouse);
 			Dest.Fill(x + SMALL_BUTTON_WIDTH + GAP, y, MIDDLE_BUTTON_WIDTH, BUTTON_SIZE, m_rgbBackColor);
 			Dest.Fill(x + SMALL_BUTTON_WIDTH + GAP + MIDDLE_BUTTON_WIDTH + GAP, y, SMALL_BUTTON_WIDTH, BUTTON_SIZE, rgbMouse);
+			break;
+
+		case keyMouseMove:
+			Dest.Fill(x, y, BUTTON_SIZE, BUTTON_SIZE, rgbMouse);
+			Dest.Fill(x + GAP + BUTTON_SIZE, y, BUTTON_SIZE, BUTTON_SIZE, rgbMouse);
 			break;
 		}
 	}
