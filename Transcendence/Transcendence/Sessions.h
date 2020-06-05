@@ -89,63 +89,63 @@ class CChooseAdventureSession : public IHISession
 class CGalacticMapSession : public IHISession
 	{
 	public:
-		struct SOptions
-			{
-			int xCenter = 0;
-			int yCenter = 0;
-			int iScale = 0;							//  0 = use defaults for everything
-			const CTopologyNode *pSelected = NULL;
-			const CTopologyNode *pCurNode = NULL;	//  Node at the time we saved options
-			};
+        struct SOptions
+            {
+            int xCenter = 0;
+            int yCenter = 0;
+            int iScale = 0;							//  0 = use defaults for everything
+            const CTopologyNode *pSelected = NULL;
+            const CTopologyNode *pCurNode = NULL;	//  Node at the time we saved options
+            };
 
-		CGalacticMapSession (STranscendenceSessionCtx &CreateCtx, CSystemMapThumbnails &SystemMapThumbnails, SOptions &SavedState);
+        CGalacticMapSession (STranscendenceSessionCtx &CreateCtx, CSystemMapThumbnails &SystemMapThumbnails, SOptions &SavedState);
 
 		//	IHISession virtuals
-		virtual void OnChar (char chChar, DWORD dwKeyData) override;
+        virtual void OnChar (char chChar, DWORD dwKeyData) override;
 		virtual void OnCleanUp (void) override;
 		virtual ALERROR OnInit (CString *retsError) override;
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData) override;
 		virtual void OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture) override;
-		virtual void OnLButtonUp (int x, int y, DWORD dwFlags) override;
-		virtual void OnMouseMove (int x, int y, DWORD dwFlags) override;
-		virtual void OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags) override;
+        virtual void OnLButtonUp (int x, int y, DWORD dwFlags) override;
+        virtual void OnMouseMove (int x, int y, DWORD dwFlags) override;
+        virtual void OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags) override;
 		virtual void OnPaint (CG32bitImage &Screen, const RECT &rcInvalid) override;
 		virtual bool OnPaintReanimator (CG32bitImage &Screen) override;
 		virtual void OnReportHardCrash (CString *retsMessage) override;
 		virtual void OnUpdate (bool bTopMost);
 
 	private:
-		void SaveState (void);
-		void Select (const CTopologyNode *pNode, bool bNoSound = false);
-		void SetTargetScale (void);
+        void SaveState (void);
+        void Select (const CTopologyNode *pNode, bool bNoSound = false);
+        void SetTargetScale (void);
 
-		CGameSettings &m_Settings;
+        CGameSettings &m_Settings;
 		CCommandLineDisplay &m_DebugConsole;
-		CSystemMapThumbnails &m_SystemMapThumbnails;
-		SOptions &m_SavedState;
+        CSystemMapThumbnails &m_SystemMapThumbnails;
+        SOptions &m_SavedState;
 		CSystemMap *m_pMap;
-		int m_iMinScale;
-		int m_iMaxScale;
+        int m_iMinScale;
+        int m_iMaxScale;
 		int m_iMinScaleIndex;
 		int m_iMaxScaleIndex;
 
 		CGalacticMapPainter *m_pPainter;
-		CMapLegendPainter m_HelpPainter;
+        CMapLegendPainter m_HelpPainter;
 
 		RECT m_rcView;
 
-		CMapScaleCounter m_Scale;           //  Map scale (100 = normal)
+        CMapScaleCounter m_Scale;           //  Map scale (100 = normal)
 		int m_xCenter;                      //  Current center (in galactic coordinates)
 		int m_yCenter;
 
 		int m_xTargetCenter;                //  Desired center
 		int m_yTargetCenter;
 
-		bool m_bDragging;                   //  TRUE if we're dragging the map
-		int m_xAnchor;                      //  Click anchor (in galactic coordinates)
-		int m_yAnchor;
-		int m_xAnchorCenter;                //  Map center at time of anchor drop
-		int m_yAnchorCenter;
+        bool m_bDragging;                   //  TRUE if we're dragging the map
+        int m_xAnchor;                      //  Click anchor (in galactic coordinates)
+        int m_yAnchor;
+        int m_xAnchorCenter;                //  Map center at time of anchor drop
+        int m_yAnchorCenter;
 	};
 
 class CHelpSession : public IHISession
@@ -168,7 +168,7 @@ class CHelpSession : public IHISession
 	};
 
 class CKeyboardMapSession : public IHISession
-	{
+    {
 	public:
 		CKeyboardMapSession (CHumanInterface &HI, CCloudService &Service, CGameSettings &Settings);
 
@@ -177,27 +177,27 @@ class CKeyboardMapSession : public IHISession
 		virtual ALERROR OnInit (CString *retsError) override;
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData) override;
 		virtual void OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture) override;
-		virtual void OnLButtonUp (int x, int y, DWORD dwFlags) override;
-		virtual void OnMouseMove (int x, int y, DWORD dwFlags) override;
+        virtual void OnLButtonUp (int x, int y, DWORD dwFlags) override;
+        virtual void OnMouseMove (int x, int y, DWORD dwFlags) override;
 		virtual void OnPaint (CG32bitImage &Screen, const RECT &rcInvalid) override;
 		virtual void OnReportHardCrash (CString *retsMessage) override;
 		virtual void OnUpdate (bool bTopMost) override;
 
 	private:
-		enum EKeySymbols
-			{
-			symbolNone,
+        enum EKeySymbols
+            {
+            symbolNone,
 
-			symbolArrowUp,
-			symbolArrowDown,
-			symbolArrowLeft,
-			symbolArrowRight,
-			};
+            symbolArrowUp,
+            symbolArrowDown,
+            symbolArrowLeft,
+            symbolArrowRight,
+            };
 
-		enum EKeyFlags
-			{
-			FLAG_RESERVED = 0x00000001,
-			};
+        enum EKeyFlags
+            {
+            FLAG_RESERVED = 0x00000001,
+            };
 
 		enum EDeviceTypes
 			{
@@ -208,17 +208,17 @@ class CKeyboardMapSession : public IHISession
 			deviceNumpad,
 			};
 
-		struct SKeyData
-			{
-			char *pszKeyID;
-			int xCol;                       //  A normal key takes up two columns (col 0 = left-most)
-			int yRow;                       //  A normal key takes one row (row 0 = top row)
-			int cxWidth;                    //  Width of the key in columns
+        struct SKeyData
+            {
+            char *pszKeyID;
+            int xCol;                       //  A normal key takes up two columns (col 0 = left-most)
+            int yRow;                       //  A normal key takes one row (row 0 = top row)
+            int cxWidth;                    //  Width of the key in columns
 			int cyHeight;					//	Height in rows
-			char *pszLabel;                 //  Label in keyboard
-			EKeySymbols iSymbol;            //  Symbol for label label
-			DWORD dwFlags;
-			};
+            char *pszLabel;                 //  Label in keyboard
+            EKeySymbols iSymbol;            //  Symbol for label label
+            DWORD dwFlags;
+            };
 
 		struct SDeviceData
 			{
@@ -233,19 +233,19 @@ class CKeyboardMapSession : public IHISession
 			int yOffset;
 			};
 
-		struct SKeyDesc
-			{
-			CString sKeyID;                 //  ID of key in CGameKeys
+        struct SKeyDesc
+            {
+            CString sKeyID;                 //  ID of key in CGameKeys
 			DWORD dwVirtKey;				//	Virtual key
-			RECT rcRect;                    //  Rect of key to draw
-			CString sLabel;                 //  Key label
-			EKeySymbols iSymbol;            //  Symbols for label
-			int iCmdBinding;                //  Index into m_Commands (-1 = none)
-			DWORD dwFlags;
-			};
+            RECT rcRect;                    //  Rect of key to draw
+            CString sLabel;                 //  Key label
+            EKeySymbols iSymbol;            //  Symbols for label
+            int iCmdBinding;                //  Index into m_Commands (-1 = none)
+            DWORD dwFlags;
+            };
 
-		struct SCommandDesc
-			{
+        struct SCommandDesc
+            {
 			SCommandDesc (void) :
 					iCmd(CGameKeys::keyNone),
 					iKeyBinding(-1),
@@ -253,72 +253,72 @@ class CKeyboardMapSession : public IHISession
 					rcRect{ 0, 0, 0, 0 }
 				{ }
 
-			CGameKeys::Keys iCmd;           //  Command
+            CGameKeys::Keys iCmd;           //  Command
 			CString sKeyBinding;			//	ID of key we're bound to
-			int iKeyBinding;                //  Index into m_Keys (-1 = none)
-			CString sLabel;                 //  Command label
-			int cxLabel;                    //  Width of command label
+            int iKeyBinding;                //  Index into m_Keys (-1 = none)
+            CString sLabel;                 //  Command label
+            int cxLabel;                    //  Width of command label
 
-			RECT rcRect;                    //  Draw the command label here.
-			TArray<POINT> Line;             //  Line to connect command to key
-			};
+            RECT rcRect;                    //  Draw the command label here.
+            TArray<POINT> Line;             //  Line to connect command to key
+            };
 
-		struct STargetCtx
-			{
-			int iCmdIndex;                  //  Index of command hit (-1 = none)
-			int iKeyIndex;                  //  Index of key hit (-1 = none)
-			bool bInKey;                    //  In key (otherwise, in command)
-			};
+        struct STargetCtx
+            {
+            int iCmdIndex;                  //  Index of command hit (-1 = none)
+            int iKeyIndex;                  //  Index of key hit (-1 = none)
+            bool bInKey;                    //  In key (otherwise, in command)
+            };
 
-		void ArrangeCommandLabels (const RECT &rcRect, const RECT &rcKeyboard);
-		void CmdClearBinding (void);
-		void CmdNextLayout (void);
-		void CmdPrevLayout (void);
-		void CmdResetDefault (void);
-		void CreateDeviceSelector (void);
+        void ArrangeCommandLabels (const RECT &rcRect, const RECT &rcKeyboard);
+        void CmdClearBinding (void);
+        void CmdNextLayout (void);
+        void CmdPrevLayout (void);
+        void CmdResetDefault (void);
+        void CreateDeviceSelector (void);
 		void InitBindings (void);
 		void InitCommands (void);
 		void InitDevice (const SDeviceData &Device);
-		bool HitTest (int x, int y, STargetCtx &Ctx);
-		void PaintKey (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, CG32bitPixel rgbText, bool bFlash);
+        bool HitTest (int x, int y, STargetCtx &Ctx);
+        void PaintKey (CG32bitImage &Screen, const SKeyDesc &Key, CG32bitPixel rgbBack, CG32bitPixel rgbText, bool bFlash);
 		void UpdateDeviceSelector (void);
 		void UpdateMenu (void);
 
-		CCloudService &m_Service;
+        CCloudService &m_Service;
 		CGameSettings &m_Settings;
-		TArray<SKeyDesc> m_Keys;
-		TArray<SCommandDesc> m_Commands;
+        TArray<SKeyDesc> m_Keys;
+        TArray<SCommandDesc> m_Commands;
 		RECT m_rcRect;
 
-		//  Keyboard metrics (valid after OnInit)
+        //  Keyboard metrics (valid after OnInit)
 
-		int m_xKeyboard;                    //  Position of keyboard
-		int m_yKeyboard;
-		int m_cxKeyboard;                   //  Size of keyboard
-		int m_cyKeyboard;
-		int m_cxKeyCol;                     //  Size of a key column (half the size of a key row)
-		int m_cyKeyRow;                     //  Height of a key
-		TSortMap<CString, int> m_KeyIDToIndex;
+        int m_xKeyboard;                    //  Position of keyboard
+        int m_yKeyboard;
+        int m_cxKeyboard;                   //  Size of keyboard
+        int m_cyKeyboard;
+        int m_cxKeyCol;                     //  Size of a key column (half the size of a key row)
+        int m_cyKeyRow;                     //  Height of a key
+        TSortMap<CString, int> m_KeyIDToIndex;
 
-		bool m_bEditable;                   //  TRUE if we can edit this layout
+        bool m_bEditable;                   //  TRUE if we can edit this layout
 		int m_iDevice;						//	Selected device
-		int m_iHoverKey;                    //  Hovering over this key (edit mode only)
-		int m_iHoverCommand;                //  Hovering over this command
-		int m_iSelectedCommand;             //  Command selected
+        int m_iHoverKey;                    //  Hovering over this key (edit mode only)
+        int m_iHoverCommand;                //  Hovering over this command
+        int m_iSelectedCommand;             //  Command selected
 		int m_iTick;
 		int m_iFlashKey;					//	Index of key (in m_Keys) to flash
 		int m_iFlashUntil;					//	Stop flashing on this tick
 
 		static const SDeviceData DEVICE_DATA[];
-		static const int DEVICE_DATA_COUNT;
+        static const int DEVICE_DATA_COUNT;
 
-		static const SKeyData KEYBOARD_DATA[];
-		static const int KEYBOARD_DATA_COUNT;
-		static const SKeyData NUMPAD_DATA[];
-		static const int NUMPAD_DATA_COUNT;
-		static const SKeyData MOUSE_DATA[];
-		static const int MOUSE_DATA_COUNT;
-	};
+        static const SKeyData KEYBOARD_DATA[];
+        static const int KEYBOARD_DATA_COUNT;
+        static const SKeyData NUMPAD_DATA[];
+        static const int NUMPAD_DATA_COUNT;
+        static const SKeyData MOUSE_DATA[];
+        static const int MOUSE_DATA_COUNT;
+    };
 
 class CLoadingSession : public IHISession
 	{

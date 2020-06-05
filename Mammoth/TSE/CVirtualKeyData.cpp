@@ -358,8 +358,8 @@ CString CVirtualKeyData::GetKeyID (DWORD dwVirtKey)
 //	Returns the label for the given key
 
 	{
-	if (dwVirtKey >= 256)
-		return NULL_STR;
+    if (dwVirtKey >= 256)
+        return NULL_STR;
 
 	//	If no name, we represent as a hex value
 
@@ -376,8 +376,8 @@ DWORD CVirtualKeyData::GetKeyFlags (DWORD dwVirtKey)
 //	Returns the flags
 
 	{
-	if (dwVirtKey >= 256)
-		return 0;
+    if (dwVirtKey >= 256)
+        return 0;
 
 	return m_VirtKeyData[dwVirtKey].dwFlags;
 	}
@@ -389,8 +389,8 @@ CString CVirtualKeyData::GetKeyLabel (DWORD dwVirtKey)
 //	Returns the label for the given key
 
 	{
-	if (dwVirtKey >= 256)
-		return NULL_STR;
+    if (dwVirtKey >= 256)
+        return NULL_STR;
 
 	if (m_VirtKeyData[dwVirtKey].pszLabel)
 		return CString(m_VirtKeyData[dwVirtKey].pszLabel, -1, true);
