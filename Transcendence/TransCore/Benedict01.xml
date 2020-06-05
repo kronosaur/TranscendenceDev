@@ -627,6 +627,8 @@
 						theItem: (itmGetName foundItm 'article)
 						itemPrice: (objGetBuyPrice targetObj foundItm)
 						systemName: (sysGetName)
+
+						keyMap: (uiGetKeyName 'ShowMap)
 						})
 					)
 			</Text>
@@ -656,6 +658,8 @@
 						target: (objGetName targetObj)
 						theItem: (itmGetName foundItm 'article)
 						item: (itmGetName foundItm)
+
+						keyMap: (uiGetKeyName 'ShowMap)
 						})
 					)
 					
@@ -836,7 +840,7 @@
 			</Text>
 			<Text id="explore:Begin">
 
-				"The [M] key will bring up a map of the entire star system.
+				"The [%keyMap%] key will bring up a map of the entire star system.
 
 				"Visit planets and asteroid fields to look for stations.
 				Green stations are friendly; you can dock with them and see
@@ -855,11 +859,13 @@
 
 			</Text>
 			<Text id="explore:Summary">
-				Use the [M] key to bring up a system map. Explore the star system
+
+				Use the [%keyMap%] key to bring up a system map. Explore the star system
 				and destroy enemy stations.
 
 				System: %systemName%\n
 				Payment: None
+
 			</Text>
 			<Text id="exploreSystem:Begin">
 				(block (
@@ -870,8 +876,14 @@
 						))
 					)
 					(if (= unexploredObjs 1)
-						(msnTranslate gSource "exploreSystem:Begin:One")
-						(msnTranslate gSource "exploreSystem:Begin:Many" {n: unexploredObjs})
+						(msnTranslate gSource "exploreSystem:Begin:One" {
+							keyMap: (uiGetKeyName 'ShowMap)
+							})
+						(msnTranslate gSource "exploreSystem:Begin:Many" 
+							{
+							keyMap: (uiGetKeyName 'ShowMap)
+							n: unexploredObjs
+							})
 						)
 					)
 			</Text>
@@ -881,7 +893,7 @@
 				providing various services, from refueling to commodity trading.
 
 				"You have found all but one friendly station in the system. Search for it by visiting
-				the planets and asteroid fields in the star system. Use your map ([M] key) to navigate."
+				the planets and asteroid fields in the star system. Use your map ([%keyMap%] key) to navigate."
 
 			</Text>
 			<Text id="exploreSystem:Begin:Many">
@@ -890,7 +902,7 @@
 				providing various services, from refueling to commodity trading.
 
 				"You have found all but %n% friendly stations in the system. Search for them by visiting
-				the planets and asteroid fields in the star system. Use your map ([M] key) to navigate."
+				the planets and asteroid fields in the star system. Use your map ([%keyMap%] key) to navigate."
 
 			</Text>
 			<Text id="exploreSystem:Debrief">
@@ -901,11 +913,13 @@
 
 			</Text>
 			<Text id="exploreSystem:Summary">
-				Use the [M] key to bring up a system map. Explore the planets and
+
+				Use the [%keyMap%] key to bring up a system map. Explore the planets and
 				asteroid fields of the system to find friendly stations.
 
 				System: %systemName%\n
 				Payment: None
+
 			</Text>
 			<Text id="fionaMission:Begin">
 				(list

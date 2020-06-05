@@ -107,6 +107,8 @@ ICCItem *fnPlyComposeString (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 #define FN_UI_QUEUE_SOUNDTRACK		2
 #define FN_UI_KEY_LABEL				3
 #define FN_UI_GET_COLLECTION		4
+#define FN_UI_KEY_DESC				5
+#define FN_UI_KEY_NAME				6
 
 ICCItem *fnUISet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -620,8 +622,19 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(uiGetCollection) -> collection",
 			NULL,	0,	},
 
-		{	"uiKeyLabel",							fnUISet,		FN_UI_KEY_LABEL,
-			"(uiKeyLabel command) -> text",
+		{	"uiGetKeyDesc",							fnUISet,		FN_UI_KEY_DESC,
+			"(uiGetKeyDesc command) -> desc\n\n"
+			
+			"desc:\n\n"
+			
+			"   id: Key ID\n"
+			"   label: Key label\n"
+			"   name: Key name\n",
+
+			"s",	0,	},
+
+		{	"uiGetKeyName",							fnUISet,		FN_UI_KEY_NAME,
+			"(uiGetKeyName command) -> text",
 			"s",	0,	},
 
 		{	"uiQueueSoundtrack",					fnUISet,	FN_UI_QUEUE_SOUNDTRACK,
@@ -660,6 +673,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"scrRefreshItemListCursor",		fnScrItem,		FN_SCR_REFRESH_ITEM,	
 			"DEPRECATED",		NULL,	PPFLAG_SIDEEFFECTS, },
 		//	(scrRefreshItemListCursor screen item)
+
+		{	"uiKeyLabel",							fnUISet,		FN_UI_KEY_LABEL,
+			"(uiKeyLabel command) -> text",
+			"DEPRECATED: Use uiGetKeyName instead.",	0,	},
 
 	};
 
@@ -2319,6 +2336,25 @@ ICCItem *fnUISet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pResult->Reference();
 			}
 
+		case FN_UI_KEY_DESC:
+			{
+			CString sCommand = pArgs->GetElement(0)->GetStringValue();
+			CGameKeys::Keys iCmd = CGameKeys::GetGameCommand(sCommand);
+			if (iCmd == CGameKeys::keyError)
+				return pCC->CreateError(CONSTLIT("Unknown command"), pArgs->GetElement(0));
+
+			DWORD dwVirtKey = g_pTrans->GetSettings().GetKeyMap().GetKey(iCmd);
+			if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
+				return pCC->CreateNil();
+
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("id"), CVirtualKeyData::GetKeyID(dwVirtKey));
+			pResult->SetStringAt(CONSTLIT("label"), CVirtualKeyData::GetKeyLabel(dwVirtKey));
+			pResult->SetStringAt(CONSTLIT("name"), CVirtualKeyData::GetKeyName(dwVirtKey));
+
+			return pResult->Reference();
+			}
+
 		case FN_UI_KEY_LABEL:
 			{
 			CString sCommand = pArgs->GetElement(0)->GetStringValue();
@@ -2331,6 +2367,24 @@ ICCItem *fnUISet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			CString sKey = CVirtualKeyData::GetKeyLabel(dwVirtKey);
+			if (sKey.IsBlank())
+				return pCC->CreateNil();
+
+			return pCC->CreateString(sKey);
+			}
+
+		case FN_UI_KEY_NAME:
+			{
+			CString sCommand = pArgs->GetElement(0)->GetStringValue();
+			CGameKeys::Keys iCmd = CGameKeys::GetGameCommand(sCommand);
+			if (iCmd == CGameKeys::keyError)
+				return pCC->CreateError(CONSTLIT("Unknown command"), pArgs->GetElement(0));
+
+			DWORD dwVirtKey = g_pTrans->GetSettings().GetKeyMap().GetKey(iCmd);
+			if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
+				return pCC->CreateNil();
+
+			CString sKey = CVirtualKeyData::GetKeyName(dwVirtKey);
 			if (sKey.IsBlank())
 				return pCC->CreateNil();
 

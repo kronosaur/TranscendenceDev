@@ -235,13 +235,15 @@ class CVirtualKeyData
 		static DWORD GetKeyFlags (DWORD dwVirtKey);
 		static CString GetKeyID (DWORD dwVirtKey);
 		static CString GetKeyLabel (DWORD dwVirtKey);
+		static CString GetKeyName (DWORD dwVirtKey);
 		static DWORD TranslateVirtKey (DWORD dwVirtKey, DWORD dwKeyData);
 
 	private:
 		struct SVirtKeyData
 			{
-			char *pszName;
-			char *pszLabel;
+			char *pszID;								//	Key ID (not human-readable)
+			char *pszLabel;								//	Label on key caps (same as pszName, if NULL)
+			char *pszName;								//	Name of key when describe in text (same as pszLabel, if NULL)
 			DWORD dwFlags;
 			};
 
