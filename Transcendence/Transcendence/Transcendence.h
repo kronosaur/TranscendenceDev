@@ -629,6 +629,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		virtual IPlayerController *CreatePlayerController (void) override;
 		virtual IShipController *CreateShipController (const CString &sController) override;
 		virtual void DebugOutput (const CString &sLine) override;
+		virtual bool FindCommandKey (const CString &sCmd, DWORD *retdwVirtKey = NULL) const override;
 		virtual bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const override;
 		virtual void GameOutput (const CString &sLine) override;
 		virtual CG32bitPixel GetColor (const CString &sColor) const override;

@@ -228,15 +228,15 @@ CVirtualKeyData::SVirtKeyData CVirtualKeyData::m_VirtKeyData[] =
 
 		{	NULL	},
 		{	NULL	},
-		{	"SemiColon",		NULL,		NULL,				0	},
-		{	"Equal",			NULL,		NULL,				0	},
-		{	"Comma",			NULL,		NULL,				0	},
-		{	"Minus",			NULL,		NULL,				0	},
-		{	"Period",			NULL,		NULL,				0	},
-		{	"Slash",			NULL,		NULL,				0	},
+		{	"SemiColon",		";",		NULL,				0	},
+		{	"Equal",			"=",		NULL,				0	},
+		{	"Comma",			",",		NULL,				0	},
+		{	"Minus",			"-",		NULL,				0	},
+		{	"Period",			".",		NULL,				0	},
+		{	"Slash",			"/",		NULL,				0	},
 
 		//	0xC0 - 0xCF
-		{	"BackQuote",		NULL,		NULL,				0	},
+		{	"BackQuote",		"`",		NULL,				0	},
 		{	NULL,	},
 		{	NULL,	},
 		{	NULL,	},
@@ -267,10 +267,10 @@ CVirtualKeyData::SVirtKeyData CVirtualKeyData::m_VirtKeyData[] =
 		{	NULL,	},
 		{	NULL,	},
 		{	NULL,	},
-		{	"OpenBracket",		NULL,		NULL,				0	},
-		{	"Backslash",		NULL,		NULL,				0	},
-		{	"CloseBracket",		NULL,		NULL,				0	},
-		{	"Quote",			NULL,		NULL,				0	},
+		{	"OpenBracket",		"[",		NULL,				0	},
+		{	"Backslash",		"\\",		NULL,				0	},
+		{	"CloseBracket",		"]",		NULL,				0	},
+		{	"Quote",			"\'",		NULL,				0	},
 		{	NULL,	},
 
 		//	0xE0 - 0xEF
@@ -334,6 +334,8 @@ DWORD CVirtualKeyData::GetKey (const CString &sKey)
 			return chChar;
 		else if (chChar >= 'A' && chChar <= 'Z')
 			return chChar;
+		else if (chChar >= 'a' && chChar <= 'z')
+			return 'A' + (chChar - 'a');
 		}
 
 	//	See if this is a hex code
@@ -345,7 +347,11 @@ DWORD CVirtualKeyData::GetKey (const CString &sKey)
 	//	Otherwise, look up in table
 
 	for (i = 0; i < 256; i++)
-		if (m_VirtKeyData[i].pszID && strEquals(sKey, CString(m_VirtKeyData[i].pszID, -1, true)))
+		if (m_VirtKeyData[i].pszID 
+				&& strEquals(sKey, CString(m_VirtKeyData[i].pszID, -1, true)))
+			return i;
+		else if (m_VirtKeyData[i].pszLabel
+				&& strEquals(sKey, CString(m_VirtKeyData[i].pszLabel, -1, true)))
 			return i;
 
 	return INVALID_VIRT_KEY;

@@ -13,6 +13,7 @@
 #define FN_KEY_PRESSED					5
 #define FN_GET_MOUSE_POSITION			6
 
+#define STR_COMMAND_PREFIX				CONSTLIT("command:")
 
 ICCItem *fnUI (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -38,20 +39,44 @@ static PRIMITIVEPROCDEF g_Primitives[] =
 			"",	0,	},
 
 		{	"uiIsKeyPressed",				fnUI,			FN_KEY_PRESSED,
-			"(uiIsKeyPressed key) -> True/Nil\n\n"
+			"(uiIsKeyPressed key|command) -> True/Nil\n\n"
 
 			"Key is a string, all alphanumeric keys as well as the following are supported:\n\n"
 
-			"   'up\n"
-			"   'down\n"
-			"   'left\n"
-			"   'right\n"
-			"   'ctrl\n"
-			"   'space\n"
-			"   'shift\n"
-			"   'esc\n"
-			"   'lmb\n"
-			"   'rmb\n",
+			"   'Backquote\n"
+			"   'Backslash\n"
+			"   'Backspace\n"
+			"   'CloseBracket\n"
+			"   'Comma\n"
+			"   'Ctrl\n"
+			"   'Delete\n"
+			"   'Down\n"
+			"   'End\n"
+			"   'Equal\n"
+			"   'Esc\n"
+			"   'F1, 'F2, ...\n"
+			"   'Home\n"
+			"   'Insert\n"
+			"   'LButton\n"
+			"   'Left\n"
+			"   'Minus\n"
+			"   'OpenBracket\n"
+			"   'PageDown\n"
+			"   'PageUp\n"
+			"   'Period\n"
+			"   'Quote\n"
+			"   'RButton\n"
+			"   'Return\n"
+			"   'Right\n"
+			"   'SemiColon\n"
+			"   'Shift\n"
+			"   'Slash\n"
+			"   'Space\n"
+			"   'Tab\n"
+			"   'Up\n"
+			"\n"
+			"Specify a command by prefixing with \"command:\".\n"
+			"E.g., (uiIsKeyPressed \"command:ThrustForward\")\n\n",
 
 			"s",	0, },
 
@@ -86,6 +111,7 @@ ICCItem *fnUI (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	{
 	int i;
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
 	switch (dwData)
 		{
@@ -178,75 +204,44 @@ ICCItem *fnUI (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_KEY_PRESSED:
 			{
 			CString sKey = pArgs->GetElement(0)->GetStringValue();
-			char *pKeyString = sKey.GetASCIIZPointer();
-
-			//  Check to see if it's a string of more than one character. If so, it's not an alphanumeric
-			//  key, and we should use a switch block.
-			if (sKey.GetLength() <= 1)
+			if (strStartsWith(sKey, STR_COMMAND_PREFIX))
 				{
-				//  Alphanumeric case. Check letter/number keys. (We won't support non-alphanumeric
-				//  char keys, since GetAsyncKeyState doesn't work with them as easily)
-				char iKey = toupper(pKeyString[0]);
+				CString sCmd = strSubString(sKey, STR_COMMAND_PREFIX.GetLength());
+				DWORD dwKey;
+				if (!pCtx->GetUniverse().GetHost()->FindCommandKey(sCmd, &dwKey))
+					{
+					if (pCtx->GetUniverse().InDebugMode())
+						return pCC->CreateError(CONSTLIT("Invalid command"), pArgs->GetElement(0));
+					else
+						return pCC->CreateNil();
+					}
 
-				if (uiIsKeyDown(iKey) == true)
-					return pCC->CreateTrue();
-				else
+				if (dwKey == CVirtualKeyData::INVALID_VIRT_KEY)
 					return pCC->CreateNil();
+				else
+					return pCC->CreateBool(uiIsKeyDown(dwKey));
 				}
 			else
 				{
-				//  Non-alphanumeric case. Use a switch statement.
-				char iKey = 0;
-				if (strEquals(sKey, "shift"))
+				DWORD dwKey = CVirtualKeyData::GetKey(sKey);
+				if (dwKey == CVirtualKeyData::INVALID_VIRT_KEY)
 					{
-					iKey = VK_SHIFT;
-					}
-				else if (strEquals(sKey, "up"))
-					{
-					iKey = VK_UP;
-					}
-				else if (strEquals(sKey, "down"))
-					{
-					iKey = VK_DOWN;
-					}
-				else if (strEquals(sKey, "left"))
-					{
-					iKey = VK_LEFT;
-					}
-				else if (strEquals(sKey, "right"))
-					{
-					iKey = VK_RIGHT;
-					}
-				else if (strEquals(sKey, "up"))
-					{
-					iKey = VK_UP;
-					}
-				else if (strEquals(sKey, "space"))
-					{
-					iKey = VK_SPACE;
-					}
-				else if (strEquals(sKey, "esc"))
-					{
-					iKey = VK_ESCAPE;
-					}
-				else if (strEquals(sKey, "ctrl"))
-					{
-					iKey = VK_CONTROL;
-					}
-				else if (strEquals(sKey, "lmb"))
-					{
-					iKey = VK_LBUTTON;
-					}
-				else if (strEquals(sKey, "rmb"))
-					{
-					iKey = VK_RBUTTON;
-					}
-				else return pCC->CreateNil();
+					//	For backwards compatibility we handle these strings.
 
-				if (uiIsKeyDown(iKey) == true)
-					return pCC->CreateTrue();
-				else
-					return pCC->CreateNil();
+					if (strEquals(sKey, "lmb"))
+						dwKey = VK_LBUTTON;
+					else if (strEquals(sKey, "rmb"))
+						dwKey = VK_RBUTTON;
+
+					//	Not found
+
+					else if (pCtx->GetUniverse().InDebugMode())
+						return pCC->CreateError(CONSTLIT("Invalid key code"), pArgs->GetElement(0));
+					else
+						return pCC->CreateNil();
+					}
+
+				return pCC->CreateBool(uiIsKeyDown(dwKey));
 				}
 			}
 

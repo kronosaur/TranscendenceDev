@@ -246,6 +246,7 @@ class CUniverse
 				virtual IPlayerController *CreatePlayerController (void) { return NULL; }
 				virtual IShipController *CreateShipController (const CString &sController) { return NULL; }
 				virtual void DebugOutput (const CString &sLine) { }
+				virtual bool FindCommandKey (const CString &sCmd, DWORD *retdwVirtKey = NULL) const { return false; }
 				virtual bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const { return false; }
 				virtual void GameOutput (const CString &sLine) { }
 				virtual CG32bitPixel GetColor (const CString &sColor) const { return CG32bitPixel(255, 255, 255); }
