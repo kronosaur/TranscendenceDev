@@ -2398,14 +2398,15 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 //	CManeuverController
 
 	{
-	int i;
 	DWORD dwLoad;
 
-	Ctx.pStream->Read((char *)&m_iGenome, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_dwStartingShipClass, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
+	m_iGenome = (GenomeTypes)dwLoad;
+	Ctx.pStream->Read(m_dwStartingShipClass);
+
 	if (Ctx.dwVersion >= 141)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_pCharacterClass = m_Universe.FindGenericType(dwLoad);
 		}
 	else
@@ -2422,29 +2423,30 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 	if (Ctx.dwVersion >= 100)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_iOrder = (OrderTypes)dwLoad;
 		}
 	else
 		m_iOrder = orderNone;
 
-	Ctx.pStream->Read((char *)&m_iManeuver, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
+	m_iManeuver = (EManeuverTypes)dwLoad;
 
 	if (Ctx.dwVersion >= 49)
 		m_Credits.ReadFromStream(Ctx);
 	else
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_Credits.SetCredits(CONSTLIT("credit"), dwLoad);
 		}
 
 	m_Stats.ReadFromStream(Ctx);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);	//	UNUSED
 
 	//	Flags
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_bThrust = false;
 	m_bActivate = false;
 	m_bStopThrust = false;
@@ -2483,15 +2485,15 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 		{
 		int iDummy;
 
-		for (i = 0; i < 2; i++)
+		for (int i = 0; i < 2; i++)
 			{
-			Ctx.pStream->Read((char *)&iDummy, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&iDummy, sizeof(DWORD));
+			Ctx.pStream->Read(iDummy);
+			Ctx.pStream->Read(iDummy);
 
 			DWORD dwCount;
-			Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
+			Ctx.pStream->Read(dwCount);
 			for (int j = 0; j < (int)dwCount; j++)
-				Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+				Ctx.pStream->Read(dwLoad);
 			}
 		}
 
@@ -3361,25 +3363,23 @@ void CPlayerShipController::WriteToStream (IWriteStream *pStream)
 
 	GetClass().WriteToStream(pStream);
 
-	pStream->Write((char *)&m_iGenome, sizeof(DWORD));
-	pStream->Write((char *)&m_dwStartingShipClass, sizeof(DWORD));
+	pStream->Write((DWORD)m_iGenome);
+	pStream->Write(m_dwStartingShipClass);
 
 	dwSave = (m_pCharacterClass ? m_pCharacterClass->GetUNID() : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	m_pShip->WriteObjRefToStream(m_pShip, pStream);
 	m_pShip->WriteObjRefToStream(m_pStation, pStream);
 	m_pShip->WriteObjRefToStream(m_pTarget, pStream);
 	m_pShip->WriteObjRefToStream(m_pDestination, pStream);
 
-	dwSave = (DWORD)m_iOrder;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write((DWORD)m_iOrder);
 
-	pStream->Write((char *)&m_iManeuver, sizeof(DWORD));
+	pStream->Write((DWORD)m_iManeuver);
 	m_Credits.WriteToStream(pStream);
 	m_Stats.WriteToStream(pStream);
-	dwSave = 0;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write((DWORD)0);
 
 	dwSave = 0;
 	dwSave |= (m_bUnderAttack ?			0x00000001 : 0);
@@ -3398,7 +3398,7 @@ void CPlayerShipController::WriteToStream (IWriteStream *pStream)
 	//	0x00002000
 	//	0x00004000
 	//	0x00008000
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	m_UIMsgs.WriteToStream(pStream);
 
