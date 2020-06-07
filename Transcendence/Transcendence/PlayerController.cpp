@@ -33,6 +33,7 @@ const DWORD DAMAGE_BAR_TIMER =					30 * 5;
 #define HINT_MINING_NEED_BETTER_WEAPON			CONSTLIT("mining.needBetterWeapon")
 
 #define PROPERTY_CHARACTER_CLASS				CONSTLIT("characterClass")
+#define PROPERTY_STARTING_SYSTEM				CONSTLIT("startingSystem")
 
 #define SETTING_ENABLED							CONSTLIT("enabled")
 #define SETTING_TRUE							CONSTLIT("true")
@@ -571,6 +572,8 @@ ICCItem *CPlayerShipController::FindProperty (const CString &sProperty)
 	{
 	if (strEquals(sProperty, PROPERTY_CHARACTER_CLASS))
 		return (m_pCharacterClass ? CCodeChain::CreateInteger(m_pCharacterClass->GetUNID()) : CCodeChain::CreateNil());
+	else if (strEquals(sProperty, PROPERTY_STARTING_SYSTEM))
+		return CCodeChain::CreateString(m_sStartingSystem);
 	else
 		return m_Stats.FindProperty(sProperty);
 	}
@@ -2383,6 +2386,7 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 //
 //	DWORD		m_iGenome
 //	DWORD		m_dwStartingShipClass
+//	CString		m_sStartingSystem
 //	DWORD		m_dwCharacterClass
 //	DWORD		m_pShip (CSpaceObject ref)
 //	DWORD		m_pStation (CSpaceObject ref)
@@ -2403,6 +2407,18 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	Ctx.pStream->Read(dwLoad);
 	m_iGenome = (GenomeTypes)dwLoad;
 	Ctx.pStream->Read(m_dwStartingShipClass);
+	
+	if (Ctx.dwVersion >= 191)
+		m_sStartingSystem.ReadFromStream(Ctx.pStream);
+	else
+		{
+		const CPlayerSettings *pPlayer = pShip->GetClass()->GetPlayerSettings();
+		if (pPlayer)
+			m_sStartingSystem = pPlayer->GetStartingNode();
+
+		if (m_sStartingSystem.IsBlank())
+			m_sStartingSystem = m_Universe.GetCurrentAdventureDesc().GetStartingNodeID();
+		}
 
 	if (Ctx.dwVersion >= 141)
 		{
@@ -3344,6 +3360,7 @@ void CPlayerShipController::WriteToStream (IWriteStream *pStream)
 //
 //	DWORD		m_iGenome
 //	DWORD		m_dwStartingShipClass
+//	CString		m_sStartingSystem
 //	DWORD		m_dwCharacterClass
 //	DWORD		m_pShip (CSpaceObject ref)
 //	DWORD		m_pStation (CSpaceObject ref)
@@ -3365,6 +3382,7 @@ void CPlayerShipController::WriteToStream (IWriteStream *pStream)
 
 	pStream->Write((DWORD)m_iGenome);
 	pStream->Write(m_dwStartingShipClass);
+	m_sStartingSystem.WriteToStream(pStream);
 
 	dwSave = (m_pCharacterClass ? m_pCharacterClass->GetUNID() : 0);
 	pStream->Write(dwSave);

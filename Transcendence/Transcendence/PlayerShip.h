@@ -176,6 +176,7 @@ class CPlayerShipController : public IShipController
 		void SetName (const CString &sName) { m_sName = sName; }
 		void SetResurrectCount (int iCount) { m_Stats.SetStat(CONSTLIT("resurrectCount"), ::strFromInt(iCount)); }
 		void SetStartingShipClass (DWORD dwUNID) { m_dwStartingShipClass = dwUNID; }
+		void SetStartingSystem (const CString &sNode) { m_sStartingSystem = sNode; }
 		void SetTarget (CSpaceObject *pTarget);
 		void SelectNearestTarget (void);
 		void SelectNextFriendly (int iDir = 1);
@@ -324,8 +325,9 @@ class CPlayerShipController : public IShipController
 		CUIMessageController m_UIMsgs;				//	Status of various UI messages, such as hints
 
 		CString m_sName;							//	Player name
-		GenomeTypes m_iGenome = genomeUnknown;					//	Player genome
+		GenomeTypes m_iGenome = genomeUnknown;		//	Player genome
 		DWORD m_dwStartingShipClass = 0;			//	Starting ship class
+		CString m_sStartingSystem;					//	Starting system
 		CGenericType *m_pCharacterClass = NULL;		//	Character class
 
 		bool m_bUnderAttack = false;				//	TRUE if we're currently under attack

@@ -692,3 +692,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					190;
 //
 //	190: 1.9 Beta 2
 //		m_MomentumDamage in DamageDesc
+//
+//	191: 1.9 Beta 2
+//		m_sStartingSystem in CPlayerShipController

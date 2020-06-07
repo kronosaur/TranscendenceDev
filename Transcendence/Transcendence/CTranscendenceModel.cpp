@@ -2667,6 +2667,10 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 	CString sStartPos;
 	CalcStartingPos(pStartingShip, &dwStartMap, &sStartNode, &sStartPos);
 
+	//	Remember the starting system.
+
+	m_pPlayer->SetStartingSystem(sStartNode);
+
 	//	Initialize topology, etc.
 
 	if (error = m_Universe.InitGame(dwStartMap, retsError))
