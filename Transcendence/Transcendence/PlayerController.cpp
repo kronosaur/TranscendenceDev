@@ -3161,15 +3161,6 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 	bool bEnemiesInRange = m_pShip->IsEnemyInRange(MAX_IN_COMBAT_RANGE, true);
 
-	//	Tell player about thrusting
-
-	if (m_UIMsgs.ShowMessage(m_Universe, uimsgKeyboardManeuverHint))
-		{
-		DisplayCommandHint(CGameKeys::keyThrustForward, Translate(CONSTLIT("hintThrust")));
-		m_iLastHelpTick = iTick;
-		return;
-		}
-
 	//	If we've never entered a gate, and there is a gate nearby
 	//	and we're not in the middle of anything, then tell the player.
 
@@ -3210,6 +3201,15 @@ void CPlayerShipController::UpdateHelp (int iTick)
 			m_iLastHelpTick = iTick;
 			return;
 			}
+		}
+
+	//	Tell player about thrusting
+
+	if (m_UIMsgs.ShowMessage(m_Universe, uimsgKeyboardManeuverHint))
+		{
+		DisplayCommandHint(CGameKeys::keyThrustForward, Translate(CONSTLIT("hintThrust")));
+		m_iLastHelpTick = iTick;
+		return;
 		}
 
 	//	If we've never used an item, and we've got a usable item in cargo
