@@ -287,6 +287,8 @@ CSpaceObject::~CSpaceObject (void)
 			}
 		}
 #endif
+
+	ASSERT(m_ForceDesc.IsEmpty());
 	}
 
 void CSpaceObject::Accelerate (const CVector &vPush, Metric rSeconds)

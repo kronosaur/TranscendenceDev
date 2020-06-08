@@ -12,6 +12,8 @@ int CPhysicsForceResolver::AllocDesc (CSpaceObject &Obj)
 //	Alloc a descriptor for the given object.
 
 	{
+	ASSERT(!Obj.IsDestroyed() && !Obj.IsAnchored());
+
 	int iIndex = m_Forces.GetCount();
 
 	SForceDesc &Desc = *m_Forces.Insert();
@@ -28,6 +30,35 @@ void CPhysicsForceResolver::BeginUpdate (void)
 
 	{
 	m_Forces.GrowToFit(DEFAULT_ALLOC);
+
+	for (int i = 0; i < m_Forces.GetCount(); i++)
+		{
+		const SForceDesc &Desc = m_Forces[i];
+		CSpaceObject *pObj = Desc.pObj;
+		if (pObj->IsDestroyed() || pObj->IsAnchored())
+			{
+			pObj->ClearForceDesc();
+			m_Forces.Delete(i);
+			i--;
+			}
+		}
+	}
+
+void CPhysicsForceResolver::CleanUp (void)
+
+//	CleanUp
+//
+//	Clean up any cached information.
+
+	{
+	for (int i = 0; i < m_Forces.GetCount(); i++)
+		{
+		const SForceDesc &Desc = m_Forces[i];
+		CSpaceObject *pObj = Desc.pObj;
+		pObj->ClearForceDesc();
+		}
+
+	m_Forces.DeleteAll();
 	}
 
 void CPhysicsForceResolver::Update (CSystem &System, const Metric rSecondsPerUpdate)

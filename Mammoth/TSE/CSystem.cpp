@@ -101,6 +101,7 @@ CSystem::~CSystem (void)
 
 	//	Deleted objects
 
+	m_ForceResolver.CleanUp();
 	FlushDeletedObjects();
 	}
 
@@ -1940,6 +1941,7 @@ void CSystem::FlushAllCaches (void)
 //	Flushes all caches to save memory.
 
 	{
+	m_ForceResolver.CleanUp();
 	FlushEnemyObjectCache();
 	FlushDeletedObjects();
 	}
@@ -4674,6 +4676,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	int iMoveObj = 0;
 #endif
 
+	//	Make sure we're valid at this point.
+
+	m_ForceResolver.BeginUpdate();
+
 	//	Delete all objects in the deleted list (we do this at the
 	//	beginning because we want to keep the list after the update
 	//	so that callers can examine it).
@@ -4700,7 +4706,6 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	hit tests
 
 	m_ObjGrid.Init(this, Ctx);
-	m_ForceResolver.BeginUpdate();
 
 	//	Fire timed events
 	//	NOTE: We only do this if we have a player because otherwise, some

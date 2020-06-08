@@ -2536,10 +2536,12 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 //	Sets the current system
 
 	{
+	if (pSystem == m_pCurrentSystem)
+		return;
+
 	if (m_pCurrentSystem)
 		m_pCurrentSystem->FlushAllCaches();
 
-	CSystem *pOldSystem = m_pCurrentSystem;
 	m_pCurrentSystem = pSystem;
 
 	if (pSystem)
@@ -2557,8 +2559,7 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 
 	//	Initialize mission cache
 
-	if (pOldSystem != m_pCurrentSystem)
-		m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
+	m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
 	}
 
 bool CUniverse::SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData)
