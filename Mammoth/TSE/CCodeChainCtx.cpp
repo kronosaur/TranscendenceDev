@@ -568,16 +568,6 @@ void CCodeChainCtx::DefineOrbit (const CString &sVar, const COrbit &OrbitDesc)
 	pValue->Discard();
 	}
 
-void CCodeChainCtx::DefineSource (CSpaceObject *pSource)
-
-//	DefineSource
-//
-//	Sets gSource
-
-	{
-	DefineGlobalSpaceObject(m_CC, STR_G_SOURCE, pSource);
-	}
-
 void CCodeChainCtx::DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj)
 
 //	DefineSpaceObject
@@ -970,17 +960,6 @@ void CCodeChainCtx::SaveItemVar (void)
 	{
 	if (m_pOldItem == NULL)
 		m_pOldItem = m_CC.LookupGlobal(STR_G_ITEM, this);
-	}
-
-void CCodeChainCtx::SaveSourceVar (void)
-
-//	SaveSourceVar
-//
-//	Saves gSource if not already saved
-
-	{
-	if (m_pOldSource == NULL)
-		m_pOldSource = m_CC.LookupGlobal(STR_G_SOURCE, this);
 	}
 
 void CCodeChainCtx::SetEvent (ECodeChainEvents iEvent)

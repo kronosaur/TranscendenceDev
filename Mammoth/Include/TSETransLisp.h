@@ -58,7 +58,6 @@ class CCodeChainCtx
 		void DefineItemType (const CString &sVar, const CItemType *pType);
 		void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.CreateNil()); }
 		void DefineOrbit (const CString &sVar, const COrbit &OrbitDesc);
-		void DefineSource (CSpaceObject *pSource);
 		void DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj);
 		void DefineSpaceObject (const CString &sVar, const CSpaceObject &Obj) { m_CC.DefineGlobalInteger(sVar, (int)&Obj); }
 		void DefineString (const CString &sVar, const CString &sValue) { m_CC.DefineGlobalString(sVar, sValue); }
@@ -90,7 +89,6 @@ class CCodeChainCtx
 		void SaveAndDefineSovereignVar (CSovereign *pSource);
 		void SaveAndDefineType (DWORD dwUNID);
 		void SaveItemVar (void);
-		void SaveSourceVar (void);
 		void SetDockScreenList (IListData *pListData) { m_pListData = pListData; }
 		void SetCanvas (CG32bitImage *pCanvas) { m_pCanvas = pCanvas; }
 		void SetEvent (ECodeChainEvents iEvent);

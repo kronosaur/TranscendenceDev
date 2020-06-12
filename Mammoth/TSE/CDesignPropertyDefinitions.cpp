@@ -306,7 +306,7 @@ void CDesignPropertyDefinitions::InitObjectData (CUniverse &Universe, CSpaceObje
 					if (!bInitialized)
 						{
 						CCCtx.DefineContainingType(&Obj);
-						CCCtx.DefineSource(&Obj);
+						CCCtx.SaveAndDefineSourceVar(&Obj);
 						bInitialized = true;
 						}
 
