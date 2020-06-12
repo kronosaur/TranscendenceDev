@@ -467,25 +467,25 @@ bool CTranscendenceWnd::ShowCommsSquadronMenu (void)
 	DWORD dwStatus = GetCommsStatus();
 
 	if (dwStatus & resCanAttack)
-		m_MenuData.AddMenuItem(CONSTLIT("A"), SO_ATTACK_TARGET, 0, msgAttack);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("A"), SO_ATTACK_TARGET, 0, msgAttack);
 
 	if (dwStatus & resCanBreakAndAttack)
-		m_MenuData.AddMenuItem(CONSTLIT("B"), SO_BREAK_AND_ATTACK, 0, msgBreakAndAttack);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("B"), SO_BREAK_AND_ATTACK, 0, msgBreakAndAttack);
 
 	if ((dwStatus & resCanFormUp) || (dwStatus & resCanAbortAttack))
-		m_MenuData.AddMenuItem(CONSTLIT("F"), SO_FORM_UP, 0, msgFormUp, 0xffffffff);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("F"), SO_FORM_UP, 0, msgFormUp, 0xffffffff);
 
 	if (dwStatus & resCanAttackInFormation)
-		m_MenuData.AddMenuItem(CONSTLIT("I"), SO_ATTACK_IN_FORMATION, 0, msgAttackInFormation);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("I"), SO_ATTACK_IN_FORMATION, 0, msgAttackInFormation);
 
 	if (dwStatus & resCanWait)
-		m_MenuData.AddMenuItem(CONSTLIT("W"), SO_WAIT, 0, msgWait);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("W"), SO_WAIT, 0, msgWait);
 
 	if (dwStatus & resCanBeInFormation)
 		{
-		m_MenuData.AddMenuItem(CONSTLIT("1"), SO_ALPHA_FORMATION, 0, msgFormUp, 0);
-		m_MenuData.AddMenuItem(CONSTLIT("2"), SO_BETA_FORMATION, 0, msgFormUp, 1);
-		m_MenuData.AddMenuItem(CONSTLIT("3"), SO_GAMMA_FORMATION, 0, msgFormUp, 2);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("1"), SO_ALPHA_FORMATION, 0, msgFormUp, 0);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("2"), SO_BETA_FORMATION, 0, msgFormUp, 1);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("3"), SO_GAMMA_FORMATION, 0, msgFormUp, 2);
 		}
 
 	//	Show Menu
@@ -595,7 +595,7 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 
 	if ((m_MenuData.GetCount() > 1 && GetCommsStatus() != 0) 
 			|| GetPlayer()->HasFleet())
-		m_MenuData.AddMenuItem(SQUADRON_KEY, SQUADRON_LABEL, 0, 0);
+		m_MenuData.AddMenuItem(NULL_STR, SQUADRON_KEY, SQUADRON_LABEL, 0, 0);
 
 	//	Done
 
