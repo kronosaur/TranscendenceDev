@@ -304,9 +304,8 @@
 			</Text>
 			<Text id="textBriefing1">
 
-				"There's %itemName% is in this system, and if you were to 
-				bring it to us, we would be able to strengthen your connection
-				to Domina.
+				"There's %itemName% in this system, and if you were to bring it
+				to us, we would be able to strengthen your connection to Domina.
 
 				"Unfortunately, it is locked away in %targetName% nearby. You'll
 				have to destroy the station to obtain it.
