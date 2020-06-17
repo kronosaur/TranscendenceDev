@@ -479,6 +479,10 @@ struct SDeviceGenerateCtx
 	IDeviceGenerator *pRoot = NULL;
 
 	CDeviceDescList *pResult = NULL;
+	bool bNoSlotCriteria = false;				//	If TRUE, do not try to place devices in slots by
+												//		criteria (we need this inside OnBind because
+												//		we're not set up).
+
 	bool bNoDefaultPos = false;					//	If TRUE, do not place device at 20 pixel offset
 												//	(we do that for ships for backwards compatibility)
 	};

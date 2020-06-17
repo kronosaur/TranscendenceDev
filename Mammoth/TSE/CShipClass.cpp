@@ -2161,9 +2161,10 @@ void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dw
 		{
 		SDeviceGenerateCtx Ctx(GetUniverse());
 		Ctx.iLevel = iLevel;
+		Ctx.pRoot = (m_pDeviceSlots ? m_pDeviceSlots : m_pDevices);
 
-		if (!(dwFlags & GDFLAG_NO_DEVICE_SLOT_SEARCH))
-			Ctx.pRoot = (m_pDeviceSlots ? m_pDeviceSlots : m_pDevices);
+		if (dwFlags & GDFLAG_NO_DEVICE_SLOT_SEARCH)
+			Ctx.bNoSlotCriteria = true;
 
 		Ctx.pResult = &Devices;
 
