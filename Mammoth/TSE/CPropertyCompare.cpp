@@ -259,6 +259,7 @@ bool CPropertyCompare::ParseValue (CCodeChainCtx &CCX, const char *&pPos, ICCIte
 	bool bDone = *pPos == '\0';
 	bool bInQuotes = false;
 	bool bHasContent = false;
+	bool bHasQuotes = false;
 	while (!bDone)
 		{
 		switch (*pPos)
@@ -288,6 +289,7 @@ bool CPropertyCompare::ParseValue (CCodeChainCtx &CCX, const char *&pPos, ICCIte
 			case '\"':
 				bInQuotes = !bInQuotes;
 				bHasContent = true;
+				bHasQuotes = true;
 				break;
 
 			default:
@@ -306,7 +308,10 @@ bool CPropertyCompare::ParseValue (CCodeChainCtx &CCX, const char *&pPos, ICCIte
 		return true;
 		}
 
-	pValue = CCX.LinkCode(sValue);
+	if (bHasQuotes)
+		sValue = strProcess(sValue, STRPROC_ESCAPE_DOUBLE_QUOTES);
+
+	pValue = CCodeChain::CreateLiteral(sValue);
 	if (pValue->IsError())
 		{
 		if (retsError) *retsError = pValue->GetStringValue();

@@ -1509,7 +1509,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 		CString sCode;
 		sCode.ReadFromStream(Ctx.pStream);
 		if (!sCode.IsBlank())
-			m_pCommandCode = CCodeChain::Link(sCode);
+			m_pCommandCode = CCodeChain::LinkCode(sCode)->Reference();
 		else
 			m_pCommandCode = NULL;
 		}

@@ -125,6 +125,10 @@
 						{	test:'(typMatches &itLaserCannon; "i +property:cost[380];")			result:True }
 						{	test:'(typMatches &itLaserCannon; "i +property:cost[379];")			result:Nil }
 						{	test:'(typMatches &itLaserCannon; "i +property:cost[381];")			result:Nil }
+
+						{	test:'(typMatches &scBorer; "s +property:manufacturer[united african states];")			result:True }
+						{	test:'(typMatches &scAsterionHeavyGunship; "s +property:manufacturer[united african states];")			result:Nil }
+						{	test:'(typMatches &scAsterionHeavyGunship; "s +property:manufacturer[NAMI];")			result:True }
 						))
 					)
 			</OnGlobalStartDiagnostics>

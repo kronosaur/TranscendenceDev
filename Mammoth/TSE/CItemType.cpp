@@ -1596,7 +1596,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		else if (strEquals(pSubDesc->GetTag(), COCKPIT_USE_TAG))
 			{
-			m_pUseCode = GetUniverse().GetCC().Link(pSubDesc->GetContentText(0));
+			m_pUseCode = CCodeChain::LinkCode(pSubDesc->GetContentText(0))->Reference();
 			if (m_pUseCode->IsError())
 				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Invoke> event: %s"), m_pUseCode->GetStringValue()));
 

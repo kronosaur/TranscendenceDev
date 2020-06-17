@@ -18,7 +18,7 @@ ALERROR CDockScreenCustomItemList::OnInitList (SInitCtx &Ctx, const SDisplayOpti
 
 	//	Get the list to show
 
-	ICCItem *pExp = CCodeChain::Link(Options.sCode);
+	ICCItemPtr pExp = CCodeChain::LinkCode(Options.sCode);
 
 	//	Evaluate the function
 
@@ -28,8 +28,7 @@ ALERROR CDockScreenCustomItemList::OnInitList (SInitCtx &Ctx, const SDisplayOpti
 	CCCtx.SaveAndDefineSourceVar(Ctx.pLocation);
 	CCCtx.SaveAndDefineDataVar(Ctx.pData);
 
-	ICCItem *pResult = CCCtx.Run(pExp);	//	LATER:Event
-	CCCtx.Discard(pExp);
+	ICCItemPtr pResult = CCCtx.RunCode(pExp);	//	LATER:Event
 
 	if (pResult->IsError())
 		{
@@ -49,10 +48,6 @@ ALERROR CDockScreenCustomItemList::OnInitList (SInitCtx &Ctx, const SDisplayOpti
 		if (NewItem.GetType() != NULL)
 			m_CustomItems.AddItem(NewItem);
 		}
-
-	//	Done with result
-
-	CCCtx.Discard(pResult);
 
 	//	Make sure items are sorted
 

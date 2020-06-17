@@ -406,7 +406,7 @@ ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue)
 		CCodeChain::SLinkOptions Options;
 		Options.iOffset = 1;
 
-		return CC.Link(sValue, Options);
+		return CC.LinkCode(sValue, Options)->Reference();
 		}
 
 	//	Handle some special constants

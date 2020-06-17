@@ -894,7 +894,7 @@ class CCodeChain
 		static ICCItem *CreateDouble (double dValue);
 		static ICCItem *CreateLambda (ICCItem *pList, bool bArgsOnly);
 		static ICCItem *CreateLinkedList (void);
-		static ICCItem *CreateLiteral (const CString &sString);
+		static ICCItemPtr CreateLiteral (const CString &sString);
 		static ICCItem *CreateNil (void) { return &m_Nil; }
 		static ICCItem *CreateNumber (double dValue);
 		static ICCItem *CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl);
@@ -926,7 +926,6 @@ class CCodeChain
 		ICCItem *GetNil (void) { return &m_Nil; }
 		ICCItem *GetTrue (void) { return &m_True; }
 		ICCItem *Eval (CEvalContext *pEvalCtx, ICCItem *pItem);
-		static ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
 		static ICCItemPtr LinkCode (const CString &sString, SLinkOptions &Options = SLinkOptions()) { return ICCItemPtr(Link(sString, Options)); }
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
 		ICCItemPtr TopLevel (const ICCItem &Code, const SRunOptions &Options);
@@ -942,7 +941,6 @@ class CCodeChain
 		IItemTransform *GetGlobalDefineHook (void) const { return m_pGlobalSymbols->GetDefineHook(); }
 		ICCItem *GetGlobals (void) { return m_pGlobalSymbols; }
 		ICCItem *ListGlobals (void);
-		ICCItem *LookupFunction (CEvalContext *pCtx, ICCItem *pName);
 		ICCItem *PoolUsage (void);
 		ALERROR RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl = NULL);
 		ALERROR RegisterPrimitives (const SPrimitiveDefTable &Table);
@@ -956,12 +954,14 @@ class CCodeChain
 		static ICCItemPtr SystemSelfTest (void);
 
 	private:
-		static ICCItem *CreateDoubleIfPossible (const CString &sString);
-		static ICCItem *CreateIntegerIfPossible (const CString &sString);
-		static ICCItem *CreateParseError (int iLine, const CString &sError);
-		ICCItem *EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem);
-		static ICCItem *LinkFragment (const CString &sString, int iOffset = 0, int *retiLinked = NULL, int *ioiCurLine = NULL);
-		ICCItem *Lookup (CEvalContext *pCtx, ICCItem *pItem);
+		static ICCItemPtr CreateDoubleIfPossible (const CString &sString);
+		static ICCItemPtr CreateIntegerIfPossible (const CString &sString);
+		static ICCItemPtr CreateParseError (int iLine, const CString &sError);
+		ICCItemPtr EvalLiteralStruct (CEvalContext *pCtx, ICCItem &Item);
+		static ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
+		static ICCItemPtr LinkFragment (const CString &sString, int iOffset = 0, int *retiLinked = NULL, int *ioiCurLine = NULL);
+		ICCItemPtr Lookup (CEvalContext *pCtx, ICCItem &Item);
+		ICCItemPtr LookupFunction (CEvalContext *pCtx, ICCItem &Name);
 		static char *SkipWhiteSpace (char *pPos, int *ioiLine);
 
 		ICCItem *m_pGlobalSymbols;

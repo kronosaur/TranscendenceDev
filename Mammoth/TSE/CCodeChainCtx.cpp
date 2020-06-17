@@ -631,7 +631,7 @@ ICCItemPtr CCodeChainCtx::LinkCode (const CString &sString, CCodeChain::SLinkOpt
 //	Links a CodeChain expression.
 
 	{
-	return ICCItemPtr(m_CC.Link(sString, Options));
+	return CCodeChain::LinkCode(sString, Options);
 	}
 
 void CCodeChainCtx::RemoveFrame (void)

@@ -195,7 +195,7 @@ ALERROR CDesignPropertyDefinitions::InitFromXML (SDesignLoadCtx &Ctx, const CXML
 			CCodeChain::SLinkOptions Options;
 			Options.bNullIfEmpty = true;
 
-			pCode = ICCItemPtr(CCodeChain::Link(sData, Options));
+			pCode = CCodeChain::LinkCode(sData, Options);
 
 			//	If no code, then nothing to do.
 

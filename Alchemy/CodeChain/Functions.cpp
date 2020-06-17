@@ -2022,7 +2022,7 @@ ICCItem *fnLink (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pCtx->pCC;
-	return pCC->Link(pArgs->GetElement(0)->GetStringValue());
+	return pCC->LinkCode(pArgs->GetElement(0)->GetStringValue())->Reference();
 	}
 
 ICCItem *fnLinkedList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)

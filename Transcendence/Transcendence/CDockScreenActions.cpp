@@ -376,15 +376,11 @@ void CDockScreenActions::Execute (int iAction, CDockScreen *pScreen)
 		{
 		//	Link the code
 
-		ICCItem *pExp = CCodeChain::Link(pAction->sCode);
+		ICCItemPtr pExp = CCodeChain::LinkCode(pAction->sCode);
 
 		//	Execute
 
 		ExecuteCode(pScreen, pAction->sID, pAction->pExtension, pExp);
-
-		//	Done
-
-		pExp->Discard();
 		}
 	}
 

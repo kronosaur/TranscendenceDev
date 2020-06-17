@@ -2488,9 +2488,8 @@ void CStandardShipAI::OnReadFromStream (SLoadCtx &Ctx)
 		sCode.ReadFromStream(Ctx.pStream);
 		if (!sCode.IsBlank())
 			{
-			ICCItem *pItem = m_pShip->GetUniverse().GetCC().Link(sCode);
+			ICCItemPtr pItem = CCodeChain::LinkCode(sCode);
 			SetCommandCode(pItem);
-			pItem->Discard();
 			}
 		}
 

@@ -188,19 +188,18 @@ bool ICCItemPtr::Load (const CString &sCode, CString *retsError)
 
 	//	Compile the code
 
-	ICCItem *pCode = CCodeChain::Link(sCode);
+	ICCItemPtr pCode = CCodeChain::LinkCode(sCode);
 	if (pCode->IsError())
 		{
 		if (retsError)
 			*retsError = pCode->GetStringValue();
 
-		pCode->Discard();
 		return false;
 		}
 
 	//	Done
 
-	TakeHandoff(pCode);
+	*this = pCode;
 	return true;
 	}
 

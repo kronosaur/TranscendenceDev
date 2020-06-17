@@ -5298,7 +5298,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	then we assume that we want type data.
 
 			if (pArgs->GetCount() == 1)
-				pResult = pCC->Link(pType->GetData());
+				pResult = pCC->LinkCode(pType->GetData())->Reference();
 
 			//	Otherwise, we get global data from the design type
 
@@ -14958,7 +14958,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Result
 
-			return pCC->Link(sData);
+			return pCC->LinkCode(sData)->Reference();
 			}
 
 		case FN_UNIVERSE_ENTITY:

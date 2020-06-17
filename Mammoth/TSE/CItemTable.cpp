@@ -2240,7 +2240,7 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, const CXM
 		CCodeChain::SLinkOptions Options;
 		Options.iOffset = 1;
 
-		m_pCode = ICCItemPtr(CCodeChain::Link(pPos, Options));
+		m_pCode = CCodeChain::LinkCode(pPos, Options);
 		if (m_pCode->IsError())
 			{
 			Ctx.sError = m_pCode->GetStringValue();

@@ -1087,7 +1087,7 @@ ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CString sResult = pPlayer->GetItemStat(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2));
 			if (!sResult.IsBlank())
-				pResult = pCC->Link(sResult);
+				pResult = pCC->LinkCode(sResult)->Reference();
 			else
 				pResult = pCC->CreateNil();
 			break;
@@ -1103,7 +1103,7 @@ ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CString sResult = pPlayer->GetKeyEventStat(pArgs->GetElement(1)->GetStringValue(), sNodeID, Crit);
 			if (!sResult.IsBlank())
-				pResult = pCC->Link(sResult);
+				pResult = pCC->LinkCode(sResult)->Reference();
 			else
 				pResult = pCC->CreateNil();
 			break;
