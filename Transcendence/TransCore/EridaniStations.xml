@@ -31,8 +31,7 @@
 		</Names>
 		
 		<Properties>
-			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
-			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+			<Constant id="maxMilitiaMissions">(random 3 4)</Constant>
 		</Properties>
 
 		<!-- Trade and Items -->

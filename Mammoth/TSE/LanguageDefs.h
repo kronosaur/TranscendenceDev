@@ -13,7 +13,8 @@ struct SStaticGenderWord
 	const char *pszText[genomeCount];
 	};
 
-static TStaticStringTable<SStaticGenderWord, 8> GENDER_WORD_TABLE = {
+static TStaticStringTable<SStaticGenderWord, 9> GENDER_WORD_TABLE = {
+	"boy",			{ "child",		"boy",		"girl",		"child", },
 	"brother",		{ "partner",	"brother",	"sister",	"partner", },
 	"he",			{ "they",		"he",		"she",		"it", },
 	"hers",			{ "theirs",		"his",		"hers",		"its", },

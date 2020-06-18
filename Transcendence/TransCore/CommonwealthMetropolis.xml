@@ -44,8 +44,7 @@
 		</Names>
 		
 		<Properties>
-			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
-			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+			<Constant id="maxMilitiaMissions">(random 3 4)</Constant>
 		</Properties>
 
 		<!-- Trade and Items -->
@@ -195,6 +194,8 @@
 		<Properties>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+
+			<Constant		id="maxMilitiaMissions">(random 3 4)</Constant>
 		</Properties>
 
 		<!-- Trade and Items -->
@@ -537,7 +538,7 @@
 									missionCriteria: (cat "n +metropolisMilitia; +rank" (int rank) ";")
 									displayCriteria: "n +metropolisMilitia;"
 									noMissionText: (scrTranslate gScreen 'descNoMissions)
-									maxPerStation: 1
+									maxPerStation: (or (obj@ gSource 'maxMilitiaMissions) 3)
 						
 									rankDetails: (typTranslate &unidCommonwealthMilitia; 'rankDetails)
 									})

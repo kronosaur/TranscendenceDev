@@ -97,6 +97,9 @@
     <Filter Include="Human Space Library\Pilgrim">
       <UniqueIdentifier>{0d3a5fa3-c89f-4ca2-b785-232965a589d5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Human Space Library\Commonwealth Metropolis">
+      <UniqueIdentifier>{008a8470-8f59-4e13-8bc5-72c588016ec7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Transcendence.xml" />
@@ -340,9 +343,6 @@
     <None Include="CommonwealthAgricultural.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </None>
-    <None Include="CommonwealthMetropolis.xml">
-      <Filter>Human Space Library\Commonwealth</Filter>
-    </None>
     <None Include="PointJuno.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </None>
@@ -399,6 +399,9 @@
     </None>
     <None Include="OvoidsCompatibility.xml">
       <Filter>Transcendence Galaxy Library</Filter>
+    </None>
+    <None Include="CommonwealthMetropolis.xml">
+      <Filter>Human Space Library\Commonwealth Metropolis</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -956,6 +959,9 @@
     </Xml>
     <Xml Include="RPGMissionTemplate01.xml">
       <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="CommonwealthVolunteerMission01.xml">
+      <Filter>Human Space Library\Commonwealth Metropolis</Filter>
     </Xml>
   </ItemGroup>
 </Project>

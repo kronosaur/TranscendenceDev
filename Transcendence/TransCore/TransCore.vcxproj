@@ -507,6 +507,7 @@
     <Xml Include="CommonwealthFleetMissionPJ01.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="CommonwealthVolunteerMission01.xml" />
     <Xml Include="CommonwealthMilitiaMission01.xml" />
     <Xml Include="CommonwealthMilitiaMission02.xml" />
     <Xml Include="CommonwealthMilitiaMission03.xml" />

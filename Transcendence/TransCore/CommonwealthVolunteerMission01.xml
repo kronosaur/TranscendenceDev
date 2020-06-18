@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&msCMVolunteer01;"
+			name=				"Commonwealth Volunteer 01: Intercept Transport"
+			attributes=			"commonwealthMilitia, commonwealthVolunteer, metropolisMilitia, rank0"
+			inherit=			"&baInterceptMission;"
+
+			level=				"1-4"
+			maxAppearing=		"3-5"
+			>
+		<Properties>
+			<Definition id="targetTable">
+				(list {	}
+					{	type: &scT31ArmedTransport;
+						sovereign: &svOutlaw;
+						dist: 200
+						}
+					{	type: &scT31ArmedTransport;	
+						sovereign: &svOutlaw;
+						dist: 200
+						escorts: (list
+							{	type:&scZulu;	}
+							{	type:&scZulu;	}
+							{	type:&scZulu;	}
+							)
+						}
+					{	type: &scT55ArmedTransport;
+						sovereign: &svOutlaw;
+						dist: 300
+						escorts: (list
+							{	type:&scZulu;	}
+							{	type:&scZulu;	}
+							{	type:&scZulu;	}
+							)
+						}
+					{	type: &scT55ArmedTransport;	
+						sovereign: &svOutlaw;
+						dist: 300
+						escorts: (list
+							{	type:&scOromo;	}
+							{	type:&scOromo;	}
+							{	type:&scOromo;	}
+							)
+						}
+					)
+			</Definition>
+
+			<Variant id="reward">
+				(@ (typ@ &unidCommonwealthMilitia; 'volunteerRewardTable) (min (sysGetLevel) 10))
+			</Variant>
+			<Variant id="targetDesc">
+				(@ (typ@ gType 'targetTable) (min (sysGetLevel) 4))
+			</Variant>
+		</Properties>
+
+		<Events>
+			<CanCreate>
+				(switch
+					;	If the player has had any dealings with the Black Market,
+					;	then this mission is not available.
+
+					(gr (typ@ &unidBlackMarketMember; 'xp) 0)
+						Nil
+
+					;	Call base class
+
+					(typFireObjEvent &baInterceptMission; gSource 'CanCreate gData)
+					)
+			</CanCreate>
+
+			<OnCompleted>
+			</OnCompleted>
+			
+			<OnReward>
+				;	Pay the player and record the award
+
+				(rpgMissionRewardPayment (msn@ gSource 'reward))
+			</OnReward>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Intercept Drug Smuggler
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(list
+					{	descID: 'textIntro1			labelID: 'actionIntro1	}
+					{	descID: 'textIntro2			labelID: 'actionIntro2	}
+					)
+			</Text>
+			<Text id="Briefing">
+				(msnTranslate gSource 'textBriefing1 {
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+					})
+			</Text>
+			<Text id="AcceptReply">
+				(msnTranslate gSource 'textAcceptReply1 {
+					})
+			</Text>
+			<Text id="DeclineReply">
+				(msnTranslate gSource 'textDeclineReply1 {
+					})
+			</Text>
+			<Text id="InProgress">
+				(msnTranslate gSource 'textInProgress1 {
+					})
+			</Text>
+			<Text id="FailureDebrief">
+				(msnTranslate gSource 'textFailureDebrief1 {
+					})
+			</Text>
+			<Text id="SuccessDebrief">
+				(msnTranslate gSource 'textSuccessDebrief1 {
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+					})
+			</Text>
+
+			<Text id="textSummary">
+			
+				A drug smuggler is operating in this system. Your mission is to 
+				intercept and destroy their ship.
+
+				System: %systemName%\n
+				Payment: %reward%
+
+			</Text>
+			<Text id="textIntro1">
+
+				A gray-haired man in wrinkled militia blues stands at a console.
+
+				"What are you gawking at, civie? Can't you see there's work to
+				do?"
+
+				He musters up an intimidating look, but a whiff of gin betrays
+				him.
+
+			</Text>
+			<String id="actionIntro1">"[W]hat kind of work?"</String>
+			<Text id="textIntro2">
+
+				He shakes his head and scoffs.
+
+				"The kind that pays to fuel that kack ship of yours! Assuming
+				you survive long enough to collect, that is.
+
+				"This is the militia, %boy%&mdash;not an ice cream shop. You do
+				the job that needs doing."
+
+			</Text>
+			<String id="actionIntro2">"[I]'m ready."</String>
+			<Text id="textBriefing1">
+
+				The gray-haired man grunts as he looks down at a screen.
+
+				"OK, that's better. There's a drug smuggler just came into the
+				system with a load of tempus. Your mission is to intercept the 
+				ship and destroy it. We don't want that kack on our station.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="textAcceptReply1">
+
+				"All right. I'll send the target to your computer. Just make 
+				sure you destroy the target before it leaves the system. 
+				Else we'll never find it again.
+
+				"OK, get out of here."
+
+			</Text>
+			<Text id="textDeclineReply1">
+
+				"Ah, Hell! What are you doing here then? Stop wasting my time!"
+
+			</Text>
+			<Text id="textInProgress1">
+
+				"What's wrong? You said you could handle this mission! Get back 
+				out there and finish the job!"
+
+			</Text>
+			<Text id="textFailureDebrief1">
+
+				The gray-haired man shouts as you enter:
+
+				"What the kack are you doing? We're all alone out here, and if 
+				we don't clean up this filth no one is going to do it for us.
+
+				"Next time act like you actually care!"
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+
+				The gray-haired man leans back on his chair.
+
+				"Good. A nice clean hit. We don't want their filth on our
+				station.
+
+				"We've deposited %reward% to your account."
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

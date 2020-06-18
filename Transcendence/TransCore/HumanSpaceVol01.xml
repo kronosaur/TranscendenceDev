@@ -2028,6 +2028,8 @@
 	<!ENTITY msCMstKatsDestroyThreat	"0x001002B5">
 	<!ENTITY rsCommonwealthMilitiaInsignia	"0x001002B6">
 
+	<!ENTITY msCMVolunteer01			"0x001002B7">
+
 	<!-- 02D0-02EF DWARG RAIDERS -->
 
 	<!ENTITY baZoanthropeBaseObsolete	"0x001002D0">
@@ -2442,7 +2444,6 @@
 	<Module filename="CommonwealthAgricultural.xml"/>
 	<Module filename="CommonwealthCenturions.xml"/>
 	<Module filename="CommonwealthCharacters.xml"/>
-	<Module filename="CommonwealthMetropolis.xml"/>
 	<Module filename="CommonwealthMission01.xml"/>
 	<Module filename="CommonwealthMissionRevenge01.xml"/>
 	<Module filename="CommonwealthRonins.xml"/>
@@ -2476,6 +2477,11 @@
 	<Module filename="CSCTerra.xml"/>
 	<Module filename="Dantalion.xml"/>
 	<Module filename="PointJuno.xml"/>
+
+	<!-- Commonwealth Metropolis -->
+
+	<Module filename="CommonwealthMetropolis.xml"/>
+	<Module filename="CommonwealthVolunteerMission01.xml"/>
 
 	<!-- Commonwealth Militia -->
 

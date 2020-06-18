@@ -7,16 +7,18 @@
 	This type holds all global data and events for the Commonwealth Militia
 	occupation.
 
-	GLOBAL DATA
+	PROPERTIES
 
-	rank: The player's current rank. The following values are defined:
+		rankID: The player's current rank.
 
-			Nil:		Civilian				Never successfully completed a mission
-			1			Lieutenant				Completed at least one mission
-			2			Captain
-			3			Major
+			Nil: Civilian who has never completed any missions.
+			'volunteer: Civilian who has completed at least one mission.
 
-			-1			Player has failed too many missions
+			'lieutenant: Lieutenant in the militia.
+			'captain: Captin in the militia.
+			'major: Major in the militia.
+
+			'blacklisted: Dishonorably discharged.
 
 	ATTRIBUTES
 
@@ -31,7 +33,7 @@
 
 			A MissionType may have multiple rank attributes.
 
-			A mission must have both the commonwealthMilitia and atleast one rank
+			A mission must have both the commonwealthMilitia and at least one rank
 			attribute to be offered at a Commonwealth Fortress. Special missions may
 			omit the rank attribute if they are offered in another way.
 
@@ -41,7 +43,7 @@
 		<Properties>
 			<Definition id="rankTable">
 				(list
-					{	rank:Nil	id:'volunteer	icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0   0 256 256)	}
+					{	rank:0		id:'volunteer	icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0   0 256 256)	}
 					{	rank:1		id:'lieutenant	icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia; 256   0 256 256)	}
 					{	rank:2		id:'captain		icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia; 512   0 256 256)	}
 					{	rank:3		id:'major		icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0 256 256 256)	}
@@ -81,6 +83,28 @@
 			<DynamicGlobal id="rankNoun">
 				(typTranslate gType (cat "rank." (typ@ gType 'rankID)) { gender:(plyGetGenome gPlayer) })
 			</DynamicGlobal>
+
+			<Definition id="volunteerRewardTable">
+
+				;	REWARD		LEVEL
+				; ---------------------------------
+
+				'(	0
+
+					400			;	1
+					800			;	2
+					1500		;	3
+					3000		;	4
+					6000		;	5
+
+					10000		;	6
+					20000		;	7
+					40000		;	8
+					70000		;	9
+					120000		;	10
+					)
+
+			</Definition>
 		</Properties>
 
 		<Events>
@@ -328,7 +352,7 @@
 							<Action id="actionCommandCenter" default="1">
 								(block (
 									(rank (typGetData &unidCommonwealthMilitia; 'rank))
-									(commonCriteria (cat "n +commonwealthMilitia; +rank" (int rank) "; =" (sysGetLevel) ";"))
+									(commonCriteria (cat "n +commonwealthMilitia; -commonwealthVolunteer; +rank" (int rank) "; =" (sysGetLevel) ";"))
 									)
 									(if (objGetItems gPlayerShip "* +militaryID;")
 
@@ -1054,8 +1078,8 @@
 			(setq milMissionCompleted (lambda (missionObj reason data)
 				(block (
 					(rank (typGetData &unidCommonwealthMilitia; 'rank))
-					(success (count (msnFind "r +commonwealthMilitia; +property:isSuccess;")))
-					(failure (count (msnFind "r +commonwealthMilitia; +property:isFailure;")))
+					(success (count (msnFind "r +commonwealthMilitia; -commonwealthVolunteer; +property:isSuccess;")))
+					(failure (count (msnFind "r +commonwealthMilitia; -commonwealthVolunteer; +property:isFailure;")))
 					promoted
 					)
 					;	Add current mission to success/failure counts
@@ -1101,6 +1125,7 @@
 				(block Nil
 					;	Pay the player and record the award
 					(rpgMissionRewardPayment (msnGetData missionObj 'reward))
+
 					;	Increase XP
 					(typIncData &unidCommonwealthMilitia; 'xp (msnGetData missionObj 'missionXP))
 
