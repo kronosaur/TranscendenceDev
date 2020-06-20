@@ -1983,6 +1983,7 @@
 	<!ENTITY chVolkov					"0x00100239">
 	<!ENTITY chJenna					"0x0010023A">
 	<!ENTITY chRama						"0x0010023B">
+	<!ENTITY chEnricoGaul				"0x0010023C">
 	
 	<!-- 0250-026F COMMONWEALTH MINING -->
 	
@@ -2424,6 +2425,7 @@
 	<!-- Characters -->
 		
 	<Module filename="Benedict.xml"/>
+	<Module filename="EnricoGaul.xml"/>
 	<Module filename="Fiona.xml"/>
 	<Module filename="HugoSandoval.xml"/>
 	<Module filename="Jenna.xml"/>

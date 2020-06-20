@@ -547,6 +547,7 @@
     <Xml Include="Debris.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="EnricoGaul.xml" />
     <Xml Include="EridaniStations.xml" />
     <Xml Include="EtaCeti.xml" />
     <Xml Include="FerianMission01.xml" />

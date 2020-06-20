@@ -47,6 +47,9 @@
 					)
 			</Definition>
 
+			<Variant id="character.missionGiver">
+				&chEnricoGaul;
+			</Variant>
 			<Variant id="reward">
 				(@ (typ@ &unidCommonwealthMilitia; 'volunteerRewardTable) (min (sysGetLevel) 10))
 			</Variant>
@@ -91,13 +94,12 @@
 					})
 			</Text>
 			<Text id="Intro">
-				(list
-					{	descID: 'textIntro1			labelID: 'actionIntro1	}
-					{	descID: 'textIntro2			labelID: 'actionIntro2	}
-					)
+				(typTranslate (msn@ gSource 'character.missionGiver) 'missionIntro {
+					missionObj: gSource
+					})
 			</Text>
 			<Text id="Briefing">
-				(msnTranslate gSource 'textBriefing1 {
+				(msnTranslate gSource (cat 'textBriefing. (min (+ (msn@ gSource 'missionNumber) 1) 3)) {
 					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
@@ -132,37 +134,38 @@
 				Payment: %reward%
 
 			</Text>
-			<Text id="textIntro1">
-
-				A gray-haired man in wrinkled militia blues stands at a console.
-
-				"What are you gawking at, civie? Can't you see there's work to
-				do?"
-
-				He musters up an intimidating look, but a whiff of gin betrays
-				him.
-
-			</Text>
-			<String id="actionIntro1">"[W]hat kind of work?"</String>
-			<Text id="textIntro2">
-
-				He shakes his head and scoffs.
-
-				"The kind that pays to fuel that kack ship of yours! Assuming
-				you survive long enough to collect, that is.
-
-				"This is the militia, %boy%&mdash;not an ice cream shop. You do
-				the job that needs doing."
-
-			</Text>
-			<String id="actionIntro2">"[I]'m ready."</String>
-			<Text id="textBriefing1">
+			<Text id="textBriefing.1">
 
 				The gray-haired man grunts as he looks down at a screen.
 
-				"OK, that's better. There's a drug smuggler just came into the
+				"All right. There's a drug smuggler just came into the
 				system with a load of tempus. Your mission is to intercept the 
 				ship and destroy it. We don't want that kack on our station.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="textBriefing.2">
+
+				Captain Gaul scoffs.
+
+				"%Boy%, I got more missions than you can handle. Everyone except
+				me is in the Black Market, judging by the amount of drugs 
+				flooding into the system!
+
+				"We tagged another smuggler ship just yesterday. Your mission is
+				to intercept and destroy.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="textBriefing.3">
+
+				Captain Gaul grunts as he looks down at a screen.
+
+				"Guess what!? I got another smuggler for you to air out. 
+				Shocking, isn't it? Why bother getting a job when you can just
+				fast-foward your life on tempus?
 
 				"We'll pay %reward% if you succeed. Clear?"
 

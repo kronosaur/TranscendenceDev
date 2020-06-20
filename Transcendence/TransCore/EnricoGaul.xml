@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&chEnricoGaul;">
+		<Properties>
+		</Properties>
+
+		<Language>
+			<Code id="missionIntro">
+				(block (
+					;	Count the number of mission intros that we've already
+					;	given to the player. 0 means that we've never shown and
+					;	intro before.
+
+					(introCount (count
+						(filter (msnFind "* +property:character.missionGiver=&chEnricoGaul;;") theMission
+							(msn@ theMission 'isIntroShown)
+							)
+						))
+					)
+					(dbgOutput "Count: " introCount)
+					(switch
+						(geq introCount 3)
+							(typTranslate gType 'missionIntro.default gData)
+
+						(typTranslate gType (cat 'missionIntro. (+ introCount 1)) gData)
+						)
+					)
+			</Code>
+
+			<!-- First Mission Intro -->
+
+			<Code id="missionIntro.1">
+				(list
+					{	descID: 'textIntro.1.1		labelID: 'actionIntro.1.1	translateType: gType	}
+					{	descID: 'textIntro.1.2		labelID: 'actionIntro.1.2	translateType: gType	}
+					)
+			</Code>
+			<Text id="textIntro.1.1">
+
+				A gray-haired man in wrinkled militia blues stands at a console.
+				A captain's insignia sits on his shoulder and the name 'Gaul' is
+				printed above his heart.
+
+				"What are you gawking at, civie? Can't you see there's work to
+				do?"
+
+				He musters up an intimidating look, but a whiff of gin betrays
+				him.
+
+			</Text>
+			<String id="actionIntro.1.1">"[W]hat kind of work?"</String>
+			<Text id="textIntro.1.2">
+
+				He shakes his head and scoffs.
+
+				"The kind that pays to fuel that kack ship of yours! Assuming
+				you survive long enough to collect, that is.
+
+				"This is the militia, %boy%&mdash;not an ice cream shop. You do
+				the job that needs doing."
+
+			</Text>
+			<String id="actionIntro.1.2">"[I]'m ready."</String>
+
+			<!-- Second Mission Intro -->
+
+			<Code id="missionIntro.2">
+				(list
+					{	descID: 'textIntro.2.1		labelID: 'actionIntro.2.1	translateType: gType	}
+					{	descID: 'textIntro.2.2		labelID: 'actionIntro.2.2	translateType: gType	}
+					)
+			</Code>
+			<Text id="textIntro.2.1">
+
+				The gray-haired man is staring off into space. His face is red 
+				and his eyes are puffy. He stands up and frowns when you enter.
+
+				"Well, look who's back! Ready for another job? Is this a 
+				convenient time for you?"
+			
+			</Text>
+			<String id="actionIntro.2.1">"[I]'m ready to help, captain."</String>
+			<Text id="textIntro.2.2">
+
+				"Yeah, well don't be so eager. This aint some cushy corporate 
+				gig where you push a button and let the bots do the kill.
+
+				"We work for a living here, %boy%."
+			
+			</Text>
+			<String id="actionIntro.2.2">"[D]o you have a mission for me or not?"</String>
+
+			<!-- Third Mission Intro -->
+
+			<Code id="missionIntro.3">
+				(list
+					{	descID: 'textIntro.3.1		labelID: 'actionIntro.3.1	translateType: gType	}
+					{	descID: 'textIntro.3.2		labelID: 'actionIntro.3.2	translateType: gType	}
+					)
+			</Code>
+			<Text id="textIntro.3.1">
+
+				Captain Gaul sits at his console watching a message from a young
+				woman. She's dressed in a neolinen suit and wears a trendy hair 
+				style. Gaul snaps the message off when he sees you.
+
+				"Back already? You must be desperate for some coin."
+
+			</Text>
+			<String id="actionIntro.3.1">"[I] just want to help, captain."</String>
+			<Text id="textIntro.3.2">
+
+				Gaul laughs.
+
+				"You're just passing through, %boy%. Sooner or later you'll be
+				done with us and off to the next system. You think you're a 
+				hero? Heros stay and fight day after day, even when it's easier
+				to run."
+
+			</Text>
+			<String id="actionIntro.3.2">"[J]ust give me a mission, please!"</String>
+
+			<!-- Subsequent Mission Intros -->
+
+			<Code id="missionIntro.default">
+				(list
+					{	descID: 'textIntro.default.1	labelID: 'actionIntro.default.1	translateType: gType	}
+					)
+			</Code>
+			<Text id="textIntro.default.1">
+
+				Captain Gaul walks up to you. He has a tight smile on his face.
+
+				"What the hell are you doing here, %name%? Don't you have better
+				things to do than catch pissant drug smugglers?"
+			
+			</Text>
+			<String id="actionIntro.default.1">"[K]nock it off, I'm trying to help."</String>
+		</Language>
+	</Type>
+
+</TranscendenceModule>

@@ -963,5 +963,8 @@
     <Xml Include="CommonwealthVolunteerMission01.xml">
       <Filter>Human Space Library\Commonwealth Metropolis</Filter>
     </Xml>
+    <Xml Include="EnricoGaul.xml">
+      <Filter>Human Space Library\Characters</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
