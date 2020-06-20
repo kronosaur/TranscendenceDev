@@ -27,7 +27,7 @@
 
 #define REASON_DEBRIEFED						CONSTLIT("debriefed")
 
-TPropertyHandler<CMission> CMission::m_PropertyTable = std::array<TPropertyHandler<CMission>::SPropertyDef, 19> {{
+TPropertyHandler<CMission> CMission::m_PropertyTable = std::array<TPropertyHandler<CMission>::SPropertyDef, 20> {{
 		{
 		"acceptedOn",		"ticks",
 		[](const CMission &Obj, const CString &sProperty) 
@@ -129,6 +129,12 @@ TPropertyHandler<CMission> CMission::m_PropertyTable = std::array<TPropertyHandl
 		{
 		"isUnavailable",	"True|Nil",
 		[](const CMission &Obj, const CString &sProperty) {	return ICCItemPtr(Obj.IsUnavailable()); },
+		NULL,
+		},
+
+		{
+		"missionNumber",	"Ordinal of mission of type",
+		[](const CMission &Obj, const CString &sProperty) {	return ICCItemPtr(Obj.m_iMissionNumber); },
 		NULL,
 		},
 

@@ -119,28 +119,29 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		void FireOnStart (void);
 		void FireOnStop (const CString &sReason, ICCItem *pData);
 
-		CMissionType *m_pType;				//	Mission type
-		EStatus m_iStatus;					//	Current mission status
-		CGlobalSpaceObject m_pOwner;		//	Mission owner (may be NULL)
-		CGlobalSpaceObject m_pDebriefer;	//	Object at which player debriefs (may be NULL,
-											//		in which case we debrief at the owner obj).
-		CString m_sNodeID;					//	NodeID of owner
-		DWORD m_dwCreatedOn;				//	Mission created on (used to check expiration)
-		DWORD m_dwAcceptedOn;				//	Tick on which mission was accepted
-		DWORD m_dwLeftSystemOn;				//	Left the system on this tick (only used if the mission
-											//		times out when out of the system).
-		DWORD m_dwCompletedOn;				//	Tick on which mission was completed
+		CMissionType *m_pType = NULL;				//	Mission type
+		EStatus m_iStatus = statusOpen;				//	Current mission status
+		int m_iMissionNumber = 0;					//	Ordinal number for mission of same type.
+		CGlobalSpaceObject m_pOwner;				//	Mission owner (may be NULL)
+		CGlobalSpaceObject m_pDebriefer;			//	Object at which player debriefs (may be NULL,
+													//		in which case we debrief at the owner obj).
+		CString m_sNodeID;							//	NodeID of owner
+		DWORD m_dwCreatedOn = 0;					//	Mission created on (used to check expiration)
+		DWORD m_dwAcceptedOn = 0;					//	Tick on which mission was accepted
+		DWORD m_dwLeftSystemOn = 0;					//	Left the system on this tick (only used if the mission
+													//		times out when out of the system).
+		DWORD m_dwCompletedOn = 0;					//	Tick on which mission was completed
 
-		CString m_sArcTitle;				//	Arc title (if any)
-		CString m_sTitle;					//	Mission title
-		CString m_sInstructions;			//	Current instructions
+		CString m_sArcTitle;						//	Arc title (if any)
+		CString m_sTitle;							//	Mission title
+		CString m_sInstructions;					//	Current instructions
 
-		DWORD m_fIntroShown:1;				//	TRUE if player has seen intro
-		DWORD m_fDeclined:1;				//	TRUE if player has declined at least once
-		DWORD m_fDebriefed:1;				//	TRUE if player has been debriefed
-		DWORD m_fInOnCreate:1;				//	TRUE if we're inside OnCreate
-		DWORD m_fInMissionSystem:1;			//	TRUE if player is in the proper mission system
-		DWORD m_fAcceptedByPlayer:1;		//	TRUE if this is a player mission
+		DWORD m_fIntroShown:1;						//	TRUE if player has seen intro
+		DWORD m_fDeclined:1;						//	TRUE if player has declined at least once
+		DWORD m_fDebriefed:1;						//	TRUE if player has been debriefed
+		DWORD m_fInOnCreate:1;						//	TRUE if we're inside OnCreate
+		DWORD m_fInMissionSystem:1;					//	TRUE if player is in the proper mission system
+		DWORD m_fAcceptedByPlayer:1;				//	TRUE if this is a player mission
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 		DWORD m_dwSpare:24;
@@ -168,6 +169,7 @@ class CMissionList
 		void DeleteAll (void);
 		CMissionList Filter (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const;
 		CMissionList FilterByArc (void) const;
+		CMissionList FilterByType (CMissionType &Type) const;
 		CMission *FindAcceptedArcChapter (const CString &sTargetArc, const CString &sTargetTitle, CMission *pExclude = NULL) const;
 		CMission *FindByArc (const CString &sTargetArc) const;
 		CMission *FindLatestActivePlayer (void) const;

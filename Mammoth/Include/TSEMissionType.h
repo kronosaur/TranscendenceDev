@@ -63,6 +63,7 @@ class CMissionType : public CDesignType
 		EMissionAutoAccept GetAutoAccept (void) const { return m_iAutoAccept; }
 		const CString &GetCreateCriteria (void) const { return m_sCreateCriteria; }
 		const CObjectImageArray &GetImage (void) const;
+		int GetMaxAppearing (void) const { return m_iMaxAppearing; }
 		const CString &GetName (void) const { return m_sName; }
 		int GetExpireTime (void) const { return m_iExpireTime; }
 		DWORD GetLastAcceptedOn (void) const { return m_dwLastAcceptedOn; }

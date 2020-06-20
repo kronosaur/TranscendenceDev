@@ -218,6 +218,14 @@ ALERROR CMission::Create (CMissionType &Type, CMissionType::SCreateCtx &CreateCt
 	pMission->m_pOwner = CreateCtx.pOwner;
 	pMission->m_pDebriefer = NULL;
 
+	//	If we can have multiple of this mission, then compute the ordinal number
+	//	by counting existing missions.
+
+	if (Type.GetMaxAppearing() != 1)
+		pMission->m_iMissionNumber = Universe.GetMissions().FilterByType(Type).GetCount();
+	else
+		pMission->m_iMissionNumber = 0;
+
 	//	NodeID
 
 	CTopologyNode *pNode = NULL;
@@ -782,6 +790,7 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 //	CGlobalSpaceObject	m_pOwner
 //	CGlobalSpaceObject	m_pDebriefer
 //	CString		m_sNodeID
+//	DWORD		m_iMissionNumber
 //	DWORD		m_dwCreatedOn
 //	DWORD		m_dwLeftSystemOn
 //	DWORD		m_dwAcceptedOn
@@ -807,6 +816,11 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 		m_pDebriefer.ReadFromStream(Ctx);
 
 	m_sNodeID.ReadFromStream(Ctx.pStream);
+
+	if (Ctx.dwVersion >= 192)
+		Ctx.pStream->Read(m_iMissionNumber);
+	else
+		m_iMissionNumber = 0;
 
 	if (Ctx.dwVersion >= 85)
 		Ctx.pStream->Read(m_dwCreatedOn);
@@ -925,6 +939,7 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 //	CGlobalSpaceObject	m_pOwner
 //	CGlobalSpaceObject	m_pDebriefer
 //	CString		m_sNodeID
+//	DWORD		m_iMissionNumber
 //	DWORD		m_dwCreatedOn
 //	DWORD		m_dwLeftSystemOn
 //	DWORD		m_dwAcceptedOn
@@ -943,6 +958,7 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 	m_pOwner.WriteToStream(pStream);
 	m_pDebriefer.WriteToStream(pStream);
 	m_sNodeID.WriteToStream(pStream);
+	pStream->Write(m_iMissionNumber);
 	pStream->Write(m_dwCreatedOn);
 	pStream->Write(m_dwLeftSystemOn);
 	pStream->Write(m_dwAcceptedOn);

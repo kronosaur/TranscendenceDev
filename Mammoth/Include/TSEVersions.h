@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							49;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					191;
+constexpr DWORD SYSTEM_SAVE_VERSION =					192;
 
 //	Uncomment out the following define when building a stable release
 
@@ -695,3 +695,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					191;
 //
 //	191: 1.9 Beta 2
 //		m_sStartingSystem in CPlayerShipController
+//
+//	192: 1.9 Beta 2
+//		m_iMissionNumber in CMission
