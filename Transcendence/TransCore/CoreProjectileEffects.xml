@@ -101,8 +101,8 @@
 								(* speed 2)						; max bullet length
 								50								; scale gamma
 								)
-						width: (mathScale damageHP 2 30 6 9 50)
-						intensity: 50
+						width: (mathScale damageHP 2 30 10 20 50)
+						intensity: 25
 						}
 					)
 			</GetParameters>

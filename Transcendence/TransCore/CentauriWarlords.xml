@@ -671,6 +671,7 @@
 				deviceSlots=		"2"
 
 				repeating=			"3"
+				repeatingDelay=		"1"
 				damage=				"kinetic:1d6+1; momentum:1"
 				fireRate=			"24"
 				missileSpeed=		"40"
