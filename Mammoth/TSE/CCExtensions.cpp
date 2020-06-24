@@ -244,6 +244,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_INC_OVERLAY_PROPERTY	137
 #define FN_OBJ_CAN_ENHANCE_ITEM		138
 #define FN_OBJ_ENHANCE_ITEM			139
+#define FN_OBJ_CAN_DESTROY_TARGET	140
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1483,6 +1484,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objCanAttack",					fnObjGetOld,		FN_OBJ_CAN_ATTACK,
 			"(objCanAttack obj) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objCanDestroyTarget",				fnObjGet,			FN_OBJ_CAN_DESTROY_TARGET,
+			"(objCanDestroyTarget obj target) -> True/Nil",
+			"ii",	0,	},
 
 		{	"objCanDetectTarget",				fnObjGet,			FN_OBJ_CAN_DETECT_TARGET,
 			"(objCanDetectTarget obj target) -> True/Nil",
@@ -6536,6 +6541,15 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else
 					return pCC->CreateNil();
 				}
+			}
+
+		case FN_OBJ_CAN_DESTROY_TARGET:
+			{
+			CSpaceObject *pTarget = CreateObjFromItem(pArgs->GetElement(1));
+			if (pTarget == NULL)
+				return pCC->CreateNil();
+
+			return pCC->CreateBool(pTarget->CanBeDestroyedBy(*pObj));
 			}
 
 		case FN_OBJ_CAN_DETECT_TARGET:

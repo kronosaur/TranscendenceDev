@@ -793,6 +793,69 @@ bool CStation::CanAttack (void) const
 				|| m_pType->CanAttack()));
 	}
 
+bool CStation::CanBeDestroyedBy (CSpaceObject &Attacker) const
+
+//	CanBeDestroyedBy
+//
+//	Returns TRUE if the given attacker has weapons that can destroy this 
+//	station.
+
+	{
+	//	Loop over all attacker weapons.
+
+	for (const CDeviceItem DeviceItem : Attacker.GetDeviceSystem())
+		{
+		if (!DeviceItem.IsWeapon())
+			continue;
+
+		//	See if any of the weapon variants can destroy us.
+
+		for (int iVariant = 0; iVariant < DeviceItem.GetWeaponVariantCount(); iVariant++)
+			{
+			if (!DeviceItem.IsWeaponVariantValid(iVariant))
+				continue;
+
+			const CWeaponFireDesc &ShotDesc = DeviceItem.GetWeaponFireDescForVariant(iVariant);
+
+			switch (m_Hull.GetHullType())
+				{
+				//	Multi-hull stations require WMD.
+
+				case CStationHullDesc::hullMultiple:
+					if (ShotDesc.GetDamage().GetMassDestructionDamage() > 0)
+						return true;
+					break;
+
+				//	Stations built on asteroids must be attacked with either WMD or
+				//	mining damage.
+
+				case CStationHullDesc::hullAsteroid:
+					if (ShotDesc.GetDamage().GetMassDestructionDamage() > 0
+							|| ShotDesc.GetDamage().GetMiningDamage() > 0)
+						return true;
+					break;
+
+				//	Underground stations must be attacked with  mining damage.
+
+				case CStationHullDesc::hullUnderground:
+					if (ShotDesc.GetDamage().GetMiningDamage() > 0)
+						return true;
+					break;
+
+				//	For single-hull stations we don't need special damage.
+
+				case CStationHullDesc::hullSingle:
+				default:
+					return true;
+				}
+			}
+		}
+
+	//	If we get this far, then none of the attacker's weapons can hurt us.
+
+	return false;
+	}
+
 bool CStation::CanBlock (CSpaceObject *pObj)
 
 //	CanBlock

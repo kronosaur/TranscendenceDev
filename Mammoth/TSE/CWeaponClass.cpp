@@ -2536,7 +2536,7 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 	return dwTargetTypes;
 	}
 
-bool CWeaponClass::HasAmmoLeft (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const
+bool CWeaponClass::HasAmmoLeft (CItemCtx &ItemCtx, const CWeaponFireDesc *pShot) const
 
 //	HasAmmoLeft
 //
@@ -4034,6 +4034,87 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
 	DEBUG_CATCH
 	}
 
+const CWeaponFireDesc &CWeaponClass::GetWeaponFireDescForVariant (const CDeviceItem &DeviceItem, int iVariant) const
+
+//	GetWeaponFireDescForVariant
+//
+//	Returns the fire descriptor for the given variant.
+
+	{
+	DEBUG_TRY
+
+	if (iVariant < 0 || iVariant >= m_ShotData.GetCount())
+		{
+		ASSERT(false);
+		return CWeaponFireDesc::Null();
+		}
+
+	else if (m_iVariantType == varLevelScaling)
+		{
+		if (iVariant != 0)
+			return CWeaponFireDesc::Null();
+
+		//	We assume that all levels are represented in m_ShotData.
+
+		int iIndex = Min(Max(0, DeviceItem.GetLevel() - m_ShotData[0].pDesc->GetLevel()), m_ShotData.GetCount() - 1);
+		return *m_ShotData[iIndex].pDesc;
+		}
+
+	else if (m_iVariantType == varCounter
+			|| m_iVariantType == varCharges)
+		{
+		return *m_ShotData[iVariant].pDesc;
+		}
+
+	//  If we need ammo, then we have extra work to do.
+	//  NOTE: Currently, if one variant uses ammo, all need to use ammo.
+	//	NOTE 2: This only applies to launchers. By definition, non-launchers
+	//	never have more than one type of ammo. [But some launchers do not
+	//	have ammo, so we need to check that they use ammo.]
+
+	else if (IsLauncherWithAmmo())
+		{
+		const CWeaponFireDesc *pRoot = m_ShotData[iVariant].pDesc;
+		int iLevel = -1;
+
+		//  For now, the scaling for ammo weapons always comes from the weapon
+		//  (we can't have scalable ammo).
+
+		iLevel = DeviceItem.GetLevel();
+		return *(iLevel == 0 ? pRoot : pRoot->GetScaledDesc(iLevel));
+		}
+	else
+		{
+		const CWeaponFireDesc *pRoot = m_ShotData[0].pDesc;
+		int iLevel = DeviceItem.GetLevel();
+		return *(iLevel == 0 ? pRoot : pRoot->GetScaledDesc(iLevel));
+		}
+
+	DEBUG_CATCH
+	}
+
+int CWeaponClass::GetWeaponVariantCount (const CDeviceItem &DeviceItem) const
+
+//	GetWeaponVariantCount
+//
+//	Returns the total number of weapon variants. Some of these variants might 
+//	not be valid (e.g., because we don't have ammo).
+
+	{
+	switch (m_iVariantType)
+		{
+		//	Level scaling weapons only have one variant.
+
+		case varLevelScaling:
+			return (m_ShotData.GetCount() > 0 ? 1 : 0);
+
+		//	Otherwise...
+
+		default:
+			return m_ShotData.GetCount();
+		}
+	}
+
 ALERROR CWeaponClass::InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType)
 
 //	InitVariantsFromXML
@@ -4509,6 +4590,29 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	else
 		return false;
+	}
+
+bool CWeaponClass::IsWeaponVariantValid (const CDeviceItem &DeviceItem, int iVariant) const
+
+//	IsWeaponVariantValid
+//
+//	Returns TRUE if the given variant is valid. If the device is not installed,
+//	then all variants are valid.
+
+	{
+	const CSpaceObject *pSource = DeviceItem.GetSource();
+	if (pSource == NULL)
+		return (iVariant >= 0 && iVariant < GetWeaponVariantCount(DeviceItem));
+
+	const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+	if (pDevice == NULL)
+		return (iVariant >= 0 && iVariant < GetWeaponVariantCount(DeviceItem));
+
+	const CWeaponFireDesc &ShotDesc = GetWeaponFireDescForVariant(DeviceItem, iVariant);
+	if (!ShotDesc)
+		return false;
+
+	return VariantIsValid(pSource, pDevice, ShotDesc);
 	}
 
 bool CWeaponClass::NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinFireArc, int *retiMaxFireArc) const
@@ -5280,7 +5384,7 @@ bool CWeaponClass::ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDev
 	return false;
 	}
 
-bool CWeaponClass::VariantIsValid (CSpaceObject *pSource, CInstalledDevice *pDevice, CWeaponFireDesc &ShotData)
+bool CWeaponClass::VariantIsValid (const CSpaceObject *pSource, const CInstalledDevice *pDevice, const CWeaponFireDesc &ShotData) const
 
 //	VariantIsValid
 //

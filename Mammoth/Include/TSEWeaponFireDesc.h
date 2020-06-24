@@ -437,6 +437,8 @@ class CWeaponFireDesc
 	public:
 		enum FireTypes
 			{
+			ftUnknown,
+
 			ftArea,
 			ftBeam,
 			ftContinuousBeam,
@@ -509,6 +511,8 @@ class CWeaponFireDesc
 
 		CWeaponFireDesc (void);
 		~CWeaponFireDesc (void);
+
+		explicit operator bool (void) const { return m_iFireType != ftUnknown; }
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		void ApplyAcceleration (CSpaceObject *pMissile) const;
@@ -626,6 +630,8 @@ class CWeaponFireDesc
 		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource); }
 		bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
 
+		static const CWeaponFireDesc &Null (void) { return m_Null; }
+
 	private:
 		struct SOldEffects
 			{
@@ -666,7 +672,7 @@ class CWeaponFireDesc
 		//	Basic properties
 		int m_iLevel = 0;						//  Level of desc (missile or weapon or scalable weapon)
 		CItemTypeRef m_pAmmoType;				//	item type for this ammo
-		FireTypes m_iFireType = ftMissile;		//	beam or missile
+		FireTypes m_iFireType = ftUnknown;		//	beam or missile
 		DamageDesc m_Damage;					//	Damage per shot
 		DamageDesc m_DamageAtMaxRange;			//	If specified, damage decays with range to this value.
 		CConfigurationDesc m_Configuration;		//	Configuration (empty = default)
@@ -762,5 +768,6 @@ class CWeaponFireDesc
 
 		DWORD m_dwSpare:8;
 
+		static const CWeaponFireDesc m_Null;
 		static SOldEffects m_NullOldEffects;
 	};

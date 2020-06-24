@@ -617,6 +617,7 @@ class CSpaceObject
 		bool BlocksShips (void) { return (m_fIsBarrier && CanBlockShips()); }
 		int CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const;
 		CSpaceObject *CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
+		virtual bool CanBeDestroyedBy (CSpaceObject &Attacker) const { return true; }
 		bool CanBeHit (void) const { return (!m_fCannotBeHit && !m_fOutOfPlaneObj); }
 		bool CanBeHitByFriends (void) const { return !m_fNoFriendlyTarget; }
 		bool CanDetect (int Perception, CSpaceObject *pObj);

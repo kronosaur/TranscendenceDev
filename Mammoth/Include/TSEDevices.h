@@ -333,6 +333,8 @@ class CDeviceClass
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) { return 0; }
 		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const { return 0; }
 		virtual const CWeaponFireDesc *GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo = CItem()) const { return NULL; }
+		virtual const CWeaponFireDesc &GetWeaponFireDescForVariant (const CDeviceItem &DeviceItem, int iVariant) const { return CWeaponFireDesc::Null(); }
+		virtual int GetWeaponVariantCount (const CDeviceItem &DeviceItem) const { return 0; }
 		virtual bool IsAmmoWeapon (void) { return false; }
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsAutomatedWeapon (void) { return false; }
@@ -343,6 +345,7 @@ class CDeviceClass
 		virtual bool IsTrackingWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const { return false; }
+		virtual bool IsWeaponVariantValid (const CDeviceItem &DeviceItem, int iVariant) const { return false; }
 		virtual bool NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const { return false; }
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) { return NULL_STR; }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }

@@ -114,6 +114,7 @@
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
+const CWeaponFireDesc CWeaponFireDesc::m_Null;
 CWeaponFireDesc::SOldEffects CWeaponFireDesc::m_NullOldEffects;
 
 static char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =

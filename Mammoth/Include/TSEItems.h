@@ -62,6 +62,8 @@ class CDifferentiatedItem
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
 		inline int GetVariantNumber (void) const;
+		inline bool IsLauncher (void) const;
+		inline bool IsWeapon (void) const;
 		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
 
 	protected:
@@ -178,11 +180,14 @@ class CDeviceItem : public CDifferentiatedItem
 		inline int GetWeaponEffectiveness (CSpaceObject *pTarget) const;
 		inline const CWeaponFireDesc *GetWeaponFireDesc (void) const;
 		inline const CWeaponFireDesc *GetWeaponFireDesc (const CItem &Ammo) const;
+		inline const CWeaponFireDesc &GetWeaponFireDescForVariant (int iVariant) const;
+		inline int GetWeaponVariantCount (void) const;
 		inline bool IsAreaWeapon (void) const;
 		inline bool IsEnabled (void) const;
 		inline bool IsMiningWeapon (void) const;
 		inline bool IsTrackingWeapon (void) const;
 		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
+		inline bool IsWeaponVariantValid (int iVariant) const;
 		inline bool NeedsAutoTarget (int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const;
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 
@@ -404,6 +409,8 @@ class CItem
 		CArmorItem AsArmorItemOrThrow (void) { if (IsArmor()) return CArmorItem(*this); else throw CException(ERR_FAIL); }
 
 		inline bool IsDevice (void) const;
+		inline bool IsLauncher (void) const;
+		inline bool IsWeapon (void) const;
 		const CDeviceItem AsDeviceItem (void) const { return CDeviceItem(IsDevice() ? *this : NullItem()); }
 		CDeviceItem AsDeviceItem (void) { return CDeviceItem(IsDevice() ? *this : CItem::m_NullItem); }
 		const CDeviceItem AsDeviceItemOrThrow (void) const { if (IsDevice()) return CDeviceItem(*this); else throw CException(ERR_FAIL); }

@@ -949,6 +949,55 @@ bool CShip::CanAttack (void) const
 	return !IsIntangible() && !m_fShipCompartment;
 	}
 
+bool CShip::CanBeDestroyedBy (CSpaceObject &Attacker) const
+
+//	CanBeDestroyedBy
+//
+//	Returns TRUE if the given attacker has weapons that can destroy this ship.
+//	In particular, we make sure that the attacker has WMD weapons if we have
+//	interior compartments.
+
+	{
+	//	Loop over all attacker weapons.
+
+	for (const CDeviceItem DeviceItem : Attacker.GetDeviceSystem())
+		{
+		if (!DeviceItem.IsWeapon())
+			continue;
+
+		//	See if any of the weapon variants can destroy us.
+
+		for (int iVariant = 0; iVariant < DeviceItem.GetWeaponVariantCount(); iVariant++)
+			{
+			if (!DeviceItem.IsWeaponVariantValid(iVariant))
+				continue;
+
+			//	If the ship has interior compartments, then the weapon must have
+			//	WMD.
+
+			if (IsMultiHull())
+				{
+				if (DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetMassDestructionDamage() > 0)
+					return true;
+				}
+
+			//	Otherwise, any weapon can destroy us.
+			//
+			//	LATER: At some point maybe we can eliminate weapon that don't
+			//	do at least 1 point of damage to armor.
+
+			else
+				{
+				return true;
+				}
+			}
+		}
+
+	//	If we get this far, then none of the attacker's weapons can hurt us.
+
+	return false;
+	}
+
 bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
