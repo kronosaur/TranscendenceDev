@@ -3076,13 +3076,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
-			"   'attributes        Attributes of the system\n"
-			"   'known             Known to player\n"
-			"   'lastVisitOn       Tick on which player last visited\n"
-			"   'lastVisitSeconds  Game seconds since player last visited\n"
-			"   'level             The level of the system\n"
-			"   'name              The name of the system\n"
-			"   'pos               Node position on map (x y)",
+			"   'attributes          Attributes of the system\n"
+			"   'known               Known to player\n"
+			"   'lastVisitOn         Tick on which player last visited\n"
+			"   'lastVisitSeconds    Game seconds since player last visited\n"
+			"   'level               The level of the system\n"
+			"   'name                The name of the system\n"
+			"   'pos                 Node position on map (x y)\n"
+			"   'stdChallengeRating  Standard challenge rating for level",
 
 			"*s",	0,	},
 
@@ -3630,6 +3631,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"property (stations):\n\n"
 
+			"   'challengeRating\n"
 			"   'sovereign\n"
 			"   'sovereignName\n\n"
 
