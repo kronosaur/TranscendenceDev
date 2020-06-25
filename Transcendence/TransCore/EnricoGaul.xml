@@ -19,7 +19,6 @@
 							)
 						))
 					)
-					(dbgOutput "Count: " introCount)
 					(switch
 						(geq introCount 3)
 							(typTranslate gType 'missionIntro.default gData)

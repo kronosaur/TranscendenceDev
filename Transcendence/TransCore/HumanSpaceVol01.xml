@@ -2030,6 +2030,7 @@
 	<!ENTITY rsCommonwealthMilitiaInsignia	"0x001002B6">
 
 	<!ENTITY msCMVolunteer01			"0x001002B7">
+	<!ENTITY msCMVolunteer02			"0x001002B8">
 
 	<!-- 02D0-02EF DWARG RAIDERS -->
 
@@ -2484,6 +2485,7 @@
 
 	<Module filename="CommonwealthMetropolis.xml"/>
 	<Module filename="CommonwealthVolunteerMission01.xml"/>
+	<Module filename="CommonwealthVolunteerMission02.xml"/>
 
 	<!-- Commonwealth Militia -->
 

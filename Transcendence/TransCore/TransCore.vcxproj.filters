@@ -966,5 +966,11 @@
     <Xml Include="EnricoGaul.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
+    <Xml Include="RPGMissionTemplate02.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="CommonwealthVolunteerMission02.xml">
+      <Filter>Human Space Library\Commonwealth Metropolis</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
