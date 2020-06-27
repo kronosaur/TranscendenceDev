@@ -2209,8 +2209,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objInc@",				fnObjSet,		FN_OBJ_INC_PROPERTY,
-			"(objInc@ obj property [increment]) -> new value",
-			"is*",	PPFLAG_SIDEEFFECTS,	},
+			"(objInc@ obj property [increment]) -> new value\n"
+			"(objInc@ obj item property [increment]) -> item",
+			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
 			"RENAMED: Use (objInc@ ...) instead.",
@@ -8632,8 +8633,32 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_INC_PROPERTY:
 			{
 			ICCItemPtr pResult;
-			if (!pObj->IncProperty(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2), pResult))
-				return pCtx->CreateDebugError(CONSTLIT("Invalid property"), pArgs->GetElement(1))->Reference();
+
+			if (pArgs->GetCount() >= 3 && pArgs->GetElement(1)->IsList())
+				{
+				//	Get the item
+
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (Item.GetType() == NULL)
+					return pCC->CreateNil();
+
+				//	Get the property
+
+				CString sProperty = pArgs->GetElement(2)->GetStringValue();
+				ICCItem *pInc = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
+
+				CItem NewItem;
+				CString sError;
+				if (!pObj->IncItemProperty(Item, sProperty, (pInc ? *pInc : *ICCItemPtr::Nil()), 1, &NewItem, NULL, &sError))
+					return pCtx->CreateDebugError(sError, pArgs->GetElement(2));
+
+				pResult = ICCItemPtr(CreateListFromItem(NewItem));
+				}
+			else
+				{
+				if (!pObj->IncProperty(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2), pResult))
+					return pCtx->CreateDebugError(CONSTLIT("Invalid property"), pArgs->GetElement(1))->Reference();
+				}
 
 			return pResult->Reference();
 			}

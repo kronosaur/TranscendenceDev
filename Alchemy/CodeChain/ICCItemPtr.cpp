@@ -144,7 +144,7 @@ void ICCItemPtr::Delete (void)
 	m_pPtr = NULL;
 	}
 
-ICCItemPtr ICCItemPtr::Error (const CString &sError, ICCItem *pData)
+ICCItemPtr ICCItemPtr::Error (const CString &sError, const ICCItem *pData)
 
 //	Error
 //

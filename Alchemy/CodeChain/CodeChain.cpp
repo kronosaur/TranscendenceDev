@@ -155,7 +155,7 @@ ICCItem *CCodeChain::CreateBool (bool bValue)
 		return CreateNil();
 	}
 
-ICCItem *CCodeChain::CreateError (const CString &sError, ICCItem *pData)
+ICCItem *CCodeChain::CreateError (const CString &sError, const ICCItem *pData)
 
 //	CreateError
 //
@@ -1284,7 +1284,7 @@ bool CCodeChain::HasIdentifier (ICCItem *pCode, const CString &sIdentifier)
 		}
 	}
 
-ICCItemPtr CCodeChain::IncValue (ICCItem *pValue, ICCItem *pInc)
+ICCItemPtr CCodeChain::IncValue (ICCItem *pValue, const ICCItem *pInc)
 
 //	IncValue
 //

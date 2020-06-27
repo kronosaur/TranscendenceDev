@@ -471,6 +471,7 @@ class CItem
 		int GetValue (bool bActual = false) const;
 		bool IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const;
 		bool IsFlagsEqual (const CItem &Src, DWORD dwFlags) const;
+		bool SetCustomProperty (const CString &sProperty, const ICCItem &Value);
         void SetScalableLevel (int iValue) { Extra(); m_pExtra->m_dwLevel = iValue; }
 
 		static bool IsDisruptionEqual (DWORD dwNow, DWORD dwD1, DWORD dwD2);

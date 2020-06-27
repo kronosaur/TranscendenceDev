@@ -177,7 +177,7 @@ class ICCItem : public CObject
 
 		bool IsLambdaExpression (void);
 		bool IsLambdaSymbol (void);
-		bool IsNumber (void) { return (IsInteger() || IsDouble()); }
+		bool IsNumber (void) const { return (IsInteger() || IsDouble()); }
 		void ResetItem (void);
 
 		//	Symbol/Atom table functions
@@ -279,7 +279,7 @@ class ICCItemPtr
 			*this = Src;
 			}
 
-		static ICCItemPtr Error (const CString &sError, ICCItem *pData = NULL);
+		static ICCItemPtr Error (const CString &sError, const ICCItem *pData = NULL);
 		static ICCItemPtr Nil (void) { return ICCItemPtr(ICCItem::Nil); }
 		static ICCItemPtr True (void) { return ICCItemPtr(ICCItem::True); }
 
@@ -888,7 +888,7 @@ class CCodeChain
 		static ICCItem *CreateAtomTable (void);
 		static ICCItem *CreateBool (bool bValue);
 		static CCons *CreateCons (void) { return m_ConsPool.CreateCons(); }
-		static ICCItem *CreateError (const CString &sError, ICCItem *pData = NULL);
+		static ICCItem *CreateError (const CString &sError, const ICCItem *pData = NULL);
 		static ICCItem *CreateErrorCode (int iErrorCode);
 		static ICCItem *CreateInteger (int iValue);
 		static ICCItem *CreateDouble (double dValue);
@@ -918,7 +918,7 @@ class CCodeChain
 		static void DestroySymbolTable (ICCItem *pItem) { m_SymbolTablePool.DestroyItem(pItem); }
 		static void DestroyVectorOld (ICCItem *pItem) { delete pItem; }
 		static void DestroyVector(ICCItem *pItem) { m_VectorPool.DestroyItem(pItem); }
-		static ICCItemPtr IncValue (ICCItem *pValue, ICCItem *pInc = NULL);
+		static ICCItemPtr IncValue (ICCItem *pValue, const ICCItem *pInc = NULL);
 
 		//	Evaluation and parsing routines
 

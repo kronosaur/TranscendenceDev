@@ -153,6 +153,14 @@
 						{	test:'(itm@ &itTestArmorScaled; 'test.dynamicData1)	result:1	}
 						{	test:'(itm@ &itTestArmorScaled; 'test.dynamicData2)	result:4	}
 
+						{	test:'(itm@ 
+									(itmSet@ &itTestArmorScaled; 'test.data1 7)
+									'test.data1)								result:7	}
+
+						{	test:'(itm@ 
+									(itmSet@ &itTestArmorScaled; 'test.data1 7)
+									'test.data1)								result:7	}
+
 						;	NOTE: Custom properties override engine properties.
 						{	test:'(itm@ &itTestArmorScaled; 'disrupted)			result:'testing	}
 
@@ -765,6 +773,23 @@
 											(unvEntity theType)
 											)
 										))
+									)
+
+								;	Test setting custom item properties
+
+								(objAddItem gPlayerShip (itmCreate &itTestArmorScaled; 1))
+								(setq result (objSet@ gPlayerShip (itmCreate &itTestArmorScaled; 1) 'test.data1 7))
+								(switch
+									(not result)
+										(error "Unable to set custom item property test.data1.")
+										
+									(!= (itm@ result 'test.data1) 7)
+										(error "Set custom item property test.data1 failed.")
+									)
+
+								(setq result (objInc@ gPlayerShip result 'test.data1 3))
+								(if (!= (itm@ result 'test.data1) 10)
+									(error "Unable to increment custom item property test.data1")
 									)
 								)
 							)

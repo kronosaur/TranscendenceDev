@@ -3045,6 +3045,38 @@ void CItem::SetCharges (int iCharges)
 		m_pExtra->m_dwCharges = iCharges;
 	}
 
+bool CItem::SetCustomProperty (const CString &sProperty, const ICCItem &Value)
+
+//	SetCustomProperty
+//
+//	Sets a custom property. Returns TRUE if the property was found.
+
+	{
+	if (IsEmpty())
+		return false;
+
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+	if (!m_pItemType->FindCustomProperty(sProperty, pDummy, &iType))
+		return false;
+
+	switch (iType)
+		{
+		case EPropertyType::propGlobal:
+			m_pItemType->SetGlobalData(sProperty, &Value);
+			return true;
+
+		case EPropertyType::propData:
+		case EPropertyType::propItemData:
+			Extra();
+			m_pExtra->m_Data.SetData(sProperty, &Value);
+			return true;
+
+		default:
+			return false;
+		}
+	}
+
 void CItem::SetDamaged (int iDamagedHP)
 
 //	SetDamaged
@@ -3184,16 +3216,14 @@ ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, cons
 //	retsError is blank then we cannot set the property because the value is Nil.
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	CInstalledDevice *pDevice;
-	CArmorClass *pArmor;
-	ICCItemPtr pNil(ICCItem::Nil);
-
 	if (IsEmpty())
 		{
 		if (retsError) *retsError = CONSTLIT("Unable to set propery on a null item.");
 		return ESetPropertyResult::error;
 		}
+
+	else if (SetCustomProperty(sName, (pValue ? *pValue : *ICCItemPtr::Nil())))
+		return ESetPropertyResult::set;
 
 	else if (strEquals(sName, PROPERTY_CHARGES))
 		{
@@ -3279,8 +3309,8 @@ ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, cons
         //  If this is armor, then we remember the current damaged state and
         //  carry that forward to the new level.
 
-		if (pArmor = GetType()->GetArmorClass())
-			return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *pNil), retsError);
+		if (CArmorClass *pArmor = GetType()->GetArmorClass())
+			return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *ICCItemPtr::Nil()), retsError);
 
 		//	Otherwise, we just set the item level.
 
@@ -3315,12 +3345,12 @@ ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, cons
 
 	//	If this is armor, then pass it on.
 
-	else if (pArmor = GetType()->GetArmorClass())
-		return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *pNil), retsError);
+	else if (CArmorClass *pArmor = GetType()->GetArmorClass())
+		return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *ICCItemPtr::Nil()), retsError);
 
 	//	If this is an installed device, then pass it on
 
-	else if (pDevice = Ctx.GetDevice())
+	else if (CInstalledDevice *pDevice = Ctx.GetDevice())
 		return pDevice->SetProperty(Ctx, sName, pValue, retsError);
 
 	//	Otherwise, nothing
