@@ -11798,17 +11798,18 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 
 	int iTime = pArgs->GetElement(0)->GetIntegerValue();
 
-	CSpaceObjectList Targets;
+	CTimedEncounterEvent::SOptions Options;
+
 	if (pArgs->GetElement(1)->IsList())
 		{
 		for (int i = 0; i < pArgs->GetElement(1)->GetCount(); i++)
 			{
 			CSpaceObject *pObj = CreateObjFromItem(pArgs->GetElement(1)->GetElement(i), CCUTIL_FLAG_CHECK_DESTROYED);
 			if (pObj)
-				Targets.FastAdd(pObj);
+				Options.TargetList.FastAdd(pObj);
 			}
 
-		if (Targets.GetCount() == 0)
+		if (Options.TargetList.GetCount() == 0)
 			return pCC->CreateNil();
 		}
 	else
@@ -11817,23 +11818,36 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 		if (pTarget == NULL)
 			return pCC->CreateNil();
 
-		Targets.FastAdd(pTarget);
+		Options.TargetList.FastAdd(pTarget);
 		}
 
 	DWORD dwEncounterID = (DWORD)pArgs->GetElement(2)->GetIntegerValue();
 
 	//	Either from a gate or from a distance from the target
 
-	int iDistance = 0;
-	CSpaceObject *pGate = NULL;
-	CVector vPos;
+	ICCItem *pOptions = pArgs->GetElement(3);
+	if (pOptions->IsSymbolTable())
+		{
+		if (ICCItem *pValue = pOptions->GetElement(CONSTLIT("distance")))
+			{
+			Options.rDistance = Max(0.0, pValue->GetIntegerValue() * LIGHT_SECOND);
+			}
 
-	if (dwData == FN_ADD_ENCOUNTER_FROM_DIST)
-		iDistance =	pArgs->GetElement(3)->GetIntegerValue();
+		if (ICCItem *pValue = pOptions->GetElement(CONSTLIT("pos")))
+			{
+			if (::GetPosOrObject(pEvalCtx, pValue, &Options.vPos, &Options.pGate) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pValue);
+			}
+		}
+	else if (dwData == FN_ADD_ENCOUNTER_FROM_DIST)
+		{
+		int iDistance =	pOptions->GetIntegerValue();
+		Options.rDistance = iDistance * LIGHT_SECOND;
+		}
 	else
 		{
-		if (::GetPosOrObject(pEvalCtx, pArgs->GetElement(3), &vPos, &pGate) != NOERROR)
-			return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(3));
+		if (::GetPosOrObject(pEvalCtx, pOptions, &Options.vPos, &Options.pGate) != NOERROR)
+			return pCC->CreateError(CONSTLIT("Invalid pos"), pOptions);
 		}
 	
 	//	Create the event
@@ -11842,13 +11856,9 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 	if (pSystem == NULL)
 		return StdErrorNoSystem(*pCC);
 
-	CTimedEncounterEvent *pEvent = new CTimedEncounterEvent(
-			pSystem->GetTick() + iTime,
-			Targets,
+	CTimedEncounterEvent *pEvent = new CTimedEncounterEvent(pSystem->GetTick() + iTime,
 			dwEncounterID,
-			pGate,
-			vPos,
-			iDistance * LIGHT_SECOND);
+			Options);
 
 	pSystem->AddTimedEvent(pEvent);
 

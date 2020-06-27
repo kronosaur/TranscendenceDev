@@ -40,18 +40,17 @@ class CRangeTypeEvent : public CSystemEvent
 class CTimedEncounterEvent : public CSystemEvent
 	{
 	public:
-		CTimedEncounterEvent (int iTick,
-							  CSpaceObject *pTarget,
-							  DWORD dwEncounterTableUNID,
-							  CSpaceObject *pGate,
-							  const CVector &vPos,
-							  Metric rDistance);
-		CTimedEncounterEvent (int iTick,
-							  const CSpaceObjectList &Targets,
-							  DWORD dwEncounterTableUNID,
-							  CSpaceObject *pGate,
-							  const CVector &vPos,
-							  Metric rDistance);
+		struct SOptions
+			{
+			CSpaceObject *pTarget = NULL;		//	Target to attack
+			CSpaceObjectList TargetList;		//	List of targets (if pTarget is NULL)
+
+			CSpaceObject *pGate = NULL;			//	Gate to exit from
+			CVector vPos;						//	Position to create at (if pGate is NULL)
+			Metric rDistance = 0.0;				//	Create a distance from target
+			};
+
+		CTimedEncounterEvent (int iTick, DWORD dwEncounterTableUNID, const SOptions &Options);
 		CTimedEncounterEvent (SLoadCtx &Ctx);
 
 		virtual CString DebugCrashInfo (void) override;
