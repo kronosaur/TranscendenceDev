@@ -363,8 +363,8 @@ ALERROR CEnhancerClass::InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	//	We need to fill all levels
 
-    int iBaseLevel = pType->GetLevel();
-    m_iLevels = (pType->GetMaxLevel() - iBaseLevel) + 1;
+	int iBaseLevel = pType->GetLevel();
+	m_iLevels = (pType->GetMaxLevel() - iBaseLevel) + 1;
 
 	//	Allocate the structure and initialize iLevel to -1 to indicate that we have 
 	//	not yet initialized it.

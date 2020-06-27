@@ -1537,7 +1537,7 @@ int CItem::GetLevel (void) const
 		return 0;
 
 	else if (GetType()->IsScalable())
-        return Max(GetType()->GetMinLevel(), Min(GetType()->GetMinLevel() + GetScalableLevel(), GetType()->GetMaxLevel()));
+		return Max(GetType()->GetMinLevel(), Min(GetType()->GetMinLevel() + GetScalableLevel(), GetType()->GetMaxLevel()));
 
 	else
 		return GetType()->GetMinLevel();
@@ -1849,8 +1849,8 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 			return CC.CreateBool(IsKnown());
 		}
 
-    else if (strEquals(sProperty, PROPERTY_LEVEL))
-        return CC.CreateInteger(GetLevel());
+	else if (strEquals(sProperty, PROPERTY_LEVEL))
+		return CC.CreateInteger(GetLevel());
 
 	else if (strEquals(sProperty, PROPERTY_PRICE))
 		return CC.CreateInteger(GetTradePrice(NULL, true));
@@ -1944,7 +1944,7 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 		//	If this is a missile, then pass it to the weapon.
 
-        else if (GetType()->IsMissile())
+		else if (GetType()->IsMissile())
 			{
 			if (Ctx.ResolveVariant()
 					&& (pResult = Ctx.GetVariantDevice()->FindItemProperty(Ctx, sProperty)))
@@ -3173,24 +3173,24 @@ bool CItem::SetLevel (int iLevel, CString *retsError)
 //
 //  Sets the level for scalable items. Returns TRUE if successful.
 
-    {
-    if (!GetType()->IsScalable())
-        {
-        if (retsError)
-            *retsError = strPatternSubst(CONSTLIT("Item [%08x] is not scalable."), GetType()->GetUNID());
-        return false;
-        }
+	{
+	if (!GetType()->IsScalable())
+		{
+		if (retsError)
+			*retsError = strPatternSubst(CONSTLIT("Item [%08x] is not scalable."), GetType()->GetUNID());
+		return false;
+		}
 
-    if (iLevel < GetType()->GetMinLevel() || iLevel > GetType()->GetMaxLevel())
-        {
-        if (retsError)
-            *retsError = strPatternSubst(CONSTLIT("Item [%08x] cannot be scaled to level %d."), GetType()->GetUNID(), iLevel);
-        return false;
-        }
+	if (iLevel < GetType()->GetMinLevel() || iLevel > GetType()->GetMaxLevel())
+		{
+		if (retsError)
+			*retsError = strPatternSubst(CONSTLIT("Item [%08x] cannot be scaled to level %d."), GetType()->GetUNID(), iLevel);
+		return false;
+		}
 
-    SetScalableLevel(iLevel - GetType()->GetMinLevel());
-    return true;
-    }
+	SetScalableLevel(iLevel - GetType()->GetMinLevel());
+	return true;
+	}
 
 void CItem::SetPrepareUninstalled (void)
 
@@ -3296,7 +3296,7 @@ ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, cons
 			}
 		}
 
-    else if (strEquals(sName, PROPERTY_KNOWN))
+	else if (strEquals(sName, PROPERTY_KNOWN))
 		{
 		if (bOnType)
 			m_pItemType->SetAllKnown(!pValue->IsNil());
@@ -3304,19 +3304,19 @@ ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, cons
 			SetKnown(pValue && !pValue->IsNil());
 		}
 
-    else if (strEquals(sName, PROPERTY_LEVEL))
-        {
-        //  If this is armor, then we remember the current damaged state and
-        //  carry that forward to the new level.
+	else if (strEquals(sName, PROPERTY_LEVEL))
+		{
+		//  If this is armor, then we remember the current damaged state and
+		//  carry that forward to the new level.
 
 		if (CArmorClass *pArmor = GetType()->GetArmorClass())
 			return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *ICCItemPtr::Nil()), retsError);
 
 		//	Otherwise, we just set the item level.
 
-        if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
+		if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
 			return ESetPropertyResult::error;
-        }
+		}
 	else if (strEquals(sName, PROPERTY_UNKNOWN_TYPE_INDEX))
 		{
 		int iUnknownTypeCount = m_pItemType->GetUnknownTypeCount();

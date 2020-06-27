@@ -42,7 +42,7 @@ class CAutoDefenseClass : public CDeviceClass
 
 		CAutoDefenseClass (void);
 
-		inline CDeviceClass *GetWeapon (void) const { return m_pWeapon; }
+		CDeviceClass *GetWeapon (void) const { return m_pWeapon; }
 		bool IsDirectional (CInstalledDevice *pDevice, int *retiMinFireArc, int *retiMaxFireArc);
 		bool IsOmniDirectional (CInstalledDevice *pDevice);
 		CSpaceObject *FindTarget (CInstalledDevice *pDevice, CSpaceObject *pSource);
@@ -336,7 +336,7 @@ class CRepairerClass : public CDeviceClass
 			};
 
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
-		inline bool FindEventHandlerRepairerClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+		bool FindEventHandlerRepairerClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
 			if (!m_CachedEvents[iEvent].pCode)
 				return false;
@@ -429,7 +429,7 @@ class CShieldClass : public CDeviceClass
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXMLElement *pDesc, CDeviceClass **retpShield);
 
 		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
-		inline bool FindEventHandlerShieldClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const
+		bool FindEventHandlerShieldClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const
 			{
 			if (!m_CachedEvents[iEvent].pCode)
 				return false;

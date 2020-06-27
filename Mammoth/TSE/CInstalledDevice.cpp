@@ -1071,15 +1071,15 @@ ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &
 			SetCanTargetMissiles(false);
 		}
 
-    else if (strEquals(sName, PROPERTY_CAPACITOR))
-        {
-        CSpaceObject *pSource = Ctx.GetSource();
-        if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntCapacitor, pValue->GetIntegerValue()))
-            {
-            if (retsError) *retsError = CONSTLIT("Unable to set capacitor value.");
+	else if (strEquals(sName, PROPERTY_CAPACITOR))
+		{
+		CSpaceObject *pSource = Ctx.GetSource();
+		if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntCapacitor, pValue->GetIntegerValue()))
+			{
+			if (retsError) *retsError = CONSTLIT("Unable to set capacitor value.");
 			return ESetPropertyResult::error;
-            }
-        }
+			}
+		}
 
 	else if (strEquals(sName, PROPERTY_CYCLE_FIRE))
 		{
@@ -1219,15 +1219,15 @@ ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &
 			SetSecondary(false);
 		}
 
-    else if (strEquals(sName, PROPERTY_TEMPERATURE))
-        {
-        CSpaceObject *pSource = Ctx.GetSource();
-        if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntTemperature, pValue->GetIntegerValue()))
-            {
-            if (retsError) *retsError = CONSTLIT("Unable to set temperature value.");
+	else if (strEquals(sName, PROPERTY_TEMPERATURE))
+		{
+		CSpaceObject *pSource = Ctx.GetSource();
+		if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntTemperature, pValue->GetIntegerValue()))
+			{
+			if (retsError) *retsError = CONSTLIT("Unable to set temperature value.");
 			return ESetPropertyResult::error;
-            }
-        }
+			}
+		}
 	else if (strEquals(sName, PROPERTY_SHOT_SEPARATION_SCALE))
 		{
 		double rShotSeparationScale = Clamp(pValue->GetDoubleValue(), -1.0, 1.0);

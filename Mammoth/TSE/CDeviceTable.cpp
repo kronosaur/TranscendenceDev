@@ -75,7 +75,7 @@ class CSingleDevice : public IDeviceGenerator
 
 		CItemTypeRef m_pItemType;				//	Device for this slot
 		DiceRange m_Count;						//	Number of slots to create
-        DiceRange m_Level;						//  For scalable items
+		DiceRange m_Level;						//  For scalable items
 
 		int m_iDamaged = 0;						//	Chance device is damaged
 		CRandomEnhancementGenerator m_Enhanced;	//	Procedure for enhancing device item
@@ -361,24 +361,24 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 		SDeviceDesc Desc;
 		Desc.Item = CItem(m_pItemType, 1);
 
-        //  Level
+		//  Level
 
-        if (!m_Level.IsEmpty())
-            {
-            CString sError;
-            if (!Desc.Item.SetLevel(m_Level.Roll(), &sError))
-                {
-                if (Ctx.GetUniverse().InDebugMode())
-                    ::kernelDebugLogString(sError);
-                }
-            }
+		if (!m_Level.IsEmpty())
+			{
+			CString sError;
+			if (!Desc.Item.SetLevel(m_Level.Roll(), &sError))
+				{
+				if (Ctx.GetUniverse().InDebugMode())
+					::kernelDebugLogString(sError);
+				}
+			}
 
 		//	Charges
 
 		if (m_iCharges)
 			Desc.Item.SetCharges(m_iCharges);
 
-        //  Damage/enhancement
+		//  Damage/enhancement
 
 		if (mathRandom(1, 100) <= m_iDamaged)
 			Desc.Item.SetDamaged();
@@ -619,10 +619,10 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (error = m_Enhanced.InitFromXML(Ctx, pDesc))
 		return error;
 
-    //  Various properties 
+	//  Various properties 
 
 	m_iDamaged = pDesc->GetAttributeInteger(DAMAGED_ATTRIB);
-    m_Level.LoadFromXML(pDesc->GetAttribute(LEVEL_ATTRIB));
+	m_Level.LoadFromXML(pDesc->GetAttribute(LEVEL_ATTRIB));
 	m_iCharges = pDesc->GetAttributeIntegerBounded(CHARGES_ATTRIB, 0, -1, 0);
 
 	if (pDesc->FindAttribute(SEGMENT_ID_ATTRIB, &m_sSlotID))
@@ -1503,7 +1503,7 @@ const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const
 //
 //  Returns a descriptor for a named device (or NULL if not found)
 
-    {
+	{
 	int i;
 	ItemCategories iCatToFind = CDeviceClass::GetItemCategory(iDev);
 
@@ -1513,12 +1513,12 @@ const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const
 
 		//	See if this is the category that we want to find
 
-        if (pDevice->GetCategory() == iCatToFind)
-            return &GetDeviceDesc(i);
+		if (pDevice->GetCategory() == iCatToFind)
+			return &GetDeviceDesc(i);
 		}
 
 	return NULL;
-    }
+	}
 
 int CDeviceDescList::GetFireArc (int iIndex) const
 
@@ -1548,9 +1548,9 @@ CDeviceClass *CDeviceDescList::GetNamedDevice (DeviceNames iDev) const
 //	Returns the named device (or NULL if not found)
 
 	{
-    const SDeviceDesc *pDesc = GetDeviceDescByName(iDev);
-    if (pDesc)
-        return pDesc->Item.GetType()->GetDeviceClass();
+	const SDeviceDesc *pDesc = GetDeviceDescByName(iDev);
+	if (pDesc)
+		return pDesc->Item.GetType()->GetDeviceClass();
 
 	return NULL;
 	}

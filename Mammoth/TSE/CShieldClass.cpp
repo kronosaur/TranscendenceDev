@@ -209,7 +209,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 		//	Adjust for tech level
 
-        int iWeaponLevel = Ctx.pDesc->GetLevel();
+		int iWeaponLevel = Ctx.pDesc->GetLevel();
 		int iShieldLevel = (pDevice ? pDevice->GetLevel() : 1);
 		rPenetrate *= pow(1.5, (iWeaponLevel - iShieldLevel));
 
@@ -335,7 +335,7 @@ bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *p
 //	when installed on the same ship
 
 	{
-    int iType = pWeapon->GetDamageType(CItemCtx(pSource, pDevice));
+	int iType = pWeapon->GetDamageType(CItemCtx(pSource, pDevice));
 	if (iType != -1 
 			&& m_WeaponSuppress.InSet(iType)
 			&& pDevice->IsWorking()

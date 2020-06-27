@@ -10,9 +10,9 @@
 #define PROPERTY_POWER							CONSTLIT("power")
 
 CReactorClass::CReactorClass (void) :
-        m_pDesc(NULL),
-        m_pDamagedDesc(NULL),
-        m_pEnhancedDesc(NULL)
+		m_pDesc(NULL),
+		m_pDamagedDesc(NULL),
+		m_pEnhancedDesc(NULL)
 	{
 	}
 
@@ -20,16 +20,16 @@ CReactorClass::~CReactorClass (void)
 
 //  CReactorClass destructor
 
-    {
-    if (m_pDesc)
-        delete[] m_pDesc;
+	{
+	if (m_pDesc)
+		delete[] m_pDesc;
 
-    if (m_pDamagedDesc)
-        delete[] m_pDamagedDesc;
+	if (m_pDamagedDesc)
+		delete[] m_pDamagedDesc;
 
-    if (m_pEnhancedDesc)
-        delete[] m_pEnhancedDesc;
-    }
+	if (m_pEnhancedDesc)
+		delete[] m_pEnhancedDesc;
+	}
 
 ALERROR CReactorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice)
 
@@ -39,7 +39,7 @@ ALERROR CReactorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, C
 
 	{
 	ALERROR error;
-    int i;
+	int i;
 
 	CReactorClass *pDevice = new CReactorClass;
 	if (pDevice == NULL)
@@ -48,28 +48,28 @@ ALERROR CReactorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, C
 	if (error = pDevice->InitDeviceFromXML(Ctx, pDesc, pType))
 		return error;
 
-    //  Figure out how many levels we need to allocate
+	//  Figure out how many levels we need to allocate
 
-    pDevice->m_iBaseLevel = pType->GetLevel();
-    pDevice->m_iLevels = (pType->GetMaxLevel() - pDevice->m_iBaseLevel) + 1;
+	pDevice->m_iBaseLevel = pType->GetLevel();
+	pDevice->m_iLevels = (pType->GetMaxLevel() - pDevice->m_iBaseLevel) + 1;
 
-    //  Allocate the normal descriptors
+	//  Allocate the normal descriptors
 
-    pDevice->m_pDesc = new CReactorDesc[pDevice->m_iLevels];
+	pDevice->m_pDesc = new CReactorDesc[pDevice->m_iLevels];
 
-    //  We initialized the first level from XML
+	//  We initialized the first level from XML
 
-    ASSERT(pDevice->m_iLevels >= 1);
-    if (error = pDevice->m_pDesc[0].InitFromXML(Ctx, pDesc, pType->GetUNID()))
-        return error;
+	ASSERT(pDevice->m_iLevels >= 1);
+	if (error = pDevice->m_pDesc[0].InitFromXML(Ctx, pDesc, pType->GetUNID()))
+		return error;
 
-    //  Now initialize the scaled levels
+	//  Now initialize the scaled levels
 
-    for (i = 1; i < pDevice->m_iLevels; i++)
-        {
-        if (error = pDevice->m_pDesc[i].InitScaled(Ctx, pDevice->m_pDesc[0], pDevice->m_iBaseLevel, pDevice->m_iBaseLevel + i))
-            return error;
-        }
+	for (i = 1; i < pDevice->m_iLevels; i++)
+		{
+		if (error = pDevice->m_pDesc[i].InitScaled(Ctx, pDevice->m_pDesc[0], pDevice->m_iBaseLevel, pDevice->m_iBaseLevel + i))
+			return error;
+		}
 
 	//	Some properties are not scaled (OK if negative).
 
@@ -102,7 +102,7 @@ ICCItem *CReactorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 	const CReactorDesc &Desc = *GetReactorDesc(Ctx);
-    ICCItem *pResult;
+	ICCItem *pResult;
 
 	//	Some properties we handle ourselves
 
@@ -123,8 +123,8 @@ ICCItem *CReactorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	//	Ask the descriptor
 
-    else if (pResult = Desc.FindProperty(sName))
-        return pResult;
+	else if (pResult = Desc.FindProperty(sName))
+		return pResult;
 
 	//	Otherwise, just get the property from the base class
 
@@ -172,35 +172,35 @@ const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx, DWORD dwFlags)
 //	Returns the reactor descriptor
 
 	{
-    CInstalledDevice *pDevice = Ctx.GetDevice();
+	CInstalledDevice *pDevice = Ctx.GetDevice();
 	bool bNormalOnly = ((dwFlags & GPO_FLAG_NORMAL_POWER) ? true : false);
 
-    //  Figure out if we want a scaled item
+	//  Figure out if we want a scaled item
 
-    int iIndex = Min(Max(0, (Ctx.GetItem().IsEmpty() ? 0 : Ctx.GetItem().GetLevel() - m_iBaseLevel)), m_iLevels - 1);
+	int iIndex = Min(Max(0, (Ctx.GetItem().IsEmpty() ? 0 : Ctx.GetItem().GetLevel() - m_iBaseLevel)), m_iLevels - 1);
 
-    //  If no device, then standard descriptor
+	//  If no device, then standard descriptor
 
 	if (pDevice == NULL)
 		return &m_pDesc[iIndex];
 
-    //  If the device is damaged, then return damaged descriptor
+	//  If the device is damaged, then return damaged descriptor
 
-    else if (!bNormalOnly && (pDevice->IsDamaged() || pDevice->IsDisrupted()))
-        {
-        InitDamagedDesc();
+	else if (!bNormalOnly && (pDevice->IsDamaged() || pDevice->IsDisrupted()))
+		{
+		InitDamagedDesc();
 		return &m_pDamagedDesc[iIndex];
-        }
+		}
 
-    //  If enhanced, then return enhanced descriptor
+	//  If enhanced, then return enhanced descriptor
 
-    else if (!bNormalOnly && pDevice->IsEnhanced())
-        {
-        InitEnhancedDesc();
+	else if (!bNormalOnly && pDevice->IsEnhanced())
+		{
+		InitEnhancedDesc();
 		return &m_pEnhancedDesc[iIndex];
-        }
+		}
 
-    //  Otherwise, standard descriptor.
+	//  Otherwise, standard descriptor.
 
 	else
 		return &m_pDesc[iIndex];
@@ -212,20 +212,20 @@ void CReactorClass::InitDamagedDesc (void) const
 //
 //  Makes sure that the damaged descriptor is initialized.
 
-    {
-    int i;
+	{
+	int i;
 
-    if (m_pDamagedDesc == NULL)
-        {
-        m_pDamagedDesc = new CReactorDesc[m_iLevels];
-        for (i = 0; i < m_iLevels; i++)
-            {
-            m_pDamagedDesc[i] = m_pDesc[i];
-            m_pDamagedDesc[i].AdjMaxPower(0.8);
-            m_pDamagedDesc[i].AdjEfficiency(0.8);
-            }
-        }
-    }
+	if (m_pDamagedDesc == NULL)
+		{
+		m_pDamagedDesc = new CReactorDesc[m_iLevels];
+		for (i = 0; i < m_iLevels; i++)
+			{
+			m_pDamagedDesc[i] = m_pDesc[i];
+			m_pDamagedDesc[i].AdjMaxPower(0.8);
+			m_pDamagedDesc[i].AdjEfficiency(0.8);
+			}
+		}
+	}
 
 void CReactorClass::InitEnhancedDesc (void) const
 
@@ -233,20 +233,20 @@ void CReactorClass::InitEnhancedDesc (void) const
 //
 //  Make sure that the enhanced descriptor is initialzied.
 
-    {
-    int i;
+	{
+	int i;
 
-    if (m_pEnhancedDesc == NULL)
-        {
-        m_pEnhancedDesc = new CReactorDesc[m_iLevels];
-        for (i = 0; i < m_iLevels; i++)
-            {
-            m_pEnhancedDesc[i] = m_pDesc[i];
-            m_pEnhancedDesc[i].AdjMaxPower(1.2);
-            m_pEnhancedDesc[i].AdjEfficiency(1.5);
-            }
-        }
-    }
+	if (m_pEnhancedDesc == NULL)
+		{
+		m_pEnhancedDesc = new CReactorDesc[m_iLevels];
+		for (i = 0; i < m_iLevels; i++)
+			{
+			m_pEnhancedDesc[i] = m_pDesc[i];
+			m_pEnhancedDesc[i].AdjMaxPower(1.2);
+			m_pEnhancedDesc[i].AdjEfficiency(1.5);
+			}
+		}
+	}
 
 CString CReactorClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
@@ -271,7 +271,7 @@ CString CReactorClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD d
 
 	int iMinLevel;
 	int iMaxLevel;
-    Desc.GetFuelLevel(&iMinLevel, &iMaxLevel);
+	Desc.GetFuelLevel(&iMinLevel, &iMaxLevel);
 
 	if (iMinLevel == -1 && iMaxLevel == -1)
 		;

@@ -68,30 +68,30 @@ static SStdDeviceStats STD_DEVICE_STATS[MAX_ITEM_LEVEL] =
 	{
 		//	Install
 		{	60,		}, 
- 		{	160,		},  
- 		{	360,		},  
- 		{	760,		},  
- 		{	1500,		},  
- 		{	3200,		},  
- 		{	6500,		},  
- 		{	13000,		},  
- 		{	26000,		},  
- 		{	53000,		},  
- 		{	100000,		},  
- 		{	210000,		},  
- 		{	450000,		},  
- 		{	880000,		},  
- 		{	1700000,	},  
- 		{	3500000,	},  
- 		{	7100000,	},  
- 		{	14000000,	},  
- 		{	28000000,	}, 
- 		{	56000000,	},  
- 		{	110000000,	},  
- 		{	230000000,	},  
- 		{	450000000,	},  
- 		{	910000000,	},  
- 		{	1800000000,	},
+		{	160,		},  
+		{	360,		},  
+		{	760,		},  
+		{	1500,		},  
+		{	3200,		},  
+		{	6500,		},  
+		{	13000,		},  
+		{	26000,		},  
+		{	53000,		},  
+		{	100000,		},  
+		{	210000,		},  
+		{	450000,		},  
+		{	880000,		},  
+		{	1700000,	},  
+		{	3500000,	},  
+		{	7100000,	},  
+		{	14000000,	},  
+		{	28000000,	}, 
+		{	56000000,	},  
+		{	110000000,	},  
+		{	230000000,	},  
+		{	450000000,	},  
+		{	910000000,	},  
+		{	1800000000,	},
 	};
 
 static char *CACHED_EVENTS[CDeviceClass::evtCount] =
@@ -188,23 +188,23 @@ bool CDeviceClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx
 //  If this device alters a ship's performance, then we modified the ship 
 //  performance context. We return TRUE if we modified the context.
 
-    {
-    bool bModified = false;
+	{
+	bool bModified = false;
 
 	//	If we install equipment, then add it.
 
 	if (ItemCtx.IsDeviceWorking())
 		Ctx.Abilities.Set(m_Equipment);
 
-    //  Let sub-classes handle it
+	//  Let sub-classes handle it
 
-    if (OnAccumulatePerformance(ItemCtx, Ctx))
-        bModified = true;
+	if (OnAccumulatePerformance(ItemCtx, Ctx))
+		bModified = true;
 
-    //  Done
+	//  Done
 
-    return bModified;
-    }
+	return bModified;
+	}
 
 void CDeviceClass::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
@@ -309,32 +309,32 @@ bool CDeviceClass::GetAmmoItemPropertyBool (CItemCtx &Ctx, const CItem &Ammo, co
 //  GetAmmoItemPropertyBool
 //
 //  Wrapper around properties that discard ICCItem appropriately.
-    
-    {
-    ICCItem *pValue = FindAmmoItemProperty(Ctx, Ammo, sProperty); 
-    if (pValue == NULL)
-        return false;
+	
+	{
+	ICCItem *pValue = FindAmmoItemProperty(Ctx, Ammo, sProperty); 
+	if (pValue == NULL)
+		return false;
 
-    bool bValue = !pValue->IsNil();
-    pValue->Discard();
-    return bValue;
-    }
+	bool bValue = !pValue->IsNil();
+	pValue->Discard();
+	return bValue;
+	}
 
 Metric CDeviceClass::GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty)
 
 //  GetAmmoItemPropertyDouble
 //
 //  Wrapper around properties that discard ICCItem appropriately.
-    
-    {
-    ICCItem *pValue = FindAmmoItemProperty(Ctx, Ammo, sProperty); 
-    if (pValue == NULL)
-        return 0.0;
+	
+	{
+	ICCItem *pValue = FindAmmoItemProperty(Ctx, Ammo, sProperty); 
+	if (pValue == NULL)
+		return 0.0;
 
-    Metric rValue = pValue->GetDoubleValue(); 
-    pValue->Discard();
-    return rValue; 
-    }
+	Metric rValue = pValue->GetDoubleValue(); 
+	pValue->Discard();
+	return rValue; 
+	}
 
 int CDeviceClass::GetInstallCost (CItemCtx &ItemCtx)
 
@@ -494,7 +494,7 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-    CString sFieldValue;
+	CString sFieldValue;
 
 	//	Get the device
 
@@ -504,32 +504,32 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	if (strEquals(sName, PROPERTY_CAN_BE_DAMAGED))
 		return (pDevice ? CC.CreateBool(pDevice->CanBeDamaged()) : CC.CreateBool(CanBeDamaged()));
-    else if (strEquals(sName, PROPERTY_CAN_BE_DISABLED))
-        return (pDevice ? CC.CreateBool(pDevice->CanBeDisabled(Ctx)) : CC.CreateBool(CanBeDisabled(Ctx)));
+	else if (strEquals(sName, PROPERTY_CAN_BE_DISABLED))
+		return (pDevice ? CC.CreateBool(pDevice->CanBeDisabled(Ctx)) : CC.CreateBool(CanBeDisabled(Ctx)));
 	else if (strEquals(sName, PROPERTY_CAN_BE_DISRUPTED))
 		return (pDevice ? CC.CreateBool(pDevice->CanBeDisrupted()) : CC.CreateBool(CanBeDisrupted()));
 	else if (strEquals(sName, PROPERTY_CAN_TARGET_MISSILES))
 		return (pDevice ? CC.CreateBool(pDevice->CanTargetMissiles()) : CC.CreateNil());
-    else if (strEquals(sName, PROPERTY_CAPACITOR))
-        {
-        CSpaceObject *pSource = Ctx.GetSource();
-        CounterTypes iType;
-        int iLevel;
-        GetCounter(pDevice, pSource, &iType, &iLevel);
-        if (iType != cntCapacitor || pDevice == NULL || pSource == NULL)
-            return CC.CreateNil();
+	else if (strEquals(sName, PROPERTY_CAPACITOR))
+		{
+		CSpaceObject *pSource = Ctx.GetSource();
+		CounterTypes iType;
+		int iLevel;
+		GetCounter(pDevice, pSource, &iType, &iLevel);
+		if (iType != cntCapacitor || pDevice == NULL || pSource == NULL)
+			return CC.CreateNil();
 
-        return CC.CreateInteger(iLevel);
-        }
+		return CC.CreateInteger(iLevel);
+		}
 
 	else if (strEquals(sName, PROPERTY_CYCLE_FIRE))
 		return (pDevice ? CC.CreateBool(pDevice->GetCycleFireSettings()) : CC.CreateNil());
 
-    else if (strEquals(sName, PROPERTY_DEVICE_SLOTS))
-        return CC.CreateInteger(GetSlotsRequired());
+	else if (strEquals(sName, PROPERTY_DEVICE_SLOTS))
+		return CC.CreateInteger(GetSlotsRequired());
 
-    else if (strEquals(sName, PROPERTY_ENABLED))
-        return (pDevice ? CC.CreateBool(pDevice->IsEnabled()) : CC.CreateNil());
+	else if (strEquals(sName, PROPERTY_ENABLED))
+		return (pDevice ? CC.CreateBool(pDevice->IsEnabled()) : CC.CreateNil());
 
 	else if (strEquals(sName, PROPERTY_EXTERNAL))
 		return CC.CreateBool(pDevice ? pDevice->IsExternal() : IsExternal());
@@ -542,30 +542,30 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(pDevice->GetExtraPowerUse());
 		}
 
-    else if (strEquals(sName, PROPERTY_POS))
-        {
-        if (pDevice == NULL)
-            return CC.CreateNil();
+	else if (strEquals(sName, PROPERTY_POS))
+		{
+		if (pDevice == NULL)
+			return CC.CreateNil();
 
-        //	Create a list
+		//	Create a list
 
-        ICCItem *pResult = CC.CreateLinkedList();
-        if (pResult->IsError())
-            return pResult;
+		ICCItem *pResult = CC.CreateLinkedList();
+		if (pResult->IsError())
+			return pResult;
 
-        CCLinkedList *pList = (CCLinkedList *)pResult;
+		CCLinkedList *pList = (CCLinkedList *)pResult;
 
-        //	List contains angle, radius, and optional z
+		//	List contains angle, radius, and optional z
 
-        pList->AppendInteger(pDevice->GetPosAngle());
-        pList->AppendInteger(pDevice->GetPosRadius());
-        if (pDevice->GetPosZ() != 0)
-            pList->AppendInteger(pDevice->GetPosZ());
+		pList->AppendInteger(pDevice->GetPosAngle());
+		pList->AppendInteger(pDevice->GetPosRadius());
+		if (pDevice->GetPosZ() != 0)
+			pList->AppendInteger(pDevice->GetPosZ());
 
-        //	Done
+		//	Done
 
-        return pResult;
-        }
+		return pResult;
+		}
 
 	else if (strEquals(sName, PROPERTY_POWER))
 		{
@@ -581,31 +581,31 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_POWER_USE))
 		return CreatePowerResult(GetPowerRating(Ctx) * 100.0);
 
-    else if (strEquals(sName, PROPERTY_SECONDARY))
-        return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());
+	else if (strEquals(sName, PROPERTY_SECONDARY))
+		return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());
 
 	else if (strEquals(sName, PROPERTY_SLOT_ID))
 		return (pDevice ? CC.CreateString(pDevice->GetID()) : CC.CreateNil());
 
-    else if (strEquals(sName, PROPERTY_TEMPERATURE))
-        {
-        CSpaceObject *pSource = Ctx.GetSource();
-        CounterTypes iType;
-        int iLevel;
-        GetCounter(pDevice, pSource, &iType, &iLevel);
-        if (iType != cntTemperature || pDevice == NULL || pSource == NULL)
-            return CC.CreateNil();
+	else if (strEquals(sName, PROPERTY_TEMPERATURE))
+		{
+		CSpaceObject *pSource = Ctx.GetSource();
+		CounterTypes iType;
+		int iLevel;
+		GetCounter(pDevice, pSource, &iType, &iLevel);
+		if (iType != cntTemperature || pDevice == NULL || pSource == NULL)
+			return CC.CreateNil();
 
-        return CC.CreateInteger(iLevel);
-        }
+		return CC.CreateInteger(iLevel);
+		}
 
 	else if (strEquals(sName, PROPERTY_SHOT_SEPARATION_SCALE))
 		{
 		return (pDevice ? CC.CreateDouble(pDevice->GetShotSeparationScale()) : CC.CreateNil());
 		}
 
-    else
-        return NULL;
+	else
+		return NULL;
 	}
 
 bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, int *retiVariant, CWeaponFireDesc **retpDesc)
@@ -620,7 +620,7 @@ bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, i
 
 	//	Get the device and variant
 
-    CItem Ammo;
+	CItem Ammo;
 	if (pItem->IsMissile())
 		{
 		pDevice = (pItem->GetLaunchWeapons().GetCount() ? pItem->GetLaunchWeapons()[0] : NULL);
@@ -807,18 +807,18 @@ Metric CDeviceClass::OnGetScaledCostAdj (CItemCtx &Ctx) const
 //
 //  Default implementation. Descendants may override.
 
-    {
-    if (Ctx.IsItemNull())
-        return 1.0;
+	{
+	if (Ctx.IsItemNull())
+		return 1.0;
 
-    int iLevel = Ctx.GetItem().GetLevel();
-    if (iLevel <= 0)
-        return 1.0;
+	int iLevel = Ctx.GetItem().GetLevel();
+	if (iLevel <= 0)
+		return 1.0;
 
-    //  We use weapon price increases as a guide.
+	//  We use weapon price increases as a guide.
 
-    return (Metric)CWeaponClass::GetStdStats(iLevel).Cost / (Metric)CWeaponClass::GetStdStats(m_pItemType->GetLevel()).Cost;
-    }
+	return (Metric)CWeaponClass::GetStdStats(iLevel).Cost / (Metric)CWeaponClass::GetStdStats(m_pItemType->GetLevel()).Cost;
+	}
 
 ALERROR CDeviceClass::ParseLinkedFireOptions (SDesignLoadCtx &Ctx, const CString &sDesc, DWORD *retdwOptions)
 

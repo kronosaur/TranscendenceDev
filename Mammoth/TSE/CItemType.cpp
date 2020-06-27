@@ -146,38 +146,38 @@ static char g_RandomDamagedAttrib[] = "randomDamaged";
 const int FLOTSAM_IMAGE_WIDTH =					32;
 
 CItemType::SStdStats CItemType::m_Stats[MAX_ITEM_LEVEL] = 
-    {
-        //  Treasure Value
-        {             750, },
-        {           1'000, },
-        {           1'500, },
-        {           2'000, },
-        {           4'000, },
+	{
+		//  Treasure Value
+		{             750, },
+		{           1'000, },
+		{           1'500, },
+		{           2'000, },
+		{           4'000, },
 
-        {           8'000, },
-        {          16'000, },
-        {          32'000, },
-        {          64'000, },
-        {         128'000, },
+		{           8'000, },
+		{          16'000, },
+		{          32'000, },
+		{          64'000, },
+		{         128'000, },
 
-        {         256'000, },
-        {         512'000, },
-        {       1'000'000, },
-        {       2'000'000, },
-        {       4'100'000, },
+		{         256'000, },
+		{         512'000, },
+		{       1'000'000, },
+		{       2'000'000, },
+		{       4'100'000, },
 
-        {       8'200'000, },
-        {      16'400'000, },
-        {      32'800'000, },
-        {      65'500'000, },
-        {     131'000'000, },
+		{       8'200'000, },
+		{      16'400'000, },
+		{      32'800'000, },
+		{      65'500'000, },
+		{     131'000'000, },
 
-        {     262'000'000, },
-        {     524'000'000, },
-        {   1'000'000'000, },
-        {   2'100'000'000, },
-        {   4'200'000'000, },
-    };
+		{     262'000'000, },
+		{     524'000'000, },
+		{   1'000'000'000, },
+		{   2'100'000'000, },
+		{   4'200'000'000, },
+	};
 
 static char *CACHED_EVENTS[CItemType::evtCount] =
 	{
@@ -558,14 +558,14 @@ ICCItemPtr CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CStrin
 	else if (strEquals(sProperty, PROPERTY_FREQUENCY))
 		return ICCItemPtr(GetFrequencyName((FrequencyTypes)GetFrequency()));
 
-    else if (strEquals(sProperty, PROPERTY_KNOWN))
+	else if (strEquals(sProperty, PROPERTY_KNOWN))
 		{
 		CItem Item(const_cast<CItemType *>(this), 1);
-        return ICCItemPtr(Item.IsKnown());
+		return ICCItemPtr(Item.IsKnown());
 		}
 
-    else if (strEquals(sProperty, PROPERTY_LEVEL))
-        return ICCItemPtr(GetLevel());
+	else if (strEquals(sProperty, PROPERTY_LEVEL))
+		return ICCItemPtr(GetLevel());
 
 	else if (strEquals(sProperty, PROPERTY_MASS_BONUS_PER_CHARGE))
 		return ICCItemPtr(GetMassBonusPerCharge());
@@ -573,11 +573,11 @@ ICCItemPtr CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CStrin
 	else if (strEquals(sProperty, PROPERTY_MAX_CHARGES))
 		return ICCItemPtr(GetMaxCharges());
 
-    else if (strEquals(sProperty, PROPERTY_MAX_LEVEL))
-        return ICCItemPtr(GetMaxLevel());
+	else if (strEquals(sProperty, PROPERTY_MAX_LEVEL))
+		return ICCItemPtr(GetMaxLevel());
 
-    else if (strEquals(sProperty, PROPERTY_MIN_LEVEL))
-        return ICCItemPtr(GetLevel());
+	else if (strEquals(sProperty, PROPERTY_MIN_LEVEL))
+		return ICCItemPtr(GetLevel());
 
 	else if (strEquals(sProperty, PROPERTY_ROLE))
 		return (!m_sRole.IsBlank() ? ICCItemPtr(m_sRole) : ICCItemPtr(ICCItem::Nil));
@@ -728,7 +728,7 @@ CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) c
 //
 //  Returns the value of the item and its currency.
 
-    {
+	{
 	//	NOTE: We have got that guaranteed m_pUnknownType is non-NULL if IsKnown is FALSE.
 
 	int iUnknownIndex;
@@ -737,18 +737,18 @@ CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) c
 
 	//	If this is a scalable item, then we need to ask the class
 
-    CurrencyValue iValue;
-    if (IsScalable())
-        {
-        if (m_pArmor)
-            iValue = CurrencyValue(m_iValue.GetValue() * m_pArmor->GetScaledCostAdj(Ctx));
-        else if (m_pDevice)
-            iValue = CurrencyValue(m_iValue.GetValue() * m_pDevice->GetScaledCostAdj(Ctx));
-        else
-            iValue = m_iValue.GetValue();
-        }
-    else
-        iValue = m_iValue.GetValue();
+	CurrencyValue iValue;
+	if (IsScalable())
+		{
+		if (m_pArmor)
+			iValue = CurrencyValue(m_iValue.GetValue() * m_pArmor->GetScaledCostAdj(Ctx));
+		else if (m_pDevice)
+			iValue = CurrencyValue(m_iValue.GetValue() * m_pDevice->GetScaledCostAdj(Ctx));
+		else
+			iValue = m_iValue.GetValue();
+		}
+	else
+		iValue = m_iValue.GetValue();
 
 	//	If we need to account for charges, then do it
 
@@ -768,10 +768,10 @@ CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) c
 			iValue = (iValue * (1 + Ctx.GetItem().GetCharges())) / (1 + iMaxCharges);
 		}
 
-    //  Done
+	//  Done
 
-    return CCurrencyAndValue(iValue, m_iValue.GetCurrencyType());
-    }
+	return CCurrencyAndValue(iValue, m_iValue.GetCurrencyType());
+	}
 
 const CString &CItemType::GetDesc (bool bActual) const
 
@@ -988,10 +988,10 @@ const CItemType::SStdStats &CItemType::GetStdStats (int iLevel)
 //
 //  Returns standard stats for the level.
 
-    {
-    ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
-    return m_Stats[iLevel - 1];
-    }
+	{
+	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	return m_Stats[iLevel - 1];
+	}
 
 CCurrencyAndValue CItemType::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 
@@ -1096,152 +1096,152 @@ CWeaponFireDesc *CItemType::GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError
 //  If anything goes wrong (e.g., if we don't have enough information) we return
 //  NULL and an optional error explanation.
 
-    {
-    //  We need to end up with the following pieces of data:
-    //
-    //  1.  A CItemCtx for the installed weapon (or at least just the weapon
-    //      item).
-    //  2.  A CWeaponClass to call.
-    //  3.  An optional CItem for the missile/ammo being fired.
+	{
+	//  We need to end up with the following pieces of data:
+	//
+	//  1.  A CItemCtx for the installed weapon (or at least just the weapon
+	//      item).
+	//  2.  A CWeaponClass to call.
+	//  3.  An optional CItem for the missile/ammo being fired.
 
-    CItemCtx *pWeaponCtx = NULL;
-    CWeaponClass *pWeaponClass = NULL;
-    const CItem *pAmmo = NULL;
+	CItemCtx *pWeaponCtx = NULL;
+	CWeaponClass *pWeaponClass = NULL;
+	const CItem *pAmmo = NULL;
 
-    CItemCtx WeaponCtx;
-    CItem Ammo;
+	CItemCtx WeaponCtx;
+	CItem Ammo;
 
-    //  We go through different paths depending on the item context that was
-    //  passed in.
-    //
-    //  If the item context is a weapon (installed or not)
+	//  We go through different paths depending on the item context that was
+	//  passed in.
+	//
+	//  If the item context is a weapon (installed or not)
 
-    if (Ctx.GetDeviceClass())
-        {
-        pWeaponCtx = &Ctx;
+	if (Ctx.GetDeviceClass())
+		{
+		pWeaponCtx = &Ctx;
 
-        pWeaponClass = pWeaponCtx->GetDeviceClass()->AsWeaponClass();
-        if (pWeaponClass == NULL)
-            {
-            if (retsError)
-                *retsError = strPatternSubst("Item %08x is not a weapon or missile.", pWeaponCtx->GetDeviceClass()->GetUNID());
-            return NULL;
-            }
+		pWeaponClass = pWeaponCtx->GetDeviceClass()->AsWeaponClass();
+		if (pWeaponClass == NULL)
+			{
+			if (retsError)
+				*retsError = strPatternSubst("Item %08x is not a weapon or missile.", pWeaponCtx->GetDeviceClass()->GetUNID());
+			return NULL;
+			}
 
-        //  If we have ammo, then get the ammo item.
+		//  If we have ammo, then get the ammo item.
 
-        if (pWeaponClass->GetAmmoItemCount() > 0)
-            {
-            //  If we're a missile, then we cons up an item
+		if (pWeaponClass->GetAmmoItemCount() > 0)
+			{
+			//  If we're a missile, then we cons up an item
 
-            if (GetDeviceClass() == NULL
-                    && pWeaponClass->GetAmmoVariant(const_cast<CItemType *>(this)))
-                {
-                Ammo = CItem(const_cast<CItemType *>(this), 1);
-                pAmmo = &Ammo;
-                }
+			if (GetDeviceClass() == NULL
+					&& pWeaponClass->GetAmmoVariant(const_cast<CItemType *>(this)))
+				{
+				Ammo = CItem(const_cast<CItemType *>(this), 1);
+				pAmmo = &Ammo;
+				}
 
-            //  If we have an installed device, then we omit the ammo, because
-            //  GetWeaponFireDesc below will get the ammo from the device.
+			//  If we have an installed device, then we omit the ammo, because
+			//  GetWeaponFireDesc below will get the ammo from the device.
 
-            else if (Ctx.GetDevice())
-                pAmmo = NULL;
+			else if (Ctx.GetDevice())
+				pAmmo = NULL;
 
-            //  We prefer the item from the context. NOTE: We assume that the
-            //  context has already validated that this ammo is compatible.
+			//  We prefer the item from the context. NOTE: We assume that the
+			//  context has already validated that this ammo is compatible.
 
 #if 0
-            else if (!(pAmmo = &Ctx.GetVariantItem())->IsEmpty())
-                { }
+			else if (!(pAmmo = &Ctx.GetVariantItem())->IsEmpty())
+				{ }
 #endif
 
-            //  If we are the same weapon, then we use the first ammo item
+			//  If we are the same weapon, then we use the first ammo item
 
-            else if (GetUNID() == pWeaponClass->GetUNID())
-                {
-                Ammo = CItem(pWeaponClass->GetAmmoItem(0), 1);
-                pAmmo = &Ammo;
-                }
+			else if (GetUNID() == pWeaponClass->GetUNID())
+				{
+				Ammo = CItem(pWeaponClass->GetAmmoItem(0), 1);
+				pAmmo = &Ammo;
+				}
 
-            //  Otherwise, error
+			//  Otherwise, error
 
-            else
-                {
-                if (retsError)
-                    *retsError = strPatternSubst("Item %08x is not compatible with weapon %08x.", GetUNID(), pWeaponClass->GetUNID());
-                return NULL;
-                }
-            }
-        }
+			else
+				{
+				if (retsError)
+					*retsError = strPatternSubst("Item %08x is not compatible with weapon %08x.", GetUNID(), pWeaponClass->GetUNID());
+				return NULL;
+				}
+			}
+		}
 
-    //  If the item context is an item, then we expect it to be ammo for us.
-    //  (It can't be the weapon, because otherwise we'd be in the code above.)
+	//  If the item context is an item, then we expect it to be ammo for us.
+	//  (It can't be the weapon, because otherwise we'd be in the code above.)
 
-    else if (!Ctx.GetItem().IsEmpty())
-        {
-        WeaponCtx = CItemCtx(const_cast<CItemType *>(this));
-        pWeaponCtx = &WeaponCtx;
+	else if (!Ctx.GetItem().IsEmpty())
+		{
+		WeaponCtx = CItemCtx(const_cast<CItemType *>(this));
+		pWeaponCtx = &WeaponCtx;
 
-        pWeaponClass = (GetDeviceClass() ? GetDeviceClass()->AsWeaponClass() : NULL);
-        if (pWeaponClass == NULL)
-            {
-            if (retsError)
-                *retsError = strPatternSubst("Item %08x is not a weapon.", GetUNID());
-            return NULL;
-            }
+		pWeaponClass = (GetDeviceClass() ? GetDeviceClass()->AsWeaponClass() : NULL);
+		if (pWeaponClass == NULL)
+			{
+			if (retsError)
+				*retsError = strPatternSubst("Item %08x is not a weapon.", GetUNID());
+			return NULL;
+			}
 
-        //  Make sure the context is ammo for the weapon.
+		//  Make sure the context is ammo for the weapon.
 
-        if (pWeaponClass->GetAmmoVariant(Ctx.GetItem().GetType()) != -1)
-            pAmmo = &Ctx.GetItem();
-        else
-            {
-            if (retsError)
-                *retsError = strPatternSubst("Item %08x is not compatible with weapon %08x.", Ctx.GetItem().GetType()->GetUNID(), pWeaponClass->GetUNID());
-            return NULL;
-            }
-        }
+		if (pWeaponClass->GetAmmoVariant(Ctx.GetItem().GetType()) != -1)
+			pAmmo = &Ctx.GetItem();
+		else
+			{
+			if (retsError)
+				*retsError = strPatternSubst("Item %08x is not compatible with weapon %08x.", Ctx.GetItem().GetType()->GetUNID(), pWeaponClass->GetUNID());
+			return NULL;
+			}
+		}
 
-    //  Otherwise, if we're a weapon, then we cons something up
+	//  Otherwise, if we're a weapon, then we cons something up
 
-    else if (GetDeviceClass() && (pWeaponClass = GetDeviceClass()->AsWeaponClass()))
-        {
-        WeaponCtx = CItemCtx(const_cast<CItemType *>(this));
-        pWeaponCtx = &WeaponCtx;
+	else if (GetDeviceClass() && (pWeaponClass = GetDeviceClass()->AsWeaponClass()))
+		{
+		WeaponCtx = CItemCtx(const_cast<CItemType *>(this));
+		pWeaponCtx = &WeaponCtx;
 
-        //  Choose the first ammo for this weapon (if necessary)
+		//  Choose the first ammo for this weapon (if necessary)
 
-        if (pWeaponClass->GetAmmoItemCount() > 0)
-            {
-            Ammo = CItem(pWeaponClass->GetAmmoItem(0), 1);
-            pAmmo = &Ammo;
-            }
-        }
+		if (pWeaponClass->GetAmmoItemCount() > 0)
+			{
+			Ammo = CItem(pWeaponClass->GetAmmoItem(0), 1);
+			pAmmo = &Ammo;
+			}
+		}
 
-    //  Otherwise we expect to be ammo for some weapon.
+	//  Otherwise we expect to be ammo for some weapon.
 
-    else
-        {
-        Ammo = CItem(const_cast<CItemType *>(this), 1);
-        pAmmo = &Ammo;
+	else
+		{
+		Ammo = CItem(const_cast<CItemType *>(this), 1);
+		pAmmo = &Ammo;
 
-	    CDeviceClass *pDeviceClass;
-        if (!CDeviceClass::FindWeaponFor(Ammo.GetType(), &pDeviceClass)
-                || (pWeaponClass = pDeviceClass->AsWeaponClass()) == NULL)
-            {
-            if (retsError)
-                *retsError = strPatternSubst("Item %08x is not a weapon or missile.", GetUNID());
-            return NULL;
-            }
+		CDeviceClass *pDeviceClass;
+		if (!CDeviceClass::FindWeaponFor(Ammo.GetType(), &pDeviceClass)
+				|| (pWeaponClass = pDeviceClass->AsWeaponClass()) == NULL)
+			{
+			if (retsError)
+				*retsError = strPatternSubst("Item %08x is not a weapon or missile.", GetUNID());
+			return NULL;
+			}
 
-        WeaponCtx = CItemCtx(pWeaponClass->GetItemType());
-        pWeaponCtx = &WeaponCtx;
-        }
+		WeaponCtx = CItemCtx(pWeaponClass->GetItemType());
+		pWeaponCtx = &WeaponCtx;
+		}
 
-    //  Now we have all the pieces.
+	//  Now we have all the pieces.
 
-    return pWeaponClass->GetWeaponFireDesc(*pWeaponCtx, (pAmmo ? *pAmmo : CItem()));
-    }
+	return pWeaponClass->GetWeaponFireDesc(*pWeaponCtx, (pAmmo ? *pAmmo : CItem()));
+	}
 
 void CItemType::InitComponents (void)
 
@@ -1475,9 +1475,9 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	ALERROR error;
 	int i;
 
-    //  Load the level. If this is a range, then it is a scalable item.
+	//  Load the level. If this is a range, then it is a scalable item.
 
-    m_fScalable = pDesc->GetAttributeIntegerRange(LEVEL_ATTRIB, &m_iLevel, &m_iMaxLevel, 1, MAX_ITEM_LEVEL, 1, 1);
+	m_fScalable = pDesc->GetAttributeIntegerRange(LEVEL_ATTRIB, &m_iLevel, &m_iMaxLevel, 1, MAX_ITEM_LEVEL, 1, 1);
 
 	//	Initialize basic info
 
@@ -1844,12 +1844,12 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		//	Get the device
 
 		CDeviceClass *pDevice;
-        CItem Ammo;
-        if (IsMissile())
-            {
+		CItem Ammo;
+		if (IsMissile())
+			{
 			pDevice = GetAmmoLauncher();
-            Ammo = CItem(const_cast<CItemType *>(this), 1);
-            }
+			Ammo = CItem(const_cast<CItemType *>(this), 1);
+			}
 		else
 			pDevice = GetDeviceClass();
 

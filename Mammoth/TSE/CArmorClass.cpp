@@ -195,8 +195,8 @@ static TStaticStringTable<TStaticStringEntry<ERegenTypes>, 5> REGEN_TYPE_TABLE =
 
 CArmorClass::CArmorClass (void) :
 		m_pItemType(NULL),
-        m_iScaledLevels(0),
-        m_pScalable(NULL)
+		m_iScaledLevels(0),
+		m_pScalable(NULL)
 
 //	CArmorClass constructor
 
@@ -207,10 +207,10 @@ CArmorClass::~CArmorClass (void)
 
 //  CArmorClass destructor
 
-    {
-    if (m_pScalable)
-        delete[] m_pScalable;
-    }
+	{
+	if (m_pScalable)
+		delete[] m_pScalable;
+	}
 
 EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
@@ -374,7 +374,7 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 
 	{
 	const CEngineOptions &Options = GetUniverse().GetEngineOptions();
-    const SScalableStats &Stats = GetScaledStats(ArmorItem);
+	const SScalableStats &Stats = GetScaledStats(ArmorItem);
 
 	//	If we require a higher level to repair
 
@@ -579,9 +579,9 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 //  Adds performance improvements (if any) to the ship performance context. 
 //  Returns TRUE if any improvements were added.
 
-    {
+	{
 	int i;
-    bool bModified = false;
+	bool bModified = false;
 
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
@@ -591,7 +591,7 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 
 	Ctx.Armor.Insert(ItemCtx);
 
-    //  Adjust max speed.
+	//  Adjust max speed.
 
 	CArmorSystem *pArmorSet;
 	if (m_iMaxSpeedInc 
@@ -636,10 +636,10 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 		bModified = true;
 		}
 
-    //  Done
+	//  Done
 
-    return bModified;
-    }
+	return bModified;
+	}
 
 void CArmorClass::AccumulatePowerUsed (CItemCtx &ItemCtx, SUpdateCtx &Ctx, int &iPowerUsed, int &iPowerGenerated) const
 
@@ -717,29 +717,29 @@ ALERROR CArmorClass::BindScaledParams (SDesignLoadCtx &Ctx)
 //
 //  Bind scaled parameters
 
-    {
-    ALERROR error;
-    int i;
+	{
+	ALERROR error;
+	int i;
 
-    if (m_pScalable == NULL)
-        return NOERROR;
+	if (m_pScalable == NULL)
+		return NOERROR;
 
-    for (i = 0; i < m_iScaledLevels - 1; i++)
-        {
-        SScalableStats &Stats = m_pScalable[i];
+	for (i = 0; i < m_iScaledLevels - 1; i++)
+		{
+		SScalableStats &Stats = m_pScalable[i];
 
-        if (error = Stats.DamageAdj.Bind(Ctx, GetUniverse().GetArmorDamageAdj(Stats.iLevel)))
-            return error;
+		if (error = Stats.DamageAdj.Bind(Ctx, GetUniverse().GetArmorDamageAdj(Stats.iLevel)))
+			return error;
 
-	    if (error = Stats.RepairCost.Bind(Ctx))
-		    return error;
+		if (error = Stats.RepairCost.Bind(Ctx))
+			return error;
 
-	    if (error = Stats.InstallCost.Bind(Ctx))
-		    return error;
-        }
+		if (error = Stats.InstallCost.Bind(Ctx))
+			return error;
+		}
 
-    return NOERROR;
-    }
+	return NOERROR;
+	}
 
 void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
@@ -856,7 +856,7 @@ int CArmorClass::CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance 
 	{
 	//	Initialize
 
-    const SScalableStats &Stats = GetScaledStats(ArmorItem);
+	const SScalableStats &Stats = GetScaledStats(ArmorItem);
 	retBalance.iLevel = Stats.iLevel;
 
 	//	Figure out how may HPs standard armor at this level should have.
@@ -1274,7 +1274,7 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const
 
 	{
 	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
-    const SScalableStats &Stats = GetScaledStats(ArmorItem);
+	const SScalableStats &Stats = GetScaledStats(ArmorItem);
 	const CItemEnhancementStack &Enhancements = ArmorItem.GetEnhancements();
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
@@ -1443,7 +1443,7 @@ Metric CArmorClass::CalcRegen180 (CItemCtx &ItemCtx) const
 //	different algorithm.
 
 	{
-    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
+	const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
 
 	Metric rRegen = 0.0;
 
@@ -1658,10 +1658,10 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_iMaxSpeedInc = pDesc->GetAttributeIntegerBounded(MAX_SPEED_INC_ATTRIB, -100, 100, 0);
 	pArmor->m_iMaxSpeedLimit = pDesc->GetAttributeIntegerBounded(MAX_SPEED_ATTRIB, 0, 100, -1);
 
-    //  If we're scalable, generate stats for all levels.
+	//  If we're scalable, generate stats for all levels.
 
-    if (pType->IsScalable())
-        pArmor->GenerateScaledStats();
+	if (pType->IsScalable())
+		pArmor->GenerateScaledStats();
 
 	//	Done
 
@@ -1841,64 +1841,64 @@ void CArmorClass::GenerateScaledStats (void)
 //
 //  Generate parameters for all levels.
 
-    {
-    int i;
+	{
+	int i;
 
-    ASSERT(m_pScalable == NULL);
+	ASSERT(m_pScalable == NULL);
 
-    int iBaseLevel = m_pItemType->GetLevel();
-    m_iScaledLevels = 1 + m_pItemType->GetMaxLevel() - iBaseLevel;
-    if (m_iScaledLevels < 2)
-        return;
+	int iBaseLevel = m_pItemType->GetLevel();
+	m_iScaledLevels = 1 + m_pItemType->GetMaxLevel() - iBaseLevel;
+	if (m_iScaledLevels < 2)
+		return;
 
-    m_pScalable = new SScalableStats[m_iScaledLevels - 1];
+	m_pScalable = new SScalableStats[m_iScaledLevels - 1];
 
-    const SStdStats &BaseStd = GetStdStats(iBaseLevel);
+	const SStdStats &BaseStd = GetStdStats(iBaseLevel);
 
-    for (i = 1; i < m_iScaledLevels; i++)
-        {
-        SScalableStats &Stats = m_pScalable[i - 1];
-        Stats.iLevel = iBaseLevel + i;
+	for (i = 1; i < m_iScaledLevels; i++)
+		{
+		SScalableStats &Stats = m_pScalable[i - 1];
+		Stats.iLevel = iBaseLevel + i;
 
-        const SStdStats &LevelStd = GetStdStats(Stats.iLevel);
+		const SStdStats &LevelStd = GetStdStats(Stats.iLevel);
 
-        //  Scale hit points using standard scale
+		//  Scale hit points using standard scale
 
-        Metric rHPAdj = (Metric)LevelStd.iHP / (Metric)BaseStd.iHP;
-        Stats.iHitPoints = (int)(rHPAdj * m_Stats.iHitPoints);
+		Metric rHPAdj = (Metric)LevelStd.iHP / (Metric)BaseStd.iHP;
+		Stats.iHitPoints = (int)(rHPAdj * m_Stats.iHitPoints);
 
-        //  Damage adjust gets initialized at bind time (because the scale is
-        //  part of the adventure).
+		//  Damage adjust gets initialized at bind time (because the scale is
+		//  part of the adventure).
 
-        Stats.DamageAdj = m_Stats.DamageAdj;
+		Stats.DamageAdj = m_Stats.DamageAdj;
 
-        //  Immunities based on level
+		//  Immunities based on level
 
-        Stats.iBlindingDamageAdj = Min(m_Stats.iBlindingDamageAdj, (Stats.iLevel >= BLIND_IMMUNE_LEVEL ? 0 : 100));
+		Stats.iBlindingDamageAdj = Min(m_Stats.iBlindingDamageAdj, (Stats.iLevel >= BLIND_IMMUNE_LEVEL ? 0 : 100));
 		Stats.fRadiationImmune = m_Stats.fRadiationImmune || (Stats.iLevel >= RADIATION_IMMUNE_LEVEL ? true : false);
 		Stats.iEMPDamageAdj = Min(m_Stats.iEMPDamageAdj, (Stats.iLevel >= EMP_IMMUNE_LEVEL ? 0 : 100));
 		Stats.iDeviceDamageAdj = Min(m_Stats.iDeviceDamageAdj, (Stats.iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL ? 0 : 100));
 		Stats.fDisintegrationImmune = m_Stats.fDisintegrationImmune || (Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL ? true : false);
 		Stats.fShatterImmune = m_Stats.fShatterImmune || (Stats.iLevel >= SHATTER_IMMUNE_LEVEL ? true : false);
 
-        //  Regen and decay
+		//  Regen and decay
 
 		Stats.iRegenType = m_Stats.iRegenType;
-        if (!m_Stats.Regen.IsEmpty())
-            Stats.Regen.InitFromRegen(rHPAdj * m_Stats.Regen.GetHPPer180(TICKS_PER_UPDATE), TICKS_PER_UPDATE);
+		if (!m_Stats.Regen.IsEmpty())
+			Stats.Regen.InitFromRegen(rHPAdj * m_Stats.Regen.GetHPPer180(TICKS_PER_UPDATE), TICKS_PER_UPDATE);
 
-        if (!m_Stats.Decay.IsEmpty())
-            Stats.Decay.InitFromRegen(rHPAdj * m_Stats.Decay.GetHPPer180(TICKS_PER_UPDATE), TICKS_PER_UPDATE);
+		if (!m_Stats.Decay.IsEmpty())
+			Stats.Decay.InitFromRegen(rHPAdj * m_Stats.Decay.GetHPPer180(TICKS_PER_UPDATE), TICKS_PER_UPDATE);
 
-        if (!m_Stats.Distribute.IsEmpty())
-            Stats.Distribute.InitFromRegen(rHPAdj * m_Stats.Distribute.GetHPPer180(TICKS_PER_UPDATE), TICKS_PER_UPDATE);
+		if (!m_Stats.Distribute.IsEmpty())
+			Stats.Distribute.InitFromRegen(rHPAdj * m_Stats.Distribute.GetHPPer180(TICKS_PER_UPDATE), TICKS_PER_UPDATE);
 
-        //  Prices
+		//  Prices
 
-        Stats.RepairCost = CCurrencyAndValue(CurrencyValue((Metric)m_Stats.RepairCost.GetValue() * (Metric)LevelStd.iRepairCost / (Metric)BaseStd.iRepairCost), m_Stats.RepairCost.GetCurrencyType());
-        Stats.InstallCost = CCurrencyAndValue(CurrencyValue((Metric)m_Stats.InstallCost.GetValue() * (Metric)LevelStd.iInstallCost / (Metric)BaseStd.iInstallCost), m_Stats.InstallCost.GetCurrencyType());
-        }
-    }
+		Stats.RepairCost = CCurrencyAndValue(CurrencyValue((Metric)m_Stats.RepairCost.GetValue() * (Metric)LevelStd.iRepairCost / (Metric)BaseStd.iRepairCost), m_Stats.RepairCost.GetCurrencyType());
+		Stats.InstallCost = CCurrencyAndValue(CurrencyValue((Metric)m_Stats.InstallCost.GetValue() * (Metric)LevelStd.iInstallCost / (Metric)BaseStd.iInstallCost), m_Stats.InstallCost.GetCurrencyType());
+		}
+	}
 
 int CArmorClass::GetDamageAdj (const CArmorItem &ArmorItem, const DamageDesc &Damage) const
 
@@ -2010,7 +2010,7 @@ int CArmorClass::GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower) const
 
 	//	Armor is not scaled, so power consumption does not change
 
-    else if (m_pScalable == NULL || ItemCtx.IsItemNull())
+	else if (m_pScalable == NULL || ItemCtx.IsItemNull())
 		{
 		if (retiIdlePower) *retiIdlePower = m_iIdlePowerUse;
 		return m_iPowerUse;
@@ -2043,7 +2043,7 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-    const SScalableStats &Stats = GetScaledStats(ArmorItem);
+	const SScalableStats &Stats = GetScaledStats(ArmorItem);
 	CItemCtx Ctx(&(const CItem &)ArmorItem, ArmorItem.GetSource());
 
 	//	Enhancements
@@ -2178,11 +2178,11 @@ int CArmorClass::GetMaxHP (const CArmorItem &ArmorItem, bool bForceComplete) con
 //	Returns the max HP for this kind of armor
 
 	{
-    const SScalableStats &Stats = GetScaledStats(ArmorItem);
+	const SScalableStats &Stats = GetScaledStats(ArmorItem);
 
 	//	Start with hit points defined by the class, scaled if necessary.
 
-    int iHP = Stats.iHitPoints;
+	int iHP = Stats.iHitPoints;
 
 	//	Fire event to compute HP, if necessary
 
@@ -2378,16 +2378,16 @@ Metric CArmorClass::GetScaledCostAdj (CItemCtx &ItemCtx) const
 //
 //  Returns the cost of the armor, taking scaling into account.
 
-    {
-    if (m_pScalable == NULL || ItemCtx.IsItemNull())
-        return 1.0;
+	{
+	if (m_pScalable == NULL || ItemCtx.IsItemNull())
+		return 1.0;
 
-    int iLevel = ItemCtx.GetItem().GetLevel();
-    if (iLevel <= 0)
-        return 1.0;
+	int iLevel = ItemCtx.GetItem().GetLevel();
+	if (iLevel <= 0)
+		return 1.0;
 
-    return (Metric)GetStdStats(iLevel).iCost / (Metric)GetStdStats(m_pItemType->GetLevel()).iCost;
-    }
+	return (Metric)GetStdStats(iLevel).iCost / (Metric)GetStdStats(m_pItemType->GetLevel()).iCost;
+	}
 
 const CArmorClass::SScalableStats &CArmorClass::GetScaledStats (const CArmorItem &ArmorItem) const
 
@@ -2396,14 +2396,14 @@ const CArmorClass::SScalableStats &CArmorClass::GetScaledStats (const CArmorItem
 //	Returns proper stats
 
 	{
-    if (m_pScalable == NULL)
-        return m_Stats;
+	if (m_pScalable == NULL)
+		return m_Stats;
 
-    int iLevel = Max(0, Min(ArmorItem.GetLevel() - ArmorItem.GetMinLevel(), m_iScaledLevels));
-    if (iLevel <= 0)
-        return m_Stats;
+	int iLevel = Max(0, Min(ArmorItem.GetLevel() - ArmorItem.GetMinLevel(), m_iScaledLevels));
+	if (iLevel <= 0)
+		return m_Stats;
 
-    return m_pScalable[iLevel - 1];
+	return m_pScalable[iLevel - 1];
 	}
 
 CString CArmorClass::GetShortName (void)
@@ -2487,10 +2487,10 @@ const CArmorClass::SStdStats &CArmorClass::GetStdStats (int iLevel)
 //
 //  Returns standard stats
 
-    {
+	{
 	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
-    return STD_STATS[iLevel - 1];
-    }
+	return STD_STATS[iLevel - 1];
+	}
 
 CUniverse &CArmorClass::GetUniverse (void) const
 
@@ -2631,10 +2631,10 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_Stats.RepairCost.Bind(Ctx))
 		return error;
 
-    //  Bind scaled parameters
+	//  Bind scaled parameters
 
-    if (error = BindScaledParams(Ctx))
-        return error;
+	if (error = BindScaledParams(Ctx))
+		return error;
 
 	//	Cache some events
 
@@ -2724,18 +2724,18 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 		}
 	else if (strEquals(sProperty, PROPERTY_LEVEL))
 		{
-        //  If this is armor, then we remember the current damaged state and
-        //  carry that forward to the new level.
+		//  If this is armor, then we remember the current damaged state and
+		//  carry that forward to the new level.
 
 		int iCurMaxHP;
 		int iCurHP = ArmorItem.GetHP(&iCurMaxHP);
 
-        //  Set the level
+		//  Set the level
 
-        if (!Item.SetLevel(Value.GetIntegerValue(), retsError))
+		if (!Item.SetLevel(Value.GetIntegerValue(), retsError))
 			return ESetPropertyResult::error;
 
-        //  Set armor HP
+		//  Set armor HP
 
 		int iNewMaxHP = ArmorItem.GetMaxHP();
 		int iNewHP = CArmorClass::CalcMaxHPChange(iCurHP, iCurMaxHP, iNewMaxHP);
@@ -2762,9 +2762,9 @@ void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, b
 //	Updates the armor. This should be called once every 10 ticks
 
 	{
-    DEBUG_TRY
+	DEBUG_TRY
 
-    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
+	const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
@@ -3085,7 +3085,7 @@ bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const C
 			if (pHealerSystem)
 				{
 				iHP = Min(iHP, pHealerSystem->GetHealerLeft());
-		        pHealerSystem->IncHealerLeft(-iHP);
+				pHealerSystem->IncHealerLeft(-iHP);
 				}
 			break;
 			}
