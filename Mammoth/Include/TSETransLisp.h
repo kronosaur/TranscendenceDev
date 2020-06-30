@@ -225,20 +225,20 @@ class CCXMLWrapper : public ICCAtom
 class CAttributeDataBlock
 	{
 	public:
-        enum ETransferOptions
-            {
-            transCopy,
-            transIgnore,
-            };
+		enum ETransferOptions
+			{
+			transCopy,
+			transIgnore,
+			};
 
-        struct STransferDesc
-            {
-            STransferDesc (void) :
-                    iOption(transCopy)
-                { }
+		struct STransferDesc
+			{
+			STransferDesc (void) :
+					iOption(transCopy)
+				{ }
 
-            ETransferOptions iOption;
-            };
+			ETransferOptions iOption;
+			};
 
 		CAttributeDataBlock (void);
 		CAttributeDataBlock (const CAttributeDataBlock &Src);
@@ -257,7 +257,7 @@ class CAttributeDataBlock
 		const CString &GetDataAttrib (int iIndex) const { return m_Data.GetKey(iIndex); }
 		int GetDataCount (void) const { return m_Data.GetCount(); }
 		CSpaceObject *GetObjRefData (const CString &sAttrib) const;
-        ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL);
+		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL);
 		bool IsDataNil (const CString &sAttrib) const;
 		bool IsEmpty (void) const { return (m_Data.GetCount() == 0 && m_pObjRefData == NULL); }
 		bool IsEqual (const CAttributeDataBlock &Src);
@@ -275,10 +275,10 @@ class CAttributeDataBlock
 		static const CAttributeDataBlock Null;
 
 	private:
-        struct SDataEntry
-            {
-            ICCItemPtr pData;
-            };
+		struct SDataEntry
+			{
+			ICCItemPtr pData;
+			};
 
 		struct SObjRefEntry
 			{
@@ -290,12 +290,12 @@ class CAttributeDataBlock
 			};
 
 		void CleanUp (void);
-        void CleanUpObjRefs (void);
+		void CleanUpObjRefs (void);
 		void Copy (const CAttributeDataBlock &Copy);
-        void CopyObjRefs (SObjRefEntry *pSrc);
+		void CopyObjRefs (SObjRefEntry *pSrc);
 		bool IsXMLText (const CString &sData) const;
-        void ReadDataEntries (IReadStream *pStream);
+		void ReadDataEntries (IReadStream *pStream);
 
-        TSortMap<CString, SDataEntry> m_Data;
+		TSortMap<CString, SDataEntry> m_Data;
 		SObjRefEntry *m_pObjRefData;			//	Custom pointers to CSpaceObject *
 	};
