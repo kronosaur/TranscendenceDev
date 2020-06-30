@@ -152,6 +152,7 @@
 						{	test:'(itm@ &itTestArmorScaled; 'test.data2)			result:2	}
 						{	test:'(itm@ &itTestArmorScaled; 'test.dynamicData1)	result:1	}
 						{	test:'(itm@ &itTestArmorScaled; 'test.dynamicData2)	result:4	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.dynamicData3)	result:1	}
 
 						{	test:'(itm@ 
 									(itmSet@ &itTestArmorScaled; 'test.data1 7)

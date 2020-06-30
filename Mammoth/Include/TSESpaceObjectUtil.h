@@ -22,7 +22,7 @@ class CItemEventDispatcher
 		void FireEvent (CSpaceObject *pSource, ECodeChainEvents iEvent)	{ if (m_pFirstEntry) FireEventFull(pSource, iEvent); }
 		void FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
-		void FireUpdateEvents (CSpaceObject *pSource) { if (m_pFirstEntry) FireUpdateEventsFull(pSource); }
+		void FireUpdateEvents (CSpaceObject *pSource) { if (m_pFirstEntry) FireEventFull(pSource, eventOnUpdate, true); }
 		void Init (CSpaceObject *pSource);
 
 	private:
@@ -41,8 +41,7 @@ class CItemEventDispatcher
 
 		void AddEntry (const CString &sEvent, EItemEventDispatchTypes iType, const SEventHandlerDesc &Event, CItem *pItem, DWORD dwEnhancementID);
 		SEntry *AddEntry (void);
-		void FireEventFull (CSpaceObject *pSource, ECodeChainEvents iEvent);
-		void FireUpdateEventsFull (CSpaceObject *pSource);
+		void FireEventFull (CSpaceObject *pSource, ECodeChainEvents iEvent, bool bCheckExpiredEnhancements = false);
 		void Refresh (CSpaceObject *pSource, SEntry *pFirst);
 		void RemoveAll (void);
 

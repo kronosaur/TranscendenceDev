@@ -61,6 +61,8 @@ class CCodeChainCtx
 		void DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj);
 		void DefineSpaceObject (const CString &sVar, const CSpaceObject &Obj) { m_CC.DefineGlobalInteger(sVar, (int)&Obj); }
 		void DefineString (const CString &sVar, const CString &sValue) { m_CC.DefineGlobalString(sVar, sValue); }
+		void DefineType (DWORD dwUNID);
+		inline void DefineType (const CDesignType *pType);
 		void DefineVar (const CString &sVar, ICCItem *pValue) { m_CC.DefineGlobal(sVar, pValue); }
 		void DefineVector (const CString &sVar, const CVector &vVector);
 		void Discard (ICCItem *pItem) { pItem->Discard(); }
@@ -89,6 +91,7 @@ class CCodeChainCtx
 		void SaveAndDefineSovereignVar (CSovereign *pSource);
 		void SaveAndDefineType (DWORD dwUNID);
 		void SaveItemVar (void);
+		void SaveTypeVar (void);
 		void SetDockScreenList (IListData *pListData) { m_pListData = pListData; }
 		void SetCanvas (CG32bitImage *pCanvas) { m_pCanvas = pCanvas; }
 		void SetEvent (ECodeChainEvents iEvent);

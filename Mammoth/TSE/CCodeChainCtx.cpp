@@ -585,6 +585,19 @@ void CCodeChainCtx::DefineSpaceObject (const CString &sVar, const CSpaceObject *
 		}
 	}
 
+void CCodeChainCtx::DefineType (DWORD dwUNID)
+
+//	DefineType
+//
+//	Defines the type
+
+	{
+	if (dwUNID)
+		DefineInteger(STR_G_TYPE, dwUNID);
+	else
+		m_CC.DefineGlobal(STR_G_TYPE, m_CC.CreateNil());
+	}
+
 void CCodeChainCtx::DefineVector (const CString &sVar, const CVector &vVector)
 
 //	DefineVector
@@ -960,6 +973,17 @@ void CCodeChainCtx::SaveItemVar (void)
 	{
 	if (m_pOldItem == NULL)
 		m_pOldItem = m_CC.LookupGlobal(STR_G_ITEM, this);
+	}
+
+void CCodeChainCtx::SaveTypeVar (void)
+
+//	SaveTypeVar
+//
+//	Saves gType if not already saved
+
+	{
+	if (m_pOldType == NULL)
+		m_pOldType = m_CC.LookupGlobal(STR_G_TYPE, this);
 	}
 
 void CCodeChainCtx::SetEvent (ECodeChainEvents iEvent)
