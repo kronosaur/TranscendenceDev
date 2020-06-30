@@ -1410,15 +1410,37 @@ void COrbEffectPainter::PaintLightning (CG32bitImage &Dest, int xCenter, int yCe
 
 	for (i = 0; i < iFlareCount; i++)
 		{
-		int xDest, yDest;
-		IntPolarToVector(iAngle, FlareDesc.iLength, &xDest, &yDest);
 
-		DrawLightning(Dest,
+		OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
+		if (pRenderQueue) {
+			int xDest, yDest;
+			IntPolarToVector(iAngle + ((rand() % 20) - 10), FlareDesc.iLength + ((rand() % (FlareDesc.iLength / 8))) - FlareDesc.iLength / 8, &xDest, &yDest);
+			int iDistX = xDest;
+			int iDistY = yDest;
+			int iCanvasHeight = Dest.GetHeight();
+			int iCanvasWidth = Dest.GetWidth();
+
+			int iShape = rand() % 6;
+
+			float iDist = sqrt(float(iDistX * iDistX) + float(iDistY * iDistY));
+			int iPosX = xCenter + ((iDistX) / 2);
+			int iPosY = yCenter + ((iDistY) / 2);
+			std::tuple<int, int, int> primaryColor(int(m_rgbPrimaryColor.GetRed()), int(m_rgbPrimaryColor.GetGreen()), int(m_rgbPrimaryColor.GetBlue()));
+			std::tuple<int, int, int> secondaryColor(0, 0, 0);
+			float rSeed = mathRandom(20, 80) / 20.0f;
+			pRenderQueue->addLightningToEffectRenderQueue(iPosX, iPosY, FlareDesc.iLength * 2, int(FlareDesc.iWidth * 30 * rSeed), iCanvasWidth, iCanvasHeight, float(-iAngle + 180) * (float(PI) / 180.0f), iShape, iShape,
+				primaryColor, secondaryColor, rSeed + float(i));
+		}
+		else {
+			int xDest, yDest;
+			IntPolarToVector(iAngle, FlareDesc.iLength, &xDest, &yDest);
+			DrawLightning(Dest,
 				xCenter, yCenter,
 				xCenter + xDest, yCenter + yDest,
 				m_rgbPrimaryColor,
 				CG32bitPixel::Null(),
 				0.5);
+		}
 
 		iAngle += iSeparation;
 		}

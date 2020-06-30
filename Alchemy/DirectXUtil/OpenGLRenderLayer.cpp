@@ -59,7 +59,28 @@ void OpenGLRenderLayer::addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor,
 	m_lightningRenderBatch.addObjToRender(renderRequest);
 }
 
-void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader, OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, unsigned int fbo, OpenGLVAO* canvasVAO)
+void OpenGLRenderLayer::addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition,
+	float rotation,
+	float radius,
+	float intensity,
+	float opacity,
+	int animation,
+	int style,
+	int detail,
+	int distortion,
+	int animationSeed,
+	int lifetime,
+	int currFrame,
+	glm::vec3 primaryColor,
+	glm::vec3 secondaryColor,
+	float startingDepth)
+{
+	auto renderRequest = OpenGLInstancedBatchRenderRequestOrb(sizeAndPosition, rotation, radius, intensity, opacity, animation, style, detail, distortion, animationSeed, lifetime, currFrame, primaryColor, secondaryColor);
+	renderRequest.set_depth(startingDepth);
+	m_orbRenderBatch.addObjToRender(renderRequest);
+}
+
+void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader, OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, OpenGLShader *orbShader, unsigned int fbo, OpenGLVAO* canvasVAO)
 {
 	// For each render queue in the ships render queue, render that render queue. We need to set the texture and do a glBindTexture before doing so.
 	// Render order is Texture, Orb, Ray, Lightning
@@ -95,6 +116,8 @@ void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int
 	m_rayRenderBatch.Render(rayShader, depthLevel, depthDelta, currentTick);
 	m_lightningRenderBatch.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions);
 	m_lightningRenderBatch.Render(lightningShader, depthLevel, depthDelta, currentTick);
+	m_orbRenderBatch.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions);
+	m_orbRenderBatch.Render(orbShader, depthLevel, depthDelta, currentTick);
 
 	m_texRenderBatches.clear();
 }

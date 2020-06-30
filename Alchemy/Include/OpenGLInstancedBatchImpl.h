@@ -1,6 +1,8 @@
 #pragma once
 #include "OpenGLInstancedBatch.h"
 
+// Each instanced batch type for a specific shader is derived from a class generated from the OpenGLInstancedBatchRenderRequest template.
+
 class OpenGLInstancedBatchRenderRequestTexture : public OpenGLInstancedBatchRenderRequest<glm::vec2, glm::vec2, glm::vec2, glm::vec2, float, glm::vec4, float> {
 public:
 	OpenGLInstancedBatchRenderRequestTexture(
@@ -48,7 +50,30 @@ private:
 	static std::unique_ptr<OpenGLVAO> vao;
 };
 
+class OpenGLInstancedBatchRenderRequestOrb : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, float, float, float, int, int, int, int, int, int, int, glm::vec3, glm::vec3 > {
+public:
+	OpenGLInstancedBatchRenderRequestOrb(
+		glm::vec4 sizeAndPosition,
+		float rotation,
+		float radius,
+		float intensity,
+		float opacity,
+		int animation,
+		int style,
+		int detail,
+		int distortion,
+		int animationSeed,
+		int lifetime,
+		int currFrame,
+		glm::vec3 primaryColor,
+		glm::vec3 secondaryColor) : OpenGLInstancedBatchRenderRequest{ sizeAndPosition, rotation, radius, intensity, opacity, animation, style, detail, distortion, animationSeed, lifetime, currFrame, primaryColor, secondaryColor } {};
+	OpenGLVAO& getVAOForInstancedBatchType() override { if (!vao) { vao = std::move(setUpVAO()); } return *(vao.get()); }
+	int getRenderRequestSize() override { return sizeof(*this); }
+private:
+	static std::unique_ptr<OpenGLVAO> vao;
+};
 
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestLightning, std::tuple<float, glm::vec2>> OpenGLInstancedBatchLightning;
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestRay, std::tuple<float, glm::vec2>> OpenGLInstancedBatchRay;
+typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestOrb, std::tuple<float, glm::vec2>> OpenGLInstancedBatchOrb;
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestTexture, std::tuple<OpenGLTexture*, OpenGLTexture*, int>> OpenGLInstancedBatchTexture;
