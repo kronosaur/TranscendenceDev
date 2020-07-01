@@ -14,6 +14,7 @@
 #define DESTROY_ON_DECLINE_ATTRIB				CONSTLIT("destroyOnDecline")
 #define EXPIRE_TIME_ATTRIB						CONSTLIT("expireTime")
 #define FAILURE_AFTER_OUT_OF_SYSTEM_ATTRIB		CONSTLIT("failureAfterOutOfSystem")
+#define FAILURE_ON_RETURN_TO_SYSTEM_ATTRIB		CONSTLIT("failureOnReturnToSystem")
 #define FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB		CONSTLIT("forceUndockAfterDebrief")
 #define IGNORE_STATION_LIMIT_ATTRIB				CONSTLIT("ignoreOwnerLimit")
 #define LEVEL_ATTRIB							CONSTLIT("level")
@@ -411,6 +412,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iPriority = pDesc->GetAttributeIntegerBounded(PRIORITY_ATTRIB, 0, -1, 1);
 	m_iExpireTime = pDesc->GetAttributeIntegerBounded(EXPIRE_TIME_ATTRIB, 1, -1, -1);
 	m_iFailIfOutOfSystem = pDesc->GetAttributeIntegerBounded(FAILURE_AFTER_OUT_OF_SYSTEM_ATTRIB, 0, -1, -1);
+	m_iFailOnReturnToSystem = pDesc->GetAttributeIntegerBounded(FAILURE_ON_RETURN_TO_SYSTEM_ATTRIB, 0, -1, -1);
 	m_fRecordNonPlayer = pDesc->GetAttributeBool(RECORD_NON_PLAYER_ATTRIB);
 	m_fNoFailureOnOwnerDestroyed = pDesc->GetAttributeBool(NO_FAILURE_ON_OWNER_DESTROYED_ATTRIB);
 	m_fNoDebrief = pDesc->GetAttributeBool(NO_DEBRIEF_ATTRIB);

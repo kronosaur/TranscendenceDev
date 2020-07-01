@@ -32,7 +32,8 @@
 
 #define STR_A_REASON							CONSTLIT("aReason")
 
-CMission::CMission (CUniverse &Universe) : TSpaceObjectImpl(Universe)
+CMission::CMission (CUniverse &Universe) : TSpaceObjectImpl(Universe),
+		m_fInMissionCompleteCode(false)
 
 //	CMission constructor
 
@@ -667,10 +668,19 @@ void CMission::OnNewSystem (CSystem *pSystem)
 		{
 		if (strEquals(m_sNodeID, pNode->GetID()))
 			{
+			const DWORD dwTimeAway = sysGetTicksElapsed(m_dwLeftSystemOn);
+
 			//	Back in our system
 
 			m_fInMissionSystem = true;
 			m_dwLeftSystemOn = 0;
+
+			//	If we've been away too long, then the mission fails.
+
+			if (m_pType->FailureOnReturnToSystem()
+					&& IsAccepted()
+					&& dwTimeAway >= (DWORD)m_pType->GetReturnToSystemTimeOut())
+				SetFailure(NULL);
 			}
 		else
 			{
@@ -1278,8 +1288,13 @@ bool CMission::SetFailure (ICCItem *pData)
 	{
 	//	Must be in the right state
 
-	if (m_iStatus != statusAccepted && m_iStatus != statusClosed && m_iStatus != statusOpen)
+	if (m_fInMissionCompleteCode)
 		return false;
+
+	else if (m_iStatus != statusAccepted && m_iStatus != statusClosed && m_iStatus != statusOpen)
+		return false;
+
+	m_fInMissionCompleteCode = true;
 
 	//	Stop the mission
 
@@ -1296,6 +1311,7 @@ bool CMission::SetFailure (ICCItem *pData)
 
 	CompleteMission(completeFailure);
 
+	m_fInMissionCompleteCode = false;
 	return true;
 	}
 
@@ -1308,8 +1324,13 @@ bool CMission::SetSuccess (ICCItem *pData)
 	{
 	//	Must be in the right state
 
+	if (m_fInMissionCompleteCode)
+		return false;
+
 	if (m_iStatus != statusAccepted && m_iStatus != statusClosed && m_iStatus != statusOpen)
 		return false;
+
+	m_fInMissionCompleteCode = true;
 
 	//	Stop the mission
 
@@ -1326,6 +1347,7 @@ bool CMission::SetSuccess (ICCItem *pData)
 
 	CompleteMission(completeSuccess);
 
+	m_fInMissionCompleteCode = false;
 	return true;
 	}
 

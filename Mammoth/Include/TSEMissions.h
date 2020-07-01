@@ -142,7 +142,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		DWORD m_fInOnCreate:1;						//	TRUE if we're inside OnCreate
 		DWORD m_fInMissionSystem:1;					//	TRUE if player is in the proper mission system
 		DWORD m_fAcceptedByPlayer:1;				//	TRUE if this is a player mission
-		DWORD m_fSpare7:1;
+		DWORD m_fInMissionCompleteCode:1;			//	TRUE if we're completing (avoids recursion)
 		DWORD m_fSpare8:1;
 		DWORD m_dwSpare:24;
 

@@ -34,6 +34,7 @@
 			debriefAfterOutOfSystem=	"false"
 			destroyOnDecline=			"false"
 			failureAfterOutOfSystem=	"-1"
+			failureOnReturnToSystem=	"-1"
 			forceUndockAfterDebrief=	"false"
 			ignoreOwnerLimit=			"false"
 			noDebrief=					"false"
