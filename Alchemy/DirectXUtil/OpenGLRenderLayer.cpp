@@ -61,7 +61,6 @@ void OpenGLRenderLayer::addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor,
 
 void OpenGLRenderLayer::addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition,
 	float rotation,
-	float radius,
 	float intensity,
 	float opacity,
 	int animation,
@@ -73,9 +72,10 @@ void OpenGLRenderLayer::addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition,
 	int currFrame,
 	glm::vec3 primaryColor,
 	glm::vec3 secondaryColor,
+	float secondaryOpacity,
 	float startingDepth)
 {
-	auto renderRequest = OpenGLInstancedBatchRenderRequestOrb(sizeAndPosition, rotation, radius, intensity, opacity, animation, style, detail, distortion, animationSeed, lifetime, currFrame, primaryColor, secondaryColor);
+	auto renderRequest = OpenGLInstancedBatchRenderRequestOrb(sizeAndPosition, rotation, intensity, opacity, animation, style, detail, distortion, animationSeed, lifetime, currFrame, primaryColor, secondaryColor, secondaryOpacity);
 	renderRequest.set_depth(startingDepth);
 	m_orbRenderBatch.addObjToRender(renderRequest);
 }

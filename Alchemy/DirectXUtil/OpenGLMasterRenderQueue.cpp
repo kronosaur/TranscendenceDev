@@ -25,6 +25,7 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	m_pObjectTextureShader = new OpenGLShader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
 	m_pRayShader = new OpenGLShader("./shaders/ray_vertex_shader.glsl", "./shaders/ray_fragment_shader.glsl");
 	m_pLightningShader = new OpenGLShader("./shaders/lightning_vertex_shader.glsl", "./shaders/lightning_fragment_shader.glsl");
+	m_pOrbShader = new OpenGLShader("./shaders/orb_vertex_shader.glsl", "./shaders/orb_fragment_shader.glsl");
 	m_pActiveRenderLayer = &m_renderLayers[0];
 #ifdef OPENGL_FPS_COUNTER_ENABLE
 	m_pOpenGLIndicatorFont = std::make_unique<CG16bitFont>();
@@ -115,9 +116,9 @@ void OpenGLMasterRenderQueue::addTextureToRenderQueue(int startPixelX, int start
 	}
 
 void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
-	                                                    int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
-	                                                    std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj)
-	{
+	int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
+	std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj)
+{
 	glm::vec3 vPrimaryColor = glm::vec3(std::get<0>(primaryColor), std::get<1>(primaryColor), std::get<2>(primaryColor)) / float(255.0);
 	glm::vec3 vSecondaryColor = glm::vec3(std::get<0>(secondaryColor), std::get<1>(secondaryColor), std::get<2>(secondaryColor)) / float(255.0);
 
@@ -128,6 +129,29 @@ void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPi
 	glm::ivec3 styles(iColorTypes, iOpacityTypes, iTexture);
 
 	m_pActiveRenderLayer->addRayToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, intensitiesAndCycles, styles, rotation, m_fDepthLevel);
+	m_fDepthLevel -= m_fDepthDelta;
+}
+
+void OpenGLMasterRenderQueue::addOrbToEffectRenderQueue(
+	int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY,
+	float rotation,
+	float intensity,
+	float opacity,
+	int animation,
+	int style,
+	int detail,
+	int distortion,
+	int animationSeed,
+	int lifetime,
+	int currFrame,
+	glm::vec3 primaryColor,
+	glm::vec3 secondaryColor,
+    float secondaryOpacity)
+	{
+	glm::vec4 sizeAndPosition((float)sizePixelX, (float)sizePixelY,
+		(float)posPixelX / (float)canvasSizeX, (float)posPixelY / (float)canvasSizeY);
+	m_pActiveRenderLayer->addOrbToEffectRenderQueue(sizeAndPosition, rotation, intensity, opacity, animation, style, detail, distortion, animationSeed, lifetime, currFrame, primaryColor, secondaryColor, secondaryOpacity,
+		m_fDepthLevel);
 	m_fDepthLevel -= m_fDepthDelta;
 	}
 
@@ -149,7 +173,7 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 {
 	for (OpenGLRenderLayer &renderLayer : m_renderLayers) {
 		renderLayer.renderAllQueues(m_fDepthLevel, m_fDepthDelta, m_iCurrentTick, glm::ivec2(m_iCanvasWidth, m_iCanvasHeight), m_pObjectTextureShader,
-			m_pRayShader, m_pLightningShader, m_pGlowmapShader, fbo, m_pCanvasVAO);
+			m_pRayShader, m_pLightningShader, m_pGlowmapShader, m_pOrbShader, fbo, m_pCanvasVAO);
 	}
 	for (OpenGLRenderLayer &renderLayer : m_renderLayers) {
 		renderLayer.GenerateGlowmaps(fbo, m_pCanvasVAO, m_pGlowmapShader);

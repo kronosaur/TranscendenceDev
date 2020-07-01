@@ -50,12 +50,11 @@ private:
 	static std::unique_ptr<OpenGLVAO> vao;
 };
 
-class OpenGLInstancedBatchRenderRequestOrb : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, float, float, float, int, int, int, int, int, int, int, glm::vec3, glm::vec3 > {
+class OpenGLInstancedBatchRenderRequestOrb : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, float, float, int, int, int, int, int, int, int, glm::vec3, glm::vec3, float > {
 public:
 	OpenGLInstancedBatchRenderRequestOrb(
 		glm::vec4 sizeAndPosition,
 		float rotation,
-		float radius,
 		float intensity,
 		float opacity,
 		int animation,
@@ -66,7 +65,8 @@ public:
 		int lifetime,
 		int currFrame,
 		glm::vec3 primaryColor,
-		glm::vec3 secondaryColor) : OpenGLInstancedBatchRenderRequest{ sizeAndPosition, rotation, radius, intensity, opacity, animation, style, detail, distortion, animationSeed, lifetime, currFrame, primaryColor, secondaryColor } {};
+		glm::vec3 secondaryColor,
+		float secondaryOpacity) : OpenGLInstancedBatchRenderRequest{ sizeAndPosition, rotation, intensity, opacity, animation, style, detail, distortion, animationSeed, lifetime, currFrame, primaryColor, secondaryColor, secondaryOpacity } {};
 	OpenGLVAO& getVAOForInstancedBatchType() override { if (!vao) { vao = std::move(setUpVAO()); } return *(vao.get()); }
 	int getRenderRequestSize() override { return sizeof(*this); }
 private:
