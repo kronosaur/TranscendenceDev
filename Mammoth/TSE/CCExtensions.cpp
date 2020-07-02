@@ -8089,12 +8089,23 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				//	Convert from position to angle and radius
 
-				CVector vPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
-				Metric rRadius;
-				int iDirection = VectorToPolar(vPos - pObj->GetPos(), &rRadius);
-				int iRotationOrigin = (pField->RotatesWithSource(*pObj) ? pObj->GetRotation() : 0);
-				iPosAngle = AngleMod(iDirection - iRotationOrigin);
-				iPosRadius = (int)(rRadius / g_KlicksPerPixel);
+				ICCItem *pPos = pArgs->GetElement(2);
+				if (pPos->IsList() && pPos->GetCount() <= 3 && pPos->GetCount() >= 2)
+					{
+					iPosAngle = pPos->GetElement(0)->GetIntegerValue();
+					iPosRadius = pPos->GetElement(1)->GetIntegerValue();
+					if (pPos->GetCount() == 3)
+						iPosZ = pPos->GetElement(2)->GetIntegerValue();
+					}
+				else
+					{
+					CVector vPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
+					Metric rRadius;
+					int iDirection = VectorToPolar(vPos - pObj->GetPos(), &rRadius);
+					int iRotationOrigin = (pField->RotatesWithSource(*pObj) ? pObj->GetRotation() : 0);
+					iPosAngle = AngleMod(iDirection - iRotationOrigin);
+					iPosRadius = (int)(rRadius / g_KlicksPerPixel);
+					}
 
 				//	Rotation
 
