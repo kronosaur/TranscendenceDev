@@ -60,7 +60,7 @@
 			<Data id="missionID"></Data>
 		</Properties>
 
-		<Image imageID="&rsItems1;" imageX="192" imageY="480" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems5;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
 		
 		<Events>
 			<GetDescription>
