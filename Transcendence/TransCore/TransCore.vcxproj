@@ -523,6 +523,7 @@
     </Xml>
     <Xml Include="CommonwealthStarCarrier.xml" />
     <Xml Include="CommonwealthVolunteerMission02.xml" />
+    <Xml Include="CommonwealthVolunteerMission03.xml" />
     <Xml Include="CompatibilityLibrary.xml" />
     <Xml Include="ContainerHabitat.xml" />
     <Xml Include="CoreDiagnostics.xml" />
@@ -625,6 +626,7 @@
     <Xml Include="Rama.xml" />
     <Xml Include="RanxEmpire.xml" />
     <Xml Include="RasiermesserMission01.xml" />
+    <Xml Include="RejuvTank.xml" />
     <Xml Include="RPGCommoditiesExchange.xml" />
     <Xml Include="RPGCommonText.xml" />
     <Xml Include="RPGComponents.xml">

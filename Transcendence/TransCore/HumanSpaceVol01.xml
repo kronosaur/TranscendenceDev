@@ -2028,9 +2028,12 @@
 	<!ENTITY msCMEscortSuperFreighter	"0x001002B4">
 	<!ENTITY msCMstKatsDestroyThreat	"0x001002B5">
 	<!ENTITY rsCommonwealthMilitiaInsignia	"0x001002B6">
-
 	<!ENTITY msCMVolunteer01			"0x001002B7">
 	<!ENTITY msCMVolunteer02			"0x001002B8">
+
+	<!ENTITY msCMVolunteer03			"0x001002B9">
+	<!ENTITY evCMVolunteer03Freighter	"0x001002BA">
+	<!ENTITY tbCMVolunteer03Pirates		"0x001002BB">
 
 	<!-- 02D0-02EF DWARG RAIDERS -->
 
@@ -2362,6 +2365,7 @@
 	<!ENTITY evStKatsTrafficBehavior	"0x00100707">
 	<!ENTITY scBorerStock				"0x00100708">
 	<!ENTITY scBorerIIStock				"0x00100709">
+	<!ENTITY itRejuvTankPatient			"0x0010070A">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2486,6 +2490,7 @@
 	<Module filename="CommonwealthMetropolis.xml"/>
 	<Module filename="CommonwealthVolunteerMission01.xml"/>
 	<Module filename="CommonwealthVolunteerMission02.xml"/>
+	<Module filename="CommonwealthVolunteerMission03.xml"/>
 
 	<!-- Commonwealth Militia -->
 
@@ -2573,6 +2578,7 @@
 	<Module filename="MiningPods.xml"/>
 	<Module filename="MiscItems.xml"/>
 	<Module filename="QuantumCPU.xml"/>
+	<Module filename="RejuvTank.xml"/>
 	<Module filename="ShieldEnhancementItems.xml"/>
 	<Module filename="StdArmor.xml"/>
 	<Module filename="StdAutons.xml"/>

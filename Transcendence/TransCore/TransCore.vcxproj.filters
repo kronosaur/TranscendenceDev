@@ -972,5 +972,11 @@
     <Xml Include="CommonwealthVolunteerMission02.xml">
       <Filter>Human Space Library\Commonwealth Metropolis</Filter>
     </Xml>
+    <Xml Include="CommonwealthVolunteerMission03.xml">
+      <Filter>Human Space Library\Commonwealth Metropolis</Filter>
+    </Xml>
+    <Xml Include="RejuvTank.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
