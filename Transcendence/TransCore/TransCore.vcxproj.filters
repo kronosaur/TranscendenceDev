@@ -978,5 +978,8 @@
     <Xml Include="RejuvTank.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
+    <Xml Include="LiaPereira.xml">
+      <Filter>Human Space Library\Characters</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

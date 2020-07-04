@@ -137,6 +137,208 @@
 			
 			</Text>
 			<String id="actionIntro.default.1">"[K]nock it off, I'm trying to help."</String>
+
+			<!-- COMMONWEALTH VOLUNTEER 01 -->
+
+			<Code id="volunteer01.briefing">
+				(typTranslate gType (cat 'volunteer01.briefing. (min (@ gData 'missionNumber) 3)) gData)
+			</Code>
+			<Text id="volunteer01.briefing.1">
+			
+				The gray-haired man grunts as he looks down at a screen.
+
+				"All right. There's a drug smuggler just came into the
+				system with a load of tempus. Your mission is to intercept the 
+				ship and destroy it. We don't want that kack on our station.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer01.briefing.2">
+			
+				Captain Gaul scoffs.
+
+				"%Boy%, I got more missions than you can handle. Everyone except
+				me is in the Black Market, judging by the amount of drugs 
+				flooding into the system!
+
+				"We tagged another smuggler ship just yesterday. Your mission is
+				to intercept and destroy.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer01.briefing.3">
+			
+				Captain Gaul grunts as he looks down at a screen.
+
+				"Guess what!? I got another smuggler for you to air out. 
+				Shocking, isn't it? Why bother getting a job when you can just
+				fast-foward your life on tempus?
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer01.successDebrief">
+
+				The gray-haired man leans back on his chair.
+
+				"Good. A nice clean hit. We don't want their filth on our
+				station.
+
+				"We've deposited %reward% to your account."
+
+			</Text>
+			<Text id="volunteer01.failureDebrief">
+
+				The gray-haired man shouts as you enter:
+
+				"What the kack are you doing? We're all alone out here, and if 
+				we don't clean up this filth no one is going to do it for us.
+
+				"Next time act like you actually care!"
+
+			</Text>
+
+			<!-- COMMONWEALTH VOLUNTEER 02 -->
+
+			<Code id="volunteer02.briefing">
+				(typTranslate gType (cat 'volunteer02.briefing. (min (@ gData 'missionNumber) 3)) gData)
+			</Code>
+			<Text id="volunteer02.briefing.1">
+
+				The gray-haired man stares at you then shakes his head.
+
+				"All right, %boy%. I hope you can handle this.
+
+				"There's %targetName% in the system, and the station council has
+				grown a backbone and decided to act. I've been authorized to 
+				deal with the threat, which means I'm authorizing you to blow
+				it to hell.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer02.briefing.2">
+
+				Captain Gaul chuckles.
+
+				"Well it's your lucky day! The station council is cleaning up 
+				the system. Must be an election coming up.
+
+				"There's %targetName% in the system and I want you to go in and
+				destroy it. Go ahead, make a mess if necessary.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer02.briefing.3">
+
+				Captain Gaul scoffs.
+
+				"All right, I forgot how much you hate banter.
+
+				"Let me get to the point: We've got %targetName% in the system
+				and I've been authorized to take it out. I want you to go out 
+				there and destroy it.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer02.acceptReply.easy">
+
+				"All right. I'll send the target to your computer. Don't worry
+				about these guys&mdash;you can handle them. But don't get 
+				careless either.
+
+				"OK, get out of here."
+
+			</Text>
+			<Text id="volunteer02.acceptReply.normal">
+
+				"All right. I'll send the target to your computer. Be careful,
+				OK? These guys are not gonna make it easy for you.
+
+				"OK, get out of here."
+
+			</Text>
+			<Text id="volunteer02.acceptReply.hard">
+
+				Captain Gaul nods, then looks you in the eyes.
+
+				"Listen, %name%, these guys are the real deal. They're 
+				experienced, and they're well-armed. Go in strong and keep
+				blasting until they're done.
+
+				"But be careful. If your armor takes a beating, get out of 
+				there. You're no good to me if you're dead.
+
+				"OK, get out of here."
+
+			</Text>
+			<Text id="volunteer02.successDebrief">
+
+				The gray-haired man leans back on his chair.
+
+				"Good. A nice clean hit. That'll send a message.
+
+				"We've deposited %reward% to your account."
+
+			</Text>
+			<Text id="volunteer02.textFailureDebrief">
+
+				The gray-haired man shouts as you enter:
+
+				"What the kack are you doing? We're all alone out here, and if 
+				we don't stand up to these blowholes they're gonna own the whole
+				system.
+
+				"Next time act like you actually care!"
+
+			</Text>
+
+			<!-- COMMONWEALTH VOLUNTEER 03 -->
+
+			<Code id="volunteer03.briefing">
+				(typTranslate gType (cat 'volunteer03.briefing. (min (@ gData 'missionNumber) 3)) gData)
+			</Code>
+			<Text id="volunteer03.briefing.1">
+
+				The gray-haired man stares at you then shakes his head.
+
+				"A Commonwealth freighter sent out a distress call a few minutes
+				ago. It sounds like they're under attack. I want you to go out
+				there and help them out.
+
+				"We'll pay %reward% if you can keep the freighter alive. Clear?"
+
+			</Text>
+			<Text id="volunteer03.briefing.2">
+
+				Captain Gaul chuckles.
+
+				"Be careful what you wish for, %boy%!
+
+				"We've just picked up a distress call from a Commonwealth 
+				freighter. It sounds like they're under attack and need 
+				armed assistance.
+
+				"We'll pay %reward% if you can save the freighter. Clear?"
+
+			</Text>
+			<Text id="volunteer03.briefing.3">
+
+				Captain Gaul looks down.
+
+				"All right, %name%, I've got a mission for you.
+
+				"There's a Commonwealth freighter in trouble a couple of hundred
+				light-seconds out. Looks like they're in the middle of a 
+				firefight.
+
+				"We'll pay %reward% if you can defend the freighter. Clear?"
+
+			</Text>
 		</Language>
 	</Type>
 

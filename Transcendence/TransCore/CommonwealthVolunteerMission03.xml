@@ -20,7 +20,7 @@
 			</Variant>
 
 			<Variant id="character.missionGiver">
-				&chEnricoGaul;
+				(typ@ &msCMVolunteer01; 'militiaCaptain)
 			</Variant>
 
 			<Data id="destID"></Data>
@@ -183,8 +183,6 @@
 					(rejuvTank (@ gData 'item))
 					(newStatus (@ gData 'status))
 					)
-					(dbgOutput "OnRejuvPatientStatusChanged: " newStatus)
-
 					(switch
 						(= newStatus 'critical)
 							(block ()
@@ -430,9 +428,9 @@
 					(totalReward (+ reward rewardBonus))
 					(currency (msn@ gSource 'rewardCurrency))
 					)
-					(dbgOutput "Reward: " reward)
-					(dbgOutput "Bonus: " rewardBonus)
-					(dbgOutput "Total: " totalReward)
+					;(dbgOutput "Reward: " reward)
+					;(dbgOutput "Bonus: " rewardBonus)
+					;(dbgOutput "Total: " totalReward)
 
 					(if (gr totalReward 0)
 						(rpgMissionRewardPayment totalReward currency)
@@ -539,6 +537,18 @@
 					})
 			</Text>
 			<Text id="Briefing">
+				(block (
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'volunteer03.briefing trData)
+						(msnTranslate gSource 'textBriefing trData)
+						)
+					)
+
 				(msnTranslate gSource (cat 'textBriefing. (min (+ (msn@ gSource 'missionNumber) 1) 3)) {
 					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
@@ -659,41 +669,14 @@
 				Payment: %reward%
 			
 			</Text>
-			<Text id="textBriefing.1">
+			<Text id="textBriefing">
 
-				The gray-haired man stares at you then shakes his head.
+				The captain looks down at a screen.
 
-				"A Commonwealth freighter sent out a distress call a few minutes
-				ago. It sounds like they're under attack. I want you to go out
-				there and help them out.
+				"I want you to investigate a distress call sent out by a 
+				Commonwealth freighter. It sounds like they're under attack.
 
-				"We'll pay %reward% if you can keep the freighter alive. Clear?"
-
-			</Text>
-			<Text id="textBriefing.2">
-
-				Captain Gaul chuckles.
-
-				"Be careful what you wish for, %boy%!
-
-				"We've just picked up a distress call from a Commonwealth 
-				freighter. It sounds like they're under attack and need 
-				armed assistance.
-
-				"We'll pay %reward% if you can save the freighter. Clear?"
-
-			</Text>
-			<Text id="textBriefing.3">
-
-				Captain Gaul looks down.
-
-				"All right, %name%, I've got a mission for you.
-
-				"There's a Commonwealth freighter in trouble a couple of hundred
-				light-seconds out. Looks like they're in the middle of a 
-				firefight.
-
-				"We'll pay %reward% if you can defend the freighter. Clear?"
+				"We'll pay %reward% if you help them. Clear?"
 
 			</Text>
 			<Text id="textAcceptReply1">
@@ -720,7 +703,6 @@
 
 				"You did good. He's going to be OK. That freighter still needs
 				help, though. Better get back out there!"
-
 
 			</Text>
 			<Text id="textInProgress.dead">

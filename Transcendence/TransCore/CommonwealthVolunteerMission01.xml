@@ -11,6 +11,14 @@
 			maxAppearing=		"3-5"
 			>
 		<Properties>
+			<DynamicGlobal id="militiaCaptain">
+				(switch
+					(= (sysGetNode) 'SE)
+						&chEnricoGaul;
+
+					&chLiaPereira;
+					)
+			</DynamicGlobal>
 			<Definition id="targetTable">
 				(list {	}
 					{	type: &scT31ArmedTransport;
@@ -48,7 +56,7 @@
 			</Definition>
 
 			<Variant id="character.missionGiver">
-				&chEnricoGaul;
+				(typ@ &msCMVolunteer01; 'militiaCaptain)
 			</Variant>
 			<Variant id="reward">
 				(@ (typ@ &unidCommonwealthMilitia; 'volunteerRewardTable) (min (sysGetLevel) 10))
@@ -69,7 +77,7 @@
 
 					;	Call base class
 
-					(typFireObjEvent &baInterceptMission; gSource 'CanCreate gData)
+					(typFireEvent &baInterceptMission; 'CanCreate gData)
 					)
 			</CanCreate>
 
@@ -81,6 +89,37 @@
 
 				(rpgMissionRewardPayment (msn@ gSource 'reward))
 			</OnReward>
+
+			<OnGlobalSystemDiagnostics>
+				(block (
+					(stationType
+						(switch
+							(= (sysGetNode) 'SE)
+								&stStartonEridani;
+
+							&stCommonwealthStation;
+							)
+						)
+
+					stationObj
+					)
+					(if (and (leq (sysGetLevel) 4)
+							(setq stationObj (@ (sysFindObject Nil (cat "TA +unid:" stationType ";")) 0))
+							(msnCanCreate &msCMVolunteer01; stationObj)
+							)
+						(block (missionObj)
+							(diagCreatePlayerShip)
+
+							(diagAssert (setq missionObj (msnCreate &msCMVolunteer01; stationObj)) (cat "Militia Volunteer 01: Unable to create in " (sysGetName) "."))
+							(diagAssertMissionLanguage missionObj)
+						
+							(msnDestroy missionObj)
+							(objDestroy gPlayerShip)
+							(setq gPlayerShip Nil)
+							)
+						)
+					)
+			</OnGlobalSystemDiagnostics>
 		</Events>
 		
 		<Language>
@@ -99,9 +138,17 @@
 					})
 			</Text>
 			<Text id="Briefing">
-				(msnTranslate gSource (cat 'textBriefing. (min (+ (msn@ gSource 'missionNumber) 1) 3)) {
-					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
-					})
+				(block (
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'volunteer01.briefing trData)
+						(msnTranslate gSource 'textBriefing trData)
+						)
+					)
 			</Text>
 			<Text id="AcceptReply">
 				(msnTranslate gSource 'textAcceptReply1 {
@@ -115,14 +162,23 @@
 				(msnTranslate gSource 'textInProgress1 {
 					})
 			</Text>
-			<Text id="FailureDebrief">
-				(msnTranslate gSource 'textFailureDebrief1 {
-					})
-			</Text>
 			<Text id="SuccessDebrief">
-				(msnTranslate gSource 'textSuccessDebrief1 {
-					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
-					})
+				(block (
+					(trData {
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'volunteer01.successDebrief trData)
+						(msnTranslate gSource 'textSuccessDebrief trData)
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(or
+					(typTranslate (msn@ gSource 'character.missionGiver) 'volunteer01.failureDebrief)
+					(msnTranslate gSource 'textFailureDebrief)
+					)
 			</Text>
 
 			<Text id="textSummary">
@@ -134,40 +190,14 @@
 				Payment: %reward%
 
 			</Text>
-			<Text id="textBriefing.1">
+			<Text id="textBriefing">
 
-				The gray-haired man grunts as he looks down at a screen.
+				The captain looks down at a screen.
 
-				"All right. There's a drug smuggler just came into the
-				system with a load of tempus. Your mission is to intercept the 
-				ship and destroy it. We don't want that kack on our station.
+				"A drug smuggler is passing through the system with a load of
+				tempus. Your mission is to intercept the ship and destroy it.
 
-				"We'll pay %reward% if you succeed. Clear?"
-
-			</Text>
-			<Text id="textBriefing.2">
-
-				Captain Gaul scoffs.
-
-				"%Boy%, I got more missions than you can handle. Everyone except
-				me is in the Black Market, judging by the amount of drugs 
-				flooding into the system!
-
-				"We tagged another smuggler ship just yesterday. Your mission is
-				to intercept and destroy.
-
-				"We'll pay %reward% if you succeed. Clear?"
-
-			</Text>
-			<Text id="textBriefing.3">
-
-				Captain Gaul grunts as he looks down at a screen.
-
-				"Guess what!? I got another smuggler for you to air out. 
-				Shocking, isn't it? Why bother getting a job when you can just
-				fast-foward your life on tempus?
-
-				"We'll pay %reward% if you succeed. Clear?"
+				"We'll pay %reward% if you succeed. Interested?"
 
 			</Text>
 			<Text id="textAcceptReply1">
@@ -190,24 +220,26 @@
 				out there and finish the job!"
 
 			</Text>
-			<Text id="textFailureDebrief1">
+			<Text id="textSuccessDebrief">
 
-				The gray-haired man shouts as you enter:
+				The captain nods in approval.
 
-				"What the kack are you doing? We're all alone out here, and if 
-				we don't clean up this filth no one is going to do it for us.
-
-				"Next time act like you actually care!"
-
-			</Text>
-			<Text id="textSuccessDebrief1">
-
-				The gray-haired man leans back on his chair.
-
-				"Good. A nice clean hit. We don't want their filth on our
-				station.
+				"Nice work. These drug smugglers are getting bolder all the 
+				time.
 
 				"We've deposited %reward% to your account."
+
+			</Text>
+			<Text id="textFailureDebrief">
+
+				The captain sighs.
+
+				"It took us weeks to track down that drug smuggler! We'll have
+				to alert other stations. Maybe they'll be able to pick up the
+				trail.
+
+				"Next time, try a little harder. We can't afford to let these
+				smugglers through."
 
 			</Text>
 			<Text id="SuccessMsg">

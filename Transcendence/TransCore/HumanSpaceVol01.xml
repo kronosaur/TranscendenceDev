@@ -1984,6 +1984,7 @@
 	<!ENTITY chJenna					"0x0010023A">
 	<!ENTITY chRama						"0x0010023B">
 	<!ENTITY chEnricoGaul				"0x0010023C">
+	<!ENTITY chLiaPereira				"0x0010023D">
 	
 	<!-- 0250-026F COMMONWEALTH MINING -->
 	
@@ -2435,6 +2436,7 @@
 	<Module filename="HugoSandoval.xml"/>
 	<Module filename="Jenna.xml"/>
 	<Module filename="KateMorgental.xml"/>
+	<Module filename="LiaPereira.xml"/>
 	<Module filename="Rama.xml"/>
 	<Module filename="Stormhound.xml"/>
 	<Module filename="Volkov.xml"/>
