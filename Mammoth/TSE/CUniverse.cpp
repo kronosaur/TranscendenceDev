@@ -1279,6 +1279,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		BindOptions.dwAPIVersion = dwAPIVersion;
 		BindOptions.bNewGame = !Ctx.bInLoadGame;
 		BindOptions.bNoResources = Ctx.bNoResources;
+		BindOptions.bDiagnostics = Ctx.bDiagnostics;
 
 #ifdef DEBUG_BIND
 		BindOptions.bTraceBind = Ctx.bDiagnostics;
@@ -1389,6 +1390,9 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 
 	{
 	ALERROR error;
+
+	if (m_Difficulty.GetLevel() == CDifficultyOptions::lvlUnknown)
+		SetDifficultyLevel(CDifficultyOptions::lvlChallenge);
 
 	//	If starting map is 0, see if we can get it from the adventure
 
