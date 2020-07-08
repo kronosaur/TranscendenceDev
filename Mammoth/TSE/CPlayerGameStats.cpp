@@ -131,59 +131,59 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 //
 //  Returns a the given property (or NULL).
 
-    {
-    if (strEquals(sProperty, BEST_ENEMY_SHIPS_DESTROYED_STAT))
-        {
-        DWORD dwUNID;
-        int iCount = GetBestEnemyShipsDestroyed(&dwUNID);
-        if (iCount == 0)
-            return CCodeChain::CreateNil();
+	{
+	if (strEquals(sProperty, BEST_ENEMY_SHIPS_DESTROYED_STAT))
+		{
+		DWORD dwUNID;
+		int iCount = GetBestEnemyShipsDestroyed(&dwUNID);
+		if (iCount == 0)
+			return CCodeChain::CreateNil();
 
-        ICCItem *pResult = CCodeChain::CreateSymbolTable();
-        pResult->SetIntegerAt(CONSTLIT("unid"), dwUNID);
-        pResult->SetIntegerAt(CONSTLIT("count"), iCount);
-        return pResult;
-        }
-    else if (strEquals(sProperty, ENEMY_SHIPS_DESTROYED_STAT))
-        {
-        CMapIterator i;
-        int iCount = 0;
-        m_ShipStats.Reset(i);
-        while (m_ShipStats.HasMore(i))
-            {
-            SShipClassStats *pStats;
-            DWORD dwUNID = m_ShipStats.GetNext(i, &pStats);
+		ICCItem *pResult = CCodeChain::CreateSymbolTable();
+		pResult->SetIntegerAt(CONSTLIT("unid"), dwUNID);
+		pResult->SetIntegerAt(CONSTLIT("count"), iCount);
+		return pResult;
+		}
+	else if (strEquals(sProperty, ENEMY_SHIPS_DESTROYED_STAT))
+		{
+		CMapIterator i;
+		int iCount = 0;
+		m_ShipStats.Reset(i);
+		while (m_ShipStats.HasMore(i))
+			{
+			SShipClassStats *pStats;
+			DWORD dwUNID = m_ShipStats.GetNext(i, &pStats);
 
-            iCount += pStats->iEnemyDestroyed;
-            }
+			iCount += pStats->iEnemyDestroyed;
+			}
 
-        return CCodeChain::CreateInteger(iCount + m_iExtraEnemyShipsDestroyed);
-        }
-    else if (strEquals(sProperty, ENEMY_STATIONS_DESTROYED_STAT))
-        {
-        CSovereign *pPlayerSovereign = m_Universe.FindSovereign(g_PlayerSovereignUNID);
-        if (pPlayerSovereign == NULL)
-            return CCodeChain::CreateInteger(0);
+		return CCodeChain::CreateInteger(iCount + m_iExtraEnemyShipsDestroyed);
+		}
+	else if (strEquals(sProperty, ENEMY_STATIONS_DESTROYED_STAT))
+		{
+		CSovereign *pPlayerSovereign = m_Universe.FindSovereign(g_PlayerSovereignUNID);
+		if (pPlayerSovereign == NULL)
+			return CCodeChain::CreateInteger(0);
 
-        CMapIterator i;
-        int iCount = 0;
-        m_StationStats.Reset(i);
-        while (m_StationStats.HasMore(i))
-            {
-            SStationTypeStats *pStats;
-            DWORD dwUNID = m_StationStats.GetNext(i, &pStats);
-            CStationType *pType = m_Universe.FindStationType(dwUNID);
-            if (pType == NULL)
-                continue;
+		CMapIterator i;
+		int iCount = 0;
+		m_StationStats.Reset(i);
+		while (m_StationStats.HasMore(i))
+			{
+			SStationTypeStats *pStats;
+			DWORD dwUNID = m_StationStats.GetNext(i, &pStats);
+			CStationType *pType = m_Universe.FindStationType(dwUNID);
+			if (pType == NULL)
+				continue;
 
-            if (pType->GetSovereign()->IsEnemy(pPlayerSovereign))
-                iCount += pStats->iDestroyed;
-            }
+			if (pType->GetSovereign()->IsEnemy(pPlayerSovereign))
+				iCount += pStats->iDestroyed;
+			}
 
-        return CCodeChain::CreateInteger(iCount);
-        }
-    else if (strEquals(sProperty, PROPERTY_FUEL_CONSUMED))
-        return CCodeChain::CreateDouble(m_rFuelConsumed);
+		return CCodeChain::CreateInteger(iCount);
+		}
+	else if (strEquals(sProperty, PROPERTY_FUEL_CONSUMED))
+		return CCodeChain::CreateDouble(m_rFuelConsumed);
 
 	else if (strEquals(sProperty, FRIENDLY_SHIPS_DESTROYED_STAT))
 		{
@@ -232,10 +232,10 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 	else if (strEquals(sProperty, PROPERTY_SYSTEMS_VISITED))
 		{
 		CMemoryWriteStream Output;
-        if (Output.Create() != NOERROR)
-            return CCodeChain::CreateNil();
+		if (Output.Create() != NOERROR)
+			return CCodeChain::CreateNil();
 
-        ICCItem *pResult = CCodeChain::CreateLinkedList();
+		ICCItem *pResult = CCodeChain::CreateLinkedList();
 
 		CMapIterator i;
 		m_SystemStats.Reset(i);
@@ -244,29 +244,29 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 			SSystemStats *pStats;
 			const CString &sNodeID = m_SystemStats.GetNext(i, &pStats);
 
-            ICCItem *pSysData = CCodeChain::CreateSymbolTable();
-            pSysData->SetStringAt(CONSTLIT("nodeID"), sNodeID);
+			ICCItem *pSysData = CCodeChain::CreateSymbolTable();
+			pSysData->SetStringAt(CONSTLIT("nodeID"), sNodeID);
 
-            if (pStats->dwFirstEntered != INVALID_TIME)
-                pSysData->SetIntegerAt(CONSTLIT("firstEnteredOn"), pStats->dwFirstEntered);
+			if (pStats->dwFirstEntered != INVALID_TIME)
+				pSysData->SetIntegerAt(CONSTLIT("firstEnteredOn"), pStats->dwFirstEntered);
 
-            if (pStats->dwLastEntered != INVALID_TIME)
-                pSysData->SetIntegerAt(CONSTLIT("lastEnteredOn"), pStats->dwLastEntered);
+			if (pStats->dwLastEntered != INVALID_TIME)
+				pSysData->SetIntegerAt(CONSTLIT("lastEnteredOn"), pStats->dwLastEntered);
 
-            if (pStats->dwLastLeft != INVALID_TIME)
-                pSysData->SetIntegerAt(CONSTLIT("lastLeftOn"), pStats->dwLastLeft);
+			if (pStats->dwLastLeft != INVALID_TIME)
+				pSysData->SetIntegerAt(CONSTLIT("lastLeftOn"), pStats->dwLastLeft);
 
-            if (pStats->dwTotalTime != INVALID_TIME)
-                pSysData->SetIntegerAt(CONSTLIT("totalTimeSpent"), pStats->dwTotalTime);
+			if (pStats->dwTotalTime != INVALID_TIME)
+				pSysData->SetIntegerAt(CONSTLIT("totalTimeSpent"), pStats->dwTotalTime);
 
 			if (pStats->iAsteroidsMined > 0)
-                pSysData->SetIntegerAt(CONSTLIT("asteroidsMined"), pStats->iAsteroidsMined);
+				pSysData->SetIntegerAt(CONSTLIT("asteroidsMined"), pStats->iAsteroidsMined);
 
-            pResult->Append(pSysData);
-            pSysData->Discard();
+			pResult->Append(pSysData);
+			pSysData->Discard();
 			}
 
-        return pResult;
+		return pResult;
 		}
 	else if (strEquals(sProperty, PROPERTY_SYSTEMS_VISITED_COUNT))
 		{
@@ -285,8 +285,8 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 		return CCodeChain::CreateInteger(iCount + m_iExtraSystemsVisited);
 		}
 	else
-        return NULL;
-    }
+		return NULL;
+	}
 
 void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlayerShip, bool bGameOver) const
 
@@ -320,6 +320,16 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 	if (!Time.IsBlank())
 		Stats.Insert(CONSTLIT("Time elapsed in game"), Time.Format(NULL_STR));
 #endif
+
+	//	Stats for player ships used (sorted by when we first entered the ship).
+
+	for (int i = 0; i < m_PlayerShipStats.GetCount(); i++)
+		{
+		const CString sClassName = m_PlayerShipStats.GetKey(i);
+		CString sSort = strPatternSubst(CONSTLIT("%012d"), m_PlayerShipStats[i].dwFirstEntered);
+
+		Stats.Insert(sClassName, NULL_STR, CONSTLIT("Ships Used"), sSort);
+		}
 
 	//	Some combat stats
 
@@ -659,10 +669,10 @@ CTimeSpan CPlayerGameStats::GetGameTime (void) const
 //  GetGameTime
 //
 //  Returns the amount of real time spent playing
-    
-    {
-    return (!m_GameTime.IsBlank() ? m_GameTime : m_Universe.GetElapsedGameTime());
-    }
+	
+	{
+	return (!m_GameTime.IsBlank() ? m_GameTime : m_Universe.GetElapsedGameTime());
+	}
 
 CString CPlayerGameStats::GetItemStat (const CString &sStat, ICCItem *pItemCriteria) const
 
@@ -914,10 +924,10 @@ CTimeSpan CPlayerGameStats::GetPlayTime (void) const
 //  GetPlayTime
 //
 //  Returns the amount of real-time spent playing
-    
-    {
-    return (!m_PlayTime.IsBlank() ? m_PlayTime : m_Universe.StopGameTime());
-    }
+	
+	{
+	return (!m_PlayTime.IsBlank() ? m_PlayTime : m_Universe.StopGameTime());
+	}
 
 CPlayerGameStats::SShipClassStats *CPlayerGameStats::GetShipStats (DWORD dwUNID)
 
@@ -1198,26 +1208,26 @@ DWORD CPlayerGameStats::GetSystemLastVisitedTime (const CString &sNodeID)
 //  Returns the tick on which the player last was in the system.
 //  0xffffffff if the player has never entered it.
 
-    {
+	{
 	SSystemStats *pStats = m_SystemStats.Find(sNodeID);
 	if (pStats == NULL)
 		return INVALID_TIME;
 
-    //  If we have a value, then return it.
+	//  If we have a value, then return it.
 
-    if (pStats->dwLastLeft != INVALID_TIME)
-        return pStats->dwLastLeft;
+	if (pStats->dwLastLeft != INVALID_TIME)
+		return pStats->dwLastLeft;
 
-    //  If we've previously entered the system, but we don't have a LastLeft
-    //  value, then we are still in the system.
+	//  If we've previously entered the system, but we don't have a LastLeft
+	//  value, then we are still in the system.
 
-    if (pStats->dwLastEntered != INVALID_TIME)
-        return m_Universe.GetTicks();
+	if (pStats->dwLastEntered != INVALID_TIME)
+		return m_Universe.GetTicks();
 
-    //  Otherwise, we have never been here
+	//  Otherwise, we have never been here
 
-    return INVALID_TIME;
-    }
+	return INVALID_TIME;
+	}
 
 const CPlayerGameStats::SSystemStats *CPlayerGameStats::GetSystemStats (const CString &sNodeID) const
 
@@ -1577,6 +1587,38 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 		}
 	}
 
+void CPlayerGameStats::OnSwitchPlayerShip (const CShip &NewShip, const CShip *pOldShip)
+
+//	OnSwitchPlayerShip
+//
+//	Player has switched to a new ship.
+
+	{
+	DWORD dwNow = m_Universe.GetTicks();
+
+	//	Stop using the old ship
+
+	if (pOldShip)
+		{
+		CString sOldClassName = pOldShip->GetType()->GetNounPhrase();
+		SPlayerShipStats *pOldStats = m_PlayerShipStats.GetAt(sOldClassName);
+		if (pOldStats)
+			{
+			pOldStats->dwLastLeft = dwNow;
+			pOldStats->dwTotalTime += dwNow - pOldStats->dwLastEntered;
+			}
+		}
+
+	//	Add an entry for the new ship.
+
+	CString sNewClassName = NewShip.GetType()->GetNounPhrase();
+	SPlayerShipStats *pNewStats = m_PlayerShipStats.SetAt(sNewClassName);
+	if (pNewStats->dwFirstEntered == INVALID_TIME)
+		pNewStats->dwFirstEntered = dwNow;
+	pNewStats->dwLastEntered = dwNow;
+	pNewStats->dwLastLeft = INVALID_TIME;
+	}
+
 void CPlayerGameStats::OnSystemEntered (CSystem *pSystem, int *retiLastVisit)
 
 //	OnSystemEntered
@@ -1735,8 +1777,8 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 		m_GameTime.ReadFromStream(Ctx.pStream);
 		}
 
-    if (Ctx.dwVersion >= 129)
-    	Ctx.pStream->Read(m_rFuelConsumed);
+	if (Ctx.dwVersion >= 129)
+		Ctx.pStream->Read(m_rFuelConsumed);
 
 	Ctx.pStream->Read(dwCount);
 	for (int i = 0; i < (int)dwCount; i++)
@@ -1823,6 +1865,24 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 				Ctx.pStream->Read(pStats->dwObjNameFlags);
 				pStats->sObjName.ReadFromStream(Ctx.pStream);
 				}
+			}
+		}
+
+	//	Read m_PlayerShipStats
+
+	if (Ctx.dwVersion >= 193)
+		{
+		Ctx.pStream->Read(dwCount);
+		for (int i = 0; i < (int)dwCount; i++)
+			{
+			CString sClassName;
+			sClassName.ReadFromStream(Ctx.pStream);
+			SPlayerShipStats *pStats = m_PlayerShipStats.SetAt(sClassName);
+
+			Ctx.pStream->Read(pStats->dwFirstEntered);
+			Ctx.pStream->Read(pStats->dwLastEntered);
+			Ctx.pStream->Read(pStats->dwLastLeft);
+			Ctx.pStream->Read(pStats->dwTotalTime);
 			}
 		}
 	}
@@ -2027,6 +2087,18 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 			pStream->Write(pStats->dwObjNameFlags);
 			pStats->sObjName.WriteToStream(pStream);
 			}
+		}
+
+	pStream->Write(m_PlayerShipStats.GetCount());
+	for (int i = 0; i < m_PlayerShipStats.GetCount(); i++)
+		{
+		m_PlayerShipStats.GetKey(i).WriteToStream(pStream);
+
+		const auto &Stats = m_PlayerShipStats[i];
+		pStream->Write(Stats.dwFirstEntered);
+		pStream->Write(Stats.dwLastEntered);
+		pStream->Write(Stats.dwLastLeft);
+		pStream->Write(Stats.dwTotalTime);
 		}
 	}
 

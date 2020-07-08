@@ -2520,7 +2520,10 @@ ALERROR CTranscendenceModel::StartGame (bool bNewGame)
 	//	Update stats
 
 	if (m_iState == stateCreatingNewGame)
+		{
 		m_pPlayer->OnSystemEntered(m_Universe.GetCurrentSystem());
+		m_pPlayer->GetGameStats().OnSwitchPlayerShip(*m_pPlayer->GetShip());
+		}
 
     //  Initialize some thumbnails
 

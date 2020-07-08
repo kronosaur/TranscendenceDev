@@ -3082,6 +3082,10 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 
 	g_pTrans->GetModel().OnPlayerChangedShips(pOldShip, pNewShip, Options);
 
+	//	Update stats
+
+	m_Stats.OnSwitchPlayerShip(*pNewShip, pOldShip);
+
 	//	Update displays
 
 	if (m_pSession)
