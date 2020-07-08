@@ -317,6 +317,7 @@
     <ClInclude Include="..\Include\TSEWeaponClassImpl.h" />
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
     <ClInclude Include="..\Include\TSEConfigurationDescInlines.h" />
+    <ClInclude Include="ItemGeneratorImpl.h" />
     <ClInclude Include="SystemCreateImpl.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="GameFileCompatibility.h" />
@@ -487,6 +488,7 @@
     <ClCompile Include="CRandomEncounterDesc.cpp" />
     <ClCompile Include="CRandomEncounterObjTable.cpp" />
     <ClCompile Include="CRandomEncounterTypeTable.cpp" />
+    <ClCompile Include="CRandomItems.cpp" />
     <ClCompile Include="CRandomTopologyCreator.cpp" />
     <ClCompile Include="CRangeTypeEvent.cpp" />
     <ClCompile Include="CRotationDesc.cpp" />

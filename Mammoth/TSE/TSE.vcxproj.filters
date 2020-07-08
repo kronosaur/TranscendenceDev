@@ -368,6 +368,9 @@
     <ClInclude Include="..\Include\TSESystemRandomEncounters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ItemGeneratorImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1500,6 +1503,9 @@
     </ClCompile>
     <ClCompile Include="CInputKeyPainter.cpp">
       <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CRandomItems.cpp">
+      <Filter>Source Files\Items</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
