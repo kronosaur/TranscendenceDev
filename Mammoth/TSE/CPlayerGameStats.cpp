@@ -1617,6 +1617,25 @@ void CPlayerGameStats::OnSwitchPlayerShip (const CShip &NewShip, const CShip *pO
 		pNewStats->dwFirstEntered = dwNow;
 	pNewStats->dwLastEntered = dwNow;
 	pNewStats->dwLastLeft = INVALID_TIME;
+
+	//	If we're switching to a new ship (and we've got an old ship) then track
+	//	installed items.
+	//
+	//	NOTE: We don't need to do this for the first ship, but we do need it for
+	//	subsequent ships.
+
+	if (pOldShip)
+		{
+		CItemListManipulator ItemList(const_cast<CItemList &>(NewShip.GetItemList()));
+		while (ItemList.MoveCursorForward())
+			{
+			const CItem &Item = ItemList.GetItemAtCursor();
+
+			if (Item.IsInstalled()
+					&& (Item.IsArmor() || Item.IsDevice()))
+				OnItemInstalled(Item);
+			}
+		}
 	}
 
 void CPlayerGameStats::OnSystemEntered (CSystem *pSystem, int *retiLastVisit)
