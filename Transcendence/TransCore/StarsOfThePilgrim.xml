@@ -62,6 +62,11 @@
 	<!ENTITY msHereticIocrymOutpost		"0x0020006C">
 	<!ENTITY msHereticMRADExperiment	"0x0020006D">
 
+	<!-- 0080-00BF MISCELLANEOUS MISSIONS -->
+
+	<!ENTITY msPsychEval01				"0x00200080">
+	<!ENTITY msPsychEval00				"0x00200081">
+
 	<!-- 0021xxxx HUARI ==================================================== -->
 	
 	<!ENTITY smHuariSpace				"0x00210001">
@@ -243,6 +248,8 @@
 	<Module filename="HuaramarcaMission06.xml"/>
 	<Module filename="HuaramarcaMission07.xml"/>
 	<Module filename="PlayerShips.xml"/>
+	<Module filename="Psych00.xml"/>
+	<Module filename="Psych01.xml"/>
 		
 <!-- ADVENTURE MAP -->
 

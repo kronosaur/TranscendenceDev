@@ -864,6 +864,13 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionHospital">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +commonwealthHospital; =" (sysGetLevel) ";")
+									maxPerStation: 1
+									noMissionTextID: 'descHospitalEmpty
+									})
+							</Action>
 							<Action id="actionCommoditiesExchange">
 								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
@@ -880,10 +887,21 @@
 		<!-- Events and Data -->
 		
 		<Language>
+			<Text id="actionHospital">[H]ospital</Text>
+
 			<Text id="descWelcome">
+
 				You are in the docking bay of %objName%. Medical professionals
 				live and work on this station, doing everything from research,
 				to drug manufacturing, to remote medicine.
+
+			</Text>
+			<Text id="descHospitalEmpty">
+
+				Medtechs and patients crisscross the large reception area of the
+				hospital. Displays and holograms direct patients to various 
+				specialties.
+			
 			</Text>
 			<Text id="rpg.stationWillNotBuy">
 

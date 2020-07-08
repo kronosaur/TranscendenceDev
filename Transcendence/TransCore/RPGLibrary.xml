@@ -148,6 +148,7 @@
 
 	<!ENTITY baInterceptMission			"0x00010180">
 	<!ENTITY baDestroyStationMission	"0x00010181">
+	<!ENTITY baVisitStationMission		"0x00010182">
 	]>
 	
 <CoreLibrary
@@ -180,6 +181,7 @@
 	<Module filename="RPGMining.xml"/>
 	<Module filename="RPGMissionTemplate01.xml"/>
 	<Module filename="RPGMissionTemplate02.xml"/>
+	<Module filename="RPGMissionTemplate03.xml"/>
 	<Module filename="RPGMissions.xml"/>
 	<Module filename="RPGPlayer.xml"/>
 	<Module filename="RPGRumors.xml"/>

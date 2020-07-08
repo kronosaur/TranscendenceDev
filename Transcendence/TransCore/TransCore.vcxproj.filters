@@ -981,5 +981,14 @@
     <Xml Include="LiaPereira.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
+    <Xml Include="Psych01.xml">
+      <Filter>Part I</Filter>
+    </Xml>
+    <Xml Include="Psych00.xml">
+      <Filter>Part I</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate03.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
