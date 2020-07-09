@@ -204,10 +204,10 @@
 				"I'm sorry, %sir%, only Fleet Officers are allowed in Central Command."
 
 			</Text>
-            
-            <Text id="core.mapDescMain">
-                Commonwealth Fleet stronghold
-            </Text>
+			
+			<Text id="core.mapDescMain">
+				Commonwealth Fleet stronghold
+			</Text>
 		</Language>
 	</StationType>
 

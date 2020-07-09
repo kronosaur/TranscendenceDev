@@ -71,7 +71,7 @@
 			size=				"110"
 			armorID=			"&itReinforcedTitanium1;"
 			hitPoints=			"250"
-            regen=              "2"
+			regen=              "2"
 			multiHull=			"true"
 			fireRateAdj=		"20"
 				 
@@ -428,9 +428,9 @@
 				interested in buying %itemName%.
 
 			</Text>
-            <Text id="core.mapDesc">
-                Fabricates special items &mdash; Repairs/installs armor up to level 8 &mdash; Buys and sells scrap
-            </Text>
+			<Text id="core.mapDesc">
+				Fabricates special items &mdash; Repairs/installs armor up to level 8 &mdash; Buys and sells scrap
+			</Text>
 		</Language>
 	</StationType>
 	

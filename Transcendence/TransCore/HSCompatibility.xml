@@ -3702,13 +3702,13 @@
 							; current experience level, then the Black Market becomes an enemy.
 							; [I.e., the better the relationship with the BM, the greater the
 							; chance that the BM will allow the player to pay back her debts.]
-                    
+					
 							(if (gr (/ totalCrimeCost 100) (typ@ &unidBlackMarketMember; 'xp))
 								(block Nil
 									(sovSetDisposition &svBlackMarket; &svPlayer; 'enemy)
 									(sovSetDisposition &svPlayer; &svBlackMarket; 'enemy)
-    								)
-	    						)
+									)
+								)
 							)
 						)
 					)
@@ -6502,7 +6502,7 @@
 			multiHull=			"true"
 			armorID=			"&itSungArmor;"
 			hitPoints=			"400"
-            regen=              "11"
+			regen=              "11"
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 
@@ -6670,7 +6670,7 @@
 			multiHull=			"true"
 			armorID=			"&itSungArmor;"
 			hitPoints=			"1500"
-            regen=              "11"
+			regen=              "11"
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"

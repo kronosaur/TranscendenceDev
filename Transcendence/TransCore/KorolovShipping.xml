@@ -1074,9 +1074,9 @@
 
 			</Text>
 
-            <Text id="core.mapDescMain">
-                "Hires freighter escorts"
-            </Text>
+			<Text id="core.mapDescMain">
+				"Hires freighter escorts"
+			</Text>
 		</Language>
 	</StationType>
 

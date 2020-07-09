@@ -21,7 +21,7 @@
 
 			dockScreen=			"&dsStKatsArcology;"
 
-            level=              "7"
+			level=              "7"
 			size=				"5280"
 			immutable=			"true"
 			>
@@ -221,11 +221,11 @@
 					)
 			</GetRumors>
 		</Events>
-        
-        <Language>
-            <Text id="core.mapDescMain">
-                Capital of the Commonwealth
-            </Text>
+		
+		<Language>
+			<Text id="core.mapDescMain">
+				Capital of the Commonwealth
+			</Text>
 
 			<Text id="rumor.stKatsParliament.1">
 
@@ -292,7 +292,7 @@
 				brethren then the Dwarg will happily exploit them."
 				
 			</Text>
-        </Language>
+		</Language>
 	</StationType>
 
 	<!-- Arcology Segment -->

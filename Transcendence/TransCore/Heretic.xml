@@ -456,7 +456,7 @@
 			armorID=			"&itP120HexphaseArmor;"
 			hitPoints=			"370"
 			multiHull=			"true"
-            regen=              "4"
+			regen=              "4"
 			shipRegen=			"6"
 				 
 			explosionType=		"&vtThermoExplosion2;"
@@ -875,7 +875,7 @@
 			armorID=			"&itHeavyTharsisPlate;"
 			hitPoints=			"610"
 			multiHull=			"true"
-            regen=              "6"
+			regen=              "6"
 
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion2;"
@@ -961,7 +961,7 @@
 			</Main>
 		</DockScreens>
 
-        <Language>
+		<Language>
 			<Text id="actionCommandCenter">[C]ommand Center</Text>
 
 			<Text id="descWelcome">
@@ -987,10 +987,10 @@
 
 			</Text>
 
-            <Text id="core.mapDesc">
-                Research base
-            </Text>
-        </Language>
+			<Text id="core.mapDesc">
+				Research base
+			</Text>
+		</Language>
 	</StationType>
 
 	<!-- Log Buoy
@@ -1465,8 +1465,8 @@
 			<Port x="92"	y="-33" />
 			<Port x="42"	y="-85" />
 		</DockingPorts>
-        
-        <Language>
+		
+		<Language>
 			<Text id="actionCentralChamber">[C]entral Chamber</Text>
 
 			<Text id="descWelcome">
@@ -1519,10 +1519,10 @@
 			
 			</Text>
 
-            <Text id="core.mapDesc">
-                Alien structure
-            </Text>
-        </Language>
+			<Text id="core.mapDesc">
+				Alien structure
+			</Text>
+		</Language>
 	</StationType>
 
 	<!-- Iocrym Manipulator
