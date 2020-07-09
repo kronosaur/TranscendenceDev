@@ -358,7 +358,7 @@
 								<!-- Make sure there is at least one missile launcher -->
 
 								<RandomItem count="1" 
-									criteria=		"l L:1-3; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+									criteria=		"l L:1-3; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
 									levelFrequency=	"systemLevel:r|c|cur"
 									/>
 							</Items>

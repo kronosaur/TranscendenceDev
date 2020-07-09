@@ -151,19 +151,19 @@
 
 		<Items>
 			<RandomItem count="1d12" 
-					criteria=		"a L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"a L:1-10; +commonwealth; -illegal; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="1d12" 
-					criteria=		"w L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-10; +commonwealth; -illegal; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="1d12" 
-					criteria=		"d~w L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"d~w L:1-10; +commonwealth; -illegal; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
 					enhancement=	"=(intCorporateGenerateEnhancement gItem)"
@@ -175,7 +175,7 @@
 					/>
 
 			<RandomItem count="2d12" 
-					criteria=		"m -Specialty; -illegal; -NotStandard; -NotForSale;"
+					criteria=		"m +commonwealth; -Specialty; -illegal; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 
@@ -302,19 +302,19 @@
 
 		<Items>
 			<RandomItem count="8-12" 
-					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"as L:1-7; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:u|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="8-12" 
-					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"as L:1-7; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:-|u|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="6-10" 
-					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"as L:1-7; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="4" 
@@ -467,26 +467,26 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-6; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:-|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement2 gItem)"
 					/>
 			<RandomItem count="15" 
-					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-6; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="8" 
-					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-6; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 
 			<RandomItem count="25-35" 
-					criteria=		"m -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"m +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 		</Items>

@@ -328,11 +328,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-10; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-10; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:u|c|crv"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~ad -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 
