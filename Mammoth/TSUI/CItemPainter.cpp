@@ -316,7 +316,7 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 	if (!m_Options.bNoIcon)
 		{
 		int xIcon = (m_Options.bNoPadding ? x : x + ITEM_LEFT_PADDING);
-		DrawItemTypeIcon(Dest, xIcon, y, &ItemType, cxIcon, cyIcon, bDisabled);
+		DrawItemTypeIcon(Dest, xIcon, y, &ItemType, cxIcon, cyIcon, bDisabled, m_Options.bDisplayAsKnown);
 		rcDrawRect.left = xIcon + cxIcon + ITEM_TEXT_MARGIN_X;
 		}
 

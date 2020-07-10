@@ -104,7 +104,7 @@ class CItemType : public CDesignType
 		CObjectImageArray &GetFlotsamImage (void) { if (!m_FlotsamImage.IsLoaded()) CreateFlotsamImage(); return m_FlotsamImage; }
 		int GetFrequency (void) const { return m_Frequency; }
 		int GetFrequencyByLevel (int iLevel);
-		const CObjectImageArray &GetImage (void) const { return m_Image; }
+		const CObjectImageArray &GetImage (bool bActual = false) const;
 		const TArray<CDeviceClass *> &GetLaunchWeapons (void) const { return m_Weapons; }
 		Metric GetMass (CItemCtx &Ctx) const { return GetMassKg(Ctx) / 1000.0; }
 		int GetMassBonusPerCharge (void) const { return m_iExtraMassPerCharge; }

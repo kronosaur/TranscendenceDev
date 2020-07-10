@@ -277,7 +277,7 @@ class CMapLabelArranger
 
 void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos);
 void CreateBlasterShape (int iAngle, int iLength, int iWidth, SPoint *Poly);
-void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize = 0, int cySize = 0, bool bGray = false);
+void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize = 0, int cySize = 0, bool bGray = false, bool bDisplayAsKnown = false);
 void DrawLightning (CG32bitImage &Dest,
 					int xFrom, int yFrom,
 					int xTo, int yTo,
