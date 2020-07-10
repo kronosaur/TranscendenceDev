@@ -151,6 +151,8 @@
 			auton(s) with green markings; auton(s) with raised markings;
 			auton(s) with numeral markings; auton(s) with geometric markings
 		</Names>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 <!-- LEVEL 5 -->

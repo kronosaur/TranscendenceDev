@@ -6820,5 +6820,6 @@
 	<Image UNID="&rsFerianWarrior;"		obsoleteVersion="49"		bitmap="Resources\FerianWarrior.jpg"	bitmask="Resources\FerianWarriorMask.bmp"	loadOnUse="true"/>
 	<Image UNID="&rsXenophobeWorldship;"	obsoleteVersion="49"		bitmap="Resources\XenophobeWorldship.jpg"		bitmask="Resources\XenophobeWorldshipMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsXenophobeArk;"		obsoleteVersion="49"		bitmap="Resources\XenophobeArk.jpg"				bitmask="Resources\XenophobeArkMask.bmp"  		loadOnUse="true"/>
+	<Image UNID="&rs1MAutonHD;"			obsoleteVersion="50" bitmap="Resources\1MAutonHD.jpg"		bitmask="Resources\1MAutonHDMask.bmp"		loadOnUse="true" />
 
 </TranscendenceModule>

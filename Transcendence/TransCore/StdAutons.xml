@@ -4,7 +4,7 @@
 
 <!-- SHIP CLASSES -->
 
-	<!-- Auton, AutoSentinel -->
+	<!-- Level 3: Auton, AutoSentinel -->
 
 	<ShipClass UNID="&scAutoSentinel;"
 			manufacturer=		"OmniDefense Systems"
@@ -76,7 +76,7 @@
 		</Language>
 	</ShipClass>
 
-	<!-- Auton, 200A Defender Auton -->
+	<!-- Level 3: Auton, 200A Defender Auton -->
 
 	<ShipClass UNID="&sc200ADefenderAuton;"
 			manufacturer=		"OmniDefense Systems"
@@ -175,7 +175,7 @@
 		</Language>
 	</ShipClass>
 
-	<!-- Auton, 300D Defender Auton -->
+	<!-- Level 4: Auton, 300D Defender Auton -->
 
 	<ShipClass UNID="&sc300DDefenderAuton;"
 			manufacturer=		"OmniDefense Systems"
@@ -265,7 +265,7 @@
 		</Language>
 	</ShipClass>
 
-	<!-- Auton, 310A Aegis Auton -->
+	<!-- Level 4: Auton, 310A Aegis Auton -->
 
 	<ShipClass UNID="&sc310AAegisAuton;"
 			manufacturer=		"OmniDefense Systems"
@@ -273,6 +273,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
+			level=				"4"
 			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
@@ -340,7 +341,7 @@
 		</Language>
 	</ShipClass>
 
-	<!-- Auton, Mule Auton -->
+	<!-- Level 4: Auton, Mule Auton -->
 
 	<ShipClass UNID="&scMuleAuton;"
 			manufacturer=		"OmniDefense Systems"
@@ -491,7 +492,7 @@
 		</DockingPorts>
 	</ShipClass>
 
-	<!-- Auton, 1M battle auton -->
+	<!-- Level 5: Auton, 1M battle auton -->
 
 	<ShipClass UNID="&sc1MBattleAuton;"
 			manufacturer=		"OmniDefense Systems"
@@ -506,7 +507,7 @@
 		<!-- Hull -->
 
 		<Hull
-			size=				"10"
+			size=				"16"
 			mass=				"4"
 			cargoSpace=			"0"
 
@@ -547,7 +548,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rs1MAutonHD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rs1MAutonHD2;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rs1MAutonHero;" imageWidth="320" imageHeight="320"/>
 
 		<!-- AI and Behavior -->
 
@@ -593,7 +595,7 @@
 		</Language>
 	</ShipClass>
 
-	<!-- Auton, 1M/i battle auton -->
+	<!-- Level 5: Auton, 1M/i battle auton -->
 
 	<ShipClass UNID="&sc1MiBattleAuton;"
 			manufacturer=		"OmniDefense Systems"
@@ -608,7 +610,7 @@
 		<!-- Hull -->
 
 		<Hull
-			size=				"10"
+			size=				"16"
 			mass=				"4"
 			cargoSpace=			"0"
 
@@ -649,7 +651,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rs1MAutonHD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rs1MAutonHD2;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rs1MAutonHero;" imageWidth="320" imageHeight="320"/>
 
 		<!-- AI and Behavior -->
 
@@ -667,7 +670,7 @@
 		</Language>
 	</ShipClass>
 	
-	<!-- Auton, TX3 explorer auton -->
+	<!-- Level 4: Auton, TX3 explorer auton -->
 
 	<ShipClass UNID="&scExplorerAuton;"
 			manufacturer=		"Taikon"
@@ -1008,7 +1011,7 @@
 			description=		"The 1M battle auton is the most powerful autonomous defense bot manufactured by the OmniDefense Systems corporation."
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems5;" imageX="96" imageY="192" imageWidth="96" imageHeight="96"/>
 
 		<StaticData>
 			<AutonShipClass>&sc1MBattleAuton;</AutonShipClass>
@@ -1060,7 +1063,7 @@
 			description=		"This is a variant of OmniDefense Systems' 1M battle auton. Instead of a particle beam, it is equipped with an EMP cannon."
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems5;" imageX="96" imageY="192" imageWidth="96" imageHeight="96"/>
 		
 		<StaticData>
 			<AutonShipClass>&sc1MiBattleAuton;</AutonShipClass>
@@ -1072,7 +1075,10 @@
 	<Image UNID="&rsExplorerAuton;"		bitmap="Resources\ExplorerAuton.jpg"	bitmask="Resources\ExplorerAutonMask.bmp"	loadOnUse="true" />
 	<Image UNID="&rsAutosentinelHD;"	bitmap="Resources\AutosentinelHD.jpg"	bitmask="Resources\AutosentinelHDMask.bmp"	loadOnUse="true" />
 	<Image UNID="&rsMediumAutonHD;"		bitmap="Resources\MediumAutonHD.jpg"	bitmask="Resources\MediumAutonHDMask.bmp"	loadOnUse="true" />
-	<Image UNID="&rs1MAutonHD;"			bitmap="Resources\1MAutonHD.jpg"		bitmask="Resources\1MAutonHDMask.bmp"		loadOnUse="true" />
+
+	<Image UNID="&rs1MAutonHD2;"		bitmap="Resources\1MAutonHD2.jpg"		bitmask="Resources\1MAutonHD2Mask.bmp"		loadOnUse="true" />
+	<Image UNID="&rs1MAutonHero;"		bitmap="Resources\1MAutonLarge.jpg"		bitmask="Resources\1MAutonLargeMask.bmp"	loadOnUse="true" />
+
 	<Image UNID="&rsMuleAutonHD;"		bitmap="Resources\MuleHD.jpg"			bitmask="Resources\MuleHDMask.bmp"			loadOnUse="true" />
 	<Image UNID="&rsExplorerAutonHD;"	bitmap="Resources\ExplorerAutonHD.jpg"	bitmask="Resources\ExplorerAutonHDMask.bmp"	loadOnUse="true" />
 
