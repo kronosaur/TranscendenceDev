@@ -4352,26 +4352,35 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 	{
 	CSovereign *pPlayer = GetUniverse().GetPlayerSovereign();
 	CSpaceObject *pPlayerShip;
-
+	CG32bitPixel rgbColor;
+	//Player & player's assets
 	if ((GetSovereign() == pPlayer) || (GetSovereign()->IsPlayerOwned()))
-		return CG32bitPixel(255, 255, 255);
-	else if (IsWreck() || IsAbandoned())
-		return CG32bitPixel(128, 80, 128);
+		rgbColor = CG32bitPixel(255, 255, 255);
+	//Angered ships
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) 
 			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
-		return CG32bitPixel(200, 130, 80);
+		rgbColor = CG32bitPixel(220, 150, 80);
+	//Assigned escorts (ex, fleet wingmates)
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) && pPlayer && IsEscorting(pPlayerShip))
-		return CG32bitPixel(80, 200, 200);
+		rgbColor = CG32bitPixel(80, 200, 200);
+	//Enemies
 	else if (pPlayer && IsEnemy(*pPlayer))
-		return CG32bitPixel(255, 80, 80);
+		rgbColor = CG32bitPixel(255, 80, 80);
+	//Friendlies
 	else if (pPlayer && IsFriend(*pPlayer))
-		return CG32bitPixel(80, 255, 80);
+		rgbColor = CG32bitPixel(80, 255, 80);
+	//Neutrals (Anger more easily)
 	else if (pPlayer && IsNeutral(*pPlayer))
-		return CG32bitPixel(80, 80, 255);
+		rgbColor = CG32bitPixel(80, 80, 255);
+	//Fallback (magenta indicates error/uncategorized ship)
 	else if (GetCategory() == CSpaceObject::catShip)
-		return CG32bitPixel(80, 255, 80);
+		rgbColor = CG32bitPixel(255, 80, 255);
 	else
-		return CG32bitPixel(0, 192, 0);
+		rgbColor = CG32bitPixel(0, 192, 0);
+	//Dim the color if it is a wreck
+	if (IsWreck() || IsAbandoned())
+		rgbColor = CG32bitPixel::Blend(0, rgbColor, (BYTE)128);
+	return rgbColor;
 	}
 
 const CEnhancementDesc *CSpaceObject::GetSystemEnhancements (void) const
