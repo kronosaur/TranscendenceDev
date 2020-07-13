@@ -80,10 +80,27 @@ enum MarkerTypes
 	markerSmallRound,
 	markerSmallSquare,
 	markerSmallCross,
-	markerMediumCross,
+	markerMediumCross, //Objectives and Stargates
 	markerSmallFilledSquare,
-	markerSmallCircle,
+	markerSmallCircle, //wrecks
 	markerTinyCircle,
+	//Square: Friendly (station type: markerSmallFilledSquare, dead station type: markerSmallSquare)
+	markerTinySquare,
+	//Triangle up: Enemies
+	markerSmallTriangleUp,
+	markerMediumTriangleUp,
+	markerMediumFilledTriangleUp,
+	//Triangle down: Angered
+	markerSmallTriangleDown,
+	markerMediumTriangleDown,
+	markerMediumFilledTriangleDown,
+	//Circle: Owned (small type: markerSmallRound)
+	markerMediumCircle,
+	markerMediumFilledCircle,
+	//Diamond: Neutral
+	markerSmallDiamond,
+	markerMediumFilledDiamond,
+	markerMediumDiamond,
 	};
 
 enum SurfaceTypes
