@@ -254,7 +254,7 @@ void CGItemListDisplayArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 			//	Paint the icon
 
-			DrawItemTypeIcon(Dest, xBox + xIcon, yBox, pItemType, ICON_WIDTH, ICON_HEIGHT, m_ItemList[i].bGrayed);
+			DrawItemTypeIcon(Dest, xBox + xIcon, yBox, pItemType, ICON_WIDTH, ICON_HEIGHT, m_ItemList[i].bGrayed, m_bActualItems);
 
 			//	Paint the count
 

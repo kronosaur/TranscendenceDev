@@ -832,6 +832,28 @@ int CItemType::GetFrequencyByLevel (int iLevel)
 		}
 	}
 
+const CObjectImageArray &CItemType::GetImage (bool bActual) const
+
+//	GetImage
+//
+//	Gets the item icon
+
+	{
+	CItem Item(const_cast<CItemType *>(this), 1);
+
+	int iUnknownIndex;
+	if (!bActual && !Item.IsKnown(&iUnknownIndex))
+		{
+		const auto &UnknownImage = m_UnknownTypes[iUnknownIndex].pUnknownType->GetImage();
+		if (!UnknownImage.IsEmpty())
+			return UnknownImage;
+		else
+			return m_Image;
+		}
+
+	return m_Image; 
+	}
+
 CString CItemType::GetItemCategory (ItemCategories iCategory)
 
 //	GetItemCategory
