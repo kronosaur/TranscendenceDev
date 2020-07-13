@@ -256,6 +256,7 @@
       <PrecompiledHeaderFile>PreComp.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>false</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
       <OutputFile>Debug\CodeChain.lib</OutputFile>
@@ -311,6 +312,7 @@
       <PrecompiledHeaderFile>PreComp.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>false</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
       <OutputFile>Debug\CodeChain.lib</OutputFile>
@@ -366,6 +368,7 @@
       <PrecompiledHeaderFile>PreComp.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>false</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
       <OutputFile>Debug\CodeChain.lib</OutputFile>
@@ -489,6 +492,7 @@
       <PrecompiledHeaderFile>PreComp.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>false</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
       <OutputFile>Release\CodeChain.lib</OutputFile>
