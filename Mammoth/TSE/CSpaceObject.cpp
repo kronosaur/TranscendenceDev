@@ -4353,15 +4353,21 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 	CSovereign *pPlayer = GetUniverse().GetPlayerSovereign();
 	CSpaceObject *pPlayerShip;
 
-	if (GetSovereign() == pPlayer)
+	if ((GetSovereign() == pPlayer) || (GetSovereign()->IsPlayerOwned()))
 		return CG32bitPixel(255, 255, 255);
-	else if (IsWreck())
-		return CG32bitPixel(0, 192, 0);
+	else if (IsWreck() || IsAbandoned())
+		return CG32bitPixel(128, 80, 128);
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) 
-			&& IsAngryAt(pPlayerShip))
+			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+		return CG32bitPixel(200, 130, 80);
+	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) && pPlayer && IsEscorting(pPlayerShip))
+		return CG32bitPixel(80, 200, 200);
+	else if (pPlayer && IsEnemy(*pPlayer))
 		return CG32bitPixel(255, 80, 80);
-	else if (!pPlayerShip && pPlayer && IsEnemy(*pPlayer))
-		return CG32bitPixel(255, 80, 80);
+	else if (pPlayer && IsFriend(*pPlayer))
+		return CG32bitPixel(80, 255, 80);
+	else if (pPlayer && IsNeutral(*pPlayer))
+		return CG32bitPixel(80, 80, 255);
 	else if (GetCategory() == CSpaceObject::catShip)
 		return CG32bitPixel(80, 255, 80);
 	else
@@ -5316,6 +5322,20 @@ bool CSpaceObject::IsEscortingFriendOf (const CSpaceObject *pObj) const
 		return false;
 	}
 
+bool CSpaceObject::IsEscorting(const CSpaceObject* pObj) const
+
+//	IsEscortingFriendOf
+//
+//	Returns TRUE if we're escorting a friend of pObj
+
+{
+	CSpaceObject* pPrincipal = GetEscortPrincipal();
+	if (pPrincipal)
+		return pObj == pPrincipal;
+	else
+		return false;
+}
+
 bool CSpaceObject::IsPlayerAttackJustified (void) const
 
 //	IsPlayerAttackJustified
@@ -5611,6 +5631,54 @@ bool CSpaceObject::IsFriend (const CSpaceObject *pObj) const
 	else
 		return pOurSovereign->IsFriend(pEnemySovereign);
 	}
+
+bool CSpaceObject::IsNeutral (const CSpaceObject* pObj) const
+
+//	IsFriend
+//
+//	Returns TRUE if the given object is neutral.
+
+{
+	CSovereign* pOurSovereign = GetSovereign();
+	CSovereign* pEnemySovereign = pObj->GetSovereign();
+
+	if (pOurSovereign == NULL || pEnemySovereign == NULL)
+		return false;
+	else
+		return pOurSovereign->IsNeutral(pEnemySovereign);
+}
+
+bool CSpaceObject::IsFriend (const CSovereign &Sovereign) const
+
+//	IsFriend
+//
+//	Returns TRUE if the given object is our friend. Note that this
+//	is not equal to !IsEnemy. It is also possible for an object to
+//	be "neutral"
+
+{
+	CSovereign* pOurSovereign = GetSovereign();
+
+	if (pOurSovereign == NULL || &Sovereign == NULL)
+		return false;
+	else
+		return pOurSovereign->IsFriend(Sovereign);
+}
+
+bool CSpaceObject::IsNeutral (const CSovereign &Sovereign) const
+
+//	IsFriend
+//
+//	Returns TRUE if the given object is neutral.
+
+{
+	CSovereign* pOurSovereign = GetSovereign();
+
+	if (pOurSovereign == NULL || &Sovereign == NULL)
+		return false;
+	else
+		return pOurSovereign->IsNeutral(Sovereign);
+}
 
 bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 									  CSpaceObject *pTarget, 

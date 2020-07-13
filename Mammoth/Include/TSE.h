@@ -783,7 +783,11 @@ class CSpaceObject
 		bool IsEnemy (const CDamageSource &Obj) const;
 		bool IsEnemyInRange (Metric rMaxRange, bool bIncludeStations = false);
 		bool IsEscortingFriendOf (const CSpaceObject *pObj) const;
+		bool IsEscorting (const CSpaceObject* pObj) const;
 		bool IsFriend (const CSpaceObject *pObj) const;
+		bool IsNeutral (const CSpaceObject* pObj) const;
+		bool IsFriend(const CSovereign &Sovereign) const;
+		bool IsNeutral(const CSovereign &Sovereign) const;
 		bool IsHighlighted (void) const { return ((m_iHighlightCountdown != 0) || m_fSelected || m_iHighlightChar); }
 		bool IsInDamageCode (void) const { return (m_fInDamage ? true : false); }
 		bool IsLineOfFireClear (const CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL) const;

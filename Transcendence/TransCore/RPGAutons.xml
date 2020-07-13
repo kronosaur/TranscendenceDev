@@ -5,6 +5,7 @@
 	<Sovereign UNID="&svFriendlyAuton;"
 			name="autons"
 			demonym=":an auton(s)"
+			inherit="&svPlayer;"
 
 			alignment="constructive chaos"
 			>
