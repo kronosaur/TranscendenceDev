@@ -6332,9 +6332,27 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 	//	Paint red if enemy, etc.
 
 	CG32bitPixel rgbColor = GetSymbolColor();
-	Dest.DrawDot(x, y, 
-			rgbColor, 
-			markerSmallRound);
+	CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
+	CSpaceObject* pPlayerShip;
+	if (IsPlayer() || GetSovereign()->IsPlayerOwned()) {
+		Dest.DrawDot(x, y, rgbColor, markerSmallRound);
+	}
+	else if ((pPlayerShip = GetUniverse().GetPlayerShip())
+		&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer))) {
+		Dest.DrawDot(x, y, rgbColor, markerSmallTriangleDown);
+	}
+	else if (pPlayer && IsFriend(*pPlayer)) {
+		Dest.DrawDot(x, y, rgbColor, markerTinySquare);
+	}
+	else if (pPlayer && IsNeutral(*pPlayer)) {
+		Dest.DrawDot(x, y, rgbColor, markerSmallDiamond);
+	}
+	else if (pPlayer && IsEnemy(*pPlayer)) {
+		Dest.DrawDot(x, y, rgbColor, markerSmallTriangleUp);
+	}
+	else {
+		Dest.DrawDot(x, y, rgbColor, markerTinySquare);
+	}
 
 	//	Identified
 

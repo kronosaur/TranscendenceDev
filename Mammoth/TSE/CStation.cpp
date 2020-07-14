@@ -4719,17 +4719,37 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 					}
 				}
 			}
-			else if (IsAbandoned() || IsWreck())
-			{
-				if (!m_fExplored) {
-					Dest.DrawDot(x, y, rgbColor, markerSmallRound);
-					Dest.DrawDot(x, y, rgbColor, markerSmallCross);
+			else {
+				CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
+				CSpaceObject* pPlayerShip;
+				//Handle abandoned/wrecks
+				if (IsAbandoned() || IsWreck()) {
+					if (m_fExplored)
+						rgbColor = CG32bitPixel::Blend(CG32bitPixel(128, 128, 128), rgbColor, (BYTE)128);
+					else
+						Dest.DrawDot(x, y, rgbColor, markerSmallCross);
 				}
-				else
-					Dest.DrawDot(x, y, CG32bitPixel::Blend(CG32bitPixel(128, 128, 128), rgbColor, (BYTE)128), markerTinyCircle);
+				//Draw icon
+				if (IsPlayer() || GetSovereign()->IsPlayerOwned()) {
+					Dest.DrawDot(x, y, rgbColor, markerSmallRound);
+				}
+				else if ((pPlayerShip = GetUniverse().GetPlayerShip())
+					&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer))) {
+					Dest.DrawDot(x, y, rgbColor, markerSmallTriangleDown);
+				}
+				else if (pPlayer && IsFriend(*pPlayer)) {
+					Dest.DrawDot(x, y, rgbColor, markerTinySquare);
+				}
+				else if (pPlayer && IsNeutral(*pPlayer)) {
+					Dest.DrawDot(x, y, rgbColor, markerSmallDiamond);
+				}
+				else if (pPlayer && IsEnemy(*pPlayer)) {
+					Dest.DrawDot(x, y, rgbColor, markerSmallTriangleUp);
+				}
+				else {
+					Dest.DrawDot(x, y, rgbColor, markerTinySquare);
+				}
 			}
-			else
-				Dest.DrawDot(x, y, rgbColor, markerSmallRound);
 		}
 
 		DEBUG_CATCH_MSG1("Crash in CStation::PaintMarkerIcon: type: %08x", m_pType->GetUNID());
