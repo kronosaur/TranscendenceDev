@@ -4732,7 +4732,7 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 				Dest.DrawDot(x, y, rgbColor, markerSmallRound);
 		}
 
-		DEBUG_CATCH_MSG1("Crash in CStation::PaintStationIcon: type: %08x", m_pType->GetUNID());
+		DEBUG_CATCH_MSG1("Crash in CStation::PaintMarkerIcon: type: %08x", m_pType->GetUNID());
 	}
 
 
