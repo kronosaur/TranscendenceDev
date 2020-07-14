@@ -4622,24 +4622,34 @@ void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
 				Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
 				}
+			else if (IsAbandoned() && m_fExplored)
+				{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
+					Dest.DrawDot(x, y, CG32bitPixel::Blend(CG32bitPixel(128, 128, 128), rgbColor, (BYTE)128), markerSmallSquare);
+				}
+			else if (IsAbandoned())
+				{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerSmallCross);
+				}
 			else
 				{
 				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
 				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
 				}
 			}
-		else if (IsAbandoned())
+		else if (IsAbandoned() || IsWreck())
 			{
-			Dest.DrawDot(x, y, 
-					(m_fExplored ? CG32bitPixel(128, 128, 128) : rgbColor),
-					markerTinyCircle);
+				if (!m_fExplored) {
+					Dest.DrawDot(x, y, rgbColor, markerSmallRound);
+					Dest.DrawDot(x, y, rgbColor, markerSmallCross);
+				}
+				else
+					Dest.DrawDot(x, y, CG32bitPixel::Blend(CG32bitPixel(128, 128, 128), rgbColor, (BYTE)128), markerTinyCircle);
 			}
 		else
-			{
-			Dest.DrawDot(x, y, 
-					rgbColor,
-					markerSmallRound);
-			}
+			Dest.DrawDot(x, y, rgbColor, markerSmallRound);
 		}
 
 	DEBUG_CATCH_MSG1("Crash in CStation::PaintLRSForeground: type: %08x", m_pType->GetUNID());
