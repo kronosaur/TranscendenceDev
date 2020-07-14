@@ -863,12 +863,13 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 	{
 	switch (iMarker)
 		{
+		//Pixel
 		case markerPixel:
 			{
 			SetPixel(x, y, rgbColor);
 			break;
 			}
-
+		//Circular
 		case markerSmallRound:
 			{
 			int xStart, xEnd, yStart, yEnd;
@@ -904,7 +905,319 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 
 			break;
 			}
+		case markerSmallCircle:
+		{
+			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
+			CG32bitPixel rgbFade2 = CG32bitPixel::Blend(0, rgbColor, (BYTE)128);
 
+			SetPixel(x - 2, y, rgbColor);
+			SetPixel(x + 2, y, rgbColor);
+			SetPixel(x, y - 2, rgbColor);
+			SetPixel(x, y + 2, rgbColor);
+
+			SetPixel(x - 1, y - 1, rgbFade2);
+			SetPixel(x - 1, y + 1, rgbFade2);
+			SetPixel(x + 1, y - 1, rgbFade2);
+			SetPixel(x + 1, y + 1, rgbFade2);
+
+			SetPixel(x - 1, y - 2, rgbFade1);
+			SetPixel(x + 1, y - 2, rgbFade1);
+			SetPixel(x - 1, y + 2, rgbFade1);
+			SetPixel(x + 1, y + 2, rgbFade1);
+			SetPixel(x + 2, y - 1, rgbFade1);
+			SetPixel(x + 2, y + 1, rgbFade1);
+			SetPixel(x - 2, y - 1, rgbFade1);
+			SetPixel(x - 2, y + 1, rgbFade1);
+			break;
+		}
+		case markerSmallFilledCircle:
+		{
+			CG32bitPixel rgbInsideColor = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
+			DrawDot(x, y, rgbInsideColor, markerSmallRound);
+			DrawDot(x, y, rgbColor, markerSmallCircle);
+		}
+		case markerTinyCircle:
+		{
+			SetPixel(x - 1, y, rgbColor);
+			SetPixel(x - 1, y + 1, rgbColor);
+			SetPixel(x + 2, y, rgbColor);
+			SetPixel(x + 2, y + 1, rgbColor);
+
+			SetPixel(x, y - 1, rgbColor);
+			SetPixel(x, y + 2, rgbColor);
+			SetPixel(x + 1, y - 1, rgbColor);
+			SetPixel(x + 1, y + 2, rgbColor);
+			break;
+		}
+		//Square
+		case markerTinySquare:
+			{
+			int radius = 1;
+			Fill(x - radius, y - radius, 2 * radius + 1, 2 * radius + 1, rgbColor);
+			break;
+			}
+		case markerSmallFilledSquare:
+		{
+			int xLeft = x - SMALL_SQUARE_SIZE;
+			int yTop = y - SMALL_SQUARE_SIZE;
+			CG32bitPixel rgbInsideColor = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
+
+			DrawDot(x, y, rgbColor, markerSmallSquare);
+			Fill(xLeft + 1, yTop + 1, 2 * SMALL_SQUARE_SIZE - 1, 2 * SMALL_SQUARE_SIZE - 1, rgbInsideColor);
+			break;
+		}
+		case markerSmallSquare:
+		{
+			int yTop = y - SMALL_SQUARE_SIZE;
+			int yBottom = y + SMALL_SQUARE_SIZE;
+			int xLeft = x - SMALL_SQUARE_SIZE;
+			int xRight = x + SMALL_SQUARE_SIZE;
+
+			//	Draw the top line
+
+			if (yTop >= m_rcClip.top && yTop < m_rcClip.bottom)
+			{
+				CG32bitPixel* pRowStart = GetPixelPos(0, yTop);
+				CG32bitPixel* pPos = pRowStart + Max((int)m_rcClip.left, xLeft);
+				CG32bitPixel* pPosEnd = pRowStart + Min(xRight + 1, (int)m_rcClip.right);
+
+				while (pPos < pPosEnd)
+					*pPos++ = rgbColor;
+			}
+
+			//	Draw the bottom line
+
+			if (yBottom >= m_rcClip.top && yBottom < m_rcClip.bottom)
+			{
+				CG32bitPixel* pRowStart = GetPixelPos(0, yBottom);
+				CG32bitPixel* pPos = pRowStart + Max((int)m_rcClip.left, xLeft);
+				CG32bitPixel* pPosEnd = pRowStart + Min(xRight + 1, (int)m_rcClip.right);
+
+				while (pPos < pPosEnd)
+					*pPos++ = rgbColor;
+			}
+
+			//	Draw the left line
+
+			if (xLeft >= m_rcClip.left && xLeft < m_rcClip.right)
+			{
+				CG32bitPixel* pPos = GetPixelPos(xLeft, Max(yTop + 1, (int)m_rcClip.top));
+				CG32bitPixel* pPosEnd = GetPixelPos(xLeft, Min(yBottom, (int)m_rcClip.bottom));
+
+				while (pPos < pPosEnd)
+				{
+					*pPos = rgbColor;
+					pPos = NextRow(pPos);
+				}
+			}
+
+			//	Draw the right line
+
+			if (xRight >= m_rcClip.left && xRight < m_rcClip.right)
+			{
+				CG32bitPixel* pPos = GetPixelPos(xRight, Max(yTop + 1, (int)m_rcClip.top));
+				CG32bitPixel* pPosEnd = GetPixelPos(xRight, Min(yBottom, (int)m_rcClip.bottom));
+
+				while (pPos < pPosEnd)
+				{
+					*pPos = rgbColor;
+					pPos = NextRow(pPos);
+				}
+			}
+
+			break;
+		}
+		//Square 45d
+		case markerSmallDiamond:
+			{
+			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			Fill(x, y - 1, 1, 3, rgbColor);
+			Fill(x - 1, y, 3, 1, rgbColor);
+			SetPixel(x - 2, y, rgbFade1);
+			SetPixel(x + 2, y, rgbFade1);
+			SetPixel(x - 1, y + 1, rgbFade1);
+			SetPixel(x - 1, y - 1, rgbFade1);
+			SetPixel(x + 1, y + 1, rgbFade1);
+			SetPixel(x + 1, y - 1, rgbFade1);
+			SetPixel(x, y + 2, rgbFade1);
+			SetPixel(x, y - 2, rgbFade1);
+			break;
+			}
+		case markerMediumDiamond:
+		{
+			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			SetPixel(x - 2, y, rgbColor);
+			SetPixel(x + 2, y, rgbColor);
+			SetPixel(x - 1, y + 1, rgbColor);
+			SetPixel(x - 1, y - 1, rgbColor);
+			SetPixel(x + 1, y + 1, rgbColor);
+			SetPixel(x + 1, y - 1, rgbColor);
+			SetPixel(x, y + 2, rgbColor);
+			SetPixel(x, y - 2, rgbColor);
+			SetPixel(x - 3, y, rgbFade1);
+			SetPixel(x + 3, y, rgbFade1);
+			SetPixel(x, y + 3, rgbFade1);
+			SetPixel(x, y - 3, rgbFade1);
+			SetPixel(x - 1, y + 2, rgbFade1);
+			SetPixel(x - 1, y - 2, rgbFade1);
+			SetPixel(x + 1, y + 2, rgbFade1);
+			SetPixel(x + 1, y - 2, rgbFade1);
+			SetPixel(x - 2, y + 1, rgbFade1);
+			SetPixel(x - 2, y - 1, rgbFade1);
+			SetPixel(x + 2, y + 1, rgbFade1);
+			SetPixel(x + 2, y - 1, rgbFade1);
+			SetPixel(x - 1, y, rgbFade1);
+			SetPixel(x + 1, y, rgbFade1);
+			SetPixel(x, y + 1, rgbFade1);
+			SetPixel(x, y - 1, rgbFade1);
+			break;
+		}
+		case markerMediumFilledDiamond:
+		{
+			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
+			SetPixel(x - 2, y, rgbColor);
+			SetPixel(x + 2, y, rgbColor);
+			SetPixel(x - 1, y + 1, rgbColor);
+			SetPixel(x - 1, y - 1, rgbColor);
+			SetPixel(x + 1, y + 1, rgbColor);
+			SetPixel(x + 1, y - 1, rgbColor);
+			SetPixel(x, y + 2, rgbColor);
+			SetPixel(x, y - 2, rgbColor);
+			SetPixel(x - 3, y, rgbFade1);
+			SetPixel(x + 3, y, rgbFade1);
+			SetPixel(x, y + 3, rgbFade1);
+			SetPixel(x, y - 3, rgbFade1);
+			SetPixel(x - 1, y + 2, rgbFade1);
+			SetPixel(x - 1, y - 2, rgbFade1);
+			SetPixel(x + 1, y + 2, rgbFade1);
+			SetPixel(x + 1, y - 2, rgbFade1);
+			SetPixel(x - 2, y + 1, rgbFade1);
+			SetPixel(x - 2, y - 1, rgbFade1);
+			SetPixel(x + 2, y + 1, rgbFade1);
+			SetPixel(x + 2, y - 1, rgbFade1);
+			Fill(x, y - 1, 1, 3, rgbInner);
+			Fill(x - 1, y, 3, 1, rgbInner);
+			break;
+		}
+		//Triangle Up
+		case markerSmallTriangleUp:
+		{
+			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			int y_adj = y + 1;
+			SetPixel(x, y_adj - 1, rgbColor);
+			Fill(x - 1, y_adj, 3, 1, rgbColor);
+			SetPixel(x - 2, y_adj, rgbFade1);
+			SetPixel(x + 2, y_adj, rgbFade1);
+			SetPixel(x - 1, y_adj - 1, rgbFade1);
+			SetPixel(x + 1, y_adj - 1, rgbFade1);
+			SetPixel(x, y_adj - 2, rgbFade1);
+			break;
+		}
+		case markerMediumTriangleUp:
+		{
+			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			int y_adj = y + 1;
+			Fill(x - 2, y_adj, 5, 1, rgbColor);
+			SetPixel(x - 1, y_adj - 1, rgbColor);
+			SetPixel(x + 1, y_adj - 1, rgbColor);
+			SetPixel(x, y_adj - 2, rgbColor);
+			SetPixel(x - 3, y_adj, rgbFade1);
+			SetPixel(x + 3, y_adj, rgbFade1);
+			SetPixel(x, y_adj - 3, rgbFade1);
+			SetPixel(x - 1, y_adj - 2, rgbFade1);
+			SetPixel(x + 1, y_adj - 2, rgbFade1);
+			SetPixel(x - 2, y_adj - 1, rgbFade1);
+			SetPixel(x + 2, y_adj - 1, rgbFade1);
+			SetPixel(x - 1, y_adj, rgbFade1);
+			SetPixel(x + 1, y_adj, rgbFade1);
+			SetPixel(x, y_adj - 1, rgbFade1);
+			break;
+		}
+		case markerMediumFilledTriangleUp:
+		{
+			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
+			int y_adj = y + 1;
+			Fill(x - 2, y_adj, 5, 1, rgbColor);
+			SetPixel(x - 1, y_adj - 1, rgbColor);
+			SetPixel(x + 1, y_adj - 1, rgbColor);
+			SetPixel(x, y_adj - 2, rgbColor);
+			SetPixel(x - 3, y_adj, rgbFade1);
+			SetPixel(x + 3, y_adj, rgbFade1);
+			SetPixel(x, y_adj - 3, rgbFade1);
+			SetPixel(x - 1, y_adj - 2, rgbFade1);
+			SetPixel(x + 1, y_adj - 2, rgbFade1);
+			SetPixel(x - 2, y_adj - 1, rgbFade1);
+			SetPixel(x + 2, y_adj - 1, rgbFade1);
+			SetPixel(x, y_adj - 1, rgbInner);
+			Fill(x - 1, y_adj, 3, 1, rgbInner);
+			break;
+		}
+		//Triangle Down
+		case markerSmallTriangleDown:
+		{
+			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			int y_adj = y - 1;
+			SetPixel(x, y_adj + 1, rgbColor);
+			Fill(x - 1, y_adj, 3, 1, rgbColor);
+			SetPixel(x - 2, y_adj, rgbFade1);
+			SetPixel(x + 2, y_adj, rgbFade1);
+			SetPixel(x - 1, y_adj + 1, rgbFade1);
+			SetPixel(x + 1, y_adj + 1, rgbFade1);
+			SetPixel(x, y_adj + 2, rgbFade1);
+			break;
+		}
+		case markerMediumTriangleDown:
+		{
+			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			int y_adj = y - 1;
+			Fill(x - 2, y_adj, 5, 1, rgbColor);
+			SetPixel(x - 1, y_adj + 1, rgbColor);
+			SetPixel(x + 1, y_adj + 1, rgbColor);
+			SetPixel(x, y_adj + 2, rgbColor);
+			SetPixel(x - 3, y_adj, rgbFade1);
+			SetPixel(x + 3, y_adj, rgbFade1);
+			SetPixel(x, y_adj + 3, rgbFade1);
+			SetPixel(x - 1, y_adj + 2, rgbFade1);
+			SetPixel(x + 1, y_adj + 2, rgbFade1);
+			SetPixel(x - 2, y_adj + 1, rgbFade1);
+			SetPixel(x + 2, y_adj + 1, rgbFade1);
+			SetPixel(x - 1, y_adj, rgbFade1);
+			SetPixel(x + 1, y_adj, rgbFade1);
+			SetPixel(x, y_adj + 1, rgbFade1);
+			break;
+		}
+		case markerMediumFilledTriangleDown:
+		{
+			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
+			int y_adj = y - 1;
+			Fill(x - 2, y_adj, 5, 1, rgbColor);
+			SetPixel(x - 1, y_adj + 1, rgbColor);
+			SetPixel(x + 1, y_adj + 1, rgbColor);
+			SetPixel(x, y_adj + 2, rgbColor);
+			SetPixel(x - 3, y_adj, rgbFade1);
+			SetPixel(x + 3, y_adj, rgbFade1);
+			SetPixel(x, y_adj + 3, rgbFade1);
+			SetPixel(x - 1, y_adj + 2, rgbFade1);
+			SetPixel(x + 1, y_adj + 2, rgbFade1);
+			SetPixel(x - 2, y_adj + 1, rgbFade1);
+			SetPixel(x + 2, y_adj + 1, rgbFade1);
+			SetPixel(x, y_adj + 1, rgbInner);
+			Fill(x - 1, y_adj, 3, 1, rgbInner);
+			break;
+		}
+		//Cross
 		case markerSmallCross:
 			{
 			int yTop = y - SMALL_SQUARE_SIZE;
@@ -966,119 +1279,6 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 				{
 				CG32bitPixel *pPos = GetPixelPos(x, Max(yTop, (int)m_rcClip.top));
 				CG32bitPixel *pPosEnd = GetPixelPos(x, Min(yBottom+1, (int)m_rcClip.bottom));
-
-				while (pPos < pPosEnd)
-					{
-					*pPos = rgbColor;
-					pPos = NextRow(pPos);
-					}
-				}
-
-			break;
-			}
-
-		case markerSmallFilledSquare:
-			{
-			int xLeft = x - SMALL_SQUARE_SIZE;
-			int yTop = y - SMALL_SQUARE_SIZE;
-			CG32bitPixel rgbInsideColor = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
-
-			DrawDot(x, y, rgbColor, markerSmallSquare);
-			Fill(xLeft + 1, yTop + 1, 2 * SMALL_SQUARE_SIZE - 1, 2 * SMALL_SQUARE_SIZE - 1, rgbInsideColor);
-			break;
-			}
-
-		case markerSmallCircle:
-			{
-			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
-			CG32bitPixel rgbFade2 = CG32bitPixel::Blend(0, rgbColor, (BYTE)128);
-
-			SetPixel(x - 2, y, rgbColor);
-			SetPixel(x + 2, y, rgbColor);
-			SetPixel(x, y - 2, rgbColor);
-			SetPixel(x, y + 2, rgbColor);
-
-			SetPixel(x - 1, y - 1, rgbFade2);
-			SetPixel(x - 1, y + 1, rgbFade2);
-			SetPixel(x + 1, y - 1, rgbFade2);
-			SetPixel(x + 1, y + 1, rgbFade2);
-
-			SetPixel(x - 1, y - 2, rgbFade1);
-			SetPixel(x + 1, y - 2, rgbFade1);
-			SetPixel(x - 1, y + 2, rgbFade1);
-			SetPixel(x + 1, y + 2, rgbFade1);
-			SetPixel(x + 2, y - 1, rgbFade1);
-			SetPixel(x + 2, y + 1, rgbFade1);
-			SetPixel(x - 2, y - 1, rgbFade1);
-			SetPixel(x - 2, y + 1, rgbFade1);
-			break;
-			}
-
-		case markerTinyCircle:
-			{
-			SetPixel(x - 1, y, rgbColor);
-			SetPixel(x - 1, y + 1, rgbColor);
-			SetPixel(x + 2, y, rgbColor);
-			SetPixel(x + 2, y + 1, rgbColor);
-
-			SetPixel(x, y - 1, rgbColor);
-			SetPixel(x, y + 2, rgbColor);
-			SetPixel(x + 1, y - 1, rgbColor);
-			SetPixel(x + 1, y + 2, rgbColor);
-			break;
-			}
-
-		case markerSmallSquare:
-			{
-			int yTop = y - SMALL_SQUARE_SIZE;
-			int yBottom = y + SMALL_SQUARE_SIZE;
-			int xLeft = x - SMALL_SQUARE_SIZE;
-			int xRight = x + SMALL_SQUARE_SIZE;
-
-			//	Draw the top line
-
-			if (yTop >= m_rcClip.top && yTop < m_rcClip.bottom)
-				{
-				CG32bitPixel *pRowStart = GetPixelPos(0, yTop);
-				CG32bitPixel *pPos = pRowStart + Max((int)m_rcClip.left, xLeft);
-				CG32bitPixel *pPosEnd = pRowStart + Min(xRight+1, (int)m_rcClip.right);
-
-				while (pPos < pPosEnd)
-					*pPos++ = rgbColor;
-				}
-
-			//	Draw the bottom line
-
-			if (yBottom >= m_rcClip.top && yBottom < m_rcClip.bottom)
-				{
-				CG32bitPixel *pRowStart = GetPixelPos(0, yBottom);
-				CG32bitPixel *pPos = pRowStart + Max((int)m_rcClip.left, xLeft);
-				CG32bitPixel *pPosEnd = pRowStart + Min(xRight+1, (int)m_rcClip.right);
-
-				while (pPos < pPosEnd)
-					*pPos++ = rgbColor;
-				}
-
-			//	Draw the left line
-
-			if (xLeft >= m_rcClip.left && xLeft < m_rcClip.right)
-				{
-				CG32bitPixel *pPos = GetPixelPos(xLeft, Max(yTop+1, (int)m_rcClip.top));
-				CG32bitPixel *pPosEnd = GetPixelPos(xLeft, Min(yBottom, (int)m_rcClip.bottom));
-
-				while (pPos < pPosEnd)
-					{
-					*pPos = rgbColor;
-					pPos = NextRow(pPos);
-					}
-				}
-
-			//	Draw the right line
-
-			if (xRight >= m_rcClip.left && xRight < m_rcClip.right)
-				{
-				CG32bitPixel *pPos = GetPixelPos(xRight, Max(yTop+1, (int)m_rcClip.top));
-				CG32bitPixel *pPosEnd = GetPixelPos(xRight, Min(yBottom, (int)m_rcClip.bottom));
 
 				while (pPos < pPosEnd)
 					{

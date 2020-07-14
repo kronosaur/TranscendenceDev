@@ -95,8 +95,7 @@ enum MarkerTypes
 	markerMediumTriangleDown,
 	markerMediumFilledTriangleDown,
 	//Circle: Owned (small type: markerSmallRound)
-	markerMediumCircle,
-	markerMediumFilledCircle,
+	markerSmallFilledCircle,
 	//Diamond: Neutral
 	markerSmallDiamond,
 	markerMediumFilledDiamond,
