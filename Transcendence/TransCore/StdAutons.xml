@@ -19,7 +19,7 @@
 		<!-- Hull -->
 
 		<Hull
-			size=				"9"
+			size=				"14"
 			mass=				"1"
 			cargoSpace=			"0"
 
@@ -58,7 +58,8 @@
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsAutosentinelHD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsAutosentinelHD2;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rsAutosentinelHero;" imageWidth="320" imageHeight="320"/>
 
 		<!-- AI and Behavior -->
 
@@ -91,7 +92,7 @@
 		<!-- Hull -->
 
 		<Hull
-			size=				"9"
+			size=				"14"
 			mass=				"2"
 			cargoSpace=			"0"
 
@@ -132,7 +133,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsMediumAutonHD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rs200AAutonHD;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rs200AAutonHero;" imageWidth="320" imageHeight="320"/>
 
 		<!-- AI and Behavior -->
 
@@ -190,7 +192,7 @@
 		<!-- Hull -->
 
 		<Hull
-			size=				"9"
+			size=				"14"
 			mass=				"2"
 			cargoSpace=			"0"
 
@@ -231,7 +233,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsMediumAutonHD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rs300DAutonHD;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rs300DAutonHero;" imageWidth="320" imageHeight="320"/>
 
 		<!-- AI and Behavior -->
 
@@ -269,7 +272,7 @@
 
 	<ShipClass UNID="&sc310AAegisAuton;"
 			manufacturer=		"OmniDefense Systems"
-			class=				"310A aegis auton"
+			class=				"310A Aegis auton"
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
@@ -281,7 +284,7 @@
 		<!-- Hull -->
 
 		<Hull
-			size=				"9"
+			size=				"14"
 			mass=				"2"
 			cargoSpace=			"0"
 
@@ -323,7 +326,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsMediumAutonHD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rs310AAutonHD;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rs310AAutonHero;" imageWidth="320" imageHeight="320"/>
 
 		<!-- AI and Behavior -->
 
@@ -345,7 +349,7 @@
 
 	<ShipClass UNID="&scMuleAuton;"
 			manufacturer=		"OmniDefense Systems"
-			class=				"330M mule auton"
+			class=				"330M Mule auton"
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
@@ -358,7 +362,7 @@
 		<!-- Hull -->
 
 		<Hull
-			size=				"15"
+			size=				"16"
 			mass=				"2"
 			cargoSpace=			"75"
 
@@ -398,7 +402,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsMuleAutonHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsMuleAutonHD;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rsMuleAutonHero;" imageWidth="320" imageHeight="320"/>
 
 		<!-- AI and Behavior -->
 
@@ -651,8 +656,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rs1MAutonHD2;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
-		<HeroImage imageID="&rs1MAutonHero;" imageWidth="320" imageHeight="320"/>
+		<Image imageID="&rs1MiAutonHD;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rs1MiAutonHero;" imageWidth="320" imageHeight="320"/>
 
 		<!-- AI and Behavior -->
 
@@ -862,7 +867,7 @@
 
 <!-- ITEMS -->
 
-	<!-- Auton, AutoSentinel -->
+	<!-- Level 3: Auton, AutoSentinel -->
 
 	<ItemType UNID="&itAutoSentinel;"
 			name=				"AutoSentinel&#xae;| AutoSentinels&#xae;"
@@ -881,14 +886,14 @@
 			description=		"For around 500 credits, OmniDefense Systems' AutoSentinel keeps you and your loved ones safe from harm. NOTE: For professional security needs, order the 1M battle auton."
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems3;" imageX="192" imageY="192" imageWidth="96" imageHeight="96"/>
 		
 		<StaticData>
 			<autonShipClass>&scAutoSentinel;</autonShipClass>
 		</StaticData>
 	</ItemType>
 
-	<!-- Auton, 300D Defender -->
+	<!-- Level 4: Auton, 300D Defender -->
 
 	<ItemType UNID="&it300DDefenderAuton;"
 			name=				"300D defender auton"
@@ -896,7 +901,7 @@
 			inherit=			"&baAutonItemBase;"
 			  
 			level=				"4"
-			frequency=			"rare"
+			frequency=			"uncommon"
 			unknownType=		"&itUnknownAuton;"
 
 			value=				"2000"
@@ -907,14 +912,14 @@
 			description=		"This is a commercial auton primarily used for defending small stations. NOTE: For professional security needs, order the 1M battle auton."
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems4;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<StaticData>
 			<AutonShipClass>&sc300DDefenderAuton;</AutonShipClass>
 		</StaticData>
 	</ItemType>
 
-	<!-- Auton, 310A Aegis -->
+	<!-- Level 4: Auton, 310A Aegis -->
 
 	<ItemType UNID="&it310AAegisAuton;"
 			name=				"310A aegis auton"
@@ -933,14 +938,14 @@
 			description=		"This variant of the 300D is equipped with an anti-missile defense system."
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems4;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<StaticData>
 			<AutonShipClass>&sc310AAegisAuton;</AutonShipClass>
 		</StaticData>
 	</ItemType>
 
-	<!-- Auton, 330M Mule -->
+	<!-- Level 4: Auton, 330M Mule -->
 
 	<ItemType UNID="&itMuleAuton;"
 			name=				"330M mule auton"
@@ -959,14 +964,14 @@
 			description=		"Dock with this auton to store supplies on its cargo platform. This auton has space for 75 tons of cargo. "
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems4;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>
 
 		<StaticData>
 			<AutonShipClass>&scMuleAuton;</AutonShipClass>
 		</StaticData>
 	</ItemType>
 
-	<!-- Auton, Defective -->
+	<!-- Level 4: Auton, Defective -->
 
 	<ItemType UNID="&itDefectiveAuton;"
 			name=				"defective auton"
@@ -985,14 +990,14 @@
 			description=		"The 200A series was recalled several years ago because of an unstable AI."
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems4;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<StaticData>
 			<AutonShipClass>&sc200ADefenderAuton;</AutonShipClass>
 		</StaticData>
 	</ItemType>
 
-	<!-- Auton, 1M Battle -->
+	<!-- Level 5: Auton, 1M Battle -->
 
 	<ItemType UNID="&it1MBattleAuton;"
 			name=				"1M battle auton"
@@ -1018,7 +1023,7 @@
 		</StaticData>
 	</ItemType>
 
-	<!-- Auton, TX3 Explorer -->
+	<!-- Level 5: Auton, TX3 Explorer -->
 
 	<ItemType UNID="&itExplorerAuton;"
 			name=				"TX3 explorer auton"
@@ -1037,14 +1042,14 @@
 			description=		"Developed at the Taikon School of Exploration, this experimental auton can explore an entire star system."
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems5;" imageX="192" imageY="192" imageWidth="96" imageHeight="96"/>
 
 		<StaticData>
 			<AutonShipClass>&scExplorerAuton;</AutonShipClass>
 		</StaticData>
 	</ItemType>
 
-	<!-- Auton, 1M/i Battle -->
+	<!-- Level 6: Auton, 1M/i Battle -->
 
 	<ItemType UNID="&it1MiBattleAuton;"
 			name=				"1M/i battle auton"
@@ -1063,7 +1068,7 @@
 			description=		"This is a variant of OmniDefense Systems' 1M battle auton. Instead of a particle beam, it is equipped with an EMP cannon."
 			>
 
-		<Image imageID="&rsItems5;" imageX="96" imageY="192" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems5;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>
 		
 		<StaticData>
 			<AutonShipClass>&sc1MiBattleAuton;</AutonShipClass>
@@ -1072,14 +1077,27 @@
 	
 <!-- RESOURCES -->
 
-	<Image UNID="&rsExplorerAuton;"		bitmap="Resources\ExplorerAuton.jpg"	bitmask="Resources\ExplorerAutonMask.bmp"	loadOnUse="true" />
-	<Image UNID="&rsAutosentinelHD;"	bitmap="Resources\AutosentinelHD.jpg"	bitmask="Resources\AutosentinelHDMask.bmp"	loadOnUse="true" />
-	<Image UNID="&rsMediumAutonHD;"		bitmap="Resources\MediumAutonHD.jpg"	bitmask="Resources\MediumAutonHDMask.bmp"	loadOnUse="true" />
+	<Image UNID="&rsAutosentinelHD2;"	bitmap="Resources\AutosentinelHD2.jpg"	bitmask="Resources\AutosentinelHD2Mask.bmp"	loadOnUse="true" />
+	<Image UNID="&rsAutosentinelHero;"	bitmap="Resources\AutosentinelLarge.jpg"	bitmask="Resources\AutosentinelLargeMask.bmp"	loadOnUse="true" />
+
+	<Image UNID="&rsMuleAutonHD;"		bitmap="Resources\MuleAuton.jpg"			bitmask="Resources\MuleAutonMask.bmp"			loadOnUse="true" />
+	<Image UNID="&rsMuleAutonHero;"		bitmap="Resources\MuleAutonLarge.jpg"	bitmask="Resources\MuleAutonLargeMask.bmp"			loadOnUse="true" />
 
 	<Image UNID="&rs1MAutonHD2;"		bitmap="Resources\1MAutonHD2.jpg"		bitmask="Resources\1MAutonHD2Mask.bmp"		loadOnUse="true" />
 	<Image UNID="&rs1MAutonHero;"		bitmap="Resources\1MAutonLarge.jpg"		bitmask="Resources\1MAutonLargeMask.bmp"	loadOnUse="true" />
 
-	<Image UNID="&rsMuleAutonHD;"		bitmap="Resources\MuleHD.jpg"			bitmask="Resources\MuleHDMask.bmp"			loadOnUse="true" />
+	<Image UNID="&rs1MiAutonHD;"		bitmap="Resources\1MiAutonHD.jpg"		bitmask="Resources\1MiAutonHDMask.bmp"		loadOnUse="true" />
+	<Image UNID="&rs1MiAutonHero;"		bitmap="Resources\1MiAutonLarge.jpg"		bitmask="Resources\1MiAutonLargeMask.bmp"	loadOnUse="true" />
+
+	<Image UNID="&rs200AAutonHD;"		bitmap="Resources\200AAutonHD.jpg"		bitmask="Resources\200AAutonHDMask.bmp"		loadOnUse="true" />
+	<Image UNID="&rs200AAutonHero;"		bitmap="Resources\200AAutonLarge.jpg"	bitmask="Resources\200AAutonLargeMask.bmp"	loadOnUse="true" />
+
+	<Image UNID="&rs300DAutonHD;"		bitmap="Resources\300DAutonHD.jpg"		bitmask="Resources\300DAutonHDMask.bmp"		loadOnUse="true" />
+	<Image UNID="&rs300DAutonHero;"		bitmap="Resources\300DAutonLarge.jpg"	bitmask="Resources\300DAutonLargeMask.bmp"	loadOnUse="true" />
+
+	<Image UNID="&rs310AAutonHD;"		bitmap="Resources\310AAutonHD.jpg"		bitmask="Resources\310AAutonHDMask.bmp"		loadOnUse="true" />
+	<Image UNID="&rs310AAutonHero;"		bitmap="Resources\310AAutonLarge.jpg"	bitmask="Resources\310AAutonLargeMask.bmp"	loadOnUse="true" />
+
 	<Image UNID="&rsExplorerAutonHD;"	bitmap="Resources\ExplorerAutonHD.jpg"	bitmask="Resources\ExplorerAutonHDMask.bmp"	loadOnUse="true" />
 
 </TranscendenceModule>
