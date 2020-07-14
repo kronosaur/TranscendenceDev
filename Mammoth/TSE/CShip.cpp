@@ -5356,10 +5356,7 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 	else if (m_fKnown && m_fShowMapLabel)
 		{
 		CG32bitPixel rgbColor;
-		if (IsEnemy(GetUniverse().GetPOV()))
-			rgbColor = CG32bitPixel(255, 0, 0);
-		else
-			rgbColor = CG32bitPixel(0, 192, 0);
+		rgbColor = GetSymbolColor();
 
 		Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
 		Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
@@ -6307,7 +6304,7 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 
 	SetKnown();
 
-	//	Paint red if enemy, blue otherwise
+	//	Paint red if enemy, etc.
 
 	CG32bitPixel rgbColor = GetSymbolColor();
 	Dest.DrawDot(x, y, 
