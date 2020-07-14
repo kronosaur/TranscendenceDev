@@ -2087,6 +2087,14 @@
 	<!ENTITY rsAutosentinelHD2			"0x00100377">
 	<!ENTITY rsAutosentinelHero			"0x00100378">
 	<!ENTITY rsMuleAutonHero			"0x00100379">
+	<!ENTITY rs200AAutonHD				"0x0010037A">
+	<!ENTITY rs200AAutonHero			"0x0010037B">
+	<!ENTITY rs300DAutonHD				"0x0010037C">
+	<!ENTITY rs300DAutonHero			"0x0010037D">
+	<!ENTITY rs310AAutonHD				"0x0010037E">
+	<!ENTITY rs310AAutonHero			"0x0010037F">
+	<!ENTITY rs1MiAutonHD				"0x00100380">
+	<!ENTITY rs1MiAutonHero				"0x00100381">
 
 	<!-- 0390-03AF COMMONWEALTH II -->
 

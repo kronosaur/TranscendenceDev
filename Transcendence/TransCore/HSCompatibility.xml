@@ -6823,5 +6823,7 @@
 
 	<Image UNID="&rs1MAutonHD;"			obsoleteVersion="50" bitmap="Resources\1MAutonHD.jpg"		bitmask="Resources\1MAutonHDMask.bmp"		loadOnUse="true" />
 	<Image UNID="&rsAutosentinelHD;"	obsoleteVersion="50" bitmap="Resources\AutosentinelHD.jpg"	bitmask="Resources\AutosentinelHDMask.bmp"	loadOnUse="true" />
+	<Image UNID="&rsMediumAutonHD;"		obsoleteVersion="50" bitmap="Resources\MediumAutonHD.jpg"	bitmask="Resources\MediumAutonHDMask.bmp"	loadOnUse="true" />
+	<Image UNID="&rsExplorerAuton;"		obsoleteVersion="50" bitmap="Resources\ExplorerAuton.jpg"	bitmask="Resources\ExplorerAutonMask.bmp"	loadOnUse="true" />
 
 </TranscendenceModule>
