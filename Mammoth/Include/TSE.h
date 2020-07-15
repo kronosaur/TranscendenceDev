@@ -15,7 +15,6 @@
 #include "JSONUtil.h"
 #include "DirectXUtil.h"
 #include "Reanimator.h"
-#include "TSEAccessibilitySettings.h"
 
 //  Starting with Part II we use Arabic numerals for levels.
 
@@ -1748,6 +1747,7 @@ class CAscendedObjectList
 #include "TSEMapPainters.h"
 #include "TSETransLispUtil.h"
 
+#include "TSEAccessibilitySettings.h"
 #include "TSEUniverse.h"
 
 #include "TSESpaceObjectsEnum.h"

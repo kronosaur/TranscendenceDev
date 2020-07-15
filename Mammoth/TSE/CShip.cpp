@@ -5360,31 +5360,37 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 		CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
 		CSpaceObject* pPlayerShip;
-		if (IsPlayer() || GetSovereign()->IsPlayerOwned()) {
+		if (IsPlayer() || GetSovereign()->IsPlayerOwned())
+			{
 			Dest.DrawDot(x + 1, y + 1, 0, markerSmallCircle);
 			Dest.DrawDot(x, y, rgbColor, markerSmallFilledCircle);
-		}
+			}
 		else if ((pPlayerShip = GetUniverse().GetPlayerShip())
-			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer))) {
+				&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+			{
 			Dest.DrawDot(x + 1, y + 1, 0, markerMediumTriangleDown);
 			Dest.DrawDot(x, y, rgbColor, markerMediumFilledTriangleDown);
-		}
-		else if (pPlayer && IsFriend(*pPlayer)) {
+			}
+		else if (pPlayer && IsFriend(*pPlayer))
+			{
 			Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
 			Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
-		}
-		else if (pPlayer && IsNeutral(*pPlayer)) {
+			}
+		else if (pPlayer && IsNeutral(*pPlayer))
+			{
 			Dest.DrawDot(x + 1, y + 1, 0, markerMediumDiamond);
 			Dest.DrawDot(x, y, rgbColor, markerMediumFilledDiamond);
-		}
-		else if (pPlayer && IsEnemy(*pPlayer)) {
+			}
+		else if (pPlayer && IsEnemy(*pPlayer))
+			{
 			Dest.DrawDot(x + 1, y + 1, 0, markerMediumTriangleUp);
 			Dest.DrawDot(x, y, rgbColor, markerMediumFilledTriangleUp);
-		}
-		else {
+			}
+		else
+			{
 			Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
 			Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
-		}
+			}
 
 		if (m_sMapLabel.IsBlank())
 			m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
@@ -6337,7 +6343,7 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 	if (IsPlayer() || GetSovereign()->IsPlayerOwned())
 		Dest.DrawDot(x, y, rgbColor, markerSmallRound);
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip())
-		&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
 		Dest.DrawDot(x, y, rgbColor, markerSmallTriangleDown);
 	else if (pPlayer && IsFriend(*pPlayer))
 		Dest.DrawDot(x, y, rgbColor, markerTinySquare);
