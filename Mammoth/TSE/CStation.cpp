@@ -4666,8 +4666,6 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 					{
 					if (m_fExplored)
 						rgbColor = CG32bitPixel::Blend(CG32bitPixel(128, 128, 128), rgbColor, (BYTE)128);
-					else
-						Dest.DrawDot(x, y, rgbColor, markerSmallCross);
 					CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
 					CSpaceObject* pPlayerShip;
 					if (IsPlayer() || GetSovereign()->IsPlayerOwned())
@@ -4701,6 +4699,9 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 						Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
 						Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
 						}
+					//mark if not yet docked with
+					if (!m_fExplored)
+						Dest.DrawDot(x, y, rgbColor, markerSmallCross);
 					}
 				else
 				{
