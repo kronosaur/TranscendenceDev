@@ -24,7 +24,7 @@ public:
 protected:
 
 private:
-	CG32bitPixel m_aColors[7]
+	CG32bitPixel m_aIFFColors[7]
 		{
 		CG32bitPixel(255, 255, 255),	//player
 		CG32bitPixel(80, 200, 200),		//escort

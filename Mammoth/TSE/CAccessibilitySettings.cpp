@@ -15,10 +15,10 @@ void CAccessibilitySettings::SetIFFColor (CString sSettingsValue, CAccessibility
 	BYTE bGreen = (BYTE)(iRawColor >> 8);
 	BYTE bRed = (BYTE)(iRawColor >> 16);
 	CG32bitPixel rgbColor = CG32bitPixel(bRed, bGreen, bBlue);
-	m_aColors[(int)iIFFType] = rgbColor;
+	m_aIFFColors[(int)iIFFType] = rgbColor;
 	};
 
 CG32bitPixel CAccessibilitySettings::GetIFFColor (CAccessibilitySettings::IFFType iIFFType)
 {
-	return m_aColors[(int)iIFFType];
+	return m_aIFFColors[(int)iIFFType];
 };
