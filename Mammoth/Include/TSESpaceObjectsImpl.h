@@ -1704,6 +1704,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnHitByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		bool OnMiningDamage (SDamageCtx &Ctx);
+		void PaintMarkerIcon (CG32bitImage& Dest, int x, int y);
 		void PaintSatellites (CG32bitImage &Dest, int x, int y, DWORD dwPaintOptions, SViewportPaintCtx &Ctx) const;
 		void RaiseAlert (CSpaceObject *pTarget);
 		void SetAngry (void);

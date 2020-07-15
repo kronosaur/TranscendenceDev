@@ -92,6 +92,15 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"soundVolume",				optionInteger,	"7",		0	},
 		{	"musicVolume",				optionInteger,	"7",		0	},
 		{	"musicPath",				optionString,	"",			0	},
+		
+		//	Accessibility options
+		{	"colorIFFPlayer",			optionString,	"#FFFFFF",	0	},
+		{	"colorIFFFriendly",			optionString,	"#50FF50",	0	},
+		{	"colorIFFNeutral",			optionString,	"#5050FF",	0	},
+		{	"colorIFFEnemy",			optionString,	"#FF5050",	0	},
+		{	"colorIFFAngry",			optionString,	"#E68250",	0	},
+		{	"colorIFFEscort",			optionString,	"#50FFFF",	0	},
+		{	"colorIFFProjectile",		optionString,	"#FFFF00",	0	},
 
 		//	Debug options
 		{	"debugMode",				optionBoolean,	"false",	0	},

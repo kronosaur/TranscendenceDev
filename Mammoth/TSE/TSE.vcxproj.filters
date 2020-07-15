@@ -84,6 +84,9 @@
     <Filter Include="Source Files\Dock Screens">
       <UniqueIdentifier>{2576b8d3-42d3-4cff-9251-31ce0058931f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\InSessionSettings">
+      <UniqueIdentifier>{989b4e7d-2b43-4195-b7a6-308b8525b851}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -369,6 +372,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ItemGeneratorImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEAccessibilitySettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1506,6 +1512,9 @@
     </ClCompile>
     <ClCompile Include="CRandomItems.cpp">
       <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CAccessibilitySettings.cpp">
+      <Filter>Source Files\InSessionSettings</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

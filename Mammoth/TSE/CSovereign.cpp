@@ -498,6 +498,22 @@ CString CSovereign::GetText (MessageTypes iMsg)
 		return g_pDefaultText[0];
 	}
 
+bool CSovereign::IsPlayerOwned (void)
+
+//  IsPlayerOwned
+//
+//  Determine if this sovereign inherits from &svPlayer;
+
+	{
+	CSovereign *pParent = CSovereign::AsType(GetInheritFrom());
+	if (pParent == NULL)
+		return false;
+	else if (pParent->GetUNID() == g_PlayerSovereignUNID)
+		return true;
+	else
+		return pParent->IsPlayerOwned();
+	}
+
 void CSovereign::InitEnemyObjectList (const CSystem *pSystem) const
 
 //	InitEnemyObjectList
