@@ -10,6 +10,6 @@ void CAccessibilitySettings::SetIFFColor (CString sSettingsValue, CAccessibility
 	};
 
 CG32bitPixel CAccessibilitySettings::GetIFFColor (CAccessibilitySettings::IFFType iIFFType)
-{
+	{
 	return m_aIFFColors[(int)iIFFType];
-};
+	};
