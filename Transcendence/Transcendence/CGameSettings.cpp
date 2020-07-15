@@ -100,7 +100,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"colorIFFEnemy",			optionString,	"0xFF5050",	0	},
 		{	"colorIFFAngry",			optionString,	"0xE68250",	0	},
 		{	"colorIFFEscort",			optionString,	"0x50FFFF",	0	},
-		{	"colorIFFProjectile",		optionString,	"0xFFFF50",	0	},
+		{	"colorIFFProjectile",		optionString,	"0xFFFF00",	0	},
 
 		//	Debug options
 		{	"debugMode",				optionBoolean,	"false",	0	},
