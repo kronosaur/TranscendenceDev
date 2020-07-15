@@ -1734,7 +1734,7 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 	if (*pPos == '\0')
 		return rgbDefault;
 
-	//	If it starts with a # we expect an RGB DWORD (ex, #ff00ff)
+	//	If it starts with a # we expect an RGB DWORD (ex, #FF00FF) - Caps safe
 
 	else if (*pPos == '#')
 		{

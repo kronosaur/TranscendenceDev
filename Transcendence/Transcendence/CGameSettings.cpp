@@ -94,13 +94,13 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"musicPath",				optionString,	"",			0	},
 		
 		//	Accessibility options
-		{	"colorIFFPlayer",			optionString,	"0xFFFFFF",	0	},
-		{	"colorIFFFriendly",			optionString,	"0x50FF50",	0	},
-		{	"colorIFFNeutral",			optionString,	"0x5050FF",	0	},
-		{	"colorIFFEnemy",			optionString,	"0xFF5050",	0	},
-		{	"colorIFFAngry",			optionString,	"0xE68250",	0	},
-		{	"colorIFFEscort",			optionString,	"0x50FFFF",	0	},
-		{	"colorIFFProjectile",		optionString,	"0xFFFF00",	0	},
+		{	"colorIFFPlayer",			optionString,	"#FFFFFF",	0	},
+		{	"colorIFFFriendly",			optionString,	"#50FF50",	0	},
+		{	"colorIFFNeutral",			optionString,	"#5050FF",	0	},
+		{	"colorIFFEnemy",			optionString,	"#FF5050",	0	},
+		{	"colorIFFAngry",			optionString,	"#E68250",	0	},
+		{	"colorIFFEscort",			optionString,	"#50FFFF",	0	},
+		{	"colorIFFProjectile",		optionString,	"#FFFF00",	0	},
 
 		//	Debug options
 		{	"debugMode",				optionBoolean,	"false",	0	},
