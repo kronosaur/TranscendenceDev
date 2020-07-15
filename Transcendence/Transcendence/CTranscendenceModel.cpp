@@ -2511,14 +2511,14 @@ ALERROR CTranscendenceModel::StartGame (bool bNewGame)
 
 	//	Set Accessibility Settings
 	m_Universe.InitAccessibilitySettings();
-	CAccessibilitySettings* pAccessibility = m_Universe.GetAccessibilitySettings();
-	pAccessibility->SetIFFColor(m_sAccessibilityColorAngry, CAccessibilitySettings::IFFType::angry);
-	pAccessibility->SetIFFColor(m_sAccessibilityColorEscort, CAccessibilitySettings::IFFType::escort);
-	pAccessibility->SetIFFColor(m_sAccessibilityColorEnemy, CAccessibilitySettings::IFFType::enemy);
-	pAccessibility->SetIFFColor(m_sAccessibilityColorFriendly, CAccessibilitySettings::IFFType::friendly);
-	pAccessibility->SetIFFColor(m_sAccessibilityColorNeutral, CAccessibilitySettings::IFFType::neutral);
-	pAccessibility->SetIFFColor(m_sAccessibilityColorPlayer, CAccessibilitySettings::IFFType::player);
-	pAccessibility->SetIFFColor(m_sAccessibilityColorProjectile, CAccessibilitySettings::IFFType::projectile);
+	CAccessibilitySettings& cAccessibility = m_Universe.GetAccessibilitySettings();
+	cAccessibility.SetIFFColor(m_sAccessibilityColorAngry, CAccessibilitySettings::IFFType::angry);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorEscort, CAccessibilitySettings::IFFType::escort);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorEnemy, CAccessibilitySettings::IFFType::enemy);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorFriendly, CAccessibilitySettings::IFFType::friendly);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorNeutral, CAccessibilitySettings::IFFType::neutral);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorPlayer, CAccessibilitySettings::IFFType::player);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorProjectile, CAccessibilitySettings::IFFType::projectile);
 
 	//	Tell the controller that we're starting
 
