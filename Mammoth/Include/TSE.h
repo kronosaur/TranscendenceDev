@@ -15,6 +15,7 @@
 #include "JSONUtil.h"
 #include "DirectXUtil.h"
 #include "Reanimator.h"
+#include "TSEAccessibilitySettings.h"
 
 //  Starting with Part II we use Arabic numerals for levels.
 
@@ -107,7 +108,7 @@
 //#define ITEM_REFERENCE
 
 //	Forward references
-
+class CAccessibilitySettings;
 class CArmorClass;
 class CBoundaryMarker;
 class CDeviceClass;

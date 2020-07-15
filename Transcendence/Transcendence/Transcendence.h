@@ -989,6 +989,14 @@ class CTranscendenceModel
 		bool m_bNoCollectionLoad;                   //  Do not load collection
 		bool m_bForcePermadeath;					//	Replace resurrection with final stats
 
+		CString m_sAccessibilityColorPlayer;		//	Colorblind accessibility options for IFF colors
+		CString m_sAccessibilityColorEscort;
+		CString m_sAccessibilityColorFriendly;
+		CString m_sAccessibilityColorNeutral;
+		CString m_sAccessibilityColorEnemy;
+		CString m_sAccessibilityColorAngry;
+		CString m_sAccessibilityColorProjectile;
+
 		CGameFile m_GameFile;
 		CUniverse m_Universe;
 		CPlayerShipController *m_pPlayer;

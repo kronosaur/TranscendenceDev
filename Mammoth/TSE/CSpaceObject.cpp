@@ -4350,33 +4350,34 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 //	Returns the color to paint this object in the player's scanner
 
 	{
+	CAccessibilitySettings* pAccessibilitySettings = GetUniverse().GetAccessibilitySettings();
 	CSovereign *pPlayer = GetUniverse().GetPlayerSovereign();
 	CSpaceObject *pPlayerShip;
 	CG32bitPixel rgbColor;
 	//Player & player's assets
 	if ((GetSovereign() == pPlayer) || (GetSovereign()->IsPlayerOwned()))
-		rgbColor = CG32bitPixel(255, 255, 255);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::player);
 	//Angered ships
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) 
 			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
-		rgbColor = CG32bitPixel(220, 150, 80);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::angry);
 	//Assigned escorts (ex, fleet wingmates)
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) && pPlayer && IsEscorting(pPlayerShip))
-		rgbColor = CG32bitPixel(80, 200, 200);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::escort);
 	//Enemies
 	else if (pPlayer && IsEnemy(*pPlayer))
-		rgbColor = CG32bitPixel(255, 80, 80);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::enemy);
 	//Friendlies
 	else if (pPlayer && IsFriend(*pPlayer))
-		rgbColor = CG32bitPixel(80, 255, 80);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::friendly);
 	//Neutrals (Anger more easily)
 	else if (pPlayer && IsNeutral(*pPlayer))
-		rgbColor = CG32bitPixel(80, 80, 255);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::neutral);
 	//Fallback (magenta indicates error/uncategorized ship)
 	else if (GetCategory() == CSpaceObject::catShip)
 		rgbColor = CG32bitPixel(255, 80, 255);
 	else
-		rgbColor = CG32bitPixel(0, 192, 0);
+		rgbColor = CG32bitPixel(255, 80, 255);
 	//Dim the color if it is a wreck
 	if (IsWreck() || IsAbandoned())
 		rgbColor = CG32bitPixel::Blend(0, rgbColor, (BYTE)128);
@@ -6806,7 +6807,7 @@ void CSpaceObject::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const V
 
 	{
 	Dest.DrawDot(x, y, 
-			CG32bitPixel(255, 255, 0), 
+			GetUniverse().GetAccessibilitySettings()->GetIFFColor(CAccessibilitySettings::projectile), 
 			markerSmallRound);
 	}
 
