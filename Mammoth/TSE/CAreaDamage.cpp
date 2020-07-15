@@ -336,7 +336,7 @@ void CAreaDamage::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Vi
 		Metric rRadius = m_pPainter->GetRadius(m_iTick);
 		int iRadius = mathRound(rRadius / g_KlicksPerPixel);
 		int iCount = Min(64, 3 * iRadius);
-		CG32bitPixel rgbColor = GetUniverse().GetAccessibilitySettings()->GetIFFColor(CAccessibilitySettings::projectile);
+		CG32bitPixel rgbColor = GetUniverse().GetAccessibilitySettings()->GetIFFColor(CAccessibilitySettings::IFFType::projectile);
 		for (i = 0; i < iCount; i++)
 			{
 			CVector vPos = GetPos() + PolarToVector(mathRandom(0, 359), rRadius);

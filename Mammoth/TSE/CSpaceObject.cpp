@@ -4356,23 +4356,23 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 	CG32bitPixel rgbColor;
 	//Player & player's assets
 	if ((GetSovereign() == pPlayer) || (GetSovereign()->IsPlayerOwned()))
-		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::player);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::IFFType::player);
 	//Angered ships
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) 
 			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
-		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::angry);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::IFFType::angry);
 	//Assigned escorts (ex, fleet wingmates)
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) && pPlayer && IsEscorting(pPlayerShip))
-		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::escort);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::IFFType::escort);
 	//Enemies
 	else if (pPlayer && IsEnemy(*pPlayer))
-		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::enemy);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::IFFType::enemy);
 	//Friendlies
 	else if (pPlayer && IsFriend(*pPlayer))
-		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::friendly);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::IFFType::friendly);
 	//Neutrals (Anger more easily)
 	else if (pPlayer && IsNeutral(*pPlayer))
-		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::neutral);
+		rgbColor = pAccessibilitySettings->GetIFFColor(CAccessibilitySettings::IFFType::neutral);
 	//Fallback (magenta indicates error/uncategorized ship)
 	else if (GetCategory() == CSpaceObject::catShip)
 		rgbColor = CG32bitPixel(255, 80, 255);
@@ -6807,7 +6807,7 @@ void CSpaceObject::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const V
 
 	{
 	Dest.DrawDot(x, y, 
-			GetUniverse().GetAccessibilitySettings()->GetIFFColor(CAccessibilitySettings::projectile), 
+			GetUniverse().GetAccessibilitySettings()->GetIFFColor(CAccessibilitySettings::IFFType::projectile),
 			markerSmallRound);
 	}
 
