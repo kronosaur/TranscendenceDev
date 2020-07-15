@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 #include <math.h>
+#include <sstream>
 
 #define CLASS_ATTRIB						CONSTLIT("class")
 #define DAMAGE_ADJ_ATTRIB					CONSTLIT("damageAdj")
@@ -1733,7 +1734,7 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 	if (*pPos == '\0')
 		return rgbDefault;
 
-	//	If it starts with a # we expect an RGB DWORD
+	//	If it starts with a # we expect an RGB DWORD (ex, #ff00ff)
 
 	else if (*pPos == '#')
 		{
@@ -1741,6 +1742,17 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 		DWORD dwColor = strParseIntOfBase(pPos, 16, 0);
 		return CG32bitPixel((dwColor >> 16) & 0xFF, (dwColor >> 8) & 0xFF, dwColor & 0xFF);
 		}
+
+	// If it starts with an 0x we expect an RGB DWORD (ex, 0xFF00FF) - Caps safe
+
+	else if (*pPos == '0' && *(pPos + 1) == 'x')
+	{
+		std::stringstream hex_ss;
+		hex_ss << std::hex << sString;
+		DWORD dwColor;
+		hex_ss >> dwColor;
+		return CG32bitPixel((BYTE)(dwColor >> 16), (BYTE)(dwColor >> 8), (BYTE)dwColor);
+	}
 
 	//	Otherwise, we expect three comma-separated values
 
