@@ -82,7 +82,11 @@ class CSovereign : public CDesignType
 		CString GetText (MessageTypes iMsg);
 		bool IsEnemy (const CSovereign &Sovereign) const { return (m_bSelfRel || (&Sovereign != this)) && (GetDispositionTowards(&Sovereign) == dispEnemy); }
 		bool IsEnemy (CSovereign *pSovereign) const { return (m_bSelfRel || (pSovereign != this)) && (GetDispositionTowards(pSovereign) == dispEnemy); }
-		bool IsFriend (CSovereign *pSovereign) const { return (!m_bSelfRel && (pSovereign == this)) || (GetDispositionTowards(pSovereign) == dispFriend); }
+		bool IsFriend (CSovereign *pSovereign) const { return (GetDispositionTowards(pSovereign) == dispFriend); }
+		bool IsFriend (const CSovereign &Sovereign) const { return (GetDispositionTowards(&Sovereign) == dispFriend); }
+		bool IsNeutral (CSovereign *pSovereign) const { return (m_bSelfRel || (pSovereign != this)) && (GetDispositionTowards(pSovereign) == dispNeutral); }
+		bool IsNeutral (const CSovereign &Sovereign) const { return (m_bSelfRel || (&Sovereign != this)) && (GetDispositionTowards(&Sovereign) == dispNeutral); }
+		bool IsPlayerOwned (void);
 		bool IsPlayer (void) const { return (GetUNID() == g_PlayerSovereignUNID); }
 		void MessageFromObj (CSpaceObject *pSender, const CString &sText);
 		void OnObjDestroyedByPlayer (CSpaceObject *pObj);

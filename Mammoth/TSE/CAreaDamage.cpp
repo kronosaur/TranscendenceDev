@@ -332,19 +332,18 @@ void CAreaDamage::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Vi
 	{
 	if (m_pPainter)
 		{
-		int i;
 		Metric rRadius = m_pPainter->GetRadius(m_iTick);
 		int iRadius = mathRound(rRadius / g_KlicksPerPixel);
 		int iCount = Min(64, 3 * iRadius);
-
-		for (i = 0; i < iCount; i++)
+		CG32bitPixel rgbColor = GetUniverse().GetAccessibilitySettings().GetIFFColor(CAccessibilitySettings::IFFType::projectile);
+		for (int i = 0; i < iCount; i++)
 			{
 			CVector vPos = GetPos() + PolarToVector(mathRandom(0, 359), rRadius);
 			Trans.Transform(vPos, &x, &y);
 
-			int iColor = mathRandom(128, 255);
+			BYTE iAlpha = (BYTE)mathRandom(128, 255);
 			Dest.DrawDot(x, y, 
-					CG32bitPixel(iColor, iColor, 0), 
+					CG32bitPixel::Blend(0, rgbColor, iAlpha), 
 					markerSmallRound);
 			}
 		}

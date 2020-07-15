@@ -1115,7 +1115,13 @@ ALERROR CTranscendenceModel::Init (const CGameSettings &Settings)
 	m_bNoSound = Settings.GetBoolean(CGameSettings::noSound);
     m_bNoCollectionLoad = Settings.GetBoolean(CGameSettings::noCollectionLoad);
 	m_bForcePermadeath = Settings.GetBoolean(CGameSettings::forcePermadeath);
-
+	m_sAccessibilityColorPlayer = Settings.GetString(CGameSettings::colorIFFPlayer);
+	m_sAccessibilityColorEscort = Settings.GetString(CGameSettings::colorIFFEscort);
+	m_sAccessibilityColorFriendly = Settings.GetString(CGameSettings::colorIFFFriendly);
+	m_sAccessibilityColorNeutral = Settings.GetString(CGameSettings::colorIFFNeutral);
+	m_sAccessibilityColorEnemy = Settings.GetString(CGameSettings::colorIFFEnemy);
+	m_sAccessibilityColorAngry = Settings.GetString(CGameSettings::colorIFFAngry);
+	m_sAccessibilityColorProjectile = Settings.GetString(CGameSettings::colorIFFProjectile);
 	return NOERROR;
 	}
 
@@ -2502,6 +2508,17 @@ ALERROR CTranscendenceModel::StartGame (bool bNewGame)
 
 	if (m_bNoSound)
 		m_Universe.SetSound(false);
+
+	//	Set Accessibility Settings
+	m_Universe.InitAccessibilitySettings();
+	CAccessibilitySettings& cAccessibility = m_Universe.GetAccessibilitySettings();
+	cAccessibility.SetIFFColor(m_sAccessibilityColorAngry, CAccessibilitySettings::IFFType::angry);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorEscort, CAccessibilitySettings::IFFType::escort);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorEnemy, CAccessibilitySettings::IFFType::enemy);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorFriendly, CAccessibilitySettings::IFFType::friendly);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorNeutral, CAccessibilitySettings::IFFType::neutral);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorPlayer, CAccessibilitySettings::IFFType::player);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorProjectile, CAccessibilitySettings::IFFType::projectile);
 
 	//	Tell the controller that we're starting
 

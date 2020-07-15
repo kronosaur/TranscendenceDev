@@ -1439,7 +1439,7 @@ void CMissile::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 	{
 	if (!m_fDestroyOnAnimationDone)
 		Dest.DrawDot(x, y, 
-				CG32bitPixel(255, 255, 0), 
+				GetUniverse().GetAccessibilitySettings().GetIFFColor(CAccessibilitySettings::IFFType::projectile),
 				markerSmallRound);
 	}
 

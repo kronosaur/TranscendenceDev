@@ -253,6 +253,15 @@ class CGameSettings
 			musicVolume,					//	Music volume level
 			musicPath,						//	Path to music folder (may be NULL_STR)
 
+			//  Accessibility options
+			colorIFFPlayer,					//	Color of player & owned assets on minimap
+			colorIFFFriendly,				//	Color of friendly assets on minimap
+			colorIFFNeutral,				//	Color of neutral assets on minimap
+			colorIFFEnemy,					//	Color of enemy assets on minimap
+			colorIFFAngry,					//	Color of angered assets on minimap
+			colorIFFEscort,				//	Color of player's non-owned escorts on minimap
+			colorIFFProjectile,			//	Color of weapon projectiles on mimimap
+
 			//	Debug options
 			debugMode,						//	Program in debug mode
 			debugGame,						//	Game instance in debug mode
@@ -266,7 +275,7 @@ class CGameSettings
 			introSpoilers,					//	Show high-level ships in intro
 
 			//	Constants
-			OPTIONS_COUNT = 45,
+			OPTIONS_COUNT = 52,
 			};
 
 		CGameSettings (IExtraSettingsHandler *pExtra = NULL) : m_pExtra(pExtra) { }
