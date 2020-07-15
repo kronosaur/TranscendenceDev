@@ -1122,21 +1122,28 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
-			int y_adj = y + 1;
-			Fill(x - 2, y_adj, 5, 1, rgbColor);
-			SetPixel(x - 1, y_adj - 1, rgbColor);
-			SetPixel(x + 1, y_adj - 1, rgbColor);
-			SetPixel(x, y_adj - 2, rgbColor);
-			SetPixel(x - 3, y_adj, rgbFade1);
-			SetPixel(x + 3, y_adj, rgbFade1);
-			SetPixel(x, y_adj - 3, rgbFade1);
+			int y_adj = y + 2;
+			Fill(x - 3, y_adj, 7, 1, rgbColor);
+			SetPixel(x - 2, y_adj - 1, rgbColor);
+			SetPixel(x + 2, y_adj - 1, rgbColor);
+			SetPixel(x + 1, y_adj - 2, rgbColor);
+			SetPixel(x - 1, y_adj - 2, rgbColor);
+			SetPixel(x, y_adj - 3, rgbColor);
+			SetPixel(x - 4, y_adj, rgbFade1);
+			SetPixel(x + 4, y_adj, rgbFade1);
+			SetPixel(x + 1, y_adj - 3, rgbFade1);
+			SetPixel(x - 1, y_adj - 3, rgbFade1);
+			SetPixel(x, y_adj - 4, rgbFade1);
+			SetPixel(x - 2, y_adj - 2, rgbFade1);
+			SetPixel(x + 2, y_adj - 2, rgbFade1);
+			SetPixel(x - 3, y_adj - 1, rgbFade1);
+			SetPixel(x + 3, y_adj - 1, rgbFade1);
+			//Inner fade
 			SetPixel(x - 1, y_adj - 2, rgbFade1);
 			SetPixel(x + 1, y_adj - 2, rgbFade1);
 			SetPixel(x - 2, y_adj - 1, rgbFade1);
 			SetPixel(x + 2, y_adj - 1, rgbFade1);
-			SetPixel(x - 1, y_adj, rgbFade1);
-			SetPixel(x + 1, y_adj, rgbFade1);
-			SetPixel(x, y_adj - 1, rgbFade1);
+			SetPixel(x, y_adj - 3, rgbFade1);
 			break;
 			}
 		case markerMediumFilledTriangleUp:
@@ -1144,20 +1151,25 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
 			CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
-			int y_adj = y + 1;
-			Fill(x - 2, y_adj, 5, 1, rgbColor);
-			SetPixel(x - 1, y_adj - 1, rgbColor);
-			SetPixel(x + 1, y_adj - 1, rgbColor);
-			SetPixel(x, y_adj - 2, rgbColor);
-			SetPixel(x - 3, y_adj, rgbFade1);
-			SetPixel(x + 3, y_adj, rgbFade1);
-			SetPixel(x, y_adj - 3, rgbFade1);
-			SetPixel(x - 1, y_adj - 2, rgbFade1);
-			SetPixel(x + 1, y_adj - 2, rgbFade1);
-			SetPixel(x - 2, y_adj - 1, rgbFade1);
-			SetPixel(x + 2, y_adj - 1, rgbFade1);
-			SetPixel(x, y_adj - 1, rgbInner);
-			Fill(x - 1, y_adj, 3, 1, rgbInner);
+			int y_adj = y + 2;
+			Fill(x - 3, y_adj, 7, 1, rgbColor);
+			SetPixel(x - 2, y_adj - 1, rgbColor);
+			SetPixel(x + 2, y_adj - 1, rgbColor);
+			SetPixel(x + 1, y_adj - 2, rgbColor);
+			SetPixel(x - 1, y_adj - 2, rgbColor);
+			SetPixel(x, y_adj - 3, rgbColor);
+			SetPixel(x - 4, y_adj, rgbFade1);
+			SetPixel(x + 4, y_adj, rgbFade1);
+			SetPixel(x + 1, y_adj - 3, rgbFade1);
+			SetPixel(x - 1, y_adj - 3, rgbFade1);
+			SetPixel(x, y_adj - 4, rgbFade1);
+			SetPixel(x - 2, y_adj - 2, rgbFade1);
+			SetPixel(x + 2, y_adj - 2, rgbFade1);
+			SetPixel(x - 3, y_adj - 1, rgbFade1);
+			SetPixel(x + 3, y_adj - 1, rgbFade1);
+			SetPixel(x, y_adj - 2, rgbInner);
+			Fill(x - 1, y_adj - 1, 3, 1, rgbInner);
+			Fill(x - 2, y_adj, 5, 1, rgbInner);
 			break;
 			}
 		//Triangle Down
@@ -1179,21 +1191,28 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
-			int y_adj = y - 1;
-			Fill(x - 2, y_adj, 5, 1, rgbColor);
-			SetPixel(x - 1, y_adj + 1, rgbColor);
-			SetPixel(x + 1, y_adj + 1, rgbColor);
-			SetPixel(x, y_adj + 2, rgbColor);
-			SetPixel(x - 3, y_adj, rgbFade1);
-			SetPixel(x + 3, y_adj, rgbFade1);
-			SetPixel(x, y_adj + 3, rgbFade1);
+			int y_adj = y - 2;
+			Fill(x - 3, y_adj, 7, 1, rgbColor);
+			SetPixel(x - 2, y_adj + 1, rgbColor);
+			SetPixel(x + 2, y_adj + 1, rgbColor);
+			SetPixel(x + 1, y_adj + 2, rgbColor);
+			SetPixel(x - 1, y_adj + 2, rgbColor);
+			SetPixel(x, y_adj + 3, rgbColor);
+			SetPixel(x - 4, y_adj, rgbFade1);
+			SetPixel(x + 4, y_adj, rgbFade1);
+			SetPixel(x + 1, y_adj + 3, rgbFade1);
+			SetPixel(x - 1, y_adj + 3, rgbFade1);
+			SetPixel(x, y_adj + 4, rgbFade1);
+			SetPixel(x - 2, y_adj + 2, rgbFade1);
+			SetPixel(x + 2, y_adj + 2, rgbFade1);
+			SetPixel(x - 3, y_adj + 1, rgbFade1);
+			SetPixel(x + 3, y_adj + 1, rgbFade1);
+			//Inner fade
 			SetPixel(x - 1, y_adj + 2, rgbFade1);
 			SetPixel(x + 1, y_adj + 2, rgbFade1);
 			SetPixel(x - 2, y_adj + 1, rgbFade1);
 			SetPixel(x + 2, y_adj + 1, rgbFade1);
-			SetPixel(x - 1, y_adj, rgbFade1);
-			SetPixel(x + 1, y_adj, rgbFade1);
-			SetPixel(x, y_adj + 1, rgbFade1);
+			SetPixel(x, y_adj + 3, rgbFade1);
 			break;
 			}
 		case markerMediumFilledTriangleDown:
@@ -1201,20 +1220,25 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
 			CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
-			int y_adj = y - 1;
-			Fill(x - 2, y_adj, 5, 1, rgbColor);
-			SetPixel(x - 1, y_adj + 1, rgbColor);
-			SetPixel(x + 1, y_adj + 1, rgbColor);
-			SetPixel(x, y_adj + 2, rgbColor);
-			SetPixel(x - 3, y_adj, rgbFade1);
-			SetPixel(x + 3, y_adj, rgbFade1);
-			SetPixel(x, y_adj + 3, rgbFade1);
-			SetPixel(x - 1, y_adj + 2, rgbFade1);
-			SetPixel(x + 1, y_adj + 2, rgbFade1);
-			SetPixel(x - 2, y_adj + 1, rgbFade1);
-			SetPixel(x + 2, y_adj + 1, rgbFade1);
-			SetPixel(x, y_adj + 1, rgbInner);
-			Fill(x - 1, y_adj, 3, 1, rgbInner);
+			int y_adj = y - 2;
+			Fill(x - 3, y_adj, 7, 1, rgbColor);
+			SetPixel(x - 2, y_adj + 1, rgbColor);
+			SetPixel(x + 2, y_adj + 1, rgbColor);
+			SetPixel(x + 1, y_adj + 2, rgbColor);
+			SetPixel(x - 1, y_adj + 2, rgbColor);
+			SetPixel(x, y_adj + 3, rgbColor);
+			SetPixel(x - 4, y_adj, rgbFade1);
+			SetPixel(x + 4, y_adj, rgbFade1);
+			SetPixel(x + 1, y_adj + 3, rgbFade1);
+			SetPixel(x - 1, y_adj + 3, rgbFade1);
+			SetPixel(x, y_adj + 4, rgbFade1);
+			SetPixel(x - 2, y_adj + 2, rgbFade1);
+			SetPixel(x + 2, y_adj + 2, rgbFade1);
+			SetPixel(x - 3, y_adj + 1, rgbFade1);
+			SetPixel(x + 3, y_adj + 1, rgbFade1);
+			SetPixel(x, y_adj + 2, rgbInner);
+			Fill(x - 1, y_adj + 1, 3, 1, rgbInner);
+			Fill(x - 2, y_adj, 5, 1, rgbInner);
 			break;
 			}
 		//Cross
