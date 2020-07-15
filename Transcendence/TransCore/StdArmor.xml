@@ -1288,19 +1288,19 @@
 
 	<ItemType UNID="&itP210HexphaseArmor;"
 			name=				"[segment(s) of ]P450 Hexphase armor"
-			attributes=			"commonwealth, hexphase, military, minorItem, pacificDefense"
+			attributes=			"commonwealth, hexphase, military, minorItem, pacificDefense"       
 			  
 			level=				"8"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
 
-			value=				"10000"
+			value=				"10000"      
 			mass=				"6000"
 			  
 			description=		"Hexphase armor is used extensively by capital ships of the Commonwealth Fleet. P450-grade armor can withstand 450 units of thermonuclear damage."
 			>
 
-		<Image imageID="&rsItems8;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems8;" imageX="0" imageY="0" imageWidth="96" imageHeight   ="96"/>
 
 		<Armor
 				hitPoints=	"360"
