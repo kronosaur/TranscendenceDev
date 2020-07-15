@@ -1748,6 +1748,7 @@ class CAscendedObjectList
 #include "TSEMapPainters.h"
 #include "TSETransLispUtil.h"
 
+#include "TSEAccessibilitySettings.h"
 #include "TSEUniverse.h"
 
 #include "TSESpaceObjectsEnum.h"

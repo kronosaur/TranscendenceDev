@@ -372,7 +372,8 @@ class CUniverse
 		void FireOnGlobalUniverseSave (void) { m_Design.FireOnGlobalUniverseSave(); }
 		void FlushStarSystem (CTopologyNode *pTopology);
 		void GenerateGameStats (CGameStats &Stats);
-		CAccessibilitySettings& GetAccessibilitySettings(void) { return m_AccessabilitySettings; }
+		const CAccessibilitySettings &GetAccessibilitySettings (void) const { return m_AccessabilitySettings; }
+		CAccessibilitySettings &GetAccessibilitySettings (void) { return m_AccessabilitySettings; }
 		void GetAllAdventures (TArray<CExtension *> *retList) { CString sError; m_Extensions.ComputeAvailableAdventures((m_bDebugMode ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retList, &sError); }
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const;
 		CAscendedObjectList &GetAscendedObjects (void) { return m_AscendedObjects; }
@@ -421,7 +422,7 @@ class CUniverse
 		CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
 		bool InDebugMode (void) { return m_bDebugMode; }
 		void InitEntityResolver (CExtension *pExtension, CEntityResolverList *retResolver) { m_Extensions.InitEntityResolver(pExtension, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retResolver); }
-		void InitAccessibilitySettings(void) { m_AccessabilitySettings = CAccessibilitySettings(); }
+		void InitAccessibilitySettings (void) { m_AccessabilitySettings = CAccessibilitySettings(); }
 		bool InResurrectMode (void) { return m_bResurrectMode; }
 		bool IsGlobalResurrectPending (CDesignType **retpType);
 		bool IsRegistered (void) { return m_bRegistered; }

@@ -502,7 +502,8 @@ bool CSovereign::IsPlayerOwned (void)
 
 //  IsPlayerOwned
 //
-//  Determine if this sovereign inherits from &svPlayer;
+//  Determine if this sovereign inherits from svPlayer, but is NOT actually the
+//	player sovereign.
 
 	{
 	CSovereign *pParent = CSovereign::AsType(GetInheritFrom());
