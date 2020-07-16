@@ -5368,8 +5368,8 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 		else if ((pPlayerShip = GetUniverse().GetPlayerShip())
 				&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
 			{
-			Dest.DrawDot(x + 1, y + 1, 0, markerMediumTriangleDown);
-			Dest.DrawDot(x, y, rgbColor, markerMediumFilledTriangleDown);
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
 			}
 		else if (pPlayer && IsFriend(*pPlayer))
 			{
@@ -5378,13 +5378,13 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 			}
 		else if (pPlayer && IsNeutral(*pPlayer))
 			{
-			Dest.DrawDot(x + 1, y + 1, 0, markerMediumDiamond);
-			Dest.DrawDot(x, y, rgbColor, markerMediumFilledDiamond);
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallDiamond);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledDiamond);
 			}
 		else if (pPlayer && IsEnemy(*pPlayer))
 			{
-			Dest.DrawDot(x + 1, y + 1, 0, markerMediumTriangleUp);
-			Dest.DrawDot(x, y, rgbColor, markerMediumFilledTriangleUp);
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
 			}
 		else
 			{
@@ -6341,18 +6341,18 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 	CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
 	CSpaceObject* pPlayerShip;
 	if (IsPlayer() || GetSovereign()->IsPlayerOwned())
-		Dest.DrawDot(x, y, rgbColor, markerSmallRound);
+		Dest.DrawDot(x, y, rgbColor, markerRoundDot);
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip())
 			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
-		Dest.DrawDot(x, y, rgbColor, markerSmallTriangleDown);
+		Dest.DrawDot(x, y, rgbColor, markerTriangleDownDot);
 	else if (pPlayer && IsFriend(*pPlayer))
-		Dest.DrawDot(x, y, rgbColor, markerTinySquare);
+		Dest.DrawDot(x, y, rgbColor, markerSquareDot);
 	else if (pPlayer && IsNeutral(*pPlayer))
-		Dest.DrawDot(x, y, rgbColor, markerSmallDiamond);
+		Dest.DrawDot(x, y, rgbColor, markerDiamondDot);
 	else if (pPlayer && IsEnemy(*pPlayer))
-		Dest.DrawDot(x, y, rgbColor, markerSmallTriangleUp);
+		Dest.DrawDot(x, y, rgbColor, markerTriangleUpDot);
 	else
-		Dest.DrawDot(x, y, rgbColor, markerTinySquare);
+		Dest.DrawDot(x, y, rgbColor, markerSquareDot);
 
 	//	Identified
 

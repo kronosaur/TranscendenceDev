@@ -6825,7 +6825,7 @@ void CSpaceObject::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const V
 	{
 	Dest.DrawDot(x, y, 
 			GetUniverse().GetAccessibilitySettings().GetIFFColor(CAccessibilitySettings::IFFType::projectile),
-			markerSmallRound);
+			markerRoundDot);
 	}
 
 void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)

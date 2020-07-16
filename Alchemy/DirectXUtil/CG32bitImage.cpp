@@ -863,14 +863,15 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 	{
 	switch (iMarker)
 		{
-		//Pixel
+		//	Dots
+
 		case markerPixel:
 			{
 			SetPixel(x, y, rgbColor);
 			break;
 			}
-		//Circular
-		case markerSmallRound:
+
+		case markerRoundDot:
 			{
 			int xStart, xEnd, yStart, yEnd;
 
@@ -905,6 +906,9 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 
 			break;
 			}
+
+		//	Circles
+
 		case markerSmallCircle:
 			{
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
@@ -930,12 +934,14 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			SetPixel(x - 2, y + 1, rgbFade1);
 			break;
 			}
+
 		case markerSmallFilledCircle:
 			{
 			CG32bitPixel rgbInsideColor = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
-			DrawDot(x, y, rgbInsideColor, markerSmallRound);
+			DrawDot(x, y, rgbInsideColor, markerRoundDot);
 			DrawDot(x, y, rgbColor, markerSmallCircle);
 			}
+
 		case markerTinyCircle:
 			{
 			SetPixel(x - 1, y, rgbColor);
@@ -949,13 +955,16 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			SetPixel(x + 1, y + 2, rgbColor);
 			break;
 			}
-		//Square
-		case markerTinySquare:
+
+		//	Squares
+
+		case markerSquareDot:
 			{
 			int radius = 1;
 			Fill(x - radius, y - radius, 2 * radius + 1, 2 * radius + 1, rgbColor);
 			break;
 			}
+
 		case markerSmallFilledSquare:
 			{
 			int xLeft = x - SMALL_SQUARE_SIZE;
@@ -966,6 +975,7 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			Fill(xLeft + 1, yTop + 1, 2 * SMALL_SQUARE_SIZE - 1, 2 * SMALL_SQUARE_SIZE - 1, rgbInsideColor);
 			break;
 			}
+
 		case markerSmallSquare:
 			{
 			int yTop = y - SMALL_SQUARE_SIZE;
@@ -1027,8 +1037,10 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 
 			break;
 			}
-		//Square 45d
-		case markerSmallDiamond:
+
+		//	Diamonds
+
+		case markerDiamondDot:
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
@@ -1044,7 +1056,8 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			SetPixel(x, y - 2, rgbFade1);
 			break;
 			}
-		case markerMediumDiamond:
+
+		case markerSmallDiamond:
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
@@ -1074,7 +1087,8 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			SetPixel(x, y - 1, rgbFade1);
 			break;
 			}
-		case markerMediumFilledDiamond:
+
+		case markerSmallFilledDiamond:
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
@@ -1103,8 +1117,10 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			Fill(x - 1, y, 3, 1, rgbInner);
 			break;
 			}
-		//Triangle Up
-		case markerSmallTriangleUp:
+
+		//	Up Triangles
+
+		case markerTriangleUpDot:
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
@@ -1118,7 +1134,8 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			SetPixel(x, y_adj - 2, rgbFade1);
 			break;
 			}
-		case markerMediumTriangleUp:
+
+		case markerSmallTriangleUp:
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
@@ -1146,7 +1163,8 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			SetPixel(x, y_adj - 3, rgbFade1);
 			break;
 			}
-		case markerMediumFilledTriangleUp:
+
+		case markerSmallFilledTriangleUp:
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
@@ -1172,8 +1190,10 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			Fill(x - 2, y_adj, 5, 1, rgbInner);
 			break;
 			}
-		//Triangle Down
-		case markerSmallTriangleDown:
+
+		//	Down Triangles
+
+		case markerTriangleDownDot:
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
@@ -1187,7 +1207,8 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			SetPixel(x, y_adj + 2, rgbFade1);
 			break;
 			}
-		case markerMediumTriangleDown:
+
+		case markerSmallTriangleDown:
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
@@ -1215,7 +1236,8 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			SetPixel(x, y_adj + 3, rgbFade1);
 			break;
 			}
-		case markerMediumFilledTriangleDown:
+
+		case markerSmallFilledTriangleDown:
 			{
 			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
 			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
@@ -1241,7 +1263,9 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			Fill(x - 2, y_adj, 5, 1, rgbInner);
 			break;
 			}
-		//Cross
+
+		//	Crosses
+
 		case markerSmallCross:
 			{
 			int yTop = y - SMALL_SQUARE_SIZE;

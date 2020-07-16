@@ -15,25 +15,30 @@ struct SMarkerDesc
 static constexpr SMarkerDesc MARKERS[] = 
 		{
 			{	markerPixel,					"Pixel",						"#ff5050"	},
-			{	markerSmallRound,				"SmallRound",					"#ff5050"	},
-			{	markerSmallSquare,				"SmallSquare",					"#ff5050"	},
+			{	markerRoundDot,					"RoundDot",						"#ff5050"	},
+			{	markerSquareDot,				"SquareDot",					"#ff5050"	},
+			{	markerDiamondDot,				"DiamondDot",					"#ff5050"	},
+			{	markerTriangleUpDot,			"TriangleUpDot",				"#ff5050"	},
+			{	markerTriangleDownDot,			"TriangleDownDot",				"#ff5050"	},
+
 			{	markerSmallCross,				"SmallCross",					"#ff5050"	},
 			{	markerMediumCross,				"MediumCross",					"#ff5050"	},
-			{	markerSmallFilledSquare,		"SmallFilledSquare",			"#ff5050"	},
-			{	markerSmallCircle,				"SmallCircle",					"#ff5050"	},
-			{	markerTinyCircle,				"TinyCircle",					"#ff5050"	},
-			{	markerTinySquare,				"TinySquare",					"#ff5050"	},
-			{	markerSmallTriangleUp,			"SmallTriangleUp",				"#ff5050"	},
 
-			{	markerMediumTriangleUp,			"MediumTriangleUp",				"#ff5050"	},
-			{	markerMediumFilledTriangleUp,	"MediumFilledTriangleUp",		"#ff5050"	},
-			{	markerSmallTriangleDown,		"SmallTriangleDown",			"#ff5050"	},
-			{	markerMediumTriangleDown,		"MediumTriangleDown",			"#ff5050"	},
-			{	markerMediumFilledTriangleDown,	"MediumFilledTriangleDown",		"#ff5050"	},
+			{	markerSmallSquare,				"SmallSquare",					"#ff5050"	},
+			{	markerSmallFilledSquare,		"SmallFilledSquare",			"#ff5050"	},
+
+			{	markerTinyCircle,				"TinyCircle",					"#ff5050"	},
+			{	markerSmallCircle,				"SmallCircle",					"#ff5050"	},
 			{	markerSmallFilledCircle,		"SmallFilledCircle",			"#ff5050"	},
+
+			{	markerSmallTriangleUp,			"SmallTriangleUp",				"#ff5050"	},
+			{	markerSmallFilledTriangleUp,	"SmallFilledTriangleUp",		"#ff5050"	},
+
+			{	markerSmallTriangleDown,		"SmallTriangleDown",			"#ff5050"	},
+			{	markerSmallFilledTriangleDown,	"SmallFilledTriangleDown",		"#ff5050"	},
+
+			{	markerSmallFilledDiamond,		"SmallFilledDiamond",			"#ff5050"	},
 			{	markerSmallDiamond,				"SmallDiamond",					"#ff5050"	},
-			{	markerMediumFilledDiamond,		"MediumFilledDiamon",			"#ff5050"	},
-			{	markerMediumDiamond,			"MediumDiamond",				"#ff5050"	},
 		};
 
 static constexpr int MARKER_COUNT = sizeof(MARKERS) / sizeof(MARKERS[0]);

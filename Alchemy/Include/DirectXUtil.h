@@ -77,29 +77,30 @@ enum GradientDirections
 enum MarkerTypes
 	{
 	markerPixel,
-	markerSmallRound,
-	markerSmallSquare,
+	markerRoundDot,
+	markerSquareDot,
+	markerDiamondDot,
+	markerTriangleUpDot,
+	markerTriangleDownDot,
+
 	markerSmallCross,
-	markerMediumCross, //Objectives and Stargates
+	markerMediumCross,
+
+	markerSmallSquare,
 	markerSmallFilledSquare,
-	markerSmallCircle, //wrecks
+
 	markerTinyCircle,
-	//Square: Friendly (station type: markerSmallFilledSquare, dead station type: markerSmallSquare)
-	markerTinySquare,
-	//Triangle up: Enemies
-	markerSmallTriangleUp,
-	markerMediumTriangleUp,
-	markerMediumFilledTriangleUp,
-	//Triangle down: Angered
-	markerSmallTriangleDown,
-	markerMediumTriangleDown,
-	markerMediumFilledTriangleDown,
-	//Circle: Owned (small type: markerSmallRound)
+	markerSmallCircle,
 	markerSmallFilledCircle,
-	//Diamond: Neutral
+
+	markerSmallTriangleUp,
+	markerSmallFilledTriangleUp,
+
+	markerSmallTriangleDown,
+	markerSmallFilledTriangleDown,
+
 	markerSmallDiamond,
-	markerMediumFilledDiamond,
-	markerMediumDiamond,
+	markerSmallFilledDiamond,
 	};
 
 enum SurfaceTypes

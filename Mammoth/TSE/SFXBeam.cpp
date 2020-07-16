@@ -495,7 +495,7 @@ void CBeamEffectCreator::DrawBeamParticle (CG32bitImage &Dest, SLineDesc &Line, 
 		int y = ((int)yPaint);
 
 		if (mathRandom(1,3) == 1)
-			Dest.DrawDot(x, y, m_rgbPrimaryColor, markerSmallRound);
+			Dest.DrawDot(x, y, m_rgbPrimaryColor, markerRoundDot);
 		else
 			{
 			for (j = 0; j < m_iIntensity; j++)
