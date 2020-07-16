@@ -6,9 +6,6 @@
 #include "PreComp.h"
 #include "PixelMacros.h"
 
-#define SMALL_SQUARE_SIZE					2
-#define MEDIUM_SQUARE_SIZE					4
-
 CG32bitImage CG32bitImage::m_NullImage;
 
 CG32bitImage::CG32bitImage (void)
@@ -861,6 +858,10 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 //	Draws a marker
 
 	{
+	constexpr int SMALL_SQUARE_SIZE = 2;
+	constexpr int MEDIUM_SQUARE_SIZE = 4;
+	constexpr int SMALL_DIAMOND_SIZE = 4;
+
 	switch (iMarker)
 		{
 		//	Dots
@@ -1059,62 +1060,123 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 
 		case markerSmallDiamond:
 			{
-			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
-			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
-			SetPixel(x - 2, y, rgbColor);
-			SetPixel(x + 2, y, rgbColor);
-			SetPixel(x - 1, y + 1, rgbColor);
-			SetPixel(x - 1, y - 1, rgbColor);
-			SetPixel(x + 1, y + 1, rgbColor);
-			SetPixel(x + 1, y - 1, rgbColor);
-			SetPixel(x, y + 2, rgbColor);
-			SetPixel(x, y - 2, rgbColor);
-			SetPixel(x - 3, y, rgbFade1);
-			SetPixel(x + 3, y, rgbFade1);
-			SetPixel(x, y + 3, rgbFade1);
-			SetPixel(x, y - 3, rgbFade1);
-			SetPixel(x - 1, y + 2, rgbFade1);
-			SetPixel(x - 1, y - 2, rgbFade1);
-			SetPixel(x + 1, y + 2, rgbFade1);
-			SetPixel(x + 1, y - 2, rgbFade1);
-			SetPixel(x - 2, y + 1, rgbFade1);
-			SetPixel(x - 2, y - 1, rgbFade1);
-			SetPixel(x + 2, y + 1, rgbFade1);
-			SetPixel(x + 2, y - 1, rgbFade1);
-			SetPixel(x - 1, y, rgbFade1);
-			SetPixel(x + 1, y, rgbFade1);
-			SetPixel(x, y + 1, rgbFade1);
-			SetPixel(x, y - 1, rgbFade1);
+			const BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			const CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+
+			const int yTop = y - SMALL_DIAMOND_SIZE;
+			const int yBottom = y + SMALL_DIAMOND_SIZE;
+
+			int xLeft = x;
+			int xRight = x;
+
+			for (int yLine = yTop; yLine <= yBottom; yLine++)
+				{
+				//	Only paint lines inside the clip region
+
+				if (yLine >= m_rcClip.top && yLine < m_rcClip.bottom)
+					{
+					CG32bitPixel* pPosLeft = GetPixelPos(xLeft, yLine);
+					CG32bitPixel* pPosRight = GetPixelPos(xRight, yLine);
+
+					//	Paint the edge (symmetrically)
+
+					if (xLeft >= m_rcClip.left && xLeft < m_rcClip.right)
+						*pPosLeft = rgbFade1;
+
+					if (xLeft != xRight && xRight >= m_rcClip.left && xRight < m_rcClip.right)
+						*pPosRight = rgbFade1;
+
+					//	Paint the line
+
+					if (xLeft != xRight && xLeft + 1 >= m_rcClip.left && xLeft + 1 < m_rcClip.right)
+						*(pPosLeft + 1) = rgbColor;
+
+					if (xRight - 1 > x && xRight - 1 >= m_rcClip.left && xRight - 1 < m_rcClip.right)
+						*(pPosRight - 1) = rgbColor;
+					}
+
+				//	Advance metrics
+
+				if (yLine >= y)
+					{
+					xLeft++;
+					xRight--;
+					}
+				else
+					{
+					xLeft--;
+					xRight++;
+					}
+				}
+
 			break;
 			}
 
 		case markerSmallFilledDiamond:
 			{
-			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
-			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
-			CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
-			SetPixel(x - 2, y, rgbColor);
-			SetPixel(x + 2, y, rgbColor);
-			SetPixel(x - 1, y + 1, rgbColor);
-			SetPixel(x - 1, y - 1, rgbColor);
-			SetPixel(x + 1, y + 1, rgbColor);
-			SetPixel(x + 1, y - 1, rgbColor);
-			SetPixel(x, y + 2, rgbColor);
-			SetPixel(x, y - 2, rgbColor);
-			SetPixel(x - 3, y, rgbFade1);
-			SetPixel(x + 3, y, rgbFade1);
-			SetPixel(x, y + 3, rgbFade1);
-			SetPixel(x, y - 3, rgbFade1);
-			SetPixel(x - 1, y + 2, rgbFade1);
-			SetPixel(x - 1, y - 2, rgbFade1);
-			SetPixel(x + 1, y + 2, rgbFade1);
-			SetPixel(x + 1, y - 2, rgbFade1);
-			SetPixel(x - 2, y + 1, rgbFade1);
-			SetPixel(x - 2, y - 1, rgbFade1);
-			SetPixel(x + 2, y + 1, rgbFade1);
-			SetPixel(x + 2, y - 1, rgbFade1);
-			Fill(x, y - 1, 1, 3, rgbInner);
-			Fill(x - 1, y, 3, 1, rgbInner);
+			const BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			const CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			const CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
+
+			const int yTop = y - SMALL_DIAMOND_SIZE;
+			const int yBottom = y + SMALL_DIAMOND_SIZE;
+
+			int xLeft = x;
+			int xRight = x;
+
+			for (int yLine = yTop; yLine <= yBottom; yLine++)
+				{
+				//	Only paint lines inside the clip region
+
+				if (yLine >= m_rcClip.top && yLine < m_rcClip.bottom)
+					{
+					CG32bitPixel* pPosLeft = GetPixelPos(xLeft, yLine);
+					CG32bitPixel* pPosRight = GetPixelPos(xRight, yLine);
+
+					//	Paint the edge (symmetrically)
+
+					if (xLeft >= m_rcClip.left && xLeft < m_rcClip.right)
+						*pPosLeft = rgbFade1;
+
+					if (xLeft != xRight && xRight >= m_rcClip.left && xRight < m_rcClip.right)
+						*pPosRight = rgbFade1;
+
+					//	Paint the line
+
+					if (xLeft != xRight && xLeft + 1 >= m_rcClip.left && xLeft + 1 < m_rcClip.right)
+						*(pPosLeft + 1) = rgbColor;
+
+					if (xRight - 1 > x && xRight - 1 >= m_rcClip.left && xRight - 1 < m_rcClip.right)
+						*(pPosRight - 1) = rgbColor;
+
+					//	Paint fill
+
+					int xFillStart = Max(xLeft + 2, (int)m_rcClip.left);
+					int xFillEnd = Min((int)m_rcClip.right, xRight - 1);
+					if (xFillStart < xFillEnd)
+						{
+						CG32bitPixel* pFill = GetPixelPos(xFillStart, yLine);
+						CG32bitPixel* pFillEnd = GetPixelPos(xFillEnd, yLine);
+
+						while (pFill < pFillEnd)
+							*pFill++ = rgbInner;
+						}
+					}
+
+				//	Advance metrics
+
+				if (yLine >= y)
+					{
+					xLeft++;
+					xRight--;
+					}
+				else
+					{
+					xLeft--;
+					xRight++;
+					}
+				}
+
 			break;
 			}
 
