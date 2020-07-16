@@ -5368,8 +5368,8 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 		else if ((pPlayerShip = GetUniverse().GetPlayerShip())
 				&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
 			{
-			Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
-			Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
 			}
 		else if (pPlayer && IsFriend(*pPlayer))
 			{
@@ -5383,8 +5383,8 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 			}
 		else if (pPlayer && IsEnemy(*pPlayer))
 			{
-			Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
-			Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
 			}
 		else
 			{
@@ -6344,13 +6344,13 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 		Dest.DrawDot(x, y, rgbColor, markerRoundDot);
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip())
 			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
-		Dest.DrawDot(x, y, rgbColor, markerTriangleDownDot);
+		Dest.DrawDot(x, y, rgbColor, markerTriangleUpDot);
 	else if (pPlayer && IsFriend(*pPlayer))
 		Dest.DrawDot(x, y, rgbColor, markerSquareDot);
 	else if (pPlayer && IsNeutral(*pPlayer))
 		Dest.DrawDot(x, y, rgbColor, markerDiamondDot);
 	else if (pPlayer && IsEnemy(*pPlayer))
-		Dest.DrawDot(x, y, rgbColor, markerTriangleUpDot);
+		Dest.DrawDot(x, y, rgbColor, markerTriangleDownDot);
 	else
 		Dest.DrawDot(x, y, rgbColor, markerSquareDot);
 

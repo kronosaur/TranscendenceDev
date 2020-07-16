@@ -4396,7 +4396,7 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 	//	Dim the color if it is a wreck
 
 	if (IsWreck() || IsAbandoned())
-		rgbColor = CG32bitPixel::Blend(0, rgbColor, (BYTE)128);
+		rgbColor = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
 
 	return rgbColor;
 	}

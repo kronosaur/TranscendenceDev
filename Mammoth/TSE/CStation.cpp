@@ -4638,10 +4638,10 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 					Dest.DrawDot(x, y, rgbColor, markerSmallFilledCircle);
 					}
 				else if ((pPlayerShip = GetUniverse().GetPlayerShip())
-					&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+						&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
 					{
-					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
-					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
 					}
 				else if (pPlayer && IsFriend(*pPlayer))
 					{
@@ -4655,8 +4655,8 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 					}
 				else if (pPlayer && IsEnemy(*pPlayer))
 					{
-					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
-					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
 					}
 				else
 					{
@@ -4668,6 +4668,7 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 				{
 				if (m_fExplored)
 					rgbColor = CG32bitPixel::Blend(CG32bitPixel(128, 128, 128), rgbColor, (BYTE)128);
+
 				CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
 				CSpaceObject* pPlayerShip;
 				if (IsPlayer() || GetSovereign()->IsPlayerOwned())
@@ -4676,10 +4677,10 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 					Dest.DrawDot(x, y, rgbColor, markerSmallCircle);
 					}
 				else if ((pPlayerShip = GetUniverse().GetPlayerShip())
-					&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+						&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
 					{
-					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
-					Dest.DrawDot(x, y, rgbColor, markerSmallTriangleDown);
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
+					Dest.DrawDot(x, y, rgbColor, markerSmallTriangleUp);
 					}
 				else if (pPlayer && IsFriend(*pPlayer))
 					{
@@ -4693,17 +4694,19 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 					}
 				else if (pPlayer && IsEnemy(*pPlayer))
 					{
-					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
-					Dest.DrawDot(x, y, rgbColor, markerSmallTriangleUp);
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
+					Dest.DrawDot(x, y, rgbColor, markerSmallTriangleDown);
 					}
 				else
 					{
 					Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
 					Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
 					}
-				//mark if not yet docked with
-				if (!m_fExplored)
-					Dest.DrawDot(x, y, rgbColor, markerSmallCross);
+
+				//	mark if not yet docked with
+
+				//if (!m_fExplored)
+				//	Dest.DrawDot(x, y, rgbColor, markerSmallCross);
 				}
 			else
 				{
@@ -4715,10 +4718,10 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 					Dest.DrawDot(x, y, rgbColor, markerSmallFilledCircle);
 					}
 				else if ((pPlayerShip = GetUniverse().GetPlayerShip())
-					&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+						&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
 					{
-					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
-					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
 					}
 				else if (pPlayer && IsFriend(*pPlayer))
 					{
@@ -4732,8 +4735,8 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 					}
 				else if (pPlayer && IsEnemy(*pPlayer))
 					{
-					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
-					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
 					}
 				else
 					{
@@ -4753,25 +4756,25 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 				{
 				if (m_fExplored)
 					rgbColor = CG32bitPixel::Blend(CG32bitPixel(128, 128, 128), rgbColor, (BYTE)128);
-				else
-					Dest.DrawDot(x, y, rgbColor, markerSmallCross);
+				//else
+				//	Dest.DrawDot(x, y, rgbColor, markerSmallCross);
 				}
 
 			//	Draw icon
 
 			if (IsPlayer() || GetSovereign()->IsPlayerOwned())
-				Dest.DrawDot(x, y, rgbColor, markerRoundDot);
+				Dest.DrawDot(x, y, rgbColor, markerSmallCircle);
 			else if ((pPlayerShip = GetUniverse().GetPlayerShip())
 					&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
-				Dest.DrawDot(x, y, rgbColor, markerTriangleDownDot);
+				Dest.DrawDot(x, y, rgbColor, markerSmallTriangleUp);
 			else if (pPlayer && IsFriend(*pPlayer))
-				Dest.DrawDot(x, y, rgbColor, markerSquareDot);
+				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
 			else if (pPlayer && IsNeutral(*pPlayer))
-				Dest.DrawDot(x, y, rgbColor, markerDiamondDot);
+				Dest.DrawDot(x, y, rgbColor, markerSmallDiamond);
 			else if (pPlayer && IsEnemy(*pPlayer))
-				Dest.DrawDot(x, y, rgbColor, markerTriangleUpDot);
+				Dest.DrawDot(x, y, rgbColor, markerSmallTriangleDown);
 			else
-				Dest.DrawDot(x, y, rgbColor, markerSquareDot);
+				Dest.DrawDot(x, y, rgbColor, markerSmallCircle);
 			}
 		}
 
