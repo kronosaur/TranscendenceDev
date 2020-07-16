@@ -2566,6 +2566,46 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 	m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
 	}
 
+bool CUniverse::SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError)
+
+//	SetDebugProperty
+//
+//	Sets a debug property.
+
+	{
+#ifdef DEBUG
+	if (strEquals(sProperty, CONSTLIT("hudColorPlayer")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::player);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorEscort")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::escort);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorFriendly")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::friendly);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorNeutral")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::neutral);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorEnemy")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::enemy);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorAngry")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::angry);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorProjectile")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::projectile);
+
+	else
+		return m_DebugOptions.SetProperty(sProperty, pValue, retsError);
+
+	return true;
+#else
+
+	return m_DebugOptions.SetProperty(sProperty, pValue, retsError);
+
+#endif
+	}
+
 bool CUniverse::SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData)
 
 //	SetExtensionData

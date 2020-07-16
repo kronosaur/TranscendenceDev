@@ -22,6 +22,7 @@
 #define ATTRIBUTE_LIST_SWITCH				CONSTLIT("attributelist")
 #define DEBUG_SWITCH						CONSTLIT("debug")
 #define DEBUG_CREATE_SWITCH					CONSTLIT("debugCreate")
+#define DEBUG_MARKERS_SWITCH				CONSTLIT("debugMarkers")
 #define DECOMPILE_SWITCH					CONSTLIT("decompile")
 #define DIAGNOSTICS_SWITCH					CONSTLIT("diagnostics")
 #define EFFECT_EXPLORER_SWITCH				CONSTLIT("effectExplorer")
@@ -218,6 +219,11 @@ void AlchemyMain (CXMLElement *pCmdLine)
 			|| pCmdLine->GetAttributeBool(H_SWITCH))
 		{
 		ShowHelp(pCmdLine);
+		return;
+		}
+	else if (pCmdLine->GetAttributeBool(DEBUG_MARKERS_SWITCH))
+		{
+		DebugMarkers(pCmdLine);
 		return;
 		}
 
