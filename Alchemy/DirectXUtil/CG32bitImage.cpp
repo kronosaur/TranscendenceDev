@@ -861,6 +861,7 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 	constexpr int SMALL_SQUARE_SIZE = 2;
 	constexpr int MEDIUM_SQUARE_SIZE = 4;
 	constexpr int SMALL_DIAMOND_SIZE = 4;
+	constexpr int SMALL_TRIANGLE_SIZE = 4;
 
 	switch (iMarker)
 		{
@@ -1199,57 +1200,137 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 
 		case markerSmallTriangleUp:
 			{
-			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
-			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
-			int y_adj = y + 2;
-			Fill(x - 3, y_adj, 7, 1, rgbColor);
-			SetPixel(x - 2, y_adj - 1, rgbColor);
-			SetPixel(x + 2, y_adj - 1, rgbColor);
-			SetPixel(x + 1, y_adj - 2, rgbColor);
-			SetPixel(x - 1, y_adj - 2, rgbColor);
-			SetPixel(x, y_adj - 3, rgbColor);
-			SetPixel(x - 4, y_adj, rgbFade1);
-			SetPixel(x + 4, y_adj, rgbFade1);
-			SetPixel(x + 1, y_adj - 3, rgbFade1);
-			SetPixel(x - 1, y_adj - 3, rgbFade1);
-			SetPixel(x, y_adj - 4, rgbFade1);
-			SetPixel(x - 2, y_adj - 2, rgbFade1);
-			SetPixel(x + 2, y_adj - 2, rgbFade1);
-			SetPixel(x - 3, y_adj - 1, rgbFade1);
-			SetPixel(x + 3, y_adj - 1, rgbFade1);
-			//Inner fade
-			SetPixel(x - 1, y_adj - 2, rgbFade1);
-			SetPixel(x + 1, y_adj - 2, rgbFade1);
-			SetPixel(x - 2, y_adj - 1, rgbFade1);
-			SetPixel(x + 2, y_adj - 1, rgbFade1);
-			SetPixel(x, y_adj - 3, rgbFade1);
+			const BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			const CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+
+			const int SLOPE = 3;
+			const int yPoint = y - SMALL_TRIANGLE_SIZE;
+			const int yBase = y + (SMALL_TRIANGLE_SIZE / 2);
+
+			//	Paint from the point towards the base
+
+			int xLeft = x;
+			int xRight = x;
+			int iSlope = 0;
+
+			for (int yLine = yPoint; yLine <= yBase; yLine++)
+				{
+				if (yLine >= m_rcClip.top && yLine < m_rcClip.bottom)
+					{
+					CG32bitPixel* pPosLeft = GetPixelPos(xLeft, yLine);
+					CG32bitPixel* pPosRight = GetPixelPos(xRight, yLine);
+
+					//	Paint edge
+
+					if (iSlope != SLOPE - 1)
+						{
+						if (xLeft >= m_rcClip.left && xLeft < m_rcClip.right)
+							*pPosLeft = rgbFade1;
+
+						if (xRight != xLeft && xRight >= m_rcClip.left && xRight < m_rcClip.right)
+							*pPosRight = rgbFade1;
+						}
+
+					//	Paint line
+
+					if (xLeft != x)
+						{
+						if (xLeft + 1 >= m_rcClip.left && xLeft + 1 < m_rcClip.right)
+							*(pPosLeft + 1) = rgbColor;
+
+						if (xRight - 1 > x && xRight - 1 >= m_rcClip.left && xRight - 1 < m_rcClip.right)
+							*(pPosRight - 1) = rgbColor;
+						}
+
+					//	Base line
+
+					if (yLine == yBase)
+						{
+						FillLine(xLeft + 2, yLine, xRight - xLeft - 3, rgbColor);
+						}
+					}
+
+				//	Advance
+
+				iSlope = (iSlope + 1) % SLOPE;
+				if (iSlope != 0)
+					{
+					xLeft--;
+					xRight++;
+					}
+				}
+
 			break;
 			}
 
 		case markerSmallFilledTriangleUp:
 			{
-			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
-			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
-			CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
-			int y_adj = y + 2;
-			Fill(x - 3, y_adj, 7, 1, rgbColor);
-			SetPixel(x - 2, y_adj - 1, rgbColor);
-			SetPixel(x + 2, y_adj - 1, rgbColor);
-			SetPixel(x + 1, y_adj - 2, rgbColor);
-			SetPixel(x - 1, y_adj - 2, rgbColor);
-			SetPixel(x, y_adj - 3, rgbColor);
-			SetPixel(x - 4, y_adj, rgbFade1);
-			SetPixel(x + 4, y_adj, rgbFade1);
-			SetPixel(x + 1, y_adj - 3, rgbFade1);
-			SetPixel(x - 1, y_adj - 3, rgbFade1);
-			SetPixel(x, y_adj - 4, rgbFade1);
-			SetPixel(x - 2, y_adj - 2, rgbFade1);
-			SetPixel(x + 2, y_adj - 2, rgbFade1);
-			SetPixel(x - 3, y_adj - 1, rgbFade1);
-			SetPixel(x + 3, y_adj - 1, rgbFade1);
-			SetPixel(x, y_adj - 2, rgbInner);
-			Fill(x - 1, y_adj - 1, 3, 1, rgbInner);
-			Fill(x - 2, y_adj, 5, 1, rgbInner);
+			const BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			const CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			const CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
+
+			const int SLOPE = 3;
+			const int yPoint = y - SMALL_TRIANGLE_SIZE;
+			const int yBase = y + (SMALL_TRIANGLE_SIZE / 2);
+
+			//	Paint from the point towards the base
+
+			int xLeft = x;
+			int xRight = x;
+			int iSlope = 0;
+
+			for (int yLine = yPoint; yLine <= yBase; yLine++)
+				{
+				if (yLine >= m_rcClip.top && yLine < m_rcClip.bottom)
+					{
+					CG32bitPixel* pPosLeft = GetPixelPos(xLeft, yLine);
+					CG32bitPixel* pPosRight = GetPixelPos(xRight, yLine);
+
+					//	Paint edge
+
+					if (iSlope != SLOPE - 1)
+						{
+						if (xLeft >= m_rcClip.left && xLeft < m_rcClip.right)
+							*pPosLeft = rgbFade1;
+
+						if (xRight != xLeft && xRight >= m_rcClip.left && xRight < m_rcClip.right)
+							*pPosRight = rgbFade1;
+						}
+
+					//	Paint line
+
+					if (xLeft != x)
+						{
+						if (xLeft + 1 >= m_rcClip.left && xLeft + 1 < m_rcClip.right)
+							*(pPosLeft + 1) = rgbColor;
+
+						if (xRight - 1 > x && xRight - 1 >= m_rcClip.left && xRight - 1 < m_rcClip.right)
+							*(pPosRight - 1) = rgbColor;
+						}
+
+					//	Base line
+
+					if (yLine == yBase)
+						{
+						FillLine(xLeft + 2, yLine, xRight - xLeft - 3, rgbColor);
+						}
+
+					//	Fill
+
+					else if (xRight - xLeft > 3)
+						FillLine(xLeft + 2, yLine, xRight - xLeft - 3, rgbInner);
+					}
+
+				//	Advance
+
+				iSlope = (iSlope + 1) % SLOPE;
+				if (iSlope != 0)
+					{
+					xLeft--;
+					xRight++;
+					}
+				}
+
 			break;
 			}
 
@@ -1272,57 +1353,137 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 
 		case markerSmallTriangleDown:
 			{
-			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
-			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
-			int y_adj = y - 2;
-			Fill(x - 3, y_adj, 7, 1, rgbColor);
-			SetPixel(x - 2, y_adj + 1, rgbColor);
-			SetPixel(x + 2, y_adj + 1, rgbColor);
-			SetPixel(x + 1, y_adj + 2, rgbColor);
-			SetPixel(x - 1, y_adj + 2, rgbColor);
-			SetPixel(x, y_adj + 3, rgbColor);
-			SetPixel(x - 4, y_adj, rgbFade1);
-			SetPixel(x + 4, y_adj, rgbFade1);
-			SetPixel(x + 1, y_adj + 3, rgbFade1);
-			SetPixel(x - 1, y_adj + 3, rgbFade1);
-			SetPixel(x, y_adj + 4, rgbFade1);
-			SetPixel(x - 2, y_adj + 2, rgbFade1);
-			SetPixel(x + 2, y_adj + 2, rgbFade1);
-			SetPixel(x - 3, y_adj + 1, rgbFade1);
-			SetPixel(x + 3, y_adj + 1, rgbFade1);
-			//Inner fade
-			SetPixel(x - 1, y_adj + 2, rgbFade1);
-			SetPixel(x + 1, y_adj + 2, rgbFade1);
-			SetPixel(x - 2, y_adj + 1, rgbFade1);
-			SetPixel(x + 2, y_adj + 1, rgbFade1);
-			SetPixel(x, y_adj + 3, rgbFade1);
+			const BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			const CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+
+			const int SLOPE = 3;
+			const int yPoint = y + SMALL_TRIANGLE_SIZE;
+			const int yBase = y - (SMALL_TRIANGLE_SIZE / 2);
+
+			//	Paint from the point towards the base
+
+			int xLeft = x;
+			int xRight = x;
+			int iSlope = 0;
+
+			for (int yLine = yPoint; yLine >= yBase; yLine--)
+				{
+				if (yLine >= m_rcClip.top && yLine < m_rcClip.bottom)
+					{
+					CG32bitPixel* pPosLeft = GetPixelPos(xLeft, yLine);
+					CG32bitPixel* pPosRight = GetPixelPos(xRight, yLine);
+
+					//	Paint edge
+
+					if (iSlope != SLOPE - 1)
+						{
+						if (xLeft >= m_rcClip.left && xLeft < m_rcClip.right)
+							*pPosLeft = rgbFade1;
+
+						if (xRight != xLeft && xRight >= m_rcClip.left && xRight < m_rcClip.right)
+							*pPosRight = rgbFade1;
+						}
+
+					//	Paint line
+
+					if (xLeft != x)
+						{
+						if (xLeft + 1 >= m_rcClip.left && xLeft + 1 < m_rcClip.right)
+							*(pPosLeft + 1) = rgbColor;
+
+						if (xRight - 1 > x && xRight - 1 >= m_rcClip.left && xRight - 1 < m_rcClip.right)
+							*(pPosRight - 1) = rgbColor;
+						}
+
+					//	Base line
+
+					if (yLine == yBase)
+						{
+						FillLine(xLeft + 2, yLine, xRight - xLeft - 3, rgbColor);
+						}
+					}
+
+				//	Advance
+
+				iSlope = (iSlope + 1) % SLOPE;
+				if (iSlope != 0)
+					{
+					xLeft--;
+					xRight++;
+					}
+				}
+
 			break;
 			}
 
 		case markerSmallFilledTriangleDown:
 			{
-			BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
-			CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
-			CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
-			int y_adj = y - 2;
-			Fill(x - 3, y_adj, 7, 1, rgbColor);
-			SetPixel(x - 2, y_adj + 1, rgbColor);
-			SetPixel(x + 2, y_adj + 1, rgbColor);
-			SetPixel(x + 1, y_adj + 2, rgbColor);
-			SetPixel(x - 1, y_adj + 2, rgbColor);
-			SetPixel(x, y_adj + 3, rgbColor);
-			SetPixel(x - 4, y_adj, rgbFade1);
-			SetPixel(x + 4, y_adj, rgbFade1);
-			SetPixel(x + 1, y_adj + 3, rgbFade1);
-			SetPixel(x - 1, y_adj + 3, rgbFade1);
-			SetPixel(x, y_adj + 4, rgbFade1);
-			SetPixel(x - 2, y_adj + 2, rgbFade1);
-			SetPixel(x + 2, y_adj + 2, rgbFade1);
-			SetPixel(x - 3, y_adj + 1, rgbFade1);
-			SetPixel(x + 3, y_adj + 1, rgbFade1);
-			SetPixel(x, y_adj + 2, rgbInner);
-			Fill(x - 1, y_adj + 1, 3, 1, rgbInner);
-			Fill(x - 2, y_adj, 5, 1, rgbInner);
+			const BYTE edge_adj = (BYTE)floor(255.0 / 1.414);
+			const CG32bitPixel rgbFade1 = CG32bitPixel::Blend(0, rgbColor, edge_adj);
+			const CG32bitPixel rgbInner = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
+
+			const int SLOPE = 3;
+			const int yPoint = y + SMALL_TRIANGLE_SIZE;
+			const int yBase = y - (SMALL_TRIANGLE_SIZE / 2);
+
+			//	Paint from the point towards the base
+
+			int xLeft = x;
+			int xRight = x;
+			int iSlope = 0;
+
+			for (int yLine = yPoint; yLine >= yBase; yLine--)
+				{
+				if (yLine >= m_rcClip.top && yLine < m_rcClip.bottom)
+					{
+					CG32bitPixel* pPosLeft = GetPixelPos(xLeft, yLine);
+					CG32bitPixel* pPosRight = GetPixelPos(xRight, yLine);
+
+					//	Paint edge
+
+					if (iSlope != SLOPE - 1)
+						{
+						if (xLeft >= m_rcClip.left && xLeft < m_rcClip.right)
+							*pPosLeft = rgbFade1;
+
+						if (xRight != xLeft && xRight >= m_rcClip.left && xRight < m_rcClip.right)
+							*pPosRight = rgbFade1;
+						}
+
+					//	Paint line
+
+					if (xLeft != x)
+						{
+						if (xLeft + 1 >= m_rcClip.left && xLeft + 1 < m_rcClip.right)
+							*(pPosLeft + 1) = rgbColor;
+
+						if (xRight - 1 > x && xRight - 1 >= m_rcClip.left && xRight - 1 < m_rcClip.right)
+							*(pPosRight - 1) = rgbColor;
+						}
+
+					//	Base line
+
+					if (yLine == yBase)
+						{
+						FillLine(xLeft + 2, yLine, xRight - xLeft - 3, rgbColor);
+						}
+
+					//	Fill
+
+					else if (xRight - xLeft > 3)
+						FillLine(xLeft + 2, yLine, xRight - xLeft - 3, rgbInner);
+					}
+
+				//	Advance
+
+				iSlope = (iSlope + 1) % SLOPE;
+				if (iSlope != 0)
+					{
+					xLeft--;
+					xRight++;
+					}
+				}
+
 			break;
 			}
 
