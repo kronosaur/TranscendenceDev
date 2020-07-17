@@ -139,6 +139,42 @@ PLAYER DATA
 -->
 	
 	<Type unid="&unidCommonwealthFleet;">
+		<Properties>
+			<Definition id="rankTable">
+				(list
+					{	rank:0	}
+					{	rank:1		id:'civilian			icon:(resCreateImageDesc &rsCommonwealthFleetInsignia;   0   0 256 256)	}
+					{	rank:2		id:'privateer			icon:(resCreateImageDesc &rsCommonwealthFleetInsignia;   0 256 256 256)	}
+					{	rank:3		id:'ensign				icon:(resCreateImageDesc &rsCommonwealthFleetInsignia; 256   0 256 256)	}
+					{	rank:4		id:'fleetLieutenant		icon:(resCreateImageDesc &rsCommonwealthFleetInsignia; 512   0 256 256)	}
+					{	rank:5		id:'fleetCommander		icon:(resCreateImageDesc &rsCommonwealthFleetInsignia; 256 256 256 256)	}
+					{	rank:5		id:'fleetCaptain		icon:(resCreateImageDesc &rsCommonwealthFleetInsignia; 512 256 256 256)	}
+					)
+			</Definition>
+			<DynamicGlobal id="rank">
+				(objGetData gPlayerShip 'fleetLevel)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankID">
+				(block (
+					(rank (typ@ gType 'rank))
+					)
+					(@ (@ (typ@ gType 'rankTable) rank) 'id)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankIcon">
+				(block (
+					(rank (or (typ@ gType 'rank) 1))
+					(rankTable (typ@ gType 'rankTable))
+					)
+					(@ (@ rankTable rank) 'icon)
+						)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankNoun">
+				(typTranslate gType (cat "rank." (typ@ gType 'rankID)) { gender:(plyGetGenome gPlayer) })
+			</DynamicGlobal>
+		</Properties>
+
 		<Events>
 			<GetGlobalPlayerPriceAdj>
 				(block (rank)
@@ -177,6 +213,53 @@ PLAYER DATA
 					)
 			</GetGlobalPlayerPriceAdj>
 		</Events>
+
+		<Language>
+			<Code id="rankDetails">
+				(block (
+					(rankID (typ@ gType 'rankID))
+					(successList (plyGetKeyEventStat gPlayer 'missionSuccess Nil "* +commonwealthFleet;"))
+					(failureList (plyGetKeyEventStat gPlayer 'missionFailure Nil "* +commonwealthFleet;"))
+					)
+					(if rankID
+						{
+							title: (fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
+							largeIcon: (typ@ gType 'rankIcon)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelSuccesses)
+									desc: (typTranslate gType 'rtfValue { 
+										value: (count successList)
+										})
+									}
+								{
+									title: (typTranslate gType 'labelFailures)
+									desc: (typTranslate gType 'rtfValue {
+										value: (count failureList)
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+			<Text id="rank.civilian">:a civilian(s)</Text>
+			<Text id="rank.privateer">:a privateer(s)</Text>
+			<Text id="rank.masterChief">:a master chief(s)</Text>
+			<Text id="rank.fleetLieutenant">:a Fleet lieutenant(s)</Text>
+			<Text id="rank.fleetCommand">:a Fleet commander(s)</Text>
+			<Text id="rank.fleetCaptain">:a Fleet captain(s)</Text>
+
+			<Text id="labelSuccesses">Mission Successes:</Text>
+			<Text id="labelFailures">Mission Failures:</Text>
+			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+
+			<Text id="rpg.missionTypeDesc">Commonwealth Fleet missions</Text>
+		</Language>
 	</Type>
 
 <!-- ENCOUNTERS -->
@@ -1586,6 +1669,8 @@ PLAYER DATA
 	</ItemTable>
 
 <!-- RESOURCES -->
+
+	<Image UNID="&rsCommonwealthFleetInsignia;"			bitmap="Resources\CommonwealthFleetInsignia.jpg" bitmask="Resources\CommonwealthFleetInsigniaMask.bmp" loadOnUse="true"/>
 
 	<Image UNID="&rsAquilaHD;"				bitmap="Resources\AquilaHD.jpg" bitmask="Resources\AquilaHDMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsAquilaHero;"			bitmap="Resources\AquilaLarge.jpg" bitmask="Resources\AquilaLargeMask.bmp" loadOnUse="true"/>
