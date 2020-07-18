@@ -11,8 +11,11 @@
 
 #ifndef _WINDOWS_
 
-#ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
-#define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
+//	Support Windows 7 and above
+
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT	0x0601 
+#define WINVER			0x0601
 #endif						
 
 #define NOMINMAX
@@ -21,6 +24,13 @@
 #endif
 
 #include <mmsystem.h>
+
+//	For some reason, <kernelspecs.h> defines HIGH_LEVEL, which ends up 
+//	conflicting with a lot of other definitions.
+
+#ifdef HIGH_LEVEL
+#undef HIGH_LEVEL
+#endif
 
 //	Debugging defines
 

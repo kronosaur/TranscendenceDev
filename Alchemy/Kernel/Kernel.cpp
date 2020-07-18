@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 #include <process.h>
+#include <VersionHelpers.h>
 #include "eh.h"
 
 long g_iGlobalInit = 0;
@@ -134,18 +135,13 @@ void InitAPIFlags (void)
 //	Initialize API flags
 
 	{
-	//	Check to see if we're running on Windows NT
+	//	We don't support Windows 95 anymore.
 
-	OSVERSIONINFO osvi;
-
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	if (GetVersionEx(&osvi))
-		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT)
-			g_dwAPIFlags |= API_FLAG_WINNT;
+	g_dwAPIFlags |= API_FLAG_WINNT;
 
 	//	DWM runs on Vista and above
 
-	if (osvi.dwMajorVersion >= 6)
+	if (::IsWindowsVistaOrGreater())
 		g_dwAPIFlags |= API_FLAG_DWM;
 
 	//	Check to see if MaskBlt is available
