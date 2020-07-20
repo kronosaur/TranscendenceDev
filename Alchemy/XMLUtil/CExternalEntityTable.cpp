@@ -13,17 +13,15 @@ CExternalEntityTable::CExternalEntityTable (void) :
 	{
 	}
 
-void CExternalEntityTable::AddTable (CSymbolTable &Table)
+void CExternalEntityTable::AddTable (const TSortMap<CString, CString> &Table)
 
 //	AddTable
 //
 //	Adds all entities in the given table
 
 	{
-	int i;
-
-	for (i = 0; i < Table.GetCount(); i++)
-		m_Entities.Insert(Table.GetKey(i), *(CString *)Table.GetValue(i));
+	for (int i = 0; i < Table.GetCount(); i++)
+		m_Entities.Insert(Table.GetKey(i), Table[i]);
 	}
 
 void CExternalEntityTable::GetEntity (int iIndex, CString *retsEntity, CString *retsValue)

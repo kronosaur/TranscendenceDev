@@ -6,6 +6,17 @@
 #ifndef INCL_TMAP
 #define INCL_TMAP
 
+template<class KEY>
+int KeyCompare (const KEY &Key1, const KEY &Key2) 
+	{
+	if (Key1 > Key2)
+		return 1;
+	else if (Key1 < Key2)
+		return -1;
+	else
+		return 0;
+	}
+
 class CMapIterator
 	{
 	public:
@@ -35,9 +46,9 @@ class CMapBase
 		void InsertEntry (void *pKey, int iKeyLen, EntryBase *pEntry);
 		void InsertEntry (int iSlot, EntryBase *pEntry);
 
-		void Reset (CMapIterator &Iterator) const;
-		EntryBase *GetNext (CMapIterator &Iterator) const;
-		bool HasMore (CMapIterator &Iterator) const;
+		void Reset (Kernel::CMapIterator &Iterator) const;
+		EntryBase *GetNext (Kernel::CMapIterator &Iterator) const;
+		bool HasMore (Kernel::CMapIterator &Iterator) const;
 
 		virtual bool KeyEquals (void *pVoidKey, EntryBase *pEntry) const = 0;
 
@@ -862,7 +873,6 @@ struct SSimpleStringEntry
 template <class VALUE> class TProbabilityMap
 	{
 	public:
-		VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
 
 		void Delete (int iIndex)
 			{

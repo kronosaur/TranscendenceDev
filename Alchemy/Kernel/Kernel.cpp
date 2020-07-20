@@ -255,7 +255,7 @@ ALERROR Kernel::kernelSetDebugLog (CTextFileLog *pLog, bool bAppend, bool bFreeL
 	return NOERROR;
 	}
 
-void Kernel::kernelDebugLogPattern (char *pszLine, ...)
+void Kernel::kernelDebugLogPattern (const char *pszLine, ...)
 
 //	kernelDebugLogPattern
 //

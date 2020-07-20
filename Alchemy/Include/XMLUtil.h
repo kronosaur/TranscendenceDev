@@ -153,7 +153,7 @@ class CExternalEntityTable : public IXMLParserController
 	public:
 		CExternalEntityTable (void);
 
-		void AddTable (CSymbolTable &Table);
+		void AddTable (const TSortMap<CString, CString> &Table);
 		int GetCount (void) { return m_Entities.GetCount(); }
 		void GetEntity (int iIndex, CString *retsEntity, CString *retsValue);
         const CString &GetName (void) const { return m_sName; }

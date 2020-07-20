@@ -5,6 +5,9 @@
 
 #pragma once
 
+DWORD mathRandom (void);
+int mathRandom (int iFrom, int iTo);
+
 enum ESortOptions
 	{
 	DescendingSort = 1,
