@@ -85,6 +85,12 @@ void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int
 	// For each render queue in the ships render queue, render that render queue. We need to set the texture and do a glBindTexture before doing so.
 	// Render order is Texture, Orb, Ray, Lightning
 	
+	// TODO: Render in proper order - by order requested in CPU code. We can do this via the following:
+	// Use a while loop that repeats while we still have stuff left in our render batches.
+	// In this loop, iterate through our batches, and find the ones with the first and second largest depths
+	// for their last elements. On the one with the first largest, render all of the objects up to and excluding
+	// the first one whose depth is smaller than the second largest. Delete those from CPU memory.
+
 	// Delete textures scheduled for deletion.
 	// TODO: Remove? We don't seem to use m_texturesForDeletion anymore
 	if (m_texturesForDeletion.size() > 0)

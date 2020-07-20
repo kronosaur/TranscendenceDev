@@ -47,6 +47,8 @@ For special effects that use textures (such as glow), what we can do is use a se
 #include "OpenGLIncludes.h"
 #include "OpenGLTexture.h"
 #include "OpenGLInstancedBatchImpl.h"
+#include "OpenGLAnimatedNoise.h"
+
 #include <vector>
 #include <map>
 #include <algorithm>
@@ -200,6 +202,8 @@ private:
 	OpenGLShader *m_pRayShader;
 	OpenGLShader *m_pLightningShader;
 	OpenGLShader *m_pOrbShader;
+	OpenGLShader *m_pPerlinNoiseShader;
+	std::unique_ptr<OpenGLAnimatedNoise> m_pPerlinNoiseTexture;
 	// TODO: Maybe use filenames of texture images as the key rather than pointer to OpenGLTextures? Using pointers as map keys is not reliable.
 	OpenGLRenderLayer* m_pActiveRenderLayer;
 	std::vector<OpenGLRenderLayer> m_renderLayers = std::vector<OpenGLRenderLayer>(NUM_OPENGL_MAIN_OBJECT_LAYERS + NUM_OPENGL_FOREGROUND_OBJECT_LAYERS + NUM_OPENGL_BACKGROUND_OBJECT_LAYERS);

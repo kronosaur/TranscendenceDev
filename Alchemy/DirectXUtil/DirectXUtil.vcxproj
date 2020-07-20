@@ -273,6 +273,7 @@
     <ClInclude Include="..\Include\DXSparseMask.h" />
     <ClInclude Include="..\Include\DXUI.h" />
     <ClInclude Include="..\Include\OpenGL.h" />
+    <ClInclude Include="..\Include\OpenGLAnimatedNoise.h" />
     <ClInclude Include="..\Include\OpenGLIncludes.h" />
     <ClInclude Include="..\Include\OpenGLInstancedBatch.h" />
     <ClInclude Include="..\Include\OpenGLInstancedBatchImpl.h" />
@@ -537,6 +538,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Noise.cpp" />
+    <ClCompile Include="OpenGLAnimatedNoise.cpp" />
     <ClCompile Include="OpenGLContext.cpp" />
     <ClCompile Include="OpenGLMasterRenderQueue.cpp" />
     <ClCompile Include="OpenGLRenderLayer.cpp" />

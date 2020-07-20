@@ -26,6 +26,10 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	m_pRayShader = new OpenGLShader("./shaders/ray_vertex_shader.glsl", "./shaders/ray_fragment_shader.glsl");
 	m_pLightningShader = new OpenGLShader("./shaders/lightning_vertex_shader.glsl", "./shaders/lightning_fragment_shader.glsl");
 	m_pOrbShader = new OpenGLShader("./shaders/orb_vertex_shader.glsl", "./shaders/orb_fragment_shader.glsl");
+	m_pPerlinNoiseShader = new OpenGLShader("./shaders/fbm_vertex_shader.glsl", "./shaders/fbm_fragment_shader.glsl");
+	m_pPerlinNoiseTexture = std::make_unique<OpenGLAnimatedNoise>(512, 512, 64);
+	m_pPerlinNoiseTexture->initTexture3D(512, 512, 64);
+	m_pPerlinNoiseTexture->populateTexture3D(fbo, m_pCanvasVAO, m_pPerlinNoiseShader);
 	m_pActiveRenderLayer = &m_renderLayers[0];
 #ifdef OPENGL_FPS_COUNTER_ENABLE
 	m_pOpenGLIndicatorFont = std::make_unique<CG16bitFont>();
@@ -83,7 +87,7 @@ void OpenGLMasterRenderQueue::initializeCanvasVAO()
 	std::vector<std::vector<unsigned int>> ebos{ indices, indices, indices };
 
 	m_pCanvasVAO = new OpenGLVAO(vbos, ebos, texcoord_arr);
-	m_pCanvasVAO->setShader(m_pGlowmapShader);
+	//m_pCanvasVAO->setShader(m_pPerlinNoiseShader);
 
 }
 

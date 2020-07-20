@@ -31,7 +31,7 @@ public:
 	unsigned int* getinstancedVBO(void) { return instancedVboID; }
 
 private:
-	OpenGLShader *m_pShader;
+	OpenGLShader *m_pShader; // TODO: Remove
 	unsigned int m_iNumArrays;
 	unsigned int m_iNumTexArrays;
 	unsigned int vaoID[128];
