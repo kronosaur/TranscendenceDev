@@ -110,7 +110,7 @@ TPropertyHandler<CMission> CMission::m_PropertyTable = std::array<TPropertyHandl
 
 		{
 		"isOpen",			"True|Nil",
-		[](const CMission &Obj, const CString &sProperty) {	return ICCItemPtr(Obj.m_iStatus == statusOpen); },
+		[](const CMission &Obj, const CString &sProperty) {	return ICCItemPtr(Obj.m_iStatus == Status::open); },
 		NULL,
 		},
 
@@ -201,7 +201,7 @@ bool CMission::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	{
 	if (strEquals(sName, PROPERTY_IS_DEBRIEFED))
 		{
-		if (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure)
+		if (m_iStatus == Status::playerSuccess || m_iStatus == Status::playerFailure)
 			{
 			if (!pValue->IsNil())
 				{
@@ -228,13 +228,13 @@ bool CMission::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 
 	else if (strEquals(sName, PROPERTY_IS_DECLINED))
 		{
-		if (m_iStatus == statusOpen)
+		if (m_iStatus == Status::open)
 			m_fDeclined = !pValue->IsNil();
 		}
 
 	else if (strEquals(sName, PROPERTY_IS_INTRO_SHOWN))
 		{
-		if (m_iStatus == statusOpen)
+		if (m_iStatus == Status::open)
 			m_fIntroShown = !pValue->IsNil();
 		}
 

@@ -32,8 +32,7 @@
 
 #define STR_A_REASON							CONSTLIT("aReason")
 
-CMission::CMission (CUniverse &Universe) : TSpaceObjectImpl(Universe),
-		m_fInMissionCompleteCode(false)
+CMission::CMission (CUniverse &Universe) : TSpaceObjectImpl(Universe)
 
 //	CMission constructor
 
@@ -75,7 +74,7 @@ void CMission::CloseMission (void)
 		GetUniverse().RefreshCurrentMission();
 	}
 
-void CMission::CompleteMission (ECompletedReasons iReason)
+void CMission::CompleteMission (CompletedReason iReason)
 
 //	CompleteMission
 //
@@ -85,7 +84,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 	if (IsCompleted())
 		return;
 
-	bool bIsPlayerMission = (m_iStatus == statusAccepted);
+	bool bIsPlayerMission = (m_iStatus == Status::accepted);
 	m_dwCompletedOn = GetUniverse().GetTicks();
 
 	//	Handle player missions differently
@@ -94,9 +93,9 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 		{
 		//	Mission failure
 
-		if (iReason == completeFailure || iReason == completeDestroyed)
+		if (iReason == CompletedReason::failure || iReason == CompletedReason::destroyed)
 			{
-			m_iStatus = statusPlayerFailure;
+			m_iStatus = Status::playerFailure;
 
 			//	Tell the player that we failed
 
@@ -123,9 +122,9 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 
 		//	Mission success
 
-		else if (iReason == completeSuccess)
+		else if (iReason == CompletedReason::success)
 			{
-			m_iStatus = statusPlayerSuccess;
+			m_iStatus = Status::playerSuccess;
 
 			//	Tell the player that we succeeded
 
@@ -170,10 +169,10 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 
 	else
 		{
-		if (iReason == completeFailure || iReason == completeDestroyed)
-			m_iStatus = statusFailure;
-		else if (iReason == completeSuccess)
-			m_iStatus = statusSuccess;
+		if (iReason == CompletedReason::failure || iReason == CompletedReason::destroyed)
+			m_iStatus = Status::failure;
+		else if (iReason == CompletedReason::success)
+			m_iStatus = Status::success;
 
 		//	For non-player missions we can close now. (For players we wait until
 		//	debrief.)
@@ -211,7 +210,7 @@ ALERROR CMission::Create (CMissionType &Type, CMissionType::SCreateCtx &CreateCt
 
 	//	Initialize
 
-	pMission->m_iStatus = statusOpen;
+	pMission->m_iStatus = Status::open;
 	pMission->m_fIntroShown = false;
 	pMission->m_fDeclined = false;
 	pMission->m_fDebriefed = false;
@@ -614,7 +613,7 @@ void CMission::OnDestroyed (SDestroyCtx &Ctx)
 
 	//	If the mission is running then we need to stop
 
-	if (m_iStatus == statusClosed || m_iStatus == statusAccepted)
+	if (m_iStatus == Status::closed || m_iStatus == Status::accepted)
 		{
 		FireOnStop(REASON_DESTROYED, NULL);
 
@@ -625,7 +624,7 @@ void CMission::OnDestroyed (SDestroyCtx &Ctx)
 
 	//	Make sure the mission is completed
 
-	CompleteMission(completeDestroyed);
+	CompleteMission(CompletedReason::destroyed);
 
 	//	Destroy the mission
 
@@ -819,7 +818,7 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 		throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Undefined mission type: %08x"), dwLoad));
 
 	Ctx.pStream->Read(dwLoad);
-	m_iStatus = (EStatus)dwLoad;
+	m_iStatus = (Status)dwLoad;
 
 	m_pOwner.ReadFromStream(Ctx);
 	if (Ctx.dwVersion >= 89)
@@ -1180,7 +1179,7 @@ bool CMission::SetAccepted (void)
 	{
 	//	Must be available to player.
 
-	if (m_iStatus != statusOpen)
+	if (m_iStatus != Status::open)
 		return false;
 
 	//	Close out any previous missions in the same arc
@@ -1217,12 +1216,12 @@ bool CMission::SetAccepted (void)
 
 	//	If the above call changed anything, then we're done
 
-	if (m_iStatus != statusOpen)
+	if (m_iStatus != Status::open)
 		return false;
 
 	//	Player has accepted
 
-	m_iStatus = statusAccepted;
+	m_iStatus = Status::accepted;
 
 	//	Start the mission
 
@@ -1250,7 +1249,7 @@ bool CMission::SetDeclined (ICCItem **retpResult)
 	{
 	//	Must be available to player.
 
-	if (m_iStatus != statusOpen
+	if (m_iStatus != Status::open
 			|| !m_pType->CanBeDeclined())
 		{
 		if (retpResult)
@@ -1291,14 +1290,14 @@ bool CMission::SetFailure (ICCItem *pData)
 	if (m_fInMissionCompleteCode)
 		return false;
 
-	else if (m_iStatus != statusAccepted && m_iStatus != statusClosed && m_iStatus != statusOpen)
+	else if (m_iStatus != Status::accepted && m_iStatus != Status::closed && m_iStatus != Status::open)
 		return false;
 
 	m_fInMissionCompleteCode = true;
 
 	//	Stop the mission
 
-	if (m_iStatus != statusOpen)
+	if (m_iStatus != Status::open)
 		{
 		FireOnStop(REASON_FAILURE, pData);
 
@@ -1309,7 +1308,7 @@ bool CMission::SetFailure (ICCItem *pData)
 
 	//	Done
 
-	CompleteMission(completeFailure);
+	CompleteMission(CompletedReason::failure);
 
 	m_fInMissionCompleteCode = false;
 	return true;
@@ -1327,14 +1326,14 @@ bool CMission::SetSuccess (ICCItem *pData)
 	if (m_fInMissionCompleteCode)
 		return false;
 
-	if (m_iStatus != statusAccepted && m_iStatus != statusClosed && m_iStatus != statusOpen)
+	if (m_iStatus != Status::accepted && m_iStatus != Status::closed && m_iStatus != Status::open)
 		return false;
 
 	m_fInMissionCompleteCode = true;
 
 	//	Stop the mission
 
-	if (m_iStatus != statusOpen)
+	if (m_iStatus != Status::open)
 		{
 		FireOnStop(REASON_SUCCESS, pData);
 
@@ -1345,7 +1344,7 @@ bool CMission::SetSuccess (ICCItem *pData)
 
 	//	Done
 
-	CompleteMission(completeSuccess);
+	CompleteMission(CompletedReason::success);
 
 	m_fInMissionCompleteCode = false;
 	return true;
@@ -1360,12 +1359,12 @@ bool CMission::SetUnavailable (void)
 	{
 	//	Must be open
 
-	if (m_iStatus != statusOpen)
+	if (m_iStatus != Status::open)
 		return false;
 
 	//	No player
 
-	m_iStatus = statusClosed;
+	m_iStatus = Status::closed;
 
 	//	Start the mission
 
