@@ -638,10 +638,7 @@ class CDamageSource
 class CDamageAdjDesc
 	{
 	public:
-		enum EConstants
-			{
-			MAX_DAMAGE_ADJ = 100000,
-			};
+		static constexpr int MAX_DAMAGE_ADJ = 100000;
 
 		CDamageAdjDesc (void) : m_pDefault(NULL)
 			{ }

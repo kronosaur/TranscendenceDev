@@ -470,10 +470,7 @@ class CRotationDesc
 class CIntegralRotationDesc
     {
     public:
-		enum EConstants
-			{
-			ROTATION_FRACTION =				1024,
-			};
+		static constexpr int ROTATION_FRACTION =	1024;
 
         CIntegralRotationDesc (void);
         explicit CIntegralRotationDesc (const CRotationDesc &Desc) { InitFromDesc(Desc); }

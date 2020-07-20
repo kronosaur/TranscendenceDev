@@ -70,11 +70,8 @@ class CExplosionColorizer
 		void Init (void);
 
 	private:
-		enum EConstants
-			{
-			RADIUS_COUNT =		100,
-			INTENSITY_COUNT =	101,	//	0 to 100
-			};
+		static constexpr int RADIUS_COUNT =		100;
+		static constexpr int INTENSITY_COUNT =	101;	//	0 to 100
 
 		TArray<TArray<Metric>> m_Heat;
 	};
