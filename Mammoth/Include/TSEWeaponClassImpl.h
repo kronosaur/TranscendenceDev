@@ -183,6 +183,8 @@ class CWeaponClass : public CDeviceClass
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const override;
 		virtual const CWeaponFireDesc *GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo = CItem()) const override;
+		virtual const CWeaponFireDesc &GetWeaponFireDescForVariant (const CDeviceItem &DeviceItem, int iVariant) const override;
+		virtual int GetWeaponVariantCount (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsAmmoWeapon (void) override;
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override;
@@ -190,6 +192,7 @@ class CWeaponClass : public CDeviceClass
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const override;
+		virtual bool IsWeaponVariantValid (const CDeviceItem &DeviceItem, int iVariant) const override;
 		virtual bool NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual bool RequiresItems (void) const override;
@@ -303,7 +306,7 @@ class CWeaponClass : public CDeviceClass
 		int GetFireDelay (const CWeaponFireDesc &ShotDesc) const;
 		const CWeaponFireDesc *GetReferenceShotData (const CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
 		int GetSelectVariantCount (void) const;
-		bool HasAmmoLeft (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const;
+		bool HasAmmoLeft (CItemCtx &ItemCtx, const CWeaponFireDesc *pShot) const;
 		ALERROR InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType);
 		inline bool IsCapacitorEnabled (void) { return (m_Counter == cntCapacitor); }
 		inline bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
@@ -317,7 +320,7 @@ class CWeaponClass : public CDeviceClass
 		bool UpdateShipCounter(CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc);
 		bool UpdateTemperature (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed);
 		inline bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
-		bool VariantIsValid (CSpaceObject *pSource, CInstalledDevice *pDevice, CWeaponFireDesc &ShotData);
+		bool VariantIsValid (const CSpaceObject *pSource, const CInstalledDevice *pDevice, const CWeaponFireDesc &ShotData) const;
 
 		int GetAlternatingPos (const CInstalledDevice *pDevice) const;
 		DWORD GetContinuousFire (const CInstalledDevice *pDevice) const;

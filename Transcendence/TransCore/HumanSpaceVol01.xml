@@ -1983,6 +1983,8 @@
 	<!ENTITY chVolkov					"0x00100239">
 	<!ENTITY chJenna					"0x0010023A">
 	<!ENTITY chRama						"0x0010023B">
+	<!ENTITY chEnricoGaul				"0x0010023C">
+	<!ENTITY chLiaPereira				"0x0010023D">
 	
 	<!-- 0250-026F COMMONWEALTH MINING -->
 	
@@ -2027,6 +2029,12 @@
 	<!ENTITY msCMEscortSuperFreighter	"0x001002B4">
 	<!ENTITY msCMstKatsDestroyThreat	"0x001002B5">
 	<!ENTITY rsCommonwealthMilitiaInsignia	"0x001002B6">
+	<!ENTITY msCMVolunteer01			"0x001002B7">
+	<!ENTITY msCMVolunteer02			"0x001002B8">
+
+	<!ENTITY msCMVolunteer03			"0x001002B9">
+	<!ENTITY evCMVolunteer03Freighter	"0x001002BA">
+	<!ENTITY tbCMVolunteer03Pirates		"0x001002BB">
 
 	<!-- 02D0-02EF DWARG RAIDERS -->
 
@@ -2074,6 +2082,19 @@
 	<!ENTITY rs1MAutonHD				"0x00100372">
 	<!ENTITY rsMuleAutonHD				"0x00100373">
 	<!ENTITY rsExplorerAutonHD			"0x00100374">
+	<!ENTITY rs1MAutonHD2				"0x00100375">
+	<!ENTITY rs1MAutonHero				"0x00100376">
+	<!ENTITY rsAutosentinelHD2			"0x00100377">
+	<!ENTITY rsAutosentinelHero			"0x00100378">
+	<!ENTITY rsMuleAutonHero			"0x00100379">
+	<!ENTITY rs200AAutonHD				"0x0010037A">
+	<!ENTITY rs200AAutonHero			"0x0010037B">
+	<!ENTITY rs300DAutonHD				"0x0010037C">
+	<!ENTITY rs300DAutonHero			"0x0010037D">
+	<!ENTITY rs310AAutonHD				"0x0010037E">
+	<!ENTITY rs310AAutonHero			"0x0010037F">
+	<!ENTITY rs1MiAutonHD				"0x00100380">
+	<!ENTITY rs1MiAutonHero				"0x00100381">
 
 	<!-- 0390-03AF COMMONWEALTH II -->
 
@@ -2330,6 +2351,7 @@
 	<!ENTITY tbCommonwealthFleetItems	"0x0010066C">
 	<!ENTITY rsAquilaHero				"0x0010066D">
 	<!ENTITY vtMinotaurTurretSlot		"0x0010066E">
+	<!ENTITY rsCommonwealthFleetInsignia	"0x0010066F">
 
 	<!-- 06C0-06FF STANDARD ITEMS -->
 
@@ -2358,6 +2380,7 @@
 	<!ENTITY evStKatsTrafficBehavior	"0x00100707">
 	<!ENTITY scBorerStock				"0x00100708">
 	<!ENTITY scBorerIIStock				"0x00100709">
+	<!ENTITY itRejuvTankPatient			"0x0010070A">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2422,10 +2445,12 @@
 	<!-- Characters -->
 		
 	<Module filename="Benedict.xml"/>
+	<Module filename="EnricoGaul.xml"/>
 	<Module filename="Fiona.xml"/>
 	<Module filename="HugoSandoval.xml"/>
 	<Module filename="Jenna.xml"/>
 	<Module filename="KateMorgental.xml"/>
+	<Module filename="LiaPereira.xml"/>
 	<Module filename="Rama.xml"/>
 	<Module filename="Stormhound.xml"/>
 	<Module filename="Volkov.xml"/>
@@ -2442,7 +2467,6 @@
 	<Module filename="CommonwealthAgricultural.xml"/>
 	<Module filename="CommonwealthCenturions.xml"/>
 	<Module filename="CommonwealthCharacters.xml"/>
-	<Module filename="CommonwealthMetropolis.xml"/>
 	<Module filename="CommonwealthMission01.xml"/>
 	<Module filename="CommonwealthMissionRevenge01.xml"/>
 	<Module filename="CommonwealthRonins.xml"/>
@@ -2476,6 +2500,13 @@
 	<Module filename="CSCTerra.xml"/>
 	<Module filename="Dantalion.xml"/>
 	<Module filename="PointJuno.xml"/>
+
+	<!-- Commonwealth Metropolis -->
+
+	<Module filename="CommonwealthMetropolis.xml"/>
+	<Module filename="CommonwealthVolunteerMission01.xml"/>
+	<Module filename="CommonwealthVolunteerMission02.xml"/>
+	<Module filename="CommonwealthVolunteerMission03.xml"/>
 
 	<!-- Commonwealth Militia -->
 
@@ -2563,6 +2594,7 @@
 	<Module filename="MiningPods.xml"/>
 	<Module filename="MiscItems.xml"/>
 	<Module filename="QuantumCPU.xml"/>
+	<Module filename="RejuvTank.xml"/>
 	<Module filename="ShieldEnhancementItems.xml"/>
 	<Module filename="StdArmor.xml"/>
 	<Module filename="StdAutons.xml"/>

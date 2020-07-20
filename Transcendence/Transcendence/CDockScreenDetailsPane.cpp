@@ -84,7 +84,7 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 
 	//	Get the list to show
 
-	ICCItem *pExp = CCodeChain::Link(Options.sCode);
+	ICCItemPtr pExp = CCodeChain::LinkCode(Options.sCode);
 
 	//	Evaluate the function
 
@@ -94,8 +94,7 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 	CCCtx.SaveAndDefineSourceVar(m_pLocation);
 	CCCtx.SaveAndDefineDataVar(m_pData);
 
-	ICCItem *pResult = CCCtx.Run(pExp);	//	LATER:Event
-	CCCtx.Discard(pExp);
+	ICCItemPtr pResult = CCCtx.RunCode(pExp);	//	LATER:Event
 
 	if (pResult->IsError())
 		{
@@ -106,7 +105,6 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 	//	Set this expression as the list
 
 	m_pControl->SetData(pResult);
-	CCCtx.Discard(pResult);
 
 	return NOERROR;
 

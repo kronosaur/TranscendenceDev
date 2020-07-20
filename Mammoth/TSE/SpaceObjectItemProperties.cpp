@@ -176,6 +176,32 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		}
 	}
 
+bool CSpaceObject::IncItemProperty (const CItem &Item, const CString &sProperty, const ICCItem &Value, int iCount, CItem *retItem, ICCItemPtr *retNewValue, CString *retsError)
+
+//	IncItemProperty
+//
+//	Increments an item property.
+
+	{
+	CCodeChainCtx CCX(GetUniverse());
+
+	ICCItemPtr pCurValue = GetItemProperty(CCX, Item, sProperty);
+	ICCItemPtr pNewValue = CCodeChain::IncValue(pCurValue, &Value);
+	if (pNewValue->IsError())
+		{
+		if (retsError) *retsError = pNewValue->GetStringValue();
+		return false;
+		}
+
+	if (!SetItemProperty(Item, sProperty, pNewValue, iCount, retItem, retsError))
+		return false;
+
+	if (retNewValue)
+		*retNewValue = pNewValue;
+
+	return true;
+	}
+
 bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError)
 
 //	SetItemProperty

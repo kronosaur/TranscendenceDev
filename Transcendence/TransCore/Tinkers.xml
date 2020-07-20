@@ -71,7 +71,7 @@
 			size=				"110"
 			armorID=			"&itReinforcedTitanium1;"
 			hitPoints=			"250"
-            regen=              "2"
+			regen=              "2"
 			multiHull=			"true"
 			fireRateAdj=		"20"
 				 
@@ -428,9 +428,9 @@
 				interested in buying %itemName%.
 
 			</Text>
-            <Text id="core.mapDesc">
-                Fabricates special items &mdash; Repairs/installs armor up to level 8 &mdash; Buys and sells scrap
-            </Text>
+			<Text id="core.mapDesc">
+				Fabricates special items &mdash; Repairs/installs armor up to level 8 &mdash; Buys and sells scrap
+			</Text>
 		</Language>
 	</StationType>
 	
@@ -444,7 +444,7 @@
 			value=				"2900"
 			mass=				"500"
 			frequency=			"notRandom"
-			attributes=			"ammoBox, consumable, military"
+			attributes=			"ammoBox, commonwealth, consumable, military"
 
 			description=		"This box contains 24 XM900 Lucifer missiles."
 			>
@@ -460,7 +460,7 @@
 
 	<ItemType UNID="&itDualMarkIIIHowitzer;"
 			name=				"dual mark III howitzer"
-			attributes=			"cannotOrder, howitzer, majorItem, tinkers"
+			attributes=			"cannotOrder, commonwealth, howitzer, majorItem, tinkers"
 
 			level=				"7"
 			value=				"47000"
@@ -495,7 +495,7 @@
 
 	<ItemType UNID="&itOmniXRayLaserCannon;"
 			name=				"omnidirectional x-ray laser"
-			attributes=			"cannotOrder, energyWeapon, majorItem, tinkers"
+			attributes=			"cannotOrder, commonwealth, energyWeapon, majorItem, tinkers"
 			  
 			level=				"5"
 			value=				"10000"

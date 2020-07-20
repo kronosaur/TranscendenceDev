@@ -35,8 +35,9 @@ enum UIMessageTypes
 	uimsgKeyboardManeuverHint =		14,
 	uimsgStationDamageHint =		15,
 	uimsgMiningDamageTypeHint =		16,
+	uimsgFireWeaponHint =			17,
 
-	uimsgCount =					17,
+	uimsgCount =					18,
 	};
 
 class CUIMessageController
@@ -47,17 +48,17 @@ class CUIMessageController
 		bool CanShow (CUniverse &Universe, UIMessageTypes iMsg, const CSpaceObject *pMsgObj = NULL) const;
 		UIMessageTypes Find (const CString &sMessageName) const;
 		bool IsEnabled (UIMessageTypes iMsg) const { return m_Messages[iMsg].bEnabled; }
+		void OnHintFollowed (UIMessageTypes iMsg, DWORD dwTick = 0);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetEnabled (UIMessageTypes iMsg, bool bEnabled = true);
 		bool ShowMessage (CUniverse &Universe, UIMessageTypes iMsg, const CSpaceObject *pMsgObj = NULL);
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
-		static constexpr DWORD OBJ_MSG_INTERVAL = 240;
-
 		struct SMsgEntry
 			{
 			bool bEnabled = true;				//	Hint is enabled
+			int iHintFollowedCount = 0;			//	How many times the player has followed this hint
 			DWORD dwLastShown = 0;				//	Frame Tick on which we last showed
 												//		this hint.
 			DWORD dwLastObjID = 0;				//	Last obj that we showed hint for.
@@ -118,11 +119,13 @@ class CPlayerShipController : public IShipController
 		CPlayerShipController (CUniverse &Universe);
 		~CPlayerShipController (void);
 
-		void Cargo (void);
 		CurrencyValue Charge (DWORD dwEconUNID, CurrencyValue iCredits) { return m_Credits.IncCredits(dwEconUNID, -iCredits); }
 
 		bool CanShowShipStatus (void);
 		void Communications (CSpaceObject *pObj, MessageTypes iMsg, DWORD dwData = 0, DWORD *iodwFormationPlace = NULL);
+		void CycleTarget (int iDir = 1);
+		void DisplayCommandHint (CGameKeys::Keys iCmd, const CString &sMessage);
+		void DisplayMessage (const CString &sMessage);
 		void Dock (void);
 		bool DockingInProgress (void) { return m_pStation != NULL; }
 		UIMessageTypes FindUIMessage (const CString &sName) { return m_UIMsgs.Find(sName); }
@@ -140,6 +143,7 @@ class CPlayerShipController : public IShipController
 		CString GetKeyEventStat (const CString &sStat, const CString &sNodeID, const CDesignTypeCriteria &Crit) const { return m_Stats.GetKeyEventStat(sStat, sNodeID, Crit); }
 		GenomeTypes GetPlayerGenome (void) const { return m_iGenome; }
 		CString GetPlayerName (void) const { return m_sName; }
+		const CString &GetRedirectMessage (void) const { return m_sRedirectMessage; }
 		int GetResurrectCount (void) const { return ::strToInt(m_Stats.GetStatString(CONSTLIT("resurrectCount")), 0); }
 		int GetScore (void) { return ::strToInt(m_Stats.GetStatString(CONSTLIT("score")), 0); }
 		CSpaceObject *GetSelectedTarget (void) { return m_pTarget; }
@@ -163,14 +167,16 @@ class CPlayerShipController : public IShipController
 		CurrencyValue Payment (DWORD dwEconUNID, CurrencyValue iCredits) { return m_Credits.IncCredits(dwEconUNID, iCredits); }
 		void ReadyNextWeapon (int iDir = 1);
 		void ReadyNextMissile (int iDir = 1);
+		void RedirectDisplayMessage (bool bRedirect);
 		void SetCharacterClass (CGenericType *pClass) { m_pCharacterClass = pClass; }
-		void SetGameSession (CGameSession *pSession) { m_pSession = pSession; }
+		void SetGameSession (CGameSession *pSession);
 		void SetGenome (GenomeTypes iGenome) { m_iGenome = iGenome; }
 		void SetMapHUD (bool bActive) { m_bMapHUD = bActive; }
 		void SetMouseAimAngle (int iAngle) { m_ManeuverController.CmdMouseAim(iAngle); }
 		void SetName (const CString &sName) { m_sName = sName; }
 		void SetResurrectCount (int iCount) { m_Stats.SetStat(CONSTLIT("resurrectCount"), ::strFromInt(iCount)); }
 		void SetStartingShipClass (DWORD dwUNID) { m_dwStartingShipClass = dwUNID; }
+		void SetStartingSystem (const CString &sNode) { m_sStartingSystem = sNode; }
 		void SetTarget (CSpaceObject *pTarget);
 		void SelectNearestTarget (void);
 		void SelectNextFriendly (int iDir = 1);
@@ -181,6 +187,7 @@ class CPlayerShipController : public IShipController
 		void SetShip (CShip *pShip) { m_pShip = pShip; }
 		void SetStopThrust (bool bStop) { m_bStopThrust = bStop; }
 		void SetUIMessageEnabled (UIMessageTypes iMsg, bool bEnabled = true) { m_UIMsgs.SetEnabled(iMsg, bEnabled); }
+		void SetUIMessageFollowed (UIMessageTypes iMsg) { m_UIMsgs.OnHintFollowed(iMsg, m_Universe.GetFrameTicks()); }
 		ALERROR SwitchShips (CShip *pNewShip, SPlayerChangedShipsCtx &Options);
 		void Undock (void);
 		void Update (int iTick);
@@ -301,8 +308,6 @@ class CPlayerShipController : public IShipController
 		DWORD m_dwWreckObjID = OBJID_NULL;			//	WreckObjID (temp while we resurrect)
 
 		int m_iLastHelpTick = 0;
-		int m_iLastHelpUseTick = 0;
-		int m_iLastHelpFireMissileTick = 0;
 
 		CManeuverController m_ManeuverController;
 		EManeuverTypes m_iManeuver = NoRotation;
@@ -320,8 +325,9 @@ class CPlayerShipController : public IShipController
 		CUIMessageController m_UIMsgs;				//	Status of various UI messages, such as hints
 
 		CString m_sName;							//	Player name
-		GenomeTypes m_iGenome = genomeUnknown;					//	Player genome
+		GenomeTypes m_iGenome = genomeUnknown;		//	Player genome
 		DWORD m_dwStartingShipClass = 0;			//	Starting ship class
+		CString m_sStartingSystem;					//	Starting system
 		CGenericType *m_pCharacterClass = NULL;		//	Character class
 
 		bool m_bUnderAttack = false;				//	TRUE if we're currently under attack
@@ -340,6 +346,10 @@ class CPlayerShipController : public IShipController
 
 		CSpaceObject *m_pAutoDamage = NULL;			//	Show damage bar for this object
 		DWORD m_dwAutoDamageExpire = 0;				//	Stop showing on this tick
+
+		bool m_bRedirectMessages = false;			//	If TRUE, redirect display messages
+		CString m_sRedirectMessage;
+		TArray<CString> m_SavedMessages;			//	Messages saved while game session not set up
 
 		CNavigationPath *m_pDebugNavPath = NULL;
 

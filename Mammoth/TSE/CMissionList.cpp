@@ -213,6 +213,25 @@ CMissionList CMissionList::FilterByArc (void) const
 	return Result;
 	}
 
+CMissionList CMissionList::FilterByType (CMissionType &Type) const
+
+//	FilterByType
+//
+//	Returns a list of all missions of the given type.
+
+	{
+	CMissionList Result;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+		if (pMission->GetType() == &Type)
+			Result.Insert(pMission);
+		}
+
+	return Result;
+	}
+
 CMission *CMissionList::FindAcceptedArcChapter (const CString &sTargetArc, const CString &sTargetTitle, CMission *pExclude) const
 
 //	FindAcceptedArcChapter
@@ -417,15 +436,13 @@ ALERROR CMissionList::ReadFromStream (SLoadCtx &Ctx, CString *retsError)
 //	CMission
 
 	{
-	int i;
-
 	DeleteAll();
 
 	DWORD dwCount;
 	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
 	m_List.InsertEmpty(dwCount);
 
-	for (i = 0; i < (int)dwCount; i++)
+	for (int i = 0; i < (int)dwCount; i++)
 		{
 		CSpaceObject *pObj;
 		try

@@ -3129,11 +3129,10 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 		//	Parse the code
 
-		ICCItem *pCode = pCtx->GetUniverse().GetCC().Link(pObj->GetContentText(0));
+		ICCItemPtr pCode = CCodeChain::LinkCode(pObj->GetContentText(0));
 		if (pCode->IsError())
 			{
 			pCtx->sError = strPatternSubst(CONSTLIT("<Code>: %s"), pCode->GetStringValue());
-			pCode->Discard();
 			return ERR_FAIL;
 			}
 
@@ -3143,13 +3142,11 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		if (error = pCtx->System.GetType()->FireSystemCreateCode(*pCtx, pCode, OrbitDesc, &sError))
 			{
 			pCtx->sError = strPatternSubst(CONSTLIT("<Code>: %s"), sError);
-			pCode->Discard();
 			return error;
 			}
 
 		//	Done
 
-		pCode->Discard();
 		PopDebugStack(pCtx);
 		}
 	else if (strEquals(sTag, Z_ADJUST_TAG))

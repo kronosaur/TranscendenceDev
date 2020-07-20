@@ -58,10 +58,11 @@ class CCodeChainCtx
 		void DefineItemType (const CString &sVar, const CItemType *pType);
 		void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.CreateNil()); }
 		void DefineOrbit (const CString &sVar, const COrbit &OrbitDesc);
-		void DefineSource (CSpaceObject *pSource);
 		void DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj);
 		void DefineSpaceObject (const CString &sVar, const CSpaceObject &Obj) { m_CC.DefineGlobalInteger(sVar, (int)&Obj); }
 		void DefineString (const CString &sVar, const CString &sValue) { m_CC.DefineGlobalString(sVar, sValue); }
+		void DefineType (DWORD dwUNID);
+		inline void DefineType (const CDesignType *pType);
 		void DefineVar (const CString &sVar, ICCItem *pValue) { m_CC.DefineGlobal(sVar, pValue); }
 		void DefineVector (const CString &sVar, const CVector &vVector);
 		void Discard (ICCItem *pItem) { pItem->Discard(); }
@@ -90,7 +91,7 @@ class CCodeChainCtx
 		void SaveAndDefineSovereignVar (CSovereign *pSource);
 		void SaveAndDefineType (DWORD dwUNID);
 		void SaveItemVar (void);
-		void SaveSourceVar (void);
+		void SaveTypeVar (void);
 		void SetDockScreenList (IListData *pListData) { m_pListData = pListData; }
 		void SetCanvas (CG32bitImage *pCanvas) { m_pCanvas = pCanvas; }
 		void SetEvent (ECodeChainEvents iEvent);
@@ -224,20 +225,20 @@ class CCXMLWrapper : public ICCAtom
 class CAttributeDataBlock
 	{
 	public:
-        enum ETransferOptions
-            {
-            transCopy,
-            transIgnore,
-            };
+		enum ETransferOptions
+			{
+			transCopy,
+			transIgnore,
+			};
 
-        struct STransferDesc
-            {
-            STransferDesc (void) :
-                    iOption(transCopy)
-                { }
+		struct STransferDesc
+			{
+			STransferDesc (void) :
+					iOption(transCopy)
+				{ }
 
-            ETransferOptions iOption;
-            };
+			ETransferOptions iOption;
+			};
 
 		CAttributeDataBlock (void);
 		CAttributeDataBlock (const CAttributeDataBlock &Src);
@@ -256,7 +257,7 @@ class CAttributeDataBlock
 		const CString &GetDataAttrib (int iIndex) const { return m_Data.GetKey(iIndex); }
 		int GetDataCount (void) const { return m_Data.GetCount(); }
 		CSpaceObject *GetObjRefData (const CString &sAttrib) const;
-        ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL);
+		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL);
 		bool IsDataNil (const CString &sAttrib) const;
 		bool IsEmpty (void) const { return (m_Data.GetCount() == 0 && m_pObjRefData == NULL); }
 		bool IsEqual (const CAttributeDataBlock &Src);
@@ -274,10 +275,10 @@ class CAttributeDataBlock
 		static const CAttributeDataBlock Null;
 
 	private:
-        struct SDataEntry
-            {
-            ICCItemPtr pData;
-            };
+		struct SDataEntry
+			{
+			ICCItemPtr pData;
+			};
 
 		struct SObjRefEntry
 			{
@@ -289,12 +290,12 @@ class CAttributeDataBlock
 			};
 
 		void CleanUp (void);
-        void CleanUpObjRefs (void);
+		void CleanUpObjRefs (void);
 		void Copy (const CAttributeDataBlock &Copy);
-        void CopyObjRefs (SObjRefEntry *pSrc);
+		void CopyObjRefs (SObjRefEntry *pSrc);
 		bool IsXMLText (const CString &sData) const;
-        void ReadDataEntries (IReadStream *pStream);
+		void ReadDataEntries (IReadStream *pStream);
 
-        TSortMap<CString, SDataEntry> m_Data;
+		TSortMap<CString, SDataEntry> m_Data;
 		SObjRefEntry *m_pObjRefData;			//	Custom pointers to CSpaceObject *
 	};

@@ -366,6 +366,23 @@ Metric CStationType::CalcBalanceHitsAdj (int iLevel) const
 	return Min(MAX_HITS_ADJ, sqrt((Metric)CalcHitsToDestroy(iLevel) / BALANCE_STD_HITS_TO_DESTROY));
 	}
 
+int CStationType::CalcChallengeRating (const int iLevel, const Metric rBalance)
+
+//	CalcChallengeRating
+//
+//	Computes the station challenge rating based on level and balance (1.0 =
+//	balanced).
+
+	{
+	static constexpr Metric CHALLENGE_RATING_K1 = 1.25;
+
+	if (iLevel < 1 || iLevel > MAX_SYSTEM_LEVEL)
+		return 0;
+
+	Metric rChallenge = pow(rBalance, TREASURE_BALANCE_POWER) * STD_STATION_DATA[iLevel].rChallenge;
+	return Max(1, mathRound(mathLog(rChallenge, CHALLENGE_RATING_K1)));
+	}
+
 Metric CStationType::CalcDefenderStrength (int iLevel) const
 
 //	CalcDefenderStrength
@@ -1015,13 +1032,7 @@ int CStationType::GetChallengeRating (void) const
 	//	Otherwise, compute it.
 
 	else
-		{
-		static constexpr Metric CHALLENGE_RATING_K1 = 1.25;
-
-		Metric rChallenge = pow(CalcBalance(), TREASURE_BALANCE_POWER) * STD_STATION_DATA[GetLevel()].rChallenge;
-
-		return Max(1, mathRound(mathLog(rChallenge, CHALLENGE_RATING_K1)));
-		}
+		return CalcChallengeRating(GetLevel(), CalcBalance());
 	}
 
 CCommunicationsHandler *CStationType::GetCommsHandler (void)

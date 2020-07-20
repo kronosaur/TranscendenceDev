@@ -35,6 +35,7 @@ class CPlayerGameStats
 		DWORD GetSystemEnteredTime (const CString &sNodeID);
         DWORD GetSystemLastVisitedTime (const CString &sNodeID);
 		ICCItemPtr GetSystemStat (const CString &sStat, const CString &sNodeID) const;
+		bool HasVisitedMultipleSystems (void) const;
 		int IncItemStat (const CString &sStat, DWORD dwUNID, int iInc);
 		int IncScore (int iScore) { m_iScore = Max(0, m_iScore + iScore); return m_iScore; }
 		int IncStat (const CString &sStat, int iInc = 1);
@@ -49,6 +50,7 @@ class CPlayerGameStats
 		void OnItemUninstalled (const CItem &Item);
 		void OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD dwCauseUNID);
 		void OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObject *pPlayer);
+		void OnSwitchPlayerShip (const CShip &NewShip, const CShip *pOldShip = NULL);
 		void OnSystemEntered (CSystem *pSystem, int *retiLastVisit = NULL);
 		void OnSystemLeft (CSystem *pSystem);
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -94,6 +96,14 @@ class CPlayerGameStats
 			bool bMarked = false;
 			};
 
+		struct SPlayerShipStats
+			{
+			DWORD dwFirstEntered = INVALID_TIME;	//	First time we started this ship class
+			DWORD dwLastEntered = INVALID_TIME;		//	Last time we started using this ship class
+			DWORD dwLastLeft = INVALID_TIME;		//	Last time we stopped using ship class
+			DWORD dwTotalTime = 0;					//	Total time using ship
+			};
+
 		struct SShipClassStats
 			{
 			int iEnemyDestroyed = 0;				//	Number of enemy ships destroyed
@@ -135,6 +145,7 @@ class CPlayerGameStats
         Metric m_rFuelConsumed = 0.0;			//  Total fuel consumed (fuel units)
 
 		TMap<DWORD, SItemTypeStats> m_ItemStats;
+		TSortMap<CString, SPlayerShipStats> m_PlayerShipStats;
 		TMap<DWORD, SShipClassStats> m_ShipStats;
 		TMap<DWORD, SStationTypeStats> m_StationStats;
 		TMap<CString, SSystemStats> m_SystemStats;

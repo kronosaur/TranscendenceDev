@@ -220,7 +220,7 @@ class CDisplayAttributeDefinitions
 	public:
 		void AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList) const;
 		void Append (const CDisplayAttributeDefinitions &Attribs);
-		inline void DeleteAll (void) { m_Attribs.DeleteAll(); m_ItemAttribs.DeleteAll(); }
+		void DeleteAll (void) { m_Attribs.DeleteAll(); m_ItemAttribs.DeleteAll(); }
 		const CItemCriteria *FindCriteriaByID (const CString &sID) const;
 		bool FindCriteriaName (const CString &sCriteria, CString *retsName = NULL) const;
 		bool FindCriteriaNameByID (const CString &sID, CString *retsName = NULL) const;
@@ -267,14 +267,14 @@ class CArmorMassDefinitions
 	{
 	public:
 		void Append (const CArmorMassDefinitions &Src);
-		inline void DeleteAll (void) { m_Definitions.DeleteAll(); InvalidateIDIndex(); }
+		void DeleteAll (void) { m_Definitions.DeleteAll(); InvalidateIDIndex(); }
 		bool FindPreviousMassClass (const CString &sID, CString *retsPrevID = NULL, int *retiPrevMass = NULL) const;
 		Metric GetFrequencyMax (const CString &sID) const;
 		const CString &GetMassClassID (const CItem &Item) const;
 		const CString &GetMassClassLabel (const CString &sID) const;
 		int GetMassClassMass (const CString &sID) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		inline bool IsEmpty (void) const { return (m_Definitions.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_Definitions.GetCount() == 0); }
 		void OnBindArmor (SDesignLoadCtx &Ctx, const CItem &Item, CString *retsMassClass = NULL);
 		void OnInitDone (void);
 
@@ -299,9 +299,9 @@ class CArmorMassDefinitions
 			TSortMap<int, SArmorMassEntry> Classes;
 			};
 
-		inline const SArmorMassEntry *FindMassEntry (const CItem &Item) const { return const_cast<CArmorMassDefinitions *>(this)->FindMassEntryActual(Item); }
+		const SArmorMassEntry *FindMassEntry (const CItem &Item) const { return const_cast<CArmorMassDefinitions *>(this)->FindMassEntryActual(Item); }
 		SArmorMassEntry *FindMassEntryActual (const CItem &Item);
-		inline void InvalidateIDIndex (void) { m_ByID.DeleteAll(); }
+		void InvalidateIDIndex (void) { m_ByID.DeleteAll(); }
 
 		TSortMap<CString, SArmorMassDefinition> m_Definitions;
 		TSortMap<CString, SArmorMassEntry *> m_ByID;

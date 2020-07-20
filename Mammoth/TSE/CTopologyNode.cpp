@@ -51,6 +51,7 @@
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_NODE_ID						CONSTLIT("nodeID")
 #define PROPERTY_POS							CONSTLIT("pos")
+#define PROPERTY_STD_CHALLENGE_RATING			CONSTLIT("stdChallengeRating")
 #define PROPERTY_UNCHARTED						CONSTLIT("uncharted")
 
 #define SPECIAL_LEVEL							CONSTLIT("level:")
@@ -572,6 +573,9 @@ ICCItemPtr CTopologyNode::GetProperty (const CString &sName) const
 
 		return pResult;
 		}
+	else if (strEquals(sName, PROPERTY_STD_CHALLENGE_RATING))
+		return ICCItemPtr(CStationType::GetStdChallengeRating(GetLevel()));
+
 	else
 		return ICCItemPtr(ICCItem::Nil);
 	}

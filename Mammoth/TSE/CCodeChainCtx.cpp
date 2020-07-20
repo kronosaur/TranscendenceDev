@@ -568,16 +568,6 @@ void CCodeChainCtx::DefineOrbit (const CString &sVar, const COrbit &OrbitDesc)
 	pValue->Discard();
 	}
 
-void CCodeChainCtx::DefineSource (CSpaceObject *pSource)
-
-//	DefineSource
-//
-//	Sets gSource
-
-	{
-	DefineGlobalSpaceObject(m_CC, STR_G_SOURCE, pSource);
-	}
-
 void CCodeChainCtx::DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj)
 
 //	DefineSpaceObject
@@ -593,6 +583,19 @@ void CCodeChainCtx::DefineSpaceObject (const CString &sVar, const CSpaceObject *
 		m_CC.DefineGlobal(sVar, pValue);
 		pValue->Discard();
 		}
+	}
+
+void CCodeChainCtx::DefineType (DWORD dwUNID)
+
+//	DefineType
+//
+//	Defines the type
+
+	{
+	if (dwUNID)
+		DefineInteger(STR_G_TYPE, dwUNID);
+	else
+		m_CC.DefineGlobal(STR_G_TYPE, m_CC.CreateNil());
 	}
 
 void CCodeChainCtx::DefineVector (const CString &sVar, const CVector &vVector)
@@ -641,7 +644,7 @@ ICCItemPtr CCodeChainCtx::LinkCode (const CString &sString, CCodeChain::SLinkOpt
 //	Links a CodeChain expression.
 
 	{
-	return ICCItemPtr(m_CC.Link(sString, Options));
+	return CCodeChain::LinkCode(sString, Options);
 	}
 
 void CCodeChainCtx::RemoveFrame (void)
@@ -972,15 +975,15 @@ void CCodeChainCtx::SaveItemVar (void)
 		m_pOldItem = m_CC.LookupGlobal(STR_G_ITEM, this);
 	}
 
-void CCodeChainCtx::SaveSourceVar (void)
+void CCodeChainCtx::SaveTypeVar (void)
 
-//	SaveSourceVar
+//	SaveTypeVar
 //
-//	Saves gSource if not already saved
+//	Saves gType if not already saved
 
 	{
-	if (m_pOldSource == NULL)
-		m_pOldSource = m_CC.LookupGlobal(STR_G_SOURCE, this);
+	if (m_pOldType == NULL)
+		m_pOldType = m_CC.LookupGlobal(STR_G_TYPE, this);
 	}
 
 void CCodeChainCtx::SetEvent (ECodeChainEvents iEvent)

@@ -54,6 +54,7 @@ class CMissionType : public CDesignType
 		bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iExisting < m_iMaxAppearing); }
 		bool CleanNonPlayer(void) const { return !m_fRecordNonPlayer; }
 		bool CloseIfOutOfSystem (void) const { return m_fCloseIfOutOfSystem; }
+		bool FailureOnReturnToSystem (void) const { return (m_iFailOnReturnToSystem != -1); }
 		bool FailureWhenOwnerDestroyed (void) const { return !m_fNoFailureOnOwnerDestroyed; }
 		bool FailureWhenOutOfSystem (void) const { return (m_iFailIfOutOfSystem != -1); }
 		bool FindCachedEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { return m_CachedEvents.FindEventHandler(iEvent, retEvent); }
@@ -63,6 +64,7 @@ class CMissionType : public CDesignType
 		EMissionAutoAccept GetAutoAccept (void) const { return m_iAutoAccept; }
 		const CString &GetCreateCriteria (void) const { return m_sCreateCriteria; }
 		const CObjectImageArray &GetImage (void) const;
+		int GetMaxAppearing (void) const { return m_iMaxAppearing; }
 		const CString &GetName (void) const { return m_sName; }
 		int GetExpireTime (void) const { return m_iExpireTime; }
 		DWORD GetLastAcceptedOn (void) const { return m_dwLastAcceptedOn; }
@@ -70,6 +72,7 @@ class CMissionType : public CDesignType
 		int GetPriority (void) const { return (m_pArcRoot ? m_pArcRoot->m_iPriority : m_iPriority); }
 		DWORD GetShuffle (void) const { return (m_pArcRoot ? m_pArcRoot->m_dwShuffle : m_dwShuffle); }
 		CString GetTitle (void) const;
+		int GetReturnToSystemTimeOut (void) const { return m_iFailOnReturnToSystem; }
 		bool HasDebrief (void) const { return !m_fNoDebrief; }
 		bool HasInProgress (void) const { return !m_fNoInProgress; }
 		void IncAccepted (void);
@@ -116,10 +119,10 @@ class CMissionType : public CDesignType
 
 		//	Mission creation
 
-		int m_iPriority;					//	Relative priority (default = 1)
+		int m_iPriority = 1;				//	Relative priority (default = 1)
 		CString m_sCreateCriteria;			//	Allow create if current mission list matches this criteria
-		int m_iMinLevel;					//	Minimum system level supported
-		int m_iMaxLevel;					//	Maximum system level supported
+		int m_iMinLevel = 1;				//	Minimum system level supported
+		int m_iMaxLevel = MAX_SYSTEM_LEVEL;	//	Maximum system level supported
 		DiceRange m_MaxAppearing;			//	Limit to number of times mission has been accepted by player
 											//		(NULL if no limit)
 		bool m_bAllowOtherArcMissions = false;
@@ -127,19 +130,22 @@ class CMissionType : public CDesignType
 		//	Options
 
 		EMissionAutoAccept m_iAutoAccept = EMissionAutoAccept::none;
-		int m_iExpireTime;					//	Mission expires after this amount
+		int m_iExpireTime = -1;				//	Mission expires after this amount
 											//		of time if not accepted.
-		int m_iFailIfOutOfSystem;			//	If player is out of mission system for this amount of time
-											//		(in ticks) then mission fails (-1 means on timeout)
+		int m_iFailIfOutOfSystem = -1;		//	If player is out of mission system for this amount of time
+											//		(in ticks) then mission fails (-1 means no timeout)
+		int m_iFailOnReturnToSystem = -1;	//	If player is out of mission system for this amount of time
+											//		(in ticks) then mission fails the next time the player
+											//		returns to the system (-1 means no timeout)
 
 		//	Mission stats
 
-		int m_iMaxAppearing;				//	Limit to number of times mission can appear (-1 = no limit)
-		int m_iExisting;					//	How many missions of this type currently exist.
+		int m_iMaxAppearing = -1;			//	Limit to number of times mission can appear (-1 = no limit)
+		int m_iExisting = 0;				//	How many missions of this type currently exist.
 											//		NOTE: This number can go up and down. If we create a mission
 											//		the number goes up, but if we later destroy the mission
 											//		(perhaps because it expired) then the count drops.
-		int m_iAccepted;					//	Number of times player has accepted this mission type
+		int m_iAccepted = 0;				//	Number of times player has accepted this mission type
 		DWORD m_dwLastAcceptedOn = 0;		//	Latest tick when we accepted this mission (0 = never)
 
 		//	Events

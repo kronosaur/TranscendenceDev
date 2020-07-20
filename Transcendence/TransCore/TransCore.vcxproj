@@ -507,6 +507,7 @@
     <Xml Include="CommonwealthFleetMissionPJ01.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="CommonwealthVolunteerMission01.xml" />
     <Xml Include="CommonwealthMilitiaMission01.xml" />
     <Xml Include="CommonwealthMilitiaMission02.xml" />
     <Xml Include="CommonwealthMilitiaMission03.xml" />
@@ -521,6 +522,8 @@
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="CommonwealthStarCarrier.xml" />
+    <Xml Include="CommonwealthVolunteerMission02.xml" />
+    <Xml Include="CommonwealthVolunteerMission03.xml" />
     <Xml Include="CompatibilityLibrary.xml" />
     <Xml Include="ContainerHabitat.xml" />
     <Xml Include="CoreDiagnostics.xml" />
@@ -546,6 +549,7 @@
     <Xml Include="Debris.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="EnricoGaul.xml" />
     <Xml Include="EridaniStations.xml" />
     <Xml Include="EtaCeti.xml" />
     <Xml Include="FerianMission01.xml" />
@@ -603,6 +607,7 @@
     <Xml Include="KSMission03.xml" />
     <Xml Include="KSMissionC01.xml" />
     <Xml Include="KSMissionC02.xml" />
+    <Xml Include="LiaPereira.xml" />
     <Xml Include="Makayev.xml" />
     <Xml Include="Marauders.xml" />
     <Xml Include="MiningPods.xml" />
@@ -616,12 +621,15 @@
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="Pilgrim.xml" />
+    <Xml Include="Psych00.xml" />
+    <Xml Include="Psych01.xml" />
     <Xml Include="Pteravores.xml" />
     <Xml Include="QuantumCPU.xml" />
     <Xml Include="RaisuStation.xml" />
     <Xml Include="Rama.xml" />
     <Xml Include="RanxEmpire.xml" />
     <Xml Include="RasiermesserMission01.xml" />
+    <Xml Include="RejuvTank.xml" />
     <Xml Include="RPGCommoditiesExchange.xml" />
     <Xml Include="RPGCommonText.xml" />
     <Xml Include="RPGComponents.xml">
@@ -633,6 +641,8 @@
     <Xml Include="RPGMembership.xml" />
     <Xml Include="RPGMining.xml" />
     <Xml Include="RPGMissionTemplate01.xml" />
+    <Xml Include="RPGMissionTemplate02.xml" />
+    <Xml Include="RPGMissionTemplate03.xml" />
     <Xml Include="RPGRumors.xml" />
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>

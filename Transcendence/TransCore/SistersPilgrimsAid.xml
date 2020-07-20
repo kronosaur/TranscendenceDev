@@ -324,7 +324,7 @@
 								(scrSetDescTranslate gScreen 'descCooldown)
 
 							(scrSetDescTranslate gScreen 'descInvokeHelp {
-								key: (uiKeyLabel 'InvokePower)
+								key: (uiGetKeyName 'InvokePower)
 								})
 							)
 						)

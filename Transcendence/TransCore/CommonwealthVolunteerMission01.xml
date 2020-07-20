@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&msCMVolunteer01;"
+			name=				"Commonwealth Volunteer 01: Intercept Transport"
+			attributes=			"commonwealthMilitia, commonwealthVolunteer, metropolisMilitia, rank0"
+			inherit=			"&baInterceptMission;"
+
+			level=				"1-4"
+			maxAppearing=		"3-5"
+			>
+		<Properties>
+			<DynamicGlobal id="militiaCaptain">
+				(switch
+					(= (sysGetNode) 'SE)
+						&chEnricoGaul;
+
+					&chLiaPereira;
+					)
+			</DynamicGlobal>
+			<Definition id="targetTable">
+				(list {	}
+					{	type: &scT31ArmedTransport;
+						sovereign: &svOutlaw;
+						dist: 200
+						}
+					{	type: &scT31ArmedTransport;	
+						sovereign: &svOutlaw;
+						dist: 200
+						escorts: (list
+							{	type:&scZulu;	}
+							{	type:&scZulu;	}
+							{	type:&scZulu;	}
+							)
+						}
+					{	type: &scT55ArmedTransport;
+						sovereign: &svOutlaw;
+						dist: 300
+						escorts: (list
+							{	type:&scZulu;	}
+							{	type:&scZulu;	}
+							{	type:&scZulu;	}
+							)
+						}
+					{	type: &scT55ArmedTransport;	
+						sovereign: &svOutlaw;
+						dist: 300
+						escorts: (list
+							{	type:&scOromo;	}
+							{	type:&scOromo;	}
+							{	type:&scOromo;	}
+							)
+						}
+					)
+			</Definition>
+
+			<Variant id="character.missionGiver">
+				(typ@ &msCMVolunteer01; 'militiaCaptain)
+			</Variant>
+			<Variant id="reward">
+				(@ (typ@ &unidCommonwealthMilitia; 'volunteerRewardTable) (min (sysGetLevel) 10))
+			</Variant>
+			<Variant id="targetDesc">
+				(@ (typ@ gType 'targetTable) (min (sysGetLevel) 4))
+			</Variant>
+		</Properties>
+
+		<Events>
+			<CanCreate>
+				(switch
+					;	If the player has had any dealings with the Black Market,
+					;	then this mission is not available.
+
+					(gr (typ@ &unidBlackMarketMember; 'xp) 0)
+						Nil
+
+					;	Call base class
+
+					(typFireEvent &baInterceptMission; 'CanCreate gData)
+					)
+			</CanCreate>
+
+			<OnCompleted>
+			</OnCompleted>
+			
+			<OnReward>
+				;	Pay the player and record the award
+
+				(rpgMissionRewardPayment (msn@ gSource 'reward))
+			</OnReward>
+
+			<OnGlobalSystemDiagnostics>
+				(block (
+					(stationType
+						(switch
+							(= (sysGetNode) 'SE)
+								&stStartonEridani;
+
+							&stCommonwealthStation;
+							)
+						)
+
+					stationObj
+					)
+					(if (and (leq (sysGetLevel) 4)
+							(setq stationObj (@ (sysFindObject Nil (cat "TA +unid:" stationType ";")) 0))
+							(msnCanCreate &msCMVolunteer01; stationObj)
+							)
+						(block (missionObj)
+							(diagCreatePlayerShip)
+
+							(diagAssert (setq missionObj (msnCreate &msCMVolunteer01; stationObj)) (cat "Militia Volunteer 01: Unable to create in " (sysGetName) "."))
+							(diagAssertMissionLanguage missionObj)
+						
+							(msnDestroy missionObj)
+							(objDestroy gPlayerShip)
+							(setq gPlayerShip Nil)
+							)
+						)
+					)
+			</OnGlobalSystemDiagnostics>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Intercept Drug Smuggler
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(typTranslate (msn@ gSource 'character.missionGiver) 'missionIntro {
+					missionObj: gSource
+					})
+			</Text>
+			<Text id="Briefing">
+				(block (
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'volunteer01.briefing trData)
+						(msnTranslate gSource 'textBriefing trData)
+						)
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(msnTranslate gSource 'textAcceptReply1 {
+					})
+			</Text>
+			<Text id="DeclineReply">
+				(msnTranslate gSource 'textDeclineReply1 {
+					})
+			</Text>
+			<Text id="InProgress">
+				(msnTranslate gSource 'textInProgress1 {
+					})
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(trData {
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'volunteer01.successDebrief trData)
+						(msnTranslate gSource 'textSuccessDebrief trData)
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(or
+					(typTranslate (msn@ gSource 'character.missionGiver) 'volunteer01.failureDebrief)
+					(msnTranslate gSource 'textFailureDebrief)
+					)
+			</Text>
+
+			<Text id="textSummary">
+			
+				A drug smuggler is operating in this system. Your mission is to 
+				intercept and destroy their ship.
+
+				System: %systemName%\n
+				Payment: %reward%
+
+			</Text>
+			<Text id="textBriefing">
+
+				The captain looks down at a screen.
+
+				"A drug smuggler is passing through the system with a load of
+				tempus. Your mission is to intercept the ship and destroy it.
+
+				"We'll pay %reward% if you succeed. Interested?"
+
+			</Text>
+			<Text id="textAcceptReply1">
+
+				"All right. I'll send the target to your computer. Just make 
+				sure you destroy the target before it leaves the system. 
+				Else we'll never find it again.
+
+				"OK, get out of here."
+
+			</Text>
+			<Text id="textDeclineReply1">
+
+				"Ah, Hell! What are you doing here then? Stop wasting my time!"
+
+			</Text>
+			<Text id="textInProgress1">
+
+				"What's wrong? You said you could handle this mission! Get back 
+				out there and finish the job!"
+
+			</Text>
+			<Text id="textSuccessDebrief">
+
+				The captain nods in approval.
+
+				"Nice work. These drug smugglers are getting bolder all the 
+				time.
+
+				"We've deposited %reward% to your account."
+
+			</Text>
+			<Text id="textFailureDebrief">
+
+				The captain sighs.
+
+				"It took us weeks to track down that drug smuggler! We'll have
+				to alert other stations. Maybe they'll be able to pick up the
+				trail.
+
+				"Next time, try a little harder. We can't afford to let these
+				smugglers through."
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

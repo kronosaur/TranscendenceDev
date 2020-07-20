@@ -191,7 +191,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the text code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::LinkCode(sCode)->Reference() : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), IMAGE_TAG))
 		{
@@ -225,7 +225,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the code that returns the image
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::LinkCode(sCode)->Reference() : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), CANVAS_TAG))
 		{
@@ -238,7 +238,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the draw code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::LinkCode(sCode)->Reference() : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), GROUP_TAG))
 		{
@@ -259,7 +259,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the text code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::LinkCode(sCode)->Reference() : NULL);
 		}
 
 	//	Done
@@ -1280,6 +1280,7 @@ void CDockScreen::InitOnUpdate (CXMLElement *pDesc)
 	}
 
 ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
+								 CPlayerShipController &Player,
 								 HWND hWnd, 
 								 RECT &rcRect, 
 								 CExtension *pExtension,
@@ -1318,7 +1319,7 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	m_pRoot = Frame.pRoot;
 	m_sScreen = Frame.sScreen;
 	m_pData = pData;
-	m_pPlayer = g_pTrans->GetPlayer();
+	m_pPlayer = &Player;
 	m_pExtension = pExtension;
 	m_pDesc = pDesc;
 

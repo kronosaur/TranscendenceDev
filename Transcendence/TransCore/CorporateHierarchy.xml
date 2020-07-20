@@ -151,19 +151,19 @@
 
 		<Items>
 			<RandomItem count="1d12" 
-					criteria=		"a L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"a L:1-10; +commonwealth; -illegal; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="1d12" 
-					criteria=		"w L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-10; +commonwealth; -illegal; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="1d12" 
-					criteria=		"d~w L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"d~w L:1-10; +commonwealth; -illegal; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
 					enhancement=	"=(intCorporateGenerateEnhancement gItem)"
@@ -175,7 +175,7 @@
 					/>
 
 			<RandomItem count="2d12" 
-					criteria=		"m -Specialty; -illegal; -NotStandard; -NotForSale;"
+					criteria=		"m +commonwealth; -Specialty; -illegal; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 
@@ -302,19 +302,19 @@
 
 		<Items>
 			<RandomItem count="8-12" 
-					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"as L:1-7; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:u|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="8-12" 
-					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"as L:1-7; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:-|u|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="6-10" 
-					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"as L:1-7; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="4" 
@@ -396,7 +396,7 @@
 			</NPCService>
 		</StaticData>
 
-        <Language>
+		<Language>
 			<Text id="descWelcome">
 				You are docked at an armor dealer station.
 			</Text>
@@ -407,8 +407,8 @@
 
 			</Text>
 
-            <Text id="core.mapDesc">"Buys and sells armor and shields &mdash; Installs purchased items &mdash; Buys damaged armor and shields"</Text>
-        </Language>
+			<Text id="core.mapDesc">"Buys and sells armor and shields &mdash; Installs purchased items &mdash; Buys damaged armor and shields"</Text>
+		</Language>
 	</StationType>
 
 	<!-- Level 4: Arms Dealer -->
@@ -467,26 +467,26 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-6; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:-|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement2 gItem)"
 					/>
 			<RandomItem count="15" 
-					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-6; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="8" 
-					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-6; +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 
 			<RandomItem count="25-35" 
-					criteria=		"m -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"m +commonwealth; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 		</Items>
@@ -549,7 +549,7 @@
 
 		<!-- Events and Behavior -->
 
-        <Language>
+		<Language>
 			<Text id="actionWeapons">[W]eapons</Text>
 
 			<Text id="descWelcome">
@@ -562,10 +562,10 @@
 
 			</Text>
 
-            <Text id="core.mapDesc">
+			<Text id="core.mapDesc">
 				Buys and sells weapons and ammo &mdash; Installs purchased items &mdash; Buys damaged weapons
 			</Text>
-        </Language>
+		</Language>
 	</StationType>
 
 	<!-- Arms Dealer, Bushido -->
@@ -876,7 +876,7 @@
 			<Port x="-60"	y="-60" />
 		</DockingPorts>
 
-        <Language>
+		<Language>
 			<Text id="descWelcome">
 				You are docked at an auton dealer.
 			</Text>
@@ -894,8 +894,8 @@
 				interested in buying %itemName%.
 
 			</Text>
-            <Text id="core.mapDesc">"Buys and sells autons"</Text>
-        </Language>
+			<Text id="core.mapDesc">"Buys and sells autons"</Text>
+		</Language>
 	</StationType>
 
 	<!-- Level 4: Corporate Enclave -->
@@ -1090,7 +1090,7 @@
 
 		<!-- Events and Data -->
 
-        <Language>
+		<Language>
 			<Text id="descWelcome">
 
 				You are in the docking level of a corporate enclave. The 
@@ -1146,8 +1146,8 @@
 				resources. We are not interested in buying %itemName%.
 
 			</Text>
-            <Text id="core.mapDesc">"Buys food, luxuries, meds, and industrial resources"</Text>
-        </Language>
+			<Text id="core.mapDesc">"Buys food, luxuries, meds, and industrial resources"</Text>
+		</Language>
 	</StationType>
 
 	<!-- Fuel Depot -->
@@ -1296,9 +1296,9 @@
 				with your transaction.
 
 			</Text>
-            <Text id="core.mapDesc">
-                Refuels up to level 10 &mdash; Sells fuel and supplies
-            </Text>
+			<Text id="core.mapDesc">
+				Refuels up to level 10 &mdash; Sells fuel and supplies
+			</Text>
 		</Language>
 
 	</StationType>
@@ -1526,7 +1526,7 @@
 			</OnManufacture>
 		</Events>
 
-        <Language>
+		<Language>
 			<Text id="descWelcome">
 
 				You are in the docking level of a corporate manufacturing plant.
@@ -1560,8 +1560,8 @@
 					)
 			</Text>
 
-            <Text id="core.mapDescCustom">
-                (typTranslate gType 'mapDescCustomText {
+			<Text id="core.mapDescCustom">
+				(typTranslate gType 'mapDescCustomText {
 					buyItemsList: (objTranslate gSource 'buyItemsList)
 					sellItemsList: (join (map (objGetData gSource 'itemsCreated) theType
 											(itmGetName theType '(plural short))
@@ -1569,13 +1569,13 @@
 										'oxfordComma
 										)
 					})
-            </Text>
+			</Text>
 			
 			<Text id="mapDescCustomText">
 				Buys %buyItemsList% &mdash;
 				Sells %sellItemsList%
 			</Text>
-        </Language>
+		</Language>
 	</StationType>
 
 	<!-- Merchant Prince Hotel -->
@@ -1715,7 +1715,7 @@
 			<Port x="-70"	y="25" />
 		</DockingPorts>
 
-        <Language>
+		<Language>
 			<Text id="actionRestaurant">"[R]estaurant"</Text>
 			<Text id="actionLoadingDock">"[L]oading Dock"</Text>
 
@@ -1741,8 +1741,8 @@
 				interested in buying %itemName%.
 
 			</Text>
-            <Text id="core.mapDesc">"Buys food, luxuries, and meds"</Text>
-        </Language>
+			<Text id="core.mapDesc">"Buys food, luxuries, and meds"</Text>
+		</Language>
 	</StationType>
 
 	<!-- Level 3: Ice Farm -->
@@ -1869,7 +1869,7 @@
 
 		<!-- Events and Data -->
 
-        <Language>
+		<Language>
 			<Text id="core.name">Ice Farm</Text>
 
 			<Text id="descWelcome">
@@ -1885,8 +1885,8 @@
 				interested in buying %itemName%.
 
 			</Text>
-            <Text id="core.mapDesc">Sells luxuries &mdash; Buys food and supplies</Text>
-        </Language>
+			<Text id="core.mapDesc">Sells luxuries &mdash; Buys food and supplies</Text>
+		</Language>
 
 	</StationType>
 

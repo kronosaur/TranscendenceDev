@@ -107,7 +107,7 @@
 //#define ITEM_REFERENCE
 
 //	Forward references
-
+class CAccessibilitySettings;
 class CArmorClass;
 class CBoundaryMarker;
 class CDeviceClass;
@@ -573,6 +573,7 @@ class CSpaceObject
 		const CItemList &GetItemList (void) const { return m_ItemList; }
 		CItemList &GetItemList (void) { return m_ItemList; }
 		ICCItemPtr GetItemProperty (CCodeChainCtx &CCX, const CItem &Item, const CString &sName) const;
+		bool IncItemProperty (const CItem &Item, const CString &sProperty, const ICCItem &Value, int iCount, CItem *retItem = NULL, ICCItemPtr *retNewValue = NULL, CString *retsError = NULL);
 		bool RemoveItem (const CItem &Item, DWORD dwItemMatchFlags, int iCount = -1, int *retiCountRemoved = NULL, CString *retsError = NULL);
 		void RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID, bool bExpiredOnly = false);
 		void RepairItem (CItemListManipulator &ItemList);
@@ -617,6 +618,7 @@ class CSpaceObject
 		bool BlocksShips (void) { return (m_fIsBarrier && CanBlockShips()); }
 		int CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const;
 		CSpaceObject *CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
+		virtual bool CanBeDestroyedBy (CSpaceObject &Attacker) const { return true; }
 		bool CanBeHit (void) const { return (!m_fCannotBeHit && !m_fOutOfPlaneObj); }
 		bool CanBeHitByFriends (void) const { return !m_fNoFriendlyTarget; }
 		bool CanDetect (int Perception, CSpaceObject *pObj);
@@ -781,7 +783,11 @@ class CSpaceObject
 		bool IsEnemy (const CDamageSource &Obj) const;
 		bool IsEnemyInRange (Metric rMaxRange, bool bIncludeStations = false);
 		bool IsEscortingFriendOf (const CSpaceObject *pObj) const;
+		bool IsEscorting (const CSpaceObject* pObj) const;
 		bool IsFriend (const CSpaceObject *pObj) const;
+		bool IsNeutral (const CSpaceObject* pObj) const;
+		bool IsFriend(const CSovereign &Sovereign) const;
+		bool IsNeutral(const CSovereign &Sovereign) const;
 		bool IsHighlighted (void) const { return ((m_iHighlightCountdown != 0) || m_fSelected || m_iHighlightChar); }
 		bool IsInDamageCode (void) const { return (m_fInDamage ? true : false); }
 		bool IsLineOfFireClear (const CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL) const;
@@ -1741,6 +1747,7 @@ class CAscendedObjectList
 #include "TSEMapPainters.h"
 #include "TSETransLispUtil.h"
 
+#include "TSEAccessibilitySettings.h"
 #include "TSEUniverse.h"
 
 #include "TSESpaceObjectsEnum.h"

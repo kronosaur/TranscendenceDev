@@ -114,6 +114,7 @@
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
+const CWeaponFireDesc CWeaponFireDesc::m_Null;
 CWeaponFireDesc::SOldEffects CWeaponFireDesc::m_NullOldEffects;
 
 static char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
@@ -152,11 +153,11 @@ CWeaponFireDesc::~CWeaponFireDesc (void)
 	if (m_pParticleDesc)
 		delete m_pParticleDesc;
 
-    if (m_pOldEffects)
-        delete m_pOldEffects;
+	if (m_pOldEffects)
+		delete m_pOldEffects;
 
-    if (m_pScalable)
-        delete[] m_pScalable;
+	if (m_pScalable)
+		delete[] m_pScalable;
 	}
 
 void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -192,14 +193,14 @@ void CWeaponFireDesc::ApplyAcceleration (CSpaceObject *pMissile) const
 //
 //  Accelerates, if necessary. This should be called exactly once per 10 ticks.
 
-    {
+	{
 	if (m_iAccelerationFactor > 0)
 		{
 		if (m_iAccelerationFactor < 100
 				|| pMissile->GetVel().Length() < m_rMaxMissileSpeed)
 			pMissile->SetVel(pMissile->GetVel() * (Metric)(m_iAccelerationFactor / 100.0));
 		}
-    }
+	}
 
 Metric CWeaponFireDesc::CalcDamage (DWORD dwDamageFlags) const
 
@@ -228,20 +229,20 @@ Metric CWeaponFireDesc::CalcDamage (DWORD dwDamageFlags) const
 					break;
 
 				default:
-                    if (pFragment->pDesc->IsTracking())
-                        rHitFraction = CWeaponClass::EXPECTED_TRACKING_FRAGMENT_HITS;
-                    else
-                        rHitFraction = CWeaponClass::EXPECTED_FRAGMENT_HITS;
-                    break;
+					if (pFragment->pDesc->IsTracking())
+						rHitFraction = CWeaponClass::EXPECTED_TRACKING_FRAGMENT_HITS;
+					else
+						rHitFraction = CWeaponClass::EXPECTED_FRAGMENT_HITS;
+					break;
 				}
 
-            //  Adjust for passthrough
+			//  Adjust for passthrough
 
-            if (pFragment->pDesc->GetPassthrough() > 0)
-                {
-                Metric rPassthroughProb = Min(0.99, pFragment->pDesc->GetPassthrough() / 100.0);
-                rHitFraction *= Min(1.0 / (1.0 - rPassthroughProb), CWeaponClass::MAX_EXPECTED_PASSTHROUGH);
-                }
+			if (pFragment->pDesc->GetPassthrough() > 0)
+				{
+				Metric rPassthroughProb = Min(0.99, pFragment->pDesc->GetPassthrough() / 100.0);
+				rHitFraction *= Min(1.0 / (1.0 - rPassthroughProb), CWeaponClass::MAX_EXPECTED_PASSTHROUGH);
+				}
 
 			//	Add up values
 
@@ -397,10 +398,10 @@ Metric CWeaponFireDesc::CalcMaxEffectiveRange (void) const
 //
 //  Computes the max effective range given current stats
 
-    {
-    int iMaxLifetime = m_Lifetime.GetMaxValue();
+	{
+	int iMaxLifetime = m_Lifetime.GetMaxValue();
 
-    Metric rRange;
+	Metric rRange;
 	if (m_iFireType == ftArea)
 		rRange = (m_ExpansionSpeed.GetAveValueFloat() * LIGHT_SECOND / 100.0) * Ticks2Seconds(iMaxLifetime) * 0.75;
 	else if (m_iFireType == ftRadius)
@@ -422,10 +423,10 @@ Metric CWeaponFireDesc::CalcMaxEffectiveRange (void) const
 	if (m_pFirstFragment)
 		rRange += m_pFirstFragment->pDesc->m_rMaxEffectiveRange;
 
-    //  Done
+	//  Done
 
-    return rRange;
-    }
+	return rRange;
+	}
 
 Metric CWeaponFireDesc::CalcSpeed (Metric rPercentOfLight, bool bRelativistic)
 
@@ -843,7 +844,7 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 
 	//	Check the damage structure
 
-    else if (pResult = m_Damage.FindProperty(sProperty))
+	else if (pResult = m_Damage.FindProperty(sProperty))
 		return pResult;
 
 	//	Otherwise, get it from a data field
@@ -882,7 +883,7 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDesc (const CString &sUNID, cons
 		if (*pPos == 'e')
 			{
 			pPos++;
-    		return NULL;
+			return NULL;
 			}
 
 		//	A fragment
@@ -967,15 +968,15 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 				iOrdinal = strParseInt(pPos, 0, &pPos);
 				}
 
-            //  Convert the ordinal to an ammo type
+			//  Convert the ordinal to an ammo type
 
-            CItem Ammo;
-            if (iOrdinal < pClass->GetAmmoItemCount())
-                Ammo = CItem(pClass->GetAmmoItem(iOrdinal), 1);
+			CItem Ammo;
+			if (iOrdinal < pClass->GetAmmoItemCount())
+				Ammo = CItem(pClass->GetAmmoItem(iOrdinal), 1);
 
 			//	Get the weapon fire desc of the ordinal
 
-            CWeaponFireDesc *pDesc = pClass->GetWeaponFireDesc(CItemCtx(), Ammo);
+			CWeaponFireDesc *pDesc = pClass->GetWeaponFireDesc(CItemCtx(), Ammo);
 			if (pDesc == NULL)
 				return NULL;
 
@@ -1523,17 +1524,17 @@ Metric CWeaponFireDesc::GetMaxRange (void) const
 //
 //  Returns the maximum possible range.
 
-    {
-    Metric rRange;
+	{
+	Metric rRange;
 
-    //  Compute lifetime
+	//  Compute lifetime
 
-    Metric rMaxLifetime = Ticks2Seconds(m_Lifetime.GetMaxValue());
+	Metric rMaxLifetime = Ticks2Seconds(m_Lifetime.GetMaxValue());
 
 	//	Compute max effective range
 
-    if (m_iFireType == ftArea)
-        rRange = (m_ExpansionSpeed.GetAveValueFloat() * LIGHT_SECOND / 100.0) * rMaxLifetime;
+	if (m_iFireType == ftArea)
+		rRange = (m_ExpansionSpeed.GetAveValueFloat() * LIGHT_SECOND / 100.0) * rMaxLifetime;
 	else if (m_iFireType == ftRadius)
 		rRange = m_rMaxRadius;
 	else
@@ -1544,13 +1545,13 @@ Metric CWeaponFireDesc::GetMaxRange (void) const
 
 	//	If we have fragments, add to the effective range
 
-    if (m_pFirstFragment)
-        rRange += m_pFirstFragment->pDesc->GetMaxRange();
+	if (m_pFirstFragment)
+		rRange += m_pFirstFragment->pDesc->GetMaxRange();
 
-    //  Done
+	//  Done
 
-    return rRange;
-    }
+	return rRange;
+	}
 
 CEffectCreator *CWeaponFireDesc::GetParticleEffect (void) const
 
@@ -1578,22 +1579,22 @@ CWeaponFireDesc *CWeaponFireDesc::GetScaledDesc (int iLevel) const
 //
 //  Returns the scalable descriptor for the given level.
 
-    {
-    //  If we're not scalable, then we just return our stats
+	{
+	//  If we're not scalable, then we just return our stats
 
-    if (m_pScalable == NULL)
-        return const_cast<CWeaponFireDesc *>(this);
+	if (m_pScalable == NULL)
+		return const_cast<CWeaponFireDesc *>(this);
 
-    //  If we're at or below our base level, then we just return our stats.
+	//  If we're at or below our base level, then we just return our stats.
 
-    else if (iLevel <= m_iBaseLevel)
-        return const_cast<CWeaponFireDesc *>(this);
+	else if (iLevel <= m_iBaseLevel)
+		return const_cast<CWeaponFireDesc *>(this);
 
-    //  Otherwise, return a scaled level (but make sure we're in range).
+	//  Otherwise, return a scaled level (but make sure we're in range).
 
-    else
-        return &m_pScalable[Min(iLevel - m_iBaseLevel - 1, m_iScaledLevels - 1)];
-    }
+	else
+		return &m_pScalable[Min(iLevel - m_iBaseLevel - 1, m_iScaledLevels - 1)];
+	}
 
 int CWeaponFireDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) const
 
@@ -1602,18 +1603,18 @@ int CWeaponFireDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlag
 //  Returns the value of the given special damage. If a weapon has fragments,
 //  we return the highest level for all fragments.
 
-    {
-    int iValue = m_Damage.GetSpecialDamage(iSpecial, dwFlags);
+	{
+	int iValue = m_Damage.GetSpecialDamage(iSpecial, dwFlags);
 
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        iValue = Max(iValue, pFrag->pDesc->GetSpecialDamage(iSpecial, dwFlags));
-        pFrag = pFrag->pNext;
-        }
+	SFragmentDesc *pFrag = m_pFirstFragment;
+	while (pFrag)
+		{
+		iValue = Max(iValue, pFrag->pDesc->GetSpecialDamage(iSpecial, dwFlags));
+		pFrag = pFrag->pNext;
+		}
 
-    return iValue;
-    }
+	return iValue;
+	}
 
 CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 
@@ -1657,13 +1658,13 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 
 		if (pClass->GetCategory() == itemcatLauncher)
 			{
-            if (iOrdinal < pClass->GetAmmoItemCount())
-                return pClass->GetAmmoItem(iOrdinal);
+			if (iOrdinal < pClass->GetAmmoItemCount())
+				return pClass->GetAmmoItem(iOrdinal);
 
 			//	Otherwise return the launcher (e.g., DM600)
 
-            else
-			    return pItemType;
+			else
+				return pItemType;
 			}
 
 		//	Otherwise, return the weapon
@@ -1722,7 +1723,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	{
 	int i;
 
-    m_iLevel = 13;
+	m_iLevel = 13;
 	m_fFragment = false;
 
 	//	Load basic attributes
@@ -1808,7 +1809,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 	//	Old effects
 
-    m_pOldEffects = NULL;
+	m_pOldEffects = NULL;
 
 	//	Sound
 
@@ -1816,7 +1817,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 	//	Compute max effective range
 
-    m_rMaxEffectiveRange = CalcMaxEffectiveRange();
+	m_rMaxEffectiveRange = CalcMaxEffectiveRange();
 
 	//	Cached events
 
@@ -1833,18 +1834,18 @@ ALERROR CWeaponFireDesc::InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *p
 //
 //  This weapon definition is for a missile
 
-    {
-    ALERROR error;
+	{
+	ALERROR error;
 
 	ASSERT(Options.iLevel == pMissile->GetLevel());
 
-    if (error = InitFromXML(Ctx, pDesc, Options))
-        return error;
+	if (error = InitFromXML(Ctx, pDesc, Options))
+		return error;
 
-    m_pAmmoType = pMissile;
+	m_pAmmoType = pMissile;
 
-    return NOERROR;
-    }
+	return NOERROR;
+	}
 
 ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const SInitOptions &Options)
 
@@ -1857,7 +1858,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	int i;
 
 	m_pExtension = Ctx.pExtension;
-    m_iLevel = Max(1, Options.iLevel);
+	m_iLevel = Max(1, Options.iLevel);
 	m_fFragment = Options.bIsFragment;
 
 	//	Fire type
@@ -1914,18 +1915,18 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		return ERR_FAIL;
 
 	//	Load the effect to use. By default we expect images to loop (since they need to last
-    //  as long as the missile).
+	//  as long as the missile).
 
-    Ctx.bLoopImages = true;
+	Ctx.bLoopImages = true;
 
-    error = m_pEffect.LoadEffect(Ctx,
-        strPatternSubst("%s:e", m_sUNID),
-        pDesc->GetContentElementByTag(EFFECT_TAG),
-        pDesc->GetAttribute(EFFECT_ATTRIB));
+	error = m_pEffect.LoadEffect(Ctx,
+		strPatternSubst("%s:e", m_sUNID),
+		pDesc->GetContentElementByTag(EFFECT_TAG),
+		pDesc->GetAttribute(EFFECT_ATTRIB));
 
-    Ctx.bLoopImages = false;
+	Ctx.bLoopImages = false;
 
-    if (error)
+	if (error)
 		return error;
 
 	//	Load stealth
@@ -2259,7 +2260,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Compute max effective range
 
-    m_rMaxEffectiveRange = CalcMaxEffectiveRange();
+	m_rMaxEffectiveRange = CalcMaxEffectiveRange();
 
 	//	Effects
 
@@ -2282,15 +2283,15 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Vapor trail
 
-    int iVaporTrailWidth;
+	int iVaporTrailWidth;
 	if (!pDesc->FindAttributeInteger(VAPOR_TRAIL_WIDTH_ATTRIB, &iVaporTrailWidth))
 		iVaporTrailWidth = 100 * pDesc->GetAttributeInteger(VAPOR_TRAIL_ATTRIB);
 
 	if (iVaporTrailWidth)
 		{
-        SVaporTrailDesc &VaporTrail = SetOldEffects().VaporTrail;
+		SVaporTrailDesc &VaporTrail = SetOldEffects().VaporTrail;
 
-        VaporTrail.iVaporTrailWidth = iVaporTrailWidth;
+		VaporTrail.iVaporTrailWidth = iVaporTrailWidth;
 		VaporTrail.rgbVaporTrailColor = LoadRGBColor(pDesc->GetAttribute(VAPOR_TRAIL_COLOR_ATTRIB));
 		VaporTrail.iVaporTrailLength = pDesc->GetAttributeInteger(VAPOR_TRAIL_LENGTH_ATTRIB);
 		if (VaporTrail.iVaporTrailLength <= 0)
@@ -2484,34 +2485,34 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 //  NOTE: We don't call this in InitFromXML because we don't want to recurse
 //  for fragments (instead, we deal with them here).
 
-    {
-    ALERROR error;
-    int i;
+	{
+	ALERROR error;
+	int i;
 
-    ASSERT(m_pScalable == NULL);
+	ASSERT(m_pScalable == NULL);
 
-    m_iBaseLevel = pItem->GetLevel();
-    m_iScaledLevels = pItem->GetMaxLevel() - m_iBaseLevel;
-    if (m_iScaledLevels < 1)
-        return NOERROR;
+	m_iBaseLevel = pItem->GetLevel();
+	m_iScaledLevels = pItem->GetMaxLevel() - m_iBaseLevel;
+	if (m_iScaledLevels < 1)
+		return NOERROR;
 
-    m_pScalable = new CWeaponFireDesc [m_iScaledLevels];
+	m_pScalable = new CWeaponFireDesc [m_iScaledLevels];
 
-    //  Loop over every descriptor and initialize it.
+	//  Loop over every descriptor and initialize it.
 
-    for (i = 0; i < m_iScaledLevels; i++)
-        {
-        CWeaponFireDesc &ScaledDesc = m_pScalable[i];
-        int iScaledLevel = m_iBaseLevel + i + 1;
+	for (i = 0; i < m_iScaledLevels; i++)
+		{
+		CWeaponFireDesc &ScaledDesc = m_pScalable[i];
+		int iScaledLevel = m_iBaseLevel + i + 1;
 
-        if (error = ScaledDesc.InitScaledStats(Ctx, pDesc, pWeapon, *this, m_iBaseLevel, iScaledLevel))
-            return error;
-        }
+		if (error = ScaledDesc.InitScaledStats(Ctx, pDesc, pWeapon, *this, m_iBaseLevel, iScaledLevel))
+			return error;
+		}
 
-    //  Done
+	//  Done
 
-    return NOERROR;
-    }
+	return NOERROR;
+	}
 
 ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CWeaponClass *pWeapon, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel)
 
@@ -2519,23 +2520,23 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 //
 //  Initializes a single level
 
-    {
-    ALERROR error;
+	{
+	ALERROR error;
 
 	const CWeaponClass::SStdStats &Base = CWeaponClass::GetStdStats(iBaseLevel);
 	const CWeaponClass::SStdStats &Scaled = CWeaponClass::GetStdStats(iScaledLevel);
 
-    //  Set the level
+	//  Set the level
 
-    m_iLevel = iScaledLevel;
+	m_iLevel = iScaledLevel;
 
-    //  Damage scales. We use the bonus parameter to increase it.
-    //  We start by figuring out the percent increase in damage at the scaled
-    //  level, relative to base.
+	//  Damage scales. We use the bonus parameter to increase it.
+	//  We start by figuring out the percent increase in damage at the scaled
+	//  level, relative to base.
 
-    Metric rAdj = (Metric)Scaled.iDamage / Base.iDamage;
-    m_Damage = Src.m_Damage;
-    m_Damage.ScaleDamage(rAdj);
+	Metric rAdj = (Metric)Scaled.iDamage / Base.iDamage;
+	m_Damage = Src.m_Damage;
+	m_Damage.ScaleDamage(rAdj);
 	if (!Src.m_DamageAtMaxRange.IsEmpty())
 		{
 		m_DamageAtMaxRange = Src.m_DamageAtMaxRange;
@@ -2549,76 +2550,76 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_iPowerUse = mathRound(iBasePowerUse * rAdj);
 	m_iIdlePowerUse = mathRound(pWeapon->GetIdlePowerUse() * rAdj);
 
-    //  These stats never scale, so we just copy them
+	//  These stats never scale, so we just copy them
 
-    m_pExtension = Src.m_pExtension;
-    m_sUNID = Src.m_sUNID;      //  NOTE: We don't need a unique UNID 
-                                //      since we're using the same effects
-                                //      as the base level.
+	m_pExtension = Src.m_pExtension;
+	m_sUNID = Src.m_sUNID;      //  NOTE: We don't need a unique UNID 
+								//      since we're using the same effects
+								//      as the base level.
 
-    m_pAmmoType = Src.m_pAmmoType;
-    m_iFireType = Src.m_iFireType;
-    m_iContinuous = Src.m_iContinuous;
+	m_pAmmoType = Src.m_pAmmoType;
+	m_iFireType = Src.m_iFireType;
+	m_iContinuous = Src.m_iContinuous;
 	m_iContinuousFireDelay = Src.m_iContinuousFireDelay;
 	m_iFireRate = Src.m_iFireRate;
 
 	m_fRelativisticSpeed = Src.m_fRelativisticSpeed;
-    m_rMissileSpeed = Src.m_rMissileSpeed;
-    m_MissileSpeed = Src.m_MissileSpeed;
-    m_Lifetime = Src.m_Lifetime;
-    m_InitialDelay = Src.m_InitialDelay;
-    m_iPassthrough = Src.m_iPassthrough;
+	m_rMissileSpeed = Src.m_rMissileSpeed;
+	m_MissileSpeed = Src.m_MissileSpeed;
+	m_Lifetime = Src.m_Lifetime;
+	m_InitialDelay = Src.m_InitialDelay;
+	m_iPassthrough = Src.m_iPassthrough;
 
-    m_iAccelerationFactor = Src.m_iAccelerationFactor;
-    m_rMaxMissileSpeed = Src.m_rMaxMissileSpeed;
-    m_iStealth = Src.m_iStealth;
-    m_iHitPoints = Src.m_iHitPoints;
-    m_iInteraction = Src.m_iInteraction;
-    m_iManeuverability = Src.m_iManeuverability;
-    m_iManeuverRate = Src.m_iManeuverRate;
+	m_iAccelerationFactor = Src.m_iAccelerationFactor;
+	m_rMaxMissileSpeed = Src.m_rMaxMissileSpeed;
+	m_iStealth = Src.m_iStealth;
+	m_iHitPoints = Src.m_iHitPoints;
+	m_iInteraction = Src.m_iInteraction;
+	m_iManeuverability = Src.m_iManeuverability;
+	m_iManeuverRate = Src.m_iManeuverRate;
 
-    m_pParticleDesc = (Src.m_pParticleDesc ? new CParticleSystemDesc(*Src.m_pParticleDesc) : NULL);
+	m_pParticleDesc = (Src.m_pParticleDesc ? new CParticleSystemDesc(*Src.m_pParticleDesc) : NULL);
 
-    m_ExpansionSpeed = Src.m_ExpansionSpeed;
-    m_AreaDamageDensity = Src.m_AreaDamageDensity;
-        
-    m_rMinRadius = Src.m_rMinRadius;
-    m_rMaxRadius = Src.m_rMaxRadius;
+	m_ExpansionSpeed = Src.m_ExpansionSpeed;
+	m_AreaDamageDensity = Src.m_AreaDamageDensity;
+		
+	m_rMinRadius = Src.m_rMinRadius;
+	m_rMaxRadius = Src.m_rMaxRadius;
 
-    m_fVariableInitialSpeed = Src.m_fVariableInitialSpeed;
-    m_fNoFriendlyFire = Src.m_fNoFriendlyFire;
-    m_fNoWorldHits = Src.m_fNoWorldHits;
-    m_fNoImmutableHits = Src.m_fNoImmutableHits;
-    m_fNoStationHits = Src.m_fNoStationHits;
-    m_fNoImmobileHits = Src.m_fNoImmobileHits;
-    m_fNoShipHits = Src.m_fNoShipHits;
-    m_fAutoTarget = Src.m_fAutoTarget;
+	m_fVariableInitialSpeed = Src.m_fVariableInitialSpeed;
+	m_fNoFriendlyFire = Src.m_fNoFriendlyFire;
+	m_fNoWorldHits = Src.m_fNoWorldHits;
+	m_fNoImmutableHits = Src.m_fNoImmutableHits;
+	m_fNoStationHits = Src.m_fNoStationHits;
+	m_fNoImmobileHits = Src.m_fNoImmobileHits;
+	m_fNoShipHits = Src.m_fNoShipHits;
+	m_fAutoTarget = Src.m_fAutoTarget;
 	m_fTargetRequired = Src.m_fTargetRequired;
-    m_fCanDamageSource = Src.m_fCanDamageSource;
-    m_fDirectional = Src.m_fDirectional;
-    m_fFragment = Src.m_fFragment;
-    m_fProximityBlast = Src.m_fProximityBlast;
+	m_fCanDamageSource = Src.m_fCanDamageSource;
+	m_fDirectional = Src.m_fDirectional;
+	m_fFragment = Src.m_fFragment;
+	m_fProximityBlast = Src.m_fProximityBlast;
 	m_FragInterval = Src.m_FragInterval;
 	m_fTargetable = Src.m_fTargetable;
 	m_fDefaultInteraction = Src.m_fDefaultInteraction;
 	m_fDefaultHitPoints = Src.m_fDefaultHitPoints;
 	m_fMIRV = Src.m_fMIRV;
 
-    m_pEffect = Src.m_pEffect;
-    m_pHitEffect = Src.m_pHitEffect;
-    m_pFireEffect = Src.m_pFireEffect;
-    m_FireSound = Src.m_FireSound;
-    m_pOldEffects = (Src.m_pOldEffects ? new SOldEffects(*Src.m_pOldEffects) : NULL);
+	m_pEffect = Src.m_pEffect;
+	m_pHitEffect = Src.m_pHitEffect;
+	m_pFireEffect = Src.m_pFireEffect;
+	m_FireSound = Src.m_FireSound;
+	m_pOldEffects = (Src.m_pOldEffects ? new SOldEffects(*Src.m_pOldEffects) : NULL);
 	m_pExplosionType = Src.m_pExplosionType;
 
-    m_Events = Src.m_Events;
+	m_Events = Src.m_Events;
 
-    //  Handle fragments recursively
+	//  Handle fragments recursively
 
 	m_pFirstFragment = NULL;
 	SFragmentDesc *pLastFragment = NULL;
 	int iFragCount = 0;
-    SFragmentDesc *pSrcFragment = Src.m_pFirstFragment;
+	SFragmentDesc *pSrcFragment = Src.m_pFirstFragment;
 	for (int i = 0; i < pDesc->GetContentElementCount() && pSrcFragment; i++, pSrcFragment = pSrcFragment->pNext)
 		{
 		CXMLElement *pFragDesc = pDesc->GetContentElement(i);
@@ -2644,17 +2645,17 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 
 		//	Set the fragment count
 
-        pNewDesc->Count = pSrcFragment->Count;
+		pNewDesc->Count = pSrcFragment->Count;
 		}
 
-    //  Cached values
+	//  Cached values
 
-    m_rMaxEffectiveRange = CalcMaxEffectiveRange();
+	m_rMaxEffectiveRange = CalcMaxEffectiveRange();
 
-    //  Done
+	//  Done
 
-    return NOERROR;
-    }
+	return NOERROR;
+	}
 
 bool CWeaponFireDesc::IsTracking (const SShotCreateCtx &Ctx) const
 
@@ -2676,10 +2677,10 @@ bool CWeaponFireDesc::IsTrackingOrHasTrackingFragments (void) const
 //	fragments.
 
 	{
-    SFragmentDesc *pFragment;
+	SFragmentDesc *pFragment;
 
 	return (IsTracking()
-            || ((pFragment = GetFirstFragment()) && pFragment->pDesc->IsTrackingOrHasTrackingFragments()));
+			|| ((pFragment = GetFirstFragment()) && pFragment->pDesc->IsTrackingOrHasTrackingFragments()));
 	}
 
 bool CWeaponFireDesc::LoadFireType (const CString &sValue, FireTypes *retiFireType)
@@ -2756,14 +2757,14 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	ALERROR error;
 	int i;
 
-    if (m_pOldEffects)
-        {
-        if (error = SetOldEffects().Image.OnDesignLoadComplete(Ctx))
-            return error;
+	if (m_pOldEffects)
+		{
+		if (error = SetOldEffects().Image.OnDesignLoadComplete(Ctx))
+			return error;
 
-        if (error = SetOldEffects().Exhaust.ExhaustImage.OnDesignLoadComplete(Ctx))
-            return error;
-        }
+		if (error = SetOldEffects().Exhaust.ExhaustImage.OnDesignLoadComplete(Ctx))
+			return error;
+		}
 
 	if (error = m_pAmmoType.Bind(Ctx))
 		return error;
@@ -2804,14 +2805,14 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 		pNext = pNext->pNext;
 		}
 
-    //  Scaled levels
+	//  Scaled levels
 
-    if (m_pScalable)
-        {
-        for (i = 0; i < m_iScaledLevels; i++)
-            if (error = m_pScalable[i].OnDesignLoadComplete(Ctx))
-                return error;
-        }
+	if (m_pScalable)
+		{
+		for (i = 0; i < m_iScaledLevels; i++)
+			if (error = m_pScalable[i].OnDesignLoadComplete(Ctx))
+				return error;
+		}
 
 	//	Load some events for efficiency
 

@@ -287,6 +287,8 @@ CSpaceObject::~CSpaceObject (void)
 			}
 		}
 #endif
+
+	ASSERT(m_ForceDesc.IsEmpty());
 	}
 
 void CSpaceObject::Accelerate (const CVector &vPush, Metric rSeconds)
@@ -4348,22 +4350,55 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 //	Returns the color to paint this object in the player's scanner
 
 	{
+	CAccessibilitySettings cAccessibilitySettings = GetUniverse().GetAccessibilitySettings();
 	CSovereign *pPlayer = GetUniverse().GetPlayerSovereign();
 	CSpaceObject *pPlayerShip;
+	CG32bitPixel rgbColor;
 
-	if (GetSovereign() == pPlayer)
-		return CG32bitPixel(255, 255, 255);
-	else if (IsWreck())
-		return CG32bitPixel(0, 192, 0);
+	//	Player & player's assets
+
+	if ((GetSovereign() == pPlayer) || (GetSovereign()->IsPlayerOwned()))
+		rgbColor = cAccessibilitySettings.GetIFFColor(CAccessibilitySettings::IFFType::player);
+
+	//	Angered ships
+
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) 
-			&& IsAngryAt(pPlayerShip))
-		return CG32bitPixel(255, 80, 80);
-	else if (!pPlayerShip && pPlayer && IsEnemy(*pPlayer))
-		return CG32bitPixel(255, 80, 80);
+			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+		rgbColor = cAccessibilitySettings.GetIFFColor(CAccessibilitySettings::IFFType::angry);
+
+	//	Assigned escorts (ex, fleet wingmates)
+
+	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) && pPlayer && IsEscorting(pPlayerShip))
+		rgbColor = cAccessibilitySettings.GetIFFColor(CAccessibilitySettings::IFFType::escort);
+
+	//	Enemies
+
+	else if (pPlayer && IsEnemy(*pPlayer))
+		rgbColor = cAccessibilitySettings.GetIFFColor(CAccessibilitySettings::IFFType::enemy);
+
+	//	Friendlies
+
+	else if (pPlayer && IsFriend(*pPlayer))
+		rgbColor = cAccessibilitySettings.GetIFFColor(CAccessibilitySettings::IFFType::friendly);
+
+	//	Neutrals (Anger more easily)
+
+	else if (pPlayer && IsNeutral(*pPlayer))
+		rgbColor = cAccessibilitySettings.GetIFFColor(CAccessibilitySettings::IFFType::neutral);
+
+	//	Fallback (magenta indicates error/uncategorized ship)
+
 	else if (GetCategory() == CSpaceObject::catShip)
-		return CG32bitPixel(80, 255, 80);
+		rgbColor = CG32bitPixel(255, 80, 255);
 	else
-		return CG32bitPixel(0, 192, 0);
+		rgbColor = CG32bitPixel(255, 80, 255);
+
+	//	Dim the color if it is a wreck
+
+	if (IsWreck() || IsAbandoned())
+		rgbColor = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
+
+	return rgbColor;
 	}
 
 const CEnhancementDesc *CSpaceObject::GetSystemEnhancements (void) const
@@ -5314,6 +5349,20 @@ bool CSpaceObject::IsEscortingFriendOf (const CSpaceObject *pObj) const
 		return false;
 	}
 
+bool CSpaceObject::IsEscorting (const CSpaceObject* pObj) const
+
+//	IsEscortingFriendOf
+//
+//	Returns TRUE if we're escorting a friend of pObj
+
+	{
+	CSpaceObject* pPrincipal = GetEscortPrincipal();
+	if (pPrincipal)
+		return pObj == pPrincipal;
+	else
+		return false;
+	}
+
 bool CSpaceObject::IsPlayerAttackJustified (void) const
 
 //	IsPlayerAttackJustified
@@ -5608,6 +5657,54 @@ bool CSpaceObject::IsFriend (const CSpaceObject *pObj) const
 		return false;
 	else
 		return pOurSovereign->IsFriend(pEnemySovereign);
+	}
+
+bool CSpaceObject::IsNeutral (const CSpaceObject* pObj) const
+
+//	IsFriend
+//
+//	Returns TRUE if the given object is neutral.
+
+	{
+	CSovereign* pOurSovereign = GetSovereign();
+	CSovereign* pEnemySovereign = pObj->GetSovereign();
+
+	if (pOurSovereign == NULL || pEnemySovereign == NULL)
+		return false;
+	else
+		return pOurSovereign->IsNeutral(pEnemySovereign);
+	}
+
+bool CSpaceObject::IsFriend (const CSovereign &Sovereign) const
+
+//	IsFriend
+//
+//	Returns TRUE if the given object is our friend. Note that this
+//	is not equal to !IsEnemy. It is also possible for an object to
+//	be "neutral"
+
+	{
+	CSovereign* pOurSovereign = GetSovereign();
+
+	if (pOurSovereign == NULL || &Sovereign == NULL)
+		return false;
+	else
+		return pOurSovereign->IsFriend(Sovereign);
+	}
+
+bool CSpaceObject::IsNeutral (const CSovereign &Sovereign) const
+
+//	IsFriend
+//
+//	Returns TRUE if the given object is neutral.
+
+	{
+	CSovereign* pOurSovereign = GetSovereign();
+
+	if (pOurSovereign == NULL || &Sovereign == NULL)
+		return false;
+	else
+		return pOurSovereign->IsNeutral(Sovereign);
 	}
 
 bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
@@ -6727,8 +6824,8 @@ void CSpaceObject::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const V
 
 	{
 	Dest.DrawDot(x, y, 
-			CG32bitPixel(255, 255, 0), 
-			markerSmallRound);
+			GetUniverse().GetAccessibilitySettings().GetIFFColor(CAccessibilitySettings::IFFType::projectile),
+			markerRoundDot);
 	}
 
 void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)

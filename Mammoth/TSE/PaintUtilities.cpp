@@ -127,14 +127,14 @@ void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos)
 		ComputeLightningPoints(iCount - iMiddle, pPoints + iMiddle, rChaos);
 	}
 
-void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize, int cySize, bool bGray)
+void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize, int cySize, bool bGray, bool bDisplayAsKnown)
 
 //	DrawItemTypeIcon
 //
 //	Draws the item type icon at the given position
 
 	{
-	const CObjectImageArray &Image = pType->GetImage();
+	const CObjectImageArray &Image = pType->GetImage(bDisplayAsKnown);
 	if (Image.IsLoaded())
 		{
 		RECT rcImage = Image.GetImageRect();

@@ -1122,7 +1122,7 @@ class CDynamicDesignTable
 		~CDynamicDesignTable (void) { CleanUp(); }
 
 		ALERROR DefineType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, CDesignType **retpType = NULL, CString *retsError = NULL);
-		ALERROR DefineType (CExtension *pExtension, DWORD dwUNID, CXMLElement *pSource, CDesignType **retpType = NULL, CString *retsError = NULL);
+		ALERROR DefineType (SDesignLoadCtx &Ctx, CExtension *pExtension, DWORD dwUNID, CXMLElement *pSource, CDesignType **retpType = NULL, CString *retsError = NULL);
 		void Delete (DWORD dwUNID);
 		void DeleteAll (void) { CleanUp(); }
 		CDesignType *FindType (DWORD dwUNID);
@@ -1159,7 +1159,7 @@ class CDynamicDesignTable
 
 		void CleanUp (void);
 		ALERROR Compile (SEntry *pEntry, CString *retsError = NULL);
-		ALERROR CreateType (SEntry *pEntry, CXMLElement *pDesc, CDesignType **retpType, CString *retsError = NULL);
+		ALERROR CreateType (SEntry *pEntry, CXMLElement *pDesc, bool bLoadDiagnostics, CDesignType **retpType, CString *retsError = NULL);
 		const SEntry *GetEntry (int iIndex) const { return &m_Table[iIndex]; }
 
 		TSortMap<DWORD, SEntry> m_Table;
@@ -1281,6 +1281,7 @@ class CDesignCollection
 			bool bNewGame = false;
 			bool bNoResources = false;
 			bool bTraceBind = false;
+			bool bDiagnostics = false;
 			};
 
 		CDesignCollection (void);

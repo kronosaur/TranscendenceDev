@@ -179,7 +179,7 @@ ALERROR CEventHandler::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		CCodeChain::SLinkOptions Options;
 		Options.bNullIfEmpty = true;
 
-		ICCItemPtr pCode = ICCItemPtr(CCodeChain::Link(pHandler->GetContentText(0), Options));
+		ICCItemPtr pCode = CCodeChain::LinkCode(pHandler->GetContentText(0), Options);
 
 		//	If Link returns NULL, then it means that this was just whitespace
 		//	or comments only.

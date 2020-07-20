@@ -96,7 +96,7 @@ class CItemType : public CDesignType
 		int GetCharges (void) const { return (m_fInstanceData ? m_InitDataValue.Roll() : 0); }
 		int GetChargesLimit (void) const { return m_iMaxCharges; }
 		const CItemList &GetComponents (void) const { return m_Components; }
-        CCurrencyAndValue GetCurrencyAndValue (CItemCtx &Ctx, bool bActual = false) const;
+		CCurrencyAndValue GetCurrencyAndValue (CItemCtx &Ctx, bool bActual = false) const;
 		const CEconomyType *GetCurrencyType (void) const { return m_iValue.GetCurrencyType(); }
 		const CString &GetData (void) const { return m_sData; }
 		const CString &GetDesc (bool bActual = false) const;
@@ -104,7 +104,7 @@ class CItemType : public CDesignType
 		CObjectImageArray &GetFlotsamImage (void) { if (!m_FlotsamImage.IsLoaded()) CreateFlotsamImage(); return m_FlotsamImage; }
 		int GetFrequency (void) const { return m_Frequency; }
 		int GetFrequencyByLevel (int iLevel);
-		const CObjectImageArray &GetImage (void) const { return m_Image; }
+		const CObjectImageArray &GetImage (bool bActual = false) const;
 		const TArray<CDeviceClass *> &GetLaunchWeapons (void) const { return m_Weapons; }
 		Metric GetMass (CItemCtx &Ctx) const { return GetMassKg(Ctx) / 1000.0; }
 		int GetMassBonusPerCharge (void) const { return m_iExtraMassPerCharge; }
@@ -112,7 +112,7 @@ class CItemType : public CDesignType
 		int GetMaxCharges (void) const { return (m_iMaxCharges == -1 ? GetMaxInitialCharges() : m_iMaxCharges); }
 		int GetMaxHPBonus (void) const;
 		int GetMaxInitialCharges (void) const { return (m_fInstanceData ? m_InitDataValue.GetMaxValue() : 0); }
-        int GetMaxLevel (void) const { return m_iMaxLevel; }
+		int GetMaxLevel (void) const { return m_iMaxLevel; }
 		int GetMinLevel (void) const { return m_iLevel; }
 		CWeaponFireDesc *GetMissileDesc (void) const { return m_pMissile;  }
 		DWORD GetModCode (void) const { return m_dwModCode; }
@@ -126,9 +126,9 @@ class CItemType : public CDesignType
 		int GetUnknownTypeCount (void) const { return m_UnknownTypes.GetCount(); }
 		ICCItem *GetUseCode (void) const { return m_pUseCode; }
 		bool GetUseDesc (SUseDesc *retDesc = NULL) const;
-        int GetValue (CItemCtx &Ctx, bool bActual = false) const { return (int)GetCurrencyAndValue(Ctx, bActual).GetValue(); }
+		int GetValue (CItemCtx &Ctx, bool bActual = false) const { return (int)GetCurrencyAndValue(Ctx, bActual).GetValue(); }
 		int GetValueBonusPerCharge (void) const { return m_iExtraValuePerCharge; }
-        CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError = NULL) const;
+		CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError = NULL) const;
 		bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
 		bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
 		bool IsAmmunition (void) const;
@@ -157,7 +157,7 @@ class CItemType : public CDesignType
 
 		static ItemCategories GetCategoryForNamedDevice (DeviceNames iDev);
 		static CString GetItemCategory (ItemCategories iCategory);
-        static const SStdStats &GetStdStats (int iLevel);
+		static const SStdStats &GetStdStats (int iLevel);
 		static ALERROR ParseFate (SDesignLoadCtx &Ctx, const CString &sDesc, ItemFates *retiFate);
 		static bool ParseItemCategory (const CString &sCategory, ItemCategories *retCategory = NULL);
 
@@ -202,7 +202,7 @@ class CItemType : public CDesignType
 		CString m_sRole;						//	Role in design (internal)
 
 		int m_iLevel;							//	Level of item
-        int m_iMaxLevel;                        //  Max level, for scalable items
+		int m_iMaxLevel;                        //  Max level, for scalable items
 		CCurrencyAndValue m_iValue;				//	Value in some currency
 		int m_iMass;							//	Mass in kilograms
 		FrequencyTypes m_Frequency;				//	Frequency
@@ -267,7 +267,7 @@ class CItemType : public CDesignType
 
 		CString m_sData;						//	Category-specific data
 
-        static SStdStats m_Stats[MAX_ITEM_LEVEL];
+		static SStdStats m_Stats[MAX_ITEM_LEVEL];
 	};
 
 //	CItemTable ----------------------------------------------------------------

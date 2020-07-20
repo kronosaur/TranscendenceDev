@@ -255,6 +255,11 @@ void CStation::Abandon (DestructionTypes iCause, const CDamageSource &Attacker, 
 
 	if (IsAutoClearDestinationOnDestroy())
 		ClearPlayerDestination();
+
+	//	Clear explored flag because we want the player to dock with the wreckage
+	//	even if they docked before.
+
+	m_fExplored = false;
 	}
 
 void CStation::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifeLeft, DWORD *retdwID)
@@ -791,6 +796,69 @@ bool CStation::CanAttack (void) const
 			&& (m_fArmed 
 				|| (m_Subordinates.GetCount() > 0)
 				|| m_pType->CanAttack()));
+	}
+
+bool CStation::CanBeDestroyedBy (CSpaceObject &Attacker) const
+
+//	CanBeDestroyedBy
+//
+//	Returns TRUE if the given attacker has weapons that can destroy this 
+//	station.
+
+	{
+	//	Loop over all attacker weapons.
+
+	for (const CDeviceItem DeviceItem : Attacker.GetDeviceSystem())
+		{
+		if (!DeviceItem.IsWeapon())
+			continue;
+
+		//	See if any of the weapon variants can destroy us.
+
+		for (int iVariant = 0; iVariant < DeviceItem.GetWeaponVariantCount(); iVariant++)
+			{
+			if (!DeviceItem.IsWeaponVariantValid(iVariant))
+				continue;
+
+			const CWeaponFireDesc &ShotDesc = DeviceItem.GetWeaponFireDescForVariant(iVariant);
+
+			switch (m_Hull.GetHullType())
+				{
+				//	Multi-hull stations require WMD.
+
+				case CStationHullDesc::hullMultiple:
+					if (ShotDesc.GetDamage().GetMassDestructionDamage() > 0)
+						return true;
+					break;
+
+				//	Stations built on asteroids must be attacked with either WMD or
+				//	mining damage.
+
+				case CStationHullDesc::hullAsteroid:
+					if (ShotDesc.GetDamage().GetMassDestructionDamage() > 0
+							|| ShotDesc.GetDamage().GetMiningDamage() > 0)
+						return true;
+					break;
+
+				//	Underground stations must be attacked with  mining damage.
+
+				case CStationHullDesc::hullUnderground:
+					if (ShotDesc.GetDamage().GetMiningDamage() > 0)
+						return true;
+					break;
+
+				//	For single-hull stations we don't need special damage.
+
+				case CStationHullDesc::hullSingle:
+				default:
+					return true;
+				}
+			}
+		}
+
+	//	If we get this far, then none of the attacker's weapons can hurt us.
+
+	return false;
 	}
 
 bool CStation::CanBlock (CSpaceObject *pObj)
@@ -3452,10 +3520,6 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 		}
 	else if (m_pType->ShowsMapIcon() && m_fKnown)
 		{
-		//	Figure out the color
-
-		CG32bitPixel rgbColor = GetSymbolColor();
-
 		//	Paint the marker
 
 		if (m_Scale == scaleStructure && m_rMass > 100000.0)
@@ -3483,27 +3547,13 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 				}
 			else
 				{
-				if (IsActiveStargate())
-					{
-					Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
-					Dest.DrawDot(x, y, rgbColor, markerMediumCross);
-					}
-				else if (!IsAbandoned() || IsImmutable())
-					{
-					Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
-					Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
-					}
-				else
-					{
-					Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
-					Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
-					}
+				// Paint the Icon
+				PaintMarkerIcon(Dest, x, y);
 				}
 			}
 		else
-			Dest.DrawDot(x, y, 
-					rgbColor, 
-					markerSmallRound);
+			// Paint the Icon
+			PaintMarkerIcon(Dest, x, y);
 
 		//	Paint the label
 
@@ -4544,9 +4594,36 @@ void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 
 	else
 		{
-		//	Paint red if enemy, green otherwise
+		PaintMarkerIcon(Dest, x, y);
+		}
 
+	DEBUG_CATCH_MSG1("Crash in CStation::PaintLRSForeground: type: %08x", m_pType->GetUNID());
+	}
+
+
+void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
+
+//	PaintMarkerIcon
+//
+//	Paints the appropriate map icon for this station type at the given location 
+//	on the given image.
+
+	{
+	DEBUG_TRY
+
+	if (m_pType->IsVirtual())
+		return;
+
+	if (m_Scale == scaleWorld || m_Scale == scaleStar)
+		{
+		//these do not have an icon
+		return;
+		}
+
+	else
+		{
 		CG32bitPixel rgbColor = GetSymbolColor();
+
 		if (m_Scale == scaleStructure && m_rMass > 100000.0)
 			{
 			if (IsActiveStargate())
@@ -4556,31 +4633,153 @@ void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 				}
 			else if (!IsAbandoned() || IsImmutable())
 				{
-				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
-				Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
+				CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
+				CSpaceObject* pPlayerShip;
+				if (IsPlayer() || GetSovereign()->IsPlayerOwned())
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallCircle);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledCircle);
+					}
+				else if ((pPlayerShip = GetUniverse().GetPlayerShip())
+						&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
+					}
+				else if (pPlayer && IsFriend(*pPlayer))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
+					}
+				else if (pPlayer && IsNeutral(*pPlayer))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallDiamond);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledDiamond);
+					}
+				else if (pPlayer && IsEnemy(*pPlayer))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
+					}
+				else
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
+					}
+				}
+			else if (IsAbandoned())
+				{
+				if (m_fExplored)
+					rgbColor = CG32bitPixel(128, 128, 128);
+
+				CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
+				CSpaceObject* pPlayerShip;
+				if (IsPlayer() || GetSovereign()->IsPlayerOwned())
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallCircle);
+					Dest.DrawDot(x, y, rgbColor, markerSmallCircle);
+					}
+				else if ((pPlayerShip = GetUniverse().GetPlayerShip())
+						&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
+					Dest.DrawDot(x, y, rgbColor, markerSmallTriangleUp);
+					}
+				else if (pPlayer && IsFriend(*pPlayer))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+					}
+				else if (pPlayer && IsNeutral(*pPlayer))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallDiamond);
+					Dest.DrawDot(x, y, rgbColor, markerSmallDiamond);
+					}
+				else if (pPlayer && IsEnemy(*pPlayer))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
+					Dest.DrawDot(x, y, rgbColor, markerSmallTriangleDown);
+					}
+				else
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+					}
 				}
 			else
 				{
-				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
-				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+				CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
+				CSpaceObject* pPlayerShip;
+				if (IsPlayer() || GetSovereign()->IsPlayerOwned())
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallCircle);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledCircle);
+					}
+				else if ((pPlayerShip = GetUniverse().GetPlayerShip())
+						&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
+					}
+				else if (pPlayer && IsFriend(*pPlayer))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
+					}
+				else if (pPlayer && IsNeutral(*pPlayer))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallDiamond);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledDiamond);
+					}
+				else if (pPlayer && IsEnemy(*pPlayer))
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
+					}
+				else
+					{
+					Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
+					}
 				}
 			}
-		else if (IsAbandoned())
+		else if (IsWreck())
 			{
-			Dest.DrawDot(x, y, 
-					(m_fExplored ? CG32bitPixel(128, 128, 128) : rgbColor),
-					markerTinyCircle);
+			//	Handle explored
+
+			if (m_fExplored)
+				rgbColor = CG32bitPixel(128, 128, 128);
+
+			//	Draw icon
+
+			Dest.DrawDot(x, y, rgbColor, markerSmallCircle);
 			}
 		else
 			{
-			Dest.DrawDot(x, y, 
-					rgbColor,
-					markerSmallRound);
+			CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
+			CSpaceObject* pPlayerShip;
+
+			//	Draw icon
+
+			if (IsPlayer() || GetSovereign()->IsPlayerOwned())
+				Dest.DrawDot(x, y, rgbColor, markerTinyCircle);
+			else if ((pPlayerShip = GetUniverse().GetPlayerShip())
+					&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+				Dest.DrawDot(x, y, rgbColor, markerTriangleUpDot);
+			else if (pPlayer && IsFriend(*pPlayer))
+				Dest.DrawDot(x, y, rgbColor, markerSquareDot);
+			else if (pPlayer && IsNeutral(*pPlayer))
+				Dest.DrawDot(x, y, rgbColor, markerDiamondDot);
+			else if (pPlayer && IsEnemy(*pPlayer))
+				Dest.DrawDot(x, y, rgbColor, markerTriangleDownDot);
+			else
+				Dest.DrawDot(x, y, rgbColor, markerTinyCircle);
 			}
 		}
 
-	DEBUG_CATCH_MSG1("Crash in CStation::PaintLRSForeground: type: %08x", m_pType->GetUNID());
+	DEBUG_CATCH_MSG1("Crash in CStation::PaintMarkerIcon: type: %08x", m_pType->GetUNID());
 	}
+
 
 void CStation::PaintSatellites (CG32bitImage &Dest, int x, int y, DWORD dwPaintOptions, SViewportPaintCtx &Ctx) const
 

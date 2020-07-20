@@ -1105,6 +1105,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual bool CanAttack (void) const override;
 		virtual bool CanBeAttacked (void) const override { return CanAttack(); }
+		virtual bool CanBeDestroyedBy (CSpaceObject &Attacker) const override;
 		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL) override;
 		virtual bool CanMove (void) const override { return true; }
 		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
@@ -1520,6 +1521,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 				return (m_Hull.GetHitPoints() > 0 || CanAttack()); 
 			}
 		virtual bool CanBeDestroyed (void) override { return m_Hull.CanBeDestroyed(); }
+		virtual bool CanBeDestroyedBy (CSpaceObject &Attacker) const override;
 		virtual bool CanBeMined (void) const override { return (m_pType->ShowsUnexploredAnnotation() && !IsOutOfPlaneObj()); }
 		virtual bool CanBlock (CSpaceObject *pObj) override;
 		virtual bool CanBlockShips (void) override { return m_fBlocksShips; }
@@ -1702,6 +1704,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnHitByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		bool OnMiningDamage (SDamageCtx &Ctx);
+		void PaintMarkerIcon (CG32bitImage& Dest, int x, int y);
 		void PaintSatellites (CG32bitImage &Dest, int x, int y, DWORD dwPaintOptions, SViewportPaintCtx &Ctx) const;
 		void RaiseAlert (CSpaceObject *pTarget);
 		void SetAngry (void);

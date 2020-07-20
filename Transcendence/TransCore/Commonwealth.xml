@@ -232,11 +232,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-5; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-5; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~ad -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<Item count="4d12"	item="&itHelium3FuelRod;" />
@@ -468,11 +468,11 @@
 
 		<Items>
 			<RandomItem	count="10" 
-					criteria=		"ad L:1-7; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-7; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~ad -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<Item count="4d12"	item="&itXenotiteFuelRod;" />
@@ -659,19 +659,19 @@
 		
 		<Items>
 			<RandomItem count="18-25" 
-				criteria=		"a L:1-8; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+				criteria=		"a L:1-8; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="8-10" 
-				criteria=		"scv L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+				criteria=		"scv L:1-7; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="4-6" 
-				criteria=		"r L:3-7; -illegal; -military; -notForSale; -notStandard;"
+				criteria=		"r L:3-7; +commonwealth; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
 			<RandomItem count="10-12" 
-				criteria=		"d~scvr L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+				criteria=		"d~scvr L:1-7; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="5-10"
@@ -864,6 +864,13 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionHospital">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +commonwealthHospital; =" (sysGetLevel) ";")
+									maxPerStation: 1
+									noMissionTextID: 'descHospitalEmpty
+									})
+							</Action>
 							<Action id="actionCommoditiesExchange">
 								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
@@ -880,10 +887,21 @@
 		<!-- Events and Data -->
 		
 		<Language>
+			<Text id="actionHospital">[H]ospital</Text>
+
 			<Text id="descWelcome">
+
 				You are in the docking bay of %objName%. Medical professionals
 				live and work on this station, doing everything from research,
 				to drug manufacturing, to remote medicine.
+
+			</Text>
+			<Text id="descHospitalEmpty">
+
+				Medtechs and patients crisscross the large reception area of the
+				hospital. Displays and holograms direct patients to various 
+				specialties.
+			
 			</Text>
 			<Text id="rpg.stationWillNotBuy">
 
@@ -1250,11 +1268,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-8; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-8; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~ad -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 

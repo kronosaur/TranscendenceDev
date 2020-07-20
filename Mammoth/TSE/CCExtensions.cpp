@@ -244,6 +244,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_INC_OVERLAY_PROPERTY	137
 #define FN_OBJ_CAN_ENHANCE_ITEM		138
 #define FN_OBJ_ENHANCE_ITEM			139
+#define FN_OBJ_CAN_DESTROY_TARGET	140
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1484,6 +1485,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objCanAttack obj) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"objCanDestroyTarget",				fnObjGet,			FN_OBJ_CAN_DESTROY_TARGET,
+			"(objCanDestroyTarget obj target) -> True/Nil",
+			"ii",	0,	},
+
 		{	"objCanDetectTarget",				fnObjGet,			FN_OBJ_CAN_DETECT_TARGET,
 			"(objCanDetectTarget obj target) -> True/Nil",
 			"ii",	0,	},
@@ -2204,8 +2209,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objInc@",				fnObjSet,		FN_OBJ_INC_PROPERTY,
-			"(objInc@ obj property [increment]) -> new value",
-			"is*",	PPFLAG_SIDEEFFECTS,	},
+			"(objInc@ obj property [increment]) -> new value\n"
+			"(objInc@ obj item property [increment]) -> item",
+			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
 			"RENAMED: Use (objInc@ ...) instead.",
@@ -3071,13 +3077,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
-			"   'attributes        Attributes of the system\n"
-			"   'known             Known to player\n"
-			"   'lastVisitOn       Tick on which player last visited\n"
-			"   'lastVisitSeconds  Game seconds since player last visited\n"
-			"   'level             The level of the system\n"
-			"   'name              The name of the system\n"
-			"   'pos               Node position on map (x y)",
+			"   'attributes          Attributes of the system\n"
+			"   'known               Known to player\n"
+			"   'lastVisitOn         Tick on which player last visited\n"
+			"   'lastVisitSeconds    Game seconds since player last visited\n"
+			"   'level               The level of the system\n"
+			"   'name                The name of the system\n"
+			"   'pos                 Node position on map (x y)\n"
+			"   'stdChallengeRating  Standard challenge rating for level",
 
 			"*s",	0,	},
 
@@ -3625,6 +3632,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"property (stations):\n\n"
 
+			"   'challengeRating\n"
 			"   'sovereign\n"
 			"   'sovereignName\n\n"
 
@@ -5298,7 +5306,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	then we assume that we want type data.
 
 			if (pArgs->GetCount() == 1)
-				pResult = pCC->Link(pType->GetData());
+				pResult = pCC->LinkCode(pType->GetData())->Reference();
 
 			//	Otherwise, we get global data from the design type
 
@@ -6536,6 +6544,15 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else
 					return pCC->CreateNil();
 				}
+			}
+
+		case FN_OBJ_CAN_DESTROY_TARGET:
+			{
+			CSpaceObject *pTarget = CreateObjFromItem(pArgs->GetElement(1));
+			if (pTarget == NULL)
+				return pCC->CreateNil();
+
+			return pCC->CreateBool(pTarget->CanBeDestroyedBy(*pObj));
 			}
 
 		case FN_OBJ_CAN_DETECT_TARGET:
@@ -8072,12 +8089,23 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				//	Convert from position to angle and radius
 
-				CVector vPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
-				Metric rRadius;
-				int iDirection = VectorToPolar(vPos - pObj->GetPos(), &rRadius);
-				int iRotationOrigin = (pField->RotatesWithSource(*pObj) ? pObj->GetRotation() : 0);
-				iPosAngle = AngleMod(iDirection - iRotationOrigin);
-				iPosRadius = (int)(rRadius / g_KlicksPerPixel);
+				ICCItem *pPos = pArgs->GetElement(2);
+				if (pPos->IsList() && pPos->GetCount() <= 3 && pPos->GetCount() >= 2)
+					{
+					iPosAngle = pPos->GetElement(0)->GetIntegerValue();
+					iPosRadius = pPos->GetElement(1)->GetIntegerValue();
+					if (pPos->GetCount() == 3)
+						iPosZ = pPos->GetElement(2)->GetIntegerValue();
+					}
+				else
+					{
+					CVector vPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
+					Metric rRadius;
+					int iDirection = VectorToPolar(vPos - pObj->GetPos(), &rRadius);
+					int iRotationOrigin = (pField->RotatesWithSource(*pObj) ? pObj->GetRotation() : 0);
+					iPosAngle = AngleMod(iDirection - iRotationOrigin);
+					iPosRadius = (int)(rRadius / g_KlicksPerPixel);
+					}
 
 				//	Rotation
 
@@ -8620,8 +8648,32 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_INC_PROPERTY:
 			{
 			ICCItemPtr pResult;
-			if (!pObj->IncProperty(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2), pResult))
-				return pCtx->CreateDebugError(CONSTLIT("Invalid property"), pArgs->GetElement(1))->Reference();
+
+			if (pArgs->GetCount() >= 3 && pArgs->GetElement(1)->IsList())
+				{
+				//	Get the item
+
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (Item.GetType() == NULL)
+					return pCC->CreateNil();
+
+				//	Get the property
+
+				CString sProperty = pArgs->GetElement(2)->GetStringValue();
+				ICCItem *pInc = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
+
+				CItem NewItem;
+				CString sError;
+				if (!pObj->IncItemProperty(Item, sProperty, (pInc ? *pInc : *ICCItemPtr::Nil()), 1, &NewItem, NULL, &sError))
+					return pCtx->CreateDebugError(sError, pArgs->GetElement(2));
+
+				pResult = ICCItemPtr(CreateListFromItem(NewItem));
+				}
+			else
+				{
+				if (!pObj->IncProperty(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2), pResult))
+					return pCtx->CreateDebugError(CONSTLIT("Invalid property"), pArgs->GetElement(1))->Reference();
+				}
 
 			return pResult->Reference();
 			}
@@ -11786,17 +11838,18 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 
 	int iTime = pArgs->GetElement(0)->GetIntegerValue();
 
-	CSpaceObjectList Targets;
+	CTimedEncounterEvent::SOptions Options;
+
 	if (pArgs->GetElement(1)->IsList())
 		{
 		for (int i = 0; i < pArgs->GetElement(1)->GetCount(); i++)
 			{
 			CSpaceObject *pObj = CreateObjFromItem(pArgs->GetElement(1)->GetElement(i), CCUTIL_FLAG_CHECK_DESTROYED);
 			if (pObj)
-				Targets.FastAdd(pObj);
+				Options.TargetList.FastAdd(pObj);
 			}
 
-		if (Targets.GetCount() == 0)
+		if (Options.TargetList.GetCount() == 0)
 			return pCC->CreateNil();
 		}
 	else
@@ -11805,23 +11858,36 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 		if (pTarget == NULL)
 			return pCC->CreateNil();
 
-		Targets.FastAdd(pTarget);
+		Options.TargetList.FastAdd(pTarget);
 		}
 
 	DWORD dwEncounterID = (DWORD)pArgs->GetElement(2)->GetIntegerValue();
 
 	//	Either from a gate or from a distance from the target
 
-	int iDistance = 0;
-	CSpaceObject *pGate = NULL;
-	CVector vPos;
+	ICCItem *pOptions = pArgs->GetElement(3);
+	if (pOptions->IsSymbolTable())
+		{
+		if (ICCItem *pValue = pOptions->GetElement(CONSTLIT("distance")))
+			{
+			Options.rDistance = Max(0.0, pValue->GetIntegerValue() * LIGHT_SECOND);
+			}
 
-	if (dwData == FN_ADD_ENCOUNTER_FROM_DIST)
-		iDistance =	pArgs->GetElement(3)->GetIntegerValue();
+		if (ICCItem *pValue = pOptions->GetElement(CONSTLIT("pos")))
+			{
+			if (::GetPosOrObject(pEvalCtx, pValue, &Options.vPos, &Options.pGate) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pValue);
+			}
+		}
+	else if (dwData == FN_ADD_ENCOUNTER_FROM_DIST)
+		{
+		int iDistance =	pOptions->GetIntegerValue();
+		Options.rDistance = iDistance * LIGHT_SECOND;
+		}
 	else
 		{
-		if (::GetPosOrObject(pEvalCtx, pArgs->GetElement(3), &vPos, &pGate) != NOERROR)
-			return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(3));
+		if (::GetPosOrObject(pEvalCtx, pOptions, &Options.vPos, &Options.pGate) != NOERROR)
+			return pCC->CreateError(CONSTLIT("Invalid pos"), pOptions);
 		}
 	
 	//	Create the event
@@ -11830,13 +11896,9 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 	if (pSystem == NULL)
 		return StdErrorNoSystem(*pCC);
 
-	CTimedEncounterEvent *pEvent = new CTimedEncounterEvent(
-			pSystem->GetTick() + iTime,
-			Targets,
+	CTimedEncounterEvent *pEvent = new CTimedEncounterEvent(pSystem->GetTick() + iTime,
 			dwEncounterID,
-			pGate,
-			vPos,
-			iDistance * LIGHT_SECOND);
+			Options);
 
 	pSystem->AddTimedEvent(pEvent);
 
@@ -14962,7 +15024,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Result
 
-			return pCC->Link(sData);
+			return pCC->LinkCode(sData)->Reference();
 			}
 
 		case FN_UNIVERSE_ENTITY:

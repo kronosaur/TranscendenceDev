@@ -25,6 +25,29 @@
 					)
 				))
 
+			(setq diagAssertMissionLanguage (lambda (missionObj)
+				(block (
+					(missionName (msn@ missionObj 'name))
+					(validateList '(
+						Name
+						Summary
+						Intro
+						Briefing
+						AcceptReply
+						DeclineReply
+						InProgress
+						SuccessDebrief
+						FailureDebrief
+						))
+					(hexUNID (hex (msn@ missionObj 'unid)))
+					)
+					(diagAssert missionName "No mission name")
+					(enum validateList textID
+						(diagAssert (msnTranslate missionObj textID) (cat "[" missionName "]: No translation for " textID " in " (sysGetNode) "."))
+						)
+					)
+				))
+
 			; Internal functions -----------------------------------------------
 
 			(setq intArmorRepairAll (lambda (theShip repairTech minHPPercent)

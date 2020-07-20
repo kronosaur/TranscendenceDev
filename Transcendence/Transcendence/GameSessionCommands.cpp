@@ -22,7 +22,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 		case CGameKeys::keyAutopilot:
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			g_pTrans->Autopilot(!g_pTrans->m_bAutopilot);
-			pPlayer->SetUIMessageEnabled(uimsgAutopilotHint, false);
+			pPlayer->SetUIMessageFollowed(uimsgAutopilotHint);
 			break;
 
 		case CGameKeys::keyEnableDevice:
@@ -58,6 +58,46 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				}
 			break;
 
+		case CGameKeys::keyInteract:
+			if (pPlayer->DockingInProgress())
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
+				g_pTrans->Autopilot(false);
+				pPlayer->Dock();
+				}
+			else if (pPlayer->GetShip()->IsParalyzed()
+					|| pPlayer->GetShip()->IsOutOfPlaneObj()
+					|| pPlayer->GetShip()->IsTimeStopped())
+				{ }
+			else if (GetUniverse().GetCurrentSystem()->GetStargateInRange(pPlayer->GetShip()->GetPos()))
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
+				g_pTrans->Autopilot(false);
+				pPlayer->Gate();
+				}
+			else
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
+				g_pTrans->Autopilot(false);
+				pPlayer->Dock();
+				}
+			break;
+
+		case CGameKeys::keyCycleTarget:
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			pPlayer->CycleTarget(0);
+			break;
+
+		case CGameKeys::keyTargetNextEnemy:
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			pPlayer->SelectNextTarget(1);
+			break;
+
+		case CGameKeys::keyTargetPrevEnemy:
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			pPlayer->SelectNextTarget(-1);
+			break;
+
 		case CGameKeys::keyTargetNextFriendly:
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			pPlayer->SelectNextFriendly(1);
@@ -66,6 +106,11 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 		case CGameKeys::keyTargetPrevFriendly:
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			pPlayer->SelectNextFriendly(-1);
+			break;
+
+		case CGameKeys::keyClearTarget:
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			pPlayer->SetTarget(NULL);
 			break;
 
 		case CGameKeys::keyEnterGate:
@@ -95,13 +140,13 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 			if (m_bShowingSystemMap)
 				g_pTrans->Autopilot(false);
             ShowSystemMap(!m_bShowingSystemMap);
-			pPlayer->SetUIMessageEnabled(uimsgMapHint, false);
+			pPlayer->SetUIMessageFollowed(uimsgMapHint);
 			break;
 
 		case CGameKeys::keyShowGalacticMap:
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			g_pHI->HICommand(CONSTLIT("uiShowGalacticMap"));
-			pPlayer->SetUIMessageEnabled(uimsgGalacticMapHint, false);
+			pPlayer->SetUIMessageFollowed(uimsgGalacticMapHint);
 			break;
 
 		case CGameKeys::keyPause:
@@ -129,27 +174,12 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				}
 			break;
 
-		case CGameKeys::keyClearTarget:
-			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-			pPlayer->SetTarget(NULL);
-			break;
-
 		case CGameKeys::keyShipStatus:
 			if (pPlayer->CanShowShipStatus())
 				{
 				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 				m_Model.ShowShipScreen();
 				}
-			break;
-
-		case CGameKeys::keyTargetNextEnemy:
-			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-			pPlayer->SelectNextTarget(1);
-			break;
-
-		case CGameKeys::keyTargetPrevEnemy:
-			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-			pPlayer->SelectNextTarget(-1);
 			break;
 
 		case CGameKeys::keyUseItem:
@@ -183,8 +213,8 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				{
 				g_pTrans->Autopilot(false);
 				pPlayer->SetThrust(true);
-				pPlayer->SetUIMessageEnabled(uimsgMouseManeuverHint, false);
-				pPlayer->SetUIMessageEnabled(uimsgKeyboardManeuverHint, false);
+				pPlayer->SetUIMessageFollowed(uimsgMouseManeuverHint);
+				pPlayer->SetUIMessageFollowed(uimsgKeyboardManeuverHint);
 				}
 			break;
 
@@ -194,7 +224,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				{
 				g_pTrans->Autopilot(false);
 				pPlayer->SetManeuver(RotateLeft);
-				pPlayer->SetUIMessageEnabled(uimsgKeyboardManeuverHint, false);
+				pPlayer->SetUIMessageFollowed(uimsgKeyboardManeuverHint);
 				}
 			break;
 
@@ -204,7 +234,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				{
 				g_pTrans->Autopilot(false);
 				pPlayer->SetManeuver(RotateRight);
-				pPlayer->SetUIMessageEnabled(uimsgKeyboardManeuverHint, false);
+				pPlayer->SetUIMessageFollowed(uimsgKeyboardManeuverHint);
 				}
 			break;
 
@@ -225,6 +255,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				{
 				g_pTrans->Autopilot(false);
 				pPlayer->SetFireMain(true);
+				pPlayer->SetUIMessageFollowed(uimsgFireWeaponHint);
 				}
 			break;
 
@@ -235,7 +266,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				{
 				g_pTrans->Autopilot(false);
 				pPlayer->SetFireMissile(true);
-				pPlayer->SetUIMessageEnabled(uimsgFireMissileHint, false);
+				pPlayer->SetUIMessageFollowed(uimsgFireMissileHint);
 				}
 			break;
 
@@ -243,14 +274,14 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			g_pTrans->Autopilot(false);
 			pPlayer->ReadyNextMissile(1);
-			pPlayer->SetUIMessageEnabled(uimsgSwitchMissileHint, false);
+			pPlayer->SetUIMessageFollowed(uimsgSwitchMissileHint);
 			break;
 
 		case CGameKeys::keyPrevMissile:
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			g_pTrans->Autopilot(false);
 			pPlayer->ReadyNextMissile(-1);
-			pPlayer->SetUIMessageEnabled(uimsgSwitchMissileHint, false);
+			pPlayer->SetUIMessageFollowed(uimsgSwitchMissileHint);
 			break;
 
 		case CGameKeys::keyShowHelp:
@@ -293,7 +324,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 					&& !pPlayer->GetShip()->IsOutOfPower())
 				{
 				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
-				pPlayer->SetUIMessageEnabled(uimsgEnableDeviceHint, false);
+				pPlayer->SetUIMessageFollowed(uimsgEnableDeviceHint);
 				pPlayer->EnableAllDevices(true);
 				}
 			break;
@@ -304,7 +335,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 					&& !pPlayer->GetShip()->IsOutOfPower())
 				{
 				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
-				pPlayer->SetUIMessageEnabled(uimsgEnableDeviceHint, false);
+				pPlayer->SetUIMessageFollowed(uimsgEnableDeviceHint);
 				pPlayer->EnableAllDevices(false);
 				}
 			break;
@@ -315,7 +346,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 					&& !pPlayer->GetShip()->IsOutOfPower())
 				{
 				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
-				pPlayer->SetUIMessageEnabled(uimsgEnableDeviceHint, false);
+				pPlayer->SetUIMessageFollowed(uimsgEnableDeviceHint);
 				pPlayer->EnableAllDevices(!pPlayer->AreAllDevicesEnabled());
 				}
 			break;
@@ -332,7 +363,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 					int iDevice = (iCommand - CGameKeys::keyEnableDeviceToggle00);
 
 					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
-					pPlayer->SetUIMessageEnabled(uimsgEnableDeviceHint, false);
+					pPlayer->SetUIMessageFollowed(uimsgEnableDeviceHint);
 					pPlayer->ToggleEnableDevice(iDevice);
 					}
 				}

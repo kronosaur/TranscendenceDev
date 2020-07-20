@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType unid="&msPsychEval00;"
+			name=				"Psych Eval 00: Visit Specialist"
+			attributes=			"commonwealth, commonwealthHospital"
+			inherit=			"&baVisitStationMission;"
+
+			maxAppearing=		"1"
+			>
+		<Events>
+			<CanCreate>
+				(switch
+
+					;	Only valid if there exists an appropriate Commonwealth 
+					;	medical station.
+
+					(not (typ@ &msPsychEval01; 'stationID))
+						Nil
+
+					;	Only if we haven't already found the mission
+
+					(msnFind "* +unid:&msPsychEval01;")
+						Nil
+
+					;	Not if we're in the same system
+
+					(= (typ@ &msPsychEval01; 'nodeID) (sysGetNode))
+						Nil
+
+					;	OK
+
+					True
+					)
+			</CanCreate>
+
+			<OnCreate>
+				(block ()
+					;	Set up mission
+
+					(msnSet@ gSource 'destNodeID (typ@ &msPsychEval01; 'nodeID))
+					(msnSet@ gSource 'destID (typ@ &msPsychEval01; 'stationID))
+					)
+			</OnCreate>
+
+			<OnDeclined>
+				(block ()
+					;	If declined once we stop showing mission.
+
+					(msnFailure gSource)
+					)
+			</OnDeclined>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Visit Hospital Specializing in Pilgrims
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					systemName: (sysGetName (msn@ gSource 'destNodeID))
+					})
+			</Text>
+			<Text id="Intro">
+				(list
+					{	descID: 'textIntro1		labelID: 'actionIntro1	}
+					)
+			</Text>
+			<Text id="Briefing">
+				(list
+					{	descID: 'textBriefing1	acceptLabelID: 'actionAccept	declineLabelID: 'actionDecline	}
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(list
+					{	descID: 'textAcceptReply1
+						data: {
+							systemName: (sysGetName (msn@ gSource 'destNodeID))
+							}
+						}
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(list
+					{	descID: 'textDeclineReply1 }
+					)
+			</Text>
+
+			<Text id="textSummary">
+
+				A hospital in the %systemName% system specializes in treating
+				pilgrims. Visit them and see if they can help you understand
+				what's happening to you.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textIntro1">
+			
+				You enter the hospital and see medtechs and patients striding
+				purposefully.
+
+				You talk to a young medtech in between shifts. After a bit of
+				small talk, she turns serious.
+
+				"You know, there's a research hospital that's developed a 
+				treatment for pilgrims. They've helped a lot of people."
+
+			</Text>
+			<String id="actionIntro1">"[T]reatment?"</String>
+			<Text id="textBriefing1">
+
+				"Of course! Your compulsions and hallucinations are just a 
+				neurological condition, and they've made progress on figuring
+				out how to treat it.
+
+				"It might allow you to live a normal life. Do you want me to 
+				give you a referral?"
+			
+			</Text>
+			<String id="actionAccept">"[S]ure, what do I have to lose?"</String>
+			<String id="actionDecline">"[Y]ou don't know what you're talking about!"</String>
+			<Text id="textAcceptReply1">
+
+				"Great! There's a medical station in the %systemName% system.
+				Go there and seek treatment.
+
+				"Good luck!"
+			
+			</Text>
+			<Text id="textDeclineReply1">
+
+				The medtech shakes her head and sighs.
+
+				"You poor thing. I know it's disturbing to hear it, but 
+				treatment is really your only hope. Good luck!"
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+			<Text id="FailureMsg"></Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

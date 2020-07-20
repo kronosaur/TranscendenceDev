@@ -101,6 +101,7 @@ CSystem::~CSystem (void)
 
 	//	Deleted objects
 
+	m_ForceResolver.CleanUp();
 	FlushDeletedObjects();
 	}
 
@@ -1940,6 +1941,7 @@ void CSystem::FlushAllCaches (void)
 //	Flushes all caches to save memory.
 
 	{
+	m_ForceResolver.CleanUp();
 	FlushEnemyObjectCache();
 	FlushDeletedObjects();
 	}
@@ -2407,6 +2409,53 @@ CTopologyNode *CSystem::GetStargateDestination (const CString &sStargate, CStrin
 
 	{
 	return m_pTopology->GetGateDest(sStargate, retsEntryPoint);
+	}
+
+CSpaceObject *CSystem::GetStargateInRange (const CVector &vPos, CSpaceObject **retpStargateNearby) const
+
+//	GetStargateInRange
+//
+//	Returns the nearest stargate to vPos if it is in range to be entered (NULL 
+//	otherwise). If there is a gate nearby (but not in range to be entered) we
+//	return it (optionally) in retpStargateNearby.
+
+	{
+	Metric rBestDist2 = MAX_GATE_RANGE * MAX_GATE_RANGE;
+	Metric rBestNearbyDist2 = MAX_GATE_HELP_RANGE * MAX_GATE_HELP_RANGE;
+	CSpaceObject *pPlayerShip = GetPlayerShip();
+
+	CSpaceObject *pStargate = NULL;
+	CSpaceObject *pStargateNearby = NULL;
+	bool bGateNearby = false;
+	for (int i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+
+		if (pObj 
+				&& pObj->SupportsGating()
+				&& !pObj->IsIntangible()
+				&& pObj != pPlayerShip)
+			{
+			CVector vDist = pObj->GetPos() - vPos;
+			Metric rDist2 = vDist.Length2();
+
+			if (rDist2 < rBestDist2)
+				{
+				rBestDist2 = rDist2;
+				pStargate = pObj;
+				}
+			else if (rDist2 < rBestNearbyDist2)
+				{
+				rBestNearbyDist2 = rDist2;
+				pStargateNearby = pObj;
+				}
+			}
+		}
+
+	if (retpStargateNearby)
+		*retpStargateNearby = pStargateNearby;
+
+	return pStargate;
 	}
 
 int CSystem::GetTileSize (void) const
@@ -4639,6 +4688,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	int iMoveObj = 0;
 #endif
 
+	//	Make sure we're valid at this point.
+
+	m_ForceResolver.BeginUpdate();
+
 	//	Delete all objects in the deleted list (we do this at the
 	//	beginning because we want to keep the list after the update
 	//	so that callers can examine it).
@@ -4665,7 +4718,6 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	hit tests
 
 	m_ObjGrid.Init(this, Ctx);
-	m_ForceResolver.BeginUpdate();
 
 	//	Fire timed events
 	//	NOTE: We only do this if we have a player because otherwise, some

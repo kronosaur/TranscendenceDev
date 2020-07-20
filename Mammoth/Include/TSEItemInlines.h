@@ -42,9 +42,19 @@ inline bool CItem::IsDevice (void) const
 	return (m_pItemType && m_pItemType->IsDevice());
 	}
 
+inline bool CItem::IsLauncher (void) const
+	{
+	return (m_pItemType && m_pItemType->GetCategory() == itemcatLauncher);
+	}
+
 inline bool CItem::IsMissile (void) const
 	{
 	return (m_pItemType && m_pItemType->IsMissile());
+	}
+
+inline bool CItem::IsWeapon (void) const
+	{
+	return (m_pItemType && (m_pItemType->GetCategory() == itemcatWeapon || m_pItemType->GetCategory() == itemcatLauncher));
 	}
 
 //	CItemType Inlines ----------------------------------------------------------
@@ -118,6 +128,16 @@ inline const CItemType &CDifferentiatedItem::GetType (void) const
 inline CItemType &CDifferentiatedItem::GetType (void)
 	{
 	return *m_Item.GetType();
+	}
+
+inline bool CDifferentiatedItem::IsLauncher (void) const
+	{
+	return m_Item.IsLauncher();
+	}
+
+inline bool CDifferentiatedItem::IsWeapon (void) const
+	{
+	return m_Item.IsWeapon();
 	}
 
 //	CArmorClass Inlines --------------------------------------------------------
@@ -343,6 +363,16 @@ inline const CWeaponFireDesc *CDeviceItem::GetWeaponFireDesc (const CItem &Ammo)
 	return GetType().GetDeviceClass()->GetWeaponFireDesc(*this, Ammo);
 	}
 
+inline const CWeaponFireDesc &CDeviceItem::GetWeaponFireDescForVariant (int iVariant) const
+	{
+	return GetType().GetDeviceClass()->GetWeaponFireDescForVariant(*this, iVariant);
+	}
+
+inline int CDeviceItem::GetWeaponVariantCount (void) const
+	{
+	return GetType().GetDeviceClass()->GetWeaponVariantCount(*this);
+	}
+
 inline bool CDeviceItem::IsAreaWeapon (void) const
 	{
 	return GetType().GetDeviceClass()->IsAreaWeapon(*this);
@@ -367,6 +397,11 @@ inline bool CDeviceItem::IsMiningWeapon (void) const
 inline bool CDeviceItem::IsTrackingWeapon (void) const
 	{
 	return GetType().GetDeviceClass()->IsTrackingWeapon(*this);
+	}
+
+inline bool CDeviceItem::IsWeaponVariantValid (int iVariant) const
+	{
+	return GetType().GetDeviceClass()->IsWeaponVariantValid(*this, iVariant);
 	}
 
 inline bool CDeviceItem::NeedsAutoTarget (int *retiMinFireArc, int *retiMaxFireArc) const

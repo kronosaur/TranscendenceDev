@@ -677,7 +677,7 @@ ALERROR CTranscendenceModel::EndGameDestroyed (bool *retbResurrected)
 			CString sError;
 			if (m_pResurrectType->FireOnGlobalResurrect(&sError) != NOERROR)
 				{
-				g_pTrans->DisplayMessage(sError);
+				m_Universe.DebugOutput(sError);
 				kernelDebugLogString(sError);
 				}
 			}
@@ -1115,7 +1115,13 @@ ALERROR CTranscendenceModel::Init (const CGameSettings &Settings)
 	m_bNoSound = Settings.GetBoolean(CGameSettings::noSound);
     m_bNoCollectionLoad = Settings.GetBoolean(CGameSettings::noCollectionLoad);
 	m_bForcePermadeath = Settings.GetBoolean(CGameSettings::forcePermadeath);
-
+	m_sAccessibilityColorPlayer = Settings.GetString(CGameSettings::colorIFFPlayer);
+	m_sAccessibilityColorEscort = Settings.GetString(CGameSettings::colorIFFEscort);
+	m_sAccessibilityColorFriendly = Settings.GetString(CGameSettings::colorIFFFriendly);
+	m_sAccessibilityColorNeutral = Settings.GetString(CGameSettings::colorIFFNeutral);
+	m_sAccessibilityColorEnemy = Settings.GetString(CGameSettings::colorIFFEnemy);
+	m_sAccessibilityColorAngry = Settings.GetString(CGameSettings::colorIFFAngry);
+	m_sAccessibilityColorProjectile = Settings.GetString(CGameSettings::colorIFFProjectile);
 	return NOERROR;
 	}
 
@@ -1673,7 +1679,7 @@ void CTranscendenceModel::OnPlayerDocked (CSpaceObject *pObj)
 	if (pSession == NULL)
 		return;
 			
-	g_pTrans->ClearMessage();
+	pSession->GetMessageDisplay().ClearAll();
 
 	//	See if the object wants to redirect us. In that case, m_pStation
 	//	will remain the original object, but gSource and m_pLocation in the
@@ -1688,7 +1694,7 @@ void CTranscendenceModel::OnPlayerDocked (CSpaceObject *pObj)
 		{
 		m_pPlayer->Undock();
 
-		g_pTrans->DisplayMessage(sError);
+		m_pPlayer->DisplayMessage(sError);
 		::kernelDebugLogString(sError);
 		return;
 		}
@@ -1777,7 +1783,7 @@ void CTranscendenceModel::OnPlayerExitedGate (void)
 
 	//	Welcome message
 
-	g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Welcome to the %s system!"), pNewSystem->GetName()));
+	m_pPlayer->DisplayMessage(strPatternSubst(CONSTLIT("Welcome to the %s system!"), pNewSystem->GetName()));
 
 	//	Update our stats, etc.
 
@@ -1870,7 +1876,7 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 				{
 				sError = strPatternSubst(CONSTLIT("%s [%s (%x)]"), sError, m_pDestNode->GetSystemName(), dwSystemID);
 
-				g_pTrans->DisplayMessage(sError);
+				m_pPlayer->DisplayMessage(sError);
 				kernelDebugLogString(sError);
 				throw CException(ERR_FAIL, sError);
 				}
@@ -2369,6 +2375,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	m_Universe.SetLogImageLoad(false);
 	CString sError;
 	error = pSession->GetDockScreen().InitScreen(m_Universe.GetDockSession(),
+			*GetPlayer(),
 			m_HI.GetHWND(),
 			g_pTrans->m_rcMainScreen,
 			pExtension,
@@ -2423,7 +2430,7 @@ void CTranscendenceModel::ShowShipScreen (void)
 	CString sError;
 	if (!ShowShipScreen(NULL, pRoot, sScreen, NULL_STR, NULL, &sError))
 		{
-		g_pTrans->DisplayMessage(sError);
+		m_pPlayer->DisplayMessage(sError);
 		::kernelDebugLogString(sError);
 		return;
 		}
@@ -2502,6 +2509,17 @@ ALERROR CTranscendenceModel::StartGame (bool bNewGame)
 	if (m_bNoSound)
 		m_Universe.SetSound(false);
 
+	//	Set Accessibility Settings
+	m_Universe.InitAccessibilitySettings();
+	CAccessibilitySettings& cAccessibility = m_Universe.GetAccessibilitySettings();
+	cAccessibility.SetIFFColor(m_sAccessibilityColorAngry, CAccessibilitySettings::IFFType::angry);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorEscort, CAccessibilitySettings::IFFType::escort);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorEnemy, CAccessibilitySettings::IFFType::enemy);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorFriendly, CAccessibilitySettings::IFFType::friendly);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorNeutral, CAccessibilitySettings::IFFType::neutral);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorPlayer, CAccessibilitySettings::IFFType::player);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorProjectile, CAccessibilitySettings::IFFType::projectile);
+
 	//	Tell the controller that we're starting
 
 	m_pPlayer->OnStartGame();
@@ -2519,7 +2537,10 @@ ALERROR CTranscendenceModel::StartGame (bool bNewGame)
 	//	Update stats
 
 	if (m_iState == stateCreatingNewGame)
+		{
 		m_pPlayer->OnSystemEntered(m_Universe.GetCurrentSystem());
+		m_pPlayer->GetGameStats().OnSwitchPlayerShip(*m_pPlayer->GetShip());
+		}
 
     //  Initialize some thumbnails
 
@@ -2665,6 +2686,10 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 	CString sStartNode;
 	CString sStartPos;
 	CalcStartingPos(pStartingShip, &dwStartMap, &sStartNode, &sStartPos);
+
+	//	Remember the starting system.
+
+	m_pPlayer->SetStartingSystem(sStartNode);
 
 	//	Initialize topology, etc.
 

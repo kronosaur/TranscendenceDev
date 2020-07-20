@@ -18,7 +18,7 @@
 			<!-- reward
 			
 				Override this to compute a reward when the mission is created.
-				Nil means no reward. In general this should be a Constant 
+				Nil means no reward. In general this should be a Variant
 				property (that is, a value initialized when the mission is
 				created).
 

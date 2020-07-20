@@ -1537,7 +1537,7 @@ int CItem::GetLevel (void) const
 		return 0;
 
 	else if (GetType()->IsScalable())
-        return Max(GetType()->GetMinLevel(), Min(GetType()->GetMinLevel() + GetScalableLevel(), GetType()->GetMaxLevel()));
+		return Max(GetType()->GetMinLevel(), Min(GetType()->GetMinLevel() + GetScalableLevel(), GetType()->GetMaxLevel()));
 
 	else
 		return GetType()->GetMinLevel();
@@ -1849,8 +1849,8 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 			return CC.CreateBool(IsKnown());
 		}
 
-    else if (strEquals(sProperty, PROPERTY_LEVEL))
-        return CC.CreateInteger(GetLevel());
+	else if (strEquals(sProperty, PROPERTY_LEVEL))
+		return CC.CreateInteger(GetLevel());
 
 	else if (strEquals(sProperty, PROPERTY_PRICE))
 		return CC.CreateInteger(GetTradePrice(NULL, true));
@@ -1944,7 +1944,7 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 		//	If this is a missile, then pass it to the weapon.
 
-        else if (GetType()->IsMissile())
+		else if (GetType()->IsMissile())
 			{
 			if (Ctx.ResolveVariant()
 					&& (pResult = Ctx.GetVariantDevice()->FindItemProperty(Ctx, sProperty)))
@@ -3045,6 +3045,38 @@ void CItem::SetCharges (int iCharges)
 		m_pExtra->m_dwCharges = iCharges;
 	}
 
+bool CItem::SetCustomProperty (const CString &sProperty, const ICCItem &Value)
+
+//	SetCustomProperty
+//
+//	Sets a custom property. Returns TRUE if the property was found.
+
+	{
+	if (IsEmpty())
+		return false;
+
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+	if (!m_pItemType->FindCustomProperty(sProperty, pDummy, &iType))
+		return false;
+
+	switch (iType)
+		{
+		case EPropertyType::propGlobal:
+			m_pItemType->SetGlobalData(sProperty, &Value);
+			return true;
+
+		case EPropertyType::propData:
+		case EPropertyType::propItemData:
+			Extra();
+			m_pExtra->m_Data.SetData(sProperty, &Value);
+			return true;
+
+		default:
+			return false;
+		}
+	}
+
 void CItem::SetDamaged (int iDamagedHP)
 
 //	SetDamaged
@@ -3141,24 +3173,24 @@ bool CItem::SetLevel (int iLevel, CString *retsError)
 //
 //  Sets the level for scalable items. Returns TRUE if successful.
 
-    {
-    if (!GetType()->IsScalable())
-        {
-        if (retsError)
-            *retsError = strPatternSubst(CONSTLIT("Item [%08x] is not scalable."), GetType()->GetUNID());
-        return false;
-        }
+	{
+	if (!GetType()->IsScalable())
+		{
+		if (retsError)
+			*retsError = strPatternSubst(CONSTLIT("Item [%08x] is not scalable."), GetType()->GetUNID());
+		return false;
+		}
 
-    if (iLevel < GetType()->GetMinLevel() || iLevel > GetType()->GetMaxLevel())
-        {
-        if (retsError)
-            *retsError = strPatternSubst(CONSTLIT("Item [%08x] cannot be scaled to level %d."), GetType()->GetUNID(), iLevel);
-        return false;
-        }
+	if (iLevel < GetType()->GetMinLevel() || iLevel > GetType()->GetMaxLevel())
+		{
+		if (retsError)
+			*retsError = strPatternSubst(CONSTLIT("Item [%08x] cannot be scaled to level %d."), GetType()->GetUNID(), iLevel);
+		return false;
+		}
 
-    SetScalableLevel(iLevel - GetType()->GetMinLevel());
-    return true;
-    }
+	SetScalableLevel(iLevel - GetType()->GetMinLevel());
+	return true;
+	}
 
 void CItem::SetPrepareUninstalled (void)
 
@@ -3184,16 +3216,14 @@ ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, cons
 //	retsError is blank then we cannot set the property because the value is Nil.
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	CInstalledDevice *pDevice;
-	CArmorClass *pArmor;
-	ICCItemPtr pNil(ICCItem::Nil);
-
 	if (IsEmpty())
 		{
 		if (retsError) *retsError = CONSTLIT("Unable to set propery on a null item.");
 		return ESetPropertyResult::error;
 		}
+
+	else if (SetCustomProperty(sName, (pValue ? *pValue : *ICCItemPtr::Nil())))
+		return ESetPropertyResult::set;
 
 	else if (strEquals(sName, PROPERTY_CHARGES))
 		{
@@ -3266,7 +3296,7 @@ ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, cons
 			}
 		}
 
-    else if (strEquals(sName, PROPERTY_KNOWN))
+	else if (strEquals(sName, PROPERTY_KNOWN))
 		{
 		if (bOnType)
 			m_pItemType->SetAllKnown(!pValue->IsNil());
@@ -3274,19 +3304,19 @@ ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, cons
 			SetKnown(pValue && !pValue->IsNil());
 		}
 
-    else if (strEquals(sName, PROPERTY_LEVEL))
-        {
-        //  If this is armor, then we remember the current damaged state and
-        //  carry that forward to the new level.
+	else if (strEquals(sName, PROPERTY_LEVEL))
+		{
+		//  If this is armor, then we remember the current damaged state and
+		//  carry that forward to the new level.
 
-		if (pArmor = GetType()->GetArmorClass())
-			return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *pNil), retsError);
+		if (CArmorClass *pArmor = GetType()->GetArmorClass())
+			return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *ICCItemPtr::Nil()), retsError);
 
 		//	Otherwise, we just set the item level.
 
-        if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
+		if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
 			return ESetPropertyResult::error;
-        }
+		}
 	else if (strEquals(sName, PROPERTY_UNKNOWN_TYPE_INDEX))
 		{
 		int iUnknownTypeCount = m_pItemType->GetUnknownTypeCount();
@@ -3315,12 +3345,12 @@ ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, cons
 
 	//	If this is armor, then pass it on.
 
-	else if (pArmor = GetType()->GetArmorClass())
-		return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *pNil), retsError);
+	else if (CArmorClass *pArmor = GetType()->GetArmorClass())
+		return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *ICCItemPtr::Nil()), retsError);
 
 	//	If this is an installed device, then pass it on
 
-	else if (pDevice = Ctx.GetDevice())
+	else if (CInstalledDevice *pDevice = Ctx.GetDevice())
 		return pDevice->SetProperty(Ctx, sName, pValue, retsError);
 
 	//	Otherwise, nothing

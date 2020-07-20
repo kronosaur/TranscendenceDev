@@ -1439,8 +1439,8 @@ void CMissile::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 	{
 	if (!m_fDestroyOnAnimationDone)
 		Dest.DrawDot(x, y, 
-				CG32bitPixel(255, 255, 0), 
-				markerSmallRound);
+				GetUniverse().GetAccessibilitySettings().GetIFFColor(CAccessibilitySettings::IFFType::projectile),
+				markerRoundDot);
 	}
 
 bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos) const

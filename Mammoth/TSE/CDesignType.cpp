@@ -3038,7 +3038,7 @@ bool CDesignType::Translate (const CDesignType &Type, const CString &sID, const 
 
 	//	Backwards compatible translate
 
-	if (GetVersion() <= 2 
+	if (GetAPIVersion() <= 2 
 			&& Params.pSource
 			&& TranslateVersion2(Params.pSource, sID, retResult))
 		return true;
@@ -3092,7 +3092,7 @@ bool CDesignType::TranslateText (const CDesignType &Type, const CString &sID, co
 
 	//	Backwards compatible translate
 
-	if (GetVersion() <= 2 && Params.pSource)
+	if (GetAPIVersion() <= 2 && Params.pSource)
 		{
 		ICCItemPtr pItem;
 		if (!TranslateVersion2(Params.pSource, sID, pItem))
@@ -3157,9 +3157,7 @@ bool CDesignType::TranslateVersion2 (const CSpaceObject *pObj, const CString &sI
 //	Translates using the old apiVersion="2" method, which relied on static data.
 
 	{
-	int i;
-
-	if (GetVersion() > 2)
+	if (GetAPIVersion() > 2)
 		return false;
 
 	ICCItemPtr pValue = GetStaticData(CONSTLIT("Language"));
@@ -3167,7 +3165,7 @@ bool CDesignType::TranslateVersion2 (const CSpaceObject *pObj, const CString &sI
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 
-		for (i = 0; i < pValue->GetCount(); i++)
+		for (int i = 0; i < pValue->GetCount(); i++)
 			{
 			ICCItem *pEntry = pValue->GetElement(i);
 			if (pEntry->GetCount() == 2 && strEquals(sID, pEntry->GetElement(0)->GetStringValue()))

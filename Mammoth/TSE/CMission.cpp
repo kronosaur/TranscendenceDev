@@ -32,7 +32,8 @@
 
 #define STR_A_REASON							CONSTLIT("aReason")
 
-CMission::CMission (CUniverse &Universe) : TSpaceObjectImpl(Universe)
+CMission::CMission (CUniverse &Universe) : TSpaceObjectImpl(Universe),
+		m_fInMissionCompleteCode(false)
 
 //	CMission constructor
 
@@ -217,6 +218,14 @@ ALERROR CMission::Create (CMissionType &Type, CMissionType::SCreateCtx &CreateCt
 	pMission->m_fAcceptedByPlayer = false;
 	pMission->m_pOwner = CreateCtx.pOwner;
 	pMission->m_pDebriefer = NULL;
+
+	//	If we can have multiple of this mission, then compute the ordinal number
+	//	by counting existing missions.
+
+	if (Type.GetMaxAppearing() != 1)
+		pMission->m_iMissionNumber = Universe.GetMissions().FilterByType(Type).GetCount();
+	else
+		pMission->m_iMissionNumber = 0;
 
 	//	NodeID
 
@@ -659,10 +668,19 @@ void CMission::OnNewSystem (CSystem *pSystem)
 		{
 		if (strEquals(m_sNodeID, pNode->GetID()))
 			{
+			const DWORD dwTimeAway = sysGetTicksElapsed(m_dwLeftSystemOn);
+
 			//	Back in our system
 
 			m_fInMissionSystem = true;
 			m_dwLeftSystemOn = 0;
+
+			//	If we've been away too long, then the mission fails.
+
+			if (m_pType->FailureOnReturnToSystem()
+					&& IsAccepted()
+					&& dwTimeAway >= (DWORD)m_pType->GetReturnToSystemTimeOut())
+				SetFailure(NULL);
 			}
 		else
 			{
@@ -782,6 +800,7 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 //	CGlobalSpaceObject	m_pOwner
 //	CGlobalSpaceObject	m_pDebriefer
 //	CString		m_sNodeID
+//	DWORD		m_iMissionNumber
 //	DWORD		m_dwCreatedOn
 //	DWORD		m_dwLeftSystemOn
 //	DWORD		m_dwAcceptedOn
@@ -807,6 +826,11 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 		m_pDebriefer.ReadFromStream(Ctx);
 
 	m_sNodeID.ReadFromStream(Ctx.pStream);
+
+	if (Ctx.dwVersion >= 192)
+		Ctx.pStream->Read(m_iMissionNumber);
+	else
+		m_iMissionNumber = 0;
 
 	if (Ctx.dwVersion >= 85)
 		Ctx.pStream->Read(m_dwCreatedOn);
@@ -925,6 +949,7 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 //	CGlobalSpaceObject	m_pOwner
 //	CGlobalSpaceObject	m_pDebriefer
 //	CString		m_sNodeID
+//	DWORD		m_iMissionNumber
 //	DWORD		m_dwCreatedOn
 //	DWORD		m_dwLeftSystemOn
 //	DWORD		m_dwAcceptedOn
@@ -943,6 +968,7 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 	m_pOwner.WriteToStream(pStream);
 	m_pDebriefer.WriteToStream(pStream);
 	m_sNodeID.WriteToStream(pStream);
+	pStream->Write(m_iMissionNumber);
 	pStream->Write(m_dwCreatedOn);
 	pStream->Write(m_dwLeftSystemOn);
 	pStream->Write(m_dwAcceptedOn);
@@ -1262,8 +1288,13 @@ bool CMission::SetFailure (ICCItem *pData)
 	{
 	//	Must be in the right state
 
-	if (m_iStatus != statusAccepted && m_iStatus != statusClosed && m_iStatus != statusOpen)
+	if (m_fInMissionCompleteCode)
 		return false;
+
+	else if (m_iStatus != statusAccepted && m_iStatus != statusClosed && m_iStatus != statusOpen)
+		return false;
+
+	m_fInMissionCompleteCode = true;
 
 	//	Stop the mission
 
@@ -1280,6 +1311,7 @@ bool CMission::SetFailure (ICCItem *pData)
 
 	CompleteMission(completeFailure);
 
+	m_fInMissionCompleteCode = false;
 	return true;
 	}
 
@@ -1292,8 +1324,13 @@ bool CMission::SetSuccess (ICCItem *pData)
 	{
 	//	Must be in the right state
 
+	if (m_fInMissionCompleteCode)
+		return false;
+
 	if (m_iStatus != statusAccepted && m_iStatus != statusClosed && m_iStatus != statusOpen)
 		return false;
+
+	m_fInMissionCompleteCode = true;
 
 	//	Stop the mission
 
@@ -1310,6 +1347,7 @@ bool CMission::SetSuccess (ICCItem *pData)
 
 	CompleteMission(completeSuccess);
 
+	m_fInMissionCompleteCode = false;
 	return true;
 	}
 

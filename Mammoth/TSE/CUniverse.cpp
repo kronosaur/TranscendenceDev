@@ -1279,6 +1279,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		BindOptions.dwAPIVersion = dwAPIVersion;
 		BindOptions.bNewGame = !Ctx.bInLoadGame;
 		BindOptions.bNoResources = Ctx.bNoResources;
+		BindOptions.bDiagnostics = Ctx.bDiagnostics;
 
 #ifdef DEBUG_BIND
 		BindOptions.bTraceBind = Ctx.bDiagnostics;
@@ -1389,6 +1390,9 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 
 	{
 	ALERROR error;
+
+	if (m_Difficulty.GetLevel() == CDifficultyOptions::lvlUnknown)
+		SetDifficultyLevel(CDifficultyOptions::lvlChallenge);
 
 	//	If starting map is 0, see if we can get it from the adventure
 
@@ -2536,10 +2540,12 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 //	Sets the current system
 
 	{
+	if (pSystem == m_pCurrentSystem)
+		return;
+
 	if (m_pCurrentSystem)
 		m_pCurrentSystem->FlushAllCaches();
 
-	CSystem *pOldSystem = m_pCurrentSystem;
 	m_pCurrentSystem = pSystem;
 
 	if (pSystem)
@@ -2557,8 +2563,47 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 
 	//	Initialize mission cache
 
-	if (pOldSystem != m_pCurrentSystem)
-		m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
+	m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
+	}
+
+bool CUniverse::SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError)
+
+//	SetDebugProperty
+//
+//	Sets a debug property.
+
+	{
+#ifdef DEBUG
+	if (strEquals(sProperty, CONSTLIT("hudColorPlayer")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::player);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorEscort")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::escort);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorFriendly")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::friendly);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorNeutral")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::neutral);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorEnemy")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::enemy);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorAngry")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::angry);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorProjectile")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::projectile);
+
+	else
+		return m_DebugOptions.SetProperty(sProperty, pValue, retsError);
+
+	return true;
+#else
+
+	return m_DebugOptions.SetProperty(sProperty, pValue, retsError);
+
+#endif
 	}
 
 bool CUniverse::SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData)

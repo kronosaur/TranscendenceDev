@@ -686,7 +686,7 @@
 						)
 						{
 						title: (objGetName wingmanObj 0)
-						icon: (objGetImageDesc wingmanObj { rotation:90 })
+						icon: (shpGetImageDesc wingmanObj { rotation:90 })
 						desc: 
 							(scrTranslate gScreen 'descWingmanPrice {
 								shipClass:(objGetName wingmanObj 'generic)

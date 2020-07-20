@@ -358,7 +358,7 @@
 		</Trade>
 		
 		<Items>
-			<RandomItem count="1d4" criteria="r -illegal; -military; -notForSale; -notStandard; L:3-6;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<RandomItem count="1d4" criteria="r +commonwealth; -illegal; -military; -notForSale; -notStandard; L:3-6;"		levelFrequency="systemLevel:ru|c|curv"/>
 		</Items>
 
 		<!-- Configuration -->
@@ -1074,9 +1074,9 @@
 
 			</Text>
 
-            <Text id="core.mapDescMain">
-                "Hires freighter escorts"
-            </Text>
+			<Text id="core.mapDescMain">
+				"Hires freighter escorts"
+			</Text>
 		</Language>
 	</StationType>
 

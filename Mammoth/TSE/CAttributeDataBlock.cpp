@@ -518,7 +518,7 @@ void CAttributeDataBlock::ReadDataEntries (IReadStream *pStream)
             sData.ReadFromStream(pStream);
 
             SDataEntry *pEntry = m_Data.SetAt(sKey);
-			pEntry->pData = ICCItemPtr(CCodeChain::Link(sData));
+			pEntry->pData = CCodeChain::LinkCode(sData);
             }
         }
 
@@ -534,7 +534,7 @@ void CAttributeDataBlock::ReadDataEntries (IReadStream *pStream)
                 {
                 SDataEntry *pEntry = m_Data.SetAt(pData->GetKey(i));
                 CString *pDest = (CString *)pData->GetValue(i);
-				pEntry->pData = ICCItemPtr(CCodeChain::Link(*pDest));
+				pEntry->pData = CCodeChain::LinkCode(*pDest);
                 }
 
             delete pData;
@@ -704,7 +704,7 @@ void CAttributeDataBlock::SetFromXML (CXMLElement *pData)
 			//	Store
 
 			SDataEntry *pEntry = m_Data.SetAt(sID);
-			pEntry->pData = ICCItemPtr(CCodeChain::Link(sData));
+			pEntry->pData = CCodeChain::LinkCode(sData);
 			}
 		}
 	}

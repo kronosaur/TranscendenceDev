@@ -949,6 +949,55 @@ bool CShip::CanAttack (void) const
 	return !IsIntangible() && !m_fShipCompartment;
 	}
 
+bool CShip::CanBeDestroyedBy (CSpaceObject &Attacker) const
+
+//	CanBeDestroyedBy
+//
+//	Returns TRUE if the given attacker has weapons that can destroy this ship.
+//	In particular, we make sure that the attacker has WMD weapons if we have
+//	interior compartments.
+
+	{
+	//	Loop over all attacker weapons.
+
+	for (const CDeviceItem DeviceItem : Attacker.GetDeviceSystem())
+		{
+		if (!DeviceItem.IsWeapon())
+			continue;
+
+		//	See if any of the weapon variants can destroy us.
+
+		for (int iVariant = 0; iVariant < DeviceItem.GetWeaponVariantCount(); iVariant++)
+			{
+			if (!DeviceItem.IsWeaponVariantValid(iVariant))
+				continue;
+
+			//	If the ship has interior compartments, then the weapon must have
+			//	WMD.
+
+			if (IsMultiHull())
+				{
+				if (DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetMassDestructionDamage() > 0)
+					return true;
+				}
+
+			//	Otherwise, any weapon can destroy us.
+			//
+			//	LATER: At some point maybe we can eliminate weapon that don't
+			//	do at least 1 point of damage to armor.
+
+			else
+				{
+				return true;
+				}
+			}
+		}
+
+	//	If we get this far, then none of the attacker's weapons can hurt us.
+
+	return false;
+	}
+
 bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
@@ -5306,13 +5355,41 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 	else if (m_fKnown && m_fShowMapLabel)
 		{
 		CG32bitPixel rgbColor;
-		if (IsEnemy(GetUniverse().GetPOV()))
-			rgbColor = CG32bitPixel(255, 0, 0);
-		else
-			rgbColor = CG32bitPixel(0, 192, 0);
+		rgbColor = GetSymbolColor();
 
-		Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
-		Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
+		CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
+		CSpaceObject* pPlayerShip;
+		if (IsPlayer() || GetSovereign()->IsPlayerOwned())
+			{
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallCircle);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledCircle);
+			}
+		else if ((pPlayerShip = GetUniverse().GetPlayerShip())
+				&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+			{
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
+			}
+		else if (pPlayer && IsFriend(*pPlayer))
+			{
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
+			}
+		else if (pPlayer && IsNeutral(*pPlayer))
+			{
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallDiamond);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledDiamond);
+			}
+		else if (pPlayer && IsEnemy(*pPlayer))
+			{
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
+			}
+		else
+			{
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallSquare);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
+			}
 
 		if (m_sMapLabel.IsBlank())
 			m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
@@ -6257,12 +6334,24 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 
 	SetKnown();
 
-	//	Paint red if enemy, blue otherwise
+	//	Paint red if enemy, etc.
 
 	CG32bitPixel rgbColor = GetSymbolColor();
-	Dest.DrawDot(x, y, 
-			rgbColor, 
-			markerSmallRound);
+	CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
+	CSpaceObject* pPlayerShip;
+	if (IsPlayer() || GetSovereign()->IsPlayerOwned())
+		Dest.DrawDot(x, y, rgbColor, markerRoundDot);
+	else if ((pPlayerShip = GetUniverse().GetPlayerShip())
+			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
+		Dest.DrawDot(x, y, rgbColor, markerTriangleUpDot);
+	else if (pPlayer && IsFriend(*pPlayer))
+		Dest.DrawDot(x, y, rgbColor, markerSquareDot);
+	else if (pPlayer && IsNeutral(*pPlayer))
+		Dest.DrawDot(x, y, rgbColor, markerDiamondDot);
+	else if (pPlayer && IsEnemy(*pPlayer))
+		Dest.DrawDot(x, y, rgbColor, markerTriangleDownDot);
+	else
+		Dest.DrawDot(x, y, rgbColor, markerSquareDot);
 
 	//	Identified
 

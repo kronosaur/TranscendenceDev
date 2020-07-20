@@ -232,6 +232,7 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 	Ctx.bBindAsNewGame = Options.bNewGame;
 	Ctx.bNoResources = Options.bNoResources;
 	Ctx.bTraceBind = Options.bTraceBind;
+	Ctx.bLoadDiagnostics = Options.bDiagnostics;
 
 	//	Loop over the bind list in order and add appropriate types to m_AllTypes
 	//	(The order guarantees that the proper types override)
@@ -1844,7 +1845,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 	//	Define the type (m_HierarchyTypes takes ownership of pNewXML).
 
 	CDesignType *pNewType;
-	if (error = m_HierarchyTypes.DefineType(pType->GetExtension(), pType->GetUNID(), pNewXML, &pNewType, &Ctx.sError))
+	if (error = m_HierarchyTypes.DefineType(Ctx, pType->GetExtension(), pType->GetUNID(), pNewXML, &pNewType, &Ctx.sError))
 		{
 		delete pNewXML;
 		return pType->ComposeLoadError(Ctx, Ctx.sError);
@@ -1928,7 +1929,7 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap
 		//	LATER: m_CreatedTypes should be a normal CDesignList.
 
 		CDesignType *pNewType;
-		if (m_CreatedTypes.DefineType(pOverride->GetExtension(), pOverride->GetUNID(), pNewXML, &pNewType, &Ctx.sError) != NOERROR)
+		if (m_CreatedTypes.DefineType(Ctx, pOverride->GetExtension(), pOverride->GetUNID(), pNewXML, &pNewType, &Ctx.sError) != NOERROR)
 			{
 			delete pNewXML;
 			return pOverride->ComposeLoadError(Ctx, Ctx.sError);

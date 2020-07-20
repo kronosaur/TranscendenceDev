@@ -77,13 +77,30 @@ enum GradientDirections
 enum MarkerTypes
 	{
 	markerPixel,
-	markerSmallRound,
-	markerSmallSquare,
+	markerRoundDot,
+	markerSquareDot,
+	markerDiamondDot,
+	markerTriangleUpDot,
+	markerTriangleDownDot,
+
 	markerSmallCross,
 	markerMediumCross,
+
+	markerSmallSquare,
 	markerSmallFilledSquare,
-	markerSmallCircle,
+
 	markerTinyCircle,
+	markerSmallCircle,
+	markerSmallFilledCircle,
+
+	markerSmallTriangleUp,
+	markerSmallFilledTriangleUp,
+
+	markerSmallTriangleDown,
+	markerSmallFilledTriangleDown,
+
+	markerSmallDiamond,
+	markerSmallFilledDiamond,
 	};
 
 enum SurfaceTypes

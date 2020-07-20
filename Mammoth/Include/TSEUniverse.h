@@ -246,6 +246,7 @@ class CUniverse
 				virtual IPlayerController *CreatePlayerController (void) { return NULL; }
 				virtual IShipController *CreateShipController (const CString &sController) { return NULL; }
 				virtual void DebugOutput (const CString &sLine) { }
+				virtual bool FindCommandKey (const CString &sCmd, DWORD *retdwVirtKey = NULL) const { return false; }
 				virtual bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const { return false; }
 				virtual void GameOutput (const CString &sLine) { }
 				virtual CG32bitPixel GetColor (const CString &sColor) const { return CG32bitPixel(255, 255, 255); }
@@ -371,6 +372,8 @@ class CUniverse
 		void FireOnGlobalUniverseSave (void) { m_Design.FireOnGlobalUniverseSave(); }
 		void FlushStarSystem (CTopologyNode *pTopology);
 		void GenerateGameStats (CGameStats &Stats);
+		const CAccessibilitySettings &GetAccessibilitySettings (void) const { return m_AccessabilitySettings; }
+		CAccessibilitySettings &GetAccessibilitySettings (void) { return m_AccessabilitySettings; }
 		void GetAllAdventures (TArray<CExtension *> *retList) { CString sError; m_Extensions.ComputeAvailableAdventures((m_bDebugMode ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retList, &sError); }
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const;
 		CAscendedObjectList &GetAscendedObjects (void) { return m_AscendedObjects; }
@@ -419,6 +422,7 @@ class CUniverse
 		CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
 		bool InDebugMode (void) { return m_bDebugMode; }
 		void InitEntityResolver (CExtension *pExtension, CEntityResolverList *retResolver) { m_Extensions.InitEntityResolver(pExtension, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retResolver); }
+		void InitAccessibilitySettings (void) { m_AccessabilitySettings = CAccessibilitySettings(); }
 		bool InResurrectMode (void) { return m_bResurrectMode; }
 		bool IsGlobalResurrectPending (CDesignType **retpType);
 		bool IsRegistered (void) { return m_bRegistered; }
@@ -440,7 +444,7 @@ class CUniverse
 		ALERROR SaveToStream (IWriteStream *pStream);
 		void SetCurrentSystem (CSystem *pSystem);
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
-		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL) { return m_DebugOptions.SetProperty(sProperty, pValue, retsError); }
+		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetDifficultyLevel (CDifficultyOptions::ELevels iLevel) { m_Difficulty.SetLevel(iLevel); }
 		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
@@ -617,6 +621,10 @@ class CUniverse
 		CObjectStats m_ObjStats;				//	Object stats (across all systems)
 
 		CDockSession m_DockSession;
+
+		//  Accessibility settings, ex for custom colorblind colors
+
+		CAccessibilitySettings m_AccessabilitySettings;
 
 		//	Support structures
 

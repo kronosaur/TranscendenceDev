@@ -551,9 +551,11 @@ class CStationType : public CDesignType
 		virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
+		static int CalcChallengeRating (const int iLevel, const Metric rBalance);
 		static Metric CalcSatelliteHitsToDestroy (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
 		static Metric CalcSatelliteStrength (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
 		static Metric CalcSatelliteTreasureValue (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
+		static int GetStdChallengeRating (int iLevel) { return CalcChallengeRating(iLevel, 1.0); }
 		static ScaleTypes LoadScaleType (DWORD dwLoad) { return (ScaleTypes)dwLoad; }
 		static ScaleTypes ParseScale (const CString sValue);
 		static ESizeClass ParseSizeClass (const CString sValue);

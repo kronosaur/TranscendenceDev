@@ -129,41 +129,19 @@ void CSystemEvent::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	CTimedEncounterEvent ------------------------------------------------------
 
-CTimedEncounterEvent::CTimedEncounterEvent (int iTick,
-											CSpaceObject *pTarget,
-											DWORD dwEncounterTableUNID,
-											CSpaceObject *pGate,
-											const CVector &vPos,
-											Metric rDistance) :
-		CSystemEvent(iTick),
+CTimedEncounterEvent::CTimedEncounterEvent (int iTick, DWORD dwEncounterTableUNID, const SOptions &Options) : CSystemEvent(iTick),
 		m_dwEncounterTableUNID(dwEncounterTableUNID),
-		m_pGate(pGate),
-		m_vPos(vPos),
-		m_rDistance(rDistance)
+		m_pGate(Options.pGate),
+		m_vPos(Options.vPos),
+		m_rDistance(Options.rDistance)
 
 //	CTimedEncounterEvent constructor
 
 	{
-	if (pTarget)
-		m_Targets.FastAdd(pTarget);
-	}
-
-CTimedEncounterEvent::CTimedEncounterEvent (int iTick,
-											const CSpaceObjectList &Targets,
-											DWORD dwEncounterTableUNID,
-											CSpaceObject *pGate,
-											const CVector &vPos,
-											Metric rDistance) :
-		CSystemEvent(iTick),
-		m_Targets(Targets),
-		m_dwEncounterTableUNID(dwEncounterTableUNID),
-		m_pGate(pGate),
-		m_vPos(vPos),
-		m_rDistance(rDistance)
-
-//	CTimedEncounterEvent constructor
-
-	{
+	if (Options.pTarget)
+		m_Targets.FastAdd(Options.pTarget);
+	else
+		m_Targets = Options.TargetList;
 	}
 
 CTimedEncounterEvent::CTimedEncounterEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)

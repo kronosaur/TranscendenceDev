@@ -1024,7 +1024,7 @@ Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 	return rMass;
 	}
 
-ICCItem *CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
+ICCItemPtr CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
 
 //	CalcMaxSpeedByArmorMass
 //
@@ -2161,9 +2161,10 @@ void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dw
 		{
 		SDeviceGenerateCtx Ctx(GetUniverse());
 		Ctx.iLevel = iLevel;
+		Ctx.pRoot = (m_pDeviceSlots ? m_pDeviceSlots : m_pDevices);
 
-		if (!(dwFlags & GDFLAG_NO_DEVICE_SLOT_SEARCH))
-			Ctx.pRoot = (m_pDeviceSlots ? m_pDeviceSlots : m_pDevices);
+		if (dwFlags & GDFLAG_NO_DEVICE_SLOT_SEARCH)
+			Ctx.bNoSlotCriteria = true;
 
 		Ctx.pResult = &Devices;
 
@@ -3931,7 +3932,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return ICCItemPtr(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetArmorLimits().GetMinArmorSpeedBonus());
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_BY_ARMOR_MASS))
-		return ICCItemPtr(CalcMaxSpeedByArmorMass(Ctx));
+		return CalcMaxSpeedByArmorMass(Ctx);
 
 	else if (strEquals(sProperty, PROPERTY_MISC_DEVICE_ITEMS))
 		{

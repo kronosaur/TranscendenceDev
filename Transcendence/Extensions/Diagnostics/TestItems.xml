@@ -28,6 +28,7 @@
 
 			<DynamicData id="test.dynamicData1">1</DynamicData>
 			<DynamicData id="test.dynamicData2">(+ 2 2)</DynamicData>
+			<DynamicData id="test.dynamicData3">(itm@ gItem 'test.data1)</DynamicData>
 
 			<Constant id="disrupted">'testing</Constant>
 		</Properties>

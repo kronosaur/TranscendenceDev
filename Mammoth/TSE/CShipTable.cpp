@@ -967,7 +967,7 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 	CXMLElement *pHandler = pDesc->GetContentElementByTag(ON_CREATE_TAG);
 	if (pHandler)
 		{
-		m_pOnCreate = CCodeChain::Link(pHandler->GetContentText(0));
+		m_pOnCreate = CCodeChain::LinkCode(pHandler->GetContentText(0))->Reference();
 		if (m_pOnCreate->IsError())
 			{
 			Ctx.sError = strPatternSubst("<OnCreate> in <Ship>: &s", m_pOnCreate->GetStringValue());

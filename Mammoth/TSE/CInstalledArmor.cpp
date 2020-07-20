@@ -28,7 +28,7 @@ bool CInstalledArmor::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformance
 	if (m_pArmorClass == NULL)
 		return false;
 
-    return m_pArmorClass->AccumulatePerformance(ItemCtx, Ctx);
+	return m_pArmorClass->AccumulatePerformance(ItemCtx, Ctx);
 	}
 
 void CInstalledArmor::FinishInstall (CSpaceObject &Source)

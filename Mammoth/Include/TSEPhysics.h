@@ -95,6 +95,7 @@ class CPhysicsForceResolver
 
 		int AllocDesc (CSpaceObject &Obj);
 		void BeginUpdate (void);
+		void CleanUp (void);
 		const SForceDesc &GetConstDesc (int iIndex) const { return m_Forces[iIndex]; }
 		SForceDesc &GetDesc (int iIndex) { return m_Forces[iIndex]; }
 		void Update (CSystem &System, const Metric rSecondsPerUpdate);
@@ -113,6 +114,7 @@ class CPhysicsForceDesc
 		void AddForce (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, const CVector &vForce);
 		void AddForceLimited (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj, const CVector &vForce);
 		void Clear (void) { m_iIndex = -1; }
+		bool IsEmpty (void) const { return m_iIndex == -1; }
 		
 	private:
 		CPhysicsForceResolver::SForceDesc &GetDesc (CPhysicsForceResolver &ForceResolver, CSpaceObject &Obj);

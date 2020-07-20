@@ -513,7 +513,7 @@ void CParticleEffect::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 						int x, y;
 
 						Ctx.XForm.Transform(GetPos() + pParticle->vPos, &x, &y);
-						Dest.DrawDot(x, y, rgbColor, markerSmallRound);
+						Dest.DrawDot(x, y, rgbColor, markerRoundDot);
 						}
 
 					pParticle++;

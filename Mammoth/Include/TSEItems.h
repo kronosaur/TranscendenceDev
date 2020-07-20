@@ -62,6 +62,8 @@ class CDifferentiatedItem
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
 		inline int GetVariantNumber (void) const;
+		inline bool IsLauncher (void) const;
+		inline bool IsWeapon (void) const;
 		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
 
 	protected:
@@ -118,7 +120,7 @@ class CArmorItem : public CDifferentiatedItem
 		ICCItemPtr FindProperty (const CString &sProperty) const;
 		inline const CArmorClass &GetArmorClass (void) const;
 		inline CArmorClass &GetArmorClass (void);
-        inline int GetDamageAdj (DamageTypes iDamage) const;
+		inline int GetDamageAdj (DamageTypes iDamage) const;
 		inline int GetDamageAdj (const DamageDesc &Damage) const;
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
@@ -178,11 +180,14 @@ class CDeviceItem : public CDifferentiatedItem
 		inline int GetWeaponEffectiveness (CSpaceObject *pTarget) const;
 		inline const CWeaponFireDesc *GetWeaponFireDesc (void) const;
 		inline const CWeaponFireDesc *GetWeaponFireDesc (const CItem &Ammo) const;
+		inline const CWeaponFireDesc &GetWeaponFireDescForVariant (int iVariant) const;
+		inline int GetWeaponVariantCount (void) const;
 		inline bool IsAreaWeapon (void) const;
 		inline bool IsEnabled (void) const;
 		inline bool IsMiningWeapon (void) const;
 		inline bool IsTrackingWeapon (void) const;
 		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
+		inline bool IsWeaponVariantValid (int iVariant) const;
 		inline bool NeedsAutoTarget (int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const;
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 
@@ -317,7 +322,7 @@ class CItem
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		CString GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
-        int GetLevel (void) const;
+		int GetLevel (void) const;
 		Metric GetMass (void) const { return GetMassKg() / 1000.0; }
 		int GetMassKg (void) const;
 		int GetMaxCharges (void) const;
@@ -347,7 +352,7 @@ class CItem
 		bool IsDamaged (int *retiDamagedHP = NULL) const;
 		bool IsDisrupted (void) const;
 		bool IsDisrupted (DWORD dwNow) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= dwNow) : false); }
-        bool IsEmpty (void) const { return (m_pItemType == NULL); }
+		bool IsEmpty (void) const { return (m_pItemType == NULL); }
 		bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
 		bool IsEnhancementEffective (const CItemEnhancement &Enhancement) const;
 		bool IsExtraEmpty (DWORD dwFlags = 0);
@@ -368,7 +373,7 @@ class CItem
 		void SetInstalled (CInstalledArmor &Installed);
 		void SetInstalled (CInstalledDevice &Installed);
 		void SetKnown (bool bKnown = true) const;
-        bool SetLevel (int iLevel, CString *retsError = NULL);
+		bool SetLevel (int iLevel, CString *retsError = NULL);
 		void SetPrepareUninstalled (void);
 		ESetPropertyResult SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError = NULL);
 		void SetUnknownIndex (int iIndex);
@@ -404,6 +409,8 @@ class CItem
 		CArmorItem AsArmorItemOrThrow (void) { if (IsArmor()) return CArmorItem(*this); else throw CException(ERR_FAIL); }
 
 		inline bool IsDevice (void) const;
+		inline bool IsLauncher (void) const;
+		inline bool IsWeapon (void) const;
 		const CDeviceItem AsDeviceItem (void) const { return CDeviceItem(IsDevice() ? *this : NullItem()); }
 		CDeviceItem AsDeviceItem (void) { return CDeviceItem(IsDevice() ? *this : CItem::m_NullItem); }
 		const CDeviceItem AsDeviceItemOrThrow (void) const { if (IsDevice()) return CDeviceItem(*this); else throw CException(ERR_FAIL); }
@@ -460,11 +467,12 @@ class CItem
 		void AccumulateCustomAttributes (TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
 		void Extra (void);
 		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const;
-        int GetScalableLevel (void) const { return (m_pExtra ? (int)m_pExtra->m_dwLevel : 0); }
+		int GetScalableLevel (void) const { return (m_pExtra ? (int)m_pExtra->m_dwLevel : 0); }
 		int GetValue (bool bActual = false) const;
 		bool IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const;
 		bool IsFlagsEqual (const CItem &Src, DWORD dwFlags) const;
-        void SetScalableLevel (int iValue) { Extra(); m_pExtra->m_dwLevel = iValue; }
+		bool SetCustomProperty (const CString &sProperty, const ICCItem &Value);
+		void SetScalableLevel (int iValue) { Extra(); m_pExtra->m_dwLevel = iValue; }
 
 		static bool IsDisruptionEqual (DWORD dwNow, DWORD dwD1, DWORD dwD2);
 		static bool IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags, DWORD dwNow);
@@ -580,7 +588,7 @@ class CItemListManipulator
 class CItemCtx
 	{
 	public:
-        CItemCtx (CItemType *pItemType) : m_Item(pItemType, 1), m_pItem(&m_Item) { }
+		CItemCtx (CItemType *pItemType) : m_Item(pItemType, 1), m_pItem(&m_Item) { }
 		CItemCtx (const CItemType *pItemType) : m_Item(const_cast<CItemType *>(pItemType), 1), m_pItem(&m_Item) { }
 		CItemCtx (const CItem &Item) : m_pItem(&Item) { }
 		CItemCtx (const CShipClass *pSource, const CItem &Item) : m_pSourceShipClass(pSource), m_pItem(&Item) { }
@@ -610,10 +618,10 @@ class CItemCtx
 		const CShipClass *GetSourceShipClass (void) const;
 		int GetVariant (void) const { return m_iVariant; }
 		CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
-        bool IsItemNull (void) { GetItem(); return (m_pItem == NULL || m_pItem->GetType() == NULL); }
+		bool IsItemNull (void) { GetItem(); return (m_pItem == NULL || m_pItem->GetType() == NULL); }
 		bool IsDeviceDamaged (void);
 		bool IsDeviceDisrupted (void);
-        bool IsDeviceEnabled (void);
+		bool IsDeviceEnabled (void);
 		bool IsDeviceWorking (void);
 		bool ResolveVariant (void);
 

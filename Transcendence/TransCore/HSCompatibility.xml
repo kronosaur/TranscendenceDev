@@ -3702,13 +3702,13 @@
 							; current experience level, then the Black Market becomes an enemy.
 							; [I.e., the better the relationship with the BM, the greater the
 							; chance that the BM will allow the player to pay back her debts.]
-                    
+					
 							(if (gr (/ totalCrimeCost 100) (typ@ &unidBlackMarketMember; 'xp))
 								(block Nil
 									(sovSetDisposition &svBlackMarket; &svPlayer; 'enemy)
 									(sovSetDisposition &svPlayer; &svBlackMarket; 'enemy)
-    								)
-	    						)
+									)
+								)
 							)
 						)
 					)
@@ -6502,7 +6502,7 @@
 			multiHull=			"true"
 			armorID=			"&itSungArmor;"
 			hitPoints=			"400"
-            regen=              "11"
+			regen=              "11"
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 
@@ -6670,7 +6670,7 @@
 			multiHull=			"true"
 			armorID=			"&itSungArmor;"
 			hitPoints=			"1500"
-            regen=              "11"
+			regen=              "11"
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -6820,5 +6820,10 @@
 	<Image UNID="&rsFerianWarrior;"		obsoleteVersion="49"		bitmap="Resources\FerianWarrior.jpg"	bitmask="Resources\FerianWarriorMask.bmp"	loadOnUse="true"/>
 	<Image UNID="&rsXenophobeWorldship;"	obsoleteVersion="49"		bitmap="Resources\XenophobeWorldship.jpg"		bitmask="Resources\XenophobeWorldshipMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsXenophobeArk;"		obsoleteVersion="49"		bitmap="Resources\XenophobeArk.jpg"				bitmask="Resources\XenophobeArkMask.bmp"  		loadOnUse="true"/>
+
+	<Image UNID="&rs1MAutonHD;"			obsoleteVersion="50" bitmap="Resources\1MAutonHD.jpg"		bitmask="Resources\1MAutonHDMask.bmp"		loadOnUse="true" />
+	<Image UNID="&rsAutosentinelHD;"	obsoleteVersion="50" bitmap="Resources\AutosentinelHD.jpg"	bitmask="Resources\AutosentinelHDMask.bmp"	loadOnUse="true" />
+	<Image UNID="&rsMediumAutonHD;"		obsoleteVersion="50" bitmap="Resources\MediumAutonHD.jpg"	bitmask="Resources\MediumAutonHDMask.bmp"	loadOnUse="true" />
+	<Image UNID="&rsExplorerAuton;"		obsoleteVersion="50" bitmap="Resources\ExplorerAuton.jpg"	bitmask="Resources\ExplorerAutonMask.bmp"	loadOnUse="true" />
 
 </TranscendenceModule>

@@ -75,3 +75,6 @@ class CUsePerformanceCounterForEvent
 		bool m_bRunning = false;
 	};
 
+//	CCodeChainCtx --------------------------------------------------------------
+
+inline void CCodeChainCtx::DefineType (const CDesignType *pType) { DefineType(pType ? pType->GetUNID() : 0); }

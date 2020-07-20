@@ -45,10 +45,10 @@ ICCItem *CCodeChain::Link (const CString &sString, SLinkOptions &Options)
 
 	//	Link
 
-	return LinkFragment(sString, Options.iOffset, &Options.iLinked, &Options.iCurLine);
+	return LinkFragment(sString, Options.iOffset, &Options.iLinked, &Options.iCurLine)->Reference();
 	}
 
-ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *retiLinked, int *ioiCurLine)
+ICCItemPtr CCodeChain::LinkFragment (const CString &sString, int iOffset, int *retiLinked, int *ioiCurLine)
 
 //	Link
 //
@@ -56,13 +56,11 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 //	chain of items
 
 	{
-	char *pStart;
-	char *pPos;
-	ICCItem *pResult = NULL;
+	ICCItemPtr pResult;
 	int iCurLine = (ioiCurLine ? *ioiCurLine : 1);
 
-	pStart = sString.GetPointer() + iOffset;
-	pPos = pStart;
+	char *pStart = sString.GetPointer() + iOffset;
+	char *pPos = pStart;
 
 	//	Skip any whitespace
 
@@ -72,7 +70,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 	//	nothing
 
 	if (*pPos == '\0')
-		pResult = CreateNil();
+		pResult = ICCItemPtr::Nil();
 
 	//	If we've got a literal quote, then remember it
 
@@ -97,12 +95,6 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 
 	else if (*pPos == SYMBOL_OPENPAREN)
 		{
-		ICCItem *pNew = CreateLinkedList();
-		if (pNew->IsError())
-			return pNew;
-
-		CCLinkedList *pList = dynamic_cast<CCLinkedList *>(pNew);
-
 		//	Keep reading until we find the end
 
 		pPos++;
@@ -112,8 +104,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 		pPos = SkipWhiteSpace(pPos, &iCurLine);
 		if (*pPos == SYMBOL_CLOSEPAREN)
 			{
-			pList->Discard();
-			pResult = CreateNil();
+			pResult = ICCItemPtr::Nil();
 			pPos++;
 			}
 
@@ -121,19 +112,21 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 
 		else
 			{
+			ICCItemPtr pList(ICCItem::List);
+			if (pList->IsError())
+				return pList;
+
 			while (*pPos != SYMBOL_CLOSEPAREN && *pPos != '\0')
 				{
-				ICCItem *pItem;
 				int iLinked;
 
-				pItem = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
+				ICCItemPtr pItem = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
 				if (pItem->IsError())
 					return pItem;
 
 				//	Add the item to the list
 
 				pList->Append(pItem);
-				pItem->Discard();
 
 				//	Move the position
 
@@ -154,7 +147,6 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 				}
 			else
 				{
-				pList->Discard();
 				pResult = CreateParseError(iCurLine, CONSTLIT("Mismatched open parenthesis"));
 				}
 			}
@@ -164,11 +156,9 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 
 	else if (*pPos == SYMBOL_OPENBRACE)
 		{
-		ICCItem *pNew = CreateSymbolTable();
-		if (pNew->IsError())
-			return pNew;
-
-		CCSymbolTable *pTable = dynamic_cast<CCSymbolTable *>(pNew);
+		ICCItemPtr pTable(ICCItem::SymbolTable);
+		if (pTable->IsError())
+			return pTable;
 
 		//	Always literal
 
@@ -195,40 +185,26 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 				{
 				//	Get the key
 
-				ICCItem *pKey;
 				int iLinked;
 
-				pKey = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
+				ICCItemPtr pKey = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
 				if (pKey->IsError())
-					{
-					pTable->Discard();
 					return pKey;
-					}
 
 				//	Move the position and read a colon
 
 				pPos += iLinked;
 				pPos = SkipWhiteSpace(pPos, &iCurLine);
 				if (*pPos != SYMBOL_COLON)
-					{
-					pKey->Discard();
-					pTable->Discard();
 					return CreateParseError(iCurLine, CONSTLIT("Struct value not found."));
-					}
 
 				pPos++;
 
 				//	Get the value
 
-				ICCItem *pValue;
-
-				pValue = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
+				ICCItemPtr pValue = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
 				if (pValue->IsError())
-					{
-					pKey->Discard();
-					pTable->Discard();
 					return pValue;
-					}
 
 				//	Move the position
 
@@ -236,10 +212,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 
 				//	Add the item to the table
 
-				pTable->AddEntry( pKey, pValue);
-				pKey->Discard();
-				pValue->Discard();
-				pResult = CCodeChain::CreateTrue();
+				pTable->AddEntry(pKey, pValue);
 
 				//	Skip whitespace because otherwise we won't know whether we
 				//	hit the end brace.
@@ -256,10 +229,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 				pResult = pTable;
 				}
 			else
-				{
-				pTable->Discard();
 				pResult = CreateParseError(iCurLine, CONSTLIT("Mismatched open brace"));
-				}
 			}
 		}
 
@@ -347,7 +317,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 
 		if (*pPos == SYMBOL_CLOSEQUOTE)
 			{
-			pResult = CreateString(sResultString);
+			pResult = ICCItemPtr(CreateString(sResultString));
 
 			//	Always a literal
 
@@ -422,9 +392,9 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 			//	Check to see if this is a reserved identifier
 
 			if (strCompareAbsolute(sIdentifier, CONSTLIT("Nil")) == 0)
-				pResult = CreateNil();
+				pResult = ICCItemPtr::Nil();
 			else if (strCompareAbsolute(sIdentifier, CONSTLIT("True")) == 0)
-				pResult = CreateTrue();
+				pResult = ICCItemPtr::True();
 			else
 				pResult = CreateLiteral(sIdentifier);
 			}
@@ -442,14 +412,14 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 	return pResult;
 	}
 
-ICCItem *CCodeChain::CreateParseError (int iLine, const CString &sError)
+ICCItemPtr CCodeChain::CreateParseError (int iLine, const CString &sError)
 
 //	CreateParseError
 //
 //	Utility for creating a parse error
 
 	{
-	return CreateError(strPatternSubst(CONSTLIT("Line %d: %s"), iLine, sError));
+	return ICCItemPtr(CreateError(strPatternSubst(CONSTLIT("Line %d: %s"), iLine, sError)));
 	}
 
 char *CCodeChain::SkipWhiteSpace (char *pPos, int *ioiLine)

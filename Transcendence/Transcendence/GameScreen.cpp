@@ -89,10 +89,10 @@ void CTranscendenceWnd::DisplayMessage (CString sMessage)
 //	Display a message for the player
 
 	{
-	if (m_bRedirectDisplayMessage)
-		m_sRedirectMessage.Append(sMessage);
-	else
-		m_MessageDisplay.DisplayMessage(sMessage, m_Fonts.rgbTitleColor);
+	if (auto pPlayer = GetPlayer())
+		{
+		pPlayer->DisplayMessage(sMessage);
+		}
 	}
 
 void CTranscendenceWnd::DoCommsMenu (int iIndex)
@@ -319,18 +319,6 @@ ALERROR CTranscendenceWnd::InitDisplays (void)
 
 	m_pSRSSnow = g_pUniverse->GetLibraryBitmap(UNID_SRS_SNOW_PATTERN, CDesignCollection::FLAG_IMAGE_LOCK);
 
-	//	Create the message display
-
-	rcRect.left = (RectWidth(m_rcScreen) - g_MessageDisplayWidth) / 2;
-	rcRect.right = rcRect.left + g_MessageDisplayWidth;
-	rcRect.top = m_rcScreen.bottom - (RectHeight(m_rcScreen) / 3);
-	rcRect.bottom = rcRect.top + 4 * g_MessageDisplayHeight;
-	m_MessageDisplay.SetRect(rcRect);
-	m_MessageDisplay.SetFont(&m_Fonts.Header);
-	m_MessageDisplay.SetBlinkTime(15);
-	m_MessageDisplay.SetSteadyTime(150);
-	m_MessageDisplay.SetFadeTime(30);
-
 	//	Initialize some displays (these need to be done after we've
 	//	created the universe).
 
@@ -479,25 +467,25 @@ bool CTranscendenceWnd::ShowCommsSquadronMenu (void)
 	DWORD dwStatus = GetCommsStatus();
 
 	if (dwStatus & resCanAttack)
-		m_MenuData.AddMenuItem(CONSTLIT("A"), SO_ATTACK_TARGET, 0, msgAttack);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("A"), SO_ATTACK_TARGET, 0, msgAttack);
 
 	if (dwStatus & resCanBreakAndAttack)
-		m_MenuData.AddMenuItem(CONSTLIT("B"), SO_BREAK_AND_ATTACK, 0, msgBreakAndAttack);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("B"), SO_BREAK_AND_ATTACK, 0, msgBreakAndAttack);
 
 	if ((dwStatus & resCanFormUp) || (dwStatus & resCanAbortAttack))
-		m_MenuData.AddMenuItem(CONSTLIT("F"), SO_FORM_UP, 0, msgFormUp, 0xffffffff);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("F"), SO_FORM_UP, 0, msgFormUp, 0xffffffff);
 
 	if (dwStatus & resCanAttackInFormation)
-		m_MenuData.AddMenuItem(CONSTLIT("I"), SO_ATTACK_IN_FORMATION, 0, msgAttackInFormation);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("I"), SO_ATTACK_IN_FORMATION, 0, msgAttackInFormation);
 
 	if (dwStatus & resCanWait)
-		m_MenuData.AddMenuItem(CONSTLIT("W"), SO_WAIT, 0, msgWait);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("W"), SO_WAIT, 0, msgWait);
 
 	if (dwStatus & resCanBeInFormation)
 		{
-		m_MenuData.AddMenuItem(CONSTLIT("1"), SO_ALPHA_FORMATION, 0, msgFormUp, 0);
-		m_MenuData.AddMenuItem(CONSTLIT("2"), SO_BETA_FORMATION, 0, msgFormUp, 1);
-		m_MenuData.AddMenuItem(CONSTLIT("3"), SO_GAMMA_FORMATION, 0, msgFormUp, 2);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("1"), SO_ALPHA_FORMATION, 0, msgFormUp, 0);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("2"), SO_BETA_FORMATION, 0, msgFormUp, 1);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("3"), SO_GAMMA_FORMATION, 0, msgFormUp, 2);
 		}
 
 	//	Show Menu
@@ -607,7 +595,7 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 
 	if ((m_MenuData.GetCount() > 1 && GetCommsStatus() != 0) 
 			|| GetPlayer()->HasFleet())
-		m_MenuData.AddMenuItem(SQUADRON_KEY, SQUADRON_LABEL, 0, 0);
+		m_MenuData.AddMenuItem(NULL_STR, SQUADRON_KEY, SQUADRON_LABEL, 0, 0);
 
 	//	Done
 
@@ -950,7 +938,7 @@ bool CTranscendenceWnd::ShowUsePicker (void)
 
 	//	Otherwise, show picker
 
-	GetPlayer()->SetUIMessageEnabled(uimsgUseItemHint, false);
+	GetPlayer()->SetUIMessageFollowed(uimsgUseItemHint);
 	m_PickerDisplay.ResetSelection();
 	m_PickerDisplay.SetHelpText(CONSTLIT("[Enter] to use; [Arrows] to select"));
 	m_PickerDisplay.Invalidate();

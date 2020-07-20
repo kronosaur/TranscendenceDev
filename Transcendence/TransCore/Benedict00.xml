@@ -254,13 +254,46 @@
 			</Text>
 			<String id="AcceptLabel">"[Y]es, I need practice."</String>
 			<Text id="AcceptReply">
+				(switch
+					;	If we aim the ship with the mouse, then we have slightly
+					;	different instructions.
 
+					(uiGetKeyDesc 'AimShip)
+						(msnTranslate gSource 'acceptReply1.mouse {
+							keyThrust: (uiGetKeyName 'ThrustForward)
+							keyFire: (uiGetKeyName 'FireWeapon)
+							})
+
+					;	Otherwise, we describe all maneuver keys.
+
+					(msnTranslate gSource 'acceptReply1.keyboard {
+						keyLeft: (uiGetKeyName 'RotateLeft)
+						keyRight: (uiGetKeyName 'RotateRight)
+						keyThrust: (uiGetKeyName 'ThrustForward)
+						keyFire: (uiGetKeyName 'FireWeapon)
+						})
+					)
+			</Text>
+			<Text id="acceptReply1.mouse">
+			
 				"I'll launch three autons&#x97;autonomous ships&#x97;for target 
 				practice.
 					
-				"Use the mouse to aim and [Ctrl] key to fire your primary weapon. 
-				You can also use the left-mouse button to fire and the right-mouse 
-				button to thrust. See if you can destroy them all.
+				"Use the mouse to aim and [%keyThrust%] to thrust forward. 
+				Use [%keyFire%] to fire your weapon. See if you can destroy them
+				all.
+					
+				"Ready?"
+
+			</Text>
+			<Text id="acceptReply1.keyboard">
+			
+				"I'll launch three autons&#x97;autonomous ships&#x97;for target 
+				practice.
+					
+				"Use [%keyLeft%] and [%keyRight%] to rotate and [%keyThrust%] to
+				thrust forward. [%keyFire%] fires your weapon. See if you can 
+				destroy them all.
 					
 				"Ready?"
 
@@ -276,11 +309,16 @@
 
 			</Text>
 			<Text id="InProgress">
-
+				(msnTranslate gSource 'textInProgress1 {
+					keyFire: (uiGetKeyName 'FireWeapon)
+					})
+			</Text>
+			<Text id="textInprogress1">
+			
 				"I guess I forgot to tell you they fire back. Don't worry: 
 				they're nothing compared to what you'll face out there.
 					
-				"Remember, use the [Ctrl] key to fire your primary weapon."
+				"Remember, use [%keyFire%] to fire your primary weapon."
 
 			</Text>
 			<Text id="SuccessDebrief">

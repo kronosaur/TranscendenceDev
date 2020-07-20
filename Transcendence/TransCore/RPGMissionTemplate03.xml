@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&baVisitStationMission;"
+			noDebrief=			"true"
+			>
+		<Properties>
+			<!-- Destination
+			
+				Set these properties in <OnCreate> to define the destination.
+
+			-->
+
+			<Data id="destID"></Data>
+			<Data id="destNodeID"></Data>
+		</Properties>
+
+		<Events>
+			<OnAccepted>
+				(block Nil
+					(msnRegisterForEvents gSource gPlayerShip)
+
+					;	Player knows about the system
+
+					(sysSetKnown (msn@ gSource 'destNodeID) True)
+					)
+			</OnAccepted>
+
+			<OnSetPlayerTarget>
+				(if (= (sysGetNode) (msn@ gSource 'destNodeID))
+					(rpgSetTarget gSource aReason (objGetObjByID (msn@ gSource 'destID)) 'dock)
+					)
+			</OnSetPlayerTarget>
+			
+			<OnObjDocked>
+				(switch
+					(and (= aObjDocked gPlayerShip) 
+							(= (objGetID aDockTarget) (msn@ gSource 'destID))
+							)
+						(msnSuccess gSource)
+					)
+			</OnObjDocked>
+		</Events>
+	</MissionType>
+
+</TranscendenceModule>

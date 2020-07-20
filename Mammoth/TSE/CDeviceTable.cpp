@@ -75,7 +75,7 @@ class CSingleDevice : public IDeviceGenerator
 
 		CItemTypeRef m_pItemType;				//	Device for this slot
 		DiceRange m_Count;						//	Number of slots to create
-        DiceRange m_Level;						//  For scalable items
+		DiceRange m_Level;						//  For scalable items
 
 		int m_iDamaged = 0;						//	Chance device is damaged
 		CRandomEnhancementGenerator m_Enhanced;	//	Procedure for enhancing device item
@@ -361,24 +361,24 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 		SDeviceDesc Desc;
 		Desc.Item = CItem(m_pItemType, 1);
 
-        //  Level
+		//  Level
 
-        if (!m_Level.IsEmpty())
-            {
-            CString sError;
-            if (!Desc.Item.SetLevel(m_Level.Roll(), &sError))
-                {
-                if (Ctx.GetUniverse().InDebugMode())
-                    ::kernelDebugLogString(sError);
-                }
-            }
+		if (!m_Level.IsEmpty())
+			{
+			CString sError;
+			if (!Desc.Item.SetLevel(m_Level.Roll(), &sError))
+				{
+				if (Ctx.GetUniverse().InDebugMode())
+					::kernelDebugLogString(sError);
+				}
+			}
 
 		//	Charges
 
 		if (m_iCharges)
 			Desc.Item.SetCharges(m_iCharges);
 
-        //  Damage/enhancement
+		//  Damage/enhancement
 
 		if (mathRandom(1, 100) <= m_iDamaged)
 			Desc.Item.SetDamaged();
@@ -619,10 +619,10 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (error = m_Enhanced.InitFromXML(Ctx, pDesc))
 		return error;
 
-    //  Various properties 
+	//  Various properties 
 
 	m_iDamaged = pDesc->GetAttributeInteger(DAMAGED_ATTRIB);
-    m_Level.LoadFromXML(pDesc->GetAttribute(LEVEL_ATTRIB));
+	m_Level.LoadFromXML(pDesc->GetAttribute(LEVEL_ATTRIB));
 	m_iCharges = pDesc->GetAttributeIntegerBounded(CHARGES_ATTRIB, 0, -1, 0);
 
 	if (pDesc->FindAttribute(SEGMENT_ID_ATTRIB, &m_sSlotID))
@@ -1196,30 +1196,31 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceO
 //	Looks for a slot descriptor that matches the given item and returns it.
 
 	{
-	int i;
-
 	//	Look for a matching slot
 
-	for (i = 0; i < m_SlotDesc.GetCount(); i++)
+	if (!Ctx.bNoSlotCriteria)
 		{
-		//	Skip if this slot does not meet criteria
+		for (int i = 0; i < m_SlotDesc.GetCount(); i++)
+			{
+			//	Skip if this slot does not meet criteria
 
-		if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
-			continue;
+			if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
+				continue;
 
-		//	If this slot has an ID and maximum counts and if we've already 
-		//	exceeded those counts, then skip.
+			//	If this slot has an ID and maximum counts and if we've already 
+			//	exceeded those counts, then skip.
 
-		if (m_SlotDesc[i].iMaxCount != -1 
-				&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
-				&& pObj
-				&& pObj->GetDeviceSystem().GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
-			continue;
+			if (m_SlotDesc[i].iMaxCount != -1 
+					&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
+					&& pObj
+					&& pObj->GetDeviceSystem().GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
+				continue;
 
-		//	If we get this far, then this is a valid slot.
+			//	If we get this far, then this is a valid slot.
 
-		*retDesc = m_SlotDesc[i].DefaultDesc;
-		return true;
+			*retDesc = m_SlotDesc[i].DefaultDesc;
+			return true;
+			}
 		}
 
 	//	Otherwise we go with default (we assume that retDesc is already 
@@ -1247,29 +1248,30 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, const C
 //	Looks for a slot descriptor that matches the given item and returns it.
 
 	{
-	int i;
-
 	//	Look for a matching slot
 
-	for (i = 0; i < m_SlotDesc.GetCount(); i++)
+	if (!Ctx.bNoSlotCriteria)
 		{
-		//	Skip if this slot does not meet criteria
+		for (int i = 0; i < m_SlotDesc.GetCount(); i++)
+			{
+			//	Skip if this slot does not meet criteria
 
-		if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
-			continue;
+			if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
+				continue;
 
-		//	If this slot has an ID and maximum counts and if we've already 
-		//	exceeded those counts, then skip.
+			//	If this slot has an ID and maximum counts and if we've already 
+			//	exceeded those counts, then skip.
 
-		if (m_SlotDesc[i].iMaxCount != -1 
-				&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
-				&& DescList.GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
-			continue;
+			if (m_SlotDesc[i].iMaxCount != -1 
+					&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
+					&& DescList.GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
+				continue;
 
-		//	If we get this far, then this is a valid slot.
+			//	If we get this far, then this is a valid slot.
 
-		*retDesc = m_SlotDesc[i].DefaultDesc;
-		return true;
+			*retDesc = m_SlotDesc[i].DefaultDesc;
+			return true;
+			}
 		}
 
 	//	Otherwise we go with default (we assume that retDesc is already 
@@ -1501,7 +1503,7 @@ const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const
 //
 //  Returns a descriptor for a named device (or NULL if not found)
 
-    {
+	{
 	int i;
 	ItemCategories iCatToFind = CDeviceClass::GetItemCategory(iDev);
 
@@ -1511,12 +1513,12 @@ const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const
 
 		//	See if this is the category that we want to find
 
-        if (pDevice->GetCategory() == iCatToFind)
-            return &GetDeviceDesc(i);
+		if (pDevice->GetCategory() == iCatToFind)
+			return &GetDeviceDesc(i);
 		}
 
 	return NULL;
-    }
+	}
 
 int CDeviceDescList::GetFireArc (int iIndex) const
 
@@ -1546,9 +1548,9 @@ CDeviceClass *CDeviceDescList::GetNamedDevice (DeviceNames iDev) const
 //	Returns the named device (or NULL if not found)
 
 	{
-    const SDeviceDesc *pDesc = GetDeviceDescByName(iDev);
-    if (pDesc)
-        return pDesc->Item.GetType()->GetDeviceClass();
+	const SDeviceDesc *pDesc = GetDeviceDescByName(iDev);
+	if (pDesc)
+		return pDesc->Item.GetType()->GetDeviceClass();
 
 	return NULL;
 	}

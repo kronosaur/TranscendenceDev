@@ -19,6 +19,7 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
         m_bShowingSystemMap(false),
         m_SystemMap(*CreateCtx.pHI, *CreateCtx.pModel, m_HUD),
 		m_SystemStationsMenu(*CreateCtx.pHI, *CreateCtx.pModel, *this),
+		m_MessageDisplay(*CreateCtx.pHI),
 		m_Narrative(*CreateCtx.pHI),
 		m_CurrentMenu(menuNone),
 		m_MenuDisplay(*CreateCtx.pHI, *CreateCtx.pModel),
@@ -47,8 +48,12 @@ void CGameSession::DismissMenu (void)
 
 		//	Mouse controls the ship again
 
-		ShowCursor(false);
-		SyncMouseToPlayerShip();
+		if (IsMouseAimEnabled())
+			{
+			ShowCursor(false);
+			SyncMouseToPlayerShip();
+			}
+
 		ExecuteCommandRefresh();
 
 		//	Ignore the next mouse move message, for purpose of enabling mouse
@@ -147,22 +152,9 @@ void CGameSession::InitUI (void)
 
 	m_iUI = pPlayerSettings->GetDefaultUI();
 
-	//	Initialize some variables based on UI
+	//	See if mouse aim is enabled. This must be done after UI is set.
 
-	switch (m_iUI)
-		{
-		case uiPilot:
-			m_bMouseAim = !m_Settings.GetBoolean(CGameSettings::noMouseAim);
-			break;
-
-		case uiCommand:
-			m_bMouseAim = false;
-			break;
-
-		default:
-			ASSERT(false);
-			break;
-		}
+	m_bMouseAim = IsMouseAimConfigured();
 
 	//	Mouse aim setting might have changed since the last time we loaded the game,
 	//	but since the player controller keeps its own state, we need to tell it
@@ -248,11 +240,14 @@ ALERROR CGameSession::OnInit (CString *retsError)
 
     {
     m_rcScreen = g_pTrans->m_rcScreen;
-    SetNoCursor(true);
 	InitUI();
+
+    SetNoCursor(IsMouseAimEnabled());
+
     m_HUD.Init(m_rcScreen);
     m_SystemMap.Init(m_rcScreen);
 	m_MenuDisplay.Init(m_rcScreen);
+	m_MessageDisplay.Init(m_rcScreen);
 
     RECT rcCenter;
     m_HUD.GetClearHorzRect(&rcCenter);
@@ -261,10 +256,50 @@ ALERROR CGameSession::OnInit (CString *retsError)
 	//	Move the mouse cursor so that it points to where the ship is points.
 	//	Otherwise the ship will try to turn to point to the mouse.
 
-	SyncMouseToPlayerShip();
+	if (IsMouseAimEnabled())
+		SyncMouseToPlayerShip();
+
+	//	Welcome
+
+	const CString &sWelcome = GetUniverse().GetCurrentAdventureDesc().GetWelcomeMessage();
+	if (!sWelcome.IsBlank())
+		DisplayMessage(sWelcome);
 
     return NOERROR;
     }
+
+void CGameSession::OnKeyboardMappingChanged (void)
+
+//	OnKeyboardMappingChanged
+//
+//	Keyboard mapping has changed.
+
+	{
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (pPlayer == NULL)
+		return;
+
+	//	See if we need to change the mouse aim variables.
+
+	if (m_bMouseAim != IsMouseAimConfigured())
+		{
+		m_bMouseAim = IsMouseAimConfigured();
+		pPlayer->OnMouseAimSetting(m_bMouseAim);
+
+	    SetNoCursor(IsMouseAimEnabled());
+		ShowCursor(!IsMouseAimEnabled());
+
+		//	Move the mouse cursor so that it points to where the ship is points.
+		//	Otherwise the ship will try to turn to point to the mouse.
+
+		if (IsMouseAimEnabled())
+			SyncMouseToPlayerShip();
+
+		//	Make sure stateful commands match key state.
+
+		ExecuteCommandRefresh();
+		}
+	}
 
 void CGameSession::OnObjDestroyed (const SDestroyCtx &Ctx)
 
@@ -316,7 +351,7 @@ void CGameSession::OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph)
 	if (strEquals(strWord(sMsg, 0), CONSTLIT("was")))
 		sMsg = strSubString(sMsg, 4, -1);
 	sMsg.Capitalize(CString::capFirstLetter);
-	g_pTrans->DisplayMessage(sMsg);
+	DisplayMessage(sMsg);
     m_HUD.Invalidate(hudArmor);
 
 	//	If we are insured, then set our state so that we come back to life
@@ -367,7 +402,10 @@ void CGameSession::OnShowDockScreen (bool bShow)
 		//	Show the cursor, if it was previously hidden
 
 		if (g_pTrans->m_State == CTranscendenceWnd::gsInGame)
-			ShowCursor(true);
+			{
+			if (IsMouseAimEnabled())
+				ShowCursor(true);
+			}
 
 		//	New state
 
@@ -382,9 +420,12 @@ void CGameSession::OnShowDockScreen (bool bShow)
 
 		//	Hide the cursor
 
-		ShowCursor(false);
-		SyncMouseToPlayerShip();
-		m_bIgnoreMouseMove = true;
+		if (IsMouseAimEnabled())
+			{
+			ShowCursor(false);
+			SyncMouseToPlayerShip();
+			m_bIgnoreMouseMove = true;
+			}
 
 		//	New state
 
@@ -507,7 +548,7 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuCommsTarget:
-			pPlayer->SetUIMessageEnabled(uimsgCommsHint, false);
+			pPlayer->SetUIMessageFollowed(uimsgCommsHint);
 			if (!g_pTrans->ShowCommsTargetMenu())
 				return false;
 			break;
@@ -561,7 +602,8 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 
 	//	Show our cursor, in case the menus have mouse UI
 
-	ShowCursor(true);
+	if (IsMouseAimEnabled())
+		ShowCursor(true);
 
 	//	Set state
 
