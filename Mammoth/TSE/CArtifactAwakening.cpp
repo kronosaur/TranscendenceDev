@@ -722,7 +722,7 @@ void CArtifactAwakening::RunPatchEffects (CArtifactProgram &Program, TArray<CArt
 			{
 			case CArtifactProgram::effectPatchDefense:
 				{
-				TArray<CArtifactProgram *> &Matching = CalcMatchingPrograms(Targets, Effect.Criteria);
+				TArray<CArtifactProgram *> Matching = CalcMatchingPrograms(Targets, Effect.Criteria);
 				IncDefense(Matching, Program.GetStrength());
 
 				for (j = 0; j < Matching.GetCount(); j++)
@@ -732,7 +732,7 @@ void CArtifactAwakening::RunPatchEffects (CArtifactProgram &Program, TArray<CArt
 
 			case CArtifactProgram::effectPatchStrength:
 				{
-				TArray<CArtifactProgram *> &Matching = CalcMatchingPrograms(Targets, Effect.Criteria);
+				TArray<CArtifactProgram *> Matching = CalcMatchingPrograms(Targets, Effect.Criteria);
 				IncStrength(Matching, Program.GetStrength());
 
 				for (j = 0; j < Matching.GetCount(); j++)

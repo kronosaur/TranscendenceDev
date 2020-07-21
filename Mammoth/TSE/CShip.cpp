@@ -1177,7 +1177,8 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 				if (bCanInstall
 						&& iCategory == itemcatCargoHold)
 					{
-					const CCargoDesc *pOldCargo = ItemToReplace.GetType()->GetDeviceClass()->GetCargoDesc(CItemCtx(ItemToReplace));
+					CItemCtx ItemToReplaceCtx(ItemToReplace);
+					const CCargoDesc *pOldCargo = ItemToReplace.GetType()->GetDeviceClass()->GetCargoDesc(ItemToReplaceCtx);
 					const CCargoDesc *pNewCargo = Item.GetType()->GetDeviceClass()->GetCargoDesc(ItemCtx);
 					if (pOldCargo 
 							&& pNewCargo 
@@ -1968,8 +1969,9 @@ void CShip::DisableAllDevices (void)
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
         {
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		CItemCtx ItemCtx(this, &Device);
         if (Device.IsEnabled()
-				&& Device.CanBeDisabled(CItemCtx(this, &Device)))
+				&& Device.CanBeDisabled(ItemCtx))
             {
             EnableDevice(Device.GetDeviceSlot(), false);
             }
@@ -2708,7 +2710,10 @@ DamageTypes CShip::GetDamageType (void)
 	{
 	CInstalledDevice *pWeapon = GetNamedDevice(devPrimaryWeapon);
 	if (pWeapon)
-		return (DamageTypes)pWeapon->GetDamageType(CItemCtx(this, pWeapon));
+		{
+		CItemCtx ItemCtx(this, pWeapon);
+		return (DamageTypes)pWeapon->GetDamageType(ItemCtx);
+		}
 	else
 		return damageGeneric;
 	}
@@ -2947,11 +2952,17 @@ Metric CShip::GetMaxWeaponRange (void) const
 	Metric rRange = 0.0;
 	const CInstalledDevice *pDevice = GetNamedDevice(devPrimaryWeapon);
 	if (pDevice)
-		rRange = pDevice->GetMaxRange(CItemCtx(const_cast<CShip *>(this), const_cast<CInstalledDevice *>(pDevice)));
+		{
+		CItemCtx ItemCtx(const_cast<CShip *>(this), const_cast<CInstalledDevice *>(pDevice));
+		rRange = pDevice->GetMaxRange(ItemCtx);
+		}
 
 	pDevice = GetNamedDevice(devMissileWeapon);
 	if (pDevice)
-		rRange = Max(rRange, pDevice->GetMaxRange(CItemCtx(const_cast<CShip *>(this), const_cast<CInstalledDevice *>(pDevice))));
+		{
+		CItemCtx ItemCtx(const_cast<CShip *>(this), const_cast<CInstalledDevice *>(pDevice));
+		rRange = Max(rRange, pDevice->GetMaxRange(ItemCtx));
+		}
 
 	return rRange;
 	}
@@ -6607,14 +6618,16 @@ void CShip::ReactorOverload (int iPowerDrain)
 		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
 			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+			CItemCtx ItemCtx(this, &Device);
 			if (!Device.IsEmpty() 
 					&& Device.IsEnabled()
-					&& Device.CanBeDisabled(CItemCtx(this, &Device)))
+					&& Device.CanBeDisabled(ItemCtx))
 				{
 				SetCursorAtDevice(ItemList, Device.GetDeviceSlot());
 
 				CItem Item = ItemList.GetItemAtCursor();
-				int iDevicePower = Device.GetPowerRating(CItemCtx(&Item, this));
+				CItemCtx ItemCtx(&Item, this);
+				int iDevicePower = Device.GetPowerRating(ItemCtx);
 				if (iDevicePower > iBestPower)
 					{
 					iBestDev = Device.GetDeviceSlot();

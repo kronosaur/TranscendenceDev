@@ -159,8 +159,8 @@ bool CHexarc::ConvertToJSON (const CIntegerIP &Value, CJSONValue *retValue)
 	//	Create the array
 
 	CJSONValue IPInteger(CJSONValue::typeArray);
-	IPInteger.InsertHandoff(CJSONValue(TYPE_AEON_IPINTEGER));
-	IPInteger.InsertHandoff(CJSONValue(CString(Buffer.GetPointer(), Buffer.GetLength())));
+	IPInteger.Insert(CJSONValue(TYPE_AEON_IPINTEGER));
+	IPInteger.Insert(CJSONValue(CString(Buffer.GetPointer(), Buffer.GetLength())));
 
 	//	Done
 
@@ -175,7 +175,8 @@ bool CHexarc::CreateCredentials (const CString &sUsername, const CString &sPassw
 //	Creates credentials for signing in to Hexarc
 
 	{
-	return CHexarc::ConvertToJSON(CDigest(CBufferReadBlock(strPatternSubst(CONSTLIT("%s:HEXARC01:%s"), strToLower(sUsername), sPassword))), retValue);
+	CBufferReadBlock Buffer(strPatternSubst(CONSTLIT("%s:HEXARC01:%s"), strToLower(sUsername), sPassword));
+	return CHexarc::ConvertToJSON(CDigest(Buffer), retValue);
 	}
 
 bool CHexarc::CreateCredentials (const CString &sUsername, const CString &sPassword, CString *retsValue)
@@ -185,7 +186,8 @@ bool CHexarc::CreateCredentials (const CString &sUsername, const CString &sPassw
 //	Creates credentials for signing in to Hexarc
 
 	{
-	CDigest PasswordHash(CBufferReadBlock(strPatternSubst("%s:HEXARC01:%s", strToLower(sUsername), sPassword)));
+	CBufferReadBlock Buffer(strPatternSubst("%s:HEXARC01:%s", strToLower(sUsername), sPassword));
+	CDigest PasswordHash(Buffer);
 	*retsValue = CString((char *)PasswordHash.GetBytes(), PasswordHash.GetLength());
 	return true;
 	}

@@ -491,7 +491,8 @@ void CGalacticMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 			int xShip, yShip;
 			m_pPainter->GalacticToView(xPos, yPos, m_xCenter, m_yCenter, m_Scale.GetScale(), &xShip, &yShip);
 
-			pPlayer->PaintMap(CMapViewportCtx(), Screen, xShip, yShip);
+			CMapViewportCtx Ctx;
+			pPlayer->PaintMap(Ctx, Screen, xShip, yShip);
 			}
 		}
 

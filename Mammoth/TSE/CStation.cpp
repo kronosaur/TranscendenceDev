@@ -1718,7 +1718,8 @@ Metric CStation::CalcMaxAttackDist (void) const
 			if (Device.GetCategory() == itemcatWeapon
 					|| Device.GetCategory() == itemcatLauncher)
 				{
-				Metric rRange = Device.GetMaxRange(CItemCtx(this, &Device));
+				CItemCtx ItemCtx(this, &Device);
+				Metric rRange = Device.GetMaxRange(ItemCtx);
 				if (rRange > rBestRange)
 					rBestRange = rRange;
 				}

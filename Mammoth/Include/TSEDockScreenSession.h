@@ -40,7 +40,7 @@ class IDockScreenUI
 
 enum class EDockScreenBackground
 	{
-	default,						//	Use the default specified by the display
+	defaultBackground,				//	Use the default specified by the display
 
 	none,							//	No background image
 	image,							//	Use an image (by UNID)
@@ -51,7 +51,7 @@ enum class EDockScreenBackground
 
 struct SDockScreenBackgroundDesc
 	{
-	EDockScreenBackground iType = EDockScreenBackground::default;		//	Type of image defined
+	EDockScreenBackground iType = EDockScreenBackground::defaultBackground;		//	Type of image defined
 	DWORD dwImageID = 0;				//	UNID to use (if iType == backgroundImage)
 	RECT rcImage = { 0 };				//	Source image rect (if 0, use entire image)
 	CSpaceObject *pObj = NULL;			//	Object to query (if iType == backgroundObjXXX)

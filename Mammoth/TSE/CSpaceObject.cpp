@@ -132,7 +132,7 @@ static Metric g_rMaxPerceptionRange[CSpaceObject::perceptMax+1] =
 
 struct SInstallItemResultsData
 	{
-	char *pszID;
+	const char *pszID;
 	int iArmorCompatibleID;
 	int iDeviceCompatibleID;
 	};
@@ -727,7 +727,8 @@ int CSpaceObject::CalcMiningDifficulty (EAsteroidType iType) const
 //	Compute mining difficult based on asteroid (0-100).
 
 	{
-	ICCItemPtr pValue = GetTypeProperty(CCodeChainCtx(GetUniverse()), PROPERTY_CORE_MINING_DIFFICULTY);
+	CCodeChainCtx CCX(GetUniverse());
+	ICCItemPtr pValue = GetTypeProperty(CCX, PROPERTY_CORE_MINING_DIFFICULTY);
 	if (!pValue->IsNil())
 		return Max(0, Min(pValue->GetIntegerValue(), 100));
 
@@ -2198,7 +2199,8 @@ void CSpaceObject::FireCustomItemEvent (const CString &sEvent, const CItem &Item
 //	Fires a named event to an item and optionally returns result
 
 	{
-	Item.FireCustomEvent(CItemCtx(&Item, this), sEvent, pData, retpResult);
+	CItemCtx ItemCtx(&Item, this);
+	Item.FireCustomEvent(ItemCtx, sEvent, pData, retpResult);
 	}
 
 void CSpaceObject::FireCustomOverlayEvent (const CString &sEvent, DWORD dwOverlayID, ICCItem *pData, ICCItem **retpResult)
@@ -4777,13 +4779,14 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 
 		CString sError;
 		CPropertyCompare Compare;
-		if (!Compare.Parse(CCodeChainCtx(GetUniverse()), sProperty, &sError))
+		CCodeChainCtx CCX(GetUniverse());
+		if (!Compare.Parse(CCX, sProperty, &sError))
 			{
 			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
 			return false;
 			}
 
-		ICCItemPtr pValue = GetProperty(CCodeChainCtx(GetUniverse()), Compare.GetProperty());
+		ICCItemPtr pValue = GetProperty(CCX, Compare.GetProperty());
 		return Compare.Eval(pValue);
 		}
 	else
@@ -5735,7 +5738,8 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 	//	We need to adjust the angle to compensate for the fact that the shot
 	//	will take on the velocity of the ship.
 
-	Metric rShotSpeed = pWeapon->GetShotSpeed(CItemCtx(this, pWeapon));
+	CItemCtx ItemCtx(this, pWeapon);
+	Metric rShotSpeed = pWeapon->GetShotSpeed(ItemCtx);
 	if (rShotSpeed > 0.0)
 		{
 		CVector vShotVel = GetVel() + PolarToVector(iAngle, rShotSpeed);

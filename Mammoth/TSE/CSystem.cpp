@@ -1229,7 +1229,7 @@ ALERROR CSystem::CreateShipwreck (CShipClass *pClass,
 	}
 
 ALERROR CSystem::CreateStargate (CStationType *pType,
-								 CVector &vPos,
+								 const CVector &vPos,
 								 const CString &sStargateID,
 								 const CString &sDestNodeID,
 								 const CString &sDestStargateID,
@@ -1283,7 +1283,7 @@ ALERROR CSystem::CreateStargate (CStationType *pType,
 
 ALERROR CSystem::CreateStation (CStationType *pType,
 								CDesignType *pEventHandler,
-								CVector &vPos,
+								const CVector &vPos,
 								CSpaceObject **retpStation)
 
 //	CreateStation

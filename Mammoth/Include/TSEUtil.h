@@ -143,7 +143,7 @@ inline void SetProgramError (const CString &sError) { }
 #ifdef DEBUG_PERFORMANCE
 extern DWORD g_dwPerformanceTimer;
 inline void DebugStartTimer (void) { g_dwPerformanceTimer = ::GetTickCount(); }
-inline void DebugStopTimer (char *szTiming)
+inline void DebugStopTimer (const char *szTiming)
 	{
 	char szBuffer[1024];
 	wsprintf(szBuffer, "%s: %d ms\n", szTiming, ::GetTickCount() - g_dwPerformanceTimer);
@@ -151,7 +151,7 @@ inline void DebugStopTimer (char *szTiming)
 	}
 #else
 inline void DebugStartTimer (void) { }
-inline void DebugStopTimer (char *szTiming) { }
+inline void DebugStopTimer (const char *szTiming) { }
 #endif
 
 #define TRY(f)	{try { error = f; } catch (...) { error = ERR_FAIL; }}
@@ -497,51 +497,6 @@ class CGlobalEventCache
 
 		CString m_sEvent;
 		TArray<SEntry> m_Cache;
-	};
-
-template <typename EVENT_ENUM, size_t N> class TEventHandlerCache
-	{
-	public:
-		bool FindEventHandler (EVENT_ENUM iEvent, SEventHandlerDesc *retEvent = NULL) const
-			{
-			if (!m_Cache[iEvent].pCode)
-				return false;
-
-			if (retEvent)
-				{
-				retEvent->pExtension = m_Cache[iEvent].pExtension;
-				retEvent->pCode = m_Cache[iEvent].pCode;
-				}
-
-			return true;
-			}
-
-		void Init (CDesignType *pType, LPSTR pEvents[N])
-			{
-			for (int i = 0; i < N; i++)
-				{
-				SEventHandlerDesc Handler;
-				if (pType->FindEventHandler(CString(pEvents[i], -1, true), &Handler))
-					{
-					m_Cache[i].pExtension = Handler.pExtension;
-					m_Cache[i].pCode = (Handler.pCode ? Handler.pCode->Reference() : NULL);
-					}
-				else
-					{
-					m_Cache[i].pExtension = NULL;
-					m_Cache[i].pCode = NULL;
-					}
-				}
-			}
-
-	private:
-		struct SEntry
-			{
-			CExtension *pExtension = NULL;
-			ICCItemPtr pCode;
-			};
-
-		SEntry m_Cache[N];
 	};
 
 enum DestructionTypes
@@ -977,7 +932,7 @@ class CSpaceObjectPool
 
 		SNode *AllocObj (SNode *pList, CSpaceObject *pObj);
 		void DeleteAll (void);
-		SNode *DeleteObj (SNode *pList, CSpaceObject *pObj, bool *retbDeleted = false);
+		SNode *DeleteObj (SNode *pList, CSpaceObject *pObj, bool *retbDeleted = NULL);
 		bool FindObj (SNode *pList, CSpaceObject *pObj) const;
 		void Init (int iSize);
 

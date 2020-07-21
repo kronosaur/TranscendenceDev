@@ -5,35 +5,6 @@
 
 #pragma once
 
-class CShotArray
-	{
-	public:
-		struct SShotDesc
-			{
-			CVector vPos;
-			int iDir = -1;
-			CSpaceObject *pTarget = NULL;
-			};
-
-		CShotArray (void) { }
-		explicit CShotArray (int iCount)
-			{
-			ASSERT(iCount >= 0);
-			m_Shots.InsertEmpty(iCount);
-			}
-
-		const SShotDesc &operator [] (int iIndex) const { return m_Shots[iIndex]; }
-		SShotDesc &operator [] (int iIndex) { return m_Shots[iIndex]; }
-
-		void AdjustFireAngle (int iAngleAdj);
-		int GetCount (void) const { return m_Shots.GetCount(); }
-		void InsertEmpty (int iCount) { m_Shots.InsertEmpty(iCount); }
-		void SetTarget (CSpaceObject *pTarget);
-		
-	private:
-		TArray<SShotDesc> m_Shots;
-	};
-
 class CWeaponClass : public CDeviceClass
 	{
 	public:

@@ -1363,48 +1363,47 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 //	Bind design
 
 	{
-	int i;
 	ALERROR error;
 
 	//	Images
 
 	if (error = m_Image.OnDesignLoadComplete(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_HeroImage.OnDesignLoadComplete(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
-	for (i = 0; i < m_iAnimationsCount; i++)
+	for (int i = 0; i < m_iAnimationsCount; i++)
 		if (error = m_pAnimations[i].m_Image.OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Sovereigns
 
 	if (error = m_pSovereign.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_pControllingSovereign.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Armor
 
 	if (error = m_HullDesc.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Resolve screen
 
 	if (error = m_pAbandonedDockScreen.Bind(Ctx, GetLocalScreens()))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_pFirstDockScreen.Bind(Ctx, GetLocalScreens()))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Resolve the devices pointer
 
 	if (m_pDevices)
 		{
 		if (error = m_pDevices->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 		//	NOTE: Can't call GetLevel because it relies on m_AverageDevices.
 
@@ -1416,47 +1415,47 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	if (m_pItems)
 		if (error = m_pItems->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pTrade)
 		if (error = m_pTrade->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Ships
 
 	if (m_pInitialShips)
 		if (error = m_pInitialShips->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pReinforcements)
 		if (error = m_pReinforcements->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pConstruction)
 		if (error = m_pConstruction->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pEncounters)
 		if (error = m_pEncounters->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Resolve the explosion pointer
 
 	if (error = m_pExplosionType.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Resolve ejecta pointer
 
 	if (error = m_pEjectaType.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Resolve effects
 
 	if (error = m_pBarrierEffect.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_Stargate.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Virtual objects always get some settings by default
 
@@ -1505,10 +1504,6 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 		m_HullDesc.SetImmutable();
 
 	return NOERROR;
-
-Fail:
-
-	return ComposeLoadError(Ctx, Ctx.sError);
 	}
 
 ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)

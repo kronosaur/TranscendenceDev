@@ -346,7 +346,7 @@ class CAsteroidDesc
 	private:
 		struct SCompositionDesc
 			{
-			LPSTR pszID = NULL;
+			LPCSTR pszID = NULL;
 			int iMiningDifficulty = 0;
 
 			Metric SuccessAdj[EMiningMethodCount] = { 0.0 };

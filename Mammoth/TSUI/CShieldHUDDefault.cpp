@@ -272,7 +272,10 @@ void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 		Ctx.iDestiny = pShip->GetDestiny();
 
 		if (m_pShieldPainter == NULL)
-			m_pShieldPainter = m_pShieldEffect->CreatePainter(CCreatePainterCtx());
+			{
+			CCreatePainterCtx CreateCtx;
+			m_pShieldPainter = m_pShieldEffect->CreatePainter(CreateCtx);
+			}
 
 		m_pShieldPainter->Paint(Dest, x, y, Ctx);
 		}

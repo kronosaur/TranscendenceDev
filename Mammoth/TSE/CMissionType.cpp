@@ -56,7 +56,7 @@
 #define PROPERTY_TOTAL_ACCEPTED					CONSTLIT("totalAccepted")
 #define PROPERTY_TOTAL_EXISTING					CONSTLIT("totalExisting")
 
-static char *CACHED_EVENTS[CMissionType::evtCount] =
+static const char *CACHED_EVENTS[CMissionType::evtCount] =
 	{
 	"CanCreate",
 	};

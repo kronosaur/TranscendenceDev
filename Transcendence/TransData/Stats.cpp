@@ -566,7 +566,7 @@ void GenerateTypeIslands (CUniverse &Universe, CXMLElement *pCmdLine)
 		}
 	}
 
-char *FrequencyChar (int iFreq)
+const char *FrequencyChar (int iFreq)
 	{
 	if (iFreq >= ftCommon)
 		return "c";

@@ -2,7 +2,7 @@
 //
 //	Included by IntroScreen.cpp
 
-static constexpr char *ADDITIONAL_PROGRAMMING[] =
+static constexpr const char *ADDITIONAL_PROGRAMMING[] =
 	{
 	"Owen Embury (giantcabbage)",
 	"Nathaniel Stalberg (NMS)",
@@ -14,7 +14,7 @@ static constexpr char *ADDITIONAL_PROGRAMMING[] =
 
 static constexpr int ADDITIONAL_PROGRAMMING_COUNT = (sizeof(ADDITIONAL_PROGRAMMING) / sizeof(ADDITIONAL_PROGRAMMING[0]));
 
-static constexpr char *SPECIAL_THANKS[] =
+static constexpr const char *SPECIAL_THANKS[] =
 	{
 	"Alexander Huitric (Wolfy)",
 	"Patrick Martin (Megas)",
@@ -40,7 +40,7 @@ static constexpr char *SPECIAL_THANKS[] =
 
 static constexpr int SPECIAL_THANKS_COUNT = (sizeof(SPECIAL_THANKS) / sizeof(SPECIAL_THANKS[0]));
 
-static constexpr char *FEEDBACK[] =
+static constexpr const char *FEEDBACK[] =
 	{
 	"Aeon Blaze",
 	"Aeonic",
@@ -258,7 +258,7 @@ static constexpr char *FEEDBACK[] =
 
 static constexpr int FEEDBACK_COUNT = (sizeof(FEEDBACK) / sizeof(FEEDBACK[0]));
 
-static constexpr char *INSPIRATION[] =
+static constexpr const char *INSPIRATION[] =
 	{
 	"Across Realtime",
 	"The Art of Game Design",
@@ -293,7 +293,7 @@ static constexpr char *INSPIRATION[] =
 
 static constexpr int INSPIRATION_COUNT = (sizeof(INSPIRATION) / sizeof(INSPIRATION[0]));
 
-static constexpr char *SOFTWARE[] =
+static constexpr const char *SOFTWARE[] =
 	{
 	"Adobe%&reg; Photoshop%&reg;",
 	"Caligari trueSpace%&reg;",

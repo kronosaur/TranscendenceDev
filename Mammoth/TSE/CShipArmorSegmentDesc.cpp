@@ -151,7 +151,7 @@ DWORD CShipArmorSegmentDesc::ParseNonCritical (const CString &sList)
 	{
 	//	These must match the order of VitalSections in TSE.h
 
-	static char *g_pszNonCritical[] =
+	static const char *g_pszNonCritical[] =
 		{
 		"dev0",
 		"dev1",
@@ -191,7 +191,7 @@ DWORD CShipArmorSegmentDesc::ParseNonCritical (const CString &sList)
 
 		int i = 0;
 		DWORD dwArea = 0x1;
-		char *pFind;
+		const char *pFind;
 		while (*(pFind = g_pszNonCritical[i]))
 			{
 			char *pSource = pPos;

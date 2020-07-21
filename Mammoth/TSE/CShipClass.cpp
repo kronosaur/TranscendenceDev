@@ -3788,7 +3788,7 @@ CEffectCreator *CShipClass::OnFindEffectCreator (const CString &sUNID)
 		}
 	}
 
-CString CShipClass::OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const
+CString CShipClass::OnGetMapDescriptionMain (const SMapDescriptionCtx &Ctx) const
 
 //  OnGetMapDescriptionMain
 //

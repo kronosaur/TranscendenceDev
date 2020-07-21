@@ -18,7 +18,7 @@
 
 #define PROPERTY_CORE_GAME_STATS				CONSTLIT("core.gameStats")
 
-static char *CACHED_EVENTS[CDesignCollection::evtCount] =
+static const char *CACHED_EVENTS[CDesignCollection::evtCount] =
 	{
 		"GetGlobalAchievements",
 		"GetGlobalDockScreen",
@@ -47,7 +47,7 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 		"OnGlobalUpdate",
 	};
 
-static constexpr char *CACHED_PROPERTIES[] =
+static constexpr const char *CACHED_PROPERTIES[] =
 	{
 		"core.gameStats",
 	};

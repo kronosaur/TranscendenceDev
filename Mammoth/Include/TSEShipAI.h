@@ -386,13 +386,13 @@ class IShipController
 	private:
 		struct SOrderTypeData
 			{
-			char *szName;
-			char *szTarget;
+			const char *szName;
+			const char *szTarget;
 			//	-		no target
 			//	*		optional target
 			//	o		required target
 
-			char *szData;
+			const char *szData;
 			//	-		no data
 			//	i		integer (may be optional)
 			//	I		CItem

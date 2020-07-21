@@ -554,7 +554,7 @@ class CUniverse
 		bool Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode = updateNormal);
 		void UpdateExtended (void);
 
-		void DebugOutput (char *pszLine, ...);
+		void DebugOutput (const char *pszLine, ...);
 
 	private:
 		struct SLevelEncounter

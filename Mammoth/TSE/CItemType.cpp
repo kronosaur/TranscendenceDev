@@ -179,7 +179,7 @@ CItemType::SStdStats CItemType::m_Stats[MAX_ITEM_LEVEL] =
 		{   4'200'000'000, },
 	};
 
-static char *CACHED_EVENTS[CItemType::evtCount] =
+static const char *CACHED_EVENTS[CItemType::evtCount] =
 	{
 		"GetDescription",
 		"GetDisplayAttributes",
@@ -424,7 +424,10 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 		}
 
 	else if (strEquals(sField, FIELD_COST))
-		*retsValue = strFromInt(GetValue(CItemCtx()));
+		{
+		CItemCtx ItemCtx;
+		*retsValue = strFromInt(GetValue(ItemCtx));
+		}
 
 	else if (strEquals(sField, FIELD_INSTALL_COST))
 		{
@@ -456,7 +459,10 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 			*retsValue = NULL_STR;
 		}
 	else if (strEquals(sField, FIELD_TREASURE_VALUE))
-		*retsValue = strFromInt((int)CEconomyType::ExchangeToCredits(GetCurrencyType(), GetValue(CItemCtx(), true)));
+		{
+		CItemCtx ItemCtx;
+		*retsValue = strFromInt((int)CEconomyType::ExchangeToCredits(GetCurrencyType(), GetValue(ItemCtx, true)));
+		}
 
 	else if (strEquals(sField, FIELD_UNKNOWN_TYPE))
 		{
@@ -733,7 +739,10 @@ CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) c
 
 	int iUnknownIndex;
 	if (!Ctx.GetItem().IsKnown(&iUnknownIndex) && !bActual)
-		return m_UnknownTypes[iUnknownIndex].pUnknownType->GetCurrencyAndValue(CItemCtx());
+		{
+		CItemCtx ItemCtx;
+		return m_UnknownTypes[iUnknownIndex].pUnknownType->GetCurrencyAndValue(ItemCtx);
+		}
 
 	//	If this is a scalable item, then we need to ask the class
 
@@ -1882,7 +1891,8 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		if (iType == damageError)
 			return false;
 
-		return (iType == pDevice->GetDamageType(CItemCtx(), Ammo));
+		CItemCtx ItemCtx;
+		return (iType == pDevice->GetDamageType(ItemCtx, Ammo));
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_CAN_BE_DAMAGED))
 		{
@@ -2045,8 +2055,10 @@ void CItemType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 
 	if (Ctx.dwSystemVersion >= 117)
 		{
+		SLoadCtx LoadCtx(Ctx);
+
 		m_Components.DeleteAll();
-		m_Components.ReadFromStream(SLoadCtx(Ctx));
+		m_Components.ReadFromStream(LoadCtx);
 		}
 	}
 

@@ -23,7 +23,7 @@ enum ParseCmdState
 	stateDone,
 	};
 
-ALERROR CreateXMLElementFromCommandLine (int argc, char *argv[], CXMLElement **retpElement)
+ALERROR CreateXMLElementFromCommandLine (int argc, const char *argv[], CXMLElement **retpElement)
 
 //	CreateXMLElementFromCommandLine
 //
@@ -63,9 +63,9 @@ ALERROR CreateXMLElementFromCommandLine (int argc, char *argv[], CXMLElement **r
 	bool bNoArgs = true;
 	while (iArg < argc)
 		{
-		char *pPos = argv[iArg];
+		const char *pPos = argv[iArg];
 		ParseCmdState iState = stateStart;
-		char *pStart;
+		const char *pStart;
 		CString sToken;
 
 		while (iState != stateDone)

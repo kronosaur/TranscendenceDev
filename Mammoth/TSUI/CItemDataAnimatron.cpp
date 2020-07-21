@@ -71,7 +71,8 @@ CItemDataAnimatron::CItemDataAnimatron (const CVisualPalette &VI, const CItem &I
 			{
 			SDamageAdjCell *pCell = m_DamageAdj.Insert();
 
-			if (!m_Item.GetReferenceDamageType(CItemCtx(m_Item), CItem(), CItemType::FLAG_ACTUAL_ITEM, &pCell->iDamage, &pCell->sText))
+			CItemCtx ItemCtx(m_Item);
+			if (!m_Item.GetReferenceDamageType(ItemCtx, CItem(), CItemType::FLAG_ACTUAL_ITEM, &pCell->iDamage, &pCell->sText))
 				m_DamageAdj.DeleteAll();
 			}
 		else

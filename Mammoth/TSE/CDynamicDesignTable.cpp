@@ -48,7 +48,7 @@ ALERROR CDynamicDesignTable::Compile (SEntry *pEntry, CString *retsError)
 
 	//	Create the type
 
-	error = CreateType(pEntry, pDesc, &pEntry->pType, false, retsError);
+	error = CreateType(pEntry, pDesc, false, &pEntry->pType, retsError);
 
 	//	We always save the XML.
 

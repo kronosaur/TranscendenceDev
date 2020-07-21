@@ -6,8 +6,8 @@
 #pragma once
 
 class CGalacticMapSystemDetails
-    {
-    public:
+	{
+	public:
 		struct SOptions
 			{
 			IAniCommand *pListener = NULL;		//	Notify on events
@@ -23,17 +23,17 @@ class CGalacticMapSystemDetails
 			bool bNoLastVisitTime = false;
 			};
 
-        CGalacticMapSystemDetails (const CVisualPalette &VI, CReanimator &Reanimator, const RECT &rcPane);
+		CGalacticMapSystemDetails (const CVisualPalette &VI, CReanimator &Reanimator, const RECT &rcPane);
 
-        bool CreateDetailsPane (const CTopologyNode &Node, const SOptions &Options, IAnimatron **retpAni, IAnimatron **retpList = NULL);
+		bool CreateDetailsPane (const CTopologyNode &Node, const SOptions &Options, IAnimatron **retpAni, IAnimatron **retpList = NULL);
 
-    private:
-        struct SObjDesc
-            {
-            int iCount = 0;
-            CObjectTracker::SObjEntry ObjData;
+	private:
+		struct SObjDesc
+			{
+			int iCount = 0;
+			CObjectTracker::SObjEntry ObjData;
 			TArray<CCartoucheBlock::SCartoucheDesc> Attribs;
-            };
+			};
 
 		struct SSystemHeader
 			{
@@ -44,82 +44,82 @@ class CGalacticMapSystemDetails
 
 		void CreateObjEntry (const SObjDesc &Obj, int yPos, int cxWidth, IAnimatron **retpAni, int *retcyHeight);
 		bool CreateObjIcon (const CObjectTracker::SObjEntry &Obj, CG32bitImage **retpIcon);
-        void CreateSystemHeader (CAniSequencer *pContainer, const CTopologyNode &Node, const SOptions &Options, int *retcyHeight) const;
+		void CreateSystemHeader (CAniSequencer *pContainer, const CTopologyNode &Node, const SOptions &Options, int *retcyHeight) const;
 		void GetObjAttribs (const CObjectTracker::SObjEntry &Obj, TArray<CCartoucheBlock::SCartoucheDesc> &retAttribs) const;
-        bool GetObjList (const CTopologyNode &Node, TSortMap<CString, SObjDesc> &Results, const SOptions &Options) const;
+		bool GetObjList (const CTopologyNode &Node, TSortMap<CString, SObjDesc> &Results, const SOptions &Options) const;
 		void GetSystemHeaderData (const CTopologyNode &Node, const SOptions &Options, SSystemHeader &Header) const;
 
-        const CVisualPalette &m_VI;
-        CReanimator &m_Reanimator;
-        RECT m_rcPane;                      //  RECT of pane (relative to screen)
-    };
+		const CVisualPalette &m_VI;
+		CReanimator &m_Reanimator;
+		RECT m_rcPane;                      //  RECT of pane (relative to screen)
+	};
 
 class CMapLegendPainter
-    {
-    public:
-        struct SScaleEntry
-            {
-            Metric rUnits;                  //  Length of scale in units
-            char *pszUnitLabel;             //  Name of the unit
-            Metric rUnitLength;             //  Length of a unit in logical units
-            };
+	{
+	public:
+		struct SScaleEntry
+			{
+			Metric rUnits;                  //  Length of scale in units
+			const char *pszUnitLabel;		//  Name of the unit
+			Metric rUnitLength;             //  Length of a unit in logical units
+			};
 
-        CMapLegendPainter (const CVisualPalette &VI, SScaleEntry *pScaleDesc = NULL, int iCount = 0);
+		CMapLegendPainter (const CVisualPalette &VI, SScaleEntry *pScaleDesc = NULL, int iCount = 0);
 
-        int GetHeight (void) const { Realize(); return RectHeight(m_rcRect); }
-        int GetWidth (void) const { return m_cxWidth; }
-        void Paint (CG32bitImage &Dest, int x, int y) const;
-        void SetDesc (const CString &sDesc) { m_sDesc = sDesc; m_bRealized = false; }
-        void SetScale (int cxScale, const CString &sLabel) { m_cxScale = cxScale; m_sScaleLabel = sLabel; }
-        void SetScale (Metric rLogicalUnitsPerPixel);
-        void SetTitle (const CString &sTitle) { m_sTitle = sTitle; m_bRealized = false; }
-        void SetWidth (int cxWidth) { m_cxWidth = cxWidth; m_bRealized = false; }
+		int GetHeight (void) const { Realize(); return RectHeight(m_rcRect); }
+		int GetWidth (void) const { return m_cxWidth; }
+		void Paint (CG32bitImage &Dest, int x, int y) const;
+		void SetDesc (const CString &sDesc) { m_sDesc = sDesc; m_bRealized = false; }
+		void SetScale (int cxScale, const CString &sLabel) { m_cxScale = cxScale; m_sScaleLabel = sLabel; }
+		void SetScale (Metric rLogicalUnitsPerPixel);
+		void SetTitle (const CString &sTitle) { m_sTitle = sTitle; m_bRealized = false; }
+		void SetWidth (int cxWidth) { m_cxWidth = cxWidth; m_bRealized = false; }
 
-    private:
-        void Realize (void) const;
+	private:
+		void Realize (void) const;
 
-        const CVisualPalette &m_VI;
-        SScaleEntry *m_pScaleDesc;
-        int m_iScaleCount;
-        int m_cxWidth;
+		const CVisualPalette &m_VI;
+		SScaleEntry *m_pScaleDesc;
+		int m_iScaleCount;
+		int m_cxWidth;
 
-        CString m_sTitle;
-        CString m_sDesc;
-        int m_cxScale;
-        CString m_sScaleLabel;
+		CString m_sTitle;
+		CString m_sDesc;
+		int m_cxScale;
+		CString m_sScaleLabel;
 
-        mutable bool m_bRealized;
-        mutable TArray<CString> m_Title;
-        mutable TArray<CString> m_Desc;
-        mutable RECT m_rcRect;
-    };
+		mutable bool m_bRealized;
+		mutable TArray<CString> m_Title;
+		mutable TArray<CString> m_Desc;
+		mutable RECT m_rcRect;
+	};
 
 class CMapScaleCounter
-    {
-    public:
-        CMapScaleCounter (void);
+	{
+	public:
+		CMapScaleCounter (void);
 
-        bool CanZoomIn (void) const { return (m_iTargetScale < m_iMaxScale); }
-        bool CanZoomOut (void) const { return (m_iTargetScale > m_iMinScale); }
-        int GetScale (void) const { return m_iScale; }
-        int GetTargetScale (void) const { return m_iTargetScale; }
-        void Init (int iScale, int iMinScale, int iMaxScale);
-        void SetTargetScale (int iScale);
-        bool Update (void);
-        void ZoomIn (void);
-        void ZoomOut (void);
-        void ZoomWheel (int iDelta);
+		bool CanZoomIn (void) const { return (m_iTargetScale < m_iMaxScale); }
+		bool CanZoomOut (void) const { return (m_iTargetScale > m_iMinScale); }
+		int GetScale (void) const { return m_iScale; }
+		int GetTargetScale (void) const { return m_iTargetScale; }
+		void Init (int iScale, int iMinScale, int iMaxScale);
+		void SetTargetScale (int iScale);
+		bool Update (void);
+		void ZoomIn (void);
+		void ZoomOut (void);
+		void ZoomWheel (int iDelta);
 
-    private:
-        int GetScaleIndex (int iScale) const;
+	private:
+		int GetScaleIndex (int iScale) const;
 
-        int m_iScale;
-        int m_iMinScale;
-        int m_iMaxScale;
+		int m_iScale;
+		int m_iMinScale;
+		int m_iMaxScale;
 
-        int m_iTargetScale;
+		int m_iTargetScale;
 
-        int m_iMinScaleIndex;
-        int m_iMaxScaleIndex;
-    };
+		int m_iMinScaleIndex;
+		int m_iMaxScaleIndex;
+	};
 

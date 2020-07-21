@@ -6,17 +6,6 @@
 #ifndef INCL_TMAP
 #define INCL_TMAP
 
-template<class KEY>
-int KeyCompare (const KEY &Key1, const KEY &Key2) 
-	{
-	if (Key1 > Key2)
-		return 1;
-	else if (Key1 < Key2)
-		return -1;
-	else
-		return 0;
-	}
-
 class CMapIterator
 	{
 	public:

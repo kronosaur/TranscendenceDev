@@ -151,6 +151,14 @@ void DrawNebulosity8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHe
 void DrawNoise8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iScale, BYTE byMin, BYTE byMax);
 void RasterizeQuarterCircle8bit (int iRadius, int *retSolid, BYTE *retEdge, DWORD byOpacity = 255);
 
+//	Implementation Helpers -----------------------------------------------------
+
+#include "TBlt.h"
+#include "TFill.h"
+#include "TCirclePainter.h"
+#include "TLinePainter.h"
+#include "TRoundedRectPainter.h"
+
 //	Noise Functions ------------------------------------------------------------
 
 struct SNoisePos

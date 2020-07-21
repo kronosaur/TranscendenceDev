@@ -56,7 +56,7 @@
 #define STORAGE_SERVICE_EXTENSION			CONSTLIT("serviceExtension")
 #define STORAGE_SERVICE_USER				CONSTLIT("serviceUser")
 
-static char *g_pszDestructionCauses[killedCount] =
+static const char *g_pszDestructionCauses[killedCount] =
 	{
 	"removedFromSystem",
 
@@ -81,7 +81,7 @@ static char *g_pszDestructionCauses[killedCount] =
 
 #define DESTRUCTION_CAUSES_COUNT	(sizeof(g_pszDestructionCauses) / sizeof(g_pszDestructionCauses[0]))
 
-static char *g_pszDamageResults[damageResultCount] =
+static const char *g_pszDamageResults[damageResultCount] =
 	{
 	"noDamage",
 	"absorbedByShields",
@@ -96,7 +96,7 @@ static char *g_pszDamageResults[damageResultCount] =
 	"shattered",
 	};
 
-static char *g_pszMessageID[msgCount] =
+static const char *g_pszMessageID[msgCount] =
 	{
 	"",							//	0
 	"AttackTarget",				//	msgAttack
@@ -131,8 +131,8 @@ static char *g_pszMessageID[msgCount] =
 
 struct SGenomeData
 	{
-	char *pszID;
-	char *pszName;
+	const char *pszID;
+	const char *pszName;
 	GenomeTypes iType;
 	};
 
@@ -150,7 +150,7 @@ static SGenomeData g_Genome[] =
 
 #define GENOME_COUNT				(sizeof(g_Genome) / sizeof(g_Genome[0]))
 
-static char *LOAD_STATE_STRINGS[] =
+static const char *LOAD_STATE_STRINGS[] =
 	{
 	"Unknown",
 	"Loading object",

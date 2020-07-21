@@ -7,7 +7,7 @@
 
 struct SBlendModeData
 	{
-	char *pszName;
+	const char *pszName;
 	};
 
 //	These must match the order of CGDraw::EBlendModes

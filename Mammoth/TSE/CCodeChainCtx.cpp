@@ -366,7 +366,9 @@ CWeaponFireDesc *CCodeChainCtx::AsWeaponFireDesc (ICCItem *pItem) const
 			&& (pType = GetUniverse().FindItemType(pItem->GetElement(0)->GetIntegerValue()))
 			&& (pMissileType = GetUniverse().FindItemType(pItem->GetElement(1)->GetIntegerValue())))
 		{
-		return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
+		CItem Item(pMissileType, 1);
+		CItemCtx ItemCtx(Item);
+		return pType->GetWeaponFireDesc(ItemCtx);
 		}
 
 	//	Otherwise, if we have a list, we expect an item.
@@ -377,14 +379,16 @@ CWeaponFireDesc *CCodeChainCtx::AsWeaponFireDesc (ICCItem *pItem) const
 		if (Item.IsEmpty())
 			return NULL;
 
-		return Item.GetType()->GetWeaponFireDesc(CItemCtx(Item));
+		CItemCtx ItemCtx(Item);
+		return Item.GetType()->GetWeaponFireDesc(ItemCtx);
 		}
 
 	//	Otherwise we expect an integer value.
 
 	else if (pType = GetUniverse().FindItemType(pItem->GetElement(0)->GetIntegerValue()))
 		{
-		return pType->GetWeaponFireDesc(CItemCtx());
+		CItemCtx ItemCtx;
+		return pType->GetWeaponFireDesc(ItemCtx);
 		}
 
 	//	Otherwise, error
@@ -635,16 +639,6 @@ bool CCodeChainCtx::InEvent (ECodeChainEvents iEvent)
 			return true;
 
 	return false;
-	}
-
-ICCItemPtr CCodeChainCtx::LinkCode (const CString &sString, CCodeChain::SLinkOptions &Options)
-
-//	LinkCode
-//
-//	Links a CodeChain expression.
-
-	{
-	return CCodeChain::LinkCode(sString, Options);
 	}
 
 void CCodeChainCtx::RemoveFrame (void)

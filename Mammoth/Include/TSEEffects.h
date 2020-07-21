@@ -112,7 +112,7 @@ class CEffectParamDesc
 		CG32bitPixel EvalColor (CG32bitPixel rgbDefault = CG32bitPixel::Null()) const;
 		DiceRange EvalDiceRange (int iDefaultCount, int iDefaultSides, int iDefaultBonus) const;
 		inline DiceRange EvalDiceRange (int iDefault = -1) const { return EvalDiceRange(0, 0, iDefault); }
-		int EvalIdentifier (LPSTR *pIDMap, int iMax, int iDefault = 0) const;
+		int EvalIdentifier (LPCSTR *pIDMap, int iMax, int iDefault = 0) const;
 		const CObjectImageArray &EvalImage (void) const;
 		int EvalInteger (void) const;
 		int EvalIntegerBounded (int iMin, int iMax = -1, int iDefault = -1) const;
@@ -130,7 +130,7 @@ class CEffectParamDesc
 		inline void InitVector (const CVector &vValue) { CleanUp(); m_pVector = new CVector(vValue); m_iType = typeVectorConstant; }
 		ALERROR InitBlendModeFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		ALERROR InitColorFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
-		ALERROR InitIdentifierFromXML (SDesignLoadCtx &Ctx, const CString &sValue, LPSTR *pIDMap);
+		ALERROR InitIdentifierFromXML (SDesignLoadCtx &Ctx, const CString &sValue, LPCSTR *pIDMap);
 		ALERROR InitImageFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR InitIntegerFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		ALERROR InitStringFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
@@ -140,7 +140,7 @@ class CEffectParamDesc
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
-		static bool FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWORD *retdwID = NULL);
+		static bool FindIdentifier (const CString &sValue, LPCSTR *pIDMap, DWORD *retdwID = NULL);
 
 	private:
 		void CleanUp (void);

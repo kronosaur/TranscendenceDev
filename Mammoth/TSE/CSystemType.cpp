@@ -27,7 +27,7 @@
 
 #define STR_NONE								CONSTLIT("none")
 
-static char *CACHED_EVENTS[CSystemType::evtCount] =
+static const char *CACHED_EVENTS[CSystemType::evtCount] =
 	{
 		"OnObjJumpPosAdj",
 	};

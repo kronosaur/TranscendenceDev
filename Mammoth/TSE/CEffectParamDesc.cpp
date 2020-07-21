@@ -258,7 +258,7 @@ DiceRange CEffectParamDesc::EvalDiceRange (int iDefaultCount, int iDefaultSides,
 		}
 	}
 
-int CEffectParamDesc::EvalIdentifier (LPSTR *pIDMap, int iMax, int iDefault) const
+int CEffectParamDesc::EvalIdentifier (LPCSTR *pIDMap, int iMax, int iDefault) const
 
 //	EvalIdentifier
 //
@@ -431,7 +431,7 @@ ALERROR CEffectParamDesc::InitColorFromXML (SDesignLoadCtx &Ctx, const CString &
 	return NOERROR;
 	}
 
-bool CEffectParamDesc::FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWORD *retdwID)
+bool CEffectParamDesc::FindIdentifier (const CString &sValue, LPCSTR *pIDMap, DWORD *retdwID)
 
 //	FindIdentifier
 //
@@ -441,7 +441,7 @@ bool CEffectParamDesc::FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWO
 	//	Loop through the ID table looking for the identifier
 
 	DWORD dwID = 0;
-	LPSTR *pID = pIDMap;
+	LPCSTR *pID = pIDMap;
 	while (*pID != NULL)
 		{
 		if ((*pID)[0] != '\0' && strEquals(sValue, CString(*pID, -1, TRUE)))
@@ -495,7 +495,7 @@ ALERROR CEffectParamDesc::InitBlendModeFromXML (SDesignLoadCtx &Ctx, const CStri
 	return NOERROR;
 	}
 
-ALERROR CEffectParamDesc::InitIdentifierFromXML (SDesignLoadCtx &Ctx, const CString &sValue, LPSTR *pIDMap)
+ALERROR CEffectParamDesc::InitIdentifierFromXML (SDesignLoadCtx &Ctx, const CString &sValue, LPCSTR *pIDMap)
 
 //	InitIdentifierFromXML
 //

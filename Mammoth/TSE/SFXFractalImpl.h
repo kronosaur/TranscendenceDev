@@ -100,6 +100,10 @@ template <class BLENDER> class CCloudCirclePainter : public TCirclePainter32<CCl
 			}
 
 	private:
+		using TCirclePainter32<CCloudCirclePainter<BLENDER>, BLENDER>::m_iAngleRange;
+		using TCirclePainter32<CCloudCirclePainter<BLENDER>, BLENDER>::m_iFrame;
+		using TCirclePainter32<CCloudCirclePainter<BLENDER>, BLENDER>::m_iRadius;
+
 		bool BeginDraw (void)
 			{
 			//	Must have both tables, or else this won't work.
@@ -240,6 +244,10 @@ template <class BLENDER> class CFireblastCirclePainter : public TCirclePainter32
 			}
 
 	private:
+		using TCirclePainter32<CFireblastCirclePainter<BLENDER>, BLENDER>::m_iAngleRange;
+		using TCirclePainter32<CFireblastCirclePainter<BLENDER>, BLENDER>::m_iFrame;
+		using TCirclePainter32<CFireblastCirclePainter<BLENDER>, BLENDER>::m_iRadius;
+
 		bool BeginDraw (void)
 			{
 			//	We need enough angular resolution to reach the pixel level (but
@@ -299,5 +307,5 @@ template <class BLENDER> class CFireblastCirclePainter : public TCirclePainter32
 		CSphericalTextureMapper m_Texture;
 		CCircleRadiusDisruptor m_Disruptor;
 
-		friend TCirclePainter32;
+		friend TCirclePainter32<CFireblastCirclePainter<BLENDER>, BLENDER>;
 	};

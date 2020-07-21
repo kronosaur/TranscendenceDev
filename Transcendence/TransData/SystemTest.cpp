@@ -177,7 +177,7 @@ CString CSystemTestGenerator::GenerateStationKey (CStationType *pType, CString *
 	{
 	//	Generate sort order
 
-	char *pCat;
+	const char *pCat;
 	if (pType->HasLiteralAttribute(CONSTLIT("debris")))
 		pCat = "debris";
 	else if (pType->GetControllingSovereign()->IsEnemy(m_pPlayer))

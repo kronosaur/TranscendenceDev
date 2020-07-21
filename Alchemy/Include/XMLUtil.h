@@ -184,6 +184,6 @@ class CEntityResolverList : public IXMLParserController
 
 //	Some utilities
 
-ALERROR CreateXMLElementFromCommandLine (int argc, char *argv[], CXMLElement **retpElement);
+ALERROR CreateXMLElementFromCommandLine (int argc, const char *argv[], CXMLElement **retpElement);
 ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList);
 ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<DWORD> *pList);

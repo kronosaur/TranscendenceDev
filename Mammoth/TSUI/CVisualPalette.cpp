@@ -18,7 +18,7 @@ const int WIDESCREEN_HEIGHT_MAX =			512;
 struct SColorInitTable
 	{
 	int iLen;										//	Length of color name
-	char *pszString;								//	Name of color
+	const char *pszString;							//	Name of color
 	CG32bitPixel rgbColor;							//	16-bit color value
 	};
 
@@ -75,11 +75,11 @@ static SColorInitTable COLOR_TABLE[] =
 struct SFontInitTable
 	{
 	int iLen;										//	Length of font name
-	char *pszString;								//	Name of the font
+	const char *pszString;								//	Name of the font
 
-	char *pszResID;									//	Resource to load (if NULL, then we create from typeface)
+	const char *pszResID;									//	Resource to load (if NULL, then we create from typeface)
 
-	char *pszTypeface;								//	Typeface (ignored if resource)
+	const char *pszTypeface;								//	Typeface (ignored if resource)
 	int cyPixelHeight;								//	Height of font (ignored if resource)
 	bool bBold;										//	TRUE if we want a bold font (ignored if resource)
 	bool bItalic;									//	TRUE if we want an italic font (ignored if resource)
@@ -108,9 +108,9 @@ static SFontInitTable FONT_TABLE[] =
 
 struct SImageInitTable
 	{
-	char *pszName;									//	Name of image
-	char *pszJPEGResID;								//	Image resource to load
-	char *pszMaskResID;								//	Mask resource to load (may be NULL)
+	const char *pszName;									//	Name of image
+	const char *pszJPEGResID;								//	Image resource to load
+	const char *pszMaskResID;								//	Mask resource to load (may be NULL)
 
 	int x;
 	int y;

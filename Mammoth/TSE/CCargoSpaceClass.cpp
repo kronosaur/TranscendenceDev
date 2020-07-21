@@ -155,7 +155,8 @@ bool CCargoSpaceClass::FindDataField (const CString &sField, CString *retsValue)
 
 	{
 	CItem Item(GetItemType(), 1);
-	const CCargoDesc *pDesc = GetDesc(CItemCtx(Item));
+	CItemCtx ItemCtx(Item);
+	const CCargoDesc *pDesc = GetDesc(ItemCtx);
 	if (pDesc == NULL)
 		return false;
 

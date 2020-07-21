@@ -204,7 +204,7 @@ static CWeaponClass::SStdStats STD_WEAPON_STATS[MAX_ITEM_LEVEL] =
 		{	2'343,	600'000,	10'900'000'000,    36'000.0,     200,   -300, },
 	};
 
-static char *CACHED_EVENTS[CWeaponClass::evtCount] =
+static const char *CACHED_EVENTS[CWeaponClass::evtCount] =
 	{
 		"OnFireWeapon",
 		"GetAmmoToConsume",
@@ -770,7 +770,8 @@ Metric CWeaponClass::CalcConfigurationMultiplier (const CWeaponFireDesc *pShot, 
 	{
 	if (pShot == NULL)
 		{
-		pShot = GetWeaponFireDesc(CItemCtx());
+		CItemCtx ItemCtx;
+		pShot = GetWeaponFireDesc(ItemCtx);
 		if (pShot == NULL)
 			return 1.0;
 		}
@@ -1316,8 +1317,9 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 			if (retpTarget && (retiFireAngle == -1 || m_bBurstTracksTargets))
 				{
+				CItemCtx ItemCtx(&Source, &Device);
 				Metric rSpeed = ShotDesc.GetInitialSpeed();
-				retiFireAngle = CalcFireAngle(CItemCtx(&Source, &Device), rSpeed, retpTarget);
+				retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
 				}
 			}
 
@@ -1351,8 +1353,9 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 					retiFireAngle = ActivateCtx.iFireAngle;
 				else if (retpTarget)
 					{
+					CItemCtx ItemCtx(&Source, &Device);
 					Metric rSpeed = ShotDesc.GetInitialSpeed();
-					retiFireAngle = CalcFireAngle(CItemCtx(&Source, &Device), rSpeed, retpTarget);
+					retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
 					}
 				else
 					retiFireAngle = -1;
@@ -1856,7 +1859,8 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 
 	ASSERT(Ammo.IsEmpty() || GetAmmoVariant(Ammo.GetType()) != -1);
 
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(CItemCtx(), Ammo);
+	CItemCtx ItemCtx;
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx, Ammo);
 	if (pShot == NULL)
 		return false;
 
@@ -3649,7 +3653,8 @@ int CWeaponClass::GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice 
 
 	if (m_iVariantType == varLevelScaling || m_iVariantType == varCharges || m_iVariantType == varCounter)
 		{
-		CWeaponFireDesc *pShot = GetWeaponFireDesc(CItemCtx(pSource, pDevice));
+		CItemCtx ItemCtx(pSource, pDevice);
+		CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
 		if (pShot && VariantIsValid(pSource, pDevice, *pShot))
 			return 1;
 		else
@@ -4890,7 +4895,8 @@ CEffectCreator *CWeaponClass::OnFindEffectCreator (const CString &sUNID)
 	if (iOrdinal < GetAmmoItemCount())
 		Ammo = CItem(GetAmmoItem(iOrdinal), 1);
 
-	CWeaponFireDesc *pDesc = GetWeaponFireDesc(CItemCtx(), Ammo);
+	CItemCtx ItemCtx;
+	CWeaponFireDesc *pDesc = GetWeaponFireDesc(ItemCtx, Ammo);
 	return pDesc->FindEffectCreator(CString(pPos));
 	}
 
@@ -5038,7 +5044,8 @@ bool CWeaponClass::SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *p
 
 	if (m_iVariantType == varLevelScaling || m_iVariantType == varCharges || m_iVariantType == varCounter)
 		{
-		CWeaponFireDesc *pShot = GetWeaponFireDesc(CItemCtx(pSource, pDevice));
+		CItemCtx ItemCtx(pSource, pDevice);
+		CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
 		if (pShot && VariantIsValid(pSource, pDevice, *pShot))
 			{
 			SetCurrentVariant(pDevice, 0);

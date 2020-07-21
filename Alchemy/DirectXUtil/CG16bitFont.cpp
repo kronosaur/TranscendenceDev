@@ -418,7 +418,7 @@ Fail:
 	return error;
 	}
 
-ALERROR CG16bitFont::CreateFromResource (HINSTANCE hInst, char *pszRes)
+ALERROR CG16bitFont::CreateFromResource (HINSTANCE hInst, const char *pszRes)
 
 //	CreateFromResource
 //

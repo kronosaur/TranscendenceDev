@@ -25,8 +25,8 @@ struct SGameKeyData
 		FLAG_XY_INPUT =		0x00000010,		//	Can only be mapped to an XY input (e.g., move position)
 		};
 
-	char *pszName;
-	char *pszLabel;
+	const char *pszName;
+	const char *pszLabel;
 	DWORD dwFlags;
 	};
 

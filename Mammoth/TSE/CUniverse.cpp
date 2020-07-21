@@ -50,7 +50,7 @@ DWORD g_dwPerformanceTimer;
 
 static CUniverse::IHost g_DefaultHost;
 
-static char *FONT_TABLE[CUniverse::fontCount] = 
+static const char *FONT_TABLE[CUniverse::fontCount] = 
 	{
 	"Medium",				//	Map label: Tahoma 13
 	"SmallBold",			//	Signs: Tahoma 11 bold
@@ -480,7 +480,7 @@ ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSys
 	return NOERROR;
 	}
 
-void CUniverse::DebugOutput (char *pszLine, ...)
+void CUniverse::DebugOutput (const char *pszLine, ...)
 
 //	DebugOutput
 //

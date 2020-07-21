@@ -11,7 +11,7 @@
 
 #define REPAIR_CYCLE_TIME			10
 
-static char *CACHED_EVENTS[CRepairerClass::evtCount] =
+static const char *CACHED_EVENTS[CRepairerClass::evtCount] =
 	{
 		"GetArmorRegen",
 	};

@@ -15,7 +15,8 @@ bool CInstalledArmor::AccumulateEnhancements (CSpaceObject *pSource, CInstalledD
 	if (m_pArmorClass == NULL)
 		return false;
 		
-	return m_pArmorClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements);
+	CItemCtx ItemCtx(pSource, this);
+	return m_pArmorClass->AccumulateEnhancements(ItemCtx, pTarget, EnhancementIDs, pEnhancements);
 	}
 
 bool CInstalledArmor::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const

@@ -35,9 +35,9 @@
 
 struct SServiceData
 	{
-	char *pszName;
-	char *pszIDPrefix;
-	char *pszTag;
+	const char *pszName;
+	const char *pszIDPrefix;
+	const char *pszTag;
 	};
 
 static SServiceData SERVICE_DATA[serviceCount] =

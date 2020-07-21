@@ -45,11 +45,11 @@ const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
 
 struct SDamageTypeData
 	{
-	char *pszID;
+	const char *pszID;
 	int iTier;
 	int iLevel;
-	char *pszName;
-	char *pszShortName;
+	const char *pszName;
+	const char *pszShortName;
 	};
 
 SDamageTypeData DAMAGE_TYPE_DATA[damageCount] =
@@ -74,8 +74,8 @@ SDamageTypeData DAMAGE_TYPE_DATA[damageCount] =
 
 struct SSpecialDamageData
 	{
-	char *pszSpecial;						//	Name as specified in a damage desc line
-	char *pszProperty;						//	Property for this special damage
+	const char *pszSpecial;						//	Name as specified in a damage desc line
+	const char *pszProperty;						//	Property for this special damage
 	};
 
 //	These must match the order in the SpecialDamageTypes enum.

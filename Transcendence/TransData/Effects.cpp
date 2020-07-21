@@ -142,7 +142,8 @@ void GenerateEffectImage (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		//	Create a painter
 
-		pEffect->pPainter = pEffect->pEffectCreator->CreatePainter(CCreatePainterCtx());
+		CCreatePainterCtx CreateCtx;
+		pEffect->pPainter = pEffect->pEffectCreator->CreatePainter(CreateCtx);
 		if (pEffect->pPainter == NULL)
 			{
 			printf("Unable to create painter.\n");

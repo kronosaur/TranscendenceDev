@@ -90,11 +90,11 @@ bool CHexarcSession::Connect (CString *retsError)
 	//	Compose a connect payload
 
 	CJSONValue Payload(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_CLIENT_ID, CJSONValue(m_sClientID));
-	Payload.InsertHandoff(FIELD_CLIENT_VERSION, CJSONValue(GetClientVersion()));
-	Payload.InsertHandoff(FIELD_PROTOCOL_VERSION, CJSONValue(TRANS_SERVICE_VERSION));
+	Payload.Insert(FIELD_CLIENT_ID, CJSONValue(m_sClientID));
+	Payload.Insert(FIELD_CLIENT_VERSION, CJSONValue(GetClientVersion()));
+	Payload.Insert(FIELD_PROTOCOL_VERSION, CJSONValue(TRANS_SERVICE_VERSION));
 	if (!m_sUsername.IsBlank())
-		Payload.InsertHandoff(FIELD_USERNAME, CJSONValue(m_sUsername));
+		Payload.Insert(FIELD_USERNAME, CJSONValue(m_sUsername));
 
 	//	Now issue the connect command
 

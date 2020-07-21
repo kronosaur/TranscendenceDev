@@ -8,7 +8,7 @@
 struct SDDERRText
 	{
 	HRESULT hr;
-	char *pszText;
+	const char *pszText;
 	};
 
 static SDDERRText g_DDERRTable[] =

@@ -178,7 +178,7 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 		{	20000,	800000000,	13800,	160000000,	3000, },
 	};
 
-static char *CACHED_EVENTS[CArmorClass::evtCount] =
+static const char *CACHED_EVENTS[CArmorClass::evtCount] =
 	{
 		"GetMaxHP",
 		"OnArmorConsumePower",
@@ -1685,7 +1685,7 @@ bool CArmorClass::FindDataField (const CString &sField, CString *retsValue)
 	if (strEquals(sField, FIELD_HP))
 		*retsValue = strFromInt(m_Stats.iHitPoints);
 	else if (strEquals(sField, FIELD_BALANCE))
-		*retsValue = strFromInt(CalcBalance(ArmorItem, CArmorItem::SBalance()));
+		*retsValue = strFromInt(CalcBalance(ArmorItem));
 	else if (strEquals(sField, FIELD_EFFECTIVE_HP))
 		{
 		int iHP;
@@ -1957,7 +1957,8 @@ int CArmorClass::GetDamageEffectiveness (const CArmorItem &ArmorItem, CSpaceObje
 //	> 100	The weapon is more effective than average.
 
 	{
-	const DamageDesc *pDamage = pWeapon->GetDamageDesc(CItemCtx(pAttacker, pWeapon));
+	CItemCtx ItemCtx(pAttacker, pWeapon);
+	const DamageDesc *pDamage = pWeapon->GetDamageDesc(ItemCtx);
 	if (pDamage == NULL)
 		return 100;
 

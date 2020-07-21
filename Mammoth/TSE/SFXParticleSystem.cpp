@@ -82,7 +82,7 @@ class CParticleSystemEffectPainter : public IEffectPainter
 		IEffectPainter *m_pParticlePainter;
 	};
 
-static LPSTR OLD_STYLE_TABLE[] =
+static LPCSTR OLD_STYLE_TABLE[] =
 	{
 	//	Must be same order as EStyles
 		"",

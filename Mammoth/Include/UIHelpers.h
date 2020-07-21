@@ -237,7 +237,7 @@ class CUIHelper
 		void CreateClassInfoReactor (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
 		CG32bitImage CreateGlowBackground (void) const;
 		CG32bitImage CreateGlowBackground (int cxWidth, int cyHeight, CG32bitPixel rgbCenter, CG32bitPixel rgbEdge) const;
-		void CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, CString &sDesc, IAnimatron **retpMsg = NULL) const;
+		void CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, const CString &sDesc, IAnimatron **retpMsg = NULL) const;
 
 		//	OPTION_FRAME_ALIGN_TOP
 		//	OPTION_FRAME_ALIGN_BOTTOM

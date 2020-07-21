@@ -41,7 +41,7 @@
 #define PROPERTY_SHIPS_DESTROYED_BY_PLAYER		CONSTLIT("shipsDestroyedByPlayer")
 #define PROPERTY_STATIONS_DESTROYED_BY_PLAYER	CONSTLIT("stationsDestroyedByPlayer")
 
-static char *g_DefaultText[] =
+static const char *g_DefaultText[] =
 	{
 	//	0
 	"",

@@ -339,8 +339,10 @@ bool CArmorSystem::Update (SUpdateCtx &Ctx, CSpaceObject *pSource, int iTick)
 	bool bSystemModified = false;
     for (CInstalledArmor &Armor : *this)
         {
+		CItemCtx ItemCtx(pSource, &Armor);
 		bool bArmorModified;
-        Armor.GetClass()->Update(CItemCtx(pSource, &Armor), Ctx, iTick, &bArmorModified);
+
+        Armor.GetClass()->Update(ItemCtx, Ctx, iTick, &bArmorModified);
         if (bArmorModified)
             bSystemModified = true;
         }

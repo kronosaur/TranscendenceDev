@@ -5385,7 +5385,10 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM_PROPERTY:
-			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue(), bOnType);
+			{
+			CItemCtx ItemCtx(Item);
+			return Item.GetItemProperty(*pCtx, ItemCtx, pArgs->GetElement(1)->GetStringValue(), bOnType);
+			}
 
 		case FN_ITEM_DAMAGED:
 			pResult = pCC->CreateBool(Item.IsDamaged());
@@ -5583,7 +5586,8 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			ICCItem *pResult;
 			ICCItem *pData = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
-			Item.FireCustomEvent(CItemCtx(&Item), pArgs->GetElement(1)->GetStringValue(), pData, &pResult);
+			CItemCtx ItemCtx(&Item);
+			Item.FireCustomEvent(ItemCtx, pArgs->GetElement(1)->GetStringValue(), pData, &pResult);
 			return pResult;
 			}
 
@@ -12268,7 +12272,8 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
 
 			CString sError;
-			CWeaponFireDesc *pDesc = pItemType->GetWeaponFireDesc(CItemCtx(), &sError);
+			CItemCtx ItemCtx;
+			CWeaponFireDesc *pDesc = pItemType->GetWeaponFireDesc(ItemCtx, &sError);
 			if (pDesc == NULL)
 				return pCC->CreateError(sError, pArgs->GetElement(0));
 

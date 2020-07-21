@@ -8,7 +8,7 @@
 SDamageCtx::SDamageCtx (CSpaceObject *pObjHitArg, 
 						CWeaponFireDesc &DescArg, 
 						const CItemEnhancementStack *pEnhancementsArg,
-						CDamageSource &AttackerArg,
+						const CDamageSource &AttackerArg,
 						CSpaceObject *pCauseArg,
 						Metric rAgeArg,
 						int iDirectionArg,

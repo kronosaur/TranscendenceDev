@@ -511,7 +511,7 @@ class CShipClass : public CDesignType
 		virtual void OnClearMark (void) override { m_WreckDesc.ClearMarks(); }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
-        virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const override;
+        virtual CString OnGetMapDescriptionMain (const SMapDescriptionCtx &Ctx) const override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
 		virtual void OnInitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const override;

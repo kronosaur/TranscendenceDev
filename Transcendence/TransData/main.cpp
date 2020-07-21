@@ -85,7 +85,7 @@ void AlchemyMain (CXMLElement *pCmdLine);
 ALERROR CreateXMLElementFromDataFile (const CString &sFilespec, CXMLElement **retpDataFile, CString *retsError);
 ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec, CXMLElement *pCmdLine, CString *retsError);
 
-int main (int argc, char *argv[ ], char *envp[ ])
+int main (int argc, const char *argv[ ], char *envp[ ])
 
 //	main
 //

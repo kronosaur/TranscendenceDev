@@ -870,7 +870,7 @@ class CSpaceObject
 		void WriteToStream (IWriteStream *pStream);
 		void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream) { GetSystem()->WriteObjRefToStream(pObj, pStream, this); }
 
-		bool MatchesCriteria (const CSpaceObjectCriteria &Crit) const { return MatchesCriteria(CSpaceObjectCriteria::SCtx(NULL, Crit), Crit); }
+		bool MatchesCriteria (const CSpaceObjectCriteria &Crit) const { CSpaceObjectCriteria::SCtx Ctx(NULL, Crit); return MatchesCriteria(Ctx, Crit); }
 		bool MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const;
 		bool MatchesCriteriaCategory (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const;
 

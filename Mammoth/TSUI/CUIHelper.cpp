@@ -293,7 +293,7 @@ CG32bitImage CUIHelper::CreateGlowBackground (int cxWidth, int cyHeight, CG32bit
 	return Image;
 	}
 
-void CUIHelper::CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, CString &sDesc, IAnimatron **retpMsg) const
+void CUIHelper::CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, const CString &sDesc, IAnimatron **retpMsg) const
 
 //	CreateInputErrorMessage
 //

@@ -8,9 +8,9 @@
 struct SFontInitTable
 	{
 	int iLen;										//	Length of font name
-	char *pszString;								//	Name of the font
+	const char *pszString;							//	Name of the font
 
-	char *pszTypeface;								//	Typeface (ignored if resource)
+	const char *pszTypeface;						//	Typeface (ignored if resource)
 	int cyPixelHeight;								//	Height of font (ignored if resource)
 	bool bBold;										//	TRUE if we want a bold font (ignored if resource)
 	bool bItalic;									//	TRUE if we want an italic font (ignored if resource)
