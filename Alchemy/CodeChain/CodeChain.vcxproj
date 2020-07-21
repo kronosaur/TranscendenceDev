@@ -52,7 +52,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{39983CCD-095B-4B41-854F-4967A254A07C}</ProjectGuid>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <RootNamespace>CodeChain</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <XPDeprecationWarning>false</XPDeprecationWarning>

@@ -24,7 +24,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EB0AFA5B-DC60-4B46-9BD7-3371612AE9C9}</ProjectGuid>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <RootNamespace>Transcendence</RootNamespace>
     <XPDeprecationWarning>false</XPDeprecationWarning>
   </PropertyGroup>

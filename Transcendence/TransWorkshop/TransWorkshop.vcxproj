@@ -22,7 +22,7 @@
     <ProjectGuid>{910B3EA2-DB1B-4F5D-B3C5-9AB1B600936B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TransWorkshop</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <XPDeprecationWarning>false</XPDeprecationWarning>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
