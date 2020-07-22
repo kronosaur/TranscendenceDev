@@ -8,6 +8,7 @@
 			inherit=			"&baVisitStationMission;"
 
 			maxAppearing=		"1"
+			priority=			"100"
 			>
 		<Events>
 			<CanCreate>
