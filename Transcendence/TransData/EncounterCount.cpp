@@ -74,7 +74,7 @@ void GenerateEncounterCount (CUniverse &Universe, CXMLElement *pCmdLine)
 			//	Create the system
 
 			CSystem *pSystem;
-			if (Universe.CreateStarSystem(pNode, &pSystem) != NOERROR)
+			if (Universe.CreateStarSystem(*pNode, &pSystem) != NOERROR)
 				{
 				printf("ERROR: Unable to create star system.\n");
 				return;

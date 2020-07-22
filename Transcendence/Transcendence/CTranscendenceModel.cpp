@@ -437,7 +437,7 @@ ALERROR CTranscendenceModel::CreateAllSystems (const CString &sStartNode, CSyste
 		//	Otherwise, create this system
 
 		CSystem *pNewSystem;
-		if (error = m_Universe.CreateStarSystem(pNode, &pNewSystem, &sError))
+		if (error = m_Universe.CreateStarSystem(*pNode, &pNewSystem, &sError))
 			{
 			kernelDebugLogPattern("Error creating system %s: %s", pNode->GetSystemName(), sError);
 			if (retsError)
@@ -469,7 +469,7 @@ ALERROR CTranscendenceModel::CreateAllSystems (const CString &sStartNode, CSyste
 		return ERR_FAIL;
 		}
 
-	if (error = m_Universe.CreateStarSystem(pStartingNode, retpStartingSystem, retsError))
+	if (error = m_Universe.CreateStarSystem(*pStartingNode, retpStartingSystem, retsError))
 		return error;
 
 	//	Output some counts
@@ -1858,7 +1858,7 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 			//	If we failed to load, then we need to create a new system
 
 			CString sError;
-			if (m_Universe.CreateStarSystem(m_pDestNode, &pNewSystem, &sError) != NOERROR)
+			if (m_Universe.CreateStarSystem(*m_pDestNode, &pNewSystem, &sError) != NOERROR)
 				{
 				SetProgramError(sError);
 				//g_pTrans->DisplayMessage(sError);

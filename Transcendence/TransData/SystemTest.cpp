@@ -380,7 +380,7 @@ bool CSystemTestGenerator::RunItemFrequencyTestGame (TSortMap<CString, SSystemIn
 
 		CSystem *pSystem;
 		CString sError;
-		if (error = m_Universe.CreateStarSystem(pNode, &pSystem, &sError))
+		if (error = m_Universe.CreateStarSystem(*pNode, &pSystem, &sError))
 			{
 			printf("ERROR: %s\n", sError.GetASCIIZPointer());
 			return false;
@@ -501,7 +501,7 @@ bool CSystemTestGenerator::RunSystemTestGame (TSortMap<CString, SSystemInfo> &Al
 
 		CSystem *pSystem;
 		CString sError;
-		if (error = m_Universe.CreateStarSystem(pNode, &pSystem, &sError))
+		if (error = m_Universe.CreateStarSystem(*pNode, &pSystem, &sError))
 			{
 			printf("ERROR: %s\n", sError.GetASCIIZPointer());
 			return false;

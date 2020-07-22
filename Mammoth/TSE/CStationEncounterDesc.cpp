@@ -75,7 +75,7 @@ int CStationEncounterDesc::CalcFrequencyForNode (const CTopologyNode &Node) cons
 
 	if (iFreq > 0 && !GetDistanceCriteria().IsEmpty())
 		{
-		int iDist = CStationEncounterCtx::CalcDistanceToCriteria(&Node, GetDistanceCriteria());
+		int iDist = CStationEncounterCtx::CalcDistanceToCriteria(Node, GetDistanceCriteria());
 		iFreq = iFreq * GetFrequencyByDistance(iDist) / ftCommon;
 		}
 

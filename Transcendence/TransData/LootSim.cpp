@@ -132,7 +132,7 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 			DWORD dwStartTime = ::GetTickCount();
 
 			CSystem *pSystem;
-			if (error = Universe.CreateStarSystem(pNode, &pSystem))
+			if (error = Universe.CreateStarSystem(*pNode, &pSystem))
 				{
 				printf("ERROR: Unable to create star system.\n");
 				return;

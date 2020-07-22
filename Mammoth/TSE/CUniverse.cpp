@@ -88,7 +88,7 @@ CUniverse::~CUniverse (void)
 //	CUniverse destructor
 
 	{
-    int i;
+	int i;
 
 	SetPOV(NULL);
 	m_pPlayerShip = NULL;
@@ -102,9 +102,9 @@ CUniverse::~CUniverse (void)
 	//	guarantee that we destroy all objects before we destruct
 	//	codechain, et al
 
-    for (i = 0; i < m_StarSystems.GetCount(); i++)
-        delete m_StarSystems[i];
-    m_StarSystems.DeleteAll();
+	for (i = 0; i < m_StarSystems.GetCount(); i++)
+		delete m_StarSystems[i];
+	m_StarSystems.DeleteAll();
 
 	m_AscendedObjects.DeleteAll();
 
@@ -144,9 +144,9 @@ ALERROR CUniverse::AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem)
 	{
 	//	Add it to our list (must be new)
 
-    bool bNew;
-    m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
-    ASSERT(bNew);
+	bool bNew;
+	m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
+	ASSERT(bNew);
 
 	//	Set the system for the topoplogy
 
@@ -215,15 +215,15 @@ ALERROR CUniverse::CreateEmptyStarSystem (CSystem **retpSystem)
 	if (error = CSystem::CreateEmpty(*this, NULL, &pSystem))
 		return error;
 
-    //  Set a unique ID
+	//  Set a unique ID
 
 	pSystem->SetID(CreateGlobalID());
 
 	//	Add to our list
 
-    bool bNew;
-    m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
-    ASSERT(bNew);
+	bool bNew;
+	m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
+	ASSERT(bNew);
 
 	//	Done
 
@@ -410,7 +410,7 @@ ALERROR CUniverse::CreateStarSystem (const CString &sNodeID, CSystem **retpSyste
 
 	//	Create the first star system
 
-	if (error = CreateStarSystem(pNode, retpSystem, retsError, pStats))
+	if (error = CreateStarSystem(*pNode, retpSystem, retsError, pStats))
 		return error;
 
 	//	Done
@@ -418,7 +418,7 @@ ALERROR CUniverse::CreateStarSystem (const CString &sNodeID, CSystem **retpSyste
 	return NOERROR;
 	}
 
-ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError, CSystemCreateStats *pStats)
+ALERROR CUniverse::CreateStarSystem (CTopologyNode &Node, CSystem **retpSystem, CString *retsError, CSystemCreateStats *pStats)
 
 //	CreateStarSystem
 //
@@ -430,11 +430,11 @@ ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSys
 
 	//	Get the description
 
-	CSystemType *pSystemType = FindSystemType(pTopology->GetSystemTypeUNID());
+	CSystemType *pSystemType = FindSystemType(Node.GetSystemTypeUNID());
 	if (pSystemType == NULL)
 		{
 		if (retsError)
-			*retsError = strPatternSubst(CONSTLIT("Cannot create system %s: Undefined system type %x"), pTopology->GetID(), pTopology->GetSystemTypeUNID());
+			*retsError = strPatternSubst(CONSTLIT("Cannot create system %s: Undefined system type %x"), Node.GetID(), Node.GetSystemTypeUNID());
 		return ERR_FAIL;
 		}
 
@@ -443,34 +443,34 @@ ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSys
 	CString sError;
 
 	SetLogImageLoad(false);
-	error = CSystem::CreateFromXML(*this, pSystemType, pTopology, &pSystem, &sError, pStats);
+	error = CSystem::CreateFromXML(*this, *pSystemType, Node, &pSystem, &sError, pStats);
 	SetLogImageLoad(true);
 
 	if (error)
 		{
 		if (retsError)
-			*retsError = strPatternSubst(CONSTLIT("Cannot create system %s: %s"), pTopology->GetID(), sError);
+			*retsError = strPatternSubst(CONSTLIT("Cannot create system %s: %s"), Node.GetID(), sError);
 		return error;
 		}
 
-    //  Set a unique ID
+	//  Set a unique ID
 
 	pSystem->SetID(CreateGlobalID());
 
 	//	Add to our list
 
-    bool bNew;
-    m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
-    ASSERT(bNew);
+	bool bNew;
+	m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
+	ASSERT(bNew);
 
 	//	Set the system for the topoplogy
 
-	pTopology->SetSystem(pSystem);
-	pTopology->SetSystemID(pSystem->GetID());
+	Node.SetSystem(pSystem);
+	Node.SetSystemID(pSystem->GetID());
 
 	//	Initialize trading economy based on stations in system
 
-	pTopology->GetTradingEconomy().Refresh(pSystem);
+	Node.GetTradingEconomy().Refresh(pSystem);
 
 	//	Done
 
@@ -516,8 +516,8 @@ void CUniverse::DestroySystem (CSystem *pSystem)
 
 	//	Remove and destroy the system
 
-    m_StarSystems.DeleteAt(pSystem->GetID());
-    delete pSystem;
+	m_StarSystems.DeleteAt(pSystem->GetID());
+	delete pSystem;
 	}
 
 CArmorClass *CUniverse::FindArmor (DWORD dwUNID)
@@ -686,15 +686,15 @@ void CUniverse::FlushStarSystem (CTopologyNode *pTopology)
 	{
 	ASSERT(pTopology->GetSystemID() != 0xffffffff);
 
-    int iPos;
-    if (m_StarSystems.FindPos(pTopology->GetSystemID(), &iPos))
-        {
+	int iPos;
+	if (m_StarSystems.FindPos(pTopology->GetSystemID(), &iPos))
+		{
 		if (m_StarSystems[iPos] == m_pCurrentSystem)
 			SetPOV(NULL);
 
-        delete m_StarSystems[iPos];
-        m_StarSystems.Delete(iPos);
-        }
+		delete m_StarSystems[iPos];
+		m_StarSystems.Delete(iPos);
+		}
 	}
 
 void CUniverse::GarbageCollectLibraryBitmaps (void)
@@ -1133,11 +1133,11 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		if (Ctx.bNoResources)
 			dwFlags |= CExtensionCollection::FLAG_NO_RESOURCES;
 
-        //  Don't load collection if we don't want it.
-        //  (But we only honor it in debug mode.)
+		//  Don't load collection if we don't want it.
+		//  (But we only honor it in debug mode.)
 
-        if (Ctx.bNoCollectionLoad && m_bDebugMode)
-            dwFlags |= CExtensionCollection::FLAG_NO_COLLECTION;
+		if (Ctx.bNoCollectionLoad && m_bDebugMode)
+			dwFlags |= CExtensionCollection::FLAG_NO_COLLECTION;
 
 		if (Ctx.bNoCollectionCheck)
 			dwFlags |= CExtensionCollection::FLAG_NO_COLLECTION_CHECK;
@@ -1454,7 +1454,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 			if (pSystemType == NULL)
 				continue;
 
-			int iFreq = pType->GetFrequencyForNode(pNode);
+			int iFreq = pType->GetFrequencyForNode(*pNode);
 			if (iFreq > 0
 					&& pSystemType->HasExtraEncounters())
 				Table.Insert(pNode, iFreq);
@@ -1496,7 +1496,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 			//	station in this system, then try again.
 
 			if (pType->IsUniqueInSystem() 
-					&& pType->GetEncounterMinimum(pNode) > 0)
+					&& pType->GetEncounterMinimum(*pNode) > 0)
 				{
 				j--;
 				continue;
@@ -1504,7 +1504,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 
 			//	Add it to this node
 
-			pType->IncEncounterMinimum(pNode, 1);
+			pType->IncEncounterMinimum(*pNode, 1);
 			}
 		}
 
@@ -2299,8 +2299,8 @@ ALERROR CUniverse::Reinit (void)
 	m_Time.DeleteAll();
 	m_pPOV = NULL;
 	SetCurrentSystem(NULL);
-    for (int i = 0; i < m_StarSystems.GetCount(); i++)
-        delete m_StarSystems[i];
+	for (int i = 0; i < m_StarSystems.GetCount(); i++)
+		delete m_StarSystems[i];
 	m_StarSystems.DeleteAll();
 	m_dwNextID = 1;
 	m_Objects.DeleteAll();
@@ -2822,11 +2822,11 @@ void CUniverse::StartGame (bool bNewGame)
 
 		if (m_pPlayerShip)
 			{
-            //  Player entered ship
+			//  Player entered ship
 
-            m_pPlayerShip->FireOnPlayerEnteredShip(NULL);
+			m_pPlayerShip->FireOnPlayerEnteredShip(NULL);
 
-            //  Player entered system
+			//  Player entered system
 
 			FireOnGlobalPlayerEnteredSystem();
 

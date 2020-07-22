@@ -416,8 +416,8 @@ class CSystem
 										 CSpaceObject **retpObj = NULL,
 										 CSpaceObject *pPlayerShip = NULL);
 		static ALERROR CreateFromXML (CUniverse &Universe, 
-									  CSystemType *pType, 
-									  CTopologyNode *pTopology, 
+									  CSystemType &Type, 
+									  CTopologyNode &NodeID, 
 									  CSystem **retpSystem,
 									  CString *retsError = NULL,
 									  CSystemCreateStats *pStats = NULL);

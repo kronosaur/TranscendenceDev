@@ -223,7 +223,7 @@ void TestUpdate (CUniverse &Universe, CXMLElement *pCmdLine)
 			}
 
 		CSystem *pSystem;
-		if (Universe.CreateStarSystem(pNode, &pSystem) != NOERROR)
+		if (Universe.CreateStarSystem(*pNode, &pSystem) != NOERROR)
 			{
 			printf("ERROR: Unable to create star system.\n");
 			return;

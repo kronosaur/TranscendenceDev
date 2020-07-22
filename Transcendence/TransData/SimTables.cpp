@@ -93,7 +93,7 @@ void GenerateSimTables (CUniverse &Universe, CXMLElement *pCmdLine)
 			//	Create the system
 
 			CSystem *pSystem;
-			if (error = Universe.CreateStarSystem(pNode, &pSystem, &sError))
+			if (error = Universe.CreateStarSystem(*pNode, &pSystem, &sError))
 				{
 				printf("ERROR: Unable to create star system: %s\n", sError.GetASCIIZPointer());
 				return;

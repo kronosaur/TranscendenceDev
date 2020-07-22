@@ -135,7 +135,7 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 	for (i = 0; i < pSystem->GetUniverse().GetStationTypeCount(); i++)
 		{
 		CStationType *pType = pSystem->GetUniverse().GetStationType(i);
-		int iSystemChance = (1000 * pType->GetFrequencyForSystem(pSystem) / ftCommon);
+		int iSystemChance = (1000 * pType->GetFrequencyForSystem(*pSystem) / ftCommon);
 		if (iSystemChance == 0)
 			continue;
 

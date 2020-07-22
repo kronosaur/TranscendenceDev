@@ -353,7 +353,7 @@ class CUniverse
 		ALERROR CreateRandomMission (const TArray<CMissionType *> &Types, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError);
 		IShipController *CreateShipController (const CString &sAI);
 		ALERROR CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
-		ALERROR CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
+		ALERROR CreateStarSystem (CTopologyNode &Node, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		void DestroySystem (CSystem *pSystem);
 		bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const { return m_pHost->FindFont(sFont, retpFont); }
 		CMission *FindMission (DWORD dwID) const { return m_AllMissions.GetMissionByID(dwID); }

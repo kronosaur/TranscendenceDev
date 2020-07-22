@@ -41,7 +41,7 @@ bool CStationEncounterTable::Init (CSystem &System, const SInitCtx &Options, CSt
 		for (int i = 0; i < iCount; i++)
 			{
 			CStationType *pType = Universe.GetStationType(i);
-			pType->SetTempChance((1000 / ftCommon) * pType->GetFrequencyForSystem(&System));
+			pType->SetTempChance((1000 / ftCommon) * pType->GetFrequencyForSystem(System));
 			}
 		}
 
@@ -97,7 +97,7 @@ bool CStationEncounterTable::Init (CSystem &System, const SInitCtx &Options, CSt
 			//	prioritize these types.
 
 			if (pType->GetTempChance() > 0
-					&& pType->GetEncounterRequired(pNode) > 0)
+					&& pType->GetEncounterRequired(*pNode) > 0)
 				{
 				bPrioritizeRequiredEncounters = true;
 				break;
@@ -112,7 +112,7 @@ bool CStationEncounterTable::Init (CSystem &System, const SInitCtx &Options, CSt
 			for (int i = 0; i < iCount; i++)
 				{
 				CStationType *pType = Universe.GetStationType(i);
-				if (pType->GetEncounterRequired(pNode) == 0)
+				if (pType->GetEncounterRequired(*pNode) == 0)
 					pType->SetTempChance(0);
 				}
 			}

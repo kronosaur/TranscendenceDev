@@ -12950,7 +12950,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	//	Make sure we can encounter the station
 
-	if (!pType->CanBeEncountered(pSystem))
+	if (!pType->CanBeEncountered(*pSystem))
 		return pCC->CreateNil();
 
 	//	Create the station (or ship encounter). If we are in the middle of system
@@ -13098,7 +13098,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 
 	//	Make sure we can encounter the station
 
-	if (!pType->CanBeEncountered(pSystem))
+	if (!pType->CanBeEncountered(*pSystem))
 		return pCC->CreateNil();
 
 	//	Create the station (or ship encounter). If we are in the middle of system
@@ -14274,7 +14274,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (CTopologyNode::ParseCriteria(pArgs->GetElement(iArg++)->GetStringValue(), &Criteria, &sError) != NOERROR)
 				return pCC->CreateError(sError);
 
-			int iDist = CStationEncounterCtx::CalcDistanceToCriteria(pNode, Criteria.AttribCriteria);
+			int iDist = CStationEncounterCtx::CalcDistanceToCriteria(*pNode, Criteria.AttribCriteria);
 			if (iDist == -100)
 				return pCC->CreateNil();
 			else

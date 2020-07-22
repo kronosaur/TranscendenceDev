@@ -166,7 +166,7 @@ void GenerateSystemImages (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		CString sError;
 		CSystem *pSystem;
-		if (Universe.CreateStarSystem(pNode, &pSystem, &sError) != NOERROR)
+		if (Universe.CreateStarSystem(*pNode, &pSystem, &sError) != NOERROR)
 			{
 			printf("ERROR: node %s: %s\n", pNode->GetID().GetASCIIZPointer(), sError.GetASCIIZPointer());
 			return;
