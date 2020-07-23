@@ -4742,11 +4742,31 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Station unid=%x"), pStationType->GetUNID()));
 
 	bool bDebug = pDesc->GetAttributeBool(DEBUG_ATTRIB);
+	bool bOptional = pDesc->GetAttributeBool(OPTIONAL_ATTRIB);
 
 	//	Get offsets
 
 	int x = pDesc->GetAttributeInteger(X_OFFSET_ATTRIB);
 	int y = pDesc->GetAttributeInteger(Y_OFFSET_ATTRIB);
+
+	if (bDebug)
+		DumpDebugStackTop(pCtx);
+
+	//	If this station is optional and if we've already exceeded limits, then 
+	//	we're done (no error because that's what optional means).
+
+	if (bOptional 
+			&& !pStationType->CanBeEncountered(pCtx->System, pStationType->GetEncounterDescConst()))
+		{
+		if (bDebug)
+			pCtx->GetUniverse().LogOutput(CONSTLIT("Station cannot be encountered"));
+
+		PopDebugStack(pCtx);
+
+		if (retpStation)
+			*retpStation = NULL;
+		return NOERROR;
+		}
 
 	//	Compute position of station
 
@@ -4766,6 +4786,12 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 	CreateCtx.sID = pDesc->GetAttribute(ID_ATTRIB);
 	CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
+	//	Since this is an explicit creation of a station, ignore limits
+
+	CreateCtx.bIgnoreLimits = true;
+
+	//	Rotation and parallax
+
 	CString sAngle;
 	if (pDesc->FindAttribute(ROTATION_ATTRIB, &sAngle))
 		CreateCtx.iRotation = CAngleGenerator::GenerateSingle(*pCtx, OrbitDesc, sAngle);
@@ -4777,10 +4803,6 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 		CreateCtx.rParallax = iParallax / 100.0;
 	else
 		CreateCtx.rParallax = COrbit::ZToParallax(rPosZ);
-
-	//	Since this is an explicit creation of a station, ignore limits
-
-	CreateCtx.bIgnoreLimits = !pDesc->GetAttribute(OPTIONAL_ATTRIB);
 
 	//	Sovereign override
 
@@ -4797,16 +4819,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 	//	Debug
 
 	if (bDebug)
-		{
 		pCtx->GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Creating: %s"), pStationType->GetNounPhrase()));
-		if (!CreateCtx.bIgnoreLimits)
-			{
-			if (!pStationType->CanBeEncountered(pCtx->System, pStationType->GetEncounterDescConst()))
-				pCtx->GetUniverse().LogOutput(CONSTLIT("Station cannot be encountered"));
-			else
-				pCtx->GetUniverse().LogOutput(CONSTLIT("Station is valid"));
-			}
-		}
 
 	//	Create the station
 
