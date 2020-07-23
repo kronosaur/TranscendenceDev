@@ -2873,6 +2873,12 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		PushDebugStack(pCtx, TABLE_TAG);
 
 		IElementGenerator::SCtx GenCtx;
+		GenCtx.bDebug = pObj->GetAttributeBool(DEBUG_ATTRIB);
+
+		if (GenCtx.bDebug)
+			{
+			DumpDebugStackTop(pCtx);
+			}
 
 		//	If we have a maxCount= attribute at the <Table> level, then we track
 		//	usage. We require this at the root level (even though we also support
@@ -4735,6 +4741,8 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 
 	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Station unid=%x"), pStationType->GetUNID()));
 
+	bool bDebug = pDesc->GetAttributeBool(DEBUG_ATTRIB);
+
 	//	Get offsets
 
 	int x = pDesc->GetAttributeInteger(X_OFFSET_ATTRIB);
@@ -4785,6 +4793,20 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 	DWORD dwEventHandler;
 	if (pDesc->FindAttributeInteger(EVENT_HANDLER_ATTRIB, (int *)&dwEventHandler))
 		CreateCtx.pEventHandler = pCtx->GetUniverse().FindDesignType(dwEventHandler);
+
+	//	Debug
+
+	if (bDebug)
+		{
+		pCtx->GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Creating: %s"), pStationType->GetNounPhrase()));
+		if (!CreateCtx.bIgnoreLimits)
+			{
+			if (!pStationType->CanBeEncountered(pCtx->System, pStationType->GetEncounterDescConst()))
+				pCtx->GetUniverse().LogOutput(CONSTLIT("Station cannot be encountered"));
+			else
+				pCtx->GetUniverse().LogOutput(CONSTLIT("Station is valid"));
+			}
+		}
 
 	//	Create the station
 

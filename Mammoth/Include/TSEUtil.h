@@ -718,10 +718,14 @@ class IElementGenerator
 
 		struct SCtx
 			{
+			CUniverse &GetUniverse() const { return *g_pUniverse; }
+
 			const CTopology *pTopology = NULL;
 			const CTopologyNode *pNode = NULL;
 
 			STableStats *pTableCounts = NULL;
+
+			bool bDebug = false;
 			};
 
 		struct SResult
@@ -742,6 +746,7 @@ class IElementGenerator
 
 		virtual ~IElementGenerator (void) { }
 
+		virtual void DebugDump (SCtx &Ctx) const { }
 		virtual void Generate (SCtx &Ctx, TArray<SResult> &retResults) const = 0;
 		void Generate (SCtx &Ctx, TArray<CXMLElement *> &retResults) const;
 
