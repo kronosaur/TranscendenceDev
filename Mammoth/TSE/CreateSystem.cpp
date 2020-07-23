@@ -4756,7 +4756,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 	//	we're done (no error because that's what optional means).
 
 	if (bOptional 
-			&& !pStationType->CanBeEncountered(pCtx->System, pStationType->GetEncounterDescConst()))
+			&& !pStationType->CanBeEncountered(pCtx->System, pCtx->StationEncounterOverrides.GetEncounterDesc(*pStationType)))
 		{
 		if (bDebug)
 			pCtx->GetUniverse().LogOutput(CONSTLIT("Station cannot be encountered"));
