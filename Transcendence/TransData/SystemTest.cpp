@@ -231,6 +231,7 @@ void CSystemTestGenerator::PrintStationStats (const TArray<TSortMap<CString, Sta
 			for (int j = 0; j < AllStations[i].GetCount(); j++)
 				{
 				const StationInfo *pEntry = &AllStations[i].GetValue(j);
+				const CStationEncounterDesc &EncounterDesc = pEntry->pType->GetEncounterDescConst();
 
 				printf("%d\t%s\t%s\t%d.%02d\t%d\n", 
 						i,
@@ -238,7 +239,7 @@ void CSystemTestGenerator::PrintStationStats (const TArray<TSortMap<CString, Sta
 						pEntry->pType->GetNounPhrase().GetASCIIZPointer(),
 						pEntry->iTotalCount / 100,
 						pEntry->iTotalCount % 100,
-						pEntry->pType->GetFrequencyByLevel(i));
+						pEntry->pType->GetFrequencyByLevel(i, EncounterDesc));
 				}
 			}
 		}

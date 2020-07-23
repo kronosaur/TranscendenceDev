@@ -30,7 +30,7 @@ class CStationEncounterTable
 		void DeleteAll (void) { m_Table.DeleteAll(); }
 		const SEntry &GetAt (int iIndex) const { return m_Table[iIndex]; }
 		int GetCount (void) const { return m_Table.GetCount(); }
-		bool Init (CSystem &System, const SInitCtx &Options, CString *retsError = NULL, bool *retbAddToCache = NULL);
+		bool Init (CSystem &System, const CStationEncounterOverrideTable &EncounterTable, const SInitCtx &Options, CString *retsError = NULL, bool *retbAddToCache = NULL);
 		void Insert (CStationType &Type, int iChance)
 			{
 			SEntry *pEntry = m_Table.Insert();
@@ -196,7 +196,7 @@ struct SZAdjust
 
 struct SStationTypeTableStats
 	{
-	TSortMap<CStationType *, int> Counts;
+	TSortMap<const CStationType *, int> Counts;
 	};
 
 struct SSystemCreateCtx
@@ -222,6 +222,7 @@ struct SSystemCreateCtx
 	TArray<CXMLElement *> LocalTables;		//	Stack of local tables
 	TSortMap<CString, CString> NameParams;	//	Parameters passed in to CNameDesc
 	CString sLabelAttribs;					//	Inherited label attributes
+	CStationEncounterOverrideTable StationEncounterOverrides;
 
 	//	Options
 

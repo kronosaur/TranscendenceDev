@@ -285,6 +285,14 @@ bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Origina
 			}
 		}
 
+	//	Max count in system. Supports a limit > 1.
+
+	if (Override.FindAttribute(MAX_IN_SYSTEM_ATTRIB, &sAttrib))
+		{
+		m_bMaxCountLimit = false;
+		m_iMaxCountInSystem = Max(1, strToInt(sAttrib, 0));
+		}
+
 	//	System criteria
 
 	CXMLElement *pCriteria = Override.GetContentElementByTag(SYSTEM_CRITERIA_TAG);

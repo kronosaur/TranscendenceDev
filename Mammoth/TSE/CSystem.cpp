@@ -2709,7 +2709,7 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, const CStationType &Typ
 
 	CSovereign *pSourceSovereign = Type.GetControllingSovereign();
 	CStationEncounterDesc::SExclusionDesc SourceExclusion;
-	Type.GetExclusionDesc(SourceExclusion);
+	Type.GetEncounterDesc().GetExclusionDesc(SourceExclusion);
 
 	//	Check against all objects in the system
 
@@ -2730,10 +2730,10 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, const CStationType &Typ
 		//	than we do). But it is OK if it doesn't have one.
 
 		CStationEncounterDesc::SExclusionDesc Exclusion;
-		CStationType *pObjType = pObj->GetEncounterInfo();
+		const CStationType *pObjType = pObj->GetEncounterInfo();
 		if (pObjType)
 			{
-			pObjType->GetExclusionDesc(Exclusion);
+			pObjType->GetEncounterDesc().GetExclusionDesc(Exclusion);
 
 			Exclusion.rAllExclusionRadius2 = Max(Exclusion.rAllExclusionRadius2, SourceExclusion.rAllExclusionRadius2);
 			Exclusion.bHasAllExclusion = (Exclusion.rAllExclusionRadius2 > 0.0);
@@ -2816,11 +2816,11 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, Metric rMinExclusion) c
 		//	than we do). But it is OK if it doesn't have one.
 
 		rExclusion2 = rMinExclusion2;
-		CStationType *pObjType = pObj->GetEncounterInfo();
+		const CStationType *pObjType = pObj->GetEncounterInfo();
 		if (pObjType)
 			{
 			CStationEncounterDesc::SExclusionDesc Exclusion;
-			pObjType->GetExclusionDesc(Exclusion);
+			pObjType->GetEncounterDesc().GetExclusionDesc(Exclusion);
 
 			if (Exclusion.bHasAllExclusion)
 				rExclusion2 = Max(rExclusion2, Exclusion.rAllExclusionRadius2);

@@ -271,7 +271,7 @@ int CStationEncounterCtx::GetRequiredForNode (CTopologyNode &Node, const CStatio
 		return 0;
 	}
 
-void CStationEncounterCtx::IncMinimumForNode (CTopologyNode &Node, const CStationEncounterDesc &Desc, int iInc)
+void CStationEncounterCtx::IncMinimumForNode (CTopologyNode &Node, int iInc)
 
 //	IncMinimumForNode
 //

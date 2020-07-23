@@ -1516,5 +1516,8 @@
     <ClCompile Include="CAccessibilitySettings.cpp">
       <Filter>Source Files\InSessionSettings</Filter>
     </ClCompile>
+    <ClCompile Include="CStationEncounterOverrideTable.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

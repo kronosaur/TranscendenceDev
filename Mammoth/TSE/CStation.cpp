@@ -1146,7 +1146,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	CStation *pStation;
 	CXMLElement *pDesc = pType->GetDesc();
 
-	if (!CreateCtx.bIgnoreLimits && !pType->CanBeEncountered())
+	if (!CreateCtx.bIgnoreLimits && !pType->CanBeEncountered(pType->GetEncounterDescConst()))
 		{
 		if (retsError)
 			*retsError = CONSTLIT("Cannot be encountered");

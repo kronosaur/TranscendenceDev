@@ -11802,7 +11802,7 @@ ICCItem *fnStationType (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_STATION_ENCOUNTERED:
 			{
-			pResult = pCC->CreateBool(!pType->CanBeEncountered());
+			pResult = pCC->CreateBool(!pType->CanBeEncountered(pType->GetEncounterDescConst()));
 			break;
 			}
 
@@ -12950,7 +12950,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	//	Make sure we can encounter the station
 
-	if (!pType->CanBeEncountered(*pSystem))
+	if (!pType->CanBeEncountered(*pSystem, pType->GetEncounterDescConst()))
 		return pCC->CreateNil();
 
 	//	Create the station (or ship encounter). If we are in the middle of system
@@ -13098,7 +13098,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 
 	//	Make sure we can encounter the station
 
-	if (!pType->CanBeEncountered(*pSystem))
+	if (!pType->CanBeEncountered(*pSystem, pType->GetEncounterDescConst()))
 		return pCC->CreateNil();
 
 	//	Create the station (or ship encounter). If we are in the middle of system

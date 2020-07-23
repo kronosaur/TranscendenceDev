@@ -73,7 +73,7 @@ void CRandomEncounterTypeTable::Realize (const CSystem &System) const
 	for (int i = 0; i < Universe.GetStationTypeCount(); i++)
 		{
 		CStationType &Type = *Universe.GetStationType(i);
-		const CStationEncounterDesc &EncounterDesc = const_cast<const CStationType &>(Type).GetEncounterDesc();
+		const CStationEncounterDesc &EncounterDesc = Type.GetEncounterDescConst();
 
 		//	Figure out the frequency of an encounter from this station based
 		//	on the frequency of the station at this level and the frequency

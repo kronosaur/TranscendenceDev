@@ -55,7 +55,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	for (i = 0; i < Universe.GetStationTypeCount(); i++)
 		{
-		CStationType *pType = Universe.GetStationType(i);
+		const CStationType *pType = Universe.GetStationType(i);
 		int iLevel = pType->GetLevel();
 
 		//	If we're selecting all types, then do it
@@ -67,7 +67,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		else if (bOnlyNotRandom)
 			{
-			if (pType->CanBeEncounteredRandomly())
+			if (pType->GetEncounterDesc().CanBeRandomlyEncountered())
 				continue;
 			}
 
@@ -75,7 +75,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		else
 			{
-			if (!pType->CanBeEncounteredRandomly())
+			if (!pType->GetEncounterDesc().CanBeRandomlyEncountered())
 				continue;
 			}
 

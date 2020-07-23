@@ -1444,6 +1444,8 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 		if (bVerbose)
 			LogOutput(strPatternSubst("[%08x] %s: Minimum count: %d", pType->GetUNID(), pType->GetNounPhrase(), iCount));
 
+		const CStationEncounterDesc &EncounterDesc = pType->GetEncounterDescConst();
+
 		//	Make a list of all the nodes in which this station can appear
 
 		TProbabilityTable<CTopologyNode *> Table;
@@ -1454,7 +1456,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 			if (pSystemType == NULL)
 				continue;
 
-			int iFreq = pType->GetFrequencyForNode(*pNode);
+			int iFreq = pType->GetFrequencyForNode(*pNode, EncounterDesc);
 			if (iFreq > 0
 					&& pSystemType->HasExtraEncounters())
 				Table.Insert(pNode, iFreq);
@@ -1480,7 +1482,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 		//	If this station is unique per system then we need at least the 
 		//	required number of systems. If not, we adjust the count.
 
-		if (pType->IsUniqueInSystem() && iCount > Table.GetCount())
+		if (EncounterDesc.IsUniqueInSystem() && iCount > Table.GetCount())
 			{
 			iCount = Table.GetCount();
 			LogOutput(strPatternSubst("WARNING: Decreasing number appearing of %s [%08x] to %d due to lack of appropriate systems.", pType->GetNounPhrase(nounPlural), pType->GetUNID(), iCount));
@@ -1495,8 +1497,8 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 			//	If the station is unique in the system and we've already got a 
 			//	station in this system, then try again.
 
-			if (pType->IsUniqueInSystem() 
-					&& pType->GetEncounterMinimum(*pNode) > 0)
+			if (EncounterDesc.IsUniqueInSystem() 
+					&& pType->GetEncounterMinimum(*pNode, EncounterDesc) > 0)
 				{
 				j--;
 				continue;

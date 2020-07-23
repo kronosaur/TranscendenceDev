@@ -251,7 +251,7 @@ class CDesignType
 		bool IsBound (void) const { return m_bBindCalled; }
 		bool IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const;
 		bool IsNull (void) const { return (m_dwUNID == 0); }
-		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
+		bool MatchesCriteria (const CDesignTypeCriteria &Criteria) const;
 		ALERROR PrepareBindDesign (SDesignLoadCtx &Ctx);
 		void PrepareReinit (void) { OnPrepareReinit(); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);

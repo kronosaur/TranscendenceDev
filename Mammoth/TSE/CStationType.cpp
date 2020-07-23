@@ -899,7 +899,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 		*retsValue = strFromInt((int)(CalcBalance() * 100.0));
 	else if (strEquals(sField, FIELD_CATEGORY))
 		{
-		if (!CanBeEncounteredRandomly())
+		if (!GetEncounterDesc().CanBeRandomlyEncountered())
 			*retsValue = CONSTLIT("04-Not Random");
 		else if (HasLiteralAttribute(CONSTLIT("debris")))
 			*retsValue = CONSTLIT("03-Debris");
@@ -917,7 +917,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 	else if (strEquals(sField, FIELD_LEVEL))
 		*retsValue = strFromInt(GetLevel());
 	else if (strEquals(sField, FIELD_LOCATION_CRITERIA))
-		*retsValue = GetLocationCriteria().AsString();
+		*retsValue = GetEncounterDesc().GetLocationCriteria().AsString();
 	else if (strEquals(sField, FIELD_NAME))
 		*retsValue = GetNounPhrase();
 	else if (strEquals(sField, FIELD_FIRE_RATE_ADJ))
