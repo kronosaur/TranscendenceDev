@@ -267,6 +267,7 @@
 
 			<RandomLocation locationCriteria="*stJohnTrojans" exclusionRadius="50">
 				<Station type="&stRaisuStation;"/>
+				<Station type="&stMiningColony;"	optional="true"/>
 				<Lookup table="StJohnTrojanStations"/>
 			</RandomLocation>
 
@@ -329,7 +330,6 @@
 
 			<StJohnTrojanStations>
 				<RandomStationTable chance="90">
-					<Station chance="40"	type="&stMiningColony;"/>
 					<Station chance="45"	type="&stCentauriCamp;"/>
 					<Station chance="10"	type="&stCharonPirateOutpost;"/>
 					<Station chance="5"		type="&stCommonwealthSlums;"/>
