@@ -180,53 +180,53 @@
 			<!-- Random Stations -->
 			
 			<FriendlyOuterStations>
-				<Table>
-					<Station weight="20" type="&stContainerHabitat;"/>
-					<Station weight="20" type="&stCommonwealthSlums;"/>
-					<Station weight="15" type="&stFuelDepot;"/>
-					<Station weight="15" type="&stIceFarm;"/>
-					<Station weight="10" type="&stArmorDealer;"/>
-					<Station weight="10" type="&stArmsDealer;"/>
-					<Station weight="10" type="&stSistersOfDomina;" optional="true"/>
-					<Station weight="5"  type="&stHotel;" optional="true"/>
-					<Station weight="5"  type="&stArmsDealerRasiermesser;"/>
-					<Station weight="5"  type="&stArmsDealerMakayev;"/>
-				</Table>
+				<RandomStationTable>
+					<Station chance="20" type="&stContainerHabitat;"/>
+					<Station chance="20" type="&stCommonwealthSlums;"/>
+					<Station chance="15" type="&stFuelDepot;"/>
+					<Station chance="15" type="&stIceFarm;"/>
+					<Station chance="10" type="&stArmorDealer;"/>
+					<Station chance="10" type="&stArmsDealer;"/>
+					<Station chance="10" type="&stSistersOfDomina;"/>
+					<Station chance="5"  type="&stHotel;"/>
+					<Station chance="5"  type="&stArmsDealerRasiermesser;"/>
+					<Station chance="5"  type="&stArmsDealerMakayev;"/>
+				</RandomStationTable>
 			</FriendlyOuterStations>
 
 			<FriendlyStations>
-				<Table>
-					<Station weight="20" type="&stCorporateEnclave;"/>
-					<Station weight="20" type="&stCommonwealthResidentials;"/>
-					<Station weight="15" type="&stFuelDepot;"/>
-					<Station weight="15" type="&stHotel;" optional="true"/>
-					<Station weight="10" type="&stContainerHabitat;"/>
-					<Station weight="10" type="&stCommonwealthSlums;"/>
-					<Station weight="10" type="&stArmorDealer;"/>
-					<Station weight="10" type="&stArmsDealer;"/>
-					<Station weight="10" type="&stManufacturingPlant;"/>
-					<Station weight="5"  type="&stTinkerGathering;" optional="true"/>
-					<Station weight="5"  type="&stCommonwealthDryDock;"/>
-					<Station weight="5"  type="&stArmsDealerRasiermesser;"/>
-					<Station weight="5"  type="&stArmsDealerMakayev;"/>
-					<Station weight="5"  type="&stInsuranceCompany;"/>
-					<Station weight="5"  type="&stSistersOfDomina;" optional="true"/>
-					<Station weight="2"  type="&stArmsDealerBushido;"/>
-				</Table>
+				<RandomStationTable>
+					<Station chance="20" type="&stCorporateEnclave;"/>
+					<Station chance="20" type="&stCommonwealthResidentials;"/>
+					<Station chance="15" type="&stFuelDepot;"/>
+					<Station chance="15" type="&stHotel;"/>
+					<Station chance="10" type="&stContainerHabitat;"/>
+					<Station chance="10" type="&stCommonwealthSlums;"/>
+					<Station chance="10" type="&stArmorDealer;"/>
+					<Station chance="10" type="&stArmsDealer;"/>
+					<Station chance="10" type="&stManufacturingPlant;"/>
+					<Station chance="5"  type="&stTinkerGathering;"/>
+					<Station chance="5"  type="&stCommonwealthDryDock;"/>
+					<Station chance="5"  type="&stArmsDealerRasiermesser;"/>
+					<Station chance="5"  type="&stArmsDealerMakayev;"/>
+					<Station chance="5"  type="&stInsuranceCompany;"/>
+					<Station chance="5"  type="&stSistersOfDomina;"/>
+					<Station chance="2"  type="&stArmsDealerBushido;"/>
+				</RandomStationTable>
 			</FriendlyStations>
 
 			<EnemyStations>
-				<Table>
-					<Station weight="15" type="&stOutlawHaven;"				noReinforcements="true"/>
-					<Station weight="15" type="&stCharonPirateOutpost3;"	noReinforcements="true"/>
-					<Station weight="10" type="&stTerroristCamp;"			noReinforcements="true"/>
-					<Station weight="10" type="&stMarauderOutpost;"			noReinforcements="true"/>
-					<Station weight="5"  type="&stTerroristCompound;"		noReinforcements="true"/>
-					<Station weight="5"  type="&stMarauderCompound;"		noReinforcements="true"/>
-					<Station weight="5"  type="&stDrugCartelOutpost;"		noReinforcements="true"/>
-					<Station weight="5"  type="&stWeaponsCache;"			noReinforcements="true"/>
-					<Station weight="5"  type="&stSungSlaveCamp;"			noReinforcements="true"/>
-				</Table>
+				<RandomStationTable>
+					<Station chance="15" type="&stOutlawHaven;"				noReinforcements="true"/>
+					<Station chance="15" type="&stCharonPirateOutpost3;"	noReinforcements="true"/>
+					<Station chance="10" type="&stTerroristCamp;"			noReinforcements="true"/>
+					<Station chance="10" type="&stMarauderOutpost;"			noReinforcements="true"/>
+					<Station chance="5"  type="&stTerroristCompound;"		noReinforcements="true"/>
+					<Station chance="5"  type="&stMarauderCompound;"		noReinforcements="true"/>
+					<Station chance="5"  type="&stDrugCartelOutpost;"		noReinforcements="true"/>
+					<Station chance="5"  type="&stWeaponsCache;"			noReinforcements="true"/>
+					<Station chance="5"  type="&stSungSlaveCamp;"			noReinforcements="true"/>
+				</RandomStationTable>
 			</EnemyStations>
 		</Tables>
 
@@ -300,9 +300,9 @@
 					</Primary>
 					
 					<Orbitals count="9" distance="54" angle="equidistant">
-						<Table>
-							<Station chance="5"  type="&stSistersOfDomina;" optional="true"/>
-							<Station chance="5"  type="&stHotel;" optional="true"/>
+						<RandomStationTable>
+							<Station chance="5"  type="&stSistersOfDomina;"/>
+							<Station chance="5"  type="&stHotel;"/>
 							<Station chance="15" type="&stCorporateEnclave;"/>
 							<Station chance="10" type="&stFuelDepot;"/>
 							<Station chance="20" type="&stCommonwealthResidentials;" noMapLabel="true"/>
@@ -312,15 +312,15 @@
 							<Station chance="5"  type="&stAutonDealer;"/>
 							<Station chance="10" type="&stContainerHabitat;" noMapLabel="true"/>
 							<Station chance="10" type="&stManufacturingPlant;"/>
-						</Table>
+						</RandomStationTable>
 					</Orbitals>
 					
 					<Orbitals count="12-16" distance="70" angle="equidistant">
-						<Table>
+						<RandomStationTable>
 							<Station chance="40" type="&stContainerHabitat;" noMapLabel="true"/>
 							<Station chance="30" type="&stCommonwealthSlums;" noMapLabel="true"/>
 							<Station chance="30" type="&stManufacturingPlant;"/>
-						</Table>
+						</RandomStationTable>
 					</Orbitals>
 				</Group>
 			</Orbitals>
