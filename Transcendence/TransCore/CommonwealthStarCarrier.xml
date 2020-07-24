@@ -469,6 +469,12 @@
 					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
 				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -517,6 +523,12 @@
 					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
 				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -540,6 +552,12 @@
 					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
 				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default descID="descInfirmary">
 						<Actions>
@@ -886,6 +904,12 @@
 					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
 				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -926,6 +950,12 @@
 					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
 				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -949,6 +979,12 @@
 					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
 				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -988,6 +1024,8 @@
 										(rpgMissionAssignment {
 											missionCriteria: (cat "n +cscTaskForce; +rank" (int rank) "; =" (sysGetLevel) ";")
 											noMissionTextID: 'descNoMissions
+
+											rankDetails: (typTranslate &unidCommonwealthFleet; 'rankDetails)
 											})
 										)
 									)

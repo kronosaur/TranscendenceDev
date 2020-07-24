@@ -7,6 +7,10 @@
 	<SystemType UNID="&ssStartonEridani;"
 				attributes=		"envWater"
 				>
+		<EncounterOverrides>
+			<Encounter unid="&stMiningColony;"		unique="inSystem"/>
+		</EncounterOverrides>
+
 		<SystemGroup>
 
 			<!-- Epsilon Eridani -->
@@ -263,6 +267,7 @@
 
 			<RandomLocation locationCriteria="*stJohnTrojans" exclusionRadius="50">
 				<Station type="&stRaisuStation;"/>
+				<Station type="&stMiningColony;"	optional="true"/>
 				<Lookup table="StJohnTrojanStations"/>
 			</RandomLocation>
 
@@ -294,23 +299,22 @@
 			<!-- Random Stations -->
 
 			<Stations1>
-				<Table>
-					<Station weight="8"  type="&stArmorDealer;"/>
-					<Station weight="4"  type="&stArmsDealer;"/>
-					<Station weight="12" type="&stCommonwealthSlums;"/>
-					<Station weight="50" type="&stCentauriCamp;"/>
-					<Station weight="25" type="&stCharonPirateOutpost;"/>
-				</Table>
+				<RandomStationTable>
+					<Station chance="8"  type="&stArmorDealer;"/>
+					<Station chance="4"  type="&stArmsDealer;"/>
+					<Station chance="12" type="&stCommonwealthSlums;"/>
+					<Station chance="50" type="&stCentauriCamp;"/>
+					<Station chance="25" type="&stCharonPirateOutpost;"/>
+				</RandomStationTable>
 			</Stations1>
 
 			<DanteStations>
-				<Table>
-					<Station chance="45"	type="&stMiningColony;"/>
+				<RandomStationTable>
+					<Station chance="50"	type="&stMiningColony;"/>
 					<Station chance="30"	type="&stCentauriCamp;"/>
 					<Station chance="15"	type="&stCharonPirateOutpost;"/>
 					<Station chance="5"		type="&stCommonwealthSlums;"/>
-					<Station chance="5"		type="&stFuelDepot;"/>
-				</Table>
+				</RandomStationTable>
 			</DanteStations>
 
 			<MetropolisStation>
@@ -325,14 +329,12 @@
 			</MetropolisStation>
 
 			<StJohnTrojanStations>
-				<Table>
-					<Station chance="25"	type="&stMiningColony;"/>
+				<RandomStationTable chance="90">
 					<Station chance="45"	type="&stCentauriCamp;"/>
 					<Station chance="10"	type="&stCharonPirateOutpost;"/>
 					<Station chance="5"		type="&stCommonwealthSlums;"/>
 					<Station chance="5"		type="&stFuelDepot;"/>
-					<Null	 chance="10" />
-				</Table>
+				</RandomStationTable>
 			</StJohnTrojanStations>
 
 			<!-- Metropolis -->

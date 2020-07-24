@@ -143,7 +143,7 @@ class COrbEffectPainter : public IEffectPainter
 		static CExplosionColorizer m_ExplosionColorizer;
 	};
 
-static LPSTR ANIMATION_TABLE[] =
+static LPCSTR ANIMATION_TABLE[] =
 	{
 	//	Must be same order as EAnimationTypes
 		"",
@@ -157,7 +157,7 @@ static LPSTR ANIMATION_TABLE[] =
 		NULL
 	};
 
-static LPSTR STYLE_TABLE[] =
+static LPCSTR STYLE_TABLE[] =
 	{
 	//	Must be same order as EOrbStyles
 		"",

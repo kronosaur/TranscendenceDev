@@ -1177,7 +1177,8 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 				if (bCanInstall
 						&& iCategory == itemcatCargoHold)
 					{
-					const CCargoDesc *pOldCargo = ItemToReplace.GetType()->GetDeviceClass()->GetCargoDesc(CItemCtx(ItemToReplace));
+					CItemCtx ItemToReplaceCtx(ItemToReplace);
+					const CCargoDesc *pOldCargo = ItemToReplace.GetType()->GetDeviceClass()->GetCargoDesc(ItemToReplaceCtx);
 					const CCargoDesc *pNewCargo = Item.GetType()->GetDeviceClass()->GetCargoDesc(ItemCtx);
 					if (pOldCargo 
 							&& pNewCargo 
@@ -1968,8 +1969,9 @@ void CShip::DisableAllDevices (void)
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
         {
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		CItemCtx ItemCtx(this, &Device);
         if (Device.IsEnabled()
-				&& Device.CanBeDisabled(CItemCtx(this, &Device)))
+				&& Device.CanBeDisabled(ItemCtx))
             {
             EnableDevice(Device.GetDeviceSlot(), false);
             }
@@ -2708,7 +2710,10 @@ DamageTypes CShip::GetDamageType (void)
 	{
 	CInstalledDevice *pWeapon = GetNamedDevice(devPrimaryWeapon);
 	if (pWeapon)
-		return (DamageTypes)pWeapon->GetDamageType(CItemCtx(this, pWeapon));
+		{
+		CItemCtx ItemCtx(this, pWeapon);
+		return (DamageTypes)pWeapon->GetDamageType(ItemCtx);
+		}
 	else
 		return damageGeneric;
 	}
@@ -2947,11 +2952,17 @@ Metric CShip::GetMaxWeaponRange (void) const
 	Metric rRange = 0.0;
 	const CInstalledDevice *pDevice = GetNamedDevice(devPrimaryWeapon);
 	if (pDevice)
-		rRange = pDevice->GetMaxRange(CItemCtx(const_cast<CShip *>(this), const_cast<CInstalledDevice *>(pDevice)));
+		{
+		CItemCtx ItemCtx(const_cast<CShip *>(this), const_cast<CInstalledDevice *>(pDevice));
+		rRange = pDevice->GetMaxRange(ItemCtx);
+		}
 
 	pDevice = GetNamedDevice(devMissileWeapon);
 	if (pDevice)
-		rRange = Max(rRange, pDevice->GetMaxRange(CItemCtx(const_cast<CShip *>(this), const_cast<CInstalledDevice *>(pDevice))));
+		{
+		CItemCtx ItemCtx(const_cast<CShip *>(this), const_cast<CInstalledDevice *>(pDevice));
+		rRange = Max(rRange, pDevice->GetMaxRange(ItemCtx));
+		}
 
 	return rRange;
 	}
@@ -5368,8 +5379,8 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 		else if ((pPlayerShip = GetUniverse().GetPlayerShip())
 				&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
 			{
-			Dest.DrawDot(x + 1, y + 1, 0, markerMediumTriangleDown);
-			Dest.DrawDot(x, y, rgbColor, markerMediumFilledTriangleDown);
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleUp);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleUp);
 			}
 		else if (pPlayer && IsFriend(*pPlayer))
 			{
@@ -5378,13 +5389,13 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 			}
 		else if (pPlayer && IsNeutral(*pPlayer))
 			{
-			Dest.DrawDot(x + 1, y + 1, 0, markerMediumDiamond);
-			Dest.DrawDot(x, y, rgbColor, markerMediumFilledDiamond);
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallDiamond);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledDiamond);
 			}
 		else if (pPlayer && IsEnemy(*pPlayer))
 			{
-			Dest.DrawDot(x + 1, y + 1, 0, markerMediumTriangleUp);
-			Dest.DrawDot(x, y, rgbColor, markerMediumFilledTriangleUp);
+			Dest.DrawDot(x + 1, y + 1, 0, markerSmallTriangleDown);
+			Dest.DrawDot(x, y, rgbColor, markerSmallFilledTriangleDown);
 			}
 		else
 			{
@@ -6341,18 +6352,18 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 	CSovereign* pPlayer = GetUniverse().GetPlayerSovereign();
 	CSpaceObject* pPlayerShip;
 	if (IsPlayer() || GetSovereign()->IsPlayerOwned())
-		Dest.DrawDot(x, y, rgbColor, markerSmallRound);
+		Dest.DrawDot(x, y, rgbColor, markerRoundDot);
 	else if ((pPlayerShip = GetUniverse().GetPlayerShip())
 			&& IsAngryAt(pPlayerShip) && (IsFriend(*pPlayer) || IsNeutral(*pPlayer)))
-		Dest.DrawDot(x, y, rgbColor, markerSmallTriangleDown);
+		Dest.DrawDot(x, y, rgbColor, markerTriangleUpDot);
 	else if (pPlayer && IsFriend(*pPlayer))
-		Dest.DrawDot(x, y, rgbColor, markerTinySquare);
+		Dest.DrawDot(x, y, rgbColor, markerSquareDot);
 	else if (pPlayer && IsNeutral(*pPlayer))
-		Dest.DrawDot(x, y, rgbColor, markerSmallDiamond);
+		Dest.DrawDot(x, y, rgbColor, markerDiamondDot);
 	else if (pPlayer && IsEnemy(*pPlayer))
-		Dest.DrawDot(x, y, rgbColor, markerSmallTriangleUp);
+		Dest.DrawDot(x, y, rgbColor, markerTriangleDownDot);
 	else
-		Dest.DrawDot(x, y, rgbColor, markerTinySquare);
+		Dest.DrawDot(x, y, rgbColor, markerSquareDot);
 
 	//	Identified
 
@@ -6607,14 +6618,16 @@ void CShip::ReactorOverload (int iPowerDrain)
 		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
 			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+			CItemCtx ItemCtx(this, &Device);
 			if (!Device.IsEmpty() 
 					&& Device.IsEnabled()
-					&& Device.CanBeDisabled(CItemCtx(this, &Device)))
+					&& Device.CanBeDisabled(ItemCtx))
 				{
 				SetCursorAtDevice(ItemList, Device.GetDeviceSlot());
 
 				CItem Item = ItemList.GetItemAtCursor();
-				int iDevicePower = Device.GetPowerRating(CItemCtx(&Item, this));
+				CItemCtx ItemCtx(&Item, this);
+				int iDevicePower = Device.GetPowerRating(ItemCtx);
 				if (iDevicePower > iBestPower)
 					{
 					iBestDev = Device.GetDeviceSlot();

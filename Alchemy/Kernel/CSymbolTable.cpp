@@ -135,7 +135,7 @@ void CSymbolTable::CopyHandler (CObject *pOriginal)
 
 		//	Bump the ref-count on the string
 
-		CString *pNewKey = (CString *)pKey->Copy();
+		CString *pNewKey = new CString(*pKey);
 
 		//	If we own the object then make a copy too
 
@@ -225,21 +225,13 @@ ALERROR CSymbolTable::LoadHandler (CUnarchiver *pUnarchiver)
 
 		for (i = 0; i < (int)dwCount; i++)
 			{
-			CObject *pObject;
 			CObject *pValue;
 			CString *pKey;
 
 			//	Read in the key
 
-			if (error = pUnarchiver->LoadObject(&pObject))
+			if (error = pUnarchiver->LoadObject(&pKey))
 				return error;
-
-			pKey = dynamic_cast<CString *>(pObject);
-			if (pKey == NULL)
-				{
-				delete pObject;
-				return ERR_FAIL;
-				}
 
 			//	If we own the object, read in the object
 
@@ -262,7 +254,10 @@ ALERROR CSymbolTable::LoadHandler (CUnarchiver *pUnarchiver)
 #ifndef LATER
 			//	We need to handle references here.
 			else
+				{
 				ASSERT(FALSE);
+				pValue = NULL;
+				}
 #endif
 
 			CDictionary::SetEntry(i, (int)pKey, (int)pValue);

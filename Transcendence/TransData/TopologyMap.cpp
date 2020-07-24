@@ -35,7 +35,7 @@ void GenerateTopologyMap (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		CSystem *pNewSystem;
 		CString sError;
-		if (Universe.CreateStarSystem(pNode, &pNewSystem, &sError) != NOERROR)
+		if (Universe.CreateStarSystem(*pNode, &pNewSystem, &sError) != NOERROR)
 			{
 			printf("ERROR: creating system %s: %s\n", (LPSTR)pNode->GetSystemName(), (LPSTR)sError);
 			continue;

@@ -8,15 +8,15 @@
 class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 	{
 	public:
-		enum EStatus
+		enum class Status
 			{
-			statusOpen,						//	Mission is open, ready for acceptance
-			statusClosed,					//	Mission started without player
-			statusAccepted,					//	Mission accepted by player
-			statusPlayerSuccess,			//	Player completed mission
-			statusPlayerFailure,			//	Player failed mission
-			statusSuccess,					//	Mission succeeded without player
-			statusFailure,					//	Mission failed without player
+			open,							//	Mission is open, ready for acceptance
+			closed,							//	Mission started without player
+			accepted,						//	Mission accepted by player
+			playerSuccess,					//	Player completed mission
+			playerFailure,					//	Player failed mission
+			success,						//	Mission succeeded without player
+			failure,						//	Mission failed without player
 			};
 
 		struct SCriteria
@@ -51,17 +51,17 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		const CMissionType &GetMissionType (void) const { return *m_pType; }
 		int GetPriority (void) const { return m_pType->GetPriority(); }
 		const CString &GetTitle (void) const { return m_sTitle; }
-		bool IsAccepted (void) const { return (m_iStatus == statusAccepted); }
-		bool IsActive (void) const { return (m_iStatus == statusAccepted || (!m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure))); }
+		bool IsAccepted (void) const { return (m_iStatus == Status::accepted); }
+		bool IsActive (void) const { return (m_iStatus == Status::accepted || (!m_fDebriefed && (m_iStatus == Status::playerSuccess || m_iStatus == Status::playerFailure))); }
 		bool IsClosed (void) const { return (!IsActive() && IsCompleted()); }
-		bool IsCompleted (void) const { return (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure || m_iStatus == statusSuccess || m_iStatus == statusFailure); }
-		bool IsCompletedNonPlayer (void) const { return (m_iStatus == statusSuccess || m_iStatus == statusFailure); }
-		bool IsFailure (void) const { return (m_iStatus == statusFailure || m_iStatus == statusPlayerFailure); }
-		bool IsOpen (void) const { return (m_iStatus == statusOpen); }
+		bool IsCompleted (void) const { return (m_iStatus == Status::playerSuccess || m_iStatus == Status::playerFailure || m_iStatus == Status::success || m_iStatus == Status::failure); }
+		bool IsCompletedNonPlayer (void) const { return (m_iStatus == Status::success || m_iStatus == Status::failure); }
+		bool IsFailure (void) const { return (m_iStatus == Status::failure || m_iStatus == Status::playerFailure); }
+		bool IsOpen (void) const { return (m_iStatus == Status::open); }
 		bool IsPlayerMission (void) const { return m_fAcceptedByPlayer; }
-		bool IsRecorded (void) const { return (m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure)); }
-		bool IsSuccess (void) const { return (m_iStatus == statusSuccess || m_iStatus == statusPlayerSuccess); }
-		bool IsUnavailable (void) const { return (m_iStatus == statusClosed || m_iStatus == statusSuccess || m_iStatus == statusFailure); }
+		bool IsRecorded (void) const { return (m_fDebriefed && (m_iStatus == Status::playerSuccess || m_iStatus == Status::playerFailure)); }
+		bool IsSuccess (void) const { return (m_iStatus == Status::success || m_iStatus == Status::playerSuccess); }
+		bool IsUnavailable (void) const { return (m_iStatus == Status::closed || m_iStatus == Status::success || m_iStatus == Status::failure); }
 		bool KeepsStats (void) const { return m_pType->KeepsStats(); }
 		bool MatchesCriteria (const CSpaceObject *pSource, const SCriteria &Criteria) const;
 		void OnPlayerEnteredSystem (CSpaceObject *pPlayer);
@@ -103,15 +103,15 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
-		enum ECompletedReasons
+		enum CompletedReason
 			{
-			completeSuccess,
-			completeFailure,
-			completeDestroyed,
+			success,
+			failure,
+			destroyed,
 			};
 
 		void CloseMission (void);
-		void CompleteMission (ECompletedReasons iReason);
+		void CompleteMission (CompletedReason iReason);
 		void FireOnAccepted (void);
 		ICCItem *FireOnDeclined (void);
 		ICCItem *FireOnReward (ICCItem *pData);
@@ -120,7 +120,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		void FireOnStop (const CString &sReason, ICCItem *pData);
 
 		CMissionType *m_pType = NULL;				//	Mission type
-		EStatus m_iStatus = statusOpen;				//	Current mission status
+		Status m_iStatus = Status::open;			//	Current mission status
 		int m_iMissionNumber = 0;					//	Ordinal number for mission of same type.
 		CGlobalSpaceObject m_pOwner;				//	Mission owner (may be NULL)
 		CGlobalSpaceObject m_pDebriefer;			//	Object at which player debriefs (may be NULL,
@@ -136,13 +136,14 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		CString m_sTitle;							//	Mission title
 		CString m_sInstructions;					//	Current instructions
 
-		DWORD m_fIntroShown:1;						//	TRUE if player has seen intro
-		DWORD m_fDeclined:1;						//	TRUE if player has declined at least once
-		DWORD m_fDebriefed:1;						//	TRUE if player has been debriefed
-		DWORD m_fInOnCreate:1;						//	TRUE if we're inside OnCreate
-		DWORD m_fInMissionSystem:1;					//	TRUE if player is in the proper mission system
-		DWORD m_fAcceptedByPlayer:1;				//	TRUE if this is a player mission
-		DWORD m_fInMissionCompleteCode:1;			//	TRUE if we're completing (avoids recursion)
+		DWORD m_fIntroShown:1 = false;				//	TRUE if player has seen intro
+		DWORD m_fDeclined:1 = false;				//	TRUE if player has declined at least once
+		DWORD m_fDebriefed:1 = false;				//	TRUE if player has been debriefed
+		DWORD m_fInOnCreate:1 = false;				//	TRUE if we're inside OnCreate
+		DWORD m_fInMissionSystem:1 = false;			//	TRUE if player is in the proper mission system
+		DWORD m_fAcceptedByPlayer:1 = false;		//	TRUE if this is a player mission
+		DWORD m_fInMissionCompleteCode:1 = false;	//	TRUE if we're completing (avoids recursion)
+
 		DWORD m_fSpare8:1;
 		DWORD m_dwSpare:24;
 

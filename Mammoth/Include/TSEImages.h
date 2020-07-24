@@ -440,7 +440,7 @@ class CCompositeImageModifiers
 
 		bool operator== (const CCompositeImageModifiers &Val) const;
 
-		void Apply (SGetImageCtx &Ctx, CObjectImageArray *retImage) const;
+		void Apply (const SGetImageCtx &Ctx, CObjectImageArray *retImage) const;
 		const CImageFilterStack *GetFilters (void) const { return m_pFilters; }
 		int GetRotation (void) const { return m_iRotation; }
 		bool IsEmpty (void) const { return (m_wFadeOpacity == 0 && !m_bStationDamage && m_pFilters == NULL && m_iRotateImage == 0); }
@@ -478,7 +478,7 @@ class CCompositeImageDesc
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { if (m_pRoot) m_pRoot->AddTypesUsed(retTypesUsed); }
 		int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers()) const { return (m_pRoot ? m_pRoot->GetActualRotation(Selector, Modifiers) : 0); }
-		CObjectImageArray &GetImage (SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers(), int *retiFrameIndex = NULL) const;
+		CObjectImageArray &GetImage (const SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers(), int *retiFrameIndex = NULL) const;
 		int GetMaxLifetime (void) const;
 		size_t GetMemoryUsage (void) const;
 		IImageEntry *GetRoot (void) const { return m_pRoot; }
@@ -496,7 +496,7 @@ class CCompositeImageDesc
 		bool IsEmpty (void) const { return (GetVariantCount() == 0); }
 		bool IsRotatable (void) const { return (m_pRoot ? m_pRoot->IsRotatable() : false); }
 		void MarkImage (void);
-		void MarkImage (SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers());
+		void MarkImage (const SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers());
 		bool NeedsShipwreckClass (void) const;
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void Reinit (void);

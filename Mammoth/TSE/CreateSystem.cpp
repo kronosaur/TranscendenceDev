@@ -45,6 +45,7 @@
 #define PRIMARY_TAG						CONSTLIT("Primary")
 #define RANDOM_LOCATION_TAG				CONSTLIT("RandomLocation")
 #define RANDOM_STATION_TAG				CONSTLIT("RandomStation")
+#define RANDOM_STATION_TABLE_TAG		CONSTLIT("RandomStationTable")
 #define SATELLITES_TAG					CONSTLIT("Satellites")
 #define SHIP_TAG						CONSTLIT("Ship")
 #define SHIPS_TAG						CONSTLIT("Ships")
@@ -276,6 +277,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 						CXMLElement *pObj, 
 						const COrbit &OrbitDesc);
 ALERROR CreateRandomStation (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
+ALERROR CreateRandomStationFromTable (SSystemCreateCtx &Ctx, const CXMLElement &Desc, const CXMLElement &TableXML, const COrbit &OrbitDesc);
 ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc);
 ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, const CXMLElement *pSatellites, const COrbit &OrbitDesc);
 ALERROR CreateShipsForStation (SSystemCreateCtx &Ctx, CSpaceObject *pStation, const CXMLElement *pShips);
@@ -292,7 +294,7 @@ void CreateSpaceEnvironmentTile (SSystemCreateCtx *pCtx,
 								 int iPatchFrequency);
 ALERROR CreateStargate (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
 ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx,
-								  CXMLElement *pDesc,
+								  const CXMLElement *pDesc,
 								  const COrbit &OrbitDesc,
 								  CStation **retpStation = NULL);
 ALERROR CreateSystemObject (SSystemCreateCtx *pCtx, 
@@ -532,7 +534,7 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 		Options.vPos = vPos;
 		Options.bIncludeAll = bIncludeAll;
 
-		if (!NewTable.Init(pCtx->System, Options, &pCtx->sError, &bAddToCache))
+		if (!NewTable.Init(pCtx->System, pCtx->StationEncounterOverrides, Options, &pCtx->sError, &bAddToCache))
 			return ERR_FAIL;
 
 		if (bAddToCache)
@@ -560,7 +562,7 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 		//	Make sure we can still encounter this type. [If we've already created
 		//	a system-unique object then it will still be in the cached tables.]
 
-		if (!Entry.pType->CanBeEncountered(&pCtx->System))
+		if (!Entry.pType->CanBeEncountered(pCtx->System, pCtx->StationEncounterOverrides.GetEncounterDesc(*Entry.pType)))
 			continue;
 
 		//	If we want to separate enemies, then see if there are any
@@ -2027,6 +2029,125 @@ ALERROR CreateRandomStation (SSystemCreateCtx *pCtx,
 	return NOERROR;
 	}
 
+ALERROR CreateRandomStationFromTable (SSystemCreateCtx &Ctx, const CXMLElement &Desc, const CXMLElement &TableXML, const COrbit &OrbitDesc)
+
+//	CreateRandomStationFromTable
+//
+//	Creates a random station given a table of station types.
+
+	{
+	struct SEntry
+		{
+		const CStationType *pStationType = NULL;
+		const CXMLElement *pStationXML = NULL;
+		};
+
+	int iMaxCount = Desc.GetAttributeIntegerBounded(MAX_COUNT_ATTRIB, 0, -1, -1);
+	bool bDebug = Desc.GetAttributeBool(DEBUG_ATTRIB);
+
+	PushDebugStack(&Ctx, strPatternSubst(CONSTLIT("RandomStation from table")));
+
+	SStationTypeTableStats *pTableStats = NULL;
+	if (iMaxCount != -1)
+		pTableStats = Ctx.RandomStationStats.SetAt(GetXMLObjID(Desc));
+
+	//	Calculate position of station
+
+	Metric rPosZ;
+	const CVector vPos = OrbitDesc.GetObjectPos(&rPosZ);
+
+	//	Generate a probability table. We don't cache it because we need to react
+	//	if the station cannot be encountered.
+
+	TProbabilityTable<SEntry> Table;
+	Table.GrowToFit(TableXML.GetContentElementCount());
+	for (int i = 0; i < TableXML.GetContentElementCount(); i++)
+		{
+		const CXMLElement &Entry = *TableXML.GetContentElement(i);
+
+		//	Parse the station type
+
+		const CStationType *pStationType = Ctx.GetUniverse().FindStationType((DWORD)Entry.GetAttributeInteger(TYPE_ATTRIB));
+		if (!pStationType)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unknown station type: %s"), Entry.GetAttribute(TYPE_ATTRIB));
+			return ERR_FAIL;
+			}
+
+		//	Make sure we can still encounter this type.
+
+		if (!pStationType->CanBeEncountered(Ctx.System, Ctx.StationEncounterOverrides.GetEncounterDesc(*pStationType)))
+			continue;
+
+		//	If we have limits, check them now.
+
+		if (pTableStats && iMaxCount != -1)
+			{
+			int *pExisting = pTableStats->Counts.GetAt(pStationType);
+			int iExisting = (pExisting ? *pExisting : 0);
+			if (iExisting >= iMaxCount)
+				continue;
+			}
+
+		//	Get the chance
+
+		int iChance = Entry.GetAttributeIntegerBounded(CHANCE_ATTRIB, 0, -1, 1);
+		if (iChance == 0)
+			continue;
+
+		//	Add it
+
+		Table.Insert({ pStationType, &Entry }, iChance);
+		}
+
+	if (bDebug)
+		{
+		DumpDebugStackTop(&Ctx);
+		if (Table.GetCount() == 0)
+			Ctx.GetUniverse().LogOutput(CONSTLIT("No entries in table."));
+
+		for (int i = 0; i < Table.GetCount(); i++)
+			{
+			Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("[%08x] %s\t%d"), Table[i].pStationType->GetUNID(), Table[i].pStationType->GetNounPhrase(), Table.GetChance(i)));
+			}
+		}
+
+	//	If no entries, then we don't need to do anything.
+
+	if (Table.IsEmpty())
+		{
+		PopDebugStack(&Ctx);
+		return NOERROR;
+		}
+
+	//	Roll
+
+	const SEntry &Entry = Table.GetAt(Table.RollPos());
+
+	//	Create the station at the location
+
+	if (ALERROR error = CreateStationFromElement(&Ctx, Entry.pStationXML, OrbitDesc))
+		return error;
+
+	//	Add to stats, if necessary
+
+	if (pTableStats)
+		{
+		bool bNew;
+		int *pExisting = pTableStats->Counts.SetAt(Entry.pStationType, &bNew);
+		if (bNew)
+			*pExisting = 1;
+		else
+			(*pExisting) += 1;
+		}
+
+	if (bDebug)
+		Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Chose: [%08x] %s"), Entry.pStationType->GetUNID(), Entry.pStationType->GetNounPhrase()));
+
+	PopDebugStack(&Ctx);
+	return NOERROR;
+	}
+
 ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc)
 
 //	CreateRandomStationAtAppropriateLocation
@@ -2083,13 +2204,15 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 		if (bSeparateEnemies)
 			pSovereign = pType->GetSovereign();
 
+		const CStationEncounterDesc &EncounterDesc = pCtx->StationEncounterOverrides.GetEncounterDesc(*pType);
+
 		//	Now look for the most appropriate location to place the station
 
 		COrbit OrbitDesc;
 		CString sLocationAttribs;
 		int iLocation;
 		if (error = ChooseRandomLocation(pCtx, 
-				SLocationCriteria(pType->GetLocationCriteria()), 
+				SLocationCriteria(EncounterDesc.GetLocationCriteria()), 
 				COrbit(),
 				(bSeparateEnemies ? pType : NULL),
 				&OrbitDesc, 
@@ -2750,6 +2873,12 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		PushDebugStack(pCtx, TABLE_TAG);
 
 		IElementGenerator::SCtx GenCtx;
+		GenCtx.bDebug = pObj->GetAttributeBool(DEBUG_ATTRIB);
+
+		if (GenCtx.bDebug)
+			{
+			DumpDebugStackTop(pCtx);
+			}
 
 		//	If we have a maxCount= attribute at the <Table> level, then we track
 		//	usage. We require this at the root level (even though we also support
@@ -2897,6 +3026,13 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		CSmartZAdjust ZAdj(*pCtx, OrbitDesc);
 
 		if (error = CreateRandomStation(pCtx, pObj, ZAdj.GetOrbit()))
+			return error;
+		}
+	else if (strEquals(sTag, RANDOM_STATION_TABLE_TAG))
+		{
+		CSmartZAdjust ZAdj(*pCtx, OrbitDesc);
+
+		if (error = CreateRandomStationFromTable(*pCtx, *pObj, *pObj, ZAdj.GetOrbit()))
 			return error;
 		}
 	else if (strEquals(sTag, SIBLINGS_TAG))
@@ -3409,8 +3545,11 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPla
 	Metric rExclusionDist2;
 	if (pStationToPlace)
 		{
+		const CStationEncounterDesc &EncounterDesc = pCtx->StationEncounterOverrides.GetEncounterDesc(*pStationToPlace);
+
 		CStationEncounterDesc::SExclusionDesc Exclusion;
-		pStationToPlace->GetExclusionDesc(Exclusion);
+		EncounterDesc.GetExclusionDesc(Exclusion);
+
 		rExclusionDist2 = Max(DEFAULT_EXCLUSION2, Max(Exclusion.rAllExclusionRadius2, Exclusion.rEnemyExclusionRadius2));
 		}
 	else
@@ -3800,8 +3939,8 @@ ALERROR CSystem::CreateEmpty (CUniverse &Universe, CTopologyNode *pTopology, CSy
 	}
 
 ALERROR CSystem::CreateFromXML (CUniverse &Universe, 
-								CSystemType *pType, 
-								CTopologyNode *pTopology, 
+								CSystemType &Type, 
+								CTopologyNode &Node, 
 								CSystem **retpSystem,
 								CString *retsError,
 								CSystemCreateStats *pStats)
@@ -3812,7 +3951,6 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	{
 	ALERROR error;
-	int i, j;
 	bool bVerbose = Universe.GetDebugOptions().IsVerboseCreate();
 
 #ifdef DEBUG_STATION_PLACEMENT
@@ -3825,8 +3963,10 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	START_STRESS_TEST;
 
+	//	Create an empty system
+
 	CSystem *pSystem;
-	if (error = CreateEmpty(Universe, pTopology, &pSystem))
+	if (error = CreateEmpty(Universe, &Node, &pSystem))
 		{
 		if (retsError)
 			*retsError = CONSTLIT("Unable to create empty system");
@@ -3839,14 +3979,14 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	//	Load some data
 
-	pSystem->m_pType = pType;
-	pSystem->m_fNoRandomEncounters = !pType->HasRandomEncounters();
+	pSystem->m_pType = &Type;
+	pSystem->m_fNoRandomEncounters = !Type.HasRandomEncounters();
 	pSystem->m_fUseDefaultTerritories = true;
 
 	//	Set scales
 
-	pSystem->m_rKlicksPerPixel = pType->GetSpaceScale();
-	pSystem->m_rTimeScale = pType->GetTimeScale();
+	pSystem->m_rKlicksPerPixel = Type.GetSpaceScale();
+	pSystem->m_rTimeScale = Type.GetTimeScale();
 
 	//	Store the current system. We need this so that any OnCreate code can
 	//	get the right system.
@@ -3858,14 +3998,22 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 	SSystemCreateCtx Ctx(*pSystem);
 	Ctx.pStats = pStats;
 
+	//	Load any overrides
+
+	if (const CXMLElement *pOverridesXML = Type.GetEncounterOverridesXML())
+		{
+		if (!Ctx.StationEncounterOverrides.InitFromXML(Universe.GetDesignCollection(), *pOverridesXML, retsError))
+			return ERR_FAIL;
+		}
+
 	//	Start the debug stack
 
-	PushDebugStack(&Ctx, strPatternSubst(CONSTLIT("SystemType nodeID=%s unid=%x"), pTopology->GetID(), pType->GetUNID()));
+	PushDebugStack(&Ctx, strPatternSubst(CONSTLIT("SystemType nodeID=%s unid=%x"), Node.GetID(), Type.GetUNID()));
 
 	//	Create objects defined by <SystemGroup>.
 	//	NOTE: This is optional, since we can create a system procedurally in <OnCreate>
 
-	CXMLElement *pPrimary = pType->GetDesc();
+	CXMLElement *pPrimary = Type.GetDesc();
 	if (pPrimary)
 		{
 		try
@@ -3894,7 +4042,7 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	//	Invoke OnCreate event
 
-	if (error = pType->FireOnCreate(Ctx, &Ctx.sError))
+	if (error = Type.FireOnCreate(Ctx, &Ctx.sError))
 		Universe.LogOutput(Ctx.sError);
 
 	//	Now invoke OnGlobalSystemCreated
@@ -3902,77 +4050,78 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 	Universe.FireOnGlobalSystemCreated(Ctx);
 
 	//	Make sure this system has all the required objects that we want
+	//
+	//	NOTE: We do this AFTER the above events to give them a chance to create
+	//	required objects.
 
-	if (pTopology)
+	for (int i = 0; i < Universe.GetStationTypeCount(); i++)
 		{
-		for (i = 0; i < Universe.GetStationTypeCount(); i++)
+		CStationType *pType = Universe.GetStationType(i);
+		const CStationEncounterDesc &EncounterDesc = Ctx.StationEncounterOverrides.GetEncounterDesc(*pType);
+
+		//	Figure out how many objects we still need to create. If none,
+		//	then we continue.
+
+		int iToCreate = pType->GetEncounterRequired(Node, EncounterDesc);
+		if (iToCreate == 0)
+			continue;
+
+		//	Debug
+
+		if (bVerbose)
+			Universe.LogOutput(strPatternSubst(CONSTLIT("[%08x] %s: Creating %d required objects."), pType->GetUNID(), pType->GetNounPhrase(), iToCreate));
+
+		//	Create each of the required objects.
+
+		for (int j = 0; j < iToCreate; j++)
 			{
-			CStationType *pType = Universe.GetStationType(i);
+			//	Look for an appropriate location to create the station at.
 
-			//	Figure out how many objects we still need to create. If none,
-			//	then we continue.
-
-			int iToCreate = pType->GetEncounterRequired(pTopology);
-			if (iToCreate == 0)
-				continue;
-
-			//	Debug
-
-			if (bVerbose)
-				Universe.LogOutput(strPatternSubst(CONSTLIT("[%08x] %s: Creating %d required objects."), pType->GetUNID(), pType->GetNounPhrase(), iToCreate));
-
-			//	Create each of the required objects.
-
-			for (j = 0; j < iToCreate; j++)
+			COrbit OrbitDesc;
+			CString sLocationAttribs;
+			int iLocation;
+			if (error = ChooseRandomLocation(&Ctx, 
+					SLocationCriteria(EncounterDesc.GetLocationCriteria()), 
+					COrbit(),
+					pType,
+					&OrbitDesc, 
+					&sLocationAttribs,
+					&iLocation))
 				{
-				//	Look for an appropriate location to create the station at.
+				//	If we couldn't find an appropriate location then we try 
+				//	picking a random location in the system that is away from
+				//	other stations.
 
-				COrbit OrbitDesc;
-				CString sLocationAttribs;
-				int iLocation;
-				if (error = ChooseRandomLocation(&Ctx, 
-						SLocationCriteria(pType->GetLocationCriteria()), 
-						COrbit(),
-						pType,
-						&OrbitDesc, 
-						&sLocationAttribs,
-						&iLocation))
+				if (error == ERR_NOTFOUND)
 					{
-					//	If we couldn't find an appropriate location then we try 
-					//	picking a random location in the system that is away from
-					//	other stations.
-
-					if (error == ERR_NOTFOUND)
-						{
-						GenerateRandomPosition(&Ctx, pType, &OrbitDesc);
-						iLocation = -1;
-						}
-					else
-						return error;
+					GenerateRandomPosition(&Ctx, pType, &OrbitDesc);
+					iLocation = -1;
 					}
-
-				//	Remember saved last obj
-
-				DWORD dwSavedLastObjID = Ctx.dwLastObjID;
-				Ctx.dwLastObjID = 0;
-
-				//	Create the station at the location
-
-				SObjCreateCtx CreateCtx(Ctx);
-				CreateCtx.vPos = OrbitDesc.GetObjectPos();
-				CreateCtx.pLoc = (iLocation != -1 ? &Ctx.System.GetLocation(iLocation) : NULL);
-				CreateCtx.pOrbit = &OrbitDesc;
-				CreateCtx.bCreateSatellites = true;
-
-				if (error = pSystem->CreateStation(&Ctx, pType, CreateCtx))
+				else
 					return error;
-
-				//	Remember that we filled this location
-
-				if (iLocation != -1)
-					pSystem->SetLocationObjID(iLocation, Ctx.dwLastObjID);
-				Ctx.dwLastObjID = dwSavedLastObjID;
 				}
+
+			//	Remember saved last obj
+
+			DWORD dwSavedLastObjID = Ctx.dwLastObjID;
+			Ctx.dwLastObjID = 0;
+
+			//	Create the station at the location
+
+			SObjCreateCtx CreateCtx(Ctx);
+			CreateCtx.vPos = OrbitDesc.GetObjectPos();
+			CreateCtx.pLoc = (iLocation != -1 ? &Ctx.System.GetLocation(iLocation) : NULL);
+			CreateCtx.pOrbit = &OrbitDesc;
+			CreateCtx.bCreateSatellites = true;
+
+			if (error = pSystem->CreateStation(&Ctx, pType, CreateCtx))
+				return error;
+
+			//	Remember that we filled this location
+
+			if (iLocation != -1)
+				pSystem->SetLocationObjID(iLocation, Ctx.dwLastObjID);
+			Ctx.dwLastObjID = dwSavedLastObjID;
 			}
 		}
 
@@ -3994,7 +4143,7 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 	//	Call each object and tell it that the system has been
 	//	created.
 
-	for (i = 0; i < pSystem->m_DeferredOnCreate.GetCount(); i++)
+	for (int i = 0; i < pSystem->m_DeferredOnCreate.GetCount(); i++)
 		{
 		const SDeferredOnCreateCtx &Defer = pSystem->m_DeferredOnCreate[i];
 
@@ -4021,11 +4170,11 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	//	Make sure this system has all the stargates that it needs
 
-	for (i = 0; i < pTopology->GetStargateCount(); i++)
-		if (pSystem->GetNamedObject(pTopology->GetStargate(i)) == NULL)
+	for (int i = 0; i < Node.GetStargateCount(); i++)
+		if (pSystem->GetNamedObject(Node.GetStargate(i)) == NULL)
 			{
 			//	Log, but for backwards compatibility with <1.1 extensions continue running.
-			Universe.LogOutput(strPatternSubst(CONSTLIT("Warning: Unable to find required stargate: %s"), pTopology->GetStargate(i)));
+			Universe.LogOutput(strPatternSubst(CONSTLIT("Warning: Unable to find required stargate: %s"), Node.GetStargate(i)));
 			DumpDebugStack(&Ctx);
 			}
 
@@ -4061,12 +4210,14 @@ void CSystem::ValidateExclusionRadius (void) const
 				|| !pObj->CanAttack())
 			continue;
 
-		CStationType *pEncounter = pObj->GetEncounterInfo();
+		const CStationType *pEncounter = pObj->GetEncounterInfo();
 		if (pEncounter == NULL)
 			continue;
 
+		const CStationEncounterDesc &EncounterDesc = pEncounter->GetEncounterDesc();
 		CStationEncounterDesc::SExclusionDesc Exclusion;
-		pEncounter->GetExclusionDesc(Exclusion);
+		EncounterDesc.GetExclusionDesc(Exclusion);
+
 		if (!Exclusion.bHasEnemyExclusion)
 			continue;
 
@@ -4300,7 +4451,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 
 		//	This type has now been encountered
 
-		pType->SetEncountered(this);
+		pType->SetEncountered(*this);
 		}
 
 	//	If this is a ship encounter, then just create the ship
@@ -4370,7 +4521,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 
 		//	This type has now been encountered
 
-		pType->SetEncountered(this);
+		pType->SetEncountered(*this);
 
 		//	Register so we call OnCreate at the appropriate time.
 
@@ -4569,7 +4720,7 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 	return NOERROR;
 	}
 
-ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc, CStation **retpStation)
+ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDesc, const COrbit &OrbitDesc, CStation **retpStation)
 
 //	CreateStation
 //
@@ -4590,10 +4741,32 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 
 	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Station unid=%x"), pStationType->GetUNID()));
 
+	bool bDebug = pDesc->GetAttributeBool(DEBUG_ATTRIB);
+	bool bOptional = pDesc->GetAttributeBool(OPTIONAL_ATTRIB);
+
 	//	Get offsets
 
 	int x = pDesc->GetAttributeInteger(X_OFFSET_ATTRIB);
 	int y = pDesc->GetAttributeInteger(Y_OFFSET_ATTRIB);
+
+	if (bDebug)
+		DumpDebugStackTop(pCtx);
+
+	//	If this station is optional and if we've already exceeded limits, then 
+	//	we're done (no error because that's what optional means).
+
+	if (bOptional 
+			&& !pStationType->CanBeEncountered(pCtx->System, pCtx->StationEncounterOverrides.GetEncounterDesc(*pStationType)))
+		{
+		if (bDebug)
+			pCtx->GetUniverse().LogOutput(CONSTLIT("Station cannot be encountered"));
+
+		PopDebugStack(pCtx);
+
+		if (retpStation)
+			*retpStation = NULL;
+		return NOERROR;
+		}
 
 	//	Compute position of station
 
@@ -4613,6 +4786,12 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	CreateCtx.sID = pDesc->GetAttribute(ID_ATTRIB);
 	CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
+	//	Since this is an explicit creation of a station, ignore limits
+
+	CreateCtx.bIgnoreLimits = true;
+
+	//	Rotation and parallax
+
 	CString sAngle;
 	if (pDesc->FindAttribute(ROTATION_ATTRIB, &sAngle))
 		CreateCtx.iRotation = CAngleGenerator::GenerateSingle(*pCtx, OrbitDesc, sAngle);
@@ -4625,10 +4804,6 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	else
 		CreateCtx.rParallax = COrbit::ZToParallax(rPosZ);
 
-	//	Since this is an explicit creation of a station, ignore limits
-
-	CreateCtx.bIgnoreLimits = !pDesc->GetAttribute(OPTIONAL_ATTRIB);
-
 	//	Sovereign override
 
 	DWORD dwSovereign;
@@ -4640,6 +4815,11 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	DWORD dwEventHandler;
 	if (pDesc->FindAttributeInteger(EVENT_HANDLER_ATTRIB, (int *)&dwEventHandler))
 		CreateCtx.pEventHandler = pCtx->GetUniverse().FindDesignType(dwEventHandler);
+
+	//	Debug
+
+	if (bDebug)
+		pCtx->GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Creating: %s"), pStationType->GetNounPhrase()));
 
 	//	Create the station
 

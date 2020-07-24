@@ -121,6 +121,7 @@ void CInstalledDevice::FinishInstall (void)
 	DEBUG_TRY
 
 	ASSERT(m_pSource);
+	CItemCtx ItemCtx(m_pSource, this);
 
 	m_pItem->FireOnInstall(m_pSource);
 	m_pItem->FireOnEnabled(m_pSource);
@@ -132,7 +133,7 @@ void CInstalledDevice::FinishInstall (void)
 	//	If necessary create an overlay for this device
 
 	COverlayType *pOverlayType;
-	pOverlayType = m_pClass->FireGetOverlayType(CItemCtx(m_pSource, this));
+	pOverlayType = m_pClass->FireGetOverlayType(ItemCtx);
 
 	//	Add it
 
@@ -391,6 +392,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	DEBUG_TRY
 
 	const CItem &Item = ItemList.GetItemAtCursor();
+	CItemCtx ItemCtx(m_pSource, this);
 
 	m_pSource = &Source;
 	m_pClass.Set(Item.GetType()->GetDeviceClass());
@@ -429,7 +431,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	Default to basic fire delay. Callers must set the appropriate delay
 	//	based on enhancements later.
 
-	m_iActivateDelay = m_pClass->GetActivateDelay(CItemCtx(m_pSource, this));
+	m_iActivateDelay = m_pClass->GetActivateDelay(ItemCtx);
 
 	//	If we're installing a device after creation then we
 	//	zero-out the device position, etc. If necessary the
@@ -751,7 +753,10 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	//	In newer versions we store an activation delay instead of an adjustment
 
 	if (Ctx.dwVersion < 93)
-		m_iActivateDelay = m_iActivateDelay * m_pClass->GetActivateDelay(CItemCtx(&Source, this)) / 100;
+		{
+		CItemCtx ItemCtx(&Source, this);
+		m_iActivateDelay = m_iActivateDelay * m_pClass->GetActivateDelay(ItemCtx) / 100;
+		}
 
 	//	We no longer store mods in the device structure
 

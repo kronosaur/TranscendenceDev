@@ -353,7 +353,7 @@ class CUniverse
 		ALERROR CreateRandomMission (const TArray<CMissionType *> &Types, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError);
 		IShipController *CreateShipController (const CString &sAI);
 		ALERROR CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
-		ALERROR CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
+		ALERROR CreateStarSystem (CTopologyNode &Node, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		void DestroySystem (CSystem *pSystem);
 		bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const { return m_pHost->FindFont(sFont, retpFont); }
 		CMission *FindMission (DWORD dwID) const { return m_AllMissions.GetMissionByID(dwID); }
@@ -444,7 +444,7 @@ class CUniverse
 		ALERROR SaveToStream (IWriteStream *pStream);
 		void SetCurrentSystem (CSystem *pSystem);
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
-		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL) { return m_DebugOptions.SetProperty(sProperty, pValue, retsError); }
+		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetDifficultyLevel (CDifficultyOptions::ELevels iLevel) { m_Difficulty.SetLevel(iLevel); }
 		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
@@ -554,7 +554,7 @@ class CUniverse
 		bool Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode = updateNormal);
 		void UpdateExtended (void);
 
-		void DebugOutput (char *pszLine, ...);
+		void DebugOutput (const char *pszLine, ...);
 
 	private:
 		struct SLevelEncounter

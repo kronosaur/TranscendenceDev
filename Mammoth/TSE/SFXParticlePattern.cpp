@@ -22,7 +22,7 @@ const int POINT_COUNT =							100;
 const int FADE_LIFETIME =						10;
 const int DEFAULT_LINE_LENGTH =					25;
 
-static LPSTR STYLE_TABLE[] =
+static LPCSTR STYLE_TABLE[] =
 	{
 	//	Must be same order as EStyles
 		"",

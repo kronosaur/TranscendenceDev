@@ -59,7 +59,7 @@ void GenerateEntitiesTable (const CString &sDataFile, CXMLElement *pCmdLine)
 
 	//	Look for entity references
 
-	CSymbolTable Output(TRUE, TRUE);
+	TSortMap<CString, CString> Output;
 	while (NextEntityReference(&pPos, pEnd, &sName))
 		{
 		//	Look for this entity
@@ -87,7 +87,7 @@ void GenerateEntitiesTable (const CString &sDataFile, CXMLElement *pCmdLine)
 
 			//	Output to the table (in UNID order)
 
-			Output.AddEntry(CString(szBuffer), new CString(sOutput));
+			Output.SetAt(CString(szBuffer), sOutput);
 			}
 		}
 
@@ -97,8 +97,8 @@ void GenerateEntitiesTable (const CString &sDataFile, CXMLElement *pCmdLine)
 
 	for (i = 0; i < Output.GetCount(); i++)
 		{
-		CString *pLine = (CString *)Output.GetValue(i);
-		printf(pLine->GetASCIIZPointer());
+		CString sLine = Output[i];
+		printf(sLine.GetASCIIZPointer());
 		}
 	}
 

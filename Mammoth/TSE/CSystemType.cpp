@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 
+#define ENCOUNTER_OVERRIDES_TAG					CONSTLIT("EncounterOverrides")
 #define ENHANCE_ABILITIES_TAG					CONSTLIT("EnhancementAbilities")
 #define IMAGE_FILTERS_TAG						CONSTLIT("ImageFilters")
 #define SYSTEM_GROUP_TAG						CONSTLIT("SystemGroup")
@@ -27,7 +28,7 @@
 
 #define STR_NONE								CONSTLIT("none")
 
-static char *CACHED_EVENTS[CSystemType::evtCount] =
+static const char *CACHED_EVENTS[CSystemType::evtCount] =
 	{
 		"OnObjJumpPosAdj",
 	};
@@ -248,6 +249,10 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList, NULL))
 			return ComposeLoadError(Ctx, Ctx.sError);
 		}
+
+	//	Encounter overrides
+
+	m_pEncounterOverrides = pDesc->GetContentElementByTag(ENCOUNTER_OVERRIDES_TAG);
 
 	return NOERROR;
 	}

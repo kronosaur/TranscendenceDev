@@ -84,7 +84,7 @@ class CArmorLimits
 		int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const;
 		bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const;
 		bool CalcArmorSpeedBonus (const CString &sArmorClassID, int iSegmentCount, int *retiBonus = NULL) const;
-		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
+		ICCItemPtr CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
 		void CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Summary) const;
 		EResults CanInstallArmor (const CItem &Item) const;
 		const CString &GetMaxArmorClass (void) const { return m_sMaxArmorClass; }
@@ -112,6 +112,7 @@ class CArmorLimits
 		struct SArmorLimits
 			{
 			CString sClass;
+			int iMass = 0;						//	Limit mass, kg (if sClass is blank)
 			TUniquePtr<CItemCriteria> pCriteria;
 
 			int iSpeedAdj = 0;					//	Change to speed for this armor class
@@ -510,7 +511,7 @@ class CShipClass : public CDesignType
 		virtual void OnClearMark (void) override { m_WreckDesc.ClearMarks(); }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
-        virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const override;
+        virtual CString OnGetMapDescriptionMain (const SMapDescriptionCtx &Ctx) const override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
 		virtual void OnInitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const override;
@@ -547,7 +548,7 @@ class CShipClass : public CDesignType
 		CurrencyValue CalcHullValue (const CShipStandard &Standard, Metric *retrPoints = NULL) const;
 		int CalcLevel (void) const;
 		Metric CalcManeuverValue (bool bDodge = false) const;
-		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const;
+		ICCItemPtr CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const;
         void CalcPerformance (void);
 		int ComputeDeviceLevel (const SDeviceDesc &Device) const;
 		void ComputeMovementStats (int *retiSpeed, int *retiThrust, int *retiManeuver);

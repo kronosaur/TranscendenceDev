@@ -105,7 +105,7 @@ bool CRunDiagnostics::Start (ILog *pProgress, CString *retsError)
 
 		CSystem *pNewSystem;
 		CString sError;
-		if (ALERROR error = m_Universe.CreateStarSystem(pNode, &pNewSystem, &sError))
+		if (ALERROR error = m_Universe.CreateStarSystem(*pNode, &pNewSystem, &sError))
 			{
 			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to create system %s: %s"), pNode->GetID(), sError);
 			return false;

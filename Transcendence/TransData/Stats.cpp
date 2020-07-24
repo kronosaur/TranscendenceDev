@@ -121,13 +121,14 @@ void GenerateStationFrequencyTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		for (i = 0; i < Universe.GetStationTypeCount(); i++)
 			{
-			CStationType *pType = Universe.GetStationType(i);
+			const CStationType *pType = Universe.GetStationType(i);
+			const CStationEncounterDesc &EncounterDesc = pType->GetEncounterDesc();
 
-			if (pType->GetFrequencyByLevel(iLevel) > 0)
+			if (pType->GetFrequencyByLevel(iLevel, EncounterDesc) > 0)
 				{
 				char szBuffer[256];
 				wsprintf(szBuffer, "%02d %s", 
-						ftCommon - pType->GetFrequencyByLevel(iLevel),
+						ftCommon - pType->GetFrequencyByLevel(iLevel, EncounterDesc),
 						pType->GetNounPhrase().GetASCIIZPointer());
 						
 				Sort.AddEntry(CString(szBuffer), (CObject *)pType);
@@ -140,7 +141,8 @@ void GenerateStationFrequencyTable (CUniverse &Universe, CXMLElement *pCmdLine)
 			{
 			for (i = 0; i < Sort.GetCount(); i++)
 				{
-				CStationType *pType = (CStationType *)Sort.GetValue(i);
+				const CStationType *pType = (CStationType *)Sort.GetValue(i);
+				const CStationEncounterDesc &EncounterDesc = pType->GetEncounterDesc();
 
 				for (j = 0; j < Cols.GetCount(); j++)
 					{
@@ -150,7 +152,7 @@ void GenerateStationFrequencyTable (CUniverse &Universe, CXMLElement *pCmdLine)
 					if (strEquals(Cols[j], CONSTLIT("Level")))
 						printf("%d", iLevel);
 					else if (strEquals(Cols[j], CONSTLIT("Freq")))
-						printf((LPSTR)FrequencyChar(pType->GetFrequencyByLevel(iLevel)));
+						printf((LPSTR)FrequencyChar(pType->GetFrequencyByLevel(iLevel, EncounterDesc)));
 					else if (strEquals(Cols[j], CONSTLIT("Name")))
 						printf((LPSTR)pType->GetNounPhrase());
 					else if (strEquals(Cols[j], CONSTLIT("Type")))
@@ -566,7 +568,7 @@ void GenerateTypeIslands (CUniverse &Universe, CXMLElement *pCmdLine)
 		}
 	}
 
-char *FrequencyChar (int iFreq)
+const char *FrequencyChar (int iFreq)
 	{
 	if (iFreq >= ftCommon)
 		return "c";

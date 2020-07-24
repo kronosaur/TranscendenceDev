@@ -86,7 +86,7 @@ void GenerateSystemCount (CUniverse &Universe, CXMLElement *pCmdLine)
 			if (bCreateSystem)
 				{
 				CString sError;
-				if (Universe.CreateStarSystem(pNode, &pSystem, &sError) != NOERROR)
+				if (Universe.CreateStarSystem(*pNode, &pSystem, &sError) != NOERROR)
 					{
 					printf("ERROR: %s\n", sError.GetASCIIZPointer());
 					return;

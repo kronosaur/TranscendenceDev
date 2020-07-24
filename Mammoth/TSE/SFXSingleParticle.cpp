@@ -44,7 +44,7 @@ class CSingleParticlePainter : public IEffectPainter
 		CG32bitPixel m_rgbSecondaryColor;
 	};
 
-static LPSTR STYLE_TABLE[] =
+static LPCSTR STYLE_TABLE[] =
 	{
 	//	Must be same order as ParticlePaintStyles
 		"",

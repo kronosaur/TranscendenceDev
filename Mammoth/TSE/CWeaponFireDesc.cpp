@@ -117,7 +117,7 @@
 const CWeaponFireDesc CWeaponFireDesc::m_Null;
 CWeaponFireDesc::SOldEffects CWeaponFireDesc::m_NullOldEffects;
 
-static char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
+static const char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
 	{
 		"OnCreateShot",
 		"OnDamageAbandoned",
@@ -976,7 +976,8 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 
 			//	Get the weapon fire desc of the ordinal
 
-			CWeaponFireDesc *pDesc = pClass->GetWeaponFireDesc(CItemCtx(), Ammo);
+			CItemCtx ItemCtx;
+			CWeaponFireDesc *pDesc = pClass->GetWeaponFireDesc(ItemCtx, Ammo);
 			if (pDesc == NULL)
 				return NULL;
 
@@ -2546,7 +2547,8 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	//	Power scales proportionally
 
 	rAdj = (Metric)Scaled.iPower / Base.iPower;
-	int iBasePowerUse = pWeapon->GetPowerRating(CItemCtx());
+	CItemCtx ItemCtx;
+	int iBasePowerUse = pWeapon->GetPowerRating(ItemCtx);
 	m_iPowerUse = mathRound(iBasePowerUse * rAdj);
 	m_iIdlePowerUse = mathRound(pWeapon->GetIdlePowerUse() * rAdj);
 

@@ -37,7 +37,7 @@
 
 #define STR_NO_UNID								CONSTLIT("(no UNID)")
 
-static char *CACHED_EVENTS[CEffectCreator::evtCount] =
+static const char *CACHED_EVENTS[CEffectCreator::evtCount] =
 	{
 		"GetParameters",
 	};
@@ -454,7 +454,8 @@ IEffectPainter *CEffectCreator::CreatePainterFromStream (SLoadCtx &Ctx, bool bNu
 	Ctx.iLoadState = loadStateEffect;
 	Ctx.sEffectUNID = pCreator->GetUNIDString();
 
-	IEffectPainter *pPainter = pCreator->CreatePainter(CCreatePainterCtx());
+	CCreatePainterCtx CreateCtx;
+	IEffectPainter *pPainter = pCreator->CreatePainter(CreateCtx);
 
 	//	Load it
 
@@ -492,7 +493,8 @@ IEffectPainter *CEffectCreator::CreatePainterFromStreamAndCreator (SLoadCtx &Ctx
 	if (pCreator == NULL)
 		return NULL;
 
-	IEffectPainter *pPainter = pCreator->CreatePainter(CCreatePainterCtx());
+	CCreatePainterCtx CreateCtx;
+	IEffectPainter *pPainter = pCreator->CreatePainter(CreateCtx);
 	pPainter->ReadFromStream(Ctx);
 
 	//	Done
@@ -1125,7 +1127,9 @@ void IEffectPainter::SetParamInteger (const CString &sParam, int iValue)
 	{
 	CEffectParamDesc Value;
 	Value.InitInteger(iValue);
-	SetParam(CCreatePainterCtx(), sParam, Value);
+
+	CCreatePainterCtx CreateCtx;
+	SetParam(CreateCtx, sParam, Value);
 	}
 
 ALERROR IEffectPainter::ValidateClass (SLoadCtx &Ctx, const CString &sOriginalClass)
@@ -1163,7 +1167,8 @@ ALERROR IEffectPainter::ValidateClass (SLoadCtx &Ctx, const CString &sOriginalCl
 
 				//	Load the original painter
 
-				IEffectPainter *pOriginalPainter = pOriginalCreator->CreatePainter(CCreatePainterCtx());
+				CCreatePainterCtx CreateCtx;
+				IEffectPainter *pOriginalPainter = pOriginalCreator->CreatePainter(CreateCtx);
 				pOriginalPainter->ReadFromStream(Ctx);
 
 				//	Discard

@@ -74,7 +74,8 @@ class CCodeChainCtx
 		CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
 		SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
 		CUniverse &GetUniverse (void) const { return m_Universe; }
-		ICCItemPtr LinkCode (const CString &sString, CCodeChain::SLinkOptions &Options = CCodeChain::SLinkOptions());
+		ICCItemPtr LinkCode (const CString &sString) { return CCodeChain::LinkCode(sString); }
+		ICCItemPtr LinkCode (const CString &sString, CCodeChain::SLinkOptions &Options) { return CCodeChain::LinkCode(sString, Options); }
 		void RestoreVars (void);
 		ICCItem *Run (ICCItem *pCode);
 		ICCItem *Run (const SEventHandlerDesc &Event);

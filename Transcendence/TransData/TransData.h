@@ -115,7 +115,7 @@ typedef TSortMap<DWORD, SDesignTypeInfo> CDesignTypeStats;
 
 //	Functions
 
-char *FrequencyChar (int iFreq);
+const char *FrequencyChar (int iFreq);
 void GetCCTransDataLibrary (SPrimitiveDefTable *retpTable);
 void ShowHelp (CXMLElement *pCmdLine);
 void MarkItemsKnown (CUniverse &Universe);
@@ -123,6 +123,7 @@ bool OutputImage (CG32bitImage &Image, const CString &sFilespec);
 ALERROR LoadDesignTypeStats (DWORD dwAventureUNID, CDesignTypeStats *retStats);
 
 void Decompile (const CString &sDataFile, CXMLElement *pCmdLine);
+void DebugMarkers (CXMLElement *pCmdLine);
 void DoEffectPerformanceTest (CUniverse &Universe, CXMLElement *pCmdLine);
 void DoRandomNumberTest (void);
 void DoSmokeTest (CUniverse &Universe, CXMLElement *pCmdLine);

@@ -617,7 +617,8 @@ CurrencyValue CSingleItem::CalcItemValue (CItemType *pType)
 //	Computes the value (to the player) of this item.
 
 	{
-	CurrencyValue ItemValue = CEconomyType::ExchangeToCredits(pType->GetCurrencyType(), pType->GetValue(CItemCtx(), true));
+	CItemCtx ItemCtx;
+	CurrencyValue ItemValue = CEconomyType::ExchangeToCredits(pType->GetCurrencyType(), pType->GetValue(ItemCtx, true));
 
 	if (pType->HasAttribute(ATTRIB_NOT_FOR_SALE))
 		ItemValue = Max((CurrencyValue)1, (CurrencyValue)(ItemValue * NOT_FOR_SALE_DISCOUNT));

@@ -7,17 +7,14 @@
 
 struct SCrewMetrics
 	{
-	enum EConstants
-		{
-		MIN_LEVEL =						  0,	//	Min
-		LOW_LEVEL =						 50,	//	Low
-		NEUTRAL_LOW_LEVEL =				 85,
-		NEUTRAL_LEVEL =					100,	//	Normal
-		NEUTRAL_HIGH_LEVEL =			115,
-		HIGH_LEVEL =					150,	//	High
-		PEAK_LEVEL =					180,	//	Peak
-		MAX_LEVEL =						200,	//	Max
-		};
+	static constexpr int MIN_LEVEL =			0;		//	Min
+	static constexpr int LOW_LEVEL =			50;		//	Low
+	static constexpr int NEUTRAL_LOW_LEVEL =	85;
+	static constexpr int NEUTRAL_LEVEL =		100;	//	Normal
+	static constexpr int NEUTRAL_HIGH_LEVEL =	115;
+	static constexpr int HIGH_LEVEL =			150;	//	High
+	static constexpr int PEAK_LEVEL =			180;	//	Peak
+	static constexpr int MAX_LEVEL =			200;	//	Max
 
 	SCrewMetrics (void) :
 			iCrewCount(0),
@@ -389,13 +386,13 @@ class IShipController
 	private:
 		struct SOrderTypeData
 			{
-			char *szName;
-			char *szTarget;
+			const char *szName;
+			const char *szTarget;
 			//	-		no target
 			//	*		optional target
 			//	o		required target
 
-			char *szData;
+			const char *szData;
 			//	-		no data
 			//	i		integer (may be optional)
 			//	I		CItem

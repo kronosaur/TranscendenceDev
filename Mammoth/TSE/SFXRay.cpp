@@ -167,7 +167,7 @@ constexpr Metric BRIGHT_FACTOR =				(0.25 / 100.0);
 constexpr Metric SOLID_FACTOR =					(0.40 / 100.0);
 constexpr Metric GRAINY_SIGMA =					1.0;
 
-static LPSTR ANIMATION_TABLE[] =
+static LPCSTR ANIMATION_TABLE[] =
 	{
 	//	Must be same order as EAnimationTypes
 		"",
@@ -179,7 +179,7 @@ static LPSTR ANIMATION_TABLE[] =
 		NULL
 	};
 
-static LPSTR SHAPE_TABLE[] =
+static LPCSTR SHAPE_TABLE[] =
 	{
 	//	Must be same order as ERayShapes
 		"",
@@ -194,7 +194,7 @@ static LPSTR SHAPE_TABLE[] =
 		NULL
 	};
 
-static LPSTR STYLE_TABLE[] =
+static LPCSTR STYLE_TABLE[] =
 	{
 	//	Must be same order as ERayStyles
 		"",

@@ -161,7 +161,8 @@ int CMiscellaneousClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pS
 
 	//	Figure out how long before we're ready
 
-	int iActivateDelay = GetActivateDelay(CItemCtx(pSource, pDevice));
+	CItemCtx ItemCtx(pSource, pDevice);
+	int iActivateDelay = GetActivateDelay(ItemCtx);
 	int iLevel = (iActivateDelay > 0 ? 100 - (pDevice->GetTimeUntilReady() * 100 / iActivateDelay) : 0);
 
 	if (retiLevel)
@@ -207,7 +208,8 @@ bool CMiscellaneousClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *p
 	if (iCounter != cntCapacitor || m_iPowerToActivate == 0 || pDevice == NULL || pSource == NULL)
 		return false;
 
-	int iActivateDelay = GetActivateDelay(CItemCtx(pSource, pDevice));
+	CItemCtx ItemCtx(pSource, pDevice);
+	int iActivateDelay = GetActivateDelay(ItemCtx);
 	int iTimeLeft = Max(0, Min((100 - iLevel) * iActivateDelay / 100, iActivateDelay));
 
 	pDevice->SetTimeUntilReady(iTimeLeft);

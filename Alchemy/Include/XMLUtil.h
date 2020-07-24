@@ -153,7 +153,7 @@ class CExternalEntityTable : public IXMLParserController
 	public:
 		CExternalEntityTable (void);
 
-		void AddTable (CSymbolTable &Table);
+		void AddTable (const TSortMap<CString, CString> &Table);
 		int GetCount (void) { return m_Entities.GetCount(); }
 		void GetEntity (int iIndex, CString *retsEntity, CString *retsValue);
         const CString &GetName (void) const { return m_sName; }
@@ -184,6 +184,6 @@ class CEntityResolverList : public IXMLParserController
 
 //	Some utilities
 
-ALERROR CreateXMLElementFromCommandLine (int argc, char *argv[], CXMLElement **retpElement);
+ALERROR CreateXMLElementFromCommandLine (int argc, const char *argv[], CXMLElement **retpElement);
 ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList);
 ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<DWORD> *pList);

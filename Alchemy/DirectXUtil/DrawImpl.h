@@ -321,7 +321,11 @@ class CSolidFill
 template <class BLENDER> class CImageCirclePainter : public TCirclePainter32<CImageCirclePainter<BLENDER>, BLENDER>
 	{
 	public:
-		CImageCirclePainter (int iRadius, BYTE byOpacity, const CG32bitImage &Src, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1) : TCirclePainter32((cxSrc >= 0 ? cxSrc : Src.GetWidth()), iRadius),
+		using TCirclePainter32<CImageCirclePainter<BLENDER>, BLENDER>::m_iAngleRange;
+		using TCirclePainter32<CImageCirclePainter<BLENDER>, BLENDER>::m_iRadius;
+
+		CImageCirclePainter (int iRadius, BYTE byOpacity, const CG32bitImage &Src, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1) : 
+				TCirclePainter32<CImageCirclePainter<BLENDER>, BLENDER>((cxSrc >= 0 ? cxSrc : Src.GetWidth()), iRadius),
 				m_byOpacity(byOpacity),
 				m_Src(Src),
 				m_xSrc(xSrc),
@@ -381,7 +385,7 @@ class CRadialCirclePainter8 : public TRadialPainter8<CRadialCirclePainter8>
 template <class BLENDER> class TFillCircleSolid : public TRadialPainter32<TFillCircleSolid<BLENDER>, BLENDER>
 	{
 	public:
-		TFillCircleSolid (int iRadius, CG32bitPixel rgbColor) : TRadialPainter32(iRadius),
+		TFillCircleSolid (int iRadius, CG32bitPixel rgbColor) : TRadialPainter32<TFillCircleSolid<BLENDER>, BLENDER>(iRadius),
 				m_rgbColor(CG32bitPixel::PreMult(rgbColor))
 			{ }
 
@@ -390,13 +394,13 @@ template <class BLENDER> class TFillCircleSolid : public TRadialPainter32<TFillC
 
 		CG32bitPixel m_rgbColor;
 
-	friend TRadialPainter32;
+	friend TRadialPainter32<TFillCircleSolid<BLENDER>, BLENDER>;
 	};
 
 template <class BLENDER> class CRadialCirclePainter : public TRadialPainter32<CRadialCirclePainter<BLENDER>, BLENDER>
 	{
 	public:
-		CRadialCirclePainter (int iRadius, const TArray<CG32bitPixel> &ColorRamp, bool bPreMult = false) : TRadialPainter32(iRadius)
+		CRadialCirclePainter (int iRadius, const TArray<CG32bitPixel> &ColorRamp, bool bPreMult = false) : TRadialPainter32<CRadialCirclePainter<BLENDER>, BLENDER>(iRadius)
 			{
 			int i;
 
@@ -425,7 +429,7 @@ template <class BLENDER> class CRadialCirclePainter : public TRadialPainter32<CR
 		const TArray<CG32bitPixel> *m_pColorRamp;
 		TArray<CG32bitPixel> m_ColorRamp;
 
-		friend TRadialPainter32;
+		friend TRadialPainter32<CRadialCirclePainter<BLENDER>, BLENDER>;
 	};
 
 extern const BYTE g_wSmallRoundMask[9];

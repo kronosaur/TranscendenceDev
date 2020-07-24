@@ -11,7 +11,7 @@ const DWORD FLAG_IS_HINT =				0x00000001;
 struct SUIMessageData
 	{
 	int iNameLen;
-	char *pszName;
+	const char *pszName;
 	DWORD dwFlags;
 	int iHintRepeat;					//	How many times should player follow hint before disabling hint
 	DWORD dwInterval;					//	Min ticks between message showing

@@ -75,7 +75,7 @@ int CStationEncounterDesc::CalcFrequencyForNode (const CTopologyNode &Node) cons
 
 	if (iFreq > 0 && !GetDistanceCriteria().IsEmpty())
 		{
-		int iDist = CStationEncounterCtx::CalcDistanceToCriteria(&Node, GetDistanceCriteria());
+		int iDist = CStationEncounterCtx::CalcDistanceToCriteria(Node, GetDistanceCriteria());
 		iFreq = iFreq * GetFrequencyByDistance(iDist) / ftCommon;
 		}
 
@@ -283,6 +283,14 @@ bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Origina
 			m_MaxAppearing.SetConstant(1);
 			m_iMaxCountInSystem = 1;
 			}
+		}
+
+	//	Max count in system. Supports a limit > 1.
+
+	if (Override.FindAttribute(MAX_IN_SYSTEM_ATTRIB, &sAttrib))
+		{
+		m_bMaxCountLimit = false;
+		m_iMaxCountInSystem = Max(1, strToInt(sAttrib, 0));
 		}
 
 	//	System criteria

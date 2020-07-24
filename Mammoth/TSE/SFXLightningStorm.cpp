@@ -83,7 +83,7 @@ class CLightningStormEffectPainter : public IEffectPainter
 		TArray<SBoltDesc> m_Bolts;			//	Bolt state
 	};
 
-static LPSTR STYLE_TABLE[] =
+static LPCSTR STYLE_TABLE[] =
 	{
 	//	Must be same order as EStyles
 		"",

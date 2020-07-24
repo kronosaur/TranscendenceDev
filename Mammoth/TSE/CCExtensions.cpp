@@ -5385,7 +5385,10 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM_PROPERTY:
-			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue(), bOnType);
+			{
+			CItemCtx ItemCtx(Item);
+			return Item.GetItemProperty(*pCtx, ItemCtx, pArgs->GetElement(1)->GetStringValue(), bOnType);
+			}
 
 		case FN_ITEM_DAMAGED:
 			pResult = pCC->CreateBool(Item.IsDamaged());
@@ -5583,7 +5586,8 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			ICCItem *pResult;
 			ICCItem *pData = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
-			Item.FireCustomEvent(CItemCtx(&Item), pArgs->GetElement(1)->GetStringValue(), pData, &pResult);
+			CItemCtx ItemCtx(&Item);
+			Item.FireCustomEvent(ItemCtx, pArgs->GetElement(1)->GetStringValue(), pData, &pResult);
 			return pResult;
 			}
 
@@ -11798,7 +11802,7 @@ ICCItem *fnStationType (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_STATION_ENCOUNTERED:
 			{
-			pResult = pCC->CreateBool(!pType->CanBeEncountered());
+			pResult = pCC->CreateBool(!pType->CanBeEncountered(pType->GetEncounterDescConst()));
 			break;
 			}
 
@@ -12268,7 +12272,8 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
 
 			CString sError;
-			CWeaponFireDesc *pDesc = pItemType->GetWeaponFireDesc(CItemCtx(), &sError);
+			CItemCtx ItemCtx;
+			CWeaponFireDesc *pDesc = pItemType->GetWeaponFireDesc(ItemCtx, &sError);
 			if (pDesc == NULL)
 				return pCC->CreateError(sError, pArgs->GetElement(0));
 
@@ -12945,7 +12950,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	//	Make sure we can encounter the station
 
-	if (!pType->CanBeEncountered(pSystem))
+	if (!pType->CanBeEncountered(*pSystem, pType->GetEncounterDescConst()))
 		return pCC->CreateNil();
 
 	//	Create the station (or ship encounter). If we are in the middle of system
@@ -13093,7 +13098,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 
 	//	Make sure we can encounter the station
 
-	if (!pType->CanBeEncountered(pSystem))
+	if (!pType->CanBeEncountered(*pSystem, pType->GetEncounterDescConst()))
 		return pCC->CreateNil();
 
 	//	Create the station (or ship encounter). If we are in the middle of system
@@ -14269,7 +14274,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (CTopologyNode::ParseCriteria(pArgs->GetElement(iArg++)->GetStringValue(), &Criteria, &sError) != NOERROR)
 				return pCC->CreateError(sError);
 
-			int iDist = CStationEncounterCtx::CalcDistanceToCriteria(pNode, Criteria.AttribCriteria);
+			int iDist = CStationEncounterCtx::CalcDistanceToCriteria(*pNode, Criteria.AttribCriteria);
 			if (iDist == -100)
 				return pCC->CreateNil();
 			else

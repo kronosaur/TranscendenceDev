@@ -123,12 +123,14 @@ IEffectPainter &CNamedEffects::GetPainter (CDesignCollection &Design, ETypes iTy
 	{
 	if (m_pNamedPainter[iType] == NULL)
 		{
+		CCreatePainterCtx PainterCtx;
+
 		DWORD dwCreatorUNID = m_NamedPainterUNID[iType];
 		CEffectCreator *pEffect = CEffectCreator::AsType(Design.FindEntry(dwCreatorUNID));
 		if (pEffect == NULL)
 			throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Named painter effect %08x not defined"), dwCreatorUNID));
 
-		m_pNamedPainter[iType] = pEffect->CreatePainter(CCreatePainterCtx());
+		m_pNamedPainter[iType] = pEffect->CreatePainter(PainterCtx);
 		if (m_pNamedPainter[iType] == NULL)
 			throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Unable to create named painter %08x"), dwCreatorUNID));
 		}

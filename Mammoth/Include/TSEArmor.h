@@ -130,6 +130,7 @@ class CArmorClass
 		ALERROR BindScaledParams (SDesignLoadCtx &Ctx);
 		int CalcArmorDamageAdj (const CArmorItem &ArmorItem, const DamageDesc &Damage) const;
 		int CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance &retBalance) const;
+		int CalcBalance (const CArmorItem &ArmorItem) const { CArmorItem::SBalance Balance; return CalcBalance(ArmorItem, Balance); }
 		Metric CalcBalanceDamageAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceDamageEffectAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdMass) const;

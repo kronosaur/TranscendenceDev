@@ -2106,7 +2106,7 @@
 	<!ENTITY rsEI200HD					"0x00100394">
 	<!ENTITY rsEI200Hero				"0x00100395">
 	<!ENTITY scEI100Stock				"0x00100396">
-	<!ENTITY rsEI100HD					"0x00100397">
+	<!-- 0x00100397 UNUSED -->
 	<!ENTITY rsEI100Hero				"0x00100398">
 	<!ENTITY rsSapphire					"0x00100399">
 	<!ENTITY rsEI500					"0x0010039A">
@@ -2351,6 +2351,7 @@
 	<!ENTITY tbCommonwealthFleetItems	"0x0010066C">
 	<!ENTITY rsAquilaHero				"0x0010066D">
 	<!ENTITY vtMinotaurTurretSlot		"0x0010066E">
+	<!ENTITY rsCommonwealthFleetInsignia	"0x0010066F">
 
 	<!-- 06C0-06FF STANDARD ITEMS -->
 

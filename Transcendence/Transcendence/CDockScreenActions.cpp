@@ -42,7 +42,7 @@ const int DEFAULT_BUTTON_WIDTH =	200;
 
 struct SSpecialDesc
 	{
-	char *pszAttrib;
+	const char *pszAttrib;
 	CLanguage::ELabelAttribs dwSpecial;
 	};
 

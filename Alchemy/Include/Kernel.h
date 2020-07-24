@@ -11,8 +11,11 @@
 
 #ifndef _WINDOWS_
 
-#ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
-#define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
+//	Support Windows 7 and above
+
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT	0x0601 
+#define WINVER			0x0601
 #endif						
 
 #define NOMINMAX
@@ -21,6 +24,13 @@
 #endif
 
 #include <mmsystem.h>
+
+//	For some reason, <kernelspecs.h> defines HIGH_LEVEL, which ends up 
+//	conflicting with a lot of other definitions.
+
+#ifdef HIGH_LEVEL
+#undef HIGH_LEVEL
+#endif
 
 //	Debugging defines
 
@@ -206,12 +216,14 @@ const int MAX_SHORT =					32767;
 class CArchiver;
 class CObject;
 class CUnarchiver;
-class CString;
 class CIDTable;
 class IReadStream;
 class IWriteStream;
 
-//	Templates
+//	Templates and Structures
+
+#include "KernelString.h"
+#include "KernelExceptions.h"
 
 #include "TSmartPtr.h"
 #include "TArray.h"
@@ -543,20 +555,6 @@ class CIntArray : public CObject
 
 //	CString. Implementation of a standard string class
 
-#define LITERAL(str)		((CString)(str))
-#define CONSTLIT(str)		(CString(str, sizeof(str)-1, TRUE))
-
-struct SConstString
-	{
-	int iLen;
-	char *pszString;
-	};
-
-#define CONSTDEF(str)		((int)(sizeof(str) - 1)), str
-#define CONSTDEFS(str)		{ ((int)(sizeof(str) - 1)), str }
-#define CONSTUSE(constEntry)	CString((constEntry).pszString, (constEntry).iLen, true)
-extern const CString NULL_STR;
-
 static constexpr char CHAR_LEFT_DOUBLE_QUOTE =		'\x93';
 static constexpr char CHAR_RIGHT_DOUBLE_QUOTE =		'\x94';
 
@@ -588,142 +586,6 @@ static constexpr SConstString CSTR_UUML =				CONSTDEFS("\xFC");
 
 static constexpr SConstString CSTR_WINGDING_LEFT_ARROW =	CONSTDEFS("\xE7");
 static constexpr SConstString CSTR_WINGDING_RIGHT_ARROW =	CONSTDEFS("\xE8");
-
-class CString : public CObject
-	{
-	public:
-		enum CapitalizeOptions
-			{
-			capFirstLetter,
-			};
-
-		enum CharacterSets
-			{
-			csUnknown,
-
-			csSystem,
-			csUTF8,
-			};
-
-		CString (void);
-		CString (const char *pString);
-		CString (CharacterSets iCharSet, const char *pString);
-		CString (const char *pString, int iLength);
-		CString (const char *pString, int iLength, BOOL bExternal);
-		CString (const SConstString &String);
-		virtual ~CString (void);
-
-		CString (const CString &pString);
-		CString &operator= (const CString &pString);
-		operator LPSTR () const { return GetASCIIZPointer(); }
-		explicit operator bool () const { return !IsBlank(); }
-		bool operator== (const CString &sValue) const;
-		bool operator!= (const CString &sValue) const;
-
-		static constexpr DWORD FLAG_ALLOC_EXTRA = 0x00000001;
-		void Append (LPCSTR pString, int iLength = -1, DWORD dwFlags = 0);
-		void Append (const CString &sString, DWORD dwFlags = 0) { Append(sString.GetPointer(), sString.GetLength(), dwFlags); }
-
-		void Capitalize (CapitalizeOptions iOption);
-		char *GetASCIIZPointer (void) const;
-		int GetLength (void) const;
-		int GetMemoryUsage (void) const;
-		char *GetPointer (void) const;
-		char *GetWritePointer (int iLength);
-		void GrowToFit (int iLength);
-		bool IsBlank (void) const { return (GetLength() == 0); }
-		void ReadFromStream (IReadStream *pStream);
-		void Transcribe (const char *pString, int iLen);
-		void Truncate (int iLength);
-		void WriteToStream (IWriteStream *pStream) const;
-
-		//	These are used internally only
-
-		static void INTStringCleanUp (void);
-		static ALERROR INTStringInit (void);
-
-		//	These are used for custom string arrays
-
-		static void *INTCopyStorage (void *pvStore);
-		static void *INTGetStorage (const CString &sString);
-		static void INTFreeStorage (void *pStore);
-		static CString INTMakeString (void *pvStore);
-		static void INTSetStorage (CString &sString, void *pStore);
-		void INTTakeStorage (void *pStore);
-		static void InitLowerCaseAbsoluteTable (void);
-
-		//	Debugging APIs
-
-#ifdef DEBUG_STRING_LEAKS
-		static int DebugGetStringCount (void);
-		static void DebugMark (void);
-		static void DebugOutputLeakedStrings (void);
-#endif
-
-	protected:
-		virtual void CopyHandler (CObject *pOriginal);
-		virtual ALERROR LoadHandler (CUnarchiver *pUnarchiver);
-		virtual ALERROR SaveHandler (CArchiver *pArchiver);
-
-	private:
-		struct STORESTRUCT
-			{
-			int iRefCount;
-			int iAllocSize;				//	If negative, this is a read-only external allocation
-			int iLength;
-			char *pString;
-#ifdef DEBUG_STRING_LEAKS
-			int iMark;
-#endif
-			};
-		typedef struct STORESTRUCT *PSTORESTRUCT;
-
-		CString (void *pStore, bool bDummy);
-
-		static void AddToFreeList (PSTORESTRUCT pStore, int iSize);
-		PSTORESTRUCT AllocStore (int iSize, BOOL bAllocString);
-#ifdef INLINE_DECREF
-		void DecRefCount (void)
-			{
-			if (m_pStore && (--m_pStore->iRefCount) == 0)
-				FreeStore(m_pStore);
-			}
-#else
-		void DecRefCount (void);
-#endif
-
-		static void FreeStore (PSTORESTRUCT pStore);
-		void IncRefCount (void) { if (m_pStore) m_pStore->iRefCount++; }
-		BOOL IsExternalStorage (void) { return (m_pStore->iAllocSize < 0 ? TRUE : FALSE); }
-
-		static constexpr DWORD FLAG_PRESERVE_CONTENTS =		0x00000001;
-		static constexpr DWORD FLAG_GEOMETRIC_GROWTH =		0x00000002;
-		void Size (int iLength, DWORD dwFlags = 0);
-
-		PSTORESTRUCT m_pStore;
-
-		static PSTORESTRUCT g_pStore;
-		static int g_iStoreSize;
-		static PSTORESTRUCT g_pFreeStore;
-	};
-
-//	Exceptions
-
-class CException
-	{
-	public:
-		CException (ALERROR error, const CString &sMsg = NULL_STR) : 
-				m_error(error),
-				m_sMsg(sMsg)
-			{ }
-
-		ALERROR GetErrorCode (void) const { return m_error; }
-		CString GetErrorMessage (void) const;
-
-	private:
-		ALERROR m_error;
-		CString m_sMsg;
-	};
 
 //	CDictionary. Implementation of a dynamic array of entries
 
@@ -922,7 +784,7 @@ class CResourceReadBlock : public CObject, public IReadBlock
 	{
 	public:
 		CResourceReadBlock (void);
-		CResourceReadBlock (HMODULE hInst, char *pszRes, char *pszType = RT_RCDATA);
+		CResourceReadBlock (HMODULE hInst, const char *pszRes, const char *pszType = RT_RCDATA);
 		virtual ~CResourceReadBlock (void);
 
 		//	IReadBlock virtuals
@@ -934,8 +796,8 @@ class CResourceReadBlock : public CObject, public IReadBlock
 
 	private:
 		HMODULE m_hModule;
-		char *m_pszRes;
-		char *m_pszType;
+		const char *m_pszRes;
+		const char *m_pszType;
 
 		char *m_pData;
 		DWORD m_dwLength;
@@ -1148,6 +1010,7 @@ class CArchiver : public CObject
 
 		ALERROR Reference2ID (void *pReference, int *retiID);
 		ALERROR SaveObject (CObject *pObject);
+		ALERROR SaveObject (CString *pObject);
 		ALERROR WriteData (char *pData, int iLength);
 
 	private:
@@ -1181,6 +1044,7 @@ class CUnarchiver : public CObject
 		//	that are being loaded
 
 		ALERROR LoadObject (CObject **retpObject);
+		ALERROR LoadObject (CString **retpString);
 		ALERROR ReadData (char *pData, int iLength);
 		ALERROR ResolveReference (int iID, void **pReference);
 
@@ -1410,14 +1274,11 @@ class CThreadPool
 		CManualEvent m_Quit;
 	};
 
-extern bool g_bLowerCaseAbsoluteTableInit;
-extern char g_LowerCaseAbsoluteTable[256];
-
 //	Initialization functions (Kernel.cpp)
 
 void kernelCleanUp (void);
 void kernelClearDebugLog (void);
-void kernelDebugLogPattern (char *pszLine, ...);
+void kernelDebugLogPattern (const char *pszLine, ...);
 void kernelDebugLogString (const CString &sLine);
 CString kernelGetSessionDebugLog (void);
 
@@ -1428,15 +1289,7 @@ ALERROR kernelSetDebugLog (CTextFileLog *pLog, bool bAppend = true, bool bFreeLo
 HANDLE kernelCreateThread (LPTHREAD_START_ROUTINE pfStart, LPVOID pData);
 bool kernelDispatchUntilEventSet (HANDLE hEvent, DWORD dwTimeout = INFINITE);
 
-//	String functions (CString.cpp)
-
-CString strCat (const CString &sString1, const CString &sString2);
-int strCompare (const CString &sString1, const CString &sString2);
-int strCompareAbsolute (const CString &sString1, const CString &sString2);
-int strCompareAbsolute (LPCSTR pS1, LPCSTR pS2);
-CString strConvert (const CString &sText, DWORD dwFromCP, DWORD dwToCP);
-inline CString strANSIToUTF8 (const CString &sText) { return strConvert(sText, CP_ACP, CP_UTF8); }
-inline CString strUTF8ToANSI (const CString &sText) { return strConvert(sText, CP_UTF8, CP_ACP); }
+//	String and Arrays
 
 static const DWORD DELIMIT_TRIM_WHITESPACE =		0x00000001;
 static const DWORD DELIMIT_ALLOW_BLANK_STRINGS =	0x00000002;
@@ -1449,74 +1302,8 @@ ALERROR strDelimitEx (const CString &sString, char cDelim, DWORD dwFlags, int iM
 inline ALERROR strDelimit (const CString &sString, char cDelim, int iMinParts, TArray<CString> *pStringList)
 	{ return strDelimitEx(sString, cDelim, 0, iMinParts, pStringList); }
 
-int strDelimitCount (const CString &sString, char cDelim, DWORD dwFlags);
-CString strDelimitGet (const CString &sString, char cDelim, DWORD dwFlags, int iIndex);
-
-CString strCapitalize (const CString &sString, int iOffset = 0);
-CString strCapitalizeWords (const CString &sString);
-CString strCEscapeCodes (const CString &sString);
-CString strConvertToToken (const CString &sString, bool bLowercase = false);
-CString strEncodeUTF8Char (DWORD dwCodePoint);
-CString strEncodeW1252ToUTF8Char (char chChar);
-bool strEndsWith (const CString &sString, const CString &sStringToFind);
-bool strEquals (const CString &sString1, const CString &sString2);
-bool strEqualsCase (const CString &sString1, const CString &sString2);
-int strFind (const CString &sString, const CString &sStringToFind);
-
-CString strFormatBytes (DWORD dwBytes);
-
-#define FORMAT_LEADING_ZERO						0x00000001
-#define FORMAT_THOUSAND_SEPARATOR				0x00000002
-#define FORMAT_UNSIGNED							0x00000004
-CString strFormatInteger (int iValue, int iMinFieldWidth = -1, DWORD dwFlags = 0);
-CString strFormatInteger (INT64 iValue, int iMinFieldWidth = -1, DWORD dwFlags = 0);
-
-CString strFormatMicroseconds (DWORD dwMicroseconds);
-CString strFormatMilliseconds (DWORD dwMilliseconds);
-CString strFromDouble (double rValue, int iDecimals = -1);
-CString strFromInt (int iInteger, bool bSigned = true);
-int strGetHexDigit (const char *pPos);
-char strGetHexDigit (int iDigit);
-inline bool strIsAlpha (const char *pPos) { return (::IsCharAlpha(*pPos) == TRUE); }
-inline bool strIsAlphaNumeric (const char *pPos) { return (::IsCharAlphaNumeric(*pPos) == TRUE); }
-inline bool strIsASCIIAlpha (const char *pPos) { return (*pPos >= 'a' && *pPos <= 'z') || (*pPos >= 'A' && *pPos <= 'Z'); }
-inline bool strIsASCIIControl (const char *pPos) { return ((BYTE)*pPos <= (BYTE)0x1f) || *pPos == 0x7f; }
-bool strIsASCIISymbol (const char *pPos);
-inline bool strIsDigit (const char *pPos) { return (*pPos >= '0' && *pPos <= '9'); }
-bool strIsInt (const CString &sValue, DWORD dwFlags = 0, int *retiValue = NULL);
-inline bool strIsWhitespace (const char *pPos) { return *pPos == ' ' || *pPos == '\t' || *pPos == '\n' || *pPos == '\r'; }
 CString strJoin (const TArray<CString> &List, const CString &sConjunction);
-CString strLoadFromRes (HINSTANCE hInst, int iResID);
-inline char strLowerCaseAbsolute (char chChar) { if (!g_bLowerCaseAbsoluteTableInit) CString::InitLowerCaseAbsoluteTable(); return g_LowerCaseAbsoluteTable[(BYTE)chChar]; }
-bool strNeedsEscapeCodes (const CString &sString);
 
-#define PARSE_THOUSAND_SEPARATOR				0x00000001
-double strParseDouble (const char *pStart, double rNullResult, const char **retpEnd, bool *retbNullValue);
-int strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, const char **retpEnd = NULL, bool *retbNullValue = NULL);
-inline int strParseInt (const char *pStart, int iNullResult, const char **retpEnd = NULL, bool *retbNullValue = NULL) { return strParseInt(pStart, iNullResult, 0, retpEnd, retbNullValue); }
-int strParseIntOfBase (const char *pStart, int iBase, int iNullResult, const char **retpEnd = NULL, bool *retbNullValue = NULL);
-
-void strParseWhitespace (const char *pPos, const char **retpPos);
-CString strPattern (const CString &sPattern, LPVOID *pArgs);
-CString strPatternSubst (CString sLine, ...);
-
-constexpr DWORD STRPROC_NO_DOUBLE_QUOTES =			0x00000001;
-constexpr DWORD STRPROC_ESCAPE_DOUBLE_QUOTES =		0x00000002;
-CString strProcess (const CString &sValue, DWORD dwFlags);
-
-CString strRepeat (const CString &sString, int iCount);
-CString strRomanNumeral (int i);
-bool strStartsWith (const CString &sString, const CString &sStringToFind);
-CString strSubString (const CString &sString, int iOffset, int iLength = -1);
-CString strTitleCapitalize (const CString &sString, const char **pExceptions = NULL, int iExceptionsCount = 0);
-double strToDouble (const CString &sString, double rFailResult, bool *retbFailed = NULL);
-CString strToFilename (const CString &sString);
-int strToInt (const CString &sString, int iFailResult, bool *retbFailed = NULL);
-CString strToLower (const CString &sString);
-CString strToUpper (const CString &sString);
-CString strToXMLText (const CString &sString, bool bInBody = false);
-CString strTrimWhitespace (const CString &sString, bool bLeading = true, bool bTrailing = true);
-CString strWord (const CString &sString, int iWordPos);
 
 //	Path functions (Path.cpp)
 
@@ -1654,17 +1441,6 @@ inline char uiGetCharFromKeyCode (int iVirtKey) { DWORD dwChar = ::MapVirtualKey
 #define MemStackAlloc(iSize) (_alloca(iSize))
 
 //	Comparison functions
-
-template<class KEY>
-int KeyCompare (const KEY &Key1, const KEY &Key2) 
-	{
-	if (Key1 > Key2)
-		return 1;
-	else if (Key1 < Key2)
-		return -1;
-	else
-		return 0;
-	}
 
 template<>
 inline int KeyCompare<LPCSTR> (const LPCSTR &Key1, const LPCSTR &Key2)

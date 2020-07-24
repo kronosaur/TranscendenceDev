@@ -628,8 +628,8 @@ class CInstalledDevice
 		//	We add our object pointer as a parameter to the call.
 
 		bool AbsorbDamage (CSpaceObject *pShip, SDamageCtx &Ctx) { if (!IsEmpty()) return m_pClass->AbsorbDamage(this, pShip, Ctx); else return false; }
-		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return m_pClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements); }
-		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return m_pClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements); }
+		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { CItemCtx ItemCtx(pSource, this); return m_pClass->AccumulateEnhancements(ItemCtx, pTarget, EnhancementIDs, pEnhancements); }
+		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { CItemCtx ItemCtx(pSource, this); return m_pClass->AccumulateEnhancements(ItemCtx, pTarget, EnhancementIDs, pEnhancements); }
 		bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const { return m_pClass->AccumulatePerformance(ItemCtx, Ctx); }
 		bool AccumulateSlotEnhancements (CSpaceObject *pSource, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
 		bool Activate (CDeviceClass::SActivateCtx &ActivateCtx)
@@ -676,7 +676,7 @@ class CInstalledDevice
 		bool IsSecondaryWeapon (void) const;
 		bool IsSelectable (void) const;
 		bool IsVariantSelected (CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsVariantSelected(pSource, this) : true); }
-		bool OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, const CDamageSource &Attacker) { return m_pClass->OnDestroyCheck(CItemCtx(pSource, this), iCause, Attacker); }
+		bool OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, const CDamageSource &Attacker) { CItemCtx ItemCtx(pSource, this); return m_pClass->OnDestroyCheck(ItemCtx, iCause, Attacker); }
 		void Recharge (CShip *pShip, int iStatus) { m_pClass->Recharge(this, pShip, iStatus); }
 		void Reset (CSpaceObject *pShip) { m_pClass->Reset(this, pShip); }
 		void SelectFirstVariant (CSpaceObject *pSource) { m_pClass->SelectFirstVariant(pSource, this); }

@@ -41,7 +41,8 @@ ALERROR CStaticEffect::Create (CEffectCreator *pType,
 	pEffect->Place(vPos);
 
 	ASSERT(pType);
-	pEffect->m_pPainter = pType->CreatePainter(CCreatePainterCtx());
+	CCreatePainterCtx CreateCtx;
+	pEffect->m_pPainter = pType->CreatePainter(CreateCtx);
 
 	//	Set the size of the object
 

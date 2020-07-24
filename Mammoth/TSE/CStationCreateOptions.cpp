@@ -43,9 +43,11 @@ ALERROR CStationCreateOptions::InitFromXML (SSystemCreateCtx &Ctx, const CXMLEle
 //	element in a system type definition.
 
 	{
+	SDesignLoadCtx LoadCtx;
+
 	//	Station name
 
-	if (ALERROR error = m_Name.InitFromXMLRoot(SDesignLoadCtx(), &XMLDesc))
+	if (ALERROR error = m_Name.InitFromXMLRoot(LoadCtx, &XMLDesc))
 		return error;
 
 	m_sObjName = XMLDesc.GetAttribute(OBJ_NAME_ATTRIB);

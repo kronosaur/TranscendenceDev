@@ -279,7 +279,7 @@ void CGameStats::SaveToJSON (CJSONValue *retOutput) const
 
 		//	Add the stats name
 
-		Stat.InsertHandoff(CJSONValue(m_Stats[i].sStatName));
+		Stat.Insert(CJSONValue(m_Stats[i].sStatName));
 
 		//	Parse the value
 
@@ -287,9 +287,9 @@ void CGameStats::SaveToJSON (CJSONValue *retOutput) const
 		if (m_Stats[i].sStatValue.IsBlank())
 			Stat.Insert(CJSONValue(CJSONValue::typeNull));
 		else if (strIsInt(m_Stats[i].sStatValue, PARSE_THOUSAND_SEPARATOR, &iValue))
-			Stat.InsertHandoff(CJSONValue(iValue));
+			Stat.Insert(CJSONValue(iValue));
 		else
-			Stat.InsertHandoff(CJSONValue(m_Stats[i].sStatValue));
+			Stat.Insert(CJSONValue(m_Stats[i].sStatValue));
 
 		//	Split the section out of the sort key
 
@@ -300,12 +300,12 @@ void CGameStats::SaveToJSON (CJSONValue *retOutput) const
 		if (sSection.IsBlank())
 			Stat.Insert(CJSONValue(CJSONValue::typeNull));
 		else
-			Stat.InsertHandoff(CJSONValue(sSection));
+			Stat.Insert(CJSONValue(sSection));
 
 		//	Add the sort key
 
 		if (!strEquals(sSectionSortKey, m_Stats[i].sStatName))
-			Stat.InsertHandoff(CJSONValue(sSectionSortKey));
+			Stat.Insert(CJSONValue(sSectionSortKey));
 
 		//	Append to large array
 

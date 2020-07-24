@@ -65,7 +65,8 @@ bool CEnhancerClass::AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTa
 		//	the first variant (otherwise we would default to the selected
 		//	variant)
 
-		int iType = pTarget->GetDamageType(CItemCtx());
+		CItemCtx ItemCtx;
+		int iType = pTarget->GetDamageType(ItemCtx);
 		iBonus = (iType != -1 ? m_iDamageAdjArray[iType] : 0);
 		}
 	else
@@ -125,7 +126,8 @@ int CEnhancerClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, C
 	if (!pDevice->IsEnabled())
 		return 0;
 
-	const SScalableStats *pStats = GetStats(CItemCtx(pSource, pDevice));
+	CItemCtx ItemCtx(pSource, pDevice);
+	const SScalableStats *pStats = GetStats(ItemCtx);
 	if (pStats == NULL)
 		return m_iPowerUse;
 

@@ -429,6 +429,7 @@ class CShieldClass : public CDeviceClass
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXMLElement *pDesc, CDeviceClass **retpShield);
 
 		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
+		int CalcBalance (CItemCtx &ItemCtx) const { SBalance Balance; return CalcBalance(ItemCtx, Balance); }
 		bool FindEventHandlerShieldClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const
 			{
 			if (!m_CachedEvents[iEvent].pCode)

@@ -83,6 +83,12 @@
 						)
 				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -112,6 +118,8 @@
 										(rpgMissionAssignment {
 											missionCriteria: (cat "n +cscTerra; +rank" (int rank) "; =" (sysGetLevel) ";")
 											noMissionTextID: 'descNoMissions
+
+											rankDetails: (typTranslate &unidCommonwealthFleet; 'rankDetails)
 											})
 										)
 									)

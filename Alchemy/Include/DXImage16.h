@@ -450,7 +450,7 @@ class CG16bitFont
 
 		ALERROR Create (const CString &sTypeface, int iSize, bool bBold = false, bool bItalic = false, bool bUnderline = false);
 		ALERROR CreateFromFont (HFONT hFont);
-		ALERROR CreateFromResource (HINSTANCE hInst, char *pszRes);
+		ALERROR CreateFromResource (HINSTANCE hInst, const char *pszRes);
 		void Destroy (void) { m_FontImage.Destroy(); m_Metrics.DeleteAll(); }
 
 		int BreakText (const CString &sText, int cxWidth, TArray<CString> *retLines = NULL, DWORD dwFlags = 0) const;

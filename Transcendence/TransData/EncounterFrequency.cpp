@@ -130,7 +130,7 @@ void CalcSystemStats (CUniverse &Universe, const SOptions &Options, CSystemCreat
 			//	Create the system
 
 			CSystem *pSystem;
-			if (Universe.CreateStarSystem(pNode, &pSystem, NULL, &Stats) != NOERROR)
+			if (Universe.CreateStarSystem(*pNode, &pSystem, NULL, &Stats) != NOERROR)
 				{
 				printf("ERROR: Unable to create star system.\n");
 				return;

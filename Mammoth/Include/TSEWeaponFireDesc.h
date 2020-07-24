@@ -218,7 +218,7 @@ struct SDamageCtx
 		SDamageCtx (CSpaceObject *pObjHitArg, 
 				CWeaponFireDesc &DescArg, 
 				const CItemEnhancementStack *pEnhancementsArg, 
-				CDamageSource &AttackerArg, 
+				const CDamageSource &AttackerArg, 
 				CSpaceObject *pCauseArg, 
 				Metric rAge,
 				int iDirectionArg, 
@@ -369,6 +369,35 @@ struct SShotCreateCtx
 	int iRepeatingCount = 0;
 	CSpaceObject *pTarget = NULL;
 	DWORD dwFlags = 0;
+	};
+
+class CShotArray
+	{
+	public:
+		struct SShotDesc
+			{
+			CVector vPos;
+			int iDir = -1;
+			CSpaceObject *pTarget = NULL;
+			};
+
+		CShotArray (void) { }
+		explicit CShotArray (int iCount)
+			{
+			ASSERT(iCount >= 0);
+			m_Shots.InsertEmpty(iCount);
+			}
+
+		const SShotDesc &operator [] (int iIndex) const { return m_Shots[iIndex]; }
+		SShotDesc &operator [] (int iIndex) { return m_Shots[iIndex]; }
+
+		void AdjustFireAngle (int iAngleAdj);
+		int GetCount (void) const { return m_Shots.GetCount(); }
+		void InsertEmpty (int iCount) { m_Shots.InsertEmpty(iCount); }
+		void SetTarget (CSpaceObject *pTarget);
+		
+	private:
+		TArray<SShotDesc> m_Shots;
 	};
 
 class CConfigurationDesc

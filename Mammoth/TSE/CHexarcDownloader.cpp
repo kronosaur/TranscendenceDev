@@ -171,13 +171,13 @@ ALERROR CHexarcDownloader::Update (CHexarcSession &Session, SStatus *retStatus, 
 	CJSONValue Result;
 	CJSONValue Payload(CJSONValue::typeObject);
 	Payload.Insert(FIELD_AUTH_TOKEN, m_pCurrent->AuthToken);
-	Payload.InsertHandoff(FIELD_FILE_PATH, CJSONValue(m_pCurrent->sFilePath));
+	Payload.Insert(FIELD_FILE_PATH, CJSONValue(m_pCurrent->sFilePath));
 
 	//	A download desc describes what we want
 
 	CJSONValue DownloadDesc(CJSONValue::typeObject);
-	DownloadDesc.InsertHandoff(FIELD_PARTIAL_POS, CJSONValue((int)m_pCurrent->dwDownload));
-	DownloadDesc.InsertHandoff(FIELD_PARTIAL_MAX_SIZE, CJSONValue((int)m_dwChunkSize));
+	DownloadDesc.Insert(FIELD_PARTIAL_POS, CJSONValue((int)m_pCurrent->dwDownload));
+	DownloadDesc.Insert(FIELD_PARTIAL_MAX_SIZE, CJSONValue((int)m_dwChunkSize));
 	Payload.InsertHandoff(FIELD_FILE_DOWNLOAD_DESC, DownloadDesc);
 
 	//	Download

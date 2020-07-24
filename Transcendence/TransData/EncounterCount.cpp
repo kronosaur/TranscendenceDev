@@ -74,7 +74,7 @@ void GenerateEncounterCount (CUniverse &Universe, CXMLElement *pCmdLine)
 			//	Create the system
 
 			CSystem *pSystem;
-			if (Universe.CreateStarSystem(pNode, &pSystem) != NOERROR)
+			if (Universe.CreateStarSystem(*pNode, &pSystem) != NOERROR)
 				{
 				printf("ERROR: Unable to create star system.\n");
 				return;
@@ -162,7 +162,7 @@ void AddSystemData (CSystem *pSystem, bool bAll, SNodeDesc *retResult)
 
 	for (i = 0; i < pSystem->GetObjectCount(); i++)
 		{
-		CStationType *pType;
+		const CStationType *pType;
 		CSpaceObject *pObj = pSystem->GetObject(i);
 		if (pObj == NULL 
 				|| pObj->IsDestroyed()
@@ -171,7 +171,7 @@ void AddSystemData (CSystem *pSystem, bool bAll, SNodeDesc *retResult)
 
 		//	Skip if we're not interested in this encounter
 
-		if (!bAll && !pType->CanBeEncounteredRandomly())
+		if (!bAll && !pType->GetEncounterDesc().CanBeRandomlyEncountered())
 			continue;
 
 		//	Get table

@@ -78,7 +78,8 @@ inline int CDifferentiatedItem::GetCharges (void) const
 
 inline CCurrencyAndValue CDifferentiatedItem::GetCurrencyAndValue (bool bActual) const
 	{
-	return GetType().GetCurrencyAndValue(CItemCtx(m_Item), bActual);
+	CItemCtx ItemCtx(m_Item);
+	return GetType().GetCurrencyAndValue(ItemCtx, bActual);
 	}
 
 inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
@@ -256,7 +257,8 @@ inline bool CArmorItem::IsImmune (SpecialDamageTypes iSpecialDamage) const
 
 inline EDamageResults CInstalledArmor::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 	{
-	return m_pArmorClass->AbsorbDamage(CItemCtx(pSource, this), Ctx);
+	CItemCtx ItemCtx(pSource, this);
+	return m_pArmorClass->AbsorbDamage(ItemCtx, Ctx);
 	}
 
 inline int CInstalledArmor::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon)

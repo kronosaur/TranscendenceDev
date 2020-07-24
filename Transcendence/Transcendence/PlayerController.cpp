@@ -109,7 +109,8 @@ bool CPlayerShipController::AreAllDevicesEnabled (void)
 	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
-		if (Device.CanBeDisabled(CItemCtx(m_pShip, &Device)))
+		CItemCtx ItemCtx(m_pShip, &Device);
+		if (Device.CanBeDisabled(ItemCtx))
 			{
 			if (!Device.IsEnabled())
 				return false;
@@ -488,7 +489,8 @@ void CPlayerShipController::EnableAllDevices (bool bEnable)
 	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
-		if (Device.CanBeDisabled(CItemCtx(m_pShip, &Device)) && Device.IsEnabled() != bEnable)
+		CItemCtx ItemCtx(m_pShip, &Device);
+		if (Device.CanBeDisabled(ItemCtx) && Device.IsEnabled() != bEnable)
 			{
 			m_pShip->EnableDevice(Device.GetDeviceSlot(), bEnable);
 
@@ -1783,7 +1785,8 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 	//	compute the path in absolute terms and adjust the position of objects
 	//	(including the player) based on their velocities.
 
-	Metric rSpeed = Weapon.GetShotSpeed(CItemCtx(pShip, &Weapon));
+	CItemCtx ItemCtx(pShip, &Weapon);
+	Metric rSpeed = Weapon.GetShotSpeed(ItemCtx);
 	CVector vVel = pShip->GetVel() + PolarToVector(iDir, rSpeed) - m_pShip->GetVel();
 	CVector vPos = vStart;
 
@@ -1910,8 +1913,9 @@ bool CPlayerShipController::ToggleEnableDevice (int iDeviceIndex)
 		{
 		CItem &Item = List.GetItem(i);
 		CInstalledDevice *pDevice = m_pShip->FindDevice(Item);
+		CItemCtx ItemCtx(m_pShip, pDevice);
 
-		if (pDevice && pDevice->CanBeDisabled(CItemCtx(m_pShip, pDevice)))
+		if (pDevice && pDevice->CanBeDisabled(ItemCtx))
 			{
 			if (iDeviceIndex == 0)
 				{

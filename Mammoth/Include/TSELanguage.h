@@ -241,9 +241,9 @@ class CVirtualKeyData
 	private:
 		struct SVirtKeyData
 			{
-			char *pszID;								//	Key ID (not human-readable)
-			char *pszLabel;								//	Label on key caps (same as pszName, if NULL)
-			char *pszName;								//	Name of key when describe in text (same as pszLabel, if NULL)
+			const char *pszID;								//	Key ID (not human-readable)
+			const char *pszLabel;								//	Label on key caps (same as pszName, if NULL)
+			const char *pszName;								//	Name of key when describe in text (same as pszLabel, if NULL)
 			DWORD dwFlags;
 			};
 

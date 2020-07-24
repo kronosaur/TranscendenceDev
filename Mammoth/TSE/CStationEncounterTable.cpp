@@ -7,7 +7,7 @@
 
 #define MATCH_ALL						CONSTLIT("*")
 
-bool CStationEncounterTable::Init (CSystem &System, const SInitCtx &Options, CString *retsError, bool *retbAddToCache)
+bool CStationEncounterTable::Init (CSystem &System, const CStationEncounterOverrideTable &EncounterTable, const SInitCtx &Options, CString *retsError, bool *retbAddToCache)
 
 //	Init
 //
@@ -41,7 +41,8 @@ bool CStationEncounterTable::Init (CSystem &System, const SInitCtx &Options, CSt
 		for (int i = 0; i < iCount; i++)
 			{
 			CStationType *pType = Universe.GetStationType(i);
-			pType->SetTempChance((1000 / ftCommon) * pType->GetFrequencyForSystem(&System));
+			const CStationEncounterDesc &Desc = EncounterTable.GetEncounterDesc(*pType);
+			pType->SetTempChance((1000 / ftCommon) * pType->GetFrequencyForSystem(System, Desc));
 			}
 		}
 
@@ -76,7 +77,9 @@ bool CStationEncounterTable::Init (CSystem &System, const SInitCtx &Options, CSt
 			CStationType *pType = Universe.GetStationType(i);
 			if (pType->GetTempChance())
 				{
-				const CAffinityCriteria &LocationCriteria = pType->GetLocationCriteria();
+				const CStationEncounterDesc &Desc = EncounterTable.GetEncounterDesc(*pType);
+
+				const CAffinityCriteria &LocationCriteria = Desc.GetLocationCriteria();
 				int iAdj = System.CalcLocationAffinity(LocationCriteria, Options.sExtraLocationAttribs, Options.vPos);
 				pType->SetTempChance((pType->GetTempChance() * iAdj) / 1000);
 				}
@@ -97,7 +100,7 @@ bool CStationEncounterTable::Init (CSystem &System, const SInitCtx &Options, CSt
 			//	prioritize these types.
 
 			if (pType->GetTempChance() > 0
-					&& pType->GetEncounterRequired(pNode) > 0)
+					&& pType->GetEncounterRequired(*pNode, EncounterTable.GetEncounterDesc(*pType)) > 0)
 				{
 				bPrioritizeRequiredEncounters = true;
 				break;
@@ -112,7 +115,8 @@ bool CStationEncounterTable::Init (CSystem &System, const SInitCtx &Options, CSt
 			for (int i = 0; i < iCount; i++)
 				{
 				CStationType *pType = Universe.GetStationType(i);
-				if (pType->GetEncounterRequired(pNode) == 0)
+				if (pType->GetTempChance() > 0 
+						&& pType->GetEncounterRequired(*pNode, EncounterTable.GetEncounterDesc(*pType)) == 0)
 					pType->SetTempChance(0);
 				}
 			}

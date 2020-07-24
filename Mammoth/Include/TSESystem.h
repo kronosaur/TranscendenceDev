@@ -416,8 +416,8 @@ class CSystem
 										 CSpaceObject **retpObj = NULL,
 										 CSpaceObject *pPlayerShip = NULL);
 		static ALERROR CreateFromXML (CUniverse &Universe, 
-									  CSystemType *pType, 
-									  CTopologyNode *pTopology, 
+									  CSystemType &Type, 
+									  CTopologyNode &NodeID, 
 									  CSystem **retpSystem,
 									  CString *retsError = NULL,
 									  CSystemCreateStats *pStats = NULL);
@@ -444,14 +444,14 @@ class CSystem
 								 CSovereign *pSovereign,
 								 CStation **retpWreck);
 		ALERROR CreateStargate (CStationType *pType,
-								CVector &vPos,
+								const CVector &vPos,
 								const CString &sStargateID,
 								const CString &sDestNodeID,
 								const CString &sDestStargateID,
 								CSpaceObject **retpStation = NULL);
 		ALERROR CreateStation (CStationType *pType,
 							   CDesignType *pEventHandler,
-							   CVector &vPos,
+							   const CVector &vPos,
 							   CSpaceObject **retpStation = NULL);
 		ALERROR CreateStation (SSystemCreateCtx *pCtx, 
 							   CStationType *pType, 

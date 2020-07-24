@@ -141,7 +141,7 @@ void CArtifactAICorePainter::Paint (CG32bitImage &Dest, int x, int y)
 
 	for (i = 0; i < Points.GetCount(); i++)
 		{
-		Dest.DrawDot(x + (int)Points[i].GetX(), y - (int)Points[i].GetY(), rgbCore, markerSmallRound);
+		Dest.DrawDot(x + (int)Points[i].GetX(), y - (int)Points[i].GetY(), rgbCore, markerRoundDot);
 		}
 
 	//	Paint the inner glow

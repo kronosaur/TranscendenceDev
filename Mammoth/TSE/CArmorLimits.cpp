@@ -7,6 +7,7 @@
 
 #define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
+#define MASS_ATTRIB								CONSTLIT("mass")
 #define MASS_CLASS_ATTRIB						CONSTLIT("massClass")
 #define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmor")
 #define MAX_ARMOR_SPEED_ATTRIB					CONSTLIT("maxArmorSpeed")
@@ -90,7 +91,9 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 			m_iMinArmorSpeedBonus = 0;
 			for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
 				{
-				int iMass = Ctx.pDesign->GetArmorMassDefinitions().GetMassClassMass(m_ArmorLimits[i].sClass);
+				int iMass = m_ArmorLimits[i].iMass;
+				if (iMass == 0)
+					iMass = Ctx.pDesign->GetArmorMassDefinitions().GetMassClassMass(m_ArmorLimits[i].sClass);
 
 				//	Max armor mass that we can support.
 
@@ -280,6 +283,9 @@ bool CArmorLimits::CalcArmorSpeedBonus (const CString &sArmorClassID, int iSegme
 
 		case typeTable:
 			{
+			const CArmorMassDefinitions &Def = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions();
+			int iArmorMass = Def.GetMassClassMass(sArmorClassID);
+
 			//	Search
 
 			for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
@@ -288,8 +294,16 @@ bool CArmorLimits::CalcArmorSpeedBonus (const CString &sArmorClassID, int iSegme
 
 				//	Skip if the wrong mass class
 
-				if (!strEquals(pLimits->sClass, sArmorClassID))
-					continue;
+				if (pLimits->iMass)
+					{
+					if (iArmorMass > pLimits->iMass)
+						continue;
+					}
+				else
+					{
+					if (!strEquals(pLimits->sClass, sArmorClassID))
+						continue;
+					}
 
 				//	Found
 
@@ -471,7 +485,7 @@ int CArmorLimits::CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) c
 		}
 	}
 
-ICCItem *CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const
+ICCItemPtr CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const
 
 //	CalcMaxSpeedByArmorMass
 //
@@ -481,12 +495,12 @@ ICCItem *CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpee
 //	If there is no variation in speed, we return a single speed value.
 
 	{
-	ICCItem *pResult = CCodeChain::CreateSymbolTable();
+	ICCItemPtr pResult(ICCItem::SymbolTable);
 
 	switch (m_iType)
 		{
 		case typeNone:
-			pResult->SetAt(strFromInt(iStdSpeed), CCodeChain::CreateNil());
+			pResult->SetAt(strFromInt(iStdSpeed), ICCItemPtr::Nil());
 			break;
 
 		case typeAuto:
@@ -524,7 +538,10 @@ ICCItem *CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpee
 			for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
 				{
 				int iSpeed = iStdSpeed + m_ArmorLimits[i].iSpeedAdj;
-				pResult->SetAt(strFromInt(iSpeed), CCodeChain::CreateString(m_ArmorLimits[i].sClass));
+				if (!m_ArmorLimits[i].sClass.IsBlank())
+					pResult->SetStringAt(strFromInt(iSpeed), m_ArmorLimits[i].sClass);
+				else
+					pResult->SetStringAt(strFromInt(iSpeed), strFromInt(m_ArmorLimits[i].iMass));
 				}
 			break;
 			}
@@ -725,6 +742,7 @@ bool CArmorLimits::FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits 
 		return false;
 
 	const CString &sMassClass = pArmor->GetMassClass(ItemCtx);
+	int iMassKg = ArmorItem.GetMassKg();
 
 	for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
 		{
@@ -732,8 +750,16 @@ bool CArmorLimits::FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits 
 
 		//	Skip if the wrong mass class
 
-		if (!strEquals(pLimits->sClass, sMassClass))
-			continue;
+		if (pLimits->iMass)
+			{
+			if (iMassKg > pLimits->iMass)
+				continue;
+			}
+		else
+			{
+			if (!strEquals(pLimits->sClass, sMassClass))
+				continue;
+			}
 
 		//	We at least found an entry for this class. We need this to tell 
 		//	whether we failed due to incompatibility or beacuse it was too heavy.
@@ -818,7 +844,11 @@ ALERROR CArmorLimits::InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *
 
 	{
 	CString sMassClass = pLimits->GetAttribute(MASS_CLASS_ATTRIB);
-	if (sMassClass.IsBlank())
+	int iMass = pLimits->GetAttributeIntegerBounded(MASS_ATTRIB, 1, -1, 0);
+
+	//	Either massClass or mass must be defined.
+
+	if (sMassClass.IsBlank() && iMass == 0)
 		{
 		Ctx.sError = strPatternSubst(CONSTLIT("Invalid mass class: %s"), sMassClass);
 		return ERR_FAIL;
@@ -836,6 +866,7 @@ ALERROR CArmorLimits::InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *
 
 	SArmorLimits &NewLimits = *m_ArmorLimits.Insert();
 	NewLimits.sClass = sMassClass;
+	NewLimits.iMass = (sMassClass.IsBlank() ? iMass : 0);
 
 	if (!sCriteria.IsBlank())
 		{

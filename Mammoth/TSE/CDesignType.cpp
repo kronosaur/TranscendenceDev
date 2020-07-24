@@ -128,7 +128,7 @@
 
 #define STR_OVERRIDE							CONSTLIT("Override")
 
-static char DESIGN_CHAR[designCount] =
+static const char DESIGN_CHAR[designCount] =
 	{
 		'i',
 		'b',
@@ -158,7 +158,7 @@ static char DESIGN_CHAR[designCount] =
 		'o',
 	};
 
-static char *DESIGN_CLASS_NAME[designCount] =
+static const char *DESIGN_CLASS_NAME[designCount] =
 	{
 		"ItemType",
 		"ItemTable",
@@ -188,7 +188,7 @@ static char *DESIGN_CLASS_NAME[designCount] =
 		"ImageComposite",
 	};
 
-static char *CACHED_EVENTS[CDesignType::evtCount] =
+static const char *CACHED_EVENTS[CDesignType::evtCount] =
 	{
 		"CanInstallItem",
 		"CanRemoveItem",
@@ -566,7 +566,9 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 		}
 
 	else if (strEquals(sProperty, PROPERTY_MAP_DESCRIPTION))
+		{
 		return CC.CreateString(GetMapDescription(SMapDescriptionCtx()));
+		}
 
 	else if (strEquals(sProperty, PROPERTY_MAX_BALANCE))
 		{
@@ -1829,7 +1831,7 @@ SEventHandlerDesc *CDesignType::GetInheritedCachedEvent (ECachedHandlers iEvent)
 		return NULL;
 	}
 
-CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
+CString CDesignType::GetMapDescription (const SMapDescriptionCtx &Ctx) const
 
 //  GetMapDescription
 //
@@ -2500,13 +2502,15 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 
 		CString sError;
 		CPropertyCompare Compare;
-		if (!Compare.Parse(CCodeChainCtx(GetUniverse()), sProperty, &sError))
+		CCodeChainCtx CCX(GetUniverse());
+
+		if (!Compare.Parse(CCX, sProperty, &sError))
 			{
 			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
 			return false;
 			}
 
-		ICCItemPtr pValue = GetProperty(CCodeChainCtx(GetUniverse()), Compare.GetProperty());
+		ICCItemPtr pValue = GetProperty(CCX, Compare.GetProperty());
 		return Compare.Eval(pValue);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_LEVEL))
@@ -2627,7 +2631,7 @@ void CDesignType::InitCachedEvents (void)
 		}
 	}
 
-void CDesignType::InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents)
+void CDesignType::InitCachedEvents (int iCount, const char **pszEvents, SEventHandlerDesc *retEvents)
 
 //	InitCachedEvents
 //
@@ -2817,7 +2821,7 @@ bool CDesignType::InSelfReference (CDesignType *pType)
 	return false;
 	}
 
-bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
+bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria) const
 
 //	MatchesCriteria
 //
@@ -2836,7 +2840,7 @@ bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
 
 	//  If structures only, and this is a stationtype, then exclude stars/planets
 
-	CStationType *pStationType;
+	const CStationType *pStationType;
 	if (Criteria.StructuresOnly()
 			&& (pStationType = CStationType::AsType(this))
 			&& (pStationType->GetScale() == scaleStar || pStationType->GetScale() == scaleWorld))
@@ -3038,7 +3042,7 @@ bool CDesignType::Translate (const CDesignType &Type, const CString &sID, const 
 
 	//	Backwards compatible translate
 
-	if (GetVersion() <= 2 
+	if (GetAPIVersion() <= 2 
 			&& Params.pSource
 			&& TranslateVersion2(Params.pSource, sID, retResult))
 		return true;
@@ -3092,7 +3096,7 @@ bool CDesignType::TranslateText (const CDesignType &Type, const CString &sID, co
 
 	//	Backwards compatible translate
 
-	if (GetVersion() <= 2 && Params.pSource)
+	if (GetAPIVersion() <= 2 && Params.pSource)
 		{
 		ICCItemPtr pItem;
 		if (!TranslateVersion2(Params.pSource, sID, pItem))
@@ -3157,9 +3161,7 @@ bool CDesignType::TranslateVersion2 (const CSpaceObject *pObj, const CString &sI
 //	Translates using the old apiVersion="2" method, which relied on static data.
 
 	{
-	int i;
-
-	if (GetVersion() > 2)
+	if (GetAPIVersion() > 2)
 		return false;
 
 	ICCItemPtr pValue = GetStaticData(CONSTLIT("Language"));
@@ -3167,7 +3169,7 @@ bool CDesignType::TranslateVersion2 (const CSpaceObject *pObj, const CString &sI
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 
-		for (i = 0; i < pValue->GetCount(); i++)
+		for (int i = 0; i < pValue->GetCount(); i++)
 			{
 			ICCItem *pEntry = pValue->GetElement(i);
 			if (pEntry->GetCount() == 2 && strEquals(sID, pEntry->GetElement(0)->GetStringValue()))
@@ -3288,7 +3290,8 @@ ALERROR CWeaponFireDescRef::Bind (SDesignLoadCtx &Ctx)
 		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
 			return error;
 
-		m_pType = pItemType->GetWeaponFireDesc(CItemCtx(), &Ctx.sError);
+		CItemCtx ItemCtx;
+		m_pType = pItemType->GetWeaponFireDesc(ItemCtx, &Ctx.sError);
 		if (m_pType == NULL)
 			return ERR_FAIL;
 		}

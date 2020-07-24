@@ -39,11 +39,11 @@ class IPrimitiveImpl
 
 typedef struct
 	{
-	char *pszName;
+	const char *pszName;
 	PRIMITIVEPROC pfFunction;
 	DWORD dwData;
-	char *pszDescription;
-	char *pszArguments;
+	const char *pszDescription;
+	const char *pszArguments;
 	DWORD dwFlags;
 	} PRIMITIVEPROCDEF, *PPRIMITIVEPROCDEF;
 
@@ -678,7 +678,7 @@ class CCVector : public ICCVector
 		void SetContext (CCodeChain *pCC) { m_pCC = pCC;  }
 		void SetShape (CCodeChain *pCC, TArray<int> vNewShape) { m_vShape = vNewShape; }
 		void SetArrayData (CCodeChain *pCC, TArray<double> vNewData) { m_vData = vNewData; }
-		CString CCVector::PrintWithoutShape (CCodeChain *pCC, DWORD dwFlags) const;
+		CString PrintWithoutShape (CCodeChain *pCC, DWORD dwFlags) const;
 		
 		void Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
 		void Sort (CCodeChain *pCC, int iOrder, int iIndex = -1);
@@ -926,7 +926,8 @@ class CCodeChain
 		ICCItem *GetNil (void) { return &m_Nil; }
 		ICCItem *GetTrue (void) { return &m_True; }
 		ICCItem *Eval (CEvalContext *pEvalCtx, ICCItem *pItem);
-		static ICCItemPtr LinkCode (const CString &sString, SLinkOptions &Options = SLinkOptions()) { return ICCItemPtr(Link(sString, Options)); }
+		static ICCItemPtr LinkCode (const CString &sString) { return ICCItemPtr(Link(sString)); }
+		static ICCItemPtr LinkCode (const CString &sString, SLinkOptions &Options) { return ICCItemPtr(Link(sString, Options)); }
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
 		ICCItemPtr TopLevel (const ICCItem &Code, const SRunOptions &Options);
 		static CString Unlink (ICCItem *pItem);
@@ -958,7 +959,8 @@ class CCodeChain
 		static ICCItemPtr CreateIntegerIfPossible (const CString &sString);
 		static ICCItemPtr CreateParseError (int iLine, const CString &sError);
 		ICCItemPtr EvalLiteralStruct (CEvalContext *pCtx, ICCItem &Item);
-		static ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
+		static ICCItem *Link (const CString &sString, SLinkOptions &Options);
+		static ICCItem *Link (const CString &sString) { SLinkOptions Options; return Link(sString, Options); }
 		static ICCItemPtr LinkFragment (const CString &sString, int iOffset = 0, int *retiLinked = NULL, int *ioiCurLine = NULL);
 		ICCItemPtr Lookup (CEvalContext *pCtx, ICCItem &Item);
 		ICCItemPtr LookupFunction (CEvalContext *pCtx, ICCItem &Name);

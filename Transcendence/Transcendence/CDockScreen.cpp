@@ -1392,10 +1392,10 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	If we have a deferred background setting, then use that (and reset it
 	//	so that we don't use it again).
 
-	if (m_DeferredBackground.iType != EDockScreenBackground::default)
+	if (m_DeferredBackground.iType != EDockScreenBackground::defaultBackground)
 		{
 		DisplayOptions.BackgroundDesc = m_DeferredBackground;
-		m_DeferredBackground.iType = EDockScreenBackground::default;
+		m_DeferredBackground.iType = EDockScreenBackground::defaultBackground;
 		}
 
 	//	Creates the title area
@@ -1471,7 +1471,7 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	to do so.
 
 	SDockScreenBackgroundDesc BackgroundDesc = DisplayOptions.BackgroundDesc;
-	if (BackgroundDesc.iType == EDockScreenBackground::default)
+	if (BackgroundDesc.iType == EDockScreenBackground::defaultBackground)
 		{
 		m_pDisplay->GetDefaultBackground(&BackgroundDesc);
 
@@ -1482,9 +1482,9 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	If we've got a default background and we're a nested frame, then use the
 	//	background of the previous frame.
 
-	if (BackgroundDesc.iType == EDockScreenBackground::default
+	if (BackgroundDesc.iType == EDockScreenBackground::defaultBackground
 			&& m_pDockSession->GetFrameStack().GetCount() > 1
-			&& m_pDockSession->GetFrameStack().GetCallingFrame().BackgroundDesc.iType != EDockScreenBackground::default)
+			&& m_pDockSession->GetFrameStack().GetCallingFrame().BackgroundDesc.iType != EDockScreenBackground::defaultBackground)
 		{
 		BackgroundDesc = m_pDockSession->GetFrameStack().GetCallingFrame().BackgroundDesc;
 		}
@@ -1879,7 +1879,7 @@ void CDockScreen::SetBackground (const SDockScreenBackgroundDesc &Desc)
 
 	//	Use a default, if necessary
 
-	if (Desc.iType == EDockScreenBackground::default)
+	if (Desc.iType == EDockScreenBackground::defaultBackground)
 		{
 		SDockScreenBackgroundDesc DefaultDesc;
 

@@ -67,7 +67,7 @@ struct ParserCtx
 		char *pPos;
 		char *pEndPos;
 
-		CSymbolTable EntityTable;
+		TSortMap<CString, CString> EntityTable;
 
 		CXMLElement *pElement;
 
@@ -88,7 +88,6 @@ struct ParserCtx
 	};
 
 ParserCtx::ParserCtx (IReadBlock *pStream, IXMLParserController *pController) : 
-		EntityTable(TRUE, FALSE),
 		m_pController(pController),
 		m_pParentCtx(NULL),
 		m_bParseRootElement(false),
@@ -103,7 +102,6 @@ ParserCtx::ParserCtx (IReadBlock *pStream, IXMLParserController *pController) :
 	}
 
 ParserCtx::ParserCtx (ParserCtx *pParentCtx, const CString &sString) : 
-		EntityTable(TRUE, FALSE),
 		m_pController(pParentCtx->m_pController),
 		m_pParentCtx(pParentCtx),
 		m_bParseRootElement(false),
@@ -119,17 +117,21 @@ ParserCtx::ParserCtx (ParserCtx *pParentCtx, const CString &sString) :
 
 void ParserCtx::DefineEntity (const CString &sName, const CString &sValue)
 	{
-	CString *pValue = new CString(sValue);
-	EntityTable.AddEntry(sName, pValue);
+	int iPos;
+	if (EntityTable.FindPos(sName, &iPos))
+		{
+		::kernelDebugLogPattern("WARNING: Duplicate entity %s = %s", sName, sValue);
+		}
+	else
+		{
+		EntityTable.InsertSorted(sName, sValue, iPos);
+		}
 	}
 
 CString ParserCtx::LookupEntity (const CString &sName, bool *retbFound)
 	{
-	CString *pValue;
-
-	//	Lookup in table
-
-	if (EntityTable.Lookup(sName, (CObject **)&pValue) != NOERROR)
+	CString *pValue = EntityTable.GetAt(sName);
+	if (!pValue)
 		{
 		if (m_pParentCtx)
 			return m_pParentCtx->LookupEntity(sName, retbFound);

@@ -1024,7 +1024,7 @@ Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 	return rMass;
 	}
 
-ICCItem *CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
+ICCItemPtr CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
 
 //	CalcMaxSpeedByArmorMass
 //
@@ -3788,7 +3788,7 @@ CEffectCreator *CShipClass::OnFindEffectCreator (const CString &sUNID)
 		}
 	}
 
-CString CShipClass::OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const
+CString CShipClass::OnGetMapDescriptionMain (const SMapDescriptionCtx &Ctx) const
 
 //  OnGetMapDescriptionMain
 //
@@ -3932,7 +3932,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return ICCItemPtr(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetArmorLimits().GetMinArmorSpeedBonus());
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_BY_ARMOR_MASS))
-		return ICCItemPtr(CalcMaxSpeedByArmorMass(Ctx));
+		return CalcMaxSpeedByArmorMass(Ctx);
 
 	else if (strEquals(sProperty, PROPERTY_MISC_DEVICE_ITEMS))
 		{

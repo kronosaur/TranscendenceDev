@@ -195,24 +195,25 @@ class CStationEncounterDesc
 class CStationEncounterCtx
 	{
 	public:
-		void AddEncounter (CSystem *pSystem);
+		void AddEncounter (void) { m_Total.iCount++; }
+		void AddEncounter (CSystem &System);
 		bool CanBeEncountered (const CStationEncounterDesc &Desc) const;
-		bool CanBeEncounteredInSystem (CSystem *pSystem, const CStationType *pStationType, const CStationEncounterDesc &Desc) const;
+		bool CanBeEncounteredInSystem (CSystem &System, const CStationType &StationType, const CStationEncounterDesc &Desc) const;
 		TSortMap<CString, int> GetEncounterCountByNode (void) const;
 		int GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc) const;
-		int GetFrequencyForNode (CTopologyNode *pNode, const CStationType *pStation, const CStationEncounterDesc &Desc) const;
-		int GetFrequencyForSystem (CSystem *pSystem, const CStationType *pStation, const CStationEncounterDesc &Desc) const;
-		int GetMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc) const;
-		int GetRequiredForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc) const;
+		int GetFrequencyForNode (CTopologyNode &Node, const CStationType &StationType, const CStationEncounterDesc &Desc) const;
+		int GetFrequencyForSystem (CSystem &System, const CStationType &StationType, const CStationEncounterDesc &Desc) const;
+		int GetMinimumForNode (CTopologyNode &Node, const CStationEncounterDesc &Desc) const;
+		int GetRequiredForNode (CTopologyNode &Node, const CStationEncounterDesc &Desc) const;
 		int GetTotalCount (void) const { return m_Total.iCount; }
 		int GetTotalLimit (void) const { return m_Total.iLimit; }
 		int GetTotalMinimum (void) const { return m_Total.iMinimum; }
-		void IncMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc, int iInc = 1);
+		void IncMinimumForNode (CTopologyNode &Node, int iInc = 1);
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Reinit (const CStationEncounterDesc &Desc);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		static int CalcDistanceToCriteria (const CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria);
+		static int CalcDistanceToCriteria (const CTopologyNode &Node, const CTopologyAttributeCriteria &Criteria);
 
 	private:
 		struct SEncounterStats
@@ -224,8 +225,8 @@ class CStationEncounterCtx
 			mutable int iNodeCriteria = -1;		//  Cached frequency for node (-1 = unknown)
 			};
 
-		int GetBaseFrequencyForNode (CTopologyNode *pNode, const CStationType *pStation, const CStationEncounterDesc &Desc) const;
-		int GetCountInSystem (CSystem *pSystem, const CStationType *pStationType) const;
+		int GetBaseFrequencyForNode (CTopologyNode &Node, const CStationType &StationType, const CStationEncounterDesc &Desc) const;
+		int GetCountInSystem (CSystem &System, const CStationType &StationType) const;
 
 		SEncounterStats m_Total;			//	Encounters in entire game
 		TSortMap<int, SEncounterStats> m_ByLevel;	//	Encounters by system level
@@ -274,6 +275,16 @@ class CStationCreateOptions
 		bool m_bSuppressMapLabel = false;
 		bool m_bSuppressMapOrbit = false;
 		bool m_bSuppressReinforcements = false;
+	};
+
+class CStationEncounterOverrideTable
+	{
+	public:
+		const CStationEncounterDesc &GetEncounterDesc (const CStationType &Type) const;
+		bool InitFromXML (CDesignCollection &Design, const CXMLElement &OverrideTableXML, CString *retsError);
+
+	private:
+		TSortMap<DWORD, CStationEncounterDesc> m_Table;
 	};
 
 //	CStationType --------------------------------------------------------------
@@ -346,7 +357,7 @@ class CAsteroidDesc
 	private:
 		struct SCompositionDesc
 			{
-			LPSTR pszID = NULL;
+			LPCSTR pszID = NULL;
 			int iMiningDifficulty = 0;
 
 			Metric SuccessAdj[EMiningMethodCount] = { 0.0 };
@@ -434,9 +445,8 @@ class CStationType : public CDesignType
 		bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
 		bool CanAttack (void) const { return (m_fCanAttack ? true : false); }
 		bool CanAttackIndependently (void) const { return (m_fNoIndependentAttack ? false : true); }
-		bool CanBeEncountered (void) const { return m_EncounterRecord.CanBeEncountered(GetEncounterDesc()); }
-		bool CanBeEncountered (CSystem *pSystem) const { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, GetEncounterDesc()); }
-		bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
+		bool CanBeEncountered (const CStationEncounterDesc &Desc) const { return m_EncounterRecord.CanBeEncountered(Desc); }
+		bool CanBeEncountered (CSystem &System, const CStationEncounterDesc &Desc) const { return m_EncounterRecord.CanBeEncounteredInSystem(System, *this, Desc); }
 		bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
 		bool CanHitFriends (void) const { return (m_fNoFriendlyFire ? false : true); }
 		TSharedPtr<CG32bitImage> CreateFullImage (SGetImageCtx &ImageCtx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, RECT &retrcImage, int &retxCenter, int &retyCenter) const;
@@ -458,21 +468,19 @@ class CStationType : public CDesignType
 		int GetEjectaAdj (void) { return m_iEjectaAdj; }
 		CWeaponFireDesc *GetEjectaType (void) { return m_pEjectaType; }
 		const CStationEncounterDesc &GetEncounterDesc (void) const;
-		Metric GetEnemyExclusionRadius (void) const { return GetEncounterDesc().GetEnemyExclusionRadius(); }
-		void GetExclusionDesc (CStationEncounterDesc::SExclusionDesc &Exclusion) const { GetEncounterDesc().GetExclusionDesc(Exclusion); }
-		Metric GetExclusionRadius (void) const { return GetEncounterDesc().GetExclusionRadius(); }
+		const CStationEncounterDesc &GetEncounterDescConst (void) { return GetEncounterDesc(); }
 		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		int GetEncounterFrequency (void) { return m_iEncounterFrequency; }
-		int GetEncounterMinimum (CTopologyNode *pNode) { return m_EncounterRecord.GetMinimumForNode(pNode, GetEncounterDesc()); }
+		int GetEncounterMinimum (CTopologyNode &Node, const CStationEncounterDesc &Desc) const { return m_EncounterRecord.GetMinimumForNode(Node, Desc); }
 		CStationEncounterCtx &GetEncounterRecord (void) { return m_EncounterRecord; }
-		int GetEncounterRequired (CTopologyNode *pNode) { return m_EncounterRecord.GetRequiredForNode(pNode, GetEncounterDesc()); }
+		int GetEncounterRequired (CTopologyNode &Node, const CStationEncounterDesc &Desc) const { return m_EncounterRecord.GetRequiredForNode(Node, Desc); }
 		IShipGenerator *GetEncountersTable (void) { return m_pEncounters; }
 		int GetFireRateAdj (void) { return m_iFireRateAdj; }
 		CXMLElement *GetFirstDockScreen (void) { return m_pFirstDockScreen.GetDesc(); }
 		CDesignType *GetFirstDockScreen (CString *retsName) { return m_pFirstDockScreen.GetDockScreen(this, retsName); }
-		int GetFrequencyByLevel (int iLevel) { return m_EncounterRecord.GetFrequencyByLevel(iLevel, GetEncounterDesc()); }
-		int GetFrequencyForNode (CTopologyNode *pNode) { return m_EncounterRecord.GetFrequencyForNode(pNode, this, GetEncounterDesc()); }
-		int GetFrequencyForSystem (CSystem *pSystem) { return m_EncounterRecord.GetFrequencyForSystem(pSystem, this, GetEncounterDesc()); }
+		int GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc) const { return m_EncounterRecord.GetFrequencyByLevel(iLevel, Desc); }
+		int GetFrequencyForNode (CTopologyNode &Node, const CStationEncounterDesc &Desc) const { return m_EncounterRecord.GetFrequencyForNode(Node, *this, Desc); }
+		int GetFrequencyForSystem (CSystem &System, const CStationEncounterDesc &Desc) const { return m_EncounterRecord.GetFrequencyForSystem(System, *this, Desc); }
 		CEffectCreator *GetGateEffect (void) const { return m_Stargate.GetGateEffect(); }
 		Metric GetGravityRadius (void) const { return m_Star.GetGravityRadius(); }
 		const CObjectImageArray &GetHeroImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_HeroImage.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
@@ -482,7 +490,6 @@ class CStationType : public CDesignType
 		int GetImageVariants (void) { return m_Image.GetVariantCount(); }
 		IShipGenerator *GetInitialShips (void) const { return m_pInitialShips; }
 		Metric GetLevelStrength (int iLevel) const;
-		const CAffinityCriteria &GetLocationCriteria (void) const { return GetEncounterDesc().GetLocationCriteria(); }
 		Metric GetMass (void) { return m_rMass; }
 		int GetMaxLightDistance (void) const { return m_Star.GetMaxLightDistance(); }
 		int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
@@ -506,7 +513,7 @@ class CStationType : public CDesignType
 		bool HasAnimations (void) const { return (m_pAnimations != NULL); }
 		bool HasGravity (void) const { return m_Star.HasGravity(); }
 		bool HasWreckImage (void) const { return m_HullDesc.CanBeWrecked(); }
-		void IncEncounterMinimum (CTopologyNode *pNode, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(pNode, GetEncounterDesc(), iInc); }
+		void IncEncounterMinimum (CTopologyNode &Node, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(Node, iInc); }
 		bool IsActive (void) const { return (m_fInactive ? false : true); }
 		bool IsAnonymous (void) const { return (m_fAnonymous ? true : false); }
 		bool IsOutOfPlaneObject (void) { return (m_fOutOfPlane ? true : false); }
@@ -523,7 +530,6 @@ class CStationType : public CDesignType
 		bool IsStatic (void) { return (m_fStatic ? true : false); }
 		bool IsStationEncounter (void) const { return (m_fStationEncounter ? true : false); }
 		bool IsTimeStopImmune (void) const { return (m_fTimeStopImmune ? true : false); }
-		bool IsUniqueInSystem (void) const { return GetEncounterDesc().IsUniqueInSystem(); }
 		bool IsWall (void) { return (m_fWall ? true : false); }
 		void MarkImages (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers);
 		void OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceObject *pObj, const COrbit &Orbit);
@@ -532,7 +538,7 @@ class CStationType : public CDesignType
 		void PaintDevicePositions (CG32bitImage &Dest, int x, int y);
 		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y);
 		void SetImageSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
-		void SetEncountered (CSystem *pSystem) { m_EncounterRecord.AddEncounter(pSystem); }
+		void SetEncountered (CSystem &System) { m_EncounterRecord.AddEncounter(System); }
 		void SetTempChance (int iChance) { m_iChance = iChance; }
 		bool ShowsMapDetails (void) { return (m_fNoMapDetails ? false : true); }
 		bool ShowsMapIcon (void) { return (m_fNoMapIcon ? false : true); }
@@ -542,6 +548,7 @@ class CStationType : public CDesignType
 
 		//	CDesignType overrides
 		static CStationType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designStationType) ? (CStationType *)pType : NULL); }
+		static const CStationType *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designStationType) ? (CStationType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual CCommunicationsHandler *GetCommsHandler (void) override;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override;

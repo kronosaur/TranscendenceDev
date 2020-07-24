@@ -4,7 +4,6 @@
 
 #include "PreComp.h"
 #include <math.h>
-#include <sstream>
 
 #define CLASS_ATTRIB						CONSTLIT("class")
 #define DAMAGE_ADJ_ATTRIB					CONSTLIT("damageAdj")
@@ -57,7 +56,7 @@
 #define STORAGE_SERVICE_EXTENSION			CONSTLIT("serviceExtension")
 #define STORAGE_SERVICE_USER				CONSTLIT("serviceUser")
 
-static char *g_pszDestructionCauses[killedCount] =
+static const char *g_pszDestructionCauses[killedCount] =
 	{
 	"removedFromSystem",
 
@@ -82,7 +81,7 @@ static char *g_pszDestructionCauses[killedCount] =
 
 #define DESTRUCTION_CAUSES_COUNT	(sizeof(g_pszDestructionCauses) / sizeof(g_pszDestructionCauses[0]))
 
-static char *g_pszDamageResults[damageResultCount] =
+static const char *g_pszDamageResults[damageResultCount] =
 	{
 	"noDamage",
 	"absorbedByShields",
@@ -97,7 +96,7 @@ static char *g_pszDamageResults[damageResultCount] =
 	"shattered",
 	};
 
-static char *g_pszMessageID[msgCount] =
+static const char *g_pszMessageID[msgCount] =
 	{
 	"",							//	0
 	"AttackTarget",				//	msgAttack
@@ -132,8 +131,8 @@ static char *g_pszMessageID[msgCount] =
 
 struct SGenomeData
 	{
-	char *pszID;
-	char *pszName;
+	const char *pszID;
+	const char *pszName;
 	GenomeTypes iType;
 	};
 
@@ -151,7 +150,7 @@ static SGenomeData g_Genome[] =
 
 #define GENOME_COUNT				(sizeof(g_Genome) / sizeof(g_Genome[0]))
 
-static char *LOAD_STATE_STRINGS[] =
+static const char *LOAD_STATE_STRINGS[] =
 	{
 	"Unknown",
 	"Loading object",
@@ -1743,26 +1742,48 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 		return CG32bitPixel((dwColor >> 16) & 0xFF, (dwColor >> 8) & 0xFF, dwColor & 0xFF);
 		}
 
-	// If it starts with an 0x we expect an RGB DWORD (ex, 0xFF00FF) - Caps safe
-
-	else if (*pPos == '0' && *(pPos + 1) == 'x')
-	{
-		std::stringstream hex_ss;
-		hex_ss << std::hex << sString;
-		DWORD dwColor;
-		hex_ss >> dwColor;
-		return CG32bitPixel((BYTE)(dwColor >> 16), (BYTE)(dwColor >> 8), (BYTE)dwColor);
-	}
-
-	//	Otherwise, we expect three comma-separated values
+	//	If it starts with an 0x we expect an RGB DWORD (ex, 0xFF00FF) - Caps safe
+	//	or 3 comma separated values.
 
 	else
 		{
-		int iRed = strParseInt(pPos, 0, &pPos, NULL); if (*pPos) pPos++;
-		int iGreen = strParseInt(pPos, 0, &pPos, NULL); if (*pPos) pPos++;
-		int iBlue = strParseInt(pPos, 0, &pPos, NULL);
+		DWORD dwValue1 = strParseInt(pPos, 0, &pPos);
 
-		return CG32bitPixel(iRed, iGreen, iBlue);
+		//	Skip delimiter, if any
+
+		while (strIsWhitespace(pPos))
+			pPos++;
+
+		if (*pPos)
+			pPos++;
+
+		//	See if we have more.
+
+		bool bNotFound;
+		DWORD dwValue2 = strParseInt(pPos, 0, &pPos, &bNotFound);
+
+		//	If not, then we've only got a single value, so we split it into bytes.
+
+		if (bNotFound)
+			{
+			return CG32bitPixel((BYTE)((dwValue1 & 0xff0000) >> 16), (BYTE)((dwValue1 & 0x00ff00) >> 8), (BYTE)(dwValue1 & 0x0000ff));
+			}
+
+		//	Skip delimiter, if any
+
+		while (strIsWhitespace(pPos))
+			pPos++;
+
+		if (*pPos)
+			pPos++;
+
+		//	Last value
+
+		DWORD dwValue3 = strParseInt(pPos, 0, &pPos);
+
+		//	Compose
+
+		return CG32bitPixel(dwValue1 & 0xff, dwValue2 & 0xff, dwValue3 & 0xff);
 		}
 	}
 

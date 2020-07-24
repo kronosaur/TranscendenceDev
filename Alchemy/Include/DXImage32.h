@@ -556,14 +556,6 @@ class CGBlendScreen : public TBlendImpl<CGBlendScreen>
 			}
 	};
 
-//	Implementation Helpers -----------------------------------------------------
-
-#include "TBlt.h"
-#include "TFill.h"
-#include "TCirclePainter.h"
-#include "TLinePainter.h"
-#include "TRoundedRectPainter.h"
-
 //	Utilities
 
 class CGImageCache

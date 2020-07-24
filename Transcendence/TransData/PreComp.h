@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include "Alchemy.h"
+#include "Euclid.h"
 #include "XMLUtil.h"
 #include "TransData.h"
 

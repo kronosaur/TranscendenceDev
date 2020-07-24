@@ -618,7 +618,7 @@ void CJSONValue::Insert (const CString &sKey, const CJSONValue &Source)
 	pObj->Insert(sKey, Source);
 	}
 
-void CJSONValue::InsertHandoff (CJSONValue &Source)
+void CJSONValue::Insert (CJSONValue &&Source)
 
 //	InsertHandoff
 //
@@ -632,7 +632,7 @@ void CJSONValue::InsertHandoff (CJSONValue &Source)
 	pNewValue->TakeHandoff(Source);
 	}
 
-void CJSONValue::InsertHandoff (const CString &sKey, CJSONValue &Source)
+void CJSONValue::Insert (const CString &sKey, CJSONValue &&Source)
 
 //	InsertHandoff
 //

@@ -104,7 +104,7 @@ static CShieldClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 		{	20000,	6700,	10900000000.0,	600000, },
 	};
 
-static char *CACHED_EVENTS[CShieldClass::evtCount] =
+static const char *CACHED_EVENTS[CShieldClass::evtCount] =
 	{
 		"GetMaxHP",
 		"OnShieldDamage",
@@ -266,7 +266,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	if (Ctx.pDesc->FireOnDamageShields(Ctx, pDevice->GetDeviceSlot()))
 		return (Ctx.iDamage == 0);
 
-	FireOnShieldDamage(CItemCtx(pShip, pDevice), Ctx);
+	FireOnShieldDamage(ItemCtx, Ctx);
 
 	//	If we reflect, then create the reflection
 
@@ -335,7 +335,8 @@ bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *p
 //	when installed on the same ship
 
 	{
-	int iType = pWeapon->GetDamageType(CItemCtx(pSource, pDevice));
+	CItemCtx ItemCtx(pSource, pDevice);
+	int iType = pWeapon->GetDamageType(ItemCtx);
 	if (iType != -1 
 			&& m_WeaponSuppress.InSet(iType)
 			&& pDevice->IsWorking()
@@ -848,7 +849,10 @@ bool CShieldClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = sResult;
 		}
 	else if (strEquals(sField, FIELD_BALANCE))
-		*retsValue = strFromInt(CalcBalance(CItemCtx(), SBalance()));
+		{
+		CItemCtx ItemCtx;
+		*retsValue = strFromInt(CalcBalance(ItemCtx));
+		}
 	else if (strEquals(sField, FIELD_WEAPON_SUPPRESS))
 		{
 		if (m_WeaponSuppress.IsEmpty())
@@ -1108,7 +1112,8 @@ int CShieldClass::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDev
 //	> 100	The weapon is more effective than average.
 
 	{
-	const DamageDesc *pDamage = pWeapon->GetDamageDesc(CItemCtx(pAttacker, pWeapon));
+	CItemCtx ItemCtx(pAttacker, pWeapon);
+	const DamageDesc *pDamage = pWeapon->GetDamageDesc(ItemCtx);
 	if (pDamage == NULL)
 		return 100;
 

@@ -77,7 +77,7 @@ class TPropertyHandler
 				}
 			catch (...)
 				{
-				return ICCItemPtr(strPatternSubst(CONSTLIT("Crash getting property: %s"), sProperty));
+				return ICCItemPtr(strPatternSubst(CONSTLIT("Crash getting property by index: %d"), iIndex));
 				}
 			}
 

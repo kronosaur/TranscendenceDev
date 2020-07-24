@@ -19,17 +19,17 @@ int g_DaysOfLeapYearByMonth[] =
 	//		J   F   M   A   M   J   J   A   S   O   N   D
 	{	0,  31, 60, 91, 121,152,182,213,244,274,305,335,366 };
 
-char *g_szMonthName[] =
+const char *g_szMonthName[] =
 	{
 	"",	"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
 	};
 
-char *g_szMonthNameShort[] =
+const char *g_szMonthNameShort[] =
 	{
 	"",	"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 	};
 
-char *g_szDayNameShort[] =
+const char *g_szDayNameShort[] =
 	{
 	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
 	};

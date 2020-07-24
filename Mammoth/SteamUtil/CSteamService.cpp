@@ -20,10 +20,10 @@ struct SSteamEntryCreate
 	{
 	DWORD dwUNID;
 	int iAppID;								//	AppID to check for ownership
-	char *pszName;
+	const char *pszName;
 	EExtensionTypes iType;
 	CMultiverseCatalogEntry::ELicenseTypes iLicense;
-	char *pszDesc;
+	const char *pszDesc;
 	};
 
 //	This is a list of all extensions available on the Steam platform. Not all 

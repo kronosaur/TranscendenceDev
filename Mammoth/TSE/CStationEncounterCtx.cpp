@@ -5,28 +5,27 @@
 
 #include "PreComp.h"
 
-void CStationEncounterCtx::AddEncounter (CSystem *pSystem)
+void CStationEncounterCtx::AddEncounter (CSystem &System)
 
 //	AddEncounter
 //
 //	Adds an encounter at the given level
 	
 	{
-	m_Total.iCount++;
+	AddEncounter();
 
 	//	By Level
 
-	if (pSystem 
-			&& pSystem->GetLevel() >= 1 
-			&& pSystem->GetLevel() <= MAX_TECH_LEVEL)
+	if (System.GetLevel() >= 1 
+			&& System.GetLevel() <= MAX_TECH_LEVEL)
 		{
-		SEncounterStats *pCount = m_ByLevel.SetAt(pSystem->GetLevel());
+		SEncounterStats *pCount = m_ByLevel.SetAt(System.GetLevel());
 		pCount->iCount++;
 		}
 
 	//	By Node
 
-	CTopologyNode *pNode = (pSystem ? pSystem->GetTopology() : NULL);
+	CTopologyNode *pNode = System.GetTopology();
 	if (pNode)
 		{
 		SEncounterStats *pCount = m_ByNode.SetAt(pNode->GetID());
@@ -34,7 +33,7 @@ void CStationEncounterCtx::AddEncounter (CSystem *pSystem)
 		}
 	}
 
-int CStationEncounterCtx::CalcDistanceToCriteria (const CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria)
+int CStationEncounterCtx::CalcDistanceToCriteria (const CTopologyNode &Node, const CTopologyAttributeCriteria &Criteria)
 
 //	CalcDistanceToCriteria
 //
@@ -47,17 +46,14 @@ int CStationEncounterCtx::CalcDistanceToCriteria (const CTopologyNode *pNode, co
 //	negative number. If we cannot reach such a node, we return -100.
 
 	{
-	if (pNode == NULL)
-		return 100;
-
-	int iDist = pNode->GetTopology().GetDistanceToCriteria(pNode, Criteria);
+	int iDist = Node.GetTopology().GetDistanceToCriteria(&Node, Criteria);
 	if (iDist == -1)
 		return 100;
 	else if (iDist > 0)
 		return iDist;
 	else
 		{
-		iDist = pNode->GetTopology().GetDistanceToCriteriaNoMatch(pNode, Criteria);
+		iDist = Node.GetTopology().GetDistanceToCriteriaNoMatch(&Node, Criteria);
 		if (iDist == -1)
 			return -100;
 		else
@@ -82,30 +78,27 @@ bool CStationEncounterCtx::CanBeEncountered (const CStationEncounterDesc &Desc) 
 	return (m_Total.iCount < m_Total.iLimit);
 	}
 
-bool CStationEncounterCtx::CanBeEncounteredInSystem (CSystem *pSystem, const CStationType *pStationType, const CStationEncounterDesc &Desc) const
+bool CStationEncounterCtx::CanBeEncounteredInSystem (CSystem &System, const CStationType &StationType, const CStationEncounterDesc &Desc) const
 
 //	CanBeEncounteredInSystem
 //
 //	Returns TRUE if we can encounter the given station type in the system.
 
 	{
-	if (pSystem)
-		{
-		int iLimit;
-		if (Desc.HasSystemLimit(&iLimit) && GetCountInSystem(pSystem, pStationType) >= iLimit)
-			return false;
+	int iLimit;
+	if (Desc.HasSystemLimit(&iLimit) && GetCountInSystem(System, StationType) >= iLimit)
+		return false;
 
-		//	Check for a level limit
+	//	Check for a level limit
 
-		const SEncounterStats *pCount = m_ByLevel.GetAt(pSystem->GetLevel());
-		if (pCount && pCount->iLimit != -1 && pCount->iCount >= pCount->iLimit)
-			return false;
-		}
+	const SEncounterStats *pCount = m_ByLevel.GetAt(System.GetLevel());
+	if (pCount && pCount->iLimit != -1 && pCount->iCount >= pCount->iLimit)
+		return false;
 
 	return CanBeEncountered(Desc);
 	}
 
-int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, const CStationType *pStation, const CStationEncounterDesc &Desc) const
+int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode &Node, const CStationType &Station, const CStationEncounterDesc &Desc) const
 
 //  GetBaseFrequencyForNode
 //
@@ -113,9 +106,6 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, const C
 //  descriptor and the node.
 
 	{
-	if (pNode == NULL)
-		return 0;
-
 	//  See if we've got a cached value for this node. (Even if not, we need
 	//  the structure so we can cache it.)
 	//
@@ -123,10 +113,10 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, const C
 	//	m_ByNode. In the future we should store this elsewhere or perhaps deal
 	//	with not being able to add it (use GetAt instead).
 
-	const SEncounterStats *pStats = const_cast<CStationEncounterCtx *>(this)->m_ByNode.SetAt(pNode->GetID());
+	const SEncounterStats *pStats = const_cast<CStationEncounterCtx *>(this)->m_ByNode.SetAt(Node.GetID());
 	if (pStats->iNodeCriteria == -1)
 		{
-		pStats->iNodeCriteria = Desc.CalcFrequencyForNode(*pNode);
+		pStats->iNodeCriteria = Desc.CalcFrequencyForNode(Node);
 		}
 
 	//  Return cached value
@@ -134,14 +124,14 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, const C
 	return pStats->iNodeCriteria;
 	}
 
-int CStationEncounterCtx::GetCountInSystem (CSystem *pSystem, const CStationType *pStationType) const
+int CStationEncounterCtx::GetCountInSystem (CSystem &System, const CStationType &StationType) const
 
 //	GetCountInSystem
 //
 //	Get the number of stations of this type already in the system.
 
 	{
-	CTopologyNode *pNode = (pSystem ? pSystem->GetTopology() : NULL);
+	CTopologyNode *pNode = System.GetTopology();
 	if (pNode == NULL)
 		return 0;
 
@@ -181,7 +171,7 @@ int CStationEncounterCtx::GetFrequencyByLevel (int iLevel, const CStationEncount
 	return Desc.GetFrequencyByLevel(iLevel);
 	}
 
-int CStationEncounterCtx::GetFrequencyForNode (CTopologyNode *pNode, const CStationType *pStation, const CStationEncounterDesc &Desc) const
+int CStationEncounterCtx::GetFrequencyForNode (CTopologyNode &Node, const CStationType &StationType, const CStationEncounterDesc &Desc) const
 
 //	GetFrequencyForNode
 //
@@ -195,16 +185,16 @@ int CStationEncounterCtx::GetFrequencyForNode (CTopologyNode *pNode, const CStat
 
 	//	Check for a level limit
 
-	const SEncounterStats *pCount = m_ByLevel.GetAt(pNode->GetLevel());
+	const SEncounterStats *pCount = m_ByLevel.GetAt(Node.GetLevel());
 	if (pCount && pCount->iLimit != -1 && pCount->iCount >= pCount->iLimit)
 		return 0;
 
 	//  Return based on the frequency for this node
 
-	return GetBaseFrequencyForNode(pNode, pStation, Desc);
+	return GetBaseFrequencyForNode(Node, StationType, Desc);
 	}
 
-int CStationEncounterCtx::GetFrequencyForSystem (CSystem *pSystem, const CStationType *pStation, const CStationEncounterDesc &Desc) const
+int CStationEncounterCtx::GetFrequencyForSystem (CSystem &System, const CStationType &StationType, const CStationEncounterDesc &Desc) const
 
 //	GetFrequencyForSystem
 //
@@ -220,21 +210,24 @@ int CStationEncounterCtx::GetFrequencyForSystem (CSystem *pSystem, const CStatio
 	//	stations of this type in the system
 
 	int iLimit;
-	if (Desc.HasSystemLimit(&iLimit) && GetCountInSystem(pSystem, pStation) >= iLimit)
+	if (Desc.HasSystemLimit(&iLimit) && GetCountInSystem(System, StationType) >= iLimit)
 		return 0;
 
 	//	Check for a level limit
 
-	const SEncounterStats *pCount = m_ByLevel.GetAt(pSystem->GetLevel());
+	const SEncounterStats *pCount = m_ByLevel.GetAt(System.GetLevel());
 	if (pCount && pCount->iLimit != -1 && pCount->iCount >= pCount->iLimit)
 		return 0;
 
 	//	Otherwise, let the descriptor figure out the chance
 
-	return GetBaseFrequencyForNode(pSystem->GetTopology(), pStation, Desc);
+	if (CTopologyNode *pNode = System.GetTopology())
+		return GetBaseFrequencyForNode(*pNode, StationType, Desc);
+	else
+		return 0;
 	}
 
-int CStationEncounterCtx::GetMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc) const
+int CStationEncounterCtx::GetMinimumForNode (CTopologyNode &Node, const CStationEncounterDesc &Desc) const
 
 //	GetMinimumForNode
 //
@@ -242,21 +235,21 @@ int CStationEncounterCtx::GetMinimumForNode (CTopologyNode *pNode, const CStatio
 //	0 means no minimum value.
 
 	{
-	const SEncounterStats *pStats = m_ByNode.GetAt(pNode->GetID());
+	const SEncounterStats *pStats = m_ByNode.GetAt(Node.GetID());
 	if (pStats == NULL)
 		return 0;
 
 	return pStats->iMinimum;
 	}
 
-int CStationEncounterCtx::GetRequiredForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc) const
+int CStationEncounterCtx::GetRequiredForNode (CTopologyNode &Node, const CStationEncounterDesc &Desc) const
 
 //	GetRequiredForNode
 //
 //	Returns the number of encounters that are still needed for this node.
 
 	{
-	const SEncounterStats *pStats = m_ByNode.GetAt(pNode->GetID());
+	const SEncounterStats *pStats = m_ByNode.GetAt(Node.GetID());
 	if (pStats == NULL || pStats->iMinimum == 0)
 		return 0;
 
@@ -278,14 +271,14 @@ int CStationEncounterCtx::GetRequiredForNode (CTopologyNode *pNode, const CStati
 		return 0;
 	}
 
-void CStationEncounterCtx::IncMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc, int iInc)
+void CStationEncounterCtx::IncMinimumForNode (CTopologyNode &Node, int iInc)
 
 //	IncMinimumForNode
 //
 //	Increments the minimum for the node.
 
 	{
-	SEncounterStats *pStats = m_ByNode.SetAt(pNode->GetID());
+	SEncounterStats *pStats = m_ByNode.SetAt(Node.GetID());
 	pStats->iMinimum += iInc;
 	}
 

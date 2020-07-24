@@ -344,7 +344,7 @@ void CAreaDamage::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Vi
 			BYTE iAlpha = (BYTE)mathRandom(128, 255);
 			Dest.DrawDot(x, y, 
 					CG32bitPixel::Blend(0, rgbColor, iAlpha), 
-					markerSmallRound);
+					markerRoundDot);
 			}
 		}
 	}

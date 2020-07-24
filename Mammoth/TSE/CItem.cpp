@@ -1414,7 +1414,8 @@ bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem 
 	//	Otherwise, see if we have properties.
 
 	CCodeChainCtx Ctx(GetUniverse());
-	ICCItemPtr pEnhancementDesc(GetItemProperty(Ctx, CItemCtx(*this), PROPERTY_CORE_ENHANCEMENT, false));
+	CItemCtx ItemCtx(*this);
+	ICCItemPtr pEnhancementDesc(GetItemProperty(Ctx, ItemCtx, PROPERTY_CORE_ENHANCEMENT, false));
 	if (pEnhancementDesc && !pEnhancementDesc->IsNil())
 		{
 		CString sError;
@@ -1550,7 +1551,8 @@ int CItem::GetMassKg (void) const
 //	Returns the mass of a single unit of the item type.
 
 	{
-	return m_pItemType->GetMassKg(CItemCtx(*this));
+	CItemCtx ItemCtx(*this);
+	return m_pItemType->GetMassKg(ItemCtx);
 	}
 
 int CItem::GetMaxCharges (void) const
@@ -2377,13 +2379,15 @@ bool CItem::HasSpecialAttribute (const CString &sAttrib) const
 
 		CString sError;
 		CPropertyCompare Compare;
-		if (!Compare.Parse(CCodeChainCtx(GetUniverse()), sProperty, &sError))
+		CCodeChainCtx CCX(GetUniverse());
+		if (!Compare.Parse(CCX, sProperty, &sError))
 			{
 			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
 			return false;
 			}
 
-		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCodeChainCtx(GetUniverse()), CItemCtx(*this), Compare.GetProperty(), false));
+		CItemCtx ItemCtx(*this);
+		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCX, ItemCtx, Compare.GetProperty(), false));
 		return Compare.Eval(pValue);
 		}
 	else

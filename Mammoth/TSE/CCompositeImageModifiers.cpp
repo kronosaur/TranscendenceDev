@@ -19,7 +19,7 @@ bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) 
 			&& m_bFullImage == Val.m_bFullImage);
 	}
 
-void CCompositeImageModifiers::Apply (SGetImageCtx &Ctx, CObjectImageArray *retImage) const
+void CCompositeImageModifiers::Apply (const SGetImageCtx &Ctx, CObjectImageArray *retImage) const
 
 //	Apply
 //

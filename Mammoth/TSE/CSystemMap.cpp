@@ -86,7 +86,8 @@ bool CSystemMap::AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect,
 	//	Create a new painter for the effect. If that fails, then there's nothing
 	//	we can do.
 
-	IEffectPainter *pPainter = pEffect->CreatePainter(CCreatePainterCtx());
+	CCreatePainterCtx CreateCtx;
+	IEffectPainter *pPainter = pEffect->CreatePainter(CreateCtx);
 	if (pPainter == NULL)
 		return false;
 
@@ -643,7 +644,8 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 		//	To load the painter we need to cons up an SLoadCtx. Fortunately.
 		//	we have the system version saved in the universe load ctx.
 
-		m_Annotations[i].pPainter = CEffectCreator::CreatePainterFromStream(SLoadCtx(Ctx));
+		SLoadCtx LoadCtx(Ctx);
+		m_Annotations[i].pPainter = CEffectCreator::CreatePainterFromStream(LoadCtx);
 
 		//	Load remaining fields
 

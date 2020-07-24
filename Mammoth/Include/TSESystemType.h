@@ -47,6 +47,7 @@ class CSystemType : public CDesignType
 		ALERROR FireSystemCreateCode (SSystemCreateCtx &SysCreateCtx, ICCItem *pCode, const COrbit &OrbitDesc, CString *retsError);
 		DWORD GetBackgroundUNID (void) { return m_dwBackgroundUNID; }
 		CXMLElement *GetDesc (void) { return m_pDesc; }
+		const CXMLElement *GetEncounterOverridesXML (void) const { return m_pEncounterOverrides; }
 		const CImageFilterStack &GetImageFilters (void) const { return m_ImageFilters; }
 		const CSpaceObjectCriteria &GetImageFiltersCriteria (void) const { return m_ImageFilterCriteria; }
 		const CEnhancementDesc &GetItemEnhancements (void) const { return m_Enhancements; }
@@ -81,6 +82,7 @@ class CSystemType : public CDesignType
 
 		CXMLElement *m_pDesc;				//	System definition
 		CXMLElement *m_pLocalTables;		//	Local system tables
+		const CXMLElement *m_pEncounterOverrides = NULL;
 
 		bool m_bNoRandomEncounters;			//	TRUE if we don't have random encounters
 		bool m_bNoExtraEncounters;			//	TRUE if we don't add new encounters to

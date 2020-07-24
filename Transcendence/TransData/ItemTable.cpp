@@ -29,7 +29,7 @@
 
 #define TOTAL_COUNT_FILENAME				CONSTLIT("TransData_ItemCount.txt")
 
-static char *g_szTypeCode[] =
+static const char *g_szTypeCode[] =
 	{
 	"",
 	"Armor",
@@ -42,7 +42,7 @@ static char *g_szTypeCode[] =
 	"Misc",
 	};
 
-static char *g_szFreqCode[] =
+static const char *g_szFreqCode[] =
 	{
 	"",	"C", "UC", "R", "VR", "NR",
 	};

@@ -96,8 +96,8 @@ static int TITLE_CAP_EXCEPTIONS_COUNT = sizeof(TITLE_CAP_EXCEPTIONS) / sizeof(TI
 
 struct SVerbData
 	{
-	char *pszKey;							//	The root verb form
-	char *pszPlural;						//	Plural version
+	const char *pszKey;							//	The root verb form
+	const char *pszPlural;						//	Plural version
 	};
 
 static TStaticStringTable<SVerbData, 3> VERB_FORM_TABLE = {

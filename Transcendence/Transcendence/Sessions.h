@@ -170,7 +170,7 @@ class CHelpSession : public IHISession
 			CGameKeys::Keys iCmd = CGameKeys::keyNone;
 			CGameKeys::Keys iCmd2 = CGameKeys::keyNone;
 			DWORD dwVirtKey = CVirtualKeyData::INVALID_VIRT_KEY;
-			char *szDesc = NULL;
+			const char *szDesc = NULL;
 			};
 
 		static constexpr int PANE_WIDTH = 580;
@@ -242,12 +242,12 @@ class CKeyboardMapSession : public IHISession
 
 		struct SKeyData
 			{
-			char *pszKeyID;
+			const char *pszKeyID;
 			int xCol;                       //  A normal key takes up two columns (col 0 = left-most)
 			int yRow;                       //  A normal key takes one row (row 0 = top row)
 			int cxWidth;                    //  Width of the key in columns
 			int cyHeight;					//	Height in rows
-			char *pszLabel;                 //  Label in keyboard
+			const char *pszLabel;			//  Label in keyboard
 			EKeySymbols iSymbol;            //  Symbol for label label
 			DWORD dwFlags;
 			};
@@ -255,7 +255,7 @@ class CKeyboardMapSession : public IHISession
 		struct SDeviceData
 			{
 			EDeviceTypes iDevice = deviceNone;	//	Device type
-			char *pszLabel = NULL;				//	Label for the device (e.g., keyboard, mouse, controller)
+			const char *pszLabel = NULL;		//	Label for the device (e.g., keyboard, mouse, controller)
 			const SKeyData *pKeys = NULL;		//	Keys available to map
 			int iKeyCount = 0;					//	Number of keys in map
 

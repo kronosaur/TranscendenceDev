@@ -94,7 +94,7 @@ static SStdDeviceStats STD_DEVICE_STATS[MAX_ITEM_LEVEL] =
 		{	1800000000,	},
 	};
 
-static char *CACHED_EVENTS[CDeviceClass::evtCount] =
+static const char *CACHED_EVENTS[CDeviceClass::evtCount] =
 	{
 		"GetOverlayType",
 	};
@@ -652,7 +652,10 @@ bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, i
 		*retiVariant = iVariant;
 
 	if (retpDesc)
-		*retpDesc = pWeapon->GetWeaponFireDesc(CItemCtx(), Ammo);
+		{
+		CItemCtx ItemCtx;
+		*retpDesc = pWeapon->GetWeaponFireDesc(ItemCtx, Ammo);
+		}
 
 	return true;
 	}

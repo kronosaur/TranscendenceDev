@@ -78,6 +78,7 @@ class CElementTable : public IElementGenerator
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, TUniquePtr<IElementGenerator> &retGenerator);
 
+		virtual void DebugDump (SCtx &Ctx) const override;
 		virtual void Generate (SCtx &Ctx, TArray<SResult> &retResults) const override;
 
 	private:
@@ -340,6 +341,9 @@ bool IElementGenerator::GenerateAsTable (SCtx &Ctx, CXMLElement *pDesc, TArray<S
 		if (retsError) *retsError = LoadCtx.sError;
 		return false;
 		}
+
+	if (Ctx.bDebug)
+		pGenerator->DebugDump(Ctx);
 
 	//	Generate
 
@@ -721,6 +725,17 @@ ALERROR CElementTable::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, T
 
 	retGenerator.Set(pEntry);
 	return NOERROR;
+	}
+
+void CElementTable::DebugDump (SCtx &Ctx) const
+
+//	DebugDump
+//
+//	Output dump
+
+	{
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Entry\t%d"), m_Table[i].iChance));
 	}
 
 void CElementTable::Generate (SCtx &Ctx, TArray<SResult> &retResults) const
