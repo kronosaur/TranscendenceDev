@@ -259,6 +259,7 @@ class CDesignType
 		void UnbindDesign (void) { m_pInheritFrom = NULL; m_bBindCalled = false; OnUnbindDesign(); }
 		void WriteToStream (IWriteStream *pStream);
 
+		void AccumulateScript (const CString &sScript, TSortMap<CString, CScript::SScriptEntry> &Script) const { if (m_pExtra) m_pExtra->Language.AccumulateScript(this, sScript, Script); }
 		void AddExternals (TArray<CString> *retExternals) { OnAddExternals(retExternals); }
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		static CDesignType *AsType (CDesignType *pType) { return pType; }

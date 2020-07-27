@@ -377,6 +377,9 @@
     <ClInclude Include="..\Include\TSEAccessibilitySettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ScriptParserImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1518,6 +1521,12 @@
     </ClCompile>
     <ClCompile Include="CStationEncounterOverrideTable.cpp">
       <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CScript.cpp">
+      <Filter>Source Files\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="CScriptParser.cpp">
+      <Filter>Source Files\Language</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

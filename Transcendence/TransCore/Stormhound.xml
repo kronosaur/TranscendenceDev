@@ -229,26 +229,29 @@
 		<Language>
 			<Text id="FirstMeetingIntro">
 				(list
-					{
-						desc: (cat
-							"The airlock opens and you see two Commonwealth troopers train their weapons on you. "
-							"\"You'd better have an amazing reason for being here, or this is going to be the "
-							"worst day of your life.\""
-							)
-							
-						label: "\"Uh, '[S]tormhound'?\""
-						}
-					{
-						desc: (cat
-							"A voice behind the troopers says, \"Stand down, gentlemen.\"\n\n"
-							
-							"A short, elegant man in a neolinen suit appears. He walks past the two troopers "
-							"and dismisses them with a nod.\n\n"
-							
-							"\"Good day, %name%!\""
-							)
-						}
+					{	descID: 'textFirstMeetingIntro1		labelID: 'actionFirstMeetingIntro1	}
+					{	descID: 'textFirstMeetingIntro2		}
 					)
+			</Text>
+			<Text id="textFirstMeetingIntro1">
+			
+				The airlock opens and you see two Commonwealth troopers train 
+				their weapons on you.
+
+				"You'd better have an amazing reason for being here, or this is
+				going to be the worst day of your life."
+
+			</Text>
+			<String id="actionFirstMeetingIntro1">"Uh, '[S]tormhound'?"</String>
+			<Text id="textFirstMeetingIntro2">
+			
+				A voice behind the troopers says, "Stand down, gentlemen."
+							
+				A short, elegant man in a neolinen suit appears. He walks past 
+				the two troopers and dismisses them with a nod.
+							
+				"Good day, %name%!"
+
 			</Text>
 
 			<Text id="MeetingIntro">

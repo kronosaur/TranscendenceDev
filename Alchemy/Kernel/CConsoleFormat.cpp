@@ -56,6 +56,7 @@ int CConsoleFormat::WrapText (const CString &sText, TArray<CString> &retLines, i
 		int iLineLen = 0;
 		const char *pLineStart = pSrc;
 		bool bLineDone = false;
+		bool bParagraphBreak = false;
 
 		while (!bLineDone)
 			{
@@ -79,6 +80,7 @@ int CConsoleFormat::WrapText (const CString &sText, TArray<CString> &retLines, i
 					if (*pSrc == '\n' || *pSrc == '\r')
 						{
 						bLineDone = true;
+						bParagraphBreak = true;
 						break;
 						}
 					else
@@ -107,6 +109,13 @@ int CConsoleFormat::WrapText (const CString &sText, TArray<CString> &retLines, i
 			retLines.Insert(CString(pLineStart, iLineLen));
 			pSrc = pLineStart + iLineLen;
 			iLinesAdded++;
+
+			if (bParagraphBreak)
+				{
+				retLines.Insert(NULL_STR);
+				iLinesAdded++;
+				bParagraphBreak = false;
+				}
 			}
 		else
 			break;

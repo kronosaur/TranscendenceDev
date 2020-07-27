@@ -403,6 +403,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="Reference.cpp" />
+    <ClCompile Include="Script.cpp" />
     <ClCompile Include="ShieldStats.cpp" />
     <ClCompile Include="ShipImage.cpp" />
     <ClCompile Include="ShipImageChart.cpp" />

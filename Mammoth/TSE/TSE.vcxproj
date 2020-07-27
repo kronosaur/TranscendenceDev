@@ -324,6 +324,7 @@
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
     <ClInclude Include="..\Include\TSEConfigurationDescInlines.h" />
     <ClInclude Include="ItemGeneratorImpl.h" />
+    <ClInclude Include="ScriptParserImpl.h" />
     <ClInclude Include="SystemCreateImpl.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="GameFileCompatibility.h" />
@@ -537,6 +538,8 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CRTFText.cpp" />
+    <ClCompile Include="CScript.cpp" />
+    <ClCompile Include="CScriptParser.cpp" />
     <ClCompile Include="CSendMessageOrder.cpp" />
     <ClCompile Include="CSentryOrder.cpp" />
     <ClCompile Include="CSFXOptions.cpp" />

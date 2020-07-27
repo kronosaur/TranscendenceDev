@@ -866,6 +866,7 @@ class CMemoryWriteStream : public CObject, public IWriteStream
 
 		char *GetPointer (void) { return m_pBlock; }
 		int GetLength (void) { return m_iCurrentSize; }
+		void Seek (int iPos);
 
 		//	IWriteStream virtuals
 

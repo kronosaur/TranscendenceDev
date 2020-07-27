@@ -5,6 +5,8 @@
 
 #pragma once
 
+class CDesignCollection;
+class CScript;
 struct SDesignLoadCtx;
 
 enum NounFlags
@@ -126,6 +128,41 @@ class CLanguage
 		static CString ParseVar (char *pPos, SVarInfo &retVarInfo, char **retpPos);
 	};
 
+class CScript
+	{
+	public:
+		enum class ParagraphStyle
+			{
+			none,
+
+			normal,					//	A description paragraph
+			normalLine,				//	Normal paragraph, but single line break
+			centered,				//	A centered block of text
+			centeredLine,			//	A centered line of text
+			};
+			
+		struct SParagraph
+			{
+			CString sText;
+			ParagraphStyle iStyle = ParagraphStyle::none;
+			};
+
+		struct SScriptEntry
+			{
+			const CDesignType *pSource = NULL;
+			CString sScript;
+			};
+
+		void DeleteAll (void) { m_Script.DeleteAll(); }
+		void Init (const CDesignCollection &Design, const TSortMap<CString, SScriptEntry> &Text);
+		void OutputConsole (void) const;
+
+	private:
+		void AddScriptText (const CDesignCollection &Design, const SScriptEntry &Entry);
+
+		TArray<SParagraph> m_Script;
+	};
+
 class CLanguageDataBlock
 	{
 	public:
@@ -147,15 +184,16 @@ class CLanguageDataBlock
 		CLanguageDataBlock (const CLanguageDataBlock &Src) { Copy(Src); }
 		~CLanguageDataBlock (void) { CleanUp(); }
 
-		inline CLanguageDataBlock &operator= (const CLanguageDataBlock &Src) { CleanUp(); Copy(Src); return *this; }
+		CLanguageDataBlock &operator= (const CLanguageDataBlock &Src) { CleanUp(); Copy(Src); return *this; }
 
+		void AccumulateScript (const CDesignType *pSource, const CString &sScript, TSortMap<CString, CScript::SScriptEntry> &Script) const;
 		void AddEntry (const CString &sID, const CString &sText);
 		void DeleteAll (void);
-		inline int GetCount (void) const { return m_Data.GetCount(); }
+		int GetCount (void) const { return m_Data.GetCount(); }
 		SEntryDesc GetEntry (int iIndex) const;
-		inline bool HasEntry (const CString &sID) const { return (m_Data.GetAt(sID) != NULL); }
+		bool HasEntry (const CString &sID) const { return (m_Data.GetAt(sID) != NULL); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		inline bool IsEmpty (void) const { return (m_Data.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_Data.GetCount() == 0); }
 		void MergeFrom (const CLanguageDataBlock &Source);
 		bool Translate (const CDesignType &Type, const CString &sID, const SParams &Params, ICCItemPtr &retResult) const;
 		bool TranslateText (const CDesignType &Type, const CString &sID, const SParams &Params, CString *retsText) const;
@@ -179,7 +217,7 @@ class CLanguageDataBlock
 			ICCItem *pCode;
 			};
 
-		inline void CleanUp (void) { DeleteAll(); }
+		void CleanUp (void) { DeleteAll(); }
 		ICCItemPtr ComposeCCItem (ICCItem *pValue, const ICCItem *pData) const;
 		bool ComposeCCResult (ETranslateResult iResult, const ICCItem *pData, const TArray<CString> &List, const CString &sText, ICCItem *pCCResult, ICCItemPtr &retResult) const;
 		ETranslateResult ComposeResult (ICCItem *pResult, const ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
@@ -187,6 +225,7 @@ class CLanguageDataBlock
 		void Copy (const CLanguageDataBlock &Src);
 		bool IsCode (const CString &sText) const;
 		CString ParseTextBlock (const CString &sText) const;
+		static bool ParseScriptParam (const CString &sValue, CString *retsScript, CString *retsOrder, CString *retsHeader);
 		ETranslateResult TranslateEval (const CDesignType &Type, const CString &sID, const SParams &Params, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
 		const SEntry *TranslateTry (const CString &sID, const ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText = NULL, CString *retsText = NULL) const;
 
@@ -249,3 +288,4 @@ class CVirtualKeyData
 
 		static SVirtKeyData m_VirtKeyData[256];
 	};
+
