@@ -112,7 +112,7 @@ void OpenGLContext::prepSquareCanvas ()
 {
 	// Prepare the background canvas.
 	//OpenGLShader* pTestShader = new OpenGLShader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
-	OpenGLShader* pTestShader = new OpenGLShader("./shaders/texture_vertex_shader.glsl", "./shaders/texture_fragment_shader.glsl");
+	m_pCanvasShader = std::make_unique<OpenGLShader>("./shaders/texture_vertex_shader.glsl", "./shaders/texture_fragment_shader.glsl");
 	float fSize = 1.0f;
 	float posZ = 0.999999f;
 
@@ -147,7 +147,6 @@ void OpenGLContext::prepSquareCanvas ()
 	std::vector<std::vector<unsigned int>> ebos{ indices, indices, indices };
 
 	OpenGLVAO* vao = new OpenGLVAO(vbos, ebos, texcoord_arr);
-	vao->setShader(pTestShader);
 	vaos.push_back(vao);
 
 	}
@@ -254,13 +253,12 @@ void OpenGLContext::renderCanvasBackground ()
 	glm::mat4 modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 	rotation += 5.0f;
 
-	OpenGLShader* pShader = vaos[0]->getShader();
-	pShader->bind(); // Bind our shader
+	m_pCanvasShader->bind(); // Bind our shader
 	// TODO: Put the rest of these thingies into the VAO class...
 					// Get the location of the matrix variables inside our shaders
-	int projectionMatrixLocation = glGetUniformLocation(pShader->id(), "projectionMatrix");
-	int viewMatrixLocation = glGetUniformLocation(pShader->id(), "viewMatrix");
-	int modelMatrixLocation = glGetUniformLocation(pShader->id(), "modelMatrix");
+	int projectionMatrixLocation = glGetUniformLocation(m_pCanvasShader->id(), "projectionMatrix");
+	int viewMatrixLocation = glGetUniformLocation(m_pCanvasShader->id(), "viewMatrix");
+	int modelMatrixLocation = glGetUniformLocation(m_pCanvasShader->id(), "modelMatrix");
 
 	// Send our matrices into the shader variables
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
@@ -271,7 +269,7 @@ void OpenGLContext::renderCanvasBackground ()
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0); // Unbind our Vertex Array Object
 
-	pShader->unbind(); // Unbind our shader
+	m_pCanvasShader->unbind(); // Unbind our shader
 	}
 
 void OpenGLContext::renderCanvasBackgroundFromTexture (OpenGLTexture* texture)
@@ -300,13 +298,12 @@ void OpenGLContext::renderCanvasBackgroundFromTexture (OpenGLTexture* texture)
 	glm::mat4 rotationMatrix = glm::mat4(glm::vec4(-1.0, 0.0, 0.0, 0.0), glm::vec4(0.0, -1.0, 0.0, 0.0), glm::vec4(0.0, 0.0, 1.0, 0.0), glm::vec4(0.0, 0.0, 0.0, 1.0));
 
 
-	OpenGLShader* pShader = vaos[0]->getShader();
-	pShader->bind(); // Bind our shader
+	m_pCanvasShader->bind(); // Bind our shader
 					 // TODO: Put the rest of these thingies into the VAO class...
 					 // Get the location of the matrix variables inside our shaders
 
-	int rotationMatrixLocation = glGetUniformLocation(pShader->id(), "rotationMatrix");
-	glUniform1i(glGetUniformLocation(pShader->id(), "ourTexture"), 0);
+	int rotationMatrixLocation = glGetUniformLocation(m_pCanvasShader->id(), "rotationMatrix");
+	glUniform1i(glGetUniformLocation(m_pCanvasShader->id(), "ourTexture"), 0);
 
 	// Send our matrices into the shader variables
 	glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
@@ -318,7 +315,7 @@ void OpenGLContext::renderCanvasBackgroundFromTexture (OpenGLTexture* texture)
 	glBindVertexArray(0); // Unbind our Vertex Array Object
 	texture->unbindTexture2D();
 
-	pShader->unbind(); // Unbind our shader
+	m_pCanvasShader->unbind(); // Unbind our shader
 
 }
 

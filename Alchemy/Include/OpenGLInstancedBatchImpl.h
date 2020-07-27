@@ -76,4 +76,4 @@ private:
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestLightning, std::tuple<float, glm::vec2>> OpenGLInstancedBatchLightning;
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestRay, std::tuple<float, glm::vec2>> OpenGLInstancedBatchRay;
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestOrb, std::tuple<float, glm::vec2>> OpenGLInstancedBatchOrb;
-typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestTexture, std::tuple<OpenGLTexture*, OpenGLTexture*, int>> OpenGLInstancedBatchTexture;
+typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestTexture, std::tuple<OpenGLTexture*, OpenGLTexture*, int, const OpenGLAnimatedNoise*>> OpenGLInstancedBatchTexture;

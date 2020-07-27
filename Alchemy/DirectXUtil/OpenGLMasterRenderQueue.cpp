@@ -28,7 +28,6 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	m_pOrbShader = new OpenGLShader("./shaders/orb_vertex_shader.glsl", "./shaders/orb_fragment_shader.glsl");
 	m_pPerlinNoiseShader = new OpenGLShader("./shaders/fbm_vertex_shader.glsl", "./shaders/fbm_fragment_shader.glsl");
 	m_pPerlinNoiseTexture = std::make_unique<OpenGLAnimatedNoise>(512, 512, 64);
-	m_pPerlinNoiseTexture->initTexture3D(512, 512, 64);
 	m_pPerlinNoiseTexture->populateTexture3D(fbo, m_pCanvasVAO, m_pPerlinNoiseShader);
 	m_pActiveRenderLayer = &m_renderLayers[0];
 #ifdef OPENGL_FPS_COUNTER_ENABLE
@@ -177,7 +176,7 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 {
 	for (OpenGLRenderLayer &renderLayer : m_renderLayers) {
 		renderLayer.renderAllQueues(m_fDepthLevel, m_fDepthDelta, m_iCurrentTick, glm::ivec2(m_iCanvasWidth, m_iCanvasHeight), m_pObjectTextureShader,
-			m_pRayShader, m_pLightningShader, m_pGlowmapShader, m_pOrbShader, fbo, m_pCanvasVAO);
+			m_pRayShader, m_pLightningShader, m_pGlowmapShader, m_pOrbShader, fbo, m_pCanvasVAO, m_pPerlinNoiseTexture.get());
 	}
 	for (OpenGLRenderLayer &renderLayer : m_renderLayers) {
 		renderLayer.GenerateGlowmaps(fbo, m_pCanvasVAO, m_pGlowmapShader);

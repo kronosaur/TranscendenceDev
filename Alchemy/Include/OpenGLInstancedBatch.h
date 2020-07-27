@@ -359,6 +359,11 @@ private:
 		tupleArg->bindTexture2D(GL_TEXTURE0 + m_iNumTexturesBound);
 		m_iNumTexturesBound += 1;
 	}
+	void setGLUniformValue(const OpenGLShader* shader, int uniformArgIndex, const OpenGLAnimatedNoise* tupleArg) {
+		glUniform1i(glGetUniformLocation(shader->id(), m_uniformNames[uniformArgIndex].c_str()), m_iNumTexturesBound);
+		tupleArg->bindTexture3D(GL_TEXTURE0 + m_iNumTexturesBound);
+		m_iNumTexturesBound += 1;
+	}
 
 	// Internal variables
 	std::vector<shaderRenderRequest> m_renderRequests;

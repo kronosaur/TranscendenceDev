@@ -23,15 +23,12 @@ public:
 	void initVAO(std::vector<std::vector<float>> vbos,
 		std::vector<std::vector<unsigned int>> ebos,
 		std::vector<std::vector<float>> texcoords);
-	void setShader(OpenGLShader* shader) { m_pShader = shader; }
 	void addTexture2D(void* texture);
 	void removeTexture();
-	OpenGLShader* getShader(void) { return m_pShader; }
 	unsigned int* getVAO(void) { return vaoID; }
 	unsigned int* getinstancedVBO(void) { return instancedVboID; }
 
 private:
-	OpenGLShader *m_pShader; // TODO: Remove
 	unsigned int m_iNumArrays;
 	unsigned int m_iNumTexArrays;
 	unsigned int vaoID[128];

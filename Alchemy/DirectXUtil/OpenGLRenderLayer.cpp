@@ -80,7 +80,7 @@ void OpenGLRenderLayer::addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition,
 	m_orbRenderBatch.addObjToRender(renderRequest);
 }
 
-void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader, OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, OpenGLShader *orbShader, unsigned int fbo, OpenGLVAO* canvasVAO)
+void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader, OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, OpenGLShader *orbShader, unsigned int fbo, OpenGLVAO* canvasVAO, const OpenGLAnimatedNoise* perlinNoise)
 {
 	// For each render queue in the ships render queue, render that render queue. We need to set the texture and do a glBindTexture before doing so.
 	// Render order is Texture, Orb, Ray, Lightning
@@ -110,8 +110,8 @@ void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int
 		OpenGLInstancedBatchTexture *pInstancedRenderQueue = p.second;
 		// TODO: Set the depths here before rendering. This will ensure that we always render from back to front, which should solve most issues with blending.
 
-		std::array<std::string, 3> textureUniformNames = { "obj_texture", "glow_map", "current_tick" };
-		pInstancedRenderQueue->setUniforms(textureUniformNames, pTextureToUse, pTextureToUse->getGlowMap() ? pTextureToUse->getGlowMap() : pTextureToUse, currentTick);
+		std::array<std::string, 4> textureUniformNames = { "obj_texture", "glow_map", "current_tick", "perlin_noise" };
+		pInstancedRenderQueue->setUniforms(textureUniformNames, pTextureToUse, pTextureToUse->getGlowMap() ? pTextureToUse->getGlowMap() : pTextureToUse, currentTick, perlinNoise);
 		pInstancedRenderQueue->Render(objectTextureShader, depthLevel, depthDelta, currentTick, false);
 		pInstancedRenderQueue->clear();
 	}

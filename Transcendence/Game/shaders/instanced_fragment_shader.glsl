@@ -14,6 +14,8 @@ out vec4 out_color;
 uniform sampler2D obj_texture;
 uniform sampler2D glow_map;
 uniform int current_tick;
+uniform sampler3D perlin_noise;
+
 
 
 //	Classic Perlin 3D Noise 
@@ -138,7 +140,9 @@ void main(void)
 	
 	
 	vec4 textureColor = vec4(realColor[0], realColor[1], realColor[2], realColor[3] * alphaNoise * alpha_strength);
-	
-	
+	float ftime = float(current_tick) / 60.0;
+	vec4 perlin_noise_color = texture(perlin_noise, vec3(texture_uv[0], texture_uv[1], ftime));
+	perlin_noise_color[3] = 1.0;
+	//out_color = perlin_noise_color;
     out_color = (float(!useGlow) * textureColor) + (float(useGlow) * glowColor);
 }

@@ -46,8 +46,8 @@ For special effects that use textures (such as glow), what we can do is use a se
 */
 #include "OpenGLIncludes.h"
 #include "OpenGLTexture.h"
-#include "OpenGLInstancedBatchImpl.h"
 #include "OpenGLAnimatedNoise.h"
+#include "OpenGLInstancedBatchImpl.h"
 
 #include <vector>
 #include <map>
@@ -103,6 +103,7 @@ private:
 	bool m_bResized;
 
 	OpenGLShader *m_pTestShader;
+	std::unique_ptr<OpenGLShader> m_pCanvasShader;
 
 	// Projection, view and model matrices respectively
 	glm::mat4 m_pMatrix;
@@ -133,7 +134,7 @@ public:
 	void addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition, float rotation, float intensity, float opacity, int animation,
 		int style, int detail, int distortion, int animationSeed, int lifetime, int currFrame, glm::vec3 primaryColor, glm::vec3 secondaryColor, float secondaryOpacity, float startingDepth);
 	void renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader,
-		OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, OpenGLShader *orbShader, unsigned int fbo, OpenGLVAO* canvasVAO);
+		OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, OpenGLShader *orbShader, unsigned int fbo, OpenGLVAO* canvasVAO, const OpenGLAnimatedNoise* perlinNoise);
 	void GenerateGlowmaps(unsigned int fbo, OpenGLVAO *canvasVAO, OpenGLShader* glowmapShader);
 private:
 	void clear();

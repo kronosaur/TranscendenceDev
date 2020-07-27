@@ -16,34 +16,37 @@ OpenGLAnimatedNoise::OpenGLAnimatedNoise(int width, int height, int frames)
 
 void OpenGLAnimatedNoise::initTexture3D(int width, int height, int frames)
 {
+	if (!m_bIsInited)
+	{
+		int iNumOfChannels = 4;
+		int iDataSize = width * height * frames * iNumOfChannels;
+		glGetInternalformativ(GL_TEXTURE_3D, GL_RGBA8, GL_TEXTURE_IMAGE_FORMAT, 1, &m_pixelFormat);
+		glGetInternalformativ(GL_TEXTURE_3D, GL_RGBA8, GL_TEXTURE_IMAGE_TYPE, 1, &m_pixelType);
 
-	int iNumOfChannels = 4;
-	int iDataSize = width * height * frames * iNumOfChannels;
-	glGetInternalformativ(GL_TEXTURE_3D, GL_RGBA8, GL_TEXTURE_IMAGE_FORMAT, 1, &m_pixelFormat);
-	glGetInternalformativ(GL_TEXTURE_3D, GL_RGBA8, GL_TEXTURE_IMAGE_TYPE, 1, &m_pixelType);
+		glGenBuffers(2, &pboID[0]);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID[0]);
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, iDataSize, 0, GL_STREAM_DRAW);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID[1]);
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, iDataSize, 0, GL_STREAM_DRAW);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-	glGenBuffers(2, &pboID[0]);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID[0]);
-	glBufferData(GL_PIXEL_UNPACK_BUFFER, iDataSize, 0, GL_STREAM_DRAW);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID[1]);
-	glBufferData(GL_PIXEL_UNPACK_BUFFER, iDataSize, 0, GL_STREAM_DRAW);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
-	glGenTextures(1, &m_pTextureID[0]);
-	glBindTexture(GL_TEXTURE_3D, m_pTextureID[0]);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// Using glTexStorage2D + glTexSubImage2D gives acceptable performance unlike initialization with glTexImage2D. Not sure why.
-	glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGBA8, width, height, frames);
-	glBindTexture(GL_TEXTURE_3D, 0);
-	m_iHeight = height;
-	m_iWidth = width;
-	m_iNumFrames = frames;
+		glGenTextures(1, &m_pTextureID[0]);
+		glBindTexture(GL_TEXTURE_3D, m_pTextureID[0]);
+		// set the texture wrapping parameters
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
+		// set texture filtering parameters
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		// Using glTexStorage2D + glTexSubImage2D gives acceptable performance unlike initialization with glTexImage2D. Not sure why.
+		glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGBA8, width, height, frames);
+		glBindTexture(GL_TEXTURE_3D, 0);
+		m_iHeight = height;
+		m_iWidth = width;
+		m_iNumFrames = frames;
+		m_bIsInited = true;
+	}
 }
 
 OpenGLAnimatedNoise::~OpenGLAnimatedNoise()
@@ -65,6 +68,7 @@ void OpenGLAnimatedNoise::populateTexture3D(unsigned int fbo, OpenGLVAO* vao, Op
 	// Generate a glow map. Kernel is a multivariate gaussian.
 	if (m_iWidth > 0 && m_iHeight > 0 && m_iNumFrames > 0)
 	{
+		initTexture3D(m_iWidth, m_iHeight, m_iNumFrames);
 		for (int i = 0; i < static_cast<int>(m_iNumFrames); i++) {
 			// TODO: Do not create any temp textures; they aren't necessary. Render each slice of the 3D cube texture one by one.
 		// See https://stackoverflow.com/questions/17504750/opengl-how-to-render-object-to-3d-texture-as-a-volumetric-billboard
