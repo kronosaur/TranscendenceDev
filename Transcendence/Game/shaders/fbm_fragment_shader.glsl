@@ -101,5 +101,8 @@ out vec4 fragColor;
 void main(void)
 {
     vec2 uv = -1. + 2. * TexCoord;
-    fragColor = vec4((fbm(uv, time * 50) + 1.0) / 2.0);
+	float fbm = (fbm(uv, time * 50) + 1.0) / 2.0;
+	float raw_perlin = (cnoise(vec3(uv.x * 20, uv.y * 20, time * 1)) * 0.5) + 0.5;
+    //fragColor = vec4(fbm, raw_perlin, 0.0, 0.0);
+    fragColor = vec4(fbm, raw_perlin, 0.0, 1.0);
 }

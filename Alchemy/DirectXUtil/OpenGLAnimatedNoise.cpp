@@ -72,7 +72,8 @@ void OpenGLAnimatedNoise::populateTexture3D(unsigned int fbo, OpenGLVAO* vao, Op
 		for (int i = 0; i < static_cast<int>(m_iNumFrames); i++) {
 			// TODO: Do not create any temp textures; they aren't necessary. Render each slice of the 3D cube texture one by one.
 		// See https://stackoverflow.com/questions/17504750/opengl-how-to-render-object-to-3d-texture-as-a-volumetric-billboard
-			float currTime = static_cast<float>(abs(i - (static_cast<int>(m_iNumFrames) / 2))); // currTime is the distance of this frame from the 'center frame'; we use this to make it continuous
+			//float currTime = static_cast<float>(abs(i - (static_cast<int>(m_iNumFrames) / 2))); // currTime is the distance of this frame from the 'center frame'; we use this to make it continuous
+			float currTime = static_cast<float>(i); // currTime is the distance of this frame from the 'center frame'; we use this to make it continuous
 			glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 			glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, getTexture()[0], 0, i);
 			unsigned int rbo;

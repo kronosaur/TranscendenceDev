@@ -112,6 +112,11 @@ vec4 getGlowColor_Static(float epsilon, vec4 color, vec2 texture_size, vec2 text
 	return glowColor;
 }
 
+float sampleNoisePerlin(vec3 sampler) {
+    return texture(perlin_noise, vec3(sampler[0], sampler[1], abs(mod(sampler[2], 2.0) - 1.0)))[1];
+    //return texture(perlin_noise, vec3(sampler[0], sampler[1], sampler[2])).x;
+}
+
 void main(void)
 {		
 	float epsilon = 0.01;
@@ -141,8 +146,8 @@ void main(void)
 	
 	vec4 textureColor = vec4(realColor[0], realColor[1], realColor[2], realColor[3] * alphaNoise * alpha_strength);
 	float ftime = float(current_tick) / 60.0;
-	vec4 perlin_noise_color = texture(perlin_noise, vec3(texture_uv[0], texture_uv[1], ftime));
+	vec4 perlin_noise_color = vec4(sampleNoisePerlin(vec3(texture_uv[0], texture_uv[1], ftime)));
 	perlin_noise_color[3] = 1.0;
-	//out_color = perlin_noise_color;
-    out_color = (float(!useGlow) * textureColor) + (float(useGlow) * glowColor);
+	out_color = perlin_noise_color;
+    //out_color = (float(!useGlow) * textureColor) + (float(useGlow) * glowColor);
 }
