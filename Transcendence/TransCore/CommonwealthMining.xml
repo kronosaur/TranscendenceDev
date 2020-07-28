@@ -4,6 +4,28 @@
 
 	<Type unid="&unidIndependentMiner;">
 		<Properties>
+			<Definition id="missionRewardTable">
+
+				;	REWARD		SYSTEM LEVEL
+				; ---------------------------------
+
+				'(	0
+
+					400			;	1
+					800			;	2
+					1500		;	3
+					3000		;	4
+					6000		;	5
+
+					10000		;	6
+					20000		;	7
+					40000		;	8
+					70000		;	9
+					120000		;	10
+					)
+
+			</Definition>
+
 			<DynamicGlobal id="mining.rankIcon">
 				(block (
 					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
