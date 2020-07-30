@@ -990,5 +990,11 @@
     <Xml Include="RPGMissionTemplate03.xml">
       <Filter>RPG Library</Filter>
     </Xml>
+    <Xml Include="CommonwealthMiningMission03.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="HarperThompson.xml">
+      <Filter>Human Space Library\Characters</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
