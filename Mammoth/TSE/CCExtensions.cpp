@@ -3084,7 +3084,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'level               The level of the system\n"
 			"   'name                The name of the system\n"
 			"   'pos                 Node position on map (x y)\n"
-			"   'stdChallengeRating  Standard challenge rating for level",
+			"   'stdChallengeRating  Standard challenge rating for level"
+			"	'stdTreasureValue    Std treasure value for level (default currency)",
 
 			"*s",	0,	},
 

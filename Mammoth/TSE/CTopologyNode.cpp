@@ -52,6 +52,7 @@
 #define PROPERTY_NODE_ID						CONSTLIT("nodeID")
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_STD_CHALLENGE_RATING			CONSTLIT("stdChallengeRating")
+#define PROPERTY_STD_TREASURE_VALUE				CONSTLIT("stdTreasureValue")
 #define PROPERTY_UNCHARTED						CONSTLIT("uncharted")
 
 #define SPECIAL_LEVEL							CONSTLIT("level:")
@@ -575,6 +576,13 @@ ICCItemPtr CTopologyNode::GetProperty (const CString &sName) const
 		}
 	else if (strEquals(sName, PROPERTY_STD_CHALLENGE_RATING))
 		return ICCItemPtr(CStationType::GetStdChallengeRating(GetLevel()));
+
+	else if (strEquals(sName, PROPERTY_STD_TREASURE_VALUE))
+		{
+		CurrencyValue ValueInCredits = CItemType::GetStdStats(GetLevel()).TreasureValue;
+		auto Result = GetUniverse().GetDefaultCurrency().ExchangeFrom(NULL, ValueInCredits);
+		return ICCItemPtr((int)Result.GetValue());
+		}
 
 	else
 		return ICCItemPtr(ICCItem::Nil);
