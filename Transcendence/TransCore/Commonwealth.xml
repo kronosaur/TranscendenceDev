@@ -1085,7 +1085,6 @@
 								(rpgMissionAssignment {
 									missionCriteria: "n +commonwealthHabitat;"
 									maxActive: 1
-									intervalPerType: (+ 5400 (* (objGetDestiny gSource) 10))
 									missionGiver: (rpgCharacterGetInfo gSource 'stationMaster)
 									noMissionTextID: 'descNoMissions
 									})

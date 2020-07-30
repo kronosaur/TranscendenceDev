@@ -300,7 +300,6 @@
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +commonwealthMining; =" (sysGetLevel) ";")
 									maxPerStation: (+ 1 (modulo (objGetDestiny gSource) 3))
-									intervalPerStation: (+ 5400 (* (objGetDestiny gSource) 10))
 									noMissionTextID: 'descNoMissions
 									})
 							</Action>

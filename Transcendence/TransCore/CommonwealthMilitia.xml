@@ -362,7 +362,6 @@
 											displayCriteria: "n +commonwealthMilitia;"
 											noMissionTextID: 'descNoMissions
 											maxPerStation: (+ 6 (modulo (objGetDestiny gSource) 3))
-											intervalPerStation: (random 3600 5400)
 											})
 
 										;	Otherwise we only get some missions
@@ -372,7 +371,6 @@
 											displayCriteria: "n +commonwealthMilitia;"
 											noMissionTextID: 'descNoCommandCenterAccess
 											maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
-											intervalPerStation: (random 3600 5400)
 											})
 										)
 									)

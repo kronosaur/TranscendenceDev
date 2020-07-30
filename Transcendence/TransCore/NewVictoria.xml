@@ -394,7 +394,6 @@
 							displayCriteria: "n +stKatsParliament;"
 							noMissionTextID: 'descParliamentEmpty
 							maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
-							intervalPerStation: (random 2400 3600)
 							})
 					</Action>
 					
@@ -414,7 +413,6 @@
 									displayCriteria: "n +stKatsMilitia;"
 									noMissionTextID: 'descNoMissions
 									maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
-									intervalPerStation: (random 3600 5400)
 									})
 								)
 							)

@@ -503,7 +503,6 @@
 							<Action id="actionResearchChamber" default="1">
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +teratonResearch; =" (sysGetLevel) ";")
-									intervalPerStation: 3600
 									noMissionTextID: 'descResearchNone
 									})
 							</Action>
