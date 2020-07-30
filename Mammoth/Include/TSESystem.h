@@ -379,11 +379,13 @@ class CSystem
 			layerBackground = 0,
 			layerSpace = 1,
 			layerStations = 2,
-			layerShips = 3,
-			layerEffects = 4,
-			layerOverhang = 5,
+			layerBGWeaponFire = 3,
+			layerShips = 4,
+			layerFGWeaponFire = 5,
+			layerEffects = 6,
+			layerOverhang = 7,
 
-			layerCount = 6
+			layerCount = 8
 			};
 
 		enum Flags

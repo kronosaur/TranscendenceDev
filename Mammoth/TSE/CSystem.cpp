@@ -3124,7 +3124,9 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	CDepthPaintList MainBackground(rTopEdge);
 	CDepthPaintList MainSpace(rTopEdge);
 	CDepthPaintList MainStations(rTopEdge);
+	CUnorderedPaintList MainBackgroundWeaponFire;
 	CUnorderedPaintList MainShips;
+	CUnorderedPaintList MainForegroundWeaponFire;
 	CUnorderedPaintList MainEffects;
 	CUnorderedPaintList MainOverhang;
 	CParallaxPaintList ParallaxForeground;
@@ -3134,7 +3136,9 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	MainLayer[layerBackground] = &MainBackground;
 	MainLayer[layerSpace] = &MainSpace;
 	MainLayer[layerStations] = &MainStations;
+	MainLayer[layerBGWeaponFire] = &MainBackgroundWeaponFire;
 	MainLayer[layerShips] = &MainShips;
+	MainLayer[layerFGWeaponFire] = &MainForegroundWeaponFire;
 	MainLayer[layerEffects] = &MainEffects;
 	MainLayer[layerOverhang] = &MainOverhang;
 

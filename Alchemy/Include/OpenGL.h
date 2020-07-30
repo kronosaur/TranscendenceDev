@@ -71,7 +71,7 @@ private:
 //typedef OpenGLInstancedBatch<std::tuple<float, glm::vec2>, glm::vec4, float, glm::ivec2, glm::ivec3, glm::vec3, glm::vec3, glm::vec3> OpenGLInstancedBatchRay;
 //typedef OpenGLInstancedBatch<std::tuple<OpenGLTexture*, OpenGLTexture*, int>, glm::vec2, glm::vec2, glm::vec2, glm::vec2, float, glm::vec4, float> OpenGLInstancedBatchTexture;
 
-const int NUM_OPENGL_MAIN_OBJECT_LAYERS = 6;
+const int NUM_OPENGL_MAIN_OBJECT_LAYERS = 8;
 const int NUM_OPENGL_FOREGROUND_OBJECT_LAYERS = 1;
 const int NUM_OPENGL_BACKGROUND_OBJECT_LAYERS = 1;
 
