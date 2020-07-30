@@ -71,7 +71,7 @@
 									(dist (+ meanDist (random -60 60)))
 									)
 									;	Create an asteroid at this distance
-									(setq asteroidObj (sysCreateStation &stMediumAsteroid; (sysVectorRandom Nil dist 60 "t")))
+									(setq asteroidObj (sysCreateStation &stRockyAsteroidSizeD; (sysVectorRandom Nil dist 60 "t")))
 									)
 								)
 
