@@ -425,14 +425,6 @@
 		
 		<!-- Events and Data -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Language>
 			<Text id="descWelcome">
 				You are in the docking bay of a Commonwealth colony.

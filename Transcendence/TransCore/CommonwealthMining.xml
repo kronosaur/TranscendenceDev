@@ -325,14 +325,6 @@
 
 		<!-- Events and Data -->
 		
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			5		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				;	Add ore to sell based on system ore frequency

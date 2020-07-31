@@ -467,16 +467,6 @@
 
 		<!-- Events and Data -->
 
-		<StaticData>
-
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
-
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(block (gate gateList count)

@@ -131,14 +131,6 @@
 		
 		<!-- Events and Behavior -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			7		100		)
-					)
-			</NPCService>
-		</StaticData>
-		
 		<Events>
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")

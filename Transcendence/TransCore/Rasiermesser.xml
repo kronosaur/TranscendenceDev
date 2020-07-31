@@ -795,14 +795,6 @@
 			</ItemAttribute>
 		</AttributeDesc>
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			9		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(if (not (objGetProperty gSource 'DvalinSystem))

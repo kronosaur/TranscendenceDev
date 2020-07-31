@@ -333,14 +333,6 @@
 
 		<!-- Events and Data -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			9		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Language>
 			<Text id="actionRepairItems">[R]epair Items</Text>
 

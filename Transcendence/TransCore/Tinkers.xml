@@ -344,12 +344,6 @@
 					(&itRepairingNanos;		6	&itArmorRepairDevice;)
 					)
 			</CustomWork>
-
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
 		</StaticData>
 
 		<Events>

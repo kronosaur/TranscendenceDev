@@ -308,14 +308,6 @@
 		
 		<!-- Events and Data -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			5		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
@@ -565,14 +557,6 @@
 		
 		<!-- Events and Data -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			7		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
@@ -735,14 +719,6 @@
 		</DockScreens>
 
 		<!-- Behavior & Language -->
-
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
-		</StaticData>
 
 		<Language>
 			<Text id="descWelcome">Your ship is in dry dock.</Text>
@@ -1363,14 +1339,6 @@
 		</DockScreens>
 		
 		<!-- Events and Data -->
-
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
-		</StaticData>
 
 		<Language>
 			<Text id="descWelcome">
