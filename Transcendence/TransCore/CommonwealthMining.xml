@@ -299,7 +299,7 @@
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +commonwealthMining; =" (sysGetLevel) ";")
-									maxPerStation: (+ 1 (modulo (objGetDestiny gSource) 3))
+									maxPerStation: (+ 2 (modulo (objGetDestiny gSource) 2))
 									noMissionTextID: 'descNoMissions
 									})
 							</Action>
