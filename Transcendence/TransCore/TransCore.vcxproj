@@ -508,6 +508,7 @@
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="CommonwealthMiningMission03.xml" />
+    <Xml Include="CommonwealthMiningMission04.xml" />
     <Xml Include="CommonwealthVolunteerMission01.xml" />
     <Xml Include="CommonwealthMilitiaMission01.xml" />
     <Xml Include="CommonwealthMilitiaMission02.xml" />
@@ -614,6 +615,7 @@
     <Xml Include="Marauders.xml" />
     <Xml Include="MiningPods.xml" />
     <Xml Include="MRAD.xml" />
+    <Xml Include="MuhammadCondi.xml" />
     <Xml Include="NewVictoria.xml" />
     <Xml Include="Ore.xml" />
     <Xml Include="OreStone.xml" />

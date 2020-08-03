@@ -1986,6 +1986,7 @@
 	<!ENTITY chEnricoGaul				"0x0010023C">
 	<!ENTITY chLiaPereira				"0x0010023D">
 	<!ENTITY chHarperThompson			"0x0010023E">
+	<!ENTITY chMuhammadCondi			"0x0010023F">
 	
 	<!-- 0250-026F COMMONWEALTH MINING -->
 	
@@ -2000,6 +2001,7 @@
 	<!ENTITY dsCommonwealthAsteroidInfo	"0x00100258">
 
 	<!ENTITY msCommonwealthMining03		"0x00100259">
+	<!ENTITY msCommonwealthMining04		"0x0010025A">
 
 	<!-- 0270-028F SOLON CORPORATION -->
 
@@ -2455,6 +2457,7 @@
 	<Module filename="Jenna.xml"/>
 	<Module filename="KateMorgental.xml"/>
 	<Module filename="LiaPereira.xml"/>
+	<Module filename="MuhammadCondi.xml"/>
 	<Module filename="Rama.xml"/>
 	<Module filename="Stormhound.xml"/>
 	<Module filename="Volkov.xml"/>
@@ -2527,6 +2530,7 @@
 	<Module filename="CommonwealthMiningMission01.xml"/>
 	<Module filename="CommonwealthMiningMission02.xml"/>
 	<Module filename="CommonwealthMiningMission03.xml"/>
+	<Module filename="CommonwealthMiningMission04.xml"/>
 
 	<!-- Corporate Hierarchy -->
 

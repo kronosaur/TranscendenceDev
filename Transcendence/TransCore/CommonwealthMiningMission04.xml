@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&msCommonwealthMining04;"
+			name=				"Commonwealth Mining 04: Destroy Enemy Station"
+			attributes=			"commonwealthMining"
+			inherit=			"&baDestroyStationMission;"
+
+			level=				"1-4"
+			maxAppearing=		"3-5"
+			>
+		<Properties>
+			<Variant id="character.missionGiver">
+				&chMuhammadCondi;
+			</Variant>
+
+			<Data id="reward"></Data>
+			<Variant id="targetDesc">
+				{
+					;	We only want asteroid station enemies.
+					criteria: "TAE +populated; -property:hullType=singleHull; -property:hullType=multiHull; -questTarget; -uncharted;"
+					}
+			</Variant>
+		</Properties>
+
+		<Events>
+			<CanCreate>
+				(switch
+					;	Player must have a mining weapon.
+
+					(not (objGetItems gPlayerShip "wI +property:damageMining;"))
+						Nil
+
+					True
+					)
+			</CanCreate>
+
+			<OnTargetChosen>
+				(block (
+					(targetObj (@ gData 'targetObj))
+
+					;	The reward for the station is half of the standard
+					;	treasure value for the station.
+
+					(rewardExact (/ (obj@ targetObj 'stdTreasure) 2))
+
+					;	Round it to the nearest 100
+
+					(reward (max 100 (* 100 (round (/ rewardExact 100)))))
+					)
+					(msnSet@ gSource 'reward reward)
+					)
+			</OnTargetChosen>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Destroy Threat to Mining Colony
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(block (
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						missionObj: gSource
+						stationName: (objGetName (objGetObjByID (msn@ gSource 'ownerID)))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'mining04.intro trData)
+						(msnTranslate gSource 'textIntro trData)
+						)
+					)
+			</Text>
+			<Text id="Briefing">
+				(block (
+					(targetObj (objGetObjByID (msn@ gSource 'targetID)))
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						targetObj: targetObj
+						targetName: (objGetName targetObj 'article)
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'mining04.briefing trData)
+						(msnTranslate gSource 'textBriefing trData)
+						)
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(msnTranslate gSource 'textAcceptReply {
+					})
+			</Text>
+			<Text id="DeclineReply">
+				(msnTranslate gSource 'textDeclineReply {
+					})
+			</Text>
+			<Text id="InProgress">
+				(msnTranslate gSource 'textInProgress {
+					})
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(trData {
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'mining04.successDebrief trData)
+						(msnTranslate gSource 'textSuccessDebrief trData)
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(or
+					(typTranslate (msn@ gSource 'character.missionGiver) 'mining04.failureDebrief)
+					(msnTranslate gSource 'textFailureDebrief)
+					)
+			</Text>
+
+			<Text id="textSummary">
+			
+				%TargetName% is threatening a mining colony. Your mission is to
+				destroy the station.
+
+				System: %systemName%\n
+				Payment: %reward%
+
+			</Text>
+			<Text id="textIntro">
+			
+				The colony supervisor stands on a plaform at the center of the 
+				hall.
+
+				"Welcome to %stationName%! If you're looking for work, I might 
+				have mission for you."
+
+			</Text>
+			<Text id="textBriefing">
+
+				"%TargetName% in this system has been attacking our mining 
+				ships. We'll pay %reward% to go out there and destroy the 
+				threat.
+
+				"What do you say?"
+
+			</Text>
+			<Text id="textAcceptReply">
+
+				"Great! The good news is you can use your mining weapon against
+				the station, since it's sitting on an asteroid.
+				
+				"I'll program the target location into your ship's computer. 
+				Come back when you're done."
+
+			</Text>
+			<Text id="textDeclineReply">
+
+				"Ah, Hell! What are you doing here then? Stop wasting my time!"
+
+			</Text>
+			<Text id="textInProgress">
+
+				"What's wrong? You said you could handle this mission! Get back 
+				out there and finish the job!"
+
+			</Text>
+			<Text id="textSuccessDebrief">
+
+				"Good work! We've deposited %reward% to your account."
+
+			</Text>
+			<Text id="textFailureDebrief">
+
+				"You let us all down! I thought you could handle this mission.
+				I guess I was wrong."
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

@@ -996,5 +996,11 @@
     <Xml Include="HarperThompson.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
+    <Xml Include="CommonwealthMiningMission04.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="MuhammadCondi.xml">
+      <Filter>Human Space Library\Characters</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
