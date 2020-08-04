@@ -359,26 +359,34 @@ float sampleNoiseFBM(vec3 sampler) {
     return texture(perlin_noise, vec3(sampler[0], sampler[1], sampler[2]))[0];
 }
 
+float sampleNoiseFBMLightning(vec3 sampler) {
+    return texture(perlin_noise, vec3(sampler[0], sampler[1], sampler[2]))[2];
+}
+
 float sampleNoisePerlin(vec3 sampler) {
     //return texture(perlin_noise, vec3(sampler[0], sampler[1], abs(mod(sampler[2], 2.0) - 1.0)))[1];
     return texture(perlin_noise, vec3(sampler[0], sampler[1], sampler[2]))[1];
 }
 
-//float fbm(vec2 a, float b) {
-    //return sampleNoiseFBM(vec3(a.x, a.y, b));
-//}
-
-float fbm(vec2 p, float time)
-{
-     float v = 0.0;
-     float amp = 0.75;
-     float freq = 1;
-     int octaves = 2;
-     for (int i = 0; i < octaves; i++)
-         v += cnoise(vec3((p * (i * freq)), time)) * (amp / (i + 1));
-
-     return v;
+float fbm(vec2 a, float b) {
+    return (sampleNoiseFBM(vec3(a.x, a.y, b)) * 2.0) - 1.0;
 }
+
+float fbmLightning(vec2 a, float b) {
+    return (sampleNoiseFBMLightning(vec3(a.x, a.y, b)) * 2.0) - 1.0;
+}
+
+//float fbm(vec2 p, float time)
+//{
+     //float v = 0.0;
+     //float amp = 0.75;
+     //float freq = 1;
+     //int octaves = 2;
+     //for (int i = 0; i < octaves; i++)
+         //v += cnoise(vec3((p * (i * freq)), time)) * (amp / (i + 1));
+
+     //return v;
+//}
 
 vec4 calcRayColor(float taperAdjTop, float taperAdjBottom, float widthAdjTop, float widthAdjBottom, float center_point, vec2 real_texcoord, float intensity, float distanceFromCenter, float grains)
 {
@@ -419,6 +427,7 @@ vec4 calcLightningColor(float taperAdj, float widthAdj, vec2 real_texcoord)
 	vec2 uv = real_texcoord;
 	uv.x *= uv_x_lightning_mult;
     uv.y *= uv_y_mult;
+	float fbmscale = 0.333;
 
     float wavefrontAdj = taperAdj * widthAdj;
 
@@ -430,7 +439,7 @@ vec4 calcLightningColor(float taperAdj, float widthAdj, vec2 real_texcoord)
     uv.y *= 0;
     uv.x *= 0.8;
 
-    float noise = fbm((uv * 2) + vec2(100, 100), (current_tick + seed) * 5) * 2;
+    float noise = fbmLightning((uv * 2 * fbmscale), (current_tick + seed) * (1.0 / 30.0) * fbmscale) * 2;
     float s1 = ((wavefront_pos) + (noise * endXReduction));
     float colorGrad = 1.0 / (s1 * (50.0));
 	float alpha = abs(colorGrad * colorGrad);
@@ -453,7 +462,7 @@ void main(void)
 	// Graininess
     float grains_x = quadSize[0] / 20.0f;
     float grains_y = quadSize[1] / 20.0f;
-    float perlinNoise = sampleNoisePerlin(vec3(quadPos[0] * grains_x, quadPos[1] * grains_y, current_tick * 100));
+    float perlinNoise = sampleNoisePerlin(vec3(quadPos[0] * grains_x * 0.2, quadPos[1] * grains_y * 0.2, current_tick * 100));
     float grains = (perlinNoise * float(grainyTexture == opacityGrainy) * 2) + float(grainyTexture == 0);
 
 	float widthCalcPos = real_texcoord[0];
