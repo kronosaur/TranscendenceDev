@@ -50,14 +50,18 @@ void OpenGLShader::init (const char *vsFile, const char *fsFile) {
 	if (!success)
 	{
 		glGetShaderInfoLog(shader_vp, 512, NULL, err_log);
-		::kernelDebugLogPattern("Vertex shader failed to compile!\n%s", err_log);
+		string error_msg = (string(vsFile) + ": Vertex shader failed to compile!\n" + string(err_log));
+		::kernelDebugLogPattern(CString(error_msg.c_str()));
+		throw(runtime_error(error_msg));
 	};
 	glCompileShader(shader_fp);
 	glGetShaderiv(shader_fp, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
 		glGetShaderInfoLog(shader_fp, 512, NULL, err_log);
-		::kernelDebugLogPattern("Fragment shader failed to compile!\n%s", err_log);
+		string error_msg = (string(fsFile) + ": Fragment shader failed to compile!\n" + string(err_log));
+		::kernelDebugLogPattern(CString(error_msg.c_str()));
+		throw(runtime_error(error_msg));
 	};
 
 	shader_id = glCreateProgram();
