@@ -211,7 +211,7 @@ void main(void)
     float s1 = ((wavefront_pos) + (noise * endXReduction));
     float colorGrad = 1.0 / (s1 * (50.0));
 	float alpha = abs(colorGrad * colorGrad);
-	float quadPosAlphaAdj = (quadPos.x + 1) / 2;
+	float quadPosAlphaAdj = (uv.x + 1) / 2;
 	vec3 color = blendVectors(secondaryColor, primaryColor, quadPosAlphaAdj);
 
 	float epsilon = 0.01;

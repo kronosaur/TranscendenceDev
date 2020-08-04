@@ -47,16 +47,16 @@ void OpenGLRenderLayer::addTextureToRenderQueue(glm::vec2 vTexPositions, glm::ve
 
 void OpenGLRenderLayer::addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, glm::vec3 intensitiesAndCycles, glm::ivec3 styles, float rotation, float startingDepth)
 {
-	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, vPrimaryColor, vSecondaryColor);
+	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, vPrimaryColor, vSecondaryColor, 0, 0);
 	renderRequest.set_depth(startingDepth);
 	m_rayRenderBatch.addObjToRender(renderRequest);
 }
 
 void OpenGLRenderLayer::addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, float rotation, float seed, float startingDepth)
 {
-	auto renderRequest = OpenGLInstancedBatchRenderRequestLightning(sizeAndPosition, rotation, shapes, seed, vPrimaryColor, vSecondaryColor);
+	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, glm::ivec3(0, 0, 0), glm::vec3(0, 0, 0), vPrimaryColor, vSecondaryColor, seed, 1);
 	renderRequest.set_depth(startingDepth);
-	m_lightningRenderBatch.addObjToRender(renderRequest);
+	m_rayRenderBatch.addObjToRender(renderRequest);
 }
 
 void OpenGLRenderLayer::addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition,
@@ -116,13 +116,14 @@ void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int
 		pInstancedRenderQueue->clear();
 	}
 
-	std::array<std::string, 2> rayAndLightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions" };
+	std::array<std::string, 3> rayAndLightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions", "perlin_noise" };
+	std::array<std::string, 2> orbUniformNames = { "current_tick", "aCanvasAdjustedDimensions" };
 
-	m_rayRenderBatch.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions);
+	m_rayRenderBatch.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions, perlinNoise);
 	m_rayRenderBatch.Render(rayShader, depthLevel, depthDelta, currentTick);
-	m_lightningRenderBatch.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions);
+	m_lightningRenderBatch.setUniforms(orbUniformNames, float(currentTick), canvasDimensions);
 	m_lightningRenderBatch.Render(lightningShader, depthLevel, depthDelta, currentTick);
-	m_orbRenderBatch.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions);
+	m_orbRenderBatch.setUniforms(orbUniformNames, float(currentTick), canvasDimensions);
 	m_orbRenderBatch.Render(orbShader, depthLevel, depthDelta, currentTick);
 
 	m_texRenderBatches.clear();

@@ -24,9 +24,12 @@ layout (location = 8) in vec3 secondaryColor;
 layout (location = 9) in float waveCyclePos;
 layout (location = 10) flat in int colorTypes;
 layout (location = 11) in float opacityAdj;
-layout (location = 12) in vec2 quadSize;
+layout (location = 12) flat in int isLightning;
+layout (location = 13) in float seed;
+layout (location = 14) in vec2 quadSize;
 
 uniform float current_tick;
+uniform sampler3D perlin_noise;
 
 out vec4 fragColor;
 
@@ -352,32 +355,120 @@ float calcOpacityTaperedExponentialGlow(float rWidthCount, float rIntensity, flo
     return (useSolid * taperComponent * taperComponent) + (useNonSolid * outerGlow);
 }
 
+float sampleNoiseFBM(vec3 sampler) {
+    return texture(perlin_noise, vec3(sampler[0], sampler[1], sampler[2]))[0];
+}
+
+float sampleNoisePerlin(vec3 sampler) {
+    //return texture(perlin_noise, vec3(sampler[0], sampler[1], abs(mod(sampler[2], 2.0) - 1.0)))[1];
+    return texture(perlin_noise, vec3(sampler[0], sampler[1], sampler[2]))[1];
+}
+
+//float fbm(vec2 a, float b) {
+    //return sampleNoiseFBM(vec3(a.x, a.y, b));
+//}
+
+float fbm(vec2 p, float time)
+{
+     float v = 0.0;
+     float amp = 0.75;
+     float freq = 1;
+     int octaves = 2;
+     for (int i = 0; i < octaves; i++)
+         v += cnoise(vec3((p * (i * freq)), time)) * (amp / (i + 1));
+
+     return v;
+}
+
+vec4 calcRayColor(float taperAdjTop, float taperAdjBottom, float widthAdjTop, float widthAdjBottom, float center_point, vec2 real_texcoord, float intensity, float distanceFromCenter, float grains)
+{
+    float limitTop = taperAdjTop * widthAdjTop;
+    float limitBottom = taperAdjBottom * widthAdjBottom;
+
+    bool pixelInUpperBounds = ((real_texcoord[1] - center_point) < limitTop) && ((real_texcoord[1] - center_point) > 0);
+    bool pixelInLowerBounds = ((real_texcoord[1] - center_point) > (-limitBottom)) && ((real_texcoord[1] - center_point) < 0);
+    float pixelWithinBounds = float(pixelInUpperBounds || pixelInLowerBounds);
+    float topOpacityGlow = calcOpacityGlow(limitTop, intensity, distanceFromCenter);
+    float bottomOpacityGlow = calcOpacityGlow(limitBottom, intensity, distanceFromCenter);
+    float topOpacityTaperedGlow = calcOpacityTaperedGlow(limitTop, intensity, distanceFromCenter, real_texcoord[0]);
+    float bottomOpacityTaperedGlow = calcOpacityTaperedGlow(limitBottom, intensity, distanceFromCenter, real_texcoord[0]);
+    float topOpacityTaperedExponentialGlow = calcOpacityTaperedExponentialGlow(limitTop, intensity, distanceFromCenter, real_texcoord[0]);
+    float bottomOpacityTaperedExponentialGlow = calcOpacityTaperedExponentialGlow(limitBottom, intensity, distanceFromCenter, real_texcoord[0]);
+
+    float topOpacity = (
+        (topOpacityGlow * float(opacity == opacityGlow)) +
+        (topOpacityTaperedGlow * float(opacity == opacityTaperedGlow)) +
+        (topOpacityTaperedExponentialGlow * float(opacity == opacityTaperedExponentialGlow))
+    ) * opacityAdj;
+    float bottomOpacity = (
+        (bottomOpacityGlow * float(opacity == opacityGlow)) +
+        (bottomOpacityTaperedGlow * float(opacity == opacityTaperedGlow)) +
+        (bottomOpacityTaperedExponentialGlow * float(opacity == opacityTaperedExponentialGlow))
+    ) * opacityAdj;
+    vec4 colorGlowTop = vec4(calcColorGlow(primaryColor, secondaryColor, limitTop, intensity, distanceFromCenter), topOpacity) * float(pixelInUpperBounds);
+    vec4 colorGlowBottom = vec4(calcColorGlow(primaryColor, secondaryColor, limitBottom, intensity, distanceFromCenter), bottomOpacity) * float(pixelInLowerBounds);
+	vec4 finalColor = (abs(colorGlowTop + colorGlowBottom) * grains);
+	return finalColor;
+}
+
+vec4 calcLightningColor(float taperAdj, float widthAdj, vec2 real_texcoord)
+{
+	float wavefront_amplitude = 6.0f;
+	float uv_x_lightning_mult = 10;
+    float uv_y_mult = 4.0;
+	vec2 uv = real_texcoord;
+	uv.x *= uv_x_lightning_mult;
+    uv.y *= uv_y_mult;
+
+    float wavefrontAdj = taperAdj * widthAdj;
+
+    float wavefront_pos = uv.y;
+    float wavefront_multiplier = (rand(vec2(current_tick + abs(seed))) - 0.5) * wavefront_amplitude;
+    wavefront_pos = uv.y + wavefront_multiplier * wavefrontAdj;
+
+    float endXReduction = clamp((uv.x * -uv.x * 0.1) + uv_x_lightning_mult * uv_x_lightning_mult * 0.1, 0.0f, 1.0f);
+    uv.y *= 0;
+    uv.x *= 0.8;
+
+    float noise = fbm((uv * 2) + vec2(100, 100), (current_tick + seed) * 5) * 2;
+    float s1 = ((wavefront_pos) + (noise * endXReduction));
+    float colorGrad = 1.0 / (s1 * (50.0));
+	float alpha = abs(colorGrad * colorGrad);
+	float quadPosAlphaAdj = (uv.x + 1) / 2;
+	vec3 color = blendVectors(secondaryColor, primaryColor, quadPosAlphaAdj);
+
+	float epsilon = 0.01;
+	bool alphaIsZero = alpha < epsilon;
+	vec4 finalColor = vec4(color, pow(alpha, 0.1) * quadPosAlphaAdj * float(!alphaIsZero));
+	return finalColor;
+}
+
 void main(void)
 {
     float center_point = 0.0; // Remember to remove this in the real shader!!
-    vec2 uv = -1. + 2. * quadPos;
     vec2 real_texcoord = quadPos;
     
     float distanceFromCenter = abs(real_texcoord[1] - center_point);
     
+	// Graininess
     float grains_x = quadSize[0] / 20.0f;
     float grains_y = quadSize[1] / 20.0f;
-    float perlinNoise = (0.5 + (cnoise(vec3(quadPos[0] * grains_x, quadPos[1] * grains_y, current_tick * 100)) / 2.0));
+    float perlinNoise = sampleNoisePerlin(vec3(quadPos[0] * grains_x, quadPos[1] * grains_y, current_tick * 100));
     float grains = (perlinNoise * float(grainyTexture == opacityGrainy) * 2) + float(grainyTexture == 0);
 
-    float blobWidthTop = widthRandomWaves(real_texcoord[0], BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), 1.1);
+	float widthCalcPos = real_texcoord[0];
+
+    float blobWidthTop = widthRandomWaves(widthCalcPos, BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), 1.1);
     float blobWidthBottom = blobWidthTop;
-    //float blobWidthBottom = widthRandomWaves(real_texcoord[0], BLOB_WAVE_SIZE, WAVY_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), 2.2);
-    float jaggedWidthTop = widthRandomWaves(real_texcoord[0], JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), 3.3);
+    float jaggedWidthTop = widthRandomWaves(widthCalcPos, JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), 3.3);
     float jaggedWidthBottom = jaggedWidthTop;
-    //float jaggedWidthBottom = widthRandomWaves(real_texcoord[0], JAGGED_AMPLITUDE, JAGGED_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), 4.4);
-    float whiptailWidthTop = widthWave(real_texcoord[0], WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), WHIPTAIL_DECAY, waveCyclePos);
-    float whiptailWidthBottom = widthWave(real_texcoord[0], WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), WHIPTAIL_DECAY, waveCyclePos + 0.5);
-    float taperWidth = widthTapered(real_texcoord[0]);
-    float coneWidth = widthCone(real_texcoord[0]);
-    float diamondWidth = widthDiamond(real_texcoord[0]);
-    float ovalWidth = widthOval(real_texcoord[0]);
-    float swordWidth = widthSword(real_texcoord[0]);
+    float whiptailWidthTop = widthWave(widthCalcPos, WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), WHIPTAIL_DECAY, waveCyclePos);
+    float whiptailWidthBottom = widthWave(widthCalcPos, WHIPTAIL_AMPLITUDE, WHIPTAIL_WAVELENGTH_FACTOR * (quadSize[1] / quadSize[0]), WHIPTAIL_DECAY, waveCyclePos + 0.5);
+    float taperWidth = widthTapered(widthCalcPos);
+    float coneWidth = widthCone(widthCalcPos);
+    float diamondWidth = widthDiamond(widthCalcPos);
+    float ovalWidth = widthOval(widthCalcPos);
+    float swordWidth = widthSword(widthCalcPos);
     float straightWidth = 1.0;
     
     float taperAdjTop = (
@@ -426,41 +517,16 @@ void main(void)
 		(swordWidth * float(widthAdjType == widthAdjSword))
     );
     
-    float limitTop = taperAdjTop * widthAdjTop;
-    float limitBottom = taperAdjBottom * widthAdjBottom;
+	vec4 rayColor = calcRayColor(taperAdjTop, taperAdjBottom, widthAdjTop, widthAdjBottom, center_point, real_texcoord, intensity, distanceFromCenter, grains);
+	vec4 lightningColor = calcLightningColor(taperAdjTop, widthAdjTop, real_texcoord);
 
-    bool pixelInUpperBounds = ((real_texcoord[1] - center_point) < limitTop) && ((real_texcoord[1] - center_point) > 0);
-    bool pixelInLowerBounds = ((real_texcoord[1] - center_point) > (-limitBottom)) && ((real_texcoord[1] - center_point) < 0);
-    float pixelWithinBounds = float(pixelInUpperBounds || pixelInLowerBounds);
-    float topOpacityGlow = calcOpacityGlow(limitTop, intensity, distanceFromCenter);
-    float bottomOpacityGlow = calcOpacityGlow(limitBottom, intensity, distanceFromCenter);
-    float topOpacityTaperedGlow = calcOpacityTaperedGlow(limitTop, intensity, distanceFromCenter, real_texcoord[0]);
-    float bottomOpacityTaperedGlow = calcOpacityTaperedGlow(limitBottom, intensity, distanceFromCenter, real_texcoord[0]);
-    float topOpacityTaperedExponentialGlow = calcOpacityTaperedExponentialGlow(limitTop, intensity, distanceFromCenter, real_texcoord[0]);
-    float bottomOpacityTaperedExponentialGlow = calcOpacityTaperedExponentialGlow(limitBottom, intensity, distanceFromCenter, real_texcoord[0]);
-	
-    float topOpacity = (
-        (topOpacityGlow * float(opacity == opacityGlow)) + 
-        (topOpacityTaperedGlow * float(opacity == opacityTaperedGlow)) +
-        (topOpacityTaperedExponentialGlow * float(opacity == opacityTaperedExponentialGlow))
-    ) * opacityAdj;
-    float bottomOpacity = (
-        (bottomOpacityGlow * float(opacity == opacityGlow)) + 
-        (bottomOpacityTaperedGlow * float(opacity == opacityTaperedGlow)) +
-        (bottomOpacityTaperedExponentialGlow * float(opacity == opacityTaperedExponentialGlow))
-    ) * opacityAdj;
-    //vec4 colorGlowTop = vec4(topOpacityGlow, topOpacityGlow, topOpacityGlow, topOpacityGlow) * float(pixelInUpperBounds);
-    //vec4 colorGlowBottom = vec4(bottomOpacityGlow, bottomOpacityGlow, bottomOpacityGlow, bottomOpacityGlow) * float(pixelInLowerBounds);
-    vec4 colorGlowTop = vec4(calcColorGlow(primaryColor, secondaryColor, limitTop, intensity, distanceFromCenter), topOpacity) * float(pixelInUpperBounds);
-    vec4 colorGlowBottom = vec4(calcColorGlow(primaryColor, secondaryColor, limitBottom, intensity, distanceFromCenter), bottomOpacity) * float(pixelInLowerBounds);
-    //fragColor = vec4(grains, grains, grains, grains);
-    //fragColor = (abs(colorGlowTop + colorGlowBottom) + vec4((primaryColor + secondaryColor) * min(1.0, grains) / 2.0, grains) * pixelWithinBounds);
 
+	vec4 finalColor = (
+		rayColor * float(!bool(isLightning)) +
+		lightningColor * float(bool(isLightning))
+	);
 	float epsilon = 0.01;
-	vec4 finalColor = (abs(colorGlowTop + colorGlowBottom) * grains);
 	bool alphaIsZero = finalColor[3] < epsilon;
 	gl_FragDepth = depth + float(alphaIsZero && (finalColor[3] < epsilon));
-    fragColor = finalColor + (0.00001 * float(colorTypes));
-	//fragColor = vec4(1.0, 1.0, 1.0, 1.0);
-	//fragColor = (real_texcoord[0], real_texcoord[1], 0.0, real_texcoord[1] + 0.5) + (abs(colorGlowTop + colorGlowBottom) * 0.8 * depth * float(colorTypes));
+    fragColor = finalColor;
 }

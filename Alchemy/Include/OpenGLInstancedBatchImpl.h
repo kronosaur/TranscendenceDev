@@ -19,7 +19,7 @@ private:
 	static std::unique_ptr<OpenGLVAO> vao;
 };
 
-class OpenGLInstancedBatchRenderRequestRay : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, glm::ivec2, glm::ivec3, glm::vec3, glm::vec3, glm::vec3> {
+class OpenGLInstancedBatchRenderRequestRay : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, glm::ivec2, glm::ivec3, glm::vec3, glm::vec3, glm::vec3, float, int> {
 public:
 	OpenGLInstancedBatchRenderRequestRay(
 		glm::vec4 sizeAndPosition,
@@ -28,7 +28,9 @@ public:
 		glm::ivec3 styles,
 		glm::vec3 intensitiesAndCycles,
 		glm::vec3 primaryColor,
-		glm::vec3 secondaryColor) : OpenGLInstancedBatchRenderRequest{ sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, primaryColor, secondaryColor } {};
+		glm::vec3 secondaryColor,
+		float seed,
+		int isLightning) : OpenGLInstancedBatchRenderRequest{ sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, primaryColor, secondaryColor, seed, isLightning } {};
 	OpenGLVAO& getVAOForInstancedBatchType() override { if (!vao) { vao = std::move(setUpVAO()); } return *(vao.get()); }
 	int getRenderRequestSize() override { return sizeof(*this); }
 private:
@@ -73,7 +75,9 @@ private:
 	static std::unique_ptr<OpenGLVAO> vao;
 };
 
-typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestLightning, std::tuple<float, glm::vec2>> OpenGLInstancedBatchLightning;
-typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestRay, std::tuple<float, glm::vec2>> OpenGLInstancedBatchRay;
+// Define uniforms for each shader
+
+typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestLightning, std::tuple<float, glm::vec2>> OpenGLInstancedBatchLightning; // TODO: Retire OpenGLInstancedBatchLightning
+typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestRay, std::tuple<float, glm::vec2, const OpenGLAnimatedNoise*>> OpenGLInstancedBatchRay;
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestOrb, std::tuple<float, glm::vec2>> OpenGLInstancedBatchOrb;
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestTexture, std::tuple<OpenGLTexture*, OpenGLTexture*, int, const OpenGLAnimatedNoise*>> OpenGLInstancedBatchTexture;

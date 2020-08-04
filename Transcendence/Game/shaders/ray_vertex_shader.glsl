@@ -21,7 +21,9 @@ layout (location = 4) in ivec3 aStyles;
 layout (location = 5) in vec3 aFloatParams;
 layout (location = 6) in vec3 aPrimaryColor;
 layout (location = 7) in vec3 aSecondaryColor;
-layout (location = 8) in float aDepth;
+layout (location = 8) in float aSeed;
+layout (location = 9) in int aIsLightning;
+layout (location = 10) in float aDepth;
 
 uniform vec2 aCanvasAdjustedDimensions;
 
@@ -37,7 +39,9 @@ layout (location = 8) out vec3 secondaryColor;
 layout (location = 9) out float waveCyclePos;
 layout (location = 10) flat out int colorTypes;
 layout (location = 11) out float opacityAdj;
-layout (location = 12) out vec2 quadSize;
+layout (location = 12) flat out int isLightning;
+layout (location = 13) out float seed;
+layout (location = 14) out vec2 quadSize;
 
 mat4 rotationMatrix2D(float rotation)
 {
@@ -75,26 +79,10 @@ void main(void)
 {
     vec2 aSize = vec2(aSizeAndPosition[0], aSizeAndPosition[1]);
     vec2 aPosOnCanvas = (vec2(aSizeAndPosition[2], aSizeAndPosition[3]) - vec2(0.5, 0.5)) * 2.0;
-	
-	// Fix positions and sizes
-	//vec2 fixedSize = aCanvasQuadSizes * 2.0;
-	//vec2 fixedTexSize = aTexQuadSizes * 1.0;
-	//vec2 positionOffset = vec2(fixedSize[0], -fixedSize[1]) / 2.0;
-	//vec2 fixedCanvPos = vec2((aCanvasPositions[0] * 2.0) - 1.0, (aCanvasPositions[1] * -2.0) + 1.0);
-	//vec2 fixedTexPos = vec2((aTexPositions[0] * 1.0), (aTexPositions[1] * 1.0));
-	//fixedCanvPos = fixedCanvPos + positionOffset;
-	//vec2 pos2d = vec2(aPos[0] * fixedSize[0], aPos[1] * fixedSize[1]) + fixedCanvPos;
-
-    //vec4 final_pos = aPos * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]);
-	//vec4 final_pos = aPos * scalingMatrix2D(aSize[0] * aCanvasAdjustedDimensions[0], aSize[1] * aCanvasAdjustedDimensions[1]) * rotationMatrix2D(aRotation) * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]);
 	vec4 final_pos = aPos * scalingMatrix2D(aSize[0], aSize[1]) * rotationMatrix2D(aRotation) * scalingMatrix2D(1.0 / aCanvasAdjustedDimensions[0], 1.0 / aCanvasAdjustedDimensions[1]) * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]);
-	//vec4 final_pos = aPos * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]) * rotationMatrix2D(aRotation) * scalingMatrix2D(aSize[0], aSize[1]);
 
-    //vec4 quadPosV4 = (vec4(aPos[0], aPos[1], 0.0, 0.5) * 2.0) * scalingMatrix2D(aSize[0], aSize[1]) * rotationMatrix2D(-aRotation);
 	quadPos = vec2(aPos[0], aPos[1]) * 2.0;
-	// Note, the iVec values are casted to float but treated as int for some weird reason. This means that the
-	// iVecs will contain bits equal to the float representation of their value, but are of type int. We should use intBitsToFloat
-	// to fix this.
+
     widthAdjType = aShapes[0];
     reshape = aShapes[1];
     colorTypes = aStyles[0];
@@ -108,5 +96,6 @@ void main(void)
     secondaryColor = aSecondaryColor;
     quadSize = aSize;
     gl_Position = final_pos;
-    
+	seed = aSeed;
+	isLightning = aIsLightning;
 }
