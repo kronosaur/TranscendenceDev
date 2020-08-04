@@ -245,6 +245,7 @@ class CShipArmorDesc
 		int GetSegmentAtAngle (int iAngle) const;
 		CString GetSegmentName (int iIndex) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		bool IsEmpty (void) const { return (m_Segments.GetCount() == 0); }
 
 	private:
 		TArray<CShipArmorSegmentDesc> m_Segments;

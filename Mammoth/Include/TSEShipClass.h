@@ -266,6 +266,7 @@ class CShipwreckDesc
 		CObjectImageArray *GetWreckImage (CShipClass *pClass, int iRotation) const;
 		CStationType *GetWreckType (void) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Metric rHullMass);
+		bool IsDefault (void) const { return m_bIsDefault; }
 		bool IsRadioactive (void) const { return m_bRadioactiveWreck; }
 		void MarkImages (CShipClass *pClass, int iRotation) const;
 		void SweepImages (void);
@@ -292,6 +293,7 @@ class CShipwreckDesc
 		CStationTypeRef m_pWreckType;			//	Station type to use as wreck
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
 
+		bool m_bIsDefault = false;				//	TRUE if initialized to defaults
 		bool m_bRadioactiveWreck = false;		//	TRUE if wreck is always radioactive
 
 		mutable TSortMap<int, CObjectImageArray> m_WreckImages;	//	Wreck image for each rotation frame index
@@ -434,8 +436,8 @@ class CShipClass : public CDesignType
 		const CString &GetClassName (void) const { return m_sName; }
 		const CString &GetManufacturerName (void) const { return m_sManufacturer; }
 		const CString &GetShipTypeName (void) const { return m_sTypeName; }
-		int GetWreckChance (void) const { return m_WreckDesc.GetWreckChance(); }
-		const CShipwreckDesc &GetWreckDesc (void) const { return m_WreckDesc; }
+		int GetWreckChance (void) const { return GetWreckDesc().GetWreckChance(); }
+		const CShipwreckDesc &GetWreckDesc (void) const;
 		bool HasDockingPorts (void) const { return (m_DockingPorts.GetPortCount() > 0 || !m_pDefaultScreen.IsEmpty()); }
 		bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);

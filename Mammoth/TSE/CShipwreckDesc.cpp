@@ -569,10 +569,17 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 	if (pWreck == NULL)
 		pWreck = pDesc;
 
+	//	Assume this is set to defaults unless some setting is set.
+
+	m_bIsDefault = true;
+
 	//	Miscellaneous
 
 	if (pWreck->FindAttributeInteger(LEAVES_WRECK_ATTRIB, &m_iLeavesWreck))
+		{
 		m_iLeavesWreck = Max(0, m_iLeavesWreck);
+		m_bIsDefault = false;
+		}
 	else
 		{
 		//	Chance of wreck is a function of mass:
@@ -585,15 +592,30 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 	if (ALERROR error = m_pWreckType.LoadUNID(Ctx, pWreck->GetAttribute(WRECK_TYPE_ATTRIB)))
 		return error;
 
-	m_bRadioactiveWreck = pWreck->GetAttributeBool(RADIOACTIVE_WRECK_ATTRIB);
-	m_iStructuralHP = pWreck->GetAttributeIntegerBounded(STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, -1);
-	if (m_iStructuralHP == -1)
-		m_iStructuralHP = pWreck->GetAttributeIntegerBounded(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, 0);
+	if (m_pWreckType.GetUNID())
+		m_bIsDefault = false;
+
+	if (pWreck->FindAttributeBool(RADIOACTIVE_WRECK_ATTRIB, &m_bRadioactiveWreck))
+		m_bIsDefault = false;
+	else
+		m_bRadioactiveWreck = false;
+
+	if (pWreck->FindAttributeInteger(STRUCTURAL_HIT_POINTS_ATTRIB, &m_iStructuralHP)
+			|| pWreck->FindAttributeInteger(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, &m_iStructuralHP))
+		{
+		m_iStructuralHP = Max(0, m_iStructuralHP);
+		m_bIsDefault = false;
+		}
+	else
+		m_iStructuralHP = 0;
 
 	//	Explosion
 
 	if (ALERROR error = m_pExplosionType.LoadUNID(Ctx, pWreck->GetAttribute(EXPLOSION_TYPE_ATTRIB)))
 		return error;
+
+	if (m_pExplosionType.GetUNID())
+		m_bIsDefault = false;
 
 	//	Done
 

@@ -37,7 +37,7 @@
 #define SHIELD_DISPLAY_TAG						CONSTLIT("ShieldDisplay")
 #define SHIP_STANDARD_TAG						CONSTLIT("ShipStandard")
 #define TRADE_TAG								CONSTLIT("Trade")
-#define WRECK_IMAGE_TAG							CONSTLIT("WreckImage")
+#define WRECK_TAG								CONSTLIT("Wreck")
 
 #define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
 #define AUTOPILOT_ATTRIB						CONSTLIT("autopilot")
@@ -1531,7 +1531,7 @@ bool CShipClass::CreateEmptyWreck (CSystem &System,
 //	Create an empty wreck of the given ship class
 
 	{
-	return m_WreckDesc.CreateEmptyWreck(System, this, pShip, vPos, vVel, pSovereign, retpWreck);
+	return GetWreckDesc().CreateEmptyWreck(System, this, pShip, vPos, vVel, pSovereign, retpWreck);
 	}
 
 void CShipClass::CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metric rScale)
@@ -1690,7 +1690,7 @@ bool CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
 //	Creates a wreck for the given ship
 
 	{
-	return m_WreckDesc.CreateWreck(pShip, retpWreck);
+	return GetWreckDesc().CreateWreck(pShip, retpWreck);
 	}
 
 void CShipClass::FindBestMissile (CDeviceClass *pLauncher, IItemGenerator *pItems, CItemType **retpBestMissile) const
@@ -1965,7 +1965,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 
 	else if (strEquals(sField, FIELD_WRECK_CHANCE))
-		*retsValue = strFromInt(m_WreckDesc.GetWreckChance());
+		*retsValue = strFromInt(GetWreckDesc().GetWreckChance());
 
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON_RANGE))
 		{
@@ -2367,8 +2367,8 @@ CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip) const
 	{
 	//	If we've got a defined explosion, then return that
 
-	if (m_WreckDesc.GetExplosionType())
-		return m_WreckDesc.GetExplosionType();
+	if (GetWreckDesc().GetExplosionType())
+		return GetWreckDesc().GetExplosionType();
 
 	//	If no defined explosion, come up with an appropriate one.
 	//
@@ -2685,8 +2685,8 @@ int CShipClass::GetMaxStructuralHitPoints (void) const
 	{
 	//	If it is set, return that
 	
-	if (m_WreckDesc.GetStructuralHP())
-		return m_WreckDesc.GetStructuralHP();
+	if (GetWreckDesc().GetStructuralHP())
+		return GetWreckDesc().GetStructuralHP();
 
 	//	Otherwise we have to compute it based on level and mass
 
@@ -2923,6 +2923,22 @@ CCurrencyAndValue CShipClass::GetTradePrice (const CSpaceObject *pObj, bool bAct
 	return Value;
 	}
 
+const CShipwreckDesc &CShipClass::GetWreckDesc (void) const
+
+//	GetWreckDesc
+//
+//	Returns the wreck descriptor.
+
+	{
+	const CShipClass *pInheritClass;
+
+	if (m_WreckDesc.IsDefault()
+			&& (pInheritClass = CShipClass::AsType(GetInheritFrom())))
+		return pInheritClass->GetWreckDesc();
+	else
+		return m_WreckDesc;
+	}
+
 void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 
 //	InitEffects
@@ -3114,8 +3130,6 @@ void CShipClass::MarkImages (bool bMarkDevices)
 	{
 	DEBUG_TRY
 
-	int i;
-
 	m_Image.MarkImage();
     m_HeroImage.MarkImage();
 
@@ -3123,7 +3137,7 @@ void CShipClass::MarkImages (bool bMarkDevices)
 
 	if (bMarkDevices)
 		{
-		for (i = 0; i < m_AverageDevices.GetCount(); i++)
+		for (int i = 0; i < m_AverageDevices.GetCount(); i++)
 			{
 			CDeviceClass *pDevice = m_AverageDevices.GetDeviceClass(i);
 			pDevice->MarkImages();
@@ -3176,6 +3190,7 @@ void CShipClass::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) 
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(EQUIPMENT_TAG), CXMLElement::MERGE_OVERRIDE);
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(PLAYER_SETTINGS_TAG), CXMLElement::MERGE_OVERRIDE);
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(SHIP_STANDARD_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(WRECK_TAG), CXMLElement::MERGE_OVERRIDE);
 	}
 
 void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -3387,6 +3402,11 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_Interior.BindDesign(Ctx))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
+	//	If we have no armor and no interior then we're virtual.
+
+	if (m_Armor.IsEmpty() && m_Interior.IsEmpty() && !IsVirtual())
+		m_fVirtual = true;
+
     //  Compute performance based on average devices
 
     CalcPerformance();
@@ -3445,7 +3465,6 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	{
 	ALERROR error;
-	int i;
 
 	//	Initialize basic info
 
@@ -3615,7 +3634,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pEquipment = pDesc->GetContentElementByTag(EQUIPMENT_TAG);
 	if (pEquipment)
 		{
-		for (i = 0; i < pEquipment->GetContentElementCount(); i++)
+		for (int i = 0; i < pEquipment->GetContentElementCount(); i++)
 			{
 			CXMLElement *pLine = pEquipment->GetContentElement(i);
 
@@ -3647,7 +3666,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		int iScale = GetImageViewportSize();
 
-		for (i = 0; i < pDriveImages->GetContentElementCount(); i++)
+		for (int i = 0; i < pDriveImages->GetContentElementCount(); i++)
 			{
 			CXMLElement *pItem = pDriveImages->GetContentElement(i);
 			if (strEquals(pItem->GetTag(), NOZZLE_IMAGE_TAG))
@@ -3989,7 +4008,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return ICCItemPtr(GetMaxStructuralHitPoints());
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_TYPE))
-		return (m_WreckDesc.GetWreckType() ? ICCItemPtr(m_WreckDesc.GetWreckType()->GetUNID()) : ICCItemPtr::Nil());
+		return (GetWreckDesc().GetWreckType() ? ICCItemPtr(GetWreckDesc().GetWreckType()->GetUNID()) : ICCItemPtr::Nil());
 
 	//	Drive properties
 
