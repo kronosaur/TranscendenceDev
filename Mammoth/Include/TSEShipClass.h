@@ -361,8 +361,14 @@ class CShipClass : public CDesignType
 			sectCritical	= 0x00010000,		//	Ship destroyed
 			};
 
-		CShipClass (void);
+		CShipClass (void) { }
+		CShipClass (const CShipClass &Src) = delete;
+		CShipClass (CShipClass &&Src) = delete;
+
 		virtual ~CShipClass (void);
+
+		CShipClass &operator= (const CShipClass &Src) = delete;
+		CShipClass &operator= (CShipClass &&Src) = delete;
 
 		int Angle2Direction (int iAngle) const { return m_Perf.GetIntegralRotationDesc().GetFrameIndex(iAngle); }
 		int AlignToRotationAngle (int iAngle) const { return m_Perf.GetIntegralRotationDesc().AlignToRotationAngle(iAngle); }
@@ -383,9 +389,9 @@ class CShipClass : public CDesignType
 
 		CString GenerateShipName (DWORD *retdwFlags) const;
 		const CAISettings &GetAISettings (void) { return m_AISettings; }
-        const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
+		const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
 		DWORD GetCategoryFlags (void) const;
-        const CCargoDesc &GetCargoDesc (const CItem **retpCargoItem = NULL) const;
+		const CCargoDesc &GetCargoDesc (const CItem **retpCargoItem = NULL) const;
 		CGenericType *GetCharacter (void) { return m_Character; }
 		CGenericType *GetCharacterClass (void) { return m_CharacterClass; }
 		Metric GetCombatStrength (void) const { return m_rCombatStrength; }
@@ -397,14 +403,14 @@ class CShipClass : public CDesignType
 		IDeviceGenerator *GetDeviceSlots (void) const { return m_pDeviceSlots; }
 		const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
 		CVector GetDockingPortOffset (int iRotation);
-        const CDriveDesc &GetDriveDesc (const CItem **retpDriveItem = NULL) const;
+		const CDriveDesc &GetDriveDesc (const CItem **retpDriveItem = NULL) const;
 		const CObjectEffectDesc &GetEffectsDesc (void) const { return m_Effects; }
 		IShipGenerator *GetEscorts (void) { return m_pEscorts; }
 		CWeaponFireDesc *GetExplosionType (CShip *pShip) const;
 		CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
 		FrequencyTypes GetFrequency (void) const { return m_Frequency; }
-        const CObjectImageArray &GetHeroImage (void) const;
+		const CObjectImageArray &GetHeroImage (void) const;
 		const CHullDesc &GetHullDesc (void) const { return m_Hull; }
 		const CDriveDesc &GetHullDriveDesc (void) const { return m_DriveDesc; }
 		const CReactorDesc *GetHullReactorDesc (void) { return &m_ReactorDesc; }
@@ -417,14 +423,14 @@ class CShipClass : public CDesignType
 		const CObjectImageArray &GetImage (const CImageFilterStack *pFilters = NULL) const;
 		int GetImageViewportSize (void) const { return m_Image.GetSimpleImage().GetImageViewportSize(); }
 		const CIntegralRotationDesc &GetIntegralRotationDesc (void) const { return m_Perf.GetIntegralRotationDesc(); }
-        const CAttributeDataBlock &GetInitialData (void) const { return m_InitialData; }
+		const CAttributeDataBlock &GetInitialData (void) const { return m_InitialData; }
 		const CShipInteriorDesc &GetInteriorDesc (void) const { return m_Interior; }
 		int GetMaxStructuralHitPoints (void) const;
-        const CPlayerSettings *GetPlayerSettings (void) const;
+		const CPlayerSettings *GetPlayerSettings (void) const;
 		CString GetPlayerSortString (void) const;
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
 		IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
-        const CReactorDesc &GetReactorDesc (const CItem **retpReactorItem = NULL) const;
+		const CReactorDesc &GetReactorDesc (const CItem **retpReactorItem = NULL) const;
 		int GetRotationAngle (void) { return m_Perf.GetIntegralRotationDesc().GetFrameAngle(); }
 		const CRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
 		int GetRotationRange (void) { return m_Perf.GetIntegralRotationDesc().GetFrameCount(); }
@@ -441,9 +447,9 @@ class CShipClass : public CDesignType
 		bool HasDockingPorts (void) const { return (m_DockingPorts.GetPortCount() > 0 || !m_pDefaultScreen.IsEmpty()); }
 		bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);
-        void InitPerformance (SShipPerformanceCtx &Ctx) const;
+		void InitPerformance (SShipPerformanceCtx &Ctx) const;
 		void InstallEquipment (CShip *pShip);
-        bool IsDebugOnly (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsDebugOnly()); }
+		bool IsDebugOnly (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsDebugOnly()); }
 		bool IsIncludedInAllAdventures (void) { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsIncludedInAllAdventures()); }
 		bool IsPlayerShip (void) { return (GetPlayerSettings() != NULL); }
 		bool IsShipSection (void) const { return m_fShipCompartment; }
@@ -497,7 +503,7 @@ class CShipClass : public CDesignType
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const override;
 		virtual CTradingDesc *GetTradingDesc (void) const override { return m_pTrade; }
 		virtual DesignTypes GetType (void) const override { return designShipClass; }
-        virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
+		virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
 		static Metric GetStdCombatStrength (int iLevel);
@@ -513,7 +519,7 @@ class CShipClass : public CDesignType
 		virtual void OnClearMark (void) override { m_WreckDesc.ClearMarks(); }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
-        virtual CString OnGetMapDescriptionMain (const SMapDescriptionCtx &Ctx) const override;
+		virtual CString OnGetMapDescriptionMain (const SMapDescriptionCtx &Ctx) const override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
 		virtual void OnInitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const override;
@@ -551,7 +557,7 @@ class CShipClass : public CDesignType
 		int CalcLevel (void) const;
 		Metric CalcManeuverValue (bool bDodge = false) const;
 		ICCItemPtr CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const;
-        void CalcPerformance (void);
+		void CalcPerformance (void);
 		int ComputeDeviceLevel (const SDeviceDesc &Device) const;
 		void ComputeMovementStats (int *retiSpeed, int *retiThrust, int *retiManeuver);
 		int ComputeScore (int iArmorLevel,
@@ -571,53 +577,53 @@ class CShipClass : public CDesignType
 		CString m_sManufacturer;				//	Name of manufacturer
 		CString m_sName;						//	Class name
 		CString m_sTypeName;					//	Name of type
-		DWORD m_dwClassNameFlags;				//	Flags for class name
+		DWORD m_dwClassNameFlags = 0;			//	Flags for class name
 		CSovereignRef m_pDefaultSovereign;		//	Sovereign
 
 		CString m_sShipNames;					//	Names to use for individual ship
-		DWORD m_dwShipNameFlags;				//	Flags for ship name
+		DWORD m_dwShipNameFlags = 0;			//	Flags for ship name
 		TArray<int> m_ShipNamesIndices;			//	Shuffled indices for ship names
-		mutable int m_iShipName;				//	Current ship name index
+		mutable int m_iShipName = 0;			//	Current ship name index
 
-		int m_iScore;							//	Score when destroyed
-		int m_iLevel;							//	Ship class level
-		EBalanceTypes m_iLevelType;				//	Type of ships for level
-		Metric m_rCombatStrength;				//	Combat strength
-		FrequencyTypes m_Frequency;				//	Frequency
+		int m_iScore = 0;						//	Score when destroyed
+		int m_iLevel = 0;						//	Ship class level
+		EBalanceTypes m_iLevelType = typeUnknown;	//	Type of ships for level
+		Metric m_rCombatStrength = 0.0;			//	Combat strength
+		FrequencyTypes m_Frequency = ftNotRandom;	//	Frequency
 
-        //  Hull properties
+		//  Hull properties
 
 		TSharedPtr<CShipStandard> m_pStandard;	//	Standard for metrics, etc.
 		CHullDesc m_Hull;						//	Basic hull definitions
 		CRotationDesc m_RotationDesc;	        //	Rotation and maneuverability
-		Metric m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
+		Metric m_rThrustRatio = 0.0;			//	If non-zero, then m_DriveDesc thrust is set based on this.
 		CDriveDesc m_DriveDesc;					//	Drive descriptor
 		CReactorDesc m_ReactorDesc;				//	Reactor descriptor
 		CShipwreckDesc m_WreckDesc;				//	Wreck descriptor
 
-        //  Armor, Devices, Equipment, Etc.
+		//  Armor, Devices, Equipment, Etc.
 
-        CShipArmorDesc m_Armor;                 //  Armor descriptor
+		CShipArmorDesc m_Armor;                 //  Armor descriptor
 		CShipInteriorDesc m_Interior;			//	Interior structure
-		IDeviceGenerator *m_pDeviceSlots;		//	Device slots
-		IDeviceGenerator *m_pDevices;			//	Generator of devices
+		IDeviceGenerator *m_pDeviceSlots = NULL;	//	Device slots
+		IDeviceGenerator *m_pDevices = NULL;	//	Generator of devices
 		TArray<SEquipmentDesc> m_Equipment;		//	Initial equipment
 
-        //  Performance Stats (after accounting for devices, etc).
+		//  Performance Stats (after accounting for devices, etc).
 
-        CShipPerformanceDesc m_Perf;            //  Performance based on average devices (only for stats)
+		CShipPerformanceDesc m_Perf;            //  Performance based on average devices (only for stats)
 		CDeviceDescList m_AverageDevices;		//	Average complement of devices (only for stats)
 
-        //  AI & Player Settings
+		//  AI & Player Settings
 
 		CAISettings m_AISettings;				//	AI controller data
-		mutable CPlayerSettings *m_pPlayerSettings;		//	Player settings data
-		IItemGenerator *m_pItems;				//	Random items
-        CAttributeDataBlock m_InitialData;      //  Initial data for ship object
+		mutable CPlayerSettings *m_pPlayerSettings = NULL;	//	Player settings data
+		IItemGenerator *m_pItems = NULL;		//	Random items
+		CAttributeDataBlock m_InitialData;      //  Initial data for ship object
 
 		//	Escorts
 
-		IShipGenerator *m_pEscorts;				//	Escorts
+		IShipGenerator *m_pEscorts = NULL;		//	Escorts
 
 		//	Character
 
@@ -629,8 +635,8 @@ class CShipClass : public CDesignType
 
 		CDockingPorts m_DockingPorts;			//	Docking port definitions
 		CDockScreenTypeRef m_pDefaultScreen;	//	Default screen
-		DWORD m_dwDefaultBkgnd;					//	Default background screen
-		CTradingDesc *m_pTrade;					//	Trade descriptors
+		DWORD m_dwDefaultBkgnd = 0;				//	Default background screen
+		CTradingDesc *m_pTrade = NULL;			//	Trade descriptors
 
 		CCommunicationsHandler m_OriginalCommsHandler;
 		CCommunicationsHandler m_CommsHandler;	//	Communications handler
@@ -638,7 +644,7 @@ class CShipClass : public CDesignType
 		//	Image
 
 		CCompositeImageDesc m_Image;			//	Image of ship
-        mutable CObjectImageArray m_HeroImage;	//  Large image
+		mutable CObjectImageArray m_HeroImage;	//  Large image
 		CObjectEffectDesc m_Effects;			//	Effects for ship
 
 		//	Exhaust
@@ -648,20 +654,20 @@ class CShipClass : public CDesignType
 
 		//	Misc
 
-		DWORD m_fCommsHandlerInit:1;			//	TRUE if comms handler has been initialized
-		DWORD m_fVirtual:1;						//	TRUE if ship class is virtual (e.g., a base class)
-		DWORD m_fOwnPlayerSettings:1;		    //	TRUE if we own m_pPlayerSettings
-		DWORD m_fScoreOverride:1;				//	TRUE if score is specified in XML
-		DWORD m_fLevelOverride:1;				//	TRUE if level is specified in XML
-		DWORD m_fInheritedDevices:1;			//	TRUE if m_pDevices is inherited from another class
-		DWORD m_fInheritedItems:1;				//	TRUE if m_pItems is inherited from another class
-		DWORD m_fInheritedEscorts:1;			//	TRUE if m_pEscorts is inherited from another class
+		DWORD m_fCommsHandlerInit:1 = false;	//	TRUE if comms handler has been initialized
+		DWORD m_fVirtual:1 = false;				//	TRUE if ship class is virtual (e.g., a base class)
+		DWORD m_fOwnPlayerSettings:1 = false;	//	TRUE if we own m_pPlayerSettings
+		DWORD m_fScoreOverride:1 = false;		//	TRUE if score is specified in XML
+		DWORD m_fLevelOverride:1 = false;		//	TRUE if level is specified in XML
+		DWORD m_fInheritedDevices:1 = false;	//	TRUE if m_pDevices is inherited from another class
+		DWORD m_fInheritedItems:1 = false;		//	TRUE if m_pItems is inherited from another class
+		DWORD m_fInheritedEscorts:1 = false;	//	TRUE if m_pEscorts is inherited from another class
 
-		DWORD m_fInheritedTrade:1;				//	TRUE if m_pTrade is inherited from another class
-		DWORD m_fShipCompartment:1;				//	TRUE if we represent an attached compartment/segment
-		DWORD m_fInheritedDeviceSlots:1;		//	TRUE if m_pDeviceSlots is inherited from another class
-		DWORD m_fHullValueOverride:1;			//	TRUE if hull value is specifed in XML
-		DWORD m_fInheritedStandard:1;			//	TRUE if m_pStandard is inherited from another class
+		DWORD m_fInheritedTrade:1 = false;		//	TRUE if m_pTrade is inherited from another class
+		DWORD m_fShipCompartment:1 = false;		//	TRUE if we represent an attached compartment/segment
+		DWORD m_fInheritedDeviceSlots:1 = false;	//	TRUE if m_pDeviceSlots is inherited from another class
+		DWORD m_fHullValueOverride:1 = false;	//	TRUE if hull value is specifed in XML
+		DWORD m_fInheritedStandard:1 = false;	//	TRUE if m_pStandard is inherited from another class
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
@@ -671,4 +677,3 @@ class CShipClass : public CDesignType
 		static CPlayerSettings m_DefaultPlayerSettings;
 		static bool m_bDefaultPlayerSettingsBound;
 	};
-

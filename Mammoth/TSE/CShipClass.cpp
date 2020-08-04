@@ -298,26 +298,6 @@ static ScoreDesc g_XP[] =
 CPlayerSettings CShipClass::m_DefaultPlayerSettings;
 bool CShipClass::m_bDefaultPlayerSettingsBound = false;
 
-CShipClass::CShipClass (void) : 
-		m_pDeviceSlots(NULL),
-		m_pDevices(NULL),
-		m_pPlayerSettings(NULL),
-		m_pItems(NULL),
-		m_pEscorts(NULL),
-		m_pTrade(NULL),
-		m_fInheritedDevices(false),
-		m_fInheritedItems(false),
-		m_fInheritedEscorts(false),
-		m_fInheritedTrade(false),
-        m_fOwnPlayerSettings(false),
-        m_fInheritedDeviceSlots(false),
-		m_fInheritedStandard(false)
-
-//	CShipClass constructor
-
-	{
-	}
-
 CShipClass::~CShipClass (void)
 
 //	CShip destructor
@@ -544,8 +524,8 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 	for (i = 0; i < m_AverageDevices.GetCount(); i++)
 		{
 		const SDeviceDesc &Desc = m_AverageDevices.GetDeviceDesc(i);
-        CItemCtx ItemCtx(Desc.Item);
-        CDeviceClass *pDevice = ItemCtx.GetDeviceClass();
+		CItemCtx ItemCtx(Desc.Item);
+		CDeviceClass *pDevice = ItemCtx.GetDeviceClass();
 		bool bIsLauncher;
 
 		//	Figure out if this is a weapon or a launcher; if neither, then we
@@ -569,27 +549,27 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 		//	If this is a launcher then we need to figure out the best available
 		//	variant.
 
-        CItem Ammo;
+		CItem Ammo;
 		int iMissileLevel = 0;
 		if (bIsLauncher)
 			{
 			CItemType *pBestMissile = CalcBestMissile(Desc);
 			if (pBestMissile)
 				{
-                Ammo = CItem(pBestMissile, 1);
-                iMissileLevel = Ammo.GetLevel();
+				Ammo = CItem(pBestMissile, 1);
+				iMissileLevel = Ammo.GetLevel();
 				}
-            else
-                {
-                //  If the launcher has no ammo, then skip to the next device.
+			else
+				{
+				//  If the launcher has no ammo, then skip to the next device.
 
-                continue;
-                }
+				continue;
+				}
 			}
 
 		//	Compute the damage rate for the weapon
 
-        Metric rDamageRate = pDevice->GetAmmoItemPropertyDouble(ItemCtx, Ammo, CONSTLIT("damage"));
+		Metric rDamageRate = pDevice->GetAmmoItemPropertyDouble(ItemCtx, Ammo, CONSTLIT("damage"));
 		bool bCanTrack = pDevice->GetAmmoItemPropertyBool(ItemCtx, Ammo, CONSTLIT("tracking"));
 
 		//	Compute weapon level
@@ -715,13 +695,13 @@ Metric CShipClass::CalcDefenseRate (void) const
 
 	Metric Ahp;
 	Metric Aregen;
-    const CShipArmorSegmentDesc *pSect = (m_Armor.GetCount() > 0 ? &m_Armor.GetSegment(0) : NULL);
+	const CShipArmorSegmentDesc *pSect = (m_Armor.GetCount() > 0 ? &m_Armor.GetSegment(0) : NULL);
 
 	if (pSect)
 		{
-        CArmorClass *pArmor = pSect->GetArmorClass();
-        CItem Item;
-        pSect->CreateArmorItem(&Item);
+		CArmorClass *pArmor = pSect->GetArmorClass();
+		CItem Item;
+		pSect->CreateArmorItem(&Item);
 		CArmorItem ArmorItem = Item.AsArmorItemOrThrow();
 
 		Ahp = ArmorItem.GetMaxHP();
@@ -730,7 +710,7 @@ Metric CShipClass::CalcDefenseRate (void) const
 		//	Adjust for damage type adjustment (for armor that has more resistance
 		//	than standard armor, e.g., meteorsteel).
 
-        CItemCtx ItemCtx(Item);
+		CItemCtx ItemCtx(Item);
 		int iDamageAdj = pArmor->CalcAverageRelativeDamageAdj(ItemCtx);
 		Metric rDamageAdj = (iDamageAdj > 0 ? 100.0 / iDamageAdj : 10.0);
 		Ahp *= rDamageAdj;
@@ -961,7 +941,7 @@ Metric CShipClass::CalcManeuverValue (bool bDodge) const
 
 	//	Get some statistics
 
-    const CDriveDesc &Drive = m_Perf.GetDriveDesc();
+	const CDriveDesc &Drive = m_Perf.GetDriveDesc();
 
 	Metric rMass = CalcMass(m_AverageDevices);
 	Metric rThrustRatio = 2.0 * (rMass > 0.0 ? Drive.GetThrust() / rMass : 0.0);
@@ -1013,7 +993,7 @@ Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 	int i;
 	Metric rMass = m_Hull.GetMass();
 
-    rMass += m_Armor.CalcMass();
+	rMass += m_Armor.CalcMass();
 
 	for (i = 0; i < Devices.GetCount(); i++)
 		{
@@ -1045,53 +1025,53 @@ void CShipClass::CalcPerformance (void)
 //  Calculates the basic stats including all devices. This function initializes
 //  m_Perf and uses m_AverageDevices.
 
-    {
+	{
 	DEBUG_TRY
 
-    int i;
+	int i;
 
-    //  We generate a context block and accumulate performance stats from the
-    //  class, armor, devices, etc.
-    //
-    //  These fields are context for the ship that we're computing.
+	//  We generate a context block and accumulate performance stats from the
+	//  class, armor, devices, etc.
+	//
+	//  These fields are context for the ship that we're computing.
 
-    SShipPerformanceCtx Ctx(this);
+	SShipPerformanceCtx Ctx(this);
 
-    //  Start with parameters from the class
+	//  Start with parameters from the class
 
-    InitPerformance(Ctx);
+	InitPerformance(Ctx);
 
-    //  Accumulate settings from armor
+	//  Accumulate settings from armor
 
 	for (i = 0; i < m_Armor.GetCount(); i++)
 		{
-        CItem ArmorItem;
-        if (!m_Armor.GetSegment(i).CreateArmorItem(&ArmorItem)
-                || ArmorItem.IsEmpty())
-            continue;
+		CItem ArmorItem;
+		if (!m_Armor.GetSegment(i).CreateArmorItem(&ArmorItem)
+				|| ArmorItem.IsEmpty())
+			continue;
 
-        CItemCtx ItemCtx(ArmorItem);
-        ItemCtx.GetArmorClass()->AccumulatePerformance(ItemCtx, Ctx);
+		CItemCtx ItemCtx(ArmorItem);
+		ItemCtx.GetArmorClass()->AccumulatePerformance(ItemCtx, Ctx);
 		}
 
-    //  Accumulate settings from devices
+	//  Accumulate settings from devices
 
-    for (i = 0; i < m_AverageDevices.GetCount(); i++)
-        {
-        const CItem &DeviceItem = m_AverageDevices.GetDeviceDesc(i).Item;
-        if (DeviceItem.IsEmpty())
-            continue;
+	for (i = 0; i < m_AverageDevices.GetCount(); i++)
+		{
+		const CItem &DeviceItem = m_AverageDevices.GetDeviceDesc(i).Item;
+		if (DeviceItem.IsEmpty())
+			continue;
 
-        CItemCtx ItemCtx(DeviceItem);
-        ItemCtx.GetDeviceClass()->AccumulatePerformance(ItemCtx, Ctx);
-        }
+		CItemCtx ItemCtx(DeviceItem);
+		ItemCtx.GetDeviceClass()->AccumulatePerformance(ItemCtx, Ctx);
+		}
 
-    //  Now apply the performance parameters to the descriptor
+	//  Now apply the performance parameters to the descriptor
 
-    m_Perf.Init(Ctx);
+	m_Perf.Init(Ctx);
 
 	DEBUG_CATCH
-    }
+	}
 
 int CShipClass::CalcRatedPowerUse (const CDeviceDescList &Devices) const
 
@@ -1261,7 +1241,7 @@ enum LowMediumHigh
 
 void CShipClass::ComputeMovementStats (int *retiSpeed, int *retiThrust, int *retiManeuver)
 	{
-    const CDriveDesc &DriveDesc = m_Perf.GetDriveDesc();
+	const CDriveDesc &DriveDesc = m_Perf.GetDriveDesc();
 
 	//	Figure out the speed of the ship
 
@@ -1289,7 +1269,7 @@ void CShipClass::ComputeMovementStats (int *retiSpeed, int *retiThrust, int *ret
 
 	//	Figure out the maneuverability of the ship
 
-    const CIntegralRotationDesc &RotationDesc = m_Perf.GetIntegralRotationDesc();
+	const CIntegralRotationDesc &RotationDesc = m_Perf.GetIntegralRotationDesc();
 	if (RotationDesc.GetMaxRotationTimeTicks() >= 90)
 		*retiManeuver = enumLow;
 	else if (RotationDesc.GetMaxRotationTimeTicks() > 30)
@@ -1828,15 +1808,15 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_PRIMARY_ARMOR_UNID))
 		{
 		CArmorClass *pArmor = NULL;
-        int iBestLevel;
+		int iBestLevel;
 		for (i = 0; i < GetHullSectionCount(); i++)
 			{
 			const CShipArmorSegmentDesc *pSeg = &GetHullSection(i);
-            if (pArmor == NULL || pSeg->GetLevel() > iBestLevel)
-                {
-                pArmor = pSeg->GetArmorClass();
-                iBestLevel = pSeg->GetLevel();
-                }
+			if (pArmor == NULL || pSeg->GetLevel() > iBestLevel)
+				{
+				pArmor = pSeg->GetArmorClass();
+				iBestLevel = pSeg->GetLevel();
+				}
 			}
 		if (pArmor)
 			*retsValue = strFromInt(pArmor->GetItemType()->GetUNID());
@@ -2055,8 +2035,8 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		for (i = 0; i < GetHullSectionCount(); i++)
 			{
 			const CShipArmorSegmentDesc &Seg = GetHullSection(i);
-            CItem theItem;
-            Seg.CreateArmorItem(&theItem);
+			CItem theItem;
+			Seg.CreateArmorItem(&theItem);
 
 			Items.Insert(theItem);
 			}
@@ -2213,15 +2193,15 @@ const CCargoDesc &CShipClass::GetCargoDesc (const CItem **retpCargoItem) const
 //
 //  Returns the computed cargo descriptor
 
-    {
-    if (retpCargoItem)
-        {
-        const SDeviceDesc *pCargo = m_AverageDevices.GetDeviceDescByName(devCargo);
-        *retpCargoItem = (pCargo ? &pCargo->Item : NULL);
-        }
+	{
+	if (retpCargoItem)
+		{
+		const SDeviceDesc *pCargo = m_AverageDevices.GetDeviceDescByName(devCargo);
+		*retpCargoItem = (pCargo ? &pCargo->Item : NULL);
+		}
 
-    return m_Perf.GetCargoDesc();
-    }
+	return m_Perf.GetCargoDesc();
+	}
 
 DWORD CShipClass::GetCategoryFlags (void) const
 
@@ -2310,7 +2290,7 @@ CVector CShipClass::GetDockingPortOffset (int iRotation)
 	{
 	//	For small ships we just go with the ship center.
 
-    int iImageSize = RectWidth(m_Image.GetSimpleImage().GetImageRect());
+	int iImageSize = RectWidth(m_Image.GetSimpleImage().GetImageRect());
 	if (iImageSize <= DOCK_OFFSET_STD_SIZE)
 		return NullVector;
 
@@ -2323,15 +2303,15 @@ const CDriveDesc &CShipClass::GetDriveDesc (const CItem **retpDriveItem) const
 //
 //  Returns the computed drive desc (including devices)
 
-    {
-    if (retpDriveItem)
-        {
-        const SDeviceDesc *pDrive = m_AverageDevices.GetDeviceDescByName(devDrive);
-        *retpDriveItem = (pDrive ? &pDrive->Item : NULL);
-        }
+	{
+	if (retpDriveItem)
+		{
+		const SDeviceDesc *pDrive = m_AverageDevices.GetDeviceDescByName(devDrive);
+		*retpDriveItem = (pDrive ? &pDrive->Item : NULL);
+		}
 
-    return m_Perf.GetDriveDesc();
-    }
+	return m_Perf.GetDriveDesc();
+	}
 
 const CEconomyType *CShipClass::GetEconomyType (void) const
 
@@ -2528,25 +2508,25 @@ const CObjectImageArray &CShipClass::GetHeroImage (void) const
 //
 //  Returns the hero image, suitable for dock screens.
 
-    {
-    //  If we don't have a hero image, try to create one from the player setting's
-    //  large image.
+	{
+	//  If we don't have a hero image, try to create one from the player setting's
+	//  large image.
 
-    const CPlayerSettings *pPlayerSettings;
-    DWORD dwImageUNID;
+	const CPlayerSettings *pPlayerSettings;
+	DWORD dwImageUNID;
 	TSharedPtr<CObjectImage> pLargeImageObj;
-    CG32bitImage *pLargeImage;
-    if (m_HeroImage.IsEmpty()
-            && (pPlayerSettings = GetPlayerSettings())
-            && (dwImageUNID = pPlayerSettings->GetLargeImage())
-            && (pLargeImageObj = GetUniverse().FindLibraryImage(dwImageUNID))
+	CG32bitImage *pLargeImage;
+	if (m_HeroImage.IsEmpty()
+			&& (pPlayerSettings = GetPlayerSettings())
+			&& (dwImageUNID = pPlayerSettings->GetLargeImage())
+			&& (pLargeImageObj = GetUniverse().FindLibraryImage(dwImageUNID))
 			&& (pLargeImage = pLargeImageObj->GetRawImage(strPatternSubst(CONSTLIT("%08x hero image"), GetUNID())))
-            && !pLargeImage->IsEmpty())
-        {
-        //  If necessary, we scale it down to fit the dock screen.
+			&& !pLargeImage->IsEmpty())
+		{
+		//  If necessary, we scale it down to fit the dock screen.
 
-        if (pLargeImage->GetHeight() > MAX_HERO_IMAGE_HEIGHT)
-            {
+		if (pLargeImage->GetHeight() > MAX_HERO_IMAGE_HEIGHT)
+			{
 			Metric rScale = (Metric)MAX_HERO_IMAGE_HEIGHT / pLargeImage->GetHeight();
 			CG32bitImage *pNewImage = new CG32bitImage;
 			pNewImage->CreateFromImageTransformed(*pLargeImage,
@@ -2558,30 +2538,30 @@ const CObjectImageArray &CShipClass::GetHeroImage (void) const
 					rScale,
 					0.0);
 
-            RECT rcImage;
-            rcImage.left = 0;
-            rcImage.top = 0;
-            rcImage.right = pNewImage->GetWidth();
-            rcImage.bottom = pNewImage->GetHeight();
+			RECT rcImage;
+			rcImage.left = 0;
+			rcImage.top = 0;
+			rcImage.right = pNewImage->GetWidth();
+			rcImage.bottom = pNewImage->GetHeight();
 
-            m_HeroImage.InitFromBitmap(pNewImage, rcImage, 1, 1, true);
-            }
-        else
-            {
-            RECT rcImage;
-            rcImage.left = 0;
-            rcImage.top = 0;
-            rcImage.right = pLargeImage->GetWidth();
-            rcImage.bottom = pLargeImage->GetHeight();
+			m_HeroImage.InitFromBitmap(pNewImage, rcImage, 1, 1, true);
+			}
+		else
+			{
+			RECT rcImage;
+			rcImage.left = 0;
+			rcImage.top = 0;
+			rcImage.right = pLargeImage->GetWidth();
+			rcImage.bottom = pLargeImage->GetHeight();
 
-            m_HeroImage.Init(pLargeImageObj, rcImage, 1, 1);
-            }
-        }
+			m_HeroImage.Init(pLargeImageObj, rcImage, 1, 1);
+			}
+		}
 
-    //  Return the hero image (even if blank)
+	//  Return the hero image (even if blank)
 
-    return m_HeroImage;
-    }
+	return m_HeroImage;
+	}
 
 int CShipClass::GetHullSectionAtAngle (int iAngle)
 
@@ -2591,7 +2571,7 @@ int CShipClass::GetHullSectionAtAngle (int iAngle)
 //	angle.
 
 	{
-    return m_Armor.GetSegmentAtAngle(iAngle);
+	return m_Armor.GetSegmentAtAngle(iAngle);
 	}
 
 CString CShipClass::GetHullSectionName (int iIndex) const
@@ -2606,7 +2586,7 @@ CString CShipClass::GetHullSectionName (int iIndex) const
 //	aft
 
 	{
-    return m_Armor.GetSegmentName(iIndex);
+	return m_Armor.GetSegmentName(iIndex);
 	}
 
 CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
@@ -2734,47 +2714,47 @@ const CPlayerSettings *CShipClass::GetPlayerSettings (void) const
 //  3.  Our m_pPlayerSettings is valid and complete. In that case, we just 
 //      return it.
 
-    {
-    //  If we have a resolved set of player settings, we're done.
+	{
+	//  If we have a resolved set of player settings, we're done.
 
-    if (m_pPlayerSettings && m_pPlayerSettings->IsResolved())
-        return m_pPlayerSettings;
+	if (m_pPlayerSettings && m_pPlayerSettings->IsResolved())
+		return m_pPlayerSettings;
 
-    //  Get our base class because we're going to need it one way or the other.
-    //  If we don't have a base class, then we just return whatever we have.
-    //  (Which may be either NULL or incomplete).
+	//  Get our base class because we're going to need it one way or the other.
+	//  If we don't have a base class, then we just return whatever we have.
+	//  (Which may be either NULL or incomplete).
 
-    CShipClass *pBase = CShipClass::AsType(GetInheritFrom());
-    const CPlayerSettings *pBaseSettings = (pBase ? pBase->GetPlayerSettings() : NULL);
+	CShipClass *pBase = CShipClass::AsType(GetInheritFrom());
+	const CPlayerSettings *pBaseSettings = (pBase ? pBase->GetPlayerSettings() : NULL);
 
-    //  If we have player settings, then resolve against the base class so that
-    //  we can inherit.
-    //
-    //  NOTE: It's OK if pBaseSettings is NULL--at least we will mark m_pPlayerSettings
-    //  as resolved.
+	//  If we have player settings, then resolve against the base class so that
+	//  we can inherit.
+	//
+	//  NOTE: It's OK if pBaseSettings is NULL--at least we will mark m_pPlayerSettings
+	//  as resolved.
 
-    if (m_fOwnPlayerSettings)
-        {
-        m_pPlayerSettings->Resolve(GetUniverse(), pBaseSettings);
-        return m_pPlayerSettings;
-        }
+	if (m_fOwnPlayerSettings)
+		{
+		m_pPlayerSettings->Resolve(GetUniverse(), pBaseSettings);
+		return m_pPlayerSettings;
+		}
 
-    //  Otherwise, we inherit all our settings from our base class
+	//  Otherwise, we inherit all our settings from our base class
 
-    else if (pBaseSettings)
-        {
-        m_pPlayerSettings = const_cast<CPlayerSettings *>(pBaseSettings);
-        return m_pPlayerSettings;
-        }
+	else if (pBaseSettings)
+		{
+		m_pPlayerSettings = const_cast<CPlayerSettings *>(pBaseSettings);
+		return m_pPlayerSettings;
+		}
 
 	//	Otherwise, we use default settings
 
 	else
 		{
-        m_pPlayerSettings = const_cast<CPlayerSettings *>(&m_DefaultPlayerSettings);
-        return m_pPlayerSettings;
+		m_pPlayerSettings = const_cast<CPlayerSettings *>(&m_DefaultPlayerSettings);
+		return m_pPlayerSettings;
 		}
-    }
+	}
 
 CString CShipClass::GetPlayerSortString (void) const
 
@@ -2849,15 +2829,15 @@ const CReactorDesc &CShipClass::GetReactorDesc (const CItem **retpReactorItem) c
 //
 //  Returns the computed reactor desc (including devices)
 
-    {
-    if (retpReactorItem)
-        {
-        const SDeviceDesc *pDevice = m_AverageDevices.GetDeviceDescByName(devReactor);
-        *retpReactorItem = (pDevice ? &pDevice->Item : NULL);
-        }
+	{
+	if (retpReactorItem)
+		{
+		const SDeviceDesc *pDevice = m_AverageDevices.GetDeviceDescByName(devReactor);
+		*retpReactorItem = (pDevice ? &pDevice->Item : NULL);
+		}
 
-    return m_Perf.GetReactorDesc();
-    }
+	return m_Perf.GetReactorDesc();
+	}
 
 CString CShipClass::GetShortName (void) const
 
@@ -3041,25 +3021,25 @@ void CShipClass::InitPerformance (SShipPerformanceCtx &Ctx) const
 //
 //  Initializes the performance parameters from the ship class.
 
-    {
-    //  Initialize some values from the class
+	{
+	//  Initialize some values from the class
 
-    Ctx.rSingleArmorFraction = (m_Armor.GetCount() > 0 ? 1.0 / m_Armor.GetCount() : 1.0);
-    Ctx.iMaxCargoSpace = m_Hull.GetMaxCargoSpace();
+	Ctx.rSingleArmorFraction = (m_Armor.GetCount() > 0 ? 1.0 / m_Armor.GetCount() : 1.0);
+	Ctx.iMaxCargoSpace = m_Hull.GetMaxCargoSpace();
 
-    //  Initialize with performance params based on the class.
+	//  Initialize with performance params based on the class.
 
-    Ctx.RotationDesc = m_RotationDesc;
+	Ctx.RotationDesc = m_RotationDesc;
 	Ctx.ReactorDesc = m_ReactorDesc;
-    Ctx.DriveDesc = m_DriveDesc;
-    Ctx.CargoDesc = CCargoDesc(m_Hull.GetCargoSpace());
+	Ctx.DriveDesc = m_DriveDesc;
+	Ctx.CargoDesc = CCargoDesc(m_Hull.GetCargoSpace());
 
 	//	Track maximum speed after bonuses. We start with the class speed; 
 	//	devices and other items should increase this in their handling of
 	//	AccumulatePerformance.
 
 	Ctx.rMaxSpeedLimit = m_DriveDesc.GetMaxSpeed();
-    }
+	}
 
 void CShipClass::InitShipNamesIndices (void)
 
@@ -3131,7 +3111,7 @@ void CShipClass::MarkImages (bool bMarkDevices)
 	DEBUG_TRY
 
 	m_Image.MarkImage();
-    m_HeroImage.MarkImage();
+	m_HeroImage.MarkImage();
 
 	//	If necessary mark images for all our installed devices
 
@@ -3148,11 +3128,11 @@ void CShipClass::MarkImages (bool bMarkDevices)
 
 	m_Effects.MarkImages();
 
-    //  Settings
+	//  Settings
 
-    const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
-    if (pPlayerSettings)
-        pPlayerSettings->MarkImages(GetUniverse());
+	const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
+	if (pPlayerSettings)
+		pPlayerSettings->MarkImages(GetUniverse());
 
 	DEBUG_CATCH
 	}
@@ -3202,7 +3182,7 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	{
 	retTypesUsed->SetAt(m_pDefaultSovereign.GetUNID(), true);
 
-    m_Armor.AddTypesUsed(retTypesUsed);
+	m_Armor.AddTypesUsed(retTypesUsed);
 	m_WreckDesc.AddTypesUsed(retTypesUsed);
 	m_Image.AddTypesUsed(retTypesUsed);
 
@@ -3212,7 +3192,7 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	if (m_pDevices)
 		m_pDevices->AddTypesUsed(retTypesUsed);
 
-    const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
+	const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
 	if (pPlayerSettings)
 		pPlayerSettings->AddTypesUsed(retTypesUsed);
 
@@ -3265,7 +3245,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_Image.OnDesignLoadComplete(Ctx))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
-    if (error = m_HeroImage.OnDesignLoadComplete(Ctx))
+	if (error = m_HeroImage.OnDesignLoadComplete(Ctx))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Now that we have the image we can bind the rotation desc, because it needs
@@ -3299,7 +3279,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_Hull.Bind(Ctx))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
-    if (error = m_Armor.Bind(Ctx))
+	if (error = m_Armor.Bind(Ctx))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_WreckDesc.Bind(Ctx))
@@ -3324,18 +3304,18 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	If we own the player settings, then bind them. Otherwise, we clear the
-    //  pointer so that we can resolve at run-time.
-    //
-    //  NOTE: Bind will also unresolve the settings, in case it inherited some
-    //  stuff.
+	//  pointer so that we can resolve at run-time.
+	//
+	//  NOTE: Bind will also unresolve the settings, in case it inherited some
+	//  stuff.
 
-    if (m_fOwnPlayerSettings)
-        {
+	if (m_fOwnPlayerSettings)
+		{
 		if (error = m_pPlayerSettings->Bind(Ctx, this))
 			return ComposeLoadError(Ctx, Ctx.sError);
-        }
-    else
-        m_pPlayerSettings = NULL;
+		}
+	else
+		m_pPlayerSettings = NULL;
 
 	//	AI Settings
 
@@ -3407,9 +3387,9 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (m_Armor.IsEmpty() && m_Interior.IsEmpty() && !IsVirtual())
 		m_fVirtual = true;
 
-    //  Compute performance based on average devices
+	//  Compute performance based on average devices
 
-    CalcPerformance();
+	CalcPerformance();
 
 	//	Compute score and level
 
@@ -3519,10 +3499,10 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = m_Image.InitSimpleFromXML(Ctx, pImage, false, STD_ROTATION_COUNT))
 			return ComposeLoadError(Ctx, Ctx.sError);
 
-    pImage = pDesc->GetContentElementByTag(HERO_IMAGE_TAG);
-    if (pImage)
-        if (error = m_HeroImage.InitFromXML(Ctx, *pImage))
-            return ComposeLoadError(Ctx, Ctx.sError);
+	pImage = pDesc->GetContentElementByTag(HERO_IMAGE_TAG);
+	if (pImage)
+		if (error = m_HeroImage.InitFromXML(Ctx, *pImage))
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Maneuvering
 
@@ -3580,8 +3560,8 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pArmor = pDesc->GetContentElementByTag(ARMOR_TAG);
 	if (pArmor)
 		{
-        if (error = m_Armor.InitFromXML(Ctx, pArmor))
-            return ComposeLoadError(Ctx, Ctx.sError);
+		if (error = m_Armor.InitFromXML(Ctx, pArmor))
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
 	//	Load devices
@@ -3746,25 +3726,25 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_fCommsHandlerInit = false;
 
-    //  Load initial data, if available
+	//  Load initial data, if available
 
-    CXMLElement *pInitData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
-    if (pInitData)
-        m_InitialData.SetFromXML(pInitData);
+	CXMLElement *pInitData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
+	if (pInitData)
+		m_InitialData.SetFromXML(pInitData);
 
 	//	Load player settings
 
-    m_pPlayerSettings = NULL;
+	m_pPlayerSettings = NULL;
 	m_fOwnPlayerSettings = false;
 	CXMLElement *pPlayer = pDesc->GetContentElementByTag(PLAYER_SETTINGS_TAG);
-    if (pPlayer)
-        {
-        m_pPlayerSettings = new CPlayerSettings;
-        m_fOwnPlayerSettings = true;
+	if (pPlayer)
+		{
+		m_pPlayerSettings = new CPlayerSettings;
+		m_fOwnPlayerSettings = true;
 
-        if (error = m_pPlayerSettings->InitFromXML(Ctx, this, pPlayer))
-            return ComposeLoadError(Ctx, Ctx.sError);
-        }
+		if (error = m_pPlayerSettings->InitFromXML(Ctx, this, pPlayer))
+			return ComposeLoadError(Ctx, Ctx.sError);
+		}
 
 	//	Done
 
@@ -3794,13 +3774,13 @@ CEffectCreator *CShipClass::OnFindEffectCreator (const CString &sUNID)
 	switch (*pPos)
 		{
 		case 'p':
-            {
-            const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
-            if (pPlayerSettings == NULL)
-                return NULL;
+			{
+			const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
+			if (pPlayerSettings == NULL)
+				return NULL;
 
-            return pPlayerSettings->FindEffectCreator(CString(pPos + 1));
-            }
+			return pPlayerSettings->FindEffectCreator(CString(pPos + 1));
+			}
 
 		default:
 			return NULL;
@@ -3813,12 +3793,12 @@ CString CShipClass::OnGetMapDescriptionMain (const SMapDescriptionCtx &Ctx) cons
 //
 //  Returns a map description. This always gets prepended to any other descriptions.
 
-    {
-    if (Ctx.bEnemy)
-        return CONSTLIT("Hostile");
+	{
+	if (Ctx.bEnemy)
+		return CONSTLIT("Hostile");
 
 	return GetNounPhrase(nounGeneric | nounCapitalize);
-    }
+	}
 
 ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
@@ -4210,10 +4190,10 @@ void CShipClass::OnReinit (void)
 	InitShipNamesIndices();
 	m_WreckDesc.CleanUp();
 
-    //  If we created the hero image, then free it.
+	//  If we created the hero image, then free it.
 
-    if (m_HeroImage.GetBitmapUNID() == 0)
-        m_HeroImage.CleanUp();
+	if (m_HeroImage.GetBitmapUNID() == 0)
+		m_HeroImage.CleanUp();
 
 	DEBUG_CATCH
 	}
@@ -4224,21 +4204,21 @@ void CShipClass::OnSweep (void)
 //
 //  Free images that we're no longer using
 
-    {
+	{
 	DEBUG_TRY
 
-    //  Clean up wreck image
+	//  Clean up wreck image
 
 	m_WreckDesc.SweepImages();
 
-    //  If we created the hero image, then we free it.
+	//  If we created the hero image, then we free it.
 
-    if (m_HeroImage.GetBitmapUNID() == 0
-            && !m_HeroImage.IsMarked())
-        m_HeroImage.CleanUp();
+	if (m_HeroImage.GetBitmapUNID() == 0
+			&& !m_HeroImage.IsMarked())
+		m_HeroImage.CleanUp();
 
 	DEBUG_CATCH
-    }
+	}
 
 void CShipClass::OnUnbindDesign (void)
 
