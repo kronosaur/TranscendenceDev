@@ -35,6 +35,7 @@
 #define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
 #define PROPERTY_DEST_NODE_ID					CONSTLIT("destNodeID")
 #define PROPERTY_DEST_STARGATE_ID				CONSTLIT("destStargateID")
+#define PROPERTY_DESTROY_WHEN_EMPTY				CONSTLIT("destroyWhenEmpty")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_EXPLORED						CONSTLIT("explored")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
@@ -1970,6 +1971,9 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 
 	else if (strEquals(sName, PROPERTY_DEST_STARGATE_ID))
 		return (IsStargate() ? CC.CreateString(m_sStargateDestEntryPoint) : CC.CreateNil());
+
+	else if (strEquals(sName, PROPERTY_DESTROY_WHEN_EMPTY))
+		return CC.CreateBool(m_fDestroyIfEmpty);
 
 	else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
 		return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
@@ -5276,6 +5280,11 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_BARRIER))
 		{
 		m_fBlocksShips = !pValue->IsNil();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_DESTROY_WHEN_EMPTY))
+		{
+		m_fDestroyIfEmpty = !pValue->IsNil();
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_EXPLORED))
