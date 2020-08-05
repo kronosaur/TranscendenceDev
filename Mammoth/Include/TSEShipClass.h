@@ -280,6 +280,7 @@ class CShipwreckDesc
 		ItemFates CalcDeviceFate (CShip *pSource, const CItem &Item, CSpaceObject *pWreck, bool bDropDamaged) const;
 		bool CreateWreckImage (CShipClass *pClass, int iRotationFrame, CObjectImageArray &Result) const;
 		void InitDamageImage (void) const;
+		void LoadXMLBool (const CXMLElement &Desc, const CString &sAttrib, bool &retbValue);
 
 		static constexpr int DAMAGE_IMAGE_COUNT =		10;
 		static constexpr int DAMAGE_IMAGE_WIDTH	=		24;
@@ -295,6 +296,8 @@ class CShipwreckDesc
 
 		bool m_bIsDefault = false;				//	TRUE if initialized to defaults
 		bool m_bRadioactiveWreck = false;		//	TRUE if wreck is always radioactive
+		bool m_bNoItems = false;				//	If TRUE, do not bring items from ship to wreck
+		bool m_bNoInstalledItems = false;		//	If TRUE, do not bring installed items from ship to wreck
 
 		mutable TSortMap<int, CObjectImageArray> m_WreckImages;	//	Wreck image for each rotation frame index
 

@@ -10,6 +10,8 @@
 #define EXPLOSION_TYPE_ATTRIB					CONSTLIT("explosionType")
 #define LEAVES_WRECK_ATTRIB						CONSTLIT("leavesWreck")
 #define MAX_STRUCTURAL_HIT_POINTS_ATTRIB		CONSTLIT("maxStructuralHitPoints")
+#define NO_INSTALLED_ITEMS_ATTRIB				CONSTLIT("noInstalledItems")
+#define NO_ITEMS_ATTRIB							CONSTLIT("noItems")
 #define RADIOACTIVE_WRECK_ATTRIB				CONSTLIT("radioactiveWreck")
 #define STRUCTURAL_HIT_POINTS_ATTRIB			CONSTLIT("structuralHitPoints")
 #define WRECK_TYPE_ATTRIB						CONSTLIT("wreckType")
@@ -47,10 +49,15 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 
 		if (WreckItem.IsInstalled())
 			{
+			//	If we don't want installed items, then skip.
+
+			if (m_bNoInstalledItems)
+				{ }
+
 			//	Make sure that the armor item reflects the current
 			//	state of the ship's armor.
 
-			if (const CArmorItem ArmorItem = WreckItem.AsArmorItem())
+			else if (const CArmorItem ArmorItem = WreckItem.AsArmorItem())
 				{
 				//	Most armor is destroyed
 
@@ -132,7 +139,7 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 		//	Non-installed virtual items are always lost
 
 		else if (WreckItem.IsVirtual())
-			continue;
+			{ }
 
 		//	Otherwise, if this is just cargo, add to wreck
 
@@ -352,7 +359,8 @@ bool CShipwreckDesc::CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const
 
 	//	Add items to the wreck
 
-	AddItemsToWreck(pShip, pWreck);
+	if (!m_bNoItems)
+		AddItemsToWreck(pShip, pWreck);
 
 	//	Done
 
@@ -595,10 +603,9 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 	if (m_pWreckType.GetUNID())
 		m_bIsDefault = false;
 
-	if (pWreck->FindAttributeBool(RADIOACTIVE_WRECK_ATTRIB, &m_bRadioactiveWreck))
-		m_bIsDefault = false;
-	else
-		m_bRadioactiveWreck = false;
+	LoadXMLBool(*pWreck, NO_INSTALLED_ITEMS_ATTRIB, m_bNoInstalledItems);
+	LoadXMLBool(*pWreck, NO_ITEMS_ATTRIB, m_bNoItems);
+	LoadXMLBool(*pWreck, RADIOACTIVE_WRECK_ATTRIB, m_bRadioactiveWreck);
 
 	if (pWreck->FindAttributeInteger(STRUCTURAL_HIT_POINTS_ATTRIB, &m_iStructuralHP)
 			|| pWreck->FindAttributeInteger(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, &m_iStructuralHP))
@@ -620,6 +627,19 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 	//	Done
 
 	return NOERROR;
+	}
+
+void CShipwreckDesc::LoadXMLBool (const CXMLElement &Desc, const CString &sAttrib, bool &retbValue)
+
+//	LoadXMLBool
+//
+//	Load XML boolean.
+
+	{
+	if (Desc.FindAttributeBool(sAttrib, &retbValue))
+		m_bIsDefault = false;
+	else
+		retbValue = false;
 	}
 
 void CShipwreckDesc::MarkImages (CShipClass *pClass, int iRotation) const
