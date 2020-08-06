@@ -17,7 +17,12 @@
 		>
 		
 		<Invoke key="A">
-			(rpgDeployAutonFromItem gSource (itmGetStaticData gItem 'autonShipClass) gItem)
+			(switch
+				(itm@ gItem 'damaged)
+					(objSendMessage gSource Nil (typTranslate gType 'msgAutonDamaged))
+
+				(rpgDeployAutonFromItem gSource (itmGetStaticData gItem 'autonShipClass) gItem)
+				)
 		</Invoke>
 		
 		<Events>
@@ -59,6 +64,11 @@
 		
 		<Language>
 			<Text id="nameText">%singularClass% named "%autonName%"|%pluralClass% named "%autonName%"</Text>
+			<Text id="msgAutonDamaged">
+
+				Auton is damaged and cannot be deployed.
+
+			</Text>
 		</Language>
 	</ItemType>
 	
@@ -122,7 +132,17 @@
 				
 	-->
 
-	<Type UNID="&baStdAutonBase;">
+	<ShipClass unid="&baStdAutonBase;">
+
+		<Properties>
+			<Definition id="pointsToResurrect">10</Definition>
+		</Properties>
+
+		<Wreck	wreckType=			"&stAutonWreck;"
+				leavesWreck=		"100"
+				noInstalledItems=	"true"
+				/>
+
 		<Communications>
 			<Message id="msgAttackTarget" name="Attack target" key="A">
 				<OnShow>
@@ -286,6 +306,8 @@
 			
 			<ConvertToItem>
 				(block (
+					(includeCargoItems (not (@ gData 'noCargoItems)))
+
 					(autonType (or (objGetData gSource 'autonItemType) &itAutoSentinel;))
 					(autonItem (itmCreate autonType 1))
 					(shieldMaxHP (shpGetShieldMaxHitPoints gSource))
@@ -318,13 +340,16 @@
 							regenStartTick: (unvGetTick) ; TODO: Add a way to get depletion time left.
 							})
 							
-						cargo: (objGetItems gSource "*U")
+						cargo: (if includeCargoItems (objGetItems gSource "*U"))
 						
 						name: (if (neq (objGetName gSource) (objGetProperty gSource 'name))
 									(rpgSanitizeAutonName (objGetName gSource))
 									)
 									
 						repairID: (if armorDamaged (rpgGetNextAutonRepairID))
+
+						pointsToResurrect: (if (@ gData 'damaged) (obj@ gSource 'pointsToResurrect))
+						currentPoints: (if (@ gData 'damaged) 0)
 						})
 					
 					(if (neq config (rpgGetAutonDefaultConfig autonItem))
@@ -332,15 +357,23 @@
 						)
 					
 					;	Add one charge on the item for every ton of cargo inside the auton
-					
-					(setq autonItem (itmSetProperty autonItem 'charges
-						(divide 
-							(map (objGetItems gSource "*U") 'reduceSum theItem 
-								(multiply (itmGetCount theItem) (itmGetMass theItem))
+
+					(if includeCargoItems					
+						(setq autonItem (itmSetProperty autonItem 'charges
+							(divide 
+								(map (objGetItems gSource "*U") 'reduceSum theItem 
+									(multiply (itmGetCount theItem) (itmGetMass theItem))
+									)
+								1000
 								)
-							1000
-							)
-						))
+							))
+						)
+
+					;	Set damaged, if necessary
+
+					;(if (@ gData 'damaged)
+					;	(setq autonItem (itmSet@ autonItem 'damaged True))
+					;	)
 						
 					;	Done
 					
@@ -462,6 +495,31 @@
 						)
 					)
 			</OnCreate>
+
+			<OnDestroy>
+				;	Convert the auton into an item and store it on the 
+				;	wreck. This allows us to salvage it later.
+				;
+				;	NOTE: We leave cargo items (e.g., Mule auton cargo) on the
+				;	wreckage itself, so the player can take it bit by bit.
+				;
+				;	NOTE: In the Wreck subelement we set noInstalledItems="true"
+				;	so that installed items (armor devices) are NOT placed on
+				;	the wreck.
+
+				(if aWreckObj
+					(block (
+						(autonItem 
+							(objFireEvent gSource "ConvertToItem" {
+								damaged: True
+								noCargoItems: True
+								})
+							)
+						)
+						(objSet@ aWreckObj 'autonItem autonItem)
+						)
+					)
+			</OnDestroy>
 			
 			<OnEnteredGate>
 				;	If we returned to a ship or non-gate station, convert back to an item
@@ -548,8 +606,8 @@
 			<String id="WaitAck">				Auton order acknowledged</String>
 			<String id="WatchYourTargets"></String>
 		</Language>
-	</Type>
-	
+	</ShipClass>
+
 	<DockScreen UNID="&dsNameAuton;"
 		nestedScreen= 	"true"
 		>
@@ -584,6 +642,158 @@
 			<Text id="actionName">[Enter] Name</Text>
 			<Text id="actionCancel">[Esc] Cancel</Text>
 			<Text id="descName">What would you like to name this %autonName%?</Text>
+		</Language>
+	</DockScreen>
+
+<!-- AUTON WRECK -->
+
+	<!-- Auton Wreck -->
+
+	<StationType unid="&stAutonWreck;"
+			name=				"(shipwreck)"
+			sovereign=			"&svNeutral;"
+			dockScreen=			"&dsRPGAutonWreck;"
+			scale=				"ship"
+			mobile=				"true"
+			noMapIcon=			"true"
+
+			ejectaType=			"&vtWreckEjecta;"
+			
+			attributes=			"shipwreck"
+			>
+		<Properties>
+			<Data id="autonItem"></Data>
+		</Properties>
+
+		<Events>
+			<GetExplosionType>
+				(intContainerGetExplosionType gSource)
+			</GetExplosionType>
+
+			<OnDamage>
+				(intContainerOnDamage gSource aDamageHP)
+			</OnDamage>
+		</Events>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"48"
+				maxDist=		"3"
+				/>
+	</StationType>
+
+	<DockScreen unid="&dsRPGAutonWreck;"
+			inherit=			"&dsDockScreenBase;"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(canSalvage (obj@ gSource 'autonItem))
+						(hasItems (objGetItems gSource "*U"))
+
+						(showSalvage canSalvage)
+						(showLoot (or hasItems (not canSalvage)))
+						(enableLoot hasItems)
+						)
+						(scrSetDescTranslate gScreen 'descAutonWreck {
+							objName: (objGetName gSource 'article)
+							})
+
+						;	Show/hide actions
+
+						(scrShowAction gScreen 'actionSalvage showSalvage)
+						(scrShowAction gScreen 'actionLoot showLoot)
+						(scrEnableAction gScreen 'actionLoot enableLoot)
+						(if (and showLoot (not enableLoot))
+							(scrSetActionDesc gScreen 'actionLoot (scrTranslate gScreen 'core.noItemsHereDesc))
+							)
+						)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionSalvage">
+						(block (
+							(autonItem (obj@ gSource 'autonItem))
+							(autonMass (itmGetMass autonItem))
+							(cargoItems (objGetItems gSource "*U"))
+							(cargoMass (map cargoItems 'reduceSum theItem (itmGetMass theItem)))
+							(totalMass (+ autonMass cargoMass))
+
+							(spaceAvail (objGetCargoSpaceLeft gPlayerShip))
+							(spaceNeeded (- totalMass spaceAvail))
+							)
+							(switch
+								;	Not enough space for auton and cargo
+
+								(and (gr spaceNeeded 0) (gr cargoMass 0))
+									(scrShowScreen gScreen &dsRPGMessage; {
+										text:(scrTranslate gScreen 'descNoSpaceWithCargo {
+											totalMass: (fmtNumber 'massKg totalMass)
+											}) 
+										})
+
+								;	Not enough space for auton
+
+								(gr spaceNeeded 0)
+									(scrShowScreen gScreen &dsRPGMessage; {
+										text:(scrTranslate gScreen 'descNoSpace {
+											totalMass: (fmtNumber 'massKg totalMass)
+											}) 
+										})
+
+								;	Salvage success
+
+								(block ()
+									(objAddItem gPlayerShip autonItem)
+									(enum cargoItems theItem
+										(block ()
+											(objAddItem gPlayerShip theItem)
+											(objRemoveItem gSource theItem)
+											)
+										)
+									(objSet@ gSource 'destroyWhenEmpty True)
+									(scrExitScreen gScreen)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionLoot">
+						(scrShowScreen gScreen &dsRPGLoot;)
+					</Action>
+
+					<Action id="actionUndock" default="1" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="actionSalvage">[S]alvage Auton</Text>
+
+			<Text id="descAutonWreck">
+
+				You are docked with %objName%.
+
+			</Text>
+			<Text id="descNoSpace">
+				
+				There is not enough space in your cargo hold to salvage the 
+				auton.
+				
+				You need at least %totalMass% of free space.
+
+			</Text>
+			<Text id="descNoSpaceWithCargo">
+			
+				There is not enough space in your cargo hold to salvage the 
+				auton and all of its cargo.
+				
+				You need at least %totalMass% of free space.
+
+			</Text>
 		</Language>
 	</DockScreen>
 
