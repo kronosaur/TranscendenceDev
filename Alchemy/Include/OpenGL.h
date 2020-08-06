@@ -134,14 +134,13 @@ public:
 	void addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition, float rotation, float intensity, float opacity, int animation,
 		int style, int detail, int distortion, int animationSeed, int lifetime, int currFrame, glm::vec3 primaryColor, glm::vec3 secondaryColor, float secondaryOpacity, float startingDepth);
 	void renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader,
-		OpenGLShader *rayShader, OpenGLShader *lightningShader, OpenGLShader *glowmapShader, OpenGLShader *orbShader, unsigned int fbo, OpenGLVAO* canvasVAO, const OpenGLAnimatedNoise* perlinNoise);
+		OpenGLShader *rayShader, OpenGLShader *glowmapShader, OpenGLShader *orbShader, unsigned int fbo, OpenGLVAO* canvasVAO, const OpenGLAnimatedNoise* perlinNoise);
 	void GenerateGlowmaps(unsigned int fbo, OpenGLVAO *canvasVAO, OpenGLShader* glowmapShader);
 private:
 	void clear();
 
 	std::map<OpenGLTexture*, OpenGLInstancedBatchTexture*> m_texRenderBatches;
 	OpenGLInstancedBatchRay m_rayRenderBatch;
-	OpenGLInstancedBatchLightning m_lightningRenderBatch;
 	OpenGLInstancedBatchOrb m_orbRenderBatch;
 	std::mutex m_texRenderQueueAddMutex;
 	std::vector<std::shared_ptr<OpenGLTexture>> m_texturesForDeletion;
@@ -201,7 +200,6 @@ private:
 	OpenGLShader *m_pObjectTextureShader;
 	OpenGLShader *m_pGlowmapShader;
 	OpenGLShader *m_pRayShader;
-	OpenGLShader *m_pLightningShader;
 	OpenGLShader *m_pOrbShader;
 	OpenGLShader *m_pPerlinNoiseShader;
 	std::unique_ptr<OpenGLAnimatedNoise> m_pPerlinNoiseTexture;

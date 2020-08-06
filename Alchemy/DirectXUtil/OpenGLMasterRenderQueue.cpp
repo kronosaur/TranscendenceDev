@@ -24,7 +24,6 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	m_pGlowmapShader = new OpenGLShader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader.glsl");
 	m_pObjectTextureShader = new OpenGLShader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
 	m_pRayShader = new OpenGLShader("./shaders/ray_vertex_shader.glsl", "./shaders/ray_fragment_shader.glsl");
-	m_pLightningShader = new OpenGLShader("./shaders/lightning_vertex_shader.glsl", "./shaders/lightning_fragment_shader.glsl");
 	m_pOrbShader = new OpenGLShader("./shaders/orb_vertex_shader.glsl", "./shaders/orb_fragment_shader.glsl");
 	m_pPerlinNoiseShader = new OpenGLShader("./shaders/fbm_vertex_shader.glsl", "./shaders/fbm_fragment_shader.glsl");
 	m_pPerlinNoiseTexture = std::make_unique<OpenGLAnimatedNoise>(512, 512, 64);
@@ -176,7 +175,7 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 {
 	for (OpenGLRenderLayer &renderLayer : m_renderLayers) {
 		renderLayer.renderAllQueues(m_fDepthLevel, m_fDepthDelta, m_iCurrentTick, glm::ivec2(m_iCanvasWidth, m_iCanvasHeight), m_pObjectTextureShader,
-			m_pRayShader, m_pLightningShader, m_pGlowmapShader, m_pOrbShader, fbo, m_pCanvasVAO, m_pPerlinNoiseTexture.get());
+			m_pRayShader, m_pGlowmapShader, m_pOrbShader, fbo, m_pCanvasVAO, m_pPerlinNoiseTexture.get());
 	}
 	for (OpenGLRenderLayer &renderLayer : m_renderLayers) {
 		renderLayer.GenerateGlowmaps(fbo, m_pCanvasVAO, m_pGlowmapShader);

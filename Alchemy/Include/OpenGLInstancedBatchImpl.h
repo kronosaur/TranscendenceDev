@@ -37,21 +37,6 @@ private:
 	static std::unique_ptr<OpenGLVAO> vao;
 };
 
-class OpenGLInstancedBatchRenderRequestLightning : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, glm::ivec2, float, glm::vec3, glm::vec3> {
-public:
-	OpenGLInstancedBatchRenderRequestLightning(
-		glm::vec4 sizeAndPosition,
-		float rotation,
-		glm::ivec2 shapes,
-		float seed,
-		glm::vec3 primaryColor,
-		glm::vec3 secondaryColor) : OpenGLInstancedBatchRenderRequest{ sizeAndPosition, rotation, shapes, seed, primaryColor, secondaryColor } {};
-	OpenGLVAO& getVAOForInstancedBatchType() override { if (!vao) { vao = std::move(setUpVAO()); } return *(vao.get()); }
-	int getRenderRequestSize() override { return sizeof(*this); }
-private:
-	static std::unique_ptr<OpenGLVAO> vao;
-};
-
 class OpenGLInstancedBatchRenderRequestOrb : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, float, float, int, int, int, int, int, int, int, glm::vec3, glm::vec3, float > {
 public:
 	OpenGLInstancedBatchRenderRequestOrb(
@@ -77,7 +62,6 @@ private:
 
 // Define uniforms for each shader
 
-typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestLightning, std::tuple<float, glm::vec2>> OpenGLInstancedBatchLightning; // TODO: Retire OpenGLInstancedBatchLightning
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestRay, std::tuple<float, glm::vec2, const OpenGLAnimatedNoise*>> OpenGLInstancedBatchRay;
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestOrb, std::tuple<float, glm::vec2>> OpenGLInstancedBatchOrb;
 typedef OpenGLInstancedBatch<OpenGLInstancedBatchRenderRequestTexture, std::tuple<OpenGLTexture*, OpenGLTexture*, int, const OpenGLAnimatedNoise*>> OpenGLInstancedBatchTexture;
