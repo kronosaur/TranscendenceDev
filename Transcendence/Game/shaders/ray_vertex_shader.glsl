@@ -18,7 +18,7 @@ layout (location = 1) in vec4 aSizeAndPosition;
 layout (location = 2) in float aRotation;
 layout (location = 3) in ivec4 aShapes;
 layout (location = 4) in ivec4 aStyles;
-layout (location = 5) in vec3 aFloatParams;
+layout (location = 5) in vec4 aFloatParams;
 layout (location = 6) in vec3 aPrimaryColor;
 layout (location = 7) in vec3 aSecondaryColor;
 layout (location = 8) in float aSeed;
@@ -82,6 +82,16 @@ void main(void)
 	vec4 final_pos = aPos * scalingMatrix2D(aSize[0], aSize[1]) * rotationMatrix2D(aRotation) * scalingMatrix2D(1.0 / aCanvasAdjustedDimensions[0], 1.0 / aCanvasAdjustedDimensions[1]) * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]);
 
 	quadPos = vec2(aPos[0], aPos[1]) * 2.0;
+
+    // For rays and lightning, aShapes, aStyles and aFloatParams are, in order:
+	// aShapes: widthAdjType, reshape, blank, blank
+	// aStyles: colorTypes, opacity, graintyTexture, blank
+	// aFloatParams: intensity, waveCyclePos, opacityAdj, blank
+	// For orbs, aShapes, aStyles and aFloatParams are, in order:
+	// aShapes: orbLifetime, orbCurrFrame, orbDistortion, orbDetail
+	// aStyles: orbStyle, blank, blank, blank
+	// aFloatParams: intensity, orbRadius, orbSecondaryOpacity, opacityAdj
+
 
     widthAdjType = aShapes[0];
     reshape = aShapes[1];

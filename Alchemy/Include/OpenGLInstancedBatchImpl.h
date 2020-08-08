@@ -19,14 +19,14 @@ private:
 	static std::unique_ptr<OpenGLVAO> vao;
 };
 
-class OpenGLInstancedBatchRenderRequestRay : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, glm::ivec4, glm::ivec4, glm::vec3, glm::vec3, glm::vec3, float, int> {
+class OpenGLInstancedBatchRenderRequestRay : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, glm::ivec4, glm::ivec4, glm::vec4, glm::vec3, glm::vec3, float, int> {
 public:
 	OpenGLInstancedBatchRenderRequestRay(
 		glm::vec4 sizeAndPosition,
 		float rotation,
 		glm::ivec4 shapes,
 		glm::ivec4 styles,
-		glm::vec3 intensitiesAndCycles,
+		glm::vec4 intensitiesAndCycles,
 		glm::vec3 primaryColor,
 		glm::vec3 secondaryColor,
 		float seed,

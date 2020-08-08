@@ -314,7 +314,7 @@ vec4 calcRayColor(float taperAdjTop, float taperAdjBottom, float widthAdjTop, fl
     float limitBottom = taperAdjBottom * widthAdjBottom;
 
     bool pixelInUpperBounds = ((real_texcoord[1] - center_point) < limitTop) && ((real_texcoord[1] - center_point) > 0);
-    bool pixelInLowerBounds = ((real_texcoord[1] - center_point) > (-limitBottom)) && ((real_texcoord[1] - center_point) < 0);
+    bool pixelInLowerBounds = ((real_texcoord[1] - center_point) > (-limitBottom)) && ((real_texcoord[1] - center_point) <= 0);
     float pixelWithinBounds = float(pixelInUpperBounds || pixelInLowerBounds);
     float topOpacityGlow = calcOpacityGlow(limitTop, intensity, distanceFromCenter);
     float bottomOpacityGlow = calcOpacityGlow(limitBottom, intensity, distanceFromCenter);
