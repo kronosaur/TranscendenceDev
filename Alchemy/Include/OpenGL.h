@@ -129,8 +129,8 @@ public:
 	~OpenGLRenderLayer(void);
 	void addTextureToRenderQueue(glm::vec2 vTexPositions, glm::vec2 vSpriteSheetPositions, glm::vec2 vCanvasQuadSizes, glm::vec2 vCanvasPositions,
 		glm::vec2 vTextureQuadSizes, glm::vec4 glowColor, float alphaStrength, float glowNoise, int numFramesPerRow, int numFramesPerCol, OpenGLTexture* image, float startingDepth);
-	void addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, glm::vec3 intensitiesAndCycles, glm::ivec3 styles, float rotation, float startingDepth);
-	void addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, float rotation, float seed, float startingDepth);
+	void addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, glm::vec3 intensitiesAndCycles, glm::ivec4 styles, float rotation, float startingDepth);
+	void addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, float rotation, float seed, float startingDepth);
 	void addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition, float rotation, float intensity, float opacity, int animation,
 		int style, int detail, int distortion, int animationSeed, int lifetime, int currFrame, glm::vec3 primaryColor, glm::vec3 secondaryColor, float secondaryOpacity, float startingDepth);
 	void renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader,
@@ -138,7 +138,16 @@ public:
 	void GenerateGlowmaps(unsigned int fbo, OpenGLVAO *canvasVAO, OpenGLShader* glowmapShader);
 private:
 	void clear();
+	enum effectType
+	{
+		effectTypeRay = 0,
+		effectTypeLightning = 1,
+		effectTypeOrb = 2,
+		effectTypeFlare = 3,
+		effectTypeParticle = 4,
 
+		effectTypeCount = 5
+	};
 	std::map<OpenGLTexture*, OpenGLInstancedBatchTexture*> m_texRenderBatches;
 	OpenGLInstancedBatchRay m_rayRenderBatch;
 	OpenGLInstancedBatchOrb m_orbRenderBatch;

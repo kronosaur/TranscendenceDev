@@ -16,13 +16,13 @@
 layout (location = 0) in vec4 aPos;
 layout (location = 1) in vec4 aSizeAndPosition;
 layout (location = 2) in float aRotation;
-layout (location = 3) in ivec2 aShapes;
-layout (location = 4) in ivec3 aStyles;
+layout (location = 3) in ivec4 aShapes;
+layout (location = 4) in ivec4 aStyles;
 layout (location = 5) in vec3 aFloatParams;
 layout (location = 6) in vec3 aPrimaryColor;
 layout (location = 7) in vec3 aSecondaryColor;
 layout (location = 8) in float aSeed;
-layout (location = 9) in int aIsLightning;
+layout (location = 9) in int aEffectType;
 layout (location = 10) in float aDepth;
 
 uniform vec2 aCanvasAdjustedDimensions;
@@ -39,7 +39,7 @@ layout (location = 8) out vec3 secondaryColor;
 layout (location = 9) out float waveCyclePos;
 layout (location = 10) flat out int colorTypes;
 layout (location = 11) out float opacityAdj;
-layout (location = 12) flat out int isLightning;
+layout (location = 12) flat out int effectType;
 layout (location = 13) out float seed;
 layout (location = 14) out vec2 quadSize;
 
@@ -97,5 +97,5 @@ void main(void)
     quadSize = aSize;
     gl_Position = final_pos;
 	seed = aSeed;
-	isLightning = aIsLightning;
+	effectType = aEffectType;
 }

@@ -126,9 +126,9 @@ void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPi
 
 	glm::vec4 sizeAndPosition((float)sizePixelX, (float)sizePixelY,
 		(float)posPixelX / (float)canvasSizeX, (float)posPixelY / (float)canvasSizeY);
-	glm::ivec2 shapes(iWidthAdjType, iReshape);
+	glm::ivec4 shapes(iWidthAdjType, iReshape, 0, 0);
 	glm::vec3 intensitiesAndCycles(float(iIntensity), waveCyclePos, float(opacityAdj) / 255.0f);
-	glm::ivec3 styles(iColorTypes, iOpacityTypes, iTexture);
+	glm::ivec4 styles(iColorTypes, iOpacityTypes, iTexture, 0);
 
 	m_pActiveRenderLayer->addRayToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, intensitiesAndCycles, styles, rotation, m_fDepthLevel);
 	m_fDepthLevel -= m_fDepthDelta;
@@ -165,7 +165,7 @@ void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int
 	glm::vec3 vSecondaryColor = glm::vec3(std::get<0>(secondaryColor), std::get<1>(secondaryColor), std::get<2>(secondaryColor)) / float(255.0);
 	glm::vec4 sizeAndPosition((float)sizePixelX, (float)sizePixelY,
 		(float)posPixelX / (float)canvasSizeX, (float)posPixelY / (float)canvasSizeY);
-	glm::ivec2 shapes(iWidthAdjType, iReshape);
+	glm::ivec4 shapes(iWidthAdjType, iReshape, 0, 0);
 
 	m_pActiveRenderLayer->addLightningToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, rotation, seed, m_fDepthLevel);
 	m_fDepthLevel -= m_fDepthDelta;

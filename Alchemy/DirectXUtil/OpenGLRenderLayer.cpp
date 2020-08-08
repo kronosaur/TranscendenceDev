@@ -45,16 +45,16 @@ void OpenGLRenderLayer::addTextureToRenderQueue(glm::vec2 vTexPositions, glm::ve
 	m_texRenderBatches[image]->addObjToRender(renderRequest);
 }
 
-void OpenGLRenderLayer::addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, glm::vec3 intensitiesAndCycles, glm::ivec3 styles, float rotation, float startingDepth)
+void OpenGLRenderLayer::addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, glm::vec3 intensitiesAndCycles, glm::ivec4 styles, float rotation, float startingDepth)
 {
-	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, vPrimaryColor, vSecondaryColor, 0, 0);
+	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, vPrimaryColor, vSecondaryColor, 0, OpenGLRenderLayer::effectType::effectTypeRay);
 	renderRequest.set_depth(startingDepth);
 	m_rayRenderBatch.addObjToRender(renderRequest);
 }
 
-void OpenGLRenderLayer::addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec2 shapes, float rotation, float seed, float startingDepth)
+void OpenGLRenderLayer::addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, float rotation, float seed, float startingDepth)
 {
-	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, glm::ivec3(0, 0, 0), glm::vec3(0, 0, 0), vPrimaryColor, vSecondaryColor, seed, 1);
+	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, glm::ivec4(0, 0, 0, 0), glm::vec3(0, 0, 0), vPrimaryColor, vSecondaryColor, seed, OpenGLRenderLayer::effectType::effectTypeLightning);
 	renderRequest.set_depth(startingDepth);
 	m_rayRenderBatch.addObjToRender(renderRequest);
 }

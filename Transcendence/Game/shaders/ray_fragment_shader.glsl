@@ -1,37 +1,43 @@
 #version 410 core
 
-
-
-// The shader used in RayRasterizer comprises the following:
-// -Width specification. The RayRasterizer draws a line in an arbitrary direction, then extends it width-wise.
-// What we can do is to transform a pixel back to a given rotational frame using the rotation, then using the distance
-// from the axis to get the width. Note, the C code uses a WidthCount and LengthCount to divide the ray into cells.
-// We can use modulos and similar methods to determine which cell our pixel is in.
-// -Length specification. There is an array of lengths in the C code; we can just pass the specified one directly into
-// our VBO. It is specified as a number of length "cells" in the C code, but this is what is meant (?)
-// Following variables will be required:
-// Direct from GeorgeCode: iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture
+// This shader implements the following effects: orb, ray, lightning.
 
 layout (location = 0) in vec2 quadPos;
-layout (location = 1) flat in int reshape;
-layout (location = 2) flat in int widthAdjType;
+layout (location = 1) flat in int rayReshape;
+layout (location = 2) flat in int rayWidthAdjType;
 layout (location = 3) flat in int opacity;
-layout (location = 4) flat in int grainyTexture;
+layout (location = 4) flat in int rayGrainyTexture;
 layout (location = 5) in float depth;
 layout (location = 6) in float intensity;
 layout (location = 7) in vec3 primaryColor;
 layout (location = 8) in vec3 secondaryColor;
-layout (location = 9) in float waveCyclePos;
-layout (location = 10) flat in int colorTypes;
+layout (location = 9) in float rayWaveCyclePos;
+layout (location = 10) flat in int colorTypes; // TODO: replace with something more useful
 layout (location = 11) in float opacityAdj;
-layout (location = 12) flat in int isLightning;
+layout (location = 12) flat in int effectType;
 layout (location = 13) in float seed;
 layout (location = 14) in vec2 quadSize;
+layout (location = 15) flat in int orbAnimation; //
+layout (location = 16) flat in int orbStyle; //
+layout (location = 17) flat in int orbDistortion;
+layout (location = 18) flat in int orbDetail;
+layout (location = 19) in float orbRadius;
+layout (location = 20) in float orbSecondaryOpacity;
+layout (location = 21) flat in int orbLifetime;
+layout (location = 22) flat in int orbCurrFrame;
 
 uniform float current_tick;
 uniform sampler3D perlin_noise;
 
 out vec4 fragColor;
+
+// This should match enum effectType in opengl.h.
+
+int effectTypeRay = 0;
+int effectTypeLightning = 1;
+int effectTypeOrb = 2;
+int effectTypeFlare = 3;
+int effectTypeParticle = 4;
 
 float PI = 3.14159;
 float BLOB_WAVE_SIZE = 0.3;
@@ -72,6 +78,8 @@ float rand(vec2 co){
   // Canonical PRNG from https://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
   return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
+
+// BEGIN RAY AND LIGHTNING SUBSHADER
 
 float widthCone(float rInputValue)
 {
@@ -300,7 +308,7 @@ float fbm(vec2 a, float b) {
     return (sampleNoiseFBM(vec3(a.x, a.y, b)) * 2.0) - 1.0;
 }
 
-vec4 calcRayColor(float taperAdjTop, float taperAdjBottom, float widthAdjTop, float widthAdjBottom, float center_point, vec2 real_texcoord, float intensity, float distanceFromCenter, float grains)
+vec4 calcRayColor(float taperAdjTop, float taperAdjBottom, float widthAdjTop, float widthAdjBottom, float center_point, vec2 real_texcoord, float intensity, float distanceFromCenter, float grains, float opacityAdj)
 {
     float limitTop = taperAdjTop * widthAdjTop;
     float limitBottom = taperAdjBottom * widthAdjBottom;
@@ -364,17 +372,13 @@ vec4 calcLightningColor(float taperAdj, float widthAdj, vec2 real_texcoord)
 	return finalColor;
 }
 
-void main(void)
-{
-    float center_point = 0.0; // Remember to remove this in the real shader!!
-    vec2 real_texcoord = quadPos;
-    
-    float distanceFromCenter = abs(real_texcoord[1] - center_point);
-    
+vec4 calcRayLightningColor(vec2 quadSize, vec2 real_texcoord, float waveCyclePos, int grainyTexture, int reshape, int widthAdjType, float ray_center_x, float opacityAdj) {
+    float distanceFromCenter = abs(real_texcoord[1] - ray_center_x);
+
 	// Graininess
     float grains_x = quadSize[0] / 20.0f;
     float grains_y = quadSize[1] / 20.0f;
-    float perlinNoise = sampleNoisePerlin(vec3(quadPos[0] * grains_x * 0.2, quadPos[1] * grains_y * 0.2, current_tick * 100));
+    float perlinNoise = sampleNoisePerlin(vec3(quadPos[0] * grains_x * 0.1, quadPos[1] * grains_y * 0.1, current_tick * 100));
     float grains = (perlinNoise * float(grainyTexture == opacityGrainy) * 2) + float(grainyTexture == 0);
 
 	float widthCalcPos = real_texcoord[0];
@@ -391,7 +395,7 @@ void main(void)
     float ovalWidth = widthOval(widthCalcPos);
     float swordWidth = widthSword(widthCalcPos);
     float straightWidth = 1.0;
-    
+
     float taperAdjTop = (
         (straightWidth * float(reshape == widthAdjStraight)) + 
         (blobWidthTop * float(reshape == widthAdjBlob)) + 
@@ -438,13 +442,26 @@ void main(void)
 		(swordWidth * float(widthAdjType == widthAdjSword))
     );
     
-	vec4 rayColor = calcRayColor(taperAdjTop, taperAdjBottom, widthAdjTop, widthAdjBottom, center_point, real_texcoord, intensity, distanceFromCenter, grains);
+	vec4 rayColor = calcRayColor(taperAdjTop, taperAdjBottom, widthAdjTop, widthAdjBottom, ray_center_x, real_texcoord, intensity, distanceFromCenter, grains, opacityAdj);
 	vec4 lightningColor = calcLightningColor(taperAdjTop, widthAdjTop, real_texcoord);
 
 
 	vec4 finalColor = (
-		rayColor * float(!bool(isLightning)) +
-		lightningColor * float(bool(isLightning))
+		rayColor * float(effectType == effectTypeRay) +
+		lightningColor * float(effectType == effectTypeLightning)
+	);
+	return finalColor;
+}
+
+// BEGIN ORB SUBSHADER
+
+void main(void)
+{
+    float center_point = 0.0; // Remember to remove this in the real shader!!
+    vec2 real_texcoord = quadPos;
+
+	vec4 finalColor = (
+		calcRayLightningColor(quadSize, real_texcoord, rayWaveCyclePos, rayGrainyTexture, rayReshape, rayWidthAdjType, center_point, opacityAdj)
 	);
 	float epsilon = 0.01;
 	bool alphaIsZero = finalColor[3] < epsilon;
