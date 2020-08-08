@@ -16,7 +16,6 @@ const int EXTRA_BACKGROUND_IMAGE =	128;
 #define NEUROHACK_TAG				CONSTLIT("Neurohack")
 #define ON_DISPLAY_INIT_TAG			CONSTLIT("OnDisplayInit")
 #define ON_INIT_TAG					CONSTLIT("OnInit")
-#define ON_PANE_INIT_TAG			CONSTLIT("OnPaneInit")
 #define ON_SCREEN_INIT_TAG			CONSTLIT("OnScreenInit")
 #define ON_SCREEN_UPDATE_TAG		CONSTLIT("OnScreenUpdate")
 #define PANES_TAG					CONSTLIT("Panes")

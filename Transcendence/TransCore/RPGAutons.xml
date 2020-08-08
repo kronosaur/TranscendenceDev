@@ -135,7 +135,34 @@
 	<ShipClass unid="&baStdAutonBase;">
 
 		<Properties>
-			<Definition id="pointsToResurrect">10</Definition>
+			<!-- maxHullHP
+			
+				Determines the time that it will take to repair a destroyed 
+				auton in the auton bay, and also the cost to repair at an auton
+				dealer.
+
+				NOTE: This cannot be a Constant because when we compute these
+				property values we have not yet computed a level (the latter
+				happens during Bind).
+
+			-->
+			<DynamicGlobal id="maxHullHP">
+				(@ '(
+					0
+					5		; Level 1
+					10		; Level 2
+					20		; Level 3
+					40		; Level 4
+					80		; Level 5
+					150		; Level 6
+					250		; Level 7
+					400		; Level 8
+					600		; Level 9
+					1000	; Level 10
+					) 
+					(min (typ@ gType 'level) 10)
+					)
+			</DynamicGlobal>
 		</Properties>
 
 		<Wreck	wreckType=			"&stAutonWreck;"
@@ -348,8 +375,8 @@
 									
 						repairID: (if armorDamaged (rpgGetNextAutonRepairID))
 
-						pointsToResurrect: (if (@ gData 'damaged) (obj@ gSource 'pointsToResurrect))
-						currentPoints: (if (@ gData 'damaged) 0)
+						maxHullHP: (if (@ gData 'damaged) (obj@ gSource 'maxHullHP))
+						hullHP: (if (@ gData 'damaged) 0)
 						})
 					
 					(if (neq config (rpgGetAutonDefaultConfig autonItem))
@@ -371,9 +398,9 @@
 
 					;	Set damaged, if necessary
 
-					;(if (@ gData 'damaged)
-					;	(setq autonItem (itmSet@ autonItem 'damaged True))
-					;	)
+					(if (@ gData 'damaged)
+						(setq autonItem (itmSet@ autonItem 'damaged True))
+						)
 						
 					;	Done
 					
