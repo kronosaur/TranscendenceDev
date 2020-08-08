@@ -176,19 +176,21 @@ class CScreenMgr3D
 
 		//	DX state
 
-		HWND m_hWnd;
-		CDXScreen m_DX;					//	DX screen object
-		bool m_bWindowedMode;
-		bool m_bMultiMonitorMode;
-		bool m_bMinimized;
-		bool m_bDebugVideo;
+		HWND m_hWnd = NULL;
+		CDXScreen m_DX;						//	DX screen object
+		bool m_bWindowedMode = false;
+		bool m_bMultiMonitorMode = false;
+		bool m_bMinimized = false;
+		bool m_bDebugVideo = false;
 
 		//	Buffer
 
-		int m_cxScreen;					//	Size of the buffer; screen size may be different.
-		int m_cyScreen;
-		Metric m_rScale;				//	Downsample resolution for super hi-res screens (1.0 = normal)
-		int m_iDefaultLayer;
+		int m_cxDevice = 0;					//	Size of screen device
+		int m_cyDevice = 0;
+		int m_cxScreen = 0;					//	Size of the buffer; device size may be different.
+		int m_cyScreen = 0;
+		Metric m_rScale = 1.0;				//	Downsample resolution for super hi-res screens (1.0 = normal)
+		int m_iDefaultLayer = -1;
 
-		CDXBackgroundBlt m_Blitter;		//	Background blitter.
+		CDXBackgroundBlt m_Blitter;			//	Background blitter.
 	};

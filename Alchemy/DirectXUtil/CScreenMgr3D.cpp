@@ -5,15 +5,10 @@
 
 #include "PreComp.h"
 
+static constexpr int MIN_SCREEN_HEIGHT = 768;
+
 CScreenMgr3D::CScreenMgr3D (void) :
-		m_hWnd(NULL),
-		m_bWindowedMode(false),
-		m_bMultiMonitorMode(false),
-		m_bMinimized(false),
-		m_bDebugVideo(false),
-		m_rScale(1.0),
-		m_Blitter(m_DX),
-		m_iDefaultLayer(-1)
+		m_Blitter(m_DX)
 
 //	CScreenMgr3D constructor
 
@@ -74,8 +69,8 @@ void CScreenMgr3D::ClientToLocal (int x, int y, int *retx, int *rety) const
 
 		if (cxClient > 0 && cyClient > 0)
 			{
-			*retx = m_cxScreen * x / cxClient;
-			*rety = m_cyScreen * y / cyClient;
+			*retx = m_cxDevice * x / cxClient;
+			*rety = m_cyDevice * y / cyClient;
 			}
 		else
 			{
@@ -161,40 +156,61 @@ ALERROR CScreenMgr3D::Init (SScreenMgrOptions &Options, CString *retsError)
 
 	if (m_bWindowedMode || Options.m_bForceScreenSize)
 		{
-		m_cxScreen = Options.m_cxScreen;
-		m_cyScreen = Options.m_cyScreen;
+		m_cxDevice = Options.m_cxScreen;
+		m_cyDevice = Options.m_cyScreen;
+
 		m_bMultiMonitorMode = false;
-		m_rScale = 1.0;
+
+		if (m_cyDevice < MIN_SCREEN_HEIGHT)
+			{
+			m_rScale = (Metric)MIN_SCREEN_HEIGHT / m_cyDevice;
+
+			m_cxScreen = mathRound(m_rScale * m_cxDevice);
+			m_cyScreen = MIN_SCREEN_HEIGHT;
+			}
+		else
+			{
+			m_rScale = 1.0;
+			m_cxScreen = m_cxDevice;
+			m_cyScreen = m_cyDevice;
+			}
 		}
 
 	//	If we want multiple monitors, then use all the space.
 
 	else if (m_bMultiMonitorMode)
 		{
-		m_cxScreen = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
-		m_cyScreen = ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
+		m_cxDevice = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
+		m_cyDevice = ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
 		m_rScale = 1.0;
+		m_cxScreen = m_cxDevice;
+		m_cyScreen = m_cyDevice;
 		}
 
 	//	Otherwise, full screen
 
 	else
 		{
-		m_cxScreen = ::GetSystemMetrics(SM_CXSCREEN);
-		m_cyScreen = ::GetSystemMetrics(SM_CYSCREEN);
+		m_cxDevice = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
+		m_cyDevice = ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
 		//	If the screen is bigger than 1920 x 1080, we scale everything
 		//	(because the game is not really well-suited to super high-res.)
 
-		if (Options.m_cyMaxScreen != -1 && m_cyScreen > Options.m_cyMaxScreen)
+		if (Options.m_cyMaxScreen != -1 && m_cyDevice > Options.m_cyMaxScreen)
 			{
-			m_rScale = (Metric)Options.m_cyMaxScreen / m_cyScreen;
+			m_rScale = (Metric)Options.m_cyMaxScreen / m_cyDevice;
 
-			m_cxScreen = mathRound(m_rScale * m_cxScreen);
+			m_cxScreen = mathRound(m_rScale * m_cxDevice);
 			m_cyScreen = Options.m_cyMaxScreen;
 			}
 		else
+			{
 			m_rScale = 1.0;
+			m_cxScreen = m_cxDevice;
+			m_cyScreen = m_cyDevice;
+			}
 		}
 
 	//	In windowed mode, make sure we have the right styles
@@ -222,8 +238,8 @@ ALERROR CScreenMgr3D::Init (SScreenMgrOptions &Options, CString *retsError)
 		RECT rcRect;
 		rcRect.left = 0;
 		rcRect.top = 0;
-		rcRect.right = m_cxScreen;
-		rcRect.bottom = m_cyScreen;
+		rcRect.right = m_cxDevice;
+		rcRect.bottom = m_cyDevice;
 		::AdjustWindowRect(&rcRect, dwStyles, FALSE);
 
 		//	Center the window on the screen
@@ -313,10 +329,10 @@ void CScreenMgr3D::LocalToClient (int x, int y, int *retx, int *rety) const
 
 		//	In DX we stretch the screen to fit into the client area.
 
-		if (m_cxScreen > 0 && m_cyScreen > 0)
+		if (m_cxDevice > 0 && m_cyDevice > 0)
 			{
-			*retx = cxClient * x / m_cxScreen;
-			*rety = cxClient * y / m_cyScreen;
+			*retx = cxClient * x / m_cxDevice;
+			*rety = cxClient * y / m_cyDevice;
 			}
 		else
 			{
