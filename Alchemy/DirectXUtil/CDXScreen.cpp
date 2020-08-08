@@ -620,6 +620,7 @@ void CDXScreen::Render (void)
 				//	If necessary, we need to antialias the texture
 
 				m_pD3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, (Layer.cxWidth < m_cxTarget ? D3DTEXF_LINEAR : D3DTEXF_POINT));
+				m_pD3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, (Layer.cxWidth > m_cxTarget ? D3DTEXF_LINEAR : D3DTEXF_POINT));
 
 				//	Blend with layer below us
 
