@@ -1643,6 +1643,7 @@
 	<!ENTITY rsCorporateManufacturing	"0x00100050">
 	<!ENTITY scCorporateExplorer		"0x00100051">
 	<!ENTITY rsCorporateExplorerHero	"0x00100052">
+	<!ENTITY rsAdventurerOutfitters		"0x00100053">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	
