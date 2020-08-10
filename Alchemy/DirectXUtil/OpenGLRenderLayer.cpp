@@ -47,7 +47,7 @@ void OpenGLRenderLayer::addTextureToRenderQueue(glm::vec2 vTexPositions, glm::ve
 
 void OpenGLRenderLayer::addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, glm::vec3 intensitiesAndCycles, glm::ivec4 styles, float rotation, float startingDepth)
 {
-	glm::ivec4 intensityAndCyclesV4(intensitiesAndCycles[0], intensitiesAndCycles[1], intensitiesAndCycles[2], 0.0);
+	glm::vec4 intensityAndCyclesV4(intensitiesAndCycles[0], intensitiesAndCycles[1], intensitiesAndCycles[2], 0.0);
 	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, intensityAndCyclesV4, vPrimaryColor, vSecondaryColor, 0, OpenGLRenderLayer::effectType::effectTypeRay);
 	renderRequest.set_depth(startingDepth);
 	m_rayRenderBatch.addObjToRender(renderRequest);
@@ -75,10 +75,18 @@ void OpenGLRenderLayer::addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition,
 	glm::vec3 secondaryColor,
 	float secondaryOpacity,
 	float startingDepth)
+	// aShapes: orbLifetime, orbCurrFrame, orbDistortion, orbDetail
+    // aStyles: orbStyle, orbAnimation, opacity, blank
+    // aFloatParams: intensity, blank, opacityAdj, orbSecondaryOpacity
 {
-	auto renderRequest = OpenGLInstancedBatchRenderRequestOrb(sizeAndPosition, rotation, intensity, opacity, animation, style, detail, distortion, animationSeed, lifetime, currFrame, primaryColor, secondaryColor, secondaryOpacity);
+
+	glm::ivec4 shapes(lifetime, currFrame, distortion, detail);
+	glm::ivec4 styles(style, animation, 0.0, 0.0);
+	glm::vec4 floatParams(intensity, secondaryOpacity, opacity, 0.0);
+
+	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, floatParams, primaryColor, secondaryColor, float(animationSeed), OpenGLRenderLayer::effectType::effectTypeLightning);
 	renderRequest.set_depth(startingDepth);
-	m_orbRenderBatch.addObjToRender(renderRequest);
+	m_rayRenderBatch.addObjToRender(renderRequest);
 }
 
 void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader, OpenGLShader *rayShader, OpenGLShader *glowmapShader, OpenGLShader *orbShader, unsigned int fbo, OpenGLVAO* canvasVAO, const OpenGLAnimatedNoise* perlinNoise)

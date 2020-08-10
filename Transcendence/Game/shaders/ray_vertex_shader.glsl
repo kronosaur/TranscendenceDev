@@ -28,20 +28,28 @@ layout (location = 10) in float aDepth;
 uniform vec2 aCanvasAdjustedDimensions;
 
 layout (location = 0) out vec2 quadPos;
-layout (location = 1) flat out int reshape;
-layout (location = 2) flat out int widthAdjType;
-layout (location = 3) flat out int opacity;
-layout (location = 4) flat out int grainyTexture;
+layout (location = 1) flat out int rayReshape;
+layout (location = 2) flat out int rayWidthAdjType;
+layout (location = 3) flat out int rayOpacity;
+layout (location = 4) flat out int rayGrainyTexture;
 layout (location = 5) out float depth;
 layout (location = 6) out float intensity;
 layout (location = 7) out vec3 primaryColor;
 layout (location = 8) out vec3 secondaryColor;
 layout (location = 9) out float waveCyclePos;
-layout (location = 10) flat out int colorTypes;
+layout (location = 10) flat out int rayColorTypes;
 layout (location = 11) out float opacityAdj;
 layout (location = 12) flat out int effectType;
 layout (location = 13) out float seed;
 layout (location = 14) out vec2 quadSize;
+layout (location = 15) flat in int orbAnimation; //
+layout (location = 16) flat in int orbStyle; //
+layout (location = 17) flat in int orbDistortion;
+layout (location = 18) flat in int orbDetail;
+layout (location = 19) in float orbRadius;
+layout (location = 20) in float orbSecondaryOpacity;
+layout (location = 21) flat in int orbLifetime;
+layout (location = 22) flat in int orbCurrFrame;
 
 mat4 rotationMatrix2D(float rotation)
 {
@@ -89,15 +97,23 @@ void main(void)
 	// aFloatParams: intensity, waveCyclePos, opacityAdj, blank
 	// For orbs, aShapes, aStyles and aFloatParams are, in order:
 	// aShapes: orbLifetime, orbCurrFrame, orbDistortion, orbDetail
-	// aStyles: orbStyle, blank, blank, blank
-	// aFloatParams: intensity, orbRadius, orbSecondaryOpacity, opacityAdj
+	// aStyles: orbStyle, orbAnimation, opacity, blank
+	// aFloatParams: intensity, orbSecondaryOpacity, opacityAdj, blank
 
 
-    widthAdjType = aShapes[0];
-    reshape = aShapes[1];
-    colorTypes = aStyles[0];
-    opacity = aStyles[1];
-    grainyTexture = aStyles[2];
+    rayWidthAdjType = aShapes[0];
+    rayReshape = aShapes[1];
+    rayColorTypes = aStyles[0];
+    rayOpacity = aStyles[1];
+    rayGrainyTexture = aStyles[2];
+    orbLifetime = aShapes[0];
+    orbCurrFrame = aShapes[1];
+    orbDistortion = aShapes[2];
+    orbDetail = aShapes[3];
+    orbStyle = aStyles[0];
+    orbAnimation = aStyles[1];
+    orbSecondaryOpacity = aFloatParams[1];
+
     depth = aDepth;
     intensity = aFloatParams[0];
     waveCyclePos = aFloatParams[1];
