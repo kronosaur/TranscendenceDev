@@ -51,6 +51,14 @@ layout (location = 20) out float orbSecondaryOpacity;
 layout (location = 21) flat out int orbLifetime;
 layout (location = 22) flat out int orbCurrFrame;
 
+// This should match enum effectType in opengl.h.
+
+int effectTypeRay = 0;
+int effectTypeLightning = 1;
+int effectTypeOrb = 2;
+int effectTypeFlare = 3;
+int effectTypeParticle = 4;
+
 mat4 rotationMatrix2D(float rotation)
 {
     // Generates a rotation matrix that rotates a vector counterclockwise in the XY plane by the specified rotation
@@ -85,7 +93,7 @@ mat4 translationMatrix2D(float transX, float transY)
 
 void main(void)
 {
-    vec2 aSize = vec2(aSizeAndPosition[0], aSizeAndPosition[1]) * ((2.0*float(effectType == effectTypeOrb)) + (float(effectType != effectTypeOrb)));
+    vec2 aSize = vec2(aSizeAndPosition[0], aSizeAndPosition[1]) * ((2.0*float(aEffectType == effectTypeOrb)) + (float(aEffectType != effectTypeOrb)));
     vec2 aPosOnCanvas = (vec2(aSizeAndPosition[2], aSizeAndPosition[3]) - vec2(0.5, 0.5)) * 2.0;
 	vec4 final_pos = aPos * scalingMatrix2D(aSize[0], aSize[1]) * rotationMatrix2D(aRotation) * scalingMatrix2D(1.0 / aCanvasAdjustedDimensions[0], 1.0 / aCanvasAdjustedDimensions[1]) * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]);
 
