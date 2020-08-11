@@ -456,7 +456,6 @@ vec4 calcRayLightningColor(vec2 quadSize, vec2 real_texcoord, float waveCyclePos
 // BEGIN ORB SUBSHADER
 float pixelsDistanceFromCenter = length(quadPos) * (quadSize[0] / 2);
 
-float PI = 3.14159;
 float SHELL_EDGE_WIDTH_RATIO = 0.05;
 
 // Copy of EAnimationTypes enum from SFXOrb.cpp
@@ -551,11 +550,6 @@ vec4 calcSmoothColorBase(float fRadius, float fIntensity, vec3 vPrimaryColor, ve
     vec4 blackRadiusColor = float(useBlackRadius) * vec4(0.0);
     
     return (blownRadiusColor + fringeRadiusColor + fadeRadiusColor + blackRadiusColor);
-}
-
-float rand(vec2 co){
-  // Canonical PRNG from https://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
-  return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
 float FloatIncrementor(float start, float power, float limit, float end, float inputValue) {
@@ -776,11 +770,11 @@ vec4 calcFireblastColor(float fRadius, float fIntensity, vec3 vPrimaryColor, vec
     // Adjust radius between 1.0 times radius and (1.0 + disrupt) times radius
     float ANGLE_DISTORTION_MULTIPLIER = 0.4;
     // TODO: Add a seed!
-    float angle_phase_adj = animationSeed * 3;
-    float rand_noise_seed = animationSeed * 1;
+    float angle_phase_adj = seed * 3;
+    float rand_noise_seed = seed * 1;
     //float fAngle = (dot(quadPos, vec2(0.0, 1.0)) / length(quadPos));
     float fAngle = abs(mod(atan(quadPos.y, quadPos.x) + angle_phase_adj, (3.14159 * 2)) - 3.14159);//(dot(quadPos, vec2(0.0, 1.0)) / length(quadPos));
-    float fRand = ((cnoise(vec3(fAngle * ANGLE_DISTORTION_MULTIPLIER + rand_noise_seed)) / 2.0) + 0.5);
+    float fRand = ((sampleNoisePerlin(vec3(fAngle * ANGLE_DISTORTION_MULTIPLIER + rand_noise_seed)) / 2.0) + 0.5);
     float fRadAdjFactor = (1 + (fRand * float(orbDistortion) / 100.0));
     vec2 fAdjPos = quadPos * fRadAdjFactor;
     float fAdjRadius = pixelsDistanceFromCenter * fRadAdjFactor;
@@ -888,7 +882,7 @@ vec4 calcAnimationColor(float animatedNoise, float scaledNoise, float orbRadius)
     float animateFadeOpacity = opacityAdj;
     float animateFadeSecondaryOpacity = orbSecondaryOpacity;
     
-    float animateFlickerMultiplier = max(0.5, min(1.0 + (0.25 * cnoise(vec3(0.0, 0.0, current_tick))), 2.0));
+    float animateFlickerMultiplier = max(0.5, min(1.0 + (0.25 * sampleNoisePerlin(vec3(0.0, 0.0, current_tick / 30.0))), 2.0));
     float animateFlickerRadius = orbRadius * animateFlickerMultiplier;
     float animateFlickerIntensity = intensity * animateFlickerMultiplier;
     animateFlickerIntensity = (float(orbStyle == styleFireblast) * (min(max(animateFlickerIntensity, 0.0), 100.0))) + (float(orbStyle != styleFireblast) * animateFlickerIntensity);
@@ -996,7 +990,7 @@ void main(void)
     vec2 real_texcoord = quadPos;
 
 	vec4 finalColor = (
-		(calcRayLightningColor(quadSize, real_texcoord, rayWaveCyclePos, rayGrainyTexture, rayReshape, rayWidthAdjType, center_point, opacityAdj) * float((effectType == effectTypeRay) | (effectType == effectTypeLightning))) +
+		(calcRayLightningColor(quadSize, real_texcoord, rayWaveCyclePos, rayGrainyTexture, rayReshape, rayWidthAdjType, center_point, opacityAdj) * float((effectType == effectTypeRay) || (effectType == effectTypeLightning))) +
 		(calcOrbColor(quadSize) * float(effectType == effectTypeOrb))
 	);
 	float epsilon = 0.01;

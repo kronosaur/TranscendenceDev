@@ -81,10 +81,10 @@ void OpenGLRenderLayer::addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition,
 {
 
 	glm::ivec4 shapes(lifetime, currFrame, distortion, detail);
-	glm::ivec4 styles(style, animation, 0.0, 0.0);
+	glm::ivec4 styles(style, animation, 0, 0);
 	glm::vec4 floatParams(intensity, secondaryOpacity, opacity, 0.0);
 
-	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, floatParams, primaryColor, secondaryColor, float(animationSeed), OpenGLRenderLayer::effectType::effectTypeLightning);
+	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, floatParams, primaryColor, secondaryColor, float(animationSeed), OpenGLRenderLayer::effectType::effectTypeOrb);
 	renderRequest.set_depth(startingDepth);
 	m_rayRenderBatch.addObjToRender(renderRequest);
 }

@@ -42,14 +42,14 @@ layout (location = 11) out float opacityAdj;
 layout (location = 12) flat out int effectType;
 layout (location = 13) out float seed;
 layout (location = 14) out vec2 quadSize;
-layout (location = 15) flat in int orbAnimation; //
-layout (location = 16) flat in int orbStyle; //
-layout (location = 17) flat in int orbDistortion;
-layout (location = 18) flat in int orbDetail;
-layout (location = 19) in float orbRadius;
-layout (location = 20) in float orbSecondaryOpacity;
-layout (location = 21) flat in int orbLifetime;
-layout (location = 22) flat in int orbCurrFrame;
+layout (location = 15) flat out int orbAnimation; //
+layout (location = 16) flat out int orbStyle; //
+layout (location = 17) flat out int orbDistortion;
+layout (location = 18) flat out int orbDetail;
+layout (location = 19) out float orbRadius;
+layout (location = 20) out float orbSecondaryOpacity;
+layout (location = 21) flat out int orbLifetime;
+layout (location = 22) flat out int orbCurrFrame;
 
 mat4 rotationMatrix2D(float rotation)
 {
@@ -85,7 +85,7 @@ mat4 translationMatrix2D(float transX, float transY)
 
 void main(void)
 {
-    vec2 aSize = vec2(aSizeAndPosition[0], aSizeAndPosition[1]);
+    vec2 aSize = vec2(aSizeAndPosition[0], aSizeAndPosition[1]) * ((2.0*float(effectType == effectTypeOrb)) + (float(effectType != effectTypeOrb)));
     vec2 aPosOnCanvas = (vec2(aSizeAndPosition[2], aSizeAndPosition[3]) - vec2(0.5, 0.5)) * 2.0;
 	vec4 final_pos = aPos * scalingMatrix2D(aSize[0], aSize[1]) * rotationMatrix2D(aRotation) * scalingMatrix2D(1.0 / aCanvasAdjustedDimensions[0], 1.0 / aCanvasAdjustedDimensions[1]) * translationMatrix2D(aPosOnCanvas[0], -aPosOnCanvas[1]);
 
