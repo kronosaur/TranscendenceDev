@@ -46,10 +46,9 @@ layout (location = 15) flat out int orbAnimation; //
 layout (location = 16) flat out int orbStyle; //
 layout (location = 17) flat out int orbDistortion;
 layout (location = 18) flat out int orbDetail;
-layout (location = 19) out float orbRadius;
-layout (location = 20) out float orbSecondaryOpacity;
-layout (location = 21) flat out int orbLifetime;
-layout (location = 22) flat out int orbCurrFrame;
+layout (location = 19) out float orbSecondaryOpacity;
+layout (location = 20) flat out int orbLifetime;
+layout (location = 21) flat out int orbCurrFrame;
 
 // This should match enum effectType in opengl.h.
 
