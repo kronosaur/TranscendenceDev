@@ -96,13 +96,25 @@ float fbm(vec2 p, float time)
      return v;
 }
 
+float fbm_lightning(vec2 p, float time)
+{
+     float v = 0.0;
+     float amp = 0.75;
+     float freq = 1;
+     int octaves = 2;
+     for (int i = 0; i < octaves; i++)
+         v += cnoise(vec3((p * (i * freq)), time)) * (amp / (i + 1));
+
+     return v;
+}
+
 out vec4 fragColor;
 
 void main(void)
 {
     vec2 uv = -1. + 2. * TexCoord;
-	float fbm = (fbm(uv, time * 50) + 1.0) / 2.0;
+	float fbm_tex = (fbm(uv, time * 50) + 1.0) / 2.0;
+	float fbm_lightning = (fbm(uv, time) + 1.0) / 2.0;
 	float raw_perlin = (cnoise(vec3(uv.x * 20, uv.y * 20, time * 1)) * 0.5) + 0.5;
-    //fragColor = vec4(fbm, raw_perlin, 0.0, 0.0);
-    fragColor = vec4(fbm, raw_perlin, 0.0, 1.0);
+    fragColor = vec4(fbm_tex, raw_perlin, fbm_lightning, 1.0);
 }
