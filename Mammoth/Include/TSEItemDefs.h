@@ -215,6 +215,15 @@ struct SDisplayAttribute
 	RECT rcRect;					//	Reserved for callers
 	};
 
+//	CDisplayAttributeDefinitions
+//
+//	This structure holds a list of display attributes to apply globally to other
+//	types. A type (such as a sovereign) can define display attributes to apply
+//	to certain item types defined by  criteria.
+//
+//	For example, we use this to apply the "NAMI" display attribute to all NAMI
+//	items.
+
 class CDisplayAttributeDefinitions
 	{
 	public:

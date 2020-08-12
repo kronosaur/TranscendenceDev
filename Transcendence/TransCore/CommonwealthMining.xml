@@ -683,9 +683,9 @@
 				10% of metallic asteroids have extractable ores, such as
 				titanium, plasteel, and orthosteel.
 
-				Mining lasers and their ilk are not very effective. Use a plasma
-				torch (ablative mining) or excavation pods (shockwave mining)
-				instead.
+				Mining charges and missiles (explosive mining) are not very 
+				effective. Use a plasma	torch (ablative mining) or excavation 
+				pods (shockwave mining) instead.
 
 			</Text>
 			<Text id="asteroidName.primordial">Primordial Asteroid</Text>
@@ -716,7 +716,7 @@
 				10% of rocky asteroids have useful resources. The most commonly
 				found are palladium, gold, and platinum.
 
-				All mining techniques are effective on rocky asteroids.
+				All mining techniques are equally effective on rocky asteroids.
 			
 			</Text>
 			<Text id="asteroidName.volcanic">Volcanic Asteroid</Text>
@@ -724,7 +724,6 @@
 
 				Volcanic asteroids are formed in high-temperature regions when
 				molten lava solidifies.
-
 			
 			</Text>
 			<Text id="asteroidHint.volcanic">
