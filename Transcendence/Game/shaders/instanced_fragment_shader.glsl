@@ -112,9 +112,50 @@ vec4 getGlowColor_Static(float epsilon, vec4 color, vec2 texture_size, vec2 text
 	return glowColor;
 }
 
+float sampleNoiseFBM(vec3 sampler) {
+    return texture(perlin_noise, vec3(sampler[0], sampler[1], sampler[2]))[0];
+}
+
+float rand(vec2 co){
+  // Canonical PRNG from https://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
+  return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
 float sampleNoisePerlin(vec3 sampler) {
-    return texture(perlin_noise, vec3(sampler[0], sampler[1], abs(mod(sampler[2], 2.0) - 1.0)))[1];
-    //return texture(perlin_noise, vec3(sampler[0], sampler[1], sampler[2])).x;
+    //return texture(perlin_noise, vec3(sampler[0], sampler[1], abs(mod(sampler[2], 2.0) - 1.0)))[1];
+    return texture(perlin_noise, vec3(sampler[0], sampler[1], sampler[2]))[1];
+}
+
+float fbm(vec2 p, float time)
+{
+    // Fractal Brownian Motion using Perlin noise
+     float v = 0.0;
+     float amp = 0.3;
+     float freq = 20;
+     int octaves = 3;
+     for (int i = 0; i < octaves; i++)
+         v += cnoise(vec3(((p + vec2(1000.0, 1000.0)) * (i * freq)), time / 100)) * (amp / (i + 1));
+
+     return v;
+}
+
+float stackedPerlin(vec2 p, float time)
+{
+    // Fractal Brownian Motion using Perlin noise
+    float v = 1.0;
+    int octaves = 5;
+	float dir_multiplier = 0.25;
+    for (int i = 0; i < octaves; i++) {
+        int rseed = i + 123;
+        vec2 rand_dir = normalize(vec2(rand(vec2(rseed, rseed)), rand(vec2(rseed+1, rseed+1)))) * dir_multiplier;
+        v *= sampleNoiseFBM(vec3((p * 5 * (rand(vec2(rseed+2, rseed-2)) - 0.5)) + time*rand_dir, 0.0)) * 2.0;
+    }
+
+    return v / 2.0;
+}
+
+float stackedPerlin(vec3 p) {
+    return stackedPerlin(vec2(p.x, p.y), p.z);
 }
 
 void main(void)
@@ -127,7 +168,7 @@ void main(void)
 	vec4 realColor = texture(obj_texture, vec2(texture_uv[0], texture_uv[1]));
 	bool alphaIsZero = realColor[3] < epsilon;
 	float alphaNoiseTimeAxis = (float(current_tick) / max(alphaNoisePeriodTime, epsilon));
-	float perlinNoise = (cnoise(vec3(fragment_pos[0] * alphaNoisePeriodXY, fragment_pos[1] * alphaNoisePeriodXY, alphaNoiseTimeAxis)) + 0.0f);
+	float perlinNoise = (sampleNoiseFBM(vec3(fragment_pos[0] * alphaNoisePeriodXY, fragment_pos[1] * alphaNoisePeriodXY, alphaNoiseTimeAxis)) + 0.0f);
 	float alphaNoise = perlinNoise + float(alpha_strength > 0.9999);
 	alphaNoise = (alpha_strength + (alphaNoise * alpha_strength));
 	alphaNoise = (float(alphaNoise > 0.5) * 2) - 1;
@@ -135,7 +176,7 @@ void main(void)
 	vec4 glowColorPerlin = getGlowColor_PerlinNoise(20.0f, fragment_pos, alphaNoiseTimeAxis, epsilon, realColor, texture_size, texture_uv, obj_texture, perlinNoise);
 	vec4 glowColorStatic = getGlowColor_Static(epsilon, realColor, texture_size, texture_uv, obj_texture);
 	bool useStaticNoise = (glow_noise < epsilon);
-	vec4 glowColor = (float(useStaticNoise) * glowColorStatic); //+ (float(!useStaticNoise) * glowColorPerlin);
+	vec4 glowColor = (float(useStaticNoise) * glowColorStatic) + (float(!useStaticNoise) * glowColorPerlin);
 	
 	// If a glow color is specified, use glow instead of using the ship texture
 	// Also add noise to the glow as appropriate
@@ -145,9 +186,9 @@ void main(void)
 	
 	
 	vec4 textureColor = vec4(realColor[0], realColor[1], realColor[2], realColor[3] * alphaNoise * alpha_strength);
-	float ftime = float(current_tick) / 60.0;
-	vec4 perlin_noise_color = vec4(sampleNoisePerlin(vec3(texture_uv[0], texture_uv[1], ftime)));
-	perlin_noise_color[3] = 1.0;
-	out_color = perlin_noise_color;
-    //out_color = (float(!useGlow) * textureColor) + (float(useGlow) * glowColor);
+	//float ftime = float(current_tick) / 60.0;
+	//vec4 perlin_noise_color = vec4(sampleNoiseFBM(vec3(fragment_pos[0], fragment_pos[1], ftime)));
+	//perlin_noise_color[3] = 1.0;
+	//out_color = perlin_noise_color;
+    out_color = (float(!useGlow) * textureColor) + (float(useGlow) * glowColor);
 }
