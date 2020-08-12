@@ -4,6 +4,10 @@ uniform float time;
 
 in vec2 TexCoord;
 
+float rand(vec2 co){
+  // Canonical PRNG from https://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
+  return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
 
 //  Classic Perlin 3D Noise 
 //  by Stefan Gustavson
@@ -82,11 +86,10 @@ float cnoise(vec3 P){
 }
 
 
-float fbm(vec2 p, float time)
+float fbm(vec2 p, float time, float amp)
 {
     // Fractal Brownian Motion using Perlin noise
      float v = 0.0;
-     float amp = 0.5;
      float freq = 20;
      float phase_shift = 2.0;
      int octaves = 10;
@@ -94,6 +97,20 @@ float fbm(vec2 p, float time)
          v += cnoise(vec3(((p + vec2(1000.0, 1000.0)) * (i * freq)), (time * (float(i) * phase_shift)) / 1000)) * (amp / (i + 1));
 
      return v;
+}
+
+float fbm_animated(vec2 p, float time)
+{
+    // Fractal Brownian Motion using Perlin noise
+     float v = 1.0;
+     int octaves = 5;
+     for (int i = 0; i < octaves; i++) {
+         int rseed = i + 123;
+         vec2 rand_dir = normalize(vec2(rand(vec2(rseed, rseed)), rand(vec2(rseed+1, rseed+1)))) * 0.005;
+         v *= ((fbm(vec2((p * 5 * (rand(vec2(rseed+2, rseed-2)) - 0.5)) + time*rand_dir), 0.0, 1.0) + 1) * 0.5) * 2.0;
+     }
+
+     return v / 4.0;
 }
 
 float fbm_lightning(vec2 p, float time)
@@ -113,8 +130,8 @@ out vec4 fragColor;
 void main(void)
 {
     vec2 uv = -1. + 2. * TexCoord;
-	float fbm_tex = (fbm(uv, time * 50) + 1.0) / 2.0;
-	float fbm_lightning = (fbm(uv, time) + 1.0) / 2.0;
+	float fbm_tex = (fbm(uv, time * 50, 0.5) + 1.0) / 2.0;
+	float fbm_animated = (fbm_animated(uv, time) + 1.0) / 2.0;
 	float raw_perlin = (cnoise(vec3(uv.x * 20, uv.y * 20, time * 1)) * 0.5) + 0.5;
-    fragColor = vec4(fbm_tex, raw_perlin, fbm_lightning, 1.0);
+    fragColor = vec4(fbm_tex, raw_perlin, fbm_animated, 1.0);
 }
