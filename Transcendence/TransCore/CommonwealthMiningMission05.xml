@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Mission: Rescue Trapped Miners ========================================
+
+	======================================================================== -->
+
+	<MissionType UNID="&msCommonwealthMining05;"
+			name=				"Commonwealth Mining 05: Rescue Trapped Miners"
+			attributes=			"commonwealthMining"
+
+			level=				"1-4"
+			maxAppearing=		"3-5"
+
+			expireTime=			"5400"
+			failureAfterOutOfSystem="5400"
+			>
+
+		<Properties>
+			<Global id="blacklisted"></Global>
+
+			<Variant id="character.missionGiver">
+				&chMuhammadCondi;
+			</Variant>
+
+			<Variant id="minersTrapped">
+				(random 8 12)
+			</Variant>
+
+			<Variant id="rewardPerMiner">
+				(divide (@ (typ@ &unidIndependentMiner; 'missionRewardTable) (min (sysGetLevel) 10)) 5)
+			</Variant>
+
+			<Data id="maxReward"></Data>
+			<Data id="reward"></Data>
+
+			<Data id="cavernID"></Data>
+			<Data id="currency"></Data>
+			<Data id="targetID"></Data>
+			<Data id="minersRescued"></Data>
+		</Properties>
+
+		<Events>
+			<CanCreate>
+				(switch
+					;	Player must have a mining weapon.
+
+					(not (objGetItems gPlayerShip "wI +property:damageMining;"))
+						Nil
+
+					;	If player has failed this mission previously, then no
+					;	chance of getting it.
+
+					(typ@ gType 'blacklisted)
+						Nil
+
+					True
+					)
+			</CanCreate>
+
+			<OnCreate>
+				(block (
+					(currency (obj@ aOwnerObj 'currency))
+					)
+					;	Remember
+
+					(msnSet@ gSource 'currency currency)
+					)
+			</OnCreate>
+
+			<OnAccepted>
+				(block (
+					(ownerObj (objGetObjByID (msn@ gSource 'ownerID)))
+					(currency (msn@ gSource 'currency))
+
+					;	Find an appropriate asteroid
+
+					(allAsteroids (sysFindObject ownerObj "t +asteroid; R:60; +property:size&gt;=250;"))
+					(asteroidList
+						(filter
+							allAsteroids
+							asteroidObj
+							(and (not (sysFindObject asteroidObj "T +populated; N:60;"))
+								(not (objGetOverlays asteroidObj))
+								)
+							)
+						)
+					(asteroidObj
+						(if asteroidList
+							(random asteroidList)
+							(block (
+								;	Find the most distant planet
+								(centerStar (sysFindObject gSource "tN +star;"))
+								(farthestPlanet (sysFindObject (or centerStar ownerObj) "tR +isPlanet:true;"))
+
+								;	Pick a random distance beyond the farthest planet
+								(meanDist (if farthestPlanet (sysVectorDistance (objGetPos farthestPlanet)) (random 600 900)))
+								(dist (+ meanDist (random -60 60)))
+								)
+								;	Create an asteroid at this distance
+								(sysCreateStation &stRockyAsteroidSizeD; (sysVectorRandom Nil dist 60 "t"))
+								)
+							)
+						)
+
+					(asteroidType (obj@ asteroidObj 'asteroidType))
+					(overlayType
+						(switch
+							(= asteroidType 'icy)
+								&ovRescueStructureIce;
+
+							(= asteroidType 'metallic)
+								&ovRescueStructureMetallic;
+
+							(= asteroidType 'primordial)
+								&ovRescueStructurePrimordial;
+
+							(= asteroidType 'volcanic)
+								&ovRescueStructureVolcanic;
+
+							&ovRescueStructureRocky;
+							)
+						)
+
+					(distToAsteroid (objGetDistance ownerObj asteroidObj))
+					(travelTime (sysCalcTravelTime distToAsteroid (obj@ gPlayerShip 'maxSpeed)))
+
+					overlayID
+					)
+					;	If the asteroid does not have a name, name it now
+
+					(if (or (= (objGetName asteroidObj 0) "")
+							(= (subset (objGetName asteroidObj 0) 0 1) "(")
+							)
+						(objSetName asteroidObj (cat "Asteroid " (random 10000 99999)))
+						)
+
+					;	Add the appropriate overlay
+					;
+					;	NOTE: We don't need to match the rotation of the asteroid.
+					;	the overlay does that automatically.
+					;
+					;	NOTE: Hit points on cavern overlay is automatically 
+					;	computed based on system level.
+
+					(setq overlayID (objAddOverlay asteroidObj overlayType (objGetPos asteroidObj) 0))
+
+					;	Set the time before miners start dying.
+
+					(ovrSet@ asteroidObj overlayID 'safeTime (+ travelTime 300))
+					(dbgOutput "Safe time set to: " (ovr@ asteroidObj overlayID 'safeTime))
+
+					;	Set the number of miners trapped.
+
+					(ovrSet@ asteroidObj overlayID 'minersTrapped (msn@ gSource 'minersTrapped))
+
+					;	Set the mission on the overlay, so we get appropriate
+					;	events.
+
+					(ovrSet@ asteroidObj overlayID 'missionID (objGetID gSource))
+
+					;	Remember
+
+					(msnSet@ gSource 'targetID (objGetID asteroidObj))
+					(msnSet@ gSource 'cavernID overlayID)
+
+					(msnSet@ gSource 'maxReward (* (msn@ gSource 'rewardPerMiner) (msn@ gSource 'minersTrapped)))
+					)
+			</OnAccepted>
+
+			<OnSetPlayerTarget>
+				(rpgSetTarget gSource aReason (objGetObjByID (msn@ gSource 'targetID)) 'dock)
+			</OnSetPlayerTarget>
+
+			<OnCompleted>
+				(switch
+					(= aReason 'success)
+						(block ()
+							(msnSet@ gSource 'minersRescued (@ gData 'minersRescued))
+							(msnSet@ gSource 'reward (* (@ gData 'minersRescued) (msn@ gSource 'rewardPerMiner)))
+							)
+
+					(= aReason 'failure)
+						(block ()
+							(switch
+								(= (@ gData 'result) 'allDead)
+									Nil
+
+								;	If we fail for a different reason (e.g., out 
+								;	of system for too long) then we remove all
+								;	miners
+
+								(block (
+									(asteroidObj (objGetObjByID (msn@ gSource 'targetID)))
+									(overlayID (msn@ gSource 'cavernID))
+									)
+									(ovrSet@ asteroidObj overlayID 'minersLeft 0)
+									)
+								)
+
+							;	Player never gets this mission again
+							(msnSet@ gType 'blacklisted True)
+							)
+					)
+			</OnCompleted>
+
+			<OnReward>
+				(rpgMissionRewardPayment (msn@ gSource 'reward))
+			</OnReward>
+		</Events>
+
+		<Language>
+			<Text id="Name">
+				"Rescue Trapped Miners"
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					systemName: (sysGetName)
+					reward: (msn@ gSource 'maxReward)
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)))
+					})
+			</Text>
+			<Text id="Intro">
+				(block (
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						minersTrapped: (msn@ gSource 'minersTrapped)
+						stationName: (objGetName (objGetObjByID (msn@ gSource 'ownerID)))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'mining05.intro trData)
+						(msnTranslate gSource 'textIntro trData)
+						)
+					)
+			</Text>
+			<Text id="Briefing">
+				(block (
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						minersTrapped: (msn@ gSource 'minersTrapped)
+						})
+					)
+					(dbgOutput trData)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'mining05.briefing trData)
+						(msnTranslate gSource 'textBriefing trData)
+						)
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(minersTrapped (msn@ gSource 'minersTrapped))
+					(minersRescued (msn@ gSource 'minersRescued))
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)))
+						minersTrapped: minersTrapped
+						minersRescued: minersRescued
+						reward: (msn@ gSource 'reward)
+						})
+					)
+					(switch
+						(= minersTrapped minersRescued)
+							(or
+								(typTranslate (msn@ gSource 'character.missionGiver) 'mining05.success.allRescued trData)
+								(msnTranslate gSource 'textSuccessDebrief.allRescued trData)
+								)
+
+						(= minersRescued 1)
+							(or
+								(typTranslate (msn@ gSource 'character.missionGiver) 'mining05.success.oneRescued trData)
+								(msnTranslate gSource 'textSuccessDebrief.oneRescued trData)
+								)
+
+						(or
+							(typTranslate (msn@ gSource 'character.missionGiver) 'mining05.success.someRescued trData)
+							(msnTranslate gSource 'textSuccessDebrief.someRescued trData)
+							)
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(block (
+					(minersTrapped (msn@ gSource 'minersTrapped))
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						minersTrapped: minersTrapped
+						targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'mining05.failure trData)
+						(msnTranslate gSource 'textFailureDebrief trData)
+						)
+					)
+			</Text>
+			
+			<!-- BRIEFING -->
+			
+			<Text id="textSummary">
+
+				An asteroid mine has collapsed, leaving many miners trapped in
+				the wreckage. Go to %targetName% and use a mining weapon to dig
+				out the wreckage and rescue the miners.
+
+				System: %systemName%\n
+				Payment: %reward%
+
+			</Text>
+			<Text id="textIntro">
+				
+				The colony supervisor stands on a plaform at the center of the 
+				hall.
+
+				"%name%, I've got a priority mission for you."
+
+			</Text>
+			<Text id="textBriefing">
+
+				"An asteroid mine in the system has collapsed, leaving 
+				%minersTrapped% miners buried in the wreckage.
+
+				"I want you to go out there are dig them out with your mining
+				equipment. What do you say?"
+
+			</Text>
+			<Text id="AcceptReply">
+
+				"Good. Hurry up! They'll be running out of air soon."
+
+			</Text>
+			<String id="DeclineReply">
+
+				"Come back when you're ready. You're their only hope."
+
+			</String>
+			<Text id="InProgress">
+
+				"What are you doing here? There's no time to waste&mdash;those
+				miners will be running out of air soon.
+
+				"Remember to use your mining equipment to dig out the wreckage."
+
+			</Text>
+			<Text id="textSuccessDebrief.allRescued">
+
+				The colony supervisor looks ecstatic.
+
+				"This has been a miraculous day! We were all fearing the worst,
+				but you managed to rescue all the miners!
+
+				"Congratulations! We've deposited %reward% in your account, and 
+				you	deserve every credit."
+
+			</Text>
+			<Text id="textSuccessDebrief.someRescued">
+
+				The colony supervisor looks relieved.
+
+				"It's been a long day. We mourn those that were lost even while
+				celebrating the rescue of %minersRescued% miners.
+
+				"For your efforts, we've deposited %reward% in your account."
+			
+			</Text>
+			<Text id="textSuccessDebrief.oneRescued">
+
+				The colony supervisor looks sad.
+
+				"We've paid a terrible price. All but one miner has perished in
+				the accident and we're devastated that you were unable to save 
+				more.
+
+				"We've deposited %reward% in your account."
+			
+			</Text>
+			<Text id="textFailureDebrief">
+
+				The colony supervisor looks stunned.
+
+				"Your incompetence has left %minersTrapped% miners dead. I 
+				should never have trusted you with this mission."
+			
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>
