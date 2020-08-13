@@ -111,6 +111,7 @@ class CTerritoryDef
 		void AddAttributes (const CString &sAttribs);
 		void AddRegion (const COrbit &Orbit, Metric rMinRadius, Metric rMaxRadius);
 		static ALERROR CreateFromXML (CXMLElement *pDesc, const COrbit &OrbitDesc, CTerritoryDef **retpTerritory);
+		void DebugPaint (CG32bitImage &Dest, CMapViewportCtx &PaintCtx, const CG16bitFont &LabelFont) const;
 		const CString &GetAttributes (void) const { return m_sAttributes; }
 		const CString &GetCriteria (void) { return m_sCriteria; }
 		bool HasAttribute (const CString &sAttrib);
@@ -126,14 +127,12 @@ class CTerritoryDef
 		struct SRegion
 			{
 			COrbit OrbitDesc;
-			Metric rMinRadius;
-			Metric rMaxRadius;
+			Metric rMinRadius = 0.0;
+			Metric rMaxRadius = 0.0;
 
-			Metric rMinRadius2;				//	Computed
-			Metric rMaxRadius2;				//	Computed
+			Metric rMinRadius2 = 0.0;		//	Computed
+			Metric rMaxRadius2 = 0.0;		//	Computed
 			};
-
-		bool MatchesCriteria (TArray<int> &Exclude, const CVector &vPos, const CString &sCriteria);
 
 		CString m_sID;
 		TArray<SRegion> m_Regions;

@@ -80,6 +80,52 @@ ALERROR CTerritoryDef::CreateFromXML (CXMLElement *pDesc, const COrbit &OrbitDes
 	return NOERROR;
 	}
 
+void CTerritoryDef::DebugPaint (CG32bitImage &Dest, CMapViewportCtx &PaintCtx, const CG16bitFont &LabelFont) const
+
+//	DebugPaint
+//
+//	Paint the zone of the system map.
+
+	{
+	const Metric SPACING_Y = LIGHT_SECOND * 50.0;
+
+	for (int i = 0; i < m_Regions.GetCount(); i++)
+		{
+		const SRegion &Region = m_Regions[i];
+
+		const CG32bitPixel rgbOuterEdge(255, 255, 0);
+
+		Metric rOuterEdge = Region.rMaxRadius;
+		if (rOuterEdge == 0.0)
+			rOuterEdge = LIGHT_SECOND * 1500.0;
+
+		//	Paint the outer edge of the zone.
+
+		COrbit OuterEdge(Region.OrbitDesc.GetObjectPos(), rOuterEdge);
+		OuterEdge.Paint(PaintCtx, Dest, rgbOuterEdge);
+
+		//	Write properties of the zone.
+
+		constexpr Metric rLabelAngle = mathDegreesToRadians(270);
+		const CVector vLabel = OuterEdge.GetPoint(rLabelAngle) + CVector(0.0, SPACING_Y);
+
+		int xLabel, yLabel;
+		PaintCtx.Transform(vLabel, &xLabel, &yLabel);
+
+		if (!m_sID.IsBlank())
+			{
+			LabelFont.DrawText(Dest, xLabel, yLabel, rgbOuterEdge, m_sID, CG16bitFont::AlignCenter);
+			yLabel += LabelFont.GetHeight();
+			}
+
+		if (!m_sAttributes.IsBlank())
+			{
+			LabelFont.DrawText(Dest, xLabel, yLabel, rgbOuterEdge, m_sAttributes, CG16bitFont::AlignCenter);
+			yLabel += LabelFont.GetHeight();
+			}
+		}
+	}
+
 bool CTerritoryDef::HasAttribute (const CString &sAttrib)
 
 //	HasAttribute

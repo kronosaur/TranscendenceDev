@@ -2164,7 +2164,7 @@ void CUniverse::PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rSca
 		m_pCurrentSystem->PaintViewportLRS(Dest, rcView, m_pPOV, rScale, dwFlags, retbNewEnemies);
 	}
 
-void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale)
+void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale, DWORD dwFlags)
 
 //	PaintPOVMap
 //
@@ -2172,7 +2172,7 @@ void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMap
 
 	{
 	if (m_pCurrentSystem && m_pPOV)
-		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale);
+		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale, dwFlags);
 
 	m_iPaintTick++;
 	}

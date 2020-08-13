@@ -3580,7 +3580,7 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	DEBUG_CATCH
 	}
 
-void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rMapScale)
+void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rMapScale, DWORD dwFlags)
 
 //	PaintViewportMap
 //
@@ -3645,6 +3645,11 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 			CGDraw::CircleGradient(Dest, x, y, iGlowRadius, pStar->GetSpaceColor());
 			}
 		}
+
+	//	Paint zones, if necessary
+
+	if (dwFlags & FLAG_VIEWPORT_MAP_SHOW_ZONES)
+		m_Territories.DebugPaint(Dest, Ctx, GetUniverse().GetNamedFont(CUniverse::fontMapLabel));
 
 	//	Paint all planets and stars first
 
