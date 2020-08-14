@@ -2535,7 +2535,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	return NOERROR;
 	}
 
-void CUniverse::SetCurrentSystem (CSystem *pSystem)
+void CUniverse::SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered)
 
 //	SetCurrentSystem
 //
@@ -2565,7 +2565,8 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 
 	//	Initialize mission cache
 
-	m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
+	if (bPlayerHasEntered)
+		m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
 	}
 
 bool CUniverse::SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError)
@@ -2682,7 +2683,7 @@ void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 	if (pPOV)
 		SetPOV(pPOV);
 	else
-		SetCurrentSystem(&NewSystem);
+		SetCurrentSystem(&NewSystem, true);
 
 	//	Replay any commands that might have happened while the player was in a
 	//	different system.
@@ -2779,7 +2780,7 @@ bool CUniverse::SetPOV (CSpaceObject *pPOV)
 	m_pPOV = pPOV;
 
 	if (m_pPOV)
-		SetCurrentSystem(m_pPOV->GetSystem());
+		SetCurrentSystem(m_pPOV->GetSystem(), true);
 	else
 		SetCurrentSystem(NULL);
 
