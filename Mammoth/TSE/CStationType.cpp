@@ -1517,6 +1517,8 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	ALERROR error;
 
 	ASSERT(pDesc);
+	if (!pDesc)
+		return ERR_FAIL;
 
 	//	Initialize basic info
 

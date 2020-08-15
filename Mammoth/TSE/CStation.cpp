@@ -30,6 +30,7 @@
 
 #define PROPERTY_ABANDONED						CONSTLIT("abandoned")
 #define PROPERTY_ACTIVE							CONSTLIT("active")
+#define PROPERTY_ALLOW_ENEMY_DOCKING			CONSTLIT("allowEnemyDocking")
 #define PROPERTY_ANGRY							CONSTLIT("angry")
 #define PROPERTY_BARRIER						CONSTLIT("barrier")
 #define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
@@ -114,13 +115,7 @@ const int g_iMapScale = 5;
 const int DEFAULT_TIME_STOP_TIME =				150;
 
 CStation::CStation (CUniverse &Universe) : TSpaceObjectImpl(Universe),
-		m_Devices(CDeviceSystem::FLAG_NO_NAMED_DEVICES),
-		m_fArmed(false),
-		m_fForceMapLabel(false),
-		m_fMapLabelInitialized(false),
-		m_fHasMissileDefense(false),
-		m_fMaxAttackDistValid(false),
-		m_dwSpare(0)
+		m_Devices(CDeviceSystem::FLAG_NO_NAMED_DEVICES)
 
 //	CStation constructor
 
@@ -894,7 +889,7 @@ CSpaceObject::RequestDockResults CStation::CanObjRequestDock (CSpaceObject *pObj
 
 	if (pObj
 			&& !IsAbandoned() 
-			&& !m_pType->IsEnemyDockingAllowed()
+			&& !m_fAllowEnemyDocking
 			&& (IsEnemy(pObj) || IsBlacklisted(pObj)))
 		return dockingDenied;
 
@@ -1187,6 +1182,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pStation->m_fDestroyIfEmpty = false;
 	pStation->m_fIsSegment = CreateCtx.bIsSegment;
 	pStation->m_fAnonymous = pType->IsAnonymous();
+	pStation->m_fAllowEnemyDocking = pType->IsEnemyDockingAllowed();
 	pStation->Set3DExtra(CreateCtx.bIs3DExtra);
 
 	//	3D Extra objects are always faded
@@ -1956,6 +1952,9 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 
 	else if (strEquals(sName, PROPERTY_ACTIVE))
 		return CC.CreateBool(m_fActive);
+
+	else if (strEquals(sName, PROPERTY_ALLOW_ENEMY_DOCKING))
+		return CC.CreateBool(m_fAllowEnemyDocking);
 
 	else if (strEquals(sName, PROPERTY_ANGRY))
 		return (m_iAngryCounter > 0 ? CC.CreateInteger(m_iAngryCounter) : CC.CreateNil());
@@ -2769,12 +2768,12 @@ void CStation::OnDestroyedByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject 
 //	Station destroyed by friendly fire
 
 	{
-	CSpaceObject *pTarget;
-
-	ASSERT(pOrderGiver && pOrderGiver->CanAttack());
+	if (!pOrderGiver || !pOrderGiver->CanAttack())
+		throw CException(ERR_FAIL);
 
 	//	If the player attacked us, we need to blacklist her
 
+	CSpaceObject *pTarget;
 	if (pOrderGiver->IsPlayer()
 			&& CanBlacklist()
 			&& (pTarget = CalcTargetToAttack(pAttacker, pOrderGiver)))
@@ -3994,6 +3993,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fIsSegment =		    ((dwLoad & 0x00100000) ? true : false);
 	m_fForceMapLabel =		((dwLoad & 0x00200000) ? true : false);
 	m_fHasMissileDefense =	((dwLoad & 0x00400000) ? true : false);
+	m_fAllowEnemyDocking =	(Ctx.dwVersion >= 194 ? ((dwLoad & 0x00800000) ? true : false) : m_pType->IsEnemyDockingAllowed());
 
 	//	Paint order
 
@@ -4495,6 +4495,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fIsSegment ?		    0x00100000 : 0);
 	dwSave |= (m_fForceMapLabel ?		0x00200000 : 0);
 	dwSave |= (m_fHasMissileDefense ?	0x00400000 : 0);
+	dwSave |= (m_fAllowEnemyDocking ?	0x00800000 : 0);
 	pStream->Write(dwSave);
 
 	//	Paint order
@@ -5275,6 +5276,11 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 			m_iAngryCounter = Max(0, pValue->GetIntegerValue());
 		else
 			SetAngry();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_ALLOW_ENEMY_DOCKING))
+		{
+		m_fAllowEnemyDocking = !pValue->IsNil();
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_BARRIER))

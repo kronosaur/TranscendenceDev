@@ -2041,6 +2041,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'abandoned\n"
 			"   'active\n"
+			"   'allowEnemyDocking\n"
 			"   'angry\n"
 			"   'barrier\n"
 			"   'destNodeID\n"
@@ -2427,6 +2428,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"\n"
 			"property (stations)\n\n"
 
+			"   'allowEnemyDocking True|Nil\n"
 			"   'angry True|Nil|ticks\n"
 			"   'barrier True|Nil\n"
 			"   'destroyWhenEmpty True|Nil\n"
