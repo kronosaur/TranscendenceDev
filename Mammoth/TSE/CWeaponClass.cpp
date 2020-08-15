@@ -249,7 +249,8 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 
 	//  Set the target to NULL if we're blind and we can't fire when blind
 
-	ActivateCtx.pTarget = ((!m_bCanFireWhenBlind) && SourceObj.IsBlind()) ? NULL : ActivateCtx.pTarget;
+	if (!m_bCanFireWhenBlind && SourceObj.IsBlind())
+		ActivateCtx.pTarget = NULL;
 
 	//	Fire the weapon
 
@@ -5247,6 +5248,9 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 			if ((dwContinuous % iContinuousDelay) == 0)
 				{
+				if (ActivateCtx.TargetList.IsEmpty())
+					ActivateCtx.TargetList = pSource->GetTargetList();
+
 				ActivateCtx.iRepeatingCount = 1 + iContinuous - (dwContinuous / iContinuousDelay);
 
 				FireWeapon(*pDevice, *pShot, ActivateCtx);

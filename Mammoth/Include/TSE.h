@@ -457,6 +457,18 @@ class CSpaceObject
 
 		virtual CDesignType *GetCharacter (void) const { return NULL; }
 
+		//	Combat Targeting
+
+		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
+		virtual CTargetList GetTargetList (void) const { return CTargetList(); }
+		virtual bool IsTargetableProjectile (void) const { return true; }
+
+		int CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const;
+		CSpaceObject *CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
+		bool IsLineOfFireClear (const CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL) const;
+		bool IsPlayerTarget (void) const { return m_fPlayerTarget; }
+		void SetPlayerTarget (void) { m_fPlayerTarget = true; }
+
 		//	Conditions
 
 		static constexpr DWORD FLAG_NO_MESSAGE = 0x00000001;
@@ -616,8 +628,6 @@ class CSpaceObject
 		void AddEffect (IEffectPainter *pPainter, const CVector &vPos, int iTick = 0, int iRotation = 0);
 		bool Blocks (CSpaceObject *pObj) { return (m_fIsBarrier && CanBlock(pObj)); }
 		bool BlocksShips (void) { return (m_fIsBarrier && CanBlockShips()); }
-		int CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const;
-		CSpaceObject *CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		virtual bool CanBeDestroyedBy (CSpaceObject &Attacker) const { return true; }
 		bool CanBeHit (void) const { return (!m_fCannotBeHit && !m_fOutOfPlaneObj); }
 		bool CanBeHitByFriends (void) const { return !m_fNoFriendlyTarget; }
@@ -790,7 +800,6 @@ class CSpaceObject
 		bool IsNeutral(const CSovereign &Sovereign) const;
 		bool IsHighlighted (void) const { return ((m_iHighlightCountdown != 0) || m_fSelected || m_iHighlightChar); }
 		bool IsInDamageCode (void) const { return (m_fInDamage ? true : false); }
-		bool IsLineOfFireClear (const CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL) const;
 		bool IsMarked (void) const { return m_fMarked; }
 		bool IsNamed (void) const { return m_fHasName; }
 		bool IsPartlyVisibleInBox (const CVector &vUR, const CVector &vLL)
@@ -804,7 +813,6 @@ class CSpaceObject
 		bool IsPlayerAttackJustified (void) const;
 		bool IsPlayerDocked (void) { return m_fPlayerDocked; }
 		bool IsPlayerEscortTarget (CSpaceObject *pPlayer = NULL);
-		bool IsPlayerTarget (void) const { return m_fPlayerTarget; }
 		bool IsSelected (void) const { return m_fSelected; }
 		bool IsShowingDamageBar (void) const { return m_fShowDamageBar; }
 		bool IsStargateInRange (Metric rMaxRange);
@@ -852,7 +860,6 @@ class CSpaceObject
 		void SetOverride (CDesignType *pOverride);
 
 		void SetPlayerDocked (void) { m_fPlayerDocked = true; }
-		void SetPlayerTarget (void) { m_fPlayerTarget = true; }
 		bool SetPOVLRS (void)
 			{
 			if (m_fInPOVLRS)
@@ -1160,7 +1167,6 @@ class CSpaceObject
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
 		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return CItem().AsDeviceItem(); }
 		virtual int GetPerception (void) const { return perceptNormal; }
-		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 		virtual int GetScore (void) { return 0; }
 		virtual int GetShieldLevel (void) const { return -1; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
@@ -1219,7 +1225,6 @@ class CSpaceObject
 		virtual const CDamageSource &GetDamageSource (void) const { return CDamageSource::Null(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) { return NULL; }
 		virtual CSpaceObject *GetSecondarySource (void) const { return NULL; }
-		virtual bool IsTargetableProjectile (void) const { return true; }
 
 		//	...for ships
 

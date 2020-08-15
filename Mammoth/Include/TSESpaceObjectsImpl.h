@@ -1187,6 +1187,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual Metric GetMaxSpeed (void) const override { return m_Perf.GetDriveDesc().GetMaxSpeed(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
+		virtual CTargetList GetTargetList (void) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const override;
 		virtual CDesignType *GetType (void) const override { return m_pClass; }
