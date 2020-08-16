@@ -385,6 +385,18 @@
 	<!ENTITY stOvoidAsteroidSizeB2		"0x00020185">
 	<!ENTITY stOvoidAsteroidSizeC		"0x00020186">
 	<!ENTITY stOvoidAsteroidSizeD		"0x00020187">
+
+	<!-- 01A0-01BF ORE AND RESOURCE TYPES -->
+
+	<!ENTITY itCopperOre				"0x000201A0">
+	<!ENTITY itVanadiumOre				"0x000201A1">
+	<!ENTITY itNiobiumOre				"0x000201A2">
+	<!ENTITY itCeriumOre				"0x000201A3">
+	<!ENTITY itHexaniumOre				"0x000201A4">
+	<!ENTITY itMolybdenumOre			"0x000201A5">
+	<!ENTITY itIridiumOre				"0x000201A6">
+	<!ENTITY itLonsdaleiteOre			"0x000201A7">
+	<!ENTITY itTantalumOre				"0x000201A8">
 	]>
 	
 <CoreLibrary
