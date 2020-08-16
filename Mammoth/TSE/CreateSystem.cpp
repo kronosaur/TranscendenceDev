@@ -4849,7 +4849,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 
 	if (pStation == NULL)
 		{
-		pCtx->sError = CONSTLIT("No station created.");
+		pCtx->sError = strPatternSubst(CONSTLIT("No station created (station type = %s [%08x])."), pStationType->GetNounPhrase(), pStationType->GetUNID());
 		return ERR_FAIL;
 		}
 
