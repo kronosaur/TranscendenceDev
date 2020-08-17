@@ -10,6 +10,7 @@
 #define RANDOM_TOPOLOGY_TAG					CONSTLIT("RandomTopology")
 #define ROOT_NODE_TAG						CONSTLIT("RootNode")
 #define STARGATE_TAG						CONSTLIT("Stargate")
+#define STARGATE_TABLE_TAG					CONSTLIT("StargateTable")
 #define STARGATES_TAG						CONSTLIT("Stargates")
 #define SYSTEM_DISTRIBUTION_TAG				CONSTLIT("SystemTypes")
 #define SYSTEM_TOPOLOGY_TAG					CONSTLIT("SystemTopology")
@@ -19,6 +20,7 @@
 
 #define BACKGROUND_IMAGE_ATTRIB				CONSTLIT("backgroundImage")
 #define BACKGROUND_IMAGE_SCALE_ATTRIB		CONSTLIT("backgroundImageScale")
+#define DEBUG_ATTRIB						CONSTLIT("debug")
 #define DEBUG_SHOW_ATTRIBUTES_ATTRIB		CONSTLIT("debugShowAttributes")
 #define PRIMARY_MAP_ATTRIB					CONSTLIT("displayOn")
 #define GRADIENT_RANGE_ATTRIB				CONSTLIT("gradientRange")
@@ -317,12 +319,19 @@ ALERROR CSystemMap::ExecuteCreator (STopologyCreateCtx &Ctx, CTopology &Topology
 			{
 			CXMLElement *pDirective = pCreator->GetContentElement(i);
 
+#ifdef DEBUG
+			if (pDirective->GetAttributeBool(DEBUG_ATTRIB))
+				DebugBreak();
+#endif
+
 			if (strEquals(pDirective->GetTag(), NODE_TAG))
 				{
 				if (error = Topology.AddTopologyNode(Ctx, pDirective->GetAttribute(ID_ATTRIB)))
 					return error;
 				}
-			else if (strEquals(pDirective->GetTag(), STARGATE_TAG) || strEquals(pDirective->GetTag(), STARGATES_TAG))
+			else if (strEquals(pDirective->GetTag(), STARGATE_TAG) 
+					|| strEquals(pDirective->GetTag(), STARGATES_TAG)
+					|| strEquals(pDirective->GetTag(), STARGATE_TABLE_TAG))
 				{
 				if (error = Topology.AddStargateFromXML(Ctx, pDirective))
 					return error;
