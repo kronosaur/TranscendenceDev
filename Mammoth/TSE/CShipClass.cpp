@@ -2920,6 +2920,26 @@ const CShipwreckDesc &CShipClass::GetWreckDesc (void) const
 		return m_WreckDesc;
 	}
 
+const CObjectImageArray &CShipClass::GetWreckImage (int iRotation) const
+
+//	GetWreckImage
+//
+//	Returns the image wreck for the class at the given rotation.
+
+	{
+	//	NOTE: We always use our wreck descriptor (not inherited one) because
+	//	otherwise we might get the wrong image.
+	//
+	//	LATER: We should probably cache this on the ship class instead of the
+	//	wreck image.
+
+	CObjectImageArray *pWreckImage = m_WreckDesc.GetWreckImage(this, iRotation);
+	if (pWreckImage == NULL)
+		return CObjectImageArray::Null();
+
+	return *pWreckImage;
+	}
+
 void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 
 //	InitEffects
