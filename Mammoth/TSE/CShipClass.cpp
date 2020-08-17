@@ -218,6 +218,7 @@
 #define PROPERTY_WEAPON_ITEMS					CONSTLIT("weaponItems")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
+#define PROPERTY_WRECK_TYPE_NAME				CONSTLIT("wreckTypeName")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
 #define SPECIAL_ITEM_ATTRIBUTE					CONSTLIT("itemAttribute:")
@@ -3989,6 +3990,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_TYPE))
 		return (GetWreckDesc().GetWreckType() ? ICCItemPtr(GetWreckDesc().GetWreckType()->GetUNID()) : ICCItemPtr::Nil());
+
+	else if (strEquals(sProperty, PROPERTY_WRECK_TYPE_NAME))
+		return (GetWreckDesc().GetWreckType() ? ICCItemPtr(GetWreckDesc().GetWreckType()->GetNounPhrase()) : ICCItemPtr::Nil());
 
 	//	Drive properties
 
