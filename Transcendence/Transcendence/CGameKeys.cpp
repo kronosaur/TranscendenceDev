@@ -409,7 +409,12 @@ bool CGameKeys::IsNonRepeatCommand (Keys iCommand)
 //	Returns TRUE if this command ignored repeated keys.
 
 	{
-	ASSERT(iCommand > 0 && iCommand < keyCount);
+	if (iCommand <= 0 || iCommand >= keyCount)
+		{
+		ASSERT(false);
+		return false;
+		}
+
 	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_NO_REPEAT ? true : false);
 	}
@@ -421,7 +426,12 @@ bool CGameKeys::IsStatefulCommand (Keys iCommand)
 //	Returns TRUE if this command tracks the state of a key (up or down).
 
 	{
-	ASSERT(iCommand > 0 && iCommand < keyCount);
+	if (iCommand <= 0 || iCommand >= keyCount)
+		{
+		ASSERT(false);
+		return false;
+		}
+
 	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_STATEFULL ? true : false);
 	}
@@ -433,7 +443,12 @@ bool CGameKeys::IsXYInputCommand (Keys iCommand)
 //	Returns TRUE if this command needs XY input.
 
 	{
-	ASSERT(iCommand > 0 && iCommand < keyCount);
+	if (iCommand <= 0 || iCommand >= keyCount)
+		{
+		ASSERT(false);
+		return false;
+		}
+
 	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_XY_INPUT ? true : false);
 	}

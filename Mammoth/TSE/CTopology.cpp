@@ -85,7 +85,11 @@ ALERROR CTopology::AddFragment (STopologyCreateCtx &Ctx, CTopologyDesc *pFragmen
 		}
 
 	CTopologyDesc *pRootNode = pFragTable->GetRootNodeDesc(0);
-	ASSERT(pRootNode);
+	if (!pRootNode)
+		{
+		ASSERT(false);
+		return ERR_FAIL;
+		}
 
 	//	Generate a unique prefix
 
@@ -250,7 +254,7 @@ ALERROR CTopology::AddNodeTable (STopologyCreateCtx &Ctx, CTopologyDesc *pTable,
 
 	struct SEntry
 		{
-		int iChance;
+		int iChance = 0;
 		CString sNodeID;
 		};
 
@@ -456,7 +460,12 @@ ALERROR CTopology::AddStargateRoute (const CTopologyNode::SStargateRouteDesc &De
 	{
 	ALERROR error;
 
-	ASSERT(Desc.pFromNode && Desc.pToNode);
+	if (!Desc.pFromNode || !Desc.pToNode)
+		{
+		ASSERT(false);
+		return ERR_FAIL;
+		}
+
 	CTopologyNode *pFromNode = const_cast<CTopologyNode *>(Desc.pFromNode);
 	CTopologyNode *pToNode = const_cast<CTopologyNode *>(Desc.pToNode);
 
@@ -1132,15 +1141,14 @@ bool CTopology::FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeI
 //	Returns the given topology desc (if found).
 
 	{
-	//	NOTE: iDummy can't be an optional parameter because this is the only
+	//	NOTE: retiNodeType can't be an optional parameter because this is the only
 	//	difference between the signatures and because NodeTypes is a private
 	//	enum.
 	//
 	//	I'm sure there's a cleaner way to design this API, but for now this is
 	//	what we've got.
 
-	NodeTypes iDummy;
-	return FindTopologyDesc(Ctx, sNodeID, retpNode, &iDummy);
+	return FindTopologyDesc(Ctx, sNodeID, retpNode, NULL);
 	}
 
 bool CTopology::FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType) const
@@ -1690,17 +1698,14 @@ void CTopology::ReadFromStream (SUniverseLoadCtx &Ctx)
 		}
 	}
 
-ALERROR CTopology::RunProcessors (CSystemMap *pMap, const TSortMap<int, TArray<ITopologyProcessor *>> &Processors, CTopologyNodeList &Nodes, CString *retsError)
+ALERROR CTopology::RunProcessors (CSystemMap &Map, const TSortMap<int, TArray<ITopologyProcessor *>> &Processors, CTopologyNodeList &Nodes, CString *retsError)
 
 //	RunProcessors
 //
 //	Run topology processors on topology.
 
 	{
-	ALERROR error;
-
-	ASSERT(pMap);
-	ITopologyProcessor::SProcessCtx Ctx(*this, pMap);
+	ITopologyProcessor::SProcessCtx Ctx(*this, &Map);
 
 	//	Apply any topology processors (in order) on all the newly added nodes
 
@@ -1717,9 +1722,10 @@ ALERROR CTopology::RunProcessors (CSystemMap *pMap, const TSortMap<int, TArray<I
 			//	Process
 
 			CString sError;
-			if (error = List[j]->Process(Ctx, NodeList, &sError))
+			if (ALERROR error = List[j]->Process(Ctx, NodeList, &sError))
 				{
-				*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): %s"), pMap->GetUNID(), sError);
+				if (retsError)
+					*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): %s"), Map.GetUNID(), sError);
 				return error;
 				}
 			}
@@ -1811,6 +1817,11 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 	for (i = 0; i < Processors.GetCount(); i++)
 		{
 		CSystemMap *pMap = Processors.GetKey(i);
+		if (!pMap)
+			{
+			ASSERT(false);
+			return ERR_FAIL;
+			}
 
 		//	Get the nodes for this map
 
@@ -1820,7 +1831,7 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 
 		//	Run all processors
 
-		if (error = m_Topology.RunProcessors(pMap, Processors[i], *pNodeList, retsError))
+		if (error = m_Topology.RunProcessors(*pMap, Processors[i], *pNodeList, retsError))
 			return error;
 		}
 

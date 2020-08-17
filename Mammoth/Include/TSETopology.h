@@ -132,7 +132,7 @@ class CTopologyNode
 		const CString &GetEpitaph (void) { return m_sEpitaph; }
 		const CString &GetID (void) const { return m_sID; }
 		CTopologyNode *GetGateDest (const CString &sName, CString *retsEntryPoint = NULL);
-        DWORD GetLastVisitedTime (void) const;
+		DWORD GetLastVisitedTime (void) const;
 		int GetLevel (void) const { return m_iLevel; }
 		Metric GetLinearDistanceTo (const CTopologyNode *pNode) const;
 		Metric GetLinearDistanceTo2 (const CTopologyNode *pNode) const;
@@ -473,7 +473,7 @@ class CTopology
 		bool InDebugMode (void) const;
 		ALERROR InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComplexArea *retArea, STopologyCreateCtx *pCtx = NULL, CTopologyNode **iopExit = NULL); 
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
-		ALERROR RunProcessors (CSystemMap *pMap, const TSortMap<int, TArray<ITopologyProcessor *>> &Processors, CTopologyNodeList &Nodes, CString *retsError);
+		ALERROR RunProcessors (CSystemMap &Map, const TSortMap<int, TArray<ITopologyProcessor *>> &Processors, CTopologyNodeList &Nodes, CString *retsError = NULL);
 
 	private:
 		enum NodeTypes

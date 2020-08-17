@@ -434,7 +434,7 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 	else
 		{
-        int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
+		int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
 		int iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
 
 		//	If we're not making progress, then return a hint about what to do.
@@ -446,7 +446,7 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 		//	Return adjusted damage
 
-        return iDamage;
+		return iDamage;
 		}
 	}
 
@@ -487,7 +487,7 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 
 	else
 		{
-        int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
+		int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
 		return mathAdjust(Ctx.iDamage, iDamageAdj);
 		}
 	}
@@ -587,7 +587,7 @@ void CStation::CalcDeviceBonus (void)
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 
-        CItemCtx ItemCtx(this, &Device);
+		CItemCtx ItemCtx(this, &Device);
 
 		//	Keep track of device types to see if we have duplicates
 
@@ -2305,37 +2305,37 @@ bool CStation::IsShownInGalacticMap (void) const
 //  Returns TRUE if this object should be shown on the details pane of the 
 //  galactic map.
 
-    {
-    //  Skip if we purposefully disable this
+	{
+	//  Skip if we purposefully disable this
 
-    if (!m_pType->ShowsMapDetails())
-        return false;
+	if (!m_pType->ShowsMapDetails())
+		return false;
 
-    //  If we're virtual and we've got a trading descriptor, then we should
-    //  be included. This handles the case of stations like New Victoria
-    //  Arcology, which are composed of multiple parts with a virtual center.
+	//  If we're virtual and we've got a trading descriptor, then we should
+	//  be included. This handles the case of stations like New Victoria
+	//  Arcology, which are composed of multiple parts with a virtual center.
 
-    if (IsVirtual() && m_pType->GetTradingDesc())
-        return true;
+	if (IsVirtual() && m_pType->GetTradingDesc())
+		return true;
 
-    //  We only show stations/wrecks (not worlds)
+	//  We only show stations/wrecks (not worlds)
 
-    if (GetScale() != scaleStructure && GetScale() != scaleShip)
-        return false;
+	if (GetScale() != scaleStructure && GetScale() != scaleShip)
+		return false;
 
-    //  Only if we would show it on the system map
+	//  Only if we would show it on the system map
 	//
 	//	NOTE: We only care about what the type specifies, not what the object
 	//	overrides, because sometimes the object just hides the map label to keep
 	//	the map clean (not because it is not an interesting station).
 
-    if (!m_pType->ShowsMapIcon() || m_pType->SuppressMapLabel())
-        return false;
+	if (!m_pType->ShowsMapIcon() || m_pType->SuppressMapLabel())
+		return false;
 
-    //  Show it
+	//  Show it
 
-    return true;
-    }
+	return true;
+	}
 
 void CStation::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
 
@@ -2556,19 +2556,19 @@ EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
 
 	{
 	//	If we don't have ejecta, then decrease damage to 0.
-    //
-    //  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
-    //  because even level 0 has some WMD. But for this case we only case
-    //  about "real" WMD.
+	//
+	//  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
+	//  because even level 0 has some WMD. But for this case we only case
+	//  about "real" WMD.
 
-    if (m_pType->GetEjectaAdj() == 0
-            || Ctx.Damage.GetMassDestructionLevel() == 0)
-        Ctx.iDamage = 0;
+	if (m_pType->GetEjectaAdj() == 0
+			|| Ctx.Damage.GetMassDestructionLevel() == 0)
+		Ctx.iDamage = 0;
 
-    //	Otherwise, adjust for WMD
+	//	Otherwise, adjust for WMD
 
-    else
-        Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+	else
+		Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 
 	//	Hit effect
 
@@ -3179,7 +3179,8 @@ void CStation::OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrde
 //	the attacker.
 
 	{
-	ASSERT(pOrderGiver && pOrderGiver->CanAttack());
+	if (!pOrderGiver || !pOrderGiver->CanAttack())
+		throw CException(ERR_FAIL);
 
 	//	Warn the attacker
 
@@ -3320,7 +3321,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 	else
 		Image.PaintImage(Dest, x, y, iTick, iVariant);
 
-    //  Paint satellites in front of the station.
+	//  Paint satellites in front of the station.
 
 	PaintSatellites(Dest, x, y, (Ctx.fShowSatellites ? CPaintOrder::none : CPaintOrder::bringToFront), Ctx);
 
@@ -3584,10 +3585,10 @@ void CStation::OnPlayerObj (CSpaceObject *pPlayer)
 //	Player has entered the system
 
 	{
-    int i;
+	int i;
 
 	//	If this is a beacon, scan all stations in range. We scan here because
-    //  we don't want to scan distant systems at game creation.
+	//  we don't want to scan distant systems at game creation.
 
 	if (m_pType->IsBeacon())
 		{
@@ -3607,7 +3608,7 @@ void CStation::OnPlayerObj (CSpaceObject *pPlayer)
 			}
 		}
 
-    //  Fire event
+	//  Fire event
 
 	FireOnPlayerEnteredSystem(pPlayer);
 	}
@@ -4235,7 +4236,7 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	{
 	DEBUG_TRY
 
-    bool bCalcBounds = false;
+	bool bCalcBounds = false;
 	bool bCalcDeviceBonus = false;
 	int iTick = GetSystem()->GetTick() + GetDestiny();
 
@@ -4310,8 +4311,8 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Update as necessary
 
-    if (bCalcDeviceBonus)
-        CalcDeviceBonus();
+	if (bCalcDeviceBonus)
+		CalcDeviceBonus();
 
 	if (bCalcBounds)
 		CalcBounds();
@@ -4803,16 +4804,16 @@ void CStation::PaintSatellites (CG32bitImage &Dest, int x, int y, DWORD dwPaintO
 	bool bOldInPaintSubordinate = Ctx.bInPaintSubordinate;
 	Ctx.bInPaintSubordinate = true;
 
-    //  Loop over all our subordinates and paint any segments.
+	//  Loop over all our subordinates and paint any segments.
 
-    for (int i = 0; i < m_Subordinates.GetCount(); i++)
-        {
-        CSpaceObject *pObj = m_Subordinates.GetObj(i);
+	for (int i = 0; i < m_Subordinates.GetCount(); i++)
+		{
+		CSpaceObject *pObj = m_Subordinates.GetObj(i);
 
 		//	If not a satellite, then ignore.
 
 		CPaintOrder::Types iPaintOrder;
-        if (!pObj->IsSatelliteSegmentOf(*this, &iPaintOrder))
+		if (!pObj->IsSatelliteSegmentOf(*this, &iPaintOrder))
 			continue;
 
 		//	If not the right paint order, then skip.
@@ -4831,7 +4832,7 @@ void CStation::PaintSatellites (CG32bitImage &Dest, int x, int y, DWORD dwPaintO
 			Ctx.pObj = pObj;
 			pObj->Paint(Dest, xObj, yObj, Ctx);
 			}
-        }
+		}
 
 	Ctx.pObj = pOldObj;
 	Ctx.bInPaintSubordinate = bOldInPaintSubordinate;

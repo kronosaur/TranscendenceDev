@@ -440,14 +440,14 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Scale information
 
-    m_rLightYearsPerPixel = pDesc->GetAttributeDoubleBounded(LIGHT_YEARS_PER_PIXEL_ATTRIB, 0.0, -1.0, 0.0);
+	m_rLightYearsPerPixel = pDesc->GetAttributeDoubleBounded(LIGHT_YEARS_PER_PIXEL_ATTRIB, 0.0, -1.0, 0.0);
 	m_iInitialScale = pDesc->GetAttributeIntegerBounded(INITIAL_SCALE_ATTRIB, 10, 1000, 100);
 	m_iMaxScale = pDesc->GetAttributeIntegerBounded(MAX_SCALE_ATTRIB, 100, 1000, 200);
 	m_iMinScale = pDesc->GetAttributeIntegerBounded(MIN_SCALE_ATTRIB, 10, 100, 50);
 
-    //  Other display information
+	//  Other display information
 
-    m_rgbStargateLines = ::LoadRGBColor(pDesc->GetAttribute(STARGATE_LINE_COLOR_ATTRIB), RGB_STARGATE_LINE_DEFAULT);
+	m_rgbStargateLines = ::LoadRGBColor(pDesc->GetAttribute(STARGATE_LINE_COLOR_ATTRIB), RGB_STARGATE_LINE_DEFAULT);
 
 	//	Keep track of root nodes
 
