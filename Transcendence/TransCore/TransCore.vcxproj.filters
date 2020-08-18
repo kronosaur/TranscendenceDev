@@ -1008,5 +1008,8 @@
     <Xml Include="CommonwealthMiningMission05.xml">
       <Filter>Human Space Library\Commonwealth Mining</Filter>
     </Xml>
+    <Xml Include="Cryovolcanic.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
