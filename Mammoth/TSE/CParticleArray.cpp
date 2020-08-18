@@ -1756,8 +1756,6 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 //	Update particle collisions, including damage
 
 	{
-	int i;
-
 	//	We need real coordinates for this
 
 	UseRealCoords();
@@ -1781,7 +1779,7 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 
 	//	Loop over all objects in the system
 
-	for (i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
+	for (int i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = Ctx.pSystem->GetObject(i);
 

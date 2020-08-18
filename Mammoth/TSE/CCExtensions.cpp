@@ -8109,11 +8109,16 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else
 					{
 					CVector vPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
-					Metric rRadius;
-					int iDirection = VectorToPolar(vPos - pObj->GetPos(), &rRadius);
+
+					//	Reverse engineer to a perspective angle and radius
+
+					C3DObjectPos Pos3D;
+					Pos3D.InitFromXY(pObj->GetImageScale(), vPos - pObj->GetPos());
+
+					int iDirection = Pos3D.GetAngle();
 					int iRotationOrigin = (pField->RotatesWithSource(*pObj) ? pObj->GetRotation() : 0);
 					iPosAngle = AngleMod(iDirection - iRotationOrigin);
-					iPosRadius = (int)(rRadius / g_KlicksPerPixel);
+					iPosRadius = Pos3D.GetRadius();
 					}
 
 				//	Rotation

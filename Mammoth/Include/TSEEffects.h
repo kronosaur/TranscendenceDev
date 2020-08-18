@@ -7,68 +7,49 @@
 
 struct SEffectHitDesc
 	{
-	CSpaceObject *pObjHit;						//	Object that was hit by the effect
+	CSpaceObject *pObjHit = NULL;				//	Object that was hit by the effect
 	CVector vHitPos;							//	Position hit
-	int iHitStrength;							//	Number of particles hitting (or 0-100 hit strength)
+	int iHitStrength = 0;						//	Number of particles hitting (or 0-100 hit strength)
 	};
 
 typedef TArray<SEffectHitDesc> CEffectHitResults;
 
 struct SEffectMoveCtx
 	{
-	SEffectMoveCtx (void) :
-			pObj(NULL),
-			bUseOrigin(false)
-		{ }
-
-	CSpaceObject *pObj;							//	The object that owns the effect
+	CSpaceObject *pObj = NULL;					//	The object that owns the effect
 	CVector vOldPos;							//	Old position of object
 
-	bool bUseOrigin;							//	If TRUE, vOrigin is valid.
+	bool bUseOrigin = false;					//	If TRUE, vOrigin is valid.
 	CVector vOrigin;							//	Effect origin
 	};
 
 struct SEffectUpdateCtx
 	{
-	SEffectUpdateCtx (void) : 
-			pSystem(NULL),
-			pObj(NULL),
-			iTick(0),
-			iRotation(0),
-			bFade(false),
-
-			pDamageDesc(NULL),
-			pEnhancements(NULL),
-			iCause(killedByDamage),
-			pTarget(NULL),
-
-			iTotalParticleCount(1),
-
-			bDestroy(false)
-		{ }
-
 	//	Object context
-	CSystem *pSystem;							//	Current system
-	CSpaceObject *pObj;							//	The object that the effect is part of
-	int iTick;									//	Effect tick
-	int iRotation;								//	Rotation
+	CSystem *pSystem = NULL;					//	Current system
+	CSpaceObject *pObj = NULL;					//	The object that the effect is part of
+	int iTick = 0;								//	Effect tick
+	int iRotation = 0;							//	Rotation
 	CVector vEmitPos;							//	Emittion pos (if not center of effect)
 												//		Relative to center of effect.
-	bool bFade;									//	Effect fading
+	bool bFade = false;							//	Effect fading
+
+	bool bUseOrigin = false;					//	If TRUE, vOrigin is valid.
+	CVector vOrigin;							//	Effect origin
 
 	//	Damage context
-	CWeaponFireDesc *pDamageDesc;				//	Damage done by particles (may be NULL)
-	CItemEnhancementStack *pEnhancements;		//	Damage enhancements (may be NULL)
-	DestructionTypes iCause;					//	Cause of damage
+	CWeaponFireDesc *pDamageDesc = NULL;		//	Damage done by particles (may be NULL)
+	CItemEnhancementStack *pEnhancements = NULL;	//	Damage enhancements (may be NULL)
+	DestructionTypes iCause = killedByDamage;	//	Cause of damage
 	CDamageSource Attacker;						//	Attacker
-	CSpaceObject *pTarget;						//	Target
+	CSpaceObject *pTarget = NULL;				//	Target
 
 	//	Particle context
-	int iTotalParticleCount;					//	Total particles
+	int iTotalParticleCount = 1;				//	Total particles
 
 	//	Outputs
 	CEffectHitResults Hits;						//	Filled in with the objects that hit
-	bool bDestroy;								//	Destroy the effect
+	bool bDestroy = false;						//	Destroy the effect
 	};
 
 class CEffectParamDesc
