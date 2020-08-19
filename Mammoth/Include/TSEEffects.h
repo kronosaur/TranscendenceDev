@@ -95,12 +95,12 @@ class CEffectParamDesc
 			{ CleanUp(); Copy(Src); return *this; }
 
 		ICCItemPtr AsItem (void) const;
-		inline ALERROR Bind (SDesignLoadCtx &Ctx) { if (m_iType == typeImage) return m_pImage->OnDesignLoadComplete(Ctx); return NOERROR; }
+		ALERROR Bind (SDesignLoadCtx &Ctx) { if (m_iType == typeImage) return m_pImage->OnDesignLoadComplete(Ctx); return NOERROR; }
 		CGDraw::EBlendModes EvalBlendMode (CGDraw::EBlendModes iDefault = CGDraw::blendNormal) const;
 		bool EvalBool (void) const;
 		CG32bitPixel EvalColor (CG32bitPixel rgbDefault = CG32bitPixel::Null()) const;
 		DiceRange EvalDiceRange (int iDefaultCount, int iDefaultSides, int iDefaultBonus) const;
-		inline DiceRange EvalDiceRange (int iDefault = -1) const { return EvalDiceRange(0, 0, iDefault); }
+		DiceRange EvalDiceRange (int iDefault = -1) const { return EvalDiceRange(0, 0, iDefault); }
 		int EvalIdentifier (LPCSTR *pIDMap, int iMax, int iDefault = 0) const;
 		const CObjectImageArray &EvalImage (void) const;
 		int EvalInteger (void) const;
@@ -108,15 +108,15 @@ class CEffectParamDesc
 		BYTE EvalOpacity (BYTE byDefault = 255) const;
 		CString EvalString (void) const;
 		CVector EvalVector (void) const;
-		inline EDataTypes GetType (void) const { return m_iType; }
-		inline void InitBool (bool bValue) { CleanUp(); m_dwData = (bValue ? 1 : 0); m_iType = typeBoolConstant; }
-		inline void InitColor (CG32bitPixel rgbValue) { CleanUp(); m_dwData = rgbValue.AsDWORD(); m_iType = typeColorConstant; }
-		inline void InitDiceRange (const DiceRange &Value) { CleanUp(); m_DiceRange = Value; m_iType = typeIntegerDiceRange; }
-		inline void InitImage (const CObjectImageArray &Value) { CleanUp(); m_pImage = new CObjectImageArray(Value); m_iType = typeImage; }
-		inline void InitInteger (int iValue) { CleanUp(); m_dwData = iValue; m_iType = typeIntegerConstant; }
-		inline void InitNull (void) { CleanUp(); }
-		inline void InitString (const CString &sValue) { CleanUp(); m_sData = sValue; m_iType = typeStringConstant; }
-		inline void InitVector (const CVector &vValue) { CleanUp(); m_pVector = new CVector(vValue); m_iType = typeVectorConstant; }
+		EDataTypes GetType (void) const { return m_iType; }
+		void InitBool (bool bValue) { CleanUp(); m_dwData = (bValue ? 1 : 0); m_iType = typeBoolConstant; }
+		void InitColor (CG32bitPixel rgbValue) { CleanUp(); m_dwData = rgbValue.AsDWORD(); m_iType = typeColorConstant; }
+		void InitDiceRange (const DiceRange &Value) { CleanUp(); m_DiceRange = Value; m_iType = typeIntegerDiceRange; }
+		void InitImage (const CObjectImageArray &Value) { CleanUp(); m_pImage = new CObjectImageArray(Value); m_iType = typeImage; }
+		void InitInteger (int iValue) { CleanUp(); m_dwData = iValue; m_iType = typeIntegerConstant; }
+		void InitNull (void) { CleanUp(); }
+		void InitString (const CString &sValue) { CleanUp(); m_sData = sValue; m_iType = typeStringConstant; }
+		void InitVector (const CVector &vValue) { CleanUp(); m_pVector = new CVector(vValue); m_iType = typeVectorConstant; }
 		ALERROR InitBlendModeFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		ALERROR InitColorFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		ALERROR InitIdentifierFromXML (SDesignLoadCtx &Ctx, const CString &sValue, LPCSTR *pIDMap);
@@ -124,8 +124,8 @@ class CEffectParamDesc
 		ALERROR InitIntegerFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		ALERROR InitStringFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		bool IsConstant (void);
-		inline bool IsNull (void) const { return (m_iType == typeNull); }
-		inline void MarkImage (void) { if (m_iType == typeImage) m_pImage->MarkImage(); }
+		bool IsNull (void) const { return (m_iType == typeNull); }
+		void MarkImage (void) { if (m_iType == typeImage) m_pImage->MarkImage(); }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
@@ -152,8 +152,8 @@ class CEffectParamDesc
 class CEffectParamSet
 	{
 	public:
-		inline void AddParam (const CString &sParam, const CEffectParamDesc &Value) { m_Params.SetAt(sParam, Value); }
-		inline bool FindParam (const CString &sParam, CEffectParamDesc *retValue = NULL) const
+		void AddParam (const CString &sParam, const CEffectParamDesc &Value) { m_Params.SetAt(sParam, Value); }
+		bool FindParam (const CString &sParam, CEffectParamDesc *retValue = NULL) const
 			{
 			const CEffectParamDesc *pValue = m_Params.GetAt(sParam);
 			if (pValue == NULL)
@@ -165,7 +165,7 @@ class CEffectParamSet
 			return true;
 			}
 
-		inline const CEffectParamDesc *GetParam (const CString &sParam) const {	return m_Params.GetAt(sParam); }
+		const CEffectParamDesc *GetParam (const CString &sParam) const {	return m_Params.GetAt(sParam); }
 
 	private:
 		TSortMap<CString, CEffectParamDesc> m_Params;
@@ -245,12 +245,12 @@ class IEffectPainter
 
 		void GetBounds (RECT *retRect);
 		void GetBounds (const CVector &vPos, CVector *retvUR, CVector *retvLL);
-		inline bool IsSingleton (void) const { return m_bSingleton; }
+		bool IsSingleton (void) const { return m_bSingleton; }
 		inline void PlaySound (CSpaceObject *pSource);
-		inline void ReadFromStream (SLoadCtx &Ctx) { OnReadFromStream(Ctx); }
+		void ReadFromStream (SLoadCtx &Ctx) { OnReadFromStream(Ctx); }
 		static CString ReadUNID (SLoadCtx &Ctx);
-		inline void SetNoSound (bool bNoSound = true) { m_bNoSound = bNoSound; }
-		inline bool SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+		void SetNoSound (bool bNoSound = true) { m_bNoSound = bNoSound; }
+		bool SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 			{
 			//	If we don't have a value, see if there is a default.
 
@@ -266,7 +266,7 @@ class IEffectPainter
 
 		bool SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue);
 		void SetParamInteger (const CString &sParam, int iValue);
-		inline void SetSingleton (bool bSingleton = true) { m_bSingleton = bSingleton; }
+		void SetSingleton (bool bSingleton = true) { m_bSingleton = bSingleton; }
 		static ALERROR ValidateClass (SLoadCtx &Ctx, const CString &sOriginalClass);
 		void WriteToStream (IWriteStream *pStream);
 
@@ -326,14 +326,10 @@ class IEffectPainter
 class CEffectPainterRef
 	{
 	public:
-		CEffectPainterRef (void) :
-				m_pPainter(NULL)
-			{ }
-
 		~CEffectPainterRef (void) { Delete(); }
 
-		inline operator IEffectPainter *() const { return m_pPainter; }
-		inline IEffectPainter * operator->() const { return m_pPainter; }
+		operator IEffectPainter *() const { return m_pPainter; }
+		IEffectPainter * operator->() const { return m_pPainter; }
 
 		void Delete (void)
 			{
@@ -343,7 +339,7 @@ class CEffectPainterRef
 			m_pPainter = NULL;
 			}
 
-		inline bool IsEmpty (void) const { return (m_pPainter == NULL); }
+		bool IsEmpty (void) const { return (m_pPainter == NULL); }
 
 		void Set (IEffectPainter *pPainter)
 			{
@@ -356,8 +352,8 @@ class CEffectPainterRef
 			}
 
 	private:
-		IEffectPainter *m_pPainter;
-		bool m_bDelete;
+		IEffectPainter *m_pPainter = NULL;
+		bool m_bDelete = false;
 	};
 
 class CObjectEffectDesc
@@ -383,9 +379,9 @@ class CObjectEffectDesc
 			};
 
 		ALERROR Bind (SDesignLoadCtx &Ctx, const CObjectImageArray &Image);
-		inline IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx, int iIndex) const { return m_Effects[iIndex].pEffect.CreatePainter(Ctx); }
+		IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx, int iIndex) const { return m_Effects[iIndex].pEffect.CreatePainter(Ctx); }
 		CEffectCreator *FindEffectCreator (const CString &sUNID) const;
-		inline int GetEffectCount (void) const { return m_Effects.GetCount(); }
+		int GetEffectCount (void) const { return m_Effects.GetCount(); }
 		int GetEffectCount (DWORD dwEffects) const;
 		const SEffectDesc &GetEffectDesc (int iIndex) const { return m_Effects[iIndex]; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc);
