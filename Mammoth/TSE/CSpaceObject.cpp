@@ -7578,7 +7578,7 @@ void CSpaceObject::UpdateEffects (void)
 	SEffectMoveCtx MoveCtx;
 	MoveCtx.pObj = this;
 
-	SEffectUpdateCtx UpdateCtx;
+	SEffectUpdateCtx UpdateCtx(GetUniverse());
 	UpdateCtx.pSystem = GetSystem();
 	UpdateCtx.pObj = this;
 

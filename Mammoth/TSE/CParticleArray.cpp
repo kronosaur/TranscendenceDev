@@ -1756,6 +1756,8 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 //	Update particle collisions, including damage
 
 	{
+	CUsePerformanceCounter Counter(Ctx.Universe, CONSTLIT("update.particleCollision"));
+
 	//	We need real coordinates for this
 
 	UseRealCoords();

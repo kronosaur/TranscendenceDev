@@ -5,6 +5,8 @@
 
 #pragma once
 
+class CUniverse;
+
 struct SEffectHitDesc
 	{
 	CSpaceObject *pObjHit = NULL;				//	Object that was hit by the effect
@@ -25,6 +27,12 @@ struct SEffectMoveCtx
 
 struct SEffectUpdateCtx
 	{
+	SEffectUpdateCtx (CUniverse &UniverseArg) :
+			Universe(UniverseArg)
+		{ }
+
+	CUniverse &Universe;
+
 	//	Object context
 	CSystem *pSystem = NULL;					//	Current system
 	CSpaceObject *pObj = NULL;					//	The object that the effect is part of
@@ -238,7 +246,6 @@ class IEffectPainter
 		void GetBounds (RECT *retRect);
 		void GetBounds (const CVector &vPos, CVector *retvUR, CVector *retvLL);
 		inline bool IsSingleton (void) const { return m_bSingleton; }
-		inline void OnUpdate (void) { SEffectUpdateCtx Ctx; OnUpdate(Ctx); }
 		inline void PlaySound (CSpaceObject *pSource);
 		inline void ReadFromStream (SLoadCtx &Ctx) { OnReadFromStream(Ctx); }
 		static CString ReadUNID (SLoadCtx &Ctx);

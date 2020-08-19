@@ -1582,7 +1582,7 @@ void COverlay::Update (CSpaceObject *pSource, int iScale, int iRotation, bool *r
 
 	//	Update the painters
 
-	SEffectUpdateCtx UpdateCtx;
+	SEffectUpdateCtx UpdateCtx(pSource->GetUniverse());
 	UpdateCtx.pSystem = pSource->GetSystem();
 	UpdateCtx.pObj = pSource;
 	UpdateCtx.iTick = m_iTick;

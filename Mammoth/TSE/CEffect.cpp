@@ -219,7 +219,7 @@ void CEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (m_pPainter)
 		{
-		SEffectUpdateCtx Ctx;
+		SEffectUpdateCtx Ctx(GetUniverse());
 		Ctx.pSystem = GetSystem();
 		Ctx.pObj = this;
 		Ctx.iTick = m_iTick;
