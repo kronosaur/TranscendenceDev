@@ -730,7 +730,8 @@ Metric CStationType::CalcTreasureValue (int iLevel) const
 	if (m_pItems)
 		{
 		SItemAddCtx AddItemCtx(GetUniverse());
-		rTotal += m_pItems->GetAverageValue(AddItemCtx, iLevel);
+		AddItemCtx.iLevel = iLevel;
+		rTotal += m_pItems->GetAverageValue(AddItemCtx);
 		}
 
 	if (m_pSatellitesDesc)
@@ -2077,14 +2078,14 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		}
 	else if (strEquals(sProperty, PROPERTY_SYSTEM_CRITERIA))
 		{
-		const CTopologyNode::SCriteria *pSystemCriteria;
+		const CTopologyNodeCriteria *pSystemCriteria;
 		if (!GetEncounterDesc().HasSystemCriteria(&pSystemCriteria))
 			return ICCItemPtr(ICCItem::Nil);
 
-		if (pSystemCriteria->AttribCriteria.IsEmpty())
+		if (pSystemCriteria->GetAttributeCriteria().IsEmpty())
 			return ICCItemPtr(ICCItem::Nil);
 
-		return ICCItemPtr(pSystemCriteria->AttribCriteria.AsString());
+		return ICCItemPtr(pSystemCriteria->GetAttributeCriteria().AsString());
 		}
 
 	else if (strEquals(sProperty, PROPERTY_TREASURE_DESIRED_VALUE))

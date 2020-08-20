@@ -49,7 +49,8 @@
 const int DEFAULT_MIN_SEPARATION =				40;
 
 CTopology::CTopology (CUniverse &Universe) :
-		m_Universe(Universe)
+		m_Universe(Universe),
+		m_NullNode(*this, CONSTLIT("(none)"), 0, NULL, 1)
 
 //	CTopology constructor
 

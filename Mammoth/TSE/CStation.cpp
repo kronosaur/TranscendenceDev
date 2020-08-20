@@ -42,6 +42,7 @@
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
 #define PROPERTY_IMAGE_SELECTOR					CONSTLIT("imageSelector")
 #define PROPERTY_IMAGE_VARIANT					CONSTLIT("imageVariant")
+#define PROPERTY_ITEM_TABLE						CONSTLIT("itemTable")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_MAX_STRUCTURAL_HP				CONSTLIT("maxStructuralHP")
 #define PROPERTY_NO_FRIENDLY_FIRE				CONSTLIT("noFriendlyFire")
@@ -1997,6 +1998,31 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 			return CC.CreateString(sVariantID);
 		else
 			return CC.CreateInteger(iVariantID);
+		}
+	else if (strEquals(sName, PROPERTY_ITEM_TABLE))
+		{
+		IItemGenerator *pTable = m_pType->GetRandomItemTable();
+		if (pTable == NULL)
+			return CC.CreateNil();
+
+		SItemAddCtx Ctx(GetUniverse());
+		Ctx.pSystem = GetSystem();
+		Ctx.vPos = GetPos();
+		Ctx.iLevel = (Ctx.pSystem ? Ctx.pSystem->GetLevel() : 1);
+
+		CItemTypeProbabilityTable Table = pTable->GetProbabilityTable(Ctx);
+		ICCItemPtr pResult(ICCItem::List);
+		for (int i = 0; i < Table.GetCount(); i++)
+			{
+			ICCItemPtr pEntry(ICCItem::SymbolTable);
+			pEntry->SetIntegerAt(CONSTLIT("itemType"), Table.GetType(i)->GetUNID());
+			pEntry->SetStringAt(CONSTLIT("itemName"), Table.GetType(i)->GetNounPhrase());
+			pEntry->SetIntegerAt(CONSTLIT("chance"), mathRound(100.0 * Table.GetProbability(i)));
+
+			pResult->Append(pEntry);
+			}
+
+		return pResult->Reference();
 		}
 
 	else if (strEquals(sName, PROPERTY_NO_FRIENDLY_FIRE))

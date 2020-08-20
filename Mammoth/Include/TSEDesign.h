@@ -19,6 +19,7 @@ class CGameStats;
 class CGenericType;
 class CItem;
 class CItemCtx;
+class CItemEncounterDefinitions;
 class CItemEnhancementStack;
 class CObjectImageArray;
 class COrbit;
@@ -328,6 +329,7 @@ class CDesignType
 		ICCItemPtr GetGlobalData (const CString &sAttrib) const;
 		CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
 		DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
+		const CItemEncounterDefinitions &GetItemEncounterDefinitions (void) const { return (m_pExtra ? m_pExtra->ItemEncounterDefinitions : CItemEncounterDefinitions::Null); }
 		const CLanguageDataBlock &GetLanguageBlock (void) const;
 		CXMLElement *GetLocalScreens (void) const;
 		CString GetMapDescription (const SMapDescriptionCtx &Ctx) const;
@@ -446,6 +448,7 @@ class CDesignType
 			CXMLElement *pLocalScreens = NULL;			//	Local dock screen
 			CArmorMassDefinitions ArmorDefinitions;		//	Armor mass definitions
 			CDisplayAttributeDefinitions DisplayAttribs;	//	Display attribute definitions
+			CItemEncounterDefinitions ItemEncounterDefinitions;	//	Item encounter definitions
 
 			SEventHandlerDesc EventsCache[evtCount];	//	Cached events
 			};
@@ -775,9 +778,6 @@ class CGenericType : public CDesignType
 	};
 
 //	Topology Descriptors -------------------------------------------------------
-//
-//	Defines CTopologyNode::SCriteria, which is needed by station encounter
-//	definitions.
 
 #include "TSETrade.h"
 #include "TSETopology.h"
@@ -1406,6 +1406,7 @@ class CDesignCollection
 		CExtension *GetExtension (int iIndex) const { return m_BoundExtensions[iIndex]; }
 		int GetExtensionCount (void) const { return m_BoundExtensions.GetCount(); }
 		CG32bitImage *GetImage (DWORD dwUNID, DWORD dwFlags = 0);
+		const CItemEncounterDefinitions &GetItemEncounterDefinitions (void) const { return m_ItemEncounterDefinitions; }
 		CString GetStartingNodeID (void);
 		void GetStats (SStats &Result) const;
 		CTopologyDescTable *GetTopologyDesc (void) const { return m_pTopology; }
@@ -1459,6 +1460,7 @@ class CDesignCollection
 		TSortMap<CString, const CEconomyType *> m_EconomyIndex;
 		CArmorMassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
+		CItemEncounterDefinitions m_ItemEncounterDefinitions;
 		CGlobalEventCache *m_EventsCache[evtCount];
 		TSortMap<CString, TArray<CDesignType *>> m_PropertyCache;
 		CAdventureDesc m_EmptyAdventure;

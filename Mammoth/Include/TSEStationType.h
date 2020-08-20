@@ -153,7 +153,7 @@ class CStationEncounterDesc
 		int GetMaxAppearing (void) const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
 		int GetNumberAppearing (void) const { return (m_bNumberAppearing ? m_NumberAppearing.Roll() : -1); }
 		bool HasAutoLevelFrequency (void) const { return m_bAutoLevelFrequency; }
-		bool HasSystemCriteria (const CTopologyNode::SCriteria **retpCriteria = NULL) const 
+		bool HasSystemCriteria (const CTopologyNodeCriteria **retpCriteria = NULL) const 
 			{
 			if (m_bSystemCriteria) 
 				{
@@ -171,7 +171,7 @@ class CStationEncounterDesc
 
 	private:
 		bool m_bSystemCriteria = false;				//	If TRUE we have system criteria
-		CTopologyNode::SCriteria m_SystemCriteria;	//	System criteria
+		CTopologyNodeCriteria m_SystemCriteria;		//	System criteria
 
 		CTopologyAttributeCriteria m_DistanceCriteria;	//	Criteria for nodes for distance calc
 		CString m_sDistanceFrequency;				//	Frequency distribution by distance from criteria

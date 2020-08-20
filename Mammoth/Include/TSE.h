@@ -161,6 +161,7 @@ extern CUniverse *g_pUniverse;
 #include "TSEPropertyHandler.h"
 #include "TSELanguage.h"
 #include "TSEDesignDefs.h"
+#include "TSETopologyDefs.h"
 #include "TSEItemDefs.h"
 #include "TSEResourceDb.h"
 #include "TSEDesign.h"

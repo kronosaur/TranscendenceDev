@@ -58,12 +58,12 @@ class ITopologyProcessor
 		virtual void OnPaint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale) const { }
 		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) { return NOERROR; }
 
-		CTopologyNodeList &FilterNodes (CTopology &Topology, CTopologyNode::SCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered);
+		CTopologyNodeList &FilterNodes (CTopology &Topology, CTopologyNodeCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered);
 		ALERROR InitBaseItemXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void RestoreMarks (CTopology &Topology, TArray<bool> &Saved);
 		void SaveAndMarkNodes (CTopology &Topology, CTopologyNodeList &NodeList, TArray<bool> *retSaved);
 
-		CTopologyNode::SCriteria m_Criteria;
+		CTopologyNodeCriteria m_Criteria;
 		EPhase m_iPhase = phaseDefault;
 	};
 

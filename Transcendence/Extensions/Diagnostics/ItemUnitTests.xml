@@ -225,6 +225,8 @@
 						{	test:'(itm@ &itLaserCannon; 'fireArc)					result:Nil	}
 						{	test:'(itm@ &itLaserCannon; 'fireDelay)				result:5	}
 						{	test:'(itm@ &itLaserCannon; 'fireRate)				result:200	}
+						{	test:'(itm@ &itLaserCannon; 'frequency)				result:'common	}
+						{	test:'(itm@ &itLaserCannon; 'frequencyRate)			result:20	}
 						{	test:'(itm@ &itLaserCannon; 'hp)						result:0	}
 						{	test:'(itm@ &itLaserCannon; 'interaction)				result:0	}
 						{	test:'(itm@ &itLaserCannon; 'lifetime)				result:30	}
@@ -289,6 +291,8 @@
 						{	test:'(itm@ &itTestWeaponRelativistic; 'range)		result:60	}
 						{	test:'(itm@ &itTestWeaponRelativistic; 'speed)		result:1000	}
 
+						{	test:'(itm@ &itSmartCannon; 'frequency)					result:'uncommon	}
+						{	test:'(itm@ &itSmartCannon; 'frequencyRate)				result:10	}
 						{	test:'(itm@ &itSmartCannon; 'hp)						result:6	}
 						{	test:'(itm@ &itSmartCannon; 'interaction)				result:50	}
 						{	test:'(itm@ &itSmartCannon; 'lifetime)				result:60	}
@@ -423,6 +427,23 @@
 						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.5")	result:"kinetic:1d12; repel:10;"	}
 						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.75")	result:"kinetic:1d12; repel:5;"	}
 						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:1.0")	result:"kinetic:0;"	}
+
+						;	Item Frequency -------------------------------------
+
+						{	test:'(itm@ &itTestRareInNewBeyond1; 'frequency)		result:'common	}
+						{	test:'(itm@ &itTestRareInNewBeyond1; 'frequencyRate)	result:20	}
+						{	test:'(sysGetItemFrequency 'SE &itTestRareInNewBeyond1;)
+																					result:4	}
+						{	test:'(sysGetItemFrequency 'C9 &itTestRareInNewBeyond1;)
+																					result:20	}
+
+						{	test:'(itm@ &itTestRareInNewBeyond2; 'frequency)		result:'uncommon	}
+						{	test:'(itm@ &itTestRareInNewBeyond2; 'frequencyRate)	result:10	}
+						{	test:'(sysGetItemFrequency 'SE &itTestRareInNewBeyond2;)
+																					result:2	}
+						{	test:'(sysGetItemFrequency 'C9 &itTestRareInNewBeyond2;)
+																					result:10	}
+
 						))
 
 					;	Unit Tests on Armor Damage -----------------------------

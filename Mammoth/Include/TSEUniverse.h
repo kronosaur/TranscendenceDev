@@ -400,8 +400,8 @@ class CUniverse
 		CTopologyNode *GetFirstTopologyNode (void);
 		const CG16bitFont &GetFont (const CString &sFont) const { return m_pHost->GetFont(sFont); }
 		CFractalTextureLibrary &GetFractalTextureLibrary (void) { return m_FractalTextureLibrary; }
-        CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
-        const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
+		CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
+		const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
 		IHost *GetHost (void) const { return m_pHost; }
 		EUpdateSpeeds GetLastUpdateSpeed (void) const { return m_iLastUpdateSpeed; }
 		CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }

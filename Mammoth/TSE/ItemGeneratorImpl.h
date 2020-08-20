@@ -43,7 +43,7 @@ class CGroupOfGenerators : public IItemGenerator
 		virtual ~CGroupOfGenerators (void) override;
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
+		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx) override;
 		virtual CCurrencyAndValue GetDesiredValue (SItemAddCtx &Ctx, int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const override;
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pItem; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
@@ -81,7 +81,7 @@ class CLevelTableOfItemGenerators : public IItemGenerator
 		virtual ~CLevelTableOfItemGenerators (void) override;
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
+		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx) override;
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pEntry; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
@@ -115,7 +115,7 @@ class CLocationCriteriaTableOfItemGenerators : public IItemGenerator
 		virtual ~CLocationCriteriaTableOfItemGenerators (void) override;
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
+		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx) override;
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pEntry; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
@@ -148,7 +148,7 @@ class CLookup : public IItemGenerator
 
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override { return m_pTable->GetAverageValue(Ctx, iLevel); }
+		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx) override { return m_pTable->GetAverageValue(Ctx); }
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_pTable->GetGenerator(); }
 		virtual int GetGeneratorCount (void) override { return ((m_pTable && m_pTable->GetGenerator()) ? 1 : 0); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
@@ -167,7 +167,6 @@ class CNullItem : public IItemGenerator
 class CRandomItems : public IItemGenerator
 	{
 	public:
-		CRandomItems (void) : m_Table(NULL) { }
 		static ALERROR Create (CUniverse &Universe,
 							   const CItemCriteria &Crit, 
 							   const CString &sLevelFrequency,
@@ -176,9 +175,9 @@ class CRandomItems : public IItemGenerator
 		virtual ~CRandomItems (void) override;
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
+		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx) override;
 		virtual CItemType *GetItemType (int iIndex) override { return m_Table[iIndex].pType; }
-		virtual int GetItemTypeCount (void) override { return m_iCount; }
+		virtual int GetItemTypeCount (void) override { return m_Table.GetCount(); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
@@ -191,19 +190,19 @@ class CRandomItems : public IItemGenerator
 			int iProbability;
 			};
 
-		void InitTable (SDesignLoadCtx &Ctx, const CString &sLevelFrequency) const;
+		const CTopologyNode &CalcCurrentNode (SItemAddCtx &Ctx) const;
+		void InitTable (SItemAddCtx &Ctx) const;
 
-		mutable int m_iCount;
-		mutable SEntry *m_Table;
+		mutable TArray<SEntry> m_Table;
+		mutable CString m_sNodeID;					//	NoteID that we initialized to
 
 		CItemCriteria m_Criteria;
 		CString m_sLevelFrequency;
-		int m_iLevel;
-		int m_iLevelCurve;
-		int m_iDamaged;
+		int m_iLevel = 0;
+		int m_iLevelCurve = 0;
+		int m_iDamaged = 0;
 		CRandomEnhancementGenerator m_Enhanced;
-		bool m_bDynamicLevelFrequency;		//	If TRUE, level frequency depends on system level
-		mutable int m_iDynamicLevel;
+		bool m_bDynamicLevelFrequency = false;		//	If TRUE, level frequency depends on system level
 	};
 
 class CSingleItem : public IItemGenerator
@@ -211,7 +210,7 @@ class CSingleItem : public IItemGenerator
 	public:
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
+		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx) override;
 		virtual CItemType *GetItemType (int iIndex) override { return m_pItemType; }
 		virtual int GetItemTypeCount (void) override { return 1; }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
@@ -237,7 +236,7 @@ class CTableOfGenerators : public IItemGenerator
 		virtual ~CTableOfGenerators (void) override;
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
+		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx) override;
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pItem; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;

@@ -1942,7 +1942,8 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_TREASURE_VALUE))
 		{
 		SItemAddCtx AddItemCtx(GetUniverse());
-		*retsValue = strFromInt(m_pItems ? (int)(m_pItems->GetAverageValue(AddItemCtx, GetLevel())) : 0);
+		AddItemCtx.iLevel = GetLevel();
+		*retsValue = strFromInt(m_pItems ? (int)(m_pItems->GetAverageValue(AddItemCtx)) : 0);
 		}
 
 	else if (strEquals(sField, FIELD_WRECK_CHANCE))

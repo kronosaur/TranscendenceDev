@@ -283,6 +283,7 @@ ALERROR CUniverse::CreateRandomItem (const CItemCriteria &Crit,
 	CItemList ItemList;
 	CItemListManipulator Items(ItemList);
 	SItemAddCtx Ctx(Items);
+	Ctx.pSystem = GetCurrentSystem();
 	Ctx.iLevel = (GetCurrentSystem() ? GetCurrentSystem()->GetLevel() : 1);
 
 	pTable->AddItems(Ctx);

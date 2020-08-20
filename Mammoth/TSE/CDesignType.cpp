@@ -22,6 +22,7 @@
 #define IMAGE_TAG								CONSTLIT("Image")
 #define IMAGE_COMPOSITE_TAG						CONSTLIT("ImageComposite")
 #define INITIAL_DATA_TAG						CONSTLIT("InitialData")
+#define ITEM_ENCOUNTER_DESC_TAG					CONSTLIT("ItemEncounterDesc")
 #define ITEM_TABLE_TAG							CONSTLIT("ItemTable")
 #define ITEM_TYPE_TAG							CONSTLIT("ItemType")
 #define LANGUAGE_TAG							CONSTLIT("Language")
@@ -2772,6 +2773,14 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 		else if (strEquals(pItem->GetTag(), ARMOR_MASS_DESC_TAG))
 			{
 			if (error = SetExtra()->ArmorDefinitions.InitFromXML(Ctx, pItem))
+				{
+				Ctx.pType = NULL;
+				return ComposeLoadError(Ctx, Ctx.sError);
+				}
+			}
+		else if (strEquals(pItem->GetTag(), ITEM_ENCOUNTER_DESC_TAG))
+			{
+			if (error = SetExtra()->ItemEncounterDefinitions.InitFromXML(Ctx, *pItem))
 				{
 				Ctx.pType = NULL;
 				return ComposeLoadError(Ctx, Ctx.sError);

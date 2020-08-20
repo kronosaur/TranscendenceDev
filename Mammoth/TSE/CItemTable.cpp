@@ -167,7 +167,7 @@ bool CItemTable::FindDataField (const CString &sField, CString *retsValue) const
 	//	Deal with the meta-data that we know about
 
 	if (strEquals(sField, FIELD_TREASURE_VALUE))
-		*retsValue = strFromInt((int)GetAverageValue(Ctx, 1));
+		*retsValue = strFromInt((int)GetAverageValue(Ctx));
 	else
 		return CDesignType::FindDataField(sField, retsValue);
 
@@ -306,6 +306,7 @@ void CGroupOfGenerators::AddItemsScaled (SItemAddCtx &Ctx, Metric rAdj) const
 	CItemList LocalList;
 	CItemListManipulator ItemList(LocalList);
 	SItemAddCtx LocalCtx(ItemList);
+	LocalCtx.pSystem = Ctx.pSystem;
 	LocalCtx.iLevel = Ctx.iLevel;
 	AddItemsInt(LocalCtx);
 
@@ -352,7 +353,7 @@ void CGroupOfGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		m_Table[i].pItem->AddTypesUsed(retTypesUsed);
 	}
 
-CurrencyValue CGroupOfGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CGroupOfGenerators::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
@@ -361,8 +362,8 @@ CurrencyValue CGroupOfGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
 	{
 	if (SetsAverageValue())
 		{
-		if (iLevel >= 0 && iLevel < m_DesiredValue.GetCount())
-			return m_DesiredValue[iLevel].GetCreditValue();
+		if (Ctx.iLevel >= 0 && Ctx.iLevel < m_DesiredValue.GetCount())
+			return m_DesiredValue[Ctx.iLevel].GetCreditValue();
 		else
 			return 0;
 		}
@@ -374,7 +375,7 @@ CurrencyValue CGroupOfGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
 		if (Check.IsRecursing())
 			return 0;
 
-		return (CurrencyValue)mathRound(GetExpectedValue(Ctx, iLevel));
+		return (CurrencyValue)mathRound(GetExpectedValue(Ctx, Ctx.iLevel));
 		}
 	}
 
@@ -438,9 +439,9 @@ Metric CGroupOfGenerators::GetExpectedValue (SItemAddCtx &Ctx, int iLevel) const
 		for (int i = 0; i < m_Table.GetCount(); i++)
 			{
 			if (m_Table[i].iChance < 100)
-				rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(Ctx, iLevel) * (Metric)m_Table[i].iChance / 100.0);
+				rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(Ctx) * (Metric)m_Table[i].iChance / 100.0);
 			else
-				rTotal += m_Table[i].Count.GetAveValueFloat() * m_Table[i].pItem->GetAverageValue(Ctx, iLevel);
+				rTotal += m_Table[i].Count.GetAveValueFloat() * m_Table[i].pItem->GetAverageValue(Ctx);
 			}
 
 		m_ExpectedValue[iLevel] = rTotal;
@@ -626,7 +627,7 @@ CurrencyValue CSingleItem::CalcItemValue (CItemType *pType)
 	return ItemValue;
 	}
 
-CurrencyValue CSingleItem::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CSingleItem::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
@@ -792,7 +793,7 @@ void CLevelTableOfItemGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesU
 		m_Table[i].pEntry->AddTypesUsed(retTypesUsed);
 	}
 
-CurrencyValue CLevelTableOfItemGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CLevelTableOfItemGenerators::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
@@ -813,15 +814,15 @@ CurrencyValue CLevelTableOfItemGenerators::GetAverageValue (SItemAddCtx &Ctx, in
 	int iTotalChance = 0;
 	for (i = 0; i < m_Table.GetCount(); i++)
 		{
-		int iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, iLevel);
+		int iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, Ctx.iLevel);
 		iTotalChance += iChance;
 		}
 
 	for (i = 0; i < m_Table.GetCount(); i++)
 		{
-		int iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, iLevel);
+		int iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, Ctx.iLevel);
 		if (iChance > 0)
-			rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pEntry->GetAverageValue(Ctx, iLevel) * (Metric)iChance / (Metric)iTotalChance);
+			rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pEntry->GetAverageValue(Ctx) * (Metric)iChance / (Metric)iTotalChance);
 		}
 
 	return (CurrencyValue)(rTotal + 0.5);
@@ -1023,7 +1024,7 @@ void CLocationCriteriaTableOfItemGenerators::AddTypesUsed (TSortMap<DWORD, bool>
 		m_Table[i].pEntry->AddTypesUsed(retTypesUsed);
 	}
 
-CurrencyValue CLocationCriteriaTableOfItemGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CLocationCriteriaTableOfItemGenerators::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
@@ -1046,7 +1047,7 @@ CurrencyValue CLocationCriteriaTableOfItemGenerators::GetAverageValue (SItemAddC
 		iTotalChance += 1;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pEntry->GetAverageValue(Ctx, iLevel) / (Metric)iTotalChance);
+		rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pEntry->GetAverageValue(Ctx) / (Metric)iTotalChance);
 
 	return (CurrencyValue)(rTotal + 0.5);
 	}
@@ -1322,7 +1323,7 @@ void CTableOfGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		m_Table[i].pItem->AddTypesUsed(retTypesUsed);
 	}
 
-CurrencyValue CTableOfGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CTableOfGenerators::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
@@ -1349,7 +1350,7 @@ CurrencyValue CTableOfGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
 	Metric rTotal = 0.0;
 	for (i = 0; i < m_Table.GetCount(); i++)
 		{
-		Metric rAverageValue = (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(Ctx, iLevel) * (Metric)m_Table[i].iChance / (Metric)m_iTotalChance);
+		Metric rAverageValue = (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(Ctx) * (Metric)m_Table[i].iChance / (Metric)m_iTotalChance);
 		rTotal += rAverageValue;
 
 #ifdef DEBUG_AVERAGE_VALUE
