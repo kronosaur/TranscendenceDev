@@ -1284,6 +1284,7 @@
 									"{/f:MediumBold;/c:#79828c; max. speed:} " (fmtNumber 'speed (obj@ shipObj 'maxSpeed)) "\n"
 									"{/f:MediumBold;/c:#79828c; thrust//mass:} " (fmtNumber 'real (/ (obj@ shipObj 'thrustToWeight) 1000)) "\n"
 									"{/f:MediumBold;/c:#79828c; maneuverability:} " (fmtNumber 'real (/ (obj@ shipObj 'maneuver) 1000)) "\n"
+									"{/f:MediumBold;/c:#79828c; power use:} " (fmtNumber 'power (obj@ shipObj 'drivePowerUse)) "\n"
 								"}"
 								)
 						}
@@ -1484,6 +1485,7 @@
 								"{/f:MediumBold;/c:#79828c; max. speed:} " (fmtNumber 'speed (obj@ shipObj 'maxSpeed)) "\n"
 								"{/f:MediumBold;/c:#79828c; thrust//mass:} " (/ (obj@ shipObj 'thrustToWeight) 1000) "\n"
 								"{/f:MediumBold;/c:#79828c; maneuverability:} " (/ (obj@ shipObj 'maneuver) 1000) "\n"
+								"{/f:MediumBold;/c:#79828c; power use:} " (fmtNumber 'power (obj@ shipObj 'drivePowerUse)) "\n"
 							"}"
 							)
 						)
