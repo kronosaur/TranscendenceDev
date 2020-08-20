@@ -1311,6 +1311,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 		if ((IsTracking(DeviceItem, &ShotDesc) || m_bBurstTracksTargets) && !(Source.IsBlind() && !(m_bCanFireWhenBlind)))
 			{
+			bool bCanReacquireTarget = ShotDesc.CanAutoTarget();
 			retpTarget = Device.GetTarget(&Source);
 			retiFireAngle = Device.GetFireAngle();
 
@@ -1324,7 +1325,17 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 				}
 			else if (!retpTarget && (retiFireAngle == -1 || m_bBurstTracksTargets))
 				{
-				retiFireAngle = -1;
+				//  Reacquire target if we can do so
+				if (bCanReacquireTarget)
+					retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
+
+				if (retpTarget)
+					{
+					Metric rSpeed = ShotDesc.GetInitialSpeed();
+					retiFireAngle = CalcFireAngle(CItemCtx(&Source, &Device), rSpeed, retpTarget);
+					}
+				else
+				    retiFireAngle = -1;
 				}
 			}
 
