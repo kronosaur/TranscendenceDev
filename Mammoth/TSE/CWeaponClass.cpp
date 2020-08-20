@@ -1322,6 +1322,10 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 				Metric rSpeed = ShotDesc.GetInitialSpeed();
 				retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
 				}
+			else if (!retpTarget && (retiFireAngle == -1 || m_bBurstTracksTargets))
+				{
+				retiFireAngle = -1;
+				}
 			}
 
 		//	No need for a target because we just fire 
