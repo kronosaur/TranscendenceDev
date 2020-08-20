@@ -13,7 +13,7 @@
 			value=				"150"
 			mass=				"25"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"Laser amplifiers are used to repair and upgrade laser weapons."
 
@@ -45,7 +45,7 @@
 			value=				"200"
 			mass=				"50"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"Kinetic upgrades increase the damage of a kinetic weapon."
 
@@ -78,7 +78,7 @@
 			mass=				"1"
 			frequency=			"rare"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"defective, info, minorItem, weaponDamage"
+			attributes=			"defective, humanTech, info, minorItem, weaponDamage"
 
 			description=		"Because of a manufacturing defect, this ROM ionizes any weapon it is installed on."
 
@@ -214,7 +214,7 @@
 			mass=				"1"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, weaponEnhance"
+			attributes=			"humanTech, info, minorItem, weaponEnhance"
 
 			description=		"This upgrade ROM increases a weapon's rate of fire. It is compatible with weapons up to level 6."
 
@@ -251,7 +251,7 @@
 			value=				"1100"
 			mass=				"25"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"This weapon upgrade increases the power of particle beams."
 
@@ -282,7 +282,7 @@
 			mass=				"1"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, weaponEnhance"
+			attributes=			"humanTech, info, minorItem, weaponEnhance"
 
 			description=		"This upgrade ROM reduces a weapon's power consumption. It is compatible with weapons up to tech level 10."
 
@@ -319,7 +319,7 @@
 			value=				"1400"
 			mass=				"75"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"This high-explosive upgrade increases the damage done by blast weapons."
 
@@ -351,7 +351,7 @@
 			value=				"10500"
 			mass=				"50"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"Ion power capacitors are used to increase the destructive power of ion weapons."
 
@@ -383,7 +383,7 @@
 			value=				"13000"
 			mass=				"150"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"This weapon upgrade increases the damage done by thermo weapons."
 

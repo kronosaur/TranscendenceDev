@@ -24,7 +24,14 @@
 			alignment="constructive chaos"
 			inherit="&unidCommonText;"
 			>
-		
+
+		<ItemEncounterDesc>
+			<Frequency criteria="* +commonwealth;" frequency="common"	systemCriteria="+commonwealthSpace;" />
+			<Frequency criteria="* +commonwealth;" frequency="uncommon" systemCriteria="+humanSpace; -commonwealthSpace;"/>
+
+			<Frequency criteria="* +commonwealth;" frequency="notRandom" />
+		</ItemEncounterDesc>
+
 		<AttributeDesc>
 			<!-- These item attributes are used across all Human Space (not just for
 				Commonwealth). -->

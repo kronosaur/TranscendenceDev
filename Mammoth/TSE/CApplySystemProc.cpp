@@ -76,21 +76,19 @@ ALERROR CApplySystemProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 //	Process on topology
 
 	{
-	int i;
-
 	CTopologyNodeList Remaining;
 
-	CTopologyNode::SCriteriaCtx MatchCtx(Ctx.Topology);
+	CTopologyNodeCriteria::SCtx MatchCtx(Ctx.Topology);
 
 	//	Apply system properties to all nodes in list
 
-	for (i = 0; i < NodeList.GetCount(); i++)
+	for (int i = 0; i < NodeList.GetCount(); i++)
 		{
 		CTopologyNode &Node = NodeList[i];
 
 		//	Make sure we match criteria
 
-		if (!Node.MatchesCriteria(MatchCtx, m_Criteria))
+		if (!m_Criteria.Matches(MatchCtx, Node))
 			{
 			//	Add to remaining (unprocessed list).
 

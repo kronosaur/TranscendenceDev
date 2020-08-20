@@ -13,7 +13,7 @@
 			mass=				"2500"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownAmmoBox;"
-			attributes=			"ammoBox, consumable"
+			attributes=			"ammoBox, commonwealth, consumable"
 
 			description=		"This box contains Akan 30 cannon shell cartridges."
 			>
@@ -35,7 +35,7 @@
 			mass=				"2500"
 			frequency=			"common"
 			unknownType=		"&vtUnknownAmmoBox;"
-			attributes=			"ammoBox, consumable"
+			attributes=			"ammoBox, commonwealth, consumable"
 
 			description=		"This box contains White Strelka missiles, compatible with the Makayev launcher."
 			>
@@ -58,7 +58,7 @@
 			frequency=			"common"
 			numberAppearing=	"1d4"
 			unknownType=		"&vtUnknownAmmoBox;"
-			attributes=			"ammoBox, consumable"
+			attributes=			"ammoBox, commonwealth, consumable"
 
 			description=		"This box contains ZG24 cluster MAGs."
 			>
@@ -81,7 +81,7 @@
 			frequency=			"uncommon"
 			numberAppearing=	"1d6"
 			unknownType=		"&vtUnknownAmmoBox;"
-			attributes=			"ammoBox, consumable, military"
+			attributes=			"ammoBox, commonwealth, consumable, military"
 
 			description=		"This box contains thermo cannon shell cartridges."
 			>
@@ -103,7 +103,7 @@
 			mass=				"2500"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownAmmoBox;"
-			attributes=			"ammoBox, consumable, military"
+			attributes=			"ammoBox, commonwealth, consumable, military"
 
 			description=		"This box contains Red Strelka missiles, compatible with the Makayev launcher."
 			>
@@ -125,7 +125,7 @@
 			mass=				"2500"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownAmmoBox;"
-			attributes=			"ammoBox, consumable, contrabandBox, illegal"
+			attributes=			"ammoBox, commonwealth, consumable, contrabandBox, illegal"
 
 			description=		"This sealed container, made out of an old ammunition box, contains illegal items."
 			>
@@ -157,7 +157,7 @@
 			mass=				"2500"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownAmmoBox;"
-			attributes=			"ammoBox, consumable, cannotOrder, defective, notForSale"
+			attributes=			"ammoBox, commonwealth, consumable, cannotOrder, defective, notForSale"
 
 			description=		"This ammunition box contains leaky radioactive ordnance."
 			>
@@ -203,7 +203,7 @@
 			mass=				"2500"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownAmmoBox;"
-			attributes=			"ammoBox, consumable, cannotOrder, defective"
+			attributes=			"ammoBox, commonwealth, consumable, cannotOrder, defective"
 
 			description=		"This ammunition box has been rigged to disable the ship when it is opened."
 			>
@@ -263,7 +263,7 @@
 
 	<ItemType UNID="&itCashCardBlue;"
 			name=				"blue cash card"
-			attributes=			"cashCard, consumable, cannotOrder"
+			attributes=			"cashCard, consumable, cannotOrder, humanTech"
 			inherit=			"&baCashCard;"
 
 			level=				"2"
@@ -287,7 +287,7 @@
 
 	<ItemType UNID="&itCashCardGold;"
 			name=				"gold cash card"
-			attributes=			"cashCard, consumable, cannotOrder"
+			attributes=			"cashCard, consumable, cannotOrder, humanTech"
 			inherit=			"&baCashCard;"
 
 			level=				"4"
@@ -311,7 +311,7 @@
 
 	<ItemType UNID="&itCashCardPlatinum;"
 			name=				"platinum cash card"
-			attributes=			"cashCard, consumable, cannotOrder"
+			attributes=			"cashCard, consumable, cannotOrder, humanTech"
 			inherit=			"&baCashCard;"
 
 			level=				"6"
@@ -346,7 +346,7 @@
 			value=				"0"
 			mass=				"1"
 			frequency=			"notrandom"
-			attributes=			"Info; MinorItem; NotForSale"
+			attributes=			"humanTech, Info; MinorItem; NotForSale"
 
 			description=		"Data ROMs are used to store everything from personal mail to ship's logs."
 
@@ -366,7 +366,7 @@
 			mass=				"1"
 			frequency=			"notrandom"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, neurohackROM, notForSale, questItem"
+			attributes=			"humanTech, info, minorItem, neurohackROM, notForSale, questItem"
 
 			description=		"This ROM enables you to connect to AIs and subdue them."
 			
@@ -390,7 +390,7 @@
 
 	<ItemType UNID="&itEnhanceSRSROM;"
 			name=				"visual display enhancement ROM"
-			attributes=			"info, minorItem, shipEquipment"
+			attributes=			"humanTech, info, minorItem, shipEquipment"
 			inherit=			"&baStdEquipmentItem;"
 
 			level=				"2"
@@ -427,7 +427,7 @@
 			mass=				"1"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"defective, info, minorItem, shipEquipment"
+			attributes=			"defective, humanTech, info, minorItem, shipEquipment"
 
 			description=		"This ROM would normally enhance a ship's visual display, but a manufacturing defect makes it worse than useless. Plugging this in to your ship's computer will temporarily damage your display screen."
 
@@ -463,7 +463,7 @@
 			mass=				"1"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"consumable, info, systemMap"
+			attributes=			"consumable, humanTech, info, systemMap"
 
 			description=		"This program accesses the central cartography libraries to generate a map of the current system."
 			>
@@ -538,7 +538,7 @@
 			mass=				"1"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"consumable, info, military, systemMap"
+			attributes=			"consumable, humanTech, info, military, systemMap"
 
 			description=		"This program accesses military databases to generate a map of enemy stations in the system."
 			>
@@ -580,7 +580,7 @@
 
 	<ItemType UNID="&itTargetingComputerROM;"
 			name=				"targeting program ROM"
-			attributes=			"info, minorItem, shipEquipment"
+			attributes=			"humanTech, info, minorItem, shipEquipment"
 			inherit=			"&baStdEquipmentItem;"
 
 			level=				"3"
@@ -611,7 +611,7 @@
 
 	<ItemType UNID="&itTradingComputerROM;"
 			name=				"trading computer ROM"
-			attributes=			"info, minorItem, shipEquipment"
+			attributes=			"humanTech, info, minorItem, shipEquipment"
 			inherit=			"&baStdEquipmentItem;"
 
 			level=				"2"

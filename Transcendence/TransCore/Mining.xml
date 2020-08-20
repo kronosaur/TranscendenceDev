@@ -50,16 +50,16 @@
 	<ItemTable unid="&tbAsteroidOre;">
 		<LocationCriteriaTable>
 			<Group criteria="*metallicComp"		value="standard:x=0.30">
-				<RandomItem criteria="* +ore; -notStandard; +metallicComp; | * +minable; -notStandard; +metallicComp;" levelFrequency="systemLevel:vruc|c|curv" />
+				<RandomItem criteria="* +ore; -notStandard; +metallicComp; | * +minable; -notStandard; +metallicComp;" levelFrequency="systemLevel:vru|c|urv" />
 			</Group>
 			<Group criteria="*organicComp"		value="standard:x=0.20">
-				<RandomItem criteria="* +ore; -notStandard; +organicComp; | * +minable; -notStandard; +organicComp;" levelFrequency="systemLevel:vruc|c|curv" />
+				<RandomItem criteria="* +ore; -notStandard; +organicComp; | * +minable; -notStandard; +organicComp;" levelFrequency="systemLevel:vru|c|urv" />
 			</Group>
 			<Group criteria="*rockyComp"		value="standard:x=0.30">
-				<RandomItem criteria="* +ore; -notStandard; +rockyComp; | * +minable; -notStandard; +rockyComp;" levelFrequency="systemLevel:vruc|c|curv" />
+				<RandomItem criteria="* +ore; -notStandard; +rockyComp; | * +minable; -notStandard; +rockyComp;" levelFrequency="systemLevel:vru|c|urv" />
 			</Group>
 			<Group criteria="*waterComp"		value="standard:x=0.20">
-				<RandomItem criteria="* +ore; -notStandard; +waterComp; | * +minable; -notStandard; +waterComp;" levelFrequency="systemLevel:vruc|c|curv" />
+				<RandomItem criteria="* +ore; -notStandard; +waterComp; | * +minable; -notStandard; +waterComp;" levelFrequency="systemLevel:vru|c|urv" />
 			</Group>
 		</LocationCriteriaTable>
 	</ItemTable>

@@ -218,6 +218,7 @@
 #define PROPERTY_WEAPON_ITEMS					CONSTLIT("weaponItems")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
+#define PROPERTY_WRECK_TYPE_NAME				CONSTLIT("wreckTypeName")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
 #define SPECIAL_ITEM_ATTRIBUTE					CONSTLIT("itemAttribute:")
@@ -1941,7 +1942,8 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_TREASURE_VALUE))
 		{
 		SItemAddCtx AddItemCtx(GetUniverse());
-		*retsValue = strFromInt(m_pItems ? (int)(m_pItems->GetAverageValue(AddItemCtx, GetLevel())) : 0);
+		AddItemCtx.iLevel = GetLevel();
+		*retsValue = strFromInt(m_pItems ? (int)(m_pItems->GetAverageValue(AddItemCtx)) : 0);
 		}
 
 	else if (strEquals(sField, FIELD_WRECK_CHANCE))
@@ -2917,6 +2919,26 @@ const CShipwreckDesc &CShipClass::GetWreckDesc (void) const
 		return pInheritClass->GetWreckDesc();
 	else
 		return m_WreckDesc;
+	}
+
+const CObjectImageArray &CShipClass::GetWreckImage (int iRotation) const
+
+//	GetWreckImage
+//
+//	Returns the image wreck for the class at the given rotation.
+
+	{
+	//	NOTE: We always use our wreck descriptor (not inherited one) because
+	//	otherwise we might get the wrong image.
+	//
+	//	LATER: We should probably cache this on the ship class instead of the
+	//	wreck image.
+
+	CObjectImageArray *pWreckImage = m_WreckDesc.GetWreckImage(this, iRotation);
+	if (pWreckImage == NULL)
+		return CObjectImageArray::Null();
+
+	return *pWreckImage;
 	}
 
 void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
@@ -3989,6 +4011,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_TYPE))
 		return (GetWreckDesc().GetWreckType() ? ICCItemPtr(GetWreckDesc().GetWreckType()->GetUNID()) : ICCItemPtr::Nil());
+
+	else if (strEquals(sProperty, PROPERTY_WRECK_TYPE_NAME))
+		return (GetWreckDesc().GetWreckType() ? ICCItemPtr(GetWreckDesc().GetWreckType()->GetNounPhrase()) : ICCItemPtr::Nil());
 
 	//	Drive properties
 

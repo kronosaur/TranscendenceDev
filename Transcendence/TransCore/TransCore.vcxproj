@@ -509,6 +509,7 @@
     </Xml>
     <Xml Include="CommonwealthMiningMission03.xml" />
     <Xml Include="CommonwealthMiningMission04.xml" />
+    <Xml Include="CommonwealthMiningMission05.xml" />
     <Xml Include="CommonwealthVolunteerMission01.xml" />
     <Xml Include="CommonwealthMilitiaMission01.xml" />
     <Xml Include="CommonwealthMilitiaMission02.xml" />
@@ -544,6 +545,7 @@
     <Xml Include="CoreSamples.xml" />
     <Xml Include="CorporateInsurance.xml" />
     <Xml Include="CorporateTradingPost.xml" />
+    <Xml Include="Cryovolcanic.xml" />
     <Xml Include="CSCTerra.xml" />
     <Xml Include="Dall01.xml" />
     <Xml Include="Dantalion.xml" />
@@ -674,6 +676,7 @@
     <Xml Include="SungSlaveCamp.xml" />
     <Xml Include="TeratonResearch.xml" />
     <Xml Include="UndergroundCaverns.xml" />
+    <Xml Include="UndergroundStructures.xml" />
     <Xml Include="Ventari.xml" />
     <Xml Include="Volkov.xml">
       <SubType>Designer</SubType>

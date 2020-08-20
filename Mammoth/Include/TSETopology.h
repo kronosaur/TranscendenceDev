@@ -11,69 +11,9 @@ const DWORD END_GAME_SYSTEM_UNID =				0x00ffffff;
 class CTopology;
 class ITopologyProcessor;
 
-class CTopologyAttributeCriteria
-	{
-	public:
-		CTopologyAttributeCriteria (void) { }
-		explicit CTopologyAttributeCriteria (const CString &sCriteria) { Parse(sCriteria); }
-
-		CString AsString (void) const;
-		ALERROR Init (const CString &sCriteria) { *this = CTopologyAttributeCriteria(); return Parse(sCriteria); }
-		bool IsEmpty (void) const;
-		bool Matches (const CTopologyNode &Node) const;
-
-	private:
-		ALERROR Parse (const CString &sCriteria);
-		ALERROR ParseSubExpression (const char *pPos);
-		void WriteSubExpression (CMemoryWriteStream &Stream) const;
-		static void WriteAsString (IWriteStream &Stream, const TArray<CString> &Attribs, const CString &sPrefix, bool &iobSpaceNeeded);
-
-		TArray<CString> m_AttribsRequired;			//	Does not match if any of these attribs are missing
-		TArray<CString> m_AttribsNotAllowed;		//	Does not match if any of these attribs are present
-		TArray<CString> m_SpecialRequired;			//	Special attributes
-		TArray<CString> m_SpecialNotAllowed;		//	Special attributes
-
-		CIntegerRangeCriteria m_Level;				//	Required level
-
-		TUniquePtr<CTopologyAttributeCriteria> m_pOr;
-	};
-
 class CTopologyNode
 	{
 	public:
-		struct SDistanceTo
-			{
-			CTopologyAttributeCriteria AttribCriteria;
-			CString sNodeID;
-
-			int iMinDist = 0;
-			int iMaxDist = -1;
-			};
-
-		struct SCriteriaCtx
-			{
-			SCriteriaCtx (CTopology &TopologyArg) :
-					Topology(TopologyArg)
-				{ }
-
-			CTopology &Topology;
-
-			TSortMap<CString, TSortMap<CString, int>> DistanceCache;
-			};
-
-		struct SCriteria
-			{
-			int iChance = 100;						//	Probability 0-100 of matching criteria
-			int iMinStargates = 0;					//	Match if >= this many stargates
-			int iMaxStargates = -1;					//	Match if <= this many stargates
-			int iMinInterNodeDist = 0;				//	Used by <DistributeNodes> (maybe move there)
-			int iMaxInterNodeDist = -1;
-			CTopologyAttributeCriteria AttribCriteria;
-			TArray<SDistanceTo> DistanceTo;			//	Matches if node is within the proper distance of another node or nodes
-
-			bool bKnownOnly = false;				//	Only nodes that are known to the player
-			};
-
 		struct SStargateDesc
 			{
 			CString sName;							//	Name of the gate
@@ -110,7 +50,7 @@ class CTopologyNode
 				mutable Metric m_rDistance = 0.0;
 			};
 
-		CTopologyNode (CTopology &Topology, const CString &sID, DWORD SystemUNID, CSystemMap *pMap);
+		CTopologyNode (CTopology &Topology, const CString &sID, DWORD SystemUNID, CSystemMap *pMap, int iLevel = 0);
 		~CTopologyNode (void);
 
 		static void CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **retpNode);
@@ -132,7 +72,7 @@ class CTopologyNode
 		const CString &GetEpitaph (void) { return m_sEpitaph; }
 		const CString &GetID (void) const { return m_sID; }
 		CTopologyNode *GetGateDest (const CString &sName, CString *retsEntryPoint = NULL);
-        DWORD GetLastVisitedTime (void) const;
+		DWORD GetLastVisitedTime (void) const;
 		int GetLevel (void) const { return m_iLevel; }
 		Metric GetLinearDistanceTo (const CTopologyNode *pNode) const;
 		Metric GetLinearDistanceTo2 (const CTopologyNode *pNode) const;
@@ -157,12 +97,11 @@ class CTopologyNode
 		ALERROR InitFromAttributesXML (CXMLElement *pAttributes, CString *retsError);
 		ALERROR InitFromSystemXML (CTopology &Topology, CXMLElement *pSystem, CString *retsError);
 		bool IsCreationDeferred (void) const { return m_bDeferCreate; }
-		static bool IsCriteriaAll (const SCriteria &Crit);
 		bool IsEndGame (void) const { return (m_SystemUNID == END_GAME_SYSTEM_UNID); }
 		bool IsKnown (void) const { return m_bKnown; }
 		bool IsMarked (void) const { return m_bMarked; }
+		bool IsNull (void) const { return (m_SystemUNID == 0 || IsEndGame()); }
 		bool IsPositionKnown (void) const { return (m_bKnown || m_bPosKnown); }
-		bool MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit) const;
 		void SetCalcDistance (int iDist) const { m_iCalcDistance = iDist; }
 		void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
 		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
@@ -186,10 +125,6 @@ class CTopologyNode
 		void AddVariantLabel (const CString &sVariant) { m_VariantLabels.Insert(sVariant); }
 		bool HasVariantLabel (const CString &sVariant);
 
-		static void InitCriteriaCtx (SCriteriaCtx &Ctx, const SCriteria &Criteria);
-		static ALERROR ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError = NULL);
-		static ALERROR ParseCriteria (CUniverse &Universe, ICCItem *pItem, SCriteria &retCrit, CString *retsError = NULL);
-		static ALERROR ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError = NULL);
 		static ALERROR ParsePointList (const CString &sValue, TArray<SPoint> *retPoints);
 		static ALERROR ParsePosition (const CString &sValue, int *retx, int *rety);
 		static ALERROR ParseStargateString (const CString &sStargate, CString *retsNodeID, CString *retsGateName);
@@ -264,8 +199,8 @@ class CTopologyNodeList
 		void Delete (CTopologyNode *pNode);
 		void Delete (int iIndex) { m_List.Delete(iIndex); }
 		void DeleteAll (void) { m_List.DeleteAll(); }
-		ALERROR Filter (CTopologyNode::SCriteriaCtx &Ctx, CXMLElement *pCriteria, CTopologyNodeList *retList, CString *retsError);
-		ALERROR Filter (CTopologyNode::SCriteriaCtx &Ctx, CTopologyNode::SCriteria &Crit, CTopologyNodeList *ioList);
+		ALERROR Filter (CTopologyNodeCriteria::SCtx &Ctx, CXMLElement *pCriteria, CTopologyNodeList *retList, CString *retsError);
+		ALERROR Filter (CTopologyNodeCriteria::SCtx &Ctx, CTopologyNodeCriteria &Crit, CTopologyNodeList *ioList);
 		bool FindNode (CTopologyNode *pNode, int *retiIndex = NULL) const;
 		bool FindNode (const CString &sID, int *retiIndex = NULL) const;
 		int GetCount (void) const { return m_List.GetCount(); }
@@ -472,8 +407,9 @@ class CTopology
 		DWORD GetVersion (void) const { return m_dwVersion; }
 		bool InDebugMode (void) const;
 		ALERROR InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComplexArea *retArea, STopologyCreateCtx *pCtx = NULL, CTopologyNode **iopExit = NULL); 
+		const CTopologyNode &NullNode (void) const { return m_NullNode; }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
-		ALERROR RunProcessors (CSystemMap *pMap, const TSortMap<int, TArray<ITopologyProcessor *>> &Processors, CTopologyNodeList &Nodes, CString *retsError);
+		ALERROR RunProcessors (CSystemMap &Map, const TSortMap<int, TArray<ITopologyProcessor *>> &Processors, CTopologyNodeList &Nodes, CString *retsError = NULL);
 
 	private:
 		enum NodeTypes
@@ -499,4 +435,6 @@ class CTopology
 		CTopologyNodeList m_Topology;
 		TSortMap<CString, int> m_IDToNode;
 		DWORD m_dwVersion = 1;
+
+		const CTopologyNode m_NullNode;
 	};

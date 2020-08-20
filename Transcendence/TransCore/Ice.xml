@@ -93,9 +93,10 @@
 			<Lookup table="StandardPlanetoidMorphology">
 				<_PlanetType>
 					<Table>
-						<Station chance="60" type="&stIcePlanetoidSizeE;" showOrbit="true"/>
-						<Station chance="30" type="&stIcePlanetoidSizeF;" showOrbit="true"/>
-						<Station chance="10" type="&stIcePlanetoidSizeG;" showOrbit="true"/>
+						<Station chance="59" type="&stIcePlanetoidSizeE;" showOrbit="true"/>
+						<Station chance="28" type="&stIcePlanetoidSizeF;" showOrbit="true"/>
+						<Station chance="8"  type="&stIcePlanetoidSizeG;" showOrbit="true"/>
+						<Station chance="5"  type="&stCryovolcanicSizeC;" showOrbit="true"/>
 					</Table>
 				</_PlanetType>
 				<_PlanetLabel>

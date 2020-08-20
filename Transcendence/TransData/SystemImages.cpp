@@ -75,6 +75,8 @@ void GenerateSystemImages (CUniverse &Universe, CXMLElement *pCmdLine)
 	if (bNo3DSystemMap)
 		Universe.GetSFXOptions().Set3DSystemMapEnabled(false);
 
+	bool bShowZones = pCmdLine->GetAttributeBool(CONSTLIT("showZones"));
+
 	//	Image size
 
 	int cxImage = pCmdLine->GetAttributeIntegerBounded(CONSTLIT("systemWidth"), 100, 10000, 1000);
@@ -156,6 +158,12 @@ void GenerateSystemImages (CUniverse &Universe, CXMLElement *pCmdLine)
 	UpdateCtx.bForceEventFiring = true;
 	UpdateCtx.bForcePainted = true;
 
+	//	Map flags
+
+	DWORD dwMapFlags = 0;
+	if (bShowZones)
+		dwMapFlags |= CSystem::FLAG_VIEWPORT_MAP_SHOW_ZONES;
+
 	//	Loop over all nodes and paint each system
 
 	for (i = 0; i < NodeList.GetCount(); i++)
@@ -232,7 +240,7 @@ void GenerateSystemImages (CUniverse &Universe, CXMLElement *pCmdLine)
 			rcMap.bottom += iOffset;
 			}
 
-		Universe.PaintPOVMap(Output, rcMap, rScale);
+		Universe.PaintPOVMap(Output, rcMap, rScale, dwMapFlags);
 
 		//	Paint the name
 

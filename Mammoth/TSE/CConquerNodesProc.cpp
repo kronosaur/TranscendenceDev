@@ -57,16 +57,14 @@ int CConquerNodesProc::CalcNodeWeight (CTopologyNode *pNode, TArray<SNodeWeight>
 //	Calculates the weight of the given node
 
 	{
-	int i;
-
 	if (pNode == NULL)
 		return 0;
 
-	CTopologyNode::SCriteriaCtx Ctx(pNode->GetTopology());
+	CTopologyNodeCriteria::SCtx Ctx(pNode->GetTopology());
 
-	for (i = 0; i < Weights.GetCount(); i++)
+	for (int i = 0; i < Weights.GetCount(); i++)
 		{
-		if (pNode->MatchesCriteria(Ctx, Weights[i].Criteria))
+		if (Weights[i].Criteria.Matches(Ctx, *pNode))
 			{
 			if (retiSuccessChance)
 				*retiSuccessChance = Weights[i].iSuccessChance;
@@ -166,8 +164,7 @@ ALERROR CConquerNodesProc::LoadNodeWeightTable (SDesignLoadCtx &Ctx, CXMLElement
 		CXMLElement *pChanceXML = pDesc->GetContentElement(i);
 		SNodeWeight *pChance = retTable->Insert();
 
-		if (error = CTopologyNode::ParseCriteria(pChanceXML->GetAttribute(CRITERIA_ATTRIB),
-				&pChance->Criteria,
+		if (error = pChance->Criteria.Parse(pChanceXML->GetAttribute(CRITERIA_ATTRIB),
 				&Ctx.sError))
 			return error;
 

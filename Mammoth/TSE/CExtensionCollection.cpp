@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-    197, 133, 255,  52, 247,  20, 170, 145,  79, 254,
-    210, 177,  60,  55, 128,  50,  15, 113, 130,  88,
+	197, 133, 255,  52, 247,  20, 170, 145,  79, 254,
+	210, 177,  60,  55, 128,  50,  15, 113, 130,  88,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -275,7 +275,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 			{
 			//	If this is an optional library, then it is OK if we cannot find it.
 
-			if (LibraryDesc.bOptional)
+			if (LibraryDesc.iUsage == CExtension::EUsage::optional)
 				;
 
 			//	Otherwise, disable the extension with the appropriate message,
@@ -625,6 +625,14 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 		//	If this extension does not extend the adventure, then skip.
 
 		if (pAdventure && !pBest->CanExtend(pAdventure, API_VERSION))
+			continue;
+
+		//	If we depend on certain libraries, but those libraries don't exist,
+		//	then we skip this extension. This is only for extensions that we 
+		//	we want to hide if their dependencies don't exist. For all other
+		//	libraries we show an error and let the user figure it out.
+
+		if (!HasDependencies(*pBest, dwFlags))
 			continue;
 
 		//	If we get this far, then we can add this extension
@@ -1151,7 +1159,7 @@ bool CExtensionCollection::FindAdventureFromDesc (DWORD dwUNID, DWORD dwFlags, C
 	return true;
 	}
 
-bool CExtensionCollection::FindBestExtension (DWORD dwUNID, DWORD dwRelease, DWORD dwFlags, CExtension **retpExtension)
+bool CExtensionCollection::FindBestExtension (DWORD dwUNID, DWORD dwRelease, DWORD dwFlags, CExtension **retpExtension) const
 
 //	FindBestExtension
 //
@@ -1168,7 +1176,7 @@ bool CExtensionCollection::FindBestExtension (DWORD dwUNID, DWORD dwRelease, DWO
 		return false;
 
 	CExtension *pBest = NULL;
-	TArray<CExtension *> &List = m_ByUNID.GetValue(iPos);
+	const TArray<CExtension *> &List = m_ByUNID.GetValue(iPos);
 	for (i = 0; i < List.GetCount(); i++)
 		{
 		//	If this is debug only and we're not in debug mode then skip.
@@ -1387,6 +1395,40 @@ bool CExtensionCollection::GetRequiredResources (TArray<CString> *retFilespecs)
 	return (retFilespecs->GetCount() > 0);
 	}
 
+bool CExtensionCollection::HasDependencies (const CExtension &Extension, DWORD dwFlags) const
+
+//	HasDependencies
+//
+//	Returns TRUE if we have all the libraries that we have a dependency on.
+//
+//	NOTE: If we have a "dependency" on a library then it means that the 
+//	extension will not be offered to the user as a choice unless all 
+//	dependencies exist.
+//
+//	If we "require" a library, then we still show the extension to the user, but
+//	show it with an error (so that the user can fix it).
+//
+//	NOTE: We only care if the library exists; if the library exists but is
+//	disabled for some reason, we still return TRUE.
+
+	{
+	for (int i = 0; i < Extension.GetLibraryCount(); i++)
+		{
+		auto &LibraryDesc = Extension.GetLibrary(i);
+
+		//	If we have a dependency and the dependency is not found, then we do
+		//	not have all our dependencies.
+
+		if (LibraryDesc.iUsage == CExtension::EUsage::dependency
+				&& !FindBestExtension(LibraryDesc.dwUNID, LibraryDesc.dwRelease, dwFlags))
+			return false;
+		}
+
+	//	If we get this far, then we have all libraries.
+
+	return true;
+	}
+
 void CExtensionCollection::InitEntityResolver (CExtension *pExtension, DWORD dwFlags, CEntityResolverList *retResolver)
 
 //	InitEntityResolver
@@ -1484,11 +1526,11 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWO
 	//	We begin by loading stubs for all extension (i.e., only basic extension
 	//	information and entities).
 
-    if (!(dwFlags & FLAG_NO_COLLECTION))
-        {
-	    if (error = LoadFolderStubsOnly(m_sCollectionFolder, CExtension::folderCollection, dwFlags, retsError))
-		    return error;
-        }
+	if (!(dwFlags & FLAG_NO_COLLECTION))
+		{
+		if (error = LoadFolderStubsOnly(m_sCollectionFolder, CExtension::folderCollection, dwFlags, retsError))
+			return error;
+		}
 
 	for (i = 0; i < m_ExtensionFolders.GetCount(); i++)
 		{
@@ -2114,11 +2156,11 @@ void CExtensionCollection::UpdateCollectionStatus (TArray<CMultiverseCatalogEntr
 		//	Figure out which folder to look in
 
 		CExtension::EFolderTypes iFolder;
-        if (Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
-            iFolder = CExtension::folderBase;
-        else if (Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
-            iFolder = CExtension::folderExtensions;
-        else
+		if (Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
+			iFolder = CExtension::folderBase;
+		else if (Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
+			iFolder = CExtension::folderExtensions;
+		else
 			iFolder = CExtension::folderCollection;
 
 		//	If this extension has been manually removed, then we mark it as 
@@ -2135,7 +2177,7 @@ void CExtensionCollection::UpdateCollectionStatus (TArray<CMultiverseCatalogEntr
 				Entry.SetStatus(CMultiverseCatalogEntry::statusError, pExtension->GetDisabledReason());
 			else if (pExtension->IsRegistrationVerified()
 					|| Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteam
-                    || Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC
+					|| Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC
 					|| !pExtension->IsRegistered())
 				Entry.SetStatus(CMultiverseCatalogEntry::statusLoaded);
 			else
@@ -2182,10 +2224,10 @@ void CExtensionCollection::UpdateRegistrationStatus (const TArray<CMultiverseCat
 		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
 			continue;
 
-        //  Skip Steam UGC
+		//  Skip Steam UGC
 
-        if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
-            continue;
+		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
+			continue;
 
 		//	Look for this extension in our list. If we found it then compare
 		//	the signature to make sure that we have the right version.

@@ -1,6 +1,7 @@
 //	CItem.cpp
 //
 //	CItem class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 

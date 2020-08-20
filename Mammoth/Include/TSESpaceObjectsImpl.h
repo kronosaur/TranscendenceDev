@@ -1187,6 +1187,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual Metric GetMaxSpeed (void) const override { return m_Perf.GetDriveDesc().GetMaxSpeed(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
+		virtual CTargetList GetTargetList (void) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const override;
 		virtual CDesignType *GetType (void) const override { return m_pClass; }
@@ -1716,74 +1717,76 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void UpdateReinforcements (int iTick);
 		void UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange);
 
-		CStationType *m_pType = NULL;			//	Station type
-		CString m_sName;						//	Station name
-		DWORD m_dwNameFlags = 0;				//	Name flags
-		CSovereign *m_pSovereign = NULL;		//	Allegiance
-		ScaleTypes m_Scale = scaleNone;			//	Scale of station
-		Metric m_rMass = 0.0;					//	Mass of station (depends on scale)
-		CIntegralRotation *m_pRotation = NULL;	//	Rotation parameters (may be NULL)
+		CStationType *m_pType = NULL;					//	Station type
+		CString m_sName;								//	Station name
+		DWORD m_dwNameFlags = 0;						//	Name flags
+		CSovereign *m_pSovereign = NULL;				//	Allegiance
+		ScaleTypes m_Scale = scaleNone;					//	Scale of station
+		Metric m_rMass = 0.0;							//	Mass of station (depends on scale)
+		CIntegralRotation *m_pRotation = NULL;			//	Rotation parameters (may be NULL)
 
-		CCompositeImageSelector m_ImageSelector;//	Image variant to display
-		int m_iDestroyedAnimation = 0;			//	Frames left of destroyed animation
-		COrbit *m_pMapOrbit = NULL;				//	Orbit to draw on map
-		Metric m_rParallaxDist = 1.0;			//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
+		CCompositeImageSelector m_ImageSelector;		//	Image variant to display
+		int m_iDestroyedAnimation = 0;					//	Frames left of destroyed animation
+		COrbit *m_pMapOrbit = NULL;						//	Orbit to draw on map
+		Metric m_rParallaxDist = 1.0;					//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
 		CPaintOrder::Types m_iPaintOrder = CPaintOrder::none;	//	Paint order instructions
-		int m_iStarlightImageRotation = 0;		//	Rotation of starlight image
-		Metric m_rStarlightDist = 0.0;			//	Distance from nearest star
-		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)
+		int m_iStarlightImageRotation = 0;				//	Rotation of starlight image
+		Metric m_rStarlightDist = 0.0;					//	Distance from nearest star
+		DWORD m_dwWreckUNID = 0;						//	UNID of wreck class (0 if none)
 
-		CString m_sStargateDestNode;			//	Destination node
-		CString m_sStargateDestEntryPoint;		//	Destination entry point
+		CString m_sStargateDestNode;					//	Destination node
+		CString m_sStargateDestEntryPoint;				//	Destination entry point
 
-		CStationHull m_Hull;					//	Hull and armor
-		CDeviceSystem m_Devices;				//	Array of CInstalledDevice
-		mutable Metric m_rMaxAttackDist = 0.0;	//	Maximum attack distance
-		COverlayList m_Overlays;				//	List of overlays
-		CDockingPorts m_DockingPorts;			//	Docking ports
+		CStationHull m_Hull;							//	Hull and armor
+		CDeviceSystem m_Devices;						//	Array of CInstalledDevice
+		mutable Metric m_rMaxAttackDist = 0.0;			//	Maximum attack distance
+		COverlayList m_Overlays;						//	List of overlays
+		CDockingPorts m_DockingPorts;					//	Docking ports
 
-		CSpaceObject *m_pBase = NULL;			//	If we're a subordinate, this points to our base
-		CString m_sSubordinateID;				//	If we're a subordinate, this is our ID
-		CSpaceObjectList m_Subordinates;		//	List of subordinates
-		CSpaceObjectList m_Targets;				//	Targets to destroy (by our ships)
-		CTargetList m_WeaponTargets;			//	Targets to destroy (by our weapons)
+		CSpaceObject *m_pBase = NULL;					//	If we're a subordinate, this points to our base
+		CString m_sSubordinateID;						//	If we're a subordinate, this is our ID
+		CSpaceObjectList m_Subordinates;				//	List of subordinates
+		CSpaceObjectList m_Targets;						//	Targets to destroy (by our ships)
+		CTargetList m_WeaponTargets;					//	Targets to destroy (by our weapons)
 
-		CAttackDetector m_Blacklist;			//	Player blacklisted
-		int m_iAngryCounter = 0;				//	Attack cycles until station is not angry
-		int m_iReinforceRequestCount = 0;		//	Number of times we've requested reinforcements
+		CAttackDetector m_Blacklist;					//	Player blacklisted
+		int m_iAngryCounter = 0;						//	Attack cycles until station is not angry
+		int m_iReinforceRequestCount = 0;				//	Number of times we've requested reinforcements
 
-		CCurrencyBlock *m_pMoney = NULL;		//	Money left (may be NULL)
-		CTradingDesc *m_pTrade = NULL;			//	Override of trading desc (may be NULL)
+		CCurrencyBlock *m_pMoney = NULL;				//	Money left (may be NULL)
+		CTradingDesc *m_pTrade = NULL;					//	Override of trading desc (may be NULL)
 
-		DWORD m_fArmed:1;						//	TRUE if station has weapons
-		DWORD m_fKnown:1;						//	TRUE if known to the player
-		DWORD m_fSuppressMapLabel:1;			//	Do not show map label
-		DWORD m_fActive:1;						//	TRUE if stargate is active
-		DWORD m_fNoReinforcements:1;			//	Do not send reinforcements
-		DWORD m_fRadioactive:1;					//	TRUE if radioactive
-		DWORD m_fReconned:1;					//	TRUE if reconned by player
-		DWORD m_fFireReconEvent:1;				//	If TRUE, fire OnReconned
+		DWORD m_fArmed:1 = false;						//	TRUE if station has weapons
+		DWORD m_fKnown:1 = false;						//	TRUE if known to the player
+		DWORD m_fSuppressMapLabel:1 = false;			//	Do not show map label
+		DWORD m_fActive:1 = false;						//	TRUE if stargate is active
+		DWORD m_fNoReinforcements:1 = false;			//	Do not send reinforcements
+		DWORD m_fRadioactive:1 = false;					//	TRUE if radioactive
+		DWORD m_fReconned:1 = false;					//	TRUE if reconned by player
+		DWORD m_fFireReconEvent:1 = false;				//	If TRUE, fire OnReconned
 
-		DWORD m_fExplored:1;					//	If TRUE, player has docked at least once
-		DWORD m_fNoBlacklist:1;					//	If TRUE, do not blacklist player on friendly fire
-		DWORD m_fNoConstruction:1;				//	Do not build new ships
-		DWORD m_fBlocksShips:1;					//	TRUE if we block ships
-		DWORD m_fShowMapOrbit:1;				//	If TRUE, show orbit in map
-		DWORD m_fDestroyIfEmpty:1;				//	If TRUE, we destroy the station as soon as it is empty
-		DWORD m_fIsSegment:1;                   //  If TRUE, we are a segment of some other object (m_pBase)
-		DWORD m_fForceMapLabel:1;				//	Force showing map label
+		DWORD m_fExplored:1 = false;					//	If TRUE, player has docked at least once
+		DWORD m_fNoBlacklist:1 = false;					//	If TRUE, do not blacklist player on friendly fire
+		DWORD m_fNoConstruction:1 = false;				//	Do not build new ships
+		DWORD m_fBlocksShips:1 = false;					//	TRUE if we block ships
+		DWORD m_fShowMapOrbit:1 = false;				//	If TRUE, show orbit in map
+		DWORD m_fDestroyIfEmpty:1 = false;				//	If TRUE, we destroy the station as soon as it is empty
+		DWORD m_fIsSegment:1 = false;                   //  If TRUE, we are a segment of some other object (m_pBase)
+		DWORD m_fForceMapLabel:1 = false;				//	Force showing map label
 
-		DWORD m_fHasMissileDefense:1;			//	If TRUE, at least one device is a missile defense weapon
-		mutable DWORD m_fMapLabelInitialized:1;	//	If TRUE, we've initialized m_MapLabel
-		mutable DWORD m_fMaxAttackDistValid:1;	//	TRUE if m_rMaxAttackDist is valid
-		DWORD m_fAnonymous:1;					//	TRUE if world has not been explicitly named
-		DWORD m_fFadeImage:1;					//	If TRUE, fade image in stellar light
-		DWORD m_dwSpare:11;
+		DWORD m_fHasMissileDefense:1 = false;			//	If TRUE, at least one device is a missile defense weapon
+		mutable DWORD m_fMapLabelInitialized:1 = false;	//	If TRUE, we've initialized m_MapLabel
+		mutable DWORD m_fMaxAttackDistValid:1 = false;	//	TRUE if m_rMaxAttackDist is valid
+		DWORD m_fAnonymous:1 = false;					//	TRUE if world has not been explicitly named
+		DWORD m_fFadeImage:1 = false;					//	If TRUE, fade image in stellar light
+		DWORD m_fAllowEnemyDocking:1 = false;			//	If TRUE, enemies can dock.
+
+		DWORD m_dwSpare:10;
 
 		//	Cached
 
-		mutable CG32bitImage m_MapImage;		//	Image for the map (if star or world)
-		mutable CMapLabelPainter m_MapLabel;	//	Cached info about map label
+		mutable CG32bitImage m_MapImage;				//	Image for the map (if star or world)
+		mutable CMapLabelPainter m_MapLabel;			//	Cached info about map label
 	};
 
 

@@ -491,6 +491,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_LOCATIONS				39
 #define FN_SYS_TOPOLOGY_DISTANCE_TO_CRITERIA		40
 #define FN_SYS_GET_ASCENDED_OBJECTS		41
+#define FN_SYS_ITEM_FREQUENCY			42
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2041,6 +2042,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'abandoned\n"
 			"   'active\n"
+			"   'allowEnemyDocking\n"
 			"   'angry\n"
 			"   'barrier\n"
 			"   'destNodeID\n"
@@ -2427,6 +2429,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"\n"
 			"property (stations)\n\n"
 
+			"   'allowEnemyDocking True|Nil\n"
 			"   'angry True|Nil|ticks\n"
 			"   'barrier True|Nil\n"
 			"   'destroyWhenEmpty True|Nil\n"
@@ -3032,6 +3035,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"sysGetItemBuyPrice",			fnSystemGet,	FN_SYS_ITEM_BUY_PRICE,
 			"(sysGetItemBuyPrice [nodeID] item [typeCriteria]) -> price (or Nil)",
+			"*v",	0,	},
+
+		{	"sysGetItemFrequency",			fnSystemGet,	FN_SYS_ITEM_FREQUENCY,
+			"(sysGetItemFrequency [nodeID] item) -> frequencyRate",
 			"*v",	0,	},
 
 		{	"sysGetLevel",					fnSystemGet,	FN_SYS_LEVEL,
@@ -8107,11 +8114,16 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else
 					{
 					CVector vPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
-					Metric rRadius;
-					int iDirection = VectorToPolar(vPos - pObj->GetPos(), &rRadius);
+
+					//	Reverse engineer to a perspective angle and radius
+
+					C3DObjectPos Pos3D;
+					Pos3D.InitFromXY(pObj->GetImageScale(), vPos - pObj->GetPos());
+
+					int iDirection = Pos3D.GetAngle();
 					int iRotationOrigin = (pField->RotatesWithSource(*pObj) ? pObj->GetRotation() : 0);
 					iPosAngle = AngleMod(iDirection - iRotationOrigin);
-					iPosRadius = (int)(rRadius / g_KlicksPerPixel);
+					iPosRadius = Pos3D.GetRadius();
 					}
 
 				//	Rotation
@@ -13618,6 +13630,55 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(iPrice);
 			}
 
+		case FN_SYS_ITEM_FREQUENCY:
+			{
+			int iArg = 0;
+
+			//	If we have more than 1 args, and the arg is a string,
+			//	then the first arg is the node ID.
+
+			CTopologyNode *pNode;
+			if (pArgs->GetCount() > 1 && pArgs->GetElement(0)->IsIdentifier())
+				{
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+				}
+
+			//	Otherwise, we assume the current system.
+
+			else
+				{
+				CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
+				if (pSystem == NULL)
+					return StdErrorNoSystem(*pCC);
+
+				pNode = pSystem->GetTopology();
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("No topology node"));
+				}
+
+			//	Get the item type
+
+			CItem Item = pCtx->AsItem(pArgs->GetElement(iArg++));
+			CItemType *pType = Item.GetType();
+			if (pType == NULL)
+				return pCC->CreateNil();
+
+			//	Get the item frequency
+
+			int iFreq = pType->GetFrequency();
+
+			//	Adjust based on encounter descriptor
+
+			CItemEncounterDefinitions::SCtx EncounterCtx;
+			pCtx->GetUniverse().GetDesignCollection().GetItemEncounterDefinitions().AdjustFrequency(EncounterCtx, *pNode, Item, iFreq);
+
+			//	Done
+
+			return pCC->CreateInteger(iFreq);
+			}
+
 		case FN_SYS_LOCATIONS:
 			{
 			CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
@@ -13922,9 +13983,9 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Parse criteria
 
-			CTopologyNode::SCriteria Criteria;
+			CTopologyNodeCriteria Criteria;
 			CString sError;
-			if (CTopologyNode::ParseCriteria(pArgs->GetElement(pArgs->GetCount() - 1)->GetStringValue(), &Criteria, &sError) != NOERROR)
+			if (Criteria.Parse(pArgs->GetElement(pArgs->GetCount() - 1)->GetStringValue(), &sError) != NOERROR)
 				return pCC->CreateError(sError);
 
 			//	Get the topology node
@@ -13943,8 +14004,8 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
 
-			CTopologyNode::SCriteriaCtx CriteriaCtx(pCtx->GetUniverse().GetTopology());
-			return pCC->CreateBool(pNode->MatchesCriteria(CriteriaCtx, Criteria));
+			CTopologyNodeCriteria::SCtx CriteriaCtx(pCtx->GetUniverse().GetTopology());
+			return pCC->CreateBool(Criteria.Matches(CriteriaCtx, *pNode));
 			}
 
 		case FN_SYS_ORBIT_CREATE:
@@ -14272,12 +14333,12 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Parse criteria
 
-			CTopologyNode::SCriteria Criteria;
+			CTopologyNodeCriteria Criteria;
 			CString sError;
-			if (CTopologyNode::ParseCriteria(pArgs->GetElement(iArg++)->GetStringValue(), &Criteria, &sError) != NOERROR)
+			if (Criteria.Parse(pArgs->GetElement(iArg++)->GetStringValue(), &sError) != NOERROR)
 				return pCC->CreateError(sError);
 
-			int iDist = CStationEncounterCtx::CalcDistanceToCriteria(*pNode, Criteria.AttribCriteria);
+			int iDist = CStationEncounterCtx::CalcDistanceToCriteria(*pNode, Criteria.GetAttributeCriteria());
 			if (iDist == -100)
 				return pCC->CreateNil();
 			else
@@ -14372,16 +14433,16 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				{
 				ICCItem *pCriteria = pArgs->GetElement(0);
-				CTopologyNode::SCriteria Criteria;
+				CTopologyNodeCriteria Criteria;
 
 				CString sError;
-				if (CTopologyNode::ParseCriteria(pCtx->GetUniverse(), pCriteria, Criteria, &sError) != NOERROR)
+				if (Criteria.Parse(pCtx->GetUniverse(), *pCriteria, &sError) != NOERROR)
 					return pCC->CreateError(sError, pCriteria);
 
 				//	Loop
 
-				CTopologyNode::SCriteriaCtx Ctx(pCtx->GetUniverse().GetTopology());
-				CTopologyNode::InitCriteriaCtx(Ctx, Criteria);
+				CTopologyNodeCriteria::SCtx Ctx(pCtx->GetUniverse().GetTopology());
+				Criteria.InitCtx(Ctx);
 
 				for (i = 0; i < pCtx->GetUniverse().GetTopologyNodeCount(); i++)
 					{
@@ -14389,7 +14450,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					if (pNode->IsEndGame())
 						continue;
 
-					if (!pNode->MatchesCriteria(Ctx, Criteria))
+					if (!Criteria.Matches(Ctx, *pNode))
 						continue;
 
 					pResult->AppendString(pNode->GetID());

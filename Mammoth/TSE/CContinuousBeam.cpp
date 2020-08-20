@@ -667,7 +667,10 @@ void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	//	Update the effect painter
 
 	if (m_pPainter)
-		m_pPainter->OnUpdate();
+		{
+		SEffectUpdateCtx UpdateCtx(GetUniverse());
+		m_pPainter->OnUpdate(UpdateCtx);
+		}
 
 	//	Do damage
 

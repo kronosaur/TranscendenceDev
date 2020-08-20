@@ -1086,7 +1086,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		if (m_pPainter 
 				&& WasPainted())
 			{
-			SEffectUpdateCtx PainterCtx;
+			SEffectUpdateCtx PainterCtx(GetUniverse());
 			PainterCtx.pObj = this;
 			PainterCtx.iTick = m_iTick;
 			PainterCtx.iRotation = GetRotation();
@@ -1201,7 +1201,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		if (m_pPainter
 				&& WasPainted())
 			{
-			SEffectUpdateCtx PainterCtx;
+			SEffectUpdateCtx PainterCtx(GetUniverse());
 			PainterCtx.pObj = this;
 			PainterCtx.iTick = m_iTick;
 			PainterCtx.iRotation = GetRotation();

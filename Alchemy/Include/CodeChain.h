@@ -128,7 +128,7 @@ class ICCItem : public CObject
 		virtual ICCItem *GetElement (int iIndex) const = 0;
 		virtual ICCItem *GetElement (const CString &sKey) const { return NULL; }
 		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex) const;
-        virtual CString GetKey (int iIndex) { return NULL_STR; }
+        virtual CString GetKey (int iIndex) const { return NULL_STR; }
 		virtual bool HasReferenceTo (ICCItem *pSrc) { return (pSrc == this); }
 		virtual ICCItem *Head (CCodeChain *pCC) = 0;
 		bool IsList (void) const { return IsNil() || !IsAtom(); }
@@ -190,6 +190,7 @@ class ICCItem : public CObject
 		CString GetStringAt (const CString &sKey, const CString &sDefault = NULL_STR) const;
 		void SetAt (const CString &sKey, ICCItem *pValue);
 		void SetBooleanAt (const CString &sKey, bool bValue);
+		void SetDoubleAt (const CString &sKey, double rValue);
 		void SetIntegerAt (const CString &sKey, int iValue);
 		void SetStringAt (const CString &sKey, const CString &sValue);
 
@@ -767,7 +768,7 @@ class CCSymbolTable : public ICCList
 		virtual ICCItem *GetElement (int iIndex) const override;
 		virtual ICCItem *GetElement (const CString &sKey) const override;
 		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex) const override;
-        virtual CString GetKey (int iIndex) override { return m_Symbols.GetKey(iIndex); }
+        virtual CString GetKey (int iIndex) const override { return m_Symbols.GetKey(iIndex); }
 		virtual bool HasReferenceTo (ICCItem *pSrc) override;
 		virtual ICCItem *Head (CCodeChain *pCC) override { return GetElement(0); }
 		virtual ICCItem *Tail (CCodeChain *pCC) override { return GetElement(1); }

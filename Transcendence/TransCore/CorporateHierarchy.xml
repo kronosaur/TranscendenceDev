@@ -98,26 +98,27 @@
 
 <!-- STATION TYPES -->
 
-	<!-- Adventurer Outfitters -->
+	<!-- Level 6: Adventurer Outfitters -->
 
 	<StationType UNID="&stAdventurerOutfitters;"
 			name=				": Adventurer Outfitters|Adventurer Outfitters"
 			sovereign=			"&svCorporate;"
+
+			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, populated"
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
-			multiHull=			"true"
+			size=				"185"
 			armorID=			"&itLightGusokuArmor;"
 			hitPoints=			"280"
+			multiHull=			"true"
 			regen=              "3"
 			fireRateAdj=		"15"
+
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -131,23 +132,21 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<Image			imageID="&rsStations6;" imageX="0" imageY="640" imageWidth="128" imageHeight="256"/>
+		<!-- Trade and Items -->
 
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
+		<Trade currency="credit">
+			<Sell	criteria="m +commonwealth; -premiumAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Buy	criteria="amdNU -Illegal; -ID; -NotForSale;"	priceAdj="50"/>
+			<Buy	criteria="ufNU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
+			<Buy	criteria="amdufNU -Illegal; -ID;"				priceAdj="10"/>
 
-		<Reinforcements minShips="4">
-			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
-		<Devices>
-			<Device deviceID="&itHeavyIonBlaster;"	omnidirectional="true"/>
-		</Devices>
+			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="110"/>
+			<InstallDevice	criteria="d L:1-10;" priceAdj="110"	upgradeInstallOnly="true"/>
+			<RemoveDevice	criteria="d L:1-10;" priceAdj="110"	upgradeInstallOnly="true"/>
+		</Trade>
 
 		<Items>
 			<RandomItem count="1d12" 
@@ -185,19 +184,45 @@
 					/>
 		</Items>
 
-		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -premiumAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
-			<Buy	criteria="amdNU -Illegal; -ID; -NotForSale;"	priceAdj="50"/>
-			<Buy	criteria="ufNU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
-			<Buy	criteria="amdufNU -Illegal; -ID;"				priceAdj="10"/>
+		<!-- Configuration -->
 
-			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="100"/>
-			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
-			<ReplaceArmor	criteria="a L:1-10;" priceAdj="110"/>
-			<InstallDevice	criteria="d L:1-10;" priceAdj="110"	upgradeInstallOnly="true"/>
-			<RemoveDevice	criteria="d L:1-10;" priceAdj="110"	upgradeInstallOnly="true"/>
-		</Trade>
+		<Devices>
+			<Device deviceID="&itHeavyIonBlaster;"	omnidirectional="true" posAngle="0" posRadius="0" posZ="180"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Lookup count="2" table="&tbCorpDefenders;"/>
+			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<Reinforcements minShips="4">
+			<Table>
+				<Lookup chance="75" table="&tbCorpDefenders;"/>
+				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&rsAdventurerOutfitters;" imageWidth="220" imageHeight="260" viewportRatio="0.02875"/>
+
+		<DockingPorts>
+			<Port posAngle="-5"    posRadius="100"  posZ="0"/>
+			<Port posAngle="35"    posRadius="100"  posZ="0"/>
+
+			<Port posAngle="85"    posRadius="100"  posZ="0"/>
+			<Port posAngle="125"   posRadius="100"  posZ="0"/>
+
+			<Port posAngle="175"   posRadius="100"  posZ="0"/>
+			<Port posAngle="215"   posRadius="100"  posZ="0"/>
+
+			<Port posAngle="265"   posRadius="100"  posZ="0"/>
+			<Port posAngle="305"   posRadius="100"  posZ="0"/>
+		</DockingPorts>
+
+		<!-- Dock Screens -->
 
 		<DockScreens>
 			<Main>
@@ -224,16 +249,7 @@
 			</Main>
 		</DockScreens>
 
-		<DockingPorts>
-			<Port x="83"	y="29" />
-			<Port x="-83"	y="29" />
-			<Port x="97"	y="-9" />
-			<Port x="-97"	y="-9" />
-			<Port x="84"	y="-72" />
-			<Port x="-84"	y="-72" />
-			<Port x="30"	y="-111" />
-			<Port x="-30"	y="-111" />
-		</DockingPorts>
+		<!-- Events and Behavior -->
 
 		<Language>
 			<Text id="descWelcome">
@@ -245,7 +261,7 @@
 		</Language>
 	</StationType>
 
-	<!-- Armor Dealer -->
+	<!-- Level 4: Armor Dealer -->
 
 	<StationType UNID="&stArmorDealer;"
 			name=				"corporate armor dealer"
@@ -560,7 +576,7 @@
 		</Language>
 	</StationType>
 
-	<!-- Arms Dealer, Bushido -->
+	<!-- Level 5: Arms Dealer, Bushido -->
 
 	<StationType UNID="&stArmsDealerBushido;"
 			name=				"Bushido merchant"
@@ -689,7 +705,7 @@
 
 	</StationType>
 
-	<!-- Auton Dealer -->
+	<!-- Level 5: Auton Dealer -->
 
 	<StationType UNID="&stAutonDealer;"
 			name=				"corporate auton dealer"
@@ -1142,7 +1158,7 @@
 		</Language>
 	</StationType>
 
-	<!-- Fuel Depot -->
+	<!-- Level 4: Fuel Depot -->
 
 	<StationType UNID="&stFuelDepot;"
 			name=				"corporate fuel depot"
@@ -1295,7 +1311,7 @@
 
 	</StationType>
 
-	<!-- Manufacturing Plant
+	<!-- Level 4: Manufacturing Plant
 	
 	EXTRA DATA
 
@@ -1570,7 +1586,7 @@
 		</Language>
 	</StationType>
 
-	<!-- Merchant Prince Hotel -->
+	<!-- Level 4: Merchant Prince Hotel -->
 
 	<StationType UNID="&stHotel;"
 			name=				"corporate hotel"
@@ -2031,7 +2047,7 @@
 		</Language>
 	</StationType>
 
-	<!-- Wondrous Devices -->
+	<!-- Level 6: Wondrous Devices -->
 
 	<StationType UNID="&stWondrousDevices;"
 			name=				": Thor's Wondrous Devices|Thor's Wondrous Devices"
@@ -2721,6 +2737,7 @@
 	
 <!-- RESOURCES -->
 
+	<Image UNID="&rsAdventurerOutfitters;"	bitmap="Resources\AdventurerOutfitters.jpg" bitmask="Resources\AdventurerOutfittersMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCorporateArmorDealer;"	bitmap="Resources\CorporateArmorDealer.jpg" bitmask="Resources\CorporateArmorDealerMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCorporateArmsDealer;"	bitmap="Resources\CorporateArmsDealer.jpg" bitmask="Resources\CorporateArmsDealerMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCorporateEnclave;"		bitmap="Resources\CorporateEnclave.jpg" bitmask="Resources\CorporateEnclaveMask.bmp" loadOnUse="true"/>

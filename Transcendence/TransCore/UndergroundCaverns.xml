@@ -5,7 +5,7 @@
 <!-- OVERLAY TYPES -->
 
 	<OverlayType unid="&ovLootCavernIce;"
-            attributes=         "asteroid, cavern, ice, underground"
+			attributes=         "asteroid, cavern, ice, underground"
 			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"
@@ -29,7 +29,7 @@
 	</OverlayType>
 
 	<OverlayType unid="&ovLootCavernMetallic;"
-            attributes=         "asteroid, cavern, metallic, underground"
+			attributes=         "asteroid, cavern, metallic, underground"
 			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"
@@ -53,7 +53,7 @@
 	</OverlayType>
 
 	<OverlayType unid="&ovLootCavernPrimordial;"
-            attributes=         "asteroid, cavern, primordial, underground"
+			attributes=         "asteroid, cavern, primordial, underground"
 			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"
@@ -77,7 +77,7 @@
 	</OverlayType>
 
 	<OverlayType unid="&ovLootCavernRocky;"
-            attributes=         "asteroid, cavern, rocky, underground"
+			attributes=         "asteroid, cavern, rocky, underground"
 			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"
@@ -101,7 +101,7 @@
 	</OverlayType>
 
 	<OverlayType unid="&ovLootCavernVolcanic;"
-            attributes=         "asteroid, cavern, underground, volcanic"
+			attributes=         "asteroid, cavern, underground, volcanic"
 			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"

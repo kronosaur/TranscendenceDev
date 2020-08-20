@@ -9,9 +9,9 @@
 			initialScale=		"200"
 			minScale=			"100" 
 			maxScale=			"250" 
-            lightYearsPerPixel= "0.4"
-               
-            stargateLineColor=  "#6b8299"
+			lightYearsPerPixel= "0.4"
+			   
+			stargateLineColor=  "#6b8299"
 			>
 
 		<MapEffect>

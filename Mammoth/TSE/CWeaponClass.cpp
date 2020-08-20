@@ -249,7 +249,8 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 
 	//  Set the target to NULL if we're blind and we can't fire when blind
 
-	ActivateCtx.pTarget = ((!m_bCanFireWhenBlind) && SourceObj.IsBlind()) ? NULL : ActivateCtx.pTarget;
+	if (!m_bCanFireWhenBlind && SourceObj.IsBlind())
+		ActivateCtx.pTarget = NULL;
 
 	//	Fire the weapon
 
@@ -470,7 +471,7 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 
 	retBalance.rProjectileHP = 0.0;
 	if (pShotDesc->GetInteraction() < 100)
-		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100 - pShotDesc->GetInteraction()) / 100.0;
+		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100.0 - pShotDesc->GetInteraction()) / 100.0;
 
 	if (pShotDesc->GetHitPoints() > 0)
 		retBalance.rProjectileHP += BALANCE_HP_FACTOR * pShotDesc->GetHitPoints() / (Metric)Stats.iDamage;
@@ -507,7 +508,7 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 	if (GetSlotsRequired() == 0)
 		retBalance.rSlots = BALANCE_NO_SLOT;
 	else if (GetSlotsRequired() > 1)
-		retBalance.rSlots = BALANCE_SLOT_FACTOR * (GetSlotsRequired() - 1);
+		retBalance.rSlots = BALANCE_SLOT_FACTOR * (GetSlotsRequired() - 1.0);
 	else
 		retBalance.rSlots = 0.0;
 
@@ -779,7 +780,7 @@ Metric CWeaponClass::CalcConfigurationMultiplier (const CWeaponFireDesc *pShot, 
 	Metric rMult = GetConfiguration(*pShot).GetMultiplier();
 
 	if (int iRepeating = GetContinuous(*pShot))
-		rMult *= (iRepeating + 1);
+		rMult *= (iRepeating + 1.0);
 
 	//	Include passthrough.
 	//
@@ -1901,7 +1902,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_POWER))
 		*retsValue = strFromInt(m_iPowerUse * 100);
 	else if (strEquals(sField, FIELD_POWER_PER_SHOT))
-		*retsValue = strFromInt(mathRound((GetFireDelay(*pShot) * m_iPowerUse * STD_SECONDS_PER_UPDATE * 1000) / 600.0));
+		*retsValue = strFromInt(mathRound(((Metric)GetFireDelay(*pShot) * (Metric)m_iPowerUse * STD_SECONDS_PER_UPDATE * 1000.0) / 600.0));
 	else if (strEquals(sField, FIELD_BALANCE))
 		{
 		SBalance Balance;
@@ -1910,7 +1911,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_RANGE))
 		*retsValue = strFromInt(mathRound(pShot->GetMaxRange() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_RECOIL))
-		*retsValue = (m_iRecoil ? strFromInt(mathRound(m_iRecoil * m_iRecoil * 10 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
+		*retsValue = (m_iRecoil ? strFromInt(mathRound(m_iRecoil * m_iRecoil * 10.0 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
 	else if (strEquals(sField, FIELD_SPEED))
 		*retsValue = strFromInt(mathRound(100.0 * pShot->GetRatedSpeed() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_VARIANT_COUNT))
@@ -2290,7 +2291,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	if (Result.bRecoil)
 		{
-		CVector vAccel = Result.vRecoil.Normal() * (Metric)(-10 * m_iRecoil * m_iRecoil);
+		CVector vAccel = Result.vRecoil.Normal() * (Metric)(-10.0 * m_iRecoil * m_iRecoil);
 		Source.AddForce((g_MomentumConstant / g_SecondsPerUpdate) * vAccel);
 		}
 
@@ -4481,6 +4482,8 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 		}
 
 	ASSERT(pTarget);
+	if (!pTarget)
+		return false;
 
 	//	Get rotation info
 
@@ -4791,6 +4794,31 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 
 		if (Damage.GetArmorDamageLevel() > 0)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("armor penetrate")));
+
+		//	Mining
+
+		if (Damage.HasMiningDamage())
+			{
+			EMiningMethod iMethod = CAsteroidDesc::CalcMiningMethod(*pShot);
+			switch (iMethod)
+				{
+				case EMiningMethod::ablation:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ablative mining")));
+					break;
+
+				case EMiningMethod::drill:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("drill mining")));
+					break;
+
+				case EMiningMethod::explosion:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("explosive mining")));
+					break;
+
+				case EMiningMethod::shockwave:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shockwave mining")));
+					break;
+				}
+			}
 
 		//	WMD
 
@@ -5220,6 +5248,9 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 			if ((dwContinuous % iContinuousDelay) == 0)
 				{
+				if (ActivateCtx.TargetList.IsEmpty())
+					ActivateCtx.TargetList = pSource->GetTargetList();
+
 				ActivateCtx.iRepeatingCount = 1 + iContinuous - (dwContinuous / iContinuousDelay);
 
 				FireWeapon(*pDevice, *pShot, ActivateCtx);

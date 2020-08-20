@@ -1002,5 +1002,14 @@
     <Xml Include="MuhammadCondi.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
+    <Xml Include="UndergroundStructures.xml">
+      <Filter>Human Space Library\Miscellaneous</Filter>
+    </Xml>
+    <Xml Include="CommonwealthMiningMission05.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="Cryovolcanic.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

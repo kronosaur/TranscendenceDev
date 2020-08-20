@@ -551,7 +551,7 @@
 			virtual=			"true"
 			level=				"1"
 			>
-		
+
 		<Invoke>
 			(block (
 				(podType (itmGetType gItem))
@@ -581,10 +581,18 @@
 		</Invoke>
 		
 		<Events>
+			<GetDisplayAttributes>
+				(list
+					{	labelType: 'advantage
+						label: (typTranslate gType 'attribShockwaveMining)
+						}
+					)
+			</GetDisplayAttributes>
 		</Events>
 		
 		<Language>
 			<Text id="msgWaiting">Armed</Text>
+			<Text id="attribShockwaveMining">shockwave mining</Text>
 		</Language>
 	</ItemType>
 	

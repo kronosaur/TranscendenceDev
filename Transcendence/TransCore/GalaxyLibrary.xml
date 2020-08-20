@@ -385,6 +385,31 @@
 	<!ENTITY stOvoidAsteroidSizeB2		"0x00020185">
 	<!ENTITY stOvoidAsteroidSizeC		"0x00020186">
 	<!ENTITY stOvoidAsteroidSizeD		"0x00020187">
+
+	<!-- 01A0-01BF ORE AND RESOURCE TYPES -->
+
+	<!ENTITY itCopperOre				"0x000201A0">
+	<!ENTITY itVanadiumOre				"0x000201A1">
+	<!ENTITY itNiobiumOre				"0x000201A2">
+	<!ENTITY itCeriumOre				"0x000201A3">
+	<!ENTITY itHexaniumOre				"0x000201A4">
+	<!ENTITY itMolybdenumOre			"0x000201A5">
+	<!ENTITY itIridiumOre				"0x000201A6">
+	<!ENTITY itLonsdaleiteOre			"0x000201A7">
+	<!ENTITY itTantalumOre				"0x000201A8">
+
+	<!-- 01C0-01DF CRYOVOLCANIC ASTEROIDS -->
+
+	<!ENTITY tbCryovolcanicTables		"0x000201C0">
+	<!ENTITY baCryovolcanic				"0x000201C1">
+	<!ENTITY rsCryovolcanicAsteroids	"0x000201C2">
+	<!ENTITY ovCryovolcanoSmall			"0x000201C3">
+	<!ENTITY ovCryovolcanoMedium		"0x000201C4">
+	<!ENTITY ovCryovolcanoLarge			"0x000201C5">
+	<!ENTITY stCryovolcanicSizeA		"0x000201C6">
+	<!ENTITY stCryovolcanicSizeB		"0x000201C7">
+	<!ENTITY stCryovolcanicSizeC		"0x000201C8">
+	<!ENTITY stCryovolcanicSizeD		"0x000201C9">
 	]>
 	
 <CoreLibrary
@@ -398,6 +423,7 @@
 	<Library unid="&unidRPGLibrary;"/>
 	
 	<Module filename="AsteroidFields.xml"/>
+	<Module filename="Cryovolcanic.xml"/>
 	<Module filename="Environments.xml"/>
 	<Module filename="GalaxyCompatibility.xml"/>
 	<Module filename="GalaxyEffects.xml"/>

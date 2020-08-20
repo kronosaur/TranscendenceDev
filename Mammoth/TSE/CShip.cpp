@@ -3457,6 +3457,16 @@ CSpaceObject *CShip::GetTarget (DWORD dwFlags) const
 	return m_pController->GetTarget(NULL, dwFlags);
 	}
 
+CTargetList CShip::GetTargetList (void) const
+
+//	GetTargetList
+//
+//	Gets the target list.
+
+	{
+	return m_pController->GetTargetList();
+	}
+
 int CShip::GetTotalArmorHP (int *retiMaxHP) const
 
 //	GetTotalArmorHP

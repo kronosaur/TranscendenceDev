@@ -1643,6 +1643,7 @@
 	<!ENTITY rsCorporateManufacturing	"0x00100050">
 	<!ENTITY scCorporateExplorer		"0x00100051">
 	<!ENTITY rsCorporateExplorerHero	"0x00100052">
+	<!ENTITY rsAdventurerOutfitters		"0x00100053">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	
@@ -1999,9 +2000,10 @@
 	<!ENTITY dsCommonwealthMiningPromotion	"0x00100256">
 	<!ENTITY unidIndependentMiner		"0x00100257">
 	<!ENTITY dsCommonwealthAsteroidInfo	"0x00100258">
-
 	<!ENTITY msCommonwealthMining03		"0x00100259">
 	<!ENTITY msCommonwealthMining04		"0x0010025A">
+
+	<!ENTITY msCommonwealthMining05		"0x0010025B">
 
 	<!-- 0270-028F SOLON CORPORATION -->
 
@@ -2411,6 +2413,21 @@
 
 	<!ENTITY ssJiangsStar				"0x001007D0">
 
+	<!-- 0800-081F UNDERGROUND STRUCTURES -->
+
+	<!ENTITY baUndergroundStructure		"0x00100800">
+	<!ENTITY baRescueStructure			"0x00100801">
+	<!ENTITY rsUndergroundStructureIce		"0x00100802">
+	<!ENTITY rsUndergroundStructureMetallic	"0x00100803">
+	<!ENTITY rsUndergroundStructurePrimordial	"0x00100804">
+	<!ENTITY rsUndergroundStructureRocky	"0x00100805">
+	<!ENTITY rsUndergroundStructureVolcanic	"0x00100806">
+	<!ENTITY ovRescueStructureIce			"0x00100807">
+	<!ENTITY ovRescueStructureMetallic		"0x00100808">
+	<!ENTITY ovRescueStructurePrimordial	"0x00100809">
+	<!ENTITY ovRescueStructureRocky			"0x0010080A">
+	<!ENTITY ovRescueStructureVolcanic		"0x0010080B">
+
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	
@@ -2531,6 +2548,7 @@
 	<Module filename="CommonwealthMiningMission02.xml"/>
 	<Module filename="CommonwealthMiningMission03.xml"/>
 	<Module filename="CommonwealthMiningMission04.xml"/>
+	<Module filename="CommonwealthMiningMission05.xml"/>
 
 	<!-- Corporate Hierarchy -->
 
@@ -2637,6 +2655,7 @@
 	<Module filename="StdPlayerShips.xml"/>
 	<Module filename="StdSovereigns.xml"/>
 	<Module filename="StdTypes.xml"/>
+	<Module filename="UndergroundStructures.xml"/>
 	
 	<!-- Pilgrim -->
 

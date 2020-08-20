@@ -20,6 +20,8 @@
 	<!ENTITY itTestWeaponSideMounted	"0xA0010044">
 	<!ENTITY itTestWeaponExternal		"0xA0010045">
 	<!ENTITY itTestWeaponFading			"0xA0010046">
+	<!ENTITY itTestRareInNewBeyond1		"0xA0010047">
+	<!ENTITY itTestRareInNewBeyond2		"0xA0010048">
 
 	<!-- 0080-00BF TEST FUNCTIONS -->
 

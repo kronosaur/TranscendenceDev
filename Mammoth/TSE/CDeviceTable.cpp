@@ -490,6 +490,7 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			{
 			CItemListManipulator ItemList(Desc.ExtraItems);
 			SItemAddCtx ItemCtx(ItemList);
+			ItemCtx.pSystem = ItemCtx.GetUniverse().GetCurrentSystem();
 			ItemCtx.iLevel = Ctx.iLevel;
 
 			m_pExtraItems->AddItems(ItemCtx);

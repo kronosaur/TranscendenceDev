@@ -125,6 +125,65 @@
 				%reward% if you succeed. What do you say?"
 			
 			</Text>
+
+			<!-- COMMONWEALTH MINING 05: RESCUE MINERS -->
+
+			<Code id="mining05.intro">
+				(typTranslate gType 'mission.intro gData)
+			</Code>
+
+			<Text id="mining05.briefing">
+
+				"There's been an accident at one of our mines. A misplaced 
+				detonation caused a collapse and now %minersTrapped% miners are
+				trapped.
+
+				"I want you to go out there and dig them out with your mining
+				equipment. What do you say?"
+			
+			</Text>
+
+			<Text id="mining05.success.allRescued">
+
+				Supervisor Condi looks ecstatic.
+
+				"This has been a miraculous day! We all feared the worst, but 
+				you managed to rescue all the miners!
+
+				"Congratulations! We've deposited %reward% in your account, and 
+				you	deserve every credit."
+			
+			</Text>
+			<Text id="mining05.success.someRescued">
+			
+				Mr. Condi looks relieved.
+
+				"It's been a long day. We mourn those that were lost even while
+				celebrating the rescue of %minersRescued% miners.
+
+				"For your efforts, we've deposited %reward% in your account."
+			
+			</Text>
+			<Text id="mining05.success.oneRescued">
+			
+				Supervisor Condi looks sad.
+
+				"We've paid a terrible price. All but one miner has perished in
+				the accident and we're devastated that you were unable to save 
+				more.
+
+				"We've deposited %reward% in your account."
+			
+			</Text>
+			<Text id="mining05.failure">
+
+				Mr. Condi looks stunned.
+
+				"Your incompetence has left %minersTrapped% miners dead. I 
+				should never have trusted you with this mission."
+			
+			</Text>
+
 		</Language>
 	</Type>
 
