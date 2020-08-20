@@ -125,18 +125,52 @@ protected:
 
 class OpenGLRenderLayer {
 public:
+	enum blendMode
+	{
+		// Copy of CGDraw::blendNormal
+		blendNone = -1,
+
+		blendNormal = 0,      //      Normal drawing
+		blendMultiply = 1,      //      Darkens images
+		blendOverlay = 2,      //      Combine multiply/screen
+		blendScreen = 3,      //      Brightens images
+		blendHardLight = 4,
+
+		blendCompositeNormal = 5,
+
+		//      See BlendModes.cpp to add new blend modes
+
+		blendModeCount = 6,
+	};
 	OpenGLRenderLayer(void) {};
 	~OpenGLRenderLayer(void);
 	void addTextureToRenderQueue(glm::vec2 vTexPositions, glm::vec2 vSpriteSheetPositions, glm::vec2 vCanvasQuadSizes, glm::vec2 vCanvasPositions,
 		glm::vec2 vTextureQuadSizes, glm::vec4 glowColor, float alphaStrength, float glowNoise, int numFramesPerRow, int numFramesPerCol, OpenGLTexture* image, float startingDepth);
-	void addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, glm::vec3 intensitiesAndCycles, glm::ivec4 styles, float rotation, float startingDepth);
-	void addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, float rotation, float seed, float startingDepth);
+	void addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, glm::vec3 intensitiesAndCycles, glm::ivec4 styles, float rotation, float startingDepth, OpenGLRenderLayer::blendMode blendMode);
+	void addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, float rotation, float seed, float startingDepth, OpenGLRenderLayer::blendMode blendMode);
 	void addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition, float rotation, float intensity, float opacity, int animation,
-		int style, int detail, int distortion, int animationSeed, int lifetime, int currFrame, glm::vec3 primaryColor, glm::vec3 secondaryColor, float secondaryOpacity, float startingDepth);
+		int style, int detail, int distortion, int animationSeed, int lifetime, int currFrame, glm::vec3 primaryColor, glm::vec3 secondaryColor, float secondaryOpacity, float startingDepth, OpenGLRenderLayer::blendMode blendMode);
 	void renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader,
 		OpenGLShader *rayShader, OpenGLShader *glowmapShader, OpenGLShader *orbShader, unsigned int fbo, OpenGLVAO* canvasVAO, const OpenGLAnimatedNoise* perlinNoise);
 	void GenerateGlowmaps(unsigned int fbo, OpenGLVAO *canvasVAO, OpenGLShader* glowmapShader);
 private:
+	void addProceduralEffectToProperRenderQueue(OpenGLInstancedBatchRenderRequestRay renderRequest, OpenGLRenderLayer::blendMode blendMode) {
+		OpenGLInstancedBatchRay& rayRenderBatch = m_rayRenderBatchBlendNormal;
+		switch (blendMode) {
+		case OpenGLRenderLayer::blendMode::blendNormal:
+			rayRenderBatch = m_rayRenderBatchBlendNormal;
+			break;
+		case OpenGLRenderLayer::blendMode::blendScreen:
+			rayRenderBatch = m_rayRenderBatchBlendScreen;
+			break;
+		default:
+			rayRenderBatch = m_rayRenderBatchBlendNormal;
+			break;
+		}
+		m_rayRenderBatch.addObjToRender(renderRequest); // TODO: fix
+	}
+	void setBlendModeNormal() { glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); };
+	void setBlendModeScreen() { glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR); };
 	void clear();
 	enum effectType
 	{
@@ -149,6 +183,8 @@ private:
 		effectTypeCount = 5
 	};
 	std::map<OpenGLTexture*, OpenGLInstancedBatchTexture*> m_texRenderBatches;
+	OpenGLInstancedBatchRay m_rayRenderBatchBlendNormal;
+	OpenGLInstancedBatchRay m_rayRenderBatchBlendScreen;
 	OpenGLInstancedBatchRay m_rayRenderBatch;
 	OpenGLInstancedBatchOrb m_orbRenderBatch;
 	std::mutex m_texRenderQueueAddMutex;
@@ -169,9 +205,9 @@ public:
 		float glowB = 0.0, float glowA = 0.0, float glowNoise = 0.0);
 	void addRayToEffectRenderQueue (int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
 		int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
-		std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj);
+		std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj, OpenGLRenderLayer::blendMode blendMode);
 	void addLightningToEffectRenderQueue (int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
-		int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor, std::tuple<int, int, int> secondaryColor, float seed);
+		int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor, std::tuple<int, int, int> secondaryColor, float seed, OpenGLRenderLayer::blendMode blendMode);
 	void addOrbToEffectRenderQueue(
 		int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY,
 		float rotation,
@@ -186,7 +222,8 @@ public:
 		int currFrame,
 		glm::vec3 primaryColor,
 		glm::vec3 secondaryColor,
-		float secondaryOpacity
+		float secondaryOpacity,
+		OpenGLRenderLayer::blendMode blendMode
 	);
 	void setCurrentTick (int currTick) { m_iCurrentTick = currTick; }
 	void setCanvasDimensions(int width, int height) { m_iCanvasHeight = height; m_iCanvasWidth = width; }

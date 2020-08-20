@@ -119,7 +119,7 @@ void OpenGLMasterRenderQueue::addTextureToRenderQueue(int startPixelX, int start
 
 void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
 	int iColorTypes, int iOpacityTypes, int iWidthAdjType, int iReshape, int iTexture, std::tuple<int, int, int> primaryColor,
-	std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj)
+	std::tuple<int, int, int> secondaryColor, int iIntensity, float waveCyclePos, int opacityAdj, OpenGLRenderLayer::blendMode blendMode)
 {
 	glm::vec3 vPrimaryColor = glm::vec3(std::get<0>(primaryColor), std::get<1>(primaryColor), std::get<2>(primaryColor)) / float(255.0);
 	glm::vec3 vSecondaryColor = glm::vec3(std::get<0>(secondaryColor), std::get<1>(secondaryColor), std::get<2>(secondaryColor)) / float(255.0);
@@ -130,7 +130,7 @@ void OpenGLMasterRenderQueue::addRayToEffectRenderQueue(int posPixelX, int posPi
 	glm::vec3 intensitiesAndCycles(float(iIntensity), waveCyclePos, float(opacityAdj) / 255.0f);
 	glm::ivec4 styles(iColorTypes, iOpacityTypes, iTexture, 0);
 
-	m_pActiveRenderLayer->addRayToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, intensitiesAndCycles, styles, rotation, m_fDepthLevel);
+	m_pActiveRenderLayer->addRayToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, intensitiesAndCycles, styles, rotation, m_fDepthLevel, blendMode);
 	m_fDepthLevel -= m_fDepthDelta;
 }
 
@@ -148,18 +148,19 @@ void OpenGLMasterRenderQueue::addOrbToEffectRenderQueue(
 	int currFrame,
 	glm::vec3 primaryColor,
 	glm::vec3 secondaryColor,
-    float secondaryOpacity)
+    float secondaryOpacity,
+	OpenGLRenderLayer::blendMode blendMode)
 	{
 	glm::vec4 sizeAndPosition((float)sizePixelX, (float)sizePixelY,
 		(float)posPixelX / (float)canvasSizeX, (float)posPixelY / (float)canvasSizeY);
 	m_pActiveRenderLayer->addOrbToEffectRenderQueue(sizeAndPosition, rotation, intensity, opacity, animation, style, detail, distortion, animationSeed, lifetime, currFrame, primaryColor, secondaryColor, secondaryOpacity,
-		m_fDepthLevel);
+		m_fDepthLevel, blendMode);
 	m_fDepthLevel -= m_fDepthDelta;
 	}
 
 void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int posPixelY, int sizePixelX, int sizePixelY, int canvasSizeX, int canvasSizeY, float rotation,
 	int iWidthAdjType, int iReshape, std::tuple<int, int, int> primaryColor,
-	std::tuple<int, int, int> secondaryColor, float seed)
+	std::tuple<int, int, int> secondaryColor, float seed, OpenGLRenderLayer::blendMode blendMode)
 {
 	glm::vec3 vPrimaryColor = glm::vec3(std::get<0>(primaryColor), std::get<1>(primaryColor), std::get<2>(primaryColor)) / float(255.0);
 	glm::vec3 vSecondaryColor = glm::vec3(std::get<0>(secondaryColor), std::get<1>(secondaryColor), std::get<2>(secondaryColor)) / float(255.0);
@@ -167,7 +168,7 @@ void OpenGLMasterRenderQueue::addLightningToEffectRenderQueue(int posPixelX, int
 		(float)posPixelX / (float)canvasSizeX, (float)posPixelY / (float)canvasSizeY);
 	glm::ivec4 shapes(iWidthAdjType, iReshape, 0, 0);
 
-	m_pActiveRenderLayer->addLightningToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, rotation, seed, m_fDepthLevel);
+	m_pActiveRenderLayer->addLightningToEffectRenderQueue(vPrimaryColor, vSecondaryColor, sizeAndPosition, shapes, rotation, seed, m_fDepthLevel, blendMode);
 	m_fDepthLevel -= m_fDepthDelta;
 }
 

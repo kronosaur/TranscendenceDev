@@ -23,7 +23,8 @@ layout (location = 6) in vec3 aPrimaryColor;
 layout (location = 7) in vec3 aSecondaryColor;
 layout (location = 8) in float aSeed;
 layout (location = 9) in int aEffectType;
-layout (location = 10) in float aDepth;
+layout (location = 10) in int aBlendMode;
+layout (location = 11) in float aDepth;
 
 uniform vec2 aCanvasAdjustedDimensions;
 
@@ -49,6 +50,7 @@ layout (location = 18) flat out int orbDetail;
 layout (location = 19) out float orbSecondaryOpacity;
 layout (location = 20) flat out int orbLifetime;
 layout (location = 21) flat out int orbCurrFrame;
+layout (location = 22) flat out int blendMode;
 
 // This should match enum effectType in opengl.h.
 
@@ -131,4 +133,5 @@ void main(void)
     gl_Position = final_pos;
 	seed = aSeed;
 	effectType = aEffectType;
+	blendMode = aBlendMode;
 }

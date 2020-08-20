@@ -24,11 +24,21 @@ layout (location = 18) flat in int orbDetail;
 layout (location = 19) in float orbSecondaryOpacity;
 layout (location = 20) flat in int orbLifetime;
 layout (location = 21) flat in int orbCurrFrame;
+layout (location = 22) flat in int blendMode;
 
 uniform float current_tick;
 uniform sampler3D perlin_noise;
 
 out vec4 fragColor;
+
+// This should match enum blendMode in opengl.h.
+
+int blendNormal = 0;      //      Normal drawing
+int blendMultiply = 1;      //      Darkens images
+int blendOverlay = 2;      //      Combine multiply/screen
+int blendScreen = 3;      //      Brightens images
+int blendHardLight = 4;
+int blendCompositeNormal = 5;
 
 // This should match enum effectType in opengl.h.
 
@@ -1007,8 +1017,15 @@ void main(void)
 		(calcRayLightningColor(quadSize, real_texcoord, rayWaveCyclePos, rayGrainyTexture, rayReshape, rayWidthAdjType, center_point, opacityAdj) * float((effectType == effectTypeRay) || (effectType == effectTypeLightning))) +
 		(calcOrbColor(quadSize) * float(effectType == effectTypeOrb))
 	);
+
+	bool usePreMultipliedAlpha = (
+		(blendMode == blendScreen)
+	);
+
+	vec3 finalColorRGB = (vec3(finalColor[0], finalColor[1], finalColor[2]) * float(!usePreMultipliedAlpha)) + (vec3(finalColor[0], finalColor[1], finalColor[2]) * float(usePreMultipliedAlpha) * finalColor[3]);
+
 	float epsilon = 0.01;
 	bool alphaIsZero = finalColor[3] < epsilon;
 	gl_FragDepth = depth + float(alphaIsZero && (finalColor[3] < epsilon));
-    fragColor = finalColor;
+    fragColor = vec4(finalColorRGB[0], finalColorRGB[1], finalColorRGB[2], finalColor[3]);
 }

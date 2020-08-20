@@ -19,7 +19,7 @@ private:
 	static std::unique_ptr<OpenGLVAO> vao;
 };
 
-class OpenGLInstancedBatchRenderRequestRay : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, glm::ivec4, glm::ivec4, glm::vec4, glm::vec3, glm::vec3, float, int> {
+class OpenGLInstancedBatchRenderRequestRay : public OpenGLInstancedBatchRenderRequest<glm::vec4, float, glm::ivec4, glm::ivec4, glm::vec4, glm::vec3, glm::vec3, float, int, int> {
 public:
 	OpenGLInstancedBatchRenderRequestRay(
 		glm::vec4 sizeAndPosition,
@@ -30,7 +30,8 @@ public:
 		glm::vec3 primaryColor,
 		glm::vec3 secondaryColor,
 		float seed,
-		int effectType) : OpenGLInstancedBatchRenderRequest{ sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, primaryColor, secondaryColor, seed, effectType } {};
+		int effectType,
+		int blendMode) : OpenGLInstancedBatchRenderRequest{ sizeAndPosition, rotation, shapes, styles, intensitiesAndCycles, primaryColor, secondaryColor, seed, effectType, blendMode } {};
 	OpenGLVAO& getVAOForInstancedBatchType() override { if (!vao) { vao = std::move(setUpVAO()); } return *(vao.get()); }
 	int getRenderRequestSize() override { return sizeof(*this); }
 private:

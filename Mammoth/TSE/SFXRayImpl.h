@@ -183,7 +183,7 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
                 m_byOpacity = byValue;
             }
 
-		virtual void DrawWithOpenGL (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iRotDegrees, bool& bSuccess) override
+		virtual void DrawWithOpenGL (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iRotDegrees, bool& bSuccess, OpenGLRenderLayer::blendMode blendMode) override
 			{
 			OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
 			if (!pRenderQueue)
@@ -204,7 +204,7 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
 			std::tuple<int, int, int> secondaryColor (int(m_secondaryColor.GetRed()), int(m_secondaryColor.GetGreen()), int(m_secondaryColor.GetBlue()));
 
 			pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, int(iDist) * 2, m_iWidthCount * 2, iCanvasWidth, iCanvasHeight, float(iRotDegrees) * (float(PI) / 180.0f), m_iColorType, m_iOpacityType, m_iWidthAdjType, m_iReshape, m_iTexture,
-				primaryColor, secondaryColor, m_iIntensity, float(m_rCyclePos), m_byOpacity);
+				primaryColor, secondaryColor, m_iIntensity, float(m_rCyclePos), m_byOpacity, blendMode);
 
 			bSuccess = true;
 			return;
@@ -361,7 +361,7 @@ class CLightningBundlePainter : public ILinePainter
 			CRayEffectPainter::EWidthAdjTypes iWidthAdjType, CRayEffectPainter::EWidthAdjTypes iReshape);
 
         virtual void Draw (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth) override;
-		virtual void DrawWithOpenGL(CG32bitImage & Dest, int x1, int y1, int x2, int y2, int iRotDegrees, bool & bSuccess) override;
+		virtual void DrawWithOpenGL(CG32bitImage & Dest, int x1, int y1, int x2, int y2, int iRotDegrees, bool & bSuccess, OpenGLRenderLayer::blendMode blendMode) override;
 
     private:
         int m_iBoltCount;

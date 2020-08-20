@@ -1261,7 +1261,8 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 			iTick % max(1, m_iLifetime),
 			glm::vec3(float(m_rgbPrimaryColor.GetRed()), float(m_rgbPrimaryColor.GetGreen()), float(m_rgbPrimaryColor.GetBlue())) / float(255.0),
 			glm::vec3(float(m_rgbSecondaryColor.GetRed()), float(m_rgbSecondaryColor.GetGreen()), float(m_rgbSecondaryColor.GetBlue())) / float(255.0),
-			float(m_bySecondaryOpacity / 255.0)
+			float(m_bySecondaryOpacity / 255.0),
+			OpenGLRenderLayer::blendMode(m_iBlendMode)
 		);
 	}
 	else {
@@ -1451,7 +1452,7 @@ void COrbEffectPainter::PaintLightning (CG32bitImage &Dest, int xCenter, int yCe
 			std::tuple<int, int, int> secondaryColor(0, 0, 0);
 			float rSeed = mathRandom(20, 80) / 20.0f;
 			pRenderQueue->addLightningToEffectRenderQueue(iPosX, iPosY, FlareDesc.iLength * 2, int(FlareDesc.iWidth * 30 * rSeed), iCanvasWidth, iCanvasHeight, float(-iAngle + 180) * (float(PI) / 180.0f), iShape, iShape,
-				primaryColor, secondaryColor, rSeed + float(i));
+				primaryColor, secondaryColor, rSeed + float(i), OpenGLRenderLayer::blendNormal);
 		}
 		else {
 			int xDest, yDest;

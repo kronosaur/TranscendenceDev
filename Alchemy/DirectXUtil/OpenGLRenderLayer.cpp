@@ -45,19 +45,19 @@ void OpenGLRenderLayer::addTextureToRenderQueue(glm::vec2 vTexPositions, glm::ve
 	m_texRenderBatches[image]->addObjToRender(renderRequest);
 }
 
-void OpenGLRenderLayer::addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, glm::vec3 intensitiesAndCycles, glm::ivec4 styles, float rotation, float startingDepth)
+void OpenGLRenderLayer::addRayToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, glm::vec3 intensitiesAndCycles, glm::ivec4 styles, float rotation, float startingDepth, OpenGLRenderLayer::blendMode blendMode)
 {
 	glm::vec4 intensityAndCyclesV4(intensitiesAndCycles[0], intensitiesAndCycles[1], intensitiesAndCycles[2], 0.0);
-	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, intensityAndCyclesV4, vPrimaryColor, vSecondaryColor, 0, OpenGLRenderLayer::effectType::effectTypeRay);
+	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, intensityAndCyclesV4, vPrimaryColor, vSecondaryColor, 0, OpenGLRenderLayer::effectType::effectTypeRay, blendMode);
 	renderRequest.set_depth(startingDepth);
-	m_rayRenderBatch.addObjToRender(renderRequest);
+	addProceduralEffectToProperRenderQueue(renderRequest, blendMode);
 }
 
-void OpenGLRenderLayer::addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, float rotation, float seed, float startingDepth)
+void OpenGLRenderLayer::addLightningToEffectRenderQueue(glm::vec3 vPrimaryColor, glm::vec3 vSecondaryColor, glm::vec4 sizeAndPosition, glm::ivec4 shapes, float rotation, float seed, float startingDepth, OpenGLRenderLayer::blendMode blendMode)
 {
-	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, glm::ivec4(0, 0, 0, 0), glm::vec4(0, 0, 0, 0), vPrimaryColor, vSecondaryColor, seed, OpenGLRenderLayer::effectType::effectTypeLightning);
+	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, glm::ivec4(0, 0, 0, 0), glm::vec4(0, 0, 0, 0), vPrimaryColor, vSecondaryColor, seed, OpenGLRenderLayer::effectType::effectTypeLightning, blendMode);
 	renderRequest.set_depth(startingDepth);
-	m_rayRenderBatch.addObjToRender(renderRequest);
+	addProceduralEffectToProperRenderQueue(renderRequest, blendMode);
 }
 
 void OpenGLRenderLayer::addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition,
@@ -74,7 +74,8 @@ void OpenGLRenderLayer::addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition,
 	glm::vec3 primaryColor,
 	glm::vec3 secondaryColor,
 	float secondaryOpacity,
-	float startingDepth)
+	float startingDepth,
+	OpenGLRenderLayer::blendMode blendMode)
 	// aShapes: orbLifetime, orbCurrFrame, orbDistortion, orbDetail
     // aStyles: orbStyle, orbAnimation, opacity, blank
     // aFloatParams: intensity, blank, opacityAdj, orbSecondaryOpacity
@@ -84,9 +85,9 @@ void OpenGLRenderLayer::addOrbToEffectRenderQueue(glm::vec4 sizeAndPosition,
 	glm::ivec4 styles(style, animation, 0, 0);
 	glm::vec4 floatParams(intensity, secondaryOpacity, opacity, 0.0);
 
-	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, floatParams, primaryColor, secondaryColor, float(animationSeed), OpenGLRenderLayer::effectType::effectTypeOrb);
+	auto renderRequest = OpenGLInstancedBatchRenderRequestRay(sizeAndPosition, rotation, shapes, styles, floatParams, primaryColor, secondaryColor, float(animationSeed), OpenGLRenderLayer::effectType::effectTypeOrb, blendMode);
 	renderRequest.set_depth(startingDepth);
-	m_rayRenderBatch.addObjToRender(renderRequest);
+	addProceduralEffectToProperRenderQueue(renderRequest, blendMode);
 }
 
 void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int currentTick, glm::ivec2 canvasDimensions, OpenGLShader *objectTextureShader, OpenGLShader *rayShader, OpenGLShader *glowmapShader, OpenGLShader *orbShader, unsigned int fbo, OpenGLVAO* canvasVAO, const OpenGLAnimatedNoise* perlinNoise)
@@ -126,12 +127,9 @@ void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int
 	}
 
 	std::array<std::string, 3> rayAndLightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions", "perlin_noise" };
-	std::array<std::string, 2> orbUniformNames = { "current_tick", "aCanvasAdjustedDimensions" };
 
 	m_rayRenderBatch.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions, perlinNoise);
 	m_rayRenderBatch.Render(rayShader, depthLevel, depthDelta, currentTick);
-	m_orbRenderBatch.setUniforms(orbUniformNames, float(currentTick), canvasDimensions);
-	m_orbRenderBatch.Render(orbShader, depthLevel, depthDelta, currentTick);
 
 	m_texRenderBatches.clear();
 }

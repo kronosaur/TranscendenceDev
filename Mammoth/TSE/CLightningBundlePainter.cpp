@@ -83,7 +83,7 @@ void CLightningBundlePainter::Draw (CG32bitImage &Dest, int x1, int y1, int x2, 
 	DEBUG_CATCH
     }
 
-void CLightningBundlePainter::DrawWithOpenGL(CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iRotDegrees, bool& bSuccess)
+void CLightningBundlePainter::DrawWithOpenGL(CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iRotDegrees, bool& bSuccess, OpenGLRenderLayer::blendMode blendMode)
 	{
 	OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
 	if (!pRenderQueue)
@@ -106,7 +106,7 @@ void CLightningBundlePainter::DrawWithOpenGL(CG32bitImage &Dest, int x1, int y1,
 	
 	for (int i = 0; i < m_iBoltCount; i++) {
 		pRenderQueue->addLightningToEffectRenderQueue(iPosX, iPosY, int(iDist) * 2, m_iWidthCount * 2 * int(rSeed), iCanvasWidth, iCanvasHeight, float(iRotDegrees) * (float(PI) / 180.0f), m_iWidthAdjType, m_iReshape,
-			primaryColor, secondaryColor, rSeed + float(i));
+			primaryColor, secondaryColor, rSeed + float(i), blendMode);
 	}
 
 	bSuccess = true;
