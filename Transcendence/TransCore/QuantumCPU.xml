@@ -32,7 +32,7 @@
 
 	<ItemType UNID="&itDefectiveShieldOptimizer;"
 			name=				"ShieldOverdrive v1.0 algorithm cube"
-			attributes=			"defective, info, minorItem, quantumProgram, shieldDamage"
+			attributes=			"commonwealth, defective, info, minorItem, quantumProgram, shieldDamage"
 			inherit=			"&baQuantumCPUShieldProgram;"
 
 			level=				"5"
@@ -99,7 +99,7 @@
 
 	<ItemType UNID="&itShieldOptimizer;"
 			name=				"ShieldOverdrive v3.1.8 algorithm cube"
-			attributes=			"info, minorItem, quantumProgram, shieldEnhance"
+			attributes=			"commonwealth, info, minorItem, quantumProgram, shieldEnhance"
 			inherit=			"&baQuantumCPUShieldProgram;"
 
 			level=				"5"
@@ -138,7 +138,7 @@
 			mass=				"50"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownMnemonicCube;"
-			attributes=			"consumable, info, quantumProgram"
+			attributes=			"commonwealth, consumable, info, quantumProgram"
 
 			description=		"This algorithm hacks into near-by enemy ship computers and temporarily disable their control systems. Scramble1.5 requires a quantum CPU to execute."
 			>
@@ -175,7 +175,7 @@
 
 	<ItemType UNID="&itShieldPowerSaver;"
 			name=				"ShieldEfficiency v1.2.5 algorithm cube"
-			attributes=			"info, minorItem, quantumProgram, shieldEnhance"
+			attributes=			"commonwealth, info, minorItem, quantumProgram, shieldEnhance"
 			inherit=			"&baQuantumCPUShieldProgram;"
 
 			level=				"6"
