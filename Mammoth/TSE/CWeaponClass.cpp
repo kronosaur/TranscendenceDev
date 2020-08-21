@@ -1086,10 +1086,19 @@ TArray<CTargetList::STargetResult> CWeaponClass::CalcMIRVFragmentationTargets (C
 		Metric rDist2 = TargetList.GetTargetDist2(i);
 
 		//	Calc firing solution
+		//
+		//	NOTE: We omit the source velocity since this is a MIRV launch and
+		//	we always start from 0 velocity.
 
-		int iFireAngle = Source.CalcFireSolution(pTarget, rSpeed);
-		if (iFireAngle == -1)
+		CVector vPos = pTarget->GetPos() - Source.GetPos();
+		CVector vVel = pTarget->GetVel();
+
+		Metric rTimeToIntercept = CalcInterceptTime(vPos, vVel, rSpeed);
+		if (rTimeToIntercept < 0.0)
 			continue;
+
+		CVector vInterceptPoint = vPos + vVel * rTimeToIntercept;
+		int iFireAngle = VectorToPolar(vInterceptPoint);
 
 		//	Add entry
 
