@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Level 5: Auton Dealer -->
+
+	<StationType UNID="&stAutonDealer;"
+			name=				"corporate auton dealer"
+			sovereign=			"&svCorporate;"
+			inherit=			"&baCorporateStation;"
+
+			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, populated"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"250"
+			armorID=			"&itAdvancedPlasteelPlate;"
+			hitPoints=			"350"
+			multiHull=			"true"
+			regen=				"4"
+
+			explosionType=		"&vtBlastExplosion2;"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+corporateSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"--rcu ur--- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<Names noArticle="true">Auton Universe; Brehzen's Used Autons; Chiba Auton Dealers;
+				Dresden Autonomous Defenders; Ehrlenmeyer Autons; Frenzy Autons;
+				General Autons, rce; Hastur Used Autons; Ixin Autons Dealer;
+				Ji Autons; Kyrrin Used Autons; Laser Autons, rce; Merlin Autons;
+				Nrummer Weapons Corp.; Oort Autons, rce; Planetary Autons;
+				Qing Long Autons; Raptor Systems, rce; Security Autons;
+				Tenhove Defense Dealer; Ultimate Autons; Victory Systems;
+				Weapons World; %s Auton Dealers</Names>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Buy	criteria="*NU +Auton; -Illegal; -NotForSale;"	priceAdj="90"/>
+		</Trade>
+
+		<Items>
+			<RandomItem count="20" 
+					criteria=		"* +auton; -illegal; -military; -notStandard; -notForSale;"
+					levelFrequency=	"systemLevel:ucc|c|cur"
+					/>
+			<RandomItem count="1d6" 
+					criteria=		"* +auton; -illegal; -military; -notStandard; -notForSale; L:4"
+					/>
+		</Items>
+
+		<!-- Configuration -->
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Lookup count="2" table="&tbCorpDefenders;"/>
+			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<Reinforcements minShips="4">
+			<Table>
+				<Lookup chance="75" table="&tbCorpDefenders;"/>
+				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&rsStations4;" imageX="128" imageY="192" imageWidth="128" imageHeight="256"/>
+
+		<DockingPorts>
+			<Port x="0"		y="90" />
+			<Port x="0"		y="-90" />
+			<Port x="60"	y="60" />
+			<Port x="60"	y="-60" />
+			<Port x="90"	y="0" />
+			<Port x="-90"	y="0" />
+			<Port x="-60"	y="60" />
+			<Port x="-60"	y="-60" />
+		</DockingPorts>
+
+		<!-- Dock Screen -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action name="Buy Autons" default="1" key="B">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
+							</Action>
+
+							<Action name="Sell Autons" key="S">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
+							</Action>
+
+							<Action name="Repair Active Autons" key="R">
+								(block Nil
+									; Figure out the list of autons for the player
+									(setq gList (sysFindObject gPlayerShip "s B:auton; O:escort;"))
+									(if gList
+										(scrShowPane gScreen "RepairAutons")
+										(scrShowPane gScreen "NoAutons")
+										)
+									)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+
+						</Actions>
+
+					</Default>
+
+					<NoAutons descID="descNoAutons">
+						<Actions>
+							<Action id="actionLeave" cancel="1" default="1">
+								<ShowPane pane="Default"/>
+							</Action>
+						</Actions>
+					</NoAutons>
+
+					<RepairAutons>
+						<OnPaneInit>
+							(block Nil
+								; Figure out how much it would cost to repair the player's
+								; autons.
+
+								(setq gCost 0)
+								(enum gList auton
+									(for i 0 (subtract (shpGetArmorCount auton) 1)
+										(setq gCost (add gCost (multiply 5 (objGetArmorDamage auton i))))
+										)
+									)
+
+								(switch
+									; If the autons have no damage, then there is nothing to do
+									(eq gCost 0)
+										(block Nil
+											(scrSetDesc gScreen "There is no damage to your autons.")
+											(scrEnableAction gScreen 0 Nil)
+											)
+
+									; If the player cannot afford it.
+									(gr gCost (plyGetCredits gPlayer))
+										(block Nil
+											(scrSetDesc gScreen (cat "Repairing the damage to your autons would cost " gCost " credits. Unfortunately, you do not have enough credits to proceed."))
+											(scrEnableAction gScreen 0 Nil)
+											)
+
+									; Otherwise, we're OK
+									(scrSetDesc gScreen (cat "Repairing the damage to your autons will cost " gCost " credits. Do you wish to proceed?"))
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action name="Repair" default="1" key="R">
+								(block Nil
+									(enum gList auton
+										(for i 0 (subtract (shpGetArmorCount auton) 1)
+											(objRepairArmor auton i)
+											)
+										)
+
+									(plyCharge gPlayer gCost)
+									(scrShowPane gScreen "Default")
+									)
+							</Action>
+
+							<Action id="actionLeave" cancel="1">
+								<ShowPane pane="Default"/>
+							</Action>
+						</Actions>
+					</RepairAutons>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Data -->
+
+		<Language>
+			<Text id="descWelcome">
+				You are docked at an auton dealer.
+			</Text>
+			<Text id="descNoAutons">
+
+				A sales drone approaches you:
+				
+				"You do not currently have any autons to repair, but I would be 
+				delighted to show you some of our newest models."
+
+			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys autons. We are not 
+				interested in buying %itemName%.
+
+			</Text>
+			<Text id="core.mapDesc">"Buys and sells autons"</Text>
+		</Language>
+	</StationType>
+
+</TranscendenceModule>

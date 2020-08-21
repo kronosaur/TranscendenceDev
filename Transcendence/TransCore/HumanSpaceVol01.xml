@@ -2552,6 +2552,7 @@
 
 	<!-- Corporate Hierarchy -->
 
+	<Module filename="CorporateAutonDealer.xml"/>
 	<Module filename="CorporateHierarchy.xml"/>
 	<Module filename="CorporateInsurance.xml"/>
 	<Module filename="CorporateTradingPost.xml"/>
