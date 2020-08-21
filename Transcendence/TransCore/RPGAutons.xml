@@ -166,7 +166,6 @@
 		</Properties>
 
 		<Wreck	wreckType=			"&stAutonWreck;"
-				leavesWreck=		"100"
 				noInstalledItems=	"true"
 				/>
 
@@ -177,7 +176,7 @@
 						(not (eq (objGetTarget gSender) (objGetTarget gSource)))
 						(not (shpGetAISetting gSource 'nonCombatant))
 						(objGetItems gSource "wI")
-						(objGetProperty gSource 'playerWingman)
+						(obj@ gSource 'playerWingman)
 						)
 				</OnShow>
 				
@@ -211,7 +210,7 @@
 					(and (neq (objGetData gSource 'behavior) 'attackingAtWill)
 						(not (shpGetAISetting gSource 'nonCombatant))
 						(objGetItems gSource "wI")
-						(objGetProperty gSource 'playerWingman)
+						(obj@ gSource 'playerWingman)
 						)
 				</OnShow>
 				
@@ -223,7 +222,7 @@
 			<Message id="msgFormUp" name="Form up" key="F">
 				<OnShow>
 					(and (neq (objGetData gSource 'behavior) 'escorting)
-						(objGetProperty gSource 'playerWingman)
+						(obj@ gSource 'playerWingman)
 						)
 				</OnShow>
 
@@ -244,7 +243,7 @@
 						(objGetItems gSender "*IN +AutonBay;")
 						(objGetData gSource 'autonItemType)
 						(neq (objGetData gSource 'behavior) 'returning)
-						(objGetProperty gSource 'playerWingman)
+						(obj@ gSource 'playerWingman)
 						)
 				</OnShow>
 				
@@ -298,7 +297,7 @@
 			<Message id="msgWait" name="Wait" key="W">
 				<OnShow>
 					(and (neq (objGetData gSource 'behavior) 'waiting)
-						(objGetProperty gSource 'playerWingman)
+						(obj@ gSource 'playerWingman)
 						)
 				</OnShow>
 
@@ -352,24 +351,24 @@
 					
 					(setq config {
 						armor: (map (objGetItems gSource "aI") theArmor	{
-							item: (itmSetProperty theArmor 'installed Nil)
-							hp: (subtract (itmGetProperty theArmor 'completeHP) (objGetArmorDamage gSource theArmor))
+							item: (itmSet@ theArmor 'installed Nil)
+							hp: (subtract (itm@ theArmor 'completeHP) (objGetArmorDamage gSource theArmor))
 							})
 							
 						devices: (map (objGetItems gSource "dI") theDev {
-							item: (itmSetProperty theDev 'installed Nil)
+							item: (itmSet@ theDev 'installed Nil)
 							})
 							
 						shieldStatus: (if (gr shieldDamage 0) {
 							maxHP: shieldMaxHP
 							hp: (- shieldMaxHP shieldDamage)
-							regen: (/ (typGetProperty (shpGetShieldItemUNID gSource) 'regen) 180)
+							regen: (/ (typ@ (shpGetShieldItemUNID gSource) 'regen) 180)
 							regenStartTick: (unvGetTick) ; TODO: Add a way to get depletion time left.
 							})
 							
 						cargo: (if includeCargoItems (objGetItems gSource "*U"))
 						
-						name: (if (neq (objGetName gSource) (objGetProperty gSource 'name))
+						name: (if (neq (objGetName gSource) (obj@ gSource 'name))
 									(rpgSanitizeAutonName (objGetName gSource))
 									)
 									
@@ -386,7 +385,7 @@
 					;	Add one charge on the item for every ton of cargo inside the auton
 
 					(if includeCargoItems					
-						(setq autonItem (itmSetProperty autonItem 'charges
+						(setq autonItem (itmSet@ autonItem 'charges
 							(divide 
 								(map (objGetItems gSource "*U") 'reduceSum theItem 
 									(multiply (itmGetCount theItem) (itmGetMass theItem))
@@ -409,9 +408,21 @@
 			</ConvertToItem>
 			
 			<CreateFromItem>
-				(block (auton sourceObj sourceItem autonConfig)
-					(setq sourceObj (@ gData 'sourceObj))
-					(setq sourceItem (@ gData 'item))
+				(block (
+					(sourceObj (@ gData 'sourceObj))
+					(sourceItem (@ gData 'item))
+					(autonConfig (itmGetData sourceItem 'autonConfig))
+					(autonSovereign
+						(switch
+							(= sourceObj gPlayerShip)
+								&svFriendlyAuton;
+
+							(obj@ sourceObj 'sovereign)
+							)
+						)
+
+					auton
+					)
 					
 					;	Create the auton
 					
@@ -419,13 +430,13 @@
 						(sysCreateShip 
 							(@ gData 'type)
 							(objGetPos sourceObj)
-							(if (eq sourceObj gPlayerShip) &svFriendlyAuton; (objGetProperty sourceObj 'sovereign))
+							autonSovereign
 							)
 						)
 						
 					;	If the source item has a configuration then we need to initialize the ship.
 					
-					(if (setq autonConfig (itmGetData sourceItem 'autonConfig))
+					(if autonConfig
 						(block Nil
 						
 							;	Start by installing the proper armor
@@ -439,7 +450,7 @@
 									
 									;	Set the appropriate hit points
 									
-									(objSetItemProperty auton (shpGetArmor auton i) 'hp (@ (@ (@ autonConfig 'armor) i) 'hp))
+									(objSet@ auton (shpGetArmor auton i) 'hp (@ (@ (@ autonConfig 'armor) i) 'hp))
 									)
 								)
 								
@@ -483,7 +494,6 @@
 							(shpRechargeShield auton (or (@ (rpgGetAutonItemShieldStatus autonConfig) 'hp)
 														(shpGetShieldMaxHitPoints auton)
 								))
-								
 							)
 						)
 						
@@ -491,12 +501,19 @@
 					
 					(objSetData auton 'behavior 'escorting)
 					(shpOrder auton 'escort sourceObj)
-					
+
 					;	Store the item type in the auton object so that we can
 					;	convert it back later.
 					
 					(objSetData auton 'autonItem sourceItem)
 					(objSetData auton 'autonItemType (itmGetType sourceItem))
+
+					;	For player autons, set them so they always leave a wreck
+					;	(so the player can repair them).
+
+					(if (= autonSovereign &svFriendlyAuton;)
+						(objSet@ auton 'alwaysLeaveWreck True)
+						)
 					
 					;	Welcome or error message
 					
@@ -517,7 +534,7 @@
 					
 					(if (eq (objGetSovereign gSource) &svFriendlyAuton;)
 						(block Nil
-							(objSetProperty gSource 'playerWingman True)
+							(objSet@ gSource 'playerWingman True)
 							)
 						)
 					)
@@ -571,7 +588,7 @@
 			<OnOrdersCompleted>
 				(block Nil
 					(switch
-						(not (objGetProperty gSource 'playerWingman))
+						(not (obj@ gSource 'playerWingman))
 							Nil
 						
 						(not gPlayerShip)
@@ -599,7 +616,7 @@
 				(block (behavior)
 					(setq behavior (objGetData gSource 'behavior))
 					(switch
-						(not (objGetProperty gSource 'playerWingman))
+						(not (obj@ gSource 'playerWingman))
 							Nil
 							
 						; If we're waiting, stay in this system and wait for the player
@@ -653,7 +670,7 @@
 						(block ((theName (rpgSanitizeAutonName (scrGetInputText gScreen)))
 								(theAuton (@ gData 'autonObject))
 								)
-							(objSetName theAuton (or theName (objGetProperty theAuton 'name)))
+							(objSetName theAuton (or theName (obj@ theAuton 'name)))
 							(scrExitScreen gScreen)
 							)
 					</Action>
@@ -937,7 +954,7 @@
 							armor: (map (typGetDataField autonShipClass 'armorItems) Nil theArmor
 								{
 									item: theArmor
-									hp: (itmGetProperty theArmor 'completeHP)
+									hp: (itm@ theArmor 'completeHP)
 									}
 								)
 
