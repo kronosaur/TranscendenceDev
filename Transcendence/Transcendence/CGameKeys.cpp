@@ -1,6 +1,7 @@
 //	CGameKeys.cpp
 //
 //	CGameKeys class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 #include "Transcendence.h"
@@ -9,6 +10,8 @@
 #define COMMAND_ATTRIB						CONSTLIT("command")
 #define KEY_ATTRIB							CONSTLIT("key")
 #define LAYOUT_ATTRIB						CONSTLIT("layout")
+
+#define COMMAND_NONE						CONSTLIT("noCommand")
 
 #define LAYOUT_CUSTOM                       CONSTLIT("custom")
 #define LAYOUT_DEFAULT                      CONSTLIT("default")
@@ -228,6 +231,9 @@ CGameKeys::Keys CGameKeys::GetGameCommand (const CString &sCmd)
 //	Returns game command from string
 
 	{
+	if (strEquals(sCmd, COMMAND_NONE))
+		return CGameKeys::keyNone;
+
 	for (int i = 0; i < CGameKeys::keyCount; i++)
 		if (strEquals(sCmd, CString(g_GameKeyData[i].pszName, -1, true)))
 			return (CGameKeys::Keys)i;
@@ -403,7 +409,12 @@ bool CGameKeys::IsNonRepeatCommand (Keys iCommand)
 //	Returns TRUE if this command ignored repeated keys.
 
 	{
-	ASSERT(iCommand > 0 && iCommand < keyCount);
+	if (iCommand <= 0 || iCommand >= keyCount)
+		{
+		ASSERT(false);
+		return false;
+		}
+
 	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_NO_REPEAT ? true : false);
 	}
@@ -415,7 +426,12 @@ bool CGameKeys::IsStatefulCommand (Keys iCommand)
 //	Returns TRUE if this command tracks the state of a key (up or down).
 
 	{
-	ASSERT(iCommand > 0 && iCommand < keyCount);
+	if (iCommand <= 0 || iCommand >= keyCount)
+		{
+		ASSERT(false);
+		return false;
+		}
+
 	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_STATEFULL ? true : false);
 	}
@@ -427,7 +443,12 @@ bool CGameKeys::IsXYInputCommand (Keys iCommand)
 //	Returns TRUE if this command needs XY input.
 
 	{
-	ASSERT(iCommand > 0 && iCommand < keyCount);
+	if (iCommand <= 0 || iCommand >= keyCount)
+		{
+		ASSERT(false);
+		return false;
+		}
+
 	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_XY_INPUT ? true : false);
 	}
@@ -439,6 +460,8 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 //	Read the key map from XML
 
 	{
+	bool bBindMouseMoveToShipAim = true;
+
 	//  For backwards compatibility, we assume a custom layout if we don't
 	//  have a layout specified.
 
@@ -491,6 +514,13 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 			kernelDebugLogPattern("Unknown game command: %s", pMap->GetAttribute(COMMAND_ATTRIB));
 			continue;
 			}
+		else if (iCommand == keyNone)
+			{
+			if (dwVirtKey == CVirtualKeyData::VK_MOUSE_MOVE)
+				bBindMouseMoveToShipAim = false;
+
+			continue;
+			}
 
 		if (iNewMap[dwVirtKey] != keyError)
 			{
@@ -504,6 +534,16 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 		//	any defaults.
 
 		m_SavedCommandMap[iCommand].Insert(dwVirtKey, 0);
+		}
+
+	//	If we haven't explicitly unbound mouse move, then map it to ship aim.
+	//	We need this for backwards compatibility (i.e., if we load an old
+	//	Settings.xml).
+
+	if (bBindMouseMoveToShipAim 
+			&& iNewMap[CVirtualKeyData::VK_MOUSE_MOVE] == keyError)
+		{
+		m_SavedCommandMap[keyAimShip].Insert(CVirtualKeyData::VK_MOUSE_MOVE);
 		}
 
 	//  Set the layout
@@ -637,6 +677,21 @@ ALERROR CGameKeys::WriteAsXML (IWriteStream *pOutput)
 			if (error = pOutput->Write(sData.GetPointer(), sData.GetLength(), NULL))
 				return error;
 			}
+		}
+
+	//	We always write out the binding for mouse move because we use it to tell
+	//	if the player has explicitly disabled it (as opposed to not being 
+	//	defined in an older version of Settings.xml).
+
+	const Keys iCmdBoundToMouseMove = GetGameCommand(CVirtualKeyData::VK_MOUSE_MOVE);
+	if (iCmdBoundToMouseMove == keyNone)
+		{
+		sData = strPatternSubst(CONSTLIT("\t\t<Map key=\"%s\" command=\"%s\"/>\r\n"),
+				CVirtualKeyData::GetKeyID(CVirtualKeyData::VK_MOUSE_MOVE),
+				COMMAND_NONE);
+
+		if (error = pOutput->Write(sData.GetPointer(), sData.GetLength(), NULL))
+			return error;
 		}
 
 	//	Close tag

@@ -380,6 +380,9 @@
     <ClInclude Include="ScriptParserImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSETopologyDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1527,6 +1530,12 @@
     </ClCompile>
     <ClCompile Include="CScriptParser.cpp">
       <Filter>Source Files\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemEncounterDefinitions.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CTopologyNodeCriteria.cpp">
+      <Filter>Source Files\Topology</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -19,6 +19,7 @@ class CGameStats;
 class CGenericType;
 class CItem;
 class CItemCtx;
+class CItemEncounterDefinitions;
 class CItemEnhancementStack;
 class CObjectImageArray;
 class COrbit;
@@ -328,6 +329,7 @@ class CDesignType
 		ICCItemPtr GetGlobalData (const CString &sAttrib) const;
 		CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
 		DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
+		const CItemEncounterDefinitions &GetItemEncounterDefinitions (void) const { return (m_pExtra ? m_pExtra->ItemEncounterDefinitions : CItemEncounterDefinitions::Null); }
 		const CLanguageDataBlock &GetLanguageBlock (void) const;
 		CXMLElement *GetLocalScreens (void) const;
 		CString GetMapDescription (const SMapDescriptionCtx &Ctx) const;
@@ -446,6 +448,7 @@ class CDesignType
 			CXMLElement *pLocalScreens = NULL;			//	Local dock screen
 			CArmorMassDefinitions ArmorDefinitions;		//	Armor mass definitions
 			CDisplayAttributeDefinitions DisplayAttribs;	//	Display attribute definitions
+			CItemEncounterDefinitions ItemEncounterDefinitions;	//	Item encounter definitions
 
 			SEventHandlerDesc EventsCache[evtCount];	//	Cached events
 			};
@@ -775,9 +778,6 @@ class CGenericType : public CDesignType
 	};
 
 //	Topology Descriptors -------------------------------------------------------
-//
-//	Defines CTopologyNode::SCriteria, which is needed by station encounter
-//	definitions.
 
 #include "TSETrade.h"
 #include "TSETopology.h"
@@ -925,11 +925,20 @@ class CExtension
 			folderExtensions,				//	Extensions folder
 			};
 
+		enum class EUsage
+			{
+			required,						//	Error if library not found
+			dependency,						//	Extension not available unless library found
+			optional,						//	OK if library not found
+
+			error,
+			};
+
 		struct SLibraryDesc
 			{
 			DWORD dwUNID = 0;				//	UNID of library that we use
 			DWORD dwRelease = 0;			//	Release of library that we use
-			bool bOptional = false;			//	Library is optional
+			EUsage iUsage = EUsage::required;
 			};
 
 		struct SLoadOptions
@@ -1015,6 +1024,8 @@ class CExtension
 		static ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, CString *retsError);
 		static void DebugDump (CExtension *pExtension, bool bFull = false);
 		static CString GetTypeName (EExtensionTypes iType);
+		static EUsage ParseUsage (const CString &sValue);
+
 
 	private:
 		struct SGlobalsEntry
@@ -1026,7 +1037,7 @@ class CExtension
 		static ALERROR CreateExtensionFromRoot (const CString &sFilespec, CXMLElement *pDesc, EFolderTypes iFolder, CExternalEntityTable *pEntities, DWORD dwInheritAPIVersion, CExtension **retpExtension, CString *retsError);
 
 		void AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD, CString> *retMap) const;
-		void AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID = 0, DWORD dwRelease = 0, bool bOptional = false);
+		void AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID = 0, DWORD dwRelease = 0, EUsage iUsage = EUsage::required);
 		void AddDefaultLibraryReferences (SDesignLoadCtx &Ctx);
 		void CleanUpXML (void);
 		ALERROR LoadDesignElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
@@ -1143,7 +1154,7 @@ class CExtensionCollection
 		bool ComputeDownloads (const TArray<CMultiverseCatalogEntry> &Collection, TArray<CMultiverseCatalogEntry> &retNotFound);
 		void DebugDump (void);
 		bool FindAdventureFromDesc (DWORD dwUNID, DWORD dwFlags = 0, CExtension **retpExtension = NULL);
-		bool FindBestExtension (DWORD dwUNID, DWORD dwRelease = 0, DWORD dwFlags = 0, CExtension **retpExtension = NULL);
+		bool FindBestExtension (DWORD dwUNID, DWORD dwRelease = 0, DWORD dwFlags = 0, CExtension **retpExtension = NULL) const;
 		bool FindExtension (DWORD dwUNID, DWORD dwRelease, CExtension::EFolderTypes iFolder, CExtension **retpExtension = NULL);
 		void FreeDeleted (void);
 		CExtension *GetBase (void) const { return m_pBase; }
@@ -1174,6 +1185,7 @@ class CExtensionCollection
 		void ComputeCompatibilityLibraries (CExtension *pAdventure, DWORD dwFlags, TArray<CExtension *> *retList);
 		ALERROR ComputeFilesToLoad (const CString &sFilespec, CExtension::EFolderTypes iFolder, TSortMap<CString, int> &List, CString *retsError);
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		bool HasDependencies (const CExtension &Extension, DWORD dwFlags) const;
 		ALERROR LoadBaseFile (const CString &sFilespec, DWORD dwFlags, CString *retsError);
 		ALERROR LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExtension **retpExtension);
 		ALERROR LoadFile (const CString &sFilespec, CExtension::EFolderTypes iFolder, DWORD dwFlags, const CIntegerIP &CheckDigest, bool *retbReload, CString *retsError);
@@ -1394,6 +1406,7 @@ class CDesignCollection
 		CExtension *GetExtension (int iIndex) const { return m_BoundExtensions[iIndex]; }
 		int GetExtensionCount (void) const { return m_BoundExtensions.GetCount(); }
 		CG32bitImage *GetImage (DWORD dwUNID, DWORD dwFlags = 0);
+		const CItemEncounterDefinitions &GetItemEncounterDefinitions (void) const { return m_ItemEncounterDefinitions; }
 		CString GetStartingNodeID (void);
 		void GetStats (SStats &Result) const;
 		CTopologyDescTable *GetTopologyDesc (void) const { return m_pTopology; }
@@ -1447,6 +1460,7 @@ class CDesignCollection
 		TSortMap<CString, const CEconomyType *> m_EconomyIndex;
 		CArmorMassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
+		CItemEncounterDefinitions m_ItemEncounterDefinitions;
 		CGlobalEventCache *m_EventsCache[evtCount];
 		TSortMap<CString, TArray<CDesignType *>> m_PropertyCache;
 		CAdventureDesc m_EmptyAdventure;

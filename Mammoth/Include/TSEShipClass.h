@@ -263,7 +263,7 @@ class CShipwreckDesc
 		size_t GetMemoryUsage (void) const;
 		int GetStructuralHP (void) const { return m_iStructuralHP; }
 		int GetWreckChance (void) const { return m_iLeavesWreck; }
-		CObjectImageArray *GetWreckImage (CShipClass *pClass, int iRotation) const;
+		CObjectImageArray *GetWreckImage (const CShipClass *pClass, int iRotation) const;
 		CStationType *GetWreckType (void) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Metric rHullMass);
 		bool IsDefault (void) const { return m_bIsDefault; }
@@ -278,7 +278,7 @@ class CShipwreckDesc
 		int CalcDeviceComponentChance (const CItem &Item, bool bDropDamaged) const;
 		int CalcDeviceDestroyChance (void) const { return 100 - Min(GetWreckChance(), 50); }
 		ItemFates CalcDeviceFate (CShip *pSource, const CItem &Item, CSpaceObject *pWreck, bool bDropDamaged) const;
-		bool CreateWreckImage (CShipClass *pClass, int iRotationFrame, CObjectImageArray &Result) const;
+		bool CreateWreckImage (const CShipClass *pClass, int iRotationFrame, CObjectImageArray &Result) const;
 		void InitDamageImage (void) const;
 		void LoadXMLBool (const CXMLElement &Desc, const CString &sAttrib, bool &retbValue);
 
@@ -447,6 +447,7 @@ class CShipClass : public CDesignType
 		const CString &GetShipTypeName (void) const { return m_sTypeName; }
 		int GetWreckChance (void) const { return GetWreckDesc().GetWreckChance(); }
 		const CShipwreckDesc &GetWreckDesc (void) const;
+		const CObjectImageArray &GetWreckImage (int iRotation) const;
 		bool HasDockingPorts (void) const { return (m_DockingPorts.GetPortCount() > 0 || !m_pDefaultScreen.IsEmpty()); }
 		bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);

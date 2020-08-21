@@ -188,6 +188,7 @@ class CParticleSystemDesc
 		void SetTangentSpeed (const DiceRange &Value) { m_TangentSpeed = Value; }
 		void SetTrackingObject (bool bValue = true) { m_bTrackingObject = bValue; }
 		void SetWakePotential (int iValue) { m_rWakeFactor = Max(0, iValue) / 100.0; m_bHasWake = (m_rWakeFactor > 0.0); }
+		void SetWakePotential (Metric rValue) { m_rWakeFactor = Max(0.0, rValue) / 100.0; m_bHasWake = (m_rWakeFactor > 0.0); }
 		void SetXformRotation (int iValue) { m_iXformRotation = iValue; }
 		void SetXformTime (Metric rValue) { m_rXformTime = rValue; }
 

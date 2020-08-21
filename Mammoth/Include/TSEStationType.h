@@ -153,7 +153,7 @@ class CStationEncounterDesc
 		int GetMaxAppearing (void) const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
 		int GetNumberAppearing (void) const { return (m_bNumberAppearing ? m_NumberAppearing.Roll() : -1); }
 		bool HasAutoLevelFrequency (void) const { return m_bAutoLevelFrequency; }
-		bool HasSystemCriteria (const CTopologyNode::SCriteria **retpCriteria = NULL) const 
+		bool HasSystemCriteria (const CTopologyNodeCriteria **retpCriteria = NULL) const 
 			{
 			if (m_bSystemCriteria) 
 				{
@@ -171,7 +171,7 @@ class CStationEncounterDesc
 
 	private:
 		bool m_bSystemCriteria = false;				//	If TRUE we have system criteria
-		CTopologyNode::SCriteria m_SystemCriteria;	//	System criteria
+		CTopologyNodeCriteria m_SystemCriteria;		//	System criteria
 
 		CTopologyAttributeCriteria m_DistanceCriteria;	//	Criteria for nodes for distance calc
 		CString m_sDistanceFrequency;				//	Frequency distribution by distance from criteria
@@ -643,40 +643,41 @@ class CStationType : public CDesignType
 		IItemGenerator *m_pItems = NULL;				//	Random item table
 		CTradingDesc *m_pTrade = NULL;					//	Trading structure
 
-		DWORD m_fMobile:1;								//	Station moves
-		DWORD m_fWall:1;								//	Station is a wall
-		DWORD m_fInactive:1;							//	Station starts inactive
-		DWORD m_fDestroyWhenAbandoned:1;				//	Station is destroyed when at 0 hit points
-		DWORD m_fDestroyWhenEmpty:1;					//	Station is destroyed when last item removed
-		DWORD m_fAllowEnemyDocking:1;					//	Station allows enemies to dock
-		DWORD m_fNoFriendlyFire:1;						//	Station cannot hit friends
-		DWORD m_fSign:1;								//	Station is a text sign
+		DWORD m_fMobile:1 = false;						//	Station moves
+		DWORD m_fWall:1 = false;						//	Station is a wall
+		DWORD m_fInactive:1 = false;					//	Station starts inactive
+		DWORD m_fDestroyWhenAbandoned:1 = false;		//	Station is destroyed when at 0 hit points
+		DWORD m_fDestroyWhenEmpty:1 = false;			//	Station is destroyed when last item removed
+		DWORD m_fAllowEnemyDocking:1 = false;			//	Station allows enemies to dock
+		DWORD m_fNoFriendlyFire:1 = false;				//	Station cannot hit friends
+		DWORD m_fSign:1 = false;						//	Station is a text sign
 
-		DWORD m_fBeacon:1;								//	Station is a nav beacon
-		DWORD m_fRadioactive:1;							//	Station is radioactive
-		DWORD m_fCanAttack:1;							//	Station is active (i.e., will react if attacked)
-		DWORD m_fShipEncounter:1;						//	This is a ship encounter
-		DWORD m_fNoMapIcon:1;							//	Do not show on map
-		DWORD m_fTimeStopImmune:1;						//	TRUE if station is immune to time-stop
-		DWORD m_fNoBlacklist:1;							//	Does not blacklist player if attacked
-		DWORD m_fReverseArticle:1;						//	Use "a" instead of "an" and vice versa
+		DWORD m_fBeacon:1 = false;						//	Station is a nav beacon
+		DWORD m_fRadioactive:1 = false;					//	Station is radioactive
+		DWORD m_fCanAttack:1 = false;					//	Station is active (i.e., will react if attacked)
+		DWORD m_fShipEncounter:1 = false;				//	This is a ship encounter
+		DWORD m_fNoMapIcon:1 = false;					//	Do not show on map
+		DWORD m_fTimeStopImmune:1 = false;				//	TRUE if station is immune to time-stop
+		DWORD m_fNoBlacklist:1 = false;					//	Does not blacklist player if attacked
+		DWORD m_fReverseArticle:1 = false;				//	Use "a" instead of "an" and vice versa
 
-		DWORD m_fStatic:1;								//	Use CStatic instead of CStation
-		DWORD m_fOutOfPlane:1;							//	Background or foreground object
-		DWORD m_fNoFriendlyTarget:1;					//	Station cannot be hit by friends
-		DWORD m_fVirtual:1;								//	Virtual stations do not show up
-		DWORD m_fCommsHandlerInit:1;					//	TRUE if comms handler has been initialized
-		DWORD m_fNoMapDetails:1;                        //  If TRUE, do not show in details pane in galactic map
-		DWORD m_fSuppressMapLabel:1;					//	If TRUE, do not show a label on system map
-		DWORD m_fBuildReinforcements:1;					//	If TRUE, reinforcements are built instead of brought in
+		DWORD m_fStatic:1 = false;						//	Use CStatic instead of CStation
+		DWORD m_fOutOfPlane:1 = false;					//	Background or foreground object
+		DWORD m_fNoFriendlyTarget:1 = false;			//	Station cannot be hit by friends
+		DWORD m_fVirtual:1 = false;						//	Virtual stations do not show up
+		DWORD m_fCommsHandlerInit:1 = false;			//	TRUE if comms handler has been initialized
+		DWORD m_fNoMapDetails:1 = false;                //  If TRUE, do not show in details pane in galactic map
+		DWORD m_fSuppressMapLabel:1 = false;			//	If TRUE, do not show a label on system map
+		DWORD m_fBuildReinforcements:1 = false;			//	If TRUE, reinforcements are built instead of brought in
 
-		DWORD m_fStationEncounter:1;					//	If TRUE, we're just an encounter wrapper that creates stations
-		DWORD m_fCalcLevel:1;							//	If TRUE, m_iLevel needs to be computed
-		DWORD m_fBalanceValid:1;						//	If TRUE, m_rCombatBalance is valid
-		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
-		DWORD m_fForceMapLabel:1;						//	If TRUE, show map label, even if we wouldn't by default.
-		DWORD m_fAnonymous:1;							//	If TRUE, object is anonymous world/asteroid/etc.
-		DWORD m_fNoIndependentAttack:1;					//	If TRUE, we only attack if our base is alive.
+		DWORD m_fStationEncounter:1 = false;			//	If TRUE, we're just an encounter wrapper that creates stations
+		DWORD m_fCalcLevel:1 = false;					//	If TRUE, m_iLevel needs to be computed
+		DWORD m_fBalanceValid:1 = false;				//	If TRUE, m_rCombatBalance is valid
+		DWORD m_fShowsUnexploredAnnotation:1 = false;	//	If TRUE, we show unexplored annotation (used for asteroids)
+		DWORD m_fForceMapLabel:1 = false;				//	If TRUE, show map label, even if we wouldn't by default.
+		DWORD m_fAnonymous:1 = false;					//	If TRUE, object is anonymous world/asteroid/etc.
+		DWORD m_fNoIndependentAttack:1 = false;			//	If TRUE, we only attack if our base is alive.
+
 		DWORD m_fSpare8:1;
 
 		//	Images

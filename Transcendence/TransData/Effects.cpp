@@ -171,6 +171,8 @@ void GenerateEffectImage (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	//	Paint
 
+	SEffectUpdateCtx UpdateCtx(Universe);
+
 	for (i = 0; i < Effects.GetCount(); i++)
 		{
 		SEffectRender *pEffect = &Effects[i];
@@ -192,7 +194,7 @@ void GenerateEffectImage (CUniverse &Universe, CXMLElement *pCmdLine)
 
 			//	Update
 
-			pEffect->pPainter->OnUpdate();
+			pEffect->pPainter->OnUpdate(UpdateCtx);
 			}
 		}
 

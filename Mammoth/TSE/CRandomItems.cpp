@@ -22,8 +22,6 @@ CRandomItems::~CRandomItems (void)
 //	CRandomItems destructor
 
 	{
-	if (m_Table)
-		delete [] m_Table;
 	}
 
 void CRandomItems::AddItems (SItemAddCtx &Ctx)
@@ -33,21 +31,17 @@ void CRandomItems::AddItems (SItemAddCtx &Ctx)
 //	Add items
 
 	{
-	//	If this is a dynamic table, then we need to generate it now
+	//	Make sure our probability table is initialized. We cache the table for
+	//	the same system.
 
-	if (m_bDynamicLevelFrequency && m_iDynamicLevel != Ctx.iLevel)
-		{
-		SDesignLoadCtx LoadCtx(Ctx.GetUniverse());
-		InitTable(LoadCtx, GenerateLevelFrequency(m_sLevelFrequency, Ctx.iLevel));
-		m_iDynamicLevel = Ctx.iLevel;
-		}
+	InitTable(Ctx);
 
 	//	Roll
 
 	int iRoll = mathRandom(1, 1000);
 	bool bAllAtOnce = (m_iDamaged == 0 && m_Enhanced.GetChance() == 0);
 
-	for (int i = 0; i < m_iCount; i++)
+	for (int i = 0; i < m_Table.GetCount(); i++)
 		{
 		iRoll -= m_Table[i].iProbability;
 
@@ -122,21 +116,9 @@ ALERROR CRandomItems::Create (CUniverse &Universe,
 	pGenerator->m_Criteria = Crit;
 	pGenerator->m_sLevelFrequency = sLevelFrequency;
 	pGenerator->m_bDynamicLevelFrequency = (strFind(sLevelFrequency, CONSTLIT(":")) != -1);
-	pGenerator->m_iDynamicLevel = 0;
 	pGenerator->m_iDamaged = 0;
 	pGenerator->m_iLevel = 0;
 	pGenerator->m_iLevelCurve = 0;
-
-	pGenerator->m_iCount = 0;
-	pGenerator->m_Table = NULL;
-
-	if (!pGenerator->m_bDynamicLevelFrequency)
-		{
-		SDesignLoadCtx LoadCtx(Universe);
-		pGenerator->InitTable(LoadCtx, sLevelFrequency);
-		if (pGenerator->m_iCount == 0)
-			return ERR_FAIL;
-		}
 
 	//	Done
 
@@ -145,55 +127,28 @@ ALERROR CRandomItems::Create (CUniverse &Universe,
 	return NOERROR;
 	}
 
-struct ItemEntryStruct
-	{
-	CItemType *pType;
-	int iChance;
-	int iRemainder;
-	};
-
-CurrencyValue CRandomItems::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CRandomItems::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
 //	Returns the average value.
 
 	{
-	//	If this is a dynamic table we need to compute all levels
+	//	Make sure the table is initialized
 
-	if (m_bDynamicLevelFrequency)
+	InitTable(Ctx);
+
+	//	Average value is proportional to chances.
+
+	Metric rTotal = 0.0;
+	for (int i = 0; i < m_Table.GetCount(); i++)
 		{
-		Metric rTotal = 0.0;
-		SDesignLoadCtx LoadCtx(Ctx.GetUniverse());
-		InitTable(LoadCtx, GenerateLevelFrequency(m_sLevelFrequency, iLevel));
-		m_iDynamicLevel = iLevel;
-
-		for (int i = 0; i < m_iCount; i++)
-			{
-			CItemType *pType = m_Table[i].pType;
-			CurrencyValue ItemValue = CSingleItem::CalcItemValue(pType);
-			rTotal += (pType->GetNumberAppearing().GetAveValueFloat() * (Metric)ItemValue * (Metric)m_Table[i].iProbability / 1000.0);
-			}
-
-		return (CurrencyValue)(rTotal + 0.5);
+		CItemType *pType = m_Table[i].pType;
+		CurrencyValue ItemValue = CSingleItem::CalcItemValue(pType);
+		rTotal += (pType->GetNumberAppearing().GetAveValueFloat() * (Metric)ItemValue * (Metric)m_Table[i].iProbability / 1000.0);
 		}
 
-	//	Otherwise the table is already initialized.
-
-	else
-		{
-		//	Average value is proportional to chances.
-
-		Metric rTotal = 0.0;
-		for (int i = 0; i < m_iCount; i++)
-			{
-			CItemType *pType = m_Table[i].pType;
-			CurrencyValue ItemValue = CSingleItem::CalcItemValue(pType);
-			rTotal += (pType->GetNumberAppearing().GetAveValueFloat() * (Metric)ItemValue * (Metric)m_Table[i].iProbability / 1000.0);
-			}
-
-		return (CurrencyValue)(rTotal + 0.5);
-		}
+	return (CurrencyValue)(rTotal + 0.5);
 	}
 
 CItemTypeProbabilityTable CRandomItems::GetProbabilityTable (SItemAddCtx &Ctx) const
@@ -203,24 +158,19 @@ CItemTypeProbabilityTable CRandomItems::GetProbabilityTable (SItemAddCtx &Ctx) c
 //	Returns a table with the probability of each item type appearing.
 
 	{
-	//	If this is a dynamic table, then we need to generate it now
+	//	Make sure the table is initialized
 
-	if (m_bDynamicLevelFrequency && m_iDynamicLevel != Ctx.iLevel)
-		{
-		SDesignLoadCtx LoadCtx(Ctx.GetUniverse());
-		InitTable(LoadCtx, GenerateLevelFrequency(m_sLevelFrequency, Ctx.iLevel));
-		m_iDynamicLevel = Ctx.iLevel;
-		}
+	InitTable(Ctx);
 
 	//	Short-circuit
 
-	if (m_iCount == 0)
+	if (m_Table.GetCount() == 0)
 		return CItemTypeProbabilityTable();
 
 	//	Scale chances
 
 	CItemTypeProbabilityTable Result;
-	for (int i = 0; i < m_iCount; i++)
+	for (int i = 0; i < m_Table.GetCount(); i++)
 		Result.Add(m_Table[i].pType, (Metric)m_Table[i].iProbability / 1000.0);
 
 	return Result;
@@ -233,14 +183,27 @@ bool CRandomItems::HasItemAttribute (const CString &sAttrib) const
 //	Returns TRUE if any item has the given attribute
 
 	{
-	for (int i = 0; i < m_iCount; i++)
+	for (int i = 0; i < m_Table.GetCount(); i++)
 		if (m_Table[i].pType->HasAttribute(sAttrib))
 			return true;
 
 	return false;
 	}
 
-void CRandomItems::InitTable (SDesignLoadCtx &Ctx, const CString &sLevelFrequency) const
+const CTopologyNode &CRandomItems::CalcCurrentNode (SItemAddCtx &Ctx) const
+
+//	CalcCurrentNode
+//
+//	Returns the node that we should use.
+
+	{
+	if (Ctx.pSystem && Ctx.pSystem->GetTopology())
+		return *Ctx.pSystem->GetTopology();
+	else
+		return Ctx.GetUniverse().GetTopology().NullNode();
+	}
+
+void CRandomItems::InitTable (SItemAddCtx &Ctx) const
 
 //	InitTable
 //
@@ -249,20 +212,45 @@ void CRandomItems::InitTable (SDesignLoadCtx &Ctx, const CString &sLevelFrequenc
 //	We assume that m_Criteria, m_iLevel, and m_iLevelCurve are properly initialized.
 
 	{
+	struct ItemEntryStruct
+		{
+		CItemType *pType;
+		int iChance;
+		int iRemainder;
+		};
+
+	SDesignLoadCtx LoadCtx(Ctx.GetUniverse());
+
+	//	We need the node because spawn probabilities sometime change depending
+	//	on system. If we've already initialized the table for this node, then
+	//	nothing to do.
+
+	const CTopologyNode &Node = CalcCurrentNode(Ctx);
+	if (strEquals(m_sNodeID, Node.GetID()))
+		return;
+
+	int iNodeLevel = (Ctx.pSystem ? Node.GetLevel() : Ctx.iLevel);
+
 	CUniverse &Universe = Ctx.GetUniverse();
+	auto &ItemEncounterDefinitions = Universe.GetDesignCollection().GetItemEncounterDefinitions();
+	CItemEncounterDefinitions::SCtx ItemEncounterCtx;
 
-	//	Free original, if necessary
+	//	Clean up
 
-	if (m_Table)
-		delete [] m_Table;
+	m_sNodeID = Node.GetID();
+	m_Table.DeleteAll();
 
-	//	Start by allocating an array large enough to hold
-	//	all item types in the universe
+	//	Allocate a temporary table
 
-	ItemEntryStruct *pTable = new ItemEntryStruct [Universe.GetItemTypeCount()];
-	int iTableSize = 0;
+	TArray<ItemEntryStruct> Table;
 
 	//	Figure out if we should use level curves or level frequency
+
+	CString sLevelFrequency;
+	if (m_bDynamicLevelFrequency)
+		sLevelFrequency = GenerateLevelFrequency(m_sLevelFrequency, iNodeLevel);
+	else
+		sLevelFrequency = m_sLevelFrequency;
 
 	bool bUseLevelFrequency = !sLevelFrequency.IsBlank();
 
@@ -280,9 +268,9 @@ void CRandomItems::InitTable (SDesignLoadCtx &Ctx, const CString &sLevelFrequenc
 		if (!Universe.GetDesignCollection().IsBindComplete()
 				&& !pType->IsBound())
 			{
-			if (pType->BindDesign(Ctx) != NOERROR)
+			if (pType->BindDesign(LoadCtx) != NOERROR)
 				{
-				Universe.LogOutput(strPatternSubst(CONSTLIT("CRandomItems::InitTable Bind: %s"), Ctx.sError));
+				Universe.LogOutput(strPatternSubst(CONSTLIT("CRandomItems::InitTable Bind: %s"), LoadCtx.sError));
 				continue;
 				}
 			}
@@ -345,6 +333,7 @@ void CRandomItems::InitTable (SDesignLoadCtx &Ctx, const CString &sLevelFrequenc
 		//	Adjust score based on item frequency
 
 		iScore = iScore * pType->GetFrequency() * 10 / (ftCommon * 10);
+		ItemEncounterDefinitions.AdjustFrequency(ItemEncounterCtx, Node, Item, iScore);
 
 		//	If we have a score of 0 then we skip this item
 
@@ -353,37 +342,32 @@ void CRandomItems::InitTable (SDesignLoadCtx &Ctx, const CString &sLevelFrequenc
 
 		//	Add the item to the table
 
-		pTable[iTableSize].pType = pType;
-		pTable[iTableSize].iChance = iScore;
-		iTableSize++;
+		ItemEntryStruct *pEntry = Table.Insert();
+		pEntry->pType = pType;
+		pEntry->iChance = iScore;
 		}
 
-	//	We must have items
+	//	If no items, then we don't create anything.
 
-	if (iTableSize == 0)
-		{
-		m_iCount = 0;
-		m_Table = NULL;
-		delete [] pTable;
+	if (Table.GetCount() == 0)
 		return;
-		}
 
 	//	Add up the total score of all items
 
 	int iTotalScore = 0;
-	for (int i = 0; i < iTableSize; i++)
-		iTotalScore += pTable[i].iChance;
+	for (int i = 0; i < Table.GetCount(); i++)
+		iTotalScore += Table[i].iChance;
 
 	//	Compute the chance
 
 	int iTotalChance = 0;
-	for (int i = 0; i < iTableSize; i++)
+	for (int i = 0; i < Table.GetCount(); i++)
 		{
-		int iScore = pTable[i].iChance;
-		pTable[i].iChance = (iScore * 1000) / iTotalScore;
-		pTable[i].iRemainder = (iScore * 1000) % iTotalScore;
+		int iScore = Table[i].iChance;
+		Table[i].iChance = (iScore * 1000) / iTotalScore;
+		Table[i].iRemainder = (iScore * 1000) % iTotalScore;
 
-		iTotalChance += pTable[i].iChance;
+		iTotalChance += Table[i].iChance;
 		}
 
 	//	Distribute the remaining chance points
@@ -395,41 +379,29 @@ void CRandomItems::InitTable (SDesignLoadCtx &Ctx, const CString &sLevelFrequenc
 		int iBestRemainder = 0;
 		int iBestEntry = -1;
 
-		for (int i = 0; i < iTableSize; i++)
-			if (pTable[i].iRemainder > iBestRemainder)
+		for (int i = 0; i < Table.GetCount(); i++)
+			if (Table[i].iRemainder > iBestRemainder)
 				{
-				iBestRemainder = pTable[i].iRemainder;
+				iBestRemainder = Table[i].iRemainder;
 				iBestEntry = i;
 				}
 
-		pTable[iBestEntry].iChance++;
-		pTable[iBestEntry].iRemainder = 0;
+		Table[iBestEntry].iChance++;
+		Table[iBestEntry].iRemainder = 0;
 		iTotalChance++;
 		}
-
-	//	Count the number of entries that we've got
-
-	m_iCount = 0;
-	for (int i = 0; i < iTableSize; i++)
-		if (pTable[i].iChance > 0)
-			m_iCount++;
 
 	//	Now loop over the entire table and add it to the 
 	//	random entry generator
 
-	m_Table = new SEntry [m_iCount];
-	int j = 0;
-	for (int i = 0; i < iTableSize; i++)
-		if (pTable[i].iChance > 0)
+	m_Table.GrowToFit(Table.GetCount());
+	for (int i = 0; i < Table.GetCount(); i++)
+		if (Table[i].iChance > 0)
 			{
-			m_Table[j].pType = pTable[i].pType;
-			m_Table[j].iProbability = pTable[i].iChance;
-			j++;
+			SEntry *pEntry = m_Table.Insert();
+			pEntry->pType = Table[i].pType;
+			pEntry->iProbability = Table[i].iChance;
 			}
-
-	//	Done
-
-	delete [] pTable;
 	}
 
 ALERROR CRandomItems::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
@@ -454,7 +426,6 @@ ALERROR CRandomItems::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc
 	m_Criteria.Init(sCriteria);
 	m_sLevelFrequency = pDesc->GetAttribute(LEVEL_FREQUENCY_ATTRIB);
 	m_bDynamicLevelFrequency = (strFind(m_sLevelFrequency, CONSTLIT(":")) != -1);
-	m_iDynamicLevel = 0;
 
 	m_iLevel = pDesc->GetAttributeInteger(LEVEL_ATTRIB);
 	m_iLevelCurve = pDesc->GetAttributeInteger(LEVEL_CURVE_ATTRIB);
@@ -462,9 +433,6 @@ ALERROR CRandomItems::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc
 
 	if (error = m_Enhanced.InitFromXML(Ctx, pDesc))
 		return error;
-
-	m_Table = NULL;
-	m_iCount = 0;
 
 	return NOERROR;
 	}
@@ -476,12 +444,10 @@ ALERROR CRandomItems::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 //	Resolve references
 
 	{
-	if (!m_bDynamicLevelFrequency)
-		InitTable(Ctx, m_sLevelFrequency);
-
 	//	Reset
 
-	m_iDynamicLevel = 0;
+	m_Table.DeleteAll();
+	m_sNodeID = NULL_STR;
 
 	return NOERROR;
 	}

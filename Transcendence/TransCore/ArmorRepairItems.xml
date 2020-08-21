@@ -15,7 +15,7 @@
 			frequency=			"common"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"ArmorRepair; Consumable"
+			attributes=			"armorRepair, consumable, humanTech"
 
 			description=		"Apply this paste to an armor segment to repair light to moderate damage. It works on armor up to level 5."
 
@@ -47,7 +47,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorRepair; Consumable"
+			attributes=			"armorRepair, consumable, humanTech"
 
 			description=		"This is a small armor plate that can be welded to your ship's armor to repair damage. It works on armor up to level 5."
 
@@ -77,7 +77,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorRepair; Consumable"
+			attributes=			"armorRepair, consumable, humanTech"
 
 			description=		"This is a large armor plate that can be welded to your ship's armor to repair damage. It works on armor up to level 7."
 
@@ -106,7 +106,7 @@
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"ArmorRepair; Consumable"
+			attributes=			"armorRepair, consumable, humanTech"
 
 			description=		"Apply this paste to an armor segment to repair moderate to heavy damage. It works on armor up to level 7."
 
@@ -140,7 +140,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorRepair; Consumable"
+			attributes=			"armorRepair, consumable, humanTech"
 
 			description=		"This kit can be used in the field to repair damaged armor. It will repair up to 100 hp of damage. It work on armor up to level 9."
 
@@ -170,7 +170,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorRepair; Consumable"
+			attributes=			"armorRepair, consumable, humanTech"
 
 			description=		"This kit can be used in the field to repair damaged armor. It will repair up to 175 hp of damage."
 
@@ -200,7 +200,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorRepair; Consumable"
+			attributes=			"armorRepair, consumable, humanTech"
 
 			description=		"This kit can be used in the field to repair damaged armor. It will repair up to 300 hp of damage."
 

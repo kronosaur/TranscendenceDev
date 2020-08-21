@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- ASTEROIDS & PLANETS -->
+
+	<!-- Size C Ice Asteroid -->
+
+	<StationType UNID="&stCryovolcanicSizeC;"
+		name=				"cryovolcanic asteroid"
+		attributes=			"asteroid, cryovolcanic, ice, inner, lifeZone, outer"
+		inherit=			"&baCryovolcanic;"
+
+		scale=				"world"
+		size=				"269"
+		anonymous=			"true"
+
+		ejectaType=			"&vtIceAsteroidEjecta;"
+		>
+		<Properties>
+			<Variant id="volcanoCount">(random 3 5)</Variant>
+		</Properties>
+
+		<ImageLookup imageID="&rsIcePlanetoidSizeG;"/>
+
+		<Items>
+			<Table>
+				<Null chance="95"/>
+				<Lookup chance="5" count="1d8" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&baCryovolcanic;"
+			virtual=	"true"
+			>
+		<Asteroid type="icy"/>
+
+		<Events>
+			<OnCreate>
+				(block (
+					)
+					(for i 1 (obj@ gSource 'volcanoCount)
+						(block (
+							(angle (random 0 359))
+							(radius 3.75)
+							(pos (sysVectorPolarOffset gSource angle radius))
+							)
+							(objAddOverlay gSource &ovCryoVolcanoMedium; pos angle)
+							)
+						)
+					)
+			</OnCreate>
+
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
+
+<!-- EFFECTS -->
+
+	<OverlayType unid="&ovCryoVolcanoMedium;"
+			attributes=         "effect"
+			>
+		<Effect>
+			<ParticleCloud
+					style=				"jet"
+					emitRate=			"10"
+					emitSpeed=			"5-10"
+					particleLifetime=	"10-15"
+					slowMotion=			"25"
+
+					wakePotential=		"25"
+					>
+				<ParticleEffect>
+					<Particle
+							style=			"plain"
+							minWidth=		"1"
+							maxWidth=		"4"
+							primaryColor=	"#ffffff"
+							secondaryColor=	"#808080"
+							/>
+				</ParticleEffect>
+			</ParticleCloud>
+		</Effect>
+	</OverlayType>
+
+</TranscendenceModule>

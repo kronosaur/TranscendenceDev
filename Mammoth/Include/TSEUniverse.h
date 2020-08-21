@@ -400,8 +400,8 @@ class CUniverse
 		CTopologyNode *GetFirstTopologyNode (void);
 		const CG16bitFont &GetFont (const CString &sFont) const { return m_pHost->GetFont(sFont); }
 		CFractalTextureLibrary &GetFractalTextureLibrary (void) { return m_FractalTextureLibrary; }
-        CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
-        const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
+		CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
+		const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
 		IHost *GetHost (void) const { return m_pHost; }
 		EUpdateSpeeds GetLastUpdateSpeed (void) const { return m_iLastUpdateSpeed; }
 		CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
@@ -442,7 +442,7 @@ class CUniverse
 		CSpaceObject *RemoveAscendedObj (DWORD dwObjID) { return m_AscendedObjects.RemoveByID(dwObjID); }
 		ALERROR SaveDeviceStorage (void);
 		ALERROR SaveToStream (IWriteStream *pStream);
-		void SetCurrentSystem (CSystem *pSystem);
+		void SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered = false);
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
 		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetDifficultyLevel (CDifficultyOptions::ELevels iLevel) { m_Difficulty.SetLevel(iLevel); }
@@ -549,7 +549,7 @@ class CUniverse
 		void PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
 		void PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags);
 		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
-		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale);
+		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale, DWORD dwFlags = 0);
 		void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
 		bool Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode = updateNormal);
 		void UpdateExtended (void);

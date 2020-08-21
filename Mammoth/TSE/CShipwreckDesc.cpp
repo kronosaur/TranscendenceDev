@@ -372,7 +372,7 @@ bool CShipwreckDesc::CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const
 	DEBUG_CATCH
 	}
 
-bool CShipwreckDesc::CreateWreckImage (CShipClass *pClass, int iRotationFrame, CObjectImageArray &Result) const
+bool CShipwreckDesc::CreateWreckImage (const CShipClass *pClass, int iRotationFrame, CObjectImageArray &Result) const
 
 //	CreateWreckImage
 //
@@ -468,7 +468,7 @@ size_t CShipwreckDesc::GetMemoryUsage (void) const
 	return dwTotal;
 	}
 
-CObjectImageArray *CShipwreckDesc::GetWreckImage (CShipClass *pClass, int iRotation) const
+CObjectImageArray *CShipwreckDesc::GetWreckImage (const CShipClass *pClass, int iRotation) const
 
 //	GetWreckImage
 //

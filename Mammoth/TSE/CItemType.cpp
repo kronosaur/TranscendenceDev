@@ -111,6 +111,7 @@
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_FREQUENCY 						CONSTLIT("frequency")
+#define PROPERTY_FREQUENCY_RATE					CONSTLIT("frequencyRate")
 #define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL  						CONSTLIT("level")
 #define PROPERTY_MAX_CHARGES  					CONSTLIT("maxCharges")
@@ -563,6 +564,9 @@ ICCItemPtr CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CStrin
 
 	else if (strEquals(sProperty, PROPERTY_FREQUENCY))
 		return ICCItemPtr(GetFrequencyName((FrequencyTypes)GetFrequency()));
+
+	else if (strEquals(sProperty, PROPERTY_FREQUENCY_RATE))
+		return ICCItemPtr(GetFrequency());
 
 	else if (strEquals(sProperty, PROPERTY_KNOWN))
 		{

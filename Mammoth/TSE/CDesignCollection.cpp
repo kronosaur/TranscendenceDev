@@ -340,6 +340,10 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 		const CDisplayAttributeDefinitions &Attribs = pEntry->GetDisplayAttributes();
 		if (!Attribs.IsEmpty())
 			m_DisplayAttribs.Append(Attribs);
+
+		const auto &ItemEncounterDefinitions = pEntry->GetItemEncounterDefinitions();
+		if (!ItemEncounterDefinitions.IsEmpty())
+			m_ItemEncounterDefinitions.Append(ItemEncounterDefinitions);
 		}
 
 	//	Tell our armor mass definitions that we're done so that we can calculate
@@ -2066,6 +2070,7 @@ void CDesignCollection::Unbind (void)
 	m_OverrideTypes.DeleteAll();
 	m_ArmorDefinitions.DeleteAll();
 	m_DisplayAttribs.DeleteAll();
+	m_ItemEncounterDefinitions.DeleteAll();
 	m_EconomyIndex.DeleteAll();
 
 	//	Reset

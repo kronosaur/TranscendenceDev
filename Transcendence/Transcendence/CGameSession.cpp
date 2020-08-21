@@ -13,20 +13,12 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
         m_Model(*CreateCtx.pModel),
 		m_DebugConsole(*CreateCtx.pDebugConsole),
 		m_Soundtrack(*CreateCtx.pSoundtrack),
-		m_iUI(uiNone),
-		m_bMouseAim(true),
         m_HUD(*CreateCtx.pHI, *CreateCtx.pModel),
-        m_bShowingSystemMap(false),
         m_SystemMap(*CreateCtx.pHI, *CreateCtx.pModel, m_HUD),
 		m_SystemStationsMenu(*CreateCtx.pHI, *CreateCtx.pModel, *this),
 		m_MessageDisplay(*CreateCtx.pHI),
 		m_Narrative(*CreateCtx.pHI),
-		m_CurrentMenu(menuNone),
 		m_MenuDisplay(*CreateCtx.pHI, *CreateCtx.pModel),
-		m_pCurrentComms(NULL),
-        m_iDamageFlash(0),
-		m_bIgnoreButtonUp(false),
-		m_bIgnoreMouseMove(false),
 		m_CurrentDock(*this)
 
 //	CGameSession constructor

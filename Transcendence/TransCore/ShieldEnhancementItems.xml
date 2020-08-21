@@ -14,7 +14,7 @@
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownCommonFieldCrystal;"
-			attributes=			"fieldCrystal, minorItem, shieldEnhance"
+			attributes=			"fieldCrystal, humanTech, minorItem, shieldEnhance"
 
 			description=		"Silicon-carbide crystals increase the energy density of shield generators. This crystal is compatible with generators up to tech level 5."
 
@@ -46,7 +46,7 @@
 
 	<ItemType UNID="&itEnhanceShieldsROM;"
 			name=				"shield enhancement ROM"
-			attributes=			"info, minorItem, shieldEnhance"
+			attributes=			"humanTech, info, minorItem, shieldEnhance"
 			inherit=			"&baStdDeviceEnhancement;"
 
 			level=				"2"
@@ -90,7 +90,7 @@
 
 	<ItemType UNID="&itShieldIonizeROM;"
 			name=				"defective shield enhancement ROM"
-			attributes=			"defective, info, minorItem, shieldDamage"
+			attributes=			"defective, humanTech, info, minorItem, shieldDamage"
 			inherit=			"&baStdDeviceEnhancement;"
 
 			level=				"3"
@@ -193,7 +193,7 @@
 
 	<ItemType UNID="&itHiroShieldOptimizer;"
 			name=				"Hiro's shield optimizer"
-			attributes=			"info, minorItem, notStandard, shieldEnhance"
+			attributes=			"humanTech, info, minorItem, notStandard, shieldEnhance"
 			inherit=			"&baStdDeviceEnhancement;"
 
 			level=				"4"
@@ -249,7 +249,7 @@
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownCommonFieldCrystal;"
-			attributes=			"fieldCrystal, minorItem, shieldEnhance"
+			attributes=			"fieldCrystal, humanTech, minorItem, shieldEnhance"
 
 			description=		"Rubidium crystals create energy fields that resist particle and blast damage. This crystal is compatible with generators of tech levels 1-7."
 
@@ -286,7 +286,7 @@
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownCommonFieldCrystal;"
-			attributes=			"fieldCrystal, minorItem, shieldEnhance"
+			attributes=			"fieldCrystal, humanTech, minorItem, shieldEnhance"
 
 			description=		"Green etherium is used to create energy fields that reflect particle beam energy. Unfortunately, it has a limited duration. This crystal works on tech levels 2-8."
 
@@ -330,7 +330,7 @@
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownFieldCrystal;"
-			attributes=			"fieldCrystal, minorItem, shieldEnhance"
+			attributes=			"fieldCrystal, humanTech, minorItem, shieldEnhance"
 
 			description=		"Diamond field crystals increase the power of shield generators. Unlike other field crystals, a generator can use multiple diamond field crystals. These crystals are compatible with shields of tech level 3-9."
 
@@ -367,7 +367,7 @@
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownFieldCrystal;"
-			attributes=			"fieldCrystal, minorItem, shieldEnhance"
+			attributes=			"fieldCrystal, humanTech, minorItem, shieldEnhance"
 
 			description=		"Crystalline trillum increases the power efficiency of high-energy shields. These crystals are compatible with tech levels 3-9."
 
@@ -405,7 +405,7 @@
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownFieldCrystal;"
-			attributes=			"defective, fieldCrystal, minorItem, shieldDamage"
+			attributes=			"defective, fieldCrystal, humanTech, minorItem, shieldDamage"
 
 			description=		"In pristine state, this field crystal is used to reflect ion energy. But this decayed crystal would do more harm than good."
 
@@ -443,7 +443,7 @@
 			mass=				"10"
 			frequency=			"common"
 			unknownType=		"&vtUnknownFieldCrystal;"
-			attributes=			"fieldCrystal, minorItem, shieldEnhance"
+			attributes=			"fieldCrystal, humanTech, minorItem, shieldEnhance"
 
 			description=		"Molbidium crystals are often used to increase the power density of shield generators. They are compatible with shields of tech levels 4-10."
 
@@ -480,7 +480,7 @@
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownFieldCrystal;"
-			attributes=			"fieldCrystal, minorItem, shieldEnhance"
+			attributes=			"fieldCrystal, humanTech, minorItem, shieldEnhance"
 
 			description=		"This crystalline superlattice absorbs high-energy particles and thus resist ion and thermonuclear damage. This crystal is compatible with shield generators of tech levels 4-10."
 
@@ -518,7 +518,7 @@
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownFieldCrystal;"
-			attributes=			"fieldCrystal, minorItem, shieldEnhance"
+			attributes=			"fieldCrystal, humanTech, minorItem, shieldEnhance"
 
 			description=		"Blue etherium is used to create energy fields that reflect ion energy. Unfortunately, it has a limited duration. These crystals work on shields of tech level 5-11."
 			
@@ -562,7 +562,7 @@
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownFieldCrystal;"
-			attributes=			"fieldCrystal, minorItem, shieldEnhance"
+			attributes=			"fieldCrystal, humanTech, minorItem, shieldEnhance"
 
 			description=		"Yellow etherium is used to create energy fields that reflect positron energy. Unfortunately, it has a limited duration. This crystal works on tech levels 7-13."
 

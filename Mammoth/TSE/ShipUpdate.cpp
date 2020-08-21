@@ -656,7 +656,7 @@ bool CShip::UpdateTriggerAllDevices (CDeviceClass::SActivateCtx &ActivateCtx, CS
 			//	target list if necessary.
 
 			if (ActivateCtx.TargetList.IsEmpty())
-				ActivateCtx.TargetList = m_pController->GetTargetList();
+				ActivateCtx.TargetList = GetTargetList();
 
 			ActivateCtx.pTarget = m_pController->GetTarget(&DeviceItem);
 

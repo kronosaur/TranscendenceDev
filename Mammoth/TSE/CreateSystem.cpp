@@ -3989,8 +3989,10 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 	pSystem->m_rTimeScale = Type.GetTimeScale();
 
 	//	Store the current system. We need this so that any OnCreate code can
-	//	get the right system.
+	//	get the right system. But we need to remember the old system because we
+	//	set it back at the end.
 
+	CSystem *pOldSystem = Universe.GetCurrentSystem();
 	Universe.SetCurrentSystem(pSystem);
 
 	//	Create the group
@@ -4003,7 +4005,10 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 	if (const CXMLElement *pOverridesXML = Type.GetEncounterOverridesXML())
 		{
 		if (!Ctx.StationEncounterOverrides.InitFromXML(Universe.GetDesignCollection(), *pOverridesXML, retsError))
+			{
+			Universe.SetCurrentSystem(pOldSystem);
 			return ERR_FAIL;
+			}
 		}
 
 	//	Start the debug stack
@@ -4036,6 +4041,7 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 				*retsError = Ctx.sError;
 			Universe.LogOutput(strPatternSubst(CONSTLIT("Unable to create system: %s"), Ctx.sError));
 			DumpDebugStack(&Ctx);
+			Universe.SetCurrentSystem(pOldSystem);
 			return error;
 			}
 		}
@@ -4098,7 +4104,10 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 					iLocation = -1;
 					}
 				else
+					{
+					Universe.SetCurrentSystem(pOldSystem);
 					return error;
+					}
 				}
 
 			//	Remember saved last obj
@@ -4115,7 +4124,10 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 			CreateCtx.bCreateSatellites = true;
 
 			if (error = pSystem->CreateStation(&Ctx, pType, CreateCtx))
+				{
+				Universe.SetCurrentSystem(pOldSystem);
 				return error;
+				}
 
 			//	Remember that we filled this location
 
@@ -4189,6 +4201,7 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	//	Done
 
+	Universe.SetCurrentSystem(pOldSystem);
 	*retpSystem = pSystem;
 
 	return NOERROR;
@@ -4836,7 +4849,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 
 	if (pStation == NULL)
 		{
-		pCtx->sError = CONSTLIT("No station created.");
+		pCtx->sError = strPatternSubst(CONSTLIT("No station created (station type = %s [%08x])."), pStationType->GetNounPhrase(), pStationType->GetUNID());
 		return ERR_FAIL;
 		}
 

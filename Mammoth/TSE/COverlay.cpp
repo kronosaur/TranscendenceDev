@@ -1582,7 +1582,7 @@ void COverlay::Update (CSpaceObject *pSource, int iScale, int iRotation, bool *r
 
 	//	Update the painters
 
-	SEffectUpdateCtx UpdateCtx;
+	SEffectUpdateCtx UpdateCtx(pSource->GetUniverse());
 	UpdateCtx.pSystem = pSource->GetSystem();
 	UpdateCtx.pObj = pSource;
 	UpdateCtx.iTick = m_iTick;
@@ -1601,6 +1601,9 @@ void COverlay::Update (CSpaceObject *pSource, int iScale, int iRotation, bool *r
 
 		MoveCtx.bUseOrigin = true;
 		MoveCtx.vOrigin = pSource->GetPos() + CVector(xOffset * g_KlicksPerPixel, -yOffset * g_KlicksPerPixel);
+
+		UpdateCtx.bUseOrigin = true;
+		UpdateCtx.vOrigin = MoveCtx.vOrigin;
 		}
 
 	//	Update

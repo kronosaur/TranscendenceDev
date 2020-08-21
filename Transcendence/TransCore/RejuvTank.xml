@@ -8,7 +8,7 @@
 			value=				"0"
 			mass=				"1000"
 			frequency=			"notRandom"
-			attributes=			"notForSale"
+			attributes=			"humanTech, notForSale"
 
 			description=		"This is a rejuvenation tank"
 			>

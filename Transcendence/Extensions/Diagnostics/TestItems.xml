@@ -190,6 +190,47 @@
 		</Weapon>
 	</ItemType>
 
+	<ItemType UNID="&itTestRareInNewBeyond1;"
+			name=				"rare in New Beyond 1"
+			level=				"5"
+			value=				"100"
+			mass=				"500"
+			frequency=			"common"
+			numberAppearing=	"1d12"
+			attributes=			"consumable, meds, rareInNewBeyond"
 
+			description=		"Rare in New Beyond 1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="480" imageWidth="96" imageHeight="96"/>
+
+		<ItemEncounterDesc>
+			<Frequency criteria="* +rareInNewBeyond;" frequency="common"	systemCriteria="-newBeyond;" />
+			<Frequency criteria="* +rareInNewBeyond;" frequency="rare"		systemCriteria="+newBeyond;" />
+
+			<Frequency criteria="* +rareInNewBeyond;" frequency="notRandom" />
+		</ItemEncounterDesc>
+	</ItemType>
+
+	<ItemType UNID="&itTestRareInNewBeyond2;"
+			name=				"rare in New Beyond 2"
+			level=				"5"
+			value=				"100"
+			mass=				"500"
+			frequency=			"uncommon"
+			numberAppearing=	"1d12"
+			attributes=			"consumable, meds, rareInNewBeyond"
+
+			description=		"Rare in New Beyond 1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="480" imageWidth="96" imageHeight="96"/>
+
+		<ItemEncounterDesc>
+			<Frequency criteria="* +rareInNewBeyond;" frequency="common"	systemCriteria="-newBeyond;" />
+
+			<Frequency criteria="* +rareInNewBeyond;" frequency="uncommon" />
+		</ItemEncounterDesc>
+	</ItemType>
 
 </TranscendenceModule>

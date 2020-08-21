@@ -283,6 +283,7 @@ ALERROR CUniverse::CreateRandomItem (const CItemCriteria &Crit,
 	CItemList ItemList;
 	CItemListManipulator Items(ItemList);
 	SItemAddCtx Ctx(Items);
+	Ctx.pSystem = GetCurrentSystem();
 	Ctx.iLevel = (GetCurrentSystem() ? GetCurrentSystem()->GetLevel() : 1);
 
 	pTable->AddItems(Ctx);
@@ -2164,7 +2165,7 @@ void CUniverse::PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rSca
 		m_pCurrentSystem->PaintViewportLRS(Dest, rcView, m_pPOV, rScale, dwFlags, retbNewEnemies);
 	}
 
-void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale)
+void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale, DWORD dwFlags)
 
 //	PaintPOVMap
 //
@@ -2172,7 +2173,7 @@ void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMap
 
 	{
 	if (m_pCurrentSystem && m_pPOV)
-		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale);
+		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale, dwFlags);
 
 	m_iPaintTick++;
 	}
@@ -2535,7 +2536,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	return NOERROR;
 	}
 
-void CUniverse::SetCurrentSystem (CSystem *pSystem)
+void CUniverse::SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered)
 
 //	SetCurrentSystem
 //
@@ -2565,7 +2566,8 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 
 	//	Initialize mission cache
 
-	m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
+	if (bPlayerHasEntered)
+		m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
 	}
 
 bool CUniverse::SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError)
@@ -2682,7 +2684,7 @@ void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 	if (pPOV)
 		SetPOV(pPOV);
 	else
-		SetCurrentSystem(&NewSystem);
+		SetCurrentSystem(&NewSystem, true);
 
 	//	Replay any commands that might have happened while the player was in a
 	//	different system.
@@ -2779,7 +2781,7 @@ bool CUniverse::SetPOV (CSpaceObject *pPOV)
 	m_pPOV = pPOV;
 
 	if (m_pPOV)
-		SetCurrentSystem(m_pPOV->GetSystem());
+		SetCurrentSystem(m_pPOV->GetSystem(), true);
 	else
 		SetCurrentSystem(NULL);
 
@@ -2817,7 +2819,8 @@ void CUniverse::StartGame (bool bNewGame)
 		//	The current system has started (0 time has elased since we last
 		//	updated this system).
 
-		m_Design.FireOnGlobalSystemStarted(0);
+		if (GetCurrentSystem())
+			m_Design.FireOnGlobalSystemStarted(0);
 
 		//	If we have a player then tell objects that the player has entered
 		//	the system.

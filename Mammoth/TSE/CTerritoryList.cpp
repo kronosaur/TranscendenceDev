@@ -16,6 +16,17 @@ CTerritoryList::~CTerritoryList (void)
 		delete m_List[i];
 	}
 
+void CTerritoryList::DebugPaint (CG32bitImage &Dest, CMapViewportCtx &PaintCtx, const CG16bitFont &LabelFont) const
+
+//	DebugPaint
+//
+//	Paint each zone.
+
+	{
+	for (int i = 0; i < m_List.GetCount(); i++)
+		m_List[i]->DebugPaint(Dest, PaintCtx, LabelFont);
+	}
+
 CString CTerritoryList::GetAttribsAtPos (const CVector &vPos) const
 
 //	GetAttribsAtPos

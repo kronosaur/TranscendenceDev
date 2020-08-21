@@ -3,8 +3,25 @@
 <TranscendenceModule>
 	
 <!-- LEVEL 1 -->
+
+	<!-- Copper Ore -->
 	
-	<!-- itTitaniumOre -->
+	<ItemType UNID="&itCopperOre;"
+			name=				"[ton(s) of ]copper ore"
+			level=				"1"
+			value=				"52"
+			mass=				"1000"
+			frequency=			"uncommon"
+			numberAppearing=	"1d8"
+			attributes=			"consumable, ore, res, waterComp"
+
+			description=		"Copper is a vital component in most electrical systems, although exotic alloys have largely replaced it in specialised high-performance equipment."
+			>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+	
+	<!-- Titanium Ore -->
 
 	<ItemType UNID="&itTitaniumOre;"
 			name=				"[ton(s) of ]titanium ore"
@@ -13,35 +30,31 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Res; metallicComp, Ore; Armor;"
+			attributes=			"armor, consumable, ore, res, rockyComp"
 
 			description=		"Titanium ore is used commercially for space-rated structures and components."
-
-			sortName=			"titanium ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
-	<!-- itUraniumOre -->
+	<!-- Vanadium Ore -->
 
-	<ItemType UNID="&itUraniumOre;"
-			name=				"[ton(s) of ]uranium ore"
+	<ItemType UNID="&itVanadiumOre;"
+			name=				"[ton(s) of ]vanadium ore"
 			level=				"1"
-			value=				"175"
+			value=				"90"
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Nuclear; Ore; Res; rockyComp"
+			attributes=			"consumable, ore, organicComp, res"
 
-			description=		"Uranium is the most common fissionable material. Uranium ore can be processed into nuclear fuel for low-tech industries."
-
-			sortName=			"uranium ore, ton of"
+			description=		"Vanadium is used heavily in specialised steels, as well as in the production of advanced batteries and catalyst packs."
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
-
+	
 <!-- LEVEL 2 -->
 	
 	<!-- itHeliumRegolith -->
@@ -49,15 +62,13 @@
 	<ItemType UNID="&itHeliumRegolith;"
 			name=				"[ton(s) of ]helium regolith"
 			level=				"2"
-			value=				"250"
+			value=				"200"
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Nuclear; Ore; Res; rockyComp"
+			attributes=			"consumable, nuclear, ore, res, waterComp"
 
 			description=		"Rocks containing helium&#xb3; are the main raw material for the fuel rods used by starships."
-
-			sortName=			"helium regolith, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
@@ -68,15 +79,30 @@
 	<ItemType UNID="&itPlasteelOre;"
 			name=				"[ton(s) of ]plasteel ore"
 			level=				"2"
-			value=				"65"
+			value=				"80"
+			mass=				"1000"
+			frequency=			"common"
+			numberAppearing=	"1d8"
+			attributes=			"armor, consumable, ore, res, organicComp"
+
+			description=		"Plasteel is a stronger and lighter alloy of titanium."
+			>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<!-- itUraniumOre -->
+
+	<ItemType UNID="&itUraniumOre;"
+			name=				"[ton(s) of ]uranium ore"
+			level=				"2"
+			value=				"120"
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Res; metallicComp, Ore; Armor;"
+			attributes=			"consumable, nuclear, ore, res, metallicComp"
 
-			description=		"Plasteel is a stronger and lighter alloy of titanium."
-
-			sortName=			"plasteel ore, ton of"
+			description=		"Uranium is the most common fissionable material. Uranium ore can be processed into nuclear fuel for low-tech industries."
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
@@ -89,34 +115,47 @@
 	<ItemType UNID="&itCobaltThoriumOre;"
 			name=				"[ton(s) of ]cobalt-thorium ore"
 			level=				"3"
-			value=				"375"
+			value=				"280"
 			mass=				"1000"
-			frequency=			"rare"
+			frequency=			"uncommon"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Nuclear; Ore; Res; waterComp"
+			attributes=			"consumable, nuclear, ore, res, metallicComp"
 
 			description=		"This exotic fissionable material is used as a catalyst in high-energy fusion reactors."
-
-			sortName=			"cobalt-thorium ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
+	<!-- Niobium Ore -->
+
+	<ItemType UNID="&itNiobiumOre;"
+			name=				"[ton(s) of ]niobium ore"
+			level=				"3"
+			value=				"185"
+			mass=				"1000"
+			frequency=			"common"
+			numberAppearing=	"1d8"
+			attributes=			"consumable, ore, res, waterComp"
+
+			description=		"Niobium is used in the creation of superconducting magnets, medical implants, and exotic super-alloys."
+			>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+	
 	<!-- itPalladiumOre -->
 
 	<ItemType UNID="&itPalladiumOre;"
 			name=				"[ton(s) of ]palladium ore"
 			level=				"3"
-			value=				"75"
+			value=				"460"
 			mass=				"1000"
-			frequency=			"common"
+			frequency=			"rare"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Ore; Res; rockyComp"
+			attributes=			"consumable, ore, res, rockyComp"
 
 			description=		"Palladium is a critical element as a catalyst in various industrial processes."
-
-			sortName=			"palladium ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
@@ -129,15 +168,13 @@
 	<ItemType UNID="&itCeralloyOre;"
 			name=				"[ton(s) of ]cerallox ore"
 			level=				"4"
-			value=				"100"
+			value=				"400"
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Ore; organicComp, Res; Armor;"
+			attributes=			"armor, consumable, ore, organicComp, res"
 
 			description=		"Cerallox ore is a crystalline blend of carbon and metals; it is the primary component of ceralloy, a heat-resistant alloy."
-
-			sortName=			"cerallox ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
@@ -148,15 +185,13 @@
 	<ItemType UNID="&itGoldOre;"
 			name=				"[ton(s) of ]gold ore"
 			level=				"4"
-			value=				"200"
+			value=				"600"
 			mass=				"1000"
 			frequency=			"uncommon"
-			numberAppearing=	"1d4"
-			attributes=			"Consumable; Ore; Res; rockyComp"
+			numberAppearing=	"1d8"
+			attributes=			"consumable, ore, res, rockyComp"
 
 			description=		"Beyond the demand for jewelry, gold is used as a conductor in many electronic devices."
-
-			sortName=			"gold ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
@@ -167,95 +202,136 @@
 	<ItemType UNID="&itXenotiteOre;"
 			name=				"[ton(s) of ]xenotite ore"
 			level=				"4"
-			value=				"500"
+			value=				"1000"
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d8"
-			attributes=			"AntiMatter; Consumable; Ore; Res; waterComp"
+			attributes=			"antiMatter, consumable, metallicComp, ore, res"
 
 			description=		"Xenotite was one of the first minerals to be discovered in another star system. Xenotite can be refined to produce a fuel for antimatter reactors."
-
-			sortName=			"xenotite ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 <!-- LEVEL 5 -->
+
+	<!-- Cerium Ore -->
 	
-	<!-- itDuralloyOre -->
+	<ItemType UNID="&itCeriumOre;"
+			name=				"[ton(s) of ]cerium ore"
+			level=				"5"
+			value=				"850"
+			mass=				"1000"
+			frequency=			"common"
+			numberAppearing=	"1d8"
+			attributes=			"consumable, ore, res, waterComp"
+
+			description=		"Cerium is one of the easiest of the rare-earth elements to extract from ore, and has a wide variety of industrial uses."
+			>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+	
+	<!-- Duralloy Ore -->
 
 	<ItemType UNID="&itDuralloyOre;"
 			name=				"[ton(s) of ]duranium ore"
 			level=				"5"
-			value=				"400"
+			value=				"2100"
 			mass=				"1000"
-			frequency=			"uncommon"
+			frequency=			"rare"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; organicComp, Ore; Res; Armor;"
+			attributes=			"armor, consumable, ore, organicComp, res"
 
 			description=		"Duranium ore is a mixture of titanium, hexanium, and other exotic metals. Duranium is the primary component of Duralloy steel."
-
-			sortName=			"Duranium ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
-	<!-- itPlatinumOre -->
+	<!-- Platinum Ore -->
 
 	<ItemType UNID="&itPlatinumOre;"
 			name=				"[ton(s) of ]platinum ore"
 			level=				"5"
-			value=				"400"
+			value=				"1250"
 			mass=				"1000"
 			frequency=			"uncommon"
-			numberAppearing=	"1d4"
-			attributes=			"Consumable; Ore; Res; rockyComp"
+			numberAppearing=	"1d8"
+			attributes=			"consumable, ore, res, rockyComp"
 
 			description=		"Platinum is a key component in many industrial processes."
-
-			sortName=			"platinum ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
-	<!-- itPteracniumOre -->
+	<!-- Pteracnium Ore -->
 
 	<ItemType UNID="&itPteracniumOre;"
 			name=				"[ton(s) of ]pteracnium ore"
 			level=				"5"
-			value=				"1000"
+			value=				"850"
 			mass=				"1000"
-			frequency=			"rare"
+			frequency=			"common"
 			numberAppearing=	"1d8"
-			attributes=			"AntiMatter; Consumable; Ore; Res; waterComp"
+			attributes=			"antiMatter, consumable, metallicComp, ore, res"
 
 			description=		"Pteracnium is one of the only transuranic elements that is stable under normal conditions. When bombarded with high-energy particles, pteracnium releases a cascade of anti-protons that can sustain a starship engine."
-
-			sortName=			"pteracnium ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 <!-- LEVEL 6 -->
+
+	<!-- Hexanium Ore -->
+
+	<ItemType UNID="&itHexaniumOre;"
+			name=				"[ton(s) of ]hexanium ore"
+			level=				"6"
+			value=				"2700"
+			mass=				"1000"
+			frequency=			"uncommon"
+			numberAppearing=	"1d8"
+			attributes=			"armor, consumable, ore, organicComp, res"
+
+			description=		"Hexanium is a cobalt-based superalloy found naturally in some asteroids. It is the raw material used to create Hexphase, a material used widely by the Commonwealth fleet."
+			>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
 	
-	<!-- itOrthosteelOre -->
+	<!-- Molybdenum Ore -->
+
+	<ItemType UNID="&itMolybdenumOre;"
+			name=				"[ton(s) of ]molybdenum ore"
+			level=				"6"
+			value=				"4500"
+			mass=				"1000"
+			frequency=			"rare"
+			numberAppearing=	"1d8"
+			attributes=			"consumable, ore, res, waterComp"
+
+			description=		"Molybdenum is used to make high-grade lubricants, advanced alloys and critical industrial components."
+			>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+	
+	<!-- Orthosteel Ore -->
 
 	<ItemType UNID="&itOrthoSteelOre;"
 			name=				"[ton(s) of ]orthosteel ore"
 			level=				"6"
-			value=				"400"
+			value=				"1800"
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; metallicComp, Ore; Res; Armor;"
+			attributes=			"armor, consumable, ore, res, rockyComp"
 
 			description=		"Orthosteel is used for military armors."
-
-			sortName=			"orthosteel ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
@@ -268,35 +344,83 @@
 	<ItemType UNID="&itIthaliumOre;"
 			name=				"[ton(s) of ]ithalium ore"
 			level=				"7"
-			value=				"800"
+			value=				"3900"
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; metallicComp, Ore; Res; Armor;"
+			attributes=			"armor, consumable, metallicComp, ore, res"
 
 			description=		"Ithalium is a rare and powerful alloy found mostly on volcanic worlds."
-
-			sortName=			"ithalium ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
-<!-- LEVEL 8 -->
+	<!-- Iridium ore -->
+		
+	<ItemType UNID="&itIridiumOre;"
+			name=				"[ton(s) of ]iridium ore"
+			level=				"7"
+			value=				"5800"
+			mass=				"1000"
+			frequency=			"uncommon"
+			numberAppearing=	"1d8"
+			attributes=			"consumable, ore, res, rockyComp"
+
+			description=		"While iridium is a common constituent of many asteroids, only a small fraction is of a high enough grade to be worth the difficult job of extracting it."
+			>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
 	
-	<!-- itNeutroniumOre -->
+<!-- LEVEL 8 -->
+
+	<!-- Lonsdaleite Ore -->
+
+	<ItemType UNID="&itLonsdaleiteOre;"
+			name=				"[ton(s) of ]lonsdaleite ore"
+			level=				"8"
+			value=				"7800"
+			mass=				"1000"
+			frequency=			"common"
+			numberAppearing=	"1d8"
+			attributes=			"consumable, ore, organicComp, res"
+
+			description=		"Lonsdaleite is an unusual allotrope of carbon formed when asteroids containing graphite collide at high speed. It is a critical componant of many advanced composites."
+			>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+	
+	<!-- Neutronium Ore -->
 
 	<ItemType UNID="&itNeutroniumOre;"
 			name=				"[ton(s) of ]neutronium ore"
 			level=				"8"
-			value=				"3200"
+			value=				"20000"
 			mass=				"1000"
-			frequency=			"uncommon"
-			numberAppearing=	"1d2"
-			attributes=			"Consumable; metallicComp, Ore; Res; Armor;"
+			frequency=			"rare"
+			numberAppearing=	"1d8"
+			attributes=			"armor, consumable, metallicComp, ore, res"
 
 			description=		"The densest substance known, a ton of neutronium could fit in the palm of your hand. The secret of its manufacture is known only to the ancient races."
-			sortName=			"neutronium ore, ton of"
+			>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<!-- Tantalum Ore -->
+
+	<ItemType UNID="&itTantalumOre;"
+			name=				"[ton(s) of ]tantalum ore"
+			level=				"8"
+			value=				"12000"
+			mass=				"1000"
+			frequency=			"uncommon"
+			numberAppearing=	"1d8"
+			attributes=			"consumable, ore, res, waterComp"
+
+			description=		"Tantalum capacitors form the backbone of many advanced technologies. The metal itself is used heavily for industrial equipment in caustic environments."
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
@@ -304,20 +428,18 @@
 
 <!-- LEVEL 9 -->
 	
-	<!-- itHadronArchaeolith -->
+	<!-- Hadron Archaeolith -->
 
 	<ItemType UNID="&itHadronArchaeolith;"
 			name=				"[ton(s) of ]hadron archaeolith"
 			level=				"9"
-			value=				"6400"
+			value=				"37500"
 			mass=				"1000"
-			frequency=			"uncommon"
+			frequency=			"rare"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Res; Ore; rockyComp, ZeroPoint"
+			attributes=			"consumable, ore, res, rockyComp, zeroPoint"
 
 			description=		"This rare resource was originally created in the Big Bang and cannot be replenished. It is used today as a fuel for zero-point energy generators."
-
-			sortName=			"hadron archaeolith, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
@@ -328,15 +450,13 @@
 	<ItemType UNID="&itTetramiteOre;"
 			name=				"[ton(s) of ]tetramite ore"
 			level=				"9"
-			value=				"3200"
+			value=				"15000"
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Ore; Res, organicComp"
+			attributes=			"consumable, ore, metallicComp, res"
 
 			description=		"Tetramite is a rare mineral used by Ringers and Teratons for many of their advanced industries."
-
-			sortName=			"tetramite ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
@@ -349,15 +469,13 @@
 	<ItemType UNID="&itEtheriumOre;"
 			name=				"[ton(s) of ]etherium ore"
 			level=				"10"
-			value=				"12500"
+			value=				"30000"
 			mass=				"1000"
-			frequency=			"uncommon"
+			frequency=			"common"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Ore; Res, waterComp"
+			attributes=			"consumable, ore, res, waterComp"
 
 			description=		"Etherium is a rare ore with still mysterious properties. Etherium is eagerly sought by Ringers and Teratons."
-
-			sortName=			"etherium ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>
@@ -368,15 +486,13 @@
 	<ItemType UNID="&itHyperonicOre;"
 			name=				"[ton(s) of ]hyperonic ore"
 			level=				"10"
-			value=				"6400"
+			value=				"45000"
 			mass=				"1000"
-			frequency=			"common"
+			frequency=			"uncommon"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Ore; organicComp, Res; ZeroPoint"
+			attributes=			"consumable, ore, organicComp, res, zeroPoint"
 
 			description=		"Hyperonic ore has a very high concentration of hyperons and consequently can be used in zero-point energy generators."
-
-			sortName=			"hyperonic ore, ton of"
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="576" imageWidth="96" imageHeight="96"/>

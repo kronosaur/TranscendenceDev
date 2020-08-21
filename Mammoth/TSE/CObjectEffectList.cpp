@@ -196,7 +196,7 @@ void CObjectEffectList::Update (CSpaceObject *pObj, const CObjectEffectDesc &Des
 	DEBUG_TRY
 
 	int i;
-	SEffectUpdateCtx PainterCtx;
+	SEffectUpdateCtx PainterCtx(pObj ? pObj->GetUniverse() : *g_pUniverse);
 	PainterCtx.pObj = pObj;
 	PainterCtx.iTick = g_pUniverse->GetTicks();
 
