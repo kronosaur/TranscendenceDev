@@ -733,6 +733,19 @@ CG32bitImage *CDockScreen::GetDisplayCanvas (const CString &sID)
 	return &pCanvasControl->GetCanvas();
 	}
 
+ICCItemPtr CDockScreen::GetListAsCCItem (void) const
+
+//	GetListAsCCItem
+//
+//	Returns the entire list.
+
+	{
+	if (m_pDisplay == NULL)
+		return ICCItemPtr::Nil();
+
+	return m_pDisplay->GetListAsCCItem();
+	}
+
 ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 
 //	GetProperty

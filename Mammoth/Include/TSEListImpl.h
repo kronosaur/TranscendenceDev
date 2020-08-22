@@ -40,6 +40,7 @@ class CListWrapper : public IListData
 		CListWrapper (ICCItem *pList);
 		virtual ~CListWrapper (void) { m_pList->Discard(); }
 
+		virtual ICCItemPtr GetAsCCItem (void) const override { return ICCItemPtr(m_pList->Reference()); }
 		virtual int GetCount (void) const override { return m_pList->GetCount(); }
 		virtual int GetCursor (void) const override { return m_iCursor; }
 		virtual CString GetDescAtCursor (void) const override;
