@@ -2320,7 +2320,25 @@ ICCItem *fnList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_MAKE:
 			{
 			CString sType = pArgs->GetElement(0)->GetStringValue();
-			if (strEquals(sType, CONSTLIT("sequence")))
+			if (strEquals(sType, CONSTLIT("duplicates")))
+				{
+				int iCount = (pArgs->GetCount() >= 2 ? pArgs->GetElement(1)->GetIntegerValue() : 0);
+				ICCItem *pEntry = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
+				if (iCount <= 0)
+					return pCC->CreateNil();
+
+				ICCItemPtr pList(ICCItem::List);
+				for (int i = 0; i < iCount; i++)
+					{
+					if (pEntry)
+						pList->Append(pEntry);
+					else
+						pList->Append(ICCItemPtr::Nil());
+					}
+
+				return pList->Reference();
+				}
+			else if (strEquals(sType, CONSTLIT("sequence")))
 				{
 				int iStart;
 				if (pArgs->GetCount() >= 2)

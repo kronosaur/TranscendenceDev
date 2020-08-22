@@ -31,6 +31,7 @@
 	<!ENTITY unidCCStringTests			"0xA0010083">
 	<!ENTITY unidCCLogicalOperators		"0xA0010084">
 	<!ENTITY unidSystemFunctionTests	"0xA0010085">
+	<!ENTITY unidCCListTests			"0xA0010086">
 
 	<!-- 00C0-00FF TEST MISSIONS -->
 
