@@ -497,6 +497,10 @@
 									(error (cat (itmGetName armorSeg 0) ": Expected " hpLeft " HP."))
 									)
 
+								(if (!= (obj@ gPlayerShip armorSeg 'damage) damageDone)
+									(error (cat (itmGetName armorSeg 0) ": Expected " damageDone " damage."))
+									)
+
 								;	Remove the segment (replace with stock reactive armor)
 
 								(if (not (shpInstallArmor gPlayerShip (itmCreate &itReactiveArmor; 1) 0))

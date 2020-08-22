@@ -899,6 +899,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (armor)\n\n"
 			"   'blindingImmune\n"
 			"   'completeHP\n"
+			"   'damage\n"
 			"   'damageAdj\n"
 			"   'deviceDamageImmune\n"
 			"   'deviceDisruptImmune\n"
