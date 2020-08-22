@@ -1173,6 +1173,7 @@
 			(setq rpgGetShipDetails (lambda (shipObj options)
 				(block (
 					(showDevices (not (@ options 'noDevices)))
+					(showFuelStats (not (@ options 'noFuelStats)))
 
 					;	Reactor stats
 					
@@ -1269,8 +1270,12 @@
 							(cat
 								"{/rtf "
 									"{/f:MediumBold;/c:#79828c; max. output:} " reactorPowerText "\n"
-									"{/f:MediumBold;/c:#79828c; fuel:} " (itmGetName reactorFuel 0x02) "\n"
-									"{/f:MediumBold;/c:#79828c; fuel efficiency:} " reactorEfficiencyText "\n"
+									(if showFuelStats
+										(cat
+											"{/f:MediumBold;/c:#79828c; fuel:} " (itmGetName reactorFuel 0x02) "\n"
+											"{/f:MediumBold;/c:#79828c; fuel efficiency:} " reactorEfficiencyText "\n"
+											)
+										)
 								"}"
 								)
 						}
@@ -1284,22 +1289,30 @@
 									"{/f:MediumBold;/c:#79828c; max. speed:} " (fmtNumber 'speed (obj@ shipObj 'maxSpeed)) "\n"
 									"{/f:MediumBold;/c:#79828c; thrust//mass:} " (fmtNumber 'real (/ (obj@ shipObj 'thrustToWeight) 1000)) "\n"
 									"{/f:MediumBold;/c:#79828c; maneuverability:} " (fmtNumber 'real (/ (obj@ shipObj 'maneuver) 1000)) "\n"
-									"{/f:MediumBold;/c:#79828c; power use:} " (fmtNumber 'power (obj@ shipObj 'drivePowerUse)) "\n"
+									(if showFuelStats
+										(cat
+											"{/f:MediumBold;/c:#79828c; power use:} " (fmtNumber 'power (obj@ shipObj 'drivePowerUse)) "\n"
+											)
+										)
 								"}"
 								)
 						}
 
-						{
-						icon: cargoIcon
-						title: (if cargoItem (itmGetName cargoItem))
-						desc:
-							(cat
-								"{/rtf "
-									"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (obj@ shipObj 'cargoSpace)) "\n"
-									"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (obj@ shipObj 'maxCargoSpace)) "\n"
-								"}"
+						(if (or (gr (obj@ shipObj 'cargoSpace) 0)
+								(gr (obj@ shipObj 'maxCargoSpace) 0)
 								)
-						}
+							{
+							icon: cargoIcon
+							title: (if cargoItem (itmGetName cargoItem))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (obj@ shipObj 'cargoSpace)) "\n"
+										"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (obj@ shipObj 'maxCargoSpace)) "\n"
+									"}"
+									)
+							}
+							)
 						
 						(if showDevices
 							{

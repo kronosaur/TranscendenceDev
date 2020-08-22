@@ -99,31 +99,22 @@
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
-							<Action name="Buy Autons" default="1" key="B">
+							<Action id="actionBuyAutons" default="1">
 								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
-							<Action name="Sell Autons" key="S">
+							<Action id="actionSellAutons">
 								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
-							<Action name="Repair Active Autons" key="R">
-								(block Nil
-									; Figure out the list of autons for the player
-									(setq gList (sysFindObject gPlayerShip "s B:auton; O:escort;"))
-									(if gList
-										(scrShowPane gScreen "RepairAutons")
-										(scrShowPane gScreen "NoAutons")
-										)
-									)
+							<Action id="actionRepairAutons">
+								(scrShowScreen gScreen &dsCorporateAutonManage;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
 								<Exit/>
 							</Action>
-
 						</Actions>
-
 					</Default>
 
 					<NoAutons descID="descNoAutons">
@@ -133,60 +124,6 @@
 							</Action>
 						</Actions>
 					</NoAutons>
-
-					<RepairAutons>
-						<OnPaneInit>
-							(block Nil
-								; Figure out how much it would cost to repair the player's
-								; autons.
-
-								(setq gCost 0)
-								(enum gList auton
-									(for i 0 (subtract (shpGetArmorCount auton) 1)
-										(setq gCost (add gCost (multiply 5 (objGetArmorDamage auton i))))
-										)
-									)
-
-								(switch
-									; If the autons have no damage, then there is nothing to do
-									(eq gCost 0)
-										(block Nil
-											(scrSetDesc gScreen "There is no damage to your autons.")
-											(scrEnableAction gScreen 0 Nil)
-											)
-
-									; If the player cannot afford it.
-									(gr gCost (plyGetCredits gPlayer))
-										(block Nil
-											(scrSetDesc gScreen (cat "Repairing the damage to your autons would cost " gCost " credits. Unfortunately, you do not have enough credits to proceed."))
-											(scrEnableAction gScreen 0 Nil)
-											)
-
-									; Otherwise, we're OK
-									(scrSetDesc gScreen (cat "Repairing the damage to your autons will cost " gCost " credits. Do you wish to proceed?"))
-									)
-								)
-						</OnPaneInit>
-
-						<Actions>
-							<Action name="Repair" default="1" key="R">
-								(block Nil
-									(enum gList auton
-										(for i 0 (subtract (shpGetArmorCount auton) 1)
-											(objRepairArmor auton i)
-											)
-										)
-
-									(plyCharge gPlayer gCost)
-									(scrShowPane gScreen "Default")
-									)
-							</Action>
-
-							<Action id="actionLeave" cancel="1">
-								<ShowPane pane="Default"/>
-							</Action>
-						</Actions>
-					</RepairAutons>
 				</Panes>
 			</Main>
 		</DockScreens>
@@ -194,6 +131,10 @@
 		<!-- Events and Data -->
 
 		<Language>
+			<Text id="actionBuyAutons">[B]uy Autons</Text>
+			<Text id="actionSellAutons">[S]ell Autons</Text>
+			<Text id="actionRepairAutons">[R]epair Autons</Text>
+
 			<Text id="descWelcome">
 				You are docked at an auton dealer.
 			</Text>
@@ -211,8 +152,374 @@
 				interested in buying %itemName%.
 
 			</Text>
-			<Text id="core.mapDesc">"Buys and sells autons"</Text>
+			<Text id="core.mapDesc">Buys and sells autons</Text>
 		</Language>
 	</StationType>
+
+<!-- DOCK SCREENS -->
+
+	<DockScreen unid="&dsCorporateAutonManage;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		
+		<Display type="carouselSelector"
+				style="shipList"
+				>
+			<OnDisplayInit>
+				(block (
+					(autonItemList 
+						(apply append
+							(map (objGetItems gPlayerShip "* +auton;") theEntry
+								(if (= (itmGetCount theEntry) 1)
+									(list theEntry)
+									(make 'duplicates (itmSetCount theEntry 1))
+									)
+								)
+							)
+						)
+					)
+					(append
+						;	First autons that are deployed
+
+						(map (sysFindObject gPlayerShip "s +auton; O:escort;") autonObj
+							(block (
+								(autonClass (objGetType autonObj))
+								)
+								{
+								title: (objGetName autonObj)
+								icon: (shpGetImageDesc autonClass { rotation:90 })
+
+								largeIcon: (shpGetImageDesc autonClass { type:'schematic })
+								details: 
+									(or (objFireEvent autonObj 'GetShipDetails { })
+										(rpgGetShipDetails autonObj { 
+											noFuelStats: True
+											})
+										)
+
+								autonObj: autonObj
+								autonClass: autonClass
+								}
+								)
+							)
+
+						;	Next, autons that are still in the cargo hold
+
+						(map autonItemList 'excludeNil autonItem
+							(block (
+								(autonConfig (rpgGetAutonConfig autonItem))
+								(autonClass (itmGetStaticData autonItem 'autonShipClass))
+								(isKnown (itm@ autonItem 'known))
+								)
+								{
+								title: 
+									(switch
+										(not isKnown )
+											(itmGetName autonItem 0)
+
+										(@ autonConfig 'name)
+											(@ autonConfig 'name)
+
+										(typGetName autonClass 'generic)
+										)
+
+								icon: (if isKnown (shpGetImageDesc autonClass { rotation:90 }) (itmGetImageDesc autonItem))
+
+								largeIcon: (if isKnown (shpGetImageDesc autonClass { type:'schematic }))
+								details: (if isKNown (rpgGetAutonItemDetails autonItem { }))
+
+								autonItem: autonItem
+								autonClass: autonClass
+								autonConfig: autonConfig
+								}
+								)
+							)
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theEntry (scrGetListEntry gScreen))
+						(currencyUsed (objGetDefaultCurrency gSource))
+
+						(autonObj (@ theEntry 'autonObj))
+						(autonConfig (@ theEntry 'autonConfig))
+
+						repairArmorInFlight
+						repairArmor
+						repairHull
+						enableRepair
+						(repairCost 0)
+						)
+						;	Figure out the cost to repair
+
+						(switch
+							;	No autons
+
+							(not theEntry)
+								(scrSetDescTranslate gScreen 'descNoAutons)
+								
+							;	We have a live auton
+
+							autonObj
+								(block (
+									(armorHPMax 
+										(map (objGetItems autonObj "aI") 'reduceSum armorItem
+											(obj@ autonObj armorItem 'maxHP)
+											)
+										)
+									(armorHPLeft
+										(map (objGetItems autonObj "aI") 'reduceSum armorItem
+											(obj@ autonObj armorItem 'hp)
+											)
+										)
+									)
+									(switch
+										;	Auton has armor damage
+
+										(ls armorHPLeft armorHPMax)
+											(block ()
+												(setq repairArmorInFlight True)
+												(setq repairCost 
+													(map (objGetItems autonObj "aI") 'reduceSum armorItem
+														(block (
+															(damage (obj@ autonObj armorItem 'damage))
+															(itemRepairCost (* (itm@ armorItem 'repairCost) damage))
+															(repairCost (ecoExchange itemRepairCost (itm@ armorItem 'currency) currencyUsed))
+															)
+															repairCost
+															)
+														)
+													)
+
+												(scrSetDescTranslate gScreen 'descAutonArmorDamaged {
+													autonName: (objGetName autonObj 'generic)
+													integrity: (round (* 100.0 (/ armorHPLeft armorHPMax)))
+													})
+												)
+
+										;	Auton is not damaged
+
+										(scrSetDescTranslate gScreen 'descAutonNotDamaged {
+											autonName: (objGetName autonObj 'generic)
+											})
+										)
+									)
+
+							;	Otherwise, auton is in cargo hold
+
+							autonConfig
+								(block (
+									(autonClass (@ theEntry 'autonClass))
+									(autonItem (@ theEntry 'autonItem))
+
+									(hullHPLeft (@ autonConfig 'hullHP))
+									(hullHPMax (@ autonConfig 'maxHullHP))
+									(hullDamage (- hullHPMax hullHPLeft))
+									(hullRepairCost
+										(if (gr hullDamage 0)
+											(round (* (itm@ autonItem 'cost) (/ hullDamage hullHPMax) 0.25))
+											)
+										)
+
+									(armorHPLeft 
+										(map (@ autonConfig 'armor) 'reduceSum armorDesc 
+											(@ armorDesc 'hp)
+											)
+										)
+									(armorHPMax 
+										(map (@ autonConfig 'armor) 'reduceSum armorDesc 
+											(itm@ (@ armorDesc 'item) 'completeHP)
+											)
+										)
+									(armorRepairCost 
+										(map (@ autonConfig 'armor) 'reduceSum armorDesc
+											(block (
+												(armorItem (@ armorDesc 'item))
+												(hp (@ armorDesc 'hp))
+												(maxHP (itm@ armorItem 'completeHP))
+												(damage (- maxHP hp))
+												(itemRepairCost (* (itm@ armorItem 'repairCost) damage))
+												(repairCost (ecoExchange itemRepairCost (itm@ armorItem 'currency) currencyUsed))
+												)
+												repairCost
+												)
+											)
+										)
+									)
+									(switch
+										;	Auton has hull damage and armor damage
+
+										(and hullDamage (ls armorHPLeft armorHPMax))
+											(block ()
+												(setq repairArmor True)
+												(setq repairHull True)
+												(setq repairCost (+ armorRepairCost hullRepairCost))
+												(scrSetDescTranslate gScreen 'descAutonArmorAndHullDamaged {
+													autonName: (typGetName autonClass 'generic)
+													armorIntegrity: (round (* 100.0 (/ armorHPLeft armorHPMax)))
+													hullIntegrity: (round (* 100.0 (/ hullHPLeft hullHPMax)))
+													})
+												)
+
+										;	Auton has armor damage only
+
+										(ls armorHPLeft armorHPMax)
+											(block ()
+												(setq repairArmor True)
+												(setq repairCost armorRepairCost)
+												(scrSetDescTranslate gScreen 'descAutonArmorDamaged {
+													autonName: (typGetName autonClass 'generic)
+													integrity: (round (* 100.0 (/ armorHPLeft armorHPMax)))
+													})
+												)
+
+										;	Auton is not damaged
+
+										(scrSetDescTranslate gScreen 'descAutonNotDamaged {
+											autonName: (if (itm@ autonItem 'known) (typGetName autonClass 'generic) (itmGetName autonItem 0))
+											})
+										)
+									)
+
+							;	Else nothing.
+							)
+
+						;	Set repair
+
+						(switch
+							(= repairCost 0)
+								(scrSetActionDesc gScreen 'actionRepair (scrTranslate gScreen 'descNoDamage))
+
+							(ls (objGetBalance gPlayerShip currencyUsed) repairCost)
+								(scrSetActionDesc gScreen 'actionRepair (scrTranslate gScreen 'descCantAfford {
+									cost: (fmtCurrency currencyUsed repairCost)
+									}))
+
+							(block ()
+								(scrSetActionDesc gScreen 'actionRepair (scrTranslate gScreen 'descRepair {
+									cost: (fmtCurrency currencyUsed repairCost)
+									}))
+								(setq enableRepair True)
+								)
+							)
+
+						(scrSetData gScreen 'repairArmorInFlight repairArmorInFlight)
+						(scrSetData gScreen 'repairArmor repairArmor)
+						(scrSetData gScreen 'repairHull repairHull)
+						(scrSetData gScreen 'repairCost repairCost)
+
+						(scrEnableAction gScreen 'actionRepair enableRepair)
+						)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionRepair" default="1">
+						(block (
+							(theEntry (scrGetListEntry gScreen))
+							(currencyUsed (objGetDefaultCurrency gSource))
+							(autonItem (@ theEntry 'autonItem))
+							)
+
+							;	Repair
+
+							(if (scrGetData gScreen 'repairArmorInFlight)
+								(block (
+									(autonObj (@ theEntry 'autonObj))
+									)
+									(enum (objGetItems autonObj "aI") theArmor
+										(objSet@ autonObj theArmor 'damage 0)
+										)
+									)
+								)
+
+							(if (scrGetData gScreen 'repairArmor)
+								(block (
+									(autonConfig (@ theEntry 'autonConfig))
+									)
+									(set@ autonConfig 'armor
+										(map (@ autonConfig 'armor) armorDesc
+											(block (
+												(armorItem (@ armorDesc 'item))
+												)
+												{
+													item: (itmSet@ armorItem 'damaged Nil)
+													hp: (itm@ armorItem 'completeHP)
+													}
+												)
+											)
+										)
+
+									(setq autonItem (objSetItemData gPlayerShip autonItem 'autonConfig autonConfig))
+									)
+								)
+
+							(if (scrGetData gScreen 'repairHull)
+								(block (
+									)
+									(set@ autonConfig 'maxHullHP Nil)
+									(set@ autonConfig 'hullHP Nil)
+
+									(setq autonItem (objSetItemData gPlayerShip autonItem 'autonConfig autonConfig))
+									(setq autonItem (objSet@ gPlayerShip autonItem 'damaged Nil))
+									)
+								)
+
+							;	Charge player
+
+							(objCharge gPlayerShip currencyUsed (scrGetData gScreen 'repairCost))
+							(scrShowPane gScreen 'Default)
+							)
+					</Action>
+
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Events>
+			<OnObjDestroyed>
+				(enum (scrGetList gScreen) theEntry
+					(if (= (@ theEntry 'autonObj) aObjDestroyed)
+						(scrRefreshScreen gScreen)
+						)
+					)
+			</OnObjDestroyed>
+		</Events>
+		
+		<Language>
+			<Text id="actionRepair">[R]epair</Text>
+
+			<Text id="descNoDamage">The auton is not damaged.</Text>
+			<Text id="descCantAfford">We can repair the auton for %cost%. Unfortunately, you cannot afford the cost.</Text>
+			<Text id="descRepair">We can repair the auton for %cost%.</Text>
+
+			<Text id="descAutonNotDamaged">
+
+				The %autonName% is not damaged.
+			
+			</Text>
+			<Text id="descAutonArmorDamaged">
+
+				%AutonName% armor at %integrity%% integrity.
+			
+			</Text>
+			<Text id="descAutonArmorAndHullDamaged">
+
+				%AutonName% is damaged.
+				
+				Hull: %hullIntegrity%% integrity\n
+				Armor: %armorIntegrity%% integrity
+			
+			</Text>
+		</Language>
+	</DockScreen>
 
 </TranscendenceModule>

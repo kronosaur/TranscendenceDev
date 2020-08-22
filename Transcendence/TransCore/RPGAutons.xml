@@ -970,6 +970,225 @@
 						)
 					)
 				))
+
+			(setq rpgGetAutonItemDetails (lambda (autonItem options)
+				(block (
+					(autonConfig (rpgGetAutonConfig autonItem))
+					(autonClass (itmGetStaticData autonItem 'autonShipClass))
+
+					(showDevices (not (@ options 'noDevices)))
+
+					;	Reactor stats
+					
+					(reactorText (cat (typGetName autonClass '(short generic)) " reactor"))
+					(reactorIcon (resCreateImageDesc &rsItems1; 288 288 96 96))
+					(reactorPowerText (fmtNumber 'power (typ@ autonClass 'power)))
+
+					;	Drive Stats
+					
+					(driveText (cat (typGetName autonClass '(short generic)) " drive"))
+					(driveIcon (resCreateImageDesc &rsItems1; 96 384 96 96))
+					
+					;	Cargo Stats
+					
+					(cargoIcon (resCreateImageDesc &rsItems1; 96 192 96 96))
+
+					;	Armor
+
+					(armorCount (count (@ autonConfig 'armor)))
+					(firstArmorItem (@ (@ (@ autonConfig 'armor) 0) 'item))
+
+					;	Devices
+
+					(allDevicesDesc (@ autonConfig 'devices))
+					(shieldItem
+						(@
+							(match allDevicesDesc theDesc 
+								(= (itm@ (@ theDesc 'item) 'category) 'shields)
+								)
+							'item
+							)
+						)
+
+					(weaponItems (map allDevicesDesc 'excludeNil theDesc
+						(if (= (itm@ (@ theDesc 'item) 'category) 'weapon)
+							(@ theDesc 'item)
+							)
+						))
+					(weaponItem1 (@ weaponItems 0))
+					(weaponItem2 (@ weaponItems 1))
+
+					(launcherItem Nil)
+
+					(miscItems (map allDevicesDesc 'excludeNil theDesc
+						(if (itmMatches (@ theDesc 'item) "d~wsrvc")
+							(@ theDesc 'item)
+							)
+						))
+					(miscItem1 (@ miscItems 0))
+
+					;	Slots
+					
+					(deviceSlots (typ@ autonClass 'deviceSlots))
+					(maxWeaponSlots (typ@ autonClass 'deviceSlotsWeapons))
+					(maxNonWeaponSlots (typ@ autonClass 'deviceSlotsNonWeapons))
+
+					(availDeviceSlots (- deviceSlots (count allDevicesDesc)))
+					(availWeaponSlots (- maxWeaponSlots (count weaponItems)))
+					(availNonWeaponSlots 
+						(- maxNonWeaponSlots 
+							(- (count allDevicesDesc) (count weaponItems))
+							)
+						)
+					)
+					(list 
+						{
+						icon: (shpGetImageDesc autonClass 0)
+						desc:
+							(cat
+								"{/rtf "
+									"{/f:MediumBold;/c:#79828c; manufacturer:} " (typ@ autonClass 'manufacturer) "\n"
+									"{/f:MediumBold;/c:#79828c; size:} " (fmtNumber (typ@ autonClass 'size)) " meters\n"
+									"{/f:MediumBold;/c:#79828c; mass:} " (fmtNumber 'massTons (typ@ autonClass 'hullMass)) "\n"
+								"}"
+								)
+						}
+
+						{
+						icon: reactorIcon
+						title: reactorText
+						desc: 
+							(cat
+								"{/rtf "
+									"{/f:MediumBold;/c:#79828c; max. output:} " reactorPowerText "\n"
+								"}"
+								)
+						}
+						
+						{
+						icon: driveIcon
+						title: driveText
+						desc:
+							(cat
+								"{/rtf "
+									"{/f:MediumBold;/c:#79828c; max. speed:} " (fmtNumber 'speed (typ@ autonClass 'maxSpeed)) "\n"
+									"{/f:MediumBold;/c:#79828c; thrust//mass:} " (fmtNumber 'real (/ (typ@ autonClass 'thrustToWeight) 1000)) "\n"
+									"{/f:MediumBold;/c:#79828c; maneuverability:} " (fmtNumber 'real (/ (typ@ autonClass 'maneuver) 1000)) "\n"
+								"}"
+								)
+						}
+
+						(if (gr (typ@ autonClass 'cargoSpace) 0)
+							{
+							icon: cargoIcon
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (typ@ autonClass 'cargoSpace)) "\n"
+										"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (typ@ autonClass 'maxCargoSpace)) "\n"
+									"}"
+									)
+							}
+							)
+						
+						(if showDevices
+							{
+							icon: (itmGetImageDesc firstArmorItem)
+							title: (cat (itmGetName firstArmorItem '(short actual)) " (&times;" armorCount ")")
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel firstArmorItem) "\n"
+										"{/f:MediumBold;/c:#79828c; std. armor:} " (typ@ autonClass 'stdArmorClassName) "\n"
+										"{/f:MediumBold;/c:#79828c; max. armor:} " (typ@ autonClass 'maxArmorClassName) "\n"
+									"}"
+									)
+							}
+							{
+							icon: (itmGetImageDesc firstArmorItem)
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; std. armor:} " (typ@ autonClass 'stdArmorClassName) "\n"
+										"{/f:MediumBold;/c:#79828c; max. armor:} " (typ@ autonClass 'maxArmorClassName) "\n"
+									"}"
+									)
+							}
+							)
+
+						(if (and shieldItem showDevices) {
+							icon: (itmGetImageDesc shieldItem)
+							title: (itmGetName shieldItem '(short actual))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel shieldItem) "\n"
+									"}"
+									)
+							})
+
+						(if (and weaponItem1 showDevices) {
+							icon: (itmGetImageDesc weaponItem1)
+							title: (itmGetName weaponItem1 '(short actual))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel weaponItem1) "\n"
+									"}"
+									)
+							})
+
+						(if (and weaponItem2 showDevices) {
+							icon: (itmGetImageDesc weaponItem2)
+							title: (itmGetName weaponItem2 '(short actual))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel weaponItem2) "\n"
+									"}"
+									)
+							})
+
+						(if (and launcherItem showDevices) {
+							icon: (itmGetImageDesc launcherItem)
+							title: (itmGetName launcherItem '(short actual))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel launcherItem) "\n"
+									"}"
+									)
+							})
+
+						(if (and miscItem1 showDevices) {
+							icon: (itmGetImageDesc miscItem1)
+							title: (itmGetName miscItem1 '(short actual))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel miscItem1) "\n"
+									"}"
+									)
+							})
+
+						{
+						icon: (resCreateImageDesc &rsItems1; 96 768 96 96)
+						desc:
+							(cat
+								"{/rtf "
+									"{/f:MediumBold;/c:#79828c; device slots:} " deviceSlots " (" availDeviceSlots " free)\n"
+							
+									(if (!= deviceSlots maxWeaponSlots)
+										(cat "{/f:MediumBold;/c:#79828c; for weapons:} " maxWeaponSlots " (" availWeaponSlots " free)\n")
+										)
+									(if (!= deviceSlots maxNonWeaponSlots)
+										(cat "{/f:MediumBold;/c:#79828c; for non-weapons:} " maxNonWeaponSlots " (" availNonWeaponSlots " free)\n") 
+										)
+								"}"
+								)
+						})
+					)
+				))
 			
 			(setq rpgGetAutonItemShieldStatus (lambda (theConfig)
 				(block (theStatus)
