@@ -287,34 +287,34 @@
 										)
 									)
 									(switch
+										;	Auton has no damage
+
+										(geq armorHPLeft armorHPMax)
+											(scrSetDescTranslate gScreen 'descAutonNotDamaged {
+												autonName: (objGetName autonObj 'generic)
+												})
+
 										;	Auton has armor damage
 
-										(ls armorHPLeft armorHPMax)
-											(block ()
-												(setq repairArmorInFlight True)
-												(setq repairCost 
-													(map (objGetItems autonObj "aI") 'reduceSum armorItem
-														(block (
-															(damage (obj@ autonObj armorItem 'damage))
-															(itemRepairCost (* (itm@ armorItem 'repairCost) damage))
-															(repairCost (ecoExchange itemRepairCost (itm@ armorItem 'currency) currencyUsed))
-															)
-															repairCost
-															)
+										(block ()
+											(setq repairArmorInFlight True)
+											(setq repairCost 
+												(map (objGetItems autonObj "aI") 'reduceSum armorItem
+													(block (
+														(damage (obj@ autonObj armorItem 'damage))
+														(itemRepairCost (* (itm@ armorItem 'repairCost) damage))
+														(repairCost (ecoExchange itemRepairCost (itm@ armorItem 'currency) currencyUsed))
+														)
+														repairCost
 														)
 													)
-
-												(scrSetDescTranslate gScreen 'descAutonArmorDamaged {
-													autonName: (objGetName autonObj 'generic)
-													integrity: (round (* 100.0 (/ armorHPLeft armorHPMax)))
-													})
 												)
 
-										;	Auton is not damaged
-
-										(scrSetDescTranslate gScreen 'descAutonNotDamaged {
-											autonName: (objGetName autonObj 'generic)
-											})
+											(scrSetDescTranslate gScreen 'descAutonArmorDamaged {
+												autonName: (objGetName autonObj 'generic)
+												integrity: (round (* 100.0 (/ armorHPLeft armorHPMax)))
+												})
+											)
 										)
 									)
 
@@ -402,6 +402,9 @@
 						(switch
 							(= repairCost 0)
 								(scrSetActionDesc gScreen 'actionRepair (scrTranslate gScreen 'descNoDamage))
+
+							(and autonObj (gr (objGetDistance gSource autonObj) 50))
+								(scrSetActionDesc gScreen 'actionRepair (scrTranslate gScreen 'descAutonTooFar))
 
 							(ls (objGetBalance gPlayerShip currencyUsed) repairCost)
 								(scrSetActionDesc gScreen 'actionRepair (scrTranslate gScreen 'descCantAfford {
@@ -506,6 +509,7 @@
 
 			<Text id="descNoDamage">The auton is not damaged.</Text>
 			<Text id="descCantAfford">We can repair the auton for %cost%. Unfortunately, you cannot afford the cost.</Text>
+			<Text id="descAutonTooFar">The auton is too far away for us to repair.</Text>
 			<Text id="descRepair">We can repair the auton for %cost%.</Text>
 
 			<Text id="descAutonNotDamaged">
