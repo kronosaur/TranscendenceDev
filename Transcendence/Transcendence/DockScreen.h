@@ -88,8 +88,9 @@ class IDockScreenDisplay
 		ICCItem *GetCurrentListEntry (void) const { return OnGetCurrentListEntry(); }
 		bool GetDefaultBackground (SDockScreenBackgroundDesc *retDesc);
 		CItemListManipulator &GetItemListManipulator (void) { return OnGetItemListManipulator(); }
+		ICCItemPtr GetListAsCCItem (void) const { return OnGetListAsCCItem(); }
 		int GetListCursor (void) const { return OnGetListCursor(); }
-		IListData *GetListData (void) { return OnGetListData(); }
+		IListData *GetListData (void) const { return OnGetListData(); }
 		ICCItemPtr GetProperty (const CString &sProperty) const;
 		CSpaceObject *GetSource (void) const { return OnGetSource(); }
 
@@ -126,8 +127,9 @@ class IDockScreenDisplay
 		virtual ICCItem *OnGetCurrentListEntry (void) const { return NULL; }
 		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) { return false; }
 		virtual CItemListManipulator &OnGetItemListManipulator (void) { return g_DummyItemListManipulator; }
+		virtual ICCItemPtr OnGetListAsCCItem (void) const;
 		virtual int OnGetListCursor (void) const { return -1; }
-		virtual IListData *OnGetListData (void) { return NULL; }
+		virtual IListData *OnGetListData (void) const { return NULL; }
 		virtual ICCItemPtr OnGetProperty (const CString &sProperty) const;
 		virtual CSpaceObject *OnGetSource (void) const { return NULL; }
 		virtual DWORD OnGetUIFlags (void) const { return 0; }
@@ -157,9 +159,9 @@ class IDockScreenDisplay
         void SelectArmor (int iSelection);
 
 		CDockScreen &m_DockScreen;
-		CSpaceObject *m_pLocation;
-		CPlayerShipController *m_pPlayer;
-		ICCItem *m_pData;
+		CSpaceObject *m_pLocation = NULL;
+		CPlayerShipController *m_pPlayer = NULL;
+		ICCItem *m_pData = NULL;
 	};
 
 class CDockScreenActions
@@ -487,6 +489,7 @@ class CDockScreen : public IScreenController,
 		CG32bitImage *GetDisplayCanvas (const CString &sID);
 		CDockSession *GetDockSession (void) const { return m_pDockSession; }
 		CItemListManipulator &GetItemListManipulator (void) { return m_pDisplay->GetItemListManipulator(); }
+		ICCItemPtr GetListAsCCItem (void) const;
 		int GetListCursor (void) const { return m_pDisplay->GetListCursor(); }
 		IListData *GetListData (void) const { return m_pDisplay->GetListData(); }
         CGameSession &GetGameSession (void) { return m_Session; }

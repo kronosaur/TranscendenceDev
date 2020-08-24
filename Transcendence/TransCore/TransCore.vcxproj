@@ -543,6 +543,7 @@
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="CoreSamples.xml" />
+    <Xml Include="CorporateAutonDealer.xml" />
     <Xml Include="CorporateInsurance.xml" />
     <Xml Include="CorporateTradingPost.xml" />
     <Xml Include="Cryovolcanic.xml" />

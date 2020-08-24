@@ -67,6 +67,7 @@
 #define PROPERTY_ARMOR_CLASS					CONSTLIT("armorClass")
 #define PROPERTY_BALANCE_ADJ					CONSTLIT("balanceAdj")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
+#define PROPERTY_DAMAGE							CONSTLIT("damage")
 #define PROPERTY_DAMAGE_ADJ						CONSTLIT("damageAdj")
 #define PROPERTY_DECAY							CONSTLIT("decay")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
@@ -2660,7 +2661,13 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 	CSpaceObject *pSource = Ctx.GetSource();
 	CInstalledArmor *pArmor = Ctx.GetArmor();
 
-	if (strEquals(sProperty, PROPERTY_HP))
+	if (strEquals(sProperty, PROPERTY_DAMAGE))
+		{
+		int iDamage = Max(0, Value.GetIntegerValue());
+		int iNewHP = Max(0, ArmorItem.GetMaxHP() - iDamage);
+		return SetItemProperty(Ctx, Item, PROPERTY_HP, *ICCItemPtr(iNewHP), retsError);
+		}
+	else if (strEquals(sProperty, PROPERTY_HP))
 		{
 		int iHP = Value.GetIntegerValue();
 

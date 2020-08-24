@@ -18,7 +18,7 @@ class CDockScreenCarousel : public IDockScreenDisplay
 		virtual ICCItem *OnGetCurrentListEntry (void) const override;
 		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override { retDesc->iType = EDockScreenBackground::none; return true; }
 		virtual int OnGetListCursor (void) const override { return m_pControl->GetCursor(); }
-		virtual IListData *OnGetListData (void) override { return m_pControl->GetList(); }
+		virtual IListData *OnGetListData (void) const override { return m_pControl->GetList(); }
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pControl->GetSource(); }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;
 		virtual EResults OnHandleKeyDown (int iVirtKey) override;
@@ -97,7 +97,7 @@ class CDockScreenList : public IDockScreenDisplay
 		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override { retDesc->iType = EDockScreenBackground::none; return true; }
 		virtual CItemListManipulator &OnGetItemListManipulator (void) override { return m_pItemListControl->GetItemListManipulator(); }
 		virtual int OnGetListCursor (void) const override { return m_pItemListControl->GetCursor(); }
-		virtual IListData *OnGetListData (void) override { return m_pItemListControl->GetList(); }
+		virtual IListData *OnGetListData (void) const override { return m_pItemListControl->GetList(); }
 		virtual ICCItemPtr OnGetProperty (const CString &sProperty) const override;
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pItemListControl->GetSource(); }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;
@@ -211,7 +211,7 @@ class CDockScreenSelector : public IDockScreenDisplay
 		virtual ICCItem *OnGetCurrentListEntry (void) const override;
 		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override;
 		virtual int OnGetListCursor (void) const override { return m_pControl->GetCursor(); }
-		virtual IListData *OnGetListData (void) override { return m_pControl->GetList(); }
+		virtual IListData *OnGetListData (void) const override { return m_pControl->GetList(); }
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pControl->GetSource(); }
 		virtual DWORD OnGetUIFlags (void) const { return FLAG_UI_ITEM_SELECTOR; }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;
