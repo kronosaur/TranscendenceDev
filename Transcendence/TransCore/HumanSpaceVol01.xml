@@ -1645,6 +1645,7 @@
 	<!ENTITY rsCorporateExplorerHero	"0x00100052">
 	<!ENTITY rsAdventurerOutfitters		"0x00100053">
 	<!ENTITY dsCorporateAutonManage		"0x00100054">
+	<!ENTITY rsCorporateAutonDealer		"0x00100055">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	

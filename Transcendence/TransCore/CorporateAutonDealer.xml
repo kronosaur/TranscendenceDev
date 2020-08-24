@@ -79,17 +79,24 @@
 
 		<!-- Image and Effects -->
 
-		<Image			imageID="&rsStations4;" imageX="128" imageY="192" imageWidth="128" imageHeight="256"/>
+		<Image			imageID="&rsCorporateAutonDealer;" imageWidth="260" imageHeight="260" viewportRatio="0.03375"/>
 
 		<DockingPorts>
-			<Port x="0"		y="90" />
-			<Port x="0"		y="-90" />
-			<Port x="60"	y="60" />
-			<Port x="60"	y="-60" />
-			<Port x="90"	y="0" />
-			<Port x="-90"	y="0" />
-			<Port x="-60"	y="60" />
-			<Port x="-60"	y="-60" />
+			<Port posAngle="-45"    posRadius="90"  posZ="0"/>
+			<Port posAngle="-15"    posRadius="90"  posZ="0"/>
+			<Port posAngle="15"     posRadius="90"  posZ="0"/>
+
+			<Port posAngle="45"     posRadius="90"  posZ="0"/>
+			<Port posAngle="75"     posRadius="90"  posZ="0"/>
+			<Port posAngle="105"    posRadius="90"  posZ="0"/>
+
+			<Port posAngle="135"    posRadius="90"  posZ="0"/>
+			<Port posAngle="165"    posRadius="90"  posZ="0"/>
+			<Port posAngle="195"    posRadius="90"  posZ="0"/>
+
+			<Port posAngle="225"   posRadius="90"  posZ="0"/>
+			<Port posAngle="255"   posRadius="90"  posZ="0"/>
+			<Port posAngle="285"   posRadius="90"  posZ="0"/>
 		</DockingPorts>
 
 		<!-- Dock Screen -->
@@ -521,5 +528,9 @@
 			</Text>
 		</Language>
 	</DockScreen>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsCorporateAutonDealer;"	bitmap="Resources\AutonDealer.jpg" bitmask="Resources\AutonDealerMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>
