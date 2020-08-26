@@ -134,6 +134,7 @@
 #define SPECIAL_HAS_COMPONENTS					CONSTLIT("hasComponents:")
 #define SPECIAL_IS_LAUNCHER						CONSTLIT("isLauncher:")
 #define SPECIAL_LAUNCHED_BY						CONSTLIT("launchedBy:")
+#define SPECIAL_LAUNCHES						CONSTLIT("launches:")
 #define SPECIAL_UNKNOWN_TYPE					CONSTLIT("unknownType:")
 
 #define SPECIAL_TRUE							CONSTLIT("true")
@@ -1934,8 +1935,11 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_LAUNCHED_BY))
 		{
-		DWORD dwLauncher = strToInt(strSubString(sAttrib, SPECIAL_LAUNCHED_BY.GetLength(), -1), 0);
-		if (dwLauncher == 0 || !IsMissile())
+		if (!IsMissile())
+			return false;
+
+		DWORD dwLauncher;
+		if (!GetUniverse().GetDesignCollection().ParseUNID(strSubString(sAttrib, SPECIAL_LAUNCHED_BY.GetLength()), &dwLauncher))
 			return false;
 
 		CDeviceClass *pDevice = GetUniverse().FindDeviceClass(dwLauncher);
@@ -1943,6 +1947,22 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 			return false;
 
 		return (pDevice->GetAmmoVariant(this) != -1);
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_LAUNCHES))
+		{
+		CDeviceClass *pDevice = GetDeviceClass();
+		if (!pDevice)
+			return false;
+
+		DWORD dwAmmo;
+		if (!GetUniverse().GetDesignCollection().ParseUNID(strSubString(sAttrib, SPECIAL_LAUNCHES.GetLength()), &dwAmmo))
+			return false;
+
+		CItemType *pAmmoType = GetUniverse().FindItemType(dwAmmo);
+		if (!pAmmoType)
+			return false;
+
+		return (pDevice->GetAmmoVariant(pAmmoType) != -1);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_UNKNOWN_TYPE))
 		{
