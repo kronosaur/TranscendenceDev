@@ -1760,6 +1760,11 @@
 						)
 					(canInstall Nil)
 					(militaryCheck (rpgCheckMilitaryIDPolicy installerObj (@ data 'checkMilitaryID)))
+					(illegalCheck 
+						(or (@ data 'checkMilitaryID)
+							(obj@ installerObj 'rpg.checkIllegals)
+							)
+						)
 
 					;	If the target object is not the player's ship, then we need to modify
 					;	some text
@@ -1956,7 +1961,7 @@
 										)
 									(setq desc (translate installerObj 'rpg.cannotInstallDeviceWithoutMilitaryID trData))
 
-								(and (@ data 'checkMilitaryID)
+								(and illegalCheck
 										(itmHasAttribute thisItem "Illegal")
 										)
 									(setq desc (translate installerObj 'rpg.cannotInstallDeviceBecauseIllegal trData))

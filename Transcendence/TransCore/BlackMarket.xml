@@ -192,9 +192,7 @@ PLAYER DATA
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: Nil
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -413,9 +411,7 @@ PLAYER DATA
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: Nil
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -1031,9 +1027,10 @@ PLAYER DATA
 			>
 		<Properties>
 			<!--
-			By default we do not check military IDs
+			By default we do not check military IDs or illegals
 			-->
-			<Constant	id="rpg.checkMilitaryID">Nil</COnstant>
+			<Definition	id="rpg.checkMilitaryID">	Nil</Definition>
+			<Definition id="rpg.checkIllegals">		Nil</Definition>
 		</Properties>
 
 		<Events>
