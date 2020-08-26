@@ -816,26 +816,26 @@
 
 								(switch
 									(= offerPrice 0)
-										(or (scrTranslate gScreen 'rpg.stationWillNotBuy { title:title stationName:title itemName:(itmGetName thisItem 'plural) })
-												(scrTranslate gScreen 'descNotForSale { title:title itemName:(itmGetName thisItem 'plural) })
+										(or (scrTranslate gScreen 'rpg.stationWillNotBuy { title:title stationName:title itemName:(itmGetName thisItem '(plural escapeQuotes)) })
+												(scrTranslate gScreen 'descNotForSale { title:title itemName:(itmGetName thisItem '(plural escapeQuotes)) })
 												)
 										
 									(= affordCount 0)
-										(scrTranslate gScreen 'descNotEnoughMoney { title:title itemName:(itmGetName thisItem 'article) })
+										(scrTranslate gScreen 'descNotEnoughMoney { title:title itemName:(itmGetName thisItem '(article escapeQuotes)) })
 
 									(= maxBuyCount 0)
-										(scrTranslate gScreen 'descNotInterested { title:title itemName:(itmGetName thisItem 'plural) })
+										(scrTranslate gScreen 'descNotInterested { title:title itemName:(itmGetName thisItem '(plural escapeQuotes)) })
 
 									(= availCount 1)
-										(scrTranslate gScreen 'descBuyOnlyItem { title:title itemName:(itmGetName thisItem 0) currency:(fmtCurrency currencyUsed offerPrice) })
+										(scrTranslate gScreen 'descBuyOnlyItem { title:title itemName:(itmGetName thisItem 'escapeQuotes) currency:(fmtCurrency currencyUsed offerPrice) })
 										
 									(= offerCount 1)
-										(scrTranslate gScreen 'descBuySingleItem { title:title itemName:(itmGetName thisItem 0) currency:(fmtCurrency currencyUsed offerPrice) })
+										(scrTranslate gScreen 'descBuySingleItem { title:title itemName:(itmGetName thisItem 'escapeQuotes) currency:(fmtCurrency currencyUsed offerPrice) })
 										
 									(ls offerCount availCount)
-										(scrTranslate gScreen 'descBuySomeItems { title:title itemName:(itmGetName thisItem 0) currency:(fmtCurrency currencyUsed offerPrice) offerCount:offerCount availCount:availCount })
+										(scrTranslate gScreen 'descBuySomeItems { title:title itemName:(itmGetName thisItem 'escapeQuotes) currency:(fmtCurrency currencyUsed offerPrice) offerCount:offerCount availCount:availCount })
 										
-									(scrTranslate gScreen 'descBuyAllItems { title:title itemName:(itmGetName thisItem 0) currency:(fmtCurrency currencyUsed offerPrice) })
+									(scrTranslate gScreen 'descBuyAllItems { title:title itemName:(itmGetName thisItem 'escapeQuotes) currency:(fmtCurrency currencyUsed offerPrice) })
 									)
 
 								(if tradeData
@@ -902,7 +902,7 @@
 						(switch
 							(itmMatches thisItem "m")
 								(scrSetDescTranslate gScreen 'warningSellAmmo {
-									itemName: (itmGetName thisItem 'plural)
+									itemName: (itmGetName thisItem '(plural escapeQuotes))
 									})
 							)
 						)
