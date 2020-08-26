@@ -53,7 +53,6 @@ static constexpr const char *FEEDBACK[] =
 	"Apemant",
 	"Aquilai",
 	"Arkheias",
-	"AssumedPseudonym",
 	"Azmond",
 
 	"Lee Baugh",
