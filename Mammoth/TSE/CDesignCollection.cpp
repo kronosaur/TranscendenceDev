@@ -1334,7 +1334,7 @@ void CDesignCollection::GetEnabledExtensions (TArray<CExtension *> *retExtension
 		}
 	}
 
-CG32bitImage *CDesignCollection::GetImage (DWORD dwUNID, DWORD dwFlags)
+CG32bitImage *CDesignCollection::GetImage (DWORD dwUNID, DWORD dwFlags) const
 
 //	GetImage
 //

@@ -1405,7 +1405,7 @@ class CDesignCollection
 		CDesignType *GetEntry (DesignTypes iType, int iIndex) const { return m_ByType[iType].GetEntry(iIndex); }
 		CExtension *GetExtension (int iIndex) const { return m_BoundExtensions[iIndex]; }
 		int GetExtensionCount (void) const { return m_BoundExtensions.GetCount(); }
-		CG32bitImage *GetImage (DWORD dwUNID, DWORD dwFlags = 0);
+		CG32bitImage *GetImage (DWORD dwUNID, DWORD dwFlags = 0) const;
 		const CItemEncounterDefinitions &GetItemEncounterDefinitions (void) const { return m_ItemEncounterDefinitions; }
 		CString GetStartingNodeID (void);
 		void GetStats (SStats &Result) const;

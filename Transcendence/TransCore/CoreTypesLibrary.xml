@@ -155,6 +155,7 @@
 	<!ENTITY unidCoreCriteria			"0x00030002">
 	<!ENTITY efNullEffect				"0x00030003">
 	<!ENTITY unidEngineText				"0x00030004">
+	<!ENTITY rsCoreIconBar				"0x00030005">
 	
 	<!-- 0020-002F PROJECTILE EFFECTS -->
 	

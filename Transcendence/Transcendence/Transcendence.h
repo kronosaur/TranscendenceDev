@@ -190,6 +190,7 @@ class CMenuData
 						  DWORD dwData2 = 0);
 		void SetTitle (const CString &sTitle) { m_sTitle = sTitle; }
 
+		void DeleteAll (void) { m_iCount = 0; }
 		int FindItemByKey (const CString &sKey);
 		bool FindItemData (const CString &sKey, DWORD *retdwData = NULL, DWORD *retdwData2 = NULL);
 		int GetCount (void) const { return m_iCount; }
@@ -206,7 +207,6 @@ class CMenuData
 		const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
 		const CString &GetTitle (void) const { return m_sTitle; }
 		bool IsEmpty (void) const { return m_iCount == 0; }
-		void RemoveAll (void) { m_iCount = 0; }
 
 	private:
 		struct Entry

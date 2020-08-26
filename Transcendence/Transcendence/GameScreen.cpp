@@ -430,7 +430,7 @@ void CTranscendenceWnd::ShowCommsMenu (CSpaceObject *pObj)
 		m_pMenuObj = pObj;
 
 		m_MenuData.SetTitle(m_pMenuObj->GetNounPhrase());
-		m_MenuData.RemoveAll();
+		m_MenuData.DeleteAll();
 
 		int iMsgCount = m_pMenuObj->GetCommsMessageCount();
 		for (i = 0; i < iMsgCount; i++)
@@ -462,7 +462,7 @@ bool CTranscendenceWnd::ShowCommsSquadronMenu (void)
 		return false;
 
 	m_MenuData.SetTitle(CONSTLIT("Squadron Orders"));
-	m_MenuData.RemoveAll();
+	m_MenuData.DeleteAll();
 
 	DWORD dwStatus = GetCommsStatus();
 
@@ -513,7 +513,7 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 
 	CShip *pShip = GetPlayer()->GetShip();
 	m_MenuData.SetTitle(CONSTLIT("Communications"));
-	m_MenuData.RemoveAll();
+	m_MenuData.DeleteAll();
 
 	//	Keep track of which keys we've used, in case specific objects want
 	//	to use their own keys.
@@ -620,7 +620,7 @@ bool CTranscendenceWnd::ShowInvokeMenu (void)
 		return false;
 
 	m_MenuData.SetTitle(CONSTLIT("Invoke Powers"));
-	m_MenuData.RemoveAll();
+	m_MenuData.DeleteAll();
 
 	bool bUseLetters = m_pTC->GetOptionBoolean(CGameSettings::allowInvokeLetterHotKeys);
 
@@ -734,7 +734,7 @@ bool CTranscendenceWnd::ShowEnableDisablePicker (void)
 
 	//	Fill the menu with all usable items
 
-	m_MenuData.RemoveAll();
+	m_MenuData.DeleteAll();
 
 	CItemList &List = pShip->GetItemList();
 	List.SortItems();
@@ -826,7 +826,7 @@ bool CTranscendenceWnd::ShowUsePicker (void)
 
 	//	Fill the menu with all usable items
 
-	m_MenuData.RemoveAll();
+	m_MenuData.DeleteAll();
 
 	CItemList &List = pShip->GetItemList();
 	List.SortItems();

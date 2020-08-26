@@ -681,6 +681,9 @@ void CGameSession::OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture
 			else if (g_pTrans->m_bPaused)
 				ExecuteCommandEnd(pPlayer, CGameKeys::keyPause);
 
+			else if (m_IconBar.OnLButtonDown(x, y, dwFlags))
+				{ }
+
 			//	Execute the command
 
 			else
@@ -725,6 +728,12 @@ void CGameSession::OnLButtonUp (int x, int y, DWORD dwFlags)
 			else if (m_bIgnoreButtonUp)
 				{
 				m_bIgnoreButtonUp = false;
+				}
+
+			else if (m_IconBar.OnLButtonUp(x, y, dwFlags))
+				{
+				CGameKeys::Keys iCommand = m_IconBar.GetLastCommand();
+				ExecuteCommand(pPlayer, iCommand);
 				}
 
 			//	Command.
@@ -851,6 +860,11 @@ void CGameSession::OnMouseMove (int x, int y, DWORD dwFlags)
 
 			else if (m_bIgnoreMouseMove)
 				m_bIgnoreMouseMove = false;
+
+			//	Icon bar
+
+			else if (m_IconBar.OnMouseMove(x, y))
+				{ }
 
 			//	Otherwise, enable mouse aim
 

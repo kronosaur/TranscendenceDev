@@ -409,6 +409,7 @@
     <ClCompile Include="CDockScreenList.cpp" />
     <ClCompile Include="CDockScreenSelector.cpp" />
     <ClCompile Include="CDockScreenSubjugate.cpp" />
+    <ClCompile Include="CGameIconBarData.cpp" />
     <ClCompile Include="CGameSession.cpp" />
     <ClCompile Include="CGCarouselArea.cpp" />
     <ClCompile Include="CGDetailsArea.cpp" />
@@ -419,6 +420,7 @@
     <ClCompile Include="CGTabArea.cpp" />
     <ClCompile Include="CHeadsUpDisplay.cpp" />
     <ClCompile Include="CHighScoreDisplay.cpp" />
+    <ClCompile Include="CIconBarDisplay.cpp" />
     <ClCompile Include="CIntroSession.cpp" />
     <ClCompile Include="CIntroShipController.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

@@ -99,6 +99,7 @@ class CGameSession : public IHISession
 		void ExecuteCommandRefresh (CPlayerShipController &Player);
 		void HideMenu (void);
 		void InitUI (void);
+		bool IsIconBarShown (void) const;
 		bool IsInPickerCompatible (void) const
 			{
 			return (m_CurrentMenu == menuEnableDevice || m_CurrentMenu == menuUseItem);
@@ -136,18 +137,19 @@ class CGameSession : public IHISession
 		EUITypes m_iUI = uiNone;				//	Basic flying UI
 		bool m_bMouseAim = true;				//	Player aims with the mouse
 
+		EMenuTypes m_CurrentMenu = menuNone;	//	Current menu being displayed
+		CMenuDisplay m_MenuDisplay;				//	Menu
+		CSpaceObject *m_pCurrentComms = NULL;	//	Object that we're currently communicating with
+
+		CIconBarDisplay m_IconBar;				//	Icons to access various screens
+		CGameIconBarData m_IconBarData;			//	Data for icon bar
+
 		//	HUD state
 
 		CHeadsUpDisplay m_HUD;					//  Paint the HUD
 		int m_iDamageFlash = 0;					//	0 = no flash; odd = recover; even = flash;
 		bool m_bIgnoreButtonUp = false;			//	If we closed a menu on button down, ignore button up
 		bool m_bIgnoreMouseMove = false;		//	Ignore mouse move, for purposes of enabling mouse flight
-
-		//	Menu state
-
-		EMenuTypes m_CurrentMenu = menuNone;	//	Current menu being displayed
-		CMenuDisplay m_MenuDisplay;				//	Menu
-		CSpaceObject *m_pCurrentComms = NULL;	//	Object that we're currently communicating with
 
 		//	Map state
 

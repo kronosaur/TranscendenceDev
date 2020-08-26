@@ -324,4 +324,6 @@
 
 	<Image UNID="&rsGenericMissionIcon;"		bitmap="Resources\GenericMissionIcon.jpg"	bitmask="Resources\GenericMissionIconMask.bmp"	loadOnUse="true"/>
 
+	<Image UNID="&rsCoreIconBar;"				bitmap="Resources\CoreIconBar.jpg"	bitmask="Resources\CoreIconBarMask.bmp"	loadOnUse="true"/>
+
 </TranscendenceModule>

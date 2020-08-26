@@ -19,6 +19,7 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
 		m_MessageDisplay(*CreateCtx.pHI),
 		m_Narrative(*CreateCtx.pHI),
 		m_MenuDisplay(*CreateCtx.pHI, *CreateCtx.pModel),
+		m_IconBar(*CreateCtx.pHI),
 		m_CurrentDock(*this)
 
 //	CGameSession constructor
@@ -47,6 +48,7 @@ void CGameSession::DismissMenu (void)
 			}
 
 		ExecuteCommandRefresh();
+		m_IconBar.Refresh();
 
 		//	Ignore the next mouse move message, for purpose of enabling mouse
 		//	control.
@@ -155,6 +157,28 @@ void CGameSession::InitUI (void)
 	pPlayer->OnMouseAimSetting(m_bMouseAim);
 	}
 
+bool CGameSession::IsIconBarShown (void) const
+
+//	IsIconBarShown
+//
+//	Returns TRUE if we should show the icon bar.
+
+	{
+	auto &sValue = m_Settings.GetString(CGameSettings::showIconBar);
+	if (strEquals(sValue, CONSTLIT("auto")))
+		{
+#if 0
+		return (GetUniverse().GetDifficultyLevel() == CDifficultyOptions::lvlStory);
+#else
+		return false;
+#endif
+		}
+	else if (strEquals(sValue, CONSTLIT("true")))
+		return true;
+	else
+		return false;
+	}
+
 void CGameSession::OnAcceptedMission (CMission &MissionObj)
 
 //	OnAcceptedMission
@@ -197,6 +221,7 @@ void CGameSession::OnActivate (void)
 	//	Refresh commands in case keyboard state has changed.
 
 	ExecuteCommandRefresh();
+	m_IconBar.Refresh();
 	}
 
 void CGameSession::OnCleanUp (void)
@@ -240,6 +265,13 @@ ALERROR CGameSession::OnInit (CString *retsError)
     m_SystemMap.Init(m_rcScreen);
 	m_MenuDisplay.Init(m_rcScreen);
 	m_MessageDisplay.Init(m_rcScreen);
+
+	//	Icon bar
+
+	if (IsIconBarShown())
+		m_IconBar.Init(m_rcScreen, m_IconBarData.CreateIconBar(GetUniverse().GetDesignCollection(), m_Settings));
+
+	//	HUD
 
     RECT rcCenter;
     m_HUD.GetClearHorzRect(&rcCenter);
@@ -291,6 +323,11 @@ void CGameSession::OnKeyboardMappingChanged (void)
 
 		ExecuteCommandRefresh();
 		}
+
+	//	Reinitialize the icon bar, if necessary
+
+	if (!m_IconBar.IsEmpty())
+		m_IconBar.Init(m_rcScreen, m_IconBarData.CreateIconBar(GetUniverse().GetDesignCollection(), m_Settings));
 	}
 
 void CGameSession::OnObjDestroyed (const SDestroyCtx &Ctx)
@@ -423,6 +460,7 @@ void CGameSession::OnShowDockScreen (bool bShow)
 
 		g_pUniverse->SetLogImageLoad(true);
 		ExecuteCommandRefresh();
+		m_IconBar.Refresh();
 		g_pTrans->m_State = CTranscendenceWnd::gsInGame;
 
 		//	Clean up
