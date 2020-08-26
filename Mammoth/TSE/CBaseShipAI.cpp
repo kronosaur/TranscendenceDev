@@ -598,7 +598,7 @@ void CBaseShipAI::FireOnOrderChanged (void)
 
 	//	Reset some internal variables
 
-	m_AICtx.SetManeuverCounter(0);
+	m_AICtx.OnOrderChanged(*m_pShip);
 
 	//	Initialize the order module. We can't call this for descendants (such as
 	//	CZoanthropeAI that do not use order modules).
