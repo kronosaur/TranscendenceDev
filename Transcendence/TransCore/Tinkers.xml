@@ -436,7 +436,7 @@
 			name=				":an XM900 ammunition box(es)"
 			level=				"7"
 			value=				"2900"
-			mass=				"500"
+			mass=				"2500"
 			frequency=			"notRandom"
 			attributes=			"ammoBox, commonwealth, consumable, military"
 
