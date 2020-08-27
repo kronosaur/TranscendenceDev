@@ -154,6 +154,11 @@ public:
 	void set_depth(float depth) {
 		m_depth = depth;
 	}
+	float getDepth() { return m_depth; }
+
+	void object_is_not_an_instanced_batch_render_request_type() {
+
+	}
 	//virtual std::vector<GLenum> getShaderArgumentTypes();
 private:
 	// Function to get the gl type of a glm type (e.g. GL_FLOAT, GL_INT, etc)
@@ -239,19 +244,34 @@ private:
 	static const std::size_t m_numShaderArgs = sizeof...(shaderArgs); // TODO: Move to implementations of this abstract class, also test that this works!!!!
 };
 
+class OpenGLInstancedBatchInterface {
+public:
+	virtual void RenderIfBelowDepth(const OpenGLShader* shader, float& startingDepth, float incDepth, int currentTick, bool clearRenderQueue = true) = 0;
+	virtual void Render(const OpenGLShader* shader, float& startingDepth, float incDepth, bool clearRenderQueue = true, bool manuallySetDepth = true) = 0;
+	virtual void clear(void) = 0;
+};
+
 // Second typename is a tuple type that contains all uniforms
-template<typename shaderRenderRequest, typename ... uniformArgs> class OpenGLInstancedBatch <shaderRenderRequest, std::tuple<uniformArgs...>> {
+template<typename shaderRenderRequest, typename ... uniformArgs> class OpenGLInstancedBatch <shaderRenderRequest, std::tuple<uniformArgs...>> : public OpenGLInstancedBatchInterface {
 public:
 	OpenGLInstancedBatch(void) {
+		//static_assert(std::is_base_of<OpenGLInstancedBatchRenderRequest, shaderRenderRequest>::value, "Derived not derived from OpenGLInstancedBatchRenderRequest");
+		m_iFirstUnrenderedElementIndex = 0;
+		m_iNumTexturesBound = 0;
 	};
 	~OpenGLInstancedBatch(void) {
 		clear();
 	};
-	void clear(void) {
+	void clear(void) override {
 		m_depthsFloat.clear();
 		m_renderRequests.clear();
+		m_iFirstUnrenderedElementIndex = 0;
+		m_iNumTexturesBound = 0;
 	};
-	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue=true, bool manuallySetDepth=true) {
+	void RenderIfBelowDepth(const OpenGLShader* shader, float& startingDepth, float incDepth, int currentTick, bool clearRenderQueue = true) override {
+
+	}
+	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, bool clearRenderQueue=true, bool manuallySetDepth=true) override {
 		int iNumObjectsToRender = m_renderRequests.size();
 		if (iNumObjectsToRender > 0)
 		{
@@ -263,32 +283,52 @@ public:
 					startingDepth -= incDepth;
 				}
 			}
-
-			OpenGLVAO &vao = m_renderRequests[0].getVAOForInstancedBatchType();
-			unsigned int iVAOID = vao.getVAO()[0];
-			unsigned int *instancedVBO = vao.getinstancedVBO();
-			glBindVertexArray(iVAOID);
-			glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(shaderRenderRequest) * iNumObjectsToRender, &m_renderRequests.front(), GL_STATIC_DRAW);
-			shader->bind();
-			//set uniforms
-			m_iNumTexturesBound = 0;
-			std::apply
-			(
-				[this, shader](uniformArgs const&... tupleArgs)
-			{
-				setGLUniformValues(shader, 0, tupleArgs...);
-			}, m_uniformValues
-			);
-			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, iNumObjectsToRender);
-			shader->unbind();
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glBindVertexArray(0);
+			RenderNItems(shader, iNumObjectsToRender, 0);
 		}
 		if (clearRenderQueue) {
 			clear();
 		}
 	};
+	void RenderUpToGivenDepth(const OpenGLShader* shader, const float minDepth, bool clearRenderQueue = true) {
+		int iNumObjectsToRender = m_renderRequests.size();
+		if (iNumObjectsToRender > 0)
+		{
+			// Find the first object that has a depth equal to or less than the given depth
+			int i = m_iFirstUnrenderedElementIndex;
+			while ((i < iNumObjectsToRender) && m_renderRequests[i].get_depth() > minDepth) {
+				i += 1;
+			}
+
+			int iNumObjectsForThisDrawCall = i - m_iFirstUnrenderedElementIndex;
+			RenderNItems(shader, iNumObjectsForThisDrawCall, m_iFirstUnrenderedElementIndex);
+			m_iFirstUnrenderedElementIndex = i;
+		}
+		if (clearRenderQueue && (iNumObjectsToRender <= m_iFirstUnrenderedElementIndex)) {
+			clear();
+		}
+	};
+	void RenderNItems(const OpenGLShader* shader, const int numItemsToRender, const int firstItemToRender) {
+		OpenGLVAO& vao = m_renderRequests[0].getVAOForInstancedBatchType();
+		unsigned int iVAOID = vao.getVAO()[0];
+		unsigned int* instancedVBO = vao.getinstancedVBO();
+		glBindVertexArray(iVAOID);
+		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(shaderRenderRequest) * numItemsToRender, &m_renderRequests.at(firstItemToRender), GL_STATIC_DRAW);
+		shader->bind();
+		//set uniforms
+		m_iNumTexturesBound = 0;
+		std::apply
+		(
+			[this, shader](uniformArgs const&... tupleArgs)
+		{
+			setGLUniformValues(shader, 0, tupleArgs...);
+		}, m_uniformValues
+		);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, numItemsToRender);
+		shader->unbind();
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
 	void RenderAllNonInstanced(const OpenGLShader *shader, float &startingDepth, float incDepth, int currentTick, bool clearRenderQueue = true) {
 		int iNumObjectsToRender = m_renderRequests.size();
 		if (iNumObjectsToRender > 0)
@@ -335,6 +375,13 @@ public:
 		// Note that this container must be cast manually to the correct value.
 		return m_shaderParameterVectors[paramIndex].get();
 	}
+	float getDepthOfDeepestObject() {
+		// Return depth of the deepest element that still needs to be rendered.
+		if (m_renderRequests.size() > 0) {
+			return m_renderRequests[m_iFirstUnrenderedElementIndex].getDepth();
+		}
+		return 1.0;
+	}
 private:
 	// Functions to manage uniforms
 	template<typename firstUniformArg, typename ... otherUniformArgs> void setGLUniformValues(const OpenGLShader* shader, int uniformArgIndex, firstUniformArg firstUniformValue, otherUniformArgs...rest) {
@@ -371,6 +418,7 @@ private:
 	std::array<std::string, sizeof...(uniformArgs)> m_uniformNames;
 	std::tuple<uniformArgs...> m_uniformValues;
 	std::tuple<int, int> m_canvasDimensions;
-	int m_iNumTexturesBound;
+	int m_iNumTexturesBound = 0;
+	int m_iFirstUnrenderedElementIndex = 0;
 };
 

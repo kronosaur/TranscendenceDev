@@ -99,7 +99,8 @@ void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int
 	// Use a while loop that repeats while we still have stuff left in our render batches.
 	// In this loop, iterate through our batches, and find the ones with the first and second largest depths
 	// for their last elements. On the one with the first largest, render all of the objects up to and excluding
-	// the first one whose depth is smaller than the second largest. Delete those from CPU memory.
+	// the first one whose depth is smaller than the second largest. Delete those from CPU memory. Remember that all batches
+	// are in order to render.
 
 	// Delete textures scheduled for deletion.
 	// TODO: Remove? We don't seem to use m_texturesForDeletion anymore
@@ -112,24 +113,33 @@ void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int
 		}
 	m_texturesForDeletion.clear();
 
-	for (const auto &p : m_texRenderBatches)
+	std::vector<std::pair<OpenGLShader*, OpenGLInstancedBatchInterface*>> batchesToRender;
+
+	// Set uniforms for all render batches and append them to our list of batches to render
+	// Note, setUniforms is persistent across calls to any Render() function since it sets things in the batch object, not in OpenGL
+	for (const auto& p : m_texRenderBatches)
 	{
-		OpenGLTexture *pTextureToUse = p.first;
+		OpenGLTexture* pTextureToUse = p.first;
 		// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
 		pTextureToUse->initTextureFromOpenGLThread();
-		OpenGLInstancedBatchTexture *pInstancedRenderQueue = p.second;
+		OpenGLInstancedBatchTexture* pInstancedRenderQueue = p.second;
 		// TODO: Set the depths here before rendering. This will ensure that we always render from back to front, which should solve most issues with blending.
-
 		std::array<std::string, 4> textureUniformNames = { "obj_texture", "glow_map", "current_tick", "perlin_noise" };
 		pInstancedRenderQueue->setUniforms(textureUniformNames, pTextureToUse, pTextureToUse->getGlowMap() ? pTextureToUse->getGlowMap() : pTextureToUse, currentTick, perlinNoise);
-		pInstancedRenderQueue->Render(objectTextureShader, depthLevel, depthDelta, currentTick, false);
+		batchesToRender.push_back(std::pair(objectTextureShader, pInstancedRenderQueue));
+	}
+	std::array<std::string, 3> rayAndLightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions", "perlin_noise" };
+	m_rayRenderBatch.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions, perlinNoise);
+	batchesToRender.push_back(std::pair(rayShader, &m_rayRenderBatch));
+
+	for (const auto &p : batchesToRender)
+	{
+		OpenGLShader *pShaderToUse = p.first;
+		OpenGLInstancedBatchInterface* pInstancedRenderQueue = p.second;
+		// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
+		pInstancedRenderQueue->Render(pShaderToUse, depthLevel, depthDelta);
 		pInstancedRenderQueue->clear();
 	}
-
-	std::array<std::string, 3> rayAndLightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions", "perlin_noise" };
-
-	m_rayRenderBatch.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions, perlinNoise);
-	m_rayRenderBatch.Render(rayShader, depthLevel, depthDelta, currentTick);
 
 	m_texRenderBatches.clear();
 }
