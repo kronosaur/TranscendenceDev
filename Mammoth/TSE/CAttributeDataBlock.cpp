@@ -252,11 +252,25 @@ ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
 //	not found, we return Nil.
 
 	{
-	const SDataEntry *pEntry = m_Data.GetAt(sAttrib);
-    if (pEntry == NULL)
-        return ICCItemPtr(ICCItem::Nil);
+	if (strEquals(sAttrib, CONSTLIT("*")))
+		{
+		ICCItemPtr pResult(ICCItem::SymbolTable);
+		for (int i = 0; i < m_Data.GetCount(); i++)
+			{
+			ICCItemPtr pValue(m_Data[i].pData->CloneContainer());
+			pResult->SetAt(m_Data.GetKey(i), pValue);
+			}
 
-	return ICCItemPtr(pEntry->pData->CloneContainer());
+		return pResult;
+		}
+	else
+		{
+		const SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+		if (pEntry == NULL)
+			return ICCItemPtr(ICCItem::Nil);
+
+		return ICCItemPtr(pEntry->pData->CloneContainer());
+		}
 	}
 
 CSpaceObject *CAttributeDataBlock::GetObjRefData (const CString &sAttrib) const
