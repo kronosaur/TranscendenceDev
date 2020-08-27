@@ -8578,8 +8578,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				ReadyToFire = true;
 
-			// Save the variables changed in OnFireWeapon first.
-
+			// Save the variables changed in OnFireWeapon first. Also save the linked fire option so we can change it back after we fire.
+			DWORD originalLinkedFireOptions = pDevice->GetDeviceItem().GetLinkedFireOptions();
 			if (ReadyToFire)
 				{
 				ICCItem *p_OldFireAngle = pCC->LookupGlobal(CONSTLIT("aFireAngle"), pCtx);
@@ -8590,6 +8590,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *p_OldWeaponBonus = pCC->LookupGlobal(CONSTLIT("aWeaponBonus"), pCtx);
 				ICCItem *p_OldWeaponType = pCC->LookupGlobal(CONSTLIT("aWeaponType"), pCtx);
 
+				// Set the weapon's linked fire option to lkfAlways before firing, then set it back so that it will fire regardless of linked fire options.
+				pDevice->SetLinkedFireOptions(CDeviceClass::lkfAlways);
 				CDeviceClass::SActivateCtx ActivateCtx(pTarget, TargetList);
 				bSuccess = pDevice->Activate(ActivateCtx);
 
@@ -8603,6 +8605,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pObj->IsDestroyed())
 				return pCC->CreateTrue();
+
+			pDevice->SetLinkedFireOptions(originalLinkedFireOptions);
 
 			if (bSuccess)
 				{

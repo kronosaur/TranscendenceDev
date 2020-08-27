@@ -4,6 +4,7 @@
 //	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #pragma once
+#include "OpenGL.h"
 
 struct SDXLayerCreate
 	{
@@ -31,6 +32,7 @@ class CDXScreen
 
 			FLAG_NO_TEXTURES =				0x00000001,
 			FLAG_FORCE_GDI =				0x00000002,
+			FLAG_FORCE_OPENGL =				0x00000004,
 			};
 
 		CDXScreen (void);
@@ -41,11 +43,13 @@ class CDXScreen
 		void DebugOutputStats (void);
 		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return ((!IsReady() || m_bDeviceLost || iLayerID < 0 || iLayerID >= m_Layers.GetCount()) ? CG32bitImage::Null() : m_Layers[iLayerID].BackBuffer); }
 		bool Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CString *retsError = NULL);
-		inline bool IsReady (void) const { return (m_bUseGDI || m_pD3DDevice); }
-		inline bool IsUsingDirectX (void) const { return !m_bUseGDI; }
+		inline bool IsReady (void) const { return (m_bUseGDI || m_pD3DDevice || m_pOGLContext); }
+		inline bool IsUsingDirectX (void) const { return (!m_bUseGDI && !m_bUseOpenGL); }
+		inline bool IsUsingOpenGL (void) const { return m_bUseOpenGL; }
 		inline bool IsUsingTextures (void) const { return m_bUseTextures; }
 		void Render (void);
 		void SwapBuffers (void);
+		void ResizeOpenGL (int width, int height);
 
 	private:
 		struct SLayer
@@ -93,6 +97,7 @@ class CDXScreen
 		bool CreateLayerResources (SLayer &Layer, CString *retsError = NULL);
 		bool InitDevice (CString *retsError = NULL);
         bool InitLayerResources (void);
+		void InitOpenGL(void);
 		bool Present (void);
 		void RenderError (const CString &sError);
 		bool ResetDevice (void);
@@ -100,8 +105,10 @@ class CDXScreen
 		HWND m_hWnd;						//	Window
 		IDirect3D9 *m_pD3D;					//	Used to create the D3DDevice
 		IDirect3DDevice9 *m_pD3DDevice;		//	Our rendering device
+		OpenGLContext *m_pOGLContext;		//  OpenGL context
 		D3DPRESENT_PARAMETERS m_Present;	//	Present parameters
 		D3DCAPS9 m_DeviceCaps;				//	Device caps for current device
+		OpenGLTexture *m_pOpenGLTexture;    //  OpenGL texture for game layer
 
 		int m_cxTarget;						//	Width of target surface (usually the screen)
 		int m_cyTarget;						//	Height of target surface
@@ -110,11 +117,13 @@ class CDXScreen
 		int m_cySource;
 
 		bool m_bUseGDI;						//	Use GDI instead of Direct3D
+		bool m_bUseOpenGL;					//  Use OpenGL instead of Direct3D
 		bool m_bNoGPUAcceleration;			//	Do not use textures, even if available
 		bool m_bUseTextures;				//	Use textures for layers.
 		bool m_bEndSceneNeeded;				//	If TRUE, we need an EndScene call
 		bool m_bErrorReported;				//	If TRUE, we've already reported an error
 		bool m_bDeviceLost;					//	If TRUE, we need to reset the device
+		bool m_bOpenGLAttached;				//	If TRUE, we've attached OpenGL to our current window context
 
 		TArray<SLayer> m_Layers;
 		TSortMap<int, int> m_PaintOrder;
@@ -130,6 +139,7 @@ class CDXBackgroundBlt
 		bool Init (int cxWidth, int cyHeight, CString *retsError = NULL);
 		inline bool IsEnabled (void) const { return (m_hBackgroundThread != INVALID_HANDLE_VALUE); }
 		void Render (void);
+		void Resize (int width, int height);
 
 	private:
 		static DWORD WINAPI BackgroundThread (LPVOID pData);

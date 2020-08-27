@@ -1,432 +1,150 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{f4d5b9f9-75bf-427a-80df-0d8425f11c1d}</UniqueIdentifier>
-      <Extensions>*.h</Extensions>
-    </Filter>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{ca8dae74-938b-45f1-9863-a7d95d969293}</UniqueIdentifier>
-      <Extensions>*.cpp</Extensions>
-    </Filter>
-    <Filter Include="Source Files\Reanimator">
-      <UniqueIdentifier>{96a74604-99ec-41ad-b187-bd17e695a496}</UniqueIdentifier>
-      <Extensions>*.cpp</Extensions>
-    </Filter>
-    <Filter Include="Source Files\TextFormat">
-      <UniqueIdentifier>{cf6f59d2-d06c-498b-83d3-12f30ae857e3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\32bit">
-      <UniqueIdentifier>{371d22ba-efc3-4241-b6dc-55514ac8f1d4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Real">
-      <UniqueIdentifier>{be89b1ae-67c3-4852-895a-f458444601d7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\16bit">
-      <UniqueIdentifier>{37ca63d6-5c76-4fe7-b391-7b42071ed0d4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\8bit">
-      <UniqueIdentifier>{ce77a204-f8e2-4ada-81b7-24aff7af1aeb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\DX">
-      <UniqueIdentifier>{54f2d532-069c-4ac1-8ce0-1168120f05a5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Fractal">
-      <UniqueIdentifier>{1f7ee3f7-f80a-45a0-8976-f7b7714725ad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Paths and Regions">
-      <UniqueIdentifier>{b6cfa6be-bfd2-4494-863d-88adf3116707}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\AG">
-      <UniqueIdentifier>{c421fc6d-c6f2-4bd3-b8f0-1be22a8c7bad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\PNG">
-      <UniqueIdentifier>{ae2f7503-cf8c-48ea-bab7-c0f97397a6ed}</UniqueIdentifier>
-    </Filter>
+    <ClCompile Include="16bitBlt.cpp" />
+    <ClCompile Include="16bitDrawCircle.cpp" />
+    <ClCompile Include="16bitDrawGradient.cpp" />
+    <ClCompile Include="16bitImageDrawing.cpp" />
+    <ClCompile Include="32bitBlt.cpp" />
+    <ClCompile Include="32bitFill.cpp" />
+    <ClCompile Include="8bitDrawCircle.cpp" />
+    <ClCompile Include="8bitImageDrawing.cpp" />
+    <ClCompile Include="8bitNoise.cpp" />
+    <ClCompile Include="AGArea.cpp" />
+    <ClCompile Include="AGScreen.cpp" />
+    <ClCompile Include="BlendModes.cpp" />
+    <ClCompile Include="CAniCartoucheBlock.cpp" />
+    <ClCompile Include="CCartoucheBlock.cpp" />
+    <ClCompile Include="CCloudGenerator.cpp" />
+    <ClCompile Include="CDrawText.cpp" />
+    <ClCompile Include="CDXBackgroundBlt.cpp" />
+    <ClCompile Include="CDXMatrix.cpp" />
+    <ClCompile Include="CFrameRateCounter.cpp" />
+    <ClCompile Include="CG16bitFont.cpp" />
+    <ClCompile Include="CG16BitImage.cpp" />
+    <ClCompile Include="CG16bitLinePainter.cpp" />
+    <ClCompile Include="CG16bitRealRegion.cpp" />
+    <ClCompile Include="CG16bitBinaryRegion.cpp" />
+    <ClCompile Include="CG16bitSprite.cpp" />
+    <ClCompile Include="CG16bitRegion.cpp" />
+    <ClCompile Include="CG32bitImage.cpp" />
+    <ClCompile Include="CGImageCache.cpp" />
+    <ClCompile Include="CG32bitPixel.cpp" />
+    <ClCompile Include="CG8bitImage.cpp" />
+    <ClCompile Include="CG8bitSparseImage.cpp" />
+    <ClCompile Include="CGButtonArea.cpp" />
+    <ClCompile Include="CGCloudGenerator3D.cpp" />
+    <ClCompile Include="CGFrameArea.cpp" />
+    <ClCompile Include="CGlobalEdgeTable.cpp" />
+    <ClCompile Include="CGlowingRingPainter.cpp" />
+    <ClCompile Include="CGImageArea.cpp" />
+    <ClCompile Include="CGPath.cpp" />
+    <ClCompile Include="CGPNG.cpp" />
+    <ClCompile Include="CGRealChannel.cpp" />
+    <ClCompile Include="CGRealHSB.cpp" />
+    <ClCompile Include="CGRealRGB.cpp" />
+    <ClCompile Include="CGRegion.cpp" />
+    <ClCompile Include="CGRunList.cpp" />
+    <ClCompile Include="CGShape.cpp" />
+    <ClCompile Include="CGTextArea.cpp" />
+    <ClCompile Include="CIconLabelBlock.cpp" />
+    <ClCompile Include="CLinePainter.cpp" />
+    <ClCompile Include="CNoiseGenerator.cpp" />
+    <ClCompile Include="CompositeCircle.cpp" />
+    <ClCompile Include="CDXScreen.cpp" />
+    <ClCompile Include="CPolygonRasterizer.cpp" />
+    <ClCompile Include="CScreenMgr.cpp" />
+    <ClCompile Include="CScreenMgr3D.cpp" />
+    <ClCompile Include="CSortedEdgeList.cpp" />
+    <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="DirectDraw.cpp" />
+    <ClCompile Include="DrawCircle.cpp" />
+    <ClCompile Include="DrawClouds.cpp" />
+    <ClCompile Include="DrawFill.cpp" />
+    <ClCompile Include="DrawLine.cpp" />
+    <ClCompile Include="DrawQuadCurve.cpp" />
+    <ClCompile Include="DrawRect.cpp" />
+    <ClCompile Include="DrawRegion.cpp" />
+    <ClCompile Include="DrawText.cpp" />
+    <ClCompile Include="Files.cpp" />
+    <ClCompile Include="FilterBlur.cpp" />
+    <ClCompile Include="FilterMinMax.cpp" />
+    <ClCompile Include="FilterThreshold.cpp" />
+    <ClCompile Include="IPropertyAnimator.cpp" />
+    <ClCompile Include="lodepng\lodepng.cpp" />
+    <ClCompile Include="Noise.cpp" />
+    <ClCompile Include="OpenGLContext.cpp" />
+    <ClCompile Include="OpenGLMasterRenderQueue.cpp" />
+    <ClCompile Include="OpenGLRenderLayer.cpp" />
+    <ClCompile Include="OpenGLShader.cpp" />
+    <ClCompile Include="OpenGLTexture.cpp" />
+    <ClCompile Include="OpenGLVAO.cpp" />
+    <ClCompile Include="Polygon.cpp" />
+    <ClCompile Include="PolygonSimple.cpp" />
+    <ClCompile Include="Sound.cpp" />
+    <ClCompile Include="CAniButton.cpp" />
+    <ClCompile Include="CAniControl.cpp" />
+    <ClCompile Include="CAniImageFill.cpp" />
+    <ClCompile Include="CAniListBox.cpp" />
+    <ClCompile Include="CAniPolygon.cpp" />
+    <ClCompile Include="CAniProperty.cpp" />
+    <ClCompile Include="CAniPropertySet.cpp" />
+    <ClCompile Include="CAniRect.cpp" />
+    <ClCompile Include="CAniRichText.cpp" />
+    <ClCompile Include="CAniRoundedRect.cpp" />
+    <ClCompile Include="CAniSequencer.cpp" />
+    <ClCompile Include="CAniShape.cpp" />
+    <ClCompile Include="CAniSolidFill.cpp" />
+    <ClCompile Include="CAniSolidLine.cpp" />
+    <ClCompile Include="CAniText.cpp" />
+    <ClCompile Include="CAniTextInput.cpp" />
+    <ClCompile Include="CAniVScroller.cpp" />
+    <ClCompile Include="CLinearAnimator.cpp" />
+    <ClCompile Include="CListScroller.cpp" />
+    <ClCompile Include="CReanimator.cpp" />
+    <ClCompile Include="IAnimatron.cpp" />
+    <ClCompile Include="PropertyAnimators.cpp" />
+    <ClCompile Include="CTextBlock.cpp" />
+    <ClCompile Include="OpenGLInstancedBatchImpl.cpp" />
+    <ClCompile Include="OpenGLAnimatedNoise.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NoiseImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Reanimator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TextFormat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DirectXUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXImage32.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXUI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DrawImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PreComp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXImageReal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXImage16.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PixelMacros.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXImage8.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXSparseMask.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXScreenMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXScreenMgr3D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DX3DImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXFractal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TBlt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TCirclePainter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TRegionPainter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DrawRegionImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXPath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\DXRegion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RasterizerImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TLinePainter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TRoundedRectPainter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TFill.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lodepng\lodepng.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TImagePlane.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="8bitDrawCircle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="8bitImageDrawing.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CFrameRateCounter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectDraw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Noise.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Polygon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PolygonSimple.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sound.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniButton.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniControl.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniImageFill.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniListBox.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniPolygon.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniProperty.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniPropertySet.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniRect.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniRichText.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniRoundedRect.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniSequencer.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniShape.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniSolidFill.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniSolidLine.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniText.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniTextInput.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniVScroller.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CLinearAnimator.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CListScroller.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CReanimator.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="IAnimatron.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="PropertyAnimators.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CTextBlock.cpp">
-      <Filter>Source Files\TextFormat</Filter>
-    </ClCompile>
-    <ClCompile Include="IPropertyAnimator.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="CG32bitImage.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="32bitFill.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CG32bitPixel.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="32bitBlt.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="DrawRect.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="DrawLine.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="DrawCircle.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="Files.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CGRealHSB.cpp">
-      <Filter>Source Files\Real</Filter>
-    </ClCompile>
-    <ClCompile Include="CGRealRGB.cpp">
-      <Filter>Source Files\Real</Filter>
-    </ClCompile>
-    <ClCompile Include="CGlowingRingPainter.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CompositeCircle.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CLinePainter.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="16bitBlt.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="16bitDrawCircle.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="16bitDrawGradient.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="16bitImageDrawing.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CG16bitBinaryRegion.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CG16bitFont.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CG16BitImage.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CG16bitLinePainter.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CG16bitRealRegion.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CG16bitRegion.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CG16bitSprite.cpp">
-      <Filter>Source Files\16bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CG8bitImage.cpp">
-      <Filter>Source Files\8bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CG8bitSparseImage.cpp">
-      <Filter>Source Files\8bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CDXBackgroundBlt.cpp">
-      <Filter>Source Files\DX</Filter>
-    </ClCompile>
-    <ClCompile Include="CDXMatrix.cpp">
-      <Filter>Source Files\DX</Filter>
-    </ClCompile>
-    <ClCompile Include="CDXScreen.cpp">
-      <Filter>Source Files\DX</Filter>
-    </ClCompile>
-    <ClCompile Include="CScreenMgr3D.cpp">
-      <Filter>Source Files\DX</Filter>
-    </ClCompile>
-    <ClCompile Include="CScreenMgr.cpp">
-      <Filter>Source Files\DX</Filter>
-    </ClCompile>
-    <ClCompile Include="8bitNoise.cpp">
-      <Filter>Source Files\Fractal</Filter>
-    </ClCompile>
-    <ClCompile Include="CNoiseGenerator.cpp">
-      <Filter>Source Files\Fractal</Filter>
-    </ClCompile>
-    <ClCompile Include="DrawClouds.cpp">
-      <Filter>Source Files\Fractal</Filter>
-    </ClCompile>
-    <ClCompile Include="CCloudGenerator.cpp">
-      <Filter>Source Files\Fractal</Filter>
-    </ClCompile>
-    <ClCompile Include="CGCloudGenerator3D.cpp">
-      <Filter>Source Files\Fractal</Filter>
-    </ClCompile>
-    <ClCompile Include="DrawRegion.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="BlendModes.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="DrawQuadCurve.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CGRunList.cpp">
-      <Filter>Source Files\Paths and Regions</Filter>
-    </ClCompile>
-    <ClCompile Include="CGRegion.cpp">
-      <Filter>Source Files\Paths and Regions</Filter>
-    </ClCompile>
-    <ClCompile Include="CGPath.cpp">
-      <Filter>Source Files\Paths and Regions</Filter>
-    </ClCompile>
-    <ClCompile Include="CSortedEdgeList.cpp">
-      <Filter>Source Files\Paths and Regions</Filter>
-    </ClCompile>
-    <ClCompile Include="CPolygonRasterizer.cpp">
-      <Filter>Source Files\Paths and Regions</Filter>
-    </ClCompile>
-    <ClCompile Include="CGlobalEdgeTable.cpp">
-      <Filter>Source Files\Paths and Regions</Filter>
-    </ClCompile>
-    <ClCompile Include="DrawText.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CGShape.cpp">
-      <Filter>Source Files\Paths and Regions</Filter>
-    </ClCompile>
-    <ClCompile Include="CGImageCache.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="AGArea.cpp">
-      <Filter>Source Files\AG</Filter>
-    </ClCompile>
-    <ClCompile Include="AGScreen.cpp">
-      <Filter>Source Files\AG</Filter>
-    </ClCompile>
-    <ClCompile Include="CGButtonArea.cpp">
-      <Filter>Source Files\AG</Filter>
-    </ClCompile>
-    <ClCompile Include="CGFrameArea.cpp">
-      <Filter>Source Files\AG</Filter>
-    </ClCompile>
-    <ClCompile Include="CGImageArea.cpp">
-      <Filter>Source Files\AG</Filter>
-    </ClCompile>
-    <ClCompile Include="CGTextArea.cpp">
-      <Filter>Source Files\AG</Filter>
-    </ClCompile>
-    <ClCompile Include="DrawFill.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="FilterThreshold.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="FilterBlur.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CGRealChannel.cpp">
-      <Filter>Source Files\Real</Filter>
-    </ClCompile>
-    <ClCompile Include="lodepng\lodepng.cpp">
-      <Filter>Source Files\PNG</Filter>
-    </ClCompile>
-    <ClCompile Include="CGPNG.cpp">
-      <Filter>Source Files\PNG</Filter>
-    </ClCompile>
-    <ClCompile Include="CCartoucheBlock.cpp">
-      <Filter>Source Files\TextFormat</Filter>
-    </ClCompile>
-    <ClCompile Include="CAniCartoucheBlock.cpp">
-      <Filter>Source Files\Reanimator</Filter>
-    </ClCompile>
-    <ClCompile Include="FilterMinMax.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
-    <ClCompile Include="CIconLabelBlock.cpp">
-      <Filter>Source Files\TextFormat</Filter>
-    </ClCompile>
-    <ClCompile Include="CDrawText.cpp">
-      <Filter>Source Files\TextFormat</Filter>
-    </ClCompile>
+    <ClInclude Include="..\Include\DirectXUtil.h" />
+    <ClInclude Include="..\Include\DXFractal.h" />
+    <ClInclude Include="..\Include\DXImage16.h" />
+    <ClInclude Include="..\Include\DXImage32.h" />
+    <ClInclude Include="..\Include\DXImage8.h" />
+    <ClInclude Include="..\Include\DXImageReal.h" />
+    <ClInclude Include="..\Include\DXPath.h" />
+    <ClInclude Include="..\Include\DXRegion.h" />
+    <ClInclude Include="..\Include\DXScreenMgr.h" />
+    <ClInclude Include="..\Include\DXScreenMgr3D.h" />
+    <ClInclude Include="..\Include\DXSparseMask.h" />
+    <ClInclude Include="..\Include\DXUI.h" />
+    <ClInclude Include="..\Include\OpenGL.h" />
+    <ClInclude Include="..\Include\OpenGLIncludes.h" />
+    <ClInclude Include="..\Include\OpenGLInstancedBatch.h" />
+    <ClInclude Include="..\Include\OpenGLInstancedBatchImpl.h" />
+    <ClInclude Include="..\Include\OpenGLShader.h" />
+    <ClInclude Include="..\Include\OpenGLTexture.h" />
+    <ClInclude Include="..\Include\OpenGLVAO.h" />
+    <ClInclude Include="..\Include\Reanimator.h" />
+    <ClInclude Include="..\Include\TBlt.h" />
+    <ClInclude Include="..\Include\TCirclePainter.h" />
+    <ClInclude Include="..\Include\TextFormat.h" />
+    <ClInclude Include="..\Include\TFill.h" />
+    <ClInclude Include="..\Include\TImagePlane.h" />
+    <ClInclude Include="..\Include\TLinePainter.h" />
+    <ClInclude Include="..\Include\TRegionPainter.h" />
+    <ClInclude Include="..\Include\TRoundedRectPainter.h" />
+    <ClInclude Include="DrawImpl.h" />
+    <ClInclude Include="DrawRegionImpl.h" />
+    <ClInclude Include="DX3DImpl.h" />
+    <ClInclude Include="lodepng\lodepng.h" />
+    <ClInclude Include="NoiseImpl.h" />
+    <ClInclude Include="PixelMacros.h" />
+    <ClInclude Include="PreComp.h" />
+    <ClInclude Include="RasterizerImpl.h" />
+    <ClInclude Include="..\Include\OpenGLAnimatedNoise.h" />
   </ItemGroup>
 </Project>

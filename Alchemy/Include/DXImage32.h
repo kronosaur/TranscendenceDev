@@ -4,6 +4,7 @@
 //	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #pragma once
+#include "OpenGL.h"
 
 class CG8bitImage;
 class CG16bitFont;
@@ -155,6 +156,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		bool CreateFromWindowsBMP (IReadStream &Stream);
 		EAlphaTypes GetAlphaType (void) const { return m_AlphaType; }
 		CG32bitPixel GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
+		CG32bitPixel *GetPixelArray (void) const { return m_pRGBA; }
 		CG32bitPixel *GetPixelPos (int x, int y) const { return (CG32bitPixel *)((BYTE *)m_pRGBA + (y * m_iPitch)) + x; }
 		bool IsEmpty (void) const { return (m_pRGBA == NULL); }
 		bool IsMarked (void) const { return m_bMarked; }
@@ -211,6 +213,16 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		void TakeHandoff (CG32bitImage &Src);
 		bool WriteToWindowsBMP (IWriteStream *pStream);
 
+		//  OpenGL functions
+		OpenGLMasterRenderQueue *GetMasterRenderQueue (void) const { return m_pOGLRenderQueue.get(); }
+		//OpenGLMasterRenderQueue *GetMasterRenderQueue(void) const { return m_pOGLRenderQueue; }
+		OpenGLTexture *GetOpenGLTexture(void) { if (!m_pOpenGLTexture) { CreateOpenGLTexture(); } return m_pOpenGLTexture.get(); }
+		void InitOpenGL (void);
+		//void SetCurrentTickForShaders (int currTick) { if (m_pOGLRenderQueue) m_pOGLRenderQueue->setCurrentTick(currTick); }
+		void SetCurrentTickForShaders(int currTick) { if (m_pOGLRenderQueue) m_pOGLRenderQueue.get()->setCurrentTick(currTick); }
+		void CreateOpenGLTexture (void) { if (m_bOpenGLInitialized) { m_pOpenGLTexture = std::make_shared<OpenGLTexture>(GetPixelArray(), GetWidth(), GetHeight(), GetAlphaType() == EAlphaTypes::alpha8); } }
+		void SetOpenGLTexture (std::shared_ptr<OpenGLTexture> OpenGLTexturePtr) { if (m_bOpenGLInitialized) { m_pOpenGLTexture = OpenGLTexturePtr; } }
+
 	private:
 		static int CalcBufferSize (int cxWidth, int cyHeight) { return (cxWidth * cyHeight); }
 		void Copy (const CG32bitImage &Src);
@@ -224,6 +236,10 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 
 		mutable BITMAPINFO *m_pBMI = NULL;		//	Used for blting to a DC
 		static CG32bitImage m_NullImage;
+		static std::unique_ptr<OpenGLMasterRenderQueue> m_pOGLRenderQueue; // TODO: Use shared_ptr instead of unique_ptr
+		//OpenGLMasterRenderQueue *m_pOGLRenderQueue = NULL;
+		std::shared_ptr<OpenGLTexture> m_pOpenGLTexture = nullptr;
+		static bool m_bOpenGLInitialized;
 	};
 
 //	Drawing Classes ------------------------------------------------------------

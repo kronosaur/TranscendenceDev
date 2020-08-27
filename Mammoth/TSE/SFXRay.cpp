@@ -20,133 +20,6 @@
 
 #define FIELD_OPACITY                   CONSTLIT("opacity")
 
-class CRayEffectPainter : public IEffectPainter
-	{
-	public:
-		CRayEffectPainter (CEffectCreator *pCreator);
-		~CRayEffectPainter (void);
-
-		//	IEffectPainter virtuals
-		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
-		virtual int GetLifetime (void) override { return m_iLifetime; }
-		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const override;
-		virtual bool GetParamList (TArray<CString> *retList) const override;
-		virtual void GetRect (RECT *retRect) const override;
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
-		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) override;
-		virtual void PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx) override;
-		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
-
-	protected:
-		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
-
-	private:
-		enum EAnimationTypes
-			{
-			animateNone =			0,
-
-			animateFade =			1,
-			animateFlicker =        2,
-			animateCycle =			3,
-
-			animateMax =            3,
-			};
-
-		enum ERayShapes
-			{
-			shapeUnknown =			0,
-
-			shapeDiamond =			1,
-			shapeOval =				2,
-			shapeStraight =			3,
-			shapeTapered =			4,
-			shapeCone =				5,
-			shapeSword =			6,
-
-			shapeMax =				6,
-			};
-
-		enum ERayStyles
-			{
-			styleUnknown =			0,
-
-			styleBlob =				1,
-			styleGlow =				2,
-			styleJagged =			3,
-			styleGrainy =			4,
-			styleLightning =		5,
-			styleWhiptail =			6,
-
-			styleMax =				6,
-			};
-
-		enum EColorTypes
-			{
-			colorNone,
-			colorGlow,
-			};
-
-		enum EOpacityTypes
-			{
-			opacityNone,
-			opacityGlow,
-			opacityGrainy,
-			opacityTaperedGlow,
-			opacityTaperedExponentialGlow,
-			};
-
-		enum EWidthAdjTypes
-			{
-			widthAdjNone,
-			widthAdjBlob,
-			widthAdjDiamond,
-			widthAdjJagged,
-			widthAdjOval,
-			widthAdjTapered,
-			widthAdjCone,
-			widthAdjWhiptail,
-			widthAdjSword,
-			};
-
-		void CalcCone (TArray<Metric> &AdjArray);
-		void CalcDiamond (TArray<Metric> &AdjArray);
-		void CalcIntermediates (int iLength);
-		int CalcLength (SViewportPaintCtx &Ctx) const;
-		void CalcOval (TArray<Metric> &AdjArray);
-		void CalcRandomWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
-		void CalcSword (TArray<Metric> &AdjArray);
-		void CalcTaper (TArray<Metric> &AdjArray);
-		void CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength, Metric rDecay, Metric rCyclePos);
-		void CleanUpIntermediates (void);
-		ILinePainter *CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos = 0.0);
-		void PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
-
-		static void CalcTaperedGlow (int Width, int iLength, int iIntensity, Metric rTaperFraction, OpacityPlane &retGlow);
-		static void CalcTaperedExponentialGlow (int Width, int iLength, int iIntensity, Metric rTaperFraction, OpacityPlane &retGlow);
-
-		CEffectCreator *m_pCreator;
-
-		int m_iLength;
-		int m_iWidth;
-		ERayShapes m_iShape;
-		ERayStyles m_iStyle;
-		int m_iIntensity;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
-		CGDraw::EBlendModes m_iBlendMode;
-
-		int m_iXformRotation;
-
-		int m_iLifetime;
-		EAnimationTypes m_iAnimation;
-
-		//	Temporary variables based on shape/style/etc.
-
-		int m_iInitializedLength;			//	If -1, not yet initialized; otherwise, initialized to the given length
-		TArray<ILinePainter *> m_RayRenderer;
-		TArray<int> m_Length;               //  Length for each frame (only for multi-frame animations)
-	};
-
 constexpr int BLOB_PEAK_FRACTION =				1;
 constexpr int SWORD_PEAK_FRACTION =				5;
 constexpr Metric TAPER_FRACTION =				0.333333;
@@ -1373,32 +1246,38 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 	//  Create the renderer
 
-	if (iStyle == styleLightning)
-		{
-		int iBoltCount = Max(1, Min(iIntensity / 5, 20));
-		return new CLightningBundlePainter(iBoltCount, m_rgbPrimaryColor, m_rgbSecondaryColor, WidthAdjTop, WidthAdjBottom);
-		}
-	else
-		{
-		switch (m_iBlendMode)
-			{
-			case CGDraw::blendNormal:
-				return new CRayRasterizer<CGBlendBlend>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+    if (iStyle == styleLightning)
+        {
+        int iBoltCount = Max(1, Min(iIntensity / 5, 20));
+        return new CLightningBundlePainter(iBoltCount, m_rgbPrimaryColor, m_rgbSecondaryColor, WidthAdjTop, WidthAdjBottom, iWidthCount, iWidthAdjType, iReshape);
+        }
+    else
+        {
+		ILinePainter* RayRasterizer;
+        switch (m_iBlendMode)
+            {
+            case CGDraw::blendNormal:
+				RayRasterizer = new CRayRasterizer<CGBlendBlend>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture, m_rgbPrimaryColor, m_rgbSecondaryColor, iIntensity, rCyclePos);
+				break;
 
-			case CGDraw::blendHardLight:
-				return new CRayRasterizer<CGBlendHardLight>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+            case CGDraw::blendHardLight:
+				RayRasterizer = new CRayRasterizer<CGBlendHardLight>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture, m_rgbPrimaryColor, m_rgbSecondaryColor, iIntensity, rCyclePos);
+				break;
 
-			case CGDraw::blendScreen:
-				return new CRayRasterizer<CGBlendScreen>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+            case CGDraw::blendScreen:
+				RayRasterizer = new CRayRasterizer<CGBlendScreen>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture, m_rgbPrimaryColor, m_rgbSecondaryColor, iIntensity, rCyclePos);
+				break;
 
-			case CGDraw::blendCompositeNormal:
-				return new CRayRasterizer<CGBlendComposite>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+            case CGDraw::blendCompositeNormal:
+				RayRasterizer = new CRayRasterizer<CGBlendComposite>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture, m_rgbPrimaryColor, m_rgbSecondaryColor, iIntensity, rCyclePos);
+				break;
 
-			default:
-				return new CRayRasterizer<CGBlendBlend>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
-			}
-		}
-	}
+            default:
+				RayRasterizer = new CRayRasterizer<CGBlendBlend>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom, iColorTypes, iOpacityTypes, iWidthAdjType, iReshape, iTexture, m_rgbPrimaryColor, m_rgbSecondaryColor, iIntensity, rCyclePos);
+            }
+		return RayRasterizer;
+        }
+    }
 
 void CRayEffectPainter::CleanUpIntermediates (void)
 
@@ -1524,7 +1403,7 @@ void CRayEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 	//	Paint the effect
 
-	PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
+    PaintRay(Dest, xFrom, yFrom, xTo, yTo, AngleMod(Ctx.iRotation + m_iXformRotation), Ctx);
 
 	DEBUG_CATCH
 	}
@@ -1552,7 +1431,7 @@ void CRayEffectPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVecto
 
 	//	Paint the effect
 
-	PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
+	PaintRay(Dest, xFrom, yFrom, xTo, yTo, AngleMod(Ctx.iRotation + m_iXformRotation), Ctx);
 	}
 
 void CRayEffectPainter::PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx)
@@ -1572,10 +1451,10 @@ void CRayEffectPainter::PaintLine (CG32bitImage &Dest, const CVector &vHead, con
 	int xTail, yTail;
 	Ctx.XFormRel.Transform(vTail, &xTail, &yTail);
 
-	PaintRay(Dest, xHead, yHead, xTail, yTail, Ctx);
+	PaintRay(Dest, xHead, yHead, xTail, yTail, AngleMod(Ctx.iRotation + m_iXformRotation), Ctx);
 	}
 
-void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx)
+void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, int iRotationDegrees, SViewportPaintCtx &Ctx)
 
 //	PaintRay
 //
@@ -1590,7 +1469,7 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 		return;
 
 	//	Paint based on animation
-
+	bool bSuccess = false;
 	switch (m_iAnimation)
 		{
 		case animateFade:
@@ -1606,18 +1485,26 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 			if (dwOpacity == 0)
 				return;
 
+            m_RayRenderer[0]->SetParam(FIELD_OPACITY, (BYTE)dwOpacity);
+			m_RayRenderer[0]->DrawWithOpenGL(Dest, xFrom, yFrom, xTo, yTo, iRotationDegrees, bSuccess, OpenGLRenderLayer::blendMode(m_iBlendMode));
+			if (!bSuccess)
+                m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
 			m_RayRenderer[0]->SetParam(FIELD_OPACITY, (BYTE)dwOpacity);
 			m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
 			break;
 			}
 
 		case animateCycle:
-		case animateFlicker:
-			m_RayRenderer[Ctx.iTick % m_RayRenderer.GetCount()]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
-			break;
+        case animateFlicker:
+			m_RayRenderer[Ctx.iTick % m_RayRenderer.GetCount()]->DrawWithOpenGL(Dest, xFrom, yFrom, xTo, yTo, iRotationDegrees, bSuccess, OpenGLRenderLayer::blendMode(m_iBlendMode));
+			if (!bSuccess)
+				m_RayRenderer[Ctx.iTick % m_RayRenderer.GetCount()]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
+            break;
 
 		default:
-			m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
+			m_RayRenderer[0]->DrawWithOpenGL(Dest, xFrom, yFrom, xTo, yTo, iRotationDegrees, bSuccess, OpenGLRenderLayer::blendMode(m_iBlendMode));
+			if (!bSuccess)
+				m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
 		}
 
 	DEBUG_CATCH

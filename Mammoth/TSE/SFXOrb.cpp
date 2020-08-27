@@ -1244,56 +1244,79 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 		}
 
 	//	Paint
-
-	switch (m_iStyle)
+	// TODO: Implement in shader form!!
+	OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
+	if (pRenderQueue) {
+		pRenderQueue->addOrbToEffectRenderQueue(
+			x, y, m_iRadius * 2, m_iRadius * 2, Dest.GetWidth(), Dest.GetHeight(),
+			0.0,
+			float(m_iIntensity),
+			float(m_byOpacity / 255.0),
+			m_iAnimation,
+			m_iStyle,
+			m_iDetail,
+			m_iDistortion,
+			int(this), // TODO(heliogenesis): Fixificate
+			max(1, m_iLifetime),
+			iTick % max(1, m_iLifetime),
+			glm::vec3(float(m_rgbPrimaryColor.GetRed()), float(m_rgbPrimaryColor.GetGreen()), float(m_rgbPrimaryColor.GetBlue())) / float(255.0),
+			glm::vec3(float(m_rgbSecondaryColor.GetRed()), float(m_rgbSecondaryColor.GetGreen()), float(m_rgbSecondaryColor.GetBlue())) / float(255.0),
+			float(m_bySecondaryOpacity / 255.0),
+			OpenGLRenderLayer::blendMode(m_iBlendMode)
+		);
+	}
+	else {
+		switch (m_iStyle)
 		{
 		case styleCloud:
 		case styleCloudshell:
 		case styleFirecloud:
 		case styleSmoke:
-			{
+		{
 			TArray<CG32bitPixel> &Table = m_ColorTable[iTick % m_ColorTable.GetCount()];
 			m_pPainter->SetParam(CONSTLIT("radiusTable"), Table);
 			m_pPainter->SetParam(CONSTLIT("pixelTable"), m_ColorTable2[iTick % m_ColorTable2.GetCount()]);
 
 			m_pPainter->Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[iTick % m_TextureFrame.GetCount()]);
 			break;
-			}
+		}
 
 		case styleDiffraction:
-			{
+		{
 			TArray<CG32bitPixel> &Table = m_ColorTable[iTick % m_ColorTable.GetCount()];
 			m_pPainter->SetParam(CONSTLIT("colorTable"), Table);
 			if (UsesColorTable2())
-				{
+			{
 				const TArray<CG32bitPixel> &Table2 = m_ColorTable2[iTick % m_ColorTable.GetCount()];
 				m_pPainter->SetParam(CONSTLIT("colorTable2"), Table2);
-				}
+			}
 
 			m_pPainter->Draw(Dest, x, y, Table.GetCount(), 0);
 			break;
-			}
+		}
 
 		case styleFireblast:
-			{
+		{
 			const TArray<CG32bitPixel> &Table = m_ColorTable[iTick % m_ColorTable.GetCount()];
 			m_pPainter->SetParam(CONSTLIT("explosionTable"), Table);
 			m_pPainter->SetParam(CONSTLIT("smokeTable"), m_ColorTable2[iTick % m_ColorTable2.GetCount()]);
 			m_pPainter->Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[iTick % m_TextureFrame.GetCount()]);
 			break;
-			}
+		}
 
 		case styleBlackHole:
 		case styleFlare:
 		case styleShell:
 		case styleSmooth:
 		case styleLightning:
-			{
+		{
 			TArray<CG32bitPixel> &Table = m_ColorTable[iTick % m_ColorTable.GetCount()];
 			CGDraw::Circle(Dest, x, y, Table.GetCount(), Table, m_iBlendMode);
 			break;
-			}
 		}
+		}
+	}
+
 
 	//	Paint flares/spikes/lightning
 
@@ -1355,6 +1378,12 @@ void COrbEffectPainter::PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCen
 	if (iLength <= 0 || iWidth <= 0)
 		return;
 
+	if (iLength >= 9000 || iWidth >= 9000)
+		{
+		int error = 2;
+		return;
+		}
+
 	//	Compute the line
 
 	CVector vHalf = PolarToVector(iAngle, iLength / 2.0);
@@ -1404,15 +1433,37 @@ void COrbEffectPainter::PaintLightning (CG32bitImage &Dest, int xCenter, int yCe
 
 	for (i = 0; i < iFlareCount; i++)
 		{
-		int xDest, yDest;
-		IntPolarToVector(iAngle, FlareDesc.iLength, &xDest, &yDest);
 
-		DrawLightning(Dest,
+		OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
+		if (pRenderQueue) {
+			int xDest, yDest;
+			IntPolarToVector(iAngle + ((rand() % 20) - 10), FlareDesc.iLength + ((rand() % (FlareDesc.iLength / 8))) - FlareDesc.iLength / 8, &xDest, &yDest);
+			int iDistX = xDest;
+			int iDistY = yDest;
+			int iCanvasHeight = Dest.GetHeight();
+			int iCanvasWidth = Dest.GetWidth();
+
+			int iShape = rand() % 6;
+
+			float iDist = sqrt(float(iDistX * iDistX) + float(iDistY * iDistY));
+			int iPosX = xCenter + ((iDistX) / 2);
+			int iPosY = yCenter + ((iDistY) / 2);
+			std::tuple<int, int, int> primaryColor(int(m_rgbPrimaryColor.GetRed()), int(m_rgbPrimaryColor.GetGreen()), int(m_rgbPrimaryColor.GetBlue()));
+			std::tuple<int, int, int> secondaryColor(0, 0, 0);
+			float rSeed = mathRandom(20, 80) / 20.0f;
+			pRenderQueue->addLightningToEffectRenderQueue(iPosX, iPosY, FlareDesc.iLength * 2, int(FlareDesc.iWidth * 30 * rSeed), iCanvasWidth, iCanvasHeight, float(-iAngle + 180) * (float(PI) / 180.0f), iShape, iShape,
+				primaryColor, secondaryColor, rSeed + float(i), OpenGLRenderLayer::blendNormal);
+		}
+		else {
+			int xDest, yDest;
+			IntPolarToVector(iAngle, FlareDesc.iLength, &xDest, &yDest);
+			DrawLightning(Dest,
 				xCenter, yCenter,
 				xCenter + xDest, yCenter + yDest,
 				m_rgbPrimaryColor,
 				CG32bitPixel::Null(),
 				0.5);
+		}
 
 		iAngle += iSeparation;
 		}

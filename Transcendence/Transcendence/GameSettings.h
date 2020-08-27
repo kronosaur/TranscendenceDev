@@ -234,6 +234,7 @@ class CGameSettings
 			//	Video options
 			forceDirectX,					//	Use DirectX to access screen directly
 			forceNonDirectX,				//	Use GDI to draw to screen
+			forceOpenGL,	 				//	Use OpenGL to draw to screen
 			forceExclusive,					//	Blt directly to primary surface
 			forceNonExclusive,				//	Blt using cooperative mode
 			windowedMode,					//	Use a window (instead of full screen)

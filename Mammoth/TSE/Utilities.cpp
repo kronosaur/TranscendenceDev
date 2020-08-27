@@ -1486,8 +1486,14 @@ CString GetPaintLayerID (CSystem::LayerEnum iPaintLayer)
 		case CSystem::layerStations:
 			return CONSTLIT("stations");
 
+		case CSystem::layerBGWeaponFire:
+			return CONSTLIT("bgweaponfire");
+
 		case CSystem::layerShips:
 			return CONSTLIT("ships");
+
+		case CSystem::layerFGWeaponFire:
+			return CONSTLIT("fgweaponfire");
 
 		case CSystem::layerEffects:
 			return CONSTLIT("effects");

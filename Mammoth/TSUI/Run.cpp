@@ -181,9 +181,11 @@ void CHumanInterface::MainLoop (void)
 
 			//	If we haven't handled it yet, handle it now
 
-			if (!bHandled)
+			//  Don't handle WM_PAINT, WM_SIZE or WM_MOVE since those will take control of the window back from OpenGL
+			if (!bHandled && msg.message != WM_PAINT && msg.message != WM_SIZE && msg.message != WM_MOVE)
 				{
 				::TranslateMessage(&msg);
+//				::kernelDebugLogPattern("message caught: %d", msg.message);
 				::DispatchMessage(&msg);
 				}
 
@@ -222,9 +224,12 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 
 	{
 	DEBUG_TRY
-
+//		::kernelDebugLogPattern("MESSAGE CAUGHT: %d", message);
 	switch (message)
 		{
+		case WM_PAINT:
+			return DefWindowProc(hWnd, message, wParam, lParam);;
+
 		case WM_ACTIVATEAPP:
 			return g_pHI->WMActivateApp(wParam ? true : false);
 
@@ -317,6 +322,7 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 		case WM_MOVE:
 			return g_pHI->WMMove((int)LOWORD(lParam), (int)HIWORD(lParam));
 
+/*
 		case WM_PAINT:
 			{
 			PAINTSTRUCT ps;
@@ -325,7 +331,7 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 			::EndPaint(hWnd, &ps);
 			return 0;
 			}
-
+*/
 		case WM_RBUTTONDBLCLK:
 			return g_pHI->WMRButtonDblClick((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
@@ -442,6 +448,7 @@ bool CHumanInterface::WMCreate (HWND hWnd, CString *retsError)
 	ScreenOptions.m_bMultiMonitorMode = m_Options.m_bMultiMonitorMode;
 	ScreenOptions.m_bForceDX = m_Options.m_bForceDX;
 	ScreenOptions.m_bForceNonDX = m_Options.m_bForceNonDX;
+	ScreenOptions.m_bForceOpenGL = m_Options.m_bForceOpenGL;
 	ScreenOptions.m_bForceExclusiveMode = m_Options.m_bForceExclusiveMode;
 	ScreenOptions.m_bForceNonExclusiveMode = m_Options.m_bForceNonExclusiveMode;
 	ScreenOptions.m_bForceScreenSize = m_Options.m_bForceScreenSize;

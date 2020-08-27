@@ -5,10 +5,14 @@
 
 #include "PreComp.h"
 
-CLightningBundlePainter::CLightningBundlePainter (int iBoltCount, CG32bitPixel rgbPrimaryColor, CG32bitPixel rgbSecondaryColor, WidthAdjArray &WidthAdjTop, WidthAdjArray &WidthAdjBottom) :
+CLightningBundlePainter::CLightningBundlePainter (int iBoltCount, CG32bitPixel rgbPrimaryColor, CG32bitPixel rgbSecondaryColor, WidthAdjArray &WidthAdjTop, WidthAdjArray &WidthAdjBottom,
+	int iWidthCount, CRayEffectPainter::EWidthAdjTypes iWidthAdjType, CRayEffectPainter::EWidthAdjTypes iReshape) :
         m_iBoltCount(iBoltCount),
         m_rgbPrimaryColor(rgbPrimaryColor),
-        m_rgbSecondaryColor(rgbSecondaryColor)
+        m_rgbSecondaryColor(rgbSecondaryColor),
+		m_iWidthCount(iWidthCount),
+		m_iWidthAdjType(iWidthAdjType),
+		m_iReshape(iReshape)
 
 //  CLightningBundlePainter constructor
 
@@ -78,3 +82,33 @@ void CLightningBundlePainter::Draw (CG32bitImage &Dest, int x1, int y1, int x2, 
 
 	DEBUG_CATCH
     }
+
+void CLightningBundlePainter::DrawWithOpenGL(CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iRotDegrees, bool& bSuccess, OpenGLRenderLayer::blendMode blendMode)
+	{
+	OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
+	if (!pRenderQueue)
+		{
+		bSuccess = false;
+		return;
+		}	
+
+	int iDistX = x1 - x2;
+	int iDistY = y1 - y2;
+	int iCanvasHeight = Dest.GetHeight();
+	int iCanvasWidth = Dest.GetWidth();
+
+	float iDist = sqrt(float(iDistX * iDistX) + float(iDistY * iDistY));
+	int iPosX = x1 - ((iDistX) / 2);
+	int iPosY = y1 - ((iDistY) / 2);
+	std::tuple<int, int, int> primaryColor(int(m_rgbSecondaryColor.GetRed()), int(m_rgbPrimaryColor.GetGreen()), int(m_rgbPrimaryColor.GetBlue()));
+	std::tuple<int, int, int> secondaryColor(int(m_rgbSecondaryColor.GetRed()), int(m_rgbSecondaryColor.GetGreen()), int(m_rgbSecondaryColor.GetBlue()));
+	float rSeed = mathRandom(20, 80) / 20.0f;
+	
+	for (int i = 0; i < m_iBoltCount; i++) {
+		pRenderQueue->addLightningToEffectRenderQueue(iPosX, iPosY, int(iDist) * 2, m_iWidthCount * 2 * int(rSeed), iCanvasWidth, iCanvasHeight, float(iRotDegrees) * (float(PI) / 180.0f), m_iWidthAdjType, m_iReshape,
+			primaryColor, secondaryColor, rSeed + float(i), blendMode);
+	}
+
+	bSuccess = true;
+	return;
+	}

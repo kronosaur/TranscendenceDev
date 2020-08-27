@@ -680,6 +680,7 @@ struct SHIOptions
 			m_bMultiMonitorMode(false),
 			m_bForceDX(false),
 			m_bForceNonDX(false),
+			m_bForceOpenGL(false),
 			m_bForceExclusiveMode(false),
 			m_bForceNonExclusiveMode(false),
 			m_bForceScreenSize(false),
@@ -704,6 +705,7 @@ struct SHIOptions
 
 	bool m_bForceDX;
 	bool m_bForceNonDX;
+	bool m_bForceOpenGL;
 	bool m_bForceExclusiveMode;
 	bool m_bForceNonExclusiveMode;
 	bool m_bForceScreenSize;

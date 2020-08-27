@@ -3124,7 +3124,9 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	CDepthPaintList MainBackground(rTopEdge);
 	CDepthPaintList MainSpace(rTopEdge);
 	CDepthPaintList MainStations(rTopEdge);
+	CUnorderedPaintList MainBackgroundWeaponFire;
 	CUnorderedPaintList MainShips;
+	CUnorderedPaintList MainForegroundWeaponFire;
 	CUnorderedPaintList MainEffects;
 	CUnorderedPaintList MainOverhang;
 	CParallaxPaintList ParallaxForeground;
@@ -3134,9 +3136,13 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	MainLayer[layerBackground] = &MainBackground;
 	MainLayer[layerSpace] = &MainSpace;
 	MainLayer[layerStations] = &MainStations;
+	MainLayer[layerBGWeaponFire] = &MainBackgroundWeaponFire;
 	MainLayer[layerShips] = &MainShips;
+	MainLayer[layerFGWeaponFire] = &MainForegroundWeaponFire;
 	MainLayer[layerEffects] = &MainEffects;
 	MainLayer[layerOverhang] = &MainOverhang;
+
+	auto pOpenGLRenderQueue = Dest.GetMasterRenderQueue();
 
 	//	Add all objects to one of the above layers, as appropriate.
 
@@ -3208,8 +3214,10 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	CUsePerformanceCounter PaintSpaceTimer(m_Universe, CONSTLIT("paint.spaceBackground"));
 	m_SpacePainter.PaintSpaceBackground(Dest, GetType(), Ctx);
 
-	//	Paint background objects
-
+	//	Paint background objects - this can involve OpenGL, since this is an object painter
+	if (pOpenGLRenderQueue) {
+		pOpenGLRenderQueue->setActiveRenderLayer(0);
+	}
 	ParallaxBackground.Paint(Dest, Ctx);
 
 	//	Paint starshine
@@ -3217,29 +3225,36 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	m_SpacePainter.PaintStarshine(Dest, GetType(), Ctx);
 	PaintSpaceTimer.StopCounter();
 
-	//	Paint any space environment (e.g., nebulae)
+	//	Paint any space environment (e.g., nebulae) - CPU
 
 	if (m_pEnvironment)
 		m_pEnvironment->Paint(Ctx, Dest);
 
-	//	Paint all the objects by layer
-
-	for (int i = 0; i < layerCount; i++)
+	//	Paint all the objects by layer, use OpenGL for these
+	//  We should organize the render queue to render one layer at a time
+	//  See GameSessionAnimate.cpp (CGameSession::OnAnimate) for dockscreens, HUD and intro.
+	for (int i = 0; i < layerCount; i++) {
+		if (pOpenGLRenderQueue) {
+			pOpenGLRenderQueue->setActiveRenderLayer(1 + i);
+		}
 		MainLayer[i]->Paint(Dest, Ctx);
+	}
 
-	//	Paint all joints
+	//	Paint all joints - this is a simple line draw; we can leave this in CPU or move to OpenGL (prefer OpenGL so we have three phases that all use OpenGL)
 
 	m_Joints.Paint(Dest, Ctx);
 
-	//	Paint foreground objects
-
+	//	Paint foreground objects, use OpenGL for these (since this is an object painter)
+	if (pOpenGLRenderQueue) {
+		pOpenGLRenderQueue->setActiveRenderLayer(1 + layerCount);
+	}
 	ParallaxForeground.Paint(Dest, Ctx);
 
-	//	Paint all the enhanced display markers
+	//	Paint all the enhanced display markers - CPU
 
 	EnhancedDisplay.Paint(Dest, Ctx);
 
-	//	Let the POV paint any other enhanced displays
+	//	Let the POV paint any other enhanced displays - CPU
 
 	pCenter->PaintSRSEnhancements(Dest, Ctx);
 	if (pAnnotations)
@@ -3248,6 +3263,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Done
 
 	Dest.ResetClipRect();
+	Dest.SetCurrentTickForShaders(GetUniverse().GetTicks());
 
 	DEBUG_CATCH
 	}

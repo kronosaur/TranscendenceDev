@@ -7,6 +7,8 @@
 #include "PixelMacros.h"
 
 CG32bitImage CG32bitImage::m_NullImage;
+bool CG32bitImage::m_bOpenGLInitialized = false;
+std::unique_ptr<OpenGLMasterRenderQueue> CG32bitImage::m_pOGLRenderQueue = nullptr;
 
 CG32bitImage::CG32bitImage (void)
 
@@ -29,6 +31,13 @@ CG32bitImage::~CG32bitImage (void)
 
 	{
 	CleanUp();
+
+	if ((m_pOpenGLTexture != nullptr) && m_pOGLRenderQueue)
+		m_pOGLRenderQueue->handOffTextureForDeletion(std::move(m_pOpenGLTexture));
+
+	//if (m_pOGLRenderQueue)
+	//	delete[] m_pOGLRenderQueue;
+
 	}
 
 CG32bitImage &CG32bitImage::operator= (const CG32bitImage &Src)
@@ -372,7 +381,6 @@ bool CG32bitImage::Create (int cxWidth, int cyHeight, EAlphaTypes AlphaType, CG3
 	m_cyHeight = cyHeight;
 	m_AlphaType = AlphaType;
 	ResetClipRect();
-
 	return true;
 	}
 
@@ -1598,6 +1606,16 @@ void CG32bitImage::InitBMI (BITMAPINFO **retpbi) const
 	//	Done
 
 	*retpbi = pbmi;
+	}
+
+void CG32bitImage::InitOpenGL(void)
+	{
+	if (!m_pOGLRenderQueue)
+		{
+		m_pOGLRenderQueue = std::make_unique<OpenGLMasterRenderQueue>();
+		//m_pOGLRenderQueue = new OpenGLMasterRenderQueue();
+		m_bOpenGLInitialized = true;
+		}
 	}
 
 bool CG32bitImage::SaveAsWindowsBMP (const CString &sFilespec)
