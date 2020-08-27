@@ -1340,8 +1340,9 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 				if (retpTarget)
 					{
+					CItemCtx ItemCtx(&Source, &Device);
 					Metric rSpeed = ShotDesc.GetInitialSpeed();
-					retiFireAngle = CalcFireAngle(CItemCtx(&Source, &Device), rSpeed, retpTarget);
+					retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
 					}
 				else
 				    retiFireAngle = -1;

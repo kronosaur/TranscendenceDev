@@ -73,12 +73,6 @@
     <ClCompile Include="IPropertyAnimator.cpp" />
     <ClCompile Include="lodepng\lodepng.cpp" />
     <ClCompile Include="Noise.cpp" />
-    <ClCompile Include="OpenGLContext.cpp" />
-    <ClCompile Include="OpenGLMasterRenderQueue.cpp" />
-    <ClCompile Include="OpenGLRenderLayer.cpp" />
-    <ClCompile Include="OpenGLShader.cpp" />
-    <ClCompile Include="OpenGLTexture.cpp" />
-    <ClCompile Include="OpenGLVAO.cpp" />
     <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="PolygonSimple.cpp" />
     <ClCompile Include="Sound.cpp" />
@@ -105,8 +99,14 @@
     <ClCompile Include="IAnimatron.cpp" />
     <ClCompile Include="PropertyAnimators.cpp" />
     <ClCompile Include="CTextBlock.cpp" />
-    <ClCompile Include="OpenGLInstancedBatchImpl.cpp" />
     <ClCompile Include="OpenGLAnimatedNoise.cpp" />
+    <ClCompile Include="OpenGLContext.cpp" />
+    <ClCompile Include="OpenGLInstancedBatchImpl.cpp" />
+    <ClCompile Include="OpenGLMasterRenderQueue.cpp" />
+    <ClCompile Include="OpenGLRenderLayer.cpp" />
+    <ClCompile Include="OpenGLShader.cpp" />
+    <ClCompile Include="OpenGLTexture.cpp" />
+    <ClCompile Include="OpenGLVAO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\DirectXUtil.h" />
@@ -121,13 +121,6 @@
     <ClInclude Include="..\Include\DXScreenMgr3D.h" />
     <ClInclude Include="..\Include\DXSparseMask.h" />
     <ClInclude Include="..\Include\DXUI.h" />
-    <ClInclude Include="..\Include\OpenGL.h" />
-    <ClInclude Include="..\Include\OpenGLIncludes.h" />
-    <ClInclude Include="..\Include\OpenGLInstancedBatch.h" />
-    <ClInclude Include="..\Include\OpenGLInstancedBatchImpl.h" />
-    <ClInclude Include="..\Include\OpenGLShader.h" />
-    <ClInclude Include="..\Include\OpenGLTexture.h" />
-    <ClInclude Include="..\Include\OpenGLVAO.h" />
     <ClInclude Include="..\Include\Reanimator.h" />
     <ClInclude Include="..\Include\TBlt.h" />
     <ClInclude Include="..\Include\TCirclePainter.h" />
@@ -145,6 +138,5 @@
     <ClInclude Include="PixelMacros.h" />
     <ClInclude Include="PreComp.h" />
     <ClInclude Include="RasterizerImpl.h" />
-    <ClInclude Include="..\Include\OpenGLAnimatedNoise.h" />
   </ItemGroup>
 </Project>

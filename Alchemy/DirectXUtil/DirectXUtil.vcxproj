@@ -535,6 +535,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Noise.cpp" />
+    <ClCompile Include="OpenGLAnimatedNoise.cpp" />
+    <ClCompile Include="OpenGLContext.cpp" />
+    <ClCompile Include="OpenGLInstancedBatchImpl.cpp" />
+    <ClCompile Include="OpenGLMasterRenderQueue.cpp" />
+    <ClCompile Include="OpenGLRenderLayer.cpp" />
+    <ClCompile Include="OpenGLShader.cpp" />
+    <ClCompile Include="OpenGLTexture.cpp" />
+    <ClCompile Include="OpenGLVAO.cpp" />
     <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="PolygonSimple.cpp" />
     <ClCompile Include="Sound.cpp">

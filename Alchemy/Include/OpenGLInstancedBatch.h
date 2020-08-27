@@ -374,10 +374,7 @@ public:
 	void setCanvasDimensions(std::tuple<int, int> canvasDimensions) { m_canvasDimensions = canvasDimensions; }
 	void setUniformValues(std::tuple<uniformArgs...> uniformValues) { m_uniformValues = m_uniformValues; }
 	void setUniformNames(std::array<std::string, sizeof...(uniformArgs)> uniformNames) { m_uniformNames = uniformNames; }
-	ContainerBase* getParameterForObject(int paramIndex) {
-		// Note that this container must be cast manually to the correct value.
-		return m_shaderParameterVectors[paramIndex].get();
-	}
+
 	bool getHasObjectsStillRequiringRendering() override {
 		return m_renderRequests.size() <= m_iFirstUnrenderedElementIndex;
 	}
