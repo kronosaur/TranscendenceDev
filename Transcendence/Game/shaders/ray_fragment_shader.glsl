@@ -613,11 +613,11 @@ float CalcShellOpacity(float fRadius, float fIntensity, float fOpacity) {
     float fMinIntensity = FloatIncrementor(0.0, 1.0, fShellMaxRadius, 1.0, pixelsDistanceFromCenter);
     float fMaxIntensityK = fIntensity / 100.0;
     float fMinIntensityK = (100 - fIntensity) / 100.0;
-    float fFade = FloatIncrementor(1.0, 2.0, fEdgeWidth + 1.0, 1.0, (1.0 + pixelsDistanceFromCenter));
+    float fFade = FloatIncrementor(1.0, 2.0, fEdgeWidth + 1.0, 0.0, (1.0 + pixelsDistanceFromCenter) - fShellMaxRadius);
 
     bool useInnerOpacity = pixelsDistanceFromCenter < fShellMaxRadius;
     float innerOpacity = fOpacity * ((fMaxIntensity * fMaxIntensityK) + (fMinIntensity * fMinIntensityK)) * float(useInnerOpacity);
-    bool useOuterOpacity = (pixelsDistanceFromCenter >= fShellMaxRadius) && (pixelsDistanceFromCenter < fEdgeWidth);
+    bool useOuterOpacity = (pixelsDistanceFromCenter >= fShellMaxRadius) && (pixelsDistanceFromCenter < fRadius);
     float outerOpacity = fOpacity * fFade * float(useOuterOpacity);
     return innerOpacity + outerOpacity;
 }
