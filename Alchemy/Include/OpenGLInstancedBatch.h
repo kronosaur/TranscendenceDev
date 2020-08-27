@@ -246,9 +246,14 @@ private:
 
 class OpenGLInstancedBatchInterface {
 public:
-	virtual void RenderIfBelowDepth(const OpenGLShader* shader, float& startingDepth, float incDepth, int currentTick, bool clearRenderQueue = true) = 0;
+	virtual void RenderUpToGivenDepth(const OpenGLShader* shader, const float minDepth, bool clearRenderQueue = true) = 0;
 	virtual void Render(const OpenGLShader* shader, float& startingDepth, float incDepth, bool clearRenderQueue = true, bool manuallySetDepth = true) = 0;
 	virtual void clear(void) = 0;
+	virtual int getNumObjectsToRender(void) = 0;
+	virtual float getDepthOfDeepestObject() = 0;
+	virtual bool getHasObjectsStillRequiringRendering() = 0;
+	virtual void setBlendMode(int blendMode) = 0;
+	virtual int getBlendMode() = 0;
 };
 
 // Second typename is a tuple type that contains all uniforms
@@ -268,9 +273,7 @@ public:
 		m_iFirstUnrenderedElementIndex = 0;
 		m_iNumTexturesBound = 0;
 	};
-	void RenderIfBelowDepth(const OpenGLShader* shader, float& startingDepth, float incDepth, int currentTick, bool clearRenderQueue = true) override {
 
-	}
 	void Render(const OpenGLShader *shader, float &startingDepth, float incDepth, bool clearRenderQueue=true, bool manuallySetDepth=true) override {
 		int iNumObjectsToRender = m_renderRequests.size();
 		if (iNumObjectsToRender > 0)
@@ -290,12 +293,12 @@ public:
 		}
 	};
 	void RenderUpToGivenDepth(const OpenGLShader* shader, const float minDepth, bool clearRenderQueue = true) {
-		int iNumObjectsToRender = m_renderRequests.size();
+		unsigned int iNumObjectsToRender = m_renderRequests.size();
 		if (iNumObjectsToRender > 0)
 		{
 			// Find the first object that has a depth equal to or less than the given depth
-			int i = m_iFirstUnrenderedElementIndex;
-			while ((i < iNumObjectsToRender) && m_renderRequests[i].get_depth() > minDepth) {
+			unsigned int i = m_iFirstUnrenderedElementIndex;
+			while ((i < iNumObjectsToRender) && m_renderRequests[i].getDepth() > minDepth) {
 				i += 1;
 			}
 
@@ -366,7 +369,7 @@ public:
 	void addObjToRender(shaderRenderRequest renderRequest) {
 		m_renderRequests.push_back(renderRequest);
 	};
-	int getNumObjectsToRender(void) { return m_renderRequests.size(); }
+	int getNumObjectsToRender(void) override { return m_renderRequests.size(); }
 	void setUniforms(std::array<std::string, sizeof...(uniformArgs)> uniformNames, uniformArgs... uniformValues) { m_uniformNames = uniformNames; m_uniformValues = std::make_tuple(uniformValues...); }
 	void setCanvasDimensions(std::tuple<int, int> canvasDimensions) { m_canvasDimensions = canvasDimensions; }
 	void setUniformValues(std::tuple<uniformArgs...> uniformValues) { m_uniformValues = m_uniformValues; }
@@ -375,13 +378,19 @@ public:
 		// Note that this container must be cast manually to the correct value.
 		return m_shaderParameterVectors[paramIndex].get();
 	}
-	float getDepthOfDeepestObject() {
+	bool getHasObjectsStillRequiringRendering() override {
+		return m_renderRequests.size() <= m_iFirstUnrenderedElementIndex;
+	}
+	float getDepthOfDeepestObject() override {
 		// Return depth of the deepest element that still needs to be rendered.
+		// Return -1 if no objects need to be rendered.
 		if (m_renderRequests.size() > 0) {
 			return m_renderRequests[m_iFirstUnrenderedElementIndex].getDepth();
 		}
-		return 1.0;
+		return -1.0;
 	}
+	void setBlendMode(int blendMode) override { m_iBlendMode = blendMode; }
+	int getBlendMode() override { return m_iBlendMode; }
 private:
 	// Functions to manage uniforms
 	template<typename firstUniformArg, typename ... otherUniformArgs> void setGLUniformValues(const OpenGLShader* shader, int uniformArgIndex, firstUniformArg firstUniformValue, otherUniformArgs...rest) {
@@ -419,6 +428,7 @@ private:
 	std::tuple<uniformArgs...> m_uniformValues;
 	std::tuple<int, int> m_canvasDimensions;
 	int m_iNumTexturesBound = 0;
-	int m_iFirstUnrenderedElementIndex = 0;
+	unsigned int m_iFirstUnrenderedElementIndex = 0;
+	int m_iBlendMode = 0;
 };
 

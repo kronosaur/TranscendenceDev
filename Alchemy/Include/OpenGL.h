@@ -142,7 +142,10 @@ public:
 
 		blendModeCount = 6,
 	};
-	OpenGLRenderLayer(void) {};
+	OpenGLRenderLayer(void) {
+		m_rayRenderBatchBlendNormal.setBlendMode(blendMode::blendNormal);
+		m_rayRenderBatchBlendScreen.setBlendMode(blendMode::blendScreen);
+	};
 	~OpenGLRenderLayer(void);
 	void addTextureToRenderQueue(glm::vec2 vTexPositions, glm::vec2 vSpriteSheetPositions, glm::vec2 vCanvasQuadSizes, glm::vec2 vCanvasPositions,
 		glm::vec2 vTextureQuadSizes, glm::vec4 glowColor, float alphaStrength, float glowNoise, int numFramesPerRow, int numFramesPerCol, OpenGLTexture* image, float startingDepth);
@@ -158,16 +161,15 @@ private:
 		OpenGLInstancedBatchRay& rayRenderBatch = m_rayRenderBatchBlendNormal;
 		switch (blendMode) {
 		case OpenGLRenderLayer::blendMode::blendNormal:
-			rayRenderBatch = m_rayRenderBatchBlendNormal;
+			m_rayRenderBatchBlendNormal.addObjToRender(renderRequest);
 			break;
 		case OpenGLRenderLayer::blendMode::blendScreen:
-			rayRenderBatch = m_rayRenderBatchBlendScreen;
+			m_rayRenderBatchBlendScreen.addObjToRender(renderRequest);
 			break;
 		default:
-			rayRenderBatch = m_rayRenderBatchBlendNormal;
+			m_rayRenderBatchBlendNormal.addObjToRender(renderRequest);
 			break;
 		}
-		m_rayRenderBatch.addObjToRender(renderRequest); // TODO: fix
 	}
 	void setBlendModeNormal() { glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); };
 	void setBlendModeScreen() { glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR); };

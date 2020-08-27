@@ -129,19 +129,83 @@ void OpenGLRenderLayer::renderAllQueues(float &depthLevel, float depthDelta, int
 		batchesToRender.push_back(std::pair(objectTextureShader, pInstancedRenderQueue));
 	}
 	std::array<std::string, 3> rayAndLightningUniformNames = { "current_tick", "aCanvasAdjustedDimensions", "perlin_noise" };
-	m_rayRenderBatch.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions, perlinNoise);
-	batchesToRender.push_back(std::pair(rayShader, &m_rayRenderBatch));
+	m_rayRenderBatchBlendNormal.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions, perlinNoise);
+	batchesToRender.push_back(std::pair(rayShader, &m_rayRenderBatchBlendNormal));
+	m_rayRenderBatchBlendScreen.setUniforms(rayAndLightningUniformNames, float(currentTick), canvasDimensions, perlinNoise);
+	batchesToRender.push_back(std::pair(rayShader, &m_rayRenderBatchBlendScreen));
 
-	for (const auto &p : batchesToRender)
-	{
-		OpenGLShader *pShaderToUse = p.first;
+	int iDeepestBatchIndex = -1;
+	int iSecondDeepestBatchIndex = -1;
+	float fDeepestBatchLastElementDepth = 0.0;
+	float fSecondDeepestBatchLastElementDepth = 0.0;
+
+	blendMode prevBlendMode = blendMode::blendNormal;
+
+	while (true) {
+		// Phase 0: Reset tracking vars
+		iDeepestBatchIndex = -1;
+		iSecondDeepestBatchIndex = -1;
+		fDeepestBatchLastElementDepth = -1.0;
+		fSecondDeepestBatchLastElementDepth = -1.0;
+
+		int iCurrBatchIndex = 0;
+		// Phase 1: Get deepest and second deepest batches
+		for (const auto& p : batchesToRender) {
+			OpenGLInstancedBatchInterface* pInstancedRenderBatch = p.second;
+			float fBatchDepth = pInstancedRenderBatch->getDepthOfDeepestObject();
+			if (fBatchDepth > fDeepestBatchLastElementDepth) {
+				iSecondDeepestBatchIndex = iDeepestBatchIndex;
+				fSecondDeepestBatchLastElementDepth = fDeepestBatchLastElementDepth;
+				iDeepestBatchIndex = iCurrBatchIndex;
+				fDeepestBatchLastElementDepth = fBatchDepth;
+			}
+			iCurrBatchIndex += 1;
+		}
+
+		// Phase 2: If deepest batch depth is less than zero, we're done.
+		if (fDeepestBatchLastElementDepth < 0) {
+			break;
+		}
+
+		// Phase 3: Render from deepest batch up to depth of second deepest batch's deepest object
+		auto batchToRenderShader = batchesToRender[iDeepestBatchIndex].first;
+		auto batchToRender = batchesToRender[iDeepestBatchIndex].second;
+		int currBlendMode = batchToRender->getBlendMode();
+
+		if (currBlendMode != int(prevBlendMode)) {
+			switch (currBlendMode) {
+				case int(blendMode::blendNormal) :
+					prevBlendMode = blendMode::blendNormal;
+					setBlendModeNormal();
+					break;
+				case int(blendMode::blendScreen) :
+				    prevBlendMode = blendMode::blendScreen;
+				    setBlendModeScreen();
+				    break;
+				default:
+					prevBlendMode = blendMode::blendNormal;
+					setBlendModeNormal();
+			}
+		}
+
+		batchToRender->RenderUpToGivenDepth(batchToRenderShader, fSecondDeepestBatchLastElementDepth);
+	}
+	for (const auto& p : batchesToRender) {
+		OpenGLInstancedBatchInterface* pInstancedRenderBatch = p.second;
+		pInstancedRenderBatch->clear();
+	}
+	/*
+	for (const auto& p : batchesToRender) {
+		OpenGLShader* pShaderToUse = p.first;
 		OpenGLInstancedBatchInterface* pInstancedRenderQueue = p.second;
 		// Initialize the texture if necessary; we do this here because all OpenGL calls must be made on the same thread
 		pInstancedRenderQueue->Render(pShaderToUse, depthLevel, depthDelta);
 		pInstancedRenderQueue->clear();
 	}
+	*/
 
 	m_texRenderBatches.clear();
+	setBlendModeNormal();
 }
 
 void OpenGLRenderLayer::GenerateGlowmaps(unsigned int fbo, OpenGLVAO *canvasVAO, OpenGLShader* glowmapShader) {
