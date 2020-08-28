@@ -2295,7 +2295,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveItem",				fnObjItem,		FN_OBJ_REMOVE_ITEM,
-			"(objRemoveItem obj item [count] [options]) -> True/Nil",
+			"(objRemoveItem obj item [count] [options]) -> True/Nil\n\n"
+			
+			"options:\n\n"
+			
+			"   'ignoreCharges\n"
+			"   'ignoreData\n"
+			"   'ignoreDisrupted\n"
+			"   'ignoreEnhancements\n"
+			"   'ignoreInstalled\n",
+
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveItemEnhancement",		fnObjSet,		FN_OBJ_REMOVE_ITEM_ENHANCEMENT,

@@ -100,6 +100,68 @@
 						{	test:'(itmMatches testItem1 "w +property:deviceSlots!=1;")		result:Nil	}
 						{	test:'(itmMatches testItem1 "w +property:deviceSlots!=3;")		result:True	}
 
+						;	Test Item Data -------------------------------------
+
+						{	test:'(setq markerObj 
+									(sysCreateMarker "Test" Nil &svPlayer;)
+									)
+																							result:'ignore	}
+
+						{	test:'(objAddItem markerObj &itLaserCannon; 5)					result:(itmCreate &itLaserCannon; 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 5))	}
+
+						;	NOTE: If we don't specify a count, we only modify 1 item, even if the
+						;	item has a count.
+
+						{	test:'(objSetItemData markerObj 
+									(itmCreate &itLaserCannon; 5)
+									'foo
+									'bar
+									)														result:(itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 4) (itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar))	}
+
+						;	Reset ----------------------------------------------
+
+						{	test:'(enum (objGetItems markerObj "*") theItem (objRemoveItem markerObj theItem))
+																							result:True	}
+						{	test:'(objAddItem markerObj &itLaserCannon; 5)					result:(itmCreate &itLaserCannon; 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 5))	}
+						;	----------------------------------------------------
+
+						;	Try setting all 5 items
+
+						{	test:'(objSetItemData markerObj 
+									(itmCreate &itLaserCannon; 1)
+									'foo
+									'bar
+									5
+									)														result:(itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmSetData (itmCreate &itLaserCannon; 5) 'foo 'bar))	}
+
+						;	Reset ----------------------------------------------
+
+						{	test:'(enum (objGetItems markerObj "*") theItem (objRemoveItem markerObj theItem))
+																							result:True	}
+						{	test:'(objAddItem markerObj &itLaserCannon; 5)					result:(itmCreate &itLaserCannon; 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 5))	}
+						;	----------------------------------------------------
+
+						;	Try setting more than exist; we should still end up 
+						;	with only 5.
+
+						{	test:'(objSetItemData markerObj 
+									(itmCreate &itLaserCannon; 1)
+									'foo
+									'bar
+									10
+									)														result:(itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmSetData (itmCreate &itLaserCannon; 5) 'foo 'bar))	}
+
+						;	Done
+
+						{	test:'(objDestroy markerObj)									result:'ignore	}
+						{	test:'(setq markerObj Nil)										result:'ignore	}
+
 						;	Test Scaled Armor ----------------------------------
 
 						{	test:'(itm@ 
