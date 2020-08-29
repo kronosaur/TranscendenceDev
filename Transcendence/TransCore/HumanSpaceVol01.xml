@@ -1853,6 +1853,7 @@
 	<!ENTITY rsXenophobeDefenderHero	"0x00100143">
 	<!ENTITY rsXenophobeWorldshipHero	"0x00100144">
 	<!ENTITY rsXenophobeArkHero			"0x00100145">
+	<!ENTITY evXenophobeFleetBehavior	"0x00100146">
 	
 	<!-- 0150-015F HUARI EMPIRE -->
 	
