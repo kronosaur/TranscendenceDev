@@ -72,20 +72,20 @@
 
 		<Items>
 			<RandomItem count="2d10" 
-					criteria=		"a L:1-7; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"a L:1-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="1d4" 
-					criteria=		"r L:1-6; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard;"	
+					criteria=		"r L:1-6; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard;"	
 					levelFrequency="systemLevel:ru|c|curv"
 					/>
 			<RandomItem count="2d10" 
-					criteria=		"d~r L:1-6; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"d~r L:1-6; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			
 			<RandomItem count="20" 
-					criteria=		"*~adm -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"*~adm -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 		</Items>
@@ -218,20 +218,20 @@
 		
 		<Items>
 			<RandomItem count="2d10" 
-					criteria=		"a L:1-9; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"a L:1-9; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="1d4" 
-					criteria=		"r L:4-8; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard;"
+					criteria=		"r L:4-8; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard;"
 					levelFrequency="systemLevel:ru|c|curv"
 					/>
 			<RandomItem count="2d10" 
-					criteria=		"d~r L:1-8; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"d~r L:1-8; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			
 			<RandomItem count="20" 
-					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 		</Items>

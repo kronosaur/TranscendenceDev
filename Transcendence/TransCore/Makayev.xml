@@ -51,19 +51,19 @@
 
 		<Items>
 			<RandomItem count="1d12" 
-					criteria=		"w L:1-7; +Makayev; -NotForSale;"
+					criteria=		"w L:1-7; +Makayev; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
 					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem chance="65" count="1d4" 
-					criteria=		"d~w L:1-7; +Makayev; -NotForSale;"
+					criteria=		"d~w L:1-7; +Makayev; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 
 			<RandomItem count="2d12" 
-					criteria=		"a L:1-7; +Makayev; -NotForSale;"
+					criteria=		"a L:1-7; +Makayev; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
 					enhancement=	"=(intMakayevArmorEnhancement gItem)"
@@ -226,35 +226,35 @@
 
 		<Items>
 			<RandomItem count="2d3"
-					criteria=		"w L:1-10; +Makayev; -NotForSale;"
+					criteria=		"w L:1-10; +Makayev; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:uc|c|crv"
 					enhanced=		"20"
 					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="2d6"
-					criteria=		"a L:1-10; +Makayev; -NotForSale;"
+					criteria=		"a L:1-10; +Makayev; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:uc|c|crv"
 					enhanced=		"20"
 					enhancement=	"=(intMakayevArmorEnhancement gItem)"
 					/>
 
 			<RandomItem count="2d3"
-					criteria=		"w L:1-10; +Makayev; -NotForSale;"
+					criteria=		"w L:1-10; +Makayev; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
 					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="2d6"
-					criteria=		"a L:1-10; +Makayev; -NotForSale;"
+					criteria=		"a L:1-10; +Makayev; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
 					enhancement=	"=(intMakayevArmorEnhancement gItem)"
 					/>
 
 			<RandomItem count="1d4"
-					criteria=		"d~w L:1-10; +Makayev; -NotForSale;"
+					criteria=		"d~w L:1-10; +Makayev; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:rucc|c|ur"
 					/>
 		</Items>

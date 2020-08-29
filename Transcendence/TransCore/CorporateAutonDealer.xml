@@ -53,11 +53,11 @@
 
 		<Items>
 			<RandomItem count="20" 
-					criteria=		"* +auton; -illegal; -military; -notStandard; -notForSale;"
+					criteria=		"* +auton; -defective; -illegal; -military; -notStandard; -notForSale;"
 					levelFrequency=	"systemLevel:ucc|c|cur"
 					/>
 			<RandomItem count="1d6" 
-					criteria=		"* +auton; -illegal; -military; -notStandard; -notForSale; L:4"
+					criteria=		"* +auton; -defective; -illegal; -military; -notStandard; -notForSale; L:4"
 					/>
 		</Items>
 
