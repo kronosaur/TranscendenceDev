@@ -2956,7 +2956,7 @@ void CSpaceObject::FireOnMining (const SDamageCtx &Ctx, EAsteroidType iType)
 	CCX.DefineDouble(CONSTLIT("aYieldAdj"), MiningStats.rYieldAdj);
 	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
 	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
 
 	ICCItemPtr pResult = CCX.RunCode(Event);
 	if (pResult->IsError())

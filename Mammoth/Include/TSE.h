@@ -433,8 +433,8 @@ class CSpaceObject
 
 		ALERROR AddToSystem (CSystem &System, bool bNoGlobalInsert = false);
 		void Ascend (void);
-		void Destroy (SDamageCtx &Ctx) { Destroy(Ctx.Damage.GetCause(), Ctx.Attacker, Ctx.pDesc); }
-		void Destroy (DestructionTypes iCause, SDamageCtx &Ctx) { Destroy(iCause, Ctx.Attacker, Ctx.pDesc); }
+		void Destroy (SDamageCtx &Ctx) { Destroy(Ctx.Damage.GetCause(), Ctx.Attacker, &Ctx.GetDesc()); }
+		void Destroy (DestructionTypes iCause, SDamageCtx &Ctx) { Destroy(iCause, Ctx.Attacker, &Ctx.GetDesc()); }
 		void Destroy (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc = NULL, CSpaceObject **retpWreck = NULL);
 		CDesignCollection &GetDesign (void) const;
 		CSystem *GetSystem (void) const { return m_pSystem; }

@@ -74,7 +74,7 @@ bool COverlay::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 		//	Handle custom damage (this is to give custom damage
 		//	a chance to react to hitting an overlay)
 
-		if (Ctx.pDesc->FireOnDamageOverlay(Ctx, this))
+		if (Ctx.GetDesc().FireOnDamageOverlay(Ctx, this))
 			return true;
 
 		//	Absorb damage
@@ -117,7 +117,7 @@ bool COverlay::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 			//	Handle custom damage (this is to give custom damage
 			//	a chance to react to hitting an overlay)
 
-			if (Ctx.pDesc->FireOnDamageOverlay(Ctx, this))
+			if (Ctx.GetDesc().FireOnDamageOverlay(Ctx, this))
 				return true;
 
 			//	Handle damage (if we don't do anything on hit, then
@@ -669,7 +669,7 @@ void COverlay::FireOnMining (CSpaceObject &Source, EAsteroidType iType, SDamageC
 	CCX.DefineDouble(CONSTLIT("aYieldAdj"), MiningStats.rYieldAdj);
 	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
 	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
 
 	ICCItemPtr pResult = CCX.RunCode(Event);
 	if (pResult->IsError())

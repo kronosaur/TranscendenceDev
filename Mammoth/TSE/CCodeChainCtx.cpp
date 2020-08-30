@@ -452,8 +452,8 @@ void CCodeChainCtx::DefineDamageCtx (const SDamageCtx &Ctx, int iDamage)
 	DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 	DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 	DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
-	DefineInteger(CONSTLIT("aWeaponLevel"), Ctx.pDesc->GetLevel());
-	DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+	DefineInteger(CONSTLIT("aWeaponLevel"), Ctx.GetDesc().GetLevel());
+	DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
 	}
 
 void CCodeChainCtx::DefineDamageEffects (const CString &sVar, SDamageCtx &Ctx)
@@ -757,8 +757,8 @@ ICCItemPtr CCodeChainCtx::RunCode (const SEventHandlerDesc &Event)
 
 //	RunCode
 //
-//	Runs the given event and returns a result. (Which must be discarded by the
-//	caller).
+//	Runs the given event and returns a result. We guarantee that we will return
+//	a non NULL item.
 
 	{
 	DEBUG_TRY
@@ -770,6 +770,8 @@ ICCItemPtr CCodeChainCtx::RunCode (const SEventHandlerDesc &Event)
 	m_pExtension = Event.pExtension;
 
 	ICCItemPtr pResult = RunCode(Event.pCode);
+	if (!pResult)
+		throw CException(ERR_FAIL);
 
 	m_pExtension = pOldExtension;
 	return pResult;

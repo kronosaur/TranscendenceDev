@@ -201,7 +201,7 @@ class CCreatePainterCtx
 		void SetRawPainter (bool bValue = true) { m_bRaw = bValue; }
 		void SetTrackingObject (bool bValue = true) { m_bTracking = bValue; }
 		void SetUseObjectCenter (bool bValue = true) { m_bUseObjectCenter = bValue; }
-		void SetWeaponFireDesc (CWeaponFireDesc *pDesc);
+		void SetWeaponFireDesc (const CWeaponFireDesc *pDesc);
 		bool UseObjectCenter (void) const { return m_bUseObjectCenter; }
 
 	private:
@@ -213,7 +213,7 @@ class CCreatePainterCtx
 
 		void SetDamageCtxData (ICCItem *pTable, SDamageCtx &DamageCtx) const;
 		void SetOverlayData (ICCItem *pTable, const COverlay &Overlay) const;
-		void SetWeaponFireDescData (ICCItem *pTable, CWeaponFireDesc *pDesc) const;
+		void SetWeaponFireDescData (ICCItem *pTable, const CWeaponFireDesc &Desc) const;
 
 		CSpaceObject *m_pAnchor = NULL;					//	Optional anchor (e.g., for effects that need an object to operate)
 		CVector m_vPos;									//	Optional position of effect
@@ -221,7 +221,7 @@ class CCreatePainterCtx
 		const CSpaceObject *m_pSource = NULL;			//	Optional object associated with effect
 		const COverlay *m_pOverlay = NULL;				//	Optional overlay that created the effect
 		SDamageCtx *m_pDamageCtx = NULL;				//	Optional damage context
-		CWeaponFireDesc *m_pWeaponFireDesc = NULL;		//	Optional weapon fire desc
+		const CWeaponFireDesc *m_pWeaponFireDesc = NULL;	//	Optional weapon fire desc
 		TArray<SDataEntry> m_Data;						//	Data to add
 		TUniquePtr<CEffectParamSet> m_pDefaultParams;	//	Default parameters (owned by us)
 		DWORD m_dwLoadVersion = SYSTEM_SAVE_VERSION;	//	Optional system version at load time

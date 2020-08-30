@@ -2484,7 +2484,7 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 
 	//	Let custom weapons get a chance
 
-	Ctx.pDesc->FireOnDamageAbandoned(Ctx);
+	Ctx.GetDesc().FireOnDamageAbandoned(Ctx);
 	if (IsDestroyed())
 		return damageDestroyed;
 
@@ -2535,7 +2535,7 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 	//	Hit effect
 
 	if (!Ctx.bNoHitEffect)
-		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+		Ctx.GetDesc().CreateHitEffect(GetSystem(), Ctx);
 
 	//	Take damage
 
@@ -2599,7 +2599,7 @@ EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
 	//	Hit effect
 
 	if (!Ctx.bNoHitEffect)
-		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+		Ctx.GetDesc().CreateHitEffect(GetSystem(), Ctx);
 
 	//	Ejecta
 
@@ -2657,7 +2657,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 
 		//	Give custom weapons a chance
 
-		bCustomDamage = Ctx.pDesc->FireOnDamageArmor(Ctx);
+		bCustomDamage = Ctx.GetDesc().FireOnDamageArmor(Ctx);
 		if (IsDestroyed())
 			return damageDestroyed;
 
@@ -2692,7 +2692,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 	//	Hit effect
 
 	if (!Ctx.bNoHitEffect)
-		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+		Ctx.GetDesc().CreateHitEffect(GetSystem(), Ctx);
 
 	//	Tell our attacker that we got hit
 
@@ -2738,7 +2738,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 
 	else
 		{
-		Abandon(Ctx.Damage.GetCause(), Ctx.Attacker, Ctx.pDesc);
+		Abandon(Ctx.Damage.GetCause(), Ctx.Attacker, &Ctx.GetDesc());
 		CreateDestructionEffect();
 		return damageDestroyedAbandoned;
 		}

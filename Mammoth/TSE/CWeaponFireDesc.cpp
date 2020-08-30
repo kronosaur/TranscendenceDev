@@ -57,8 +57,10 @@
 #define NO_FRIENDLY_FIRE_ATTRIB					CONSTLIT("noFriendlyFire")
 #define NO_IMMOBILE_HITS_ATTRIB					CONSTLIT("noImmobileHits")
 #define NO_IMMUTABLE_HITS_ATTRIB				CONSTLIT("noImmutableHits")
+#define NO_MINING_HINT_ATTRIB					CONSTLIT("noMiningHint")
 #define NO_SHIP_HITS_ATTRIB						CONSTLIT("noShipHits")
 #define NO_STATION_HITS_ATTRIB					CONSTLIT("noStationHits")
+#define NO_WMD_HINT_ATTRIB						CONSTLIT("noWMDHint")
 #define NO_WORLD_HITS_ATTRIB					CONSTLIT("noWorldHits")
 #define PARTICLE_COUNT_ATTRIB					CONSTLIT("particleCount")
 #define PARTICLE_EMIT_TIME_ATTRIB				CONSTLIT("particleEmitTime")
@@ -128,13 +130,6 @@ static const char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
 		"OnDestroyShot",
 		"OnFragment",
 	};
-
-CWeaponFireDesc::CWeaponFireDesc (void)
-
-//	CWeaponFireDesc constructor
-
-	{
-	}
 
 CWeaponFireDesc::~CWeaponFireDesc (void)
 
@@ -534,7 +529,7 @@ void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource,
 		//	Create a painter.
 
 		CCreatePainterCtx Ctx;
-		Ctx.SetWeaponFireDesc(const_cast<CWeaponFireDesc *>(this));
+		Ctx.SetWeaponFireDesc(this);
 
 		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, &GetUniverse().GetDefaultFireEffect(m_Damage.GetDamageType()));
 		if (pPainter == NULL)
@@ -557,7 +552,7 @@ void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource,
 		}
 	}
 
-void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
+void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx) const
 
 //	CreateHitEffect
 //
@@ -946,7 +941,11 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 	if (pType->GetType() == designItemType)
 		{
 		CItemType *pItemType = CItemType::AsType(pType);
-		ASSERT(pItemType);
+		if (!pItemType)
+			{
+			ASSERT(false);
+			return NULL;
+			}
 
 		CWeaponFireDesc *pMissileDesc;
 		CDeviceClass *pDevice;
@@ -1099,7 +1098,7 @@ bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 		return false;
 	}
 
-bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx)
+bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx) const
 
 //	FireOnDamageArmor
 //
@@ -1389,6 +1388,12 @@ bool CWeaponFireDesc::FireOnFragment (const CDamageSource &Source, CSpaceObject 
 //	fragmentation event.
 
 	{
+	if (!pShot)
+		{
+		ASSERT(false);
+		return false;
+		}
+
 	SEventHandlerDesc Event;
 	if (FindEventHandler(evtOnFragment, &Event))
 		{
@@ -1410,24 +1415,15 @@ bool CWeaponFireDesc::FireOnFragment (const CDamageSource &Source, CSpaceObject 
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), pAttacker);
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Source.GetOrderGiver());
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			pShot->ReportEventError(ON_FRAGMENT_EVENT, pResult);
 
-		//	If we return Nil, then we continue processing
+		//	If we return Nil, then we return FALSE, which means continue
+		//	processing. Otherwise, we return TRUE, which means skip the default
+		//	fragmentation code.
 
-		bool bResult;
-		if (pResult->IsNil())
-			bResult = false;
-
-		//	Otherwise, we skip fragmentation
-
-		else
-			bResult = true;
-
-		CCCtx.Discard(pResult);
-
-		return bResult;
+		return !pResult->IsNil();
 		}
 	else
 		return false;
@@ -1735,6 +1731,8 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_fAutoTarget = false;
 	m_fTargetRequired = false;
 	m_fMIRV = false;
+	m_fNoMiningHint = false;
+	m_fNoWMDHint = false;
 	m_InitialDelay.SetConstant(0);
 
 	//	Hit criteria
@@ -2117,9 +2115,11 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	else if (m_iManeuverability == 0 && m_iManeuverRate > 0)
 		m_iManeuverability = 1;
 
-	//	MIRV
+	//	Various options
 
 	m_fMIRV = pDesc->GetAttributeBool(MULTI_TARGET_ATTRIB);
+	m_fNoMiningHint = pDesc->GetAttributeBool(NO_MINING_HINT_ATTRIB);
+	m_fNoWMDHint = pDesc->GetAttributeBool(NO_WMD_HINT_ATTRIB);
 
 	//	Load continuous and passthrough
 
@@ -2606,6 +2606,8 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_fDefaultInteraction = Src.m_fDefaultInteraction;
 	m_fDefaultHitPoints = Src.m_fDefaultHitPoints;
 	m_fMIRV = Src.m_fMIRV;
+	m_fNoMiningHint = Src.m_fNoMiningHint;
+	m_fNoWMDHint = Src.m_fNoWMDHint;
 
 	m_pEffect = Src.m_pEffect;
 	m_pHitEffect = Src.m_pHitEffect;
@@ -2836,4 +2838,28 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	return NOERROR;
 
 	DEBUG_CATCH
+	}
+
+bool CWeaponFireDesc::ShowsHint (EDamageHint iHint) const
+
+//	ShowsHint
+//
+//	Returns TRUE if we should show the given hint.
+
+	{
+	switch (iHint)
+		{
+		case EDamageHint::useMining:
+			return !m_fNoMiningHint;
+
+		case EDamageHint::useMiningOrWMD:
+			return !m_fNoMiningHint || !m_fNoWMDHint;
+
+		case EDamageHint::useWMD:
+		case EDamageHint::useWMDforShip:
+			return !m_fNoWMDHint;
+
+		default:
+			return true;
+		}
 	}

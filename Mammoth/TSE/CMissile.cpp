@@ -662,7 +662,7 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	//	Create a hit effect
 
-	Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+	Ctx.GetDesc().CreateHitEffect(GetSystem(), Ctx);
 
 	//	Check for passthrough. If we pass through then we don't take any damage.
 

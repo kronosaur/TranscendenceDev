@@ -251,7 +251,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	//	First give custom weapons a chance
 
-	bool bCustomDamage = (Ctx.pDesc && Ctx.pDesc->FireOnDamageArmor(Ctx));
+	bool bCustomDamage = Ctx.GetDesc().FireOnDamageArmor(Ctx);
 	if (pSource->IsDestroyed())
 		return damageDestroyed;
 
@@ -328,7 +328,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	Create a hit effect. (Many weapons show an effect even if no damage was
 	//	done.)
 
-	if (!Ctx.bNoHitEffect && Ctx.pDesc)
+	if (!Ctx.bNoHitEffect)
 		{
 		//	Hit effect is based on how much damage the armor took, so we need to
 		//	temporarily store that in Ctx.iDamage.
@@ -336,7 +336,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		int iSavedDamage = Ctx.iDamage;
 		Ctx.iDamage = Ctx.iArmorDamage;
 
-		Ctx.pDesc->CreateHitEffect(pSource->GetSystem(), Ctx);
+		Ctx.GetDesc().CreateHitEffect(pSource->GetSystem(), Ctx);
 
 		Ctx.iDamage = iSavedDamage;
 		}
