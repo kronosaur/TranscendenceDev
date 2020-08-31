@@ -1249,6 +1249,10 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 			DisplayTranslate(CONSTLIT("msgDeviceRepaired"), CONSTLIT("itemName"), sItemName);
 			break;
 
+		case CDeviceClass::statusUsedLastAmmo:
+			OnWeaponStatusChanged();
+			break;
+
 		case CDeviceClass::failDamagedByDisruption:
 			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), sItemName);
 			break;

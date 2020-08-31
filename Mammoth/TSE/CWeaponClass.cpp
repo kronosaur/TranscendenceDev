@@ -1654,7 +1654,18 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 	//	Switch to the next variant if necessary
 
 	if (bNextVariant)
-		pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
+		{
+		//	For repeating weapons, we set a flag and switch variants only after
+		//	we've shot the last projectile.
+
+		if (GetContinuous(ShotDesc) > 0)
+			pDevice->SetOnUsedLastAmmoFlag(true);
+
+		//	Otherwise, switch now.
+
+		else
+			pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
+		}
 
 	//	Success!
 
@@ -5199,6 +5210,7 @@ void CWeaponClass::SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) c
 	//	want to stop firing the previous missile.
 
 	SetContinuousFire(pDevice, 0);
+	pDevice->SetOnUsedLastAmmoFlag(false);
 
 	//	Set the new variant
 
@@ -5267,7 +5279,10 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 				}
 			}
 		else
+			{
 			SetContinuousFire(pDevice, 0);
+			pDevice->SetOnUsedLastAmmoFlag(false);
+			}
 		}
 	else if (dwContinuous > 0)
 		{
@@ -5295,6 +5310,15 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 		dwContinuous--;
 		SetContinuousFire(pDevice, dwContinuous);
+
+		//	If we've fired the last round, then see if we need to notify the UI
+		//	that we're out of ammo.
+
+		if (dwContinuous == 0 && pDevice->IsOnUsedLastAmmoFlagSet())
+			{
+			pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
+			pDevice->SetOnUsedLastAmmoFlag(false);
+			}
 		}
 	else if (pDevice->HasLastShots()
 			&& (!pDevice->IsTriggered() || pDevice->GetTimeUntilReady() > 1))
