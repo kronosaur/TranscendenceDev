@@ -1382,10 +1382,13 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 					{
 					CItemCtx ItemCtx(&Source, &Device);
 					Metric rSpeed = ShotDesc.GetInitialSpeed();
-					retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
+					retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget, &retbSetFireAngle);
 					}
 				else
+					{
 					retiFireAngle = -1;
+					retbSetFireAngle = false;
+					}
 
 				break;
 				}
@@ -1396,16 +1399,15 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 				if (retpTarget == NULL)
 					return false;
 
+				//	Remember the fire angle for future bursts.
+
+				retbSetFireAngle = true;
 				break;
 				}
 
 			default:
 				return false;
 			}
-
-		//	Remember the fire angle for future bursts.
-
-		retbSetFireAngle = true;
 		}
 
 	//	Fire!
@@ -2288,6 +2290,10 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 		{
 		Device.SetTarget(Shots[0].pTarget);
 		Device.SetFireAngle(iFireAngle);
+		}
+	else if (ActivateCtx.iRepeatingCount == 0)
+		{
+		Device.SetFireAngle(-1);
 		}
 
 	//	Increment polarity, if necessary
