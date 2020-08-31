@@ -3896,7 +3896,19 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	if (!m_Devices.Install(this, ItemList, iDeviceSlot, iSlotPosIndex, false, &iDeviceSlot))
 		return;
 
-	//	Adjust the named devices
+	//	Recalc bonuses
+
+	CalcArmorBonus();
+	CalcDeviceBonus();
+    CalcPerformance();
+
+	//	Adjust the named devices.
+	//
+	//	NOTE: We need to do this AFTER CalcDeviceBonus because we need to have
+	//	the new enhancement stack, since we might have a linked-fire setting
+	//	conferred by a device slot.
+
+	m_Devices.RefreshNamedDevice(iDeviceSlot);
 
 	switch (m_Devices.GetDevice(iDeviceSlot).GetCategory())
 		{
@@ -3908,12 +3920,6 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 			m_pController->OnWeaponStatusChanged();
 			break;
 		}
-
-	//	Recalc bonuses
-
-	CalcArmorBonus();
-	CalcDeviceBonus();
-    CalcPerformance();
 
 	//	Reset the fuel level (we are effectively transfering the fuel to the
 	//	new reactor. Note that on a downgrade, we will clip the fuel to the

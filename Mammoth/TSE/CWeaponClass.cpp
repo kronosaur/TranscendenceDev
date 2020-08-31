@@ -1236,6 +1236,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 				{
 				if (Targets.GetCount() == 0)
 					return CShotArray();
+				break;
 				}
 
 			default:
@@ -1936,7 +1937,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_RANGE))
 		*retsValue = strFromInt(mathRound(pShot->GetMaxRange() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_RECOIL))
-		*retsValue = (m_iRecoil ? strFromInt(mathRound(m_iRecoil * m_iRecoil * 10.0 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
+		*retsValue = (m_iRecoil ? strFromInt(mathRound((Metric)m_iRecoil * m_iRecoil * 10.0 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
 	else if (strEquals(sField, FIELD_SPEED))
 		*retsValue = strFromInt(mathRound(100.0 * pShot->GetRatedSpeed() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_VARIANT_COUNT))
