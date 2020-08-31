@@ -2566,7 +2566,8 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 
 		//	See if we have mining capability
 
-		if (pShotDesc->GetDamage().GetMiningDamage() > 0)
+		if (pShotDesc->GetDamage().GetMiningDamage() > 0
+				|| Enhancements.HasSpecialDamage(specialMining))
 			dwTargetTypes |= CTargetList::typeMinable;
 		}
 

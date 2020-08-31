@@ -493,6 +493,45 @@ int CItemEnhancementStack::GetResistMatterAdj (void) const
 	return mathRound(rValue);
 	}
 
+int CItemEnhancementStack::GetSpecialDamage (SpecialDamageTypes iSpecial) const
+
+//	GetSpecialDamage
+//
+//	Returns the damage level for the given special damage.
+
+	{
+	int iResult = 0;
+
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iLevel;
+		if (m_Stack[i].GetSpecialDamage(&iLevel) == iSpecial)
+			{
+			if (iLevel > iResult)
+				iResult = iLevel;
+			}
+		}
+
+	return iResult;
+	}
+
+bool CItemEnhancementStack::HasSpecialDamage (SpecialDamageTypes iSpecial) const
+
+//	HasSpecialDamage
+//
+//	Returns TRUE if we have the given special damage.
+
+	{
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iLevel;
+		if (m_Stack[i].GetSpecialDamage(&iLevel) == iSpecial && iLevel > 0)
+			return true;
+		}
+
+	return false;
+	}
+
 void CItemEnhancementStack::Insert (const CItemEnhancement &Mods)
 
 //	Insert
