@@ -320,8 +320,6 @@
 				target=			"missiles"
 				weapon=			"&vtICXLaserCannon;"
 				fireRate=		"15"
-
-				checkLineOfFire="true"
 				/>
 	</ItemType>
 
@@ -340,6 +338,8 @@
 				fireRate=			"15"
 				lifetime=			"30"
 				powerUse=			"10"
+
+				noFriendlyFire=		"true"
 
 				effect=				"&efLaserBeamDefault;"
 				sound=				"&snLaserCannon;"
@@ -713,8 +713,6 @@
 				weapon=			"&vtLongreachI;"
 				interceptRange=	"15"
 				fireRate=		"15"
-
-				checkLineOfFire="true"
 				/>
 
 	</ItemType>
@@ -735,6 +733,8 @@
 				missileSpeed=		"90"
 				lifetime=			"27"
 				powerUse=			"100"
+
+				noFriendlyFire=		"true"
 
 				effect=				"&efKineticBoltDefault;"
 				sound=				"&snRecoillessCannon;"
