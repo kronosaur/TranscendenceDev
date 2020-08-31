@@ -771,7 +771,7 @@ void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 		//	Hit test
 
-		m_pHit = HitTestProximity(vOldPos, rMinThreshold, rMaxThreshold, m_pDesc->GetDamage(), &m_vHitPos, &m_iHitDir);
+		m_pHit = HitTestProximity(vOldPos, rMinThreshold, rMaxThreshold, m_pDesc->GetDamage(), m_pTarget, &m_vHitPos, &m_iHitDir);
 
 		//	Make sure we are not too close to the source when we trigger
 		//	a proximity blast.
