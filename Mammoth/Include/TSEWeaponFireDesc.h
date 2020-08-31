@@ -212,7 +212,7 @@ struct SDamageCtx
 	{
 	public:
 		static constexpr int DAMAGE_ADJ_HINT_THRESHOLD = 25;
-		static constexpr int WMD_HINT_THRESHOLD = 40;
+		static constexpr int WMD_HINT_THRESHOLD = 60;
 
 		SDamageCtx (void);
 		SDamageCtx (CSpaceObject *pObjHitArg, 

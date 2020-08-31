@@ -441,9 +441,12 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 		//	If we're not making progress, then return a hint about what to do.
 
 		if (iHint != EDamageHint::none 
-				&& iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD 
-				&& (iDamage == 0 || (m_Hull.GetHitPoints() / iDamage) > SDamageCtx::WMD_HINT_THRESHOLD))
-			Ctx.SetHint(iHint);
+				&& iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD)
+			{
+			int iAveDamage = mathAdjust(mathRound(Ctx.Damage.GetDamageValue(DamageDesc::flagAverageDamage | DamageDesc::flagIncludeBonus)), iDamageAdj);
+			if (iAveDamage == 0 || (m_Hull.GetHitPoints() / iAveDamage) > SDamageCtx::WMD_HINT_THRESHOLD)
+				Ctx.SetHint(iHint);
+			}
 
 		//	Return adjusted damage
 
