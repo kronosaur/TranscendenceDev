@@ -6212,6 +6212,12 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &So
 	{
 	DEBUG_TRY
 
+	if (!pObj || !pDesc)
+		{
+		ASSERT(false);
+		return false;
+		}
+
 	//	If we have a source...
 
 	if (Source.HasSource())
@@ -6241,7 +6247,7 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &So
 				&& pDesc->CanHit(pObj)
 
 				//	We cannot hit our friends (if our source can't)
-				&& ((CanHitFriends() && Source.CanHitFriends() && pObj->CanBeHitByFriends()) || !Source.IsFriend(pObj->GetSovereign()))
+				&& ((CanHitFriends() && Source.CanHitFriends() && pObj->CanBeHitByFriends()) || Source.IsAngryAt(*pObj))
 
 				//	If our source is the player, then we cannot hit player wingmen
 

@@ -248,6 +248,25 @@ bool CDamageSource::HasSource (void) const
 		return (m_pSource != NULL);
 	}
 
+bool CDamageSource::IsAngryAt (const CSpaceObject &Obj) const
+
+//	IsAngryAt
+//
+//	Returns TRUE if the source is angry at the given object.
+
+	{
+	if (const CSpaceObject *pSource = GetObj())
+		return pSource->IsAngryAt(&Obj);
+	else if (const CSovereign *pSourceSovereign = GetSovereign())
+		{
+		const CSovereign *pSovereign = Obj.GetSovereign();
+		if (pSovereign)
+			return pSourceSovereign->IsEnemy(*pSovereign);
+		}
+
+	return false;
+	}
+
 bool CDamageSource::IsCausedByEnemyOf (CSpaceObject *pObj) const
 
 //	IsCausedByEnemyOf
