@@ -234,7 +234,7 @@ void CGameSession::OnAnimate (CG32bitImage &ScreenFG, CG32bitImage &ScreenBG, bo
 				if (bShowSRS)
 					{
 					PaintSRS(ScreenFG, ScreenBG);
-					ScreenFG.Fill(CG32bitPixel(0, 0, 0, 0x80));
+					ScreenFG.Fill(CG32bitPixel(0, 0, 0, ScreenBG.GetMasterRenderQueue() ? 0 : 0x80));
 					}
 
 				g_pTrans->m_pCurrentScreen->Paint(ScreenFG);
