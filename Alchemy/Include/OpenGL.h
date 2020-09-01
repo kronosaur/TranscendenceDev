@@ -88,7 +88,7 @@ public:
 	void renderScene (void);
 	void testRender ();
 	void renderCanvasBackground ();
-	void renderCanvasBackgroundFromTexture (OpenGLTexture *texture);
+	void renderCanvasBackgroundFromTexture (OpenGLTexture *texture, bool clear = false);
 	void prepSquareCanvas ();
 	void prepTextureCanvas ();
 	void prepTestScene ();

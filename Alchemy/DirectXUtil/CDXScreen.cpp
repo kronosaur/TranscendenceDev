@@ -18,7 +18,8 @@ CDXScreen::CDXScreen (void) :
 		m_pOGLContext(NULL),
 		m_bDeviceLost(false),
 		m_bOpenGLAttached(false),
-	    m_pOpenGLTexture(NULL)
+	    m_pOpenGLTextureFG(NULL),
+	    m_pOpenGLTextureBG(NULL)
 
 //	CDXScreen constructor
 
@@ -617,7 +618,8 @@ void CDXScreen::Render (void)
 #endif
 		HDC hDC = ::GetDC(m_hWnd);
 		SLayer &Layer = m_Layers[m_PaintOrder[0]];
-		CG32bitPixel *pPixelArray = Layer.BackBuffer.GetPixelArray();
+		CG32bitPixel *pPixelArrayBG = Layer.BackBuffer.GetPixelArray();
+		CG32bitPixel *pPixelArrayFG = Layer.FrontBuffer.GetPixelArray();
 #ifdef OPENGL_FPS_COUNTER_ENABLE
 		char szBuffer[256];
 		int iLen = wsprintf(szBuffer, "Time between frames: %d (%d in graphics) (ms)",
@@ -632,37 +634,44 @@ void CDXScreen::Render (void)
 			// happens with the device context that hDC is attached to...
 			Sleep(1);
 			bool iInitOpenGLSuccess = m_pOGLContext->initOpenGL(m_hWnd, hDC);
-			if (iInitOpenGLSuccess)
+			if (iInitOpenGLSuccess) {
 				m_bOpenGLAttached = true;
 				m_pOGLContext->resize(m_cxTarget, m_cyTarget);
 			}
-		::ReleaseDC(m_hWnd, hDC);
-		if (pPixelArray)
+			::ReleaseDC(m_hWnd, hDC);
+			}
+		if (pPixelArrayFG && pPixelArrayBG)
 			{
 			if (m_pOGLContext->pollResize())
 				{
-				delete m_pOpenGLTexture;
+				delete m_pOpenGLTextureFG;
+				delete m_pOpenGLTextureBG;
 				m_pOGLContext->ackResize();
 				}
-			if (!m_pOpenGLTexture) {
-				m_pOpenGLTexture = new OpenGLTexture(pPixelArray, Layer.cxWidth, Layer.cyHeight, false);
-				m_pOpenGLTexture->initTextureFromOpenGLThread();
+			if (!m_pOpenGLTextureBG) {
+				m_pOpenGLTextureBG = new OpenGLTexture(pPixelArrayBG, Layer.cxWidth, Layer.cyHeight, false);
+				m_pOpenGLTextureFG = new OpenGLTexture(pPixelArrayFG, Layer.cxWidth, Layer.cyHeight, false);
+				m_pOpenGLTextureBG->initTextureFromOpenGLThread();
+				m_pOpenGLTextureFG->initTextureFromOpenGLThread();
 				}
 			else {
 #ifdef OPENGL_FPS_COUNTER_ENABLE
 				Layer.BackBuffer.DrawText(300, 20, Layer.BackBuffer.GetMasterRenderQueue()->getOpenGLIndicatorFont(), CG32bitPixel(80, 80, 80), CString(szBuffer, iLen));
 #endif
-				m_pOpenGLTexture->updateTexture2D(pPixelArray, Layer.cxWidth, Layer.cyHeight);
+				m_pOpenGLTextureBG->updateTexture2D(pPixelArrayBG, Layer.cxWidth, Layer.cyHeight);
+				m_pOpenGLTextureFG->updateTexture2D(pPixelArrayFG, Layer.cxWidth, Layer.cyHeight);
 				}
 			}
-		if (m_pOpenGLTexture)
+		if (m_pOpenGLTextureBG && m_pOpenGLTextureFG)
 			{
 			Layer.BackBuffer.InitOpenGL();
-			m_pOGLContext->renderCanvasBackgroundFromTexture(m_pOpenGLTexture);
+			m_pOGLContext->renderCanvasBackgroundFromTexture(m_pOpenGLTextureBG, true);
 			// Set a pointer to the canvas in the Master Render Queue, so we only render textures if we are rendering with that as the DEST
 			Layer.BackBuffer.GetMasterRenderQueue()->setPointerToCanvas(&Layer.BackBuffer);
 			Layer.BackBuffer.GetMasterRenderQueue()->setCanvasDimensions(Layer.BackBuffer.GetWidth(), Layer.BackBuffer.GetHeight());
 			Layer.BackBuffer.GetMasterRenderQueue()->renderAllQueues();
+			m_pOGLContext->renderCanvasBackgroundFromTexture(m_pOpenGLTextureFG);
+			Layer.FrontBuffer.Set(CG32bitPixel(0, 0, 0, 0)); // TODO: Replace once we get the proper method from George
 			//Layer.BackBuffer.GetInstancedRenderQueue()->Render(Layer.BackBuffer.GetInstancedRenderQueue()->getShader(), Layer.BackBuffer.GetInstancedRenderQueue()->getVAO());
 			//delete m_pOpenGLTexture;
 			//m_pOpenGLTexture = NULL;

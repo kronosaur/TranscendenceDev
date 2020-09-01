@@ -135,7 +135,8 @@ class IHISession : public IHICommand, public IAniCommand
 		virtual ~IHISession (void);
 
 		void HIActivate (void) { OnActivate(); }
-		void HIAnimate (CG32bitImage &Screen, bool bTopMost) { OnAnimate(Screen, bTopMost); }
+		void HIAnimate (CG32bitImage &Screen, bool bTopMost) { OnAnimate(Screen, Screen, bTopMost); }
+		void HIAnimate (CG32bitImage &ScreenFG, CG32bitImage& ScreenBG, bool bTopMost) { OnAnimate(ScreenFG, ScreenBG, bTopMost); }
 		void HIChar (char chChar, DWORD dwKeyData);
 		void HIDeactivate (void) { OnDeactivate(); }
 		CReanimator &HIGetReanimator (void) { return GetReanimator(); }
@@ -199,7 +200,7 @@ class IHISession : public IHICommand, public IAniCommand
 			};
 
 		virtual void OnActivate (void) { }
-		virtual void OnAnimate (CG32bitImage &Screen, bool bTopMost) { DefaultOnAnimate(Screen, bTopMost); }
+		virtual void OnAnimate (CG32bitImage &ScreenFG, CG32bitImage& ScreenBG, bool bTopMost) { DefaultOnAnimate(ScreenFG, ScreenBG, bTopMost); }
 		virtual void OnChar (char chChar, DWORD dwKeyData) { }
 		virtual void OnDeactivate (void) { }
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData) { }
@@ -232,7 +233,7 @@ class IHISession : public IHICommand, public IAniCommand
 		//	IAniCommand virtuals
 		virtual void OnAniCommand (const CString &sID, const CString &sEvent, const CString &sCmd, DWORD dwData);
 
-		void DefaultOnAnimate (CG32bitImage &Screen, bool bTopMost);
+		void DefaultOnAnimate (CG32bitImage &ScreenFG, CG32bitImage& ScreenBG, bool bTopMost);
 
 		bool m_bNoCursor;						//	If TRUE, we hide the cursor when we show the session.
 		bool m_bTransparent;					//	If TRUE, session below this one shows through.
@@ -741,6 +742,8 @@ class CHumanInterface
 		const SHIOptions &GetOptions (void) { return m_Options; }
 		CReanimator &GetReanimator (void);
 		CG32bitImage &GetScreen (void) { return m_ScreenMgr.GetScreen(); }
+		CG32bitImage &GetScreenFG (void) { return m_ScreenMgr.GetScreenFG(); }
+		CG32bitImage &GetScreenBG (void) { return m_ScreenMgr.GetScreenBG(); }
 #ifdef DEBUG_USE_DX7
 		CScreenMgr &GetScreenMgr (void) { return m_ScreenMgr; }
 #else

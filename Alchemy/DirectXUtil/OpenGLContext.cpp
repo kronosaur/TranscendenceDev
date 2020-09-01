@@ -272,7 +272,7 @@ void OpenGLContext::renderCanvasBackground ()
 	m_pCanvasShader->unbind(); // Unbind our shader
 	}
 
-void OpenGLContext::renderCanvasBackgroundFromTexture (OpenGLTexture* texture)
+void OpenGLContext::renderCanvasBackgroundFromTexture (OpenGLTexture* texture, bool clear)
 {
 
 	// Create our new shader
@@ -284,9 +284,12 @@ void OpenGLContext::renderCanvasBackgroundFromTexture (OpenGLTexture* texture)
 	//glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), (float)m_iWindowWidth / (float)m_iWindowHeight, 0.1f, 100.0f);
 	glm::mat4 projectionMatrix = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, 0.1f, 256.0f);
 
-	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-	glViewport(0, 0, m_iWindowWidth, m_iWindowHeight); // Set the viewport size to fill the window
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // Clear required buffers
+	if (clear) {
+		glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+		glViewport(0, 0, m_iWindowWidth, m_iWindowHeight); // Set the viewport size to fill the window
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // Clear required buffers
+	}
+
 
 	// Set up model and view matrices
 	// glm::mat4(1.0f) seems to make an identity matrix?

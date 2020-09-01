@@ -452,6 +452,8 @@ void CHumanInterface::OnAnimate (void)
 	//	Get the screen. Remember that we need to release it when we're done.
 
 	CG32bitImage &Screen = GetScreen();
+	CG32bitImage &ScreenFG = GetScreenFG();
+	CG32bitImage &ScreenBG = GetScreenBG();
 
 	//	Paint the current session
 
@@ -464,11 +466,11 @@ void CHumanInterface::OnAnimate (void)
 			//	Paint the background sessions
 
 			for (i = 0; i < m_BackgroundSessions.GetCount(); i++)
-				m_BackgroundSessions[i]->HIAnimate(Screen, false);
+				m_BackgroundSessions[i]->HIAnimate(ScreenFG, ScreenBG, false);
 
 			//	Paint the current session
 
-			m_pCurSession->HIAnimate(Screen, true);
+			m_pCurSession->HIAnimate(ScreenFG, ScreenBG, true);
 			}
 		catch (...)
 			{
@@ -482,7 +484,8 @@ void CHumanInterface::OnAnimate (void)
 		}
 	else
 		{
-		Screen.Set(CG32bitPixel(0, 0, 0));
+		ScreenFG.Set(CG32bitPixel(0, 0, 0));
+		ScreenBG.Set(CG32bitPixel(0, 0, 0));
 		BltScreen();
 		FlipScreen();
 		}
@@ -592,7 +595,7 @@ void CHumanInterface::PaintFrameRate (void)
 //	Paints the current frame rate
 
 	{
-	CG32bitImage &Screen = GetScreen();
+	CG32bitImage &Screen = GetScreenFG();
 
 	int iRate = mathRound(m_FrameRate.GetFrameRate());
 	CString sText = strPatternSubst(CONSTLIT("Frame rate: %d"), iRate);

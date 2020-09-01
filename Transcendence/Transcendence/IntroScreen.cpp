@@ -1165,7 +1165,7 @@ void CTranscendenceWnd::PaintDlgButton (const RECT &rcRect, const CString &sText
 //	Paint button
 
 	{
-	CG32bitImage &TheScreen = g_pHI->GetScreen();
+	CG32bitImage &TheScreen = g_pHI->GetScreenFG();
 
 	TheScreen.Fill(rcRect.left, 
 			rcRect.top,

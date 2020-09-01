@@ -29,7 +29,7 @@ IHISession::~IHISession (void)
 	{
 	}
 
-void IHISession::DefaultOnAnimate (CG32bitImage &Screen, bool bTopMost)
+void IHISession::DefaultOnAnimate (CG32bitImage &ScreenFG, CG32bitImage& ScreenBG, bool bTopMost)
 
 //	DefaultOnAnimate
 //
@@ -40,20 +40,20 @@ void IHISession::DefaultOnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 	//	Let the session paint the screen
 
-	m_HI.BeginSessionPaint(Screen);
+	m_HI.BeginSessionPaint(ScreenFG);
 
 	//	Session itself paints
 
-	HIPaint(Screen);
+	HIPaint(ScreenFG);
 
 	//	Paint animations on top
 
-	if (OnPaintReanimator(Screen))
+	if (OnPaintReanimator(ScreenFG))
 		bHasAnimation = true;
 
 	//	Done
 
-	m_HI.EndSessionPaint(Screen, bTopMost);
+	m_HI.EndSessionPaint(ScreenFG, bTopMost);
 
 	//	Update
 

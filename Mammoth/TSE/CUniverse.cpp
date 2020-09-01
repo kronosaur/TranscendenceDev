@@ -2133,7 +2133,7 @@ void CUniverse::PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 		m_pCurrentSystem->PaintViewportMapObject(Dest, rcView, m_pPOV, pObj);
 	}
 
-void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
+void CUniverse::PaintPOV (CG32bitImage &DestBG, CG32bitImage& DestFG, const RECT &rcView, DWORD dwFlags)
 
 //	PaintPOV
 //
@@ -2142,14 +2142,14 @@ void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 	{
 	if (m_pCurrentSystem && m_pPOV)
 		{
-		m_pCurrentSystem->PaintViewport(Dest, rcView, m_pPOV, dwFlags, &m_ViewportAnnotations);
+		m_pCurrentSystem->PaintViewport(DestBG, DestFG, rcView, m_pPOV, dwFlags, &m_ViewportAnnotations);
 
 		//	Reset annotations until the next update
 
 		m_ViewportAnnotations.Init();
 		}
 
-	m_PerformanceCounters.Paint(Dest, rcView, GetNamedFont(fontSRSMessage));
+	m_PerformanceCounters.Paint(DestFG, rcView, GetNamedFont(fontSRSMessage));
 
 	m_iPaintTick++;
 	}

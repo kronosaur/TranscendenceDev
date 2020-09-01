@@ -72,7 +72,7 @@ class CIntroSession : public IHISession
 
 		//	IHISession virtuals
 		virtual CReanimator &GetReanimator (void) override { return g_pTrans->GetReanimator(); }
-		virtual void OnAnimate (CG32bitImage &Screen, bool bTopMost) override;
+		virtual void OnAnimate (CG32bitImage &ScreenFG, CG32bitImage &ScreenBG, bool bTopMost) override;
 		virtual void OnChar (char chChar, DWORD dwKeyData) override;
 		virtual void OnCleanUp (void) override;
 		virtual ALERROR OnCommand (const CString &sCmd, void *pData = NULL) override;
@@ -104,7 +104,7 @@ class CIntroSession : public IHISession
 		bool HandleCommandBoxChar (char chChar, DWORD dwKeyData);
 		bool HandleChar (char chChar, DWORD dwKeyData);
 		void OnPOVSet (CSpaceObject *pObj);
-		void Paint (CG32bitImage &Screen, bool bTopMost);
+		void Paint (CG32bitImage &ScreenFG, CG32bitImage &ScreenBG, bool bTopMost);
 		void SetExpanded (bool bExpanded = true);
 		void SetState (EStates iState);
 		void StartSoundtrackTitleAnimation (CMusicResource *pTrack);

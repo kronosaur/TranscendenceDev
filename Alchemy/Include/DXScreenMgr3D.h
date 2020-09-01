@@ -42,6 +42,8 @@ class CDXScreen
 		bool CreateLayer (const SDXLayerCreate &Create, int *retiLayerID, CString *retsError = NULL);
 		void DebugOutputStats (void);
 		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return ((!IsReady() || m_bDeviceLost || iLayerID < 0 || iLayerID >= m_Layers.GetCount()) ? CG32bitImage::Null() : m_Layers[iLayerID].BackBuffer); }
+		inline CG32bitImage &GetLayerBufferBG (int iLayerID) { return IsUsingOpenGL() ? ((!IsReady() || m_bDeviceLost || iLayerID < 0 || iLayerID >= m_Layers.GetCount()) ? CG32bitImage::Null() : m_Layers[iLayerID].BackBuffer) : GetLayerBuffer(iLayerID); }
+		inline CG32bitImage &GetLayerBufferFG (int iLayerID) { return IsUsingOpenGL() ? ((!IsReady() || m_bDeviceLost || iLayerID < 0 || iLayerID >= m_Layers.GetCount()) ? CG32bitImage::Null() : m_Layers[iLayerID].FrontBuffer) : GetLayerBuffer(iLayerID); }
 		bool Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CString *retsError = NULL);
 		inline bool IsReady (void) const { return (m_bUseGDI || m_pD3DDevice || m_pOGLContext); }
 		inline bool IsUsingDirectX (void) const { return (!m_bUseGDI && !m_bUseOpenGL); }
@@ -108,7 +110,8 @@ class CDXScreen
 		OpenGLContext *m_pOGLContext;		//  OpenGL context
 		D3DPRESENT_PARAMETERS m_Present;	//	Present parameters
 		D3DCAPS9 m_DeviceCaps;				//	Device caps for current device
-		OpenGLTexture *m_pOpenGLTexture;    //  OpenGL texture for game layer
+		OpenGLTexture *m_pOpenGLTextureBG;    //  OpenGL texture for game layer background
+		OpenGLTexture *m_pOpenGLTextureFG;    //  OpenGL texture for game layer foreground
 
 		int m_cxTarget;						//	Width of target surface (usually the screen)
 		int m_cyTarget;						//	Height of target surface
@@ -165,6 +168,9 @@ class CScreenMgr3D
 		inline int GetHeight (void) const { return m_cyScreen; }
 		inline bool GetInvalidRect (RECT *retrcRect) { retrcRect->left = 0; retrcRect->top = 0; retrcRect->right = m_cxScreen; retrcRect->bottom = m_cyScreen; return true; }
 		inline CG32bitImage &GetScreen (void) { return m_DX.GetLayerBuffer(m_iDefaultLayer); }
+		inline CG32bitImage &GetScreenBG (void) { return m_DX.GetLayerBufferBG(m_iDefaultLayer); }
+		inline CG32bitImage &GetScreenFG (void) { return m_DX.GetLayerBufferFG(m_iDefaultLayer); }
+		bool GetIsUsingOpenGL (void) { return m_DX.IsUsingOpenGL(); }
 		inline int GetWidth (void) const { return m_cxScreen; }
 		void GlobalToLocal (int x, int y, int *retx, int *rety) const;
 		ALERROR Init (SScreenMgrOptions &Options, CString *retsError);

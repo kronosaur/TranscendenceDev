@@ -356,7 +356,7 @@ void CTranscendenceWnd::PaintMainScreenBorder (CG32bitPixel rgbColor)
 //	than the main screen (larger than 1024x768)
 
 	{
-	CG32bitImage &TheScreen = g_pHI->GetScreen();
+	CG32bitImage &TheScreen = g_pHI->GetScreenFG();
 
 	if (m_rcMainScreen.left != m_rcScreen.left)
 		{
@@ -406,7 +406,7 @@ void CTranscendenceWnd::PaintSRSSnow (void)
 //	Fills the screen with snow
 
 	{
-	CG32bitImage &TheScreen = g_pHI->GetScreen();
+	CG32bitImage &TheScreen = g_pHI->GetScreenFG();
 
 	PaintSnow(TheScreen, 0, 0, g_cxScreen, g_cyScreen);
 

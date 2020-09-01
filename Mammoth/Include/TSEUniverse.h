@@ -547,7 +547,8 @@ class CUniverse
 
 		void PaintObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
 		void PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
-		void PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags);
+		void PaintPOV (CG32bitImage& Dest, const RECT& rcView, DWORD dwFlags) { PaintPOV(Dest, Dest, rcView, dwFlags); };
+		void PaintPOV (CG32bitImage &DestBG, CG32bitImage& DestFG, const RECT &rcView, DWORD dwFlags);
 		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
 		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale, DWORD dwFlags = 0);
 		void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }

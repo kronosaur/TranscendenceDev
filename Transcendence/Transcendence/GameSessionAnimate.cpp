@@ -7,8 +7,9 @@
 #include "Transcendence.h"
 
 const CG32bitPixel BAR_COLOR = CG32bitPixel(0, 2, 10);
-
-void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
+// TODO: Modify with FG and BG screens. If identical, then should have same behaviour as now.
+// Replace existing function with FG/BG screen, and modify calls to call with single FG/BG
+void CGameSession::OnAnimate (CG32bitImage &ScreenFG, CG32bitImage &ScreenBG, bool bTopMost)
 
 //  OnAnimate
 //
@@ -44,7 +45,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				//	Paint the main image
 
-				PaintSRS(Screen);
+				PaintSRS(ScreenFG, ScreenBG);
 
 				//	Paint various displays
 
@@ -54,29 +55,29 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				if (!m_bShowingSystemMap || bShowMapHUD)
 					{
                     m_HUD.Update(g_pUniverse->GetFrameTicks());
-                    m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
+                    m_HUD.Paint(ScreenFG, g_pUniverse->GetFrameTicks());
 
 					SetProgramState(psPaintingDeviceDisplay);
-					g_pTrans->m_DeviceDisplay.Paint(Screen);
+					g_pTrans->m_DeviceDisplay.Paint(ScreenFG);
 					}
 
 				if (!m_bShowingSystemMap && g_pTrans->m_State != CTranscendenceWnd::gsDestroyed)
 					{
 					m_Narrative.Update(g_pUniverse->GetFrameTicks());
-					m_Narrative.Paint(Screen, g_pUniverse->GetFrameTicks());
+					m_Narrative.Paint(ScreenFG, g_pUniverse->GetFrameTicks());
 					}
 
 				if (!IsInPickerCompatible())
 					{
 					SetProgramState(psPaintingMessageDisplay);
-					m_MessageDisplay.Paint(Screen);
+					m_MessageDisplay.Paint(ScreenFG);
 					}
 
 				SetProgramState(psAnimating);
 
-				m_IconBar.Paint(Screen, g_pUniverse->GetFrameTicks());
-				PaintMenu(Screen);
-				m_DebugConsole.Paint(Screen);
+				m_IconBar.Paint(ScreenFG, g_pUniverse->GetFrameTicks());
+				PaintMenu(ScreenFG);
+				m_DebugConsole.Paint(ScreenFG);
 
 				//	If we're in a HUD menu, run quarter speed
 
@@ -95,13 +96,13 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 #ifdef DEBUG
 				g_pTrans->PaintDebugLines();
 #endif
-				g_pTrans->m_pTC->PaintDebugInfo(Screen, m_rcScreen);
+				g_pTrans->m_pTC->PaintDebugInfo(ScreenFG, m_rcScreen);
 
 				//	Paint soundtrack info
 
 				if (m_Settings.GetBoolean(CGameSettings::debugSoundtrack)
 						&& !m_bShowingSystemMap)
-					PaintSoundtrackTitles(Screen);
+					PaintSoundtrackTitles(ScreenFG);
 
                 //  Paint the mouse cursor, if necessary
 
@@ -116,13 +117,13 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
                         int xCenter = m_rcScreen.left + RectWidth(m_rcScreen) / 2;
                         int yCenter = m_rcScreen.top + RectHeight(m_rcScreen) / 2;
                         iMouseAimAngle = ::VectorToPolar(CVector(xMouse - xCenter, yCenter - yMouse));
-                        CPaintHelper::PaintArrow(Screen, xMouse, yMouse, iMouseAimAngle, g_pHI->GetVisuals().GetColor(colorTextHighlight));
+                        CPaintHelper::PaintArrow(ScreenFG, xMouse, yMouse, iMouseAimAngle, g_pHI->GetVisuals().GetColor(colorTextHighlight));
 
 						if (g_pUniverse->GetDebugOptions().IsShowFacingsAngleEnabled())
 							{
 							const CG16bitFont &DebugFont = m_HI.GetVisuals().GetFont(fontMedium);
 							CString sDebugText = strPatternSubst(CONSTLIT("Aim: %d"), iMouseAimAngle);
-							CPaintHelper::PaintArrowText(Screen, xMouse, yMouse, iMouseAimAngle, sDebugText, DebugFont, g_pHI->GetVisuals().GetColor(colorTextHighlight));
+							CPaintHelper::PaintArrowText(ScreenFG, xMouse, yMouse, iMouseAimAngle, sDebugText, DebugFont, g_pHI->GetVisuals().GetColor(colorTextHighlight));
 							}
                         }
                     else
@@ -232,11 +233,11 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				if (bShowSRS)
 					{
-					PaintSRS(Screen);
-					Screen.Fill(CG32bitPixel(0, 0, 0, 0x80));
+					PaintSRS(ScreenFG, ScreenBG);
+					ScreenFG.Fill(CG32bitPixel(0, 0, 0, 0x80));
 					}
 
-				g_pTrans->m_pCurrentScreen->Paint(Screen);
+				g_pTrans->m_pCurrentScreen->Paint(ScreenFG);
 				g_pTrans->m_pCurrentScreen->Update();
 
 				if (!bShowSRS)
@@ -245,11 +246,11 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
                 //  Paint displays
 
                 m_HUD.Update(g_pUniverse->GetFrameTicks());
-                m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks(), true);
+                m_HUD.Paint(ScreenFG, g_pUniverse->GetFrameTicks(), true);
 
 				//	Debug console
 
-				m_DebugConsole.Paint(Screen);
+				m_DebugConsole.Paint(ScreenFG);
 
 				//	Update the screen
 
@@ -282,13 +283,13 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				{
 				//	Tell the universe to paint
 
-				g_pUniverse->PaintPOV(Screen, m_rcScreen, 0);
+				g_pUniverse->PaintPOV(ScreenBG, ScreenFG, m_rcScreen, 0);
 
                 m_HUD.Update(g_pUniverse->GetFrameTicks());
-                m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
+                m_HUD.Paint(ScreenFG, g_pUniverse->GetFrameTicks());
 
-				m_MessageDisplay.Paint(Screen);
-				g_pTrans->m_DeviceDisplay.Paint(Screen);
+				m_MessageDisplay.Paint(ScreenFG);
+				g_pTrans->m_DeviceDisplay.Paint(ScreenFG);
 
 				//	Debug information
 
@@ -298,7 +299,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 #ifdef DEBUG
 				g_pTrans->PaintDebugLines();
 #endif
-				g_pTrans->m_pTC->PaintDebugInfo(Screen, m_rcScreen);
+				g_pTrans->m_pTC->PaintDebugInfo(ScreenFG, m_rcScreen);
 
 				//	Update the screen
 
@@ -326,15 +327,15 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 					if (g_pTrans->m_pStargateEffect == NULL)
 						g_pTrans->m_pStargateEffect = new CStargateEffectPainter;
 
-					g_pTrans->m_pStargateEffect->Paint(Screen, m_rcScreen);
+					g_pTrans->m_pStargateEffect->Paint(ScreenFG, m_rcScreen);
 					g_pTrans->m_pStargateEffect->Update();
 					}
 				else
 					{
-					Screen.Fill(m_rcScreen.left, m_rcScreen.top, RectWidth(m_rcScreen), RectHeight(m_rcScreen), BAR_COLOR);
+					ScreenFG.Fill(m_rcScreen.left, m_rcScreen.top, RectWidth(m_rcScreen), RectHeight(m_rcScreen), BAR_COLOR);
 					}
 
-				g_pTrans->m_pTC->PaintDebugInfo(Screen, m_rcScreen);
+				g_pTrans->m_pTC->PaintDebugInfo(ScreenFG, m_rcScreen);
 
 				if (bTopMost)
 					g_pHI->GetScreenMgr().Render();
@@ -345,13 +346,13 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				{
 				//	Tell the universe to paint
 
-				g_pUniverse->PaintPOV(Screen, m_rcScreen, 0);
+				g_pUniverse->PaintPOV(ScreenBG, ScreenFG, m_rcScreen, 0);
 
                 m_HUD.Update(g_pUniverse->GetFrameTicks());
-                m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
+                m_HUD.Paint(ScreenFG, g_pUniverse->GetFrameTicks());
 
-				m_MessageDisplay.Paint(Screen);
-				g_pTrans->m_DeviceDisplay.Paint(Screen);
+				m_MessageDisplay.Paint(ScreenFG);
+				g_pTrans->m_DeviceDisplay.Paint(ScreenFG);
 
 				//	Debug information
 
@@ -361,7 +362,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 #ifdef DEBUG
 				g_pTrans->PaintDebugLines();
 #endif
-				g_pTrans->m_pTC->PaintDebugInfo(Screen, m_rcScreen);
+				g_pTrans->m_pTC->PaintDebugInfo(ScreenFG, m_rcScreen);
 
 				//	Update the screen
 
@@ -449,7 +450,7 @@ void CGameSession::PaintMenu (CG32bitImage &Screen)
 		}
 	}
 
-void CGameSession::PaintSRS (CG32bitImage &Screen)
+void CGameSession::PaintSRS (CG32bitImage &ScreenFG, CG32bitImage &ScreenBG)
 
 //	PaintSRS
 //
@@ -481,20 +482,20 @@ void CGameSession::PaintSRS (CG32bitImage &Screen)
 
 	if (m_iDamageFlash > 0 && (m_iDamageFlash % 2) == 0)
 		{
-		Screen.Set(CG32bitPixel(128,0,0));
+		ScreenBG.Set(CG32bitPixel(128,0,0));
 		if (pShip && pShip->GetSystem())
 			{
 			if (m_bShowingSystemMap)
-				g_pUniverse->PaintObjectMap(Screen, g_pTrans->m_rcMainScreen, pShip);
+				g_pUniverse->PaintObjectMap(ScreenBG, g_pTrans->m_rcMainScreen, pShip);
 			else
-				g_pUniverse->PaintObject(Screen, g_pTrans->m_rcMainScreen, pShip);
+				g_pUniverse->PaintObject(ScreenBG, g_pTrans->m_rcMainScreen, pShip);
 			}
 		}
 
 	//	Otherwise, if we're in map mode, paint the map
 
 	else if (m_bShowingSystemMap)
-        m_SystemMap.Paint(Screen);
+        m_SystemMap.Paint(ScreenBG);
 
 	//	Otherwise, if we're blind, paint scramble
 
@@ -507,7 +508,7 @@ void CGameSession::PaintSRS (CG32bitImage &Screen)
 	else
 		{
 		SetProgramState(psPaintingSRS, g_pUniverse->GetPOV());
-		g_pUniverse->PaintPOV(Screen, m_rcScreen, dwViewportFlags);
+		g_pUniverse->PaintPOV(ScreenBG, ScreenFG, m_rcScreen, dwViewportFlags);
 		SetProgramState(psAnimating);
 		}
 

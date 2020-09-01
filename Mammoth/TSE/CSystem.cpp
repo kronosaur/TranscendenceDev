@@ -3075,7 +3075,8 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest
 	DEBUG_CATCH
 	}
 
-void CSystem::PaintViewport (CG32bitImage &Dest, 
+void CSystem::PaintViewport (CG32bitImage &DestBG,
+							 CG32bitImage &DestFG,
 							 const RECT &rcView, 
 							 CSpaceObject *pCenter, 
 							 DWORD dwFlags, 
@@ -3084,6 +3085,8 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 //	PaintViewport
 //
 //	Paints the system in the viewport
+//  DestBG contains the background behind the OpenGL objects as well as all OpenGL objects, while DestFG
+//  contains all UI elements to be drawn on top of OpenGL objects
 
 	{
 	DEBUG_TRY
@@ -3094,7 +3097,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 
 	SViewportPaintCtx Ctx;
 	CalcViewportCtx(Ctx, rcView, pCenter, dwFlags);
-	Dest.SetClipRect(rcView);
+	DestBG.SetClipRect(rcView);
 
 	//	Keep track of the player object because sometimes we do special processing
 
@@ -3142,7 +3145,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	MainLayer[layerEffects] = &MainEffects;
 	MainLayer[layerOverhang] = &MainOverhang;
 
-	auto pOpenGLRenderQueue = Dest.GetMasterRenderQueue();
+	auto pOpenGLRenderQueue = DestBG.GetMasterRenderQueue();
 
 	//	Add all objects to one of the above layers, as appropriate.
 
@@ -3212,23 +3215,23 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Paint space background
 
 	CUsePerformanceCounter PaintSpaceTimer(m_Universe, CONSTLIT("paint.spaceBackground"));
-	m_SpacePainter.PaintSpaceBackground(Dest, GetType(), Ctx);
+	m_SpacePainter.PaintSpaceBackground(DestBG, GetType(), Ctx);
 
 	//	Paint background objects - this can involve OpenGL, since this is an object painter
 	if (pOpenGLRenderQueue) {
 		pOpenGLRenderQueue->setActiveRenderLayer(0);
 	}
-	ParallaxBackground.Paint(Dest, Ctx);
+	ParallaxBackground.Paint(DestBG, Ctx);
 
 	//	Paint starshine
 
-	m_SpacePainter.PaintStarshine(Dest, GetType(), Ctx);
+	m_SpacePainter.PaintStarshine(DestBG, GetType(), Ctx);
 	PaintSpaceTimer.StopCounter();
 
 	//	Paint any space environment (e.g., nebulae) - CPU
 
 	if (m_pEnvironment)
-		m_pEnvironment->Paint(Ctx, Dest);
+		m_pEnvironment->Paint(Ctx, DestBG);
 
 	//	Paint all the objects by layer, use OpenGL for these
 	//  We should organize the render queue to render one layer at a time
@@ -3237,33 +3240,35 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 		if (pOpenGLRenderQueue) {
 			pOpenGLRenderQueue->setActiveRenderLayer(1 + i);
 		}
-		MainLayer[i]->Paint(Dest, Ctx);
+		MainLayer[i]->Paint(DestBG, Ctx);
 	}
 
 	//	Paint all joints - this is a simple line draw; we can leave this in CPU or move to OpenGL (prefer OpenGL so we have three phases that all use OpenGL)
 
-	m_Joints.Paint(Dest, Ctx);
+	m_Joints.Paint(DestBG, Ctx);
 
 	//	Paint foreground objects, use OpenGL for these (since this is an object painter)
 	if (pOpenGLRenderQueue) {
 		pOpenGLRenderQueue->setActiveRenderLayer(1 + layerCount);
 	}
-	ParallaxForeground.Paint(Dest, Ctx);
+	ParallaxForeground.Paint(DestBG, Ctx);
 
 	//	Paint all the enhanced display markers - CPU
 
-	EnhancedDisplay.Paint(Dest, Ctx);
+	EnhancedDisplay.Paint(DestFG, Ctx);
 
 	//	Let the POV paint any other enhanced displays - CPU
 
-	pCenter->PaintSRSEnhancements(Dest, Ctx);
+	pCenter->PaintSRSEnhancements(DestFG, Ctx);
 	if (pAnnotations)
-		PaintViewportAnnotations(Dest, *pAnnotations, Ctx);
+		PaintViewportAnnotations(DestFG, *pAnnotations, Ctx);
 
 	//	Done
 
-	Dest.ResetClipRect();
-	Dest.SetCurrentTickForShaders(GetUniverse().GetTicks());
+	DestBG.ResetClipRect();
+	DestFG.ResetClipRect();
+
+	DestBG.SetCurrentTickForShaders(GetUniverse().GetTicks());
 
 	DEBUG_CATCH
 	}

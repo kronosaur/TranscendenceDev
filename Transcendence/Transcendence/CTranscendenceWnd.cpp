@@ -193,7 +193,7 @@ void CTranscendenceWnd::PaintDebugLines (void)
 //	Paint debug output
 
 	{
-	CG32bitImage &TheScreen = g_pHI->GetScreen();
+	CG32bitImage &TheScreen = g_pHI->GetScreenFG();
 
 #ifdef DEBUG
 	int iLine = m_iDebugLinesStart;
@@ -221,7 +221,7 @@ void CTranscendenceWnd::PaintFrameRate (void)
 	DEBUG_TRY
 
 	int i;
-	CG32bitImage &TheScreen = g_pHI->GetScreen();
+	CG32bitImage &TheScreen = g_pHI->GetScreenFG();
 
 	if (m_iStartAnimation == 0)
 		m_iStartAnimation = GetTickCount();

@@ -997,7 +997,7 @@ bool CIntroSession::HandleChar (char chChar, DWORD dwKeyData)
 	return true;
 	}
 
-void CIntroSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
+void CIntroSession::OnAnimate (CG32bitImage& ScreenFG, CG32bitImage& ScreenBG, bool bTopMost)
 
 //	OnAnimate
 //
@@ -1018,7 +1018,7 @@ void CIntroSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 		//	Paint
 
-		Paint(Screen, bTopMost);
+		Paint(ScreenFG, ScreenBG, bTopMost);
 		Update();
 
 		SetProgramState(psUnknown);
@@ -1413,7 +1413,7 @@ void CIntroSession::OrderAttack (CShip *pShip, CSpaceObject *pTarget)
 		pController->AddOrder(IShipController::orderDestroyTarget, pTarget, IShipController::SData());
 	}
 
-void CIntroSession::Paint (CG32bitImage &Screen, bool bTopMost)
+void CIntroSession::Paint (CG32bitImage &ScreenFG, CG32bitImage &ScreenBG, bool bTopMost)
 
 //	Paint
 //
@@ -1430,22 +1430,22 @@ void CIntroSession::Paint (CG32bitImage &Screen, bool bTopMost)
 
 	//	Tell the universe to paint
 
-	g_pUniverse->PaintPOV(Screen, m_rcMain, 0);
+	g_pUniverse->PaintPOV(ScreenBG, ScreenFG, m_rcMain, 0);
 
 	//	Paint displays
 
 	g_pTrans->m_ButtonBarDisplay.Update();
-	g_pTrans->m_ButtonBarDisplay.Paint(Screen);
+	g_pTrans->m_ButtonBarDisplay.Paint(ScreenFG);
 
 	//	Paint a frame around viewscreen
 
-	Screen.FillLine(m_rcMain.left, m_rcMain.top - 1, RectWidth(m_rcMain), RGB_FRAME);
-	Screen.FillLine(m_rcMain.left, m_rcMain.bottom, RectWidth(m_rcMain), RGB_FRAME);
-	Screen.Fill(0, 0, RectWidth(m_rcMain), m_rcMain.top - 1, rgbBackgroundColor);
+	ScreenFG.FillLine(m_rcMain.left, m_rcMain.top - 1, RectWidth(m_rcMain), RGB_FRAME);
+	ScreenFG.FillLine(m_rcMain.left, m_rcMain.bottom, RectWidth(m_rcMain), RGB_FRAME);
+	ScreenFG.Fill(0, 0, RectWidth(m_rcMain), m_rcMain.top - 1, rgbBackgroundColor);
 
 	//	Paint reanimator
 
-	Reanimator.PaintFrame(Screen);
+	Reanimator.PaintFrame(ScreenFG);
 
 	//	Paint based on state
 
@@ -1460,14 +1460,14 @@ void CIntroSession::Paint (CG32bitImage &Screen, bool bTopMost)
 			int cxWidth = Max(300, g_pTrans->m_Fonts.SubTitle.MeasureText(g_pTrans->m_sCommand, &cyHeight));
 
 			CG32bitPixel rgbBorderColor = CG32bitPixel::Blend(CG32bitPixel(0, 0, 0), g_pTrans->m_Fonts.rgbTitleColor, (BYTE)128);
-			CGDraw::RectOutlineDotted(Screen, 
+			CGDraw::RectOutlineDotted(ScreenFG,
 					xMidCenter - cxWidth / 2 - 2, 
 					yMidCenter - 2, 
 					cxWidth + 4, 
 					cyHeight + 4, 
 					rgbBorderColor);
 
-			g_pTrans->m_Fonts.SubTitle.DrawText(Screen,
+			g_pTrans->m_Fonts.SubTitle.DrawText(ScreenFG,
 					xMidCenter,
 					yMidCenter,
 					g_pTrans->m_Fonts.rgbTitleColor,
@@ -1494,11 +1494,11 @@ void CIntroSession::Paint (CG32bitImage &Screen, bool bTopMost)
 #ifdef DEBUG
 	g_pTrans->PaintDebugLines();
 #endif
-	g_pTrans->m_pTC->PaintDebugInfo(Screen, m_rcMain);
+	g_pTrans->m_pTC->PaintDebugInfo(ScreenFG, m_rcMain);
 
 	//	Debug console
 
-	m_DebugConsole.Paint(Screen);
+	m_DebugConsole.Paint(ScreenFG);
 
 	//	Update the screen
 

@@ -54,7 +54,7 @@ class CGameSession : public IHISession
 
 		virtual CReanimator &GetReanimator (void) override { return g_pTrans->GetReanimator(); }
 		virtual void OnActivate (void) override;
-		virtual void OnAnimate (CG32bitImage &Screen, bool bTopMost) override;
+		virtual void OnAnimate (CG32bitImage &ScreenFG, CG32bitImage &ScreenBG, bool bTopMost) override;
 		virtual void OnChar (char chChar, DWORD dwKeyData) override;
 		virtual void OnCleanUp (void);
 		virtual ALERROR OnCommand (const CString &sCmd, void *pData = NULL) override;
@@ -121,7 +121,7 @@ class CGameSession : public IHISession
 		bool IsMouseAimConfigured (void) const;
 
 		void PaintMenu (CG32bitImage &Screen);
-		void PaintSRS (CG32bitImage &Screen);
+		void PaintSRS (CG32bitImage &ScreenFG, CG32bitImage &ScreenBG);
 		void SetMouseAimEnabled (bool bEnabled = true);
 		bool ShowMenu (EMenuTypes iMenu);
 		void SyncMouseToPlayerShip (void);
