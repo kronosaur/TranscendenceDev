@@ -1957,6 +1957,7 @@
 	<!ENTITY unidBlackMarketMember		"0x0010020C">
 	<!ENTITY dsBlackMarketBoss			"0x0010020D">
 	<!ENTITY rsBlackMarketInsignia		"0x0010020E">
+	<!ENTITY rsBlackMarketStation		"0x0010020F">
 
 	<!-- 0210-022F PENITENTS -->
 	
