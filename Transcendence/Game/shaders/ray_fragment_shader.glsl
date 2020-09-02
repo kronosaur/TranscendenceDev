@@ -68,11 +68,12 @@ int widthAdjCone = 6;
 int widthAdjWhiptail = 7;
 int widthAdjSword = 8;
 
-// Copy of EOpacityTypes enum from SFXRay.cpp
+// Copy of EOpacityTypes enum from SFXRay.cpp (except for opacityFlareGlow)
 int opacityGlow = 1;
 int opacityGrainy = 2;
 int opacityTaperedGlow = 3;
 int opacityTaperedExponentialGlow = 4;
+int opacityFlareGlow = -1;
 
 
 //  Classic Perlin 3D Noise 
@@ -304,6 +305,16 @@ float calcOpacityTaperedExponentialGlow(float rWidthCount, float rIntensity, flo
     return (useSolid * taperComponent * taperComponent) + (useNonSolid * outerGlow);
 }
 
+float calcOpacityFlareGlow(float distanceFromCenter_w, float coordinate_l)
+{
+    const float BLOOM_FACTOR = 1.2;
+    float rDist = (1.0 - abs(distanceFromCenter_w));
+    float rSpread = (1.0 - abs(coordinate_l));
+    float rValue = BLOOM_FACTOR * (rDist * rDist) * (rSpread * rSpread);
+    float byOpacity = min(1.0, rValue);
+    return (byOpacity);
+}
+
 float sampleNoiseFBM(vec3 sampler) {
     return texture(perlin_noise, vec3(sampler[0], sampler[1], sampler[2]))[0];
 }
@@ -330,6 +341,7 @@ vec4 calcRayColor(float taperAdjTop, float taperAdjBottom, float widthAdjTop, fl
     float limitTop = taperAdjTop * widthAdjTop;
     float limitBottom = taperAdjBottom * widthAdjBottom;
 
+    // Note we don't use distanceFromCenter in pixelInUpper/LowerBounds since distanceFromCenter is abs, but we can't use abs there
     bool pixelInUpperBounds = ((real_texcoord[1] - center_point) < limitTop) && ((real_texcoord[1] - center_point) > 0);
     bool pixelInLowerBounds = ((real_texcoord[1] - center_point) > (-limitBottom)) && ((real_texcoord[1] - center_point) <= 0);
     float pixelWithinBounds = float(pixelInUpperBounds || pixelInLowerBounds);
@@ -339,16 +351,20 @@ vec4 calcRayColor(float taperAdjTop, float taperAdjBottom, float widthAdjTop, fl
     float bottomOpacityTaperedGlow = calcOpacityTaperedGlow(limitBottom, intensity, distanceFromCenter, real_texcoord[0]);
     float topOpacityTaperedExponentialGlow = calcOpacityTaperedExponentialGlow(limitTop, intensity, distanceFromCenter, real_texcoord[0]);
     float bottomOpacityTaperedExponentialGlow = calcOpacityTaperedExponentialGlow(limitBottom, intensity, distanceFromCenter, real_texcoord[0]);
+    float topOpacityFlareGlow = calcOpacityFlareGlow(distanceFromCenter, real_texcoord[0]);
+    float bottomOpacityFlareGlow = calcOpacityFlareGlow(distanceFromCenter, real_texcoord[0]);
 
     float topOpacity = (
         (topOpacityGlow * float(rayOpacity == opacityGlow)) +
         (topOpacityTaperedGlow * float(rayOpacity == opacityTaperedGlow)) +
-        (topOpacityTaperedExponentialGlow * float(rayOpacity == opacityTaperedExponentialGlow))
+        (topOpacityTaperedExponentialGlow * float(rayOpacity == opacityTaperedExponentialGlow)) +
+        (topOpacityFlareGlow * float(rayOpacity == opacityFlareGlow))
     ) * opacityAdj;
     float bottomOpacity = (
         (bottomOpacityGlow * float(rayOpacity == opacityGlow)) +
         (bottomOpacityTaperedGlow * float(rayOpacity == opacityTaperedGlow)) +
-        (bottomOpacityTaperedExponentialGlow * float(rayOpacity == opacityTaperedExponentialGlow))
+        (bottomOpacityTaperedExponentialGlow * float(rayOpacity == opacityTaperedExponentialGlow)) +
+        (bottomOpacityFlareGlow * float(rayOpacity == opacityFlareGlow))
     ) * opacityAdj;
     vec4 colorGlowTop = vec4(calcColorGlow(primaryColor, secondaryColor, limitTop, intensity, distanceFromCenter), topOpacity) * float(pixelInUpperBounds);
     vec4 colorGlowBottom = vec4(calcColorGlow(primaryColor, secondaryColor, limitBottom, intensity, distanceFromCenter), bottomOpacity) * float(pixelInLowerBounds);
@@ -902,9 +918,10 @@ vec4 calcAnimationColor(float animatedNoise, float scaledNoise, float orbRadius)
     float animateFadeOpacity = opacityAdj;
     float animateFadeSecondaryOpacity = orbSecondaryOpacity;
     
-    float animateFlickerMultiplier = max(0.5, min(1.0 + (0.25 * sampleNoisePerlin(vec3(0.0, 0.0, current_tick / 30.0))), 2.0));
-    float animateFlickerRadius = orbRadius * animateFlickerMultiplier;
-    float animateFlickerIntensity = intensity * animateFlickerMultiplier;
+	// Note that for flicker we just use the orb radius and intensity we're given. This is because those variables are
+	// supplied on the CPU end.
+    float animateFlickerRadius = orbRadius;
+    float animateFlickerIntensity = intensity;
     animateFlickerIntensity = (float(orbStyle == styleFireblast) * (min(max(animateFlickerIntensity, 0.0), 100.0))) + (float(orbStyle != styleFireblast) * animateFlickerIntensity);
     vec3 animateFlickerPrimaryColor = primaryColor;
     float animateFlickerDetail = orbDetail;

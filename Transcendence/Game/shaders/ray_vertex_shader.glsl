@@ -53,6 +53,7 @@ layout (location = 21) flat out int orbCurrFrame;
 layout (location = 22) flat out int blendMode;
 
 // This should match enum effectType in opengl.h.
+// Note that flares are under the ray category.
 
 int effectTypeRay = 0;
 int effectTypeLightning = 1;

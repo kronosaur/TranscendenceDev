@@ -1083,8 +1083,27 @@ void COrbEffectPainter::CompositeFlareRay (CG32bitImage &Dest, int xCenter, int 
 
     //  Paint the line
 
-    CFlareRayRasterizer<CGBlendComposite> Flare;
-    Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
+	OpenGLMasterRenderQueue* pRenderQueue = Dest.GetMasterRenderQueue();
+	if (pRenderQueue) {
+		int xDest, yDest;
+		IntPolarToVector(iAngle, iLength, &xDest, &yDest);
+		int iDistX = xDest;
+		int iDistY = yDest;
+		int iCanvasHeight = Dest.GetHeight();
+		int iCanvasWidth = Dest.GetWidth();
+
+		float iDist = sqrt(float(iDistX * iDistX) + float(iDistY * iDistY));
+		int iPosX = xCenter + ((iDistX) / 2);
+		int iPosY = yCenter + ((iDistY) / 2);
+		std::tuple<int, int, int> primaryColor(int(m_rgbPrimaryColor.GetRed()), int(m_rgbPrimaryColor.GetGreen()), int(m_rgbPrimaryColor.GetBlue()));
+		std::tuple<int, int, int> secondaryColor(0, 0, 0);
+		pRenderQueue->addRayToEffectRenderQueue(iPosX, iPosY, iLength, iWidth, iCanvasWidth, iCanvasHeight, float(-iAngle + 180) * (float(PI) / 180.0f), 0, -1,
+			0, 0, 0, primaryColor, secondaryColor, iIntensity, 0.0, 255, OpenGLRenderLayer::blendNormal);
+	}
+	else {
+		CFlareRayRasterizer<CGBlendComposite> Flare;
+		Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
+	}
 	}
 
 void COrbEffectPainter::CompositeFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)
@@ -1244,13 +1263,15 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 		}
 
 	//	Paint
-	// TODO: Implement in shader form!!
 	OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
 	if (pRenderQueue) {
+		int iRadiusFlicker = m_FlareDesc[iTick % m_FlareDesc.GetCount()].iLength / FLARE_MULITPLE;
+		int iRadius = m_iAnimation == animateFlicker ? iRadiusFlicker : m_iRadius;
+		float fFlickerMultiplier = m_iAnimation == animateFlicker ? float(iRadiusFlicker) / float(m_iRadius) : 1.0f;
 		pRenderQueue->addOrbToEffectRenderQueue(
-			x, y, m_iRadius * 2, m_iRadius * 2, Dest.GetWidth(), Dest.GetHeight(),
+			x, y, iRadius * 2, iRadius * 2, Dest.GetWidth(), Dest.GetHeight(),
 			0.0,
-			float(m_iIntensity),
+			float(m_iIntensity) * fFlickerMultiplier,
 			float(m_byOpacity / 255.0),
 			m_iAnimation,
 			m_iStyle,
@@ -1392,8 +1413,22 @@ void COrbEffectPainter::PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCen
 
     //  Paint the line
 
-    CFlareRayRasterizer<CGBlendBlend> Flare;
-    Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
+	OpenGLMasterRenderQueue* pRenderQueue = Dest.GetMasterRenderQueue();
+	if (pRenderQueue) {
+		int xDest, yDest;
+		IntPolarToVector(iAngle, iLength, &xDest, &yDest);
+		int iCanvasHeight = Dest.GetHeight();
+		int iCanvasWidth = Dest.GetWidth();
+
+
+		std::tuple<int, int, int> primaryColor(255, 255, 255);
+		std::tuple<int, int, int> secondaryColor(255, 255, 255);
+		pRenderQueue->addRayToEffectRenderQueue(xCenter, yCenter, iLength * 2, iWidth * 2, iCanvasWidth, iCanvasHeight, float(-iAngle + 180) * (float(PI) / 180.0f), 0, -1,
+			0, 0, 0, primaryColor, secondaryColor, iIntensity, 0.0, 255, OpenGLRenderLayer::blendMode(m_iBlendMode));
+	} else {
+		CFlareRayRasterizer<CGBlendBlend> Flare;
+		Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
+	}
 	}
 
 void COrbEffectPainter::PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)
