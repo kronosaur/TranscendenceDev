@@ -575,14 +575,14 @@ vec4 calcSmoothColorBase(float fRadius, float fIntensity, vec3 vPrimaryColor, ve
     
     
     // Secondary color in fade radius
-    bool useFadeRadius = (pixelsDistanceFromCenter < fRadius && (pixelsDistanceFromCenter >= fFringeMaxRadius || fFringeWidth <= 0.0) && fFadeWidth > 0.0);
+    bool useFadeRadius = (pixelsDistanceFromCenter < (fFringeMaxRadius + fFadeWidth) && (pixelsDistanceFromCenter >= fFringeMaxRadius || fFringeWidth <= 0.0) && fFadeWidth > 0.0);
     float fadeOpacityStep = (pixelsDistanceFromCenter - fFringeMaxRadius);
     float fadeOpacity = 1.0 - (fadeOpacityStep / fFadeWidth);
     fadeOpacity = (fadeOpacity * fadeOpacity) * fOpacity;
     vec4 fadeRadiusColor = float(useFadeRadius) * vec4(vSecondaryColor, fadeOpacity);
     
     // Black otherwise
-    bool useBlackRadius = (pixelsDistanceFromCenter > fRadius);
+    bool useBlackRadius = (pixelsDistanceFromCenter > fRadius) || (pixelsDistanceFromCenter >= (fFringeMaxRadius + fFadeWidth));
     vec4 blackRadiusColor = float(useBlackRadius) * vec4(0.0);
     
     return (blownRadiusColor + fringeRadiusColor + fadeRadiusColor + blackRadiusColor);
@@ -919,7 +919,7 @@ vec4 calcAnimationColor(float animatedNoise, float scaledNoise, float orbRadius)
     float animateFadeSecondaryOpacity = orbSecondaryOpacity;
     
 	// Note that for flicker we just use the orb radius and intensity we're given. This is because those variables are
-	// supplied on the CPU end.
+	// supplied on the CPU end, so we can sync the flickering and flare effects.
     float animateFlickerRadius = orbRadius;
     float animateFlickerIntensity = intensity;
     animateFlickerIntensity = (float(orbStyle == styleFireblast) * (min(max(animateFlickerIntensity, 0.0), 100.0))) + (float(orbStyle != styleFireblast) * animateFlickerIntensity);
