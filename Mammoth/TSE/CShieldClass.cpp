@@ -209,7 +209,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 		//	Adjust for tech level
 
-		int iWeaponLevel = Ctx.pDesc->GetLevel();
+		int iWeaponLevel = Ctx.GetDesc().GetLevel();
 		int iShieldLevel = (pDevice ? pDevice->GetLevel() : 1);
 		rPenetrate *= pow(1.5, (iWeaponLevel - iShieldLevel));
 
@@ -263,7 +263,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	//
 	//	Ctx.iDamage (if we skip further processing)
 
-	if (Ctx.pDesc->FireOnDamageShields(Ctx, pDevice->GetDeviceSlot()))
+	if (Ctx.GetDesc().FireOnDamageShields(Ctx, pDevice->GetDeviceSlot()))
 		return (Ctx.iDamage == 0);
 
 	FireOnShieldDamage(ItemCtx, Ctx);

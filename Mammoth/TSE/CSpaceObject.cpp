@@ -2956,7 +2956,7 @@ void CSpaceObject::FireOnMining (const SDamageCtx &Ctx, EAsteroidType iType)
 	CCX.DefineDouble(CONSTLIT("aYieldAdj"), MiningStats.rYieldAdj);
 	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
 	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
 
 	ICCItemPtr pResult = CCX.RunCode(Event);
 	if (pResult->IsError())
@@ -4970,6 +4970,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 											  Metric rMinThreshold, 
 											  Metric rMaxThreshold, 
 											  const DamageDesc &Damage, 
+											  const CSpaceObject *pTarget,
 											  CVector *retvHitPos, 
 											  int *retiHitDir)
 
@@ -5036,8 +5037,8 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 		bool bCanTriggerDetonation = (pObj->GetScale() == scaleShip
 					|| pObj->GetScale() == scaleStructure)
-				&& IsAngryAt(pObj)
-				&& pObj->CanBeAttacked();
+				&& IsAngryAt(pObj) 
+				&& (pObj->CanBeAttacked() || pObj == pTarget);
 
 		//	Compute the size of the object, if we're doing proximity computations
 
@@ -6211,6 +6212,12 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &So
 	{
 	DEBUG_TRY
 
+	if (!pObj || !pDesc)
+		{
+		ASSERT(false);
+		return false;
+		}
+
 	//	If we have a source...
 
 	if (Source.HasSource())
@@ -6240,7 +6247,7 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &So
 				&& pDesc->CanHit(pObj)
 
 				//	We cannot hit our friends (if our source can't)
-				&& ((CanHitFriends() && Source.CanHitFriends() && pObj->CanBeHitByFriends()) || !Source.IsFriend(pObj->GetSovereign()))
+				&& ((CanHitFriends() && Source.CanHitFriends() && pObj->CanBeHitByFriends()) || Source.IsAngryAt(*pObj))
 
 				//	If our source is the player, then we cannot hit player wingmen
 

@@ -517,7 +517,7 @@ class IDeviceGenerator
 class CInstalledDevice
 	{
 	public:
-		CInstalledDevice (void);
+		CInstalledDevice (void) { }
 
 		operator CDeviceItem () const { return GetDeviceItem(); }
 
@@ -584,6 +584,7 @@ class CInstalledDevice
 		bool IsLastActivateSuccessful (void) const { return m_fLastActivateSuccessful; }
 		bool IsOmniDirectional (void) const { return (m_fOmniDirectional ? true : false); }
 		bool IsOnSegment (void) const { return (m_fOnSegment ? true : false); }
+		bool IsOnUsedLastAmmoFlagSet (void) const { return (m_fOnUsedLastAmmo ? true : false); }
 		bool IsOptimized (void) const { return m_fOptimized; }
 		bool IsOverdrive (void) const { return m_fOverdrive; }
 		bool IsReady (void) const { return (m_iTimeUntilReady == 0); }
@@ -608,6 +609,7 @@ class CInstalledDevice
 		void SetLastActivateSuccessful (bool bSuccessful) { m_fLastActivateSuccessful = bSuccessful; }
 		void SetLinkedFireOptions (DWORD dwOptions);
 		void SetOmniDirectional (bool bOmnidirectional = true) { m_fOmniDirectional = bOmnidirectional; }
+		void SetOnUsedLastAmmoFlag (bool bValue = true) { m_fOnUsedLastAmmo = bValue; }
 		void SetOptimized (bool bOptimized) { m_fOptimized = bOptimized; }
 		void SetOverdrive (bool bOverdrive) { m_fOverdrive = bOverdrive; }
 		void SetOverlay (COverlay *pOverlay) { m_pOverlay = pOverlay; }
@@ -702,66 +704,67 @@ class CInstalledDevice
 	private:
 		const CItemEnhancement &GetMods (void) const { return (m_pItem ? m_pItem->GetMods() : CItem::GetNullMod()); }
 
-		CString m_sID;							//	ID for this slot (may match ID in class slot desc)
-		CSpaceObject *m_pSource = NULL;			//	Installed on this object
-		CItem *m_pItem = NULL;					//	Item installed in this slot
-		CDeviceClassRef m_pClass;				//	The device class that is installed here
-		COverlay *m_pOverlay = NULL;			//	Overlay (if associated)
-		DWORD m_dwTargetID;						//	ObjID of target (for tracking secondary weapons)
-		CEnhancementDesc m_SlotEnhancements;	//	Enhancements conferred by the slot
+		CString m_sID;								//	ID for this slot (may match ID in class slot desc)
+		CSpaceObject *m_pSource = NULL;				//	Installed on this object
+		CItem *m_pItem = NULL;						//	Item installed in this slot
+		CDeviceClassRef m_pClass;					//	The device class that is installed here
+		COverlay *m_pOverlay = NULL;				//	Overlay (if associated)
+		DWORD m_dwTargetID = 0;						//	ObjID of target (for tracking secondary weapons)
+		CEnhancementDesc m_SlotEnhancements;		//	Enhancements conferred by the slot
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	List of enhancements (may be NULL)
-		TArray<DWORD> m_LastShotIDs;			//	ObjID of last shots (only for continuous beams)
+		TArray<DWORD> m_LastShotIDs;				//	ObjID of last shots (only for continuous beams)
 
-		DWORD m_dwData;							//	Data specific to device class
+		DWORD m_dwData = 0;							//	Data specific to device class
 
-		int m_iDeviceSlot:16;					//	Device slot
+		int m_iDeviceSlot:16 = -1;					//	Device slot
 
-		int m_iPosAngle:16;						//	Position of installation (degrees)
-		int m_iPosRadius:16;					//	Position of installation (pixels)
-		int m_iPosZ:16;							//	Position of installation (height)
-		int m_iMinFireArc:16;					//	Min angle of fire arc (degrees)
-		int m_iMaxFireArc:16;					//	Max angle of fire arc (degrees)
+		int m_iPosAngle:16 = 0;						//	Position of installation (degrees)
+		int m_iPosRadius:16 = 0;					//	Position of installation (pixels)
+		int m_iPosZ:16 = 0;							//	Position of installation (height)
+		int m_iMinFireArc:16 = 0;					//	Min angle of fire arc (degrees)
+		int m_iMaxFireArc:16 = 0;					//	Max angle of fire arc (degrees)
 
-		int m_iShotSeparationScale:16;			//	Scaled by 32767. Governs scaling of shot separation for dual etc weapons
-		int m_iMaxFireRange:16;					//	Max effective fire range (in light-seconds); 0 = no limit
+		int m_iShotSeparationScale:16 = 32767;		//	Scaled by 32767. Governs scaling of shot separation for dual etc weapons
+		int m_iMaxFireRange:16 = 0;					//	Max effective fire range (in light-seconds); 0 = no limit
 
-		int m_iTimeUntilReady:16;				//	Timer counting down until ready to activate
-		int m_iFireAngle:16;					//	Last fire angle
+		int m_iTimeUntilReady:16 = 0;				//	Timer counting down until ready to activate
+		int m_iFireAngle:16 = 0;					//	Last fire angle
 
-		int m_iTemperature:16;					//	Temperature for weapons
-		int m_iActivateDelay:16;				//	Cached activation delay
-		int m_iExtraPowerUse:16;				//	Additional power use per tick
-		int m_iSlotPosIndex:16;					//	Slot placement
+		int m_iTemperature:16 = 0;					//	Temperature for weapons
+		int m_iActivateDelay:16 = 0;				//	Cached activation delay
+		int m_iExtraPowerUse:16 = 0;				//	Additional power use per tick
+		int m_iSlotPosIndex:16 = -1;				//	Slot placement
 
-		DWORD m_fOmniDirectional:1;				//	Installed on turret
-		DWORD m_fOverdrive:1;					//	Device has overdrive installed
-		DWORD m_fOptimized:1;					//	Device is optimized by alien engineers
-		DWORD m_fSecondaryWeapon:1;				//	Secondary weapon
-		DWORD m_fEnabled:1;						//	Device is enabled
-		DWORD m_fExternal:1;					//	Device is external to hull
-		mutable DWORD m_fWaiting:1;				//	Waiting for cooldown, etc.
-		DWORD m_fTriggered:1;					//	Device trigger is down (e.g., weapon is firing)
+		DWORD m_fOmniDirectional:1 = false;			//	Installed on turret
+		DWORD m_fOverdrive:1 = false;				//	Device has overdrive installed
+		DWORD m_fOptimized:1 = false;				//	Device is optimized by alien engineers
+		DWORD m_fSecondaryWeapon:1 = false;			//	Secondary weapon
+		DWORD m_fEnabled:1 = false;					//	Device is enabled
+		DWORD m_fExternal:1 = false;				//	Device is external to hull
+		mutable DWORD m_fWaiting:1 = false;			//	Waiting for cooldown, etc.
+		DWORD m_fTriggered:1 = false;				//	Device trigger is down (e.g., weapon is firing)
 
-		DWORD m_fRegenerating:1;				//	TRUE if we regenerated on the last tick
-		DWORD m_fLastActivateSuccessful:1;		//	TRUE if we successfully fired (last time we tried)
-		DWORD m_f3DPosition:1;					//	If TRUE we use m_iPosZ to compute position
-		DWORD m_fLinkedFireAlways:1;			//	If TRUE, lkfAlways
-		DWORD m_fLinkedFireTarget:1;			//	If TRUE, lkfTarget
-		DWORD m_fLinkedFireEnemy:1;				//	If TRUE, lkfEnemy
-		DWORD m_fDuplicate:1;					//	If TRUE, we have multiple version of the same item type installed
-		DWORD m_fCannotBeEmpty:1;				//	If TRUE, slot must always have a device
+		DWORD m_fRegenerating:1 = false;			//	TRUE if we regenerated on the last tick
+		DWORD m_fLastActivateSuccessful:1 = false;	//	TRUE if we successfully fired (last time we tried)
+		DWORD m_f3DPosition:1 = false;				//	If TRUE we use m_iPosZ to compute position
+		DWORD m_fLinkedFireAlways:1 = false;		//	If TRUE, lkfAlways
+		DWORD m_fLinkedFireTarget:1 = false;		//	If TRUE, lkfTarget
+		DWORD m_fLinkedFireEnemy:1 = false;			//	If TRUE, lkfEnemy
+		DWORD m_fDuplicate:1 = false;				//	If TRUE, we have multiple version of the same item type installed
+		DWORD m_fCannotBeEmpty:1 = false;			//	If TRUE, slot must always have a device
 
-		DWORD m_fFateSurvives:1;				//	Always survives when ship destroyed
-		DWORD m_fFateDamaged:1;					//	Always damaged when ship destroyed
-		DWORD m_fFateDestroyed:1;				//	Always destroyed when ship destroyed
-		DWORD m_fFateComponetized:1;			//	Always break into components when ship destroyed
-		DWORD m_fLinkedFireSelected : 1;		//	If TRUE, lkfSelected
-		DWORD m_fLinkedFireNever : 1;			//	If TRUE, lkfNever
-		DWORD m_fLinkedFireSelectedVariants : 1;//  If TRUE, lkfSelectedVariant
-		DWORD m_fCycleFire :1;					//	If TRUE, then cycle fire through weapons of same type and linked fire settings
+		DWORD m_fFateSurvives:1 = false;			//	Always survives when ship destroyed
+		DWORD m_fFateDamaged:1 = false;				//	Always damaged when ship destroyed
+		DWORD m_fFateDestroyed:1 = false;			//	Always destroyed when ship destroyed
+		DWORD m_fFateComponetized:1 = false;		//	Always break into components when ship destroyed
+		DWORD m_fLinkedFireSelected:1 = false;		//	If TRUE, lkfSelected
+		DWORD m_fLinkedFireNever:1 = false;			//	If TRUE, lkfNever
+		DWORD m_fLinkedFireSelectedVariants:1 = false;//  If TRUE, lkfSelectedVariant
+		DWORD m_fCycleFire:1 = false;				//	If TRUE, then cycle fire through weapons of same type and linked fire settings
 
-		DWORD m_fCanTargetMissiles:1;			//	If TRUE, then this weapon can fire at hostile missiles as well as ships
-		DWORD m_fOnSegment:1;					//	If TRUE, then device logically belongs to the segment specified by m_sID.
+		DWORD m_fCanTargetMissiles:1 = false;		//	If TRUE, then this weapon can fire at hostile missiles as well as ships
+		DWORD m_fOnSegment:1 = false;				//	If TRUE, then device logically belongs to the segment specified by m_sID.
+		DWORD m_fOnUsedLastAmmo:1 = false;			//	If TRUE, remember the send statusUsedLastAmmo when done firing
 
-		DWORD m_dwSpare2:6;
+		DWORD m_dwSpare2:5;
 	};

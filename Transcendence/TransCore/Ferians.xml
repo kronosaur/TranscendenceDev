@@ -702,6 +702,19 @@
 				(block (
 					(storageObj (objGetObjByID (objGetData gSource 'storageID)))
 					(rewardValue (@ gData 'value))
+
+					;	Pick three random ore types
+
+					(oreList (list (sysGetRandomOreType) (sysGetRandomOreType) (sysGetRandomOreType)))
+
+					;	Choose the highest priced one (to minimize the amount
+					;	that the player has to carry).
+
+					(bestOreType 
+						(map oreList '(reduceMax original) theOreType
+							(itmGetPrice theOreType 'rin)
+							)
+						)
 					)
 					;	Create a storage object, if necessary
 
@@ -714,7 +727,7 @@
 
 					;	Add ore to storage appropriate to the system
 
-					(objAddItemByValue storageObj (itmCreate (sysGetRandomOreType) 1) rewardValue 'credit)
+					(objAddItemByValue storageObj (itmCreate bestOreType 1) rewardValue 'credit)
 
 					;	Return data appropriate for a mission to navigate to the
 					;	loot screen.

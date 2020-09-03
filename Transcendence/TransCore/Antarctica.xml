@@ -130,7 +130,7 @@
 			
 			<!-- Some upgrades for sale -->
 			
-			<RandomItem count="1d3" criteria="r +commonwealth; -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<RandomItem count="1d3" criteria="r +commonwealth; -defective; -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
 			<Lookup count="8-12" table="&tbCommonwealthFleetItems;"/>
 		</Items>
 

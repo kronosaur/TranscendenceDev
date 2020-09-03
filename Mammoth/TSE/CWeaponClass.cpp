@@ -1236,6 +1236,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 				{
 				if (Targets.GetCount() == 0)
 					return CShotArray();
+				break;
 				}
 
 			default:
@@ -1326,11 +1327,27 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 			//	If necessary, we recompute the fire angle
 
-			if (retpTarget && (retiFireAngle == -1 || m_bBurstTracksTargets))
+			if (retiFireAngle == -1 || m_bBurstTracksTargets)
 				{
-				CItemCtx ItemCtx(&Source, &Device);
-				Metric rSpeed = ShotDesc.GetInitialSpeed();
-				retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
+				if (retpTarget)
+					{
+					CItemCtx ItemCtx(&Source, &Device);
+					Metric rSpeed = ShotDesc.GetInitialSpeed();
+					retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
+					}
+				else
+					{
+					//  Reacquire target if we can do so
+
+					if (ShotDesc.CanAutoTarget())
+						{
+						retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
+						if (!retpTarget)
+							retiFireAngle = -1;
+						}
+					else
+						retiFireAngle = -1;
+					}
 				}
 			else if (!retpTarget && (retiFireAngle == -1 || m_bBurstTracksTargets))
 				{
@@ -1381,10 +1398,13 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 					{
 					CItemCtx ItemCtx(&Source, &Device);
 					Metric rSpeed = ShotDesc.GetInitialSpeed();
-					retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
+					retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget, &retbSetFireAngle);
 					}
 				else
+					{
 					retiFireAngle = -1;
+					retbSetFireAngle = false;
+					}
 
 				break;
 				}
@@ -1395,16 +1415,15 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 				if (retpTarget == NULL)
 					return false;
 
+				//	Remember the fire angle for future bursts.
+
+				retbSetFireAngle = true;
 				break;
 				}
 
 			default:
 				return false;
 			}
-
-		//	Remember the fire angle for future bursts.
-
-		retbSetFireAngle = true;
 		}
 
 	//	Fire!
@@ -1651,7 +1670,18 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 	//	Switch to the next variant if necessary
 
 	if (bNextVariant)
-		pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
+		{
+		//	For repeating weapons, we set a flag and switch variants only after
+		//	we've shot the last projectile.
+
+		if (GetContinuous(ShotDesc) > 0)
+			pDevice->SetOnUsedLastAmmoFlag(true);
+
+		//	Otherwise, switch now.
+
+		else
+			pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
+		}
 
 	//	Success!
 
@@ -1936,7 +1966,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_RANGE))
 		*retsValue = strFromInt(mathRound(pShot->GetMaxRange() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_RECOIL))
-		*retsValue = (m_iRecoil ? strFromInt(mathRound(m_iRecoil * m_iRecoil * 10.0 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
+		*retsValue = (m_iRecoil ? strFromInt(mathRound((Metric)m_iRecoil * m_iRecoil * 10.0 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
 	else if (strEquals(sField, FIELD_SPEED))
 		*retsValue = strFromInt(mathRound(100.0 * pShot->GetRatedSpeed() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_VARIANT_COUNT))
@@ -2288,6 +2318,10 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 		Device.SetTarget(Shots[0].pTarget);
 		Device.SetFireAngle(iFireAngle);
 		}
+	else if (ActivateCtx.iRepeatingCount == 0)
+		{
+		Device.SetFireAngle(-1);
+		}
 
 	//	Increment polarity, if necessary
 
@@ -2559,7 +2593,8 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 
 		//	See if we have mining capability
 
-		if (pShotDesc->GetDamage().GetMiningDamage() > 0)
+		if (pShotDesc->GetDamage().GetMiningDamage() > 0
+				|| Enhancements.HasSpecialDamage(specialMining))
 			dwTargetTypes |= CTargetList::typeMinable;
 		}
 
@@ -5191,6 +5226,7 @@ void CWeaponClass::SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) c
 	//	want to stop firing the previous missile.
 
 	SetContinuousFire(pDevice, 0);
+	pDevice->SetOnUsedLastAmmoFlag(false);
 
 	//	Set the new variant
 
@@ -5259,7 +5295,10 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 				}
 			}
 		else
+			{
 			SetContinuousFire(pDevice, 0);
+			pDevice->SetOnUsedLastAmmoFlag(false);
+			}
 		}
 	else if (dwContinuous > 0)
 		{
@@ -5287,6 +5326,15 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 		dwContinuous--;
 		SetContinuousFire(pDevice, dwContinuous);
+
+		//	If we've fired the last round, then see if we need to notify the UI
+		//	that we're out of ammo.
+
+		if (dwContinuous == 0 && pDevice->IsOnUsedLastAmmoFlagSet())
+			{
+			pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
+			pDevice->SetOnUsedLastAmmoFlag(false);
+			}
 		}
 	else if (pDevice->HasLastShots()
 			&& (!pDevice->IsTriggered() || pDevice->GetTimeUntilReady() > 1))

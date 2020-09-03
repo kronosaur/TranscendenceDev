@@ -389,7 +389,9 @@ CSpaceObject *CFerianShipAI::FindRandomAsteroid (void)
 		{
 		CSpaceObject *pObj = m_pShip->GetSystem()->GetObject(i);
 
-		if (pObj && pObj->HasAttribute(ATTRIBUTE_ASTEROID))
+		if (pObj
+				&& !pObj->IsOutOfPlaneObj()
+				&& pObj->HasAttribute(ATTRIBUTE_ASTEROID))
 			{
 			CVector vRange = pObj->GetPos() - m_pShip->GetPos();
 			Metric rDistance2 = vRange.Dot(vRange);

@@ -153,18 +153,13 @@ PLAYER DATA
 
 		<!-- Image and Effects -->
 		
-		<Image			imageID="&rsStations3;" imageX="128" imageY="0" imageWidth="128" imageHeight="128"/>
+		<Image			imageID="&rsBlackMarketStation;" imageWidth="230" imageHeight="230" viewportRatio="0.035"/>
 
-		<DockingPorts>
-			<Port x="0"		y="90" />
-			<Port x="0"		y="-90" />
-			<Port x="60"	y="60" />
-			<Port x="60"	y="-60" />
-			<Port x="90"	y="0" />
-			<Port x="-90"	y="0" />
-			<Port x="-60"	y="60" />
-			<Port x="-60"	y="-60" />
-		</DockingPorts>
+		<DockingPorts
+				portAngle=		"15"
+				portCount=		"8"
+				portRadius=		"140"
+				/>
 		
 		<!-- Dock Screen -->
 		
@@ -1163,9 +1158,11 @@ PLAYER DATA
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsMolotokA;"		bitmap="Resources\MolotokA.jpg" bitmask="Resources\MolotokAMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsMolotokAHero;"	bitmap="Resources\MolotokALarge.jpg" bitmask="Resources\MolotokALargeMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsMolotokB;"		bitmap="Resources\MolotokHD.jpg" bitmask="Resources\MolotokHDMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsMolotokBHero;"	bitmap="Resources\MolotokLarge.jpg" bitmask="Resources\MolotokLargeMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsBlackMarketStation;"	bitmap="Resources\BlackMarketStation.jpg" bitmask="Resources\BlackMarketStationMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsMolotokA;"				bitmap="Resources\MolotokA.jpg" bitmask="Resources\MolotokAMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsMolotokAHero;"			bitmap="Resources\MolotokALarge.jpg" bitmask="Resources\MolotokALargeMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsMolotokB;"				bitmap="Resources\MolotokHD.jpg" bitmask="Resources\MolotokHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsMolotokBHero;"			bitmap="Resources\MolotokLarge.jpg" bitmask="Resources\MolotokLargeMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

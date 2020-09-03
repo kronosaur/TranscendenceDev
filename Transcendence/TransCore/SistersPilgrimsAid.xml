@@ -64,6 +64,7 @@
 								(block ()
 									(shpRefuelFromItem gPlayerShip (itmSetCount fuelItem fuelAffordCount))
 									(typInc@ &svSistersOfDomina; 'balance (- affordCost))
+									(typInc@ &svSistersOfDomina; 'pilgrimsAidUsed affordCost)
 
 									(scrSetData gScreen 'message 'descShipRefueled)
 									)
@@ -123,7 +124,7 @@
 												)
 											)
 										)
-										
+									(typInc@ &svSistersOfDomina; 'pilgrimsAidUsed (- (typ@ &svSistersOfDomina; 'balance) balance))
 									(typSet@ &svSistersOfDomina; 'balance balance)
 									(scrSetData gScreen 'message 'descArmorRepaired)
 									)

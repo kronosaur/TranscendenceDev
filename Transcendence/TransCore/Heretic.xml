@@ -328,11 +328,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-10; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-10; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:u|c|crv"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 
@@ -590,17 +590,17 @@
 
 		<Items>
 			<RandomItem count="1d12" 
-					criteria=		"* +Meds; -Illegal; -NotStandard; -NotForSale;"
+					criteria=		"* +Meds; -defective; -Illegal; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ruc|u|r"
 					/>
 
 			<RandomItem count="1d4" 
-					criteria=		"u -NotForSale; -NotStandard;"
+					criteria=		"u -defective; -NotForSale; -NotStandard;"
 					levelFrequency=	"systemLevel:ruc|u|r"
 					/>
 
 			<RandomItem count="2d12" 
-					criteria=		"f -NotForSale; -NotStandard;"
+					criteria=		"f -defective; -NotForSale; -NotStandard;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 

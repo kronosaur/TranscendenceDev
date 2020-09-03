@@ -21,7 +21,8 @@
 -->
 
 	<Type unid="&unidPlayer;"
-			inherit="&unidCommonText;">
+			inherit="&unidCommonText;"
+			>
 		<Events>
 			<GetGlobalAchievements>
 				(block (

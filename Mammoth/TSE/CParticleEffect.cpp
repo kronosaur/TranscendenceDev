@@ -422,7 +422,7 @@ EDamageResults CParticleEffect::OnDamage (SDamageCtx &Ctx)
 
 	//	Create hit effect
 
-	Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+	Ctx.GetDesc().CreateHitEffect(GetSystem(), Ctx);
 
 	return damagePassthrough;
 

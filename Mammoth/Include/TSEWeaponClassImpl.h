@@ -98,7 +98,7 @@ class CWeaponClass : public CDeviceClass
 		virtual ~CWeaponClass (void);
 
 		int CalcBalance (const CItem &Ammo, SBalance &retBalance) const;
-		inline bool FindEventHandlerWeaponClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const
+		bool FindEventHandlerWeaponClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const
 			{
 			if (!m_CachedEvents[iEvent].pCode)
 				return false;
@@ -109,7 +109,7 @@ class CWeaponClass : public CDeviceClass
 
 		CItemType *GetAmmoItem (int iIndex) const;
 		int GetAmmoItemCount (void) const;
-		inline int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
+		int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
 		CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo = CItem()) const;
 
 		static TArray<CTargetList::STargetResult> CalcMIRVFragmentationTargets (CSpaceObject &Source, const CWeaponFireDesc &ShotDesc, int iMaxCount);
@@ -279,18 +279,18 @@ class CWeaponClass : public CDeviceClass
 		int GetSelectVariantCount (void) const;
 		bool HasAmmoLeft (CItemCtx &ItemCtx, const CWeaponFireDesc *pShot) const;
 		ALERROR InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType);
-		inline bool IsCapacitorEnabled (void) { return (m_Counter == cntCapacitor); }
-		inline bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
-		inline bool IsLauncher (void) const { return (m_iVariantType == varLauncher); }
-		inline bool IsLauncherWithAmmo (void) const { return (IsLauncher() && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
+		bool IsCapacitorEnabled (void) { return (m_Counter == cntCapacitor); }
+		bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
+		bool IsLauncher (void) const { return (m_iVariantType == varLauncher); }
+		bool IsLauncherWithAmmo (void) const { return (IsLauncher() && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
 		bool IsMIRV (const CWeaponFireDesc &ShotDesc) const { return (m_bMIRV || ShotDesc.IsMIRV()); }
 		bool IsSinglePointOrigin (void) const { return m_Configuration.IsSinglePointOrigin(); }
-		inline bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
+		bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
 		bool IsTargetReachable (const CInstalledDevice &Device, CSpaceObject &Target, int iDefaultFireAngle = -1, int *retiFireAngle = NULL) const;
 		bool IsTracking (const CDeviceItem &DeviceItem, const CWeaponFireDesc *pShot) const;
 		bool UpdateShipCounter(CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc);
 		bool UpdateTemperature (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed);
-		inline bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
+		bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
 		bool VariantIsValid (const CSpaceObject *pSource, const CInstalledDevice *pDevice, const CWeaponFireDesc &ShotData) const;
 
 		int GetAlternatingPos (const CInstalledDevice *pDevice) const;

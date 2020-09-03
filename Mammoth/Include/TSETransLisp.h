@@ -243,14 +243,13 @@ class CAttributeDataBlock
 
 		CAttributeDataBlock (void);
 		CAttributeDataBlock (const CAttributeDataBlock &Src);
-		CAttributeDataBlock (CAttributeDataBlock &&Src);
+		CAttributeDataBlock (CAttributeDataBlock &&Src) noexcept;
 		CAttributeDataBlock &operator= (const CAttributeDataBlock &Src);
-		CAttributeDataBlock &operator= (CAttributeDataBlock &&Src);
+		CAttributeDataBlock &operator= (CAttributeDataBlock &&Src) noexcept;
 		~CAttributeDataBlock (void);
 
 		void Copy (const CAttributeDataBlock &Src, const TSortMap<CString, STransferDesc> &Options);
 		void DeleteAll (void) { CleanUp(); }
-//		bool FindData (const CString &sAttrib, const CString **retpData = NULL) const;
 		bool FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const;
 		bool FindObjRefData (CSpaceObject *pObj, CString *retsAttrib = NULL) const;
 		ICCItemPtr GetData (int iIndex) const;
@@ -298,5 +297,5 @@ class CAttributeDataBlock
 		void ReadDataEntries (IReadStream *pStream);
 
 		TSortMap<CString, SDataEntry> m_Data;
-		SObjRefEntry *m_pObjRefData;			//	Custom pointers to CSpaceObject *
+		SObjRefEntry *m_pObjRefData = NULL;			//	Custom pointers to CSpaceObject *
 	};

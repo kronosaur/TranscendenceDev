@@ -22,6 +22,7 @@
 			plural="true"
 
 			alignment="constructive chaos"
+			inherit="&unidCommonText;"
 			>
 		<Properties>
 			<Definition id="gainPerPeriod">0.01</Definition>
@@ -30,12 +31,42 @@
 			<Global id="balance">0</Global>
 			<Global id="totalTithe">0</Global>
 			<Global id="investmentGain">0</Global>
+			<Global id="pilgrimsAidUsed">0</Global>
 			
 			<Definition id="contemplateIntervalInSeconds">600</Definition>
 			<Global id="lastContemplateTime"></Global>
 		</Properties>
 
 		<Events>
+			<GetGlobalAchievements>
+				(block (
+					(totalDonations (typ@ gType 'totalTithe))
+					(pilgrimsAidUsed (typ@ gType 'pilgrimsAidUsed))
+					)
+					(append
+						(if (gr totalDonations 0)
+							(list {
+								descID: 'achievement.donations
+								value: (fmtCurrency 'credit totalDonations)
+								sectionID: 'missionsAndActivities
+								})
+							)
+
+						(if (gr pilgrimsAidUsed 0)
+							(list {
+								descID: 'achievement.pilgrimsAidUsed
+								value: (fmtCurrency 'credit pilgrimsAidUsed)
+								sectionID: 'missionsAndActivities
+								})
+							(list {
+								descID: 'achievement.neverUsedPilgrimsAid
+								sectionID: 'conducts
+								})
+							)
+						)
+					)
+			</GetGlobalAchievements>
+
 			<OnGlobalUpdate>
 				(switch
 					(!= (mod (divide (unvGetTick) 30) (typ@ gType 'periodInSeconds)) 0)
@@ -64,6 +95,12 @@
 					)
 			</OnMoneyDonatedToSisters>
 		</Events>
+
+		<Language>
+			<Text id="achievement.donations">Money donated to Sisters of Domina</Text>
+			<Text id="achievement.pilgrimsAidUsed">Pilgrims' Aid Usage</Text>
+			<Text id="achievement.neverUsedPilgrimsAid">Never used Pilgrims' Aid</Text>
+		</Language>
 	</Sovereign>
 	
 <!-- ITEM TYPES -->

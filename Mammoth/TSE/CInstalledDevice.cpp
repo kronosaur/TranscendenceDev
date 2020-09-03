@@ -22,52 +22,6 @@
 #define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
 #define PROPERTY_SHOT_SEPARATION_SCALE			CONSTLIT("shotSeparationScale")
 
-//	CInstalledDevice class
-
-CInstalledDevice::CInstalledDevice (void) : 
-		m_pItem(NULL),
-		m_pOverlay(NULL),
-		m_dwTargetID(0),
-		m_iDeviceSlot(-1),
-		m_iPosAngle(0),
-		m_iPosRadius(0),
-		m_iPosZ(0),
-		m_iMinFireArc(0),
-		m_iMaxFireArc(0),
-		m_iShotSeparationScale(32767),
-		m_iMaxFireRange(0),
-
-		m_iTimeUntilReady(0),
-		m_iFireAngle(0),
-		m_iTemperature(0),
-		m_iActivateDelay(0),
-		m_iExtraPowerUse(0),
-		m_iSlotPosIndex(-1),
-
-		m_fOmniDirectional(false),
-		m_fSecondaryWeapon(false),
-		m_fTriggered(false),
-		m_fLastActivateSuccessful(false),
-		m_f3DPosition(false),
-
-		m_fLinkedFireAlways(false),
-		m_fLinkedFireTarget(false),
-		m_fLinkedFireEnemy(false),
-		m_fDuplicate(false),
-		m_fCannotBeEmpty(false),
-		m_fFateDamaged(false),
-		m_fFateDestroyed(false),
-		m_fFateSurvives(false),
-		m_fFateComponetized(false),
-		m_fLinkedFireSelected(false),
-		m_fLinkedFireNever(false),
-		m_fLinkedFireSelectedVariants(false),
-		m_fCycleFire(false),
-		m_fCanTargetMissiles(false),
-		m_fOnSegment(false)
-	{
-	}
-
 bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const
 
 //	AccumulateSlotEnhancements
@@ -355,6 +309,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 		m_SlotEnhancements.InsertHPBonus(Desc.iSlotBonus);
 
 	m_iSlotPosIndex = -1;
+	m_fOnUsedLastAmmo = false;
 	}
 
 ALERROR CInstalledDevice::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -650,7 +605,6 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 //	CItemEnhancementStack
 
 	{
-	int i;
 	DWORD dwLoad;
 
 	//	ID
@@ -660,7 +614,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 
 	//	Class
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	if (dwLoad == 0xffffffff)
 		return;
 
@@ -669,18 +623,18 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	//	Other data
 
 	if (Ctx.dwVersion >= 66)
-		Ctx.pStream->Read((char *)&m_dwTargetID, sizeof(DWORD));
+		Ctx.pStream->Read(m_dwTargetID);
 
-	Ctx.pStream->Read((char *)&m_dwData, sizeof(DWORD));
+	Ctx.pStream->Read(m_dwData);
 
 	//	Last shots
 
 	if (Ctx.dwVersion >= 139)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_LastShotIDs.InsertEmpty(dwLoad);
-		for (i = 0; i < (int)dwLoad; i++)
-			Ctx.pStream->Read((char *)&m_LastShotIDs[i], sizeof(DWORD));
+		for (int i = 0; i < (int)dwLoad; i++)
+			Ctx.pStream->Read(m_LastShotIDs[i]);
 		}
 
 	//	In 1.08 we changed how we store alternating and repeating counters.
@@ -690,19 +644,19 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 
 	//	Flags
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_iPosAngle = (int)LOWORD(dwLoad);
 	m_iPosRadius = (int)HIWORD(dwLoad);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_iMinFireArc = (int)LOWORD(dwLoad);
 	m_iMaxFireArc = (int)HIWORD(dwLoad);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_iTimeUntilReady = (int)LOWORD(dwLoad);
 	m_iFireAngle = (int)HIWORD(dwLoad);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_iTemperature = (int)HIWORD(dwLoad);
 
 	if (Ctx.dwVersion < 92)
@@ -723,7 +677,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	//	In version 159, we replace slot bonus with extra power variable
 
 	int iSlotBonus = 0;
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 
 	if (Ctx.dwVersion >= 159)
 		m_iExtraPowerUse = (int)LOWORD(dwLoad);
@@ -740,7 +694,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 44)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_iActivateDelay = (int)LOWORD(dwLoad);
 		m_iPosZ = (int)HIWORD(dwLoad);
 		}
@@ -768,7 +722,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 172)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_iShotSeparationScale = (int)LOWORD(dwLoad);
 		m_iMaxFireRange = (int)HIWORD(dwLoad);
 		}
@@ -778,7 +732,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 		m_iMaxFireRange = 0;
 		}
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_fOmniDirectional =	((dwLoad & 0x00000001) ? true : false);
 	m_f3DPosition =			(((dwLoad & 0x00000002) ? true : false) && (Ctx.dwVersion >= 73));
 	m_fFateSurvives =		(((dwLoad & 0x00000004) ? true : false) && (Ctx.dwVersion >= 58));
@@ -807,6 +761,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	m_fCycleFire =		((dwLoad & 0x01000000) ? true : false);
 	m_fCanTargetMissiles =	((dwLoad & 0x02000000) ? true : false);
 	m_fOnSegment =			((dwLoad & 0x04000000) ? true : false);
+	m_fOnUsedLastAmmo =		((dwLoad & 0x08000000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -1376,44 +1331,43 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //	CEnhancementDesc
 
 	{
-	int i;
 	DWORD dwSave;
 
 	m_sID.WriteToStream(pStream);
 
 	dwSave = (m_pClass ? m_pClass->GetUNID() : 0xffffffff);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	if (m_pClass == NULL)
 		return;
 
-	pStream->Write((char *)&m_dwTargetID, sizeof(DWORD));
-	pStream->Write((char *)&m_dwData, sizeof(DWORD));
+	pStream->Write(m_dwTargetID);
+	pStream->Write(m_dwData);
 
 	dwSave = m_LastShotIDs.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	for (i = 0; i < m_LastShotIDs.GetCount(); i++)
-		pStream->Write((char *)&m_LastShotIDs[i], sizeof(DWORD));
+	pStream->Write(dwSave);
+	for (int i = 0; i < m_LastShotIDs.GetCount(); i++)
+		pStream->Write(m_LastShotIDs[i]);
 
 	dwSave = MAKELONG(m_iPosAngle, m_iPosRadius);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	
 	dwSave = MAKELONG(m_iMinFireArc, m_iMaxFireArc);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	
 	dwSave = MAKELONG(m_iTimeUntilReady, m_iFireAngle);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	
 	dwSave = MAKELONG(m_iSlotPosIndex, m_iTemperature);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	dwSave = MAKELONG(m_iExtraPowerUse, m_iDeviceSlot);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	dwSave = MAKELONG(m_iActivateDelay, m_iPosZ);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	dwSave = MAKELONG(m_iShotSeparationScale, m_iMaxFireRange);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	dwSave = 0;
 	dwSave |= (m_fOmniDirectional ?		0x00000001 : 0);
@@ -1443,7 +1397,8 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fCycleFire ?			0x01000000 : 0);
 	dwSave |= (m_fCanTargetMissiles ?	0x02000000 : 0);
 	dwSave |= (m_fOnSegment ?			0x04000000 : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	dwSave |= (m_fOnUsedLastAmmo ?		0x08000000 : 0);
+	pStream->Write(dwSave);
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 

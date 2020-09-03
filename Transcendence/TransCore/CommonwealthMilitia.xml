@@ -281,11 +281,11 @@
 
 		<Items>
 			<RandomItem count="2d10"
-					criteria=		"ad~r L:1-8; +commonwealth; -alien; -illegal; -notForSale; -notStandard; -specialty;"
+					criteria=		"ad~r L:1-8; +commonwealth; -alien; -defective; -illegal; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="1d4"
-					criteria=		"r L:4-8; +commonwealth; -alien; -illegal; -specialty; -notForSale; -notStandard;"
+					criteria=		"r L:4-8; +commonwealth; -alien; -defective; -illegal; -specialty; -notForSale; -notStandard;"
 					levelFrequency="systemLevel:ru|c|curv"
 					/>
 

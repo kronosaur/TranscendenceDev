@@ -212,9 +212,9 @@ struct SDamageCtx
 	{
 	public:
 		static constexpr int DAMAGE_ADJ_HINT_THRESHOLD = 25;
-		static constexpr int WMD_HINT_THRESHOLD = 40;
+		static constexpr int WMD_HINT_THRESHOLD = 60;
 
-		SDamageCtx (void) { }
+		SDamageCtx (void);
 		SDamageCtx (CSpaceObject *pObjHitArg, 
 				CWeaponFireDesc &DescArg, 
 				const CItemEnhancementStack *pEnhancementsArg, 
@@ -229,6 +229,7 @@ struct SDamageCtx
 
 		void ClearTimeStop (void) { m_bTimeStop = false; }
 		int GetBlindTime (void) const { return m_iBlindTime; }
+		CWeaponFireDesc &GetDesc (void) const { return *m_pDesc; }
 		int GetDeviceDisruptTime (void) const { return m_iDisruptTime; }
 		EDamageHint GetHint (void) const { return m_iHint; }
 		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
@@ -248,7 +249,7 @@ struct SDamageCtx
 		void SetDeviceDisrupted (bool bValue = true) { m_bDeviceDisrupt = bValue; }
 		void SetDeviceDisruptedTime (int iTime) { m_iDisruptTime = iTime; }
 		void SetDisintegrated (bool bValue = true) { m_bDisintegrate = bValue; }
-		void SetHint (EDamageHint iHint) { m_iHint = iHint; }
+		void SetHint (EDamageHint iHint);
 		void SetParalyzed (bool bValue = true) { m_bParalyze = bValue; }
 		void SetParalyzedTime (int iTime) { m_iParalyzeTime = iTime; }
 		void SetRadioactive (bool bValue = true) { m_bRadioactive = bValue; }
@@ -257,7 +258,6 @@ struct SDamageCtx
 		void SetTimeStopped (bool bValue = true) { m_bTimeStop = bValue; }
 
 		CSpaceObject *pObj = NULL;					//	Object hit
-		CWeaponFireDesc *pDesc = NULL;				//	WeaponFireDesc
 		DamageDesc Damage;							//	Damage
 		int iDirection = -1;						//	Direction that hit came from
 		CVector vHitPos;							//	Hit at this position
@@ -290,8 +290,11 @@ struct SDamageCtx
 		//  Copying this class is not supported
 
 		SDamageCtx (const SDamageCtx &Src) = delete;
-		SDamageCtx & operator= (const SDamageCtx &Src) = delete;
+		SDamageCtx (SDamageCtx &&Src) = delete;
+		SDamageCtx &operator= (const SDamageCtx &Src) = delete;
+		SDamageCtx &operator= (SDamageCtx &&Src) = delete;
 
+		CWeaponFireDesc *m_pDesc = NULL;			//	WeaponFireDesc (guaranteed non-NULL).
 		EDamageHint m_iHint = EDamageHint::none;	//	Hints to player
 
 		//	Damage effects
@@ -538,10 +541,15 @@ class CWeaponFireDesc
 			CG32bitPixel rgbVaporTrailColor;//	Color of vapor trail
 			};
 
-		CWeaponFireDesc (void);
+		CWeaponFireDesc (void) { }
+		CWeaponFireDesc (const CWeaponFireDesc &Src) = delete;
+		CWeaponFireDesc (CWeaponFireDesc &&Src) = delete;
+
 		~CWeaponFireDesc (void);
 
 		explicit operator bool (void) const { return m_iFireType != ftUnknown; }
+		CWeaponFireDesc &operator= (const CWeaponFireDesc &Src) = delete;
+		CWeaponFireDesc &operator= (CWeaponFireDesc &&Src) = delete;
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		void ApplyAcceleration (CSpaceObject *pMissile) const;
@@ -553,7 +561,7 @@ class CWeaponFireDesc
 		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		IEffectPainter *CreateEffectPainter (SShotCreateCtx &CreateCtx);
 		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir) const;
-		void CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx);
+		void CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx) const;
 		IEffectPainter *CreateParticlePainter (void);
 		IEffectPainter *CreateSecondaryPainter (bool bTrackingObj = false, bool bUseObjectCenter = false);
 		IEffectPainter *CreateShockwavePainter (bool bTrackingObj = false, bool bUseObjectCenter = false);
@@ -574,7 +582,7 @@ class CWeaponFireDesc
 		static CWeaponFireDesc *FindWeaponFireDescFromFullUNID (const CString &sUNID);
 		void FireOnCreateShot (const CDamageSource &Source, CSpaceObject *pShot, CSpaceObject *pTarget);
 		bool FireOnDamageAbandoned (SDamageCtx &Ctx);
-		bool FireOnDamageArmor (SDamageCtx &Ctx);
+		bool FireOnDamageArmor (SDamageCtx &Ctx) const;
 		bool FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay);
 		bool FireOnDamageShields (SDamageCtx &Ctx, int iDevice);
 		bool FireOnFragment (const CDamageSource &Source, CSpaceObject *pShot, const CVector &vHitPos, CSpaceObject *pNearestObj, CSpaceObject *pTarget);
@@ -658,6 +666,7 @@ class CWeaponFireDesc
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource); }
 		bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
+		bool ShowsHint (EDamageHint iHint) const;
 
 		static const CWeaponFireDesc &Null (void) { return m_Null; }
 
@@ -668,11 +677,6 @@ class CWeaponFireDesc
 			SExhaustDesc Exhaust;				//  Exhaust effect
 			SVaporTrailDesc VaporTrail;			//  Vapor trail effect
 			};
-
-		//  Copying this class is not supported
-
-		CWeaponFireDesc (const CWeaponFireDesc &Desc) = delete;
-		CWeaponFireDesc & operator= (const CWeaponFireDesc &Desc) = delete;
 
 		int CalcDefaultHitPoints (void) const;
 		int CalcDefaultInteraction (void) const;
@@ -767,29 +771,29 @@ class CWeaponFireDesc
 		CWeaponFireDesc *m_pScalable = NULL;	//  Array of entries, one per scaled level above base
 
 		//	Flags
-		DWORD m_fVariableInitialSpeed:1;		//	TRUE if initial speed is random
-		DWORD m_fNoFriendlyFire:1;				//	TRUE if we cannot hit our friends
-		DWORD m_fNoWorldHits:1;					//	If TRUE, we never hit worlds (or stars)
-		DWORD m_fNoImmutableHits:1;				//	If TRUE, we never hit immutable objects
-		DWORD m_fNoStationHits:1;				//	If TRUE, we never hit station-scale objects
-		DWORD m_fNoImmobileHits:1;				//	If TRUE, we never hit immobile objects
-		DWORD m_fNoShipHits:1;					//	If TRUE, we never hit ship-scale objects
-		DWORD m_fAutoTarget:1;					//	If TRUE, we can acquire new targets after launch
+		DWORD m_fVariableInitialSpeed:1 = false;	//	TRUE if initial speed is random
+		DWORD m_fNoFriendlyFire:1 = false;		//	TRUE if we cannot hit our friends
+		DWORD m_fNoWorldHits:1 = false;			//	If TRUE, we never hit worlds (or stars)
+		DWORD m_fNoImmutableHits:1 = false;		//	If TRUE, we never hit immutable objects
+		DWORD m_fNoStationHits:1 = false;		//	If TRUE, we never hit station-scale objects
+		DWORD m_fNoImmobileHits:1 = false;		//	If TRUE, we never hit immobile objects
+		DWORD m_fNoShipHits:1 = false;			//	If TRUE, we never hit ship-scale objects
+		DWORD m_fAutoTarget:1 = false;			//	If TRUE, we can acquire new targets after launch
 
-		DWORD m_fCanDamageSource;				//	TRUE if we can damage the source
-		DWORD m_fDirectional:1;					//	True if different images for each direction
-		DWORD m_fFragment:1;					//	True if this is a fragment of a proximity blast
-		DWORD m_fProximityBlast;				//	This is TRUE if we have fragments or if we have
+		DWORD m_fCanDamageSource:1 = false;		//	TRUE if we can damage the source
+		DWORD m_fDirectional:1 = false;			//	True if different images for each direction
+		DWORD m_fFragment:1 = false;			//	True if this is a fragment of a proximity blast
+		DWORD m_fProximityBlast:1 = false;		//	This is TRUE if we have fragments or if we have
 												//		and OnFragment event.
-		DWORD m_fRelativisticSpeed:1;			//	If TRUE, adjust speed to simulate for light-lag
-		DWORD m_fTargetRequired:1;				//	If TRUE, do not fragment unless we have a target
-		DWORD m_fTargetable:1;					//	If TRUE, and type is 'missile', the weaponFire can be shot at by weapons with canTargetMissiles=true
-		DWORD m_fDefaultInteraction:1;			//	If TRUE, compute default interaction at bind-time.
+		DWORD m_fRelativisticSpeed:1 = false;	//	If TRUE, adjust speed to simulate for light-lag
+		DWORD m_fTargetRequired:1 = false;		//	If TRUE, do not fragment unless we have a target
+		DWORD m_fTargetable:1 = false;			//	If TRUE, and type is 'missile', the weaponFire can be shot at by weapons with canTargetMissiles=true
+		DWORD m_fDefaultInteraction:1 = false;	//	If TRUE, compute default interaction at bind-time.
 
-		DWORD m_fDefaultHitPoints:1;			//	If TRUE, computer hit points at bind-time.
-		DWORD m_fMIRV:1;						//	If TRUE, shots require their own target.
-		DWORD m_fSpare3:1;
-		DWORD m_fSpare4:1;
+		DWORD m_fDefaultHitPoints:1 = false;	//	If TRUE, computer hit points at bind-time.
+		DWORD m_fMIRV:1 = false;				//	If TRUE, shots require their own target.
+		DWORD m_fNoWMDHint:1 = false;			//	If TRUE, do not show WMD-needed hint
+		DWORD m_fNoMiningHint:1 = false;		//	If TRUE, do not show mining-needed hint
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;

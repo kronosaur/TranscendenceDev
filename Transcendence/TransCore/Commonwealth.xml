@@ -239,11 +239,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-5; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-5; +commonwealth; -alien; -defective; -Illegal; -Military; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -alien; -defective; -Illegal; -Military; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<Item count="4d12"	item="&itHelium3FuelRod;" />
@@ -467,11 +467,11 @@
 
 		<Items>
 			<RandomItem	count="10" 
-					criteria=		"ad L:1-7; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-7; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<Item count="4d12"	item="&itXenotiteFuelRod;" />
@@ -650,23 +650,23 @@
 		
 		<Items>
 			<RandomItem count="18-25" 
-				criteria=		"a L:1-8; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+				criteria=		"a L:1-8; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="8-10" 
-				criteria=		"scv L:1-7; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+				criteria=		"scv L:1-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="4-6" 
-				criteria=		"r L:3-7; +commonwealth; -illegal; -military; -notForSale; -notStandard;"
+				criteria=		"r L:3-7; +commonwealth; -defective; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
 			<RandomItem count="10-12" 
-				criteria=		"d~scvr L:1-7; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+				criteria=		"d~scvr L:1-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="5-10"
-				criteria=		"u +armorRepair; -illegal; -military; -notForSale; -notStandard;"
+				criteria=		"u +armorRepair; -defective; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
 		</Items>
@@ -801,7 +801,7 @@
 
 		<Items>
 			<RandomItem count="10-20" 
-					criteria=		"* +Meds; -Illegal; -Military; -Alien; -NotStandard; -NotForSale;"
+					criteria=		"* +Meds; -defective; -Illegal; -Military; -Alien; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 		</Items>
@@ -1250,11 +1250,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-8; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-8; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 

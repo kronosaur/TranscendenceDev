@@ -1249,6 +1249,10 @@ void CPlayerShipController::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass
 			DisplayTranslate(CONSTLIT("msgDeviceRepaired"), CONSTLIT("itemName"), sItemName);
 			break;
 
+		case CDeviceClass::statusUsedLastAmmo:
+			OnWeaponStatusChanged();
+			break;
+
 		case CDeviceClass::failDamagedByDisruption:
 			DisplayTranslate(CONSTLIT("msgDeviceDamaged"), CONSTLIT("itemName"), sItemName);
 			break;
@@ -2206,7 +2210,7 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 
 	//	If we have a hint, then show it to the player.
 
-	else if ((iHint = Ctx.GetHint()) != EDamageHint::none && Ctx.Attacker.IsPlayer())
+	if ((iHint = Ctx.GetHint()) != EDamageHint::none && Ctx.Attacker.IsPlayer())
 		{
 		if (m_UIMsgs.ShowMessage(m_Universe, uimsgStationDamageHint, Ctx.pObj))
 			{
@@ -2234,7 +2238,7 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 	//	Remember that we caused damage to this object (but only if it is an 
 	//	enemy station or a capital ship of some sort).
 
-	else if (Ctx.pObj->GetCategory() == CSpaceObject::catStation
+	if (Ctx.pObj->GetCategory() == CSpaceObject::catStation
 				|| Ctx.pObj->IsMultiHull())
 		{
 		if (m_pAutoDamage)
