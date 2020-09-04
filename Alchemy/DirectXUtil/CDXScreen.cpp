@@ -638,8 +638,8 @@ void CDXScreen::Render (void)
 				m_bOpenGLAttached = true;
 				m_pOGLContext->resize(m_cxTarget, m_cyTarget);
 			}
-			::ReleaseDC(m_hWnd, hDC);
 			}
+		::ReleaseDC(m_hWnd, hDC);
 		if (pPixelArrayFG && pPixelArrayBG)
 			{
 			if (m_pOGLContext->pollResize())
