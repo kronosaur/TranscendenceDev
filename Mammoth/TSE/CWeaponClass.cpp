@@ -2297,9 +2297,9 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	//	Set the device angle so that repeating weapons can get access to it.
 
+	Device.SetTarget(Shots[0].pTarget);
 	if (bSetFireAngle)
 		{
-		Device.SetTarget(Shots[0].pTarget);
 		Device.SetFireAngle(iFireAngle);
 		}
 	else if (ActivateCtx.iRepeatingCount == 0)
