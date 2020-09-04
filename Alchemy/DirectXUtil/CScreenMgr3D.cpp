@@ -192,8 +192,8 @@ ALERROR CScreenMgr3D::Init (SScreenMgrOptions &Options, CString *retsError)
 
 	else
 		{
-		m_cxDevice = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
-		m_cyDevice = ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
+		m_cxDevice = ::GetSystemMetrics(SM_CXSCREEN);
+		m_cyDevice = ::GetSystemMetrics(SM_CYSCREEN);
 
 		//	If the screen is bigger than 1920 x 1080, we scale everything
 		//	(because the game is not really well-suited to super high-res.)
