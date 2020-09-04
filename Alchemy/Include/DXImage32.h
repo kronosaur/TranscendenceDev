@@ -135,12 +135,12 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 
 		CG32bitImage (void);
 		CG32bitImage (const CG32bitImage &Src);
-		CG32bitImage (CG32bitImage &&Src) {	TakeHandoff(Src); }
+		CG32bitImage (CG32bitImage &&Src) noexcept { TakeHandoff(Src); }
 
 		~CG32bitImage (void);
 
 		CG32bitImage &operator= (const CG32bitImage &Src);
-		CG32bitImage &operator= (CG32bitImage &&Src) { TakeHandoff(Src); return *this; }
+		CG32bitImage &operator= (CG32bitImage &&Src) noexcept { TakeHandoff(Src); return *this; }
 
 		static CG32bitImage &Null (void) { return m_NullImage; }
 

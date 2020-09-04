@@ -253,7 +253,7 @@ class ICCItemPtr
 
 		ICCItemPtr (const ICCItemPtr &Src);
 
-		ICCItemPtr (ICCItemPtr &&Src) : m_pPtr(Src.m_pPtr)
+		ICCItemPtr (ICCItemPtr &&Src) noexcept : m_pPtr(Src.m_pPtr)
 			{
 			Src.m_pPtr = NULL;
 			}
@@ -261,6 +261,7 @@ class ICCItemPtr
 		~ICCItemPtr (void);
 
 		ICCItemPtr &operator= (const ICCItemPtr &Src);
+		ICCItemPtr &operator= (ICCItemPtr &&Value) noexcept { m_pPtr = Value.m_pPtr; Value.m_pPtr = NULL; return *this; }
 		ICCItemPtr &operator= (ICCItem *pSrc);
 		ICCItemPtr &operator= (const ICCItem &Value);
 		operator ICCItem *() const { return m_pPtr; }
