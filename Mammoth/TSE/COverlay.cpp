@@ -787,32 +787,32 @@ CConditionSet COverlay::GetConditions (CSpaceObject *pSource) const
 	//	Do we disarm the source?
 
 	if (Disarms(pSource))
-		Conditions.Set(CConditionSet::cndDisarmed);
+		Conditions.Set(ECondition::disarmed);
 
 	//	Do we paralyze the source?
 
 	if (Paralyzes(pSource))
-		Conditions.Set(CConditionSet::cndParalyzed);
+		Conditions.Set(ECondition::paralyzed);
 
 	//	Can't bring up ship status
 
 	if (IsShipScreenDisabled())
-		Conditions.Set(CConditionSet::cndShipScreenDisabled);
+		Conditions.Set(ECondition::shipScreenDisabled);
 
 	//	Do we spin the source ?
 
 	if (Spins(pSource))
-		Conditions.Set(CConditionSet::cndSpinning);
+		Conditions.Set(ECondition::spinning);
 
 	//	Drag
 
 	if (GetDrag(pSource) < 1.0)
-		Conditions.Set(CConditionSet::cndDragged);
+		Conditions.Set(ECondition::dragged);
 
 	//	Time-stopped?
 
 	if (StopsTime(pSource))
-		Conditions.Set(CConditionSet::cndTimeStopped);
+		Conditions.Set(ECondition::timeStopped);
 
 	//	Done
 

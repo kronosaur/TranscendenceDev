@@ -528,8 +528,8 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 
 	//	If the ship is disarmed or paralyzed, then we do not fire.
 
-	if (pSource->GetCondition(CConditionSet::cndParalyzed) 
-			|| pSource->GetCondition(CConditionSet::cndDisarmed))
+	if (pSource->GetCondition(ECondition::paralyzed) 
+			|| pSource->GetCondition(ECondition::disarmed))
 		return;
 
 	//	If we're docked with a station, then we do not fire.

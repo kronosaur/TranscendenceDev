@@ -3128,7 +3128,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxWeapons() - iWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
 		}
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
-		return CC.CreateBool(IsImmuneTo(CConditionSet::cndBlind));
+		return CC.CreateBool(IsImmuneTo(ECondition::blind));
 
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE))
 		return CC.CreateInteger(CalcMaxCargoSpace());
@@ -3173,7 +3173,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
         return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
 
 	else if (strEquals(sName, PROPERTY_EMP_IMMUNE))
-		return CC.CreateBool(IsImmuneTo(CConditionSet::cndParalyzed));
+		return CC.CreateBool(IsImmuneTo(ECondition::paralyzed));
 
 	else if (strEquals(sName, PROPERTY_EXIT_GATE_TIMER))
 		return (IsInGate() ? CC.CreateInteger(m_iExitGateTimer) : CC.CreateNil());
@@ -3252,7 +3252,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger((int)GetTradePrice(NULL).GetValue());
 
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
-		return CC.CreateBool(IsImmuneTo(CConditionSet::cndRadioactive));
+		return CC.CreateBool(IsImmuneTo(ECondition::radioactive));
 
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		return CC.CreateInteger(GetRotation());
@@ -4215,7 +4215,7 @@ void CShip::OnBounce (CSpaceObject *pBarrierObj, const CVector &vPos)
 	m_pController->OnHitBarrier(pBarrierObj, vPos);
 	}
 
-void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
+void CShip::OnClearCondition (ECondition iCondition, DWORD dwFlags)
 
 //	OnClearCondition
 //
@@ -4224,7 +4224,7 @@ void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndBlind:
+		case ECondition::blind:
 			{
 			DWORD dwOptions = 0;
 			if (dwFlags & FLAG_NO_MESSAGE)
@@ -4234,11 +4234,11 @@ void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
 			break;
 			}
 
-		case CConditionSet::cndDisarmed:
+		case ECondition::disarmed:
 			m_iDisarmedTimer = 0;
 			break;
 
-		case CConditionSet::cndLRSBlind:
+		case ECondition::LRSBlind:
 			{
 			DWORD dwOptions = 0;
 			if (dwFlags & FLAG_NO_MESSAGE)
@@ -4248,11 +4248,11 @@ void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
 			break;
 			}
 
-		case CConditionSet::cndParalyzed:
+		case ECondition::paralyzed:
 			m_iParalysisTimer = 0;
 			break;
 
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			if (m_fRadioactive)
 				{
 				if (m_pIrradiatedBy)
@@ -4547,7 +4547,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Handle special attacks
 
 	if (Ctx.IsTimeStopped() 
-			&& !IsImmuneTo(CConditionSet::cndTimeStopped)
+			&& !IsImmuneTo(ECondition::timeStopped)
 			&& !IsTimeStopped())
 		{
 		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
@@ -4858,8 +4858,8 @@ void CShip::OnDocked (CSpaceObject *pObj)
 	//	If we've docked with a radioactive object then we become radioactive
 	//	unless our armor is immune
 
-	if (pObj->IsRadioactive() && !IsImmuneTo(CConditionSet::cndRadioactive))
-		SetCondition(CConditionSet::cndRadioactive);
+	if (pObj->IsRadioactive() && !IsImmuneTo(ECondition::radioactive))
+		SetCondition(ECondition::radioactive);
 
 	//	Tell our items that we docked with something
 
@@ -4934,7 +4934,7 @@ bool CShip::OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoin
 	return true;
 	}
 
-bool CShip::OnGetCondition (CConditionSet::ETypes iCondition) const
+bool CShip::OnGetCondition (ECondition iCondition) const
 
 //	OnGetCondition
 //
@@ -4945,22 +4945,22 @@ bool CShip::OnGetCondition (CConditionSet::ETypes iCondition) const
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndBlind:
+		case ECondition::blind:
 			return (m_iBlindnessTimer != 0);
 
-		case CConditionSet::cndDisarmed:
+		case ECondition::disarmed:
 			return (m_iDisarmedTimer != 0);
 
-		case CConditionSet::cndLRSBlind:
+		case ECondition::LRSBlind:
 			return (m_fLRSDisabledByNebula || (m_iLRSBlindnessTimer != 0));
 
-		case CConditionSet::cndParalyzed:
+		case ECondition::paralyzed:
 			return (m_iParalysisTimer != 0);
 
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			return (m_fRadioactive ? true : false);
 
-		case CConditionSet::cndShieldBlocked:
+		case ECondition::shieldBlocked:
 			return m_Perf.HasShieldInterference();
 
 		default:
@@ -5050,7 +5050,7 @@ void CShip::OnHitByDeviceDisruptDamage (DWORD dwDuration)
 		}
 	}
 
-bool CShip::OnIsImmuneTo (CConditionSet::ETypes iCondition) const
+bool CShip::OnIsImmuneTo (ECondition iCondition) const
 
 //	OnIsImmuneTo
 //
@@ -5059,16 +5059,16 @@ bool CShip::OnIsImmuneTo (CConditionSet::ETypes iCondition) const
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndBlind:
+		case ECondition::blind:
 			return m_Armor.IsImmune(specialBlinding);
 
-		case CConditionSet::cndParalyzed:
+		case ECondition::paralyzed:
 			return m_Armor.IsImmune(specialEMP);
 			
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			return m_Armor.IsImmune(specialRadiation);
 			
-		case CConditionSet::cndTimeStopped:
+		case ECondition::timeStopped:
 			return m_pClass->IsTimeStopImmune();
 
 		default:
@@ -5973,7 +5973,7 @@ void CShip::OnRemoved (SDestroyCtx &Ctx)
 		}
 	}
 
-void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
+void CShip::OnSetCondition (ECondition iCondition, int iTimer)
 
 //	OnSetCondition
 //
@@ -5982,11 +5982,11 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndBlind:
+		case ECondition::blind:
 			SetAbility(ablShortRangeScanner, ablDamage, iTimer, 0);
 			break;
 
-		case CConditionSet::cndDisarmed:
+		case ECondition::disarmed:
 			if (m_iDisarmedTimer == 0)
 				{
 				if (iTimer < 0)
@@ -5996,11 +5996,11 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 				}
 			break;
 
-		case CConditionSet::cndLRSBlind:
+		case ECondition::LRSBlind:
 			SetAbility(ablLongRangeScanner, ablDamage, iTimer, 0);
 			break;
 
-		case CConditionSet::cndParalyzed:
+		case ECondition::paralyzed:
 			if (m_iParalysisTimer == 0)
 				{
 				if (iTimer < 0)
@@ -6010,7 +6010,7 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 				}
 			break;
 
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			if (!m_fRadioactive)
 				{
 				if (iTimer < 0)
@@ -6025,7 +6025,7 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 		}
 	}
 
-void CShip::OnSetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETypes iCondition)
+void CShip::OnSetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition)
 
 //	OnSetConditionDueToDamage
 //
@@ -6034,15 +6034,15 @@ void CShip::OnSetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETy
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndBlind:
+		case ECondition::blind:
 			SetCondition(iCondition, DamageCtx.GetBlindTime());
 			break;
 
-		case CConditionSet::cndParalyzed:
+		case ECondition::paralyzed:
 			SetCondition(iCondition, DamageCtx.GetParalyzedTime());
 			break;
 
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			if (!IsRadioactive())
 				{
 				//	Remember the object that hit us so that we can report
@@ -6575,7 +6575,7 @@ void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
 
 			int iSuccess = 50 + 10 * (Program.iAILevel - iTargetLevel);
 			if (mathRandom(1, 100) <= iSuccess)
-				SetCondition(CConditionSet::cndDisarmed, Program.iAILevel * mathRandom(30, 60));
+				SetCondition(ECondition::disarmed, Program.iAILevel * mathRandom(30, 60));
 
 			break;
 			}
@@ -7563,9 +7563,9 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
 		{
 		if (pValue->IsNil())
-			ClearCondition(CConditionSet::cndRadioactive);
+			ClearCondition(ECondition::radioactive);
 		else
-			SetCondition(CConditionSet::cndRadioactive);
+			SetCondition(ECondition::radioactive);
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))

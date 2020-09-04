@@ -1033,7 +1033,7 @@ bool CSpaceObject::CanInstallItem (const CItem &Item, int iSlot, InstallItemResu
 	return false;
 	}
 
-void CSpaceObject::ClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
+void CSpaceObject::ClearCondition (ECondition iCondition, DWORD dwFlags)
 
 //	ClearCondition
 //
@@ -1042,7 +1042,7 @@ void CSpaceObject::ClearCondition (CConditionSet::ETypes iCondition, DWORD dwFla
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndTimeStopped:
+		case ECondition::timeStopped:
 			m_fTimeStop = false;
 			break;
 
@@ -3772,7 +3772,7 @@ int CSpaceObject::GetCommsMessageCount (void)
 		return pHandler->GetCount();
 	}
 
-bool CSpaceObject::GetCondition (CConditionSet::ETypes iCondition) const
+bool CSpaceObject::GetCondition (ECondition iCondition) const
 
 //	GetCondition
 //
@@ -3783,7 +3783,7 @@ bool CSpaceObject::GetCondition (CConditionSet::ETypes iCondition) const
 
 	switch (iCondition)
 		{
-		case CConditionSet::cndTimeStopped:
+		case ECondition::timeStopped:
 			if (m_fTimeStop)
 				return true;
 			break;
@@ -3807,14 +3807,12 @@ CConditionSet CSpaceObject::GetConditions (void) const
 //	Returns the set of all conditions.
 
 	{
-	int i;
-
 	CConditionSet Conditions;
 	DWORD dwFlag = 1;
-	for (i = 0; i < CConditionSet::cndCount; i++)
+	for (int i = 0; i < (int)ECondition::count; i++)
 		{
-		if (GetCondition((CConditionSet::ETypes)dwFlag))
-			Conditions.Set((CConditionSet::ETypes)dwFlag);
+		if (GetCondition((ECondition)dwFlag))
+			Conditions.Set((ECondition)dwFlag);
 
 		dwFlag = dwFlag << 1;
 		}
@@ -6491,7 +6489,7 @@ void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CSpaceObject::SetCondition (CConditionSet::ETypes iCondition, int iTimer)
+void CSpaceObject::SetCondition (ECondition iCondition, int iTimer)
 
 //	SetCondition
 //
@@ -6500,7 +6498,7 @@ void CSpaceObject::SetCondition (CConditionSet::ETypes iCondition, int iTimer)
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndTimeStopped:
+		case ECondition::timeStopped:
 			m_fTimeStop = true;
 			break;
 
@@ -6510,7 +6508,7 @@ void CSpaceObject::SetCondition (CConditionSet::ETypes iCondition, int iTimer)
 		}
 	}
 
-void CSpaceObject::SetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETypes iCondition)
+void CSpaceObject::SetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition)
 
 //	SetConditionDueToDamage
 //

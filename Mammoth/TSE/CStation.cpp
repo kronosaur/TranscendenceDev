@@ -1364,7 +1364,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	//	Make radioactive, if necessary
 
 	if (pType->IsRadioactive())
-		pStation->SetCondition(CConditionSet::cndRadioactive);
+		pStation->SetCondition(ECondition::radioactive);
 
 	//	Add to system (note that we must add the station to the system
 	//	before creating any ships).
@@ -2366,7 +2366,7 @@ bool CStation::IsShownInGalacticMap (void) const
 	return true;
 	}
 
-void CStation::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
+void CStation::OnClearCondition (ECondition iCondition, DWORD dwFlags)
 
 //	OnClearCondition
 //
@@ -2375,7 +2375,7 @@ void CStation::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			m_fRadioactive = false;
 			break;
 		}
@@ -2514,7 +2514,7 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 		{
 		int iChance = 4 * iRadioactive * iRadioactive;
 		if (mathRandom(1, 100) <= iChance)
-			SetCondition(CConditionSet::cndRadioactive);
+			SetCondition(ECondition::radioactive);
 		}
 
 	//	If we have mining damage then call OnMining
@@ -2710,7 +2710,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 	//	Handle special attacks
 
 	if (Ctx.IsTimeStopped() 
-			&& !IsImmuneTo(CConditionSet::cndTimeStopped)
+			&& !IsImmuneTo(ECondition::timeStopped)
 			&& !IsTimeStopped())
 		{
 		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
@@ -2832,7 +2832,7 @@ void CStation::OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *
 		}
 	}
 
-bool CStation::OnGetCondition (CConditionSet::ETypes iCondition) const
+bool CStation::OnGetCondition (ECondition iCondition) const
 
 //	OnGetCondition
 //
@@ -2841,7 +2841,7 @@ bool CStation::OnGetCondition (CConditionSet::ETypes iCondition) const
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			return (m_fRadioactive ? true : false);
 
 		default:
@@ -2849,7 +2849,7 @@ bool CStation::OnGetCondition (CConditionSet::ETypes iCondition) const
 		}
 	}
 
-bool CStation::OnIsImmuneTo (CConditionSet::ETypes iCondition) const
+bool CStation::OnIsImmuneTo (ECondition iCondition) const
 
 //	OnIsImmuneTo
 //
@@ -2858,7 +2858,7 @@ bool CStation::OnIsImmuneTo (CConditionSet::ETypes iCondition) const
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndTimeStopped:
+		case ECondition::timeStopped:
 			return m_pType->IsTimeStopImmune();
 
 		default:
@@ -2902,7 +2902,7 @@ void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
 	m_DockingPorts.MoveAll(this);
 	}
 
-void CStation::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
+void CStation::OnSetCondition (ECondition iCondition, int iTimer)
 
 //	OnSetCondition
 //
@@ -2911,7 +2911,7 @@ void CStation::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			m_fRadioactive = true;
 			break;
 		}
@@ -5469,9 +5469,9 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
 		{
 		if (pValue->IsNil())
-			ClearCondition(CConditionSet::cndRadioactive);
+			ClearCondition(ECondition::radioactive);
 		else
-			SetCondition(CConditionSet::cndRadioactive);
+			SetCondition(ECondition::radioactive);
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))

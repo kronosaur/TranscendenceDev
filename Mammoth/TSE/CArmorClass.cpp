@@ -295,17 +295,17 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	then freeze the ship.
 
 	if (Ctx.IsParalyzed())
-		pSource->SetConditionDueToDamage(Ctx, CConditionSet::cndParalyzed);
+		pSource->SetConditionDueToDamage(Ctx, ECondition::paralyzed);
 
 	//	If this is blinding damage then our sensors are disabled
 
 	if (Ctx.IsBlinded())
-		pSource->SetConditionDueToDamage(Ctx, CConditionSet::cndBlind);
+		pSource->SetConditionDueToDamage(Ctx, ECondition::blind);
 
 	//	If this attack is radioactive, then contaminate the ship
 
 	if (Ctx.IsRadioactive())
-		pSource->SetConditionDueToDamage(Ctx, CConditionSet::cndRadioactive);
+		pSource->SetConditionDueToDamage(Ctx, ECondition::radioactive);
 
 	//	If this is device damage, then see if any device is damaged
 

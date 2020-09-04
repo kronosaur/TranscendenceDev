@@ -146,7 +146,7 @@ bool CPlayerShipController::CanShowShipStatus (void)
 
 	COverlay::SImpactDesc Impact;
 	if (m_pShip->GetOverlayImpact(Impact) 
-			&& Impact.Conditions.IsSet(CConditionSet::cndShipScreenDisabled))
+			&& Impact.Conditions.IsSet(ECondition::shipScreenDisabled))
 		return false;
 
 	//	We're OK
@@ -1340,7 +1340,7 @@ void CPlayerShipController::OnEnterGate (CTopologyNode *pDestNode, const CString
 	g_pTrans->GetModel().OnPlayerEnteredGate(pDestNode, sDestEntryPoint, pStargate);
 	}
 
-void CPlayerShipController::OnOverlayConditionChanged (CConditionSet::ETypes iCondition, CConditionSet::EModifications iChange)
+void CPlayerShipController::OnOverlayConditionChanged (ECondition iCondition, EConditionChange iChange)
 
 //	OnOverlayConditionChanged
 //
@@ -1351,11 +1351,11 @@ void CPlayerShipController::OnOverlayConditionChanged (CConditionSet::ETypes iCo
 		{
 		//	Time stopped
 
-		case CConditionSet::cndTimeStopped:
+		case ECondition::timeStopped:
 			{
 			//	Time stopped
 
-			if (iChange == CConditionSet::cndAdded)
+			if (iChange == EConditionChange::added)
 				DisplayTranslate(CONSTLIT("msgTimeStopped"));
 
 			//	If we're no longer time-stopped

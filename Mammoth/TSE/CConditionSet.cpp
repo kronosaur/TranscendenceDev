@@ -5,20 +5,20 @@
 
 #include "PreComp.h"
 
-static TStaticStringTable<TStaticStringEntry<CConditionSet::ETypes>, CConditionSet::cndCount> CONDITION_TABLE = {
-	"blind",				CConditionSet::cndBlind,
-	"disarmed",				CConditionSet::cndDisarmed,
-	"dragged",				CConditionSet::cndDragged,
-	"lrsBlind",				CConditionSet::cndLRSBlind,
-	"paralyzed",			CConditionSet::cndParalyzed,
-	"radioactive",			CConditionSet::cndRadioactive,
-	"shieldBlocked",		CConditionSet::cndShieldBlocked,
-	"shipScreenDisabled",	CConditionSet::cndShipScreenDisabled,
-	"spinning",				CConditionSet::cndSpinning,
-	"timeStopped",			CConditionSet::cndTimeStopped,
+static TStaticStringTable<TStaticStringEntry<ECondition>, (int)ECondition::count> CONDITION_TABLE = {
+	"blind",				ECondition::blind,
+	"disarmed",				ECondition::disarmed,
+	"dragged",				ECondition::dragged,
+	"lrsBlind",				ECondition::LRSBlind,
+	"paralyzed",			ECondition::paralyzed,
+	"radioactive",			ECondition::radioactive,
+	"shieldBlocked",		ECondition::shieldBlocked,
+	"shipScreenDisabled",	ECondition::shipScreenDisabled,
+	"spinning",				ECondition::spinning,
+	"timeStopped",			ECondition::timeStopped,
 	};
 
-bool CConditionSet::Diff (const CConditionSet &OldSet, TArray<ETypes> &Added, TArray<ETypes> &Removed) const
+bool CConditionSet::Diff (const CConditionSet &OldSet, TArray<ECondition> &Added, TArray<ECondition> &Removed) const
 
 //	Diff
 //
@@ -32,18 +32,18 @@ bool CConditionSet::Diff (const CConditionSet &OldSet, TArray<ETypes> &Added, TA
 		return false;
 
 	DWORD dwFlag = 1;
-	for (i = 0; i < cndCount; i++)
+	for (i = 0; i < (int)ECondition::count; i++)
 		{
 		//	If we have this condition, but the old set does not, then it got
 		//	added.
 
 		if ((m_dwSet & dwFlag) && !(OldSet.m_dwSet & dwFlag))
-			Added.Insert((ETypes)dwFlag);
+			Added.Insert((ECondition)dwFlag);
 
 		//	If the old set had this condition but we don't, it got removed
 
 		else if ((OldSet.m_dwSet & dwFlag) && !(m_dwSet & dwFlag))
-			Removed.Insert((ETypes)dwFlag);
+			Removed.Insert((ECondition)dwFlag);
 
 		//	Next flag
 
@@ -53,7 +53,7 @@ bool CConditionSet::Diff (const CConditionSet &OldSet, TArray<ETypes> &Added, TA
 	return true;
 	}
 
-CConditionSet::ETypes CConditionSet::ParseCondition (const CString &sCondition)
+ECondition CConditionSet::ParseCondition (const CString &sCondition)
 
 //	ParseCondition
 //
@@ -62,7 +62,7 @@ CConditionSet::ETypes CConditionSet::ParseCondition (const CString &sCondition)
 	{
 	auto pEntry = CONDITION_TABLE.GetAt(sCondition);
 	if (pEntry == NULL)
-		return cndNone;
+		return ECondition::none;
 
 	return pEntry->Value;
 	}
@@ -91,7 +91,7 @@ ICCItemPtr CConditionSet::WriteAsCCItem (void) const
 
 	for (int i = 0; i < CONDITION_TABLE.GetCount(); i++)
 		{
-		if (m_dwSet & CONDITION_TABLE[i].Value)
+		if (m_dwSet & (DWORD)CONDITION_TABLE[i].Value)
 			pResult->AppendString(CString(CONDITION_TABLE.GetKey(i)));
 		}
 

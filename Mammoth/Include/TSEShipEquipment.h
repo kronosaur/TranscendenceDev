@@ -7,47 +7,47 @@
 
 //	Conditions -----------------------------------------------------------------
 
+enum class ECondition
+	{
+	none =					0x00000000,
+
+	blind =					0x00000001,		//	SRS-blind
+	paralyzed =				0x00000002,		//	EMP
+	radioactive =			0x00000004,		//	Radioactive
+	disarmed =				0x00000008,		//	Unable to fire weapons
+	dragged =				0x00000010,		//	Subject to drag
+	spinning =				0x00000020,		//	Spinning uncontrollably
+	timeStopped =			0x00000040,		//	Time-stopped
+	shipScreenDisabled =	0x00000080,		//	Source cannot bring up ship screen
+	LRSBlind =				0x00000100,		//	LRS-blind
+	shieldBlocked =			0x00000200,		//	Shields disabled
+
+	count =					10,
+	};
+
+enum class EConditionChange
+	{
+	unknown =				-1,
+
+	added =					0,
+	removed =				1,
+	};
+
 class CConditionSet
 	{
 	public:
-		enum ETypes
-			{
-			cndNone =				0x00000000,
-
-			cndBlind =				0x00000001,		//	SRS-blind
-			cndParalyzed =			0x00000002,		//	EMP
-			cndRadioactive =		0x00000004,		//	Radioactive
-			cndDisarmed =			0x00000008,		//	Unable to fire weapons
-			cndDragged =			0x00000010,		//	Subject to drag
-			cndSpinning =			0x00000020,		//	Spinning uncontrollably
-			cndTimeStopped =		0x00000040,		//	Time-stopped
-			cndShipScreenDisabled =	0x00000080,		//	Source cannot bring up ship screen
-			cndLRSBlind =			0x00000100,		//	LRS-blind
-			cndShieldBlocked =		0x00000200,		//	Shields disabled
-
-			cndCount =				10,
-			};
-
-		enum EModifications
-			{
-			cndModificationUnknown =	-1,
-
-			cndAdded =					0,
-			cndRemoved =				1,
-			};
-
-		void Clear (ETypes iCondition) { m_dwSet &= ~iCondition; }
+		void Clear (ECondition iCondition) { m_dwSet &= ~(DWORD)iCondition; }
 		void ClearAll (void) { m_dwSet = 0; }
-		bool Diff (const CConditionSet &OldSet, TArray<ETypes> &Added, TArray<ETypes> &Removed) const;
+		bool Diff (const CConditionSet &OldSet, TArray<ECondition> &Added, TArray<ECondition> &Removed) const;
 		bool IsEmpty (void) const { return (m_dwSet == 0); }
-		bool IsSet (ETypes iCondition) const { return ((m_dwSet & iCondition) ? true : false); }
+		bool IsSet (ECondition iCondition) const { return ((m_dwSet & (DWORD)iCondition) ? true : false); }
 		void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
-		void Set (ETypes iCondition) { m_dwSet |= iCondition; }
+		void Set (ECondition iCondition) { m_dwSet |= (DWORD)iCondition; }
 		void Set (const CConditionSet &Conditions);
 		ICCItemPtr WriteAsCCItem (void) const;
 		void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
 
-		static ETypes ParseCondition (const CString &sCondition);
+		static ECondition ParseCondition (const CString &sCondition);
 
 	private:
 		DWORD m_dwSet = 0;

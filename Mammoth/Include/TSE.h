@@ -473,18 +473,18 @@ class CSpaceObject
 		//	Conditions
 
 		static constexpr DWORD FLAG_NO_MESSAGE = 0x00000001;
-		void ClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags = 0);
-		bool GetCondition (CConditionSet::ETypes iCondition) const;
+		void ClearCondition (ECondition iCondition, DWORD dwFlags = 0);
+		bool GetCondition (ECondition iCondition) const;
 		CConditionSet GetConditions (void) const;
-		bool IsBlind (void) const { return GetCondition(CConditionSet::cndBlind); }
-		bool IsDisarmed (void) const { return GetCondition(CConditionSet::cndDisarmed); }
-		bool IsImmuneTo (CConditionSet::ETypes iCondition) const { return OnIsImmuneTo(iCondition); }
-		bool IsLRSBlind (void) const { return GetCondition(CConditionSet::cndLRSBlind); }
-		bool IsParalyzed (void) const { return GetCondition(CConditionSet::cndParalyzed); }
-		bool IsRadioactive (void) const { return GetCondition(CConditionSet::cndRadioactive); }
-		bool IsTimeStopped (void) const { return GetCondition(CConditionSet::cndTimeStopped); }
-		void SetCondition (CConditionSet::ETypes iCondition, int iTimer = -1);
-		void SetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETypes iCondition);
+		bool IsBlind (void) const { return GetCondition(ECondition::blind); }
+		bool IsDisarmed (void) const { return GetCondition(ECondition::disarmed); }
+		bool IsImmuneTo (ECondition iCondition) const { return OnIsImmuneTo(iCondition); }
+		bool IsLRSBlind (void) const { return GetCondition(ECondition::LRSBlind); }
+		bool IsParalyzed (void) const { return GetCondition(ECondition::paralyzed); }
+		bool IsRadioactive (void) const { return GetCondition(ECondition::radioactive); }
+		bool IsTimeStopped (void) const { return GetCondition(ECondition::timeStopped); }
+		void SetCondition (ECondition iCondition, int iTimer = -1);
+		void SetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition);
 
 		//	Data
 
@@ -929,7 +929,7 @@ class CSpaceObject
 		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, int iPosZ, DWORD *retdwID = NULL) { if (retdwID) *retdwID = 0; }
 		virtual COverlayList *GetOverlays (void) { return NULL; }
 		virtual const COverlayList *GetOverlays (void) const { return NULL; }
-		virtual void OnOverlayConditionChanged (CConditionSet::ETypes iCondition, CConditionSet::EModifications iChange) { }
+		virtual void OnOverlayConditionChanged (ECondition iCondition, EConditionChange iChange) { }
 		virtual void RemoveOverlay (DWORD dwID) { }
 
 		void AddOverlay (COverlayType *pType, const CVector &vPos, int iRotation, int iPosZ, int iLifetime, DWORD *retdwID = NULL);
@@ -1274,15 +1274,15 @@ class CSpaceObject
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }
 		virtual void OnAscended (void) { }
-		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) { }
+		virtual void OnClearCondition (ECondition iCondition, DWORD dwFlags) { }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damageNoDamage; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) { }
 		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const { return ICCItemPtr(); }
-		virtual bool OnGetCondition (CConditionSet::ETypes iCondition) const { return false; }
+		virtual bool OnGetCondition (ECondition iCondition) const { return false; }
 		virtual CSpaceObject *OnGetOrderGiver (void) { return this; }
 		virtual bool OnIncProperty (const CString &sProperty, ICCItem *pValue, ICCItemPtr &pResult) { return false; }
-		virtual bool OnIsImmuneTo (CConditionSet::ETypes iCondition) const { return false; }
+		virtual bool OnIsImmuneTo (ECondition iCondition) const { return false; }
 		virtual void OnItemEnhanced (CItemListManipulator &ItemList) { }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) { }
 		virtual void OnNewSystem (CSystem *pSystem) { }
@@ -1294,8 +1294,8 @@ class CSpaceObject
 		virtual void OnPlace (const CVector &vOldPos) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
 		virtual void OnRemoved (SDestroyCtx &Ctx) { }
-		virtual void OnSetCondition (CConditionSet::ETypes iCondition, int iTimer = -1) { }
-		virtual void OnSetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETypes iCondition) { }
+		virtual void OnSetCondition (ECondition iCondition, int iTimer = -1) { }
+		virtual void OnSetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition) { }
 		virtual void OnSetEventFlags (void) { }
 		virtual void OnSetSovereign (CSovereign *pSovereign) { }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) { }

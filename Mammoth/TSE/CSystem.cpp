@@ -4538,7 +4538,7 @@ void CSystem::StopTime (const CSpaceObjectList &Targets, int iDuration)
 		{
 		CSpaceObject *pObj = Targets.GetObj(i);
 
-		if (pObj && !pObj->IsImmuneTo(CConditionSet::cndTimeStopped))
+		if (pObj && !pObj->IsImmuneTo(ECondition::timeStopped))
 			pObj->StopTime();
 		}
 
@@ -4559,7 +4559,7 @@ void CSystem::StopTimeForAll (int iDuration, CSpaceObject *pExcept)
 		{
 		CSpaceObject *pObj = GetObject(i);
 
-		if (pObj && pObj != pExcept && !pObj->IsImmuneTo(CConditionSet::cndTimeStopped))
+		if (pObj && pObj != pExcept && !pObj->IsImmuneTo(ECondition::timeStopped))
 			pObj->StopTime();
 		}
 
