@@ -147,6 +147,7 @@ class CHullDesc
 	{
 	public:
 
+		void AdjustDamage (SDamageCtx &Ctx) const;
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		const CArmorLimits &GetArmorLimits (void) const { return m_ArmorLimits; }
 		int GetCargoSpace (void) const { return m_iCargoSpace; }
@@ -165,6 +166,7 @@ class CHullDesc
 		int GetSize (void) const { return m_iSize; }
 		const CCurrencyAndValue &GetValue (void) const { return m_Value; }
 		bool HasArmorLimits (void) const { return m_ArmorLimits.HasArmorLimits(); }
+		bool IsImmuneTo (SpecialDamageTypes iSpecialDamage) const;
 		void InitCyberDefenseLevel (int iLevel) { if (m_iCyberDefenseLevel == -1) m_iCyberDefenseLevel = iLevel; }
 		void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio) { m_ArmorLimits.InitDefaultArmorLimits(m_iMass, iMaxSpeed, rThrustRatio); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);

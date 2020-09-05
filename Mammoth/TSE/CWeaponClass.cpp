@@ -3823,7 +3823,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 
 		if (pTarget->IsParalyzed() 
 				|| pTarget->GetCategory() != CSpaceObject::catShip
-				|| pTarget->IsImmuneTo(ECondition::paralyzed))
+				|| pTarget->IsImmuneTo(specialEMP))
 			return -100;
 
 		iScore += 100;
@@ -3839,7 +3839,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 
 		if (pTarget->IsBlind()
 				|| pTarget->GetCategory() != CSpaceObject::catShip
-				|| pTarget->IsImmuneTo(ECondition::blind))
+				|| pTarget->IsImmuneTo(specialBlinding))
 			return -100;
 
 		iScore += 100;

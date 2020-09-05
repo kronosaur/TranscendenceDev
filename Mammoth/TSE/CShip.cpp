@@ -3128,7 +3128,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxWeapons() - iWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
 		}
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
-		return CC.CreateBool(IsImmuneTo(ECondition::blind));
+		return CC.CreateBool(IsImmuneTo(specialBlinding));
 
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE))
 		return CC.CreateInteger(CalcMaxCargoSpace());
@@ -3173,7 +3173,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
 
 	else if (strEquals(sName, PROPERTY_EMP_IMMUNE))
-		return CC.CreateBool(IsImmuneTo(ECondition::paralyzed));
+		return CC.CreateBool(IsImmuneTo(specialEMP));
 
 	else if (strEquals(sName, PROPERTY_EXIT_GATE_TIMER))
 		return (IsInGate() ? CC.CreateInteger(m_iExitGateTimer) : CC.CreateNil());
@@ -3252,7 +3252,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger((int)GetTradePrice(NULL).GetValue());
 
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
-		return CC.CreateBool(IsImmuneTo(ECondition::radioactive));
+		return CC.CreateBool(IsImmuneTo(specialRadiation));
 
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		return CC.CreateInteger(GetRotation());
@@ -4468,6 +4468,22 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			}
 		}
 
+	//	Deal with hull immunities.
+	//
+	//	LATER: Technically this should be AFTER armor gets a hold of the damage,
+	//	but AbsorbDamage applies special damage to the ship instead of just 
+	//	setting state in SDamageCtx.
+	//
+	//	Eventually we should split up pArmor->AbsorbDamage into two pieces. One
+	//	piece just takes the damage, computes its effect on armor, and subtracts
+	//	HP, but leaves any special damage to later.
+	//
+	//	Then, inside this function, we call the hull to deal with any special
+	//	damage and after that we apply special damage to the ship (radiation,
+	//	EMP, etc.).
+
+	m_pClass->GetHullDesc().AdjustDamage(Ctx);
+
 	//	Let the armor handle it
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;
@@ -4547,7 +4563,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Handle special attacks
 
 	if (Ctx.IsTimeStopped() 
-			&& !IsImmuneTo(ECondition::timeStopped)
 			&& !IsTimeStopped())
 		{
 		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
@@ -4858,7 +4873,7 @@ void CShip::OnDocked (CSpaceObject *pObj)
 	//	If we've docked with a radioactive object then we become radioactive
 	//	unless our armor is immune
 
-	if (pObj->IsRadioactive() && !IsImmuneTo(ECondition::radioactive))
+	if (pObj->IsRadioactive() && !IsImmuneTo(specialRadiation))
 		SetCondition(ECondition::radioactive);
 
 	//	Tell our items that we docked with something
@@ -5050,30 +5065,26 @@ void CShip::OnHitByDeviceDisruptDamage (DWORD dwDuration)
 		}
 	}
 
-bool CShip::OnIsImmuneTo (ECondition iCondition) const
+bool CShip::OnIsImmuneTo (SpecialDamageTypes iSpecialDamage) const
 
 //	OnIsImmuneTo
 //
 //	Returns TRUE if we are immune to the given condition.
 
 	{
-	switch (iCondition)
-		{
-		case ECondition::blind:
-			return m_Armor.IsImmune(specialBlinding);
+	//	See if armor confers immunity.
 
-		case ECondition::paralyzed:
-			return m_Armor.IsImmune(specialEMP);
-			
-		case ECondition::radioactive:
-			return m_Armor.IsImmune(specialRadiation);
-			
-		case ECondition::timeStopped:
-			return m_pClass->IsTimeStopImmune();
+	if (m_Armor.IsImmune(iSpecialDamage))
+		return true;
 
-		default:
-			return false;
-		}
+	//	See if hull confers immunity.
+
+	if (m_pClass->GetHullDesc().IsImmuneTo(iSpecialDamage))
+		return true;
+
+	//	If we get this far, then not immune.
+
+	return false;
 	}
 
 void CShip::OnItemEnhanced (CItemListManipulator &ItemList)

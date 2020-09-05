@@ -35,6 +35,19 @@ enum SpecialDamageTypes
 	specialRepel			= 18,
 	};
 
+class CSpecialDamageSet
+	{
+	public:
+		void Clear (SpecialDamageTypes iSpecialDamage) { if (iSpecialDamage != specialNone) m_dwSet &= ~Bit(iSpecialDamage); }
+		bool IsSet (SpecialDamageTypes iSpecialDamage) const { if (iSpecialDamage != specialNone) return ((m_dwSet & Bit(iSpecialDamage)) ? true : false); else return false; }
+		void Set (SpecialDamageTypes iSpecialDamage) { if (iSpecialDamage != specialNone) m_dwSet |= Bit(iSpecialDamage); }
+
+	private:
+		static DWORD Bit (SpecialDamageTypes iSpecialDamage) { return (1 << (DWORD)iSpecialDamage); }
+
+		DWORD m_dwSet = 0;
+	};
+
 class DamageDesc
 	{
 	public:

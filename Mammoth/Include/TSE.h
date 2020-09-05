@@ -478,7 +478,7 @@ class CSpaceObject
 		CConditionSet GetConditions (void) const;
 		bool IsBlind (void) const { return GetCondition(ECondition::blind); }
 		bool IsDisarmed (void) const { return GetCondition(ECondition::disarmed); }
-		bool IsImmuneTo (ECondition iCondition) const { return OnIsImmuneTo(iCondition); }
+		bool IsImmuneTo (SpecialDamageTypes iSpecialDamage) const { return OnIsImmuneTo(iSpecialDamage); }
 		bool IsLRSBlind (void) const { return GetCondition(ECondition::LRSBlind); }
 		bool IsParalyzed (void) const { return GetCondition(ECondition::paralyzed); }
 		bool IsRadioactive (void) const { return GetCondition(ECondition::radioactive); }
@@ -1282,7 +1282,7 @@ class CSpaceObject
 		virtual bool OnGetCondition (ECondition iCondition) const { return false; }
 		virtual CSpaceObject *OnGetOrderGiver (void) { return this; }
 		virtual bool OnIncProperty (const CString &sProperty, ICCItem *pValue, ICCItemPtr &pResult) { return false; }
-		virtual bool OnIsImmuneTo (ECondition iCondition) const { return false; }
+		virtual bool OnIsImmuneTo (SpecialDamageTypes iSpecialDamage) const { return false; }
 		virtual void OnItemEnhanced (CItemListManipulator &ItemList) { }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) { }
 		virtual void OnNewSystem (CSystem *pSystem) { }

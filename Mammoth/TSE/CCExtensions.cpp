@@ -10146,7 +10146,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateBool(ArmorItem.IsImmune(specialRadiation));
 				}
 			else
-				return pCC->CreateBool(pShip->IsImmuneTo(ECondition::radioactive));
+				return pCC->CreateBool(pShip->IsImmuneTo(specialRadiation));
 			break;
 			}
 

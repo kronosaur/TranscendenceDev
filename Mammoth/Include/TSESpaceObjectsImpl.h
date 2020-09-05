@@ -1280,7 +1280,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
 		virtual bool OnGetCondition (ECondition iCondition) const override;
 		virtual CSpaceObject *OnGetOrderGiver (void) override;
-		virtual bool OnIsImmuneTo (ECondition iCondition) const override;
+		virtual bool OnIsImmuneTo (SpecialDamageTypes iSpecialDamage) const override;
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
@@ -1650,7 +1650,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
 		virtual bool OnGetCondition (ECondition iCondition) const override;
-		virtual bool OnIsImmuneTo (ECondition iCondition) const override;
+		virtual bool OnIsImmuneTo (SpecialDamageTypes iSpecialDamage) const override;
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;

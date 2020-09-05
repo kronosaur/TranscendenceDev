@@ -2710,7 +2710,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 	//	Handle special attacks
 
 	if (Ctx.IsTimeStopped() 
-			&& !IsImmuneTo(ECondition::timeStopped)
+			&& !IsImmuneTo(specialTimeStop)
 			&& !IsTimeStopped())
 		{
 		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
@@ -2849,16 +2849,16 @@ bool CStation::OnGetCondition (ECondition iCondition) const
 		}
 	}
 
-bool CStation::OnIsImmuneTo (ECondition iCondition) const
+bool CStation::OnIsImmuneTo (SpecialDamageTypes iSpecialDamage) const
 
 //	OnIsImmuneTo
 //
 //	Returns TRUE if we are immune to the given condition.
 
 	{
-	switch (iCondition)
+	switch (iSpecialDamage)
 		{
-		case ECondition::timeStopped:
+		case specialTimeStop:
 			return m_pType->IsTimeStopImmune();
 
 		default:
