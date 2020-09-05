@@ -1,6 +1,7 @@
 //	CDesignCollection.cpp
 //
 //	CDesignCollection class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -15,8 +16,6 @@
 #define VERSION_ATTRIB							CONSTLIT("version")
 
 #define GET_TYPE_SOURCE_EVENT					CONSTLIT("GetTypeSource")
-
-#define PROPERTY_CORE_GAME_STATS				CONSTLIT("core.gameStats")
 
 static const char *CACHED_EVENTS[CDesignCollection::evtCount] =
 	{

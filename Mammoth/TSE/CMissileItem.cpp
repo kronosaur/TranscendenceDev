@@ -5,8 +5,6 @@
 
 #include "PreComp.h"
 
-#define LANGID_CORE_LAUNCHED_BY					CONSTLIT("core.launchedBy")
-
 TArray<CItem> CMissileItem::GetLaunchWeapons (void) const
 
 //	GetLaunchWeapons

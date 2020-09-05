@@ -159,8 +159,6 @@
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
 #define FIELD_WRECK_CHANCE						CONSTLIT("wreckChance")
 
-#define LANG_CORE_DESC							CONSTLIT("core.desc")
-
 #define ERR_OUT_OF_MEMORY						CONSTLIT("out of memory")
 #define ERR_BAD_IMAGE							CONSTLIT("invalid ship image")
 #define ERR_MISSING_ARMOR_TAG					CONSTLIT("missing <Armor> element")
@@ -2261,7 +2259,7 @@ CString CShipClass::GetDesc (void) const
 	//	First, see if we have a translation
 
 	CString sText;
-	if (TranslateText(LANG_CORE_DESC, NULL, &sText))
+	if (TranslateText(LANGID_CORE_DESC, NULL, &sText))
 		return sText;
 
 	//	If the player settings has this, get it from there.

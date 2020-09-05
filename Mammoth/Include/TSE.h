@@ -153,6 +153,7 @@ extern CUniverse *g_pUniverse;
 
 //	Include other TSE files
 
+#include "TSEEngineDefs.h"
 #include "TSEVersions.h"
 #include "TSEGeometry.h"
 #include "TSETypes.h"

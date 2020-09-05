@@ -26,7 +26,6 @@
 #define PROPERTY_CAN_BE_USED					CONSTLIT("canBeUsed")
 #define PROPERTY_CHARGES						CONSTLIT("charges")
 #define PROPERTY_COMPONENTS						CONSTLIT("components")
-#define PROPERTY_CORE_ENHANCEMENT				CONSTLIT("core.enhancement")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_DEFECTIVE_ENHANCEMENT			CONSTLIT("defectiveEnhancement")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
@@ -51,9 +50,6 @@
 #define PROPERTY_UNKNOWN_TYPE_INDEX				CONSTLIT("unknownTypeIndex")
 #define PROPERTY_USED							CONSTLIT("used")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
-
-#define LANGID_CORE_CHARGES						CONSTLIT("core.charges")
-#define LANGID_CORE_REFERENCE					CONSTLIT("core.reference")
 
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
 

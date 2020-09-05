@@ -257,6 +257,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\TSEAccessibilitySettings.h" />
+    <ClInclude Include="..\Include\TSEEngineDefs.h" />
     <ClInclude Include="..\Include\TSEListImpl.h" />
     <ClInclude Include="..\Include\TSEOverlays.h" />
     <ClInclude Include="..\Include\TSESpaceObjectUtil.h" />

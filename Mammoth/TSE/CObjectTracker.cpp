@@ -5,9 +5,6 @@
 
 #include "PreComp.h"
 
-#define LANGID_DESC_GALACTIC_MAP_CUSTOM         CONSTLIT("core.mapDescCustom")
-#define LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM CONSTLIT("core.mapDescAbandonedCustom")
-
 const int MAX_ALLOC_GRANULARITY =			10000;
 
 CObjectTracker::~CObjectTracker (void)
@@ -288,7 +285,7 @@ bool CObjectTracker::GetCustomDesc (const CSpaceObject &Obj, const SObjBasics &O
 
 	//	Translate
 
-    return Obj.TranslateText((ObjData.fShowDestroyed ? LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM : LANGID_DESC_GALACTIC_MAP_CUSTOM), pData, retsDesc);
+    return Obj.TranslateText((ObjData.fShowDestroyed ? LANGID_CORE_MAP_DESC_ABANDONED_CUSTOM : LANGID_CORE_MAP_DESC_CUSTOM), pData, retsDesc);
 	}
 
 void CObjectTracker::GetGalacticMapObjects (const CTopologyNode &Node, TArray<SObjEntry> &Results) const
