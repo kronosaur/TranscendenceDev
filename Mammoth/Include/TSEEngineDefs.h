@@ -118,6 +118,14 @@
 
 #define PROPERTY_CORE_MINING_DIFFICULTY			CONSTLIT("core.miningDifficulty")
 
+//	core.noBiologicalEffects
+//
+//	Object Property: If this property is True for an object, the object will not
+//	be affected by biological attacks targeted at crew/pilot. For example, it 
+//	makes a ship immune to neuroplague launcher pods.
+
+#define PROPERTY_CORE_NO_BIOLOGICAL_EFFECTS		CONSTLIT("core.noBiologicalEffects")
+
 //	core.noRadiationDeath
 //
 //	Object Property: If this property is True for an object, the object will not

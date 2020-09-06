@@ -953,6 +953,7 @@
 			>
 
 		<Properties>
+			<Definition id="core.noBiologicalEffects">True</Definition>
 			<Definition id="core.noRadiationDeath">True</Definition>
 		</Properties>
 
