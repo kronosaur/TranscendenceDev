@@ -135,6 +135,8 @@
 	<ShipClass unid="&baStdAutonBase;">
 
 		<Properties>
+			<Definition id="core.noRadiationDeath">True</Definition>
+
 			<!-- maxHullHP
 			
 				Determines the time that it will take to repair a destroyed 

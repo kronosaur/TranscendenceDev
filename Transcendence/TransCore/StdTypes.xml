@@ -952,6 +952,10 @@
 			cargoSpace=			"0"
 			>
 
+		<Properties>
+			<Definition id="core.noRadiationDeath">True</Definition>
+		</Properties>
+
 		<!-- Configuration -->
 
 		<Armor
