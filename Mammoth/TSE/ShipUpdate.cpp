@@ -342,10 +342,9 @@ bool CShip::UpdateConditions (CShipUpdateSet &UpdateFlags)
 
 	//	Radiation
 
-	if (m_fRadioactive)
+	if (m_fRadioactive && m_iContaminationTimer != -1)
 		{
-		m_iContaminationTimer--;
-		if (m_iContaminationTimer > 0)
+		if (--m_iContaminationTimer > 0)
 			{
 			m_pController->OnShipStatus(IShipController::statusRadiationWarning, m_iContaminationTimer);
 			}

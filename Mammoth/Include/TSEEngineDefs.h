@@ -118,6 +118,14 @@
 
 #define PROPERTY_CORE_MINING_DIFFICULTY			CONSTLIT("core.miningDifficulty")
 
+//	core.noRadiationDeath
+//
+//	Object Property: If this property is True for an object, the object will not
+//	die from radiation poisoning. NOTE: This is separate from radiation 
+//	immunity.
+
+#define PROPERTY_CORE_NO_RADIATION_DEATH		CONSTLIT("core.noRadiationDeath")
+
 //	core.noSalvage
 //
 //	Object Property: Evaluated when the AI is looking for objects to salvage.

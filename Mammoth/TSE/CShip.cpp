@@ -51,6 +51,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_CARGO_SPACE					CONSTLIT("cargoSpace")
 #define PROPERTY_CARGO_SPACE_FREE_KG			CONSTLIT("cargoSpaceFreeKg")
 #define PROPERTY_CARGO_SPACE_USED_KG			CONSTLIT("cargoSpaceUsedKg")
+#define PROPERTY_CONTAMINATION_TIMER			CONSTLIT("contaminationTimer")
 #define PROPERTY_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
 #define PROPERTY_COUNTER_VALUE					CONSTLIT("counterValue")
 #define PROPERTY_COUNTER_VALUE_INCREMENT		CONSTLIT("counterValueIncrement")
@@ -127,16 +128,7 @@ const DWORD CONTROLLER_PLAYERSHIP =				0x100000 + 100;
 
 const int DEFAULT_TIME_STOP_TIME =				150;
 
-CShip::CShip (CUniverse &Universe) : TSpaceObjectImpl(Universe),
-		m_pDocked(NULL),
-		m_pController(NULL),
-		m_pEncounterInfo(NULL),
-		m_pTrade(NULL),
-		m_pMoney(NULL),
-		m_pPowerUse(NULL),
-		m_dwNameFlags(0),
-		m_pExitGate(NULL),
-		m_pDeferredOrders(NULL)
+CShip::CShip (CUniverse &Universe) : TSpaceObjectImpl(Universe)
 
 //	CShip constructor
 
@@ -148,8 +140,6 @@ CShip::~CShip (void)
 //	CShip destructor
 
 	{
-	int i;
-
 	if (m_pController)
 		delete m_pController;
 
@@ -167,7 +157,7 @@ CShip::~CShip (void)
 
 	//	We own any attached objects.
 
-	for (i = 0; i < m_Interior.GetCount(); i++)
+	for (int i = 0; i < m_Interior.GetCount(); i++)
 		{
 		CSpaceObject *pAttached = m_Interior.GetAttached(i);
 		if (pAttached)
@@ -1489,45 +1479,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 	pShip->m_pSovereign = pSovereign;
 	pShip->m_sName = pClass->GenerateShipName(&pShip->m_dwNameFlags);
 	pShip->m_Rotation.Init(pClass->GetIntegralRotationDesc(), iRotation);
-	pShip->m_iContaminationTimer = 0;
-	pShip->m_iBlindnessTimer = 0;
-	pShip->m_iLRSBlindnessTimer = 0;
-	pShip->m_iParalysisTimer = 0;
-	pShip->m_iDriveDamagedTimer = 0;
-	pShip->m_iDisarmedTimer = 0;
-	pShip->m_iExitGateTimer = 0;
-	pShip->m_pExitGate = NULL;
-	pShip->m_pIrradiatedBy = NULL;
-	pShip->m_iLastFireTime = 0;
-	pShip->m_iLastHitTime = 0;
-	pShip->m_rItemMass = 0.0;
-	pShip->m_rCargoMass = 0.0;
-	pShip->m_pTrade = NULL;
-	pShip->m_pMoney = NULL;
-	pShip->m_pPowerUse = NULL;
 	pShip->m_pCharacter = pClass->GetCharacter();
-	pShip->m_iCounterValue = 0;
-
-	pShip->m_fTrackMass = false;
-	pShip->m_fRadioactive = false;
-	pShip->m_fDestroyInGate = false;
-	pShip->m_fHalfSpeed = false;
-	pShip->m_fDeviceDisrupted = false;
-	pShip->m_fKnown = false;
-	pShip->m_fHiddenByNebula = false;
-	pShip->m_fIdentified = false;
-	pShip->m_fManualSuspended = false;
-	pShip->m_fRecalcItemMass = true;
-	pShip->m_fRecalcRotationAccel = false;
-	pShip->m_fDockingDisabled = false;
-	pShip->m_fControllerDisabled = false;
-	pShip->m_fAlwaysLeaveWreck = false;
-	pShip->m_fEmergencySpeed = false;
-	pShip->m_fQuarterSpeed = false;
-	pShip->m_fLRSDisabledByNebula = false;
-	pShip->m_fShipCompartment = false;
-	pShip->m_fHasShipCompartments = false;
-	pShip->m_fNameBlanked = false;
 	pShip->m_fShowMapLabel = pClass->ShowsMapLabel();
 
 	//	Shouldn't be able to hit a virtual ship
@@ -3139,6 +3091,9 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		InvalidateItemMass();
 		return CC.CreateInteger(mathRound(GetCargoMass() * 1000.0));
 		}
+
+	else if (strEquals(sName, PROPERTY_CONTAMINATION_TIMER))
+		return CC.CreateInteger(m_iContaminationTimer);
 
 	else if (strEquals(sName, PROPERTY_COUNTER_VALUE))
 		return CC.CreateInteger(GetCounterValue());
@@ -6022,7 +5977,9 @@ void CShip::OnSetCondition (ECondition iCondition, int iTimer)
 		case ECondition::radioactive:
 			if (!m_fRadioactive)
 				{
-				if (iTimer < 0)
+				if (!GetProperty(PROPERTY_CORE_NO_RADIATION_DEATH)->IsNil())
+					m_iContaminationTimer = -1;
+				else if (iTimer < 0)
 					m_iContaminationTimer = (IsPlayer() ? 180 : 60) * g_TicksPerSecond;
 				else
 					m_iContaminationTimer = Min(iTimer, MAX_SHORT);

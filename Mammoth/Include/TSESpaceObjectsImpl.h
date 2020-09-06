@@ -1347,78 +1347,79 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void UpdateManeuvers (Metric rSecondsPerTick);
 		bool UpdateTriggerAllDevices (CDeviceClass::SActivateCtx &ActivateCtx, CShipUpdateSet &UpdateFlags);
 
-		CShipClass *m_pClass;					//	Ship class
-		IShipController *m_pController;			//	Controller
-		CSovereign *m_pSovereign;				//	Allegiance
-		CString m_sName;						//	Ship's name
-		DWORD m_dwNameFlags;					//	Name flags
-		CString m_sMapLabel;					//	Map label
+		CShipClass *m_pClass = NULL;				//	Ship class
+		IShipController *m_pController = NULL;		//	Controller
+		CSovereign *m_pSovereign = NULL;			//	Allegiance
+		CString m_sName;							//	Ship's name
+		DWORD m_dwNameFlags = 0;					//	Name flags
+		CString m_sMapLabel;						//	Map label
 
-		CArmorSystem m_Armor;		            //	Array of CInstalledArmor
-		CDeviceSystem m_Devices;				//	Array of CInstalledDevice
-		CIntegralRotation m_Rotation;			//	Ship rotation
-		CObjectEffectList m_Effects;			//	List of effects to paint
-		CShipInterior m_Interior;				//	Interior decks and compartments (optionally)
-		COverlayList m_Overlays;		        //	List of energy fields
+		CArmorSystem m_Armor;						//	Array of CInstalledArmor
+		CDeviceSystem m_Devices;					//	Array of CInstalledDevice
+		CIntegralRotation m_Rotation;				//	Ship rotation
+		CObjectEffectList m_Effects;				//	List of effects to paint
+		CShipInterior m_Interior;					//	Interior decks and compartments (optionally)
+		COverlayList m_Overlays;					//	List of energy fields
 
-		CGenericType *m_pCharacter;				//	Character (may be NULL)
-		CAbilitySet m_Abilities;				//	Installed abilities
-		CDockingPorts m_DockingPorts;			//	Docking ports (optionally)
-		CStationType *m_pEncounterInfo;			//	Pointer back to encounter type (generally NULL)
-		CTradingDesc *m_pTrade;					//	Override of trading desc (may be NULL)
-		CCurrencyBlock *m_pMoney;				//	Store of money (may be NULL)
-		CPowerConsumption *m_pPowerUse;			//	Power consumption variables (may be NULL if not tracking fuel)
+		CGenericType *m_pCharacter = NULL;			//	Character (may be NULL)
+		CAbilitySet m_Abilities;					//	Installed abilities
+		CDockingPorts m_DockingPorts;				//	Docking ports (optionally)
+		CStationType *m_pEncounterInfo = NULL;		//	Pointer back to encounter type (generally NULL)
+		CTradingDesc *m_pTrade = NULL;				//	Override of trading desc (may be NULL)
+		CCurrencyBlock *m_pMoney = NULL;			//	Store of money (may be NULL)
+		CPowerConsumption *m_pPowerUse = NULL;		//	Power consumption variables (may be NULL if not tracking fuel)
 
-		int m_iContaminationTimer:16;			//	Ticks left to live
-		int m_iBlindnessTimer:16;				//	Ticks until blindness wears off
-												//	(-1 = permanent)
-		int m_iParalysisTimer:16;				//	Ticks until paralysis wears off
-												//	(-1 = permanent)
-		int m_iExitGateTimer:16;				//	Ticks until ship exits gate (in gate until then)
-		int m_iDisarmedTimer:16;				//	Ticks until ship can use weapons
-												//	(-1 = permanent)
-		int m_iLRSBlindnessTimer:16;			//	Ticks until LRS blindness wears off
-												//	(-1 = permanent)
-		int m_iDriveDamagedTimer:16;			//	Ticks until drive repaired
-												//	(-1 = permanent)
-		int m_iLastFireTime;					//	Tick when we last fired a weapon
-		int m_iLastHitTime;						//	Tick when we last got hit by something
+		int m_iContaminationTimer:16 = 0;			//	Ticks left to live
+													//	(-1 = no death from contamination)
+		int m_iBlindnessTimer:16 = 0;				//	Ticks until blindness wears off
+													//	(-1 = permanent)
+		int m_iParalysisTimer:16 = 0;				//	Ticks until paralysis wears off
+													//	(-1 = permanent)
+		int m_iExitGateTimer:16 = 0;				//	Ticks until ship exits gate (in gate until then)
+		int m_iDisarmedTimer:16 = 0;				//	Ticks until ship can use weapons
+													//	(-1 = permanent)
+		int m_iLRSBlindnessTimer:16 = 0;			//	Ticks until LRS blindness wears off
+													//	(-1 = permanent)
+		int m_iDriveDamagedTimer:16 = 0;			//	Ticks until drive repaired
+													//	(-1 = permanent)
+		int m_iLastFireTime = 0;					//	Tick when we last fired a weapon
+		int m_iLastHitTime = 0;						//	Tick when we last got hit by something
 
-		mutable Metric m_rItemMass;				//	Total mass of all items (including installed)
-		mutable Metric m_rCargoMass;			//	Mass of cargo items (not including installed)
-		int m_iStealth;							//	Computed stealth
-		int m_iCounterValue;					//	Heat/capacitor counter value
+		mutable Metric m_rItemMass = 0.0;			//	Total mass of all items (including installed)
+		mutable Metric m_rCargoMass = 0.0;			//	Mass of cargo items (not including installed)
+		int m_iStealth = 0;							//	Computed stealth
+		int m_iCounterValue = 0;					//	Heat/capacitor counter value
 
-		CSpaceObject *m_pDocked;				//	If not NULL, object we are docked to.
-		CSpaceObject *m_pExitGate;				//	If not NULL, gate we are about to exit.
-		CDamageSource *m_pIrradiatedBy;			//	If not NULL, object that irradiated us
-		SShipGeneratorCtx *m_pDeferredOrders;	//	Defer orders until system done being created.
+		CSpaceObject *m_pDocked = NULL;				//	If not NULL, object we are docked to.
+		CSpaceObject *m_pExitGate = NULL;			//	If not NULL, gate we are about to exit.
+		CDamageSource *m_pIrradiatedBy = NULL;		//	If not NULL, object that irradiated us
+		SShipGeneratorCtx *m_pDeferredOrders = NULL;//	Defer orders until system done being created.
 
-		CShipPerformanceDesc m_Perf;            //  Computed performance parameters (not saved)
+		CShipPerformanceDesc m_Perf;				//  Computed performance parameters (not saved)
 
-		DWORD m_fRadioactive:1;					//	TRUE if radioactive
-		DWORD m_fDestroyInGate:1;				//	TRUE if ship has entered a gate
-		DWORD m_fHalfSpeed:1;					//	TRUE if ship is at half speed
-		DWORD m_fDeviceDisrupted:1;				//	TRUE if at least one device is disrupted
-		DWORD m_fKnown:1;						//	TRUE if we know about this ship
-		DWORD m_fHiddenByNebula:1;				//	TRUE if ship is hidden by nebula
-		DWORD m_fTrackMass:1;					//	TRUE if ship keeps track of mass to compute performance
-		DWORD m_fIdentified:1;					//	TRUE if player can see ship class, etc.
+		DWORD m_fRadioactive:1 = false;				//	TRUE if radioactive
+		DWORD m_fDestroyInGate:1 = false;			//	TRUE if ship has entered a gate
+		DWORD m_fHalfSpeed:1 = false;				//	TRUE if ship is at half speed
+		DWORD m_fDeviceDisrupted:1 = false;			//	TRUE if at least one device is disrupted
+		DWORD m_fKnown:1 = false;					//	TRUE if we know about this ship
+		DWORD m_fHiddenByNebula:1 = false;			//	TRUE if ship is hidden by nebula
+		DWORD m_fTrackMass:1 = false;				//	TRUE if ship keeps track of mass to compute performance
+		DWORD m_fIdentified:1 = false;				//	TRUE if player can see ship class, etc.
 
-		DWORD m_fManualSuspended:1;				//	TRUE if ship is suspended
-		mutable DWORD m_fRecalcItemMass:1;		//	TRUE if we need to recalculate m_rImageMass
-		DWORD m_fDockingDisabled:1;				//	TRUE if docking is disabled
-		DWORD m_fControllerDisabled:1;			//	TRUE if we want to disable controller
-		DWORD m_fRecalcRotationAccel:1;			//	TRUE if we need to recalc rotation acceleration
-		DWORD m_fAlwaysLeaveWreck:1;			//	TRUE if we always leave a wreck
-		DWORD m_fEmergencySpeed:1;				//	TRUE if we're operating at 1.5x max speed
-		DWORD m_fQuarterSpeed:1;				//	TRUE if we're operating at 0.25x max speed
+		DWORD m_fManualSuspended:1 = false;			//	TRUE if ship is suspended
+		mutable DWORD m_fRecalcItemMass:1 = true;	//	TRUE if we need to recalculate m_rImageMass
+		DWORD m_fDockingDisabled:1 = false;			//	TRUE if docking is disabled
+		DWORD m_fControllerDisabled:1 = false;		//	TRUE if we want to disable controller
+		DWORD m_fRecalcRotationAccel:1 = false;		//	TRUE if we need to recalc rotation acceleration
+		DWORD m_fAlwaysLeaveWreck:1 = false;		//	TRUE if we always leave a wreck
+		DWORD m_fEmergencySpeed:1 = false;			//	TRUE if we're operating at 1.5x max speed
+		DWORD m_fQuarterSpeed:1 = false;			//	TRUE if we're operating at 0.25x max speed
 		
-		DWORD m_fLRSDisabledByNebula:1;			//	TRUE if LRS is disabled due to environment
-		DWORD m_fShipCompartment:1;				//	TRUE if we're part of another ship (m_pDocked is the root ship)
-		DWORD m_fHasShipCompartments:1;			//	TRUE if we have ship compartment objects attached
-		DWORD m_fNameBlanked:1;					//	TRUE if name has been blanked; show generic name
-		DWORD m_fShowMapLabel:1;				//	TRUE if we should show a map label
+		DWORD m_fLRSDisabledByNebula:1 = false;		//	TRUE if LRS is disabled due to environment
+		DWORD m_fShipCompartment:1 = false;			//	TRUE if we're part of another ship (m_pDocked is the root ship)
+		DWORD m_fHasShipCompartments:1 = false;		//	TRUE if we have ship compartment objects attached
+		DWORD m_fNameBlanked:1 = false;				//	TRUE if name has been blanked; show generic name
+		DWORD m_fShowMapLabel:1 = false;			//	TRUE if we should show a map label
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
