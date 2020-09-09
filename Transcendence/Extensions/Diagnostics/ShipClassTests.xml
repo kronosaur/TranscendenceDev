@@ -56,7 +56,18 @@
 						{	test:'(typ@ &scWindSlaver; 'wreckChance)			result:19	}
 						{	test:'(typ@ &scSteelSlaver; 'wreckChance)			result:100	}
 						{	test:'(typ@ &scEarthSlaver; 'wreckChance)			result:100	}
+						{	test:'(typ@ &scEarthSlaver; 'wreckHasItems)			result:True	}
+						{	test:'(typ@ &scEarthSlaver; 'wreckHasInstalledItems)
+																				result:True	}
+						{	test:'(typ@ &scEarthSlaver; 'wreckType)				result:&stShipwreck;	}
+						{	test:'(typ@ &scEarthSlaver; 'wreckStructuralHP)		result:2092	}
 
+						{	test:'(typ@ &scAutoSentinel; 'wreckChance)			result:5	}
+						{	test:'(typ@ &scAutoSentinel; 'wreckHasItems)		result:True	}
+						{	test:'(typ@ &scAutoSentinel; 'wreckHasInstalledItems)
+																				result:Nil	}
+						{	test:'(typ@ &scAutoSentinel; 'wreckStructuralHP)	result:24	}
+						{	test:'(typ@ &scAutoSentinel; 'wreckType)			result:&stAutonWreck;	}
 						))
 					)
 			</OnGlobalStartDiagnostics>

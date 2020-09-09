@@ -51,7 +51,7 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 			{
 			//	If we don't want installed items, then skip.
 
-			if (m_bNoInstalledItems)
+			if (!AreInstalledItemsAddedToWreck())
 				{ }
 
 			//	Make sure that the armor item reflects the current
@@ -159,7 +159,37 @@ void CShipwreckDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
 	retTypesUsed->SetAt(m_pExplosionType.GetUNID(), true);
 	}
 
-ALERROR CShipwreckDesc::Bind (SDesignLoadCtx &Ctx)
+bool CShipwreckDesc::AreInstalledItemsAddedToWreck (void) const
+
+//	AreInstalledItemsAddedToWreck
+//
+//	Returns TRUE if we need to add installed items to wreck.
+
+	{
+	if (m_bNoInstalledItems)
+		return false;
+	else if (m_pInherited)
+		return m_pInherited->AreInstalledItemsAddedToWreck();
+	else
+		return true;
+	}
+
+bool CShipwreckDesc::AreItemsAddedToWreck (void) const
+
+//	AreItemsAddedToWreck
+//
+//	Returns TRUE if we should add items to wreckage.
+
+	{
+	if (m_bNoItems)
+		return false;
+	else if (m_pInherited)
+		return m_pInherited->AreItemsAddedToWreck();
+	else
+		return true;
+	}
+
+ALERROR CShipwreckDesc::Bind (SDesignLoadCtx &Ctx, const CShipwreckDesc *pInherited)
 
 //	Bind
 //
@@ -167,6 +197,8 @@ ALERROR CShipwreckDesc::Bind (SDesignLoadCtx &Ctx)
 
 	{
 	ALERROR error;
+
+	m_pInherited = pInherited;
 
 	if (error = m_pExplosionType.Bind(Ctx))
 		return error;
@@ -262,6 +294,7 @@ void CShipwreckDesc::CleanUp (void)
 //	Clean up images to free up space.
 
 	{
+	m_pInherited = NULL;
 	m_WreckImages.DeleteAll();
 	}
 
@@ -359,7 +392,7 @@ bool CShipwreckDesc::CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const
 
 	//	Add items to the wreck
 
-	if (!m_bNoItems)
+	if (AreItemsAddedToWreck())
 		AddItemsToWreck(pShip, pWreck);
 
 	//	Done
@@ -452,6 +485,21 @@ bool CShipwreckDesc::CreateWreckImage (const CShipClass *pClass, int iRotationFr
 	return true;
 	}
 
+CWeaponFireDesc *CShipwreckDesc::GetExplosionType (void) const
+
+//	GetExplosionType
+//
+//	Returns the explosion type.
+
+	{
+	if (m_pExplosionType.GetUNID())
+		return m_pExplosionType;
+	else if (m_pInherited)
+		return m_pInherited->GetExplosionType();
+	else
+		return NULL;
+	}
+
 size_t CShipwreckDesc::GetMemoryUsage (void) const
 
 //	GetMemoryUsage
@@ -459,13 +507,47 @@ size_t CShipwreckDesc::GetMemoryUsage (void) const
 //	Returns the memory used by our cache.
 
 	{
-	int i;
 	size_t dwTotal = 0;
 
-	for (i = 0; i < m_WreckImages.GetCount(); i++)
+	for (int i = 0; i < m_WreckImages.GetCount(); i++)
 		dwTotal += m_WreckImages[i].GetMemoryUsage();
 
 	return dwTotal;
+	}
+
+int CShipwreckDesc::GetStructuralHP (void) const
+
+//	GetStructuralHP
+//
+//	Returns structure HP of the wreck.
+
+	{
+	if (m_iStructuralHP != -1)
+		return m_iStructuralHP;
+	else if (m_pInherited)
+		return m_pInherited->GetStructuralHP();
+	else
+		return 0;
+	}
+
+int CShipwreckDesc::GetWreckChance (void) const
+
+//	GetWreckChance
+//
+//	Returns the chance of leaving a wreck.
+
+	{
+	//	If the chance is explicitly set (either by us or one of our ancestors)
+	//	then that's the chance.
+
+	int iChance;
+	if (IsWreckChanceSet(&iChance))
+		return iChance;
+
+	//	Otherwise, return the computed chance.
+
+	else
+		return m_iLeavesWreck;
 	}
 
 CObjectImageArray *CShipwreckDesc::GetWreckImage (const CShipClass *pClass, int iRotation) const
@@ -530,6 +612,8 @@ CStationType *CShipwreckDesc::GetWreckType (void) const
 	{
 	if (m_pWreckType)
 		return m_pWreckType;
+	else if (m_pInherited)
+		return m_pInherited->GetWreckType();
 	else
 		{
 		if (m_pWreckDesc == NULL)
@@ -577,16 +661,12 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 	if (pWreck == NULL)
 		pWreck = pDesc;
 
-	//	Assume this is set to defaults unless some setting is set.
-
-	m_bIsDefault = true;
-
 	//	Miscellaneous
 
 	if (pWreck->FindAttributeInteger(LEAVES_WRECK_ATTRIB, &m_iLeavesWreck))
 		{
 		m_iLeavesWreck = Max(0, m_iLeavesWreck);
-		m_bIsDefault = false;
+		m_bIsDefaultWreckChance = false;
 		}
 	else
 		{
@@ -595,13 +675,11 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 		//	prob = 5 * MASS^0.45
 
 		m_iLeavesWreck = Max(0, Min((int)(5.0 * pow(rHullMass, 0.45)), 100));
+		m_bIsDefaultWreckChance = true;
 		}
 
 	if (ALERROR error = m_pWreckType.LoadUNID(Ctx, pWreck->GetAttribute(WRECK_TYPE_ATTRIB)))
 		return error;
-
-	if (m_pWreckType.GetUNID())
-		m_bIsDefault = false;
 
 	LoadXMLBool(*pWreck, NO_INSTALLED_ITEMS_ATTRIB, m_bNoInstalledItems);
 	LoadXMLBool(*pWreck, NO_ITEMS_ATTRIB, m_bNoItems);
@@ -611,22 +689,53 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 			|| pWreck->FindAttributeInteger(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, &m_iStructuralHP))
 		{
 		m_iStructuralHP = Max(0, m_iStructuralHP);
-		m_bIsDefault = false;
 		}
 	else
-		m_iStructuralHP = 0;
+		m_iStructuralHP = -1;
 
 	//	Explosion
 
 	if (ALERROR error = m_pExplosionType.LoadUNID(Ctx, pWreck->GetAttribute(EXPLOSION_TYPE_ATTRIB)))
 		return error;
 
-	if (m_pExplosionType.GetUNID())
-		m_bIsDefault = false;
-
 	//	Done
 
 	return NOERROR;
+	}
+
+bool CShipwreckDesc::IsRadioactive (void) const
+
+//	IsRadioactive
+//
+//	Returns TRUE if wreck should be radioactive.
+
+	{
+	if (m_bRadioactiveWreck)
+		return true;
+	else if (m_pInherited)
+		return m_pInherited->IsRadioactive();
+	else
+		return false;
+	}
+
+bool CShipwreckDesc::IsWreckChanceSet (int *retiChance) const
+
+//	IsWreckChanceSet
+//
+//	Returns TRUE if we or any of our ancestors defines an explicit wreck chance.
+//	If so, we return it.
+
+	{
+	if (!m_bIsDefaultWreckChance)
+		{
+		if (retiChance)
+			*retiChance = m_iLeavesWreck;
+		return true;
+		}
+	else if (m_pInherited)
+		return m_pInherited->IsWreckChanceSet(retiChance);
+	else
+		return false;
 	}
 
 void CShipwreckDesc::LoadXMLBool (const CXMLElement &Desc, const CString &sAttrib, bool &retbValue)
@@ -636,9 +745,7 @@ void CShipwreckDesc::LoadXMLBool (const CXMLElement &Desc, const CString &sAttri
 //	Load XML boolean.
 
 	{
-	if (Desc.FindAttributeBool(sAttrib, &retbValue))
-		m_bIsDefault = false;
-	else
+	if (!Desc.FindAttributeBool(sAttrib, &retbValue))
 		retbValue = false;
 	}
 

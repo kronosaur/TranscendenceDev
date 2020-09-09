@@ -216,6 +216,8 @@
 #define PROPERTY_TREASURE_ITEM_NAMES			CONSTLIT("treasureItemNames")
 #define PROPERTY_VIEWPORT_SIZE					CONSTLIT("viewportSize")
 #define PROPERTY_WEAPON_ITEMS					CONSTLIT("weaponItems")
+#define PROPERTY_WRECK_HAS_ITEMS				CONSTLIT("wreckHasItems")
+#define PROPERTY_WRECK_HAS_INSTALLED_ITEMS		CONSTLIT("wreckHasInstalledItems")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 #define PROPERTY_WRECK_TYPE_NAME				CONSTLIT("wreckTypeName")
@@ -2658,6 +2660,19 @@ const CObjectImageArray &CShipClass::GetImage (const CImageFilterStack *pFilters
 	return m_Image.GetImage(Ctx, CCompositeImageSelector::Null(), Modifiers);
 	}
 
+const CShipwreckDesc *CShipClass::GetInheritedShipwreckDesc (void) const
+
+//	GetInheritedShipwreckDesc
+//
+//	Returns the shipwreck descriptor of our parent (if any).
+
+	{
+	if (const CShipClass *pInheritClass = CShipClass::AsType(GetInheritFrom()))
+		return &pInheritClass->m_WreckDesc;
+	else
+		return NULL;
+	}
+
 int CShipClass::GetMaxStructuralHitPoints (void) const
 
 //	GetMaxStructuralHitPoints
@@ -2905,22 +2920,6 @@ CCurrencyAndValue CShipClass::GetTradePrice (const CSpaceObject *pObj, bool bAct
 	return Value;
 	}
 
-const CShipwreckDesc &CShipClass::GetWreckDesc (void) const
-
-//	GetWreckDesc
-//
-//	Returns the wreck descriptor.
-
-	{
-	const CShipClass *pInheritClass;
-
-	if (m_WreckDesc.IsDefault()
-			&& (pInheritClass = CShipClass::AsType(GetInheritFrom())))
-		return pInheritClass->GetWreckDesc();
-	else
-		return m_WreckDesc;
-	}
-
 const CObjectImageArray &CShipClass::GetWreckImage (int iRotation) const
 
 //	GetWreckImage
@@ -2928,13 +2927,7 @@ const CObjectImageArray &CShipClass::GetWreckImage (int iRotation) const
 //	Returns the image wreck for the class at the given rotation.
 
 	{
-	//	NOTE: We always use our wreck descriptor (not inherited one) because
-	//	otherwise we might get the wrong image.
-	//
-	//	LATER: We should probably cache this on the ship class instead of the
-	//	wreck image.
-
-	CObjectImageArray *pWreckImage = m_WreckDesc.GetWreckImage(this, iRotation);
+	CObjectImageArray *pWreckImage = GetWreckDesc().GetWreckImage(this, iRotation);
 	if (pWreckImage == NULL)
 		return CObjectImageArray::Null();
 
@@ -3304,7 +3297,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_Armor.Bind(Ctx))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
-	if (error = m_WreckDesc.Bind(Ctx))
+	if (error = m_WreckDesc.Bind(Ctx, GetInheritedShipwreckDesc()))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	More
@@ -4005,6 +3998,12 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_MASS))
 		return (m_Hull.GetArmorLimits().GetStdArmorMass() > 0 ? ICCItemPtr(m_Hull.GetArmorLimits().GetStdArmorMass()) : ICCItemPtr(ICCItem::Nil));
+
+	else if (strEquals(sProperty, PROPERTY_WRECK_HAS_ITEMS))
+		return ICCItemPtr(m_WreckDesc.AreItemsAddedToWreck());
+
+	else if (strEquals(sProperty, PROPERTY_WRECK_HAS_INSTALLED_ITEMS))
+		return ICCItemPtr(m_WreckDesc.AreInstalledItemsAddedToWreck());
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
 		return ICCItemPtr(GetMaxStructuralHitPoints());
