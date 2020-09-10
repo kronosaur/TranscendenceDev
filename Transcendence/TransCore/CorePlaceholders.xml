@@ -52,29 +52,40 @@
 			manufacturer=		"United African States"
 			class=				"Mikeno"
 			type=				"destroyer"
+			defaultSovereign=	"&svIndependent;"
 
-			mass=				"5000"
-			cargoSpace=			"500"
-			thrustRatio=		"1.5"
-			maxSpeed=			"12"
-
-			leavesWreck=		"100"
+			attributes=			""
 			>
 
-		<Armor>
-			<ArmorSection start="345" span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="315" span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="285" span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="255" span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="225" span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="195" span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="165" span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="135" span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="105" span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="75"  span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="45"  span="30" armorID="&itHeavyPlasteelPlate;"/>
-			<ArmorSection start="15"  span="30" armorID="&itHeavyPlasteelPlate;"/>
-		</Armor>
+		<!-- Hull -->
+
+		<Hull
+			size=				"100"
+			mass=				"5000"
+			cargoSpace=			"500"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"5000"
+			maxDevices=			"10"
+			maxWeapons=			"4"
+			/>
+
+		<Drive
+			maxSpeed=			"12"
+			thrust=				"8000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3.6"
+			rotationAccel=		"1.2"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itHeavyPlasteelPlate;"
+			count=				"12"
+			/>
 
 		<Devices>
 			<Device deviceID="&itBallistaCannon;" posAngle="0" posRadius="64"/>
@@ -83,15 +94,14 @@
 			<Device deviceID="&itLaserCannon;" secondaryWeapon="true" minFireArc="185" maxFireArc="330" posAngle="270" posRadius="20"/>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"3.6"
-			rotationAccel=		"1.2"
-			/>
-
 		<Items>
 		</Items>
 
+		<!-- Image and Effects -->
+
 		<Image imageID="&rsMikeno;" imageX="0" imageY="0" imageWidth="192" imageHeight="192" rotationCount="20"/>
+
+		<!-- AI and Behavior -->
 
 		<AISettings
 			fireRateAdj=		"15"

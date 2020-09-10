@@ -256,20 +256,21 @@ class CShipwreckDesc
 	{
 	public:
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
-		ALERROR Bind (SDesignLoadCtx &Ctx);
+		bool AreInstalledItemsAddedToWreck (void) const;
+		bool AreItemsAddedToWreck (void) const;
+		ALERROR Bind (SDesignLoadCtx &Ctx, const CShipwreckDesc *pInherited);
 		void CleanUp (void);
 		void ClearMarks (void);
 		bool CreateEmptyWreck (CSystem &System, CShipClass *pClass, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck) const;
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const;
-		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
+		CWeaponFireDesc *GetExplosionType (void) const;
 		size_t GetMemoryUsage (void) const;
-		int GetStructuralHP (void) const { return m_iStructuralHP; }
-		int GetWreckChance (void) const { return m_iLeavesWreck; }
+		int GetStructuralHP (void) const;
+		int GetWreckChance (void) const;
 		CObjectImageArray *GetWreckImage (const CShipClass *pClass, int iRotation) const;
 		CStationType *GetWreckType (void) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Metric rHullMass);
-		bool IsDefault (void) const { return m_bIsDefault; }
-		bool IsRadioactive (void) const { return m_bRadioactiveWreck; }
+		bool IsRadioactive (void) const;
 		void MarkImages (CShipClass *pClass, int iRotation) const;
 		void SweepImages (void);
 
@@ -282,6 +283,7 @@ class CShipwreckDesc
 		ItemFates CalcDeviceFate (CShip *pSource, const CItem &Item, CSpaceObject *pWreck, bool bDropDamaged) const;
 		bool CreateWreckImage (const CShipClass *pClass, int iRotationFrame, CObjectImageArray &Result) const;
 		void InitDamageImage (void) const;
+		bool IsWreckChanceSet (int *retiChance) const;
 		void LoadXMLBool (const CXMLElement &Desc, const CString &sAttrib, bool &retbValue);
 
 		static constexpr int DAMAGE_IMAGE_COUNT =		10;
@@ -296,10 +298,12 @@ class CShipwreckDesc
 		CStationTypeRef m_pWreckType;			//	Station type to use as wreck
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
 
-		bool m_bIsDefault = false;				//	TRUE if initialized to defaults
+		bool m_bIsDefaultWreckChance = false;	//	TRUE if we computed wreck chance
 		bool m_bRadioactiveWreck = false;		//	TRUE if wreck is always radioactive
 		bool m_bNoItems = false;				//	If TRUE, do not bring items from ship to wreck
 		bool m_bNoInstalledItems = false;		//	If TRUE, do not bring installed items from ship to wreck
+
+		const CShipwreckDesc *m_pInherited = NULL;
 
 		mutable TSortMap<int, CObjectImageArray> m_WreckImages;	//	Wreck image for each rotation frame index
 
@@ -448,7 +452,7 @@ class CShipClass : public CDesignType
 		const CString &GetManufacturerName (void) const { return m_sManufacturer; }
 		const CString &GetShipTypeName (void) const { return m_sTypeName; }
 		int GetWreckChance (void) const { return GetWreckDesc().GetWreckChance(); }
-		const CShipwreckDesc &GetWreckDesc (void) const;
+		const CShipwreckDesc &GetWreckDesc (void) const { return m_WreckDesc; }
 		const CObjectImageArray &GetWreckImage (int iRotation) const;
 		bool HasDockingPorts (void) const { return (m_DockingPorts.GetPortCount() > 0 || !m_pDefaultScreen.IsEmpty()); }
 		bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
@@ -575,6 +579,7 @@ class CShipClass : public CDesignType
 		void FindBestMissile (CDeviceClass *pLauncher, IItemGenerator *pItems, CItemType **retpMissile) const;
 		void FindBestMissile (CDeviceClass *pLauncher, const CItemList &Items, CItemType **retpMissile) const;
 		CString GetGenericName (DWORD *retdwFlags = NULL) const;
+		const CShipwreckDesc *GetInheritedShipwreckDesc (void) const;
 		int GetManeuverDelay (void) const { return m_Perf.GetIntegralRotationDesc().GetManeuverDelay(); }
 		void InitShipNamesIndices (void);
 

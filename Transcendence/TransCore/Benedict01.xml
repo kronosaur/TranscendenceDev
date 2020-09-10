@@ -83,8 +83,8 @@
 					;	Find an enemy station to attack
 
 					(hiddenObj 
-						(or (sysFindObject sourceObj "TAN +enemy; +property:challengeRating[6];")
-							(sysFindObject sourceObj "TAN +enemy; +property:challengeRating[7];")
+						(or (sysFindObject sourceObj "TAN +enemy; +property:challengeRating[6]; -questTarget;")
+							(sysFindObject sourceObj "TAN +enemy; +property:challengeRating[7]; -questTarget;")
 							)
 						)
 					)
@@ -736,6 +736,8 @@
 
 						(= (objGetType (@ gData 'targetObj)) &stUrakOutpost;)
 							(msnTranslate gSource "attackHiddenEnemy:Begin:Urak" gData)
+
+						(msnTranslate gSource "attackHiddenEnemy:Begin:Generic" gData)
 						)
 
 					(switch
@@ -790,6 +792,14 @@
 				and fear all outsiders.
 
 				"I want you to go out there and destroy their outpost."
+
+			</Text>
+			<Text id="attackHiddenEnemy:Begin:Generic">
+
+				"You've done well, %name%. You're ready for your final exam.
+
+				"There's %theTarget% at the edge of	the system. I want you to 
+				go out there and destroy it."
 
 			</Text>
 			<Text id="attackHiddenEnemy:Begin:NoLooting">

@@ -1014,5 +1014,8 @@
     <Xml Include="CorporateAutonDealer.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\ShipClassTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

@@ -89,7 +89,7 @@ void CPhysicsForceResolver::Update (CSystem &System, const Metric rSecondsPerUpd
 		//	Apply forces
 
 		const Metric rMass = pObj->GetMass();
-		if (rMass >= 0.0)
+		if (rMass > 0.0)
 			{
 			//	Compute a factor incorporating mass.
 			//	NOTE: The original code multiplies force by 1000, ostensibly
