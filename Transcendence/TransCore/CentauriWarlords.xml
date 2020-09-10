@@ -378,7 +378,7 @@
 			hitPoints=			"35"
 			ejectaType=			"&vtWreckEjecta;"
 
-			attributes=			"arcoVaughn, centauriWarlords, enemy, human, populated, uncharted, warlords"
+			attributes=			"arcoVaughn, centauriWarlords, enemy, human, populated, questTarget, uncharted, warlords"
 			maxAppearing=		"1"
 			>
 
