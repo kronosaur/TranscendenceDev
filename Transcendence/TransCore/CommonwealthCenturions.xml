@@ -104,8 +104,8 @@
 
 			maxReactorPower=	"10000"
 			maxCargoSpace=		"200"
-			maxDevices=			"8"
-			maxNonWeapons=		"4"
+			maxDevices=			"9"
+			maxNonWeapons=		"5"
 
 			maxArmor=			"massive"
 			stdArmor=			"heavy"
@@ -184,8 +184,8 @@
 
 			maxReactorPower=	"10000"
 			maxCargoSpace=		"200"
-			maxDevices=			"8"
-			maxNonWeapons=		"4"
+			maxDevices=			"9"
+			maxNonWeapons=		"5"
 
 			maxArmor=			"massive"
 			stdArmor=			"heavy"
@@ -264,8 +264,8 @@
 
 			maxReactorPower=	"10000"
 			maxCargoSpace=		"200"
-			maxDevices=			"8"
-			maxNonWeapons=		"4"
+			maxDevices=			"9"
+			maxNonWeapons=		"6"
 
 			maxArmor=			"massive"
 			stdArmor=			"heavy"
