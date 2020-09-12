@@ -59,7 +59,7 @@
 		<!-- Configuration -->
 		
 		<Armor
-			armorID=			"&itHeavyTitaniumPlate;"
+			armorID=			"&itLightPlasteelPlate;"
 			count=				"4"
 			/>
 		
@@ -70,19 +70,12 @@
 			<Device deviceID="&itCargoHoldExpansion;"/>
 		</Devices>
 
+		<Equipment>
+			<Install equipment="targetingComputer"/>
+		</Equipment>
+
 		<Items>
 			<Item count="6d6" item="&itHelium3FuelRod;"/>
-			<Item count="2d4+2" item="&itLargeArmorPatch;"/>
-			<Table>
-				<Item chance="40" count="4" item="&itAblativeArmorCoating;"/>
-				<Item chance="40" count="4" item="&itReactiveArmorCoating;"/>
-				<Item chance="20" count="4" item="&itRegeneratingNanos;"/>
-			</Table>
-			<Table>
-				<Item chance="40" count="1" item="&itEnhanceSRSROM;"/>
-				<Item chance="40" count="1" item="&itTargetingComputerROM;"/>
-				<Item chance="20" count="1" item="&itEnhanceShieldsROM;"/>
-			</Table>
 		</Items>
 
 		<!-- Player Settings -->
