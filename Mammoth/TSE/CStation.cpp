@@ -441,9 +441,24 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 		//	If we're not making progress, then return a hint about what to do.
 
 		if (iHint != EDamageHint::none 
-				&& iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD)
+				&& iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD
+				&& Ctx.Attacker.IsPlayer()
+				&& Ctx.Attacker.IsAngryAt(*this))
 			{
-			int iAveDamage = mathAdjust(mathRound(Ctx.Damage.GetDamageValue(DamageDesc::flagAverageDamage | DamageDesc::flagIncludeBonus)), iDamageAdj);
+			//	Figure out the average damage for this weapon.
+
+			Metric rAveDamage = Ctx.Damage.GetDamageValue(DamageDesc::flagAverageDamage | DamageDesc::flagIncludeBonus);
+
+			//	Adjust damage for difficulty level.
+
+			rAveDamage = GetUniverse().AdjustDamage(Ctx, rAveDamage);
+
+			//	Adjust for special damage resistance.
+
+			int iAveDamage = mathAdjust(mathRound(rAveDamage), iDamageAdj);
+
+			//	If we're not doing much harm, then warn the player.
+
 			if (iAveDamage == 0 || (m_Hull.GetHitPoints() / iAveDamage) > SDamageCtx::WMD_HINT_THRESHOLD)
 				Ctx.SetHint(iHint);
 			}

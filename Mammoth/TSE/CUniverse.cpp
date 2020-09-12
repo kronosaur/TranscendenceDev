@@ -190,6 +190,72 @@ void CUniverse::AdjustDamage (SDamageCtx &Ctx) const
 		Ctx.iDamage = mathRoundStochastic(Ctx.iDamage * rAdjust);
 	}
 
+int CUniverse::AdjustDamage (const SDamageCtx &Ctx, int iDamage) const
+
+//	AdjustDamage
+//
+//	Adjust damage to implement difficulty levels.
+
+	{
+	const CSpaceObject *pOrderGiver;
+
+	//	If the player got hit, then adjust
+
+	Metric rAdjust;
+	if (Ctx.pObj->IsPlayer())
+		rAdjust = m_Difficulty.GetPlayerDamageAdj();
+
+	//	Otherwise, if the attacker is the player, then adjust
+
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
+		rAdjust = m_Difficulty.GetEnemyDamageAdj();
+
+	//	Otherwise, no adjustment.
+
+	else
+		return iDamage;
+
+	//	Adjust damage
+
+	if (rAdjust != 1.0)
+		return mathRoundStochastic(iDamage * rAdjust);
+	else
+		return iDamage;
+	}
+
+Metric CUniverse::AdjustDamage (const SDamageCtx &Ctx, Metric rDamage) const
+
+//	AdjustDamage
+//
+//	Adjust damage to implement difficulty levels.
+
+	{
+	const CSpaceObject *pOrderGiver;
+
+	//	If the player got hit, then adjust
+
+	Metric rAdjust;
+	if (Ctx.pObj->IsPlayer())
+		rAdjust = m_Difficulty.GetPlayerDamageAdj();
+
+	//	Otherwise, if the attacker is the player, then adjust
+
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
+		rAdjust = m_Difficulty.GetEnemyDamageAdj();
+
+	//	Otherwise, no adjustment.
+
+	else
+		return rDamage;
+
+	//	Adjust damage
+
+	if (rAdjust != 1.0)
+		return rDamage * rAdjust;
+	else
+		return rDamage;
+	}
+
 void CUniverse::Boot (void)
 
 //	Boot

@@ -341,6 +341,8 @@ class CUniverse
 		void AddTimeDiscontinuity (const CTimeSpan &Duration) { m_Time.AddDiscontinuity(m_iTick++, Duration); }
 		ALERROR AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem);
 		void AdjustDamage (SDamageCtx &Ctx) const;
+		int AdjustDamage (const SDamageCtx &Ctx, int iDamage) const;
+		Metric AdjustDamage (const SDamageCtx &Ctx, Metric rDamage) const;
 		bool CancelEvent (CSpaceObject *pObj, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, bInDoEvent); }
 		bool CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, sEvent, bInDoEvent); }
 		bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pType, sEvent, bInDoEvent); }
