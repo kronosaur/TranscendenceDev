@@ -371,10 +371,10 @@
 							;	If we listened this far, we get to use the sanctum
 							
 							(objSetData gSource "freeSanctum" True)
-                            
-                            ;   Intro done
-                            
-                            (scrShowPane gScreen 'IntroDone)
+							
+							;   Intro done
+							
+							(scrShowPane gScreen 'IntroDone)
 						
 							;	Exit the screen so when we return, we're back at the main screen
 							
@@ -398,13 +398,13 @@
 					</Action>
 				</Actions>
 			</Default>
-            
-            <IntroDone>
-                <OnPaneInit>
+			
+			<IntroDone>
+				<OnPaneInit>
 					(scrSetDesc gScreen (typTranslate &dsBenedictIntro; "BenedictMeeting"))
-                </OnPaneInit>
-                
-                <Actions>
+				</OnPaneInit>
+				
+				<Actions>
 					<Action id="actionContinue" default="1" cancel="1">
 						(block (theMission)
 						
@@ -424,8 +424,8 @@
 								)
 							)
 					</Action>
-                </Actions>
-            </IntroDone>
+				</Actions>
+			</IntroDone>
 			
 			<IntroSkip>
 				<OnPaneInit>

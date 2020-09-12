@@ -144,45 +144,13 @@
 				</Actions>
 			</Default>
 
-			<RepairArmor descID="RepairArmorDesc">
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						<ShowPane pane="Default"/>
-					</Action>
-				</Actions>
-			</RepairArmor>
-
-			<NoDamage descID="NoDamageDesc">
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						<ShowPane pane="Default"/>
-					</Action>
-				</Actions>
-			</NoDamage>
-
-			<UnableToRepair descID="UnableToRepairDesc">
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						<ShowPane pane="Default"/>
-					</Action>
-				</Actions>
-			</UnableToRepair>
-
-			<TooRich descID="TooRichDesc">
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-				</Actions>
-			</TooRich>
-
 			<MessagePane>
 				<OnPaneInit>
 					(scrSetDescTranslate gScreen (scrGetData gScreen 'message))
 				</OnPaneInit>
 				<Actions>
 					<Action id="actionContinue" default="1" cancel="1">
-						(scrExitScreen gScreen)
+						(scrShowPane gScreen 'Default)
 					</Action>
 				</Actions>
 			</MessagePane>
