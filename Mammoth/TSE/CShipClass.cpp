@@ -195,6 +195,7 @@
 #define PROPERTY_MAX_ARMOR_CLASS				CONSTLIT("maxArmorClass")
 #define PROPERTY_MAX_ARMOR_CLASS_NAME			CONSTLIT("maxArmorClassName")
 #define PROPERTY_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")
+#define PROPERTY_MAX_DEVICES					CONSTLIT("maxDevices")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_MAX_SPEED_AT_MAX_ARMOR			CONSTLIT("maxSpeedAtMaxArmor")
 #define PROPERTY_MAX_SPEED_AT_MIN_ARMOR			CONSTLIT("maxSpeedAtMinArmor")
@@ -3936,6 +3937,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_MASS))
 		return (m_Hull.GetArmorLimits().GetMaxArmorMass() > 0 ? ICCItemPtr(m_Hull.GetArmorLimits().GetMaxArmorMass()) : ICCItemPtr(ICCItem::Nil));
+
+	else if (strEquals(sProperty, PROPERTY_MAX_DEVICES))
+		return ICCItemPtr(m_Hull.GetMaxDevices());
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_AT_MAX_ARMOR))
 		return ICCItemPtr(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetArmorLimits().GetMaxArmorSpeedPenalty());
