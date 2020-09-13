@@ -18,70 +18,81 @@
 			<!-- New Beyond -->
 
 			<Group xOffset="179" yOffset="-163">
+				<!--
+
+				NOTE: We can't delete these because saved game rely on effect
+				order. In the future we need to change this so we can deprecate
+				these effects.
+
 				<Text text=				"New Beyond" 
 						font=			"Title"
 						primaryColor=	"0xff, 0xff, 0xff"
 						opacity=		"20"
 						/>
+				-->
 			</Group>
 			
 			<Group xOffset="324" yOffset="-61">
 				<Text text=				"Charon Pirates" 
-						font=			"SubTitle"
-						primaryColor=	"0xff, 0xff, 0xff"
-						opacity=		"20"
+						font=			"SubTitleHeavyBold"
+						primaryColor=	"#fff2d9"
+						opacity=		"80"
 						/>
 			</Group>
 
 			<Group xOffset="-160" yOffset="420">
 				<Text text=				"Huari Empire" 
-						font=			"SubTitle"
-						primaryColor=	"0xff, 0xff, 0xff"
-						opacity=		"20"
+						font=			"SubTitleHeavyBold"
+						primaryColor=	"#fff2d9"
+						opacity=		"80"
 						/>
 			</Group>
 
 			<!-- Ungoverned Territories -->
 
 			<Group xOffset="-33" yOffset="347">
+			<!--
 				<Text text=				"Ungoverned Territories" 
 						font=			"Title"
 						primaryColor=	"0xff, 0xff, 0xff"
 						opacity=		"20"
 						/>
+			-->
 			</Group>
 				
-			<Group xOffset="-38" yOffset="292">
+			<Group xOffset="-300" yOffset="260">
 				<Text text=				"Sung Slavers" 
-						font=			"SubTitle"
-						primaryColor=	"0xff, 0xff, 0xff"
-						opacity=		"20"
+						font=			"SubTitleHeavyBold"
+						primaryColor=	"#fff2d9"
+						opacity=		"80"
 						/>
 			</Group>
 
 			<!-- Outer Realm -->
 
 			<Group xOffset="-224" yOffset="-44">
+			<!--
 				<Text text=				"Outer\nRealm" 
 						font=			"Title"
 						primaryColor=	"0xff, 0xff, 0xff"
 						opacity=		"20"
 						/>
+			-->
 			</Group>
 				
 			<Group xOffset="-384" yOffset="36">
 				<Text text=				"Ranx\nEmpire" 
-						font=			"SubTitle"
-						primaryColor=	"0xff, 0xff, 0xff"
-						opacity=		"20"
+						font=			"SubTitleHeavyBold"
+						primaryColor=	"#fff2d9"
+						opacity=		"80"
 						/>
 			</Group>
 
 			<Group xOffset="-383" yOffset="-176">
 				<Text text=				"Ares\nSpace" 
-						font=			"SubTitle"
-						primaryColor=	"0xff, 0xff, 0xff"
-						opacity=		"20"
+						font=			"SubTitleHeavyBold"
+						primaryColor=	"#fff2d9"
+						opacity=		"80"
 						/>
 			</Group>
 		</MapEffect>
