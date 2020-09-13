@@ -149,8 +149,6 @@
 							(list (list "Never reached Heretic" Nil "exploration" "Z005"))
 							)
 						
-						(list (list "Never reached the Galactic Core" Nil "exploration" "Z006"))
-					
 						; Total goods profit
 						(if (gr totalGMProfit 0)
 							(list (list "Profit on goods and materials" totalGMProfit "commerce"))

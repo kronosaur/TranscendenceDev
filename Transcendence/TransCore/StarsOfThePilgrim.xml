@@ -98,6 +98,7 @@
 	<AdventureDesc
 			unid=			"&adPart1Desc;"
 			backgroundID=	"&rsPart1Cover;"
+			inherit=		"&unidCommonText;"
 				
 			startingShipCriteria=	"* +00200000_PlayerShip;"
 			include10StartingShips=	"true" 
@@ -172,7 +173,22 @@
 			</OnGameEnd>
 
 			<GetGlobalAchievements>
-				(intGetGlobalAchievements)
+				(append
+					(intGetGlobalAchievements)
+
+					(switch
+						(= aEndGameReason 'leftHumanSpace)
+							{	descID: 'achieve.leftHumanSpace
+								sectionID: 'exploration
+								sort: 'Z006
+								}
+
+						{	descID: 'achieve.neverLeftHumanSpace
+							sectionID: 'exploration
+							sort: 'Z006
+							}
+						)
+					)
 			</GetGlobalAchievements>
 				
 			<OnGlobalUniverseCreated>
@@ -215,6 +231,9 @@
 			</Text>
 			<Text id="lastPhrase.continued">To be continued...</Text>
 			<Text id="lastPhrase.never">%He% never reached the Galactic Core.</Text>
+
+			<Text id="achieve.leftHumanSpace">Left Human Space</Text>
+			<Text id="achieve.neverLeftHumanSpace">Never left Human Space</Text>
 		</Language>
 	</AdventureDesc>
 		
