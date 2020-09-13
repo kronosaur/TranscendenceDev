@@ -282,7 +282,7 @@ class CDesignType
 		bool FindStaticData (const CString &sAttrib, ICCItemPtr &pData) const;
 		void FireCustomEvent (const CString &sEvent, ECodeChainEvents iEvent = eventNone, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
 		bool FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, CSpaceObject **retpGate, CVector *retvPos);
-		void FireGetGlobalAchievements (CGameStats &Stats);
+		void FireGetGlobalAchievements (CCodeChainCtx &CCX, CGameStats &Stats);
 		bool FireGetGlobalDockScreen (const SEventHandlerDesc &Event, const CSpaceObject *pObj, CDockScreenSys::SSelector &Selector) const;
 		bool FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		int FireGetGlobalResurrectPotential (void);
@@ -1361,7 +1361,7 @@ class CDesignCollection
 
 		CExtension *FindExtension (DWORD dwUNID) const;
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) const;
-		void FireGetGlobalAchievements (CGameStats &Stats);
+		void FireGetGlobalAchievements (const CString &sEndGameReason, CGameStats &Stats);
 
 		static constexpr DWORD FLAG_NO_OVERRIDE = 0x00000001;
 		bool FireGetGlobalDockScreen (const CSpaceObject *pObj, DWORD dwFlags, CDockScreenSys::SSelector *retSelector = NULL) const;

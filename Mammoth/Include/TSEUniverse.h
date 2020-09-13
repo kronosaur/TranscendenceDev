@@ -373,7 +373,7 @@ class CUniverse
 		void FireOnGlobalUniverseLoad (void) { m_Design.FireOnGlobalUniverseLoad(); }
 		void FireOnGlobalUniverseSave (void) { m_Design.FireOnGlobalUniverseSave(); }
 		void FlushStarSystem (CTopologyNode *pTopology);
-		void GenerateGameStats (CGameStats &Stats);
+		void GenerateGameStats (const CString &sEndGameReason, CGameStats &Stats);
 		const CAccessibilitySettings &GetAccessibilitySettings (void) const { return m_AccessabilitySettings; }
 		CAccessibilitySettings &GetAccessibilitySettings (void) { return m_AccessabilitySettings; }
 		void GetAllAdventures (TArray<CExtension *> *retList) { CString sError; m_Extensions.ComputeAvailableAdventures((m_bDebugMode ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retList, &sError); }

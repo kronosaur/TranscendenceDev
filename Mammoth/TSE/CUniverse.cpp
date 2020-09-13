@@ -776,7 +776,7 @@ void CUniverse::GarbageCollectLibraryBitmaps (void)
 	SweepLibraryBitmaps();
 	}
 
-void CUniverse::GenerateGameStats (CGameStats &Stats)
+void CUniverse::GenerateGameStats (const CString &sEndGameReason, CGameStats &Stats)
 
 //	GenerateGameStats
 //
@@ -787,7 +787,7 @@ void CUniverse::GenerateGameStats (CGameStats &Stats)
 
 	//	Ask all design types to generate game stats
 
-	m_Design.FireGetGlobalAchievements(Stats);
+	m_Design.FireGetGlobalAchievements(sEndGameReason, Stats);
 
 	//	Add all extensions
 

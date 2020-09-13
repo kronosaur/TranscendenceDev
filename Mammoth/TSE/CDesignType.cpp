@@ -967,7 +967,7 @@ bool CDesignType::FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, 
 	DEBUG_CATCH
 	}
 
-void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
+void CDesignType::FireGetGlobalAchievements (CCodeChainCtx &CCX, CGameStats &Stats)
 
 //	FireGetGlobalAchievements
 //
@@ -978,7 +978,6 @@ void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
 	if (!FindEventHandler(GET_GLOBAL_ACHIEVEMENTS_EVENT, &Event))
 		return;
 
-	CCodeChainCtx CCX(GetUniverse());
 	CCX.DefineContainingType(this);
 	ICCItemPtr pResult = CCX.RunCode(Event);
 
