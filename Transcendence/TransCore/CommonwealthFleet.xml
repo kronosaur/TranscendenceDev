@@ -251,7 +251,7 @@ PLAYER DATA
 			<Text id="rank.privateer">:a privateer(s)</Text>
 			<Text id="rank.ensign">:an ensign(s)</Text>
 			<Text id="rank.fleetLieutenant">:a Fleet lieutenant(s)</Text>
-			<Text id="rank.fleetCommand">:a Fleet commander(s)</Text>
+			<Text id="rank.fleetCommander">:a Fleet commander(s)</Text>
 			<Text id="rank.fleetCaptain">:a Fleet captain(s)</Text>
 
 			<Text id="labelSuccesses">Mission Successes:</Text>
