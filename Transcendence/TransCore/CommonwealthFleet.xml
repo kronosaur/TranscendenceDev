@@ -108,7 +108,7 @@
 					(switch
 						(= rank 1) "Civilian"
 						(= rank 2) "Privateer"
-						(= rank 3) "Master sergeant"
+						(= rank 3) "Ensign"
 						(= rank 4) "Fleet lieutenant"
 						(= rank 5) "Fleet commander"
 						(= rank 6) "Fleet captain"
@@ -249,7 +249,7 @@ PLAYER DATA
 			</Code>
 			<Text id="rank.civilian">:a civilian(s)</Text>
 			<Text id="rank.privateer">:a privateer(s)</Text>
-			<Text id="rank.masterChief">:a master chief(s)</Text>
+			<Text id="rank.ensign">:an ensign(s)</Text>
 			<Text id="rank.fleetLieutenant">:a Fleet lieutenant(s)</Text>
 			<Text id="rank.fleetCommand">:a Fleet commander(s)</Text>
 			<Text id="rank.fleetCaptain">:a Fleet captain(s)</Text>
@@ -1230,7 +1230,7 @@ PLAYER DATA
 			<Text id="Promotion:3">
 				(cat
 					"In recognition of your service to the Fleet, " (@ gData 'captainName)
-					" awards you the rank of master sergeant in the Commonwealth Fleet."
+					" awards you the rank of ensign in the Commonwealth Fleet."
 					)
 			</Text>
 			<Text id="Promotion:4">
