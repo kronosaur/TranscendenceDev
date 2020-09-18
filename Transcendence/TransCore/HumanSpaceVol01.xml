@@ -2363,6 +2363,7 @@
 	<!ENTITY rsAquilaHero				"0x0010066D">
 	<!ENTITY vtMinotaurTurretSlot		"0x0010066E">
 	<!ENTITY rsCommonwealthFleetInsignia	"0x0010066F">
+	<!ENTITY etCSCSupportEncounter		"0x00100670">
 
 	<!-- 06C0-06FF STANDARD ITEMS -->
 

@@ -6746,6 +6746,38 @@
 
 	</StationType>
 
+	<!-- CSC Arctica Encounter -->
+
+	<EncounterType UNID="&stCSCArcticaEncounter;"
+			obsoleteVersion="51"
+			name=				"(CSC Arctica)"
+			sovereign=			"&svCommonwealthFleet;"
+			>
+		<Ships>
+			<Ship	count="1"	class="&scCSCArctica;" orders="hold">
+				<Escorts>
+					<Ship     count="2d6"	class="&scCenturionM;"	orders="patrol" patrolDist="15"/>
+				</Escorts>
+			</Ship>
+		</Ships>
+	</EncounterType>
+
+	<!-- CSC Sahara Encounter -->
+
+	<EncounterType UNID="&stCSCSaharaEncounter;"
+			obsoleteVersion="51"
+			name=				"(CSC Sahara)"
+			sovereign=			"&svCommonwealthFleet;"
+			>
+		<Ships>
+			<Ship	count="1"	class="&scCSCSahara;" orders="hold">
+				<Escorts>
+					<Ship     count="2d6"	class="&scCenturionM;"	orders="patrol" patrolDist="15"/>
+				</Escorts>
+			</Ship>
+		</Ships>
+	</EncounterType>
+
 	<!-- Old Effects -->
 	
 	<Effect UNID="&efLargeExplosion1;"	obsoleteVersion="49">

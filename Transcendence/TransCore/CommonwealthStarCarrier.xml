@@ -23,6 +23,9 @@
 			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 320 0 320 240)
 			</Definition>
+			<Definition id="csc.id">
+				'america
+			</Definition>
 		</Properties>
 
 		<Language>
@@ -58,6 +61,9 @@
 		<Properties>
 			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 960 0 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'arctica
 			</Definition>
 		</Properties>
 
@@ -107,6 +113,9 @@
 			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 0 240 320 240)
 			</Definition>
+			<Definition id="csc.id">
+				'asia
+			</Definition>
 		</Properties>
 
 		<Language>
@@ -139,6 +148,9 @@
 		<Properties>
 			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 320 240 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'atlantica
 			</Definition>
 		</Properties>
 
@@ -174,6 +186,9 @@
 			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 0 480 320 240)
 			</Definition>
+			<Definition id="csc.id">
+				'india
+			</Definition>
 		</Properties>
 
 		<Language>
@@ -207,6 +222,9 @@
 		<Properties>
 			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 320 480 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'pacifica
 			</Definition>
 		</Properties>
 
@@ -244,6 +262,9 @@
 		<Properties>
 			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 640 480 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'sahara
 			</Definition>
 		</Properties>
 
@@ -1192,16 +1213,31 @@
 			</OnBehavior>
 
 			<OnCreate>
-				(block (squadronList)
-					; Are we in a good spot? If not, then we give orders to move
+				(block (
+					(cscID (obj@ gSource 'csc.id))
+					(cscStatus (typ@ &svCommonwealthFleet; 'cscStatus))
+					(ourStatus (@ cscStatus cscID))
+					)
+					; (dbgOutput "Creating " (objGetName gSource) " in " (sysGetName) "           ")
+
+					;	Set our status
+
+					(set@ ourStatus 'nodeID (sysGetNode))
+					(set@ cscStatus cscID ourStatus)
+					(typSet@ &svCommonwealthFleet; 'cscStatus cscStatus)
+
+					;	Are we in a good spot? If not, then we give orders to move
+
 					(fltOrderCheckPosition gSource)
 
-					; Create the Britannia squadron
+					;	Create the Britannia squadron
+
 					(for i 1 6
 						(cscSquadronCreateShip gSource &scBritannia;)
 						)
 
-					; Behavior event
+					;	Behavior event
+
 					(sysAddObjRecurringTimerEvent 90 gSource "OnBehavior")
 					)
 			</OnCreate>

@@ -18,6 +18,56 @@
 
 			alignment="constructive chaos"
 			>
+		<Properties>
+			<Global id="cscStatus">
+				{
+					america: {
+						class: &scCSCAmerica;
+						nodeID: Nil
+						}
+
+					antarctica: {
+						class: &scCSCAntarctica;
+						nodeID: Nil
+						}
+
+					arctica: {
+						class: &scCSCArctica;
+						nodeID: Nil
+						}
+
+					asia: {
+						class: &scCSCAsia;
+						nodeID: Nil
+						}
+
+					atlantica: {
+						class: &scCSCAtlantica;
+						nodeID: Nil
+						}
+
+					india: {
+						class: &scCSCIndia;
+						nodeID: Nil
+						}
+
+					pacifica: {
+						class: &scCSCPacifica;
+						nodeID: Nil
+						}
+
+					sahara: {
+						class: &scCSCSahara;
+						nodeID: Nil
+						}
+
+					terra: {
+						class: &scCSCTerra;
+						nodeID: Nil
+						}
+					}
+			</Global>
+		</Properties>
 
 		<Events>
 			<GetGlobalAchievements>
@@ -264,13 +314,7 @@ PLAYER DATA
 
 <!-- ENCOUNTERS -->
 
-	<!-- CSC Task Force Encounter
-	
-	GLOBAL DATA
-
-	shipsLeft: A list of ships not yet deployed.
-
-	-->
+	<!-- CSC Task Force Encounter -->
 
 	<EncounterType UNID="&stCSCTaskForceEncounter;"
 			name=				"(CSC Task Force)"
@@ -278,6 +322,11 @@ PLAYER DATA
 
 			attributes=			"fleet,friendly,envAir,envEarth,envFire,envWater"
 			>
+		<Properties>
+			<Definition id="cscList">
+				'(america atlantica asia india pacifica)
+			</Definition>
+		</Properties>
 
 		<!-- Encounter Info -->
 
@@ -293,44 +342,29 @@ PLAYER DATA
 				unique=					"inSystem"
 				/>
 
-		<GlobalData>
-			<shipsLeft>
-				("america" "atlantica" "asia" "india" "pacifica")
-			</shipsLeft>
-		</GlobalData>
-
 		<Ships>
 			<Ship	count="1"	class="&scCSCAmerica;" orders="hold">
 				<GetParameters>
 					(block (
-						;	Pick a random ship
+						(allCSCs (typ@ &stCSCTaskForceEncounter; 'cscList))
+						(cscStatus (typ@ &svCommonwealthFleet; 'cscStatus))
 
-						(shipsLeft (typGetData &stCSCTaskForceEncounter; 'shipsLeft))
-						(shipToCreate (if (not shipsLeft) "america" (random shipsLeft)))
-						(cscTable {
-							america: &scCSCAmerica;
-							asia: &scCSCAsia;
-							atlantica: &scCSCAtlantica;
-							india: &scCSCIndia;
-							pacifica: &scCSCPacifica;
-							})
-						)
+						;	Make a list of all ships that have not yet been encountered
 
-						;	Remove from list
-						;	LATER: We shouldn't modify the list inside here, since
-						;	this should not have side-effects. In the future we should
-						;	modify the list in an OnCreate event (or something).
-
-						(typSetData &stCSCTaskForceEncounter; 'shipsLeft 
-							(filter shipsLeft theShip 
-								(not (eq theShip shipToCreate))
+						(cscLeft
+							(filter allCSCs cscID
+								(not (@ (@ cscStatus cscID) 'nodeID))
 								)
 							)
 
+						;	Pick a random ship
+
+						(cscToCreate (or (random cscLeft) 'america))
+						)
 						;	Return the CSC class
 
 						{
-							class: (@ cscTable shipToCreate)
+							class: (@ (@ cscStatus cscToCreate) 'class)
 							}
 						)
 				</GetParameters>
@@ -351,61 +385,62 @@ PLAYER DATA
 		</Ships>
 	</EncounterType>
 
-	<!-- CSC Arctica Encounter -->
+	<!-- CSC Support Encounter -->
 
-	<EncounterType UNID="&stCSCArcticaEncounter;"
-			name=				"(CSC Arctica)"
+	<EncounterType UNID="&etCSCSupportEncounter;"
+			name=				"(CSC Support Ship)"
 			sovereign=			"&svCommonwealthFleet;"
 
 			attributes=			"fleet,friendly,envAir,envEarth,envFire,envWater"
 			>
+		<Properties>
+			<Definition id="cscList">
+				'(arctica sahara)
+			</Definition>
+		</Properties>
 
 		<!-- Encounter Info -->
 
 		<Encounter
 				systemCriteria=			"+cscOperationsSpace;"
 				systemAffinity=			"*"
-				levelFrequency=			"----- ruu-- ----- ----- -----"
+				levelFrequency=			"----- rcu-- ----- ----- -----"
 
 				locationCriteria=		"*"
 				enemyExclusionRadius=	"120"
 
-				maxAppearing=			"1"
+				maxAppearing=			"2"
+				unique=					"inSystem"
 				/>
 
 		<Ships>
 			<Ship	count="1"	class="&scCSCArctica;" orders="hold">
-				<Escorts>
-					<Ship     count="2d6"	class="&scCenturionM;"	orders="patrol" patrolDist="15"/>
-				</Escorts>
-			</Ship>
-		</Ships>
-	</EncounterType>
+				<GetParameters>
+					(block (
+						(allCSCs (typ@ &etCSCSupportEncounter; 'cscList))
+						(cscStatus (typ@ &svCommonwealthFleet; 'cscStatus))
 
-	<!-- CSC Sahara Encounter -->
+						;	Make a list of all ships that have not yet been encountered
 
-	<EncounterType UNID="&stCSCSaharaEncounter;"
-			name=				"(CSC Sahara)"
-			sovereign=			"&svCommonwealthFleet;"
+						(cscLeft
+							(filter allCSCs cscID
+								(not (@ (@ cscStatus cscID) 'nodeID))
+								)
+							)
 
-			attributes=			"fleet,friendly,envAir,envEarth,envFire,envWater"
-			>
+						;	Pick a random ship
 
-		<!-- Encounter Info -->
+						(cscToCreate (or (random cscLeft) 'arctica))
+						)
 
-		<Encounter
-				systemCriteria=			"+cscOperationsSpace;"
-				systemAffinity=			"*"
-				levelFrequency=			"----- ruu-- ----- ----- -----"
+						;	Return the CSC class
 
-				locationCriteria=		"*"
-				enemyExclusionRadius=	"120"
+						{
+							class: (@ (@ allCSCs cscToCreate) 'class)
+							}
+						)
+				</GetParameters>
 
-				maxAppearing=			"1"
-				/>
-
-		<Ships>
-			<Ship	count="1"	class="&scCSCSahara;" orders="hold">
 				<Escorts>
 					<Ship     count="2d6"	class="&scCenturionM;"	orders="patrol" patrolDist="15"/>
 				</Escorts>
