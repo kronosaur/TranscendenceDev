@@ -6,7 +6,7 @@
 
 #include "stdafx.h"
 
-int main (int argc, char *argv[ ], char *envp[ ])
+int main (int argc, const char *argv[ ], char *envp[ ])
 
 //	main
 //
