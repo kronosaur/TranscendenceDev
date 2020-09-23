@@ -417,6 +417,11 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 		{
 		sArticle = NounDesc.sArticle;
 		}
+	else if (dwComposeFlags & nounDefinitePhrase)
+		{
+		if (!NounDesc.sArticle.IsBlank())
+			sArticle = CONSTLIT("the ");
+		}
 	else if (dwComposeFlags & nounDemonstrative)
 		{
 		if (NounDesc.sArticle.IsBlank() || *NounDesc.sArticle.GetPointer() == 't')

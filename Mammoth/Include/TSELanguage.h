@@ -46,6 +46,7 @@ enum NounPhraseFlags
 	nounNoQuotes			= 0x00080000,	//	Convert double-quotes to single-quotes (for use inside quoted text)
 	nounEscapeQuotes		= 0x00100000,	//	Convert double-quotes to escaped double-quotes
 	nounHUDName				= 0x00200000,	//  Name to be displayed on the HUD
+	nounDefinitePhrase		= 0x00400000,	//	Prefix with "the", if an article is needed
 	};
 
 class CLanguage

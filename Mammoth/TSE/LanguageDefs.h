@@ -27,7 +27,7 @@ static TStaticStringTable<SStaticGenderWord, 9> GENDER_WORD_TABLE = {
 
 //	Convert from a string to NounPhraseFlags
 
-static TStaticStringTable<TStaticStringEntry<DWORD>, 22> NOUN_FLAG_TABLE = {
+static TStaticStringTable<TStaticStringEntry<DWORD>, 23> NOUN_FLAG_TABLE = {
 	"actual",				nounActual,
 	"adjective",			nounAdjective,
 	"article",				nounArticle,
@@ -36,6 +36,7 @@ static TStaticStringTable<TStaticStringEntry<DWORD>, 22> NOUN_FLAG_TABLE = {
 
 	"countAlways",			nounCountAlways,
 	"countOnly",			nounCountOnly,
+	"definitePhrase",		nounDefinitePhrase,
 	"demonstrative",		nounDemonstrative,
 	"demonym",				nounDemonym,
 	"duplicateModifier",	nounDuplicateModifier,
