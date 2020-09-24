@@ -6858,4 +6858,7 @@
 	<Image UNID="&rsMediumAutonHD;"		obsoleteVersion="50" bitmap="Resources\MediumAutonHD.jpg"	bitmask="Resources\MediumAutonHDMask.bmp"	loadOnUse="true" />
 	<Image UNID="&rsExplorerAuton;"		obsoleteVersion="50" bitmap="Resources\ExplorerAuton.jpg"	bitmask="Resources\ExplorerAutonMask.bmp"	loadOnUse="true" />
 
+	<Image UNID="&rsCentauriHeavyRaiderImage;"	obsoleteVersion="51" bitmap="Resources\CentauriHeavyRaider.jpg" bitmask="Resources\CentauriHeavyRaiderMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsCentauriRaiderImage;"		obsoleteVersion="51" bitmap="Resources\CentauriRaider.jpg" bitmask="Resources\CentauriRaiderMask.bmp"  loadOnUse="true"/>
+
 </TranscendenceModule>

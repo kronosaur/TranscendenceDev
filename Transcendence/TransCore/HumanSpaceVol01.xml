@@ -2161,6 +2161,8 @@
 	<!ENTITY evCentauriOccupation		"0x001003F2">
 	<!ENTITY evArcoVaughn				"0x001003F3">
 	<!ENTITY smCentauriWarlordsSpace	"0x001003F4">
+	<!ENTITY rsCentauriRaiderHero		"0x001003F5">
+	<!ENTITY rsCentauriHeavyRaiderHero	"0x001003F6">
 
 	<!-- 0410-042F KOBOL WARLORDS -->
 
