@@ -836,25 +836,49 @@
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(block (missionObj result)
-						(setq missionObj (scrGetData gScreen 'missionObj))
-						(setq result (msnFireEvent missionObj 'OnDeliveryMissionCompleted))
+					(block (
+						(missionObj (scrGetData gScreen 'missionObj))
+						(result (msnFireEvent missionObj 'OnDeliveryMissionCompleted))
+						(showAction Nil)
+						)
+						(switch
+							;	For backwards compatibility we handle the special case of
+							;	a structure with 'forceUndock
 
-						(if (eq (typeof result) 'struct)
-							(block Nil
-								(scrSetData gScreen 'forceUndock (@ result 'forceUndock))
-								(scrSetDesc gScreen (@ result 'desc))
+							(and (= (typeof result) 'struct) (@ result 'forceUndock))
+								(block Nil
+									(scrSetData gScreen 'forceUndock (@ result 'forceUndock))
+									(scrSetDesc gScreen (@ result 'desc))
 
-								(if (@ result 'forceUndock)
-									(scrSetActionLabel gScreen 'actionContinue "Undock" "U")
+									(if (@ result 'forceUndock)
+										(scrSetActionLabel gScreen 'actionContinue "Undock" "U")
+										)
+
+									(setq showAction True)
 									)
-								)
 
-							(block Nil
-								(scrSetData gScreen 'forceUndock Nil)
-								(scrSetDesc gScreen result)
-								)
+							;	Otherwise, we treat this like a dialog structure
+
+							(!= (typeof result) 'struct)
+								(rpgPagePaneInit gScreen result)
+						
+							(@ result 'dialog)
+								(rpgPagePaneInit gScreen (@ result 'dialog) {
+									translateType: (@ result 'translateType)
+									})
+								
+							(@ result 'dialogID)
+								(rpgPagePaneInit gScreen 
+									(or (scrTranslate gScreen (@ result 'dialogID)) (typTranslate (@ result 'translateType) (@ result 'dialogID)))
+									{
+										translateType: (@ result 'translateType)
+										}
+									)
+						
+							(rpgPagePaneInit gScreen result)
 							)
+
+						(scrShowAction gScreen 'actionContinue showAction)
 						)
 				</OnPaneInit>
 
