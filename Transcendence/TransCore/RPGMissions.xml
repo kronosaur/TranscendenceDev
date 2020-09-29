@@ -827,9 +827,13 @@
 			inherit=			"&dsDockScreenBase;"
 			>
 		<OnScreenInit>
-			(block Nil
-				; Store the mission object in screen data
+			(block (
+				)
+				;	Store the mission object in screen data
 				(scrSetData gScreen 'missionObj (@ gData 'missionObj))
+
+				;	Invoke the event
+				(scrSetData gScreen 'deliveryText (msnFireEvent (@ gData 'missionObj) 'OnDeliveryMissionCompleted))
 				)
 		</OnScreenInit>
 
@@ -838,7 +842,7 @@
 				<OnPaneInit>
 					(block (
 						(missionObj (scrGetData gScreen 'missionObj))
-						(result (msnFireEvent missionObj 'OnDeliveryMissionCompleted))
+						(result (scrGetData gScreen 'deliveryText))
 						(showAction Nil)
 						)
 						(switch
