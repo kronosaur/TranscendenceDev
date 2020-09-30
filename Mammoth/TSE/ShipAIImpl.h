@@ -327,7 +327,7 @@ class COrderList
 class CBaseShipAI : public IShipController
 	{
 	public:
-		CBaseShipAI (void);
+		CBaseShipAI (void) { }
 		virtual ~CBaseShipAI (void);
 
 		//	IShipController virtuals
@@ -355,6 +355,7 @@ class CBaseShipAI : public IShipController
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayer (void) const override { return m_AICtx.IsPlayer(); }
 		virtual bool IsPlayerBlacklisted (void) const override { return (m_fPlayerBlacklisted ? true : false); }
+		virtual bool IsPlayerEscort (void) const override { return (m_fIsPlayerEscort ? true : false) || IsPlayerWingman(); }
 		virtual bool IsPlayerWingman (void) const override { return (m_fIsPlayerWingman ? true : false); }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
@@ -379,6 +380,7 @@ class CBaseShipAI : public IShipController
 		virtual void SetShipToControl (CShip *pShip) override;
 		virtual void SetThrust (bool bThrust) override { m_AICtx.SetThrust(bThrust); }
 		virtual void SetPlayerBlacklisted (bool bValue) override { m_fPlayerBlacklisted = bValue; }
+		virtual void SetPlayerEscort (bool bValue) override { m_fIsPlayerEscort = bValue; }
 		virtual void SetPlayerWingman (bool bIsWingman) override { m_fIsPlayerWingman = bIsWingman; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
 		virtual void WriteToStream (IWriteStream *pStream) override;
@@ -442,29 +444,30 @@ class CBaseShipAI : public IShipController
 		virtual void OnSystemLoadedNotify (void) { }
 		virtual void OnWriteToStream (IWriteStream *pStream) { }
 
-		CShip *m_pShip;							//	Ship that we're controlling
-		COrderList m_Orders;					//	Ordered list of orders
-		ICCItem *m_pCommandCode;				//	Code to generate orders (may be NULL)
+		CShip *m_pShip = NULL;						//	Ship that we're controlling
+		COrderList m_Orders;						//	Ordered list of orders
+		ICCItem *m_pCommandCode = NULL;				//	Code to generate orders (may be NULL)
 
-		CAIBehaviorCtx m_AICtx;					//	Ctx for behavior
-		IOrderModule *m_pOrderModule;			//	Current order module (may be NULL)
+		CAIBehaviorCtx m_AICtx;						//	Ctx for behavior
+		IOrderModule *m_pOrderModule = NULL;		//	Current order module (may be NULL)
 
-		CAttackDetector m_Blacklist;			//	Player blacklisted
+		CAttackDetector m_Blacklist;				//	Player blacklisted
 
 		//	Flags
 
-		DWORD m_fDeviceActivate:1;
-		DWORD m_fInOnOrderChanged:1;
-		DWORD m_fInOnOrdersCompleted:1;
-		DWORD m_fCheckedForWalls:1;				//	TRUE if we searched for walls in the system
-		DWORD m_fAvoidWalls:1;					//	TRUE if we need to avoid walls
-		DWORD m_fIsPlayerWingman:1;				//	TRUE if this is a wingman for the player
-		DWORD m_fOldStyleBehaviors:1;			//	TRUE if we're not using m_pOrderModule
-		DWORD m_fPlayerBlacklisted:1;			//	TRUE if we've blacklisted the player (for attacking us)
+		DWORD m_fDeviceActivate:1 = false;
+		DWORD m_fInOnOrderChanged:1 = false;
+		DWORD m_fInOnOrdersCompleted:1 = false;
+		DWORD m_fCheckedForWalls:1 = false;			//	TRUE if we searched for walls in the system
+		DWORD m_fAvoidWalls:1 = false;				//	TRUE if we need to avoid walls
+		DWORD m_fIsPlayerWingman:1 = false;			//	TRUE if this is a wingman for the player
+		DWORD m_fOldStyleBehaviors:1 = false;		//	TRUE if we're not using m_pOrderModule
+		DWORD m_fPlayerBlacklisted:1 = false;		//	TRUE if we've blacklisted the player (for attacking us)
 
-		DWORD m_fUseOrderModules:1;				//	TRUE if descendant allows order modules
+		DWORD m_fUseOrderModules:1 = false;			//	TRUE if descendant allows order modules
+		DWORD m_fIsPlayerEscort:1 = false;			//	TRUE if we're escorting the player (but not necessarily a wingmate).
 
-		DWORD m_fSpare:23;
+		DWORD m_fSpare:22;
 	};
 
 //	Inlines --------------------------------------------------------------------

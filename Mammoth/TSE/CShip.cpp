@@ -81,6 +81,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
 #define PROPERTY_OPERATING_SPEED				CONSTLIT("operatingSpeed")
 #define PROPERTY_PLAYER_BLACKLISTED				CONSTLIT("playerBlacklisted")
+#define PROPERTY_PLAYER_ESCORT					CONSTLIT("playerEscort")
 #define PROPERTY_PLAYER_WINGMAN					CONSTLIT("playerWingman")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
@@ -3195,6 +3196,9 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_PLAYER_BLACKLISTED))
 		return CC.CreateBool(m_pController->IsPlayerBlacklisted());
 
+	else if (strEquals(sName, PROPERTY_PLAYER_ESCORT))
+		return CC.CreateBool(IsPlayerEscort());
+
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
 		return CC.CreateBool(m_pController->IsPlayerWingman());
 
@@ -3920,29 +3924,6 @@ bool CShip::IsDeviceSlotAvailable (ItemCategories iItemCat, int *retiSlot)
 	return m_Devices.IsSlotAvailable(iItemCat, retiSlot);
 	}
 
-bool CShip::IsEscortingPlayer (void) const
-
-//	IsEscortingPlayer
-//
-//	Returns TRUE if we're escorting the player.
-
-	{
-	if (IsPlayerWingman())
-		return true;
-
-	CSpaceObject *pTarget;
-	IShipController::OrderTypes iOrder = GetCurrentOrder(&pTarget);
-	switch (iOrder)
-		{
-		case IShipController::orderEscort:
-		case IShipController::orderFollow:
-			return (pTarget && pTarget->IsPlayer());
-
-		default:
-			return false;
-		}
-	}
-
 bool CShip::IsFuelCompatible (const CItem &Item)
 
 //	IsFuelCompatible
@@ -3961,6 +3942,29 @@ bool CShip::IsPlayer (void) const
 
 	{
 	return m_pController->IsPlayer();
+	}
+
+bool CShip::IsPlayerEscort (void) const
+
+//	IsPlayerEscort
+//
+//	Returns TRUE if we're escorting the player.
+
+	{
+	if (m_pController->IsPlayerEscort())
+		return true;
+
+	CSpaceObject *pTarget;
+	IShipController::OrderTypes iOrder = GetCurrentOrder(&pTarget);
+	switch (iOrder)
+		{
+		case IShipController::orderEscort:
+		case IShipController::orderFollow:
+			return (pTarget && pTarget->IsPlayer());
+
+		default:
+			return false;
+		}
 	}
 
 bool CShip::IsSingletonDevice (ItemCategories iItemCat)
@@ -7519,6 +7523,11 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	else if (strEquals(sName, PROPERTY_PLAYER_BLACKLISTED))
 		{
 		m_pController->SetPlayerBlacklisted(!pValue->IsNil());
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_PLAYER_ESCORT))
+		{
+		m_pController->SetPlayerEscort(!pValue->IsNil());
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))

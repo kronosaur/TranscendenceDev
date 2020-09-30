@@ -313,6 +313,7 @@ class IShipController
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const { return false; }
 		virtual bool IsPlayer (void) const { return false; }
 		virtual bool IsPlayerBlacklisted (void) const { return false; }
+		virtual bool IsPlayerEscort (void) const { return false; }
 		virtual bool IsPlayerWingman (void) const { return false; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) { ASSERT(false); }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
@@ -322,6 +323,7 @@ class IShipController
 		virtual void SetShipToControl (CShip *pShip) { }
 		virtual void SetThrust (bool bThrust) { }
 		virtual void SetPlayerBlacklisted (bool bValue) { }
+		virtual void SetPlayerEscort (bool bValue) { }
 		virtual void SetPlayerWingman (bool bIsWingman) { }
 		virtual ESetPropertyResult SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL) { return ESetPropertyResult::notFound; }
 		virtual void WriteToStream (IWriteStream *pStream) { ASSERT(false); }

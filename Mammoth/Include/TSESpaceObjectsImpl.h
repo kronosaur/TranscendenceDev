@@ -1199,7 +1199,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool IsAnchored (void) const override { return (GetDockedObj() != NULL) || IsManuallyAnchored(); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsAttached (void) const override { return m_fShipCompartment; }
-		virtual bool IsEscortingPlayer (void) const override;
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || IsInGate()); }
 		virtual bool IsIdentified (void) const override { return m_fIdentified; }
 		virtual bool IsInactive (void) const override { return (m_fManualSuspended || IsInGate() || IsDestroyed()); }
@@ -1207,6 +1206,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool IsKnown (void) const override { return m_fKnown; }
 		virtual bool IsOutOfPower (void) override { return (m_pPowerUse && (m_pPowerUse->IsOutOfPower() || m_pPowerUse->IsOutOfFuel())); }
 		virtual bool IsPlayer (void) const override;
+		virtual bool IsPlayerEscort (void) const override;
 		virtual bool IsPlayerWingman (void) const override { return m_pController->IsPlayerWingman(); }
 		virtual bool IsShownInGalacticMap (void) const override { return m_pClass->HasDockingPorts(); }
 		virtual bool IsSuspended (void) const override { return m_fManualSuspended; }

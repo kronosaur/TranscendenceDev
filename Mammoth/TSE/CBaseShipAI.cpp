@@ -14,25 +14,6 @@ constexpr int MAX_TARGETS =				10;
 
 extern int g_iDebugLine;
 
-CBaseShipAI::CBaseShipAI (void) : 
-		m_pShip(NULL),
-		m_pCommandCode(NULL),
-		m_pOrderModule(NULL),
-		m_fDeviceActivate(false),
-		m_fInOnOrderChanged(false),
-		m_fInOnOrdersCompleted(false),
-		m_fCheckedForWalls(false),
-		m_fAvoidWalls(false),
-		m_fIsPlayerWingman(false),
-		m_fOldStyleBehaviors(false),
-		m_fPlayerBlacklisted(false),
-		m_fUseOrderModules(false)
-
-//	CBaseShipAI constructor
-
-	{
-	}
-
 CBaseShipAI::~CBaseShipAI (void)
 
 //	CBaseShipAI destructor
@@ -1525,6 +1506,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	m_fCheckedForWalls =		((dwLoad & 0x00000008) ? true : false);
 	m_fAvoidWalls =				((dwLoad & 0x00000010) ? true : false);
 	m_fIsPlayerWingman =		((dwLoad & 0x00000020) ? true : false);
+	m_fIsPlayerEscort =			((dwLoad & 0x00000040) ? true : false);
 
 	//	Before version 75 we always used old style behaviors
 
@@ -1911,6 +1893,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fCheckedForWalls ?			0x00000008 : 0);
 	dwSave |= (m_fAvoidWalls ?				0x00000010 : 0);
 	dwSave |= (m_fIsPlayerWingman ?			0x00000020 : 0);
+	dwSave |= (m_fIsPlayerEscort ?			0x00000040 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Subclasses

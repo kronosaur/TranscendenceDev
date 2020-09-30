@@ -1054,7 +1054,7 @@ class CSpaceObject
 
 		//	Wingmen
 
-		virtual bool IsEscortingPlayer (void) const { return false; }
+		virtual bool IsPlayerEscort (void) const { return false; }
 		virtual bool IsPlayerWingman (void) const { return false; }
 
 		//	DEBUG

@@ -37,9 +37,10 @@ bool CDamageSource::CanHit (CSpaceObject *pTarget) const
 	if (pObj == NULL)
 		return true;
 
-	//	If this is not a wingman, then we allow the hit
+	//	If this is not a player escort then we allow the hit. NOTE: We check for
+	//	player escort, not player wingman, which is more restrictive.
 
-	if (!pTarget->IsEscortingPlayer())
+	if (!pTarget->IsPlayerEscort())
 		return true;
 
 	//	If we don't protect wingmen, then we allow a hit
