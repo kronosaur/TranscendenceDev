@@ -337,7 +337,7 @@
 						(rpgMissionAssignment {
 							missionCriteria: (cat "n +blackMarket; =" (sysGetLevel) ";")
 							noMissionText: (scrTranslate gScreen 'descNoMissions)
-							maxPerStation: (+ 5 (mod (objGetDestiny gSource) 3))
+							maxPerStation: (+ 6 (mod (objGetDestiny gSource) 3))
 							})
 					</Action>
 
