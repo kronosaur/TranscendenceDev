@@ -203,19 +203,3 @@ bool ICCItemPtr::Load (const CString &sCode, CString *retsError)
 	return true;
 	}
 
-void ICCItemPtr::TakeHandoff (ICCItem *pPtr)
-	{
-	if (m_pPtr)
-		m_pPtr->Discard();
-
-	m_pPtr = pPtr;
-	}
-
-void ICCItemPtr::TakeHandoff (ICCItemPtr &Src)
-	{
-	if (m_pPtr)
-		m_pPtr->Discard();
-
-	m_pPtr = Src.m_pPtr;
-	Src.m_pPtr = NULL;
-	}
