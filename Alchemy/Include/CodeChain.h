@@ -261,7 +261,7 @@ class ICCItemPtr
 		~ICCItemPtr (void);
 
 		ICCItemPtr &operator= (const ICCItemPtr &Src);
-		ICCItemPtr &operator= (ICCItemPtr &&Value) noexcept { m_pPtr = Value.m_pPtr; Value.m_pPtr = NULL; return *this; }
+		ICCItemPtr &operator= (ICCItemPtr &&Value) noexcept { TakeHandoff(Value); return *this; }
 		ICCItemPtr &operator= (ICCItem *pSrc);
 		ICCItemPtr &operator= (const ICCItem &Value);
 		operator ICCItem *() const { return m_pPtr; }
@@ -273,8 +273,8 @@ class ICCItemPtr
 
 		bool Load (const CString &sCode, CString *retsError);
 
-		void TakeHandoff (ICCItem *pPtr);
-		void TakeHandoff (ICCItemPtr &Src);
+		void TakeHandoff (ICCItem *pPtr) { if (m_pPtr) m_pPtr->Discard(); m_pPtr = pPtr; }
+		void TakeHandoff (ICCItemPtr &Src) { if (m_pPtr) m_pPtr->Discard(); m_pPtr = Src.m_pPtr; Src.m_pPtr = NULL; }
 
 		void Set (const ICCItemPtr &Src)
 			{
