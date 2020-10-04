@@ -90,7 +90,7 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 
 		{
 		"escortingPlayer",	"True|Nil",
-		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsEscortingPlayer()); },
+		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsPlayerEscort()); },
 		NULL,
 		}
 		
