@@ -2435,6 +2435,10 @@
 	<!ENTITY ovRescueStructureRocky			"0x0010080A">
 	<!ENTITY ovRescueStructureVolcanic		"0x0010080B">
 
+	<!-- 0820-083F BLACK MARKET II -->
+
+	<!ENTITY rsBlackMarketShipyard			"0x00100820">
+
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	

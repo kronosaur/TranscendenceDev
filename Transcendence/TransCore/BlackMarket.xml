@@ -363,21 +363,18 @@ PLAYER DATA
 
 		<!-- Image and Effects -->
 		
-		<Image			imageID="&rsStations5;" imageX="0" imageY="896" imageWidth="256" imageHeight="256"/>
+		<Image			imageID="&rsBlackMarketShipyard;" imageWidth="480" imageHeight="480" viewportRatio="0.04625"/>
 
 		<DockingPorts>
-			<Port x="53"	y="146" />
-			<Port x="-92"	y="100" />
-			<Port x="-148"	y="-42" />
-			<Port x="-64"	y="-134" />
-			<Port x="108"	y="-116" />
-			<Port x="148"	y="5" />
+			<Port posAngle="-13" posRadius="140" posZ="0"/>
+			<Port posAngle="42" posRadius="140" posZ="0"/>
+			<Port posAngle="77" posRadius="140" posZ="0"/>
+			<Port posAngle="132" posRadius="140" posZ="0"/>
 
-			<Port x="62"	y="43" />
-			<Port x="-19"	y="76" />
-			<Port x="-67"	y="12" />
-			<Port x="-72"	y="-60" />
-			<Port x="12"	y="-72" />
+			<Port posAngle="167" posRadius="140" posZ="0"	bringToFront="true"/>
+			<Port posAngle="222" posRadius="140" posZ="0"	sendToBack="true"/>
+			<Port posAngle="257" posRadius="140" posZ="0"/>
+			<Port posAngle="312" posRadius="140" posZ="0"/>
 		</DockingPorts>
 		
 		<!-- Dock Screens -->
@@ -1158,6 +1155,7 @@ PLAYER DATA
 
 <!-- RESOURCES -->
 
+	<Image UNID="&rsBlackMarketShipyard;"	bitmap="Resources\BlackMarketShipyard.jpg" bitmask="Resources\BlackMarketShipyardMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsBlackMarketStation;"	bitmap="Resources\BlackMarketStation.jpg" bitmask="Resources\BlackMarketStationMask.bmp" loadOnUse="true"/>
 
 	<Image UNID="&rsMolotokA;"				bitmap="Resources\MolotokA.jpg" bitmask="Resources\MolotokAMask.bmp" loadOnUse="true"/>
