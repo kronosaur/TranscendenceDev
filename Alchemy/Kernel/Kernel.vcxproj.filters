@@ -244,6 +244,9 @@
     <ClCompile Include="CConsoleFormat.cpp">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
+    <ClCompile Include="ILog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Crypto.h">
@@ -340,6 +343,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\KernelString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\KernelExceptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

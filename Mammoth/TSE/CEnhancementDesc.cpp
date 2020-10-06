@@ -12,7 +12,7 @@
 #define LEVEL_CHECK_ATTRIB						CONSTLIT("levelCheck")
 #define TYPE_ATTRIB								CONSTLIT("type")
 
-bool CEnhancementDesc::Accumulate (int iLevel, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const
+bool CEnhancementDesc::Accumulate (int iLevel, const CItem &Target, CItemEnhancementStack &Enhancements, TArray<CString> *pEnhancementIDs) const
 
 //	Accumulate
 //
@@ -26,8 +26,9 @@ bool CEnhancementDesc::Accumulate (int iLevel, const CItem &Target, TArray<CStri
 		{
 		//	If this type of enhancement has already been applied, skip it
 
-		if (!m_Enhancements[i].sType.IsBlank()
-				&& EnhancementIDs.Find(m_Enhancements[i].sType))
+		if (pEnhancementIDs
+				&& !m_Enhancements[i].sType.IsBlank()
+				&& pEnhancementIDs->Find(m_Enhancements[i].sType))
 			continue;
 
 		//	If we don't match the criteria, skip it.
@@ -43,26 +44,17 @@ bool CEnhancementDesc::Accumulate (int iLevel, const CItem &Target, TArray<CStri
 
 		//	Add the enhancement
 
-		pEnhancements->Insert(m_Enhancements[i].Enhancement);
+		Enhancements.Insert(m_Enhancements[i].Enhancement);
 		bEnhanced = true;
 
 		//	Remember that we added this enhancement class
 
-		if (!m_Enhancements[i].sType.IsBlank())
-			EnhancementIDs.Insert(m_Enhancements[i].sType);
+		if (pEnhancementIDs
+				&& !m_Enhancements[i].sType.IsBlank())
+			pEnhancementIDs->Insert(m_Enhancements[i].sType);
 		}
 
 	return bEnhanced;
-	}
-
-bool CEnhancementDesc::Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const
-
-//	Accumulate
-//
-//	Adds enhancements to the stack. Returns TRUE if any enhancements were added.
-
-	{
-	return Accumulate(Ctx.GetItem().GetLevel(), Target, EnhancementIDs, pEnhancements);
 	}
 
 ALERROR CEnhancementDesc::Bind (SDesignLoadCtx &Ctx)

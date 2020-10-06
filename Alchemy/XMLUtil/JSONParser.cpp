@@ -437,7 +437,8 @@ CJSONParser::ETokens CJSONParser::ParseNumber (CJSONValue *retValue)
 	//	about parsing integers separately.
 
 	CString sNumber(pStart, (int)(pExpEnd - pStart));
-	retValue->TakeHandoff(CJSONValue(atof(sNumber.GetASCIIZPointer())));
+	CJSONValue Value(atof(sNumber.GetASCIIZPointer()));
+	retValue->TakeHandoff(Value);
 	return tkValue;
 	}
 
@@ -539,7 +540,8 @@ CJSONParser::ETokens CJSONParser::ParseString (CJSONValue *retValue)
 
 	//	Done
 
-	retValue->TakeHandoff(CJSONValue(strUTF8ToANSI(CString(Stream.GetPointer(), Stream.GetLength()))));
+	CJSONValue Value(strUTF8ToANSI(CString(Stream.GetPointer(), Stream.GetLength())));
+	retValue->TakeHandoff(Value);
 	return tkValue;
 	}
 

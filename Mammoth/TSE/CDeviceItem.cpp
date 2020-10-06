@@ -15,6 +15,87 @@ void CDeviceItem::AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttrib
 	GetDeviceClass().AccumulateAttributes(*this, Ammo, retList);
 	}
 
+CDeviceItem::ECalcTargetTypes CDeviceItem::CalcTargetType (void) const
+
+//	CalcTargetType
+//
+//	Helper function to figure out the kind of target to compute.
+
+	{
+	const CInstalledDevice &Device = *GetInstalledDevice();
+	CSpaceObject *pSource = GetSource();
+	if (pSource == NULL)
+		return calcNoTarget;
+
+	//	For primary weapons, the target is the controller target.
+	//	
+	//	NOTE: Selectable means that the weapon is not a secondary weapon
+	//	and not a linked-fire weapon. We specifically exclude "fire if selected"
+	//  linked-fire weapons, which normally count as "selectable", from this definition.
+
+	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
+
+	if (Device.IsSelectable() && !(Device.GetSlotLinkedFireOptions() & dwLinkedFireSelected))
+		{
+		return calcControllerTarget;
+		}
+
+	//	Otherwise this is a linked fire weapon or a secondary weapon.
+
+	else
+		{
+		const CDeviceClass &Weapon = GetDeviceClass();
+
+		//	Get the actual options.
+
+		DWORD dwLinkedFireOptions = GetLinkedFireOptions();
+
+		CInstalledDevice *pPrimaryWeapon = pSource->GetNamedDevice(devPrimaryWeapon);
+		CInstalledDevice *pSelectedLauncher = pSource->GetNamedDevice(devMissileWeapon);
+
+		//  If our options is "never fire", or if our options is "fire if selected" and this is the player ship,
+		//  but the primary weapon or launcher isn't both "fire if selected" AND of the same type, then don't fire.
+		//  If a weapon is "fire if selected and same variant", then it only fires if the primary weapon is of the
+		//  same variant and type.
+
+		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
+
+		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (dwLinkedFireOptions
+			& CDeviceClass::lkfSelectedVariant ? GetVariantNumber() == CItemCtx(pSource, pPrimaryWeapon).GetItemVariantNumber() : true) : false;
+		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (dwLinkedFireOptions
+			& CDeviceClass::lkfSelectedVariant ? GetVariantNumber() == CItemCtx(pSource, pSelectedLauncher).GetItemVariantNumber() : true) : false;
+
+		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
+			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
+			(pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == Weapon.GetUNID()) && bPrimaryWeaponCheckVariant) : false))
+				&& ((Weapon.GetCategory() == itemcatWeapon) && !Weapon.UsesLauncherControls())) ||
+				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
+			(pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == Weapon.GetUNID()) && bSelectedLauncherCheckVariant) : false))
+				&& ((Weapon.GetCategory() == itemcatLauncher) || Weapon.UsesLauncherControls()))) &&
+			(dwLinkedFireOptions & dwLinkedFireSelected) &&
+			pSource->IsPlayer()
+			))
+			{
+			return calcNoTarget;
+			}
+
+		//	If our options is "fire always" or "fire if selected" then our target is always the same
+		//	as the primary target.
+
+		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & dwLinkedFireSelected))
+			{
+			return calcControllerTarget;
+			}
+
+		//	Otherwise, we need to let our controller find a target for this weapon.
+
+		else
+			{
+			return calcWeaponTarget;
+			}
+		}
+	}
+
 TSharedPtr<CItemEnhancementStack> CDeviceItem::GetEnhancementStack (void) const
 
 //	GetEnhancementStack
@@ -42,6 +123,27 @@ TSharedPtr<CItemEnhancementStack> CDeviceItem::GetEnhancementStack (void) const
 	m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
 	m_pEnhancements->Insert(Mods);
 	return m_pEnhancements;
+	}
+
+int CDeviceItem::GetFireArc (void) const
+
+//	GetFireArc
+//
+//	Returns the fire arc for swivel weapons and turrets.
+
+	{
+	int iMinArc, iMaxArc;
+	switch (GetType().GetDeviceClass()->GetRotationType(*this, &iMinArc, &iMaxArc))
+		{
+		case CDeviceRotationDesc::rotOmnidirectional:
+			return 360;
+
+		case CDeviceRotationDesc::rotSwivel:
+			return AngleRange(iMinArc, iMaxArc);
+
+		default:
+			return 0;
+		}
 	}
 
 int CDeviceItem::GetHP (int *retiMaxHP, bool bUninstalled) const
@@ -130,41 +232,23 @@ int CDeviceItem::GetMaxHP (void) const
 	return iMaxHP;
 	}
 
-bool CDeviceItem::IsMissileDefenseWeapon (void) const
+DamageTypes CDeviceItem::GetWeaponDamageType (void) const
 
-//	IsMissileDefenseWeapon
+//	GetWeaponDamageType
 //
-//	Returns TRUE if this weapon has missile defense capabilities.
-//
-//	LATER: Paradoxically, this return FALSE for missile defense devices. In the
-//	future we should fix that. The semantics is that we fire on missiles during
-//	a normal fire (Activate) call, not during OnUpdate.
+//	Returns the damage type for the weapon.
 
 	{
-	//	See if this is confered via enhancement or via slot property.
+	const CWeaponFireDesc *pShot = GetWeaponFireDesc();
 
-	if (const CItemEnhancementStack *pStack = GetEnhancementStack())
-		{
-		if (pStack->IsMissileDefense())
-			return true;
-		}
+	//	OK if we don't find shot--could be a launcher with no ammo
 
-	return false;
-	}
+	if (pShot == NULL)
+		return damageGeneric;
 
-bool CDeviceItem::IsTargetableMissileDefenseWeapon (void) const
+	//	Get the damage type
 
-//	IsTargetableMissileDefenseWeapon
-//
-//	Returns TRUE if we target specially marked missiles.
-
-	{
-	if (const CInstalledDevice *pInstalled = GetInstalledDevice())
-		{
-		return pInstalled->CanTargetMissiles();
-		}
-	else
-		return false;
+	return pShot->GetDamageType();
 	}
 
 bool CDeviceItem::IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle, int *retiFireAngle) const

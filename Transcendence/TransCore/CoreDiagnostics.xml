@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidDiagnostics;">
+		<Properties>
+			<Global id="totalTests">0</Global>
+			<Global id="totalFailures">0</Global>
+		</Properties>
+
+		<Events>
+			<OnGlobalEndDiagnostics>
+				(block (
+					(totalTests (typ@ &unidDiagnostics; 'totalTests))
+					(totalFailures (typ@ &unidDiagnostics; 'totalFailures))
+					)
+					(print "Total Tests: " (fmtNumber totalTests))
+					(print "Failed Tests: " (fmtNumber totalFailures) "\n")
+
+					(if (gr totalFailures 0)
+						(error "One or more tests failed.")
+						)
+					)
+			</OnGlobalEndDiagnostics>
+		</Events>
+	</Type>
+
+<!-- CODE -->
+
+	<Globals>
+	(block ()
+
+		;	HELPERS ------------------------------------------------------------
+
+		(setq diagRun (lambda (testList)
+			(block ()
+				(enum testList theTest
+					(if theTest
+						(errBlock (theError)
+							(typInc@ &unidDiagnostics; 'totalTests)
+							(theTest)
+
+							(block ()
+								(print "ERROR: " theError)
+								(typInc@ &unidDiagnostics; 'totalFailures)
+								)
+							)
+						)
+					)
+				)
+			))
+
+		(setq diagEval (lambda (testList data)
+			(enum testList theTest
+				(if theTest
+					(block (
+						(testResult (eval (@ theTest 'test)))
+						)
+						(typInc@ &unidDiagnostics; 'totalTests)
+
+						(switch
+							;	If we don't care about the test result, then we just execute
+
+							(= (@ theTest 'result) 'ignore)
+								testResult
+
+							;	If the test succeeds, then we're good
+
+							(= testResult (@ theTest 'result))
+								True
+
+							;	Failed
+
+							(block ()
+								(print "ERROR: " (@ theTest 'test) " - " testResult " [expected " (@ theTest 'result) "]")
+								(typInc@ &unidDiagnostics; 'totalFailures)
+								)
+							)
+						)
+					)
+				)
+			))
+		)
+	</Globals>
+
+</TranscendenceModule>

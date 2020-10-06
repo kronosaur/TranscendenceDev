@@ -13,7 +13,7 @@
 			value=				"150"
 			mass=				"25"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"Laser amplifiers are used to repair and upgrade laser weapons."
 
@@ -45,7 +45,7 @@
 			value=				"200"
 			mass=				"50"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"Kinetic upgrades increase the damage of a kinetic weapon."
 
@@ -76,16 +76,19 @@
 			level=				"3"
 			value=				"5"
 			mass=				"1"
-			frequency=			"veryrare"
+			frequency=			"rare"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"defective, info, minorItem, weaponDamage"
+			attributes=			"defective, humanTech, info, minorItem, weaponDamage"
 
-			description=		"Because of a manufacturing defect, this ROM ionizes any weapon it is intalled on."
+			description=		"Because of a manufacturing defect, this ROM ionizes any weapon it is installed on."
 
 			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Properties>
+			<Definition id="enhance.minLevel">1</Definition>
+			<Definition id="enhance.maxLevel">6</Definition>
+
 			<Constant id="rpg.useCriteria">"w~l"</Constant>
 		</Properties>
 
@@ -113,7 +116,7 @@
 					(trdata { weapon:(itmGetName targetItem 'noModifiers) } )
 					)
 					(switch
-						(gr (itmGetProperty targetItem 'level) 6)
+						(gr (itmGetProperty targetItem 'level) (itm@ gItem 'enhance.maxLevel))
 							{
 								resultCode: 'noEffect
 								effect: 'tooAdvanced
@@ -211,7 +214,7 @@
 			mass=				"1"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, weaponEnhance"
+			attributes=			"humanTech, info, minorItem, weaponEnhance"
 
 			description=		"This upgrade ROM increases a weapon's rate of fire. It is compatible with weapons up to level 6."
 
@@ -248,7 +251,7 @@
 			value=				"1100"
 			mass=				"25"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"This weapon upgrade increases the power of particle beams."
 
@@ -279,7 +282,7 @@
 			mass=				"1"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, weaponEnhance"
+			attributes=			"humanTech, info, minorItem, weaponEnhance"
 
 			description=		"This upgrade ROM reduces a weapon's power consumption. It is compatible with weapons up to tech level 10."
 
@@ -316,7 +319,7 @@
 			value=				"1400"
 			mass=				"75"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"This high-explosive upgrade increases the damage done by blast weapons."
 
@@ -348,7 +351,7 @@
 			value=				"10500"
 			mass=				"50"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"Ion power capacitors are used to increase the destructive power of ion weapons."
 
@@ -380,7 +383,7 @@
 			value=				"13000"
 			mass=				"150"
 			frequency=			"uncommon"
-			attributes=			"minorItem, weaponEnhance"
+			attributes=			"humanTech, minorItem, weaponEnhance"
 
 			description=		"This weapon upgrade increases the damage done by thermo weapons."
 
@@ -405,61 +408,6 @@
 
 	<Globals>
 		(block Nil
-			(setq intEnhanceWeaponUse (lambda (newMods damageType successText maxLevel)
-				(block (notFound)
-					(if (not maxLevel) (setq maxLevel 10))
-					; Install
-					(setq notFound True)
-					(objEnumItems gSource "w~lI" theItem
-						(block (weaponItem)
-							(setq weaponItem theItem)
-							(if (and 
-									notFound 
-									(or (not damageType) (eq (itmGetDamageType weaponItem) damageType))
-									(eq (shpGetItemDeviceName gSource weaponItem) 0)
-									)
-								(block Nil
-									(switch
-										; If the weapon is too advanced, it doesn't work
-										(gr (itmGetLevel weaponItem) maxLevel)
-											(objSendMessage gSource Nil (cat "Your " (itmGetName weaponItem 32) " is too advanced to be optimized"))
-												
-										; If the item is damaged, we repair it
-										(and (itmIsDamaged weaponItem) (ls newMods 0x8000))
-											(block Nil
-												(shpRepairItem gSource theItem)
-												(objSendMessage gSource Nil (cat (itmGetName weaponItem 33) " has been repaired"))
-												)
-
-										; Enhance the weapon
-										(block (result)
-											(setq result (shpEnhanceItem gSource theItem {
-												enhancement: newMods
-												type: gType
-												}))
-
-											(objSendMessage gSource Nil (intItemEnhanceStatus result (cat "Your " (itmGetName weaponItem 32) " " successText) (cat "your " (itmGetName weaponItem 32))))
-											)
-										)
-									(setq notFound Nil)
-									)
-								)
-							)
-						)
-
-					; Item is identified
-
-					(itmSetKnown gItem)
-
-					; If we did not find a weapon to enhance, then no effect. Otherwise
-					; we consume the item
-
-					(if notFound
-						(objSendMessage gSource Nil "The enhancement has no effect")
-						(objRemoveItem gSource gItem 1)
-						)
-					)
-				))
 			)
 	</Globals>
 

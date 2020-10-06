@@ -51,7 +51,7 @@
 		<Items>
 			<!-- Some upgrades for sale -->
 			
-			<RandomItem count="1d6" criteria="r -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<RandomItem count="1d6" criteria="r +commonwealth; -defective; -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
 			<Lookup count="12-16" table="&tbCommonwealthFleetItems;"/>
 		</Items>
 		
@@ -96,7 +96,7 @@
 		<!-- Image and Effects -->
 
 		<Image			imageID="&rsPointJuno;"		imageWidth="420" imageHeight="460" viewportRatio="0.0425"/>
-		<HeroImage		imageID="&rsPointJunoHero;" imageWidth="712" imageHeight="528"/>
+		<HeroImage		imageID="&rsPointJunoHero;" imageWidth="800" imageHeight="650"/>
 
 		<DockingPorts
 				portCount=		"10"
@@ -204,10 +204,10 @@
 				"I'm sorry, %sir%, only Fleet Officers are allowed in Central Command."
 
 			</Text>
-            
-            <Text id="core.mapDescMain">
-                Commonwealth Fleet stronghold
-            </Text>
+			
+			<Text id="core.mapDescMain">
+				Commonwealth Fleet stronghold
+			</Text>
 		</Language>
 	</StationType>
 
@@ -424,6 +424,7 @@
 
 	<SystemType UNID="&ssPointJuno;" 
 				backgroundID=		"&rsLightNebulaSpace;"
+				spaceColor=			"#282a3c"
 				spaceEnvironmentTileSize=	"large"
 				noRandomEncounters=	"true"
 				noExtraEncounters=	"true"
@@ -516,7 +517,7 @@
 			<Orbitals distance="360-400" angle="30-75">
 				<Group>
 					<Primary>
-						<Station type="&stHydrogenGasGiantSizeM;" name="Zheling Iv" showOrbit="true"/>
+						<Station type="&stHydrogenGasGiantSizeM;" name="Zheling IV" showOrbit="true"/>
 					</Primary>
 
 					<ZAdjust inclination="random" rotation="alignedRandom" excludeLocations="true">

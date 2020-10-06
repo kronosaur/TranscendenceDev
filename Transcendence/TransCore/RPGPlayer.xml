@@ -4,6 +4,10 @@
 
 <!-- PLAYER SOVEREIGN ==========================================================
 
+	This type implements some player behavior. We used to implement this in
+	svPlayer, but due to the fact that svPlayer is inherited by svPlayerAlly,
+	it is better if we implement this in a separate type.
+
 	GLOBAL DATA
 	
 	missionRewards:		Total amount earned in missions (in default currency)
@@ -16,9 +20,8 @@
 	
 -->
 
-	<Sovereign UNID="&svPlayer;"
-			name="independent"
-			alignment="constructive chaos"
+	<Type unid="&unidPlayer;"
+			inherit="&unidCommonText;"
 			>
 		<Events>
 			<GetGlobalAchievements>
@@ -28,24 +31,26 @@
 					(append
 
 						;	Current player money
+
 						(map (typFind "$") 'removeNil theEcon
 							(if (gr (objGetBalance gPlayerShip theEcon) 0)
-								(list
-									(typTranslate &svPlayer; 'achievement.playerMoney {
-										currency: (fmtCurrency theEcon True)
-										})
-									(objGetBalance gPlayerShip theEcon)
-									)
+								{
+									descID: 'achievement.playerMoney
+									value: (objGetBalance gPlayerShip theEcon)
+
+									currency: (fmtCurrency theEcon True)
+									}
 								)
 							)
 					
 						;	Money earned on missions
+
 						(if missionRewards
-							(list (list
-								(typTranslate &svPlayer; 'achievement.missionMoney)
-								(fmtCurrency (unvGetProperty 'defaultCurrency) missionRewards)
-								(typTranslate &unidCommonText; 'missionsAndActivities)
-								))
+							(list {
+								descID: 'achievement.missionMoney
+								value: (fmtCurrency (unvGetProperty 'defaultCurrency) missionRewards)
+								sectionID: 'missionsAndActivities
+								})
 							)
 						)
 					)
@@ -54,21 +59,24 @@
 			<OnGlobalUniverseLoad>
 				; If we're loading because of a resurrect, repair the ship
 
-				(if (eq aReason 'resurrect)
+				(if (= aReason 'resurrect)
 					(block Nil
 						; Put the player in a safe place and repair the ship
 						(rpgRestorePlayer)
 
 						; Tell the player about the resurrection
-						(plyMessage gPlayer "You wake up somewhere else in an identical body...")
+						(plyMessage gPlayer (typTranslate gType 'msgResurrection))
 						)
 					)
 			</OnGlobalUniverseLoad>
 		</Events>
+
 		<Language>
+			<Text id="msgResurrection">You wake up somewhere else in an identical body...</Text>
+
 			<Text id="achievement.playerMoney">Money (%currency%)</Text>
 			<Text id="achievement.missionMoney">Money earned on missions</Text>
 		</Language>
-	</Sovereign>
+	</Type>
 
 </TranscendenceModule>

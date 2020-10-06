@@ -273,7 +273,7 @@ void DoTradeSim (CUniverse &Universe, CXMLElement *pCmdLine)
 			//	Create the system
 
 			CSystem *pSystem;
-			if (error = Universe.CreateStarSystem(pNode, &pSystem))
+			if (error = Universe.CreateStarSystem(*pNode, &pSystem))
 				{
 				printf("ERROR: Unable to create star system.\n");
 				return;

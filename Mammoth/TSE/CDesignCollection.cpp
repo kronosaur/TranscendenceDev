@@ -1,6 +1,7 @@
 //	CDesignCollection.cpp
 //
 //	CDesignCollection class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -16,7 +17,7 @@
 
 #define GET_TYPE_SOURCE_EVENT					CONSTLIT("GetTypeSource")
 
-static char *CACHED_EVENTS[CDesignCollection::evtCount] =
+static const char *CACHED_EVENTS[CDesignCollection::evtCount] =
 	{
 		"GetGlobalAchievements",
 		"GetGlobalDockScreen",
@@ -44,6 +45,13 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 
 		"OnGlobalUpdate",
 	};
+
+static constexpr const char *CACHED_PROPERTIES[] =
+	{
+		"core.gameStats",
+	};
+
+static constexpr int CACHED_PROPERTIES_COUNT = (sizeof(CACHED_PROPERTIES) / sizeof(CACHED_PROPERTIES[0]));
 
 CDesignCollection::CDesignCollection (void) :
 		m_Base(true)	//	m_Base owns its types and will free them at the end
@@ -223,6 +231,7 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 	Ctx.bBindAsNewGame = Options.bNewGame;
 	Ctx.bNoResources = Options.bNoResources;
 	Ctx.bTraceBind = Options.bTraceBind;
+	Ctx.bLoadDiagnostics = Options.bDiagnostics;
 
 	//	Loop over the bind list in order and add appropriate types to m_AllTypes
 	//	(The order guarantees that the proper types override)
@@ -330,6 +339,10 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 		const CDisplayAttributeDefinitions &Attribs = pEntry->GetDisplayAttributes();
 		if (!Attribs.IsEmpty())
 			m_DisplayAttribs.Append(Attribs);
+
+		const auto &ItemEncounterDefinitions = pEntry->GetItemEncounterDefinitions();
+		if (!ItemEncounterDefinitions.IsEmpty())
+			m_ItemEncounterDefinitions.Append(ItemEncounterDefinitions);
 		}
 
 	//	Tell our armor mass definitions that we're done so that we can calculate
@@ -404,8 +417,6 @@ void CDesignCollection::CacheGlobalEvents (CDesignType *pType)
 	{
 	DEBUG_TRY
 
-	int i, j;
-
 	const CEventHandler *pEvents;
 	TSortMap<CString, SEventHandlerDesc> FullEvents;
 	pType->GetEventHandlers(&pEvents, &FullEvents);
@@ -414,25 +425,39 @@ void CDesignCollection::CacheGlobalEvents (CDesignType *pType)
 		SEventHandlerDesc Event;
 		Event.pExtension = pType->GetExtension();
 
-		for (i = 0; i < pEvents->GetCount(); i++)
+		for (int i = 0; i < pEvents->GetCount(); i++)
 			{
 			CString sEvent = pEvents->GetEvent(i, &Event.pCode);
 
-			for (j = 0; j < evtCount; j++)
+			for (int j = 0; j < evtCount; j++)
 				if (m_EventsCache[j]->Insert(pType, sEvent, Event))
 					break;
 			}
 		}
 	else
 		{
-		for (i = 0; i < FullEvents.GetCount(); i++)
+		for (int i = 0; i < FullEvents.GetCount(); i++)
 			{
 			CString sEvent = FullEvents.GetKey(i);
 			const SEventHandlerDesc &Event = FullEvents[i];
 
-			for (j = 0; j < evtCount; j++)
+			for (int j = 0; j < evtCount; j++)
 				if (m_EventsCache[j]->Insert(pType, sEvent, Event))
 					break;
+			}
+		}
+
+	//	Cache global properties
+
+	for (int i = 0; i < CACHED_PROPERTIES_COUNT; i++)
+		{
+		CString sProperty(CACHED_PROPERTIES[i]);
+
+		ICCItemPtr pResult;
+		if (pType->FindCustomProperty(sProperty, pResult))
+			{
+			auto *pList = m_PropertyCache.SetAt(sProperty);
+			pList->Insert(pType);
 			}
 		}
 
@@ -565,9 +590,9 @@ const CDesignType *CDesignCollection::FindEntry (DWORD dwUNID) const
 		return NULL;
 
 #ifdef DEBUG
-	if (!pType->IsBound())
+	if (!m_bInBindDesign && !pType->IsBound())
 		{
-		DebugBreak();
+		throw CException(ERR_FAIL);
 		}
 #endif
 
@@ -586,9 +611,9 @@ CDesignType *CDesignCollection::FindEntry (DWORD dwUNID)
 		return NULL;
 
 #ifdef DEBUG
-	if (!pType->IsBound())
+	if (!m_bInBindDesign && !pType->IsBound())
 		{
-		DebugBreak();
+		throw CException(ERR_FAIL);
 		}
 #endif
 
@@ -663,20 +688,47 @@ CXMLElement *CDesignCollection::FindSystemFragment (const CString &sName, CSyste
 	return NULL;
 	}
 
-void CDesignCollection::FireGetGlobalAchievements (CGameStats &Stats)
+void CDesignCollection::FireGetGlobalAchievements (const CString &sEndGameReason, CGameStats &Stats)
 
 //	FireGetGlobalAchievements
 //
 //	Fire event to fill achievements
 
 	{
-	int i;
+	//	Add achievements from core.gameStats property.
 
-	for (i = 0; i < m_EventsCache[evtGetGlobalAchievements]->GetCount(); i++)
+	auto *pList = m_PropertyCache.GetAt(PROPERTY_CORE_GAME_STATS);
+	if (pList)
+		{
+		for (int i = 0; i < pList->GetCount(); i++)
+			{
+			CDesignType *pType = pList->GetAt(i);
+
+			ICCItemPtr pResult;
+			if (pType->FindCustomProperty(PROPERTY_CORE_GAME_STATS, pResult)
+					&& !pResult->IsNil())
+				{
+				if (pResult->IsError())
+					pType->ReportEventError(PROPERTY_CORE_GAME_STATS, pResult);
+				else
+					Stats.InsertFromCCItem(*pType, *pResult);
+				}
+			}
+		}
+
+	//	Add achievements from <GetGlobalAchievements>
+
+	CCodeChainCtx CCX(GetUniverse());
+	if (!sEndGameReason.IsBlank())
+		CCX.DefineString(CONSTLIT("aEndGameReason"), sEndGameReason);
+	else
+		CCX.DefineNil(CONSTLIT("aEndGameReason"));
+
+	for (int i = 0; i < m_EventsCache[evtGetGlobalAchievements]->GetCount(); i++)
 		{
 		CDesignType *pType = m_EventsCache[evtGetGlobalAchievements]->GetEntry(i);
 
-		pType->FireGetGlobalAchievements(Stats);
+		pType->FireGetGlobalAchievements(CCX, Stats);
 		}
 	}
 
@@ -1287,7 +1339,7 @@ void CDesignCollection::GetEnabledExtensions (TArray<CExtension *> *retExtension
 		}
 	}
 
-CG32bitImage *CDesignCollection::GetImage (DWORD dwUNID, DWORD dwFlags)
+CG32bitImage *CDesignCollection::GetImage (DWORD dwUNID, DWORD dwFlags) const
 
 //	GetImage
 //
@@ -1580,6 +1632,67 @@ bool CDesignCollection::OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLEl
 	return true;
 	}
 
+bool CDesignCollection::ParseShipClassUNID (const CString &sType, CShipClass **retpClass) const
+
+//	ParseShipClassUNID
+//
+//	Parses an UNID for a ship class.
+
+	{
+	DWORD dwUNID;
+	if (!ParseUNID(sType, &dwUNID))
+		return false;
+
+	const CShipClass *pClass = CShipClass::AsType(FindEntry(dwUNID));
+	if (!pClass)
+		return false;
+
+	if (retpClass)
+		*retpClass = const_cast<CShipClass *>(pClass);
+
+	return true;
+	}
+
+bool CDesignCollection::ParseUNID (const CString &sType, DWORD *retdwUNID) const
+
+//	ParseUNID
+//
+//	Parses an UNID as either a number or an entity.
+
+	{
+	DWORD dwUNID = strParseInt(sType.GetASCIIZPointer(), 0);
+	if (dwUNID)
+		{
+		if (retdwUNID)
+			*retdwUNID = dwUNID;
+
+		return true;
+		}
+	else
+		{
+		for (int i = 0; i < m_BoundExtensions.GetCount(); i++)
+			{
+			bool bFound;
+			CString sValue = m_BoundExtensions[i]->GetEntities()->ResolveExternalEntity(sType, &bFound);
+			if (bFound)
+				{
+				DWORD dwUNID = strParseInt(sValue.GetASCIIZPointer(), 0);
+				if (dwUNID)
+					{
+					if (retdwUNID)
+						*retdwUNID = dwUNID;
+
+					return true;
+					}
+				else
+					return false;
+				}
+			}
+
+		return false;
+		}
+	}
+
 void CDesignCollection::ReadDynamicTypes (SUniverseLoadCtx &Ctx)
 
 //	ReadDynamicTypes
@@ -1741,7 +1854,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 	//	Define the type (m_HierarchyTypes takes ownership of pNewXML).
 
 	CDesignType *pNewType;
-	if (error = m_HierarchyTypes.DefineType(pType->GetExtension(), pType->GetUNID(), pNewXML, &pNewType, &Ctx.sError))
+	if (error = m_HierarchyTypes.DefineType(Ctx, pType->GetExtension(), pType->GetUNID(), pNewXML, &pNewType, &Ctx.sError))
 		{
 		delete pNewXML;
 		return pType->ComposeLoadError(Ctx, Ctx.sError);
@@ -1825,7 +1938,7 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap
 		//	LATER: m_CreatedTypes should be a normal CDesignList.
 
 		CDesignType *pNewType;
-		if (m_CreatedTypes.DefineType(pOverride->GetExtension(), pOverride->GetUNID(), pNewXML, &pNewType, &Ctx.sError) != NOERROR)
+		if (m_CreatedTypes.DefineType(Ctx, pOverride->GetExtension(), pOverride->GetUNID(), pNewXML, &pNewType, &Ctx.sError) != NOERROR)
 			{
 			delete pNewXML;
 			return pOverride->ComposeLoadError(Ctx, Ctx.sError);
@@ -1962,12 +2075,15 @@ void CDesignCollection::Unbind (void)
 	m_OverrideTypes.DeleteAll();
 	m_ArmorDefinitions.DeleteAll();
 	m_DisplayAttribs.DeleteAll();
+	m_ItemEncounterDefinitions.DeleteAll();
 	m_EconomyIndex.DeleteAll();
 
 	//	Reset
 
 	for (int i = 0; i < evtCount; i++)
 		m_EventsCache[i]->DeleteAll();
+
+	m_PropertyCache.DeleteAll();
 
 	m_pTopology = NULL;
 	m_pAdventureExtension = NULL;

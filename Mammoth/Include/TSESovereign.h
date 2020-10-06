@@ -71,18 +71,23 @@ class CSovereign : public CDesignType
 		void DebugObjDeleted (CSpaceObject *pObj) const;
 #endif
 		void DeleteRelationships (void);
-		inline void FlushEnemyObjectCache (void) { m_EnemyObjects.DeleteAll(); m_pEnemyObjectsSystem = NULL; }
+		void FlushEnemyObjectCache (void) { m_EnemyObjects.DeleteAll(); m_pEnemyObjectsSystem = NULL; }
 		IPlayerController *GetController (void);
 		Disposition GetDispositionTowards (const CSovereign *pSovereign, bool bCheckParent = true) const;
-		inline const CSpaceObjectList &GetEnemyObjectList (const CSystem *pSystem) { InitEnemyObjectList(pSystem); return m_EnemyObjects; }
+		const CSpaceObjectList &GetEnemyObjectList (const CSystem *pSystem) { InitEnemyObjectList(pSystem); return m_EnemyObjects; }
 		EThreatLevels GetPlayerThreatLevel (void) const;
 		bool GetPropertyInteger (const CString &sProperty, int *retiValue);
 		bool GetPropertyItemList (const CString &sProperty, CItemList *retItemList);
 		bool GetPropertyString (const CString &sProperty, CString *retsValue);
 		CString GetText (MessageTypes iMsg);
-		inline bool IsEnemy (CSovereign *pSovereign) const { return (m_bSelfRel || (pSovereign != this)) && (GetDispositionTowards(pSovereign) == dispEnemy); }
-		inline bool IsFriend (CSovereign *pSovereign) const { return (!m_bSelfRel && (pSovereign == this)) || (GetDispositionTowards(pSovereign) == dispFriend); }
-		inline bool IsPlayer (void) const { return (GetUNID() == g_PlayerSovereignUNID); }
+		bool IsEnemy (const CSovereign &Sovereign) const { return (m_bSelfRel || (&Sovereign != this)) && (GetDispositionTowards(&Sovereign) == dispEnemy); }
+		bool IsEnemy (CSovereign *pSovereign) const { return (m_bSelfRel || (pSovereign != this)) && (GetDispositionTowards(pSovereign) == dispEnemy); }
+		bool IsFriend (CSovereign *pSovereign) const { return (GetDispositionTowards(pSovereign) == dispFriend); }
+		bool IsFriend (const CSovereign &Sovereign) const { return (GetDispositionTowards(&Sovereign) == dispFriend); }
+		bool IsNeutral (CSovereign *pSovereign) const { return (m_bSelfRel || (pSovereign != this)) && (GetDispositionTowards(pSovereign) == dispNeutral); }
+		bool IsNeutral (const CSovereign &Sovereign) const { return (m_bSelfRel || (&Sovereign != this)) && (GetDispositionTowards(&Sovereign) == dispNeutral); }
+		bool IsPlayerOwned (void);
+		bool IsPlayer (void) const { return (GetUNID() == g_PlayerSovereignUNID); }
 		void MessageFromObj (CSpaceObject *pSender, const CString &sText);
 		void OnObjDestroyedByPlayer (CSpaceObject *pObj);
 		static Alignments ParseAlignment (const CString &sAlign);
@@ -130,7 +135,7 @@ class CSovereign : public CDesignType
 		bool CalcSelfRel (void);
 		const SRelationship *FindRelationship (const CSovereign *pSovereign, bool bCheckParent = false) const;
 		SRelationship *FindRelationship (const CSovereign *pSovereign, bool bCheckParent = false);
-		inline Alignments GetAlignment (void) const { return m_iAlignment; }
+		Alignments GetAlignment (void) const { return m_iAlignment; }
 		void InitEnemyObjectList (const CSystem *pSystem) const;
 		void InitRelationships (void);
 

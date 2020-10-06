@@ -13,15 +13,15 @@ ALERROR CCargoDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 //
 //  Initializes from an XML element
 
-    {
+	{
 	//	NOTE: It is OK to have negative cargo space; it just means that we use
 	//	up more cargo space than we provide.
 
-    m_iCargoSpace = pDesc->GetAttributeInteger(CARGO_SPACE_ATTRIB);
+	m_iCargoSpace = pDesc->GetAttributeInteger(CARGO_SPACE_ATTRIB);
 	m_bUninitialized = false;
 
-    return NOERROR;
-    }
+	return NOERROR;
+	}
 
 void CCargoDesc::Interpolate (const CCargoDesc &From, const CCargoDesc &To, Metric rInterpolate)
 
@@ -29,10 +29,10 @@ void CCargoDesc::Interpolate (const CCargoDesc &From, const CCargoDesc &To, Metr
 //
 //  Initializes based on interpolation between two values.
 
-    {
-    m_iCargoSpace = mathRound(mathInterpolate(From.m_iCargoSpace, To.m_iCargoSpace, rInterpolate));
+	{
+	m_iCargoSpace = mathRound(mathInterpolate(From.m_iCargoSpace, To.m_iCargoSpace, rInterpolate));
 	m_bUninitialized = false;
-    }
+	}
 
 void CCargoDesc::ValidateCargoSpace (int iMaxCargoSpace)
 

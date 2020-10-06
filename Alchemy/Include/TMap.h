@@ -35,9 +35,9 @@ class CMapBase
 		void InsertEntry (void *pKey, int iKeyLen, EntryBase *pEntry);
 		void InsertEntry (int iSlot, EntryBase *pEntry);
 
-		void Reset (CMapIterator &Iterator) const;
-		EntryBase *GetNext (CMapIterator &Iterator) const;
-		bool HasMore (CMapIterator &Iterator) const;
+		void Reset (Kernel::CMapIterator &Iterator) const;
+		EntryBase *GetNext (Kernel::CMapIterator &Iterator) const;
+		bool HasMore (Kernel::CMapIterator &Iterator) const;
 
 		virtual bool KeyEquals (void *pVoidKey, EntryBase *pEntry) const = 0;
 
@@ -248,15 +248,6 @@ template <class KEY, class VALUE> class TSortMap
 
 		const VALUE &operator [] (int iIndex) const { return GetValue(iIndex); }
 		VALUE &operator [] (int iIndex) { return GetValue(iIndex); }
-
-		TSortMap<KEY, VALUE> &operator= (const TSortMap<KEY, VALUE> &Obj)
-			{
-			m_iOrder = Obj.m_iOrder;
-			m_Index = Obj.m_Index;
-			m_Array = Obj.m_Array;
-			m_Free = Obj.m_Free;
-			return *this;
-			}
 
 		void Delete (int iIndex)
 			{
@@ -871,7 +862,6 @@ struct SSimpleStringEntry
 template <class VALUE> class TProbabilityMap
 	{
 	public:
-		VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
 
 		void Delete (int iIndex)
 			{

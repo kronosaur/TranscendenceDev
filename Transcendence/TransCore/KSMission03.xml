@@ -252,6 +252,8 @@
 			</OnObjDocked>
 		</Events>
 
+		<Image	imageID="&rsKorolovLogo;" imageWidth="152" imageHeight="150"/>
+
 		<Language>
 			<Text id="Name">
 				Destroy Pirate stronghold

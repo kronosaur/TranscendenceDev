@@ -24,7 +24,14 @@
 			alignment="constructive chaos"
 			inherit="&unidCommonText;"
 			>
-		
+
+		<ItemEncounterDesc>
+			<Frequency criteria="* +commonwealth;" frequency="common"	systemCriteria="+commonwealthSpace;" />
+			<Frequency criteria="* +commonwealth;" frequency="uncommon" systemCriteria="+humanSpace; -commonwealthSpace;"/>
+
+			<Frequency criteria="* +commonwealth;" frequency="notRandom" />
+		</ItemEncounterDesc>
+
 		<AttributeDesc>
 			<!-- These item attributes are used across all Human Space (not just for
 				Commonwealth). -->
@@ -232,11 +239,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-5; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-5; +commonwealth; -alien; -defective; -Illegal; -Military; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~ad -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -alien; -defective; -Illegal; -Military; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<Item count="4d12"	item="&itHelium3FuelRod;" />
@@ -307,14 +314,6 @@
 		</DockScreens>
 		
 		<!-- Events and Data -->
-
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			5		100		)
-					)
-			</NPCService>
-		</StaticData>
 
 		<Events>
 			<OnCreate>
@@ -468,11 +467,11 @@
 
 		<Items>
 			<RandomItem	count="10" 
-					criteria=		"ad L:1-7; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-7; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~ad -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<Item count="4d12"	item="&itXenotiteFuelRod;" />
@@ -565,14 +564,6 @@
 		
 		<!-- Events and Data -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			7		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
@@ -658,24 +649,24 @@
 		</Trade>
 		
 		<Items>
-			<RandomItem count="1d10" 
-				criteria=		"a L:1-8; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+			<RandomItem count="18-25" 
+				criteria=		"a L:1-8; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
-			<RandomItem count="1d10" 
-				criteria=		"scv L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+			<RandomItem count="8-10" 
+				criteria=		"scv L:1-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
-			<RandomItem count="1d6" 
-				criteria=		"r -illegal; -military; -notForSale; -notStandard; L:3-7;"
+			<RandomItem count="4-6" 
+				criteria=		"r L:3-7; +commonwealth; -defective; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
-			<RandomItem count="1d10" 
-				criteria=		"d~scvr L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+			<RandomItem count="10-12" 
+				criteria=		"d~scvr L:1-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
-			<RandomItem count="1d8"
-				criteria=		"u +armorRepair; -illegal; -military; -notForSale; -notStandard;"
+			<RandomItem count="5-10"
+				criteria=		"u +armorRepair; -defective; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
 		</Items>
@@ -735,14 +726,6 @@
 		</DockScreens>
 
 		<!-- Behavior & Language -->
-
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
-		</StaticData>
 
 		<Language>
 			<Text id="descWelcome">Your ship is in dry dock.</Text>
@@ -818,7 +801,7 @@
 
 		<Items>
 			<RandomItem count="10-20" 
-					criteria=		"* +Meds; -Illegal; -Military; -Alien; -NotStandard; -NotForSale;"
+					criteria=		"* +Meds; -defective; -Illegal; -Military; -Alien; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 		</Items>
@@ -864,6 +847,13 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionHospital">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +commonwealthHospital; =" (sysGetLevel) ";")
+									maxPerStation: 1
+									noMissionTextID: 'descHospitalEmpty
+									})
+							</Action>
 							<Action id="actionCommoditiesExchange">
 								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
@@ -879,15 +869,32 @@
 		
 		<!-- Events and Data -->
 		
-        <Language>
+		<Language>
+			<Text id="actionHospital">[H]ospital</Text>
+
 			<Text id="descWelcome">
+
 				You are in the docking bay of %objName%. Medical professionals
 				live and work on this station, doing everything from research,
 				to drug manufacturing, to remote medicine.
+
+			</Text>
+			<Text id="descHospitalEmpty">
+
+				Medtechs and patients crisscross the large reception area of the
+				hospital. Displays and holograms direct patients to various 
+				specialties.
+			
+			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food and luxury items. We are not 
+				interested in buying %itemName%.
+
 			</Text>
 
-            <Text id="core.mapDesc">"Sells meds &mdash; Buys food and luxuries"</Text>
-        </Language>
+			<Text id="core.mapDesc">"Sells meds &mdash; Buys food and luxuries"</Text>
+		</Language>
 	</StationType>
 
 	<!-- Commonwealth Residentials -->
@@ -1061,7 +1068,6 @@
 								(rpgMissionAssignment {
 									missionCriteria: "n +commonwealthHabitat;"
 									maxActive: 1
-									intervalPerType: (+ 5400 (* (objGetDestiny gSource) 10))
 									missionGiver: (rpgCharacterGetInfo gSource 'stationMaster)
 									noMissionTextID: 'descNoMissions
 									})
@@ -1087,7 +1093,7 @@
 			<Port x="-43"	y="56" />
 		</DockingPorts>
 
-        <Language>
+		<Language>
 			<Text id="descWelcome">
 
 				The loud voices of a packed multitude bounce off every bulkhead and
@@ -1179,228 +1185,6 @@
 				Is it hard to get parts for it?"
 
 			</Text>
-        </Language>
-	</StationType>
-
-	<!-- Container Habitat
-
-	GLOBAL DATA
-
-	donationPoints:		Donation points earned
-
-	-->
-
-	<StationType UNID="&stContainerHabitat;"
-			name=				"container habitat"
-			sovereign=			"&svCommonwealth;"
-			inherit=			"&baCommonwealthStation;"
-				 
-			dockScreen=			"Main"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			level=				"4"
-			multiHull=			"true"
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"160"
-			regen=              "1"
-			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"commonwealth, friendly, generic, human, populated"
-			>
-
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+commonwealthSpace;"
-				systemAffinity=			"+commonwealthCore;"
-				levelFrequency=			"uur-- ----- ----- ----- -----"
-
-				locationCriteria=		"-planetary"
-				/>
-
-		<ImageVariants>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="128" imageWidth="64" imageHeight="64"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="64" imageY="128" imageWidth="64" imageHeight="64"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="128" imageY="128" imageWidth="64" imageHeight="64"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="192" imageY="128" imageWidth="64" imageHeight="64"/>
-		</ImageVariants>
-
-		<Ships>
-			<Lookup count="1d2-1" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Trade currency="credit">
-			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100"/>
-
-			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="1"/>
-			<ConsumeTrade	criteria="{human.basicFood}"	impact="1"/>
-			<ConsumeTrade	criteria="{core.ore}"			impact="1"/>
-		</Trade>
-
-		<StaticData>
-			<DonationTable>
-				; donate =	If -1, gain 1 donation point per item donated
-				;			If 0, gain no donation points
-				;			If greater than 0, this is the credit value to gain 1 donation point
-
-				(	; pattern						donate	result
-					("* +meds;"						50		'info)
-					("* +illegal; +consumerGood"	250		'info)
-					("* +lux;"						100		'info)
-					("* +food;"						50		'info)
-					("f"							50		'info)
-					(Nil							0		'thanksForNothing)
-					)
-			</DonationTable>
-		</StaticData>
-
-		<Events>
-			<OnObjDestroyed>
-				(if (eq aObjDestroyed (objGetObjRefData gSource "target"))
-					(block Nil
-						(shpCancelOrders gPlayerShip)
-						(objUnregisterForEvents gSource aObjDestroyed)
-						(objSetData gSource "missionID" Nil)
-						)
-					)
-			</OnObjDestroyed>
-
-			<OnObjDocked>
-				(if (eq aDockTarget (objGetObjRefData gSource "target"))
-					(block Nil
-						(shpCancelOrders gPlayerShip)
-						(objUnregisterForEvents gSource gPlayerShip)
-						(objSetData gSource "missionID" Nil)
-						)
-					)
-			</OnObjDocked>
-
-			<OrderDestroyTarget>
-				; aTargetObj = object to destroy
-				
-				(block Nil
-					; Clean up in case we have a previous mission
-					(if (eq (objGetData gSource "missionID") 'dockWithTarget)
-						(objUnregisterForEvents gSource gPlayerShip)
-						)
-
-					(objSetData gSource "missionID" 'destroyTarget)
-					(objSetObjRefData gSource "target" aTargetObj)
-					(objRegisterForEvents gSource aTargetObj)
-
-					(shpCancelOrders gPlayerShip)
-					(shpOrder gPlayerShip 'attack aTargetObj)
-					)
-			</OrderDestroyTarget>
-
-			<OrderDockWithTarget>
-				(block Nil
-					; Clean up in case we have a previous mission
-					(if (eq (objGetData gSource "missionID") 'destroyTarget)
-						(objUnregisterForEvents gSource (objGetObjRefData gSource "target"))
-						)
-
-					(objSetData gSource "missionID" 'dockWithTarget)
-					(objSetObjRefData gSource "target" aTargetObj)
-					(objRegisterForEvents gSource gPlayerShip)
-
-					(shpCancelOrders gPlayerShip)
-					(shpOrder gPlayerShip 'dock aTargetObj)
-					)
-			</OrderDockWithTarget>
-
-			<GetRumors>
-				(rpgRumorAdd 'commonwealthContainer (make 'sequence 6))
-			</GetRumors>
-		</Events>
-
-		<DockScreens>
-			<Main>
-				<Panes>
-					<Default>
-						<OnPaneInit>
-							(switch
-								(eq (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
-									(scrSetDescTranslate gScreen 'descWelcomePilgrim)
-									
-								(scrSetDescTranslate gScreen 'descWelcome)
-								)
-						</OnPaneInit>
-
-						<Actions>
-							<Action id="actionDonate" default="1">
-								(scrShowScreen gScreen "&dsContainerHabitatDonateItem;")
-							</Action>
-
-							<Action id="actionUndock" cancel="1">
-								<Exit/>
-							</Action>
-						</Actions>
-					</Default>
-				</Panes>
-			</Main>
-		</DockScreens>
-
-		<DockingPorts>
-			<Port x="0"		y="70" />
-			<Port x="61"	y="35" />
-			<Port x="61"	y="-35" />
-			<Port x="0"		y="-70" />
-			<Port x="-61"	y="-35" />
-			
-			<Port x="-61"	y="35" />
-		</DockingPorts>
-		
-		<Language>
-			<Text id="actionDonate">[D]onate Item</Text>
-
-			<Text id="descWelcome">
-				You are docked at a habitat made out of shipping containers. Children
-				bounce off the bulkheads in zero-G while maintenance workers repair
-				leaky seals and balky machinery. The station master approaches you:
-
-				"Traveling the universe, yeah? Why don't you spare some items for us!"
-			</Text>
-			<Text id="descWelcomePilgrim">
-				You are docked at a habitat made out of shipping containers. Children
-				bounce off the bulkheads in zero-G while maintenance workers repair
-				leaky seals and balky machinery. The station master approaches you:
-
-				"We don't get many pilgrims visiting around here. Why don't you give
-				us some of your worldly possessions; they won't do you much good at
-				the Core, or wherever you're trying to get."
-			</Text>
-			<String id="descNoRumors">
-				"Everything's quiet around here at the moment."
-			</String>
-
-			<Text id="rumor.intro">
-				The station master grabs you and speaks softly in your ear:\n\n
-			</Text>
-			<Text id="rumor.commonwealthContainer.1">
-				"The Charon pirates are a menace. They have bases in almost every
-				system and they prey on defenseless freighters."
-			</Text>
-			<Text id="rumor.commonwealthContainer.2">
-				"If you need a contact in the Black Market find the Aleksany
-				brothers; they're always doing business in some fancy hotel."
-			</Text>
-			<Text id="rumor.commonwealthContainer.3">
-				"The anarchists don't bother us, but they really annoy the
-				Corporations: they're always stealing their fancy ROMs."
-			</Text>
-			<Text id="rumor.commonwealthContainer.4">
-				"Stay away from the Abbasid fortresses. Those fanatics will
-				shoot you rather than let you get close."
-			</Text>
-			<Text id="rumor.commonwealthContainer.5">
-				"The Urak warlords are another nutty group, but their armor
-				and weapons are pretty good."
-			</Text>
-			<Text id="rumor.commonwealthContainer.6">
-				"Hiro is the best hacker in the 'verse. He's created some
-				fancy ROMs that even the cyber corporations can't figure out."
-			</Text>
 		</Language>
 	</StationType>
 
@@ -1466,11 +1250,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-8; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-8; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~ad -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 
@@ -1563,14 +1347,6 @@
 		
 		<!-- Events and Data -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Language>
 			<Text id="descWelcome">
 				You are in the docking bay of a Commonwealth settlement. Except for a few shuttles,
@@ -1660,8 +1436,8 @@
 	</StationType>
 
 	<OverlayType UNID="&ovNavSignText;"
-            attributes=         "effect"
-            >
+			attributes=         "effect"
+			>
 		<Effect>
 			<Text text="Nav Sign"
 					font="SmallBold"
@@ -2141,582 +1917,6 @@
 				</Actions>
 			</CantPay>
 		</Panes>
-	</DockScreen>
-
-	<!-- Donate Item to Container Habitat -->
-
-	<DockScreen UNID="&dsContainerHabitatDonateItem;"
-			type=				"itemPicker"
-			nestedScreen=		"true"
-			inherit=			"&dsDockScreenBase;"
-			>
-
-		<ListOptions
-			dataFrom=	"player"
-			list=		"*U -ID; -questItem;"
-			/>
-
-		<Panes>
-			<Default descID="descDonateWhat">
-				<OnPaneInit>
-					(scrEnableAction gScreen 'actionDonateThisItem (scrGetItem gScreen))
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionDonateThisItem" default="1">
-						(block (
-							(theItem (scrGetItem gScreen))
-							(maxCount (itmGetCount theItem))
-							)
-							(switch
-								(gr maxCount 1)
-									(scrShowPane gScreen 'Quantity)
-
-								(block Nil
-									(setq theItem (scrRemoveItem gScreen 1))
-									(scrExitScreen gScreen)
-									(scrShowScreen gScreen &dsContainerHabitatReward; {
-										donatedItem: theItem
-										})
-									)
-								)
-							)
-					</Action>
-
-					<Action id="actionCancel" cancel="1">
-						<Exit/>
-					</Action>
-				</Actions>					
-			</Default>
-
-			<Quantity
-					showCounter=	"true">
-
-				<OnPaneInit>
-					(block (
-						(theItem (scrGetItem gScreen))
-						)
-						(scrSetDescTranslate gScreen 'descDonateQuantity { items: (itmGetName theItem 'plural) })
-						(scrSetCounter gScreen (itmGetCount theItem))
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionDonate" default="1">
-						(block (
-							(theItem (scrGetItem gScreen))
-							(maxCount (itmGetCount theItem))
-							(count (scrGetCounter gScreen))
-							)
-							(switch
-								(gr count maxCount)
-									(scrSetCounter gScreen maxCount)
-
-								(block Nil
-									(setq theItem (scrRemoveItem gScreen count))
-									(scrExitScreen gScreen)
-									(scrShowScreen gScreen &dsContainerHabitatReward; {
-										donatedItem: theItem
-										})
-									)
-								)
-							)
-					</Action>
-
-					<Action id="actionCancel" cancel="1">
-						(scrShowPane gScreen 'Default)
-					</Action>
-				</Actions>
-			</Quantity>
-		</Panes>
-
-		<Language>
-			<String id="descDonateWhat">"What do you want to give us?"</String>
-			<String id="descDonateQuantity">"How many %items% do you want to give us?"</String>
-		</Language>
-	</DockScreen>
-
-	<DockScreen UNID="&dsContainerHabitatReward;"
-			nestedScreen=		"true"
-			inherit=			"&dsDockScreenBase;"
-			>
-
-		<OnScreenInit>
-			(scrSetData gScreen 'donatedItem (or (@ gData 'donatedItem) gItem))
-		</OnScreenInit>
-
-		<Panes>
-			<Default>
-				<OnPaneInit>
-					(block (
-						(theItem (scrGetData gScreen 'donatedItem))
-
-						;	Look for the entry in the donation table
-						(table (objGetStaticData gSource 'DonationTable))
-						(entry (match table thisEntry
-							(or
-								;	If the criteria in the table is Nil, then we always match. This
-								;	is for the last (default) entry.
-								(not (@ thisEntry 0))
-
-								;	If the criteria is an integer, then we see if this is the UNID
-								;	of the item.
-								(= (itmGetType theItem) (@ thisEntry 0))
-
-								;	If the criteria matches, then we have an entry
-								(itmMatches theItem (@ thisEntry 0))
-								)
-							))
-
-						(totalValue (* (objGetBuyPrice gSource theItem) (itmGetCount theItem)))
-
-						(result (@ entry 2))
-						incPoints
-						)
-
-						;	Calculate how valuable the donation was
-						(switch
-							;	If the player donated rotted food, then we're insulted
-							(and (itmMatches theItem "* +FreshFood;") (= totalValue 0))
-								(block Nil
-									(objSetTypeData gSource 'donationPoints 0)
-									(setq result 'rottedFood)
-									(setq incPoints Nil)
-									)
-
-							;	If 0, then we get result regardless of quantity
-							(eq (@ entry 1) 0)
-								(setq incPoints Nil)
-
-							;	If -1, then each item counts for +1 donation points
-							(eq (@ entry 1) -1)
-								(setq incPoints (itmGetCount theItem))
-
-							;	Otherwise, depends on the value of the item
-							(setq incPoints (divide totalValue (@ entry 1)))
-							)
-
-						(if (= incPoints 0)
-							(setq result 'notEnough)
-							)
-						(scrSetData gScreen 'result result)
-
-						;	Accumulate donation points
-						(typIncData (objGetType gSource) 'donationPoints incPoints)
-
-						;	Deal with the result appropriately
-						(switch
-							(= result 'rottedFood)
-								(scrSetDescTranslate gScreen 'descDonateInsulted)
-
-							(= result 'notEnough)
-								(scrSetDescTranslate gScreen 'descDonateNotEnough)
-
-							(= result 'info)
-								(scrSetDescTranslate gScreen 'descDonateThanks {
-									item: (itmGetName theItem 'demonstrative)
-									})
-
-							;	Thanks for nothing
-							(scrSetDescTranslate gScreen
-								(if (gr (itmGetCount theItem) 1)
-									'descDonateUselessPlural
-									'descDonateUseless
-									)
-								)
-							)
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionContinue" cancel="1" default="1">
-						(switch
-							(= (scrGetData gScreen 'result) 'info)
-								(if (geq (objGetTypeData gSource 'donationPoints) 5)
-									(scrShowPane gScreen "RewardInfo")
-									(block Nil
-										(scrExitScreen gScreen)
-										(rpgRumorShow {
-											rumorCriteria: "+commonwealthContainer"
-											noRumorTextID: 'descNoRumors
-											})
-										)
-									)
-
-							(scrExitScreen gScreen)
-							)
-					</Action>
-				</Actions>
-			</Default>
-
-			<RewardInfo descID="descRewardInfo">
-				<OnPaneInit>
-					(block (
-						(donationPoints (objGetTypeData gSource 'donationPoints))
-						)
-
-						; Equipment location available after 5 donation points
-						(scrShowAction gScreen 'actionInfoEquipment (geq donationPoints 5))
-
-						; Centauri warlords info available in Eridani after 10 points
-						(scrShowAction gScreen 'actionInfoCentauriBase
-							(and (geq donationPoints 10) (eq (sysGetNode) 'SE))
-							)
-
-						; Arco Vaughn info available after 20 points and only in SE or if he
-						; is still alive
-						(scrShowAction gScreen 'actionInfoArcoVaughn
-							(and (geq donationPoints 20)
-								(eq (sysGetNode) 'SE)
-								(not (eq (typGetGlobalData &scArcoVaughnHeavyRaider; "status") 'destroyed))
-								)
-							)
-
-						; Korolov station info available after 5 points if past SE
-						(scrShowAction gScreen 'actionInfoKorolov
-							(and (geq donationPoints 5)
-								(not (eq (sysGetNode) 'SE))
-								(leq (sysGetLevel) 3)
-								)
-							)
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionInfoEquipment">
-						(scrShowPane gScreen "RewardInfoEquipment")
-					</Action>
-
-					<Action id="actionInfoCentauriBase">
-						(scrShowPane gScreen "RewardInfoCentauriBase")
-					</Action>
-
-					<Action id="actionInfoArcoVaughn">
-						(scrShowPane gScreen "RewardInfoArcoVaughn")
-					</Action>
-
-					<Action id="actionInfoKorolov">
-						(scrShowPane gScreen "RewardInfoKorolov")
-					</Action>
-
-					<Action id="actionNevermind" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-				</Actions>
-			</RewardInfo>
-
-			<RewardInfoEquipment>
-				<OnPaneInit>
-					(block (desc bestObj bestItem allItems bestItems)
-						(setq aTargetObj Nil)
-						(setq aEvent Nil)
-						(setq desc "")
-
-						; Make a list of all potential items
-						(setq allItems Nil)
-						(enum (sysFindObject gSource "T") theObj
-							(enum (objGetItems theObj "wsUN") theItem
-								(if	(and (geq (itmGetLevel theItem) 3)
-										(not (objHasItem gPlayerShip theItem))
-										(or (objIsEnemy gPlayerShip theObj)
-											(gr (objGetSellPrice theObj theItem) 0)))
-									(setq allItems (append allItems (list (list theObj theItem))))
-									)
-								)
-							)
-
-						; Filter out any items that the player already has installed
-						(setq allItems (filter allItems theEntry
-							(not 
-								; This filter returns the set of installed items that is equal
-								; to the items that we found
-								(filter (objGetItems gPlayerShip "wsI") theItem
-									(eq (itmGetType theItem) (itmGetType (item theEntry 1)))
-									)
-								)
-							))
-
-						; Make a list of lootable items or items that the player doesn't know about
-						(setq bestItems (filter allItems theEntry
-							(or (objIsEnemy gPlayerShip (item theEntry 0))
-								(not (objIsKnown (item theEntry 0)))
-								)
-							))
-						(if (not bestItems)
-							(setq bestItems allItems)
-							)
-
-						; Pick a random high-level item
-						(setq bestItem Nil)
-						(setq bestObj Nil)
-						(if bestItems
-							(for i 1 10
-								(block (trialEntry)
-									(setq trialEntry (random bestItems))
-									(if (or (not bestItem)
-											(gr (itmGetLevel (item trialEntry 1)) (itmGetLevel bestItem)))
-										(block Nil
-											(setq bestObj (item trialEntry 0))
-											(setq bestItem (item trialEntry 1))
-											)
-										)
-									)
-								)
-							)
-
-						; If an item was found, then set up everything
-						(if bestItem
-							(block Nil
-								(setq desc (cat desc
-									"\""
-									(objGetName bestObj 0x05) " in this system has "
-									(itmGetName bestItem 0x04) ". "
-									(if (objIsEnemy gPlayerShip bestObj)
-										"If you destroy the station, you will be able to loot it. "
-										"If you go to the station you will be able to buy it. "
-										)
-									"I'll give you the coordinates, if you want.\""
-									))
-
-								(setq aTargetObj bestObj)
-								(if (objIsEnemy gPlayerShip bestObj)
-									(setq aEvent "OrderDestroyTarget")
-									(setq aEvent "OrderDockWithTarget")
-									)
-								)
-
-							; Otherwise, if no item found, then we're sorry
-							(setq desc (cat desc
-								"\"Sorry, I don't know of anything in the system that could help you.\""
-								))
-							)
-
-						(scrSetDesc gScreen desc)
-
-						; Enable disable buttons
-						(scrShowAction gScreen 'actionCoordinates aEvent)
-						(scrShowAction gScreen 'actionNevermind aEvent)
-						(scrShowAction gScreen 'actionContinue (not aEvent))
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionCoordinates" default="1">
-						(block Nil
-							(objFireEvent gSource aEvent)
-							(scrShowPane gScreen "RewardInfoDone")
-							)
-					</Action>
-
-					<Action id="actionNevermind" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-
-					<Action id="actionContinue" default="1" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-				</Actions>
-			</RewardInfoEquipment>
-
-			<RewardInfoCentauriBase>
-				<OnPaneInit>
-					(block (desc targetList)
-						(setq aTargetObj Nil)
-						(setq aEvent Nil)
-						(setq desc "The station master grabs you and speaks softly in your ear:\n\n")
-
-						(setq targetList (sysFindObject gSource "TA +centauriWarlords; +populated; -occupation; -questTarget; -uncharted;"))
-						(if targetList
-							(block Nil
-								(setq aTargetObj (random targetList))
-								(setq desc (cat desc
-									"\"I know the location of one of the Centauri bases. I'll give you the coordinates so that you can destroy it. But don't tell anyone where you got it, OK?\""
-									))
-
-								; Set player target
-								(setq aEvent "OrderDestroyTarget")
-								)
-							(setq desc "\"Sorry, I don't know of any active Centauri bases in this system.\"")
-							)
-
-						(scrSetDesc gScreen desc)
-
-						; Enable disable buttons
-						(scrShowAction gScreen 'actionCoordinates aEvent)
-						(scrShowAction gScreen 'actionNevermind aEvent)
-						(scrShowAction gScreen 'actionContinue (not aEvent))
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionCoordinates" default="1">
-						(block Nil
-							(objFireEvent gSource aEvent)
-							(scrShowPane gScreen "RewardInfoDone")
-							)
-					</Action>
-
-					<Action id="actionNevermind" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-
-					<Action id="actionContinue" default="1" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-				</Actions>
-			</RewardInfoCentauriBase>
-
-			<RewardInfoArcoVaughn>
-				<OnPaneInit>
-					(block (desc targetList)
-						(setq aTargetObj Nil)
-						(setq aEvent Nil)
-						(setq desc "The station master grabs you and speaks softly in your ear:\n\n")
-
-						(switch
-							(eq (typGetGlobalData &scArcoVaughnHeavyRaider; "status") 'destroyed)
-								(setq desc (cat
-									"\"Arco Vaughn is dead, thankfully!\""
-									))
-
-							(not (sysFindObject gSource "s +arcoVaughn;"))
-								(setq desc (cat
-									"\"Arco Vaughn is not in this system; last I heard he was in the Eridani system.\""
-									))
-
-							(block Nil
-								(setq desc (cat desc
-									"\"If you're hunting Arco Vaughn, I know where you can find him. He has a habitat deep in the outer system. "
-									"I'll give you his coordinates, but don't say where you got them.\""
-									))
-
-								; Set player target
-								(setq aTargetObj (sysFindObject gSource "sN +arcoVaughn;"))
-								(setq aEvent "OrderDestroyTarget")
-								)
-							)
-
-						(scrSetDesc gScreen desc)
-
-						; Enable disable buttons
-						(scrShowAction gScreen 0 aEvent)
-						(scrShowAction gScreen 'actionNevermind aEvent)
-						(scrShowAction gScreen 'actionContinue (not aEvent))
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action name="&quot;Give me his coordinates, please!&quot;" key="C" default="1">
-						(block Nil
-							(objFireEvent gSource aEvent)
-							(scrShowPane gScreen "RewardInfoDone")
-							)
-					</Action>
-
-					<Action id="actionNevermind" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-
-					<Action id="actionContinue" default="1" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-				</Actions>
-			</RewardInfoArcoVaughn>
-
-			<RewardInfoKorolov>
-				<OnPaneInit>
-					(block (desc targetList)
-						(setq aTargetObj Nil)
-						(setq aEvent Nil)
-
-						(setq targetList (sysFindObject gSource "TA +korolovShipping; +populated; -occupation; -uncharted;"))
-						(if targetList
-							(block Nil
-								(setq aTargetObj (random targetList))
-								(setq desc (cat 
-									"The station master is happy to oblige:\n\n"
-									"\"Yeah, there's a Korolov station in this system. I can give you their coordinates, if you want.\""
-									))
-
-								; Set player target
-								(setq aEvent "OrderDockWithTarget")
-								)
-							(setq desc (cat 
-								"The station master thinks for a moment:\n\n"
-								"\"No, sorry, there aren't any in this system, as far as I know.\""
-								))
-							)
-
-						(scrSetDesc gScreen desc)
-
-						; Enable disable buttons
-						(scrShowAction gScreen 0 aEvent)
-						(scrShowAction gScreen 'actionNevermind aEvent)
-						(scrShowAction gScreen 'actionContinue (not aEvent))
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action name="&quot;Give me their coordinates, please!&quot;" key="C" default="1">
-						(block Nil
-							(objFireEvent gSource aEvent)
-							(scrShowPane gScreen "RewardInfoDone")
-							)
-					</Action>
-
-					<Action id="actionNevermind" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-
-					<Action id="actionContinue" default="1" cancel="1">
-						(scrExitScreen gScreen)
-					</Action>
-				</Actions>
-			</RewardInfoKorolov>
-
-			<RewardInfoDone>
-				<OnPaneInit>
-					(scrSetDesc gScreen (cat
-						"\"Done. Just follow the marker on your display and you will get there."
-						(if (objIsEnemy gSource aTargetObj)
-							" Remember, don't say anything about where you got it.\""
-							"\""
-							)
-						))
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						<Exit/>
-					</Action>
-				</Actions>
-			</RewardInfoDone>
-		</Panes>
-
-		<Language>
-			<String id="actionInfoEquipment">"I need better [e]quipment."</String>
-			<String id="actionInfoCentauriBase">"Where are the [C]entauri warlords?"</String>
-			<String id="actionInfoArcoVaughn">"Where is [A]rco Vaughn?"</String>
-			<String id="actionInfoKorolov">"Is there a [K]orolov station nearby?"</String>
-			<String id="actionCoordinates">"Give me the [c]oordinates, please!"</String>
-			<String id="actionNevermind">"[N]evermind, I'm all set."</String>
-
-			<String id="descDonateNotEnough">"Thanks, that's something we need more of around here."</String>
-			<String id="descDonateThanks">"Thank you, %sir%! We'll put %item% to good use. Maybe I can help you in return."</String>
-			<String id="descDonateInsulted">"Kack! What do you think we're going to do with that? Thanks for nothing!"</String>
-			<Text id="descDonateUseless">
-				"Yeah, I guess you won't be needing that where you're going.
-				Not sure we need it ourselves, but thanks anyway."
-			</Text>
-			<Text id="descDonateUselessPlural">
-				"Yeah, I guess you won't be needing them where you're going.
-				Not sure we need them ourselves, but thanks anyway."
-			</Text>
-			<Text id="descRewardInfo">
-				"I know a thing or two about getting around in this system.
-				What do you need to know?"
-			</Text>
-		</Language>
 	</DockScreen>
 
 <!-- BEHAVIORS -->

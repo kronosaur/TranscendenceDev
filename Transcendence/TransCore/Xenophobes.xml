@@ -27,15 +27,11 @@
 
 	<!-- Xenophobe Fleet Encounter -->
 
-	<StationType UNID="&stXenophobeFleet;"
+	<EncounterType unid="&stXenophobeFleet;"
 			name=				"(Xenophobe fleet)"
-			scale=				"world"
-			sovereign=			"&svIndependent;"
-			controllingSovereign="&svXenophobes;"
+			sovereign=			"&svXenophobes;"
 
-			ejectaType=			"&vtStoneAsteroidEjecta;"
-
-			attributes=			"asteroid,enemy,envFire,envAvoidsWater"
+			attributes=			"benninXenophobes, enemy, envFire, envAvoidsWater"
 			>
 
 		<!-- Encounter Info -->
@@ -48,50 +44,14 @@
 				locationCriteria=		"*"
 				/>
 
-		<ImageVariants>
-			<Image imageID="&rsWorlds1;" imageX="128" imageY="0"   imageWidth="64" imageHeight="64"/>
-			<Image imageID="&rsWorlds1;" imageX="128" imageY="64"  imageWidth="64" imageHeight="64"/>
-			<Image imageID="&rsWorlds1;" imageX="128" imageY="128" imageWidth="64" imageHeight="64"/>
-			<Image imageID="&rsWorlds1;" imageX="128" imageY="192" imageWidth="64" imageHeight="64"/>
-			<Image imageID="&rsWorlds1;" imageX="128" imageY="256" imageWidth="64" imageHeight="64"/>
-
-			<Image imageID="&rsWorlds1;" imageX="128" imageY="320" imageWidth="64" imageHeight="64"/>
-			<Image imageID="&rsWorlds1;" imageX="128" imageY="384" imageWidth="64" imageHeight="64"/>
-			<Image imageID="&rsWorlds1;" imageX="128" imageY="448" imageWidth="64" imageHeight="64"/>
-		</ImageVariants>
-
 		<Ships>
-			<Ship	count="1"	class="&scXenophobeDefender;" orders="wander" sovereign="&svXenophobes;" >
+			<Ship	count="1"	class="&scXenophobeDefender;" orders="wander" eventHandler="&evXenophobeFleetBehavior;">
 				<Escorts>
 					<Ship		count="1d4+1"	class="&scXenophobeFighter;"	orders="escort"/>
 				</Escorts>
 			</Ship>
 		</Ships>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 100)
-			</OnMining>
-
-			<GetRumors>
-				{
-					attributes: "commonwealthPub"
-					priority: 60
-					textID: 'rumor.commonwealthPub
-					}
-			</GetRumors>
-		</Events>
-
-		<Language>
-			<Text id="rumor.commonwealthPub">
-				You spend 5 credits buying drinks for a mercenary. He talk about
-				his encounters with the Xenophobes:
-
-				"The minute I see their green ships I turn tail&mdash;I'm not
-				proud. And you shouldn't be either!"
-			</Text>
-		</Language>
-	</StationType>
+	</EncounterType>
 
 	<!-- Xenophobe Worldship Encounter -->
 
@@ -113,7 +73,7 @@
 		<!-- Encounter Info -->
 
 		<Encounter
-				systemCriteria=			"+xenophobeSpace;"
+				systemCriteria=			"+commonwealthSpace; +xenophobeSpace;"
 				systemAffinity=			"+envFire; -envWater;"
 				levelFrequency=			"----- -vuv- ----- ----- -----"
 
@@ -141,7 +101,7 @@
 		</DockingPorts>
 		
 		<Ships>
-			<Ship	count="1"	class="&scXenophobeWorldship;" orders="wander" sovereign="&svXenophobes;" >
+			<Ship	count="1"	class="&scXenophobeWorldship;" orders="wander" sovereign="&svXenophobes;" eventHandler="&evXenophobeFleetBehavior;">
 				<Escorts>
 					<Ship		count="1d3+1"	class="&scXenophobeDefender;"	orders="escort">
 						<Escorts>
@@ -226,9 +186,6 @@
 
 			attributes=			"benninXenophobes, capitalShip, genericClass"
 
-			size=				"165"
-			mass=				"15000"
-			cargoSpace=			"500"
 			thrustRatio=		"1"
 			maxSpeed=			"12"
 
@@ -238,23 +195,33 @@
 
 			>
 
-		<!-- Configuration -->
-		
-		<Armor
-			armorID=			"&itHeavyMeteorsteel;"
-			count=				"12"
+		<!-- Hull -->
+
+		<Hull
+			size=				"173"
+			mass=				"15000"
+			cargoSpace=			"5000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"5000"
+			maxDevices=			"12"
 			/>
-		
-		<Devices>
-			<Device deviceID="&itMarkIIIHowitzer;" omnidirectional="true" posAngle="180" posRadius="6" posZ="7"/>
-			<Device deviceID="&itLancerCannon;" secondaryWeapon="true" minFireArc="340" maxFireArc="180" posAngle="130" posRadius="36" posZ="7"/>
-			<Device deviceID="&itLancerCannon;" secondaryWeapon="true" minFireArc="180" maxFireArc="20" posAngle="230" posRadius="36" posZ="7"/>
-		</Devices>
+
+		<Drive
+			maxSpeed=			"12"
+			thrust=				"15000"
+			/>
 
 		<Maneuver
 			maxRotationRate=	"4"
 			rotationAccel=		"0.5"
 			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="mainTurret"			criteria="w"	posAngle="180"  posRadius="15"   posZ="15"	omnidirectional="true"/>
+			<DeviceSlot id="portTurret"			criteria="w"	posAngle="-144" posRadius="50"  posZ="15"	fireAngle="-100" fireArc="180" secondaryWeapon="true"/>
+			<DeviceSlot id="starboardTurret"	criteria="w"	posAngle="144"  posRadius="50"  posZ="15"	fireAngle="100"  fireArc="180" secondaryWeapon="true"/>
+		</DeviceSlots>
 
 		<Interior>
 			<Compartment name="interior"
@@ -265,12 +232,27 @@
 					type=		"mainDrive"
 					hitPoints=	"80"
 
-					posX=		"-40"
+					posX=		"-60"
 					posY=		"0"
 					sizeX=		"36"
-					sizeY=		"36"
+					sizeY=		"44"
 					/>
 		</Interior>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itHeavyMeteorsteel;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device slotID="mainTurret"			deviceID="&itMarkIIIHowitzer;"/>
+			<Device slotID="portTurret"			deviceID="&itLancerCannon;"/>
+			<Device slotID="starboardTurret"	deviceID="&itLancerCannon;"/>
+		</Devices>
+
+		<!-- Items -->
 
 		<Items>
 			<Item				count="4d6"		item="&itXenotiteFuelRod;"/>
@@ -283,12 +265,19 @@
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsXenophobeDefender;" imageWidth="180" imageHeight="180"/>
+		<Image imageID="&rsXenophobeDefenderHD;" imageWidth="188" imageHeight="188"	rotationCount="120" rotationColumns="12" viewportRatio="0.025"/>
+		<HeroImage imageID="&rsXenophobeDefenderHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="168"	posRadius="75"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="74"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-168"	posRadius="75"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="173"	posRadius="73"	posZ="-13"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-173"	posRadius="73"	posZ="-13"	rotation="180"	effect="&efMainThrusterLarge;"/>
+
+			<Effect type="thrustMain"		posAngle="166"	posRadius="74"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="72"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-166"	posRadius="74"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+
+			<Effect type="thrustMain"		posAngle="173"	posRadius="73"	posZ="13"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-173"	posRadius="73"	posZ="13"	rotation="180"	effect="&efMainThrusterLarge;"/>
 		</Effects>
 		
 		<!-- AI and Behavior -->
@@ -331,14 +320,16 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itMarkVHowitzer;" omnidirectional="true" posAngle="0" posRadius="24" posZ="0"/>
+			<Device deviceID="&itMarkVHowitzer;" omnidirectional="true" posAngle="0" posRadius="30" posZ="42"/>
 
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="345" maxFireArc="165" posAngle="30" posRadius="75" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="345" maxFireArc="135" posAngle="15" posRadius="84" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="225" maxFireArc="15"  posAngle="345" posRadius="84" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="195" maxFireArc="15"  posAngle="330" posRadius="75" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="180" maxFireArc="285" posAngle="220" posRadius="52" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="75"  maxFireArc="180" posAngle="140" posRadius="52" posZ="0"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="345" maxFireArc="165" posAngle="16"   posRadius="65" posZ="26"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="195" maxFireArc="15"  posAngle="-16"  posRadius="65" posZ="26"/>
+
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="345" maxFireArc="135" posAngle="14"   posRadius="88" posZ="5"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="225" maxFireArc="15"  posAngle="-14"  posRadius="88" posZ="5"/>
+
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="75"  maxFireArc="180" posAngle="138"  posRadius="49" posZ="0"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="180" maxFireArc="285" posAngle="-138" posRadius="49" posZ="0"/>
 
 			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
 			<Device deviceID="&it500MWReactor;"/>
@@ -376,13 +367,14 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsXenophobeWorldship;" imageX="0" imageY="0" imageWidth="250" imageHeight="250"/>
+		<Image imageID="&rsXenophobeWorldshipHD;" imageWidth="250" imageHeight="250"	rotationCount="120" rotationColumns="12" viewportRatio="0.0375"/>
+		<HeroImage imageID="&rsXenophobeWorldshipHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="175"	posRadius="99"	posZ="-10"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
 			<Effect type="thrustMain"		posAngle="-175"	posRadius="99"	posZ="-10"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
-			<Effect type="thrustMain"		posAngle="168"	posRadius="93"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-168"	posRadius="93"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="166"	posRadius="90"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-166"	posRadius="90"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 			<Effect type="thrustMain"		posAngle="175"	posRadius="99"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"	bringToFront="*"/>
 			<Effect type="thrustMain"		posAngle="-175"	posRadius="99"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"	bringToFront="*"/>
 		</Effects>
@@ -446,21 +438,21 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itFusionfireHowitzer;" secondaryWeapon="true"	minFireArc="280" maxFireArc="80"  posAngle="0"   posRadius="90" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		minFireArc="280" maxFireArc="80"  posAngle="15"  posRadius="90" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		minFireArc="280" maxFireArc="80"  posAngle="345" posRadius="90" posZ="0"/>
+			<Device deviceID="&itFusionfireHowitzer;" secondaryWeapon="true"	fireArc="160"  posAngle="0"    posRadius="82" posZ="114"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="15"   posRadius="82" posZ="114"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="-15"  posRadius="82" posZ="114"/>
 
-			<Device deviceID="&itFusionfireHowitzer;" secondaryWeapon="true"	minFireArc="10"  maxFireArc="170" posAngle="90"  posRadius="90" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		minFireArc="10"  maxFireArc="170" posAngle="105" posRadius="90" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		minFireArc="10"  maxFireArc="170" posAngle="75"  posRadius="90"/>
+			<Device deviceID="&itFusionfireHowitzer;" secondaryWeapon="true"	fireArc="160"  posAngle="90"   posRadius="82" posZ="114"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="105"  posRadius="82" posZ="114"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="75"   posRadius="82" posZ="114"/>
 
-			<Device deviceID="&itFusionfireHowitzer;" secondaryWeapon="true"	minFireArc="100" maxFireArc="260" posAngle="180" posRadius="90" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		minFireArc="100" maxFireArc="260" posAngle="165" posRadius="90" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		minFireArc="100" maxFireArc="260" posAngle="195" posRadius="90" posZ="0"/>
+			<Device deviceID="&itFusionfireHowitzer;" secondaryWeapon="true"	fireArc="160"  posAngle="180"  posRadius="82" posZ="114"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="165"  posRadius="82" posZ="114"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="-165" posRadius="82" posZ="114"/>
 
-			<Device deviceID="&itFusionfireHowitzer;" secondaryWeapon="true"	minFireArc="190" maxFireArc="350" posAngle="270" posRadius="90" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		minFireArc="190" maxFireArc="350" posAngle="285" posRadius="90" posZ="0"/>
-			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		minFireArc="190" maxFireArc="350" posAngle="255" posRadius="90" posZ="0"/>
+			<Device deviceID="&itFusionfireHowitzer;" secondaryWeapon="true"	fireArc="160"  posAngle="-90"  posRadius="82" posZ="114"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="-75"  posRadius="82" posZ="114"/>
+			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="-105" posRadius="82" posZ="114"/>
 
 			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
 			<Device deviceID="&it1GWReactor;"/>
@@ -488,7 +480,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsXenophobeArk;" imageWidth="256" imageHeight="256"/>
+		<Image imageID="&rsXenophobeArkHD;" imageWidth="256" imageHeight="256"	rotationCount="120" rotationColumns="12" viewportRatio="0.03375"/>
+		<Image imageID="&rsXenophobeArkHero;" imageWidth="320" imageHeight="320"/>
 
 		<AISettings
 			aggressor=			"true"
@@ -763,11 +756,41 @@
 
 	</ItemType>
 
+<!-- BEHAVIORS -->
+
+	<Type unid="&evXenophobeFleetBehavior;">
+		<Events>
+			<GetRumors>
+				{
+					attributes: "commonwealthPub"
+					priority: 60
+					textID: 'rumor.commonwealthPub
+					}
+			</GetRumors>
+		</Events>
+
+		<Language>
+			<Text id="rumor.commonwealthPub">
+				You spend 5 credits buying drinks for a mercenary. He talk about
+				his encounters with the Xenophobes:
+
+				"The minute I see their green ships I turn tail&mdash;I'm not
+				proud. And you shouldn't be either!"
+			</Text>
+		</Language>
+	</Type>
+
 <!-- RESOURCES -->
 
-	<Image UNID="&rsXenophobeArk;"				bitmap="Resources\XenophobeArk.jpg"				bitmask="Resources\XenophobeArkMask.bmp"  		loadOnUse="true"/>
-	<Image UNID="&rsXenophobeDefender;"			bitmap="Resources\XenophobeDefender.jpg"		bitmask="Resources\XenophobeDefenderMask.bmp"	loadOnUse="true"/>
-	<Image UNID="&rsXenophobeWorldship;"		bitmap="Resources\XenophobeWorldship.jpg"		bitmask="Resources\XenophobeWorldshipMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsXenophobeArkHD;"			bitmap="Resources\XenophobeArkHD.jpg"			bitmask="Resources\XenophobeArkHDMask.bmp"  		loadOnUse="true"/>
+	<Image UNID="&rsXenophobeArkHero;"			bitmap="Resources\XenophobeArkLarge.jpg"				bitmask="Resources\XenophobeArkLargeMask.bmp"  		loadOnUse="true"/>
+
+	<Image UNID="&rsXenophobeDefenderHD;"		bitmap="Resources\XenophobeDefenderHD.jpg"		bitmask="Resources\XenophobeDefenderHDMask.bmp"  		loadOnUse="true"/>
+	<Image UNID="&rsXenophobeDefenderHero;"		bitmap="Resources\XenophobeDefenderLarge.jpg"	bitmask="Resources\XenophobeDefenderLargeMask.bmp"  		loadOnUse="true"/>
+
 	<Image UNID="&rsXenophobeFighterHD;"		bitmap="Resources\XenophobeFighterHD.jpg"		bitmask="Resources\XenophobeFighterHDMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&rsXenophobeWorldshipHD;"		bitmap="Resources\XenophobeWorldshipHD.jpg"		bitmask="Resources\XenophobeWorldshipHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsXenophobeWorldshipHero;"	bitmap="Resources\XenophobeWorldshipLarge.jpg"		bitmask="Resources\XenophobeWorldshipLargeMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

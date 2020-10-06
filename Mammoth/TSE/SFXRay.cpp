@@ -46,10 +46,10 @@ class CRayEffectPainter : public IEffectPainter
 			animateNone =			0,
 
 			animateFade =			1,
-            animateFlicker =        2,
+			animateFlicker =        2,
 			animateCycle =			3,
 
-            animateMax =            3,
+			animateMax =            3,
 			};
 
 		enum ERayShapes
@@ -61,8 +61,9 @@ class CRayEffectPainter : public IEffectPainter
 			shapeStraight =			3,
 			shapeTapered =			4,
 			shapeCone =				5,
+			shapeSword =			6,
 
-			shapeMax =				5,
+			shapeMax =				6,
 			};
 
 		enum ERayStyles
@@ -91,6 +92,7 @@ class CRayEffectPainter : public IEffectPainter
 			opacityGlow,
 			opacityGrainy,
 			opacityTaperedGlow,
+			opacityTaperedExponentialGlow,
 			};
 
 		enum EWidthAdjTypes
@@ -103,19 +105,24 @@ class CRayEffectPainter : public IEffectPainter
 			widthAdjTapered,
 			widthAdjCone,
 			widthAdjWhiptail,
+			widthAdjSword,
 			};
 
 		void CalcCone (TArray<Metric> &AdjArray);
 		void CalcDiamond (TArray<Metric> &AdjArray);
 		void CalcIntermediates (int iLength);
-        int CalcLength (SViewportPaintCtx &Ctx) const;
+		int CalcLength (SViewportPaintCtx &Ctx) const;
 		void CalcOval (TArray<Metric> &AdjArray);
 		void CalcRandomWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
+		void CalcSword (TArray<Metric> &AdjArray);
 		void CalcTaper (TArray<Metric> &AdjArray);
 		void CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength, Metric rDecay, Metric rCyclePos);
 		void CleanUpIntermediates (void);
-        ILinePainter *CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos = 0.0);
+		ILinePainter *CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos = 0.0);
 		void PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
+
+		static void CalcTaperedGlow (int Width, int iLength, int iIntensity, Metric rTaperFraction, OpacityPlane &retGlow);
+		static void CalcTaperedExponentialGlow (int Width, int iLength, int iIntensity, Metric rTaperFraction, OpacityPlane &retGlow);
 
 		CEffectCreator *m_pCreator;
 
@@ -136,30 +143,31 @@ class CRayEffectPainter : public IEffectPainter
 		//	Temporary variables based on shape/style/etc.
 
 		int m_iInitializedLength;			//	If -1, not yet initialized; otherwise, initialized to the given length
-        TArray<ILinePainter *> m_RayRenderer;
-        TArray<int> m_Length;               //  Length for each frame (only for multi-frame animations)
+		TArray<ILinePainter *> m_RayRenderer;
+		TArray<int> m_Length;               //  Length for each frame (only for multi-frame animations)
 	};
 
-const int BLOB_PEAK_FRACTION =			1;
-const int TAPER_FRACTION =				3;
-const int TAPER_PEAK_FRACTION =			8;
-const int JAGGED_PEAK_FRACTION =		3;
-const Metric BLOB_WAVE_SIZE =			0.30;
-const Metric JAGGED_AMPLITUDE =			0.45;
-const Metric JAGGED_WAVELENGTH_FACTOR =	0.33;
-const Metric WAVY_WAVELENGTH_FACTOR =	1.0;
-const Metric WHIPTAIL_AMPLITUDE =		0.45;
-const Metric WHIPTAIL_WAVELENGTH_FACTOR =		1.0;
-const Metric WHIPTAIL_DECAY =			0.13;
-const int MAX_TAPERED_FADE_TAIL =		300;
+constexpr int BLOB_PEAK_FRACTION =				1;
+constexpr int SWORD_PEAK_FRACTION =				5;
+constexpr Metric TAPER_FRACTION =				0.333333;
+constexpr int TAPER_PEAK_FRACTION =				8;
+constexpr int JAGGED_PEAK_FRACTION =			3;
+constexpr Metric BLOB_WAVE_SIZE =				0.30;
+constexpr Metric JAGGED_AMPLITUDE =				0.45;
+constexpr Metric JAGGED_WAVELENGTH_FACTOR =		0.33;
+constexpr Metric WAVY_WAVELENGTH_FACTOR =		1.0;
+constexpr Metric WHIPTAIL_AMPLITUDE =			0.45;
+constexpr Metric WHIPTAIL_WAVELENGTH_FACTOR =	1.0;
+constexpr Metric WHIPTAIL_DECAY =				0.13;
+constexpr int MAX_TAPERED_FADE_TAIL =			300;
 
-const Metric MIN_GLOW_LEVEL =			0.6;
-const Metric GLOW_FACTOR =				(0.4 / 100.0);
-const Metric BRIGHT_FACTOR =			(0.25 / 100.0);
-const Metric SOLID_FACTOR =				(0.40 / 100.0);
-const Metric GRAINY_SIGMA =				1.0;
+constexpr Metric MIN_GLOW_LEVEL =				0.6;
+constexpr Metric GLOW_FACTOR =					(0.4 / 100.0);
+constexpr Metric BRIGHT_FACTOR =				(0.25 / 100.0);
+constexpr Metric SOLID_FACTOR =					(0.40 / 100.0);
+constexpr Metric GRAINY_SIGMA =					1.0;
 
-static LPSTR ANIMATION_TABLE[] =
+static LPCSTR ANIMATION_TABLE[] =
 	{
 	//	Must be same order as EAnimationTypes
 		"",
@@ -171,7 +179,7 @@ static LPSTR ANIMATION_TABLE[] =
 		NULL
 	};
 
-static LPSTR SHAPE_TABLE[] =
+static LPCSTR SHAPE_TABLE[] =
 	{
 	//	Must be same order as ERayShapes
 		"",
@@ -181,11 +189,12 @@ static LPSTR SHAPE_TABLE[] =
 		"straight",
 		"tapered",
 		"cone",
+		"sword",
 
 		NULL
 	};
 
-static LPSTR STYLE_TABLE[] =
+static LPCSTR STYLE_TABLE[] =
 	{
 	//	Must be same order as ERayStyles
 		"",
@@ -273,9 +282,9 @@ ALERROR CRayEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 	{
 	ALERROR error;
 
-    CString sAnimate;
-    if (!pDesc->FindAttribute(ANIMATE_ATTRIB, &sAnimate))
-        sAnimate = pDesc->GetAttribute(ANIMATE_OPACITY_ATTRIB);
+	CString sAnimate;
+	if (!pDesc->FindAttribute(ANIMATE_ATTRIB, &sAnimate))
+		sAnimate = pDesc->GetAttribute(ANIMATE_OPACITY_ATTRIB);
 
 	if (error = m_AnimateOpacity.InitIdentifierFromXML(Ctx, sAnimate, ANIMATION_TABLE))
 		return error;
@@ -408,61 +417,61 @@ void CRayEffectPainter::CalcIntermediates (int iLength)
 //	Calculate intermediate values used for painting.
 
 	{
-    int i;
+	int i;
 
-    //  If already initialized, we're done.
+	//  If already initialized, we're done.
 
-    if (m_iInitializedLength == iLength)
-        return;
+	if (m_iInitializedLength == iLength)
+		return;
 	else
 		CleanUpIntermediates();
 
-    //  Create the renderer. Depending on our animation option, we either create
-    //  one or more renderers.
+	//  Create the renderer. Depending on our animation option, we either create
+	//  one or more renderers.
 
-    switch (m_iAnimation)
-        {
+	switch (m_iAnimation)
+		{
 		case animateCycle:
 			{
-            //  We generate 16 frames. For some styles, such as "wavy", we cycle
+			//  We generate 16 frames. For some styles, such as "wavy", we cycle
 			//	through some kind of motion. For others, it's just random.
 
-            int iFrameCount = 16;
-            m_RayRenderer.InsertEmpty(iFrameCount);
+			int iFrameCount = 16;
+			m_RayRenderer.InsertEmpty(iFrameCount);
 
-            for (i = 0; i < m_RayRenderer.GetCount(); i++)
-                {
+			for (i = 0; i < m_RayRenderer.GetCount(); i++)
+				{
 				Metric rAnimation = (Metric)i / (Metric)iFrameCount;
-                m_RayRenderer[i] = CreateRenderer(m_iWidth, iLength, m_iIntensity, m_iStyle, m_iShape, rAnimation);
-                }
+				m_RayRenderer[i] = CreateRenderer(m_iWidth, iLength, m_iIntensity, m_iStyle, m_iShape, rAnimation);
+				}
 			break;
 			}
 
-        case animateFlicker:
-            {
-            //  We generate 16 frames of random length and intensity
+		case animateFlicker:
+			{
+			//  We generate 16 frames of random length and intensity
 
-            int iFrameCount = 16;
-            m_RayRenderer.InsertEmpty(iFrameCount);
-            m_Length.InsertEmpty(iFrameCount);
+			int iFrameCount = 16;
+			m_RayRenderer.InsertEmpty(iFrameCount);
+			m_Length.InsertEmpty(iFrameCount);
 
-            for (i = 0; i < m_RayRenderer.GetCount(); i++)
-                {
+			for (i = 0; i < m_RayRenderer.GetCount(); i++)
+				{
 				Metric rFlicker = Max(0.5, Min(1.0 + (0.25 * mathRandomGaussian()), 2.0));
 				int iFlickerLength = Max(2, (int)(rFlicker * iLength));
 				int iIntensity = (int)(rFlicker * m_iIntensity);
 
-                m_Length[i] = iFlickerLength;
-                m_RayRenderer[i] = CreateRenderer(m_iWidth, iFlickerLength, iIntensity, m_iStyle, m_iShape);
-                }
-            break;
-            }
+				m_Length[i] = iFlickerLength;
+				m_RayRenderer[i] = CreateRenderer(m_iWidth, iFlickerLength, iIntensity, m_iStyle, m_iShape);
+				}
+			break;
+			}
 
-        default:
-            m_RayRenderer.InsertEmpty();
-            m_RayRenderer[0] = CreateRenderer(m_iWidth, iLength, m_iIntensity, m_iStyle, m_iShape);
-            break;
-        }
+		default:
+			m_RayRenderer.InsertEmpty();
+			m_RayRenderer[0] = CreateRenderer(m_iWidth, iLength, m_iIntensity, m_iStyle, m_iShape);
+			break;
+		}
 
 	//	Done
 
@@ -475,25 +484,25 @@ int CRayEffectPainter::CalcLength (SViewportPaintCtx &Ctx) const
 //
 //  Computes the length of the ray this frame.
 
-    {
-    int iLength;
+	{
+	int iLength;
 
-    //  Get the length based on the animation frame
+	//  Get the length based on the animation frame
 
-    switch (m_iAnimation)
-        {
-        case animateFlicker:
-            iLength = m_Length[Ctx.iTick % m_Length.GetCount()];
-            break;
+	switch (m_iAnimation)
+		{
+		case animateFlicker:
+			iLength = m_Length[Ctx.iTick % m_Length.GetCount()];
+			break;
 
-        default:
-            iLength = m_iLength;
-        }
+		default:
+			iLength = m_iLength;
+		}
 
-    //  Adjust for maximum
+	//  Adjust for maximum
 
 	return (Ctx.iMaxLength != -1 ? Min(Ctx.iMaxLength, iLength) : iLength);
-    }
+	}
 
 void CRayEffectPainter::CalcOval (TArray<Metric> &AdjArray)
 
@@ -564,6 +573,31 @@ void CRayEffectPainter::CalcRandomWaves (TArray<Metric> &AdjArray, Metric rAmpli
 		}
 	}
 
+void CRayEffectPainter::CalcSword (TArray<Metric> &AdjArray)
+
+//	CalcSword
+//
+//	Fills in the given array with sword-shaped width
+
+	{
+	//	From the head to the peak is linear
+
+	const int iPeakPoint = AdjArray.GetCount() / SWORD_PEAK_FRACTION;
+	const Metric rXInc = (iPeakPoint > 0 ? (1.0 / (Metric)iPeakPoint) : 0.0);
+	Metric rX = 0.0;
+	for (int i = 0; i < iPeakPoint; i++, rX += rXInc)
+		AdjArray[i] = rX;
+
+	//	Past the peak we decay linearly
+
+	const Metric MIN_WIDTH = (1.0 / Max(1, m_iWidth));
+	const Metric INC_TOTAL = 1.0 - MIN_WIDTH;
+	const Metric rYInc = (AdjArray.GetCount() > 0 ? (INC_TOTAL / (Metric)(AdjArray.GetCount() - iPeakPoint)) : 0.0);
+	Metric rY = 1.0;
+	for (int i = iPeakPoint; i < AdjArray.GetCount(); i++, rY -= rYInc)
+		AdjArray[i] = rY;
+	}
+
 void CRayEffectPainter::CalcTaper (TArray<Metric> &AdjArray)
 
 //	CalcTaper
@@ -589,6 +623,108 @@ void CRayEffectPainter::CalcTaper (TArray<Metric> &AdjArray)
 	Metric rYInc = (AdjArray.GetCount() > 0 ? (INC_TOTAL / (Metric)(AdjArray.GetCount() - iPeakPoint)) : 0.0);
 	for (i = iPeakPoint; i < AdjArray.GetCount(); i++, rY -= rYInc)
 		AdjArray[i] = rY;
+	}
+
+void CRayEffectPainter::CalcTaperedExponentialGlow (int iWidth, int iLength, int iIntensity, Metric rTaperFraction, OpacityPlane &retGlow)
+
+//	CalcTaperedExponentialGlow
+//
+//	Calculates the opacity for tapered glow.
+
+	{
+	retGlow.InsertEmpty(iLength);
+	for (int i = 0; i < iLength; i++)
+		retGlow[i].InsertEmpty(iWidth);
+
+	//	From center to peak we have solid opacity
+
+	int iPeakPoint = (int)(SOLID_FACTOR * iIntensity * iWidth);
+
+	//	After the 1/3 point start fading out (linearly)
+
+	int iMinFadePoint = iLength - MAX_TAPERED_FADE_TAIL;
+	int iFadePoint = Max(iMinFadePoint, (int)(iLength * rTaperFraction));
+	Metric rTaperInc = (iLength > 0 ? (1.0 / (iLength - iFadePoint)) : 0.0);
+
+	//	From center to peak we have solid opacity plus taper
+
+	for (int w = 0; w < iPeakPoint; w++)
+		{
+		for (int v = 0; v < iFadePoint; v++)
+			retGlow[v][w] = 255;
+
+		Metric rTaper = 1.0;
+		for (int v = iFadePoint; v < iLength; v++, rTaper -= rTaperInc)
+			retGlow[v][w] = (int)(255.0 * rTaper * rTaper);
+		}
+
+	//	The glow around the peak decays exponentially
+
+	Metric rGlowLevel = MIN_GLOW_LEVEL + (iIntensity * GLOW_FACTOR);
+	Metric rGlowInc = (iWidth > 0 ? (1.0 / (iWidth - iPeakPoint)) : 0.0);
+	Metric rGlow = 1.0;
+	for (int w = iPeakPoint; w < iWidth; w++, rGlow -= rGlowInc)
+		{
+		Metric rGlowPart = rGlowLevel * rGlow * rGlow;
+
+		for (int v = 0; v < iFadePoint; v++)
+			retGlow[v][w] = (int)(255.0 * rGlowPart);
+
+		Metric rTaper = 1.0;
+		for (int v = iFadePoint; v < iLength; v++, rTaper -= rTaperInc)
+			retGlow[v][w] = (int)(255.0 * rGlowPart * rTaper * rTaper);
+		}
+	}
+
+void CRayEffectPainter::CalcTaperedGlow (int iWidth, int iLength, int iIntensity, Metric rTaperFraction, OpacityPlane &retGlow)
+
+//	CalcTaperedGlow
+//
+//	Calculates the opacity for tapered glow.
+
+	{
+	retGlow.InsertEmpty(iLength);
+	for (int i = 0; i < iLength; i++)
+		retGlow[i].InsertEmpty(iWidth);
+
+	//	From center to peak we have solid opacity
+
+	int iPeakPoint = (int)(SOLID_FACTOR * iIntensity * iWidth);
+
+	//	After the 1/3 point start fading out (linearly)
+
+	int iMinFadePoint = iLength - MAX_TAPERED_FADE_TAIL;
+	int iFadePoint = Max(iMinFadePoint, (int)(iLength * rTaperFraction));
+	Metric rTaperInc = (iLength > 0 ? (1.0 / (iLength - iFadePoint)) : 0.0);
+
+	//	From center to peak we have solid opacity plus taper
+
+	for (int w = 0; w < iPeakPoint; w++)
+		{
+		for (int v = 0; v < iFadePoint; v++)
+			retGlow[v][w] = 255;
+
+		Metric rTaper = 1.0;
+		for (int v = iFadePoint; v < iLength; v++, rTaper -= rTaperInc)
+			retGlow[v][w] = (int)(255.0 * rTaper);
+		}
+
+	//	The glow around the peak decays exponentially
+
+	Metric rGlowLevel = MIN_GLOW_LEVEL + (iIntensity * GLOW_FACTOR);
+	Metric rGlowInc = (iWidth > 0 ? (1.0 / (iWidth - iPeakPoint)) : 0.0);
+	Metric rGlow = 1.0;
+	for (int w = iPeakPoint; w < iWidth; w++, rGlow -= rGlowInc)
+		{
+		Metric rGlowPart = rGlowLevel * rGlow * rGlow;
+
+		for (int v = 0; v < iFadePoint; v++)
+			retGlow[v][w] = (int)(255.0 * rGlowPart);
+
+		Metric rTaper = 1.0;
+		for (int v = iFadePoint; v < iLength; v++, rTaper -= rTaperInc)
+			retGlow[v][w] = (int)(255.0 * rGlowPart * rTaper);
+		}
 	}
 
 void CRayEffectPainter::CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength, Metric rDecay, Metric rCyclePos)
@@ -635,8 +771,8 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 //
 //  Creates a single renderer with the given properties.
 
-    {
-    int i, v, w;
+	{
+	int i, v, w;
 
 	EColorTypes iColorTypes = colorNone;
 	EOpacityTypes iOpacityTypes = opacityNone;
@@ -780,6 +916,49 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 				}
 			break;
 
+		case shapeSword:
+			switch (iStyle)
+				{
+				case styleBlob:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedExponentialGlow;
+					iWidthAdjType = widthAdjBlob;
+					iReshape = widthAdjSword;
+					break;
+
+				case styleGlow:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedExponentialGlow;
+					iWidthAdjType = widthAdjSword;
+					break;
+
+				case styleGrainy:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedExponentialGlow;
+					iWidthAdjType = widthAdjSword;
+					iTexture = opacityGrainy;
+					break;
+
+				case styleJagged:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedExponentialGlow;
+					iWidthAdjType = widthAdjJagged;
+					iReshape = widthAdjSword;
+					break;
+
+				case styleLightning:
+					iWidthAdjType = widthAdjSword;
+					break;
+
+				case styleWhiptail:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedExponentialGlow;
+					iWidthAdjType = widthAdjWhiptail;
+					iReshape = widthAdjSword;
+					break;
+				}
+			break;
+
 		case shapeStraight:
 			switch (iStyle)
 				{
@@ -863,7 +1042,7 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 	//	Full color map
 
-    ColorPlane ColorMap;
+	ColorPlane ColorMap;
 	switch (iColorTypes)
 		{
 		case colorGlow:
@@ -892,7 +1071,7 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 	//	Full opacity
 
-    OpacityPlane OpacityMap;
+	OpacityPlane OpacityMap;
 	switch (iOpacityTypes)
 		{
 		case opacityGlow:
@@ -917,59 +1096,19 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 			break;
 			}
 
-		case opacityTaperedGlow:
-			{
-			OpacityMap.InsertEmpty(iLengthCount);
-			for (i = 0; i < iLengthCount; i++)
-				OpacityMap[i].InsertEmpty(iWidthCount);
-
-			//	From center to peak we have solid opacity
-
-			int iPeakPoint = (int)(SOLID_FACTOR * iIntensity * iWidthCount);
-
-			//	After the 1/3 point start fading out (linearly)
-
-			int iMinFadePoint = iLengthCount - MAX_TAPERED_FADE_TAIL;
-			int iFadePoint = Max(iMinFadePoint, iLengthCount / TAPER_FRACTION);
-			Metric rTaperInc = (iLengthCount > 0 ? (1.0 / (iLengthCount - iFadePoint)) : 0.0);
-
-			//	From center to peak we have solid opacity plus taper
-
-			for (w = 0; w < iPeakPoint; w++)
-				{
-				for (v = 0; v < iFadePoint; v++)
-					OpacityMap[v][w] = 255;
-
-				Metric rTaper = 1.0;
-				for (v = iFadePoint; v < iLengthCount; v++, rTaper -= rTaperInc)
-					OpacityMap[v][w] = (int)(255.0 * rTaper);
-				}
-
-			//	The glow around the peak decays exponentially
-
-			Metric rGlowLevel = MIN_GLOW_LEVEL + (iIntensity * GLOW_FACTOR);
-			Metric rGlowInc = (iWidthCount > 0 ? (1.0 / (iWidthCount - iPeakPoint)) : 0.0);
-			Metric rGlow = 1.0;
-			for (w = iPeakPoint; w < iWidthCount; w++, rGlow -= rGlowInc)
-				{
-				Metric rGlowPart = rGlowLevel * rGlow * rGlow;
-
-				for (v = 0; v < iFadePoint; v++)
-					OpacityMap[v][w] = (int)(255.0 * rGlowPart);
-
-				Metric rTaper = 1.0;
-				for (v = iFadePoint; v < iLengthCount; v++, rTaper -= rTaperInc)
-					OpacityMap[v][w] = (int)(255.0 * rGlowPart * rTaper);
-				}
-
+		case opacityTaperedExponentialGlow:
+			CalcTaperedExponentialGlow(iWidthCount, iLengthCount, iIntensity, 0.1, OpacityMap);
 			break;
-			}
+
+		case opacityTaperedGlow:
+			CalcTaperedGlow(iWidthCount, iLengthCount, iIntensity, TAPER_FRACTION, OpacityMap);
+			break;
 		}
 
 	//	Width adjustments
 
-    WidthAdjArray WidthAdjTop;
-    WidthAdjArray WidthAdjBottom;
+	WidthAdjArray WidthAdjTop;
+	WidthAdjArray WidthAdjBottom;
 	switch (iWidthAdjType)
 		{
 		case widthAdjBlob:
@@ -1019,6 +1158,15 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 			WidthAdjTop.InsertEmpty(iLengthCount);
 
 			CalcOval(WidthAdjTop);
+			WidthAdjBottom = WidthAdjTop;
+			break;
+			}
+
+		case widthAdjSword:
+			{
+			WidthAdjTop.InsertEmpty(iLengthCount);
+
+			CalcSword(WidthAdjTop);
 			WidthAdjBottom = WidthAdjTop;
 			break;
 			}
@@ -1089,16 +1237,30 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 			break;
 			}
 
-		case widthAdjTapered:
+		case widthAdjSword:
 			{
 			TArray<Metric> TaperAdj;
 			TaperAdj.InsertEmpty(iLengthCount);
-			CalcTaper(TaperAdj);
+			CalcSword(TaperAdj);
 
-			for (i = 0; i < iLengthCount; i++)
+			for (int i = 0; i < iLengthCount; i++)
 				{
 				WidthAdjTop[i] *= TaperAdj[i];
 				WidthAdjBottom[i] *= TaperAdj[i];
+				}
+			break;
+			}
+
+		case widthAdjTapered:
+			{
+			TArray<Metric> WidthAdj;
+			WidthAdj.InsertEmpty(iLengthCount);
+			CalcTaper(WidthAdj);
+
+			for (i = 0; i < iLengthCount; i++)
+				{
+				WidthAdjTop[i] *= WidthAdj[i];
+				WidthAdjBottom[i] *= WidthAdj[i];
 				}
 			break;
 			}
@@ -1160,83 +1322,83 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 			}
 		}
 
-    //  Combine the opacity map and color map.
+	//  Combine the opacity map and color map.
 
-    if (OpacityMap.GetCount() > ColorMap.GetCount())
-        {
-        int iInsert = OpacityMap.GetCount() - ColorMap.GetCount();
-        ColorMap.GrowToFit(iInsert);
+	if (OpacityMap.GetCount() > ColorMap.GetCount())
+		{
+		int iInsert = OpacityMap.GetCount() - ColorMap.GetCount();
+		ColorMap.GrowToFit(iInsert);
 
-        //  If we have no color column, then add one using the primary color.
+		//  If we have no color column, then add one using the primary color.
 
-        if (ColorMap.GetCount() == 0)
-            {
-            ColorArray *pSingleRow = ColorMap.Insert();
-            pSingleRow->InsertEmpty(OpacityMap[0].GetCount());
-            for (i = 0; i < pSingleRow->GetCount(); i++)
-                pSingleRow->GetAt(i) = m_rgbPrimaryColor;
+		if (ColorMap.GetCount() == 0)
+			{
+			ColorArray *pSingleRow = ColorMap.Insert();
+			pSingleRow->InsertEmpty(OpacityMap[0].GetCount());
+			for (i = 0; i < pSingleRow->GetCount(); i++)
+				pSingleRow->GetAt(i) = m_rgbPrimaryColor;
 
-            iInsert--;
-            }
+			iInsert--;
+			}
 
-        //  Copy the color columns.
+		//  Copy the color columns.
 
-        for (i = 0; i < iInsert; i++)
-            ColorMap.Insert(ColorMap[0]);
-        }
-    else if (OpacityMap.GetCount() < ColorMap.GetCount())
-        {
-        int iInsert = ColorMap.GetCount() - OpacityMap.GetCount();
-        OpacityMap.GrowToFit(iInsert);
+		for (i = 0; i < iInsert; i++)
+			ColorMap.Insert(ColorMap[0]);
+		}
+	else if (OpacityMap.GetCount() < ColorMap.GetCount())
+		{
+		int iInsert = ColorMap.GetCount() - OpacityMap.GetCount();
+		OpacityMap.GrowToFit(iInsert);
 
-        if (OpacityMap.GetCount() == 0)
-            {
-            OpacityArray *pSingleRow = OpacityMap.Insert();
-            pSingleRow->InsertEmpty(ColorMap[0].GetCount());
-            for (i = 0; i < pSingleRow->GetCount(); i++)
-                pSingleRow->GetAt(i) = 255;
+		if (OpacityMap.GetCount() == 0)
+			{
+			OpacityArray *pSingleRow = OpacityMap.Insert();
+			pSingleRow->InsertEmpty(ColorMap[0].GetCount());
+			for (i = 0; i < pSingleRow->GetCount(); i++)
+				pSingleRow->GetAt(i) = 255;
 
-            iInsert--;
-            }
+			iInsert--;
+			}
 
-        for (i = 0; i < iInsert; i++)
-            OpacityMap.Insert(OpacityMap[0]);
-        }
+		for (i = 0; i < iInsert; i++)
+			OpacityMap.Insert(OpacityMap[0]);
+		}
 
-    //  Apply opacity
+	//  Apply opacity
 
-    for (v = 0; v < ColorMap.GetCount(); v++)
-        for (w = 0; w < ColorMap[0].GetCount(); w++)
-            ColorMap[v][w] = CG32bitPixel::PreMult(ColorMap[v][w], OpacityMap[v][w]);
+	for (v = 0; v < ColorMap.GetCount(); v++)
+		for (w = 0; w < ColorMap[0].GetCount(); w++)
+			ColorMap[v][w] = CG32bitPixel::PreMult(ColorMap[v][w], OpacityMap[v][w]);
 
-    //  Create the renderer
+	//  Create the renderer
 
-    if (iStyle == styleLightning)
-        {
-        int iBoltCount = Max(1, Min(iIntensity / 5, 20));
-        return new CLightningBundlePainter(iBoltCount, m_rgbPrimaryColor, m_rgbSecondaryColor, WidthAdjTop, WidthAdjBottom);
-        }
-    else
-        {
-        switch (m_iBlendMode)
-            {
-            case CGDraw::blendNormal:
-                return new CRayRasterizer<CGBlendBlend>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
-
-            case CGDraw::blendHardLight:
-                return new CRayRasterizer<CGBlendHardLight>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
-
-            case CGDraw::blendScreen:
-                return new CRayRasterizer<CGBlendScreen>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
-
-            case CGDraw::blendCompositeNormal:
-                return new CRayRasterizer<CGBlendComposite>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
-
-            default:
+	if (iStyle == styleLightning)
+		{
+		int iBoltCount = Max(1, Min(iIntensity / 5, 20));
+		return new CLightningBundlePainter(iBoltCount, m_rgbPrimaryColor, m_rgbSecondaryColor, WidthAdjTop, WidthAdjBottom);
+		}
+	else
+		{
+		switch (m_iBlendMode)
+			{
+			case CGDraw::blendNormal:
 				return new CRayRasterizer<CGBlendBlend>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
-            }
-        }
-    }
+
+			case CGDraw::blendHardLight:
+				return new CRayRasterizer<CGBlendHardLight>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+
+			case CGDraw::blendScreen:
+				return new CRayRasterizer<CGBlendScreen>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+
+			case CGDraw::blendCompositeNormal:
+				return new CRayRasterizer<CGBlendComposite>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+
+			default:
+				return new CRayRasterizer<CGBlendBlend>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+			}
+		}
+	}
 
 void CRayEffectPainter::CleanUpIntermediates (void)
 
@@ -1245,10 +1407,10 @@ void CRayEffectPainter::CleanUpIntermediates (void)
 //	Clean up any allocations
 
 	{
-    int i;
+	int i;
 
-    for (i = 0; i < m_RayRenderer.GetCount(); i++)
-        delete m_RayRenderer[i];
+	for (i = 0; i < m_RayRenderer.GetCount(); i++)
+		delete m_RayRenderer[i];
 
 	m_RayRenderer.DeleteAll();
 	m_Length.DeleteAll();
@@ -1362,7 +1524,7 @@ void CRayEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 	//	Paint the effect
 
-    PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
+	PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
 
 	DEBUG_CATCH
 	}
@@ -1420,12 +1582,12 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 //	Paints the ray
 
 	{
-    DEBUG_TRY
+	DEBUG_TRY
 
-    //  If no renderer, nothing to do
+	//  If no renderer, nothing to do
 
-    if (m_RayRenderer.GetCount() == 0)
-        return;
+	if (m_RayRenderer.GetCount() == 0)
+		return;
 
 	//	Paint based on animation
 
@@ -1433,29 +1595,29 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 		{
 		case animateFade:
 			{
-        	DWORD dwOpacity;
+			DWORD dwOpacity;
 			if (m_iLifetime > 0)
 				dwOpacity = 255 * (m_iLifetime - (Ctx.iTick % m_iLifetime)) / m_iLifetime;
 			else
 				dwOpacity = 255;
 
-	        //	Short-circuit
+			//	Short-circuit
 
-	        if (dwOpacity == 0)
-		        return;
+			if (dwOpacity == 0)
+				return;
 
-            m_RayRenderer[0]->SetParam(FIELD_OPACITY, (BYTE)dwOpacity);
-            m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
+			m_RayRenderer[0]->SetParam(FIELD_OPACITY, (BYTE)dwOpacity);
+			m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
 			break;
 			}
 
 		case animateCycle:
-        case animateFlicker:
-            m_RayRenderer[Ctx.iTick % m_RayRenderer.GetCount()]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
-            break;
+		case animateFlicker:
+			m_RayRenderer[Ctx.iTick % m_RayRenderer.GetCount()]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
+			break;
 
 		default:
-            m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
+			m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
 		}
 
 	DEBUG_CATCH
@@ -1482,11 +1644,11 @@ bool CRayEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 //	Sets parameters
 
 	{
-    if (strEquals(sParam, ANIMATE_ATTRIB))
-        m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(ANIMATION_TABLE, animateMax, animateNone);
+	if (strEquals(sParam, ANIMATE_ATTRIB))
+		m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(ANIMATION_TABLE, animateMax, animateNone);
 
 	else if (strEquals(sParam, ANIMATE_OPACITY_ATTRIB))
-        m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(ANIMATION_TABLE, animateMax, animateNone);
+		m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(ANIMATION_TABLE, animateMax, animateNone);
 
 	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
 		m_iBlendMode = Value.EvalBlendMode();

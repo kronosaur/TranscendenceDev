@@ -24,34 +24,34 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{797712EA-A2B5-4E30-A2F9-5998E90AFECC}</ProjectGuid>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <XPDeprecationWarning>false</XPDeprecationWarning>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -110,8 +110,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -140,8 +141,9 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -170,8 +172,9 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -204,8 +207,9 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -238,8 +242,9 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -251,6 +256,9 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Include\TSEAccessibilitySettings.h" />
+    <ClInclude Include="..\Include\TSEEngineDefs.h" />
+    <ClInclude Include="..\Include\TSEListImpl.h" />
     <ClInclude Include="..\Include\TSEOverlays.h" />
     <ClInclude Include="..\Include\TSESpaceObjectUtil.h" />
     <ClInclude Include="..\Include\TSEAdventureDesc.h" />
@@ -300,15 +308,25 @@
     <ClInclude Include="..\Include\TSESpaceObjectsEnum.h" />
     <ClInclude Include="..\Include\TSEStationType.h" />
     <ClInclude Include="..\Include\TSESystem.h" />
+    <ClInclude Include="..\Include\TSESystemCreate.h" />
+    <ClInclude Include="..\Include\TSESystemDefs.h" />
     <ClInclude Include="..\Include\TSESystemMap.h" />
+    <ClInclude Include="..\Include\TSESystemRandomEncounters.h" />
     <ClInclude Include="..\Include\TSESystemType.h" />
+    <ClInclude Include="..\Include\TSETargeting.h" />
     <ClInclude Include="..\Include\TSETopology.h" />
+    <ClInclude Include="..\Include\TSETopologyDefs.h" />
     <ClInclude Include="..\Include\TSETrade.h" />
     <ClInclude Include="..\Include\TSETransLispUtil.h" />
     <ClInclude Include="..\Include\TSEUniverse.h" />
+    <ClInclude Include="..\Include\TSEUniverseInlines.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="..\Include\TSEVersions.h" />
+    <ClInclude Include="..\Include\TSEWeaponClassImpl.h" />
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
+    <ClInclude Include="..\Include\TSEConfigurationDescInlines.h" />
+    <ClInclude Include="ItemGeneratorImpl.h" />
+    <ClInclude Include="ScriptParserImpl.h" />
     <ClInclude Include="SystemCreateImpl.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="GameFileCompatibility.h" />
@@ -333,12 +351,15 @@
     <ClInclude Include="ShipAIImpl.h" />
     <ClInclude Include="SystemImpl.h" />
     <ClInclude Include="SystemPaintImpl.h" />
+    <ClInclude Include="TargetListImpl.h" />
     <ClInclude Include="TopologyDescImpl.h" />
     <ClInclude Include="TopologyProcessorsImpl.h" />
+    <ClInclude Include="WeaponClassImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C3DObjectPos.cpp" />
     <ClCompile Include="CAbilitySet.cpp" />
+    <ClCompile Include="CAccessibilitySettings.cpp" />
     <ClCompile Include="CAdventureHighScoreList.cpp" />
     <ClCompile Include="CAdventureRecord.cpp" />
     <ClCompile Include="CAISettings.cpp" />
@@ -351,9 +372,11 @@
     <ClCompile Include="CArtifactAwakening.cpp" />
     <ClCompile Include="CArtifactProgram.cpp" />
     <ClCompile Include="CAscendedObjectList.cpp" />
+    <ClCompile Include="CAsteroidDesc.cpp" />
     <ClCompile Include="CAttackOrder.cpp" />
     <ClCompile Include="CAttackStationOrder.cpp" />
     <ClCompile Include="CAutoDockCalc.cpp" />
+    <ClCompile Include="CAutoMiningCalc.cpp" />
     <ClCompile Include="CAutoTargetCalc.cpp" />
     <ClCompile Include="CCargoDesc.cpp" />
     <ClCompile Include="CCircleRadiusDisruptor.cpp" />
@@ -378,6 +401,7 @@
     <ClCompile Include="CCompositeImageModifiers.cpp" />
     <ClCompile Include="CCompositeImageType.cpp" />
     <ClCompile Include="CConditionSet.cpp" />
+    <ClCompile Include="CConfigurationDesc.cpp" />
     <ClCompile Include="CContinuousBeam.cpp" />
     <ClCompile Include="CCreatePainterCtx.cpp" />
     <ClCompile Include="CCrewAI.cpp" />
@@ -414,6 +438,7 @@
     <ClCompile Include="CDockSession.cpp" />
     <ClCompile Include="CDriveDesc.cpp" />
     <ClCompile Include="CEffectParamDesc.cpp" />
+    <ClCompile Include="CEngineLanguage.cpp" />
     <ClCompile Include="CEngineOptions.cpp" />
     <ClCompile Include="CEnhancementDesc.cpp" />
     <ClCompile Include="CExplosionColorizer.cpp" />
@@ -421,20 +446,24 @@
     <ClCompile Include="CFireAndSmokePainter.cpp" />
     <ClCompile Include="CFractalTextureLibrary.cpp" />
     <ClCompile Include="CGalacticMapPainter.cpp" />
+    <ClCompile Include="CGateTimerManager.cpp" />
     <ClCompile Include="CGenericType.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CHullDesc.cpp" />
     <ClCompile Include="CHullPointsCalculator.cpp" />
     <ClCompile Include="CImageFilterDesc.cpp" />
     <ClCompile Include="CImageFilterStack.cpp" />
+    <ClCompile Include="CInputKeyPainter.cpp" />
     <ClCompile Include="CIntegerRangeCriteria.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CItemCriteria.cpp" />
+    <ClCompile Include="CItemEncounterDefinitions.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />
     <ClCompile Include="CItemTypeProbabilityTable.cpp" />
     <ClCompile Include="CLabelPainter.cpp" />
     <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
+    <ClCompile Include="CLocationSelectionTable.cpp" />
     <ClCompile Include="CMapLabelArranger.cpp" />
     <ClCompile Include="CMapLabelPainter.cpp" />
     <ClCompile Include="CMissileItem.cpp" />
@@ -446,6 +475,7 @@
     <ClCompile Include="CObjectTrackerCriteria.cpp" />
     <ClCompile Include="COrbitFocusGenerator.cpp" />
     <ClCompile Include="COverlay.cpp" />
+    <ClCompile Include="COverlayCounterDesc.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />
     <ClCompile Include="CFireEventOrder.cpp" />
@@ -456,13 +486,20 @@
     <ClCompile Include="CImageArranger.cpp" />
     <ClCompile Include="CInstalledDevice.cpp" />
     <ClCompile Include="CIntegralRotation.cpp" />
+    <ClCompile Include="COverlayUndergroundDesc.cpp" />
     <ClCompile Include="CPaintOrder.cpp" />
     <ClCompile Include="CPerceptionCalc.cpp" />
+    <ClCompile Include="CPerformanceCounters.cpp" />
     <ClCompile Include="CPhysicsContact.cpp" />
     <ClCompile Include="CPhysicsContactResolver.cpp" />
+    <ClCompile Include="CPhysicsForceResolver.cpp" />
     <ClCompile Include="CPlayerGameStats.cpp" />
     <ClCompile Include="CPowerConsumption.cpp" />
     <ClCompile Include="CPropertyCompare.cpp" />
+    <ClCompile Include="CRandomEncounterDesc.cpp" />
+    <ClCompile Include="CRandomEncounterObjTable.cpp" />
+    <ClCompile Include="CRandomEncounterTypeTable.cpp" />
+    <ClCompile Include="CRandomItems.cpp" />
     <ClCompile Include="CRandomTopologyCreator.cpp" />
     <ClCompile Include="CRangeTypeEvent.cpp" />
     <ClCompile Include="CRotationDesc.cpp" />
@@ -504,6 +541,8 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CRTFText.cpp" />
+    <ClCompile Include="CScript.cpp" />
+    <ClCompile Include="CScriptParser.cpp" />
     <ClCompile Include="CSendMessageOrder.cpp" />
     <ClCompile Include="CSentryOrder.cpp" />
     <ClCompile Include="CSFXOptions.cpp" />
@@ -516,10 +555,12 @@
     <ClCompile Include="CShipPerformanceDesc.cpp" />
     <ClCompile Include="CShipStandard.cpp" />
     <ClCompile Include="CShipTable.cpp" />
+    <ClCompile Include="CShipUpdateSet.cpp" />
     <ClCompile Include="CShipwreckDesc.cpp" />
     <ClCompile Include="CShockwaveHitTest.cpp" />
     <ClCompile Include="CEnvironmentGrid.cpp" />
     <ClCompile Include="CMusicResource.cpp" />
+    <ClCompile Include="CShotArray.cpp" />
     <ClCompile Include="CSimpleOrder.cpp" />
     <ClCompile Include="CSimplePathStargateGenerator.cpp" />
     <ClCompile Include="CSmartSystemCreateOptions.cpp" />
@@ -529,22 +570,27 @@
     <ClCompile Include="CSpaceObjectItemList.cpp" />
     <ClCompile Include="CSpaceObjectPool.cpp" />
     <ClCompile Include="CSpaceObjectProperties.cpp" />
-    <ClCompile Include="CSpaceObjectTargetList.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />
+    <ClCompile Include="CStarDesc.cpp" />
+    <ClCompile Include="CStargateDesc.cpp" />
     <ClCompile Include="CStationCreateOptions.cpp" />
     <ClCompile Include="CStationEncounterCtx.cpp" />
     <ClCompile Include="CStationEncounterDesc.cpp" />
+    <ClCompile Include="CStationEncounterOverrideTable.cpp" />
+    <ClCompile Include="CStationEncounterTable.cpp" />
     <ClCompile Include="CStationHull.cpp" />
     <ClCompile Include="CStationHullDesc.cpp" />
     <ClCompile Include="CStationTableCache.cpp" />
     <ClCompile Include="CSystemMapThumbnails.cpp" />
     <ClCompile Include="CSystemSpacePainter.cpp" />
     <ClCompile Include="CSystemEventList.cpp" />
+    <ClCompile Include="CTargetList.cpp" />
     <ClCompile Include="CTimedMissionEvent.cpp" />
     <ClCompile Include="CTLispConvert.cpp" />
     <ClCompile Include="CTopologyAttributeCriteria.cpp" />
     <ClCompile Include="CTopologyCreateCtx.cpp" />
+    <ClCompile Include="CTopologyNodeCriteria.cpp" />
     <ClCompile Include="CTopologySystemDesc.cpp" />
     <ClCompile Include="CTradingComputer.cpp" />
     <ClCompile Include="CTradingDesc.cpp" />
@@ -614,6 +660,7 @@
     <ClCompile Include="IShipController.cpp" />
     <ClCompile Include="MissileProperties.cpp" />
     <ClCompile Include="MissionProperties.cpp" />
+    <ClCompile Include="ObjectImageProperties.cpp" />
     <ClCompile Include="SDamageCtx.cpp" />
     <ClCompile Include="SFXDisintegrate.cpp" />
     <ClCompile Include="SFXGlow.cpp" />
@@ -621,7 +668,11 @@
     <ClCompile Include="SFXOrb.cpp" />
     <ClCompile Include="SFXParticleSystem.cpp" />
     <ClCompile Include="SFXRay.cpp" />
+    <ClCompile Include="ShipUpdate.cpp" />
+    <ClCompile Include="CPhysicsForceDesc.cpp" />
+    <ClCompile Include="SpaceObjectItemProperties.cpp" />
     <ClCompile Include="SUpdateCtx.cpp" />
+    <ClCompile Include="SystemProperties.cpp" />
     <ClCompile Include="XMLLoader.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>

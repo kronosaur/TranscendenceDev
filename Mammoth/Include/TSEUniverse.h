@@ -77,6 +77,37 @@ class CDebugOptions
 		bool m_bVerboseCreate = false;
 	};
 
+class CPerformanceCounters
+	{
+	public:
+		struct SCounter
+			{
+			DWORD dwStartTime = 0;
+
+			int iTotalCalls = 0;
+			int iTotalTime = 0;
+
+			bool bEnabled = false;
+			};
+
+		int GetCount (void) const { return m_Counters.GetCount(); }
+		const SCounter &GetCounter (int iIndex) const { return m_Counters[iIndex]; }
+		const CString &GetCounterID (int iIndex) const { return m_Counters.GetKey(iIndex); }
+		void Paint (CG32bitImage &Dest, const RECT &rcRect, const CG16bitFont &Font) const;
+		void SetEnabled (bool bEnabled = true) { m_bEnabled = bEnabled; }
+		bool SetEnabled (const CString &sID, bool bEnabled = true);
+		void StartCounter (const CString &sID) { if (m_bEnabled) StartTimer(sID); }
+		void StopCounter (const CString &sID) { if (m_bEnabled) StopTimer(sID); }
+
+	private:
+		bool IsAnyCounterEnabled (void) const;
+		void StartTimer (const CString &sID);
+		void StopTimer (const CString &sID);
+
+		TSortMap<CString, SCounter> m_Counters;
+		bool m_bEnabled = false;
+	};
+
 //	SFX Options ----------------------------------------------------------------
 
 class CSFXOptions
@@ -119,6 +150,26 @@ class CSFXOptions
 		bool m_bStarGlow;					//	Show star glow in system map
 		bool m_bStarshine;					//	Show starshine effect
 		bool m_bDockScreenTransparent;		//	Show SRS behind dock screen
+	};
+
+//	Engine Strings -------------------------------------------------------------
+
+class CEngineLanguage
+	{
+	public:
+		CEngineLanguage (const CDesignCollection &Design) :
+				m_Design(Design)
+			{ }
+
+		const CString &GetAsteroidTypeLabel (EAsteroidType iType) const;
+		CString Translate (const CString &sID, ICCItem *pData = NULL) const;
+		void Reinit (void);
+
+	private:
+		const CDesignCollection &m_Design;
+
+		mutable const CDesignType *m_pEngineText = NULL;
+		mutable CString m_AsteroidTypeLabel[EAsteroidTypeCount];
 	};
 
 //	Named Painters -------------------------------------------------------------
@@ -195,17 +246,30 @@ class CUniverse
 				virtual IPlayerController *CreatePlayerController (void) { return NULL; }
 				virtual IShipController *CreateShipController (const CString &sController) { return NULL; }
 				virtual void DebugOutput (const CString &sLine) { }
+				virtual bool FindCommandKey (const CString &sCmd, DWORD *retdwVirtKey = NULL) const { return false; }
 				virtual bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const { return false; }
 				virtual void GameOutput (const CString &sLine) { }
 				virtual CG32bitPixel GetColor (const CString &sColor) const { return CG32bitPixel(255, 255, 255); }
 				virtual const CG16bitFont &GetFont (const CString &sFont) const { const CG16bitFont *pFont; if (!FindFont(sFont, &pFont)) return CG16bitFont::GetDefault(); return *pFont; }
 				virtual void LogOutput (const CString &sLine) const { ::kernelDebugLogString(sLine); }
+				virtual void OnSaveGame (void) const { }
 			};
 
 		class INotifications
 			{
 			public:
 				virtual void OnObjDestroyed (SDestroyCtx &Ctx) { }
+			};
+
+		enum EUpdateSpeeds
+			{
+			updateNone,
+
+			updateNormal,
+			updateAccelerated,
+			updatePaused,
+			updateSingleFrame,
+			updateSlowMotion,
 			};
 
 		struct SInitDesc
@@ -256,8 +320,9 @@ class CUniverse
 			fontSRSObjCounter =			4,	//	Font for counter labels
 			fontPlanetoidMapLabel =		5,
 			fontWorldMapLabel =			6,
+			fontLargeWorldMapLabel =	7,
 
-			fontCount =					75,
+			fontCount =					8,
 			};
 
 		CUniverse (void);
@@ -276,19 +341,21 @@ class CUniverse
 		void AddTimeDiscontinuity (const CTimeSpan &Duration) { m_Time.AddDiscontinuity(m_iTick++, Duration); }
 		ALERROR AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem);
 		void AdjustDamage (SDamageCtx &Ctx) const;
+		int AdjustDamage (const SDamageCtx &Ctx, int iDamage) const;
+		Metric AdjustDamage (const SDamageCtx &Ctx, Metric rDamage) const;
 		bool CancelEvent (CSpaceObject *pObj, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, bInDoEvent); }
 		bool CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, sEvent, bInDoEvent); }
 		bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pType, sEvent, bInDoEvent); }
 		ALERROR CreateEmptyStarSystem (CSystem **retpSystem);
 		DWORD CreateGlobalID (void) { return m_dwNextID++; }
-		ALERROR CreateMission (CMissionType *pType, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError);
+		ALERROR CreateMission (CMissionType &Type, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError);
 		ALERROR CreateRandomItem (const CItemCriteria &Crit, 
 								  const CString &sLevelFrequency,
 								  CItem *retItem);
-		ALERROR CreateRandomMission (const TArray<CMissionType *> &Types, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError);
+		ALERROR CreateRandomMission (const TArray<CMissionType *> &Types, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError);
 		IShipController *CreateShipController (const CString &sAI);
 		ALERROR CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
-		ALERROR CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
+		ALERROR CreateStarSystem (CTopologyNode &Node, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		void DestroySystem (CSystem *pSystem);
 		bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const { return m_pHost->FindFont(sFont, retpFont); }
 		CMission *FindMission (DWORD dwID) const { return m_AllMissions.GetMissionByID(dwID); }
@@ -306,7 +373,9 @@ class CUniverse
 		void FireOnGlobalUniverseLoad (void) { m_Design.FireOnGlobalUniverseLoad(); }
 		void FireOnGlobalUniverseSave (void) { m_Design.FireOnGlobalUniverseSave(); }
 		void FlushStarSystem (CTopologyNode *pTopology);
-		void GenerateGameStats (CGameStats &Stats);
+		void GenerateGameStats (const CString &sEndGameReason, CGameStats &Stats);
+		const CAccessibilitySettings &GetAccessibilitySettings (void) const { return m_AccessabilitySettings; }
+		CAccessibilitySettings &GetAccessibilitySettings (void) { return m_AccessabilitySettings; }
 		void GetAllAdventures (TArray<CExtension *> *retList) { CString sError; m_Extensions.ComputeAvailableAdventures((m_bDebugMode ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retList, &sError); }
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const;
 		CAscendedObjectList &GetAscendedObjects (void) { return m_AscendedObjects; }
@@ -314,7 +383,6 @@ class CUniverse
 		const CAdventureDesc &GetCurrentAdventureDesc (void) const { return m_Design.GetAdventureDesc(); }
 		CAdventureDesc &GetCurrentAdventureDesc (void) { return m_Design.GetAdventureDesc(); }
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
-		CMission *GetCurrentMission (void);
 		const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
 		const CEconomyType &GetCreditCurrency (void) const;
 		const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
@@ -327,25 +395,27 @@ class CUniverse
 		CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
 		CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
 		CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
+		const CEngineLanguage &GetEngineLanguage (void) const { return m_Language; }
 		const CEngineOptions &GetEngineOptions (void) const { return m_EngineOptions; }
 		CExtensionCollection &GetExtensionCollection (void) { return m_Extensions; }
 		CString GetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib);
 		CTopologyNode *GetFirstTopologyNode (void);
 		const CG16bitFont &GetFont (const CString &sFont) const { return m_pHost->GetFont(sFont); }
 		CFractalTextureLibrary &GetFractalTextureLibrary (void) { return m_FractalTextureLibrary; }
-        CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
-        const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
+		CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
+		const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
 		IHost *GetHost (void) const { return m_pHost; }
+		EUpdateSpeeds GetLastUpdateSpeed (void) const { return m_iLastUpdateSpeed; }
 		CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
 		int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
+		const CMissionList &GetMissions (void) const { return m_AllMissions; }
 		CMissionList &GetMissions (void) { return m_AllMissions; }
-		void GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList);
 		const CG16bitFont &GetNamedFont (ENamedFonts iFont) { return *m_FontTable[iFont]; }
 		IEffectPainter &GetNamedPainter (CNamedEffects::ETypes iPainter) { return m_NamedEffects.GetPainter(m_Design, iPainter); }
 		const CObjectStats::SEntry &GetObjStats (DWORD dwObjID) const { return m_ObjStats.GetEntry(dwObjID); }
 		CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
+		CPerformanceCounters &GetPerformanceCounters (void) { return m_PerformanceCounters; }
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
-		void GetRandomLevelEncounter (int iLevel, CDesignType **retpType, IShipGenerator **retpTable, CSovereign **retpBaseSovereign);
 		CString GetResourceDb (void) { return m_sResourceDb; }
 		CCriticalSection &GetSem (void) { return m_cs; }
 		CSFXOptions &GetSFXOptions (void) { return m_SFXOptions; }
@@ -354,6 +424,7 @@ class CUniverse
 		CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
 		bool InDebugMode (void) { return m_bDebugMode; }
 		void InitEntityResolver (CExtension *pExtension, CEntityResolverList *retResolver) { m_Extensions.InitEntityResolver(pExtension, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retResolver); }
+		void InitAccessibilitySettings (void) { m_AccessabilitySettings = CAccessibilitySettings(); }
 		bool InResurrectMode (void) { return m_bResurrectMode; }
 		bool IsGlobalResurrectPending (CDesignType **retpType);
 		bool IsRegistered (void) { return m_bRegistered; }
@@ -373,13 +444,13 @@ class CUniverse
 		CSpaceObject *RemoveAscendedObj (DWORD dwObjID) { return m_AscendedObjects.RemoveByID(dwObjID); }
 		ALERROR SaveDeviceStorage (void);
 		ALERROR SaveToStream (IWriteStream *pStream);
-		void SetCurrentSystem (CSystem *pSystem);
+		void SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered = false);
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
-		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL) { return m_DebugOptions.SetProperty(sProperty, pValue, retsError); }
+		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetDifficultyLevel (CDifficultyOptions::ELevels iLevel) { m_Difficulty.SetLevel(iLevel); }
 		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
-		void SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV);
+		void SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV = NULL);
 		bool SetPOV (CSpaceObject *pPOV);
 		void SetPlayerShip (CSpaceObject *pPlayer);
 		void SetRegistered (bool bRegistered = true) { m_bRegistered = bRegistered; }
@@ -388,7 +459,7 @@ class CUniverse
 		void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
 		CTimeSpan StopGameTime (void);
-		CString TranslateEngineText (const CString &sID, ICCItem *pData = CCodeChain::CreateNil()) const;
+		CString TranslateEngineText (const CString &sID, ICCItem *pData = NULL) const { return m_Language.Translate(sID, pData); }
 		void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }
 		static CString ValidatePlayerName (const CString &sName);
 
@@ -434,13 +505,15 @@ class CUniverse
 		IPlayerController::EUIMode GetCurrentUIMode (void) const { return (m_pPlayer ? m_pPlayer->GetUIMode() : IPlayerController::uimodeUnknown); }
 		const CDifficultyOptions &GetDifficulty (void) const { return m_Difficulty; }
 		CDifficultyOptions::ELevels GetDifficultyLevel (void) const { return m_Difficulty.GetLevel(); }
+		DWORD GetFrameTicks (void) const { return m_dwFrame; }
 		int GetPaintTick (void) { return m_iPaintTick; }
 		CSpaceObject *GetPOV (void) const { return m_pPOV; }
 		IPlayerController *GetPlayer (void) const { return m_pPlayer; }
 		GenomeTypes GetPlayerGenome (void) const;
 		CString GetPlayerName (void) const;
 		CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
-		CSovereign *GetPlayerSovereign (void) const;
+		const CSovereign *GetPlayerSovereign (void) const;
+		CSovereign *GetPlayerSovereign (void);
 		DWORD GetTicks (void) { return (DWORD)m_iTick; }
 
 		void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); m_DynamicImageLibrary.ClearMarks();  }
@@ -478,12 +551,12 @@ class CUniverse
 		void PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
 		void PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags);
 		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
-		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale);
+		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale, DWORD dwFlags = 0);
 		void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
-		void Update (SSystemUpdateCtx &Ctx);
+		bool Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode = updateNormal);
 		void UpdateExtended (void);
 
-		void DebugOutput (char *pszLine, ...);
+		void DebugOutput (const char *pszLine, ...);
 
 	private:
 		struct SLevelEncounter
@@ -509,11 +582,11 @@ class CUniverse
 		ALERROR InitCodeChainPrimitives (void);
 		ALERROR InitDeviceStorage (CString *retsError);
 		ALERROR InitFonts (void);
-		ALERROR InitLevelEncounterTables (void);
 		ALERROR InitRequiredEncounters (CString *retsError);
 		ALERROR InitTopology (DWORD dwStartingMap, CString *retsError);
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);
+		void UpdateTick (SSystemUpdateCtx &Ctx);
 		void UpdateMissions (int iTick, CSystem *pSystem);
 		void UpdateSovereigns (int iTick, CSystem *pSystem);
 
@@ -525,7 +598,6 @@ class CUniverse
 
 		CString m_sResourceDb;					//	Resource database
 
-		TArray<TArray<SLevelEncounter>> m_LevelEncounterTables;	//	Array of SLevelEncounter arrays
 		bool m_bBasicInit = false;				//	TRUE if we've initialized CodeChain, etc.
 
 		//	Game instance data
@@ -552,6 +624,10 @@ class CUniverse
 
 		CDockSession m_DockSession;
 
+		//  Accessibility settings, ex for custom colorblind colors
+
+		CAccessibilitySettings m_AccessabilitySettings;
+
 		//	Support structures
 
 		CCriticalSection m_cs;
@@ -565,14 +641,18 @@ class CUniverse
 		CEngineOptions m_EngineOptions;
 		CSFXOptions m_SFXOptions;
 		CDebugOptions m_DebugOptions;
+		CPerformanceCounters m_PerformanceCounters;
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;
+		EUpdateSpeeds m_iLastUpdateSpeed = updateNone;
+		DWORD m_dwFrame = 0;
 
 		//	Cached singletons
 
 		mutable const CEconomyType *m_pCreditCurrency = NULL;
 		CNamedEffects m_NamedEffects;
+		CEngineLanguage m_Language;
 
 		//	Debugging structures
 

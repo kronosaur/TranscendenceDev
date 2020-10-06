@@ -35,9 +35,9 @@
 
 struct SServiceData
 	{
-	char *pszName;
-	char *pszIDPrefix;
-	char *pszTag;
+	const char *pszName;
+	const char *pszIDPrefix;
+	const char *pszTag;
 	};
 
 static SServiceData SERVICE_DATA[serviceCount] =
@@ -68,37 +68,37 @@ static SServiceData SERVICE_DATA[serviceCount] =
 
 static CurrencyValue MAX_BALANCE_CREDITS[MAX_SYSTEM_LEVEL + 1] =
 	{
-		            0,
+					  0,
 
-		       10'000,		//	Level 1
-		       20'000,
-		       30'000,
-		       40'000,
-		       50'000,
+				 10'000,		//	Level 1
+				 20'000,
+				 30'000,
+				 50'000,
+				100'000,		//	Level 5
 
-		      100'000,		//	Level 6
-		      200'000,
-		      400'000,
-		      800'000,
-		    1'500'000,
+				200'000,
+				400'000,
+				800'000,
+			  1'500'000,
+			  3'000'000,		//	Level 10
 
-		    3'000'000,		//	Level 11
-		    6'000'000,
-		   12'000'000,
-		   25'000'000,
-		   50'000'000,
+			  6'000'000,
+			 12'000'000,
+			 25'000'000,
+			 50'000'000,
+			100'000'000,		//	Level 15
 
-		  100'000'000,		//	Level 16
-		  200'000'000,
-		  400'000'000,
-		  800'000'000,
-		 1'500'000'000,
+			200'000'000,
+			400'000'000,
+			800'000'000,
+		  1'500'000'000,
+		  3'000'000'000,		//	Level 20
 
-		 3'000'000'000,		//	Level 21
-		 6'000'000'000,
-		12'000'000'000,
-		25'000'000'000,
-		50'000'000'000,
+		  6'000'000'000,
+		 12'000'000'000,
+		 25'000'000'000,
+		 50'000'000'000,
+		100'000'000'000,		//	Level 25
 	};
 
 CTradingDesc::CTradingDesc (void)
@@ -268,7 +268,7 @@ CurrencyValue CTradingDesc::CalcMaxBalance (CSpaceObject *pObj, CurrencyValue *r
 //	Computes max balance
 
 	{
-	CurrencyValue iMaxBalance = (m_iMaxCurrency ? m_iMaxCurrency : CalcMaxBalance(pObj->GetLevel(), m_pCurrency));
+	CurrencyValue iMaxBalance = GetMaxBalance(pObj->GetLevel());
 
 	if (retReplenish)
 		{
@@ -310,121 +310,121 @@ bool CTradingDesc::ComposeDescription (CUniverse &Universe, CString *retsDesc) c
 //  Composes a description of the trading desc, suitable for map description.
 //  We return FALSE if we have no relevant services.
 
-    {
-    CString sDesc;
+	{
+	CString sDesc;
 
-    //  Short-circuit
+	//  Short-circuit
 
-    if (!HasServices())
-        return false;
+	if (!HasServices())
+		return false;
 
-    //  Buying and selling ships
+	//  Buying and selling ships
 
-    SServiceTypeInfo BuyShips;
-    GetServiceTypeInfo(Universe, serviceBuyShip, BuyShips);
+	SServiceTypeInfo BuyShips;
+	GetServiceTypeInfo(Universe, serviceBuyShip, BuyShips);
 
-    SServiceTypeInfo SellShips;
-    GetServiceTypeInfo(Universe, serviceSellShip, SellShips);
+	SServiceTypeInfo SellShips;
+	GetServiceTypeInfo(Universe, serviceSellShip, SellShips);
 
-    CString sBuySellShips;
-    if (BuyShips.bAvailable && SellShips.bAvailable)
-        sDesc = CONSTLIT("Buys and sells ships");
-    else if (BuyShips.bAvailable)
-        sDesc = CONSTLIT("Buys ships");
-    else if (BuyShips.bAvailable)
-        sDesc = CONSTLIT("Sells ships");
+	CString sBuySellShips;
+	if (BuyShips.bAvailable && SellShips.bAvailable)
+		sDesc = CONSTLIT("Buys and sells ships");
+	else if (BuyShips.bAvailable)
+		sDesc = CONSTLIT("Buys ships");
+	else if (BuyShips.bAvailable)
+		sDesc = CONSTLIT("Sells ships");
 
-    //  Refuels
+	//  Refuels
 
-    SServiceTypeInfo Refuel;
-    if (GetServiceTypeInfo(Universe, serviceRefuel, Refuel))
-        {
-        CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), Refuel.iMaxLevel);
+	SServiceTypeInfo Refuel;
+	if (GetServiceTypeInfo(Universe, serviceRefuel, Refuel))
+		{
+		CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), Refuel.iMaxLevel);
 
-        if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
-        else
-            sDesc = sText;
-        }
+		if (!sDesc.IsBlank())
+			sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
+		else
+			sDesc = sText;
+		}
 
-    //  Repair armor
+	//  Repair armor
 
-    SServiceTypeInfo RepairArmor;
-    GetServiceTypeInfo(Universe, serviceRepairArmor, RepairArmor);
+	SServiceTypeInfo RepairArmor;
+	GetServiceTypeInfo(Universe, serviceRepairArmor, RepairArmor);
 
-    SServiceTypeInfo InstallArmor;
-    GetServiceTypeInfo(Universe, serviceReplaceArmor, InstallArmor);
+	SServiceTypeInfo InstallArmor;
+	GetServiceTypeInfo(Universe, serviceReplaceArmor, InstallArmor);
 
-    if (RepairArmor.iMaxLevel != -1 || InstallArmor.iMaxLevel != -1)
-        {
-        CString sPurchased = (InstallArmor.bUpdateInstallOnly ? CONSTLIT("purchased ") : NULL_STR);
+	if (RepairArmor.iMaxLevel != -1 || InstallArmor.iMaxLevel != -1)
+		{
+		CString sPurchased = (InstallArmor.bUpdateInstallOnly ? CONSTLIT("purchased ") : NULL_STR);
 
-        CString sText;
-        if (RepairArmor.iMaxLevel == InstallArmor.iMaxLevel)
-            sText = strPatternSubst(CONSTLIT("Repairs/installs %sarmor up to level %d"), sPurchased, RepairArmor.iMaxLevel);
-        else if (RepairArmor.iMaxLevel != -1 && InstallArmor.iMaxLevel != -1)
-            sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d %&mdash; Installs %sarmor up to level %d"), RepairArmor.iMaxLevel, sPurchased, InstallArmor.iMaxLevel);
-        else if (RepairArmor.iMaxLevel != -1)
-            sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d"), RepairArmor.iMaxLevel);
-        else
-            sText = strPatternSubst(CONSTLIT("Installs %sarmor up to level %d"), sPurchased, InstallArmor.iMaxLevel);
+		CString sText;
+		if (RepairArmor.iMaxLevel == InstallArmor.iMaxLevel)
+			sText = strPatternSubst(CONSTLIT("Repairs/installs %sarmor up to level %d"), sPurchased, RepairArmor.iMaxLevel);
+		else if (RepairArmor.iMaxLevel != -1 && InstallArmor.iMaxLevel != -1)
+			sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d %&mdash; Installs %sarmor up to level %d"), RepairArmor.iMaxLevel, sPurchased, InstallArmor.iMaxLevel);
+		else if (RepairArmor.iMaxLevel != -1)
+			sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d"), RepairArmor.iMaxLevel);
+		else
+			sText = strPatternSubst(CONSTLIT("Installs %sarmor up to level %d"), sPurchased, InstallArmor.iMaxLevel);
 
-        if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
-        else
-            sDesc = sText;
-        }
+		if (!sDesc.IsBlank())
+			sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
+		else
+			sDesc = sText;
+		}
 
-    //  Install devices
+	//  Install devices
 
-    SServiceTypeInfo InstallDevice;
-    GetServiceTypeInfo(Universe, serviceInstallDevice, InstallDevice);
+	SServiceTypeInfo InstallDevice;
+	GetServiceTypeInfo(Universe, serviceInstallDevice, InstallDevice);
 
-    if (InstallDevice.iMaxLevel != -1)
-        {
-        CString sPurchased = (InstallDevice.bUpdateInstallOnly ? CONSTLIT("purchased ") : NULL_STR);
-        CString sText = strPatternSubst(CONSTLIT("Installs %sdevices up to level %d"), sPurchased, InstallDevice.iMaxLevel);
+	if (InstallDevice.iMaxLevel != -1)
+		{
+		CString sPurchased = (InstallDevice.bUpdateInstallOnly ? CONSTLIT("purchased ") : NULL_STR);
+		CString sText = strPatternSubst(CONSTLIT("Installs %sdevices up to level %d"), sPurchased, InstallDevice.iMaxLevel);
 
-        if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
-        else
-            sDesc = sText;
-        }
+		if (!sDesc.IsBlank())
+			sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
+		else
+			sDesc = sText;
+		}
 
-    SServiceTypeInfo Buys;
-    GetServiceTypeInfo(Universe, serviceBuy, Buys);
+	SServiceTypeInfo Buys;
+	GetServiceTypeInfo(Universe, serviceBuy, Buys);
 
-    SServiceTypeInfo Sells;
-    GetServiceTypeInfo(Universe, serviceSell, Sells);
+	SServiceTypeInfo Sells;
+	GetServiceTypeInfo(Universe, serviceSell, Sells);
 
-    if (Buys.bAvailable || Sells.bAvailable)
-        {
-        CString sText;
-        if (Buys.bAvailable && Sells.bAvailable)
-            sText = CONSTLIT("Buys and sells commodities");
-        else if (Buys.bAvailable)
-            sText = CONSTLIT("Buys commodities");
-        else
-            sText = CONSTLIT("Sells commodities");
+	if (Buys.bAvailable || Sells.bAvailable)
+		{
+		CString sText;
+		if (Buys.bAvailable && Sells.bAvailable)
+			sText = CONSTLIT("Buys and sells commodities");
+		else if (Buys.bAvailable)
+			sText = CONSTLIT("Buys commodities");
+		else
+			sText = CONSTLIT("Sells commodities");
 
-        if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
-        else
-            sDesc = sText;
-        }
+		if (!sDesc.IsBlank())
+			sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
+		else
+			sDesc = sText;
+		}
 
-    //  If we don't have any trade descriptor, then we're done
+	//  If we don't have any trade descriptor, then we're done
 
-    if (sDesc.IsBlank())
-        return false;
+	if (sDesc.IsBlank())
+		return false;
 
-    //  Return it
+	//  Return it
 
-    if (retsDesc)
-        *retsDesc = sDesc;
+	if (retsDesc)
+		*retsDesc = sDesc;
 
-    return true;
-    }
+	return true;
+	}
 
 CString CTradingDesc::ComputeID (ETradeServiceTypes iService, DWORD dwUNID, const CString &sCriteria, DWORD dwFlags)
 
@@ -508,7 +508,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 			if (!ArmorItem)
 				return -1;
 
-   			iBasePrice = (int)ArmorItem.GetRepairCost(Ctx.iCount);
+			iBasePrice = (int)ArmorItem.GetRepairCost(Ctx.iCount);
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}
@@ -756,8 +756,8 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDe
 			if (pLine->GetAttributeBool(UPGRADE_INSTALL_ONLY_ATTRIB))
 				pCommodity->dwFlags |= FLAG_UPGRADE_INSTALL_ONLY;
 
-            if (pLine->GetAttributeBool(NO_DESCRIPTION_ATTRIB))
-                pCommodity->dwFlags |= FLAG_NO_DESCRIPTION;
+			if (pLine->GetAttributeBool(NO_DESCRIPTION_ATTRIB))
+				pCommodity->dwFlags |= FLAG_NO_DESCRIPTION;
 
 			//	Set ID
 
@@ -1151,7 +1151,7 @@ bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject &Obj, CSpaceObject *p
 	Ctx.iService = serviceRepairArmor;
 	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
-    Ctx.pObj = pSource;
+	Ctx.pObj = pSource;
 	Ctx.pItem = &Item;
 	Ctx.iCount = iHPToRepair;
 
@@ -1298,11 +1298,11 @@ int CTradingDesc::GetMaxLevelMatched (CUniverse &Universe, ETradeServiceTypes iS
 			if (strEquals(sPrefix, UNAVAILABLE_PREFIX))
 				continue;
 
-            //  If we're looking for a description, ignore any entries that
-            //  don't want one.
+			//  If we're looking for a description, ignore any entries that
+			//  don't want one.
 
-            if (bDescriptionOnly && (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
-                continue;
+			if (bDescriptionOnly && (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
+				continue;
 
 			int iLevel;
 			if (m_List[i].pItemType)
@@ -1436,14 +1436,14 @@ bool CTradingDesc::GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes i
 //  Returns information about the given service suitable for creating a human-
 //  readable description.
 
-    {
+	{
 	int i;
 
-    //  Initialize to defaults.
+	//  Initialize to defaults.
 
-    Info.bAvailable = false;
-    Info.bUpdateInstallOnly = true;
-    Info.iMaxLevel = -1;
+	Info.bAvailable = false;
+	Info.bUpdateInstallOnly = true;
+	Info.iMaxLevel = -1;
 
 	//	Loop over the commodity list and find the first entry that matches
 
@@ -1453,22 +1453,22 @@ bool CTradingDesc::GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes i
 			CString sPrefix;
 			int iPriceAdj = m_List[i].PriceAdj.EvalAsInteger(NULL, &sPrefix);
 
-            //  Ignore entries that don't count towards the description
+			//  Ignore entries that don't count towards the description
 
 			if (strEquals(sPrefix, UNAVAILABLE_PREFIX)
-                    || (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
+					|| (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
 				continue;
 
-            //  Found at least one service.
+			//  Found at least one service.
 
-            Info.bAvailable = true;
+			Info.bAvailable = true;
 
-            //  If we don't require a purchase, then clear the flag
+			//  If we don't require a purchase, then clear the flag
 
-            if (!(m_List[i].dwFlags & FLAG_UPGRADE_INSTALL_ONLY))
-                Info.bUpdateInstallOnly = false;
+			if (!(m_List[i].dwFlags & FLAG_UPGRADE_INSTALL_ONLY))
+				Info.bUpdateInstallOnly = false;
 
-            //  Compute the level
+			//  Compute the level
 
 			int iLevel;
 			if (m_List[i].pItemType)
@@ -1481,7 +1481,7 @@ bool CTradingDesc::GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes i
 			}
 
 	return Info.bAvailable;
-    }
+	}
 
 bool CTradingDesc::HasService (CUniverse &Universe, ETradeServiceTypes iService, const SHasServiceOptions &Options) const
 
@@ -1509,7 +1509,7 @@ bool CTradingDesc::HasService (CUniverse &Universe, ETradeServiceTypes iService,
 
 			//	Found it!
 
-            return true;
+			return true;
 			}
 	
 	return false;
@@ -1564,10 +1564,10 @@ bool CTradingDesc::HasServiceDescription (ETradeServiceTypes iService) const
 			CString sPrefix;
 			int iPriceAdj = m_List[i].PriceAdj.EvalAsInteger(NULL, &sPrefix);
 			if (strEquals(sPrefix, UNAVAILABLE_PREFIX)
-                    || (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
+					|| (m_List[i].dwFlags & FLAG_NO_DESCRIPTION))
 				continue;
 
-            return true;
+			return true;
 			}
 	
 	return false;
@@ -1776,7 +1776,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 62)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_pCurrency.Set(Ctx.GetUniverse(), dwLoad);
 		if (m_pCurrency == NULL)
 			m_pCurrency.Set(Ctx.GetUniverse(), DEFAULT_ECONOMY_UNID);
@@ -1785,17 +1785,17 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 		{
 		CString sDummy;
 		sDummy.ReadFromStream(Ctx.pStream);
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 
 		//	Previous versions are always credits
 
 		m_pCurrency.Set(Ctx.GetUniverse(), DEFAULT_ECONOMY_UNID);
 		}
 
-	Ctx.pStream->Read((char *)&m_iMaxCurrency, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iReplenishCurrency, sizeof(DWORD));
+	Ctx.pStream->Read(m_iMaxCurrency);
+	Ctx.pStream->Read(m_iReplenishCurrency);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	if (dwLoad > 0)
 		{
 		m_List.InsertEmpty(dwLoad);
@@ -1805,7 +1805,10 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 			SServiceDesc &Commodity = m_List[i];
 
 			if (Ctx.dwVersion >= 83)
-				Ctx.pStream->Read((char *)&Commodity.iService, sizeof(DWORD));
+				{
+				Ctx.pStream->Read(dwLoad);
+				Commodity.iService = (ETradeServiceTypes)dwLoad;
+				}
 
 			//	Temporarily initialize because we might check it below before we
 			//	can properly load this.
@@ -1815,7 +1818,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 
 			Commodity.sID.ReadFromStream(Ctx.pStream);
 
-			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+			Ctx.pStream->Read(dwLoad);
 			Commodity.pItemType = Ctx.GetUniverse().FindItemType(dwLoad);
 
 			CString sCriteria;
@@ -1844,7 +1847,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 				}
 			else
 				{
-				Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+				Ctx.pStream->Read(dwLoad);
 				Commodity.PriceAdj.SetInteger(dwLoad);
 				}
 
@@ -1854,7 +1857,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 			if (Ctx.dwVersion >= 113)
 				Commodity.sMessageID.ReadFromStream(Ctx.pStream);
 
-			Ctx.pStream->Read((char *)&Commodity.dwFlags, sizeof(DWORD));
+			Ctx.pStream->Read(Commodity.dwFlags);
 
 			//	If necessary we need to load backwards-compatible service
 
@@ -2157,25 +2160,25 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 
 	dwSave = (m_pCurrency ? m_pCurrency->GetUNID() : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
-	pStream->Write((char *)&m_iMaxCurrency, sizeof(DWORD));
-	pStream->Write((char *)&m_iReplenishCurrency, sizeof(DWORD));
+	pStream->Write(m_iMaxCurrency);
+	pStream->Write(m_iReplenishCurrency);
 
 	dwSave = m_List.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	for (i = 0; i < m_List.GetCount(); i++)
 		{
 		const SServiceDesc &Commodity = m_List[i];
 
 		dwSave = Commodity.iService;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
 		Commodity.sID.WriteToStream(pStream);
 
 		dwSave = (Commodity.pItemType ? Commodity.pItemType->GetUNID() : 0);
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
 		//	Criteria is different depending on service
 
@@ -2194,7 +2197,7 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 
 		Commodity.sMessageID.WriteToStream(pStream);
 
-		pStream->Write((char *)&Commodity.dwFlags, sizeof(DWORD));
+		pStream->Write(Commodity.dwFlags);
 		}
 	}
 

@@ -135,7 +135,8 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 	for (i = 0; i < pSystem->GetUniverse().GetStationTypeCount(); i++)
 		{
 		CStationType *pType = pSystem->GetUniverse().GetStationType(i);
-		int iSystemChance = (1000 * pType->GetFrequencyForSystem(pSystem) / ftCommon);
+		const CStationEncounterDesc &EncounterDesc = pType->GetEncounterDescConst();
+		int iSystemChance = (1000 * pType->GetFrequencyForSystem(*pSystem, EncounterDesc) / ftCommon);
 		if (iSystemChance == 0)
 			continue;
 
@@ -147,7 +148,7 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 
 		pEntry->FillProb.Insert(pType, iBaseChance);
 
-		const CAffinityCriteria &LocationCriteria = pType->GetLocationCriteria();
+		const CAffinityCriteria &LocationCriteria = EncounterDesc.GetLocationCriteria();
 
 		//	Average out our chance of ending up at one of the given locations.
 
@@ -266,7 +267,7 @@ void CSystemCreateStats::AddLabelExpansion (const CString &sAttributes, const CS
 		AddEntryPermutations(NULL_STR, Permutable, 0);
 	}
 
-void CSystemCreateStats::AddStationTable (CSystem *pSystem, const CString &sStationCriteria, const CString &sLocationAttribs, TArray<CStationTableCache::SEntry> &Table)
+void CSystemCreateStats::AddStationTable (CSystem *pSystem, const CString &sStationCriteria, const CString &sLocationAttribs, const CStationEncounterTable &Table)
 
 //	AddStationTable
 //
@@ -322,7 +323,7 @@ void CSystemCreateStats::AddStationTable (CSystem *pSystem, const CString &sStat
 		}
 	}
 
-bool CSystemCreateStats::FindEncounterTable (TArray<CStationTableCache::SEntry> &Src, SEncounterTable **retpTable)
+bool CSystemCreateStats::FindEncounterTable (const CStationEncounterTable &Src, SEncounterTable **retpTable)
 
 //	FindEncounterTable
 //

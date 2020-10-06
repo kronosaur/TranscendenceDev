@@ -98,26 +98,27 @@
 
 <!-- STATION TYPES -->
 
-	<!-- Adventurer Outfitters -->
+	<!-- Level 6: Adventurer Outfitters -->
 
 	<StationType UNID="&stAdventurerOutfitters;"
 			name=				": Adventurer Outfitters|Adventurer Outfitters"
 			sovereign=			"&svCorporate;"
+
+			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, populated"
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
-			multiHull=			"true"
+			size=				"185"
 			armorID=			"&itLightGusokuArmor;"
 			hitPoints=			"280"
+			multiHull=			"true"
 			regen=              "3"
 			fireRateAdj=		"15"
+
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -131,59 +132,7 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<Image			imageID="&rsStations6;" imageX="0" imageY="640" imageWidth="128" imageHeight="256"/>
-
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
-			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
-		<Devices>
-			<Device deviceID="&itHeavyIonBlaster;"	omnidirectional="true"/>
-		</Devices>
-
-		<Items>
-			<RandomItem count="1d12" 
-					criteria=		"a L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
-					levelFrequency=	"systemLevel:r|c|cur"
-					enhanced=		"5"
-					enhancement=	"=(intHPEnhancement1 gItem)"
-					/>
-			<RandomItem count="1d12" 
-					criteria=		"w L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
-					levelFrequency=	"systemLevel:r|c|cur"
-					enhanced=		"5"
-					enhancement=	"=(intHPEnhancement1 gItem)"
-					/>
-			<RandomItem count="1d12" 
-					criteria=		"d~w L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
-					levelFrequency=	"systemLevel:r|c|cur"
-					enhanced=		"5"
-					enhancement=	"=(intCorporateGenerateEnhancement gItem)"
-					/>
-
-			<RandomItem count="1d12" 
-					criteria=		"u -Specialty; -illegal; -NotStandard; -NotForSale;"
-					levelFrequency=	"systemLevel:ru|c|cur"
-					/>
-
-			<RandomItem count="2d12" 
-					criteria=		"m -Specialty; -illegal; -NotStandard; -NotForSale;"
-					levelFrequency=	"systemLevel:ru|c|cur"
-					/>
-
-			<RandomItem count="1d6" 
-					criteria=		"adu L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
-					levelFrequency=	"systemLevel:-|r|cur"
-					/>
-		</Items>
+		<!-- Trade and Items -->
 
 		<Trade currency="credit">
 			<Sell	criteria="m +commonwealth; -premiumAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
@@ -198,6 +147,82 @@
 			<InstallDevice	criteria="d L:1-10;" priceAdj="110"	upgradeInstallOnly="true"/>
 			<RemoveDevice	criteria="d L:1-10;" priceAdj="110"	upgradeInstallOnly="true"/>
 		</Trade>
+
+		<Items>
+			<RandomItem count="1d12" 
+					criteria=		"a L:1-10; +commonwealth; -defective; -illegal; -Specialty; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					enhanced=		"5"
+					enhancement=	"=(intHPEnhancement1 gItem)"
+					/>
+			<RandomItem count="1d12" 
+					criteria=		"w L:1-10; +commonwealth; -defective; -illegal; -Specialty; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					enhanced=		"5"
+					enhancement=	"=(intHPEnhancement1 gItem)"
+					/>
+			<RandomItem count="1d12" 
+					criteria=		"d~w L:1-10; +commonwealth; -defective; -illegal; -Specialty; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					enhanced=		"5"
+					enhancement=	"=(intCorporateGenerateEnhancement gItem)"
+					/>
+
+			<RandomItem count="1d12" 
+					criteria=		"u -defective; -Specialty; -illegal; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:ru|c|cur"
+					/>
+
+			<RandomItem count="2d12" 
+					criteria=		"m +commonwealth; -defective; -Specialty; -illegal; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:ru|c|cur"
+					/>
+
+			<RandomItem count="1d6" 
+					criteria=		"adu L:1-10; -defective; -illegal; -Specialty; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:-|r|cur"
+					/>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itHeavyIonBlaster;"	omnidirectional="true" posAngle="0" posRadius="0" posZ="180"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Lookup count="2" table="&tbCorpDefenders;"/>
+			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<Reinforcements minShips="4">
+			<Table>
+				<Lookup chance="75" table="&tbCorpDefenders;"/>
+				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&rsAdventurerOutfitters;" imageWidth="220" imageHeight="260" viewportRatio="0.02875"/>
+
+		<DockingPorts>
+			<Port posAngle="-5"    posRadius="100"  posZ="0"/>
+			<Port posAngle="35"    posRadius="100"  posZ="0"/>
+
+			<Port posAngle="85"    posRadius="100"  posZ="0"/>
+			<Port posAngle="125"   posRadius="100"  posZ="0"/>
+
+			<Port posAngle="175"   posRadius="100"  posZ="0"/>
+			<Port posAngle="215"   posRadius="100"  posZ="0"/>
+
+			<Port posAngle="265"   posRadius="100"  posZ="0"/>
+			<Port posAngle="305"   posRadius="100"  posZ="0"/>
+		</DockingPorts>
+
+		<!-- Dock Screens -->
 
 		<DockScreens>
 			<Main>
@@ -224,16 +249,7 @@
 			</Main>
 		</DockScreens>
 
-		<DockingPorts>
-			<Port x="83"	y="29" />
-			<Port x="-83"	y="29" />
-			<Port x="97"	y="-9" />
-			<Port x="-97"	y="-9" />
-			<Port x="84"	y="-72" />
-			<Port x="-84"	y="-72" />
-			<Port x="30"	y="-111" />
-			<Port x="-30"	y="-111" />
-		</DockingPorts>
+		<!-- Events and Behavior -->
 
 		<Language>
 			<Text id="descWelcome">
@@ -245,7 +261,7 @@
 		</Language>
 	</StationType>
 
-	<!-- Armor Dealer -->
+	<!-- Level 4: Armor Dealer -->
 
 	<StationType UNID="&stArmorDealer;"
 			name=				"corporate armor dealer"
@@ -302,23 +318,23 @@
 
 		<Items>
 			<RandomItem count="8-12" 
-					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"as L:1-7; +commonwealth; -defective; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:u|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="8-12" 
-					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"as L:1-7; +commonwealth; -defective; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:-|u|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="6-10" 
-					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"as L:1-7; +commonwealth; -defective; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="4" 
-					criteria=		"u +ArmorRepair; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"u +ArmorRepair; -defective; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:uc|c|cur"
 					/>
 
@@ -388,21 +404,19 @@
 
 		<!-- Events and Behavior -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			7		100		)
-					)
-			</NPCService>
-		</StaticData>
-
-        <Language>
+		<Language>
 			<Text id="descWelcome">
 				You are docked at an armor dealer station.
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
 
-            <Text id="core.mapDesc">"Buys and sells armor and shields &mdash; Installs purchased items &mdash; Buys damaged armor and shields"</Text>
-        </Language>
+				%StationName% buys armor and shields (even if damaged). We are not 
+				interested in buying %itemName%.
+
+			</Text>
+
+			<Text id="core.mapDesc">"Buys and sells armor and shields &mdash; Installs purchased items &mdash; Buys damaged armor and shields"</Text>
+		</Language>
 	</StationType>
 
 	<!-- Level 4: Arms Dealer -->
@@ -461,26 +475,26 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-6; +commonwealth; -defective; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:-|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement2 gItem)"
 					/>
 			<RandomItem count="15" 
-					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-6; +commonwealth; -defective; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="8" 
-					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-6; +commonwealth; -defective; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 
 			<RandomItem count="25-35" 
-					criteria=		"m -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"m +commonwealth; -defective; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 		</Items>
@@ -543,144 +557,26 @@
 
 		<!-- Events and Behavior -->
 
-        <Language>
+		<Language>
 			<Text id="actionWeapons">[W]eapons</Text>
 
 			<Text id="descWelcome">
 				You are docked at an arms dealer station.
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
 
-            <Text id="core.mapDesc">
-				Buys and sells weapons and ammo &mdash; Installs purchased items &mdash; Buys damaged weapons
-			</Text>
-        </Language>
-	</StationType>
-
-	<!-- Arms Dealer, Makayev -->
-
-	<StationType UNID="&stArmsDealerMakayev;"
-			name=				": Makayev-Energia Space Systems|Makayev-Energia Space Systems"
-			sovereign=			"&svCorporate;"
-			inherit=			"&baCorporateStation;"
-
-			dockScreen=			"&dsArmsDealerSpecial;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			level=				"5"
-			multiHull=			"true"
-			armorID=			"&itBlastPlate;"
-			hitPoints=			"350"
-			regen=				"12"
-			fireRateAdj=		"20"
-			explosionType=		"&vtBlastExplosion2;"
-			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, populated"
-			>
-
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+corporateSpace;"
-				systemAffinity=			"*"
-				levelFrequency=			"--rur v---- ----- ----- -----"
-
-				locationCriteria=		"+planetary"
-				/>
-
-		<Image			imageID="&rsCorporateArmsDealer;" imageWidth="148" imageHeight="226" viewportRatio="0.03125"/>
-
-		<DockingPorts
-				portCount=		"8"
-				portAngle=		"-15"
-				portRadius=		"100"
-				>
-		</DockingPorts>
-		
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
-			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
-		<Devices>
-			<Device deviceID="&itMarkIHowitzer;"	omnidirectional="true"/>
-		</Devices>
-
-		<Items>
-			<RandomItem count="1d12" 
-					criteria=		"w L:1-7; +Makayev; -NotForSale;"
-					levelFrequency=	"systemLevel:r|c|cur"
-					enhanced=		"10"
-					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
-					/>
-
-			<RandomItem chance="65" count="1d4" 
-					criteria=		"d~w L:1-7; +Makayev; -NotForSale;"
-					levelFrequency=	"systemLevel:r|c|cur"
-					/>
-
-			<RandomItem count="2d12" 
-					criteria=		"a L:1-7; +Makayev; -NotForSale;"
-					levelFrequency=	"systemLevel:r|c|cur"
-					enhanced=		"10"
-					enhancement=	"=(intMakayevArmorEnhancement)"
-					/>
-
-			<LevelTable count="1-8">
-				<Item levelFrequency="----u ccur-"	count="40-60"	item="&itStrelkaRed;" />
-				<Item levelFrequency="----- -uccu"	count="40-60"	item="&itStrelkaBlack;" />
-			</LevelTable>
-		</Items>
-
-		<Trade currency="credit">
-			<Sell	criteria="m +makayev; -defective; -military; -illegal; -notForSale;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
-
-			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
-			<ReplaceArmor	criteria="a +makayev; L:1-7;" priceAdj="100"/>
-			<InstallDevice	criteria="d +makayev; L:1-7;" priceAdj="100"/>
-			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
-			
-			<ReplaceArmor	criteria="a L:1-7;" priceAdj="unavailable"	messageID="descNoInstall"/>
-			<InstallDevice	criteria="d L:1-7;" priceAdj="unavailable"	messageID="descNoInstall"/>
-		</Trade>
-
-		<StaticData>
-			<LongName>"a Makayev-Energia weapons franchise"</LongName>
-		</StaticData>
-
-		<Language>
-			<Text id="descNoInstall">
-
-				We only install Makayev items. We cannot install %itemName% on 
-				your ship.
-
-			</Text>
-			<Text id="dockServices:installAbility">
-
-				We install Makayev items up to tech level %maxLevel%.
+				%StationName% buys weapons (even if damaged). We are not 
+				interested in buying %itemName%.
 
 			</Text>
 
 			<Text id="core.mapDesc">
-
-				Repairs armor up to level 8 &mdash;
-				Installs Makayev armor up to level 7 &mdash;
-				Installs Makayev devices up to level 7 &mdash;
-				Sells Makayev products
-
+				Buys and sells weapons and ammo &mdash; Installs purchased items &mdash; Buys damaged weapons
 			</Text>
 		</Language>
 	</StationType>
 
-	<!-- Arms Dealer, Bushido -->
+	<!-- Level 5: Arms Dealer, Bushido -->
 
 	<StationType UNID="&stArmsDealerBushido;"
 			name=				"Bushido merchant"
@@ -739,28 +635,28 @@
 
 		<Items>
 			<RandomItem count="1d12" 
-					criteria=		"w L:1-10; +Bushido; -NotForSale;"
+					criteria=		"w L:1-10; +Bushido; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
 					enhancement=	"=(intBushidoWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="1d12" 
-					criteria=		"s L:1-10; +Bushido; -NotForSale;"
+					criteria=		"s L:1-10; +Bushido; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
 					enhancement=	"=(intBushidoShieldEnhancement)"
 					/>
 
 			<RandomItem count="1d12" 
-					criteria=		"a L:1-10; +Bushido; -NotForSale;"
+					criteria=		"a L:1-10; +Bushido; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
 					enhancement=	"=(intBushidoArmorEnhancement)"
 					/>
 
 			<RandomItem count="1d12" 
-					criteria=		"a L:1-10; +Bushido; -NotForSale;"
+					criteria=		"a L:1-10; +Bushido; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|u|cur"
 					enhanced=		"5"
 					enhancement=	"=(intBushidoArmorEnhancement)"
@@ -807,201 +703,6 @@
 			</Text>
 		</Language>
 
-	</StationType>
-
-	<!-- Auton Dealer -->
-
-	<StationType UNID="&stAutonDealer;"
-			name=				"corporate auton dealer"
-			sovereign=			"&svCorporate;"
-			inherit=			"&baCorporateStation;"
-
-			dockScreen=			"Main"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
-
-			multiHull=			"true"
-			armorID=			"&itAdvancedPlasteelPlate;"
-			hitPoints=			"350"
-			regen=				"4"
-			explosionType=		"&vtBlastExplosion2;"
-			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, populated"
-			>
-
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+corporateSpace;"
-				systemAffinity=			"*"
-				levelFrequency=			"--rcu ur--- ----- ----- -----"
-
-				locationCriteria=		"+planetary"
-				enemyExclusionRadius=	"50"
-				/>
-
-		<Names noArticle="true">Auton Universe; Brehzen's Used Autons; Chiba Auton Dealers;
-				Dresden Autonomous Defenders; Ehrlenmeyer Autons; Frenzy Autons;
-				General Autons, rce; Hastur Used Autons; Ixin Autons Dealer;
-				Ji Autons; Kyrrin Used Autons; Laser Autons, rce; Merlin Autons;
-				Nrummer Weapons Corp.; Oort Autons, rce; Planetary Autons;
-				Qing Long Autons; Raptor Systems, rce; Security Autons;
-				Tenhove Defense Dealer; Ultimate Autons; Victory Systems;
-				Weapons World; %s Auton Dealers</Names>
-
-		<Image			imageID="&rsStations4;" imageX="128" imageY="192" imageWidth="128" imageHeight="256"/>
-
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
-			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
-		<Items>
-			<RandomItem count="20" 
-					criteria=		"* +auton; -illegal; -military; -notStandard; -notForSale;"
-					levelFrequency=	"systemLevel:ucc|c|cur"
-					/>
-			<RandomItem count="1d6" 
-					criteria=		"* +auton; -illegal; -military; -notStandard; -notForSale; L:4"
-					/>
-		</Items>
-
-		<Trade currency="credit">
-			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
-			<Buy	criteria="*NU +Auton; -Illegal; -NotForSale;"	priceAdj="90"/>
-		</Trade>
-
-		<DockScreens>
-			<Main>
-				<Panes>
-					<Default descID="descWelcome">
-						<Actions>
-							<Action name="Buy Autons" default="1" key="B">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
-							</Action>
-
-							<Action name="Sell Autons" key="S">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
-							</Action>
-
-							<Action name="Repair Active Autons" key="R">
-								(block Nil
-									; Figure out the list of autons for the player
-									(setq gList (sysFindObject gPlayerShip "s B:auton; O:escort;"))
-									(if gList
-										(scrShowPane gScreen "RepairAutons")
-										(scrShowPane gScreen "NoAutons")
-										)
-									)
-							</Action>
-
-							<Action id="actionUndock" cancel="1">
-								<Exit/>
-							</Action>
-
-						</Actions>
-
-					</Default>
-
-					<NoAutons descID="descNoAutons">
-						<Actions>
-							<Action id="actionLeave" cancel="1" default="1">
-								<ShowPane pane="Default"/>
-							</Action>
-						</Actions>
-					</NoAutons>
-
-					<RepairAutons>
-						<OnPaneInit>
-							(block Nil
-								; Figure out how much it would cost to repair the player's
-								; autons.
-
-								(setq gCost 0)
-								(enum gList auton
-									(for i 0 (subtract (shpGetArmorCount auton) 1)
-										(setq gCost (add gCost (multiply 5 (objGetArmorDamage auton i))))
-										)
-									)
-
-								(switch
-									; If the autons have no damage, then there is nothing to do
-									(eq gCost 0)
-										(block Nil
-											(scrSetDesc gScreen "There is no damage to your autons.")
-											(scrEnableAction gScreen 0 Nil)
-											)
-
-									; If the player cannot afford it.
-									(gr gCost (plyGetCredits gPlayer))
-										(block Nil
-											(scrSetDesc gScreen (cat "Repairing the damage to your autons would cost " gCost " credits. Unfortunately, you do not have enough credits to proceed."))
-											(scrEnableAction gScreen 0 Nil)
-											)
-
-									; Otherwise, we're OK
-									(scrSetDesc gScreen (cat "Repairing the damage to your autons will cost " gCost " credits. Do you wish to proceed?"))
-									)
-								)
-						</OnPaneInit>
-
-						<Actions>
-							<Action name="Repair" default="1" key="R">
-								(block Nil
-									(enum gList auton
-										(for i 0 (subtract (shpGetArmorCount auton) 1)
-											(objRepairArmor auton i)
-											)
-										)
-
-									(plyCharge gPlayer gCost)
-									(scrShowPane gScreen "Default")
-									)
-							</Action>
-
-							<Action id="actionLeave" cancel="1">
-								<ShowPane pane="Default"/>
-							</Action>
-						</Actions>
-					</RepairAutons>
-				</Panes>
-			</Main>
-
-		</DockScreens>
-
-		<DockingPorts>
-			<Port x="0"		y="90" />
-			<Port x="0"		y="-90" />
-			<Port x="60"	y="60" />
-			<Port x="60"	y="-60" />
-			<Port x="90"	y="0" />
-			<Port x="-90"	y="0" />
-			<Port x="-60"	y="60" />
-			<Port x="-60"	y="-60" />
-		</DockingPorts>
-
-        <Language>
-			<Text id="descWelcome">
-				You are docked at an auton dealer.
-			</Text>
-			<Text id="descNoAutons">
-
-				A sales drone approaches you:
-				
-				"You do not currently have any autons to repair, but I would be 
-				delighted to show you some of our newest models."
-
-			</Text>
-            <Text id="core.mapDesc">"Buys and sells autons"</Text>
-        </Language>
 	</StationType>
 
 	<!-- Level 4: Corporate Enclave -->
@@ -1126,14 +827,26 @@
 							</Action>
 
 							<Action name="&quot;The merchandise is in my cargo hold.&quot;" default="1" key="M">
-								(block Nil
+								(block (
+									;	Price depends on whether a Black Market station 
+									;	is in the system.
+
+									(priceAdj
+										(switch
+											(sysFindObject Nil "TA +blackMarket; +populated;")
+												90
+
+											110
+											)
+										)
+									)
 									(scrShowPane gScreen "Default")
 									
 									(scrShowSellScreen
 										(lambda (theItem)
 											(switch
 												(itmMatches theItem "*NU +Illegal; -ID; +property:known;")
-													(divide (multiply 90 (itmGetPrice theItem 'credit)) 100)
+													(divide (multiply priceAdj (itmGetPrice theItem 'credit)) 100)
 													
 												Nil
 												)
@@ -1184,7 +897,7 @@
 
 		<!-- Events and Data -->
 
-        <Language>
+		<Language>
 			<Text id="descWelcome">
 
 				You are in the docking level of a corporate enclave. The 
@@ -1234,11 +947,17 @@
 				corporations are carried out on this level.
 
 			</Text>
-            <Text id="core.mapDesc">"Buys food, luxuries, meds, and resources"</Text>
-        </Language>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food, luxuries, meds, and industrial 
+				resources. We are not interested in buying %itemName%.
+
+			</Text>
+			<Text id="core.mapDesc">"Buys food, luxuries, meds, and industrial resources"</Text>
+		</Language>
 	</StationType>
 
-	<!-- Fuel Depot -->
+	<!-- Level 4: Fuel Depot -->
 
 	<StationType UNID="&stFuelDepot;"
 			name=				"corporate fuel depot"
@@ -1384,204 +1103,14 @@
 				with your transaction.
 
 			</Text>
-            <Text id="core.mapDesc">
-                Refuels up to level 10 &mdash; Sells fuel and supplies
-            </Text>
-		</Language>
-
-	</StationType>
-
-	<!-- Makayev Factory -->
-
-	<StationType UNID="&stMakayevFactory;"
-			name=				"Makayev manufacturing plant"
-			sovereign=			"&svCorporate;"
-			inherit=			"&baCorporateStation;"
-
-			dockScreen=			"Main"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
-
-			multiHull=			"true"
-			armorID=			"&itAdvancedPlasteelPlate;"
-			hitPoints=			"1890"
-			regen=              "19"
-			fireRateAdj=		"15"
-			explosionType=		"&vtThermoExplosion3;"
-			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, majorStation, Makayev, populated"
-			>
-
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+corporateSpace;"
-				systemAffinity=			"+corporateCore;"
-				levelFrequency=			"----- rrur- ----- ----- -----"
-
-				locationCriteria=		"+planetary"
-				enemyExclusionRadius=	"75"
-
-				unique=					"inSystem"
-				/>
-
-		<Image imageID="&rsMakayevFactory;" imageX="0" imageY="0" imageWidth="150" imageHeight="256"/>
-
-		<Ships>
-			<Ship	count="1" class="&scManticore;" orders="guard"/>
-			<Lookup count="1" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
-			<Table>
-				<Ship	chance="40" class="&scManticore;" orders="guard"/>
-				<Lookup chance="35" table="&tbCorpDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
-		<Devices>
-			<Device deviceID="&itMarkVHowitzer;"	omnidirectional="true"/>
-		</Devices>
-
-		<Items>
-			<RandomItem count="2d3"
-					criteria=		"w L:1-10; +Makayev; -NotForSale;"
-					levelFrequency=	"systemLevel:uc|c|crv"
-					enhanced=		"20"
-					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
-					/>
-
-			<RandomItem count="2d6"
-					criteria=		"a L:1-10; +Makayev; -NotForSale;"
-					levelFrequency=	"systemLevel:uc|c|crv"
-					enhanced=		"20"
-					enhancement=	"=(intMakayevArmorEnhancement)"
-					/>
-
-			<RandomItem count="2d3"
-					criteria=		"w L:1-10; +Makayev; -NotForSale;"
-					levelFrequency=	"systemLevel:r|c|cur"
-					enhanced=		"10"
-					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
-					/>
-
-			<RandomItem count="2d6"
-					criteria=		"a L:1-10; +Makayev; -NotForSale;"
-					levelFrequency=	"systemLevel:r|c|cur"
-					enhanced=		"10"
-					enhancement=	"=(intMakayevArmorEnhancement)"
-					/>
-
-			<RandomItem count="1d4"
-					criteria=		"d~w L:1-10; +Makayev; -NotForSale;"
-					levelFrequency=	"systemLevel:rucc|c|ur"
-					/>
-		</Items>
-
-		<Trade currency="credit">
-			<Sell	criteria="m +makayev; -defective; -illegal; -notForSale;" priceAdj="100" inventoryAdj="800" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU +makayev; -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
-
-			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
-			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
-			<ReplaceArmor	criteria="a +makayev;" priceAdj="100"/>
-			<InstallDevice	criteria="d +makayev;" priceAdj="100"/>
-			<RemoveDevice	criteria="d L:1-10;" priceAdj="100"/>
-			
-			<ReplaceArmor	criteria="a L:1-10;" priceAdj="unavailable"	messageID="descNoInstall"/>
-			<InstallDevice	criteria="d L:1-10;" priceAdj="unavailable"	messageID="descNoInstall"/>
-
-			<ConsumeTrade	criteria="{core.antimatterFuel}"	impact="3"/>
-			<ConsumeTrade	criteria="{human.res}"		impact="3"/>
-			<ConsumeTrade	criteria="{core.ore}"			impact="3"/>
-		</Trade>
-
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			9		100		)
-					)
-			</NPCService>
-		</StaticData>
-
-		<DockScreens>
-			<Main>
-				<Panes>
-					<Default descID="descWelcome">
-						<Actions>
-							<Action id="actionDockServices" default="1">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
-							</Action>
-
-							<Action id="actionBuyItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
-							</Action>
-
-							<Action id="actionRepairItems">
-								(scrShowScreen gScreen "&dsRPGRepairItem;" {
-									criteria: "*~aD +Makayev;"
-									priceAdj: 65
-									})
-							</Action>
-
-							<Action id="actionUndock" cancel="1">
-								<Exit/>
-							</Action>
-						</Actions>
-
-					</Default>
-				</Panes>
-			</Main>
-		</DockScreens>
-
-		<DockingPorts>
-			<Port x="22"	y="86" />
-			<Port x="56"	y="35" />
-			<Port x="69"	y="-39" />
-			<Port x="33"	y="-75" />
-			<Port x="-33"	y="-75" />
-			
-			<Port x="-69"	y="-39" />
-			<Port x="-56"	y="35" />
-			<Port x="-22"	y="86" />
-		</DockingPorts>
-
-		<Language>
-			<Text id="actionRepairItems">[R]epair Items</Text>
-
-			<Text id="descWelcome">
-				Welcome to Makayev-Energia!
-			</Text>
-			<Text id="descNoInstall">
-
-				We only install Makayev items. We cannot install %itemName% on 
-				your ship.
-
-			</Text>
-			<Text id="dockServices:installAbility">
-
-				We install Makayev items up to tech level %maxLevel%.
-
-			</Text>
-            
 			<Text id="core.mapDesc">
-
-				Refuels up to level 10 &mdash;
-				Repairs/installs Makayev armor up to level 9 &mdash;
-				Installs Makayev devices up to level 9 &mdash;
-				Sells Makayev weapons and ammo
-
+				Refuels up to level 10 &mdash; Sells fuel and supplies
 			</Text>
 		</Language>
 
 	</StationType>
 
-	<!-- Manufacturing Plant
+	<!-- Level 4: Manufacturing Plant
 	
 	EXTRA DATA
 
@@ -1804,7 +1333,7 @@
 			</OnManufacture>
 		</Events>
 
-        <Language>
+		<Language>
 			<Text id="descWelcome">
 
 				You are in the docking level of a corporate manufacturing plant.
@@ -1838,8 +1367,8 @@
 					)
 			</Text>
 
-            <Text id="core.mapDescCustom">
-                (typTranslate gType 'mapDescCustomText {
+			<Text id="core.mapDescCustom">
+				(typTranslate gType 'mapDescCustomText {
 					buyItemsList: (objTranslate gSource 'buyItemsList)
 					sellItemsList: (join (map (objGetData gSource 'itemsCreated) theType
 											(itmGetName theType '(plural short))
@@ -1847,16 +1376,16 @@
 										'oxfordComma
 										)
 					})
-            </Text>
+			</Text>
 			
 			<Text id="mapDescCustomText">
 				Buys %buyItemsList% &mdash;
 				Sells %sellItemsList%
 			</Text>
-        </Language>
+		</Language>
 	</StationType>
 
-	<!-- Merchant Prince Hotel -->
+	<!-- Level 4: Merchant Prince Hotel -->
 
 	<StationType UNID="&stHotel;"
 			name=				"corporate hotel"
@@ -1885,6 +1414,7 @@
 				levelFrequency=			"uuurr v---- ----- ----- -----"
 
 				locationCriteria=		"*"
+				unique=					"inSystem"
 				/>
 
 		<Names definiteArticle="true">Beta Gemini Hotel; Honoku-Tomashi Hotel; Manchurian Oriental Hotel;
@@ -1992,7 +1522,7 @@
 			<Port x="-70"	y="25" />
 		</DockingPorts>
 
-        <Language>
+		<Language>
 			<Text id="actionRestaurant">"[R]estaurant"</Text>
 			<Text id="actionLoadingDock">"[L]oading Dock"</Text>
 
@@ -2012,8 +1542,14 @@
 				about the excellent service. You spend 5 credits on drinks.
 			</Text>
 
-            <Text id="core.mapDesc">"Buys food, luxuries, and meds"</Text>
-        </Language>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food, luxuries, and meds. We are not 
+				interested in buying %itemName%.
+
+			</Text>
+			<Text id="core.mapDesc">"Buys food, luxuries, and meds"</Text>
+		</Language>
 	</StationType>
 
 	<!-- Level 3: Ice Farm -->
@@ -2029,11 +1565,6 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"150"
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"120"
-			multiHull=			"true"
-			regen=              "1"
-
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtIceAsteroidEjecta;"
 			>
@@ -2073,6 +1604,14 @@
 			<Item chance="50"	count="2d12"	item="&itHogeiSalmon;" />
 		</Items>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itPlasteelPlate;"
+				hitPoints=		"120"
+				regen=			"1"
+				/>
+		
 		<!-- Ships and Defenses -->
 
 		<Ships>
@@ -2137,7 +1676,7 @@
 
 		<!-- Events and Data -->
 
-        <Language>
+		<Language>
 			<Text id="core.name">Ice Farm</Text>
 
 			<Text id="descWelcome">
@@ -2147,8 +1686,14 @@
 				hear the drone of struggling generators and pumps.
 
 			</Text>
-            <Text id="core.mapDesc">Sells luxuries &mdash; Buys food and supplies</Text>
-        </Language>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys food and supplies. We are not 
+				interested in buying %itemName%.
+
+			</Text>
+			<Text id="core.mapDesc">Sells luxuries &mdash; Buys food and supplies</Text>
+		</Language>
 
 	</StationType>
 
@@ -2203,27 +1748,27 @@
 
 		<Items>
 			<RandomItem count="1d6" 
-					criteria=		"d L:1-11; +Taikon; -NotStandard; -NotForSale"
+					criteria=		"d L:1-11; +Taikon; -defective; -NotStandard; -NotForSale"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<RandomItem count="1d6" 
-					criteria=		"a L:1-11; +Taikon; -NotStandard; -NotForSale"
+					criteria=		"a L:1-11; +Taikon; -defective; -NotStandard; -NotForSale"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<RandomItem count="3d6" 
-					criteria=		"m +Taikon; -illegal; -NotStandard; -NotForSale"
+					criteria=		"m +Taikon; -defective; -illegal; -NotStandard; -NotForSale"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<RandomItem count="1d6" 
-					criteria=		"* L:1-11; -illegal; -NotStandard; -NotForSale;"
+					criteria=		"* L:1-11; -defective; -illegal; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="2d6" 
-					criteria=		"*~ad -Alien; -illegal; -NotStandard; -NotForSale;"
+					criteria=		"*~ad -Alien; -defective; -illegal; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|u"
 					/>
 			<RandomItem count="1d3" 
-					criteria=		"* L:1-11; +Alien; -illegal; -NotStandard; -NotForSale;"
+					criteria=		"* L:1-11; +Alien; -defective; -illegal; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<Item	count="6d12" item="&itPteracniumFuelRod;"/>
@@ -2301,7 +1846,7 @@
 		</Language>
 	</StationType>
 
-	<!-- Wondrous Devices -->
+	<!-- Level 6: Wondrous Devices -->
 
 	<StationType UNID="&stWondrousDevices;"
 			name=				": Thor's Wondrous Devices|Thor's Wondrous Devices"
@@ -2349,13 +1894,13 @@
 
 		<Items>
 			<RandomItem count="20-30" 
-					criteria=		"admu L:1-9; -Illegal; -NotStandard; -NotForSale;"
+					criteria=		"admu L:1-9; -defective; -Illegal; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:u|c|crv"
 					enhanced=		"5"
 					enhancement=	"=(intCorporateGenerateEnhancement gItem)"
 					/>
 			<RandomItem count="8" 
-					criteria=		"admu L:1-9; -Illegal; -NotStandard; -NotForSale;"
+					criteria=		"admu L:1-9; -defective; -Illegal; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|u|cur"
 					enhanced=		"1"
 					enhancement=	"=(intCorporateGenerateEnhancement gItem)"
@@ -2424,12 +1969,98 @@
 
 <!-- SHIP CLASSES -->
 
-	<!-- CorporateCruiser -->
+	<!-- Level 8: Corporate Explorer -->
+
+	<ShipClass UNID="&scCorporateExplorer;"
+			manufacturer=		"Rasiermesser"
+			class=				"Svalbard"
+			type=				"explorer"
+			defaultSovereign=	"&svCorporate;"
+
+			attributes=			"capitalShip, corporate, genericClass, majorShip"
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"195"
+			mass=				"4000"
+			cargoSpace=			"1000"
+
+			cyberDefenseLevel=	"8"
+			/>
+
+		<Drive
+			maxSpeed=			"10"
+			thrust=				"5000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3"
+			rotationAccel=		"0.5"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"120"
+					/>
+
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"80"
+
+					posX=		"-61"
+					posY=		"0"
+					sizeX=		"60"
+					sizeY=		"40"
+					/>
+		</Interior>
+
+		<Wreck
+			explosionType=		"&vtThermoExplosion2;"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itQuadroCarbideArmor;"
+			count=				"16"
+			/>
+
+		<Devices>
+			<Device deviceID="&itPlasmaShieldGenerator;"/>
+		</Devices>
+
+		<Items>
+			<Item count="2d12" item="&itPteracniumFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsCorporateExplorerHD;" imageWidth="192" imageHeight="192"	rotationCount="120" rotationColumns="12" viewportRatio="0.025"/>
+		<HeroImage imageID="&rsCorporateExplorerHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"25"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+	</ShipClass>
+
+	<!-- Level 9: Corporate Cruiser -->
 
 	<ShipClass UNID="&scCorporateCruiser;"
 			manufacturer=		"Rasiermesser"
-			class=				"corporate cruiser"
-			type=				""
+			class=				"Eir"
+			type=				"cruiser"
 			defaultSovereign=	"&svCorporate;"
 
 			attributes=			"capitalShip, corporate, genericClass, majorShip"
@@ -2705,16 +2336,26 @@
 					)
 				))
 
-			(setq intMakayevArmorEnhancement (lambda Nil
-				(random (list
-					{	enhancement:"+hpBonus:10"			type:&itPlasteelNanos;	}
-					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
-					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
-					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
-					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
-					{	enhancement:"+hpBonus:40"			type:&itPlasteelNanos;	}
-					{	enhancement:"+immunity:radiation"	type:&itRadiationImmuneCoating;	}
-					{	enhancement:"+immunity:ionEffects"	type:&itIonEffectImmuneCoating; }
+			(setq intMakayevArmorEnhancement (lambda (theItem)
+				(random (append 
+					(list
+						{	enhancement:"+hpBonus:10"			type:&itPlasteelNanos;	}
+						{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+						{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+						{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+						{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+						{	enhancement:"+hpBonus:40"			type:&itPlasteelNanos;	}
+						)
+					(if (not (itm@ theItem 'radiationImmune))
+						(list
+							{	enhancement:"+immunity:radiation"	type:&itRadiationImmuneCoating;	}
+							)
+						)
+					(if (not (itm@ theItem 'empImmune))
+						(list
+							{	enhancement:"+immunity:ionEffects"	type:&itIonEffectImmuneCoating; }
+							)
+						)
 					))
 				))
 
@@ -2739,7 +2380,7 @@
 						(= damageType 'laser)		&itLaserAmplifier;
 						(= damageType 'kinetic)		&itKineticUpgrade;
 						(= damageType 'particle)	&itParticleUpgrade;
-						(= damageType 'bast)		&itBlastUpgrade;
+						(= damageType 'blast)		&itBlastUpgrade;
 						(= damageType 'ion)			&itIonUpgrade;
 						(= damageType 'thermo)		&itThermoUpgrade;
 						)
@@ -2895,6 +2536,7 @@
 	
 <!-- RESOURCES -->
 
+	<Image UNID="&rsAdventurerOutfitters;"	bitmap="Resources\AdventurerOutfitters.jpg" bitmask="Resources\AdventurerOutfittersMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCorporateArmorDealer;"	bitmap="Resources\CorporateArmorDealer.jpg" bitmask="Resources\CorporateArmorDealerMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCorporateArmsDealer;"	bitmap="Resources\CorporateArmsDealer.jpg" bitmask="Resources\CorporateArmsDealerMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCorporateEnclave;"		bitmap="Resources\CorporateEnclave.jpg" bitmask="Resources\CorporateEnclaveMask.bmp" loadOnUse="true"/>
@@ -2903,9 +2545,13 @@
 	<Image UNID="&rsIceFarmIce;"			bitmap="Resources\IceFarmIce.jpg" bitmask="Resources\IceFarmIceMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsIceFarmPrimordial;"		bitmap="Resources\IceFarmPrimordial.jpg" bitmask="Resources\IceFarmPrimordialMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsIceFarmRocky;"			bitmap="Resources\IceFarmRocky.jpg" bitmask="Resources\IceFarmRockyMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsMakayevFactory;"		bitmap="Resources\MakayevFactory.jpg" bitmask="Resources\MakayevFactoryMask.bmp" loadOnUse="true"/>
 
 	<Image UNID="&rsCorporateCruiserHD;"	bitmap="Resources\CorporateCruiserHD.jpg" bitmask="Resources\CorporateCruiserHDMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCorporateCruiserHero;"	bitmap="Resources\CorporateCruiserLarge.jpg" bitmask="Resources\CorporateCruiserLargeMask.bmp"  loadOnUse="true"/>
 	
+	<Image UNID="&rsCorporateExplorerHD;"	bitmap="Resources\CorporateExplorerHD.jpg" bitmask="Resources\CorporateExplorerHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsCorporateExplorerHero;"	bitmap="Resources\CorporateExplorerLarge.jpg" bitmask="Resources\CorporateExplorerLargeMask.bmp"  loadOnUse="true"/>
+
+	<!-- Deprecate when we re-do Huygens Explorer -->
+
 </TranscendenceModule>

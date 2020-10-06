@@ -39,11 +39,11 @@ class IPrimitiveImpl
 
 typedef struct
 	{
-	char *pszName;
+	const char *pszName;
 	PRIMITIVEPROC pfFunction;
 	DWORD dwData;
-	char *pszDescription;
-	char *pszArguments;
+	const char *pszDescription;
+	const char *pszArguments;
 	DWORD dwFlags;
 	} PRIMITIVEPROCDEF, *PPRIMITIVEPROCDEF;
 
@@ -128,7 +128,7 @@ class ICCItem : public CObject
 		virtual ICCItem *GetElement (int iIndex) const = 0;
 		virtual ICCItem *GetElement (const CString &sKey) const { return NULL; }
 		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex) const;
-        virtual CString GetKey (int iIndex) { return NULL_STR; }
+        virtual CString GetKey (int iIndex) const { return NULL_STR; }
 		virtual bool HasReferenceTo (ICCItem *pSrc) { return (pSrc == this); }
 		virtual ICCItem *Head (CCodeChain *pCC) = 0;
 		bool IsList (void) const { return IsNil() || !IsAtom(); }
@@ -177,7 +177,7 @@ class ICCItem : public CObject
 
 		bool IsLambdaExpression (void);
 		bool IsLambdaSymbol (void);
-		bool IsNumber (void) { return (IsInteger() || IsDouble()); }
+		bool IsNumber (void) const { return (IsInteger() || IsDouble()); }
 		void ResetItem (void);
 
 		//	Symbol/Atom table functions
@@ -190,10 +190,11 @@ class ICCItem : public CObject
 		CString GetStringAt (const CString &sKey, const CString &sDefault = NULL_STR) const;
 		void SetAt (const CString &sKey, ICCItem *pValue);
 		void SetBooleanAt (const CString &sKey, bool bValue);
+		void SetDoubleAt (const CString &sKey, double rValue);
 		void SetIntegerAt (const CString &sKey, int iValue);
 		void SetStringAt (const CString &sKey, const CString &sValue);
 
-		virtual void AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) { }
+		virtual bool AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false, bool bMustBeNew = false) { return true; }
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) { ASSERT(false); }
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) { }
 		virtual void DeleteEntry (ICCItem *pKey) { }
@@ -241,6 +242,7 @@ class ICCItemPtr
 		constexpr ICCItemPtr (std::nullptr_t) : m_pPtr(NULL) { }
 
 		explicit ICCItemPtr (ICCItem *pPtr) : m_pPtr(pPtr) { }
+		ICCItemPtr (const ICCItem &Value) : m_pPtr(Value.Reference()) { }
 
 		explicit ICCItemPtr (ICCItem::ValueTypes iType);
 		explicit ICCItemPtr (const CString &sValue);
@@ -251,7 +253,7 @@ class ICCItemPtr
 
 		ICCItemPtr (const ICCItemPtr &Src);
 
-		ICCItemPtr (ICCItemPtr &&Src) : m_pPtr(Src.m_pPtr)
+		ICCItemPtr (ICCItemPtr &&Src) noexcept : m_pPtr(Src.m_pPtr)
 			{
 			Src.m_pPtr = NULL;
 			}
@@ -259,7 +261,9 @@ class ICCItemPtr
 		~ICCItemPtr (void);
 
 		ICCItemPtr &operator= (const ICCItemPtr &Src);
+		ICCItemPtr &operator= (ICCItemPtr &&Value) noexcept { TakeHandoff(Value); return *this; }
 		ICCItemPtr &operator= (ICCItem *pSrc);
+		ICCItemPtr &operator= (const ICCItem &Value);
 		operator ICCItem *() const { return m_pPtr; }
 		ICCItem * operator->() const { return m_pPtr; }
 
@@ -269,13 +273,17 @@ class ICCItemPtr
 
 		bool Load (const CString &sCode, CString *retsError);
 
-		void TakeHandoff (ICCItem *pPtr);
-		void TakeHandoff (ICCItemPtr &Src);
+		void TakeHandoff (ICCItem *pPtr) { if (m_pPtr) m_pPtr->Discard(); m_pPtr = pPtr; }
+		void TakeHandoff (ICCItemPtr &Src) { if (m_pPtr) m_pPtr->Discard(); m_pPtr = Src.m_pPtr; Src.m_pPtr = NULL; }
 
 		void Set (const ICCItemPtr &Src)
 			{
 			*this = Src;
 			}
+
+		static ICCItemPtr Error (const CString &sError, const ICCItem *pData = NULL);
+		static ICCItemPtr Nil (void) { return ICCItemPtr(ICCItem::Nil); }
+		static ICCItemPtr True (void) { return ICCItemPtr(ICCItem::True); }
 
 	private:
 		ICCItem *m_pPtr;
@@ -672,7 +680,7 @@ class CCVector : public ICCVector
 		void SetContext (CCodeChain *pCC) { m_pCC = pCC;  }
 		void SetShape (CCodeChain *pCC, TArray<int> vNewShape) { m_vShape = vNewShape; }
 		void SetArrayData (CCodeChain *pCC, TArray<double> vNewData) { m_vData = vNewData; }
-		CString CCVector::PrintWithoutShape (CCodeChain *pCC, DWORD dwFlags) const;
+		CString PrintWithoutShape (CCodeChain *pCC, DWORD dwFlags) const;
 		
 		void Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
 		void Sort (CCodeChain *pCC, int iOrder, int iIndex = -1);
@@ -720,7 +728,7 @@ class CCAtomTable : public ICCAtom
 		virtual CString Print (DWORD dwFlags = 0) const override;
 		virtual void Reset (void) override;
 
-		virtual void AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd = false) override;
+		virtual bool AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd = false, bool bMustBeNew = false) override;
 		virtual ICCItem *ListSymbols (CCodeChain *pCC) override;
 		virtual ICCItem *Lookup (CCodeChain *pCC, ICCItem *pAtom) override;
 		virtual ICCItem *LookupEx (CCodeChain *pCC, ICCItem *pAtom, bool *retbFound) override;
@@ -761,7 +769,7 @@ class CCSymbolTable : public ICCList
 		virtual ICCItem *GetElement (int iIndex) const override;
 		virtual ICCItem *GetElement (const CString &sKey) const override;
 		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex) const override;
-        virtual CString GetKey (int iIndex) override { return m_Symbols.GetKey(iIndex); }
+        virtual CString GetKey (int iIndex) const override { return m_Symbols.GetKey(iIndex); }
 		virtual bool HasReferenceTo (ICCItem *pSrc) override;
 		virtual ICCItem *Head (CCodeChain *pCC) override { return GetElement(0); }
 		virtual ICCItem *Tail (CCodeChain *pCC) override { return GetElement(1); }
@@ -769,7 +777,7 @@ class CCSymbolTable : public ICCList
 		//	Symbols
 
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) override;
-		virtual void AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) override;
+		virtual bool AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false, bool bMustBeNew = false) override;
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) override;
 		virtual void DeleteEntry (ICCItem *pKey) override;
 		virtual int FindOffset (CCodeChain *pCC, ICCItem *pKey) override;
@@ -842,11 +850,12 @@ class CConsPool
 class CEvalContext
 	{
 	public:
-		CCodeChain *pCC;
-		ICCItem *pLexicalSymbols;
-		ICCItem *pLocalSymbols;
+		CCodeChain *pCC = NULL;
+		ICCItem *pLexicalSymbols = NULL;
+		ICCItem *pLocalSymbols = NULL;
+		bool bStrict = false;
 
-		LPVOID pExternalCtx;
+		LPVOID pExternalCtx = NULL;
 	};
 
 //	This is the main CodeChain context
@@ -863,6 +872,13 @@ class CCodeChain
 			int iCurLine = 1;				//	Updated to return current line.
 			};
 
+		struct SRunOptions
+			{
+			LPVOID pExternalCtx = NULL;
+
+			bool bStrict = false;			//	Extra checking (generally for debug mode)
+			};
+
 		CCodeChain (void);
 		virtual ~CCodeChain (void);
 
@@ -874,13 +890,13 @@ class CCodeChain
 		static ICCItem *CreateAtomTable (void);
 		static ICCItem *CreateBool (bool bValue);
 		static CCons *CreateCons (void) { return m_ConsPool.CreateCons(); }
-		static ICCItem *CreateError (const CString &sError, ICCItem *pData = NULL);
+		static ICCItem *CreateError (const CString &sError, const ICCItem *pData = NULL);
 		static ICCItem *CreateErrorCode (int iErrorCode);
 		static ICCItem *CreateInteger (int iValue);
 		static ICCItem *CreateDouble (double dValue);
 		static ICCItem *CreateLambda (ICCItem *pList, bool bArgsOnly);
 		static ICCItem *CreateLinkedList (void);
-		static ICCItem *CreateLiteral (const CString &sString);
+		static ICCItemPtr CreateLiteral (const CString &sString);
 		static ICCItem *CreateNil (void) { return &m_Nil; }
 		static ICCItem *CreateNumber (double dValue);
 		static ICCItem *CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl);
@@ -904,17 +920,18 @@ class CCodeChain
 		static void DestroySymbolTable (ICCItem *pItem) { m_SymbolTablePool.DestroyItem(pItem); }
 		static void DestroyVectorOld (ICCItem *pItem) { delete pItem; }
 		static void DestroyVector(ICCItem *pItem) { m_VectorPool.DestroyItem(pItem); }
-		static ICCItemPtr IncValue (ICCItem *pValue, ICCItem *pInc = NULL);
+		static ICCItemPtr IncValue (ICCItem *pValue, const ICCItem *pInc = NULL);
 
 		//	Evaluation and parsing routines
 
-		ICCItem *Apply (ICCItem *pFunc, ICCItem *pArgs, LPVOID pExternalCtx);
+		ICCItemPtr Apply (const ICCItem &Func, ICCItem &Args, const SRunOptions &Options);
 		ICCItem *GetNil (void) { return &m_Nil; }
 		ICCItem *GetTrue (void) { return &m_True; }
 		ICCItem *Eval (CEvalContext *pEvalCtx, ICCItem *pItem);
-		static ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
+		static ICCItemPtr LinkCode (const CString &sString) { return ICCItemPtr(Link(sString)); }
+		static ICCItemPtr LinkCode (const CString &sString, SLinkOptions &Options) { return ICCItemPtr(Link(sString, Options)); }
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
-		ICCItem *TopLevel (ICCItem *pItem, LPVOID pExternalCtx);
+		ICCItemPtr TopLevel (const ICCItem &Code, const SRunOptions &Options);
 		static CString Unlink (ICCItem *pItem);
 
 		//	Extensions
@@ -927,7 +944,6 @@ class CCodeChain
 		IItemTransform *GetGlobalDefineHook (void) const { return m_pGlobalSymbols->GetDefineHook(); }
 		ICCItem *GetGlobals (void) { return m_pGlobalSymbols; }
 		ICCItem *ListGlobals (void);
-		ICCItem *LookupFunction (CEvalContext *pCtx, ICCItem *pName);
 		ICCItem *PoolUsage (void);
 		ALERROR RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl = NULL);
 		ALERROR RegisterPrimitives (const SPrimitiveDefTable &Table);
@@ -941,12 +957,15 @@ class CCodeChain
 		static ICCItemPtr SystemSelfTest (void);
 
 	private:
-		static ICCItem *CreateDoubleIfPossible (const CString &sString);
-		static ICCItem *CreateIntegerIfPossible (const CString &sString);
-		static ICCItem *CreateParseError (int iLine, const CString &sError);
-		ICCItem *EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem);
-		static ICCItem *LinkFragment (const CString &sString, int iOffset = 0, int *retiLinked = NULL, int *ioiCurLine = NULL);
-		ICCItem *Lookup (CEvalContext *pCtx, ICCItem *pItem);
+		static ICCItemPtr CreateDoubleIfPossible (const CString &sString);
+		static ICCItemPtr CreateIntegerIfPossible (const CString &sString);
+		static ICCItemPtr CreateParseError (int iLine, const CString &sError);
+		ICCItemPtr EvalLiteralStruct (CEvalContext *pCtx, ICCItem &Item);
+		static ICCItem *Link (const CString &sString, SLinkOptions &Options);
+		static ICCItem *Link (const CString &sString) { SLinkOptions Options; return Link(sString, Options); }
+		static ICCItemPtr LinkFragment (const CString &sString, int iOffset = 0, int *retiLinked = NULL, int *ioiCurLine = NULL);
+		ICCItemPtr Lookup (CEvalContext *pCtx, ICCItem &Item);
+		ICCItemPtr LookupFunction (CEvalContext *pCtx, ICCItem &Name);
 		static char *SkipWhiteSpace (char *pPos, int *ioiLine);
 
 		ICCItem *m_pGlobalSymbols;

@@ -7,6 +7,50 @@
 
 const SDockFrame CDockScreenStack::m_NullFrame;
 
+ICCItemPtr CDockScreenStack::AsCCItem (const SDockFrame &Frame)
+
+//	AsCCItem
+//
+//	Encodes a frame as an item.
+
+	{
+	DWORD dwRootUNID = (Frame.pResolvedRoot ? Frame.pResolvedRoot->GetUNID() : 0);
+    CString sScreen = Frame.sResolvedScreen;
+
+    ICCItemPtr pResult(ICCItem::SymbolTable);
+
+	pResult->SetIntegerAt(CONSTLIT("type"), dwRootUNID);
+	if (Frame.pResolvedRoot)
+		pResult->SetStringAt(CONSTLIT("typeEntity"), Frame.pResolvedRoot->GetEntityName());
+
+	if (sScreen.IsBlank())
+		{
+        pResult->SetIntegerAt(CONSTLIT("screen"), dwRootUNID);
+		pResult->SetIntegerAt(CONSTLIT("screenType"), dwRootUNID);
+		}
+	else
+		{
+		bool bNotUNID;
+		DWORD dwScreen = strToInt(sScreen, 0, &bNotUNID);
+		if (bNotUNID)
+			{
+			pResult->SetStringAt(CONSTLIT("screen"), sScreen);
+			pResult->SetStringAt(CONSTLIT("screenName"), sScreen);
+			}
+		else
+			{
+			pResult->SetIntegerAt(CONSTLIT("screen"), dwScreen);
+			pResult->SetIntegerAt(CONSTLIT("screenType"), dwScreen);
+			}
+		}
+
+    pResult->SetStringAt(CONSTLIT("pane"), Frame.sPane);
+    if (Frame.pStoredData)
+        pResult->SetAt(CONSTLIT("data"), Frame.pStoredData);
+
+    return pResult;
+	}
+
 void CDockScreenStack::DeleteAll (void)
 
 //	DeleteAll

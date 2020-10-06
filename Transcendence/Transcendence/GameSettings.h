@@ -10,15 +10,16 @@
 class CGameKeys
 	{
 	public:
-        enum ELayouts
-            {
-            layoutNone =                -1,
+		enum ELayouts
+			{
+			layoutNone =                -1,
 
-            layoutDefault =             0,  //  Default layout
-            layoutCustom =              1,  //  Configured by player
+			layoutDefault =             0,  //  Default layout
+			layoutWASD =				1,  //  WASD
+			layoutCustom =              2,  //  Configured by player
 
-            layoutCount =               2,
-            };
+			layoutCount =               3,
+			};
 
 		enum Keys
 			{
@@ -109,69 +110,83 @@ class CGameKeys
 			keyPrevWeapon =				79,
 			keyPrevMissile =			80,
 			keyShowGalacticMap =		81,
+			keyAimShip =				82,
+			keyInteract =				83,
+			keyCycleTarget =			84,
 
-			keyCount =					82,
-			};
-
-		enum ESpecialVirtKeys
-			{
-			VK_NUMPAD_ENTER =			0xE0,
+			keyCount =					85,
 			};
 
 		struct SBindingDesc
 			{
-            CString sKeyID;
-            DWORD dwVirtKey;
+			CString sKeyID;
+			DWORD dwVirtKey;
 			};
 
-        struct SCommandKeyDesc
-            {
-            CGameKeys::Keys iCmd;
-            CString sCmdID;
-            CString sCmdLabel;
+		struct SCommandKeyDesc
+			{
+			CGameKeys::Keys iCmd;
+			CString sCmdID;
+			CString sCmdLabel;
 
 			TArray<SBindingDesc> Keys;
-            };
+			};
 
 		CGameKeys (void);
 
-        void GetCommands (TArray<SCommandKeyDesc> &Result) const;
-		inline Keys GetGameCommand (DWORD dwVirtKey) const { return m_iMap[(dwVirtKey < 256 ? dwVirtKey : 0)]; }
-        Keys GetGameCommandFromChar (char chChar) const;
+		void GetCommands (TArray<SCommandKeyDesc> &Result, bool bIncludeDebug) const;
+		Keys GetGameCommand (DWORD dwVirtKey) const { InitKeyMap(); return m_KeyToCommandMap[(dwVirtKey < 256 ? dwVirtKey : 0)]; }
+		Keys GetGameCommandFromChar (char chChar) const;
 		char GetKeyIfChar (Keys iCommand) const;
-        DWORD GetKey (Keys iCommand) const;
-        inline ELayouts GetLayout (void) const { return m_iLayout; }
-        CString GetLayoutName (ELayouts iLayout) const;
-        inline bool IsModified (void) const { return m_bModified; }
-		bool IsNonRepeatCommand (Keys iCommand) const;
-		bool IsStatefulCommand (Keys iCommand) const;
+		DWORD GetKey (Keys iCommand) const;
+		ELayouts GetLayout (void) const { return m_iLayout; }
+		bool IsKeyBound (Keys iCommand) const { return GetKey(iCommand) != CVirtualKeyData::INVALID_VIRT_KEY; }
+		bool IsKeyDown (Keys iCommand) const;
+		bool IsModified (void) const { return m_bModified; }
+		static bool IsNonRepeatCommand (Keys iCommand);
+		static bool IsStatefulCommand (Keys iCommand);
+		static bool IsXYInputCommand (Keys iCommand);
 		ALERROR ReadFromXML (CXMLElement *pDesc);
-        void SetGameKey (const CString &sKeyID, Keys iCommand);
-        void SetLayout (ELayouts iLayout);
+		void SetGameKey (const CString &sKeyID, Keys iCommand);
+		void SetLayout (ELayouts iLayout);
 		ALERROR WriteAsXML (IWriteStream *pOutput);
 
+		static CString GetCommandID (Keys iCommand);
 		static CGameKeys::Keys GetGameCommand (const CString &sCmd);
+		static CString GetLayoutName (ELayouts iLayout);
 
 	private:
-        struct SKeyMapEntry
-	        {
-	        int iVirtKey;
-	        CGameKeys::Keys iGameKey;
-	        };
+		struct SKeyMapEntry
+			{
+			int iVirtKey;
+			CGameKeys::Keys iGameKey;
+			};
 
-        void SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount);
+		void ClearKey (TArray<DWORD> Map[], DWORD dwVirtKey);
+		void ClearKeyMap (TArray<DWORD> Map[]);
+		int GetKeyMappedToCommandCount (Keys iCommand) const { return m_CommandMap[iCommand].GetCount(); }
+		DWORD GetKeyMappedToCommand (Keys iCommand, int iKeyIndex) const { return m_CommandMap[iCommand].GetAt(iKeyIndex); }
+		void InitKeyMap (void) const;
+		void SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount);
 
-        static CString GetLayoutID (ELayouts iLayout);
-        static ELayouts GetLayoutFromID (const CString &sLayoutID);
+		static CString GetLayoutID (ELayouts iLayout);
+		static ELayouts GetLayoutFromID (const CString &sLayoutID);
 
-        ELayouts m_iLayout;                 //  Current layout to use
-		Keys m_iMap[256];                   //  Current mappings
+		ELayouts m_iLayout = layoutNone;			//  Current layout to use
+		TArray<DWORD> m_CommandMap[keyCount];		//	Current map from command to ordered array of virtual keys for that command
 
-        Keys m_CustomMap[256];
-        bool m_bModified;                   //  TRUE if modified since we loaded
+		TArray<DWORD> m_SavedCommandMap[keyCount];	//	Last defined custom map (to switch between default and custom)
 
-        static const SKeyMapEntry DEFAULT_MAP[];
-        static const int DEFAULT_MAP_COUNT;
+		bool m_bModified = false;					//  TRUE if modified since we loaded
+
+		mutable Keys m_KeyToCommandMap[256];		//	Map from virtual key to command
+		mutable bool m_bKeyMapValid = false;		//	TRUE if m_KeyToCommandMap is valid
+
+		static const SKeyMapEntry DEFAULT_MAP[];
+		static const int DEFAULT_MAP_COUNT;
+
+		static const SKeyMapEntry WASD_MAP[];
+		static const int WASD_MAP_COUNT;
 	};
 
 //	Game settings class -------------------------------------------------------
@@ -210,6 +225,7 @@ class CGameSettings
 			defaultBuyTab,					//	Default tab when buying items
 			noMouseAim,						//	Disable mouse aiming
 			forcePermadeath,				//	We treat a game file as ended when we would normally resurrect
+			showIconBar,					//	Show or hide icon bar
 
 			//	Installation options
 			useTDB,							//	Force use of .TDB
@@ -238,6 +254,15 @@ class CGameSettings
 			musicVolume,					//	Music volume level
 			musicPath,						//	Path to music folder (may be NULL_STR)
 
+			//  Accessibility options
+			colorIFFPlayer,					//	Color of player & owned assets on minimap
+			colorIFFFriendly,				//	Color of friendly assets on minimap
+			colorIFFNeutral,				//	Color of neutral assets on minimap
+			colorIFFEnemy,					//	Color of enemy assets on minimap
+			colorIFFAngry,					//	Color of angered assets on minimap
+			colorIFFEscort,				//	Color of player's non-owned escorts on minimap
+			colorIFFProjectile,			//	Color of weapon projectiles on mimimap
+
 			//	Debug options
 			debugMode,						//	Program in debug mode
 			debugGame,						//	Game instance in debug mode
@@ -251,32 +276,32 @@ class CGameSettings
 			introSpoilers,					//	Show high-level ships in intro
 
 			//	Constants
-			OPTIONS_COUNT = 45,
+			OPTIONS_COUNT = 53,
 			};
 
 		CGameSettings (IExtraSettingsHandler *pExtra = NULL) : m_pExtra(pExtra) { }
 
-		inline const CString &GetAppDataFolder (void) const { return m_sAppData; }
-		inline bool GetBoolean (int iOption) const { return m_Options[iOption].bValue; }
-		inline void GetDefaultExtensions (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList) const { m_Extensions.GetList(dwAdventure, bDebugMode, retList); }
-		inline void GetDefaultExtensions (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, TArray<DWORD> *retList) const { m_Extensions.GetList(dwAdventure, Available, bDebugMode, retList); }
-		inline const TSortMap<DWORD, bool> &GetDisabledExtensionList (void) const { return m_Extensions.GetDisabledExtensionList(); }
-		inline const TArray<CString> &GetExtensionFolders (void) const { return m_ExtensionFolders; }
-		inline const CString &GetInitialSaveFile (void) const { return m_sSaveFile; }
-		inline int GetInteger (int iOption) const { return m_Options[iOption].iValue; }
-		inline CGameKeys &GetKeyMap (void) { return m_KeyMap; }
-		inline const CGameKeys &GetKeyMap (void) const { return m_KeyMap; }
-		inline const CString &GetString (int iOption) const { return m_Options[iOption].sValue; }
+		const CString &GetAppDataFolder (void) const { return m_sAppData; }
+		bool GetBoolean (int iOption) const { return m_Options[iOption].bValue; }
+		void GetDefaultExtensions (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList) const { m_Extensions.GetList(dwAdventure, bDebugMode, retList); }
+		void GetDefaultExtensions (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, TArray<DWORD> *retList) const { m_Extensions.GetList(dwAdventure, Available, bDebugMode, retList); }
+		const TSortMap<DWORD, bool> &GetDisabledExtensionList (void) const { return m_Extensions.GetDisabledExtensionList(); }
+		const TArray<CString> &GetExtensionFolders (void) const { return m_ExtensionFolders; }
+		const CString &GetInitialSaveFile (void) const { return m_sSaveFile; }
+		int GetInteger (int iOption) const { return m_Options[iOption].iValue; }
+		CGameKeys &GetKeyMap (void) { return m_KeyMap; }
+		const CGameKeys &GetKeyMap (void) const { return m_KeyMap; }
+		const CString &GetString (int iOption) const { return m_Options[iOption].sValue; }
 		ALERROR Load (const CString &sFilespec, CString *retsError = NULL);
 		ALERROR ParseCommandLine (char *pszCmdLine);
 		ALERROR Save (const CString &sFilespec);
-		inline void SetBoolean (int iOption, bool bValue, bool bModifySettings = true) { SetValueBoolean(iOption, bValue, bModifySettings); if (bModifySettings) m_bModified = true; }
-		inline void SetDefaultExtensions (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, const TArray<DWORD> &List) { m_Extensions.SetList(dwAdventure, Available, bDebugMode, List); m_bModified = true; }
-		inline void SetExtensionEnabled (DWORD dwUNID, bool bEnabled = true) { m_Extensions.SetExtensionEnabled(dwUNID, bEnabled); m_bModified = true; }
-		inline void SetInteger (int iOption, int iValue, bool bModifySettings = true) { SetValueInteger(iOption, iValue, bModifySettings); if (bModifySettings) m_bModified = true; }
-		inline void SetModified (void) { m_bModified = true; }
-		inline void SetSettingsHandler (IExtraSettingsHandler *pExtra) { m_pExtra = pExtra; }
-		inline void SetString (int iOption, const CString &sValue, bool bModifySettings = true) { SetValueString(iOption, sValue, bModifySettings); if (bModifySettings) m_bModified = true; }
+		void SetBoolean (int iOption, bool bValue, bool bModifySettings = true) { SetValueBoolean(iOption, bValue, bModifySettings); if (bModifySettings) m_bModified = true; }
+		void SetDefaultExtensions (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, const TArray<DWORD> &List) { m_Extensions.SetList(dwAdventure, Available, bDebugMode, List); m_bModified = true; }
+		void SetExtensionEnabled (DWORD dwUNID, bool bEnabled = true) { m_Extensions.SetExtensionEnabled(dwUNID, bEnabled); m_bModified = true; }
+		void SetInteger (int iOption, int iValue, bool bModifySettings = true) { SetValueInteger(iOption, iValue, bModifySettings); if (bModifySettings) m_bModified = true; }
+		void SetModified (void) { m_bModified = true; }
+		void SetSettingsHandler (IExtraSettingsHandler *pExtra) { m_pExtra = pExtra; }
+		void SetString (int iOption, const CString &sValue, bool bModifySettings = true) { SetValueString(iOption, sValue, bModifySettings); if (bModifySettings) m_bModified = true; }
 
 	private:
 		struct SOption
@@ -296,7 +321,7 @@ class CGameSettings
 		void SetValueInteger (int iOption, int iValue, bool bSetSettings = false);
 		void SetValueString (int iOption, const CString &sValue, bool bSetSettings = false);
 
-		IExtraSettingsHandler *m_pExtra;	//	Additional settings handler
+		IExtraSettingsHandler *m_pExtra = NULL;	//	Additional settings handler
 		SOption m_Options[OPTIONS_COUNT];	//	Options
 		CGameKeys m_KeyMap;					//	Key map
 		CExtensionListMap m_Extensions;		//	Default extensions
@@ -307,6 +332,6 @@ class CGameSettings
 
 		CString m_sSaveFile;				//	Optional save file to open on game start
 
-		bool m_bModified;					//	If TRUE, we need to save out settings
+		bool m_bModified = false;			//	If TRUE, we need to save out settings
 	};
 

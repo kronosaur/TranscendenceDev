@@ -22,6 +22,7 @@
 #define IMAGE_TAG								CONSTLIT("Image")
 #define IMAGE_COMPOSITE_TAG						CONSTLIT("ImageComposite")
 #define INITIAL_DATA_TAG						CONSTLIT("InitialData")
+#define ITEM_ENCOUNTER_DESC_TAG					CONSTLIT("ItemEncounterDesc")
 #define ITEM_TABLE_TAG							CONSTLIT("ItemTable")
 #define ITEM_TYPE_TAG							CONSTLIT("ItemType")
 #define LANGUAGE_TAG							CONSTLIT("Language")
@@ -96,13 +97,6 @@
 #define SPECIAL_SYSTEM_LEVEL					CONSTLIT("systemLevel:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
-#define LANGID_CORE_MAP_DESC                    CONSTLIT("core.mapDesc")
-#define LANGID_CORE_MAP_DESC_ABANDONED          CONSTLIT("core.mapDescAbandoned")
-#define LANGID_CORE_MAP_DESC_ABANDONED_CUSTOM	CONSTLIT("core.mapDescAbandonedCustom")
-#define LANGID_CORE_MAP_DESC_CUSTOM				CONSTLIT("core.mapDescCustom")
-#define LANGID_CORE_MAP_DESC_EXTRA              CONSTLIT("core.mapDescExtra")
-#define LANGID_CORE_MAP_DESC_MAIN				CONSTLIT("core.mapDescMain")
-
 #define PROPERTY_API_VERSION					CONSTLIT("apiVersion")
 #define PROPERTY_ATTRIBUTES						CONSTLIT("attributes")
 #define PROPERTY_CLASS							CONSTLIT("class")
@@ -127,7 +121,7 @@
 
 #define STR_OVERRIDE							CONSTLIT("Override")
 
-static char DESIGN_CHAR[designCount] =
+static const char DESIGN_CHAR[designCount] =
 	{
 		'i',
 		'b',
@@ -157,7 +151,7 @@ static char DESIGN_CHAR[designCount] =
 		'o',
 	};
 
-static char *DESIGN_CLASS_NAME[designCount] =
+static const char *DESIGN_CLASS_NAME[designCount] =
 	{
 		"ItemType",
 		"ItemTable",
@@ -187,7 +181,7 @@ static char *DESIGN_CLASS_NAME[designCount] =
 		"ImageComposite",
 	};
 
-static char *CACHED_EVENTS[CDesignType::evtCount] =
+static const char *CACHED_EVENTS[CDesignType::evtCount] =
 	{
 		"CanInstallItem",
 		"CanRemoveItem",
@@ -248,6 +242,14 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 
 		Ctx.iBindNesting++;
 		Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Bind %02d> %s"), Ctx.iBindNesting, sName));
+		}
+
+	//	Bind ancestors
+
+	if (m_pInheritFrom && !m_pInheritFrom->IsBound())
+		{
+		if (ALERROR error = m_pInheritFrom->BindDesign(Ctx))
+			return error;
 		}
 
 	//	Bind. Set the flag so that we do not recurse.
@@ -445,6 +447,7 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 				return error;
 
 			pType->m_dwUNID = dwUNID;
+			pType->m_dwObsoleteVersion = pDesc->GetAttributeIntegerBounded(OBSOLETE_VERSION_ATTRIB, 0, -1, 0);
 
 			if (!pDesc->FindAttribute(ATTRIBUTES_ATTRIB, &pType->m_sAttributes))
 				pType->m_sAttributes = pDesc->GetAttribute(MODIFIERS_ATTRIB);
@@ -555,8 +558,10 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 			return CC.CreateNil();
 		}
 
-    else if (strEquals(sProperty, PROPERTY_MAP_DESCRIPTION))
-        return CC.CreateString(GetMapDescription(SMapDescriptionCtx()));
+	else if (strEquals(sProperty, PROPERTY_MAP_DESCRIPTION))
+		{
+		return CC.CreateString(GetMapDescription(SMapDescriptionCtx()));
+		}
 
 	else if (strEquals(sProperty, PROPERTY_MAX_BALANCE))
 		{
@@ -567,10 +572,10 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 		return CC.CreateInteger((int)pTrade->GetMaxBalance(GetLevel()));
 		}
 
-    else if (strEquals(sProperty, PROPERTY_MERGED))
-        return CC.CreateBool(m_bIsMerged);
+	else if (strEquals(sProperty, PROPERTY_MERGED))
+		return CC.CreateBool(m_bIsMerged);
 
-    else if (strEquals(sProperty, PROPERTY_NAME_PATTERN))
+	else if (strEquals(sProperty, PROPERTY_NAME_PATTERN))
 		{
 		pResult = CC.CreateSymbolTable();
 		DWORD dwFlags;
@@ -585,7 +590,7 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 	else if (strEquals(sProperty, PROPERTY_REQUIRED_VERSION))
 		return (m_dwMinVersion > 0 ? CC.CreateInteger(m_dwMinVersion) : CC.CreateNil());
 
-    else if (strEquals(sProperty, PROPERTY_UNID))
+	else if (strEquals(sProperty, PROPERTY_UNID))
 		return CC.CreateInteger(GetUNID());
 
 	//	Otherwise, we see if there is a data field
@@ -809,6 +814,29 @@ bool CDesignType::FindDataField (const CString &sField, CString *retsValue) cons
 	return true;
 	}
 
+bool CDesignType::FindEngineProperty (CCodeChainCtx &CCX, const CString &sProperty, ICCItemPtr &pResult) const
+
+//	FindEngineProperty
+//
+//	Returns an engine property (FALSE if not found).
+
+	{
+	//	Let our subclass handle it.
+
+	if (pResult = OnGetProperty(CCX, sProperty))
+		return true;
+
+	//	If not, then see if we handle it.
+
+	else if (pResult = FindBaseProperty(CCX, sProperty))
+		return true;
+
+	//	Nobody handled it, so not found
+
+	else
+		return false;
+	}
+
 bool CDesignType::FindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent) const
 
 //	FindEventHandler
@@ -939,53 +967,26 @@ bool CDesignType::FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, 
 	DEBUG_CATCH
 	}
 
-void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
+void CDesignType::FireGetGlobalAchievements (CCodeChainCtx &CCX, CGameStats &Stats)
 
 //	FireGetGlobalAchievements
 //
 //	Fires GetGlobalAchievements event
 
 	{
-	int i;
-
 	SEventHandlerDesc Event;
-	if (FindEventHandler(GET_GLOBAL_ACHIEVEMENTS_EVENT, &Event))
-		{
-		CCodeChainCtx Ctx(GetUniverse());
-		Ctx.DefineContainingType(this);
+	if (!FindEventHandler(GET_GLOBAL_ACHIEVEMENTS_EVENT, &Event))
+		return;
 
-		//	Run code
-		
-		ICCItemPtr pResult = Ctx.RunCode(Event);
+	CCX.DefineContainingType(this);
+	ICCItemPtr pResult = CCX.RunCode(Event);
 
-		//	Interpret result
+	//	Add to our stats, if valid.
 
-		if (pResult->IsError())
-			ReportEventError(GET_GLOBAL_ACHIEVEMENTS_EVENT, pResult);
-
-		else if (pResult->IsNil())
-			;
-
-		else if (pResult->IsSymbolTable())
-			Stats.Insert(this, pResult);
-
-		else if (pResult->IsList() && pResult->GetCount() > 0)
-			{
-			//	If we have a list of lists, then we have 
-			//	a list of achievements
-
-			if (pResult->GetElement(0)->IsList() || pResult->GetElement(0)->IsSymbolTable())
-				{
-				for (i = 0; i < pResult->GetCount(); i++)
-					Stats.Insert(this, pResult->GetElement(i));
-				}
-
-			//	Otherwise, we have a single achievement
-
-			else
-				Stats.Insert(this, pResult);
-			}
-		}
+	if (pResult->IsError())
+		ReportEventError(GET_GLOBAL_ACHIEVEMENTS_EVENT, pResult);
+	else
+		Stats.InsertFromCCItem(*this, *pResult);
 	}
 
 bool CDesignType::FireGetGlobalDockScreen (const SEventHandlerDesc &Event, const CSpaceObject *pObj, CDockScreenSys::SSelector &Selector) const
@@ -1026,6 +1027,7 @@ bool CDesignType::FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, S
 	{
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
+
 	//	Set up
 
 	Ctx.SetEvent(eventGetGlobalPlayerPriceAdj);
@@ -1119,6 +1121,35 @@ void CDesignType::FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj,
 		{
 		if (retpResult)
 			*retpResult = Ctx.CreateNil();
+		}
+	}
+
+ICCItemPtr CDesignType::FireObjItemCustomEvent (const CString &sEvent, CSpaceObject *pObj, const CItem &Item, ICCItem *pData)
+
+//	FireObjItemCustomEvent
+//
+//	Fires a named event.
+
+	{
+	CCodeChainCtx Ctx(GetUniverse());
+
+	SEventHandlerDesc Event;
+	if (FindEventHandler(sEvent, &Event))
+		{
+		Ctx.DefineContainingType(this);
+		Ctx.SaveAndDefineSourceVar(pObj);
+		Ctx.SaveAndDefineItemVar(Item);
+		Ctx.SaveAndDefineDataVar(pData);
+
+		ICCItemPtr pResult = Ctx.RunCode(Event);
+		if (pResult->IsError())
+			pObj->ReportEventError(sEvent, pResult);
+
+		return pResult;
+		}
+	else
+		{
+		return ICCItemPtr::Nil();
 		}
 	}
 
@@ -1792,7 +1823,7 @@ SEventHandlerDesc *CDesignType::GetInheritedCachedEvent (ECachedHandlers iEvent)
 		return NULL;
 	}
 
-CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
+CString CDesignType::GetMapDescription (const SMapDescriptionCtx &Ctx) const
 
 //  GetMapDescription
 //
@@ -1800,71 +1831,76 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
 //  services provided. If we cannot come up with a suitable description, we
 //  return NULL_STR.
 
-    {
-    CString sDesc;
+	{
+	CString sDesc;
 
-    //  If we're abandoned, then we go through a totally different path.
+	//  If we're abandoned, then we go through a totally different path.
 
-    if (Ctx.bShowDestroyed)
-        {
-        //  If we've got a specific language element, use that.
+	if (Ctx.bShowDestroyed)
+		{
+		//  If we've got a specific language element, use that.
 
-        if (!TranslateText(LANGID_CORE_MAP_DESC_ABANDONED, NULL, &sDesc))
-            sDesc = CONSTLIT("Abandoned");
+		if (!TranslateText(LANGID_CORE_MAP_DESC_ABANDONED, NULL, &sDesc))
+			sDesc = CONSTLIT("Abandoned");
 
-        return sDesc;
-        }
+		return sDesc;
+		}
 
-    //  If we have a specific language element for this, then we return it.
+	//  If we have a specific language element for this, then we return it.
 
-    else if (TranslateText(LANGID_CORE_MAP_DESC, NULL, &sDesc))
-        return sDesc;
+	else if (TranslateText(LANGID_CORE_MAP_DESC, NULL, &sDesc))
+		return sDesc;
 
-    //  Otherwise, check the trade descriptors and compose our own.
+	//  Otherwise, check the trade descriptors and compose our own.
 
-    else
-        {
-        //  See if we have a language element for the main service. If we don't,
-        //  ask the subclass
+	else
+		{
+		//  See if we have a language element for the main service. If we don't,
+		//  ask the subclass
 
-        CString sMainDesc;
-        if (!TranslateText(LANGID_CORE_MAP_DESC_MAIN, NULL, &sMainDesc))
-            sMainDesc = OnGetMapDescriptionMain(Ctx);
+		CString sMainDesc;
+		if (!TranslateText(LANGID_CORE_MAP_DESC_MAIN, NULL, &sMainDesc))
+			sMainDesc = OnGetMapDescriptionMain(Ctx);
 
-        //  Get the trade descriptor
+		//  Get the trade descriptor
 
-        CString sTradeDesc;
-        CTradingDesc *pTrade = GetTradingDesc();
-        if (pTrade)
-            pTrade->ComposeDescription(GetUniverse(), &sTradeDesc);
+		CString sTradeDesc;
+		CTradingDesc *pTrade = GetTradingDesc();
+		if (pTrade)
+			pTrade->ComposeDescription(GetUniverse(), &sTradeDesc);
 
-        //  If we have both main and trade descriptors, combine them.
+		//  If we have both main and trade descriptors, combine them.
 
-        if (!sMainDesc.IsBlank() && !sTradeDesc.IsBlank())
-            return strPatternSubst(CONSTLIT("%s %&mdash; %s"), sMainDesc, sTradeDesc);
+		if (!sMainDesc.IsBlank() && !sTradeDesc.IsBlank())
+			return strPatternSubst(CONSTLIT("%s %&mdash; %s"), sMainDesc, sTradeDesc);
 
-        //  If all we have is main desc, return that.
+		//  If all we have is main desc, return that.
 
-        else if (!sMainDesc.IsBlank())
-            return sMainDesc;
+		else if (!sMainDesc.IsBlank())
+			return sMainDesc;
 
-        //  If all we have is trade desc, return that.
+		//  If all we have is trade desc, return that.
 
-        else if (!sTradeDesc.IsBlank())
-            return sTradeDesc;
+		else if (!sTradeDesc.IsBlank())
+			return sTradeDesc;
 
-        //  Otherwise, we have neither and we need to compose it. If we're an 
-        //  enemy, say so.
+		//  Otherwise, we have neither and we need to compose it. If we're an 
+		//  enemy, say so.
 
-        else if (Ctx.bEnemy)
-            return CONSTLIT("Hostile");
+		else if (Ctx.bEnemy)
+			return CONSTLIT("Hostile");
 
-        //  Otherwise, we report no services.
+		//	Stargate
 
-        else
-            return CONSTLIT("No services available");
-        }
-    }
+		else if (Ctx.bIsStargate)
+			return CONSTLIT("Stargate");
+
+		//  Otherwise, we report no services.
+
+		else
+			return CONSTLIT("No services available");
+		}
+	}
 
 CCurrencyAndValue CDesignType::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 
@@ -1895,12 +1931,13 @@ TSortMap<DWORD, DWORD> CDesignType::GetXMLMergeFlags (void) const
 	//	These elements are never merged because we can handle the inheritance
 	//	hierarchy.
 
-	MergeFlags.SetAt(CXMLElement::GetKeywordID(EVENTS_TAG), CXMLElement::MERGE_OVERRIDE);
-	MergeFlags.SetAt(CXMLElement::GetKeywordID(STATIC_DATA_TAG), CXMLElement::MERGE_OVERRIDE);
-	MergeFlags.SetAt(CXMLElement::GetKeywordID(DOCK_SCREENS_TAG), CXMLElement::MERGE_OVERRIDE);
-	MergeFlags.SetAt(CXMLElement::GetKeywordID(LANGUAGE_TAG), CXMLElement::MERGE_OVERRIDE);
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(ATTRIBUTE_DESC_TAG), CXMLElement::MERGE_OVERRIDE);
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(DISPLAY_ATTRIBUTES_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(DOCK_SCREENS_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(EVENTS_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(LANGUAGE_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(PROPERTIES_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(STATIC_DATA_TAG), CXMLElement::MERGE_OVERRIDE);
 
 	//	Let our sub-class add their own flags.
 
@@ -1916,12 +1953,12 @@ CString CDesignType::GetNounPhrase (DWORD dwFlags) const
 //  GetNounPhrase
 //
 //  Composes a noun phrase
-    
-    {
-    DWORD dwNameFlags;
-    CString sName = GetNamePattern(dwFlags, &dwNameFlags); 
-    return CLanguage::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
-    }
+	
+	{
+	DWORD dwNameFlags;
+	CString sName = GetNamePattern(dwFlags, &dwNameFlags); 
+	return CLanguage::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
+	}
 
 ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType) const
 
@@ -1930,30 +1967,20 @@ ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 //	Returns the value of the given property. We return a CC item.
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult;
 	ICCItemPtr pResultPtr;
 
-	//	Let our subclass handle this first
+	//	Check to see if this is a custom property.
 
-	if (pResultPtr = OnGetProperty(Ctx, sProperty))
+	if (FindCustomProperty(sProperty, pResultPtr, retiType))
+		return pResultPtr;
+
+	//	Else, engine property
+
+	else if (FindEngineProperty(Ctx, sProperty, pResultPtr))
 		{
 		if (retiType) *retiType = EPropertyType::propEngine;
 		return pResultPtr;
 		}
-
-	//	If not, then see if we handle it.
-
-	else if (pResult = FindBaseProperty(Ctx, sProperty))
-		{
-		if (retiType) *retiType = EPropertyType::propEngine;
-		return ICCItemPtr(pResult);
-		}
-
-	//	Otherwise, check to see if this is a custom property.
-
-	else if (FindCustomProperty(sProperty, pResultPtr, retiType))
-		return pResultPtr;
 
 	//	Nobody handled it, so just return Nil
 
@@ -1962,6 +1989,22 @@ ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 		if (retiType) *retiType = EPropertyType::propNone;
 		return ICCItemPtr(ICCItem::Nil);
 		}
+	}
+
+EPropertyType CDesignType::GetPropertyType (CCodeChainCtx &Ctx, const CString &sProperty) const
+
+//	GetPropertyType
+//
+//	Returns the property type (or propNone if not found).
+
+	{
+	ICCItemPtr pResultPtr;
+	EPropertyType iType;
+
+	if (FindCustomProperty(sProperty, pResultPtr, &iType))
+		return iType;
+	else
+		return EPropertyType::propNone;
 	}
 
 int CDesignType::GetPropertyInteger (const CString &sProperty) const
@@ -2361,10 +2404,20 @@ const CCompositeImageDesc &CDesignType::GetTypeImage (void) const
 //  GetTypeImage
 //
 //  Default implementation
-    
-    {
-    return CCompositeImageDesc::Null();
-    }
+	
+	{
+	return CCompositeImageDesc::Null();
+	}
+
+const CObjectImageArray &CDesignType::GetTypeSimpleImage (void) const
+
+//	GetTypeSimpleImage
+//
+//	Default implementation
+
+	{
+	return GetTypeImage().GetSimpleImage();
+	}
 
 bool CDesignType::HasAttribute (const CString &sAttrib) const
 
@@ -2441,13 +2494,15 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 
 		CString sError;
 		CPropertyCompare Compare;
-		if (!Compare.Parse(sProperty, &sError))
+		CCodeChainCtx CCX(GetUniverse());
+
+		if (!Compare.Parse(CCX, sProperty, &sError))
 			{
 			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
 			return false;
 			}
 
-		ICCItemPtr pValue = GetProperty(CCodeChainCtx(GetUniverse()), Compare.GetProperty());
+		ICCItemPtr pValue = GetProperty(CCX, Compare.GetProperty());
 		return Compare.Eval(pValue);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_LEVEL))
@@ -2501,7 +2556,10 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_UNID))
 		{
-		DWORD dwUNID = strToInt(strSubString(sAttrib, SPECIAL_UNID.GetLength()), 0);
+		DWORD dwUNID;
+		if (!GetUniverse().GetDesignCollection().ParseUNID(strSubString(sAttrib, SPECIAL_UNID.GetLength()), &dwUNID))
+			return false;
+
 		return (GetUNID() == dwUNID);
 		}
 	else
@@ -2565,7 +2623,7 @@ void CDesignType::InitCachedEvents (void)
 		}
 	}
 
-void CDesignType::InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents)
+void CDesignType::InitCachedEvents (int iCount, const char **pszEvents, SEventHandlerDesc *retEvents)
 
 //	InitCachedEvents
 //
@@ -2711,6 +2769,14 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 				return ComposeLoadError(Ctx, Ctx.sError);
 				}
 			}
+		else if (strEquals(pItem->GetTag(), ITEM_ENCOUNTER_DESC_TAG))
+			{
+			if (error = SetExtra()->ItemEncounterDefinitions.InitFromXML(Ctx, *pItem))
+				{
+				Ctx.pType = NULL;
+				return ComposeLoadError(Ctx, Ctx.sError);
+				}
+			}
 
 		//	Otherwise, it is some element that we don't understand.
 		}
@@ -2755,7 +2821,7 @@ bool CDesignType::InSelfReference (CDesignType *pType)
 	return false;
 	}
 
-bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
+bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria) const
 
 //	MatchesCriteria
 //
@@ -2772,13 +2838,13 @@ bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
 	if (!Criteria.MatchesDesignType(GetType()))
 		return false;
 
-    //  If structures only, and this is a stationtype, then exclude stars/planets
+	//  If structures only, and this is a stationtype, then exclude stars/planets
 
-    CStationType *pStationType;
-    if (Criteria.StructuresOnly()
-            && (pStationType = CStationType::AsType(this))
-            && (pStationType->GetScale() == scaleStar || pStationType->GetScale() == scaleWorld))
-        return false;
+	const CStationType *pStationType;
+	if (Criteria.StructuresOnly()
+			&& (pStationType = CStationType::AsType(this))
+			&& (pStationType->GetScale() == scaleStar || pStationType->GetScale() == scaleWorld))
+		return false;
 
 	//	Skip virtual
 
@@ -2976,7 +3042,7 @@ bool CDesignType::Translate (const CDesignType &Type, const CString &sID, const 
 
 	//	Backwards compatible translate
 
-	if (GetVersion() <= 2 
+	if (GetAPIVersion() <= 2 
 			&& Params.pSource
 			&& TranslateVersion2(Params.pSource, sID, retResult))
 		return true;
@@ -2986,7 +3052,7 @@ bool CDesignType::Translate (const CDesignType &Type, const CString &sID, const 
 	return false;
 	}
 
-bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+bool CDesignType::Translate (const CString &sID, const ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //
@@ -2999,7 +3065,7 @@ bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &ret
 	return Translate(*this, sID, Params, retResult);
 	}
 
-bool CDesignType::Translate (const CSpaceObject &Source, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+bool CDesignType::Translate (const CSpaceObject &Source, const CString &sID, const ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //
@@ -3030,7 +3096,7 @@ bool CDesignType::TranslateText (const CDesignType &Type, const CString &sID, co
 
 	//	Backwards compatible translate
 
-	if (GetVersion() <= 2 && Params.pSource)
+	if (GetAPIVersion() <= 2 && Params.pSource)
 		{
 		ICCItemPtr pItem;
 		if (!TranslateVersion2(Params.pSource, sID, pItem))
@@ -3047,7 +3113,7 @@ bool CDesignType::TranslateText (const CDesignType &Type, const CString &sID, co
 	return false;
 	}
 
-bool CDesignType::TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const
+bool CDesignType::TranslateText (const CString &sID, const ICCItem *pData, CString *retsText) const
 
 //	TranslateText
 //
@@ -3060,7 +3126,7 @@ bool CDesignType::TranslateText (const CString &sID, ICCItem *pData, CString *re
 	return TranslateText(*this, sID, Params, retsText);
 	}
 	
-bool CDesignType::TranslateText (const CSpaceObject &Source, const CString &sID, ICCItem *pData, CString *retsText) const
+bool CDesignType::TranslateText (const CSpaceObject &Source, const CString &sID, const ICCItem *pData, CString *retsText) const
 
 //	Translate
 //
@@ -3074,7 +3140,7 @@ bool CDesignType::TranslateText (const CSpaceObject &Source, const CString &sID,
 	return TranslateText(*this, sID, Params, retsText);
 	}
 	
-bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const
+bool CDesignType::TranslateText (const CItem &Item, const CString &sID, const ICCItem *pData, CString *retsText) const
 
 //	Translate
 //
@@ -3095,9 +3161,7 @@ bool CDesignType::TranslateVersion2 (const CSpaceObject *pObj, const CString &sI
 //	Translates using the old apiVersion="2" method, which relied on static data.
 
 	{
-	int i;
-
-	if (GetVersion() > 2)
+	if (GetAPIVersion() > 2)
 		return false;
 
 	ICCItemPtr pValue = GetStaticData(CONSTLIT("Language"));
@@ -3105,7 +3169,7 @@ bool CDesignType::TranslateVersion2 (const CSpaceObject *pObj, const CString &sI
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 
-		for (i = 0; i < pValue->GetCount(); i++)
+		for (int i = 0; i < pValue->GetCount(); i++)
 			{
 			ICCItem *pEntry = pValue->GetElement(i);
 			if (pEntry->GetCount() == 2 && strEquals(sID, pEntry->GetElement(0)->GetStringValue()))
@@ -3226,9 +3290,10 @@ ALERROR CWeaponFireDescRef::Bind (SDesignLoadCtx &Ctx)
 		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
 			return error;
 
-        m_pType = pItemType->GetWeaponFireDesc(CItemCtx(), &Ctx.sError);
-        if (m_pType == NULL)
-            return ERR_FAIL;
+		CItemCtx ItemCtx;
+		m_pType = pItemType->GetWeaponFireDesc(ItemCtx, &Ctx.sError);
+		if (m_pType == NULL)
+			return ERR_FAIL;
 		}
 
 	return NOERROR;
@@ -3329,31 +3394,31 @@ ALERROR CEffectCreatorRef::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	{
 	ALERROR error;
 
-    //  If we're specifying an effect type by reference, then we load it here.
+	//  If we're specifying an effect type by reference, then we load it here.
 
-    CString sAttrib;
-    if (pDesc->FindAttribute(EFFECT_ATTRIB, &sAttrib))
-        {
-        if (error = LoadUNID(Ctx, sAttrib))
-            return error;
+	CString sAttrib;
+	if (pDesc->FindAttribute(EFFECT_ATTRIB, &sAttrib))
+		{
+		if (error = LoadUNID(Ctx, sAttrib))
+			return error;
 
-        //  We can pass parameters to the effect type through a data block.
+		//  We can pass parameters to the effect type through a data block.
 
-	    CXMLElement *pInitialData = pDesc->GetContentElementByTag(DATA_TAG);
-	    if (pInitialData)
-		    m_Data.SetFromXML(pInitialData);
-        }
+		CXMLElement *pInitialData = pDesc->GetContentElementByTag(DATA_TAG);
+		if (pInitialData)
+			m_Data.SetFromXML(pInitialData);
+		}
 
-    //  Otherwise, we are defining an effect
+	//  Otherwise, we are defining an effect
 
-    else
-        {
-	    if (error = CEffectCreator::CreateFromXML(Ctx, pDesc, sUNID, &m_pType))
-		    return error;
+	else
+		{
+		if (error = CEffectCreator::CreateFromXML(Ctx, pDesc, sUNID, &m_pType))
+			return error;
 
-	    m_dwUNID = 0;
-	    m_bDelete = true;
-        }
+		m_dwUNID = 0;
+		m_bDelete = true;
+		}
 
 	return NOERROR;
 	}
@@ -3365,7 +3430,7 @@ IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffec
 //	Use this call when we want to use a per-owner singleton.
 
 	{
-    int i;
+	int i;
 
 	//	If we have a singleton, then return that.
 
@@ -3381,15 +3446,15 @@ IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffec
 	if (pCreator == NULL)
 		return NULL;
 
-    //  If we have some data, add it to the context
+	//  If we have some data, add it to the context
 
-    for (i = 0; i < m_Data.GetDataCount(); i++)
-        {
-        //  LATER: We only handle integers for now. Later we should handle any
-        //  ICCItem type.
+	for (i = 0; i < m_Data.GetDataCount(); i++)
+		{
+		//  LATER: We only handle integers for now. Later we should handle any
+		//  ICCItem type.
 
-        Ctx.AddDataInteger(m_Data.GetDataAttrib(i), m_Data.GetData(i)->GetIntegerValue());
-        }
+		Ctx.AddDataInteger(m_Data.GetDataAttrib(i), m_Data.GetData(i)->GetIntegerValue());
+		}
 
 	//	Create the painter
 

@@ -23,12 +23,14 @@
 			<Text id="actionJettison">[J]ettison</Text>
 			<Text id="actionLeave">[L]eave</Text>
 			<Text id="actionLoot">[L]oot</Text>
+			<Text id="actionNo">[N]o</Text>
 			<Text id="actionRefuel">[R]efuel</Text>
 			<Text id="actionRepairArmor">Repair [A]rmor</Text>
 			<Text id="actionRepairItem">[R]epair Item</Text>
 			<Text id="actionRepairReplaceArmor">Repair or Replace [A]rmor</Text>
 			<Text id="actionSellItems">[S]ell Items</Text>
 			<Text id="actionUndock">[U]ndock</Text>
+			<Text id="actionYes">[Y]es</Text>
 
 			<!-- Dock Screen Text -->
 			
@@ -49,6 +51,7 @@
 			<Text id="commerce">commerce</Text>
 			<Text id="conducts">conducts</Text>
 			<Text id="criminalRecord">criminal record</Text>
+			<Text id="exploration">exploration</Text>
 			<Text id="missionsAndActivities">missions &amp; activities</Text>
 
 			<!-- Basic -->
@@ -76,6 +79,61 @@
 			<Text id="rpg.mustHaveAMilitaryIDToUseItem">
 				You must have %militaryID% to use %itemName%.
 			</Text>
+
+			<!-- Standard Epitaph -->
+
+			<Text id="epitaph">
+				(block (
+					(epitaph (@ gData 'epitaph))
+					(systemsVisited (@ gData 'systemsVisited))
+
+					(enemiesDestroyed (@ gData 'enemiesDestroyed))
+					(bestEnemiesDestroyed (@ gData 'bestEnemiesDestroyed))
+					(bestEnemyClass (@ gData 'bestEnemyClass))
+					)
+					(typTranslate gType 'epitaph.crawl {
+						epitaph: epitaph
+						systemsVisited: 
+							(if (= systemsVisited 1)
+								(typTranslate gType 'epitaph.systemsVisited.one)
+								(typTranslate gType 'epitaph.systemsVisited.many { count:systemsVisited })
+								)
+						destroyed: 
+							(switch
+								(or (= enemiesDestroyed 0) (not bestEnemyClass))
+									(typTranslate gType 'epitaph.enemiesDestroyed.none)
+
+								(= enemiesDestroyed bestEnemiesDestroyed)
+									(if (= enemiesDestroyed 1)
+										(shpGetClassName bestEnemyClass 0x04)
+										(cat enemiesDestroyed " " (shpGetClassName bestEnemyClass 0x02))
+										)
+
+								(= bestEnemiesDestroyed 1)
+									(typTranslate gType 'epitaph.enemiesDestroyed.many {
+										count: enemiesDestroyed
+										bestEnemies: (shpGetClassName bestEnemyClass 0x04)
+										})
+
+								(typTranslate gType 'epitaph.enemiesDestroyed.many {
+									count: enemiesDestroyed
+									bestEnemies: (cat bestEnemiesDestroyed " " (shpGetClassName bestEnemyClass 0x02))
+									})
+								)
+						})
+					)
+			</Text>
+			<Text id="epitaph.Crawl">
+			
+				%name% %epitaph%. 
+				%name% visited %systemsVisited% 
+				and destroyed %destroyed%.
+
+			</Text>
+			<Text id="epitaph.systemsVisited.one">a single star system</Text>
+			<Text id="epitaph.systemsVisited.many">%count% star systems</Text>
+			<Text id="epitaph.enemiesDestroyed.none">no enemy ships</Text>
+			<Text id="epitaph.enemiesDestroyed.many">%count% enemy ships, including %bestEnemies%</Text>
 		</Language>
 	</Type>
 

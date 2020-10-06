@@ -93,6 +93,9 @@ enum EnhanceItemStatus
 	eisDefectReplaced =					10,		//	Defect was replaced by another defect
 	eisCantReplaceDefect =				11,		//	Existing defect cannot be replaced
 	eisCantReplaceEnhancement =			12,		//	Existing enhancement cannot be replaced
+	eisDefectOK =						13,		//	Added a disadvantage
+	eisDefectBetter =					14,		//	Disadvantage made slightly better (but not removed)
+	eisEnhancementWorse =				15,		//	Enhancement made slightly worse (but not removed)
 	};
 
 enum ERegenTypes
@@ -237,10 +240,7 @@ class CItemEnhancement
 class CItemEnhancementStack
 	{
 	public:
-		CItemEnhancementStack (void) :
-				m_bCacheValid(false),
-				m_dwRefCount(1)
-			{ }
+		CItemEnhancementStack (void) { }
 
 		void AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList) const;
 		CItemEnhancementStack *AddRef (void) { m_dwRefCount++; return this; }
@@ -263,6 +263,8 @@ class CItemEnhancementStack
 		int GetResistDamageAdj (DamageTypes iDamage) const;
 		int GetResistEnergyAdj (void) const;
 		int GetResistMatterAdj (void) const;
+		int GetSpecialDamage (SpecialDamageTypes iSpecial) const;
+		bool HasSpecialDamage (SpecialDamageTypes iSpecial) const;
 		void Insert (const CItemEnhancement &Mods);
 		void InsertActivateAdj (CItemType *pEnhancerType, int iAdj, int iMin, int iMax);
 		void InsertHPBonus (CItemType *pEnhancerType, int iBonus);
@@ -288,15 +290,16 @@ class CItemEnhancementStack
 
 	private:
 		~CItemEnhancementStack (void) { }
+
 		void CalcCache (void) const;
 
 		TArray<CItemEnhancement> m_Stack;
 
-		mutable bool m_bCacheValid;				//	If TRUE, these cache values are OK.
-		mutable int m_iBonus;					//	Cached bonus
+		mutable bool m_bCacheValid = false;		//	If TRUE, these cache values are OK.
+		mutable int m_iBonus = 0;				//	Cached bonus
 		mutable DamageDesc m_Damage;			//	Cached damage descriptor
 
-		DWORD m_dwRefCount;
+		DWORD m_dwRefCount = 1;
 	};
 
 class CRandomEnhancementGenerator
@@ -304,7 +307,7 @@ class CRandomEnhancementGenerator
 	public:
 		void EnhanceItem (CItem &Item) const;
 		int GetChance (void) const { return m_iChance; }
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc);
 		bool IsVariant (void) const;
 
 	private:

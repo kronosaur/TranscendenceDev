@@ -17,18 +17,18 @@
 #define THRUST_RATIO_ATTRIB						CONSTLIT("thrustRatio")
 
 CDriveDesc::CDriveDesc (void) :
-        m_dwUNID(0),
+		m_dwUNID(0),
 		m_iMaxSpeedInc(0),
 		m_iMaxSpeedLimit(-1),
-        m_iThrust(0),
-        m_iPowerUse(0),
-        m_rMaxSpeed(0.0),
-        m_fInertialess(false)
+		m_iThrust(0),
+		m_iPowerUse(0),
+		m_rMaxSpeed(0.0),
+		m_fInertialess(false)
 
 //  CDriveDesc constructor
 
-    {
-    }
+	{
+	}
 
 void CDriveDesc::Add (const CDriveDesc &Src)
 
@@ -36,14 +36,14 @@ void CDriveDesc::Add (const CDriveDesc &Src)
 //
 //  Adds the properties of the drive to this one.
 
-    {
-    //  If the source has an UNID, then it means that it is a drive upgradew, so
-    //  we take the UNID.
+	{
+	//  If the source has an UNID, then it means that it is a drive upgradew, so
+	//  we take the UNID.
 
-    if (Src.m_dwUNID)
+	if (Src.m_dwUNID)
 		m_dwUNID = Src.m_dwUNID;
 
-    //  Compute max speed based on our adjustments. If the drive enhancement
+	//  Compute max speed based on our adjustments. If the drive enhancement
 	//	is relative, then increase/decrease max speed.
 
 	if (Src.m_iMaxSpeedInc)
@@ -54,22 +54,22 @@ void CDriveDesc::Add (const CDriveDesc &Src)
 	else
 		m_rMaxSpeed = Max(m_rMaxSpeed, Src.m_rMaxSpeed);
 
-    //  Thrust adds
+	//  Thrust adds
 
-    m_iThrust += Src.m_iThrust;
+	m_iThrust += Src.m_iThrust;
 
-    //  Power use is additive (unless inertialess)
+	//  Power use is additive (unless inertialess)
 
 	if (Src.m_fInertialess)
 		m_iPowerUse = Src.m_iPowerUse;
 	else
 		m_iPowerUse += Src.m_iPowerUse;
 
-    //  Take on inertialess
+	//  Take on inertialess
 
-    if (Src.m_fInertialess)
-        m_fInertialess = true;
-    }
+	if (Src.m_fInertialess)
+		m_fInertialess = true;
+	}
 
 Metric CDriveDesc::AddMaxSpeed (Metric rChange)
 
@@ -92,7 +92,7 @@ Metric CDriveDesc::AdjMaxSpeed (Metric rAdj)
 //
 //  Adjust speed
 
-    {
+	{
 	if (rAdj >= 0.0)
 		{
 		if (m_iMaxSpeedInc)
@@ -111,8 +111,8 @@ Metric CDriveDesc::AdjMaxSpeed (Metric rAdj)
 			m_rMaxSpeed = Min(m_rMaxSpeed * rAdj, LIGHT_SPEED);
 		}
 
-    return m_rMaxSpeed;
-    }
+	return m_rMaxSpeed;
+	}
 
 int CDriveDesc::AdjPowerUse (Metric rAdj)
 
@@ -120,12 +120,12 @@ int CDriveDesc::AdjPowerUse (Metric rAdj)
 //
 //  Adjust power use
 
-    {
-    if (rAdj >= 0.0)
-        m_iPowerUse = mathRound(m_iPowerUse * rAdj);
+	{
+	if (rAdj >= 0.0)
+		m_iPowerUse = mathRound(m_iPowerUse * rAdj);
 
-    return m_iPowerUse;
-    }
+	return m_iPowerUse;
+	}
 
 int CDriveDesc::AdjThrust (Metric rAdj)
 
@@ -133,12 +133,12 @@ int CDriveDesc::AdjThrust (Metric rAdj)
 //
 //  Adjust thrust
 
-    {
-    if (rAdj >= 0.0)
-        m_iThrust = mathRound(m_iThrust * rAdj);
+	{
+	if (rAdj >= 0.0)
+		m_iThrust = mathRound(m_iThrust * rAdj);
 
-    return m_iThrust;
-    }
+	return m_iThrust;
+	}
 
 int CDriveDesc::CalcThrust (Metric rThrustRatio, Metric rMassInTons)
 
@@ -241,8 +241,8 @@ ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD 
 //
 //  Initializes from an XML descriptor
 
-    {
-    m_dwUNID = dwUNID;
+	{
+	m_dwUNID = dwUNID;
 
 	//	There are two different modes of operation:
 	//
@@ -256,7 +256,7 @@ ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD 
 	m_iMaxSpeedLimit = pDesc->GetAttributeIntegerBounded(MAX_SPEED_ATTRIB, 0, 100, -1);
 	m_rMaxSpeed = (m_iMaxSpeedLimit > 0 ? m_iMaxSpeedLimit * LIGHT_SPEED / 100.0 : 0.0);
 
-    //  Thrust
+	//  Thrust
 
 	m_iThrust = pDesc->GetAttributeInteger(THRUST_ATTRIB);
 
@@ -266,18 +266,18 @@ ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD 
 	if (Ctx.GetAPIVersion() >= 38)
 		m_iThrust = mathRound(0.5 * m_iThrust);
 
-    //  Power use. Previous versions called it "powerUsed", so we check both
-    //  attributes.
+	//  Power use. Previous versions called it "powerUsed", so we check both
+	//  attributes.
 
-    if (!pDesc->FindAttributeInteger(POWER_USE_ATTRIB, &m_iPowerUse))
-    	m_iPowerUse = pDesc->GetAttributeInteger(POWER_USED_ATTRIB);
+	if (!pDesc->FindAttributeInteger(POWER_USE_ATTRIB, &m_iPowerUse))
+		m_iPowerUse = pDesc->GetAttributeInteger(POWER_USED_ATTRIB);
 
-    //  Other
+	//  Other
 
 	m_fInertialess = pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
 
-    return NOERROR;
-    }
+	return NOERROR;
+	}
 
 void CDriveDesc::Interpolate (const CDriveDesc &From, const CDriveDesc &To, Metric rInterpolate)
 
@@ -285,15 +285,15 @@ void CDriveDesc::Interpolate (const CDriveDesc &From, const CDriveDesc &To, Metr
 //
 //  Initialize stats based on an interpolation between From and To.
 
-    {
-    //  Some values cannot be interpolated. We take one or the other.
+	{
+	//  Some values cannot be interpolated. We take one or the other.
 
-    m_dwUNID = (rInterpolate >= 0.5 ? To.m_dwUNID : From.m_dwUNID);
-    m_fInertialess = (rInterpolate >= 0.5 ? To.m_fInertialess : From.m_fInertialess);
+	m_dwUNID = (rInterpolate >= 0.5 ? To.m_dwUNID : From.m_dwUNID);
+	m_fInertialess = (rInterpolate >= 0.5 ? To.m_fInertialess : From.m_fInertialess);
 
-    //  Scalar values can be interpolated
+	//  Scalar values can be interpolated
 
-    m_iThrust = mathRound(mathInterpolate(From.m_iThrust, To.m_iThrust, rInterpolate));
-    m_iPowerUse = mathRound(mathInterpolate(From.m_iPowerUse, To.m_iPowerUse, rInterpolate));
-    m_rMaxSpeed = mathInterpolate(From.m_rMaxSpeed, To.m_rMaxSpeed, rInterpolate);
-    }
+	m_iThrust = mathRound(mathInterpolate(From.m_iThrust, To.m_iThrust, rInterpolate));
+	m_iPowerUse = mathRound(mathInterpolate(From.m_iPowerUse, To.m_iPowerUse, rInterpolate));
+	m_rMaxSpeed = mathInterpolate(From.m_rMaxSpeed, To.m_rMaxSpeed, rInterpolate);
+	}

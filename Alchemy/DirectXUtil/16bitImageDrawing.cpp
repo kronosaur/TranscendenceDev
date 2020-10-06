@@ -1189,7 +1189,7 @@ void CG16bitImage::DrawDot (int x, int y, WORD wColor, MarkerTypes iMarker)
 			break;
 			}
 
-		case markerSmallRound:
+		case markerRoundDot:
 			{
 			int xStart, xEnd, yStart, yEnd;
 

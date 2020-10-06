@@ -1,99 +1,46 @@
 //	CGameKeys.cpp
 //
 //	CGameKeys class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 #include "Transcendence.h"
+#include "DefaultKeyMappings.h"
 
 #define COMMAND_ATTRIB						CONSTLIT("command")
 #define KEY_ATTRIB							CONSTLIT("key")
 #define LAYOUT_ATTRIB						CONSTLIT("layout")
 
-#define LAYOUT_DEFAULT                      CONSTLIT("default")
+#define COMMAND_NONE						CONSTLIT("noCommand")
+
 #define LAYOUT_CUSTOM                       CONSTLIT("custom")
-
-//	Default Key Mapping
-//
-//	NOTES
-//
-//	* Do not use F12 as it causes a break when running with a debugger
-
-const CGameKeys::SKeyMapEntry CGameKeys::DEFAULT_MAP[] =
-	{
-		{	'A',				CGameKeys::keyAutopilot },
-		{	'B',				CGameKeys::keyEnableDevice },
-		{	'C',				CGameKeys::keyCommunications },
-		{	'D',				CGameKeys::keyDock },
-		//	'E' unused
-		{	'F',				CGameKeys::keyTargetNextFriendly },
-		{	'G',				CGameKeys::keyEnterGate },
-		//	'H' unused
-		{	'I',				CGameKeys::keyInvokePower },
-		{	'J',				CGameKeys::keyRotateLeft },
-		{	'K',				CGameKeys::keyThrustForward },
-		{	'L',				CGameKeys::keyRotateRight },
-		{	'M',				CGameKeys::keyShowMap },
-		{	'N',				CGameKeys::keyShowGalacticMap },
-		//	'O' unused
-		{	'P',				CGameKeys::keyPause },
-		{	'Q',				CGameKeys::keySquadronCommands },
-		{	'R',				CGameKeys::keyClearTarget },
-		{	'S',				CGameKeys::keyShipStatus },
-		{	'T',				CGameKeys::keyTargetNextEnemy },
-		{	'U',				CGameKeys::keyUseItem },
-		//	'V' unused
-		{	'W',				CGameKeys::keyNextWeapon },
-		//	'X' unused
-		//	'Y' unused
-		//	'Z' unused
-
-		{	VK_LBUTTON,			CGameKeys::keyFireWeapon },
-		{	VK_RBUTTON,			CGameKeys::keyThrustForward },
-
-		{	VK_CONTROL,			CGameKeys::keyFireWeapon },
-		{	VK_DOWN,			CGameKeys::keyThrustForward },
-		{	VK_LEFT,			CGameKeys::keyRotateLeft },
-		{	VK_OEM_PERIOD,		CGameKeys::keyStop },
-		{	VK_PAUSE,			CGameKeys::keyPause },
-		{	VK_RETURN,			CGameKeys::keyFireMissile },
-		{	VK_RIGHT,			CGameKeys::keyRotateRight },
-		{	VK_SHIFT,			CGameKeys::keyFireMissile },
-		{	VK_SPACE,			CGameKeys::keyFireWeapon },
-		{	VK_TAB,				CGameKeys::keyNextMissile },
-		{	VK_UP,				CGameKeys::keyThrustForward },
-
-		{	VK_F1,				CGameKeys::keyShowHelp },
-		{	VK_F2,				CGameKeys::keyShowGameStats },
-		{	VK_F7,				CGameKeys::keyVolumeDown },
-		{	VK_F8,				CGameKeys::keyVolumeUp },
-		{	VK_F9,				CGameKeys::keyShowConsole },
-	};
-
-const int CGameKeys::DEFAULT_MAP_COUNT = (sizeof(DEFAULT_MAP) / sizeof(DEFAULT_MAP[0]));
+#define LAYOUT_DEFAULT                      CONSTLIT("default")
+#define LAYOUT_WASD							CONSTLIT("wasd")
 
 struct SGameKeyData
 	{
-    enum EFlags
-        {
-        FLAG_HIDDEN =       0x00000001,
-        FLAG_DEBUG_ONLY =   0x00000002,
+	enum EFlags
+		{
+		FLAG_HIDDEN =       0x00000001,
+		FLAG_DEBUG_ONLY =   0x00000002,
 		FLAG_STATEFULL =	0x00000004,		//	Tracks when key is down vs. up (thrust, fire, etc.).
 		FLAG_NO_REPEAT =	0x00000008,		//	Ignore repeated keys
-        };
+		FLAG_XY_INPUT =		0x00000010,		//	Can only be mapped to an XY input (e.g., move position)
+		};
 
-	char *pszName;
-    char *pszLabel;
-    DWORD dwFlags;
+	const char *pszName;
+	const char *pszLabel;
+	DWORD dwFlags;
 	};
 
 SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 	{
 		{	NULL },	//	keyNone
 
-		{	"Autopilot",            "Autopilot",                    SGameKeyData::FLAG_NO_REPEAT },
+		{	"Autopilot",            "Accelerate Time",				SGameKeyData::FLAG_NO_REPEAT },
 		{	"EnableDevices",        "Enable/Disable Devices",       SGameKeyData::FLAG_NO_REPEAT },
 		{	"Communications",       "Communications",               SGameKeyData::FLAG_NO_REPEAT },
-		{	"Dock",                 "Request Dock",                 SGameKeyData::FLAG_NO_REPEAT },
+		{	"Dock",                 "Dock",			                SGameKeyData::FLAG_NO_REPEAT },
 		{	"TargetNextFriendly",   "Target Next Friendly",         0 },
 		{	"EnterGate",            "Enter Stargate",               SGameKeyData::FLAG_NO_REPEAT },
 		{	"InvokePower",          "Invoke Power",                 SGameKeyData::FLAG_NO_REPEAT },
@@ -174,82 +121,108 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 		{	"PreviousWeapon",           "Select Previous Weapon",       SGameKeyData::FLAG_NO_REPEAT | SGameKeyData::FLAG_HIDDEN	},
 		{	"PreviousMissile",          "Select Previous Missile",      SGameKeyData::FLAG_NO_REPEAT | SGameKeyData::FLAG_HIDDEN	},
 		{	"ShowGalacticMap",          "Stargate Map",                 SGameKeyData::FLAG_NO_REPEAT },
+		{	"AimShip",					"Aim Ship",						SGameKeyData::FLAG_XY_INPUT },
+		{	"Interact",					"Dock or Enter Stargate",		SGameKeyData::FLAG_NO_REPEAT },
+		{	"CycleTarget",				"Cycle Target",					SGameKeyData::FLAG_NO_REPEAT },
 	};
 
 const int GAME_KEY_DATA_COUNT = (sizeof(g_GameKeyData) / sizeof(g_GameKeyData[0]));
 
-CGameKeys::CGameKeys (void) :
-        m_bModified(false)
+CGameKeys::CGameKeys (void)
 
 //	CGameKeys constructor
 
 	{
 	ASSERT(GAME_KEY_DATA_COUNT == CGameKeys::keyCount);
-    SetLayout(layoutDefault);
-
-	for (int i = 0; i < 256; i++)
-		m_CustomMap[i] = keyNone;
+	SetLayout(layoutDefault);
 	}
 
-void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result) const
+void CGameKeys::ClearKey (TArray<DWORD> Map[], DWORD dwVirtKey)
+
+//	ClearKey
+//
+//	Removes the key from the mappings.
+
+	{
+	for (int i = 0; i < keyCount; i++)
+		{
+		for (int j = 0; j < Map[i].GetCount(); j++)
+			{
+			if (Map[i][j] == dwVirtKey)
+				{
+				Map[i].Delete(j);
+				j--;
+				}
+			}
+		}
+	}
+
+void CGameKeys::ClearKeyMap (TArray<DWORD> Map[])
+
+//	ClearKeyMap
+//
+//	Clears the map of commands.
+
+	{
+	for (int i = 0; i < keyCount; i++)
+		Map[i].DeleteAll();
+	}
+
+CString CGameKeys::GetCommandID (Keys iCommand)
+
+//	GetCommandID
+//
+//	Returns the command ID
+
+	{
+	return CString(g_GameKeyData[iCommand].pszName, -1, true);
+	}
+
+void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result, bool bIncludeDebug) const
 
 //  GetCommands
 //
 //  Returns a list of all commands and their key bindings.
 
-    {
-    int i;
+	{
+	Result.DeleteAll();
+	Result.GrowToFit(keyCount);
 
-	TSortMap<int, int> CmdToIndex;
-
-    Result.DeleteAll();
-    Result.GrowToFit(keyCount);
-
-    for (i = 0; i < keyCount; i++)
-        {
-        const SGameKeyData &Data = g_GameKeyData[i];
-
-        //  If no name, or if it is hidden, then we skip
-
-        if (Data.pszName == NULL
-                || (Data.dwFlags & SGameKeyData::FLAG_HIDDEN))
-            continue;
-
-        //  Add the command
-
-        SCommandKeyDesc *pNewCmd = Result.Insert();
-        pNewCmd->iCmd = (Keys)i;
-        pNewCmd->sCmdID = CString(Data.pszName);
-        if (Data.pszLabel)
-            pNewCmd->sCmdLabel = CString(Data.pszLabel);
-        else
-            pNewCmd->sCmdLabel = CONSTLIT("(unknown)");
-
-		CmdToIndex.SetAt(i, Result.GetCount() - 1);
-		}
-
-	//	Now add all bindings
-
-	for (i = 0; i < 256; i++)
+	for (int i = 0; i < keyCount; i++)
 		{
-		if (m_iMap[i] != keyNone)
+		const SGameKeyData &Data = g_GameKeyData[i];
+
+		//  If no name, or if it is hidden, then we skip
+
+		if (Data.pszName == NULL
+				|| (Data.dwFlags & SGameKeyData::FLAG_HIDDEN))
+			continue;
+
+		//	If debug only, skip unless desired.
+
+		if (!bIncludeDebug && (Data.dwFlags & SGameKeyData::FLAG_DEBUG_ONLY))
+			continue;
+
+		//  Add the command
+
+		SCommandKeyDesc *pNewCmd = Result.Insert();
+		pNewCmd->iCmd = (Keys)i;
+		pNewCmd->sCmdID = CString(Data.pszName);
+		if (Data.pszLabel)
+			pNewCmd->sCmdLabel = CString(Data.pszLabel);
+		else
+			pNewCmd->sCmdLabel = CONSTLIT("(unknown)");
+
+		//	Add the mappings
+
+		for (int j = 0; j < GetKeyMappedToCommandCount((Keys)i); j++)
 			{
-			//	Find the command
-
-			int *pIndex = CmdToIndex.GetAt(m_iMap[i]);
-			if (pIndex == NULL)
-				continue;
-
-			SCommandKeyDesc &Cmd = Result[*pIndex];
-
-			//	Add the key
-
-			SBindingDesc *pBinding = Cmd.Keys.Insert();
-			pBinding->dwVirtKey = (DWORD)i;
-			pBinding->sKeyID = CVirtualKeyData::GetKeyID(i);
+			SBindingDesc *pBinding = pNewCmd->Keys.Insert();
+			pBinding->dwVirtKey = GetKeyMappedToCommand((Keys)i, j);
+			pBinding->sKeyID = CVirtualKeyData::GetKeyID(pBinding->dwVirtKey);
 			}
 		}
-    }
+	}
 
 CGameKeys::Keys CGameKeys::GetGameCommand (const CString &sCmd)
 
@@ -258,9 +231,10 @@ CGameKeys::Keys CGameKeys::GetGameCommand (const CString &sCmd)
 //	Returns game command from string
 
 	{
-	int i;
+	if (strEquals(sCmd, COMMAND_NONE))
+		return CGameKeys::keyNone;
 
-	for (i = 0; i < CGameKeys::keyCount; i++)
+	for (int i = 0; i < CGameKeys::keyCount; i++)
 		if (strEquals(sCmd, CString(g_GameKeyData[i].pszName, -1, true)))
 			return (CGameKeys::Keys)i;
 
@@ -273,47 +247,32 @@ CGameKeys::Keys CGameKeys::GetGameCommandFromChar (char chChar) const
 //
 //  Returns game command from character
 
-    {
-    const DWORD VK_FIRST_NUMBER = 0x30;
-    const DWORD VK_FIRST_LETTER = 0x41;
+	{
+	const DWORD VK_FIRST_NUMBER = 0x30;
+	const DWORD VK_FIRST_LETTER = 0x41;
 
-    //  Convert from character to virtual key code
+	//  Convert from character to virtual key code
 
-    if (chChar >= '0' && chChar <= '9')
-        return GetGameCommand(VK_FIRST_NUMBER + (DWORD)(chChar - '0'));
-    else if (chChar >= 'A' && chChar <= 'Z')
-        return GetGameCommand(VK_FIRST_LETTER + (DWORD)(chChar - 'A'));
-    else if (chChar >= 'a' && chChar <= 'z')
-        return GetGameCommand(VK_FIRST_LETTER + (DWORD)(chChar - 'a'));
-    else
-        return keyError;
-    }
+	if (chChar >= '0' && chChar <= '9')
+		return GetGameCommand(VK_FIRST_NUMBER + (DWORD)(chChar - '0'));
+	else if (chChar >= 'A' && chChar <= 'Z')
+		return GetGameCommand(VK_FIRST_LETTER + (DWORD)(chChar - 'A'));
+	else if (chChar >= 'a' && chChar <= 'z')
+		return GetGameCommand(VK_FIRST_LETTER + (DWORD)(chChar - 'a'));
+	else
+		return keyError;
+	}
 
 DWORD CGameKeys::GetKey (Keys iCommand) const
 
 //  GetKey
 //
-//  Returns the virtual key mapped to the given command.
+//  Returns the virtual key mapped to the given command. If there are multiple
+//	keys bound to the same command, we return the first key.
 
-    {
-	int i;
-
-	for (i = 0; i < 256; i++)
-        if (m_iMap[i] == iCommand)
-            {
-            //  If this is a non-standard key, then skip it because
-            //  we won't be able to see it in the keyboard UI.
-
-            if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
-                continue;
-
-            //  Found it
-
-            return i;
-            }
-
-    return CVirtualKeyData::INVALID_VIRT_KEY;
-    }
+	{
+	return (m_CommandMap[iCommand].GetCount() > 0 ? m_CommandMap[iCommand].GetAt(0) : CVirtualKeyData::INVALID_VIRT_KEY);
+	}
 
 char CGameKeys::GetKeyIfChar (Keys iCommand) const
 
@@ -323,18 +282,12 @@ char CGameKeys::GetKeyIfChar (Keys iCommand) const
 //	Otherwise we return 0.
 
 	{
-	int i;
+	DWORD dwVirtKey = GetKey(iCommand);
 
-	for (i = 0; i < 256; i++)
-		if (m_iMap[i] == iCommand)
-			{
-			if (i >= 'A' && i <= 'Z')
-				return (char)i;
-			else
-				return '\0';
-			}
-
-	return '\0';
+	if (dwVirtKey >= 'A' && dwVirtKey <= 'Z')
+		return (char)dwVirtKey;
+	else
+		return '\0';
 	}
 
 CString CGameKeys::GetLayoutID (ELayouts iLayout)
@@ -343,19 +296,22 @@ CString CGameKeys::GetLayoutID (ELayouts iLayout)
 //
 //  Returns the layout ID (which is used to identify a layout in XML).
 
-    {
-    switch (iLayout)
-        {
-        case layoutDefault:
-            return LAYOUT_DEFAULT;
+	{
+	switch (iLayout)
+		{
+		case layoutDefault:
+			return LAYOUT_DEFAULT;
 
-        case layoutCustom:
-            return LAYOUT_CUSTOM;
+		case layoutWASD:
+			return LAYOUT_WASD;
 
-        default:
-            return NULL_STR;
-        }
-    }
+		case layoutCustom:
+			return LAYOUT_CUSTOM;
+
+		default:
+			return NULL_STR;
+		}
+	}
 
 CGameKeys::ELayouts CGameKeys::GetLayoutFromID (const CString &sLayoutID)
 
@@ -364,57 +320,137 @@ CGameKeys::ELayouts CGameKeys::GetLayoutFromID (const CString &sLayoutID)
 //  Parses a layout ID and return a layout. Returns layoutNone if we cannot
 //  recognize the ID.
 
-    {
-    if (sLayoutID.IsBlank() || strEquals(sLayoutID, LAYOUT_DEFAULT))
-        return layoutDefault;
-    else if (strEquals(sLayoutID, LAYOUT_CUSTOM))
-        return layoutCustom;
-    else
-        return layoutNone;
-    }
+	{
+	if (sLayoutID.IsBlank() || strEquals(sLayoutID, LAYOUT_DEFAULT))
+		return layoutDefault;
+	else if (strEquals(sLayoutID, LAYOUT_CUSTOM))
+		return layoutCustom;
+	else if (strEquals(sLayoutID, LAYOUT_WASD))
+		return layoutWASD;
+	else
+		return layoutNone;
+	}
 
-CString CGameKeys::GetLayoutName (ELayouts iLayout) const
+CString CGameKeys::GetLayoutName (ELayouts iLayout)
 
 //  GetLayoutName
 //
 //  Returns the human readable name of the layout.
 
-    {
-    switch (iLayout)
-        {
-        case layoutDefault:
-            return CONSTLIT("Default");
+	{
+	switch (iLayout)
+		{
+		case layoutDefault:
+			return CONSTLIT("Default");
 
-        case layoutCustom:
-            return CONSTLIT("Custom");
+		case layoutCustom:
+			return CONSTLIT("Custom");
 
-        default:
-            return CONSTLIT("(Unknown)");
-        }
-    }
+		case layoutWASD:
+			return CONSTLIT("WASD");
 
-bool CGameKeys::IsNonRepeatCommand (Keys iCommand) const
+		default:
+			return CONSTLIT("(Unknown)");
+		}
+	}
+
+void CGameKeys::InitKeyMap (void) const
+
+//	InitKeyMap
+//
+//	Initialize a map from key to command.
+
+	{
+	if (m_bKeyMapValid)
+		return;
+
+	//	Clear out all keys
+
+	for (int i = 0; i < 256; i++)
+		m_KeyToCommandMap[i] = keyNone;
+
+	//	Loop over all commands and add its keys
+
+	for (int i = 0; i < keyCount; i++)
+		{
+		Keys iCmd = (Keys)i;
+		for (int j = 0; j < GetKeyMappedToCommandCount(iCmd); j++)
+			{
+			DWORD dwVirtKey = GetKeyMappedToCommand(iCmd, j);
+			if (dwVirtKey > 255)
+				continue;
+
+			m_KeyToCommandMap[dwVirtKey] = iCmd;
+			}
+		}
+
+	m_bKeyMapValid = true;
+	}
+
+bool CGameKeys::IsKeyDown (Keys iCommand) const
+
+//	IsKeyDown
+//
+//	Returns TRUE if the key for the given command is currently down. This handles
+//	multiple keys mapped to the same command.
+
+	{
+	DWORD dwVirtKey = GetKey(iCommand);
+	if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
+		return false;
+
+	return ::uiIsKeyDown(dwVirtKey);
+	}
+
+bool CGameKeys::IsNonRepeatCommand (Keys iCommand)
 
 //	IsNonRepeatCommand
 //
 //	Returns TRUE if this command ignored repeated keys.
 
 	{
-	ASSERT(iCommand > 0 && iCommand < keyCount);
-    const SGameKeyData &Data = g_GameKeyData[iCommand];
+	if (iCommand <= 0 || iCommand >= keyCount)
+		{
+		ASSERT(false);
+		return false;
+		}
+
+	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_NO_REPEAT ? true : false);
 	}
 
-bool CGameKeys::IsStatefulCommand (Keys iCommand) const
+bool CGameKeys::IsStatefulCommand (Keys iCommand)
 
 //	IsStatefulCommand
 //
 //	Returns TRUE if this command tracks the state of a key (up or down).
 
 	{
-	ASSERT(iCommand > 0 && iCommand < keyCount);
-    const SGameKeyData &Data = g_GameKeyData[iCommand];
+	if (iCommand <= 0 || iCommand >= keyCount)
+		{
+		ASSERT(false);
+		return false;
+		}
+
+	const SGameKeyData &Data = g_GameKeyData[iCommand];
 	return (Data.dwFlags & SGameKeyData::FLAG_STATEFULL ? true : false);
+	}
+
+bool CGameKeys::IsXYInputCommand (Keys iCommand)
+
+//	IsXYInputCommand
+//
+//	Returns TRUE if this command needs XY input.
+
+	{
+	if (iCommand <= 0 || iCommand >= keyCount)
+		{
+		ASSERT(false);
+		return false;
+		}
+
+	const SGameKeyData &Data = g_GameKeyData[iCommand];
+	return (Data.dwFlags & SGameKeyData::FLAG_XY_INPUT ? true : false);
 	}
 
 ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
@@ -424,33 +460,44 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 //	Read the key map from XML
 
 	{
-	int i;
+	bool bBindMouseMoveToShipAim = true;
 
-    //  For backwards compatibility, we assume a custom layout if we don't
-    //  have a layout specified.
+	//  For backwards compatibility, we assume a custom layout if we don't
+	//  have a layout specified.
 
-    ELayouts iLayout = layoutCustom;
-    bool bCompatible = true;
+	ELayouts iLayout = layoutCustom;
+	ClearKeyMap(m_SavedCommandMap);
 
-    //  Load the layout
+	//  Load the layout
 
-    CString sLayout;
-    if (pDesc->FindAttribute(LAYOUT_ATTRIB, &sLayout))
-        {
-        iLayout = GetLayoutFromID(sLayout);
-        if (iLayout == layoutNone)
-            iLayout = layoutDefault;
-        bCompatible = false;
-        }
+	CString sLayout;
+	if (pDesc->FindAttribute(LAYOUT_ATTRIB, &sLayout))
+		{
+		iLayout = GetLayoutFromID(sLayout);
+		if (iLayout == layoutNone)
+			iLayout = layoutDefault;
+		}
+
+	//	If loading old settings, then we initialize with the default map and
+	//	override as appropriate
+
+	else
+		{
+		for (int i = 0; i < DEFAULT_MAP_COUNT; i++)
+			{
+			auto &KeyList = m_SavedCommandMap[DEFAULT_MAP[i].iGameKey];
+			KeyList.Insert(DEFAULT_MAP[i].iVirtKey);
+			}
+		}
 
 	//	Load the map into a separate array so that we can detect
 	//	duplicates
 
 	Keys iNewMap[256];
-	for (i = 0; i < 256; i++)
+	for (int i = 0; i < 256; i++)
 		iNewMap[i] = keyError;
 
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+	for (int i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
 		CXMLElement *pMap = pDesc->GetContentElement(i);
 		
@@ -467,6 +514,13 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 			kernelDebugLogPattern("Unknown game command: %s", pMap->GetAttribute(COMMAND_ATTRIB));
 			continue;
 			}
+		else if (iCommand == keyNone)
+			{
+			if (dwVirtKey == CVirtualKeyData::VK_MOUSE_MOVE)
+				bBindMouseMoveToShipAim = false;
+
+			continue;
+			}
 
 		if (iNewMap[dwVirtKey] != keyError)
 			{
@@ -475,28 +529,27 @@ ALERROR CGameKeys::ReadFromXML (CXMLElement *pDesc)
 			}
 
 		iNewMap[dwVirtKey] = iCommand;
+
+		//	Insert at the beginning because we want saved settings to override
+		//	any defaults.
+
+		m_SavedCommandMap[iCommand].Insert(dwVirtKey, 0);
 		}
 
-	//	Copy to our custom map (we initialize to default for any key not 
-    //  specified in the XML).
+	//	If we haven't explicitly unbound mouse move, then map it to ship aim.
+	//	We need this for backwards compatibility (i.e., if we load an old
+	//	Settings.xml).
 
-	for (i = 0; i < 256; i++)
-		m_CustomMap[i] = keyNone;
+	if (bBindMouseMoveToShipAim 
+			&& iNewMap[CVirtualKeyData::VK_MOUSE_MOVE] == keyError)
+		{
+		m_SavedCommandMap[keyAimShip].Insert(CVirtualKeyData::VK_MOUSE_MOVE);
+		}
 
-    if (bCompatible)
-        {
-	    for (i = 0; i < DEFAULT_MAP_COUNT; i++)
-		    m_CustomMap[DEFAULT_MAP[i].iVirtKey] = DEFAULT_MAP[i].iGameKey;
-        }
+	//  Set the layout
 
-	for (i = 0; i < 256; i++)
-		if (iNewMap[i] != keyError)
-			m_CustomMap[i] = iNewMap[i];
-
-    //  Set the layout
-
-    SetLayout(iLayout);
-    m_bModified = false;
+	SetLayout(iLayout);
+	m_bModified = false;
 
 	return NOERROR;
 	}
@@ -507,33 +560,41 @@ void CGameKeys::SetGameKey (const CString &sKeyID, Keys iCommand)
 //
 //  Binds the command to the given key (in the custom layout only).
 
-    {
-	int i;
+	{
+	DWORD dwVirtKey = CVirtualKeyData::GetKey(sKeyID);
+	if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
+		return;
 
-    DWORD dwVirtKey = CVirtualKeyData::GetKey(sKeyID);
-    if (dwVirtKey == CVirtualKeyData::INVALID_VIRT_KEY)
-        return;
-
-	//	If we're trying to change the default layout, switch over to the custom
+	//	If we're trying to change a default layout, switch over to the custom
 	//	layout.
 
-	if (m_iLayout == layoutDefault)
+	if (m_iLayout != layoutCustom)
 		{
-        for (i = 0; i < 256; i++)
-            m_CustomMap[i] = m_iMap[i];
+		for (int i = 0; i < keyCount; i++)
+			m_SavedCommandMap[i] = m_CommandMap[i];
 
 		m_iLayout = layoutCustom;
 		}
 
-	//	Update the key
+	//	Clear the old key
 
-    m_CustomMap[(dwVirtKey < 256 ? dwVirtKey : 0)] = iCommand;
-    m_iMap[(dwVirtKey < 256 ? dwVirtKey : 0)] = iCommand;
+	ClearKey(m_CommandMap, dwVirtKey);
+	ClearKey(m_SavedCommandMap, dwVirtKey);
+
+	//	Update the key (and add at the beginning of the array because we want
+	//	this key to take precedence.
+
+	if (iCommand != keyNone)
+		{
+		m_CommandMap[iCommand].Insert(dwVirtKey, 0);
+		m_SavedCommandMap[iCommand].Insert(dwVirtKey, 0);
+		}
 
 	//	Need to save out
 
-    m_bModified = true;
-    }
+	m_bModified = true;
+	m_bKeyMapValid = false;
+	}
 
 void CGameKeys::SetLayout (ELayouts iLayout)
 
@@ -541,29 +602,32 @@ void CGameKeys::SetLayout (ELayouts iLayout)
 //
 //  Switches to the given layout
 
-    {
-    int i;
+	{
+	switch (iLayout)
+		{
+		case layoutDefault:
+			SetLayoutFromStatic(DEFAULT_MAP, DEFAULT_MAP_COUNT);
+			break;
 
-    switch (iLayout)
-        {
-        case layoutDefault:
-            SetLayoutFromStatic(DEFAULT_MAP, DEFAULT_MAP_COUNT);
-            break;
+		case layoutWASD:
+			SetLayoutFromStatic(WASD_MAP, WASD_MAP_COUNT);
+			break;
 
-        case layoutCustom:
-            for (i = 0; i < 256; i++)
-                m_iMap[i] = m_CustomMap[i];
-            break;
+		case layoutCustom:
+			for (int i = 0; i < keyCount; i++)
+				m_CommandMap[i] = m_SavedCommandMap[i];
+			break;
 
-        default:
-            //  Unknown layout, so do nothing
+		default:
+			//  Unknown layout, so do nothing
 
-            return;
-        }
+			return;
+		}
 
-    m_iLayout = iLayout;
-    m_bModified = true;
-    }
+	m_iLayout = iLayout;
+	m_bModified = true;
+	m_bKeyMapValid = false;
+	}
 
 void CGameKeys::SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount)
 
@@ -571,15 +635,14 @@ void CGameKeys::SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCou
 //
 //  Sets the current layout from the given mapping
 
-    {
-    int i;
+	{
+	ClearKeyMap(m_CommandMap);
 
-	for (i = 0; i < 256; i++)
-		m_iMap[i] = keyNone;
+	for (int i = 0; i < iLayoutCount; i++)
+		m_CommandMap[pLayout[i].iGameKey].Insert(pLayout[i].iVirtKey);
 
-	for (i = 0; i < iLayoutCount; i++)
-		m_iMap[pLayout[i].iVirtKey] = pLayout[i].iGameKey;
-    }
+	m_bKeyMapValid = false;
+	}
 
 ALERROR CGameKeys::WriteAsXML (IWriteStream *pOutput)
 
@@ -589,7 +652,6 @@ ALERROR CGameKeys::WriteAsXML (IWriteStream *pOutput)
 
 	{
 	ALERROR error;
-	int i;
 
 	//	Open tag
 
@@ -600,20 +662,37 @@ ALERROR CGameKeys::WriteAsXML (IWriteStream *pOutput)
 
 	//	Write out the custom map
 
-	for (i = 0; i < 256; i++)
-		if (m_CustomMap[i] != keyNone)
+	for (int i = 0; i < keyCount; i++)
+		{
+		for (int j = 0; j < m_SavedCommandMap[i].GetCount(); j++)
 			{
-			CString sKey = CVirtualKeyData::GetKeyID(i);
+			CString sKey = CVirtualKeyData::GetKeyID(m_SavedCommandMap[i][j]);
 			if (sKey.IsBlank())
 				sKey = strPatternSubst(CONSTLIT("0x%02x"), i);
 
 			sData = strPatternSubst(CONSTLIT("\t\t<Map key=\"%s\" command=\"%s\"/>\r\n"),
 					sKey,
-					CString(g_GameKeyData[m_CustomMap[i]].pszName, -1, true));
+					CString(g_GameKeyData[i].pszName, -1, true));
 
 			if (error = pOutput->Write(sData.GetPointer(), sData.GetLength(), NULL))
 				return error;
 			}
+		}
+
+	//	We always write out the binding for mouse move because we use it to tell
+	//	if the player has explicitly disabled it (as opposed to not being 
+	//	defined in an older version of Settings.xml).
+
+	const Keys iCmdBoundToMouseMove = GetGameCommand(CVirtualKeyData::VK_MOUSE_MOVE);
+	if (iCmdBoundToMouseMove == keyNone)
+		{
+		sData = strPatternSubst(CONSTLIT("\t\t<Map key=\"%s\" command=\"%s\"/>\r\n"),
+				CVirtualKeyData::GetKeyID(CVirtualKeyData::VK_MOUSE_MOVE),
+				COMMAND_NONE);
+
+		if (error = pOutput->Write(sData.GetPointer(), sData.GetLength(), NULL))
+			return error;
+		}
 
 	//	Close tag
 

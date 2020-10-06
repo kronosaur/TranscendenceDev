@@ -60,5 +60,5 @@ void CTranscendencePlayer::OnMessageFromObj (const CSpaceObject *pSender, const 
 			&& !pSender->IsDestroyed())
 		const_cast<CSpaceObject *>(pSender)->Highlight(sMessage);
 	else
-		g_pTrans->DisplayMessage(sMessage);
+		m_pPlayer->DisplayMessage(sMessage);
 	}

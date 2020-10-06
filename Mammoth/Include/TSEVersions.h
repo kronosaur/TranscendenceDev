@@ -5,9 +5,9 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							48;
+constexpr DWORD API_VERSION =							50;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					178;
+constexpr DWORD SYSTEM_SAVE_VERSION =					194;
 
 //	Uncomment out the following define when building a stable release
 
@@ -583,7 +583,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					178;
 //		Added m_pEnhancements to CInstalledArmor
 //
 //	153: 1.8 Alpha 4
-//		Added m_WeaponTargets
+//		Added m_WeaponTargetsOld
 //
 //	154: 1.8 Alpha 4
 //		Added sNodeID and flags to CSystemMap::SMapAnnotation
@@ -656,3 +656,51 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					178;
 //
 //	178: 1.9 Alpha 5
 //		m_rMaxPlayerDist in CDockingPorts
+//
+//	179: 1.9 Beta 1
+//		iCountMined in CPlayerGameStats
+//
+//	180: 1.9 Beta 1
+//		Replace m_WeaponTargets
+//
+//	181: 1.9 Beta 1
+//		Remove m_iFireDelay and m_iMissileFireDelay from CShip
+//
+//	182: 1.9 Beta 1
+//		Add m_fAnonymous to CStation
+//
+//	183: 1.9 Beta 1
+//		m_iStarlightImageRotation in CStation
+//
+//	184: 1.9 Beta 1
+//		Add m_iHitPoints to COverlay
+//
+//	185: 1.9 Beta 1
+//		Move m_fAutoCreatedPorts to CSpaceObject (from CShip)
+//
+//	186: 1.9 Beta 1
+//		Add m_Source to CParticleEffect
+//
+//	187: 1.9 Beta 1
+//		Add m_sArcTitle and m_sArcStatus to CMission
+//
+//	188: 1.9 Beta 1
+//		m_fIsStargate in CObjectTracker::SObjEntry
+//
+//	189: 1.9 Beta 2
+//		m_sSubordinateID in CStation
+//
+//	190: 1.9 Beta 2
+//		m_MomentumDamage in DamageDesc
+//
+//	191: 1.9 Beta 2
+//		m_sStartingSystem in CPlayerShipController
+//
+//	192: 1.9 Beta 2
+//		m_iMissionNumber in CMission
+//
+//	193: 1.9 Beta 2
+//		m_PlayerShipStats in CPlayerGameStats
+//
+//	194: 1.9 Beta 2
+//		m_fAllowEnemyDocking in CStation

@@ -28,6 +28,9 @@
 
 			<DynamicData id="test.dynamicData1">1</DynamicData>
 			<DynamicData id="test.dynamicData2">(+ 2 2)</DynamicData>
+			<DynamicData id="test.dynamicData3">(itm@ gItem 'test.data1)</DynamicData>
+
+			<Constant id="disrupted">'testing</Constant>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="672" imageWidth="96" imageHeight="96"/>
@@ -63,6 +66,36 @@
 				powerUse=		"2000"
 				/>
 
+	</ItemType>
+
+	<ItemType UNID="&itTestWeaponFading;"
+			name=				"fading weapon"
+			attributes=			"testItem"
+
+			level=				"5"
+			frequency=			"common"
+
+			value=				"1000"
+			mass=				"3000"
+
+			description=		"Test weapon: fading."
+			>
+
+		<Image imageID="&rsItemsNAMI1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"kinetic:2d12; repel:20;"
+				damageAtMaxRange=	"kinetic:1;	repel:0;"
+				fireRate=			"16"
+				missileSpeed=		"50"
+				lifetime=			"60"
+				powerUse=			"10"
+
+				effect=				"&efKineticBoltDefault;"
+				sound=				"&snRecoillessCannon;"
+				/>
 	</ItemType>
 
 	<ItemType UNID="&itTestWeaponRelativistic;"
@@ -122,6 +155,82 @@
 				effect=				"&efKineticBoltDefault;"
 				sound=				"&snRecoillessCannon;"
 				/>
+	</ItemType>
+
+	<ItemType UNID="&itTestWeaponSideMounted;"
+			name=				"side-mounted weapon"
+			attributes=			"testItem"
+			  
+			level=				"3"
+			frequency=			"rare"
+
+			value=				"1000"
+			mass=				"3000"
+			  
+			description=		"Test weapon: side-mounted"
+			>
+
+		<Image imageID="&rsItemsNAMI1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+				linkedFire=			"always"
+
+				damage=				"thermo:1d12; momentum:3; WMD:4"
+				fireRate=			"40"
+				missileSpeed=		"50"
+				lifetime=			"120"
+				hitPoints=			"10"
+				powerUse=			"12"
+				recoil=				"2"
+
+				effect=				"&efThermoShellDefault;"
+				sound=				"&snRecoillessCannon;"
+				>
+		</Weapon>
+	</ItemType>
+
+	<ItemType UNID="&itTestRareInNewBeyond1;"
+			name=				"rare in New Beyond 1"
+			level=				"5"
+			value=				"100"
+			mass=				"500"
+			frequency=			"common"
+			numberAppearing=	"1d12"
+			attributes=			"consumable, meds, rareInNewBeyond"
+
+			description=		"Rare in New Beyond 1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="480" imageWidth="96" imageHeight="96"/>
+
+		<ItemEncounterDesc>
+			<Frequency criteria="* +rareInNewBeyond;" frequency="common"	systemCriteria="-newBeyond;" />
+			<Frequency criteria="* +rareInNewBeyond;" frequency="rare"		systemCriteria="+newBeyond;" />
+
+			<Frequency criteria="* +rareInNewBeyond;" frequency="notRandom" />
+		</ItemEncounterDesc>
+	</ItemType>
+
+	<ItemType UNID="&itTestRareInNewBeyond2;"
+			name=				"rare in New Beyond 2"
+			level=				"5"
+			value=				"100"
+			mass=				"500"
+			frequency=			"uncommon"
+			numberAppearing=	"1d12"
+			attributes=			"consumable, meds, rareInNewBeyond"
+
+			description=		"Rare in New Beyond 1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="480" imageWidth="96" imageHeight="96"/>
+
+		<ItemEncounterDesc>
+			<Frequency criteria="* +rareInNewBeyond;" frequency="common"	systemCriteria="-newBeyond;" />
+
+			<Frequency criteria="* +rareInNewBeyond;" frequency="uncommon" />
+		</ItemEncounterDesc>
 	</ItemType>
 
 </TranscendenceModule>

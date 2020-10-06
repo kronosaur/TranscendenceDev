@@ -259,6 +259,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"make",				fnList,			FN_MAKE,
+			"(make 'duplicates count entry) -> list of n entries\n"
 			"(make 'sequence count) -> list from 1 to count\n"
 			"(make 'sequence start end [inc]) -> list from start to end, incrementing by inc",
 			"s*",	0,	},

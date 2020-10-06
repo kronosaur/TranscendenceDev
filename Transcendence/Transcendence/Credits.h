@@ -2,7 +2,7 @@
 //
 //	Included by IntroScreen.cpp
 
-static constexpr char *ADDITIONAL_PROGRAMMING[] =
+static constexpr const char *ADDITIONAL_PROGRAMMING[] =
 	{
 	"Owen Embury (giantcabbage)",
 	"Nathaniel Stalberg (NMS)",
@@ -14,7 +14,7 @@ static constexpr char *ADDITIONAL_PROGRAMMING[] =
 
 static constexpr int ADDITIONAL_PROGRAMMING_COUNT = (sizeof(ADDITIONAL_PROGRAMMING) / sizeof(ADDITIONAL_PROGRAMMING[0]));
 
-static constexpr char *SPECIAL_THANKS[] =
+static constexpr const char *SPECIAL_THANKS[] =
 	{
 	"Alexander Huitric (Wolfy)",
 	"Patrick Martin (Megas)",
@@ -40,7 +40,7 @@ static constexpr char *SPECIAL_THANKS[] =
 
 static constexpr int SPECIAL_THANKS_COUNT = (sizeof(SPECIAL_THANKS) / sizeof(SPECIAL_THANKS[0]));
 
-static constexpr char *FEEDBACK[] =
+static constexpr const char *FEEDBACK[] =
 	{
 	"Aeon Blaze",
 	"Aeonic",
@@ -53,7 +53,6 @@ static constexpr char *FEEDBACK[] =
 	"Apemant",
 	"Aquilai",
 	"Arkheias",
-	"AssumedPseudonym",
 	"Azmond",
 
 	"Lee Baugh",
@@ -258,12 +257,12 @@ static constexpr char *FEEDBACK[] =
 
 static constexpr int FEEDBACK_COUNT = (sizeof(FEEDBACK) / sizeof(FEEDBACK[0]));
 
-static constexpr char *INSPIRATION[] =
+static constexpr const char *INSPIRATION[] =
 	{
 	"Across Realtime",
 	"The Art of Game Design",
 	"The Book of the New Sun",
-	"BSG",
+	"Battlestar Galactica",
 	"A Canticle for Leibowitz",
 	"Castles of Steel",
 	"Crystal Express",
@@ -275,15 +274,15 @@ static constexpr char *INSPIRATION[] =
 	"Dwarf Fortress",
 	"Firefly",
 	"A Fire Upon the Deep",
-	"GEB",
+	"G%&ouml;edel, Escher, Bach",
 	"Graphics Gems",
 	"Graphics Programming Black Book",
-	"GTA 4",
 	"Neuromancer",
 	"Robotron 2084",
 	"Sister Alice",
 	"Star Blazers",
 	"Ultima Series",
+	"Uplift Universe",
 	"Wing Commander",
 	"",
 	"and",
@@ -293,15 +292,15 @@ static constexpr char *INSPIRATION[] =
 
 static constexpr int INSPIRATION_COUNT = (sizeof(INSPIRATION) / sizeof(INSPIRATION[0]));
 
-static constexpr char *SOFTWARE[] =
+static constexpr const char *SOFTWARE[] =
 	{
-	"Adobe® Photoshop®",
-	"Caligari trueSpace®",
+	"Adobe%&reg; Photoshop%&reg;",
+	"Caligari trueSpace%&reg;",
 	"Hexarc",
-	"Intel® JPEG Library",
+	"Intel%&reg; JPEG Library",
 	"LodePNG",
 	"Luminous",
-	"Microsoft® Visual Studio®",
+	"Microsoft%&reg; Visual Studio%&reg;",
 	"zlib"
 	};
 

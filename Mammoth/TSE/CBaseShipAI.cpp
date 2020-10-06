@@ -14,25 +14,6 @@ constexpr int MAX_TARGETS =				10;
 
 extern int g_iDebugLine;
 
-CBaseShipAI::CBaseShipAI (void) : 
-		m_pShip(NULL),
-		m_pCommandCode(NULL),
-		m_pOrderModule(NULL),
-		m_fDeviceActivate(false),
-		m_fInOnOrderChanged(false),
-		m_fInOnOrdersCompleted(false),
-		m_fCheckedForWalls(false),
-		m_fAvoidWalls(false),
-		m_fIsPlayerWingman(false),
-		m_fOldStyleBehaviors(false),
-		m_fPlayerBlacklisted(false),
-		m_fUseOrderModules(false)
-
-//	CBaseShipAI constructor
-
-	{
-	}
-
 CBaseShipAI::~CBaseShipAI (void)
 
 //	CBaseShipAI destructor
@@ -577,7 +558,7 @@ void CBaseShipAI::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPai
 //	Paint debug information
 
 	{
-	m_AICtx.DebugPaintInfo(Dest, x, y, Ctx);
+	m_AICtx.DebugPaintInfo(*m_pShip->GetSystem(), Dest, x, y, Ctx);
 	}
 
 void CBaseShipAI::FireOnOrderChanged (void)
@@ -598,7 +579,7 @@ void CBaseShipAI::FireOnOrderChanged (void)
 
 	//	Reset some internal variables
 
-	m_AICtx.SetManeuverCounter(0);
+	m_AICtx.OnOrderChanged(*m_pShip);
 
 	//	Initialize the order module. We can't call this for descendants (such as
 	//	CZoanthropeAI that do not use order modules).
@@ -743,76 +724,6 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 		}
 	}
 
-void CBaseShipAI::GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
-
-//	GetNearestTargets
-//
-//	Returns a list of nearest targets
-
-	{
-	const CInstalledDevice &Device = *WeaponItem.GetInstalledDevice();
-
-	//	Make sure we have a list of targets. This will initialize a list of
-	//	nearby targets and (if required) a list of missiles to defend against.
-	//	It will store them in UpdateCtx so that more than one weapon can access
-	//	the list without recomputing.
-
-	InitTargetList(UpdateCtx);
-
-	//	If this weapon does not target missiles, then we just do a quick find.
-
-	if (!WeaponItem.IsMissileDefenseWeapon() && !WeaponItem.IsTargetableMissileDefenseWeapon())
-		{
-		if (!UpdateCtx.Targets.FindTargetInRange(*m_pShip, 
-				WeaponItem, 
-				m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
-				retpTarget,
-				retiFireSolution))
-			{
-			*retpTarget = NULL;
-			*retiFireSolution = -1;
-			}
-		}
-
-	//	Otherwise, we look in both the target and the missile lists and choose
-	//	the nearest one.
-
-	else
-		{
-		CSpaceObject *pTarget = NULL;
-		int iFireSolution = -1;
-		Metric rDist2;
-
-		UpdateCtx.Targets.FindTargetInRange(*m_pShip, 
-				WeaponItem, 
-				m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
-				&pTarget,
-				&iFireSolution,
-				&rDist2);
-
-		CSpaceObject *pMissile = NULL;
-		int iMissileFireSolution = -1;
-		Metric rMissileDist2;
-
-		if (!UpdateCtx.Missiles.FindTargetInRange(*m_pShip, 
-					WeaponItem, 
-					m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
-					&pMissile, 
-					&iMissileFireSolution, 
-					&rMissileDist2)
-				|| (pTarget && rDist2 < rMissileDist2))
-			{
-			*retpTarget = pTarget;
-			*retiFireSolution = iFireSolution;
-			}
-		else
-			{
-			*retpTarget = pMissile;
-			*retiFireSolution = iMissileFireSolution;
-			}
-		}
-	}
-
 CSpaceObject *CBaseShipAI::GetOrderGiver (void)
 
 //	GetOrderGiver
@@ -863,7 +774,7 @@ CSpaceObject *CBaseShipAI::GetPlayerOrderGiver (void) const
 		return m_pShip;
 	}
 
-CSpaceObject *CBaseShipAI::GetTarget (DWORD dwFlags) const
+CSpaceObject *CBaseShipAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -874,6 +785,51 @@ CSpaceObject *CBaseShipAI::GetTarget (DWORD dwFlags) const
 		return m_pOrderModule->GetTarget();
 	else
 		return OnGetTarget(dwFlags);
+	}
+
+CTargetList CBaseShipAI::GetTargetList (void) const
+
+//	GetTargetList
+//
+//	Returns an initialized (though not yet realized) target list, suitable for
+//	weapons to find appropriate targets.
+
+	{
+	CTargetList::STargetOptions Options;
+	
+	//	Range
+
+	Options.rMaxDist = m_AICtx.GetBestWeaponRange();
+
+	//	Include our target
+
+	Options.bIncludeSourceTarget = true;
+
+	//	If we are aggressive, then include ships that haven't fired 
+	//	their weapons recently
+
+	if (m_AICtx.IsAggressor())
+		Options.bIncludeNonAggressors = true;
+
+	//	Include the player if they are blacklisted
+
+	if (m_fPlayerBlacklisted)
+		Options.bIncludePlayer = true;
+
+	//	Always exclude our base (even if it is an enemy)
+
+	Options.pExcludeObj = GetBase();
+
+	//	Include missiles if we have anti-missile defense
+
+	if (m_AICtx.ShootsAllMissiles())
+		Options.bIncludeMissiles = true;
+	else if (m_AICtx.ShootsTargetableMissiles())
+		Options.bIncludeTargetableMissiles = true;
+
+	//	Done
+
+	return CTargetList(*m_pShip, Options);
 	}
 
 void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)
@@ -901,53 +857,6 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 
 	else
 		m_pShip->Communicate(pOrderGiver, msgWatchTargets);
-	}
-
-void CBaseShipAI::InitTargetList (SUpdateCtx &UpdateCtx) const
-
-//	CalcTargetsOfOpportunity
-//
-//	Returns a list of targets of opportunity.
-
-	{
-	//	Initialize the targets list if necessary
-
-	if (!UpdateCtx.Targets.IsValid())
-		{
-		//	If we are aggressive, then include ships that haven't fired 
-		//	their weapons recently
-
-		DWORD dwFlags = 0;
-		if (m_AICtx.IsAggressor())
-			dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS;
-
-		//	Include our target
-
-		dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_SOURCE_TARGET;
-
-		//	Include the player
-
-		if (m_fPlayerBlacklisted)
-			dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_PLAYER;
-		
-		//	Init
-
-		UpdateCtx.Targets.InitWithNearestVisibleEnemies(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), GetBase(), dwFlags);
-		}
-
-	//	Initialize the list of missiles, if necessary
-
-	if (!UpdateCtx.Missiles.IsValid())
-		{
-		if (m_AICtx.ShootsAllMissiles())
-			UpdateCtx.Missiles.InitWithNearestMissiles(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), 0);
-
-		else if (m_AICtx.ShootsTargetableMissiles())
-			UpdateCtx.Missiles.InitWithNearestTargetableMissiles(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), 0);
-
-		else
-			UpdateCtx.Missiles.InitEmpty();
-		}
 	}
 
 bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
@@ -1080,7 +989,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 	DEBUG_CATCH
 	}
 
-DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //
@@ -1088,9 +997,9 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 
 	{
 	if (m_pOrderModule)
-		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2);
+		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 	else
-		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2);
+		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2, pData);
 	}
 
 void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)
@@ -1581,7 +1490,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 		CString sCode;
 		sCode.ReadFromStream(Ctx.pStream);
 		if (!sCode.IsBlank())
-			m_pCommandCode = CCodeChain::Link(sCode);
+			m_pCommandCode = CCodeChain::LinkCode(sCode)->Reference();
 		else
 			m_pCommandCode = NULL;
 		}
@@ -1597,6 +1506,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	m_fCheckedForWalls =		((dwLoad & 0x00000008) ? true : false);
 	m_fAvoidWalls =				((dwLoad & 0x00000010) ? true : false);
 	m_fIsPlayerWingman =		((dwLoad & 0x00000020) ? true : false);
+	m_fIsPlayerEscort =			((dwLoad & 0x00000040) ? true : false);
 
 	//	Before version 75 we always used old style behaviors
 
@@ -1983,6 +1893,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fCheckedForWalls ?			0x00000008 : 0);
 	dwSave |= (m_fAvoidWalls ?				0x00000010 : 0);
 	dwSave |= (m_fIsPlayerWingman ?			0x00000020 : 0);
+	dwSave |= (m_fIsPlayerEscort ?			0x00000040 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Subclasses

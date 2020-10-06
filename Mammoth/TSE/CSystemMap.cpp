@@ -10,6 +10,7 @@
 #define RANDOM_TOPOLOGY_TAG					CONSTLIT("RandomTopology")
 #define ROOT_NODE_TAG						CONSTLIT("RootNode")
 #define STARGATE_TAG						CONSTLIT("Stargate")
+#define STARGATE_TABLE_TAG					CONSTLIT("StargateTable")
 #define STARGATES_TAG						CONSTLIT("Stargates")
 #define SYSTEM_DISTRIBUTION_TAG				CONSTLIT("SystemTypes")
 #define SYSTEM_TOPOLOGY_TAG					CONSTLIT("SystemTopology")
@@ -19,6 +20,7 @@
 
 #define BACKGROUND_IMAGE_ATTRIB				CONSTLIT("backgroundImage")
 #define BACKGROUND_IMAGE_SCALE_ATTRIB		CONSTLIT("backgroundImageScale")
+#define DEBUG_ATTRIB						CONSTLIT("debug")
 #define DEBUG_SHOW_ATTRIBUTES_ATTRIB		CONSTLIT("debugShowAttributes")
 #define PRIMARY_MAP_ATTRIB					CONSTLIT("displayOn")
 #define GRADIENT_RANGE_ATTRIB				CONSTLIT("gradientRange")
@@ -86,7 +88,8 @@ bool CSystemMap::AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect,
 	//	Create a new painter for the effect. If that fails, then there's nothing
 	//	we can do.
 
-	IEffectPainter *pPainter = pEffect->CreatePainter(CCreatePainterCtx());
+	CCreatePainterCtx CreateCtx;
+	IEffectPainter *pPainter = pEffect->CreatePainter(CreateCtx);
 	if (pPainter == NULL)
 		return false;
 
@@ -316,12 +319,19 @@ ALERROR CSystemMap::ExecuteCreator (STopologyCreateCtx &Ctx, CTopology &Topology
 			{
 			CXMLElement *pDirective = pCreator->GetContentElement(i);
 
+#ifdef DEBUG
+			if (pDirective->GetAttributeBool(DEBUG_ATTRIB))
+				DebugBreak();
+#endif
+
 			if (strEquals(pDirective->GetTag(), NODE_TAG))
 				{
 				if (error = Topology.AddTopologyNode(Ctx, pDirective->GetAttribute(ID_ATTRIB)))
 					return error;
 				}
-			else if (strEquals(pDirective->GetTag(), STARGATE_TAG) || strEquals(pDirective->GetTag(), STARGATES_TAG))
+			else if (strEquals(pDirective->GetTag(), STARGATE_TAG) 
+					|| strEquals(pDirective->GetTag(), STARGATES_TAG)
+					|| strEquals(pDirective->GetTag(), STARGATE_TABLE_TAG))
 				{
 				if (error = Topology.AddStargateFromXML(Ctx, pDirective))
 					return error;
@@ -430,14 +440,14 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Scale information
 
-    m_rLightYearsPerPixel = pDesc->GetAttributeDoubleBounded(LIGHT_YEARS_PER_PIXEL_ATTRIB, 0.0, -1.0, 0.0);
+	m_rLightYearsPerPixel = pDesc->GetAttributeDoubleBounded(LIGHT_YEARS_PER_PIXEL_ATTRIB, 0.0, -1.0, 0.0);
 	m_iInitialScale = pDesc->GetAttributeIntegerBounded(INITIAL_SCALE_ATTRIB, 10, 1000, 100);
 	m_iMaxScale = pDesc->GetAttributeIntegerBounded(MAX_SCALE_ATTRIB, 100, 1000, 200);
 	m_iMinScale = pDesc->GetAttributeIntegerBounded(MIN_SCALE_ATTRIB, 10, 100, 50);
 
-    //  Other display information
+	//  Other display information
 
-    m_rgbStargateLines = ::LoadRGBColor(pDesc->GetAttribute(STARGATE_LINE_COLOR_ATTRIB), RGB_STARGATE_LINE_DEFAULT);
+	m_rgbStargateLines = ::LoadRGBColor(pDesc->GetAttribute(STARGATE_LINE_COLOR_ATTRIB), RGB_STARGATE_LINE_DEFAULT);
 
 	//	Keep track of root nodes
 
@@ -643,7 +653,8 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 		//	To load the painter we need to cons up an SLoadCtx. Fortunately.
 		//	we have the system version saved in the universe load ctx.
 
-		m_Annotations[i].pPainter = CEffectCreator::CreatePainterFromStream(SLoadCtx(Ctx));
+		SLoadCtx LoadCtx(Ctx);
+		m_Annotations[i].pPainter = CEffectCreator::CreatePainterFromStream(LoadCtx);
 
 		//	Load remaining fields
 

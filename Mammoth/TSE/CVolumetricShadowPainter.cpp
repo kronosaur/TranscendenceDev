@@ -100,6 +100,10 @@ void CVolumetricShadowPainter::PaintShadow (void) const
 //	Paint the shadow
 
 	{
+	constexpr BYTE SHADOW_OPACITY = 0x80;
+	constexpr BYTE LIGHT_OPACITY = 0xff;
+	constexpr DWORD SHADOW_RANGE = LIGHT_OPACITY - SHADOW_OPACITY;
+
 	//	Compute the upper-left corner of the box in shadow coordinates
 
 	CVector vULRelativeToShadowOrigin = m_vUL - m_vShadowOrigin;
@@ -157,9 +161,9 @@ void CVolumetricShadowPainter::PaintShadow (void) const
 					if (rWFrac < rUFrac)
 						{
 						if (rLFrac < 0.5)
-							*pSrcPos = 0x00;
+							*pSrcPos = SHADOW_OPACITY;
 						else
-							*pSrcPos = (BYTE)((rLFrac - 0.5) * 510);
+							*pSrcPos = SHADOW_OPACITY + (BYTE)((rLFrac - 0.5) * 2 * SHADOW_RANGE);
 						}
 
 					//	In the penumbra
@@ -175,16 +179,16 @@ void CVolumetricShadowPainter::PaintShadow (void) const
 						Metric rPFrac = (rWFrac - rUFrac) / rLFrac;
 
 						if (rLFrac < 0.5)
-							*pSrcPos = (BYTE)(0xff * rPFrac);
+							*pSrcPos = SHADOW_OPACITY + (BYTE)(SHADOW_RANGE * rPFrac);
 						else
-							*pSrcPos = (BYTE)(0xff * (1.0 - ((1.0 - ((rLFrac - 0.5) * 2.0)) * (1.0 - rPFrac))));
+							*pSrcPos = SHADOW_OPACITY + (BYTE)(SHADOW_RANGE * (1.0 - ((1.0 - ((rLFrac - 0.5) * 2.0)) * (1.0 - rPFrac))));
 						}
 					}
 				else
-					*pSrcPos = 0xff;
+					*pSrcPos = LIGHT_OPACITY;
 				}
 			else
-				*pSrcPos = 0xff;
+				*pSrcPos = LIGHT_OPACITY;
 
 			pSrcPos++;
 			vShadowPos = vShadowPos + m_LightingCtx.vIncX;

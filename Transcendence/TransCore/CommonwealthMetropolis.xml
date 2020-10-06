@@ -14,7 +14,7 @@
 			dockScreen=			"&dsCommonwealthStation;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
-            level=              "5"
+			level=              "5"
 			size=				"670"
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"1000"
@@ -44,13 +44,12 @@
 		</Names>
 		
 		<Properties>
-			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
-			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+			<Constant id="maxMilitiaMissions">(random 3 4)</Constant>
 		</Properties>
 
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit">
+		<Trade currency="credit"	max="500000">
 			<Sell	criteria="m +commonwealth; -defective; -military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
@@ -73,20 +72,20 @@
 
 		<Items>
 			<RandomItem count="2d10" 
-					criteria=		"a L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"a L:1-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="1d4" 
-					criteria=		"r L:1-6; -alien; -illegal; -military; -notForSale; -notStandard;"	
+					criteria=		"r L:1-6; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard;"	
 					levelFrequency="systemLevel:ru|c|curv"
 					/>
 			<RandomItem count="2d10" 
-					criteria=		"d~r L:1-6; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"d~r L:1-6; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			
 			<RandomItem count="20" 
-					criteria=		"*~ad -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"*~adm -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 		</Items>
@@ -132,14 +131,6 @@
 		
 		<!-- Events and Behavior -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			7		100		)
-					)
-			</NPCService>
-		</StaticData>
-		
 		<Events>
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
@@ -195,11 +186,13 @@
 		<Properties>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+
+			<Constant		id="maxMilitiaMissions">(random 3 4)</Constant>
 		</Properties>
 
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit">
+		<Trade currency="credit"	max="1000000">
 			<Sell	criteria="m +commonwealth; -defective; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
@@ -225,20 +218,20 @@
 		
 		<Items>
 			<RandomItem count="2d10" 
-					criteria=		"a L:1-9; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"a L:1-9; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="1d4" 
-					criteria=		"r L:4-8; -alien; -illegal; -military; -notForSale; -notStandard;"
+					criteria=		"r L:4-8; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard;"
 					levelFrequency="systemLevel:ru|c|curv"
 					/>
 			<RandomItem count="2d10" 
-					criteria=		"d~r L:1-8; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"d~r L:1-8; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			
 			<RandomItem count="20" 
-					criteria=		"*~ad -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 		</Items>
@@ -385,7 +378,19 @@
 			<Default descID="descWelcome">
 				<Actions>
 					<Action id="actionIGotIt" default="1">
-						(block Nil
+						(block (
+							;	Price depends on whether a Black Market station 
+							;	is in the system.
+
+							(priceAdj
+								(switch
+									(sysFindObject Nil "TA +blackMarket; +populated;")
+										120
+
+									150
+									)
+								)
+							)
 							; Navigate to DealComplete so that we return here when sell
 							; screen exits.
 							
@@ -397,7 +402,7 @@
 								(lambda (theItem)
 									(switch
 										(itmMatches theItem "*NU +illegal; +consumerGood; -ID; +property:known; &lt;=#25;")
-											(divide (multiply 150 (itmGetPrice theItem 'credit)) 100)
+											(divide (multiply priceAdj (itmGetPrice theItem 'credit)) 100)
 											
 										Nil
 										)
@@ -513,6 +518,30 @@
 							)
 					</Action>
 
+					<Action id="actionMilitiaHQ">
+						(block (
+							(rank (typ@ &unidCommonwealthMilitia; 'rank))
+							)
+							(switch
+								(= rank -1)
+									(scrShowScreen gScreen &dsRPGMessage; { desc: (scrTranslate gScreen 'descTooManyFailures) })
+
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +metropolisMilitia; +rank" (int rank) ";")
+									displayCriteria: "n +metropolisMilitia;"
+									noMissionText: (scrTranslate gScreen 'descNoMissions)
+									maxPerStation: (or (obj@ gSource 'maxMilitiaMissions) 3)
+						
+									rankDetails: (typTranslate &unidCommonwealthMilitia; 'rankDetails)
+									})
+								)
+							)
+					</Action>
+
+					<Action id="actionCentralPlaza">
+						<ShowPane pane="CentralPlaza"/>
+					</Action>
+
 					<Action id="actionCommoditiesExchange" default="1">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 					</Action>
@@ -521,10 +550,6 @@
 						(rpgDockServices gPlayerShip {
 							checkMilitaryID: True
 							})
-					</Action>
-
-					<Action id="actionCentralPlaza">
-						<ShowPane pane="CentralPlaza"/>
 					</Action>
 
 					<Action id="actionBuyShip">
@@ -644,6 +669,7 @@
 
 		<Language>
 			<Text id="actionInformation">[I]nformation</Text>
+			<Text id="actionMilitiaHQ">[M]ilitia Headquarters</Text>
 			<Text id="actionCentralPlaza">Central [P]laza</Text>
 			<Text id="actionTrafalgarPub">Trafalgar [P]ub</Text>
 			<Text id="actionVictorianClub">The [V]ictorian Nightclub</Text>
@@ -666,6 +692,17 @@
 				You are in the central hub of this station, a busy area where 
 				trendy shops mix with high-end residences.
 
+			</Text>
+			<Text id="descNoMissions">
+			
+				"Sorry, there are no missions currently available."
+				
+			</Text>
+			<Text id="descTooManyFailures">
+			
+				"How about getting us a cup of tea or something? That's probably
+				a mission you could handle."
+				
 			</Text>
 		</Language>
 	</DockScreen>

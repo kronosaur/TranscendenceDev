@@ -10,6 +10,8 @@
 #define EXPLOSION_TYPE_ATTRIB					CONSTLIT("explosionType")
 #define LEAVES_WRECK_ATTRIB						CONSTLIT("leavesWreck")
 #define MAX_STRUCTURAL_HIT_POINTS_ATTRIB		CONSTLIT("maxStructuralHitPoints")
+#define NO_INSTALLED_ITEMS_ATTRIB				CONSTLIT("noInstalledItems")
+#define NO_ITEMS_ATTRIB							CONSTLIT("noItems")
 #define RADIOACTIVE_WRECK_ATTRIB				CONSTLIT("radioactiveWreck")
 #define STRUCTURAL_HIT_POINTS_ATTRIB			CONSTLIT("structuralHitPoints")
 #define WRECK_TYPE_ATTRIB						CONSTLIT("wreckType")
@@ -47,10 +49,15 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 
 		if (WreckItem.IsInstalled())
 			{
+			//	If we don't want installed items, then skip.
+
+			if (!AreInstalledItemsAddedToWreck())
+				{ }
+
 			//	Make sure that the armor item reflects the current
 			//	state of the ship's armor.
 
-			if (const CArmorItem ArmorItem = WreckItem.AsArmorItem())
+			else if (const CArmorItem ArmorItem = WreckItem.AsArmorItem())
 				{
 				//	Most armor is destroyed
 
@@ -132,7 +139,7 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 		//	Non-installed virtual items are always lost
 
 		else if (WreckItem.IsVirtual())
-			continue;
+			{ }
 
 		//	Otherwise, if this is just cargo, add to wreck
 
@@ -152,7 +159,37 @@ void CShipwreckDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
 	retTypesUsed->SetAt(m_pExplosionType.GetUNID(), true);
 	}
 
-ALERROR CShipwreckDesc::Bind (SDesignLoadCtx &Ctx)
+bool CShipwreckDesc::AreInstalledItemsAddedToWreck (void) const
+
+//	AreInstalledItemsAddedToWreck
+//
+//	Returns TRUE if we need to add installed items to wreck.
+
+	{
+	if (m_bNoInstalledItems)
+		return false;
+	else if (m_pInherited)
+		return m_pInherited->AreInstalledItemsAddedToWreck();
+	else
+		return true;
+	}
+
+bool CShipwreckDesc::AreItemsAddedToWreck (void) const
+
+//	AreItemsAddedToWreck
+//
+//	Returns TRUE if we should add items to wreckage.
+
+	{
+	if (m_bNoItems)
+		return false;
+	else if (m_pInherited)
+		return m_pInherited->AreItemsAddedToWreck();
+	else
+		return true;
+	}
+
+ALERROR CShipwreckDesc::Bind (SDesignLoadCtx &Ctx, const CShipwreckDesc *pInherited)
 
 //	Bind
 //
@@ -160,6 +197,8 @@ ALERROR CShipwreckDesc::Bind (SDesignLoadCtx &Ctx)
 
 	{
 	ALERROR error;
+
+	m_pInherited = pInherited;
 
 	if (error = m_pExplosionType.Bind(Ctx))
 		return error;
@@ -255,6 +294,7 @@ void CShipwreckDesc::CleanUp (void)
 //	Clean up images to free up space.
 
 	{
+	m_pInherited = NULL;
 	m_WreckImages.DeleteAll();
 	}
 
@@ -307,7 +347,7 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem &System, CShipClass *pClass, CShi
 	//	ship class always has radioactive wrecks)
 
 	if ((pShip && pShip->IsRadioactive()) || IsRadioactive())
-		pWreck->SetCondition(CConditionSet::cndRadioactive);
+		pWreck->SetCondition(ECondition::radioactive);
 
 	//	If the ship has been explicitly set to leave a wreck, then we assume
 	//	that it has something important, so we set the wreck to have the flag
@@ -352,7 +392,8 @@ bool CShipwreckDesc::CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const
 
 	//	Add items to the wreck
 
-	AddItemsToWreck(pShip, pWreck);
+	if (AreItemsAddedToWreck())
+		AddItemsToWreck(pShip, pWreck);
 
 	//	Done
 
@@ -364,7 +405,7 @@ bool CShipwreckDesc::CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const
 	DEBUG_CATCH
 	}
 
-bool CShipwreckDesc::CreateWreckImage (CShipClass *pClass, int iRotationFrame, CObjectImageArray &Result) const
+bool CShipwreckDesc::CreateWreckImage (const CShipClass *pClass, int iRotationFrame, CObjectImageArray &Result) const
 
 //	CreateWreckImage
 //
@@ -444,6 +485,21 @@ bool CShipwreckDesc::CreateWreckImage (CShipClass *pClass, int iRotationFrame, C
 	return true;
 	}
 
+CWeaponFireDesc *CShipwreckDesc::GetExplosionType (void) const
+
+//	GetExplosionType
+//
+//	Returns the explosion type.
+
+	{
+	if (m_pExplosionType.GetUNID())
+		return m_pExplosionType;
+	else if (m_pInherited)
+		return m_pInherited->GetExplosionType();
+	else
+		return NULL;
+	}
+
 size_t CShipwreckDesc::GetMemoryUsage (void) const
 
 //	GetMemoryUsage
@@ -451,16 +507,50 @@ size_t CShipwreckDesc::GetMemoryUsage (void) const
 //	Returns the memory used by our cache.
 
 	{
-	int i;
 	size_t dwTotal = 0;
 
-	for (i = 0; i < m_WreckImages.GetCount(); i++)
+	for (int i = 0; i < m_WreckImages.GetCount(); i++)
 		dwTotal += m_WreckImages[i].GetMemoryUsage();
 
 	return dwTotal;
 	}
 
-CObjectImageArray *CShipwreckDesc::GetWreckImage (CShipClass *pClass, int iRotation) const
+int CShipwreckDesc::GetStructuralHP (void) const
+
+//	GetStructuralHP
+//
+//	Returns structure HP of the wreck.
+
+	{
+	if (m_iStructuralHP != -1)
+		return m_iStructuralHP;
+	else if (m_pInherited)
+		return m_pInherited->GetStructuralHP();
+	else
+		return 0;
+	}
+
+int CShipwreckDesc::GetWreckChance (void) const
+
+//	GetWreckChance
+//
+//	Returns the chance of leaving a wreck.
+
+	{
+	//	If the chance is explicitly set (either by us or one of our ancestors)
+	//	then that's the chance.
+
+	int iChance;
+	if (IsWreckChanceSet(&iChance))
+		return iChance;
+
+	//	Otherwise, return the computed chance.
+
+	else
+		return m_iLeavesWreck;
+	}
+
+CObjectImageArray *CShipwreckDesc::GetWreckImage (const CShipClass *pClass, int iRotation) const
 
 //	GetWreckImage
 //
@@ -522,6 +612,8 @@ CStationType *CShipwreckDesc::GetWreckType (void) const
 	{
 	if (m_pWreckType)
 		return m_pWreckType;
+	else if (m_pInherited)
+		return m_pInherited->GetWreckType();
 	else
 		{
 		if (m_pWreckDesc == NULL)
@@ -565,16 +657,17 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 //	Initialize from XML
 
 	{
-	ALERROR error;
-
-	CXMLElement *pWreck = pDesc->GetContentElementByTag(WRECK_TAG);
+	const CXMLElement *pWreck = pDesc->GetContentElementByTag(WRECK_TAG);
 	if (pWreck == NULL)
 		pWreck = pDesc;
 
 	//	Miscellaneous
 
-	if (pDesc->FindAttributeInteger(LEAVES_WRECK_ATTRIB, &m_iLeavesWreck))
+	if (pWreck->FindAttributeInteger(LEAVES_WRECK_ATTRIB, &m_iLeavesWreck))
+		{
 		m_iLeavesWreck = Max(0, m_iLeavesWreck);
+		m_bIsDefaultWreckChance = false;
+		}
 	else
 		{
 		//	Chance of wreck is a function of mass:
@@ -582,24 +675,78 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 		//	prob = 5 * MASS^0.45
 
 		m_iLeavesWreck = Max(0, Min((int)(5.0 * pow(rHullMass, 0.45)), 100));
+		m_bIsDefaultWreckChance = true;
 		}
 
-	if (error = m_pWreckType.LoadUNID(Ctx, pDesc->GetAttribute(WRECK_TYPE_ATTRIB)))
+	if (ALERROR error = m_pWreckType.LoadUNID(Ctx, pWreck->GetAttribute(WRECK_TYPE_ATTRIB)))
 		return error;
 
-	m_bRadioactiveWreck = pDesc->GetAttributeBool(RADIOACTIVE_WRECK_ATTRIB);
-	m_iStructuralHP = pDesc->GetAttributeIntegerBounded(STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, -1);
-	if (m_iStructuralHP == -1)
-		m_iStructuralHP = pDesc->GetAttributeIntegerBounded(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, 0);
+	LoadXMLBool(*pWreck, NO_INSTALLED_ITEMS_ATTRIB, m_bNoInstalledItems);
+	LoadXMLBool(*pWreck, NO_ITEMS_ATTRIB, m_bNoItems);
+	LoadXMLBool(*pWreck, RADIOACTIVE_WRECK_ATTRIB, m_bRadioactiveWreck);
+
+	if (pWreck->FindAttributeInteger(STRUCTURAL_HIT_POINTS_ATTRIB, &m_iStructuralHP)
+			|| pWreck->FindAttributeInteger(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, &m_iStructuralHP))
+		{
+		m_iStructuralHP = Max(0, m_iStructuralHP);
+		}
+	else
+		m_iStructuralHP = -1;
 
 	//	Explosion
 
-	if (error = m_pExplosionType.LoadUNID(Ctx, pDesc->GetAttribute(EXPLOSION_TYPE_ATTRIB)))
+	if (ALERROR error = m_pExplosionType.LoadUNID(Ctx, pWreck->GetAttribute(EXPLOSION_TYPE_ATTRIB)))
 		return error;
 
 	//	Done
 
 	return NOERROR;
+	}
+
+bool CShipwreckDesc::IsRadioactive (void) const
+
+//	IsRadioactive
+//
+//	Returns TRUE if wreck should be radioactive.
+
+	{
+	if (m_bRadioactiveWreck)
+		return true;
+	else if (m_pInherited)
+		return m_pInherited->IsRadioactive();
+	else
+		return false;
+	}
+
+bool CShipwreckDesc::IsWreckChanceSet (int *retiChance) const
+
+//	IsWreckChanceSet
+//
+//	Returns TRUE if we or any of our ancestors defines an explicit wreck chance.
+//	If so, we return it.
+
+	{
+	if (!m_bIsDefaultWreckChance)
+		{
+		if (retiChance)
+			*retiChance = m_iLeavesWreck;
+		return true;
+		}
+	else if (m_pInherited)
+		return m_pInherited->IsWreckChanceSet(retiChance);
+	else
+		return false;
+	}
+
+void CShipwreckDesc::LoadXMLBool (const CXMLElement &Desc, const CString &sAttrib, bool &retbValue)
+
+//	LoadXMLBool
+//
+//	Load XML boolean.
+
+	{
+	if (!Desc.FindAttributeBool(sAttrib, &retbValue))
+		retbValue = false;
 	}
 
 void CShipwreckDesc::MarkImages (CShipClass *pClass, int iRotation) const

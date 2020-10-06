@@ -17,6 +17,37 @@
 
 	<Globals>
 		(block Nil
+			;	Diagnostics Helper Functions -----------------------------------
+
+			(setq diagAssert (lambda (expr errorMsg)
+				(if (not expr)
+					(error errorMsg)
+					)
+				))
+
+			(setq diagAssertMissionLanguage (lambda (missionObj)
+				(block (
+					(missionName (msn@ missionObj 'name))
+					(validateList '(
+						Name
+						Summary
+						Intro
+						Briefing
+						AcceptReply
+						DeclineReply
+						InProgress
+						SuccessDebrief
+						FailureDebrief
+						))
+					(hexUNID (hex (msn@ missionObj 'unid)))
+					)
+					(diagAssert missionName "No mission name")
+					(enum validateList textID
+						(diagAssert (msnTranslate missionObj textID) (cat "[" missionName "]: No translation for " textID " in " (sysGetNode) "."))
+						)
+					)
+				))
+
 			; Internal functions -----------------------------------------------
 
 			(setq intArmorRepairAll (lambda (theShip repairTech minHPPercent)
@@ -398,6 +429,36 @@
 					)
 				))
 
+			(setq intItemEnhanceStatus (lambda (result successText itemName)
+				(switch
+					(eq result 0)
+						successText
+
+					(eq result 1)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.noEffect)
+
+					(eq result 2)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.alreadyEnhanced { itemName:itemName })
+
+					(eq result 3)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.degraded { itemName:itemName })
+
+					(eq result 4)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.defectRemoved { itemName:itemName })
+
+					(eq result 5)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.enhancementRemoved { itemName:itemName })
+
+					(eq result 6)
+						(cat successText " " (typTranslate &vtGenericEnhancement; 'itemEnhanceResult.enhancementReplaced))
+
+					(eq result 7)
+						(typTranslate &vtGenericEnhancement; 'itemEnhanceResult.improved { itemName:itemName })
+
+					""
+					)
+				))
+				
 			; Math functions ---------------------------------------------------
 			
 			(setq mathAngleDiffDegrees (lambda (first second)
@@ -786,7 +847,12 @@
 			
 			(setq sysGetStargateLeadingToCore (lambda ()
 				(block (
-					(corewardNode (typGetStaticData (@ (typFind "a") 0) 'defaultCorewardNode))
+					(adventure (@ (typFind "a") 0))
+					(corewardNode 
+						(or (typ@ adventure 'core.defaultCorewardNode) 
+							(typGetStaticData adventure 'defaultCorewardNode)
+							)
+						)
 					)
 					(switch
 						(not corewardNode)

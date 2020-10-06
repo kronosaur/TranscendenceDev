@@ -376,18 +376,11 @@
 			description=		"This is a one-meter sphere of a dark metal, etched with a network of thin lines and complex shapes."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateRel">200</Definition>
+		</Properties>
+
 		<Image imageID="&rsDallSphere;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
-		
-		<StaticData>
-			<Data id="sisters.donation">
-				;		attd	rel		text
-				'(Nil	-1		200		(block Nil 
-											(typSetData &itDallSphere; 'status 'donated)
-											(typTranslate &itDallSphere; 'donationText)
-											)
-					)
-			</Data>
-		</StaticData>
 		
 		<Events>
 			<GetGlobalAchievements>
@@ -448,6 +441,10 @@
 					)
 			</OnObjDestroyed>
 			
+			<OnItemDonatedToSisters>
+				(typSetData &itDallSphere; 'status 'donated)
+			</OnItemDonatedToSisters>
+
 			<OnUpdate>
 				(if (and (not (eq (sysGetNode) "SK")) (eq gSource gPlayerShip))
 					(block (roll)
@@ -471,7 +468,15 @@
 			<Text id="msgPowerSurge">A power surge from the sphere disables your ship</Text>
 			<Text id="msgPowerPulse">The sphere in your cargo hold pulses with power</Text>
 			
-			<Text id="donationText">This is a remarkable item! Domina will be very pleased!</Text>
+			<Text id="sisters.donateDesc">
+			
+				A thunderclap knocks you down, and you hear an alien voice in 
+				your head. Images of destruction and death fly through your 
+				mind, leaving a dull pain behind.
+
+				When you open your eyes, the sphere is gone.
+				
+			</Text>
 
 			<Text id="achievement.destroyed">Destroyed Professor Dall's alien sphere</Text>
 			<Text id="achievement.donated">Donated Professor Dall's alien sphere to the Sisters of Domina</Text>
@@ -554,6 +559,10 @@
 			attributes=			"shipwreck"
 			>
 			
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
+
 		<ImageShipwreck class="&scSungTransport;"/>
 		
 		<Items>

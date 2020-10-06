@@ -19,9 +19,9 @@
 #define TAG_SCALING                 CONSTLIT("Scaling")
 
 CDriveClass::CDriveClass (void) :
-        m_pDesc(NULL),
-        m_pDamagedDesc(NULL),
-        m_pEnhancedDesc(NULL)
+		m_pDesc(NULL),
+		m_pDamagedDesc(NULL),
+		m_pEnhancedDesc(NULL)
 
 //  CDriveClass constructor
 
@@ -32,16 +32,16 @@ CDriveClass::~CDriveClass (void)
 
 //  CDriveClass destructor
 
-    {
-    if (m_pDesc)
-        delete[] m_pDesc;
+	{
+	if (m_pDesc)
+		delete[] m_pDesc;
 
-    if (m_pDamagedDesc)
-        delete[] m_pDamagedDesc;
+	if (m_pDamagedDesc)
+		delete[] m_pDamagedDesc;
 
-    if (m_pEnhancedDesc)
-        delete[] m_pEnhancedDesc;
-    }
+	if (m_pEnhancedDesc)
+		delete[] m_pEnhancedDesc;
+	}
 
 ALERROR CDriveClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDrive)
 
@@ -51,7 +51,7 @@ ALERROR CDriveClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	{
 	ALERROR error;
-    int i;
+	int i;
 	CDriveClass *pDrive;
 
 	pDrive = new CDriveClass;
@@ -61,116 +61,116 @@ ALERROR CDriveClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	if (error = pDrive->InitDeviceFromXML(Ctx, pDesc, pType))
 		return error;
 
-    //  Figure out how many levels we need to allocate
+	//  Figure out how many levels we need to allocate
 
-    int iBaseLevel = pType->GetLevel();
-    pDrive->m_iLevels = (pType->GetMaxLevel() - iBaseLevel) + 1;
+	int iBaseLevel = pType->GetLevel();
+	pDrive->m_iLevels = (pType->GetMaxLevel() - iBaseLevel) + 1;
 
-    //  Allocate the normal descriptors
+	//  Allocate the normal descriptors
 
-    pDrive->m_pDesc = new SScalableStats[pDrive->m_iLevels];
+	pDrive->m_pDesc = new SScalableStats[pDrive->m_iLevels];
 
-    //  If we've got a scaling element, then we use that.
+	//  If we've got a scaling element, then we use that.
 
-    CXMLElement *pScalingDesc = pDesc->GetContentElementByTag(TAG_SCALING);
-    if (pScalingDesc)
-        {
-        for (i = 0; i < pScalingDesc->GetContentElementCount(); i++)
-            {
-            CXMLElement *pStageDesc = pScalingDesc->GetContentElement(i);
-            int iLevel = pStageDesc->GetAttributeInteger(FIELD_LEVEL);
-            if (iLevel < iBaseLevel || iLevel >= iBaseLevel + pDrive->m_iLevels)
-                {
-                Ctx.sError = strPatternSubst(CONSTLIT("Invalid level: %d"), iLevel);
-                return ERR_FAIL;
-                }
+	CXMLElement *pScalingDesc = pDesc->GetContentElementByTag(TAG_SCALING);
+	if (pScalingDesc)
+		{
+		for (i = 0; i < pScalingDesc->GetContentElementCount(); i++)
+			{
+			CXMLElement *pStageDesc = pScalingDesc->GetContentElement(i);
+			int iLevel = pStageDesc->GetAttributeInteger(FIELD_LEVEL);
+			if (iLevel < iBaseLevel || iLevel >= iBaseLevel + pDrive->m_iLevels)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Invalid level: %d"), iLevel);
+				return ERR_FAIL;
+				}
 
-            if (error = pDrive->InitStatsFromXML(Ctx, iLevel, pDrive->GetUNID(), pStageDesc, pDrive->m_pDesc[iLevel - iBaseLevel]))
-                return error;
-            }
-        }
+			if (error = pDrive->InitStatsFromXML(Ctx, iLevel, pDrive->GetUNID(), pStageDesc, pDrive->m_pDesc[iLevel - iBaseLevel]))
+				return error;
+			}
+		}
 
-    //  Otherwise, we load a single descriptor
+	//  Otherwise, we load a single descriptor
 
-    else
-        {
-        ASSERT(pDrive->m_iLevels >= 1);
-        if (error = pDrive->InitStatsFromXML(Ctx, iBaseLevel, pDrive->GetUNID(), pDesc, pDrive->m_pDesc[0]))
-            return error;
-        }
+	else
+		{
+		ASSERT(pDrive->m_iLevels >= 1);
+		if (error = pDrive->InitStatsFromXML(Ctx, iBaseLevel, pDrive->GetUNID(), pDesc, pDrive->m_pDesc[0]))
+			return error;
+		}
 
-    //  Loop over all scales and see if all are initialized. If not, we 
-    //  interpolate as appropriate.
+	//  Loop over all scales and see if all are initialized. If not, we 
+	//  interpolate as appropriate.
 
-    int iStartLevel = -1;
-    int iEndLevel = 0;
-    for (i = 0; i < pDrive->m_iLevels; i++)
-        {
-        SScalableStats &Stats = pDrive->m_pDesc[i];
-        if (Stats.iLevel == -1)
-            {
-            //  If we don't have a starting level, we can't interpolate.
+	int iStartLevel = -1;
+	int iEndLevel = 0;
+	for (i = 0; i < pDrive->m_iLevels; i++)
+		{
+		SScalableStats &Stats = pDrive->m_pDesc[i];
+		if (Stats.iLevel == -1)
+			{
+			//  If we don't have a starting level, we can't interpolate.
 
-            if (iStartLevel == -1)
-                {
-                Ctx.sError = strPatternSubst(CONSTLIT("Unable to interpolate level %d."), i);
-                return ERR_FAIL;
-                }
+			if (iStartLevel == -1)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Unable to interpolate level %d."), i);
+				return ERR_FAIL;
+				}
 
-            const SScalableStats &StartStats = pDrive->m_pDesc[iStartLevel];
+			const SScalableStats &StartStats = pDrive->m_pDesc[iStartLevel];
 
-            //  Initialize
+			//  Initialize
 
-            Stats.iLevel = iBaseLevel + i;
+			Stats.iLevel = iBaseLevel + i;
 
-            //  Look for the end level, if necessary
+			//  Look for the end level, if necessary
 
-            if (iEndLevel != -1 && iEndLevel <= i)
-                {
-                for (int j = i + 1; j < pDrive->m_iLevels; j++)
-                    if (pDrive->m_pDesc[j].iLevel != -1)
-                        {
-                        iEndLevel = j;
-                        break;
-                        }
+			if (iEndLevel != -1 && iEndLevel <= i)
+				{
+				for (int j = i + 1; j < pDrive->m_iLevels; j++)
+					if (pDrive->m_pDesc[j].iLevel != -1)
+						{
+						iEndLevel = j;
+						break;
+						}
 
-                //  If we couldn't find the end level, then we have none
+				//  If we couldn't find the end level, then we have none
 
-                if (iEndLevel <= i)
-                    iEndLevel = -1;
-                }
+				if (iEndLevel <= i)
+					iEndLevel = -1;
+				}
 
-            //  If we don't have an end level, then this level is the same as 
-            //  the starting level (no interpolation).
+			//  If we don't have an end level, then this level is the same as 
+			//  the starting level (no interpolation).
 
-            if (iEndLevel == -1)
-                {
-                Stats.DriveDesc = StartStats.DriveDesc;
-                Stats.ManeuverDesc = StartStats.ManeuverDesc;
-                }
+			if (iEndLevel == -1)
+				{
+				Stats.DriveDesc = StartStats.DriveDesc;
+				Stats.ManeuverDesc = StartStats.ManeuverDesc;
+				}
 
-            //  Otherwise, we interpolate between the two levels.
+			//  Otherwise, we interpolate between the two levels.
 
-            else
-                {
-                const SScalableStats &EndStats = pDrive->m_pDesc[iEndLevel];
+			else
+				{
+				const SScalableStats &EndStats = pDrive->m_pDesc[iEndLevel];
 
-                //  Compute the number of steps. iSteps has to be > 0 because
-                //  iStartLevel is always < i and iEndLevel is always > i.
+				//  Compute the number of steps. iSteps has to be > 0 because
+				//  iStartLevel is always < i and iEndLevel is always > i.
 
-                int iSteps = iEndLevel - iStartLevel;
-                ASSERT(iSteps > 0);
+				int iSteps = iEndLevel - iStartLevel;
+				ASSERT(iSteps > 0);
 
-                //  Interpolate
+				//  Interpolate
 
-                Metric rInterpolate = (Metric)(i - iStartLevel) / iSteps;
-                Stats.DriveDesc.Interpolate(StartStats.DriveDesc, EndStats.DriveDesc, rInterpolate);
-                Stats.ManeuverDesc.Interpolate(StartStats.ManeuverDesc, EndStats.ManeuverDesc, rInterpolate);
-                }
-            }
-        else
-            iStartLevel = i;
-        }
+				Metric rInterpolate = (Metric)(i - iStartLevel) / iSteps;
+				Stats.DriveDesc.Interpolate(StartStats.DriveDesc, EndStats.DriveDesc, rInterpolate);
+				Stats.ManeuverDesc.Interpolate(StartStats.ManeuverDesc, EndStats.ManeuverDesc, rInterpolate);
+				}
+			}
+		else
+			iStartLevel = i;
+		}
 
 	//	Done
 
@@ -186,9 +186,11 @@ bool CDriveClass::FindDataField (const CString &sField, CString *retsValue)
 //	Returns meta-data
 
 	{
-    const SScalableStats *pDesc = GetDesc(CItemCtx());
-    if (pDesc == NULL)
-        return false;
+	CItem Item(GetItemType(), 1);
+	const CDeviceItem DeviceItem = Item.AsDeviceItem();
+	const SScalableStats *pDesc = GetDesc(DeviceItem);
+	if (pDesc == NULL)
+		return false;
 
 	if (strEquals(sField, FIELD_MAX_SPEED))
 		*retsValue = strFromInt(mathRound(100.0 * pDesc->DriveDesc.GetMaxSpeed() / LIGHT_SPEED));
@@ -209,38 +211,38 @@ const CDriveClass::SScalableStats *CDriveClass::GetDesc (const CDeviceItem &Devi
 //	Returns the drive descriptor
 
 	{
-    if (m_pDesc == NULL)
-        return NULL;
+	if (m_pDesc == NULL)
+		return NULL;
 
-    const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
-    int iBaseLevel = m_pDesc[0].iLevel;
+	const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+	int iBaseLevel = m_pDesc[0].iLevel;
 
-    //  Figure out if we want a scaled item
+	//  Figure out if we want a scaled item
 
-    int iIndex = Min(Max(0, (!DeviceItem ? 0 : DeviceItem.GetLevel() - iBaseLevel)), m_iLevels - 1);
+	int iIndex = Min(Max(0, (!DeviceItem ? 0 : DeviceItem.GetLevel() - iBaseLevel)), m_iLevels - 1);
 
-    //  If no device, then standard descriptor
+	//  If no device, then standard descriptor
 
 	if (pDevice == NULL)
 		return &m_pDesc[iIndex];
 
-    //  If the device is damaged, then return damaged descriptor
+	//  If the device is damaged, then return damaged descriptor
 
-    else if (pDevice->IsDamaged() || pDevice->IsDisrupted())
-        {
-        InitDamagedDesc();
+	else if (pDevice->IsDamaged() || pDevice->IsDisrupted())
+		{
+		InitDamagedDesc();
 		return &m_pDamagedDesc[iIndex];
-        }
+		}
 
-    //  If enhanced, then return enhanced descriptor
+	//  If enhanced, then return enhanced descriptor
 
-    else if (pDevice->IsEnhanced())
-        {
-        InitEnhancedDesc();
+	else if (pDevice->IsEnhanced())
+		{
+		InitEnhancedDesc();
 		return &m_pEnhancedDesc[iIndex];
-        }
+		}
 
-    //  Otherwise, standard descriptor.
+	//  Otherwise, standard descriptor.
 
 	else
 		return &m_pDesc[iIndex];
@@ -253,38 +255,38 @@ const CDriveClass::SScalableStats *CDriveClass::GetDesc (CItemCtx &Ctx) const
 //	Returns the drive descriptor
 
 	{
-    if (m_pDesc == NULL)
-        return NULL;
+	if (m_pDesc == NULL)
+		return NULL;
 
-    CInstalledDevice *pDevice = Ctx.GetDevice();
-    int iBaseLevel = m_pDesc[0].iLevel;
+	CInstalledDevice *pDevice = Ctx.GetDevice();
+	int iBaseLevel = m_pDesc[0].iLevel;
 
-    //  Figure out if we want a scaled item
+	//  Figure out if we want a scaled item
 
-    int iIndex = Min(Max(0, (Ctx.GetItem().IsEmpty() ? 0 : Ctx.GetItem().GetLevel() - iBaseLevel)), m_iLevels - 1);
+	int iIndex = Min(Max(0, (Ctx.GetItem().IsEmpty() ? 0 : Ctx.GetItem().GetLevel() - iBaseLevel)), m_iLevels - 1);
 
-    //  If no device, then standard descriptor
+	//  If no device, then standard descriptor
 
 	if (pDevice == NULL)
 		return &m_pDesc[iIndex];
 
-    //  If the device is damaged, then return damaged descriptor
+	//  If the device is damaged, then return damaged descriptor
 
-    else if (pDevice->IsDamaged() || pDevice->IsDisrupted())
-        {
-        InitDamagedDesc();
+	else if (pDevice->IsDamaged() || pDevice->IsDisrupted())
+		{
+		InitDamagedDesc();
 		return &m_pDamagedDesc[iIndex];
-        }
+		}
 
-    //  If enhanced, then return enhanced descriptor
+	//  If enhanced, then return enhanced descriptor
 
-    else if (pDevice->IsEnhanced())
-        {
-        InitEnhancedDesc();
+	else if (pDevice->IsEnhanced())
+		{
+		InitEnhancedDesc();
 		return &m_pEnhancedDesc[iIndex];
-        }
+		}
 
-    //  Otherwise, standard descriptor.
+	//  Otherwise, standard descriptor.
 
 	else
 		return &m_pDesc[iIndex];
@@ -300,8 +302,8 @@ ICCItem *CDriveClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 	const SScalableStats *pDesc = GetDesc(Ctx);
-    if (pDesc == NULL)
-        return CDeviceClass::FindItemProperty(Ctx, sProperty);
+	if (pDesc == NULL)
+		return CDeviceClass::FindItemProperty(Ctx, sProperty);
 
 	if (strEquals(sProperty, PROPERTY_MAX_SPEED))
 		return CC.CreateInteger(mathRound(100.0 * pDesc->DriveDesc.GetMaxSpeed() / LIGHT_SPEED));
@@ -330,8 +332,8 @@ int CDriveClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 		*retiIdlePowerUse = 0;
 
 	const SScalableStats *pDesc = GetDesc(Ctx);
-    if (pDesc == NULL)
-        return 0;
+	if (pDesc == NULL)
+		return 0;
 
 	return pDesc->DriveDesc.GetPowerUse();
 	}
@@ -362,22 +364,22 @@ void CDriveClass::InitDamagedDesc (void) const
 //
 //  Makes sure that the damaged descriptor is initialized.
 
-    {
-    int i;
+	{
+	int i;
 
-    if (m_pDamagedDesc == NULL)
-        {
-        m_pDamagedDesc = new SScalableStats[m_iLevels];
-        for (i = 0; i < m_iLevels; i++)
-            {
-            m_pDamagedDesc[i] = m_pDesc[i];
-            m_pDamagedDesc[i].DriveDesc.AdjMaxSpeed(0.75);
-            m_pDamagedDesc[i].DriveDesc.AdjThrust(0.5);
-            m_pDamagedDesc[i].DriveDesc.AdjPowerUse(1.3);
-            m_pDamagedDesc[i].DriveDesc.SetInertialess(false);
-            }
-        }
-    }
+	if (m_pDamagedDesc == NULL)
+		{
+		m_pDamagedDesc = new SScalableStats[m_iLevels];
+		for (i = 0; i < m_iLevels; i++)
+			{
+			m_pDamagedDesc[i] = m_pDesc[i];
+			m_pDamagedDesc[i].DriveDesc.AdjMaxSpeed(0.75);
+			m_pDamagedDesc[i].DriveDesc.AdjThrust(0.5);
+			m_pDamagedDesc[i].DriveDesc.AdjPowerUse(1.3);
+			m_pDamagedDesc[i].DriveDesc.SetInertialess(false);
+			}
+		}
+	}
 
 void CDriveClass::InitEnhancedDesc (void) const
 
@@ -385,21 +387,21 @@ void CDriveClass::InitEnhancedDesc (void) const
 //
 //  Makes sure that the enhanced descriptor is initialized.
 
-    {
-    int i;
+	{
+	int i;
 
-    if (m_pEnhancedDesc == NULL)
-        {
-        m_pEnhancedDesc = new SScalableStats[m_iLevels];
-        for (i = 0; i < m_iLevels; i++)
-            {
-            m_pEnhancedDesc[i] = m_pDesc[i];
-            m_pEnhancedDesc[i].DriveDesc.AdjMaxSpeed(1.1);
-            m_pEnhancedDesc[i].DriveDesc.AdjThrust(1.2);
-            m_pEnhancedDesc[i].DriveDesc.AdjPowerUse(0.9);
-            }
-        }
-    }
+	if (m_pEnhancedDesc == NULL)
+		{
+		m_pEnhancedDesc = new SScalableStats[m_iLevels];
+		for (i = 0; i < m_iLevels; i++)
+			{
+			m_pEnhancedDesc[i] = m_pDesc[i];
+			m_pEnhancedDesc[i].DriveDesc.AdjMaxSpeed(1.1);
+			m_pEnhancedDesc[i].DriveDesc.AdjThrust(1.2);
+			m_pEnhancedDesc[i].DriveDesc.AdjPowerUse(0.9);
+			}
+		}
+	}
 
 ALERROR CDriveClass::InitStatsFromXML (SDesignLoadCtx &Ctx, int iLevel, DWORD dwUNID, CXMLElement *pDesc, SScalableStats &retStats)
 
@@ -407,26 +409,26 @@ ALERROR CDriveClass::InitStatsFromXML (SDesignLoadCtx &Ctx, int iLevel, DWORD dw
 //
 //  Initialize stats
 
-    {
-    ALERROR error;
+	{
+	ALERROR error;
 
-    retStats.iLevel = iLevel;
+	retStats.iLevel = iLevel;
 
-    //  Load drive desc
+	//  Load drive desc
 
-    if (error = retStats.DriveDesc.InitFromXML(Ctx, pDesc, dwUNID))
-        return error;
+	if (error = retStats.DriveDesc.InitFromXML(Ctx, pDesc, dwUNID))
+		return error;
 
-    //  Load maneuverability desc. If no maneuverability parameters, we default
-    //  values to 0.0.
+	//  Load maneuverability desc. If no maneuverability parameters, we default
+	//  values to 0.0.
 
-    if (error = retStats.ManeuverDesc.InitFromManeuverXML(Ctx, pDesc, 0.0))
-        return error;
+	if (error = retStats.ManeuverDesc.InitFromManeuverXML(Ctx, pDesc, 0.0))
+		return error;
 
-    //  Done
+	//  Done
 
-    return NOERROR;
-    }
+	return NOERROR;
+	}
 
 void CDriveClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const
 
@@ -436,8 +438,8 @@ void CDriveClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const C
 
 	{
 	const SScalableStats *pDesc = GetDesc(DeviceItem);
-    if (pDesc == NULL)
-        return;
+	if (pDesc == NULL)
+		return;
 
 	//	Inertialess
 
@@ -451,22 +453,22 @@ bool CDriveClass::OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCt
 //
 //  Modifies the performance of the ship.
 
-    {
-    //  If disabled, then nothing
+	{
+	//  If disabled, then nothing
 
-    if (!ItemCtx.IsDeviceEnabled())
-        return false;
+	if (!ItemCtx.IsDeviceEnabled())
+		return false;
 
-    //  Get the stats (this checks for damage)
+	//  Get the stats (this checks for damage)
 
 	const SScalableStats *pDesc = GetDesc(ItemCtx);
-    if (pDesc == NULL)
-        return false;
+	if (pDesc == NULL)
+		return false;
 
-    //  Add our metrics to the base metrics.
+	//  Add our metrics to the base metrics.
 
-    Ctx.DriveDesc.Add(pDesc->DriveDesc);
-    Ctx.RotationDesc.Add(pDesc->ManeuverDesc);
+	Ctx.DriveDesc.Add(pDesc->DriveDesc);
+	Ctx.RotationDesc.Add(pDesc->ManeuverDesc);
 
 	//	Set the maximum speed
 
@@ -475,8 +477,8 @@ bool CDriveClass::OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCt
 	else
 		Ctx.rMaxSpeedLimit = Max(Ctx.rMaxSpeedLimit, pDesc->DriveDesc.GetMaxSpeedLimit() * LIGHT_SPEED / 100.0);
 
-    return true;
-    }
+	return true;
+	}
 
 CString CDriveClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
@@ -490,8 +492,8 @@ CString CDriveClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwF
 	//	Get the drive stats
 
 	const SScalableStats *pDesc = GetDesc(Ctx);
-    if (pDesc == NULL)
-        return NULL_STR;
+	if (pDesc == NULL)
+		return NULL_STR;
 
 	//	Max speed
 

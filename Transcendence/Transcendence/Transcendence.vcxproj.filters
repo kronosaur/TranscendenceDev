@@ -125,9 +125,6 @@
     <ClCompile Include="CGNeurohackArea.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
-    <ClCompile Include="CMenuDisplay.cpp">
-      <Filter>Source Files\Displays</Filter>
-    </ClCompile>
     <ClCompile Include="CMessageDisplay.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
@@ -227,9 +224,6 @@
     <ClCompile Include="CHighScoreDisplay.cpp">
       <Filter>Source Files\Intro Session</Filter>
     </ClCompile>
-    <ClCompile Include="CLRSDisplay.cpp">
-      <Filter>Source Files\Displays</Filter>
-    </ClCompile>
     <ClCompile Include="CGItemListDisplayArea.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
@@ -308,6 +302,30 @@
     <ClCompile Include="CDockScreenLayout.cpp">
       <Filter>Source Files\Dock Screens</Filter>
     </ClCompile>
+    <ClCompile Include="CNarrativeDisplay.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerControllerProperties.cpp">
+      <Filter>Source Files\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemStationsMenu.cpp">
+      <Filter>Source Files\Game Session</Filter>
+    </ClCompile>
+    <ClCompile Include="CMenuDisplayOld.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
+    <ClCompile Include="CMenuDisplay.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSessionMenus.cpp">
+      <Filter>Source Files\Game Session</Filter>
+    </ClCompile>
+    <ClCompile Include="CIconBarDisplay.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
+    <ClCompile Include="CGameIconBarData.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BackgroundTasks.h">
@@ -356,6 +374,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PlayerShip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DefaultKeyMappings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

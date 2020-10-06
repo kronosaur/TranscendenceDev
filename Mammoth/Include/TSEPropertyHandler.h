@@ -8,11 +8,11 @@
 #include <array>
 #include <functional>
 
-enum ESetPropertyResults
+enum class ESetPropertyResult
 	{
-	resultPropertySet,
-	resultPropertyNotFound,
-	resultPropertyError,
+	set,
+	notFound,
+	error,
 	};
 
 template <class OBJ>
@@ -77,7 +77,7 @@ class TPropertyHandler
 				}
 			catch (...)
 				{
-				return ICCItemPtr(strPatternSubst(CONSTLIT("Crash getting property: %s"), sProperty));
+				return ICCItemPtr(strPatternSubst(CONSTLIT("Crash getting property by index: %d"), iIndex));
 				}
 			}
 

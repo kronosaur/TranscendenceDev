@@ -15,6 +15,7 @@
 #define FLOCK_FORMATION_ATTRIB					CONSTLIT("flockFormation")
 #define FLOCKING_STYLE_ATTRIB					CONSTLIT("flockingStyle")
 #define FLYBY_COMBAT_ATTRIB						CONSTLIT("flybyCombat")
+#define IS_PLAYER_ATTRIB						CONSTLIT("isPlayer")
 #define NO_SHIELD_RETREAT_ATTRIB				CONSTLIT("ignoreShieldsDown")
 #define NO_ATTACK_ON_THREAT_ATTRIB				CONSTLIT("noAttackOnThreat")
 #define NO_DOGFIGHTS_ATTRIB						CONSTLIT("noDogfights")
@@ -167,6 +168,8 @@ CString CAISettings::GetValue (const CString &sSetting)
 		return ConvertToID(m_iFlockingStyle);
 	else if (strEquals(sSetting, FLOCK_FORMATION_ATTRIB))
 		return (m_iFlockingStyle == flockCloud ? STR_TRUE : NULL_STR);
+	else if (strEquals(sSetting, IS_PLAYER_ATTRIB))
+		return (m_fIsPlayer ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, NO_ATTACK_ON_THREAT_ATTRIB))
 		return (m_fNoAttackOnThreat ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, NO_TARGETS_OF_OPPORTUNITY_ATTRIB))
@@ -258,6 +261,7 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fNoFriendlyFireCheck = pDesc->GetAttributeBool(NO_FRIENDLY_FIRE_CHECK_ATTRIB);
 	m_fNoNavPaths = pDesc->GetAttributeBool(NO_NAV_PATHS_ATTRIB);
 	m_fNoOrderGiver = pDesc->GetAttributeBool(NO_ORDER_GIVER_ATTRIB);
+	m_fIsPlayer = false;
 
 	return NOERROR;
 	}
@@ -289,6 +293,7 @@ void CAISettings::InitToDefault (void)
 	m_fNoNavPaths = false;
 	m_fNoAttackOnThreat = false;
 	m_fNoTargetsOfOpportunity = false;
+	m_fIsPlayer = false;
 	}
 
 void CAISettings::ReadFromStream (SLoadCtx &Ctx)
@@ -346,7 +351,10 @@ void CAISettings::ReadFromStream (SLoadCtx &Ctx)
 		{
 		if (dwLoad & 0x00000800)
 			m_iFlockingStyle = flockCloud;
+		m_fIsPlayer = false;
 		}
+	else
+		m_fIsPlayer =			((dwLoad & 0x00000800) ? true : false);
 	}
 
 CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
@@ -374,6 +382,8 @@ CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
 		m_iFlockingStyle = ConvertToFlockingStyle(sValue);
 	else if (strEquals(sSetting, FLOCK_FORMATION_ATTRIB))
 		m_iFlockingStyle = (!sValue.IsBlank() ? flockCloud : flockNone);
+	else if (strEquals(sSetting, IS_PLAYER_ATTRIB))
+		m_fIsPlayer = !sValue.IsBlank();
 	else if (strEquals(sSetting, NO_ATTACK_ON_THREAT_ATTRIB))
 		m_fNoAttackOnThreat = !sValue.IsBlank();
 	else if (strEquals(sSetting, NO_TARGETS_OF_OPPORTUNITY_ATTRIB))
@@ -440,5 +450,7 @@ void CAISettings::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fNoNavPaths ?				0x00000100 : 0);
 	dwSave |= (m_fNoAttackOnThreat ?		0x00000200 : 0);
 	dwSave |= (m_fNoTargetsOfOpportunity ?	0x00000400 : 0);
+	dwSave |= (m_fIsPlayer ?				0x00000800 : 0);
+
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}

@@ -270,6 +270,12 @@ ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpM
 
 	pMissile->m_pSovereign = pMissile->m_Source.GetSovereign();
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pMissile, pMissile->GetData());
+
 	//	Create a painter instance
 
 	pMissile->m_pPainter = Ctx.pDesc->CreateEffectPainter(Ctx);
@@ -324,15 +330,15 @@ void CMissile::CreateFragments (const CVector &vPos)
 
 	if (m_pDesc->IsTargetRequired() 
 			&& m_pTarget == NULL
-			&& !m_pDesc->IsMIRV())
+			&& !m_pDesc->IsMIRVFragment())
 		return;
 
-    //  If we triggering inside an object, then we only create half the number
-    //  of fragments (as if it hit on the surface).
+	//  If we triggering inside an object, then we only create half the number
+	//  of fragments (as if it hit on the surface).
 
-    int iFraction = 100;
-    if (m_pHit && m_pHit->PointInObject(m_pHit->GetPos(), vPos))
-        iFraction = 50;
+	int iFraction = 100;
+	if (m_pHit && m_pHit->PointInObject(m_pHit->GetPos(), vPos))
+		iFraction = 50;
 
 	//	If there is an event, then let it handle the fragmentation
 
@@ -357,10 +363,11 @@ void CMissile::CreateFragments (const CVector &vPos)
 	//	Create the hit effect
 
 	SDamageCtx DamageCtx(NULL,
-			m_pDesc,
+			*m_pDesc,
 			m_pEnhancements,
 			m_Source,
 			this,
+			0.0,
 			mathRandom(0, 359),
 			vPos);
 
@@ -482,6 +489,20 @@ void CMissile::DetonateNow (CSpaceObject *pHit)
 
 	{
 	m_fDetonate = true;
+	}
+
+Metric CMissile::GetAge (void) const
+
+//	GetAge
+//
+//	Returns the age of the missile as a fraction of its lifetime (0-1.0).
+
+	{
+	int iTotalLife = m_iTick + m_iLifeLeft;
+	if (iTotalLife > 0)
+		return (Metric)m_iTick / (Metric)iTotalLife;
+	else
+		return 0.0;
 	}
 
 CSpaceObject::Categories CMissile::GetCategory (void) const
@@ -632,17 +653,16 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	//	If this is a momentum attack then we are pushed
 
-	int iMomentum;
-	if (iMomentum = Ctx.Damage.GetMomentumDamage())
+	Metric rImpulse;
+	if (Ctx.Damage.HasImpulseDamage(&rImpulse))
 		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -10 * iMomentum * iMomentum);
-		Accelerate(vAccel, g_MomentumConstant);
-		ClipSpeed(GetMaxSpeed());
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
 		}
 
 	//	Create a hit effect
 
-	Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+	Ctx.GetDesc().CreateHitEffect(GetSystem(), Ctx);
 
 	//	Check for passthrough. If we pass through then we don't take any damage.
 
@@ -660,22 +680,6 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 	//	We are destroyed
 
 	m_iHitPoints = 0;
-
-#if 0
-	//	If the missile has 10+ hp, then we create an effect when
-	//	it gets destroyed.
-
-	if (m_pDesc->GetHitPoints() >= 10)
-		{
-		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_ExplosionUNID);
-		if (pEffect)
-			pEffect->CreateEffect(GetSystem(),
-					NULL,
-					GetPos(),
-					CVector(),
-					0);
-		}
-#endif
 
 	//	If we've got a vapor trail, then we stick around until the trail is gone,
 	//	but otherwise we're destroyed.
@@ -767,7 +771,7 @@ void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 		//	Hit test
 
-		m_pHit = HitTestProximity(vOldPos, rMinThreshold, rMaxThreshold, m_pDesc->GetDamage(), &m_vHitPos, &m_iHitDir);
+		m_pHit = HitTestProximity(vOldPos, rMinThreshold, rMaxThreshold, m_pDesc->GetDamage(), m_pTarget, &m_vHitPos, &m_iHitDir);
 
 		//	Make sure we are not too close to the source when we trigger
 		//	a proximity blast.
@@ -1082,7 +1086,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		if (m_pPainter 
 				&& WasPainted())
 			{
-			SEffectUpdateCtx PainterCtx;
+			SEffectUpdateCtx PainterCtx(GetUniverse());
 			PainterCtx.pObj = this;
 			PainterCtx.iTick = m_iTick;
 			PainterCtx.iRotation = GetRotation();
@@ -1116,8 +1120,8 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		//	Accelerate, if necessary
 
-        if ((iTick % 10) == 0)
-            m_pDesc->ApplyAcceleration(this);
+		if ((iTick % 10) == 0)
+			m_pDesc->ApplyAcceleration(this);
 
 		//	If we can choose new targets, see if we need one now
 
@@ -1197,7 +1201,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		if (m_pPainter
 				&& WasPainted())
 			{
-			SEffectUpdateCtx PainterCtx;
+			SEffectUpdateCtx PainterCtx(GetUniverse());
 			PainterCtx.pObj = this;
 			PainterCtx.iTick = m_iTick;
 			PainterCtx.iRotation = GetRotation();
@@ -1275,10 +1279,11 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			else if (m_iHitDir != -1)
 				{
 				SDamageCtx DamageCtx(m_pHit,
-						m_pDesc,
+						*m_pDesc,
 						m_pEnhancements,
 						m_Source,
 						this,
+						GetAge(),
 						AngleMod(m_iHitDir + mathRandom(0, 30) - 15),
 						m_vHitPos);
 
@@ -1434,8 +1439,8 @@ void CMissile::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 	{
 	if (!m_fDestroyOnAnimationDone)
 		Dest.DrawDot(x, y, 
-				CG32bitPixel(255, 255, 0), 
-				markerSmallRound);
+				GetUniverse().GetAccessibilitySettings().GetIFFColor(CAccessibilitySettings::IFFType::projectile),
+				markerRoundDot);
 	}
 
 bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos) const

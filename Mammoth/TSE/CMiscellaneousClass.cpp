@@ -119,53 +119,54 @@ int CMiscellaneousClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pS
 //	Returns the charge level
 
 	{
-    //  If we don't need activation power, then we're done
+	//  If we don't need activation power, then we're done
 
 	if (m_iPowerToActivate == 0)
 		{
 		if (retiType)
 			*retiType = cntNone;
 
-        if (retiLevel)
-            *retiLevel = 0;
+		if (retiLevel)
+			*retiLevel = 0;
 
 		return 0;
 		}
 
-    //  We're always a capacitor
+	//  We're always a capacitor
 
-    if (retiType)
-        *retiType = cntCapacitor;
+	if (retiType)
+		*retiType = cntCapacitor;
 
-    //  If no device or source, we don't know the level
+	//  If no device or source, we don't know the level
 
-    if (pDevice == NULL || pSource == NULL)
-        {
-        if (retiLevel)
-            *retiLevel = 0;
+	if (pDevice == NULL || pSource == NULL)
+		{
+		if (retiLevel)
+			*retiLevel = 0;
 
-        return 0;
-        }
+		return 0;
+		}
 
 	//	If we're full, no counter
 
 	if (pDevice->IsReady())
-        {
-        if (retiLevel)
-            *retiLevel = 100;
+		{
+		if (retiLevel)
+			*retiLevel = 100;
 
-        //  Return 0 so we don't show a counter
+		//  Return 0 so we don't show a counter
 
 		return 0;
-        }
+		}
 
 	//	Figure out how long before we're ready
 
-	int iActivateDelay = GetActivateDelay(CItemCtx(pSource, pDevice));
+	CItemCtx ItemCtx(pSource, pDevice);
+	int iActivateDelay = GetActivateDelay(ItemCtx);
 	int iLevel = (iActivateDelay > 0 ? 100 - (pDevice->GetTimeUntilReady() * 100 / iActivateDelay) : 0);
 
-    if (retiLevel)
-        *retiLevel = iLevel;
+	if (retiLevel)
+		*retiLevel = iLevel;
 
 	return iLevel;
 	}
@@ -203,18 +204,19 @@ bool CMiscellaneousClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *p
 //
 //  Sets the counter to the given level. Returns FALSE if we cannot set it.
 
-    {
-    if (iCounter != cntCapacitor || m_iPowerToActivate == 0 || pDevice == NULL || pSource == NULL)
-        return false;
+	{
+	if (iCounter != cntCapacitor || m_iPowerToActivate == 0 || pDevice == NULL || pSource == NULL)
+		return false;
 
-	int iActivateDelay = GetActivateDelay(CItemCtx(pSource, pDevice));
-    int iTimeLeft = Max(0, Min((100 - iLevel) * iActivateDelay / 100, iActivateDelay));
+	CItemCtx ItemCtx(pSource, pDevice);
+	int iActivateDelay = GetActivateDelay(ItemCtx);
+	int iTimeLeft = Max(0, Min((100 - iLevel) * iActivateDelay / 100, iActivateDelay));
 
-    pDevice->SetTimeUntilReady(iTimeLeft);
+	pDevice->SetTimeUntilReady(iTimeLeft);
 	pSource->OnComponentChanged(comDeviceCounter);
 
-    return true;
-    }
+	return true;
+	}
 
 bool CMiscellaneousClass::ShowActivationDelayCounter (CSpaceObject *pSource, CInstalledDevice *pDevice)
 

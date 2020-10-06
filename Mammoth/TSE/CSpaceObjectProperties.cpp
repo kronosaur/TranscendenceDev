@@ -63,7 +63,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 3> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 5> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -80,8 +80,65 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 		"canBeAttacked",	"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.CanBeAttacked()); },
 		NULL,
+		},
+
+		{
+		"canBeHitByFriends",	"True|Nil",
+		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.CanBeHitByFriends()); },
+		[](CSpaceObject &Obj, const CString &sProperty, const ICCItem &Value, CString *retsError) { Obj.SetNoFriendlyTarget(Value.IsNil()); return true; },
+		},
+
+		{
+		"escortingPlayer",	"True|Nil",
+		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsPlayerEscort()); },
+		NULL,
 		}
-	}};
+		
+		}};
+
+bool CSpaceObject::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const
+
+//	FindCustomProperty
+//
+//	Finds and evaluates a custom property.
+
+	{
+	if (CDesignType *pType = GetType())
+		{
+		EPropertyType iType;
+		if (!pType->FindCustomProperty(sProperty, pResult, &iType))
+			return false;
+
+		//	If the property is an object property, then we need to look in 
+		//	object data.
+
+		if (iType == EPropertyType::propVariant 
+				|| iType == EPropertyType::propData
+				|| iType == EPropertyType::propObjData)
+			{
+			pResult = GetData(sProperty);
+			return true;
+			}
+
+		//	If this is a dynamic property, we need to evaluate.
+
+		else if (iType == EPropertyType::propDynamicData)
+			{
+			CCodeChainCtx CCX(GetUniverse());
+			CCX.SaveAndDefineSourceVar(this);
+
+			pResult = CCX.RunCode(pResult);
+			return true;
+			}
+
+		//	Otherwise we have a valid property.
+
+		else
+			return true;
+		}
+	else
+		return false;
+	}
 
 ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const
 
@@ -90,7 +147,16 @@ ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProper
 //	Returns the property.
 
 	{
-	if (ICCItemPtr pValue = OnFindProperty(CCX, sProperty))
+	ICCItemPtr pValue;
+
+	//	Always start with custom properties because they override built-in 
+	//	properties. [We need this in case we add a new engine property that
+	//	conflicts with a custom propertie. We don't want old code to break.]
+
+	if (FindCustomProperty(sProperty, pValue))
+		return pValue;
+
+	else if (pValue = OnFindProperty(CCX, sProperty))
 		return pValue;
 
 	else if (m_BasePropertyTable.FindProperty(*this, sProperty, pValue))
@@ -110,9 +176,7 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 //	Returns the property
 
 	{
-	int i;
 	CCodeChain &CC = GetUniverse().GetCC();
-	CDesignType *pType;
 
 	if (strEquals(sName, PROPERTY_CATEGORY))
 		{
@@ -192,7 +256,7 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 			return CC.CreateNil();
 
 		ICCItem *pList = CC.CreateLinkedList();
-		for (i = 0; i < pPorts->GetPortCount(this); i++)
+		for (int i = 0; i < pPorts->GetPortCount(this); i++)
 			{
 			ICCItem *pPortDesc = CC.CreateSymbolTable();
 
@@ -276,7 +340,7 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 	else if (strEquals(sName, PROPERTY_MASS))
 		return CC.CreateInteger((int)GetMass());
 
-    else if (strEquals(sName, PROPERTY_NAME_PATTERN))
+	else if (strEquals(sName, PROPERTY_NAME_PATTERN))
 		{
 		ICCItem *pResult = CC.CreateSymbolTable();
 		DWORD dwFlags;
@@ -389,16 +453,37 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 	else if (strEquals(sName, PROPERTY_UNDER_ATTACK))
 		return CC.CreateBool(IsUnderAttack());
 
-	else if (pType = GetType())
+	else if (const CDesignType *pType = GetType())
+		{
+		ICCItemPtr pValue;
+		if (pType->FindEngineProperty(Ctx, sName, pValue))
+			return pValue->Reference();
+
+		return CC.CreateNil();
+		}
+	else
+		return CC.CreateNil();
+	}
+
+ICCItemPtr CSpaceObject::GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const
+
+//	GetCustomProperty
+//
+//	Returns a property from the type.
+
+	{
+	if (CDesignType *pType = GetType())
 		{
 		EPropertyType iType;
-		ICCItemPtr pResult = pType->GetProperty(Ctx, sName, &iType);
+		ICCItemPtr pResult = pType->GetProperty(CCX, sProperty, &iType);
 
 		//	If the property is an object property, then we need to look in 
 		//	object data.
 
-		if (iType == EPropertyType::propVariant || iType == EPropertyType::propData)
-			return GetData(sName)->Reference();
+		if (iType == EPropertyType::propVariant 
+				|| iType == EPropertyType::propData
+				|| iType == EPropertyType::propObjData)
+			return GetData(sProperty);
 
 		//	If this is a dynamic property, we need to evaluate.
 
@@ -408,17 +493,16 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 			Ctx.SaveAndDefineSourceVar(this);
 
 			ICCItemPtr pValue = Ctx.RunCode(pResult);
-			return pValue->Reference();
+			return pValue;
 			}
 
 		//	Otherwise we have a valid property.
 
 		else
-			return pResult->Reference();
+			return pResult;
 		}
-
 	else
-		return CC.CreateNil();
+		return ICCItemPtr::Nil();
 	}
 
 bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
@@ -428,7 +512,16 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 //	Sets an object property
 
 	{
-	if (strEquals(sName, PROPERTY_IDENTIFIED))
+	CString sError;
+	bool bSuccess;
+	if ((bSuccess = m_BasePropertyTable.SetProperty(*this, sName, *pValue, &sError)) || !sError.IsBlank())
+		{
+		if (!bSuccess && retsError)
+			*retsError = sError;
+
+		return bSuccess;
+		}
+	else if (strEquals(sName, PROPERTY_IDENTIFIED))
 		{
 		SetIdentified(!pValue->IsNil());
 		return true;
@@ -473,6 +566,7 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 				return true;
 
 			case EPropertyType::propData:
+			case EPropertyType::propObjData:
 				SetData(sName, pValue);
 				return true;
 

@@ -94,6 +94,12 @@
     <Filter Include="Human Space Library\Encounters">
       <UniqueIdentifier>{b33ac3ac-3346-4d8b-b1b3-ef7b253a1f89}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Human Space Library\Pilgrim">
+      <UniqueIdentifier>{0d3a5fa3-c89f-4ca2-b785-232965a589d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Human Space Library\Commonwealth Metropolis">
+      <UniqueIdentifier>{008a8470-8f59-4e13-8bc5-72c588016ec7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Transcendence.xml" />
@@ -193,9 +199,6 @@
     <None Include="Mining.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Ovoids.xml">
-      <Filter>Transcendence Galaxy Library</Filter>
-    </None>
     <None Include="Neurohack.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
@@ -242,9 +245,6 @@
       <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="Code.xml">
-      <Filter>Human Space Library\Miscellaneous</Filter>
-    </None>
-    <None Include="Domina.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
     <None Include="DwargRaiders.xml">
@@ -343,9 +343,6 @@
     <None Include="CommonwealthAgricultural.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </None>
-    <None Include="CommonwealthMetropolis.xml">
-      <Filter>Human Space Library\Commonwealth</Filter>
-    </None>
     <None Include="PointJuno.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </None>
@@ -396,6 +393,15 @@
     </None>
     <None Include="StdEffects.xml">
       <Filter>Human Space Library\Items</Filter>
+    </None>
+    <None Include="Domina.xml">
+      <Filter>Human Space Library\Pilgrim</Filter>
+    </None>
+    <None Include="OvoidsCompatibility.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </None>
+    <None Include="CommonwealthMetropolis.xml">
+      <Filter>Human Space Library\Commonwealth Metropolis</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -893,6 +899,123 @@
     </Xml>
     <Xml Include="NewVictoria.xml">
       <Filter>Human Space Library\St Katharines</Filter>
+    </Xml>
+    <Xml Include="Makayev.xml">
+      <Filter>Human Space Library\Corporate Hierarchy</Filter>
+    </Xml>
+    <Xml Include="RPGMining.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="CoreEngineText.xml">
+      <Filter>Core Types</Filter>
+    </Xml>
+    <Xml Include="MiningPods.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
+    <Xml Include="UndergroundCaverns.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
+    <Xml Include="BlackMarketMember.xml">
+      <Filter>Human Space Library\Black Market</Filter>
+    </Xml>
+    <Xml Include="CoreDiagnostics.xml">
+      <Filter>Core Types</Filter>
+    </Xml>
+    <Xml Include="SistersDonate.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
+    <Xml Include="Pilgrim.xml">
+      <Filter>Human Space Library\Pilgrim</Filter>
+    </Xml>
+    <Xml Include="SistersPilgrimsAid.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
+    <Xml Include="Sisters01.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
+    <Xml Include="SistersSanctum.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
+    <Xml Include="HaloGems.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
+    <Xml Include="SungFortress.xml">
+      <Filter>Human Space Library\Sung Slavers</Filter>
+    </Xml>
+    <Xml Include="SungCitadel.xml">
+      <Filter>Human Space Library\Sung Slavers</Filter>
+    </Xml>
+    <Xml Include="JiangsStar.xml">
+      <Filter>Human Space Library\Sung Slavers</Filter>
+    </Xml>
+    <Xml Include="Scoria.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
+    <Xml Include="Ovoids.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
+    <Xml Include="ContainerHabitat.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate01.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="CommonwealthVolunteerMission01.xml">
+      <Filter>Human Space Library\Commonwealth Metropolis</Filter>
+    </Xml>
+    <Xml Include="EnricoGaul.xml">
+      <Filter>Human Space Library\Characters</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate02.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="CommonwealthVolunteerMission02.xml">
+      <Filter>Human Space Library\Commonwealth Metropolis</Filter>
+    </Xml>
+    <Xml Include="CommonwealthVolunteerMission03.xml">
+      <Filter>Human Space Library\Commonwealth Metropolis</Filter>
+    </Xml>
+    <Xml Include="RejuvTank.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
+    <Xml Include="LiaPereira.xml">
+      <Filter>Human Space Library\Characters</Filter>
+    </Xml>
+    <Xml Include="Psych01.xml">
+      <Filter>Part I</Filter>
+    </Xml>
+    <Xml Include="Psych00.xml">
+      <Filter>Part I</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate03.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="CommonwealthMiningMission03.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="HarperThompson.xml">
+      <Filter>Human Space Library\Characters</Filter>
+    </Xml>
+    <Xml Include="CommonwealthMiningMission04.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="MuhammadCondi.xml">
+      <Filter>Human Space Library\Characters</Filter>
+    </Xml>
+    <Xml Include="UndergroundStructures.xml">
+      <Filter>Human Space Library\Miscellaneous</Filter>
+    </Xml>
+    <Xml Include="CommonwealthMiningMission05.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="Cryovolcanic.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
+    <Xml Include="CorporateAutonDealer.xml">
+      <Filter>Human Space Library\Corporate Hierarchy</Filter>
+    </Xml>
+    <Xml Include="..\Extensions\Diagnostics\ShipClassTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
     </Xml>
   </ItemGroup>
 </Project>

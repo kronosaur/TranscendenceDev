@@ -23,11 +23,7 @@ CCyberDeckClass::CCyberDeckClass (void)
 	{
 	}
 
-bool CCyberDeckClass::Activate (CInstalledDevice *pDevice, 
-							    CSpaceObject *pSource, 
-							    CSpaceObject *pTarget,
-								bool *retbSourceDestroyed,
-							    bool *retbConsumedItems)
+bool CCyberDeckClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 
 //	Activate
 //
@@ -38,17 +34,16 @@ bool CCyberDeckClass::Activate (CInstalledDevice *pDevice,
 
 	//	Init
 
-	if (retbConsumedItems)
-		*retbConsumedItems = false;
+	ActivateCtx.bConsumedItems = false;
 
 	//	Won't work if not enabled
 
-	if (!pDevice->IsWorking())
+	if (!Device.IsWorking())
 		return false;
 
 	//	We better have a target
 
-	if (pTarget == NULL)
+	if (ActivateCtx.pTarget == NULL)
 		return false;
 
 	//	The attack has a random chance of succeeding. If it did not
@@ -66,7 +61,7 @@ bool CCyberDeckClass::Activate (CInstalledDevice *pDevice,
 
 	//	See if the attack is blocked by defenses
 
-	if (m_Program.iAILevel < pTarget->GetCyberDefenseLevel())
+	if (m_Program.iAILevel < ActivateCtx.pTarget->GetCyberDefenseLevel())
 		{
 		//	There is a chance that the attacker will need to reboot
 
@@ -77,12 +72,13 @@ bool CCyberDeckClass::Activate (CInstalledDevice *pDevice,
 
 	//	Run the program
 
-	pTarget->ProgramDamage(pSource, m_Program);
+	CSpaceObject &SourceObj = Device.GetSourceOrThrow();
+	ActivateCtx.pTarget->ProgramDamage(&SourceObj, m_Program);
 
 	//	Identify when program is run
 
-	if (pSource->IsPlayer())
-		pDevice->GetItem()->SetKnown();
+	if (SourceObj.IsPlayer())
+		Device.GetItem()->SetKnown();
 
 	return true;
 

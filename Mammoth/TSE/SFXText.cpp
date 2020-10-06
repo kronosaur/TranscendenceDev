@@ -189,7 +189,7 @@ void CTextPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 	if (pFont == NULL)
 		return;
 
-	CG32bitPixel rgbColor = (m_pCreator ? m_pCreator->GetPrimaryColor() : 0xFFFF);
+	CG32bitPixel rgbColor = (m_pCreator ? m_pCreator->GetPrimaryColor() : CG32bitPixel(255, 255, 255));
 	DWORD dwFlags = (m_pCreator ? m_pCreator->GetFontFlags() : 0);
 	BYTE byOpacity = (m_pCreator ? (BYTE)m_pCreator->GetOpacity() : 255);
 

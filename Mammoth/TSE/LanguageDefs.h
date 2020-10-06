@@ -13,7 +13,8 @@ struct SStaticGenderWord
 	const char *pszText[genomeCount];
 	};
 
-static TStaticStringTable<SStaticGenderWord, 8> GENDER_WORD_TABLE = {
+static TStaticStringTable<SStaticGenderWord, 9> GENDER_WORD_TABLE = {
+	"boy",			{ "child",		"boy",		"girl",		"child", },
 	"brother",		{ "partner",	"brother",	"sister",	"partner", },
 	"he",			{ "they",		"he",		"she",		"it", },
 	"hers",			{ "theirs",		"his",		"hers",		"its", },
@@ -26,7 +27,7 @@ static TStaticStringTable<SStaticGenderWord, 8> GENDER_WORD_TABLE = {
 
 //	Convert from a string to NounPhraseFlags
 
-static TStaticStringTable<TStaticStringEntry<DWORD>, 22> NOUN_FLAG_TABLE = {
+static TStaticStringTable<TStaticStringEntry<DWORD>, 23> NOUN_FLAG_TABLE = {
 	"actual",				nounActual,
 	"adjective",			nounAdjective,
 	"article",				nounArticle,
@@ -35,6 +36,7 @@ static TStaticStringTable<TStaticStringEntry<DWORD>, 22> NOUN_FLAG_TABLE = {
 
 	"countAlways",			nounCountAlways,
 	"countOnly",			nounCountOnly,
+	"definitePhrase",		nounDefinitePhrase,
 	"demonstrative",		nounDemonstrative,
 	"demonym",				nounDemonym,
 	"duplicateModifier",	nounDuplicateModifier,
@@ -95,8 +97,8 @@ static int TITLE_CAP_EXCEPTIONS_COUNT = sizeof(TITLE_CAP_EXCEPTIONS) / sizeof(TI
 
 struct SVerbData
 	{
-	char *pszKey;							//	The root verb form
-	char *pszPlural;						//	Plural version
+	const char *pszKey;							//	The root verb form
+	const char *pszPlural;						//	Plural version
 	};
 
 static TStaticStringTable<SVerbData, 3> VERB_FORM_TABLE = {

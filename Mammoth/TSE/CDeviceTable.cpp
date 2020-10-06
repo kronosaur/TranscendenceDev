@@ -40,9 +40,11 @@
 #define MAX_COUNT_ATTRIB						CONSTLIT("maxCount")
 #define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
 #define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
+#define MAX_FIRE_RANGE_ATTRIB					CONSTLIT("maxFireRange")
 #define MISSILE_DEFENSE_ATTRIB					CONSTLIT("missileDefense")
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define SECONDARY_WEAPON_ATTRIB					CONSTLIT("secondaryWeapon")
+#define SEGMENT_ID_ATTRIB						CONSTLIT("segmentID")
 #define SHOT_SEPARATION_SCALE_ATTRIB			CONSTLIT("shotSeparationScale")
 #define SLOT_ID_ATTRIB							CONSTLIT("slotID")
 #define TABLE_ATTRIB							CONSTLIT("table")
@@ -73,7 +75,7 @@ class CSingleDevice : public IDeviceGenerator
 
 		CItemTypeRef m_pItemType;				//	Device for this slot
 		DiceRange m_Count;						//	Number of slots to create
-        DiceRange m_Level;						//  For scalable items
+		DiceRange m_Level;						//  For scalable items
 
 		int m_iDamaged = 0;						//	Chance device is damaged
 		CRandomEnhancementGenerator m_Enhanced;	//	Procedure for enhancing device item
@@ -93,12 +95,13 @@ class CSingleDevice : public IDeviceGenerator
 		bool m_bOmnidirectional = false;		//	This slot has a turret
 		int m_iMinFireArc = 0;					//	This slot swivels
 		int m_iMaxFireArc = 0;
+		int m_iMaxFireRange = 0;				//	Max effective fire range (light-seconds)
 		bool m_bDefaultFireArc = false;			//	This slot does not define swivel
 
 		DWORD m_dwLinkedFireOptions = 0;		//	This slot has linked-fire properties
 		bool m_bDefaultLinkedFire = false;		//	This slot does not define linked-fire
 		bool m_bSecondary = false;				//	Secondary weapon (for AI)
-
+		bool m_bOnSegment = false;				//	Device is (logically) on segment (m_sSlotID)
 		bool m_bExternal = false;				//	This slot is external
 		bool m_bCannotBeEmpty = false;			//	This slot cannot be empty
 		ItemFates m_iFate = fateNone;			//	What happens to item when ship is destroyed
@@ -176,10 +179,10 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
-		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const override;
-		virtual bool FindDefaultDesc (CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const override;
-		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
-		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, DeviceNames iDev, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
 
 	private:
 		struct SEntry
@@ -267,6 +270,7 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		retDesc->b3DPosition = false;
 		}
 
+	retDesc->iMaxFireRange = pDesc->GetAttributeIntegerBounded(MAX_FIRE_RANGE_ATTRIB, 1, -1, 0);
 	retDesc->rShotSeparationScale = pDesc->GetAttributeDoubleBounded(SHOT_SEPARATION_SCALE_ATTRIB, -1.0, 1.0, 1.0);
 
 	retDesc->bExternal = pDesc->GetAttributeBool(EXTERNAL_ATTRIB);
@@ -357,24 +361,24 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 		SDeviceDesc Desc;
 		Desc.Item = CItem(m_pItemType, 1);
 
-        //  Level
+		//  Level
 
-        if (!m_Level.IsEmpty())
-            {
-            CString sError;
-            if (!Desc.Item.SetLevel(m_Level.Roll(), &sError))
-                {
-                if (Ctx.GetUniverse().InDebugMode())
-                    ::kernelDebugLogString(sError);
-                }
-            }
+		if (!m_Level.IsEmpty())
+			{
+			CString sError;
+			if (!Desc.Item.SetLevel(m_Level.Roll(), &sError))
+				{
+				if (Ctx.GetUniverse().InDebugMode())
+					::kernelDebugLogString(sError);
+				}
+			}
 
 		//	Charges
 
 		if (m_iCharges)
 			Desc.Item.SetCharges(m_iCharges);
 
-        //  Damage/enhancement
+		//  Damage/enhancement
 
 		if (mathRandom(1, 100) <= m_iDamaged)
 			Desc.Item.SetDamaged();
@@ -385,6 +389,17 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 
 		SDeviceDesc SlotDesc;
 		bool bUseSlotDesc = FindSlot(Ctx, Desc.Item, SlotDesc);
+
+		if (SlotDesc.bOnSegment)
+			{
+			Desc.bOnSegment = true;
+			Desc.sID = SlotDesc.sID;
+			}
+		else if (m_bOnSegment)
+			{
+			Desc.bOnSegment = true;
+			Desc.sID = m_sSlotID;
+			}
 
 		//	Set the device position appropriately, either from the <Device> element,
 		//	from the slot descriptor at the root, or from defaults.
@@ -405,31 +420,27 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			Desc.b3DPosition = SlotDesc.b3DPosition;
 			}
 
-		if (bUseSlotDesc)
-			Desc.rShotSeparationScale = SlotDesc.rShotSeparationScale;
+		//	Slot descriptor overrides
+
+		if (SlotDesc.iMaxFireRange)
+			Desc.iMaxFireRange = SlotDesc.iMaxFireRange;
 		else
-			Desc.rShotSeparationScale = m_rShotSeparationScale;
-
-		//	External
+			Desc.iMaxFireRange = m_iMaxFireRange;
 
 		if (bUseSlotDesc)
-			Desc.bExternal = SlotDesc.bExternal;
-		else
-			Desc.bExternal = m_bExternal;
-
-		//	Cannot be empty
-
-		if (bUseSlotDesc)
+			{
 			Desc.bCannotBeEmpty = SlotDesc.bCannotBeEmpty;
-		else
-			Desc.bCannotBeEmpty = m_bCannotBeEmpty;
-
-		//	Fate
-
-		if (bUseSlotDesc)
+			Desc.bExternal = SlotDesc.bExternal;
 			Desc.iFate = SlotDesc.iFate;
+			Desc.rShotSeparationScale = SlotDesc.rShotSeparationScale;
+			}
 		else
+			{
+			Desc.bCannotBeEmpty = m_bCannotBeEmpty;
+			Desc.bExternal = m_bExternal;
 			Desc.iFate = m_iFate;
+			Desc.rShotSeparationScale = m_rShotSeparationScale;
+			}
 
 		//	Set the device fire arc appropriately.
 
@@ -479,6 +490,7 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			{
 			CItemListManipulator ItemList(Desc.ExtraItems);
 			SItemAddCtx ItemCtx(ItemList);
+			ItemCtx.pSystem = ItemCtx.GetUniverse().GetCurrentSystem();
 			ItemCtx.iLevel = Ctx.iLevel;
 
 			m_pExtraItems->AddItems(ItemCtx);
@@ -519,9 +531,9 @@ bool CSingleDevice::FindSlot (SDeviceGenerateCtx &Ctx, const CItem &Item, SDevic
 
 	//	If we have a slot ID, then we need to look for that slot.
 
-	else if (!m_sSlotID.IsBlank())
+	else if (!m_sSlotID.IsBlank() && !m_bOnSegment)
 		{
-		if (!Ctx.pRoot->FindDefaultDesc(*Ctx.pResult, m_sSlotID, &retSlotDesc))
+		if (!Ctx.pRoot->FindDefaultDesc(Ctx, *Ctx.pResult, m_sSlotID, &retSlotDesc))
 			{
 			if (Ctx.GetUniverse().InDebugMode())
 				::kernelDebugLogPattern("WARNING: Unable to find device slot %s", m_sSlotID);
@@ -533,7 +545,7 @@ bool CSingleDevice::FindSlot (SDeviceGenerateCtx &Ctx, const CItem &Item, SDevic
 
 	//	Otherwise, see if a slot wants this item
 
-	else if (Ctx.pRoot->FindDefaultDesc(*Ctx.pResult, Item, &retSlotDesc))
+	else if (Ctx.pRoot->FindDefaultDesc(Ctx, *Ctx.pResult, Item, &retSlotDesc))
 		return true;
 
 	//	Otherwise, not found
@@ -608,12 +620,16 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (error = m_Enhanced.InitFromXML(Ctx, pDesc))
 		return error;
 
-    //  Various properties 
+	//  Various properties 
 
 	m_iDamaged = pDesc->GetAttributeInteger(DAMAGED_ATTRIB);
-    m_Level.LoadFromXML(pDesc->GetAttribute(LEVEL_ATTRIB));
-	m_sSlotID = pDesc->GetAttribute(SLOT_ID_ATTRIB);
+	m_Level.LoadFromXML(pDesc->GetAttribute(LEVEL_ATTRIB));
 	m_iCharges = pDesc->GetAttributeIntegerBounded(CHARGES_ATTRIB, 0, -1, 0);
+
+	if (pDesc->FindAttribute(SEGMENT_ID_ATTRIB, &m_sSlotID))
+		m_bOnSegment = true;
+	else
+		m_sSlotID = pDesc->GetAttribute(SLOT_ID_ATTRIB);
 
 	//	Load device position attributes
 
@@ -634,6 +650,7 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_bDefaultPos = true;
 		}
 
+	m_iMaxFireRange = pDesc->GetAttributeIntegerBounded(MAX_FIRE_RANGE_ATTRIB, 1, -1, 0);
 	m_rShotSeparationScale = pDesc->GetAttributeDoubleBounded(SHOT_SEPARATION_SCALE_ATTRIB, -1.0, 1.0, 1.0);
 
 	//	Load fire arc attributes
@@ -1137,7 +1154,7 @@ Metric CGroupOfDeviceGenerators::CalcHullPoints (void) const
 	return rPoints;
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const
+bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, DeviceNames iDev, SDeviceDesc *retDesc) const
 
 //	FindDefaultDesc
 //
@@ -1173,37 +1190,38 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *r
 	return true;
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc (CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const
+bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const
 
 //	FindDefaultDesc
 //
 //	Looks for a slot descriptor that matches the given item and returns it.
 
 	{
-	int i;
-
 	//	Look for a matching slot
 
-	for (i = 0; i < m_SlotDesc.GetCount(); i++)
+	if (!Ctx.bNoSlotCriteria)
 		{
-		//	Skip if this slot does not meet criteria
+		for (int i = 0; i < m_SlotDesc.GetCount(); i++)
+			{
+			//	Skip if this slot does not meet criteria
 
-		if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
-			continue;
+			if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
+				continue;
 
-		//	If this slot has an ID and maximum counts and if we've already 
-		//	exceeded those counts, then skip.
+			//	If this slot has an ID and maximum counts and if we've already 
+			//	exceeded those counts, then skip.
 
-		if (m_SlotDesc[i].iMaxCount != -1 
-				&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
-				&& pObj
-				&& pObj->GetDeviceSystem().GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
-			continue;
+			if (m_SlotDesc[i].iMaxCount != -1 
+					&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
+					&& pObj
+					&& pObj->GetDeviceSystem().GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
+				continue;
 
-		//	If we get this far, then this is a valid slot.
+			//	If we get this far, then this is a valid slot.
 
-		*retDesc = m_SlotDesc[i].DefaultDesc;
-		return true;
+			*retDesc = m_SlotDesc[i].DefaultDesc;
+			return true;
+			}
 		}
 
 	//	Otherwise we go with default (we assume that retDesc is already 
@@ -1212,45 +1230,49 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (CSpaceObject *pObj, const CItem 
 	//	For backwards compatibility, however, we place all weapons 20 pixels
 	//	forward.
 
-	ItemCategories iCategory = Item.GetType()->GetCategory();
-	if (iCategory == itemcatWeapon || iCategory == itemcatLauncher)
-		retDesc->iPosRadius = 20;
+	if (!Ctx.bNoDefaultPos)
+		{
+		ItemCategories iCategory = Item.GetType()->GetCategory();
+		if (iCategory == itemcatWeapon || iCategory == itemcatLauncher)
+			retDesc->iPosRadius = 20;
+		}
 
 	//	Done
 
 	return true;
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc (const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const
+bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const
 
 //	FindDefaultDesc
 //
 //	Looks for a slot descriptor that matches the given item and returns it.
 
 	{
-	int i;
-
 	//	Look for a matching slot
 
-	for (i = 0; i < m_SlotDesc.GetCount(); i++)
+	if (!Ctx.bNoSlotCriteria)
 		{
-		//	Skip if this slot does not meet criteria
+		for (int i = 0; i < m_SlotDesc.GetCount(); i++)
+			{
+			//	Skip if this slot does not meet criteria
 
-		if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
-			continue;
+			if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
+				continue;
 
-		//	If this slot has an ID and maximum counts and if we've already 
-		//	exceeded those counts, then skip.
+			//	If this slot has an ID and maximum counts and if we've already 
+			//	exceeded those counts, then skip.
 
-		if (m_SlotDesc[i].iMaxCount != -1 
-				&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
-				&& DescList.GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
-			continue;
+			if (m_SlotDesc[i].iMaxCount != -1 
+					&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
+					&& DescList.GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
+				continue;
 
-		//	If we get this far, then this is a valid slot.
+			//	If we get this far, then this is a valid slot.
 
-		*retDesc = m_SlotDesc[i].DefaultDesc;
-		return true;
+			*retDesc = m_SlotDesc[i].DefaultDesc;
+			return true;
+			}
 		}
 
 	//	Otherwise we go with default (we assume that retDesc is already 
@@ -1259,16 +1281,19 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (const CDeviceDescList &DescList,
 	//	For backwards compatibility, however, we place all weapons 20 pixels
 	//	forward.
 
-	ItemCategories iCategory = Item.GetType()->GetCategory();
-	if (iCategory == itemcatWeapon || iCategory == itemcatLauncher)
-		retDesc->iPosRadius = 20;
+	if (!Ctx.bNoDefaultPos)
+		{
+		ItemCategories iCategory = Item.GetType()->GetCategory();
+		if (iCategory == itemcatWeapon || iCategory == itemcatLauncher)
+			retDesc->iPosRadius = 20;
+		}
 
 	//	Done
 
 	return true;
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc (const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const
+bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const
 
 //	FindDefaultDesc
 //
@@ -1479,7 +1504,7 @@ const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const
 //
 //  Returns a descriptor for a named device (or NULL if not found)
 
-    {
+	{
 	int i;
 	ItemCategories iCatToFind = CDeviceClass::GetItemCategory(iDev);
 
@@ -1489,12 +1514,33 @@ const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const
 
 		//	See if this is the category that we want to find
 
-        if (pDevice->GetCategory() == iCatToFind)
-            return &GetDeviceDesc(i);
+		if (pDevice->GetCategory() == iCatToFind)
+			return &GetDeviceDesc(i);
 		}
 
 	return NULL;
-    }
+	}
+
+int CDeviceDescList::GetFireArc (int iIndex) const
+
+//	GetFireArc
+//
+//	Returns the fire arc of the device.
+
+	{
+	const SDeviceDesc &Desc = GetDeviceDesc(iIndex);
+	int iDescFireArc;
+	if (Desc.bOmnidirectional)
+		iDescFireArc = 360;
+	else if (Desc.iMaxFireArc != Desc.iMinFireArc)
+		iDescFireArc = AngleRange(Desc.iMinFireArc, Desc.iMaxFireArc);
+	else
+		iDescFireArc = 0;
+
+	int iDeviceFireArc = GetDeviceItem(iIndex).GetFireArc();
+
+	return Max(iDescFireArc, iDeviceFireArc);
+	}
 
 CDeviceClass *CDeviceDescList::GetNamedDevice (DeviceNames iDev) const
 
@@ -1503,9 +1549,9 @@ CDeviceClass *CDeviceDescList::GetNamedDevice (DeviceNames iDev) const
 //	Returns the named device (or NULL if not found)
 
 	{
-    const SDeviceDesc *pDesc = GetDeviceDescByName(iDev);
-    if (pDesc)
-        return pDesc->Item.GetType()->GetDeviceClass();
+	const SDeviceDesc *pDesc = GetDeviceDescByName(iDev);
+	if (pDesc)
+		return pDesc->Item.GetType()->GetDeviceClass();
 
 	return NULL;
 	}

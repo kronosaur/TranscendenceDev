@@ -87,6 +87,27 @@ void CLocationList::FillCloseLocations (void)
 		}
 	}
 
+void CLocationList::FillInRange (const CVector &vPos, Metric rExclusionRadius)
+
+//	FillInRange
+//
+//	Fills any location that is in the given range.
+
+	{
+	Metric rRadius2 = rExclusionRadius * rExclusionRadius;
+
+	for (int i = 0; i < m_List.GetCount(); i++)
+		{
+		CLocationDef &Loc = GetLocation(i);
+		if (Loc.IsBlocked() || !Loc.CanBeBlocked())
+			continue;
+
+		CVector vLoc = Loc.GetOrbit().GetObjectPos();
+		if ((vLoc - vPos).Length2() < rRadius2)
+			Loc.SetBlocked();
+		}
+	}
+
 void CLocationList::FillOverlappingWith (CSpaceObject *pObj)
 
 //	FillOverlappingWith

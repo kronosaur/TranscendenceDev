@@ -267,12 +267,16 @@
 		<Image			imageID="&rsStations6;" imageX="0" imageY="896" imageWidth="256" imageHeight="256"/>
 
 		<Devices>
-			<Device deviceID="&itDwargXiphonCannon;"	posAngle="45" posRadius="84"  minFireArc="315" maxFireArc="135" />
-			<Device deviceID="&itDwargBehemothCannon;"	posAngle="344" posRadius="89" minFireArc="254" maxFireArc="74" />
-			<Device deviceID="&itDwargXiphonCannon;"	posAngle="295" posRadius="87" minFireArc="205" maxFireArc="25" />
-			<Device deviceID="&itDwargBehemothCannon;"	posAngle="220" posRadius="93" minFireArc="130" maxFireArc="310" />
-			<Device deviceID="&itDwargXiphonCannon;"	posAngle="155" posRadius="86" minFireArc="65"  maxFireArc="245" />
-			<Device deviceID="&itDwargBehemothCannon;"	posAngle="112" posRadius="80" minFireArc="22"  maxFireArc="202" />
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="45"  posRadius="30" posZ="40" maxFireRange="2"/>
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="-70" posRadius="30" posZ="40" maxFireRange="2"/>
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="160" posRadius="30" posZ="40" maxFireRange="2"/>
+			
+			<Device deviceID="&itDwargXiphonCannon;"	posAngle="45"  posRadius="90"  posZ="0" fireArc="180" />
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="-15" posRadius="90" posZ="0" fireArc="180" />
+			<Device deviceID="&itDwargXiphonCannon;"	posAngle="-70" posRadius="90" posZ="0" fireAngle="295" fireArc="180" />
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="225" posRadius="90" posZ="0" fireAngle="220" fireArc="180" />
+			<Device deviceID="&itDwargXiphonCannon;"	posAngle="150" posRadius="90" posZ="0" fireAngle="155" fireArc="180" />
+			<Device deviceID="&itDwargBehemothCannon;"	posAngle="105" posRadius="90" posZ="0" fireAngle="112" fireArc="180" />
 		</Devices>
 
 		<Ships>
@@ -341,6 +345,7 @@
 			defaultSovereign=	"&svDwargRaiders;"
 			inherit=			"&baZoanthropeBase;"
 
+			size=				"27"
 			mass=				"25"
 			cargoSpace=			"5"
 			thrustRatio=		"6.5"
@@ -351,11 +356,11 @@
 			explosionType=		"&vtKineticExplosion2;"
 			>
 
-		<Armor>
-			<ArmorSection start="270" span="180" armorID="&itDwargChitonArmor;" />
-			<ArmorSection start="90"  span="180" armorID="&itDwargChitonArmor;" />
-		</Armor>
-
+		<Armor
+			armorID=			"&itDwargChitonArmor;"
+			count=				"2"
+			/>
+		
 		<Devices>
 			<Device deviceID="&itDwargXiphonCannon;"/>
 		</Devices>
@@ -365,10 +370,11 @@
 			rotationAccel=		"2.0"
 			/>
 
-		<Image imageID="&rsZoanthropeRaiderHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsZoanthropeRaiderHD;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.00375"/>
+		<HeroImage imageID="&rsZoanthropeRaiderHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="4"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="2"	posZ="0"	rotation="180"/>
 		</Effects>
 
 		<AISettings
@@ -398,13 +404,11 @@
 			attributes=			"dwarg,genericClass"
 			>
 
-		<Armor>
-			<ArmorSection start="315" span="90" armorID="&itDwargCatoptricArmor;" />
-			<ArmorSection start="225" span="90" armorID="&itDwargCatoptricArmor;" />
-			<ArmorSection start="135" span="90" armorID="&itDwargCatoptricArmor;" />
-			<ArmorSection start="45"  span="90" armorID="&itDwargCatoptricArmor;" />
-		</Armor>
-
+		<Armor
+			armorID=			"&itDwargCatoptricArmor;"
+			count=				"4"
+			/>
+		
 		<Devices>
 			<Device deviceID="&itDwargCnidocystCannon;" omnidirectional="true">
 				<Items>
@@ -423,7 +427,8 @@
 			<Item count="2d6" item="&itXenotiteFuelRod;"/>
 		</Items>
 
-		<Image imageID="&rsMediumShips3;" imageX="672" imageY="0" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsDwargMasterHD;" imageWidth="96" imageHeight="96" rotationCount="120" rotationColumns="12" viewportRatio="0.01"/>
+		<HeroImage imageID="&rsDwargMasterHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="180"	posRadius="43"	posZ="0"	rotation="180"/>
@@ -681,7 +686,7 @@
 			mass=				"20"
 			attributes=			"Consumable; Dwarg; Missile; NotForSale; NotStandard"
 			frequency=			"uncommon"
-			numberAppearing=	"2d12"
+			numberAppearing=	"40-60"
 
 			description=		"Used by the Dwarg, cnidocyst nodules are guided missiles that paralyze their targets when they hit."
 
@@ -845,6 +850,11 @@
 	
 	<Image UNID="&rsDwargBehemothHD;"		bitmap="Resources\DwargBehemothHD.jpg"	bitmask="Resources\DwargBehemothHDMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsDwargBehemothHero;"		bitmap="Resources\DwargBehemothLarge.jpg"	bitmask="Resources\DwargBehemothLargeMask.bmp" 	loadOnUse="true" />
+
+	<Image UNID="&rsDwargMasterHD;"			bitmap="Resources\DwargMasterHD.jpg"	bitmask="Resources\DwargMasterHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&rsDwargMasterHero;"		bitmap="Resources\DwargMasterLarge.jpg"	bitmask="Resources\DwargMasterLargeMask.bmp" 	loadOnUse="true" />
+
 	<Image UNID="&rsZoanthropeRaiderHD;"	bitmap="Resources\ZoanthropeRaiderHD.jpg"	bitmask="Resources\ZoanthropeRaiderHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&rsZoanthropeRaiderHero;"	bitmap="Resources\ZoanthropeRaiderLarge.jpg"	bitmask="Resources\ZoanthropeRaiderLargeMask.bmp" 	loadOnUse="true" />
 
 </TranscendenceModule>

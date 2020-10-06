@@ -6,10 +6,10 @@
 #include "PreComp.h"
 
 TPropertyHandler<CDockSession> CDockSession::m_PropertyTable = std::array<TPropertyHandler<CDockSession>::SPropertyDef, 1> {
-	{	"foo",
-		"Test.",
-		[](const CDockSession &DockSession, const CString &sProperty) { return ICCItemPtr(ICCItem::Nil); },
-		[](CDockSession &DockSession, const CString &sProperty, const ICCItem &Value, CString *retsError) { return false; }
+	{	"stack",
+		"List of screens on stack.",
+		[](const CDockSession &DockSession, const CString &sProperty) { return DockSession.GetPropertyFrameStack(); },
+		NULL
 		},
 	};
 
@@ -70,6 +70,27 @@ ICCItemPtr CDockSession::GetProperty (const CString &sProperty) const
 
 	else
 		return ICCItemPtr(ICCItem::Nil);
+	}
+
+ICCItemPtr CDockSession::GetPropertyFrameStack (void) const
+
+//	GetPropertyFrameStack
+//
+//	Returns the dock screen stack.
+
+	{
+	if (m_DockFrames.IsEmpty())
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pList(ICCItem::List);
+	for (int i = 0; i < m_DockFrames.GetCount(); i++)
+		{
+		const SDockFrame &Frame = m_DockFrames.GetFrame(i);
+		ICCItemPtr pEntry = CDockScreenStack::AsCCItem(Frame);
+		pList->Append(pEntry);
+		}
+
+	return pList;
 	}
 
 void CDockSession::InitCustomProperties (void)

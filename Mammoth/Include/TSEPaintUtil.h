@@ -68,6 +68,53 @@ class CImageArranger
 		int m_cyMaxHeight;
 	};
 
+class CInputKeyPainter
+	{
+	public:
+		int GetHeight (void) const { return m_cyHeight; }
+		int GetWidth (void) const { return m_cxWidth; }
+		void Init (DWORD dwVirtKey, int cyHeight, const CG16bitFont &LargeFont, const CG16bitFont &SmallFont);
+		void Init (const CString &sKey, int cyHeight, const CG16bitFont &Font, int cxWidth = -1);
+		void Paint (CG32bitImage &Dest, int x, int y) const;
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		void SetTextColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+
+	private:
+		static constexpr int DEFAULT_HEIGHT = 24;
+		static constexpr int HORZ_PADDING = 4;
+		static constexpr int BORDER_RADIUS = 4;
+		static constexpr int BORDER_WIDTH = 1;
+
+		enum EKeyTypes
+			{
+			keyLabel,
+
+			keyArrowDown,
+			keyArrowLeft,
+			keyArrowRight,
+			keyArrowUp,
+			keyMouseMove,
+
+			keyLeftMouseButton,
+			keyRightMouseButton,
+			keyScrollWheel,
+			};
+
+		void PaintArrowSymbol (CG32bitImage &Dest, int x, int y) const;
+		void PaintBackground (CG32bitImage &Dest, int x, int y) const;
+		void PaintLabel (CG32bitImage &Dest, int x, int y) const;
+		void PaintMouse (CG32bitImage &Dest, int x, int y) const;
+
+		EKeyTypes m_iType = keyLabel;
+		CString m_sKey;						//	Key label
+		int m_cxWidth = 0;					//	Width of block
+		int m_cyHeight = 0;					//	Height of block
+		int m_cxKey = 0;					//	Width of key in current font
+		const CG16bitFont *m_pFont = NULL;	//	Font to use
+		CG32bitPixel m_rgbBackColor = CG32bitPixel(0, 0, 0);
+		CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
+	};
+
 class CPaintHelper
 	{
 	public:
@@ -75,7 +122,7 @@ class CPaintHelper
 
 		static void PaintArrow (CG32bitImage &Dest, int x, int y, int iDirection, CG32bitPixel rgbColor);
 		static void PaintArrowText (CG32bitImage &Dest, int x, int y, int iDirection, const CString &sText, const CG16bitFont &Font, CG32bitPixel rgbColor);
-		static void PaintScaledImage (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, CG32bitImage &Src, const RECT &rcSrc, Metric rScale = 1.0);
+		static void PaintScaledImage (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, const CG32bitImage &Src, const RECT &rcSrc, Metric rScale = 1.0);
 		static void PaintStatusBar (CG32bitImage &Dest, int x, int y, int iTick, CG32bitPixel rgbColor, const CString &sLabel, int iPos, int iMaxPos = 100, int *retcyHeight = NULL);
 		static void PaintTargetHighlight (CG32bitImage &Dest, int x, int y, int iTick, int iRadius, int iRingSpacing, int iDelay, CG32bitPixel rgbColor);
 	};
@@ -92,6 +139,7 @@ class CRTFText
 
 		CRTFText (const CString &sText = NULL_STR, const IFontTable *pFontTable = NULL);
 
+		int CalcHeight (int cxWidth) const;
 		void Format (const RECT &rcRect) const;
 		void GetBounds (const RECT &rcRect, RECT *retrcRect) const;
 		void Paint (CG32bitImage &Dest, const RECT &rcRect) const;
@@ -229,7 +277,7 @@ class CMapLabelArranger
 
 void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos);
 void CreateBlasterShape (int iAngle, int iLength, int iWidth, SPoint *Poly);
-void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize = 0, int cySize = 0, bool bGray = false);
+void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize = 0, int cySize = 0, bool bGray = false, bool bDisplayAsKnown = false);
 void DrawLightning (CG32bitImage &Dest,
 					int xFrom, int yFrom,
 					int xTo, int yTo,

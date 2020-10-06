@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <utility>
 #include "Internets.h"
 
 class CJSONValue
@@ -43,9 +44,11 @@ class CJSONValue
 		Types GetType (void) const { return m_iType; }
 		bool FindElement (const CString &sKey, CJSONValue *retValue = NULL) const;
 		void Insert (const CJSONValue &Source);
+		void Insert (CJSONValue &&Source);
 		void Insert (const CString &sKey, const CJSONValue &Source);
-		void InsertHandoff (CJSONValue &Source);
-		void InsertHandoff (const CString &sKey, CJSONValue &Source);
+		void Insert (const CString &sKey, CJSONValue &&Source);
+		void InsertHandoff (CJSONValue &Source) { Insert(std::move(Source)); }
+		void InsertHandoff (const CString &sKey, CJSONValue &Source) { Insert(sKey, std::move(Source)); }
 		bool IsNotFalse (void) const { return ((m_iType != typeFalse) && (m_iType != typeNull)); }
 		bool IsNull (void) const { return (m_iType == typeNull); }
 		void Serialize (IWriteStream *pOutput) const;

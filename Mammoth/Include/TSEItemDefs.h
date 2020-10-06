@@ -215,12 +215,21 @@ struct SDisplayAttribute
 	RECT rcRect;					//	Reserved for callers
 	};
 
+//	CDisplayAttributeDefinitions
+//
+//	This structure holds a list of display attributes to apply globally to other
+//	types. A type (such as a sovereign) can define display attributes to apply
+//	to certain item types defined by  criteria.
+//
+//	For example, we use this to apply the "NAMI" display attribute to all NAMI
+//	items.
+
 class CDisplayAttributeDefinitions
 	{
 	public:
 		void AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList) const;
 		void Append (const CDisplayAttributeDefinitions &Attribs);
-		inline void DeleteAll (void) { m_Attribs.DeleteAll(); m_ItemAttribs.DeleteAll(); }
+		void DeleteAll (void) { m_Attribs.DeleteAll(); m_ItemAttribs.DeleteAll(); }
 		const CItemCriteria *FindCriteriaByID (const CString &sID) const;
 		bool FindCriteriaName (const CString &sCriteria, CString *retsName = NULL) const;
 		bool FindCriteriaNameByID (const CString &sID, CString *retsName = NULL) const;
@@ -267,14 +276,14 @@ class CArmorMassDefinitions
 	{
 	public:
 		void Append (const CArmorMassDefinitions &Src);
-		inline void DeleteAll (void) { m_Definitions.DeleteAll(); InvalidateIDIndex(); }
+		void DeleteAll (void) { m_Definitions.DeleteAll(); InvalidateIDIndex(); }
 		bool FindPreviousMassClass (const CString &sID, CString *retsPrevID = NULL, int *retiPrevMass = NULL) const;
 		Metric GetFrequencyMax (const CString &sID) const;
 		const CString &GetMassClassID (const CItem &Item) const;
 		const CString &GetMassClassLabel (const CString &sID) const;
 		int GetMassClassMass (const CString &sID) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		inline bool IsEmpty (void) const { return (m_Definitions.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_Definitions.GetCount() == 0); }
 		void OnBindArmor (SDesignLoadCtx &Ctx, const CItem &Item, CString *retsMassClass = NULL);
 		void OnInitDone (void);
 
@@ -299,10 +308,47 @@ class CArmorMassDefinitions
 			TSortMap<int, SArmorMassEntry> Classes;
 			};
 
-		inline const SArmorMassEntry *FindMassEntry (const CItem &Item) const { return const_cast<CArmorMassDefinitions *>(this)->FindMassEntryActual(Item); }
+		const SArmorMassEntry *FindMassEntry (const CItem &Item) const { return const_cast<CArmorMassDefinitions *>(this)->FindMassEntryActual(Item); }
 		SArmorMassEntry *FindMassEntryActual (const CItem &Item);
-		inline void InvalidateIDIndex (void) { m_ByID.DeleteAll(); }
+		void InvalidateIDIndex (void) { m_ByID.DeleteAll(); }
 
 		TSortMap<CString, SArmorMassDefinition> m_Definitions;
 		TSortMap<CString, SArmorMassEntry *> m_ByID;
 	};
+
+//	CItemEncounterDefinitions --------------------------------------------------
+
+class CItemEncounterDefinitions
+	{
+	public:
+		struct SCtx
+			{
+			const CTopologyNode *pNode = NULL;
+			TArray<int> Selection;			//	Indices of entries that match node
+			};
+
+		void AdjustFrequency (SCtx &Ctx, const CTopologyNode &Node, const CItem &Item, int &iFreq) const;
+		void Append (const CItemEncounterDefinitions &Src) { m_Table.Insert(Src.m_Table); }
+		void DeleteAll (void) { m_Table.DeleteAll(); }
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool IsEmpty (void) const { return (m_Table.GetCount() == 0); }
+
+		static const CItemEncounterDefinitions Null;
+
+	private:
+		struct SEntry
+			{
+			CItemCriteria Criteria;						//	Items selected
+			CTopologyNodeCriteria SystemCriteria;		//	System criteria
+			FrequencyTypes Frequency;					//	Frequency
+			Metric rFreqAdj = 1.0;						//	Adjustment corresponding to frequency
+
+			bool bDefaultSystems = false;				//	If TRUE, this is the default for non-matching systems
+			bool bHasSystemCriteria = false;
+			};
+
+		void InitCtx (SCtx &Ctx, const CTopologyNode &Node) const;
+
+		TArray<SEntry> m_Table;
+	};
+

@@ -17,6 +17,8 @@
 #define FIELD_FIRE_RATE_ADJ					CONSTLIT("fireRateAdj")
 #define FIELD_HP							CONSTLIT("hp")
 #define FIELD_LEVEL							CONSTLIT("level")
+#define FIELD_MAX_COUNT						CONSTLIT("maxCount")
+#define FIELD_MIN_COUNT						CONSTLIT("minCount")
 #define FIELD_NAME							CONSTLIT("name")
 #define FIELD_TOTAL_COUNT					CONSTLIT("totalCount")
 
@@ -30,7 +32,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	//	Get the criteria from the command line. Always append 't' because we
 	//	want station types.
 
-	CString sCriteria = strPatternSubst(CONSTLIT("%s t"), pCmdLine->GetAttribute(CRITERIA_ATTRIB));
+	CString sCriteria = strPatternSubst(CONSTLIT("%s; t"), pCmdLine->GetAttribute(CRITERIA_ATTRIB));
 
 	//	Parse it
 
@@ -53,7 +55,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	for (i = 0; i < Universe.GetStationTypeCount(); i++)
 		{
-		CStationType *pType = Universe.GetStationType(i);
+		const CStationType *pType = Universe.GetStationType(i);
 		int iLevel = pType->GetLevel();
 
 		//	If we're selecting all types, then do it
@@ -65,7 +67,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		else if (bOnlyNotRandom)
 			{
-			if (pType->CanBeEncounteredRandomly())
+			if (pType->GetEncounterDesc().CanBeRandomlyEncountered())
 				continue;
 			}
 
@@ -73,7 +75,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		else
 			{
-			if (!pType->CanBeEncounteredRandomly())
+			if (!pType->GetEncounterDesc().CanBeRandomlyEncountered())
 				continue;
 			}
 
@@ -128,7 +130,9 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	CDesignTypeStats TotalCount;
 	if (pCmdLine->GetAttributeBool(FIELD_TOTAL_COUNT)
-			|| pCmdLine->GetAttributeBool(FIELD_COUNT_DISTRIBUTION))
+			|| pCmdLine->GetAttributeBool(FIELD_COUNT_DISTRIBUTION)
+			|| pCmdLine->GetAttributeBool(FIELD_MAX_COUNT)
+			|| pCmdLine->GetAttributeBool(FIELD_MIN_COUNT))
 		{
 		if (error = LoadDesignTypeStats(Universe.GetDesignCollection().GetAdventureUNID(), &TotalCount))
 			return;
@@ -177,6 +181,16 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 					SDesignTypeInfo *pInfo = TotalCount.GetAt(pType->GetUNID());
 					double rCount = (pInfo ? pInfo->rPerGameMeanCount : 0.0);
 					printf("%.2f", rCount);
+					}
+				else if (strEquals(sField, FIELD_MAX_COUNT))
+					{
+					SDesignTypeInfo *pInfo = TotalCount.GetAt(pType->GetUNID());
+					printf("%d", pInfo->iPerGameMaxCount);
+					}
+				else if (strEquals(sField, FIELD_MIN_COUNT))
+					{
+					SDesignTypeInfo *pInfo = TotalCount.GetAt(pType->GetUNID());
+					printf("%d", pInfo->iPerGameMinCount);
 					}
 				else if (strEquals(sField, FIELD_COUNT_DISTRIBUTION))
 					{

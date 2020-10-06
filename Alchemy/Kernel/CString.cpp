@@ -10,11 +10,6 @@
 #define STORE_SIZE_INCREMENT				256
 #define STORE_ALLOC_MAX						(64 * 1024 * 1024)
 
-static DATADESCSTRUCT g_DataDesc[] =
-	{	{ DATADESC_OPCODE_REFERENCE,	1,	0 },		//	m_pStore
-		{ DATADESC_OPCODE_STOP,	0,	0 } };
-static CObjectClass<CString>g_Class(OBJID_CSTRING, g_DataDesc);
-
 CString::PSTORESTRUCT CString::g_pStore;
 int CString::g_iStoreSize;
 CString::PSTORESTRUCT CString::g_pFreeStore;
@@ -56,7 +51,6 @@ static const char *TITLE_CAP_EXCEPTIONS_SHORT[] =
 static int TITLE_CAP_EXCEPTIONS_SHORT_COUNT = sizeof(TITLE_CAP_EXCEPTIONS_SHORT) / sizeof(TITLE_CAP_EXCEPTIONS_SHORT[0]);
 
 CString::CString (void) :
-		CObject(&g_Class),
 		m_pStore(NULL)
 
 //	CString constructor
@@ -65,7 +59,6 @@ CString::CString (void) :
 	}
 
 CString::CString (const char *pString) :
-		CObject(&g_Class),
 		m_pStore(NULL)
 
 //	CString constructor
@@ -76,7 +69,6 @@ CString::CString (const char *pString) :
 	}
 
 CString::CString (const char *pString, int iLength) :
-		CObject(&g_Class),
 		m_pStore(NULL)
 
 //	CString constructor
@@ -87,7 +79,6 @@ CString::CString (const char *pString, int iLength) :
 	}
 
 CString::CString (CharacterSets iCharSet, const char *pString) :
-		CObject(&g_Class),
 		m_pStore(NULL)
 
 //	CString constructor
@@ -181,7 +172,6 @@ CString::CString (CharacterSets iCharSet, const char *pString) :
 	}
 
 CString::CString (const char *pString, int iLength, BOOL bExternal) :
-		CObject(&g_Class),
 		m_pStore(NULL)
 
 //	CString constructor
@@ -216,7 +206,6 @@ CString::CString (const char *pString, int iLength, BOOL bExternal) :
 	}
 
 CString::CString (const SConstString &String) :
-		CObject(&g_Class),
 		m_pStore(NULL)
 
 //	CString constructor
@@ -245,7 +234,7 @@ CString::~CString (void)
 	DecRefCount();
 	}
 
-CString::CString (void *pStore, bool bDummy) : CObject(&g_Class), m_pStore((PSTORESTRUCT)pStore)
+CString::CString (void *pStore, bool bDummy) : m_pStore((PSTORESTRUCT)pStore)
 
 //	CString private constructor
 
@@ -255,7 +244,6 @@ CString::CString (void *pStore, bool bDummy) : CObject(&g_Class), m_pStore((PSTO
 	}
 
 CString::CString (const CString &pString) :
-		CObject(&g_Class),
 		m_pStore(NULL)
 
 //	CString copy constructor
@@ -508,19 +496,6 @@ void CString::Capitalize (CapitalizeOptions iOption)
 		}
 	}
 
-void CString::CopyHandler (CObject *pOriginal)
-
-//	CopyHandler
-//
-//	Handle special tasks when copying object
-
-	{
-	//	If we've got a store, up the refcount
-
-	if (m_pStore)
-		m_pStore->iRefCount++;
-	}
-
 #ifndef INLINE_DECREF
 void CString::DecRefCount (void)
 
@@ -618,7 +593,7 @@ char *CString::GetPointer (void) const
 	if (m_pStore)
 		return m_pStore->pString;
 	else
-		return "";
+		return const_cast<char *>("");
 	}
 
 char *CString::GetWritePointer (int iLength)
@@ -2797,7 +2772,7 @@ CString Kernel::strTitleCapitalize (const CString &sString, const char **pExcept
 	return sResult;
 	}
 
-CString RomanNumeralBase (int iNumber, char *szTens, char *szFives, char *szSingles)
+CString RomanNumeralBase (int iNumber, const char *szTens, const char *szFives, const char *szSingles)
 	{
 	char szBuffer[10];
 	char *pPos = szBuffer;

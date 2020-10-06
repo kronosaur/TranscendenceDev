@@ -29,8 +29,13 @@
 					gender: 'genderFemale
 					}
 			</Constant>
-
 		</Properties>
+
+		<!-- Encounter Info -->
+		
+		<Encounter
+				exclusionRadius="80"
+				/>
 
 		<ImageVariants>
 			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>
@@ -60,7 +65,6 @@
 								(rpgMissionAssignment {
 									missionCriteria: "n +commonwealthHabitat;"
 									maxActive: 1
-									intervalPerType: (+ 5400 (* (objGetDestiny gSource) 10))
 									noMissionTextID: 'descNoMissions
 
 									missionGiver: (objGetProperty gSource 'rpgCharacter.stationMaster)
@@ -231,7 +235,7 @@
 							Nil
 
 						;	If we currently have raiders, then nothing to do
-						(sysFindObject stationObj "s +centauriWarlords; N:150")
+						(sysFindObject stationObj "sH +centauriWarlords;")
 							Nil
 
 						;	If we've already summoned lots of raiders, then send Arco Vaughn
@@ -475,6 +479,7 @@
 			</SummonRaiders>
 		</Events>
 
+		<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>
 
 		<Language>
 			<!-- Code Points -->

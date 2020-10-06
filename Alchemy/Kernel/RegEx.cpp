@@ -827,7 +827,7 @@ void CNFA::DebugDump (void)
 
 		for (j = 0; j < pState->Transitions.GetCount(); j++)
 			{
-			char *pType;
+			const char *pType;
 			switch (pState->Transitions[j].iType)
 				{
 				case transAlpha:

@@ -11,21 +11,21 @@
 #define FIELD_ITEMS					CONSTLIT("items")
 #define FIELD_SOURCE				CONSTLIT("source")
 
-const int BORDER_RADIUS =						4;
-const int PADDING =								4;
+static constexpr int BORDER_RADIUS =						4;
+static constexpr int PADDING =								4;
 
-const int ITEM_TEXT_MARGIN_Y =					4;
-const int ITEM_TEXT_MARGIN_X =					4;
-const int ITEM_TITLE_EXTRA_MARGIN =				4;
-const int ITEM_TEXT_MARGIN_BOTTOM =				10;
+static constexpr int ITEM_TEXT_MARGIN_Y =					4;
+static constexpr int ITEM_TEXT_MARGIN_X =					4;
+static constexpr int ITEM_TITLE_EXTRA_MARGIN =				4;
+static constexpr int ITEM_TEXT_MARGIN_BOTTOM =				10;
 
-const int ICON_WIDTH =							48;
-const int ICON_HEIGHT =							48;
-const int BOX_WIDTH =							ICON_WIDTH * 2;
-const int BOX_SPACING_X =						4;
-const int BOX_SPACING_Y =						2;
-const int COUNT_PADDING_X =						2;
-const int COUNT_PADDING_Y =						1;
+static constexpr int ICON_WIDTH =							48;
+static constexpr int ICON_HEIGHT =							48;
+static constexpr int BOX_WIDTH =							ICON_WIDTH * 2;
+static constexpr int BOX_SPACING_X =						4;
+static constexpr int BOX_SPACING_Y =						2;
+static constexpr int COUNT_PADDING_X =						2;
+static constexpr int COUNT_PADDING_Y =						1;
 
 CGItemListDisplayArea::CGItemListDisplayArea (void) :
 		m_pSource(NULL),
@@ -119,6 +119,10 @@ int CGItemListDisplayArea::Justify (const RECT &rcRect)
 	rcInner.top += PADDING;
 	rcInner.bottom -= PADDING;
 
+	DWORD dwNounPhraseFlags = nounShort;
+	if (m_bActualItems)
+		dwNounPhraseFlags |= nounActual;
+
 	//	If we have an item, format it
 
 	if (m_ItemList.GetCount() > 0)
@@ -135,7 +139,7 @@ int CGItemListDisplayArea::Justify (const RECT &rcRect)
 		for (i = 0; i < m_ItemList.GetCount(); i++)
 			{
 			const CItem &Item = m_ItemList[i].Item;
-			int iLinesNeeded = Medium.BreakText(Item.GetNounPhrase(nounShort), m_cxBox);
+			int iLinesNeeded = Medium.BreakText(Item.GetNounPhrase(dwNounPhraseFlags), m_cxBox);
 			if (iLinesNeeded > iMaxLines)
 				iMaxLines = iLinesNeeded;
 			}
@@ -225,6 +229,8 @@ void CGItemListDisplayArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 		CG32bitPixel rgbCountBox = CG32bitPixel::Darken(m_rgbBackColor, 0x80);
 		CG32bitPixel rgbCount = m_rgbTextColor;
 		DWORD dwNounPhraseFlags = nounShort;
+		if (m_bActualItems)
+			dwNounPhraseFlags |= nounActual;
 
 		//	Some metrics
 
@@ -248,7 +254,7 @@ void CGItemListDisplayArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 			//	Paint the icon
 
-			DrawItemTypeIcon(Dest, xBox + xIcon, yBox, pItemType, ICON_WIDTH, ICON_HEIGHT, m_ItemList[i].bGrayed);
+			DrawItemTypeIcon(Dest, xBox + xIcon, yBox, pItemType, ICON_WIDTH, ICON_HEIGHT, m_ItemList[i].bGrayed, m_bActualItems);
 
 			//	Paint the count
 

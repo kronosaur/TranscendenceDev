@@ -13,6 +13,7 @@
 #define BACKGROUND_ID_ATTRIB					CONSTLIT("backgroundID")
 #define DEFAULT_CURRENCY_ATTRIB					CONSTLIT("defaultCurrency")
 #define DESC_ATTRIB								CONSTLIT("desc")
+#define DIFFICULTY_ATTRIB						CONSTLIT("difficulty")
 #define INCLUDE_10_STARTING_CLASSES_ATTRIB		CONSTLIT("include10StartingShips")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define NAME_ATTRIB								CONSTLIT("name")
@@ -21,6 +22,8 @@
 #define STARTING_SHIP_CRITERIA_ATTRIB			CONSTLIT("startingShipCriteria")
 #define STARTING_SYSTEM_ATTRIB					CONSTLIT("startingSystem")
 #define WELCOME_MESSAGE_ATTRIB					CONSTLIT("welcomeMessage")
+
+#define DIFFICULTY_CHOOSE						CONSTLIT("choose")
 
 #define ON_GAME_START_EVENT						CONSTLIT("OnGameStart")
 #define ON_GAME_END_EVENT						CONSTLIT("OnGameEnd")
@@ -69,31 +72,31 @@ void CAdventureDesc::FireOnGameEnd (const CGameRecord &Game, const SBasicGameSta
 
 	if (FindEventHandler(ON_GAME_END_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx(GetUniverse());
+		CCodeChainCtx CCX(GetUniverse());
+		CCX.DefineContainingType(this);
 
 		//	Initialize variables
 
-		Ctx.DefineInteger(CONSTLIT("aScore"), Game.GetScore());
-		Ctx.DefineInteger(CONSTLIT("aResurrectCount"), Game.GetResurrectCount());
-		Ctx.DefineInteger(CONSTLIT("aSystemsVisited"), BasicStats.iSystemsVisited);
-		Ctx.DefineInteger(CONSTLIT("aEnemiesDestroyed"), BasicStats.iEnemiesDestroyed);
-		Ctx.DefineInteger(CONSTLIT("aBestEnemiesDestroyed"), BasicStats.iBestEnemyDestroyedCount);
+		CCX.DefineInteger(CONSTLIT("aScore"), Game.GetScore());
+		CCX.DefineInteger(CONSTLIT("aResurrectCount"), Game.GetResurrectCount());
+		CCX.DefineInteger(CONSTLIT("aSystemsVisited"), BasicStats.iSystemsVisited);
+		CCX.DefineInteger(CONSTLIT("aEnemiesDestroyed"), BasicStats.iEnemiesDestroyed);
+		CCX.DefineInteger(CONSTLIT("aBestEnemiesDestroyed"), BasicStats.iBestEnemyDestroyedCount);
 		if (BasicStats.dwBestEnemyDestroyed)
-			Ctx.DefineInteger(CONSTLIT("aBestEnemyClass"), BasicStats.dwBestEnemyDestroyed);
+			CCX.DefineInteger(CONSTLIT("aBestEnemyClass"), BasicStats.dwBestEnemyDestroyed);
 		else
-			Ctx.DefineNil(CONSTLIT("aBestEnemyClass"));
+			CCX.DefineNil(CONSTLIT("aBestEnemyClass"));
 
-		Ctx.DefineString(CONSTLIT("aEndGameReason"), Game.GetEndGameReason());
-		Ctx.DefineString(CONSTLIT("aEpitaph"), Game.GetEndGameEpitaph());
-		Ctx.DefineString(CONSTLIT("aEpitaphOriginal"), Game.GetEndGameEpitaph());
-		Ctx.DefineString(CONSTLIT("aTime"), Game.GetPlayTimeString());
+		CCX.DefineString(CONSTLIT("aEndGameReason"), Game.GetEndGameReason());
+		CCX.DefineString(CONSTLIT("aEpitaph"), Game.GetEndGameEpitaph());
+		CCX.DefineString(CONSTLIT("aEpitaphOriginal"), Game.GetEndGameEpitaph());
+		CCX.DefineString(CONSTLIT("aTime"), Game.GetPlayTimeString());
 
 		//	Invoke
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = CCX.RunCode(Event);
 		if (pResult->IsError())
 			kernelDebugLogPattern("OnGameEnd error: %s", pResult->GetStringValue());
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -108,14 +111,14 @@ void CAdventureDesc::FireOnGameStart (void)
 
 	if (FindEventHandler(ON_GAME_START_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx(GetUniverse());
+		CCodeChainCtx CCX(GetUniverse());
+		CCX.DefineContainingType(this);
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = CCX.RunCode(Event);
 		if (pResult->IsError())
 			kernelDebugLogPattern("OnGameStart error: %s", pResult->GetStringValue());
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -216,7 +219,6 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	{
 	ALERROR error;
-	int i;
 
 	//	If we are part of the default resource, then get the adventure UNID
 
@@ -259,6 +261,18 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	m_sStartingNodeID = pDesc->GetAttribute(STARTING_SYSTEM_ATTRIB);
 	m_sStartingPos = pDesc->GetAttribute(STARTING_POS_ATTRIB);
 
+	//	Difficulty
+
+	CString sDifficulty = pDesc->GetAttribute(DIFFICULTY_ATTRIB);
+	if (sDifficulty.IsBlank() || strEquals(sDifficulty, DIFFICULTY_CHOOSE))
+		m_iForceDifficulty = CDifficultyOptions::lvlUnknown;
+	else
+		{
+		m_iForceDifficulty = CDifficultyOptions::ParseID(sDifficulty);
+		if (m_iForceDifficulty == CDifficultyOptions::lvlUnknown)
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown difficulty: %s"), sDifficulty));
+		}
+
 	//	Welcome message
 
 	if (!pDesc->FindAttribute(WELCOME_MESSAGE_ATTRIB, &m_sWelcomeMessage))
@@ -290,7 +304,7 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	CXMLElement *pConstants = pDesc->GetContentElementByTag(CONSTANTS_TAG);
 	if (pConstants)
 		{
-		for (i = 0; i < pConstants->GetContentElementCount(); i++)
+		for (int i = 0; i < pConstants->GetContentElementCount(); i++)
 			{
 			CXMLElement *pItem = pConstants->GetContentElement(i);
 

@@ -100,11 +100,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
-			armorID=			"&itAdvancedPlasteelPlate;"
-			hitPoints=			"500"
-            regen=              "10"
-			multiHull=			"true"
-				 
 			ignoreFriendlyFire=	"true"
 			explosionType=		"&vtThermoExplosion1;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
@@ -131,6 +126,14 @@
 			<Item count="4d12"	item="&itChronimiumGas;" />
 		</Items>
 
+		<!-- Configuration -->
+		
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itAdvancedPlasteelPlate;"
+				hitPoints=		"500"
+			    regen=			"10"
+				/>
+		
 		<!-- Ships and Defenses -->
 		
 		<Ships>
@@ -596,7 +599,7 @@
 			/>
 
 		<Devices>
-			<Device deviceID="&itFerianCannon;"/>
+			<Device deviceID="&itFerianCannon;" posAngle="0" posRadius="65" posZ="0"/>
 		</Devices>
 
 		<Maneuver
@@ -628,7 +631,8 @@
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsFerianWarrior;" imageWidth="144" imageHeight="144"/>
+		<Image imageID="&rsFerianWarriorHD;"	imageWidth="144" imageHeight="144"	rotationCount="120" rotationColumns="12" viewportRatio="0.016875"/>
+		<HeroImage imageID="&rsFerianWarriorHero;" imageWidth="320" imageHeight="320"/>
 		
 		<Effects>
 			<Effect type="thrustMain"		posAngle="180"	posRadius="66"	posZ="0"	rotation="180"/>
@@ -698,6 +702,19 @@
 				(block (
 					(storageObj (objGetObjByID (objGetData gSource 'storageID)))
 					(rewardValue (@ gData 'value))
+
+					;	Pick three random ore types
+
+					(oreList (list (sysGetRandomOreType) (sysGetRandomOreType) (sysGetRandomOreType)))
+
+					;	Choose the highest priced one (to minimize the amount
+					;	that the player has to carry).
+
+					(bestOreType 
+						(map oreList '(reduceMax original) theOreType
+							(itmGetPrice theOreType 'rin)
+							)
+						)
 					)
 					;	Create a storage object, if necessary
 
@@ -710,7 +727,7 @@
 
 					;	Add ore to storage appropriate to the system
 
-					(objAddItemByValue storageObj (itmCreate (sysGetRandomOreType) 1) rewardValue 'credit)
+					(objAddItemByValue storageObj (itmCreate bestOreType 1) rewardValue 'credit)
 
 					;	Return data appropriate for a mission to navigate to the
 					;	loot screen.
@@ -734,7 +751,9 @@
 	<Image UNID="&rsFerianColonyRocky;"			bitmap="Resources\FerianColonyRocky.jpg"	bitmask="Resources\FerianColonyRockyMask.bmp"	loadOnUse="true"/>
 	<Image UNID="&rsFerianColonyVolcanic;"		bitmap="Resources\FerianColonyVolcanic.jpg"	bitmask="Resources\FerianColonyVolcanicMask.bmp"	loadOnUse="true"/>
 
-	<Image UNID="&rsFerianWarrior;"				bitmap="Resources\FerianWarrior.jpg"	bitmask="Resources\FerianWarriorMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsFerianWarriorHD;"			bitmap="Resources\FerianWarriorHD.jpg"	bitmask="Resources\FerianWarriorHDMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsFerianWarriorHero;"			bitmap="Resources\FerianWarriorLarge.jpg"	bitmask="Resources\FerianWarriorLargeMask.bmp"	loadOnUse="true"/>
+
 	<Image UNID="&rsFerianMinerHD;"				bitmap="Resources\FerianMinerHD.jpg"	bitmask="Resources\FerianMinerHDMask.bmp"	loadOnUse="true"/>
 
 </TranscendenceModule>

@@ -163,6 +163,12 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 
 	pParticles->m_iParticleCount = Max(1, pParticles->m_iParticleCount);
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pParticles, pParticles->GetData());
+
 	//	Add to system
 
 	if (error = pParticles->AddToSystem(System))
@@ -509,7 +515,7 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Set up context block for particle array update
 
-	SEffectUpdateCtx EffectCtx;
+	SEffectUpdateCtx EffectCtx(GetUniverse());
 	EffectCtx.pSystem = GetSystem();
 	EffectCtx.pObj = this;
 	EffectCtx.iTick = m_iTick;
@@ -526,7 +532,7 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	if (m_pEffectPainter 
 			&& WasPainted())
 		{
-		SEffectUpdateCtx PainterCtx;
+		SEffectUpdateCtx PainterCtx(GetUniverse());
 		PainterCtx.pObj = this;
 		PainterCtx.iTick = m_iTick;
 		PainterCtx.bFade = m_fPainterFade;
@@ -547,7 +553,10 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	//	Update the single particle painter
 
 	if (m_pParticlePainter)
-		m_pParticlePainter->OnUpdate();
+		{
+		SEffectUpdateCtx PainterCtx(GetUniverse());
+		m_pParticlePainter->OnUpdate(PainterCtx);
+		}
 
 	//	Update (includes doing damage)
 

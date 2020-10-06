@@ -36,6 +36,12 @@
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(@ gData 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -223,19 +229,19 @@
 
 					;	Build rumor list from: global types, local stations, and missions
 					(allRumors (apply append (append
-						(map (typFind "*") 'excludeNil theType
+						(map (typFind "* +event:GetGlobalRumors;") 'excludeNil theType
 							(setRumorDefaults
 								{	sourceType: theType	}
 								(typFireEvent theType 'GetGlobalRumors eventData)
 								)
 							)
-						(map (sysFindObject Nil "ATV") 'excludeNil theObj
+						(map (sysFindObject Nil "sTAV +event:GetRumors;") 'excludeNil theObj
 							(setRumorDefaults
 								{	sourceObj: theObj	}
 								(objFireEvent theObj 'GetRumors eventData)
 								)
 							)
-						(map (msnFind "*") 'excludeNil msnObj
+						(map (msnFind "* +event:GetRumors;") 'excludeNil msnObj
 							(setRumorDefaults
 								{	sourceObj: msnObj	}
 								(msnFireEvent msnObj 'GetRumors eventData)
@@ -290,11 +296,18 @@
 						)
 
 					(switch
+						(not theRumor)
+							Nil
+
 						(@ options 'rumorGiver)
 							(set@ theRumor 'rumorGiver (@ options 'rumorGiver))
 
 						(@ options 'missionGiver)
 							(set@ theRumor 'rumorGiver (@ options 'missionGiver))
+						)
+
+					(if (and theRumor (@ options 'rankDetails))
+						(set@ theRumor 'rankDetails (@ options 'rankDetails))
 						)
 
 					theRumor

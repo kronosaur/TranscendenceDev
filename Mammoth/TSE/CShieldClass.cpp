@@ -104,7 +104,7 @@ static CShieldClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 		{	20000,	6700,	10900000000.0,	600000, },
 	};
 
-static char *CACHED_EVENTS[CShieldClass::evtCount] =
+static const char *CACHED_EVENTS[CShieldClass::evtCount] =
 	{
 		"GetMaxHP",
 		"OnShieldDamage",
@@ -209,7 +209,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 		//	Adjust for tech level
 
-        int iWeaponLevel = Ctx.pDesc->GetLevel();
+		int iWeaponLevel = Ctx.GetDesc().GetLevel();
 		int iShieldLevel = (pDevice ? pDevice->GetLevel() : 1);
 		rPenetrate *= pow(1.5, (iWeaponLevel - iShieldLevel));
 
@@ -263,10 +263,10 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	//
 	//	Ctx.iDamage (if we skip further processing)
 
-	if (Ctx.pDesc->FireOnDamageShields(Ctx, pDevice->GetDeviceSlot()))
+	if (Ctx.GetDesc().FireOnDamageShields(Ctx, pDevice->GetDeviceSlot()))
 		return (Ctx.iDamage == 0);
 
-	FireOnShieldDamage(CItemCtx(pShip, pDevice), Ctx);
+	FireOnShieldDamage(ItemCtx, Ctx);
 
 	//	If we reflect, then create the reflection
 
@@ -335,7 +335,8 @@ bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *p
 //	when installed on the same ship
 
 	{
-    int iType = pWeapon->GetDamageType(CItemCtx(pSource, pDevice));
+	CItemCtx ItemCtx(pSource, pDevice);
+	int iType = pWeapon->GetDamageType(ItemCtx);
 	if (iType != -1 
 			&& m_WeaponSuppress.InSet(iType)
 			&& pDevice->IsWorking()
@@ -354,20 +355,6 @@ bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *p
 		}
 	else
 		return false;
-	}
-
-bool CShieldClass::Activate (CInstalledDevice *pDevice, 
-							 CSpaceObject *pSource, 
-							 CSpaceObject *pTarget,
-							 bool *retbSourceDestroyed,
-							 bool *retbConsumedItems)
-
-//	Activate
-//
-//	Activates device
-
-	{
-	return false;
 	}
 
 int CShieldClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
@@ -862,7 +849,10 @@ bool CShieldClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = sResult;
 		}
 	else if (strEquals(sField, FIELD_BALANCE))
-		*retsValue = strFromInt(CalcBalance(CItemCtx(), SBalance()));
+		{
+		CItemCtx ItemCtx;
+		*retsValue = strFromInt(CalcBalance(ItemCtx));
+		}
 	else if (strEquals(sField, FIELD_WEAPON_SUPPRESS))
 		{
 		if (m_WeaponSuppress.IsEmpty())
@@ -904,20 +894,27 @@ int CShieldClass::FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource
 		ASSERT(pSource);
 		ASSERT(pDevice);
 
-		CCodeChainCtx Ctx(GetUniverse());
+		if (pDevice->GetCachedMaxHP(iMaxHP))
+			return iMaxHP;
+		else
+			{
+			CUsePerformanceCounterForEvent Counter(GetUniverse(), GET_MAX_HP_EVENT);
 
-		Ctx.DefineContainingType(GetItemType());
-		Ctx.SaveAndDefineSourceVar(pSource);
-		Ctx.SaveAndDefineItemVar(pSource->GetItemForDevice(pDevice));
-		Ctx.DefineInteger(CONSTLIT("aMaxHP"), iMaxHP);
+			CCodeChainCtx Ctx(GetUniverse());
 
-		ICCItem *pResult = Ctx.Run(Event);
-		if (pResult->IsError())
-			pSource->ReportEventError(GET_MAX_HP_EVENT, pResult);
-		else if (!pResult->IsNil())
-			iMaxHP = Max(0, pResult->GetIntegerValue());
+			Ctx.DefineContainingType(GetItemType());
+			Ctx.SaveAndDefineSourceVar(pSource);
+			Ctx.SaveAndDefineItemVar(pSource->GetItemForDevice(pDevice));
+			Ctx.DefineInteger(CONSTLIT("aMaxHP"), iMaxHP);
 
-		Ctx.Discard(pResult);
+			ICCItemPtr pResult = Ctx.RunCode(Event);
+			if (pResult->IsError())
+				pSource->ReportEventError(GET_MAX_HP_EVENT, pResult);
+			else if (!pResult->IsNil())
+				iMaxHP = Max(0, pResult->GetIntegerValue());
+
+			pDevice->SetCachedMaxHP(iMaxHP);
+			}
 		}
 
 	return iMaxHP;
@@ -933,6 +930,8 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	SEventHandlerDesc Event;
 	if (FindEventHandlerShieldClass(evtOnShieldDamage, &Event))
 		{
+		CUsePerformanceCounterForEvent Counter(GetUniverse(), ON_SHIELD_DAMAGE_EVENT);
+
 		//	Setup arguments
 
 		CCodeChainCtx CCCtx(GetUniverse());
@@ -957,7 +956,7 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 			CCCtx.DefineInteger(CONSTLIT("aOriginalArmorDamageHP"), Ctx.iDamage - Ctx.iAbsorb);
 			}
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 
 		//	If we return Nil, then nothing
 
@@ -1012,8 +1011,6 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 				Ctx.iAbsorb = Max(0, Ctx.iDamage - Max(0, pResult->GetElement(2)->GetIntegerValue()));
 				}
 			}
-
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -1027,16 +1024,16 @@ void CShieldClass::FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pS
 	SEventHandlerDesc Event;
 	if (FindEventHandlerShieldClass(evtOnShieldDown, &Event))
 		{
+		CUsePerformanceCounterForEvent Counter(GetUniverse(), ON_SHIELD_DOWN_EVENT);
 		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(pSource->GetItemForDevice(pDevice));
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(ON_SHIELD_DOWN_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -1115,7 +1112,8 @@ int CShieldClass::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDev
 //	> 100	The weapon is more effective than average.
 
 	{
-	const DamageDesc *pDamage = pWeapon->GetDamageDesc(CItemCtx(pAttacker, pWeapon));
+	CItemCtx ItemCtx(pAttacker, pWeapon);
+	const DamageDesc *pDamage = pWeapon->GetDamageDesc(ItemCtx);
 	if (pDamage == NULL)
 		return 100;
 
@@ -1853,7 +1851,7 @@ void CShieldClass::SetHitPoints (CItemCtx &ItemCtx, int iHP)
 	SetHPLeft(pDevice, pSource, Min(GetMaxHP(ItemCtx), iHP), true);
 	}
 
-ESetPropertyResults CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
+ESetPropertyResult CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
 
 //	SetItemProperty
 //
@@ -1871,7 +1869,7 @@ ESetPropertyResults CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString 
 			|| !Ctx.GetItem().IsInstalled())
 		{
 		*retsError = CONSTLIT("Item is not an installed device on object.");
-		return resultPropertyError;
+		return ESetPropertyResult::error;
 		}
 
 	//	Handle it.
@@ -1902,7 +1900,7 @@ ESetPropertyResults CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString 
 
 	//	Success
 
-	return resultPropertySet;
+	return ESetPropertyResult::set;
 	}
 
 void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)
@@ -1948,7 +1946,7 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 	if (pDevice->IsDamaged() || pDevice->IsDisrupted())
 		{
-		if ((Ctx.iTick % 10) == 0 && mathRandom(1, 100) <= 5)
+		if ((Ctx.iTick % 30) == 0 && mathRandom(1, 100) <= 5)
 			{
 			Deplete(pDevice, pSource);
 			pSource->OnDeviceStatus(pDevice, failShieldFailure);

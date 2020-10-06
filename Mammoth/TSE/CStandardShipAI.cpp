@@ -110,7 +110,6 @@ const Metric LONG_THREAT_RANGE =		(120 * LIGHT_SECOND);
 const Metric LONG_THREAT_RANGE2 =		(LONG_THREAT_RANGE * LONG_THREAT_RANGE);
 
 #define FIELD_SCAVENGE					CONSTLIT("$scavenge")
-#define FIELD_CORE_NO_SALVAGE			CONSTLIT("core.noSalvage")
 #define FIELD_NO_SALVAGE				CONSTLIT("noSalvage")
 
 static CShip *g_pDebugShip = NULL;
@@ -613,8 +612,8 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 							&& !pObj->IsIntangible()
 							&& (pObj->CanObjRequestDock() == CSpaceObject::dockingOK)
 							&& !pObj->HasAttribute(FIELD_NO_SALVAGE)
-							&& pObj->GetProperty(FIELD_CORE_NO_SALVAGE)->IsNil()
-							&& pObj->GetData(FIELD_CORE_NO_SALVAGE)->IsNil()
+							&& pObj->GetProperty(PROPERTY_CORE_NO_SALVAGE)->IsNil()
+							&& pObj->GetData(PROPERTY_CORE_NO_SALVAGE)->IsNil()
 							&& pObj->GetData(FIELD_SCAVENGE)->IsNil())
 						{
 						CVector vRange = pObj->GetPos() - m_pShip->GetPos();
@@ -1866,7 +1865,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 		}
 	}
 
-DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	OnCommunicateNotify
 //
@@ -2488,9 +2487,8 @@ void CStandardShipAI::OnReadFromStream (SLoadCtx &Ctx)
 		sCode.ReadFromStream(Ctx.pStream);
 		if (!sCode.IsBlank())
 			{
-			ICCItem *pItem = m_pShip->GetUniverse().GetCC().Link(sCode);
+			ICCItemPtr pItem = CCodeChain::LinkCode(sCode);
 			SetCommandCode(pItem);
-			pItem->Discard();
 			}
 		}
 

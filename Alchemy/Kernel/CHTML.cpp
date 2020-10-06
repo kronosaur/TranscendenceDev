@@ -6,12 +6,13 @@
 #include "PreComp.h"
 #include "Internets.h"
 
-static TStaticStringTable<TStaticStringEntry<SConstString>, 29> STD_ENTITY_TABLE = {
+static TStaticStringTable<TStaticStringEntry<SConstString>, 31> STD_ENTITY_TABLE = {
 	"Aacute",		CONSTDEFS("\xC1"),
 	"Eacute",		CONSTDEFS("\xC9"),
 	"Iacute",		CONSTDEFS("\xCD"),
 	"Ntilde",		CONSTDEFS("\xD1"),
 	"Oacute",		CONSTDEFS("\xD3"),
+	"Ouml",			CONSTDEFS("\xD6"),
 	"Uacute",		CONSTDEFS("\xDA"),
 	"Uuml",			CONSTDEFS("\xDC"),
 	"aacute",		CONSTDEFS("\xE1"),
@@ -29,6 +30,7 @@ static TStaticStringTable<TStaticStringEntry<SConstString>, 29> STD_ENTITY_TABLE
 	"mdash",		CONSTDEFS("\x97"),
 	"ntilde",		CONSTDEFS("\xF1"),
 	"oacute",		CONSTDEFS("\xF3"),
+	"ouml",			CONSTDEFS("\xF6"),
 
 	"plusmn",		CONSTDEFS("\xB1"),
 	"quot",			CONSTDEFS("\""),

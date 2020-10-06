@@ -36,39 +36,39 @@ class CGameRecord
 		CGameRecord (void);
 
 		CString GetAdventureID (void) const;
-		inline DWORD GetAdventureUNID (void) const { return m_dwAdventure; }
+		DWORD GetAdventureUNID (void) const { return m_dwAdventure; }
 		CString GetDescription (DWORD dwParts = descAll) const;
 		CString GetEndGameEpitaph (DWORD dwFlags = 0) const;
-		inline const CString &GetEndGameReason (void) const { return m_sEndGameReason; }
-		inline const CString &GetGameID (void) const { return m_sGameID; }
-		inline GenomeTypes GetPlayerGenome (void) const { return m_iGenome; }
-		inline const CString &GetPlayerName (void) const { return m_sName; }
-		inline CString GetPlayTimeString (void) const { return m_Duration.Format(NULL_STR); }
-		inline int GetResurrectCount (void) const { return m_iResurrectCount; }
-		inline int GetScore (void) const { return m_iScore; }
-		inline CString GetShipClass (void) const { return m_sShipClass; }
-		inline const CString &GetUsername (void) const { return m_sUsername; }
+		const CString &GetEndGameReason (void) const { return m_sEndGameReason; }
+		const CString &GetGameID (void) const { return m_sGameID; }
+		GenomeTypes GetPlayerGenome (void) const { return m_iGenome; }
+		const CString &GetPlayerName (void) const { return m_sName; }
+		CString GetPlayTimeString (void) const { return m_Duration.Format(NULL_STR); }
+		int GetResurrectCount (void) const { return m_iResurrectCount; }
+		int GetScore (void) const { return m_iScore; }
+		CString GetShipClass (void) const { return m_sShipClass; }
+		const CString &GetUsername (void) const { return m_sUsername; }
 		ALERROR InitFromJSON (const CJSONValue &Value);
 		ALERROR InitFromXML (CXMLElement *pDesc);
-		inline bool IsDebug (void) const { return m_bDebugGame; }
-		inline bool IsRegistered (void) const { return m_bRegisteredGame; }
+		bool IsDebug (void) const { return m_bDebugGame; }
+		bool IsRegistered (void) const { return m_bRegisteredGame; }
 		static GenomeTypes LoadGenome (const CString &sAttrib);
 		void SaveToJSON (CJSONValue *retOutput) const;
-		inline void SetAdventureUNID (DWORD dwUNID) { m_dwAdventure = dwUNID; }
-		inline void SetDebug (bool bDebug = true) { m_bDebugGame = bDebug; }
-		inline void SetEndGameEpitaph (const CString &sEpitaph) { m_sEpitaph = sEpitaph; }
-		inline void SetEndGameReason (const CString &sReason) { m_sEndGameReason = sReason; }
-		inline void SetExtensions (const TArray<DWORD> &Extensions) { m_Extensions = Extensions; }
-		inline void SetGameID (const CString &sGameID) { m_sGameID = sGameID; }
-		inline void SetPlayerGenome (GenomeTypes iGenome) { m_iGenome = iGenome; }
-		inline void SetPlayerName (const CString &sName) { m_sName = sName; }
-		inline void SetPlayTime (const CTimeSpan &Time) { m_Duration = Time; }
-		inline void SetRegistered (bool bRegistered = true) { m_bRegisteredGame = bRegistered; }
-		inline void SetResurrectCount (int iCount) { m_iResurrectCount = iCount; }
-		inline void SetScore (int iScore) { m_iScore = iScore; }
+		void SetAdventureUNID (DWORD dwUNID) { m_dwAdventure = dwUNID; }
+		void SetDebug (bool bDebug = true) { m_bDebugGame = bDebug; }
+		void SetEndGameEpitaph (const CString &sEpitaph) { m_sEpitaph = sEpitaph; }
+		void SetEndGameReason (const CString &sReason) { m_sEndGameReason = sReason; }
+		void SetExtensions (const TArray<DWORD> &Extensions) { m_Extensions = Extensions; }
+		void SetGameID (const CString &sGameID) { m_sGameID = sGameID; }
+		void SetPlayerGenome (GenomeTypes iGenome) { m_iGenome = iGenome; }
+		void SetPlayerName (const CString &sName) { m_sName = sName; }
+		void SetPlayTime (const CTimeSpan &Time) { m_Duration = Time; }
+		void SetRegistered (bool bRegistered = true) { m_bRegisteredGame = bRegistered; }
+		void SetResurrectCount (int iCount) { m_iResurrectCount = iCount; }
+		void SetScore (int iScore) { m_iScore = iScore; }
 		void SetShipClass (DWORD dwUNID);
 		void SetSystem (CSystem *pSystem);
-		inline void SetUsername (const CString &sUsername) { m_sUsername = sUsername; }
+		void SetUsername (const CString &sUsername) { m_sUsername = sUsername; }
 		ALERROR WriteToXML (IWriteStream &Stream);
 
 	private:
@@ -104,17 +104,17 @@ class CGameRecord
 class CGameStats
 	{
 	public:
-		inline void DeleteAll (void) { m_Stats.DeleteAll(); }
-		inline int GetCount (void) const { return m_Stats.GetCount(); }
-		inline const CString &GetDefaultSectionName (void) const { return m_sDefaultSectionName; }
+		void DeleteAll (void) { m_Stats.DeleteAll(); }
+		int GetCount (void) const { return m_Stats.GetCount(); }
+		const CString &GetDefaultSectionName (void) const { return m_sDefaultSectionName; }
 		void GetEntry (int iIndex, CString *retsStatName, CString *retsStatValue, CString *retsSection) const;
-		void Insert (CDesignType *pType, ICCItem *pAchievement);
 		void Insert (const CString &sStatName, const CString &sStatValue = NULL_STR, const CString &sSection = NULL_STR, const CString &sSortKey = NULL_STR);
+		void InsertFromCCItem (CDesignType &Type, const ICCItem &Entry);
 		ALERROR LoadFromStream (IReadStream *pStream);
 		void SaveToJSON (CJSONValue *retOutput) const;
 		ALERROR SaveToStream (IWriteStream *pStream) const;
-		inline void SetDefaultSectionName (const CString &sName) { m_sDefaultSectionName = sName; }
-		inline void Sort (void) { m_Stats.Sort(); }
+		void SetDefaultSectionName (const CString &sName) { m_sDefaultSectionName = sName; }
+		void Sort (void) { m_Stats.Sort(); }
 		void TakeHandoff (CGameStats &Source);
 		ALERROR WriteAsText (IWriteStream *pOutput) const;
 
@@ -130,10 +130,12 @@ class CGameStats
 			CString sStatValue;
 			};
 
-		static CString GetTextValue (CDesignType *pType, const CString &sIDField, const CString &sTextField, ICCItem *pEntry);
-		static CString ParseAchievementSection (ICCItem *pItem);
-		static CString ParseAchievementSort (ICCItem *pItem);
-		static CString ParseAchievementValue (ICCItem *pItem);
+		void Insert (CDesignType &Type, const ICCItem &Achievement);
+
+		static CString GetTextValue (CDesignType &Type, const CString &sIDField, const CString &sTextField, const ICCItem &Entry);
+		static CString ParseAchievementSection (const ICCItem *pItem);
+		static CString ParseAchievementSort (const ICCItem *pItem);
+		static CString ParseAchievementValue (const ICCItem *pItem);
 		static void ParseSortKey (const CString &sSortKey, CString *retsSection, CString *retsSectionSortKey);
 
 		TArray<SStat> m_Stats;
@@ -154,12 +156,12 @@ class CAdventureHighScoreList
 				m_iSelection(-1)
 			{ }
 
-		inline void DeleteAll (void) { m_HighScores.DeleteAll(); m_iSelection = -1; }
-		inline int GetCount (void) const { return m_HighScores.GetCount(); }
-		inline int GetSelection (void) const { return m_iSelection; }
+		void DeleteAll (void) { m_HighScores.DeleteAll(); m_iSelection = -1; }
+		int GetCount (void) const { return m_HighScores.GetCount(); }
+		int GetSelection (void) const { return m_iSelection; }
 		ALERROR InitFromJSON (DWORD dwAdventureUNID, const CJSONValue &Value);
 		void InsertSimpleScore (const CString &sUsername, int iScore);
-		inline const CGameRecord &GetEntry (int iIndex) const { return m_HighScores[iIndex]; }
+		const CGameRecord &GetEntry (int iIndex) const { return m_HighScores[iIndex]; }
 		void SetSelection (const CString &sUsername, int iScore);
 
 	private:
@@ -186,11 +188,11 @@ class CAdventureRecord
 		bool FindRecordByGameID (const CString &sGameID, DWORD *retdwID = NULL) const;
 		CString GetAdventureName (void) const;
 		DWORD GetAdventureUNID (void) const { return m_dwAdventure; }
-		inline int GetHighScoreCount (void) const { return m_HighScores.GetCount(); }
+		int GetHighScoreCount (void) const { return m_HighScores.GetCount(); }
 		CGameRecord &GetRecordAt (DWORD dwID);
 		void Init (DWORD dwAdventure);
 		CGameRecord &InsertHighScore (void) { return *m_HighScores.Insert(); }
-		inline bool IsSpecialID (DWORD dwID) const { return (dwID >= specialIDFirst && dwID < (specialIDFirst + specialIDCount)); }
+		bool IsSpecialID (DWORD dwID) const { return (dwID >= specialIDFirst && dwID < (specialIDFirst + specialIDCount)); }
 
 	private:
 		DWORD m_dwAdventure;
@@ -204,8 +206,8 @@ class CUserProfile
 		CUserProfile (void) { }
 
 		bool FindAdventureRecord (DWORD dwAdventure, int *retiIndex = NULL);
-		inline CAdventureRecord &GetAdventureRecord (int iIndex) { return m_Records[iIndex]; }
-		inline int GetAdventureRecordCount (void) { return m_Records.GetCount(); }
+		CAdventureRecord &GetAdventureRecord (int iIndex) { return m_Records[iIndex]; }
+		int GetAdventureRecordCount (void) { return m_Records.GetCount(); }
 		void Init (const CString &sUsername);
 		CAdventureRecord &InsertAdventureRecord (DWORD dwAdventure);
 

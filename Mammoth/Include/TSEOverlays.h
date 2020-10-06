@@ -15,7 +15,10 @@ class COverlay
 			};
 
 		COverlay (void);
+		COverlay (const COverlay &Src) = delete;
+		COverlay (COverlay &&Src) = delete;
 		~COverlay (void);
+
 		static void CreateFromType (COverlayType &Type, 
 									CSpaceObject &Source,
 									int iPosAngle,
@@ -25,8 +28,12 @@ class COverlay
 									int iLifeLeft, 
 									COverlay **retpField);
 
+		COverlay &operator = (const COverlay &Src) = delete;
+		COverlay &operator = (COverlay &&Src) = delete;
+
 		bool AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		void AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds);
+		bool AccumulateEnhancements (CSpaceObject &Source, CDeviceItem &Device, TArray<CString> &EnhancementIDs, CItemEnhancementStack &Enhancements);
 		void Destroy (CSpaceObject *pSource);
 		bool Disarms (CSpaceObject *pSource) const { return m_pType->Disarms(); }
 		void FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, ICCItem *pData, ICCItem **retpResult);
@@ -34,6 +41,7 @@ class COverlay
 		void FireOnCreate (CSpaceObject *pSource);
 		bool FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		void FireOnDestroy (CSpaceObject *pSource);
+		void FireOnMining (CSpaceObject &Source, EAsteroidType iType, SDamageCtx &Ctx);
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
 		CConditionSet GetConditions (CSpaceObject *pSource) const;
@@ -49,12 +57,14 @@ class COverlay
 		ICCItemPtr GetProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj, const CString &sProperty) const;
 		int GetRotation (void) const { return m_iRotation; }
 		COverlayType *GetType(void) const { return m_pType; }
-        ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
+		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		bool IncProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
+		bool IsActive (void) const { return (m_fInactive ? false : true); }
 		bool IsDestroyed (void) const { return (m_fDestroyed ? true : false); }
 		bool IsFading (void) const { return (m_fFading ? true : false); }
 		bool IsShieldOverlay (void) const { return m_pType->IsShieldOverlay(); }
 		bool IsShipScreenDisabled (void) const { return m_pType->IsShipScreenDisabled(); }
+		bool OnMiningDamage (CSpaceObject &Source, EAsteroidType iType, SDamageCtx &Ctx);
 		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
@@ -62,12 +72,13 @@ class COverlay
 		void PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		bool Paralyzes (CSpaceObject *pSource) const { return m_pType->Paralyzes(); }
 		void ReadFromStream (SLoadCtx &Ctx);
+		void SetActive (CSpaceObject &Source, bool bActive = true);
 		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
 		void SetDevice (int iDev) { m_iDevice = iDev; }
 		bool SetEffectProperty (const CString &sProperty, ICCItem *pValue);
 		void SetNext (COverlay *pNext) { m_pNext = pNext; }
 		void SetPos (CSpaceObject *pSource, const CVector &vPos);
-		bool SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem *pValue);
+		bool SetProperty (CSpaceObject &Source, const CString &sName, ICCItem *pValue);
 		void SetRotation (int iRotation) { m_iRotation = iRotation; }
 		bool Spins (CSpaceObject *pSource) const { return m_pType->Spins(); }
 		bool StopsTime (const CSpaceObject *pSource) const { return m_pType->StopsTime(); }
@@ -77,7 +88,7 @@ class COverlay
 		static void PaintCounterFlag (CG32bitImage &Dest, int x, int y, const CString &sCounter, const CString &sLabel, CG32bitPixel rgbColor, SViewportPaintCtx &Ctx);
 
 	private:
-		void CalcOffset (int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin = NULL) const;
+		void CalcOffset (const CSpaceObject &Source, int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin = NULL) const;
 		void FireOnUpdate (CSpaceObject *pSource);
 		void CreateHitEffect (CSpaceObject *pSource, SDamageCtx &Ctx);
 		bool FindCustomProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj, const CString &sProperty, ICCItemPtr &pValue) const;
@@ -85,38 +96,45 @@ class COverlay
 		bool IncCustomProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		bool SetCustomProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pValue);
 
-		COverlayType *m_pType;					//	Type of field
-		DWORD m_dwID;							//	Universal ID
-		int m_iTick;							//	Overlay tick
-		int m_iLifeLeft;						//	Ticks left of energy field life (-1 = permanent)
-		int m_iDevice;							//	Index of device that we're associated with (-1 if not a device)
+		COverlayType *m_pType = NULL;			//	Type of field
+		DWORD m_dwID = 0;						//	Universal ID
+		int m_iTick = 0;						//	Overlay tick
+		int m_iLifeLeft = -1;					//	Ticks left of energy field life (-1 = permanent)
+		int m_iHitPoints = 0;					//	Hit points left
+		int m_iDevice = -1;						//	Index of device that we're associated with (-1 if not a device)
 
-		int m_iPosAngle;						//	Position relative to source (degrees)
-		int m_iPosRadius;						//	Position relative to source (pixels)
-		int m_iRotation;						//	Overlay orientation (degrees)
-		int m_iPosZ;							//  Overlay height (pixels)
+		int m_iPosAngle = 0;					//	Position relative to source (degrees)
+		int m_iPosRadius = 0;					//	Position relative to source (pixels)
+		int m_iRotation = 0;					//	Overlay orientation (degrees)
+		int m_iPosZ = 0;						//  Overlay height (pixels)
 
 		CAttributeDataBlock m_Data;				//	data
-		int m_iCounter;							//	Arbitrary counter
+		int m_iCounter = 0;						//	Arbitrary counter
 		CString m_sMessage;						//	Message text
 
-		IEffectPainter *m_pPainter;				//	Painter
+		IEffectPainter *m_pPainter = NULL;		//	Painter
 
-		int m_iPaintHit;						//	If >0 then we paint a hit
-		int m_iPaintHitTick;					//	Tick for hit painter
-		IEffectPainter *m_pHitPainter;			//	Hit painter
+		int m_iPaintHit = 0;					//	If >0 then we paint a hit
+		int m_iPaintHitTick = 0;				//	Tick for hit painter
+		IEffectPainter *m_pHitPainter = NULL;	//	Hit painter
 
 		DWORD m_fDestroyed:1;					//	TRUE if field should be destroyed
 		DWORD m_fFading:1;						//	TRUE if we're destroyed, but fading the effect
+		DWORD m_fInactive:1;					//	TRUE if we're hidden (or buried undergroud)
 
-		COverlay *m_pNext;					//	Next energy field associated with this object
+		COverlay *m_pNext = NULL;				//	Next energy field associated with this object
 	};
 
 class COverlayList
 	{
 	public:
 		COverlayList (void);
+		COverlayList (const COverlayList &Src) = delete;
+		COverlayList (COverlayList &&Src) = delete;
 		~COverlayList (void);
+
+		COverlayList &operator = (const COverlayList &Src) = delete;
+		COverlayList &operator = (COverlayList &&Src) = delete;
 
 		void AddField (CSpaceObject &Source, 
 					   COverlayType &Type,
@@ -129,9 +147,10 @@ class COverlayList
 		bool AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		bool AbsorbsWeaponFire (CInstalledDevice *pDevice);
 		void AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds);
+		bool AccumulateEnhancements (CSpaceObject &Source, CDeviceItem &Device, TArray<CString> &EnhancementIDs, CItemEnhancementStack &Enhancements);
 		bool Damage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		CString DebugCrashInfo (void) const;
-		bool FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector = NULL) const;
+		bool FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector = NULL, CDesignType **retpLocalScreens = NULL) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
 		const CConditionSet &GetConditions (void) const { return m_Conditions; }
@@ -145,10 +164,11 @@ class COverlayList
 		ICCItem *GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, DWORD dwID, const CString &sName) const;
 		int GetRotation (DWORD dwID);
 		COverlayType *GetType(DWORD dwID);
-		int GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource);
-        ICCItemPtr IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue = NULL);
+		bool HasMinableItem (void) const;
+		ICCItemPtr IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue = NULL);
 		bool IncProperty (CSpaceObject &SourceObj, DWORD dwID, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		bool IsEmpty (void) { return (m_pFirst == NULL); }
+		bool OnMiningDamage (CSpaceObject &Source, EAsteroidType iType, SDamageCtx &Ctx);
 		void OnNewSystem (CSpaceObject *pSource, CSystem *pSystem) { m_Conditions = CalcConditions(pSource); }
 		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
@@ -173,7 +193,7 @@ class COverlayList
 		COverlay *FindField (DWORD dwID);
 		void OnConditionsChanged (CSpaceObject *pSource);
 
-		COverlay *m_pFirst;
+		COverlay *m_pFirst = NULL;
 		CConditionSet m_Conditions;			//	Imparted conditions (cached from actual overlays)
 	};
 

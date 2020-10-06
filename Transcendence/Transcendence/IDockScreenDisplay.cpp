@@ -34,12 +34,24 @@
 #define TYPE_ATTRIB					CONSTLIT("type")
 #define WIDTH_ATTRIB				CONSTLIT("width")
 
+#define ALIGN_CENTER				CONSTLIT("center")
+#define ALIGN_RIGHT					CONSTLIT("right")
+#define ALIGN_LEFT					CONSTLIT("left")
+#define ALIGN_BOTTOM				CONSTLIT("bottom")
+#define ALIGN_TOP					CONSTLIT("top")
+#define ALIGN_MIDDLE				CONSTLIT("middle")
+
 #define DATA_FROM_PLAYER			CONSTLIT("player")
 #define DATA_FROM_SOURCE			CONSTLIT("source")
 #define DATA_FROM_STATION			CONSTLIT("station")
 
+#define FIELD_ALIGN					CONSTLIT("align")
 #define FIELD_IMAGE					CONSTLIT("image")
 #define FIELD_OBJ					CONSTLIT("obj")
+#define FIELD_PADDING_BOTTOM		CONSTLIT("padding-bottom")
+#define FIELD_PADDING_LEFT			CONSTLIT("padding-left")
+#define FIELD_PADDING_RIGHT			CONSTLIT("padding-right")
+#define FIELD_PADDING_TOP			CONSTLIT("padding-top")
 #define FIELD_TYPE					CONSTLIT("type")
 
 #define PROPERTY_LIST_SOURCE		CONSTLIT("listSource")
@@ -187,12 +199,17 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 			}
 		}
 
+	retOptions->rcDisplay.left = 0;
+	retOptions->rcDisplay.top = 23;
+	retOptions->rcDisplay.right = RectWidth(Ctx.rcRect);
+	retOptions->rcDisplay.bottom = RectHeight(Ctx.rcRect) - 47;
+
 	//	Initialize control rect. If we have a background, then initialize to
 	//	backwards compatible position. Otherwise, we take up the full range.
 	//
 	//	NOTE: This RECT is relative to Ctx.rcRect.
 
-	if (retOptions->BackgroundDesc.iType != EDockScreenBackground::default)
+	if (retOptions->BackgroundDesc.iType != EDockScreenBackground::defaultBackground)
 		{
 		retOptions->rcControl.left = 4;
 		retOptions->rcControl.top = 12;
@@ -200,12 +217,7 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 		retOptions->rcControl.bottom = 396;
 		}
 	else
-		{
-		retOptions->rcControl.left = 0;
-		retOptions->rcControl.top = 23;
-		retOptions->rcControl.right = RectWidth(Ctx.rcRect);
-		retOptions->rcControl.bottom = RectHeight(Ctx.rcRect) - 47;
-		}
+		retOptions->rcControl = retOptions->rcDisplay;
 
 	//	Get the type
 
@@ -431,6 +443,20 @@ ALERROR IDockScreenDisplay::Init (SInitCtx &Ctx, const SDisplayOptions &Options,
 	return OnInit(Ctx, Options, retsError); 
 	}
 
+ICCItemPtr IDockScreenDisplay::OnGetListAsCCItem (void) const
+
+//	OnGetListAsCCItem
+//
+//	REturns the entire list as an item.
+
+	{
+	IListData *pList = GetListData();
+	if (!pList)
+		return ICCItemPtr::Nil();
+
+	return pList->GetAsCCItem();
+	}
+
 ICCItemPtr IDockScreenDisplay::OnGetProperty (const CString &sProperty) const
 
 //	OnGetProperty
@@ -548,6 +574,42 @@ void IDockScreenDisplay::OnShowPane (bool bNoListNavigation)
 	SelectArmor(-1); 
 	}
 
+bool IDockScreenDisplay::ParseAlign (const ICCItem &Align, DWORD *retdwAlign)
+
+//	ParseAlign
+//
+//	Parse alignment.
+
+	{
+	DWORD dwAlign = 0;
+
+	for (int i = 0; i < Align.GetCount(); i++)
+		{
+		const ICCItem *pEntry = Align.GetElement(i);
+		CString sValue = pEntry->GetStringValue();
+
+		if (strEquals(sValue, ALIGN_LEFT))
+			dwAlign |= alignLeft;
+		else if (strEquals(sValue, ALIGN_RIGHT))
+			dwAlign |= alignRight;
+		else if (strEquals(sValue, ALIGN_CENTER))
+			dwAlign |= alignCenter;
+		else if (strEquals(sValue, ALIGN_TOP))
+			dwAlign |= alignTop;
+		else if (strEquals(sValue, ALIGN_BOTTOM))
+			dwAlign |= alignBottom;
+		else if (strEquals(sValue, ALIGN_MIDDLE))
+			dwAlign |= alignMiddle;
+		else
+			return false;
+		}
+
+	if (retdwAlign)
+		*retdwAlign = dwAlign;
+
+	return true;
+	}
+
 bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgroundDesc *retDesc)
 
 //	ParseBackroundDesc
@@ -558,7 +620,7 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgrou
 	//	Nil means no default value
 
 	if (pDesc->IsNil())
-		retDesc->iType = EDockScreenBackground::default;
+		retDesc->iType = EDockScreenBackground::defaultBackground;
 
 	//	If we have a struct, we expect a certain format
 
@@ -570,18 +632,31 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgrou
 
 		else if (strEquals(sType, TYPE_HERO))
 			{
-			retDesc->iType = EDockScreenBackground::objHeroImage;
-			retDesc->pObj = CreateObjFromItem(pDesc->GetElement(FIELD_OBJ));
-			if (retDesc->pObj == NULL)
+			if (const ICCItem* pObj = pDesc->GetElement(FIELD_OBJ))
+				{
+				retDesc->iType = EDockScreenBackground::objHeroImage;
+				retDesc->pObj = CreateObjFromItem(pObj);
+				if (retDesc->pObj == NULL)
+					return false;
+				}
+			else if (const ICCItem* pImageDesc = pDesc->GetElement(FIELD_IMAGE))
+				{
+				retDesc->iType = EDockScreenBackground::heroImage;
+				retDesc->dwImageID = CTLispConvert::AsImageDesc(pImageDesc, &retDesc->rcImage);
+				}
+			else
 				return false;
 			}
 		else if (strEquals(sType, TYPE_IMAGE))
 			{
 			retDesc->iType = EDockScreenBackground::image;
 
-			ICCItem *pImage = pDesc->GetElement(FIELD_IMAGE);
+			const ICCItem *pImage = pDesc->GetElement(FIELD_IMAGE);
 			if (pImage == NULL)
 				return false;
+
+			else if (pImage->IsList())
+				retDesc->dwImageID = CTLispConvert::AsImageDesc(pImage, &retDesc->rcImage);
 
 			else if (pImage->IsInteger())
 				retDesc->dwImageID = pImage->GetIntegerValue();
@@ -609,6 +684,28 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgrou
 			}
 		else
 			return false;
+
+		//	Optional alignment
+
+		if (const ICCItem *pAlign = pDesc->GetElement(FIELD_ALIGN))
+			{
+			if (!ParseAlign(*pAlign, &retDesc->dwImageAlign))
+				return false;
+			}
+
+		//	Optional padding
+
+		if (const ICCItem *pPadding = pDesc->GetElement(FIELD_PADDING_BOTTOM))
+			retDesc->rcImagePadding.bottom = pPadding->GetIntegerValue();
+
+		if (const ICCItem *pPadding = pDesc->GetElement(FIELD_PADDING_LEFT))
+			retDesc->rcImagePadding.left = pPadding->GetIntegerValue();
+
+		if (const ICCItem *pPadding = pDesc->GetElement(FIELD_PADDING_RIGHT))
+			retDesc->rcImagePadding.right = pPadding->GetIntegerValue();
+
+		if (const ICCItem *pPadding = pDesc->GetElement(FIELD_PADDING_TOP))
+			retDesc->rcImagePadding.top = pPadding->GetIntegerValue();
 		}
 
 	//	Otherwise, we can't parse.

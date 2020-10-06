@@ -425,5 +425,8 @@
     <ClCompile Include="CIconLabelBlock.cpp">
       <Filter>Source Files\TextFormat</Filter>
     </ClCompile>
+    <ClCompile Include="CDrawText.cpp">
+      <Filter>Source Files\TextFormat</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

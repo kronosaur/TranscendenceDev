@@ -14,7 +14,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This coating is used to protect a ship's armor against laser and particle beam weapons."
@@ -25,14 +25,19 @@
 			sortName=			"ablative armor coating, barrel of"
 			>
 
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resistDamageClass:laser:50"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancement">0x0a05</Data>
-		</StaticData>
-
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The paste is an ablative coating that resists laser and particle damage.
 			</Text>
 		</Language>
@@ -49,7 +54,7 @@
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 
 			description=		"This coating reacts when hit by kinetic or chemical explosives and produces an opposite reaction that protect the underlying armor and hull."
 
@@ -59,14 +64,19 @@
 			sortName=			"reactive armor coating, barrel of"
 			>
 
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resistDamageClass:kinetic:50"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancement">0x0a15</Data>
-		</StaticData>
-
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The paste is a reactive coating that resists kinetic and chemical explosion damage.
 			</Text>
 		</Language>
@@ -85,7 +95,7 @@
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 
 			description=		"The nanomachines in this paste weave a strong carbon grid through a ship's armor. Armor that has been treated in this way will be stronger and more resistant to damage."
 
@@ -96,20 +106,21 @@
 			>
 
 		<Properties>
-			<Constant id="rpg.enhancementTable">
+			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a &lt;=3"	enhancement:0x0105	}
-					{	criteria:"a &lt;=5"	enhancement:0x0103	}
-					{	criteria:"a &lt;=6"	enhancement:0x0101	}
-					{	criteria:"a &gt;6"	enhancement:Nil	descID:'TooAdvanced	}
+					{	criteria:"a L:1-3"		enhancement:"+hpBonus:50"	}
+					{	criteria:"a L:4-6"		enhancement:"+hpBonus:30"	}
+					{	criteria:"a L:7-9"		enhancement:"+hpBonus:20"	}
+					{	criteria:"a L:10"		enhancement:"+hpBonus:10"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
 					)
-			</Constant>
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The coating is composed of nanomachines that strengthen your armor.
 			</Text>
 		</Language>
@@ -126,7 +137,7 @@
 			frequency=			"common"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"armorDamage, consumable, res"
+			attributes=			"armorDamage, consumable, humanTech, res"
 
 			description=		"Powerful organic acids such as these are used in various industrial processes. Use with caution: Do not allow contact with a ship's armor or hull."
 
@@ -138,42 +149,48 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Properties>
-			<Constant id="rpg.useCriteria">"a"</Constant>
-		</Properties>
-
 		<Events>
-			<OnUseOnItem>
+			<CanEnhanceItem>
 				(block (
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					)
-					(setq dstItem (objSetItemProperty gPlayerShip dstItem 'incHP (- (rollDice 3 6 0))))
+					{
+						resultCode: 'damaged
+						desc: (itmTranslate gItem 'descUsage {
+							useItem: (itmGetName gItem 'article)
+							dstItem: (itmGetName dstItem 'noModifiers)
+							})
+						}
+					)
+			</CanEnhanceItem>
 
-					;	Remove the armor paste from the player's cargo
-					(objRemoveItem gPlayerShip gItem 1)
-
-					;	Identify the item
-					(itmSetKnown gItem)
+			<OnEnhanceItem>
+				(block (
+					(dstItem (@ gData 'targetItem))
+					)
+					(setq dstItem (objSet@ gSource dstItem 'incHP (- (rollDice 3 6 0))))
 
 					;	If the armor was destroyed, then we remove it too.
 
-					(if (and (not (itmGetProperty dstItem 'installed))
-							(= (itmGetProperty dstItem 'hp) 0)
+					(if (and (not (itm@ dstItem 'installed))
+							(= (itm@ dstItem 'hp) 0)
 							)
 						(block ()
-							(objRemoveItem gPlayerShip dstItem)
+							(objRemoveItem gSource dstItem)
 
 							{
+								resultCode: 'damaged
 								desc: (itmTranslate gItem 'descResultDestroyed)
 								}
 							)
 
 						{
+							resultCode: 'damaged
 							desc: (itmTranslate gItem 'descResult)
 							}
 						)
 					)
-			</OnUseOnItem>
+			</OnEnhanceItem>
 		</Events>
 
 		<Language>
@@ -187,6 +204,11 @@
 
 				Unfortunately, the barrel contained an organic acid that eats
 				through most metals. The armor segment has been destroyed.
+
+			</Text>
+			<Text id="descUsage">
+
+				Using organic acid will damage the %dstItem%.
 
 			</Text>
 		</Language>
@@ -204,7 +226,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"Consumable"
+			attributes=			"consumable, humanTech"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"Decon gel is used to decontaminate radioactive metals, ceramics and other materials. It is ideal for decontaminating a ship's armor and hull."
@@ -217,63 +239,82 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Properties>
-			<Constant id="rpg.useCriteria">"a"</Constant>
-		</Properties>
-
 		<Events>
-			<OnUseOnItem>
+			<CanEnhanceItem>
+				(switch
+					(not (itm@ (@ gData 'targetItem) 'installed))
+						{	
+							resultCode: 'noEffect 
+							}
+
+					(not (objGetCondition gSource 'radioactive))
+						{
+							resultCode: 'noEffect
+							desc: (itmTranslate gItem 'rpg.canUse.notRadioactive)
+							}
+
+					{
+						resultCode: 'ok
+						desc: (itmTranslate gItem 'rpg.canUse.decon)
+						}
+					)
+			</CanEnhanceItem>
+
+			<OnEnhanceItem>
 				(block (
-					(dstItem (@ gData 'itemToUseOn))
+					(dstItem (@ gData 'targetItem))
 					resultID
 					)
 
 					(switch
-						;	If applied on a loose segment, then no effect
+						(not (itm@ dstItem 'installed))
+							{
+								resultCode: 'noEffect
+								nextScreen: 'exitScreen
+								}
 
-						(not (itmGetProperty dstItem 'installed))
-							(setq resultID 'descResultNoEffect)
+						(not (objGetCondition gSource 'radioactive))
+							{
+								resultCode: 'noEffect
+								desc: (itmTranslate gItem 'rpg.useResult.notRadioactive)
+								nextScreen: 'exitScreen
+								}
 
-						;	If ship is radioactive, then we decontaminate
-
-						(shpIsRadioactive gPlayerShip)
-							(block Nil
-								(shpDecontaminate gPlayerShip)
-								(setq resultID 'descResultDecontaminated)
-								)
-
-						(setq resultID 'descResultNotNeeded)
+						(block ()
+							(shpDecontaminate gSource)
+							{
+								resultCode: 'ok
+								desc: (itmTranslate gItem 'rpg.useResult.decon)
+								nextScreen: 'exitScreen
+								}
+							)
 						)
-
-					(objRemoveItem gPlayerShip gItem 1)
-					(itmSetKnown gItem)
-					{
-						nextScreen: 'exitScreen
-						desc: (itmTranslate gItem resultID {
-							dstItem: (itmGetName dstItem)
-							})
-						}
 					)
-			</OnUseOnItem>
+			</OnEnhanceItem>
 		</Events>
 
 		<Language>
-			<Text id="descResultDecontaminated">
+			<Text id="rpg.canUse.decon">
+
+				Using this barrel of gel will decontaminate your ship.
+
+			</Text>
+			<Text id="rpg.useResult.decon">
 
 				The barrel was filled with a decontamination gel. Your ship has 
 				been decontaminated.
 
 			</Text>
-			<Text id="descResultNotNeeded">
+			<Text id="rpg.canUse.notRadioactive">
+
+				Your ship is not radioactive, so the gel will not have any 
+				effect.
+
+			</Text>
+			<Text id="rpg.useResult.notRadioactive">
 
 				The barrel was filled with a decontamination gel. Since your 
 				ship is not radioactive, the gel had no effect.
-
-			</Text>
-			<Text id="descResultNoEffect">
-
-				The barrel was filled with a decontamination gel. It had no 
-				effect on the %dstItem% because it is not radioactive.
 
 			</Text>
 		</Language>
@@ -289,7 +330,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This coating is used to protect a ship's armor against particle beam weapons."
@@ -300,14 +341,19 @@
 			sortName=			"particle resistance coating, barrel of"
 			>
 
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resist:particle:50"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancement">0x0925</Data>
-		</StaticData>
-
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The paste is a coating that resists particle damage.
 			</Text>
 		</Language>
@@ -324,7 +370,7 @@
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 
 			description=		"The nanomachines in this paste create a hard plasteel shell on top of armor segments."
 
@@ -332,13 +378,18 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+hpBonus"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+hpBonus"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The coating is composed of plasteel nanomachines that strengthen your armor.
 			</Text>
 		</Language>
@@ -354,7 +405,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem; Specialty"
+			attributes=			"armorEnhance, humanTech, minorItem, specialty"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This coating is nearly perfectly reflective at all laser weapon wavelengths. A ship's armor coated with this substance will be immune to laser weapons."
@@ -366,13 +417,18 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+reflect:laser"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+reflect:laser"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The paste is a mirrored coating that reflects laser beams.
 			</Text>
 		</Language>
@@ -390,7 +446,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This borocarbide coating absorbs deadly radiation before it can penetrate your ship's hull."
@@ -401,14 +457,19 @@
 			sortName=			"anti-radiation coating, barrel of"
 			>
 
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+immunity:radiation"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancement">"+immunity:radiation"</Data>
-		</StaticData>
-
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The barrel contains a borocarbide paste that resists radiation.
 			</Text>
 		</Language>
@@ -425,7 +486,7 @@
 			unknownType=		"&itUnknownBarrel;"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"armorDamage, consumable, defective"
+			attributes=			"armorDamage, consumable, defective, humanTech"
 
 			description=		"These nanomachines are used to recycle old ships and armors into their basic components. Use with caution: Do not allow contact with a ship's armor or hull."
 
@@ -435,14 +496,19 @@
 			sortName=			"degenerating nanos, barrel of"
 			>
 
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"-decay"	}
+					{	criteria:"a L:11-"		descID:'tooAdvanced	}
+					)
+			</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancement">0x8200</Data>
-		</StaticData>
-
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The paste is a nanomachine matrix that dissolves metals and composites.
 			</Text>
 		</Language>
@@ -458,7 +524,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"Consumable; CannotOrder"
+			attributes=			"consumable, humanTech, cannotOrder"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This is a titanium barrel filled with low and medium-level radioactive waste."
@@ -471,68 +537,131 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Properties>
-			<Constant id="rpg.useCriteria">"a"</Constant>
-		</Properties>
-
 		<Events>
-			<OnUseOnItem>
+			<CanEnhanceItem>
 				(block (
-					(dstItem (@ gData 'itemToUseOn))
-					resultID
+					(dstItem (@ gData 'targetItem))
+					(trData {
+						dstItem: (itmGetName dstItem 'noModifiers)
+						})
 					)
 					(switch
-						;	Already contaminated
-						(shpIsRadioactive gPlayerShip)
-							(setq resultID 'descResultAlreadyContaminated)
+						(objGetCondition gSource 'radioactive)
+							{
+								resultCode: 'noEffect
+								desc: (itmTranslate gItem 'rpg.canUse.alreadyRadioactive trData)
+								}
 
-						;	Applied to an installed armor segment with radiation immunity
-						(and (itmMatches dstItem "aI") (shpIsRadiationImmune gPlayerShip dstItem))
-							(setq resultID 'descResultImmune)
+						(and (itmMatches dstItem "aI") (shpIsRadiationImmune gSource dstItem))
+							{
+								resultCode: 'noEffect
+								desc: (itmTranslate gItem 'rpg.canUse.immune trData)
+								}
 
-						(block Nil
-							(if (itmMatches dstItem "aI")
-								(setq resultID 'descResultContaminated)
-								(setq resultID 'descResultContaminatedCargo)
-								)
-							(shpMakeRadioactive gPlayerShip)
-							)
-						)
+						(itmMatches dstItem "aI")
+							{
+								resultCode: 'damaged
+								desc: (itmTranslate gItem 'rpg.canUse.contaminateArmor trData)
+								}
 
-						(objRemoveItem gPlayerShip gItem 1)
-						(itmSetKnown gItem)
 						{
-							nextScreen: 'forceUndock
-							desc: (typTranslate &itRadioactiveWaste; resultID)
+							resultCode: 'damaged
+							desc: (itmTranslate gItem 'rpg.canUse.contaminateCargo trData)
 							}
 						)
 					)
-			</OnUseOnItem>
+			</CanEnhanceItem>
+
+			<OnEnhanceItem>
+				(block (
+					(dstItem (@ gData 'targetItem))
+					(trData {
+						dstItem: (itmGetName dstItem 'noModifiers)
+						})
+					)
+					(switch
+						(objGetCondition gSource 'radioactive)
+							{
+								resultCode: 'noEffect
+								desc: (itmTranslate gItem 'rpg.useResult.alreadyRadioactive trData)
+								}
+
+						(and (itmMatches dstItem "aI") (shpIsRadiationImmune gSource dstItem))
+							{
+								resultCode: 'noEffect
+								desc: (itmTranslate gItem 'rpg.useResult.immune trData)
+								}
+
+						(itmMatches dstItem "aI")
+							(block ()
+								(shpMakeRadioactive gSource)
+								{
+									resultCode: 'damaged
+									desc: (itmTranslate gItem 'rpg.useResult.contaminateArmor trData)
+									nextScreen: 'forceUndock
+									}
+								)
+
+						(block ()
+							(shpMakeRadioactive gSource)
+							{
+								resultCode: 'damaged
+								desc: (itmTranslate gItem 'rpg.useResult.contaminateCargo trData)
+								nextScreen: 'forceUndock
+								}
+							)
+						)
+					)
+			</OnEnhanceItem>
 		</Events>
 
 		<Language>
-			<Text id="descResultAlreadyContaminated">
+			<Text id="rpg.canUse.alreadyRadioactive">
+
+				Your ship is already contaminated, so opening this barrel will
+				have no effect.
+
+			</Text>
+			<Text id="rpg.useResult.alreadyRadioactive">
 
 				The barrel contained radioactive waste. Your ship is already
 				radioactive; the waste has no further effect.
 
 			</Text>
-			<Text id="descResultContaminated">
+			<Text id="rpg.canUse.contaminateArmor">
+
+				Opening the barrel of radioactive waste will contaminate your
+				ship.
+
+			</Text>
+			<Text id="rpg.useResult.contaminateArmor">
 
 				The barrel contained radioactive waste. Your ship has been
 				contaminated.
 
 			</Text>
-			<Text id="descResultImmune">
+			<Text id="rpg.canUse.contaminateCargo">
 
-				The barrel contained radioactive waste. Fortunately, your armor
-				is immune to radiation. The waste has no effect.
+				Opening the barrel of radioactive waste will contaminate your
+				ship.
 
 			</Text>
-			<Text id="descResultContaminatedCargo">
+			<Text id="rpg.useResult.contaminateCargo">
 
 				The barrel contained radioactive waste which just emptied inside
 				your cargo hold. Your ship has been contaminated.
+
+			</Text>
+			<Text id="rpg.canUse.immune">
+
+				This %dstItem% is immune to radiation. The barrel will have no 
+				effect.
+
+			</Text>
+			<Text id="rpg.useResult.immune">
+
+				The barrel contained radioactive waste. Fortunately, your armor
+				is immune to radiation. The waste has no effect.
 
 			</Text>
 		</Language>
@@ -548,7 +677,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem; Specialty"
+			attributes=			"armorEnhance, humanTech, minorItem, specialty"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"The nanomachines are able to automatically regenerate any armor. Once treated with this paste an armor segment will continue to regenerate even if damaged further."
@@ -559,19 +688,19 @@
 			sortName=			"regenerating nanos, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
-
 		<Properties>
-			<Constant id="rpg.enhancementTable">
+			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a &lt;=10"	enhancement:0x0200	}
-					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
+					{	criteria:"a L:1-10"		enhancement:"+regen"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
 					)
-			</Constant>
+			</Definition>
 		</Properties>
 
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The paste is a nanomachine matrix that regenerates the armor segment.
 			</Text>
 		</Language>
@@ -589,7 +718,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"When applied to armor, monopole dust dissipates EMP energy, rendering it harmless."
@@ -600,14 +729,19 @@
 			sortName=			"monopole dust, barrel of"
 			>
 
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+immunity:emp"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancement">0x0b20</Data>
-		</StaticData>
-
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The barrel contains monopole dust, which protects your armor against EMP effects.
 			</Text>
 		</Language>
@@ -623,7 +757,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem; Specialty"
+			attributes=			"armorEnhance, humanTech, minorItem, specialty"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This coating reflects particle beams."
@@ -632,13 +766,18 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+reflect:particle"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+reflect:particle"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The paste is a coating that reflects particle beams.
 			</Text>
 		</Language>
@@ -656,7 +795,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"This coating is used to protect a ship's armor against ion damage."
@@ -667,14 +806,19 @@
 			sortName=			"ion resistance coating, barrel of"
 			>
 
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resist:ion:50"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancement">0x0945</Data>
-		</StaticData>
-
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The paste is a coating that resists ion damage.
 			</Text>
 		</Language>
@@ -690,7 +834,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"armorDamage, defective, minorItem"
+			attributes=			"armorDamage, defective, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"Meteorsteel interferes with most kinds of shield generators."
@@ -701,14 +845,19 @@
 			sortName=			"meteorsteel dust, barrel of"
 			>
 
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"-shieldInterference"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancement">0x8c00</Data>
-		</StaticData>
-
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The barrel contains meteorsteel dust.
 			</Text>
 		</Language>
@@ -726,10 +875,10 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
-			description=		"Dust activated by dyons immunizes armor against ion effects that disable or damage a ship's systems."
+			description=		"Dust activated by dyons immunizes armor against ionization effects such as blinding, EMP, and device ionization."
 
 			useScreen=			"&dsRPGUseItemOnArmor;"
 			data=				"ioneffectimmune"
@@ -737,15 +886,20 @@
 			sortName=			"dyon dust, barrel of"
 			>
 
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+immunity:ionEffects"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancement">0x0c00</Data>
-		</StaticData>
-
 		<Language>
-			<Text id="descResultIntro">
-				The barrel contains dyon dust, which immunizes your armor against disabling ion effects.
+			<Text id="rpg.useResultIntro">
+				The barrel contains dyon dust, which immunizes your armor against ionization effects.
 			</Text>
 		</Language>
 	</ItemType>
@@ -762,7 +916,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem; Specialty"
+			attributes=			"armorEnhance, humanTech, minorItem, specialty"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"This coating reflects ion damage."
@@ -771,13 +925,18 @@
 			>
 
 		<Properties>
-			<Constant id="core.enhancement">"+reflect:ion"</Constant>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+reflect:ion"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The paste is a coating that reflects ion damage.
 			</Text>
 		</Language>
@@ -793,7 +952,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"This coating is used to protect a ship's armor against thermonuclear damage."
@@ -804,14 +963,19 @@
 			sortName=			"ithalium paste, barrel of"
 			>
 
+		<Properties>
+			<Definition id="rpg.enhancementTable">
+				'(
+					{	criteria:"a L:1-10"		enhancement:"+resist:thermo:50"	}
+					{	criteria:"a L:11-"		descID:'TooAdvanced	}
+					)
+			</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancement">0x0955</Data>
-		</StaticData>
-
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The paste is a coating that resists thermonuclear damage.
 			</Text>
 		</Language>
@@ -829,7 +993,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"The nanomachines in this paste weave a strong orthosteel grid through a ship's armor. Armor that has been treated in this way will be stronger and more resistant to damage."
@@ -845,18 +1009,504 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"a &lt;=6"	enhancement:Nil	descID:'TooPrimitive	}
-					{	criteria:"a &lt;=10"	enhancement:0x0105	}
-					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
+					{	criteria:"a L:1-6"		descID:'TooPrimitive	}
+					{	criteria:"a L:7-9"		enhancement:"+hpBonus:50"	}
+					{	criteria:"a L:10-12"	enhancement:"+hpBonus:30"	}
+					{	criteria:"a L:13-"		descID:'TooAdvanced	}
 					)
 			</Constant>
 		</Properties>
 
 		<Language>
-			<Text id="descResultIntro">
+			<Text id="rpg.useResultIntro">
 				The coating is composed of nanomachines that strengthen your armor.
 			</Text>
 		</Language>
 	</ItemType>
+
+<!-- DIAGNOSTICS -->
+
+	<Type unid="&diagArmorEnhancements;">
+		<Events>
+			<OnGlobalRunDiagnostics>
+				(block ()
+
+					;	Set up a player ship
+
+					(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+					(if (not gPlayerShip)
+						(error "Unable to create player ship.")
+						)
+					(shpOrder gPlayerShip 'hold)
+
+					;	Unit Tests for Item Enhancements
+
+					(diagEval (list
+
+						;	Ablative Armor Coating -----------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itAblativeArmorCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(@ (itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)
+									'laser)											result:20	}
+
+						{	test:'(@ (itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)
+									'particle)										result:75	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Particle Resistance Coating ------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itParticleResistCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)											
+							result: {
+								laser:40				kinetic:40
+								particle:50 			blast:100
+								ion:100					thermo:100
+								positron:100 			plasma:100 
+								antimatter:100			nano:100 
+								graviton:125			singularity:125 
+								darkAcid:200			darkSteel:200
+								darkLightning:300		darkFire:300
+								}
+							}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Plasteel Nanos -------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itPlasteelNanos;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'maxHP
+										)											result:88	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itPlasteelNanos;
+										)
+									'resultCode)									result:'improved	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'maxHP
+										)											result:96	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Degenerating Nanos ---------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itDegeneratingNanos;
+										)
+									'resultCode)									result:'defectOK	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'decay
+										)											result:0.2	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Reflective Armor Coating ---------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itReflectiveArmorCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'reflect
+										)											result:{ laser:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Regenerating Nanos ---------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itRegeneratingNanos;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'regen
+										)											result:1	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	EMP Immunity Coating -------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itEMPImmuneCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'empImmune
+										)											result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Particle Reflect Coating ---------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itParticleReflectCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'reflect
+										)											result:{ particle:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Ion Resistance Coating -----------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itIonResistCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)											
+							result: {
+								laser:40				kinetic:40
+								particle:100 			blast:100
+								ion:50					thermo:100
+								positron:100 			plasma:100 
+								antimatter:100			nano:100 
+								graviton:125			singularity:125 
+								darkAcid:200			darkSteel:200
+								darkLightning:300		darkFire:300
+								}
+							}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Meteorsteel Dust -----------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itShieldInterfereCoating;
+										)
+									'resultCode)									result:'defectOK	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'shieldInterference
+										)											result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Dyon Dust ------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itIonEffectImmuneCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'blindingImmune
+										)											result:True	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'deviceDamageImmune
+										)											result:True	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'deviceDisruptImmune
+										)											result:True	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'empImmune
+										)											result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Ion Reflect Coating --------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itIonReflectCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'reflect
+										)											result:{ ion:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Ithalium Paste -------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itThermoResistCoating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										'damageAdj
+										)											
+							result: {
+								laser:40				kinetic:40
+								particle:100 			blast:100
+								ion:100					thermo:50
+								positron:100 			plasma:100 
+								antimatter:100			nano:100 
+								graviton:125			singularity:125 
+								darkAcid:200			darkSteel:200
+								darkLightning:300		darkFire:300
+								}
+							}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Orthosteel Nanos -----------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itLightOrthoSteel;
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itLightOrthoSteel;;") 0)
+										&itCarbonWeaver2Coating;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itLightOrthoSteel;;") 0)
+										'maxHP
+										)											result:217	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itLightOrthoSteel;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Organic Acid ---------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									&itPlasteelPlate;
+									)												result:'ignore	}
+
+						{	test:'(@ (objCanEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itOrganicAcid;
+										)
+									'resultCode)									result:'damaged	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
+										&itOrganicAcid;
+										)
+									'resultCode)									result:'damaged	}
+
+						{	test:'(ls 
+									(itm@ 
+										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") 0)
+										'hp
+										)
+									(itm@ &itPlasteelPlate; 'hp)
+									)												result:True	}
+
+						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
+										(objRemoveItem gPlayerShip theItem)
+										)											result:'ignore	}
+
+						;	Decon Gel ------------------------------------------
+
+						{	test:'(shpMakeRadioactive gPlayerShip)					result:True	}
+
+						{	test:'(@ (objCanEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itDeconGel;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itDeconGel;
+										)
+									'resultCode)									result:'ok	}
+
+						{	test:'(objGetCondition gPlayerShip 'radioactive)		result:Nil	}
+
+						{	test:'(@ (objCanEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itDeconGel;
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itDeconGel;
+										)
+									'resultCode)									result:'noEffect	}
+
+						;	Radioactive Waste ----------------------------------
+
+						{	test:'(@ (objCanEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itRadioactiveWaste;
+										)
+									'resultCode)									result:'damaged	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itRadioactiveWaste;
+										)
+									'resultCode)									result:'damaged	}
+
+						{	test:'(objGetCondition gPlayerShip 'radioactive)		result:True	}
+
+						{	test:'(@ (objCanEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itRadioactiveWaste;
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itRadioactiveWaste;
+										)
+									'resultCode)									result:'noEffect	}
+
+						{	test:'(@ (objEnhanceItem gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itDeconGel;
+										)
+									'resultCode)									result:'ok	}
+
+						))
+
+					;	Done
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
+					)
+				
+			</OnGlobalRunDiagnostics>
+		</Events>
+	</Type>
 
 </TranscendenceModule>

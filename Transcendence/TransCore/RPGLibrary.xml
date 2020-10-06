@@ -105,9 +105,12 @@
 
 	<!-- 0090-00AF AUTONS -->
 
-	<!ENTITY baStdAutonBase				"0x00010090">
+	<!ENTITY baStdAutonBaseOld			"0x00010090">
 	<!ENTITY baAutonItemBase			"0x00010091">
 	<!ENTITY dsNameAuton				"0x00010092">
+	<!ENTITY baStdAutonBase				"0x00010093">
+	<!ENTITY stAutonWreck				"0x00010094">
+	<!ENTITY dsRPGAutonWreck			"0x00010095">
 
 	<!-- 00B0-00CF ITEMS -->
 
@@ -135,6 +138,20 @@
 
 	<!ENTITY dsRPGShipClassViewer		"0x00010120">
 	<!ENTITY dsRPGUseItemOnShields		"0x00010121">
+
+	<!-- 0140-015F MINING -->
+
+	<!ENTITY unidMiningSkill			"0x00010140">
+
+	<!-- 0160-017F PLAYER -->
+
+	<!ENTITY unidPlayer					"0x00010160">
+
+	<!-- 0180-01BF MISSION TEMPLATE -->
+
+	<!ENTITY baInterceptMission			"0x00010180">
+	<!ENTITY baDestroyStationMission	"0x00010181">
+	<!ENTITY baVisitStationMission		"0x00010182">
 	]>
 	
 <CoreLibrary
@@ -164,6 +181,10 @@
 	<Module filename="RPGDockScreens.xml"/>
 	<Module filename="RPGDockServices.xml"/>
 	<Module filename="RPGMembership.xml"/>
+	<Module filename="RPGMining.xml"/>
+	<Module filename="RPGMissionTemplate01.xml"/>
+	<Module filename="RPGMissionTemplate02.xml"/>
+	<Module filename="RPGMissionTemplate03.xml"/>
 	<Module filename="RPGMissions.xml"/>
 	<Module filename="RPGPlayer.xml"/>
 	<Module filename="RPGRumors.xml"/>

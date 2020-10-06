@@ -41,7 +41,7 @@
 #define PROPERTY_SHIPS_DESTROYED_BY_PLAYER		CONSTLIT("shipsDestroyedByPlayer")
 #define PROPERTY_STATIONS_DESTROYED_BY_PLAYER	CONSTLIT("stationsDestroyedByPlayer")
 
-static char *g_DefaultText[] =
+static const char *g_DefaultText[] =
 	{
 	//	0
 	"",
@@ -309,6 +309,14 @@ CSovereign::SRelationship *CSovereign::FindRelationship (const CSovereign *pSove
 			&& (pInheritFrom = CSovereign::AsType(GetInheritFrom())))
 		pRel = pInheritFrom->FindRelationship(pSovereign, true);
 
+	//	Next look to see if we have a relationship to an ancestor of the 
+	//	sovereign.
+
+	if (pRel == NULL 
+			&& bCheckParent
+			&& (pInheritFrom = CSovereign::AsType(pSovereign->GetInheritFrom())))
+		pRel = FindRelationship(pInheritFrom, true);
+
 	//	Done
 
 	return pRel;
@@ -488,6 +496,23 @@ CString CSovereign::GetText (MessageTypes iMsg)
 		return g_pDefaultText[iMsg];
 	else
 		return g_pDefaultText[0];
+	}
+
+bool CSovereign::IsPlayerOwned (void)
+
+//  IsPlayerOwned
+//
+//  Determine if this sovereign inherits from svPlayer, but is NOT actually the
+//	player sovereign.
+
+	{
+	CSovereign *pParent = CSovereign::AsType(GetInheritFrom());
+	if (pParent == NULL)
+		return false;
+	else if (pParent->GetUNID() == g_PlayerSovereignUNID)
+		return true;
+	else
+		return pParent->IsPlayerOwned();
 	}
 
 void CSovereign::InitEnemyObjectList (const CSystem *pSystem) const

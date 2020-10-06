@@ -77,13 +77,30 @@ enum GradientDirections
 enum MarkerTypes
 	{
 	markerPixel,
-	markerSmallRound,
-	markerSmallSquare,
+	markerRoundDot,
+	markerSquareDot,
+	markerDiamondDot,
+	markerTriangleUpDot,
+	markerTriangleDownDot,
+
 	markerSmallCross,
 	markerMediumCross,
+
+	markerSmallSquare,
 	markerSmallFilledSquare,
-	markerSmallCircle,
+
 	markerTinyCircle,
+	markerSmallCircle,
+	markerSmallFilledCircle,
+
+	markerSmallTriangleUp,
+	markerSmallFilledTriangleUp,
+
+	markerSmallTriangleDown,
+	markerSmallFilledTriangleDown,
+
+	markerSmallDiamond,
+	markerSmallFilledDiamond,
 	};
 
 enum SurfaceTypes
@@ -133,6 +150,14 @@ void DrawGradientCircle8bit (CG16bitImage &Dest,
 void DrawNebulosity8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iScale, BYTE byMin, BYTE byMax);
 void DrawNoise8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iScale, BYTE byMin, BYTE byMax);
 void RasterizeQuarterCircle8bit (int iRadius, int *retSolid, BYTE *retEdge, DWORD byOpacity = 255);
+
+//	Implementation Helpers -----------------------------------------------------
+
+#include "TBlt.h"
+#include "TFill.h"
+#include "TCirclePainter.h"
+#include "TLinePainter.h"
+#include "TRoundedRectPainter.h"
 
 //	Noise Functions ------------------------------------------------------------
 

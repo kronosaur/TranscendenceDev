@@ -38,7 +38,7 @@ class CConquerNodesProc : public ITopologyProcessor
 	private:
 		struct SNodeWeight
 			{
-			CTopologyNode::SCriteria Criteria;
+			CTopologyNodeCriteria Criteria;
 			int iWeight;
 			int iSuccessChance;
 			};

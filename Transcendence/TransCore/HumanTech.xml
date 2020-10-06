@@ -31,6 +31,13 @@
 					style=			"circular"
 					/>
 
+			<!-- NOTE: This shield definition is for backwards compatibility.
+				If a ship uses the procedural circular ArmorDisplay, then we
+				don't use this image-based shield effect. But any ship that
+				provides its own armor image (like the Sapphire) will need this
+				shield display.
+			-->
+
 			<ShieldDisplay shieldLevelEffect="&efShieldHUDDefault;">
 			</ShieldDisplay>
 

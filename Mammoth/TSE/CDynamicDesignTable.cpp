@@ -48,7 +48,7 @@ ALERROR CDynamicDesignTable::Compile (SEntry *pEntry, CString *retsError)
 
 	//	Create the type
 
-	error = CreateType(pEntry, pDesc, &pEntry->pType, retsError);
+	error = CreateType(pEntry, pDesc, false, &pEntry->pType, retsError);
 
 	//	We always save the XML.
 
@@ -62,7 +62,7 @@ ALERROR CDynamicDesignTable::Compile (SEntry *pEntry, CString *retsError)
 	return NOERROR;
 	}
 
-ALERROR CDynamicDesignTable::CreateType (SEntry *pEntry, CXMLElement *pDesc, CDesignType **retpType, CString *retsError)
+ALERROR CDynamicDesignTable::CreateType (SEntry *pEntry, CXMLElement *pDesc, bool bLoadDiagnostics, CDesignType **retpType, CString *retsError)
 
 //	CreateType
 //
@@ -79,6 +79,7 @@ ALERROR CDynamicDesignTable::CreateType (SEntry *pEntry, CXMLElement *pDesc, CDe
 
 	SDesignLoadCtx Ctx;
 	Ctx.pExtension = pEntry->pExtension;
+	Ctx.bLoadDiagnostics = bLoadDiagnostics;
 
 	//	Load the type
 
@@ -97,7 +98,7 @@ ALERROR CDynamicDesignTable::CreateType (SEntry *pEntry, CXMLElement *pDesc, CDe
 	return NOERROR;
 	}
 
-ALERROR CDynamicDesignTable::DefineType (CExtension *pExtension, DWORD dwUNID, CXMLElement *pSource, CDesignType **retpType, CString *retsError)
+ALERROR CDynamicDesignTable::DefineType (SDesignLoadCtx &Ctx, CExtension *pExtension, DWORD dwUNID, CXMLElement *pSource, CDesignType **retpType, CString *retsError)
 
 //	DefineType
 //
@@ -113,7 +114,7 @@ ALERROR CDynamicDesignTable::DefineType (CExtension *pExtension, DWORD dwUNID, C
 
 	//	Create the type
 
-	if (error = CreateType(pEntry, pEntry->pSource, &pEntry->pType, retsError))
+	if (error = CreateType(pEntry, pEntry->pSource, Ctx.bLoadDiagnostics, &pEntry->pType, retsError))
 		{
 		m_Table.DeleteAt(dwUNID);
 		return error;
@@ -158,7 +159,7 @@ ALERROR CDynamicDesignTable::DefineType (CExtension *pExtension, DWORD dwUNID, I
 
 		//	Create the type
 
-		if (error = CreateType(pEntry, pEntry->pSource, &pEntry->pType, retsError))
+		if (error = CreateType(pEntry, pEntry->pSource, false, &pEntry->pType, retsError))
 			{
 			m_Table.DeleteAt(dwUNID);
 			return error;

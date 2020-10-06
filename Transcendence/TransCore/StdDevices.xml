@@ -163,33 +163,6 @@
 
 <!-- LEVEL III -->
 
-	<!-- Miner's Cargo Hold -->
-
-	<ItemType UNID="&itMinersCargoHold;"
-			name=				"miner's cargo hold"
-			attributes=			"commonwealth, majorItem, minersHold, miningEquipment"
-			  
-			level=				"3"
-			frequency=			"rare"
-
-			value=				"2000"
-			mass=				"1250"
-			  
-			description=		"Designed for mining ships, this cargo hold has grapples to bring ore on board."
-			>
-
-		<Image imageID="&rsItems1;" imageX="96" imageY="192" imageWidth="96" imageHeight="96"/>
-
-		<CargoHoldDevice
-				cargoSpace=		"150"
-				>
-			<Equipment>
-				<Install equipment="miningComputer"/>
-			</Equipment>
-		</CargoHoldDevice>
-
-	</ItemType>
-
 	<!-- Nova-25 reactor -->
 
 	<ItemType UNID="&it25MWReactor;"
@@ -347,8 +320,6 @@
 				target=			"missiles"
 				weapon=			"&vtICXLaserCannon;"
 				fireRate=		"15"
-
-				checkLineOfFire="true"
 				/>
 	</ItemType>
 
@@ -367,6 +338,8 @@
 				fireRate=			"15"
 				lifetime=			"30"
 				powerUse=			"10"
+
+				noFriendlyFire=		"true"
 
 				effect=				"&efLaserBeamDefault;"
 				sound=				"&snLaserCannon;"
@@ -573,7 +546,7 @@
 			value=				"10000"
 			mass=				"1500"
 			  
-			description=		"This enhancer increases the damage potential of installed Rasiermesser kinetic and blast weapons."
+			description=		"This enhancer increases the damage potential of installed Rasiermesser kinetic, blast, and thermonuclear weapons."
 			>
 
 		<Image imageID="&rsItemsRasiermesser3;" imageX="96" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -583,7 +556,7 @@
 				>
 			<EnhancementAbilities>
 				<Enhance type=			"rasiermesserEnhancer"
-						 criteria=		"w~l +rasiermesser; -energyWeapon;"
+						 criteria=		"w~l +rasiermesser; +damageType:kinetic; | w~l +rasiermesser; +damageType:blast; | w~l +rasiermesser; +damageType:thermo;"
 						 enhancement=	"+hpBonus:75;"
 						 />
 			</EnhancementAbilities>
@@ -592,7 +565,7 @@
 		<Language>
 			<Text id="core.reference">
 				
-				+75% damage from Rasiermesser kinetic and blast weapons
+				+75% damage bonus to Rasiermesser kinetic, blast, and thermonuclear weapons
 
 			</Text>
 		</Language>
@@ -740,8 +713,6 @@
 				weapon=			"&vtLongreachI;"
 				interceptRange=	"15"
 				fireRate=		"15"
-
-				checkLineOfFire="true"
 				/>
 
 	</ItemType>
@@ -762,6 +733,8 @@
 				missileSpeed=		"90"
 				lifetime=			"27"
 				powerUse=			"100"
+
+				noFriendlyFire=		"true"
 
 				effect=				"&efKineticBoltDefault;"
 				sound=				"&snRecoillessCannon;"

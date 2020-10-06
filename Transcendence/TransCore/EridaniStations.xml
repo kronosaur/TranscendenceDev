@@ -31,8 +31,7 @@
 		</Names>
 		
 		<Properties>
-			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
-			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+			<Constant id="maxMilitiaMissions">(random 3 4)</Constant>
 		</Properties>
 
 		<!-- Trade and Items -->
@@ -59,20 +58,20 @@
 
 		<Items>
 			<RandomItem count="2d10" 
-					criteria=		"a L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"a L:1-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="1d4" 
-					criteria=		"r L:1-6; -alien; -illegal; -military; -notForSale; -notStandard;"	
+					criteria=		"r L:1-6; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard;"	
 					levelFrequency="systemLevel:ru|c|curv"
 					/>
 			<RandomItem count="2d10" 
-					criteria=		"d~r L:1-6; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"d~r L:1-6; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			
 			<RandomItem count="20" 
-					criteria=		"*~ad -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"*~adm -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 

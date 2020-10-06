@@ -18,7 +18,7 @@ const Metric WALL_RANGE2 =				(WALL_RANGE * WALL_RANGE);
 const Metric GRAVITY_WELL_RANGE =		(KLICKS_PER_PIXEL * 800.0);
 const Metric GRAVITY_WELL_RANGE2 =		(GRAVITY_WELL_RANGE * GRAVITY_WELL_RANGE);
 
-const Metric MAX_NAV_START_DIST =		(20.0 * LIGHT_SECOND);
+const Metric MAX_NAV_START_DIST =		(12.0 * LIGHT_SECOND);
 const Metric MAX_NAV_START_DIST2 =		(MAX_NAV_START_DIST * MAX_NAV_START_DIST);
 
 const DWORD NAV_PATH_ID_OWNED =			0xffffffff;
@@ -28,30 +28,6 @@ const DWORD NAV_PATH_ID_OWNED =			0xffffffff;
 //	that there is a chance we'll be too close to turn properly.
 
 const Metric MAX_TARGET_SPEED =			(0.25 * LIGHT_SPEED);
-
-CAIBehaviorCtx::CAIBehaviorCtx (void) :
-		m_fDockingRequested(false),
-		m_fWaitForShieldsToRegen(false),
-
-		m_fImmobile(false),
-		m_fSuperconductingShields(false),
-		m_fHasMultipleWeapons(false),
-		m_fThrustThroughTurn(false),
-		m_fAvoidExplodingStations(false),
-		m_fRecalcBestWeapon(true),
-		m_fHasSecondaryWeapons(false),
-		m_fHasEscorts(false),
-
-		m_fHasMultiplePrimaries(false),
-		m_fFreeNavPath(false),
-		m_fHasAvoidPotential(false),
-		m_fShootTargetableMissiles(false),
-		m_fShootAllMissiles(false)
-
-//	CAIBehaviorCtx constructor
-
-	{
-	}
 
 CAIBehaviorCtx::~CAIBehaviorCtx (void)
 
@@ -232,10 +208,11 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 		//	See if this weapon shoots missiles.
 
-		if (DeviceItem.IsMissileDefenseWeapon())
+		DWORD dwTargetTypes = DeviceItem.GetTargetTypes();
+		if (dwTargetTypes & CTargetList::typeMissile)
 			m_fShootAllMissiles = true;
 
-		else if (Weapon.CanTargetMissiles())
+		else if (dwTargetTypes & CTargetList::typeTargetableMissile)
 			m_fShootTargetableMissiles = true;
 
 		//	If this is a secondary weapon, remember that we have some and 
@@ -281,7 +258,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 					if (rMaxRange > m_rMaxWeaponRange)
 						m_rMaxWeaponRange = rMaxRange;
 
-                    int iWeaponLevel = Weapon.GetLevel();
+					int iWeaponLevel = Weapon.GetLevel();
 					if (!Weapon.GetClass()->IsAmmoWeapon()
 							&& iWeaponLevel > iBestNonLauncherLevel)
 						iBestNonLauncherLevel = iWeaponLevel;
@@ -446,7 +423,7 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 				{
 				//	Figure out the best non-launcher level
 
-                int iWeaponLevel = Device.GetLevel();
+				int iWeaponLevel = Device.GetLevel();
 				if (Device.GetCategory() != itemcatLauncher
 						&& !Device.GetClass()->IsAmmoWeapon()
 						&& iWeaponLevel > m_iBestNonLauncherWeaponLevel)
@@ -593,6 +570,7 @@ bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 					|| (pObj->GetCategory() == CSpaceObject::catStation
 						&& pObj->GetScale() == scaleStructure
 						&& !pObj->IsIntangible()
+						&& !pObj->BlocksShips()
 						&& pObj->CanObjRequestDock(pShip)
 						&& (pObj->IsFriend(pShip) || !pObj->CanAttack()))))
 			{
@@ -772,7 +750,7 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 
 	//	Base score is based on the level of the variant
 
-    int iLevel = (pType->IsDevice() ? pWeapon->GetLevel() : pType->GetLevel());
+	int iLevel = (pType->IsDevice() ? pWeapon->GetLevel() : pType->GetLevel());
 	iScore += iLevel * 10;
 
 	//	Missiles/ammo count for more
@@ -940,7 +918,7 @@ void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage
 	DEBUG_CATCH
 	}
 
-void CAIBehaviorCtx::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CAIBehaviorCtx::DebugPaintInfo (CSystem &System, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	DebugPaintInfo
 //
@@ -948,7 +926,7 @@ void CAIBehaviorCtx::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewport
 
 	{
 	if (m_pNavPath && g_pUniverse->GetDebugOptions().IsShowNavPathsEnabled())
-		m_pNavPath->DebugPaintInfo(Dest, x, y, Ctx.XForm);
+		m_pNavPath->DebugPaintInfo(System, Dest, x, y, Ctx.XForm);
 	}
 
 bool CAIBehaviorCtx::IsBeingAttacked (DWORD dwThreshold) const 
@@ -972,6 +950,22 @@ bool CAIBehaviorCtx::IsSecondAttack (void) const
 	{
 	int iInterval = g_pUniverse->GetTicks() - GetLastAttack();
 	return (iInterval > MULTI_HIT_WINDOW && iInterval < 3 * ATTACK_TIME_THRESHOLD);
+	}
+
+void CAIBehaviorCtx::OnOrderChanged (CShip &Ship)
+
+//	OnOrderChanged
+//
+//	Orders have changed, so reset some state.
+
+	{
+	SetManeuverCounter(0);
+
+	if (m_fShipSpeedLowered)
+		{
+		Ship.ResetMaxSpeed();
+		m_fShipSpeedLowered = false;
+		}
 	}
 
 void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
@@ -1003,15 +997,18 @@ void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
 
 	//	State
 
-	Ctx.pStream->Read((char *)&m_iLastTurn, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iLastTurnCount, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iManeuverCounter, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iLastAttack, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_vPotential, sizeof(CVector));
+	int iValue;
+	Ctx.pStream->Read(iValue);
+	m_iLastTurn = (EManeuverTypes)iValue;
+
+	Ctx.pStream->Read(m_iLastTurnCount);
+	Ctx.pStream->Read(m_iManeuverCounter);
+	Ctx.pStream->Read(m_iLastAttack);
+	m_vPotential.ReadFromStream(*Ctx.pStream);
 
 	if (Ctx.dwVersion >= 112)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_iBarrierClock = (int)dwLoad;
 		}
 	else
@@ -1019,17 +1016,17 @@ void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
 
 	//	Nav path
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	if (dwLoad == 0)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_pNavPath = NULL;
 		m_iNavPathPos = -1;
 		m_fFreeNavPath = false;
 		}
 	else if (dwLoad == NAV_PATH_ID_OWNED)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_iNavPathPos = (int)dwLoad;
 
 		m_pNavPath = new CNavigationPath;
@@ -1039,7 +1036,7 @@ void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
 	else
 		{
 		DWORD dwNavPathPos;
-		Ctx.pStream->Read((char *)&dwNavPathPos, sizeof(DWORD));
+		Ctx.pStream->Read(dwNavPathPos);
 		m_iNavPathPos = (int)dwNavPathPos;
 
 		m_pNavPath = Ctx.pSystem->GetNavPathByID(dwLoad);
@@ -1050,10 +1047,11 @@ void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
 
 	//	Flags
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_fDockingRequested =		((dwLoad & 0x00000001) ? true : false);
 	m_fWaitForShieldsToRegen =	((dwLoad & 0x00000002) ? true : false);
 	m_fHasEscorts =				((dwLoad & 0x00000004) ? true : false);
+	m_fShipSpeedLowered =		((dwLoad & 0x00000008) ? true : false);
 
 	//	These flags do not need to be saved
 
@@ -1162,23 +1160,23 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 	//	State
 
-	pStream->Write((char *)&m_iLastTurn, sizeof(DWORD));
-	pStream->Write((char *)&m_iLastTurnCount, sizeof(DWORD));
-	pStream->Write((char *)&m_iManeuverCounter, sizeof(DWORD));
-	pStream->Write((char *)&m_iLastAttack, sizeof(DWORD));
-	pStream->Write((char *)&m_vPotential, sizeof(CVector));
+	pStream->Write(m_iLastTurn);
+	pStream->Write(m_iLastTurnCount);
+	pStream->Write(m_iManeuverCounter);
+	pStream->Write(m_iLastAttack);
+	m_vPotential.WriteToStream(*pStream);
 
 	dwSave = m_iBarrierClock;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	If we don't have a nav path, just write out 0
 
 	if (m_pNavPath == NULL)
 		{
 		dwSave = 0;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 		dwSave = m_iNavPathPos;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 		}
 
 	//	If we have a shared nav path, write out the nav path ID
@@ -1186,9 +1184,9 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	else if (!m_fFreeNavPath)
 		{
 		dwSave = (m_pNavPath ? m_pNavPath->GetID() : 0);
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 		dwSave = m_iNavPathPos;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 		}
 
 	//	Otherwise we need to save the nav path here.
@@ -1196,9 +1194,9 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	else
 		{
 		dwSave = NAV_PATH_ID_OWNED;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 		dwSave = m_iNavPathPos;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
 		m_pNavPath->OnWriteToStream(pSystem, pStream);
 		}
@@ -1209,5 +1207,6 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	dwSave |= (m_fDockingRequested ?		0x00000001 : 0);
 	dwSave |= (m_fWaitForShieldsToRegen ?	0x00000002 : 0);
 	dwSave |= (m_fHasEscorts ?				0x00000004 : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	dwSave |= (m_fShipSpeedLowered ?		0x00000008 : 0);
+	pStream->Write(dwSave);
 	}

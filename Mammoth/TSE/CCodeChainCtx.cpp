@@ -366,7 +366,9 @@ CWeaponFireDesc *CCodeChainCtx::AsWeaponFireDesc (ICCItem *pItem) const
 			&& (pType = GetUniverse().FindItemType(pItem->GetElement(0)->GetIntegerValue()))
 			&& (pMissileType = GetUniverse().FindItemType(pItem->GetElement(1)->GetIntegerValue())))
 		{
-		return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
+		CItem Item(pMissileType, 1);
+		CItemCtx ItemCtx(Item);
+		return pType->GetWeaponFireDesc(ItemCtx);
 		}
 
 	//	Otherwise, if we have a list, we expect an item.
@@ -377,14 +379,16 @@ CWeaponFireDesc *CCodeChainCtx::AsWeaponFireDesc (ICCItem *pItem) const
 		if (Item.IsEmpty())
 			return NULL;
 
-		return Item.GetType()->GetWeaponFireDesc(CItemCtx(Item));
+		CItemCtx ItemCtx(Item);
+		return Item.GetType()->GetWeaponFireDesc(ItemCtx);
 		}
 
 	//	Otherwise we expect an integer value.
 
 	else if (pType = GetUniverse().FindItemType(pItem->GetElement(0)->GetIntegerValue()))
 		{
-		return pType->GetWeaponFireDesc(CItemCtx());
+		CItemCtx ItemCtx;
+		return pType->GetWeaponFireDesc(ItemCtx);
 		}
 
 	//	Otherwise, error
@@ -448,8 +452,8 @@ void CCodeChainCtx::DefineDamageCtx (const SDamageCtx &Ctx, int iDamage)
 	DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 	DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 	DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
-	DefineInteger(CONSTLIT("aWeaponLevel"), Ctx.pDesc->GetLevel());
-	DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+	DefineInteger(CONSTLIT("aWeaponLevel"), Ctx.GetDesc().GetLevel());
+	DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
 	}
 
 void CCodeChainCtx::DefineDamageEffects (const CString &sVar, SDamageCtx &Ctx)
@@ -568,16 +572,6 @@ void CCodeChainCtx::DefineOrbit (const CString &sVar, const COrbit &OrbitDesc)
 	pValue->Discard();
 	}
 
-void CCodeChainCtx::DefineSource (CSpaceObject *pSource)
-
-//	DefineSource
-//
-//	Sets gSource
-
-	{
-	DefineGlobalSpaceObject(m_CC, STR_G_SOURCE, pSource);
-	}
-
 void CCodeChainCtx::DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj)
 
 //	DefineSpaceObject
@@ -593,6 +587,19 @@ void CCodeChainCtx::DefineSpaceObject (const CString &sVar, const CSpaceObject *
 		m_CC.DefineGlobal(sVar, pValue);
 		pValue->Discard();
 		}
+	}
+
+void CCodeChainCtx::DefineType (DWORD dwUNID)
+
+//	DefineType
+//
+//	Defines the type
+
+	{
+	if (dwUNID)
+		DefineInteger(STR_G_TYPE, dwUNID);
+	else
+		m_CC.DefineGlobal(STR_G_TYPE, m_CC.CreateNil());
 	}
 
 void CCodeChainCtx::DefineVector (const CString &sVar, const CVector &vVector)
@@ -632,16 +639,6 @@ bool CCodeChainCtx::InEvent (ECodeChainEvents iEvent)
 			return true;
 
 	return false;
-	}
-
-ICCItemPtr CCodeChainCtx::LinkCode (const CString &sString, CCodeChain::SLinkOptions &Options)
-
-//	LinkCode
-//
-//	Links a CodeChain expression.
-
-	{
-	return ICCItemPtr(m_CC.Link(sString, Options));
 	}
 
 void CCodeChainCtx::RemoveFrame (void)
@@ -706,15 +703,8 @@ ICCItem *CCodeChainCtx::Run (ICCItem *pCode)
 //	(which must be discarded by the caller)
 
 	{
-	DEBUG_TRY
-
-	AddFrame();
-	ICCItem *pResult = m_CC.TopLevel(pCode, this);
-	RemoveFrame();
-
-	return pResult;
-
-	DEBUG_CATCH
+	ICCItemPtr pResult = RunCode(pCode);
+	return pResult->Reference();
 	}
 
 ICCItem *CCodeChainCtx::Run (const SEventHandlerDesc &Event)
@@ -726,6 +716,9 @@ ICCItem *CCodeChainCtx::Run (const SEventHandlerDesc &Event)
 
 	{
 	DEBUG_TRY
+
+	if (!Event.pCode)
+		return m_CC.CreateNil();
 
 	CExtension *pOldExtension = m_pExtension;
 	m_pExtension = Event.pExtension;
@@ -747,8 +740,12 @@ ICCItemPtr CCodeChainCtx::RunCode (ICCItem *pCode)
 	{
 	DEBUG_TRY
 
+	CCodeChain::SRunOptions Options;
+	Options.pExternalCtx = this;
+	Options.bStrict = GetUniverse().InDebugMode();
+
 	AddFrame();
-	ICCItemPtr pResult = ICCItemPtr(m_CC.TopLevel(pCode, this));
+	ICCItemPtr pResult = m_CC.TopLevel(*pCode, Options);
 	RemoveFrame();
 
 	return pResult;
@@ -760,16 +757,21 @@ ICCItemPtr CCodeChainCtx::RunCode (const SEventHandlerDesc &Event)
 
 //	RunCode
 //
-//	Runs the given event and returns a result. (Which must be discarded by the
-//	caller).
+//	Runs the given event and returns a result. We guarantee that we will return
+//	a non NULL item.
 
 	{
 	DEBUG_TRY
+
+	if (!Event.pCode)
+		return ICCItemPtr::Nil();
 
 	CExtension *pOldExtension = m_pExtension;
 	m_pExtension = Event.pExtension;
 
 	ICCItemPtr pResult = RunCode(Event.pCode);
+	if (!pResult)
+		throw CException(ERR_FAIL);
 
 	m_pExtension = pOldExtension;
 	return pResult;
@@ -785,26 +787,8 @@ ICCItem *CCodeChainCtx::RunLambda (ICCItem *pCode)
 //	and returns a result (which must be discarded by the caller)
 
 	{
-	DEBUG_TRY
-
-	AddFrame();
-
-	//	If this is a lambda expression, then eval as if
-	//	it were an expression with no arguments
-
-	ICCItem *pResult;
-	if (pCode->IsFunction())
-		pResult = m_CC.Apply(pCode, m_CC.CreateNil(), this);
-	else
-		pResult = m_CC.TopLevel(pCode, this);
-
-	//	Done
-
-	RemoveFrame();
-
-	return pResult;
-
-	DEBUG_CATCH
+	ICCItemPtr pResult = RunLambdaCode(pCode);
+	return pResult->Reference();
 	}
 
 ICCItemPtr CCodeChainCtx::RunLambdaCode (ICCItem *pCode, ICCItem *pArgs)
@@ -816,6 +800,10 @@ ICCItemPtr CCodeChainCtx::RunLambdaCode (ICCItem *pCode, ICCItem *pArgs)
 	{
 	DEBUG_TRY
 
+	CCodeChain::SRunOptions Options;
+	Options.pExternalCtx = this;
+	Options.bStrict = GetUniverse().InDebugMode();
+
 	AddFrame();
 
 	//	If this is a lambda expression, then eval as if
@@ -823,9 +811,9 @@ ICCItemPtr CCodeChainCtx::RunLambdaCode (ICCItem *pCode, ICCItem *pArgs)
 
 	ICCItemPtr pResult;
 	if (pCode->IsFunction())
-		pResult = ICCItemPtr(m_CC.Apply(pCode, (pArgs ? pArgs : m_CC.CreateNil()), this));
+		pResult = m_CC.Apply(*pCode, (pArgs ? *pArgs : *ICCItemPtr::Nil()), Options);
 	else
-		pResult = ICCItemPtr(m_CC.TopLevel(pCode, this));
+		pResult = m_CC.TopLevel(*pCode, Options);
 
 	//	Done
 
@@ -875,7 +863,7 @@ bool CCodeChainCtx::RunEvalString (const CString &sString, bool bPlain, CString 
 		}
 	}
 
-void CCodeChainCtx::SaveAndDefineDataVar (ICCItem *pData)
+void CCodeChainCtx::SaveAndDefineDataVar (const ICCItem *pData)
 
 //	SaveAndDefineDataVar
 //
@@ -886,7 +874,7 @@ void CCodeChainCtx::SaveAndDefineDataVar (ICCItem *pData)
 		m_pOldData = m_CC.LookupGlobal(STR_G_DATA, this);
 
 	if (pData)
-		DefineVar(STR_G_DATA, pData);
+		DefineVar(STR_G_DATA, const_cast<ICCItem *>(pData));
 	else
 		DefineNil(STR_G_DATA);
 	}
@@ -983,15 +971,15 @@ void CCodeChainCtx::SaveItemVar (void)
 		m_pOldItem = m_CC.LookupGlobal(STR_G_ITEM, this);
 	}
 
-void CCodeChainCtx::SaveSourceVar (void)
+void CCodeChainCtx::SaveTypeVar (void)
 
-//	SaveSourceVar
+//	SaveTypeVar
 //
-//	Saves gSource if not already saved
+//	Saves gType if not already saved
 
 	{
-	if (m_pOldSource == NULL)
-		m_pOldSource = m_CC.LookupGlobal(STR_G_SOURCE, this);
+	if (m_pOldType == NULL)
+		m_pOldType = m_CC.LookupGlobal(STR_G_TYPE, this);
 	}
 
 void CCodeChainCtx::SetEvent (ECodeChainEvents iEvent)

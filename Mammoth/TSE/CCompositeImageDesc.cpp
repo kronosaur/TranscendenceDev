@@ -157,7 +157,7 @@ class CFilterColorizeEntry : public IImageEntry
 class CImageEntry : public IImageEntry
 	{
 	public:
-        inline ALERROR InitSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1) { return m_Image.InitFromXML(Ctx, pDesc, bResolveNow, iDefaultRotationCount); }
+        inline ALERROR InitSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1) { return m_Image.InitFromXML(Ctx, *pDesc, bResolveNow, iDefaultRotationCount); }
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true); }
         virtual IImageEntry *Clone (void) override;
@@ -400,7 +400,7 @@ CCompositeImageDesc::SCacheEntry *CCompositeImageDesc::FindCacheEntry (const CCo
 	return NULL;
 	}
 
-CObjectImageArray &CCompositeImageDesc::GetImage (SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiFrameIndex) const
+CObjectImageArray &CCompositeImageDesc::GetImage (const SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiFrameIndex) const
 
 //	GetImage
 //
@@ -743,7 +743,7 @@ void CCompositeImageDesc::MarkImage (void)
 	m_pRoot->MarkImage(CCompositeImageSelector(), CCompositeImageModifiers());
 	}
 
-void CCompositeImageDesc::MarkImage (SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
+void CCompositeImageDesc::MarkImage (const SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
 
 //	MarkImage
 //
@@ -1599,7 +1599,7 @@ ALERROR CImageEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLEl
 
 	//	Initialize the image
 
-	if (error = m_Image.InitFromXML(Ctx, pDesc))
+	if (error = m_Image.InitFromXML(Ctx, *pDesc))
 		return error;
 
 	return NOERROR;
@@ -2139,15 +2139,7 @@ void CShipwreckEntry::GetImage (CShipClass *pClass, int iRotation, CObjectImageA
 //	Returns an image.
 
 	{
-	const CShipwreckDesc &WreckDesc = pClass->GetWreckDesc();
-	CObjectImageArray *pWreckImage = WreckDesc.GetWreckImage(pClass, iRotation);
-	if (pWreckImage == NULL)
-		{
-		*retImage = EMPTY_IMAGE;
-		return;
-		}
-
-	*retImage = *pWreckImage;
+	*retImage = pClass->GetWreckImage(iRotation);
 	}
 
 void CShipwreckEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)

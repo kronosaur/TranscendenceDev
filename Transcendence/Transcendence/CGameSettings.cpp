@@ -32,15 +32,15 @@ enum OptionTypes
 
 struct SOptionDefaults
 	{
-	char *pszName;
+	const char *pszName;
 	int iType;
-	char *pszDefaultValue;
+	const char *pszDefaultValue;
 	DWORD dwFlags;
 	};
 
 struct SCommandLineData
 	{
-	char *pszParam;
+	const char *pszParam;
 	int iOption;
 	DWORD dwFlags;
 	};
@@ -64,6 +64,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"defaultBuyTab",			optionString,	"filterGeneral",	0	},
 		{	"noMouseAim",				optionBoolean,	"false",	0	},
 		{	"forcePermadeath",			optionBoolean,	"false",	0	},
+		{	"showIconBar",				optionString,	"auto",		0	},
 
 		//	Installation options
 
@@ -92,6 +93,15 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"soundVolume",				optionInteger,	"7",		0	},
 		{	"musicVolume",				optionInteger,	"7",		0	},
 		{	"musicPath",				optionString,	"",			0	},
+		
+		//	Accessibility options
+		{	"colorIFFPlayer",			optionString,	"#FFFFFF",	0	},
+		{	"colorIFFFriendly",			optionString,	"#50FF50",	0	},	//	H:120 S:69  B:100
+		{	"colorIFFNeutral",			optionString,	"#4FA7FF",	0	},	//	H:210 S:69  B:100
+		{	"colorIFFEnemy",			optionString,	"#FF5050",	0	},	//	H:0   S:69  B:100
+		{	"colorIFFAngry",			optionString,	"#FF5050",	0	},
+		{	"colorIFFEscort",			optionString,	"#4FFFFF",	0	},	//	H:180 S:69  B:100
+		{	"colorIFFProjectile",		optionString,	"#FFFF00",	0	},	//	H:60  S:100 B:100
 
 		//	Debug options
 		{	"debugMode",				optionBoolean,	"false",	0	},
@@ -309,7 +319,7 @@ ALERROR CGameSettings::ParseCommandLine (char *pszCmdLine)
 	ALERROR error;
 	int i;
 
-	char *argv[2];
+	const char *argv[2];
 	argv[0] = "Transcendence";
 	argv[1] = pszCmdLine;
 	CXMLElement *pCmdLine;

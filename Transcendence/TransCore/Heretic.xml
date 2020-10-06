@@ -235,7 +235,7 @@
 
 		<Armor
 			armorID=			"&itQuadroCarbideArmor;"
-			count=				"24"
+			count=				"12"
 			/>
 		
 		<Devices>
@@ -266,13 +266,14 @@
 					/>
 		</Interior>
 
-		<Image imageID="&rsCorporateExplorer;" imageWidth="192" imageHeight="192" />
+		<Image imageID="&rsCorporateExplorerHD;" imageWidth="192" imageHeight="192"	rotationCount="120" rotationColumns="12" viewportRatio="0.025"/>
+		<HeroImage imageID="&rsCorporateExplorerHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 			<Effect type="thrustMain"		posAngle="-176"	posRadius="88"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 		</Effects>
-		
+
 		<Names definiteArticle="true">Huygens Explorer</Names>
 
 		<AISettings
@@ -327,11 +328,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-10; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-10; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:u|c|crv"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~ad -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 
@@ -424,14 +425,6 @@
 		
 		<!-- Events and Data -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Language>
 			<Text id="descWelcome">
 				You are in the docking bay of a Commonwealth colony.
@@ -455,7 +448,7 @@
 			armorID=			"&itP120HexphaseArmor;"
 			hitPoints=			"370"
 			multiHull=			"true"
-            regen=              "4"
+			regen=              "4"
 			shipRegen=			"6"
 				 
 			explosionType=		"&vtThermoExplosion2;"
@@ -597,17 +590,17 @@
 
 		<Items>
 			<RandomItem count="1d12" 
-					criteria=		"* +Meds; -Illegal; -NotStandard; -NotForSale;"
+					criteria=		"* +Meds; -defective; -Illegal; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ruc|u|r"
 					/>
 
 			<RandomItem count="1d4" 
-					criteria=		"u -NotForSale; -NotStandard;"
+					criteria=		"u -defective; -NotForSale; -NotStandard;"
 					levelFrequency=	"systemLevel:ruc|u|r"
 					/>
 
 			<RandomItem count="2d12" 
-					criteria=		"f -NotForSale; -NotStandard;"
+					criteria=		"f -defective; -NotForSale; -NotStandard;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 
@@ -726,134 +719,27 @@
 	<!-- St. Josephine Mission -->
 
 	<StationType UNID="&stSistersResearchHeretic;"
-			name=				"St. Josephine mission"
+			name=				":the St. Josephine mission"
 			sovereign=			"&svSistersOfDomina;"
-			inherit=			"&unidCommonText;"
+			inherit=			"&stSistersOfDomina;"
+			   
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			ignoreFriendlyFire=	"true"
-
+			   
 			multiHull=			"true"
 			armorID=			"&itLightIthaliumArmor;"
 			hitPoints=			"470"
 			regen=              "4"
 			ejectaType=			"&vtWreckEjecta;"
+			ignoreFriendlyFire=	"true"
 
 			attributes=			"friendly, hereticStation, human, majorStation, populated, religious, sistersOfDomina"
-
-			definiteArticle=	"true"
 			>
 
-		<Image			imageID="&rsStations1;" imageX="384" imageY="512" imageWidth="128" imageHeight="128"/>
-		<HeroImage		imageID="&rsSistersShrineHero;" imageWidth="324" imageHeight="528"/>
+		<!-- Encounter Info -->
 
-		<Ships>
-			<Lookup count="1d2" table="&tbCommDefenders;"/>
-			<Lookup count="1d3" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Items>
-			<Table count="1d6">
-				<Lookup chance="25" count="1d3" table="&trConsumables6;"/>
-				<Lookup chance="25" count="1"	table="&trConsumables7;"/>
-				<Lookup chance="25" count="1"	table="&trMinorItem2;"/>
-				<Lookup chance="15" count="1"	table="&trMinorItem3;"/>
-				<Lookup chance="10" count="1"	table="&trMajorItem2;"/>
-			</Table>
-		</Items>
-
-		<Trade currency="credit">
-			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100" actualPrice="true"/>
-		</Trade>
-
-		<DockScreens>
-			<Main>
-				<Panes>
-					<Default>
-						<OnPaneInit>
-							(block Nil
-								(if (not (objGetData gPlayerShip "sistersAttitude"))
-									(objSetData gPlayerShip "sistersAttitude" 0)
-									)
-
-								(if (objGetData gSource "freeSanctum")
-									(scrSetDescTranslate gScreen 'descWelcomeFreeSanctum)
-									(scrSetDescTranslate gScreen 'descWelcome)
-									)
-								)
-						</OnPaneInit>
-
-						<Actions>
-							<Action id="actionTalkToAbbess" default="1">
-								(rpgMissionAssignment {
-									missionCriteria: (cat "n +sistersMission; =" (sysGetLevel) ";")
-									noMissionTextID: 'descNothingToTalkAbout
-									})
-							</Action>
-							<Action id="actionSanctum">
-								(scrShowScreen gScreen &dsSistersSanctum;)
-							</Action>
-							<Action id="actionPilgrimsAid">
-								(scrShowScreen gScreen &dsSistersDockServices;)
-							</Action>
-							<Action id="actionDonate">
-								(scrShowScreen gScreen &dsSistersDonate;)
-							</Action>
-							<Action id="actionUndock" cancel="1">
-								<Exit/>
-							</Action>
-						</Actions>
-					</Default>
-				</Panes>
-			</Main>
-		</DockScreens>
-
-		<DockingPorts>
-			<Port x="0"		y="90" />
-			<Port x="0"		y="-90" />
-			<Port x="60"	y="60" />
-			<Port x="60"	y="-60" />
-			<Port x="90"	y="0" />
-			<Port x="-90"	y="0" />
-			<Port x="-60"	y="60" />
-			<Port x="-60"	y="-60" />
-		</DockingPorts>
-
-        <Language>
-			<Text id="actionTalkToAbbess">"[M]atriarch's Chancery"</Text>
-			<Text id="actionPilgrimsAid">"[P]ilgrim's Aid"</Text>
-			<Text id="actionSanctum">"[S]anctum"</Text>
-
-			<Text id="descWelcome">
-
-				You are docked at an abbey of the Sisters of Domina.
-				A woman wearing a flowing red robe approaches you,
-
-				"How may I help you, child?"
-
-			</Text>
-			<Text id="descWelcomeFreeSanctum">
-
-				You are docked at an abbey of the Sisters of Domina.
-				A woman wearing a flowing red robe is before you.
-
-				"Take your ease here before you go, or seek guidance at our Sanctum.
-				May the blessings of Domina protect you."
-
-			</Text>
-			<Text id="descNothingToTalkAbout">
-
-				You enter the abbess's spartan office and chat with her.
-				She leaves you with a small piece of advice:
-
-				The universe is dark and lonely; I do not envy your task.
-
-			</Text>
-
-            <Text id="core.mapDesc">
-                Contemplation and communion
-            </Text>
-        </Language>
+		<Encounter/>
+		
 	</StationType>
 
 	<!-- TVX-1 -->
@@ -981,7 +867,7 @@
 			armorID=			"&itHeavyTharsisPlate;"
 			hitPoints=			"610"
 			multiHull=			"true"
-            regen=              "6"
+			regen=              "6"
 
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion2;"
@@ -1067,7 +953,7 @@
 			</Main>
 		</DockScreens>
 
-        <Language>
+		<Language>
 			<Text id="actionCommandCenter">[C]ommand Center</Text>
 
 			<Text id="descWelcome">
@@ -1093,10 +979,10 @@
 
 			</Text>
 
-            <Text id="core.mapDesc">
-                Research base
-            </Text>
-        </Language>
+			<Text id="core.mapDesc">
+				Research base
+			</Text>
+		</Language>
 	</StationType>
 
 	<!-- Log Buoy
@@ -1571,8 +1457,8 @@
 			<Port x="92"	y="-33" />
 			<Port x="42"	y="-85" />
 		</DockingPorts>
-        
-        <Language>
+		
+		<Language>
 			<Text id="actionCentralChamber">[C]entral Chamber</Text>
 
 			<Text id="descWelcome">
@@ -1625,10 +1511,10 @@
 			
 			</Text>
 
-            <Text id="core.mapDesc">
-                Alien structure
-            </Text>
-        </Language>
+			<Text id="core.mapDesc">
+				Alien structure
+			</Text>
+		</Language>
 	</StationType>
 
 	<!-- Iocrym Manipulator
@@ -1831,6 +1717,7 @@
 
 	<SystemType UNID="&ssHeretic;" 
 			backgroundID=		"&rsLightNebulaSpace;"
+			spaceColor=			"#282a3c"
 			spaceEnvironmentTileSize=	"large"
 			noRandomEncounters=	"true"
 			noExtraEncounters=	"true"
@@ -2135,8 +2022,6 @@
 
 	<Image UNID="&rsIocrymManipulator;"	bitmap="Resources\IocrymManipulator.jpg" bitmask="Resources\IocrymManipulatorMask.bmp" loadOnUse="true"/>
 	
-	<Image UNID="&rsCorporateExplorer;"	bitmap="Resources\CorporateExplorer.jpg" bitmask="Resources\CorporateExplorerMask.bmp" loadOnUse="true"/>
-
 	<Image UNID="&rsHereticItems;"		bitmap="Resources\HereticItems.jpg" bitmask="Resources\HereticItemsMask.bmp" />
 
 </TranscendenceModule>

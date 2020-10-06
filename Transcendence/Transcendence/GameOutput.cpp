@@ -32,6 +32,24 @@ void CTranscendenceWnd::DebugOutput (const CString &sLine)
 #endif
 	}
 
+bool CTranscendenceWnd::FindCommandKey (const CString &sCmd, DWORD *retdwVirtKey) const
+
+//	FindCommandKey
+//
+//	Returns TRUE if the given string is a command. Optionally returns the 
+//	currently bound key.
+
+	{
+	CGameKeys::Keys iCmd = CGameKeys::GetGameCommand(sCmd);
+	if (iCmd == CGameKeys::keyNone)
+		return false;
+
+	if (retdwVirtKey)
+		*retdwVirtKey = m_pTC->GetSettings().GetKeyMap().GetKey(iCmd);
+
+	return true;
+	}
+
 bool CTranscendenceWnd::FindFont (const CString &sFont, const CG16bitFont **retpFont) const
 
 //	FindFont

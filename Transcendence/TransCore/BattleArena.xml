@@ -88,7 +88,6 @@
 			attributes=			"battleArena, battleArenaMaximus, battleArenaSegment, corporate, corporateCustoms, corporateDecon, friendly, generic, human, majorStation, populated"
 
 			dockScreen=			"Main"
-			defaultBackgroundID="&rsBattleArenaBkgnd;"
 				 
 			level=				"5"
 			size=				"5000"
@@ -158,6 +157,7 @@
 		<!-- Image and Effects -->
 		
 		<Image			imageID="&rsBattleArenaSegments;" imageX="1240" imageY="0"    imageWidth="320" imageHeight="280"/>
+		<HeroImage		imageID="&rsBattleArenaBkgnd;"	imageWidth="950" imageHeight="650"/>
 		
 		<DockingPorts>
 			<Port x="-105"	y="-140" />
@@ -543,7 +543,7 @@
 
 				Welcome to Battle Arena Maximus! Prepare yourself for the greatest show in space!
 				Watch as the best pilots in the Commonwealth compete in mortal combat. The action
-				is so real you'll swear its faked! See your ticket agent for reservations.
+				is so real you'll swear it's faked! See your ticket agent for reservations.
 				Enquire within to join the elite combatants.
 
 			</Text>
@@ -988,15 +988,6 @@
 					<Station chance="20" type="&stArmsDealerRasiermesser;" noMapLabel="true"/>
 				</Table>
 			</ArmsQuarterStation>
-
-			<CorporateQuarterStation>
-				<Table>
-					<Station chance="40" type="&stCorporateEnclave;" noMapLabel="true"/>
-					<Station chance="45" type="&stCommonwealthDryDock;" noMapLabel="true"/>
-					<Station chance="15" type="&stInsuranceCompany;" noMapLabel="true"/>
-					<Station chance="15" type="&stHotel;" noMapLabel="true"/>
-				</Table>
-			</CorporateQuarterStation>
 
 			<MiddleQuarterStation>
 				<Table>
@@ -1575,7 +1566,7 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsBattleArenaBkgnd;" bitmap="Resources\BattleArenaScreen.jpg" loadOnUse="true" />
+	<Image UNID="&rsBattleArenaBkgnd;" bitmap="Resources\BattleArenaScreen.jpg" bitmask="Resources\BattleArenaScreenMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsBattleArenaSegments;" bitmap="Resources\BattleArenaSegments.jpg" bitmask="Resources\BattleArenaSegmentsMask.bmp" hitMask="Resources\BattleArenaSegmentsHitMask.bmp" loadOnUse="true" />
 
 </TranscendenceModule>

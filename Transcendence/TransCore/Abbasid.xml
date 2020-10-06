@@ -154,6 +154,10 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
+
 		<!-- Configuration -->
 
 		<Hull 	hullType=		"multiHull"
@@ -187,8 +191,24 @@
 			description=		"This is a neural network initialized from the cerebral patterns of one or more Scholars of Abbasid. The legal, ethical, and moral knowledge of the Abbasid is contained and interpreted by these constructs."
 			>
 
+		<Properties>
+			<Definition id="sisters.donateRel">64</Definition>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
 
+		<Language>
+			<Text id="sisters.donateDesc">
+
+				You hear a voice talking in a foreign language, yet somehow you
+				understand it. They are narrating the story of their life, and
+				though you listen for only a moment, you remember hearing the
+				whole thing.
+
+				You feel that Domina is pleased.
+
+			</Text>
+		</Language>
 	</ItemType>
 
 <!-- RESOURCES -->

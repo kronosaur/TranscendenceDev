@@ -26,7 +26,7 @@ int StringToConstant (SConstString *pTable, int iTableSize, const CString &sValu
 struct SConstStringTuple
 	{
 	int iLen;
-	char *pszString;
+	const char *pszString;
 	DWORD dwData;
 	};
 

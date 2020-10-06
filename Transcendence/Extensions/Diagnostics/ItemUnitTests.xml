@@ -25,11 +25,11 @@
 									(itmCreate &itBallistaCannon; 1)
 									)														result:Nil	}
 						{	test:'(itmIsEqual 
-									(itmSetProperty testItem1 'damaged True)
+									(itmSet@ testItem1 'damaged True)
 									testItem2
 									)														result:Nil	}
 						{	test:'(itmIsEqual 
-									(itmSetProperty testItem1 'charges 10)
+									(itmSet@ testItem1 'charges 10)
 									testItem2
 									)														result:Nil	}
 						{	test:'(itmIsEqual 
@@ -42,12 +42,12 @@
 									)														result:Nil	}
 
 						{	test:'(itmIsEqual 
-									(itmSetProperty testItem1 'charges 10)
+									(itmSet@ testItem1 'charges 10)
 									testItem2
 									'ignoreCharges
 									)														result:True	}
 						{	test:'(itmIsEqual 
-									(itmSetProperty testItem1 'charges 10)
+									(itmSet@ testItem1 'charges 10)
 									testItem2
 									'ignoreEnhancements
 									)														result:Nil	}
@@ -100,35 +100,97 @@
 						{	test:'(itmMatches testItem1 "w +property:deviceSlots!=1;")		result:Nil	}
 						{	test:'(itmMatches testItem1 "w +property:deviceSlots!=3;")		result:True	}
 
+						;	Test Item Data -------------------------------------
+
+						{	test:'(setq markerObj 
+									(sysCreateMarker "Test" Nil &svPlayer;)
+									)
+																							result:'ignore	}
+
+						{	test:'(objAddItem markerObj &itLaserCannon; 5)					result:(itmCreate &itLaserCannon; 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 5))	}
+
+						;	NOTE: If we don't specify a count, we only modify 1 item, even if the
+						;	item has a count.
+
+						{	test:'(objSetItemData markerObj 
+									(itmCreate &itLaserCannon; 5)
+									'foo
+									'bar
+									)														result:(itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 4) (itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar))	}
+
+						;	Reset ----------------------------------------------
+
+						{	test:'(enum (objGetItems markerObj "*") theItem (objRemoveItem markerObj theItem))
+																							result:True	}
+						{	test:'(objAddItem markerObj &itLaserCannon; 5)					result:(itmCreate &itLaserCannon; 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 5))	}
+						;	----------------------------------------------------
+
+						;	Try setting all 5 items
+
+						{	test:'(objSetItemData markerObj 
+									(itmCreate &itLaserCannon; 1)
+									'foo
+									'bar
+									5
+									)														result:(itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmSetData (itmCreate &itLaserCannon; 5) 'foo 'bar))	}
+
+						;	Reset ----------------------------------------------
+
+						{	test:'(enum (objGetItems markerObj "*") theItem (objRemoveItem markerObj theItem))
+																							result:True	}
+						{	test:'(objAddItem markerObj &itLaserCannon; 5)					result:(itmCreate &itLaserCannon; 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 5))	}
+						;	----------------------------------------------------
+
+						;	Try setting more than exist; we should still end up 
+						;	with only 5.
+
+						{	test:'(objSetItemData markerObj 
+									(itmCreate &itLaserCannon; 1)
+									'foo
+									'bar
+									10
+									)														result:(itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmSetData (itmCreate &itLaserCannon; 5) 'foo 'bar))	}
+
+						;	Done
+
+						{	test:'(objDestroy markerObj)									result:'ignore	}
+						{	test:'(setq markerObj Nil)										result:'ignore	}
+
 						;	Test Scaled Armor ----------------------------------
 
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestArmorScaled; 1) 'level 5)
 									'level
 									)														result:5	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestArmorScaled; 1) 'level 5)
 									'hp
 									)														result:166	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestArmorScaled; 1) 'level 5)
 									'price
 									)														result:4000	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestArmorScaled; 1) 'level 5)
 									'repairCost
 									)														result:3	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestArmorScaled; 1) 'level 5)
 									'repairLevel
 									)														result:5	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestArmorScaled; 1) 'level 5)
 									'powerUse
 									)														result:40	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty 
-										(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'hp 50)
+						{	test:'(itm@ 
+									(itmSet@ 
+										(itmSet@ (itmCreate &itTestArmorScaled; 1) 'hp 50)
 										'level 5
 										)
 									'hp
@@ -136,111 +198,317 @@
 
 						;	Test Scaled Weapons --------------------------------
 
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itTestWeaponScaled; 1) 'level 5)
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestWeaponScaled; 1) 'level 5)
 									'level
 									)														result:5	}
 
 						;	Item Custom Properties -----------------------------
 
-						{	test:'(itmGetProperty &itTestArmorScaled; 'test.constant1)		result:'foo	}
-						{	test:'(itmGetProperty &itTestArmorScaled; 'test.constant2)		result:1	}
-						{	test:'(itmGetProperty &itTestArmorScaled; 'test.constant3)		result:2	}
-						{	test:'(itmGetProperty &itTestArmorScaled; 'test.global1)		result:17	}
-						{	test:'(itmGetProperty &itTestArmorScaled; 'test.global2)		result:4	}
-						{	test:'(itmGetProperty &itTestArmorScaled; 'test.data1)			result:1	}
-						{	test:'(itmGetProperty &itTestArmorScaled; 'test.data2)			result:2	}
-						{	test:'(itmGetProperty &itTestArmorScaled; 'test.dynamicData1)	result:1	}
-						{	test:'(itmGetProperty &itTestArmorScaled; 'test.dynamicData2)	result:4	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.constant1)		result:'foo	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.constant2)		result:1	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.constant3)		result:2	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.global1)		result:17	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.global2)		result:4	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.data1)			result:1	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.data2)			result:2	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.dynamicData1)	result:1	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.dynamicData2)	result:4	}
+						{	test:'(itm@ &itTestArmorScaled; 'test.dynamicData3)	result:1	}
+
+						{	test:'(itm@ 
+									(itmSet@ &itTestArmorScaled; 'test.data1 7)
+									'test.data1)								result:7	}
+
+						{	test:'(itm@ 
+									(itmSet@ &itTestArmorScaled; 'test.data1 7)
+									'test.data1)								result:7	}
+
+						;	NOTE: Custom properties override engine properties.
+						{	test:'(itm@ &itTestArmorScaled; 'disrupted)			result:'testing	}
 
 						;	Item Properties ------------------------------------
 
-						{	test:'(itmGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
-						{	test:'(typGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 0)
+						{	test:'(itm@ &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(typ@ &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 0)
 									'known)													result:Nil	}
-						{	test:'(itmSetProperty 
-									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 0)
+						{	test:'(itmSet@ 
+									(itmSet@ (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 0)
 									'known True)											result:'ignore	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 0)
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 0)
 									'known)													result:True	}
-						{	test:'(itmGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
-						{	test:'(typGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
+						{	test:'(itm@ &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(typ@ &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
 									'known)													result:Nil	}
-						{	test:'(itmSetProperty 
-									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
+						{	test:'(itmSet@ 
+									(itmSet@ (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
 									'known True)											result:'ignore	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
 									'known)													result:True	}
-						{	test:'(itmGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
-						{	test:'(typSetProperty &itWeaponSpeedROM; 'known True)			result:True	}
-						{	test:'(itmGetProperty &itWeaponSpeedROM; 'known)				result:True	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 2)
+						{	test:'(itm@ &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(typSet@ &itWeaponSpeedROM; 'known True)			result:True	}
+						{	test:'(itm@ &itWeaponSpeedROM; 'known)				result:True	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 2)
 									'known)													result:True	}
-						{	test:'(itmSetProperty 
-									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 2)
+						{	test:'(itmSet@ 
+									(itmSet@ (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 2)
 									'known Nil)												result:'ignore	}
-						{	test:'(itmGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
+						{	test:'(itm@ &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
 									'known)													result:True	}
-						{	test:'(itmSetProperty &itWeaponSpeedROM; 'known Nil)			result:'ignore	}
-						{	test:'(itmGetProperty 
-									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
+						{	test:'(itmSet@ &itWeaponSpeedROM; 'known Nil)			result:'ignore	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
 									'known)													result:Nil	}
 
 						;	Various weapon properties ----------------------------------------------
 
-						{	test:'(itmGetProperty &itLaserCannon; 'hp)						result:0	}
-						{	test:'(itmGetProperty &itLaserCannon; 'interaction)				result:0	}
-						{	test:'(itmGetProperty &itLaserCannon; 'lifetime)				result:30	}
-						{	test:'(itmGetProperty &itLaserCannon; 'range)					result:60	}
-						{	test:'(itmGetProperty &itLaserCannon; 'speed)					result:100	}
+						{	test:'(itm@ &itLaserCannon; 'ammoTypes)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'averageDamage)			result:2.5	}
+						{	test:'(itm@ &itLaserCannon; 'balance)					result:1	}
+						{	test:'(itm@ &itLaserCannon; 'balanceDamage)			result:89	}
+						{	test:'(itm@ &itLaserCannon; 'balanceCost)				result:385	}
+						{	test:'(itm@ &itLaserCannon; 'balanceExcludeCost)		result:5	}
+						{	test:'(itm@ &itLaserCannon; 'canFireWhenBlind)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damage)					result:90	}
+						{	test:'(itm@ &itLaserCannon; 'damagePerProjectile)		result:2.5	}
+						{	test:'(itm@ &itLaserCannon; 'damageTypeID)			result:'laser	}
+						{	test:'(itm@ &itLaserCannon; 'damageWMD180)			result:9	}
+						{	test:'(itm@ &itLaserCannon; 'damaged)					result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'effectiveRange)			result:60	}
+						{	test:'(itm@ &itLaserCannon; 'fireArc)					result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'fireDelay)				result:5	}
+						{	test:'(itm@ &itLaserCannon; 'fireRate)				result:200	}
+						{	test:'(itm@ &itLaserCannon; 'frequency)				result:'common	}
+						{	test:'(itm@ &itLaserCannon; 'frequencyRate)			result:20	}
+						{	test:'(itm@ &itLaserCannon; 'hp)						result:0	}
+						{	test:'(itm@ &itLaserCannon; 'interaction)				result:0	}
+						{	test:'(itm@ &itLaserCannon; 'lifetime)				result:30	}
+						{	test:'(itm@ &itLaserCannon; 'linkedFireOptions)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'maxDamage)				result:4.0	}
+						{	test:'(itm@ &itLaserCannon; 'minDamage)				result:1.0	}
+						{	test:'(itm@ &itLaserCannon; 'multiShot)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'omnidirectional)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'range)					result:60	}
+						{	test:'(itm@ &itLaserCannon; 'repeating)				result:0	}
+						{	test:'(itm@ &itLaserCannon; 'secondary)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'shipCounterPerShot)		result:0	}
+						{	test:'(itm@ &itLaserCannon; 'singlePointOrigin)		result:True	}
+						{	test:'(itm@ &itLaserCannon; 'speed)					result:100	}
+						{	test:'(itm@ &itLaserCannon; 'stdCost)					result:350.0	}
+						{	test:'(itm@ &itLaserCannon; 'stdHP)					result:0	}
+						{	test:'(itm@ &itLaserCannon; 'stdMass)					result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'stdInteraction)			result:0	}
+						{	test:'(itm@ &itLaserCannon; 'tracking)				result:Nil	}
 
-						{	test:'(itmGetProperty &itRecoillessCannon; 'hp)					result:2	}
-						{	test:'(itmGetProperty &itRecoillessCannon; 'interaction)		result:47	}
-						{	test:'(itmGetProperty &itRecoillessCannon; 'lifetime)			result:60	}
-						{	test:'(itmGetProperty &itRecoillessCannon; 'range)				result:48	}
-						{	test:'(itmGetProperty &itRecoillessCannon; 'speed)				result:40	}
+						{	test:'(itm@ &itLaserCannon; 'damageArmorLevel)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageAttract)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageBlinding)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageDeviceDestroy)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageDeviceDisrupt)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageDisintegration)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageEMP)					result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageFuel)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageMining)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageMomentum)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageRadiation)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageRepel)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageSensor)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageShatter)				result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageShieldLevel)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageShieldPenetrate)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageTimeStop)			result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageWMD)					result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'damageWormhole)			result:Nil	}
 
-						{	test:'(itmGetProperty &itOracusHarassPower; 'hp)				result:0	}
-						{	test:'(itmGetProperty &itOracusHarassPower; 'interaction)		result:100	}
-						{	test:'(itmGetProperty &itOracusHarassPower; 'lifetime)			result:40	}
-						{	test:'(itmGetProperty &itOracusHarassPower; 'range)				result:12	}
-						{	test:'(itmGetProperty &itOracusHarassPower; 'speed)				result:0	}
+						{	test:'(itm@ &itRecoillessCannon; 'hp)					result:2	}
+						{	test:'(itm@ &itRecoillessCannon; 'interaction)		result:47	}
+						{	test:'(itm@ &itRecoillessCannon; 'lifetime)			result:60	}
+						{	test:'(itm@ &itRecoillessCannon; 'range)				result:48	}
+						{	test:'(itm@ &itRecoillessCannon; 'speed)				result:40	}
 
-						{	test:'(itmGetProperty &itMorningStarCannon; 'hp)				result:0	}
-						{	test:'(itmGetProperty &itMorningStarCannon; 'interaction)		result:100	}
-						{	test:'(itmGetProperty &itMorningStarCannon; 'lifetime)			result:60	}
-						{	test:'(itmGetProperty &itMorningStarCannon; 'range)				result:48	}
-						{	test:'(itmGetProperty &itMorningStarCannon; 'speed)				result:40	}
+						{	test:'(itm@ &itOracusHarassPower; 'hp)				result:0	}
+						{	test:'(itm@ &itOracusHarassPower; 'interaction)		result:100	}
+						{	test:'(itm@ &itOracusHarassPower; 'lifetime)			result:40	}
+						{	test:'(itm@ &itOracusHarassPower; 'range)				result:12	}
+						{	test:'(itm@ &itOracusHarassPower; 'speed)				result:0	}
 
-						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'hp)			result:0	}
-						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'interaction)	result:100	}
-						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'lifetime)		result:3	}
-						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'range)		result:60	}
-						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'speed)		result:1000	}
+						{	test:'(itm@ &itMorningStarCannon; 'hp)				result:0	}
+						{	test:'(itm@ &itMorningStarCannon; 'interaction)		result:100	}
+						{	test:'(itm@ &itMorningStarCannon; 'lifetime)			result:60	}
+						{	test:'(itm@ &itMorningStarCannon; 'range)				result:48	}
+						{	test:'(itm@ &itMorningStarCannon; 'speed)				result:40	}
 
-						{	test:'(itmGetProperty &itSmartCannon; 'hp)						result:6	}
-						{	test:'(itmGetProperty &itSmartCannon; 'interaction)				result:50	}
-						{	test:'(itmGetProperty &itSmartCannon; 'lifetime)				result:60	}
-						{	test:'(itmGetProperty &itSmartCannon; 'range)					result:60	}
-						{	test:'(itmGetProperty &itSmartCannon; 'speed)					result:50	}
+						{	test:'(itm@ &itTestWeaponRelativistic; 'hp)			result:0	}
+						{	test:'(itm@ &itTestWeaponRelativistic; 'interaction)	result:100	}
+						{	test:'(itm@ &itTestWeaponRelativistic; 'lifetime)		result:3	}
+						{	test:'(itm@ &itTestWeaponRelativistic; 'range)		result:60	}
+						{	test:'(itm@ &itTestWeaponRelativistic; 'speed)		result:1000	}
 
-						{	test:'(itmGetProperty &itSmartCannonShell; 'hp)					result:6	}
-						{	test:'(itmGetProperty &itSmartCannonShell; 'interaction)		result:50	}
-						{	test:'(itmGetProperty &itSmartCannonShell; 'lifetime)			result:60	}
-						{	test:'(itmGetProperty &itSmartCannonShell; 'range)				result:60	}
-						{	test:'(itmGetProperty &itSmartCannonShell; 'speed)				result:50	}
+						{	test:'(itm@ &itSmartCannon; 'frequency)					result:'uncommon	}
+						{	test:'(itm@ &itSmartCannon; 'frequencyRate)				result:10	}
+						{	test:'(itm@ &itSmartCannon; 'hp)						result:6	}
+						{	test:'(itm@ &itSmartCannon; 'interaction)				result:50	}
+						{	test:'(itm@ &itSmartCannon; 'lifetime)				result:60	}
+						{	test:'(itm@ &itSmartCannon; 'range)					result:60	}
+						{	test:'(itm@ &itSmartCannon; 'speed)					result:50	}
+
+						{	test:'(itm@ &itSmartCannonShell; 'hp)					result:6	}
+						{	test:'(itm@ &itSmartCannonShell; 'interaction)		result:50	}
+						{	test:'(itm@ &itSmartCannonShell; 'lifetime)			result:60	}
+						{	test:'(itm@ &itSmartCannonShell; 'range)				result:60	}
+						{	test:'(itm@ &itSmartCannonShell; 'speed)				result:50	}
+
+						{	test:'(itm@ &itNAMIMissileLauncher; 'ammoTypes)				result:'(&itKM100Missile; &itFragmentationMissile; &itKM120Missile;	&itKM500Missile; &itKM550Missile; &itXM300Missile; &itXM900Missile;)	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'averageDamage)			result:14.0	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'balance)					result:-56	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceDamage)			result:241	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceCost)				result:599	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceExcludeCost)		result:-13	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'canFireWhenBlind)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damage)					result:168	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damagePerProjectile)		result:14.0	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageTypeID)			result:'blast	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageWMD180)			result:106	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damaged)					result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'effectiveRange)			result:108	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'fireArc)					result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'fireDelay)				result:15	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'fireRate)				result:67	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'hp)						result:10	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'interaction)				result:100	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'lifetime)				result:90	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'linkedFireOptions)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'maxDamage)				result:24.0	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'minDamage)				result:4.0	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'multiShot)				result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'omnidirectional)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'range)					result:108	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'repeating)				result:0	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'secondary)				result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'shipCounterPerShot)		result:0	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'singlePointOrigin)		result:True	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'speed)					result:60	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'stdCost)					result:800.0	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'stdHP)					result:7	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'stdInteraction)			result:100	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'tracking)				result:Nil	}
+
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageArmorLevel)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageAttract)				result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageBlinding)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDeviceDestroy)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDeviceDisrupt)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageDisintegration)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageEMP)					result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageFuel)				result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageMining)				result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageMomentum)			result:4	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageRadiation)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageRepel)				result:37	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageSensor)				result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShatter)				result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShieldLevel)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageShieldPenetrate)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageTimeStop)			result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageWMD)					result:5	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'damageWormhole)			result:Nil	}
+
+						{	test:'(itm@ &itKM500Missile; 'ammoTypes)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'averageDamage)			result:17.5	}
+						{	test:'(itm@ &itKM500Missile; 'balance)				result:15	}
+						{	test:'(itm@ &itKM500Missile; 'balanceDamage)			result:199	}
+						{	test:'(itm@ &itKM500Missile; 'balanceCost)			result:2410	}
+						{	test:'(itm@ &itKM500Missile; 'balanceExcludeCost)		result:15	}
+						{	test:'(itm@ &itKM500Missile; 'canFireWhenBlind)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damage)					result:210	}
+						{	test:'(itm@ &itKM500Missile; 'damagePerProjectile)	result:17.5	}
+						{	test:'(itm@ &itKM500Missile; 'damageTypeID)			result:'blast }
+						{	test:'(itm@ &itKM500Missile; 'damageWMD180)			result:132	}
+						{	test:'(itm@ &itKM500Missile; 'damaged)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'effectiveRange)			result:72	}
+						{	test:'(itm@ &itKM500Missile; 'fireArc)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'fireDelay)				result:15	}
+						{	test:'(itm@ &itKM500Missile; 'fireRate)				result:67	}
+						{	test:'(itm@ &itKM500Missile; 'hp)						result:10	}
+						{	test:'(itm@ &itKM500Missile; 'interaction)			result:100	}
+						{	test:'(itm@ &itKM500Missile; 'lifetime)				result:120	}
+						{	test:'(itm@ &itKM500Missile; 'linkedFireOptions)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'maxDamage)				result:30.0	}
+						{	test:'(itm@ &itKM500Missile; 'minDamage)				result:5.0	}
+						{	test:'(itm@ &itKM500Missile; 'multiShot)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'omnidirectional)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'range)					result:96	}
+						{	test:'(itm@ &itKM500Missile; 'repeating)				result:0	}
+						{	test:'(itm@ &itKM500Missile; 'secondary)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'shipCounterPerShot)		result:0	}
+						{	test:'(itm@ &itKM500Missile; 'singlePointOrigin)		result:True	}
+						{	test:'(itm@ &itKM500Missile; 'speed)					result:40	}
+						{	test:'(itm@ &itKM500Missile; 'stdCost)				result:6	}
+						{	test:'(itm@ &itKM500Missile; 'stdMass)				result:19	}
+						{	test:'(itm@ &itKM500Missile; 'stdHP)					result:12	}
+						{	test:'(itm@ &itKM500Missile; 'stdInteraction)			result:100	}
+						{	test:'(itm@ &itKM500Missile; 'tracking)				result:True	}
+
+						{	test:'(itm@ &itKM500Missile; 'damageAttract)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageArmorLevel)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageBlinding)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageDeviceDestroy)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageDeviceDisrupt)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageDisintegration)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageEMP)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageFuel)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageMining)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageMomentum)			result:4	}
+						{	test:'(itm@ &itKM500Missile; 'damageRadiation)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageRepel)				result:37	}
+						{	test:'(itm@ &itKM500Missile; 'damageSensor)				result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageShatter)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageShieldLevel)		result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageShieldPenetrate)	result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageTimeStop)			result:Nil	}
+						{	test:'(itm@ &itKM500Missile; 'damageWMD)				result:5	}
+						{	test:'(itm@ &itKM500Missile; 'damageWormhole)			result:Nil	}
+
+						;	Fading Items ---------------------------------------
+
+						{	test:'(itm@ &itLaserCannon; "damageDescAt:0.0")			result:"laser:1d4;"	}
+						{	test:'(itm@ &itLaserCannon; "damageDescAt:0.5")			result:"laser:1d4;"	}
+						{	test:'(itm@ &itLaserCannon; "damageDescAt:1.0")			result:"laser:1d4;"	}
+
+						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.0")	result:"kinetic:2d12; repel:20;"	}
+						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.25")	result:"kinetic:2d12; repel:15;"	}
+						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.5")	result:"kinetic:1d12; repel:10;"	}
+						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.75")	result:"kinetic:1d12; repel:5;"	}
+						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:1.0")	result:"kinetic:0;"	}
+
+						;	Item Frequency -------------------------------------
+
+						{	test:'(itm@ &itTestRareInNewBeyond1; 'frequency)		result:'common	}
+						{	test:'(itm@ &itTestRareInNewBeyond1; 'frequencyRate)	result:20	}
+						{	test:'(sysGetItemFrequency 'SE &itTestRareInNewBeyond1;)
+																					result:4	}
+						{	test:'(sysGetItemFrequency 'C9 &itTestRareInNewBeyond1;)
+																					result:20	}
+
+						{	test:'(itm@ &itTestRareInNewBeyond2; 'frequency)		result:'uncommon	}
+						{	test:'(itm@ &itTestRareInNewBeyond2; 'frequencyRate)	result:10	}
+						{	test:'(sysGetItemFrequency 'SE &itTestRareInNewBeyond2;)
+																					result:2	}
+						{	test:'(sysGetItemFrequency 'C9 &itTestRareInNewBeyond2;)
+																					result:10	}
+
 						))
 
-					;	Unit Tests on Armor Damage
+					;	Unit Tests on Armor Damage -----------------------------
 
 					(diagRun (list
 
@@ -291,6 +559,10 @@
 									(error (cat (itmGetName armorSeg 0) ": Expected " hpLeft " HP."))
 									)
 
+								(if (!= (obj@ gPlayerShip armorSeg 'damage) damageDone)
+									(error (cat (itmGetName armorSeg 0) ": Expected " damageDone " damage."))
+									)
+
 								;	Remove the segment (replace with stock reactive armor)
 
 								(if (not (shpInstallArmor gPlayerShip (itmCreate &itReactiveArmor; 1) 0))
@@ -311,8 +583,8 @@
 
 								;	Check hit points.
 
-								(if (!= (itmGetProperty armorSeg 'hp) hpAdjusted)
-									(error (cat "Incorrect HP after uninstall: " (itmGetProperty armorSet 'hp)))
+								(if (!= (itm@ armorSeg 'hp) hpAdjusted)
+									(error (cat "Incorrect HP after uninstall: " (itm@ armorSet 'hp)))
 									)
 
 								;	Remaining installed segments also lose their completion
@@ -365,6 +637,293 @@
 								)
 							)
 						))
+
+					;	Unit Tests on Weapon Installtion and Switching ---------
+
+					(diagRun (list
+
+						;	Set up
+
+						(lambda ()
+							(block (i)
+								(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+								(if (not gPlayerShip)
+									(error "Unable to create player ship.")
+									)
+								(shpOrder gPlayerShip 'hold)
+								)
+							)
+
+						;	Some tests
+
+						(lambda ()
+							(block (
+								result
+								)
+								;	Start with a single recoilless cannon and switch weapons
+
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "1: Expected recoilless cannon.")
+									)
+
+								(if (obj@ gPlayerShip 'selectedMissile)
+									(error "1: Expected no missile launcher.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "1: After select next, expected recoilless cannon.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "1: After select prev, expected recoilless cannon.")
+									)
+
+								;	Now add a second weapon.
+
+								(objAddItem gPlayerShip (itmCreate &itLaserCannon; 1))
+								(if (not (shpInstallDevice gPlayerShip (itmCreate &itLaserCannon; 1)))
+									(error "2: Unable to install laser cannon.")
+									)
+
+								;	NOTE: Because this is an AI ship, we recompute the best weapon after
+								;	the installation, and we end up with the recoilless cannon.
+
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error (cat "2: Expected recoilless cannon: " (itmGetName (obj@ gPlayerShip 'selectedWeapon) Nil)))
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itLaserCannon;)
+									(error "2: After select next, expected laser cannon.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "2: After select next, expected recoilless cannon.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itLaserCannon;)
+									(error "2: After select prev, expected laser cannon.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "2: After select prev, expected recoilless cannon.")
+									)
+
+								;	Add a missile launcher
+
+								(objAddItem gPlayerShip (itmCreate &itNAMIMissileLauncher; 1))
+								(if (not (shpInstallDevice gPlayerShip (itmCreate &itNAMIMissileLauncher; 1)))
+									(error "3: Unable to install NAMI missile launcher.")
+									)
+
+								(if (obj@ gPlayerShip 'selectedMissile)
+									(error "3: Unexpected missile.")
+									)
+
+								(objAddItem gPlayerShip (itmCreate &itKM100Missile; 10))
+								(objSet@ gPlayerShip 'selectedMissile 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM100Missile;)
+									(error "3: After select next, expected KM100.")
+									)
+
+								(objSet@ gPlayerShip 'selectedMissile 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM100Missile;)
+									(error "3: After select prev, expected KM100.")
+									)
+
+								(objAddItem gPlayerShip (itmCreate &itKM500Missile; 10))
+								(objSet@ gPlayerShip 'selectedMissile 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM500Missile;)
+									(error "3: After select next, expected KM500.")
+									)
+
+								(objSet@ gPlayerShip 'selectedMissile 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM100Missile;)
+									(error "3: After select next, expected KM100.")
+									)
+
+								(objSet@ gPlayerShip 'selectedMissile 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM500Missile;)
+									(error "3: After select next, expected KM500.")
+									)
+
+								(objSet@ gPlayerShip 'selectedMissile 'prev)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &itKM100Missile;)
+									(error "3: After select next, expected KM100.")
+									)
+
+								;	Try to install a second missile launcher
+
+								(objAddItem gPlayerShip (itmCreate &itMAGLauncher; 1))
+								(setq result (objCanInstallItem gPlayerShip (itmCreate &itMAGLauncher; 1)))
+								(if (not (@ result 0))
+									(error "4: Cannot install MAG launcher.")
+									)
+
+								(if (!= (@ result 1) 'replacementRequired)
+									(error (cat "4: Unexpected result code: " (@ result 1)))
+									)
+
+								(if (not (shpInstallDevice gPlayerShip (itmCreate &itMAGLauncher; 1)))
+									(error "4: Unable to install MAG launcher.")
+									)
+
+								(if (obj@ gPlayerShip 'selectedMissile)
+									(error "4: Unexpected missile.")
+									)
+
+								(objAddItem gPlayerShip (itmCreate &it400HexageneMAG; 10))
+								(objSet@ gPlayerShip 'selectedMissile 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedMissile)) &it400HexageneMAG;)
+									(error "4: After select next, expected 400 Hexagene MAG.")
+									)
+
+								;	Add a side-mounted weapon
+
+								(objAddItem gPlayerShip (itmCreate &itTestWeaponSideMounted; 1))
+								(setq result (objCanInstallItem gPlayerShip (itmCreate &itTestWeaponSideMounted; 1)))
+								(if (not (@ result 0))
+									(error "5: Cannot install side-mounted weapon.")
+									)
+
+								(if (!= (@ result 1) 'ok)
+									(error (cat "5: Unexpected result code: " (@ result 1)))
+									)
+
+								(if (not (shpInstallDevice gPlayerShip (itmCreate &itTestWeaponSideMounted; 1)))
+									(error "5: Unable to install side-mounted weapon.")
+									)
+
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error (cat "5: Expected recoilless cannon: " (itmGetName (obj@ gPlayerShip 'selectedWeapon) Nil)))
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itLaserCannon;)
+									(error "5: After select next, expected laser cannon.")
+									)
+
+								(objSet@ gPlayerShip 'selectedWeapon 'next)
+								(if (!= (itmGetType (obj@ gPlayerShip 'selectedWeapon)) &itRecoillessCannon;)
+									(error "5: After select next, expected recoilless cannon.")
+									)
+
+								;	Add 2 more weapons
+
+								(objAddItem gPlayerShip (itmCreate &itLightRecoillessCannon; 3))
+								(for i 1 2
+									(block ()
+										(setq result (objCanInstallItem gPlayerShip (itmCreate &itLightRecoillessCannon; 1)))
+										(if (not (@ result 0))
+											(error "6: Cannot install light recoilless cannon.")
+											)
+
+										(if (!= (@ result 1) 'ok)
+											(error (cat "6: Unexpected result code: [" i "] = " (@ result 1)))
+											)
+
+										(if (not (shpInstallDevice gPlayerShip (itmCreate &itLightRecoillessCannon; 1)))
+											(error "6: Unable to install light recoilless cannon.")
+											)
+										)
+									)
+
+								;	Now we're full
+
+								(objAddItem gPlayerShip (itmCreate &itBlaster; 1))
+								(setq result (objCanInstallItem gPlayerShip (itmCreate &itBlaster; 1)))
+								(if (not (@ result 0))
+									(error "7: Cannot install blaster.")
+									)
+
+								(if (!= (@ result 1) 'replacementRequired)
+									(error (cat "7: Unexpected result code: " (@ result 1)))
+									)
+
+								(if (not (shpInstallDevice gPlayerShip (itmCreate &itBlaster; 1)))
+									(error "7: Unable to install blaster.")
+									)
+
+								(setq result
+									(map (objGetItems gPlayerShip "wI") theItem
+										(itmGetType theItem)
+										)
+									)
+
+								(if (!= result (list &itLaserCannon; &itMAGLauncher; &itTestWeaponSideMounted; &itLightRecoillessCannon; &itLightRecoillessCannon; &itBlaster;))
+									(error (cat "7: Unexpected list: " 
+										(map result theType
+											(unvEntity theType)
+											)
+										))
+									)
+
+								;	Test setting custom item properties
+
+								(objAddItem gPlayerShip (itmCreate &itTestArmorScaled; 1))
+								(setq result (objSet@ gPlayerShip (itmCreate &itTestArmorScaled; 1) 'test.data1 7))
+								(switch
+									(not result)
+										(error "Unable to set custom item property test.data1.")
+										
+									(!= (itm@ result 'test.data1) 7)
+										(error "Set custom item property test.data1 failed.")
+									)
+
+								(setq result (objInc@ gPlayerShip result 'test.data1 3))
+								(if (!= (itm@ result 'test.data1) 10)
+									(error "Unable to increment custom item property test.data1")
+									)
+								)
+							)
+
+						;	Clean up
+
+						(lambda ()
+							(block ()
+								(objDestroy gPlayerShip)
+								(setq gPlayerShip Nil)
+								)
+							)
+						))
+
+					;	Unit Tests on Missile Properties -----------------------
+
+					(block (i)
+						(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+						(if (not gPlayerShip)
+							(error "Unable to create player ship.")
+							)
+						(shpOrder gPlayerShip 'hold)
+
+						;	Install NAMI launcher
+
+						(objAddItem gPlayerShip (itmCreate &itNAMIMissileLauncher; 1))
+						(shpInstallDevice gPlayerShip (itmCreate &itNAMIMissileLauncher; 1))
+						)
+
+					;	Some tests
+
+					(diagEval (list
+						{	test:'(objGetItemProperty gPlayerShip 
+									(itmCreate &itKM100Missile; 1) 
+									'canBeFired
+									)														result:True }
+						{	test:'(objGetItemProperty gPlayerShip 
+									(itmCreate &itSmartCannonShell; 1) 
+									'canBeFired
+									)														result:Nil }
+						))
+
+					;	Clean up
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
 					)
 			</OnGlobalStartDiagnostics>
 		</Events>

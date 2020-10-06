@@ -300,38 +300,38 @@ void CGameRecord::SaveToJSON (CJSONValue *retOutput) const
 
 	*retOutput = CJSONValue(CJSONValue::typeObject);
 
-	retOutput->InsertHandoff(FIELD_USERNAME, CJSONValue(m_sUsername));
-	retOutput->InsertHandoff(FIELD_GAME_ID, CJSONValue(m_sGameID));
-	retOutput->InsertHandoff(FIELD_ADVENTURE, CJSONValue((int)m_dwAdventure));
-	retOutput->InsertHandoff(FIELD_ADVENTURE_ID, CJSONValue(GetAdventureID()));
+	retOutput->Insert(FIELD_USERNAME, CJSONValue(m_sUsername));
+	retOutput->Insert(FIELD_GAME_ID, CJSONValue(m_sGameID));
+	retOutput->Insert(FIELD_ADVENTURE, CJSONValue((int)m_dwAdventure));
+	retOutput->Insert(FIELD_ADVENTURE_ID, CJSONValue(GetAdventureID()));
 
 	if (IsRegistered())
-		retOutput->InsertHandoff(FIELD_LEAGUE, CJSONValue(CONSTLIT("registered")));
+		retOutput->Insert(FIELD_LEAGUE, CJSONValue(CONSTLIT("registered")));
 	else
-		retOutput->InsertHandoff(FIELD_LEAGUE, CJSONValue(CONSTLIT("unregistered")));
+		retOutput->Insert(FIELD_LEAGUE, CJSONValue(CONSTLIT("unregistered")));
 
 	CJSONValue Extensions(CJSONValue::typeArray);
 	for (i = 0; i < m_Extensions.GetCount(); i++)
 		Extensions.Insert(CJSONValue((int)m_Extensions[i]));
 	retOutput->InsertHandoff(FIELD_EXTENSIONS, Extensions);
 
-	retOutput->InsertHandoff(FIELD_CHARACTER_NAME, CJSONValue(m_sName));
-	retOutput->InsertHandoff(FIELD_CHARACTER_GENOME, CJSONValue(GetGenomeID(m_iGenome)));
+	retOutput->Insert(FIELD_CHARACTER_NAME, CJSONValue(m_sName));
+	retOutput->Insert(FIELD_CHARACTER_GENOME, CJSONValue(GetGenomeID(m_iGenome)));
 
-	retOutput->InsertHandoff(FIELD_SHIP_CLASS, CJSONValue((int)m_dwShipClass));
-	retOutput->InsertHandoff(FIELD_SHIP_CLASS_NAME, CJSONValue(m_sShipClass));
-	retOutput->InsertHandoff(FIELD_SYSTEM, CJSONValue(m_sSystem));
-	retOutput->InsertHandoff(FIELD_SYSTEM_NAME, CJSONValue(m_sSystemName));
+	retOutput->Insert(FIELD_SHIP_CLASS, CJSONValue((int)m_dwShipClass));
+	retOutput->Insert(FIELD_SHIP_CLASS_NAME, CJSONValue(m_sShipClass));
+	retOutput->Insert(FIELD_SYSTEM, CJSONValue(m_sSystem));
+	retOutput->Insert(FIELD_SYSTEM_NAME, CJSONValue(m_sSystemName));
 
-	retOutput->InsertHandoff(FIELD_DURATION, CJSONValue((int)m_Duration.Seconds()));
+	retOutput->Insert(FIELD_DURATION, CJSONValue((int)m_Duration.Seconds()));
 	if (m_bDebugGame)
-		retOutput->InsertHandoff(FIELD_DEBUG, CJSONValue(CJSONValue::typeTrue));
+		retOutput->Insert(FIELD_DEBUG, CJSONValue(CJSONValue::typeTrue));
 
-	retOutput->InsertHandoff(FIELD_SCORE, CJSONValue(m_iScore));
-	retOutput->InsertHandoff(FIELD_RESURRECT_COUNT, CJSONValue(m_iResurrectCount));
+	retOutput->Insert(FIELD_SCORE, CJSONValue(m_iScore));
+	retOutput->Insert(FIELD_RESURRECT_COUNT, CJSONValue(m_iResurrectCount));
 
-	retOutput->InsertHandoff(FIELD_END_GAME, CJSONValue(m_sEndGameReason));
-	retOutput->InsertHandoff(FIELD_EPITAPH, CJSONValue(m_sEpitaph));
+	retOutput->Insert(FIELD_END_GAME, CJSONValue(m_sEndGameReason));
+	retOutput->Insert(FIELD_EPITAPH, CJSONValue(m_sEpitaph));
 	}
 
 void CGameRecord::SetShipClass (DWORD dwUNID)

@@ -9,6 +9,7 @@
 	<StationType UNID="&stCathedralOfDomina;"
 			name=				"Cathedral of Domina"
 			sovereign=			"&svSistersOfDomina;"
+			inherit=			"&baSistersStation;"
 
 			attributes=			"envAir, envAvoidsFire, friendly, generic, human, majorStation, populated, religious, sistersOfDomina"
 				 
@@ -39,6 +40,8 @@
 		
 		<Trade currency="credit">
 			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100" actualPrice="true"/>
+
+			<Refuel			criteria="f +basicFuel; L:1-10;" priceAdj="100"/>
 		</Trade>
 
 		<Items>
@@ -76,16 +79,16 @@
 		
 		<DockScreens>
 			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidPilgrimClass; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
-							(block Nil
-								(if (not (objGetData gPlayerShip "sistersAttitude"))
-									(objSetData gPlayerShip "sistersAttitude" 0)
-									)
-
-								(scrSetDesc gScreen (objTranslate gSource 'descWelcome))
-								)
+							(scrSetDesc gScreen (objTranslate gSource 'descWelcome))
 						</OnPaneInit>
 
 						<Actions>
@@ -102,7 +105,7 @@
 								(scrShowScreen gScreen &dsSistersDockServices;)
 							</Action>
 							<Action id="actionDonate">
-								(scrShowScreen gScreen &dsSistersDonate;)
+								(scrShowScreen gScreen &dsDominaTithe;)
 							</Action>
 							<Action id="actionUndock" cancel="1">
 								<Exit/>
@@ -149,6 +152,7 @@
 	<SystemType UNID="&ssSanctuary;"
 				attributes=			"envAir"
 				backgroundID=		"&rsLightNebulaSpace;"
+				spaceColor=			"#282a3c"
 				spaceEnvironmentTileSize=	"large"
 				>
 		<Tables>
@@ -189,6 +193,12 @@
 						</Siblings>
 					</Group>
 				</Siblings>
+			</RandomLocation>
+
+			<!-- Black Market Station -->
+
+			<RandomLocation locationCriteria="+outerSystem; +planetary">
+				<Station type="&stBlackMarketShipyard;"/>
 			</RandomLocation>
 
 			<!-- Random Stations -->

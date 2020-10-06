@@ -72,7 +72,7 @@ void HexarcTest (CUniverse &Universe, CXMLElement *pCmdLine)
 	for (j = 0; j < 5; j++)
 		{
 		CJSONValue Payload = CJSONValue(CJSONValue::typeObject);
-		Payload.InsertHandoff(FIELD_MAX_GAMES, CJSONValue(100));
+		Payload.Insert(FIELD_MAX_GAMES, CJSONValue(100));
 		CJSONValue Result;
 		if (!ServerCommand(Session, METHOD_OPTIONS, FUNC_HIGH_SCORE_GAMES, Payload, &Result))
 			{
@@ -144,9 +144,9 @@ bool Connect (const CString &sHostspec, CHTTPClientSession &Session)
 	//	Compose a connect payload
 
 	CJSONValue Payload(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_CLIENT_ID, CJSONValue(sClientID));
-	Payload.InsertHandoff(FIELD_CLIENT_VERSION, CJSONValue(CLIENT_TYPE));
-	Payload.InsertHandoff(FIELD_PROTOCOL_VERSION, CJSONValue(TRANS_SERVICE_VERSION));
+	Payload.Insert(FIELD_CLIENT_ID, CJSONValue(sClientID));
+	Payload.Insert(FIELD_CLIENT_VERSION, CJSONValue(CLIENT_TYPE));
+	Payload.Insert(FIELD_PROTOCOL_VERSION, CJSONValue(TRANS_SERVICE_VERSION));
 
 	//	Now issue the connect command
 

@@ -15,7 +15,7 @@ CResourceReadBlock::CResourceReadBlock (void) :
 	{
 	}
 
-CResourceReadBlock::CResourceReadBlock (HMODULE hModule, char *pszRes, char *pszType) :
+CResourceReadBlock::CResourceReadBlock (HMODULE hModule, const char *pszRes, const char *pszType) :
 		CObject(&g_Class),
 		m_hModule(hModule),
 		m_pszRes(pszRes),

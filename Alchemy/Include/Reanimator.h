@@ -376,8 +376,8 @@ class CReanimator
 		void DeleteElement (const CString &sID);
 		static const CG16bitFont &GetDefaultFont (void);
 		bool GetPropertyBool (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyBool(sProp) : false); }
-		CG32bitPixel GetPropertyColor (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyColor(sProp) : 0); }
-		const CG16bitFont *GetPropertyFont (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyFont(sProp) : 0); }
+		CG32bitPixel GetPropertyColor (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyColor(sProp) : CG32bitPixel(0)); }
+		const CG16bitFont *GetPropertyFont (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyFont(sProp) : NULL); }
 		int GetPropertyInteger (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyInteger(sProp) : 0); }
 		Metric GetPropertyMetric (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyMetric(sProp) : 0.0); }
 		DWORD GetPropertyOpacity (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyOpacity(sProp) : 0); }

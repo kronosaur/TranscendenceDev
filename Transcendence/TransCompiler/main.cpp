@@ -617,7 +617,7 @@ ALERROR WriteResource (CTDBCompiler &Ctx, const CString &sFilename, const CStrin
 	return NOERROR;
 	}
 
-int main (int argc, char *argv[ ], char *envp[ ])
+int main (int argc, const char *argv[ ], char *envp[ ])
 
 //	main
 //

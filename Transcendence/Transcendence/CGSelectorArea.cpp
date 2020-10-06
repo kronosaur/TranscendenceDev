@@ -316,8 +316,8 @@ bool CGSelectorArea::FindNearestRegion (int xCur, int yCur, EDirections iDir, bo
 		if (i != m_iCursor)
 			{
 			const SEntry &Entry = m_Regions[i];
-			int xDist = Absolute(Entry.rcRect.left + (RectWidth(Entry.rcRect) / 2) - xCur);
-			int yDist = Absolute(Entry.rcRect.top + (RectHeight(Entry.rcRect) / 2) - yCur);
+			int xDist = Absolute((int)Entry.rcRect.left + (RectWidth(Entry.rcRect) / 2) - xCur);
+			int yDist = Absolute((int)Entry.rcRect.top + (RectHeight(Entry.rcRect) / 2) - yCur);
 			bool bCloser = false;
 
 			//	See if this entry is better than the best so far

@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 
+#define ENCOUNTER_OVERRIDES_TAG					CONSTLIT("EncounterOverrides")
 #define ENHANCE_ABILITIES_TAG					CONSTLIT("EnhancementAbilities")
 #define IMAGE_FILTERS_TAG						CONSTLIT("ImageFilters")
 #define SYSTEM_GROUP_TAG						CONSTLIT("SystemGroup")
@@ -13,6 +14,7 @@
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define NO_EXTRA_ENCOUNTERS_ATTRIB				CONSTLIT("noExtraEncounters")
 #define NO_RANDOM_ENCOUNTERS_ATTRIB				CONSTLIT("noRandomEncounters")
+#define SPACE_COLOR_ATTRIB						CONSTLIT("spaceColor")
 #define SPACE_SCALE_ATTRIB						CONSTLIT("spaceScale")
 #define SPACE_ENVIRONMENT_TILE_SIZE_ATTRIB		CONSTLIT("spaceEnvironmentTileSize")
 #define TIME_SCALE_ATTRIB						CONSTLIT("timeScale")
@@ -26,7 +28,7 @@
 
 #define STR_NONE								CONSTLIT("none")
 
-static char *CACHED_EVENTS[CSystemType::evtCount] =
+static const char *CACHED_EVENTS[CSystemType::evtCount] =
 	{
 		"OnObjJumpPosAdj",
 	};
@@ -204,6 +206,8 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	else
 		m_iTileSize = (GetAPIVersion() >= 14 ? sizeSmall : sizeLarge);
 
+	m_rgbSpace = ::LoadRGBColor(pDesc->GetAttribute(SPACE_COLOR_ATTRIB), DEFAULT_SPACE_COLOR);
+
 	//	Options
 
 	m_bNoExtraEncounters = pDesc->GetAttributeBool(NO_EXTRA_ENCOUNTERS_ATTRIB);
@@ -245,6 +249,10 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList, NULL))
 			return ComposeLoadError(Ctx, Ctx.sError);
 		}
+
+	//	Encounter overrides
+
+	m_pEncounterOverrides = pDesc->GetContentElementByTag(ENCOUNTER_OVERRIDES_TAG);
 
 	return NOERROR;
 	}

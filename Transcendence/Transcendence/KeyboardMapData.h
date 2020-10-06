@@ -151,11 +151,11 @@ const int CKeyboardMapSession::NUMPAD_DATA_COUNT = (sizeof(NUMPAD_DATA) / sizeof
 
 const CKeyboardMapSession::SKeyData CKeyboardMapSession::MOUSE_DATA[] =
     {
-        {   "LButton",		0,	0,	3,	2,	"",				symbolNone,     0  },
+        {   "LButton",		0,	0,	3,	2,	"L",			symbolNone,     0  },
         {   "MButton",		3,	0,	1,	2,	"",				symbolNone,		0  },
-        {   "RButton",		4,	0,	3,	2,	"",				symbolNone,		0  },
+        {   "RButton",		4,	0,	3,	2,	"R",			symbolNone,		0  },
 
-        {   "",				0,	2,	7,	3,	"",				symbolNone,		CKeyboardMapSession::FLAG_RESERVED  },
+        {   "MouseMove",	0,	2,	7,	3,	"Mouse",		symbolNone,		0  },
 	};
 
 const int CKeyboardMapSession::MOUSE_DATA_COUNT = (sizeof(MOUSE_DATA) / sizeof(MOUSE_DATA[0]));

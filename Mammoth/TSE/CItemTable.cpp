@@ -9,6 +9,7 @@
 //	At some point, it might be better to switch this around.
 
 #include "PreComp.h"
+#include "ItemGeneratorImpl.h"
 
 #ifdef DEBUG_AVERAGE_VALUE
 #include <stdio.h>
@@ -52,260 +53,6 @@
 
 static const Metric NOT_FOR_SALE_DISCOUNT =		0.2;
 
-class CRecursingCheck
-	{
-	public:
-		CRecursingCheck (bool &bRecurse) :
-				m_bRecurse(bRecurse),
-				m_bWorking(false)
-			{ }
-
-		~CRecursingCheck ()
-			{
-			if (m_bWorking)
-				m_bRecurse = false;
-			}
-
-		bool IsRecursing (void)
-			{
-			if (m_bRecurse)
-				return true;
-
-			m_bWorking = true;
-			m_bRecurse = true;
-			return false;
-			}
-
-	private:
-		bool &m_bRecurse;
-		bool m_bWorking;
-	};
-
-class CGroupOfGenerators : public IItemGenerator
-	{
-	public:
-		CGroupOfGenerators (void) : m_bRecursing(false)
-			{ }
-
-		virtual ~CGroupOfGenerators (void) override;
-		virtual void AddItems (SItemAddCtx &Ctx) override;
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
-		virtual CCurrencyAndValue GetDesiredValue (SItemAddCtx &Ctx, int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const override;
-		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pItem; }
-		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
-		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
-		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
-
-	private:
-		struct SEntry
-			{
-			IItemGenerator *pItem;
-			int iChance;
-			DiceRange Count;
-			};
-
-		void AddItemsInt (SItemAddCtx &Ctx) const;
-		void AddItemsScaled (SItemAddCtx &Ctx, Metric rAdj) const;
-		Metric GetExpectedValue (SItemAddCtx &Ctx, int iLevel) const;
-		bool SetsAverageValue (void) const { return m_DesiredValue.GetCount() > 0; }
-
-		TArray<SEntry> m_Table;
-		TArray<CCurrencyAndValue> m_DesiredValue;
-
-		mutable TArray<Metric> m_ExpectedValue;			//	Expected average value by level
-		mutable bool m_bRecursing;
-	};
-
-class CLevelTableOfItemGenerators : public IItemGenerator
-	{
-	public:
-		CLevelTableOfItemGenerators (void) : m_bRecursing(false)
-			{ }
-
-		virtual ~CLevelTableOfItemGenerators (void) override;
-		virtual void AddItems (SItemAddCtx &Ctx) override;
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
-		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pEntry; }
-		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
-		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
-		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
-
-	private:
-		struct SEntry
-			{
-			IItemGenerator *pEntry;
-			CString sLevelFrequency;
-			DiceRange Count;
-
-			mutable int iChance;
-			};
-
-		TArray<SEntry> m_Table;
-		mutable int m_iTotalChance;
-		mutable int m_iComputedLevel;
-
-		mutable bool m_bRecursing;
-	};
-
-class CLocationCriteriaTableOfItemGenerators : public IItemGenerator
-	{
-	public:
-		CLocationCriteriaTableOfItemGenerators (void) : m_bRecursing(false)
-			{ }
-
-		virtual ~CLocationCriteriaTableOfItemGenerators (void) override;
-		virtual void AddItems (SItemAddCtx &Ctx) override;
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
-		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pEntry; }
-		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
-		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
-		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
-
-	private:
-		struct SEntry
-			{
-			IItemGenerator *pEntry;
-			CAffinityCriteria Criteria;
-			DiceRange Count;
-
-			mutable int iChance;
-			};
-
-		TArray<SEntry> m_Table;
-		mutable int m_iTotalChance;
-		mutable CSystem *m_pComputedSystem;
-		mutable CString m_sComputedAttribs;
-
-		mutable bool m_bRecursing;
-	};
-
-class CLookup : public IItemGenerator
-	{
-	public:
-		static ALERROR Create (DWORD dwUNID, IItemGenerator **retpGenerator, CString *retsError = NULL);
-
-		virtual void AddItems (SItemAddCtx &Ctx) override;
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override { return m_pTable->GetAverageValue(Ctx, iLevel); }
-		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_pTable->GetGenerator(); }
-		virtual int GetGeneratorCount (void) override { return ((m_pTable && m_pTable->GetGenerator()) ? 1 : 0); }
-		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
-		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
-
-	private:
-		CItemTableRef m_pTable;
-	};
-
-class CNullItem : public IItemGenerator
-	{
-	};
-
-class CRandomItems : public IItemGenerator
-	{
-	public:
-		CRandomItems (void) : m_Table(NULL) { }
-		static ALERROR Create (CUniverse &Universe,
-							   const CItemCriteria &Crit, 
-							   const CString &sLevelFrequency,
-							   IItemGenerator **retpGenerator);
-
-		virtual ~CRandomItems (void) override;
-		virtual void AddItems (SItemAddCtx &Ctx) override;
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
-		virtual CItemType *GetItemType (int iIndex) override { return m_Table[iIndex].pType; }
-		virtual int GetItemTypeCount (void) override { return m_iCount; }
-		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
-		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
-
-	private:
-		struct SEntry
-			{
-			CItemType *pType;
-			int iProbability;
-			};
-
-		void InitTable (SDesignLoadCtx &Ctx, const CString &sLevelFrequency) const;
-
-		mutable int m_iCount;
-		mutable SEntry *m_Table;
-
-		CItemCriteria m_Criteria;
-		CString m_sLevelFrequency;
-		int m_iLevel;
-		int m_iLevelCurve;
-		int m_iDamaged;
-		CRandomEnhancementGenerator m_Enhanced;
-		bool m_bDynamicLevelFrequency;		//	If TRUE, level frequency depends on system level
-		mutable int m_iDynamicLevel;
-	};
-
-class CSingleItem : public IItemGenerator
-	{
-	public:
-		virtual void AddItems (SItemAddCtx &Ctx) override;
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
-		virtual CItemType *GetItemType (int iIndex) override { return m_pItemType; }
-		virtual int GetItemTypeCount (void) override { return 1; }
-		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
-		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
-
-		static CurrencyValue CalcItemValue (CItemType *pType);
-
-	private:
-		CItemTypeRef m_pItemType;
-		int m_iDamaged;
-		CRandomEnhancementGenerator m_Enhanced;
-		bool m_bDebugOnly;
-	};
-
-class CTableOfGenerators : public IItemGenerator
-	{
-	public:
-		CTableOfGenerators (void) : m_bRecursing(false)
-			{ }
-
-		virtual ~CTableOfGenerators (void) override;
-		virtual void AddItems (SItemAddCtx &Ctx) override;
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) override;
-		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pItem; }
-		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
-		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
-		virtual bool HasItemAttribute (const CString &sAttrib) const override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
-
-	private:
-		struct SEntry
-			{
-			IItemGenerator *pItem;
-			int iChance;
-			DiceRange Count;
-			};
-
-		TArray<SEntry> m_Table;
-		int m_iTotalChance;
-
-		mutable bool m_bRecursing;
-	};
-
 //	IItemGenerator -------------------------------------------------------------
 
 int IItemGenerator::CalcLocationAffinity (SItemAddCtx &Ctx, const CAffinityCriteria &Criteria)
@@ -321,7 +68,7 @@ int IItemGenerator::CalcLocationAffinity (SItemAddCtx &Ctx, const CAffinityCrite
 		return Criteria.CalcWeight([](const CString &sAttrib) { return false; });
 	}
 
-ALERROR IItemGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IItemGenerator **retpGenerator)
+ALERROR IItemGenerator::CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, IItemGenerator **retpGenerator)
 
 //	CreateFromXML
 //
@@ -420,7 +167,7 @@ bool CItemTable::FindDataField (const CString &sField, CString *retsValue) const
 	//	Deal with the meta-data that we know about
 
 	if (strEquals(sField, FIELD_TREASURE_VALUE))
-		*retsValue = strFromInt((int)GetAverageValue(Ctx, 1));
+		*retsValue = strFromInt((int)GetAverageValue(Ctx));
 	else
 		return CDesignType::FindDataField(sField, retsValue);
 
@@ -559,6 +306,7 @@ void CGroupOfGenerators::AddItemsScaled (SItemAddCtx &Ctx, Metric rAdj) const
 	CItemList LocalList;
 	CItemListManipulator ItemList(LocalList);
 	SItemAddCtx LocalCtx(ItemList);
+	LocalCtx.pSystem = Ctx.pSystem;
 	LocalCtx.iLevel = Ctx.iLevel;
 	AddItemsInt(LocalCtx);
 
@@ -605,7 +353,7 @@ void CGroupOfGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		m_Table[i].pItem->AddTypesUsed(retTypesUsed);
 	}
 
-CurrencyValue CGroupOfGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CGroupOfGenerators::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
@@ -614,8 +362,8 @@ CurrencyValue CGroupOfGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
 	{
 	if (SetsAverageValue())
 		{
-		if (iLevel >= 0 && iLevel < m_DesiredValue.GetCount())
-			return m_DesiredValue[iLevel].GetCreditValue();
+		if (Ctx.iLevel >= 0 && Ctx.iLevel < m_DesiredValue.GetCount())
+			return m_DesiredValue[Ctx.iLevel].GetCreditValue();
 		else
 			return 0;
 		}
@@ -627,7 +375,7 @@ CurrencyValue CGroupOfGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
 		if (Check.IsRecursing())
 			return 0;
 
-		return (CurrencyValue)mathRound(GetExpectedValue(Ctx, iLevel));
+		return (CurrencyValue)mathRound(GetExpectedValue(Ctx, Ctx.iLevel));
 		}
 	}
 
@@ -691,9 +439,9 @@ Metric CGroupOfGenerators::GetExpectedValue (SItemAddCtx &Ctx, int iLevel) const
 		for (int i = 0; i < m_Table.GetCount(); i++)
 			{
 			if (m_Table[i].iChance < 100)
-				rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(Ctx, iLevel) * (Metric)m_Table[i].iChance / 100.0);
+				rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(Ctx) * (Metric)m_Table[i].iChance / 100.0);
 			else
-				rTotal += m_Table[i].Count.GetAveValueFloat() * m_Table[i].pItem->GetAverageValue(Ctx, iLevel);
+				rTotal += m_Table[i].Count.GetAveValueFloat() * m_Table[i].pItem->GetAverageValue(Ctx);
 			}
 
 		m_ExpectedValue[iLevel] = rTotal;
@@ -742,7 +490,7 @@ bool CGroupOfGenerators::HasItemAttribute (const CString &sAttrib) const
 	return false;
 	}
 
-ALERROR CGroupOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CGroupOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -870,7 +618,8 @@ CurrencyValue CSingleItem::CalcItemValue (CItemType *pType)
 //	Computes the value (to the player) of this item.
 
 	{
-	CurrencyValue ItemValue = CEconomyType::ExchangeToCredits(pType->GetCurrencyType(), pType->GetValue(CItemCtx(), true));
+	CItemCtx ItemCtx;
+	CurrencyValue ItemValue = CEconomyType::ExchangeToCredits(pType->GetCurrencyType(), pType->GetValue(ItemCtx, true));
 
 	if (pType->HasAttribute(ATTRIB_NOT_FOR_SALE))
 		ItemValue = Max((CurrencyValue)1, (CurrencyValue)(ItemValue * NOT_FOR_SALE_DISCOUNT));
@@ -878,7 +627,7 @@ CurrencyValue CSingleItem::CalcItemValue (CItemType *pType)
 	return ItemValue;
 	}
 
-CurrencyValue CSingleItem::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CSingleItem::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
@@ -916,7 +665,7 @@ bool CSingleItem::HasItemAttribute (const CString &sAttrib) const
 	return false;
 	}
 
-ALERROR CSingleItem::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CSingleItem::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1044,7 +793,7 @@ void CLevelTableOfItemGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesU
 		m_Table[i].pEntry->AddTypesUsed(retTypesUsed);
 	}
 
-CurrencyValue CLevelTableOfItemGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CLevelTableOfItemGenerators::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
@@ -1065,15 +814,15 @@ CurrencyValue CLevelTableOfItemGenerators::GetAverageValue (SItemAddCtx &Ctx, in
 	int iTotalChance = 0;
 	for (i = 0; i < m_Table.GetCount(); i++)
 		{
-		int iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, iLevel);
+		int iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, Ctx.iLevel);
 		iTotalChance += iChance;
 		}
 
 	for (i = 0; i < m_Table.GetCount(); i++)
 		{
-		int iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, iLevel);
+		int iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, Ctx.iLevel);
 		if (iChance > 0)
-			rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pEntry->GetAverageValue(Ctx, iLevel) * (Metric)iChance / (Metric)iTotalChance);
+			rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pEntry->GetAverageValue(Ctx) * (Metric)iChance / (Metric)iTotalChance);
 		}
 
 	return (CurrencyValue)(rTotal + 0.5);
@@ -1144,7 +893,7 @@ bool CLevelTableOfItemGenerators::HasItemAttribute (const CString &sAttrib) cons
 	return false;
 	}
 
-ALERROR CLevelTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CLevelTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1275,7 +1024,7 @@ void CLocationCriteriaTableOfItemGenerators::AddTypesUsed (TSortMap<DWORD, bool>
 		m_Table[i].pEntry->AddTypesUsed(retTypesUsed);
 	}
 
-CurrencyValue CLocationCriteriaTableOfItemGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CLocationCriteriaTableOfItemGenerators::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
@@ -1298,7 +1047,7 @@ CurrencyValue CLocationCriteriaTableOfItemGenerators::GetAverageValue (SItemAddC
 		iTotalChance += 1;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pEntry->GetAverageValue(Ctx, iLevel) / (Metric)iTotalChance);
+		rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pEntry->GetAverageValue(Ctx) / (Metric)iTotalChance);
 
 	return (CurrencyValue)(rTotal + 0.5);
 	}
@@ -1371,7 +1120,7 @@ bool CLocationCriteriaTableOfItemGenerators::HasItemAttribute (const CString &sA
 	return false;
 	}
 
-ALERROR CLocationCriteriaTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CLocationCriteriaTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1486,7 +1235,7 @@ bool CLookup::HasItemAttribute (const CString &sAttrib) const
 	return m_pTable->HasItemAttribute(sAttrib);
 	}
 
-ALERROR CLookup::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CLookup::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1574,7 +1323,7 @@ void CTableOfGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		m_Table[i].pItem->AddTypesUsed(retTypesUsed);
 	}
 
-CurrencyValue CTableOfGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
+CurrencyValue CTableOfGenerators::GetAverageValue (SItemAddCtx &Ctx)
 
 //	GetAverageValue
 //
@@ -1601,7 +1350,7 @@ CurrencyValue CTableOfGenerators::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
 	Metric rTotal = 0.0;
 	for (i = 0; i < m_Table.GetCount(); i++)
 		{
-		Metric rAverageValue = (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(Ctx, iLevel) * (Metric)m_Table[i].iChance / (Metric)m_iTotalChance);
+		Metric rAverageValue = (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(Ctx) * (Metric)m_Table[i].iChance / (Metric)m_iTotalChance);
 		rTotal += rAverageValue;
 
 #ifdef DEBUG_AVERAGE_VALUE
@@ -1668,7 +1417,7 @@ bool CTableOfGenerators::HasItemAttribute (const CString &sAttrib) const
 	return false;
 	}
 
-ALERROR CTableOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CTableOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1731,484 +1480,7 @@ ALERROR CTableOfGenerators::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-//	CRandomItems ---------------------------------------------------------------
-
-CRandomItems::~CRandomItems (void)
-
-//	CRandomItems destructor
-
-	{
-	if (m_Table)
-		delete [] m_Table;
-	}
-
-void CRandomItems::AddItems (SItemAddCtx &Ctx)
-
-//	AddItems
-//
-//	Add items
-
-	{
-	int i, j;
-
-	//	If this is a dynamic table, then we need to generate it now
-
-	if (m_bDynamicLevelFrequency && m_iDynamicLevel != Ctx.iLevel)
-		{
-		SDesignLoadCtx LoadCtx(Ctx.GetUniverse());
-		InitTable(LoadCtx, GenerateLevelFrequency(m_sLevelFrequency, Ctx.iLevel));
-		m_iDynamicLevel = Ctx.iLevel;
-		}
-
-	//	Roll
-
-	int iRoll = mathRandom(1, 1000);
-	bool bAllAtOnce = (m_iDamaged == 0 && m_Enhanced.GetChance() == 0);
-
-	for (i = 0; i < m_iCount; i++)
-		{
-		iRoll -= m_Table[i].iProbability;
-
-		if (iRoll <= 0)
-			{
-			CItemType *pType = m_Table[i].pType;
-			int iCount = pType->GetNumberAppearing().Roll();
-
-			//	If we don't have a chance of enhancement or damage, just optimize the
-			//	result by adding a group of items.
-
-			if (bAllAtOnce)
-				Ctx.ItemList.AddItem(CItem(m_Table[i].pType, iCount));
-
-			//	If this is armor, then treat them as a block
-
-			else if (pType->GetCategory() == itemcatArmor)
-				{
-				CItem Item(m_Table[i].pType, iCount);
-
-				if (mathRandom(1, 100) <= m_iDamaged)
-					Item.SetDamaged();
-				else
-					m_Enhanced.EnhanceItem(Item);
-
-				Ctx.ItemList.AddItem(Item);
-				}
-
-			//	Otherwise, enhance/damage each item individually
-
-			else
-				{
-				for (j = 0; j < iCount; j++)
-					{
-					CItem Item(m_Table[i].pType, 1);
-
-					if (mathRandom(1, 100) <= m_iDamaged)
-						Item.SetDamaged();
-					else
-						m_Enhanced.EnhanceItem(Item);
-
-					Ctx.ItemList.AddItem(Item);
-					}
-				}
-			break;
-			}
-		}
-	}
-
-void CRandomItems::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
-
-//	AddTypesUsed
-//
-//	Adds types used by this generator
-
-	{
-	//	Since random items tables don't explicitly refer to a type
-	//	(they do it by criteria) we don't need to add them.
-	}
-
-ALERROR CRandomItems::Create (CUniverse &Universe,
-							  const CItemCriteria &Crit, 
-							  const CString &sLevelFrequency,
-							  IItemGenerator **retpGenerator)
-
-//	Create
-//
-//	Creates the table from criteria and level frequency
-
-	{
-	CRandomItems *pGenerator = new CRandomItems;
-	pGenerator->m_Criteria = Crit;
-	pGenerator->m_sLevelFrequency = sLevelFrequency;
-	pGenerator->m_bDynamicLevelFrequency = false;
-	pGenerator->m_iDynamicLevel = 0;
-	pGenerator->m_iDamaged = 0;
-	pGenerator->m_iLevel = 0;
-	pGenerator->m_iLevelCurve = 0;
-
-	pGenerator->m_iCount = 0;
-	pGenerator->m_Table = NULL;
-
-	SDesignLoadCtx LoadCtx(Universe);
-	pGenerator->InitTable(LoadCtx, sLevelFrequency);
-	if (pGenerator->m_iCount == 0)
-		return ERR_FAIL;
-
-	//	Done
-
-	*retpGenerator = pGenerator;
-
-	return NOERROR;
-	}
-
-struct ItemEntryStruct
-	{
-	CItemType *pType;
-	int iChance;
-	int iRemainder;
-	};
-
-CurrencyValue CRandomItems::GetAverageValue (SItemAddCtx &Ctx, int iLevel)
-
-//	GetAverageValue
-//
-//	Returns the average value.
-
-	{
-	int i;
-
-	//	If this is a dynamic table we need to compute all levels
-
-	if (m_bDynamicLevelFrequency)
-		{
-		Metric rTotal = 0.0;
-		SDesignLoadCtx LoadCtx(Ctx.GetUniverse());
-		InitTable(LoadCtx, GenerateLevelFrequency(m_sLevelFrequency, iLevel));
-		m_iDynamicLevel = iLevel;
-
-		for (i = 0; i < m_iCount; i++)
-			{
-			CItemType *pType = m_Table[i].pType;
-			CurrencyValue ItemValue = CSingleItem::CalcItemValue(pType);
-			rTotal += (pType->GetNumberAppearing().GetAveValueFloat() * (Metric)ItemValue * (Metric)m_Table[i].iProbability / 1000.0);
-			}
-
-		return (CurrencyValue)(rTotal + 0.5);
-		}
-
-	//	Otherwise the table is already initialized.
-
-	else
-		{
-		//	Average value is proportional to chances.
-
-		Metric rTotal = 0.0;
-		for (i = 0; i < m_iCount; i++)
-			{
-			CItemType *pType = m_Table[i].pType;
-			CurrencyValue ItemValue = CSingleItem::CalcItemValue(pType);
-			rTotal += (pType->GetNumberAppearing().GetAveValueFloat() * (Metric)ItemValue * (Metric)m_Table[i].iProbability / 1000.0);
-			}
-
-		return (CurrencyValue)(rTotal + 0.5);
-		}
-	}
-
-CItemTypeProbabilityTable CRandomItems::GetProbabilityTable (SItemAddCtx &Ctx) const
-
-//	GetProbabilityTable
-//
-//	Returns a table with the probability of each item type appearing.
-
-	{
-	int i;
-
-	//	If this is a dynamic table, then we need to generate it now
-
-	if (m_bDynamicLevelFrequency && m_iDynamicLevel != Ctx.iLevel)
-		{
-		SDesignLoadCtx LoadCtx(Ctx.GetUniverse());
-		InitTable(LoadCtx, GenerateLevelFrequency(m_sLevelFrequency, Ctx.iLevel));
-		m_iDynamicLevel = Ctx.iLevel;
-		}
-
-	//	Short-circuit
-
-	if (m_iCount == 0)
-		return CItemTypeProbabilityTable();
-
-	//	Scale chances
-
-	CItemTypeProbabilityTable Result;
-	for (i = 0; i < m_iCount; i++)
-		Result.Add(m_Table[i].pType, (Metric)m_Table[i].iProbability / 1000.0);
-
-	return Result;
-	}
-
-bool CRandomItems::HasItemAttribute (const CString &sAttrib) const
-
-//	HasItemAttribute
-//
-//	Returns TRUE if any item has the given attribute
-
-	{
-	int i;
-
-	for (i = 0; i < m_iCount; i++)
-		if (m_Table[i].pType->HasAttribute(sAttrib))
-			return true;
-
-	return false;
-	}
-
-void CRandomItems::InitTable (SDesignLoadCtx &Ctx, const CString &sLevelFrequency) const
-
-//	InitTable
-//
-//	Initializes the m_Table array.
-//
-//	We assume that m_Criteria, m_iLevel, and m_iLevelCurve are properly initialized.
-
-	{
-	int i;
-	CUniverse &Universe = Ctx.GetUniverse();
-
-	//	Free original, if necessary
-
-	if (m_Table)
-		delete [] m_Table;
-
-	//	Start by allocating an array large enough to hold
-	//	all item types in the universe
-
-	ItemEntryStruct *pTable = new ItemEntryStruct [Universe.GetItemTypeCount()];
-	int iTableSize = 0;
-
-	//	Figure out if we should use level curves or level frequency
-
-	bool bUseLevelFrequency = !sLevelFrequency.IsBlank();
-
-	//	Iterate over every item type and add it to the table if
-	//	it matches the given criteria
-
-	for (i = 0; i < Universe.GetItemTypeCount(); i++)
-		{
-		CItemType *pType = Universe.GetItemType(i);
-		CItem Item(pType, 1);
-
-		//	If we're inside Bind, then make sure the item type is bound because
-		//	we need to refer to it inside the criteria code.
-
-		if (!Universe.GetDesignCollection().IsBindComplete()
-				&& !pType->IsBound())
-			{
-			if (pType->BindDesign(Ctx) != NOERROR)
-				{
-				Universe.LogOutput(strPatternSubst(CONSTLIT("CRandomItems::InitTable Bind: %s"), Ctx.sError));
-				continue;
-				}
-			}
-
-		//	Skip if the item doesn't match the categories
-
-		if (!Item.MatchesCriteria(m_Criteria))
-			continue;
-
-		//	Skip if this item is not found randomly
-
-		if (pType->GetFrequency() == ftNotRandom)
-			continue;
-
-		//	Adjust score based on level, either the level curve
-		//	or the level frequency string.
-
-		int iScore;
-		if (bUseLevelFrequency)
-			{
-			iScore = 1000 * GetFrequencyByLevel(sLevelFrequency, pType->GetLevel()) / ftCommon;
-			}
-		else
-			{
-			//	Skip if the item is not within the level curve
-
-			if ((pType->GetLevel() < m_iLevel - m_iLevelCurve)
-					|| (pType->GetLevel() > m_iLevel + m_iLevelCurve))
-				continue;
-
-			//	If we get this far then the item perfectly matches
-			//	and we need to add it to our table. First, however, we need
-			//	to calculate a score.
-			//
-			//	The score is number that represents how common the item
-			//	is in the table. Later we normalize the score to be a probability
-
-			int iLevelDelta = pType->GetLevel() - m_iLevel;
-			switch (iLevelDelta)
-				{
-				case 0:
-					iScore = 1000;
-					break;
-
-				case 1:
-				case -1:
-					iScore = 500;
-					break;
-
-				case 2:
-				case -2:
-					iScore = 200;
-					break;
-
-				default:
-					iScore = 50;
-				}
-			}
-
-		//	Adjust score based on item frequency
-
-		iScore = iScore * pType->GetFrequency() * 10 / (ftCommon * 10);
-
-		//	If we have a score of 0 then we skip this item
-
-		if (iScore == 0)
-			continue;
-
-		//	Add the item to the table
-
-		pTable[iTableSize].pType = pType;
-		pTable[iTableSize].iChance = iScore;
-		iTableSize++;
-		}
-
-	//	We must have items
-
-	if (iTableSize == 0)
-		{
-		m_iCount = 0;
-		m_Table = NULL;
-		delete [] pTable;
-		return;
-		}
-
-	//	Add up the total score of all items
-
-	int iTotalScore = 0;
-	for (i = 0; i < iTableSize; i++)
-		iTotalScore += pTable[i].iChance;
-
-	//	Compute the chance
-
-	int iTotalChance = 0;
-	for (i = 0; i < iTableSize; i++)
-		{
-		int iScore = pTable[i].iChance;
-		pTable[i].iChance = (iScore * 1000) / iTotalScore;
-		pTable[i].iRemainder = (iScore * 1000) % iTotalScore;
-
-		iTotalChance += pTable[i].iChance;
-		}
-
-	//	Distribute the remaining chance points
-
-	while (iTotalChance < 1000)
-		{
-		//	Look for the entry with the biggest remainder
-
-		int iBestRemainder = 0;
-		int iBestEntry = -1;
-
-		for (i = 0; i < iTableSize; i++)
-			if (pTable[i].iRemainder > iBestRemainder)
-				{
-				iBestRemainder = pTable[i].iRemainder;
-				iBestEntry = i;
-				}
-
-		pTable[iBestEntry].iChance++;
-		pTable[iBestEntry].iRemainder = 0;
-		iTotalChance++;
-		}
-
-	//	Count the number of entries that we've got
-
-	m_iCount = 0;
-	for (i = 0; i < iTableSize; i++)
-		if (pTable[i].iChance > 0)
-			m_iCount++;
-
-	//	Now loop over the entire table and add it to the 
-	//	random entry generator
-
-	m_Table = new SEntry [m_iCount];
-	int j = 0;
-	for (i = 0; i < iTableSize; i++)
-		if (pTable[i].iChance > 0)
-			{
-			m_Table[j].pType = pTable[i].pType;
-			m_Table[j].iProbability = pTable[i].iChance;
-			j++;
-			}
-
-	//	Done
-
-	delete [] pTable;
-	}
-
-ALERROR CRandomItems::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
-
-//	LoadFromXML
-//
-//	Load from XML
-
-	{
-	ALERROR error;
-
-	CString sCriteria = pDesc->GetAttribute(CRITERIA_ATTRIB);
-	if (sCriteria.IsBlank())
-		{
-		CString sAttributes = pDesc->GetAttribute(ATTRIBUTES_ATTRIB);
-		if (sAttributes.IsBlank())
-			sAttributes = pDesc->GetAttribute(MODIFIERS_ATTRIB);
-
-		sCriteria = strPatternSubst(CONSTLIT("%s %s"), pDesc->GetAttribute(CATEGORIES_ATTRIB), sAttributes);
-		}
-
-	m_Criteria.Init(sCriteria);
-	m_sLevelFrequency = pDesc->GetAttribute(LEVEL_FREQUENCY_ATTRIB);
-	m_bDynamicLevelFrequency = (strFind(m_sLevelFrequency, CONSTLIT(":")) != -1);
-	m_iDynamicLevel = 0;
-
-	m_iLevel = pDesc->GetAttributeInteger(LEVEL_ATTRIB);
-	m_iLevelCurve = pDesc->GetAttributeInteger(LEVEL_CURVE_ATTRIB);
-	m_iDamaged = pDesc->GetAttributeInteger(DAMAGED_ATTRIB);
-
-	if (error = m_Enhanced.InitFromXML(Ctx, pDesc))
-		return error;
-
-	m_Table = NULL;
-	m_iCount = 0;
-
-	return NOERROR;
-	}
-
-ALERROR CRandomItems::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
-
-//	OnDesignLoadComplete
-//
-//	Resolve references
-
-	{
-	if (!m_bDynamicLevelFrequency)
-		InitTable(Ctx, m_sLevelFrequency);
-
-	//	Reset
-
-	m_iDynamicLevel = 0;
-
-	return NOERROR;
-	}
-
-ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	InitFromXML
 //
@@ -2237,7 +1509,7 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 		CCodeChain::SLinkOptions Options;
 		Options.iOffset = 1;
 
-		m_pCode = ICCItemPtr(CCodeChain::Link(pPos, Options));
+		m_pCode = CCodeChain::LinkCode(pPos, Options);
 		if (m_pCode->IsError())
 			{
 			Ctx.sError = m_pCode->GetStringValue();

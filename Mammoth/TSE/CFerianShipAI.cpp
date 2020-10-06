@@ -389,7 +389,9 @@ CSpaceObject *CFerianShipAI::FindRandomAsteroid (void)
 		{
 		CSpaceObject *pObj = m_pShip->GetSystem()->GetObject(i);
 
-		if (pObj && pObj->HasAttribute(ATTRIBUTE_ASTEROID))
+		if (pObj
+				&& !pObj->IsOutOfPlaneObj()
+				&& pObj->HasAttribute(ATTRIBUTE_ASTEROID))
 			{
 			CVector vRange = pObj->GetPos() - m_pShip->GetPos();
 			Metric rDistance2 = vRange.Dot(vRange);
@@ -404,8 +406,11 @@ CSpaceObject *CFerianShipAI::FindRandomAsteroid (void)
 
 			if (rDistance2 < rCloseDist2)
 				{
-				Table[iCount++] = pObj;
-				Table[iCount++] = pObj;
+				if (iCount < MAX_RANDOM_COUNT)
+					Table[iCount++] = pObj;
+
+				if (iCount < MAX_RANDOM_COUNT)
+					Table[iCount++] = pObj;
 				}
 			}
 		}
@@ -418,7 +423,7 @@ CSpaceObject *CFerianShipAI::FindRandomAsteroid (void)
 		return Table[mathRandom(0, iCount-1)];
 	}
 
-CSpaceObject *CFerianShipAI::GetTarget (DWORD dwFlags) const
+CSpaceObject *CFerianShipAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -501,7 +506,7 @@ bool CFerianShipAI::InRangeOfThreat (CSpaceObject **retpThreat)
 	return false;
 	}
 
-DWORD CFerianShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
+DWORD CFerianShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
 
 //	Communicate
 //

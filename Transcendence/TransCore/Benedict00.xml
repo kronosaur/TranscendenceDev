@@ -13,41 +13,32 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBenedictsDrones;"
-			name=				"Benedict&apos;s Autons"
+			name=				"Benedict 00: Benedict&apos;s Autons"
 			attributes=			"benedictStoryArc, sistersMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"1"
+			missionArc=			"benedictArc:10"
 
 			maxAppearing=		"1"
 			debriefAfterOutOfSystem="true"
 			failureAfterOutOfSystem="5400"
 			>
-
-		<StaticData>
-			<sequence>10</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block Nil
+			<CanCreate>
+				(switch
+					;	This mission only works in the starting system
 
-					(switch
-						;	This mission only works in the starting system
+					(!= (sysGetNode) (objGetProperty gPlayerShip 'startingSystem))
+						Nil
 
-						(not (eq (sysGetNode) (objGetProperty gPlayerShip 'startingSystem)))
-							(msnDestroy gSource)
+					;	Success!
 
-						;	See if the mission is still available
-
-						(not (benedict_isMissionAvailable &msBenedictsDrones;))
-							(msnDestroy gSource)
-
-						;	Set up the mission
-
-						(block Nil
-							)
-						)
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>
@@ -84,10 +75,6 @@
 					
 					(msnSetData gSource 'targetIDs (map droneObjList theObj (objGetID theObj)))
 					(msnSetPlayerTarget gSource)
-					
-					;	Remember that we accepted this mission
-					
-					(benedict_missionAccepted gSource)
 					
 					;	Once we accept this mission, we're done with the intro
 					
@@ -153,7 +140,9 @@
 			</OnObjDestroyed>
 			
 			<OnCompleted>
-				(if (eq aReason 'success)
+				(if (and (= aReason 'success)
+						(msnGetData gSource 'startTime)
+						)
 					(block Nil
 						(msnSetData gSource 'endTime (unvGetTick))
 					
@@ -191,7 +180,7 @@
 					Nil
 					)
 			</OnReward>
-			
+
 			<GetGlobalAchievements>
 				(typGetData &msBenedictsDrones; 'achievements)
 			</GetGlobalAchievements>
@@ -199,20 +188,52 @@
 		
 		<Language>
 			<Text id="Name">
-				"Benedict's Autons"
+				Chapter 1: Training Day
 			</Text>
 			<Text id="Summary">
-				(msnTranslate gSource 'textSummary {
-					systemName: (sysGetName)
-					})
+				(switch
+					;	Not needed because we always accept a new mission in the 
+					;	story arc after debriefing.
+
+					(msn@ gSource 'isDebriefed)
+						Nil
+
+					;	If completed but not debriefed, then tell the player to
+					;	return to the Benedict.
+
+					(msn@ gSource 'isCompleted)
+						(msnTranslate gSource 'textSummary.completed {
+							systemName: (sysGetName)
+							})
+
+					;	Otherwise, we're active
+
+					(msnTranslate gSource 'textSummary.active {
+						systemName: (sysGetName)
+						})
+					)
 			</Text>
-			<Text id="textSummary">
+			<Text id="textSummary.active">
 
-					Destroy Benedict's autons.
+				Searching for answers about your quest, you seek out the Sisters
+				of Domina. There you meet Benedict, obviously a mercenary of 
+				some sort, who offers you training.
 
-					System: %systemName%\n
-					Payment: None
+				Destroy all of Benedict's autons to practice your combat skills.
 
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.completed">
+
+				You've destroyed all of Benedict's autons in target practice.
+				Return to the Sisters of Domina to hear Benedict's evaluation of
+				your performance.
+
+				System: %systemName%\n
+				Payment: None
+			
 			</Text>
 			<Text id="Intro">
 
@@ -235,13 +256,46 @@
 			</Text>
 			<String id="AcceptLabel">"[Y]es, I need practice."</String>
 			<Text id="AcceptReply">
+				(switch
+					;	If we aim the ship with the mouse, then we have slightly
+					;	different instructions.
 
+					(uiGetKeyDesc 'AimShip)
+						(msnTranslate gSource 'acceptReply1.mouse {
+							keyThrust: (uiGetKeyName 'ThrustForward)
+							keyFire: (uiGetKeyName 'FireWeapon)
+							})
+
+					;	Otherwise, we describe all maneuver keys.
+
+					(msnTranslate gSource 'acceptReply1.keyboard {
+						keyLeft: (uiGetKeyName 'RotateLeft)
+						keyRight: (uiGetKeyName 'RotateRight)
+						keyThrust: (uiGetKeyName 'ThrustForward)
+						keyFire: (uiGetKeyName 'FireWeapon)
+						})
+					)
+			</Text>
+			<Text id="acceptReply1.mouse">
+			
 				"I'll launch three autons&#x97;autonomous ships&#x97;for target 
 				practice.
 					
-				"Use the mouse to aim and [Ctrl] key to fire your primary weapon. 
-				You can also use the left-mouse button to fire and the right-mouse 
-				button to thrust. See if you can destroy them all.
+				"Use the mouse to aim and [%keyThrust%] to thrust forward. 
+				Use [%keyFire%] to fire your weapon. See if you can destroy them
+				all.
+					
+				"Ready?"
+
+			</Text>
+			<Text id="acceptReply1.keyboard">
+			
+				"I'll launch three autons&#x97;autonomous ships&#x97;for target 
+				practice.
+					
+				"Use [%keyLeft%] and [%keyRight%] to rotate and [%keyThrust%] to
+				thrust forward. [%keyFire%] fires your weapon. See if you can 
+				destroy them all.
 					
 				"Ready?"
 
@@ -252,26 +306,51 @@
 				Benedict stares. A smile flashes for an instant.
 					
 				"Fine. You'll be working your weapons soon enough. Meet me in 
-				the Matriarch's Chamber when you're ready to tackle something 
+				the Matriarch's Chancery when you're ready to tackle something 
 				more dangerous."
 
 			</Text>
 			<Text id="InProgress">
-
+				(msnTranslate gSource 'textInProgress1 {
+					keyFire: (uiGetKeyName 'FireWeapon)
+					})
+			</Text>
+			<Text id="textInprogress1">
+			
 				"I guess I forgot to tell you they fire back. Don't worry: 
 				they're nothing compared to what you'll face out there.
 					
-				"Remember, use the [Ctrl] key to fire your primary weapon."
+				"Remember, use [%keyFire%] to fire your primary weapon."
 
 			</Text>
 			<Text id="SuccessDebrief">
-				(msnTranslate gSource 'textSuccessDebrief {
-					time: (unvGetElapsedGameTime (msnGetData gSource 'startTime) (msnGetData gSource 'endTime) 'display)
-					})
+				(list
+					{	descID: 'textSuccessDebrief1
+						data: {
+							time: (unvGetElapsedGameTime (msnGetData gSource 'startTime) (msnGetData gSource 'endTime) 'display)
+							}
+						}
+					{	descID: 'textSuccessDebrief2
+						data: {
+							systemName: (sysGetName)
+							}
+						}
+					)
 			</Text>
-			<String id="textSuccessDebrief">
+			<String id="textSuccessDebrief1">
+
 				"Excellent work! You destroyed all autons in %time%."
+
 			</String>
+			<Text id="textSuccessDebrief2">
+
+				"I know you're eager to start your journey, but take the time to
+				practice your skills here in the civilized safety of %systemName%.
+				
+				"Return to the Matriarch's Chancery when you're ready and I will
+				continue your training."
+			
+			</Text>
 			<Text id="SuccessMsg">
 				Mission complete!
 			</Text>

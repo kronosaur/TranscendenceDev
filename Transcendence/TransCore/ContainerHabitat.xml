@@ -1,0 +1,766 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- ENCOUNTERS -->
+
+	<!-- Container Habitat
+
+	PROPERTIES
+
+	donationPoints:		Donation points earned
+
+	-->
+
+	<StationType UNID="&stContainerHabitat;"
+			name=				"container habitat"
+			sovereign=			"&svCommonwealth;"
+			inherit=			"&baCommonwealthStation;"
+				 
+			dockScreen=			"Main"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			level=				"4"
+			multiHull=			"true"
+			armorID=			"&itPlasteelPlate;"
+			hitPoints=			"160"
+			regen=              "1"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"commonwealth, friendly, generic, human, populated"
+			>
+		<Properties>
+			<DynamicGlobal id="infoAvailable">
+				(map (typ@ gType 'infoTable) 'excludeNil theEntry
+					(block (
+						(data ((@ theEntry 'getInfo)))
+						)
+						(if data
+							{
+								id: (@ theEntry 'id)
+								type: (@ theEntry 'type)
+								giveInfo: (@ theEntry 'giveInfo)
+								data: data
+								}
+							)
+						)
+					)
+			</DynamicGlobal>
+
+			<Definition id="donationTable">
+				(list
+					{	criteria: "* +ID;"						pointsPerHundred: 0.0	}
+					{	criteria: "* +questItem;"				pointsPerHundred: 0.0	}
+					{	criteria: "* +meds;"					pointsPerHundred: 1.0	}
+					{	criteria: "* +illegal; +consumerGood"	pointsPerHundred: 2.0	}
+					{	criteria: "* +lux;"						pointsPerHundred: 1.2	}
+					{	criteria: "* +food;"					pointsPerHundred: 1.0	}
+					{	criteria: "f L:1-5;"					pointsPerHundred: 1.2	}
+					)
+			</Definition>
+			<Definition id="infoTable">
+				(list
+					{	id: 'arcoVaughn
+						type: &stContainerHabitat;
+						getInfo: 
+							(lambda ()
+								(if (and (= (sysGetNode) 'SE)
+										(!= (typGetGlobalData &scArcoVaughnHeavyRaider; 'status) 'destroyed)
+										)
+									{
+										obj: (@ (sysFindObject Nil "s +arcoVaughn;") 0)
+										}
+									)
+								)
+
+						giveInfo:
+							(lambda (data)
+								(objSetShowAsDestination (@ data 'obj) 'autoClearOnDestroy)
+								)
+						}
+
+					{	id: 'betterEquipment
+						type: &stContainerHabitat;
+						getInfo: 
+							(lambda ()
+								(block (
+									(allDests
+										(map (sysFindObject gPlayerShip "TE -questTarget; -uncharted; | T +shipwreck; -questTarget; -uncharted;") 'excludeNil theObj
+											(block (
+												(all (objGetItems theObj "dUN"))
+												(bestItem (map all '(reduceMax original) theItem
+													(itmGetLevel theItem)
+													))
+												)
+												(if bestItem
+													{
+														obj: theObj
+														item: bestItem
+														level: (itmGetLevel bestItem)
+														}
+													)
+												)
+											)
+										)
+									(bestDest (map allDests '(reduceMax original) theEntry
+										(@ theEntry 'level)
+										))
+									)
+									(if bestDest
+										{
+											obj: (@ bestDest 'obj)
+											objName: (objGetName (@ bestDest 'obj) 'article)
+											item: (@ bestDest 'item)
+											itemName: (itmGetName (@ bestDest 'item) 'article)
+											}
+										)
+									)
+								)
+
+						giveInfo:
+							(lambda (data)
+								(block (
+									(targetObj (@ data 'obj))
+									)
+									(if (obj@ targetObj 'canBeAttacked)
+										(objSetShowAsDestination targetObj 'autoClearOnDestroy)
+										(objSetShowAsDestination targetObj 'autoClearOnDock)
+										)
+									)
+								)
+						}
+
+					{	id: 'centauriBase
+						type: &stContainerHabitat;
+						getInfo: 
+							(lambda ()
+								(block (
+									targetObj
+									)
+									(if (and (= (sysGetNode) 'SE)
+											(setq targetObj 
+												(random (sysFindObject gPlayerShip "TAN +centauriWarlords; +populated; -occupation; -questTarget; -uncharted;"))
+												)
+											)
+										{
+											obj: targetObj
+											objName: (objGetName targetObj 'article)
+											}
+										)
+									)
+								)
+
+						giveInfo:
+							(lambda (data)
+								(objSetShowAsDestination (@ data 'obj) 'autoClearOnDestroy)
+								)
+						}
+
+					{	id: 'korolovStation
+						type: &stContainerHabitat;
+						getInfo: 
+							(lambda ()
+								(block (
+									(destObj (random (sysFindObject Nil "TA +korolovShipping; +populated; -uncharted; -property:known;")))
+									)
+									(if destObj
+										{
+											obj: destObj
+											objName: (objGetName destObj 'article)
+											}
+										)
+									)
+								)
+
+						giveInfo:
+							(lambda (data)
+								(block ()
+									(objSetShowAsDestination (@ data 'obj) 'autoClearOnDock)
+									(objSetKnown (@ data 'obj))
+									)
+								)
+						}
+
+					{	id: 'stargate
+						type: &stContainerHabitat;
+						getInfo: 
+							(lambda ()
+								(block (
+									(destObj (random (sysFindObject gPlayerShip "GN -uncharted; -property:known;")))
+									)
+									(if destObj
+										{
+											obj: destObj
+											objName: (objGetName destObj 'article)
+											}
+										)
+									)
+								)
+
+						giveInfo:
+							(lambda (data)
+								(block ()
+									(objSetShowAsDestination (@ data 'obj) 'autoClear)
+									(objSetKnown (@ data 'obj))
+									)
+								)
+						}
+					)
+			</Definition>
+
+			<Global id="donationPoints">0</Global>
+		</Properties>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+commonwealthSpace;"
+				systemAffinity=			"+commonwealthCore;"
+				levelFrequency=			"uur-- ----- ----- ----- -----"
+
+				locationCriteria=		"-planetary"
+				/>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100"/>
+
+			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="1"/>
+			<ConsumeTrade	criteria="{human.basicFood}"	impact="1"/>
+			<ConsumeTrade	criteria="{core.ore}"			impact="1"/>
+		</Trade>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Lookup count="1d2-1" table="&tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="64" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="128" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="192" imageY="128" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<DockingPorts>
+			<Port x="0"		y="70" />
+			<Port x="61"	y="35" />
+			<Port x="61"	y="-35" />
+			<Port x="0"		y="-70" />
+			<Port x="-61"	y="-35" />
+			
+			<Port x="-61"	y="35" />
+		</DockingPorts>
+		
+		<!-- Dock Screen -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(switch
+								(eq (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+									(scrSetDescTranslate gScreen 'descWelcomePilgrim)
+									
+								(scrSetDescTranslate gScreen 'descWelcome)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionInformation">
+								(block (
+									(infoAvailable (obj@ gSource 'infoAvailable))
+									)
+									(switch
+										(not infoAvailable)
+											(rpgRumorShow {
+													rumorCriteria: "+commonwealthContainer"
+													noRumorTextID: 'descNoRumors
+													})
+
+										(scrShowScreen gScreen &dsContainerHabitatReward; {
+											infoAvailable: infoAvailable
+											})
+										)
+									)
+							</Action>
+
+							<Action id="actionDonate">
+								(scrShowScreen gScreen &dsContainerHabitatDonateItem;)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Data -->
+
+		<Events>
+			<GetRumors>
+				(rpgRumorAdd 'commonwealthContainer (make 'sequence 6))
+			</GetRumors>
+		</Events>
+
+		<Language>
+			<Text id="actionDonate">[D]onate Item</Text>
+
+			<Text id="descWelcome">
+
+				You are docked at a habitat made out of shipping containers. Children
+				bounce off the bulkheads in zero-G while maintenance workers repair
+				leaky seals and balky machinery. The station master approaches you:
+
+				"Traveling the universe, yeah? Why don't you spare some items for us!"
+
+			</Text>
+			<Text id="descWelcomePilgrim">
+
+				You are docked at a habitat made out of shipping containers. 
+				Children bounce off the bulkheads in zero-G while maintenance 
+				workers repair leaky seals and balky machinery. The station 
+				master approaches you:
+
+				"We don't get many pilgrims visiting around here. I'll make you
+				a deal: donate supplies to us and I'll give you some information
+				in exchange."
+
+			</Text>
+			<String id="descNoRumors">
+
+				"Everything's quiet around here at the moment."
+
+			</String>
+
+			<String id="infoAction.arcoVaughn">"Where is [A]rco Vaughn?"</String>
+			<Text id="infoDlg.arcoVaughn">
+
+				"If you're hunting Arco Vaughn, I know where you can find him. 
+				He has a habitat deep in the outer system. I'll give you his
+				coordinates, but don't say where you got them."
+
+			</Text>
+			<String id="infoAction.betterEquipment">"I need better [e]quipment."</String>
+			<Text id="infoDlg.betterEquipment">
+			
+				"%ObjName% in this system has %itemName%. I'll give you the 
+				coordinates and you can take it from there."
+
+			</Text>
+			<String id="infoAction.centauriBase">"Where are the [C]entauri warlords?"</String>
+			<Text id="infoDlg.centauriBase">
+
+				"%ObjName% in this system has been raiding stations all year. 
+				No one will miss it. I'll give you the coordinates and you can
+				do what you want."
+			
+			</Text>
+			<String id="infoAction.korolovStation">"Is there a [K]orolov station here?"</String>
+			<Text id="infoDlg.korolovStation">
+			
+				"Yeah, there is a Korolov station in this system. I'll program
+				the coordinates into your computer."
+
+			</Text>
+			<String id="infoAction.stargate">"Where is the [S]targate?"</String>
+			<Text id="infoDlg.stargate">
+			
+				"I can point you to %objName%. I'll enter the coordinates into 
+				your computer."
+
+			</Text>
+
+			<Text id="rumor.intro">
+
+				The station master grabs you and speaks softly in your ear:\n\n
+
+			</Text>
+			<Text id="rumor.commonwealthContainer.1">
+
+				"The Charon pirates are a menace. They have bases in almost every
+				system and they prey on defenseless freighters."
+
+			</Text>
+			<Text id="rumor.commonwealthContainer.2">
+
+				"If you need a contact in the Black Market find the Aleksany
+				brothers; they're always doing business in some fancy hotel."
+
+			</Text>
+			<Text id="rumor.commonwealthContainer.3">
+
+				"The anarchists don't bother us, but they really annoy the
+				Corporations: they're always stealing their fancy ROMs."
+
+			</Text>
+			<Text id="rumor.commonwealthContainer.4">
+
+				"Stay away from the Abbasid fortresses. Those fanatics will
+				shoot you rather than let you get close."
+
+			</Text>
+			<Text id="rumor.commonwealthContainer.5">
+
+				"The Urak warlords are another nutty group, but their armor
+				and weapons are pretty good."
+
+			</Text>
+			<Text id="rumor.commonwealthContainer.6">
+
+				"Hiro is the best hacker in the 'verse. He's created some
+				fancy ROMs that even the cyber corporations can't figure out."
+
+			</Text>
+		</Language>
+	</StationType>
+
+<!-- DOCK SCREENS -->
+
+	<!-- Donate Item to Container Habitat -->
+
+	<DockScreen UNID="&dsContainerHabitatDonateItem;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+		<Display type=		"itemPicker"
+				dataFrom=	"player"
+				list=		"*U"
+				>
+			<OnDisplayInit>
+				(scrSet@ gScreen 'enabledFilter (lambda (theItem)
+					(block (
+						(donationTable (obj@ gSource 'donationTable))
+						(entry (match donationTable theEntry
+							(and (@ theEntry 'criteria) 
+								(itmMatches theItem (@ theEntry 'criteria))
+								)
+							))
+						)
+						(and entry 
+							(gr (@ entry 'pointsPerHundred) 0)
+							)
+						)
+					))
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theItem (scrGetItem gScreen))
+						(donationTable (obj@ gSource 'donationTable))
+						(entry (match donationTable theEntry
+							(and (@ theEntry 'criteria) 
+								(itmMatches theItem (@ theEntry 'criteria))
+								)
+							))
+						(itemPrice (objGetBuyPrice gSource theItem))
+						(pointsGainedPerItem
+							(* (@ entry 'pointsPerHundred)
+								(/ itemPrice 100.0)
+								)
+							)
+						(minCount 
+							(if (gr pointsGainedPerItem 0)
+								(int (ceil (/ 1.0 pointsGainedPerItem)))
+								)
+							)
+						(canDonate Nil)
+						)
+						(scrEnableAction gScreen 'actionDonateThisItem Nil)
+
+						(switch
+							(not theItem)
+								(scrSetDescTranslate gScreen 'descNoItems)
+
+							(not minCount)
+								(scrSetDescTranslate gScreen 'descNotInterested {
+									itemNames: (itmGetName theItem '(plural short))
+									})
+
+							(ls (itmGetCount theItem) minCount)
+								(scrSetDescTranslate gScreen 'descWantMore {
+									itemName: (itmGetName (itmSetCount theItem minCount) '(count short))
+									})
+
+							(block ()
+								(scrSetDescTranslate gScreen 'descCanDonate {
+									itemName: (itmGetName (itmSetCount theItem minCount) '(count short))
+									})
+								(setq canDonate True)
+								)
+							)
+
+						(scrEnableAction gScreen 'actionDonateThisItem canDonate)
+						(scrSetData gScreen 'pointsGainedPerItem pointsGainedPerItem)
+						(scrSetData gScreen 'minCount minCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonateThisItem" default="1">
+						(block (
+							(theItem (scrGetItem gScreen))
+							(maxCount (itmGetCount theItem))
+							(minCount (scrGetData gScreen 'minCount))
+							)
+							(switch
+								(gr maxCount 1)
+									(scrShowPane gScreen 'Quantity)
+
+								(block (
+									(points (int (scrGetData gScreen 'pointsGainedPerItem)))
+									(infoAvailable (obj@ gSource 'infoAvailable))
+									)
+									(setq theItem (scrRemoveItem gScreen 1))
+									(objInc@ gSource 'donationPoints points)
+
+									(if infoAvailable
+										(block ()
+											(scrExitScreen gScreen)
+											(scrShowScreen gScreen &dsContainerHabitatReward; {
+												infoAvailable: infoAvailable
+												})
+											)
+										(scrShowPane gScreen 'NoInfo)
+										)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>					
+			</Default>
+
+			<Quantity
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block (
+						(theItem (scrGetItem gScreen))
+						(minCount (scrGetData gScreen 'minCount))
+						)
+						(scrSetDescTranslate gScreen 'descDonateQuantity {
+								items: (itmGetName theItem 'plural)
+								minCount: minCount
+								})
+						(scrSetCounter gScreen (itmGetCount theItem))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonate" default="1">
+						(block (
+							(theItem (scrGetItem gScreen))
+							(maxCount (itmGetCount theItem))
+							(minCount (scrGetData gScreen 'minCount))
+							(count (scrGetCounter gScreen))
+							)
+							(switch
+								(gr count maxCount)
+									(scrSetCounter gScreen maxCount)
+
+								(ls count minCount)
+									(scrSetCounter gScreen minCount)
+
+								(block (
+									(points (int (* count (scrGetData gScreen 'pointsGainedPerItem))))
+									(infoAvailable (obj@ gSource 'infoAvailable))
+									)
+									(setq theItem (scrRemoveItem gScreen count))
+									(objInc@ gSource 'donationPoints points)
+
+									(if infoAvailable
+										(block ()
+											(scrExitScreen gScreen)
+											(scrShowScreen gScreen &dsContainerHabitatReward; {
+												infoAvailable: infoAvailable
+												})
+											)
+										(scrShowPane gScreen 'NoInfo)
+										)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						(scrShowPane gScreen 'Default)
+					</Action>
+				</Actions>
+			</Quantity>
+
+			<NoInfo descID="descThanksButNoInfo">
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</NoInfo>
+		</Panes>
+
+		<Language>
+			<Text id="descNoItems">
+			
+				You have no items to give.
+				
+			</Text>
+			<Text id="descNotInterested">
+			
+				"We are not interested in %itemNames%.
+				
+				"Give us food, fuel, or medicine and we'll give you information
+				in exchange."
+				
+			</Text>
+			<Text id="descWantMore">
+			
+				"We'd happily give you information in exchange for at least
+				%itemName%. Unfortunately, you do not have that many."
+
+			</Text>
+			<Text id="descCanDonate">
+
+				"We'll happily give you information in exchange for at least
+				%itemName%."
+			
+			</Text>
+
+			<Text id="descDonateQuantity">
+
+				How many %items% do you wish to give?
+				
+				(You must give at least	%minCount%.)
+
+			</Text>
+			<Text id="descThanksButNoInfo">
+
+				"Thanks for the donation. We don't have any good information
+				right now, but if we get any we'll let you know!"
+			
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<DockScreen UNID="&dsContainerHabitatReward;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(donationPoints (or (obj@ gSource 'donationPoints) 0))
+						(infoTable (or (@ gData 'infoAvailable) (obj@ gSource 'infoAvailable)))
+						)
+						(switch
+							(not infoTable)
+								(scrSetDescTranslate gScreen 'descNoInfo)
+
+							(block ()
+
+								;	Add an action for each valid entry
+
+								(enum infoTable theEntry
+									(block (
+										(actionID (cat "infoAction." (@ theEntry 'id)))
+										(dialogID (cat "infoDlg." (@ theEntry 'id)))
+										(translateType (@ theEntry 'type))
+										(giveInfo (@ theEntry 'giveInfo))
+										(data (@ theEntry 'data))
+										)
+										(scrAddAction gScreen 
+											actionID
+											0
+											(typTranslate translateType actionID)
+											(lambda ()
+												(switch
+													(= (or (obj@ gSource 'donationPoints) 0) 0)
+														(scrShowPane gScreen 'NeedToDonate)
+
+													(block ()
+														(objInc@ gSource 'donationPoints -1)
+														(if giveInfo
+															(giveInfo data)
+															)
+														(scrExitScreen gScreen)
+
+														(scrShowScreen gScreen &dsRPGDialog; {
+															dialog: (typTranslate translateType dialogID data)
+															})
+														)
+													)
+												)
+											)
+										)
+									)
+
+								;	Set desc
+
+								(if (= donationPoints 0)
+									(scrSetDescTranslate gScreen 'descInfoNeedToDonate)
+									(scrSetDescTranslate gScreen 'descInfo)
+									)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+
+			<NeedToDonate descID="descNeedToDonate">
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</NeedToDonate>
+		</Panes>
+
+		<Language>
+			<Text id="descNeedToDonate">
+
+				"Interested in that, huh? Well I think I can help, but you'll
+				have to help us first. Donate some supplies to us and I'll tell
+				you what I know. Fair?"
+			
+			</Text>
+			<Text id="descInfo">
+
+				"Thank you for donating supplies to us. What do you want to 
+				know?"
+			
+			</Text>
+			<Text id="descInfoNeedToDonate">
+
+				"What do you want to know?"
+			
+			</Text>
+			<Text id="descNoInfo">
+
+				"Sorry, we don't know anything."
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+</TranscendenceModule>

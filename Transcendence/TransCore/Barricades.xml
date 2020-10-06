@@ -19,6 +19,10 @@
 			noMapIcon=			"true"
 			>
 
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
+
 		<Image imageID="&rsBarricades;" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="1"/>
 
 		<DockingPorts
@@ -48,6 +52,10 @@
 			mass=				"15"
 			noMapIcon=			"true"
 			>
+
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
 
 		<Image imageID="&rsBarricades;" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="1"/>
 
@@ -79,6 +87,10 @@
 			noMapIcon=			"true"
 			>
 
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
+
 		<Image imageID="&rsBarricades;" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="1"/>
 
 		<DockingPorts
@@ -100,7 +112,7 @@
 
 	<ItemType UNID="&itReinforcedTitanium1;"
 			name=				"titanium barricade"
-			attributes=			"barricade, minorItem, nami, specialty"
+			attributes=			"barricade, humanTech, minorItem, nami, specialty"
 			  
 			level=				"2"
 			frequency=			"uncommon"
@@ -131,7 +143,7 @@
 
 	<ItemType UNID="&itReinforcedTitanium2;"
 			name=				"double titanium barricade"
-			attributes=			"barricade, minorItem, nami, specialty"
+			attributes=			"barricade, humanTech, minorItem, nami, specialty"
 			  
 			level=				"3"
 			frequency=			"uncommon"
@@ -162,7 +174,7 @@
 
 	<ItemType UNID="&itReinforcedTitanium3;"
 			name=				"quad titanium barricade"
-			attributes=			"barricade, minorItem, nami, specialty"
+			attributes=			"barricade, humanTech, minorItem, nami, specialty"
 			  
 			level=				"4"
 			frequency=			"uncommon"

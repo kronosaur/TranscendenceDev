@@ -80,7 +80,7 @@ void CDeviceSystem::AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, in
 		}
 	}
 
-int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const
+int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *retiLauncherSlots) const
 
 //	CalcSlotsInUse
 //
@@ -91,6 +91,7 @@ int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) con
 	int iAll = 0;
 	int iWeapons = 0;
 	int iNonWeapons = 0;
+	int iLaunchers = 0;
 
 	//	Count the number of slots being used up currently
 
@@ -102,11 +103,16 @@ int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) con
 			int iSlots = Device.GetClass()->GetSlotsRequired();
 			iAll += iSlots;
 
-			if (Device.GetCategory() == itemcatWeapon 
+			if (Device.GetCategory() == itemcatWeapon
 					|| Device.GetCategory() == itemcatLauncher)
 				iWeapons += iSlots;
 			else
 				iNonWeapons += iSlots;
+
+			//  Unlike weapon or nonweapon devices, launchers either take one launcher slot or none at all.
+			//  This is in addition to the weapon/device slots it would take up.
+			if (Device.GetCategory() == itemcatLauncher)
+				iLaunchers += max(iSlots, 1);
 			}
 		}
 
@@ -115,6 +121,9 @@ int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) con
 
 	if (retiNonWeapon)
 		*retiNonWeapon = iNonWeapons;
+
+	if (retiLauncherSlots)
+		*retiLauncherSlots = iLaunchers;
 
 	return iAll;
 	}
@@ -282,6 +291,9 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 	//  weapon types, which is based on the order of appearance of the first enabled weapon of each type with "fire if selected".
 	//  Only return a "fire if selected" device if it is the FIRST such weapon of a given type.
 	//  If selectedFireVariants is true, then only select next item of the same UNID AND variant (as in charges/counter variant).
+	//  TODO: If both "switchWeapons" and category is Launcher, then maybe search for both launchers AND primary weapons that have
+	//  the "select as launcher" flag?
+
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 	TSortMap<LONGLONG, int> FireWhenSelectedDeviceTypes;
 	if (switchWeapons)
@@ -478,6 +490,80 @@ DeviceNames CDeviceSystem::GetNamedFromDeviceIndex (int iIndex) const
 	return devNone;
 	}
 
+DWORD CDeviceSystem::GetTargetTypes (void) const
+
+//	GetTargetTypes
+//
+//	Returns the set of targets that we need based on our devices.
+
+	{
+	DWORD dwAllTargetTypes = 0;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		const CInstalledDevice &Device = GetDevice(i);
+		if (Device.IsEmpty())
+			continue;
+
+		const CDeviceItem DeviceItem = Device.GetDeviceItem();
+
+		switch (Device.GetCategory())
+			{
+			case itemcatWeapon:
+				{
+				//	Primary weapons and anything linked to the primary weapon count.
+
+				if ((i == m_NamedDevices[devPrimaryWeapon])
+						|| Device.IsLinkedFire(itemcatWeapon))
+					{
+					dwAllTargetTypes |= DeviceItem.GetTargetTypes();
+					}
+					
+				break;
+				}
+
+			case itemcatLauncher:
+				{
+				//	Launcher and anything linked to the launcher count.
+
+				if ((i == m_NamedDevices[devMissileWeapon])
+						|| Device.IsLinkedFire(itemcatLauncher))
+					{
+					dwAllTargetTypes |= DeviceItem.GetTargetTypes();
+					}
+					
+				break;
+				}
+
+			default:
+				{
+				//	Include other non-weapon devices with target requirements. 
+				//	These are usually missile defense devices.
+
+				dwAllTargetTypes |= DeviceItem.GetTargetTypes();
+				break;
+				}
+			}
+		}
+
+	return dwAllTargetTypes;
+	}
+
+bool CDeviceSystem::HasShieldsUp (void) const
+
+//	HasShieldsUp
+//
+//	Returns TRUE if ship has shields > 0 HP. This is cheaper than calculating
+//	the shield level, since we don't have to compute max HP (which sometimes
+//	calls to TLisp).
+
+	{
+	if (CDeviceItem ShieldItem = GetNamedDeviceItem(devShields))
+		return (ShieldItem.GetHP() > 0);
+	else
+		return false;
+	}
+
 bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices)
 
 //	Init
@@ -486,7 +572,6 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 
 	{
 	int i;
-
 
 	//	Allocate devices
 
@@ -594,7 +679,32 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 	if (iSlotPosIndex != -1)
 		Device.SetSlotPosIndex(iSlotPosIndex);
 
-	//	Adjust the named devices
+	//	Special initialization depending on device type
+
+	switch (Device.GetCategory())
+		{
+		case itemcatShields:
+			//	If we just installed a shield generator, start at 0 energy
+			Device.Reset(pObj);
+			break;
+		}
+
+	//	Done
+
+	if (retiDeviceSlot)
+		*retiDeviceSlot = iDeviceSlot;
+
+	return true;
+	}
+
+void CDeviceSystem::RefreshNamedDevice (int iDeviceSlot)
+
+//	RefreshNamedDevice
+//
+//	Update the named device.
+
+	{
+	CInstalledDevice &Device = m_Devices[iDeviceSlot];
 
 	if (HasNamedDevices())
 		{
@@ -602,7 +712,12 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 			{
 			case itemcatWeapon:
 				if (Device.IsSelectable())
-					m_NamedDevices[devPrimaryWeapon] = iDeviceSlot;
+					{
+					if (Device.GetClass()->UsesLauncherControls())
+						m_NamedDevices[devMissileWeapon] = iDeviceSlot;
+					else
+						m_NamedDevices[devPrimaryWeapon] = iDeviceSlot;
+					}
 				break;
 
 			case itemcatLauncher:
@@ -627,23 +742,6 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 				break;
 			}
 		}
-
-	//	Special initialization depending on device type
-
-	switch (Device.GetCategory())
-		{
-		case itemcatShields:
-			//	If we just installed a shield generator, start at 0 energy
-			Device.Reset(pObj);
-			break;
-		}
-
-	//	Done
-
-	if (retiDeviceSlot)
-		*retiDeviceSlot = iDeviceSlot;
-
-	return true;
 	}
 
 bool CDeviceSystem::IsSlotAvailable (ItemCategories iItemCat, int *retiSlot) const
@@ -748,6 +846,24 @@ bool CDeviceSystem::OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause,
 	return true;
 	}
 
+void CDeviceSystem::OnSubordinateDestroyed (CSpaceObject &SubordinateObj, const CString &sSubordinateID)
+
+//	OnSubordinateDestroyed
+//
+//	The given subordinate was destroyed. If any of our devices are associated
+//	with that subordinate, then we need to destroy or disable them.
+
+	{
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		{
+		CInstalledDevice &Device = m_Devices[i];
+		if (!Device.IsEmpty() && Device.IsOnSegment() && strEquals(sSubordinateID, Device.GetSegmentID()))
+			{
+			Device.SetEnabled(Device.GetSource(), false);
+			}
+		}
+	}
+
 void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
 
 //	ReadFromStream
@@ -832,7 +948,7 @@ void CDeviceSystem::ReadyFirstWeapon (CSpaceObject *pObj)
 		}
 	}
 
-void CDeviceSystem::ReadyNextLauncher(CSpaceObject *pObj, int iDir)
+void CDeviceSystem::ReadyNextLauncher (CSpaceObject *pObj, int iDir)
 
 //	ReadyNextLauncher
 //
@@ -841,12 +957,55 @@ void CDeviceSystem::ReadyNextLauncher(CSpaceObject *pObj, int iDir)
 	{
 	if (!HasNamedDevices())
 		return;
+	int iCurrIndex = m_NamedDevices[devMissileWeapon];
+	int iNextLauncher = FindNextIndex(pObj, m_NamedDevices[devMissileWeapon], itemcatLauncher, iDir, true);
+	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devMissileWeapon], itemcatWeapon, iDir, true);
+	int iNextWeaponStartingPoint = iCurrIndex;
+	int iIndexToSelect = -1;
 
-	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devMissileWeapon], itemcatLauncher, iDir, true);
-	if (iNextWeapon != -1)
+	//  If iNextWeapon exists and this is the player ship, then keep looping through it until either the next weapon has 
+	//  the "select as launcher" flag, or we're back where we started.
+	
+	if ((iNextWeapon != -1) && pObj->IsPlayer())
 		{
-		m_NamedDevices[devMissileWeapon] = iNextWeapon;
+		while ((iNextWeapon != iNextWeaponStartingPoint) && !(GetDevice(iNextWeapon).GetClass()->UsesLauncherControls()))
+			{
+			if (iNextWeaponStartingPoint == iCurrIndex)
+				iNextWeaponStartingPoint = iNextWeapon;
+			iNextWeapon = FindNextIndex(pObj, iNextWeapon, itemcatWeapon, iDir, true);
+			}
 
+		//  If we end on a weapon that doesn't use launcher controls, then we just select the launcher.
+		if (!(GetDevice(iNextWeapon).GetClass()->UsesLauncherControls()))
+			iIndexToSelect = iNextLauncher;
+		else
+			{
+			//  If iNextWeapon is not -1, then it is a device. See if it has the "select as launcher" flag. If so, then
+			//  check which one appears first. Rule of thumb to keep in mind:
+			//  1. If both have indices that are BOTH higher or BOTH lower than the current index, pick the lower index
+			//  2. If one has an index that's higher than current, and the other has one that is lower than current, pick the one with index higher than current
+			//  3. If both have indices lower than current, pick the higher of the two.
+			//  4. If one of them is equal to current index, and the other is not, then pick the one that is not equal to current index. (If both are, pick either.)
+			//  5. If one of them is equal to -1 (which will be iNextLauncher at this point), then pick the one that is not -1.
+			if (iNextLauncher == -1)
+				iIndexToSelect = iNextWeapon;
+			else if ((iNextLauncher == iCurrIndex) || (iNextWeapon == iCurrIndex))
+				iIndexToSelect = (iNextWeapon == iCurrIndex) ? iNextLauncher : iNextWeapon;
+			else if ((iNextLauncher > iCurrIndex) && (iNextWeapon > iCurrIndex))
+				iIndexToSelect = (iNextLauncher > iNextWeapon) ? iNextWeapon : iNextLauncher;
+			else if (((iNextLauncher > iCurrIndex) && (iNextWeapon < iCurrIndex)) || ((iNextLauncher < iCurrIndex) && (iNextWeapon > iCurrIndex)))
+				iIndexToSelect = (iNextLauncher > iCurrIndex) ? iNextLauncher : iNextWeapon;
+			else if ((iNextLauncher < iCurrIndex) && (iNextWeapon < iCurrIndex))
+				iIndexToSelect = (iNextLauncher > iNextWeapon) ? iNextWeapon : iNextLauncher;
+			}
+
+		}
+	else
+		iIndexToSelect = iNextLauncher;
+
+	if (iIndexToSelect != -1)
+		{
+		m_NamedDevices[devMissileWeapon] = iIndexToSelect;
 		CInstalledDevice *pDevice = GetNamedDevice(devMissileWeapon);
 		CDeviceClass *pClass = pDevice->GetClass();
 		pClass->ValidateSelectedVariant(pObj, pDevice);
@@ -918,8 +1077,22 @@ void CDeviceSystem::ReadyNextWeapon (CSpaceObject *pObj, int iDir)
 		return;
 
 	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devPrimaryWeapon], itemcatWeapon, iDir, true);
+	int iFirstValidWeapon = -1;
 	if (iNextWeapon != -1)
 		{
+		//  Ignore any primary weapon that uses the launcher fire key to shoot
+		while ((iNextWeapon != m_NamedDevices[devPrimaryWeapon]) && (GetDevice(iNextWeapon).GetClass()->UsesLauncherControls())
+				&& (iNextWeapon != iFirstValidWeapon))
+			{
+			if (iFirstValidWeapon == -1)
+				iFirstValidWeapon = iNextWeapon;
+			iNextWeapon = FindNextIndex(pObj, iNextWeapon, itemcatWeapon, iDir, true);
+			}
+
+		if ((GetDevice(iNextWeapon).GetClass()->UsesLauncherControls()))
+			return;
+
+
 		m_NamedDevices[devPrimaryWeapon] = iNextWeapon;
 
 		CInstalledDevice *pDevice = GetNamedDevice(devPrimaryWeapon);
@@ -1000,6 +1173,19 @@ void CDeviceSystem::SetCursorAtNamedDevice (CItemListManipulator &ItemList, Devi
 
 	if (m_NamedDevices[iDev] != -1)
 		SetCursorAtDevice(ItemList, m_NamedDevices[iDev]);
+	}
+
+void CDeviceSystem::SetSecondary (bool bValue)
+
+//	SetSecondary
+//
+//	Sets all devices to secondary (or not)
+
+	{
+	for (CInstalledDevice &Device : *this)
+		{
+		Device.SetSecondary(bValue);
+		}
 	}
 
 bool CDeviceSystem::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList, ItemCategories *retiCat)

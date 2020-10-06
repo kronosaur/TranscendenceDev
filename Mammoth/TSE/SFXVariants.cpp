@@ -251,7 +251,8 @@ void CEffectVariantPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPa
 	if (m_Cache[iIndex].IsEmpty())
 		{
 		CEffectCreator *pCreator = m_pCreator->GetVariantCreator(iIndex);
-		m_Cache[iIndex].Set(pCreator->CreatePainter(CCreatePainterCtx()));
+		CCreatePainterCtx CreateCtx;
+		m_Cache[iIndex].Set(pCreator->CreatePainter(CreateCtx));
 		}
 
 	//	Paint

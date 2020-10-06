@@ -181,7 +181,7 @@ void CTranscendenceWnd::CreateCreditsAnimation (IAnimatron **retpAnimatron)
 
 	Names.DeleteAll();
 	for (int i = 0; i < ADDITIONAL_PROGRAMMING_COUNT; i++)
-		Names.Insert(CString(ADDITIONAL_PROGRAMMING[i]));
+		Names.Insert(strPatternSubst(ADDITIONAL_PROGRAMMING[i]));
 
 	m_UIRes.CreateMediumCredit(CONSTLIT("additional programming by"),
 			Names,
@@ -196,7 +196,7 @@ void CTranscendenceWnd::CreateCreditsAnimation (IAnimatron **retpAnimatron)
 
 	Names.DeleteAll();
 	for (int i = 0; i < SPECIAL_THANKS_COUNT; i++)
-		Names.Insert(CString(SPECIAL_THANKS[i]));
+		Names.Insert(strPatternSubst(SPECIAL_THANKS[i]));
 
 	m_UIRes.CreateMediumCredit(CONSTLIT("special thanks to"),
 			Names,
@@ -286,7 +286,7 @@ void CTranscendenceWnd::CreateLongCreditsAnimation (int x, int y, int cyHeight, 
 	//	Add names
 
 	for (i = 0; i < FEEDBACK_COUNT; i++)
-		pAni->AddTextLine(CString(FEEDBACK[i]), 
+		pAni->AddTextLine(strPatternSubst(FEEDBACK[i]), 
 				&m_Fonts.Header, 
 				m_Fonts.rgbTitleColor, 
 				CG16bitFont::AlignCenter,
@@ -296,7 +296,7 @@ void CTranscendenceWnd::CreateLongCreditsAnimation (int x, int y, int cyHeight, 
 
 	pAni->AddTextLine(CONSTLIT("created using"), &m_Fonts.SubTitle, m_Fonts.rgbLightTitleColor, CG16bitFont::AlignCenter, m_Fonts.Title.GetHeight());
 	for (i = 0; i < SOFTWARE_COUNT; i++)
-		pAni->AddTextLine(CString(SOFTWARE[i]), 
+		pAni->AddTextLine(strPatternSubst(SOFTWARE[i]), 
 				&m_Fonts.Header, 
 				m_Fonts.rgbTitleColor, 
 				CG16bitFont::AlignCenter,
@@ -306,7 +306,7 @@ void CTranscendenceWnd::CreateLongCreditsAnimation (int x, int y, int cyHeight, 
 
 	pAni->AddTextLine(CONSTLIT("with inspiration from"), &m_Fonts.SubTitle, m_Fonts.rgbLightTitleColor, CG16bitFont::AlignCenter, m_Fonts.Title.GetHeight());
 	for (i = 0; i < INSPIRATION_COUNT; i++)
-		pAni->AddTextLine(CString(INSPIRATION[i]), 
+		pAni->AddTextLine(strPatternSubst(INSPIRATION[i]), 
 				&m_Fonts.Header, 
 				m_Fonts.rgbTitleColor, 
 				CG16bitFont::AlignCenter,

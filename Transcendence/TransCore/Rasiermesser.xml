@@ -108,14 +108,14 @@
 
 		<Items>
 			<RandomItem count="1d12" 
-					criteria=		"w L:1-7; +Rasiermesser; -NotForSale;"
+					criteria=		"w L:1-7; +Rasiermesser; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
 					enhancement=	"=(intRasiermesserWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="2d12" 
-					criteria=		"a L:1-7; +Rasiermesser; -NotForSale;"
+					criteria=		"a L:1-7; +Rasiermesser; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:u|c|cur"
 					enhanced=		"10"
 					enhancement=	"=(intRasiermesserArmorEnhancement)"
@@ -310,28 +310,28 @@
 
 		<Items>
 			<RandomItem count="1d12"
-					criteria=		"w L:1-10; +Rasiermesser; -NotForSale;"
+					criteria=		"w L:1-10; +Rasiermesser; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"20"
 					enhancement=	"=(intRasiermesserWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="1d12"
-					criteria=		"a L:1-10; +Rasiermesser; -NotForSale;"
+					criteria=		"a L:1-10; +Rasiermesser; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"20"
 					enhancement=	"=(intRasiermesserArmorEnhancement)"
 					/>
 
 			<RandomItem count="1d12"
-					criteria=		"w L:1-10; +Rasiermesser; -NotForSale;"
+					criteria=		"w L:1-10; +Rasiermesser; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:v|u|cur"
 					enhanced=		"10"
 					enhancement=	"=(intRasiermesserWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="1d12"
-					criteria=		"a L:1-10; +Rasiermesser; -NotForSale;"
+					criteria=		"a L:1-10; +Rasiermesser; -defective; -NotForSale;"
 					levelFrequency=	"systemLevel:v|u|cur"
 					enhanced=		"10"
 					enhancement=	"=(intRasiermesserArmorEnhancement)"
@@ -795,14 +795,6 @@
 			</ItemAttribute>
 		</AttributeDesc>
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			9		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(if (not (objGetProperty gSource 'DvalinSystem))
@@ -848,7 +840,7 @@
 				testing various new weapons here.
 
 				Sitting by the corner, a small stocky man mumbles to himself as 
-				he pours through dozens of screens of information. His name is 
+				he pores through dozens of screens of information. His name is 
 				Dvalin, the chief scientist for the Rasiermesser Corporation.
 
 			</Text>

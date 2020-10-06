@@ -24,7 +24,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EB0AFA5B-DC60-4B46-9BD7-3371612AE9C9}</ProjectGuid>
-    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <RootNamespace>Transcendence</RootNamespace>
     <XPDeprecationWarning>false</XPDeprecationWarning>
   </PropertyGroup>
@@ -32,27 +32,27 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -149,8 +149,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>MULTIVERSE_BUILD;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -205,8 +206,9 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <CompileAs>Default</CompileAs>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>STEAM_BUILD;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -258,8 +260,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>MULTIVERSE_BUILD;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -310,8 +313,9 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>STEAM_BUILD;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -361,8 +365,9 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -404,6 +409,7 @@
     <ClCompile Include="CDockScreenList.cpp" />
     <ClCompile Include="CDockScreenSelector.cpp" />
     <ClCompile Include="CDockScreenSubjugate.cpp" />
+    <ClCompile Include="CGameIconBarData.cpp" />
     <ClCompile Include="CGameSession.cpp" />
     <ClCompile Include="CGCarouselArea.cpp" />
     <ClCompile Include="CGDetailsArea.cpp" />
@@ -414,6 +420,7 @@
     <ClCompile Include="CGTabArea.cpp" />
     <ClCompile Include="CHeadsUpDisplay.cpp" />
     <ClCompile Include="CHighScoreDisplay.cpp" />
+    <ClCompile Include="CIconBarDisplay.cpp" />
     <ClCompile Include="CIntroSession.cpp" />
     <ClCompile Include="CIntroShipController.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -434,8 +441,9 @@
     </ClCompile>
     <ClCompile Include="CKeyboardMapSession.cpp" />
     <ClCompile Include="CLoadGameWithSignInTask.cpp" />
-    <ClCompile Include="CLRSDisplay.cpp" />
     <ClCompile Include="CManeuverController.cpp" />
+    <ClCompile Include="CMenuDisplay.cpp" />
+    <ClCompile Include="CNarrativeDisplay.cpp" />
     <ClCompile Include="CodeChainExtensions.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
@@ -454,6 +462,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CSystemMapDisplay.cpp" />
+    <ClCompile Include="CSystemStationsMenu.cpp" />
     <ClCompile Include="CTranscendenceController.cpp" />
     <ClCompile Include="CTranscendenceModel.cpp" />
     <ClCompile Include="CTranscendencePlayer.cpp" />
@@ -477,6 +486,7 @@
     <ClCompile Include="GameSessionAnimate.cpp" />
     <ClCompile Include="GameSessionCommands.cpp" />
     <ClCompile Include="GameSessionInput.cpp" />
+    <ClCompile Include="GameSessionMenus.cpp" />
     <ClCompile Include="IDockScreenDisplay.cpp" />
     <ClCompile Include="Main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -569,7 +579,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CGNeurohackArea.cpp" />
-    <ClCompile Include="CMenuDisplay.cpp">
+    <ClCompile Include="CMenuDisplayOld.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">Disabled</Optimization>
@@ -693,6 +703,7 @@
     </ClCompile>
     <ClCompile Include="CUIResources.cpp" />
     <ClCompile Include="GameOutput.cpp" />
+    <ClCompile Include="PlayerControllerProperties.cpp" />
     <ClCompile Include="Utilities.cpp" />
     <ClCompile Include="CDockScreen.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -735,6 +746,7 @@
     <ClInclude Include="BackgroundTasks.h" />
     <ClInclude Include="CGAreas.h" />
     <ClInclude Include="Credits.h" />
+    <ClInclude Include="DefaultKeyMappings.h" />
     <ClInclude Include="DockScreen.h" />
     <ClInclude Include="DockScreenDisplayImpl.h" />
     <ClInclude Include="DockScreenSubjugate.h" />
@@ -759,14 +771,28 @@
     <None Include="..\..\README" />
     <None Include="..\Game\Readme.htm">
       <DeploymentContent>true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </DeploymentContent>
     </None>
     <None Include="..\Game\ReadmeSource.htm">
       <DeploymentContent>true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">false</DeploymentContent>
     </None>
     <None Include="..\Game\ReadmeStub.htm">
       <DeploymentContent>true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">false</DeploymentContent>
     </None>
     <None Include="..\Game\Transcendence.tdb">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
@@ -836,9 +862,10 @@
     <Image Include="Resources\UIIconsMask.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Media Include="..\Game\TranscendenceIntro.mp3">
+    <None Include="..\Game\TranscendenceIntro.mp3">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
-    </Media>
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

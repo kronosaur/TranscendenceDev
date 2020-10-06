@@ -5,9 +5,7 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CTextFileLog>g_Class(OBJID_CTEXTFILELOG, NULL);
-
-CTextFileLog::CTextFileLog (void) : CObject(&g_Class),
+CTextFileLog::CTextFileLog (void) : 
 		m_hFile(NULL),
 		m_dwSessionStart(0)
 
@@ -16,7 +14,7 @@ CTextFileLog::CTextFileLog (void) : CObject(&g_Class),
 	{
 	}
 
-CTextFileLog::CTextFileLog (const CString &sFilename) : CObject(&g_Class),
+CTextFileLog::CTextFileLog (const CString &sFilename) : 
 		m_sFilename(sFilename),
 		m_hFile(NULL)
 
@@ -49,7 +47,7 @@ ALERROR CTextFileLog::Close (void)
 	return NOERROR;
 	}
 
-ALERROR CTextFileLog::Create (BOOL bAppend)
+ALERROR CTextFileLog::Create (bool bAppend)
 
 //	Create
 //
@@ -145,59 +143,24 @@ CString CTextFileLog::GetSessionLog (void)
 	return sLog;
 	}
 
-void CTextFileLog::LogOutput (DWORD dwFlags, const CString &sLine)
+void CTextFileLog::Print (const CString &sLine) const
 
-//	LogOutput
+//	Print
 //
-//	Output a line to the log
+//	Outputs a line to the log
 
 	{
-	DWORD dwWritten;
-
 	ASSERT(m_hFile);
+	if (m_hFile == NULL)
+		return;
 
-	//	Write the time date
-
-	if (dwFlags & ILOG_FLAG_TIMEDATE)
-		{
-		char szBuffer[1024];
-		SYSTEMTIME time;
-
-		GetLocalTime(&time);
-		int iLen = wsprintf(szBuffer, "%02d/%02d/%04d %02d:%02d:%02d\t",
-				time.wMonth,
-				time.wDay,
-				time.wYear,
-				time.wHour,
-				time.wMinute,
-				time.wSecond);
-
-		WriteFile(m_hFile, szBuffer, iLen, &dwWritten, NULL);
-		}
-
-	//	Write out the line
-
+	DWORD dwWritten;
 	WriteFile(m_hFile, sLine.GetASCIIZPointer(), sLine.GetLength(), &dwWritten, NULL);
 	WriteFile(m_hFile, "\r\n", 2, &dwWritten, NULL);
 
 	//	Flush now because we don't want to lose any info if we crash
 
 	FlushFileBuffers(m_hFile);
-	}
-
-void CTextFileLog::LogOutput (DWORD dwFlags, char *pszLine, ...)
-
-//	LogOutput
-//
-//	Output a line to the log
-
-	{
-	CString sParsedLine;
-
-	char *pArgs = (char *)&pszLine + sizeof(pszLine);
-	sParsedLine = strPattern(CString(pszLine, ::strlen(pszLine), TRUE), (void **)pArgs);
-
-	LogOutput(dwFlags, sParsedLine);
 	}
 
 void CTextFileLog::SetFilename (const CString &sFilename)

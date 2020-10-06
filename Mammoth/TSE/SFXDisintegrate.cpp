@@ -66,7 +66,7 @@ class CDisintegrateEffectPainter : public IEffectPainter
 		TArray<SParticle> m_Particles;
 	};
 
-static LPSTR STYLE_TABLE[] =
+static LPCSTR STYLE_TABLE[] =
 	{
 	//	Must be same order as EStyles
 		"",

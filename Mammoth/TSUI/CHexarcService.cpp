@@ -214,8 +214,8 @@ ALERROR CHexarcService::ChangePassword (ITaskProcessor *pProcessor, const CStrin
 
 	CJSONValue Result;
 	CJSONValue Payload(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
-	Payload.InsertHandoff(FIELD_USERNAME, CJSONValue(sUsername));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_USERNAME, CJSONValue(sUsername));
 	Payload.InsertHandoff(FIELD_OLD_CREDENTIALS, OldPasswordHash);
 	Payload.InsertHandoff(FIELD_NEW_CREDENTIALS, NewPasswordHash);
 	if (m_Session.ServerCommand(METHOD_POST, FUNC_CHANGE_PASSWORD, Payload, &Result) != NOERROR)
@@ -433,11 +433,11 @@ ALERROR CHexarcService::LoadNews (ITaskProcessor *pProcessor,
 	//	Put together a request
 
 	CJSONValue Payload(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
-	Payload.InsertHandoff(FIELD_TRANSCENDENCE_VERSION, CJSONValue(sAppVersion));
-	Payload.InsertHandoff(FIELD_TYPE, CJSONValue(TYPE_TRANSCENDENCE_NEWS));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_TRANSCENDENCE_VERSION, CJSONValue(sAppVersion));
+	Payload.Insert(FIELD_TYPE, CJSONValue(TYPE_TRANSCENDENCE_NEWS));
 	if (IsLoggedIn())
-		Payload.InsertHandoff(FIELD_USERNAME, CJSONValue(m_sUsername));
+		Payload.Insert(FIELD_USERNAME, CJSONValue(m_sUsername));
 
 	CJSONValue Result;
 	if (m_Session.ServerCommand(METHOD_POST, FUNC_LIST_ARTICLES, Payload, &Result) != NOERROR)
@@ -505,16 +505,16 @@ ALERROR CHexarcService::LoadUserCollection (ITaskProcessor *pProcessor, CExtensi
 	//	Put together a request
 
 	CJSONValue TypesRequested(CJSONValue::typeArray);
-	TypesRequested.InsertHandoff(CJSONValue(TYPE_TRANSCENDENCE_ADVENTURE));
-	TypesRequested.InsertHandoff(CJSONValue(TYPE_TRANSCENDENCE_EXPANSION));
-	TypesRequested.InsertHandoff(CJSONValue(TYPE_TRANSCENDENCE_LIBRARY));
-	TypesRequested.InsertHandoff(CJSONValue(TYPE_GAME_ENGINE));
+	TypesRequested.Insert(CJSONValue(TYPE_TRANSCENDENCE_ADVENTURE));
+	TypesRequested.Insert(CJSONValue(TYPE_TRANSCENDENCE_EXPANSION));
+	TypesRequested.Insert(CJSONValue(TYPE_TRANSCENDENCE_LIBRARY));
+	TypesRequested.Insert(CJSONValue(TYPE_GAME_ENGINE));
 
 	CJSONValue Payload(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
 	Payload.Insert(FIELD_AUTH_TOKEN, m_UserToken);
-	Payload.InsertHandoff(FIELD_ONLY_IN_COLLECTION, CJSONValue(CJSONValue::typeTrue));
-	Payload.InsertHandoff(FIELD_TYPE, TypesRequested);
+	Payload.Insert(FIELD_ONLY_IN_COLLECTION, CJSONValue(CJSONValue::typeTrue));
+	Payload.Insert(FIELD_TYPE, TypesRequested);
 
 	CJSONValue Result;
 	if (m_Session.ServerCommand(METHOD_POST, FUNC_LIST_CATALOG, Payload, &Result) != NOERROR)
@@ -562,10 +562,10 @@ ALERROR CHexarcService::PostCrashReport (ITaskProcessor *pProcessor, const CStri
 	CJSONValue Payload(CJSONValue::typeObject);
 	if (IsLoggedIn())
 		Payload.Insert(FIELD_AUTH_TOKEN, m_UserToken);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
-	Payload.InsertHandoff(FIELD_CLIENT_ID, CJSONValue(m_sClientID));
-	Payload.InsertHandoff(FIELD_CLIENT_VERSION, CJSONValue(m_Session.GetClientVersion()));
-	Payload.InsertHandoff(FIELD_DEBUG_LOG, CJSONValue(sCrash));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_CLIENT_ID, CJSONValue(m_sClientID));
+	Payload.Insert(FIELD_CLIENT_VERSION, CJSONValue(m_Session.GetClientVersion()));
+	Payload.Insert(FIELD_DEBUG_LOG, CJSONValue(sCrash));
 
 	if (error = m_Session.ServerCommand(METHOD_POST, FUNC_POST_CRASH_LOG, Payload, &Result))
 		{
@@ -631,8 +631,8 @@ ALERROR CHexarcService::PostGameRecord (ITaskProcessor *pProcessor, const CGameR
 
 	CJSONValue Result;
 	CJSONValue Payload(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
-	Payload.InsertHandoff(FIELD_GAME, CJSONValue(GAME_TYPE));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_GAME, CJSONValue(GAME_TYPE));
 	Payload.InsertHandoff(FIELD_GAME_STATS, RecordJSON);
 	Payload.InsertHandoff(FIELD_SIGNATURE, SignatureJSON);
 	Payload.Insert(FIELD_AUTH_TOKEN, m_UserToken);
@@ -724,11 +724,11 @@ ALERROR CHexarcService::ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwA
 
 	CJSONValue Result;
 	CJSONValue Payload(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
-	Payload.InsertHandoff(FIELD_GAME, CJSONValue(GAME_TYPE));
-	Payload.InsertHandoff(FIELD_LEAGUE, CJSONValue(LEAGUE_REGISTERED));
-	Payload.InsertHandoff(FIELD_MAX_GAMES, CJSONValue(100));
-	Payload.InsertHandoff(FIELD_UNID, CJSONValue(strPatternSubst(CONSTLIT("%08x"), dwAdventure)));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_GAME, CJSONValue(GAME_TYPE));
+	Payload.Insert(FIELD_LEAGUE, CJSONValue(LEAGUE_REGISTERED));
+	Payload.Insert(FIELD_MAX_GAMES, CJSONValue(100));
+	Payload.Insert(FIELD_UNID, CJSONValue(strPatternSubst(CONSTLIT("%08x"), dwAdventure)));
 	if (m_Session.ServerCommand(METHOD_OPTIONS, FUNC_HIGH_SCORE_GAMES, Payload, &Result) != NOERROR)
 		{
 		*retsResult = Result.AsString();
@@ -771,10 +771,10 @@ ALERROR CHexarcService::ReadProfile (ITaskProcessor *pProcessor, CUserProfile *r
 
 	CJSONValue Result;
 	CJSONValue Payload(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
-	Payload.InsertHandoff(FIELD_INCLUDE_LEADERBOARD, CJSONValue(CJSONValue::typeTrue));
-	Payload.InsertHandoff(FIELD_GAMES, CJSONValue(GAME_TYPE));
-	Payload.InsertHandoff(FIELD_USERNAME, CJSONValue(m_sUsername));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_INCLUDE_LEADERBOARD, CJSONValue(CJSONValue::typeTrue));
+	Payload.Insert(FIELD_GAMES, CJSONValue(GAME_TYPE));
+	Payload.Insert(FIELD_USERNAME, CJSONValue(m_sUsername));
 	if (m_Session.ServerCommand(METHOD_OPTIONS, FUNC_GET_PROFILE_RECORDS, Payload, &Result) != NOERROR)
 		{
 		*retsResult = Result.AsString();
@@ -832,11 +832,11 @@ ALERROR CHexarcService::ReadProfile (ITaskProcessor *pProcessor, CUserProfile *r
 
 	CJSONValue Result;
 	CJSONValue Payload(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
-	Payload.InsertHandoff(FIELD_GAME, CJSONValue(GAME_TYPE));
-	Payload.InsertHandoff(FIELD_USERNAME, CJSONValue(m_sUsername));
-	Payload.InsertHandoff(FIELD_MAX_GAMES, CJSONValue(10));
-	Payload.InsertHandoff(FIELD_LEAGUE, CJSONValue(LEAGUE_REGISTERED));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_GAME, CJSONValue(GAME_TYPE));
+	Payload.Insert(FIELD_USERNAME, CJSONValue(m_sUsername));
+	Payload.Insert(FIELD_MAX_GAMES, CJSONValue(10));
+	Payload.Insert(FIELD_LEAGUE, CJSONValue(LEAGUE_REGISTERED));
 	if (m_Session.ServerCommand(METHOD_OPTIONS, FUNC_HIGH_SCORE_GAMES, Payload, &Result) != NOERROR)
 		{
 		*retsResult = Result.AsString();
@@ -860,11 +860,11 @@ ALERROR CHexarcService::ReadProfile (ITaskProcessor *pProcessor, CUserProfile *r
 	//	Read the list of recent games for this user for all registered adventures
 
 	Payload = CJSONValue(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
-	Payload.InsertHandoff(FIELD_GAME, CJSONValue(GAME_TYPE));
-	Payload.InsertHandoff(FIELD_USERNAME, CJSONValue(m_sUsername));
-	Payload.InsertHandoff(FIELD_MAX_GAMES, CJSONValue(10));
-	Payload.InsertHandoff(FIELD_LEAGUE, CJSONValue(LEAGUE_REGISTERED));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_GAME, CJSONValue(GAME_TYPE));
+	Payload.Insert(FIELD_USERNAME, CJSONValue(m_sUsername));
+	Payload.Insert(FIELD_MAX_GAMES, CJSONValue(10));
+	Payload.Insert(FIELD_LEAGUE, CJSONValue(LEAGUE_REGISTERED));
 	if (m_Session.ServerCommand(METHOD_OPTIONS, FUNC_RECENT_GAMES, Payload, &Result) != NOERROR)
 		{
 		*retsResult = Result.AsString();
@@ -894,10 +894,10 @@ ALERROR CHexarcService::ReadProfile (ITaskProcessor *pProcessor, CUserProfile *r
 	//	Read the list of high scores
 
 	Payload = CJSONValue(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
-	Payload.InsertHandoff(FIELD_GAME, CJSONValue(GAME_TYPE));
-	Payload.InsertHandoff(FIELD_MAX_GAMES, CJSONValue(10));
-	Payload.InsertHandoff(FIELD_LEAGUE, CJSONValue(LEAGUE_REGISTERED));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_GAME, CJSONValue(GAME_TYPE));
+	Payload.Insert(FIELD_MAX_GAMES, CJSONValue(10));
+	Payload.Insert(FIELD_LEAGUE, CJSONValue(LEAGUE_REGISTERED));
 	if (m_Session.ServerCommand(METHOD_OPTIONS, FUNC_HIGH_SCORE_GAMES, Payload, &Result) != NOERROR)
 		{
 		*retsResult = Result.AsString();
@@ -950,10 +950,10 @@ ALERROR CHexarcService::RegisterUser (ITaskProcessor *pProcessor, const CString 
 
 	CJSONValue Result;
 	CJSONValue Payload(CJSONValue::typeObject);
-	Payload.InsertHandoff(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
-	Payload.InsertHandoff(FIELD_USERNAME, CJSONValue(sUsername));
+	Payload.Insert(FIELD_API_VERSION, CJSONValue((int)API_VERSION));
+	Payload.Insert(FIELD_USERNAME, CJSONValue(sUsername));
 	Payload.InsertHandoff(FIELD_CREDENTIALS, PasswordHash);
-	Payload.InsertHandoff(FIELD_EMAIL, CJSONValue(sEmail));
+	Payload.Insert(FIELD_EMAIL, CJSONValue(sEmail));
 	if (m_Session.ServerCommand(METHOD_POST, FUNC_REGISTER, Payload, &Result) != NOERROR)
 		{
 		*retsResult = Result.AsString();
@@ -1007,7 +1007,8 @@ bool CHexarcService::Sign (const CJSONValue &Value, CIntegerIP *retSignature)
 
 	//	Sign
 
-	cryptoCreateMAC(CMemoryReadBlockWrapper(Document), SecretKey, retSignature);
+	CMemoryReadBlockWrapper Buffer(Document);
+	cryptoCreateMAC(Buffer, SecretKey, retSignature);
 	return true;
 	}
 
@@ -1044,7 +1045,7 @@ ALERROR CHexarcService::SignInUser (ITaskProcessor *pProcessor, const CString &s
 
 	CJSONValue Result;
 	CJSONValue GetChallenge(CJSONValue::typeObject);
-	GetChallenge.InsertHandoff(FIELD_USERNAME, CJSONValue(m_sUsername));
+	GetChallenge.Insert(FIELD_USERNAME, CJSONValue(m_sUsername));
 	if (!bUseCachedCredentials)
 		GetChallenge.Insert(FIELD_ACTUAL, CJSONValue(CJSONValue::typeTrue));
 
@@ -1076,7 +1077,8 @@ ALERROR CHexarcService::SignInUser (ITaskProcessor *pProcessor, const CString &s
 	//	Generate the proper response
 
 	CJSONValue ChallengeCredentials;
-	if (!CHexarc::ConvertToJSON(CDigest(CBufferReadBlock(strPatternSubst("%s:%s", sPasswordHash, sChallenge))), &ChallengeCredentials))
+	CBufferReadBlock Buffer(strPatternSubst("%s:%s", sPasswordHash, sChallenge));
+	if (!CHexarc::ConvertToJSON(CDigest(Buffer), &ChallengeCredentials))
 		{
 		*retsResult = ERR_CANNOT_DIGEST_PASSWORD;
 		SendServiceError(ERR_SERVER_RESPONSE_ERROR);
@@ -1087,8 +1089,8 @@ ALERROR CHexarcService::SignInUser (ITaskProcessor *pProcessor, const CString &s
 
 	CJSONValue Login(CJSONValue::typeObject);
 	if (!bUseCachedCredentials)
-		Login.InsertHandoff(FIELD_ACTUAL, CJSONValue(CJSONValue::typeTrue));
-	Login.InsertHandoff(FIELD_USERNAME, CJSONValue(m_sUsername));
+		Login.Insert(FIELD_ACTUAL, CJSONValue(CJSONValue::typeTrue));
+	Login.Insert(FIELD_USERNAME, CJSONValue(m_sUsername));
 	Login.InsertHandoff(FIELD_CHALLENGE_CREDENTIALS, ChallengeCredentials);
 	if (m_Session.ServerCommand(METHOD_POST, FUNC_LOGIN, Login, &Result) != NOERROR)
 		{

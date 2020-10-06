@@ -131,7 +131,7 @@
 -->
 	
 	<OverlayType UNID="&ovDamagedSiteSmall;"
-            attributes=         "effect"
+			attributes=         "effect"
 			>
 		<Effect>
 			<ParticleCloud
@@ -153,7 +153,7 @@
 	</OverlayType>
 	
 	<OverlayType UNID="&ovDamagedSiteMedium;"
-            attributes=         "effect"
+			attributes=         "effect"
 			>
 		<Effect>
 			<ParticleCloud
@@ -175,7 +175,7 @@
 	</OverlayType>
 	
 	<OverlayType UNID="&ovDeprezSiteSmall;"
-            attributes=         "effect"
+			attributes=         "effect"
 			>
 		<Effect>
 			<ParticleCloud
@@ -310,16 +310,20 @@
 -->
 
 	<Image UNID="&rsDefaultDockScreenBkgnd;"	bitmap="Resources\DockScreenBackground.jpg"	bitmask="Resources\DockScreenBackgroundMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsDefaultDockScreenMask;"	bitmask="Resources\DockScreenMask.bmp"/>
+	<Image UNID="&rsDefaultDockScreenMask;"		bitmask="Resources\DockScreenMask.bmp"/>
 	
-	<Image UNID="&rsExplosionsAG48;"	bitmap="Resources\Explosions-AG48.jpg"	bitmask="Resources\Explosions-AG48Mask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsExplosionsAG96;"	bitmap="Resources\Explosions-AG96.jpg"	bitmask="Resources\Explosions-AG96Mask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsMediumExplosions;" bitmap="Resources\MediumExplosions.jpg" bitmask="Resources\MediumExplosionsMask.bmp"/>
-	<Image UNID="&rsMediumDamage;"	bitmap="Resources\MediumDamage.jpg"	bitmask="Resources\MediumDamageMask.bmp"/>
-	<Image UNID="&rsMediumHit;"		bitmap="Resources\MediumHit.jpg"		bitmask="Resources\MediumHitMask.bmp"/>
-	<Image UNID="&rsLargeDamage;"	bitmap="Resources\LargeDamage.jpg"	bitmask="Resources\LargeDamageMask.bmp"/>
-	<Image UNID="&rsShieldHit;"		bitmap="Resources\ShieldHit.jpg" bitmask="Resources\ShieldHitMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsExplosionsAG48;"			bitmap="Resources\Explosions-AG48.jpg"	bitmask="Resources\Explosions-AG48Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsExplosionsAG96;"			bitmap="Resources\Explosions-AG96.jpg"	bitmask="Resources\Explosions-AG96Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsMediumExplosions;"			bitmap="Resources\MediumExplosions.jpg" bitmask="Resources\MediumExplosionsMask.bmp"/>
+	<Image UNID="&rsMediumDamage;"				bitmap="Resources\MediumDamage.jpg"	bitmask="Resources\MediumDamageMask.bmp"/>
+	<Image UNID="&rsMediumHit;"					bitmap="Resources\MediumHit.jpg"		bitmask="Resources\MediumHitMask.bmp"/>
+	<Image UNID="&rsLargeDamage;"				bitmap="Resources\LargeDamage.jpg"	bitmask="Resources\LargeDamageMask.bmp"/>
+	<Image UNID="&rsShieldHit;"					bitmap="Resources\ShieldHit.jpg" bitmask="Resources\ShieldHitMask.bmp" loadOnUse="true"/>
 	
-	<Image UNID="&rsDeepSpace;"		bitmap="Resources\DeepSpaceBackground.jpg"	loadOnUse="true"/>
-	
+	<Image UNID="&rsDeepSpace;"					bitmap="Resources\DeepSpaceBackground.jpg"	loadOnUse="true"/>
+
+	<Image UNID="&rsGenericMissionIcon;"		bitmap="Resources\GenericMissionIcon.jpg"	bitmask="Resources\GenericMissionIconMask.bmp"	loadOnUse="true"/>
+
+	<Image UNID="&rsCoreIconBar;"				bitmap="Resources\CoreIconBar.jpg"	bitmask="Resources\CoreIconBarMask.bmp"	loadOnUse="true"/>
+
 </TranscendenceModule>

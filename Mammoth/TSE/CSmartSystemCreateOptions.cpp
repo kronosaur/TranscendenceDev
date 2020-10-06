@@ -23,6 +23,10 @@ ALERROR CSmartSystemCreateOptions::Init (const CXMLElement &XMLDesc)
 		{
 		if (strEquals(sOptional, OPTION_3DEXTRA))
 			m_Ctx.bIs3DExtra = true;
+		else if (CXMLElement::IsBoolTrueValue(sOptional))
+			{
+			//	Ignore. This is used by <Station> to honor station limits.
+			}
 		else
 			{
 			m_Ctx.sError = strPatternSubst(CONSTLIT("Invalid optional: %s"), sOptional);

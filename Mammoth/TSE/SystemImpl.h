@@ -13,6 +13,11 @@ class CAStarPathFinder
 
 		void AddObstacle (const CVector &vUR, const CVector &vLL);
 		int FindPath (const CVector &vStart, const CVector &vEnd, CVector **retPathList, bool bTryReverse = true);
+#ifdef DEBUG_ASTAR_PATH
+		const TArray<CVector> &GetDebugPointsChecked (void) const { return m_PointsChecked; }
+#endif
+
+		static bool LineIntersectsRect (const CVector &vStart, const CVector &vEnd, const CVector &vUR, const CVector &vLL);
 
 	private:
 		struct SObstacle
@@ -46,7 +51,6 @@ class CAStarPathFinder
 		bool IsInClosedList (int x, int y);
 		bool IsPathClear (const CVector &vStart, const CVector &vEnd);
 		bool IsPointClear (const CVector &vPos);
-		bool LineIntersectsRect (const CVector &vStart, const CVector &vEnd, const CVector &vUR, const CVector &vLL);
 		int OptimizePath (const CVector &vEnd, SNode *pFinal, CVector **retPathList);
 		void Reset (void);
 
@@ -58,6 +62,10 @@ class CAStarPathFinder
 		SNodeRoot m_pOpenList;
 		SNodeRoot m_pClosedList;
 		CTileMap *m_pClosedMap;
+
+#ifdef DEBUG_ASTAR_PATH
+		TArray<CVector> m_PointsChecked;
+#endif
 
 #ifdef DEBUG_ASTAR_PERF
 		int m_iCallsToIsPathClear;

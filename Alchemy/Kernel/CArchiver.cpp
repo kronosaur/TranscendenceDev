@@ -241,6 +241,38 @@ ALERROR CArchiver::SaveObject (CObject *pObject)
 	return NOERROR;
 	}
 
+ALERROR CArchiver::SaveObject (CString *pObject)
+
+//	SaveObject
+//
+//	Saves an object to the stream.
+
+	{
+	ALERROR error;
+	int iID;
+
+	//	Write out the object ID
+
+	if (error = Reference2ID(pObject, &iID))
+		return error;
+
+	if (error = m_pStream->Write((char *)&iID, sizeof(iID), NULL))
+		return error;
+
+	//	Write out the ID of object class
+
+	DWORD dwID = OBJID_CSTRING;
+	if (error = WriteData((char *)&dwID, sizeof(DWORD)))
+		return error;
+
+	//	Write the string
+
+	if (error = pObject->SaveHandler(this))
+		return error;
+
+	return NOERROR;
+	}
+
 ALERROR CArchiver::WriteData (char *pData, int iLength)
 
 //	WriteData
@@ -509,6 +541,61 @@ ALERROR CUnarchiver::LoadObject (CObject **retpObject)
 	//	Done
 
 	*retpObject = pObject;
+
+	return NOERROR;
+	}
+
+ALERROR CUnarchiver::LoadObject (CString **retpString)
+
+//	LoadObject
+//
+//	Loads a string.
+
+	{
+	ALERROR error;
+	DWORD dwID, dwReferenceID;
+
+	//	Load the object's instance ID
+
+	if (error = m_pStream->Read((char *)&dwReferenceID, sizeof(DWORD), NULL))
+		return error;
+
+	//	Load the object's class ID
+
+	if (error = m_pStream->Read((char *)&dwID, sizeof(DWORD), NULL))
+		return error;
+
+	//	Create a new object with this ID
+
+	CString *pString = new CString;
+	pString->LoadHandler(this);
+
+	//	Now that we've got the object, associate the ID with the
+	//	pointer. Note that we may need to grow the reference table
+
+	if (dwReferenceID >= (DWORD)m_ReferenceList.GetCount())
+		{
+		int iGrow = 1 + ((int)dwReferenceID - m_ReferenceList.GetCount());
+		int iPos = m_ReferenceList.GetCount();
+		int i;
+
+		if (error = m_ReferenceList.ExpandArray(iPos, iGrow))
+			{
+			delete pString;
+			return error;
+			}
+
+		//	Fill new part of table with -1
+
+		for (i = iPos; i < iPos + iGrow; i++)
+			m_ReferenceList.ReplaceElement(i, -1);
+		}
+
+	m_ReferenceList.ReplaceElement((int)dwReferenceID, (int)pString);
+
+	//	Done
+
+	*retpString = pString;
 
 	return NOERROR;
 	}

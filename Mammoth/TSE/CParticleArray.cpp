@@ -1756,7 +1756,7 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 //	Update particle collisions, including damage
 
 	{
-	int i;
+	CUsePerformanceCounter Counter(Ctx.Universe, CONSTLIT("update.particleCollision"));
 
 	//	We need real coordinates for this
 
@@ -1781,7 +1781,7 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 
 	//	Loop over all objects in the system
 
-	for (i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
+	for (int i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = Ctx.pSystem->GetObject(i);
 
@@ -2000,10 +2000,11 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 				//	Do damage
 
 				SDamageCtx DamageCtx(pObj,
-						Ctx.pDamageDesc,
+						*Ctx.pDamageDesc,
 						Ctx.pEnhancements,
 						Ctx.Attacker,
 						Ctx.pObj,
+						0.0,
 						VectorToPolar(pHit->vHitPos - pObj->GetPos()),
 						pHit->vHitPos,
 						iDamage);

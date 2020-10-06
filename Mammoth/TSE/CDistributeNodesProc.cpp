@@ -94,7 +94,7 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 	//	If we don't have any constraints between nodes then we just
 	//	pick random nodes from the list
 
-	if (m_Criteria.iMinInterNodeDist == 0 && m_Criteria.iMaxInterNodeDist == -1)
+	if (m_Criteria.GetMinInterNodeDist() == 0 && m_Criteria.GetMaxInterNodeDist() == -1)
 		{
 		NewNodeList.Shuffle();
 
@@ -149,8 +149,8 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 			//	Compute how close we are to meeting the criteria (lower numbers
 			//	are better).
 
-			int iMinDiff = (iMin < m_Criteria.iMinInterNodeDist ? m_Criteria.iMinInterNodeDist - iMin : 0);
-			int iMaxDiff = (m_Criteria.iMaxInterNodeDist != -1 && iMax > m_Criteria.iMaxInterNodeDist ? iMax - m_Criteria.iMaxInterNodeDist : 0);
+			int iMinDiff = (iMin < m_Criteria.GetMinInterNodeDist() ? m_Criteria.GetMinInterNodeDist() - iMin : 0);
+			int iMaxDiff = (m_Criteria.GetMaxInterNodeDist() != -1 && iMax > m_Criteria.GetMaxInterNodeDist() ? iMax - m_Criteria.GetMaxInterNodeDist() : 0);
 			int iMatch = (iMinDiff * iMinDiff) + (iMaxDiff * iMaxDiff);
 
 			//	Even if we don't match the criteria, see if this is a better match

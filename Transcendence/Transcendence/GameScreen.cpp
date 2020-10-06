@@ -9,17 +9,6 @@
 #define BEGIN_EXCEPTION_HANDLER		try
 #define END_EXCEPTION_HANDLER		catch (...) { g_pHI->GetScreenMgr().StopDX(); throw; }
 
-#define ARMOR_DISPLAY_WIDTH					360
-#define ARMOR_DISPLAY_HEIGHT				136
-#define ARMOR_DISPLAY_MARGIN_X				8
-#define ARMOR_DISPLAY_MARGIN_Y				8
-
-#define REACTOR_DISPLAY_HEIGHT				64
-#define REACTOR_DISPLAY_WIDTH				256
-
-#define TARGET_DISPLAY_WIDTH				360
-#define TARGET_DISPLAY_HEIGHT				120
-
 #define INVOKE_DISPLAY_WIDTH				200
 #define INVOKE_DISPLAY_HEIGHT				300
 
@@ -65,22 +54,8 @@
 #define SO_BETA_FORMATION					CONSTLIT("Beta formation")
 #define SO_GAMMA_FORMATION					CONSTLIT("Gamma formation")
 
-const int g_WeaponStatusWidth = 350;
-const int g_WeaponStatusHeight = 32;
-
 const int g_MessageDisplayWidth = 400;
 const int g_MessageDisplayHeight = 32;
-
-const int g_iScaleCount = 2;
-const int g_iStellarScale = 0;
-const int g_iPlanetaryScale = 1;
-
-const int MAP_ZOOM_SPEED =					16;
-
-const int LRS_UPDATE_DELAY =				5;
-const int MIN_LRS_SIZE =					200;
-const int LRS_SCALE =						27;
-const CG32bitPixel RGB_LRS_BACKGROUND =		CG32bitPixel(17, 21, 26);
 
 void CTranscendenceWnd::Autopilot (bool bTurnOn)
 
@@ -95,7 +70,6 @@ void CTranscendenceWnd::Autopilot (bool bTurnOn)
 			{
 			if (GetPlayer()->GetShip()->HasAutopilot())
 				{
-				DisplayMessage(CONSTLIT("Autopilot engaged"));
 				m_bAutopilot = true;
 				}
 			else
@@ -103,10 +77,8 @@ void CTranscendenceWnd::Autopilot (bool bTurnOn)
 			}
 		else
 			{
-			DisplayMessage(CONSTLIT("Autopilot disengaged"));
 			m_bAutopilot = false;
 			}
-
 		}
 	}
 
@@ -117,10 +89,10 @@ void CTranscendenceWnd::DisplayMessage (CString sMessage)
 //	Display a message for the player
 
 	{
-	if (m_bRedirectDisplayMessage)
-		m_sRedirectMessage.Append(sMessage);
-	else
-		m_MessageDisplay.DisplayMessage(sMessage, m_Fonts.rgbTitleColor);
+	if (auto pPlayer = GetPlayer())
+		{
+		pPlayer->DisplayMessage(sMessage);
+		}
 	}
 
 void CTranscendenceWnd::DoCommsMenu (int iIndex)
@@ -138,8 +110,6 @@ void CTranscendenceWnd::DoCommsMenu (int iIndex)
 		m_pMenuObj->SetHighlightChar(0);
 		m_pMenuObj = NULL;
 		}
-
-	m_CurrentMenu = menuNone;
 	}
 
 void CTranscendenceWnd::DoCommsSquadronMenu (const CString &sName, MessageTypes iOrder, DWORD dwData2)
@@ -181,8 +151,6 @@ void CTranscendenceWnd::DoCommsSquadronMenu (const CString &sName, MessageTypes 
 				GetPlayer()->Communications(pObj, iOrder, dwData2, &dwFormationPlace);
 			}
 		}
-
-	m_CurrentMenu = menuNone;
 	}
 
 void CTranscendenceWnd::DoEnableDisableItemCommand (DWORD dwData)
@@ -201,65 +169,6 @@ void CTranscendenceWnd::DoEnableDisableItemCommand (DWORD dwData)
 		int iDev = Item.GetInstalled();
 		CInstalledDevice *pDevice = pShip->GetDevice(iDev);
 		pShip->EnableDevice(iDev, !pDevice->IsEnabled());
-		}
-
-	//	Dismiss picker
-
-	m_CurrentPicker = pickNone;
-	}
-
-bool CTranscendenceWnd::DoGameMenuCommand (DWORD dwCmd)
-
-//	DoGameMenuCommand
-//
-//	Do game menu
-
-	{
-	switch (dwCmd)
-		{
-		case CMD_DELETE:
-			m_CurrentMenu = menuNone;
-			g_pHI->HICommand(CONSTLIT("gameEndDelete"));
-
-			//	Kill the session
-
-			return false;
-
-		case CMD_PAUSE:
-			m_CurrentMenu = menuNone;
-			g_pHI->HICommand(CONSTLIT("uiShowHelp"));
-			return true;
-
-		case CMD_REVERT:
-			m_CurrentMenu = menuNone;
-			g_pHI->HICommand(CONSTLIT("gameRevert"));
-			return false;
-
-		case CMD_SAVE:
-			m_CurrentMenu = menuNone;
-			g_pHI->HICommand(CONSTLIT("gameEndSave"));
-
-			//	FALSE means don't try to dismiss the menu because the session has
-			//	been killed.
-
-			return false;
-
-		case CMD_SELF_DESTRUCT:
-			DisplayMessage(CONSTLIT("Warning: Self-Destruct Activated"));
-
-			m_MenuData.SetTitle(CONSTLIT("Self-Destruct"));
-			m_MenuData.RemoveAll();
-			m_MenuData.AddMenuItem(CONSTLIT("1"), CONSTLIT("Confirm"), 0, CMD_CONFIRM);
-			m_MenuData.AddMenuItem(CONSTLIT("2"), CONSTLIT("Cancel"), 0, CMD_CANCEL);
-			m_MenuDisplay.Invalidate();
-			m_CurrentMenu = menuSelfDestructConfirm;
-
-			//	We return FALSE because we're putting up a new menu.
-
-			return false;
-		default:
-			m_CurrentMenu = menuNone;
-			return true;
 		}
 	}
 
@@ -280,28 +189,6 @@ void CTranscendenceWnd::DoInvocation (CPower *pPower)
 			kernelDebugLogString(sError);
 			}
 		}
-
-	m_CurrentMenu = menuNone;
-	}
-
-void CTranscendenceWnd::DoSelfDestructConfirmCommand (DWORD dwCmd)
-
-//	DoSelfDestructConfirmCommand
-//
-//	Confirm self destruct
-
-	{
-	switch (dwCmd)
-		{
-		case CMD_CONFIRM:
-			GetPlayer()->GetShip()->Destroy(killedBySelf, CDamageSource(NULL, killedBySelf));
-			m_CurrentMenu = menuNone;
-			break;
-
-		case CMD_CANCEL:
-			m_CurrentMenu = menuNone;
-			break;
-		}
 	}
 
 void CTranscendenceWnd::DoUseItemCommand (DWORD dwData)
@@ -320,10 +207,6 @@ void CTranscendenceWnd::DoUseItemCommand (DWORD dwData)
 	//	Use it
 
 	GetModel().UseItem(Item);
-
-	//	Dismiss picker
-
-	m_CurrentPicker = pickNone;
 	}
 
 DWORD CTranscendenceWnd::GetCommsStatus (void)
@@ -394,6 +277,17 @@ DWORD CTranscendenceWnd::GetCommsStatus (void)
 	return dwStatus;
 	}
 
+void CTranscendenceWnd::HideCommsMenu (void)
+
+//	HideCommsMenu
+//
+//	Remove all highlight keys
+
+	{
+	if (m_pMenuObj)
+		m_pMenuObj->SetHighlightChar(0);
+	}
+
 void CTranscendenceWnd::HideCommsTargetMenu (CSpaceObject *pExclude)
 
 //	HideCommsTargetMenu
@@ -401,23 +295,11 @@ void CTranscendenceWnd::HideCommsTargetMenu (CSpaceObject *pExclude)
 //	Remove all highlight keys
 
 	{
-	int i;
-
-	if (m_CurrentMenu == menuCommsTarget)
+	for (int i = 0; i < m_MenuData.GetCount(); i++)
 		{
-		for (i = 0; i < m_MenuData.GetCount(); i++)
-			{
-			CSpaceObject *pObj = (CSpaceObject *)m_MenuData.GetItemData(i);
-			if (pObj && pObj != pExclude)
-				pObj->SetHighlightChar(0);
-			}
-
-		m_CurrentMenu = menuNone;
-		}
-	else if (m_CurrentMenu == menuComms)
-		{
-		if (m_pMenuObj)
-			m_pMenuObj->SetHighlightChar(0);
+		CSpaceObject *pObj = (CSpaceObject *)m_MenuData.GetItemData(i);
+		if (pObj && pObj != pExclude)
+			pObj->SetHighlightChar(0);
 		}
 	}
 
@@ -435,30 +317,7 @@ ALERROR CTranscendenceWnd::InitDisplays (void)
 	//
 	//	LATER: These should be obtained form the player ship.
 
-	m_pSRSSnow = g_pUniverse->GetLibraryBitmap(g_SRSSnowImageUNID, CDesignCollection::FLAG_IMAGE_LOCK);
-
-	//	Create LRS
-
-	int iLRSDiameter = Max(MIN_LRS_SIZE, LRS_SCALE * RectHeight(m_rcScreen) / 100);
-	rcRect.left = m_rcScreen.right - iLRSDiameter;
-	rcRect.top = 0;
-	rcRect.right = rcRect.left + iLRSDiameter;
-	rcRect.bottom = rcRect.top + iLRSDiameter;
-	m_LRSDisplay.Init(GetPlayer(), rcRect);
-	m_LRSDisplay.SetSnowImage(m_pSRSSnow);
-	m_LRSDisplay.SetBackgroundColor(RGB_LRS_BACKGROUND);
-
-	//	Create the message display
-
-	rcRect.left = (RectWidth(m_rcScreen) - g_MessageDisplayWidth) / 2;
-	rcRect.right = rcRect.left + g_MessageDisplayWidth;
-	rcRect.top = m_rcScreen.bottom - (RectHeight(m_rcScreen) / 3);
-	rcRect.bottom = rcRect.top + 4 * g_MessageDisplayHeight;
-	m_MessageDisplay.SetRect(rcRect);
-	m_MessageDisplay.SetFont(&m_Fonts.Header);
-	m_MessageDisplay.SetBlinkTime(15);
-	m_MessageDisplay.SetSteadyTime(150);
-	m_MessageDisplay.SetFadeTime(30);
+	m_pSRSSnow = g_pUniverse->GetLibraryBitmap(UNID_SRS_SNOW_PATTERN, CDesignCollection::FLAG_IMAGE_LOCK);
 
 	//	Initialize some displays (these need to be done after we've
 	//	created the universe).
@@ -487,29 +346,6 @@ ALERROR CTranscendenceWnd::InitDisplays (void)
 	m_DeviceDisplay.Init(GetPlayer(), rcRect);
 
 	return NOERROR;
-	}
-
-void CTranscendenceWnd::PaintLRS (void)
-
-//	PaintLRS
-//
-//	Paint the long-range scanner
-
-	{
-	DEBUG_TRY
-
-	CG32bitImage &Screen = g_pHI->GetScreen();
-
-	//	Update the LRS every 10 ticks
-
-	if ((m_iTick % LRS_UPDATE_DELAY) == 0)
-		m_LRSDisplay.Update();
-
-	//	Blt the LRS
-
-	m_LRSDisplay.Paint(Screen);
-
-	DEBUG_CATCH
 	}
 
 void CTranscendenceWnd::PaintMainScreenBorder (CG32bitPixel rgbColor)
@@ -594,7 +430,7 @@ void CTranscendenceWnd::ShowCommsMenu (CSpaceObject *pObj)
 		m_pMenuObj = pObj;
 
 		m_MenuData.SetTitle(m_pMenuObj->GetNounPhrase());
-		m_MenuData.RemoveAll();
+		m_MenuData.DeleteAll();
 
 		int iMsgCount = m_pMenuObj->GetCommsMessageCount();
 		for (i = 0; i < iMsgCount; i++)
@@ -603,523 +439,508 @@ void CTranscendenceWnd::ShowCommsMenu (CSpaceObject *pObj)
 			CString sKey;
 
 			if (m_pMenuObj->IsCommsMessageValidFrom(pShip, i, &sName, &sKey))
-				m_MenuData.AddMenuItem(sKey,
+				m_MenuData.AddMenuItem(NULL_STR,
+						sKey,
 						sName,
 						CMenuData::FLAG_SORT_BY_KEY,
 						i);
 			}
 
 		m_MenuDisplay.Invalidate();
-		m_CurrentMenu = menuComms;
 		}
 	}
 
-void CTranscendenceWnd::ShowCommsSquadronMenu (void)
+bool CTranscendenceWnd::ShowCommsSquadronMenu (void)
 
 //	ShowCommsSquadronMenu
 //
-//	Shows the comms menu for the whole squadron
+//	Shows the comms menu for the whole squadron. Returns FALSE if the menu could
+//	not be shown (e.g., if there is no squadron).
 
 	{
-	if (GetPlayer())
+	if (!GetPlayer())
+		return false;
+
+	m_MenuData.SetTitle(CONSTLIT("Squadron Orders"));
+	m_MenuData.DeleteAll();
+
+	DWORD dwStatus = GetCommsStatus();
+
+	if (dwStatus & resCanAttack)
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("A"), SO_ATTACK_TARGET, 0, msgAttack);
+
+	if (dwStatus & resCanBreakAndAttack)
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("B"), SO_BREAK_AND_ATTACK, 0, msgBreakAndAttack);
+
+	if ((dwStatus & resCanFormUp) || (dwStatus & resCanAbortAttack))
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("F"), SO_FORM_UP, 0, msgFormUp, 0xffffffff);
+
+	if (dwStatus & resCanAttackInFormation)
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("I"), SO_ATTACK_IN_FORMATION, 0, msgAttackInFormation);
+
+	if (dwStatus & resCanWait)
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("W"), SO_WAIT, 0, msgWait);
+
+	if (dwStatus & resCanBeInFormation)
 		{
-		m_MenuData.SetTitle(CONSTLIT("Squadron Orders"));
-		m_MenuData.RemoveAll();
-
-		DWORD dwStatus = GetCommsStatus();
-
-		if (dwStatus & resCanAttack)
-			m_MenuData.AddMenuItem(CONSTLIT("A"), SO_ATTACK_TARGET, 0, msgAttack);
-
-		if (dwStatus & resCanBreakAndAttack)
-			m_MenuData.AddMenuItem(CONSTLIT("B"), SO_BREAK_AND_ATTACK, 0, msgBreakAndAttack);
-
-		if ((dwStatus & resCanFormUp) || (dwStatus & resCanAbortAttack))
-			m_MenuData.AddMenuItem(CONSTLIT("F"), SO_FORM_UP, 0, msgFormUp, 0xffffffff);
-
-		if (dwStatus & resCanAttackInFormation)
-			m_MenuData.AddMenuItem(CONSTLIT("I"), SO_ATTACK_IN_FORMATION, 0, msgAttackInFormation);
-
-		if (dwStatus & resCanWait)
-			m_MenuData.AddMenuItem(CONSTLIT("W"), SO_WAIT, 0, msgWait);
-
-		if (dwStatus & resCanBeInFormation)
-			{
-			m_MenuData.AddMenuItem(CONSTLIT("1"), SO_ALPHA_FORMATION, 0, msgFormUp, 0);
-			m_MenuData.AddMenuItem(CONSTLIT("2"), SO_BETA_FORMATION, 0, msgFormUp, 1);
-			m_MenuData.AddMenuItem(CONSTLIT("3"), SO_GAMMA_FORMATION, 0, msgFormUp, 2);
-			}
-
-		//	Show Menu
-
-		if (m_MenuData.GetCount())
-			{
-			m_MenuDisplay.Invalidate();
-			m_CurrentMenu = menuCommsSquadron;
-			}
-		else
-			{
-			DisplayMessage(CONSTLIT("No carrier signal"));
-			m_CurrentMenu = menuNone;
-			}
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("1"), SO_ALPHA_FORMATION, 0, msgFormUp, 0);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("2"), SO_BETA_FORMATION, 0, msgFormUp, 1);
+		m_MenuData.AddMenuItem(NULL_STR, CONSTLIT("3"), SO_GAMMA_FORMATION, 0, msgFormUp, 2);
 		}
+
+	//	Show Menu
+
+	if (m_MenuData.GetCount() == 0)
+		{
+		DisplayMessage(CONSTLIT("No carrier signal"));
+		return false;
+		}
+
+	m_MenuDisplay.Invalidate();
+	return true;
 	}
 
-void CTranscendenceWnd::ShowCommsTargetMenu (void)
+bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 
 //	ShowCommsTargetMenu
 //
-//	Shows list of objects to communicate with
+//	Shows list of objects to communicate with. Returns FALSE if there are no
+//	targets.
 
 	{
-	int i;
+	if (!GetPlayer())
+		return false;
 
-	if (GetPlayer())
+	CShip *pShip = GetPlayer()->GetShip();
+	m_MenuData.SetTitle(CONSTLIT("Communications"));
+	m_MenuData.DeleteAll();
+
+	//	Keep track of which keys we've used, in case specific objects want
+	//	to use their own keys.
+
+	TSortMap<CString, bool> KeyMap;
+	int iNextKey = 0;
+
+	//	Add the comms key to the list of keys to exclude
+
+	char chCommsKey = m_pTC->GetKeyMap().GetKeyIfChar(CGameKeys::keyCommunications);
+	KeyMap.Insert(CString(&chCommsKey, 1), true);
+
+	//	First add all the objects that are following the player
+
+	CSystem *pSystem = pShip->GetSystem();
+	for (int i = 0; i < pSystem->GetObjectCount(); i++)
 		{
-		CShip *pShip = GetPlayer()->GetShip();
-		m_MenuData.SetTitle(CONSTLIT("Communications"));
-		m_MenuData.RemoveAll();
+		CSpaceObject *pObj = pSystem->GetObject(i);
 
-		//	Keep track of which keys we've used, in case specific objects want
-		//	to use their own keys.
-
-		TSortMap<CString, bool> KeyMap;
-		int iNextKey = 0;
-
-		//	Add the comms key to the list of keys to exclude
-
-		char chCommsKey = m_pTC->GetKeyMap().GetKeyIfChar(CGameKeys::keyCommunications);
-		KeyMap.Insert(CString(&chCommsKey, 1), true);
-
-		//	First add all the objects that are following the player
-
-		CSystem *pSystem = pShip->GetSystem();
-		for (i = 0; i < pSystem->GetObjectCount(); i++)
+		if (pObj 
+				&& pObj->CanCommunicateWith(pShip)
+				&& pObj->GetEscortPrincipal() == pShip
+				&& pObj != pShip)
 			{
-			CSpaceObject *pObj = pSystem->GetObject(i);
-
-			if (pObj 
-					&& pObj->CanCommunicateWith(pShip)
-					&& pObj->GetEscortPrincipal() == pShip
-					&& pObj != pShip)
+			if (m_MenuData.GetCount() < MAX_COMMS_OBJECTS)
 				{
-				if (m_MenuData.GetCount() < MAX_COMMS_OBJECTS)
-					{
-					CString sKey = pObj->GetDesiredCommsKey();
-					if (sKey.IsBlank() || KeyMap.GetAt(sKey) != NULL)
-						sKey = CMenuDisplay::GetHotKeyFromOrdinal(&iNextKey, KeyMap);
-
-					if (!sKey.IsBlank())
-						{
-						m_MenuData.AddMenuItem(sKey,
-								pObj->GetNounPhrase(),
-								CMenuData::FLAG_SORT_BY_KEY,
-								(DWORD)pObj);
-
-						pObj->SetHighlightChar(*sKey.GetASCIIZPointer());
-						KeyMap.SetAt(sKey, true);
-						}
-					}
-				}
-			}
-
-		//	Next, add all other objects
-
-		for (i = 0; i < pSystem->GetObjectCount(); i++)
-			{
-			CSpaceObject *pObj = pSystem->GetObject(i);
-
-			if (pObj 
-					&& pObj->CanCommunicateWith(pShip)
-					&& pObj->GetEscortPrincipal() != pShip
-					&& pObj != pShip)
-				{
-				if (m_MenuData.GetCount() < MAX_COMMS_OBJECTS)
-					{
-					CString sKey = pObj->GetDesiredCommsKey();
-					if (sKey.IsBlank() || KeyMap.GetAt(sKey) != NULL)
-						sKey = CMenuDisplay::GetHotKeyFromOrdinal(&iNextKey, KeyMap);
-
-					if (!sKey.IsBlank())
-						{
-						m_MenuData.AddMenuItem(sKey,
-								pObj->GetNounPhrase(),
-								CMenuData::FLAG_SORT_BY_KEY,
-								(DWORD)pObj);
-
-						pObj->SetHighlightChar(*sKey.GetASCIIZPointer());
-						KeyMap.SetAt(sKey, true);
-						}
-					}
-				}
-			}
-
-		//	Add the squadron option, if necessary
-
-		if ((m_MenuData.GetCount() > 1 && GetCommsStatus() != 0) 
-				|| GetPlayer()->HasFleet())
-			m_MenuData.AddMenuItem(SQUADRON_KEY, SQUADRON_LABEL, 0, 0);
-
-		//	Done
-
-		if (m_MenuData.GetCount())
-			{
-			m_MenuDisplay.Invalidate();
-			m_CurrentMenu = menuCommsTarget;
-			}
-		else
-			{
-			DisplayMessage(CONSTLIT("No carrier signal"));
-			m_CurrentMenu = menuNone;
-			}
-		}
-	}
-
-void CTranscendenceWnd::ShowInvokeMenu (void)
-
-//	ShowInvokeMenu
-//
-//	Shows menu of powers to invoke
-
-	{
-	int i;
-
-	if (GetPlayer())
-		{
-		m_MenuData.SetTitle(CONSTLIT("Invoke Powers"));
-		m_MenuData.RemoveAll();
-
-		bool bUseLetters = m_pTC->GetOptionBoolean(CGameSettings::allowInvokeLetterHotKeys);
-
-		TSortMap<CString, bool> KeyMap;
-		char chInvokeKey = m_pTC->GetKeyMap().GetKeyIfChar(CGameKeys::keyInvokePower);
-		KeyMap.Insert(CString(&chInvokeKey, 1), true);
-
-		//	Add the powers
-
-		for (i = 0; i < g_pUniverse->GetPowerCount(); i++)
-			{
-			CPower *pPower = g_pUniverse->GetPower(i);
-
-			CString sError;
-			if (pPower->OnShow(GetPlayer()->GetShip(), NULL, &sError))
-				{
-				CString sKey = pPower->GetInvokeKey();
-				if (sKey.IsBlank())
-					continue;
-
-				//	If we're the default letter keys, then make sure we don't
-				//	conflict.
-
-				if (bUseLetters)
-					{
-					//	Make sure key is one character long (we use a double-
-					//	letter syntax below).
-
-					sKey.Truncate(1);
-
-					//	If the key conflicts, then pick another key (the next 
-					//	key in the sequence).
-
-					while (!sKey.IsBlank() && KeyMap.GetAt(sKey) != NULL)
-						{
-						char chChar = (*sKey.GetASCIIZPointer()) + 1;
-						if (chChar == ':')
-							chChar = 'A';
-
-						if (chChar <= 'Z')
-							sKey = CString(&chChar, 1);
-						else
-							sKey = NULL_STR;
-						}
-					}
-
-				//	If we're not using letters, then convert to a number
-
-				else
-					{
-					char chLetter = *sKey.GetASCIIZPointer();
-					int iOrdinal = chLetter - 'A';
-
-					//	A double letter means that we really want a letter, so we
-					//	offset to increment past the numbers.
-
-					if (sKey.GetLength() == 2)
-						iOrdinal += 9;
-
-					sKey = CMenuDisplay::GetHotKeyFromOrdinal(&iOrdinal, KeyMap);
-					}
-
-				//	Add the menu. (We check again to see if the key is valid
-				//	because we might have collided and failed to find a substitute.)
+				CString sKey = pObj->GetDesiredCommsKey();
+				if (sKey.IsBlank() || KeyMap.GetAt(sKey) != NULL)
+					sKey = CMenuDisplayOld::GetHotKeyFromOrdinal(&iNextKey, KeyMap);
 
 				if (!sKey.IsBlank())
 					{
-					m_MenuData.AddMenuItem(
+					m_MenuData.AddMenuItem(NULL_STR,
 							sKey,
-							pPower->GetName(),
+							pObj->GetNounPhrase(),
 							CMenuData::FLAG_SORT_BY_KEY,
-							(DWORD)pPower);
+							(DWORD)pObj);
 
-					KeyMap.Insert(sKey, true);
+					pObj->SetHighlightChar(*sKey.GetASCIIZPointer());
+					KeyMap.SetAt(sKey, true);
+					}
+				}
+			}
+		}
+
+	//	Next, add all other objects
+
+	for (int i = 0; i < pSystem->GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = pSystem->GetObject(i);
+
+		if (pObj 
+				&& pObj->CanCommunicateWith(pShip)
+				&& pObj->GetEscortPrincipal() != pShip
+				&& pObj != pShip)
+			{
+			if (m_MenuData.GetCount() < MAX_COMMS_OBJECTS)
+				{
+				CString sKey = pObj->GetDesiredCommsKey();
+				if (sKey.IsBlank() || KeyMap.GetAt(sKey) != NULL)
+					sKey = CMenuDisplayOld::GetHotKeyFromOrdinal(&iNextKey, KeyMap);
+
+				if (!sKey.IsBlank())
+					{
+					m_MenuData.AddMenuItem(NULL_STR,
+							sKey,
+							pObj->GetNounPhrase(),
+							CMenuData::FLAG_SORT_BY_KEY,
+							(DWORD)pObj);
+
+					pObj->SetHighlightChar(*sKey.GetASCIIZPointer());
+					KeyMap.SetAt(sKey, true);
+					}
+				}
+			}
+		}
+
+	//	Add the squadron option, if necessary
+
+	if ((m_MenuData.GetCount() > 1 && GetCommsStatus() != 0) 
+			|| GetPlayer()->HasFleet())
+		m_MenuData.AddMenuItem(NULL_STR, SQUADRON_KEY, SQUADRON_LABEL, 0, 0);
+
+	//	Done
+
+	if (m_MenuData.GetCount() == 0)
+		{
+		DisplayMessage(CONSTLIT("No carrier signal"));
+		return false;
+		}
+
+	m_MenuDisplay.Invalidate();
+	return true;
+	}
+
+bool CTranscendenceWnd::ShowInvokeMenu (void)
+
+//	ShowInvokeMenu
+//
+//	Shows menu of powers to invoke. Returns FALSE if no powers to invoke.
+
+	{
+	if (!GetPlayer())
+		return false;
+
+	m_MenuData.SetTitle(CONSTLIT("Invoke Powers"));
+	m_MenuData.DeleteAll();
+
+	bool bUseLetters = m_pTC->GetOptionBoolean(CGameSettings::allowInvokeLetterHotKeys);
+
+	TSortMap<CString, bool> KeyMap;
+	char chInvokeKey = m_pTC->GetKeyMap().GetKeyIfChar(CGameKeys::keyInvokePower);
+	KeyMap.Insert(CString(&chInvokeKey, 1), true);
+
+	//	Add the powers
+
+	for (int i = 0; i < g_pUniverse->GetPowerCount(); i++)
+		{
+		CPower *pPower = g_pUniverse->GetPower(i);
+
+		CString sError;
+		if (pPower->OnShow(GetPlayer()->GetShip(), NULL, &sError))
+			{
+			CString sKey = pPower->GetInvokeKey();
+			if (sKey.IsBlank())
+				continue;
+
+			//	If we're the default letter keys, then make sure we don't
+			//	conflict.
+
+			if (bUseLetters)
+				{
+				//	Make sure key is one character long (we use a double-
+				//	letter syntax below).
+
+				sKey.Truncate(1);
+
+				//	If the key conflicts, then pick another key (the next 
+				//	key in the sequence).
+
+				while (!sKey.IsBlank() && KeyMap.GetAt(sKey) != NULL)
+					{
+					char chChar = (*sKey.GetASCIIZPointer()) + 1;
+					if (chChar == ':')
+						chChar = 'A';
+
+					if (chChar <= 'Z')
+						sKey = CString(&chChar, 1);
+					else
+						sKey = NULL_STR;
 					}
 				}
 
-			if (!sError.IsBlank())
+			//	If we're not using letters, then convert to a number
+
+			else
 				{
-				DisplayMessage(sError);
-				return;
+				char chLetter = *sKey.GetASCIIZPointer();
+				int iOrdinal = chLetter - 'A';
+
+				//	A double letter means that we really want a letter, so we
+				//	offset to increment past the numbers.
+
+				if (sKey.GetLength() == 2)
+					iOrdinal += 9;
+
+				sKey = CMenuDisplayOld::GetHotKeyFromOrdinal(&iOrdinal, KeyMap);
+				}
+
+			//	Add the menu. (We check again to see if the key is valid
+			//	because we might have collided and failed to find a substitute.)
+
+			if (!sKey.IsBlank())
+				{
+				m_MenuData.AddMenuItem(NULL_STR,
+						sKey,
+						pPower->GetName(),
+						CMenuData::FLAG_SORT_BY_KEY,
+						(DWORD)pPower);
+
+				KeyMap.Insert(sKey, true);
 				}
 			}
 
-		//	If no powers are available, say so
-
-		if (m_MenuData.GetCount() == 0)
+		if (!sError.IsBlank())
 			{
-			DisplayMessage(CONSTLIT("No Powers available"));
-			return;
+			DisplayMessage(sError);
+			return false;
 			}
-
-		//	Show menu
-
-		m_MenuDisplay.Invalidate();
-		m_CurrentMenu = menuInvoke;
 		}
+
+	//	If no powers are available, say so
+
+	if (m_MenuData.GetCount() == 0)
+		{
+		DisplayMessage(CONSTLIT("No Powers available"));
+		return false;
+		}
+
+	//	Show menu
+
+	m_MenuDisplay.Invalidate();
+	return true;
 	}
 
-void CTranscendenceWnd::ShowEnableDisablePicker (void)
+bool CTranscendenceWnd::ShowEnableDisablePicker (void)
 
 //	ShowEnableDisablePicker
 //
-//	Show the picker to select devices to enable/disable
+//	Show the picker to select devices to enable/disable. Returns FALSE if there
+//	are no devices to enable/disable.
 
 	{
-	int i;
+	if (!GetPlayer())
+		return false;
 
-	if (GetPlayer())
+	CShip *pShip = GetPlayer()->GetShip();
+
+	//	Fill the menu with all usable items
+
+	m_MenuData.DeleteAll();
+
+	CItemList &List = pShip->GetItemList();
+	List.SortItems();
+
+	char chKey = '1';
+	for (int i = 0; i < List.GetCount(); i++)
 		{
-		CShip *pShip = GetPlayer()->GetShip();
+		CItem &Item = List.GetItem(i);
+		CItemType *pType = Item.GetType();
+		CInstalledDevice *pDevice = pShip->FindDevice(Item);
+		CItemCtx ItemCtx(&Item, pShip, pDevice);
 
-		//	Fill the menu with all usable items
-
-		m_MenuData.RemoveAll();
-
-		CItemList &List = pShip->GetItemList();
-		List.SortItems();
-
-		char chKey = '1';
-		for (i = 0; i < List.GetCount(); i++)
+		if (pDevice && pDevice->CanBeDisabled(ItemCtx))
 			{
-			CItem &Item = List.GetItem(i);
-			CItemType *pType = Item.GetType();
-			CInstalledDevice *pDevice = pShip->FindDevice(Item);
-			CItemCtx ItemCtx(&Item, pShip, pDevice);
-
-			if (pDevice && pDevice->CanBeDisabled(ItemCtx))
-				{
-				//	Name of item
-
-				CString sName;
-				if (pDevice->IsEnabled())
-					sName = strPatternSubst(CONSTLIT("Disable %s"), Item.GetNounPhrase());
-				else
-					sName = strPatternSubst(CONSTLIT("Enable %s"), Item.GetNounPhrase());
-
-				//	Extra
-
-				CString sExtra;
-				if (pDevice->IsEnabled())
-					sExtra = CONSTLIT("[Enter] to disable; [Arrows] to select");
-				else
-					sExtra = CONSTLIT("[Enter] to enable; [Arrows] to select");
-
-				//	Key
-
-				CString sKey(&chKey, 1);
-
-				//	Add the item
-
-				m_MenuData.AddMenuItem(sKey,
-						sName,
-						&pType->GetImage(),
-						sExtra,
-						(pDevice->IsEnabled() ? 0 : CMenuData::FLAG_GRAYED),
-						i);
-
-				//	Next key
-
-				if (chKey == '9')
-					chKey = 'A';
-				else
-					chKey++;
-				}
-			}
-
-		//	If we've got items, then show the picker...
-
-		if (m_MenuData.GetCount() > 0)
-			{
-			m_PickerDisplay.ResetSelection();
-			m_PickerDisplay.Invalidate();
-			m_PickerDisplay.SetHelpText(NULL_STR);
-			m_CurrentPicker = pickEnableDisableItem;
-			}
-
-		//	Otherwise, message
-
-		else
-			DisplayMessage(CONSTLIT("No installed devices"));
-		}
-	}
-
-void CTranscendenceWnd::ShowGameMenu (void)
-
-//	ShowGameMenu
-//
-//	Show the game menu
-
-	{
-	m_MenuData.SetTitle(CONSTLIT("Transcendence"));
-	m_MenuData.RemoveAll();
-	m_MenuData.AddMenuItem(CONSTLIT("1"), CONSTLIT("Help [F1]"), 0, CMD_PAUSE);
-	m_MenuData.AddMenuItem(CONSTLIT("2"), CONSTLIT("Save & Quit"), 0, CMD_SAVE);
-	m_MenuData.AddMenuItem(CONSTLIT("3"), CONSTLIT("Self-Destruct"), 0, CMD_SELF_DESTRUCT);
-
-	//	Debug mode includes more special functions
-
-	if (g_pUniverse->InDebugMode())
-		{
-		m_MenuData.AddMenuItem(CONSTLIT("9"), CONSTLIT("Revert"), 0, CMD_REVERT);
-		m_MenuData.AddMenuItem(CONSTLIT("0"), CONSTLIT("Delete & Quit"), 0, CMD_DELETE);
-		}
-	m_MenuDisplay.Invalidate();
-	m_CurrentMenu = menuGame;
-	}
-
-void CTranscendenceWnd::ShowUsePicker (void)
-
-//	ShowUsePicker
-//
-//	Show the picker to select an item to use
-
-	{
-	int i, j;
-
-	if (GetPlayer())
-		{
-		CShip *pShip = GetPlayer()->GetShip();
-		char chUseKey = m_pTC->GetKeyMap().GetKeyIfChar(CGameKeys::keyUseItem);
-
-		//	Fill the menu with all usable items
-
-		m_MenuData.RemoveAll();
-
-		CItemList &List = pShip->GetItemList();
-		List.SortItems();
-
-		//	Generate a sorted list of items
-
-		TSortMap<CString, int> SortedList;
-		for (i = 0; i < List.GetCount(); i++)
-			{
-			CItem &Item = List.GetItem(i);
-			CItemType *pType = Item.GetType();
-			CItemCtx ItemCtx(&Item, pShip);
-
-			//	See if we can use this item, and get the use key
-
-			CString sUseKey;
-			if (!Item.CanBeUsed(&sUseKey))
-				continue;
-
-			//	Add to the list
-
-			bool bHasUseKey = (Item.IsKnown() && !sUseKey.IsBlank() && (*sUseKey.GetASCIIZPointer() != chUseKey));
-
-			//	Any items without use keys sort first (so that they are easier
-			//	to access).
-			//
-			//	Then we sort by level (higher-level first)
-			//
-			//	Then we sort by natural order
-			//
-			//	For items that use charges, we expand if there are multiple
-
-			if (pType->ShowChargesInUseMenu() && Item.IsKnown())
-				{
-				for (j = 0; j < Item.GetCount(); j++)
-					{
-					SortedList.Insert(strPatternSubst(CONSTLIT("%d%s%04d%04d"),
-								(bHasUseKey ? 1 : 0),
-								(bHasUseKey ? strPatternSubst(CONSTLIT("%s0"), sUseKey) : strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - Item.GetLevel())),
-								i, j),
-							i);
-					}
-				}
-			else
-				SortedList.Insert(strPatternSubst(CONSTLIT("%d%s%04d%04d"),
-							(bHasUseKey ? 1 : 0),
-							(bHasUseKey ? strPatternSubst(CONSTLIT("%s0"), sUseKey) : strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - Item.GetLevel())),
-							i, 0),
-						i);
-			}
-
-		//	Now add all the items to the menu
-
-		for (i = 0; i < SortedList.GetCount(); i++)
-			{
-			CString sSort = SortedList.GetKey(i);
-			CItem &Item = List.GetItem(SortedList.GetValue(i));
-			CItemType *pType = Item.GetType();
-
-			CItemType::SUseDesc UseDesc;
-			if (!pType->GetUseDesc(&UseDesc))
-				continue;
-
-			CString sCount;
-			if (pType->ShowChargesInUseMenu() && Item.IsKnown())
-				sCount = strFromInt(Item.GetCharges());
-			else if (Item.GetCount() > 1)
-				sCount = strFromInt(Item.GetCount());
-
-			//	Show the key only if the item is identified
-
-			CString sKey;
-			if (Item.IsKnown() && (*UseDesc.sUseKey.GetASCIIZPointer() != chUseKey))
-				sKey = UseDesc.sUseKey;
-
 			//	Name of item
 
-			CString sName = Item.GetNounPhrase();
-			if (Item.IsInstalled())
-				sName.Append(STR_INSTALLED);
-			sName = strPatternSubst(CONSTLIT("Use %s"), sName);
+			CString sName;
+			if (pDevice->IsEnabled())
+				sName = strPatternSubst(CONSTLIT("Disable %s"), Item.GetNounPhrase());
+			else
+				sName = strPatternSubst(CONSTLIT("Enable %s"), Item.GetNounPhrase());
+
+			//	Extra
+
+			CString sExtra;
+			if (!pDevice->IsEnabled())
+				sExtra = CONSTLIT("Disabled");
+
+			//	Help
+
+			CString sHelp;
+			if (pDevice->IsEnabled())
+				sHelp = CONSTLIT("[Enter] to disable; [Arrows] to select");
+			else
+				sHelp = CONSTLIT("[Enter] to enable; [Arrows] to select");
+
+			//	Key
+
+			CString sKey(&chKey, 1);
 
 			//	Add the item
 
-			m_MenuData.AddMenuItem(sKey,
+			m_MenuData.AddMenuItem(NULL_STR,
+					sKey,
 					sName,
 					&pType->GetImage(),
-					sCount,
 					0,
-					SortedList.GetValue(i));
+					sExtra,
+					sHelp,
+					(pDevice->IsEnabled() ? 0 : CMenuData::FLAG_GRAYED),
+					i);
+
+			//	Next key
+
+			if (chKey == '9')
+				chKey = 'A';
+			else
+				chKey++;
 			}
-
-		//	If we've got items, then show the picker...
-
-		if (m_MenuData.GetCount() > 0)
-			{
-			GetPlayer()->SetUIMessageEnabled(uimsgUseItemHint, false);
-			m_PickerDisplay.ResetSelection();
-			m_PickerDisplay.SetHelpText(CONSTLIT("[Enter] to use; [Arrows] to select"));
-			m_PickerDisplay.Invalidate();
-			m_CurrentPicker = pickUsableItem;
-			}
-
-		//	Otherwise, message
-
-		else
-			DisplayMessage(CONSTLIT("No usable items"));
 		}
+
+	//	If we've got items, then show the picker...
+
+	if (m_MenuData.GetCount() == 0)
+		{
+		DisplayMessage(CONSTLIT("No installed devices"));
+		return false;
+		}
+
+	m_PickerDisplay.ResetSelection();
+	m_PickerDisplay.Invalidate();
+	m_PickerDisplay.SetHelpText(NULL_STR);
+	return true;
 	}
 
+bool CTranscendenceWnd::ShowUsePicker (void)
+
+//	ShowUsePicker
+//
+//	Show the picker to select an item to use. Returns FALSE if there are no 
+//	items to use.
+
+	{
+	if (!GetPlayer())
+		return false;
+
+	CShip *pShip = GetPlayer()->GetShip();
+	char chUseKey = m_pTC->GetKeyMap().GetKeyIfChar(CGameKeys::keyUseItem);
+
+	//	Fill the menu with all usable items
+
+	m_MenuData.DeleteAll();
+
+	CItemList &List = pShip->GetItemList();
+	List.SortItems();
+
+	//	Generate a sorted list of items
+
+	TSortMap<CString, int> SortedList;
+	for (int i = 0; i < List.GetCount(); i++)
+		{
+		CItem &Item = List.GetItem(i);
+		CItemType *pType = Item.GetType();
+		CItemCtx ItemCtx(&Item, pShip);
+
+		//	See if we can use this item, and get the use key
+
+		CString sUseKey;
+		if (!Item.CanBeUsed(&sUseKey))
+			continue;
+
+		//	Add to the list
+
+		bool bHasUseKey = (Item.IsKnown() && !sUseKey.IsBlank() && (*sUseKey.GetASCIIZPointer() != chUseKey));
+
+		//	Any items without use keys sort first (so that they are easier
+		//	to access).
+		//
+		//	Then we sort by level (higher-level first)
+		//
+		//	Then we sort by natural order
+		//
+		//	For items that use charges, we expand if there are multiple
+
+		if (pType->ShowChargesInUseMenu() && Item.IsKnown())
+			{
+			for (int j = 0; j < Item.GetCount(); j++)
+				{
+				SortedList.Insert(strPatternSubst(CONSTLIT("%d%s%04d%04d"),
+							(bHasUseKey ? 1 : 0),
+							(bHasUseKey ? strPatternSubst(CONSTLIT("%s0"), sUseKey) : strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - Item.GetLevel())),
+							i, j),
+						i);
+				}
+			}
+		else
+			SortedList.Insert(strPatternSubst(CONSTLIT("%d%s%04d%04d"),
+						(bHasUseKey ? 1 : 0),
+						(bHasUseKey ? strPatternSubst(CONSTLIT("%s0"), sUseKey) : strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - Item.GetLevel())),
+						i, 0),
+					i);
+		}
+
+	//	Now add all the items to the menu
+
+	for (int i = 0; i < SortedList.GetCount(); i++)
+		{
+		CString sSort = SortedList.GetKey(i);
+		CItem &Item = List.GetItem(SortedList.GetValue(i));
+		CItemType *pType = Item.GetType();
+
+		CItemType::SUseDesc UseDesc;
+		if (!pType->GetUseDesc(&UseDesc))
+			continue;
+
+		int iCount;
+		if (pType->ShowChargesInUseMenu() && Item.IsKnown())
+			iCount = Item.GetCharges();
+		else if (Item.GetCount() > 1)
+			iCount = Item.GetCount();
+		else
+			iCount = 0;
+
+		//	Installed
+
+		CString sExtra;
+		if (Item.IsInstalled())
+			sExtra = CONSTLIT("Installed");
+
+		//	Show the key only if the item is identified
+
+		CString sKey;
+		if (Item.IsKnown() && (*UseDesc.sUseKey.GetASCIIZPointer() != chUseKey))
+			sKey = UseDesc.sUseKey;
+
+		//	Name of item
+
+		CString sName = Item.GetNounPhrase();
+		sName = strPatternSubst(CONSTLIT("Use %s"), sName);
+
+		//	Add the item
+
+		m_MenuData.AddMenuItem(NULL_STR,
+				sKey,
+				sName,
+				&pType->GetImage(),
+				iCount,
+				sExtra,
+				NULL_STR,
+				0,
+				SortedList.GetValue(i));
+		}
+
+	//	If no items, then no menu
+
+	if (m_MenuData.GetCount() == 0)
+		{
+		DisplayMessage(CONSTLIT("No usable items"));
+		return false;
+		}
+
+	//	Otherwise, show picker
+
+	GetPlayer()->SetUIMessageFollowed(uimsgUseItemHint);
+	m_PickerDisplay.ResetSelection();
+	m_PickerDisplay.SetHelpText(CONSTLIT("[Enter] to use; [Arrows] to select"));
+	m_PickerDisplay.Invalidate();
+	return true;
+	}

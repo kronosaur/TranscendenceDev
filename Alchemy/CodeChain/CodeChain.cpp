@@ -47,14 +47,13 @@ CCodeChain::~CCodeChain (void)
 	CleanUp();
 	}
 
-ICCItem *CCodeChain::Apply (ICCItem *pFunc, ICCItem *pArgs, LPVOID pExternalCtx)
+ICCItemPtr CCodeChain::Apply (const ICCItem &Func, ICCItem &Args, const SRunOptions &Options)
 
 //	Apply
 //
 //	Runs the given function with the given arguments
 
 	{
-	ICCItem *pResult;
 	CEvalContext EvalCtx;
 
 	//	Set up the context
@@ -62,16 +61,24 @@ ICCItem *CCodeChain::Apply (ICCItem *pFunc, ICCItem *pArgs, LPVOID pExternalCtx)
 	EvalCtx.pCC = this;
 	EvalCtx.pLexicalSymbols = m_pGlobalSymbols;
 	EvalCtx.pLocalSymbols = NULL;
-	EvalCtx.pExternalCtx = pExternalCtx;
+	EvalCtx.bStrict = Options.bStrict;
+	EvalCtx.pExternalCtx = Options.pExternalCtx;
 
 	//	Evalute the actual code
 
-	pArgs->SetQuoted();
+	Args.SetQuoted();
 
-	if (pFunc->IsFunction())
-		pResult = pFunc->Execute(&EvalCtx, pArgs);
+	ICCItemPtr pResult;
+	if (Func.IsFunction())
+		{
+		//	We're not yet ready to pull on the const thread in CodeChain:
+
+		ICCItem *pFunc = &const_cast<ICCItem &>(Func);
+
+		pResult = ICCItemPtr(pFunc->Execute(&EvalCtx, &Args));
+		}
 	else
-		pResult = pFunc->Reference();
+		pResult = ICCItemPtr(Func);
 
 	return pResult;
 	}
@@ -148,7 +155,7 @@ ICCItem *CCodeChain::CreateBool (bool bValue)
 		return CreateNil();
 	}
 
-ICCItem *CCodeChain::CreateError (const CString &sError, ICCItem *pData)
+ICCItem *CCodeChain::CreateError (const CString &sError, const ICCItem *pData)
 
 //	CreateError
 //
@@ -158,25 +165,7 @@ ICCItem *CCodeChain::CreateError (const CString &sError, ICCItem *pData)
 //	pData: Item that caused error.
 
 	{
-	ICCItem *pError;
-	CString sArg;
-	CString sErrorLine;
-
-	//	Convert the argument to a string
-
-	if (pData)
-		{
-		sArg = pData->Print();
-		sErrorLine = strPatternSubst(LITERAL("%s [%s]"), sError, sArg);
-		}
-	else
-		sErrorLine = sError;
-
-	//	Create the error
-
-	pError = CreateString(sErrorLine);
-	pError->SetError();
-	return pError;
+	return ICCItemPtr::Error(sError, pData)->Reference();
 	}
 
 ICCItem *CCodeChain::CreateErrorCode (int iErrorCode)
@@ -305,27 +294,27 @@ ICCItem *CCodeChain::CreateNumber (double dValue)
 		return CreateDouble(dValue);
 	}
 
-ICCItem *CCodeChain::CreateDoubleIfPossible (const CString &sString)
+ICCItemPtr CCodeChain::CreateDoubleIfPossible (const CString &sString)
 	{
 	bool bFailed;
 	double rValue = strToDouble(sString, 0.0, &bFailed);
 	if (bFailed)
-		return CreateString(sString);
+		return ICCItemPtr(CreateString(sString));
 	else
-		return CreateDouble(rValue);
+		return ICCItemPtr(CreateDouble(rValue));
 	}
 
-ICCItem *CCodeChain::CreateIntegerIfPossible (const CString &sString)
+ICCItemPtr CCodeChain::CreateIntegerIfPossible (const CString &sString)
 	{
 	bool bFailed;
 	int iValue = strToInt(sString, 0, &bFailed);
 	if (bFailed)
-		return CreateString(sString);
+		return ICCItemPtr(CreateString(sString));
 	else
-		return CreateInteger(iValue);
+		return ICCItemPtr(CreateInteger(iValue));
 	}
 
-ICCItem *CCodeChain::CreateLiteral (const CString &sString)
+ICCItemPtr CCodeChain::CreateLiteral (const CString &sString)
 
 //	CreateLiteral
 //
@@ -353,18 +342,18 @@ ICCItem *CCodeChain::CreateLiteral (const CString &sString)
 			{
 			case stateStart:
 				if (pPos >= pPosEnd)
-					return CreateString(sString);
+					return ICCItemPtr(CreateString(sString));
 				else if (*pPos == '0')
 					iState = stateZero;
 				else if ((*pPos >= '0' && *pPos <= '9') || *pPos == '-' || *pPos == '+')
 					iState = stateNumber;
 				else
-					return CreateString(sString);
+					return ICCItemPtr(CreateString(sString));
 				break;
 
 			case stateZero:
 				if (pPos >= pPosEnd)
-					return CreateInteger(0);
+					return ICCItemPtr(CreateInteger(0));
 				else if (*pPos >= '0' && *pPos <= '9')
 					iState = stateNumber;
 				else if (*pPos == '.')
@@ -374,7 +363,7 @@ ICCItem *CCodeChain::CreateLiteral (const CString &sString)
 				else if (*pPos == 'x' || *pPos == 'X')
 					iState = stateHex;
 				else
-					return CreateString(sString);
+					return ICCItemPtr(CreateString(sString));
 				break;
 
 			case stateNumber:
@@ -387,7 +376,7 @@ ICCItem *CCodeChain::CreateLiteral (const CString &sString)
 				else if (*pPos == 'e' || *pPos == 'E')
 					iState = stateExponent;
 				else
-					return CreateString(sString);
+					return ICCItemPtr(CreateString(sString));
 				break;
 
 			case stateHex:
@@ -400,7 +389,7 @@ ICCItem *CCodeChain::CreateLiteral (const CString &sString)
 				else if (*pPos >= 'A' && *pPos <= 'F')
 					;
 				else
-					return CreateString(sString);
+					return ICCItemPtr(CreateString(sString));
 				break;
 
 			case stateDecimal:
@@ -411,18 +400,18 @@ ICCItem *CCodeChain::CreateLiteral (const CString &sString)
 				else if (*pPos == 'e' || *pPos == 'E')
 					iState = stateExponent;
 				else
-					return CreateString(sString);
+					return ICCItemPtr(CreateString(sString));
 				break;
 
 			case stateExponent:
 				if (pPos >= pPosEnd)
-					return CreateString(sString);
+					return ICCItemPtr(CreateString(sString));
 				else if (*pPos == '+' || *pPos == '-')
 					iState = stateExponentDigits;
 				else if (*pPos >= '0' && *pPos <= '9')
 					iState = stateExponentDigits;
 				else
-					return CreateString(sString);
+					return ICCItemPtr(CreateString(sString));
 				break;
 
 			case stateExponentDigits:
@@ -431,12 +420,12 @@ ICCItem *CCodeChain::CreateLiteral (const CString &sString)
 				else if (*pPos >= '0' && *pPos <= '9')
 					;
 				else
-					return CreateString(sString);
+					return ICCItemPtr(CreateString(sString));
 				break;
 
 			default:
 				ASSERT(false);
-				return CreateString(sString);
+				return ICCItemPtr(CreateString(sString));
 			}
 
 		pPos++;
@@ -772,6 +761,10 @@ ICCItem *CCodeChain::Eval (CEvalContext *pEvalCtx, ICCItem *pItem)
 //	Evaluates the given item and returns a result
 
 	{
+	ASSERT(pItem);
+	if (!pItem)
+		return CreateNil();
+
 	//	Errors always evaluate to themselves
 
 	if (pItem->IsError())
@@ -785,7 +778,7 @@ ICCItem *CCodeChain::Eval (CEvalContext *pEvalCtx, ICCItem *pItem)
 		//	values.
 
 		if (pItem->IsSymbolTable())
-			return EvalLiteralStruct(pEvalCtx, pItem);
+			return EvalLiteralStruct(pEvalCtx, *pItem)->Reference();
 
 		//	HACK: We clone the item so that when we try to modify a literal list we
 		//	mody a copy instead of the original.
@@ -804,7 +797,7 @@ ICCItem *CCodeChain::Eval (CEvalContext *pEvalCtx, ICCItem *pItem)
 	//	is a list, try to evaluate as a function
 
 	else if (pItem->IsIdentifier())
-		return Lookup(pEvalCtx, pItem);
+		return Lookup(pEvalCtx, *pItem)->Reference();
 
 	//	If this is an expression (a list with multiple terms) then we
 	//	try to evaluate it.
@@ -828,7 +821,7 @@ ICCItem *CCodeChain::Eval (CEvalContext *pEvalCtx, ICCItem *pItem)
 		//	in the global symbols
 
 		if (pFunctionName->IsIdentifier())
-			pFunction = LookupFunction(pEvalCtx, pFunctionName);
+			pFunction = LookupFunction(pEvalCtx, *pFunctionName)->Reference();
 
 		//	Otherwise, evaluate it
 
@@ -889,7 +882,7 @@ ICCItem *CCodeChain::Eval (CEvalContext *pEvalCtx, ICCItem *pItem)
 		return pItem->Reference();
 	}
 
-ICCItem *CCodeChain::EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem)
+ICCItemPtr CCodeChain::EvalLiteralStruct (CEvalContext *pCtx, ICCItem &Item)
 
 //	EvalLiteralStruct
 //
@@ -897,38 +890,31 @@ ICCItem *CCodeChain::EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem)
 //	(or an error).
 
 	{
-	int i;
-
-	CCSymbolTable *pTable = dynamic_cast<CCSymbolTable *>(pItem);
-	if (pTable == NULL)
-		return CreateError(CONSTLIT("Not a structure"), pItem);
-
-	ICCItem *pNew = CreateSymbolTable();
+	ICCItemPtr pNew(ICCItem::SymbolTable);
 	if (pNew->IsError())
 		return pNew;
 
-	CCSymbolTable *pNewTable = dynamic_cast<CCSymbolTable *>(pNew);
-
 	//	Loop over all key/value pairs
 
-	for (i = 0; i < pTable->GetCount(); i++)
+	for (int i = 0; i < Item.GetCount(); i++)
 		{
-		CString sKey = pTable->GetKey(i);
-		ICCItem *pValue = pTable->GetElement(i);
+		CString sKey = Item.GetKey(i);
+		ICCItem *pValue = Item.GetElement(i);
+		if (!pValue)
+			continue;
 
-		ICCItem *pNewKey = CreateString(sKey);
-		ICCItem *pNewValue = (pValue ? Eval(pCtx, pValue) : CreateNil());
+		ICCItemPtr pNewValue(Eval(pCtx, pValue));
+		if (pCtx->bStrict && pNewValue->IsError())
+			return pNewValue;
 
+		ICCItemPtr pNewKey(sKey);
 		if (!pNewValue->IsNil())
-			pNewTable->AddEntry(pNewKey, pNewValue);
-
-		pNewKey->Discard();
-		pNewValue->Discard();
+			pNew->AddEntry(pNewKey, pNewValue);
 		}
 
 	//	Done
 
-	return pNewTable;
+	return pNew;
 	}
 
 ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CString &sArgValidation)
@@ -1298,7 +1284,7 @@ bool CCodeChain::HasIdentifier (ICCItem *pCode, const CString &sIdentifier)
 		}
 	}
 
-ICCItemPtr CCodeChain::IncValue (ICCItem *pValue, ICCItem *pInc)
+ICCItemPtr CCodeChain::IncValue (ICCItem *pValue, const ICCItem *pInc)
 
 //	IncValue
 //
@@ -1351,20 +1337,16 @@ ICCItem *CCodeChain::ListGlobals (void)
 	return m_pGlobalSymbols->ListSymbols(this);
 	}
 
-ICCItem *CCodeChain::Lookup (CEvalContext *pCtx, ICCItem *pItem)
+ICCItemPtr CCodeChain::Lookup (CEvalContext *pCtx, ICCItem &Item)
 
 //	Lookup
 //
 //	Returns the binding for this item
 
 	{
-	ICCItem *pBinding = NULL;
-	bool bFound;
-	ICCItem *pStart;
-	int iFrame, iOffset;
-
 	//	Start somewhere
 
+	ICCItem *pStart;
 	if (pCtx->pLocalSymbols)
 		pStart = pCtx->pLocalSymbols;
 	else
@@ -1372,7 +1354,8 @@ ICCItem *CCodeChain::Lookup (CEvalContext *pCtx, ICCItem *pItem)
 
 	//	If this item already has been resolved, do a quick lookup
 
-	if (pItem->GetBinding(&iFrame, &iOffset))
+	int iFrame, iOffset;
+	if (Item.GetBinding(&iFrame, &iOffset))
 		{
 		while (iFrame > 0)
 			{
@@ -1380,24 +1363,22 @@ ICCItem *CCodeChain::Lookup (CEvalContext *pCtx, ICCItem *pItem)
 			iFrame--;
 			}
 
-		pBinding = pStart->LookupByOffset(this, iOffset);
-		bFound = true;
+		return ICCItemPtr(pStart->LookupByOffset(this, iOffset));
 		}
 
 	//	Otherwise, do a lookup
 
 	else
 		{
-		bFound = false;
+		bool bFound = false;
 		iFrame = 0;
 
+		ICCItemPtr pBinding;
 		while (!bFound && pStart)
 			{
-			pBinding = pStart->SimpleLookup(this, pItem, &bFound, &iOffset);
+			pBinding = ICCItemPtr(pStart->SimpleLookup(this, &Item, &bFound, &iOffset));
 			if (!bFound)
 				{
-				pBinding->Discard();
-				pBinding = NULL;
 				pStart = pStart->GetParent();
 				iFrame++;
 				}
@@ -1406,43 +1387,39 @@ ICCItem *CCodeChain::Lookup (CEvalContext *pCtx, ICCItem *pItem)
 		//	If we found it and this is a local frame,
 		//	set the resolution info
 
-		if (bFound && pStart->IsLocalFrame())
-			pItem->SetBinding(iFrame, iOffset);
+		if (bFound)
+			{
+			if (pStart->IsLocalFrame())
+				Item.SetBinding(iFrame, iOffset);
+
+			return pBinding;
+			}
+		else
+			{
+			return ICCItemPtr(CreateError(LITERAL("No binding for symbol"), &Item));
+			}
 		}
-
-	//	If there is no binding, return an error
-
-	if (!bFound)
-		{
-		ASSERT(pBinding == NULL);
-		//pBinding->Discard();
-		pBinding = CreateError(LITERAL("No binding for symbol"), pItem);
-		}
-
-	return pBinding;
 	}
 
-ICCItem *CCodeChain::LookupFunction (CEvalContext *pCtx, ICCItem *pName)
+ICCItemPtr CCodeChain::LookupFunction (CEvalContext *pCtx, ICCItem &Name)
 
 //	LookupFunction
 //
 //	Returns the binding for a function
 
 	{
-	ICCItem *pBinding;
-
 	//	See if the identifier is already bound
 
-	pBinding = pName->GetFunctionBinding();
+	ICCItemPtr pBinding(Name.GetFunctionBinding());
 	if (pBinding)
 		return pBinding;
 
 	//	If not bound, check global scope
 
-	pBinding = m_pGlobalSymbols->Lookup(this, pName);
+	pBinding = ICCItemPtr(m_pGlobalSymbols->Lookup(this, &Name));
 	if (!pBinding->IsError() || pBinding->GetIntegerValue() != CCRESULT_NOTFOUND)
 		{
-		pName->SetFunctionBinding(this, pBinding);
+		Name.SetFunctionBinding(this, pBinding);
 		return pBinding;
 		}
 
@@ -1450,8 +1427,7 @@ ICCItem *CCodeChain::LookupFunction (CEvalContext *pCtx, ICCItem *pName)
 
 	if (pCtx)
 		{
-		pBinding->Discard();
-		pBinding = Lookup(pCtx, pName);
+		pBinding = Lookup(pCtx, Name);
 		if (!pBinding->IsError())
 			//	We don't set a function binding because local variables often change
 			//	(as when we pass a function as a parameter)
@@ -1460,9 +1436,7 @@ ICCItem *CCodeChain::LookupFunction (CEvalContext *pCtx, ICCItem *pName)
 
 	//	If we get this far then we could not find it
 
-	pBinding->Discard();
-	pBinding = CreateError(LITERAL("Unknown function"), pName);
-	return pBinding;
+	return ICCItemPtr(CreateError(LITERAL("Unknown function"), &Name));
 	}
 
 ICCItem *CCodeChain::LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx)
@@ -1489,7 +1463,7 @@ ICCItem *CCodeChain::LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx)
 	if (pItem->IsError())
 		return pItem;
 
-	pResult = Lookup(&EvalCtx, pItem);
+	pResult = Lookup(&EvalCtx, *pItem)->Reference();
 	pItem->Discard();
 	return pResult;
 	}
@@ -1543,7 +1517,7 @@ ICCItem *CCodeChain::PoolUsage (void)
 	return pList;
 	}
 
-ICCItem *CCodeChain::TopLevel (ICCItem *pItem, LPVOID pExternalCtx)
+ICCItemPtr CCodeChain::TopLevel (const ICCItem &Code, const SRunOptions &Options)
 
 //	TopLevel
 //
@@ -1557,11 +1531,16 @@ ICCItem *CCodeChain::TopLevel (ICCItem *pItem, LPVOID pExternalCtx)
 	EvalCtx.pCC = this;
 	EvalCtx.pLexicalSymbols = m_pGlobalSymbols;
 	EvalCtx.pLocalSymbols = NULL;
-	EvalCtx.pExternalCtx = pExternalCtx;
+	EvalCtx.bStrict = Options.bStrict;
+	EvalCtx.pExternalCtx = Options.pExternalCtx;
+
+	//	We're not yet ready to pull on the const thread in CodeChain:
+
+	ICCItem *pCode = &const_cast<ICCItem &>(Code);
 
 	//	Evalute the actual code
 
-	return Eval(&EvalCtx, pItem);
+	return ICCItemPtr(Eval(&EvalCtx, pCode));
 	}
 
 ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)

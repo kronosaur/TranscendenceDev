@@ -19,11 +19,14 @@
 
 		<Names>:the CSC America</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 320 0 320 240)
-			</Data>
-		</StaticData>
+			</Definition>
+			<Definition id="csc.id">
+				'america
+			</Definition>
+		</Properties>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -55,11 +58,16 @@
 
 		<Names>:the CSC Arctica</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 960 0 320 240)
-			</Data>
+			</Definition>
+			<Definition id="csc.id">
+				'arctica
+			</Definition>
+		</Properties>
 
+		<StaticData>
 			<Data id="csc.giftTable">
 				(	; donation	item						count	unique
 					(10000		&itPlasmaShieldGenerator;	1		'Gift1)
@@ -101,11 +109,14 @@
 
 		<Names>:the CSC Asia</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 0 240 320 240)
-			</Data>
-		</StaticData>
+			</Definition>
+			<Definition id="csc.id">
+				'asia
+			</Definition>
+		</Properties>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -134,11 +145,14 @@
 
 		<Names>:the CSC Atlantica</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 320 240 320 240)
-			</Data>
-		</StaticData>
+			</Definition>
+			<Definition id="csc.id">
+				'atlantica
+			</Definition>
+		</Properties>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -168,11 +182,14 @@
 
 		<Names>:the CSC India</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 0 480 320 240)
-			</Data>
-		</StaticData>
+			</Definition>
+			<Definition id="csc.id">
+				'india
+			</Definition>
+		</Properties>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -202,11 +219,14 @@
 
 		<Names>:the CSC Pacifica</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 320 480 320 240)
-			</Data>
-		</StaticData>
+			</Definition>
+			<Definition id="csc.id">
+				'pacifica
+			</Definition>
+		</Properties>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -239,11 +259,16 @@
 
 		<Names>:the CSC Sahara</Names>
 
-		<StaticData>
-			<Data id="csc.emblem">
+		<Properties>
+			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 640 480 320 240)
-			</Data>
+			</Definition>
+			<Definition id="csc.id">
+				'sahara
+			</Definition>
+		</Properties>
 
+		<StaticData>
 			<Data id="csc.giftTable">
 				(	; donation	item						count	unique
 					(10000		&itMammoth100Deflector;		1		'Gift1)
@@ -286,6 +311,16 @@
 			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, EI, fleetLaw, majorShip"
 			inherit=			"&baCSCBase;"
 			>
+		<Properties>
+			<DynamicData id="csc.emblemDesc">
+				{
+					type: 'image
+					image: (or (obj@ gSource 'csc.emblem) (eval (objGetStaticData gSource 'csc.emblem)))
+					align: '(center middle)
+					padding-bottom: 100
+					}
+			</DynamicData>
+		</Properties>
 
 		<!-- Hull -->
 
@@ -382,9 +417,12 @@
 		This class defines a standard CSC hospital ship (support ship).	
 		Descendants from this class must define the following data elements:
 
-		STATIC DATA
+		PROPERTIES
 
 		csc.emblem: Code to generate the ship's emblem.
+
+		STATIC DATA
+
 		csc.giftTable: Table of items to give as gifts.
 
 		LANGUAGE
@@ -440,20 +478,24 @@
 			
 			<!-- Some upgrades for sale -->
 			
-			<RandomItem count="1d3" criteria="r -illegal; -notForSale; -notStandard; L:6-8;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<RandomItem count="1d3" criteria="r +commonwealth; -defective; -illegal; -notForSale; -notStandard; L:6-8;"		levelFrequency="systemLevel:ru|c|curv"/>
 			<Lookup count="8-12" table="&tbCommonwealthFleetItems;"/>
 		</Items>
 
 		<!-- Dock Screens -->
 
 		<DockScreens>
-			<Main backgroundID="none">
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
+			<Main>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -497,15 +539,17 @@
 
 			<Bridge
 				name=			"Bridge"
-				backgroundID=	"none"
 				>
-
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -524,15 +568,17 @@
 
 			<Infirmary
 				name=			"Infirmary"
-				backgroundID=	"none"
 				>
-
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default descID="descInfirmary">
 						<Actions>
@@ -808,9 +854,9 @@
 		This class defines a standard CSC Task Force ship (an active CSC on
 		patrol in the Outer Realm).
 
-		Descendants from this class must define the following data elementss:
+		Descendants from this class must define the following data elements:
 
-		STATIC DATA
+		PROPERTIES
 
 		csc.emblem: Code to generate the ship's emblem.
 
@@ -867,18 +913,22 @@
 			
 			<!-- Some upgrades for sale -->
 			
-			<RandomItem count="1d4" criteria="r -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<RandomItem count="1d4" criteria="r +commonwealth; -defective; -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
 			<Lookup count="8-12" table="&tbCommonwealthFleetItems;"/>
 		</Items>
 
 		<!-- Dock Screens -->
 
 		<DockScreens>
-			<Main backgroundID="none">
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
+			<Main>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
+				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
 				</Display>
 
 				<Panes>
@@ -916,15 +966,17 @@
 
 			<Bridge
 				name=			"Bridge"
-				backgroundID=	"none"
 				>
-
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -943,15 +995,17 @@
 
 			<FlightDeck
 				name=			"Flight Deck"
-				backgroundID=	"none"
 				>
-
-				<Display>
-					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(eval (objGetStaticData gSource 'csc.emblem))
-					</Image>
-				</Display>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
 				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -991,6 +1045,8 @@
 										(rpgMissionAssignment {
 											missionCriteria: (cat "n +cscTaskForce; +rank" (int rank) "; =" (sysGetLevel) ";")
 											noMissionTextID: 'descNoMissions
+
+											rankDetails: (typTranslate &unidCommonwealthFleet; 'rankDetails)
 											})
 										)
 									)
@@ -1157,16 +1213,31 @@
 			</OnBehavior>
 
 			<OnCreate>
-				(block (squadronList)
-					; Are we in a good spot? If not, then we give orders to move
+				(block (
+					(cscID (obj@ gSource 'csc.id))
+					(cscStatus (typ@ &svCommonwealthFleet; 'cscStatus))
+					(ourStatus (@ cscStatus cscID))
+					)
+					; (dbgOutput "Creating " (objGetName gSource) " in " (sysGetName) "           ")
+
+					;	Set our status
+
+					(set@ ourStatus 'nodeID (sysGetNode))
+					(set@ cscStatus cscID ourStatus)
+					(typSet@ &svCommonwealthFleet; 'cscStatus cscStatus)
+
+					;	Are we in a good spot? If not, then we give orders to move
+
 					(fltOrderCheckPosition gSource)
 
-					; Create the Britannia squadron
+					;	Create the Britannia squadron
+
 					(for i 1 6
 						(cscSquadronCreateShip gSource &scBritannia;)
 						)
 
-					; Behavior event
+					;	Behavior event
+
 					(sysAddObjRecurringTimerEvent 90 gSource "OnBehavior")
 					)
 			</OnCreate>

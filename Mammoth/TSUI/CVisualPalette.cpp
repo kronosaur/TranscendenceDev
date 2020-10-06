@@ -18,7 +18,7 @@ const int WIDESCREEN_HEIGHT_MAX =			512;
 struct SColorInitTable
 	{
 	int iLen;										//	Length of color name
-	char *pszString;								//	Name of color
+	const char *pszString;							//	Name of color
 	CG32bitPixel rgbColor;							//	16-bit color value
 	};
 
@@ -41,7 +41,7 @@ static SColorInitTable COLOR_TABLE[] =
 		{	CONSTDEF("TextHighlight"),			CG32bitPixel(217, 236, 255) },      //  H:210 S:15 B:100
 		{	CONSTDEF("TextNormal"),				CG32bitPixel(191, 196, 201) },      //  H:210 S:5  B:79
 		{	CONSTDEF("TextFade"),				CG32bitPixel(120, 129, 140) },
-		{	CONSTDEF("TextAltHighlight"),		CG32bitPixel(255, 239, 215) },
+		{	CONSTDEF("TextAltHighlight"),		CG32bitPixel(255, 239, 215) },		//	H:36  S:16 B:100
 		{	CONSTDEF("TextAltNormal"),			CG32bitPixel(204, 200, 194) },
 
 		{	CONSTDEF("TextAltFade"),			CG32bitPixel(140, 131, 118) },
@@ -63,9 +63,9 @@ static SColorInitTable COLOR_TABLE[] =
 		{	CONSTDEF("AreaDisadvantage"),		CG32bitPixel(0xA6, 0x21, 0x21) },
 
 		{	CONSTDEF("AreaShields"),			CG32bitPixel(0x45, 0x73, 0x17) },
-		{	CONSTDEF("TextAdvantage"),			CG32bitPixel(0xCC, 0xE5, 0xFF) },
+		{	CONSTDEF("TextAdvantage"),			CG32bitPixel(0xCC, 0xE5, 0xFF) },	//	H:210 S:20  B:100
 		{	CONSTDEF("TextDisadvantage"),		CG32bitPixel(0xFF, 0xCC, 0xCC) },
-		{	CONSTDEF("TextShields"),			CG32bitPixel(0xE5, 0xFF, 0xCC) },
+		{	CONSTDEF("TextShields"),			CG32bitPixel(0xE5, 0xFF, 0xCC) },	//	H:90  S:20  B:100
 		{	CONSTDEF("TextAccelerator"),		CG32bitPixel(0xFF, 0xFF, 0x00) },	//	H:60  S:100 B:100
 
 		{	CONSTDEF("AreaAccelerator"),		CG32bitPixel(0xCB, 0xCB, 0x00) },	//	H:60  S:100 B:80
@@ -75,11 +75,11 @@ static SColorInitTable COLOR_TABLE[] =
 struct SFontInitTable
 	{
 	int iLen;										//	Length of font name
-	char *pszString;								//	Name of the font
+	const char *pszString;								//	Name of the font
 
-	char *pszResID;									//	Resource to load (if NULL, then we create from typeface)
+	const char *pszResID;									//	Resource to load (if NULL, then we create from typeface)
 
-	char *pszTypeface;								//	Typeface (ignored if resource)
+	const char *pszTypeface;								//	Typeface (ignored if resource)
 	int cyPixelHeight;								//	Height of font (ignored if resource)
 	bool bBold;										//	TRUE if we want a bold font (ignored if resource)
 	bool bItalic;									//	TRUE if we want an italic font (ignored if resource)
@@ -108,9 +108,9 @@ static SFontInitTable FONT_TABLE[] =
 
 struct SImageInitTable
 	{
-	char *pszName;									//	Name of image
-	char *pszJPEGResID;								//	Image resource to load
-	char *pszMaskResID;								//	Mask resource to load (may be NULL)
+	const char *pszName;									//	Name of image
+	const char *pszJPEGResID;								//	Image resource to load
+	const char *pszMaskResID;								//	Mask resource to load (may be NULL)
 
 	int x;
 	int y;
@@ -162,6 +162,10 @@ static SImageInitTable IMAGE_TABLE[] =
 		{	"NormalDifficultyIcon",		"JPEG_UI_ICONS",			"BMP_UI_ICONS_MASK",			 96,	576,	 32,	 32, },
 		{	"ChallengeDifficultyIcon",	"JPEG_UI_ICONS",			"BMP_UI_ICONS_MASK",			 64,	608,	 32,	 32, },
 		{	"PermadeathDifficultyIcon",	"JPEG_UI_ICONS",			"BMP_UI_ICONS_MASK",			 96,	608,	 32,	 32, },
+
+		{	"PlayIcon",				"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			128,	  0,	128,	128, },
+		{	"PauseIcon",			"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			128,	128,	128,	128, },
+		{	"FastForwardIcon",		"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			128,	256,	128,	128, },
 	};
 
 class CResourceImageCache
@@ -177,7 +181,7 @@ class CResourceImageCache
 		TSortMap<CString, CG32bitImage> m_Cache;
 	};
 
-void CVisualPalette::DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, DamageTypes iDamageType) const
+void CVisualPalette::DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, DamageTypes iDamageType, bool bGray) const
 
 //	DrawDamageTypeIcon
 //
@@ -187,14 +191,28 @@ void CVisualPalette::DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, Dam
 	if (iDamageType == damageGeneric)
 		return;
 
-	Screen.Blt((int)iDamageType * DAMAGE_TYPE_ICON_WIDTH,
-			0,
-			DAMAGE_TYPE_ICON_WIDTH,
-			DAMAGE_TYPE_ICON_HEIGHT,
-			255,
-			m_Image[imageDamageTypeIcons],
-			x,
-			y);
+	if (bGray)
+		{
+		CGDraw::BltGray(Screen, 
+				x, 
+				y, 
+				m_Image[imageDamageTypeIcons], 
+				(int)iDamageType * DAMAGE_TYPE_ICON_WIDTH, 
+				0, 
+				DAMAGE_TYPE_ICON_WIDTH, 
+				DAMAGE_TYPE_ICON_HEIGHT);
+		}
+	else
+		{
+		Screen.Blt((int)iDamageType * DAMAGE_TYPE_ICON_WIDTH,
+				0,
+				DAMAGE_TYPE_ICON_WIDTH,
+				DAMAGE_TYPE_ICON_HEIGHT,
+				255,
+				m_Image[imageDamageTypeIcons],
+				x,
+				y);
+		}
 	}
 
 void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitImage &Background, CG32bitPixel rgbCenter, DWORD dwFlags, RECT *retrcCenter) const

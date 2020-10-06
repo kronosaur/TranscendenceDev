@@ -135,12 +135,12 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 
 		CG32bitImage (void);
 		CG32bitImage (const CG32bitImage &Src);
-		CG32bitImage (CG32bitImage &&Src) {	TakeHandoff(Src); }
+		CG32bitImage (CG32bitImage &&Src) noexcept { TakeHandoff(Src); }
 
 		~CG32bitImage (void);
 
 		CG32bitImage &operator= (const CG32bitImage &Src);
-		CG32bitImage &operator= (CG32bitImage &&Src) { TakeHandoff(Src); return *this; }
+		CG32bitImage &operator= (CG32bitImage &&Src) noexcept { TakeHandoff(Src); return *this; }
 
 		static CG32bitImage &Null (void) { return m_NullImage; }
 
@@ -275,7 +275,7 @@ class CGDraw
 		//	Blts
 
 		static void Blt (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff, EBlendModes iMode = blendNormal);
-		static void BltGray (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff);
+		static void BltGray (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff);
 		static void BltLighten (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc);
 		static void BltMask (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG8bitImage &Mask, EBlendModes iMode = blendNormal);
 		static void BltMask0 (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc);
@@ -304,13 +304,22 @@ class CGDraw
 		static void LineGradient (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor1, CG32bitPixel rgbColor2);
 		static void LineHD (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
 
+		//	Masks
+
+		static void MaskRoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius);
+
 		//	Rects
 
 		static void OctaRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iCorner, int iLineWidth, CG32bitPixel rgbColor);
 		static void RectGradient (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, CG32bitPixel rgbStart, CG32bitPixel rgbEnd, GradientDirections iDir = gradientHorizontal);
 		static void RectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, CG32bitPixel rgbColor);
 		static void RectOutlineDotted (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, CG32bitPixel rgbColor);
+		static void RoundedRect (CG8bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, BYTE Value);
 		static void RoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+		static void RoundedRectBottom (CG8bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, BYTE Value);
+		static void RoundedRectBottom (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor);
+		static void RoundedRectTop (CG8bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, BYTE Value);
+		static void RoundedRectTop (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor);
 		static void RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, int iLineWidth, CG32bitPixel rgbColor);
         static void TriangleCorner (CG32bitImage &Dest, int x, int y, int iDir, int iSize, CG32bitPixel rgbColor);
 
@@ -327,6 +336,7 @@ class CGDraw
 		static void CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, EBlendModes iMode = blendNormal, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1);
 		static void CircleGradient (CG8bitImage &Dest, int x, int y, int iRadius, BYTE CenterValue, BYTE EdgeValue);
 		static void CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+		static void CircleOutline (CG32bitImage &Dest, int x, int y, int iRadius, int iLineWidth, CG32bitPixel rgbColor);
 		static void RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, CG32bitPixel rgbColor);
 		static void RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, const TArray<CG32bitPixel> &ColorRamp, BYTE byOpacity = 0xff);
 
@@ -545,14 +555,6 @@ class CGBlendScreen : public TBlendImpl<CGBlendScreen>
 				}
 			}
 	};
-
-//	Implementation Helpers -----------------------------------------------------
-
-#include "TBlt.h"
-#include "TFill.h"
-#include "TCirclePainter.h"
-#include "TLinePainter.h"
-#include "TRoundedRectPainter.h"
 
 //	Utilities
 

@@ -93,9 +93,10 @@
 			<Lookup table="StandardPlanetoidMorphology">
 				<_PlanetType>
 					<Table>
-						<Station chance="60" type="&stIcePlanetoidSizeE;" showOrbit="true"/>
-						<Station chance="30" type="&stIcePlanetoidSizeF;" showOrbit="true"/>
-						<Station chance="10" type="&stIcePlanetoidSizeG;" showOrbit="true"/>
+						<Station chance="59" type="&stIcePlanetoidSizeE;" showOrbit="true"/>
+						<Station chance="28" type="&stIcePlanetoidSizeF;" showOrbit="true"/>
+						<Station chance="8"  type="&stIcePlanetoidSizeG;" showOrbit="true"/>
+						<Station chance="5"  type="&stCryovolcanicSizeC;" showOrbit="true"/>
 					</Table>
 				</_PlanetType>
 				<_PlanetLabel>
@@ -187,15 +188,16 @@
 	<!-- Size A Ice Asteroid -->
 
 	<StationType UNID="&stIceAsteroidSizeA;"
-		name=				"(ice asteroid)"
+		name=				"ice asteroid"
+		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		inherit=			"&baIceAsteroid;"
+
 		scale=				"world"
 		size=				"7"
-
-		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-
 		<ImageLookup imageID="&rsIceAsteroidSizeA;"/>
 
 		<Items>
@@ -204,26 +206,21 @@
 				<Lookup chance="5" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 50)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size B Ice Asteroid -->
 
 	<StationType UNID="&stIceAsteroidSizeB;"
-		name=				"(ice asteroid)"
+		name=				"ice asteroid"
+		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		inherit=			"&baIceAsteroid;"
+
 		scale=				"world"
 		size=				"60"
-
-		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsIceAsteroidSizeB;"/>
 
 		<Items>
@@ -232,26 +229,21 @@
 				<Lookup chance="5" count="1d6" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 50)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size C Ice Asteroid -->
 
 	<StationType UNID="&stIceAsteroidSizeC;"
-		name=				"(ice asteroid)"
+		name=				"ice asteroid"
+		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		inherit=			"&baIceAsteroid;"
+
 		scale=				"world"
 		size=				"165"
-
-		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsIceAsteroidSizeC;"/>
 
 		<Items>
@@ -260,26 +252,21 @@
 				<Lookup chance="5" count="1d8" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 50)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size D Ice Asteroid -->
 
 	<StationType UNID="&stIceAsteroidSizeD;"
-		name=				"(ice asteroid)"
+		name=				"ice asteroid"
+		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		inherit=			"&baIceAsteroid;"
+
 		scale=				"world"
 		size=				"670"
-
-		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsIceAsteroidSizeD;"/>
 
 		<Items>
@@ -288,57 +275,65 @@
 				<Lookup chance="5" count="1d10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 50)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Ice Planetoid Size E -->
 
 	<StationType UNID="&stIcePlanetoidSizeE;"
-		name=				"(ice planetoid)"
+		name=				"ice planetoid"
+		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+
 		scale=				"world"
 		size=				"1250"
-
-		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsIcePlanetoidSizeE;"/>
 	</StationType>
 
 	<!-- Ice Planetoid Size F -->
 
 	<StationType UNID="&stIcePlanetoidSizeF;"
-		name=				"(ice planetoid)"
+		name=				"ice planetoid"
+		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+
 		scale=				"world"
 		size=				"2450"
-
-		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsIcePlanetoidSizeF;"/>
 	</StationType>
 
 	<!-- Ice Planetoid Size G -->
 
 	<StationType UNID="&stIcePlanetoidSizeG;"
-		name=				"(ice planetoid)"
+		name=				"ice planetoid"
+		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+
 		scale=				"world"
 		size=				"4000"
-
-		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+		anonymous=			"true"
 
 		ejectaType=			"&vtIceAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsIcePlanetoidSizeG;"/>
+	</StationType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&baIceAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="icy"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
 	</StationType>
 
 <!-- RESOURCES -->

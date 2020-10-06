@@ -155,7 +155,7 @@ class CEscortOrder : public IOrderModule
 		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) override;
-		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual CSpaceObject *OnGetBase (void) override;
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderEscort; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
@@ -289,7 +289,7 @@ class CSentryOrder : public IOrderModule
 		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) override;
-		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
 		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderSentry; }
@@ -359,7 +359,7 @@ class CWaitOrder : public IOrderModule
 		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) override;
-		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return m_iOrder; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }

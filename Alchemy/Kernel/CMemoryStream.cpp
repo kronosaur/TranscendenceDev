@@ -78,6 +78,25 @@ ALERROR CMemoryWriteStream::Create (void)
 	return NOERROR;
 	}
 
+void CMemoryWriteStream::Seek (int iPos)
+
+//	Seek
+//
+//	Seek to the given position.
+
+	{
+	if (iPos < 0)
+		return;
+
+	else if (iPos <= m_iCommittedSize)
+		m_iCurrentSize = iPos;
+
+	else
+		{
+		Write((const char *)NULL, iPos - m_iCurrentSize);
+		}
+	}
+
 ALERROR CMemoryWriteStream::Write (const char *pData, int iLength, int *retiBytesWritten)
 
 //	Write

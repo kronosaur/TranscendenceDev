@@ -20,7 +20,7 @@
 #define STR_A_CAUSE								CONSTLIT("aCause")
 #define STR_A_DESTROYER							CONSTLIT("aDestroyer")
 
-static char *CACHED_EVENTS[CPower::evtCount] =
+static const char *CACHED_EVENTS[CPower::evtCount] =
 	{
 	"OnInvoke",
 	"OnShow",

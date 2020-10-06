@@ -23,45 +23,41 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msRescueBenedict;"
-			name=				"Rescue Benedict"
+			name=				"Benedict 07: Rescue Benedict"
 			attributes=			"benedictStoryArc, cathedralOfDominaMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"5"
+			missionArc=			"benedictArc:70"
+
 			maxAppearing=		"1"
 			priority=			"100"
 
 			failureAfterOutOfSystem="5400"
 			noDebrief=			"true"
 			>
-
-		<StaticData>
-			<sequence>70</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block ()
-					(switch
-						;	See if the mission is still available
-
-						(not (benedict_isMissionAvailable (objGetType gSource)))
-							(msnDestroy gSource)
-							
-						;	Must have completed Sandoval mission (but previous Benedict
-						;	mission is optional).
+			<CanCreate>
+				(switch
+					;	Must have completed Sandoval mission (but previous Benedict
+					;	mission is optional).
 						
-						(not (msnFind "r +unid:&msFindHandOfSolace;; +property:isSuccess;"))
-							(msnDestroy gSource)
+					(not (msnFind "r +unid:&msFindHandOfSolace;; +property:isSuccess;"))
+						Nil
 
-						;	If Penitent infiltration mission fails, we can't proceed
-						;	(but OK if we never do it).
+					;	If Penitent infiltration mission fails, we can't proceed
+					;	(but OK if we never do it).
 						
-						(msnFind "r +unid:&msInfiltratePenitents;; +property:isFailure;")
-							(msnDestroy gSource)
+					(msnFind "r +unid:&msInfiltratePenitents;; +property:isFailure;")
+						Nil
 
-						;	OK
-						)
+					;	OK
+
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>
@@ -326,12 +322,31 @@
 		</Events>
 		
 		<Language>
-			<Text id="Name">"Rescue Benedict"</Text>
+			<Text id="Name">
+				Chapter 7: Benedict
+			</Text>
 			<Text id="Summary">
-				(cat
-					"Intercept a Penitent convoy carrying Benedict.\n\n"
-					"System: " (sysGetName) "\n"
-					"Payment: None"
+				(switch
+					(msn@ gSource 'isFailure)
+						(msnTranslate gSource 'textSummary.failure {
+							systemName: (sysGetName)
+							})
+							
+					(and (not (unvFindObject 'EC "tA +unid:&stPenitentMonastery;;"))
+							(msn@ gSource 'isDebriefed)
+							)
+						(msnTranslate gSource 'textSummary.deadEnd {
+							systemName: (sysGetName)
+							})
+
+					(msn@ gSource 'isDebriefed)
+						(msnTranslate gSource 'textSummary.next {
+							systemName: (sysGetName 'EC)
+							})
+
+					(msnTranslate gSource 'textSummary.active {
+						systemName: (sysGetName)
+						})
 					)
 			</Text>
 			<Text id="Intro">
@@ -353,229 +368,324 @@
 			</Text>
 			<Text id="Intro.default">
 				(list
-					{
-						desc: (cat
-							"The beautiful central chamber, built hundreds of years ago by Saint Eugenia, "
-							"is lit by the holograms of various Sisters. Lay and ordained women walk "
-							"through the halls in quiet conversation.\n\n"
-							
-							"You see Fiona and Sandoval pacing in front of a large meteorsteel door."
-							)
-						label: "\"[A]ny word on Benedict?\""
-						}
-					{
-						desc: (cat
-							"Fiona frowns, \"No, but we're waiting for an audience with the "
-							"Circle of Obligation, the Sisters' leadership. They'll help us.\""
-							)
-						label: "\"[H]ow can you be sure?\""
-						}
-					{
-						desc: (cat
-							"\"I talked to Sister Oriela, the grandmatriarch of the Sisters. "
-							"I gave her the video ROM of Sister Ston talking to the Penitents. "
-							"She's convened a meeting of the Circle to formally charge "
-							"Sister Ston.\"\n\n"
-							
-							"Just then, the meteorsteel door opens and all of you are led inside."
-							)
-						}
+					{	descID: 'textIntro1				labelID: 'actionIntro1	}
+					{	descID: 'textIntro2				labelID: 'actionIntro2	}
+					{	descID: 'textIntro3		}
 					)
 			</Text>
 			<Text id="Intro.benedictExpo">
 				(list
-					{
-						desc: (cat
-							"The beautiful central chamber, built hundreds of years ago by Saint Eugenia, "
-							"is lit by the holograms of various Sisters. Lay and ordained women walk "
-							"through the halls in quiet conversation.\n\n"
-							
-							"You see Fiona and Sandoval pacing in front of a large meteorsteel door."
-							)
-						label: "\"[W]here's Benedict?\""
-						}
-					{
-						desc: (cat
-							"Fiona frowns, \"You haven't heard? He was captured by Penitents!\"\n\n"
-							
-							"Sandoval interjects, \"Actually, I think he's working them from the inside. "
-							"He's not as stupid as I thought.\""
-							)
-						label: "\"[W]hat happened?\""
-						}
-					{
-						desc: (cat
-							"Sandoval smiles, \"We had the perfect plan! Benedict and I infiltrated "
-							"a Penitent station looking for evidence&mdash;and we found some! "
-							"We've got a video ROM of Sister Ston making a deal with the Penitents.\n\n"
-							
-							"\"But we almost got caught and Benedict stayed behind to give me a chance "
-							"to escape.\""
-							)
-						label: "\"[S]ister Ston?\""
-						}
-					{
-						desc: (cat
-							"Fiona is furious, \"She's betrayed us! And with the video we can prove it!\n\n"
-							
-							"\"We're waiting for an audience with the Circle of Obligation, the "
-							"Sisters' leadership. They'll help us.\""
-							)
-						label: "\"[H]ow can you be sure?\""
-						}
-					{
-						desc: (cat
-							"\"I talked to Sister Oriela, the grandmatriarch of the Sisters. "
-							"I gave her the video ROM and she's convened a meeting of the Circle "
-							"to formally charge Sister Ston.\"\n\n"
-							
-							"Just then, the meteorsteel door opens and all of you are led inside."
-							)
-						}
+					{	descID: 'textIntro4				labelID: 'actionIntro4	}
+					{	descID: 'textIntro5				labelID: 'actionIntro5	}
+					{	descID: 'textIntro6				labelID: 'actionIntro6	}
+					{	descID: 'textIntro7				labelID: 'actionIntro7	}
+					{	descID: 'textIntro8		}
 					)
 			</Text>
 			<Text id="Intro.circleOfObligation">
 				(list
-					{
-						desc: (cat
-							"The Circle of Obligation sits at a curved table in front of you. "
-							"The grandmatriarch, clad in a high collar that hides her many wrinkles, "
-							"stands as you enter.\n\n"
-							
-							"To her right, Sister Colleen McMurray, long rumored to be her successor, "
-							"nods to Fiona.\n\n"
-							
-							"Sister Elana Ston frowns at one edge of the table. She occasionally looks "
-							"behind her at a pair of guards."
-							)
-						}
-					{
-						desc: (cat
-							"The grandmatriach sits down, \"Fiona, will you tell us your story.\"\n\n"
-							
-							"Fiona recounts how a murder investigation led her to suspect "
-							"that Sister Ston was plotting with the Penitent Order. "
-							"She lauds Benedict, who obtained video evidence, at the cost "
-							"of his own freedom and possibly his life."
-							)
-						}
-					{
-						desc: (cat
-							"Fiona shows the video to the assembled Sisters. The room explodes "
-							"in chaos when they see Sister Ston delivering a dozen infants to "
-							"the Penitents.\n\n"
-							
-							"The grandmatriach silences them, \"Enough! We are not finished yet.\"\n\n"
-							
-							"She continues, \"Thank you Fiona. Now let us hear from Sister "
-							"Isabel, our cybertech.\""
-							)
-						}
-					{
-						desc: (cat
-							"Fiona shoots a look of panic at Sandoval.\n\n"
-							
-							"Sister Isabel steps forward: \"Right. Well, I've analyzed Fiona's "
-							"video, and I'm sorry to say that it has 53 distinct stream artifacts "
-							"and probably a dozen injection sites...\"\n\n"
-							
-							"McMurray interrupts her, \"Sister, would you summarize, please.\""
-							)
-						}
-					{
-						desc: (cat
-							"Sister Isabel looks at Fiona and then at the floor: \"The video is "
-							"a fake. Probably a splice or a hypervisualized...\"\n\n"
-							
-							"\"Thank you, Sister Isabel!\" says the grandmatriarch with a wave. "
-							"\"Fiona, I'm afraid you've been the unwitting pawn in an effort to "
-							"bring discord to our Sisterhood.\""
-							)
-						}
-					{
-						desc: (cat
-							"Sister Ston rises with a smile. \"I bear no ill will, Fiona. "
-							"No doubt the Penitents are trying to undermine us. Perhaps this "
-							"Benedict is himself involved. I'm glad the truth was revealed "
-							"in time.\"\n\n"
-							
-							"Guards usher you all out of the room, and the meteorsteel door "
-							"shuts firmly."
-							)
-						label: "\"[W]hat just happened?\""
-						}
-					{
-						desc: (cat
-							"Fiona's face is flushed. \"We've been played! The grandmatriarch...\"\n\n"
-							
-							"Sandoval interrupts, \"Played by whom, eh? Maybe Sister Ston is right "
-							"about Benedict. He could have planned the whole thing from the "
-							"beginning.\""
-							)
-						label: "\"[N]o, I trust Benedict!\""
-						}
-					{
-						desc: (cat
-							"Fiona agrees, \"And I don't trust Sister Ston. But if the "
-							"grandmatriarch is involved...\"\n\n"
-							
-							"Just then, Sister Colleen McMurray appears from a side corridor. "
-							"\"If the grandmatriarch were involved, you'd all be dead! But "
-							"don't look for help from her either.\""
-							)
-						label: "\"[W]hat do you mean?\""
-						}
-					{
-						desc: (cat
-							"\"The Sisterhood is compromised; schism is inevitable.\"\n\n"
-							
-							"\"And it's all %his% fault,\" she says, pointing at you."
-							)
-						label: "\"[M]e? What did I do?\""
-						}
-					{
-						desc: (cat
-							"\"Maybe not you, specifically, but a pilgrim. One of the "
-							"pilgrims beamed back her logbooks before she died. The contents "
-							"are secret still, but they've already sparked conflict in "
-							"the Circle of Obligation.\""
-							)
-						label: "\"[D]id she discover something?\""
-						}
-					{
-						desc: (cat
-							"\"Maybe you'll find out yourself. But it doesn't matter now; "
-							"the damage is done. All you can do is get far away from here. "
-							"Save yourselves.\""
-							)
-						label: "\"[G]ive up? Just like that?\""
-						}
-					{
-						desc: (cat
-							"\"I didn't say give up! There's one more service you can perform. "
-							"My spies tell me that Benedict is still alive.\n\n"
-							
-							"\"He's on a convoy, being taken to Eta Ceti. He'll pass through "
-							"this system soon. If you leave now, you'll have a chance to "
-							"free him.\""
-							)
-						}
+					{	descID: 'textIntro9		}
+					{	descID: 'textIntro10	}
+					{	descID: 'textIntro11	}
+					{	descID: 'textIntro12	}
+					{	descID: 'textIntro13	}
+					{	descID: 'textIntro14			labelID: 'actionIntro14	}
+					{	descID: 'textIntro15			labelID: 'actionIntro15	}
+					{	descID: 'textIntro16			labelID: 'actionIntro16	}
+					{	descID: 'textIntro17			labelID: 'actionIntro17	}
+					{	descID: 'textIntro18			labelID: 'actionIntro18	}
+					{	descID: 'textIntro19			labelID: 'actionIntro19	}
+					{	descID: 'textIntro20	}
 					)
 			</Text>
 			<Text id="Briefing">
 				(list
-					{
-						desc: (cat
-							"Fiona looks at you and Sandoval. \"If there's a chance we can "
-							"save Benedict, we need to take it.\n\n"
-							
-							"\"Please help me rescue him.\""
-							)
-						acceptLabel: "\"[O]f course!\""
-						declineLabel: "\"[L]et me prepare first.\""
-						}
+					{	descID: 'textBriefing1			acceptLabelID: 'actionAccept declineLabelID: 'actionDecline }
 					)
 			</Text>
+
+			<!-- INTRO -->
+
+			<Text id="textSummary.active">
+			
+				After extracting proof implicating Sister Elana Ston in a
+				conspiracy, Benedict was captured by Penitents.
+
+				Though Fiona failed to convince the Sisters about Elana Ston's
+				betrayal, you have an opportunity to rescue Benedict.
+
+				He's aboard a Penitent ship passing through the system. Help 
+				Fiona and Sandoval rescue him.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.next">
+
+				At great cost, Benedict extracted a video showing Sister Elana
+				Ston handing over a group of infants to the Penitents. Fiona 
+				failed to convince the rest of the Sisters, however, because 
+				Sister Ston tampered with the video to make it look like a 
+				forgery.
+
+				But Benedict knows where the children are being kept, and he's
+				planning a rescue mission.
+
+				If you wish to help, go to the %systemName% system.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.deadEnd">
+
+				Though you rescued Benedict, you are no closer to unravelling
+				the mystery of the Penitents and the Sisters. Perhaps your 
+				questions will not be answered until you reach Domina at the
+				Galactic Core.
+
+				No further progress on this storyline is possible.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.failure">
+
+				You have failed. Benedict was being help prisoner inside a 
+				Penitent ship. You attempted a rescue, but the Penitent ship
+				escaped through the stargate.
+
+				No further progress on this storyline is possible.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+
+			<Text id="textIntro1">
+			
+				The beautiful central chamber, built hundreds of years ago by 
+				Saint Eugenia, is lit by the holograms of various Sisters. Lay 
+				and ordained women walk through the halls in quiet conversation.
+							
+				You see Fiona and Sandoval pacing in front of a large 
+				meteorsteel door.
+
+			</Text>
+			<String id="actionIntro1">"[A]ny word on Benedict?"</String>
+			<Text id="textIntro2">
+
+				Fiona frowns, "No, but we're waiting for an audience with the 
+				Circle of Obligation, the Sisters' leadership. They'll help us."
+			
+			</Text>
+			<String id="actionIntro2">"[H]ow can you be sure?"</String>
+			<Text id="textIntro3">
+			
+				"I talked to Sister Oriela, the grandmatriarch of the Sisters.
+				I gave her the video ROM of Sister Ston talking to the Penitents. 
+				She's convened a meeting of the Circle to formally charge 
+				Sister Ston."
+							
+				Just then, the meteorsteel door opens and all of you are led 
+				inside.
+
+			</Text>
+			<Text id="textIntro4">
+
+				The beautiful central chamber, built hundreds of years ago by 
+				Saint Eugenia, is lit by the holograms of various Sisters. Lay
+				and ordained women walk through the halls in quiet conversation.
+							
+				You see Fiona and Sandoval pacing in front of a large 
+				meteorsteel door.
+			
+			</Text>
+			<String id="actionIntro4">"[W]here's Benedict?"</String>
+			<Text id="textIntro5">
+
+				Fiona frowns, "You haven't heard? He was captured by Penitents!"
+							
+				Sandoval interjects, "Actually, I think he's working them from 
+				the inside. He's not as stupid as I thought."
+			
+			</Text>
+			<String id="actionIntro5">"[W]hat happened?"</String>
+			<Text id="textIntro6">
+
+				Sandoval smiles, "We had the perfect plan! Benedict and I 
+				infiltrated a Penitent station looking for evidence&mdash;and we
+				found some! We've got a video ROM of Sister Ston making a deal 
+				with the Penitents."
+							
+				"But we almost got caught and Benedict stayed behind to give me 
+				a chance to escape."
+			
+			</Text>
+			<String id="actionIntro6">"[S]ister Ston?"</String>
+			<Text id="textIntro7">
+
+				Fiona is furious, "She's betrayed us! And with the video we can 
+				prove it!"
+							
+				"We're waiting for an audience with the Circle of Obligation, 
+				the Sisters' leadership. They'll help us."
+			
+			</Text>
+			<String id="actionIntro7">"[H]ow can you be sure?"</String>
+			<Text id="textIntro8">
+			
+				"I talked to Sister Oriela, the grandmatriarch of the Sisters.
+				I gave her the video ROM and she's convened a meeting of the 
+				Circle to formally charge Sister Ston."
+							
+				Just then, the meteorsteel door opens and all of you are led 
+				inside.
+
+			</Text>
+			<Text id="textIntro9">
+
+				The Circle of Obligation sits at a curved table in front of you.
+				The grandmatriarch, clad in a high collar that hides her many 
+				wrinkles, stands as you enter.
+							
+				To her right, Sister Colleen McMurray, long rumored to be her 
+				successor, nods to Fiona.
+							
+				Sister Elana Ston frowns at one edge of the table. She 
+				occasionally looks behind her at a pair of guards.
+			
+			</Text>
+			<Text id="textIntro10">
+
+				The grandmatriach sits down, "Fiona, will you tell us your 
+				story?"
+							
+				Fiona recounts how a murder investigation led her to suspect 
+				that Sister Ston was plotting with the Penitent Order. She lauds
+				Benedict, who obtained video evidence, at the cost of his own 
+				freedom and possibly his life.
+			
+			</Text>
+			<Text id="textIntro11">
+
+				Fiona shows the video to the assembled Sisters. The room 
+				explodes in chaos when they see Sister Ston delivering a dozen 
+				infants to the Penitents.
+							
+				The grandmatriach silences them, "Enough! We are not finished 
+				yet."
+							
+				She continues, "Thank you Fiona. Now let us hear from Sister 
+				Isabel, our cybertech."
+			
+			</Text>
+			<Text id="textIntro12">
+
+				Fiona shoots a look of panic at Sandoval.
+							
+				Sister Isabel steps forward: "Right. Well, I've analyzed Fiona's 
+				video, and I'm sorry to say that it has 53 distinct stream 
+				artifacts and probably a dozen injection sites..."
+							
+				McMurray interrupts her, "Sister, would you summarize, please?"
+			
+			</Text>
+			<Text id="textIntro13">
+			
+				Sister Isabel looks at Fiona and then at the floor: "The video 
+				is a fake. Probably a splice or a hypervisualized..."
+							
+				"Thank you, Sister Isabel!" says the grandmatriarch with a wave.
+				"Fiona, I'm afraid you've been the unwitting pawn in an effort 
+				to bring discord to our Sisterhood."
+
+			</Text>
+			<Text id="textIntro14">
+
+				Sister Ston rises with a smile. "I bear no ill will, Fiona. No 
+				doubt the Penitents are trying to undermine us. Perhaps this 
+				Benedict is himself involved. I'm glad the truth was revealed in
+				time."
+							
+				Guards usher you all out of the room, and the meteorsteel door 
+				shuts firmly.
+			
+			</Text>
+			<String id="actionIntro14">"[W]hat just happened?"</String>
+			<Text id="textIntro15">
+			
+				Fiona's face is flushed. "We've been played! The 
+				grandmatriarch..."
+							
+				Sandoval interrupts, "Played by whom, eh? Maybe Sister Ston is 
+				right about Benedict. He could have planned the whole thing from
+				the beginning."
+
+			</Text>
+			<String id="actionIntro15">"[N]o, I trust Benedict."</String>
+			<Text id="textIntro16">
+			
+				Fiona agrees, "And I don't trust Sister Ston. But if the 
+				grandmatriarch is involved..."
+							
+				Just then, Sister Colleen McMurray appears from a side corridor. 
+				"If the grandmatriarch were involved, you'd all be dead! But 
+				don't look for help from her either."
+
+			</Text>
+			<String id="actionIntro16">"[W]hat do you mean?"</String>
+			<Text id="textIntro17">
+			
+				"The Sisterhood is compromised; schism is inevitable.
+						
+				"And it's all %his% fault," she says, pointing at you.
+
+			</Text>
+			<String id="actionIntro17">"[M]e? What did I do?"</String>
+			<Text id="textIntro18">
+
+				"Maybe not you, specifically, but a pilgrim. One of the pilgrims
+				beamed back her logbooks before she died. The contents are 
+				secret still, but they've already sparked conflict in the Circle
+				of Obligation."
+			
+			</Text>
+			<String id="actionIntro18">"[D]id she discover something?"</String>
+			<Text id="textIntro19">
+
+				"Maybe you'll find out yourself. But it doesn't matter now; the 
+				damage is done. All you can do is get far away from here. Save 
+				yourselves."
+			
+			</Text>
+			<String id="actionIntro19">"[G]ive up? Just like that?"</String>
+			<Text id="textIntro20">
+			
+				"I didn't say give up! There's one more service you can perform.
+				My spies tell me that Benedict is still alive.
+							
+				"He's on a convoy, being taken to Eta Ceti. He'll pass through
+				this system soon. If you leave now, you'll have a chance to 
+				free him."
+
+			</Text>
+
+			<!-- BRIEFING -->
+
+			<Text id="textBriefing1">
+			
+				Fiona looks at you and Sandoval. "If there's a chance we can 
+				save Benedict, we need to take it."
+							
+				"Please help me rescue him."
+
+			</Text>
+			<String id="actionAccept">"[O]f course!"</String>
+			<String id="actionDecline">"[L]et me prepare first."</String>
+
 			<Text id="AcceptReply">
 
 				Sandoval nods at you.
@@ -666,34 +776,30 @@
 
 			<Text id="dlgWaitForFiona">
 				(list
-					{
-						desc: (cat "You decide to wait for Fiona.")
-						nextPage: 'forceUndock
-						}
+					{	descID: 'textWaitForFiona1		nextPage: 'forceUndock		}
 					)
+			</Text>
+			<Text id="textWaitForFiona1">
+
+				You decide to wait for Fiona.
+
 			</Text>
 			<Text id="dlgGoRescueFiona">
 				(list
-					{
-						desc: (cat
-							"Fiona calls you on the comms.\n\n"
-							
-							"\"Come get me! I can help you rescue Benedict!\""
-							)
-						nextPage: 'forceUndock
-						}
+					{	descID: 'textGoRescueFiona1		nextPage: 'forceUndock		}
 					)
+			</Text>
+			<Text id="textGoRescueFiona1">
+			
+				Fiona calls you on the comms.
+							
+				"Come get me! I can help you rescue Benedict!"
+
 			</Text>
 			
 			<Text id="dlgRescueFiona">
 				(list
-					{
-						desc: (cat
-							"Fiona meets you at the airlock.\n\n"
-							
-							"\"I'm alright. Let's get to the wreckage and rescue Benedict!\""
-							)
-						nextPage: 'forceUndock
+					{	descID: 'textRescueFiona1		nextPage: 'forceUndock
 						code: (lambda ()
 							(block (
 								(missionObj (@ (msnFind "a +unid:&msRescueBenedict;;") 0))
@@ -705,17 +811,25 @@
 						}
 					)
 			</Text>
+			<Text id="textRescueFiona1">
+			
+				Fiona meets you at the airlock.
+							
+				"I'm all right. Let's get to the wreckage and rescue Benedict!"
+
+			</Text>
 			<Text id="dlgContinueWithAttack">
 				(list
-					{
-						desc: (cat
-							"Fiona meets you at the airlock.\n\n"
-							
-							"\"Don't let that Penitent ship get away! Come back for me when you're done!\""
-							)
-						nextPage: 'forceUndock
-						}
+					{	descID: 'textContinueWithAttack1	nextPage: 'forceUndock	}
 					)
+			</Text>
+			<Text id="textContinueWithAttack1">
+
+				Fiona meets you at the airlock.
+							
+				"Don't let that Penitent ship get away! Come back for me when 
+				you're done!"
+
 			</Text>
 
 			<!-- RESCUE BENEDICT -->
@@ -846,24 +960,40 @@
 						;	If Fiona is at the wreck, then we need to rescue her
 						
 						(= (msnGetData missionObj 'fionaStatus) 'wrecked)
-							(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgGoRescueFiona) 10)
+							{	screen: &dsRPGDialog;
+								priority: 10
+								translateType: &msRescueBenedict;
+								dialogID: 'dlgGoRescueFiona
+								}
 							
 						;	If Fiona has not yet docked with the wreck, the player has to wait.
 						
 						(and (!= (objGetProperty fionaObj 'dockedAtID) (objGetID gSource))
 								(not (msnGetData missionObj 'fionaStatus))
 								)
-							(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgWaitForFiona) 10)
+							{	screen: &dsRPGDialog;
+								priority: 10
+								translateType: &msRescueBenedict;
+								dialogID: 'dlgWaitForFiona
+								}
 
 						;	If the Penitent station in Eta Ceti is already destroyed, then we get
 						;	an alternate script.
 
 						(not (unvFindObject 'EC "tA +unid:&stPenitentMonastery;;"))
-							(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgRescueBenedictDeadEnd) 10)
+							{	screen: &dsRPGDialog;
+								priority: 10
+								translateType: &msRescueBenedict;
+								dialogID: 'dlgRescueBenedictDeadEnd
+								}
 
 						;	Rescue script
 						
-						(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgRescueBenedict) 10)
+						{	screen: &dsRPGDialog;
+							priority: 10
+							translateType: &msRescueBenedict;
+							dialogID: 'dlgRescueBenedict
+							}
 						)
 					)
 			</GetDockScreen>
@@ -893,11 +1023,19 @@
 						;	If we haven't yet destroyed the target, Fiona tells us to continue
 						
 						(!= (msnGetData missionObj 'status) 'rescue)
-							(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgContinueWithAttack) 10)
+							{	screen: &dsRPGDialog;
+								priority: 10
+								translateType: &msRescueBenedict;
+								dialogID: 'dlgContinueWithAttack
+								}
 							
 						;	Rescue script
-						
-						(list &dsRPGDialog; (typTranslate &msRescueBenedict; 'dlgRescueFiona) 10)
+
+						{	screen: &dsRPGDialog;
+							priority: 10
+							translateType: &msRescueBenedict;
+							dialogID: 'dlgRescueFiona
+							}
 						)
 					)
 			</GetDockScreen>
@@ -1019,7 +1157,7 @@
 								)
 							)
 							
-						(objSetShowAsDestination gSource Nil 'autoclear)
+						(objSetShowAsDestination gSource 'autoclear)
 						)
 				</Invoke>
 			</Message>

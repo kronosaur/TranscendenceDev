@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<!-- Destroy Threat to Sisters =============================================
+	
+	PROPERTIES
+	
+		targetID:			Id of station to destroy
+
+	======================================================================== -->
+	
+	<MissionType UNID="&msSisters01;"
+			name=						"Sisters 01: Find Domina Artifact"
+			attributes=					"sistersMission"
+
+			level=						"1-10"
+			>
+		<Properties>
+			<!--
+				status:
+
+					'destroyTarget: Target must be destroyed
+					'lootTarget: Player must loot the target
+					
+			-->
+			<Data id="status">'destroyTarget</Data>
+
+			<Data id="targetID"></Data>
+			<Data id="treasureItem"></Data>
+		</Properties>
+
+		<Events>
+			<!-- CREATE MISSION -->
+
+			<CanCreate>
+
+				;	Called from inside msnCreate and msnCanCreate.
+				;	If defined, then return either true or nil to indicate that
+				;	the mission can or cannot be created.
+				;
+				;	gData: Data passed in to msnCreate.
+				;	aOwnerObj: Object that create the mission (or nil)
+				
+				(switch
+					;	Player must be a Pilgrim
+					
+					(!= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+						Nil
+						
+					;	Must be an enemy station in the system
+					
+					(not (sysFindObject aOwnerObj "TAE +populated; -questTarget; -uncharted;"))
+						Nil
+						
+					;	Can create
+					
+					True
+					)
+
+			</CanCreate>
+
+			<OnCreate>
+
+				;	Called when mission object is created. This adds the mission
+				;	to the list of available missions, but it does not 
+				;	necessarily start or accept the mission.
+				;
+				;	The script may call msnDestroy to abort creation of the 
+				;	mission (but a better mechanism is to implement CanCreate).
+				;
+				;	gSource: Mission object
+				;	gData: Arbitrary data passed in to msnCreate
+				;	aOwnerObj: Object that created the mission (or nil)
+
+				(block (
+					(enemyStations (sysFindObject aOwnerObj "TAE +populated; -questTarget; -uncharted; -sungSlaveCamp;"))
+					(enemyStationsWithTreasure (filter enemyStations theObj
+						(objGetItems theObj "*U +communion;")
+						))
+
+					(targetObj (or (random enemyStationsWithTreasure) (random enemyStations)))
+					)
+					(switch
+
+						;	If we don't have a target station, we don't have a mission
+
+						(not targetObj)
+							(msnDestroy gSource)
+
+						;	Set up the mission
+
+						(block (
+							(itemToFind (@ (objGetItems targetObj "*U +communion;") 0))
+							)
+
+							;	If there is no appropriate treasure on the station,
+							;	add some.
+
+							(if (not itemToFind)
+								(block ()
+									(setq itemToFind (itmCreateRandom "* +communion;" "systemLevel:vvr|c|urv"))
+									(objAddItem targetObj itemToFind)
+									)
+								)
+
+							;	Prepare mission
+
+							(msnSet@ gSource 'targetID (objGetID targetObj))
+							(msnRegisterForEvents gSource targetObj)
+
+							(msnSet@ gSource 'treasureItem itemToFind)
+							)
+						)
+					)
+			</OnCreate>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<OnSetPlayerTarget>
+
+				;	Called to refresh the player's target. Always called right 
+				;	after the player accepts the mission. May be called at 
+				;	other times (e.g., after the player returns to the system).
+				;
+				;	gSource: Mission object.
+				;	aReason:
+				;		'accepted: Mission has been accepted
+				;		'debriefed: Player has been debriefed
+				;		'failure: Mission failed
+				;		'inProgress: Player visited station while mission in progress
+				;		'newSystem: Player is in a new system
+				;		'success: Mission completed successfully
+
+				(block (
+					(status (msn@ gSource 'status))
+					)
+					(switch
+						(= status 'destroyTarget)
+							(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)))
+
+						(= status 'lootTarget)
+							(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)) 'dock)
+
+						(rpgSetTarget gSource aReason)
+						)
+					)
+			</OnSetPlayerTarget>
+
+			<OnObjDestroyed>
+
+				;	Called when an object is destroyed, but only if we have 
+				;	called msnRegisterForEvents on the object.
+				;
+				;	gSource: Mission object.
+				;	aObjDestroyed: Object that was destroyed
+				;	aDestroy: True if object was destroyed (as opposed to left 
+				;		system)
+				;	aDestroyReason:
+				;		'ascended
+				;		'custom
+				;		'damage
+				;		'disintegration
+				;		'ejecta
+				;		'enteredStargate
+				;		'explosion
+				;		'gravity
+				;		'playerCreatedExplosion
+				;		'powerFailure
+				;		'radiationPoisoning
+				;		'removedFromSystem
+				;		'runningOutOfFuel
+				;		'self
+				;		'shatter
+				;		'weaponMalfunction
+				;	aDestroyer: Object that destroyed it.
+				;	aOrderGiver: Object that controlled destroyer, e.g.,
+				;		if destroyer is an auton.
+				;	aWreckObj: Wreck left behind (may be nil)
+				
+				(switch
+					(= (objGetID aObjDestroyed) (msn@ gSource 'targetID))
+						(block ()
+							(msnSet@ gSource 'status 'lootTarget)
+							(msnSetPlayerTarget gSource)
+							)
+					)
+			</OnObjDestroyed>
+
+			<OnUpdate>
+				(block (
+					(status (msn@ gSource 'status))
+					)
+					(switch
+						(= status 'lootTarget)
+							(block (
+								(targetObj (objGetObjByID (msn@ gSource 'targetID)))
+								)
+								(if (not (objGetItems targetObj "*U +communion;"))
+									(msnSuccess gSource)
+									)
+								)
+						)
+					)
+			</OnUpdate>
+
+			<!-- MISSION COMPLETE -->
+
+			<OnCompleted>
+
+				;	Called when the mission ends (generally because msnSuccess 
+				;	or msnFailure were called).
+				;
+				;	gSource: Mission object.
+				;	gData: Arbitrary data passed in to msnSuccess or msnFailure
+				;	aReason:
+				;		'failure: Mission failed
+				;		'success: Mission completed successfully
+
+			</OnCompleted>
+
+			<OnReward>
+
+				;	Called when the mission was successful, just before showing
+				;	the debriefing screen.
+				;
+				;	gSource: Mission object.
+				;	gData: Arbitrary data passed to msnReward
+				;
+				;	This event can return an optional structure to control 
+				;	debriefing. The struct has the following fields:
+				;
+				;	nextScreen: The screen to show after debrief, OR
+				;		'forceUndock
+				;	nextScreenData: Data to pass to scrShowScreen.
+
+			</OnReward>
+		</Events>
+
+		<Language>
+
+			<!-- Code Points -->
+
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					itemName: (itmGetName (msn@ gSource 'treasureItem) 'actual)
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(msnTranslate gSource 'textIntro1 {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					itemName: (itmGetName (msn@ gSource 'treasureItem) '(actual article))
+					})
+			</Text>
+			<Text id="Briefing">
+				(msnTranslate gSource 'textBriefing1 {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					itemName: (itmGetName (msn@ gSource 'treasureItem) '(actual article))
+					})
+			</Text>
+			<Text id="AcceptReply">
+				(msnTranslate gSource 'textAccept1 {
+					})
+			</Text>
+			<Text id="DeclineReply">
+				(msnTranslate gSource 'textDecline1 {
+					})
+			</Text>
+			<Text id="InProgress">
+				(msnTranslate gSource (cat 'textInProgress. (msn@ gSource 'status)) {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					itemName: (itmGetName (msn@ gSource 'treasureItem) 'actual)
+					})
+			</Text>
+			<Text id="SuccessDebrief">
+				(msnTranslate gSource 'textSuccessDebrief1 {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					itemName: (itmGetName (msn@ gSource 'treasureItem) 'actual)
+					})
+			</Text>
+
+			<!-- Text -->
+
+			<Text id="Name">
+				Recover a Lost Artifact
+			</Text>
+			<Text id="textSummary">
+
+				Your mission is to destroy %targetName% in the %systemName% system and
+				recover a lost %itemName%.
+
+			</Text>
+			<Text id="textIntro1">
+
+				The abbess greets you:
+
+				"Welcome, pilgrim! Your journey will be arduous, but I think I 
+				can help you. Some rare items are imbued with resonant energies 
+				that can help you to commune with Domina and strengthen your 
+				connection to her."
+
+			</Text>
+			<Text id="textBriefing1">
+
+				"There's %itemName% in this system, and if you were to bring it
+				to us, we would be able to strengthen your connection to Domina.
+
+				"Unfortunately, it is locked away in %targetName% nearby. You'll
+				have to destroy the station to obtain it.
+
+				"Will you undertake this quest?"
+
+			</Text>
+			<Text id="textAccept1">
+
+				"We will give the coordinates to your computer. Go with Domina!"
+			
+			</Text>
+			<Text id="textDecline1">
+
+				"I understand. Let Domina counsel you, and return if you've 
+				mustered the strength to continue."
+			
+			</Text>
+			<Text id="textInProgress.destroyTarget">
+
+				"Your target is %targetName%. Destroy it and take back the 
+				artifact."
+
+			</Text>
+			<Text id="textInProgress.lootTarget">
+
+				"Well done, %name%. Now dock with the remains and bring back
+				the %itemName%."
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+
+				"You've done well, %name%. The %itemName% will improve your
+				connection to Domina.
+
+				"Go to our sanctum and offer the item to Domina."
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

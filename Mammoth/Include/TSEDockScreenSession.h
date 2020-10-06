@@ -40,7 +40,7 @@ class IDockScreenUI
 
 enum class EDockScreenBackground
 	{
-	default,						//	Use the default specified by the display
+	defaultBackground,				//	Use the default specified by the display
 
 	none,							//	No background image
 	image,							//	Use an image (by UNID)
@@ -51,10 +51,13 @@ enum class EDockScreenBackground
 
 struct SDockScreenBackgroundDesc
 	{
-	EDockScreenBackground iType = EDockScreenBackground::default;		//	Type of image defined
+	EDockScreenBackground iType = EDockScreenBackground::defaultBackground;		//	Type of image defined
 	DWORD dwImageID = 0;				//	UNID to use (if iType == backgroundImage)
 	RECT rcImage = { 0 };				//	Source image rect (if 0, use entire image)
 	CSpaceObject *pObj = NULL;			//	Object to query (if iType == backgroundObjXXX)
+
+	RECT rcImagePadding = { 0 };
+	DWORD dwImageAlign = 0;				//	AlignmentStyles
 	};
 
 struct SScreenSetTab
@@ -110,6 +113,7 @@ class CDockScreenStack
 		SDockFrame &GetCallingFrame (void) { return (m_Stack.GetCount() < 2 ? const_cast<SDockFrame &>(m_NullFrame) : m_Stack[m_Stack.GetCount() - 2]); }
 		SDockFrame &GetCurrent (void) { ASSERT(!IsEmpty()); return (IsEmpty() ? const_cast<SDockFrame &>(m_NullFrame) : m_Stack[m_Stack.GetCount() - 1]); }
 		const SDockFrame &GetCurrent (void) const;
+		const SDockFrame &GetFrame (int iIndex) const { return m_Stack[iIndex]; }
 		bool IsEmpty (void) const { return (m_Stack.GetCount() == 0); }
 		void Push (const SDockFrame &Frame);
 		void Pop (void);
@@ -119,6 +123,8 @@ class CDockScreenStack
 		void SetCurrentPane (const CString &sPane);
 		void SetDisplayData (const CString &sID, const CString &sData);
 		void SetLocation (CSpaceObject *pLocation);
+
+		static ICCItemPtr AsCCItem (const SDockFrame &Frame);
 
 	private:
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
@@ -143,6 +149,7 @@ class CDockSession
 		CDockScreenStack &GetFrameStack (void) { return m_DockFrames; }
 		const CDockScreenStack &GetFrameStack (void) const { return m_DockFrames; }
 		ICCItemPtr GetProperty (const CString &sProperty) const;
+		ICCItemPtr GetPropertyFrameStack (void) const;
 		ICCItemPtr GetReturnData (const CString &sAttrib) const;
 		IDockScreenUI &GetUI (void) const { return *m_pDockScreenUI; }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }

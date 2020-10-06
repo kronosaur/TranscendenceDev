@@ -26,39 +26,39 @@
 #define PROPERTY_POWER							CONSTLIT("power")
 
 CReactorDesc::SStdStats CReactorDesc::m_Stats[MAX_ITEM_LEVEL] = 
-    {
-        //  Max         Fuel        Fuel
-        //  Power       Density     Cost
-        {   50,          0.5,        1.0 },
-        {   100,         1.0,        1.1 },
-        {   250,         2.5,        1.2 },
-        {   500,         5.0,        1.3 },
-        {   1000,       10.6,        1.5 },
+	{
+		//  Max         Fuel        Fuel
+		//  Power       Density     Cost
+		{   50,          0.5,        1.0 },
+		{   100,         1.0,        1.1 },
+		{   250,         2.5,        1.2 },
+		{   500,         5.0,        1.3 },
+		{   1000,       10.6,        1.5 },
 
-        {   1500,       15.0,        1.6 },
-        {   2500,       25.0,        1.8 },
-        {   5000,       50.0,        1.9 },
-        {   10000,     100.0,        2.1 },
-        {   15000,     150.0,        2.4 },
+		{   1500,       15.0,        1.6 },
+		{   2500,       25.0,        1.8 },
+		{   5000,       50.0,        1.9 },
+		{   10000,     100.0,        2.1 },
+		{   15000,     150.0,        2.4 },
 
-        {   25000,     250.0,        2.6 },
-        {   40000,     400.0,        2.9 },
-        {   60000,     600.0,        3.1 },
-        {   90000,     900.0,        3.5 },
-        {   140000,   1400.0,        3.8 },
+		{   25000,     250.0,        2.6 },
+		{   40000,     400.0,        2.9 },
+		{   60000,     600.0,        3.1 },
+		{   90000,     900.0,        3.5 },
+		{   140000,   1400.0,        3.8 },
 
-        {   200000,   2000.0,        4.2 },
-        {   300000,   3000.0,        4.6 },
-        {   450000,   4500.0,        5.1 },
-        {   600000,   6000.0,        5.6 },
-        {   800000,   8000.0,        6.1 },
+		{   200000,   2000.0,        4.2 },
+		{   300000,   3000.0,        4.6 },
+		{   450000,   4500.0,        5.1 },
+		{   600000,   6000.0,        5.6 },
+		{   800000,   8000.0,        6.1 },
 
-        {   1100000, 11000.0,        6.7 },
-        {   1500000, 15000.0,        7.4 },
-        {   2000000, 20000.0,        8.1 },
-        {   2500000, 25000.0,        9.0 },
-        {   3000000, 30000.0,        9.8 },
-    };
+		{   1100000, 11000.0,        6.7 },
+		{   1500000, 15000.0,        7.4 },
+		{   2000000, 20000.0,        8.1 },
+		{   2500000, 25000.0,        9.0 },
+		{   3000000, 30000.0,        9.8 },
+	};
 
 CReactorDesc::CReactorDesc (void) : 
 		m_dwUNID(0),
@@ -82,12 +82,12 @@ int CReactorDesc::AdjMaxPower (Metric rAdj)
 //
 //  Adjusts max power by the given factor
 
-    {
-    if (rAdj > 0.0)
-        m_iMaxPower = mathRound(m_iMaxPower * rAdj);
+	{
+	if (rAdj > 0.0)
+		m_iMaxPower = mathRound(m_iMaxPower * rAdj);
 
-    return m_iMaxPower;
-    }
+	return m_iMaxPower;
+	}
 
 Metric CReactorDesc::AdjEfficiency (Metric rAdj)
 
@@ -95,12 +95,12 @@ Metric CReactorDesc::AdjEfficiency (Metric rAdj)
 //
 //  Adjusts efficiency by the given factor
 
-    {
-    if (rAdj > 0.0)
-        m_rPowerPerFuelUnit = m_rPowerPerFuelUnit * rAdj;
+	{
+	if (rAdj > 0.0)
+		m_rPowerPerFuelUnit = m_rPowerPerFuelUnit * rAdj;
 
-    return m_rPowerPerFuelUnit;
-    }
+	return m_rPowerPerFuelUnit;
+	}
 
 void CReactorDesc::CleanUp (void)
 
@@ -108,10 +108,10 @@ void CReactorDesc::CleanUp (void)
 //
 //  Free allocations
 
-    {
+	{
 	if (m_pFuelCriteria && m_fFreeFuelCriteria)
 		delete m_pFuelCriteria;
-    }
+	}
 
 void CReactorDesc::Copy (const CReactorDesc &Src)
 
@@ -119,7 +119,7 @@ void CReactorDesc::Copy (const CReactorDesc &Src)
 //
 //  Make a copy. We assume that we are clean.
 
-    {
+	{
 	m_dwUNID = Src.m_dwUNID;
 	m_iMaxPower = Src.m_iMaxPower;
 	m_rMaxFuel = Src.m_rMaxFuel;
@@ -132,7 +132,7 @@ void CReactorDesc::Copy (const CReactorDesc &Src)
 	m_fNoFuel = Src.m_fNoFuel;
 
 	m_fFreeFuelCriteria = (m_pFuelCriteria != NULL);
-    }
+	}
 
 bool CReactorDesc::FindDataField (const CString &sField, CString *retsValue) const
 
@@ -141,11 +141,11 @@ bool CReactorDesc::FindDataField (const CString &sField, CString *retsValue) con
 //  Returns a data field, for backwards compatibility. New code should call
 //  FindProperty.
 
-    {
-    if (strEquals(sField, PROPERTY_POWER))
-        *retsValue = strFromInt(GetMaxPower() * 100);
-    else if (strEquals(sField, PROPERTY_FUEL_CRITERIA))
-        *retsValue = GetFuelCriteriaString();
+	{
+	if (strEquals(sField, PROPERTY_POWER))
+		*retsValue = strFromInt(GetMaxPower() * 100);
+	else if (strEquals(sField, PROPERTY_FUEL_CRITERIA))
+		*retsValue = GetFuelCriteriaString();
 	else if (strEquals(sField, PROPERTY_FUEL_EFFICIENCY))
 		*retsValue = strFromInt((int)GetEfficiency());
 	else if (strEquals(sField, PROPERTY_FUEL_CAPACITY))
@@ -154,7 +154,7 @@ bool CReactorDesc::FindDataField (const CString &sField, CString *retsValue) con
 		return false;
 
 	return true;
-    }
+	}
 
 bool CReactorDesc::IsExportedProperty (const CString &sProperty)
 
@@ -178,7 +178,7 @@ ICCItem *CReactorDesc::FindProperty (const CString &sProperty) const
 //  Returns the given property. If not found, return NULL. NOTE: Caller must
 //  discard the result if non-NULL.
 
-    {
+	{
 	if (strEquals(sProperty, PROPERTY_POWER))
 		return CreatePowerResult(100.0 * m_iMaxPower);
 
@@ -195,15 +195,15 @@ ICCItem *CReactorDesc::FindProperty (const CString &sProperty) const
 	else if (strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY_BONUS))
 		return CCodeChain::CreateInteger(GetEfficiencyBonus());
 
-    else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY))
-        return CCodeChain::CreateInteger(mathRound(m_rMaxFuel / FUEL_UNITS_PER_STD_ROD));
+	else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY))
+		return CCodeChain::CreateInteger(mathRound(m_rMaxFuel / FUEL_UNITS_PER_STD_ROD));
 
-    else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY_EXACT))
-        return CCodeChain::CreateDouble(m_rMaxFuel);
+	else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY_EXACT))
+		return CCodeChain::CreateDouble(m_rMaxFuel);
 
-    else
-        return NULL;
-    }
+	else
+		return NULL;
+	}
 
 int CReactorDesc::GetEfficiencyBonus (void) const
 
@@ -231,12 +231,12 @@ CString CReactorDesc::GetFuelCriteriaString (void) const
 //
 //  Returns a string describing the fuel criteria for the reactor.
 
-    {
+	{
 	if (m_pFuelCriteria)
 		return m_pFuelCriteria->AsString();
 	else
 		return strPatternSubst(CONSTLIT("f L:%d-%d;"), m_iMinFuelLevel, m_iMaxFuelLevel);
-    }
+	}
 
 void CReactorDesc::GetFuelLevel (int *retiMin, int *retiMax) const
 
@@ -244,7 +244,7 @@ void CReactorDesc::GetFuelLevel (int *retiMin, int *retiMax) const
 //
 //  Returns the minimum and maximum level fuel compatible with reactor.
 
-    {
+	{
 	if (m_pFuelCriteria)
 		m_pFuelCriteria->GetExplicitLevelMatched(retiMin, retiMax);
 	else
@@ -252,7 +252,7 @@ void CReactorDesc::GetFuelLevel (int *retiMin, int *retiMax) const
 		*retiMin = m_iMinFuelLevel;
 		*retiMax = m_iMaxFuelLevel;
 		}
-    }
+	}
 
 const CReactorDesc::SStdStats &CReactorDesc::GetStdStats (int iLevel)
 
@@ -260,10 +260,10 @@ const CReactorDesc::SStdStats &CReactorDesc::GetStdStats (int iLevel)
 //
 //  Returns standard stats for the level.
 
-    {
-    ASSERT(iLevel >= 0 && iLevel <= MAX_ITEM_LEVEL);
-    return m_Stats[iLevel];
-    }
+	{
+	ASSERT(iLevel >= 0 && iLevel <= MAX_ITEM_LEVEL);
+	return m_Stats[iLevel];
+	}
 
 ALERROR CReactorDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID)
 
@@ -272,9 +272,9 @@ ALERROR CReactorDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 //	Initializes from a <ShipClass> element.
 
 	{
-    CleanUp();
+	CleanUp();
 
-    m_dwUNID = dwUNID;
+	m_dwUNID = dwUNID;
 	m_fNoFuel = false;
 
 	//	If we have a <Reactor> element, use that.
@@ -325,10 +325,10 @@ ALERROR CReactorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWOR
 //
 //  Initializes from an XML element
 
-    {
-    CleanUp();
+	{
+	CleanUp();
 
-    m_dwUNID = dwUNID;
+	m_dwUNID = dwUNID;
 
 	//	Load some values
 
@@ -379,7 +379,7 @@ ALERROR CReactorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWOR
 		}
 
 	return NOERROR;
-    }
+	}
 
 ALERROR CReactorDesc::InitScaled (SDesignLoadCtx &Ctx, const CReactorDesc &Src, int iBaseLevel, int iScaledLevel)
 
@@ -387,27 +387,27 @@ ALERROR CReactorDesc::InitScaled (SDesignLoadCtx &Ctx, const CReactorDesc &Src, 
 //
 //  Initializes as a scaled version of Src.
 
-    {
-    *this = Src;
-    if (iBaseLevel > iScaledLevel)
-        return NOERROR;
+	{
+	*this = Src;
+	if (iBaseLevel > iScaledLevel)
+		return NOERROR;
 
-    const SStdStats &BaseStats = GetStdStats(iBaseLevel);
-    const SStdStats &ScaledStats = GetStdStats(iScaledLevel);
+	const SStdStats &BaseStats = GetStdStats(iBaseLevel);
+	const SStdStats &ScaledStats = GetStdStats(iScaledLevel);
 
-    //  We increase power output proportionally to scale
+	//  We increase power output proportionally to scale
 
-    Metric rPowerAdj = (Metric)ScaledStats.iMaxPower / (Metric)BaseStats.iMaxPower;
-    m_iMaxPower = mathRound(m_iMaxPower * rPowerAdj);
+	Metric rPowerAdj = (Metric)ScaledStats.iMaxPower / (Metric)BaseStats.iMaxPower;
+	m_iMaxPower = mathRound(m_iMaxPower * rPowerAdj);
 
-    //  We increase fuel capacity in the same way.
+	//  We increase fuel capacity in the same way.
 
-    m_rMaxFuel = m_rMaxFuel * rPowerAdj;
+	m_rMaxFuel = m_rMaxFuel * rPowerAdj;
 
-    //  Done
+	//  Done
 
-    return NOERROR;
-    }
+	return NOERROR;
+	}
 
 bool CReactorDesc::IsFuelCompatible (const CItem &FuelItem) const
 
@@ -415,7 +415,7 @@ bool CReactorDesc::IsFuelCompatible (const CItem &FuelItem) const
 //
 //  Returns TRUE if the given fuel item is compatible with us.
 
-    {
+	{
 	if (m_pFuelCriteria)
 		return FuelItem.MatchesCriteria(*m_pFuelCriteria);
 	else
@@ -431,4 +431,4 @@ bool CReactorDesc::IsFuelCompatible (const CItem &FuelItem) const
 		return (iLevel >= m_iMinFuelLevel 
 				&& iLevel <= m_iMaxFuelLevel);
 		}
-    }
+	}

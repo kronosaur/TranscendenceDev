@@ -35,6 +35,33 @@ const int DEFAULT_PORT_POS_RADIUS =				64;
 const Metric GATE_DIST =						KLICKS_PER_PIXEL * 64.0;
 const Metric GATE_DIST2 =						GATE_DIST * GATE_DIST;
 
+int CDockingPorts::CalcMaxRadiusPixels (void) const
+
+//	CalcMaxRadiusPixels
+//
+//	Computes the largest radius of all ports.
+
+	{
+	int iMaxRadius = 0;
+	for (int i = 0; i < m_iPortCount; i++)
+		{
+		if (!m_pPort[i].Pos.IsEmpty())
+			{
+			int iRadius = m_pPort[i].Pos.GetRadius();
+			if (iRadius > iMaxRadius)
+				iMaxRadius = iRadius;
+			}
+		else
+			{
+			int iRadius = mathRound(m_pPort[i].vPos.Length() / g_KlicksPerPixel);
+			if (iRadius > iMaxRadius)
+				iMaxRadius = iRadius;
+			}
+		}
+
+	return iMaxRadius;
+	}
+
 void CDockingPorts::CleanUp (void)
 
 //	CleanUp
@@ -491,8 +518,6 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 //	m_iLastRotation is initialized to the rotation of the owner.
 
 	{
-	int i;
-
 	//	See if we've got a special element with docking port geometry
 
 	CXMLElement *pDockingPorts = pElement->GetContentElementByTag(DOCKING_PORTS_TAG);
@@ -537,7 +562,7 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 			{
 			m_pPort = new SDockingPort[m_iPortCount];
 
-			for (i = 0; i < m_iPortCount; i++)
+			for (int i = 0; i < m_iPortCount; i++)
 				{
 				CXMLElement *pPort = pDockingPorts->GetContentElement(i);
 
@@ -599,7 +624,7 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 			//	Initialize ports
 
 			m_pPort = new SDockingPort[m_iPortCount];
-			for (i = 0; i < m_iPortCount; i++)
+			for (int i = 0; i < m_iPortCount; i++)
 				{
 				int iPortAngle = AngleMod(iStartAngle + mathRound(i * rAngle));
 				m_pPort[i].Pos = C3DObjectPos(iPortAngle, iRadius);
@@ -617,21 +642,27 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 
 		//	Convert from polar to Cartessian
 
-		int iMaxRadius;
-		InitXYPortPos(pOwner, GetScale(iScale), &iMaxRadius);
+		InitXYPortPos(pOwner, GetScale(iScale));
 
-		m_rMaxPlayerDist = (iMaxRadius + m_iMaxDist) * LIGHT_SECOND;
+		//	Calculate the farthest port, so we can compute the distance at which
+		//	to start showing auto-ports.
+
+		m_rMaxPlayerDist = (CalcMaxRadiusPixels() * g_KlicksPerPixel) + (m_iMaxDist * LIGHT_SECOND);
 		}
 
 	//	Otherwise, initialize ports based on a count
 
 	else
+		{
+		constexpr int DEFAULT_RADIUS = 64;
+
 		InitPorts(pOwner,
 				pElement->GetAttributeInteger(DOCKING_PORTS_ATTRIB),
-				64 * g_KlicksPerPixel);
+				DEFAULT_RADIUS * g_KlicksPerPixel);
+		}
 	}
 
-void CDockingPorts::InitXYPortPos (const CSpaceObject *pOwner, int iScale, int *retiMaxRadius) const
+void CDockingPorts::InitXYPortPos (const CSpaceObject *pOwner, int iScale) const
 
 //	InitXYPortPos
 //
@@ -639,10 +670,7 @@ void CDockingPorts::InitXYPortPos (const CSpaceObject *pOwner, int iScale, int *
 
 	{
 	if (m_iPortCount == 0)
-		{
-		if (retiMaxRadius) *retiMaxRadius = 0;
 		return;
-		}
 
 	//	If we've already computed x,y for this object rotation, then we're done.
 
@@ -661,10 +689,10 @@ void CDockingPorts::InitXYPortPos (const CSpaceObject *pOwner, int iScale, int *
 
 	//	Compute coordinates for each port
 
-	InitXYPortPos(iRotation, GetScale(iScale), retiMaxRadius);
+	InitXYPortPos(iRotation, GetScale(iScale));
 	}
 
-void CDockingPorts::InitXYPortPos (int iRotation, int iScale, int *retiMaxRadius) const
+void CDockingPorts::InitXYPortPos (int iRotation, int iScale) const
 
 //	InitXYPortPos
 //
@@ -675,22 +703,13 @@ void CDockingPorts::InitXYPortPos (int iRotation, int iScale, int *retiMaxRadius
 
 	//	Compute coordinates for each port
 
-	int iMaxRadius = 0;
 	for (int i = 0; i < m_iPortCount; i++)
 		if (!m_pPort[i].Pos.IsEmpty())
-			{
 			m_pPort[i].Pos.CalcCoord(GetScale(iScale), iRotation, &m_pPort[i].vPos);
-
-			int iRadius = m_pPort[i].Pos.GetRadius();
-			if (iRadius > iMaxRadius)
-				iMaxRadius = iRadius;
-			}
 
 	//	Done
 
 	m_iLastRotation = iRotation;
-	if (retiMaxRadius)
-		*retiMaxRadius = iMaxRadius;
 	}
 
 bool CDockingPorts::IsDocked (const CSpaceObject *pObj, int *retiPort) const
@@ -780,9 +799,13 @@ void CDockingPorts::OnDockObjDestroyed (CSpaceObject *pOwner, const SDestroyCtx 
 //	require a subscription. E.g., it is called when a station is destroyed.
 
 	{
+	DEBUG_TRY
+
 	for (int i = 0; i < m_iPortCount; i++)
 		if (m_pPort[i].pObj != NULL)
 			m_pPort[i].pObj->FireOnDockObjDestroyed(pOwner, Ctx);
+
+	DEBUG_CATCH
 	}
 
 void CDockingPorts::OnNewSystem (CSystem *pNewSystem)
@@ -911,7 +934,7 @@ void CDockingPorts::RepairAll (CSpaceObject *pOwner, int iRepairRate)
 					&& !pOwner->IsEnemy(m_pPort[i].pObj))
 				{
 				m_pPort[i].pObj->RepairDamage(iRepairRate);
-				m_pPort[i].pObj->ClearCondition(CConditionSet::cndRadioactive);
+				m_pPort[i].pObj->ClearCondition(ECondition::radioactive);
 				m_pPort[i].pObj->ScrapeOverlays();
 				}
 		}
@@ -1260,7 +1283,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 
 		//	Accelerate
 
-		pShip->Accelerate(vDeltaV * pShip->GetMass() / 10000.0, g_SecondsPerUpdate);
+		pShip->AddForce(vDeltaV * pShip->GetMass() / 10000.0);
 		pShip->ClipSpeed(rSpeed);
 		}
 

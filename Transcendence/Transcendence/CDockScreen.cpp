@@ -16,7 +16,6 @@ const int EXTRA_BACKGROUND_IMAGE =	128;
 #define NEUROHACK_TAG				CONSTLIT("Neurohack")
 #define ON_DISPLAY_INIT_TAG			CONSTLIT("OnDisplayInit")
 #define ON_INIT_TAG					CONSTLIT("OnInit")
-#define ON_PANE_INIT_TAG			CONSTLIT("OnPaneInit")
 #define ON_SCREEN_INIT_TAG			CONSTLIT("OnScreenInit")
 #define ON_SCREEN_UPDATE_TAG		CONSTLIT("OnScreenUpdate")
 #define PANES_TAG					CONSTLIT("Panes")
@@ -62,7 +61,8 @@ const int EXTRA_BACKGROUND_IMAGE =	128;
 #define ALIGN_MIDDLE				CONSTLIT("middle")
 
 CDockScreen::CDockScreen (CGameSession &Session) : 
-        m_Session(Session)
+        m_Session(Session),
+		m_CurrentPane(*this)
 
 //	CDockScreen constructor
 
@@ -190,7 +190,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the text code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::LinkCode(sCode)->Reference() : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), IMAGE_TAG))
 		{
@@ -224,7 +224,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the code that returns the image
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::LinkCode(sCode)->Reference() : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), CANVAS_TAG))
 		{
@@ -237,7 +237,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the draw code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::LinkCode(sCode)->Reference() : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), GROUP_TAG))
 		{
@@ -258,7 +258,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the text code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::LinkCode(sCode)->Reference() : NULL);
 		}
 
 	//	Done
@@ -410,12 +410,24 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 	//	Load the image
 
 	CG32bitImage *pImage = NULL;
+	int cxImage = 0;
+	int cyImage = 0;
 	switch (Desc.iType)
 		{
 		case EDockScreenBackground::image:
 		case EDockScreenBackground::heroImage:
 			if (Desc.dwImageID)
+				{
 				pImage = g_pUniverse->GetLibraryBitmap(Desc.dwImageID);
+
+				cxImage = RectWidth(Desc.rcImage);
+				if (cxImage == 0)
+					cxImage = pImage->GetWidth();
+
+				cyImage = RectHeight(Desc.rcImage);
+				if (cyImage == 0)
+					cyImage = pImage->GetHeight();
+				}
 			break;
 		}
 
@@ -450,14 +462,17 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 			{
 			BltSystemBackground(g_pUniverse->GetCurrentSystem(), rcRect);
 
+			int xImage, yImage;
+			m_Layout.CalcBackgroundImagePos(Desc, *pImage, alignCenter | alignMiddle, xImage, yImage);
+
 			m_pBackgroundImage->Blt(Desc.rcImage.left,
 					Desc.rcImage.top,
-					RectWidth(Desc.rcImage),
-					RectHeight(Desc.rcImage),
+					cxImage,
+					cyImage,
 					255,
 					*pImage,
-					xOffset + m_Layout.GetFrameImageFocusX() - (RectWidth(Desc.rcImage) / 2),
-					m_Layout.GetFrameImageFocusY() - (RectHeight(Desc.rcImage) / 2));
+					xImage,
+					yImage);
 			}
 		}
 
@@ -567,14 +582,20 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 	//	If we have an image with a mask, just blt the masked image
 
 	else if (pImage && pImage->GetAlphaType() != CG32bitImage::alphaNone)
-		m_pBackgroundImage->Blt(0, 0, pImage->GetWidth(), pImage->GetHeight(), 255, *pImage, xOffset, 0);
+		{
+		int xImage, yImage;
+		m_Layout.CalcBackgroundImagePos(Desc, *pImage, alignLeft | alignTop, xImage, yImage);
+		m_pBackgroundImage->Blt(Desc.rcImage.left, Desc.rcImage.top, cxImage, cyImage, 255, *pImage, xImage, yImage);
+		}
 
 	//	If we have an image with no mask, then we need to create our own mask.
 	//	If the image is larger than the space, then it is flush right with 
 	//	the center line. Otherwise, it is flush left.
 
 	else if (pImage)
-		BltToBackgroundImage(rcRect, pImage, 0, 0, pImage->GetWidth(), pImage->GetHeight());
+		{
+		BltToBackgroundImage(rcRect, pImage, Desc.rcImage.left, Desc.rcImage.top, cxImage, cyImage);
+		}
 
 	return NOERROR;
 	}
@@ -710,6 +731,19 @@ CG32bitImage *CDockScreen::GetDisplayCanvas (const CString &sID)
 
 	CGDrawArea *pCanvasControl = (CGDrawArea *)pControl->pArea;
 	return &pCanvasControl->GetCanvas();
+	}
+
+ICCItemPtr CDockScreen::GetListAsCCItem (void) const
+
+//	GetListAsCCItem
+//
+//	Returns the entire list.
+
+	{
+	if (m_pDisplay == NULL)
+		return ICCItemPtr::Nil();
+
+	return m_pDisplay->GetListAsCCItem();
 	}
 
 ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
@@ -1258,6 +1292,7 @@ void CDockScreen::InitOnUpdate (CXMLElement *pDesc)
 	}
 
 ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
+								 CPlayerShipController &Player,
 								 HWND hWnd, 
 								 RECT &rcRect, 
 								 CExtension *pExtension,
@@ -1296,7 +1331,7 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	m_pRoot = Frame.pRoot;
 	m_sScreen = Frame.sScreen;
 	m_pData = pData;
-	m_pPlayer = g_pTrans->GetPlayer();
+	m_pPlayer = &Player;
 	m_pExtension = pExtension;
 	m_pDesc = pDesc;
 
@@ -1369,10 +1404,10 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	If we have a deferred background setting, then use that (and reset it
 	//	so that we don't use it again).
 
-	if (m_DeferredBackground.iType != EDockScreenBackground::default)
+	if (m_DeferredBackground.iType != EDockScreenBackground::defaultBackground)
 		{
 		DisplayOptions.BackgroundDesc = m_DeferredBackground;
-		m_DeferredBackground.iType = EDockScreenBackground::default;
+		m_DeferredBackground.iType = EDockScreenBackground::defaultBackground;
 		}
 
 	//	Creates the title area
@@ -1406,9 +1441,14 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 
 	//	Create the main display object based on the type parameter.
 
-	m_pDisplay = IDockScreenDisplay::Create(*this, DisplayOptions.sType, retsError);
+	m_pDisplay = IDockScreenDisplay::Create(*this, DisplayOptions.sType, &sError);
 	if (m_pDisplay == NULL)
-		return ERR_FAIL;
+		{
+		m_pDisplay = IDockScreenDisplay::Create(*this, NULL_STR);
+		ReportError(sError);
+
+		//	Continue
+		}
 
 	//	Initialize
 
@@ -1443,7 +1483,7 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	to do so.
 
 	SDockScreenBackgroundDesc BackgroundDesc = DisplayOptions.BackgroundDesc;
-	if (BackgroundDesc.iType == EDockScreenBackground::default)
+	if (BackgroundDesc.iType == EDockScreenBackground::defaultBackground)
 		{
 		m_pDisplay->GetDefaultBackground(&BackgroundDesc);
 
@@ -1454,9 +1494,9 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	If we've got a default background and we're a nested frame, then use the
 	//	background of the previous frame.
 
-	if (BackgroundDesc.iType == EDockScreenBackground::default
+	if (BackgroundDesc.iType == EDockScreenBackground::defaultBackground
 			&& m_pDockSession->GetFrameStack().GetCount() > 1
-			&& m_pDockSession->GetFrameStack().GetCallingFrame().BackgroundDesc.iType != EDockScreenBackground::default)
+			&& m_pDockSession->GetFrameStack().GetCallingFrame().BackgroundDesc.iType != EDockScreenBackground::defaultBackground)
 		{
 		BackgroundDesc = m_pDockSession->GetFrameStack().GetCallingFrame().BackgroundDesc;
 		}
@@ -1522,6 +1562,16 @@ ALERROR CDockScreen::ReportError (const CString &sError)
 	::kernelDebugLogString(sNewError);
 
 	return ERR_FAIL;
+	}
+
+void CDockScreen::OnExecuteActionDone (void)
+
+//	OnExecuteActionDone
+//
+//	Called by the pane when it is done executing an action.
+
+	{
+	m_Session.OnExecuteActionDone();
 	}
 
 void CDockScreen::OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const
@@ -1841,7 +1891,7 @@ void CDockScreen::SetBackground (const SDockScreenBackgroundDesc &Desc)
 
 	//	Use a default, if necessary
 
-	if (Desc.iType == EDockScreenBackground::default)
+	if (Desc.iType == EDockScreenBackground::defaultBackground)
 		{
 		SDockScreenBackgroundDesc DefaultDesc;
 

@@ -7,9 +7,6 @@
 
 #define LEVEL_ATTRIB							CONSTLIT("level")
 
-#define PROPERTY_CORE_DEFAULT_INTERACTION		CONSTLIT("core.defaultInteraction")
-#define PROPERTY_CORE_DEFAULT_SHOT_HP			CONSTLIT("core.defaultShotHP")
-
 static int g_StdArmorDamageAdj[MAX_ITEM_LEVEL][damageCount] =
 	{
 		//	lsr knt par blt ion thr pos pls am  nan grv sng dac dst dlg dfr
@@ -97,6 +94,37 @@ CEngineOptions::CEngineOptions (void)
 		}
 	}
 
+bool CEngineOptions::HidesArmorImmunity (SpecialDamageTypes iSpecial) const
+
+//	HidesArmorImmunity
+//
+//	Returns TRUE if we should hide the given immunity from armor UI displays.
+//	We do this on high-level adventures (e.g., VotG) when all armors are immune
+//	to a particular special damage.
+
+	{
+	switch (iSpecial)
+		{
+		case specialBlinding:
+		case specialDeviceDamage:
+		case specialDeviceDisrupt:
+		case specialEMP:
+			return m_bHideIonizeImmune;
+
+		case specialDisintegration:
+			return m_bHideDisintegrationImmune;
+
+		case specialRadiation:
+			return m_bHideRadiationImmune;
+
+		case specialShatter:
+			return m_bHideShatterImmune;
+
+		default:
+			return false;
+		}
+	}
+
 bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable)
 
 //	InitDamageAdjFromXML
@@ -155,6 +183,11 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_DEFAULT_SHOT_HP);
 	m_iDefaultShotHP = (pValue->IsNil() ? -1 : Max(0, pValue->GetIntegerValue()));
+
+	m_bHideDisintegrationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_DISINTEGRATION_IMMUNE)->IsNil();
+	m_bHideIonizeImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_IONIZE_IMMUNE)->IsNil();
+	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
+	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
 
 	return true;
 	}

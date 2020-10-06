@@ -50,7 +50,7 @@ ALERROR CSoundRef::LoadUNID (SDesignLoadCtx &Ctx, const CString &sAttrib)
 	return ::LoadUNID(Ctx, sAttrib, &m_dwUNID);
 	}
 
-void CSoundRef::PlaySound (CSpaceObject *pSource)
+void CSoundRef::PlaySound (CSpaceObject *pSource) const
 
 //	PlaySound
 //

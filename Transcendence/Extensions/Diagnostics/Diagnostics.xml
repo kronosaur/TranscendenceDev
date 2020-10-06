@@ -4,7 +4,7 @@
 	[
 	<!ENTITY unidExtension				"0xA0010000">
 	<!ENTITY unidCoverImage				"0xA0010001">
-	<!ENTITY unidDiagnostics			"0xA0010002">
+	<!ENTITY unidDiagnosticsCompatible	"0xA0010002">
 	<!ENTITY unidItemUnitTests			"0xA0010003">
 	<!ENTITY unidRPGUnitTests			"0xA0010004">
 	<!ENTITY unidTopologyTests			"0xA0010005">
@@ -17,6 +17,11 @@
 	<!ENTITY itTestArmorScaled			"0xA0010041">
 	<!ENTITY itTestWeaponScaled			"0xA0010042">
 	<!ENTITY itTestWeaponRelativistic	"0xA0010043">
+	<!ENTITY itTestWeaponSideMounted	"0xA0010044">
+	<!ENTITY itTestWeaponExternal		"0xA0010045">
+	<!ENTITY itTestWeaponFading			"0xA0010046">
+	<!ENTITY itTestRareInNewBeyond1		"0xA0010047">
+	<!ENTITY itTestRareInNewBeyond2		"0xA0010048">
 
 	<!-- 0080-00BF TEST FUNCTIONS -->
 
@@ -26,6 +31,7 @@
 	<!ENTITY unidCCStringTests			"0xA0010083">
 	<!ENTITY unidCCLogicalOperators		"0xA0010084">
 	<!ENTITY unidSystemFunctionTests	"0xA0010085">
+	<!ENTITY unidCCListTests			"0xA0010086">
 
 	<!-- 00C0-00FF TEST MISSIONS -->
 
@@ -45,15 +51,21 @@
 	<!ENTITY unidTestStationType		"0xA0010104">
 	<!ENTITY unidTestArmorClass			"0xA0010105">
 	<!ENTITY stTestStation1				"0xA0010106">
+	<!ENTITY stTestStation2				"0xA0010107">
 
 	<!-- 0140-017F TEST OVERLAYS -->
 
 	<!ENTITY unidTestOverlays			"0xA0010140">
 	<!ENTITY ovTestOverlay01			"0xA0010141">
+	<!ENTITY ovTestOverlay02			"0xA0010142">
 
 	<!-- 0180-01CF TEST TSE -->
 
 	<!ENTITY unidTestTSE				"0xA0010180">
+
+	<!-- 01D0-01FF TEST SHIP CLASSES -->
+
+	<!ENTITY unidShipClassTests			"0xA00101D0">
 
 	<!-- OTHER -->
 
@@ -80,6 +92,7 @@
 	<Module filename="ItemUnitTests.xml"/>
 	<Module filename="MissionUnitTests.xml"/>
 	<Module filename="RPGUnitTests.xml"/>
+	<Module filename="ShipClassTests.xml"/>
 	<Module filename="SystemFunctionTests.xml"/>
 	<Module filename="TestArmorClasses.xml"/>
 	<Module filename="TestItems.xml"/>
@@ -91,7 +104,7 @@
 
 <!-- DIAGNOSTICS -->
 
-	<Type unid="&unidDiagnostics;">
+	<Type unid="&unidDiagnosticsCompatible;">
 		<Events>
 			<OnGlobalStartDiagnostics>
 				(block ()
@@ -112,20 +125,6 @@
 					; (diagDebugOreTable)
 					)
 			</OnGlobalSystemDiagnostics>
-
-			<OnGlobalEndDiagnostics>
-				(block (
-					(totalTests (or (typGetData &unidDiagnostics; 'totalTests) 0))
-					(totalFailures (or (typGetData &unidDiagnostics; 'totalFailures) 0))
-					)
-					(print "Total Tests: " (fmtNumber totalTests))
-					(print "Failed Tests: " (fmtNumber totalFailures) "\n")
-
-					(if (gr totalFailures 0)
-						(error "One or more tests failed.")
-						)
-					)
-			</OnGlobalEndDiagnostics>
 		</Events>
 	</Type>
 
@@ -241,6 +240,41 @@
 				)
 			))
 
+		(setq diagTestEnhanceCombine (lambda (itemType enhance1 enhance2)
+			(block (
+				result1 result2
+				)
+				(if (= enhance1 'damaged)
+					(objAddItem gPlayerShip (itmSet@ itemType 'damaged True))
+
+					(block ()
+						(objAddItem gPlayerShip itemType)
+						
+						(setq result1 
+							(objEnhanceItem gPlayerShip 
+								(@ (objGetItems gPlayerShip (cat "*U +unid:" itemType ";")) 0)
+								enhance1
+								)
+							)
+						(if (and (!= (@ result1 'resultCode) 'ok) (!= (@ result1 'resultCode) 'defectOK))
+							(error "Unexpected result: " result1)
+							)
+						)
+					)
+
+				(setq result2
+					(objEnhanceItem gPlayerShip 
+						(@ (objGetItems gPlayerShip (cat "*U +unid:" itemType ";")) 0)
+						enhance2
+						)
+					)
+
+				(objRemoveItem gPlayerShip (@ (objGetItems gPlayerShip (cat "*U +unid:" itemType ";")) 0))
+
+				result2
+				)
+			))
+
 		(setq diagTestMeteorsteel (lambda ()
 			(block ()
 				(diagRun (list
@@ -344,7 +378,9 @@
 				;	Done with player ship
 
 				(objDestroy gPlayerShip)
-				(setq gPlayerShip Nil)
+				(if gPlayerShip
+					(error "gPlayerShip not cleared")
+					)
 				)
 			))
 
@@ -382,28 +418,32 @@
 		;	HELPERS ------------------------------------------------------------
 
 		(setq diagCreatePlayerShip (lambda (options)
-			(block ()
-				(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
-				(if (not gPlayerShip)
+			(block (playerObj)
+				(setq playerObj (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+				(if (not playerObj)
 					(error "Unable to create player ship.")
 					)
-				(shpOrder gPlayerShip 'hold)
+				(shpOrder playerObj 'hold)
 
 				;	Add the biggest reactor
 
-				(objAddItem gPlayerShip (itmCreate &it1GWReactor; 1))
-				(shpInstallDevice gPlayerShip (itmCreate &it1GWReactor; 1))
-				(shpRefuelFromItem gPlayerShip (itmCreate &itHadronVacuumFuelCell; 100))
-				(objAddItem gPlayerShip (itmCreate &itMilitaryID; 1))
+				(objAddItem playerObj (itmCreate &it1GWReactor; 1))
+				(shpInstallDevice playerObj (itmCreate &it1GWReactor; 1))
+				(shpRefuelFromItem playerObj (itmCreate &itHadronVacuumFuelCell; 100))
+				(objAddItem playerObj (itmCreate &itMilitaryID; 1))
 
 				;	Add money
 
-				(objCredit gPlayerShip 1000000)
-				(objCredit gPlayerShip 'rin 1000000)
+				(objCredit playerObj 1000000)
+				(objCredit playerObj 'rin 1000000)
+
+				;	Set gPlayerShip
+
+				(diagSetPlayerShip playerObj)
 
 				;	Return the ship
 
-				gPlayerShip
+				playerObj
 				)
 			))
 
@@ -437,55 +477,6 @@
 								(error (cat "Installation failed: " (itmGetName installedItem 0) "."))
 								)
 							)
-					)
-				)
-			))
-
-		(setq diagRun (lambda (testList)
-			(block ()
-				(enum testList theTest
-					(if theTest
-						(errBlock (theError)
-							(typIncData &unidDiagnostics; 'totalTests)
-							(theTest)
-
-							(block ()
-								(print "ERROR: " theError)
-								(typIncData &unidDiagnostics; 'totalFailures)
-								)
-							)
-						)
-					)
-				)
-			))
-
-		(setq diagEval (lambda (testList data)
-			(enum testList theTest
-				(if theTest
-					(block (
-						(testResult (eval (@ theTest 'test)))
-						)
-						(typIncData &unidDiagnostics; 'totalTests)
-
-						(switch
-							;	If we don't care about the test result, then we just execute
-
-							(= (@ theTest 'result) 'ignore)
-								testResult
-
-							;	If the test succeeds, then we're good
-
-							(= testResult (@ theTest 'result))
-								True
-
-							;	Failed
-
-							(block ()
-								(print "ERROR: " (@ theTest 'test) " - " testResult " [expected " (@ theTest 'result) "]")
-								(typIncData &unidDiagnostics; 'totalFailures)
-								)
-							)
-						)
 					)
 				)
 			))

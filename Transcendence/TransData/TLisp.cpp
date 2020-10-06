@@ -26,7 +26,7 @@ void Run (CUniverse &Universe, CXMLElement *pCmdLine)
 		}
 
 	CSystem *pSystem;
-	if (error = g_pUniverse->CreateStarSystem(pNode, &pSystem))
+	if (error = g_pUniverse->CreateStarSystem(*pNode, &pSystem))
 		{
 		printf("ERROR: Unable to create star system.\n");
 		return;

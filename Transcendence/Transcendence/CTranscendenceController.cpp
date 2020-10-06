@@ -98,6 +98,8 @@
 #define CMD_MODEL_INIT_DONE						CONSTLIT("modelInitDone")
 #define CMD_MODEL_NEW_GAME_CREATED				CONSTLIT("modelNewGameCreated")
 
+#define CMD_ON_KEYBOARD_MAPPING_CHANGED			CONSTLIT("onKeyboardMappingChanged")
+
 #define CMD_PLAYER_COMBAT_ENDED					CONSTLIT("playerCombatEnded")
 #define CMD_PLAYER_COMBAT_STARTED				CONSTLIT("playerCombatStarted")
 #define CMD_PLAYER_UNDOCKED						CONSTLIT("playerUndocked")
@@ -125,6 +127,7 @@
 #define CMD_UI_CHANGE_PASSWORD					CONSTLIT("uiChangePassword")
 #define CMD_UI_EXIT								CONSTLIT("uiExit")
 #define CMD_UI_GET_COLLECTION					CONSTLIT("uiGetCollection")
+#define CMD_UI_HIDE_STATION_LIST   				CONSTLIT("uiHideStationList")
 #define CMD_UI_MUSIC_VOLUME_DOWN				CONSTLIT("uiMusicVolumeDown")
 #define CMD_UI_MUSIC_VOLUME_UP					CONSTLIT("uiMusicVolumeUp")
 #define CMD_UI_RESET_PASSWORD					CONSTLIT("uiResetPassword")
@@ -135,6 +138,7 @@
 #define CMD_UI_SHOW_MOD_EXCHANGE				CONSTLIT("uiShowModExchange")
 #define CMD_UI_SHOW_PROFILE						CONSTLIT("uiShowProfile")
 #define CMD_UI_SHOW_SETTINGS    				CONSTLIT("uiShowSettings")
+#define CMD_UI_SHOW_STATION_LIST   				CONSTLIT("uiShowStationList")
 #define CMD_UI_SIGN_OUT							CONSTLIT("uiSignOut")
 #define CMD_UI_START_EPILOGUE					CONSTLIT("uiStartEpilogue")
 #define CMD_UI_START_GAME						CONSTLIT("uiStartGame")
@@ -590,7 +594,7 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 		if (m_Settings.GetBoolean(CGameSettings::force1280Res))
 			{
 			retOptions->m_cxScreenDesired = 1280;
-			retOptions->m_cyScreenDesired = 768;
+			retOptions->m_cyScreenDesired = 960;
 			}
 		else if (m_Settings.GetBoolean(CGameSettings::force1024Res))
 			{
@@ -859,7 +863,6 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		SNewGameSettings Defaults;
 		Defaults.sPlayerName = m_Settings.GetString(CGameSettings::playerName);
 		Defaults.iPlayerGenome = ParseGenomeID(m_Settings.GetString(CGameSettings::playerGenome));
-		Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
 		Defaults.dwPlayerShip = (DWORD)m_Settings.GetInteger(CGameSettings::playerShipClass);
 
 		//	If the player name is NULL then we come up with a better idea
@@ -885,12 +888,19 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		//	Validate difficulty
 
-		if (Defaults.iDifficulty == CDifficultyOptions::lvlUnknown)
-			Defaults.iDifficulty = CDifficultyOptions::lvlStory;
+		Defaults.iDifficulty = m_Model.GetUniverse().GetCurrentAdventureDesc().GetDifficulty();
+		if (Defaults.iDifficulty != CDifficultyOptions::lvlUnknown)
+			Defaults.bDifficultyLocked = true;
+		else
+			{
+			Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
+			if (Defaults.iDifficulty == CDifficultyOptions::lvlUnknown)
+				Defaults.iDifficulty = CDifficultyOptions::lvlStory;
+			}
 
 		//	New game screen
 
-		if (error = m_HI.ShowSession(new CNewGameSession(m_HI, m_Service, Defaults), &sError))
+		if (error = m_HI.ShowSession(new CNewGameSession(m_HI, m_Service, m_Model.GetUniverse(), Defaults), &sError))
 			{
 			kernelDebugLogString(sError);
 			m_HI.OpenPopupSession(new CMessageSession(m_HI, ERR_CANT_START_GAME, sError, CMD_UI_BACK_TO_INTRO));
@@ -1124,7 +1134,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 	else if (strEquals(sCmd, CMD_GAME_END_DELETE))
 		{
 		if (error = m_Model.EndGameDelete(&sError))
-			g_pTrans->DisplayMessage(sError);
+			m_pGameSession->DisplayMessage(sError);
 
 		//	Back to intro screen
 
@@ -1160,13 +1170,13 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 	else if (strEquals(sCmd, CMD_GAME_END_SAVE))
 		{
 		if (error = m_Model.EndGameSave(&sError))
-			g_pTrans->DisplayMessage(sError);
+			m_pGameSession->DisplayMessage(sError);
 
-        //	Back to intro screen
+		//	Back to intro screen
 
-        m_pGameSession = NULL;
-        if (m_Model.GetPlayer())
-            m_Model.GetPlayer()->SetGameSession(NULL);
+		m_pGameSession = NULL;
+		if (m_Model.GetPlayer())
+			m_Model.GetPlayer()->SetGameSession(NULL);
 		m_HI.ShowSession(new CIntroSession(m_SessionCtx, CIntroSession::isShipStats));
 		m_iState = stateIntro;
 		DisplayMultiverseStatus(m_Multiverse.GetServiceStatus());
@@ -1177,8 +1187,8 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 	else if (strEquals(sCmd, CMD_GAME_READY))
 		{
-        m_pGameSession = new CGameSession(m_SessionCtx);
-        m_Model.GetPlayer()->SetGameSession(m_pGameSession);
+		m_pGameSession = new CGameSession(m_SessionCtx);
+		m_Model.GetPlayer()->SetGameSession(m_pGameSession);
 		m_HI.ShowSession(m_pGameSession);
 		m_iState = stateInGame;
 
@@ -1194,9 +1204,9 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		{
 		CString sFilename = m_Model.GetGameFile().GetFilespec();
 		if (error = m_Model.EndGameNoSave(&sError))
-			g_pTrans->DisplayMessage(sError);
+			m_pGameSession->DisplayMessage(sError);
 
-        //	Back to intro screen
+		//	Back to intro screen
 
 		m_pGameSession = NULL;
 		if (m_Model.GetPlayer())
@@ -1240,8 +1250,8 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		{
 		CTopologyNode *pDestNode = (CTopologyNode *)pData;
 
-        if (m_pGameSession)
-            m_pGameSession->OnPlayerEnteredStargate(pDestNode);
+		if (m_pGameSession)
+			m_pGameSession->OnPlayerEnteredStargate(pDestNode);
 
 		if (pDestNode && !pDestNode->IsEndGame())
 			{
@@ -1303,9 +1313,9 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		//	Otherwise, start epilog session
 
-        m_pGameSession = NULL;
-        if (m_Model.GetPlayer())
-            m_Model.GetPlayer()->SetGameSession(NULL);
+		m_pGameSession = NULL;
+		if (m_Model.GetPlayer())
+			m_Model.GetPlayer()->SetGameSession(NULL);
 		m_HI.ShowSession(new CTextCrawlSession(m_HI, m_Service, pCrawlImage, sCrawlText, CMD_SESSION_EPILOGUE_DONE));
 		m_iState = stateEpilogue;
 		m_Soundtrack.SetGameState(CSoundtrackManager::stateGameEpitaph, m_Model.GetCrawlSoundtrack());
@@ -1378,7 +1388,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		if (!m_Model.IsGalacticMapAvailable(&sError))
 			{
-			g_pTrans->DisplayMessage(sError);
+			m_pGameSession->DisplayMessage(sError);
 			return NOERROR;
 			}
 
@@ -1390,21 +1400,21 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		//	Close the system map, if it is open
 
-        m_pGameSession->ShowSystemMap(false);
+		m_pGameSession->ShowSystemMap(false);
 		}
 
-    //  Switch back to system map
+	//  Switch back to system map
 
-    else if (strEquals(sCmd, CMD_UI_SWITCH_TO_SYSTEM_MAP))
-        {
-        //  Close galactic map
+	else if (strEquals(sCmd, CMD_UI_SWITCH_TO_SYSTEM_MAP))
+		{
+		//  Close galactic map
 
-        m_HI.ClosePopupSession();
+		m_HI.ClosePopupSession();
 
-        //  Show system map
+		//  Show system map
 
-        m_pGameSession->ShowSystemMap(true);
-        }
+		m_pGameSession->ShowSystemMap(true);
+		}
 
 	//	Show game stats session
 
@@ -1430,18 +1440,32 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 	else if (strEquals(sCmd, CMD_UI_SHOW_HELP))
 		{
 		DisplayMultiverseStatus(NULL_STR);
-		CHelpSession *pSession = new CHelpSession(m_HI);
+		CHelpSession *pSession = new CHelpSession(m_HI, m_Settings);
 		if (error = m_HI.OpenPopupSession(pSession))
 			return error;
 		}
 
-    //  Show game settings
+	//  Show game settings
 
-    else if (strEquals(sCmd, CMD_UI_SHOW_SETTINGS))
-        {
-        if (error = m_HI.OpenPopupSession(new CKeyboardMapSession(m_HI, m_Service, m_Settings)))
-            return error;
-        }
+	else if (strEquals(sCmd, CMD_UI_SHOW_SETTINGS))
+		{
+		if (error = m_HI.OpenPopupSession(new CKeyboardMapSession(m_HI, m_Service, m_Settings)))
+			return error;
+		}
+
+	//	Show station list
+
+	else if (strEquals(sCmd, CMD_UI_SHOW_STATION_LIST))
+		{
+		if (m_pGameSession)
+			m_pGameSession->ShowStationList(true);
+		}
+
+	else if (strEquals(sCmd, CMD_UI_HIDE_STATION_LIST))
+		{
+		if (m_pGameSession)
+			m_pGameSession->ShowStationList(false);
+		}
 
 	//	Volume controls
 
@@ -1451,7 +1475,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		if (--iVolume >= 0)
 			{
 			SetOptionInteger(CGameSettings::musicVolume, iVolume);
-			g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
+			m_pGameSession->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
 			}
 		}
 	else if (strEquals(sCmd, CMD_UI_MUSIC_VOLUME_UP))
@@ -1460,7 +1484,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		if (++iVolume <= 10)
 			{
 			SetOptionInteger(CGameSettings::musicVolume, iVolume);
-			g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
+			m_pGameSession->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
 			}
 		}
 	else if (strEquals(sCmd, CMD_UI_VOLUME_DOWN))
@@ -1469,7 +1493,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		if (--iVolume >= 0)
 			{
 			SetOptionInteger(CGameSettings::soundVolume, iVolume);
-			g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
+			m_pGameSession->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
 			}
 		}
 	else if (strEquals(sCmd, CMD_UI_VOLUME_UP))
@@ -1478,7 +1502,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		if (++iVolume <= 10)
 			{
 			SetOptionInteger(CGameSettings::soundVolume, iVolume);
-			g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
+			m_pGameSession->DisplayMessage(strPatternSubst(CONSTLIT("Volume %d"), iVolume));
 			}
 		}
 
@@ -1664,7 +1688,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		//	task to process the download.
 
 		else if (!m_Settings.GetBoolean(CGameSettings::noCollectionDownload)
-                && !m_Settings.GetBoolean(CGameSettings::noCollectionLoad)
+				&& !m_Settings.GetBoolean(CGameSettings::noCollectionLoad)
 				&& RequestCatalogDownload(Download))
 			{
 			m_iBackgroundState = stateDownloadingCatalogEntry;
@@ -1802,7 +1826,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 	else if (strEquals(sCmd, CMD_SERVICE_DOWNLOAD_RESOURCES))
 		{
 		if (!m_Settings.GetBoolean(CGameSettings::noCollectionDownload)
-                && !m_Settings.GetBoolean(CGameSettings::noCollectionLoad))
+				&& !m_Settings.GetBoolean(CGameSettings::noCollectionLoad))
 			{
 			TArray<CString> LocalFilenames;
 			m_Model.GetUniverse().GetExtensionCollection().GetRequiredResources(&LocalFilenames);
@@ -1993,6 +2017,14 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		//	Callers are expected to reload the collection
 		}
 
+	//	Notify that keyboard mappings have changed.
+
+	else if (strEquals(sCmd, CMD_ON_KEYBOARD_MAPPING_CHANGED))
+		{
+		if (m_pGameSession)
+			m_pGameSession->OnKeyboardMappingChanged();
+		}
+
 	//	Exit
 
 	else if (strEquals(sCmd, CMD_UI_EXIT))
@@ -2061,9 +2093,9 @@ ALERROR CTranscendenceController::OnInit (CString *retsError)
 
 	ExtensionFolders.Insert(m_Settings.GetExtensionFolders());
 
-    //  Let the service add more extension folders (Steam needs this)
+	//  Let the service add more extension folders (Steam needs this)
 
-    ExtensionFolders.Insert(m_Service.GetExtensionFolders());
+	ExtensionFolders.Insert(m_Service.GetExtensionFolders());
 
 	//	If our AppData is elsewhere, then add an Extensions folder under the
 	//	current folder. [This allows the player to manually place extensions in Program Files.]

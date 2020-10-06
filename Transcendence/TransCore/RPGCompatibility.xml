@@ -679,6 +679,11 @@
 			>
 	</ShipClass>
 
+	<Type UNID="&baStdAutonBaseOld;"
+			obsoleteVersion="50"
+			>
+	</Type>
+	
 <!-- RPG USE ITEM ==============================================================
 
 	This screen allows the player to use an item on another item or device.

@@ -33,12 +33,9 @@ CTranscendenceWnd::CTranscendenceWnd (HWND hWnd, CTranscendenceController *pTC) 
 		m_pCurrentScreen(NULL),
 		m_bAutopilot(false),
 		m_dwIntroShipClass(0),
-		m_CurrentMenu(menuNone),
-		m_CurrentPicker(pickNone),
 		m_pIntroSystem(NULL),
 		m_pStargateEffect(NULL),
 		m_pMenuObj(NULL),
-		m_bRedirectDisplayMessage(false),
 		m_chKeyDown('\0'),
 		m_bDockKeyDown(false),
 		m_bPaused(false)
@@ -58,7 +55,6 @@ void CTranscendenceWnd::CleanUpPlayerShip (void)
 	{
 	DEBUG_TRY
 
-	m_LRSDisplay.CleanUp();
 	m_DeviceDisplay.CleanUp();
 	m_MenuDisplay.CleanUp();
 	m_PickerDisplay.CleanUp();
@@ -304,24 +300,6 @@ void CTranscendenceWnd::PlayerEnteredGate (CSystem *pSystem,
 	m_iCountdown = TICKS_BEFORE_GATE;
 	m_State = gsEnteringStargate;
 	m_bAutopilot = false;
-	}
-
-void CTranscendenceWnd::RedirectDisplayMessage (bool bRedirect)
-
-//	RedirectDisplayMessage
-//
-//	Start/stop displaying messages
-
-	{
-	if (bRedirect)
-		{
-		m_bRedirectDisplayMessage = true;
-		m_sRedirectMessage = NULL_STR;
-		}
-	else
-		{
-		m_bRedirectDisplayMessage = false;
-		}
 	}
 
 void CTranscendenceWnd::ReportCrash (void)
@@ -676,22 +654,12 @@ ALERROR CTranscendenceWnd::StartGame (void)
 	if (error = InitDisplays())
 		return error;
 
-	//	Welcome
-
-	m_MessageDisplay.ClearAll();
-	const CString &sWelcome = g_pUniverse->GetCurrentAdventureDesc().GetWelcomeMessage();
-	if (!sWelcome.IsBlank())
-		m_MessageDisplay.DisplayMessage(sWelcome, m_Fonts.rgbTitleColor);
-
 	//	Set the state appropriately
 
 	m_State = gsInGame;
 	m_bPaused = false;
 	m_bPausedStep = false;
 	m_bAutopilot = false;
-	m_CurrentPicker = pickNone;
-	m_CurrentMenu = menuNone;
-	m_iTick = 0;
 
 	return NOERROR;
 	}

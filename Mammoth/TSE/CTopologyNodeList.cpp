@@ -16,7 +16,7 @@ void CTopologyNodeList::Delete (CTopologyNode *pNode)
 		m_List.Delete(iIndex);
 	}
 
-ALERROR CTopologyNodeList::Filter (CTopologyNode::SCriteriaCtx &Ctx, CXMLElement *pCriteria, CTopologyNodeList *retList, CString *retsError)
+ALERROR CTopologyNodeList::Filter (CTopologyNodeCriteria::SCtx &Ctx, CXMLElement *pCriteria, CTopologyNodeList *retList, CString *retsError)
 
 //	Filter
 //
@@ -24,11 +24,13 @@ ALERROR CTopologyNodeList::Filter (CTopologyNode::SCriteriaCtx &Ctx, CXMLElement
 
 	{
 	ALERROR error;
+	if (!pCriteria)
+		return NOERROR;
 
 	//	Parse the filter
 
-	CTopologyNode::SCriteria Crit;
-	if (error = CTopologyNode::ParseCriteria(pCriteria, &Crit, retsError))
+	CTopologyNodeCriteria Crit;
+	if (error = Crit.Parse(*pCriteria, retsError))
 		return error;
 
 	//	Filter
@@ -42,7 +44,7 @@ ALERROR CTopologyNodeList::Filter (CTopologyNode::SCriteriaCtx &Ctx, CXMLElement
 	return NOERROR;
 	}
 
-ALERROR CTopologyNodeList::Filter (CTopologyNode::SCriteriaCtx &Ctx, CTopologyNode::SCriteria &Crit, CTopologyNodeList *ioList)
+ALERROR CTopologyNodeList::Filter (CTopologyNodeCriteria::SCtx &Ctx, CTopologyNodeCriteria &Crit, CTopologyNodeList *ioList)
 
 //	Filter
 //
@@ -53,7 +55,7 @@ ALERROR CTopologyNodeList::Filter (CTopologyNode::SCriteriaCtx &Ctx, CTopologyNo
 
 	for (int i = 0; i < m_List.GetCount(); i++)
 		{
-		if (m_List[i]->MatchesCriteria(Ctx, Crit))
+		if (Crit.Matches(Ctx, *m_List[i]))
 			ioList->Insert(m_List[i]);
 		}
 
@@ -181,4 +183,15 @@ void CTopologyNodeList::SaveAndSetMarks (bool bMark, TArray<bool> *retSaved)
 		retSaved->GetAt(i) = m_List[i]->IsMarked();
 		m_List[i]->SetMarked(bMark);
 		}
+	}
+
+void CTopologyNodeList::SetMarked (bool bMark) const
+
+//	SetMarked
+//
+//	Sets all marks.
+
+	{
+	for (int i = 0; i < m_List.GetCount(); i++)
+		m_List[i]->SetMarked(bMark);
 	}

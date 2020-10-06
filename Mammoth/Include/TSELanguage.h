@@ -5,6 +5,8 @@
 
 #pragma once
 
+class CDesignCollection;
+class CScript;
 struct SDesignLoadCtx;
 
 enum NounFlags
@@ -44,6 +46,7 @@ enum NounPhraseFlags
 	nounNoQuotes			= 0x00080000,	//	Convert double-quotes to single-quotes (for use inside quoted text)
 	nounEscapeQuotes		= 0x00100000,	//	Convert double-quotes to escaped double-quotes
 	nounHUDName				= 0x00200000,	//  Name to be displayed on the HUD
+	nounDefinitePhrase		= 0x00400000,	//	Prefix with "the", if an article is needed
 	};
 
 class CLanguage
@@ -94,7 +97,7 @@ class CLanguage
 			};
 
 		static int CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecimal);
-		static CString Compose (const CString &sString, ICCItem *pArgs);
+		static CString Compose (const CString &sString, const ICCItem *pArgs);
 		static CString ComposeGenderedWord (const CString &sWord, GenomeTypes iGender);
 		static CString ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags);
 		static CString ComposeNumber (ENumberFormatTypes iFormat, int iNumber);
@@ -110,6 +113,7 @@ class CLanguage
 		static DWORD ParseNounFlags (const CString &sValue);
 		static CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, SNounDesc *retDesc = NULL);
 		static ENumberFormatTypes ParseNumberFormat (const CString &sValue);
+		static bool ValidateTranslation (const CString &sText);
 
 	private:
 		struct SVarInfo
@@ -120,9 +124,44 @@ class CLanguage
 			bool bDone = false;
 			};
 
-		static CString ComposeCharacterReference (CUniverse &Universe, const CString &sCharacter, const CString &sField, ICCItem *pData);
-		static CString ComposeGenderedWordHelper (CUniverse &Universe, const CString &sWord, const CString &sField, ICCItem *pData);
+		static CString ComposeCharacterReference (CUniverse &Universe, const CString &sCharacter, const CString &sField, const ICCItem *pData);
+		static CString ComposeGenderedWordHelper (CUniverse &Universe, const CString &sWord, const CString &sField, const ICCItem *pData);
 		static CString ParseVar (char *pPos, SVarInfo &retVarInfo, char **retpPos);
+	};
+
+class CScript
+	{
+	public:
+		enum class ParagraphStyle
+			{
+			none,
+
+			normal,					//	A description paragraph
+			normalLine,				//	Normal paragraph, but single line break
+			centered,				//	A centered block of text
+			centeredLine,			//	A centered line of text
+			};
+			
+		struct SParagraph
+			{
+			CString sText;
+			ParagraphStyle iStyle = ParagraphStyle::none;
+			};
+
+		struct SScriptEntry
+			{
+			const CDesignType *pSource = NULL;
+			CString sScript;
+			};
+
+		void DeleteAll (void) { m_Script.DeleteAll(); }
+		void Init (const CDesignCollection &Design, const TSortMap<CString, SScriptEntry> &Text);
+		void OutputConsole (void) const;
+
+	private:
+		void AddScriptText (const CDesignCollection &Design, const SScriptEntry &Entry);
+
+		TArray<SParagraph> m_Script;
 	};
 
 class CLanguageDataBlock
@@ -139,22 +178,23 @@ class CLanguageDataBlock
 			{
 			const CSpaceObject *pSource = NULL;
 			const CItem *pItem = NULL;
-			ICCItem *pData = NULL;
+			const ICCItem *pData = NULL;
 			};
 
 		CLanguageDataBlock (void) { }
 		CLanguageDataBlock (const CLanguageDataBlock &Src) { Copy(Src); }
 		~CLanguageDataBlock (void) { CleanUp(); }
 
-		inline CLanguageDataBlock &operator= (const CLanguageDataBlock &Src) { CleanUp(); Copy(Src); return *this; }
+		CLanguageDataBlock &operator= (const CLanguageDataBlock &Src) { CleanUp(); Copy(Src); return *this; }
 
+		void AccumulateScript (const CDesignType *pSource, const CString &sScript, TSortMap<CString, CScript::SScriptEntry> &Script) const;
 		void AddEntry (const CString &sID, const CString &sText);
 		void DeleteAll (void);
-		inline int GetCount (void) const { return m_Data.GetCount(); }
+		int GetCount (void) const { return m_Data.GetCount(); }
 		SEntryDesc GetEntry (int iIndex) const;
-		inline bool HasEntry (const CString &sID) const { return (m_Data.GetAt(sID) != NULL); }
+		bool HasEntry (const CString &sID) const { return (m_Data.GetAt(sID) != NULL); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		inline bool IsEmpty (void) const { return (m_Data.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_Data.GetCount() == 0); }
 		void MergeFrom (const CLanguageDataBlock &Source);
 		bool Translate (const CDesignType &Type, const CString &sID, const SParams &Params, ICCItemPtr &retResult) const;
 		bool TranslateText (const CDesignType &Type, const CString &sID, const SParams &Params, CString *retsText) const;
@@ -178,16 +218,17 @@ class CLanguageDataBlock
 			ICCItem *pCode;
 			};
 
-		inline void CleanUp (void) { DeleteAll(); }
-		ICCItemPtr ComposeCCItem (ICCItem *pValue, ICCItem *pData) const;
-		bool ComposeCCResult (ETranslateResult iResult, ICCItem *pData, const TArray<CString> &List, const CString &sText, ICCItem *pCCResult, ICCItemPtr &retResult) const;
-		ETranslateResult ComposeResult (ICCItem *pResult, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
+		void CleanUp (void) { DeleteAll(); }
+		ICCItemPtr ComposeCCItem (ICCItem *pValue, const ICCItem *pData) const;
+		bool ComposeCCResult (ETranslateResult iResult, const ICCItem *pData, const TArray<CString> &List, const CString &sText, ICCItem *pCCResult, ICCItemPtr &retResult) const;
+		ETranslateResult ComposeResult (ICCItem *pResult, const ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
 		bool ComposeTextResult (ETranslateResult iResult, const TArray<CString> &List, CString *retsText) const;
 		void Copy (const CLanguageDataBlock &Src);
 		bool IsCode (const CString &sText) const;
 		CString ParseTextBlock (const CString &sText) const;
+		static bool ParseScriptParam (const CString &sValue, CString *retsScript, CString *retsOrder, CString *retsHeader);
 		ETranslateResult TranslateEval (const CDesignType &Type, const CString &sID, const SParams &Params, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
-		const SEntry *TranslateTry (const CString &sID, ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText = NULL, CString *retsText = NULL) const;
+		const SEntry *TranslateTry (const CString &sID, const ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText = NULL, CString *retsText = NULL) const;
 
 		TSortMap<CString, SEntry> m_Data;
 	};
@@ -223,23 +264,29 @@ class CVirtualKeyData
 	public:
 		static constexpr DWORD FLAG_NON_STANDARD =			0x00000001;	//	Not available in keyboard UI
 		static constexpr DWORD FLAG_SPECIAL_KEY =			0x00000002;	//	Custom VK code
+		static constexpr DWORD FLAG_XY_INPUT =				0x00000004;	//	XY input (e.g., mouse position or joystick)
+		static constexpr DWORD FLAG_SCROLL_INPUT =			0x00000008;	//	Scroll wheel
 
-		static constexpr DWORD INVALID_VIRT_KEY = 0xFFFFFFFF;
-		static constexpr DWORD VK_NUMPAD_ENTER = 0xE0;
+		static constexpr DWORD INVALID_VIRT_KEY =			0xFFFFFFFF;
+		static constexpr DWORD VK_MOUSE_MOVE =				0x07;
+		static constexpr DWORD VK_NUMPAD_ENTER =			0xE0;
 
 		static DWORD GetKey (const CString &sKey);
 		static DWORD GetKeyFlags (DWORD dwVirtKey);
 		static CString GetKeyID (DWORD dwVirtKey);
 		static CString GetKeyLabel (DWORD dwVirtKey);
+		static CString GetKeyName (DWORD dwVirtKey);
 		static DWORD TranslateVirtKey (DWORD dwVirtKey, DWORD dwKeyData);
 
 	private:
 		struct SVirtKeyData
 			{
-			char *pszName;
-			char *pszLabel;
+			const char *pszID;								//	Key ID (not human-readable)
+			const char *pszLabel;								//	Label on key caps (same as pszName, if NULL)
+			const char *pszName;								//	Name of key when describe in text (same as pszLabel, if NULL)
 			DWORD dwFlags;
 			};
 
 		static SVirtKeyData m_VirtKeyData[256];
 	};
+

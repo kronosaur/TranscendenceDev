@@ -281,7 +281,7 @@ CString CGladiatorAI::DebugCrashInfo (void)
 	return sResult;
 	}
 
-CSpaceObject *CGladiatorAI::GetTarget (DWORD dwFlags) const
+CSpaceObject *CGladiatorAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
 //

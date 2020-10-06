@@ -23,15 +23,16 @@ enum ELootTypes
 struct SSystemInfo
 	{
 	CString sName;
-	int iLevel;
-	DWORD dwSystemType;
-	int iCount;								//	Number of times this system instance 
+	int iLevel = 0;
+	DWORD dwSystemType = 0;
+	int iCount = 0;							//	Number of times this system instance 
 											//	has appeared.
 
 	CItemInfoTable Items;					//	All items types that have ever appeared in
 											//	this system instance.
 
 	int iTotalStations = 0;
+	int iTotalAsteroids = 0;				//	Total count of minable asteroids
 	int iTotalLootValue = 0;
 	int iTotalDeviceValue = 0;
 	int iTotalArmorValue = 0;
@@ -55,6 +56,8 @@ void AddItems (CSpaceObject &Obj, const CItemCriteria &Criteria, SSystemInfo *pS
 void AddItems (CSpaceObject &Obj, const CItemCriteria &Criteria, TSortMap<DWORD, SSourceInfo> &AllSources);
 void OutputItemsBySource (CUniverse &Universe, const TSortMap<DWORD, SSourceInfo> &AllSources, int iSystemSample);
 void OutputSourceSummary (CUniverse &Universe, const TSortMap<DWORD, SSourceInfo> &AllSources, int iSystemSample);
+void OutputSystemMiningTable (CUniverse &Universe, const TSortMap<CString, SSystemInfo> &AllSystems, int iSystemSample);
+void OutputSystemTable (CUniverse &Universe, const TSortMap<CString, SSystemInfo> &AllSystems, int iSystemSample);
 
 void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 	{
@@ -67,7 +70,6 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	ALERROR error;
 	CString sError;
-	int i, j;
 	CSovereign *pPlayer = Universe.FindSovereign(g_PlayerSovereignUNID);
 
 	int iSystemSample = pCmdLine->GetAttributeIntegerBounded(CONSTLIT("count"), 1, -1, 1);
@@ -115,7 +117,7 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	TSortMap<CString, SSystemInfo> AllSystems;
 	TSortMap<DWORD, SSourceInfo> AllSources;
-	for (i = 0; i < iSystemSample; i++)
+	for (int i = 0; i < iSystemSample; i++)
 		{
 		if (bLogo)
 			printf("pass %d...\n", i+1);
@@ -132,7 +134,7 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 			DWORD dwStartTime = ::GetTickCount();
 
 			CSystem *pSystem;
-			if (error = Universe.CreateStarSystem(pNode, &pSystem))
+			if (error = Universe.CreateStarSystem(*pNode, &pSystem))
 				{
 				printf("ERROR: Unable to create star system.\n");
 				return;
@@ -157,7 +159,7 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 			//	Create a table of all items
 
 			CSpaceObjectCriteria::SCtx Ctx(NULL, Criteria);
-			for (j = 0; j < pSystem->GetObjectCount(); j++)
+			for (int j = 0; j < pSystem->GetObjectCount(); j++)
 				{
 				CSpaceObject *pObj = pSystem->GetObject(j);
 				if (pObj == NULL
@@ -168,11 +170,15 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 
 				if ((dwLootType & lootMining)
 						&& pObj->GetScale() == scaleWorld
-						&& pObj->GetItemList().GetCount() != 0)
+						&& pObj->CanBeMined())
 					{
-					pSystemEntry->iTotalStations++;
-					AddItems(*pObj, ItemCriteria, pSystemEntry);
-					AddItems(*pObj, ItemCriteria, AllSources);
+					pSystemEntry->iTotalAsteroids++;
+					if (pObj->GetItemList().GetCount() != 0)
+						{
+						pSystemEntry->iTotalStations++;
+						AddItems(*pObj, ItemCriteria, pSystemEntry);
+						AddItems(*pObj, ItemCriteria, AllSources);
+						}
 					}
 
 				//	Find any objects that are lootable by the player
@@ -246,45 +252,31 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		default:
 			{
-			TSortMap<CString, int> Sorted;
-			for (i = 0; i < AllSystems.GetCount(); i++)
-				{
-				Sorted.Insert(strPatternSubst(CONSTLIT("%04d-%s"), AllSystems[i].iLevel, AllSystems[i].sName), i);
-				}
-
-			//	Output total value stats
-
-			printf("Level\tSystem\tObjects\tLoot\tDevices\tArmor\tTreasure\n");
-
-			for (i = 0; i < Sorted.GetCount(); i++)
-				{
-				const SSystemInfo &SystemEntry = AllSystems[Sorted[i]];
-
-				printf("%d\t%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n",
-						SystemEntry.iLevel,
-						SystemEntry.sName.GetASCIIZPointer(),
-						(double)SystemEntry.iTotalStations / (double)iSystemSample,
-						(double)SystemEntry.iTotalLootValue / (double)iSystemSample,
-						(double)SystemEntry.iTotalDeviceValue / (double)iSystemSample,
-						(double)SystemEntry.iTotalArmorValue / (double)iSystemSample,
-						(double)SystemEntry.iTotalOtherValue / (double)iSystemSample
-						);
-				}
+			if (dwLootType == lootMining)
+				OutputSystemMiningTable(Universe, AllSystems, iSystemSample);
+			else
+				OutputSystemTable(Universe, AllSystems, iSystemSample);
 
 			printf("\n");
 
 			//	Output all items
+
+			TSortMap<CString, int> Sorted;
+			for (int i = 0; i < AllSystems.GetCount(); i++)
+				{
+				Sorted.Insert(strPatternSubst(CONSTLIT("%04d-%s"), AllSystems[i].iLevel, AllSystems[i].sName), i);
+				}
 
 			printf("Level\tSystem\tItem\tCount\tValue\n");
 
 			CItem NULL_ITEM;
 			CItemCtx ItemCtx(NULL_ITEM);
 
-			for (i = 0; i < Sorted.GetCount(); i++)
+			for (int i = 0; i < Sorted.GetCount(); i++)
 				{
 				const SSystemInfo &SystemEntry = AllSystems[Sorted[i]];
 
-				for (j = 0; j < SystemEntry.Items.GetCount(); j++)
+				for (int j = 0; j < SystemEntry.Items.GetCount(); j++)
 					{
 					const CItemType &ItemType = SystemEntry.Items.GetItemType(j);
 					int iItemCount = SystemEntry.Items.GetItemCount(j);
@@ -444,4 +436,58 @@ void OutputSourceSummary (CUniverse &Universe, const TSortMap<DWORD, SSourceInfo
 		}
 
 	printf("\n");
+	}
+
+void OutputSystemMiningTable (CUniverse &Universe, const TSortMap<CString, SSystemInfo> &AllSystems, int iSystemSample)
+	{
+	TSortMap<CString, int> Sorted;
+	for (int i = 0; i < AllSystems.GetCount(); i++)
+		{
+		Sorted.Insert(strPatternSubst(CONSTLIT("%04d-%s"), AllSystems[i].iLevel, AllSystems[i].sName), i);
+		}
+
+	//	Output total value stats
+
+	printf("Level\tSystem\tAsteroids\tWith Ore\tTreasure Value\n");
+
+	for (int i = 0; i < Sorted.GetCount(); i++)
+		{
+		const SSystemInfo &SystemEntry = AllSystems[Sorted[i]];
+
+		printf("%d\t%s\t%.2f\t%.2f\t%.2f\n",
+				SystemEntry.iLevel,
+				SystemEntry.sName.GetASCIIZPointer(),
+				(double)SystemEntry.iTotalAsteroids / (double)iSystemSample,
+				(double)SystemEntry.iTotalStations / (double)iSystemSample,
+				(double)SystemEntry.iTotalOtherValue / (double)iSystemSample
+				);
+		}
+	}
+
+void OutputSystemTable (CUniverse &Universe, const TSortMap<CString, SSystemInfo> &AllSystems, int iSystemSample)
+	{
+	TSortMap<CString, int> Sorted;
+	for (int i = 0; i < AllSystems.GetCount(); i++)
+		{
+		Sorted.Insert(strPatternSubst(CONSTLIT("%04d-%s"), AllSystems[i].iLevel, AllSystems[i].sName), i);
+		}
+
+	//	Output total value stats
+
+	printf("Level\tSystem\tObjects\tLoot\tDevices\tArmor\tTreasure\n");
+
+	for (int i = 0; i < Sorted.GetCount(); i++)
+		{
+		const SSystemInfo &SystemEntry = AllSystems[Sorted[i]];
+
+		printf("%d\t%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n",
+				SystemEntry.iLevel,
+				SystemEntry.sName.GetASCIIZPointer(),
+				(double)SystemEntry.iTotalStations / (double)iSystemSample,
+				(double)SystemEntry.iTotalLootValue / (double)iSystemSample,
+				(double)SystemEntry.iTotalDeviceValue / (double)iSystemSample,
+				(double)SystemEntry.iTotalArmorValue / (double)iSystemSample,
+				(double)SystemEntry.iTotalOtherValue / (double)iSystemSample
+				);
+		}
 	}

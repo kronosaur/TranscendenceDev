@@ -358,7 +358,7 @@ void CGalacticMapSession::Select (const CTopologyNode *pNode, bool bNoSound)
         CGalacticMapSystemDetails Details(m_HI.GetVisuals(), GetReanimator(), rcPane);
 
         IAnimatron *pAni;
-        Details.CreateDetailsPane(*pNode, &pAni);
+        Details.CreateDetailsPane(*pNode, CGalacticMapSystemDetails::SOptions(), &pAni);
 
     	StartPerformance(pAni, ID_DETAILS, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
         }
@@ -491,7 +491,8 @@ void CGalacticMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 			int xShip, yShip;
 			m_pPainter->GalacticToView(xPos, yPos, m_xCenter, m_yCenter, m_Scale.GetScale(), &xShip, &yShip);
 
-			pPlayer->PaintMap(CMapViewportCtx(), Screen, xShip, yShip);
+			CMapViewportCtx Ctx;
+			pPlayer->PaintMap(Ctx, Screen, xShip, yShip);
 			}
 		}
 

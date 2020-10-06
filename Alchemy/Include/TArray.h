@@ -5,6 +5,20 @@
 
 #pragma once
 
+template<class KEY>
+int KeyCompare (const KEY &Key1, const KEY &Key2) 
+	{
+	if (Key1 > Key2)
+		return 1;
+	else if (Key1 < Key2)
+		return -1;
+	else
+		return 0;
+	}
+
+DWORD mathRandom (void);
+int mathRandom (int iFrom, int iTo);
+
 enum ESortOptions
 	{
 	DescendingSort = 1,
@@ -171,6 +185,14 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 			return *this;
 			}
 
+		TArray<VALUE> &operator= (TArray<VALUE> &&Src)
+			{
+			DeleteAll();
+			m_pBlock = Src.m_pBlock;
+			Src.m_pBlock = NULL;
+			return *this;
+			}
+
 		const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
 		VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
 
@@ -197,11 +219,14 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 
 		void DeleteAll (void)
 			{
-			VALUE *pElement = (VALUE *)GetBytes();
-			for (int i = 0; i < GetCount(); i++, pElement++)
-				pElement->VALUE::~VALUE();
+			if (m_pBlock)
+				{
+				VALUE *pElement = (VALUE *)GetBytes();
+				for (int i = 0; i < GetCount(); i++, pElement++)
+					pElement->VALUE::~VALUE();
 
-			CleanUpBlock();
+				CleanUpBlock();
+				}
 			}
 
 		void DeleteValue (const VALUE &ToDelete)
@@ -551,6 +576,11 @@ template <class VALUE> class TProbabilityTable
 
 		int GetTotalChance (void) const { return m_iTotalChance; }
 
+		void GrowToFit (int iCount)
+			{
+			m_Table.GrowToFit(iCount);
+			}
+
 		void Insert (const VALUE &NewValue, int iChance)
 			{
 			ASSERT(iChance >= 0);
@@ -573,7 +603,7 @@ template <class VALUE> class TProbabilityTable
 
 			//	Get the position
 
-			while (m_Table[iPos].iChance <= iRoll)
+			while (iRoll >= m_Table[iPos].iChance)
 				iRoll -= m_Table[iPos++].iChance;
 
 			return iPos;

@@ -11,10 +11,6 @@
 
 	GLOBAL DATA
 	
-	curMission: The UNID of the most recent mission that the player accepted.
-			Nil if the player has not yet accepted any mission in the story
-			arc. Use benedict_missionAccepted to set this value.
-
 	firstDockedAtSisters: The tick on which the player first docked at a Sisters
 			of Domina station. Nil if never docked.
 			
@@ -68,12 +64,195 @@
 					Nil
 					)
 			</GetGlobalDockScreen>
+
+			<OnGlobalSystemDiagnostics>
+				(block (
+					(curSystem (sysGetNode))
+					)
+					(switch
+						(= curSystem 'SE)
+							(block (sistersObj missionObj)
+								(diagCreatePlayerShip)
+								(setq sistersObj (sysFindObject gPlayerShip "TAN +sistersOfDomina;"))
+
+								;	Benedict 00
+
+								(diagAssert (setq missionObj (msnCreate &msBenedictsDrones; sistersObj)) "Benedict 00: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 00: Unable to accept.")
+								(diagAssert (msnSuccess missionObj) "Benedict 00: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+
+								;	Benedict 01
+								;
+								;	This mission is created and accepted when we succeed at Benedict 00.
+
+								(setq missionObj (msnFind "aP +unid:&msBenedictTraining;;"))
+								(diagAssert missionObj "Benedict 01: Failed to create.")
+								(diagAssert (msnSuccess missionObj) "Benedict 01: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+
+								;	Benedict 02
+
+								(diagAssert (setq missionObj (msnCreate &msBenedictAndFiona; sistersObj)) "Benedict 02: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 02: Unable to accept.")
+								(diagAssert (msnSuccess missionObj) "Benedict 02: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+
+								(objDestroy gPlayerShip)
+								(setq gPlayerShip Nil)
+								)
+
+						(sysHasAttribute 'newBeyond)
+							(block (colonyObj)
+								(switch
+									;	If we already finished Benedict 04, then we're done.
+
+									(msnFind "r +unid:&msBenedictInNewBeyond;;")
+										Nil
+
+									;	If this is not the Stormhound system, then we're done.
+
+									(and (typ@ &msBenedictInNewBeyond; 'stormhoundSystem)
+											(!= curSystem (typ@ &msBenedictInNewBeyond; 'stormhoundSystem))
+											)
+										Nil
+
+									;	If there is no Commonwealth colony here, then we're done.
+
+									(not (setq colonyObj (@ (sysFindObject Nil "TA +unid:&stCommonwealthColony;;") 0)))
+										Nil
+
+									;	Create the mission
+
+									(block (missionObj)
+										(diagCreatePlayerShip)
+
+										(diagAssert (setq missionObj (msnCreate &msBenedictInNewBeyond; colonyObj)) "Benedict 04: Unable to create.")
+										(diagAssert (msnAccept missionObj) "Benedict 04: Unable to accept.")
+										(diagAssert (msnSuccess missionObj) "Benedict 04: Unable to complete.")
+										(msnReward missionObj)
+										(msnSetProperty missionObj 'isDebriefed True)
+										
+										(objDestroy gPlayerShip)
+										(setq gPlayerShip Nil)
+										)
+									)
+								)
+
+						(= curSystem 'SK)
+							(block (missionObj)
+								(diagAssert (setq missionObj (msnCreate &msFionaInStKats; Nil)) "Benedict 05: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 05: Unable to accept.")
+								)
+
+						(= curSystem 'C5)
+							(block (missionObj)
+								(diagAssert (setq missionObj (msnCreate &msFindHandOfSolace; Nil)) "Benedict 05A: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 05A: Unable to accept.")
+								(diagAssert (msnSuccess missionObj) "Benedict 05A: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+								)
+
+						(or (= curSystem 'C6A) (= curSystem 'C6))
+							(switch
+								;	If we already finished Benedict 06, then we're done.
+
+								(msnFind "r +unid:&msInfiltratePenitents;;")
+									Nil
+
+								;	If C6A exists and we're in C6, then skip
+
+								(and (= curSystem 'C6) (find (sysGetNodes) 'C6A))
+									Nil
+
+								;	Continue
+
+								(block (
+									(sources (append
+										(sysFindObject Nil "TA +unid:&stCommonwealthColonyArmed;;")
+										(sysFindObject Nil "TA +unid:&stSistersOfDomina;;")
+										))
+									(sourceObj (@ sources 0))
+
+									missionObj
+									)
+									(if (not (msnFind "r +unid:&msFindHandOfSolace;; +property:isSuccess;"))
+										(error "Benedict 06: Did not finish previous mission.")
+										)
+
+									(diagCreatePlayerShip)
+									(if (not sourceObj)
+										(error "Benedict 06: Unable to find mission-giver station.")
+										)
+
+									(diagAssert (setq missionObj (msnCreate &msInfiltratePenitents; sourceObj)) "Benedict 06: Unable to create.")
+									(diagAssert (msnAccept missionObj) "Benedict 06: Unable to accept.")
+									(diagAssert (msnSuccess missionObj) "Benedict 06: Unable to complete.")
+									(msnReward missionObj)
+									(msnSetProperty missionObj 'isDebriefed True)
+										
+									(objDestroy gPlayerShip)
+									(setq gPlayerShip Nil)
+									)
+								)
+
+						(= curSystem 'CD)
+							(block (
+								(sourceObj (@ (sysFindObject Nil "TA +unid:&stCathedralOfDomina;;") 0))
+
+								missionObj
+								)
+								(diagCreatePlayerShip)
+								(if (not sourceObj)
+									(error "Benedict 07: Unable to find mission-giver station.")
+									)
+
+								(diagAssert (setq missionObj (msnCreate &msRescueBenedict; sourceObj)) "Benedict 07: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 07: Unable to accept.")
+								(diagAssert (msnSuccess missionObj) "Benedict 07: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+										
+								(objDestroy gPlayerShip)
+								(setq gPlayerShip Nil)
+								)
+
+						(= curSystem 'EC)
+							(block (
+								(sourceObj (@ (sysFindObject Nil "sA +unid:&scStormhoundAquila;;") 0))
+
+								missionObj
+								)
+								(diagCreatePlayerShip)
+								(if (not sourceObj)
+									(error "Benedict 08: Unable to find mission-giver station.")
+									)
+
+								(diagAssert (setq missionObj (msnCreate &msRescueChildrenFromPenitents; sourceObj)) "Benedict 08: Unable to create.")
+								(diagAssert (msnAccept missionObj) "Benedict 08: Unable to accept.")
+								(diagAssert (msnSuccess missionObj) "Benedict 08: Unable to complete.")
+								(msnReward missionObj)
+								(msnSetProperty missionObj 'isDebriefed True)
+										
+								(objDestroy gPlayerShip)
+								(setq gPlayerShip Nil)
+								)
+						)
+					)
+			</OnGlobalSystemDiagnostics>
+
+			<OnGlobalEndDiagnostics>
+				(block ()
+					(if (not (msnFind "r +unid:&msBenedictInNewBeyond;;"))
+						(print "WARNING: Benedict 04 mission was not created.")
+						)
+					)
+			</OnGlobalEndDiagnostics>
 		</Events>
-		
-		<Language>
-			<Text id="actionTalkToAbbess">*[M]atriarch's Chamber</Text>
-			<Text id="actionTalkToBenedict">*Talk to [B]enedict</Text>
-		</Language>
 	</Type>
 	
 <!-- DOCK SCREENS -->
@@ -192,10 +371,10 @@
 							;	If we listened this far, we get to use the sanctum
 							
 							(objSetData gSource "freeSanctum" True)
-                            
-                            ;   Intro done
-                            
-                            (scrShowPane gScreen 'IntroDone)
+							
+							;   Intro done
+							
+							(scrShowPane gScreen 'IntroDone)
 						
 							;	Exit the screen so when we return, we're back at the main screen
 							
@@ -219,13 +398,13 @@
 					</Action>
 				</Actions>
 			</Default>
-            
-            <IntroDone>
-                <OnPaneInit>
+			
+			<IntroDone>
+				<OnPaneInit>
 					(scrSetDesc gScreen (typTranslate &dsBenedictIntro; "BenedictMeeting"))
-                </OnPaneInit>
-                
-                <Actions>
+				</OnPaneInit>
+				
+				<Actions>
 					<Action id="actionContinue" default="1" cancel="1">
 						(block (theMission)
 						
@@ -245,8 +424,8 @@
 								)
 							)
 					</Action>
-                </Actions>
-            </IntroDone>
+				</Actions>
+			</IntroDone>
 			
 			<IntroSkip>
 				<OnPaneInit>
@@ -282,31 +461,38 @@
 			<Text id="actionDone">Do[n]e</Text>
 			
 			<Text id="IntroFirst">
+
 				You are docked at an abbey of the Sisters of Domina.
 				A woman in a flowing cardinal robe approaches you.
 							
 				"Welcome, pilgrim! Your journey to the Galactic Core has just begun.
 				Your path will be filled with many obstacles, but do not worry:
 				Domina chooses only those who have the strength to succeed."
+
 			</Text>
 			<Text id="IntroReturning">
+
 				The abbess greets you:
 					
 				"Welcome back, %name%! Your journey to the Galactic Core has just begun.
 				Whatever obstacles you've faced so far are nothing compared to what
 				awaits you. Take comfort in Domina's guidance."
+
 			</Text>
 			<Text id="IntroSkip">
+
 				The abbess signals an unseen companion and a stout man emerges from
 				the shadows. He marches to the abbess's side, looking past you at
 				your ship.
 					
 				The abbess continues: "This is Benedict, our most valuable friend.
 				He will help you prepare for your journey."
+
 			</Text>
 			
 			<Text id="q1:Label">*"Who is [D]omina?"</Text>
 			<Text id="q1:Answer">
+
 				"Domina is the divine intelligence who brought you here!
 					
 				"You can feel her in your thoughts, can't you? She compels you
@@ -318,73 +504,703 @@
 				all humanity.
 					
 				"Perhaps when you reach her you will understand."
+
 			</Text>
 			
 			<Text id="q2:Label">*"How do I reach the [G]alactic Core?"</Text>
 			<Text id="q2:Answer">
+
 				"The stargates will take you. Seek them out and enter.
 				But be prepared for many obstacles. You must grow stronger to reach the Core.
 					
 				"You will upgrade your ship in your travels, and eventually you'll
 				command terrible energies, enough to defeat anyone who blocks your path."
+
 			</Text>
 			
 			<Text id="q3:Label">*"[W]hat obstacles will I face?"</Text>
 			<Text id="q3:Answer">
+
 				"Star travel is dangerous, even in the Commonwealth.
 				You'll face pirates, outlaws and worse before you reach the Core.
 				But we can prepare you."
+
 			</Text>
 			
 			<Text id="BenedictMeeting">
+
 				The abbess signals an unseen companion and a stout man emerges from
-				he shadows. He marches to the abbess's side, looking past you at
+				the shadows. He marches to the abbess's side, looking past you at
 				your ship.
 					
 				The abbess continues: "This is Benedict, our most valuable friend.
 				He will help you."
+
 			</Text>
+
+			<Script id="sotp:0001">
+
+				OPENING CRAWL
+
+				%id=&adPart1Desc;/openingCrawl%
+
+				ERIDANI SYSTEM - SISTERS OF DOMINA STATION
+
+				%id=IntroFirst%
+
+				|	PLAYER
+				|	%id=q1:Label%
+
+				|	ABBESS
+				|	%id=q1:Answer%
+
+				|	PLAYER
+				|	%id=q2:Label%
+
+				|	ABBESS
+				|	%id=q2:Answer%
+
+				|	PLAYER
+				|	%id=q3:Label%
+				
+				|	ABBESS
+				|	%id=q3:Answer%
+
+				%id=BenedictMeeting%
+
+				%id=&msBenedictsDrones;/Intro%
+
+				|	BENEDICT
+				|	%id=&msBenedictsDrones;/Briefing%
+
+				|	PLAYER
+				|	%id=&msBenedictsDrones;/AcceptLabel%
+
+				|	BENEDICT
+				|	%id=&msBenedictsDrones;/acceptReply1.mouse%
+				
+				|	BENEDICT
+				|	%id=&msBenedictsDrones;/textSuccessDebrief1%
+
+				|	%id=&msBenedictsDrones;/textSuccessDebrief2%
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/visitHabitat:Begin%
+
+				ERIDANI SYSTEM - COMMONWEALTH HABITAT
+
+				%id=&msDestroyThreatToSlums;/textIntro%
+
+				|	STATION MASTER
+				|	%id=&msDestroyThreatToSlums;/Briefing:centauriWarlords%
+				
+				|	PLAYER
+				|	Accept
+
+				|	STATION MASTER
+				|	%id=&msDestroyThreatToSlums;/AcceptReply%
+
+				The player destroys the Centauri warlords outpost and returns to
+				the Commonwealt habitat for her reward.
+
+				|	STATION MASTER
+				|	%id=&msDestroyThreatToSlums;/SuccessDebrief:centauriWarlords%
+
+				ERIDANI SYSTEM - SISTERS OF DOMINA STATION
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/visitHabitat:Debrief%
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/loot:Begin%
+
+				Player loots the station.
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/loot:Debrief%
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/sellLoot:Begin%
+
+				Player sells the loot.
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/sellLoot:Debrief%
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/exploreSystem:Begin:Many%
+
+				Player explores the system.
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/exploreSystem:Debrief%
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/installWMD:Begin%
+
+				Player buys a weapon and installs it.
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/installWMD.debriefLauncher%
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/attackHiddenEnemy:Begin:Abbasid%
+
+				|	%id=&msBenedictTraining;/attackHiddenEnemy:Begin:Normal%
+
+
+				Player destroys Abbasid outpost.
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/attackHiddenEnemy:Debrief%
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/installSmartCannon.begin1%
+
+				Player installs SmartCannon.
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/installSmartCannon:Debrief%
+
+				%id=&msBenedictTraining;/fionaMission:Begin:1%
+
+				|	BENEDICT
+				|	%id=&msBenedictTraining;/fionaMission:Begin:2%
+
+				|	%id=&msBenedictTraining;/fionaMission:Begin:3a%
+
+				Player defends the freighter.
+
+				%id=&msBenedictAndFiona;/successDebrief1%
+
+				|	BENEDICT
+				|	%id=&msBenedictAndFiona;/successDebrief2%
+
+				|	PLAYER
+				|	%id=&msBenedictAndFiona;/actionSuccess2%
+
+				|	BENEDICT
+				|	%id=&msBenedictAndFiona;/successDebrief3%
+
+				|	PLAYER
+				|	%id=&msBenedictAndFiona;/actionSuccess3%
+
+				|	BENEDICT
+				|	%id=&msBenedictAndFiona;/successDebrief4%
+
+				|	%id=&msBenedictAndFiona;/successDebrief5a%
+
+				|	PLAYER
+				|	%id=&msBenedictAndFiona;/actionDebrief5a%
+
+				|	BENEDICT
+				|	%id=&msBenedictAndFiona;/successDebrief5b%
+
+				NEW BEYOND - COMMONWEALTH STATION
+
+				%id=&msBenedictInNewBeyond;/firstIntro1%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionFirstIntro1%
+
+				|	BENEDICT
+				|	%id=&msBenedictInNewBeyond;/firstIntro2%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionFirstIntro2%
+
+				|	BENEDICT
+				|	%id=&msBenedictInNewBeyond;/firstIntro3%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionFirstIntro3%
+
+				|	BENEDICT
+				|	%id=&msBenedictInNewBeyond;/firstIntro4%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionFirstIntro4%
+
+				|	BENEDICT
+				|	%id=&msBenedictInNewBeyond;/firstIntro5%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionFirstIntro5%
+
+				|	BENEDICT
+				|	%id=&msBenedictInNewBeyond;/Briefing%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/AcceptLabel%
+
+				NEW BEYOND - STORMHOUND'S MEGAYACHT
+
+				%id=&scStormhoundYacht;/textFirstMeetingIntro1%
+
+				|	PLAYER
+				|	%id=&scStormhoundYacht;/actionFirstMeetingIntro1%
+
+				%id=&msBenedictInNewBeyond;/StormhoundMeeting1%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionStormhoundMeeting1%
+
+				|	STORMHOUND
+				|	%id=&msBenedictInNewBeyond;/StormhoundMeeting2%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionStormhoundMeeting2%
+
+				|	STORMHOUND
+				|	%id=&msBenedictInNewBeyond;/StormhoundMeeting3%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionStormhoundMeeting3%
+
+				|	STORMHOUND
+				|	%id=&msBenedictInNewBeyond;/StormhoundMeeting4%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionStormhoundMeeting4%
+
+				|	STORMHOUND
+				|	%id=&msBenedictInNewBeyond;/StormhoundMeeting5%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionStormhoundMeeting5%
+
+				|	STORMHOUND
+				|	%id=&msBenedictInNewBeyond;/StormhoundMeeting6%
+
+				NEW BEYOND - COMMONWEALTH STATION
+
+				%id=&msBenedictInNewBeyond;/SuccessDebrief1%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionSuccessDebrief1b%
+
+				|	BENEDICT
+				|	%id=&msBenedictInNewBeyond;/SuccessDebriefB1%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionSuccessDebriefB1%
+
+				|	BENEDICT
+				|	%id=&msBenedictInNewBeyond;/SuccessDebriefB2%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionSuccessDebriefB2b%
+
+				|	BENEDICT
+				|	%id=&msBenedictInNewBeyond;/SuccessDebriefC1%
+
+				|	PLAYER
+				|	%id=&msBenedictInNewBeyond;/actionSuccessDebriefC1%
+
+				|	BENEDICT
+				|	%id=&msBenedictInNewBeyond;/SuccessDebriefC2%
+
+				ST. KATHARINE'S STAR SYSTEM - UNIVERSITY HOSPITAL
+
+				%id=&msFionaInStKats;/descIntro1%
+
+				|	PLAYER
+				|	%id=&msFionaInStKats;/actionIntro1%
+
+				|	FIONA
+				|	%id=&msFionaInStKats;/descIntro2%
+
+				|	PLAYER
+				|	%id=&msFionaInStKats;/actionIntro2%
+
+				|	FIONA
+				|	%id=&msFionaInStKats;/descIntro3%
+
+				|	%id=&msFionaInStKats;/descIntro4%
+
+				|	PLAYER
+				|	%id=&msFionaInStKats;/actionIntro4%
+
+				|	FIONA
+				|	%id=&msFionaInStKats;/descIntro5%
+
+				|	PLAYER
+				|	%id=&msFionaInStKats;/actionIntro5%
+
+				|	FIONA
+				|	%id=&msFionaInStKats;/descIntro6%
+
+				|	PLAYER
+				|	%id=&msFionaInStKats;/actionIntro6%
+
+				|	FIONA
+				|	%id=&msFionaInStKats;/descIntro7%
+
+				|	PLAYER
+				|	%id=&msFionaInStKats;/actionIntro7A%
+
+				|	FIONA
+				|	%id=&msFionaInStKats;/descIntro8%
+
+				|	PLAYER
+				|	%id=&msFionaInStKats;/actionIntro8%
+
+				|	FIONA
+				|	%id=&msFionaInStKats;/descBriefing1%
+
+				|	PLAYER
+				|	%id=&msFionaInStKats;/actionAccept%
+
+				UNGOVERNED TERRITORIES - HUGO SANDOVAL'S SHIP
+
+				%id=&scHugoSandovalArmstrong;/textFirstMeetingIntro1%
+
+				|	SANDOVAL
+				|	%id=&msFindHandOfSolace;/textFirstIntro1.female%
+
+				|	PLAYER
+				|	%id=&msFindHandOfSolace;/actionFirstIntro1%
+
+				|	SANDOVAL
+				|	%id=&msFindHandOfSolace;/textFirstIntro2%
+
+				|	PLAYER
+				|	%id=&msFindHandOfSolace;/actionFirstIntro2%
+
+				|	SANDOVAL
+				|	%id=&msFindHandOfSolace;/textFirstIntro3%
+
+				|	PLAYER
+				|	%id=&msFindHandOfSolace;/actionFirstIntro3%
+
+				|	SANDOVAL
+				|	%id=&msFindHandOfSolace;/textFirstIntro4%
+
+				|	PLAYER
+				|	%id=&msFindHandOfSolace;/actionFirstIntro4%
+
+				|	SANDOVAL
+				|	%id=&msFindHandOfSolace;/textBriefing1%
+
+				|	PLAYER
+				|	%id=&msFindHandOfSolace;/actionAccept%
+
+				The player and Sandoval search for the Hand of Solace. 
+				Eventually they find the wreckage, but they see that another 
+				ship is already docked with it. They board the wreck.
+
+				UNGOVERNED TERRITORIES - WRECK OF THE HAND OF SOLACE
+
+				%id=&stHandOfSolaceWreck;/textHoS1%
+
+				|	PLAYER
+				|	%id=&stHandOfSolaceWreck;/actionHoS1%
+
+				|	BENEDICT
+				|	%id=&stHandOfSolaceWreck;/textHoS2%
+
+				|	SANDOVAL
+				|	%id=&stHandOfSolaceWreck;/textHoS3%
+
+				|	PLAYER
+				|	%id=&stHandOfSolaceWreck;/actionHoS3%
+
+				|	BENEDICT
+				|	%id=&stHandOfSolaceWreck;/textHoS4%
+
+				|	PLAYER
+				|	%id=&stHandOfSolaceWreck;/actionHoS4%
+
+				|	SANDOVAL
+				|	%id=&stHandOfSolaceWreck;/textHoS5%
+
+				|	PLAYER
+				|	%id=&stHandOfSolaceWreck;/actionHoS5%
+
+				|	SANDOVAL
+				|	%id=&stHandOfSolaceWreck;/textHoS6%
+
+				|	PLAYER
+				|	%id=&stHandOfSolaceWreck;/actionHoS6%
+
+				|	SANDOVAL
+				|	%id=&stHandOfSolaceWreck;/textHoS7%
+
+				|	PLAYER
+				|	%id=&stHandOfSolaceWreck;/actionHoS7%
+
+				|	SANDOVAL
+				|	%id=&stHandOfSolaceWreck;/textHoS8%
+
+				UNGOVERNED TERRITORIES - SISTERS OF DOMINA STATION
+
+				%id=&msInfiltratePenitents;/descIntro1%
+
+				|	PLAYER
+				|	%id=&msInfiltratePenitents;/actionIntro1%
+
+				|	BENEDICT
+				|	%id=&msInfiltratePenitents;/descIntro2%
+
+				|	PLAYER
+				|	%id=&msInfiltratePenitents;/actionIntro2%
+
+				|	BENEDICT
+				|	%id=&msInfiltratePenitents;/descIntro3%
+
+				|	PLAYER
+				|	%id=&msInfiltratePenitents;/actionIntro3%
+
+				|	BENEDICT
+				|	%id=&msInfiltratePenitents;/Briefing%
+
+				|	PLAYER
+				|	%id=&msInfiltratePenitents;/AcceptLabel%
+
+				UNGOVERNED TERRITORIES - PENITENT STATION
+
+				%id=&evBenedict06PenitentBase;/descPenitents1%
+
+				%id=&evBenedict06PenitentBase;/descPenitents2%
+
+				|	PLAYER
+				|	%id=&evBenedict06PenitentBase;/actionPenitents2B%
+
+				|	PENITENT
+				|	%id=&evBenedict06PenitentBase;/descPenitents5%
+
+				|	PLAYER
+				|	%id=&evBenedict06PenitentBase;/actionPenitents5%
+				
+				|	PENITENT
+				|	%id=&evBenedict06PenitentBase;/descPenitents6%
+
+				|	PLAYER
+				|	%id=&evBenedict06PenitentBase;/actionNowWhat%
+
+				|	BENEDICT
+				|	%id=&evBenedict06PenitentBase;/descPenitents8%
+
+				%id=&evBenedict06PenitentBase;/descPenitents9%
+
+				%id=&evBenedict06PenitentBase;/descPenitents10%
+
+				|	PLAYER
+				|	%id=&evBenedict06PenitentBase;/actionPenitents10%
+
+				|	BENEDICT
+				|	%id=&evBenedict06PenitentBase;/descPenitents11%
+
+				%id=&evBenedict06PenitentBase;/descPenitents12%
+
+				The player escapes the Penitent station and returns to the 
+				Sisters of Domina.
+
+				UNGOVERNED TERRITORIES - SISTERS OF DOMINA STATION
+
+				%id=&msInfiltratePenitents;/descSuccess1A%
+
+				%id=&msInfiltratePenitents;/descSuccess2%
+
+				|	FIONA
+				|	%id=&msInfiltratePenitents;/descSuccess3%
+
+				|	PLAYER
+				|	%id=&msInfiltratePenitents;/actionSuccess3%
+
+				|	FIONA
+				|	%id=&msInfiltratePenitents;/descSuccess4%
+
+				|	PLAYER
+				|	%id=&msInfiltratePenitents;/actionSuccess4%
+
+				SANCTUARY SYSTEM - CATHEDRAL OF DOMINA
+
+				%id=&msRescueBenedict;/textIntro1%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionIntro1%
+
+				|	FIONA
+				|	%id=&msRescueBenedict;/textIntro2%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionIntro2%
+
+				|	FIONA
+				|	%id=&msRescueBenedict;/textIntro3%
+
+				%id=&msRescueBenedict;/textIntro9%
+
+				%id=&msRescueBenedict;/textIntro10%
+
+				%id=&msRescueBenedict;/textIntro11%
+
+				%id=&msRescueBenedict;/textIntro12%
+
+				%id=&msRescueBenedict;/textIntro13%
+
+				%id=&msRescueBenedict;/textIntro14%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionIntro14%
+
+				|	FIONA
+				|	%id=&msRescueBenedict;/textIntro15%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionIntro15%
+
+				|	FIONA
+				|	%id=&msRescueBenedict;/textIntro16%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionIntro16%
+
+				|	SISTER MCMURRAY
+				|	%id=&msRescueBenedict;/textIntro17%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionIntro17%
+
+				|	SISTER MCMURRAY
+				|	%id=&msRescueBenedict;/textIntro18%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionIntro18%
+
+				|	SISTER MCMURRAY
+				|	%id=&msRescueBenedict;/textIntro19%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionIntro19%
+
+				|	SISTER MCMURRAY
+				|	%id=&msRescueBenedict;/textIntro20%
+
+				|	FIONA
+				|	%id=&msRescueBenedict;/textBriefing1%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionAccept%
+
+				|	SANDOVAL
+				|	%id=&msRescueBenedict;/AcceptReply%
+
+				The player, Fiona, and Sandoval intercept the Penitent ship and
+				disable it. They all dock with the wreckage.
+
+				SANCTUARY SYSTEM - PENITENT DESTROYER
+
+				%id=&msRescueBenedict;/textRescueBenedict1%
+
+				%id=&msRescueBenedict;/textRescueBenedict2%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionRescueBenedict2%
+
+				|	FIONA AND BENEDICT
+				|	%id=&msRescueBenedict;/textRescueBenedict3%
+
+				|	%id=&msRescueBenedict;/textRescueBenedict4%
+
+				|	%id=&msRescueBenedict;/textRescueBenedict5%
+
+				|	PLAYER
+				|	%id=&msRescueBenedict;/actionRescueBenedict5A%
+
+				|	FIONA
+				|	%id=&msRescueBenedict;/textRescueBenedict6%
+
+				ETA CETI SYSTEM - CSS CHANGELING
+
+				%id=&scStormhoundAquila;/textFirstMeetingIntro1%
+
+				|	PLAYER
+				|	%id=&scStormhoundAquila;/actionFirstMeetingIntro1%
+
+				|	STORMHOUND
+				|	%id=&scStormhoundAquila;/textFirstMeetingIntro2%
+
+				%id=&msRescueChildrenFromPenitents;/textRescue1%
+
+				%id=&msRescueChildrenFromPenitents;/textRescue2%
+
+				%id=&msRescueChildrenFromPenitents;/textRescue3%
+
+				|	PLAYER
+				|	%id=&msRescueChildrenFromPenitents;/actionRescue3%
+
+				%id=&msRescueChildrenFromPenitents;/textRescue4%
+
+				|	CREATURE
+				|	%id=&msRescueChildrenFromPenitents;/textRescue5%
+
+				|	PLAYER
+				|	%id=&msRescueChildrenFromPenitents;/actionRescue5%
+
+				|	CREATURE
+				|	%id=&msRescueChildrenFromPenitents;/textRescue6%
+
+				|	PLAYER
+				|	%id=&msRescueChildrenFromPenitents;/actionRescue6%
+
+				%id=&msRescueChildrenFromPenitents;/textRescue7%
+
+				|	PLAYER
+				|	%id=&msRescueChildrenFromPenitents;/actionRescue7%
+
+				|	STORMHOUND
+				|	%id=&msRescueChildrenFromPenitents;/textRescue8%
+
+				|	PLAYER
+				|	%id=&msRescueChildrenFromPenitents;/actionRescue8%
+
+				|	STORMHOUND
+				|	%id=&msRescueChildrenFromPenitents;/textRescue9%
+
+				|	PLAYER
+				|	%id=&msRescueChildrenFromPenitents;/actionRescue9%
+
+				|	STORMHOUND
+				|	%id=&msRescueChildrenFromPenitents;/textRescue10%
+
+				|	PLAYER
+				|	%id=&msRescueChildrenFromPenitents;/actionRescue10%
+
+				|	STORMHOUND
+				|	%id=&msRescueChildrenFromPenitents;/textRescue11%
+
+				|	STORMHOUND
+				|	%id=&msRescueChildrenFromPenitents;/textRescue12%
+
+				|	PLAYER
+				|	%id=&msRescueChildrenFromPenitents;/actionRescue12%
+
+				%id=&msRescueChildrenFromPenitents;/textRescue13%
+
+				%id=&msRescueChildrenFromPenitents;/textRescue14%
+
+				%id=&msRescueChildrenFromPenitents;/textRescue15%
+
+				%id=&msRescueChildrenFromPenitents;/textRescue16%
+
+			</Script>
 		</Language>
 	</DockScreen>
 
-<!-- CODE -->
+<!-- BASE CLASSES -->
 
-	<Globals>
-		(block Nil
-			(setq benedict_isFirstMission (lambda ()
-				(not (typGetData &unidBenedictStoryArc; 'curMission))
-				))
-				
-			(setq benedict_isMissionAvailable (lambda (missionUNID options)
-				(block (curMission)
-					(setq curMission (typGetData &unidBenedictStoryArc; 'curMission))
+	<MissionType unid="&baBenedictMission;">
+		<Image imageID="&rsBenedictMission;"	imageWidth="384" imageHeight="192"/>
 
-					(switch
-						;	If there are active missions that the player has not 
-						;	yet completed, then they need to complete them first.
+		<Language>
+			<Text id="ArcName">Benedict &amp; Fiona</Text>
+		</Language>
+	</MissionType>
 
-						(and (not (@ options 'allowActiveMissions))
-								(msnFind "a +benedictStoryArc;")
-								)
-							Nil
+<!-- RESOURCE -->
 
-						;	If the new mission is earlier than the latest mission
-						;	then it is too late.
-
-						(and curMission (leq (typGetStaticData missionUNID 'sequence) (typGetStaticData curMission 'sequence)))
-							Nil
-
-						;	Otherwise, the mission is available
-
-						True
-						)
-					)
-				))
-
-			(setq benedict_missionAccepted (lambda (missionObj)
-				(typSetData &unidBenedictStoryArc; 'curMission (msnGetProperty missionObj 'unid))
-				))
-			)
-	</Globals>
+	<Image UNID="&rsBenedictMission;"		bitmap="Resources\BenedictMissionTile.jpg"			loadOnUse="true" />
 
 </TranscendenceModule>

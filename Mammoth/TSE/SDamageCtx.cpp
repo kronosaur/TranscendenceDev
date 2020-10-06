@@ -5,16 +5,27 @@
 
 #include "PreComp.h"
 
+SDamageCtx::SDamageCtx (void)
+
+//	SDamageCtx constructor
+
+	{
+	m_pDesc = new CWeaponFireDesc;
+	m_bFreeDesc = true;
+	}
+
 SDamageCtx::SDamageCtx (CSpaceObject *pObjHitArg, 
-						CWeaponFireDesc *pDescArg, 
+						CWeaponFireDesc &DescArg, 
 						const CItemEnhancementStack *pEnhancementsArg,
-						CDamageSource &AttackerArg,
+						const CDamageSource &AttackerArg,
 						CSpaceObject *pCauseArg,
+						Metric rAgeArg,
 						int iDirectionArg,
 						const CVector &vHitPosArg,
 						int iDamageArg) :
 		pObj(pObjHitArg),
-		pDesc(pDescArg),
+		m_pDesc(&DescArg),
+		Damage(DescArg.CalcDamageDesc(pEnhancementsArg, AttackerArg, rAgeArg)),
 		iDirection(iDirectionArg),
 		vHitPos(vHitPosArg),
 		pCause(pCauseArg),
@@ -27,15 +38,6 @@ SDamageCtx::SDamageCtx (CSpaceObject *pObjHitArg,
 //	All such calls should go through this constructor.
 
 	{
-	//	Initialize damage structure
-
-	Damage = pDescArg->GetDamage();
-	if (pEnhancementsArg)
-		Damage.AddEnhancements(pEnhancementsArg);
-	Damage.SetCause(AttackerArg.GetCause());
-	if (AttackerArg.IsAutomatedWeapon())
-		Damage.SetAutomatedWeapon();
-
 	//	Roll damage
 
 	if (iDamage == -1)
@@ -53,9 +55,9 @@ SDamageCtx::SDamageCtx (const DamageDesc &DamageArg)
 	{
 	//	Initialize a descriptor
 
-	pDesc = new CWeaponFireDesc;
+	m_pDesc = new CWeaponFireDesc;
 	m_bFreeDesc = true;
-	pDesc->InitFromDamage(DamageArg);
+	m_pDesc->InitFromDamage(DamageArg);
 
 	//	Roll damage
 
@@ -73,7 +75,7 @@ SDamageCtx::~SDamageCtx (void)
 
 	{
 	if (m_bFreeDesc)
-		delete pDesc;
+		delete m_pDesc;
 	}
 
 void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
@@ -175,4 +177,15 @@ void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 	//	Time Stop
 
 	m_bTimeStop = (DamageArg.GetTimeStopDamageLevel() > 0);
+	}
+
+void SDamageCtx::SetHint (EDamageHint iHint)
+
+//	SetHint
+//
+//	Sets the hint.
+
+	{
+	if (iHint == EDamageHint::none || GetDesc().ShowsHint(iHint))
+		m_iHint = iHint;
 	}

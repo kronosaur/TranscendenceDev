@@ -165,8 +165,6 @@ static constexpr DWORD UNID_ANTIMATTER_EXPLOSION_1 =	0x00030030;
 static constexpr DWORD UNID_GRAVITON_EXPLOSION_1 =		0x00030034;
 
 static constexpr DWORD g_ExplosionUNID =				0x00009001;	//	efMediumExplosion1
-static constexpr DWORD g_LargeExplosionUNID =			0x00009002;	//	efLargeExplosion1
-static constexpr DWORD g_HitEffectUNID =				0x00009003;	//	efSmallExplosion1
 static constexpr DWORD g_ShieldEffectUNID =				0x00009004;	//	efShieldHit1
 static constexpr DWORD g_StargateInUNID =				0x00009005;	//	efStargateIn
 static constexpr DWORD g_StargateOutUNID =				0x00009006;	//	efStargateOut
@@ -177,10 +175,9 @@ static constexpr DWORD MEDIUM_STATION_DAMAGE_UNID =		0x0000900F;	//	efMediumStat
 static constexpr DWORD DEFAULT_SHIP_SCREEN_UNID =		0x0000A001;	//	dsShipInterior
 
 static constexpr DWORD g_DamageImageUNID =				0x0000F001;	//	rsMediumDamage
-static constexpr DWORD SHIP_INTERIOR_IMAGE_UNID =		0x0000F002;	//	rsShipInterior
 static constexpr DWORD g_LRSImageUNID =					0x0000F006;	//	rsZubrinLRS
 static constexpr DWORD UNID_TARGETING_HUD_BACKGROUND =	0x0000F007;	//	rsZubrinTargeting
-static constexpr DWORD g_SRSSnowImageUNID =				0x0000F008;	//	rsSRSSnow
+static constexpr DWORD UNID_SRS_SNOW_PATTERN =			0x0000F008;	//	rsSRSSnow
 static constexpr DWORD g_LRSBorderUNID =				0x0000F009;	//	rsZubrinLRSBorder
 static constexpr DWORD DEFAULT_REACTOR_DISPLAY_IMAGE =	0x0000F00C;	//	rsZubrinReactor
 static constexpr DWORD DEFAULT_DOCK_SCREEN_IMAGE_UNID = 0x0000F013;	//	Default dock screen background
@@ -194,6 +191,7 @@ static constexpr DWORD COMPATIBLE_DOCK_SERVICES_SCREEN = 0x0001002A;
 static constexpr DWORD COMPATIBLE_SHIP_CONFIG_SCREEN =	0x0000A01B;
 
 static constexpr DWORD UNID_DEFAULT_SYSTEM_BACKGROUND =	0x00030001;
+static constexpr DWORD UNID_CORE_ICON_BAR			 =	0x00030005;
 static constexpr DWORD UNID_DISINTEGRATION_EXPLOSION =	0x00030044;
 static constexpr DWORD UNID_TIME_STOP_OVERLAY =			0x00030080;
 static constexpr DWORD UNID_GENERIC_ENHANCEMENT =		0x00030140;

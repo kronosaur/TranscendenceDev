@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- MORPHOLOGY -->
+
+	<SystemPartTable unid="&tbScoriaTables;">
+
+		<!-- PLANETS AND PLANETOIDS -->
+
+		<ScoriaPlanetoidPrimary>
+			<Lookup table="StandardPlanetoidMorphology">
+				<_PlanetType>
+					<Table>
+						<Station chance="60" type="&stScoriaPlanetoidSizeE;" showOrbit="true"/>
+						<!--
+						<Station chance="30" type="&stScoriaPlanetoidSizeF;" showOrbit="true"/>
+						<Station chance="10" type="&stScoriaPlanetoidSizeG;" showOrbit="true"/>
+						-->
+					</Table>
+				</_PlanetType>
+				<_PlanetLabel>
+					<Label attributes="planet, planetary, planetoid, scoria"/>
+				</_PlanetLabel>
+			</Lookup>
+		</ScoriaPlanetoidPrimary>
+
+		<!-- ASTEROID FIELDS -->
+
+		<ScoriaAsteroidBelt200>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt200Pattern">
+					<_AsteroidSizeA		table="ScoriaSizeA"/>
+					<_AsteroidSizeB		table="ScoriaSizeB"/>
+					<_AsteroidSizeC		table="ScoriaSizeC"/>
+					<_AsteroidSizeD		table="ScoriaSizeD"/>
+
+					<_Location			table="ScoriaLabel"/>
+				</_Morphology>
+			</Lookup>
+		</ScoriaAsteroidBelt200>
+
+		<ScoriaAsteroidBelt300>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt300Pattern">
+					<_AsteroidSizeA		table="ScoriaSizeA"/>
+					<_AsteroidSizeB		table="ScoriaSizeB"/>
+					<_AsteroidSizeC		table="ScoriaSizeC"/>
+					<_AsteroidSizeD		table="ScoriaSizeD"/>
+
+					<_Location			table="ScoriaLabel"/>
+				</_Morphology>
+			</Lookup>
+		</ScoriaAsteroidBelt300>
+
+		<ScoriaAsteroidTrojans25>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidTrojans25Pattern">
+					<_AsteroidSizeA		table="ScoriaSizeA"/>
+					<_AsteroidSizeB		table="ScoriaSizeB"/>
+					<_AsteroidSizeC		table="ScoriaSizeC"/>
+					<_AsteroidSizeD		table="ScoriaSizeD"/>
+
+					<_Location			table="ScoriaLabel"/>
+				</_Morphology>
+			</Lookup>
+		</ScoriaAsteroidTrojans25>
+
+		<ScoriaAsteroidAntiTrojans25>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidAntiTrojans25Pattern">
+					<_AsteroidSizeA		table="ScoriaSizeA"/>
+					<_AsteroidSizeB		table="ScoriaSizeB"/>
+					<_AsteroidSizeC		table="ScoriaSizeC"/>
+					<_AsteroidSizeD		table="ScoriaSizeD"/>
+
+					<_Location			table="ScoriaLabel"/>
+				</_Morphology>
+			</Lookup>
+		</ScoriaAsteroidAntiTrojans25>
+
+		<ScoriaAsteroidTrojans50>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidTrojans50Pattern">
+					<_AsteroidSizeA		table="ScoriaSizeA"/>
+					<_AsteroidSizeB		table="ScoriaSizeB"/>
+					<_AsteroidSizeC		table="ScoriaSizeC"/>
+					<_AsteroidSizeD		table="ScoriaSizeD"/>
+
+					<_Location			table="ScoriaLabel"/>
+				</_Morphology>
+			</Lookup>
+		</ScoriaAsteroidTrojans50>
+
+		<ScoriaAsteroidAntiTrojans50>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidAntiTrojans50Pattern">
+					<_AsteroidSizeA		table="ScoriaSizeA"/>
+					<_AsteroidSizeB		table="ScoriaSizeB"/>
+					<_AsteroidSizeC		table="ScoriaSizeC"/>
+					<_AsteroidSizeD		table="ScoriaSizeD"/>
+
+					<_Location			table="ScoriaLabel"/>
+				</_Morphology>
+			</Lookup>
+		</ScoriaAsteroidAntiTrojans50>
+
+		<ScoriaAsteroidTrojans100>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidTrojans100Pattern">
+					<_AsteroidSizeA		table="ScoriaSizeA"/>
+					<_AsteroidSizeB		table="ScoriaSizeB"/>
+					<_AsteroidSizeC		table="ScoriaSizeC"/>
+					<_AsteroidSizeD		table="ScoriaSizeD"/>
+
+					<_Location			table="ScoriaLabel"/>
+				</_Morphology>
+			</Lookup>
+		</ScoriaAsteroidTrojans100>
+
+		<ScoriaAsteroidAntiTrojans100>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidAntiTrojans100Pattern">
+					<_AsteroidSizeA		table="ScoriaSizeA"/>
+					<_AsteroidSizeB		table="ScoriaSizeB"/>
+					<_AsteroidSizeC		table="ScoriaSizeC"/>
+					<_AsteroidSizeD		table="ScoriaSizeD"/>
+
+					<_Location			table="ScoriaLabel"/>
+				</_Morphology>
+			</Lookup>
+		</ScoriaAsteroidAntiTrojans100>
+
+		<!-- COMPONENTS -->
+
+		<ScoriaSizeA>
+			<Table>
+				<Station chance="80" type="&stScoriaAsteroidSizeA1;"/>
+				<Station chance="15" type="&stScoriaAsteroidSizeA2;"/>
+				<Station chance="4" type="&stScoriaAsteroidSizeA3;"/>
+				<Station chance="1" type="&stScoriaAsteroidSizeA4;"/>
+			</Table>
+		</ScoriaSizeA>
+
+		<ScoriaSizeB>
+			<Table>
+				<Station chance="80" type="&stScoriaAsteroidSizeB1;"/>
+				<Station chance="20" type="&stScoriaAsteroidSizeB2;"/>
+			</Table>
+		</ScoriaSizeB>
+
+		<ScoriaSizeC>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*scoria;		*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*scoria;		*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*scoria;		*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</ScoriaSizeC>
+
+		<ScoriaSizeD>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*scoria;		*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*scoria;		*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*scoria;		*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</ScoriaSizeD>
+
+		<ScoriaSizeE>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*scoria;		*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*scoria;		*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*scoria;		*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</ScoriaSizeE>
+
+		<ScoriaSizeF>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*scoria;		*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*scoria;		*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*scoria;		*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</ScoriaSizeF>
+
+		<ScoriaSizeG>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*scoria;		*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*scoria;		*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*scoria;		*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</ScoriaSizeG>
+
+		<ScoriaLabel>
+			<Label attributes="scoria"/>
+		</ScoriaLabel>
+	</SystemPartTable>
+
+<!-- ASTEROIDS & PLANETS -->
+
+	<!-- Size A Scoria Asteroid -->
+
+	<StationType UNID="&stScoriaAsteroidSizeA1;"
+		name=				"Scoria Asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, scoria"
+		inherit=			"&baScoriaAsteroid;"
+
+		scale=				"world"
+		size=				"1"
+		anonymous=			"true"
+
+		ejectaType=			"&vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="0"   imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="32"  imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="64"  imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="96"  imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="128" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="160" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="192" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="224" imageWidth="32" imageHeight="32"/>
+			
+			<Image			imageID="&rsScoriaAsteroids;" imageX="32"  imageY="0"   imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="32"  imageY="32"  imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="32"  imageY="64"  imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="32"  imageY="96"  imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="32"  imageY="128" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="32"  imageY="160" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="32"  imageY="192" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="32"  imageY="224" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="85"/>
+				<Lookup chance="15" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<StationType UNID="&stScoriaAsteroidSizeA2;"
+		name=				"Scoria Asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, scoria"
+		inherit=			"&baScoriaAsteroid;"
+
+		scale=				"world"
+		size=				"1"
+		anonymous=			"true"
+
+		ejectaType=			"&vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="64"  imageY="0"   imageWidth="48" imageHeight="48"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="64"  imageY="48"  imageWidth="48" imageHeight="48"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="64"  imageY="96"  imageWidth="48" imageHeight="48"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="64"  imageY="144" imageWidth="48" imageHeight="48"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="64"  imageY="192" imageWidth="48" imageHeight="48"/>
+
+			<Image			imageID="&rsScoriaAsteroids;" imageX="112" imageY="0"   imageWidth="48" imageHeight="48"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="112" imageY="48"  imageWidth="48" imageHeight="48"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="112" imageY="96"  imageWidth="48" imageHeight="48"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="112" imageY="144" imageWidth="48" imageHeight="48"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="112" imageY="192" imageWidth="48" imageHeight="48"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="85"/>
+				<Lookup chance="15" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<StationType UNID="&stScoriaAsteroidSizeA3;"
+		name=				"Scoria Asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, scoria"
+		inherit=			"&baScoriaAsteroid;"
+
+		scale=				"world"
+		size=				"4"
+		anonymous=			"true"
+
+		ejectaType=			"&vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="256" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="320" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="384" imageWidth="64" imageHeight="64"/>
+
+			<Image			imageID="&rsScoriaAsteroids;" imageX="64"  imageY="256" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="64"  imageY="320" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="64"  imageY="384" imageWidth="64" imageHeight="64"/>
+
+			<Image			imageID="&rsScoriaAsteroids;" imageX="128" imageY="256" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="128" imageY="320" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="128" imageY="384" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="85"/>
+				<Lookup chance="15" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<StationType UNID="&stScoriaAsteroidSizeA4;"
+		name=				"Scoria Asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, scoria"
+		inherit=			"&baScoriaAsteroid;"
+
+		scale=				"world"
+		size=				"9"
+		anonymous=			"true"
+
+		ejectaType=			"&vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="160" imageY="0"   imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="160" imageY="80"  imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="160" imageY="160" imageWidth="80" imageHeight="80"/>
+
+			<Image			imageID="&rsScoriaAsteroids;" imageX="240" imageY="0"   imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="240" imageY="80"  imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="240" imageY="160" imageWidth="80" imageHeight="80"/>
+
+			<Image			imageID="&rsScoriaAsteroids;" imageX="320" imageY="0"   imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="320" imageY="80"  imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="320" imageY="160" imageWidth="80" imageHeight="80"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="85"/>
+				<Lookup chance="15" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size B Scoria Asteroid -->
+
+	<StationType UNID="&stScoriaAsteroidSizeB1;"
+		name=				"Scoria Asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, scoria"
+		inherit=			"&baScoriaAsteroid;"
+
+		scale=				"world"
+		size=				"24"
+		anonymous=			"true"
+
+		ejectaType=			"&vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="192" imageY="240" imageWidth="100" imageHeight="100"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="292" imageY="240" imageWidth="100" imageHeight="100"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="392" imageY="240" imageWidth="100" imageHeight="100"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="492" imageY="240" imageWidth="100" imageHeight="100"/>
+
+			<Image			imageID="&rsScoriaAsteroids;" imageX="192" imageY="340" imageWidth="100" imageHeight="100"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="292" imageY="340" imageWidth="100" imageHeight="100"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="392" imageY="340" imageWidth="100" imageHeight="100"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="492" imageY="340" imageWidth="100" imageHeight="100"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="85"/>
+				<Lookup chance="15" count="1d6" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<StationType UNID="&stScoriaAsteroidSizeB2;"
+		name=				"Scoria Asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, scoria"
+		inherit=			"&baScoriaAsteroid;"
+
+		scale=				"world"
+		size=				"50"
+		anonymous=			"true"
+
+		ejectaType=			"&vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="400" imageY="0"   imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="520" imageY="0"   imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="640" imageY="0"   imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="760" imageY="0"   imageWidth="120" imageHeight="120"/>
+
+			<Image			imageID="&rsScoriaAsteroids;" imageX="400" imageY="120" imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="520" imageY="120" imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="640" imageY="120" imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="760" imageY="120" imageWidth="120" imageHeight="120"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="85"/>
+				<Lookup chance="15" count="1d6" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size C Scoria Asteroid -->
+
+	<StationType UNID="&stScoriaAsteroidSizeC1;"
+		name=				"Scoria Asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, scoria"
+		inherit=			"&baScoriaAsteroid;"
+
+		scale=				"world"
+		size=				"120"
+		anonymous=			"true"
+
+		ejectaType=			"&vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="448" imageWidth="150" imageHeight="150"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="150" imageY="448" imageWidth="150" imageHeight="150"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="300" imageY="448" imageWidth="150" imageHeight="150"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="450" imageY="448" imageWidth="150" imageHeight="150"/>
+
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="598" imageWidth="150" imageHeight="150"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="150" imageY="598" imageWidth="150" imageHeight="150"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="300" imageY="598" imageWidth="150" imageHeight="150"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="450" imageY="598" imageWidth="150" imageHeight="150"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="85"/>
+				<Lookup chance="15" count="1d8" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<StationType UNID="&stScoriaAsteroidSizeC2;"
+		name=				"Scoria Asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, scoria"
+		inherit=			"&baScoriaAsteroid;"
+
+		scale=				"world"
+		size=				"250"
+		anonymous=			"true"
+
+		ejectaType=			"&vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="748" imageWidth="180" imageHeight="180"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="180" imageY="748" imageWidth="180" imageHeight="180"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="360" imageY="748" imageWidth="180" imageHeight="180"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="540" imageY="748" imageWidth="180" imageHeight="180"/>
+
+			<Image			imageID="&rsScoriaAsteroids;" imageX="0"   imageY="928" imageWidth="180" imageHeight="180"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="180" imageY="928" imageWidth="180" imageHeight="180"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="360" imageY="928" imageWidth="180" imageHeight="180"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="540" imageY="928" imageWidth="180" imageHeight="180"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="85"/>
+				<Lookup chance="15" count="1d8" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size D Scoria Asteroid -->
+
+	<StationType UNID="&stScoriaAsteroidSizeD;"
+		name=				"Scoria Asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, scoria"
+		inherit=			"&baScoriaAsteroid;"
+
+		scale=				"world"
+		size=				"480"
+		anonymous=			"true"
+
+		ejectaType=			"&vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="600" imageY="240" imageWidth="210" imageHeight="210"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="810" imageY="240" imageWidth="210" imageHeight="210"/>
+
+			<Image			imageID="&rsScoriaAsteroids;" imageX="600" imageY="450" imageWidth="210" imageHeight="210"/>
+			<Image			imageID="&rsScoriaAsteroids;" imageX="810" imageY="450" imageWidth="210" imageHeight="210"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="85"/>
+				<Lookup chance="15" count="1d10" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Scoria Planetoid Size E -->
+
+	<StationType UNID="&stScoriaPlanetoidSizeE;"
+		name=				"scoria planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, scoria"
+		inherit=			"&baScoriaPlanetoid;"
+
+		scale=				"world"
+		size=				"820"
+		anonymous=			"true"
+
+		ejectaType=			"&vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image	imageID="&rsScoriaAsteroids;" imageX="720"  imageY="660"   imageWidth="240" imageHeight="240"/>
+			<Image	imageID="&rsScoriaAsteroids;" imageX="960"  imageY="660"   imageWidth="240" imageHeight="240"/>
+
+			<Image	imageID="&rsScoriaAsteroids;" imageX="720"  imageY="900"   imageWidth="240" imageHeight="240"/>
+			<Image	imageID="&rsScoriaAsteroids;" imageX="960"  imageY="900"   imageWidth="240" imageHeight="240"/>
+		</ImageVariants>
+	</StationType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&baScoriaAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="volcanic"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
+
+	<Type unid="&baScoriaPlanetoid;">
+	</Type>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsScoriaAsteroids;"		bitmap="Resources\ScoriaAsteroids.jpg"	bitmask="Resources\ScoriaAsteroidsMask.bmp"		loadOnUse="true"/>
+
+</TranscendenceModule>

@@ -6,7 +6,7 @@
 
 	<ItemType UNID="&itPortableAnalyzer;"
 			name=				"portable analyzer"
-			attributes=			"analyzer; MinorItem"
+			attributes=			"analyzer, humanTech, minorItem"
 			inherit=			"&baAnalyzer;"
 
 			level=				"2"
@@ -35,7 +35,7 @@
 
 	<ItemType UNID="&itEngineeringAnalyzer;"
 			name=				"engineering analyzer"
-			attributes=			"analyzer; MinorItem"
+			attributes=			"analyzer, humanTech, MinorItem"
 			inherit=			"&baAnalyzer;"
 			  
 			level=				"5"
@@ -64,7 +64,7 @@
 
 	<ItemType UNID="&itAdvancedAnalyzer;"
 			name=				"advanced analyzer"
-			attributes=			"analyzer; MinorItem"
+			attributes=			"analyzer, humanTech, MinorItem"
 			inherit=			"&baAnalyzer;"
 			  
 			level=				"8"

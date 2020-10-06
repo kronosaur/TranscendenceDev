@@ -437,7 +437,7 @@ ALERROR CTranscendenceModel::CreateAllSystems (const CString &sStartNode, CSyste
 		//	Otherwise, create this system
 
 		CSystem *pNewSystem;
-		if (error = m_Universe.CreateStarSystem(pNode, &pNewSystem, &sError))
+		if (error = m_Universe.CreateStarSystem(*pNode, &pNewSystem, &sError))
 			{
 			kernelDebugLogPattern("Error creating system %s: %s", pNode->GetSystemName(), sError);
 			if (retsError)
@@ -469,7 +469,7 @@ ALERROR CTranscendenceModel::CreateAllSystems (const CString &sStartNode, CSyste
 		return ERR_FAIL;
 		}
 
-	if (error = m_Universe.CreateStarSystem(pStartingNode, retpStartingSystem, retsError))
+	if (error = m_Universe.CreateStarSystem(*pStartingNode, retpStartingSystem, retsError))
 		return error;
 
 	//	Output some counts
@@ -677,7 +677,7 @@ ALERROR CTranscendenceModel::EndGameDestroyed (bool *retbResurrected)
 			CString sError;
 			if (m_pResurrectType->FireOnGlobalResurrect(&sError) != NOERROR)
 				{
-				g_pTrans->DisplayMessage(sError);
+				m_Universe.DebugOutput(sError);
 				kernelDebugLogString(sError);
 				}
 			}
@@ -959,7 +959,20 @@ void CTranscendenceModel::ExitScreenSession (bool bForceUndock)
 		//	If necessary, checkpoint the game.
 
 		if (pLocation && !pLocation->IsPlayer() && m_Universe.GetDifficulty().SaveOnUndock())
-			SaveGame(CGameFile::FLAG_CHECKPOINT);
+			{
+			//	If we're in the middle of a script, then we wait until the 
+			//	script is done before saving because the script made set some
+			//	additional state that we want to capture.
+			//
+			//	For example, we exit a screen before calling <OnAcceptUndock>.
+			//	If we were to save now, we would lose all the changes made in 
+			//	<OnAcceptUndock>.
+
+			if (pSession->GetDockScreen().InExecuteAction())
+				m_bSaveOnActionDone = true;
+			else
+				SaveGame(CGameFile::FLAG_CHECKPOINT);
+			}
 		}
 
 	DEBUG_CATCH
@@ -1043,7 +1056,7 @@ void CTranscendenceModel::GenerateGameStats (CGameStats *retStats, bool bGameOve
 
 	//	Generate
 
-	m_Universe.GenerateGameStats(*retStats);
+	m_Universe.GenerateGameStats((bGameOver ? m_sEndGameReason : NULL_STR), *retStats);
 	m_pPlayer->GenerateGameStats(*retStats, bGameOver);
 	retStats->Sort();
 
@@ -1102,7 +1115,13 @@ ALERROR CTranscendenceModel::Init (const CGameSettings &Settings)
 	m_bNoSound = Settings.GetBoolean(CGameSettings::noSound);
     m_bNoCollectionLoad = Settings.GetBoolean(CGameSettings::noCollectionLoad);
 	m_bForcePermadeath = Settings.GetBoolean(CGameSettings::forcePermadeath);
-
+	m_sAccessibilityColorPlayer = Settings.GetString(CGameSettings::colorIFFPlayer);
+	m_sAccessibilityColorEscort = Settings.GetString(CGameSettings::colorIFFEscort);
+	m_sAccessibilityColorFriendly = Settings.GetString(CGameSettings::colorIFFFriendly);
+	m_sAccessibilityColorNeutral = Settings.GetString(CGameSettings::colorIFFNeutral);
+	m_sAccessibilityColorEnemy = Settings.GetString(CGameSettings::colorIFFEnemy);
+	m_sAccessibilityColorAngry = Settings.GetString(CGameSettings::colorIFFAngry);
+	m_sAccessibilityColorProjectile = Settings.GetString(CGameSettings::colorIFFProjectile);
 	return NOERROR;
 	}
 
@@ -1544,6 +1563,23 @@ void CTranscendenceModel::MarkGateFollowers (CSystem *pSystem)
 		}
 	}
 
+void CTranscendenceModel::OnExecuteActionDone (void)
+
+//	OnExecuteActionDone
+//
+//	This method is called when we're done executing a dock screen action.
+
+	{
+	if (m_bSaveOnActionDone)
+		{
+		//	We treat this as a mission checkpoint because we want to disable
+		//	this autosave under the same circumstances (debug mode, etc.).
+
+		SaveGame(CGameFile::FLAG_CHECKPOINT | CGameFile::FLAG_ACCEPT_MISSION);
+		m_bSaveOnActionDone = false;
+		}
+	}
+
 void CTranscendenceModel::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, SPlayerChangedShipsCtx &Options)
 
 //	OnPlayerChangedShips
@@ -1643,7 +1679,7 @@ void CTranscendenceModel::OnPlayerDocked (CSpaceObject *pObj)
 	if (pSession == NULL)
 		return;
 			
-	g_pTrans->ClearMessage();
+	pSession->GetMessageDisplay().ClearAll();
 
 	//	See if the object wants to redirect us. In that case, m_pStation
 	//	will remain the original object, but gSource and m_pLocation in the
@@ -1658,7 +1694,7 @@ void CTranscendenceModel::OnPlayerDocked (CSpaceObject *pObj)
 		{
 		m_pPlayer->Undock();
 
-		g_pTrans->DisplayMessage(sError);
+		m_pPlayer->DisplayMessage(sError);
 		::kernelDebugLogString(sError);
 		return;
 		}
@@ -1747,7 +1783,7 @@ void CTranscendenceModel::OnPlayerExitedGate (void)
 
 	//	Welcome message
 
-	g_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Welcome to the %s system!"), pNewSystem->GetName()));
+	m_pPlayer->DisplayMessage(strPatternSubst(CONSTLIT("Welcome to the %s system!"), pNewSystem->GetName()));
 
 	//	Update our stats, etc.
 
@@ -1822,7 +1858,7 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 			//	If we failed to load, then we need to create a new system
 
 			CString sError;
-			if (m_Universe.CreateStarSystem(m_pDestNode, &pNewSystem, &sError) != NOERROR)
+			if (m_Universe.CreateStarSystem(*m_pDestNode, &pNewSystem, &sError) != NOERROR)
 				{
 				SetProgramError(sError);
 				//g_pTrans->DisplayMessage(sError);
@@ -1840,7 +1876,7 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 				{
 				sError = strPatternSubst(CONSTLIT("%s [%s (%x)]"), sError, m_pDestNode->GetSystemName(), dwSystemID);
 
-				g_pTrans->DisplayMessage(sError);
+				m_pPlayer->DisplayMessage(sError);
 				kernelDebugLogString(sError);
 				throw CException(ERR_FAIL, sError);
 				}
@@ -1882,38 +1918,15 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 			}
 		}
 
-	//	Let all types know that the current system is going away
-	//	(Obviously, we need to call this before we change the current system.
-	//	Note also that at this point the player is already gone.)
-
-	m_Universe.GetMissions().FireOnSystemStopped();
-	m_Universe.GetDesignCollection().FireOnGlobalSystemStopped();
-
 	//	Set the new system
 
-	m_Universe.SetNewSystem(pNewSystem, pStart);
+	m_Universe.SetNewSystem(*pNewSystem, pStart);
 
 	//	Move any henchmen through the stargate (note: we do this here because
 	//	we need to remove the henchmen out of the old system before we save).
 
 	SetProgramState(psStargateTransferringGateFollowers);
 	TransferGateFollowers(m_pOldSystem, pNewSystem, pStart);
-
-    //  Make sure we've updated current system data to global data.
-
-    m_Universe.GetGlobalObjects().Refresh(m_pOldSystem);
-
-	//	Compute how long (in ticks) it has been since this system has been
-	//	updated.
-
-	int iLastUpdated = pNewSystem->GetLastUpdated();
-	DWORD dwElapsedTime = (iLastUpdated > 0 ? ((DWORD)m_Universe.GetTicks() - (DWORD)iLastUpdated) : 0);
-
-	//	Let all types know that we have a new system. Again, this is called 
-	//	before the player has entered the system.
-
-	m_Universe.GetDesignCollection().FireOnGlobalSystemStarted(dwElapsedTime);
-	m_Universe.GetMissions().FireOnSystemStarted(dwElapsedTime);
 
 	//	Garbage-collect images and load those for the new system
 
@@ -2362,6 +2375,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	m_Universe.SetLogImageLoad(false);
 	CString sError;
 	error = pSession->GetDockScreen().InitScreen(m_Universe.GetDockSession(),
+			*GetPlayer(),
 			m_HI.GetHWND(),
 			g_pTrans->m_rcMainScreen,
 			pExtension,
@@ -2416,7 +2430,7 @@ void CTranscendenceModel::ShowShipScreen (void)
 	CString sError;
 	if (!ShowShipScreen(NULL, pRoot, sScreen, NULL_STR, NULL, &sError))
 		{
-		g_pTrans->DisplayMessage(sError);
+		m_pPlayer->DisplayMessage(sError);
 		::kernelDebugLogString(sError);
 		return;
 		}
@@ -2495,6 +2509,17 @@ ALERROR CTranscendenceModel::StartGame (bool bNewGame)
 	if (m_bNoSound)
 		m_Universe.SetSound(false);
 
+	//	Set Accessibility Settings
+	m_Universe.InitAccessibilitySettings();
+	CAccessibilitySettings& cAccessibility = m_Universe.GetAccessibilitySettings();
+	cAccessibility.SetIFFColor(m_sAccessibilityColorAngry, CAccessibilitySettings::IFFType::angry);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorEscort, CAccessibilitySettings::IFFType::escort);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorEnemy, CAccessibilitySettings::IFFType::enemy);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorFriendly, CAccessibilitySettings::IFFType::friendly);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorNeutral, CAccessibilitySettings::IFFType::neutral);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorPlayer, CAccessibilitySettings::IFFType::player);
+	cAccessibility.SetIFFColor(m_sAccessibilityColorProjectile, CAccessibilitySettings::IFFType::projectile);
+
 	//	Tell the controller that we're starting
 
 	m_pPlayer->OnStartGame();
@@ -2512,7 +2537,10 @@ ALERROR CTranscendenceModel::StartGame (bool bNewGame)
 	//	Update stats
 
 	if (m_iState == stateCreatingNewGame)
+		{
 		m_pPlayer->OnSystemEntered(m_Universe.GetCurrentSystem());
+		m_pPlayer->GetGameStats().OnSwitchPlayerShip(*m_pPlayer->GetShip());
+		}
 
     //  Initialize some thumbnails
 
@@ -2658,6 +2686,10 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 	CString sStartNode;
 	CString sStartPos;
 	CalcStartingPos(pStartingShip, &dwStartMap, &sStartNode, &sStartPos);
+
+	//	Remember the starting system.
+
+	m_pPlayer->SetStartingSystem(sStartNode);
 
 	//	Initialize topology, etc.
 

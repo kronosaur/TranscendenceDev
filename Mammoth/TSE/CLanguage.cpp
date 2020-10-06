@@ -70,7 +70,7 @@ int CLanguage::CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecima
 		return CalcMetricNumber(rNumber / 1000.0, retiWhole, retiDecimal) + 1;
 	}
 
-CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
+CString CLanguage::Compose (const CString &sString, const ICCItem *pArgs)
 
 //	Compose
 //
@@ -257,7 +257,7 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 	return sOutput;
 	}
 
-CString CLanguage::ComposeCharacterReference (CUniverse &Universe, const CString &sCharacter, const CString &sField, ICCItem *pData)
+CString CLanguage::ComposeCharacterReference (CUniverse &Universe, const CString &sCharacter, const CString &sField, const ICCItem *pData)
 
 //	ComposeCharacterReference
 //
@@ -339,7 +339,7 @@ CString CLanguage::ComposeGenderedWord (const CString &sWord, GenomeTypes iGende
 	return pEntry->pszText[iGender];
 	}
 
-CString CLanguage::ComposeGenderedWordHelper (CUniverse &Universe, const CString &sWord, const CString &sField, ICCItem *pData)
+CString CLanguage::ComposeGenderedWordHelper (CUniverse &Universe, const CString &sWord, const CString &sField, const ICCItem *pData)
 
 //	ComposeGenderedWordHelper
 //
@@ -416,6 +416,11 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 			|| ((dwComposeFlags & nounCount) && iCount == 1))
 		{
 		sArticle = NounDesc.sArticle;
+		}
+	else if (dwComposeFlags & nounDefinitePhrase)
+		{
+		if (!NounDesc.sArticle.IsBlank())
+			sArticle = CONSTLIT("the ");
 		}
 	else if (dwComposeFlags & nounDemonstrative)
 		{
@@ -1425,4 +1430,38 @@ CString CLanguage::ParseVar (char *pPos, SVarInfo &retVarInfo, char **retpPos)
 	if (retpPos) *retpPos = pPos;
 
 	return sVar;
+	}
+
+bool CLanguage::ValidateTranslation (const CString &sText)
+
+//	ValidateTranslation
+//
+//	Make sure that we don't have any untranslated fields. Returns TRUE if we're
+//	OK.
+
+	{
+	const char *pPos = sText.GetASCIIZPointer();
+	bool bPercent = false;
+
+	while (*pPos != '\0')
+		{
+		//	If the last character was a percent, then make sure it is not 
+		//	followed by a character.
+
+		if (bPercent)
+			{
+			if (*pPos == '%' || strIsAlphaNumeric(pPos))
+				return false;
+
+			bPercent = false;
+			}
+		else if (*pPos == '%')
+			{
+			bPercent = true;
+			}
+
+		pPos++;
+		}
+
+	return true;
 	}

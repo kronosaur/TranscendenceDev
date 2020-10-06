@@ -21,8 +21,9 @@ class CTLispConvert
 			};
 
 		static ETypes ArgType (ICCItem *pItem, ETypes iDefaultType, ICCItem **retpValue = NULL);
-		static DWORD AsImageDesc (ICCItem *pItem, RECT *retrcRect);
-		inline static bool AsOption (ICCItem *pItem, const CString &sOption) { return (pItem && pItem->GetBooleanAt(sOption)); }
+		static DWORD AsImageDesc (const ICCItem *pItem, RECT *retrcRect);
+		static CSpaceObject *AsObject (const ICCItem *pItem);
+		static bool AsOption (ICCItem *pItem, const CString &sOption) { return (pItem && pItem->GetBooleanAt(sOption)); }
 		static bool AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector = NULL);
 		static ICCItemPtr CreateCurrencyValue (CurrencyValue Value);
 		static ICCItemPtr CreateObject (const CSpaceObject *pObj);
@@ -36,7 +37,7 @@ class CPropertyCompare
 	public:
 		bool Eval (ICCItem *pPropertyValue) const;
 		inline const CString &GetProperty (void) const { return m_sProperty; }
-		bool Parse (const CString &sExpression, CString *retsError = NULL);
+		bool Parse (CCodeChainCtx &CCX, const CString &sExpression, CString *retsError = NULL);
 
 	private:
 		enum EOperator
@@ -49,12 +50,15 @@ class CPropertyCompare
 			opLessThan,
 			opGreaterThanOrEqual,
 			opLessThanOrEqual,
+			opInRange,
 			opNonNil,
 			};
 
-		inline bool IsOperatorChar (char chChar) { return (chChar == '=' || chChar == '!' || chChar == '>' || chChar == '<'); }
+		bool IsOperatorChar (char chChar) { return (chChar == '=' || chChar == '!' || chChar == '>' || chChar == '<' || chChar == '['); }
+		static bool ParseValue (CCodeChainCtx &CCX, const char *&pPos, ICCItemPtr &pValue, CString *retsError = NULL);
 
 		CString m_sProperty;
 		EOperator m_iOp = opNone;
 		ICCItemPtr m_pValue;
+		ICCItemPtr m_pValue2;
 	};

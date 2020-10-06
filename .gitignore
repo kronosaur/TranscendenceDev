@@ -42,6 +42,7 @@ Mammoth/TSUI/HexarcKeys.h
 *.iobj
 *.ipdb
 *.dtbcache
+*.dtbcache.v2
 
 # Build results
 [Dd]ebug/
@@ -223,3 +224,5 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+/.vs/VSWorkspaceState.json
+/.vs/slnx.sqlite

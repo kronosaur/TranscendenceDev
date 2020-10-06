@@ -80,7 +80,7 @@ void GenerateSystemLabelCount (CUniverse &Universe, CXMLElement *pCmdLine)
 					//	Create the system and generate stats
 
 					CSystem *pSystem;
-					if (error = Universe.CreateStarSystem(pNode, &pSystem, NULL, &Stats))
+					if (error = Universe.CreateStarSystem(*pNode, &pSystem, NULL, &Stats))
 						{
 						printf("ERROR: Unable to create star system.\n");
 						return;

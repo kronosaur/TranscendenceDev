@@ -104,8 +104,8 @@
 
 			maxReactorPower=	"10000"
 			maxCargoSpace=		"200"
-			maxDevices=			"8"
-			maxNonWeapons=		"4"
+			maxDevices=			"9"
+			maxNonWeapons=		"5"
 
 			maxArmor=			"massive"
 			stdArmor=			"heavy"
@@ -184,8 +184,8 @@
 
 			maxReactorPower=	"10000"
 			maxCargoSpace=		"200"
-			maxDevices=			"8"
-			maxNonWeapons=		"4"
+			maxDevices=			"9"
+			maxNonWeapons=		"5"
 
 			maxArmor=			"massive"
 			stdArmor=			"heavy"
@@ -200,6 +200,7 @@
 		<Maneuver
 			maxRotationRate=	"9.0"
 			rotationAccel=		"1.0"
+			rotationStopAccel=	"9.0"
 			/>
 
 		<!-- Configuration -->
@@ -263,8 +264,8 @@
 
 			maxReactorPower=	"10000"
 			maxCargoSpace=		"200"
-			maxDevices=			"8"
-			maxNonWeapons=		"4"
+			maxDevices=			"9"
+			maxNonWeapons=		"6"
 
 			maxArmor=			"massive"
 			stdArmor=			"heavy"
@@ -279,6 +280,7 @@
 		<Maneuver
 			maxRotationRate=	"12.0"
 			rotationAccel=		"1.0"
+			rotationStopAccel=	"9.0"
 			/>
 
 		<!-- Configuration -->

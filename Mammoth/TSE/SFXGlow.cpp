@@ -90,7 +90,7 @@ class CGlowEffectPainter : public IEffectPainter
 		mutable TArray<BYTE> m_OpacityTable;
 	};
 
-static LPSTR ANIMATION_TABLE[] =
+static LPCSTR ANIMATION_TABLE[] =
 	{
 	//	Must be same order as EAnimationTypes
 		"",
@@ -102,7 +102,7 @@ static LPSTR ANIMATION_TABLE[] =
 		NULL
 	};
 
-static LPSTR STYLE_TABLE[] =
+static LPCSTR STYLE_TABLE[] =
 	{
 	//	Must be same order as EStyles
 		"",

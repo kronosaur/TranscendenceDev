@@ -167,6 +167,12 @@ ALERROR CContinuousBeam::Create (CSystem &System, SShotCreateCtx &Ctx, CContinuo
 
 	pBeam->AddContinuousBeam(Ctx.vPos, Ctx.vVel, Ctx.iDirection);
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pBeam, pBeam->GetData());
+
 	//	Add to system
 
 	if (error = pBeam->AddToSystem(System))
@@ -223,14 +229,28 @@ EDamageResults CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHi
 
 	{
 	SDamageCtx DamageCtx(pHit,
-			m_pDesc,
+			*m_pDesc,
 			m_pEnhancements,
 			m_Source,
 			this,
+			GetAge(),
 			AngleMod(iHitDir + mathRandom(0, 30) - 15),
 			vHitPos);
 
 	return pHit->Damage(DamageCtx);
+	}
+
+Metric CContinuousBeam::GetAge (void) const
+
+//	GetAge
+//
+//	Returns the age of the shot as a fraction of its lifetime (0-1.0).
+
+	{
+	if (m_iLifetime > 0)
+		return (Metric)Min(m_iTick, m_iLifetime) / (Metric)m_iLifetime;
+	else
+		return 0.0;
 	}
 
 CString CContinuousBeam::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
@@ -299,7 +319,6 @@ bool CContinuousBeam::HitTestSegment (SSegment &Segment, CVector *retvHitPos)
 			CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
 			if (!CanHit(pObj)
 					|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
-					|| !pObj->InteractsWith(iInteraction)
 					|| pObj == this)
 				continue;
 
@@ -376,7 +395,6 @@ bool CContinuousBeam::HitTestSegment (SSegment &Segment, CVector *retvHitPos)
 			CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
 			if (!CanHit(pObj)
 					|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
-					|| !pObj->InteractsWith(iInteraction)
 					|| pObj == this)
 				continue;
 
@@ -649,7 +667,10 @@ void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	//	Update the effect painter
 
 	if (m_pPainter)
-		m_pPainter->OnUpdate();
+		{
+		SEffectUpdateCtx UpdateCtx(GetUniverse());
+		m_pPainter->OnUpdate(UpdateCtx);
+		}
 
 	//	Do damage
 

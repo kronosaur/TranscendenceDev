@@ -66,9 +66,9 @@ void CItemEnhancementStack::AccumulateAttributes (const CItem &Item, TArray<SDis
 
 	int iPowerAdj = GetPowerAdj();
 	if (iPowerAdj > 100)
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-drain"), true));
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-power drain"), true));
 	else if (iPowerAdj < 100)
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+efficient"), true));
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+power save"), true));
 
 	//	Enhancements to fire rate
 
@@ -93,8 +93,10 @@ void CItemEnhancementStack::AccumulateAttributes (const CItem &Item, TArray<SDis
 		//	Only add this as an enhancement if the raw (unenhanced device) 
 		//	doesn't already have it.
 
-		CDeviceClass *pClass = Item.GetDeviceClass();
-		if (pClass && !pClass->IsTrackingWeapon(CItemCtx()))
+		CItem BasicItem(Item.GetType(), 1);
+		const CDeviceItem DeviceItem = BasicItem.AsDeviceItem();
+
+		if (DeviceItem.IsTrackingWeapon())
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+tracking"), true));
 		}
 	}
@@ -157,9 +159,9 @@ int CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
 	int i;
 
 	CDeviceClass *pClass = DeviceCtx.GetDeviceClass();
-    if (pClass == NULL)
-        pClass = DeviceCtx.GetVariantDevice();
-    if (pClass == NULL)
+	if (pClass == NULL)
+		pClass = DeviceCtx.GetVariantDevice();
+	if (pClass == NULL)
 		return 0;
 
 	//	Get the raw activation delay. NOTE: This DOES NOT include
@@ -489,6 +491,45 @@ int CItemEnhancementStack::GetResistMatterAdj (void) const
 		}
 
 	return mathRound(rValue);
+	}
+
+int CItemEnhancementStack::GetSpecialDamage (SpecialDamageTypes iSpecial) const
+
+//	GetSpecialDamage
+//
+//	Returns the damage level for the given special damage.
+
+	{
+	int iResult = 0;
+
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iLevel;
+		if (m_Stack[i].GetSpecialDamage(&iLevel) == iSpecial)
+			{
+			if (iLevel > iResult)
+				iResult = iLevel;
+			}
+		}
+
+	return iResult;
+	}
+
+bool CItemEnhancementStack::HasSpecialDamage (SpecialDamageTypes iSpecial) const
+
+//	HasSpecialDamage
+//
+//	Returns TRUE if we have the given special damage.
+
+	{
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iLevel;
+		if (m_Stack[i].GetSpecialDamage(&iLevel) == iSpecial && iLevel > 0)
+			return true;
+		}
+
+	return false;
 	}
 
 void CItemEnhancementStack::Insert (const CItemEnhancement &Mods)

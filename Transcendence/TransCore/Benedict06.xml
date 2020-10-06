@@ -11,43 +11,39 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msInfiltratePenitents;"
-			name=				"Infiltrate Penitents"
+			name=				"Benedict 06: Infiltrate Penitents"
 			attributes=			"benedictStoryArc, commonwealthColonyArmed, sistersMission"
+			inherit=			"&baBenedictMission;"
 
 			level=				"5"
+			missionArc=			"benedictArc:60"
+
 			maxAppearing=		"1"
 			priority=			"100"
 
 			failureAfterOutOfSystem="5400"
 			noFailureOnOwnerDestroyed="true"
 			>
-
-		<StaticData>
-			<sequence>60</sequence>
-		</StaticData>
-
 		<Events>
-			<OnCreate>
-				(block ()
-					(switch
-						;	See if the mission is still available
+			<CanCreate>
+				(switch
+					;	Only valid in system C6A (or C6)
 
-						(not (benedict_isMissionAvailable (objGetType gSource)))
-							(msnDestroy gSource)
+					(!= (sysGetNode) (if (find (sysGetNodes) 'C6A) 'C6A 'C6))
+						Nil
 							
-						;	Only valid in system C6A (or C6)
-
-						(!= (sysGetNode) (if (find (sysGetNodes) 'C6A) 'C6A 'C6))
-							(msnDestroy gSource)
-							
-						;	Must have completed Sandoval mission
+					;	Must have completed Sandoval mission
 						
-						(not (msnFind "r +unid:&msFindHandOfSolace;; +property:isSuccess;"))
-							(msnDestroy gSource)
+					(not (msnFind "r +unid:&msFindHandOfSolace;; +property:isSuccess;"))
+						Nil
 
-						;	OK
-						)
+					;	OK
+
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>
@@ -135,6 +131,10 @@
 					;	Install targeting ROM
 					
 					(objChangeEquipmentStatus newShipObj 'TargetingComputer 'install)
+
+					;	Add more ammo
+
+					(objAddItem newShipObj &itPX3HexageneMAG; (random 80 100))
 					
 					;	Switch ships
 					;
@@ -234,17 +234,9 @@
 			
 			<OnGlobalSystemStarted>
 				(switch
-					;	This mission is spawned in C6A, or C6 (if C6A does not exist).
-					;	If we're not in the right node, then nothing to do.
-					
-					(!= (sysGetNode) (if (find (sysGetNodes) 'C6A) 'C6A 'C6))
+					(not (msnCanCreate &msInfiltratePenitents;))
 						Nil
-						
-					;	If the mission isn't available, then nothing to do
-					
-					(not (benedict_isMissionAvailable &msInfiltratePenitents;))
-						Nil
-						
+
 					;	If we've already gone through this setup code, then skip it.
 					;	Otherwise we would keep creating stations whenever one got
 					;	destroyed.
@@ -328,17 +320,78 @@
 		<Language>
 			<!-- Mission Summary -->
 
-			<Text id="Name">Infiltrate a Penitent Sanctum</Text>
-			<Text id="Summary">
-				(msnTranslate gSource 'descSummary {
-					systemName: (sysGetName)
-					})
+			<Text id="Name">
+				Chapter 6: The Penitents
 			</Text>
-			<Text id="descSummary">
-				Help Benedict to infiltrate a Penitent Sanctum.
+			<Text id="Summary">
+				(block (
+					)
+					(switch
+						(msn@ gSource 'isFailure)
+							(msnTranslate gSource 'textSummary.failure {
+								systemName: (sysGetName)
+								})
+							
+						(msn@ gSource 'isDebriefed)
+							(msnTranslate gSource 'textSummary.next {
+								systemName: (sysGetName 'CD)
+								})
+
+						(msnTranslate gSource 'textSummary.active {
+							systemName: (sysGetName)
+							})
+						)
+					)
+			</Text>
+			<Text id="textSummary.active">
+
+				Hoping to unravel the mystery of the Hand of Solace, Benedict
+				has come up with a bold plan: infiltrate a Penitent station and
+				extract data that could implicate Sister Elana Ston in a 
+				conspiracy.
+
+				Aboard a stolen Penitent vessel, you and Benedict must dock with
+				a Penitent station, extract its secrets, and escape with your
+				lives.
 
 				System: %systemName%\n
 				Payment: None
+
+			</Text>
+			<Text id="textSummary.next">
+
+				Benedict's bold plan worked! You infiltrated a Penitent station
+				and extracted video evidence that Sister Elana Ston had been
+				conspiring with Penitents.
+
+				But on leaving the station, Benedict chose to stay behind to 
+				give you a chance to escape with the evidence.
+
+				You turned over the evidence to Fiona, who will take it to the
+				grandmatriarch of the Sisters at their cathedral in the 
+				Sanctuary system.
+
+				Meet her there if you wish to help.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.failure">
+
+				You have failed. Hoping to unravel the mystery of the Hand of 
+				Solace, Benedict had come up with a bold plan: infiltrate a
+				Penitent station and extract data that could implicate Sister
+				Elana Ston in a conspiracy.
+
+				But the plan failed spectacularly, and now you have no hope of
+				solving the mystery.
+
+				No further progress on this storyline is possible.
+			
+				System: %systemName%\n
+				Payment: None
+
 			</Text>
 
 			<!-- Intro -->
@@ -536,7 +589,7 @@
 <!-- OVERLAYS -->
 	
 	<OverlayType UNID="&ovBenedict06Disarm;"
-            attributes=         "effect"
+			attributes=         "effect"
 			disarm=		"true"
 			>
 		<Events>

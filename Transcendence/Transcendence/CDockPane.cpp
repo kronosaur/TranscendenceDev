@@ -20,6 +20,7 @@
 #define DESC_ID_ATTRIB				CONSTLIT("descID")
 #define ID_ATTRIB					CONSTLIT("id")
 #define LAYOUT_ATTRIB				CONSTLIT("layout")
+#define SHOW_ACTUAL_ITEM_ATTRIB		CONSTLIT("showActualItem")
 #define SHOW_COUNTER_ATTRIB			CONSTLIT("showCounter")
 #define SHOW_TEXT_INPUT_ATTRIB		CONSTLIT("showTextInput")
 #define STYLE_ATTRIB				CONSTLIT("style")
@@ -64,13 +65,8 @@ const int STD_PANE_PADDING_RIGHT =	8;
 const int STD_PANE_PADDING_BOTTOM =	24;
 const int THIN_PANE_HEIGHT =		100;
 
-CDockPane::CDockPane (void) :
-		m_pPaneDesc(NULL),
-		m_iLayout(layoutNone),
-		m_pContainer(NULL),
-		m_bInShowPane(false),
-		m_bInExecuteAction(false),
-		m_bDescError(false)
+CDockPane::CDockPane (CDockScreen &DockScreen) :
+		m_DockScreen(DockScreen)
 
 //	CDockPane constructor
 
@@ -104,15 +100,13 @@ void CDockPane::CleanUp (AGScreen *pScreen)
 
 	//	No need to free these fields because we don't own them
 
-	m_pDockScreen = NULL;
 	m_pPaneDesc = NULL;
 	m_pContainer = NULL;
 	m_bInShowPane = false;
-	m_bInExecuteAction = false;
 	m_sDeferredShowPane = NULL_STR;
 	}
 
-void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CString &sStyle, RECT rcPane)
+void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CXMLElement &ControlDesc, RECT rcPane)
 
 //	CreateControl
 //
@@ -120,7 +114,7 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CS
 
 	{
 	const CVisualPalette &VI = g_pHI->GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = m_pDockScreen->GetDockScreenVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = m_DockScreen.GetDockScreenVisuals();
 
 	switch (iType)
 		{
@@ -165,6 +159,10 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CS
 			pControl->cyMaxHeight = 0;
 
 			//	Choose font and colors based on style
+
+			CString sStyle;
+			if (!ControlDesc.FindAttribute(STYLE_ATTRIB, &sStyle))
+				sStyle = STYLE_DEFAULT;
 
 			SControlStyle Style;
 			GetControlStyle(sStyle, &Style);
@@ -213,6 +211,7 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CS
 			CGItemListDisplayArea *pItemDisplayArea = new CGItemListDisplayArea;
             pItemDisplayArea->SetColor(DockScreenVisuals.GetTitleTextColor());
             pItemDisplayArea->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+			pItemDisplayArea->SetDisplayAsKnown(ControlDesc.GetAttributeBool(SHOW_ACTUAL_ITEM_ATTRIB));
 
 			pControl->pArea = pItemDisplayArea;
 			m_pContainer->AddArea(pControl->pArea, rcPane, 0);
@@ -300,10 +299,6 @@ ALERROR CDockPane::CreateControls (RECT rcPane, CString *retsError)
 				return ERR_FAIL;
 				}
 
-			CString sStyle;
-			if (!pControlDef->FindAttribute(STYLE_ATTRIB, &sStyle))
-				sStyle = STYLE_DEFAULT;
-
             //  Keep track of default controls created
 
             if (strEquals(sID, DEFAULT_DESC_ID))
@@ -311,7 +306,7 @@ ALERROR CDockPane::CreateControls (RECT rcPane, CString *retsError)
 
 			//	Create the control
 
-			CreateControl(iType, sID, sStyle, rcPane);
+			CreateControl(iType, sID, *pControlDef, rcPane);
 			}
 
         //  If we don't have a default description control, create it. NOTE: It 
@@ -319,7 +314,7 @@ ALERROR CDockPane::CreateControls (RECT rcPane, CString *retsError)
         //  collapsed.
 
         if (!bDescCreated)
-            CreateControl(controlDesc, DEFAULT_DESC_ID, STYLE_DEFAULT, rcPane);
+            CreateControl(controlDesc, DEFAULT_DESC_ID, CXMLElement(), rcPane);
 		}
 
 	//	Otherwise we create default controls
@@ -328,14 +323,14 @@ ALERROR CDockPane::CreateControls (RECT rcPane, CString *retsError)
 		{
 		//	Create the text description control
 
-		CreateControl(controlDesc, DEFAULT_DESC_ID, STYLE_DEFAULT, rcPane);
+		CreateControl(controlDesc, DEFAULT_DESC_ID, CXMLElement(), rcPane);
 
 		//	Create counter or input fields
 
 		if (m_pPaneDesc->GetAttributeBool(SHOW_COUNTER_ATTRIB))
-			CreateControl(controlCounter, DEFAULT_COUNTER_ID, STYLE_DEFAULT, rcPane);
+			CreateControl(controlCounter, DEFAULT_COUNTER_ID, CXMLElement(), rcPane);
 		else if (m_pPaneDesc->GetAttributeBool(SHOW_TEXT_INPUT_ATTRIB))
-			CreateControl(controlTextInput, DEFAULT_TEXT_INPUT_ID, STYLE_DEFAULT, rcPane);
+			CreateControl(controlTextInput, DEFAULT_TEXT_INPUT_ID, CXMLElement(), rcPane);
 		}
 
 	return NOERROR;
@@ -357,12 +352,18 @@ void CDockPane::ExecuteAction (int iAction)
 
 	//	Execute
 
-	m_Actions.Execute(iAction, m_pDockScreen);
+	m_Actions.Execute(iAction, &m_DockScreen);
+
+	m_bInExecuteAction = false;
+
+	//	Tell our dock screen that we're done executing script. Sometimes we need
+	//	to do this because we've deferred something.
+
+	m_DockScreen.OnExecuteActionDone();
 
 	//	If inside the action we changed the object (e.g., deleted an item) then
 	//	we might need to reload the pane. If so, we do it now.
 
-	m_bInExecuteAction = false;
 	if (!m_sDeferredShowPane.IsBlank())
 		{
 		m_Actions.ExecuteShowPane(m_sDeferredShowPane);
@@ -561,7 +562,7 @@ void CDockPane::GetControlStyle (const CString &sStyle, SControlStyle *retStyle)
 
 	{
 	const CVisualPalette &VI = g_pHI->GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = m_pDockScreen->GetDockScreenVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = m_DockScreen.GetDockScreenVisuals();
 
 	if (strEquals(sStyle, STYLE_WARNING))
 		{
@@ -890,9 +891,8 @@ ALERROR CDockPane::InitPane (CDockSession &DockSession, CDockScreen &DockScreen,
 	AGScreen *pScreen = DockScreen.GetScreen();
 	CleanUp(pScreen);
 
-	m_pDockScreen = &DockScreen;
 	m_pPaneDesc = pPaneDesc;
-	ICCItem *pData = m_pDockScreen->GetData();
+	ICCItem *pData = m_DockScreen.GetData();
 
 	//	Make sure we don't recurse
 
@@ -908,7 +908,7 @@ ALERROR CDockPane::InitPane (CDockSession &DockSession, CDockScreen &DockScreen,
 
 	//	Initialize list of actions.
 
-	if (m_Actions.InitFromXML(m_pDockScreen->GetExtension(), m_pPaneDesc->GetContentElementByTag(ACTIONS_TAG), pData, &sError) != NOERROR)
+	if (m_Actions.InitFromXML(m_DockScreen.GetExtension(), m_pPaneDesc->GetContentElementByTag(ACTIONS_TAG), pData, &sError) != NOERROR)
 		{
 		ReportError(strPatternSubst(CONSTLIT("Pane %s: %s"), pPaneDesc->GetTag(), sError));
 		return NOERROR;
@@ -946,7 +946,7 @@ ALERROR CDockPane::InitPane (CDockSession &DockSession, CDockScreen &DockScreen,
 	if (m_pPaneDesc->FindAttribute(DESC_ATTRIB, &sValue))
 		{
 		CString sDesc;
-		if (!m_pDockScreen->EvalString(sValue, pData, false, eventNone, &sDesc))
+		if (!m_DockScreen.EvalString(sValue, pData, false, eventNone, &sDesc))
 			ReportError(strPatternSubst(CONSTLIT("Error evaluating desc param: %s"), sValue));
 		else
 			SetDescription(sDesc);
@@ -973,21 +973,21 @@ ALERROR CDockPane::InitPane (CDockSession &DockSession, CDockScreen &DockScreen,
 		{
 		CString sCode = pInit->GetContentText(0);
 		CString sError;
-		if (!m_pDockScreen->EvalString(sCode, pData, true, eventNone, &sError))
+		if (!m_DockScreen.EvalString(sCode, pData, true, eventNone, &sError))
 			ReportError(strPatternSubst(CONSTLIT("Error evaluating <OnPaneInit>: %s"), sError));
 		}
 
 	//	We might have called exit inside OnPaneInit. If so, we exit
 
-	if (m_pDockScreen->GetScreen() == NULL)
+	if (m_DockScreen.GetScreen() == NULL)
 		return NOERROR;
 
 	//	Allow other design types to override the pane
 
 	CString sResolvedScreen;
-	CDesignType *pResolvedRoot = m_pDockScreen->GetResolvedRoot(&sResolvedScreen);
-	g_pUniverse->FireOnGlobalPaneInit(m_pDockScreen, pResolvedRoot, sResolvedScreen, m_pPaneDesc->GetTag(), pData);
-	if (m_pDockScreen->GetScreen() == NULL)
+	CDesignType *pResolvedRoot = m_DockScreen.GetResolvedRoot(&sResolvedScreen);
+	g_pUniverse->FireOnGlobalPaneInit(&m_DockScreen, pResolvedRoot, sResolvedScreen, m_pPaneDesc->GetTag(), pData);
+	if (m_DockScreen.GetScreen() == NULL)
 		return NOERROR;
 
 	//	Now that all the controls (and actions) have been initialized, resize them
@@ -1096,7 +1096,7 @@ void CDockPane::RenderControlsBottomBar (void)
 	{
 	//	Compute the vertical height of the actions
 
-	int cyActions = m_Actions.CalcAreaHeight(m_pDockScreen->GetResolvedRoot(), CDockScreenActions::arrangeHorizontal, m_rcActions);
+	int cyActions = m_Actions.CalcAreaHeight(m_DockScreen.GetResolvedRoot(), CDockScreenActions::arrangeHorizontal, m_rcActions);
 
 	//	Compute the desired height of all variable-height controls
 
@@ -1111,7 +1111,7 @@ void CDockPane::RenderControlsBottomBar (void)
 
 	//	Create the action buttons at the bottom
 
-	m_Actions.CreateButtons(m_pDockScreen->GetDockScreenVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeHorizontal, m_rcActions);
+	m_Actions.CreateButtons(m_DockScreen.GetDockScreenVisuals(), m_pContainer, m_DockScreen.GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeHorizontal, m_rcActions);
 
 	//	Now that we know the size of the pane, we set the container size so that we
 	//	don't overlap the screen display.
@@ -1134,7 +1134,7 @@ void CDockPane::RenderControlsColumn (void)
 	//	Figure out how much room we need for actions and how much we have left
 	//	for controls.
 
-	int cyActions = m_Actions.CalcAreaHeight(m_pDockScreen->GetResolvedRoot(), CDockScreenActions::arrangeVertical, m_rcActions);
+	int cyActions = m_Actions.CalcAreaHeight(m_DockScreen.GetResolvedRoot(), CDockScreenActions::arrangeVertical, m_rcActions);
 	int cyAvailable = RectHeight(m_rcControls) - cyActions;
 
 	//	Compute the desired height of all variable-height controls
@@ -1172,7 +1172,7 @@ void CDockPane::RenderControlsColumn (void)
 	rcActions.right = m_rcControls.right;
 	rcActions.bottom = m_rcControls.bottom;
 
-	m_Actions.CreateButtons(m_pDockScreen->GetDockScreenVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeVertical, rcActions);
+	m_Actions.CreateButtons(m_DockScreen.GetDockScreenVisuals(), m_pContainer, m_DockScreen.GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeVertical, rcActions);
 
 	//	Now that we know the size of the pane, we set the container size so that we
 	//	don't overlap the screen display.
@@ -1190,12 +1190,17 @@ ALERROR CDockPane::ReportError (const CString &sError)
 	//	Make sure we have a description control
 
 	if (GetTextControlByType(controlDesc) == NULL)
-		CreateControl(controlDesc, DEFAULT_DESC_ID, STYLE_WARNING, m_rcControls);
+		{
+		CXMLElement Desc(TEXT_TAG);
+		Desc.AddAttribute(STYLE_ATTRIB, STYLE_WARNING);
+
+		CreateControl(controlDesc, DEFAULT_DESC_ID, Desc, m_rcControls);
+		}
 
 	//	Report the error through the screen. This will add screen information and
 	//	eventually call us back at SetDescription.
 
-	return m_pDockScreen->ReportError(sError);
+	return m_DockScreen.ReportError(sError);
 	}
 
 bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
@@ -1206,7 +1211,7 @@ bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
 //	control of the given ID.
 
 	{
-	if (m_pDockScreen == NULL)
+	if (!m_DockScreen.IsValid())
 		return false;
 
 	SControl *pControl;
@@ -1285,7 +1290,7 @@ bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
 					return true;
 					}
 
-				CCodeChainCtx Ctx(m_pDockScreen->GetUniverse());
+				CCodeChainCtx Ctx(m_DockScreen.GetUniverse());
 				CItem Item = Ctx.AsItem(pItemCC);
 
 				CSpaceObject *pSource = NULL;
@@ -1301,7 +1306,7 @@ bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
 
 			else if (pValue->IsList())
 				{
-				CCodeChainCtx Ctx(m_pDockScreen->GetUniverse());
+				CCodeChainCtx Ctx(m_DockScreen.GetUniverse());
 				CItem Item = Ctx.AsItem(pValue);
 				pItemDisplayArea->SetItem(NULL, Item);
 				return true;

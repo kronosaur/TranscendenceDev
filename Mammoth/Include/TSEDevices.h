@@ -6,6 +6,7 @@
 #pragma once
 
 class CCargoDesc;
+class CTargetList;
 struct SShipPerformanceCtx;
 
 enum DeviceNames
@@ -46,8 +47,8 @@ class CFailureDesc
 			failJammed =			3,
 			failMisfire =			4,
 			failSafeMode =			5,		//	Device disabled
-
 			failCustom =			6,		//	Fire OnFailure event
+			failNoFire =			7,		//	Same as jammed, but increase temp
 			};
 
 		CFailureDesc (EProfile iProfile = profileNone);
@@ -93,8 +94,7 @@ class CItemLevelCriteria
 class CEnhancementDesc
 	{
 	public:
-		bool Accumulate (int iLevel, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
-		bool Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
+		bool Accumulate (int iLevel, const CItem &Target, CItemEnhancementStack &Enhancements, TArray<CString> *pEnhancementIDs = NULL) const;
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pEnhancerType);
 		void InsertHPBonus (int iBonus);
@@ -122,6 +122,24 @@ class CEnhancementDesc
 		TArray<SEnhancerDesc> m_Enhancements;	//	Enhancements conferred on other items
 	};
 
+class CDeviceRotationDesc
+	{
+	public:
+		enum ETypes
+			{
+			rotUnknown,
+
+			rotNone,							//	Cannot rotate
+			rotSwivel,							//	Can swivel but not 360 degrees
+			rotOmnidirectional,					//	Omnidirectional
+			};
+
+	private:
+		ETypes m_iType = rotUnknown;
+		int m_iMinFireArc = -1;
+		int m_iMaxFireArc = -1;
+	};
+
 class CDeviceClass
 	{
 	public:
@@ -147,13 +165,7 @@ class CDeviceClass
 			failWeaponExplosion,
 			failWeaponJammed,
 			failWeaponMisfire,
-			};
-
-		enum DeviceRotationTypes
-			{
-			rotNone,							//	Cannot rotate
-			rotSwivel,							//	Can swivel but not 360 degrees
-			rotOmnidirectional,					//	Omnidirectional
+			failWeaponNoFire,
 			};
 
 		enum LinkedFireOptions
@@ -173,9 +185,33 @@ class CDeviceClass
 			evtCount					= 1,
 			};
 
+		struct SActivateCtx
+			{
+			SActivateCtx (CSpaceObject *pTargetArg, CTargetList &TargetListArg, int iFireAngleArg = -1) :
+					pTarget(pTargetArg),
+					TargetList(TargetListArg),
+					iFireAngle(iFireAngleArg)
+				{ }
+
+			//	Inputs to Activate
+
+			CSpaceObject *pTarget = NULL;
+			int iFireAngle = -1;
+			CTargetList &TargetList;
+
+			//	Used internally
+
+			int iRepeatingCount = 0;
+
+			//	Status results
+
+			bool bConsumedItems = false;
+			};
+
 		struct SDeviceUpdateCtx
 			{
-			SDeviceUpdateCtx (int iTickArg = 0) :
+			SDeviceUpdateCtx (CTargetList &TargetListArg, int iTickArg = 0) :
+					TargetList(TargetListArg),
 					iTick(iTickArg)
 				{
 				ResetOutputs();
@@ -183,7 +219,6 @@ class CDeviceClass
 
 			void ResetOutputs (void)
 				{
-				bSourceDestroyed = false;
 				bConsumedItems = false;
 				bDisrupted = false;
 				bRepaired = false;
@@ -191,15 +226,24 @@ class CDeviceClass
 				}
 					
 			int iTick;
+			CTargetList &TargetList;
 
 			//	Outputs
 
-			bool bSourceDestroyed;
 			bool bConsumedItems;
 			bool bDisrupted;
 			bool bRepaired;
 			bool bSetDisabled;
 			};
+
+		//	NOTES
+		//
+		//	With the move to use CDeviceItem we're changing some of the standard
+		//	calling conventions here. A few guidelines:
+		//
+		//	If a call is valid for installed and uninstalled devices, then it 
+		//	should take a CDeviceItem reference. If the call is only valid for
+		//	installed items, then it should take a CInstalledDevice reference.
 
 		CDeviceClass (void) : m_pItemType(NULL) { }
 		virtual ~CDeviceClass (void) { }
@@ -207,7 +251,7 @@ class CDeviceClass
 		void AccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
 		bool AccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		bool AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
-        bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
+		bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		bool CanBeDamaged (void) const { return (!m_fDeviceDamageImmune && (m_fCanBeDamagedOverride || OnCanBeDamaged())); }
@@ -224,12 +268,11 @@ class CDeviceClass
 			}
 
 		COverlayType *FireGetOverlayType (CItemCtx &Ctx) const;
-        bool GetAmmoItemPropertyBool (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty);
-        Metric GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty);
+		bool GetAmmoItemPropertyBool (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty);
+		Metric GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty);
 		ItemCategories GetCategory (void) const { return (m_iSlotCategory == itemcatNone ? GetImplCategory() : m_iSlotCategory); }
 		CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
-		int GetFireArc (CItemCtx &Ctx) const;
 		int GetInstallCost (CItemCtx &ItemCtx);
 		CItemType *GetItemType (void) const { return m_pItemType; }
 		inline int GetLevel (void) const;
@@ -238,7 +281,7 @@ class CDeviceClass
 		COverlayType *GetOverlayType(void) const { return m_pOverlayType; }
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0);
 		CString GetReferencePower (CItemCtx &Ctx);
-        Metric GetScaledCostAdj (CItemCtx &Ctx) const { return OnGetScaledCostAdj(Ctx); }
+		Metric GetScaledCostAdj (CItemCtx &Ctx) const { return OnGetScaledCostAdj(Ctx); }
 		int GetSlotsRequired (void) const { return m_iSlots; }
 		inline DWORD GetUNID (void) const;
 		void MarkImages (void) { DEBUG_TRY OnMarkImages(); DEBUG_CATCH }
@@ -247,19 +290,15 @@ class CDeviceClass
 
 		virtual bool AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &Ctx) { Ctx.iAbsorb = 0; return false; }
 		virtual bool AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon) { return false; }
-		virtual bool Activate (CInstalledDevice *pDevice, 
-							   CSpaceObject *pSource, 
-							   CSpaceObject *pTarget,
-							   bool *retbSourceDestroyed,
-							   bool *retbConsumedItems = NULL) { return false; }
+		virtual bool Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) { return false; }
 		virtual CShieldClass *AsShieldClass (void) { return NULL; }
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
-		virtual int CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSource, CSpaceObject *pTarget) { return -1; }
+		virtual bool CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const { return false; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
 		virtual bool CanHitFriends (void) const { return true; }
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) { }
 		virtual bool FindAmmoDataField (const CItem &Ammo, const CString &sField, CString *retsValue) const { return false; }
-        virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) { return CDeviceClass::FindItemProperty(Ctx, sProperty); }
+		virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) { return CDeviceClass::FindItemProperty(Ctx, sProperty); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName);
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const { return 0; }
@@ -269,7 +308,7 @@ class CDeviceClass
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return NULL; }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageGeneric; }
-		virtual int GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const { return 0; }
+		virtual int GetDefaultFireAngle (const CDeviceItem &DeviceItem) const { return 0; }
 		virtual int GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP = NULL) const { return 0; }
 		virtual DWORD GetLinkedFireOptions (void) const { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const { return 0.0; }
@@ -281,7 +320,7 @@ class CDeviceClass
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const { return false; }
 		virtual int GetReflectChance (const CDeviceItem &DeviceItem, const DamageDesc &Damage) const { return 0; }
-		virtual DeviceRotationTypes GetRotationType (CItemCtx &Ctx, int *retiMinArc = NULL, int *retiMaxArc = NULL) const { return rotNone; }
+		virtual CDeviceRotationDesc::ETypes GetRotationType (const CDeviceItem &DeviceItem, int *retiMinArc = NULL, int *retiMaxArc = NULL) const { return CDeviceRotationDesc::rotNone; }
 		virtual void GetSelectedVariantInfo (const CSpaceObject *pSource, 
 											 const CInstalledDevice *pDevice,
 											 CString *retsLabel,
@@ -290,8 +329,12 @@ class CDeviceClass
 											 bool bUseCustomAmmoCountHandler = false) { if (retsLabel) *retsLabel = NULL_STR; if (retiAmmoLeft) *retiAmmoLeft = -1; if (retpType) *retpType = NULL; }
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const { return 0.0; }
 		virtual void GetStatus (const CInstalledDevice *pDevice, const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) { *retiStatus = 0; *retiMaxStatus = 0; }
+		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const { return 0; }
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) { return 0; }
 		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const { return 0; }
+		virtual const CWeaponFireDesc *GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo = CItem()) const { return NULL; }
+		virtual const CWeaponFireDesc &GetWeaponFireDescForVariant (const CDeviceItem &DeviceItem, int iVariant) const { return CWeaponFireDesc::Null(); }
+		virtual int GetWeaponVariantCount (const CDeviceItem &DeviceItem) const { return 0; }
 		virtual bool IsAmmoWeapon (void) { return false; }
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsAutomatedWeapon (void) { return false; }
@@ -299,10 +342,11 @@ class CDeviceClass
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return false; }
 		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
-		virtual bool IsTrackingWeapon (CItemCtx &Ctx) { return false; }
+		virtual bool IsTrackingWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const { return false; }
-		virtual bool NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) { return false; }
+		virtual bool IsWeaponVariantValid (const CDeviceItem &DeviceItem, int iVariant) const { return false; }
+		virtual bool NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const { return false; }
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) { return NULL_STR; }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }
 		virtual void OnUninstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }
@@ -313,9 +357,10 @@ class CDeviceClass
 		virtual bool SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *pDevice, int iDir = 1) { return false; }
 		virtual bool SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel) { return false; }
 		virtual void SetHitPoints (CItemCtx &ItemCtx, int iHP) { }
-		virtual ESetPropertyResults SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError);
+		virtual ESetPropertyResult SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError);
 		virtual bool ShowActivationDelayCounter (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) { }
+		virtual bool UsesLauncherControls (void) const { return false; }
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 
 		static DWORD CombineLinkedFireOptions (DWORD dwSrc1, DWORD dwSrc2);
@@ -335,14 +380,14 @@ class CDeviceClass
 		virtual void OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const { }
 		virtual bool OnAccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return false; }
 		virtual bool OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return false; }
-        virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const { return false; }
+		virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const { return false; }
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual bool OnCanBeDamaged (void) const { return true; }
 		virtual bool OnCanBeDisabled (CItemCtx &Ctx) const { return (GetPowerRating(Ctx) != 0); }
 		virtual bool OnCanBeDisrupted(void) const { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
-        virtual Metric OnGetScaledCostAdj (CItemCtx &Ctx) const;
+		virtual Metric OnGetScaledCostAdj (CItemCtx &Ctx) const;
 		virtual void OnMarkImages (void) { }
 		virtual ALERROR OnPrepareBind (SDesignLoadCtx &Ctx) { return NOERROR; }
 
@@ -386,10 +431,11 @@ struct SDeviceDesc
 	bool bOmnidirectional = false;				//	Slot turret
 	int iMinFireArc = 0;						//	Slot swivel
 	int iMaxFireArc = 0;
+	int iMaxFireRange = 0;						//	Slot range restriction (light-seconds)
 
 	DWORD dwLinkedFireOptions = 0;				//	Slot linked-fire options
 	bool bSecondary = false;
-
+	bool bOnSegment = false;					//	Slot is (logically) on segment with ID = sID
 	bool bExternal = false;						//	Slot is external
 	bool bCannotBeEmpty = false;				//	Slot cannot be empty
 	ItemFates iFate = fateNone;					//	Fate of device when ship destroyed
@@ -410,11 +456,14 @@ class CDeviceDescList
 		int GetCount (void) const { return m_List.GetCount(); }
 		int GetCountByID (const CString &sID) const;
 		inline CDeviceClass *GetDeviceClass (int iIndex) const;
+		SDeviceDesc &GetDeviceDesc (int iIndex) { return m_List[iIndex]; }
 		const SDeviceDesc &GetDeviceDesc (int iIndex) const { return m_List[iIndex]; }
 		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev) const;
 		CDeviceItem GetDeviceItem (int iIndex) const { return m_List[iIndex].Item.AsDeviceItemOrThrow(); }
+		int GetFireArc (int iIndex) const;
 		const CItem &GetItem (int iIndex) const { return m_List[iIndex].Item; }
 		CDeviceClass *GetNamedDevice (DeviceNames iDev) const;
+		void SetSecondary (bool bValue = true) { for (int i = 0; i < GetCount(); i++) m_List[i].bSecondary = bValue; }
 
 	private:
 		TArray<SDeviceDesc> m_List;
@@ -433,6 +482,12 @@ struct SDeviceGenerateCtx
 	IDeviceGenerator *pRoot = NULL;
 
 	CDeviceDescList *pResult = NULL;
+	bool bNoSlotCriteria = false;				//	If TRUE, do not try to place devices in slots by
+												//		criteria (we need this inside OnBind because
+												//		we're not set up).
+
+	bool bNoDefaultPos = false;					//	If TRUE, do not place device at 20 pixel offset
+												//	(we do that for ships for backwards compatibility)
 	};
 
 class IDeviceGenerator
@@ -451,10 +506,10 @@ class IDeviceGenerator
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 
-		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const { return false; }
-		virtual bool FindDefaultDesc (CSpaceObject *pSource, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
-		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
-		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, DeviceNames iDev, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pSource, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const { return false; }
 
 		static ALERROR InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SDeviceDesc *retDesc);
 	};
@@ -462,7 +517,7 @@ class IDeviceGenerator
 class CInstalledDevice
 	{
 	public:
-		CInstalledDevice (void);
+		CInstalledDevice (void) { }
 
 		operator CDeviceItem () const { return GetDeviceItem(); }
 
@@ -490,6 +545,7 @@ class CInstalledDevice
 
 		bool CanBeEmpty (void) const { return !m_fCannotBeEmpty; }
 		bool CanTargetMissiles (void) const { return m_fCanTargetMissiles; }
+		bool GetCachedMaxHP (int &retiMaxHP) const;
 		int GetCharges (const CSpaceObject *pSource) const { return (m_pItem ? m_pItem->GetCharges() : 0); }
 		DWORD GetContinuousFire (void) const { return (int)(DWORD)LOBYTE(LOWORD(m_dwData)); }
 		bool GetCycleFireSettings (void) const { return m_fCycleFire; }
@@ -498,19 +554,21 @@ class CInstalledDevice
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
 		int GetExtraPowerUse (void) const { return m_iExtraPowerUse; }
 		ItemFates GetFate (void) const;
-		int GetFireArc (void) const { return (IsOmniDirectional() ? 360 : AngleRange(m_iMinFireArc, m_iMaxFireArc)); }
 		int GetFireAngle (void) const { return m_iFireAngle; }
 		int GetHitPointsPercent (const CSpaceObject *pSource) const;
 		const CString &GetID (void) const { return m_sID; }
 		DWORD GetSlotLinkedFireOptions (void) const;
-        int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }
+		int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }
 		int GetMinFireArc (void) const { return m_iMinFireArc; }
 		int GetMaxFireArc (void) const { return m_iMaxFireArc; }
+		Metric GetMaxFireRange (void) const { return (m_iMaxFireRange == 0 ? g_InfiniteDistance : LIGHT_SECOND * m_iMaxFireRange); }
+		int GetMaxFireRangeLS (void) const { return m_iMaxFireRange; }
 		COverlay *GetOverlay (void) const { return m_pOverlay; }
 		int GetPosAngle (void) const { return m_iPosAngle; }
 		int GetPosRadius (void) const { return m_iPosRadius; }
 		int GetPosZ (void) const { return m_iPosZ; }
 		int GetRotation (void) const { return AngleMiddle(m_iMinFireArc, m_iMaxFireArc); }
+		const CString &GetSegmentID (void) const { return (m_fOnSegment ? m_sID : NULL_STR); }
 		const CEnhancementDesc &GetSlotEnhancements (void) const { return m_SlotEnhancements; }
 		double GetShotSeparationScale(void) const { return (double)m_iShotSeparationScale / 32767.0; }
 		int GetSlotPosIndex (void) const { return m_iSlotPosIndex; }
@@ -525,6 +583,8 @@ class CInstalledDevice
 		bool IsExternal (void) const { return m_fExternal; }
 		bool IsLastActivateSuccessful (void) const { return m_fLastActivateSuccessful; }
 		bool IsOmniDirectional (void) const { return (m_fOmniDirectional ? true : false); }
+		bool IsOnSegment (void) const { return (m_fOnSegment ? true : false); }
+		bool IsOnUsedLastAmmoFlagSet (void) const { return (m_fOnUsedLastAmmo ? true : false); }
 		bool IsOptimized (void) const { return m_fOptimized; }
 		bool IsOverdrive (void) const { return m_fOverdrive; }
 		bool IsReady (void) const { return (m_iTimeUntilReady == 0); }
@@ -533,6 +593,7 @@ class CInstalledDevice
 		bool IsWorking (void) const { return (IsEnabled() && !IsDamaged() && !IsDisrupted()); }
 		bool IsWaiting (void) const { return (m_fWaiting ? true : false); }
 		void SetActivateDelay (int iDelay) { m_iActivateDelay = iDelay; }
+		void SetCachedMaxHP (int iMaxHP);
 		void SetCanTargetMissiles (bool bCanTargetMissiles) { m_fCanTargetMissiles = bCanTargetMissiles; }
 		void SetCycleFireSettings (bool bCycleFire) { m_fCycleFire = bCycleFire; }
 		void SetData (DWORD dwData) { m_dwData = dwData; }
@@ -548,13 +609,14 @@ class CInstalledDevice
 		void SetLastActivateSuccessful (bool bSuccessful) { m_fLastActivateSuccessful = bSuccessful; }
 		void SetLinkedFireOptions (DWORD dwOptions);
 		void SetOmniDirectional (bool bOmnidirectional = true) { m_fOmniDirectional = bOmnidirectional; }
+		void SetOnUsedLastAmmoFlag (bool bValue = true) { m_fOnUsedLastAmmo = bValue; }
 		void SetOptimized (bool bOptimized) { m_fOptimized = bOptimized; }
 		void SetOverdrive (bool bOverdrive) { m_fOverdrive = bOverdrive; }
 		void SetOverlay (COverlay *pOverlay) { m_pOverlay = pOverlay; }
 		void SetPosAngle (int iAngle) { m_iPosAngle = iAngle; }
 		void SetPosRadius (int iRadius) { m_iPosRadius = iRadius; }
 		void SetPosZ (int iZ) { m_iPosZ = iZ; m_f3DPosition = (iZ != 0); }
-		ESetPropertyResults SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError);
+		ESetPropertyResult SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError);
 		void SetRegenerating (bool bRegenerating) { m_fRegenerating = bRegenerating; }
 		void SetShotSeparationScale(double rShotSeparationScale) { m_iShotSeparationScale = (int)(rShotSeparationScale * 32767.0); }
 		void SetSecondary (bool bSecondary = true) { m_fSecondaryWeapon = bSecondary; }
@@ -568,15 +630,12 @@ class CInstalledDevice
 		//	We add our object pointer as a parameter to the call.
 
 		bool AbsorbDamage (CSpaceObject *pShip, SDamageCtx &Ctx) { if (!IsEmpty()) return m_pClass->AbsorbDamage(this, pShip, Ctx); else return false; }
-		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return m_pClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements); }
-		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return m_pClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements); }
-        bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const { return m_pClass->AccumulatePerformance(ItemCtx, Ctx); }
+		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { CItemCtx ItemCtx(pSource, this); return m_pClass->AccumulateEnhancements(ItemCtx, pTarget, EnhancementIDs, pEnhancements); }
+		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { CItemCtx ItemCtx(pSource, this); return m_pClass->AccumulateEnhancements(ItemCtx, pTarget, EnhancementIDs, pEnhancements); }
+		bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const { return m_pClass->AccumulatePerformance(ItemCtx, Ctx); }
 		bool AccumulateSlotEnhancements (CSpaceObject *pSource, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
-		bool Activate (CSpaceObject *pSource, 
-							  CSpaceObject *pTarget,
-							  bool *retbSourceDestroyed,
-							  bool *retbConsumedItems = NULL)
-			{ return m_pClass->Activate(this, pSource, pTarget, retbSourceDestroyed, retbConsumedItems); }
+		bool Activate (CDeviceClass::SActivateCtx &ActivateCtx)
+			{ return m_pClass->Activate(*this, ActivateCtx); }
 		int CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource);
 		bool CanBeDamaged (void) { return m_pClass->CanBeDamaged(); }
 		bool CanBeDisabled (CItemCtx &Ctx) { return m_pClass->CanBeDisabled(Ctx); }
@@ -589,7 +648,7 @@ class CInstalledDevice
 		const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return m_pClass->GetDamageDesc(Ctx); }
 		int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return m_pClass->GetDamageEffectiveness(pAttacker, pWeapon); }
 		int GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) { return m_pClass->GetDamageType(Ctx, Ammo); }
-		int GetDefaultFireAngle (CSpaceObject *pSource) { return m_pClass->GetDefaultFireAngle(this, pSource); }
+		int GetDefaultFireAngle (void) const { return m_pClass->GetDefaultFireAngle(*this); }
 		int GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP = NULL) const { return m_pClass->GetHitPoints(ItemCtx, retiMaxHP); }
 		CSpaceObject *GetLastShot (CSpaceObject *pSource, int iIndex) const;
 		Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) const { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
@@ -605,6 +664,7 @@ class CInstalledDevice
 			{ m_pClass->GetSelectedVariantInfo(pSource, this, retsLabel, retiAmmoLeft, retpType); }
 		Metric GetShotSpeed (CItemCtx &Ctx) const { return m_pClass->GetShotSpeed(Ctx); }
 		CSpaceObject *GetSource (void) const { return m_pSource; }
+		CSpaceObject &GetSourceOrThrow (void) const { if (m_pSource) return *m_pSource; else throw CException(ERR_FAIL); }
 		void GetStatus (const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) const { m_pClass->GetStatus(this, pSource, retiStatus, retiMaxStatus); }
 		CSpaceObject *GetTarget (CSpaceObject *pSource) const;
 		int GetValidVariantCount (CSpaceObject *pSource) { return m_pClass->GetValidVariantCount(pSource, this); }
@@ -618,7 +678,7 @@ class CInstalledDevice
 		bool IsSecondaryWeapon (void) const;
 		bool IsSelectable (void) const;
 		bool IsVariantSelected (CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsVariantSelected(pSource, this) : true); }
-		bool OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, const CDamageSource &Attacker) { return m_pClass->OnDestroyCheck(CItemCtx(pSource, this), iCause, Attacker); }
+		bool OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, const CDamageSource &Attacker) { CItemCtx ItemCtx(pSource, this); return m_pClass->OnDestroyCheck(ItemCtx, iCause, Attacker); }
 		void Recharge (CShip *pShip, int iStatus) { m_pClass->Recharge(this, pShip, iStatus); }
 		void Reset (CSpaceObject *pShip) { m_pClass->Reset(this, pShip); }
 		void SelectFirstVariant (CSpaceObject *pSource) { m_pClass->SelectFirstVariant(pSource, this); }
@@ -644,65 +704,67 @@ class CInstalledDevice
 	private:
 		const CItemEnhancement &GetMods (void) const { return (m_pItem ? m_pItem->GetMods() : CItem::GetNullMod()); }
 
-		CString m_sID;							//	ID for this slot (may match ID in class slot desc)
-		CSpaceObject *m_pSource = NULL;			//	Installed on this object
-		CItem *m_pItem = NULL;					//	Item installed in this slot
-		CDeviceClassRef m_pClass;				//	The device class that is installed here
-		COverlay *m_pOverlay = NULL;			//	Overlay (if associated)
-		DWORD m_dwTargetID;						//	ObjID of target (for tracking secondary weapons)
-		CEnhancementDesc m_SlotEnhancements;	//	Enhancements conferred by the slot
+		CString m_sID;								//	ID for this slot (may match ID in class slot desc)
+		CSpaceObject *m_pSource = NULL;				//	Installed on this object
+		CItem *m_pItem = NULL;						//	Item installed in this slot
+		CDeviceClassRef m_pClass;					//	The device class that is installed here
+		COverlay *m_pOverlay = NULL;				//	Overlay (if associated)
+		DWORD m_dwTargetID = 0;						//	ObjID of target (for tracking secondary weapons)
+		CEnhancementDesc m_SlotEnhancements;		//	Enhancements conferred by the slot
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	List of enhancements (may be NULL)
-		TArray<DWORD> m_LastShotIDs;			//	ObjID of last shots (only for continuous beams)
+		TArray<DWORD> m_LastShotIDs;				//	ObjID of last shots (only for continuous beams)
 
-		DWORD m_dwData;							//	Data specific to device class
+		DWORD m_dwData = 0;							//	Data specific to device class
 
-		int m_iDeviceSlot:16;					//	Device slot
+		int m_iDeviceSlot:16 = -1;					//	Device slot
 
-		int m_iPosAngle:16;						//	Position of installation (degrees)
-		int m_iPosRadius:16;					//	Position of installation (pixels)
-		int m_iPosZ:16;							//	Position of installation (height)
-		int m_iMinFireArc:16;					//	Min angle of fire arc (degrees)
-		int m_iMaxFireArc:16;					//	Max angle of fire arc (degrees)
+		int m_iPosAngle:16 = 0;						//	Position of installation (degrees)
+		int m_iPosRadius:16 = 0;					//	Position of installation (pixels)
+		int m_iPosZ:16 = 0;							//	Position of installation (height)
+		int m_iMinFireArc:16 = 0;					//	Min angle of fire arc (degrees)
+		int m_iMaxFireArc:16 = 0;					//	Max angle of fire arc (degrees)
 
-		int m_iShotSeparationScale:16;			//	Scaled by 32767. Governs scaling of shot separation for dual etc weapons
-		DWORD m_dwSpare1:16;
+		int m_iShotSeparationScale:16 = 32767;		//	Scaled by 32767. Governs scaling of shot separation for dual etc weapons
+		int m_iMaxFireRange:16 = 0;					//	Max effective fire range (in light-seconds); 0 = no limit
 
-		int m_iTimeUntilReady:16;				//	Timer counting down until ready to activate
-		int m_iFireAngle:16;					//	Last fire angle
+		int m_iTimeUntilReady:16 = 0;				//	Timer counting down until ready to activate
+		int m_iFireAngle:16 = 0;					//	Last fire angle
 
-		int m_iTemperature:16;					//	Temperature for weapons
-		int m_iActivateDelay:16;				//	Cached activation delay
-		int m_iExtraPowerUse:16;				//	Additional power use per tick
-		int m_iSlotPosIndex:16;					//	Slot placement
+		int m_iTemperature:16 = 0;					//	Temperature for weapons
+		int m_iActivateDelay:16 = 0;				//	Cached activation delay
+		int m_iExtraPowerUse:16 = 0;				//	Additional power use per tick
+		int m_iSlotPosIndex:16 = -1;				//	Slot placement
 
-		DWORD m_fOmniDirectional:1;				//	Installed on turret
-		DWORD m_fOverdrive:1;					//	Device has overdrive installed
-		DWORD m_fOptimized:1;					//	Device is optimized by alien engineers
-		DWORD m_fSecondaryWeapon:1;				//	Secondary weapon
-		DWORD m_fEnabled:1;						//	Device is enabled
-		DWORD m_fExternal:1;					//	Device is external to hull
-		mutable DWORD m_fWaiting:1;				//	Waiting for cooldown, etc.
-		DWORD m_fTriggered:1;					//	Device trigger is down (e.g., weapon is firing)
+		DWORD m_fOmniDirectional:1 = false;			//	Installed on turret
+		DWORD m_fOverdrive:1 = false;				//	Device has overdrive installed
+		DWORD m_fOptimized:1 = false;				//	Device is optimized by alien engineers
+		DWORD m_fSecondaryWeapon:1 = false;			//	Secondary weapon
+		DWORD m_fEnabled:1 = false;					//	Device is enabled
+		DWORD m_fExternal:1 = false;				//	Device is external to hull
+		mutable DWORD m_fWaiting:1 = false;			//	Waiting for cooldown, etc.
+		DWORD m_fTriggered:1 = false;				//	Device trigger is down (e.g., weapon is firing)
 
-		DWORD m_fRegenerating:1;				//	TRUE if we regenerated on the last tick
-		DWORD m_fLastActivateSuccessful:1;		//	TRUE if we successfully fired (last time we tried)
-		DWORD m_f3DPosition:1;					//	If TRUE we use m_iPosZ to compute position
-		DWORD m_fLinkedFireAlways:1;			//	If TRUE, lkfAlways
-		DWORD m_fLinkedFireTarget:1;			//	If TRUE, lkfTarget
-		DWORD m_fLinkedFireEnemy:1;				//	If TRUE, lkfEnemy
-		DWORD m_fDuplicate:1;					//	If TRUE, we have multiple version of the same item type installed
-		DWORD m_fCannotBeEmpty:1;				//	If TRUE, slot must always have a device
+		DWORD m_fRegenerating:1 = false;			//	TRUE if we regenerated on the last tick
+		DWORD m_fLastActivateSuccessful:1 = false;	//	TRUE if we successfully fired (last time we tried)
+		DWORD m_f3DPosition:1 = false;				//	If TRUE we use m_iPosZ to compute position
+		DWORD m_fLinkedFireAlways:1 = false;		//	If TRUE, lkfAlways
+		DWORD m_fLinkedFireTarget:1 = false;		//	If TRUE, lkfTarget
+		DWORD m_fLinkedFireEnemy:1 = false;			//	If TRUE, lkfEnemy
+		DWORD m_fDuplicate:1 = false;				//	If TRUE, we have multiple version of the same item type installed
+		DWORD m_fCannotBeEmpty:1 = false;			//	If TRUE, slot must always have a device
 
-		DWORD m_fFateSurvives:1;				//	Always survives when ship destroyed
-		DWORD m_fFateDamaged:1;					//	Always damaged when ship destroyed
-		DWORD m_fFateDestroyed:1;				//	Always destroyed when ship destroyed
-		DWORD m_fFateComponetized:1;			//	Always break into components when ship destroyed
-		DWORD m_fLinkedFireSelected : 1;		//	If TRUE, lkfSelected
-		DWORD m_fLinkedFireNever : 1;			//	If TRUE, lkfNever
-		DWORD m_fLinkedFireSelectedVariants : 1;//  If TRUE, lkfSelectedVariant
-		DWORD m_fCycleFire :1;					//	If TRUE, then cycle fire through weapons of same type and linked fire settings
+		DWORD m_fFateSurvives:1 = false;			//	Always survives when ship destroyed
+		DWORD m_fFateDamaged:1 = false;				//	Always damaged when ship destroyed
+		DWORD m_fFateDestroyed:1 = false;			//	Always destroyed when ship destroyed
+		DWORD m_fFateComponetized:1 = false;		//	Always break into components when ship destroyed
+		DWORD m_fLinkedFireSelected:1 = false;		//	If TRUE, lkfSelected
+		DWORD m_fLinkedFireNever:1 = false;			//	If TRUE, lkfNever
+		DWORD m_fLinkedFireSelectedVariants:1 = false;//  If TRUE, lkfSelectedVariant
+		DWORD m_fCycleFire:1 = false;				//	If TRUE, then cycle fire through weapons of same type and linked fire settings
 
-		DWORD m_fCanTargetMissiles:1;			//	If TRUE, then this weapon can fire at hostile missiles as well as ships
+		DWORD m_fCanTargetMissiles:1 = false;		//	If TRUE, then this weapon can fire at hostile missiles as well as ships
+		DWORD m_fOnSegment:1 = false;				//	If TRUE, then device logically belongs to the segment specified by m_sID.
+		DWORD m_fOnUsedLastAmmo:1 = false;			//	If TRUE, remember the send statusUsedLastAmmo when done firing
 
-		DWORD m_dwSpare2:7;
+		DWORD m_dwSpare2:5;
 	};

@@ -6,21 +6,20 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
+#define ID_SYSTEM_STATIONS 						CONSTLIT("idSystemStations")
+
 CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*CreateCtx.pHI),
 		m_Settings(*CreateCtx.pSettings),
         m_Model(*CreateCtx.pModel),
 		m_DebugConsole(*CreateCtx.pDebugConsole),
 		m_Soundtrack(*CreateCtx.pSoundtrack),
-		m_iUI(uiNone),
-		m_bMouseAim(true),
         m_HUD(*CreateCtx.pHI, *CreateCtx.pModel),
-        m_bShowingSystemMap(false),
         m_SystemMap(*CreateCtx.pHI, *CreateCtx.pModel, m_HUD),
-		m_CurrentMenu(menuNone),
-		m_pCurrentComms(NULL),
-        m_iDamageFlash(0),
-		m_bIgnoreButtonUp(false),
-		m_bIgnoreMouseMove(false),
+		m_SystemStationsMenu(*CreateCtx.pHI, *CreateCtx.pModel, *this),
+		m_MessageDisplay(*CreateCtx.pHI),
+		m_Narrative(*CreateCtx.pHI),
+		m_MenuDisplay(*CreateCtx.pHI, *CreateCtx.pModel),
+		m_IconBar(*CreateCtx.pHI),
 		m_CurrentDock(*this)
 
 //	CGameSession constructor
@@ -42,8 +41,14 @@ void CGameSession::DismissMenu (void)
 
 		//	Mouse controls the ship again
 
-		ShowCursor(false);
-		SyncMouseToPlayerShip();
+		if (IsMouseAimEnabled())
+			{
+			ShowCursor(false);
+			SyncMouseToPlayerShip();
+			}
+
+		ExecuteCommandRefresh();
+		m_IconBar.Refresh();
 
 		//	Ignore the next mouse move message, for purpose of enabling mouse
 		//	control.
@@ -90,41 +95,20 @@ void CGameSession::HideMenu (void)
 			return;
 
 		case menuComms:
-			g_pTrans->HideCommsTargetMenu(NULL);
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
-			break;
-
-		case menuCommsSquadron:
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
+			g_pTrans->HideCommsMenu();
+			m_pCurrentComms = NULL;
 			break;
 
 		case menuCommsTarget:
 			g_pTrans->HideCommsTargetMenu(m_pCurrentComms);
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
 			break;
 
 		case menuDebugConsole:
 			m_DebugConsole.SetEnabled(false);
 			break;
 
-		case menuEnableDevice:
-			g_pTrans->m_CurrentPicker = CTranscendenceWnd::pickNone;
-			break;
-
-		case menuGame:
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
-			break;
-
-		case menuInvoke:
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
-			break;
-
-		case menuSelfDestructConfirm:
-			g_pTrans->m_CurrentMenu = CTranscendenceWnd::menuNone;
-			break;
-
-		case menuUseItem:
-			g_pTrans->m_CurrentPicker = CTranscendenceWnd::pickNone;
+		case menuSystemStations:
+			m_SystemStationsMenu.Hide();
 			break;
 		}
 
@@ -162,28 +146,82 @@ void CGameSession::InitUI (void)
 
 	m_iUI = pPlayerSettings->GetDefaultUI();
 
-	//	Initialize some variables based on UI
+	//	See if mouse aim is enabled. This must be done after UI is set.
 
-	switch (m_iUI)
-		{
-		case uiPilot:
-			m_bMouseAim = !m_Settings.GetBoolean(CGameSettings::noMouseAim);
-			break;
-
-		case uiCommand:
-			m_bMouseAim = false;
-			break;
-
-		default:
-			ASSERT(false);
-			break;
-		}
+	m_bMouseAim = IsMouseAimConfigured();
 
 	//	Mouse aim setting might have changed since the last time we loaded the game,
 	//	but since the player controller keeps its own state, we need to tell it
 	//	about our current state.
 
 	pPlayer->OnMouseAimSetting(m_bMouseAim);
+	}
+
+bool CGameSession::IsIconBarShown (void) const
+
+//	IsIconBarShown
+//
+//	Returns TRUE if we should show the icon bar.
+
+	{
+	auto &sValue = m_Settings.GetString(CGameSettings::showIconBar);
+	if (strEquals(sValue, CONSTLIT("auto")))
+		{
+#if 0
+		return (GetUniverse().GetDifficultyLevel() == CDifficultyOptions::lvlStory);
+#else
+		return false;
+#endif
+		}
+	else if (strEquals(sValue, CONSTLIT("true")))
+		return true;
+	else
+		return false;
+	}
+
+void CGameSession::OnAcceptedMission (CMission &MissionObj)
+
+//	OnAcceptedMission
+//
+//	The player accepted a mission.
+
+	{
+	const CString &sArc = MissionObj.GetArc();
+	const CString &sArcTitle = MissionObj.GetArcTitle();
+	const CString &sTitle = MissionObj.GetTitle();
+
+	//	For missions that are part of an arc, we announce them. Also, we skip
+	//	announcing a mission if we've already previously accepted a mission with
+	//	the same title.
+
+	if (!sArc.IsBlank() 
+			&& !sArcTitle.IsBlank()
+			&& !sTitle.IsBlank()
+			&& !GetUniverse().GetMissions().FindAcceptedArcChapter(sArc, sTitle, &MissionObj))
+		{
+		CTileData Data;
+		Data.SetTitle(sArcTitle);
+		Data.SetDesc(sTitle);
+		const CObjectImageArray &ImageArray = MissionObj.GetImage();
+		const CG32bitImage &Image = ImageArray.GetImage(CONSTLIT("Mission tile"));
+		Data.SetImage(&Image, ImageArray.GetImageRect());
+
+		m_Narrative.Show(ENarrativeDisplayStyle::missionAccept, Data);
+		}
+	}
+
+void CGameSession::OnActivate (void)
+
+//	OnActivate
+//
+//	Session has been activated after a popup has been dismissed. For example, the
+//	help screen has been dismissed.
+
+	{
+	//	Refresh commands in case keyboard state has changed.
+
+	ExecuteCommandRefresh();
+	m_IconBar.Refresh();
 	}
 
 void CGameSession::OnCleanUp (void)
@@ -219,18 +257,78 @@ ALERROR CGameSession::OnInit (CString *retsError)
 
     {
     m_rcScreen = g_pTrans->m_rcScreen;
-    SetNoCursor(true);
 	InitUI();
+
+    SetNoCursor(IsMouseAimEnabled());
+
     m_HUD.Init(m_rcScreen);
     m_SystemMap.Init(m_rcScreen);
+	m_MenuDisplay.Init(m_rcScreen);
+	m_MessageDisplay.Init(m_rcScreen);
+
+	//	Icon bar
+
+	if (IsIconBarShown())
+		m_IconBar.Init(m_rcScreen, m_IconBarData.CreateIconBar(GetUniverse().GetDesignCollection(), m_Settings));
+
+	//	HUD
+
+    RECT rcCenter;
+    m_HUD.GetClearHorzRect(&rcCenter);
+	m_Narrative.Init(rcCenter);
 
 	//	Move the mouse cursor so that it points to where the ship is points.
 	//	Otherwise the ship will try to turn to point to the mouse.
 
-	SyncMouseToPlayerShip();
+	if (IsMouseAimEnabled())
+		SyncMouseToPlayerShip();
+
+	//	Welcome
+
+	const CString &sWelcome = GetUniverse().GetCurrentAdventureDesc().GetWelcomeMessage();
+	if (!sWelcome.IsBlank())
+		DisplayMessage(sWelcome);
 
     return NOERROR;
     }
+
+void CGameSession::OnKeyboardMappingChanged (void)
+
+//	OnKeyboardMappingChanged
+//
+//	Keyboard mapping has changed.
+
+	{
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (pPlayer == NULL)
+		return;
+
+	//	See if we need to change the mouse aim variables.
+
+	if (m_bMouseAim != IsMouseAimConfigured())
+		{
+		m_bMouseAim = IsMouseAimConfigured();
+		pPlayer->OnMouseAimSetting(m_bMouseAim);
+
+	    SetNoCursor(IsMouseAimEnabled());
+		ShowCursor(!IsMouseAimEnabled());
+
+		//	Move the mouse cursor so that it points to where the ship is points.
+		//	Otherwise the ship will try to turn to point to the mouse.
+
+		if (IsMouseAimEnabled())
+			SyncMouseToPlayerShip();
+
+		//	Make sure stateful commands match key state.
+
+		ExecuteCommandRefresh();
+		}
+
+	//	Reinitialize the icon bar, if necessary
+
+	if (!m_IconBar.IsEmpty())
+		m_IconBar.Init(m_rcScreen, m_IconBarData.CreateIconBar(GetUniverse().GetDesignCollection(), m_Settings));
+	}
 
 void CGameSession::OnObjDestroyed (const SDestroyCtx &Ctx)
 
@@ -282,7 +380,7 @@ void CGameSession::OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph)
 	if (strEquals(strWord(sMsg, 0), CONSTLIT("was")))
 		sMsg = strSubString(sMsg, 4, -1);
 	sMsg.Capitalize(CString::capFirstLetter);
-	g_pTrans->DisplayMessage(sMsg);
+	DisplayMessage(sMsg);
     m_HUD.Invalidate(hudArmor);
 
 	//	If we are insured, then set our state so that we come back to life
@@ -333,7 +431,10 @@ void CGameSession::OnShowDockScreen (bool bShow)
 		//	Show the cursor, if it was previously hidden
 
 		if (g_pTrans->m_State == CTranscendenceWnd::gsInGame)
-			ShowCursor(true);
+			{
+			if (IsMouseAimEnabled())
+				ShowCursor(true);
+			}
 
 		//	New state
 
@@ -348,13 +449,18 @@ void CGameSession::OnShowDockScreen (bool bShow)
 
 		//	Hide the cursor
 
-		ShowCursor(false);
-		SyncMouseToPlayerShip();
-		m_bIgnoreMouseMove = true;
+		if (IsMouseAimEnabled())
+			{
+			ShowCursor(false);
+			SyncMouseToPlayerShip();
+			m_bIgnoreMouseMove = true;
+			}
 
 		//	New state
 
 		g_pUniverse->SetLogImageLoad(true);
+		ExecuteCommandRefresh();
+		m_IconBar.Refresh();
 		g_pTrans->m_State = CTranscendenceWnd::gsInGame;
 
 		//	Clean up
@@ -452,12 +558,6 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 	if (pPlayer == NULL)
 		return false;
 
-	//	Can't do anything if we're currently showing a menu. Need to dismiss
-	//	first.
-
-	if (m_CurrentMenu != menuNone)
-		return false;
-
 	//	Bring up the menu
 
 	switch (iMenu)
@@ -473,15 +573,13 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuCommsSquadron:
-			g_pTrans->ShowCommsSquadronMenu();
-			if (g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuNone)
+			if (!g_pTrans->ShowCommsSquadronMenu())
 				return false;
 			break;
 
 		case menuCommsTarget:
-			pPlayer->SetUIMessageEnabled(uimsgCommsHint, false);
-			g_pTrans->ShowCommsTargetMenu();
-			if (g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuNone)
+			pPlayer->SetUIMessageFollowed(uimsgCommsHint);
+			if (!g_pTrans->ShowCommsTargetMenu())
 				return false;
 			break;
 
@@ -490,24 +588,41 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuEnableDevice:
-			g_pTrans->ShowEnableDisablePicker();
-			if (g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickNone)
+			if (!g_pTrans->ShowEnableDisablePicker())
 				return false;
 			break;
 
 		case menuGame:
-			g_pTrans->ShowGameMenu();
+			{
+			CMenuDisplay::SOptions Options;
+			Options.iPos = CMenuDisplay::posCenter;
+			Options.bHideShortCutKeys = true;
+
+			m_MenuDisplay.Show(CreateGameMenu(), Options);
 			break;
+			}
 
 		case menuInvoke:
-			g_pTrans->ShowInvokeMenu();
-			if (g_pTrans->m_CurrentMenu == CTranscendenceWnd::menuNone)
+			if (!g_pTrans->ShowInvokeMenu())
 				return false;
 			break;
 
+		case menuSelfDestructConfirm:
+			{
+			CMenuDisplay::SOptions Options;
+			Options.iPos = CMenuDisplay::posCenter;
+			Options.bHideShortCutKeys = true;
+
+			m_MenuDisplay.Show(CreateSelfDestructMenu(), Options);
+			break;
+			}
+
+		case menuSystemStations:
+			m_SystemStationsMenu.Show(m_rcScreen, ID_SYSTEM_STATIONS);
+			break;
+
 		case menuUseItem:
-			g_pTrans->ShowUsePicker();
-			if (g_pTrans->m_CurrentPicker == CTranscendenceWnd::pickNone)
+			if (!g_pTrans->ShowUsePicker())
 				return false;
 			break;
 
@@ -517,13 +632,27 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 
 	//	Show our cursor, in case the menus have mouse UI
 
-	ShowCursor(true);
+	if (IsMouseAimEnabled())
+		ShowCursor(true);
 
 	//	Set state
 
 	m_CurrentMenu = iMenu;
 
 	return true;
+	}
+
+void CGameSession::ShowStationList (bool bShow)
+
+//	ShowStationList
+//
+//	Shows the list of known stations.
+
+	{
+	if (bShow)
+		ShowMenu(menuSystemStations);
+	else
+		HideMenu();
 	}
 
 void CGameSession::ShowSystemMap (bool bShow)

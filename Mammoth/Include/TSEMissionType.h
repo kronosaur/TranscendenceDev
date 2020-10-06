@@ -28,12 +28,33 @@ class CMissionType : public CDesignType
 			evtCount					= 1,
 			};
 
-		bool CanBeCreated (const CMissionList &AllMissions, CSpaceObject *pOwner, ICCItem *pCreateData) const;
+		struct SCreateCtx
+			{
+			int iLevel = 0;
+			CSpaceObject *pOwner = NULL;
+			ICCItem *pCreateData = NULL;
+
+			bool bNoSystemLevelCheck = false;
+			bool bNoMissionArcCheck = false;
+			};
+
+		struct SArcStatus
+			{
+			int iTotal = 0;
+			int iCompleted = 0;
+			int iLeft = 0;
+			int iSkipped =  0;
+			};
+
+		bool AllowsOtherArcMissions (void) const { return m_bAllowOtherArcMissions; }
+		SArcStatus CalcArcStatus (void) const;
+		bool CanBeCreated (const CMissionList &AllMissions, SCreateCtx &CreateCtx) const;
 		bool CanBeDeclined (void) const { return (m_iAutoAccept == EMissionAutoAccept::none); }
 		bool CanBeDeleted (void) const { return m_fAllowDelete; }
 		bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iExisting < m_iMaxAppearing); }
 		bool CleanNonPlayer(void) const { return !m_fRecordNonPlayer; }
 		bool CloseIfOutOfSystem (void) const { return m_fCloseIfOutOfSystem; }
+		bool FailureOnReturnToSystem (void) const { return (m_iFailOnReturnToSystem != -1); }
 		bool FailureWhenOwnerDestroyed (void) const { return !m_fNoFailureOnOwnerDestroyed; }
 		bool FailureWhenOutOfSystem (void) const { return (m_iFailIfOutOfSystem != -1); }
 		bool FindCachedEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { return m_CachedEvents.FindEventHandler(iEvent, retEvent); }
@@ -41,12 +62,17 @@ class CMissionType : public CDesignType
 		const CString &GetArc (void) const { return m_sArc; }
 		int GetArcSequence (void) const { return m_iArcSequence; }
 		EMissionAutoAccept GetAutoAccept (void) const { return m_iAutoAccept; }
+		const CString &GetCreateCriteria (void) const { return m_sCreateCriteria; }
+		const CObjectImageArray &GetImage (void) const;
+		int GetMaxAppearing (void) const { return m_iMaxAppearing; }
 		const CString &GetName (void) const { return m_sName; }
 		int GetExpireTime (void) const { return m_iExpireTime; }
 		DWORD GetLastAcceptedOn (void) const { return m_dwLastAcceptedOn; }
 		int GetOutOfSystemTimeOut (void) const { return m_iFailIfOutOfSystem; }
 		int GetPriority (void) const { return (m_pArcRoot ? m_pArcRoot->m_iPriority : m_iPriority); }
 		DWORD GetShuffle (void) const { return (m_pArcRoot ? m_pArcRoot->m_dwShuffle : m_dwShuffle); }
+		CString GetTitle (void) const;
+		int GetReturnToSystemTimeOut (void) const { return m_iFailOnReturnToSystem; }
 		bool HasDebrief (void) const { return !m_fNoDebrief; }
 		bool HasInProgress (void) const { return !m_fNoInProgress; }
 		void IncAccepted (void);
@@ -61,10 +87,13 @@ class CMissionType : public CDesignType
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iMinLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return (m_iMinLevel + m_iMaxLevel) / 2; }
 		virtual DesignTypes GetType (void) const override { return designMissionType; }
+		virtual const CObjectImageArray &GetTypeSimpleImage (void) const override { return m_Image; }
+		virtual bool IsVirtual (void) const override { return m_sName.IsBlank(); }
 
 	protected:
 		//	CDesignType overrides
 
+		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
@@ -83,31 +112,40 @@ class CMissionType : public CDesignType
 		//	Basic properties
 
 		CString m_sName;					//	Internal name
+		CObjectImageArray m_Image;			//	Mission icon
 		CMissionType *m_pArcRoot = NULL;	//	First mission in arc (NULL if not part of mission arc)
 		CString m_sArc;						//	For related missions
 		int m_iArcSequence = -1;			//	Missions assigned in this order (lower numbers first)
-		int m_iPriority;					//	Relative priority (default = 1)
-		EMissionAutoAccept m_iAutoAccept = EMissionAutoAccept::none;
 
 		//	Mission creation
 
-		int m_iMinLevel;					//	Minimum system level supported
-		int m_iMaxLevel;					//	Maximum system level supported
+		int m_iPriority = 1;				//	Relative priority (default = 1)
+		CString m_sCreateCriteria;			//	Allow create if current mission list matches this criteria
+		int m_iMinLevel = 1;				//	Minimum system level supported
+		int m_iMaxLevel = MAX_SYSTEM_LEVEL;	//	Maximum system level supported
 		DiceRange m_MaxAppearing;			//	Limit to number of times mission has been accepted by player
 											//		(NULL if no limit)
-		int m_iExpireTime;					//	Mission expires after this amount
+		bool m_bAllowOtherArcMissions = false;
+
+		//	Options
+
+		EMissionAutoAccept m_iAutoAccept = EMissionAutoAccept::none;
+		int m_iExpireTime = -1;				//	Mission expires after this amount
 											//		of time if not accepted.
-		int m_iFailIfOutOfSystem;			//	If player is out of mission system for this amount of time
-											//		(in ticks) then mission fails (-1 means on timeout)
+		int m_iFailIfOutOfSystem = -1;		//	If player is out of mission system for this amount of time
+											//		(in ticks) then mission fails (-1 means no timeout)
+		int m_iFailOnReturnToSystem = -1;	//	If player is out of mission system for this amount of time
+											//		(in ticks) then mission fails the next time the player
+											//		returns to the system (-1 means no timeout)
 
 		//	Mission stats
 
-		int m_iMaxAppearing;				//	Limit to number of times mission can appear (-1 = no limit)
-		int m_iExisting;					//	How many missions of this type currently exist.
+		int m_iMaxAppearing = -1;			//	Limit to number of times mission can appear (-1 = no limit)
+		int m_iExisting = 0;				//	How many missions of this type currently exist.
 											//		NOTE: This number can go up and down. If we create a mission
 											//		the number goes up, but if we later destroy the mission
 											//		(perhaps because it expired) then the count drops.
-		int m_iAccepted;					//	Number of times player has accepted this mission type
+		int m_iAccepted = 0;				//	Number of times player has accepted this mission type
 		DWORD m_dwLastAcceptedOn = 0;		//	Latest tick when we accepted this mission (0 = never)
 
 		//	Events
@@ -124,7 +162,7 @@ class CMissionType : public CDesignType
 		DWORD m_fDestroyOnDecline:1;		//	If TRUE, destroy mission if player declines.
 
 		DWORD m_fNoInProgress:1;			//	If TRUE, no in progress messages
-		DWORD m_fSpare2:1;
+		DWORD m_fIgnoreStationLimit:1;		//	If TRUE, offer mission even if station has hit count limit
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;

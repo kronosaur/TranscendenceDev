@@ -2,6 +2,78 @@
 
 <TranscendenceModule>
 	
+	<!-- Level 2: Borer-class Gunship -->
+
+	<ShipClass UNID="&scBorerStock;"
+			manufacturer=		"United African States"
+			class=				"Borer"
+			type=				"gunship"
+
+			attributes=			""
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"31"
+			mass=				"120"
+			cargoSpace=			"250"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"250"
+			maxDevices=			"8"
+
+			maxArmor=			"heavy"
+			stdArmor=			"heavy"
+			/>
+
+		<Drive
+			maxSpeed=			"10"
+			thrust=				"480"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3.0"
+			rotationAccel=		"0.5"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="36"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itLightReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itMiningLaser;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsBorerHD;" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.005625" />
+		<HeroImage imageID="&rsBorerHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="-25"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="122"	posRadius="25"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-122"	posRadius="25"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="25"	rotation="180"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"40"
+			fireAccuracy=		"70"
+			perception=			"4"
+			/>
+	</ShipClass>
+
 	<!-- Level 2: EI100 Freighter -->
 
 	<ShipClass UNID="&scEI100Stock;"
@@ -183,6 +255,9 @@
 						destX="34" destY="103" hpX="55" hpY="105"
 						nameY="74" nameBreakWidth="360" nameDestX="12" nameDestY="0" />
 			</ArmorDisplay>
+
+			<ShieldDisplay shieldLevelEffect="&efShieldHUDDefault;">
+			</ShieldDisplay>
 		</PlayerSettings>
 
 		<!-- AI and Behavior -->
@@ -195,6 +270,79 @@
 			combatStyle=		"advanced"
 			/>
 
+	</ShipClass>
+
+	<!-- Level 3: Borer II-class Gunship -->
+
+	<ShipClass UNID="&scBorerIIStock;"
+			manufacturer=		"United African States"
+			class=				"Borer II"
+			type=				"gunship"
+
+			attributes=			""
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"31"
+			mass=				"120"
+			cargoSpace=			"250"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxArmor=			"massive"
+			stdArmor=			"heavy"
+			/>
+
+		<Drive
+			maxSpeed=			"12"
+			thrust=				"800"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3.0"
+			rotationAccel=		"0.5"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="36"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itHeavyReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itMiningLaser;"/>
+			<Device deviceID="&itClass1Deflector;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsBorerHD;" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.005625" />
+		<HeroImage imageID="&rsBorerHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="-25"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="122"	posRadius="25"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-122"	posRadius="25"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="25"	rotation="180"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
 	</ShipClass>
 
 	<!-- Level 3: EI200 Freighter -->
@@ -216,7 +364,7 @@
 
 			maxReactorPower=	"10000"
 			maxCargoSpace=		"500"
-			maxDevices=			"8"
+			maxDevices=			"10"
 			maxWeapons=			"2"
 
 			maxArmor=			"superHeavy"
@@ -525,6 +673,9 @@
 						destX="23" destY="97" hpX="55" hpY="97"
 						nameY="74" nameBreakWidth="200" nameDestX="0" nameDestY="8" />
 			</ArmorDisplay>
+
+			<ShieldDisplay shieldLevelEffect="&efShieldHUDDefault;">
+			</ShieldDisplay>
 		</PlayerSettings>
 
 		<!-- AI and Behavior -->
@@ -692,6 +843,9 @@
 						destX="42" destY="103" hpX="55" hpY="107"
 						nameY="74" nameBreakWidth="360" nameDestX="12" nameDestY="0" />
 			</ArmorDisplay>
+
+			<ShieldDisplay shieldLevelEffect="&efShieldHUDDefault;">
+			</ShieldDisplay>
 		</PlayerSettings>
 
 		<!-- AI and Behavior -->
@@ -1326,7 +1480,7 @@
 
 			maxReactorPower=	"10000"
 			maxCargoSpace=		"200"
-			maxDevices=			"8"
+			maxDevices=			"9"
 
 			maxArmor=			"massive"
 			stdArmor=			"heavy"
@@ -1473,6 +1627,9 @@
 						destX="24" destY="90" hpX="4" hpY="102"
 						nameY="98" nameBreakWidth="200" nameDestX="0" nameDestY="7" />
 			</ArmorDisplay>
+
+			<ShieldDisplay shieldLevelEffect="&efShieldHUDDefault;">
+			</ShieldDisplay>
 		</PlayerSettings>
 
 		<!-- AI and Behavior -->
@@ -1580,6 +1737,10 @@
 	<Image UNID="&rsArmstrongTransportHero;"	bitmap="Resources\ArmstrongTransportLarge.jpg" bitmask="Resources\ArmstrongTransportLargeMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsAsterionHeavyGunship;"		bitmap="Resources\AsterionHeavyGunship.jpg" bitmask="Resources\AsterionHeavyGunshipMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsAsterionHeavyGunshipHero;"	bitmap="Resources\AsterionHeavyGunshipLarge.jpg" bitmask="Resources\AsterionHeavyGunshipLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsBorerHD;"					bitmap="Resources\BorerHD.jpg" bitmask="Resources\BorerHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsBorerHero;"					bitmap="Resources\BorerLarge.jpg" bitmask="Resources\BorerLargeMask.bmp" loadOnUse="true"/>
+
 	<Image UNID="&rsEI100HD;"					bitmap="Resources\EI100HD.jpg" bitmask="Resources\EI100HDMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsEI100Hero;"					bitmap="Resources\EI100Large.jpg" bitmask="Resources\EI100LargeMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsEI200HD;"					bitmap="Resources\EI200HD.jpg" bitmask="Resources\EI200HDMask.bmp" loadOnUse="true"/>

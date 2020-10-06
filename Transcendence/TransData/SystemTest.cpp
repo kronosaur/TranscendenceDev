@@ -177,7 +177,7 @@ CString CSystemTestGenerator::GenerateStationKey (CStationType *pType, CString *
 	{
 	//	Generate sort order
 
-	char *pCat;
+	const char *pCat;
 	if (pType->HasLiteralAttribute(CONSTLIT("debris")))
 		pCat = "debris";
 	else if (pType->GetControllingSovereign()->IsEnemy(m_pPlayer))
@@ -231,6 +231,7 @@ void CSystemTestGenerator::PrintStationStats (const TArray<TSortMap<CString, Sta
 			for (int j = 0; j < AllStations[i].GetCount(); j++)
 				{
 				const StationInfo *pEntry = &AllStations[i].GetValue(j);
+				const CStationEncounterDesc &EncounterDesc = pEntry->pType->GetEncounterDescConst();
 
 				printf("%d\t%s\t%s\t%d.%02d\t%d\n", 
 						i,
@@ -238,7 +239,7 @@ void CSystemTestGenerator::PrintStationStats (const TArray<TSortMap<CString, Sta
 						pEntry->pType->GetNounPhrase().GetASCIIZPointer(),
 						pEntry->iTotalCount / 100,
 						pEntry->iTotalCount % 100,
-						pEntry->pType->GetFrequencyByLevel(i));
+						pEntry->pType->GetFrequencyByLevel(i, EncounterDesc));
 				}
 			}
 		}
@@ -380,7 +381,7 @@ bool CSystemTestGenerator::RunItemFrequencyTestGame (TSortMap<CString, SSystemIn
 
 		CSystem *pSystem;
 		CString sError;
-		if (error = m_Universe.CreateStarSystem(pNode, &pSystem, &sError))
+		if (error = m_Universe.CreateStarSystem(*pNode, &pSystem, &sError))
 			{
 			printf("ERROR: %s\n", sError.GetASCIIZPointer());
 			return false;
@@ -501,7 +502,7 @@ bool CSystemTestGenerator::RunSystemTestGame (TSortMap<CString, SSystemInfo> &Al
 
 		CSystem *pSystem;
 		CString sError;
-		if (error = m_Universe.CreateStarSystem(pNode, &pSystem, &sError))
+		if (error = m_Universe.CreateStarSystem(*pNode, &pSystem, &sError))
 			{
 			printf("ERROR: %s\n", sError.GetASCIIZPointer());
 			return false;

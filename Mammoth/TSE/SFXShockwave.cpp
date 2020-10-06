@@ -99,7 +99,7 @@ class CShockwavePainter : public IEffectPainter
 
 CG8bitImage *CShockwavePainter::m_pCloudTexture = NULL;
 
-static LPSTR STYLE_TABLE[] =
+static LPCSTR STYLE_TABLE[] =
 	{
 	//	Must be same order as EStyles
 		"",

@@ -42,9 +42,19 @@ inline bool CItem::IsDevice (void) const
 	return (m_pItemType && m_pItemType->IsDevice());
 	}
 
+inline bool CItem::IsLauncher (void) const
+	{
+	return (m_pItemType && m_pItemType->GetCategory() == itemcatLauncher);
+	}
+
 inline bool CItem::IsMissile (void) const
 	{
 	return (m_pItemType && m_pItemType->IsMissile());
+	}
+
+inline bool CItem::IsWeapon (void) const
+	{
+	return (m_pItemType && (m_pItemType->GetCategory() == itemcatWeapon || m_pItemType->GetCategory() == itemcatLauncher));
 	}
 
 //	CItemType Inlines ----------------------------------------------------------
@@ -68,7 +78,8 @@ inline int CDifferentiatedItem::GetCharges (void) const
 
 inline CCurrencyAndValue CDifferentiatedItem::GetCurrencyAndValue (bool bActual) const
 	{
-	return GetType().GetCurrencyAndValue(CItemCtx(m_Item), bActual);
+	CItemCtx ItemCtx(m_Item);
+	return GetType().GetCurrencyAndValue(ItemCtx, bActual);
 	}
 
 inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
@@ -118,6 +129,16 @@ inline const CItemType &CDifferentiatedItem::GetType (void) const
 inline CItemType &CDifferentiatedItem::GetType (void)
 	{
 	return *m_Item.GetType();
+	}
+
+inline bool CDifferentiatedItem::IsLauncher (void) const
+	{
+	return m_Item.IsLauncher();
+	}
+
+inline bool CDifferentiatedItem::IsWeapon (void) const
+	{
+	return m_Item.IsWeapon();
 	}
 
 //	CArmorClass Inlines --------------------------------------------------------
@@ -236,7 +257,8 @@ inline bool CArmorItem::IsImmune (SpecialDamageTypes iSpecialDamage) const
 
 inline EDamageResults CInstalledArmor::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 	{
-	return m_pArmorClass->AbsorbDamage(CItemCtx(pSource, this), Ctx);
+	CItemCtx ItemCtx(pSource, this);
+	return m_pArmorClass->AbsorbDamage(ItemCtx, Ctx);
 	}
 
 inline int CInstalledArmor::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon)
@@ -323,14 +345,70 @@ inline CSpaceObject *CDeviceItem::GetSource (void) const
 		return NULL;
 	}
 
+inline DWORD CDeviceItem::GetTargetTypes (void) const
+	{
+	return GetType().GetDeviceClass()->GetTargetTypes(*this);
+	}
+
 inline int CDeviceItem::GetWeaponEffectiveness (CSpaceObject *pTarget) const
 	{
 	return GetType().GetDeviceClass()->GetWeaponEffectiveness(*this, pTarget);
 	}
 
+inline const CWeaponFireDesc *CDeviceItem::GetWeaponFireDesc (void) const
+	{
+	return GetType().GetDeviceClass()->GetWeaponFireDesc(*this, CItem());
+	}
+
+inline const CWeaponFireDesc *CDeviceItem::GetWeaponFireDesc (const CItem &Ammo) const
+	{
+	return GetType().GetDeviceClass()->GetWeaponFireDesc(*this, Ammo);
+	}
+
+inline const CWeaponFireDesc &CDeviceItem::GetWeaponFireDescForVariant (int iVariant) const
+	{
+	return GetType().GetDeviceClass()->GetWeaponFireDescForVariant(*this, iVariant);
+	}
+
+inline int CDeviceItem::GetWeaponVariantCount (void) const
+	{
+	return GetType().GetDeviceClass()->GetWeaponVariantCount(*this);
+	}
+
 inline bool CDeviceItem::IsAreaWeapon (void) const
 	{
 	return GetType().GetDeviceClass()->IsAreaWeapon(*this);
+	}
+
+inline bool CDeviceItem::IsEnabled (void) const
+	{
+	if (const CInstalledDevice *pDevice = GetInstalledDevice())
+		return pDevice->IsEnabled();
+	else
+		return false;
+	}
+
+inline bool CDeviceItem::IsMiningWeapon (void) const
+	{
+	if (const CWeaponFireDesc *pShot = GetWeaponFireDesc())
+		return (pShot->GetDamage().GetMiningDamage() > 0 || GetEnhancements().HasSpecialDamage(specialMining));
+	else
+		return false;
+	}
+
+inline bool CDeviceItem::IsTrackingWeapon (void) const
+	{
+	return GetType().GetDeviceClass()->IsTrackingWeapon(*this);
+	}
+
+inline bool CDeviceItem::IsWeaponVariantValid (int iVariant) const
+	{
+	return GetType().GetDeviceClass()->IsWeaponVariantValid(*this, iVariant);
+	}
+
+inline bool CDeviceItem::NeedsAutoTarget (int *retiMinFireArc, int *retiMaxFireArc) const
+	{
+	return GetType().GetDeviceClass()->NeedsAutoTarget(*this, retiMinFireArc, retiMaxFireArc);
 	}
 
 //	CInstalledDevice Inlines ---------------------------------------------------

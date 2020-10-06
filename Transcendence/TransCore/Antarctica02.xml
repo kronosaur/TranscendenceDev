@@ -77,24 +77,34 @@
 
 
 		<Events>
-			<OnCreate>
+			<CanCreate>
 				(switch
 					;	This mission only works in Dantalion
+					
 					(!= (sysGetNode) 'A7)
-						(msnDestroy gSource)
-
+						Nil
+						
 					;	Prevent duplicates (maxAppearing only counts accepted missions)
+					;	This can happen since we delete non-player missions.
+					
 					(typGetData &msEscapeFromDantalion; 'status)
-						(msnDestroy gSource)
+						Nil
+						
+					;	Only if the player accepted the mission from Admiral Decker
+					
+					(not (msnFind "a +unid:&msHuntForAntarctica;;"))
+						Nil
 
-					;	Set up the mission
-					(block Nil
-						(msnSetData gSource 'gateID (objGetID (sysGetStargateLeadingToNode 'SK)))
-						(msnRegisterForEvents gSource gPlayerShip)
-						)
+					True
+					)
+			</CanCreate>
+			
+			<OnCreate>
+				(block Nil
+					(msnSetData gSource 'gateID (objGetID (sysGetStargateLeadingToNode 'SK)))
+					(msnRegisterForEvents gSource gPlayerShip)
 					)
 			</OnCreate>
-
 
 			<OnAccepted>
 				(block (
@@ -726,9 +736,15 @@
 			<GetDockScreen>
 				(block (missionObj)
 					(switch
+						;	If the player does not have a military ID, then
+						;	refuse dock
+					
+						(not (objGetItems gPlayerShip "*+MilitaryID"))
+							{	screen:&dsFleetRefuseDock;	priority:6		overrideOnly:true	}
+					
 						;	If the Antarctica mission is active then go to dsRPGMission on dock
 						(setq missionObj (@ (filter (msnFind gSource "auS") theMission (msnGetData theMission 'onDockScreen)) 0))
-							(list &dsRPGMission; { missionObj: missionObj } 4)
+							{	screen:&dsRPGMission;	priority:4	data: { missionObj: missionObj }	}
 						)
 					)
 			</GetDockScreen>

@@ -6,8 +6,6 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
-#define STR_HELP_DESC						CONSTLIT("Scroll wheel to zoom map\n[H] to toggle HUD on/off")
-
 const Metric SCALE_100 = g_AU / 400.0;
 const int MAP_ZOOM_SPEED =					16;
 const int HELP_PANE_WIDTH = 280;
@@ -16,6 +14,7 @@ const int SCREEN_BORDER_Y = 10;
 
 static CMapLegendPainter::SScaleEntry LEGEND_SCALE[] =
     {
+        {   25,         "light-minutes",  LIGHT_MINUTE },
         {   800,        "light-seconds",  LIGHT_SECOND },
         {   400,        "light-seconds",  LIGHT_SECOND },
         {   200,        "light-seconds",  LIGHT_SECOND },
@@ -23,6 +22,7 @@ static CMapLegendPainter::SScaleEntry LEGEND_SCALE[] =
         {   50,         "light-seconds",  LIGHT_SECOND },
         {   25,         "light-seconds",  LIGHT_SECOND },
         {   10,         "light-seconds",  LIGHT_SECOND },
+        {   5,          "light-seconds",  LIGHT_SECOND },
     };
 
 const int LEGEND_SCALE_COUNT = (sizeof(LEGEND_SCALE) / sizeof(LEGEND_SCALE[0]));
@@ -64,6 +64,11 @@ bool CSystemMapDisplay::HandleKeyDown (int iVirtKey, DWORD dwKeyData)
 		case 'H':
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 			pPlayer->SetMapHUD(!pPlayer->IsMapHUDActive());
+			break;
+
+		case 'L':
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			m_HI.HICommand(CONSTLIT("uiShowStationList"));
 			break;
 
 		case VK_SUBTRACT:
@@ -117,11 +122,11 @@ bool CSystemMapDisplay::Init (const RECT &rcRect)
     if (pSystem == NULL)
         return false;
 
-    m_Scale.Init(100, 25, 200);
+    m_Scale.Init(DEFAULT_ZOOM, MIN_ZOOM, MAX_ZOOM);
 
     m_HelpPainter.SetWidth(HELP_PANE_WIDTH);
     m_HelpPainter.SetTitle(pSystem->GetName());
-    m_HelpPainter.SetDesc(STR_HELP_DESC);
+    m_HelpPainter.SetDesc(m_Model.GetUniverse().GetEngineLanguage().Translate(CONSTLIT("uiSystemMapHelp")));
 
     m_HelpPainter.SetScale(GetScaleKlicksPerPixel(m_Scale.GetScale()));
 

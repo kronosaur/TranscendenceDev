@@ -21,8 +21,6 @@
 #define PROPERTY_DIFFICULTY					CONSTLIT("difficulty")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
 
-#define UNID_ENGINE_TEXT					0x00030004
-
 struct SExtensionSaveDesc
 	{
 	DWORD dwUNID = 0;
@@ -52,7 +50,7 @@ DWORD g_dwPerformanceTimer;
 
 static CUniverse::IHost g_DefaultHost;
 
-static char *FONT_TABLE[CUniverse::fontCount] = 
+static const char *FONT_TABLE[CUniverse::fontCount] = 
 	{
 	"Medium",				//	Map label: Tahoma 13
 	"SmallBold",			//	Signs: Tahoma 11 bold
@@ -60,13 +58,15 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 	"Header",				//	SRS object message
 	"Small",				//	SRS object counter: 10 pixels
 	"MediumBold",			//	Planetoid map label
-	"HeaderBold",			//	World map label
+	"LargeBold",			//	World map label
+	"HeaderBold",			//	Large world map label
 	};
 
 CUniverse::CUniverse (void) : 
 		m_Topology(*this),
 		m_AllMissions(true),
-		m_pHost(&g_DefaultHost)
+		m_pHost(&g_DefaultHost),
+		m_Language(m_Design)
 
 //	CUniverse constructor
 
@@ -88,7 +88,7 @@ CUniverse::~CUniverse (void)
 //	CUniverse destructor
 
 	{
-    int i;
+	int i;
 
 	SetPOV(NULL);
 	m_pPlayerShip = NULL;
@@ -102,9 +102,11 @@ CUniverse::~CUniverse (void)
 	//	guarantee that we destroy all objects before we destruct
 	//	codechain, et al
 
-    for (i = 0; i < m_StarSystems.GetCount(); i++)
-        delete m_StarSystems[i];
-    m_StarSystems.DeleteAll();
+	for (i = 0; i < m_StarSystems.GetCount(); i++)
+		delete m_StarSystems[i];
+	m_StarSystems.DeleteAll();
+
+	m_AscendedObjects.DeleteAll();
 
 	//	Free up various arrays whose cleanup requires m_CC
 
@@ -142,9 +144,9 @@ ALERROR CUniverse::AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem)
 	{
 	//	Add it to our list (must be new)
 
-    bool bNew;
-    m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
-    ASSERT(bNew);
+	bool bNew;
+	m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
+	ASSERT(bNew);
 
 	//	Set the system for the topoplogy
 
@@ -174,7 +176,7 @@ void CUniverse::AdjustDamage (SDamageCtx &Ctx) const
 
 	//	Otherwise, if the attacker is the player, then adjust
 
-	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer())
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
 		rAdjust = m_Difficulty.GetEnemyDamageAdj();
 
 	//	Otherwise, no adjustment.
@@ -186,6 +188,72 @@ void CUniverse::AdjustDamage (SDamageCtx &Ctx) const
 
 	if (rAdjust != 1.0)
 		Ctx.iDamage = mathRoundStochastic(Ctx.iDamage * rAdjust);
+	}
+
+int CUniverse::AdjustDamage (const SDamageCtx &Ctx, int iDamage) const
+
+//	AdjustDamage
+//
+//	Adjust damage to implement difficulty levels.
+
+	{
+	const CSpaceObject *pOrderGiver;
+
+	//	If the player got hit, then adjust
+
+	Metric rAdjust;
+	if (Ctx.pObj->IsPlayer())
+		rAdjust = m_Difficulty.GetPlayerDamageAdj();
+
+	//	Otherwise, if the attacker is the player, then adjust
+
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
+		rAdjust = m_Difficulty.GetEnemyDamageAdj();
+
+	//	Otherwise, no adjustment.
+
+	else
+		return iDamage;
+
+	//	Adjust damage
+
+	if (rAdjust != 1.0)
+		return mathRoundStochastic(iDamage * rAdjust);
+	else
+		return iDamage;
+	}
+
+Metric CUniverse::AdjustDamage (const SDamageCtx &Ctx, Metric rDamage) const
+
+//	AdjustDamage
+//
+//	Adjust damage to implement difficulty levels.
+
+	{
+	const CSpaceObject *pOrderGiver;
+
+	//	If the player got hit, then adjust
+
+	Metric rAdjust;
+	if (Ctx.pObj->IsPlayer())
+		rAdjust = m_Difficulty.GetPlayerDamageAdj();
+
+	//	Otherwise, if the attacker is the player, then adjust
+
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
+		rAdjust = m_Difficulty.GetEnemyDamageAdj();
+
+	//	Otherwise, no adjustment.
+
+	else
+		return rDamage;
+
+	//	Adjust damage
+
+	if (rAdjust != 1.0)
+		return rDamage * rAdjust;
+	else
+		return rDamage;
 	}
 
 void CUniverse::Boot (void)
@@ -213,15 +281,15 @@ ALERROR CUniverse::CreateEmptyStarSystem (CSystem **retpSystem)
 	if (error = CSystem::CreateEmpty(*this, NULL, &pSystem))
 		return error;
 
-    //  Set a unique ID
+	//  Set a unique ID
 
 	pSystem->SetID(CreateGlobalID());
 
 	//	Add to our list
 
-    bool bNew;
-    m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
-    ASSERT(bNew);
+	bool bNew;
+	m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
+	ASSERT(bNew);
 
 	//	Done
 
@@ -231,7 +299,7 @@ ALERROR CUniverse::CreateEmptyStarSystem (CSystem **retpSystem)
 	return NOERROR;
 	}
 
-ALERROR CUniverse::CreateMission (CMissionType *pType, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError)
+ALERROR CUniverse::CreateMission (CMissionType &Type, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError)
 
 //	CreateMission
 //
@@ -244,7 +312,7 @@ ALERROR CUniverse::CreateMission (CMissionType *pType, CSpaceObject *pOwner, ICC
 	//	Create the mission object
 
 	CMission *pMission;
-	if (error = CMission::Create(*this, pType, pOwner, pCreateData, &pMission, retsError))
+	if (error = CMission::Create(Type, CreateCtx, &pMission, retsError))
 		return error;
 
 	//	Add the mission 
@@ -281,6 +349,7 @@ ALERROR CUniverse::CreateRandomItem (const CItemCriteria &Crit,
 	CItemList ItemList;
 	CItemListManipulator Items(ItemList);
 	SItemAddCtx Ctx(Items);
+	Ctx.pSystem = GetCurrentSystem();
 	Ctx.iLevel = (GetCurrentSystem() ? GetCurrentSystem()->GetLevel() : 1);
 
 	pTable->AddItems(Ctx);
@@ -297,7 +366,7 @@ ALERROR CUniverse::CreateRandomItem (const CItemCriteria &Crit,
 	return NOERROR;
 	}
 
-ALERROR CUniverse::CreateRandomMission (const TArray<CMissionType *> &Types, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError)
+ALERROR CUniverse::CreateRandomMission (const TArray<CMissionType *> &Types, CMissionType::SCreateCtx &CreateCtx, CMission **retpMission, CString *retsError)
 
 //	CreateRandomMission
 //
@@ -310,25 +379,14 @@ ALERROR CUniverse::CreateRandomMission (const TArray<CMissionType *> &Types, CSp
 	{
 	ALERROR error;
 
-	int iSystemLevel = (m_pCurrentSystem ? m_pCurrentSystem->GetLevel() : 1);
-
 	//	Loop until we create a valid mission (we assume that Types has been 
 	//	shuffled).
 
 	for (int i = 0; i < Types.GetCount(); i++)
 		{
-		//	Skip if this mission is not appropriate for this system level. We do
-		//	this here (instead of inside CMissionType::CanBeCreated) becaseu we
-		//	want explicitly created missions to not have a system restriction.
-
-		int iMinLevel, iMaxLevel;
-		Types[i]->GetLevel(&iMinLevel, &iMaxLevel);
-		if (iSystemLevel < iMinLevel || iSystemLevel > iMaxLevel)
-			continue;
-
 		//	Create a random mission. If successful, return.
 
-		if (error = CreateMission(Types[i], pOwner, pCreateData, retpMission, retsError))
+		if (error = CreateMission(*Types[i], CreateCtx, retpMission, retsError))
 			{
 			if (error == ERR_NOTFOUND)
 				continue;
@@ -419,7 +477,7 @@ ALERROR CUniverse::CreateStarSystem (const CString &sNodeID, CSystem **retpSyste
 
 	//	Create the first star system
 
-	if (error = CreateStarSystem(pNode, retpSystem, retsError, pStats))
+	if (error = CreateStarSystem(*pNode, retpSystem, retsError, pStats))
 		return error;
 
 	//	Done
@@ -427,7 +485,7 @@ ALERROR CUniverse::CreateStarSystem (const CString &sNodeID, CSystem **retpSyste
 	return NOERROR;
 	}
 
-ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError, CSystemCreateStats *pStats)
+ALERROR CUniverse::CreateStarSystem (CTopologyNode &Node, CSystem **retpSystem, CString *retsError, CSystemCreateStats *pStats)
 
 //	CreateStarSystem
 //
@@ -439,11 +497,11 @@ ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSys
 
 	//	Get the description
 
-	CSystemType *pSystemType = FindSystemType(pTopology->GetSystemTypeUNID());
+	CSystemType *pSystemType = FindSystemType(Node.GetSystemTypeUNID());
 	if (pSystemType == NULL)
 		{
 		if (retsError)
-			*retsError = strPatternSubst(CONSTLIT("Cannot create system %s: Undefined system type %x"), pTopology->GetID(), pTopology->GetSystemTypeUNID());
+			*retsError = strPatternSubst(CONSTLIT("Cannot create system %s: Undefined system type %x"), Node.GetID(), Node.GetSystemTypeUNID());
 		return ERR_FAIL;
 		}
 
@@ -452,34 +510,34 @@ ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSys
 	CString sError;
 
 	SetLogImageLoad(false);
-	error = CSystem::CreateFromXML(*this, pSystemType, pTopology, &pSystem, &sError, pStats);
+	error = CSystem::CreateFromXML(*this, *pSystemType, Node, &pSystem, &sError, pStats);
 	SetLogImageLoad(true);
 
 	if (error)
 		{
 		if (retsError)
-			*retsError = strPatternSubst(CONSTLIT("Cannot create system %s: %s"), pTopology->GetID(), sError);
+			*retsError = strPatternSubst(CONSTLIT("Cannot create system %s: %s"), Node.GetID(), sError);
 		return error;
 		}
 
-    //  Set a unique ID
+	//  Set a unique ID
 
 	pSystem->SetID(CreateGlobalID());
 
 	//	Add to our list
 
-    bool bNew;
-    m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
-    ASSERT(bNew);
+	bool bNew;
+	m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
+	ASSERT(bNew);
 
 	//	Set the system for the topoplogy
 
-	pTopology->SetSystem(pSystem);
-	pTopology->SetSystemID(pSystem->GetID());
+	Node.SetSystem(pSystem);
+	Node.SetSystemID(pSystem->GetID());
 
 	//	Initialize trading economy based on stations in system
 
-	pTopology->GetTradingEconomy().Refresh(pSystem);
+	Node.GetTradingEconomy().Refresh(pSystem);
 
 	//	Done
 
@@ -489,7 +547,7 @@ ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSys
 	return NOERROR;
 	}
 
-void CUniverse::DebugOutput (char *pszLine, ...)
+void CUniverse::DebugOutput (const char *pszLine, ...)
 
 //	DebugOutput
 //
@@ -525,8 +583,8 @@ void CUniverse::DestroySystem (CSystem *pSystem)
 
 	//	Remove and destroy the system
 
-    m_StarSystems.DeleteAt(pSystem->GetID());
-    delete pSystem;
+	m_StarSystems.DeleteAt(pSystem->GetID());
+	delete pSystem;
 	}
 
 CArmorClass *CUniverse::FindArmor (DWORD dwUNID)
@@ -695,15 +753,15 @@ void CUniverse::FlushStarSystem (CTopologyNode *pTopology)
 	{
 	ASSERT(pTopology->GetSystemID() != 0xffffffff);
 
-    int iPos;
-    if (m_StarSystems.FindPos(pTopology->GetSystemID(), &iPos))
-        {
+	int iPos;
+	if (m_StarSystems.FindPos(pTopology->GetSystemID(), &iPos))
+		{
 		if (m_StarSystems[iPos] == m_pCurrentSystem)
 			SetPOV(NULL);
 
-        delete m_StarSystems[iPos];
-        m_StarSystems.Delete(iPos);
-        }
+		delete m_StarSystems[iPos];
+		m_StarSystems.Delete(iPos);
+		}
 	}
 
 void CUniverse::GarbageCollectLibraryBitmaps (void)
@@ -718,7 +776,7 @@ void CUniverse::GarbageCollectLibraryBitmaps (void)
 	SweepLibraryBitmaps();
 	}
 
-void CUniverse::GenerateGameStats (CGameStats &Stats)
+void CUniverse::GenerateGameStats (const CString &sEndGameReason, CGameStats &Stats)
 
 //	GenerateGameStats
 //
@@ -727,15 +785,13 @@ void CUniverse::GenerateGameStats (CGameStats &Stats)
 	{
 	DEBUG_TRY
 
-	int i;
-
 	//	Ask all design types to generate game stats
 
-	m_Design.FireGetGlobalAchievements(Stats);
+	m_Design.FireGetGlobalAchievements(sEndGameReason, Stats);
 
 	//	Add all extensions
 
-	for (i = 0; i < m_Design.GetExtensionCount(); i++)
+	for (int i = 0; i < m_Design.GetExtensionCount(); i++)
 		{
 		CExtension *pExtension = m_Design.GetExtension(i);
 
@@ -793,34 +849,6 @@ const CEconomyType &CUniverse::GetCreditCurrency (void) const
 	return *m_pCreditCurrency;
 	}
 
-CMission *CUniverse::GetCurrentMission (void)
-
-//	GetCurrentMission
-//
-//	Returns the current player mission (or NULL)
-
-	{
-	int i;
-	DWORD dwLatestMission = 0;
-	CMission *pCurrentMission = NULL;
-
-	for (i = 0; i < m_AllMissions.GetCount(); i++)
-		{
-		CMission *pMission = m_AllMissions.GetMission(i);
-		if (pMission->IsActive() && pMission->IsPlayerMission())
-			{
-			DWORD dwAcceptedOn = pMission->GetAcceptedOn();
-			if (pCurrentMission == NULL || dwAcceptedOn > dwLatestMission)
-				{
-				pCurrentMission = pMission;
-				dwLatestMission = dwAcceptedOn;
-				}
-			}
-		}
-
-	return pCurrentMission;
-	}
-
 CEffectCreator &CUniverse::GetDefaultFireEffect (DamageTypes iDamage)
 
 //	GetDefaultFireEffect
@@ -845,25 +873,6 @@ CEffectCreator &CUniverse::GetDefaultHitEffect (DamageTypes iDamage)
 		throw CException(ERR_FAIL, CONSTLIT("DamageTypes value out of range."));
 
 	return m_NamedEffects.GetHitEffect(m_Design, iDamage);
-	}
-
-void CUniverse::GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList)
-
-//	GetMissions
-//
-//	Returns a list of missions that match the given criteria
-
-	{
-	int i;
-
-	retList->DeleteAll();
-	for (i = 0; i < m_AllMissions.GetCount(); i++)
-		{
-		CMission *pMission = m_AllMissions.GetMission(i);
-		if (pMission->MatchesCriteria(pSource, Criteria) 
-				&& !pMission->IsDestroyed())
-			retList->Insert(pMission);
-		}
 	}
 
 const CDamageAdjDesc *CUniverse::GetShieldDamageAdj (int iLevel) const
@@ -993,7 +1002,7 @@ CString CUniverse::GetPlayerName (void) const
 	return m_pPlayer->GetName();
 	}
 
-CSovereign *CUniverse::GetPlayerSovereign (void) const
+CSovereign *CUniverse::GetPlayerSovereign (void)
 
 //	GetPlayerSovereign
 //
@@ -1005,7 +1014,22 @@ CSovereign *CUniverse::GetPlayerSovereign (void) const
 	else if (m_pPlayer)
 		return m_pPlayer->GetSovereign();
 	else
-		return NULL;
+		return FindSovereign(g_PlayerSovereignUNID);
+	}
+
+const CSovereign *CUniverse::GetPlayerSovereign (void) const
+
+//	GetPlayerSovereign
+//
+//	Returns the player's sovereign
+
+	{
+	if (m_pPlayerShip)
+		return m_pPlayerShip->GetSovereign();
+	else if (m_pPlayer)
+		return m_pPlayer->GetSovereign();
+	else
+		return FindSovereign(g_PlayerSovereignUNID);
 	}
 
 ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
@@ -1031,62 +1055,6 @@ ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 
 	else
 		return ICCItemPtr(ICCItem::Nil);
-	}
-
-void CUniverse::GetRandomLevelEncounter (int iLevel, 
-										 CDesignType **retpType,
-										 IShipGenerator **retpTable, 
-										 CSovereign **retpBaseSovereign)
-
-//	GetRandomLevelEncounter
-//
-//	Returns a random encounter appropriate for the given level
-
-	{
-	int i;
-
-	iLevel--;	//	m_LevelEncounterTable is 0-based
-	if (iLevel < 0 || iLevel >= m_LevelEncounterTables.GetCount())
-		{
-		*retpType = NULL;
-		*retpTable = NULL;
-		*retpBaseSovereign = NULL;
-		return;
-		}
-
-	//	Get the level table
-
-	const TArray<SLevelEncounter> &Table = m_LevelEncounterTables[iLevel];
-
-	//	Compute the totals for the table
-
-	int iTotal = 0;
-	for (i = 0; i < Table.GetCount(); i++)
-		iTotal += Table[i].iWeight;
-
-	if (iTotal == 0)
-		{
-		*retpType = NULL;
-		*retpTable = NULL;
-		*retpBaseSovereign = NULL;
-		return;
-		}
-
-	//	Pick a random entry
-
-	int iRoll = mathRandom(0, iTotal - 1);
-	int iPos = 0;
-
-	//	Get the position
-
-	while (Table[iPos].iWeight <= iRoll)
-		iRoll -= Table[iPos++].iWeight;
-
-	//	Done
-
-	*retpType = Table[iPos].pType;
-	*retpTable = Table[iPos].pTable;
-	*retpBaseSovereign = Table[iPos].pBaseSovereign;
 	}
 
 ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
@@ -1232,11 +1200,11 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		if (Ctx.bNoResources)
 			dwFlags |= CExtensionCollection::FLAG_NO_RESOURCES;
 
-        //  Don't load collection if we don't want it.
-        //  (But we only honor it in debug mode.)
+		//  Don't load collection if we don't want it.
+		//  (But we only honor it in debug mode.)
 
-        if (Ctx.bNoCollectionLoad && m_bDebugMode)
-            dwFlags |= CExtensionCollection::FLAG_NO_COLLECTION;
+		if (Ctx.bNoCollectionLoad && m_bDebugMode)
+			dwFlags |= CExtensionCollection::FLAG_NO_COLLECTION;
 
 		if (Ctx.bNoCollectionCheck)
 			dwFlags |= CExtensionCollection::FLAG_NO_COLLECTION_CHECK;
@@ -1378,6 +1346,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		BindOptions.dwAPIVersion = dwAPIVersion;
 		BindOptions.bNewGame = !Ctx.bInLoadGame;
 		BindOptions.bNoResources = Ctx.bNoResources;
+		BindOptions.bDiagnostics = Ctx.bDiagnostics;
 
 #ifdef DEBUG_BIND
 		BindOptions.bTraceBind = Ctx.bDiagnostics;
@@ -1489,6 +1458,9 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 	{
 	ALERROR error;
 
+	if (m_Difficulty.GetLevel() == CDifficultyOptions::lvlUnknown)
+		SetDifficultyLevel(CDifficultyOptions::lvlChallenge);
+
 	//	If starting map is 0, see if we can get it from the adventure
 
 	if (dwStartingMap == 0)
@@ -1508,12 +1480,6 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 	//	be encountered) we distribute them randomly across all topology nodes.
 
 	if (error = InitRequiredEncounters(retsError))
-		return error;
-
-	//	Init encounter tables (this must be done AFTER InitTopoloy because it
-	//	some station encounters specify a topology node).
-
-	if (error = InitLevelEncounterTables())
 		return error;
 
 	return NOERROR;
@@ -1545,6 +1511,8 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 		if (bVerbose)
 			LogOutput(strPatternSubst("[%08x] %s: Minimum count: %d", pType->GetUNID(), pType->GetNounPhrase(), iCount));
 
+		const CStationEncounterDesc &EncounterDesc = pType->GetEncounterDescConst();
+
 		//	Make a list of all the nodes in which this station can appear
 
 		TProbabilityTable<CTopologyNode *> Table;
@@ -1555,7 +1523,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 			if (pSystemType == NULL)
 				continue;
 
-			int iFreq = pType->GetFrequencyForNode(pNode);
+			int iFreq = pType->GetFrequencyForNode(*pNode, EncounterDesc);
 			if (iFreq > 0
 					&& pSystemType->HasExtraEncounters())
 				Table.Insert(pNode, iFreq);
@@ -1581,7 +1549,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 		//	If this station is unique per system then we need at least the 
 		//	required number of systems. If not, we adjust the count.
 
-		if (pType->IsUniqueInSystem() && iCount > Table.GetCount())
+		if (EncounterDesc.IsUniqueInSystem() && iCount > Table.GetCount())
 			{
 			iCount = Table.GetCount();
 			LogOutput(strPatternSubst("WARNING: Decreasing number appearing of %s [%08x] to %d due to lack of appropriate systems.", pType->GetNounPhrase(nounPlural), pType->GetUNID(), iCount));
@@ -1596,8 +1564,8 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 			//	If the station is unique in the system and we've already got a 
 			//	station in this system, then try again.
 
-			if (pType->IsUniqueInSystem() 
-					&& pType->GetEncounterMinimum(pNode) > 0)
+			if (EncounterDesc.IsUniqueInSystem() 
+					&& pType->GetEncounterMinimum(*pNode, EncounterDesc) > 0)
 				{
 				j--;
 				continue;
@@ -1605,7 +1573,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 
 			//	Add it to this node
 
-			pType->IncEncounterMinimum(pNode, 1);
+			pType->IncEncounterMinimum(*pNode, 1);
 			}
 		}
 
@@ -2247,6 +2215,8 @@ void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 		m_ViewportAnnotations.Init();
 		}
 
+	m_PerformanceCounters.Paint(Dest, rcView, GetNamedFont(fontSRSMessage));
+
 	m_iPaintTick++;
 	}
 
@@ -2261,7 +2231,7 @@ void CUniverse::PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rSca
 		m_pCurrentSystem->PaintViewportLRS(Dest, rcView, m_pPOV, rScale, dwFlags, retbNewEnemies);
 	}
 
-void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale)
+void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale, DWORD dwFlags)
 
 //	PaintPOVMap
 //
@@ -2269,7 +2239,7 @@ void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMap
 
 	{
 	if (m_pCurrentSystem && m_pPOV)
-		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale);
+		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale, dwFlags);
 
 	m_iPaintTick++;
 	}
@@ -2369,7 +2339,7 @@ void CUniverse::RefreshCurrentMission (void)
 //	Picks the most recently accepted player mission and refresh the target.
 
 	{
-	CMission *pMission = GetCurrentMission();
+	CMission *pMission = m_AllMissions.FindLatestActivePlayer();
 	if (pMission == NULL)
 		return;
 
@@ -2398,12 +2368,13 @@ ALERROR CUniverse::Reinit (void)
 	m_Time.DeleteAll();
 	m_pPOV = NULL;
 	SetCurrentSystem(NULL);
-    for (int i = 0; i < m_StarSystems.GetCount(); i++)
-        delete m_StarSystems[i];
+	for (int i = 0; i < m_StarSystems.GetCount(); i++)
+		delete m_StarSystems[i];
 	m_StarSystems.DeleteAll();
 	m_dwNextID = 1;
 	m_Objects.DeleteAll();
 	m_Difficulty = CDifficultyOptions();
+	m_Language.Reinit();
 
 	//	NOTE: We don't reinitialize m_bDebugMode or m_bRegistered because those
 	//	are set before Reinit (and thus we would overwrite them).
@@ -2631,17 +2602,19 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	return NOERROR;
 	}
 
-void CUniverse::SetCurrentSystem (CSystem *pSystem)
+void CUniverse::SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered)
 
 //	SetCurrentSystem
 //
 //	Sets the current system
 
 	{
+	if (pSystem == m_pCurrentSystem)
+		return;
+
 	if (m_pCurrentSystem)
 		m_pCurrentSystem->FlushAllCaches();
 
-	CSystem *pOldSystem = m_pCurrentSystem;
 	m_pCurrentSystem = pSystem;
 
 	if (pSystem)
@@ -2659,8 +2632,48 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 
 	//	Initialize mission cache
 
-	if (pOldSystem != m_pCurrentSystem)
+	if (bPlayerHasEntered)
 		m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
+	}
+
+bool CUniverse::SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError)
+
+//	SetDebugProperty
+//
+//	Sets a debug property.
+
+	{
+#ifdef DEBUG
+	if (strEquals(sProperty, CONSTLIT("hudColorPlayer")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::player);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorEscort")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::escort);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorFriendly")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::friendly);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorNeutral")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::neutral);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorEnemy")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::enemy);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorAngry")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::angry);
+
+	else if (strEquals(sProperty, CONSTLIT("hudColorProjectile")))
+		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::projectile);
+
+	else
+		return m_DebugOptions.SetProperty(sProperty, pValue, retsError);
+
+	return true;
+#else
+
+	return m_DebugOptions.SetProperty(sProperty, pValue, retsError);
+
+#endif
 	}
 
 bool CUniverse::SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData)
@@ -2693,18 +2706,33 @@ void CUniverse::SetHost (IHost *pHost)
 		m_pHost = pHost;
 	}
 
-void CUniverse::SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV)
+void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 
 //	SetNewSystem
 //
 //	Shows the new system before the player appears.
 
 	{
-	int i;
+	if (&NewSystem == m_pCurrentSystem)
+		return;
+
+	if (m_pCurrentSystem)
+		{
+		//	Let all types know that the current system is going away
+		//	(Obviously, we need to call this before we change the current system.
+		//	Note also that at this point the player is already gone.)
+
+		GetMissions().FireOnSystemStopped();
+		GetDesignCollection().FireOnGlobalSystemStopped();
+
+		//  Make sure we've updated current system data to global data.
+
+		GetGlobalObjects().Refresh(m_pCurrentSystem);
+		}
 
 	//	Before we set the POV, delete any old missions
 
-	for (i = 0; i < m_AllMissions.GetCount(); i++)
+	for (int i = 0; i < m_AllMissions.GetCount(); i++)
 		{
 		CMission *pMission = m_AllMissions.GetMission(i);
 
@@ -2719,12 +2747,15 @@ void CUniverse::SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV)
 
 	//	Set the new system
 
-	SetPOV(pPOV);
+	if (pPOV)
+		SetPOV(pPOV);
+	else
+		SetCurrentSystem(&NewSystem, true);
 
 	//	Replay any commands that might have happened while the player was in a
 	//	different system.
 
-	m_Objects.ReplayCommands(pSystem);
+	m_Objects.ReplayCommands(&NewSystem);
 
 	//	Add a discontinuity to reflect the amount of time spent
 	//	in the stargate
@@ -2739,7 +2770,20 @@ void CUniverse::SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV)
 	//	Clear the POVLRS flag for all objects (so that we don't get the
 	//	"Enemy Ships Detected" message when entering a system
 
-	pSystem->SetPOVLRS(pPOV);
+	if (pPOV)
+		NewSystem.SetPOVLRS(pPOV);
+
+	//	Compute how long (in ticks) it has been since this system has been
+	//	updated.
+
+	int iLastUpdated = NewSystem.GetLastUpdated();
+	DWORD dwElapsedTime = (iLastUpdated > 0 ? ((DWORD)GetTicks() - (DWORD)iLastUpdated) : 0);
+
+	//	Let all types know that we have a new system. Again, this is called 
+	//	before the player has entered the system.
+
+	GetDesignCollection().FireOnGlobalSystemStarted(dwElapsedTime);
+	GetMissions().FireOnSystemStarted(dwElapsedTime);
 	}
 
 void CUniverse::SetPlayer (IPlayerController *pPlayer)
@@ -2803,7 +2847,7 @@ bool CUniverse::SetPOV (CSpaceObject *pPOV)
 	m_pPOV = pPOV;
 
 	if (m_pPOV)
-		SetCurrentSystem(m_pPOV->GetSystem());
+		SetCurrentSystem(m_pPOV->GetSystem(), true);
 	else
 		SetCurrentSystem(NULL);
 
@@ -2841,18 +2885,19 @@ void CUniverse::StartGame (bool bNewGame)
 		//	The current system has started (0 time has elased since we last
 		//	updated this system).
 
-		m_Design.FireOnGlobalSystemStarted(0);
+		if (GetCurrentSystem())
+			m_Design.FireOnGlobalSystemStarted(0);
 
 		//	If we have a player then tell objects that the player has entered
 		//	the system.
 
 		if (m_pPlayerShip)
 			{
-            //  Player entered ship
+			//  Player entered ship
 
-            m_pPlayerShip->FireOnPlayerEnteredShip(NULL);
+			m_pPlayerShip->FireOnPlayerEnteredShip(NULL);
 
-            //  Player entered system
+			//  Player entered system
 
 			FireOnGlobalPlayerEnteredSystem();
 
@@ -2891,22 +2936,48 @@ CTimeSpan CUniverse::StopGameTime (void)
 	return timeSpan(m_StartTime, StopTime);
 	}
 
-CString CUniverse::TranslateEngineText(const CString &sID, ICCItem *pData) const
-	{
-	const CDesignType *pEngineTextType = FindDesignType(UNID_ENGINE_TEXT);
-	if (!pEngineTextType)
-		return CONSTLIT("Error: Can't find engine text type.");
-	ICCItemPtr pResult;
-	if (!pEngineTextType->Translate(sID, pData, pResult))
-		return strPatternSubst(CONSTLIT("Error: Can't find engine text ID %s"), sID);
-	if (pResult->IsNil())
-		return strPatternSubst(CONSTLIT("Error: Engine text ID %s returned Nil."), sID);
-	return pResult->GetStringValue();
-	}
-
-void CUniverse::Update (SSystemUpdateCtx &Ctx)
+bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 
 //	Update
+//
+//	Updates one frame. Returns TRUE if the universe was actually updated.
+
+	{
+	m_iLastUpdateSpeed = iUpdateMode;
+
+	switch (iUpdateMode)
+		{
+		case updateAccelerated:
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			m_dwFrame++;
+			return true;
+
+		case updatePaused:
+			return false;
+
+		case updateSlowMotion:
+			if ((m_dwFrame++ % 4) == 0)
+				{
+				UpdateTick(Ctx);
+				return true;
+				}
+			else
+				return false;
+
+		default:
+			UpdateTick(Ctx);
+			m_dwFrame++;
+			return true;
+		}
+	}
+
+void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
+
+//	UpdateTick
 //
 //	Update the system of the current point of view
 

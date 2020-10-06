@@ -129,7 +129,7 @@ void CItemEventDispatcher::Init (CSpaceObject *pSource)
 	DEBUG_CATCH
 	}
 
-void CItemEventDispatcher::FireEventFull (CSpaceObject *pSource, ECodeChainEvents iEvent)
+void CItemEventDispatcher::FireEventFull (CSpaceObject *pSource, ECodeChainEvents iEvent, bool bCheckExpiredEnhancements)
 
 //	FireEventFull
 //
@@ -159,6 +159,7 @@ void CItemEventDispatcher::FireEventFull (CSpaceObject *pSource, ECodeChainEvent
 
 			if (!bSavedVars)
 				{
+				Ctx.SaveTypeVar();
 				Ctx.SaveAndDefineSourceVar(pSource);
 				Ctx.SaveItemVar();
 				bSavedVars = true;
@@ -166,6 +167,7 @@ void CItemEventDispatcher::FireEventFull (CSpaceObject *pSource, ECodeChainEvent
 
 			//	Set the item
 
+			Ctx.DefineType(pEntry->pItem->GetType());
 			Ctx.DefineItem(*pEntry->pItem);
 
 			//	Run code
@@ -174,6 +176,16 @@ void CItemEventDispatcher::FireEventFull (CSpaceObject *pSource, ECodeChainEvent
 			if (pResult->IsError())
 				pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x Event"), pEntry->pItem->GetType()->GetUNID()), pResult);
 			Ctx.Discard(pResult);
+			}
+
+		//	Check for enhancement expiration
+
+		else if (bCheckExpiredEnhancements && pEntry->iType == dispatchCheckEnhancementLifetime)
+			{
+			//	Remove any expired mods on the item
+			//	(TRUE flag means, "removed expired only")
+
+			pSource->RemoveItemEnhancement(*pEntry->pItem, pEntry->dwEnhancementID, true);
 			}
 
 		//	Next
@@ -267,77 +279,6 @@ void CItemEventDispatcher::FireOnObjDestroyed (CSpaceObject *pSource, const SDes
 		//	Fire event
 
 		Items[i]->FireOnObjDestroyed(pSource, Ctx);
-		}
-
-	DEBUG_CATCH
-	}
-
-void CItemEventDispatcher::FireUpdateEventsFull (CSpaceObject *pSource)
-
-//	FireUpdateEventsFull
-//
-//	Fires all events at item update time
-
-	{
-	DEBUG_TRY
-
-	CCodeChainCtx Ctx(pSource->GetUniverse());
-	bool bSavedVars = false;
-
-	//	Fire event for all items that have it
-
-	SEntry *pEntry = m_pFirstEntry;
-	while (pEntry)
-		{
-		//	Skip NULL items (this can happen after a refresh).
-
-		if (pEntry->pItem == NULL)
-			{ }
-
-		//	Fire OnUpdate event
-
-		else if (pEntry->iEvent == eventOnUpdate)
-			{
-			//	We don't bother saving the variables unless we've got an event
-
-			if (!bSavedVars)
-				{
-				Ctx.SaveAndDefineSourceVar(pSource);
-				Ctx.SaveItemVar();
-				bSavedVars = true;
-				}
-
-			//	Set the item
-
-			Ctx.DefineItem(*pEntry->pItem);
-
-			//	Run code
-
-			ICCItem *pResult = Ctx.Run(pEntry->Event);
-			if (pResult->IsError())
-				pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x Event"), pEntry->pItem->GetType()->GetUNID()), pResult);
-			Ctx.Discard(pResult);
-			}
-
-		//	Check for enhancement expiration
-
-		else if (pEntry->iType == dispatchCheckEnhancementLifetime)
-			{
-			//	Remove any expired mods on the item
-			//	(TRUE flag means, "removed expired only")
-
-			pSource->RemoveItemEnhancement(*pEntry->pItem, pEntry->dwEnhancementID, true);
-			}
-
-		//	Next
-
-		pEntry = pEntry->pNext;
-
-		//	If the item event list has changed, then we need to refresh it. This
-		//	can happen if the code changed one of the items.
-
-		if (pEntry && !pSource->IsItemEventListValid())
-			Refresh(pSource, pEntry);
 		}
 
 	DEBUG_CATCH

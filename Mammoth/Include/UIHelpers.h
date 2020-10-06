@@ -14,6 +14,7 @@ class CSmallOptionButtonAnimator
 
 		void Create (CAniVScroller &Root, const CString &sID, const CString &sLabel, int x, int y, int cxWidth, AlignmentStyles iAlign = alignLeft);
 		bool IsEditing (void) const { return m_bInEditMode; }
+		void SetEnabled (bool bEnable = true);
 		void SetImage (const CG32bitImage &Image, bool bFreeImage = false);
 		void SetText (const CString &sText);
 		void StartEdit (int cxWidth, const CString &sValue);
@@ -36,6 +37,27 @@ class CSmallOptionButtonAnimator
 		int m_cxWidth = 0;
 		AlignmentStyles m_iAlign = alignLeft;
 		bool m_bInEditMode = false;
+	};
+
+class CTextAreaAnimator
+	{
+	public:
+		CTextAreaAnimator (IHISession &Session) :
+				m_Session(Session)
+			{ }
+
+		void Create (CAniVScroller &Root, const CString &sID, const CString &sText, int x, int y, int cxWidth, AlignmentStyles iAlign = alignLeft);
+		void SetText (const CString &sText);
+
+	private:
+		IHISession &m_Session;
+
+		CAniVScroller *m_pRoot = NULL;
+		CString m_sID;
+		int m_x = 0;
+		int m_y = 0;
+		int m_cxWidth = 0;
+		AlignmentStyles m_iAlign = alignLeft;
 	};
 
 class CItemDataAnimatron : public IAnimatron
@@ -188,6 +210,7 @@ class CUIHelper
 		static constexpr DWORD MENU_ALIGN_RIGHT =						0x00000008;		//	Align right
 		static constexpr DWORD MENU_HIDDEN =							0x00000010;
 		static constexpr DWORD MENU_DISABLED =							0x00000020;
+		static constexpr DWORD MENU_IGNORE_DOUBLE_CLICK =				0x00000040;		//	Ignore double-click on button
 
 		struct SMenuEntry
 			{
@@ -214,7 +237,7 @@ class CUIHelper
 		void CreateClassInfoReactor (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
 		CG32bitImage CreateGlowBackground (void) const;
 		CG32bitImage CreateGlowBackground (int cxWidth, int cyHeight, CG32bitPixel rgbCenter, CG32bitPixel rgbEdge) const;
-		void CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, CString &sDesc, IAnimatron **retpMsg = NULL) const;
+		void CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, const CString &sDesc, IAnimatron **retpMsg = NULL) const;
 
 		//	OPTION_FRAME_ALIGN_TOP
 		//	OPTION_FRAME_ALIGN_BOTTOM

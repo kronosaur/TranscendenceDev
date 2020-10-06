@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<ItemType unid="&itRejuvTankPatient;"
+			name=				"patient in a rejuv tank|patients in rejuv tanks"
+			level=				"5"
+			value=				"0"
+			mass=				"1000"
+			frequency=			"notRandom"
+			attributes=			"humanTech, notForSale"
+
+			description=		"This is a rejuvenation tank"
+			>
+
+		<Properties>
+			<DynamicData id="status">
+				(block (
+					(deathOn (itm@ gItem 'deathOn))
+					(criticalOn (- deathOn 900))
+					(now (unvGetTick))
+					)
+					(switch
+						(geq now deathOn)
+							'dead
+
+						(geq now criticalOn)
+							'critical
+
+						'stable
+						)
+					)
+			</DynamicData>
+
+			<!-- deathOn
+			
+				Tick on which patient will die.
+
+			-->
+
+			<Data id="deathOn">(+ (unvGetTick) (random 1800 3600))</Data>
+			<Data id="lastMessageAt">100000</Data>
+
+			<!-- missionID
+			
+				This is the (optional) mission associated with the rejuv tank.
+
+				The mission will get called at the following events:
+
+				OnRejuvPatientStatusChanged:
+
+					The patient's status has changed. gData has the following
+					fields:
+
+					'item: The rejuv tank item
+					'status: The new status.
+
+			-->
+
+			<Data id="missionID"></Data>
+		</Properties>
+
+		<Image imageID="&rsItems5;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		
+		<Events>
+			<GetDescription>
+				(typTranslate gType (cat 'desc. (itm@ gItem 'status)))
+			</GetDescription>
+
+			<OnUpdate>
+				(block (
+					(deathOn (itm@ gItem 'deathOn))
+					(now (unvGetTick))
+					(timeToDieInSeconds (max 0 (round (/ (- deathOn now) 30))))
+					(lastMessageAt (itm@ gItem 'lastMessageAt))
+					)
+					(switch
+						(= lastMessageAt 0)
+							Nil
+
+						(= lastMessageAt timeToDieInSeconds)
+							Nil
+
+						(= timeToDieInSeconds 0)
+							(block (
+								(missionID (itm@ gItem 'missionID))
+								(missionObj (and missionID (objGetObjByID missionID)))
+								)
+								(if (= gSource gPlayerShip)
+									(objSendMessage gSource Nil (typTranslate gType 'msgPatientHasDied))
+									)
+
+								(objSet@ gSource gItem 'lastMessageAt 0)
+
+								(if missionObj
+									(msnFireEvent missionObj 'OnRejuvPatientStatusChanged {
+										item: gItem
+										status: 'dead
+										})
+									)
+								)
+
+						(!= gSource gPlayerShip)
+							Nil
+
+						(and (gr lastMessageAt 30) (leq timeToDieInSeconds 30))
+							(block (
+								(missionID (itm@ gItem 'missionID))
+								(missionObj (and missionID (objGetObjByID missionID)))
+								)
+								(objSendMessage gSource Nil (typTranslate gType 'msgPatientCritical))
+								(objSet@ gSource gItem 'lastMessageAt timeToDieInSeconds)
+
+								(if missionObj
+									(msnFireEvent missionObj 'OnRejuvPatientStatusChanged {
+										item: gItem
+										status: 'critical
+										})
+									)
+								)
+
+						(and (leq timeToDieInSeconds 30)
+								(= (mod timeToDieInSeconds 5) 0)
+								)
+							(block ()
+								(objSendMessage gSource Nil (typTranslate gType 'msgPatientWillDieIn {
+									time: timeToDieInSeconds
+									}))
+								(objSet@ gSource gItem 'lastMessageAt timeToDieInSeconds)
+								)
+						)
+					)
+			</OnUpdate>
+		</Events>
+
+		<Language>
+			<Text id="desc.stable">
+
+				You see a patient floating inside the rejuvenation tank. Bright
+				displays on the front seem to show stable vital signs, but a red
+				message keeps flashing: "Medical Attention Needed".
+
+			</Text>
+			<Text id="desc.critical">
+
+				The patient inside the rejuvenation tank appears to be in 
+				distress. Vital signs are fluctuating, and a big red message 
+				keeps flashing: "Conditional Critical".
+			
+			</Text>
+			<Text id="desc.dead">
+				
+				The patient in the rejuvenation tank is dead. All vital signs 
+				have ceased, and the displays are ominously dark.
+
+			</Text>
+			<Text id="msgPatientHasDied">
+				Patient in rejuv tank has died.
+			</Text>
+			<Text id="msgPatientCritical">
+				Patient in critical condition.
+			</Text>
+			<Text id="msgPatientWillDieIn">
+				Patient will die in %time% seconds.
+			</Text>
+		</Language>
+	</ItemType>
+
+</TranscendenceModule>

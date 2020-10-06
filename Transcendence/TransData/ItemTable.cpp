@@ -29,7 +29,7 @@
 
 #define TOTAL_COUNT_FILENAME				CONSTLIT("TransData_ItemCount.txt")
 
-static char *g_szTypeCode[] =
+static const char *g_szTypeCode[] =
 	{
 	"",
 	"Armor",
@@ -42,7 +42,7 @@ static char *g_szTypeCode[] =
 	"Misc",
 	};
 
-static char *g_szFreqCode[] =
+static const char *g_szFreqCode[] =
 	{
 	"",	"C", "UC", "R", "VR", "NR",
 	};
@@ -769,6 +769,7 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 					{
 					CDeviceClass *pDevice = pType->GetDeviceClass();
 					CWeaponClass *pWeapon = NULL;
+					CItem Ammo;
 
 					if (pDevice)
 						pWeapon = pDevice->AsWeaponClass();
@@ -776,12 +777,13 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 						{
 						pDevice = ItemCtx.GetVariantDevice();
 						pWeapon = pDevice->AsWeaponClass();
+						Ammo = CItem(pType, 1);
 						}
 
 					if (pWeapon)
 						{
 						CWeaponClass::SBalance Balance;
-						pWeapon->CalcBalance(ItemCtx, Balance);
+						pWeapon->CalcBalance(Ammo, Balance);
 						printf("%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f",
 								Balance.rBalance,
 								Balance.rBalance - Balance.rCost,

@@ -17,6 +17,7 @@ class CArmorClass
 	{
 	public:
 		static constexpr int TICKS_PER_UPDATE = 10;
+		static constexpr int DEFAULT_DECAY_PER_180 = 4;
 
 		enum ECachedHandlers
 			{
@@ -34,16 +35,16 @@ class CArmorClass
 			int iMaxMassKg;
 			};
 
-        struct SStdStats
-	        {
-	        int iHP;								//	HP for std armor at this level
-	        int iCost;								//	Std cost at this level
-	        int iRepairCost;						//	Cost to repair 1 hp
-	        int iInstallCost;						//	Cost to install
-	        int iMass;								//	Standard mass
-	        };
+		struct SStdStats
+			{
+			int iHP;								//	HP for std armor at this level
+			int iCost;								//	Std cost at this level
+			int iRepairCost;						//	Cost to repair 1 hp
+			int iInstallCost;						//	Cost to install
+			int iMass;								//	Standard mass
+			};
 
-        ~CArmorClass (void);
+		~CArmorClass (void);
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor);
@@ -65,13 +66,13 @@ class CArmorClass
 		CString GetShortName (void);
 		int GetStealth (void) const { return m_iStealth; }
 		DWORD GetUNID (void);
-        bool IsScalable (void) const { return (m_pScalable != NULL); }
+		bool IsScalable (void) const { return (m_pScalable != NULL); }
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
 
 		EDamageResults AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		void AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDisplayAttribute> *retList) const;
 		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
-        bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
+		bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (CItemCtx &ItemCtx, SUpdateCtx &Ctx, int &iPowerUsed, int &iPowerGenerated) const;
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
@@ -81,11 +82,11 @@ class CArmorClass
 		int GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower = NULL) const;
 		CString GetReference (CItemCtx &Ctx);
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
-        Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
+		Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
 		bool IsImmune (const CArmorItem &ArmorItem, SpecialDamageTypes iSpecialDamage) const;
 		bool IsReflective (const CArmorItem &ArmorItem, const DamageDesc &Damage, int *retiChance = NULL) const;
-		bool IsShieldInterfering (CItemCtx &ItemCtx);
-		ESetPropertyResults SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
+		bool IsShieldInterfering (CItemCtx &ItemCtx) const;
+		ESetPropertyResult SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
 		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);
 		bool UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &Regen, ERegenTypes iRegenType, int iTick);
 
@@ -96,39 +97,40 @@ class CArmorClass
 		static int GetStdEffectiveHP (CUniverse &Universe, int iLevel);
 		static int GetStdHP (int iLevel);
 		static int GetStdMass (int iLevel);
-        static const SStdStats &GetStdStats (int iLevel);
+		static const SStdStats &GetStdStats (int iLevel);
 
 	private:
 
-        struct SScalableStats
-            {
-            int iLevel;
+		struct SScalableStats
+			{
+			int iLevel;
 
-            int iHitPoints;
-            CDamageAdjDesc DamageAdj;
-            int iBlindingDamageAdj;
-            int iEMPDamageAdj;
-            int iDeviceDamageAdj;
+			int iHitPoints;
+			CDamageAdjDesc DamageAdj;
+			int iBlindingDamageAdj;
+			int iEMPDamageAdj;
+			int iDeviceDamageAdj;
 
 			ERegenTypes iRegenType;
-            CRegenDesc Regen;
+			CRegenDesc Regen;
 
-            CRegenDesc Decay;
-            CRegenDesc Distribute;
-            
-            CCurrencyAndValue RepairCost;
-            CCurrencyAndValue InstallCost;
+			CRegenDesc Decay;
+			CRegenDesc Distribute;
+			
+			CCurrencyAndValue RepairCost;
+			CCurrencyAndValue InstallCost;
 
-            DWORD fRadiationImmune:1;
-            DWORD fDisintegrationImmune:1;
-            DWORD fShatterImmune:1;
-            };
+			DWORD fRadiationImmune:1;
+			DWORD fDisintegrationImmune:1;
+			DWORD fShatterImmune:1;
+			};
 
 		CArmorClass (void);
 
-        ALERROR BindScaledParams (SDesignLoadCtx &Ctx);
+		ALERROR BindScaledParams (SDesignLoadCtx &Ctx);
 		int CalcArmorDamageAdj (const CArmorItem &ArmorItem, const DamageDesc &Damage) const;
 		int CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance &retBalance) const;
+		int CalcBalance (const CArmorItem &ArmorItem) const { CArmorItem::SBalance Balance; return CalcBalance(ArmorItem, Balance); }
 		Metric CalcBalanceDamageAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceDamageEffectAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdMass) const;
@@ -136,9 +138,10 @@ class CArmorClass
 		Metric CalcBalanceRegen (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceRepair (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceSpecial (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
+		Metric CalcDecay180 (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		ICCItemPtr FindItemProperty (const CArmorItem &ArmorItem, const CString &sProperty) const;
 		void GenerateScaledStats (void);
-        inline int GetDamageAdj (const CArmorItem &ArmorItem, DamageTypes iDamage) const;
+		inline int GetDamageAdj (const CArmorItem &ArmorItem, DamageTypes iDamage) const;
 		int GetDamageAdj (const CArmorItem &ArmorItem, const DamageDesc &Damage) const;
 		int GetDamageEffectiveness (const CArmorItem &ArmorItem, CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
 		inline int GetInstallCost (const CArmorItem &ArmorItem) const;
@@ -147,7 +150,7 @@ class CArmorClass
 		int GetMaxHP (const CArmorItem &ArmorItem, bool bForceComplete = false) const;
 		CurrencyValue GetRepairCost (const CArmorItem &ArmorItem, int iHPToRepair = 1) const;
 		int GetRepairLevel (const CArmorItem &ArmorItem) const;
-        const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
+		const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
 		CUniverse &GetUniverse (void) const;
 
 		Metric CalcRegen180 (CItemCtx &ItemCtx) const;
@@ -158,7 +161,7 @@ class CArmorClass
 
 		static bool IsImmune (const SScalableStats &Stats, const CItemEnhancementStack &Enhancements, SpecialDamageTypes iSpecialDamage);
 
-        SScalableStats m_Stats;                 //  Base stats capable of being scaled
+		SScalableStats m_Stats;                 //  Base stats capable of being scaled
 
 		int m_iRepairTech;						//	Tech required to repair
 		int m_iArmorCompleteBonus;				//	Extra HP if armor is complete
@@ -191,8 +194,8 @@ class CArmorClass
 
 		CItemType *m_pItemType;					//	Item for this armor
 
-        int m_iScaledLevels;                    //  Number of levels above first
-        SScalableStats *m_pScalable;            //  Params for higher level versions of this armor
+		int m_iScaledLevels;                    //  Number of levels above first
+		SScalableStats *m_pScalable;            //  Params for higher level versions of this armor
 
 		SEventHandlerDesc m_CachedEvents[evtCount];
 
@@ -205,47 +208,48 @@ class CArmorClass
 //  the number and distribution of armor segmens for a ship.
 
 class CShipArmorSegmentDesc
-    {
-    public:
-        bool AngleInSegment (int iAngle) const;
-        ALERROR Bind (SDesignLoadCtx &Ctx);
-        bool CreateArmorItem (CItem *retItem, CString *retsError = NULL) const;
-        inline CArmorClass *GetArmorClass (void) const { return m_pArmor; }
+	{
+	public:
+		bool AngleInSegment (int iAngle) const;
+		ALERROR Bind (SDesignLoadCtx &Ctx);
+		bool CreateArmorItem (CItem *retItem, CString *retsError = NULL) const;
+		CArmorClass *GetArmorClass (void) const { return m_pArmor; }
 		CItem GetArmorItem (void) const;
-        inline int GetCenterAngle (void) const { return AngleMod(m_iStartAt + m_iSpan / 2); }
-        DWORD GetCriticalArea (void) const { return m_dwAreaSet; }
-        int GetLevel (void) const;
-        inline int GetSpan (void) const { return m_iSpan; }
-        inline int GetStartAngle (void) const { return m_iStartAt; }
-        ALERROR Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement);
-        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		int GetCenterAngle (void) const { return AngleMod(m_iStartAt + m_iSpan / 2); }
+		DWORD GetCriticalArea (void) const { return m_dwAreaSet; }
+		int GetLevel (void) const;
+		int GetSpan (void) const { return m_iSpan; }
+		int GetStartAngle (void) const { return m_iStartAt; }
+		ALERROR Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 
-    private:
-        static DWORD ParseNonCritical (const CString &sList);
+	private:
+		static DWORD ParseNonCritical (const CString &sList);
 
 		int m_iStartAt;						//	Start of section in degrees
 		int m_iSpan;						//	Size of section in degrees
 		CArmorClassRef m_pArmor;			//	Type of armor for hull
-        int m_iLevel;                       //  For scalable armor
+		int m_iLevel;                       //  For scalable armor
 		CRandomEnhancementGenerator m_Enhanced;//	Mods
 		DWORD m_dwAreaSet;					//	Areas that this section protects
-    };
+	};
 
 class CShipArmorDesc
-    {
-    public:
-        void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
-        ALERROR Bind (SDesignLoadCtx &Ctx);
-        Metric CalcMass (void) const;
-        inline int GetCount (void) const { return m_Segments.GetCount(); }
-        inline const CShipArmorSegmentDesc &GetSegment (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < m_Segments.GetCount()); return m_Segments[iIndex]; }
-        int GetSegmentAtAngle (int iAngle) const;
-        CString GetSegmentName (int iIndex) const;
-        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+	{
+	public:
+		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
+		ALERROR Bind (SDesignLoadCtx &Ctx);
+		Metric CalcMass (void) const;
+		int GetCount (void) const { return m_Segments.GetCount(); }
+		const CShipArmorSegmentDesc &GetSegment (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < m_Segments.GetCount()); return m_Segments[iIndex]; }
+		int GetSegmentAtAngle (int iAngle) const;
+		CString GetSegmentName (int iIndex) const;
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		bool IsEmpty (void) const { return (m_Segments.GetCount() == 0); }
 
-    private:
-        TArray<CShipArmorSegmentDesc> m_Segments;
-    };
+	private:
+		TArray<CShipArmorSegmentDesc> m_Segments;
+	};
 
 //  Installed Armor ------------------------------------------------------------
 //
@@ -262,7 +266,7 @@ class CInstalledArmor
 		CArmorItem AsArmorItem (void) { return m_pItem->AsArmorItemOrThrow(); }
 		inline EDamageResults AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
-        bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
+		bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		bool ConsumedPower (void) const { return (m_fConsumePower ? true : false); }
 		void FinishInstall (CSpaceObject &Source);
 		int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
@@ -272,7 +276,7 @@ class CInstalledArmor
 		int GetHitPoints (void) const { return m_iHitPoints; }
 		int GetHitPointsPercent (CSpaceObject *pSource);
 		CItem *GetItem (void) const { return m_pItem; }
-        inline int GetLevel (void) const;
+		inline int GetLevel (void) const;
 		inline int GetMaxHP (CSpaceObject *pSource) const;
 		int GetSect (void) const { return m_iSect; }
 		CSpaceObject *GetSource (void) const { return m_pSource; }

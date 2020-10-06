@@ -46,6 +46,52 @@ int CStationEncounterDesc::CalcAffinity (const CTopologyNode &Node) const
 	return (ftCommon * iWeight / 1000);
 	}
 
+int CStationEncounterDesc::CalcFrequencyForNode (const CTopologyNode &Node) const
+
+//	CalcFrequencyForNode
+//
+//	Computes the base chance for this station to appear at the given node,
+//	excluding any limits.
+
+	{
+	//  Initialized based on level
+
+	int iFreq = GetFrequencyByLevel(Node.GetLevel());
+
+	//	If we have system criteria, then make sure we are allowed to be in
+	//  this system.
+
+	const CTopologyNodeCriteria *pSystemCriteria;
+	if (iFreq > 0 && HasSystemCriteria(&pSystemCriteria))
+		{
+		//  Compute the criteria for this node and cache it.
+
+		CTopologyNodeCriteria::SCtx Ctx(Node.GetTopology());
+		if (!pSystemCriteria->Matches(Ctx, Node))
+			iFreq = 0;
+		}
+
+	//	Adjust based on distance criteria.
+
+	if (iFreq > 0 && !GetDistanceCriteria().IsEmpty())
+		{
+		int iDist = CStationEncounterCtx::CalcDistanceToCriteria(Node, GetDistanceCriteria());
+		iFreq = iFreq * GetFrequencyByDistance(iDist) / ftCommon;
+		}
+
+	//	Adjust based on affinity
+
+	int iAffinity;
+	if (iFreq > 0 && (iAffinity = CalcAffinity(Node)) < ftCommon)
+		{
+		iFreq = iFreq * iAffinity / ftCommon;
+		}
+
+	//	Done
+
+	return iFreq;
+	}
+
 int CStationEncounterDesc::CalcLevelFromFrequency (void) const
 
 //	CalcLevelFromFrequency
@@ -239,6 +285,14 @@ bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Origina
 			}
 		}
 
+	//	Max count in system. Supports a limit > 1.
+
+	if (Override.FindAttribute(MAX_IN_SYSTEM_ATTRIB, &sAttrib))
+		{
+		m_bMaxCountLimit = false;
+		m_iMaxCountInSystem = Max(1, strToInt(sAttrib, 0));
+		}
+
 	//	System criteria
 
 	CXMLElement *pCriteria = Override.GetContentElementByTag(SYSTEM_CRITERIA_TAG);
@@ -247,14 +301,14 @@ bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Origina
 
 	if (pCriteria)
 		{
-		if (CTopologyNode::ParseCriteria(pCriteria, &m_SystemCriteria, retsError) != NOERROR)
+		if (m_SystemCriteria.Parse(*pCriteria, retsError) != NOERROR)
 			return false;
 
 		m_bSystemCriteria = true;
 		}
 	else if (Override.FindAttribute(SYSTEM_CRITERIA_ATTRIB, &sAttrib))
 		{
-		if (CTopologyNode::ParseCriteria(sAttrib, &m_SystemCriteria, retsError) != NOERROR)
+		if (m_SystemCriteria.Parse(sAttrib, retsError) != NOERROR)
 			return false;
 
 		m_bSystemCriteria = true;
@@ -398,14 +452,14 @@ ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	if (pCriteria)
 		{
-		if (error = CTopologyNode::ParseCriteria(pCriteria, &m_SystemCriteria, &Ctx.sError))
+		if (error = m_SystemCriteria.Parse(*pCriteria, &Ctx.sError))
 			return error;
 
 		m_bSystemCriteria = true;
 		}
 	else if (pDesc->FindAttribute(SYSTEM_CRITERIA_ATTRIB, &sAttrib))
 		{
-		if (error = CTopologyNode::ParseCriteria(sAttrib, &m_SystemCriteria, &Ctx.sError))
+		if (error = m_SystemCriteria.Parse(sAttrib, &Ctx.sError))
 			return error;
 
 		m_bSystemCriteria = true;
@@ -471,12 +525,12 @@ void CStationEncounterDesc::InitLevelFrequency (CTopology &Topology)
 		//	Loop over all nodes and check to see if we appear at the node.
 		//	If we do, we mark that level 'common.'
 
-		CTopologyNode::SCriteriaCtx Ctx(Topology);
+		CTopologyNodeCriteria::SCtx Ctx(Topology);
 		for (i = 0; i < Topology.GetTopologyNodeCount(); i++)
 			{
 			CTopologyNode *pNode = Topology.GetTopologyNode(i);
 
-			if (pNode->MatchesCriteria(Ctx, m_SystemCriteria))
+			if (m_SystemCriteria.Matches(Ctx, *pNode))
 				::SetFrequencyByLevel(m_sLevelFrequency, pNode->GetLevel(), ftCommon);
 			}
 

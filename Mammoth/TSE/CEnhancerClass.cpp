@@ -65,7 +65,8 @@ bool CEnhancerClass::AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTa
 		//	the first variant (otherwise we would default to the selected
 		//	variant)
 
-		int iType = pTarget->GetDamageType(CItemCtx());
+		CItemCtx ItemCtx;
+		int iType = pTarget->GetDamageType(ItemCtx);
 		iBonus = (iType != -1 ? m_iDamageAdjArray[iType] : 0);
 		}
 	else
@@ -125,7 +126,8 @@ int CEnhancerClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, C
 	if (!pDevice->IsEnabled())
 		return 0;
 
-	const SScalableStats *pStats = GetStats(CItemCtx(pSource, pDevice));
+	CItemCtx ItemCtx(pSource, pDevice);
+	const SScalableStats *pStats = GetStats(ItemCtx);
 	if (pStats == NULL)
 		return m_iPowerUse;
 
@@ -363,8 +365,8 @@ ALERROR CEnhancerClass::InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	//	We need to fill all levels
 
-    int iBaseLevel = pType->GetLevel();
-    m_iLevels = (pType->GetMaxLevel() - iBaseLevel) + 1;
+	int iBaseLevel = pType->GetLevel();
+	m_iLevels = (pType->GetMaxLevel() - iBaseLevel) + 1;
 
 	//	Allocate the structure and initialize iLevel to -1 to indicate that we have 
 	//	not yet initialized it.
@@ -443,7 +445,7 @@ bool CEnhancerClass::OnAccumulateEnhancements (CItemCtx &Device, CInstalledArmor
 
 	//	New style
 
-	return pStats->Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
+	return pStats->Enhancements.Accumulate(Device.GetItem().GetLevel(), *pTarget->GetItem(), *pEnhancements, &EnhancementIDs);
 	}
 
 bool CEnhancerClass::OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
@@ -464,5 +466,5 @@ bool CEnhancerClass::OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevic
 
 	//	New style
 
-	return pStats->Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
+	return pStats->Enhancements.Accumulate(Device.GetItem().GetLevel(), *pTarget->GetItem(), *pEnhancements, &EnhancementIDs);
 	}

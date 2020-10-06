@@ -176,7 +176,7 @@ ALERROR CUserSettings::LoadCommandLine (char *pszCmdLine, CString *retsError)
 	ALERROR error;
 	int i;
 
-	char *argv[2];
+	const char *argv[2];
 	argv[0] = "Application";
 	argv[1] = pszCmdLine;
 	CXMLElement *pCmdLine;

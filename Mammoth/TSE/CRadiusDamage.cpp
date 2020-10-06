@@ -64,6 +64,12 @@ ALERROR CRadiusDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CRadiusDama
 
 	pArea->m_pSovereign = Ctx.Source.GetSovereign();
 
+	//	Initialize properties
+
+	CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+	if (pWeaponType)
+		pWeaponType->InitObjectData(*pArea, pArea->GetData());
+
 	//	Create a painter instance
 
 	pArea->m_pPainter = Ctx.pDesc->CreateEffectPainter(Ctx);
@@ -162,10 +168,11 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		//	Setup context
 
 		SDamageCtx DamageCtx(pObj,
-				m_pDesc,
+				*m_pDesc,
 				m_pEnhancements,
 				m_Source,
 				this,
+				0.0,
 				AngleMod(iAngle + 180),
 				vHitPos,
 				iDamage);
@@ -409,7 +416,7 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	m_iTick++;
 
-	SEffectUpdateCtx EffectCtx;
+	SEffectUpdateCtx EffectCtx(GetUniverse());
 	EffectCtx.pSystem = GetSystem();
 	EffectCtx.pObj = this;
 	EffectCtx.iTick = m_iTick;

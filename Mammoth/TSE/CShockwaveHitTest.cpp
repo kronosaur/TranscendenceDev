@@ -284,10 +284,11 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 						if (!pObj->IsDestroyed())
 							{
 							SDamageCtx DamageCtx(pObj,
-									Ctx.pDamageDesc,
+									*Ctx.pDamageDesc,
 									Ctx.pEnhancements,
 									Ctx.Attacker,
 									Ctx.pObj,
+									0.0,
 									AngleMod(SegHit[j].iAngle + 180),
 									SegHit[j].vHitPos);
 

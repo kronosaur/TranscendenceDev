@@ -234,7 +234,6 @@
 					</GetParameters>
 				</Events>
 			</Orb>
-			
 			<Orb	style=			"smooth"
 					animate=		"fade"
 					
@@ -246,6 +245,7 @@
 					<GetParameters>
 						(block (
 							(damageHP (@ gData 'damageHP))
+							(weaponUNID (@ gData 'weaponUNID))
 							)
 							{
 								radius: (if (= damageHP 0) 10 (mathScale damageHP 5 64 20 50 50))

@@ -12,6 +12,7 @@
 enum MessageTypes
 	{
 	msgNone =						0,	//	None
+
 	msgAttack =						1,	//	Order to attack (pParam1 is target)
 	msgDestroyBroadcast =			2,	//	Broadcast order to destroy target (pParam1 is target)
 	msgHitByFriendlyFire =			3,	//	OBSOLETE: Hit by friendly fire (pParam1 is attacker)
@@ -35,6 +36,10 @@ enum MessageTypes
 	msgDestroyedByFriendlyFire =	21,	//	OBSOLETE: We were destroyed by friendly fire (pParam1 is attacker)
 	msgDestroyedByHostileFire =		22,	//	OBSOLETE: We were destroyed by hostile fire (pParam is attacker)
 	msgBaseDestroyedByTarget =		23,	//	Our base was destroyed by target (pParam is target)
+	msgOnAsteroidExplored =			24,	//	Sender has been successfully explored by player
+	msgOnPlayerHint =				25, //	Sender has a hint for the player
+
+	msgCount =						26,
 	};
 
 enum ResponseTypes

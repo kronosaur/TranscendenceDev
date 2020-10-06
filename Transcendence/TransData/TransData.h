@@ -26,6 +26,46 @@ class CHost : public CUniverse::IHost
 		mutable TArray<CG16bitFont> m_Fonts;
 	};
 
+class CConsole : public ILog
+	{
+	public:
+		virtual void Print (const CString &sLine) const { ClearLine(); printf("%s\n", (LPSTR)sLine); }
+		virtual void Progress (const CString &sLine, int iPercent = -1) const { ClearLine(); printf("%s\r", (LPSTR)sLine); m_iClearCount = sLine.GetLength(); }
+
+	private:
+		void ClearLine (void) const
+			{
+			if (m_iClearCount) 
+				{
+				printf("%s\r", (LPSTR)strRepeat(CONSTLIT(" "), m_iClearCount));
+				m_iClearCount = 0;
+				}
+			}
+
+		mutable int m_iClearCount = 0;
+	};
+
+class ITransDataCommand
+	{
+	public:
+		ITransDataCommand (ILog &Console) :
+				m_Console(Console)
+			{ }
+
+		virtual ~ITransDataCommand (void) { }
+		virtual bool Run (void) { return true; }
+		virtual bool SetOptions (const CXMLElement &CmdLine) { return true; }
+
+	protected:
+		bool Error (const CString &sError) const { m_Console.Print(strPatternSubst(CONSTLIT("ERROR: %s"))); return false; }
+		ILog &GetConsole (void) { return m_Console; }
+		void Print (const CString &sLine) const { m_Console.Print(sLine); }
+		void Progress (const CString &sLine) const { m_Console.Progress(sLine); }
+
+	private:
+		ILog &m_Console;
+	};
+
 //	Used by sim tables
 
 class ItemInfo
@@ -64,21 +104,18 @@ class StationInfo
 
 struct SDesignTypeInfo
 	{
-	SDesignTypeInfo (void) :
-			rPerGameMedianCount(0.0),
-			rPerGameMeanCount(0.0)
-		{ }
-
-	double rPerGameMedianCount;				//	Median encountered per game
-	double rPerGameMeanCount;				//	Mean encountered per game
-	CString sDistribution;					//	"1 (5%); 2 (10%); 3 (70%); 4 (10%); 5 (5%)"
+	double rPerGameMedianCount = 0.0;				//	Median encountered per game
+	double rPerGameMeanCount = 0.0;					//	Mean encountered per game
+	int iPerGameMinCount = 0;						//	Minimum ever encountered in a game
+	int iPerGameMaxCount = 0;						//	Maximum ever encountered in a game
+	CString sDistribution;							//	"1 (5%); 2 (10%); 3 (70%); 4 (10%); 5 (5%)"
 	};
 
 typedef TSortMap<DWORD, SDesignTypeInfo> CDesignTypeStats;
 
 //	Functions
 
-char *FrequencyChar (int iFreq);
+const char *FrequencyChar (int iFreq);
 void GetCCTransDataLibrary (SPrimitiveDefTable *retpTable);
 void ShowHelp (CXMLElement *pCmdLine);
 void MarkItemsKnown (CUniverse &Universe);
@@ -86,6 +123,7 @@ bool OutputImage (CG32bitImage &Image, const CString &sFilespec);
 ALERROR LoadDesignTypeStats (DWORD dwAventureUNID, CDesignTypeStats *retStats);
 
 void Decompile (const CString &sDataFile, CXMLElement *pCmdLine);
+void DebugMarkers (CXMLElement *pCmdLine);
 void DoEffectPerformanceTest (CUniverse &Universe, CXMLElement *pCmdLine);
 void DoRandomNumberTest (void);
 void DoSmokeTest (CUniverse &Universe, CXMLElement *pCmdLine);
@@ -107,6 +145,7 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateRandomItemTables (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateReference (CUniverse &Universe, CXMLElement *pCmdLine);
+void GenerateScript (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateShipImage (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateShipImageChart (CUniverse &Universe, CXMLElement *pCmdLine);

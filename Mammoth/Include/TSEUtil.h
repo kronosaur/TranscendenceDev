@@ -143,7 +143,7 @@ inline void SetProgramError (const CString &sError) { }
 #ifdef DEBUG_PERFORMANCE
 extern DWORD g_dwPerformanceTimer;
 inline void DebugStartTimer (void) { g_dwPerformanceTimer = ::GetTickCount(); }
-inline void DebugStopTimer (char *szTiming)
+inline void DebugStopTimer (const char *szTiming)
 	{
 	char szBuffer[1024];
 	wsprintf(szBuffer, "%s: %d ms\n", szTiming, ::GetTickCount() - g_dwPerformanceTimer);
@@ -151,7 +151,7 @@ inline void DebugStopTimer (char *szTiming)
 	}
 #else
 inline void DebugStartTimer (void) { }
-inline void DebugStopTimer (char *szTiming) { }
+inline void DebugStopTimer (const char *szTiming) { }
 #endif
 
 #define TRY(f)	{try { error = f; } catch (...) { error = ERR_FAIL; }}
@@ -443,13 +443,8 @@ class CCurrencyBlock
 
 struct SEventHandlerDesc
 	{
-    SEventHandlerDesc (void) :
-            pExtension(NULL),
-            pCode(NULL)
-        { }
-
-	CExtension *pExtension;
-	ICCItem *pCode;
+	CExtension *pExtension = NULL;
+	ICCItem *pCode = NULL;
 	};
 
 class CEventHandler
@@ -504,51 +499,6 @@ class CGlobalEventCache
 		TArray<SEntry> m_Cache;
 	};
 
-template <typename EVENT_ENUM, size_t N> class TEventHandlerCache
-	{
-	public:
-		bool FindEventHandler (EVENT_ENUM iEvent, SEventHandlerDesc *retEvent = NULL) const
-			{
-			if (!m_Cache[iEvent].pCode)
-				return false;
-
-			if (retEvent)
-				{
-				retEvent->pExtension = m_Cache[iEvent].pExtension;
-				retEvent->pCode = m_Cache[iEvent].pCode;
-				}
-
-			return true;
-			}
-
-		void Init (CDesignType *pType, LPSTR pEvents[N])
-			{
-			for (int i = 0; i < N; i++)
-				{
-				SEventHandlerDesc Handler;
-				if (pType->FindEventHandler(CString(pEvents[i], -1, true), &Handler))
-					{
-					m_Cache[i].pExtension = Handler.pExtension;
-					m_Cache[i].pCode = (Handler.pCode ? Handler.pCode->Reference() : NULL);
-					}
-				else
-					{
-					m_Cache[i].pExtension = NULL;
-					m_Cache[i].pCode = NULL;
-					}
-				}
-			}
-
-	private:
-		struct SEntry
-			{
-			CExtension *pExtension = NULL;
-			ICCItemPtr pCode;
-			};
-
-		SEntry m_Cache[N];
-	};
-
 enum DestructionTypes
 	{
 	removedFromSystem				= 0,
@@ -576,7 +526,7 @@ enum DestructionTypes
 class CDamageSource
 	{
 	public:
-		CDamageSource (void) : m_pSource(NULL), m_iCause(removedFromSystem), m_dwFlags(0), m_pSecondarySource(NULL) { }
+		CDamageSource (void) { }
 		CDamageSource (CSpaceObject *pSource, DestructionTypes iCause = killedByDamage, CSpaceObject *pSecondarySource = NULL, const CString &sSourceName = NULL_STR, DWORD dwSourceFlags = 0);
 
 		bool CanHit (CSpaceObject *pTarget) const;
@@ -584,7 +534,6 @@ class CDamageSource
 		DestructionTypes GetCause (void) const { return m_iCause; }
 		CString GetDamageCauseNounPhrase (DWORD dwFlags);
 		CSpaceObject *GetObj (void) const;
-		DWORD GetObjID (void) const;
 		CSpaceObject *GetOrderGiver (void) const;
 		CSpaceObject *GetSecondaryObj (void) const { return m_pSecondarySource; }
 		const CString &GetSourceName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwSourceNameFlags; return m_sSourceName; }
@@ -593,6 +542,7 @@ class CDamageSource
 		bool HasDamageCause (void) const { return ((m_pSource && !IsObjID()) || !m_sSourceName.IsBlank()); }
 		bool HasSource (void) const;
 		bool IsAutomatedWeapon (void) const { return ((m_dwFlags & FLAG_IS_AUTOMATED_WEAPON) ? true : false); }
+		bool IsAngryAt (const CSpaceObject &Obj, const CSovereign *pOurSovereign = NULL) const;
 		bool IsCausedByEnemyOf (CSpaceObject *pObj) const;
 		bool IsCausedByFriendOf (CSpaceObject *pObj) const;
 		bool IsCausedByNonFriendOf (CSpaceObject *pObj) const;
@@ -622,20 +572,22 @@ class CDamageSource
 			FLAG_OBJ_ID						= 0x00000008,	//	m_pSource is an ID, not a pointer
 
 			FLAG_IS_AUTOMATED_WEAPON		= 0x00000010,	//	Source is a missile-defense system.
+			FLAG_CANNOT_HIT_FRIENDS			= 0x00000020,	//	Source cannot hit friends
 			};
 
+		DWORD GetObjID (void) const;
 		DWORD GetRawObjID (void) const { return (DWORD)m_pSource; }
 		bool IsObjPointer (void) const { return (m_pSource && !IsObjID()); }
 		bool IsObjID (void) const { return ((m_dwFlags & FLAG_OBJ_ID) == FLAG_OBJ_ID); }
 
-		CSpaceObject *m_pSource;
-		DestructionTypes m_iCause;
-		DWORD m_dwFlags;
+		CSpaceObject *m_pSource = NULL;
+		DestructionTypes m_iCause = removedFromSystem;
+		DWORD m_dwFlags = 0;
 
 		CString m_sSourceName;
-		DWORD m_dwSourceNameFlags;
+		DWORD m_dwSourceNameFlags = 0;
 
-		CSpaceObject *m_pSecondarySource;
+		CSpaceObject *m_pSecondarySource = NULL;
 
 		static CDamageSource m_Null;
 	};
@@ -643,10 +595,7 @@ class CDamageSource
 class CDamageAdjDesc
 	{
 	public:
-		enum EConstants
-			{
-			MAX_DAMAGE_ADJ = 100000,
-			};
+		static constexpr int MAX_DAMAGE_ADJ = 100000;
 
 		CDamageAdjDesc (void) : m_pDefault(NULL)
 			{ }
@@ -764,10 +713,21 @@ class CRandomEntryResults
 class IElementGenerator
 	{
 	public:
+		struct STableStats
+			{
+			TArray<int> Counts;
+			};
+
 		struct SCtx
 			{
+			CUniverse &GetUniverse() const { return *g_pUniverse; }
+
 			const CTopology *pTopology = NULL;
 			const CTopologyNode *pNode = NULL;
+
+			STableStats *pTableCounts = NULL;
+
+			bool bDebug = false;
 			};
 
 		struct SResult
@@ -788,6 +748,7 @@ class IElementGenerator
 
 		virtual ~IElementGenerator (void) { }
 
+		virtual void DebugDump (SCtx &Ctx) const { }
 		virtual void Generate (SCtx &Ctx, TArray<SResult> &retResults) const = 0;
 		void Generate (SCtx &Ctx, TArray<CXMLElement *> &retResults) const;
 
@@ -978,7 +939,7 @@ class CSpaceObjectPool
 
 		SNode *AllocObj (SNode *pList, CSpaceObject *pObj);
 		void DeleteAll (void);
-		SNode *DeleteObj (SNode *pList, CSpaceObject *pObj, bool *retbDeleted = false);
+		SNode *DeleteObj (SNode *pList, CSpaceObject *pObj, bool *retbDeleted = NULL);
 		bool FindObj (SNode *pList, CSpaceObject *pObj) const;
 		void Init (int iSize);
 
@@ -1490,6 +1451,32 @@ class CDeviceStorage
 
 //	IListData ------------------------------------------------------------------
 
+class CTileData
+	{
+	public:
+		const CString &GetDesc (void) const { return m_sDesc; }
+		int GetHeight (void) const { return m_cyHeight; }
+		const CG32bitImage *GetImage (void) const { return m_pImage; }
+		Metric GetImageScale (void) const { return m_rImageScale; }
+		const RECT &GetImageSrc (void) const { return m_rcImageSrc; }
+		const CString &GetTitle (void) const { return m_sTitle; }
+		void SetDesc (const CString &sValue) { m_sDesc = sValue; }
+		void SetHeight (int iValue) { m_cyHeight = iValue; }
+		void SetImage (const CG32bitImage *pImage, const RECT &rcImageSrc, Metric rImageScale = 1.0)
+			{ m_pImage = pImage; m_rcImageSrc = rcImageSrc; m_rImageScale = rImageScale; }
+		void SetTitle (const CString &sValue) { m_sTitle = sValue; }
+
+	private:
+		CString m_sTitle;
+		CString m_sDesc;
+
+		const CG32bitImage *m_pImage = NULL;
+		RECT m_rcImageSrc = { 0 };
+		Metric m_rImageScale = 1.0;
+
+		int m_cyHeight = 0;
+	};
+
 extern const CItem g_DummyItem;
 extern CItemListManipulator g_DummyItemListManipulator;
 
@@ -1499,19 +1486,22 @@ class IListData
 		virtual ~IListData (void) { }
 		virtual void DeleteAtCursor (int iCount) { }
 		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) { return false; }
+		virtual ICCItemPtr GetAsCCItem (void) const { return ICCItemPtr::Nil(); }
 		virtual int GetCount (void) const { return 0; }
 		virtual int GetCursor (void) const { return -1; }
-		virtual CString GetDescAtCursor (void) { return NULL_STR; }
-		virtual ICCItem *GetEntryAtCursor (void) { return CCodeChain::CreateNil(); }
-		virtual const CItem &GetItemAtCursor (void) { return g_DummyItem; }
+		virtual CString GetDescAtCursor (void) const { return NULL_STR; }
+		virtual ICCItem *GetEntryAtCursor (void) const { return CCodeChain::CreateNil(); }
+		virtual CTileData GetEntryDescAtCursor (void) const { return CTileData(); }
+		virtual const CItem &GetItemAtCursor (void) const { return g_DummyItem; }
 		virtual CItemListManipulator &GetItemListManipulator (void) { return g_DummyItemListManipulator; }
-		virtual CSpaceObject *GetSource (void) { return NULL; }
-		virtual CString GetTitleAtCursor (void) { return NULL_STR; }
+		virtual CSpaceObject *GetSource (void) const { return NULL; }
+		virtual CString GetTitleAtCursor (void) const { return NULL_STR; }
 		virtual bool IsCursorValid (void) const { return false; }
 		virtual bool MoveCursorBack (void) { return false; }
 		virtual bool MoveCursorForward (void) { return false; }
 		virtual void PaintImageAtCursor (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, Metric rScale) { }
 		virtual void ResetCursor (void) { }
+		virtual void ResetCursor (const CItemCriteria &EnabledItems) { ResetCursor(); }
 		virtual void SetCursor (int iCursor) { }
 		virtual void SetFilter (const CItemCriteria &Filter) { }
 		virtual void SyncCursor (void) { }

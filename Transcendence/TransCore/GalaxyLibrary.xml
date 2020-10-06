@@ -241,17 +241,18 @@
 	<!ENTITY stStarClassA5				"0x0002007A">
 	<!ENTITY stStarClassA0				"0x0002007B">
 	
-	<!-- 0080-008F OVOID ASTEROIDS -->
+	<!-- 0080-008F OVOID ASTEROIDS (OLD SCALE) -->
 	
 	<!ENTITY rsOvoidAsteroids			"0x00020080">
-	<!ENTITY stOvoidAsteroidSizeA		"0x00020081">
-	<!ENTITY stOvoidAsteroidSizeB		"0x00020082">
-	<!ENTITY stOvoidAsteroidSizeC		"0x00020083">
-	<!ENTITY stOvoidAsteroidSizeD		"0x00020084">
-	<!ENTITY stOvoidPlanetoidSizeE		"0x00020085">
-	<!ENTITY stOvoidPlanetoidSizeF		"0x00020086">
-	<!ENTITY stOvoidPlanetoidSizeG		"0x00020087">
-	<!ENTITY tbOvoidTables				"0x00020088">
+	<!ENTITY stOvoidAsteroidSizeAComp	"0x00020081">
+	<!ENTITY stOvoidAsteroidSizeBComp	"0x00020082">
+	<!ENTITY stOvoidAsteroidSizeCComp	"0x00020083">
+	<!ENTITY stOvoidAsteroidSizeDComp	"0x00020084">
+	<!ENTITY stOvoidPlanetoidSizeEComp	"0x00020085">
+	<!ENTITY stOvoidPlanetoidSizeFComp	"0x00020086">
+	<!ENTITY stOvoidPlanetoidSizeGComp	"0x00020087">
+	<!ENTITY tbOvoidTablesComp			"0x00020088">
+	<!ENTITY baOvoidAsteroid			"0x00020089">
 	
 	<!-- 0090-00AF SYSTEM BACKGROUNDS -->
 	
@@ -281,6 +282,7 @@
 	<!ENTITY rsIcePlanetoidSizeE		"0x000200D4">
 	<!ENTITY rsIcePlanetoidSizeF		"0x000200D5">
 	<!ENTITY rsIcePlanetoidSizeG		"0x000200D6">
+	<!ENTITY baIceAsteroid				"0x000200D7">
 	
 	<!-- 00E0-00EF METALLIC ASTEROIDS -->
 	
@@ -291,6 +293,7 @@
 	<!ENTITY rsMetallicPlanetoidSizeE	"0x000200E4">
 	<!ENTITY rsMetallicPlanetoidSizeF	"0x000200E5">
 	<!ENTITY rsMetallicPlanetoidSizeG	"0x000200E6">
+	<!ENTITY baMetallicAsteroid			"0x000200E7">
 	
 	<!-- 00F0-00FF PRIMORDIAL ASTEROIDS -->
 	
@@ -301,6 +304,7 @@
 	<!ENTITY rsPrimordialPlanetoidSizeE	"0x000200F4">
 	<!ENTITY rsPrimordialPlanetoidSizeF	"0x000200F5">
 	<!ENTITY rsPrimordialPlanetoidSizeG	"0x000200F6">
+	<!ENTITY baPrimordialAsteroid		"0x000200F7">
 	
 	<!-- 0100-010F ROCKY ASTEROIDS -->
 	
@@ -311,6 +315,7 @@
 	<!ENTITY rsRockyPlanetoidSizeE		"0x00020104">
 	<!ENTITY rsRockyPlanetoidSizeF		"0x00020105">
 	<!ENTITY rsRockyPlanetoidSizeG		"0x00020106">
+	<!ENTITY baRockyAsteroid			"0x00020107">
 	
 	<!-- 0110-011F VOLCANIC ASTEROIDS -->
 	
@@ -321,12 +326,13 @@
 	<!ENTITY rsVolcanicPlanetoidSizeE	"0x00020114">
 	<!ENTITY rsVolcanicPlanetoidSizeF	"0x00020115">
 	<!ENTITY rsVolcanicPlanetoidSizeG	"0x00020116">
+	<!ENTITY baVolcanicAsteroid			"0x00020117">
 
 	<!-- 0120-013F ORE STONE ASTEROIDS -->
 
 	<!ENTITY tbOreStoneTables			"0x00020120">
 	<!ENTITY rsOreStoneAsteroids		"0x00020121">
-	<!ENTITY baOreStoneAsteroid			"0x00020122">
+	<!ENTITY baOreStoneAsteroidOld		"0x00020122">
 	<!ENTITY stOreStoneAsteroidSizeA	"0x00020123">
 	<!ENTITY stOreStoneAsteroidSizeB	"0x00020124">
 	<!ENTITY stOreStoneAsteroidSizeC	"0x00020125">
@@ -335,6 +341,75 @@
 	<!ENTITY stOreStonePlanetoidSizeE	"0x00020128">
 	<!ENTITY stOreStonePlanetoidSizeF	"0x00020129">
 	<!ENTITY stOreStonePlanetoidSizeG	"0x0002012A">
+	<!ENTITY baOreStoneAsteroid			"0x0002012B">
+
+	<!-- 0140-015F UNDERGROUND CAVERNS -->
+
+	<!ENTITY baUndergroundCavern		"0x00020140">
+	<!ENTITY rsUndergroundCavernIce		"0x00020141">
+	<!ENTITY rsUndergroundCavernMetallic	"0x00020142">
+	<!ENTITY rsUndergroundCavernPrimordial	"0x00020143">
+	<!ENTITY rsUndergroundCavernRocky	"0x00020144">
+	<!ENTITY rsUndergroundCavernVolcanic	"0x00020145">
+	<!ENTITY baLootCavern				"0x00020146">
+	<!ENTITY ovLootCavernIce			"0x00020147">
+	<!ENTITY ovLootCavernMetallic		"0x00020148">
+	<!ENTITY ovLootCavernPrimordial		"0x00020149">
+	<!ENTITY ovLootCavernRocky			"0x0002014A">
+	<!ENTITY ovLootCavernVolcanic		"0x0002014B">
+
+	<!-- 0160-017F SCORIA ASTEROIDS -->
+
+	<!ENTITY tbScoriaTables				"0x00020160">
+	<!ENTITY baScoriaAsteroid			"0x00020161">
+	<!ENTITY rsScoriaAsteroids			"0x00020162">
+	<!ENTITY stScoriaAsteroidSizeA1		"0x00020163">
+	<!ENTITY stScoriaAsteroidSizeA2		"0x00020164">
+	<!ENTITY stScoriaAsteroidSizeA3		"0x00020165">
+	<!ENTITY stScoriaAsteroidSizeA4		"0x00020166">
+	<!ENTITY stScoriaAsteroidSizeB1		"0x00020167">
+	<!ENTITY stScoriaAsteroidSizeB2		"0x00020168">
+	<!ENTITY stScoriaAsteroidSizeC1		"0x00020169">
+	<!ENTITY stScoriaAsteroidSizeC2		"0x0002016A">
+	<!ENTITY stScoriaAsteroidSizeD		"0x0002016B">
+	<!ENTITY baScoriaPlanetoid			"0x0002016C">
+	<!ENTITY stScoriaPlanetoidSizeE		"0x0002016D">
+
+	<!-- 0180-019F OVOID ASTEROIDS -->
+
+	<!ENTITY tbOvoidTables				"0x00020180">
+	<!ENTITY stOvoidAsteroidSizeA1		"0x00020181">
+	<!ENTITY stOvoidAsteroidSizeA2		"0x00020182">
+	<!ENTITY stOvoidAsteroidSizeA3		"0x00020183">
+	<!ENTITY stOvoidAsteroidSizeB1		"0x00020184">
+	<!ENTITY stOvoidAsteroidSizeB2		"0x00020185">
+	<!ENTITY stOvoidAsteroidSizeC		"0x00020186">
+	<!ENTITY stOvoidAsteroidSizeD		"0x00020187">
+
+	<!-- 01A0-01BF ORE AND RESOURCE TYPES -->
+
+	<!ENTITY itCopperOre				"0x000201A0">
+	<!ENTITY itVanadiumOre				"0x000201A1">
+	<!ENTITY itNiobiumOre				"0x000201A2">
+	<!ENTITY itCeriumOre				"0x000201A3">
+	<!ENTITY itHexaniumOre				"0x000201A4">
+	<!ENTITY itMolybdenumOre			"0x000201A5">
+	<!ENTITY itIridiumOre				"0x000201A6">
+	<!ENTITY itLonsdaleiteOre			"0x000201A7">
+	<!ENTITY itTantalumOre				"0x000201A8">
+
+	<!-- 01C0-01DF CRYOVOLCANIC ASTEROIDS -->
+
+	<!ENTITY tbCryovolcanicTables		"0x000201C0">
+	<!ENTITY baCryovolcanic				"0x000201C1">
+	<!ENTITY rsCryovolcanicAsteroids	"0x000201C2">
+	<!ENTITY ovCryovolcanoSmall			"0x000201C3">
+	<!ENTITY ovCryovolcanoMedium		"0x000201C4">
+	<!ENTITY ovCryovolcanoLarge			"0x000201C5">
+	<!ENTITY stCryovolcanicSizeA		"0x000201C6">
+	<!ENTITY stCryovolcanicSizeB		"0x000201C7">
+	<!ENTITY stCryovolcanicSizeC		"0x000201C8">
+	<!ENTITY stCryovolcanicSizeD		"0x000201C9">
 	]>
 	
 <CoreLibrary
@@ -348,6 +423,7 @@
 	<Library unid="&unidRPGLibrary;"/>
 	
 	<Module filename="AsteroidFields.xml"/>
+	<Module filename="Cryovolcanic.xml"/>
 	<Module filename="Environments.xml"/>
 	<Module filename="GalaxyCompatibility.xml"/>
 	<Module filename="GalaxyEffects.xml"/>
@@ -359,12 +435,15 @@
 	<Module filename="Ore.xml"/>
 	<Module filename="OreStone.xml"/>
 	<Module filename="Ovoids.xml"/>
+	<Module filename="OvoidsCompatibility.xml"/>
 	<Module filename="Neurohack.xml"/>
 	<Module filename="Primordial.xml"/>
 	<Module filename="Rocky.xml"/>
+	<Module filename="Scoria.xml"/>
 	<Module filename="Stargates.xml"/>
 	<Module filename="Stars.xml"/>
 	<Module filename="StarSystems.xml"/>
+	<Module filename="UndergroundCaverns.xml"/>
 	<Module filename="Volcanic.xml"/>
 	<Module filename="Worlds.xml"/>
 

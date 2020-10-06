@@ -30,13 +30,17 @@ class CPlayerGameStats
 		CString GetItemStat (const CString &sStat, ICCItem *pItemCriteria) const;
 		CString GetKeyEventStat (const CString &sStat, const CString &sNodeID, const CDesignTypeCriteria &Crit) const;
         CTimeSpan GetPlayTime (void) const;
-		CString GetStat (const CString &sStat) const;
+		ICCItemPtr GetStat (const CString &sStat) const;
+		CString GetStatString (const CString &sStat) const;
 		DWORD GetSystemEnteredTime (const CString &sNodeID);
         DWORD GetSystemLastVisitedTime (const CString &sNodeID);
+		ICCItemPtr GetSystemStat (const CString &sStat, const CString &sNodeID) const;
+		bool HasVisitedMultipleSystems (void) const;
 		int IncItemStat (const CString &sStat, DWORD dwUNID, int iInc);
-		inline int IncScore (int iScore) { m_iScore = Max(0, m_iScore + iScore); return m_iScore; }
+		int IncScore (int iScore) { m_iScore = Max(0, m_iScore + iScore); return m_iScore; }
 		int IncStat (const CString &sStat, int iInc = 1);
-        inline void OnFuelConsumed (CSpaceObject *pPlayer, Metric rFuel) { m_rFuelConsumed += rFuel; }
+		int IncSystemStat (const CString &sStat, const CString &sNodeID, int iInc);
+        void OnFuelConsumed (CSpaceObject *pPlayer, Metric rFuel) { m_rFuelConsumed += rFuel; }
 		void OnGameEnd (CSpaceObject *pPlayer);
 		void OnItemBought (const CItem &Item, CurrencyValue iTotalPrice);
 		void OnItemDamaged (const CItem &Item, int iHP);
@@ -46,6 +50,7 @@ class CPlayerGameStats
 		void OnItemUninstalled (const CItem &Item);
 		void OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD dwCauseUNID);
 		void OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObject *pPlayer);
+		void OnSwitchPlayerShip (const CShip &NewShip, const CShip *pOldShip = NULL);
 		void OnSystemEntered (CSystem *pSystem, int *retiLastVisit = NULL);
 		void OnSystemLeft (CSystem *pSystem);
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -91,6 +96,14 @@ class CPlayerGameStats
 			bool bMarked = false;
 			};
 
+		struct SPlayerShipStats
+			{
+			DWORD dwFirstEntered = INVALID_TIME;	//	First time we started this ship class
+			DWORD dwLastEntered = INVALID_TIME;		//	Last time we started using this ship class
+			DWORD dwLastLeft = INVALID_TIME;		//	Last time we stopped using ship class
+			DWORD dwTotalTime = 0;					//	Total time using ship
+			};
+
 		struct SShipClassStats
 			{
 			int iEnemyDestroyed = 0;				//	Number of enemy ships destroyed
@@ -108,6 +121,8 @@ class CPlayerGameStats
 			DWORD dwLastEntered = INVALID_TIME;		//	Last time this system was entered (0xffffffff = never)
 			DWORD dwLastLeft = INVALID_TIME;		//	Last time this system was left (0xffffffff = never)
 			DWORD dwTotalTime = 0;					//	Total time in system (all visits)
+
+			int iAsteroidsMined = 0;				//	Count of asteroids explored for resources
 			};
 
 		bool AddMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStats> *pEventList, TArray<SKeyEventStatsResult> *retList) const;
@@ -117,7 +132,8 @@ class CPlayerGameStats
 		bool GetMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStatsResult> *retList) const;
 		SShipClassStats *GetShipStats (DWORD dwUNID);
 		SStationTypeStats *GetStationStats (DWORD dwUNID);
-		SSystemStats *GetSystemStats (const CString &sNodeID);
+		const SSystemStats *GetSystemStats (const CString &sNodeID) const;
+		SSystemStats *SetSystemStats (const CString &sNodeID);
 
 		static void WriteTimeValue (CMemoryWriteStream &Output, DWORD dwTime);
 
@@ -129,6 +145,7 @@ class CPlayerGameStats
         Metric m_rFuelConsumed = 0.0;			//  Total fuel consumed (fuel units)
 
 		TMap<DWORD, SItemTypeStats> m_ItemStats;
+		TSortMap<CString, SPlayerShipStats> m_PlayerShipStats;
 		TMap<DWORD, SShipClassStats> m_ShipStats;
 		TMap<DWORD, SStationTypeStats> m_StationStats;
 		TMap<CString, SSystemStats> m_SystemStats;

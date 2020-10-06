@@ -59,11 +59,11 @@ class IHICommand
 		virtual ~IHICommand (void) { }
 
 		CHumanInterface &GetHI (void) const { return m_HI; }
-		inline void HICleanUp (void) { OnCleanUp(); }
-		inline ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return OnCommand(sCmd, pData); }
-		inline CString HIGetPropertyString (const CString &sProperty) { return OnGetPropertyString(sProperty); }
+		void HICleanUp (void) { OnCleanUp(); }
+		ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return OnCommand(sCmd, pData); }
+		CString HIGetPropertyString (const CString &sProperty) { return OnGetPropertyString(sProperty); }
 		ALERROR HIInit (CString *retsError) { return OnInit(retsError); }
-		inline void HISetProperty (const CString &sProperty, const CString &sValue) { OnSetProperty(sProperty, sValue); }
+		void HISetProperty (const CString &sProperty, const CString &sValue) { OnSetProperty(sProperty, sValue); }
 
 	protected:
 		virtual void OnCleanUp (void) { }
@@ -83,10 +83,10 @@ class IHIController : public IHICommand
 		IHIController (void) : IHICommand(CreateHI()) { }
 		virtual ~IHIController (void) { }
 
-		inline ALERROR HIBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError = NULL) { return OnBoot(pszCommandLine, retOptions, retsError); }
-		inline bool HIClose (void) { return OnClose(); }
-		inline void HIShutdown (EHIShutdownReasons iShutdownCode) { OnShutdown(iShutdownCode); }
-		inline void HIUpdate (void) { OnUpdate(); }
+		ALERROR HIBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError = NULL) { return OnBoot(pszCommandLine, retOptions, retsError); }
+		bool HIClose (void) { return OnClose(); }
+		void HIShutdown (EHIShutdownReasons iShutdownCode) { OnShutdown(iShutdownCode); }
+		void HIUpdate (void) { OnUpdate(); }
 
 	protected:
 		virtual ALERROR OnBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError);
@@ -115,8 +115,8 @@ class IHITask : public IHICommand
 		IHITask (CHumanInterface &HI) : IHICommand(HI) { }
 		virtual ~IHITask (void) { }
 
-		inline ALERROR GetResult (CString *retsResult) { if (retsResult) *retsResult = m_sResult; return m_Result; }
-		inline ALERROR HIExecute (ITaskProcessor *pProcessor, CString *retsResult) { m_Result = OnExecute(pProcessor, &m_sResult); *retsResult = m_sResult; return m_Result; }
+		ALERROR GetResult (CString *retsResult) { if (retsResult) *retsResult = m_sResult; return m_Result; }
+		ALERROR HIExecute (ITaskProcessor *pProcessor, CString *retsResult) { m_Result = OnExecute(pProcessor, &m_sResult); *retsResult = m_sResult; return m_Result; }
 
 	protected:
 		virtual ALERROR OnExecute (ITaskProcessor *pProcessor, CString *retsResult) { return NOERROR; }
@@ -134,9 +134,11 @@ class IHISession : public IHICommand, public IAniCommand
 		IHISession (CHumanInterface &HI);
 		virtual ~IHISession (void);
 
-		inline void HIAnimate (CG32bitImage &Screen, bool bTopMost) { OnAnimate(Screen, bTopMost); }
+		void HIActivate (void) { OnActivate(); }
+		void HIAnimate (CG32bitImage &Screen, bool bTopMost) { OnAnimate(Screen, bTopMost); }
 		void HIChar (char chChar, DWORD dwKeyData);
-		inline CReanimator &HIGetReanimator (void) { return GetReanimator(); }
+		void HIDeactivate (void) { OnDeactivate(); }
+		CReanimator &HIGetReanimator (void) { return GetReanimator(); }
 		inline void HIInvalidate (const RECT &rcRect);
 		inline void HIInvalidate (void);
 		void HIKeyDown (int iVirtKey, DWORD dwKeyData);
@@ -149,43 +151,45 @@ class IHISession : public IHICommand, public IAniCommand
 		void HIMButtonUp (int x, int y, DWORD dwFlags);
 		void HIMouseMove (int x, int y, DWORD dwFlags);
 		void HIMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
-		inline void HIMove (int x, int y) { OnMove(x, y); }
+		void HIMove (int x, int y) { OnMove(x, y); }
 		void HIPaint (CG32bitImage &Screen);
 		void HIRButtonDblClick (int x, int y, DWORD dwFlags);
 		void HIRButtonDown (int x, int y, DWORD dwFlags);
 		void HIRButtonUp (int x, int y, DWORD dwFlags);
-		inline void HIReportHardCrash (CString *retsMessage) { OnReportHardCrash(retsMessage); }
+		void HIReportHardCrash (CString *retsMessage) { OnReportHardCrash(retsMessage); }
 		inline void HISize (int cxWidth, int cyHeight);
-		inline void HIUpdate (bool bTopMost) { OnUpdate(bTopMost); }
+		void HIUpdate (bool bTopMost) { OnUpdate(bTopMost); }
 
-		inline bool IsCursorShown (void) const { return !m_bNoCursor; }
-		inline bool IsTransparent (void) const { return m_bTransparent; }
+		bool IsCursorShown (void) const { return !m_bNoCursor; }
+		bool IsTransparent (void) const { return m_bTransparent; }
 		void RegisterPerformanceEvent (IAnimatron *pAni, const CString &sEvent, const CString &sCmd);
 
 		//	Reanimator interface
-		inline void AddPerformance (IAnimatron *pAni, const CString &sID) { m_Reanimator.AddPerformance(pAni, sID); }
-		inline void DeleteElement (const CString &sID) { m_Reanimator.DeleteElement(sID); }
-		inline IAnimatron *GetElement (const CString &sID) const { return m_Reanimator.GetElement(sID); }
-		inline IAnimatron *GetPerformance (const CString &sID, int *retiFrame = NULL) { return m_Reanimator.GetPerformance(sID, retiFrame); }
-		inline bool GetPropertyBool (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyBool(sID, sProp); }
-		inline CG32bitPixel GetPropertyColor (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyColor(sID, sProp); }
-		inline int GetPropertyInteger (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyInteger(sID, sProp); }
-		inline Metric GetPropertyMetric (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyMetric(sID, sProp); }
-		inline DWORD GetPropertyOpacity (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyOpacity(sID, sProp); }
-		inline CString GetPropertyString (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyString(sID, sProp); }
-		inline CVector GetPropertyVector (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyVector(sID, sProp); }
+		virtual CReanimator &GetReanimator (void) { return m_Reanimator; }
+
+		void AddPerformance (IAnimatron *pAni, const CString &sID) { m_Reanimator.AddPerformance(pAni, sID); }
+		void DeleteElement (const CString &sID) { m_Reanimator.DeleteElement(sID); }
+		IAnimatron *GetElement (const CString &sID) const { return m_Reanimator.GetElement(sID); }
+		IAnimatron *GetPerformance (const CString &sID, int *retiFrame = NULL) { return m_Reanimator.GetPerformance(sID, retiFrame); }
+		bool GetPropertyBool (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyBool(sID, sProp); }
+		CG32bitPixel GetPropertyColor (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyColor(sID, sProp); }
+		int GetPropertyInteger (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyInteger(sID, sProp); }
+		Metric GetPropertyMetric (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyMetric(sID, sProp); }
+		DWORD GetPropertyOpacity (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyOpacity(sID, sProp); }
+		CString GetPropertyString (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyString(sID, sProp); }
+		CVector GetPropertyVector (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyVector(sID, sProp); }
 		bool IsElementEnabled (const CString &sID);
-		inline void SetInputFocus (const CString &sID) { IAnimatron *pFocus = GetElement(sID); if (pFocus) m_Reanimator.SetInputFocus(pFocus); }
-		inline void SetPropertyBool (const CString &sID, const CString &sProp, bool bValue) { m_Reanimator.SetPropertyBool(sID, sProp, bValue); }
-		inline void SetPropertyColor (const CString &sID, const CString &sProp, CG32bitPixel rgbValue) { m_Reanimator.SetPropertyColor(sID, sProp, rgbValue); }
-		inline void SetPropertyInteger (const CString &sID, const CString &sProp, int iValue) { m_Reanimator.SetPropertyInteger(sID, sProp, iValue); }
-		inline void SetPropertyMetric (const CString &sID, const CString &sProp, Metric rValue) { m_Reanimator.SetPropertyMetric(sID, sProp, rValue); }
-		inline void SetPropertyOpacity (const CString &sID, const CString &sProp, DWORD dwValue) { m_Reanimator.SetPropertyOpacity(sID, sProp, dwValue); }
-		inline void SetPropertyString (const CString &sID, const CString &sProp, const CString &sValue) { m_Reanimator.SetPropertyString(sID, sProp, sValue); }
-		inline void SetPropertyVector (const CString &sID, const CString &sProp, const CVector &vValue) { m_Reanimator.SetPropertyVector(sID, sProp, vValue); }
-		inline void StartPerformance (const CString &sID, DWORD dwFlags = 0) { m_Reanimator.StartPerformance(sID, dwFlags); }
+		void SetInputFocus (const CString &sID) { IAnimatron *pFocus = GetElement(sID); if (pFocus) m_Reanimator.SetInputFocus(pFocus); }
+		void SetPropertyBool (const CString &sID, const CString &sProp, bool bValue) { m_Reanimator.SetPropertyBool(sID, sProp, bValue); }
+		void SetPropertyColor (const CString &sID, const CString &sProp, CG32bitPixel rgbValue) { m_Reanimator.SetPropertyColor(sID, sProp, rgbValue); }
+		void SetPropertyInteger (const CString &sID, const CString &sProp, int iValue) { m_Reanimator.SetPropertyInteger(sID, sProp, iValue); }
+		void SetPropertyMetric (const CString &sID, const CString &sProp, Metric rValue) { m_Reanimator.SetPropertyMetric(sID, sProp, rValue); }
+		void SetPropertyOpacity (const CString &sID, const CString &sProp, DWORD dwValue) { m_Reanimator.SetPropertyOpacity(sID, sProp, dwValue); }
+		void SetPropertyString (const CString &sID, const CString &sProp, const CString &sValue) { m_Reanimator.SetPropertyString(sID, sProp, sValue); }
+		void SetPropertyVector (const CString &sID, const CString &sProp, const CVector &vValue) { m_Reanimator.SetPropertyVector(sID, sProp, vValue); }
+		void StartPerformance (const CString &sID, DWORD dwFlags = 0) { m_Reanimator.StartPerformance(sID, dwFlags); }
 		void StartPerformance (IAnimatron *pAni, const CString &sID, DWORD dwFlags = 0);
-		inline void StopPerformance (const CString &sID) { m_Reanimator.StopPerformance(sID); }
+		void StopPerformance (const CString &sID) { m_Reanimator.StopPerformance(sID); }
 
 	protected:
 		struct SPerformanceEvent
@@ -194,9 +198,10 @@ class IHISession : public IHICommand, public IAniCommand
 			CString sEvent;
 			};
 
-		virtual CReanimator &GetReanimator (void) { return m_Reanimator; }
+		virtual void OnActivate (void) { }
 		virtual void OnAnimate (CG32bitImage &Screen, bool bTopMost) { DefaultOnAnimate(Screen, bTopMost); }
 		virtual void OnChar (char chChar, DWORD dwKeyData) { }
+		virtual void OnDeactivate (void) { }
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData) { }
 		virtual void OnKeyUp (int iVirtKey, DWORD dwKeyData) { }
 		virtual void OnLButtonDblClick (int x, int y, DWORD dwFlags) { }
@@ -220,8 +225,8 @@ class IHISession : public IHICommand, public IAniCommand
         void GetRect (RECT &rcRect);
 		bool HandlePageScrollKeyDown (const CString &sScroller, int iVirtKey, DWORD dwKeyData);
 		bool HandlePageScrollMouseWheel (const CString &sScroller, int iDelta);
-		inline void SetNoCursor (bool bNoCursor = true) { if (bNoCursor != m_bNoCursor) { m_bNoCursor = bNoCursor; } }
-		inline void SetTransparent (bool bTransparent = true) { m_bTransparent = bTransparent; }
+		void SetNoCursor (bool bNoCursor = true) { if (bNoCursor != m_bNoCursor) { m_bNoCursor = bNoCursor; } }
+		void SetTransparent (bool bTransparent = true) { m_bTransparent = bTransparent; }
 
 	private:
 		//	IAniCommand virtuals
@@ -240,9 +245,9 @@ class IHISession : public IHICommand, public IAniCommand
 class CKeyboardTracker
 	{
 	public:
-		inline int GetKeyDownCount (void) { return m_KeysDown.GetCount(); }
-		inline void OnKeyDown (int iVirtKey) { m_KeysDown.Insert(iVirtKey); }
-		inline void OnKeyUp (int iVirtKey) { int iIndex; if (m_KeysDown.Find(iVirtKey, &iIndex)) m_KeysDown.Delete(iIndex); }
+		int GetKeyDownCount (void) { return m_KeysDown.GetCount(); }
+		void OnKeyDown (int iVirtKey) { m_KeysDown.Insert(iVirtKey); }
+		void OnKeyUp (int iVirtKey) { int iIndex; if (m_KeysDown.Find(iVirtKey, &iIndex)) m_KeysDown.Delete(iIndex); }
 
 	private:
 		TArray<int> m_KeysDown;
@@ -301,7 +306,7 @@ class CBackgroundProcessor : public ITaskProcessor
 			CString sCmd;
 			};
 
-		inline bool IsInitialized (void) const { return (m_hBackgroundThread != INVALID_HANDLE_VALUE); }
+		bool IsInitialized (void) const { return (m_hBackgroundThread != INVALID_HANDLE_VALUE); }
 		void PostOnAllTasksComplete (void);
 		void PostOnTaskComplete (IHITask *pTask);
 
@@ -473,8 +478,11 @@ enum EImageLibrary
 	imageDifficultyNormal =			29,
 	imageDifficultyChallenge =		30,
 	imageDifficultyPermadeath =		31,
+	imagePlay =						32,
+	imagePause =					33,
+	imageFastForward =				34,
 
-	imageCount =					32,
+	imageCount =					35,
 	};
 
 class CVisualPalette : public IFontTable
@@ -511,17 +519,17 @@ class CVisualPalette : public IFontTable
 
 		//	Low-level palette elements
 
-		inline CG32bitPixel GetColor (int iIndex) const { return m_Color[iIndex]; }
+		CG32bitPixel GetColor (int iIndex) const { return m_Color[iIndex]; }
 		CG32bitPixel GetColor (const CString &sName, bool *retFound = NULL) const;
-		inline const CG16bitFont &GetFont (int iIndex) const { return m_Font[iIndex]; }
+		const CG16bitFont &GetFont (int iIndex) const { return m_Font[iIndex]; }
 		const CG16bitFont &GetFont (const CString &sName, bool *retFound = NULL) const;
-		inline const CG32bitImage &GetImage (int iIndex) const { return m_Image[iIndex]; }
+		const CG32bitImage &GetImage (int iIndex) const { return m_Image[iIndex]; }
 		RECT GetScreenRect (void) const;
 		void GetWidescreenRect (RECT *retrcCenter, RECT *retrcFull = NULL) const;
 
 		//	Draw functions
 
-		void DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, DamageTypes iDamageType) const;
+		void DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, DamageTypes iDamageType, bool bGray = false) const;
 		void DrawSessionBackground (CG32bitImage &Screen, const CG32bitImage &Background, CG32bitPixel rgbCenter, DWORD dwFlags, RECT *retrcCenter = NULL) const;
 
 		//	Reanimator objects
@@ -725,31 +733,32 @@ class CHumanInterface
 		void ClosePopupSession (void);
 		void Exit (void);
 		void GetCodeChainPrimitives (SPrimitiveDefTable *retTable);
-		inline HWND GetHWND (void) { return m_hWnd; }
+		HWND GetHWND (void) { return m_hWnd; }
+		int GetLastVirtualKey (void) const { return m_iLastVirtualKey; }
         bool GetMousePos (int *retx, int *rety) const;
-		inline const SHIOptions &GetOptions (void) { return m_Options; }
+		const SHIOptions &GetOptions (void) { return m_Options; }
 		CReanimator &GetReanimator (void);
-		inline CG32bitImage &GetScreen (void) { return m_ScreenMgr.GetScreen(); }
+		CG32bitImage &GetScreen (void) { return m_ScreenMgr.GetScreen(); }
 #ifdef DEBUG_USE_DX7
-		inline CScreenMgr &GetScreenMgr (void) { return m_ScreenMgr; }
+		CScreenMgr &GetScreenMgr (void) { return m_ScreenMgr; }
 #else
-		inline CScreenMgr3D &GetScreenMgr (void) { return m_ScreenMgr; }
+		CScreenMgr3D &GetScreenMgr (void) { return m_ScreenMgr; }
 #endif
-		inline int GetScreenHeight (void) const { return m_ScreenMgr.GetHeight(); }
-		inline int GetScreenWidth (void) const { return m_ScreenMgr.GetWidth(); }
-		inline IHISession *GetSession (void) { return m_pCurSession; }
-		inline CSoundMgr &GetSoundMgr (void) { return m_SoundMgr; }
+		int GetScreenHeight (void) const { return m_ScreenMgr.GetHeight(); }
+		int GetScreenWidth (void) const { return m_ScreenMgr.GetWidth(); }
+		IHISession *GetSession (void) { return m_pCurSession; }
+		CSoundMgr &GetSoundMgr (void) { return m_SoundMgr; }
 		IHISession *GetTopSession (bool bNonTransparentOnly = true);
-		inline CCriticalSection &GetUISem (void) { return m_cs; }
-		inline const CVisualPalette &GetVisuals (void) { return m_Visuals; }
-        inline bool HasMouseMoved (int x, int y) const { return m_bMouseMoved; }
-		inline ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return m_pController->HICommand(sCmd, pData); }
+		CCriticalSection &GetUISem (void) { return m_cs; }
+		const CVisualPalette &GetVisuals (void) { return m_Visuals; }
+        bool HasMouseMoved (int x, int y) const { return m_bMouseMoved; }
+		ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return m_pController->HICommand(sCmd, pData); }
 		void HIPostCommand (const CString &sCmd, void *pData = NULL);
-		inline ALERROR HISessionCommand (const CString &sCmd, void *pData = NULL) { return (m_pCurSession ? m_pCurSession->HICommand(sCmd, pData) : NOERROR); }
-        inline bool IsLButtonDown (void) const { return m_bLButtonDown; }
-        inline bool IsMButtonDown (void) const { return m_bMButtonDown; }
-        inline bool IsRButtonDown (void) const { return m_bRButtonDown; }
-		inline bool IsWindowedMode (void) const { return m_Options.m_bWindowedMode; }
+		ALERROR HISessionCommand (const CString &sCmd, void *pData = NULL) { return (m_pCurSession ? m_pCurSession->HICommand(sCmd, pData) : NOERROR); }
+        bool IsLButtonDown (void) const { return m_bLButtonDown; }
+        bool IsMButtonDown (void) const { return m_bMButtonDown; }
+        bool IsRButtonDown (void) const { return m_bRButtonDown; }
+		bool IsWindowedMode (void) const { return m_Options.m_bWindowedMode; }
 		ALERROR OpenPopupSession (IHISession *pSession, CString *retsError = NULL);
 		void ShowHardCrashSession (const CString &sTitle, const CString &sDescription);
 		ALERROR ShowSession (IHISession *pSession, CString *retsError = NULL);
@@ -757,11 +766,11 @@ class CHumanInterface
 		int SetSoundVolume (int iVolume);
 
 		void AddBackgroundTask (IHITask *pTask, DWORD dwFlags, IHICommand *pListener = NULL, const CString &sCmd = NULL_STR);
-		inline CBackgroundProcessor &GetBackgroundProcessor (void) { return m_Background; }
-		inline bool RegisterOnAllBackgroundTasksComplete (IHICommand *pListener, const CString &sCmd = NULL) { return m_Background.RegisterOnAllTasksComplete(pListener, sCmd); }
+		CBackgroundProcessor &GetBackgroundProcessor (void) { return m_Background; }
+		bool RegisterOnAllBackgroundTasksComplete (IHICommand *pListener, const CString &sCmd = NULL) { return m_Background.RegisterOnAllTasksComplete(pListener, sCmd); }
 
 		DWORD AddTimer (DWORD dwMilliseconds, IHICommand *pListener = NULL, const CString &sCmd = NULL_STR, bool bRecurring = true);
-		inline void DeleteTimer (DWORD dwID) { m_Timers.DeleteTimer(m_hWnd, dwID); }
+		void DeleteTimer (DWORD dwID) { m_Timers.DeleteTimer(m_hWnd, dwID); }
 
 		//	Message Handlers
 		void OnAnimate (void);
@@ -787,11 +796,11 @@ class CHumanInterface
 		CHumanInterface (void);
 		~CHumanInterface (void);
 
-		inline void BltScreen (void) { m_ScreenMgr.Render(); }
+		void BltScreen (void) { m_ScreenMgr.Render(); }
 		void CalcBackgroundSessions (void);
 		void CaptureMouse (void);
 		void CleanUp (EHIShutdownReasons iShutdownCode);
-		inline void FlipScreen (void) { m_ScreenMgr.Flip(); }
+		void FlipScreen (void) { m_ScreenMgr.Flip(); }
 		void HardCrash (const CString &sProgramState);
 		void PaintFrameRate (void);
 		void ReleaseMouse (void);
@@ -852,6 +861,7 @@ class CHumanInterface
 		bool m_bMouseMoved;					//	Mouse moved from previous OnMouseMove
         int m_xLastMousePos;
         int m_yLastMousePos;
+		int m_iLastVirtualKey = 0;
 
 		//	Sound
 		CSoundMgr m_SoundMgr;

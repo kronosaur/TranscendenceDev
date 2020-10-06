@@ -160,6 +160,11 @@
 			attributes=			"AI, genericClass, luminous, luminousDrone"
 			>
 
+		<Properties>
+			<Definition id="core.noBiologicalEffects">True</Definition>
+			<Definition id="core.noRadiationDeath">True</Definition>
+		</Properties>
+
 		<Armor>
 			<ArmorSection start="315" span="90" armorID="&itLuminousArmature;" areaSet="0,2" />
 			<ArmorSection start="225" span="90" armorID="&itLuminousArmature;" areaSet="3,4" />

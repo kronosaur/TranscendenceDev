@@ -70,15 +70,16 @@
 	<!-- Size A Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeA;"
-		name=				"(primordial asteroid)"
+		name=				"primordial asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&baPrimordialAsteroid;"
+
 		scale=				"world"
 		size=				"6"
-
-		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
-		
 		<ImageLookup imageID="&rsPrimordialAsteroidSizeA;"/>
 
 		<Items>
@@ -87,27 +88,21 @@
 				<Lookup chance="8" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 80)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size B Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeB;"
-		name=				"(primordial asteroid)"
+		name=				"primordial asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&baPrimordialAsteroid;"
+
 		scale=				"world"
 		size=				"55"
-
-		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
-		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
-
 		<ImageLookup imageID="&rsPrimordialAsteroidSizeB;"/>
 
 		<Items>
@@ -116,22 +111,18 @@
 				<Lookup chance="8" count="1d6" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 80)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size C Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeC;"
-		name=				"(primordial asteroid)"
+		name=				"primordial asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&baPrimordialAsteroid;"
+
 		scale=				"world"
 		size=				"250"
-
-		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -143,22 +134,18 @@
 				<Lookup chance="8" count="1d8" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 80)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size D Primordial Asteroid -->
 
 	<StationType UNID="&stPrimordialAsteroidSizeD;"
-		name=				"(primordial asteroid)"
+		name=				"primordial asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&baPrimordialAsteroid;"
+
 		scale=				"world"
 		size=				"740"
-
-		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -170,22 +157,17 @@
 				<Lookup chance="8" count="1d10" table="&tbAsteroidOre;"/>
 			</Table>
 		</Items>
-
-		<Events>
-			<OnMining>
-				(intAsteroidOnMining 80)
-			</OnMining>
-		</Events>
 	</StationType>
 
 	<!-- Size E Primordial Planetoid -->
 
 	<StationType UNID="&stPrimordialPlanetoidSizeE;"
-		name=				"(primordial planetoid)"
+		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
 		scale=				"world"
 		size=				"1150"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -195,11 +177,12 @@
 	<!-- Size F Primordial Planetoid -->
 
 	<StationType UNID="&stPrimordialPlanetoidSizeF;"
-		name=				"(primordial planetoid)"
+		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
 		scale=				"world"
 		size=				"1640"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+		anonymous=			"true"
 
 		ejectaType=			"&vtStoneAsteroidEjecta;"
 		>
@@ -209,11 +192,12 @@
 	<!-- Size F Primordial Planetoid -->
 
 	<StationType UNID="&stPrimordialPlanetoidSizeF2;"
-		name=				"(primordial planetoid)"
+		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
 		scale=				"world"
 		size=				"2530"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsPrimordialWorlds;"	imageX="182" imageY="580"   imageWidth="158"  imageHeight="158"/>
@@ -223,11 +207,12 @@
 	<!-- Size G Primordial Planetoid -->
 
 	<StationType UNID="&stPrimordialPlanetoidSizeG;"
-		name=				"(primordial planetoid)"
+		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
 		scale=				"world"
 		size=				"4000"
-
-		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+		anonymous=			"true"
 		>
 		<ImageLookup imageID="&rsPrimordialPlanetoidSizeG;"/>
 	</StationType>
@@ -235,11 +220,12 @@
 	<!-- Size H Primordial Terrestrial -->
 
 	<StationType UNID="&stPrimordialTerrestrialSizeH;"
-		name=				"(primordial terrestrial)"
+		name=				"primordial world"
+		attributes=			"generic, inner, lifeZone, outer, primordial, terrestrial"
+
 		scale=				"world"
 		size=				"4285"
-
-		attributes=			"generic, inner, lifeZone, outer, primordial, terrestrial"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsPrimordialWorlds;"	imageX="0"   imageY="580"   imageWidth="182"  imageHeight="182"/>
@@ -249,11 +235,12 @@
 	<!-- Size H Primordial Terrestrial -->
 
 	<StationType UNID="&stPrimordialTerrestrialSizeH2;"
-		name=				"(primordial terrestrial)"
+		name=				"primordial world"
+		attributes=			"atmosphere, denseAtmosphere, generic, inner, lifeZone, outer, primordial, terrestrial"
+
 		scale=				"world"
 		size=				"6300"
-
-		attributes=			"atmosphere, denseAtmosphere, generic, inner, lifeZone, outer, primordial, terrestrial"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsPrimordialWorlds;"	imageX="0"   imageY="340"   imageWidth="240"  imageHeight="240"/>
@@ -264,11 +251,12 @@
 	<!-- Size J Primordial Terrestrial -->
 
 	<StationType UNID="&stPrimordialTerrestrialSizeJ;"
-		name=				"(primordial terrestrial)"
+		name=				"primordial world"
+		attributes=			"generic, inner, lifeZone, outer, primordial, terrestrial"
+
 		scale=				"world"
 		size=				"22000"
-
-		attributes=			"generic, inner, lifeZone, outer, primordial, terrestrial"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsPrimordialWorlds;"	imageX="340" imageY="0"     imageWidth="270"  imageHeight="270"/>
@@ -278,11 +266,12 @@
 	<!-- Size K Primordial Gas Giant -->
 
 	<StationType UNID="&stPrimordialGasGiantSizeK;"
-		name=				"(primordial gas giant)"
+		name=				"primordial gas giant"
+		attributes=			"atmosphere, denseAtmosphere, gasGiant, generic, inner, lifeZone, outer, primordial"
+
 		scale=				"world"
 		size=				"48200"
-
-		attributes=			"atmosphere, denseAtmosphere, gasGiant, generic, inner, lifeZone, outer, primordial"
+		anonymous=			"true"
 		>
 		<ImageVariants>
 			<Image	imageID="&rsPrimordialWorlds;"	imageX="0"   imageY="0"     imageWidth="340"  imageHeight="340"/>
@@ -324,6 +313,20 @@
 				imageWidth="2048" 
 				imageHeight="2048"/>
 	</SpaceEnvironmentType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&baPrimordialAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="primordial"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
 
 <!-- RESOURCES -->
 	

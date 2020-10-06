@@ -54,6 +54,7 @@ class CParticleCloudPainter : public IEffectPainter
 		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) override { Paint(Dest, x, y, Ctx); }
 		virtual void SetPos (const CVector &vPos) override { m_Particles.SetOrigin(vPos); }
+		virtual bool UsesOrigin (void) const override { return true; }
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
@@ -548,6 +549,8 @@ void CParticleCloudPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 	//	Make sure particles are initialized
 
 	InitParticles(Ctx.vEmitPos);
+	if (Ctx.bUseOrigin)
+		m_Particles.SetOrigin(Ctx.vOrigin);
 
 	//	Update the single-particle painter
 
@@ -572,7 +575,7 @@ void CParticleCloudPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 	Ctx.pDamageDesc = m_pCreator->GetDamageDesc();
 
 	CParticleSystemDesc Desc;
-	Desc.SetWakePotential(m_pCreator->GetWakePotential());
+	Desc.SetWakePotential(m_pCreator->GetWakePotential() * m_pCreator->GetSlowMotionFactor());
 
 	//	Update
 

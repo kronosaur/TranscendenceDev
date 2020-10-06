@@ -155,6 +155,7 @@
 	<!ENTITY unidCoreCriteria			"0x00030002">
 	<!ENTITY efNullEffect				"0x00030003">
 	<!ENTITY unidEngineText				"0x00030004">
+	<!ENTITY rsCoreIconBar				"0x00030005">
 	
 	<!-- 0020-002F PROJECTILE EFFECTS -->
 	
@@ -202,10 +203,16 @@
 	<!-- 0100-0139 DIAGNOSTICS AND DEBUGGING -->
 
 	<!ENTITY efTestOrbEffect			"0x00030100">
+	<!ENTITY unidDiagnostics			"0x00030101">
 
 	<!-- 0140-017F MISCELLANEOUS EFFECTS -->
 
 	<!ENTITY vtGenericEnhancement		"0x00030140">
+	<!ENTITY rsGenericMissionIcon		"0x00030141">
+
+	<!-- 0180-01CF SOVEREIGNS -->
+
+	<!ENTITY svPlayerAlly				"0x00030180">
 
 	]>
 	
@@ -217,6 +224,7 @@
 		>
 
 	<Module filename="CoreCode.xml"/>
+	<Module filename="CoreDiagnostics.xml"/>
 	<Module filename="CoreEffects.xml"/>
 	<Module filename="CoreEngineText.xml"/>
 	<Module filename="CoreExplosions.xml"/>

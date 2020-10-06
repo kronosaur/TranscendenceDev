@@ -11,6 +11,7 @@ bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) 
 
 	{
 	return (m_iRotation == Val.m_iRotation
+			&& m_iRotateImage == Val.m_iRotateImage
 			&& m_pFilters == Val.m_pFilters
 			&& m_rgbFadeColor == Val.m_rgbFadeColor
 			&& m_wFadeOpacity == Val.m_wFadeOpacity
@@ -18,7 +19,7 @@ bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) 
 			&& m_bFullImage == Val.m_bFullImage);
 	}
 
-void CCompositeImageModifiers::Apply (SGetImageCtx &Ctx, CObjectImageArray *retImage) const
+void CCompositeImageModifiers::Apply (const SGetImageCtx &Ctx, CObjectImageArray *retImage) const
 
 //	Apply
 //
@@ -27,6 +28,13 @@ void CCompositeImageModifiers::Apply (SGetImageCtx &Ctx, CObjectImageArray *retI
 	{
 	RECT rcNewImage;
 	CG32bitImage *pNewDest = NULL;
+
+	//	Rotate the image
+
+	if (m_iRotateImage)
+		{
+		retImage->InitFromRotated(*retImage, retImage->GetImageRect(), m_iRotateImage);
+		}
 
 	//	Station damage
 

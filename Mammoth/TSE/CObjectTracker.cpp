@@ -5,9 +5,6 @@
 
 #include "PreComp.h"
 
-#define LANGID_DESC_GALACTIC_MAP_CUSTOM         CONSTLIT("core.mapDescCustom")
-#define LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM CONSTLIT("core.mapDescAbandonedCustom")
-
 const int MAX_ALLOC_GRANULARITY =			10000;
 
 CObjectTracker::~CObjectTracker (void)
@@ -60,6 +57,9 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CObject
 			if (Criteria.SelectsKnownOnly() && !Basics.fKnown)
 				continue;
 
+			if (Criteria.SelectsUnknownOnly() && Basics.fKnown)
+				continue;
+
 			//	Otherwise, add
 
             AccumulateEntry(*pList, pList->Objects.GetKey(j), Basics, dwFlags, *retResult);
@@ -89,6 +89,7 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
     pEntry->fEnemy = ObjData.fEnemy;
 	pEntry->fInactive = ObjData.fInactive;
 	pEntry->fPlayerBlacklisted = ObjData.fPlayerBlacklisted;
+	pEntry->fIsStargate = ObjData.fIsStargate;
 
 	if (ObjData.pExtra)
 		{
@@ -119,6 +120,7 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
         Ctx.bShowDestroyed = pEntry->fShowDestroyed;
         Ctx.bEnemy = pEntry->fEnemy;
         Ctx.bFriend = pEntry->fFriendly;
+		Ctx.bIsStargate = pEntry->fIsStargate;
 
         pEntry->sNotes = pEntry->pType->GetMapDescription(Ctx);
         if (pEntry->sNotes.IsBlank())
@@ -283,7 +285,7 @@ bool CObjectTracker::GetCustomDesc (const CSpaceObject &Obj, const SObjBasics &O
 
 	//	Translate
 
-    return Obj.TranslateText((ObjData.fShowDestroyed ? LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM : LANGID_DESC_GALACTIC_MAP_CUSTOM), pData, retsDesc);
+    return Obj.TranslateText((ObjData.fShowDestroyed ? LANGID_CORE_MAP_DESC_ABANDONED_CUSTOM : LANGID_CORE_MAP_DESC_CUSTOM), pData, retsDesc);
 	}
 
 void CObjectTracker::GetGalacticMapObjects (const CTopologyNode &Node, TArray<SObjEntry> &Results) const
@@ -509,9 +511,9 @@ void CObjectTracker::GetTradingObjects (const CTopologyNode *pNode, TArray<SObjE
             {
             const SObjBasics &ObjData = pList->Objects[j];
 
-            //  We only care about friendly objects.
+            //  We only care about living friendly objects.
 
-            if (ObjData.fEnemy)
+            if (ObjData.fEnemy || ObjData.fShowDestroyed)
 				continue;
 
             //  Add the object to the result
@@ -661,6 +663,11 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                         pObjData->fEnemy =			((dwLoad & 0x00000020) ? true : false);
                         pObjData->fInactive =		((dwLoad & 0x00000040) ? true : false);
                         pObjData->fPlayerBlacklisted = ((dwLoad & 0x00000080) ? true : false);
+
+						if (Ctx.dwSystemVersion >= 188)
+							pObjData->fIsStargate =		((dwLoad & 0x00000100) ? true : false);
+						else
+							pObjData->fIsStargate = pType->HasAttribute(CONSTLIT("stargate"));
 
                         //  Extra, if we've got it
 
@@ -954,6 +961,7 @@ void CObjectTracker::Refresh (const CSpaceObject &Obj, SObjBasics &ObjData, cons
     ObjData.fShowInMap = Obj.IsShownInGalacticMap();
 	ObjData.fInactive = Obj.IsInactive();
 	ObjData.fPlayerBlacklisted = (pPlayer && !Obj.IsEnemy(pPlayer) && Obj.IsAngryAt(pPlayer));
+	ObjData.fIsStargate = Obj.IsStargate();
 
     //  Track our disposition relative to the player
 
@@ -1295,6 +1303,7 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
                 dwSave |= (ObjData.fEnemy				? 0x00000020 : 0);
                 dwSave |= (ObjData.fInactive			? 0x00000040 : 0);
                 dwSave |= (ObjData.fPlayerBlacklisted	? 0x00000080 : 0);
+				dwSave |= (ObjData.fIsStargate			? 0x00000100 : 0);
 			    pStream->Write((char *)&dwSave, sizeof(DWORD));
 
                 //  If we have extra data, save that

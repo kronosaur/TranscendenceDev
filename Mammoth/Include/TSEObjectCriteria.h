@@ -52,6 +52,8 @@ class CSpaceObjectCriteria
 		CSpaceObjectCriteria (void) { }
 		explicit CSpaceObjectCriteria (const CString &sCriteria);
 
+		bool DeepMatchesCategory (DWORD dwCat) const { return MatchesCategory(dwCat) || (m_pOr && m_pOr->DeepMatchesCategory(dwCat)); }
+
 		bool ExcludesIntangible (void) const { return !m_bIncludeIntangible; }
 		bool ExcludesPlayer (void) const { return m_bExcludePlayer; }
 		bool ExcludesVirtual (void) const { return !m_bIncludeVirtual; }

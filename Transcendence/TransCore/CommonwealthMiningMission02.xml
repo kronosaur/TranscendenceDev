@@ -6,7 +6,6 @@
 
 	EXTRA DATA
 
-	reward:			Reward (in credits) for completing mission
 	targetID:		Id of asteroid
 	targetCount:	Number of targets to destroy
 
@@ -16,23 +15,27 @@
 			name=				"Destroy Illegal Miners"
 			attributes=			"commonwealthMining"
 
-			level=				"1-5"
+			level=				"1-4"
 
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
 			>
 
-		<StaticData>
-			<Data id="encounter">
-				(
+		<Properties>
+			<Definition id="encounterTable">
+				(list
 					{	}
-					{	min:1	max:2	shipTypes: (&scBorer; &scBorer; &scHammerhead;) }
-					{	min:2	max:3	shipTypes: (&scBorer; &scBorer; &scHammerhead; &scHammerhead-II; &scBorer-II;) }
-					{	min:3	max:5	shipTypes: (&scBorer; &scBorer; &scHammerhead; &scHammerhead-II; &scBorer-II;) }
-					{	min:5	max:7	shipTypes: (&scBorer; &scBorer; &scHammerhead; &scHammerhead-II; &scBorer-II;) }
+					{	min:1	max:2	shipTypes: (list &scBorer; &scBorer; &scHammerhead;) }
+					{	min:2	max:3	shipTypes: (list &scBorer; &scBorer; &scHammerhead; &scHammerhead-II; &scBorer-II;) }
+					{	min:3	max:5	shipTypes: (list &scBorer; &scBorer; &scHammerhead; &scHammerhead-II; &scBorer-II;) }
+					{	min:5	max:7	shipTypes: (list &scBorer; &scBorer; &scHammerhead; &scHammerhead-II; &scBorer-II;) }
 					)
-			</Data>
-		</StaticData>
+			</Definition>
+
+			<Variant id="reward">
+				(@ (typ@ &unidIndependentMiner; 'missionRewardTable) (min (sysGetLevel) 10))
+			</Variant>
+		</Properties>
 
 		<Events>
 			<OnCreate>
@@ -68,7 +71,7 @@
 									(dist (+ meanDist (random -60 60)))
 									)
 									;	Create an asteroid at this distance
-									(setq asteroidObj (sysCreateStation &stMediumAsteroid; (sysVectorRandom Nil dist 60 "t")))
+									(setq asteroidObj (sysCreateStation &stRockyAsteroidSizeD; (sysVectorRandom Nil dist 60 "t")))
 									)
 								)
 
@@ -80,9 +83,6 @@
 								)
 
 							(msnSetData gSource 'targetID (objGetID asteroidObj))
-
-							;	Set the reward
-							(msnSetData gSource 'reward (+ 150 (* 150 (sysGetLevel))))
 							)
 						)
 					)
@@ -94,7 +94,7 @@
 					(asteroidObj (objGetObjByID (msnGetData gSource 'targetID)))
 
 					;	Get encounter options based on level
-					(encounterEntry (@ (msnGetStaticData gSource 'encounter) (sysGetLevel)))
+					(encounterEntry (@ (msn@ gSource 'encounterTable) (sysGetLevel)))
 
 					;	Number of warlords is based on system level
 					(targetCount (random (@ encounterEntry 'min) (@ encounterEntry 'max)))
@@ -133,7 +133,7 @@
 			</OnObjDestroyed>
 
 			<OnReward>
-				(rpgMissionRewardPayment (msnGetData gSource 'reward))
+				(rpgMissionRewardPayment (msn@ gSource 'reward))
 			</OnReward>
 		</Events>
 
@@ -144,7 +144,7 @@
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
 					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textSummary">
@@ -207,7 +207,7 @@
 			<Text id="Briefing">
 				(msnTranslate gSource 'textBriefing {
 					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)))
-					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textBriefing">
@@ -237,7 +237,7 @@
 			</Text>
 			<Text id="SuccessDebrief">
 				(msnTranslate gSource 'textSuccessDebrief {
-					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textSuccessDebrief">
