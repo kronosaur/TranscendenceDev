@@ -1843,7 +1843,7 @@ ALERROR GetEconomyUNIDOrDefault (CCodeChain &CC, ICCItem *pItem, DWORD *retdwUNI
 void GetImageDescFromList (ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect);
 ICCItem *GetImageDescProperty (CCodeChain &CC, ICCItem *pImageDesc, const CString &sProperty);
 bool GetLinkedFireOptions (const ICCItem *pArg, DWORD *retdwOptions, CString *retsError);
-ALERROR GetPosOrObject (CEvalContext *pEvalCtx, ICCItem *pArg, CVector *retvPos, CSpaceObject **retpObj = NULL, int *retiLocID = NULL);
+ALERROR GetPosOrObject (CEvalContext *pEvalCtx, ICCItem *pArg, CVector *retvPos, CSpaceObject **retpObj = NULL, int *retiLocID = NULL, CStationType *pStationToPlace = NULL);
 bool IsVectorItem (ICCItem *pItem);
 ALERROR LoadCodeBlock (const CString &sCode, ICCItem **retpCode, CString *retsError = NULL);
 ICCItem *StdErrorNoSystem (CCodeChain &CC);

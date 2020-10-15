@@ -763,7 +763,8 @@ ALERROR GetPosOrObject (CEvalContext *pEvalCtx,
 						ICCItem *pArg, 
 						CVector *retvPos, 
 						CSpaceObject **retpObj,
-						int *retiLocID)
+						int *retiLocID, 
+						CStationType *pStationToPlace)
 
 //	GetPosOrObject
 //
@@ -816,7 +817,7 @@ ALERROR GetPosOrObject (CEvalContext *pEvalCtx,
 
 			//	Get a random location
 
-			if (!pSystem->FindRandomLocation(Criteria, 0, COrbit(), NULL, &iLocID))
+			if (!pSystem->FindRandomLocation(Criteria, 0, COrbit(), pStationToPlace, &iLocID))
 				return ERR_NOTFOUND;
 
 			//	Return the position

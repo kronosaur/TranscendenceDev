@@ -12942,7 +12942,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	CVector vPos;
 	int iLocID;
-	if (error = GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, NULL, &iLocID))
+	if (error = GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, NULL, &iLocID, pType))
 		{
 		//	If we couldn't find a location, then we abort, but return Nil
 		//	so that callers can recover.
