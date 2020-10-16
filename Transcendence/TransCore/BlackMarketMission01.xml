@@ -12,7 +12,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBlackMarketDelivery;"
-			name=				"Black Market Delivery"
+			name=				"Black Market 01: Delivery"
 			attributes=			"paneInitMission, blackMarket"
 
 			level=				"2-5"

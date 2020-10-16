@@ -2438,6 +2438,8 @@
 	<!-- 0820-083F BLACK MARKET II -->
 
 	<!ENTITY rsBlackMarketShipyard			"0x00100820">
+	<!ENTITY msBlackMarketMission02			"0x00100821">
+	<!ENTITY msBlackMarketSmuggle01			"0x00100822">
 
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
@@ -2474,6 +2476,8 @@
 	<Module filename="BlackMarketMember.xml"/>
 	<Module filename="BlackMarketMission00.xml"/>
 	<Module filename="BlackMarketMission01.xml"/>
+	<Module filename="BlackMarketMission02.xml"/>
+	<Module filename="BlackMarketMissionSmuggle01.xml"/>
 
 	<!-- Characters -->
 		

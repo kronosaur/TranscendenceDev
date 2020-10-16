@@ -189,6 +189,9 @@
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
+		<Properties>
+			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +consumerGood; -ID; +property:known; &lt;=#25;"</Definition>
+		</Properties>
 		
 		<!-- Encounter Info -->
 
@@ -319,7 +322,7 @@
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
-			
+
 			<OnTrafficControl>
 				(comTrafficControl gSource 10)
 			</OnTrafficControl>
@@ -919,7 +922,10 @@
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
-
+		<Properties>
+			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +consumerGood; -ID; +property:known; &lt;=#25;"</Definition>
+		</Properties>
+		
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
@@ -954,6 +960,14 @@
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
+							<Action id="actionMainHall" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +commonwealthResidentials; =" (sysGetLevel) ";")
+									maxPerStation: 1
+									noMissionTextID: 'descHallEmpty
+									})
+							</Action>
+					
 							<Action id="actionUndock" cancel="1">
 								<Exit/>
 							</Action>

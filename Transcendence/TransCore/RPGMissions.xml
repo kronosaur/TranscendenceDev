@@ -257,13 +257,30 @@
 										;	If we accept, then navigate to ReplyAccept
 										
 										(= acceptDecline 'accept)
-											(block Nil
+											(block (screenOptions)
 												(msnAccept (@ options 'missionObj))
 												(scrSetData gScreen 'curPage Nil)
 
-												;	If no ReplyAccept, then we're done
-												(if (msnTranslate missionObj 'AcceptReply)
-													(scrShowPane gScreen "ReplyAccept")
+												(switch
+													;	If we have an accept reply, show it.
+
+													(msnTranslate missionObj 'AcceptReply)
+														(scrShowPane gScreen "ReplyAccept")
+
+													;	Ask the mission for a new screen
+
+													(block ()
+															(setq aScreenType 'AcceptFollowUp)
+															(setq screenOptions (msnFireEvent missionObj "OnGetNextScreen"))
+															(@ screenOptions 'nextScreen)
+															)
+														(block Nil
+															(scrExitScreen gScreen)
+															(scrShowScreen gScreen (@ screenOptions 'nextScreen) (@ screenOptions 'nextScreenData))
+															)
+
+													;	Exit
+
 													(block Nil
 
 														;	Undock

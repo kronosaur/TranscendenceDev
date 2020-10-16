@@ -1017,5 +1017,11 @@
     <Xml Include="..\Extensions\Diagnostics\ShipClassTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
+    <Xml Include="BlackMarketMission02.xml">
+      <Filter>Human Space Library\Black Market</Filter>
+    </Xml>
+    <Xml Include="BlackMarketMissionSmuggle01.xml">
+      <Filter>Human Space Library\Black Market</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

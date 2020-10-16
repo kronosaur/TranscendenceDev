@@ -79,8 +79,9 @@
 					(totalLuxProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Lux")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "*~wsam +Lux"))
 						)
-					(totalIllegalProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Illegal")
-						(plyGetItemStat gPlayer "itemsBoughtValue" "*~wsam +Illegal"))
+					(smugglingCriteria (typ@ &unidBlackMarketMember; 'smugglingCriteria))
+					(totalIllegalProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" smugglingCriteria)
+						(plyGetItemStat gPlayer "itemsBoughtValue" smugglingCriteria))
 						)
 					(totalOreMinedValue (plyGetItemStat gPlayer 'itemsMinedValue "* +ore | * +minable;"))
 

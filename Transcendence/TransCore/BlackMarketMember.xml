@@ -11,26 +11,31 @@
 						id:'civilian
 						icon: (resCreateImageDesc &rsBlackMarketInsignia; 0 256 256 256)
 						xp: 1
+						aveXPPerMission: 100
 						}
 					{	rank: 2
 						id:'smuggler
 						icon: (resCreateImageDesc &rsBlackMarketInsignia; 256 256 256 256)
 						xp: 200
+						aveXPPerMission: 150
 						}
 					{	rank: 3
 						id:'enforcer
 						icon: (resCreateImageDesc &rsBlackMarketInsignia; 512 256 256 256)
 						xp: 600
+						aveXPPerMission: 250
 						}
 					{	rank:4
 						id:'sindikatMember
 						icon: (resCreateImageDesc &rsBlackMarketInsignia; 512 0 256 256)
 						xp: 1500
+						aveXPPerMission: 400
 						}
 					{	rank:5
 						id:'sindikatLieutenant
 						icon: (resCreateImageDesc &rsBlackMarketInsignia; 256 0 256 256)
 						xp: 3000
+						aveXPPerMission: 1000
 						}
 					{	rank:6
 						id:'sindikatLord
@@ -39,6 +44,7 @@
 						}
 					)
 			</Definition>
+			<Definition id="smugglingCriteria">"*~da +illegal; -id;"</Definition>
 
 			<Global id="level">1</Global>
 			<Global id="shieldRewardLevel">1</Global>
@@ -118,7 +124,7 @@
 						;	we add to XP.
 					
 						(and (objHasAttribute aSellerObj 'blackMarket)
-								(itmHasAttribute gItem 'illegal)
+								(itmMatches gItem (typ@ gType 'smugglingCriteria))
 								(ls (typ@ gType 'xp) maxXP)
 								)
 							(block (
@@ -234,8 +240,9 @@
 					(level (typ@ gType 'level))
 					(rankTable (typ@ gType 'rankTable))
 
-					(totalSold (plyGetItemStat gPlayer 'itemsSoldValue "*~wsam +Illegal"))
-					(totalBought (plyGetItemStat gPlayer 'itemsBoughtValue "*~wsam +Illegal"))
+					(smugglingCriteria (typ@ gType 'smugglingCriteria))
+					(totalSold (plyGetItemStat gPlayer 'itemsSoldValue smugglingCriteria))
+					(totalBought (plyGetItemStat gPlayer 'itemsBoughtValue smugglingCriteria))
 
 					(totalProfit (- totalSold totalBought))
 
