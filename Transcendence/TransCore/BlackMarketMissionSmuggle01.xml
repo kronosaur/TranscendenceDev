@@ -22,7 +22,7 @@
 
 	<MissionType UNID="&msBlackMarketSmuggle01;"
 			name=				"Black Market Smuggle 01: Sell Goods"
-			attributes=			"commonwealthColony, commonwealthResidentials"
+			attributes=			"commonwealthColony, commonwealthColonyArmed, commonwealthHospital, commonwealthResidentials"
 
 			level=				"1-10"
 				 
@@ -113,17 +113,18 @@
 				Black Market Smuggling
 			</Text>
 			<Text id="Briefing">
-				(list
-					{	descID:'textBriefing1	acceptLabelID:'actionAccept		declineLabelID:'actionSorry	}
+				(or 
+					(objTranslate (objGetObjByID (msn@ gSource 'ownerID)) 'blackMarketSmuggle01.briefing)
+					(list
+						{	descID:'textBriefing1	acceptLabelID:'actionAccept		declineLabelID:'actionSorry	}
+						)
 					)
 			</Text>
 			<Text id="DeclineReply">
-
-				The woman scoffs.
-
-				"You're not getting a better price, elsewhere, friend. Come back
-				after you've gotten your education."
-
+				(or
+					(objTranslate (objGetObjByID (msn@ gSource 'ownerID)) 'blackMarketSmuggle01.declineReply)
+					{	descID:'textDeclineReply1	}
+					)
 			</Text>
 			<Text id="SuccessMsg"></Text>
 
@@ -139,6 +140,15 @@
 			</Text>
 			<String id="actionAccept">"[Y]eah, I've got some stuff in my cargo hold."</String>
 			<String id="actionSorry">"[S]orry, I can't help you."</String>
+
+			<Text id="textDeclineReply1">
+			
+				The woman scoffs.
+
+				"You're not getting a better price, elsewhere, friend. Come back
+				after you've gotten your education."
+
+			</Text>
 		</Language>
 	</MissionType>
 

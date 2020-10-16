@@ -189,21 +189,7 @@
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
-		<Properties>
-			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +consumerGood; -ID; +property:known; &lt;=#25;"</Definition>
-		</Properties>
 		
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+commonwealthSpace;"
-				systemAffinity=			"+commonwealthCore;"
-				levelFrequency=			"cuc-- ----- ----- ----- -----"
-
-				locationCriteria=		"-outerSystem, +planetary"
-				enemyExclusionRadius=	"50"
-				/>
-
 		<Names noArticle="true">
 			Agricola Station; Britannia Station; Canterbury Station;
 			Devonshire Colony; Enterprise Station; Farsend Station;
@@ -217,6 +203,21 @@
 			Anacreon Colony %1%0%0; Anacreon Colony %1%0%0
 		</Names>
 		
+		<Properties>
+			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +consumerGood; -ID; +property:known; &lt;=#25;"</Definition>
+		</Properties>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+commonwealthSpace;"
+				systemAffinity=			"+commonwealthCore;"
+				levelFrequency=			"cuc-- ----- ----- ----- -----"
+
+				locationCriteria=		"-outerSystem, +planetary"
+				enemyExclusionRadius=	"50"
+				/>
+
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
@@ -434,6 +435,10 @@
 				Vindication Colony; Wight Station; %s Colony; %s Alpha Station;
 				%s Beta Station; %s Gamma Station; %s Epsilon Station</Names>
 
+		<Properties>
+			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +consumerGood; -ID; +property:known; &lt;=#25;"</Definition>
+		</Properties>
+
 		<!-- Encounter Info -->
 
 		<Encounter
@@ -612,6 +617,11 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
+		<Properties>
+			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -military; -notStandard; +shipBroker;"</Constant>
+			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+		</Properties>
+
 		<!-- Encounter Info -->
 
 		<Encounter
@@ -624,11 +634,6 @@
 
 				unique=					"inSystem"
 				/>
-
-		<Properties>
-			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -military; -notStandard; +shipBroker;"</Constant>
-			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
-		</Properties>
 
 		<!-- Trade and Items -->
 
@@ -761,19 +766,6 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+commonwealthSpace;"
-				systemAffinity=			"+commonwealthCore;"
-				levelFrequency=			"uuurr ----- ----- ----- -----"
-
-				locationCriteria=		"-outerSystem, +planetary"
-				enemyExclusionRadius=	"50"
-
-				unique=					"inSystem"
-				/>
-
 		<Names noArticle="true">
 			Asclepius Station; Barnard Station; Station Charity; 
 			Crick Station; Drew Station; Station Empathy; Freud Complex;
@@ -786,6 +778,23 @@
 			Cyteen Station; NeuroSci Station; Biogen Station;
 			Pharmaton %s; Medecin d'Etoile Station
 		</Names>
+
+		<Properties>
+			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +meds; -ID; +property:known; &lt;=#25;"</Definition>
+		</Properties>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+commonwealthSpace;"
+				systemAffinity=			"+commonwealthCore;"
+				levelFrequency=			"uuurr ----- ----- ----- -----"
+
+				locationCriteria=		"-outerSystem, +planetary"
+				enemyExclusionRadius=	"50"
+
+				unique=					"inSystem"
+				/>
 
 		<!-- Trade and Items -->
 		
@@ -896,6 +905,31 @@
 
 			</Text>
 
+			<Text id="blackMarketSmuggle01.briefing">
+				(list
+					{	descID:'textBMSBriefing.1	acceptLabelID:'actionBMSAccept.1		declineLabelID:'actionBMSDecline.1		translateType:gType	}
+					)
+			</Text>
+			<Text id="blackMarketSmuggle01.declineReply">
+
+				The medtech sighs.
+
+				"I don't know how to convince the Corporations to care about 
+				people. Not without using force, anyway."
+
+			</Text>
+			<Text id="textBMSBriefing.1">
+
+				You enter the hospital and talk to a medtech at the reception
+				desk. He complains about a lack of supplies.
+
+				"Corporate oligarchs are hoarding the good meds for themselves.
+				We can't get enough for all our patients. Not legally, anyway."
+				
+			</Text>
+			<String id="actionBMSAccept.1">"[I] have some meds you can use."</String>
+			<String id="actionBMSDecline.1">"[S]orry, I wish I could help."</String>
+
 			<Text id="core.mapDesc">"Sells meds &mdash; Buys food and luxuries"</Text>
 		</Language>
 	</StationType>
@@ -922,6 +956,7 @@
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
+
 		<Properties>
 			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +consumerGood; -ID; +property:known; &lt;=#25;"</Definition>
 		</Properties>
