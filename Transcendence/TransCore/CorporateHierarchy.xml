@@ -822,11 +822,7 @@
 
 					<MaintenanceShop descID="descMaintenanceShop">
 						<Actions>
-							<Action name="&quot;Sorry, you have me confused with someone else.&quot;" cancel="1" key="S">
-								<ShowPane pane="Illegals"/>
-							</Action>
-
-							<Action name="&quot;The merchandise is in my cargo hold.&quot;" default="1" key="M">
+							<Action id="actionIllegalsAccept" default="1">
 								(block (
 									;	Price depends on whether a Black Market station 
 									;	is in the system.
@@ -860,6 +856,10 @@
 											)
 										)
 									)
+							</Action>
+
+							<Action id="actionIllegalsDecline" name="&quot;Sorry, you have me confused with someone else.&quot;" cancel="1" key="S">
+								<ShowPane pane="Illegals"/>
 							</Action>
 						</Actions>
 					</MaintenanceShop>
@@ -953,6 +953,9 @@
 				resources. We are not interested in buying %itemName%.
 
 			</Text>
+			<String id="actionIllegalsAccept">"[S]ure, the merchandise is in my cargo hold."</String>
+			<String id="actionIllegalsDecline">"You've co[n]fused me with someone else, sorry."</String>
+
 			<Text id="core.mapDesc">"Buys food, luxuries, meds, and industrial resources"</Text>
 		</Language>
 	</StationType>

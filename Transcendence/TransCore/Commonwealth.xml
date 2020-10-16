@@ -927,8 +927,8 @@
 				We can't get enough for all our patients. Not legally, anyway."
 				
 			</Text>
-			<String id="actionBMSAccept.1">"[I] have some meds you can use."</String>
-			<String id="actionBMSDecline.1">"[S]orry, I wish I could help."</String>
+			<String id="actionBMSAccept.1">"I can [s]ell you some meds."</String>
+			<String id="actionBMSDecline.1">"Too bad, but I ca[n]'t help."</String>
 
 			<Text id="core.mapDesc">"Sells meds &mdash; Buys food and luxuries"</Text>
 		</Language>

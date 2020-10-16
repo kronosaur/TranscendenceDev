@@ -138,8 +138,8 @@
 				"Do you have anything for me today?"
 			
 			</Text>
-			<String id="actionAccept">"[Y]eah, I've got some stuff in my cargo hold."</String>
-			<String id="actionSorry">"[S]orry, I can't help you."</String>
+			<String id="actionAccept">"[S]ure, I've got some stuff in my cargo hold."</String>
+			<String id="actionSorry">"I ca[n]'t help you, sorry."</String>
 
 			<Text id="textDeclineReply1">
 			
