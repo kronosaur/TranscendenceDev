@@ -584,7 +584,7 @@ class CDockScreen : public IScreenController,
 		CDesignType *m_pRoot = NULL;
 		CString m_sScreen;
 		CSpaceObject *m_pLocation = NULL;
-		ICCItem *m_pData = NULL;
+		ICCItemPtr m_pData = NULL;
 		CExtension *m_pExtension = NULL;
 		CXMLElement *m_pDesc = NULL;
 		bool m_bFirstOnInit = true;

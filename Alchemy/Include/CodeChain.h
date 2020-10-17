@@ -113,7 +113,7 @@ class ICCItem : public CObject
 		virtual ICCItem *CloneContainer (void) const = 0;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) { return Clone(pCC); }
 		virtual void Discard (void);
-		ICCItem *Reference (void) const { m_dwRefCount++; return const_cast<ICCItem *>(this); }
+		ICCItem *Reference (void) const { ASSERT(m_dwRefCount < 0x00010000); m_dwRefCount++; return const_cast<ICCItem *>(this); }
 		virtual void Reset (void) = 0;
 		void SetNoRefCount (void) { m_bNoRefCount = true; }
 
