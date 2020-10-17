@@ -231,19 +231,19 @@
 					(allRumors (apply append (append
 						(map (typFind "* +event:GetGlobalRumors;") 'excludeNil theType
 							(setRumorDefaults
-								{	sourceType: theType	}
+								{	sourceType: theType	stationObj:gSource }
 								(typFireEvent theType 'GetGlobalRumors eventData)
 								)
 							)
 						(map (sysFindObject Nil "sTAV +event:GetRumors;") 'excludeNil theObj
 							(setRumorDefaults
-								{	sourceObj: theObj	}
+								{	sourceObj: theObj	stationObj:gSource }
 								(objFireEvent theObj 'GetRumors eventData)
 								)
 							)
 						(map (msnFind "* +event:GetRumors;") 'excludeNil msnObj
 							(setRumorDefaults
-								{	sourceObj: msnObj	}
+								{	sourceObj: msnObj	stationObj:gSource }
 								(msnFireEvent msnObj 'GetRumors eventData)
 								)
 							)

@@ -61,7 +61,7 @@ PLAYER DATA
 			sovereign=			"&svBlackMarket;"
 			inherit=			"&baBlackMarketStation;"
 
-			attributes=			"blackMarket, friendly, envEarth, envAvoidsAir, generic, human, majorStation, outlaws, populated"
+			attributes=			"blackMarket, blackMarketMissions, friendly, envEarth, envAvoidsAir, generic, human, majorStation, outlaws, populated"
 				 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
@@ -205,9 +205,42 @@ PLAYER DATA
 			<GetRumors>
 				(append
 					(rpgRumorAdd 'commonwealthPub Nil 31 'scan)
-					(rpgRumorAdd 'corporateHotel Nil 11 'scan)
+					(rpgRumorAdd 'corporateHotel Nil 21 'scan)
 					)
 			</GetRumors>
+
+			<GetGlobalRumors>
+				(append
+					(if (and (= (objGetType (@ gData 'stationObj)) &stHotel;)
+							(not (objGetData (@ gData 'stationObj) 'blackMarket.locationRumor))
+							(gr (typ@ &unidBlackMarketMember; 'xp) 0)
+							)
+						(block (
+							(otherStations (unvFindObject "TU +blackMarketMissions;"))
+							(nearestEntry (map otherStations '(reduceMin original) theEntry
+								(sysGetTopologyDistance (sysGetNode) (@ theEntry 2))
+								))
+							)
+							(if nearestEntry {
+								attributes: 'corporateHotel
+								priority: 16
+								textID: (cat 'rumor.corporateHotel.far (random 1 3))
+								data: {
+									systemName: (sysGetName (@ nearestEntry 2))
+									objectName: (fmtNoun (@ nearestEntry 3) (@ nearestEntry 4) 1 'article)
+									}
+								onExitRumor: (lambda (theRumor)
+									(block ()
+										(sysSetKnown (@ nearestEntry 2) True)
+										(unvSetObjectKnown (@ nearestEntry 2) "T +blackMarketMissions;" True)
+										(objSetData (@ theRumor 'stationObj) 'blackMarket.locationRumor True)
+										)
+									)
+								})
+							)
+						)
+					)
+			</GetGlobalRumors>
 		</Events>
 		
 		<StaticData>
@@ -257,6 +290,33 @@ PLAYER DATA
 				corporate types."
 			
 			</Text>
+			<Text id="rumor.corporateHotel.far1">
+
+				You sit at the bar next to a pilot. He tells you about 
+				%objectName% in the %systemName% system:
+
+				"I tell you, they got all the Martian nori you could ask for."
+			
+			</Text>
+			<Text id="rumor.corporateHotel.far2">
+
+				You sit at the bar next to a older woman. She tells you that her
+				daughter joined %objectName% in the %systemName% system:
+
+				"I hear from her every six month or so. She sounds fine but I
+				can tell that she's scared. I don't know if I'll ever see her
+				again."
+			
+			</Text>
+			<Text id="rumor.corporateHotel.far3">
+
+				You sit at the bar next to a freighter pilot. He tells you about
+				%objectName% in the %systemName% system:
+
+				"I used to fly for Korolov, but I'm getting paid almost double 
+				by the Black Market. It's only a little bit more dangerous."
+			
+			</Text>
 
 			<Text id="core.mapDesc">
 
@@ -276,7 +336,7 @@ PLAYER DATA
 			sovereign=			"&svBlackMarket;"
 			inherit=			"&baBlackMarketStation;"
 				 
-			attributes=			"blackMarket, envEarth, majorStation, envAvoidsAir, friendly, generic, human, outlaws, populated"
+			attributes=			"blackMarket, blackMarketMissions, envEarth, majorStation, envAvoidsAir, friendly, generic, human, outlaws, populated"
 				 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
