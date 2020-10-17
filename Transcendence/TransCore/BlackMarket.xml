@@ -42,7 +42,7 @@
 			</GetGlobalDockScreen>
 		</Events>
 	</Sovereign>
-    
+	
 <!--
 
 PLAYER DATA
@@ -205,6 +205,7 @@ PLAYER DATA
 			<GetRumors>
 				(append
 					(rpgRumorAdd 'commonwealthPub Nil 31 'scan)
+					(rpgRumorAdd 'corporateHotel Nil 11 'scan)
 					)
 			</GetRumors>
 		</Events>
@@ -239,21 +240,32 @@ PLAYER DATA
 
 				A woman dressed in a fancy neolinen suit talks to you:
 
-				"Do you know how to get a contact at the black market station?
+				"Do you know how to get a contact at the Black Market station?
 				You look like you might know."
 
 				You spend 5 credits on drinks.
 
 			</Text>
+			<Text id="rumor.corporateHotel">
 
-            <Text id="core.mapDesc">
+				You sit at the bar next to a hotel employee. He tells you about
+				his job:
 
-                Refuels up to level 6 &mdash;
+				"Business has been good since the Black Market station opened
+				up. We get a lot of customers from there. They come in to do 
+				deals with various groups: outlaws, smugglers, even some 
+				corporate types."
+			
+			</Text>
+
+			<Text id="core.mapDesc">
+
+				Refuels up to level 6 &mdash;
 				Repairs/installs armor up to level 6 &mdash;
 				Installs purchased devices up to level 8 &mdash;
 				Buys and sells illegal and military items
 
-            </Text>
+			</Text>
 		</Language>
 	</StationType>
 
@@ -424,21 +436,21 @@ PLAYER DATA
 			<Data id="blackMarket.destroyBountyHunters">(random 1 5)</Data>
 		</StaticData>
 		
-        <Language>
+		<Language>
 			<Text id="rpg.stationWillNotBuy">
 
 				%StationName% buys illegal and military items. We are not 
 				interested in buying %itemName%.
 
 			</Text>
-            <Text id="core.mapDesc">
+			<Text id="core.mapDesc">
 
-                Refuels up to level 7 &mdash; Repairs/installs armor up to 
+				Refuels up to level 7 &mdash; Repairs/installs armor up to 
 				level 9 &mdash; Installs devices up to level 9 &mdash; Buys and
 				sells illegal and military items
 
-            </Text>
-        </Language>
+			</Text>
+		</Language>
 	</StationType>
 
 	<!-- Tempus Lab -->
@@ -579,7 +591,7 @@ PLAYER DATA
 			</Text>
 		</Language>
 	</StationType>
-    
+	
 <!-- SHIP CLASSES -->
 
 	<!-- Level 5: Molotok/A-class Heavy Gunship -->
@@ -861,7 +873,7 @@ PLAYER DATA
 				))
 			)
 	</Globals>
-    
+	
 <!-- DOCK SCREENS -->
 
 	<!-- Black Market Pay Debt -->
@@ -995,10 +1007,10 @@ PLAYER DATA
 		</Language>
 	</DockScreen>
 	
-    <!-- Bounty Hunters 
-        Based on code by JohnBWatson. Thank you! -->
+	<!-- Bounty Hunters 
+		Based on code by JohnBWatson. Thank you! -->
 	
-    <Sovereign UNID="&svBlackMarketBountyHunter;"
+	<Sovereign UNID="&svBlackMarketBountyHunter;"
 			name="bounty hunters"
 			demonym=":a bounty hunter(s)"
 			alignment="neutral"
@@ -1011,7 +1023,7 @@ PLAYER DATA
 			<Relationship sovereign="&svPlayer;" disposition="enemy" mutual="true"/>
 		</Relationships>
 	</Sovereign>
-    
+	
 <!-- BASE CLASSES -->
 
 	<Type unid="&baBlackMarketStation;"
@@ -1055,12 +1067,12 @@ PLAYER DATA
 								
 							;	If the player is not part of the Black Market, then she is 
 							;	treated as an enemy.
-                    
+					
 							(if (= (typ@ &unidBlackMarketMember; 'xp) 0)
 								(block Nil
 									(sovSetDisposition &svBlackMarket; &svPlayer; 'enemy)
 									(sovSetDisposition &svPlayer; &svBlackMarket; 'enemy)
-    								)
+									)
 									
 								;	Otherwise, this is a Black Market crime
 								
@@ -1071,7 +1083,7 @@ PLAYER DATA
 										(objSetData gPlayerShip "blackMarketCrime" (cat "the destruction of " (objGetName gSource 4)))
 										)
 									)
-	    						)
+								)
 						
 							;	After death, only a certain number of bounty hunters go 
 							;	after the player.

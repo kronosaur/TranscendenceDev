@@ -95,9 +95,12 @@
 			<Text id="Summary">
 			</Text>
 			<Text id="Intro">
-				The maitre d' tells you that no tables are available and shows you to
-				the bar instead. At the bar you strike up a conversation with two brothers
-				from Eridani who seem to be a little evasive about their business.
+
+				The maitre d' tells you that no tables are available and shows 
+				you to the bar instead. At the bar you strike up a conversation 
+				with two brothers from Eridani who seem to be a little evasive 
+				about their business.
+
 			</Text>
 			<Text id="Briefing">
 				(list
