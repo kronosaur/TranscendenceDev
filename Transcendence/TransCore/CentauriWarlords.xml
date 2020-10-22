@@ -12,6 +12,20 @@
 			alignment="destructive order"
 			/>
 
+	<Sovereign unid="&svCentauriWarlordCivilians;"
+			name=":the Centauri coalition"
+			shortName=":the Centauri"
+			adjective="Centauri"
+			demonym=":a Centauri warlord(s)"
+			plural="true"
+
+			alignment="neutral"
+			>
+		<Relationships>
+			<Relationship sovereign="&svCentauriWarlords;" disposition="friend" mutual="true"/>
+		</Relationships>
+	</Sovereign>
+
 	<SystemMap unid="&smCentauriWarlordsSpace;"
 			displayOn="&smHumanSpace;"
 			>
@@ -217,6 +231,137 @@
 
 	</StationType>
 	
+	<!-- Level 3: Centauri Settlement -->
+
+	<StationType UNID="&stCentauriSettlement;"
+			name=				"Centauri warlord settlement"
+			sovereign=			"&svCentauriWarlordCivilians;"
+
+			attributes=			"centauriWarlords, enemy, envWater, envAvoidsEarth, generic, human, populated, warlords"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			armorID=			"&itPlasteelPlate;"
+			hitPoints=			"90"
+			regen=				"1"
+			fireRateAdj=		"40"
+			explosionType=		"&vtKineticExplosion2;"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+centauriWarlordsSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"vrur- ----- ----- ----- -----"
+
+				locationCriteria=		"+outerSystem, +planetary"
+				/>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Sell	criteria="*NU -illegal; -id; -notForSale;"	priceAdj="100"/>
+			<Buy	criteria="amdNU -notForSale;"				priceAdj="50"/>
+			<Buy	criteria="*NU -id; -notForSale;"			priceAdj="90"/>
+			<Buy	criteria="*NU -id;"							priceAdj="10"/>
+		</Trade>
+		
+		<Items>
+			<RandomItem count="3-5" 
+					criteria=		"* L:1-5; +centauriWarlords -notStandard; -notForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					/>
+			<RandomItem count="1-3" 
+					criteria=		"*~adm -alien; -defective; -military; -specialty; -notStandard; -notForSale;"
+					levelFrequency=	"systemLevel:ru|c|cur"
+					/>
+
+			<Item	count="8d6" item="&itCentauriRice;"/>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itCentauriCLAW;"	posAngle="90" posRadius="50" omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Table>
+				<Ship chance="30"	count="2d4"	class="&scCentauriRaider;"			orders="guard"/>
+				<Group chance="60">
+					<Ship			count="1d4"	class="&scCentauriRaider;"			orders="guard"/>
+					<Ship			count="1"	class="&scCentauriHeavyRaider;"		orders="guard"/>
+				</Group>
+				<Ship chance="10"	count="2"	class="&scCentauriHeavyRaider;"		orders="guard"/>
+			</Table>
+		</Ships>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&rsCentauriStationsImage;" imageX="24" imageY="0" imageWidth="80" imageHeight="128"/>
+
+		<!-- Dock Screens -->
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionCommoditiesExchange">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
+							</Action>
+
+							<Action id="actionUndock" default="1" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Behavior -->
+
+		<Events>
+			<OnDestroy>
+				(block ()
+					;	If a settlement is destroyed by the player, then all 
+					;	settlements become hostile.
+
+					(if (and gPlayerShip (= aOrderGiver gPlayerShip))
+						(block ()
+							(sovSetDisposition &svCentauriWarlordCivilians; &svPlayer; 'enemy)
+							(sovSetDisposition &svPlayer; &svCentauriWarlordCivilians; 'enemy)
+							)
+						)
+
+					;	Destroy items on the station because we don't want too 
+					;	much loot
+
+					(rpgDestroyItems gSource)
+					)
+			</OnDestroy>
+		</Events>
+
+		<Language>
+			<Text id="descWelcome">
+
+				LATER: You are in a vast station.
+			
+			</Text>
+		</Language>
+
+		<Encounters frequency="common">
+			<Lookup table="&tbCentauriEncounters;"/>
+		</Encounters>
+	</StationType>
+
 	<!-- Level 4: Centauri Occupation -->
 
 	<StationType UNID="&stCentauriOccupation;"
@@ -234,7 +379,7 @@
 			multiHull=			"true"
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"150"
-            regen=              "1"
+			regen=              "1"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 
