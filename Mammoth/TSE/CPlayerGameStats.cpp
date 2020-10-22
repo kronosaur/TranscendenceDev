@@ -1564,7 +1564,7 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 
 		CSovereign *pSovereign = Ctx.Obj.GetSovereign();
 		if (pSovereign)
-			pSovereign->OnObjDestroyedByPlayer(&Ctx.Obj);
+			pSovereign->OnObjDestroyedByPlayer(Ctx);
 		}
 
 	//	Is this a station?
@@ -1582,7 +1582,7 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 
 			CSovereign *pSovereign = Ctx.Obj.GetSovereign();
 			if (pSovereign)
-				pSovereign->OnObjDestroyedByPlayer(&Ctx.Obj);
+				pSovereign->OnObjDestroyedByPlayer(Ctx);
 			}
 		}
 	}

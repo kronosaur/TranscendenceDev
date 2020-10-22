@@ -71,6 +71,15 @@ class CSovereign : public CDesignType
 		void DebugObjDeleted (CSpaceObject *pObj) const;
 #endif
 		void DeleteRelationships (void);
+		bool FindEventHandlerSovereign (int iEvent, SEventHandlerDesc *retEvent = NULL) const 
+			{
+			ASSERT(iEvent >= 0 && iEvent < CACHED_EVENT_COUNT);
+			if (m_CachedEvents[iEvent].pCode == NULL)
+				return false;
+
+			if (retEvent) *retEvent = m_CachedEvents[iEvent];
+			return true;
+			}
 		void FlushEnemyObjectCache (void) { m_EnemyObjects.DeleteAll(); m_pEnemyObjectsSystem = NULL; }
 		IPlayerController *GetController (void);
 		Disposition GetDispositionTowards (const CSovereign *pSovereign, bool bCheckParent = true) const;
@@ -89,7 +98,7 @@ class CSovereign : public CDesignType
 		bool IsPlayerOwned (void);
 		bool IsPlayer (void) const { return (GetUNID() == g_PlayerSovereignUNID); }
 		void MessageFromObj (CSpaceObject *pSender, const CString &sText);
-		void OnObjDestroyedByPlayer (CSpaceObject *pObj);
+		void OnObjDestroyedByPlayer (const SDestroyCtx &Ctx);
 		static Alignments ParseAlignment (const CString &sAlign);
 		void SetDispositionTowards (CSovereign *pSovereign, Disposition iDisp, bool bMutual = false);
 		void SetDispositionTowards (Alignments iAlignment, Disposition iDisp, bool bMutual = false);
@@ -124,6 +133,10 @@ class CSovereign : public CDesignType
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
+		static constexpr int eventOnShipDestroyedByPlayer		= 0;
+		static constexpr int eventOnStationDestroyedByPlayer	= 1;
+		static constexpr int CACHED_EVENT_COUNT					= 2;
+
 		struct SRelationship
 			{
 			CSovereign *pSovereign;
@@ -143,7 +156,7 @@ class CSovereign : public CDesignType
 		CString m_sShortName;					//	":the USA"
 		CString m_sAdjective;					//	"American"
 		CString m_sDemonym;						//	":an American(s)"
-		bool m_bPluralForm;						//	"The United States ARE..."
+		bool m_bPluralForm = false;				//	"The United States ARE..."
 
 		Alignments m_iAlignment = alignUnknown;
 		CXMLElement *m_pInitialRelationships = NULL;
@@ -157,5 +170,8 @@ class CSovereign : public CDesignType
 		bool m_bVirtual = false;						//	TRUE if this is a virtual sovereign (usually a base class)
 		mutable const CSystem *m_pEnemyObjectsSystem = NULL;	//	System that we've cached enemy objects
 		mutable CSpaceObjectList m_EnemyObjects;		//	List of enemy objects that can attack
+
+		SEventHandlerDesc m_CachedEvents[CACHED_EVENT_COUNT] = { 0 };
+		static const char *m_CACHED_EVENTS[CACHED_EVENT_COUNT];
 	};
 
