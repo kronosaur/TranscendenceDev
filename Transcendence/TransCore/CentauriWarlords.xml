@@ -22,7 +22,202 @@
 
 <!-- STATION TYPES -->
 
-	<!-- Centauri Occupation -->
+	<!-- Level 1: Centauri Camp -->
+
+	<StationType UNID="&stCentauriCamp;"
+			name=				"Centauri warlord camp"
+			sovereign=			"&svCentauriWarlords;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			armorID=			"&itLightPlasteelPlate;"
+			hitPoints=			"50"
+			fireRateAdj=		"80"
+			explosionType=		"&vtKineticExplosion1;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"centauriWarlords, enemy, envWater, envAvoidsEarth, generic, human, populated, warlords"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+centauriWarlordsSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"crv-- ----- ----- ----- -----"
+
+				locationCriteria=		"+outerSystem, +planetary"
+				/>
+
+		<Image			imageID="&rsCentauriStationsImage;" imageX="24" imageY="0" imageWidth="80" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itCentauriRecoilless;" posAngle="90" posRadius="50" omnidirectional="true"/>
+		</Devices>
+
+		<Ships>
+			<Table>
+				<Ship chance="30"	count="1d4+1"	class="&scCentauriRaider;"			orders="guard"/>
+				<Ship chance="60"	count="1d3+2"	class="&scCentauriRaider;"			orders="guard"/>
+				<Group chance="10">
+					<Ship			count="1d4"	class="&scCentauriRaider;"			orders="guard"/>
+					<Ship			count="1"	class="&scCentauriHeavyRaider;"		orders="guard"/>
+				</Group>
+			</Table>
+		</Ships>
+
+		<Items value="standard:level=1:x=0.8">
+			<Item	chance="80" count="1d6" item="&itCentauriRice;"/>
+			<Lookup	chance="50"				table="&trStdTreasure;"/>
+		</Items>
+
+		<Encounters frequency="uncommon">
+			<Lookup table="&tbCentauriEncounters;"/>
+		</Encounters>
+
+	</StationType>
+
+	<!-- Level 2: Centauri Stronghold -->
+
+	<StationType UNID="&stCentauriStronghold;"
+			name=				"Centauri warlord stronghold"
+			sovereign=			"&svCentauriWarlords;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			armorID=			"&itPlasteelPlate;"
+			hitPoints=			"90"
+			regen=				"1"
+			fireRateAdj=		"40"
+			explosionType=		"&vtKineticExplosion2;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"centauriWarlords, enemy, envWater, envAvoidsEarth, generic, human, populated, warlords"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+centauriWarlordsSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"rurv- ----- ----- ----- -----"
+
+				locationCriteria=		"+outerSystem, +planetary"
+				/>
+
+		<Image			imageID="&rsCentauriStationsImage;" imageX="24" imageY="0" imageWidth="80" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itCentauriCLAW;"	posAngle="90" posRadius="50" omnidirectional="true"/>
+		</Devices>
+
+		<Ships>
+			<Table>
+				<Ship chance="30"	count="2d4"	class="&scCentauriRaider;"			orders="guard"/>
+				<Group chance="60">
+					<Ship			count="1d4"	class="&scCentauriRaider;"			orders="guard"/>
+					<Ship			count="1"	class="&scCentauriHeavyRaider;"		orders="guard"/>
+				</Group>
+				<Ship chance="10"	count="2"	class="&scCentauriHeavyRaider;"		orders="guard"/>
+			</Table>
+		</Ships>
+
+		<Items value="standard:level=2:x=1.3">
+			<Item	chance="80" count="2d6" item="&itCentauriRice;"/>
+			<Lookup							table="&trStdTreasure;"/>
+		</Items>
+
+		<Encounters frequency="common">
+			<Lookup table="&tbCentauriEncounters;"/>
+		</Encounters>
+	</StationType>
+
+	<!-- Level 2: Arco Vaughn's Habitat -->
+
+	<StationType UNID="&stArcoVaughnHabitat;"
+			name=				": Arco Vaughn's container habitat"
+			sovereign=			"&svCentauriWarlords;"
+			
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noFriendlyTarget=	"true"
+
+			level=				"2"
+			armorID=			"&itPlasteelPlate;"
+			hitPoints=			"35"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcoVaughn, centauriWarlords, enemy, human, populated, questTarget, uncharted, warlords"
+			maxAppearing=		"1"
+			>
+
+		<ImageVariants>
+			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="64" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="128" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="192" imageY="128" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Ships>
+			<Ship				count="1" class="&scArcoVaughnHeavyRaider;"		orders="patrol" patrolDist="5"/>
+		</Ships>
+
+		<Items>
+			<Item		chance="80" count="1d6" item="&itCentauriRice;"/>
+		</Items>
+
+		<Events>
+			<OnAttacked>
+				(block (
+					(arcoVaughnObj (sysFindObject Nil "sAN +arcoVaughn"))
+					)
+					(switch
+						;	If Arco is dead, nothing to do
+						
+						(not arcoVaughnObj)
+							Nil
+							
+						;	If arco is already attacking the player, nothing to do.
+						
+						(= (objGetData arcoVaughnObj 'behavior) 'killPlayer)
+							Nil
+							
+						;	If the attack is not from the player, or if we can't see
+						;	the player, then nothing to do
+						
+						(or (!= aOrderGiver gPlayerShip)
+								(not (objCanDetectTarget arcoVaughnObj gPlayerShip))
+								)
+							Nil
+
+						;	Arco attacks the player
+						
+						(objFireEvent arcoVaughnObj 'OrderKillPlayer)
+						)
+					)
+			</OnAttacked>
+		</Events>
+
+		<DockingPorts>
+			<Port x="0"		y="70" />
+			<Port x="61"	y="35" />
+			<Port x="61"	y="-35" />
+			<Port x="0"		y="-70" />
+			<Port x="-61"	y="-35" />
+			<Port x="-61"	y="35" />
+		</DockingPorts>
+		
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at the lifeless ruins of a container habitat. 
+				This makeshift station has been recently occupied by a band of Centauri warlords.
+
+			</Text>
+		</Language>
+
+	</StationType>
+	
+	<!-- Level 4: Centauri Occupation -->
 
 	<StationType UNID="&stCentauriOccupation;"
 			name=				"occupied Commonwealth habitat"
@@ -254,204 +449,106 @@
 		</Language>
 	</StationType>
 
-	<!-- Centauri Camp -->
-
-	<StationType UNID="&stCentauriCamp;"
-			name=				"Centauri warlord camp"
-			sovereign=			"&svCentauriWarlords;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
-
-			armorID=			"&itLightPlasteelPlate;"
-			hitPoints=			"50"
-			fireRateAdj=		"80"
-			explosionType=		"&vtKineticExplosion1;"
-			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"centauriWarlords, enemy, envWater, envAvoidsEarth, generic, human, populated, warlords"
-			>
-
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+centauriWarlordsSpace;"
-				systemAffinity=			"+envWater; -envEarth;"
-				levelFrequency=			"crv-- ----- ----- ----- -----"
-
-				locationCriteria=		"+outerSystem, +planetary"
-				/>
-
-		<Image			imageID="&rsCentauriStationsImage;" imageX="24" imageY="0" imageWidth="80" imageHeight="128"/>
-
-		<Devices>
-			<Device deviceID="&itCentauriRecoilless;" posAngle="90" posRadius="50" omnidirectional="true"/>
-		</Devices>
-
-		<Ships>
-			<Table>
-				<Ship chance="30"	count="1d4+1"	class="&scCentauriRaider;"			orders="guard"/>
-				<Ship chance="60"	count="1d3+2"	class="&scCentauriRaider;"			orders="guard"/>
-				<Group chance="10">
-					<Ship			count="1d4"	class="&scCentauriRaider;"			orders="guard"/>
-					<Ship			count="1"	class="&scCentauriHeavyRaider;"		orders="guard"/>
-				</Group>
-			</Table>
-		</Ships>
-
-		<Items value="standard:level=1:x=0.8">
-			<Item	chance="80" count="1d6" item="&itCentauriRice;"/>
-			<Lookup	chance="50"				table="&trStdTreasure;"/>
-		</Items>
-
-		<Encounters frequency="uncommon">
-			<Lookup table="&tbCentauriEncounters;"/>
-		</Encounters>
-
-	</StationType>
-
-	<!-- Centauri Stronghold -->
-
-	<StationType UNID="&stCentauriStronghold;"
-			name=				"Centauri warlord stronghold"
-			sovereign=			"&svCentauriWarlords;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
-
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"90"
-			regen=				"1"
-			fireRateAdj=		"40"
-			explosionType=		"&vtKineticExplosion2;"
-			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"centauriWarlords, enemy, envWater, envAvoidsEarth, generic, human, populated, warlords"
-			>
-
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+centauriWarlordsSpace;"
-				systemAffinity=			"+envWater; -envEarth;"
-				levelFrequency=			"rurv- ----- ----- ----- -----"
-
-				locationCriteria=		"+outerSystem, +planetary"
-				/>
-
-		<Image			imageID="&rsCentauriStationsImage;" imageX="24" imageY="0" imageWidth="80" imageHeight="128"/>
-
-		<Devices>
-			<Device deviceID="&itCentauriCLAW;"	posAngle="90" posRadius="50" omnidirectional="true"/>
-		</Devices>
-
-		<Ships>
-			<Table>
-				<Ship chance="30"	count="2d4"	class="&scCentauriRaider;"			orders="guard"/>
-				<Group chance="60">
-					<Ship			count="1d4"	class="&scCentauriRaider;"			orders="guard"/>
-					<Ship			count="1"	class="&scCentauriHeavyRaider;"		orders="guard"/>
-				</Group>
-				<Ship chance="10"	count="2"	class="&scCentauriHeavyRaider;"		orders="guard"/>
-			</Table>
-		</Ships>
-
-		<Items value="standard:level=2:x=1.3">
-			<Item	chance="80" count="2d6" item="&itCentauriRice;"/>
-			<Lookup							table="&trStdTreasure;"/>
-		</Items>
-
-		<Encounters frequency="common">
-			<Lookup table="&tbCentauriEncounters;"/>
-		</Encounters>
-	</StationType>
-
-	<!-- Arco Vaughn's Habitat -->
-
-	<StationType UNID="&stArcoVaughnHabitat;"
-			name=				": Arco Vaughn's container habitat"
-			sovereign=			"&svCentauriWarlords;"
-			
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			noFriendlyTarget=	"true"
-
-			level=				"2"
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"35"
-			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"arcoVaughn, centauriWarlords, enemy, human, populated, questTarget, uncharted, warlords"
-			maxAppearing=		"1"
-			>
-
-		<ImageVariants>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="128" imageWidth="64" imageHeight="64"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="64" imageY="128" imageWidth="64" imageHeight="64"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="128" imageY="128" imageWidth="64" imageHeight="64"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="192" imageY="128" imageWidth="64" imageHeight="64"/>
-		</ImageVariants>
-
-		<Ships>
-			<Ship				count="1" class="&scArcoVaughnHeavyRaider;"		orders="patrol" patrolDist="5"/>
-		</Ships>
-
-		<Items>
-			<Item		chance="80" count="1d6" item="&itCentauriRice;"/>
-		</Items>
-
-		<Events>
-			<OnAttacked>
-				(block (
-					(arcoVaughnObj (sysFindObject Nil "sAN +arcoVaughn"))
-					)
-					(switch
-						;	If Arco is dead, nothing to do
-						
-						(not arcoVaughnObj)
-							Nil
-							
-						;	If arco is already attacking the player, nothing to do.
-						
-						(= (objGetData arcoVaughnObj 'behavior) 'killPlayer)
-							Nil
-							
-						;	If the attack is not from the player, or if we can't see
-						;	the player, then nothing to do
-						
-						(or (!= aOrderGiver gPlayerShip)
-								(not (objCanDetectTarget arcoVaughnObj gPlayerShip))
-								)
-							Nil
-
-						;	Arco attacks the player
-						
-						(objFireEvent arcoVaughnObj 'OrderKillPlayer)
-						)
-					)
-			</OnAttacked>
-		</Events>
-
-		<DockingPorts>
-			<Port x="0"		y="70" />
-			<Port x="61"	y="35" />
-			<Port x="61"	y="-35" />
-			<Port x="0"		y="-70" />
-			<Port x="-61"	y="-35" />
-			<Port x="-61"	y="35" />
-		</DockingPorts>
-		
-		<Language>
-			<Text id="core.abandonedStationDesc">
-
-				You are docked at the lifeless ruins of a container habitat. 
-				This makeshift station has been recently occupied by a band of Centauri warlords.
-
-			</Text>
-		</Language>
-
-	</StationType>
-	
 <!-- SHIP CLASSES -->
 
-	<!-- Arco Vaughn's Heavy Raider -->
+	<!-- Level 1: Centauri Raider -->
+
+	<ShipClass UNID="&scCentauriRaider;"
+			manufacturer=		"Centauri"
+			class=				""
+			type=				"raider"
+			defaultSovereign=	"&svCentauriWarlords;"
+
+			size=				"17"
+			mass=				"25"
+			cargoSpace=			"5"
+			thrustRatio=		"4.0"
+			maxSpeed=			"13"
+
+			attributes=			"centauriWarlords,genericClass"
+			>
+
+		<Armor>
+			<ArmorSection start="270" span="180" armorID="&itUltraLightTitaniumArmor;" />
+			<ArmorSection start="90"  span="180" armorID="&itUltraLightTitaniumArmor;" />
+		</Armor>
+
+		<Devices>
+			<Device deviceID="&itCentauriRecoilless;" enhanced="10"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"5.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<Image imageID="&rsCentauriRaiderHD;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rsCentauriRaiderHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="143"	posRadius="20"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-143"	posRadius="20"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<AISettings
+			fireRateAdj=		"40"
+			fireAccuracy=		"80"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+	
+	<!-- Level 3: Centauri Heavy Raider -->
+
+	<ShipClass UNID="&scCentauriHeavyRaider;"
+			manufacturer=		"Centauri"
+			class=				""
+			type=				"heavy raider"
+			defaultSovereign=	"&svCentauriWarlords;"
+
+			size=				"22"
+			mass=				"60"
+			cargoSpace=			"10"
+			thrustRatio=		"1.8"
+			maxSpeed=			"13"
+
+			attributes=			"centauriWarlords,genericClass"
+			>
+
+		<Armor>
+			<ArmorSection start="270" span="180" armorID="&itReactiveArmor;" />
+			<ArmorSection start="90"  span="180" armorID="&itReactiveArmor;" />
+		</Armor>
+
+		<Devices>
+			<Table>
+				<Device chance="40" deviceID="&itCentauriCLAW;"/>
+				<Device chance="60" deviceID="&itCentauriHeavyCLAW;"/>
+			</Table>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"5.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<Image imageID="&rsCentauriHeavyRaiderHD;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.004375"/>
+		<HeroImage imageID="&rsCentauriHeavyRaiderHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="143"	posRadius="20"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-143"	posRadius="20"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"80"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 3: Arco Vaughn's Heavy Raider -->
 
 	<ShipClass UNID="&scArcoVaughnHeavyRaider;"
 			manufacturer=		"Centauri"
@@ -466,7 +563,7 @@
 
 			leavesWreck=		"100"
 
-			attributes=			"arcoVaughn,centauriWarlords"
+			attributes=			"arcoVaughn, centauriWarlords"
 			>
 
 		<Armor>
@@ -552,106 +649,47 @@
 		</Events>
 	</ShipClass>
 
-	<!-- Centauri Heavy Raider -->
-
-	<ShipClass UNID="&scCentauriHeavyRaider;"
-			manufacturer=		"Centauri"
-			class=				""
-			type=				"heavy raider"
-			defaultSovereign=	"&svCentauriWarlords;"
-
-			size=				"22"
-			mass=				"60"
-			cargoSpace=			"10"
-			thrustRatio=		"1.8"
-			maxSpeed=			"13"
-
-			attributes=			"centauriWarlords,genericClass"
-			>
-
-		<Armor>
-			<ArmorSection start="270" span="180" armorID="&itReactiveArmor;" />
-			<ArmorSection start="90"  span="180" armorID="&itReactiveArmor;" />
-		</Armor>
-
-		<Devices>
-			<Table>
-				<Device chance="40" deviceID="&itCentauriCLAW;"/>
-				<Device chance="60" deviceID="&itCentauriHeavyCLAW;"/>
-			</Table>
-		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"5.0"
-			rotationAccel=		"1.0"
-			/>
-
-		<Image imageID="&rsCentauriHeavyRaiderHD;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.004375"/>
-		<HeroImage imageID="&rsCentauriHeavyRaiderHero;" imageWidth="320" imageHeight="320"/>
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="143"	posRadius="20"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-143"	posRadius="20"	posZ="0"	rotation="180"/>
-		</Effects>
-
-		<AISettings
-			fireRateAdj=		"20"
-			fireAccuracy=		"80"
-			perception=			"4"
-			/>
-
-	</ShipClass>
-
-	<!-- Centauri Raider -->
-
-	<ShipClass UNID="&scCentauriRaider;"
-			manufacturer=		"Centauri"
-			class=				""
-			type=				"raider"
-			defaultSovereign=	"&svCentauriWarlords;"
-
-			size=				"17"
-			mass=				"25"
-			cargoSpace=			"5"
-			thrustRatio=		"4.0"
-			maxSpeed=			"13"
-
-			attributes=			"centauriWarlords,genericClass"
-			>
-
-		<Armor>
-			<ArmorSection start="270" span="180" armorID="&itUltraLightTitaniumArmor;" />
-			<ArmorSection start="90"  span="180" armorID="&itUltraLightTitaniumArmor;" />
-		</Armor>
-
-		<Devices>
-			<Device deviceID="&itCentauriRecoilless;" enhanced="10"/>
-		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"5.0"
-			rotationAccel=		"1.0"
-			/>
-
-		<Image imageID="&rsCentauriRaiderHD;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
-		<HeroImage imageID="&rsCentauriRaiderHero;" imageWidth="320" imageHeight="320"/>
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="143"	posRadius="20"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-143"	posRadius="20"	posZ="0"	rotation="180"/>
-		</Effects>
-
-		<AISettings
-			fireRateAdj=		"40"
-			fireAccuracy=		"80"
-			perception=			"4"
-			/>
-
-	</ShipClass>
-	
 <!-- ITEM TYPES -->
 
-	<!-- Centauri CLAW cannon -->
+	<!-- Level 1: Centauri Recoilless -->
+
+	<ItemType UNID="&itCentauriRecoilless;"
+			name=				"Centauri recoilless| Centauri recoilless cannons"
+			level=				"1"
+			value=				"150"
+			mass=				"2500"
+			frequency=			"uncommon"
+			attributes=			"centauriWarlords; MajorItem; NotForSale"
+			showReference=		"true"
+
+			description=		"Centauri raiders use twin recoilless cannons, firing light rounds."
+
+			sortName=			"recoilless cannon, Centauri"
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="768" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"kinetic:1d3; momentum1"
+				fireRate=			"15"
+				missileSpeed=		"30"
+				lifetime=			"30"
+				powerUse=			"10"
+
+				effect=				"&efKineticBoltDefault;"
+				sound=				"&snRecoillessCannon;"
+				>
+
+			<Configuration aimTolerance="5">
+				<Shot posAngle="90" posRadius="13" />
+				<Shot posAngle="270" posRadius="13" />
+			</Configuration>
+		</Weapon>
+	</ItemType>
+
+	<!-- Level 3: Centauri CLAW cannon -->
 
 	<ItemType UNID="&itCentauriCLAW;"
 			name=				"CLAW cannon"
@@ -692,7 +730,7 @@
 		</Weapon>
 	</ItemType>
 
-	<!-- Centauri Heavy CLAW cannon -->
+	<!-- Level 3: Centauri Heavy CLAW cannon -->
 
 	<ItemType UNID="&itCentauriHeavyCLAW;"
 			name=				"heavy CLAW cannon"
@@ -731,45 +769,7 @@
 		</Weapon>
 	</ItemType>
 
-	<!-- Centauri Recoilless -->
-
-	<ItemType UNID="&itCentauriRecoilless;"
-			name=				"Centauri recoilless| Centauri recoilless cannons"
-			level=				"1"
-			value=				"150"
-			mass=				"2500"
-			frequency=			"uncommon"
-			attributes=			"centauriWarlords; MajorItem; NotForSale"
-			showReference=		"true"
-
-			description=		"Centauri raiders use twin recoilless cannons, firing light rounds."
-
-			sortName=			"recoilless cannon, Centauri"
-			>
-
-		<Image imageID="&rsItems1;" imageX="192" imageY="768" imageWidth="96" imageHeight="96"/>
-
-		<Weapon
-				type=				"missile"
-
-				damage=				"kinetic:1d3; momentum1"
-				fireRate=			"15"
-				missileSpeed=		"30"
-				lifetime=			"30"
-				powerUse=			"10"
-
-				effect=				"&efKineticBoltDefault;"
-				sound=				"&snRecoillessCannon;"
-				>
-
-			<Configuration aimTolerance="5">
-				<Shot posAngle="90" posRadius="13" />
-				<Shot posAngle="270" posRadius="13" />
-			</Configuration>
-		</Weapon>
-	</ItemType>
-
-	<!-- Barrel of Centauri Nanos -->
+	<!-- Level 3: Barrel of Centauri Nanos -->
 
 	<ItemType UNID="&itCentauriNanos;"
 			inherit=			"&baStdPasteBarrel;"

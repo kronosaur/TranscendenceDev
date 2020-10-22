@@ -1023,5 +1023,8 @@
     <Xml Include="BlackMarketMissionSmuggle01.xml">
       <Filter>Human Space Library\Black Market</Filter>
     </Xml>
+    <Xml Include="RaisuMission01.xml">
+      <Filter>Human Space Library\Eridani</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

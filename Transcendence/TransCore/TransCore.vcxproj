@@ -635,6 +635,7 @@
     <Xml Include="Psych01.xml" />
     <Xml Include="Pteravores.xml" />
     <Xml Include="QuantumCPU.xml" />
+    <Xml Include="RaisuMission01.xml" />
     <Xml Include="RaisuStation.xml" />
     <Xml Include="Rama.xml" />
     <Xml Include="RanxEmpire.xml" />

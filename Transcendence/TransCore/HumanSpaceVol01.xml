@@ -2121,7 +2121,8 @@
 	<!ENTITY rsEI100Hero				"0x00100398">
 	<!ENTITY rsSapphire					"0x00100399">
 	<!ENTITY rsEI500					"0x0010039A">
-	<!ENTITY msRaisuStation				"0x0010039B">
+	<!ENTITY msRaisuStation				"0x0010039B">	<!-- Backwards Compatible -->
+	<!ENTITY msRaisuStation01			"0x0010039B">
 	<!ENTITY rsRoninAHero				"0x0010039C">
 	<!ENTITY rsRoninB					"0x0010039D">
 	<!ENTITY rsRoninBHero				"0x0010039E">
