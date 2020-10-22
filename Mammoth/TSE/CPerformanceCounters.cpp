@@ -5,6 +5,10 @@
 
 #include "PreComp.h"
 
+#ifdef DEBUG
+//#define DEBUG_CCREFCOUNT
+#endif
+
 bool CPerformanceCounters::IsAnyCounterEnabled (void) const
 
 //	IsAnyCounterEnabled
@@ -52,6 +56,12 @@ void CPerformanceCounters::Paint (CG32bitImage &Dest, const RECT &rcRect, const 
 
 		y += Font.GetHeight();
 		}
+
+#ifdef DEBUG_CCREFCOUNT
+	CString sLine = strPatternSubst(CONSTLIT("CCNil: %d refCounts"), g_pUniverse->GetCC().GetNil()->GetRefCount());
+	Font.DrawText(Dest, x, y, RGB_TEXT_COLOR, sLine);
+	y += Font.GetHeight();
+#endif
 	}
 
 bool CPerformanceCounters::SetEnabled (const CString &sID, bool bEnabled)

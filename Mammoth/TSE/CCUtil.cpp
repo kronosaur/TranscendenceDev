@@ -892,11 +892,7 @@ void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, const CSpaceO
 	if (pObj)
 		CC.DefineGlobalInteger(sVar, (int)pObj);
 	else
-		{
-		ICCItem *pValue = CC.CreateNil();
-		CC.DefineGlobal(sVar, pValue);
-		pValue->Discard();
-		}
+		CC.DefineGlobal(sVar, CC.GetNil());
 	}
 
 void DefineGlobalVector (CCodeChain &CC, const CString &sVar, const CVector &vVector)
@@ -916,7 +912,7 @@ void DefineGlobalWeaponType (CCodeChain &CC, const CString &sVar, CItemType *pWe
 	if (pWeaponType)
 		CC.DefineGlobalInteger(sVar, pWeaponType->GetUNID());
 	else
-		CC.DefineGlobal(sVar, CC.CreateNil());
+		CC.DefineGlobal(sVar, CC.GetNil());
 	}
 
 ICCItem *StdErrorNoSystem (CCodeChain &CC)

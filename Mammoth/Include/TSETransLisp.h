@@ -47,7 +47,7 @@ class CCodeChainCtx
 		void DefineContainingType (const COverlay *pOverlay);
 		void DefineContainingType (const CSpaceObject *pObj);
 		ICCItem *CreateNil (void) { return m_CC.CreateNil(); }
-		void DefineBool (const CString &sVar, bool bValue) { m_CC.DefineGlobal(sVar, (bValue ? m_CC.CreateTrue() : m_CC.CreateNil())); }
+		void DefineBool (const CString &sVar, bool bValue) { m_CC.DefineGlobal(sVar, (bValue ? m_CC.GetTrue() : m_CC.GetNil())); }
 		void DefineDamageCtx (const SDamageCtx &Ctx, int iDamage = -1);
 		void DefineDamageEffects (const CString &sVar, SDamageCtx &Ctx);
 		void DefineDouble (const CString &sVar, Metric rValue) { ICCItemPtr pValue(rValue); m_CC.DefineGlobal(sVar, pValue); }
@@ -56,7 +56,7 @@ class CCodeChainCtx
 		void DefineItem (const CString &sVar, const CItem &Item);
 		void DefineItem (const CString &sVar, CItemCtx &ItemCtx);
 		void DefineItemType (const CString &sVar, const CItemType *pType);
-		void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.CreateNil()); }
+		void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.GetNil()); }
 		void DefineOrbit (const CString &sVar, const COrbit &OrbitDesc);
 		void DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj);
 		void DefineSpaceObject (const CString &sVar, const CSpaceObject &Obj) { m_CC.DefineGlobalInteger(sVar, (int)&Obj); }

@@ -1621,7 +1621,7 @@ void CUniverse::NotifyOnPlayerEnteredGate (CTopologyNode *pDestNode, const CStri
 	//	never get an OnObjDestroyed message).
 	//	Note: We need gPlayer for OnGameEnd event
 
-	GetCC().DefineGlobal(STR_G_PLAYER_SHIP, GetCC().CreateNil());
+	GetCC().DefineGlobal(STR_G_PLAYER_SHIP, GetCC().GetNil());
 
 	//	Mark source and destination stargates as charted.
 

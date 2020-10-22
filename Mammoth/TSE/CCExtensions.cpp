@@ -4282,11 +4282,11 @@ ALERROR CUniverse::InitCodeChainPrimitives (void)
 	//	events, we may get undefined variable errors when trying to save
 	//	old versions of the globals)
 
-	m_CC.DefineGlobal(CONSTLIT("gPlayer"), m_CC.CreateNil());
-	m_CC.DefineGlobal(CONSTLIT("gPlayerShip"), m_CC.CreateNil());
-	m_CC.DefineGlobal(CONSTLIT("gSource"), m_CC.CreateNil());
-	m_CC.DefineGlobal(CONSTLIT("gItem"), m_CC.CreateNil());
-	m_CC.DefineGlobal(CONSTLIT("gType"), m_CC.CreateNil());
+	m_CC.DefineGlobal(CONSTLIT("gPlayer"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gPlayerShip"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gSource"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gItem"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gType"), m_CC.GetNil());
 
 	//	Register primitives
 
@@ -6042,7 +6042,7 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 
 	//	Associate the enumaration variable
 
-	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+	pLocalSymbols->AddEntry(pVar, pCC->GetNil());
 
 	//	Setup the context
 
@@ -6210,7 +6210,7 @@ ICCItem *fnItemEnumTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 
 	//	Associate the enumaration variable
 
-	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+	pLocalSymbols->AddEntry(pVar, pCC->GetNil());
 
 	//	Setup the context
 
@@ -12124,7 +12124,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return StdErrorNoSystem(*pCC);
 
 			CDesignType *pType = pCtx->GetUniverse().FindDesignType(pArgs->GetElement(0)->GetIntegerValue());
-			ICCItem *pOptions = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : pCC->CreateNil());
+			ICCItem *pOptions = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : pCC->GetNil());
 
 			CSpaceObject *pTarget = CreateObjFromItem(pOptions->GetElement(CONSTLIT("target")));
 			if (pTarget == NULL)
@@ -14825,7 +14825,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 				if (pRadiusFunc)
 					{
-					ICCItem *pResult = pRadiusFunc->Execute(pEvalCtx, pCC->CreateNil());
+					ICCItem *pResult = pRadiusFunc->Execute(pEvalCtx, pCC->GetNil());
 
 					//	Function can return either a radius or a vector
 

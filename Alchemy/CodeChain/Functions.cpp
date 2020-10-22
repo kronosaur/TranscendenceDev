@@ -835,11 +835,11 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 	if (pArgs->GetCount() == 0
 			&& (dwCoerceFlags & HELPER_COMPARE_COERCE_FULL))
 		{
-		bOk = CompareSucceeds(HelperCompareItems(pCC->CreateNil(), pCC->CreateNil(), dwCoerceFlags), dwData);
+		bOk = CompareSucceeds(HelperCompareItems(pCC->GetNil(), pCC->GetNil(), dwCoerceFlags), dwData);
 		}
 	else
 		{
-		ICCItem *pPrev = ((pArgs->GetCount() == 1 && (dwCoerceFlags & HELPER_COMPARE_COERCE_FULL)) ? pCC->CreateNil() : NULL);
+		ICCItem *pPrev = ((pArgs->GetCount() == 1 && (dwCoerceFlags & HELPER_COMPARE_COERCE_FULL)) ? pCC->GetNil() : NULL);
 
 		//	Loop over all arguments
 
@@ -965,9 +965,9 @@ ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		return pLocalSymbols;
 		}
 
-	//	Associate the enumaration variable
+	//	Associate the enumeration variable
 
-	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+	pLocalSymbols->AddEntry(pVar, pCC->GetNil());
 
 	//	Setup the context
 
@@ -1096,7 +1096,7 @@ ICCItem *fnFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					break;
 
 				ICCItem *pTry = pSource->GetElement(iTry)->GetElement(iListKey);
-				int iCompare = iSorted * HelperCompareItems(pTarget, (pTry ? pTry : pCC->CreateNil()));
+				int iCompare = iSorted * HelperCompareItems(pTarget, (pTry ? pTry : pCC->GetNil()));
 				if (iCompare == 0)
 					{
 					//	Found
@@ -1232,7 +1232,7 @@ ICCItem *fnForLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+	pLocalSymbols->AddEntry(pVar, pCC->GetNil());
 
 	//	Setup the context
 
@@ -2641,7 +2641,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumeration variable
 
-	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+	pLocalSymbols->AddEntry(pVar, pCC->GetNil());
 
 	//	Setup the context
 
@@ -2849,7 +2849,7 @@ ICCItem *fnMatch (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+	pLocalSymbols->AddEntry(pVar, pCC->GetNil());
 
 	//	Setup the context
 

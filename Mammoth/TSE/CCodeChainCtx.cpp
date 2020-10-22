@@ -544,7 +544,7 @@ void CCodeChainCtx::DefineItem (const CString &sVar, const CItem &Item)
 		pItem->Discard();
 		}
 	else
-		m_CC.DefineGlobal(sVar, m_CC.CreateNil());
+		m_CC.DefineGlobal(sVar, m_CC.GetNil());
 	}
 
 void CCodeChainCtx::DefineItemType (const CString &sVar, const CItemType *pType)
@@ -557,7 +557,7 @@ void CCodeChainCtx::DefineItemType (const CString &sVar, const CItemType *pType)
 	if (pType)
 		m_CC.DefineGlobalInteger(sVar, pType->GetUNID());
 	else
-		m_CC.DefineGlobal(sVar, m_CC.CreateNil());
+		m_CC.DefineGlobal(sVar, m_CC.GetNil());
 	}
 
 void CCodeChainCtx::DefineOrbit (const CString &sVar, const COrbit &OrbitDesc)
@@ -582,11 +582,7 @@ void CCodeChainCtx::DefineSpaceObject (const CString &sVar, const CSpaceObject *
 	if (pObj)
 		DefineSpaceObject(sVar, *pObj);
 	else
-		{
-		ICCItem *pValue = m_CC.CreateNil();
-		m_CC.DefineGlobal(sVar, pValue);
-		pValue->Discard();
-		}
+		m_CC.DefineGlobal(sVar, m_CC.GetNil());
 	}
 
 void CCodeChainCtx::DefineType (DWORD dwUNID)
@@ -599,7 +595,7 @@ void CCodeChainCtx::DefineType (DWORD dwUNID)
 	if (dwUNID)
 		DefineInteger(STR_G_TYPE, dwUNID);
 	else
-		m_CC.DefineGlobal(STR_G_TYPE, m_CC.CreateNil());
+		m_CC.DefineGlobal(STR_G_TYPE, m_CC.GetNil());
 	}
 
 void CCodeChainCtx::DefineVector (const CString &sVar, const CVector &vVector)
@@ -957,7 +953,7 @@ void CCodeChainCtx::SaveAndDefineType (DWORD dwUNID)
 	if (dwUNID)
 		DefineInteger(STR_G_TYPE, dwUNID);
 	else
-		m_CC.DefineGlobal(STR_G_TYPE, m_CC.CreateNil());
+		m_CC.DefineGlobal(STR_G_TYPE, m_CC.GetNil());
 	}
 
 void CCodeChainCtx::SaveItemVar (void)
