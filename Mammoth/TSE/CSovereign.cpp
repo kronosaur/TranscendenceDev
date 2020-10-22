@@ -194,6 +194,12 @@ static SAlignData ALIGN_DATA[CSovereign::alignCount] =
 		{	CONSTDEF("predator"),		alignDestructiveChaos,		ALIGN_FLAG_DESTRUCTIVE },
 	};
 
+const char *CSovereign::m_CACHED_EVENTS[CACHED_EVENT_COUNT] = 
+	{
+	"OnShipDestroyedByPlayer",
+	"OnStationDestroyedByPlayer"
+	};
+
 CSovereign::CSovereign (void)
 
 //	CSovereign constructor
@@ -693,6 +699,9 @@ ALERROR CSovereign::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	{
 	InitRelationships();
+
+	InitCachedEvents(CACHED_EVENT_COUNT, m_CACHED_EVENTS, m_CachedEvents);
+
 	return NOERROR;
 	}
 
@@ -781,17 +790,71 @@ ICCItemPtr CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return NULL;
 	}
 
-void CSovereign::OnObjDestroyedByPlayer (CSpaceObject *pObj)
+void CSovereign::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx)
 
 //	OnObjDestroyedByPlayer
 //
 //	One of our objects (ship/station) was destroyed by the player.
 
 	{
-	if (pObj->GetCategory() == CSpaceObject::catStation)
+	if (Ctx.Obj.GetCategory() == CSpaceObject::catStation)
+		{
 		m_iStationsDestroyedByPlayer++;
+
+		SEventHandlerDesc Event;
+		if (FindEventHandlerSovereign(eventOnStationDestroyedByPlayer, &Event))
+			{
+			CCodeChainCtx CCX(GetUniverse());
+
+			//	Setup
+
+			CCX.DefineContainingType(this);
+			CCX.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
+			CCX.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
+			CCX.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+			CCX.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+			CCX.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
+			CCX.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
+
+			//	Execute
+
+			ICCItemPtr pResult = CCX.RunCode(Event);
+
+			//	Done
+
+			if (pResult->IsError())
+				ReportEventError(CONSTLIT("OnStationDestroyedByPlayer"), pResult);
+			}
+		}
 	else
+		{
 		m_iShipsDestroyedByPlayer++;
+
+		SEventHandlerDesc Event;
+		if (FindEventHandlerSovereign(eventOnShipDestroyedByPlayer, &Event))
+			{
+			CCodeChainCtx CCX(GetUniverse());
+
+			//	Setup
+
+			CCX.DefineContainingType(this);
+			CCX.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
+			CCX.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
+			CCX.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+			CCX.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+			CCX.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
+			CCX.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
+
+			//	Execute
+
+			ICCItemPtr pResult = CCX.RunCode(Event);
+
+			//	Done
+
+			if (pResult->IsError())
+				ReportEventError(CONSTLIT("OnShipDestroyedByPlayer"), pResult);
+			}
+		}
 	}
 
 ALERROR CSovereign::OnPrepareBindDesign (SDesignLoadCtx &Ctx)
