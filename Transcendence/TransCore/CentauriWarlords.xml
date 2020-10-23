@@ -21,9 +21,30 @@
 
 			alignment="neutral"
 			>
+		<Properties>
+			<Global id="playerCanTrade">Nil</Global>
+		</Properties>
+
 		<Relationships>
 			<Relationship sovereign="&svCentauriWarlords;" disposition="friend" mutual="true"/>
 		</Relationships>
+
+		<Events>
+			<OrderSetPlayerCanTrade>
+				(block ()
+					(typSet@ gType 'playerCanTrade True)
+					)
+			</OrderSetPlayerCanTrade>
+
+			<OrderSetPlayerIsEnemy>
+				(block ()
+					(sovSetDisposition gType &svPlayer; 'enemy)
+					(sovSetDisposition &svPlayer; gType 'enemy)
+
+					(typSet@ gType 'playerCanTrade Nil)
+					)
+			</OrderSetPlayerIsEnemy>
+		</Events>
 	</Sovereign>
 
 	<SystemMap unid="&smCentauriWarlordsSpace;"
@@ -236,12 +257,12 @@
 	<StationType UNID="&stCentauriSettlement;"
 			name=				"Centauri warlord settlement"
 			sovereign=			"&svCentauriWarlordCivilians;"
+			inherit=			"&unidCommonText;"
 
 			attributes=			"centauriWarlords, enemy, envWater, envAvoidsEarth, generic, human, populated, warlords"
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"90"
@@ -286,25 +307,28 @@
 		<!-- Configuration -->
 
 		<Devices>
-			<Device deviceID="&itCentauriCLAW;"	posAngle="90" posRadius="50" omnidirectional="true"/>
+			<Device deviceID="&itCentauriCLAW;"	posAngle="90" posRadius="34" omnidirectional="true"/>
 		</Devices>
 
 		<!-- Ships and Defenses -->
 
 		<Ships>
-			<Table>
-				<Ship chance="30"	count="2d4"	class="&scCentauriRaider;"			orders="guard"/>
-				<Group chance="60">
-					<Ship			count="1d4"	class="&scCentauriRaider;"			orders="guard"/>
-					<Ship			count="1"	class="&scCentauriHeavyRaider;"		orders="guard"/>
-				</Group>
-				<Ship chance="10"	count="2"	class="&scCentauriHeavyRaider;"		orders="guard"/>
-			</Table>
+			<LevelTable count="3-5">
+				<Ship levelFrequency="uuurr -----" count="1" class="&scBorer;" orders="gateOnThreat"/>
+				<Ship levelFrequency="cccrr -----" count="1" class="&scIAVLight;" orders="gateOnThreat"/>
+				<Ship levelFrequency="-rrcc -----" count="1" class="&scIAVMedium;" orders="gateOnThreat"/>
+			</LevelTable>
 		</Ships>
 
 		<!-- Image and Effects -->
 
-		<Image			imageID="&rsCentauriStationsImage;" imageX="24" imageY="0" imageWidth="80" imageHeight="128"/>
+		<Image			imageID="&rsCentauriSettlement;" imageWidth="186" imageHeight="186" viewportRatio="0.025"/>
+
+		<DockingPorts
+				portAngle=		"15"
+				portCount=		"8"
+				portRadius=		"120"
+				/>
 
 		<!-- Dock Screens -->
 		
@@ -314,7 +338,10 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
+								(if (typ@ &svCentauriWarlordCivilians; 'playerCanTrade)
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
+									(scrShowScreen gScreen &dsRPGMessage; { textID: 'descNoTrade })
+									)
 							</Action>
 
 							<Action id="actionUndock" default="1" cancel="1">
@@ -328,6 +355,10 @@
 
 		<!-- Events and Behavior -->
 
+		<Encounters frequency="common">
+			<Lookup table="&tbCentauriEncounters;"/>
+		</Encounters>
+
 		<Events>
 			<OnDestroy>
 				(block ()
@@ -335,10 +366,7 @@
 					;	settlements become hostile.
 
 					(if (and gPlayerShip (= aOrderGiver gPlayerShip))
-						(block ()
-							(sovSetDisposition &svCentauriWarlordCivilians; &svPlayer; 'enemy)
-							(sovSetDisposition &svPlayer; &svCentauriWarlordCivilians; 'enemy)
-							)
+						(typFireEvent &svCentauriWarlordCivilians; 'OrderSetPlayerIsEnemy)
 						)
 
 					;	Destroy items on the station because we don't want too 
@@ -351,15 +379,47 @@
 
 		<Language>
 			<Text id="descWelcome">
+				(switch
+					(typ@ &svCentauriWarlordCivilians; 'playerCanTrade)
+						(scrTranslate gScreen 'descWelcome.trade)
 
-				LATER: You are in a vast station.
+					(scrTranslate gScreen 'descWelcome.default)
+					)
+			</Text>
+			<Text id="descWelcome.trade">
+
+				You enter a narrow docking bay that leads to a warren of 
+				corridors. People in work gear and pressure suits wander the
+				station on various errands.
+
+				A couple of merchants approach you:
+
+				"Welcome! Welcome! We're happy to trade with you. Come in and 
+				buy what you want."
+
+				A group of armed men in dirty uniforms keep watch, but they do
+				not interfere.
+
+			</Text>
+			<Text id="descWelcome.default">
+
+				You enter a narrow docking bay that leads to a warren of 
+				corridors. People in work gear and pressure suits wander the
+				station on various errands.
+				
+				A group of armed men in dirty uniforms keep watch. They eye you
+				warily and follow discreetly behind you.
 			
 			</Text>
-		</Language>
+			<Text id="descNoTrade">
 
-		<Encounters frequency="common">
-			<Lookup table="&tbCentauriEncounters;"/>
-		</Encounters>
+				Armed men stop you from entering:
+
+				"I think you're lost, %boy%. No one wants to trade with you 
+				here."
+
+			</Text>
+		</Language>
 	</StationType>
 
 	<!-- Level 4: Centauri Occupation -->
@@ -584,12 +644,14 @@
 			</Text>
 
 			<Text id="rumor.commonwealthPub">
+
 				You listen to a refugee from %station%:
 
 				"Centauri warlords took over our station last month.
 				Whatever&mdash;I like this place better."
 
 				You spend 5 credits and buy him a few drinks.
+
 			</Text>
 		</Language>
 	</StationType>
@@ -982,6 +1044,7 @@
 <!-- RESOURCE -->
 
 	<Image UNID="&rsCentauriStationsImage;"		bitmap="Resources\CentauriStations.jpg" bitmask="Resources\CentauriStationsMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsCentauriSettlement;"		bitmap="Resources\CentauriSettlement.jpg" bitmask="Resources\CentauriSettlementMask.bmp"  loadOnUse="true"/>
 
 	<Image UNID="&rsCentauriHeavyRaiderHD;"		bitmap="Resources\CentauriHeavyRaiderHD.jpg" bitmask="Resources\CentauriHeavyRaiderHDMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCentauriHeavyRaiderHero;"	bitmap="Resources\CentauriHeavyRaiderLarge.jpg" bitmask="Resources\CentauriHeavyRaiderLargeMask.bmp"  loadOnUse="true"/>

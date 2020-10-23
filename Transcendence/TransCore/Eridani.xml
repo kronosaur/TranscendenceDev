@@ -177,6 +177,10 @@
 						<Lookup table="AsteroidRing100"/>
 					</ZAdjust>
 
+					<Orbitals count="6" distance="20-28" angle="equidistant">
+						<Location attributes="voermsOrbit"/>
+					</Orbitals>
+
 					<!-- Voerms is in a sparse asteroid belt -->
 
 					<LocationAttributes attributes="voermsRegion">
@@ -189,7 +193,7 @@
 						<Location attributes="arcoVaughnBase" required="true"/>
 					</Siblings>
 
-					<!-- There are a few other Centauri bases here -->
+					<!-- There are a few other encounters here -->
 
 					<Siblings count="6" angleInc="40-320" radiusInc="-90-90">
 						<Location attributes="voermsRegion"/>
@@ -277,7 +281,11 @@
 				<Station type="&stArcoVaughnHabitat;"/>
 			</RandomLocation>
 
-			<RandomLocation count="2-3" locationCriteria="*voermsRegion" exclusionRadius="50">
+			<RandomLocation locationCriteria="*voermsOrbit">
+				<Station type="&stCentauriSettlement;"/>
+			</RandomLocation>
+
+			<RandomLocation count="2-3" locationCriteria="*voermsOrbit">
 				<Station type="&stCentauriCamp;"/>
 			</RandomLocation>
 
