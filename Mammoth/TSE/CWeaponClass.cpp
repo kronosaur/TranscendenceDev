@@ -249,7 +249,8 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 
 	//  Set the target to NULL if we're blind and we can't fire when blind
 
-	ActivateCtx.pTarget = ((!m_bCanFireWhenBlind) && SourceObj.IsBlind()) ? NULL : ActivateCtx.pTarget;
+	if (!m_bCanFireWhenBlind && SourceObj.IsBlind())
+		ActivateCtx.pTarget = NULL;
 
 	//	Fire the weapon
 
@@ -470,7 +471,7 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 
 	retBalance.rProjectileHP = 0.0;
 	if (pShotDesc->GetInteraction() < 100)
-		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100 - pShotDesc->GetInteraction()) / 100.0;
+		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100.0 - pShotDesc->GetInteraction()) / 100.0;
 
 	if (pShotDesc->GetHitPoints() > 0)
 		retBalance.rProjectileHP += BALANCE_HP_FACTOR * pShotDesc->GetHitPoints() / (Metric)Stats.iDamage;
@@ -507,7 +508,7 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 	if (GetSlotsRequired() == 0)
 		retBalance.rSlots = BALANCE_NO_SLOT;
 	else if (GetSlotsRequired() > 1)
-		retBalance.rSlots = BALANCE_SLOT_FACTOR * (GetSlotsRequired() - 1);
+		retBalance.rSlots = BALANCE_SLOT_FACTOR * (GetSlotsRequired() - 1.0);
 	else
 		retBalance.rSlots = 0.0;
 
@@ -779,7 +780,7 @@ Metric CWeaponClass::CalcConfigurationMultiplier (const CWeaponFireDesc *pShot, 
 	Metric rMult = GetConfiguration(*pShot).GetMultiplier();
 
 	if (int iRepeating = GetContinuous(*pShot))
-		rMult *= (iRepeating + 1);
+		rMult *= (iRepeating + 1.0);
 
 	//	Include passthrough.
 	//
@@ -1085,10 +1086,19 @@ TArray<CTargetList::STargetResult> CWeaponClass::CalcMIRVFragmentationTargets (C
 		Metric rDist2 = TargetList.GetTargetDist2(i);
 
 		//	Calc firing solution
+		//
+		//	NOTE: We omit the source velocity since this is a MIRV launch and
+		//	we always start from 0 velocity.
 
-		int iFireAngle = Source.CalcFireSolution(pTarget, rSpeed);
-		if (iFireAngle == -1)
+		CVector vPos = pTarget->GetPos() - Source.GetPos();
+		CVector vVel = pTarget->GetVel();
+
+		Metric rTimeToIntercept = CalcInterceptTime(vPos, vVel, rSpeed);
+		if (rTimeToIntercept < 0.0)
 			continue;
+
+		CVector vInterceptPoint = vPos + vVel * rTimeToIntercept;
+		int iFireAngle = VectorToPolar(vInterceptPoint);
 
 		//	Add entry
 
@@ -1226,6 +1236,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 				{
 				if (Targets.GetCount() == 0)
 					return CShotArray();
+				break;
 				}
 
 			default:
@@ -1315,11 +1326,27 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 			//	If necessary, we recompute the fire angle
 
-			if (retpTarget && (retiFireAngle == -1 || m_bBurstTracksTargets))
+			if (retiFireAngle == -1 || m_bBurstTracksTargets)
 				{
-				CItemCtx ItemCtx(&Source, &Device);
-				Metric rSpeed = ShotDesc.GetInitialSpeed();
-				retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
+				if (retpTarget)
+					{
+					CItemCtx ItemCtx(&Source, &Device);
+					Metric rSpeed = ShotDesc.GetInitialSpeed();
+					retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
+					}
+				else
+					{
+					//  Reacquire target if we can do so
+
+					if (ShotDesc.CanAutoTarget())
+						{
+						retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
+						if (!retpTarget)
+							retiFireAngle = -1;
+						}
+					else
+						retiFireAngle = -1;
+					}
 				}
 			}
 
@@ -1355,10 +1382,13 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 					{
 					CItemCtx ItemCtx(&Source, &Device);
 					Metric rSpeed = ShotDesc.GetInitialSpeed();
-					retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget);
+					retiFireAngle = CalcFireAngle(ItemCtx, rSpeed, retpTarget, &retbSetFireAngle);
 					}
 				else
+					{
 					retiFireAngle = -1;
+					retbSetFireAngle = false;
+					}
 
 				break;
 				}
@@ -1369,16 +1399,15 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 				if (retpTarget == NULL)
 					return false;
 
+				//	Remember the fire angle for future bursts.
+
+				retbSetFireAngle = true;
 				break;
 				}
 
 			default:
 				return false;
 			}
-
-		//	Remember the fire angle for future bursts.
-
-		retbSetFireAngle = true;
 		}
 
 	//	Fire!
@@ -1625,7 +1654,18 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 	//	Switch to the next variant if necessary
 
 	if (bNextVariant)
-		pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
+		{
+		//	For repeating weapons, we set a flag and switch variants only after
+		//	we've shot the last projectile.
+
+		if (GetContinuous(ShotDesc) > 0)
+			pDevice->SetOnUsedLastAmmoFlag(true);
+
+		//	Otherwise, switch now.
+
+		else
+			pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
+		}
 
 	//	Success!
 
@@ -1901,7 +1941,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_POWER))
 		*retsValue = strFromInt(m_iPowerUse * 100);
 	else if (strEquals(sField, FIELD_POWER_PER_SHOT))
-		*retsValue = strFromInt(mathRound((GetFireDelay(*pShot) * m_iPowerUse * STD_SECONDS_PER_UPDATE * 1000) / 600.0));
+		*retsValue = strFromInt(mathRound(((Metric)GetFireDelay(*pShot) * (Metric)m_iPowerUse * STD_SECONDS_PER_UPDATE * 1000.0) / 600.0));
 	else if (strEquals(sField, FIELD_BALANCE))
 		{
 		SBalance Balance;
@@ -1910,7 +1950,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_RANGE))
 		*retsValue = strFromInt(mathRound(pShot->GetMaxRange() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_RECOIL))
-		*retsValue = (m_iRecoil ? strFromInt(mathRound(m_iRecoil * m_iRecoil * 10 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
+		*retsValue = (m_iRecoil ? strFromInt(mathRound((Metric)m_iRecoil * m_iRecoil * 10.0 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
 	else if (strEquals(sField, FIELD_SPEED))
 		*retsValue = strFromInt(mathRound(100.0 * pShot->GetRatedSpeed() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_VARIANT_COUNT))
@@ -2257,10 +2297,14 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	//	Set the device angle so that repeating weapons can get access to it.
 
+	Device.SetTarget(Shots[0].pTarget);
 	if (bSetFireAngle)
 		{
-		Device.SetTarget(Shots[0].pTarget);
 		Device.SetFireAngle(iFireAngle);
+		}
+	else if (ActivateCtx.iRepeatingCount == 0)
+		{
+		Device.SetFireAngle(-1);
 		}
 
 	//	Increment polarity, if necessary
@@ -2290,7 +2334,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	if (Result.bRecoil)
 		{
-		CVector vAccel = Result.vRecoil.Normal() * (Metric)(-10 * m_iRecoil * m_iRecoil);
+		CVector vAccel = Result.vRecoil.Normal() * (Metric)(-10.0 * m_iRecoil * m_iRecoil);
 		Source.AddForce((g_MomentumConstant / g_SecondsPerUpdate) * vAccel);
 		}
 
@@ -2533,7 +2577,8 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 
 		//	See if we have mining capability
 
-		if (pShotDesc->GetDamage().GetMiningDamage() > 0)
+		if (pShotDesc->GetDamage().GetMiningDamage() > 0
+				|| Enhancements.HasSpecialDamage(specialMining))
 			dwTargetTypes |= CTargetList::typeMinable;
 		}
 
@@ -3778,7 +3823,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 
 		if (pTarget->IsParalyzed() 
 				|| pTarget->GetCategory() != CSpaceObject::catShip
-				|| pTarget->IsImmuneTo(CConditionSet::cndParalyzed))
+				|| pTarget->IsImmuneTo(specialEMP))
 			return -100;
 
 		iScore += 100;
@@ -3794,7 +3839,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 
 		if (pTarget->IsBlind()
 				|| pTarget->GetCategory() != CSpaceObject::catShip
-				|| pTarget->IsImmuneTo(CConditionSet::cndBlind))
+				|| pTarget->IsImmuneTo(specialBlinding))
 			return -100;
 
 		iScore += 100;
@@ -4481,6 +4526,8 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 		}
 
 	ASSERT(pTarget);
+	if (!pTarget)
+		return false;
 
 	//	Get rotation info
 
@@ -4791,6 +4838,31 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 
 		if (Damage.GetArmorDamageLevel() > 0)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("armor penetrate")));
+
+		//	Mining
+
+		if (Damage.HasMiningDamage())
+			{
+			EMiningMethod iMethod = CAsteroidDesc::CalcMiningMethod(*pShot);
+			switch (iMethod)
+				{
+				case EMiningMethod::ablation:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ablative mining")));
+					break;
+
+				case EMiningMethod::drill:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("drill mining")));
+					break;
+
+				case EMiningMethod::explosion:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("explosive mining")));
+					break;
+
+				case EMiningMethod::shockwave:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shockwave mining")));
+					break;
+				}
+			}
 
 		//	WMD
 
@@ -5138,6 +5210,7 @@ void CWeaponClass::SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) c
 	//	want to stop firing the previous missile.
 
 	SetContinuousFire(pDevice, 0);
+	pDevice->SetOnUsedLastAmmoFlag(false);
 
 	//	Set the new variant
 
@@ -5206,7 +5279,10 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 				}
 			}
 		else
+			{
 			SetContinuousFire(pDevice, 0);
+			pDevice->SetOnUsedLastAmmoFlag(false);
+			}
 		}
 	else if (dwContinuous > 0)
 		{
@@ -5220,6 +5296,9 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 			if ((dwContinuous % iContinuousDelay) == 0)
 				{
+				if (ActivateCtx.TargetList.IsEmpty())
+					ActivateCtx.TargetList = pSource->GetTargetList();
+
 				ActivateCtx.iRepeatingCount = 1 + iContinuous - (dwContinuous / iContinuousDelay);
 
 				FireWeapon(*pDevice, *pShot, ActivateCtx);
@@ -5231,6 +5310,15 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 		dwContinuous--;
 		SetContinuousFire(pDevice, dwContinuous);
+
+		//	If we've fired the last round, then see if we need to notify the UI
+		//	that we're out of ammo.
+
+		if (dwContinuous == 0 && pDevice->IsOnUsedLastAmmoFlagSet())
+			{
+			pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
+			pDevice->SetOnUsedLastAmmoFlag(false);
+			}
 		}
 	else if (pDevice->HasLastShots()
 			&& (!pDevice->IsTriggered() || pDevice->GetTimeUntilReady() > 1))

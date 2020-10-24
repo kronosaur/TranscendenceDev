@@ -95,11 +95,7 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define FIELD_SHIELD_LEVEL						CONSTLIT("shieldLevel")
 #define FIELD_STATUS							CONSTLIT("status")
 
-#define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
-
 #define ORDER_DOCKED							CONSTLIT("docked")
-
-#define PROPERTY_CORE_MINING_DIFFICULTY			CONSTLIT("core.miningDifficulty")
 
 #define SPECIAL_CHARACTER						CONSTLIT("character:")
 #define SPECIAL_DATA							CONSTLIT("data:")
@@ -1033,7 +1029,7 @@ bool CSpaceObject::CanInstallItem (const CItem &Item, int iSlot, InstallItemResu
 	return false;
 	}
 
-void CSpaceObject::ClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
+void CSpaceObject::ClearCondition (ECondition iCondition, DWORD dwFlags)
 
 //	ClearCondition
 //
@@ -1042,7 +1038,7 @@ void CSpaceObject::ClearCondition (CConditionSet::ETypes iCondition, DWORD dwFla
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndTimeStopped:
+		case ECondition::timeStopped:
 			m_fTimeStop = false;
 			break;
 
@@ -2956,7 +2952,7 @@ void CSpaceObject::FireOnMining (const SDamageCtx &Ctx, EAsteroidType iType)
 	CCX.DefineDouble(CONSTLIT("aYieldAdj"), MiningStats.rYieldAdj);
 	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
 	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
 
 	ICCItemPtr pResult = CCX.RunCode(Event);
 	if (pResult->IsError())
@@ -3772,7 +3768,7 @@ int CSpaceObject::GetCommsMessageCount (void)
 		return pHandler->GetCount();
 	}
 
-bool CSpaceObject::GetCondition (CConditionSet::ETypes iCondition) const
+bool CSpaceObject::GetCondition (ECondition iCondition) const
 
 //	GetCondition
 //
@@ -3783,7 +3779,7 @@ bool CSpaceObject::GetCondition (CConditionSet::ETypes iCondition) const
 
 	switch (iCondition)
 		{
-		case CConditionSet::cndTimeStopped:
+		case ECondition::timeStopped:
 			if (m_fTimeStop)
 				return true;
 			break;
@@ -3807,14 +3803,12 @@ CConditionSet CSpaceObject::GetConditions (void) const
 //	Returns the set of all conditions.
 
 	{
-	int i;
-
 	CConditionSet Conditions;
 	DWORD dwFlag = 1;
-	for (i = 0; i < CConditionSet::cndCount; i++)
+	for (int i = 0; i < (int)ECondition::count; i++)
 		{
-		if (GetCondition((CConditionSet::ETypes)dwFlag))
-			Conditions.Set((CConditionSet::ETypes)dwFlag);
+		if (GetCondition((ECondition)dwFlag))
+			Conditions.Set((ECondition)dwFlag);
 
 		dwFlag = dwFlag << 1;
 		}
@@ -4970,6 +4964,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 											  Metric rMinThreshold, 
 											  Metric rMaxThreshold, 
 											  const DamageDesc &Damage, 
+											  const CSpaceObject *pTarget,
 											  CVector *retvHitPos, 
 											  int *retiHitDir)
 
@@ -5036,8 +5031,8 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 		bool bCanTriggerDetonation = (pObj->GetScale() == scaleShip
 					|| pObj->GetScale() == scaleStructure)
-				&& IsAngryAt(pObj)
-				&& pObj->CanBeAttacked();
+				&& IsAngryAt(pObj) 
+				&& (pObj->CanBeAttacked() || pObj == pTarget);
 
 		//	Compute the size of the object, if we're doing proximity computations
 
@@ -6211,6 +6206,12 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &So
 	{
 	DEBUG_TRY
 
+	if (!pObj || !pDesc)
+		{
+		ASSERT(false);
+		return false;
+		}
+
 	//	If we have a source...
 
 	if (Source.HasSource())
@@ -6240,7 +6241,7 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &So
 				&& pDesc->CanHit(pObj)
 
 				//	We cannot hit our friends (if our source can't)
-				&& ((CanHitFriends() && Source.CanHitFriends() && pObj->CanBeHitByFriends()) || !Source.IsFriend(pObj->GetSovereign()))
+				&& ((CanHitFriends() && Source.CanHitFriends() && pObj->CanBeHitByFriends()) || Source.IsAngryAt(*pObj, GetSovereign()))
 
 				//	If our source is the player, then we cannot hit player wingmen
 
@@ -6484,7 +6485,7 @@ void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CSpaceObject::SetCondition (CConditionSet::ETypes iCondition, int iTimer)
+void CSpaceObject::SetCondition (ECondition iCondition, int iTimer)
 
 //	SetCondition
 //
@@ -6493,7 +6494,7 @@ void CSpaceObject::SetCondition (CConditionSet::ETypes iCondition, int iTimer)
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndTimeStopped:
+		case ECondition::timeStopped:
 			m_fTimeStop = true;
 			break;
 
@@ -6503,7 +6504,7 @@ void CSpaceObject::SetCondition (CConditionSet::ETypes iCondition, int iTimer)
 		}
 	}
 
-void CSpaceObject::SetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETypes iCondition)
+void CSpaceObject::SetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition)
 
 //	SetConditionDueToDamage
 //
@@ -7578,7 +7579,7 @@ void CSpaceObject::UpdateEffects (void)
 	SEffectMoveCtx MoveCtx;
 	MoveCtx.pObj = this;
 
-	SEffectUpdateCtx UpdateCtx;
+	SEffectUpdateCtx UpdateCtx(GetUniverse());
 	UpdateCtx.pSystem = GetSystem();
 	UpdateCtx.pObj = this;
 

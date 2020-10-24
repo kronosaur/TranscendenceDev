@@ -59,7 +59,7 @@
 			description=		"22nd century miners relied on magma cutters to carve up iron-rich asteroids. Magma cutters are particularly effective on metallic and icy asteroids."
 			>
 
-		<Image imageID="&rsItems6;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems3;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<Weapon
 				type=				"particles"
@@ -106,7 +106,7 @@
 			description=		"Designed for mining ships, this cargo hold has grapples to bring ore on board."
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="192" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems3;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<CargoHoldDevice
 				cargoSpace=		"150"
@@ -133,7 +133,7 @@
 			description=		"This proton beam weapon is primarily used for mining. It is particularly effective on icy and primordial asteroids."
 			>
 
-		<Image imageID="&rsItems2;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsItems4;" imageX="288" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<Weapon
 				type=				"beam"

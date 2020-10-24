@@ -99,13 +99,13 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		{
 		//	Spin wildly
 
-		if (!IsAnchored() && m_Overlays.GetConditions().IsSet(CConditionSet::cndSpinning))
+		if (!IsAnchored() && m_Overlays.GetConditions().IsSet(ECondition::spinning))
 			m_Rotation.Update(m_Perf.GetIntegralRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
 		}
 
 	//	Slow down if an overlay is imposing drag
 
-	if (m_Overlays.GetConditions().IsSet(CConditionSet::cndDragged)
+	if (m_Overlays.GetConditions().IsSet(ECondition::dragged)
 			&& !ShowParalyzedEffect())
 		{
 		//	We're too lazy to store the drag coefficient, so we recalculate it here.
@@ -342,10 +342,9 @@ bool CShip::UpdateConditions (CShipUpdateSet &UpdateFlags)
 
 	//	Radiation
 
-	if (m_fRadioactive)
+	if (m_fRadioactive && m_iContaminationTimer != -1)
 		{
-		m_iContaminationTimer--;
-		if (m_iContaminationTimer > 0)
+		if (--m_iContaminationTimer > 0)
 			{
 			m_pController->OnShipStatus(IShipController::statusRadiationWarning, m_iContaminationTimer);
 			}
@@ -656,7 +655,7 @@ bool CShip::UpdateTriggerAllDevices (CDeviceClass::SActivateCtx &ActivateCtx, CS
 			//	target list if necessary.
 
 			if (ActivateCtx.TargetList.IsEmpty())
-				ActivateCtx.TargetList = m_pController->GetTargetList();
+				ActivateCtx.TargetList = GetTargetList();
 
 			ActivateCtx.pTarget = m_pController->GetTarget(&DeviceItem);
 

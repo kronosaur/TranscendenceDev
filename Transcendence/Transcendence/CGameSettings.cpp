@@ -64,6 +64,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"defaultBuyTab",			optionString,	"filterGeneral",	0	},
 		{	"noMouseAim",				optionBoolean,	"false",	0	},
 		{	"forcePermadeath",			optionBoolean,	"false",	0	},
+		{	"showIconBar",				optionString,	"auto",		0	},
 
 		//	Installation options
 

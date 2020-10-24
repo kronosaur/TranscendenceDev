@@ -443,6 +443,20 @@ ALERROR IDockScreenDisplay::Init (SInitCtx &Ctx, const SDisplayOptions &Options,
 	return OnInit(Ctx, Options, retsError); 
 	}
 
+ICCItemPtr IDockScreenDisplay::OnGetListAsCCItem (void) const
+
+//	OnGetListAsCCItem
+//
+//	REturns the entire list as an item.
+
+	{
+	IListData *pList = GetListData();
+	if (!pList)
+		return ICCItemPtr::Nil();
+
+	return pList->GetAsCCItem();
+	}
+
 ICCItemPtr IDockScreenDisplay::OnGetProperty (const CString &sProperty) const
 
 //	OnGetProperty

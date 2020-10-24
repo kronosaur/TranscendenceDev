@@ -190,6 +190,72 @@ void CUniverse::AdjustDamage (SDamageCtx &Ctx) const
 		Ctx.iDamage = mathRoundStochastic(Ctx.iDamage * rAdjust);
 	}
 
+int CUniverse::AdjustDamage (const SDamageCtx &Ctx, int iDamage) const
+
+//	AdjustDamage
+//
+//	Adjust damage to implement difficulty levels.
+
+	{
+	const CSpaceObject *pOrderGiver;
+
+	//	If the player got hit, then adjust
+
+	Metric rAdjust;
+	if (Ctx.pObj->IsPlayer())
+		rAdjust = m_Difficulty.GetPlayerDamageAdj();
+
+	//	Otherwise, if the attacker is the player, then adjust
+
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
+		rAdjust = m_Difficulty.GetEnemyDamageAdj();
+
+	//	Otherwise, no adjustment.
+
+	else
+		return iDamage;
+
+	//	Adjust damage
+
+	if (rAdjust != 1.0)
+		return mathRoundStochastic(iDamage * rAdjust);
+	else
+		return iDamage;
+	}
+
+Metric CUniverse::AdjustDamage (const SDamageCtx &Ctx, Metric rDamage) const
+
+//	AdjustDamage
+//
+//	Adjust damage to implement difficulty levels.
+
+	{
+	const CSpaceObject *pOrderGiver;
+
+	//	If the player got hit, then adjust
+
+	Metric rAdjust;
+	if (Ctx.pObj->IsPlayer())
+		rAdjust = m_Difficulty.GetPlayerDamageAdj();
+
+	//	Otherwise, if the attacker is the player, then adjust
+
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
+		rAdjust = m_Difficulty.GetEnemyDamageAdj();
+
+	//	Otherwise, no adjustment.
+
+	else
+		return rDamage;
+
+	//	Adjust damage
+
+	if (rAdjust != 1.0)
+		return rDamage * rAdjust;
+	else
+		return rDamage;
+	}
+
 void CUniverse::Boot (void)
 
 //	Boot
@@ -283,6 +349,7 @@ ALERROR CUniverse::CreateRandomItem (const CItemCriteria &Crit,
 	CItemList ItemList;
 	CItemListManipulator Items(ItemList);
 	SItemAddCtx Ctx(Items);
+	Ctx.pSystem = GetCurrentSystem();
 	Ctx.iLevel = (GetCurrentSystem() ? GetCurrentSystem()->GetLevel() : 1);
 
 	pTable->AddItems(Ctx);
@@ -709,7 +776,7 @@ void CUniverse::GarbageCollectLibraryBitmaps (void)
 	SweepLibraryBitmaps();
 	}
 
-void CUniverse::GenerateGameStats (CGameStats &Stats)
+void CUniverse::GenerateGameStats (const CString &sEndGameReason, CGameStats &Stats)
 
 //	GenerateGameStats
 //
@@ -720,7 +787,7 @@ void CUniverse::GenerateGameStats (CGameStats &Stats)
 
 	//	Ask all design types to generate game stats
 
-	m_Design.FireGetGlobalAchievements(Stats);
+	m_Design.FireGetGlobalAchievements(sEndGameReason, Stats);
 
 	//	Add all extensions
 
@@ -1554,7 +1621,7 @@ void CUniverse::NotifyOnPlayerEnteredGate (CTopologyNode *pDestNode, const CStri
 	//	never get an OnObjDestroyed message).
 	//	Note: We need gPlayer for OnGameEnd event
 
-	GetCC().DefineGlobal(STR_G_PLAYER_SHIP, GetCC().CreateNil());
+	GetCC().DefineGlobal(STR_G_PLAYER_SHIP, GetCC().GetNil());
 
 	//	Mark source and destination stargates as charted.
 
@@ -2164,7 +2231,7 @@ void CUniverse::PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rSca
 		m_pCurrentSystem->PaintViewportLRS(Dest, rcView, m_pPOV, rScale, dwFlags, retbNewEnemies);
 	}
 
-void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale)
+void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale, DWORD dwFlags)
 
 //	PaintPOVMap
 //
@@ -2172,7 +2239,7 @@ void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMap
 
 	{
 	if (m_pCurrentSystem && m_pPOV)
-		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale);
+		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale, dwFlags);
 
 	m_iPaintTick++;
 	}
@@ -2535,7 +2602,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	return NOERROR;
 	}
 
-void CUniverse::SetCurrentSystem (CSystem *pSystem)
+void CUniverse::SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered)
 
 //	SetCurrentSystem
 //
@@ -2565,7 +2632,8 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 
 	//	Initialize mission cache
 
-	m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
+	if (bPlayerHasEntered)
+		m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
 	}
 
 bool CUniverse::SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError)
@@ -2682,7 +2750,7 @@ void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 	if (pPOV)
 		SetPOV(pPOV);
 	else
-		SetCurrentSystem(&NewSystem);
+		SetCurrentSystem(&NewSystem, true);
 
 	//	Replay any commands that might have happened while the player was in a
 	//	different system.
@@ -2779,7 +2847,7 @@ bool CUniverse::SetPOV (CSpaceObject *pPOV)
 	m_pPOV = pPOV;
 
 	if (m_pPOV)
-		SetCurrentSystem(m_pPOV->GetSystem());
+		SetCurrentSystem(m_pPOV->GetSystem(), true);
 	else
 		SetCurrentSystem(NULL);
 
@@ -2817,7 +2885,8 @@ void CUniverse::StartGame (bool bNewGame)
 		//	The current system has started (0 time has elased since we last
 		//	updated this system).
 
-		m_Design.FireOnGlobalSystemStarted(0);
+		if (GetCurrentSystem())
+			m_Design.FireOnGlobalSystemStarted(0);
 
 		//	If we have a player then tell objects that the player has entered
 		//	the system.

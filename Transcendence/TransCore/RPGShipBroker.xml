@@ -74,7 +74,7 @@
 						(block (
 							(theEntry (scrGetListEntry gScreen))
 							(selObj (@ theEntry 'shipObj))
-							(currency (objGetProperty gSource 'currency))
+							(currency (obj@ gSource 'currency))
 						
 							;	Compute some prices
 						
@@ -85,7 +85,7 @@
 						
 							;	Compute some descriptions
 						
-							(newShipDesc (objGetProperty selObj 'playerDesc))
+							(newShipDesc (obj@ selObj 'playerDesc))
 
 							;	Wingmen
 						
@@ -161,7 +161,7 @@
 
 								;	If we have too much cargo, then say so
 
-								(gr (objGetProperty gPlayerShip 'cargoSpaceUsedKg) (objGetProperty selObj 'cargoSpaceFreeKg))
+								(gr (obj@ gPlayerShip 'cargoSpaceUsedKg) (obj@ selObj 'cargoSpaceFreeKg))
 									(block ()
 										(scrEnableAction gScreen 'actionBuyShip Nil)
 										(scrSetActionDesc gScreen 'actionBuyShip (scrTranslate gScreen 'descTooMuchCargo))
@@ -384,7 +384,7 @@
 			<Default>
 				<OnPaneInit>
 					(block (
-						(currency (objGetProperty gSource 'currency))
+						(currency (obj@ gSource 'currency))
 
 						(newShipObj (objGetObjByID (@ gData 'newShipID)))
 						(newShipPrice (@ gData 'newShipPrice))
@@ -442,7 +442,7 @@
 
 							;	Wingman has too much cargo
 
-							(gr (objGetProperty oldShipObj 'cargoSpaceUsedKg) (objGetProperty newShipObj 'cargoSpaceFreeKg))
+							(gr (obj@ oldShipObj 'cargoSpaceUsedKg) (obj@ newShipObj 'cargoSpaceFreeKg))
 								(setq confirmDesc (scrTranslate gScreen 'descTooMuchCargo {
 									wingmanName:(objGetName oldShipObj 0)
 									newShipName:(objGetName newShipObj 'article)
@@ -512,7 +512,7 @@
 						(block (
 							(selObj (objGetObjByID (@ gData 'newShipID)))
 
-							(currency (objGetProperty gSource 'currency))
+							(currency (obj@ gSource 'currency))
 							(tradeInPrice (@ gData 'price))
 							
 							(shipIDList (objGetData gSource 'shipBroker.list))
@@ -597,7 +597,7 @@
 							
 							(setq portPos
 								(@	(random
-										(filter (objGetProperty gSource 'dockingPorts) portDesc
+										(filter (obj@ gSource 'dockingPorts) portDesc
 											(= (@ portDesc 'status) 'empty)
 											)
 										)
@@ -680,7 +680,7 @@
 			<OnDisplayInit>
 				(map (sysFindObject gPlayerShip "s +property:playerWingman; +property:character") wingmanObj
 					(block (
-						(currency (objGetProperty gSource 'currency))
+						(currency (obj@ gSource 'currency))
 						(wingmanClass (objGetType wingmanObj))
 						(wingmanPrice (or (objGetShipBuyPrice gSource wingmanObj) 0))
 						)
@@ -709,7 +709,7 @@
 						(oldShipObj (objGetObjByID (@ theEntry 'wingmanID)))
 						(newShipObj (objGetObjByID (@ gData 'newShipID)))
 						(tradeInPrice (- (@ gData 'price) (@ theEntry 'wingmanPrice)))
-						(currency (objGetProperty gSource 'currency))
+						(currency (obj@ gSource 'currency))
 
 						(introDesc (scrTranslate gScreen 'descOffer {
 							wingmanName: (objGetName oldShipObj 0)
@@ -756,7 +756,7 @@
 
 							;	Wingman has too much cargo
 
-							(gr (objGetProperty oldShipObj 'cargoSpaceUsedKg) (objGetProperty newShipObj 'cargoSpaceFreeKg))
+							(gr (obj@ oldShipObj 'cargoSpaceUsedKg) (obj@ newShipObj 'cargoSpaceFreeKg))
 								(block ()
 									(scrEnableAction gScreen 'actionBuyFor Nil)
 									(scrSetDesc gScreen introDesc
@@ -923,7 +923,7 @@
 			<Message id="msgFormUp" name="Form up" key="F">
 				<OnShow>
 					(and (neq (objGetData gSource 'behavior) 'escorting)
-						(objGetProperty gSource 'playerWingman)
+						(obj@ gSource 'playerWingman)
 						)
 				</OnShow>
 
@@ -952,7 +952,7 @@
 			<Message id="msgWait" name="Wait" key="W">
 				<OnShow>
 					(and (neq (objGetData gSource 'behavior) 'waiting)
-						(objGetProperty gSource 'playerWingman)
+						(obj@ gSource 'playerWingman)
 						)
 				</OnShow>
 
@@ -1006,7 +1006,7 @@
 				(block (behavior)
 					(setq behavior (objGetData gSource 'behavior))
 					(switch
-						(not (objGetProperty gSource 'playerWingman))
+						(not (obj@ gSource 'playerWingman))
 							Nil
 							
 						; If we're waiting, stay in this system and wait for the player
@@ -1050,17 +1050,17 @@
 					
 					;	Transfer wingman flag
 
-					(objSetProperty newShipObj 'playerWingman (objGetProperty oldShipObj 'playerWingman))
+					(objSetProperty newShipObj 'playerWingman (obj@ oldShipObj 'playerWingman))
 					(objSetProperty oldShipObj 'playerWingman Nil)
 
 					;	Transfer the character
 
-					(objSetProperty newShipObj 'character (objGetProperty oldShipObj 'character))
+					(objSetProperty newShipObj 'character (obj@ oldShipObj 'character))
 					(objSetProperty oldShipObj 'character Nil)
 
 					;	Transfer the name
 
-					(setq namePattern (objGetProperty oldShipObj 'namePattern))
+					(setq namePattern (obj@ oldShipObj 'namePattern))
 					(objSetName newShipObj (@ namePattern 'pattern) (@ namePattern 'flags))
 					(objSetName oldShipObj Nil)
 
@@ -1082,7 +1082,7 @@
 					;	Make a list of all possible ship classes that we sell.
 
 					(createCriteria (or 
-						(objGetProperty sellerObj 'rpg.shipBrokerCriteria)
+						(obj@ sellerObj 'rpg.shipBrokerCriteria)
 						createCriteriaArg
 						"s +shipBroker;"
 						))
@@ -1173,14 +1173,15 @@
 			(setq rpgGetShipDetails (lambda (shipObj options)
 				(block (
 					(showDevices (not (@ options 'noDevices)))
+					(showFuelStats (not (@ options 'noFuelStats)))
 
 					;	Reactor stats
 					
 					(reactorItem (@ (objGetItems shipObj "rI") 0))
 					(reactorText (if reactorItem (itmGetName reactorItem) (cat (objGetName shipObj '(short generic)) " reactor")))
 					(reactorIcon (if reactorItem (itmGetImageDesc reactorItem) (resCreateImageDesc &rsItems1; 288 288 96 96)))
-					(reactorPowerText (fmtNumber 'power (objGetProperty shipObj 'power)))
-					(reactorEfficiency (objGetProperty shipObj 'fuelEfficiencyBonus))
+					(reactorPowerText (fmtNumber 'power (obj@ shipObj 'power)))
+					(reactorEfficiency (obj@ shipObj 'fuelEfficiencyBonus))
 					(reactorEfficiencyText
 						(switch
 							(gr reactorEfficiency 0)
@@ -1241,12 +1242,12 @@
 					
 					;	Slots
 					
-					(deviceSlots (objGetProperty shipObj 'deviceSlots))
-					(maxWeaponSlots (objGetProperty shipObj 'deviceSlotsWeapons))
-					(maxNonWeaponSlots (objGetProperty shipObj 'deviceSlotsNonWeapons))
-					(availDeviceSlots (objGetProperty shipObj 'availableDeviceSlots))
-					(availWeaponSlots (objGetProperty shipObj 'availableWeaponSlots))
-					(availNonWeaponSlots (objGetProperty shipObj 'availableNonWeaponSlots))
+					(deviceSlots (obj@ shipObj 'deviceSlots))
+					(maxWeaponSlots (obj@ shipObj 'deviceSlotsWeapons))
+					(maxNonWeaponSlots (obj@ shipObj 'deviceSlotsNonWeapons))
+					(availDeviceSlots (obj@ shipObj 'availableDeviceSlots))
+					(availWeaponSlots (obj@ shipObj 'availableWeaponSlots))
+					(availNonWeaponSlots (obj@ shipObj 'availableNonWeaponSlots))
 					)
 
 					(list 
@@ -1255,9 +1256,9 @@
 						desc:
 							(cat
 								"{/rtf "
-									"{/f:MediumBold;/c:#79828c; manufacturer:} " (objGetProperty shipObj 'manufacturer) "\n"
-									"{/f:MediumBold;/c:#79828c; size:} " (fmtNumber (objGetProperty shipObj 'size)) " meters\n"
-									"{/f:MediumBold;/c:#79828c; mass:} " (fmtNumber 'massTons (objGetProperty shipObj 'hullMass)) "\n"
+									"{/f:MediumBold;/c:#79828c; manufacturer:} " (obj@ shipObj 'manufacturer) "\n"
+									"{/f:MediumBold;/c:#79828c; size:} " (fmtNumber (obj@ shipObj 'size)) " meters\n"
+									"{/f:MediumBold;/c:#79828c; mass:} " (fmtNumber 'massTons (obj@ shipObj 'hullMass)) "\n"
 								"}"
 								)
 						}
@@ -1269,8 +1270,12 @@
 							(cat
 								"{/rtf "
 									"{/f:MediumBold;/c:#79828c; max. output:} " reactorPowerText "\n"
-									"{/f:MediumBold;/c:#79828c; fuel:} " (itmGetName reactorFuel 0x02) "\n"
-									"{/f:MediumBold;/c:#79828c; fuel efficiency:} " reactorEfficiencyText "\n"
+									(if showFuelStats
+										(cat
+											"{/f:MediumBold;/c:#79828c; fuel:} " (itmGetName reactorFuel 0x02) "\n"
+											"{/f:MediumBold;/c:#79828c; fuel efficiency:} " reactorEfficiencyText "\n"
+											)
+										)
 								"}"
 								)
 						}
@@ -1281,35 +1286,44 @@
 						desc:
 							(cat
 								"{/rtf "
-									"{/f:MediumBold;/c:#79828c; max. speed:} " (fmtNumber 'speed (objGetProperty shipObj 'maxSpeed)) "\n"
-									"{/f:MediumBold;/c:#79828c; thrust//mass:} " (fmtNumber 'real (/ (objGetProperty shipObj 'thrustToWeight) 1000)) "\n"
-									"{/f:MediumBold;/c:#79828c; maneuverability:} " (fmtNumber 'real (/ (objGetProperty shipObj 'maneuver) 1000)) "\n"
+									"{/f:MediumBold;/c:#79828c; max. speed:} " (fmtNumber 'speed (obj@ shipObj 'maxSpeed)) "\n"
+									"{/f:MediumBold;/c:#79828c; thrust//mass:} " (fmtNumber 'real (/ (obj@ shipObj 'thrustToWeight) 1000)) "\n"
+									"{/f:MediumBold;/c:#79828c; maneuverability:} " (fmtNumber 'real (/ (obj@ shipObj 'maneuver) 1000)) "\n"
+									(if showFuelStats
+										(cat
+											"{/f:MediumBold;/c:#79828c; power use:} " (fmtNumber 'power (obj@ shipObj 'drivePowerUse)) "\n"
+											)
+										)
 								"}"
 								)
 						}
 
-						{
-						icon: cargoIcon
-						title: (if cargoItem (itmGetName cargoItem))
-						desc:
-							(cat
-								"{/rtf "
-									"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (objGetProperty shipObj 'cargoSpace)) "\n"
-									"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (objGetProperty shipObj 'maxCargoSpace)) "\n"
-								"}"
+						(if (or (gr (obj@ shipObj 'cargoSpace) 0)
+								(gr (obj@ shipObj 'maxCargoSpace) 0)
 								)
-						}
+							{
+							icon: cargoIcon
+							title: (if cargoItem (itmGetName cargoItem))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (obj@ shipObj 'cargoSpace)) "\n"
+										"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (obj@ shipObj 'maxCargoSpace)) "\n"
+									"}"
+									)
+							}
+							)
 						
 						(if showDevices
 							{
 							icon: (itmGetImageDesc armorItem)
-							title: (cat (itmGetName armorItem '(short actual)) " (&times;" (objGetProperty shipObj 'armorCount) ")")
+							title: (cat (itmGetName armorItem '(short actual)) " (&times;" (obj@ shipObj 'armorCount) ")")
 							desc:
 								(cat
 									"{/rtf "
 										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel armorItem) "\n"
-										"{/f:MediumBold;/c:#79828c; std. armor:} " (objGetProperty shipObj 'stdArmorClassName) "\n"
-										"{/f:MediumBold;/c:#79828c; max. armor:} " (objGetProperty shipObj 'maxArmorClassName) "\n"
+										"{/f:MediumBold;/c:#79828c; std. armor:} " (obj@ shipObj 'stdArmorClassName) "\n"
+										"{/f:MediumBold;/c:#79828c; max. armor:} " (obj@ shipObj 'maxArmorClassName) "\n"
 									"}"
 									)
 							}
@@ -1318,8 +1332,8 @@
 							desc:
 								(cat
 									"{/rtf "
-										"{/f:MediumBold;/c:#79828c; std. armor:} " (objGetProperty shipObj 'stdArmorClassName) "\n"
-										"{/f:MediumBold;/c:#79828c; max. armor:} " (objGetProperty shipObj 'maxArmorClassName) "\n"
+										"{/f:MediumBold;/c:#79828c; std. armor:} " (obj@ shipObj 'stdArmorClassName) "\n"
+										"{/f:MediumBold;/c:#79828c; max. armor:} " (obj@ shipObj 'maxArmorClassName) "\n"
 									"}"
 									)
 							}
@@ -1418,8 +1432,8 @@
 					
 					(reactorItem (@ (objGetItems shipObj "rI") 0))
 					(reactorText (if reactorItem (itmGetName reactorItem 0x00) (cat (objGetName shipObj 0x80) " reactor")))
-					(reactorPowerText (fmtNumber 'power (objGetProperty shipObj 'power)))
-					(reactorEfficiency (objGetProperty shipObj 'fuelEfficiencyBonus))
+					(reactorPowerText (fmtNumber 'power (obj@ shipObj 'power)))
+					(reactorEfficiency (obj@ shipObj 'fuelEfficiencyBonus))
 					(reactorEfficiencyText
 						(switch
 							(gr reactorEfficiency 0)
@@ -1455,12 +1469,12 @@
 					
 					;	Slots
 					
-					(deviceSlots (objGetProperty shipObj 'deviceSlots))
-					(maxWeaponSlots (objGetProperty shipObj 'deviceSlotsWeapons))
-					(maxNonWeaponSlots (objGetProperty shipObj 'deviceSlotsNonWeapons))
-					(availDeviceSlots (objGetProperty shipObj 'availableDeviceSlots))
-					(availWeaponSlots (objGetProperty shipObj 'availableWeaponSlots))
-					(availNonWeaponSlots (objGetProperty shipObj 'availableNonWeaponSlots))
+					(deviceSlots (obj@ shipObj 'deviceSlots))
+					(maxWeaponSlots (obj@ shipObj 'deviceSlotsWeapons))
+					(maxNonWeaponSlots (obj@ shipObj 'deviceSlotsNonWeapons))
+					(availDeviceSlots (obj@ shipObj 'availableDeviceSlots))
+					(availWeaponSlots (obj@ shipObj 'availableWeaponSlots))
+					(availNonWeaponSlots (obj@ shipObj 'availableNonWeaponSlots))
 					)
 					
 					;	Set the background image
@@ -1481,9 +1495,10 @@
 								"{/f:MediumBold;/c:#79828c; fuel efficiency:} " reactorEfficiencyText "\n"
 								"\n"
 								"{/f:MediumBold;/c:#79828c; drive:} " driveText "\n"
-								"{/f:MediumBold;/c:#79828c; max. speed:} " (fmtNumber 'speed (objGetProperty shipObj 'maxSpeed)) "\n"
-								"{/f:MediumBold;/c:#79828c; thrust//mass:} " (/ (objGetProperty shipObj 'thrustToWeight) 1000) "\n"
-								"{/f:MediumBold;/c:#79828c; maneuverability:} " (/ (objGetProperty shipObj 'maneuver) 1000) "\n"
+								"{/f:MediumBold;/c:#79828c; max. speed:} " (fmtNumber 'speed (obj@ shipObj 'maxSpeed)) "\n"
+								"{/f:MediumBold;/c:#79828c; thrust//mass:} " (/ (obj@ shipObj 'thrustToWeight) 1000) "\n"
+								"{/f:MediumBold;/c:#79828c; maneuverability:} " (/ (obj@ shipObj 'maneuver) 1000) "\n"
+								"{/f:MediumBold;/c:#79828c; power use:} " (fmtNumber 'power (obj@ shipObj 'drivePowerUse)) "\n"
 							"}"
 							)
 						)
@@ -1494,8 +1509,8 @@
 						(cat
 							"{/rtf "
 								(if cargoItem (cat "{/f:MediumBold;/c:#79828c; cargo:} " (itmGetName cargoItem 0x00) "\n"))
-								"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (objGetProperty shipObj 'cargoSpace)) "\n"
-								"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (objGetProperty shipObj 'maxCargoSpace)) "\n"
+								"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (obj@ shipObj 'cargoSpace)) "\n"
+								"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (obj@ shipObj 'maxCargoSpace)) "\n"
 								"\n"
 								"{/f:MediumBold;/c:#79828c; device slots:} " deviceSlots " (" availDeviceSlots " free)\n"
 							
@@ -1506,12 +1521,12 @@
 									(cat "{/f:MediumBold;/c:#79828c; for non-weapons:} " maxNonWeaponSlots " (" availNonWeaponSlots " free)\n") 
 									)
 								"\n"
-								"{/f:MediumBold;/c:#79828c; std. armor:} " (objGetProperty shipObj 'stdArmorClassName) "\n"
-								"{/f:MediumBold;/c:#79828c; max. armor:} " (objGetProperty shipObj 'maxArmorClassName) "\n"
+								"{/f:MediumBold;/c:#79828c; std. armor:} " (obj@ shipObj 'stdArmorClassName) "\n"
+								"{/f:MediumBold;/c:#79828c; max. armor:} " (obj@ shipObj 'maxArmorClassName) "\n"
 								"\n"
-								"{/f:MediumBold;/c:#79828c; manufacturer:} " (objGetProperty shipObj 'manufacturer) "\n"
-								"{/f:MediumBold;/c:#79828c; size:} " (objGetProperty shipObj 'size) " meters\n"
-								"{/f:MediumBold;/c:#79828c; mass:} " (fmtNumber 'massTons (objGetProperty shipObj 'hullMass)) "\n"
+								"{/f:MediumBold;/c:#79828c; manufacturer:} " (obj@ shipObj 'manufacturer) "\n"
+								"{/f:MediumBold;/c:#79828c; size:} " (obj@ shipObj 'size) " meters\n"
+								"{/f:MediumBold;/c:#79828c; mass:} " (fmtNumber 'massTons (obj@ shipObj 'hullMass)) "\n"
 							"}"
 							)
 						)

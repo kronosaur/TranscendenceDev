@@ -36,12 +36,55 @@ class CHeadsUpDisplay
 
 		CHumanInterface &m_HI;
 		CTranscendenceModel &m_Model;
-		RECT m_rcScreen;
+		RECT m_rcScreen = { 0 };
 
 		//	HUDs
 
 		TUniquePtr<IHUDPainter> m_pHUD[hudCount];
 		int m_iSelection = -1;						//  Selected armor seg (or -1)
+	};
+
+class CIconBarDisplay
+	{
+	public:
+		CIconBarDisplay (CHumanInterface &HI) :
+				m_HI(HI)
+			{ }
+
+		CGameKeys::Keys GetLastCommand (void) const { return m_iLastCommand; }
+		void Init (const RECT &rcScreen, const CMenuData &Data);
+		bool IsEmpty (void) const { return m_Data.IsEmpty(); }
+		bool OnLButtonDblClick (int x, int y, DWORD dwFlags) { return OnLButtonDown(x, y, dwFlags); }
+		bool OnLButtonDown (int x, int y, DWORD dwFlags);
+		bool OnLButtonUp (int x, int y, DWORD dwFlags);
+		bool OnMouseMove (int x, int y);
+		void Paint (CG32bitImage &Screen, int iTick) const;
+		void Refresh (void) { m_iSelected = -1; m_iHover = -1; m_bInvalid =true; }
+
+	private:
+		static constexpr int DEFAULT_ICON_HEIGHT = 48;
+		static constexpr int DEFAULT_ICON_WIDTH = 48;
+
+		static constexpr int ENTRY_BORDER_RADIUS = 4;
+
+		int HitTest (int x, int y) const;
+		void Realize (void) const;
+
+		CHumanInterface &m_HI;
+		CMenuData m_Data;
+
+		RECT m_rcScreen = { 0 };					//	Rect of entire screen
+		RECT m_rcRect = { 0 };						//	Rect of icon bar
+		int m_cxEntry = 0;							//	Width of a single icon
+		int m_cyEntry = 0;							//	Height of a single icon
+
+		int m_iSelected = -1;						//	Selected entry (or -1)
+		int m_iHover = -1;							//	Entry that we're hovering over (or -1)
+		bool m_bDown = false;						//	TRUE if mouse is down over menu.
+		CGameKeys::Keys m_iLastCommand = CGameKeys::keyNone;
+
+		mutable CG32bitImage m_Buffer;
+		mutable bool m_bInvalid = true;
 	};
 
 class CMenuDisplay
@@ -285,4 +328,28 @@ class CSystemStationsMenu : IAniCommand
 		CString m_sID;						//	ID of the performance
 		IAnimatron *m_pList = NULL;			//	List
 		DWORD m_dwCurObjID = 0;				//	Currently selected object ID
+	};
+
+class CGameIconBarData
+	{
+	public:
+		CMenuData CreateIconBar (const CDesignCollection &Design, const CGameSettings &Settings) const;
+		void Invalidate (void) { m_bValid = false; }
+
+	private:
+		static constexpr int DEFAULT_COUNT = 7;
+		static constexpr int ICON_WIDTH = 48;
+		static constexpr int ICON_HEIGHT = 48;
+
+		struct SEntry
+			{
+			CGameKeys::Keys iCmd = CGameKeys::keyNone;
+			int iImage = -1;
+			};
+
+		mutable bool m_bValid = false;
+		mutable TSharedPtr<CG32bitImage> m_pImage;
+		mutable TArray<CObjectImageArray> m_Images;
+
+		static const SEntry m_Defaults[DEFAULT_COUNT];
 	};

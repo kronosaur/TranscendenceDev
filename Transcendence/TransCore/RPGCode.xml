@@ -612,7 +612,7 @@
 									{
 										visible: True
 										enabled: Nil
-										desc: (scrTranslate gScreen 'actionRemove.canOnlyBeReplaced { itemName:(itmGetName theItem '(noModifiers short)) })
+										desc: (scrTranslate gScreen 'actionRemove.canOnlyBeReplaced { itemName:(itmGetName theItem '(noModifiers short escapeQuotes)) })
 										}
 								
 								(not (eq itemStatus 0))
@@ -1755,11 +1755,16 @@
 					(currencyUsed (if (@ data 'currencyUsed) (@ data 'currencyUsed) (objGetDefaultCurrency installerObj)))
 					(itemName 
 						(itmGetName thisItem 
-							(list 'article (if (@ data 'showActualItem) 'actual))
+							(list 'article 'escapeQuotes (if (@ data 'showActualItem) 'actual))
 							)
 						)
 					(canInstall Nil)
 					(militaryCheck (rpgCheckMilitaryIDPolicy installerObj (@ data 'checkMilitaryID)))
+					(illegalCheck 
+						(or (@ data 'checkMilitaryID)
+							(obj@ installerObj 'rpg.checkIllegals)
+							)
+						)
 
 					;	If the target object is not the player's ship, then we need to modify
 					;	some text
@@ -1918,7 +1923,7 @@
 							;	Update trData
 							(set@ trData {
 								itemToReplace:itemToReplace
-								replaceItemName:(itmGetName itemToReplace 'short)
+								replaceItemName:(itmGetName itemToReplace '(short escapeQuotes))
 								})
 
 							(switch
@@ -1956,7 +1961,7 @@
 										)
 									(setq desc (translate installerObj 'rpg.cannotInstallDeviceWithoutMilitaryID trData))
 
-								(and (@ data 'checkMilitaryID)
+								(and illegalCheck
 										(itmHasAttribute thisItem "Illegal")
 										)
 									(setq desc (translate installerObj 'rpg.cannotInstallDeviceBecauseIllegal trData))
@@ -2186,7 +2191,7 @@
 										(!= (itmGetProperty thisItem 'category) 'cargoHold)
 										)
 									(setq descWarning (translate installerObj 'rpg.warningLevelDowngrade {
-										itemName: (itmGetName itemToReplace 0x00)
+										itemName: (itmGetName itemToReplace 'escapeQuotes)
 										}))
 
 								;	If this is a reactor and the power level is lower, then we
@@ -2198,7 +2203,7 @@
 										(gr (itmGetProperty itemToReplace 'maxPower) (itmGetProperty thisItem 'maxPower))
 										)
 									(setq descWarning (translate installerObj 'rpg.warningReactorPowerDowngrade {
-										itemName: (itmGetName itemToReplace 0x00)
+										itemName: (itmGetName itemToReplace 'escapeQuotes)
 										}))
 								)
 							)

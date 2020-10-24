@@ -10,7 +10,7 @@
 			<Code id="missionIntro">
 				(block (
 					;	Count the number of mission intros that we've already
-					;	given to the player. 0 means that we've never shown and
+					;	given to the player. 0 means that we've never shown an
 					;	intro before.
 
 					(introCount (count

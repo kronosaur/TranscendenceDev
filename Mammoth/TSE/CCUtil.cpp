@@ -763,7 +763,8 @@ ALERROR GetPosOrObject (CEvalContext *pEvalCtx,
 						ICCItem *pArg, 
 						CVector *retvPos, 
 						CSpaceObject **retpObj,
-						int *retiLocID)
+						int *retiLocID, 
+						CStationType *pStationToPlace)
 
 //	GetPosOrObject
 //
@@ -816,7 +817,7 @@ ALERROR GetPosOrObject (CEvalContext *pEvalCtx,
 
 			//	Get a random location
 
-			if (!pSystem->FindRandomLocation(Criteria, 0, COrbit(), NULL, &iLocID))
+			if (!pSystem->FindRandomLocation(Criteria, 0, COrbit(), pStationToPlace, &iLocID))
 				return ERR_NOTFOUND;
 
 			//	Return the position
@@ -891,11 +892,7 @@ void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, const CSpaceO
 	if (pObj)
 		CC.DefineGlobalInteger(sVar, (int)pObj);
 	else
-		{
-		ICCItem *pValue = CC.CreateNil();
-		CC.DefineGlobal(sVar, pValue);
-		pValue->Discard();
-		}
+		CC.DefineGlobal(sVar, CC.GetNil());
 	}
 
 void DefineGlobalVector (CCodeChain &CC, const CString &sVar, const CVector &vVector)
@@ -915,7 +912,7 @@ void DefineGlobalWeaponType (CCodeChain &CC, const CString &sVar, CItemType *pWe
 	if (pWeaponType)
 		CC.DefineGlobalInteger(sVar, pWeaponType->GetUNID());
 	else
-		CC.DefineGlobal(sVar, CC.CreateNil());
+		CC.DefineGlobal(sVar, CC.GetNil());
 	}
 
 ICCItem *StdErrorNoSystem (CCodeChain &CC)

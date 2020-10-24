@@ -145,6 +145,7 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateRandomItemTables (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateReference (CUniverse &Universe, CXMLElement *pCmdLine);
+void GenerateScript (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateShipImage (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateShipImageChart (CUniverse &Universe, CXMLElement *pCmdLine);

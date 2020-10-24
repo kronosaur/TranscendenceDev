@@ -7,13 +7,6 @@
 
 #define LEVEL_ATTRIB							CONSTLIT("level")
 
-#define PROPERTY_CORE_DEFAULT_INTERACTION		CONSTLIT("core.defaultInteraction")
-#define PROPERTY_CORE_DEFAULT_SHOT_HP			CONSTLIT("core.defaultShotHP")
-#define PROPERTY_CORE_HIDE_DISINTEGRATION_IMMUNE	CONSTLIT("core.hideDisintegrationImmune")
-#define PROPERTY_CORE_HIDE_IONIZE_IMMUNE		CONSTLIT("core.hideIonizeImmune")
-#define PROPERTY_CORE_HIDE_RADIATION_IMMUNE		CONSTLIT("core.hideRadiationImmune")
-#define PROPERTY_CORE_HIDE_SHATTER_IMMUNE		CONSTLIT("core.hideShatterImmune")
-
 static int g_StdArmorDamageAdj[MAX_ITEM_LEVEL][damageCount] =
 	{
 		//	lsr knt par blt ion thr pos pls am  nan grv sng dac dst dlg dfr

@@ -112,7 +112,7 @@
 
 	<ItemType UNID="&itReinforcedTitanium1;"
 			name=				"titanium barricade"
-			attributes=			"barricade, minorItem, nami, specialty"
+			attributes=			"barricade, humanTech, minorItem, nami, specialty"
 			  
 			level=				"2"
 			frequency=			"uncommon"
@@ -143,7 +143,7 @@
 
 	<ItemType UNID="&itReinforcedTitanium2;"
 			name=				"double titanium barricade"
-			attributes=			"barricade, minorItem, nami, specialty"
+			attributes=			"barricade, humanTech, minorItem, nami, specialty"
 			  
 			level=				"3"
 			frequency=			"uncommon"
@@ -174,7 +174,7 @@
 
 	<ItemType UNID="&itReinforcedTitanium3;"
 			name=				"quad titanium barricade"
-			attributes=			"barricade, minorItem, nami, specialty"
+			attributes=			"barricade, humanTech, minorItem, nami, specialty"
 			  
 			level=				"4"
 			frequency=			"uncommon"

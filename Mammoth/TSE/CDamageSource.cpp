@@ -37,9 +37,10 @@ bool CDamageSource::CanHit (CSpaceObject *pTarget) const
 	if (pObj == NULL)
 		return true;
 
-	//	If this is not a wingman, then we allow the hit
+	//	If this is not a player escort then we allow the hit. NOTE: We check for
+	//	player escort, not player wingman, which is more restrictive.
 
-	if (!pTarget->IsEscortingPlayer())
+	if (!pTarget->IsPlayerEscort())
 		return true;
 
 	//	If we don't protect wingmen, then we allow a hit
@@ -71,8 +72,14 @@ bool CDamageSource::CanHitFriends (void) const
 
 	//	See if our source can hit friends.
 
-	CSpaceObject *pObj = GetObj();
-	return (pObj ? pObj->CanHitFriends() : false);
+	else if (const CSpaceObject *pObj = GetObj())
+		return pObj->CanHitFriends();
+
+	else if (m_dwFlags & FLAG_CANNOT_HIT_FRIENDS)
+		return false;
+
+	else
+		return true;
 	}
 
 CString CDamageSource::GetDamageCauseNounPhrase (DWORD dwFlags)
@@ -248,6 +255,29 @@ bool CDamageSource::HasSource (void) const
 		return (m_pSource != NULL);
 	}
 
+bool CDamageSource::IsAngryAt (const CSpaceObject &Obj, const CSovereign *pOurSovereign) const
+
+//	IsAngryAt
+//
+//	Returns TRUE if the source is angry at the given object.
+//
+//	pOurSovereign is an optional sovereign that we use only if the source obj
+//	has been destroyed.
+
+	{
+	if (const CSpaceObject *pSource = GetObj())
+		return pSource->IsAngryAt(&Obj);
+
+	else if (pOurSovereign)
+		{
+		const CSovereign *pSovereign = Obj.GetSovereign();
+		if (pSovereign)
+			return pOurSovereign->IsEnemy(*pSovereign);
+		}
+
+	return false;
+	}
+
 bool CDamageSource::IsCausedByEnemyOf (CSpaceObject *pObj) const
 
 //	IsCausedByEnemyOf
@@ -412,6 +442,9 @@ void CDamageSource::OnObjDestroyed (CSpaceObject &ObjDestroyed)
 	if (ObjDestroyed == m_pSource && !IsObjID())
 		{
 		m_sSourceName = m_pSource->GetNamePattern(0, &m_dwSourceNameFlags);
+		if (!m_pSource->CanHitFriends())
+			m_dwFlags |= FLAG_CANNOT_HIT_FRIENDS;
+
 		m_pSource = (CSpaceObject *)m_pSource->GetID();
 		m_dwFlags |= FLAG_OBJ_ID;
 		}

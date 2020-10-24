@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Black Market Smuggler Mission 01
+	
+		This mission allows the player to sell illegal goods to a Commonwealth
+		station as long as the player has a Smuggler's Cargo Hold.
+
+		USAGE
+
+		To enable a station to use this mission, follow these steps:
+
+		1.	Add an attribute on this mission so that it shows up on the 
+			station's mission dialog.
+
+		2.	Add a property called blackMarket.buysIllegals on the station and
+			set it to a criteria specifying the illegal items that the station
+			will buy.
+	
+	-->
+
+	<MissionType UNID="&msBlackMarketSmuggle01;"
+			name=				"Black Market Smuggle 01: Sell Goods"
+			attributes=			"commonwealthColony, commonwealthColonyArmed, commonwealthHospital, commonwealthResidentials"
+
+			level=				"1-10"
+				 
+			ignoreOwnerLimit=	"true"
+			noDebrief=			"true"
+			noStats=			"true"
+			>
+
+		<Events>
+			<CanCreate>
+				(block (
+					(buysIllegals (obj@ aOwnerObj 'blackMarket.buysIllegals))
+					)
+					(switch
+						(not buysIllegals)
+							Nil
+
+						;	Player must have illegal stuff
+
+						(not (objGetItems gPlayerShip buysIllegals))
+							Nil
+
+						;	Success!
+
+						True
+						)
+					)
+			</CanCreate>
+
+			<OnCreate>
+			</OnCreate>
+
+			<OnAccepted>
+				(msnSuccess gSource)
+			</OnAccepted>
+
+			<OnDeclined>
+				(msnSetUnavailable gSource)
+			</OnDeclined>
+
+			<OnAcceptedUndock>
+			</OnAcceptedUndock>
+
+			<OnGetNextScreen>
+				(switch
+					(= aScreenType 'AcceptFollowUp)
+						(block (
+							(ownerObj (objGetObjByID (msn@ gSource 'ownerID)))
+
+							;	Price depends on whether a Black Market station 
+							;	is in the system.
+
+							(priceAdj
+								(switch
+									(sysFindObject Nil "TA +blackMarket; +populated;")
+										120
+
+									150
+									)
+								)
+
+							(calcSellPrice
+								(lambda (theItem)
+									(switch
+										(itmMatches theItem (obj@ ownerObj 'blackMarket.buysIllegals))
+											(divide (multiply priceAdj (itmGetPrice theItem 'credit)) 100)
+											
+										Nil
+										)
+									)
+								)
+							)
+							{
+								nextScreen: &dsRPGCommoditiesExchangeSell;
+								nextScreenData: {
+									listFilter: calcSellPrice
+									priceCalc: calcSellPrice
+									maxPrice: 10000
+									}
+								}
+							)
+					)
+			</OnGetNextScreen>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Black Market Smuggling
+			</Text>
+			<Text id="Briefing">
+				(or 
+					(objTranslate (objGetObjByID (msn@ gSource 'ownerID)) 'blackMarketSmuggle01.briefing)
+					(list
+						{	descID:'textBriefing1	acceptLabelID:'actionAccept		declineLabelID:'actionSorry	}
+						)
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(or
+					(objTranslate (objGetObjByID (msn@ gSource 'ownerID)) 'blackMarketSmuggle01.declineReply)
+					{	descID:'textDeclineReply1	}
+					)
+			</Text>
+			<Text id="SuccessMsg"></Text>
+
+			<Text id="textBriefing1">
+
+				As you enter the hall, you see a woman in a pressure suit 
+				standing near the entrance. She grabs your arm as you pass.
+
+				"Hello, %name%. Your friends in the Black Market say 'hi.'
+
+				"Do you have anything for me today?"
+			
+			</Text>
+			<String id="actionAccept">"[S]ure, I've got some stuff in my cargo hold."</String>
+			<String id="actionSorry">"I ca[n]'t help you, sorry."</String>
+
+			<Text id="textDeclineReply1">
+			
+				The woman scoffs.
+
+				"You're not getting a better price, elsewhere, friend. Come back
+				after you've gotten your education."
+
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

@@ -65,8 +65,7 @@ class CIntroSession : public IHISession
 				m_Model(*CreateCtx.pModel),
 				m_DebugConsole(*CreateCtx.pDebugConsole),
 				m_Settings(*CreateCtx.pSettings),
-				m_iInitialState(iInitialState),
-				m_bShowAllShips(false)
+				m_iInitialState(iInitialState)
 			{ }
 
 		~CIntroSession (void);
@@ -82,7 +81,7 @@ class CIntroSession : public IHISession
 		virtual void OnLButtonDblClick (int x, int y, DWORD dwFlags) override;
 		virtual void OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture) override;
 		virtual void OnLButtonUp (int x, int y, DWORD dwFlags) override;
-        virtual void OnMouseMove (int x, int y, DWORD dwFlags) override;
+		virtual void OnMouseMove (int x, int y, DWORD dwFlags) override;
 		virtual void OnMove (int x, int y) override { g_pTrans->WMMove(x, y); }
 		virtual void OnReportHardCrash (CString *retsMessage) override { *retsMessage = g_pTrans->GetCrashInfo(); }
 		virtual void OnSize (int cxWidth, int cyHeight) override { g_pTrans->WMSize(cxWidth, cyHeight, 0); }
@@ -106,7 +105,7 @@ class CIntroSession : public IHISession
 		bool HandleChar (char chChar, DWORD dwKeyData);
 		void OnPOVSet (CSpaceObject *pObj);
 		void Paint (CG32bitImage &Screen, bool bTopMost);
-        void SetExpanded (bool bExpanded = true);
+		void SetExpanded (bool bExpanded = true);
 		void SetState (EStates iState);
 		void StartSoundtrackTitleAnimation (CMusicResource *pTrack);
 		void StopAnimations (void);
@@ -115,25 +114,25 @@ class CIntroSession : public IHISession
 		CTranscendenceModel &m_Model;
 		CCommandLineDisplay &m_DebugConsole;
 		CGameSettings &m_Settings;
-		EStates m_iInitialState;
-		EStates m_iState;					//	Current state
+		EStates m_iInitialState = isBlank;
+		EStates m_iState = isBlank;				//	Current state
 
-		RECT m_rcMain;						//	Main animation RECT (where system is painted)
-        RECT m_rcCenter;                    //  Center RECT
-		RECT m_rcTop;						//	Top area (sign in controls, etc.)
-		RECT m_rcBottom;					//	Bottom area (buttons)
+		RECT m_rcMain = { 0 };					//	Main animation RECT (where system is painted)
+		RECT m_rcCenter = { 0 };                //  Center RECT
+		RECT m_rcTop = { 0 };					//	Top area (sign in controls, etc.)
+		RECT m_rcBottom = { 0 };				//	Bottom area (buttons)
 
-        bool m_bExpanded;                   //  TRUE if the main screen is fully expanded
-        bool m_bExpandedDesired;            //  Desired setting for expanded/collapsed
-        int m_iIdleTicks;                   //  Number of ticks idle
-        RECT m_rcMainNormal;                //  Center RECT with button area
-        RECT m_rcMainExpanded;              //  Full screen
+		bool m_bExpanded = false;               //  TRUE if the main screen is fully expanded
+		bool m_bExpandedDesired = false;        //  Desired setting for expanded/collapsed
+		int m_iIdleTicks = 0;                   //  Number of ticks idle
+		RECT m_rcMainNormal = { 0 };            //  Center RECT with button area
+		RECT m_rcMainExpanded = { 0 };          //  Full screen
 
 		CHighScoreDisplay m_HighScoreDisplay;
 		DWORD m_dwTextPerformance = 0;
 
 		TSortMap<int, CShipClass *> m_ShipList;
-		bool m_bShowAllShips;				//	If FALSE, we only show the lower half (by score)
+		bool m_bShowAllShips = false;			//	If FALSE, we only show the lower half (by score)
 	};
 
 class CIntroShipController : public IShipController
@@ -149,7 +148,7 @@ class CIntroShipController : public IShipController
 		virtual void Behavior (SUpdateCtx &Ctx) override { m_pDelegate->Behavior(Ctx); }
 		virtual void CancelDocking (void) override { m_pDelegate->CancelDocking(); }
 		virtual CString DebugCrashInfo (void) override { return m_pDelegate->DebugCrashInfo(); }
-        virtual ICCItem *FindProperty (const CString &sProperty) override { return m_pDelegate->FindProperty(sProperty); }
+		virtual ICCItem *FindProperty (const CString &sProperty) override { return m_pDelegate->FindProperty(sProperty); }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) override { return m_pDelegate->FollowsObjThroughGate(pLeader); }
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pDelegate->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) override { return m_pDelegate->GetAISettingString(sSetting); }
@@ -202,7 +201,7 @@ class CIntroShipController : public IShipController
 		virtual void OnDocked (CSpaceObject *pObj) override { m_pDelegate->OnDocked(pObj); }
 		virtual void OnDockingStop (void) override { m_pDelegate->OnDockingStop(); }
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override { m_pDelegate->OnEnterGate(pDestNode, sDestEntryPoint, pStargate, bAscend); }
-        virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) override { m_pDelegate->OnFuelConsumed(rFuel, iUse); }
+		virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) override { m_pDelegate->OnFuelConsumed(rFuel, iUse); }
 		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos) override { m_pDelegate->OnHitBarrier(pBarrierObj, vPos); }
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) override { m_pDelegate->OnMissionCompleted(pMission, bSuccess); }
 		virtual void OnObjHit (const SDamageCtx &Ctx) override { m_pDelegate->OnObjHit(Ctx); }
@@ -217,7 +216,7 @@ class CIntroShipController : public IShipController
 		virtual void OnWreckCreated (CSpaceObject *pWreck) override { m_pDelegate->OnWreckCreated(pWreck); }
 
 	private:
-		IShipController *m_pDelegate;
-		CShip *m_pShip;
+		IShipController *m_pDelegate = NULL;
+		CShip *m_pShip = NULL;
 	};
 

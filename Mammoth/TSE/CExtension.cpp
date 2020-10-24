@@ -57,10 +57,15 @@
 #define PRIVATE_ATTRIB							CONSTLIT("private")
 #define RELEASE_ATTRIB							CONSTLIT("release")
 #define UNID_ATTRIB								CONSTLIT("UNID")
+#define USAGE_ATTRIB							CONSTLIT("usage")
 #define USES_XML_ATTRIB							CONSTLIT("usesXML")
 #define VERSION_ATTRIB							CONSTLIT("version")
 
 #define FILESPEC_TDB_EXTENSION					CONSTLIT("tdb")
+
+#define USAGE_DEPENDENCY						CONSTLIT("dependency")
+#define USAGE_OPTIONAL							CONSTLIT("optional")
+#define USAGE_REQUIRED							CONSTLIT("required")
 
 //	The center of an adventure cover image is at this position relative to the
 //	right edge of the image.
@@ -182,7 +187,7 @@ void CExtension::AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD
 		}
 	}
 
-void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD dwRelease, bool bOptional)
+void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD dwRelease, EUsage iUsage)
 
 //	AddLibraryReference
 //
@@ -199,7 +204,7 @@ void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD d
 		SLibraryDesc *pLibrary = m_Libraries.Insert();
 		pLibrary->dwUNID = dwUNID;
 		pLibrary->dwRelease = dwRelease;
-		pLibrary->bOptional = bOptional;
+		pLibrary->iUsage = iUsage;
 		}
 	}
 
@@ -210,9 +215,11 @@ bool CExtension::CanExtend (CExtension *pAdventure, DWORD dwAPIVersion) const
 //	Returns TRUE if this extension can extend the given adventure.
 
 	{
-	int i;
-
-	ASSERT(pAdventure);
+	if (!pAdventure)
+		{
+		ASSERT(false);
+		return false;
+		}
 
 	//	If this extension is too old for the adventure, then it can't be used.
 	//	NOTE: We only exclude at adventure create-time. We can't exclude at 
@@ -242,7 +249,7 @@ bool CExtension::CanExtend (CExtension *pAdventure, DWORD dwAPIVersion) const
 
 	//	Otherwise, see if we extend any of the libraries used by this adventure.
 
-	for (i = 0; i < pAdventure->GetLibraryCount(); i++)
+	for (int i = 0; i < pAdventure->GetLibraryCount(); i++)
 		if (m_Extends.Find(pAdventure->GetLibrary(i).dwUNID))
 			return true;
 
@@ -1442,7 +1449,20 @@ ALERROR CExtension::LoadLibraryElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &dwUNID))
 		return error;
 
-	AddLibraryReference(Ctx, dwUNID, pDesc->GetAttributeInteger(RELEASE_ATTRIB), pDesc->GetAttributeBool(OPTIONAL_ATTRIB));
+	EUsage iUsage = EUsage::required;
+	if (pDesc->GetAttributeBool(OPTIONAL_ATTRIB))
+		iUsage = EUsage::optional;
+	else
+		{
+		iUsage = ParseUsage(pDesc->GetAttribute(USAGE_ATTRIB));
+		if (iUsage == EUsage::error)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unknown usage type: %s"), pDesc->GetAttribute(USAGE_ATTRIB));
+			return ERR_FAIL;
+			}
+		}
+
+	AddLibraryReference(Ctx, dwUNID, pDesc->GetAttributeInteger(RELEASE_ATTRIB), iUsage);
 
 	return NOERROR;
 	}
@@ -1628,6 +1648,23 @@ ALERROR CExtension::LoadSystemTypesElement (SDesignLoadCtx &Ctx, CXMLElement *pD
 		}
 
 	return NOERROR;
+	}
+
+CExtension::EUsage CExtension::ParseUsage (const CString &sValue)
+
+//	ParseUsage
+//
+//	Parses a usage value.
+
+	{
+	if (sValue.IsBlank() || strEquals(sValue, USAGE_REQUIRED))
+		return EUsage::required;
+	else if (strEquals(sValue, USAGE_DEPENDENCY))
+		return EUsage::dependency;
+	else if (strEquals(sValue, USAGE_OPTIONAL))
+		return EUsage::optional;
+	else
+		return EUsage::error;
 	}
 
 void CExtension::SweepImages (void)

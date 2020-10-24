@@ -7,6 +7,7 @@
 
 #define PROPERTY_COMPLETE_HP					CONSTLIT("completeHP")
 #define PROPERTY_COMPLETE_SET					CONSTLIT("completeSet")
+#define PROPERTY_DAMAGE							CONSTLIT("damage")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
@@ -40,6 +41,9 @@ ICCItemPtr CArmorItem::FindProperty (const CString &sProperty) const
 
 		return ICCItemPtr(pInstalled->IsComplete());
 		}
+
+	else if (strEquals(sProperty, PROPERTY_DAMAGE))
+		return ICCItemPtr(Max(0, GetMaxHP() - GetHP()));
 
 	else if (strEquals(sProperty, PROPERTY_HP))
 		return ICCItemPtr(GetHP());

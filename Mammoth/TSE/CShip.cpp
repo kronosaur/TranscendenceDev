@@ -14,8 +14,6 @@ const Metric MAX_MANEUVER_DELAY	=				8.0;
 const Metric MANEUVER_MASS_FACTOR =				0.4;
 const Metric MAX_SPEED_FOR_DOCKING2 =			(0.04 * 0.04 * LIGHT_SPEED * LIGHT_SPEED);
 
-#define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
-
 #define MAX_DELTA								(2.0 * g_KlicksPerPixel)
 #define MAX_DELTA2								(MAX_DELTA * MAX_DELTA)
 #define MAX_DELTA_VEL							(g_KlicksPerPixel / 2.0)
@@ -53,6 +51,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_CARGO_SPACE					CONSTLIT("cargoSpace")
 #define PROPERTY_CARGO_SPACE_FREE_KG			CONSTLIT("cargoSpaceFreeKg")
 #define PROPERTY_CARGO_SPACE_USED_KG			CONSTLIT("cargoSpaceUsedKg")
+#define PROPERTY_CONTAMINATION_TIMER			CONSTLIT("contaminationTimer")
 #define PROPERTY_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
 #define PROPERTY_COUNTER_VALUE					CONSTLIT("counterValue")
 #define PROPERTY_COUNTER_VALUE_INCREMENT		CONSTLIT("counterValueIncrement")
@@ -82,6 +81,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
 #define PROPERTY_OPERATING_SPEED				CONSTLIT("operatingSpeed")
 #define PROPERTY_PLAYER_BLACKLISTED				CONSTLIT("playerBlacklisted")
+#define PROPERTY_PLAYER_ESCORT					CONSTLIT("playerEscort")
 #define PROPERTY_PLAYER_WINGMAN					CONSTLIT("playerWingman")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
@@ -129,16 +129,7 @@ const DWORD CONTROLLER_PLAYERSHIP =				0x100000 + 100;
 
 const int DEFAULT_TIME_STOP_TIME =				150;
 
-CShip::CShip (CUniverse &Universe) : TSpaceObjectImpl(Universe),
-		m_pDocked(NULL),
-		m_pController(NULL),
-		m_pEncounterInfo(NULL),
-		m_pTrade(NULL),
-		m_pMoney(NULL),
-		m_pPowerUse(NULL),
-		m_dwNameFlags(0),
-		m_pExitGate(NULL),
-		m_pDeferredOrders(NULL)
+CShip::CShip (CUniverse &Universe) : TSpaceObjectImpl(Universe)
 
 //	CShip constructor
 
@@ -150,8 +141,6 @@ CShip::~CShip (void)
 //	CShip destructor
 
 	{
-	int i;
-
 	if (m_pController)
 		delete m_pController;
 
@@ -169,7 +158,7 @@ CShip::~CShip (void)
 
 	//	We own any attached objects.
 
-	for (i = 0; i < m_Interior.GetCount(); i++)
+	for (int i = 0; i < m_Interior.GetCount(); i++)
 		{
 		CSpaceObject *pAttached = m_Interior.GetAttached(i);
 		if (pAttached)
@@ -242,9 +231,9 @@ void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int 
 	CalcBounds();
 	CalcArmorBonus();
 	CalcDeviceBonus();
-    CalcPerformance();
+	CalcPerformance();
 
-    m_pController->OnStatsChanged();
+	m_pController->OnStatsChanged();
 	m_pController->OnWeaponStatusChanged();
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	}
@@ -341,7 +330,7 @@ void CShip::CalcArmorBonus (void)
 		for (j = 0; j < SegmentsByType[i].GetCount(); j++)
 			{
 			CInstalledArmor *pArmor = GetArmorSection(SegmentsByType[i][j]);
-            CItemCtx ItemCtx(this, pArmor);
+			CItemCtx ItemCtx(this, pArmor);
 
 			//	Set armor complete
 
@@ -456,7 +445,7 @@ void CShip::CalcDeviceBonus (void)
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
-        CItemCtx ItemCtx(this, &Device);
+		CItemCtx ItemCtx(this, &Device);
 
 		//	Keep track of device types to see if we have duplicates
 
@@ -830,7 +819,7 @@ int CShip::CalcMaxCargoSpace (void) const
 //	additional devices)
 
 	{
-    return m_Perf.GetCargoDesc().GetCargoSpace();
+	return m_Perf.GetCargoDesc().GetCargoSpace();
 	}
 
 void CShip::CalcPerformance (void)
@@ -840,22 +829,22 @@ void CShip::CalcPerformance (void)
 //  Computes ship performance parameters by accumulating all devices, 
 //  enhancements, etc.
 
-    {
+	{
 	DEBUG_TRY
 
-    //  Remember current settings so we can detect if something changed.
+	//  Remember current settings so we can detect if something changed.
 
-    int iOldThrust = m_Perf.GetDriveDesc().GetThrust();
-    Metric rOldMaxSpeed = m_Perf.GetDriveDesc().GetMaxSpeed();
+	int iOldThrust = m_Perf.GetDriveDesc().GetThrust();
+	Metric rOldMaxSpeed = m_Perf.GetDriveDesc().GetMaxSpeed();
 
-    //  We generate a context block and accumulate performance stats from the
-    //  class, armor, devices, etc.
-    //
-    //  These fields are context for the ship that we're computing.
+	//  We generate a context block and accumulate performance stats from the
+	//  class, armor, devices, etc.
+	//
+	//  These fields are context for the ship that we're computing.
 
-    SShipPerformanceCtx Ctx(GetClass());
-    Ctx.pShip = this;
-    Ctx.bDriveDamaged = IsMainDriveDamaged();
+	SShipPerformanceCtx Ctx(GetClass());
+	Ctx.pShip = this;
+	Ctx.bDriveDamaged = IsMainDriveDamaged();
 
 	if (m_fEmergencySpeed)
 		Ctx.rOperatingSpeedAdj = 1.5;
@@ -866,40 +855,40 @@ void CShip::CalcPerformance (void)
 	else
 		Ctx.rOperatingSpeedAdj = 1.0;
 
-    //  Start with parameters from the class
+	//  Start with parameters from the class
 
-    m_pClass->InitPerformance(Ctx);
+	m_pClass->InitPerformance(Ctx);
 
-    //  Accumulate settings from armor
+	//  Accumulate settings from armor
 
 	m_Armor.AccumulatePerformance(Ctx);
 
-    //  Accumulate settings from devices
+	//  Accumulate settings from devices
 
 	m_Devices.AccumulatePerformance(Ctx);
 
-    //  If we're tracking mass, adjust rotation descriptor to compensate for
-    //  ship mass.
+	//  If we're tracking mass, adjust rotation descriptor to compensate for
+	//  ship mass.
 
-    if (m_fTrackMass)
-        Ctx.RotationDesc.AdjForShipMass(m_pClass->GetHullDesc().GetMass(), GetItemMass());
+	if (m_fTrackMass)
+		Ctx.RotationDesc.AdjForShipMass(m_pClass->GetHullDesc().GetMass(), GetItemMass());
 
-    //  Now apply the performance parameters to the descriptor
+	//  Now apply the performance parameters to the descriptor
 
-    m_Perf.Init(Ctx);
+	m_Perf.Init(Ctx);
 
-    //  This recalcs maneuvering
+	//  This recalcs maneuvering
 
-    m_fRecalcRotationAccel = false;
+	m_fRecalcRotationAccel = false;
 
 	//	If we upgraded, then we reinitialize the effects
 
 	if (m_Perf.GetDriveDesc().GetThrust() != iOldThrust
-            || m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
+			|| m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
 		m_pClass->InitEffects(this, &m_Effects);
 
 	DEBUG_CATCH
-    }
+	}
 
 int CShip::CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated)
 
@@ -1082,7 +1071,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 	else if (Item.IsDevice())
 		{
-        CItemCtx ItemCtx(&Item);
+		CItemCtx ItemCtx(&Item);
 
 		//	Get the item type
 
@@ -1345,13 +1334,13 @@ void CShip::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
 //	Consumes some amount of fuel
 
 	{
-    if (m_pPowerUse
+	if (m_pPowerUse
 			&& !IsOutOfPower()
 			&& m_Perf.GetReactorDesc().UsesFuel())
-        {
+		{
 		Metric rConsumed = m_pPowerUse->ConsumeFuel(rFuel, iUse);
-        m_pController->OnFuelConsumed(rConsumed, iUse);
-        }
+		m_pController->OnFuelConsumed(rConsumed, iUse);
+		}
 	}
 
 void CShip::CreateDefaultDockingPorts (void)
@@ -1465,7 +1454,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 	DEBUG_TRY
 
 	ALERROR error;
-    CString sError;
+	CString sError;
 	CShip *pShip;
 	CUniverse &Universe = System.GetUniverse();
 
@@ -1491,45 +1480,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 	pShip->m_pSovereign = pSovereign;
 	pShip->m_sName = pClass->GenerateShipName(&pShip->m_dwNameFlags);
 	pShip->m_Rotation.Init(pClass->GetIntegralRotationDesc(), iRotation);
-	pShip->m_iContaminationTimer = 0;
-	pShip->m_iBlindnessTimer = 0;
-	pShip->m_iLRSBlindnessTimer = 0;
-	pShip->m_iParalysisTimer = 0;
-	pShip->m_iDriveDamagedTimer = 0;
-	pShip->m_iDisarmedTimer = 0;
-	pShip->m_iExitGateTimer = 0;
-	pShip->m_pExitGate = NULL;
-	pShip->m_pIrradiatedBy = NULL;
-	pShip->m_iLastFireTime = 0;
-	pShip->m_iLastHitTime = 0;
-	pShip->m_rItemMass = 0.0;
-	pShip->m_rCargoMass = 0.0;
-	pShip->m_pTrade = NULL;
-	pShip->m_pMoney = NULL;
-	pShip->m_pPowerUse = NULL;
 	pShip->m_pCharacter = pClass->GetCharacter();
-	pShip->m_iCounterValue = 0;
-
-	pShip->m_fTrackMass = false;
-	pShip->m_fRadioactive = false;
-	pShip->m_fDestroyInGate = false;
-	pShip->m_fHalfSpeed = false;
-	pShip->m_fDeviceDisrupted = false;
-	pShip->m_fKnown = false;
-	pShip->m_fHiddenByNebula = false;
-	pShip->m_fIdentified = false;
-	pShip->m_fManualSuspended = false;
-	pShip->m_fRecalcItemMass = true;
-	pShip->m_fRecalcRotationAccel = false;
-	pShip->m_fDockingDisabled = false;
-	pShip->m_fControllerDisabled = false;
-	pShip->m_fAlwaysLeaveWreck = false;
-	pShip->m_fEmergencySpeed = false;
-	pShip->m_fQuarterSpeed = false;
-	pShip->m_fLRSDisabledByNebula = false;
-	pShip->m_fShipCompartment = false;
-	pShip->m_fHasShipCompartments = false;
-	pShip->m_fNameBlanked = false;
 	pShip->m_fShowMapLabel = pClass->ShowsMapLabel();
 
 	//	Shouldn't be able to hit a virtual ship
@@ -1582,7 +1533,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 	pShip->OnComponentChanged(comCargo);
 	pShip->CalcArmorBonus();
 	pShip->CalcDeviceBonus();
-    pShip->CalcPerformance();
+	pShip->CalcPerformance();
 
 	//	Set the bounds for this object
 
@@ -1623,7 +1574,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 
 	pShip->m_Interior.Init(pClass->GetInteriorDesc());
 
-    //  Initialize the data from the class
+	//  Initialize the data from the class
 
 	pClass->InitObjectData(*pShip, pShip->GetData());
 
@@ -1638,8 +1589,8 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 
 		if (pCtx->pItems)
 			{
-            if (pShip->CreateRandomItems(pCtx->pItems, &System) != NOERROR)
-                pShip->ReportCreateError(CONSTLIT("Unable to create items"));
+			if (pShip->CreateRandomItems(pCtx->pItems, &System) != NOERROR)
+				pShip->ReportCreateError(CONSTLIT("Unable to create items"));
 			}
 
 		//	set any initial data
@@ -1779,7 +1730,7 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 
 		//	Update performance (which also updates effects).
 
-        CalcPerformance();
+		CalcPerformance();
 		}
 	}
 
@@ -1967,15 +1918,15 @@ void CShip::DisableAllDevices (void)
 
 	{
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
-        {
+		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 		CItemCtx ItemCtx(this, &Device);
-        if (Device.IsEnabled()
+		if (Device.IsEnabled()
 				&& Device.CanBeDisabled(ItemCtx))
-            {
-            EnableDevice(Device.GetDeviceSlot(), false);
-            }
-        }
+			{
+			EnableDevice(Device.GetDeviceSlot(), false);
+			}
+		}
 	}
 
 void CShip::DisableDevice (CInstalledDevice *pDevice)
@@ -2008,9 +1959,9 @@ void CShip::EnableDevice (int iDev, bool bEnable, bool bSilent)
 
 	CalcArmorBonus();
 	CalcDeviceBonus();
-    CalcPerformance();
+	CalcPerformance();
 
-    m_pController->OnStatsChanged();
+	m_pController->OnStatsChanged();
 	m_pController->OnWeaponStatusChanged();
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	m_pController->OnDeviceEnabledDisabled(iDev, bEnable, bSilent);
@@ -2058,15 +2009,15 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_PRIMARY_ARMOR_UNID))
 		{
 		CArmorClass *pBestArmor = NULL;
-        int iBestLevel = 0;
+		int iBestLevel = 0;
 		for (i = 0; i < GetArmorSectionCount(); i++)
 			{
 			CInstalledArmor *pSect = GetArmorSection(i);
-            if (pBestArmor == NULL || pSect->GetLevel() > iBestLevel)
-                {
-                pBestArmor = pSect->GetClass();
-                iBestLevel = pSect->GetLevel();
-                }
+			if (pBestArmor == NULL || pSect->GetLevel() > iBestLevel)
+				{
+				pBestArmor = pSect->GetClass();
+				iBestLevel = pSect->GetLevel();
+				}
 			}
 		if (pBestArmor)
 			*retsValue = strFromInt(pBestArmor->GetItemType()->GetUNID());
@@ -2929,7 +2880,7 @@ Metric CShip::GetMaxFuel (void) const
 //	Return the maximum amount of fuel that the reactor can hold
 
 	{
-    return m_Perf.GetReactorDesc().GetFuelCapacity();
+	return m_Perf.GetReactorDesc().GetFuelCapacity();
 	}
 
 int CShip::GetMaxPower (void) const
@@ -2939,7 +2890,7 @@ int CShip::GetMaxPower (void) const
 //	Return max power output
 
 	{
-    return m_Perf.GetReactorDesc().GetMaxPower();
+	return m_Perf.GetReactorDesc().GetMaxPower();
 	}
 
 Metric CShip::GetMaxWeaponRange (void) const
@@ -3086,7 +3037,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-    ICCItem *pResult;
+	ICCItem *pResult;
 
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
@@ -3128,7 +3079,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxWeapons() - iWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
 		}
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
-		return CC.CreateBool(IsImmuneTo(CConditionSet::cndBlind));
+		return CC.CreateBool(IsImmuneTo(specialBlinding));
 
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE))
 		return CC.CreateInteger(CalcMaxCargoSpace());
@@ -3141,6 +3092,9 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		InvalidateItemMass();
 		return CC.CreateInteger(mathRound(GetCargoMass() * 1000.0));
 		}
+
+	else if (strEquals(sName, PROPERTY_CONTAMINATION_TIMER))
+		return CC.CreateInteger(m_iContaminationTimer);
 
 	else if (strEquals(sName, PROPERTY_COUNTER_VALUE))
 		return CC.CreateInteger(GetCounterValue());
@@ -3169,23 +3123,23 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_DOCKING_ENABLED))
 		return CC.CreateBool(CanObjRequestDock(GetPlayerShip()) == CSpaceObject::dockingOK);
 
-    else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
-        return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
+	else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
+		return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
 
 	else if (strEquals(sName, PROPERTY_EMP_IMMUNE))
-		return CC.CreateBool(IsImmuneTo(CConditionSet::cndParalyzed));
+		return CC.CreateBool(IsImmuneTo(specialEMP));
 
 	else if (strEquals(sName, PROPERTY_EXIT_GATE_TIMER))
 		return (IsInGate() ? CC.CreateInteger(m_iExitGateTimer) : CC.CreateNil());
 
-    else if (strEquals(sName, PROPERTY_FUEL_LEFT))
-        return CC.CreateInteger(mathRound(GetFuelLeft() / FUEL_UNITS_PER_STD_ROD));
+	else if (strEquals(sName, PROPERTY_FUEL_LEFT))
+		return CC.CreateInteger(mathRound(GetFuelLeft() / FUEL_UNITS_PER_STD_ROD));
 
-    else if (strEquals(sName, PROPERTY_FUEL_LEFT_EXACT))
-        return CC.CreateDouble(GetFuelLeft());
+	else if (strEquals(sName, PROPERTY_FUEL_LEFT_EXACT))
+		return CC.CreateDouble(GetFuelLeft());
 
-    else if (strEquals(sName, PROPERTY_HEALER_LEFT))
-        return CC.CreateInteger(m_Armor.GetHealerLeft());
+	else if (strEquals(sName, PROPERTY_HEALER_LEFT))
+		return CC.CreateInteger(m_Armor.GetHealerLeft());
 
 	else if (strEquals(sName, PROPERTY_HP))
 		return CC.CreateInteger(GetTotalArmorHP());
@@ -3204,10 +3158,10 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(m_pClass->GetHullDesc().GetMaxCounter());
 
 	else if (strEquals(sName, PROPERTY_MAX_FUEL))
-        return CC.CreateInteger(mathRound(GetMaxFuel() / FUEL_UNITS_PER_STD_ROD));
+		return CC.CreateInteger(mathRound(GetMaxFuel() / FUEL_UNITS_PER_STD_ROD));
 
-    else if (strEquals(sName, PROPERTY_MAX_FUEL_EXACT))
-        return CC.CreateDouble(GetMaxFuel());
+	else if (strEquals(sName, PROPERTY_MAX_FUEL_EXACT))
+		return CC.CreateDouble(GetMaxFuel());
 
 	else if (strEquals(sName, PROPERTY_MAX_HP))
 		{
@@ -3242,17 +3196,20 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_PLAYER_BLACKLISTED))
 		return CC.CreateBool(m_pController->IsPlayerBlacklisted());
 
+	else if (strEquals(sName, PROPERTY_PLAYER_ESCORT))
+		return CC.CreateBool(IsPlayerEscort());
+
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
 		return CC.CreateBool(m_pController->IsPlayerWingman());
 
-    else if (strEquals(sName, PROPERTY_POWER_USE))
-        return CC.CreateDouble(GetPowerConsumption() * 100.0);
+	else if (strEquals(sName, PROPERTY_POWER_USE))
+		return CC.CreateDouble(GetPowerConsumption() * 100.0);
 
 	else if (strEquals(sName, PROPERTY_PRICE))
 		return CC.CreateInteger((int)GetTradePrice(NULL).GetValue());
 
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
-		return CC.CreateBool(IsImmuneTo(CConditionSet::cndRadioactive));
+		return CC.CreateBool(IsImmuneTo(specialRadiation));
 
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		return CC.CreateInteger(GetRotation());
@@ -3349,10 +3306,10 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 			return CC.CreateNil();
 		}
 
-    //  Controller properties
+	//  Controller properties
 
-    else if (pResult = m_pController->FindProperty(sName))
-        return pResult;
+	else if (pResult = m_pController->FindProperty(sName))
+		return pResult;
 
 	else
 		return CSpaceObject::GetPropertyCompatible(Ctx, sName);
@@ -3455,6 +3412,16 @@ CSpaceObject *CShip::GetTarget (DWORD dwFlags) const
 
 	{
 	return m_pController->GetTarget(NULL, dwFlags);
+	}
+
+CTargetList CShip::GetTargetList (void) const
+
+//	GetTargetList
+//
+//	Gets the target list.
+
+	{
+	return m_pController->GetTargetList();
 	}
 
 int CShip::GetTotalArmorHP (int *retiMaxHP) const
@@ -3698,13 +3665,13 @@ Metric CShip::GetWeaponRange (DeviceNames iDev)
 //
 //  Returns the range of the given weapon.
 
-    {
+	{
 	CInstalledDevice *pWeapon = GetNamedDevice(iDev);
-    if (pWeapon == NULL)
-        return 0.0;
+	if (pWeapon == NULL)
+		return 0.0;
 
-    return pWeapon->GetMaxEffectiveRange(this);
-    }
+	return pWeapon->GetMaxEffectiveRange(this);
+	}
 
 bool CShip::HasAttribute (const CString &sAttribute) const
 
@@ -3832,10 +3799,10 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 
 	CalcArmorBonus();
 	CalcDeviceBonus();
-    CalcPerformance();
+	CalcPerformance();
 
 	InvalidateItemListState();
-    m_pController->OnStatsChanged();
+	m_pController->OnStatsChanged();
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
 	}
 
@@ -3886,7 +3853,19 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	if (!m_Devices.Install(this, ItemList, iDeviceSlot, iSlotPosIndex, false, &iDeviceSlot))
 		return;
 
-	//	Adjust the named devices
+	//	Recalc bonuses
+
+	CalcArmorBonus();
+	CalcDeviceBonus();
+	CalcPerformance();
+
+	//	Adjust the named devices.
+	//
+	//	NOTE: We need to do this AFTER CalcDeviceBonus because we need to have
+	//	the new enhancement stack, since we might have a linked-fire setting
+	//	conferred by a device slot.
+
+	m_Devices.RefreshNamedDevice(iDeviceSlot);
 
 	switch (m_Devices.GetDevice(iDeviceSlot).GetCategory())
 		{
@@ -3898,12 +3877,6 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 			m_pController->OnWeaponStatusChanged();
 			break;
 		}
-
-	//	Recalc bonuses
-
-	CalcArmorBonus();
-	CalcDeviceBonus();
-    CalcPerformance();
 
 	//	Reset the fuel level (we are effectively transfering the fuel to the
 	//	new reactor. Note that on a downgrade, we will clip the fuel to the
@@ -3951,29 +3924,6 @@ bool CShip::IsDeviceSlotAvailable (ItemCategories iItemCat, int *retiSlot)
 	return m_Devices.IsSlotAvailable(iItemCat, retiSlot);
 	}
 
-bool CShip::IsEscortingPlayer (void) const
-
-//	IsEscortingPlayer
-//
-//	Returns TRUE if we're escorting the player.
-
-	{
-	if (IsPlayerWingman())
-		return true;
-
-	CSpaceObject *pTarget;
-	IShipController::OrderTypes iOrder = GetCurrentOrder(&pTarget);
-	switch (iOrder)
-		{
-		case IShipController::orderEscort:
-		case IShipController::orderFollow:
-			return (pTarget && pTarget->IsPlayer());
-
-		default:
-			return false;
-		}
-	}
-
 bool CShip::IsFuelCompatible (const CItem &Item)
 
 //	IsFuelCompatible
@@ -3992,6 +3942,29 @@ bool CShip::IsPlayer (void) const
 
 	{
 	return m_pController->IsPlayer();
+	}
+
+bool CShip::IsPlayerEscort (void) const
+
+//	IsPlayerEscort
+//
+//	Returns TRUE if we're escorting the player.
+
+	{
+	if (m_pController->IsPlayerEscort())
+		return true;
+
+	CSpaceObject *pTarget;
+	IShipController::OrderTypes iOrder = GetCurrentOrder(&pTarget);
+	switch (iOrder)
+		{
+		case IShipController::orderEscort:
+		case IShipController::orderFollow:
+			return (pTarget && pTarget->IsPlayer());
+
+		default:
+			return false;
+		}
 	}
 
 bool CShip::IsSingletonDevice (ItemCategories iItemCat)
@@ -4199,7 +4172,7 @@ void CShip::OnBounce (CSpaceObject *pBarrierObj, const CVector &vPos)
 	m_pController->OnHitBarrier(pBarrierObj, vPos);
 	}
 
-void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
+void CShip::OnClearCondition (ECondition iCondition, DWORD dwFlags)
 
 //	OnClearCondition
 //
@@ -4208,7 +4181,7 @@ void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndBlind:
+		case ECondition::blind:
 			{
 			DWORD dwOptions = 0;
 			if (dwFlags & FLAG_NO_MESSAGE)
@@ -4218,11 +4191,11 @@ void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
 			break;
 			}
 
-		case CConditionSet::cndDisarmed:
+		case ECondition::disarmed:
 			m_iDisarmedTimer = 0;
 			break;
 
-		case CConditionSet::cndLRSBlind:
+		case ECondition::LRSBlind:
 			{
 			DWORD dwOptions = 0;
 			if (dwFlags & FLAG_NO_MESSAGE)
@@ -4232,11 +4205,11 @@ void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
 			break;
 			}
 
-		case CConditionSet::cndParalyzed:
+		case ECondition::paralyzed:
 			m_iParalysisTimer = 0;
 			break;
 
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			if (m_fRadioactive)
 				{
 				if (m_pIrradiatedBy)
@@ -4285,12 +4258,12 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 		case comCargo:
 			{
 			//	Calculate new mass
-            //
-            //  NOTE: In this case we defer recalculating performance until update.
+			//
+			//  NOTE: In this case we defer recalculating performance until update.
 
 			m_fRecalcItemMass = true;
-            if (m_fTrackMass)
-                m_fRecalcRotationAccel = true;
+			if (m_fTrackMass)
+				m_fRecalcRotationAccel = true;
 
 			//	If one of our weapons doesn't have a variant selected, then
 			//	try to select it now (if we just got some new ammo, this will
@@ -4310,7 +4283,7 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 			}
 
 		case comDrive:
-            CalcPerformance();
+			CalcPerformance();
 			break;
 
 		case comReactor:
@@ -4452,6 +4425,22 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			}
 		}
 
+	//	Deal with hull immunities.
+	//
+	//	LATER: Technically this should be AFTER armor gets a hold of the damage,
+	//	but AbsorbDamage applies special damage to the ship instead of just 
+	//	setting state in SDamageCtx.
+	//
+	//	Eventually we should split up pArmor->AbsorbDamage into two pieces. One
+	//	piece just takes the damage, computes its effect on armor, and subtracts
+	//	HP, but leaves any special damage to later.
+	//
+	//	Then, inside this function, we call the hull to deal with any special
+	//	damage and after that we apply special damage to the ship (radiation,
+	//	EMP, etc.).
+
+	m_pClass->GetHullDesc().AdjustDamage(Ctx);
+
 	//	Let the armor handle it
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;
@@ -4531,7 +4520,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Handle special attacks
 
 	if (Ctx.IsTimeStopped() 
-			&& !IsImmuneTo(CConditionSet::cndTimeStopped)
 			&& !IsTimeStopped())
 		{
 		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
@@ -4607,7 +4595,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 			//	We only care about mass destruction damage
 
-            int iWMDDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+			int iWMDDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 
 			//	Compare the amount of damage that we are taking with the
 			//	original strength (HP) of the armor. Increase the chance
@@ -4842,8 +4830,8 @@ void CShip::OnDocked (CSpaceObject *pObj)
 	//	If we've docked with a radioactive object then we become radioactive
 	//	unless our armor is immune
 
-	if (pObj->IsRadioactive() && !IsImmuneTo(CConditionSet::cndRadioactive))
-		SetCondition(CConditionSet::cndRadioactive);
+	if (pObj->IsRadioactive() && !IsImmuneTo(specialRadiation))
+		SetCondition(ECondition::radioactive);
 
 	//	Tell our items that we docked with something
 
@@ -4918,7 +4906,7 @@ bool CShip::OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoin
 	return true;
 	}
 
-bool CShip::OnGetCondition (CConditionSet::ETypes iCondition) const
+bool CShip::OnGetCondition (ECondition iCondition) const
 
 //	OnGetCondition
 //
@@ -4929,22 +4917,22 @@ bool CShip::OnGetCondition (CConditionSet::ETypes iCondition) const
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndBlind:
+		case ECondition::blind:
 			return (m_iBlindnessTimer != 0);
 
-		case CConditionSet::cndDisarmed:
+		case ECondition::disarmed:
 			return (m_iDisarmedTimer != 0);
 
-		case CConditionSet::cndLRSBlind:
+		case ECondition::LRSBlind:
 			return (m_fLRSDisabledByNebula || (m_iLRSBlindnessTimer != 0));
 
-		case CConditionSet::cndParalyzed:
+		case ECondition::paralyzed:
 			return (m_iParalysisTimer != 0);
 
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			return (m_fRadioactive ? true : false);
 
-		case CConditionSet::cndShieldBlocked:
+		case ECondition::shieldBlocked:
 			return m_Perf.HasShieldInterference();
 
 		default:
@@ -5034,30 +5022,26 @@ void CShip::OnHitByDeviceDisruptDamage (DWORD dwDuration)
 		}
 	}
 
-bool CShip::OnIsImmuneTo (CConditionSet::ETypes iCondition) const
+bool CShip::OnIsImmuneTo (SpecialDamageTypes iSpecialDamage) const
 
 //	OnIsImmuneTo
 //
 //	Returns TRUE if we are immune to the given condition.
 
 	{
-	switch (iCondition)
-		{
-		case CConditionSet::cndBlind:
-			return m_Armor.IsImmune(specialBlinding);
+	//	See if armor confers immunity.
 
-		case CConditionSet::cndParalyzed:
-			return m_Armor.IsImmune(specialEMP);
-			
-		case CConditionSet::cndRadioactive:
-			return m_Armor.IsImmune(specialRadiation);
-			
-		case CConditionSet::cndTimeStopped:
-			return m_pClass->IsTimeStopImmune();
+	if (m_Armor.IsImmune(iSpecialDamage))
+		return true;
 
-		default:
-			return false;
-		}
+	//	See if hull confers immunity.
+
+	if (m_pClass->GetHullDesc().IsImmuneTo(iSpecialDamage))
+		return true;
+
+	//	If we get this far, then not immune.
+
+	return false;
 	}
 
 void CShip::OnItemEnhanced (CItemListManipulator &ItemList)
@@ -5075,16 +5059,16 @@ void CShip::OnItemEnhanced (CItemListManipulator &ItemList)
 
 		m_fRecalcItemMass = true;
 
-        //  Recalc performance
+		//  Recalc performance
 
 		CalcArmorBonus();
 		CalcDeviceBonus();
-        CalcPerformance();
+		CalcPerformance();
 
 		//	Update UI
 
 		InvalidateItemListState();
-        m_pController->OnStatsChanged();
+		m_pController->OnStatsChanged();
 		m_pController->OnWeaponStatusChanged();
 		m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 		}
@@ -5137,9 +5121,9 @@ void CShip::OnNewSystem (CSystem *pSystem)
 	CalcBounds();
 	CalcArmorBonus();
 	CalcDeviceBonus();
-    CalcPerformance();
+	CalcPerformance();
 
-    m_pController->OnStatsChanged();
+	m_pController->OnStatsChanged();
 	m_pController->OnWeaponStatusChanged();
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 
@@ -5708,7 +5692,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load armor
 
-    m_Armor.ReadFromStream(Ctx, *this);
+	m_Armor.ReadFromStream(Ctx, *this);
 
 	//	Abilities
 
@@ -5750,8 +5734,8 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Previous versions stored drive desc UNID
 
-    if (Ctx.dwVersion < 127)
-	    Ctx.pStream->Read(dwLoad);
+	if (Ctx.dwVersion < 127)
+		Ctx.pStream->Read(dwLoad);
 
 	//	Energy fields
 
@@ -5923,9 +5907,9 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	else
 		m_iCounterValue = 0;
 
-    //  Recompute performance (because we don't save it).
+	//  Recompute performance (because we don't save it).
 
-    CalcPerformance();
+	CalcPerformance();
 
 	//	Initialize effects
 
@@ -5957,7 +5941,7 @@ void CShip::OnRemoved (SDestroyCtx &Ctx)
 		}
 	}
 
-void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
+void CShip::OnSetCondition (ECondition iCondition, int iTimer)
 
 //	OnSetCondition
 //
@@ -5966,11 +5950,11 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndBlind:
+		case ECondition::blind:
 			SetAbility(ablShortRangeScanner, ablDamage, iTimer, 0);
 			break;
 
-		case CConditionSet::cndDisarmed:
+		case ECondition::disarmed:
 			if (m_iDisarmedTimer == 0)
 				{
 				if (iTimer < 0)
@@ -5980,11 +5964,11 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 				}
 			break;
 
-		case CConditionSet::cndLRSBlind:
+		case ECondition::LRSBlind:
 			SetAbility(ablLongRangeScanner, ablDamage, iTimer, 0);
 			break;
 
-		case CConditionSet::cndParalyzed:
+		case ECondition::paralyzed:
 			if (m_iParalysisTimer == 0)
 				{
 				if (iTimer < 0)
@@ -5994,10 +5978,12 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 				}
 			break;
 
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			if (!m_fRadioactive)
 				{
-				if (iTimer < 0)
+				if (!GetProperty(PROPERTY_CORE_NO_RADIATION_DEATH)->IsNil())
+					m_iContaminationTimer = -1;
+				else if (iTimer < 0)
 					m_iContaminationTimer = (IsPlayer() ? 180 : 60) * g_TicksPerSecond;
 				else
 					m_iContaminationTimer = Min(iTimer, MAX_SHORT);
@@ -6009,7 +5995,7 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 		}
 	}
 
-void CShip::OnSetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETypes iCondition)
+void CShip::OnSetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition)
 
 //	OnSetConditionDueToDamage
 //
@@ -6018,15 +6004,15 @@ void CShip::OnSetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETy
 	{
 	switch (iCondition)
 		{
-		case CConditionSet::cndBlind:
+		case ECondition::blind:
 			SetCondition(iCondition, DamageCtx.GetBlindTime());
 			break;
 
-		case CConditionSet::cndParalyzed:
+		case ECondition::paralyzed:
 			SetCondition(iCondition, DamageCtx.GetParalyzedTime());
 			break;
 
-		case CConditionSet::cndRadioactive:
+		case ECondition::radioactive:
 			if (!IsRadioactive())
 				{
 				//	Remember the object that hit us so that we can report
@@ -6212,7 +6198,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	//	Armor
 
-    m_Armor.WriteToStream(pStream);
+	m_Armor.WriteToStream(pStream);
 
 	//	Abilities
 
@@ -6559,7 +6545,7 @@ void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
 
 			int iSuccess = 50 + 10 * (Program.iAILevel - iTargetLevel);
 			if (mathRandom(1, 100) <= iSuccess)
-				SetCondition(CConditionSet::cndDisarmed, Program.iAILevel * mathRandom(30, 60));
+				SetCondition(ECondition::disarmed, Program.iAILevel * mathRandom(30, 60));
 
 			break;
 			}
@@ -6702,15 +6688,15 @@ void CShip::RechargeItem (CItemListManipulator &ItemList, int iCharges)
 
 	if (Item.IsInstalled())
 		{
-        if (Item.IsDevice())
-            {
+		if (Item.IsDevice())
+			{
 			CalcArmorBonus();
-            CalcDeviceBonus();
+			CalcDeviceBonus();
 
-            m_pController->OnStatsChanged();
-            m_pController->OnWeaponStatusChanged();
+			m_pController->OnStatsChanged();
+			m_pController->OnWeaponStatusChanged();
 			m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
-            }
+			}
 		}
 	}
 
@@ -6802,10 +6788,10 @@ ALERROR CShip::RemoveItemAsDevice (CItemListManipulator &ItemList)
 
 	CalcArmorBonus();
 	CalcDeviceBonus();
-    CalcPerformance();
+	CalcPerformance();
 
 	InvalidateItemListState();
-    m_pController->OnStatsChanged();
+	m_pController->OnStatsChanged();
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 
 	return NOERROR;
@@ -6886,10 +6872,10 @@ ALERROR CShip::ReportCreateError (const CString &sError) const
 //
 //  Reports an error while creating a ship.
 
-    {
-    ::kernelDebugLogPattern("Error creating ship %08x: %s", (m_pClass ? m_pClass->GetUNID() : 0), sError);
-    return ERR_FAIL;
-    }
+	{
+	::kernelDebugLogPattern("Error creating ship %08x: %s", (m_pClass ? m_pClass->GetUNID() : 0), sError);
+	return ERR_FAIL;
+	}
 
 void CShip::RevertOrientationChange (void)
 
@@ -7473,19 +7459,19 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		m_fDockingDisabled = pValue->IsNil();
 		return true;
 		}
-    else if (strEquals(sName, PROPERTY_FUEL_LEFT))
-        {
+	else if (strEquals(sName, PROPERTY_FUEL_LEFT))
+		{
 		if (m_pPowerUse)
 			m_pPowerUse->SetFuelLeft(Max(0.0, Min(pValue->GetIntegerValue() * FUEL_UNITS_PER_STD_ROD, GetMaxFuel())));
-        return true;
-        }
+		return true;
+		}
 
-    else if (strEquals(sName, PROPERTY_FUEL_LEFT_EXACT))
-        {
+	else if (strEquals(sName, PROPERTY_FUEL_LEFT_EXACT))
+		{
 		if (m_pPowerUse)
 			m_pPowerUse->SetFuelLeft(Max(0.0, Min(pValue->GetDoubleValue(), GetMaxFuel())));
-        return true;
-        }
+		return true;
+		}
 
 	else if (strEquals(sName, PROPERTY_EXIT_GATE_TIMER))
 		{
@@ -7494,15 +7480,15 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		return true;
 		}
 
-    else if (strEquals(sName, PROPERTY_HEALER_LEFT))
-        {
-        m_Armor.SetHealerLeft(pValue->GetIntegerValue());
+	else if (strEquals(sName, PROPERTY_HEALER_LEFT))
+		{
+		m_Armor.SetHealerLeft(pValue->GetIntegerValue());
 
 		//	Update the armor status because some armor HUDs show healer level.
 
 		m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
-        return true;
-        }
+		return true;
+		}
 
 	else if (strEquals(sName, PROPERTY_HP))
 		{
@@ -7539,6 +7525,11 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		m_pController->SetPlayerBlacklisted(!pValue->IsNil());
 		return true;
 		}
+	else if (strEquals(sName, PROPERTY_PLAYER_ESCORT))
+		{
+		m_pController->SetPlayerEscort(!pValue->IsNil());
+		return true;
+		}
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
 		{
 		SetPlayerWingman(!pValue->IsNil());
@@ -7547,9 +7538,9 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
 		{
 		if (pValue->IsNil())
-			ClearCondition(CConditionSet::cndRadioactive);
+			ClearCondition(ECondition::radioactive);
 		else
-			SetCondition(CConditionSet::cndRadioactive);
+			SetCondition(ECondition::radioactive);
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))

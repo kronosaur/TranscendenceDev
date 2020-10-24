@@ -391,7 +391,7 @@ inline bool CDeviceItem::IsEnabled (void) const
 inline bool CDeviceItem::IsMiningWeapon (void) const
 	{
 	if (const CWeaponFireDesc *pShot = GetWeaponFireDesc())
-		return (pShot->GetDamage().GetMiningDamage() > 0);
+		return (pShot->GetDamage().GetMiningDamage() > 0 || GetEnhancements().HasSpecialDamage(specialMining));
 	else
 		return false;
 	}

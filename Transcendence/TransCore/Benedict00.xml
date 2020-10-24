@@ -140,7 +140,9 @@
 			</OnObjDestroyed>
 			
 			<OnCompleted>
-				(if (eq aReason 'success)
+				(if (and (= aReason 'success)
+						(msnGetData gSource 'startTime)
+						)
 					(block Nil
 						(msnSetData gSource 'endTime (unvGetTick))
 					

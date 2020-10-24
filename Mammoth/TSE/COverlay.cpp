@@ -74,7 +74,7 @@ bool COverlay::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 		//	Handle custom damage (this is to give custom damage
 		//	a chance to react to hitting an overlay)
 
-		if (Ctx.pDesc->FireOnDamageOverlay(Ctx, this))
+		if (Ctx.GetDesc().FireOnDamageOverlay(Ctx, this))
 			return true;
 
 		//	Absorb damage
@@ -117,7 +117,7 @@ bool COverlay::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 			//	Handle custom damage (this is to give custom damage
 			//	a chance to react to hitting an overlay)
 
-			if (Ctx.pDesc->FireOnDamageOverlay(Ctx, this))
+			if (Ctx.GetDesc().FireOnDamageOverlay(Ctx, this))
 				return true;
 
 			//	Handle damage (if we don't do anything on hit, then
@@ -669,7 +669,7 @@ void COverlay::FireOnMining (CSpaceObject &Source, EAsteroidType iType, SDamageC
 	CCX.DefineDouble(CONSTLIT("aYieldAdj"), MiningStats.rYieldAdj);
 	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
 	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
 
 	ICCItemPtr pResult = CCX.RunCode(Event);
 	if (pResult->IsError())
@@ -787,32 +787,32 @@ CConditionSet COverlay::GetConditions (CSpaceObject *pSource) const
 	//	Do we disarm the source?
 
 	if (Disarms(pSource))
-		Conditions.Set(CConditionSet::cndDisarmed);
+		Conditions.Set(ECondition::disarmed);
 
 	//	Do we paralyze the source?
 
 	if (Paralyzes(pSource))
-		Conditions.Set(CConditionSet::cndParalyzed);
+		Conditions.Set(ECondition::paralyzed);
 
 	//	Can't bring up ship status
 
 	if (IsShipScreenDisabled())
-		Conditions.Set(CConditionSet::cndShipScreenDisabled);
+		Conditions.Set(ECondition::shipScreenDisabled);
 
 	//	Do we spin the source ?
 
 	if (Spins(pSource))
-		Conditions.Set(CConditionSet::cndSpinning);
+		Conditions.Set(ECondition::spinning);
 
 	//	Drag
 
 	if (GetDrag(pSource) < 1.0)
-		Conditions.Set(CConditionSet::cndDragged);
+		Conditions.Set(ECondition::dragged);
 
 	//	Time-stopped?
 
 	if (StopsTime(pSource))
-		Conditions.Set(CConditionSet::cndTimeStopped);
+		Conditions.Set(ECondition::timeStopped);
 
 	//	Done
 
@@ -1582,7 +1582,7 @@ void COverlay::Update (CSpaceObject *pSource, int iScale, int iRotation, bool *r
 
 	//	Update the painters
 
-	SEffectUpdateCtx UpdateCtx;
+	SEffectUpdateCtx UpdateCtx(pSource->GetUniverse());
 	UpdateCtx.pSystem = pSource->GetSystem();
 	UpdateCtx.pObj = pSource;
 	UpdateCtx.iTick = m_iTick;
@@ -1601,6 +1601,9 @@ void COverlay::Update (CSpaceObject *pSource, int iScale, int iRotation, bool *r
 
 		MoveCtx.bUseOrigin = true;
 		MoveCtx.vOrigin = pSource->GetPos() + CVector(xOffset * g_KlicksPerPixel, -yOffset * g_KlicksPerPixel);
+
+		UpdateCtx.bUseOrigin = true;
+		UpdateCtx.vOrigin = MoveCtx.vOrigin;
 		}
 
 	//	Update

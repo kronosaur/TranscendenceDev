@@ -3580,7 +3580,7 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	DEBUG_CATCH
 	}
 
-void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rMapScale)
+void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rMapScale, DWORD dwFlags)
 
 //	PaintViewportMap
 //
@@ -3645,6 +3645,11 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 			CGDraw::CircleGradient(Dest, x, y, iGlowRadius, pStar->GetSpaceColor());
 			}
 		}
+
+	//	Paint zones, if necessary
+
+	if (dwFlags & FLAG_VIEWPORT_MAP_SHOW_ZONES)
+		m_Territories.DebugPaint(Dest, Ctx, GetUniverse().GetNamedFont(CUniverse::fontMapLabel));
 
 	//	Paint all planets and stars first
 
@@ -4533,7 +4538,7 @@ void CSystem::StopTime (const CSpaceObjectList &Targets, int iDuration)
 		{
 		CSpaceObject *pObj = Targets.GetObj(i);
 
-		if (pObj && !pObj->IsImmuneTo(CConditionSet::cndTimeStopped))
+		if (pObj && !pObj->IsImmuneTo(specialTimeStop))
 			pObj->StopTime();
 		}
 
@@ -4554,7 +4559,7 @@ void CSystem::StopTimeForAll (int iDuration, CSpaceObject *pExcept)
 		{
 		CSpaceObject *pObj = GetObject(i);
 
-		if (pObj && pObj != pExcept && !pObj->IsImmuneTo(CConditionSet::cndTimeStopped))
+		if (pObj && pObj != pExcept && !pObj->IsImmuneTo(specialTimeStop))
 			pObj->StopTime();
 		}
 

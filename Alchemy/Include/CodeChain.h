@@ -113,7 +113,8 @@ class ICCItem : public CObject
 		virtual ICCItem *CloneContainer (void) const = 0;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) { return Clone(pCC); }
 		virtual void Discard (void);
-		ICCItem *Reference (void) const { m_dwRefCount++; return const_cast<ICCItem *>(this); }
+		DWORD GetRefCount () const { return m_dwRefCount; }
+		ICCItem *Reference (void) const { ASSERT(m_bNoRefCount || m_dwRefCount < 0x00010000); m_dwRefCount++; return const_cast<ICCItem *>(this); }
 		virtual void Reset (void) = 0;
 		void SetNoRefCount (void) { m_bNoRefCount = true; }
 
@@ -128,7 +129,7 @@ class ICCItem : public CObject
 		virtual ICCItem *GetElement (int iIndex) const = 0;
 		virtual ICCItem *GetElement (const CString &sKey) const { return NULL; }
 		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex) const;
-        virtual CString GetKey (int iIndex) { return NULL_STR; }
+        virtual CString GetKey (int iIndex) const { return NULL_STR; }
 		virtual bool HasReferenceTo (ICCItem *pSrc) { return (pSrc == this); }
 		virtual ICCItem *Head (CCodeChain *pCC) = 0;
 		bool IsList (void) const { return IsNil() || !IsAtom(); }
@@ -190,6 +191,7 @@ class ICCItem : public CObject
 		CString GetStringAt (const CString &sKey, const CString &sDefault = NULL_STR) const;
 		void SetAt (const CString &sKey, ICCItem *pValue);
 		void SetBooleanAt (const CString &sKey, bool bValue);
+		void SetDoubleAt (const CString &sKey, double rValue);
 		void SetIntegerAt (const CString &sKey, int iValue);
 		void SetStringAt (const CString &sKey, const CString &sValue);
 
@@ -252,7 +254,7 @@ class ICCItemPtr
 
 		ICCItemPtr (const ICCItemPtr &Src);
 
-		ICCItemPtr (ICCItemPtr &&Src) : m_pPtr(Src.m_pPtr)
+		ICCItemPtr (ICCItemPtr &&Src) noexcept : m_pPtr(Src.m_pPtr)
 			{
 			Src.m_pPtr = NULL;
 			}
@@ -260,6 +262,7 @@ class ICCItemPtr
 		~ICCItemPtr (void);
 
 		ICCItemPtr &operator= (const ICCItemPtr &Src);
+		ICCItemPtr &operator= (ICCItemPtr &&Value) noexcept { TakeHandoff(Value); return *this; }
 		ICCItemPtr &operator= (ICCItem *pSrc);
 		ICCItemPtr &operator= (const ICCItem &Value);
 		operator ICCItem *() const { return m_pPtr; }
@@ -271,8 +274,8 @@ class ICCItemPtr
 
 		bool Load (const CString &sCode, CString *retsError);
 
-		void TakeHandoff (ICCItem *pPtr);
-		void TakeHandoff (ICCItemPtr &Src);
+		void TakeHandoff (ICCItem *pPtr) { if (m_pPtr) m_pPtr->Discard(); m_pPtr = pPtr; }
+		void TakeHandoff (ICCItemPtr &Src) { if (m_pPtr) m_pPtr->Discard(); m_pPtr = Src.m_pPtr; Src.m_pPtr = NULL; }
 
 		void Set (const ICCItemPtr &Src)
 			{
@@ -767,7 +770,7 @@ class CCSymbolTable : public ICCList
 		virtual ICCItem *GetElement (int iIndex) const override;
 		virtual ICCItem *GetElement (const CString &sKey) const override;
 		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex) const override;
-        virtual CString GetKey (int iIndex) override { return m_Symbols.GetKey(iIndex); }
+        virtual CString GetKey (int iIndex) const override { return m_Symbols.GetKey(iIndex); }
 		virtual bool HasReferenceTo (ICCItem *pSrc) override;
 		virtual ICCItem *Head (CCodeChain *pCC) override { return GetElement(0); }
 		virtual ICCItem *Tail (CCodeChain *pCC) override { return GetElement(1); }

@@ -265,6 +265,11 @@
 			attributes=			"auton, combatAuton, genericClass, urak"
 			>
 
+		<Properties>
+			<Definition id="core.noBiologicalEffects">True</Definition>
+			<Definition id="core.noRadiationDeath">True</Definition>
+		</Properties>
+
 		<Armor>
 			<ArmorSection start="270" span="180" armorID="&itUrakArmorLight;" />
 			<ArmorSection start="90"  span="180" armorID="&itUrakArmorLight;" />

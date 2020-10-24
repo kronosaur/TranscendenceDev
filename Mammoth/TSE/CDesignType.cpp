@@ -22,6 +22,7 @@
 #define IMAGE_TAG								CONSTLIT("Image")
 #define IMAGE_COMPOSITE_TAG						CONSTLIT("ImageComposite")
 #define INITIAL_DATA_TAG						CONSTLIT("InitialData")
+#define ITEM_ENCOUNTER_DESC_TAG					CONSTLIT("ItemEncounterDesc")
 #define ITEM_TABLE_TAG							CONSTLIT("ItemTable")
 #define ITEM_TYPE_TAG							CONSTLIT("ItemType")
 #define LANGUAGE_TAG							CONSTLIT("Language")
@@ -96,17 +97,9 @@
 #define SPECIAL_SYSTEM_LEVEL					CONSTLIT("systemLevel:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
-#define LANGID_CORE_MAP_DESC                    CONSTLIT("core.mapDesc")
-#define LANGID_CORE_MAP_DESC_ABANDONED          CONSTLIT("core.mapDescAbandoned")
-#define LANGID_CORE_MAP_DESC_ABANDONED_CUSTOM	CONSTLIT("core.mapDescAbandonedCustom")
-#define LANGID_CORE_MAP_DESC_CUSTOM				CONSTLIT("core.mapDescCustom")
-#define LANGID_CORE_MAP_DESC_EXTRA              CONSTLIT("core.mapDescExtra")
-#define LANGID_CORE_MAP_DESC_MAIN				CONSTLIT("core.mapDescMain")
-
 #define PROPERTY_API_VERSION					CONSTLIT("apiVersion")
 #define PROPERTY_ATTRIBUTES						CONSTLIT("attributes")
 #define PROPERTY_CLASS							CONSTLIT("class")
-#define PROPERTY_CORE_GAME_STATS				CONSTLIT("core.gameStats")
 #define PROPERTY_DEFAULT_CURRENCY				CONSTLIT("defaultCurrency")
 #define PROPERTY_DEFAULT_CURRENCY_EXCHANGE		CONSTLIT("defaultCurrencyExchange")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
@@ -974,7 +967,7 @@ bool CDesignType::FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, 
 	DEBUG_CATCH
 	}
 
-void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
+void CDesignType::FireGetGlobalAchievements (CCodeChainCtx &CCX, CGameStats &Stats)
 
 //	FireGetGlobalAchievements
 //
@@ -985,7 +978,6 @@ void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
 	if (!FindEventHandler(GET_GLOBAL_ACHIEVEMENTS_EVENT, &Event))
 		return;
 
-	CCodeChainCtx CCX(GetUniverse());
 	CCX.DefineContainingType(this);
 	ICCItemPtr pResult = CCX.RunCode(Event);
 
@@ -2772,6 +2764,14 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 		else if (strEquals(pItem->GetTag(), ARMOR_MASS_DESC_TAG))
 			{
 			if (error = SetExtra()->ArmorDefinitions.InitFromXML(Ctx, pItem))
+				{
+				Ctx.pType = NULL;
+				return ComposeLoadError(Ctx, Ctx.sError);
+				}
+			}
+		else if (strEquals(pItem->GetTag(), ITEM_ENCOUNTER_DESC_TAG))
+			{
+			if (error = SetExtra()->ItemEncounterDefinitions.InitFromXML(Ctx, *pItem))
 				{
 				Ctx.pType = NULL;
 				return ComposeLoadError(Ctx, Ctx.sError);

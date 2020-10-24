@@ -403,6 +403,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="Reference.cpp" />
+    <ClCompile Include="Script.cpp" />
     <ClCompile Include="ShieldStats.cpp" />
     <ClCompile Include="ShipImage.cpp" />
     <ClCompile Include="ShipImageChart.cpp" />
@@ -525,6 +526,11 @@
     </None>
     <None Include="TransDataReadme.htm">
       <DeploymentContent>true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">false</DeploymentContent>
     </None>
   </ItemGroup>
   <ItemGroup>

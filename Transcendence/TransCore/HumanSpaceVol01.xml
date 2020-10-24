@@ -1643,6 +1643,9 @@
 	<!ENTITY rsCorporateManufacturing	"0x00100050">
 	<!ENTITY scCorporateExplorer		"0x00100051">
 	<!ENTITY rsCorporateExplorerHero	"0x00100052">
+	<!ENTITY rsAdventurerOutfitters		"0x00100053">
+	<!ENTITY dsCorporateAutonManage		"0x00100054">
+	<!ENTITY rsCorporateAutonDealer		"0x00100055">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	
@@ -1850,6 +1853,7 @@
 	<!ENTITY rsXenophobeDefenderHero	"0x00100143">
 	<!ENTITY rsXenophobeWorldshipHero	"0x00100144">
 	<!ENTITY rsXenophobeArkHero			"0x00100145">
+	<!ENTITY evXenophobeFleetBehavior	"0x00100146">
 	
 	<!-- 0150-015F HUARI EMPIRE -->
 	
@@ -1953,6 +1957,7 @@
 	<!ENTITY unidBlackMarketMember		"0x0010020C">
 	<!ENTITY dsBlackMarketBoss			"0x0010020D">
 	<!ENTITY rsBlackMarketInsignia		"0x0010020E">
+	<!ENTITY rsBlackMarketStation		"0x0010020F">
 
 	<!-- 0210-022F PENITENTS -->
 	
@@ -1985,6 +1990,8 @@
 	<!ENTITY chRama						"0x0010023B">
 	<!ENTITY chEnricoGaul				"0x0010023C">
 	<!ENTITY chLiaPereira				"0x0010023D">
+	<!ENTITY chHarperThompson			"0x0010023E">
+	<!ENTITY chMuhammadCondi			"0x0010023F">
 	
 	<!-- 0250-026F COMMONWEALTH MINING -->
 	
@@ -1997,6 +2004,10 @@
 	<!ENTITY dsCommonwealthMiningPromotion	"0x00100256">
 	<!ENTITY unidIndependentMiner		"0x00100257">
 	<!ENTITY dsCommonwealthAsteroidInfo	"0x00100258">
+	<!ENTITY msCommonwealthMining03		"0x00100259">
+	<!ENTITY msCommonwealthMining04		"0x0010025A">
+
+	<!ENTITY msCommonwealthMining05		"0x0010025B">
 
 	<!-- 0270-028F SOLON CORPORATION -->
 
@@ -2150,6 +2161,8 @@
 	<!ENTITY evCentauriOccupation		"0x001003F2">
 	<!ENTITY evArcoVaughn				"0x001003F3">
 	<!ENTITY smCentauriWarlordsSpace	"0x001003F4">
+	<!ENTITY rsCentauriRaiderHero		"0x001003F5">
+	<!ENTITY rsCentauriHeavyRaiderHero	"0x001003F6">
 
 	<!-- 0410-042F KOBOL WARLORDS -->
 
@@ -2352,6 +2365,7 @@
 	<!ENTITY rsAquilaHero				"0x0010066D">
 	<!ENTITY vtMinotaurTurretSlot		"0x0010066E">
 	<!ENTITY rsCommonwealthFleetInsignia	"0x0010066F">
+	<!ENTITY etCSCSupportEncounter		"0x00100670">
 
 	<!-- 06C0-06FF STANDARD ITEMS -->
 
@@ -2406,6 +2420,27 @@
 
 	<!ENTITY ssJiangsStar				"0x001007D0">
 
+	<!-- 0800-081F UNDERGROUND STRUCTURES -->
+
+	<!ENTITY baUndergroundStructure		"0x00100800">
+	<!ENTITY baRescueStructure			"0x00100801">
+	<!ENTITY rsUndergroundStructureIce		"0x00100802">
+	<!ENTITY rsUndergroundStructureMetallic	"0x00100803">
+	<!ENTITY rsUndergroundStructurePrimordial	"0x00100804">
+	<!ENTITY rsUndergroundStructureRocky	"0x00100805">
+	<!ENTITY rsUndergroundStructureVolcanic	"0x00100806">
+	<!ENTITY ovRescueStructureIce			"0x00100807">
+	<!ENTITY ovRescueStructureMetallic		"0x00100808">
+	<!ENTITY ovRescueStructurePrimordial	"0x00100809">
+	<!ENTITY ovRescueStructureRocky			"0x0010080A">
+	<!ENTITY ovRescueStructureVolcanic		"0x0010080B">
+
+	<!-- 0820-083F BLACK MARKET II -->
+
+	<!ENTITY rsBlackMarketShipyard			"0x00100820">
+	<!ENTITY msBlackMarketMission02			"0x00100821">
+	<!ENTITY msBlackMarketSmuggle01			"0x00100822">
+
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	
@@ -2441,16 +2476,20 @@
 	<Module filename="BlackMarketMember.xml"/>
 	<Module filename="BlackMarketMission00.xml"/>
 	<Module filename="BlackMarketMission01.xml"/>
+	<Module filename="BlackMarketMission02.xml"/>
+	<Module filename="BlackMarketMissionSmuggle01.xml"/>
 
 	<!-- Characters -->
 		
 	<Module filename="Benedict.xml"/>
 	<Module filename="EnricoGaul.xml"/>
 	<Module filename="Fiona.xml"/>
+	<Module filename="HarperThompson.xml"/>
 	<Module filename="HugoSandoval.xml"/>
 	<Module filename="Jenna.xml"/>
 	<Module filename="KateMorgental.xml"/>
 	<Module filename="LiaPereira.xml"/>
+	<Module filename="MuhammadCondi.xml"/>
 	<Module filename="Rama.xml"/>
 	<Module filename="Stormhound.xml"/>
 	<Module filename="Volkov.xml"/>
@@ -2522,9 +2561,13 @@
 	<Module filename="CommonwealthMining.xml"/>
 	<Module filename="CommonwealthMiningMission01.xml"/>
 	<Module filename="CommonwealthMiningMission02.xml"/>
+	<Module filename="CommonwealthMiningMission03.xml"/>
+	<Module filename="CommonwealthMiningMission04.xml"/>
+	<Module filename="CommonwealthMiningMission05.xml"/>
 
 	<!-- Corporate Hierarchy -->
 
+	<Module filename="CorporateAutonDealer.xml"/>
 	<Module filename="CorporateHierarchy.xml"/>
 	<Module filename="CorporateInsurance.xml"/>
 	<Module filename="CorporateTradingPost.xml"/>
@@ -2628,6 +2671,7 @@
 	<Module filename="StdPlayerShips.xml"/>
 	<Module filename="StdSovereigns.xml"/>
 	<Module filename="StdTypes.xml"/>
+	<Module filename="UndergroundStructures.xml"/>
 	
 	<!-- Pilgrim -->
 

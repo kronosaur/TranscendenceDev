@@ -90,7 +90,7 @@ ALERROR ITopologyProcessor::CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, CXMLEleme
 	return (*retpProc)->InitFromXML(Ctx, pDesc, sUNID);
 	}
 
-CTopologyNodeList &ITopologyProcessor::FilterNodes (CTopology &Topology, CTopologyNode::SCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered)
+CTopologyNodeList &ITopologyProcessor::FilterNodes (CTopology &Topology, CTopologyNodeCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered)
 
 //	FilterNodes
 //
@@ -98,11 +98,11 @@ CTopologyNodeList &ITopologyProcessor::FilterNodes (CTopology &Topology, CTopolo
 
 	{
 	CTopologyNodeList *pNodeList = &Unfiltered;
-	if (!CTopologyNode::IsCriteriaAll(Criteria))
+	if (!Criteria.IsCriteriaAll())
 		{
 		//	Context
 
-		CTopologyNode::SCriteriaCtx Ctx(Topology);
+		CTopologyNodeCriteria::SCtx Ctx(Topology);
 
 		//	Filter
 
@@ -134,7 +134,7 @@ ALERROR ITopologyProcessor::InitBaseItemXML (SDesignLoadCtx &Ctx, CXMLElement *p
 		{
 		//	Parse the filter
 
-		if (CTopologyNode::ParseCriteria(pDesc, &m_Criteria, &Ctx.sError) != NOERROR)
+		if (m_Criteria.Parse(*pDesc, &Ctx.sError) != NOERROR)
 			return ERR_FAIL;
 		}
 
@@ -157,17 +157,17 @@ ALERROR ITopologyProcessor::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	{
 	//	Initialize criteria
 
-	CTopologyNode::ParseCriteria(NULL, &m_Criteria);
-
 	CString sCriteria;
 	if (pDesc->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
 		{
-		if (m_Criteria.AttribCriteria.Init(sCriteria) != NOERROR)
+		if (m_Criteria.Parse(sCriteria) != NOERROR)
 			{
 			Ctx.sError = CONSTLIT("Invalid criteria syntax.");
 			return ERR_FAIL;
 			}
 		}
+	else
+		m_Criteria = CTopologyNodeCriteria();
 
 	//	Phase
 

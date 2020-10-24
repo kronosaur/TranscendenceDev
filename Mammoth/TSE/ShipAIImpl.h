@@ -35,8 +35,14 @@ class CAIShipControls
 class CAIBehaviorCtx
 	{
 	public:
-		CAIBehaviorCtx (void);
+		CAIBehaviorCtx (void) { }
+		CAIBehaviorCtx (const CAIBehaviorCtx &Src) = delete;
+		CAIBehaviorCtx (CAIBehaviorCtx &&Src) = delete;
+
 		~CAIBehaviorCtx (void);
+
+		CAIBehaviorCtx &operator= (const CAIBehaviorCtx &Src) = delete;
+		CAIBehaviorCtx &operator= (CAIBehaviorCtx &&Src) = delete;
 
 		bool AscendOnGate (void) const { return m_AISettings.AscendOnGate(); }
 		bool AvoidsExplodingStations (void) const { return m_fAvoidExplodingStations; }
@@ -90,6 +96,7 @@ class CAIBehaviorCtx
 		bool NoNavPaths (void) const { return m_AISettings.NoNavPaths(); }
 		bool NoOrderGiver (void) const { return m_AISettings.NoOrderGiver(); }
 		bool NoShieldRetreat (void) const { return m_AISettings.NoShieldRetreat(); }
+		void OnOrderChanged (CShip &Ship);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void ReadFromStreamAISettings (SLoadCtx &Ctx) { m_AISettings.ReadFromStream(Ctx); }
 		CString SetAISetting (const CString &sSetting, const CString &sValue) { return m_AISettings.SetValue(sSetting, sValue); }
@@ -184,9 +191,11 @@ class CAIBehaviorCtx
 		int16_t m_iNavPathPos = -1;					//	-1 = not in nav path
 		int16_t m_iBarrierClock = -1;				//	We've hit a barrier, so try to recover
 
-		DWORD m_fDockingRequested:1;				//	TRUE if we've requested docking
-		DWORD m_fWaitForShieldsToRegen:1;			//	TRUE if ship is waiting for shields to regen
-		DWORD m_dwSpare1:30;
+		DWORD m_fDockingRequested:1 = false;		//	TRUE if we've requested docking
+		DWORD m_fWaitForShieldsToRegen:1 = false;	//	TRUE if ship is waiting for shields to regen
+		DWORD m_fShipSpeedLowered:1 = false;		//	TRUE if ship is traveling slower than normal
+													//		(due to navigation).
+		DWORD m_dwSpare1:29;
 
 		//	Cached values
 		SUpdateCtx *m_pUpdateCtx = NULL;			//	System update context
@@ -201,20 +210,20 @@ class CAIBehaviorCtx
 		int m_iBestNonLauncherWeaponLevel = 0;		//	Level of best non-launcher weapon
 		int m_iPrematureFireChance = 0;				//	Chance of firing prematurely
 
-		DWORD m_fImmobile:1;						//	TRUE if ship does not move
-		DWORD m_fSuperconductingShields:1;			//	TRUE if ship has superconducting shields
-		DWORD m_fHasMultipleWeapons:1;				//	TRUE if ship has more than 1 primary
-		DWORD m_fThrustThroughTurn:1;				//	TRUE if ship thrusts through a turn
-		DWORD m_fAvoidExplodingStations:1;			//	TRUE if ship avoids exploding stations
-		DWORD m_fRecalcBestWeapon:1;				//	TRUE if we need to recalc best weapon
-		DWORD m_fHasSecondaryWeapons:1;				//	TRUE if ship has secondary weapons
-		DWORD m_fHasEscorts:1;						//	TRUE if ship has escorts
+		DWORD m_fImmobile:1 = false;				//	TRUE if ship does not move
+		DWORD m_fSuperconductingShields:1 = false;	//	TRUE if ship has superconducting shields
+		DWORD m_fHasMultipleWeapons:1 = false;		//	TRUE if ship has more than 1 primary
+		DWORD m_fThrustThroughTurn:1 = false;		//	TRUE if ship thrusts through a turn
+		DWORD m_fAvoidExplodingStations:1 = false;	//	TRUE if ship avoids exploding stations
+		DWORD m_fRecalcBestWeapon:1 = true;			//	TRUE if we need to recalc best weapon
+		DWORD m_fHasSecondaryWeapons:1 = false;		//	TRUE if ship has secondary weapons
+		DWORD m_fHasEscorts:1 = false;				//	TRUE if ship has escorts
 
-		DWORD m_fHasMultiplePrimaries:1;			//	TRUE if ship has multiple primary weapons (non-launchers)
-		DWORD m_fFreeNavPath:1;						//	TRUE if we own the nav path object
-		DWORD m_fHasAvoidPotential:1;				//	TRUE if there is something to avoid
-		DWORD m_fShootTargetableMissiles:1;			//	TRUE if we try to hit targetable missiles with secondaries
-		DWORD m_fShootAllMissiles:1;				//	TRUE if we try to hit all missiles with secondaries
+		DWORD m_fHasMultiplePrimaries:1 = false;	//	TRUE if ship has multiple primary weapons (non-launchers)
+		DWORD m_fFreeNavPath:1 = false;				//	TRUE if we own the nav path object
+		DWORD m_fHasAvoidPotential:1 = false;		//	TRUE if there is something to avoid
+		DWORD m_fShootTargetableMissiles:1 = false;	//	TRUE if we try to hit targetable missiles with secondaries
+		DWORD m_fShootAllMissiles:1 = false;		//	TRUE if we try to hit all missiles with secondaries
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
@@ -318,7 +327,7 @@ class COrderList
 class CBaseShipAI : public IShipController
 	{
 	public:
-		CBaseShipAI (void);
+		CBaseShipAI (void) { }
 		virtual ~CBaseShipAI (void);
 
 		//	IShipController virtuals
@@ -346,6 +355,7 @@ class CBaseShipAI : public IShipController
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayer (void) const override { return m_AICtx.IsPlayer(); }
 		virtual bool IsPlayerBlacklisted (void) const override { return (m_fPlayerBlacklisted ? true : false); }
+		virtual bool IsPlayerEscort (void) const override { return (m_fIsPlayerEscort ? true : false) || IsPlayerWingman(); }
 		virtual bool IsPlayerWingman (void) const override { return (m_fIsPlayerWingman ? true : false); }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
@@ -370,6 +380,7 @@ class CBaseShipAI : public IShipController
 		virtual void SetShipToControl (CShip *pShip) override;
 		virtual void SetThrust (bool bThrust) override { m_AICtx.SetThrust(bThrust); }
 		virtual void SetPlayerBlacklisted (bool bValue) override { m_fPlayerBlacklisted = bValue; }
+		virtual void SetPlayerEscort (bool bValue) override { m_fIsPlayerEscort = bValue; }
 		virtual void SetPlayerWingman (bool bIsWingman) override { m_fIsPlayerWingman = bIsWingman; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
 		virtual void WriteToStream (IWriteStream *pStream) override;
@@ -433,29 +444,30 @@ class CBaseShipAI : public IShipController
 		virtual void OnSystemLoadedNotify (void) { }
 		virtual void OnWriteToStream (IWriteStream *pStream) { }
 
-		CShip *m_pShip;							//	Ship that we're controlling
-		COrderList m_Orders;					//	Ordered list of orders
-		ICCItem *m_pCommandCode;				//	Code to generate orders (may be NULL)
+		CShip *m_pShip = NULL;						//	Ship that we're controlling
+		COrderList m_Orders;						//	Ordered list of orders
+		ICCItem *m_pCommandCode = NULL;				//	Code to generate orders (may be NULL)
 
-		CAIBehaviorCtx m_AICtx;					//	Ctx for behavior
-		IOrderModule *m_pOrderModule;			//	Current order module (may be NULL)
+		CAIBehaviorCtx m_AICtx;						//	Ctx for behavior
+		IOrderModule *m_pOrderModule = NULL;		//	Current order module (may be NULL)
 
-		CAttackDetector m_Blacklist;			//	Player blacklisted
+		CAttackDetector m_Blacklist;				//	Player blacklisted
 
 		//	Flags
 
-		DWORD m_fDeviceActivate:1;
-		DWORD m_fInOnOrderChanged:1;
-		DWORD m_fInOnOrdersCompleted:1;
-		DWORD m_fCheckedForWalls:1;				//	TRUE if we searched for walls in the system
-		DWORD m_fAvoidWalls:1;					//	TRUE if we need to avoid walls
-		DWORD m_fIsPlayerWingman:1;				//	TRUE if this is a wingman for the player
-		DWORD m_fOldStyleBehaviors:1;			//	TRUE if we're not using m_pOrderModule
-		DWORD m_fPlayerBlacklisted:1;			//	TRUE if we've blacklisted the player (for attacking us)
+		DWORD m_fDeviceActivate:1 = false;
+		DWORD m_fInOnOrderChanged:1 = false;
+		DWORD m_fInOnOrdersCompleted:1 = false;
+		DWORD m_fCheckedForWalls:1 = false;			//	TRUE if we searched for walls in the system
+		DWORD m_fAvoidWalls:1 = false;				//	TRUE if we need to avoid walls
+		DWORD m_fIsPlayerWingman:1 = false;			//	TRUE if this is a wingman for the player
+		DWORD m_fOldStyleBehaviors:1 = false;		//	TRUE if we're not using m_pOrderModule
+		DWORD m_fPlayerBlacklisted:1 = false;		//	TRUE if we've blacklisted the player (for attacking us)
 
-		DWORD m_fUseOrderModules:1;				//	TRUE if descendant allows order modules
+		DWORD m_fUseOrderModules:1 = false;			//	TRUE if descendant allows order modules
+		DWORD m_fIsPlayerEscort:1 = false;			//	TRUE if we're escorting the player (but not necessarily a wingmate).
 
-		DWORD m_fSpare:23;
+		DWORD m_fSpare:22;
 	};
 
 //	Inlines --------------------------------------------------------------------

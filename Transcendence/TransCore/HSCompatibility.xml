@@ -6746,6 +6746,38 @@
 
 	</StationType>
 
+	<!-- CSC Arctica Encounter -->
+
+	<EncounterType UNID="&stCSCArcticaEncounter;"
+			obsoleteVersion="51"
+			name=				"(CSC Arctica)"
+			sovereign=			"&svCommonwealthFleet;"
+			>
+		<Ships>
+			<Ship	count="1"	class="&scCSCArctica;" orders="hold">
+				<Escorts>
+					<Ship     count="2d6"	class="&scCenturionM;"	orders="patrol" patrolDist="15"/>
+				</Escorts>
+			</Ship>
+		</Ships>
+	</EncounterType>
+
+	<!-- CSC Sahara Encounter -->
+
+	<EncounterType UNID="&stCSCSaharaEncounter;"
+			obsoleteVersion="51"
+			name=				"(CSC Sahara)"
+			sovereign=			"&svCommonwealthFleet;"
+			>
+		<Ships>
+			<Ship	count="1"	class="&scCSCSahara;" orders="hold">
+				<Escorts>
+					<Ship     count="2d6"	class="&scCenturionM;"	orders="patrol" patrolDist="15"/>
+				</Escorts>
+			</Ship>
+		</Ships>
+	</EncounterType>
+
 	<!-- Old Effects -->
 	
 	<Effect UNID="&efLargeExplosion1;"	obsoleteVersion="49">
@@ -6825,5 +6857,8 @@
 	<Image UNID="&rsAutosentinelHD;"	obsoleteVersion="50" bitmap="Resources\AutosentinelHD.jpg"	bitmask="Resources\AutosentinelHDMask.bmp"	loadOnUse="true" />
 	<Image UNID="&rsMediumAutonHD;"		obsoleteVersion="50" bitmap="Resources\MediumAutonHD.jpg"	bitmask="Resources\MediumAutonHDMask.bmp"	loadOnUse="true" />
 	<Image UNID="&rsExplorerAuton;"		obsoleteVersion="50" bitmap="Resources\ExplorerAuton.jpg"	bitmask="Resources\ExplorerAutonMask.bmp"	loadOnUse="true" />
+
+	<Image UNID="&rsCentauriHeavyRaiderImage;"	obsoleteVersion="51" bitmap="Resources\CentauriHeavyRaider.jpg" bitmask="Resources\CentauriHeavyRaiderMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsCentauriRaiderImage;"		obsoleteVersion="51" bitmap="Resources\CentauriRaider.jpg" bitmask="Resources\CentauriRaiderMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

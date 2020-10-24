@@ -904,7 +904,7 @@
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownAuton;"
 
-			value=				"2000"
+			value=				"3000"
 			mass=				"1000"
 			charges=			"0"
 			massBonusPerCharge=	"1000"
@@ -930,7 +930,7 @@
 			frequency=			"rare"
 			unknownType=		"&itUnknownAuton;"
 
-			value=				"2500"
+			value=				"3000"
 			mass=				"1000"
 			charges=			"0"
 			massBonusPerCharge=	"1000"
@@ -982,7 +982,7 @@
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownAuton;"
 			  
-			value=				"2000"
+			value=				"1000"
 			mass=				"2000"
 			charges=			"0"
 			massBonusPerCharge=	"1000"
@@ -1008,7 +1008,7 @@
 			frequency=			"rare"
 			unknownType=		"&itUnknownAuton;"
 			  
-			value=				"5000"
+			value=				"9500"
 			mass=				"5000"
 			charges=			"0"
 			massBonusPerCharge=	"1000"
@@ -1060,7 +1060,7 @@
 			frequency=			"rare"
 			unknownType=		"&itUnknownAuton;"
 			  
-			value=				"7500"
+			value=				"13000"
 			mass=				"5000"
 			charges=			"0"
 			massBonusPerCharge=	"1000"

@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Level 5: Auton Dealer -->
+
+	<StationType UNID="&stAutonDealer;"
+			name=				"corporate auton dealer"
+			sovereign=			"&svCorporate;"
+			inherit=			"&baCorporateStation;"
+
+			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, populated"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"250"
+			armorID=			"&itAdvancedPlasteelPlate;"
+			hitPoints=			"350"
+			multiHull=			"true"
+			regen=				"4"
+
+			explosionType=		"&vtBlastExplosion2;"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+corporateSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"--rcu ur--- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<Names noArticle="true">Auton Universe; Brehzen's Used Autons; Chiba Auton Dealers;
+				Dresden Autonomous Defenders; Ehrlenmeyer Autons; Frenzy Autons;
+				General Autons, rce; Hastur Used Autons; Ixin Autons Dealer;
+				Ji Autons; Kyrrin Used Autons; Laser Autons, rce; Merlin Autons;
+				Nrummer Weapons Corp.; Oort Autons, rce; Planetary Autons;
+				Qing Long Autons; Raptor Systems, rce; Security Autons;
+				Tenhove Defense Dealer; Ultimate Autons; Victory Systems;
+				Weapons World; %s Auton Dealers</Names>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Buy	criteria="*NU +Auton; -Illegal; -NotForSale;"	priceAdj="90"/>
+		</Trade>
+
+		<Items>
+			<RandomItem count="20" 
+					criteria=		"* +auton; -defective; -illegal; -military; -notStandard; -notForSale;"
+					levelFrequency=	"systemLevel:ucc|c|cur"
+					/>
+			<RandomItem count="1d6" 
+					criteria=		"* +auton; -defective; -illegal; -military; -notStandard; -notForSale; L:4"
+					/>
+		</Items>
+
+		<!-- Configuration -->
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Lookup count="2" table="&tbCorpDefenders;"/>
+			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<Reinforcements minShips="4">
+			<Table>
+				<Lookup chance="75" table="&tbCorpDefenders;"/>
+				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&rsCorporateAutonDealer;" imageWidth="260" imageHeight="260" viewportRatio="0.03375"/>
+
+		<DockingPorts>
+			<Port posAngle="-45"    posRadius="90"  posZ="0"/>
+			<Port posAngle="-15"    posRadius="90"  posZ="0"/>
+			<Port posAngle="15"     posRadius="90"  posZ="0"/>
+
+			<Port posAngle="45"     posRadius="90"  posZ="0"/>
+			<Port posAngle="75"     posRadius="90"  posZ="0"/>
+			<Port posAngle="105"    posRadius="90"  posZ="0"/>
+
+			<Port posAngle="135"    posRadius="90"  posZ="0"/>
+			<Port posAngle="165"    posRadius="90"  posZ="0"/>
+			<Port posAngle="195"    posRadius="90"  posZ="0"/>
+
+			<Port posAngle="225"   posRadius="90"  posZ="0"/>
+			<Port posAngle="255"   posRadius="90"  posZ="0"/>
+			<Port posAngle="285"   posRadius="90"  posZ="0"/>
+		</DockingPorts>
+
+		<!-- Dock Screen -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionBuyAutons" default="1">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
+							</Action>
+
+							<Action id="actionSellAutons">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
+							</Action>
+
+							<Action id="actionRepairAutons">
+								(scrShowScreen gScreen &dsCorporateAutonManage;)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+
+					<NoAutons descID="descNoAutons">
+						<Actions>
+							<Action id="actionLeave" cancel="1" default="1">
+								<ShowPane pane="Default"/>
+							</Action>
+						</Actions>
+					</NoAutons>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Data -->
+
+		<Language>
+			<Text id="actionBuyAutons">[B]uy Autons</Text>
+			<Text id="actionSellAutons">[S]ell Autons</Text>
+			<Text id="actionRepairAutons">[R]epair Autons</Text>
+
+			<Text id="descWelcome">
+				You are docked at an auton dealer.
+			</Text>
+			<Text id="descNoAutons">
+
+				A sales drone approaches you:
+				
+				"You do not currently have any autons to repair, but I would be 
+				delighted to show you some of our newest models."
+
+			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys autons. We are not 
+				interested in buying %itemName%.
+
+			</Text>
+			<Text id="core.mapDesc">Buys and sells autons</Text>
+		</Language>
+	</StationType>
+
+<!-- DOCK SCREENS -->
+
+	<DockScreen unid="&dsCorporateAutonManage;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		
+		<Display type="carouselSelector"
+				style="shipList"
+				>
+			<OnDisplayInit>
+				(block (
+					(autonItemList 
+						(apply append
+							(map (objGetItems gPlayerShip "* +auton;") theEntry
+								(if (= (itmGetCount theEntry) 1)
+									(list theEntry)
+									(make 'duplicates (itmSetCount theEntry 1))
+									)
+								)
+							)
+						)
+					)
+					(append
+						;	First autons that are deployed
+
+						(map (sysFindObject gPlayerShip "s +auton; O:escort;") autonObj
+							(block (
+								(autonClass (objGetType autonObj))
+								)
+								{
+								title: (objGetName autonObj)
+								icon: (shpGetImageDesc autonClass { rotation:90 })
+
+								largeIcon: (shpGetImageDesc autonClass { type:'schematic })
+								details: 
+									(or (objFireEvent autonObj 'GetShipDetails { })
+										(rpgGetShipDetails autonObj { 
+											noFuelStats: True
+											})
+										)
+
+								autonObj: autonObj
+								autonClass: autonClass
+								}
+								)
+							)
+
+						;	Next, autons that are still in the cargo hold
+
+						(map autonItemList 'excludeNil autonItem
+							(block (
+								(autonConfig (rpgGetAutonConfig autonItem))
+								(autonClass (itmGetStaticData autonItem 'autonShipClass))
+								(isKnown (itm@ autonItem 'known))
+								)
+								{
+								title: 
+									(switch
+										(not isKnown )
+											(itmGetName autonItem 0)
+
+										(@ autonConfig 'name)
+											(@ autonConfig 'name)
+
+										(typGetName autonClass 'generic)
+										)
+
+								icon: (if isKnown (shpGetImageDesc autonClass { rotation:90 }) (itmGetImageDesc autonItem))
+
+								largeIcon: (if isKnown (shpGetImageDesc autonClass { type:'schematic }))
+								details: (if isKNown (rpgGetAutonItemDetails autonItem { }))
+
+								autonItem: autonItem
+								autonClass: autonClass
+								autonConfig: autonConfig
+								}
+								)
+							)
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theEntry (scrGetListEntry gScreen))
+						(currencyUsed (objGetDefaultCurrency gSource))
+
+						(autonObj (@ theEntry 'autonObj))
+						(autonConfig (@ theEntry 'autonConfig))
+
+						repairArmorInFlight
+						repairArmor
+						repairHull
+						enableRepair
+						(repairCost 0)
+						)
+						;	Figure out the cost to repair
+
+						(switch
+							;	No autons
+
+							(not theEntry)
+								(scrSetDescTranslate gScreen 'descNoAutons)
+								
+							;	We have a live auton
+
+							autonObj
+								(block (
+									(armorHPMax 
+										(map (objGetItems autonObj "aI") 'reduceSum armorItem
+											(obj@ autonObj armorItem 'maxHP)
+											)
+										)
+									(armorHPLeft
+										(map (objGetItems autonObj "aI") 'reduceSum armorItem
+											(obj@ autonObj armorItem 'hp)
+											)
+										)
+									)
+									(switch
+										;	Auton has no damage
+
+										(geq armorHPLeft armorHPMax)
+											(scrSetDescTranslate gScreen 'descAutonNotDamaged {
+												autonName: (objGetName autonObj 'generic)
+												})
+
+										;	Auton has armor damage
+
+										(block ()
+											(setq repairArmorInFlight True)
+											(setq repairCost 
+												(map (objGetItems autonObj "aI") 'reduceSum armorItem
+													(block (
+														(damage (obj@ autonObj armorItem 'damage))
+														(itemRepairCost (* (itm@ armorItem 'repairCost) damage))
+														(repairCost (ecoExchange itemRepairCost (itm@ armorItem 'currency) currencyUsed))
+														)
+														repairCost
+														)
+													)
+												)
+
+											(scrSetDescTranslate gScreen 'descAutonArmorDamaged {
+												autonName: (objGetName autonObj 'generic)
+												integrity: (round (* 100.0 (/ armorHPLeft armorHPMax)))
+												})
+											)
+										)
+									)
+
+							;	Otherwise, auton is in cargo hold
+
+							autonConfig
+								(block (
+									(autonClass (@ theEntry 'autonClass))
+									(autonItem (@ theEntry 'autonItem))
+
+									(hullHPLeft (@ autonConfig 'hullHP))
+									(hullHPMax (@ autonConfig 'maxHullHP))
+									(hullDamage (- hullHPMax hullHPLeft))
+									(hullRepairCost
+										(if (gr hullDamage 0)
+											(round (* (itm@ autonItem 'cost) (/ hullDamage hullHPMax) 0.25))
+											)
+										)
+
+									(armorHPLeft 
+										(map (@ autonConfig 'armor) 'reduceSum armorDesc 
+											(@ armorDesc 'hp)
+											)
+										)
+									(armorHPMax 
+										(map (@ autonConfig 'armor) 'reduceSum armorDesc 
+											(itm@ (@ armorDesc 'item) 'completeHP)
+											)
+										)
+									(armorRepairCost 
+										(map (@ autonConfig 'armor) 'reduceSum armorDesc
+											(block (
+												(armorItem (@ armorDesc 'item))
+												(hp (@ armorDesc 'hp))
+												(maxHP (itm@ armorItem 'completeHP))
+												(damage (- maxHP hp))
+												(itemRepairCost (* (itm@ armorItem 'repairCost) damage))
+												(repairCost (ecoExchange itemRepairCost (itm@ armorItem 'currency) currencyUsed))
+												)
+												repairCost
+												)
+											)
+										)
+									)
+									(switch
+										;	Auton has hull damage and armor damage
+
+										(and hullDamage (ls armorHPLeft armorHPMax))
+											(block ()
+												(setq repairArmor True)
+												(setq repairHull True)
+												(setq repairCost (+ armorRepairCost hullRepairCost))
+												(scrSetDescTranslate gScreen 'descAutonArmorAndHullDamaged {
+													autonName: (typGetName autonClass 'generic)
+													armorIntegrity: (round (* 100.0 (/ armorHPLeft armorHPMax)))
+													hullIntegrity: (round (* 100.0 (/ hullHPLeft hullHPMax)))
+													})
+												)
+
+										;	Auton has armor damage only
+
+										(ls armorHPLeft armorHPMax)
+											(block ()
+												(setq repairArmor True)
+												(setq repairCost armorRepairCost)
+												(scrSetDescTranslate gScreen 'descAutonArmorDamaged {
+													autonName: (typGetName autonClass 'generic)
+													integrity: (round (* 100.0 (/ armorHPLeft armorHPMax)))
+													})
+												)
+
+										;	Auton is not damaged
+
+										(scrSetDescTranslate gScreen 'descAutonNotDamaged {
+											autonName: (if (itm@ autonItem 'known) (typGetName autonClass 'generic) (itmGetName autonItem 0))
+											})
+										)
+									)
+
+							;	Else nothing.
+							)
+
+						;	Set repair
+
+						(switch
+							(= repairCost 0)
+								(scrSetActionDesc gScreen 'actionRepair (scrTranslate gScreen 'descNoDamage))
+
+							(and autonObj (gr (objGetDistance gSource autonObj) 50))
+								(scrSetActionDesc gScreen 'actionRepair (scrTranslate gScreen 'descAutonTooFar))
+
+							(ls (objGetBalance gPlayerShip currencyUsed) repairCost)
+								(scrSetActionDesc gScreen 'actionRepair (scrTranslate gScreen 'descCantAfford {
+									cost: (fmtCurrency currencyUsed repairCost)
+									}))
+
+							(block ()
+								(scrSetActionDesc gScreen 'actionRepair (scrTranslate gScreen 'descRepair {
+									cost: (fmtCurrency currencyUsed repairCost)
+									}))
+								(setq enableRepair True)
+								)
+							)
+
+						(scrSetData gScreen 'repairArmorInFlight repairArmorInFlight)
+						(scrSetData gScreen 'repairArmor repairArmor)
+						(scrSetData gScreen 'repairHull repairHull)
+						(scrSetData gScreen 'repairCost repairCost)
+
+						(scrEnableAction gScreen 'actionRepair enableRepair)
+						)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionRepair" default="1">
+						(block (
+							(theEntry (scrGetListEntry gScreen))
+							(currencyUsed (objGetDefaultCurrency gSource))
+							(autonItem (@ theEntry 'autonItem))
+							)
+
+							;	Repair
+
+							(if (scrGetData gScreen 'repairArmorInFlight)
+								(block (
+									(autonObj (@ theEntry 'autonObj))
+									)
+									(enum (objGetItems autonObj "aI") theArmor
+										(objSet@ autonObj theArmor 'damage 0)
+										)
+									)
+								)
+
+							(if (scrGetData gScreen 'repairArmor)
+								(block (
+									(autonConfig (@ theEntry 'autonConfig))
+									)
+									(set@ autonConfig 'armor
+										(map (@ autonConfig 'armor) armorDesc
+											(block (
+												(armorItem (@ armorDesc 'item))
+												)
+												{
+													item: (itmSet@ armorItem 'damaged Nil)
+													hp: (itm@ armorItem 'completeHP)
+													}
+												)
+											)
+										)
+
+									(setq autonItem (objSetItemData gPlayerShip autonItem 'autonConfig autonConfig))
+									)
+								)
+
+							(if (scrGetData gScreen 'repairHull)
+								(block (
+									)
+									(set@ autonConfig 'maxHullHP Nil)
+									(set@ autonConfig 'hullHP Nil)
+
+									(setq autonItem (objSetItemData gPlayerShip autonItem 'autonConfig autonConfig))
+									(setq autonItem (objSet@ gPlayerShip autonItem 'damaged Nil))
+									)
+								)
+
+							;	Charge player
+
+							(objCharge gPlayerShip currencyUsed (scrGetData gScreen 'repairCost))
+							(scrShowPane gScreen 'Default)
+							)
+					</Action>
+
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Events>
+			<OnObjDestroyed>
+				(enum (scrGetList gScreen) theEntry
+					(if (= (@ theEntry 'autonObj) aObjDestroyed)
+						(scrRefreshScreen gScreen)
+						)
+					)
+			</OnObjDestroyed>
+		</Events>
+		
+		<Language>
+			<Text id="actionRepair">[R]epair</Text>
+
+			<Text id="descNoDamage">The auton is not damaged.</Text>
+			<Text id="descCantAfford">We can repair the auton for %cost%. Unfortunately, you cannot afford the cost.</Text>
+			<Text id="descAutonTooFar">The auton is too far away for us to repair.</Text>
+			<Text id="descRepair">We can repair the auton for %cost%.</Text>
+
+			<Text id="descAutonNotDamaged">
+
+				The %autonName% is not damaged.
+			
+			</Text>
+			<Text id="descAutonArmorDamaged">
+
+				%AutonName% armor at %integrity%% integrity.
+			
+			</Text>
+			<Text id="descAutonArmorAndHullDamaged">
+
+				%AutonName% is damaged.
+				
+				Hull: %hullIntegrity%% integrity\n
+				Armor: %armorIntegrity%% integrity
+			
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsCorporateAutonDealer;"	bitmap="Resources\AutonDealer.jpg" bitmask="Resources\AutonDealerMask.bmp" loadOnUse="true"/>
+
+</TranscendenceModule>

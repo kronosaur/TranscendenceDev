@@ -8,7 +8,7 @@
 
 	<ItemType UNID="&itGemOfDespair;"
 			name=				"gem(s) of despair"
-			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
+			attributes=			"alien, cannotOrder, communion, haloGem, minorItem, psionic"
 			inherit=			"&baHaloGem;"
 			
 			level=				"7"
@@ -52,7 +52,7 @@
 
 	<ItemType UNID="&itGemOfContrition;"
 			name=				"gem(s) of contrition"
-			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
+			attributes=			"alien, cannotOrder, communion, haloGem, minorItem, psionic"
 			inherit=			"&baHaloGem;"
 			
 			level=				"8"
@@ -90,7 +90,7 @@
 
 	<ItemType UNID="&itGemOfFury;"
 			name=				"gem(s) of fury"
-			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
+			attributes=			"alien, cannotOrder, communion, haloGem, minorItem, psionic"
 			inherit=			"&baHaloGem;"
 			
 			level=				"9"
@@ -127,7 +127,7 @@
 
 	<ItemType UNID="&itGemOfSacrifice;"
 			name=				"gem(s) of sacrifice"
-			attributes=			"cannotOrder, communion, haloGem, minorItem, psionic"
+			attributes=			"alien, cannotOrder, communion, haloGem, minorItem, psionic"
 			inherit=			"&baHaloGem;"
 			
 			level=				"12"

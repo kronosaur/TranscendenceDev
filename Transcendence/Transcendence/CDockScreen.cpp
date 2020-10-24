@@ -16,7 +16,6 @@ const int EXTRA_BACKGROUND_IMAGE =	128;
 #define NEUROHACK_TAG				CONSTLIT("Neurohack")
 #define ON_DISPLAY_INIT_TAG			CONSTLIT("OnDisplayInit")
 #define ON_INIT_TAG					CONSTLIT("OnInit")
-#define ON_PANE_INIT_TAG			CONSTLIT("OnPaneInit")
 #define ON_SCREEN_INIT_TAG			CONSTLIT("OnScreenInit")
 #define ON_SCREEN_UPDATE_TAG		CONSTLIT("OnScreenUpdate")
 #define PANES_TAG					CONSTLIT("Panes")
@@ -732,6 +731,19 @@ CG32bitImage *CDockScreen::GetDisplayCanvas (const CString &sID)
 
 	CGDrawArea *pCanvasControl = (CGDrawArea *)pControl->pArea;
 	return &pCanvasControl->GetCanvas();
+	}
+
+ICCItemPtr CDockScreen::GetListAsCCItem (void) const
+
+//	GetListAsCCItem
+//
+//	Returns the entire list.
+
+	{
+	if (m_pDisplay == NULL)
+		return ICCItemPtr::Nil();
+
+	return m_pDisplay->GetListAsCCItem();
 	}
 
 ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const

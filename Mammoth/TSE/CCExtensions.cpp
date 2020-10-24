@@ -245,6 +245,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_CAN_ENHANCE_ITEM		138
 #define FN_OBJ_ENHANCE_ITEM			139
 #define FN_OBJ_CAN_DESTROY_TARGET	140
+#define FN_OBJ_CAN_HIT_TARGET		141
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -491,6 +492,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_LOCATIONS				39
 #define FN_SYS_TOPOLOGY_DISTANCE_TO_CRITERIA		40
 #define FN_SYS_GET_ASCENDED_OBJECTS		41
+#define FN_SYS_ITEM_FREQUENCY			42
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -898,6 +900,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (armor)\n\n"
 			"   'blindingImmune\n"
 			"   'completeHP\n"
+			"   'damage\n"
 			"   'damageAdj\n"
 			"   'deviceDamageImmune\n"
 			"   'deviceDisruptImmune\n"
@@ -1519,6 +1522,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"ivv",	0,	},
 
+		{	"objCanHitTarget",					fnObjGet,			FN_OBJ_CAN_HIT_TARGET,
+			"(objCanHitTarget obj target) -> True/Nil",
+			"ii",	0,	},
+
 		{	"objCanInstallItem",				fnObjGet,			FN_OBJ_CAN_INSTALL_ITEM,
 			"(objCanInstallItem obj item [armorSeg|deviceSlot]) -> (True/Nil resultCode resultString [itemToReplace])\n\n"
 			
@@ -2041,10 +2048,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'abandoned\n"
 			"   'active\n"
+			"   'allowEnemyDocking\n"
 			"   'angry\n"
 			"   'barrier\n"
 			"   'destNodeID\n"
 			"   'destStargateID\n"
+			"   'destroyWhenEmpty\n"
 			"   'dockingPortCount\n"
 			"   'explored -> True if the player has docked with the station\n"
 			"   'hp\n"
@@ -2291,7 +2300,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveItem",				fnObjItem,		FN_OBJ_REMOVE_ITEM,
-			"(objRemoveItem obj item [count] [options]) -> True/Nil",
+			"(objRemoveItem obj item [count] [options]) -> True/Nil\n\n"
+			
+			"options:\n\n"
+			
+			"   'ignoreCharges\n"
+			"   'ignoreData\n"
+			"   'ignoreDisrupted\n"
+			"   'ignoreEnhancements\n"
+			"   'ignoreInstalled\n",
+
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveItemEnhancement",		fnObjSet,		FN_OBJ_REMOVE_ITEM_ENHANCEMENT,
@@ -2426,8 +2444,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"\n"
 			"property (stations)\n\n"
 
+			"   'allowEnemyDocking True|Nil\n"
 			"   'angry True|Nil|ticks\n"
 			"   'barrier True|Nil\n"
+			"   'destroyWhenEmpty True|Nil\n"
 			"   'explored True|Nil\n"
 			"   'hp hitPoints\n"
 			"   'identified True|Nil\n"
@@ -3032,6 +3052,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysGetItemBuyPrice [nodeID] item [typeCriteria]) -> price (or Nil)",
 			"*v",	0,	},
 
+		{	"sysGetItemFrequency",			fnSystemGet,	FN_SYS_ITEM_FREQUENCY,
+			"(sysGetItemFrequency [nodeID] item) -> frequencyRate",
+			"*v",	0,	},
+
 		{	"sysGetLevel",					fnSystemGet,	FN_SYS_LEVEL,
 			"(sysGetLevel [nodeID]) -> level",
 			"*",	0,	},
@@ -3084,7 +3108,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'level               The level of the system\n"
 			"   'name                The name of the system\n"
 			"   'pos                 Node position on map (x y)\n"
-			"   'stdChallengeRating  Standard challenge rating for level",
+			"   'stdChallengeRating  Standard challenge rating for level"
+			"	'stdTreasureValue    Std treasure value for level (default currency)",
 
 			"*s",	0,	},
 
@@ -4257,11 +4282,11 @@ ALERROR CUniverse::InitCodeChainPrimitives (void)
 	//	events, we may get undefined variable errors when trying to save
 	//	old versions of the globals)
 
-	m_CC.DefineGlobal(CONSTLIT("gPlayer"), m_CC.CreateNil());
-	m_CC.DefineGlobal(CONSTLIT("gPlayerShip"), m_CC.CreateNil());
-	m_CC.DefineGlobal(CONSTLIT("gSource"), m_CC.CreateNil());
-	m_CC.DefineGlobal(CONSTLIT("gItem"), m_CC.CreateNil());
-	m_CC.DefineGlobal(CONSTLIT("gType"), m_CC.CreateNil());
+	m_CC.DefineGlobal(CONSTLIT("gPlayer"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gPlayerShip"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gSource"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gItem"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gType"), m_CC.GetNil());
 
 	//	Register primitives
 
@@ -6017,7 +6042,7 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 
 	//	Associate the enumaration variable
 
-	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+	pLocalSymbols->AddEntry(pVar, pCC->GetNil());
 
 	//	Setup the context
 
@@ -6185,7 +6210,7 @@ ICCItem *fnItemEnumTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 
 	//	Associate the enumaration variable
 
-	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+	pLocalSymbols->AddEntry(pVar, pCC->GetNil());
 
 	//	Setup the context
 
@@ -6593,6 +6618,15 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
 			}
 
+		case FN_OBJ_CAN_HIT_TARGET:
+			{
+			CSpaceObject *pTarget = CreateObjFromItem(pArgs->GetElement(1));
+			if (pTarget == NULL)
+				return pCC->CreateNil();
+
+			return pCC->CreateBool(pObj->CanHit(pTarget));
+			}
+
 		case FN_OBJ_CAN_INSTALL_ITEM:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
@@ -6663,8 +6697,8 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			else
 				{
-				CConditionSet::ETypes iCondition = CConditionSet::ParseCondition(sCondition);
-				if (iCondition == CConditionSet::cndNone)
+				ECondition iCondition = CConditionSet::ParseCondition(sCondition);
+				if (iCondition == ECondition::none)
 					return pCC->CreateError(CONSTLIT("Unknown condition"), pCondition);
 
 				return pCC->CreateBool(pObj->GetCondition(iCondition));
@@ -8104,11 +8138,16 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else
 					{
 					CVector vPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
-					Metric rRadius;
-					int iDirection = VectorToPolar(vPos - pObj->GetPos(), &rRadius);
+
+					//	Reverse engineer to a perspective angle and radius
+
+					C3DObjectPos Pos3D;
+					Pos3D.InitFromXY(pObj->GetImageScale(), vPos - pObj->GetPos());
+
+					int iDirection = Pos3D.GetAngle();
 					int iRotationOrigin = (pField->RotatesWithSource(*pObj) ? pObj->GetRotation() : 0);
 					iPosAngle = AngleMod(iDirection - iRotationOrigin);
-					iPosRadius = (int)(rRadius / g_KlicksPerPixel);
+					iPosRadius = Pos3D.GetRadius();
 					}
 
 				//	Rotation
@@ -8562,8 +8601,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				ReadyToFire = true;
 
-			// Save the variables changed in OnFireWeapon first.
-
+			// Save the variables changed in OnFireWeapon first. Also save the linked fire option so we can change it back after we fire.
+			DWORD originalLinkedFireOptions = pDevice->GetDeviceItem().GetLinkedFireOptions();
 			if (ReadyToFire)
 				{
 				ICCItem *p_OldFireAngle = pCC->LookupGlobal(CONSTLIT("aFireAngle"), pCtx);
@@ -8574,6 +8613,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *p_OldWeaponBonus = pCC->LookupGlobal(CONSTLIT("aWeaponBonus"), pCtx);
 				ICCItem *p_OldWeaponType = pCC->LookupGlobal(CONSTLIT("aWeaponType"), pCtx);
 
+				// Set the weapon's linked fire option to lkfAlways before firing, then set it back so that it will fire regardless of linked fire options.
+				pDevice->SetLinkedFireOptions(CDeviceClass::lkfAlways);
 				CDeviceClass::SActivateCtx ActivateCtx(pTarget, TargetList);
 				bSuccess = pDevice->Activate(ActivateCtx);
 
@@ -8587,6 +8628,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pObj->IsDestroyed())
 				return pCC->CreateTrue();
+
+			pDevice->SetLinkedFireOptions(originalLinkedFireOptions);
 
 			if (bSuccess)
 				{
@@ -8608,7 +8651,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_FIX_PARALYSIS:
 			{
-			pObj->ClearCondition(CConditionSet::cndParalyzed);
+			pObj->ClearCondition(ECondition::paralyzed);
 			return pCC->CreateTrue();
 			}
 
@@ -9227,7 +9270,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			int iTime = pArgs->GetElement(1)->GetIntegerValue();
 			pArgs->Discard();
 
-			pObj->SetCondition(CConditionSet::cndParalyzed, iTime);
+			pObj->SetCondition(ECondition::paralyzed, iTime);
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -10121,7 +10164,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateBool(ArmorItem.IsImmune(specialRadiation));
 				}
 			else
-				return pCC->CreateBool(pShip->IsImmuneTo(CConditionSet::cndRadioactive));
+				return pCC->CreateBool(pShip->IsImmuneTo(specialRadiation));
 			break;
 			}
 
@@ -10279,12 +10322,12 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			break;
 
 		case FN_SHIP_DECONTAMINATE:
-			pShip->ClearCondition(CConditionSet::cndRadioactive);
+			pShip->ClearCondition(ECondition::radioactive);
 			pResult = pCC->CreateTrue();
 			break;
 
 		case FN_SHIP_MAKE_RADIOACTIVE:
-			pShip->SetCondition(CConditionSet::cndRadioactive);
+			pShip->SetCondition(ECondition::radioactive);
 			pResult = pCC->CreateTrue();
 			break;
 
@@ -12081,7 +12124,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return StdErrorNoSystem(*pCC);
 
 			CDesignType *pType = pCtx->GetUniverse().FindDesignType(pArgs->GetElement(0)->GetIntegerValue());
-			ICCItem *pOptions = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : pCC->CreateNil());
+			ICCItem *pOptions = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : pCC->GetNil());
 
 			CSpaceObject *pTarget = CreateObjFromItem(pOptions->GetElement(CONSTLIT("target")));
 			if (pTarget == NULL)
@@ -12899,7 +12942,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	CVector vPos;
 	int iLocID;
-	if (error = GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, NULL, &iLocID))
+	if (error = GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, NULL, &iLocID, pType))
 		{
 		//	If we couldn't find a location, then we abort, but return Nil
 		//	so that callers can recover.
@@ -13615,6 +13658,55 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(iPrice);
 			}
 
+		case FN_SYS_ITEM_FREQUENCY:
+			{
+			int iArg = 0;
+
+			//	If we have more than 1 args, and the arg is a string,
+			//	then the first arg is the node ID.
+
+			CTopologyNode *pNode;
+			if (pArgs->GetCount() > 1 && pArgs->GetElement(0)->IsIdentifier())
+				{
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+				}
+
+			//	Otherwise, we assume the current system.
+
+			else
+				{
+				CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
+				if (pSystem == NULL)
+					return StdErrorNoSystem(*pCC);
+
+				pNode = pSystem->GetTopology();
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("No topology node"));
+				}
+
+			//	Get the item type
+
+			CItem Item = pCtx->AsItem(pArgs->GetElement(iArg++));
+			CItemType *pType = Item.GetType();
+			if (pType == NULL)
+				return pCC->CreateNil();
+
+			//	Get the item frequency
+
+			int iFreq = pType->GetFrequency();
+
+			//	Adjust based on encounter descriptor
+
+			CItemEncounterDefinitions::SCtx EncounterCtx;
+			pCtx->GetUniverse().GetDesignCollection().GetItemEncounterDefinitions().AdjustFrequency(EncounterCtx, *pNode, Item, iFreq);
+
+			//	Done
+
+			return pCC->CreateInteger(iFreq);
+			}
+
 		case FN_SYS_LOCATIONS:
 			{
 			CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
@@ -13919,9 +14011,9 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Parse criteria
 
-			CTopologyNode::SCriteria Criteria;
+			CTopologyNodeCriteria Criteria;
 			CString sError;
-			if (CTopologyNode::ParseCriteria(pArgs->GetElement(pArgs->GetCount() - 1)->GetStringValue(), &Criteria, &sError) != NOERROR)
+			if (Criteria.Parse(pArgs->GetElement(pArgs->GetCount() - 1)->GetStringValue(), &sError) != NOERROR)
 				return pCC->CreateError(sError);
 
 			//	Get the topology node
@@ -13940,8 +14032,8 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
 
-			CTopologyNode::SCriteriaCtx CriteriaCtx(pCtx->GetUniverse().GetTopology());
-			return pCC->CreateBool(pNode->MatchesCriteria(CriteriaCtx, Criteria));
+			CTopologyNodeCriteria::SCtx CriteriaCtx(pCtx->GetUniverse().GetTopology());
+			return pCC->CreateBool(Criteria.Matches(CriteriaCtx, *pNode));
 			}
 
 		case FN_SYS_ORBIT_CREATE:
@@ -14269,12 +14361,12 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Parse criteria
 
-			CTopologyNode::SCriteria Criteria;
+			CTopologyNodeCriteria Criteria;
 			CString sError;
-			if (CTopologyNode::ParseCriteria(pArgs->GetElement(iArg++)->GetStringValue(), &Criteria, &sError) != NOERROR)
+			if (Criteria.Parse(pArgs->GetElement(iArg++)->GetStringValue(), &sError) != NOERROR)
 				return pCC->CreateError(sError);
 
-			int iDist = CStationEncounterCtx::CalcDistanceToCriteria(*pNode, Criteria.AttribCriteria);
+			int iDist = CStationEncounterCtx::CalcDistanceToCriteria(*pNode, Criteria.GetAttributeCriteria());
 			if (iDist == -100)
 				return pCC->CreateNil();
 			else
@@ -14369,16 +14461,16 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				{
 				ICCItem *pCriteria = pArgs->GetElement(0);
-				CTopologyNode::SCriteria Criteria;
+				CTopologyNodeCriteria Criteria;
 
 				CString sError;
-				if (CTopologyNode::ParseCriteria(pCtx->GetUniverse(), pCriteria, Criteria, &sError) != NOERROR)
+				if (Criteria.Parse(pCtx->GetUniverse(), *pCriteria, &sError) != NOERROR)
 					return pCC->CreateError(sError, pCriteria);
 
 				//	Loop
 
-				CTopologyNode::SCriteriaCtx Ctx(pCtx->GetUniverse().GetTopology());
-				CTopologyNode::InitCriteriaCtx(Ctx, Criteria);
+				CTopologyNodeCriteria::SCtx Ctx(pCtx->GetUniverse().GetTopology());
+				Criteria.InitCtx(Ctx);
 
 				for (i = 0; i < pCtx->GetUniverse().GetTopologyNodeCount(); i++)
 					{
@@ -14386,7 +14478,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					if (pNode->IsEndGame())
 						continue;
 
-					if (!pNode->MatchesCriteria(Ctx, Criteria))
+					if (!Criteria.Matches(Ctx, *pNode))
 						continue;
 
 					pResult->AppendString(pNode->GetID());
@@ -14733,7 +14825,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 				if (pRadiusFunc)
 					{
-					ICCItem *pResult = pRadiusFunc->Execute(pEvalCtx, pCC->CreateNil());
+					ICCItem *pResult = pRadiusFunc->Execute(pEvalCtx, pCC->GetNil());
 
 					//	Function can return either a radius or a vector
 

@@ -14,7 +14,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This coating is used to protect a ship's armor against laser and particle beam weapons."
@@ -54,7 +54,7 @@
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 
 			description=		"This coating reacts when hit by kinetic or chemical explosives and produces an opposite reaction that protect the underlying armor and hull."
 
@@ -95,7 +95,7 @@
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 
 			description=		"The nanomachines in this paste weave a strong carbon grid through a ship's armor. Armor that has been treated in this way will be stronger and more resistant to damage."
 
@@ -137,7 +137,7 @@
 			frequency=			"common"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"armorDamage, consumable, res"
+			attributes=			"armorDamage, consumable, humanTech, res"
 
 			description=		"Powerful organic acids such as these are used in various industrial processes. Use with caution: Do not allow contact with a ship's armor or hull."
 
@@ -226,7 +226,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"Consumable"
+			attributes=			"consumable, humanTech"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"Decon gel is used to decontaminate radioactive metals, ceramics and other materials. It is ideal for decontaminating a ship's armor and hull."
@@ -330,7 +330,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This coating is used to protect a ship's armor against particle beam weapons."
@@ -370,7 +370,7 @@
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 
 			description=		"The nanomachines in this paste create a hard plasteel shell on top of armor segments."
 
@@ -405,7 +405,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem; Specialty"
+			attributes=			"armorEnhance, humanTech, minorItem, specialty"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This coating is nearly perfectly reflective at all laser weapon wavelengths. A ship's armor coated with this substance will be immune to laser weapons."
@@ -446,7 +446,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This borocarbide coating absorbs deadly radiation before it can penetrate your ship's hull."
@@ -486,7 +486,7 @@
 			unknownType=		"&itUnknownBarrel;"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"armorDamage, consumable, defective"
+			attributes=			"armorDamage, consumable, defective, humanTech"
 
 			description=		"These nanomachines are used to recycle old ships and armors into their basic components. Use with caution: Do not allow contact with a ship's armor or hull."
 
@@ -524,7 +524,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"Consumable; CannotOrder"
+			attributes=			"consumable, humanTech, cannotOrder"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This is a titanium barrel filled with low and medium-level radioactive waste."
@@ -677,7 +677,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem; Specialty"
+			attributes=			"armorEnhance, humanTech, minorItem, specialty"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"The nanomachines are able to automatically regenerate any armor. Once treated with this paste an armor segment will continue to regenerate even if damaged further."
@@ -718,7 +718,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"When applied to armor, monopole dust dissipates EMP energy, rendering it harmless."
@@ -757,7 +757,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem; Specialty"
+			attributes=			"armorEnhance, humanTech, minorItem, specialty"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This coating reflects particle beams."
@@ -795,7 +795,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"This coating is used to protect a ship's armor against ion damage."
@@ -834,7 +834,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"armorDamage, defective, minorItem"
+			attributes=			"armorDamage, defective, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"Meteorsteel interferes with most kinds of shield generators."
@@ -875,7 +875,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"Dust activated by dyons immunizes armor against ionization effects such as blinding, EMP, and device ionization."
@@ -916,7 +916,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem; Specialty"
+			attributes=			"armorEnhance, humanTech, minorItem, specialty"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"This coating reflects ion damage."
@@ -952,7 +952,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"This coating is used to protect a ship's armor against thermonuclear damage."
@@ -993,7 +993,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"ArmorEnhance; MinorItem"
+			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel5;"
 
 			description=		"The nanomachines in this paste weave a strong orthosteel grid through a ship's armor. Armor that has been treated in this way will be stronger and more resistant to damage."

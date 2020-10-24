@@ -67,6 +67,7 @@
 #define PROPERTY_ARMOR_CLASS					CONSTLIT("armorClass")
 #define PROPERTY_BALANCE_ADJ					CONSTLIT("balanceAdj")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
+#define PROPERTY_DAMAGE							CONSTLIT("damage")
 #define PROPERTY_DAMAGE_ADJ						CONSTLIT("damageAdj")
 #define PROPERTY_DECAY							CONSTLIT("decay")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
@@ -250,7 +251,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	//	First give custom weapons a chance
 
-	bool bCustomDamage = (Ctx.pDesc && Ctx.pDesc->FireOnDamageArmor(Ctx));
+	bool bCustomDamage = Ctx.GetDesc().FireOnDamageArmor(Ctx);
 	if (pSource->IsDestroyed())
 		return damageDestroyed;
 
@@ -294,17 +295,17 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	then freeze the ship.
 
 	if (Ctx.IsParalyzed())
-		pSource->SetConditionDueToDamage(Ctx, CConditionSet::cndParalyzed);
+		pSource->SetConditionDueToDamage(Ctx, ECondition::paralyzed);
 
 	//	If this is blinding damage then our sensors are disabled
 
 	if (Ctx.IsBlinded())
-		pSource->SetConditionDueToDamage(Ctx, CConditionSet::cndBlind);
+		pSource->SetConditionDueToDamage(Ctx, ECondition::blind);
 
 	//	If this attack is radioactive, then contaminate the ship
 
 	if (Ctx.IsRadioactive())
-		pSource->SetConditionDueToDamage(Ctx, CConditionSet::cndRadioactive);
+		pSource->SetConditionDueToDamage(Ctx, ECondition::radioactive);
 
 	//	If this is device damage, then see if any device is damaged
 
@@ -327,7 +328,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	Create a hit effect. (Many weapons show an effect even if no damage was
 	//	done.)
 
-	if (!Ctx.bNoHitEffect && Ctx.pDesc)
+	if (!Ctx.bNoHitEffect)
 		{
 		//	Hit effect is based on how much damage the armor took, so we need to
 		//	temporarily store that in Ctx.iDamage.
@@ -335,7 +336,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		int iSavedDamage = Ctx.iDamage;
 		Ctx.iDamage = Ctx.iArmorDamage;
 
-		Ctx.pDesc->CreateHitEffect(pSource->GetSystem(), Ctx);
+		Ctx.GetDesc().CreateHitEffect(pSource->GetSystem(), Ctx);
 
 		Ctx.iDamage = iSavedDamage;
 		}
@@ -2660,7 +2661,13 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 	CSpaceObject *pSource = Ctx.GetSource();
 	CInstalledArmor *pArmor = Ctx.GetArmor();
 
-	if (strEquals(sProperty, PROPERTY_HP))
+	if (strEquals(sProperty, PROPERTY_DAMAGE))
+		{
+		int iDamage = Max(0, Value.GetIntegerValue());
+		int iNewHP = Max(0, ArmorItem.GetMaxHP() - iDamage);
+		return SetItemProperty(Ctx, Item, PROPERTY_HP, *ICCItemPtr(iNewHP), retsError);
+		}
+	else if (strEquals(sProperty, PROPERTY_HP))
 		{
 		int iHP = Value.GetIntegerValue();
 

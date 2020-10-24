@@ -1689,7 +1689,9 @@ void CAIBehaviorCtx::ImplementGating (CShip *pShip, CSpaceObject *pTarget)
 	{
 	DEBUG_TRY
 
-	ASSERT(pTarget);
+	if (!pTarget)
+		return;
+
 	CVector vTarget = pTarget->GetPos() - pShip->GetPos();
 	Metric rTargetDist2 = vTarget.Dot(vTarget);
 
@@ -1699,6 +1701,7 @@ void CAIBehaviorCtx::ImplementGating (CShip *pShip, CSpaceObject *pTarget)
 	else if (rTargetDist2 < (DOCKING_APPROACH_DISTANCE * DOCKING_APPROACH_DISTANCE))
 		{
 		pShip->SetMaxSpeedHalf();
+		m_fShipSpeedLowered = true;
 		ImplementCloseOnImmobileTarget(pShip, pTarget, vTarget, rTargetDist2, pShip->GetMaxSpeed() / 2.0);
 		}
 	else

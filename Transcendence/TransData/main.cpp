@@ -49,6 +49,7 @@
 #define REFERENCE_SWITCH					CONSTLIT("reference")
 #define RUN_SWITCH							CONSTLIT("run")
 #define RUN_FILE_SWITCH						CONSTLIT("runFile")
+#define SCRIPT_SWITCH						CONSTLIT("script")
 #define SHIELD_TEST_SWITCH					CONSTLIT("shieldtest")
 #define SHIP_IMAGE_SWITCH					CONSTLIT("shipimage")
 #define SHIP_IMAGES_SWITCH					CONSTLIT("shipimages")
@@ -372,6 +373,8 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		GenerateItemTable(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(LANGUAGE_SWITCH))
 		GenerateLanguageTable(Universe, pCmdLine);
+	else if (pCmdLine->FindAttribute(SCRIPT_SWITCH))
+		GenerateScript(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(LOOT_SIM_SWITCH))
 		GenerateLootSim(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(RANDOM_ITEMS_SWITCH))

@@ -1,6 +1,7 @@
 //	CTopologyNode.cpp
 //
-//	Star system topology
+//	CTopologyNode class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -52,6 +53,7 @@
 #define PROPERTY_NODE_ID						CONSTLIT("nodeID")
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_STD_CHALLENGE_RATING			CONSTLIT("stdChallengeRating")
+#define PROPERTY_STD_TREASURE_VALUE				CONSTLIT("stdTreasureValue")
 #define PROPERTY_UNCHARTED						CONSTLIT("uncharted")
 
 #define SPECIAL_LEVEL							CONSTLIT("level:")
@@ -60,11 +62,12 @@
 
 //	CTopologyNode class --------------------------------------------------------
 
-CTopologyNode::CTopologyNode (CTopology &Topology, const CString &sID, DWORD SystemUNID, CSystemMap *pMap) : 
+CTopologyNode::CTopologyNode (CTopology &Topology, const CString &sID, DWORD SystemUNID, CSystemMap *pMap, int iLevel) : 
 		m_Topology(Topology),
 		m_sID(sID),
 		m_SystemUNID(SystemUNID),
-		m_pMap(pMap)
+		m_pMap(pMap),
+		m_iLevel(iLevel)
 
 //	CTopology constructor
 
@@ -576,6 +579,13 @@ ICCItemPtr CTopologyNode::GetProperty (const CString &sName) const
 	else if (strEquals(sName, PROPERTY_STD_CHALLENGE_RATING))
 		return ICCItemPtr(CStationType::GetStdChallengeRating(GetLevel()));
 
+	else if (strEquals(sName, PROPERTY_STD_TREASURE_VALUE))
+		{
+		CurrencyValue ValueInCredits = CItemType::GetStdStats(GetLevel()).TreasureValue;
+		auto Result = GetUniverse().GetDefaultCurrency().ExchangeFrom(NULL, ValueInCredits);
+		return ICCItemPtr((int)Result.GetValue());
+		}
+
 	else
 		return ICCItemPtr(ICCItem::Nil);
 	}
@@ -711,37 +721,6 @@ bool CTopologyNode::HasVariantLabel (const CString &sVariant)
 	return false;
 	}
 
-void CTopologyNode::InitCriteriaCtx (SCriteriaCtx &Ctx, const SCriteria &Criteria)
-
-//	InitCriteriaCtx
-//
-//	Initializes criteria context. This is needed to optimize distance 
-//	calculations.
-
-	{
-	int i;
-
-	//	Initialize the distance cache, if necessary.
-
-	for (i = 0; i < Criteria.DistanceTo.GetCount(); i++)
-		{
-		//	If we're restricting nodes to a distance from a particular node, 
-		//	then we pre-calculate distances.
-	
-		if (!Criteria.DistanceTo[i].sNodeID.IsBlank())
-			{
-			CTopologyNode *pSource = Ctx.Topology.FindTopologyNode(Criteria.DistanceTo[i].sNodeID);
-			if (pSource == NULL)
-				continue;
-
-			bool bNew;
-			TSortMap<CString, int> *pDistMap = Ctx.DistanceCache.SetAt(pSource->GetID(), &bNew);
-			if (bNew)
-				Ctx.Topology.CalcDistances(*pSource, *pDistMap);
-			}
-		}
-	}
-
 ALERROR CTopologyNode::InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError)
 
 //	InitFromAdditionalXML
@@ -797,282 +776,6 @@ ALERROR CTopologyNode::InitFromSystemXML (CTopology &Topology, CXMLElement *pSys
 		}
 
 	SystemDesc.Apply(Topology, this);
-
-	return NOERROR;
-	}
-
-bool CTopologyNode::IsCriteriaAll (const SCriteria &Crit)
-
-//	IsCriteriaAll
-//
-//	Returns TRUE if the criteria matches all nodes
-
-	{
-	return (Crit.iChance == 100
-			&& Crit.iMaxInterNodeDist == -1
-			&& Crit.iMinInterNodeDist == 0
-			&& Crit.iMaxStargates == -1
-			&& Crit.iMinStargates == 0
-			&& Crit.AttribCriteria.IsEmpty()
-			&& Crit.DistanceTo.GetCount() == 0);
-	}
-
-bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit) const
-
-//	MatchesCriteria
-//
-//	Returns TRUE if this node matches the given criteria
-
-	{
-	int i;
-
-	//	Chance
-
-	if (Crit.iChance < 100 && mathRandom(1, 100) > Crit.iChance)
-		return false;
-
-	//	Check attributes
-
-	if (!Crit.AttribCriteria.Matches(*this))
-		return false;
-
-	//	Stargates
-
-	if (m_NamedGates.GetCount() < Crit.iMinStargates)
-		return false;
-
-	if (Crit.iMaxStargates != -1 && m_NamedGates.GetCount() > Crit.iMaxStargates)
-		return false;
-
-	//	Flags
-
-	if (Crit.bKnownOnly && !IsKnown())
-		return false;
-
-	//	Distance to other nodes
-
-	for (i = 0; i < Crit.DistanceTo.GetCount(); i++)
-		{
-		//	If we don't have a specified nodeID then we need to find the distance
-		//	to any node with the appropriate attributes
-
-		if (Crit.DistanceTo[i].sNodeID.IsBlank())
-			{
-			CTopologyNodeList Checked;
-			if (!Ctx.Topology.GetTopologyNodeList().IsNodeInRangeOf(this,
-					Crit.DistanceTo[i].iMinDist,
-					Crit.DistanceTo[i].iMaxDist,
-					Crit.DistanceTo[i].AttribCriteria,
-					Checked))
-				return false;
-			}
-
-		//	Otherwise, find the distance to the given node
-
-		else
-			{
-			int iDist;
-
-			//	See if we can use the cache to get the distance. If not, then
-			//	we just compute it.
-
-			const TSortMap<CString, int> *pDistMap = Ctx.DistanceCache.GetAt(Crit.DistanceTo[i].sNodeID);
-			if (pDistMap == NULL || !pDistMap->Find(GetID(), &iDist))
-				iDist = Ctx.Topology.GetDistance(Crit.DistanceTo[i].sNodeID, GetID());
-
-			//	In range?
-
-			if (iDist != -1 && iDist < Crit.DistanceTo[i].iMinDist)
-				return false;
-
-			if (iDist == -1 || (Crit.DistanceTo[i].iMaxDist != -1 && iDist > Crit.DistanceTo[i].iMaxDist))
-				return false;
-			}
-		}
-
-	//	Done
-
-	return true;
-	}
-
-ALERROR CTopologyNode::ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError)
-
-//	ParseCriteria
-//
-//	Parses a string criteria
-
-	{
-	(*retCrit) = SCriteria();
-	return retCrit->AttribCriteria.Init(sCriteria);
-	}
-
-ALERROR CTopologyNode::ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError)
-
-//	ParseCriteria
-//
-//	Parses an XML element into a criteria desc
-
-	{
-	int i;
-
-	retCrit->iChance = 100;
-	retCrit->iMaxInterNodeDist = -1;
-	retCrit->iMinInterNodeDist = 0;
-	retCrit->iMaxStargates = -1;
-	retCrit->iMinStargates = 0;
-
-	if (pCrit)
-		{
-		for (i = 0; i < pCrit->GetContentElementCount(); i++)
-			{
-			CXMLElement *pItem = pCrit->GetContentElement(i);
-
-			if (strEquals(pItem->GetTag(), ATTRIBUTES_TAG))
-				{
-				CString sCriteria = pItem->GetAttribute(CRITERIA_ATTRIB);
-				retCrit->AttribCriteria.Init(sCriteria);
-				}
-			else if (strEquals(pItem->GetTag(), CHANCE_TAG))
-				{
-				retCrit->iChance = pItem->GetAttributeIntegerBounded(CHANCE_ATTRIB, 0, 100, 100);
-				}
-			else if (strEquals(pItem->GetTag(), DISTANCE_BETWEEN_NODES_TAG))
-				{
-				retCrit->iMinInterNodeDist = pItem->GetAttributeIntegerBounded(MIN_ATTRIB, 0, -1, 0);
-				retCrit->iMaxInterNodeDist = pItem->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, -1);
-				}
-			else if (strEquals(pItem->GetTag(), DISTANCE_TO_TAG))
-				{
-				SDistanceTo *pDistTo = retCrit->DistanceTo.Insert();
-				pDistTo->iMinDist = pItem->GetAttributeIntegerBounded(MIN_ATTRIB, 0, -1, 0);
-				pDistTo->iMaxDist = pItem->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, -1);
-
-				CString sCriteria;
-				if (pItem->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
-					{
-					if (pDistTo->AttribCriteria.Init(sCriteria) != NOERROR)
-						{
-						*retsError = strPatternSubst(CONSTLIT("Unable to parse criteria: %s"), sCriteria);
-						return ERR_FAIL;
-						}
-					}
-				else
-					pDistTo->sNodeID = pItem->GetAttribute(NODE_ID_ATTRIB);
-				}
-			else if (strEquals(pItem->GetTag(), STARGATE_COUNT_TAG))
-				{
-				retCrit->iMinStargates = pItem->GetAttributeIntegerBounded(MIN_ATTRIB, 0, -1, 0);
-				retCrit->iMaxStargates = pItem->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, -1);
-				}
-			else
-				{
-				*retsError = strPatternSubst(CONSTLIT("Unknown criteria element: %s"), pItem->GetTag());
-				return ERR_FAIL;
-				}
-			}
-		}
-
-	return NOERROR;
-	}
-
-ALERROR CTopologyNode::ParseCriteria (CUniverse &Universe, ICCItem *pItem, SCriteria &retCrit, CString *retsError)
-
-//	ParseCriteria
-//
-//	Parses a TLisp criteria structure.
-
-	{
-	int i;
-
-	//	Initialize
-
-	retCrit = SCriteria();
-
-	//	Parse
-
-	if (!pItem || pItem->IsNil())
-		return NOERROR;
-
-	else if (pItem->IsIdentifier())
-		{
-		if (ALERROR error = retCrit.AttribCriteria.Init(pItem->GetStringValue()))
-			return error;
-		}
-
-	else if (pItem->IsSymbolTable())
-		{
-		int iMaxDist = -1;
-		int iMinDist = 0;
-
-		for (i = 0; i < pItem->GetCount(); i++)
-			{
-			CString sKey = pItem->GetKey(i);
-
-			if (strEquals(sKey, FIELD_CRITERIA))
-				{
-				if (ALERROR error = retCrit.AttribCriteria.Init(pItem->GetElement(i)->GetStringValue()))
-					return error;
-				}
-			else if (strEquals(sKey, FIELD_MAX_DIST))
-				{
-				iMaxDist = pItem->GetElement(i)->GetIntegerValue();
-				}
-			else if (strEquals(sKey, FIELD_MIN_DIST))
-				{
-				iMinDist = pItem->GetElement(i)->GetIntegerValue();
-				}
-			else if (strEquals(sKey, FIELD_KNOWN_ONLY))
-				{
-				retCrit.bKnownOnly = true;
-				}
-			else
-				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown criteria field: %s"), sKey);
-				return ERR_FAIL;
-				}
-			}
-
-		//	Set min/max
-
-		if (iMaxDist != -1 || iMinDist != 0)
-			{
-			if ((iMaxDist != -1 && iMaxDist < iMinDist)
-					|| iMinDist < 0)
-				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid criteria distance."));
-				return ERR_FAIL;
-				}
-
-			//	This short-cut only works if we're not using the full-length,
-			//	explicit distanceTo criteria (not yet implemented).
-
-			else if (retCrit.DistanceTo.GetCount() != 0)
-				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("maxDist and minDist incompatible with distanceTo."));
-				return ERR_FAIL;
-				}
-
-			//	Make sure we have a valid node
-
-			else if (Universe.GetCurrentTopologyNode() == NULL)
-				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("No current system."));
-				return ERR_FAIL;
-				}
-
-			//	Create a new entry
-
-			SDistanceTo *pDistCriteria = retCrit.DistanceTo.Insert();
-			pDistCriteria->sNodeID = Universe.GetCurrentTopologyNode()->GetID();
-			pDistCriteria->iMaxDist = iMaxDist;
-			pDistCriteria->iMinDist = iMinDist;
-			}
-		}
-	else
-		{
-		if (retsError) *retsError = CONSTLIT("Invalid criteria.");
-		return ERR_FAIL;
-		}
 
 	return NOERROR;
 	}

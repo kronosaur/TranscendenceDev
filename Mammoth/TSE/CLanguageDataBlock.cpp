@@ -8,13 +8,50 @@
 #define CODE_TAG								CONSTLIT("Code")
 #define MESSAGE_TAG								CONSTLIT("Message")
 #define RTF_TAG									CONSTLIT("RTF")
+#define SCRIPT_TAG								CONSTLIT("Script")
 #define STRING_TAG								CONSTLIT("String")
 #define TEXT_TAG								CONSTLIT("Text")
 
 #define ID_ATTRIB								CONSTLIT("id")
 #define TEXT_ATTRIB								CONSTLIT("text")
 
+#define SCRIPT_ID_PREFIX						CONSTLIT("[script]")
+
 const CLanguageDataBlock CLanguageDataBlock::m_Null;
+
+void CLanguageDataBlock::AccumulateScript (const CDesignType *pSource, const CString &sScript, TSortMap<CString, CScript::SScriptEntry> &Script) const
+
+//	AccumulateScript
+//
+//	Accumualtes script elements.
+
+	{
+	for (int i = 0; i < m_Data.GetCount(); i++)
+		{
+		const SEntry &Entry = m_Data[i];
+		if (!strStartsWith(m_Data.GetKey(i), SCRIPT_ID_PREFIX))
+			continue;
+
+		CString sScriptID = strSubString(m_Data.GetKey(i), SCRIPT_ID_PREFIX.GetLength());
+
+		CString sEntryScript;
+		CString sOrder;
+		CString sHeader;
+		if (!ParseScriptParam(sScriptID, &sEntryScript, &sOrder, &sHeader))
+			continue;
+
+		//	Do we match
+
+		if (!sScript.IsBlank() && !strEquals(sScript, sEntryScript))
+			continue;
+
+		//	Add it
+
+		CScript::SScriptEntry *pEntry = Script.SetAt(sOrder);
+		pEntry->pSource = pSource;
+		pEntry->sScript = Entry.sText;
+		}
+	}
 
 void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 
@@ -283,9 +320,7 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 //	Initializes from an XML block
 
 	{
-	int i;
-
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+	for (int i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
 		CXMLElement *pItem = pDesc->GetContentElement(i);
 		CString sID = pItem->GetAttribute(ID_ATTRIB);
@@ -294,6 +329,12 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 			Ctx.sError = strPatternSubst(CONSTLIT("Invalid id in <Language> block"));
 			return ERR_FAIL;
 			}
+
+		//	Script blocks get a special ID
+
+		bool bIsScriptBlock = strEquals(pItem->GetTag(), SCRIPT_TAG);
+		if (bIsScriptBlock)
+			sID = strPatternSubst(CONSTLIT("%s%s"), SCRIPT_ID_PREFIX, sID);
 
 		//	Add an entry
 
@@ -369,7 +410,7 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 				return ERR_FAIL;
 				}
 			}
-		else if (strEquals(pItem->GetTag(), STRING_TAG))
+		else if (bIsScriptBlock || strEquals(pItem->GetTag(), STRING_TAG))
 			{
 			pEntry->pCode = NULL;
 			pEntry->sText = ParseTextBlock(pItem->GetContentText(0));
@@ -488,6 +529,63 @@ void CLanguageDataBlock::MergeFrom (const CLanguageDataBlock &Source)
 		}
 
 	DEBUG_CATCH
+	}
+
+bool CLanguageDataBlock::ParseScriptParam (const CString &sValue, CString *retsScript, CString *retsOrder, CString *retsHeader)
+
+//	ParseScriptParam
+//
+//	Parses a script parameter of the form:
+//
+//	{script}:{order} [{header}]
+//
+//	Returns TRUE if we have a valid parameter.
+
+	{
+	const char *pPos = sValue.GetASCIIZPointer();
+
+	//	Script
+
+	const char *pStart = pPos;
+	while (*pPos && *pPos != ':')
+		pPos++;
+
+	if (*pPos != ':')
+		return false;
+
+	if (retsScript)
+		*retsScript = CString(pStart, pPos - pStart);
+
+	//	Order
+
+	pPos++;
+	const char *pOrderStart = pPos;
+	while (*pPos && *pPos != ' ')
+		pPos++;
+
+	if (retsOrder)
+		*retsOrder = CString(pOrderStart, pPos - pOrderStart);
+
+	//	Header
+
+	while (strIsWhitespace(pPos))
+		pPos++;
+
+	if (*pPos == '[')
+		{
+		pPos++;
+		const char *pHeaderStart = pPos;
+		while (*pPos && *pPos != ']')
+			pPos++;
+
+		if (retsHeader)
+			*retsHeader = CString(pHeaderStart, pPos - pHeaderStart);
+
+		if (*pPos == ']')
+			pPos++;
+		}
+
+	return true;
 	}
 
 CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const

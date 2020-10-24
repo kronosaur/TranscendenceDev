@@ -990,5 +990,38 @@
     <Xml Include="RPGMissionTemplate03.xml">
       <Filter>RPG Library</Filter>
     </Xml>
+    <Xml Include="CommonwealthMiningMission03.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="HarperThompson.xml">
+      <Filter>Human Space Library\Characters</Filter>
+    </Xml>
+    <Xml Include="CommonwealthMiningMission04.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="MuhammadCondi.xml">
+      <Filter>Human Space Library\Characters</Filter>
+    </Xml>
+    <Xml Include="UndergroundStructures.xml">
+      <Filter>Human Space Library\Miscellaneous</Filter>
+    </Xml>
+    <Xml Include="CommonwealthMiningMission05.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="Cryovolcanic.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
+    <Xml Include="CorporateAutonDealer.xml">
+      <Filter>Human Space Library\Corporate Hierarchy</Filter>
+    </Xml>
+    <Xml Include="..\Extensions\Diagnostics\ShipClassTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="BlackMarketMission02.xml">
+      <Filter>Human Space Library\Black Market</Filter>
+    </Xml>
+    <Xml Include="BlackMarketMissionSmuggle01.xml">
+      <Filter>Human Space Library\Black Market</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

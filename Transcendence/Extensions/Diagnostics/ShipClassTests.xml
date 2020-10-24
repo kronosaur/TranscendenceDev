@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidShipClassTests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					)
+					;	Unit Tests for Properties
+
+					(diagEval (list
+
+						;	Basic Properties
+
+						{	test:'(typ@ &scMikeno; 'armorItem)					result:(itmCreate &itHeavyPlasteelPlate; 1)	}
+						{	test:'(typ@ &scMikeno; 'armorSpeedAdj)				result:Nil	}
+						{	test:'(typ@ &scMikeno; 'character)					result:Nil	}
+						{	test:'(typ@ &scMikeno; 'characterName)				result:Nil	}
+						{	test:'(typ@ &scMikeno; 'currency)					result:&ecCreditEconomy;	}
+						{	test:'(typ@ &scMikeno; 'currencyName)				result:'credit	}
+						{	test:'(typ@ &scMikeno; 'defaultSovereign)			result:&svIndependent;	}
+						{	test:'(typ@ &scMikeno; 'drivePowerUse)				result:108700	}
+						{	test:'(typ@ &scMikeno; 'frequency)					result:'common	}
+						{	test:'(typ@ &scMikeno; 'frequencyRatio)				result:1.0	}
+						{	test:'(typ@ &scMikeno; 'fuelEfficiency)				result:295	}
+						{	test:'(typ@ &scMikeno; 'hasTradeDesc)				result:Nil	}
+						{	test:'(typ@ &scMikeno; 'hasVariants)				result:Nil	}
+						{	test:'(typ@ &scMikeno; 'hullPoints)					result:30	}
+						{	test:'(typ@ &scMikeno; 'hullValue)					result:2000	}
+						{	test:'(typ@ &scMikeno; 'imageRotationCount)			result:20	}
+						{	test:'(typ@ &scMikeno; 'maxArmorClass)				result:Nil	}
+						{	test:'(typ@ &scMikeno; 'maxArmorClassName)			result:Nil }
+						{	test:'(typ@ &scMikeno; 'maxSpeed)					result:12	}
+						{	test:'(typ@ &scMikeno; 'maxSpeedByArmorMass)		result:Nil	}
+						{	test:'(typ@ &scMikeno; 'miscDeviceItems)			result:Nil	}
+						{	test:'(typ@ &scMikeno; 'power)						result:0	}
+						{	test:'(typ@ &scMikeno; 'price)						result:9940	}
+						{	test:'(typ@ &scMikeno; 'stdAmorClassName)			result:Nil	}
+						{	test:'(typ@ &scMikeno; 'stdAmorMass)				result:Nil	}
+						{	test:'(typ@ &scMikeno; 'thrust)						result:8000	}
+						{	test:'(typ@ &scMikeno; 'thrustRatio)				result:1.6	}
+						{	test:'(typ@ &scMikeno; 'thrustToWeight)				result:1580	}
+						{	test:'(typ@ &scMikeno; 'thrusterPower)				result:6000	}
+						{	test:'(typ@ &scMikeno; 'treasureItemNames)			result:""	}
+						{	test:'(typ@ &scMikeno; 'unid)						result:&scMikeno;	}
+						{	test:'(typ@ &scMikeno; 'viewportSize)				result:192	}
+						{	test:'(typ@ &scMikeno; 'weaponItems)				result:(list (itmCreate &itBallistaCannon; 1) (itmCreate &itLaserCannon; 2))	}
+						{	test:'(typ@ &scMikeno; 'wreckChance)				result:100	}
+						{	test:'(typ@ &scMikeno; 'wreckStructureHP)			result:Nil	}
+						{	test:'(typ@ &scMikeno; 'wreckType)					result:&stShipwreck;	}
+						{	test:'(typ@ &scMikeno; 'wreckTypeName)				result:"(shipwreck)"	}
+
+						;	Wrecks
+
+						{	test:'(typ@ &scWindSlaver; 'wreckChance)			result:19	}
+						{	test:'(typ@ &scSteelSlaver; 'wreckChance)			result:100	}
+						{	test:'(typ@ &scEarthSlaver; 'wreckChance)			result:100	}
+						{	test:'(typ@ &scEarthSlaver; 'wreckHasItems)			result:True	}
+						{	test:'(typ@ &scEarthSlaver; 'wreckHasInstalledItems)
+																				result:True	}
+						{	test:'(typ@ &scEarthSlaver; 'wreckType)				result:&stShipwreck;	}
+						{	test:'(typ@ &scEarthSlaver; 'wreckStructuralHP)		result:2092	}
+
+						{	test:'(typ@ &scAutoSentinel; 'wreckChance)			result:5	}
+						{	test:'(typ@ &scAutoSentinel; 'wreckHasItems)		result:True	}
+						{	test:'(typ@ &scAutoSentinel; 'wreckHasInstalledItems)
+																				result:Nil	}
+						{	test:'(typ@ &scAutoSentinel; 'wreckStructuralHP)	result:24	}
+						{	test:'(typ@ &scAutoSentinel; 'wreckType)			result:&stAutonWreck;	}
+						))
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

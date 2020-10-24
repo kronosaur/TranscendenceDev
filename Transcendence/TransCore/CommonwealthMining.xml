@@ -4,6 +4,28 @@
 
 	<Type unid="&unidIndependentMiner;">
 		<Properties>
+			<Definition id="missionRewardTable">
+
+				;	REWARD		SYSTEM LEVEL
+				; ---------------------------------
+
+				'(	0
+
+					400			;	1
+					800			;	2
+					1500		;	3
+					3000		;	4
+					6000		;	5
+
+					10000		;	6
+					20000		;	7
+					40000		;	8
+					70000		;	9
+					120000		;	10
+					)
+
+			</Definition>
+
 			<DynamicGlobal id="mining.rankIcon">
 				(block (
 					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
@@ -277,8 +299,7 @@
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +commonwealthMining; =" (sysGetLevel) ";")
-									maxPerStation: (+ 1 (modulo (objGetDestiny gSource) 3))
-									intervalPerStation: (+ 5400 (* (objGetDestiny gSource) 10))
+									maxPerStation: (+ 2 (modulo (objGetDestiny gSource) 2))
 									noMissionTextID: 'descNoMissions
 									})
 							</Action>
@@ -304,14 +325,6 @@
 
 		<!-- Events and Data -->
 		
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			5		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				;	Add ore to sell based on system ore frequency
@@ -670,9 +683,9 @@
 				10% of metallic asteroids have extractable ores, such as
 				titanium, plasteel, and orthosteel.
 
-				Mining lasers and their ilk are not very effective. Use a plasma
-				torch (ablative mining) or excavation pods (shockwave mining)
-				instead.
+				Mining charges and missiles (explosive mining) are not very 
+				effective. Use a plasma	torch (ablative mining) or excavation 
+				pods (shockwave mining) instead.
 
 			</Text>
 			<Text id="asteroidName.primordial">Primordial Asteroid</Text>
@@ -703,7 +716,7 @@
 				10% of rocky asteroids have useful resources. The most commonly
 				found are palladium, gold, and platinum.
 
-				All mining techniques are effective on rocky asteroids.
+				All mining techniques are equally effective on rocky asteroids.
 			
 			</Text>
 			<Text id="asteroidName.volcanic">Volcanic Asteroid</Text>
@@ -711,7 +724,6 @@
 
 				Volcanic asteroids are formed in high-temperature regions when
 				molten lava solidifies.
-
 			
 			</Text>
 			<Text id="asteroidHint.volcanic">

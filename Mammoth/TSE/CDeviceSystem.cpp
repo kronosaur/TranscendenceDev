@@ -679,7 +679,32 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 	if (iSlotPosIndex != -1)
 		Device.SetSlotPosIndex(iSlotPosIndex);
 
-	//	Adjust the named devices
+	//	Special initialization depending on device type
+
+	switch (Device.GetCategory())
+		{
+		case itemcatShields:
+			//	If we just installed a shield generator, start at 0 energy
+			Device.Reset(pObj);
+			break;
+		}
+
+	//	Done
+
+	if (retiDeviceSlot)
+		*retiDeviceSlot = iDeviceSlot;
+
+	return true;
+	}
+
+void CDeviceSystem::RefreshNamedDevice (int iDeviceSlot)
+
+//	RefreshNamedDevice
+//
+//	Update the named device.
+
+	{
+	CInstalledDevice &Device = m_Devices[iDeviceSlot];
 
 	if (HasNamedDevices())
 		{
@@ -717,23 +742,6 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 				break;
 			}
 		}
-
-	//	Special initialization depending on device type
-
-	switch (Device.GetCategory())
-		{
-		case itemcatShields:
-			//	If we just installed a shield generator, start at 0 energy
-			Device.Reset(pObj);
-			break;
-		}
-
-	//	Done
-
-	if (retiDeviceSlot)
-		*retiDeviceSlot = iDeviceSlot;
-
-	return true;
 	}
 
 bool CDeviceSystem::IsSlotAvailable (ItemCategories iItemCat, int *retiSlot) const

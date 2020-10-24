@@ -26,6 +26,17 @@
 #define VALUE_ATTRIB							CONSTLIT("value")
 #define VALUE_ADJ_ATTRIB						CONSTLIT("valueAdj")
 
+void CHullDesc::AdjustDamage (SDamageCtx &Ctx) const
+
+//	AdjustDamage
+//
+//	Adjusts damage to deal with intrinsic immunities.
+
+	{
+	if (Ctx.IsTimeStopped() && IsImmuneTo(specialTimeStop))
+		Ctx.SetTimeStopped(false);
+	}
+
 ALERROR CHullDesc::Bind (SDesignLoadCtx &Ctx)
 
 //	Bind
@@ -145,4 +156,21 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	//	Done
 
 	return NOERROR;
+	}
+
+bool CHullDesc::IsImmuneTo (SpecialDamageTypes iSpecialDamage) const
+
+//	IsImmuneTo
+//
+//	Returns TRUE if we're immune to the given condition.
+
+	{
+	switch (iSpecialDamage)
+		{
+		case specialTimeStop:
+			return m_bTimeStopImmune;
+
+		default:
+			return false;
+		}
 	}

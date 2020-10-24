@@ -215,6 +215,15 @@ struct SDisplayAttribute
 	RECT rcRect;					//	Reserved for callers
 	};
 
+//	CDisplayAttributeDefinitions
+//
+//	This structure holds a list of display attributes to apply globally to other
+//	types. A type (such as a sovereign) can define display attributes to apply
+//	to certain item types defined by  criteria.
+//
+//	For example, we use this to apply the "NAMI" display attribute to all NAMI
+//	items.
+
 class CDisplayAttributeDefinitions
 	{
 	public:
@@ -306,3 +315,40 @@ class CArmorMassDefinitions
 		TSortMap<CString, SArmorMassDefinition> m_Definitions;
 		TSortMap<CString, SArmorMassEntry *> m_ByID;
 	};
+
+//	CItemEncounterDefinitions --------------------------------------------------
+
+class CItemEncounterDefinitions
+	{
+	public:
+		struct SCtx
+			{
+			const CTopologyNode *pNode = NULL;
+			TArray<int> Selection;			//	Indices of entries that match node
+			};
+
+		void AdjustFrequency (SCtx &Ctx, const CTopologyNode &Node, const CItem &Item, int &iFreq) const;
+		void Append (const CItemEncounterDefinitions &Src) { m_Table.Insert(Src.m_Table); }
+		void DeleteAll (void) { m_Table.DeleteAll(); }
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool IsEmpty (void) const { return (m_Table.GetCount() == 0); }
+
+		static const CItemEncounterDefinitions Null;
+
+	private:
+		struct SEntry
+			{
+			CItemCriteria Criteria;						//	Items selected
+			CTopologyNodeCriteria SystemCriteria;		//	System criteria
+			FrequencyTypes Frequency;					//	Frequency
+			Metric rFreqAdj = 1.0;						//	Adjustment corresponding to frequency
+
+			bool bDefaultSystems = false;				//	If TRUE, this is the default for non-matching systems
+			bool bHasSystemCriteria = false;
+			};
+
+		void InitCtx (SCtx &Ctx, const CTopologyNode &Node) const;
+
+		TArray<SEntry> m_Table;
+	};
+

@@ -76,7 +76,7 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"* -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"* -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					level=			"2"
 					levelCurve=		"1"
 					/>
@@ -138,14 +138,6 @@
 		</DockScreens>
 
 		<!-- Events and Data -->
-
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			5		100		)
-					)
-			</NPCService>
-		</StaticData>
 
 		<Events>
 			<GetGlobalAchievements>

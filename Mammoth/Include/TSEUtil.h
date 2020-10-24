@@ -534,7 +534,6 @@ class CDamageSource
 		DestructionTypes GetCause (void) const { return m_iCause; }
 		CString GetDamageCauseNounPhrase (DWORD dwFlags);
 		CSpaceObject *GetObj (void) const;
-		DWORD GetObjID (void) const;
 		CSpaceObject *GetOrderGiver (void) const;
 		CSpaceObject *GetSecondaryObj (void) const { return m_pSecondarySource; }
 		const CString &GetSourceName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwSourceNameFlags; return m_sSourceName; }
@@ -543,6 +542,7 @@ class CDamageSource
 		bool HasDamageCause (void) const { return ((m_pSource && !IsObjID()) || !m_sSourceName.IsBlank()); }
 		bool HasSource (void) const;
 		bool IsAutomatedWeapon (void) const { return ((m_dwFlags & FLAG_IS_AUTOMATED_WEAPON) ? true : false); }
+		bool IsAngryAt (const CSpaceObject &Obj, const CSovereign *pOurSovereign = NULL) const;
 		bool IsCausedByEnemyOf (CSpaceObject *pObj) const;
 		bool IsCausedByFriendOf (CSpaceObject *pObj) const;
 		bool IsCausedByNonFriendOf (CSpaceObject *pObj) const;
@@ -572,8 +572,10 @@ class CDamageSource
 			FLAG_OBJ_ID						= 0x00000008,	//	m_pSource is an ID, not a pointer
 
 			FLAG_IS_AUTOMATED_WEAPON		= 0x00000010,	//	Source is a missile-defense system.
+			FLAG_CANNOT_HIT_FRIENDS			= 0x00000020,	//	Source cannot hit friends
 			};
 
+		DWORD GetObjID (void) const;
 		DWORD GetRawObjID (void) const { return (DWORD)m_pSource; }
 		bool IsObjPointer (void) const { return (m_pSource && !IsObjID()); }
 		bool IsObjID (void) const { return ((m_dwFlags & FLAG_OBJ_ID) == FLAG_OBJ_ID); }
@@ -1484,6 +1486,7 @@ class IListData
 		virtual ~IListData (void) { }
 		virtual void DeleteAtCursor (int iCount) { }
 		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) { return false; }
+		virtual ICCItemPtr GetAsCCItem (void) const { return ICCItemPtr::Nil(); }
 		virtual int GetCount (void) const { return 0; }
 		virtual int GetCursor (void) const { return -1; }
 		virtual CString GetDescAtCursor (void) const { return NULL_STR; }

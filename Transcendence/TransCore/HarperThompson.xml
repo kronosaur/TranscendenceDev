@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&chHarperThompson;">
+		<Properties>
+		</Properties>
+
+		<Language>
+			<!-- MISSION 03 INTRO -->
+
+			<Code id="mining03.intro">
+				(typTranslate gType (cat 'mining03.intro. (min (@ gData 'missionNumber) 3)) gData)
+			</Code>
+
+			<Text id="mining03.intro.1">
+
+				You enter the meeting hall see a woman mumbling to an infopad. 
+				She has short blonde hair and wears a ship's jacket with a faded
+				insignia. She nods at you as you enter.
+
+				"You're in luck, friend! I've got it all figured out. See this
+				spectra? That's the tell-tale sign of %oreName%."
+			
+			</Text>
+			<Text id="mining03.intro.2">
+
+				You enter the meeting hall and see the blonde-haired prospector.
+				She approaches you.
+
+				"Hi, %name%. Remember me? My name's Harper Thompson, and I've 
+				got another tip for you."
+			
+			</Text>
+			<Text id="mining03.intro.3">
+
+				You enter the meeting hall and see the prospector Harper 
+				Thompson staring at an infopad. She smiles at you as you 
+				approach.
+
+				"Look at this! See this spike? That's a sure sign of %oreName%."
+			
+			</Text>
+
+			<!-- MISSION 03 BRIEFING -->
+
+			<Code id="mining03.briefing">
+				(typTranslate gType (cat 'mining03.briefing. (min (@ gData 'missionNumber) 3)) gData)
+			</Code>
+
+			<Text id="mining03.briefing.1">
+			
+				"I've found an unclaimed asteroid with a cavern full of 
+				%oreName%, and I'll give you the coordinates for only 
+				%infoPrice%.
+
+				"If I'm right, you can dig it up and easily double your money.
+				What do you say?"
+
+			</Text>
+			<Text id="mining03.briefing.2">
+
+				"According to my calculations, there's a deposit of %oreName%
+				in a hidden cavern.
+
+				"I'll give you the coordinates for %infoPrice%. What do you say?"
+
+			</Text>
+			<Text id="mining03.briefing.3">
+
+				"Same deal as before? I'll give you the coordinates of the 
+				asteroid for %infoPrice% and you can dig up the ore and sell it.
+
+				"It's a sure thing! What do you say?"
+			
+			</Text>
+
+			<!-- MISSION 03 SUCCESS DEBRIEF -->
+
+			<Text id="mining03.success.noProfit">
+			
+				The blonde prospector shakes her head.
+
+				"That doesn't make any sense. My calculations clearly showed a
+				cavern full of ore. Oh well, I guess you can't win them all."
+
+			</Text>
+			<Text id="mining03.success.profit">
+
+				The blonde prospector smiles as you enter.
+
+				"I was right, wasn't I?"
+
+			</Text>
+		</Language>
+	</Type>
+
+</TranscendenceModule>

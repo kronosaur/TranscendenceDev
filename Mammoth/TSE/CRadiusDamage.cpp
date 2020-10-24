@@ -416,7 +416,7 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	m_iTick++;
 
-	SEffectUpdateCtx EffectCtx;
+	SEffectUpdateCtx EffectCtx(GetUniverse());
 	EffectCtx.pSystem = GetSystem();
 	EffectCtx.pObj = this;
 	EffectCtx.iTick = m_iTick;

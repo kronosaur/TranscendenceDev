@@ -108,32 +108,32 @@
 
 		<Items>
 			<RandomItem count="1d12" 
-					criteria=		"* +Meds; -Illegal; -NotStandard; -NotForSale;"
+					criteria=		"* +Meds; -defective; -Illegal; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ruc|u|r"
 					/>
 
 			<RandomItem count="1d4" 
-					criteria=		"w -NotStandard; -NotForSale;"
+					criteria=		"w -defective; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 
 			<RandomItem count="1d4" 
-					criteria=		"d~w -NotStandard; -NotForSale;"
+					criteria=		"d~w -defective; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 
 			<RandomItem count="1d8" 
-					criteria=		"a -NotStandard; -NotForSale;"
+					criteria=		"a -defective; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|u|cur"
 					/>
 
 			<RandomItem count="1d4" 
-					criteria=		"u -NotStandard; -NotForSale;"
+					criteria=		"u -defective; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 
 			<RandomItem count="2d12" 
-					criteria=		"f -NotStandard; -NotForSale;"
+					criteria=		"f -defective; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 
@@ -297,25 +297,25 @@
 		</Trade>
 
 		<Items>
-			<RandomItem count="1d4" criteria="r -illegal; -notForSale; -notStandard; L:7-9;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<RandomItem count="1d4" criteria="r -defective; -illegal; -notForSale; -notStandard; L:7-9;"		levelFrequency="systemLevel:ru|c|curv"/>
 			
 			<RandomItem count="1d4" 
-					criteria=		"w L:1-10; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-10; -defective; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 
 			<RandomItem count="1d8" 
-					criteria=		"d~w L:1-10; -NotStandard; -NotForSale;"
+					criteria=		"d~w L:1-10; -defective; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ruc|u|r"
 					/>
 
 			<RandomItem count="1d8" 
-					criteria=		"a L:1-10; -NotStandard; -NotForSale;"
+					criteria=		"a L:1-10; -defective; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|u|cur"
 					/>
 
 			<RandomItem count="4d12" 
-					criteria=		"f -NotStandard; -NotForSale;"
+					criteria=		"f -defective; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|ur"
 					/>
 

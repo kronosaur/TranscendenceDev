@@ -16,6 +16,10 @@
 			gateEffect=			"&efStargateOut;"
 			definiteArticle=	"true"
 			>
+		<Encounter
+				exclusionRadius="50"
+				/>
+
 		<Image imageID="&rsDaazhenStargate;" imageWidth="350" imageHeight="350" imageFrameCount="48" imageTicksPerFrame="1" animationColumns="6"/>
 
 		<DockingPorts

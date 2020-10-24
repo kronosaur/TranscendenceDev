@@ -5,7 +5,7 @@
 <!-- OVERLAY TYPES -->
 
 	<OverlayType unid="&ovLootCavernIce;"
-            attributes=         "asteroid, cavern, ice, underground"
+			attributes=         "asteroid, cavern, ice, underground"
 			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"
@@ -22,14 +22,14 @@
 		<Language>
 			<Text id="descWelcome">
 
-				You are in underground ice cavern.
+				You are in an underground ice cavern.
 
 			</Text>
 		</Language>
 	</OverlayType>
 
 	<OverlayType unid="&ovLootCavernMetallic;"
-            attributes=         "asteroid, cavern, metallic, underground"
+			attributes=         "asteroid, cavern, metallic, underground"
 			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"
@@ -46,14 +46,14 @@
 		<Language>
 			<Text id="descWelcome">
 
-				You are in underground cavern inside of a metallic asteroid.
+				You are in an underground cavern inside of a metallic asteroid.
 
 			</Text>
 		</Language>
 	</OverlayType>
 
 	<OverlayType unid="&ovLootCavernPrimordial;"
-            attributes=         "asteroid, cavern, primordial, underground"
+			attributes=         "asteroid, cavern, primordial, underground"
 			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"
@@ -66,10 +66,18 @@
 		<Effect>
 			<Image imageID="&rsUndergroundCavernPrimordial;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
 		</Effect>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in an underground cavern inside a primordial asteroid.
+
+			</Text>
+		</Language>
 	</OverlayType>
 
 	<OverlayType unid="&ovLootCavernRocky;"
-            attributes=         "asteroid, cavern, rocky, underground"
+			attributes=         "asteroid, cavern, rocky, underground"
 			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"
@@ -86,14 +94,14 @@
 		<Language>
 			<Text id="descWelcome">
 
-				You are in underground cavern inside a rocky asteroid.
+				You are in an underground cavern inside a rocky asteroid.
 
 			</Text>
 		</Language>
 	</OverlayType>
 
 	<OverlayType unid="&ovLootCavernVolcanic;"
-            attributes=         "asteroid, cavern, underground, volcanic"
+			attributes=         "asteroid, cavern, underground, volcanic"
 			inherit=			"&baLootCavern;"
 
 			rotateWithSource=	"true"
@@ -110,7 +118,7 @@
 		<Language>
 			<Text id="descWelcome">
 
-				You are in underground cavern inside a volcanic asteroid.
+				You are in an underground cavern inside a volcanic asteroid.
 
 			</Text>
 		</Language>

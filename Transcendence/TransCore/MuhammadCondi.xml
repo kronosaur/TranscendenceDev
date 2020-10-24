@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&chMuhammadCondi;">
+		<Properties>
+		</Properties>
+
+		<Language>
+
+			<!-- GENERAL INTRO -->
+
+			<Code id="mission.intro">
+				(block (
+					;	Count the number of mission intros that we've already
+					;	given to the player. 0 means that we've never shown an
+					;	intro before.
+
+					(introCount (count
+						(filter (msnFind "* +property:character.missionGiver=&chMuhammadCondi;;") theMission
+							(msn@ theMission 'isIntroShown)
+							)
+						))
+					)
+					(switch
+						(geq introCount 3)
+							(typTranslate gType 'mission.intro.default gData)
+
+						(typTranslate gType (cat 'mission.intro. (+ introCount 1)) gData)
+						)
+					)
+			</Code>
+
+			<Text id="mission.intro.1">
+
+				The meeting hall is carved deep below the asteroid's surface.
+				A well-dressed man stands at a console. He turns his attention 
+				towards you:
+
+				"Welcome to %stationName%! I'm the colony supervisor, Muhammad 
+				Condi. You looking for work?"
+
+			</Text>
+			<Text id="mission.intro.2">
+
+				Mr. Condi, the colony supervisor, is talking to a couple of 
+				miners. After they leave, he turns his attention towards you:
+
+				"Welcome back, %name%. I got problem, and I thought of you."
+
+			</Text>
+			<Text id="mission.intro.3">
+
+				The colony supervisor stands at his console, fixated on a chart
+				of some sort. He rubs his eyes and turns to you:
+
+				"Hi, %name%. Looking for work? I think I have something for 
+				you."
+			
+			</Text>
+			<Text id="mission.intro.default">
+
+				Mr. Condi, the colony supervisor, is on the comm talking with
+				a miner. He waves you over:
+
+				"Hi, %name%, good to see you! I've got another job for you, if
+				you're interested."
+			
+			</Text>
+
+			<!-- COMMONWEALTH MINING 04: DESTROY ENEMY STATION -->
+
+			<Code id="mining04.intro">
+				(typTranslate gType 'mission.intro gData)
+			</Code>
+
+			<Code id="mining04.briefing">
+				(switch
+					(objHasAttribute (@ gData 'targetObj) 'himal)
+						(typTranslate gType 'mining04.briefing.himal gData)
+
+					(objHasAttribute (@ gData 'targetObj) 'outlawMiners)
+						(typTranslate gType 'mining04.briefing.outlawMiners gData)
+
+					(objHasAttribute (@ gData 'targetObj) 'urakWarlords)
+						(typTranslate gType 'mining04.briefing.urakWarlords gData)
+
+					(typTranslate gType 'mining04.briefing.default gData)
+					)
+			</Code>
+
+			<Text id="mining04.briefing.default">
+			
+				"%TargetName% has been threatening our mining ships.
+
+				"I want you to go out there and take them out. We'll pay you
+				%reward% if you succeed. What do you say?"
+			
+			</Text>
+			<Text id="mining04.briefing.himal">
+
+				"%TargetName% has been threatening our mining ships. They tend 
+				to fire first and ask questions later.
+
+				"I want you to go out there and take them out. We'll pay you
+				%reward% if you succeed. What do you say?"
+			
+			</Text>
+			<Text id="mining04.briefing.outlawMiners">
+			
+				"%TargetName% is encroaching on our territory. They're trying
+				to claim the whole asteroid field for themselves.
+
+				"I want you to go out there and take them out. We'll pay you
+				%reward% if you succeed. What do you say?"
+			
+			</Text>
+			<Text id="mining04.briefing.urakWarlords">
+			
+				"%TargetName% is encroaching on our territory. The Urak are
+				organized and technologically advanced, which makes them very
+				dangerous.
+
+				"I want you to go out there and take them out. We'll pay you
+				%reward% if you succeed. What do you say?"
+			
+			</Text>
+
+			<!-- COMMONWEALTH MINING 05: RESCUE MINERS -->
+
+			<Code id="mining05.intro">
+				(typTranslate gType 'mission.intro gData)
+			</Code>
+
+			<Text id="mining05.briefing">
+
+				"There's been an accident at one of our mines. A misplaced 
+				detonation caused a collapse and now %minersTrapped% miners are
+				trapped.
+
+				"I want you to go out there and dig them out with your mining
+				equipment. What do you say?"
+			
+			</Text>
+
+			<Text id="mining05.success.allRescued">
+
+				Supervisor Condi looks ecstatic.
+
+				"This has been a miraculous day! We all feared the worst, but 
+				you managed to rescue all the miners!
+
+				"Congratulations! We've deposited %reward% in your account, and 
+				you	deserve every credit."
+			
+			</Text>
+			<Text id="mining05.success.someRescued">
+			
+				Mr. Condi looks relieved.
+
+				"It's been a long day. We mourn those that were lost even while
+				celebrating the rescue of %minersRescued% miners.
+
+				"For your efforts, we've deposited %reward% in your account."
+			
+			</Text>
+			<Text id="mining05.success.oneRescued">
+			
+				Supervisor Condi looks sad.
+
+				"We've paid a terrible price. All but one miner has perished in
+				the accident and we're devastated that you were unable to save 
+				more.
+
+				"We've deposited %reward% in your account."
+			
+			</Text>
+			<Text id="mining05.failure">
+
+				Mr. Condi looks stunned.
+
+				"Your incompetence has left %minersTrapped% miners dead. I 
+				should never have trusted you with this mission."
+			
+			</Text>
+
+		</Language>
+	</Type>
+
+</TranscendenceModule>

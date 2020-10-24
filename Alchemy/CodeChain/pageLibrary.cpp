@@ -88,7 +88,7 @@ ICCItem *fnPageMap (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+	pLocalSymbols->AddEntry(pVar, pCC->GetNil());
 
 	//	Setup the context
 

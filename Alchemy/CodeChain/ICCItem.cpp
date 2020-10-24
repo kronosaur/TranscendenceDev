@@ -321,6 +321,20 @@ void ICCItem::SetBooleanAt (const CString &sKey, bool bValue)
 	pValue->Discard();
 	}
 
+void ICCItem::SetDoubleAt (const CString &sKey, double rValue)
+
+//	SetDoubleAt
+//
+//	Set key-value pair.
+
+	{
+	ICCItem *pKey = CCodeChain::CreateString(sKey);
+	ICCItem *pValue = CCodeChain::CreateDouble(rValue);
+	AddEntry(pKey, pValue);
+	pKey->Discard();
+	pValue->Discard();
+	}
+
 void ICCItem::SetIntegerAt (const CString &sKey, int iValue)
 
 //	SetIntegerAt

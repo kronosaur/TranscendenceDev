@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Black Market Mission 02 ===============================================
+
+	======================================================================== -->
+	
+	<MissionType UNID="&msBlackMarketMission02;"
+			name=				"Black Market 02: Destroy Enemy Station"
+			attributes=			"blackMarket"
+			inherit=			"&baDestroyStationMission;"
+
+			level=				"1-5"
+			maxAppearing=		"2-4"
+			>
+		<Properties>
+			<Data id="rewardXP"></Data>
+			<Variant id="targetDesc">
+				{
+					criteria: "TAE +populated; -questTarget; -uncharted;"
+					}
+			</Variant>
+		</Properties>
+
+		<Events>
+			<OnTargetChosen>
+				(block (
+					(targetObj (@ gData 'targetObj))
+
+					;	The XP reward for the station is 1/20th the
+					;	treasure value for the station. On average, this works
+					;	out to the following values:
+					;
+					;	LEVEL   XP
+					;	--------------------
+					;    1		   50
+					;	 2		   50
+					;	 3		  100
+					;	 4		  100
+					;	 5		  200
+					;	 6		  400
+					;	 7		  800
+					;	 8+		1,000
+
+					(rewardExact (/ (obj@ targetObj 'stdTreasure) 20))
+
+					;	Round it to the nearest 50
+
+					(reward (min (max 50 (* 50 (round (/ rewardExact 50)))) 1000))
+					)
+					(msnSet@ gSource 'rewardXP reward)
+					)
+			</OnTargetChosen>
+
+			<OnReward>
+				(typInc@ &unidBlackMarketMember; 'xp (msn@ gSource 'rewardXP))
+			</OnReward>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Destroy Threat to Black Market Station
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(list
+					{	descID:'textIntro1		}
+					)
+			</Text>
+			<Text id="Briefing">
+				(block (
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+						})
+					)
+					(list
+						{	descID:'textBriefing1		acceptLabelID:'actionAccept	declineLabelID:'actionDecline	
+							data:trData
+							}
+						)
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(list
+					{	descID:'textAccept1		}
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(list
+					{	descID:'textDecline1	}
+					)
+			</Text>
+			<Text id="InProgress">
+				(list
+					{	descID:'textInProgress1	}
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(list
+					{	descID:'textSuccessDebrief1		}
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(list
+					{	descID:'textFailureDebrief1		}
+					)
+			</Text>
+
+			<Text id="textSummary">
+			
+				%TargetName% is interfering with our business. Your mission is 
+				to destroy the station.
+
+				System: %systemName%\n
+				Payment: %reward%
+
+			</Text>
+			<Text id="textIntro1">
+
+				The dark-haired woman picks up a datapad.
+
+				"Now that I think of it, I do need a blunt instrument to take 
+				care of a problem."
+
+			</Text>
+			<Text id="textBriefing1">
+
+				"There's %targetName% in the system that's been interfering with
+				our business. Lord Mikho would like someone to destroy it, but
+				all our bounty hunters are busy.
+
+				"Do you think you can handle it?"
+
+			</Text>
+			<String id="actionAccept">"[Y]es, absolutely!"</String>
+			<String id="actionDecline">"[N]o, sorry."</String>
+			<Text id="textAccept1">
+
+				"Excellent! I will enter the coordinates into your computer.
+				Good luck!"
+
+			</Text>
+			<Text id="textDecline1">
+
+				The dark-haired woman frowns for a second, "I'm sorry you feel 
+				that way. I will inform Lord Mikho."
+
+			</Text>
+			<Text id="textInProgress1">
+
+				The dark-haired woman doesn't look up as you enter.
+
+				"You better not be here to ask for help."
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+
+				The dark-haired woman is pleased.
+
+				"Good. I can cross that off my list. Lord Mikho will be 
+				pleased."
+
+			</Text>
+			<Text id="textFailureDebrief1">
+
+				The dark-haired woman is disappointed.
+
+				"You are useless."
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

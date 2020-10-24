@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- OVERLAY TYPES -->
+
+	<OverlayType unid="&ovRescueStructureIce;"
+			attributes=         "asteroid, ice, structure, rescue, underground"
+			inherit=			"&baRescueStructure;"
+
+			rotateWithSource=	"true"
+			>
+		<Underground
+			type="vault"
+			strength="20"
+			/>
+
+		<Effect>
+			<Image imageID="&rsUndergroundStructureIce;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
+		</Effect>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in a wrecked structure buried under ice.
+
+			</Text>
+		</Language>
+	</OverlayType>
+
+	<OverlayType unid="&ovRescueStructureMetallic;"
+			attributes=         "asteroid, metallic, structure, rescue, underground"
+			inherit=			"&baRescueStructure;"
+
+			rotateWithSource=	"true"
+			>
+		<Underground
+			type="vault"
+			strength="20"
+			/>
+
+		<Effect>
+			<Image imageID="&rsUndergroundStructureMetallic;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
+		</Effect>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in a wreck structure buried in a metallic asteroid.
+
+			</Text>
+		</Language>
+	</OverlayType>
+
+	<OverlayType unid="&ovRescueStructurePrimordial;"
+			attributes=         "asteroid, primordial, structure, rescue, underground"
+			inherit=			"&baRescueStructure;"
+
+			rotateWithSource=	"true"
+			>
+		<Underground
+			type="vault"
+			strength="20"
+			/>
+
+		<Effect>
+			<Image imageID="&rsUndergroundStructurePrimordial;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
+		</Effect>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in a wreck structure buried in a primordial asteroid.
+
+			</Text>
+		</Language>
+	</OverlayType>
+
+	<OverlayType unid="&ovRescueStructureRocky;"
+			attributes=         "asteroid, rocky, structure, rescue, underground"
+			inherit=			"&baRescueStructure;"
+
+			rotateWithSource=	"true"
+			>
+		<Underground
+			type="vault"
+			strength="20"
+			/>
+
+		<Effect>
+			<Image imageID="&rsUndergroundStructureRocky;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
+		</Effect>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in a wreck structure buried by a rock slide.
+
+			</Text>
+		</Language>
+	</OverlayType>
+
+	<OverlayType unid="&ovRescueStructureVolcanic;"
+			attributes=         "asteroid, structure, rescue, underground, volcanic"
+			inherit=			"&baRescueStructure;"
+
+			rotateWithSource=	"true"
+			>
+		<Underground
+			type="vault"
+			strength="20"
+			/>
+
+		<Effect>
+			<Image imageID="&rsUndergroundStructureVolcanic;" imageWidth="90" imageHeight="90"	rotateImage="true"/>
+		</Effect>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are in a wreck structure buried in hardened lava.
+
+			</Text>
+		</Language>
+	</OverlayType>
+
+<!-- BASE TYPES -->
+
+	<Type unid="&baRescueStructure;"
+			inherit="&baUndergroundStructure;">
+
+		<Properties>
+			<Data id="missionID"></Data>
+
+			<Data id="minersTrapped">(random 5 10)</Data>
+			<Data id="minersLeft"></Data>
+			<Data id="rescueComplete"></Data>
+
+			<!-- trappedOn
+			
+				Tick on which miners became trapped. All times are based on this
+				starting point.
+
+			-->
+			<Data id="trappedOn">(unvGetTick)</Data>
+
+			<!-- safeTime 
+			
+				All miners will remain alive for this number of ticks after the
+				initial trappedOn time.
+			
+			-->
+			<Data id="safeTime">1800</Data>
+
+			<!-- deathTime
+			
+				After safe time, the miners will begin to die randomly for this
+				period of time (in ticks). At the end of this period of time,
+				all miners will be dead.
+
+			-->
+			<Data id="deathTime">1800</Data>
+			<Data id="deathChance">10</Data>
+		</Properties>
+
+		<DockScreens>
+			<Main>
+				<InitialPane>
+					(switch
+						;	If rescue is complete, then we show an empty wreck.
+
+						(ovr@ gSource (@ gData 'overlayID) 'rescueComplete)
+							"Empty"
+
+						;	If all miners are dead, then we show that.
+
+						(leq (ovr@ gSource (@ gData 'overlayID) 'minersLeft) 0)
+							"AllDead"
+
+						;	Otherwise, rescue some.
+
+						"Default"
+						)
+				</InitialPane>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block (
+								(minersLeft (ovr@ gSource (@ gData 'overlayID) 'minersLeft))
+								)
+								(switch
+									(= minersLeft 1)
+										(scrSetDescTranslate gScreen 'descRescueOne {
+											})
+
+									(scrSetDescTranslate gScreen 'descRescueSeveral {
+										minersLeft: minersLeft
+										})
+									)
+								)
+						</OnPaneInit>
+						<Actions>
+							<Action id="actionUndock" default="1" cancel="1">
+								(block (
+									(missionObj (objGetObjByID (ovr@ gSource (@ gData 'overlayID) 'missionID)))
+									)
+									(if missionObj
+										(msnSuccess missionObj { 
+											minersTrapped: (ovr@ gSource (@ gData 'overlayID) 'minersTrapped)
+											minersRescued: (ovr@ gSource (@ gData 'overlayID) 'minersLeft)
+											})
+										)
+
+									(ovrSet@ gSource (@ gData 'overlayID) 'rescueComplete True)
+									(ovrSet@ gSource (@ gData 'overlayID) 'minersLeft 0)
+									(scrExitScreen gScreen)
+									)
+							</Action>
+						</Actions>
+					</Default>
+
+					<AllDead descID="descAllDead">
+						<Actions>
+							<Action id="actionUndock" default="1" cancel="1">
+								(block (
+									(missionObj (objGetObjByID (ovr@ gSource (@ gData 'overlayID) 'missionID)))
+									)
+									(ovrSet@ gSource (@ gData 'overlayID) 'rescueComplete True)
+									(if missionObj
+										(msnFailure missionObj {
+											result:'allDead
+											minersTrapped: (ovr@ gSource (@ gData 'overlayID) 'minersTrapped)
+											})
+										)
+									(scrExitScreen gScreen)
+									)
+							</Action>
+						</Actions>
+					</AllDead>
+
+					<Empty descID="descEmpty">
+						<Actions>
+							<Action id="actionUndock" default="1" cancel="1">
+								(scrExitScreen gScreen)
+							</Action>
+						</Actions>
+					</Empty>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Events>
+			<OnCreate>
+				(block ()
+					(ovrSet@ gSource aOverlayID 'minersLeft (ovr@ gSource aOverlayID 'minersTrapped))
+					(dbgOutput (ovr@ gSource aOverlayID 'minersLeft) " miners trapped.")
+					)
+			</OnCreate>
+
+			<GetDockScreen>
+				{	screen: "Main"
+					priority: 1
+
+					overlayID: aOverlayID
+					}
+			</GetDockScreen>
+
+			<OnUpdate>
+				(if (gr (ovr@ gSource aOverlayID 'minersLeft) 0)
+					(block (
+						(now (unvGetTick))
+						(trappedOn (ovr@ gSource aOverlayID 'trappedOn))
+						(safeTime (ovr@ gSource aOverlayID 'safeTime))
+						(deathTime (ovr@ gSource aOverlayID 'deathTime))
+						(safeUntil (+ trappedOn safeTime))
+						(allDeadOn (+ safeUntil deathTime))
+						)
+						(switch
+							;	Skip if player is docked with us
+
+							(objIsDockedAt gPlayerShip gSource)
+								Nil
+
+							;	If we're past the death time, then all miners die.
+
+							(geq now allDeadOn)
+								(block ()
+									(ovrSet@ gSource aOverlayID 'minersLeft 0)
+									(dbgOutput "All remaining miners dead.")
+									)
+
+							;	If we're past the safe time, then random chance of 
+							;	a miner dying.
+
+							(gr now safeUntil)
+								(if (leq (random 1 100) (ovr@ gSource aOverlayID 'deathChance))
+									(block (minersLeft)
+										(setq minersLeft (ovrInc@ gSource aOverlayID 'minersLeft -1))
+										(if (gr minersLeft 0)
+											(objSendMessage gPlayerShip gSource (typTranslate gType 'msgMinerDied))
+											)
+
+										(dbgOutput "Miner died. " minersLeft " left.")
+										)
+									)
+
+							(dbgOutput "Nothing happening")
+							)
+						)
+					)
+			</OnUpdate>
+		</Events>
+
+		<Language>
+			<Text id="descRescueOne">
+
+				Digging through the wreckage you enter a sealed chamber with an
+				intact airlock.
+
+				Bodies are strewn all over the floor, but a single miner 
+				survives. Dazed by the ordeal, the lone miner follows you to 
+				your ship.
+
+			</Text>
+			<Text id="descRescueSeveral">
+
+				You enter a sealed chamber with an intact airlock.
+
+				Inside you find %minersLeft% miners alive. They are dazed and
+				verging on hypoxia, but they walk to your ship unaided.
+
+				"Thank you for rescuing us. We almost lost hope."
+
+			</Text>
+			<Text id="descAllDead">
+
+				You enter a sealed chamber with an intact airlock, but the 
+				stench almost pushes you back.
+
+				There are bodies strewn across the floor, some embracing or
+				holding hands.
+
+				You leave quickly.
+
+			</Text>
+			<Text id="descEmpty">
+
+				You are in the remains of a collapsed asteroid mine.
+			
+			</Text>
+		</Language>
+	</Type>
+
+	<Type unid="&baUndergroundStructure;"
+			inherit="&baUndergroundCavern;"
+			>
+		<Events>
+		</Events>
+
+		<Language>
+			<Text id="core.undergroundName">structure(s)</Text>
+
+			<Text id="msgExcavating">%AsteroidType%\nBuried Structure</Text>
+			<Text id="msgCavernFound">Structure found! Dock to enter.</Text>
+
+			<Text id="msgMinerDied">Help us! We're dying!</Text>
+		</Language>
+	</Type>
+
+<!-- RESOURCES -->
+
+	<Image unid="&rsUndergroundStructureIce;"			bitmap="Resources\UndergroundWreckageIce.jpg"			bitmask="Resources\UndergroundWreckageIceMask.bmp"	loadOnUse="true"/>
+	<Image unid="&rsUndergroundStructureMetallic;"		bitmap="Resources\UndergroundWreckageMetallic.jpg"			bitmask="Resources\UndergroundWreckageMetallicMask.bmp"	loadOnUse="true"/>
+	<Image unid="&rsUndergroundStructurePrimordial;"	bitmap="Resources\UndergroundWreckagePrimordial.jpg"			bitmask="Resources\UndergroundWreckagePrimordialMask.bmp"	loadOnUse="true"/>
+	<Image unid="&rsUndergroundStructureRocky;"			bitmap="Resources\UndergroundWreckageRocky.jpg"			bitmask="Resources\UndergroundWreckageRockyMask.bmp"	loadOnUse="true"/>
+	<Image unid="&rsUndergroundStructureVolcanic;"		bitmap="Resources\UndergroundWreckageVolcanic.jpg"			bitmask="Resources\UndergroundWreckageVolcanicMask.bmp"	loadOnUse="true"/>
+
+</TranscendenceModule>

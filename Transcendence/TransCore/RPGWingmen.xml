@@ -62,7 +62,9 @@
 								
 	-->
 
-	<Type UNID="&baStdWingmanBase;">
+	<Type UNID="&baStdWingmanBase;"
+			inherit="&unidCommonText;"
+			>
 
 		<Communications>
 			<Message id="msgAttackTarget" name="Attack target" key="A">
@@ -476,6 +478,13 @@
 
 			<OrderEscortPlayer>
 				(block ()
+					;	NOTE: This is looser than a wingmate relationship. This
+					;	flag prevents friendly fire, but it does not cause the
+					;	ship to follow the player through gates (as wingmates 
+					;	do).
+
+					(objSet@ gSource 'playerEscort True)
+
 					(objSetData gSource 'behavior 'escorting)
 					(shpCancelOrders gSource)
 					(shpOrder gSource 'follow gPlayerShip)
@@ -519,6 +528,7 @@
 					;	player.
 
 					(block ()
+						(objSet@ gSource 'playerEscort Nil)
 						(objSetData gSource "behavior" 'goingHome)
 					
 						(shpCancelOrders gSource)

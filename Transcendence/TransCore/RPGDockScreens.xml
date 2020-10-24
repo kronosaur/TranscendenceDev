@@ -687,7 +687,7 @@
 						(@ gData 'textID)
 							(scrSetDesc gScreen (objTranslate gSource (@ gData 'textID)))
 
-						(scrSetDesc gScreen (@ gData 'desc))
+						(scrSetDesc gScreen (or (@ gData 'text) (@ gData 'desc)))
 						)
 				</OnPaneInit>
 

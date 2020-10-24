@@ -363,6 +363,25 @@
 		</Events>
 	</Type>
 
+	<Type unid="&unidCCListTests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(diagEval (list
+
+					;	make ---------------------------------------------------
+
+					{	test: '(make 'duplicates)							result: nil }
+					{	test: '(make 'duplicates 0)							result: nil }
+					{	test: '(make 'duplicates 1)							result: '(nil) }
+					{	test: '(make 'duplicates 3)							result: '(nil nil nil) }
+					{	test: '(make 'duplicates 3 5)						result: '(5 5 5) }
+					{	test: '(make 'duplicates 3 'foo)					result: '(foo foo foo) }
+					{	test: '(make 'duplicates 3 { test:1 })				result: (list {test:1} {test:1} {test:1}) })
+					))
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
 	<Type unid="&unidCCLogicalOperators;">
 		<Events>
 			<OnGlobalStartDiagnostics>

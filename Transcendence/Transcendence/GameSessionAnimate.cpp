@@ -74,6 +74,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				SetProgramState(psAnimating);
 
+				m_IconBar.Paint(Screen, g_pUniverse->GetFrameTicks());
 				PaintMenu(Screen);
 				m_DebugConsole.Paint(Screen);
 

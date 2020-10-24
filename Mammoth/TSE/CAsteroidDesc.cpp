@@ -137,7 +137,7 @@ void CAsteroidDesc::CalcMining (int iMiningLevel, int iMiningDifficulty, EAstero
 	//	method (type of weapon) and asteroid type.
 
 	const SCompositionDesc &CompositionDesc = GetCompositionDesc(iType);
-	const EMiningMethod iMiningMethod = (DamageCtx.pDesc ? CalcMiningMethod(*DamageCtx.pDesc) : EMiningMethod::drill);
+	const EMiningMethod iMiningMethod = CalcMiningMethod(DamageCtx.GetDesc());
 	const Metric rBaseSuccess = CalcBaseMiningSuccess(iMiningLevel, iMiningDifficulty);
 
 	retMining.iSuccessChance = CMath::Round(100.0 * CMath::AdjustChance(rBaseSuccess, CompositionDesc.SuccessAdj[static_cast<int>(iMiningMethod)]));

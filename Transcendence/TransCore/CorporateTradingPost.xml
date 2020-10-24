@@ -59,7 +59,7 @@
 
 		<Items>
 			<RandomItem count="20-30" 
-					criteria=		"* -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"* -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:vru|c|urv"
 					/>
 		</Items>

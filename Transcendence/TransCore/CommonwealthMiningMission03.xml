@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Mission: Excavate Ore Cavern ==========================================
+
+	======================================================================== -->
+
+	<MissionType UNID="&msCommonwealthMining03;"
+			name=				"Commonwealth Mining 03: Excavate Ore Cavern"
+			attributes=			"commonwealthMining"
+
+			level=				"1-4"
+			maxAppearing=		"3-5"
+
+			expireTime=			"5400"
+			failureAfterOutOfSystem="5400"
+			>
+
+		<Properties>
+			<Definition id="chanceOfSuccess">75</Definition>
+
+			<Variant id="character.missionGiver">
+				&chHarperThompson;
+			</Variant>
+
+			<Data id="cavernID"></Data>
+			<Data id="currency"></Data>
+			<Data id="infoPrice"></Data>
+			<Data id="markerID"></Data>
+			<Data id="oreType"></Data>
+			<Data id="targetID"></Data>
+			<Data id="totalValue"></Data>
+		</Properties>
+
+		<Events>
+			<CanCreate>
+				(switch
+					;	Player must have a mining weapon.
+
+					(not (objGetItems gPlayerShip "wI +property:damageMining;"))
+						Nil
+
+					True
+					)
+			</CanCreate>
+
+			<OnCreate>
+				(block (
+					(successChance (typ@ gType 'chanceOfSuccess))
+
+					(predictedValueInCredits (sys@ 'stdTreasureValue))
+					(currency (obj@ aOwnerObj 'currency))
+					(predictedValue (ecoExchange predictedValueInCredits (unv@ 'defaultCurrency) currency))
+
+					(infoPrice (divide predictedValue 2))
+
+					markerObj
+					totalValue
+					bestItem
+					)
+					;	Create a marker to store the ore. We don't want to place 
+					;	the ore on the actual asteroid until after the player
+					;	accepts the mission.
+
+					(setq markerObj (sysCreateMarker "oreMarker" aOwnerObj &svPlayer;))
+
+					;	There is a good chance that the prospector is right and 
+					;	that the asteroid has a lot of ore.
+
+					(if (leq (random 1 100) successChance)
+						(block ()
+							(objAddRandomItems markerObj &tbAsteroidOre; 4)
+
+							;	Compute the total value of the ore
+
+							(setq totalValue
+								(map (objGetItems markerObj "* +ore") 'reduceSum theItem
+									(* (itmGetPrice theItem currency) (itmGetCount theItem))
+									)
+								)
+
+							;	Figure out what type of ore to tell the player about.
+
+							(setq bestItem
+								(map (objGetItems markerObj "* +ore") '(reduceMax original) theItem
+									(* (itmGetPrice theItem currency) (itmGetCount theItem))
+									)
+								)
+							)
+
+						;	Otherwise, the prospector is wrong.
+
+						(block ()
+							(setq totalValue 0)
+
+							;	Pick a random ore type
+
+							(setq bestItem 
+								(itmCreate 
+									(random	
+										(typFind (cat "i +ore; L:" (sysGetLevel) ";"))
+										)
+									1
+									)
+								)
+							)
+						)
+
+					;	Remember
+
+					(msnSet@ gSource 'markerID (objGetID markerObj))
+					(msnSet@ gSource 'currency currency)
+					(msnSet@ gSource 'infoPrice infoPrice)
+					(msnSet@ gSource 'oreType (itmGetType bestItem))
+					(msnSet@ gSource 'totalValue totalValue)
+					)
+			</OnCreate>
+
+			<OnCanBrief>
+				(block (
+					(currency (msn@ gSource 'currency))
+					(infoPrice (msn@ gSource 'infoPrice))
+					)
+					(switch
+						;	Make sure we have enough money to pay the prospector.
+
+						(ls (objGetBalance gPlayerShip currency) infoPrice)
+							(msnTranslate gSource 'descCannotAfford {
+								oreName: (itmGetName (msn@ gSource 'oreType) 'short)
+								infoPrice: (fmtCurrency currency infoPrice)
+								})
+
+						;	OK
+
+						True
+						)
+					)
+			</OnCanBrief>
+
+			<OnAccepted>
+				(block (
+					(ownerObj (objGetObjByID (msn@ gSource 'ownerID)))
+					(currency (msn@ gSource 'currency))
+					(infoPrice (msn@ gSource 'infoPrice))
+
+					(markerObj (objGetObjByID (msn@ gSource 'markerID)))
+
+					;	Find an appropriate asteroid
+
+					(allAsteroids (sysFindObject ownerObj "t +asteroid; R:60; +property:size&gt;=250;"))
+					(asteroidList
+						(filter
+							allAsteroids
+							asteroidObj
+							(and (not (sysFindObject asteroidObj "T +populated; N:60;"))
+								(not (objGetOverlays asteroidObj))
+								)
+							)
+						)
+					(asteroidObj
+						(if asteroidList
+							(random asteroidList)
+							(block (
+								;	Find the most distant planet
+								(centerStar (sysFindObject gSource "tN +star;"))
+								(farthestPlanet (sysFindObject (or centerStar ownerObj) "tR +isPlanet:true;"))
+
+								;	Pick a random distance beyond the farthest planet
+								(meanDist (if farthestPlanet (sysVectorDistance (objGetPos farthestPlanet)) (random 600 900)))
+								(dist (+ meanDist (random -60 60)))
+								)
+								;	Create an asteroid at this distance
+								(sysCreateStation &stRockyAsteroidSizeD; (sysVectorRandom Nil dist 60 "t"))
+								)
+							)
+						)
+
+					(asteroidType (obj@ asteroidObj 'asteroidType))
+					(overlayType
+						(switch
+							(= asteroidType 'icy)
+								&ovLootCavernIce;
+
+							(= asteroidType 'metallic)
+								&ovLootCavernMetallic;
+
+							(= asteroidType 'primordial)
+								&ovLootCavernPrimordial;
+
+							(= asteroidType 'volcanic)
+								&ovLootCavernVolcanic;
+
+							&ovLootCavernRocky;
+							)
+						)
+
+					overlayID
+					)
+					;	If the asteroid does not have a name, name it now
+
+					(if (or (= (objGetName asteroidObj 0) "")
+							(= (subset (objGetName asteroidObj 0) 0 1) "(")
+							)
+						(objSetName asteroidObj (cat "Asteroid " (random 10000 99999)))
+						)
+
+					;	Move ore to the asteroid, and destroy the marker
+
+					(if markerObj
+						(block ()
+							(enum (objGetItems markerObj "* +ore") theItem
+								(objAddItem asteroidObj theItem)
+								)
+							(objDestroy markerObj)
+							(msnSet@ gSource 'markerID Nil)
+							)
+						)
+
+					;	Add the appropriate overlay
+					;
+					;	NOTE: We don't need to match the rotation of the asteroid.
+					;	the overlay does that automatically.
+					;
+					;	NOTE: Hit points on cavern overlay is automatically 
+					;	computed based on system level.
+
+					(setq overlayID (objAddOverlay asteroidObj overlayType (objGetPos asteroidObj) 0))
+
+					;	Charge the player
+
+					(objCharge gPlayerShip currency infoPrice)
+
+					;	Remember
+
+					(msnSet@ gSource 'targetID (objGetID asteroidObj))
+					(msnSet@ gSource 'cavernID overlayID)
+					)
+			</OnAccepted>
+
+			<OnSetPlayerTarget>
+				(rpgSetTarget gSource aReason (objGetObjByID (msn@ gSource 'targetID)) 'dock)
+			</OnSetPlayerTarget>
+
+			<OnUpdate>
+				(block (
+					(asteroidObj (objGetObjByID (msn@ gSource 'targetID)))
+					(cavernID (msn@ gSource 'cavernID))
+					)
+					(if (ovr@ asteroidObj cavernID 'active)
+						(msnSuccess gSource)
+						)
+					)
+			</OnUpdate>
+
+			<OnDestroy>
+				(block (
+					(markerObj (objGetObjByID (msn@ gSource 'markerID)))
+					)
+					(if markerObj
+						(objDestroy markerObj)
+						)
+					)
+			</OnDestroy>
+		</Events>
+
+		<Language>
+			<Text id="Name">
+				"Excavate Cavern"
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					systemName: (sysGetName)
+					infoPrice: (fmtCurrency currency infoPrice)
+					oreName: (itmGetName (msn@ gSource 'oreType) 'short)
+					})
+			</Text>
+			<Text id="Intro">
+				(block (
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						oreName: (itmGetName (msn@ gSource 'oreType) 'short)
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'mining03.intro trData)
+						(msnTranslate gSource 'textIntro trData)
+						)
+					)
+			</Text>
+			<Text id="Briefing">
+				(block (
+					(currency (msn@ gSource 'currency))
+					(infoPrice (msn@ gSource 'infoPrice))
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						oreName: (itmGetName (msn@ gSource 'oreType) 'short)
+						infoPrice: (fmtCurrency currency infoPrice)
+						targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'mining03.briefing trData)
+						(msnTranslate gSource 'textBriefing trData)
+						)
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(currency (msn@ gSource 'currency))
+					(infoPrice (msn@ gSource 'infoPrice))
+					(totalValue (msn@ gSource 'totalValue))
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						oreName: (itmGetName (msn@ gSource 'oreType) 'short)
+						infoPrice: (fmtCurrency currency infoPrice)
+						targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)))
+						})
+					)
+					(switch
+						(leq totalValue infoPrice)
+							(or
+								(typTranslate (msn@ gSource 'character.missionGiver) 'mining03.success.noProfit trData)
+								(msnTranslate gSource 'textSuccessDebrief.noProfit trData)
+								)
+
+						(or
+							(typTranslate (msn@ gSource 'character.missionGiver) 'mining03.success.profit trData)
+							(msnTranslate gSource 'textSuccessDebrief.profit trData)
+							)
+						)
+					)
+			</Text>
+			
+			<!-- BRIEFING -->
+			
+			<Text id="textSummary">
+
+				You paid %infoPrice% to get the location of an asteroid cavern
+				that might be filled with valuable %oreName%.
+
+				Go dig it up and see if the ore is there.
+
+				System: %systemName%\n
+				Payment: Unknown
+
+			</Text>
+			<Text id="textIntro">
+				
+				"Hello, friend! I'm a prospector analyzing ore deposits."
+
+			</Text>
+			<Text id="textBriefing">
+
+				"I think I've found a hidden deposit of %oreName% on an asteroid
+				in this system.
+
+				"I'll charge you %infoPrice% for the coordinates. You can dig it
+				up and sell the ore for a profit. What do you say?"
+
+			</Text>
+			<Text id="AcceptReply">
+
+				"Thanks! I've sent the coordinates to your ship. Let me know 
+				what you find.
+
+				"Good luck!"
+
+			</Text>
+			<String id="DeclineReply">
+
+				"That's OK. Come back if you change your mind."
+
+			</String>
+			<Text id="InProgress">
+
+				"Have you found the ore yet? I'm sure it's there."
+
+			</Text>
+			<Text id="textSuccessDebrief.noProfit">
+
+				"Hmm, I guess I was wrong."
+
+			</Text>
+			<Text id="textSuccessDebrief.profit">
+
+				"Told you it was good."
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+
+			<Text id="descCannotAfford">
+
+				"I think I've found a hidden deposit of %oreName% on an asteroid
+				in this system. I'll charge you %infoPrice% for the coordinates.
+
+				"Unfortunately, you don't have enough money. Come back when 
+				you can afford my price."
+
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

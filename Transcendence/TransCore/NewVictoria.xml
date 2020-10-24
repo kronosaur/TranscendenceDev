@@ -61,16 +61,16 @@
 		
 		<Items>
 			<RandomItem count="8d10" 
-					criteria=		"ad~r L:1-7; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"ad~r L:1-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="1d6" 
-					criteria=		"r L:3-7; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard;"	
+					criteria=		"r L:3-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard;"	
 					levelFrequency="systemLevel:ru|c|curv"
 					/>
 			
 			<RandomItem count="20" 
-					criteria=		"*~adm -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					criteria=		"*~adm -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 					
@@ -394,7 +394,6 @@
 							displayCriteria: "n +stKatsParliament;"
 							noMissionTextID: 'descParliamentEmpty
 							maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
-							intervalPerStation: (random 2400 3600)
 							})
 					</Action>
 					
@@ -414,7 +413,6 @@
 									displayCriteria: "n +stKatsMilitia;"
 									noMissionTextID: 'descNoMissions
 									maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
-									intervalPerStation: (random 3600 5400)
 									})
 								)
 							)

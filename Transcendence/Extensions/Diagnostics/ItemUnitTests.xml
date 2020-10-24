@@ -100,6 +100,68 @@
 						{	test:'(itmMatches testItem1 "w +property:deviceSlots!=1;")		result:Nil	}
 						{	test:'(itmMatches testItem1 "w +property:deviceSlots!=3;")		result:True	}
 
+						;	Test Item Data -------------------------------------
+
+						{	test:'(setq markerObj 
+									(sysCreateMarker "Test" Nil &svPlayer;)
+									)
+																							result:'ignore	}
+
+						{	test:'(objAddItem markerObj &itLaserCannon; 5)					result:(itmCreate &itLaserCannon; 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 5))	}
+
+						;	NOTE: If we don't specify a count, we only modify 1 item, even if the
+						;	item has a count.
+
+						{	test:'(objSetItemData markerObj 
+									(itmCreate &itLaserCannon; 5)
+									'foo
+									'bar
+									)														result:(itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 4) (itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar))	}
+
+						;	Reset ----------------------------------------------
+
+						{	test:'(enum (objGetItems markerObj "*") theItem (objRemoveItem markerObj theItem))
+																							result:True	}
+						{	test:'(objAddItem markerObj &itLaserCannon; 5)					result:(itmCreate &itLaserCannon; 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 5))	}
+						;	----------------------------------------------------
+
+						;	Try setting all 5 items
+
+						{	test:'(objSetItemData markerObj 
+									(itmCreate &itLaserCannon; 1)
+									'foo
+									'bar
+									5
+									)														result:(itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmSetData (itmCreate &itLaserCannon; 5) 'foo 'bar))	}
+
+						;	Reset ----------------------------------------------
+
+						{	test:'(enum (objGetItems markerObj "*") theItem (objRemoveItem markerObj theItem))
+																							result:True	}
+						{	test:'(objAddItem markerObj &itLaserCannon; 5)					result:(itmCreate &itLaserCannon; 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmCreate &itLaserCannon; 5))	}
+						;	----------------------------------------------------
+
+						;	Try setting more than exist; we should still end up 
+						;	with only 5.
+
+						{	test:'(objSetItemData markerObj 
+									(itmCreate &itLaserCannon; 1)
+									'foo
+									'bar
+									10
+									)														result:(itmSetData (itmCreate &itLaserCannon; 1) 'foo 'bar 5)	}
+						{	test:'(objGetItems markerObj "*")								result:(list (itmSetData (itmCreate &itLaserCannon; 5) 'foo 'bar))	}
+
+						;	Done
+
+						{	test:'(objDestroy markerObj)									result:'ignore	}
+						{	test:'(setq markerObj Nil)										result:'ignore	}
+
 						;	Test Scaled Armor ----------------------------------
 
 						{	test:'(itm@ 
@@ -225,6 +287,8 @@
 						{	test:'(itm@ &itLaserCannon; 'fireArc)					result:Nil	}
 						{	test:'(itm@ &itLaserCannon; 'fireDelay)				result:5	}
 						{	test:'(itm@ &itLaserCannon; 'fireRate)				result:200	}
+						{	test:'(itm@ &itLaserCannon; 'frequency)				result:'common	}
+						{	test:'(itm@ &itLaserCannon; 'frequencyRate)			result:20	}
 						{	test:'(itm@ &itLaserCannon; 'hp)						result:0	}
 						{	test:'(itm@ &itLaserCannon; 'interaction)				result:0	}
 						{	test:'(itm@ &itLaserCannon; 'lifetime)				result:30	}
@@ -289,6 +353,8 @@
 						{	test:'(itm@ &itTestWeaponRelativistic; 'range)		result:60	}
 						{	test:'(itm@ &itTestWeaponRelativistic; 'speed)		result:1000	}
 
+						{	test:'(itm@ &itSmartCannon; 'frequency)					result:'uncommon	}
+						{	test:'(itm@ &itSmartCannon; 'frequencyRate)				result:10	}
 						{	test:'(itm@ &itSmartCannon; 'hp)						result:6	}
 						{	test:'(itm@ &itSmartCannon; 'interaction)				result:50	}
 						{	test:'(itm@ &itSmartCannon; 'lifetime)				result:60	}
@@ -423,6 +489,23 @@
 						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.5")	result:"kinetic:1d12; repel:10;"	}
 						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.75")	result:"kinetic:1d12; repel:5;"	}
 						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:1.0")	result:"kinetic:0;"	}
+
+						;	Item Frequency -------------------------------------
+
+						{	test:'(itm@ &itTestRareInNewBeyond1; 'frequency)		result:'common	}
+						{	test:'(itm@ &itTestRareInNewBeyond1; 'frequencyRate)	result:20	}
+						{	test:'(sysGetItemFrequency 'SE &itTestRareInNewBeyond1;)
+																					result:4	}
+						{	test:'(sysGetItemFrequency 'C9 &itTestRareInNewBeyond1;)
+																					result:20	}
+
+						{	test:'(itm@ &itTestRareInNewBeyond2; 'frequency)		result:'uncommon	}
+						{	test:'(itm@ &itTestRareInNewBeyond2; 'frequencyRate)	result:10	}
+						{	test:'(sysGetItemFrequency 'SE &itTestRareInNewBeyond2;)
+																					result:2	}
+						{	test:'(sysGetItemFrequency 'C9 &itTestRareInNewBeyond2;)
+																					result:10	}
+
 						))
 
 					;	Unit Tests on Armor Damage -----------------------------
@@ -474,6 +557,10 @@
 								(setq hpLeft (- 300 damageDone))
 								(if (!= (objGetItemProperty gPlayerShip armorSeg 'hp) hpLeft)
 									(error (cat (itmGetName armorSeg 0) ": Expected " hpLeft " HP."))
+									)
+
+								(if (!= (obj@ gPlayerShip armorSeg 'damage) damageDone)
+									(error (cat (itmGetName armorSeg 0) ": Expected " damageDone " damage."))
 									)
 
 								;	Remove the segment (replace with stock reactive armor)

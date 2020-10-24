@@ -320,6 +320,12 @@
     <ClCompile Include="GameSessionMenus.cpp">
       <Filter>Source Files\Game Session</Filter>
     </ClCompile>
+    <ClCompile Include="CIconBarDisplay.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
+    <ClCompile Include="CGameIconBarData.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BackgroundTasks.h">
@@ -429,6 +435,7 @@
     <None Include="..\Game\Transcendence.tdb">
       <Filter>PackageContents</Filter>
     </None>
+    <None Include="..\Game\TranscendenceIntro.mp3" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Transcendence.rc">
@@ -496,10 +503,5 @@
       <Filter>Resources</Filter>
     </Image>
     <Image Include="Resources\GenericExtensionSmall.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="..\Game\TranscendenceIntro.mp3">
-      <Filter>PackageContents</Filter>
-    </Media>
   </ItemGroup>
 </Project>

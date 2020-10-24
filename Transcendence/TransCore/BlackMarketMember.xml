@@ -4,6 +4,48 @@
 
 	<Type unid="&unidBlackMarketMember;">
 		<Properties>
+			<Definition id="rankTable">
+				(list
+					{	rank: 0	}
+					{	rank: 1
+						id:'civilian
+						icon: (resCreateImageDesc &rsBlackMarketInsignia; 0 256 256 256)
+						xp: 1
+						aveXPPerMission: 100
+						}
+					{	rank: 2
+						id:'smuggler
+						icon: (resCreateImageDesc &rsBlackMarketInsignia; 256 256 256 256)
+						xp: 200
+						aveXPPerMission: 150
+						}
+					{	rank: 3
+						id:'enforcer
+						icon: (resCreateImageDesc &rsBlackMarketInsignia; 512 256 256 256)
+						xp: 600
+						aveXPPerMission: 250
+						}
+					{	rank:4
+						id:'sindikatMember
+						icon: (resCreateImageDesc &rsBlackMarketInsignia; 512 0 256 256)
+						xp: 1500
+						aveXPPerMission: 400
+						}
+					{	rank:5
+						id:'sindikatLieutenant
+						icon: (resCreateImageDesc &rsBlackMarketInsignia; 256 0 256 256)
+						xp: 3000
+						aveXPPerMission: 1000
+						}
+					{	rank:6
+						id:'sindikatLord
+						icon: (resCreateImageDesc &rsBlackMarketInsignia; 0 0 256 256)
+						xp: 10000
+						}
+					)
+			</Definition>
+			<Definition id="smugglingCriteria">"*~da +illegal; -id;"</Definition>
+
 			<Global id="level">1</Global>
 			<Global id="shieldRewardLevel">1</Global>
 			<Global id="weaponRewardLevel">2</Global>
@@ -12,24 +54,13 @@
 			<DynamicGlobal id="rankIcon">
 				(block (
 					(level (typ@ gType 'level))
+					(rankTable (typ@ gType 'rankTable))
 					)
 					(switch
-						(= level 1)
-							(resCreateImageDesc &rsBlackMarketInsignia; 0 256 256 256)
+						(or (not level) (= level 0))
+							Nil
 
-						(= level 2)
-							(resCreateImageDesc &rsBlackMarketInsignia; 256 256 256 256)
-
-						(= level 3)
-							(resCreateImageDesc &rsBlackMarketInsignia; 512 256 256 256)
-
-						(= level 4)
-							(resCreateImageDesc &rsBlackMarketInsignia; 512 0 256 256)
-
-						(= level 5)
-							(resCreateImageDesc &rsBlackMarketInsignia; 256 0 256 256)
-
-						(resCreateImageDesc &rsBlackMarketInsignia; 0 0 256 256)
+						(@ (@ rankTable level) 'icon)
 						)
 					)
 			</DynamicGlobal>
@@ -93,7 +124,7 @@
 						;	we add to XP.
 					
 						(and (objHasAttribute aSellerObj 'blackMarket)
-								(itmHasAttribute gItem 'illegal)
+								(itmMatches gItem (typ@ gType 'smugglingCriteria))
 								(ls (typ@ gType 'xp) maxXP)
 								)
 							(block (
@@ -207,11 +238,20 @@
 				(block (
 					(xp (typ@ gType 'xp))
 					(level (typ@ gType 'level))
+					(rankTable (typ@ gType 'rankTable))
 
-					(totalSold (plyGetItemStat gPlayer 'itemsSoldValue "*~wsam +Illegal"))
-					(totalBought (plyGetItemStat gPlayer 'itemsBoughtValue "*~wsam +Illegal"))
+					(smugglingCriteria (typ@ gType 'smugglingCriteria))
+					(totalSold (plyGetItemStat gPlayer 'itemsSoldValue smugglingCriteria))
+					(totalBought (plyGetItemStat gPlayer 'itemsBoughtValue smugglingCriteria))
 
 					(totalProfit (- totalSold totalBought))
+
+					(levelXP (@ (@ rankTable level) 'xp))
+					(nextLevel (if (ls level 6) (+ level 1)))
+					(nextLevelXP (@ (@ rankTable nextLevel) 'xp))
+					(totalXPNeeded (- nextLevelXP levelXP))
+					(XPSoFar (- xp levelXP))
+					(percentToNextLevel (if (gr totalXPNeeded 0) (round (* 100.0 (/ XPSoFar totalXPNeeded)))))
 					)
 					(if (gr xp 0)
 						{
@@ -231,6 +271,16 @@
 										value: (fmtCurrency 'credit (if (geq totalProfit 0) totalProfit (- totalProfit)))
 										})
 									}
+								(if (ls level 6)
+									{
+										title: (typTranslate gType 'labelNextLevel {
+											nextLevelName: (fmtNoun (typTranslate gType (cat 'rank. nextLevel)) 1 'titleCapitalize)
+											})
+										desc: (typTranslate gType 'rtfValue {
+											value: (cat percentToNextLevel "%")
+											})
+										}
+									)
 								)
 
 							detailsStyle: 'stats
@@ -250,6 +300,7 @@
 			<Text id="labelIllegalsSold">Illegals Sold:</Text>
 			<Text id="labelIllegalsProfit">Total Profit:</Text>
 			<Text id="labelIllegalsLoss">Loss:</Text>
+			<Text id="labelNextLevel">Progress to %nextLevelName%:</Text>
 
 			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
 		</Language>
@@ -293,7 +344,7 @@
 						(rpgMissionAssignment {
 							missionCriteria: (cat "n +blackMarket; =" (sysGetLevel) ";")
 							noMissionText: (scrTranslate gScreen 'descNoMissions)
-							maxPerStation: (+ 5 (mod (objGetDestiny gSource) 3))
+							maxPerStation: (+ 6 (mod (objGetDestiny gSource) 3))
 							})
 					</Action>
 

@@ -91,6 +91,7 @@ class CGameSession : public IHISession
 		void PaintSoundtrackTitles (CG32bitImage &Dest);
 
 	private:
+
 		CMenuData CreateGameMenu (void) const;
 		CMenuData CreateSelfDestructMenu (void) const;
 		void DismissMenu (void);
@@ -98,6 +99,7 @@ class CGameSession : public IHISession
 		void ExecuteCommandRefresh (CPlayerShipController &Player);
 		void HideMenu (void);
 		void InitUI (void);
+		bool IsIconBarShown (void) const;
 		bool IsInPickerCompatible (void) const
 			{
 			return (m_CurrentMenu == menuEnableDevice || m_CurrentMenu == menuUseItem);
@@ -128,30 +130,31 @@ class CGameSession : public IHISession
 		CTranscendenceModel &m_Model;
 		CCommandLineDisplay &m_DebugConsole;
 		CSoundtrackManager &m_Soundtrack;
-		RECT m_rcScreen;					//	RECT of main screen within window.
+		RECT m_rcScreen = { 0 };				//	RECT of main screen within window.
 
 		//	UI state
 
-		EUITypes m_iUI;						//	Basic flying UI
-		bool m_bMouseAim;					//	Player aims with the mouse
+		EUITypes m_iUI = uiNone;				//	Basic flying UI
+		bool m_bMouseAim = true;				//	Player aims with the mouse
+
+		EMenuTypes m_CurrentMenu = menuNone;	//	Current menu being displayed
+		CMenuDisplay m_MenuDisplay;				//	Menu
+		CSpaceObject *m_pCurrentComms = NULL;	//	Object that we're currently communicating with
+
+		CIconBarDisplay m_IconBar;				//	Icons to access various screens
+		CGameIconBarData m_IconBarData;			//	Data for icon bar
 
 		//	HUD state
 
-		CHeadsUpDisplay m_HUD;              //  Paint the HUD
-		int m_iDamageFlash;					//	0 = no flash; odd = recover; even = flash;
-		bool m_bIgnoreButtonUp;				//	If we closed a menu on button down, ignore button up
-		bool m_bIgnoreMouseMove;			//	Ignore mouse move, for purposes of enabling mouse flight
-
-		//	Menu state
-
-		EMenuTypes m_CurrentMenu;			//	Current menu being displayed
-		CMenuDisplay m_MenuDisplay;			//	Menu
-		CSpaceObject *m_pCurrentComms;		//	Object that we're currently communicating with
+		CHeadsUpDisplay m_HUD;					//  Paint the HUD
+		int m_iDamageFlash = 0;					//	0 = no flash; odd = recover; even = flash;
+		bool m_bIgnoreButtonUp = false;			//	If we closed a menu on button down, ignore button up
+		bool m_bIgnoreMouseMove = false;		//	Ignore mouse move, for purposes of enabling mouse flight
 
 		//	Map state
 
-		bool m_bShowingSystemMap;           //  If TRUE, show map
-		CSystemMapDisplay m_SystemMap;      //  Helps to paint the system map
+		bool m_bShowingSystemMap = false;		//  If TRUE, show map
+		CSystemMapDisplay m_SystemMap;			//  Helps to paint the system map
 		CSystemStationsMenu m_SystemStationsMenu;
 		CGalacticMapSession::SOptions m_GalacticMapSettings;
 
@@ -162,5 +165,5 @@ class CGameSession : public IHISession
 
 		//	Dock screen state
 
-		CDockScreen m_CurrentDock;			//	Current dock screen
+		CDockScreen m_CurrentDock;				//	Current dock screen
 	};

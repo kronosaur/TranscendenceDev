@@ -94,6 +94,7 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 #define FN_SCR_SET_PROPERTY			34
 #define FN_SCR_SCREEN_SET			35
 #define FN_SCR_SHOW_TAB				36
+#define FN_SCR_LIST					37
 
 ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -247,6 +248,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"scrGetItem",					fnScrItem,		FN_SCR_GET_ITEM,
 			"(scrGetItem screen) -> item",
 			NULL,	PPFLAG_SIDEEFFECTS, },
+
+		{	"scrGetList",					fnScrGet,		FN_SCR_LIST,
+			"(scrGetList screen) -> list of entries",
+			"i",	0,	},
 
 		{	"scrGetListCursor",				fnScrGet,		FN_SCR_LIST_CURSOR,
 			"(scrGetListCursor screen) -> cursor",
@@ -1565,6 +1570,9 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_SCR_LIST:
+			return pScreen->GetListAsCCItem()->Reference();
+
 		case FN_SCR_LIST_CURSOR:
 			return pCC->CreateInteger(pScreen->GetListCursor());
 

@@ -272,7 +272,7 @@ void CAreaDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Set up context block for particle array update
 
-	SEffectUpdateCtx EffectCtx;
+	SEffectUpdateCtx EffectCtx(GetUniverse());
 	EffectCtx.pSystem = GetSystem();
 	EffectCtx.pObj = this;
 	EffectCtx.iTick = m_iTick;

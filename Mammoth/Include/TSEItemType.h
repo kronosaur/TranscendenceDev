@@ -279,7 +279,7 @@ class CItemTable : public CDesignType
 		virtual ~CItemTable (void);
 
 		void AddItems (SItemAddCtx &Ctx) { if (m_pGenerator) m_pGenerator->AddItems(Ctx); }
-		CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) const { return (m_pGenerator ? m_pGenerator->GetAverageValue(Ctx, iLevel) : 0); }
+		CurrencyValue GetAverageValue (SItemAddCtx &Ctx) const { return (m_pGenerator ? m_pGenerator->GetAverageValue(Ctx) : 0); }
 		IItemGenerator *GetGenerator (void) { return m_pGenerator; }
 		CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const { return m_pGenerator->GetProbabilityTable(Ctx); }
 		bool HasItemAttribute (const CString &sAttrib) const { return (m_pGenerator ? m_pGenerator->HasItemAttribute(sAttrib) : false); }
@@ -298,4 +298,3 @@ class CItemTable : public CDesignType
 	private:
 		IItemGenerator *m_pGenerator;
 	};
-

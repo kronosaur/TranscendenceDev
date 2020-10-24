@@ -706,16 +706,16 @@ void COverlayList::OnConditionsChanged (CSpaceObject *pSource)
 
 	//	See what changed.
 
-	TArray<CConditionSet::ETypes> Added;
-	TArray<CConditionSet::ETypes> Removed;
+	TArray<ECondition> Added;
+	TArray<ECondition> Removed;
 
 	if (m_Conditions.Diff(OldConditions, Added, Removed))
 		{
 		for (i = 0; i < Added.GetCount(); i++)
-			pSource->OnOverlayConditionChanged(Added[i], CConditionSet::cndAdded);
+			pSource->OnOverlayConditionChanged(Added[i], EConditionChange::added);
 
 		for (i = 0; i < Removed.GetCount(); i++)
-			pSource->OnOverlayConditionChanged(Removed[i], CConditionSet::cndRemoved);
+			pSource->OnOverlayConditionChanged(Removed[i], EConditionChange::removed);
 		}
 	}
 

@@ -67,7 +67,7 @@ ICCItem *CCreatePainterCtx::GetData (void)
 	//	it might overwrite it.
 
 	else if (m_pWeaponFireDesc)
-		SetWeaponFireDescData(m_pData, m_pWeaponFireDesc);
+		SetWeaponFireDescData(m_pData, *m_pWeaponFireDesc);
 
 	//	Set data for overlays
 
@@ -104,10 +104,10 @@ void CCreatePainterCtx::SetDamageCtxData (ICCItem *pTable, SDamageCtx &DamageCtx
 
 	pTable->SetIntegerAt(FIELD_HIT_DIR, DamageCtx.iDirection);
 	pTable->SetIntegerAt(FIELD_DAMAGE_HP, DamageCtx.iDamage);
-	pTable->SetIntegerAt(FIELD_AVERAGE_DAMAGE_HP, mathRound(DamageCtx.pDesc->GetAveDamage()));
+	pTable->SetIntegerAt(FIELD_AVERAGE_DAMAGE_HP, mathRound(DamageCtx.GetDesc().GetAveDamage()));
 	pTable->SetStringAt(FIELD_DAMAGE_TYPE, GetDamageShortName(DamageCtx.Damage.GetDamageType()));
 
-	CItemType *pWeapon = DamageCtx.pDesc->GetWeaponType();
+	CItemType *pWeapon = DamageCtx.GetDesc().GetWeaponType();
 	DWORD dwWeaponUNID = (pWeapon ? pWeapon->GetUNID() : 0);
 	pTable->SetIntegerAt(FIELD_WEAPON_UNID, dwWeaponUNID);
 	}
@@ -135,7 +135,7 @@ void CCreatePainterCtx::SetOverlayData (ICCItem *pTable, const COverlay &Overlay
 	pTable->SetIntegerAt(FIELD_OVERLAY_TYPE, (int)Overlay.GetType()->GetUNID());
 	}
 
-void CCreatePainterCtx::SetWeaponFireDesc (CWeaponFireDesc *pDesc)
+void CCreatePainterCtx::SetWeaponFireDesc (const CWeaponFireDesc *pDesc)
 
 //	SetWeaponFireDesc
 //
@@ -151,20 +151,20 @@ void CCreatePainterCtx::SetWeaponFireDesc (CWeaponFireDesc *pDesc)
 		m_dwAPIVersion = pType->GetAPIVersion();
 	}
 
-void CCreatePainterCtx::SetWeaponFireDescData (ICCItem *pTable, CWeaponFireDesc *pDesc) const
+void CCreatePainterCtx::SetWeaponFireDescData (ICCItem *pTable, const CWeaponFireDesc &Desc) const
 
 //	SetWeaponFireDescData
 //
 //	Sets the data from a weapon fire desc to the data block.
 
 	{
-	pTable->SetIntegerAt(FIELD_DAMAGE_HP, mathRound(pDesc->GetAveDamage()));
-	pTable->SetStringAt(FIELD_DAMAGE_TYPE, GetDamageShortName(pDesc->GetDamageType()));
-	pTable->SetIntegerAt(FIELD_SPEED, mathRound(100.0 * pDesc->GetAveInitialSpeed() / LIGHT_SPEED));
-	if (pDesc->GetType() == CWeaponFireDesc::ftParticles)
-		pTable->SetIntegerAt(FIELD_PARTICLE_COUNT, mathRound(pDesc->GetAveParticleCount()));
+	pTable->SetIntegerAt(FIELD_DAMAGE_HP, mathRound(Desc.GetAveDamage()));
+	pTable->SetStringAt(FIELD_DAMAGE_TYPE, GetDamageShortName(Desc.GetDamageType()));
+	pTable->SetIntegerAt(FIELD_SPEED, mathRound(100.0 * Desc.GetAveInitialSpeed() / LIGHT_SPEED));
+	if (Desc.GetType() == CWeaponFireDesc::ftParticles)
+		pTable->SetIntegerAt(FIELD_PARTICLE_COUNT, mathRound(Desc.GetAveParticleCount()));
 
-	CItemType *pWeapon = pDesc->GetWeaponType();
+	CItemType *pWeapon = Desc.GetWeaponType();
 	DWORD dwWeaponUNID = (pWeapon ? pWeapon->GetUNID() : 0);
 	pTable->SetIntegerAt(FIELD_WEAPON_UNID, dwWeaponUNID);
 	}

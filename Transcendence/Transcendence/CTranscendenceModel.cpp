@@ -1056,7 +1056,7 @@ void CTranscendenceModel::GenerateGameStats (CGameStats *retStats, bool bGameOve
 
 	//	Generate
 
-	m_Universe.GenerateGameStats(*retStats);
+	m_Universe.GenerateGameStats((bGameOver ? m_sEndGameReason : NULL_STR), *retStats);
 	m_pPlayer->GenerateGameStats(*retStats, bGameOver);
 	retStats->Sort();
 

@@ -6,7 +6,6 @@
 
 	EXTRA DATA
 
-	reward:			Reward (in credits) for completing mission
 	targetID:		Id of ship to rescue
 	targetCount:	Number of raiders to destroy
 
@@ -24,23 +23,27 @@
 			name=				"Rescue Mining Ship"
 			attributes=			"commonwealthMining"
 
-			level=				"1-5"
+			level=				"1-4"
 
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
 			>
 
-		<StaticData>
-			<Data id="encounter">
-				(
+		<Properties>
+			<Definition id="encounterTable">
+				(list
 					{	}
-					{	min:2	max:3	raiderTypes: (&scCentauriRaider;) }
-					{	min:3	max:4	raiderTypes: (&scCentauriRaider; &scCentauriRaider; &scCentauriHeavyRaider;) }
-					{	min:4	max:6	raiderTypes: (&scCentauriRaider; &scCentauriRaider; &scCentauriHeavyRaider;) }
-					{	min:6	max:8	raiderTypes: (&scCentauriRaider; &scCentauriRaider; &scCentauriHeavyRaider;) }
+					{	min:2	max:3	raiderTypes: (list &scCentauriRaider;) }
+					{	min:3	max:4	raiderTypes: (list &scCentauriRaider; &scCentauriRaider; &scCentauriHeavyRaider;) }
+					{	min:4	max:6	raiderTypes: (list &scCentauriRaider; &scCentauriRaider; &scCentauriHeavyRaider;) }
+					{	min:6	max:8	raiderTypes: (list &scCentauriRaider; &scCentauriRaider; &scCentauriHeavyRaider;) }
 					)
-			</Data>
-		</StaticData>
+			</Definition>
+
+			<Variant id="reward">
+				(@ (typ@ &unidIndependentMiner; 'missionRewardTable) (min (sysGetLevel) 10))
+			</Variant>
+		</Properties>
 
 		<Events>
 			<OnCreate>
@@ -51,8 +54,7 @@
 								(ls (random 1 100) 33))
 							(msnDestroy gSource)
 
-						;	Set the reward
-						(msnSetData gSource 'reward (+ 100 (* 100 (sysGetLevel))))
+						True
 						)
 					)
 			</OnCreate>
@@ -77,7 +79,7 @@
 						))
 
 					;	Get encounter options based on level
-					(encounterEntry (@ (msnGetStaticData gSource 'encounter) (sysGetLevel)))
+					(encounterEntry (@ (msn@ gSource 'encounterTable) (sysGetLevel)))
 
 					;	Number of warlords is based on system level
 					(targetCount (random (@ encounterEntry 'min) (@ encounterEntry 'max)))
@@ -186,7 +188,7 @@
 			</OnReturnedToStation>
 
 			<OnReward>
-				(rpgMissionRewardPayment (msnGetData gSource 'reward))
+				(rpgMissionRewardPayment (msn@ gSource 'reward))
 			</OnReward>
 		</Events>
 
@@ -198,7 +200,7 @@
 				(msnTranslate gSource 'textSummary {
 					stationName: (objGetName (objGetObjByID (msnGetProperty gSource 'ownerID)))
 					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textSummary">
@@ -262,7 +264,7 @@
 
 			<Text id="Briefing">
 				(msnTranslate gSource 'textBriefing {
-					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textBriefing">
@@ -293,7 +295,7 @@
 
 			<Text id="SuccessDebrief">
 				(msnTranslate gSource 'textSuccessDebrief {
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textSuccessDebrief">

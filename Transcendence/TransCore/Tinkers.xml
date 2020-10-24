@@ -81,9 +81,11 @@
 
 		<Properties>
 			<!--
-			By default we accept any military ID (even ones from APD or ED).
+			By default we accept any military ID (even ones from APD or ED),
+			but we do not check illegals.
 			-->
-			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</COnstant>
+			<Definition	id="rpg.checkMilitaryID">	"* +militaryID;"</Definition>
+			<Definition id="rpg.checkIllegals">		Nil</Definition>
 		</Properties>
 
 		<!-- Encounter Info -->
@@ -119,8 +121,11 @@
 			<Buy	criteria="*DU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="*DU -Illegal; -ID;"				priceAdj="50"/>
 			
+			<Refuel			criteria="f +BasicFuel; L:1-8;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
 		</Trade>
 		
 		<Items>
@@ -175,19 +180,7 @@
 		<DockScreens>
 			<Main>
 				<Panes>
-					<Default>
-						<OnPaneInit>
-							(block (
-								(actionStatus (rpgCalcDockServiceArmorAction gSource gPlayerShip { }))
-								)
-								(scrShowAction gScreen 'actionRepairArmor (@ actionStatus 'visible))
-								(scrEnableAction gScreen 'actionRepairArmor (@ actionStatus 'enabled))
-								(scrSetActionDesc gScreen 'actionRepairArmor (@ actionStatus 'desc))
-								
-								(scrSetDescTranslate gScreen 'descWelcome)
-								)
-						</OnPaneInit>
-
+					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionBuyScrap" default="1">
 								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
@@ -206,10 +199,8 @@
 									)
 							</Action>
 
-							<Action id="actionRepairArmor">
-								(scrShowScreen gScreen &dsRPGManageArmor; {
-									checkMilitaryID: True
-									})
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -344,12 +335,6 @@
 					(&itRepairingNanos;		6	&itArmorRepairDevice;)
 					)
 			</CustomWork>
-
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
 		</StaticData>
 
 		<Events>
@@ -367,7 +352,7 @@
 		<Language>
 			<Text id="actionBuyScrap">[B]uy Scrap</Text>
 			<Text id="actionCustomWork">[C]ustom Work</Text>
-			<Text id="actionRepairArmor">[A]rmor and Shields</Text>
+			<Text id="actionDockServices">[D]ock Services</Text>
 			<Text id="actionSellScrap">[S]ell Scrap</Text>
 			<Text id="actionDecon">[D]econtaminate</Text>
 			<Text id="actionContinue">[C]ontinue</Text>
@@ -442,7 +427,7 @@
 			name=				":an XM900 ammunition box(es)"
 			level=				"7"
 			value=				"2900"
-			mass=				"500"
+			mass=				"2500"
 			frequency=			"notRandom"
 			attributes=			"ammoBox, commonwealth, consumable, military"
 

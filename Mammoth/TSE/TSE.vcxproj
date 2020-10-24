@@ -257,6 +257,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\TSEAccessibilitySettings.h" />
+    <ClInclude Include="..\Include\TSEEngineDefs.h" />
     <ClInclude Include="..\Include\TSEListImpl.h" />
     <ClInclude Include="..\Include\TSEOverlays.h" />
     <ClInclude Include="..\Include\TSESpaceObjectUtil.h" />
@@ -314,6 +315,7 @@
     <ClInclude Include="..\Include\TSESystemType.h" />
     <ClInclude Include="..\Include\TSETargeting.h" />
     <ClInclude Include="..\Include\TSETopology.h" />
+    <ClInclude Include="..\Include\TSETopologyDefs.h" />
     <ClInclude Include="..\Include\TSETrade.h" />
     <ClInclude Include="..\Include\TSETransLispUtil.h" />
     <ClInclude Include="..\Include\TSEUniverse.h" />
@@ -324,6 +326,7 @@
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
     <ClInclude Include="..\Include\TSEConfigurationDescInlines.h" />
     <ClInclude Include="ItemGeneratorImpl.h" />
+    <ClInclude Include="ScriptParserImpl.h" />
     <ClInclude Include="SystemCreateImpl.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="GameFileCompatibility.h" />
@@ -454,6 +457,7 @@
     <ClCompile Include="CIntegerRangeCriteria.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CItemCriteria.cpp" />
+    <ClCompile Include="CItemEncounterDefinitions.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />
     <ClCompile Include="CItemTypeProbabilityTable.cpp" />
     <ClCompile Include="CLabelPainter.cpp" />
@@ -537,6 +541,8 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CRTFText.cpp" />
+    <ClCompile Include="CScript.cpp" />
+    <ClCompile Include="CScriptParser.cpp" />
     <ClCompile Include="CSendMessageOrder.cpp" />
     <ClCompile Include="CSentryOrder.cpp" />
     <ClCompile Include="CSFXOptions.cpp" />
@@ -584,6 +590,7 @@
     <ClCompile Include="CTLispConvert.cpp" />
     <ClCompile Include="CTopologyAttributeCriteria.cpp" />
     <ClCompile Include="CTopologyCreateCtx.cpp" />
+    <ClCompile Include="CTopologyNodeCriteria.cpp" />
     <ClCompile Include="CTopologySystemDesc.cpp" />
     <ClCompile Include="CTradingComputer.cpp" />
     <ClCompile Include="CTradingDesc.cpp" />

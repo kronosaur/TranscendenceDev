@@ -24,7 +24,14 @@
 			alignment="constructive chaos"
 			inherit="&unidCommonText;"
 			>
-		
+
+		<ItemEncounterDesc>
+			<Frequency criteria="* +commonwealth;" frequency="common"	systemCriteria="+commonwealthSpace;" />
+			<Frequency criteria="* +commonwealth;" frequency="uncommon" systemCriteria="+humanSpace; -commonwealthSpace;"/>
+
+			<Frequency criteria="* +commonwealth;" frequency="notRandom" />
+		</ItemEncounterDesc>
+
 		<AttributeDesc>
 			<!-- These item attributes are used across all Human Space (not just for
 				Commonwealth). -->
@@ -183,17 +190,6 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 		
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+commonwealthSpace;"
-				systemAffinity=			"+commonwealthCore;"
-				levelFrequency=			"cuc-- ----- ----- ----- -----"
-
-				locationCriteria=		"-outerSystem, +planetary"
-				enemyExclusionRadius=	"50"
-				/>
-
 		<Names noArticle="true">
 			Agricola Station; Britannia Station; Canterbury Station;
 			Devonshire Colony; Enterprise Station; Farsend Station;
@@ -207,6 +203,21 @@
 			Anacreon Colony %1%0%0; Anacreon Colony %1%0%0
 		</Names>
 		
+		<Properties>
+			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +consumerGood; -ID; +property:known; &lt;=#25;"</Definition>
+		</Properties>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+commonwealthSpace;"
+				systemAffinity=			"+commonwealthCore;"
+				levelFrequency=			"cuc-- ----- ----- ----- -----"
+
+				locationCriteria=		"-outerSystem, +planetary"
+				enemyExclusionRadius=	"50"
+				/>
+
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
@@ -232,11 +243,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-5; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-5; +commonwealth; -alien; -defective; -Illegal; -Military; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -alien; -defective; -Illegal; -Military; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<Item count="4d12"	item="&itHelium3FuelRod;" />
@@ -308,19 +319,11 @@
 		
 		<!-- Events and Data -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			5		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
-			
+
 			<OnTrafficControl>
 				(comTrafficControl gSource 10)
 			</OnTrafficControl>
@@ -432,6 +435,10 @@
 				Vindication Colony; Wight Station; %s Colony; %s Alpha Station;
 				%s Beta Station; %s Gamma Station; %s Epsilon Station</Names>
 
+		<Properties>
+			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +consumerGood; -ID; +property:known; &lt;=#25;"</Definition>
+		</Properties>
+
 		<!-- Encounter Info -->
 
 		<Encounter
@@ -468,11 +475,11 @@
 
 		<Items>
 			<RandomItem	count="10" 
-					criteria=		"ad L:1-7; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-7; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 			<Item count="4d12"	item="&itXenotiteFuelRod;" />
@@ -565,14 +572,6 @@
 		
 		<!-- Events and Data -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			7		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
@@ -618,6 +617,11 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
+		<Properties>
+			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -military; -notStandard; +shipBroker;"</Constant>
+			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+		</Properties>
+
 		<!-- Encounter Info -->
 
 		<Encounter
@@ -630,11 +634,6 @@
 
 				unique=					"inSystem"
 				/>
-
-		<Properties>
-			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -military; -notStandard; +shipBroker;"</Constant>
-			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
-		</Properties>
 
 		<!-- Trade and Items -->
 
@@ -659,23 +658,23 @@
 		
 		<Items>
 			<RandomItem count="18-25" 
-				criteria=		"a L:1-8; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+				criteria=		"a L:1-8; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="8-10" 
-				criteria=		"scv L:1-7; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+				criteria=		"scv L:1-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="4-6" 
-				criteria=		"r L:3-7; +commonwealth; -illegal; -military; -notForSale; -notStandard;"
+				criteria=		"r L:3-7; +commonwealth; -defective; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
 			<RandomItem count="10-12" 
-				criteria=		"d~scvr L:1-7; +commonwealth; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+				criteria=		"d~scvr L:1-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard; -specialty;"
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="5-10"
-				criteria=		"u +armorRepair; -illegal; -military; -notForSale; -notStandard;"
+				criteria=		"u +armorRepair; -defective; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
 		</Items>
@@ -736,14 +735,6 @@
 
 		<!-- Behavior & Language -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
-		</StaticData>
-
 		<Language>
 			<Text id="descWelcome">Your ship is in dry dock.</Text>
 		</Language>
@@ -775,19 +766,6 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+commonwealthSpace;"
-				systemAffinity=			"+commonwealthCore;"
-				levelFrequency=			"uuurr ----- ----- ----- -----"
-
-				locationCriteria=		"-outerSystem, +planetary"
-				enemyExclusionRadius=	"50"
-
-				unique=					"inSystem"
-				/>
-
 		<Names noArticle="true">
 			Asclepius Station; Barnard Station; Station Charity; 
 			Crick Station; Drew Station; Station Empathy; Freud Complex;
@@ -800,6 +778,23 @@
 			Cyteen Station; NeuroSci Station; Biogen Station;
 			Pharmaton %s; Medecin d'Etoile Station
 		</Names>
+
+		<Properties>
+			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +meds; -ID; +property:known; &lt;=#25;"</Definition>
+		</Properties>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+commonwealthSpace;"
+				systemAffinity=			"+commonwealthCore;"
+				levelFrequency=			"uuurr ----- ----- ----- -----"
+
+				locationCriteria=		"-outerSystem, +planetary"
+				enemyExclusionRadius=	"50"
+
+				unique=					"inSystem"
+				/>
 
 		<!-- Trade and Items -->
 		
@@ -818,7 +813,7 @@
 
 		<Items>
 			<RandomItem count="10-20" 
-					criteria=		"* +Meds; -Illegal; -Military; -Alien; -NotStandard; -NotForSale;"
+					criteria=		"* +Meds; -defective; -Illegal; -Military; -Alien; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 		</Items>
@@ -910,6 +905,31 @@
 
 			</Text>
 
+			<Text id="blackMarketSmuggle01.briefing">
+				(list
+					{	descID:'textBMSBriefing.1	acceptLabelID:'actionBMSAccept.1		declineLabelID:'actionBMSDecline.1		translateType:gType	}
+					)
+			</Text>
+			<Text id="blackMarketSmuggle01.declineReply">
+
+				The medtech sighs.
+
+				"I don't know how to convince the Corporations to care about 
+				people. Not without using force, anyway."
+
+			</Text>
+			<Text id="textBMSBriefing.1">
+
+				You enter the hospital and talk to a medtech at the reception
+				desk. He complains about a lack of supplies.
+
+				"Corporate oligarchs are hoarding the good meds for themselves.
+				We can't get enough for all our patients. Not legally, anyway."
+				
+			</Text>
+			<String id="actionBMSAccept.1">"I can [s]ell you some meds."</String>
+			<String id="actionBMSDecline.1">"Too bad, but I ca[n]'t help."</String>
+
 			<Text id="core.mapDesc">"Sells meds &mdash; Buys food and luxuries"</Text>
 		</Language>
 	</StationType>
@@ -937,6 +957,10 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
+		<Properties>
+			<Definition id="blackMarket.buysIllegals">"*NU +illegal; +consumerGood; -ID; +property:known; &lt;=#25;"</Definition>
+		</Properties>
+		
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
@@ -971,6 +995,14 @@
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
+							<Action id="actionMainHall" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +commonwealthResidentials; =" (sysGetLevel) ";")
+									maxPerStation: 1
+									noMissionTextID: 'descHallEmpty
+									})
+							</Action>
+					
 							<Action id="actionUndock" cancel="1">
 								<Exit/>
 							</Action>
@@ -1085,7 +1117,6 @@
 								(rpgMissionAssignment {
 									missionCriteria: "n +commonwealthHabitat;"
 									maxActive: 1
-									intervalPerType: (+ 5400 (* (objGetDestiny gSource) 10))
 									missionGiver: (rpgCharacterGetInfo gSource 'stationMaster)
 									noMissionTextID: 'descNoMissions
 									})
@@ -1268,11 +1299,11 @@
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"ad L:1-8; +commonwealth; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"ad L:1-8; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="10" 
-					criteria=		"*~adm -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:ru|c|cur"
 					/>
 
@@ -1364,14 +1395,6 @@
 		</DockScreens>
 		
 		<!-- Events and Data -->
-
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			8		100		)
-					)
-			</NPCService>
-		</StaticData>
 
 		<Language>
 			<Text id="descWelcome">

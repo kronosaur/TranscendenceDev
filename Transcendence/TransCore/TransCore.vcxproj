@@ -183,6 +183,7 @@
     <Xml Include="..\Extensions\Diagnostics\ItemUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\MissionUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\RPGUnitTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\ShipClassTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\SystemFunctionTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestArmorClasses.xml" />
     <Xml Include="..\Extensions\Diagnostics\ItemEnhancementUnitTests.xml" />
@@ -483,6 +484,8 @@
     <Xml Include="BlackMarketMember.xml" />
     <Xml Include="BlackMarketMission00.xml" />
     <Xml Include="BlackMarketMission01.xml" />
+    <Xml Include="BlackMarketMission02.xml" />
+    <Xml Include="BlackMarketMissionSmuggle01.xml" />
     <Xml Include="CommonwealthCenturions.xml" />
     <Xml Include="CommonwealthCharacters.xml" />
     <Xml Include="CommonwealthFleetMission01.xml" />
@@ -507,6 +510,9 @@
     <Xml Include="CommonwealthFleetMissionPJ01.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="CommonwealthMiningMission03.xml" />
+    <Xml Include="CommonwealthMiningMission04.xml" />
+    <Xml Include="CommonwealthMiningMission05.xml" />
     <Xml Include="CommonwealthVolunteerMission01.xml" />
     <Xml Include="CommonwealthMilitiaMission01.xml" />
     <Xml Include="CommonwealthMilitiaMission02.xml" />
@@ -540,8 +546,10 @@
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="CoreSamples.xml" />
+    <Xml Include="CorporateAutonDealer.xml" />
     <Xml Include="CorporateInsurance.xml" />
     <Xml Include="CorporateTradingPost.xml" />
+    <Xml Include="Cryovolcanic.xml" />
     <Xml Include="CSCTerra.xml" />
     <Xml Include="Dall01.xml" />
     <Xml Include="Dantalion.xml" />
@@ -565,6 +573,7 @@
     </Xml>
     <Xml Include="GroupIAsteroids.xml" />
     <Xml Include="HaloGems.xml" />
+    <Xml Include="HarperThompson.xml" />
     <Xml Include="Heliotropes.xml" />
     <Xml Include="Heretic00.xml" />
     <Xml Include="Heretic01.xml" />
@@ -612,6 +621,7 @@
     <Xml Include="Marauders.xml" />
     <Xml Include="MiningPods.xml" />
     <Xml Include="MRAD.xml" />
+    <Xml Include="MuhammadCondi.xml" />
     <Xml Include="NewVictoria.xml" />
     <Xml Include="Ore.xml" />
     <Xml Include="OreStone.xml" />
@@ -670,6 +680,7 @@
     <Xml Include="SungSlaveCamp.xml" />
     <Xml Include="TeratonResearch.xml" />
     <Xml Include="UndergroundCaverns.xml" />
+    <Xml Include="UndergroundStructures.xml" />
     <Xml Include="Ventari.xml" />
     <Xml Include="Volkov.xml">
       <SubType>Designer</SubType>

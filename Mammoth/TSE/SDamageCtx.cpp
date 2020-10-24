@@ -5,6 +5,15 @@
 
 #include "PreComp.h"
 
+SDamageCtx::SDamageCtx (void)
+
+//	SDamageCtx constructor
+
+	{
+	m_pDesc = new CWeaponFireDesc;
+	m_bFreeDesc = true;
+	}
+
 SDamageCtx::SDamageCtx (CSpaceObject *pObjHitArg, 
 						CWeaponFireDesc &DescArg, 
 						const CItemEnhancementStack *pEnhancementsArg,
@@ -15,7 +24,7 @@ SDamageCtx::SDamageCtx (CSpaceObject *pObjHitArg,
 						const CVector &vHitPosArg,
 						int iDamageArg) :
 		pObj(pObjHitArg),
-		pDesc(&DescArg),
+		m_pDesc(&DescArg),
 		Damage(DescArg.CalcDamageDesc(pEnhancementsArg, AttackerArg, rAgeArg)),
 		iDirection(iDirectionArg),
 		vHitPos(vHitPosArg),
@@ -46,9 +55,9 @@ SDamageCtx::SDamageCtx (const DamageDesc &DamageArg)
 	{
 	//	Initialize a descriptor
 
-	pDesc = new CWeaponFireDesc;
+	m_pDesc = new CWeaponFireDesc;
 	m_bFreeDesc = true;
-	pDesc->InitFromDamage(DamageArg);
+	m_pDesc->InitFromDamage(DamageArg);
 
 	//	Roll damage
 
@@ -66,7 +75,7 @@ SDamageCtx::~SDamageCtx (void)
 
 	{
 	if (m_bFreeDesc)
-		delete pDesc;
+		delete m_pDesc;
 	}
 
 void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
@@ -168,4 +177,15 @@ void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 	//	Time Stop
 
 	m_bTimeStop = (DamageArg.GetTimeStopDamageLevel() > 0);
+	}
+
+void SDamageCtx::SetHint (EDamageHint iHint)
+
+//	SetHint
+//
+//	Sets the hint.
+
+	{
+	if (iHint == EDamageHint::none || GetDesc().ShowsHint(iHint))
+		m_iHint = iHint;
 	}
