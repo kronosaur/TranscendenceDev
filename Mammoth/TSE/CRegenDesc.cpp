@@ -82,6 +82,22 @@ int CRegenDesc::GetRegen (int iTick, int iTicksPerCycle) const
 			//	Remaining HP are spread out across the entire era.
 
 			int iRemainderPeriod = CYCLES_PER_ERA / m_iHPPerEraRemainder;
+			if (iRemainderPeriod == 1)
+				{
+				int iAdjHPPerEraRemainder = CYCLES_PER_ERA - m_iHPPerEraRemainder;
+				iRemainderPeriod = CYCLES_PER_ERA / iAdjHPPerEraRemainder;
+				int iAdjHPPerCycle = m_iHPPerCycle + 1;
+
+				if ((iCycleNo % iRemainderPeriod) != 0)
+					return iAdjHPPerCycle;
+
+				int iLastCycle = iRemainderPeriod * (iAdjHPPerEraRemainder - 1);
+
+				if (iCycleNo > iLastCycle)
+					return iAdjHPPerCycle;
+
+				return iAdjHPPerCycle - 1;
+				}
 			if ((iCycleNo % iRemainderPeriod) != 0)
 				return m_iHPPerCycle;
 
