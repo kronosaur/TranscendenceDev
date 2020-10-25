@@ -694,7 +694,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 	GeneratorCtx.pOnCreate = m_pOnCreate;
 	GeneratorCtx.dwCreateFlags = Ctx.dwFlags;
 
-	GeneratorCtx.iOrder = m_iOrder;
+	GeneratorCtx.iOrder = (m_iOrder != IShipController::orderNone ? m_iOrder : Ctx.iDefaultOrder);
 	GeneratorCtx.OrderData = m_OrderData;
 
 	GeneratorCtx.pBase = Ctx.pBase;
@@ -706,7 +706,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	if (Ctx.pBase == NULL && Ctx.pGate != NULL)
 		{
-		switch (m_iOrder)
+		switch (GeneratorCtx.iOrder)
 			{
 			case IShipController::orderEscort:
 			case IShipController::orderFollow:

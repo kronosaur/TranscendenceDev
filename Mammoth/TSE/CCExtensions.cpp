@@ -12160,6 +12160,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				SShipCreateCtx Ctx;
 				Ctx.pSystem = pSystem;
 				Ctx.pTarget = pTarget;
+				Ctx.iDefaultOrder = (pTarget ? IShipController::orderDestroyTarget : IShipController::orderNone);
 				Ctx.dwFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY | SShipCreateCtx::RETURN_RESULT;
 
 				//	Figure out where the encounter will come from
