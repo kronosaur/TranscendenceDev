@@ -67,30 +67,23 @@ class CShipChallengeDesc
 
 struct SShipCreateCtx
 	{
-	SShipCreateCtx (void) :
-			pSystem(NULL),
-			pGate(NULL),
-			pBase(NULL),
-			pBaseSovereign(NULL),
-			pTarget(NULL),
-			pEncounterInfo(NULL),
-			pOverride(NULL),
-			dwFlags(0)
+	SShipCreateCtx (void)
 		{ }
 
-	inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+	CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 
-	CSystem *pSystem;							//	System to create ship in
-	CSpaceObject *pGate;						//	Gate where ship will appear (may be NULL)
+	CSystem *pSystem = NULL;					//	System to create ship in
+	CSpaceObject *pGate = NULL;					//	Gate where ship will appear (may be NULL)
 	CVector vPos;								//	Position where ship will appear (only if pGate is NULL)
 	DiceRange PosSpread;						//	Distance from vPos (in light-seconds)
-	CSpaceObject *pBase;						//	Base for this ship (may be NULL)
-	CSovereign *pBaseSovereign;					//	Only if pBase is NULL
-	CSpaceObject *pTarget;						//	Target for ship orders (may be NULL)
-	CStationType *pEncounterInfo;				//	Encounter info (may be NULL)
-	CDesignType *pOverride;						//	Override to apply to ships (may be NULL)
+	CSpaceObject *pBase = NULL;					//	Base for this ship (may be NULL)
+	CSovereign *pBaseSovereign = NULL;			//	Only if pBase is NULL
+	IShipController::OrderTypes iDefaultOrder = IShipController::orderNone;
+	CSpaceObject *pTarget = NULL;				//	Target for ship orders (may be NULL)
+	CStationType *pEncounterInfo = NULL;		//	Encounter info (may be NULL)
+	CDesignType *pOverride = NULL;				//	Override to apply to ships (may be NULL)
 
-	DWORD dwFlags;								//	Flags
+	DWORD dwFlags = 0;							//	Flags
 
 	CSpaceObjectList Result;					//	List of ships created
 
