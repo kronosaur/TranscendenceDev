@@ -783,6 +783,31 @@ Metric CStationType::CalcWeaponStrength (int iLevel) const
 	return rTotal;
 	}
 
+bool CStationType::CanAttack () const
+
+//	CanAttack
+//
+//	Returns TRUE if the station type can normally attack.
+
+	{
+	//	Sometimes we override...
+
+	if (m_fCanAttack)
+		return true;
+	else if (m_fCannotAttack)
+		return false;
+	
+	//	If we have any installed weapon, we can attack
+
+	for (int i = 0; i < m_AverageDevices.GetCount(); i++)
+		if (m_AverageDevices.GetDeviceItem(i).IsWeapon())
+			return true;
+
+	//	If we get this far, then we cannot attack.
+
+	return false;
+	}
+
 TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, RECT &retrcImage, int &retxCenter, int &retyCenter) const
 
 //	CreateFullImage
@@ -1550,13 +1575,23 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fNoMapIcon = pDesc->GetAttributeBool(NO_MAP_ICON_ATTRIB);
 	m_fNoMapDetails = pDesc->GetAttributeBool(NO_MAP_DETAILS_ATTRIB);
 	m_fTimeStopImmune = pDesc->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);
-	m_fCanAttack = pDesc->GetAttributeBool(CAN_ATTACK_ATTRIB);
 	m_fReverseArticle = pDesc->GetAttributeBool(REVERSE_ARTICLE_ATTRIB);
 	m_fNoBlacklist = (pDesc->GetAttributeBool(NO_BLACKLIST_ATTRIB) || pDesc->GetAttributeBool(IGNORE_FRIENDLY_FIRE_ATTRIB));
 	m_fAnonymous = pDesc->GetAttributeBool(ANONYMOUS_ATTRIB);
 	m_iAlertWhenAttacked = pDesc->GetAttributeInteger(ALERT_WHEN_ATTACKED_ATTRIB);
 	m_iAlertWhenDestroyed = pDesc->GetAttributeInteger(ALERT_WHEN_DESTROYED_ATTRIB);
 	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
+
+	//	Can attack?
+
+	CString sValue;
+	if (pDesc->FindAttribute(CAN_ATTACK_ATTRIB, &sValue))
+		{
+		if (CXMLElement::IsBoolTrueValue(sValue))
+			m_fCanAttack = true;
+		else
+			m_fCannotAttack = true;
+		}
 
 	//	Suppress or force map label
 	//
