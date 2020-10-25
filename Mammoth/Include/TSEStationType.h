@@ -443,13 +443,15 @@ class CStationType : public CDesignType
 		bool AlertWhenAttacked (void) { return (mathRandom(1, 100) <= m_iAlertWhenAttacked); }
 		bool AlertWhenDestroyed (void) { return (mathRandom(1, 100) <= m_iAlertWhenDestroyed); }
 		bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
-		bool CanAttack (void) const { return (m_fCanAttack ? true : false); }
+		bool CanAttack () const;
 		bool CanAttackIndependently (void) const { return (m_fNoIndependentAttack ? false : true); }
 		bool CanBeEncountered (const CStationEncounterDesc &Desc) const { return m_EncounterRecord.CanBeEncountered(Desc); }
 		bool CanBeEncountered (CSystem &System, const CStationEncounterDesc &Desc) const { return m_EncounterRecord.CanBeEncounteredInSystem(System, *this, Desc); }
 		bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
 		bool CanHitFriends (void) const { return (m_fNoFriendlyFire ? false : true); }
 		TSharedPtr<CG32bitImage> CreateFullImage (SGetImageCtx &ImageCtx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, RECT &retrcImage, int &retxCenter, int &retyCenter) const;
+		bool ForceCanAttack (void) const { return (m_fCanAttack ? true : false); }
+		bool ForceCannotAttack (void) const { return (m_fCannotAttack ? true : false); }
 		bool ForceMapLabel (void) const { return m_fForceMapLabel; }
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices) const;
 		CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
@@ -677,8 +679,7 @@ class CStationType : public CDesignType
 		DWORD m_fForceMapLabel:1 = false;				//	If TRUE, show map label, even if we wouldn't by default.
 		DWORD m_fAnonymous:1 = false;					//	If TRUE, object is anonymous world/asteroid/etc.
 		DWORD m_fNoIndependentAttack:1 = false;			//	If TRUE, we only attack if our base is alive.
-
-		DWORD m_fSpare8:1;
+		DWORD m_fCannotAttack:1 = false;				//	If TRUE, object cannot attack
 
 		//	Images
 		CCompositeImageDesc m_Image;

@@ -808,9 +808,10 @@ bool CStation::CanAttack (void) const
 	{
 	return (!IsAbandoned() 
 			&& !IsVirtual()
+			&& !m_pType->ForceCannotAttack()
 			&& (m_fArmed 
 				|| (m_Subordinates.GetCount() > 0)
-				|| m_pType->CanAttack()));
+				|| m_pType->ForceCanAttack()));
 	}
 
 bool CStation::CanBeDestroyedBy (CSpaceObject &Attacker) const
@@ -940,7 +941,7 @@ bool CStation::ClassCanAttack (void)
 //	Only returns FALSE if this object can never attack
 
 	{
-	return (m_pType->CanAttack());
+	return (m_pType->ForceCanAttack() && !m_pType->ForceCannotAttack());
 	}
 
 void CStation::ClearBlacklist (CSpaceObject *pObj)
