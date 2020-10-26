@@ -1156,8 +1156,11 @@ class CRegenDesc
 		CRegenDesc (int iHPPerEra);
 
 		void Add (const CRegenDesc &Desc);
+		int GetCyclesPerBurst () const { return m_iCyclesPerBurst; }
 		double GetHPPer180 (int iTicksPerCycle = 1) const;
+		int GetHPPerCycle () const { return m_iHPPerCycle; }
 		int GetHPPerEra (void) const;
+		int GetHPPerEraRemainder () const { return m_iHPPerEraRemainder; }
 		int GetRegen (int iTick, int iTicksPerCycle = 1) const;
 		void Init (int iHPPerEra, int iCyclesPerBurst = 1);
 		void InitFromRegen (double rRegen, int iTicksPerCycle = 1);

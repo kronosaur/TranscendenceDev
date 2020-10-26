@@ -11,6 +11,7 @@ static constexpr DWORD FN_TSE_SET_SYSTEM =				3;
 static constexpr DWORD FN_TSE_UPDATE_SYSTEM =			4;
 static constexpr DWORD FN_TSE_AFFINITY_CRITERIA =		5;
 static constexpr DWORD FN_TSE_SET_PLAYER_SHIP =			6;
+static constexpr DWORD FN_TSE_REGEN_DESC =				7;
 
 ICCItem *fnNil (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -49,6 +50,10 @@ static PRIMITIVEPROCDEF g_Library[] =
 		{	"tsePattern",					fnTransEngine,		FN_TSE_PATTERN,
 			"(tsePattern pattern ...) -> string",
 			"s*",	0,	},
+
+		{	"tseRegenDesc",					fnTransEngine,		FN_TSE_REGEN_DESC,
+			"(tseRegenDesc regen [ticksPerCycle]) -> desc of hp to regen",
+			"n*",	0,	},
 	};
 
 static constexpr int FUNCTION_COUNT	=	((sizeof g_Library) / (sizeof g_Library[0]));
@@ -224,6 +229,40 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				Universe.SetPlayerShip(NULL);
 				return pCC->CreateNil();
 				}
+			}
+
+		case FN_TSE_REGEN_DESC:
+			{
+			constexpr int TOTAL_TICKS = 360;
+			constexpr int TICKS180 = 180;
+			Metric rRegen = pArgs->GetElement(0)->GetDoubleValue();
+			int iTicksPerCycle = (pArgs->GetCount() > 1 ? pArgs->GetElement(1)->GetIntegerValue() : 1);
+			CRegenDesc Regen;
+			Regen.InitFromRegen(rRegen, iTicksPerCycle);
+
+			ICCItemPtr pHPList(ICCItem::List);
+			int iResultCount = TOTAL_TICKS / iTicksPerCycle;
+			int iTick = 0;
+			int iTotalHP = 0;
+			for (int i = 0; i < iResultCount; i++)
+				{
+				int iHP = Regen.GetRegen(iTick, iTicksPerCycle);
+				pHPList->Append(ICCItemPtr(iHP));
+
+				iTick += iTicksPerCycle;
+				iTotalHP += iHP;
+				}
+
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetIntegerAt(CONSTLIT("actualRegen"), mathRound((double)iTotalHP / (TOTAL_TICKS / (double)TICKS180)));
+			pResult->SetDoubleAt(CONSTLIT("regen"), Regen.GetHPPer180(iTicksPerCycle));
+
+			pResult->SetIntegerAt(CONSTLIT("cyclesPerBurst"), Regen.GetCyclesPerBurst());
+			pResult->SetIntegerAt(CONSTLIT("hpPerCycle"), Regen.GetHPPerCycle());
+			pResult->SetIntegerAt(CONSTLIT("hpPerEraRemainder"), Regen.GetHPPerEraRemainder());
+			pResult->SetAt(CONSTLIT("hp"), pHPList);
+
+			return pResult->Reference();
 			}
 
 		case FN_TSE_SET_SYSTEM:
