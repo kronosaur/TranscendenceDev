@@ -2244,7 +2244,7 @@
 			;				a random location.
 
 				(block (
-					(bestStationObj (sysFindObject gPlayerShip "TAFN +populated; -occupation;"))
+					(bestStationObj (sysFindObject gPlayerShip "TAFN +populated; -occupation; -noPlayerResurrect"))
 					(bestShipObj (sysFindObject gPlayerShip "sAFN; +property:dockingEnabled;"))
 
 					;	Figure out the best place to put the ship
