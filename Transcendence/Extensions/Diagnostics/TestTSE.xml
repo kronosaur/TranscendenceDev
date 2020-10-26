@@ -118,6 +118,16 @@
 					{	test:'(tseParseIntegerRange "L:18-")				result:{ greaterThan:17 modifier:"L" }	}
 					{	test:'(tseParseIntegerRange "&gt;#100")				result:{ greaterThan:100 modifier:"#" }	}
 					{	test:'(tseParseIntegerRange "&gt;=#100")			result:{ greaterThan:99 modifier:"#" }	}
+					
+					;	CRegenDesc
+					
+					{	test:'(@ (tseRegenDesc 1 10) 'actualRegen)			result:1	}
+					{	test:'(@ (tseRegenDesc 5 10) 'actualRegen)			result:5	}
+					{	test:'(@ (tseRegenDesc 9 10) 'actualRegen)			result:9	}
+					{	test:'(@ (tseRegenDesc 10 10) 'actualRegen)			result:10	}
+					{	test:'(@ (tseRegenDesc 15 10) 'actualRegen)			result:15	}
+					{	test:'(@ (tseRegenDesc 20 10) 'actualRegen)			result:20	}
+					{	test:'(@ (tseRegenDesc 28 10) 'actualRegen)			result:28	}
 
 					;	strPatternSubst
 
