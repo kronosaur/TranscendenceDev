@@ -636,6 +636,7 @@
     <Xml Include="Pteravores.xml" />
     <Xml Include="QuantumCPU.xml" />
     <Xml Include="RaisuMission01.xml" />
+    <Xml Include="RaisuMission02.xml" />
     <Xml Include="RaisuStation.xml" />
     <Xml Include="Rama.xml" />
     <Xml Include="RanxEmpire.xml" />
@@ -654,6 +655,7 @@
     <Xml Include="RPGMissionTemplate01.xml" />
     <Xml Include="RPGMissionTemplate02.xml" />
     <Xml Include="RPGMissionTemplate03.xml" />
+    <Xml Include="RPGMissionTemplate04.xml" />
     <Xml Include="RPGRumors.xml" />
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>

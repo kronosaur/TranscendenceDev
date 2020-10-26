@@ -44,6 +44,18 @@
 			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="192" imageY="0" imageWidth="64" imageHeight="128"/>
 		</ImageVariants>
 
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Sell	criteria="m +commonwealth; +basicAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-4;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-4;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-4;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-4;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-4;" priceAdj="100"/>
+		</Trade>
+
 		<!-- Ships and Defenses -->
 
 		<Ships challenge="standard">
@@ -61,6 +73,10 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionTakeReward">
+								(scrShowScreen gScreen &dsRPGLoot;)
+							</Action>
+
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
 									missionCriteria: "n +commonwealthHabitat;"
@@ -71,8 +87,8 @@
 									})
 							</Action>
 
-							<Action id="actionTakeReward">
-								(scrShowScreen gScreen &dsRPGLoot;)
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip { })
 							</Action>
 
 							<Action id="actionUndock" cancel="1">

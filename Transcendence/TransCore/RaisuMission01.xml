@@ -22,8 +22,8 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msRaisuStation01;"
-			name=				"Liberate Raisu station"
-			attributes=			"commonwealth, special, deliveryMission"
+			name=				"Raisu 01: Liberate Raisu station"
+			attributes=			"commonwealth, raisuStation, special, deliveryMission"
 
 			level=				"1"
 
@@ -33,6 +33,25 @@
 			>
 
 		<Events>
+			<OnGlobalSystemStarted>
+				(block (raisuObj)
+					(switch
+						;	Only create in Starton Eridani
+						(!= (sysGetNode) 'SE)
+							Nil
+
+						;	Only create one
+						(msnFind "* +unid:&msRaisuStation01;;")
+							Nil
+
+						(not (setq raisuObj (sysFindObject Nil "TAN +unid:&stRaisuStation;;")))
+							Nil
+
+						(msnCreate &msRaisuStation01; raisuObj)
+						)
+					)
+			</OnGlobalSystemStarted>
+
 			<OnCreate>
 				(block (
 					(arcoVaughn (sysFindObject gSource "sN +arcoVaughn;"))
@@ -70,6 +89,41 @@
 						)
 					)
 			</OnCreate>
+
+			<OnCanBrief>
+				(block (
+					(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					(centauriDestroyed (count (sysFindObject gPlayerShip "TK +centauriWarlords; +populated; -occupation; -uncharted;")))
+					)
+
+					(switch
+						;	If the player declined, then everyone is still in fear
+						(msnGetProperty gSource 'isDeclined)
+							(msnTranslate gSource 'descMissionHiding)
+
+						;	If there are Centauri raiders in range, then everyone is hinding
+						(sysFindObject stationObj "s +centauriWarlords; N:100;")
+							(msnTranslate gSource 'descMissionHiding)
+
+						;	If all stations have been destroyed, then the player gets the mission
+						(not (sysFindObject gPlayerShip "TA +centauriWarlords; +populated; -occupation; -uncharted;"))
+							Nil
+
+						;	Check the number of destroyed Centauri stations
+						(= centauriDestroyed 0)
+							(msnTranslate gSource 'descStationFearful0)
+
+						(= centauriDestroyed 1)
+							(msnTranslate gSource 'descStationFearful1)
+
+						(= centauriDestroyed 2)
+							(msnTranslate gSource 'descStationFearful2)
+
+						;	Otherwise player gets the mission
+						Nil
+						)
+					)
+			</OnCanBrief>
 
 			<OnAccepted>
 				(block (theItem launcherItem missileTypes bestType)
@@ -116,6 +170,13 @@
 			<OnSetPlayerTarget>
 				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)))
 			</OnSetPlayerTarget>
+
+			<OnDeliveryMissionCompleted>
+				{
+					desc: (msnTranslate gSource 'descHiding)
+					forceUndock: True
+					}
+			</OnDeliveryMissionCompleted>
 
 			<OnTimer>
 				(block (
@@ -223,66 +284,22 @@
 					)
 			</OnCompleted>
 
-			<OnCanBrief>
-				(block (
-					(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
-					(centauriDestroyed (count (sysFindObject gPlayerShip "TK +centauriWarlords; +populated; -occupation; -uncharted;")))
+			<OnGetNextScreen>
+				(switch
+					(= aScreenType 'SuccessFollowUp)
+						(block (
+							(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+							(missionObj (msnCreate &msRaisuStation02; stationObj))
+							)
+							(if missionObj
+								{
+									nextScreen: &dsRPGMission;
+									nextScreenData: { missionObj:missionObj }
+									}
+								)
+							)
 					)
-
-					(switch
-						;	If the player declined, then everyone is still in fear
-						(msnGetProperty gSource 'isDeclined)
-							(msnTranslate gSource 'descMissionHiding)
-
-						;	If there are Centauri raiders in range, then everyone is hinding
-						(sysFindObject stationObj "s +centauriWarlords; N:100;")
-							(msnTranslate gSource 'descMissionHiding)
-
-						;	If all stations have been destroyed, then the player gets the mission
-						(not (sysFindObject gPlayerShip "TA +centauriWarlords; +populated; -occupation; -uncharted;"))
-							Nil
-
-						;	Check the number of destroyed Centauri stations
-						(= centauriDestroyed 0)
-							(msnTranslate gSource 'descStationFearful0)
-
-						(= centauriDestroyed 1)
-							(msnTranslate gSource 'descStationFearful1)
-
-						(= centauriDestroyed 2)
-							(msnTranslate gSource 'descStationFearful2)
-
-						;	Otherwise player gets the mission
-						Nil
-						)
-					)
-			</OnCanBrief>
-
-			<OnDeliveryMissionCompleted>
-				{
-					desc: (msnTranslate gSource 'descHiding)
-					forceUndock: True
-					}
-			</OnDeliveryMissionCompleted>
-
-			<OnGlobalSystemStarted>
-				(block (raisuObj)
-					(switch
-						;	Only create in Starton Eridani
-						(!= (sysGetNode) 'SE)
-							Nil
-
-						;	Only create one
-						(msnFind "* +unid:&msRaisuStation01;;")
-							Nil
-
-						(not (setq raisuObj (sysFindObject Nil "TAN +unid:&stRaisuStation;;")))
-							Nil
-
-						(msnCreate &msRaisuStation01; raisuObj)
-						)
-					)
-			</OnGlobalSystemStarted>
+			</OnGetNextScreen>
 
 			<GetGlobalAchievements>
 				(block (theMission theStatus)

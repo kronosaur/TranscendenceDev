@@ -2412,6 +2412,9 @@
 	<!ENTITY stHydrogenGasGiantStJohns	"0x00100762">
 	<!ENTITY rsHydrogenGasGiantStJohns	"0x00100763">
 
+	<!ENTITY msRaisuStation02			"0x00100764">
+	<!ENTITY tbRaisuStation02Revenge	"0x00100765">
+
 	<!-- 0780-079F QUANTUM CPU -->
 
 	<!ENTITY baQuantumCPUShieldProgram	"0x00100780">
@@ -2612,6 +2615,8 @@
 
 	<Module filename="Eridani.xml"/>
 	<Module filename="EridaniStations.xml"/>
+	<Module filename="RaisuMission01.xml"/>
+	<Module filename="RaisuMission02.xml"/>
 	<Module filename="RaisuStation.xml"/>
 
 	<!-- Ferians -->

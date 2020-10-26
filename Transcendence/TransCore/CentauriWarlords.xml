@@ -181,6 +181,7 @@
 			hitPoints=			"35"
 			ejectaType=			"&vtWreckEjecta;"
 
+			canAttack=			"false"
 			attributes=			"arcoVaughn, centauriWarlords, enemy, human, populated, questTarget, uncharted, warlords"
 			maxAppearing=		"1"
 			>
@@ -259,7 +260,7 @@
 			sovereign=			"&svCentauriWarlordCivilians;"
 			inherit=			"&unidCommonText;"
 
-			attributes=			"centauriWarlords, enemy, envWater, envAvoidsEarth, generic, human, populated, warlords"
+			attributes=			"centauriWarlords, enemy, envWater, envAvoidsEarth, generic, human, noPlayerResurrect, populated, warlords"
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
