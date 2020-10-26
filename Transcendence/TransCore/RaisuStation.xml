@@ -29,6 +29,8 @@
 					gender: 'genderFemale
 					}
 			</Constant>
+
+			<Data id="rpg.storageID"></Data>
 		</Properties>
 
 		<!-- Encounter Info -->
@@ -68,13 +70,15 @@
 					<Default descID="descNormal">
 						<OnPaneInit>
 							(block ()
-								(scrShowAction gScreen 'actionTakeReward (objGetItems gSource "*U"))
+								(scrShowAction gScreen 'actionTakeReward (rpgGetStorage gSource))
 								)
 						</OnPaneInit>
 
 						<Actions>
 							<Action id="actionTakeReward">
-								(scrShowScreen gScreen &dsRPGLoot;)
+								(scrShowScreen gScreen &dsRPGLoot; {
+									sourceObj: (rpgGetStorage gSource)
+									})
 							</Action>
 
 							<Action id="actionMainHall" default="1">
@@ -88,7 +92,17 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip { })
+								;	If the station is still controlled by warlords, then 
+								;	no dock services.
+
+								(switch
+									(msnFind "c +unid:&msRaisuStation01;;")
+										(rpgDockServices gPlayerShip { })
+
+									(scrShowScreen &dsRPGMessage;{
+										textID: 'descNoServices
+										})
+									)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -115,12 +129,19 @@
 
 			<Text id="descNormal">
 
-				The loud voices of a packed multitude bounce off every bulkhead and corridor in the station.
-				Old air scrubbers pump a thin, odorous breeze out of rusty vents. Discarded packets of
+				The loud voices of a packed multitude bounce off every bulkhead 
+				and corridor in the station. Old air scrubbers pump a thin, 
+				odorous breeze out of rusty vents. Discarded packets of	
 				Salmonite and Red Nebula beer huddle in the corner.
 
 				Welcome to Raisu Station!
 
+			</Text>
+			<Text id="descNoServices">
+
+				The docking bay is deserted. No one is here to service your 
+				ship.
+			
 			</Text>
 		</Language>
 	</StationType>

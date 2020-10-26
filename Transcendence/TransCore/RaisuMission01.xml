@@ -267,7 +267,7 @@
 
 							(if (@ gData 'lateAccept)
 								(block ()
-									(objAddItem stationObj (itmCreate &itCentauriRice; (random 4 8)))
+									(rpgStoreItem stationObj (itmCreate &itCentauriRice; (random 4 8)))
 									(msnSetData gSource 'lateAccept True)
 									)
 								)

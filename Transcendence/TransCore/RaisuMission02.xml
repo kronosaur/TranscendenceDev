@@ -52,7 +52,7 @@
 			</Text>
 			<Text id="Briefing">
 				(list
-					{	descID: 'textBriefing1						}
+					{	descID: 'textBriefing1			acceptLabelID:'actionAccept		declineLabelID:'actionDecline			}
 					)
 			</Text>
 			<Text id="AcceptReply">
@@ -99,6 +99,8 @@
 				LATER: Will you defend us?
 
 			</Text>
+			<String id="actionAccept">"[I]'ll defend you."</String>
+			<String id="actionDecline">"[L]et me prepare first."</String>
 			<Text id="textAcceptReply1">
 
 				LATER: Thanks!
