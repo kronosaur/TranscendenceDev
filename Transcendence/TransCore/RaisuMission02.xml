@@ -72,7 +72,7 @@
 			</Text>
 			<Text id="SuccessDebrief">
 				(list
-					{	descID: 'textSuccessDebrief1				}
+					{	descID: 'textSuccessDebrief1		labelID:'actionSuccessDebrief1		}
 					)
 			</Text>
 			<Text id="FailureDebrief">
@@ -83,7 +83,7 @@
 
 			<Text id="textSummary">
 			
-				LATER: Defend Raisu Station.
+				Defend Raisu Station from Centauri warlords.
 
 				System: %systemName%\n
 				Payment: None
@@ -91,36 +91,61 @@
 			</Text>
 			<Text id="textIntro1">
 
-				LATER: Centauri are going to attack.
+				The station master climbs up to her central console and raises
+				her voice to address the crowd.
+
+				"Friends! The pilgrim has given us a fighting chance! Now we 
+				must rise to the challenge. The warlords will not free us 
+				willingly. Even now they are planning to retaliate.
+
+				"We must endure their attack and finish them once and for all!"
 
 			</Text>
 			<Text id="textBriefing1">
 
-				LATER: Will you defend us?
+				The station master turns to you:
 
+				"The warlords are coming to take Raisu Station. Will you help
+				defend us?"
+			
 			</Text>
 			<String id="actionAccept">"[I]'ll defend you."</String>
 			<String id="actionDecline">"[L]et me prepare first."</String>
 			<Text id="textAcceptReply1">
 
-				LATER: Thanks!
+				The citizens cheer, and the station master nods.
+
+				"All right, everyone! Get ready!"
 
 			</Text>
 			<Text id="textDeclineReply1">
 
-				LATER: Too bad!
+				The citizens grumble, but the station master calms them:
+
+				"All right, everyone! Don't worry, we've got time."
 
 			</Text>
 			<Text id="textInProgress1">
 
-				LATER: WTF?
+				The station master is at her console monitoring the battle.
+
+				"Get back out there, %name%, the warlords are getting ready for
+				more attacks!"
 
 			</Text>
 			<Text id="textSuccessDebrief1">
 
-				LATER: Awesome!
+				The halls of Raisu Station are filled with citizens on various
+				tasks. Some are repairing damage from the battle, others are
+				caring for the wounded.
+
+				The station master greets you with a smile:
+
+				"You've done it! The station is out of danger. But we'll never
+				be truly safe until the warlords are defeated."
 
 			</Text>
+			<String id="actionSuccessDebrief1">"[W]hat do you mean?"</String>
 			<Text id="textFailureDebrief1">
 
 				LATER: We're all dead.
