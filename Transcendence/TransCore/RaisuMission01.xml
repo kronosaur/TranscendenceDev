@@ -272,6 +272,10 @@
 									)
 								)
 
+							(if (not (obj@ stationObj 'abandoned))
+								(objSet@ stationObj 'status 'liberated)
+								)
+
 							(msnSetData gSource 'status 'liberated)
 							(objSetEventHandler stationObj Nil)
 							)
@@ -300,25 +304,6 @@
 							)
 					)
 			</OnGetNextScreen>
-
-			<GetGlobalAchievements>
-				(block (theMission theStatus)
-					(if (and
-							(setq theMission (msnFind "P* +unid:&msRaisuStation01;;"))
-							(setq theStatus (msnGetData theMission 'status))
-							)
-						(list
-							(list
-								(or (msnTranslate theMission (cat "achievement." theStatus))
-									(cat "ERROR: Raisu Station status: " (or theStatus "Nil"))
-									)
-								Nil
-								(typTranslate &unidCommonText; 'achievementsAndRegrets)
-								)
-							)
-						)
-					)
-			</GetGlobalAchievements>
 
 			<GetRumors>
 				(switch

@@ -30,8 +30,36 @@
 
 		<Events>
 			<OnCompleted>
+				(switch
+					;	On success, we set state for the station.
+
+					(= aReason 'success)
+						(block (
+							(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+							)
+							(if (not (obj@ stationObj 'abandoned))
+								(objSet@ stationObj 'status 'defended)
+								)
+							)
+					)
 			</OnCompleted>
 			
+			<OnGetNextScreen>
+				(switch
+					(= aScreenType 'SuccessFollowUp)
+						(block (
+							(missionObj (@ (msnFind "o +unid:&msRaisuStation03;;") 0))
+							)
+							(if missionObj
+								{
+									nextScreen: &dsRPGMission;
+									nextScreenData: { missionObj:missionObj }
+									}
+								)
+							)
+					)
+			</OnGetNextScreen>
+
 			<OnReward>
 			</OnReward>
 		</Events>
@@ -71,8 +99,29 @@
 					)
 			</Text>
 			<Text id="SuccessDebrief">
-				(list
-					{	descID: 'textSuccessDebrief1		labelID:'actionSuccessDebrief1		}
+				(block (
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+					)
+					(switch
+						;	Try to create the next mission. If we succeed, then 
+						;	we show the appropriate text.
+
+						(msnCreate &msRaisuStation03; stationObj)
+							(list
+								{	descID: 'textSuccessDebrief1		labelID:'actionSuccessDebrief1		}
+								)
+
+						;	Otherwise, we're done
+
+						(= (plyGetGenome gPlayer) 'humanMale)
+							(list
+								{	descID: 'textSuccessDebrief1.whisper	}
+								)
+
+						(list
+							{	descID: 'textSuccessDebrief1.hug	}
+							)
+						)
 					)
 			</Text>
 			<Text id="FailureDebrief">
@@ -146,6 +195,32 @@
 
 			</Text>
 			<String id="actionSuccessDebrief1">"[W]hat do you mean?"</String>
+			<Text id="textSuccessDebrief1.whisper">
+
+				The halls of Raisu Station are filled with citizens on various
+				tasks. Some are repairing damage from the battle, others are
+				caring for the wounded.
+
+				The station master runs towards you:
+			
+				"You've done it! The station is out of danger!"
+
+				She hugs you and whispers her name in your ear.
+
+			</Text>
+			<Text id="textSuccessDebrief1.hug">
+
+				The halls of Raisu Station are filled with citizens on various
+				tasks. Some are repairing damage from the battle, others are
+				caring for the wounded.
+
+				The station master runs towards you:
+			
+				"You've done it! The station is out of danger!"
+
+				She beams a smile and hugs you.
+			
+			</Text>
 			<Text id="textFailureDebrief1">
 
 				LATER: We're all dead.

@@ -637,6 +637,7 @@
     <Xml Include="QuantumCPU.xml" />
     <Xml Include="RaisuMission01.xml" />
     <Xml Include="RaisuMission02.xml" />
+    <Xml Include="RaisuMission03.xml" />
     <Xml Include="RaisuStation.xml" />
     <Xml Include="Rama.xml" />
     <Xml Include="RanxEmpire.xml" />

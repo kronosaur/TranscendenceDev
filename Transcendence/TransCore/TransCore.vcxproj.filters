@@ -1032,5 +1032,8 @@
     <Xml Include="RPGMissionTemplate04.xml">
       <Filter>RPG Library</Filter>
     </Xml>
+    <Xml Include="RaisuMission03.xml">
+      <Filter>Human Space Library\Eridani</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

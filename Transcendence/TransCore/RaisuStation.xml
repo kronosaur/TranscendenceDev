@@ -23,6 +23,21 @@
 			>
 
 		<Properties>
+			<!-- status
+			
+				One of the following:
+
+					destroyed: Destroyed by some other reason
+					destroyedByPlayer: Player destroyed the station.
+					destroyedByWarlords: Destroyed by Centauri warlords
+					liberated: Arco Vaughn killed, but warlords still active
+					defended: Station defended against counter attack, but warlords still active
+					settlementFreed: Centauri settlement has been freed of warlords
+					settlementKilled: Centauri settlement has been destroyed
+
+			-->
+			<Global id="status"></Global>
+
 			<Constant id="rpgCharacter.stationMaster">
 				{
 					id: 'raisuStationMaster
@@ -124,6 +139,57 @@
 			<Port x="-43"	y="56" />
 		</DockingPorts>
 
+		<Events>
+			<OnDestroy>
+				(switch
+					;	Player killed us.
+
+					(and aOrderGiver (= aOrderGiver gPlayerShip))
+						(msnSet@ gSource 'destroyedByPlayer)
+
+					;	Centauri warlords killed us.
+
+					(objHasAttribute aOrderGiver 'centauriWarlords)
+						(msnSet@ gSource 'destroyedByWarlords)
+
+					;	Something else killed us
+
+					(msnSet@ gSource 'destroyed)
+					)
+			</OnDestroy>
+
+			<GetPlayerPriceAdj>
+
+				(switch
+					;	If the player has destroyed the Centauri settlement, then
+					;	she gets free refuel and repairs.
+
+					(and (= (obj@ gSource 'status) 'settlementKilled)
+							(or (= aService 'priceToRefuel)
+								(= aService 'priceToRepairArmor)
+								)
+							)
+						0
+
+					;	Otherwise, nothing
+
+					Nil
+					)
+
+			</GetPlayerPriceAdj>
+
+			<GetGlobalAchievements>
+				(block (
+					(status (typ@ &stRaisuStation; 'status))
+					)
+					(if status {
+						descID: (cat 'achievement. status)
+						sectionID: 'achievementsAndRegrets
+						})
+					)
+			</GetGlobalAchievements>
+		</Events>
+
 		<Language>
 			<Text id="actionTakeReward">[T]ake Reward</Text>
 
@@ -143,6 +209,14 @@
 				ship.
 			
 			</Text>
+
+			<Text id="achievement.destroyed">Allowed Raisu Station to be destroyed</Text>
+			<Text id="achievement.destroyedByPlayer">Destroyed Raisu Station</Text>
+			<Text id="achievement.destroyedByWarlords">Failed to defend Raisu Station</Text>
+			<Text id="achievement.liberated">Killed Arco Vaughn in Eridani</Text>
+			<Text id="achievement.defended">Defended Raisu Station from Centauri warlord attack</Text>
+			<Text id="achievement.settlementFreed">Killed Centauri warlords in Eridani</Text>
+			<Text id="achievement.settlementKilled">Destroyed Centauri settlement threatening Raisu Station</Text>
 		</Language>
 	</StationType>
 

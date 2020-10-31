@@ -2414,6 +2414,8 @@
 
 	<!ENTITY msRaisuStation02			"0x00100764">
 	<!ENTITY tbRaisuStation02Revenge	"0x00100765">
+	<!ENTITY msRaisuStation03			"0x00100766">
+	<!ENTITY evRaisuStation03Settlement	"0x00100767">
 
 	<!-- 0780-079F QUANTUM CPU -->
 
@@ -2617,6 +2619,7 @@
 	<Module filename="EridaniStations.xml"/>
 	<Module filename="RaisuMission01.xml"/>
 	<Module filename="RaisuMission02.xml"/>
+	<Module filename="RaisuMission03.xml"/>
 	<Module filename="RaisuStation.xml"/>
 
 	<!-- Ferians -->
