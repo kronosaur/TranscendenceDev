@@ -52,6 +52,7 @@
 	<!ENTITY unidTestArmorClass			"0xA0010105">
 	<!ENTITY stTestStation1				"0xA0010106">
 	<!ENTITY stTestStation2				"0xA0010107">
+	<!ENTITY evTestStationOverride		"0xA0010108">
 
 	<!-- 0140-017F TEST OVERLAYS -->
 
