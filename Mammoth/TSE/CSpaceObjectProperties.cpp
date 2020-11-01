@@ -103,41 +103,52 @@ bool CSpaceObject::FindCustomProperty (const CString &sProperty, ICCItemPtr &pRe
 //	Finds and evaluates a custom property.
 
 	{
-	if (CDesignType *pType = GetType())
-		{
-		EPropertyType iType;
-		if (!pType->FindCustomProperty(sProperty, pResult, &iType))
-			return false;
+	CDesignType *pType;
+	EPropertyType iType = EPropertyType::propNone;
 
-		//	If the property is an object property, then we need to look in 
-		//	object data.
+	//	First look for property in override
 
-		if (iType == EPropertyType::propVariant 
-				|| iType == EPropertyType::propData
-				|| iType == EPropertyType::propObjData)
-			{
-			pResult = GetData(sProperty);
-			return true;
-			}
+	if (m_pOverride
+			&& m_pOverride->FindCustomProperty(sProperty, pResult, &iType))
+		{ }
 
-		//	If this is a dynamic property, we need to evaluate.
+	//	Otherwise, look in object type
 
-		else if (iType == EPropertyType::propDynamicData)
-			{
-			CCodeChainCtx CCX(GetUniverse());
-			CCX.SaveAndDefineSourceVar(this);
+	else if ((pType = GetType())
+			&& pType->FindCustomProperty(sProperty, pResult, &iType))
+		{ }
 
-			pResult = CCX.RunCode(pResult);
-			return true;
-			}
+	//	Otherwise, not found
 
-		//	Otherwise we have a valid property.
-
-		else
-			return true;
-		}
 	else
 		return false;
+
+	//	If the property is an object property, then we need to look in 
+	//	object data.
+
+	if (iType == EPropertyType::propVariant 
+			|| iType == EPropertyType::propData
+			|| iType == EPropertyType::propObjData)
+		{
+		pResult = GetData(sProperty);
+		return true;
+		}
+
+	//	If this is a dynamic property, we need to evaluate.
+
+	else if (iType == EPropertyType::propDynamicData)
+		{
+		CCodeChainCtx CCX(GetUniverse());
+		CCX.SaveAndDefineSourceVar(this);
+
+		pResult = CCX.RunCode(pResult);
+		return true;
+		}
+
+	//	Otherwise we have a valid property.
+
+	else
+		return true;
 	}
 
 ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const
@@ -552,11 +563,19 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 
 	//	See if this is a custom property, we set data
 
-	else if (CDesignType *pType = GetType())
+	else
 		{
+		EPropertyType iType = EPropertyType::propNone;
 		ICCItemPtr pDummy;
-		EPropertyType iType;
-		if (!pType->FindCustomProperty(sName, pDummy, &iType))
+		CDesignType *pType;
+
+		if (m_pOverride
+				&& m_pOverride->FindCustomProperty(sName, pDummy, &iType))
+			{ }
+		else if ((pType = GetType())
+				&& pType->FindCustomProperty(sName, pDummy, &iType))
+			{ }
+		else
 			return false;
 
 		switch (iType)
@@ -574,7 +593,4 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 				return false;
 			}
 		}
-
-	else
-		return false;
 	}

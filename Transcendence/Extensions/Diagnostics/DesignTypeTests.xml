@@ -80,6 +80,15 @@
 						{	test:'(obj@ gTestStation2 'structuralHP)				result:20	}
 						{	test:'(obj@ gTestStation2 'hitPoints)					result:70	}
 						{	test:'(objInc@ gTestStation2 'hitPoints 10)				result:80	}
+
+						;	Test override
+
+						{	test:'(objSetEventHandler gTestStation1 &evTestStationOverride;)	result:True	}
+						{	test:'(obj@ gTestStation1 'diag.override.global1)		result:99	}
+						{	test:'(obj@ gTestStation1 'diag.override.data1)			result:'foo	}
+						{	test:'(obj@ gTestStation1 'diag.global1)				result:101	}
+						{	test:'(obj@ gTestStation1 'diag.data1)					result:77	}
+						{	test:'(obj@ gTestStation1 'diag.override.data2)			result:'bar	}
 						))
 
 					;	Unit Tests for Criteria
@@ -204,5 +213,25 @@
 			<Data id="hitPoints">70</Data>
 		</Properties>
 	</StationType>
+
+	<Type unid="&evTestStationOverride;">
+		<Properties>
+			<Global id="diag.override.global1">99</Global>
+			<Data id="diag.override.data1">'foo</Data>
+			<Data id="diag.override.data2"></Data>
+
+			<Global id="diag.global1">101</Global>
+			<Data id="diag.data1">101</Data>
+		</Properties>
+
+		<Events>
+			<OnEventHandlerInit>
+				(block ()
+					(objSet@ gSource 'diag.data1 77)
+					(objSet@ gSource 'diag.override.data2 'bar)
+					)
+			</OnEventHandlerInit>
+		</Events>
+	</Type>
 
 </TranscendenceModule>
