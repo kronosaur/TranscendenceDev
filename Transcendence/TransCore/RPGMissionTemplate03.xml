@@ -3,6 +3,7 @@
 <TranscendenceModule>
 
 	<MissionType UNID="&baVisitStationMission;"
+			inherit=			"&unidCommonText;"
 			noDebrief=			"true"
 			>
 		<Properties>

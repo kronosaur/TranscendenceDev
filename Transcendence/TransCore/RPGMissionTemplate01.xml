@@ -3,6 +3,7 @@
 <TranscendenceModule>
 
 	<MissionType unid="&baInterceptMission;"
+			inherit=			"&unidCommonText;"
 			expireTime=			"5400"
 			failureAfterOutOfSystem="1800"
 			>

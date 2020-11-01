@@ -286,15 +286,18 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
+			<Sell	criteria="* +unid:&itCentauriRice;;"		priceAdj="90"/>
 			<Sell	criteria="*NU -illegal; -id; -notForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -notForSale;"				priceAdj="50"/>
+			<Buy	criteria="* +unid:&itCentauriRice;"			priceAdj="80"/>
+			<Buy	criteria="*NU +centauriWarlord"				priceAdj="80"/>
 			<Buy	criteria="*NU -id; -notForSale;"			priceAdj="90"/>
 			<Buy	criteria="*NU -id;"							priceAdj="10"/>
 		</Trade>
 		
 		<Items>
 			<RandomItem count="3-5" 
-					criteria=		"* L:1-5; +centauriWarlords -notStandard; -notForSale;"
+					criteria=		"* L:1-5; +centauriWarlords -notForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					/>
 			<RandomItem count="1-3" 
@@ -867,7 +870,7 @@
 			value=				"150"
 			mass=				"2500"
 			frequency=			"uncommon"
-			attributes=			"centauriWarlords; MajorItem; NotForSale"
+			attributes=			"centauriWarlords, majorItem, notStandard"
 			showReference=		"true"
 
 			description=		"Centauri raiders use twin recoilless cannons, firing light rounds."
@@ -905,7 +908,7 @@
 			value=				"1700"
 			mass=				"6000"
 			frequency=			"rare"
-			attributes=			"centauriWarlords; MajorItem; NotForSale"
+			attributes=			"centauriWarlords, majorItem, notStandard"
 			showReference=		"true"
 
 			description=		"Centauri warlords create these weapons by linking together two DK10 Arbalest cannons. The CLAW cannon requires two device slots to install."
@@ -946,7 +949,7 @@
 			value=				"1800"
 			mass=				"6000"
 			frequency=			"rare"
-			attributes=			"centauriWarlords; MajorItem; NotForSale"
+			attributes=			"centauriWarlords, majorItem, notStandard"
 			showReference=		"true"
 
 			description=		"The Centauri warlord's favorite weapon is a massive dual kinetic-cannon. The heavy CLAW cannon requires two device slots to install."
@@ -988,7 +991,7 @@
 			frequency=			"veryrare"
 			numberAppearing=	"1d4"
 			unknownType=		"&itUnknownBarrel;"
-			attributes=			"ArmorEnhance; centauriWarlords; MinorItem; NotForSale"
+			attributes=			"armorEnhance, centauriWarlords, minorItem, notStandard"
 
 			description=		"These nanomachines weave a diamond matrix through the target material. Armor that has been treated in this way will be more resistant to laser and impact damage."
 

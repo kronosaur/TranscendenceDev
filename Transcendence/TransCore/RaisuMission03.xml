@@ -16,6 +16,8 @@
 					criteria: "TA +unid:&stCentauriSettlement;;"
 					}
 			</Variant>
+
+			<Global id="settlementSpared"></Global>
 		</Properties>
 
 		<Events>
@@ -30,6 +32,10 @@
 					;	Warlords give the player a chance
 
 					(typFireEvent &svCentauriWarlordCivilians; 'OrderSetPlayerCanTrade)
+
+					;	Guaranteed barrels for purchase
+
+					(objAddItem settlementObj &itCentauriNanos; (obj@ gPlayerShip 'armorCount))
 
 					;	Add an event handler on the settlement to close the loop
 					;	with the player.
@@ -48,11 +54,55 @@
 							(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
 							)
 							(if (not (obj@ stationObj 'abandoned))
-								(objSet@ stationObj 'status 'settlementKilled)
+								(objSet@ stationObj 'playerStatus 'hero)
 								)
 							)
 					)
 			</OnCompleted>
+
+			<GetRumors>
+				(append
+					(switch
+						(and (msn@ gSource 'isDeclined)
+								(typ@ &msRaisuStation03; 'settlementSpared)
+								)
+							(rpgRumorAdd 'raisuStation 'settlementSpared)
+
+						(msn@ gSource 'isDeclined)
+							(rpgRumorAdd 'raisuStation 'missionDeclined)
+
+						(msn@ gSource 'isSuccess)
+							(rpgRumorAdd 'raisuStation 'settlementDestroyed)
+						)
+					)
+			</GetRumors>
+
+			<GetGlobalAchievements>
+				(block (
+					(missionObj (msnFind "*P +unid:&msRaisuStation03;;"))
+					)
+					(switch
+						(not missionObj)
+							Nil
+
+						(msn@ missionObj 'isSuccess)
+							(list
+								{
+									descID: 'achievement.destroyedSettlement
+									sectionID: 'achievementsAndRegrets
+									}
+								)
+
+						(msn@ missionObj 'isDeclined)
+							(list
+								{
+									descID: 'achievement.sparedSettlement
+									sectionID: 'achievementsAndRegrets
+									}
+								)
+						)
+					)
+			</GetGlobalAchievements>
 		</Events>
 		
 		<Language>
@@ -183,6 +233,33 @@
 			<Text id="SuccessMsg">
 				Mission complete!
 			</Text>
+
+			<Text id="rumor.raisuStation.settlementDestroyed">
+
+				The station master smiles as you enter:
+
+				"We'll always remember how you freed us from the warlords."
+			
+			</Text>
+			<Text id="rumor.raisuStation.missionDeclined">
+
+				The station master is working at her console. She sees you but
+				does not want to talk.
+			
+			</Text>
+			<Text id="rumor.raisuStation.settlementSpared">
+
+				The station master is working at her console. The comms channels
+				are quiet and she stops to chat.
+
+				"You were right about sparing the Centauri settlement. I was too
+				angry to see it then, but more killing would not have helped
+				anyone."
+			
+			</Text>
+
+			<Text id="achievement.destroyedSettlement">Destroyed Centauri settlement in Eridani</Text>
+			<Text id="achievement.sparedSettlement">Spared Centauri settlement in Eridani</Text>
 		</Language>
 	</MissionType>
 
@@ -229,12 +306,9 @@
 						{	descID: 'raisu.welcome4		labelID:'raisu.actionWelcome4
 							code: (lambda ()
 								(block (
-									(raisuObj (sysFindObject gPlayerShip "TAN +unid:&stRaisuStation;;"))
 									)
-									(if (not (obj@ raisuObj 'abandoned))
-										(objSet@ raisuObj 'status 'settlementFreed)
-										)
 									(objSet@ stationObj 'raisu.showWelcome Nil)
+									(typSet@ &msRaisuStation03; 'settlementSpared True)
 									)
 								)
 							}

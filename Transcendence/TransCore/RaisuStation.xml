@@ -23,6 +23,19 @@
 			>
 
 		<Properties>
+			<!-- playerStatus
+			
+				This describes the station's attitude towards the player. One of
+				the following:
+
+					Nil: Player not known.
+					'ally: Player has helped the station.
+					'hero: Player is considered a hero, gets free refuel and 
+							armor repair.
+
+			-->
+			<Data id="playerStatus"></Data>
+
 			<!-- status
 			
 				One of the following:
@@ -32,8 +45,6 @@
 					destroyedByWarlords: Destroyed by Centauri warlords
 					liberated: Arco Vaughn killed, but warlords still active
 					defended: Station defended against counter attack, but warlords still active
-					settlementFreed: Centauri settlement has been freed of warlords
-					settlementKilled: Centauri settlement has been destroyed
 
 			-->
 			<Global id="status"></Global>
@@ -66,8 +77,8 @@
 		<Trade currency="credit">
 			<Sell	criteria="m +commonwealth; +basicAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
 			
-			<Refuel			criteria="f +BasicFuel; L:1-4;" priceAdj="100"/>
-			<RepairArmor	criteria="a L:1-4;" priceAdj="100"/>
+			<Refuel			criteria="f +BasicFuel; L:1-4;" priceAdj="variable:100"/>
+			<RepairArmor	criteria="a L:1-4;" priceAdj="variable:100"/>
 			<ReplaceArmor	criteria="a L:1-4;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-4;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-4;" priceAdj="100"/>
@@ -82,9 +93,12 @@
 		<DockScreens>
 			<Main>
 				<Panes>
-					<Default descID="descNormal">
+					<Default>
 						<OnPaneInit>
-							(block ()
+							(block (
+								(playerStatus (or (obj@ gSource 'playerStatus) 'default))
+								)
+								(scrSetDescTranslate gScreen (cat 'descWelcome. playerStatus))
 								(scrShowAction gScreen 'actionTakeReward (rpgGetStorage gSource))
 								)
 						</OnPaneInit>
@@ -98,7 +112,7 @@
 
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
-									missionCriteria: "n +commonwealthHabitat;"
+									missionCriteria: "n +raisuStation;"
 									maxActive: 1
 									noMissionTextID: 'descNoMissions
 
@@ -141,20 +155,28 @@
 
 		<Events>
 			<OnDestroy>
-				(switch
-					;	Player killed us.
+				(block ()
+					(switch
+						;	Player killed us.
 
-					(and aOrderGiver (= aOrderGiver gPlayerShip))
-						(msnSet@ gSource 'destroyedByPlayer)
+						(and aOrderGiver (= aOrderGiver gPlayerShip))
+							(objSet@ gSource 'status 'destroyedByPlayer)
 
-					;	Centauri warlords killed us.
+						;	Centauri warlords killed us.
 
-					(objHasAttribute aOrderGiver 'centauriWarlords)
-						(msnSet@ gSource 'destroyedByWarlords)
+						(objHasAttribute aOrderGiver 'centauriWarlords)
+							(objSet@ gSource 'status 'destroyedByWarlords)
 
-					;	Something else killed us
+						;	Something else killed us
 
-					(msnSet@ gSource 'destroyed)
+						(objSet@ gSource 'status 'destroyed)
+						)
+
+					;	No loot if station is destroyed
+
+					(enum (objGetItems gSource "*U") theItem
+						(objRemoveItem gSource theItem)
+						)
 					)
 			</OnDestroy>
 
@@ -164,7 +186,7 @@
 					;	If the player has destroyed the Centauri settlement, then
 					;	she gets free refuel and repairs.
 
-					(and (= (obj@ gSource 'status) 'settlementKilled)
+					(and (= (obj@ gSource 'playerStatus) 'hero)
 							(or (= aService 'priceToRefuel)
 								(= aService 'priceToRepairArmor)
 								)
@@ -193,7 +215,7 @@
 		<Language>
 			<Text id="actionTakeReward">[T]ake Reward</Text>
 
-			<Text id="descNormal">
+			<Text id="descWelcome.default">
 
 				The loud voices of a packed multitude bounce off every bulkhead 
 				and corridor in the station. Old air scrubbers pump a thin, 
@@ -201,6 +223,34 @@
 				Salmonite and Red Nebula beer huddle in the corner.
 
 				Welcome to Raisu Station!
+
+			</Text>
+			<Text id="descWelcome.ally">
+			
+				Stationers greet you as you enter:
+
+				"Welcome, %name%! We'll never forget that you defended us when
+				no one else would."
+
+			</Text>
+			<Text id="descWelcome.hero">
+
+				Stationers greet you as you enter:
+
+				"Welcome, %name%! We'll never forget that you freed us from the
+				warlords.
+
+				"If your ship needs refueling or repairs, we'd be honored to 
+				do so at no charge."
+			
+			</Text>
+			<Text id="descNoMissions">
+
+				The station master is working at her station. The comms channels
+				are quiet and she stops to chat:
+
+				"It's calm now, but I've been hearing a lot of military chatter 
+				lately."
 
 			</Text>
 			<Text id="descNoServices">
@@ -215,8 +265,6 @@
 			<Text id="achievement.destroyedByWarlords">Failed to defend Raisu Station</Text>
 			<Text id="achievement.liberated">Killed Arco Vaughn in Eridani</Text>
 			<Text id="achievement.defended">Defended Raisu Station from Centauri warlord attack</Text>
-			<Text id="achievement.settlementFreed">Killed Centauri warlords in Eridani</Text>
-			<Text id="achievement.settlementKilled">Destroyed Centauri settlement threatening Raisu Station</Text>
 		</Language>
 	</StationType>
 
