@@ -766,6 +766,8 @@
 			class=				""
 			type=				"heavy raider"
 
+			inherit=			"&baHumanTechShip;"
+
 			size=				"23"
 			mass=				"60"
 			cargoSpace=			"10"
@@ -776,6 +778,18 @@
 
 			attributes=			"arcoVaughn, centauriWarlords"
 			>
+		<Properties>
+			<!-- status
+
+				Arco Vaugh's current status. One of:
+
+					Nil: Still alive
+					'destroyedByPlayer: Killed by the player
+					'destroyed: Destroyed by another cause
+
+			-->
+			<Global id="status"></Global>
+		</Properties>
 
 		<Armor>
 			<ArmorSection start="270" span="180" armorID="&itReactiveArmor;" />
@@ -857,7 +871,34 @@
 						)
 					)
 			</OnCreate>
+
+			<OnDestroy>
+				(switch
+					(and gPlayerShip (= aOrderGiver gPlayerShip))
+						(typSet@ &scArcoVaughnHeavyRaider; 'status 'destroyedByPlayer)
+
+					(typSet@ &scArcoVaughnHeavyRaider; 'status 'destroyed)
+					)
+			</OnDestroy>
+
+			<GetGlobalAchievements>
+				(block (
+					(status (typ@ &scArcoVaughnHeavyRaider; 'status))
+					)
+					(switch
+						(= status 'destroyedByPlayer)
+							{
+								descID: 'achievement.destroyedByPlayer
+								sectionID: 'achievementsAndRegrets
+								}
+						)
+					)
+			</GetGlobalAchievements>
 		</Events>
+
+		<Language>
+			<Text id="achievement.destroyedByPlayer">Killed Arco Vaughn in Eridani</Text>
+		</Language>
 	</ShipClass>
 
 <!-- ITEM TYPES -->

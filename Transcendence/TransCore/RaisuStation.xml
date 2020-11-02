@@ -263,7 +263,7 @@
 			<Text id="achievement.destroyed">Allowed Raisu Station to be destroyed</Text>
 			<Text id="achievement.destroyedByPlayer">Destroyed Raisu Station</Text>
 			<Text id="achievement.destroyedByWarlords">Failed to defend Raisu Station</Text>
-			<Text id="achievement.liberated">Killed Arco Vaughn in Eridani</Text>
+			<Text id="achievement.liberated">Liberated Raisu Station</Text>
 			<Text id="achievement.defended">Defended Raisu Station from Centauri warlord attack</Text>
 		</Language>
 	</StationType>

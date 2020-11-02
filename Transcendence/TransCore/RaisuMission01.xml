@@ -218,34 +218,29 @@
 							)
 
 					(= (objGetID aObjDestroyed) (msnGetData gSource 'targetID))
-						(block Nil
-							;	Backward compatibility for old Container Habitat rumors
-							(typSetData &scArcoVaughnHeavyRaider; 'status 'destroyed)
+						(switch
+							;	If the player has accepted the mission, then mission 
+							;	accomplished.
 
-							(switch
-								;	If the player has accepted the mission, then mission 
-								;	accomplished.
+							(msnGetProperty gSource 'isActive)
+								(msnSuccess gSource)
 
-								(msnGetProperty gSource 'isActive)
-									(msnSuccess gSource)
+							;	Otherwise, if the player killed Arco Vaughn, then we 
+							;	accept the mission so that we can get a proper debrief.
 
-								;	Otherwise, if the player killed Arco Vaughn, then we 
-								;	accept the mission so that we can get a proper debrief.
-
-								(and gPlayerShip (= aOrderGiver gPlayerShip))
-									(block ()
-										(msnAccept gSource)
-										(msnSuccess gSource {
-											lateAccept: True
-											})
-										)
-
-								;	Otherwise, we just end the mission
-
+							(and gPlayerShip (= aOrderGiver gPlayerShip))
 								(block ()
-									(msnSetUnavailable gSource)
-									(msnSuccess gSource)
+									(msnAccept gSource)
+									(msnSuccess gSource {
+										lateAccept: True
+										})
 									)
+
+							;	Otherwise, we just end the mission
+
+							(block ()
+								(msnSetUnavailable gSource)
+								(msnSuccess gSource)
 								)
 							)
 

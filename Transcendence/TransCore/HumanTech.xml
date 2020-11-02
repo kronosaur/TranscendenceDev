@@ -3,7 +3,9 @@
 <TranscendenceModule>
 
 	<ShipClass unid="&baHumanTechShip;"
-			virtual="true">
+			inherit="&unidCommonText;"
+			virtual="true"
+			>
 
 		<!-- Ship Standard
 

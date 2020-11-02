@@ -31,6 +31,8 @@
 
 					;	Warlords give the player a chance
 
+					(objSet@ settlementObj 'known True)
+					(objSetShowAsDestination settlementObj 'autoClearOnDock)
 					(typFireEvent &svCentauriWarlordCivilians; 'OrderSetPlayerCanTrade)
 
 					;	Guaranteed barrels for purchase
