@@ -2121,7 +2121,8 @@
 	<!ENTITY rsEI100Hero				"0x00100398">
 	<!ENTITY rsSapphire					"0x00100399">
 	<!ENTITY rsEI500					"0x0010039A">
-	<!ENTITY msRaisuStation				"0x0010039B">
+	<!ENTITY msRaisuStation				"0x0010039B">	<!-- Backwards Compatible -->
+	<!ENTITY msRaisuStation01			"0x0010039B">
 	<!ENTITY rsRoninAHero				"0x0010039C">
 	<!ENTITY rsRoninB					"0x0010039D">
 	<!ENTITY rsRoninBHero				"0x0010039E">
@@ -2163,6 +2164,9 @@
 	<!ENTITY smCentauriWarlordsSpace	"0x001003F4">
 	<!ENTITY rsCentauriRaiderHero		"0x001003F5">
 	<!ENTITY rsCentauriHeavyRaiderHero	"0x001003F6">
+	<!ENTITY svCentauriWarlordCivilians	"0x001003F7">
+	<!ENTITY stCentauriSettlement		"0x001003F8">
+	<!ENTITY rsCentauriSettlement		"0x001003F9">
 
 	<!-- 0410-042F KOBOL WARLORDS -->
 
@@ -2408,6 +2412,11 @@
 	<!ENTITY stHydrogenGasGiantStJohns	"0x00100762">
 	<!ENTITY rsHydrogenGasGiantStJohns	"0x00100763">
 
+	<!ENTITY msRaisuStation02			"0x00100764">
+	<!ENTITY tbRaisuStation02Revenge	"0x00100765">
+	<!ENTITY msRaisuStation03			"0x00100766">
+	<!ENTITY evRaisuStation03Settlement	"0x00100767">
+
 	<!-- 0780-079F QUANTUM CPU -->
 
 	<!ENTITY baQuantumCPUShieldProgram	"0x00100780">
@@ -2608,6 +2617,9 @@
 
 	<Module filename="Eridani.xml"/>
 	<Module filename="EridaniStations.xml"/>
+	<Module filename="RaisuMission01.xml"/>
+	<Module filename="RaisuMission02.xml"/>
+	<Module filename="RaisuMission03.xml"/>
 	<Module filename="RaisuStation.xml"/>
 
 	<!-- Ferians -->

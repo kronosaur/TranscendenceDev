@@ -65,7 +65,8 @@
 						getInfo: 
 							(lambda ()
 								(if (and (= (sysGetNode) 'SE)
-										(!= (typGetGlobalData &scArcoVaughnHeavyRaider; 'status) 'destroyed)
+										(!= (typ@ &scArcoVaughnHeavyRaider; 'status) 'destroyed)
+										(!= (typ@ &scArcoVaughnHeavyRaider; 'status) 'destroyedByPlayer)
 										)
 									{
 										obj: (@ (sysFindObject Nil "s +arcoVaughn;") 0)

@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&msRaisuStation03;"
+			name=				"Raisu 03: Destroy Centauri Settlement"
+			attributes=			"commonwealth, raisuStation"
+			inherit=			"&baDestroyStationMission;"
+
+			level=				"1"
+			maxAppearing=		"1"
+			>
+		<Properties>
+			<Variant id="targetDesc">
+				{
+					criteria: "TA +unid:&stCentauriSettlement;;"
+					}
+			</Variant>
+
+			<Global id="settlementSpared"></Global>
+		</Properties>
+
+		<Events>
+			<OnDeclined>
+				(block (
+					(settlementObj (sysFindObject gPlayerShip "TAN +unid:&stCentauriSettlement;;"))
+					)
+					;	Can't accept the mission later.
+
+					(msnSetUnavailable gSource)
+
+					;	Warlords give the player a chance
+
+					(objSet@ settlementObj 'known True)
+					(objSetShowAsDestination settlementObj 'autoClearOnDock)
+					(typFireEvent &svCentauriWarlordCivilians; 'OrderSetPlayerCanTrade)
+
+					;	Guaranteed barrels for purchase
+
+					(objAddItem settlementObj &itCentauriNanos; (obj@ gPlayerShip 'armorCount))
+
+					;	Add an event handler on the settlement to close the loop
+					;	with the player.
+
+					(objSetEventHandler settlementObj &evRaisuStation03Settlement;)
+					)
+			</OnDeclined>
+
+			<OnCompleted>
+				(switch
+					;	On success, we get free refueling and free armor repair
+					;	at Raisu Station.
+
+					(= aReason 'success)
+						(block (
+							(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+							)
+							(if (not (obj@ stationObj 'abandoned))
+								(objSet@ stationObj 'playerStatus 'hero)
+								)
+							)
+					)
+			</OnCompleted>
+
+			<GetRumors>
+				(append
+					(switch
+						(and (msn@ gSource 'isDeclined)
+								(typ@ &msRaisuStation03; 'settlementSpared)
+								)
+							(rpgRumorAdd 'raisuStation 'settlementSpared)
+
+						(msn@ gSource 'isDeclined)
+							(rpgRumorAdd 'raisuStation 'missionDeclined)
+
+						(msn@ gSource 'isSuccess)
+							(rpgRumorAdd 'raisuStation 'settlementDestroyed)
+						)
+					)
+			</GetRumors>
+
+			<GetGlobalAchievements>
+				(block (
+					(missionObj (msnFind "*P +unid:&msRaisuStation03;;"))
+					)
+					(switch
+						(not missionObj)
+							Nil
+
+						(msn@ missionObj 'isSuccess)
+							(list
+								{
+									descID: 'achievement.destroyedSettlement
+									sectionID: 'achievementsAndRegrets
+									}
+								)
+
+						(msn@ missionObj 'isDeclined)
+							(list
+								{
+									descID: 'achievement.sparedSettlement
+									sectionID: 'achievementsAndRegrets
+									}
+								)
+						)
+					)
+			</GetGlobalAchievements>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Destroy Centauri Settlement
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(list
+					{	descID: 'textIntro1		labelID:'actionIntro1					}
+					{	descID: 'textIntro2		labelID:'actionIntro2					}
+					)
+			</Text>
+			<Text id="Briefing">
+				(list
+					{	descID: 'textBriefing1			acceptLabelID:'actionAccept		declineLabelID:'actionDecline			}
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(list
+					{	descID: 'textAcceptReply1					}
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(list
+					{	descID: 'textDeclineReply1					}
+					)
+			</Text>
+			<Text id="InProgress">
+				(list
+					{	descID: 'textInProgress1					}
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(list
+					{	descID: 'textSuccessDebrief1		labelID:'actionSuccessDebrief1		}
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(list
+					{	descID: 'textFailureDebrief1				}
+					)
+			</Text>
+
+			<Text id="textSummary">
+			
+				%TargetName% is a nest of Centauri warlords. No station in the 
+				system will be safe until you destroy it.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textIntro1">
+
+				The station master looks at you sternly:
+
+				"There's a settlement at the edge of the system. It's a safe
+				haven for warlords. We won't be safe until the settlement is
+				destroyed!"
+			
+			</Text>
+			<String id="actionIntro1">"[M]ore killing?"</String>
+			<Text id="textIntro2">
+
+				The station master tenses up. She stares right at you, her eyes
+				filling up.
+
+				"We don't have a choice! The warlords won't stop! They take what
+				they want, killing anyone who gets in their way.
+
+				"This won't end until they're all dead!"
+
+			</Text>
+			<String id="actionIntro2">"[W]hat about the innocent people of the settlement?"</String>
+			<Text id="textBriefing1">
+
+				"No one on the settlement is innocent! If they're supporting the
+				warlords then they're just as guilty. You can't compromise with 
+				people who are trying to kill you!
+
+				"Will you help us?"
+			
+			</Text>
+			<String id="actionAccept">"[Y]eah, you're right."</String>
+			<String id="actionDecline">"[N]o, I've shed enough blood."</String>
+			<Text id="textAcceptReply1">
+
+				The station master sighs and slumps down on her console.
+
+				"I don't like it any more than you do, but there's nothing we
+				can do. You have to destroy the settlement!"
+
+			</Text>
+			<Text id="textDeclineReply1">
+
+				The station master wipes away her tears.
+
+				"You're a coward! When the warlords return and kill us all, the
+				blood will be on your hands."
+
+			</Text>
+			<Text id="textInProgress1">
+
+				"What's wrong? You said you could handle this mission! Get back 
+				out there and finish the job!"
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+
+				The citizens of Raisu Station are celebrating in the halls. 
+				The air is filled with music and laughter.
+
+				The station master approaches you, a bottle of Exile Starport
+				in her hand:
+
+				"Come on, pilgrim, this party is for you! We never would have
+				killed the tyrants if it wasn't for you!"
+
+			</Text>
+			<Text id="textFailureDebrief">
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+
+			<Text id="rumor.raisuStation.settlementDestroyed">
+
+				The station master smiles as you enter:
+
+				"We'll always remember how you freed us from the warlords."
+			
+			</Text>
+			<Text id="rumor.raisuStation.missionDeclined">
+
+				The station master is working at her console. She sees you but
+				does not want to talk.
+			
+			</Text>
+			<Text id="rumor.raisuStation.settlementSpared">
+
+				The station master is working at her console. The comms channels
+				are quiet and she stops to chat.
+
+				"You were right about sparing the Centauri settlement. I was too
+				angry to see it then, but more killing would not have helped
+				anyone."
+			
+			</Text>
+
+			<Text id="achievement.destroyedSettlement">Destroyed Centauri settlement in Eridani</Text>
+			<Text id="achievement.sparedSettlement">Spared Centauri settlement in Eridani</Text>
+		</Language>
+	</MissionType>
+
+<!-- EVENT HANDLERS -->
+
+	<Type unid="&evRaisuStation03Settlement;">
+		<Properties>
+			<Data id="raisu.showWelcome"></Data>
+		</Properties>
+
+		<Events>
+			<OnEventHandlerInit>
+				(block ()
+					(objSet@ gSource 'raisu.showWelcome True)
+					)
+			</OnEventHandlerInit>
+
+			<GetDockScreen>
+				(switch
+					(and (not (obj@ gSource 'abandoned))
+							(typ@ &svCentauriWarlordCivilians; 'playerCanTrade)
+							(obj@ gSource 'raisu.showWelcome)
+							)
+						{	
+							screen: &dsRPGDialog;
+							priority: 10
+							data: {
+								dialogID: 'raisu.welcomePlayer
+								}
+							}
+					)
+			</GetDockScreen>
+		</Events>
+
+		<Language>
+			<Code id="raisu.welcomePlayer">
+				(block (
+					(stationObj gSource)
+					)
+					(list
+						{	descID: 'raisu.welcome1		labelID:'raisu.actionWelcome1	}
+						{	descID: 'raisu.welcome2		labelID:'raisu.actionWelcome2	}
+						{	descID: 'raisu.welcome3		labelID:'raisu.actionWelcome3	}
+						{	descID: 'raisu.welcome4		labelID:'raisu.actionWelcome4
+							code: (lambda ()
+								(block (
+									)
+									(objSet@ stationObj 'raisu.showWelcome Nil)
+									(typSet@ &msRaisuStation03; 'settlementSpared True)
+									)
+								)
+							}
+						)
+					)
+			</Code>
+
+			<Text id="raisu.welcome1">
+
+				The docking bay is filled with people maintaining the station.
+				They stop what they're doing as you enter.
+
+				A woman in a pressure suit walks up to you:
+
+				"What are you doing here, pilgrim?"
+			
+			</Text>
+			<String id="raisu.actionWelcome1">"[W]here are the warlords?"</String>
+			<Text id="raisu.welcome2">
+
+				The woman laughs.
+
+				"You've killed all the leaders! The ones that remain are just
+				criminals."
+			
+			</Text>
+			<String id="raisu.actionWelcome2">"[W]hat happens now?"</String>
+			<Text id="raisu.welcome3">
+
+				"I don't know. We don't want more fighting, but no one likes a
+				vacuum. There will be a struggle for power, and whoever wins 
+				will decide.
+
+				"But at least we have a chance, thanks to you."
+			
+			</Text>
+			<String id="raisu.actionWelcome3">"[D]on't waste it."</String>
+			<Text id="raisu.welcome4">
+
+				The woman shrugs.
+
+				"You think too much of me, pilgrim. One person cannot change the
+				future.
+
+				"Not even you."
+
+				Even as she says this, you see armed men hiding in the shadows.
+			
+			</Text>
+			<String id="raisu.actionWelcome4">"[W]e'll see."</String>
+		</Language>
+	</Type>
+
+</TranscendenceModule>

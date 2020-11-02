@@ -2244,7 +2244,7 @@
 			;				a random location.
 
 				(block (
-					(bestStationObj (sysFindObject gPlayerShip "TAFN +populated; -occupation;"))
+					(bestStationObj (sysFindObject gPlayerShip "TAFN +populated; -occupation; -noPlayerResurrect"))
 					(bestShipObj (sysFindObject gPlayerShip "sAFN; +property:dockingEnabled;"))
 
 					;	Figure out the best place to put the ship
@@ -2373,6 +2373,14 @@
 				))
 
 			;	STORAGE FUNCTIONS ------------------------------------------------------------------
+			;
+			;	To implement:
+			;
+			;	1.	Add data property rpg.storageID.
+			;	2.	To store, call rpgStoreItem
+			;	3.	To retrieve, call rpgGetStorage. If it returns non-nil, then
+			;		call scrShowScreen on dsRPGLoot and pass the result in
+			;		sourceObj as an option.
 
 			(setq rpgGetStorage (lambda (sourceObj)
 				(block (

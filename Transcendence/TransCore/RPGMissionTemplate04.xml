@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&baDefendStationMission;"
+			inherit=			"&unidCommonText;"
+			expireTime=			"5400"
+			failureAfterOutOfSystem="1800"
+			>
+		<Properties>
+			<!-- encounterDesc
+			
+				This property is either a single struct or a list of structs. In 
+				either case, the fields in the struct are:
+
+				type: The ship table to use.
+				sovereign: The sovereign for the ships (if not specified in the
+						ship table.
+				target: If 'player, then we target the player. Otherwise, we 
+						target the station being defended (the mission giver).
+				dist: The distance from the target that they will appear.
+			
+			-->
+			<Definition id="encounterDesc">
+				{
+					type: &scMikeno;
+					sovereign: &svUnknownEnemy;
+					dist: 100
+					}
+			</Definition>
+
+			<Data id="targetID"></Data>
+		</Properties>
+
+		<Events>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<OnAcceptedUndock>
+
+				;	Called after the player undocks after having accepted the
+				;	mission. 
+				;
+				;	gSource: Mission object.
+				;	aDockTarget: Object that we were docked with.
+
+				(block (
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+					(encounterDesc (msn@ gSource 'encounterDesc))
+					(encounterList
+						(switch
+							(= (typeof encounterDesc) 'struct)
+								(list encounterDesc)
+
+							(= (typeof encounterDesc) 'list)
+								encounterDesc
+
+							nil
+							)
+						)
+
+					(firstObj nil)
+					)
+					;	Create each group 
+
+					(enum encounterList encounterDesc
+						(block (
+							(targetObj
+								(switch
+									(= (@ encounterDesc 'target) 'player)
+										gPlayerShip
+
+									stationObj
+									)
+								)
+
+							enemyObjs
+							)
+
+							(setq enemyObjs 
+								(sysCreateEncounter (@ encounterDesc 'type) {
+									target: targetObj
+									distance: (@ encounterDesc 'dist)
+									})
+								)
+
+							(if (not firstObj)
+								(setq firstObj (@ enemyObjs 0))
+								)
+
+							;	Mark the objects so that we know when we've killed 
+							;	everyone.
+
+							(enum enemyObjs theObj
+								(block ()
+									(objSetData theObj 'rpg.missionTarget (objGetID gSource))
+									(msnRegisterForEvents gSource theObj)
+									)
+								)
+							)
+						)
+
+					;	Set the first object as the target
+
+					(msnSet@ gSource 'targetID (objGetID firstObj))
+					(msnSetPlayerTarget gSource)
+					)
+
+			</OnAcceptedUndock>
+
+			<!-- RUNNING THE MISSION -->
+
+			<OnSetPlayerTarget>
+
+				;	Called to refresh the player's target. Always called right 
+				;	after the player accepts the mission. May be called at 
+				;	other times (e.g., after the player returns to the system).
+				;
+				;	gSource: Mission object.
+				;	aReason:
+				;		'accepted: Mission has been accepted
+				;		'debriefed: Player has been debriefed
+				;		'failure: Mission failed
+				;		'inProgress: Player visited station while mission in progress
+				;		'newSystem: Player is in a new system
+				;		'success: Mission completed successfully
+
+				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)) 'attack)
+
+			</OnSetPlayerTarget>
+
+			<OnObjDestroyed>
+
+				;	Called when an object is destroyed, but only if we have 
+				;	called msnRegisterForEvents on the object.
+				;
+				;	gSource: Mission object.
+				;	aObjDestroyed: Object that was destroyed
+				;	aDestroy: True if object was destroyed (as opposed to left 
+				;		system)
+				;	aDestroyReason:
+				;		'ascended
+				;		'custom
+				;		'damage
+				;		'disintegration
+				;		'ejecta
+				;		'enteredStargate
+				;		'explosion
+				;		'gravity
+				;		'playerCreatedExplosion
+				;		'powerFailure
+				;		'radiationPoisoning
+				;		'removedFromSystem
+				;		'runningOutOfFuel
+				;		'self
+				;		'shatter
+				;		'weaponMalfunction
+				;	aDestroyer: Object that destroyed it.
+				;	aOrderGiver: Object that controlled destroyer, e.g.,
+				;		if destroyer is an auton.
+				;	aWreckObj: Wreck left behind (may be nil)
+				
+				(switch
+					;	If our station got destroyed, then we fail.
+
+					(= (objGetID aObjDestroyed) (msn@ gSource 'ownerID))
+						(msnFailure gSource)
+
+					;	If this is one of the attackers, record it.
+
+					(and aDestroy 
+							(= (objGetData aObjDestroyed 'rpg.missionTarget) (objGetID gSource))
+							)
+						(block (
+							(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+							(attackersLeft 
+								(filter (sysFindObject stationObj "sA D:rpg.missionTarget;") theObj
+									(= (objGetData theObj 'rpg.missionTarget) (objGetID gSource))
+									)
+								)
+							)
+							(if attackersLeft
+								(block ()
+									(msnSet@ gSource 'targetID (objGetID (@ attackersLeft 0)))
+									(msnSetPlayerTarget gSource)
+									)
+
+								(msnSuccess gSource)
+								)
+							)
+					)
+			</OnObjDestroyed>
+		</Events>
+	</MissionType>
+
+</TranscendenceModule>
