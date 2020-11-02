@@ -650,6 +650,11 @@ CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTar
 	bool bCheckLineOfFire = !TargetList.NoLineOfFireCheck();
 	bool bCheckRange = !TargetList.NoRangeCheck() || (Device.GetMaxFireRangeLS() != 0);
 	DWORD dwTargetTypes = DeviceItem.GetTargetTypes();
+	if (dwTargetTypes & CTargetList::typeMissile)
+		{
+		//  If we can target missiles, then we can target targetable missiles as well
+		dwTargetTypes |= CTargetList::typeTargetableMissile;
+		}
 
 	Metric rMaxRange = DeviceItem.GetMaxEffectiveRange();
 	Metric rMaxRange2 = rMaxRange * rMaxRange;

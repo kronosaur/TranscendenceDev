@@ -28,7 +28,8 @@ class CTargetListSelector
 						&& m_Source.IsAngryAt(&Obj)
 						&& Obj != m_Options.pExcludeObj)
 					{
-					if (retiType) *retiType = CTargetList::typeMissile;
+					CTargetList::ETargetTypes missileType = Obj.IsTargetableProjectile() ? CTargetList::typeTargetableMissile : CTargetList::typeMissile;
+					if (retiType) *retiType = missileType;
 					return true;
 					}
 				}
