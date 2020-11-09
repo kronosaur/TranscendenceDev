@@ -117,6 +117,7 @@ class CAIBehaviorCtx
 		void SetWaitingForShieldsToRegen (bool bValue = true) { m_fWaitForShieldsToRegen = bValue; }
 		bool ThrustsThroughTurn (void) const { return m_fThrustThroughTurn; }
 		void Update (CShip *pShip);
+		bool UsesAllPrimaryWeapons (void) const { return m_AISettings.UseAllPrimaryWeapons(); }
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
 		//	Maneuvers
@@ -160,7 +161,7 @@ class CAIBehaviorCtx
 		void CalcNavPath (CShip *pShip, CSpaceObject *pFrom, CSpaceObject *pTo);
 		void CalcNavPath (CShip *pShip, CNavigationPath *pPath, bool bOwned = false);
 		void CalcShieldState (CShip *pShip);
-		int CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2);
+		int CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2, bool avoidAnyNonReadyWeapons = false);
 		void CancelDocking (CShip *pShip, CSpaceObject *pBase);
 		bool CheckForFriendsInLineOfFire (CShip *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int iFireAngle, Metric rMaxRange)
 			{ return (NoFriendlyFireCheck() || pShip->IsLineOfFireClear(pDevice, pTarget, iFireAngle, rMaxRange)); }

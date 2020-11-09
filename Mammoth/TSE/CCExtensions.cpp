@@ -1410,6 +1410,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'noNavPaths (True/Nil)\n"
 			"   'noOrderGiver (True/Nil)\n"
 			"   'noTargetsOfOpportunity (True/Nil)\n"
+			"   'useAllPrimaryWeapons (True/Nil)\n"
 			"\n"
 			"   'combatSeparation {pixels}\n"
 			"   'fireAccuracy {percent}\n"

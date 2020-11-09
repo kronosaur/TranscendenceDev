@@ -1402,9 +1402,127 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 	//	Select the appropriate weapon. If we're not given a weapon, then choose the
 	//	best one.
 
-	DeviceNames iWeaponToFire;
-	Metric rWeaponRange;
-	if (iWeapon == -1)
+	std::vector<CInstalledDevice*> pWeaponsToFire;
+	std::vector<Metric> rWeaponRanges;
+	if (iWeapon == -1 && UsesAllPrimaryWeapons())
+		{
+		//  Block for selecting and firing multiple weapons. In this case, we select each weapon on the ship that is not a secondary weapon or linked fire (except for
+		//  selected or selectedSameVariant). If it is selected or selectedSameVariant, add only the gun with the highest weapon score.
+		int weaponIndex = 0;
+
+		std::map<LONG, int> lkfSelectedWeaponsByScore;
+		std::map<LONG, CInstalledDevice*> lkfSelectedWeaponsToPushBack;
+		std::map<std::pair<LONG, int>, int> lkfSelectedVariantWeaponsByScore;
+		std::map<std::pair<LONG, int>, CInstalledDevice*> lkfSelectedVariantWeaponsToPushBack;
+
+		for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
+			{
+			// Iterate through all weapons.
+			CInstalledDevice *pWeapon = DeviceItem.GetInstalledDevice();
+
+			//	If this weapon is not working, linked-fire, or secondary, then skip it
+			auto linkedFireOptions = pWeapon->GetItem()->AsDeviceItemOrThrow().GetLinkedFireOptions();
+			bool isLinkedFire = (pWeapon->IsLinkedFire() && !(linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelected)
+				&& !(linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelectedVariant));
+
+			if (pWeapon->IsSecondaryWeapon() || isLinkedFire || !pWeapon->IsWorking())
+				{
+				continue;
+				}
+			switch (pWeapon->GetCategory())
+				{
+				case itemcatWeapon:
+					{
+					// If score is greater than zero, add it to the list
+					// If it is an lkfSelected weapon, add only the one with the highest score of that type to the list
+					// If it is an lkfSelectedVariant weapon, add only the one with the highest score and variant combo of that type to the list
+					int iScore = CalcWeaponScore(pShip, pTarget, pWeapon, rTargetDist2, true);
+					if (linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelected)
+						{
+						LONG UNID = pWeapon->GetUNID();
+						// Check if this UNID exists in the respective map; if it does then check to see if the score exceeds the stored score, otherwise the score to beat is zero
+						// If so, set this as the weapon of the given UNID to push_back
+						int iHighestScoreForCategory = lkfSelectedWeaponsByScore[UNID];
+						if (iScore > iHighestScoreForCategory)
+							{
+							lkfSelectedWeaponsByScore[UNID] = iScore;
+							lkfSelectedWeaponsToPushBack[UNID] = pWeapon;
+							}
+						}
+					else if (linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelectedVariant)
+						{
+						LONG UNID = pWeapon->GetUNID();
+						int variant_type = CItemCtx(pShip, pWeapon).GetItemVariantNumber();
+						auto identifier = std::make_pair(UNID, variant_type);
+						// Check if this identifier exists in the respective map; if it does then check to see if the score exceeds the stored score, otherwise the score to beat is zero
+						// If so, set this as the weapon of the given identifier to push_back
+						int iHighestScoreForCategory = lkfSelectedVariantWeaponsByScore[identifier];
+						if (iScore > iHighestScoreForCategory)
+						{
+							lkfSelectedVariantWeaponsByScore[identifier] = iScore;
+							lkfSelectedVariantWeaponsToPushBack[identifier] = pWeapon;
+						}
+						}
+					else if (iScore > 0)
+						{
+						pWeaponsToFire.push_back(pWeapon);
+						rWeaponRanges.push_back(pWeapon->GetMaxEffectiveRange(pShip, pTarget));
+						}
+					break;
+					}
+
+				case itemcatLauncher:
+					{
+					int iCount = pShip->GetMissileCount();
+					int iBestScore = 0;
+					int iBestWeaponVariant = 0;
+					if (iCount > 0 && !pShip->IsWeaponRepeating(devMissileWeapon))
+						{
+						pShip->ReadyFirstMissile();
+
+						for (int j = 0; j < iCount; j++)
+							{
+							int iScore = CalcWeaponScore(pShip, pTarget, pWeapon, rTargetDist2);
+
+							//	If we only score 1 and we've got secondary weapons, then don't
+							//	bother with this missile (we don't want to waste it)
+
+							if (iScore == 1 && HasSecondaryWeapons())
+								{
+								iScore = 0;
+								}
+
+							if (iScore > iBestScore)
+								{
+								iBestWeaponVariant = j;
+								iBestScore = iScore;
+								}
+
+							pShip->ReadyNextMissile();
+							}
+						}
+					auto iBestWeapon = pWeapon->GetDeviceSlot();
+					iBestWeapon = pShip->SelectWeapon(iBestWeapon, iBestWeaponVariant);
+					pWeaponsToFire.push_back(pWeapon);
+					rWeaponRanges.push_back(pWeapon->GetMaxEffectiveRange(pShip, pTarget));
+					break;
+					}
+				}
+			}
+
+		for (auto& UNIDAndWeapon : lkfSelectedWeaponsToPushBack)
+			{
+			pWeaponsToFire.push_back(UNIDAndWeapon.second);
+			rWeaponRanges.push_back(UNIDAndWeapon.second->GetMaxEffectiveRange(pShip, pTarget));
+			}
+
+		for (auto& identifierAndWeapon : lkfSelectedVariantWeaponsToPushBack)
+			{
+			pWeaponsToFire.push_back(identifierAndWeapon.second);
+			rWeaponRanges.push_back(identifierAndWeapon.second->GetMaxEffectiveRange(pShip, pTarget));
+			}
+		}
+	else if (iWeapon == -1)
 		{
 		if (((iTick % 30) == 0)
 				&& (m_fHasMultipleWeapons || m_iBestWeapon == devNone))
@@ -1419,142 +1537,154 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 			DebugAIOutput(pShip, "Fire: No appropriate weapon found");
 			return;
 			}
-
-		iWeaponToFire = m_iBestWeapon;
-		rWeaponRange = m_rBestWeaponRange;
+		CInstalledDevice* pWeapon = pShip->GetNamedDevice(m_iBestWeapon);
+		if (pWeapon)
+			{
+			pWeaponsToFire.push_back(pWeapon);
+			rWeaponRanges.push_back(pWeapon->GetMaxEffectiveRange(pShip, pTarget));
+			}
 		}
 	else
 		{
-		iWeaponToFire = pShip->SelectWeapon(iWeapon, iWeaponVariant);
-		rWeaponRange = pShip->GetWeaponRange(iWeaponToFire);
+		auto iWeaponToFire = pShip->SelectWeapon(iWeapon, iWeaponVariant);
+		CInstalledDevice* pWeapon = pShip->GetNamedDevice(iWeaponToFire);
+		if (pWeapon)
+			{
+			pWeaponsToFire.push_back(pWeapon);
+			rWeaponRanges.push_back(pWeapon->GetMaxEffectiveRange(pShip, pTarget));
+			}
 		}
 
-	//	See if the chosen weapon can hit the target
+	int iWeaponIndex = 0;
+	for (auto& pWeaponToFire : pWeaponsToFire)
+		{
+		//	See if the chosen weapon can hit the target
+		Metric rWeaponRange = rWeaponRanges[iWeaponIndex];
 
-	int iAimAngle = pShip->GetRotation();
-	int iFireAngle = -1;
-	int iFacingAngle = -1;
-	bool bAligned;
-	bAligned = pShip->IsWeaponAligned(iWeaponToFire,
-			pTarget, 
+		int iAimAngle = pShip->GetRotation();
+		int iFireAngle = -1;
+		int iFacingAngle = -1;
+		bool bAligned;
+		bAligned = pShip->IsWeaponAligned(pWeaponToFire,
+			pTarget,
 			&iAimAngle,
 			&iFireAngle,
 			&iFacingAngle);
-	bool bAimError = false;
+		bool bAimError = false;
 
-	//	iAimAngle is the direction that we should fire in order to hit
-	//	the target.
-	//
-	//	iFireAngle is the direction in which the weapon will fire.
-	//
-	//	iFacingAngle is the direction in which the ship should face
-	//	in order for the weapon to hit the target.
+		//	iAimAngle is the direction that we should fire in order to hit
+		//	the target.
+		//
+		//	iFireAngle is the direction in which the weapon will fire.
+		//
+		//	iFacingAngle is the direction in which the ship should face
+		//	in order for the weapon to hit the target.
 
-	//	There is a chance of missing
+		//	There is a chance of missing
 
-	if (pShip->GetWeaponIsReady(iWeaponToFire))
-		{
+		if (pWeaponToFire->IsReady())
+			{
+			if (bAligned)
+				{
+				if (mathRandom(1, 100) > GetFireAccuracy())
+					{
+					bAligned = false;
+
+					//	In this case, we happen to be aligned, but because of inaccuracy
+					//	reason we think we're not. We clear the aim angle because for
+					//	omnidirectional weapons, we don't want to try to turn towards
+					//	the new aim point.
+
+					iAimAngle = -1;
+					bAimError = true;
+					DebugAIOutput(pShip, "Aim error: hold fire when aligned");
+					}
+				}
+			else if (iAimAngle != -1)
+				{
+				if (mathRandom(1, 100) <= m_iPrematureFireChance)
+					{
+					int iAimOffset = AngleOffset(iFireAngle, iAimAngle);
+					if (iAimOffset < 20)
+						{
+						bAligned = true;
+						bAimError = true;
+						DebugAIOutput(pShip, "Aim error: fire when not aligned");
+						}
+					}
+				}
+			}
+
+		//	Fire
+
 		if (bAligned)
 			{
-			if (mathRandom(1, 100) > GetFireAccuracy())
-				{
-				bAligned = false;
-
-				//	In this case, we happen to be aligned, but because of inaccuracy
-				//	reason we think we're not. We clear the aim angle because for
-				//	omnidirectional weapons, we don't want to try to turn towards
-				//	the new aim point.
-
-				iAimAngle = -1;
-				bAimError = true;
-				DebugAIOutput(pShip, "Aim error: hold fire when aligned");
-				}
-			}
-		else if (iAimAngle != -1)
-			{
-			if (mathRandom(1, 100) <= m_iPrematureFireChance)
-				{
-				int iAimOffset = AngleOffset(iFireAngle, iAimAngle);
-				if (iAimOffset < 20)
-					{
-					bAligned = true;
-					bAimError = true;
-					DebugAIOutput(pShip, "Aim error: fire when not aligned");
-					}
-				}
-			}
-		}
-
-	//	Fire
-
-	if (bAligned)
-		{
 #ifdef DEBUG
-		{
-		CInstalledDevice *pWeapon = pShip->GetNamedDevice(iWeaponToFire);
+				{
+				char szDebug[1024];
+				if (bAimError)
+					wsprintf(szDebug, "%s: false positive  iAim=%d  iFireAngle=%d", pWeaponToFire->GetName().GetASCIIZPointer(), iAimAngle, iFireAngle);
+				else if (!pWeaponToFire->IsReady())
+					wsprintf(szDebug, "%s: aligned; NOT READY", pWeaponToFire->GetName().GetASCIIZPointer());
+				else if (rTargetDist2 > (rWeaponRange * rWeaponRange))
+					wsprintf(szDebug, "%s: aligned; TARGET OUT OF RANGE", pWeaponToFire->GetName().GetASCIIZPointer());
+				else
+					wsprintf(szDebug, "%s: aligned", pWeaponToFire->GetName().GetASCIIZPointer());
 
-		char szDebug[1024];
-		if (bAimError)
-			wsprintf(szDebug, "%s: false positive  iAim=%d  iFireAngle=%d", pWeapon->GetName().GetASCIIZPointer(), iAimAngle, iFireAngle);
-		else if (!pShip->GetWeaponIsReady(iWeaponToFire))
-			wsprintf(szDebug, "%s: aligned; NOT READY", pWeapon->GetName().GetASCIIZPointer());
-		else if (rTargetDist2 > (rWeaponRange * rWeaponRange))
-			wsprintf(szDebug, "%s: aligned; TARGET OUT OF RANGE", pWeapon->GetName().GetASCIIZPointer());
-		else
-			wsprintf(szDebug, "%s: aligned", pWeapon->GetName().GetASCIIZPointer());
-
-		DebugAIOutput(pShip, szDebug);
-		}
+				DebugAIOutput(pShip, szDebug);
+				}
 #endif
 
-		//	If we're aligned and the weapon is ready, and we're
-		//	in range of the target, then fire!
+			//	If we're aligned and the weapon is ready, and we're
+			//	in range of the target, then fire!
 
-		if (pShip->GetWeaponIsReady(iWeaponToFire)
+			if (pWeaponToFire->IsReady()
 				&& rTargetDist2 <= (rWeaponRange * rWeaponRange))
-			{
-			CInstalledDevice *pWeapon = pShip->GetNamedDevice(iWeaponToFire);
-
-			if (iWeaponToFire == devPrimaryWeapon)
 				{
-				if (CheckForFriendsInLineOfFire(pShip, pWeapon, pTarget, iFireAngle, Max(pWeapon->GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK)))
+				if (pWeaponToFire->GetCategory() == itemcatWeapon)
 					{
-					if (!bDoNotShoot)
-						pShip->SetWeaponTriggered(pWeapon);
-					DebugAIOutput(pShip, "FireOnTarget: Fire primary!");
+					if (CheckForFriendsInLineOfFire(pShip, pWeaponToFire, pTarget, iFireAngle, Max(pWeaponToFire->GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK)))
+						{
+						if (!bDoNotShoot)
+							pShip->SetWeaponTriggered(pWeaponToFire);
+						DebugAIOutput(pShip, "FireOnTarget: Fire primary!");
+						}
+					else
+						DebugAIOutput(pShip, "FireOnTarget: Friendlies in line of fire");
 					}
 				else
-					DebugAIOutput(pShip, "FireOnTarget: Friendlies in line of fire");
-				}
-			else
-				{
-				if (CheckForFriendsInLineOfFire(pShip, pWeapon, pTarget, iFireAngle, Max(pWeapon->GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK)))
 					{
-					if (!bDoNotShoot)
-						pShip->SetWeaponTriggered(pWeapon);
-					DebugAIOutput(pShip, "FireOnTarget: Fire missile!");
+					if (CheckForFriendsInLineOfFire(pShip, pWeaponToFire, pTarget, iFireAngle, Max(pWeaponToFire->GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK)))
+						{
+						if (!bDoNotShoot)
+							pShip->SetWeaponTriggered(pWeaponToFire);
+						DebugAIOutput(pShip, "FireOnTarget: Fire missile!");
+						}
+					else
+						DebugAIOutput(pShip, "FireOnTarget: Friendlies in line of fire");
 					}
-				else
-					DebugAIOutput(pShip, "FireOnTarget: Friendlies in line of fire");
 				}
 			}
-		}
-	else
-		{
-		DebugAIOutput(pShip, "Fire: Weapon NOT aligned");
+		else
+			{
+			DebugAIOutput(pShip, "Fire: Weapon NOT aligned");
 
 #ifdef DEBUG_SHIP
-		if (bDebug)
-			pShip->GetUniverse().DebugOutput("Face target at distance: %d moving at: %d%%c", 
+			if (bDebug)
+				pShip->GetUniverse().DebugOutput("Face target at distance: %d moving at: %d%%c",
 					(int)(vTarget.Length() / LIGHT_SECOND),
 					(int)(100.0 * 0 / LIGHT_SPEED));
 #endif
+			}
+
+		//	Turn to aim, even if weapon is already approximately aligned
+
+		if (retiFireDir)
+			*retiFireDir = iFacingAngle;
+		iWeaponIndex++;
 		}
 
-	//	Turn to aim, even if weapon is already approximately aligned
 
-	if (retiFireDir)
-		*retiFireDir = iFacingAngle;
 
 	DEBUG_CATCH
 	}

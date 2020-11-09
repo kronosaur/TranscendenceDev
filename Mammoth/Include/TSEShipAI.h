@@ -91,6 +91,7 @@ class CAISettings
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetMinCombatSeparation (Metric rValue) { m_rMinCombatSeparation = rValue; }
 		CString SetValue (const CString &sSetting, const CString &sValue);
+		bool UseAllPrimaryWeapons (void) const { return m_fUseAllPrimaryWeapons; }
 		void WriteToStream (IWriteStream *pStream);
 
 		static AICombatStyles ConvertToAICombatStyle (const CString &sValue);
@@ -123,7 +124,7 @@ class CAISettings
 		DWORD m_fNoTargetsOfOpportunity:1;		//	If TRUE, do not attack targets of opportunity
 		DWORD m_fIsPlayer:1;					//	If TRUE, we're controlling the player ship (this is usually
 												//		for debugging only).
-		DWORD m_fSpare5:1;
+		DWORD m_fUseAllPrimaryWeapons:1;		//  If TRUE, we try to shoot all primary weapons at the same time
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
