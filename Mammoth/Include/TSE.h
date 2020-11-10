@@ -356,11 +356,11 @@ class CSpaceObject
 			{
 			stealthMin =			0,
 			stealthNormal =			4,
-			stealthMax =			15,			//	Cloaked
+			stealthMax = CPerceptionCalc::EConstants::RANGE_ARRAY_SIZE - 1,			//	Cloaked
 
 			perceptMin =			0,
 			perceptNormal =			4,
-			perceptMax =			15,
+			perceptMax = CPerceptionCalc::EConstants::RANGE_ARRAY_SIZE - 1,
 			};
 
 		enum InterSystemResults
