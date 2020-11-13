@@ -128,7 +128,7 @@
 									(msnFind "c +unid:&msRaisuStation01;;")
 										(rpgDockServices gPlayerShip { })
 
-									(scrShowScreen &dsRPGMessage;{
+									(scrShowScreen gScreen &dsRPGMessage; {
 										textID: 'descNoServices
 										})
 									)
