@@ -673,7 +673,9 @@
 			>
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(@ gData 'rankDetails)
+				(or (@ gData 'rankDetails) 
+					(objTranslate gSource 'rpg.statusDetails)
+					)
 			</OnDisplayInit>
 		</Display>
 

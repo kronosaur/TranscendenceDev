@@ -53,7 +53,7 @@
 
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(@ gData 'rankDetails)
+				(or (@ gData 'rankDetails) (objTranslate gSource 'rpg.statusDetails))
 			</OnDisplayInit>
 		</Display>
 
@@ -853,6 +853,16 @@
 				(scrSetData gScreen 'deliveryText (msnFireEvent (@ gData 'missionObj) 'OnDeliveryMissionCompleted))
 				)
 		</OnScreenInit>
+
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(block (
+					(deliveryText (scrGetData gScreen 'deliveryText))
+					)
+					(or (@ deliveryText 'rankDetails) (objTranslate gSource 'rpg.statusDetails))
+					)
+			</OnDisplayInit>
+		</Display>
 
 		<Panes>
 			<Default>
