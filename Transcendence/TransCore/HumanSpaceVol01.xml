@@ -2416,6 +2416,7 @@
 	<!ENTITY tbRaisuStation02Revenge	"0x00100765">
 	<!ENTITY msRaisuStation03			"0x00100766">
 	<!ENTITY evRaisuStation03Settlement	"0x00100767">
+	<!ENTITY rsRaisuStation				"0x00100768">
 
 	<!-- 0780-079F QUANTUM CPU -->
 

@@ -53,7 +53,9 @@
 							(if missionObj
 								{
 									nextScreen: &dsRPGMission;
-									nextScreenData: { missionObj:missionObj }
+									nextScreenData: { 
+										missionObj:missionObj
+										}
 									}
 								)
 							)

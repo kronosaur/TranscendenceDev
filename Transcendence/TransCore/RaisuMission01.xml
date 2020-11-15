@@ -293,7 +293,9 @@
 							(if missionObj
 								{
 									nextScreen: &dsRPGMission;
-									nextScreenData: { missionObj:missionObj }
+									nextScreenData: { 
+										missionObj:missionObj
+										}
 									}
 								)
 							)
@@ -425,8 +427,11 @@
 			</Text>
 			<Text id="descHiding">
 
-				The docking bay is completely empty. Old air scrubbers pump a thin, odorous breeze out of
-				rusty vents. Discarded packets of Salmonite and Red Nebula beer huddle in the corner.
+				The station master stands at her console. She turns her 
+				attention towards you:
+
+				"Arco Vaughn is the key! Kill him and we'll all rest easy. Until
+				then, we're gonna shelter in place."
 
 			</Text>
 
