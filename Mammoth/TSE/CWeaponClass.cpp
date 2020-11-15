@@ -1472,7 +1472,11 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 	if (m_iCounterPerShot != 0)
 		{
 		if (!UpdateShipCounter(ItemCtx, ShotDesc))
+			{
+			//	If we fail because of ship energy/heat limits, do not increment the counter.
+			pSource->IncCounterValue(-m_iCounterPerShot);
 			return resFailure;
+			}
 		}
 	
 	//	We can fail to fire but still update temperature and consume power.
@@ -1481,10 +1485,15 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 		return resNoEffect;
 	
 	//	See if we have enough ammo/charges to proceed. If we don't then we 
-	//	cannot continue.
+	//	cannot continue, and should reverse ship energy/heat consumption
+	//	if necessary.
 
 	if (!ConsumeAmmo(ItemCtx, ShotDesc, iRepeatingCount, retbConsumedItems))
+		{
+		if (m_iCounterPerShot != 0)
+			pSource->IncCounterValue(-m_iCounterPerShot);
 		return resFailure;
+		}
 
 	//	If we're damaged, disabled, or badly designed, we have a chance of 
 	//	failure.
