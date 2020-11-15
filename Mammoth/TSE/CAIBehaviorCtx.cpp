@@ -235,7 +235,6 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 		else if (Weapon.IsLinkedFire())
 			{
-			bool bSkipThisWeapon = false;
 			if (UsesAllPrimaryWeapons())
 				{
 				auto linkedFireOptions = Weapon.GetItem()->AsDeviceItemOrThrow().GetLinkedFireOptions();

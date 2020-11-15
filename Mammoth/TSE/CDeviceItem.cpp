@@ -53,28 +53,9 @@ CDeviceItem::ECalcTargetTypes CDeviceItem::CalcTargetType (void) const
 		CInstalledDevice *pPrimaryWeapon = pSource->GetNamedDevice(devPrimaryWeapon);
 		CInstalledDevice *pSelectedLauncher = pSource->GetNamedDevice(devMissileWeapon);
 
-		//  If our options is "never fire", or if our options is "fire if selected" and this is the player ship,
-		//  but the primary weapon or launcher isn't both "fire if selected" AND of the same type, then don't fire.
-		//  If a weapon is "fire if selected and same variant", then it only fires if the primary weapon is of the
-		//  same variant and type.
-
 		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
-		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (dwLinkedFireOptions
-			& CDeviceClass::lkfSelectedVariant ? GetVariantNumber() == CItemCtx(pSource, pPrimaryWeapon).GetItemVariantNumber() : true) : false;
-		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (dwLinkedFireOptions
-			& CDeviceClass::lkfSelectedVariant ? GetVariantNumber() == CItemCtx(pSource, pSelectedLauncher).GetItemVariantNumber() : true) : false;
-
-		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
-			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
-			(pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == Weapon.GetUNID()) && bPrimaryWeaponCheckVariant) : false))
-				&& ((Weapon.GetCategory() == itemcatWeapon) && !Weapon.UsesLauncherControls())) ||
-				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
-			(pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == Weapon.GetUNID()) && bSelectedLauncherCheckVariant) : false))
-				&& ((Weapon.GetCategory() == itemcatLauncher) || Weapon.UsesLauncherControls()))) &&
-			(dwLinkedFireOptions & dwLinkedFireSelected) &&
-			pSource->IsPlayer()
-			))
+		if ((dwLinkedFireOptions & CDeviceClass::lkfNever))
 			{
 			return calcNoTarget;
 			}

@@ -438,7 +438,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	DEBUG_CATCH
 	}
 
-bool CInstalledDevice::IsLinkedFire (ItemCategories iTriggerCat) const
+bool CInstalledDevice::IsLinkedFire (ItemCategories iTriggerCat, CInstalledDevice *pWeapon) const
 
 //	IsLinkedFire
 //
@@ -452,11 +452,29 @@ bool CInstalledDevice::IsLinkedFire (ItemCategories iTriggerCat) const
 		return true;
 	else
 		{
+		bool bWeaponMatchesSelected = true;
+		if (pWeapon)
+			{
+			auto linkedFireOptions = GetItem()->AsDeviceItemOrThrow().GetLinkedFireOptions();
+			auto bLinkedFireSelected = (linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelected);
+			auto bLinkedFireSelectedVariant = (linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelectedVariant);
+			if (bLinkedFireSelected || bLinkedFireSelectedVariant)
+				{
+				bWeaponMatchesSelected = pWeapon->GetUNID() == GetUNID();
+				}
+			if (bLinkedFireSelectedVariant)
+				{
+				int iGunVariantType = CItemCtx(GetSource(), pWeapon).GetItemVariantNumber();
+				int iOtherGunVariantType = CItemCtx(GetSource(), this).GetItemVariantNumber();
+				bWeaponMatchesSelected = bWeaponMatchesSelected && (iGunVariantType == iOtherGunVariantType);
+				}
+			}
+
 		ItemCategories iNewItemCategory = GetClass()->GetCategory();
 		if (GetClass()->UsesLauncherControls() && iNewItemCategory == itemcatWeapon)
 			iNewItemCategory = itemcatLauncher;
 
-		return (iNewItemCategory == iTriggerCat);
+		return (iNewItemCategory == iTriggerCat) && bWeaponMatchesSelected;
 		}
 	}
 

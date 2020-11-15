@@ -674,7 +674,7 @@ class CInstalledDevice
 		bool IsFirstVariantSelected(CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsFirstVariantSelected(pSource, this) : true); }
 		bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return m_pClass->IsFuelCompatible(Ctx, FuelItem); }
 		bool IsLastVariantSelected(CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsLastVariantSelected(pSource, this) : true); }
-		bool IsLinkedFire (ItemCategories iTriggerCat = itemcatNone) const;
+		bool IsLinkedFire (ItemCategories iTriggerCat = itemcatNone, CInstalledDevice *pWeapon = nullptr) const;
 		bool IsSecondaryWeapon (void) const;
 		bool IsSelectable (void) const;
 		bool IsVariantSelected (CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsVariantSelected(pSource, this) : true); }
