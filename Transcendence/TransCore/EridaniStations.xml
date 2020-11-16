@@ -10,7 +10,7 @@
 			inherit=			"&baCommonwealthStation;"
 				 
 			level=				"4"
-			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated, startonEridani"
+			attributes=			"commonwealth, commonwealthCustoms, eridaniScript, friendly, human, majorStation, populated, startonEridani"
 				 
 			dockScreen=			"&dsCommonwealthStation;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"

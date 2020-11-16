@@ -4,7 +4,7 @@
 
 	<MissionType UNID="&msCommonwealthMining04;"
 			name=				"Commonwealth Mining 04: Destroy Enemy Station"
-			attributes=			"commonwealthMining"
+			attributes=			"commonwealthMining, eridaniScript"
 			inherit=			"&baDestroyStationMission;"
 
 			level=				"1-4"

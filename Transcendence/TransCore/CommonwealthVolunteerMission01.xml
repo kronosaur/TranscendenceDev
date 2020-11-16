@@ -4,7 +4,7 @@
 
 	<MissionType UNID="&msCMVolunteer01;"
 			name=				"Commonwealth Volunteer 01: Intercept Transport"
-			attributes=			"commonwealthMilitia, commonwealthVolunteer, metropolisMilitia, rank0"
+			attributes=			"commonwealthMilitia, commonwealthVolunteer, eridaniScript, metropolisMilitia, rank0"
 			inherit=			"&baInterceptMission;"
 
 			level=				"1-4"

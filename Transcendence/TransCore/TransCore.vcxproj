@@ -371,7 +371,7 @@
     <None Include="Benedict02.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Benedict03.xml">
+    <None Include="Part1Compatibility.xml">
       <SubType>Designer</SubType>
     </None>
     <None Include="Benedict01.xml">

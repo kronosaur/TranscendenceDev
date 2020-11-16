@@ -21,7 +21,7 @@
 	
 	<MissionType UNID="&msDestroyThreatToSlums;"
 			name=						"Destroy Threat to Commonwealth Habitat"
-			attributes=					"commonwealth, commonwealthHabitat"
+			attributes=					"commonwealth, commonwealthHabitat, eridaniScript"
 
 			level=						"1-10"
 			scope=						"system"

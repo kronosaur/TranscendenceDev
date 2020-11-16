@@ -42,7 +42,7 @@
 	
 	<MissionType UNID="&msBenedictTraining;"
 			name=				"Benedict 01: Benedict Training"
-			attributes=			"benedictStoryArc, sistersMission"
+			attributes=			"benedictStoryArc, eridaniScript, sistersMission"
 			inherit=			"&baBenedictMission;"
 
 			level=				"1"

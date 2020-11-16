@@ -27,7 +27,7 @@
 	
 	<MissionType UNID="&msBenedictAndFiona;"
 			name=				"Benedict 02: Benedict and Fiona"
-			attributes=			"benedictStoryArc, sistersMission"
+			attributes=			"benedictStoryArc, eridaniScript, sistersMission"
 			inherit=			"&baBenedictMission;"
 
 			level=				"1"

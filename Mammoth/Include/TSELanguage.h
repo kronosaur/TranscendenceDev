@@ -199,6 +199,7 @@ class CLanguageDataBlock
 		bool Translate (const CDesignType &Type, const CString &sID, const SParams &Params, ICCItemPtr &retResult) const;
 		bool TranslateText (const CDesignType &Type, const CString &sID, const SParams &Params, CString *retsText) const;
 
+		static bool IsScriptEntry (const SEntryDesc &Entry);
 		static const CLanguageDataBlock m_Null;
 
 	private:

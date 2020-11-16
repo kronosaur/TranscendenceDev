@@ -14,7 +14,7 @@
 	
 	<MissionType UNID="&msBenedictsDrones;"
 			name=				"Benedict 00: Benedict&apos;s Autons"
-			attributes=			"benedictStoryArc, sistersMission"
+			attributes=			"benedictStoryArc, eridaniScript, sistersMission"
 			inherit=			"&baBenedictMission;"
 
 			level=				"1"

@@ -23,7 +23,7 @@
 
 	<MissionType UNID="&msRaisuStation01;"
 			name=				"Raisu 01: Liberate Raisu Station"
-			attributes=			"commonwealth, raisuStation, special, deliveryMission"
+			attributes=			"commonwealth, eridaniScript, raisuStation, special, deliveryMission"
 
 			level=				"1"
 
@@ -653,7 +653,9 @@
 
 	-->
 
-	<Type UNID="&evArcoVaughn;">
+	<Type UNID="&evArcoVaughn;"
+			attributes=			"eridaniScript"
+			>
 		<Events>
 			<OnEventHandlerInit>
 				(block Nil

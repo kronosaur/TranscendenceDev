@@ -29,6 +29,7 @@ struct SLanguageTableOptions
 	{
 	ELanguageOutputTypes iType = ELanguageOutputTypes::table;
 	bool bShowCode = false;
+	bool bIncludeScript = false;
 	bool bShowInherited = false;
 	};
 
@@ -154,6 +155,10 @@ void OutputLanguageBlock (CDesignType *pType, const TArray<CString> &Cols, const
 			if (Entry.sText.IsBlank())
 				continue;
 
+			if (!Options.bIncludeScript
+					&& CLanguageDataBlock::IsScriptEntry(Entry))
+				continue;
+
 			OutputLanguageEntry(pType, Entry, Cols, Options);
 			}
 		}
@@ -235,6 +240,10 @@ void OutputScriptBlock (const CDesignType &Type, const SLanguageTableOptions &Op
 		else
 			{
 			if (Entry.sText.IsBlank())
+				continue;
+
+			if (!Options.bIncludeScript
+					&& CLanguageDataBlock::IsScriptEntry(Entry))
 				continue;
 
 			printf("%s\n\n", (LPSTR)CConsoleFormat::CenterLine(Entry.sID));

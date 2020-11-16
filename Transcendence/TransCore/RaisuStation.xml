@@ -9,7 +9,7 @@
 			sovereign=			"&svCommonwealth;"
 			inherit=			"&baCommonwealthStation;"
 
-			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated, raisuStation"
+			attributes=			"commonwealth, commonwealthCustoms, eridaniScript, friendly, human, majorStation, populated, raisuStation"
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"

@@ -2,7 +2,9 @@
 
 <TranscendenceModule>
 
-	<Type unid="&chMuhammadCondi;">
+	<Type unid="&chMuhammadCondi;"
+			attributes=		"eridaniScript"
+			>
 		<Properties>
 		</Properties>
 

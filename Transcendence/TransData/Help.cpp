@@ -24,6 +24,7 @@
 #define RANDOM_ITEMS_SWITCH					CONSTLIT("randomitems")
 #define RANDOM_NUMBER_TEST					CONSTLIT("randomnumbertest")
 #define RUN_SWITCH							CONSTLIT("run")
+#define SCRIPT_SWITCH						CONSTLIT("script")
 #define SHIELD_TEST_SWITCH					CONSTLIT("shieldtest")
 #define SHIP_IMAGE_SWITCH					CONSTLIT("shipimage")
 #define SHIP_IMAGES_SWITCH					CONSTLIT("shipimages")
@@ -477,6 +478,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 			printf("  /perftest             Performance test.\n");
 		printf("  /run                  Shows a TransLisp interpreter or runs a command.\n");
 		printf("  /runFile:filespec     Runs a TransLisp file.\n");
+		printf("  /script:scriptID      Outputs text by script ID.\n");
 		if (bDebug)
 			printf("  /shieldtest           Outputs capabilities of shield against weapons.\n");
 		printf("  /shipimage            Generates image of a specific ship class.\n");

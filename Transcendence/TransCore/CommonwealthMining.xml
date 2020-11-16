@@ -134,7 +134,7 @@
 			sovereign=			"&svCommonwealth;"
 			inherit=			"&baCommonwealthStation;"
 				 
-			attributes=			"asteroidBase, commonwealth, commonwealthCustoms, envEarth, envAvoidsAir, friendly, generic, human, mining, populated"
+			attributes=			"asteroidBase, commonwealth, commonwealthCustoms, envEarth, envAvoidsAir, eridaniScript, friendly, generic, human, mining, populated"
 				 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
@@ -608,6 +608,8 @@
 	<DockScreen unid="&dsCommonwealthAsteroidInfo;"
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
+
+			attributes=			"eridaniScript"
 			>
 		<Display type="customPicker"
 				rowHeight="110"
@@ -744,6 +746,8 @@
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
 			backgroundID=		"object"
+
+			attributes=			"eridaniScript"
 			>
 		<Display type="detailsPane">
 			<OnDisplayInit>

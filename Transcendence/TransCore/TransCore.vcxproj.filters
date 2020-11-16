@@ -169,9 +169,6 @@
     <None Include="Benedict02.xml">
       <Filter>Part I</Filter>
     </None>
-    <None Include="Benedict03.xml">
-      <Filter>Part I</Filter>
-    </None>
     <None Include="BenedictStoryArc.xml">
       <Filter>Part I</Filter>
     </None>
@@ -402,6 +399,9 @@
     </None>
     <None Include="CommonwealthMetropolis.xml">
       <Filter>Human Space Library\Commonwealth Metropolis</Filter>
+    </None>
+    <None Include="Part1Compatibility.xml">
+      <Filter>Part I</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

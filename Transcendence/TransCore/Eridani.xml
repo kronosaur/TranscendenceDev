@@ -5,7 +5,8 @@
 <!-- ERIDANI SYSTEM -->
 
 	<SystemType UNID="&ssStartonEridani;"
-				attributes=		"envWater"
+				attributes=		"envWater, eridaniScript"
+				noExtraEncounters=	"true"
 				>
 		<EncounterOverrides>
 			<Encounter unid="&stMiningColony;"		unique="inSystem"/>
