@@ -9,17 +9,19 @@
 			sovereign=			"&svCommonwealth;"
 			inherit=			"&baCommonwealthStation;"
 
+			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated, raisuStation"
+
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"3"
-			multiHull=			"true"
+			size=				"160"
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"150"
+			multiHull=			"true"
 			regen=				"1"
-			ejectaType=			"&vtWreckEjecta;"
 
-			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated, raisuStation"
+			ejectaType=			"&vtWreckEjecta;"
 			>
 
 		<Properties>
@@ -89,7 +91,7 @@
 
 		<DockingPorts
 				portCount=		"8"
-				portRadius=		"90"
+				portRadius=		"100"
 				/>
 
 		<!-- Dock Screens -->

@@ -1057,6 +1057,8 @@
 			</Variant>
 		</Properties>
 
+		<!-- Trade and Items -->
+
 		<Trade>
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="1"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="2"/>
@@ -1064,16 +1066,51 @@
 			<ConsumeTrade	criteria="{human.res}"		impact="1"/>
 		</Trade>
 
-		<ImageVariants>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="64" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="128" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="192" imageY="0" imageWidth="64" imageHeight="128"/>
-		</ImageVariants>
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
 		</Ships>
+
+		<!-- Image and Effects -->
+
+		<Image		imageID="&rsCommonwealthHabitat;" imageWidth="170" imageHeight="240" viewportRatio="0.02125"/>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"100"
+				/>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrSetDescTranslate gScreen 'descWelcome {objName: (objGetName gSource)})
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionMainHall" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: "n +commonwealthHabitat;"
+									maxActive: 1
+									missionGiver: (rpgCharacterGetInfo gSource 'stationMaster)
+									noMissionTextID: 'descNoMissions
+									})
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Behavior -->
 
 		<Events>
 			<GetGlobalAchievements>
@@ -1103,44 +1140,6 @@
 					)
 			</GetRumors>
 		</Events>
-
-		<DockScreens>
-			<Main>
-				<Panes>
-					<Default>
-						<OnPaneInit>
-							(scrSetDescTranslate gScreen 'descWelcome {objName: (objGetName gSource)})
-						</OnPaneInit>
-
-						<Actions>
-							<Action id="actionMainHall" default="1">
-								(rpgMissionAssignment {
-									missionCriteria: "n +commonwealthHabitat;"
-									maxActive: 1
-									missionGiver: (rpgCharacterGetInfo gSource 'stationMaster)
-									noMissionTextID: 'descNoMissions
-									})
-							</Action>
-
-							<Action id="actionUndock" cancel="1">
-								<Exit/>
-							</Action>
-						</Actions>
-					</Default>
-				</Panes>
-			</Main>
-		</DockScreens>
-
-		<DockingPorts>
-			<Port x="0"		y="80" />
-			<Port x="43"	y="56" />
-			<Port x="52"	y="8" />
-			<Port x="35"	y="-44" />
-			<Port x="-35"	y="-44" />
-			
-			<Port x="-52"	y="8" />
-			<Port x="-43"	y="56" />
-		</DockingPorts>
 
 		<Language>
 			<Text id="descWelcome">
@@ -2216,9 +2215,11 @@
 	<Image UNID="&rsCommonwealthArmoredColony;"	bitmap="Resources\CommonwealthColonyArmored.jpg" bitmask="Resources\CommonwealthColonyArmoredMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthColony;"		bitmap="Resources\CommonwealthColony.jpg" bitmask="Resources\CommonwealthColonyMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthDryDock;"		bitmap="Resources\CommonwealthDryDock.jpg" bitmask="Resources\CommonwealthDryDockMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsCommonwealthHabitat;"		bitmap="Resources\CommonwealthHabitat.jpg" bitmask="Resources\CommonwealthHabitatMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthMedicalColony;"	bitmap="Resources\CommonwealthMedicalColony.jpg" bitmask="Resources\CommonwealthMedicalColonyMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthResidentials;"	bitmap="Resources\CommonwealthResidentials.jpg" bitmask="Resources\CommonwealthResidentialsMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthSettlement;"	bitmap="Resources\CommonwealthSettlement.jpg" bitmask="Resources\CommonwealthSettlementMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthSlumsImage;"	bitmap="Resources\CommonwealthSlums.jpg" bitmask="Resources\CommonwealthSlumsMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsContainerHabitat;"			bitmap="Resources\CommonwealthContainerHabitat.jpg" bitmask="Resources\CommonwealthContainerHabitatMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

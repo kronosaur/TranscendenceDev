@@ -371,8 +371,6 @@
 			</SummonRaiders>
 		</Events>
 
-		<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>
-
 		<Language>
 			<!-- Code Points -->
 

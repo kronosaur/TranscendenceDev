@@ -2399,6 +2399,8 @@
 	<!ENTITY scBorerStock				"0x00100708">
 	<!ENTITY scBorerIIStock				"0x00100709">
 	<!ENTITY itRejuvTankPatient			"0x0010070A">
+	<!ENTITY rsCommonwealthHabitat		"0x0010070B">
+	<!ENTITY rsContainerHabitat			"0x0010070C">
 
 	<!-- 0740-075F RASIERMESSER -->
 
