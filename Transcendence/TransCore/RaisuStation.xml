@@ -221,12 +221,9 @@
 
 			<Text id="descWelcome.default">
 
-				The loud voices of a packed multitude bounce off every bulkhead 
-				and corridor in the station. Old air scrubbers pump a thin, 
-				odorous breeze out of rusty vents. Discarded packets of	
-				Salmonite and Red Nebula beer huddle in the corner.
-
-				Welcome to Raisu Station!
+				You enter a large but deserted docking bay. Trash and other 
+				debris is scattered around. A few dock workers are idling near
+				a hatchway, but they studiously ignore you.
 
 			</Text>
 			<Text id="descWelcome.ally">
