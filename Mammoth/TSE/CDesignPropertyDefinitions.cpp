@@ -252,6 +252,9 @@ void CDesignPropertyDefinitions::InitItemData (CUniverse &Universe, CItem &Item)
 //	Initializes item-level properties.
 
 	{
+	CCodeChainCtx CCX(Universe);
+	bool bVarsDefined = false;
+
 	for (int i = 0; i < m_Defs.GetCount(); i++)
 		{
 		switch (m_Defs[i].iType)
@@ -262,11 +265,14 @@ void CDesignPropertyDefinitions::InitItemData (CUniverse &Universe, CItem &Item)
 				{
 				if (m_Defs[i].pCode)
 					{
-					CCodeChainCtx CCCtx(Universe);
-					CCCtx.DefineContainingType(Item);
-					CCCtx.DefineItem(Item);
+					if (!bVarsDefined)
+						{
+						CCX.DefineContainingType(Item);
+						CCX.SaveAndDefineItemVar(Item);
+						bVarsDefined = true;
+						}
 
-					ICCItemPtr pResult = CCCtx.RunCode(m_Defs[i].pCode);
+					ICCItemPtr pResult = CCX.RunCode(m_Defs[i].pCode);
 					if (pResult->IsError())
 						{
 						::kernelDebugLogPattern("ERROR: Evaluating property %s: %s", m_Defs.GetKey(i), pResult->GetStringValue());
