@@ -85,7 +85,7 @@
 										"T +sistersOfDomina; | G N")
 									)												result: &stStargate; }
 
-					{	test: '(sys@ 'attributes)									result: '(humanSpace mainline newBeyond envWater commonwealthCore commonwealthSpace centauriWarlordsSpace abbasidSpace corporateCore corporateSpace salvagerSpace urakSpace tinkerSpace penitentSpace outlawSpace sapiensSpace himalSpace anarchistSpace curatorSpace KTypeSystem) }
+					{	test: '(sys@ 'attributes)									result: '(humanSpace mainline newBeyond envWater eridaniScript commonwealthCore commonwealthSpace centauriWarlordsSpace abbasidSpace corporateCore corporateSpace salvagerSpace urakSpace tinkerSpace penitentSpace outlawSpace sapiensSpace himalSpace anarchistSpace curatorSpace KTypeSystem) }
 					{	test: '(sys@ 'known)										result: True }
 					{	test: '(sys@ 'lastVisitOn)									result: Nil }
 					{	test: '(sys@ 'lastVisitSeconds)								result: Nil }
