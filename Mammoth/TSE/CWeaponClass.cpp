@@ -1474,8 +1474,7 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 		if (!UpdateShipCounter(ItemCtx, ShotDesc))
 			{
 			//	If we fail because of ship energy/heat limits, do not increment the counter.
-			pSource->IncCounterValue(m_Counter != cntNone ? -m_iCounterPerShot : 0);
-			pDevice->IncTemperature(-m_iCounterActivate);
+			pDevice->IncTemperature(m_Counter != cntNone ? -m_iCounterActivate : 0);
 			return resFailure;
 			}
 		}
@@ -1491,8 +1490,8 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 
 	if (!ConsumeAmmo(ItemCtx, ShotDesc, iRepeatingCount, retbConsumedItems))
 		{
-		pSource->IncCounterValue(m_Counter != cntNone ? -m_iCounterPerShot : 0);
-		pDevice->IncTemperature(-m_iCounterActivate);
+		pSource->IncCounterValue(-m_iCounterPerShot);
+		pDevice->IncTemperature(m_Counter != cntNone ? -m_iCounterActivate : 0);
 		return resFailure;
 		}
 
