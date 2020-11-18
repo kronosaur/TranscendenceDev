@@ -352,7 +352,7 @@
 				but you managed to rescue all the miners!
 
 				"Congratulations! We've deposited %reward% in your account, and 
-				you	deserve every credit."
+				you deserve every credit."
 
 			</Text>
 			<Text id="textSuccessDebrief.someRescued">
