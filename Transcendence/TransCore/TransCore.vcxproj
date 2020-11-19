@@ -643,6 +643,7 @@
     <Xml Include="RanxEmpire.xml" />
     <Xml Include="RasiermesserMission01.xml" />
     <Xml Include="RejuvTank.xml" />
+    <Xml Include="ResidentialsMission01.xml" />
     <Xml Include="RPGCommoditiesExchange.xml" />
     <Xml Include="RPGCommonText.xml" />
     <Xml Include="RPGComponents.xml">
@@ -657,6 +658,7 @@
     <Xml Include="RPGMissionTemplate02.xml" />
     <Xml Include="RPGMissionTemplate03.xml" />
     <Xml Include="RPGMissionTemplate04.xml" />
+    <Xml Include="RPGMissionTemplate05.xml" />
     <Xml Include="RPGRumors.xml" />
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>

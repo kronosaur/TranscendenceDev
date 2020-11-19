@@ -820,7 +820,8 @@
 	In order to take advantage of this screen, the mission object should have
 	the following characteristics:
 
-	1.	The mission type must have the "deliveryMission" attribute.
+	1.	The mission type must have the property rpg.deliveryMission set to 
+		non-nil, or must have the "deliveryMission" attribute.
 
 	2.	The mission object must have data of "destID" with the ID of the
 		recipient of the delivery.
@@ -929,12 +930,12 @@
 				(block (missionObj)
 					(switch
 						(setq missionObj (@ 
-								(filter (msnFind gSource "a +deliveryMission;") theMission 
+								(filter (msnFind gSource "a +deliveryMission; | a +property:rpg.deliveryMission;") theMission 
 									(and
 										(not (msnGetProperty theMission 'isCompleted))
 										(eq gSource 
 											(objGetObjByID 
-												(or (msn@ theMission 'destID) (msnGetData theMission 'destID))
+												(or (msn@ theMission 'rpg.deliveryDestID) (msn@ theMission 'destID) (msnGetData theMission 'destID))
 												)
 											)
 										)

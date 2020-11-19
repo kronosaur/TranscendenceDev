@@ -2402,6 +2402,9 @@
 	<!ENTITY rsCommonwealthHabitat		"0x0010070B">
 	<!ENTITY rsContainerHabitat			"0x0010070C">
 
+	<!ENTITY msResidentials01			"0x0010070D">
+	<!ENTITY itCarbonScrubbers			"0x0010070E">
+
 	<!-- 0740-075F RASIERMESSER -->
 
 	<!ENTITY msRasiermesserFindDvalin	"0x00100740">
@@ -2523,6 +2526,7 @@
 	<Module filename="CommonwealthRonins.xml"/>
 	<Module filename="CommonwealthShips.xml"/>
 	<Module filename="ContainerHabitat.xml"/>
+	<Module filename="ResidentialsMission01.xml"/>
 
 	<!-- Commonwealth Fleet -->
 
