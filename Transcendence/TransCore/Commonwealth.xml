@@ -666,7 +666,7 @@
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="4-6" 
-				criteria=		"r L:3-7; +commonwealth; -defective; -illegal; -military; -notForSale; -notStandard;"
+				criteria=		"r L:3-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
 			<RandomItem count="10-12" 
@@ -736,7 +736,15 @@
 		<!-- Behavior & Language -->
 
 		<Language>
-			<Text id="descWelcome">Your ship is in dry dock.</Text>
+			<Text id="descWelcome">
+
+				You are in a large enclosed docking bay. Ship in varying stages
+				of repair line the docks around you. Workers in powered frames
+				dance around the ships.
+
+				Holopanes advertise the latest deals on new starships.
+
+			</Text>
 		</Language>
 
 	</StationType>
