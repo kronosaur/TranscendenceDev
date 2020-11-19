@@ -9,6 +9,8 @@
 #define CODE_ATTRIB							CONSTLIT("code")
 #define CRITERIA_ATTRIB						CONSTLIT("criteria")
 #define INHERITED_ATTRIB					CONSTLIT("inherited")
+#define LEXICON_ATTRIB						CONSTLIT("lexicon")
+#define REFERENCES_ATTRIB					CONSTLIT("references")
 #define SCRIPT_ATTRIB						CONSTLIT("script")
 
 #define FIELD_ID							CONSTLIT("id")
@@ -21,6 +23,7 @@ enum class ELanguageOutputTypes
 	{
 	none,
 
+	lexicon,
 	script,
 	table,
 	};
@@ -31,10 +34,19 @@ struct SLanguageTableOptions
 	bool bShowCode = false;
 	bool bIncludeScript = false;
 	bool bShowInherited = false;
+	bool bShowReferences = false;
+	};
+
+struct SLexiconEntry
+	{
+	CString sWord;
+	int iCount = 0;
+	TArray<CString> References;
 	};
 
 void OutputLanguageBlock (CDesignType *pType, const TArray<CString> &Cols, const SLanguageTableOptions &Options);
 void OutputLanguageEntry (CDesignType *pType, const CLanguageDataBlock::SEntryDesc &Entry, const TArray<CString> &Cols, const SLanguageTableOptions &Options);
+void OutputLexicon (CUniverse &Universe, const TSortMap<CString, CDesignType *> &Table, const SLanguageTableOptions &Options);
 void OutputScript (CUniverse &Universe, const TSortMap<CString, CDesignType *> &Table, const SLanguageTableOptions &Options);
 void OutputScriptBlock (const CDesignType &Type, const SLanguageTableOptions &Options);
 void OutputTable (CUniverse &Universe, const TSortMap<CString, CDesignType *> &Table, const SLanguageTableOptions &Options);
@@ -59,13 +71,16 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	//	Options
 
 	SLanguageTableOptions Options;
-	if (pCmdLine->GetAttributeBool(SCRIPT_ATTRIB))
+	if (pCmdLine->GetAttributeBool(LEXICON_ATTRIB))
+		Options.iType = ELanguageOutputTypes::lexicon;
+	else if (pCmdLine->GetAttributeBool(SCRIPT_ATTRIB))
 		Options.iType = ELanguageOutputTypes::script;
 	else
 		Options.iType = ELanguageOutputTypes::table;
 
 	Options.bShowCode = pCmdLine->GetAttributeBool(CODE_ATTRIB);
 	Options.bShowInherited = pCmdLine->GetAttributeBool(INHERITED_ATTRIB);
+	Options.bShowReferences = pCmdLine->GetAttributeBool(REFERENCES_ATTRIB);
 
 	//	Generate a table of all matching types
 
@@ -107,6 +122,10 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	switch (Options.iType)
 		{
+		case ELanguageOutputTypes::lexicon:
+			OutputLexicon(Universe, Table, Options);
+			break;
+
 		case ELanguageOutputTypes::script:
 			OutputScript(Universe, Table, Options);
 			break;
@@ -190,6 +209,121 @@ void OutputLanguageEntry (CDesignType *pType, const CLanguageDataBlock::SEntryDe
 			printf("\n");
 		else
 			printf("\t");
+		}
+	}
+
+void AccumulateLexicon (const CString &sReference, const CString &sText, const SLanguageTableOptions &Options, TSortMap<CString, SLexiconEntry> &Lexicon)
+	{
+	CWordParser Parser(sText.GetASCIIZPointer(), sText.GetASCIIZPointer() + sText.GetLength());
+	Parser.SetExcludePercentFields();
+	Parser.SetHandleAccelerators();
+
+	TSortMap<CString, int> WordsInEntry;
+	WordsInEntry.GrowToFit(1000);
+
+	while (true)
+		{
+		CString sWord = Parser.ParseNextWord();
+		if (sWord.IsBlank())
+			break;
+
+		bool bNew;
+		auto *pCount = WordsInEntry.SetAt(sWord, &bNew);
+		if (bNew)
+			*pCount = 1;
+		else
+			(*pCount)++;
+		}
+
+	for (int i = 0; i < WordsInEntry.GetCount(); i++)
+		{
+		const CString &sWord = WordsInEntry.GetKey(i);
+
+		auto *pEntry = Lexicon.SetAt(sWord);
+		if (pEntry->sWord.IsBlank())
+			pEntry->sWord = sWord;
+
+		//	If this word comes in capital and lowercase versions, show the 
+		//	lowercase version.
+
+		else if (strIsUpper(pEntry->sWord.GetASCIIZPointer()) && !strIsUpper(sWord.GetASCIIZPointer()))
+			pEntry->sWord = sWord;
+
+		pEntry->iCount += WordsInEntry[i];
+		pEntry->References.Insert(sReference);
+		}
+	}
+
+void AccumulateLexicon (const CString &sTypeEntity, const CLanguageDataBlock &Language, const SLanguageTableOptions &Options, TSortMap<CString, SLexiconEntry> &Lexicon)
+	{
+	for (int i = 0; i < Language.GetCount(); i++)
+		{
+		const auto Entry = Language.GetEntry(i);
+
+		if (Entry.sText.IsBlank())
+			continue;
+
+		if (!Options.bIncludeScript
+				&& CLanguageDataBlock::IsScriptEntry(Entry))
+			continue;
+
+		CString sReference = strPatternSubst(CONSTLIT("%s::%s"), sTypeEntity, Entry.sID);
+
+		AccumulateLexicon(sReference, Entry.sText, Options, Lexicon);
+		}
+	}
+
+void OutputLexicon (CUniverse &Universe, const TSortMap<CString, CDesignType *> &Table, const SLanguageTableOptions &Options)
+	{
+	TSortMap<CString, SLexiconEntry> Lexicon;
+	Lexicon.GrowToFit(10000);
+
+	for (int i = 0; i < Table.GetCount(); i++)
+		{
+		const CDesignType &Type = *Table[i];
+
+		const CLanguageDataBlock *pLanguage = NULL;
+		CLanguageDataBlock MergedBlock;
+
+		if (Options.bShowInherited)
+			{
+			MergedBlock = Type.GetMergedLanguageBlock();
+			pLanguage = &MergedBlock;
+			}
+		else
+			pLanguage = &Type.GetLanguageBlock();
+
+		CString sEntityName = Type.GetEntityName();
+		if (sEntityName.IsBlank())
+			sEntityName = strPatternSubst(CONSTLIT("%08x"), Type.GetUNID());
+
+		AccumulateLexicon(sEntityName, *pLanguage, Options, Lexicon);
+		}
+
+	//	Output
+
+	for (int i = 0; i < Lexicon.GetCount(); i++)
+		{
+		const auto &Entry = Lexicon[i];
+
+		printf("%s: ", (LPSTR)Entry.sWord);
+
+		if (Options.bShowReferences)
+			{
+			for (int j = 0; j < Entry.References.GetCount(); j++)
+				{
+				if (j != 0)
+					printf(", ");
+
+				printf("%s", (LPSTR)Entry.References[j]);
+				}
+
+			printf("\n\n");
+			}
+		else
+			{
+			printf("%s\n", (LPSTR)strFormatInteger(Entry.iCount));
+			}
 		}
 	}
 

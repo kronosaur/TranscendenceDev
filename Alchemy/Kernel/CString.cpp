@@ -2090,6 +2090,17 @@ bool Kernel::strIsInt (const CString &sValue, DWORD dwFlags, int *retiValue)
 	return (!bError && (int)(pPosEnd - pPos) == sValue.GetLength());
 	}
 
+bool Kernel::strIsUpper (const char *pPos)
+
+//	strIsUpper
+//
+//	Returns TRUE if this is an uppercase character.
+
+	{
+	char chLower = (char)(DWORD)::CharLowerA((LPSTR)(BYTE)*pPos);
+	return (chLower != *pPos);
+	}
+
 CString Kernel::strJoin (const TArray<CString> &List, const CString &sConjunction)
 
 //	strJoin
