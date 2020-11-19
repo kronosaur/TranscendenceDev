@@ -6294,7 +6294,7 @@ void CSpaceObject::Move (SUpdateCtx &Ctx, Metric rSeconds)
 	if (!m_vVel.IsNull() && !m_fNonLinearMove && !IsAnchored())
 		m_vPos = m_vPos + (m_vVel * g_SecondsPerUpdate);
 
-	//	Let descendents process the move (if necessary)
+	//	Let descendants process the move (if necessary)
 
 	OnMove(m_vOldPos, rSeconds);
 

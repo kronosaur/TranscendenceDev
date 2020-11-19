@@ -587,7 +587,7 @@ void CBaseShipAI::FireOnOrderChanged (void)
 	if (m_fUseOrderModules)
 		InitOrderModule();
 
-	//	Give descendents a chance
+	//	Give descendants a chance
 
 	OnOrderChanged();
 
