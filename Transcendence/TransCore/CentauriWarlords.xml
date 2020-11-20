@@ -266,10 +266,10 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"90"
-			regen=				"1"
+			hitPoints=			"250"
+			regen=				"2"
 			fireRateAdj=		"40"
-			explosionType=		"&vtKineticExplosion2;"
+			explosionType=		"&vtKineticExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
 

@@ -178,7 +178,7 @@
 						<Lookup table="AsteroidRing100"/>
 					</ZAdjust>
 
-					<Orbitals count="6" distance="20-28" angle="equidistant">
+					<Orbitals count="6" distance="32-36" angle="equidistant">
 						<Location attributes="voermsOrbit"/>
 					</Orbitals>
 
