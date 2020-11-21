@@ -59,6 +59,7 @@
 #define PROPERTY_SHIP_REINFORCEMENT_REQUESTED	CONSTLIT("shipReinforcementRequested")
 #define PROPERTY_SHOW_MAP_LABEL					CONSTLIT("showMapLabel")
 #define PROPERTY_SHOW_MAP_ORBIT					CONSTLIT("showMapOrbit")
+#define PROPERTY_STARGATE						CONSTLIT("stargate")
 #define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
 #define PROPERTY_STRUCTURAL_HP					CONSTLIT("structuralHP")
 #define PROPERTY_SUBORDINATE_ID					CONSTLIT("subordinateID")
@@ -2087,6 +2088,9 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_ORBIT))
 		return CC.CreateBool(m_pMapOrbit && m_fShowMapOrbit);
+
+	else if (strEquals(sName, PROPERTY_STARGATE))
+		return CC.CreateBool(IsStargate());
 
 	else if (strEquals(sName, PROPERTY_STARGATE_ID))
 		{
