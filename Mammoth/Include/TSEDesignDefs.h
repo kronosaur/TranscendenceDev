@@ -66,6 +66,7 @@ class CDesignPropertyDefinitions
 			};
 
 		TSortMap<CString, SDef> m_Defs;
+		TArray<int> m_InitOrder;
 	};
 
 //	Difficulty Levels ----------------------------------------------------------
