@@ -2401,9 +2401,9 @@
 	<!ENTITY itRejuvTankPatient			"0x0010070A">
 	<!ENTITY rsCommonwealthHabitat		"0x0010070B">
 	<!ENTITY rsContainerHabitat			"0x0010070C">
-
 	<!ENTITY msResidentials01			"0x0010070D">
 	<!ENTITY itCarbonScrubbers			"0x0010070E">
+	<!ENTITY msResidentials02			"0x0010070F">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2527,6 +2527,7 @@
 	<Module filename="CommonwealthShips.xml"/>
 	<Module filename="ContainerHabitat.xml"/>
 	<Module filename="ResidentialsMission01.xml"/>
+	<Module filename="ResidentialsMission02.xml"/>
 
 	<!-- Commonwealth Fleet -->
 
