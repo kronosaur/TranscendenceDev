@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType unid="&baEscortMission;"
+			inherit=			"&unidCommonText;"
+			expireTime=			"5400"
+			failureAfterOutOfSystem="1800"
+			>
+		<Properties>
+			<!-- Escort 
+			
+			-->
+
+			<Constant id="escortDesc">
+				{
+					type: &scMikeno;
+					sovereign: &svIndependent;
+
+					startDesc: 'owner
+					endDesc: 'stargate
+					}
+			</Constant>
+
+			<!-- encounterDesc
+			
+				This property is either a single struct or a list of structs. In 
+				either case, the fields in the struct are:
+
+				type: The ship table to use.
+				sovereign: The sovereign for the ships (if not specified in the
+						ship table.
+				target: If 'player, then we target the player. Otherwise, we 
+						target the ship being escorted.
+				interceptOn: Tick on which we launch intercept (relative to when
+						the ship starts).
+			
+			-->
+			<Definition id="encounterDesc">
+				{
+					type: &scMikeno;
+					sovereign: &svUnknownEnemy;
+					interceptOn: 300
+					}
+			</Definition>
+
+			<!-- reward
+			
+				Override this to compute a reward when the mission is created.
+				Nil means no reward. In general this should be a Variant
+				property (that is, a value initialized when the mission is
+				created).
+
+				-->
+			<Definition id="reward"></Definition>
+
+			<!-- rewardCurrency
+			
+				This is the currency in which the reward is given.
+
+				-->
+			<Constant id="rewardCurrency">(unv@ 'defaultCurrency)</Constant>
+
+			<!-- These properties are internal and should not be overridden. -->
+
+			<Data id="destID"></Data>
+			<Data id="escortID"></Data>
+
+		</Properties>
+
+		<Events>
+			<OnCreate>
+				(block (
+					(escortDesc (msn@ gSource 'escortDesc))
+					(endDesc (@ escortDesc 'endDesc))
+					(destObj
+						(switch
+							(= endDesc 'stargate)
+								(sysFindObject aOwnerObj "GR -uncharted")
+
+							aOwnerObj
+							)
+						)
+					)
+					(msnSet@ gSource 'destID (objGetID destObj))
+					)
+			</OnCreate>
+
+			<OnAcceptedUndock>
+				(block (
+					(ownerObj (objGetObjByID (msn@ gSource 'ownerID)))
+					(escortDesc (msn@ gSource 'escortDesc))
+					(destObj (objGetObjByID (msn@ gSource 'destID)))
+
+					(startDesc (@ escortDesc 'startDesc))
+					(startPos
+						(switch
+							(= startDesc 'owner)
+								(objGetPos ownerObj)
+
+							(objGetPos ownerObj)
+							)
+						)
+
+					(encounterDesc (msn@ gSource 'encounterDesc))
+					(encounterList
+						(switch
+							(= (typeof encounterDesc) 'struct)
+								(list encounterDesc)
+
+							(= (typeof encounterDesc) 'list)
+								encounterDesc
+
+							nil
+							)
+						)
+
+					escortObj
+					)
+					;	Create the principal and order it
+
+					(setq escortObj 
+						(sysCreateShip 
+							(@ escortDesc 'type)
+							startPos
+							(or (@ escortDesc 'sovereign) (obj@ ownerObj 'sovereign))
+							)
+						)
+					(if (obj@ destObj 'stargate)
+						(shpOrder escortObj 'gate destObj)
+						(block ()
+							(shpOrder escortObj 'dock destObj)
+							(shpOrder escortObj 'gate)
+							)
+						)
+
+					;	Remember the ship
+
+					(msnSet@ gSource 'escortID (objGetID escortObj))
+					(msnRegisterForEvents gSource escortObj)
+
+					;	Create timers that will attack
+
+					(enum encounterList theEncounter
+						(block (
+							(targetObj
+								(switch
+									(= (@ theEncounter 'target) 'player)
+										gPlayerShip
+
+									escortObj
+									)
+								)
+							)
+							(sysAddEncounterEventAtDist 
+								(@ theEncounter 'interceptOn)
+								targetObj
+								(@ theEncounter 'type)
+								100
+								)
+							)
+						)
+
+					(objSendMessage gPlayerShip escortObj (msnTranslate gSource 'msgThanksForEscorting))
+					(msnSetPlayerTarget gSource)
+					)
+			</OnAcceptedUndock>
+
+			<OnSetPlayerTarget>
+				(rpgSetTarget gSource aReason (objGetObjByID (msn@ gSource 'escortID)) 'escort)
+			</OnSetPlayerTarget>
+			
+			<OnObjDestroyed>
+				(switch
+					(= (objGetID aObjDestroyed) (msn@ gSource 'escortID))
+						(if aDestroy
+							(msnFailure gSource)
+							(msnSuccess gSource)
+							)
+					)
+			</OnObjDestroyed>
+
+			<OnObjDocked>
+				(switch
+					(and (= (objGetID aObjDocked) (msn@ gSource 'escortID))
+							(= (objGetID aDockTarget) (msn@ gSource 'destID))
+							)
+						(msnSuccess gSource)
+					)
+			</OnObjDocked>
+		</Events>
+
+		<Language>
+			<Text id="msgThanksForEscorting">Thanks for the escort!</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

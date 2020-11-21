@@ -1041,5 +1041,11 @@
     <Xml Include="RPGMissionTemplate05.xml">
       <Filter>RPG Library</Filter>
     </Xml>
+    <Xml Include="RPGMissionTemplate06.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="ResidentialsMission02.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
