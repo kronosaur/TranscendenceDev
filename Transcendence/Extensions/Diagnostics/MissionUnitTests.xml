@@ -37,6 +37,11 @@
 								'type
 								)															result:&msTestMission01;	}
 
+						;	Test msnFind
+
+						{	test:'(count (msnFind "* +testMission;"))						result: 1 }
+						{	test:'(count (msnFind "* +testMission; | * -testMission;"))		result: (+ 1 (count (msnFind "*"))) }
+
 						{	test:'(enum (msnFind "*") theMission (msnDestroy theMission))	result:'ignore	}
 
 						;	The only mission that matches this criteria is Mission 03,

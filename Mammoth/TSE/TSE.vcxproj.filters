@@ -1540,5 +1540,8 @@
     <ClCompile Include="CTopologyNodeCriteria.cpp">
       <Filter>Source Files\Topology</Filter>
     </ClCompile>
+    <ClCompile Include="CMissionCriteria.cpp">
+      <Filter>Source Files\Missions</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

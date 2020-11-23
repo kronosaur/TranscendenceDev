@@ -9688,9 +9688,7 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Parse criteria
 
-			CMission::SCriteria Criteria;
-			if (!CMission::ParseCriteria(sCriteria, &Criteria))
-				return pCC->CreateError(CONSTLIT("Unable to parse criteria"), pArgs->GetElement(1));
+			CMissionCriteria Criteria(sCriteria);
 
 			//	Get list of missions that match criteria
 
@@ -9700,7 +9698,7 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Return a single mission
 
-			if (Criteria.bPriorityOnly)
+			if (Criteria.ReturnHighestPriority())
 				{
 				CMission *pBestMission = List.FindHighestPriority();
 				return pCC->CreateInteger((int)pBestMission);

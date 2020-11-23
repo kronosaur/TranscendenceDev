@@ -232,11 +232,10 @@ bool CMissionType::CanBeCreated (const CMissionList &AllMissions, SCreateCtx &Cr
 
 	//	If we have create criteria, then make sure we match
 
-	CMission::SCriteria CreateCriteria;
+	CMissionCriteria CreateCriteria;
 	if (!m_sCreateCriteria.IsBlank())
 		{
-		if (!CMission::ParseCriteria(m_sCreateCriteria, &CreateCriteria))
-			return false;
+		CreateCriteria = CMissionCriteria(m_sCreateCriteria);
 
 		if (!AllMissions.Matches(CreateCtx.pOwner, CreateCriteria))
 			return false;
