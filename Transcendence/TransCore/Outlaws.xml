@@ -130,7 +130,7 @@
 			sovereign=			"&svOutlaw;"
 
 			level=				"1"
-			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, populated"
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, outlawSmugglers, populated"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
@@ -226,7 +226,7 @@
 			name=				"outlaw base"
 			sovereign=			"&svOutlaw;"
 
-			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, populated"
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, outlawSmugglers, populated"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
@@ -309,7 +309,7 @@
 			name=				"outlaw haven"
 			sovereign=			"&svOutlaw;"
 
-			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlawHaven, outlaws, populated"
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlawHaven, outlaws, outlawSmugglers, populated"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
