@@ -1041,9 +1041,12 @@ bool CMission::Reward (ICCItem *pData, ICCItem **retpResult)
 
 	//	Set debriefed to true as a convenience
 
-	m_fDebriefed = true;
-	FireOnSetPlayerTarget(REASON_DEBRIEFED);
-	CloseMission();
+	if (!m_fDebriefed)
+		{
+		m_fDebriefed = true;
+		FireOnSetPlayerTarget(REASON_DEBRIEFED);
+		CloseMission();
+		}
 
 	//	Done
 
