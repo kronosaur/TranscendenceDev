@@ -1024,7 +1024,14 @@
 		
 		<Language>
 			<Text id="descWelcome">
-				Welcome to Commonwealth Residentials.
+
+				You are in the docking bay of a residential station. You see a
+				mix of dockworkers, professionals, and families boarding 
+				shuttles and starships.
+
+				Scuffed and faded infopanes line the walls, and you smell the
+				stale exhaust of overworked ventilation systems.
+
 			</Text>
 		</Language>
 	</StationType>

@@ -701,7 +701,7 @@
 	</ItemType>
 
 	<OverlayType UNID="&sfSustain;"
-            attributes=     "dominaPower, energyField, temporary"
+			attributes=     "dominaPower, energyField, temporary"
 
 			absorbAdj=		"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
 			weaponSuppress=	"*"
@@ -731,8 +731,8 @@
 	</OverlayType>
 
 	<OverlayType UNID="&sfStrengthen;"
-            attributes=     "dominaPower, effect, temporary"
-                 
+			attributes=     "dominaPower, effect, temporary"
+				 
 			weaponBonusAdj=	"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
 			>
 		<Effect>
@@ -746,8 +746,8 @@
 	</OverlayType>
 
 	<OverlayType UNID="&sfDefend;"
-            attributes=     "dominaPower, energyField, temporary"
-                 
+			attributes=     "dominaPower, energyField, temporary"
+				 
 			absorbAdj=		"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
 			>
 		<Effect>
@@ -874,7 +874,7 @@
 	
 	<DockScreen UNID="&dsPilgrimBeringStation;">
 		<Panes>
-			<Default descID="descWelcome">
+			<Default descID="descPilgrimWelcome">
 				<Actions>
 					<Action name="Go to Level 5" key="G" default="1">
 						(scrShowPane gScreen "Level5")
@@ -920,12 +920,14 @@
 		</Panes>
 
 		<Language>
-			<Text id="descWelcome">
+			<Text id="descPilgrimWelcome">
 
-				You are docked with a Commonwealth residential station.
+				You are in the docking bay of a residential station. You see a
+				mix of dockworkers, professionals, and families boarding 
+				shuttles and starships.
 
-				You feel nervous and uneasy as you walk through the familiar 
-				halls of the station.
+				You feel nervous and uneasy as you walk through its familiar 
+				halls.
 
 			</Text>
 			<Text id="descLevel5">
