@@ -321,6 +321,7 @@ void OutputLexicon (CUniverse &Universe, const TSortMap<CString, CDesignType *> 
 
 	//	Output
 
+	int iTotalWords = 0;
 	for (int i = 0; i < Lexicon.GetCount(); i++)
 		{
 		const auto &Entry = Lexicon[i];
@@ -341,9 +342,15 @@ void OutputLexicon (CUniverse &Universe, const TSortMap<CString, CDesignType *> 
 			}
 		else
 			{
-			printf("%s\n", (LPSTR)strFormatInteger(Entry.iCount));
+			printf("%s\n", (LPSTR)strFormatInteger(Entry.iCount, -1, FORMAT_THOUSAND_SEPARATOR));
 			}
+
+		iTotalWords += Entry.iCount;
 		}
+
+	printf("\n");
+	printf("LEXICON ENTRIES: %s\n", (LPSTR)strFormatInteger(Lexicon.GetCount(), -1, FORMAT_THOUSAND_SEPARATOR));
+	printf("TOTAL WORDS: %s\n", (LPSTR)strFormatInteger(iTotalWords, -1, FORMAT_THOUSAND_SEPARATOR));
 	}
 
 void OutputScript (CUniverse &Universe, const TSortMap<CString, CDesignType *> &Table, const SLanguageTableOptions &Options)
