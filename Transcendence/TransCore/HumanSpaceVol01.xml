@@ -2404,6 +2404,7 @@
 	<!ENTITY msResidentials01			"0x0010070D">
 	<!ENTITY itCarbonScrubbers			"0x0010070E">
 	<!ENTITY msResidentials02			"0x0010070F">
+	<!ENTITY msResidentials03			"0x00100710">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2528,6 +2529,7 @@
 	<Module filename="ContainerHabitat.xml"/>
 	<Module filename="ResidentialsMission01.xml"/>
 	<Module filename="ResidentialsMission02.xml"/>
+	<Module filename="ResidentialsMission03.xml"/>
 
 	<!-- Commonwealth Fleet -->
 

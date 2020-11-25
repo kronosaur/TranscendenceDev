@@ -645,6 +645,7 @@
     <Xml Include="RejuvTank.xml" />
     <Xml Include="ResidentialsMission01.xml" />
     <Xml Include="ResidentialsMission02.xml" />
+    <Xml Include="ResidentialsMission03.xml" />
     <Xml Include="RPGCommoditiesExchange.xml" />
     <Xml Include="RPGCommonText.xml" />
     <Xml Include="RPGComponents.xml">
@@ -661,6 +662,7 @@
     <Xml Include="RPGMissionTemplate04.xml" />
     <Xml Include="RPGMissionTemplate05.xml" />
     <Xml Include="RPGMissionTemplate06.xml" />
+    <Xml Include="RPGMissionTemplate07.xml" />
     <Xml Include="RPGRumors.xml" />
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>
