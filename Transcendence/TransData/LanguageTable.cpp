@@ -35,6 +35,7 @@ struct SLanguageTableOptions
 	bool bIncludeScript = false;
 	bool bShowInherited = false;
 	bool bShowReferences = false;
+	bool bIncludeAllTypes = false;
 	};
 
 struct SLexiconEntry
@@ -81,6 +82,7 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	Options.bShowCode = pCmdLine->GetAttributeBool(CODE_ATTRIB);
 	Options.bShowInherited = pCmdLine->GetAttributeBool(INHERITED_ATTRIB);
 	Options.bShowReferences = pCmdLine->GetAttributeBool(REFERENCES_ATTRIB);
+	Options.bIncludeAllTypes = (Options.iType == ELanguageOutputTypes::lexicon);
 
 	//	Generate a table of all matching types
 
@@ -99,7 +101,8 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		//	Skip if we don't have an language elements.
 
-		if (!pType->HasLanguageBlock())
+		if (!Options.bIncludeAllTypes 
+				&& !pType->HasLanguageBlock())
 			continue;
 
 		//	Figure out the sort order
@@ -298,6 +301,22 @@ void OutputLexicon (CUniverse &Universe, const TSortMap<CString, CDesignType *> 
 			sEntityName = strPatternSubst(CONSTLIT("%08x"), Type.GetUNID());
 
 		AccumulateLexicon(sEntityName, *pLanguage, Options, Lexicon);
+
+		//	We pull text from other places for specific types.
+
+		switch (Type.GetType())
+			{
+			case designItemType:
+				{
+				const CItemType *pItemType = CItemType::AsType(&Type);
+				if (!pItemType)
+					continue;
+
+				AccumulateLexicon(strPatternSubst(CONSTLIT("%s/name"), sEntityName), pItemType->GetNounPhrase(nounActual), Options, Lexicon);
+				AccumulateLexicon(strPatternSubst(CONSTLIT("%s/desc"), sEntityName), pItemType->GetDesc(true), Options, Lexicon);
+				break;
+				}
+			}
 		}
 
 	//	Output
