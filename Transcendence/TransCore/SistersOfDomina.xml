@@ -386,6 +386,10 @@
 			<Text id="core.mapDesc">
 				Contemplation and communion
 			</Text>
+
+			<Code id="rpg.statusDetails">
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</Code>
 		</Language>
 	</StationType>
 	
