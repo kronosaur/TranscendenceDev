@@ -1116,7 +1116,7 @@
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
 									missionCriteria: "n +commonwealthHabitat;"
-									maxActive: 1
+									maxPerStation: 1
 									missionGiver: (rpgCharacterGetInfo gSource 'stationMaster)
 									noMissionTextID: 'descNoMissions
 									})
