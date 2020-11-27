@@ -7,6 +7,25 @@
 
 #define COMMUNICATIONS_TAG						CONSTLIT("Communications")
 
+CString CGenericType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
+
+//	GetNamePattern
+//
+//	Get the name pattern.
+
+	{
+	CCodeChainCtx CCX(GetUniverse());
+
+	//	core.namePattern can be used to set this value.
+
+	ICCItemPtr pValue = GetProperty(CCX, CONSTLIT("core.namePattern"));
+
+	if (retdwFlags)
+		*retdwFlags = 0;
+
+	return pValue->GetStringValue();
+	}
+
 void CGenericType::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
 
 //	OnAccumulateXMLMergeFlags

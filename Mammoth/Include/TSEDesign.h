@@ -765,6 +765,7 @@ class CGenericType : public CDesignType
 
 		static CGenericType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designGenericType) ? (CGenericType *)pType : NULL); }
 		virtual CCommunicationsHandler *GetCommsHandler (void) override { return m_Comms.GetCommsHandler(GetInheritFrom()); }
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const;
 		virtual DesignTypes GetType (void) const override { return designGenericType; }
 
 	protected:
