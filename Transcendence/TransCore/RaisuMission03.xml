@@ -271,6 +271,7 @@
 			attributes=		"eridaniScript"
 			>
 		<Properties>
+			<Definition id="core.namePattern">": Centauri settlement in Eridani"</Definition>
 			<Data id="raisu.showWelcome"></Data>
 		</Properties>
 

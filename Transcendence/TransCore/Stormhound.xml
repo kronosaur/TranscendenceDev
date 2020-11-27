@@ -5,6 +5,10 @@
 	<!-- Stormhound -->
 	
 	<Type UNID="&unidStormhound;">
+		<Properties>
+			<Definition id="core.namePattern">": Stormhound"</Definition>
+		</Properties>
+
 		<StaticData>
 			<Data id="MissionAttribute">"stormhoundMission"</Data>
 			<Data id="Name">"Stormhound"</Data>

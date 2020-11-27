@@ -23,6 +23,10 @@
 	-->
 
 	<Type UNID="&unidBenedict;">
+		<Properties>
+			<Definition id="core.namePattern">": Benedict"</Definition>
+		</Properties>
+
 		<StaticData>
 			<MissionAttribute>"benedictMission"</MissionAttribute>
 			<Name>"Benedict"</Name>

@@ -4,6 +4,7 @@
 
 	<Type unid="&chEnricoGaul;">
 		<Properties>
+			<Definition id="core.namePattern">": [Captain ]Enrico Gaul"</Definition>
 		</Properties>
 
 		<Events>

@@ -246,6 +246,10 @@
 	<Type unid="&chVolkov;"
 			inherit=	"&baStdWingmanBase;">
 
+		<Properties>
+			<Definition id="core.namePattern">": Volkov"</Definition>
+		</Properties>
+
 		<StaticData>
 			<Name>Volkov</Name>
 			<Sovereign>&svCommonwealth;</Sovereign>

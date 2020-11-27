@@ -4,6 +4,7 @@
 
 	<Type unid="&chHarperThompson;">
 		<Properties>
+			<Definition id="core.namePattern">": Harper Thompson"</Definition>
 		</Properties>
 
 		<Language>

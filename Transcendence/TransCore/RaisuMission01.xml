@@ -704,6 +704,10 @@
 	<Type UNID="&evArcoVaughn;"
 			attributes=			"eridaniScript"
 			>
+		<Properties>
+			<Definition id="core.namePattern">": Arco Vaughn"</Definition>
+		</Properties>
+
 		<Events>
 			<OnEventHandlerInit>
 				(block Nil
