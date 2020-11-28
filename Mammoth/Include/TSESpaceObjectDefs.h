@@ -42,3 +42,4 @@ struct SObjectPartDesc
 	CItem Item;										//	If iPart == item
 	Abilities iEquipment = ablUnknown;				//	If iPart == equipment
 	};
+

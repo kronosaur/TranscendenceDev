@@ -28,14 +28,6 @@ enum class ECondition
 	count =					10,
 	};
 
-enum class EConditionChange
-	{
-	unknown =				-1,
-
-	added =					0,
-	removed =				1,
-	};
-
 class CConditionSet
 	{
 	public:
@@ -54,6 +46,26 @@ class CConditionSet
 
 	private:
 		DWORD m_dwSet = 0;
+	};
+
+enum class EConditionChange
+	{
+	unknown =				-1,
+
+	added =					0,
+	removed =				1,
+	};
+
+enum class EConditionResult
+	{
+	unknown,
+
+	nothing,				//	Unable to apply or remove
+	alreadyApplied,			//	Condition already applied
+	alreadyRemoved,			//	Condition already removed
+	applied,				//	Condition applied
+	removed,				//	Condition removed
+	stillApplied,			//	Removed, but condition still exists
 	};
 
 //	Damage ---------------------------------------------------------------------

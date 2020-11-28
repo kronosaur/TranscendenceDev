@@ -474,6 +474,11 @@ class CSpaceObject
 
 		//	Conditions
 
+		EConditionResult ApplyCondition (ECondition iCondition, const SObjectPartDesc &Options);
+		EConditionResult CanApplyCondition (ECondition iCondition, const SObjectPartDesc &Options) const;
+		EConditionResult CanRemoveCondition (ECondition iCondition, const SObjectPartDesc &Options) const;
+		EConditionResult RemoveCondition (ECondition iCondition, const SObjectPartDesc &Options) const;
+
 		static constexpr DWORD FLAG_NO_MESSAGE = 0x00000001;
 		void ClearCondition (ECondition iCondition, DWORD dwFlags = 0);
 		bool GetCondition (ECondition iCondition) const;
@@ -827,6 +832,7 @@ class CSpaceObject
 		bool NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		bool NotifyOthersWhenDestroyed (void) { return (m_fNoObjectDestructionNotify ? false : true); }
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
+		bool ParseObjectPart (const ICCItem &Options, SObjectPartDesc &retPartDesc) const;
 		bool PointInHitSizeBox (const CVector &vPos, Metric rRadius = 0.0) const
 			{ 
 			CVector vRelPos = vPos - GetPos();

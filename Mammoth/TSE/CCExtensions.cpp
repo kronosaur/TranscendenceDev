@@ -246,6 +246,10 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_ENHANCE_ITEM			139
 #define FN_OBJ_CAN_DESTROY_TARGET	140
 #define FN_OBJ_CAN_HIT_TARGET		141
+#define FN_OBJ_CAN_APPLY_CONDITION	142
+#define FN_OBJ_APPLY_CONDITION		143
+#define FN_OBJ_CAN_REMOVE_CONDITION	144
+#define FN_OBJ_REMOVE_CONDITION		145
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1480,9 +1484,29 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objAddTradeOrder obj service criteria priceAdj) -> True/Nil",
 			"isvi",		PPFLAG_SIDEEFFECTS,	},
 
+		{	"objApplyCondition",				fnObjSet,		FN_OBJ_APPLY_CONDITION,
+			"(objApplyCondition obj condition [options]) -> True/Nil/'alreadyApplied\n\n"
+			
+			"options:\n\n"
+			
+			"   applyTo: 'interior (optional)\n"
+			"   applyToItem: Item to apply to (optional)\n",
+
+			"is*",		PPFLAG_SIDEEFFECTS,	},
+
 		{	"objCalcBestTarget",				fnObjGet,		FN_OBJ_CALC_BEST_TARGET,
 			"(objCalcBestTarget obj [objList]) -> targetObj (or Nil)",
 			"i*",	0,	},
+
+		{	"objCanApplyCondition",				fnObjGet,		FN_OBJ_CAN_APPLY_CONDITION,
+			"(objCanApplyCondition obj condition [options]) -> True/Nil/'alreadyApplied\n\n"
+			
+			"options:\n\n"
+			
+			"   applyTo: 'interior (optional)\n"
+			"   applyToItem: Item to apply to (optional)\n",
+
+			"is*",		0,	},
 
 		{	"objCanAttack",					fnObjGetOld,		FN_OBJ_CAN_ATTACK,
 			"(objCanAttack obj) -> True/Nil",
@@ -1546,6 +1570,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'tooMuchCargo",
 
 			"iv*",	0,	},
+
+		{	"objCanRemoveCondition",				fnObjGet,		FN_OBJ_CAN_REMOVE_CONDITION,
+			"(objCanRemoveCondition obj condition [options]) -> True|Nil|'notApplied|'stillApplied\n\n"
+
+			"options:\n\n"
+
+			"   applyTo: 'interior (optional)\n"
+			"   applyToItem: Item to apply to (optional)\n",
+
+			"is*",		0,	},
 
 		{	"objChangeEquipmentStatus",		fnObjSet,		FN_OBJ_SET_ABILITY,
 			"(objChangeEquipmentStatus obj equipment command [duration] [options]) -> True/Nil\n\n"
@@ -2298,6 +2332,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objRegisterForSystemEvents",	fnObjSet,		FN_OBJ_REGISTER_SYSTEM_EVENTS,
 			"(objRegisterForSystemEvents target range) -> True/Nil",
 			"ii",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objRemoveCondition",				fnObjSet,		FN_OBJ_REMOVE_CONDITION,
+			"(objRemoveCondition obj condition [options]) -> True|Nil|'notApplied|'stillApplied\n\n"
+
+			"options:\n\n"
+
+			"   applyTo: 'interior (optional)\n"
+			"   applyToItem: Item to apply to (optional)\n",
+
+			"is*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveItem",				fnObjItem,		FN_OBJ_REMOVE_ITEM,
 			"(objRemoveItem obj item [count] [options]) -> True/Nil\n\n"
@@ -5516,6 +5560,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		default:
 			ASSERT(FALSE);
+			return NULL;
 		}
 
 	return pResult;
@@ -5829,6 +5874,9 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_OBJ_GET_STATIC_DATA_FOR_STATION_TYPE:
 			{
+			if (!pStationType)
+				throw CException(ERR_FAIL);
+
 			pResult = pStationType->GetStaticData(sAttrib)->Reference();
 			pArgs->Discard();
 			break;
@@ -5912,7 +5960,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -6377,7 +6425,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 			break;
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -6573,6 +6621,30 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else
 					return pCC->CreateNil();
 				}
+			}
+
+		case FN_OBJ_CAN_APPLY_CONDITION:
+			{
+			CString sCondition = pArgs->GetElement(1)->GetStringValue();
+			ECondition iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(1));
+
+			ICCItemPtr pOptions;
+			if (pArgs->GetElement(2))
+				pOptions = ICCItemPtr(pArgs->GetElement(2)->Reference());
+			else
+				pOptions = ICCItemPtr(pCC->CreateNil());
+
+			SObjectPartDesc Options;
+			if (!pObj->ParseObjectPart(*pOptions, Options))
+				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
+
+
+			}
+
+		case FN_OBJ_CAN_REMOVE_CONDITION:
+			{
 			}
 
 		case FN_OBJ_CAN_DESTROY_TARGET:
@@ -7825,7 +7897,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -9324,7 +9396,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -9484,7 +9556,7 @@ ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -10073,7 +10145,7 @@ ICCItem *fnShipClass (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -10443,7 +10515,7 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -11442,8 +11514,7 @@ ICCItem *fnSovereignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(false);
-			return NULL;
+			throw CException(ERR_FAIL);
 		}
 	}
 
@@ -11537,7 +11608,7 @@ ICCItem *fnSovereignSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(false);
+			throw CException(ERR_FAIL);
 		}
 
 	return pCC->CreateNil();
@@ -11705,7 +11776,7 @@ ICCItem *fnStationGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -11753,7 +11824,7 @@ ICCItem *fnStationSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pCC->CreateNil();
@@ -11813,7 +11884,7 @@ ICCItem *fnStationSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -11859,7 +11930,7 @@ ICCItem *fnStationType (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -12620,7 +12691,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(false);
+			throw CException(ERR_FAIL);
 		}
 
 	return pCC->CreateNil();
@@ -14851,6 +14922,10 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 				return CreateListFromVector(vTry);
 				}
+
+			//	Should never get there.
+
+			throw CException(ERR_FAIL);
 			}
 
 		case FN_VECTOR_SUBTRACT:
@@ -14915,8 +14990,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			}
 
 		default:
-			ASSERT(false);
-			return NULL;
+			throw CException(ERR_FAIL);
 		}
 	}
 
@@ -15329,7 +15403,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					sName = pFoundShip->GetNounPhrase();
 					}
 				else
-					ASSERT(false);
+					throw CException(ERR_FAIL);
 
 				ICCItem *pValue = pCC->CreateInteger(dwUNID);
 				pList->Append(pValue);
