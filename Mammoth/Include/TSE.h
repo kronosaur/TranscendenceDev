@@ -169,6 +169,7 @@ extern CUniverse *g_pUniverse;
 #include "TSEStorage.h"
 #include "TSEMultiverse.h"
 #include "TSEPaintUtil.h"
+#include "TSESpaceObjectDefs.h"
 #include "TSESystem.h"
 #include "TSEDockScreenSession.h"
 

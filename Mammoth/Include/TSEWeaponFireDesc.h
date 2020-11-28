@@ -417,6 +417,8 @@ class DamageTypeSet
 		DWORD m_dwSet;
 	};
 
+//	Shots ----------------------------------------------------------------------
+
 struct SShotCreateCtx
 	{
 	enum Flags
