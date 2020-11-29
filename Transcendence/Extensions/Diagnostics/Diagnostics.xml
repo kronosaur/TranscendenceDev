@@ -63,6 +63,7 @@
 	<!-- 0180-01CF TEST TSE -->
 
 	<!ENTITY unidTestTSE				"0xA0010180">
+	<!ENTITY unidTestRadiation			"0xA0010181">
 
 	<!-- 01D0-01FF TEST SHIP CLASSES -->
 
@@ -92,6 +93,7 @@
 	<Module filename="ItemEnhancementUnitTests.xml"/>
 	<Module filename="ItemUnitTests.xml"/>
 	<Module filename="MissionUnitTests.xml"/>
+	<Module filename="RadiationTests.xml"/>
 	<Module filename="RPGUnitTests.xml"/>
 	<Module filename="ShipClassTests.xml"/>
 	<Module filename="SystemFunctionTests.xml"/>

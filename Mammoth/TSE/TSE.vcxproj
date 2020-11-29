@@ -260,6 +260,7 @@
     <ClInclude Include="..\Include\TSEEngineDefs.h" />
     <ClInclude Include="..\Include\TSEListImpl.h" />
     <ClInclude Include="..\Include\TSEOverlays.h" />
+    <ClInclude Include="..\Include\TSESpaceObjectDefs.h" />
     <ClInclude Include="..\Include\TSESpaceObjectUtil.h" />
     <ClInclude Include="..\Include\TSEAdventureDesc.h" />
     <ClInclude Include="..\Include\TSEArmor.h" />

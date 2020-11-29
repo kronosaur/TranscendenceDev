@@ -18,7 +18,7 @@ CString CGenericType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) 
 
 	//	core.namePattern can be used to set this value.
 
-	ICCItemPtr pValue = GetProperty(CCX, CONSTLIT("core.namePattern"));
+	ICCItemPtr pValue = GetProperty(CCX, PROPERTY_CORE_NAME_PATTERN);
 
 	if (retdwFlags)
 		*retdwFlags = 0;

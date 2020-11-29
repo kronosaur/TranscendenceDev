@@ -118,6 +118,13 @@
 
 #define PROPERTY_CORE_MINING_DIFFICULTY			CONSTLIT("core.miningDifficulty")
 
+//	core.namePattern
+//
+//	Type Property: For generic type definitions (<Type>), this defines the name
+//	of the type. This is mostly used for debugging and TransData lists.
+
+#define PROPERTY_CORE_NAME_PATTERN				CONSTLIT("core.namePattern")
+
 //	core.noBiologicalEffects
 //
 //	Object Property: If this property is True for an object, the object will not

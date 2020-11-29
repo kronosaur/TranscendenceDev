@@ -523,6 +523,32 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) co
 		}
 	}
 
+SpecialDamageTypes DamageDesc::GetSpecialDamageFromCondition (ECondition iCondition)
+
+//	GetSpecialDamageFromCondition
+//
+//	Returns the special damage that causes the given condition.
+
+	{
+	switch (iCondition)
+		{
+		case ECondition::blind:
+			return specialBlinding;
+
+		case ECondition::paralyzed:
+			return specialEMP;
+
+		case ECondition::radioactive:
+			return specialRadiation;
+
+		case ECondition::timeStopped:
+			return specialTimeStop;
+
+		default:
+			return specialNone;
+		}
+	}
+
 CString DamageDesc::GetSpecialDamageName (SpecialDamageTypes iSpecial)
 
 //	GetSpecialDamageName

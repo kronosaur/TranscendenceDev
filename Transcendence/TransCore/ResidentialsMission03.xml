@@ -4,12 +4,11 @@
 
 	<MissionType UNID="&msResidentials03;"
 			name=				"Commonwealth Residentials 03: Rescue Leonor Ren"
-			attributes=			"commonwealthAgricultural, commonwealthColony, commonwealthResidentials, eridaniScript"
+			attributes=			"commonwealthColony, commonwealthResidentials, eridaniScript"
 			inherit=			"&baAssaultStationMission;"
 
 			level=				"1-4"
 			maxAppearing=		"1"
-			priority=			"5"
 
 			noDebrief=			"true"
 			>
