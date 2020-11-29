@@ -1053,5 +1053,8 @@
     <Xml Include="ResidentialsMission03.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\RadiationTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

@@ -182,6 +182,7 @@
     <Xml Include="..\Extensions\Diagnostics\FunctionTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ItemUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\MissionUnitTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\RadiationTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\RPGUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ShipClassTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\SystemFunctionTests.xml" />

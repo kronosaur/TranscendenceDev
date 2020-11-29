@@ -169,6 +169,7 @@ extern CUniverse *g_pUniverse;
 #include "TSEStorage.h"
 #include "TSEMultiverse.h"
 #include "TSEPaintUtil.h"
+#include "TSESpaceObjectDefs.h"
 #include "TSESystem.h"
 #include "TSEDockScreenSession.h"
 
@@ -253,6 +254,17 @@ class CAttackDetector
 
 #include "TSESpaceObjectUtil.h"
 #include "TSEOverlays.h"
+
+struct SApplyConditionOptions
+	{
+	CDamageSource Cause;
+
+	SObjectPartDesc ApplyTo;
+	int iTimer = -1;
+
+	bool bNoImmunityCheck = false;
+	bool bNoMessage = false;
+	};
 
 struct SUpdateCtx
 	{
@@ -473,8 +485,11 @@ class CSpaceObject
 
 		//	Conditions
 
-		static constexpr DWORD FLAG_NO_MESSAGE = 0x00000001;
-		void ClearCondition (ECondition iCondition, DWORD dwFlags = 0);
+		EConditionResult ApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options);
+		EConditionResult CanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const;
+		EConditionResult CanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const;
+		EConditionResult RemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options);
+
 		bool GetCondition (ECondition iCondition) const;
 		CConditionSet GetConditions (void) const;
 		bool IsBlind (void) const { return GetCondition(ECondition::blind); }
@@ -484,7 +499,6 @@ class CSpaceObject
 		bool IsParalyzed (void) const { return GetCondition(ECondition::paralyzed); }
 		bool IsRadioactive (void) const { return GetCondition(ECondition::radioactive); }
 		bool IsTimeStopped (void) const { return GetCondition(ECondition::timeStopped); }
-		void SetCondition (ECondition iCondition, int iTimer = -1);
 		void SetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition);
 
 		//	Data
@@ -826,6 +840,7 @@ class CSpaceObject
 		bool NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		bool NotifyOthersWhenDestroyed (void) { return (m_fNoObjectDestructionNotify ? false : true); }
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
+		bool ParseConditionOptions (const ICCItem &Options, SApplyConditionOptions &retOptions) const;
 		bool PointInHitSizeBox (const CVector &vPos, Metric rRadius = 0.0) const
 			{ 
 			CVector vRelPos = vPos - GetPos();
@@ -1274,8 +1289,10 @@ class CSpaceObject
 		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }
+		virtual EConditionResult OnApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::nothing; }
 		virtual void OnAscended (void) { }
-		virtual void OnClearCondition (ECondition iCondition, DWORD dwFlags) { }
+		virtual EConditionResult OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::nothing; }
+		virtual EConditionResult OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::nothing; }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damageNoDamage; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) { }
@@ -1294,9 +1311,8 @@ class CSpaceObject
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnPlace (const CVector &vOldPos) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
+		virtual EConditionResult OnRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::nothing; }
 		virtual void OnRemoved (SDestroyCtx &Ctx) { }
-		virtual void OnSetCondition (ECondition iCondition, int iTimer = -1) { }
-		virtual void OnSetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition) { }
 		virtual void OnSetEventFlags (void) { }
 		virtual void OnSetSovereign (CSovereign *pSovereign) { }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) { }
