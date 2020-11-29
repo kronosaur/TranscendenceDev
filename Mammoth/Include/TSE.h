@@ -255,6 +255,15 @@ class CAttackDetector
 #include "TSESpaceObjectUtil.h"
 #include "TSEOverlays.h"
 
+struct SApplyConditionOptions
+	{
+	SObjectPartDesc ApplyTo;
+	int iTimer = -1;
+
+	bool bNoImmunityCheck = false;
+	bool bNoMessage = false;
+	};
+
 struct SUpdateCtx
 	{
 	public:
@@ -474,10 +483,10 @@ class CSpaceObject
 
 		//	Conditions
 
-		EConditionResult ApplyCondition (ECondition iCondition, const SObjectPartDesc &Options);
-		EConditionResult CanApplyCondition (ECondition iCondition, const SObjectPartDesc &Options) const;
-		EConditionResult CanRemoveCondition (ECondition iCondition, const SObjectPartDesc &Options) const;
-		EConditionResult RemoveCondition (ECondition iCondition, const SObjectPartDesc &Options) const;
+		EConditionResult ApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options);
+		EConditionResult CanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const;
+		EConditionResult CanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const;
+		EConditionResult RemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options);
 
 		static constexpr DWORD FLAG_NO_MESSAGE = 0x00000001;
 		void ClearCondition (ECondition iCondition, DWORD dwFlags = 0);
@@ -1281,7 +1290,10 @@ class CSpaceObject
 		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }
+		virtual EConditionResult OnApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::nothing; }
 		virtual void OnAscended (void) { }
+		virtual EConditionResult OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::nothing; }
+		virtual EConditionResult OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::nothing; }
 		virtual void OnClearCondition (ECondition iCondition, DWORD dwFlags) { }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damageNoDamage; }
@@ -1301,6 +1313,7 @@ class CSpaceObject
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnPlace (const CVector &vOldPos) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
+		virtual EConditionResult OnRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::nothing; }
 		virtual void OnRemoved (SDestroyCtx &Ctx) { }
 		virtual void OnSetCondition (ECondition iCondition, int iTimer = -1) { }
 		virtual void OnSetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition) { }

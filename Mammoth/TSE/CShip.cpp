@@ -4127,6 +4127,91 @@ void CShip::OnAcceptedMission (CMission &MissionObj)
 	m_pController->OnAcceptedMission(MissionObj);
 	}
 
+EConditionResult CShip::OnApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options)
+
+//	OnApplyCondition
+//
+//	Apply the condition.
+
+	{
+	//	Set the condition
+
+	switch (iCondition)
+		{
+		case ECondition::blind:
+			{
+			DWORD dwOptions = 0;
+			if (Options.bNoMessage)
+				dwOptions |= ablOptionNoMessage;
+
+			SetAbility(ablShortRangeScanner, ablDamage, Options.iTimer, dwOptions);
+			return EConditionResult::applied;
+			}
+
+		case ECondition::disarmed:
+			{
+			if (m_iDisarmedTimer == 0)
+				{
+				if (Options.iTimer < 0)
+					m_iDisarmedTimer = -1;
+				else
+					m_iDisarmedTimer = Min(Options.iTimer, MAX_SHORT);
+
+				return EConditionResult::applied;
+				}
+			else
+				return EConditionResult::alreadyApplied;
+			}
+
+		case ECondition::LRSBlind:
+			{
+			DWORD dwOptions = 0;
+			if (Options.bNoMessage)
+				dwOptions |= ablOptionNoMessage;
+
+			SetAbility(ablLongRangeScanner, ablDamage, Options.iTimer, 0);
+			return EConditionResult::applied;
+			}
+
+		case ECondition::paralyzed:
+			{
+			if (m_iParalysisTimer == 0)
+				{
+				if (Options.iTimer < 0)
+					m_iParalysisTimer = -1;
+				else
+					m_iParalysisTimer = Min(Options.iTimer, MAX_SHORT);
+
+				return EConditionResult::applied;
+				}
+			else
+				return EConditionResult::alreadyApplied;
+			}
+
+		case ECondition::radioactive:
+			{
+			if (!m_fRadioactive)
+				{
+				if (!GetProperty(PROPERTY_CORE_NO_RADIATION_DEATH)->IsNil())
+					m_iContaminationTimer = -1;
+				else if (Options.iTimer < 0)
+					m_iContaminationTimer = (IsPlayer() ? 180 : 60) * g_TicksPerSecond;
+				else
+					m_iContaminationTimer = Min(Options.iTimer, MAX_SHORT);
+
+				m_fRadioactive = true;
+				m_pController->OnShipStatus(IShipController::statusRadiationWarning, m_iContaminationTimer);
+				return EConditionResult::applied;
+				}
+			else
+				return EConditionResult::alreadyApplied;
+			}
+
+		default:
+			return EConditionResult::nothing;
+		}
+	}
+
 void CShip::OnAscended (void)
 
 //	OnAscended
@@ -4170,6 +4255,144 @@ void CShip::OnBounce (CSpaceObject *pBarrierObj, const CVector &vPos)
 
 	{
 	m_pController->OnHitBarrier(pBarrierObj, vPos);
+	}
+
+EConditionResult CShip::OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const
+
+//	OnCanApplyCondition
+//
+//	Returns result if trying to apply a condition.
+
+	{
+	//	There are some conditions that we do not handle at this level. They need
+	//	to be applied as an overlay or such.
+
+	switch (iCondition)
+		{
+		//	These we handle.
+
+		case ECondition::blind:
+		case ECondition::disarmed:
+		case ECondition::LRSBlind:
+		case ECondition::paralyzed:
+		case ECondition::radioactive:
+		case ECondition::timeStopped:
+			break;
+
+		//	Anything else, we do not handle.
+
+		default:
+			return EConditionResult::nothing;
+		}
+
+	//	Otherwise, see where we're applying the condition.
+
+	switch (Options.ApplyTo.iPart)
+		{
+		//	If applying to interior, then we don't get benefit of armor or hull.
+
+		case EObjectPart::interior:
+			{
+			return EConditionResult::applied;
+			}
+
+		//	We're apply the condition to an item (e.g., using a barrel on an 
+		//	item). We ignore shields, etc.
+
+		case EObjectPart::item:
+			{
+			SpecialDamageTypes iSpecialDamage = DamageDesc::GetSpecialDamageFromCondition(iCondition);
+			if (iSpecialDamage != specialNone)
+				{
+				//	If we're applying to installed armor, then we get a chance
+				//	to test immunities.
+
+				if (Options.ApplyTo.Item.IsArmor() 
+						&& Options.ApplyTo.Item.IsInstalled())
+					{
+					const CArmorItem ArmorItem = Options.ApplyTo.Item.AsArmorItem();
+					if (ArmorItem.IsImmune(iSpecialDamage))
+						return EConditionResult::nothing;
+
+					//	Still get a chance to test hull
+
+					if (m_pClass->GetHullDesc().IsImmuneTo(iSpecialDamage))
+						return EConditionResult::nothing;
+
+					return EConditionResult::applied;
+					}
+
+				//	Otherwise, we're applying to an item in cargo hold, so we
+				//	don't have any immunities.
+
+				else
+					return EConditionResult::applied;
+				}
+			else
+				{
+				SApplyConditionOptions NewOptions(Options);
+				NewOptions.ApplyTo = SObjectPartDesc();
+				return OnCanApplyCondition(iCondition, NewOptions);
+				}
+
+			break;
+			}
+
+		//	Default means treat the ship as a whole
+
+		default:
+			{
+			SpecialDamageTypes iSpecialDamage = DamageDesc::GetSpecialDamageFromCondition(iCondition);
+			if (iSpecialDamage != specialNone)
+				{
+				if (m_pClass->GetHullDesc().IsImmuneTo(iSpecialDamage))
+					return EConditionResult::nothing;
+
+				return EConditionResult::applied;
+				}
+			else
+				return EConditionResult::applied;
+
+			break;
+			}
+		}
+	}
+
+EConditionResult CShip::OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const
+
+//	OnCanRemoveCondition
+//
+//	Returns result when attempting to remove condition.
+//	NOTE: We only return whether we are able to remove the condition from the
+//	ship. We do not check to see if the condition is acquired a different way.
+
+	{
+	//	Otherwise, see where we're applying the condition.
+
+	switch (Options.ApplyTo.iPart)
+		{
+		//	If applying to interior, then we don't get benefit of armor or hull.
+
+		case EObjectPart::interior:
+			{
+			return EConditionResult::removed;
+			}
+
+		//	We're apply the condition to an item (e.g., using a barrel on an 
+		//	item). We ignore shields, etc.
+
+		case EObjectPart::item:
+			{
+			return EConditionResult::removed;
+			}
+
+		//	Default means treat the ship as a whole
+
+		default:
+			{
+			return EConditionResult::removed;
+			}
+		}
 	}
 
 void CShip::OnClearCondition (ECondition iCondition, DWORD dwFlags)
@@ -5914,6 +6137,71 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	Initialize effects
 
 	m_pClass->InitEffects(this, &m_Effects);
+	}
+
+EConditionResult CShip::OnRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options)
+
+//	OnRemoveCondition
+//
+//	Remove the condition.
+
+	{
+	switch (iCondition)
+		{
+		case ECondition::blind:
+			{
+			DWORD dwOptions = 0;
+			if (Options.bNoMessage)
+				dwOptions |= ablOptionNoMessage;
+
+			SetAbility(ablShortRangeScanner, ablRepair, -1, dwOptions);
+			return EConditionResult::removed;
+			}
+
+		case ECondition::disarmed:
+			{
+			m_iDisarmedTimer = 0;
+			return EConditionResult::removed;
+			}
+
+		case ECondition::LRSBlind:
+			{
+			DWORD dwOptions = 0;
+			if (Options.bNoMessage)
+				dwOptions |= ablOptionNoMessage;
+
+			SetAbility(ablLongRangeScanner, ablRepair, -1, dwOptions);
+			return EConditionResult::removed;
+			}
+
+		case ECondition::paralyzed:
+			{
+			m_iParalysisTimer = 0;
+			return EConditionResult::removed;
+			}
+
+		case ECondition::radioactive:
+			{
+			if (m_fRadioactive)
+				{
+				if (m_pIrradiatedBy)
+					{
+					delete m_pIrradiatedBy;
+					m_pIrradiatedBy = NULL;
+					}
+
+				m_iContaminationTimer = 0;
+				m_fRadioactive = false;
+				m_pController->OnShipStatus(IShipController::statusRadiationCleared);
+				return EConditionResult::removed;
+				}
+			else
+				return EConditionResult::alreadyRemoved;
+			}
+
+		default:
+			return EConditionResult::nothing;
+		}
 	}
 
 void CShip::OnRemoved (SDestroyCtx &Ctx)

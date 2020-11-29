@@ -28,26 +28,6 @@ enum class ECondition
 	count =					10,
 	};
 
-class CConditionSet
-	{
-	public:
-		void Clear (ECondition iCondition) { m_dwSet &= ~(DWORD)iCondition; }
-		void ClearAll (void) { m_dwSet = 0; }
-		bool Diff (const CConditionSet &OldSet, TArray<ECondition> &Added, TArray<ECondition> &Removed) const;
-		bool IsEmpty (void) const { return (m_dwSet == 0); }
-		bool IsSet (ECondition iCondition) const { return ((m_dwSet & (DWORD)iCondition) ? true : false); }
-		void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
-		void Set (ECondition iCondition) { m_dwSet |= (DWORD)iCondition; }
-		void Set (const CConditionSet &Conditions);
-		ICCItemPtr WriteAsCCItem (void) const;
-		void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
-
-		static ECondition ParseCondition (const CString &sCondition);
-
-	private:
-		DWORD m_dwSet = 0;
-	};
-
 enum class EConditionChange
 	{
 	unknown =				-1,
@@ -66,6 +46,27 @@ enum class EConditionResult
 	applied,				//	Condition applied
 	removed,				//	Condition removed
 	stillApplied,			//	Removed, but condition still exists
+	};
+
+class CConditionSet
+	{
+	public:
+		void Clear (ECondition iCondition) { m_dwSet &= ~(DWORD)iCondition; }
+		void ClearAll (void) { m_dwSet = 0; }
+		bool Diff (const CConditionSet &OldSet, TArray<ECondition> &Added, TArray<ECondition> &Removed) const;
+		bool IsEmpty (void) const { return (m_dwSet == 0); }
+		bool IsSet (ECondition iCondition) const { return ((m_dwSet & (DWORD)iCondition) ? true : false); }
+		void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
+		void Set (ECondition iCondition) { m_dwSet |= (DWORD)iCondition; }
+		void Set (const CConditionSet &Conditions);
+		ICCItemPtr WriteAsCCItem (void) const;
+		void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
+
+		static CString AsID (EConditionResult iResult);
+		static ECondition ParseCondition (const CString &sCondition);
+
+	private:
+		DWORD m_dwSet = 0;
 	};
 
 //	Damage ---------------------------------------------------------------------
@@ -212,6 +213,7 @@ class DamageDesc
 		static SpecialDamageTypes ConvertToSpecialDamageTypes (const CString &sValue);
 		static int GetDamageLevel (DamageTypes iType);
 		static int GetDamageTier (DamageTypes iType);
+		static SpecialDamageTypes GetSpecialDamageFromCondition (ECondition iCondition);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
 		static int GetMassDestructionAdjFromValue (int iValue);
 		static int GetMassDestructionLevelFromValue (int iValue);

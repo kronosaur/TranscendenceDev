@@ -1274,6 +1274,9 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL, ICCItemPtr *retpData = NULL) const override;
 		virtual CDesignType *GetDefaultOverride (void) const { return m_pClass->GetDefaultEventHandler(); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
+		virtual EConditionResult OnApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) override;
+		virtual EConditionResult OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const override;
+		virtual EConditionResult OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const override;
 		virtual void OnClearCondition (ECondition iCondition, DWORD dwFlags) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
@@ -1288,6 +1291,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) override { m_pController->OnPaintSRSEnhancements(Dest, Ctx); }
 		virtual void OnPlace (const CVector &vOldPos) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual EConditionResult OnRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) override;
 		virtual void OnRemoved (SDestroyCtx &Ctx) override;
 		virtual void OnSetCondition (ECondition iCondition, int iTimer = -1) override;
 		virtual void OnSetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition) override;

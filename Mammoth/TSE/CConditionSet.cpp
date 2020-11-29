@@ -18,6 +18,30 @@ static TStaticStringTable<TStaticStringEntry<ECondition>, (int)ECondition::count
 	"timeStopped",			ECondition::timeStopped,
 	};
 
+static TStaticStringTable<TStaticStringEntry<EConditionResult>, 7> CONDITION_RESULT_TABLE = {
+	"alreadyApplied",		EConditionResult::alreadyApplied,
+	"alreadyRemoved",		EConditionResult::alreadyRemoved,
+	"applied",				EConditionResult::applied,
+	"nothing",				EConditionResult::nothing,
+	"removed",				EConditionResult::removed,
+	"stillApplied",			EConditionResult::stillApplied,
+	"unknown",				EConditionResult::unknown,
+	};
+
+CString CConditionSet::AsID (EConditionResult iResult)
+
+//	AsID
+//
+//	Return the ID.
+
+	{
+	for (int i = 0; i < CONDITION_RESULT_TABLE.GetCount(); i++)
+		if (CONDITION_RESULT_TABLE[i].Value == iResult)
+			return CString(CONDITION_RESULT_TABLE[i].pszKey);
+
+	return NULL_STR;
+	}
+
 bool CConditionSet::Diff (const CConditionSet &OldSet, TArray<ECondition> &Added, TArray<ECondition> &Removed) const
 
 //	Diff

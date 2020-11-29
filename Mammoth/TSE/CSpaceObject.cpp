@@ -567,6 +567,36 @@ ALERROR CSpaceObject::AddToSystem (CSystem &System, bool bNoGlobalInsert)
 	return NOERROR;
 	}
 
+EConditionResult CSpaceObject::ApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options)
+
+//	ApplyCondition
+//
+//	Apply a condition
+
+	{
+	//	Check to see if we're immune. If not, then we continue.
+
+	EConditionResult iResult = CanApplyCondition(iCondition, Options);
+	if (iResult != EConditionResult::applied)
+		return iResult;
+
+	//	Handle some conditions ourselves.
+
+	switch (iCondition)
+		{
+		case ECondition::timeStopped:
+			{
+			StopTime();
+			return EConditionResult::applied;
+			}
+
+		//	For others, let the descendant handle it.
+
+		default:
+			return OnApplyCondition(iCondition, Options);
+		}
+	}
+
 ICCItemPtr CSpaceObject::AsCCItem (CCodeChainCtx &Ctx, const CItem::SEnhanceItemResult &Result)
 
 //	AsCCItem
@@ -850,6 +880,28 @@ Metric CSpaceObject::CalculateItemMass (Metric *retrCargoMass) const
 	return rTotal;
 	}
 
+EConditionResult CSpaceObject::CanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const
+
+//	CanApplyCondition
+//
+//	Returns result when applying condition
+
+	{
+	//	If we're already in this condition...
+
+	if (GetCondition(iCondition))
+		return EConditionResult::alreadyApplied;
+
+	//	If we don't need to check immunities, then we continue.
+
+	if (Options.bNoImmunityCheck)
+		return EConditionResult::applied;
+
+	//	Let our descendants handle it.
+
+	return OnCanApplyCondition(iCondition, Options); 
+	}
+
 bool CSpaceObject::CanCommunicateWith (CSpaceObject *pSender)
 
 //	CanCommunicateWith
@@ -1027,6 +1079,29 @@ bool CSpaceObject::CanInstallItem (const CItem &Item, int iSlot, InstallItemResu
 		*retsResult = CONSTLIT("Item installation not supported.");
 
 	return false;
+	}
+
+EConditionResult CSpaceObject::CanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const
+
+//	CanRemoveCondition
+//
+//	Returns result when attempting to remove condition.
+
+	{
+	//	If we're not in this condition...
+
+	if (!GetCondition(iCondition))
+		return EConditionResult::alreadyRemoved;
+
+	//	If we don't need to check for cases in which we cannot remove the
+	//	condition, then just return.
+
+	if (Options.bNoImmunityCheck)
+		return EConditionResult::removed;
+
+	//	Let our descendants handle it.
+
+	return OnCanRemoveCondition(iCondition, Options);
 	}
 
 void CSpaceObject::ClearCondition (ECondition iCondition, DWORD dwFlags)
@@ -6876,6 +6951,41 @@ void CSpaceObject::PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SView
 	CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 3, rgbColor);
 	}
 
+bool CSpaceObject::ParseObjectPart (const ICCItem &Options, SObjectPartDesc &retPartDesc) const
+
+//	ParseObjectPart
+//
+//	Parse options for setting conditions.
+
+	{
+	retPartDesc = SObjectPartDesc();
+
+	if (Options.IsNil())
+		return true;
+	else if (Options.IsSymbolTable())
+		{
+		CCodeChainCtx CCX(GetUniverse());
+
+		if (ICCItem *pApplyTo = Options.GetElement(CONSTLIT("applyTo")))
+			{
+			CString sApplyTo = pApplyTo->GetStringValue();
+			if (strEquals(sApplyTo, CONSTLIT("interior")))
+				retPartDesc.iPart = EObjectPart::interior;
+			else
+				return false;
+			}
+		else if (ICCItem *pApplyToItem = Options.GetElement(CONSTLIT("applyToItem")))
+			{
+			retPartDesc.iPart = EObjectPart::item;
+			retPartDesc.Item = CCX.AsItem(pApplyToItem);
+			}
+
+		return true;
+		}
+	else
+		return false;
+	}
+
 void CSpaceObject::Reconned (void)
 
 //	Reconned
@@ -7021,6 +7131,44 @@ void CSpaceObject::RemoveAllEventSubscriptions (CSystem *pSystem, TArray<DWORD> 
 				}
 			}
 		}
+	}
+
+EConditionResult CSpaceObject::RemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options)
+
+//	RemoveCondition
+//
+//	Removes the given condition
+
+	{
+	//	Check to see if we can remove the condition
+
+	EConditionResult iResult = CanRemoveCondition(iCondition, Options);
+	if (iResult != EConditionResult::removed)
+		return iResult;
+
+	//	Handle some conditions ourselves.
+
+	switch (iCondition)
+		{
+		case ECondition::timeStopped:
+			{
+			RestartTime();
+			break;
+			}
+
+		//	Otherwise, let our descendant handle it.
+
+		default:
+			OnRemoveCondition(iCondition, Options);
+			break;
+		}
+
+	//	See if we removed the condition
+
+	if (GetCondition(iCondition))
+		return EConditionResult::stillApplied;
+	else
+		return EConditionResult::removed;
 	}
 
 void CSpaceObject::RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID, bool bExpiredOnly)

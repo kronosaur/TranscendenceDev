@@ -55,7 +55,7 @@
 						{	test:'(objAddItem gPlayerShip &itHardenedReactiveArmor; 4)
 																				result:'ignore	}
 
-						{	test:'(for i 1 4 (shpInstallArmor gPlayerShip (itmCreate &itHardenedReactiveArmor; 1) i))
+						{	test:'(for i 0 3 (shpInstallArmor gPlayerShip (itmCreate &itHardenedReactiveArmor; 1) i))
 																				result:'ignore	}
 
 						{	test:'(objCanApplyCondition gPlayerShip 'radioactive {

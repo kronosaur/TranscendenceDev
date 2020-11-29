@@ -6625,8 +6625,8 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_CAN_APPLY_CONDITION:
 			{
-			CString sCondition = pArgs->GetElement(1)->GetStringValue();
-			ECondition iCondition = CConditionSet::ParseCondition(sCondition);
+			auto sCondition = pArgs->GetElement(1)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
 			if (iCondition == ECondition::none)
 				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(1));
 
@@ -6636,15 +6636,53 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				pOptions = ICCItemPtr(pCC->CreateNil());
 
-			SObjectPartDesc Options;
-			if (!pObj->ParseObjectPart(*pOptions, Options))
+			SApplyConditionOptions Options;
+			if (!pObj->ParseObjectPart(*pOptions, Options.ApplyTo))
 				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
 
+			auto iResult = pObj->CanApplyCondition(iCondition, Options);
+			switch (iResult)
+				{
+				case EConditionResult::nothing:
+					return pCC->CreateNil();
 
+				case EConditionResult::applied:
+					return pCC->CreateTrue();
+
+				default:
+					return pCC->CreateString(CConditionSet::AsID(iResult));
+				}
 			}
 
 		case FN_OBJ_CAN_REMOVE_CONDITION:
 			{
+			auto sCondition = pArgs->GetElement(1)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(1));
+
+			ICCItemPtr pOptions;
+			if (pArgs->GetElement(2))
+				pOptions = ICCItemPtr(pArgs->GetElement(2)->Reference());
+			else
+				pOptions = ICCItemPtr(pCC->CreateNil());
+
+			SApplyConditionOptions Options;
+			if (!pObj->ParseObjectPart(*pOptions, Options.ApplyTo))
+				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
+
+			auto iResult = pObj->CanRemoveCondition(iCondition, Options);
+			switch (iResult)
+				{
+				case EConditionResult::nothing:
+					return pCC->CreateNil();
+
+				case EConditionResult::removed:
+					return pCC->CreateTrue();
+
+				default:
+					return pCC->CreateString(CConditionSet::AsID(iResult));
+				}
 			}
 
 		case FN_OBJ_CAN_DESTROY_TARGET:
@@ -8284,6 +8322,37 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_OBJ_APPLY_CONDITION:
+			{
+			auto sCondition = pArgs->GetElement(1)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(1));
+
+			ICCItemPtr pOptions;
+			if (pArgs->GetElement(2))
+				pOptions = ICCItemPtr(pArgs->GetElement(2)->Reference());
+			else
+				pOptions = ICCItemPtr(pCC->CreateNil());
+
+			SApplyConditionOptions Options;
+			if (!pObj->ParseObjectPart(*pOptions, Options.ApplyTo))
+				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
+
+			auto iResult = pObj->ApplyCondition(iCondition, Options);
+			switch (iResult)
+				{
+				case EConditionResult::nothing:
+					return pCC->CreateNil();
+
+				case EConditionResult::applied:
+					return pCC->CreateTrue();
+
+				default:
+					return pCC->CreateString(CConditionSet::AsID(iResult));
+				}
+			}
+
 		case FN_OBJ_CHARGE:
 			{
 			DWORD dwEconomyUNID;
@@ -8897,6 +8966,37 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pObj->GetSystem()->RegisterEventHandler(pObj, pArgs->GetElement(1)->GetIntegerValue() * LIGHT_SECOND);
 			return pCC->CreateTrue();
+
+		case FN_OBJ_REMOVE_CONDITION:
+			{
+			auto sCondition = pArgs->GetElement(1)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(1));
+
+			ICCItemPtr pOptions;
+			if (pArgs->GetElement(2))
+				pOptions = ICCItemPtr(pArgs->GetElement(2)->Reference());
+			else
+				pOptions = ICCItemPtr(pCC->CreateNil());
+
+			SApplyConditionOptions Options;
+			if (!pObj->ParseObjectPart(*pOptions, Options.ApplyTo))
+				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
+
+			auto iResult = pObj->RemoveCondition(iCondition, Options);
+			switch (iResult)
+				{
+				case EConditionResult::nothing:
+					return pCC->CreateNil();
+
+				case EConditionResult::removed:
+					return pCC->CreateTrue();
+
+				default:
+					return pCC->CreateString(CConditionSet::AsID(iResult));
+				}
+			}
 
 		case FN_OBJ_REMOVE_ITEM_ENHANCEMENT:
 			{
