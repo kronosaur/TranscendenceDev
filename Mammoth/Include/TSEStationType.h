@@ -80,6 +80,7 @@ class CStationHull
 		int IncStructuralHP (int iInc) { m_iStructuralHP = Max(0, m_iStructuralHP + iInc); return m_iStructuralHP; }
 		void Init (const CStationHullDesc &Desc);
 		bool IsAbandoned (void) const { return (m_iHitPoints == 0 && !m_fImmutable); }
+		bool IsImmuneTo (SpecialDamageTypes iSpecialDamage) const { return false; }
 		bool IsImmutable (void) const { return (m_fImmutable ? true : false); }
 		bool IsWrecked (void) const { return (IsAbandoned() && m_iMaxHitPoints > 0); }
 		void ReadFromStream (SLoadCtx &Ctx);

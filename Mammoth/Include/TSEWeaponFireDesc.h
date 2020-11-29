@@ -63,6 +63,7 @@ class CConditionSet
 		void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
 
 		static CString AsID (EConditionResult iResult);
+		static bool IsSuccessResult (EConditionResult iResult);
 		static ECondition ParseCondition (const CString &sCondition);
 
 	private:

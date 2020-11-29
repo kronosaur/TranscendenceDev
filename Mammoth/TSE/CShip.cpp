@@ -4192,12 +4192,27 @@ EConditionResult CShip::OnApplyCondition (ECondition iCondition, const SApplyCon
 			{
 			if (!m_fRadioactive)
 				{
+				//	Set time to death by radiation
+
 				if (!GetProperty(PROPERTY_CORE_NO_RADIATION_DEATH)->IsNil())
 					m_iContaminationTimer = -1;
 				else if (Options.iTimer < 0)
 					m_iContaminationTimer = (IsPlayer() ? 180 : 60) * g_TicksPerSecond;
 				else
 					m_iContaminationTimer = Min(Options.iTimer, MAX_SHORT);
+
+				//	Set cause so that the epitaph is correct if/when we die.
+
+				if (!Options.Cause.IsEmpty())
+					{
+					if (m_pIrradiatedBy == NULL)
+						m_pIrradiatedBy = new CDamageSource;
+
+					*m_pIrradiatedBy = Options.Cause;
+					m_pIrradiatedBy->SetCause(killedByRadiationPoisoning);
+					}
+
+				//	Set radioactive and notify UI
 
 				m_fRadioactive = true;
 				m_pController->OnShipStatus(IShipController::statusRadiationWarning, m_iContaminationTimer);
@@ -4345,6 +4360,9 @@ EConditionResult CShip::OnCanApplyCondition (ECondition iCondition, const SApply
 			SpecialDamageTypes iSpecialDamage = DamageDesc::GetSpecialDamageFromCondition(iCondition);
 			if (iSpecialDamage != specialNone)
 				{
+				if (m_Armor.IsImmune(iSpecialDamage))
+					return EConditionResult::nothing;
+
 				if (m_pClass->GetHullDesc().IsImmuneTo(iSpecialDamage))
 					return EConditionResult::nothing;
 
@@ -4392,60 +4410,6 @@ EConditionResult CShip::OnCanRemoveCondition (ECondition iCondition, const SAppl
 			{
 			return EConditionResult::removed;
 			}
-		}
-	}
-
-void CShip::OnClearCondition (ECondition iCondition, DWORD dwFlags)
-
-//	OnClearCondition
-//
-//	Clears the condition
-
-	{
-	switch (iCondition)
-		{
-		case ECondition::blind:
-			{
-			DWORD dwOptions = 0;
-			if (dwFlags & FLAG_NO_MESSAGE)
-				dwOptions |= ablOptionNoMessage;
-
-			SetAbility(ablShortRangeScanner, ablRepair, -1, dwOptions);
-			break;
-			}
-
-		case ECondition::disarmed:
-			m_iDisarmedTimer = 0;
-			break;
-
-		case ECondition::LRSBlind:
-			{
-			DWORD dwOptions = 0;
-			if (dwFlags & FLAG_NO_MESSAGE)
-				dwOptions |= ablOptionNoMessage;
-
-			SetAbility(ablLongRangeScanner, ablRepair, -1, dwOptions);
-			break;
-			}
-
-		case ECondition::paralyzed:
-			m_iParalysisTimer = 0;
-			break;
-
-		case ECondition::radioactive:
-			if (m_fRadioactive)
-				{
-				if (m_pIrradiatedBy)
-					{
-					delete m_pIrradiatedBy;
-					m_pIrradiatedBy = NULL;
-					}
-
-				m_iContaminationTimer = 0;
-				m_fRadioactive = false;
-				m_pController->OnShipStatus(IShipController::statusRadiationCleared);
-				}
-			break;
 		}
 	}
 
@@ -5051,10 +5015,10 @@ void CShip::OnDocked (CSpaceObject *pObj)
 	m_pDocked = pObj;
 
 	//	If we've docked with a radioactive object then we become radioactive
-	//	unless our armor is immune
+	//	unless our armor is immune (ApplyCondition does all the proper checks).
 
-	if (pObj->IsRadioactive() && !IsImmuneTo(specialRadiation))
-		SetCondition(ECondition::radioactive);
+	if (pObj->IsRadioactive())
+		ApplyCondition(ECondition::radioactive, SApplyConditionOptions());
 
 	//	Tell our items that we docked with something
 
@@ -6229,97 +6193,6 @@ void CShip::OnRemoved (SDestroyCtx &Ctx)
 		}
 	}
 
-void CShip::OnSetCondition (ECondition iCondition, int iTimer)
-
-//	OnSetCondition
-//
-//	Sets (or clears) the given condition.
-
-	{
-	switch (iCondition)
-		{
-		case ECondition::blind:
-			SetAbility(ablShortRangeScanner, ablDamage, iTimer, 0);
-			break;
-
-		case ECondition::disarmed:
-			if (m_iDisarmedTimer == 0)
-				{
-				if (iTimer < 0)
-					m_iDisarmedTimer = -1;
-				else
-					m_iDisarmedTimer = Min(iTimer, MAX_SHORT);
-				}
-			break;
-
-		case ECondition::LRSBlind:
-			SetAbility(ablLongRangeScanner, ablDamage, iTimer, 0);
-			break;
-
-		case ECondition::paralyzed:
-			if (m_iParalysisTimer == 0)
-				{
-				if (iTimer < 0)
-					m_iParalysisTimer = -1;
-				else
-					m_iParalysisTimer = Min(iTimer, MAX_SHORT);
-				}
-			break;
-
-		case ECondition::radioactive:
-			if (!m_fRadioactive)
-				{
-				if (!GetProperty(PROPERTY_CORE_NO_RADIATION_DEATH)->IsNil())
-					m_iContaminationTimer = -1;
-				else if (iTimer < 0)
-					m_iContaminationTimer = (IsPlayer() ? 180 : 60) * g_TicksPerSecond;
-				else
-					m_iContaminationTimer = Min(iTimer, MAX_SHORT);
-
-				m_fRadioactive = true;
-				m_pController->OnShipStatus(IShipController::statusRadiationWarning, m_iContaminationTimer);
-				}
-			break;
-		}
-	}
-
-void CShip::OnSetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition)
-
-//	OnSetConditionDueToDamage
-//
-//	Damage has imparted the given condition.
-
-	{
-	switch (iCondition)
-		{
-		case ECondition::blind:
-			SetCondition(iCondition, DamageCtx.GetBlindTime());
-			break;
-
-		case ECondition::paralyzed:
-			SetCondition(iCondition, DamageCtx.GetParalyzedTime());
-			break;
-
-		case ECondition::radioactive:
-			if (!IsRadioactive())
-				{
-				//	Remember the object that hit us so that we can report
-				//	it back if/when we are destroyed.
-
-				if (m_pIrradiatedBy == NULL)
-					m_pIrradiatedBy = new CDamageSource;
-
-				*m_pIrradiatedBy = DamageCtx.Attacker;
-				m_pIrradiatedBy->SetCause(killedByRadiationPoisoning);
-
-				//	Radioactive
-
-				SetCondition(iCondition);
-				}
-			break;
-		}
-	}
-
 void CShip::OnSetEventFlags (void)
 
 //	OnGetEventFlags
@@ -6833,7 +6706,12 @@ void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
 
 			int iSuccess = 50 + 10 * (Program.iAILevel - iTargetLevel);
 			if (mathRandom(1, 100) <= iSuccess)
-				SetCondition(ECondition::disarmed, Program.iAILevel * mathRandom(30, 60));
+				{
+				SApplyConditionOptions Options;
+				Options.iTimer = Program.iAILevel * mathRandom(30, 60);
+
+				ApplyCondition(ECondition::disarmed, Options);
+				}
 
 			break;
 			}
@@ -7825,10 +7703,14 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		}
 	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
 		{
+		SApplyConditionOptions Options;
+		Options.bNoImmunityCheck = true;
+
 		if (pValue->IsNil())
-			ClearCondition(ECondition::radioactive);
+			RemoveCondition(ECondition::radioactive, Options);
 		else
-			SetCondition(ECondition::radioactive);
+			ApplyCondition(ECondition::radioactive, Options);
+
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))

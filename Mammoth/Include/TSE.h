@@ -257,6 +257,8 @@ class CAttackDetector
 
 struct SApplyConditionOptions
 	{
+	CDamageSource Cause;
+
 	SObjectPartDesc ApplyTo;
 	int iTimer = -1;
 
@@ -488,8 +490,6 @@ class CSpaceObject
 		EConditionResult CanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const;
 		EConditionResult RemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options);
 
-		static constexpr DWORD FLAG_NO_MESSAGE = 0x00000001;
-		void ClearCondition (ECondition iCondition, DWORD dwFlags = 0);
 		bool GetCondition (ECondition iCondition) const;
 		CConditionSet GetConditions (void) const;
 		bool IsBlind (void) const { return GetCondition(ECondition::blind); }
@@ -499,7 +499,6 @@ class CSpaceObject
 		bool IsParalyzed (void) const { return GetCondition(ECondition::paralyzed); }
 		bool IsRadioactive (void) const { return GetCondition(ECondition::radioactive); }
 		bool IsTimeStopped (void) const { return GetCondition(ECondition::timeStopped); }
-		void SetCondition (ECondition iCondition, int iTimer = -1);
 		void SetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition);
 
 		//	Data
@@ -841,7 +840,7 @@ class CSpaceObject
 		bool NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		bool NotifyOthersWhenDestroyed (void) { return (m_fNoObjectDestructionNotify ? false : true); }
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
-		bool ParseObjectPart (const ICCItem &Options, SObjectPartDesc &retPartDesc) const;
+		bool ParseConditionOptions (const ICCItem &Options, SApplyConditionOptions &retOptions) const;
 		bool PointInHitSizeBox (const CVector &vPos, Metric rRadius = 0.0) const
 			{ 
 			CVector vRelPos = vPos - GetPos();
@@ -1294,7 +1293,6 @@ class CSpaceObject
 		virtual void OnAscended (void) { }
 		virtual EConditionResult OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::nothing; }
 		virtual EConditionResult OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::nothing; }
-		virtual void OnClearCondition (ECondition iCondition, DWORD dwFlags) { }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damageNoDamage; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) { }
@@ -1315,8 +1313,6 @@ class CSpaceObject
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
 		virtual EConditionResult OnRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::nothing; }
 		virtual void OnRemoved (SDestroyCtx &Ctx) { }
-		virtual void OnSetCondition (ECondition iCondition, int iTimer = -1) { }
-		virtual void OnSetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition) { }
 		virtual void OnSetEventFlags (void) { }
 		virtual void OnSetSovereign (CSovereign *pSovereign) { }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) { }

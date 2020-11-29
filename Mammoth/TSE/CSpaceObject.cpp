@@ -1104,25 +1104,6 @@ EConditionResult CSpaceObject::CanRemoveCondition (ECondition iCondition, const 
 	return OnCanRemoveCondition(iCondition, Options);
 	}
 
-void CSpaceObject::ClearCondition (ECondition iCondition, DWORD dwFlags)
-
-//	ClearCondition
-//
-//	Clears the given condition (generically).
-
-	{
-	switch (iCondition)
-		{
-		case ECondition::timeStopped:
-			m_fTimeStop = false;
-			break;
-
-		default:
-			OnClearCondition(iCondition, dwFlags);
-			break;
-		}
-	}
-
 void CSpaceObject::CommsMessageFrom (CSpaceObject *pSender, int iIndex)
 
 //	CommsMessageFrom
@@ -6560,25 +6541,6 @@ void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CSpaceObject::SetCondition (ECondition iCondition, int iTimer)
-
-//	SetCondition
-//
-//	Sets the given condition (generically).
-
-	{
-	switch (iCondition)
-		{
-		case ECondition::timeStopped:
-			m_fTimeStop = true;
-			break;
-
-		default:
-			OnSetCondition(iCondition, iTimer);
-			break;
-		}
-	}
-
 void CSpaceObject::SetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition)
 
 //	SetConditionDueToDamage
@@ -6587,7 +6549,38 @@ void CSpaceObject::SetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iC
 //	responsible for checking to see if the object is immune or not.
 
 	{
-	OnSetConditionDueToDamage(DamageCtx, iCondition);
+	switch (iCondition)
+		{
+		case ECondition::blind:
+			{
+			SApplyConditionOptions Options;
+			Options.iTimer = DamageCtx.GetBlindTime();
+			Options.bNoImmunityCheck = true;
+
+			ApplyCondition(iCondition, Options);
+			break;
+			}
+
+		case ECondition::paralyzed:
+			{
+			SApplyConditionOptions Options;
+			Options.iTimer = DamageCtx.GetParalyzedTime();
+			Options.bNoImmunityCheck = true;
+
+			ApplyCondition(iCondition, Options);
+			break;
+			}
+
+		case ECondition::radioactive:
+			{
+			SApplyConditionOptions Options;
+			Options.Cause = DamageCtx.Attacker;
+			Options.bNoImmunityCheck = true;
+
+			ApplyCondition(iCondition, Options);
+			break;
+			}
+		}
 	}
 
 void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -6951,14 +6944,14 @@ void CSpaceObject::PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SView
 	CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 3, rgbColor);
 	}
 
-bool CSpaceObject::ParseObjectPart (const ICCItem &Options, SObjectPartDesc &retPartDesc) const
+bool CSpaceObject::ParseConditionOptions (const ICCItem &Options, SApplyConditionOptions &retOptions) const
 
 //	ParseObjectPart
 //
 //	Parse options for setting conditions.
 
 	{
-	retPartDesc = SObjectPartDesc();
+	retOptions = SApplyConditionOptions();
 
 	if (Options.IsNil())
 		return true;
@@ -6970,15 +6963,26 @@ bool CSpaceObject::ParseObjectPart (const ICCItem &Options, SObjectPartDesc &ret
 			{
 			CString sApplyTo = pApplyTo->GetStringValue();
 			if (strEquals(sApplyTo, CONSTLIT("interior")))
-				retPartDesc.iPart = EObjectPart::interior;
+				retOptions.ApplyTo.iPart = EObjectPart::interior;
 			else
 				return false;
 			}
 		else if (ICCItem *pApplyToItem = Options.GetElement(CONSTLIT("applyToItem")))
 			{
-			retPartDesc.iPart = EObjectPart::item;
-			retPartDesc.Item = CCX.AsItem(pApplyToItem);
+			retOptions.ApplyTo.iPart = EObjectPart::item;
+			retOptions.ApplyTo.Item = CCX.AsItem(pApplyToItem);
 			}
+
+		if (ICCItem *pDuration = Options.GetElement(CONSTLIT("duration")))
+			{
+			retOptions.iTimer = pDuration->GetIntegerValue();
+			}
+
+		return true;
+		}
+	else if (Options.IsNumber())
+		{
+		retOptions.iTimer = Options.GetIntegerValue();
 
 		return true;
 		}

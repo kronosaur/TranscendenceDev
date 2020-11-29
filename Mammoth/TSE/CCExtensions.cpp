@@ -250,6 +250,8 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_APPLY_CONDITION		143
 #define FN_OBJ_CAN_REMOVE_CONDITION	144
 #define FN_OBJ_REMOVE_CONDITION		145
+#define FN_OBJ_MAKE_RADIOACTIVE		146
+#define FN_OBJ_DECONTAMINATE		147
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -295,7 +297,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 #define FN_SHIP_BLINDNESS			14
 #define FN_SHIP_ENHANCE_ITEM		15
 #define FN_SHIP_CAN_INSTALL_DEVICE	16
-#define FN_SHIP_DECONTAMINATE		17
+//	spare
 #define FN_SHIP_IS_RADIOACTIVE		18
 #define FN_SHIP_CANCEL_ORDERS		19
 #define FN_SHIP_ADD_ENERGY_FIELD	20
@@ -308,7 +310,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 #define FN_SHIP_SHIELD_DAMAGE		27
 #define FN_SHIP_SHIELD_MAX_HP		28
 #define FN_SHIP_RECHARGE_SHIELD		29
-#define FN_SHIP_MAKE_RADIOACTIVE	30
+//	spare
 #define FN_SHIP_ORDER_GATE			31
 #define FN_SHIP_ORDER_ESCORT		32
 #define FN_SHIP_ORDER_LOOT			33
@@ -1163,10 +1165,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(shpDamageArmor ship armorSegment damageType damage ['noSRSFlash]) -> damage done",
 			"ivvi*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"shpDecontaminate",				fnShipGetOld,		FN_SHIP_DECONTAMINATE,
-			"(shpDecontaminate ship) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
-
 		{	"shpGetAISetting",				fnShipGet,			FN_SHIP_AI_SETTING,
 			"(shpGetAISetting ship setting)",
 			"is",	0,	},
@@ -1314,10 +1312,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   type: item causing enhancement\n",
 
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
-
-		{	"shpMakeRadioactive",			fnShipGetOld,		FN_SHIP_MAKE_RADIOACTIVE,
-			"(shpMakeRadioactive ship) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpOrder",						fnShipSet,		FN_SHIP_ORDER,
 			"(shpOrder ship order [target] [count]) -> True/Nil\n\n"
@@ -1490,7 +1484,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"options:\n\n"
 			
 			"   applyTo: 'interior (optional)\n"
-			"   applyToItem: Item to apply to (optional)\n",
+			"   applyToItem: Item to apply to (optional)\n"
+			"   duration: Duration in ticks (optional)\n",
 
 			"is*",		PPFLAG_SIDEEFFECTS,	},
 
@@ -1739,10 +1734,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objFireWeapon",				fnObjSet,		FN_OBJ_FIRE_WEAPON,
 			"(objFireWeapon obj weapon target [fireDelay] [checkFireDelay]) -> True/Nil",
 			"ivi*",	PPFLAG_SIDEEFFECTS, },
-
-		{	"objFixParalysis",				fnObjSet,		FN_OBJ_FIX_PARALYSIS,
-			"(objFixParalysis obj) -> True/Nil",
-			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGateTo",					fnObjGateTo,	0,
 			"(objGateTo obj node entrypoint [effectID]) -> True/Nil",
@@ -2301,10 +2292,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objLowerShields",				fnObjGetOld,		FN_OBJ_LOWER_SHIELDS,
 			"(objLowerShields obj) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
-
-		{	"objMakeParalyzed",				fnObjSetOld,		FN_OBJ_PARALYSIS,
-			"(objMakeParalyzed obj ticks) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objMatches",					fnObjGet,			FN_OBJ_MATCHES,
@@ -3997,6 +3984,22 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
+
+		{	"shpMakeRadioactive",			fnObjSet,		FN_OBJ_MAKE_RADIOACTIVE,
+			"DEPRECATED: Use (objApplyCondition ...) instead.",
+			"i",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objMakeParalyzed",				fnObjSet,			FN_OBJ_PARALYSIS,
+			"DEPRECATED: Use (objApplyCondition ...) instead.",
+			"ii",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"shpDecontaminate",				fnObjSet,			FN_OBJ_DECONTAMINATE,
+			"DEPRECATED: Use (objRemoveCondition ...) instead.",
+			"i",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objFixParalysis",				fnObjSet,		FN_OBJ_FIX_PARALYSIS,
+			"DEPRECATED: Use (objRemoveCondition ...) instead.",
+			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetSovereign",				fnObjSetOld,		FN_OBJ_SOVEREIGN,
 			"DEPRECATED: Use (objSet@ obj 'sovereign sovereign) instead.",
@@ -6637,7 +6640,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pOptions = ICCItemPtr(pCC->CreateNil());
 
 			SApplyConditionOptions Options;
-			if (!pObj->ParseObjectPart(*pOptions, Options.ApplyTo))
+			if (!pObj->ParseConditionOptions(*pOptions, Options))
 				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
 
 			auto iResult = pObj->CanApplyCondition(iCondition, Options);
@@ -6668,7 +6671,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pOptions = ICCItemPtr(pCC->CreateNil());
 
 			SApplyConditionOptions Options;
-			if (!pObj->ParseObjectPart(*pOptions, Options.ApplyTo))
+			if (!pObj->ParseConditionOptions(*pOptions, Options))
 				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
 
 			auto iResult = pObj->CanRemoveCondition(iCondition, Options);
@@ -8336,7 +8339,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pOptions = ICCItemPtr(pCC->CreateNil());
 
 			SApplyConditionOptions Options;
-			if (!pObj->ParseObjectPart(*pOptions, Options.ApplyTo))
+			if (!pObj->ParseConditionOptions(*pOptions, Options))
 				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
 
 			auto iResult = pObj->ApplyCondition(iCondition, Options);
@@ -8409,6 +8412,15 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int iValue = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : pArgs->GetElement(1))->GetIntegerValue();
 			int iRemaining = (int)pObj->CreditMoney(dwEconomyUNID, iValue);
 			return pCC->CreateInteger(iRemaining);
+			}
+
+		case FN_OBJ_DECONTAMINATE:
+			{
+			SApplyConditionOptions Options;
+			Options.bNoImmunityCheck = true;
+
+			auto iResult = pObj->RemoveCondition(ECondition::radioactive, Options);
+			return pCC->CreateBool(CConditionSet::IsSuccessResult(iResult));
 			}
 
 		case FN_OBJ_DEPLETE_SHIELDS:
@@ -8792,8 +8804,11 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_FIX_PARALYSIS:
 			{
-			pObj->ClearCondition(ECondition::paralyzed);
-			return pCC->CreateTrue();
+			SApplyConditionOptions Options;
+			Options.bNoImmunityCheck = true;
+
+			auto iResult = pObj->RemoveCondition(ECondition::paralyzed, Options);
+			return pCC->CreateBool(CConditionSet::IsSuccessResult(iResult));
 			}
 
 		case FN_OBJ_IDENTIFIED:
@@ -8827,6 +8842,15 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Return the newly changed item
 
 			return CreateListFromItem(Item);
+			}
+
+		case FN_OBJ_MAKE_RADIOACTIVE:
+			{
+			SApplyConditionOptions Options;
+			Options.bNoImmunityCheck = true;
+
+			auto iResult = pObj->ApplyCondition(ECondition::radioactive, Options);
+			return pCC->CreateBool(CConditionSet::IsSuccessResult(iResult));
 			}
 
 		case FN_OBJ_INC_PROPERTY:
@@ -8872,6 +8896,16 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Return the resulting speed
 
 			return CreateListFromVector(vNewVel);
+			}
+
+		case FN_OBJ_PARALYSIS:
+			{
+			SApplyConditionOptions Options;
+			Options.iTimer = pArgs->GetElement(1)->GetIntegerValue();
+			Options.bNoImmunityCheck = true;
+
+			auto iResult = pObj->ApplyCondition(ECondition::paralyzed, Options);
+			return pCC->CreateBool(CConditionSet::IsSuccessResult(iResult));
 			}
 
 		case FN_OBJ_POSITION:
@@ -8981,7 +9015,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pOptions = ICCItemPtr(pCC->CreateNil());
 
 			SApplyConditionOptions Options;
-			if (!pObj->ParseObjectPart(*pOptions, Options.ApplyTo))
+			if (!pObj->ParseConditionOptions(*pOptions, Options))
 				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
 
 			auto iResult = pObj->RemoveCondition(iCondition, Options);
@@ -9433,16 +9467,6 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 			//	Done
 
-			pResult = pCC->CreateTrue();
-			break;
-			}
-
-		case FN_OBJ_PARALYSIS:
-			{
-			int iTime = pArgs->GetElement(1)->GetIntegerValue();
-			pArgs->Discard();
-
-			pObj->SetCondition(ECondition::paralyzed, iTime);
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -10488,16 +10512,6 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 		case FN_SHIP_INSTALL_TARGETING:
 			pShip->SetAbility(ablTargetingSystem, ablInstall, -1, 0);
-			pResult = pCC->CreateTrue();
-			break;
-
-		case FN_SHIP_DECONTAMINATE:
-			pShip->ClearCondition(ECondition::radioactive);
-			pResult = pCC->CreateTrue();
-			break;
-
-		case FN_SHIP_MAKE_RADIOACTIVE:
-			pShip->SetCondition(ECondition::radioactive);
 			pResult = pCC->CreateTrue();
 			break;
 

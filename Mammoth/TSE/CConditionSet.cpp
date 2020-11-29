@@ -77,6 +77,27 @@ bool CConditionSet::Diff (const CConditionSet &OldSet, TArray<ECondition> &Added
 	return true;
 	}
 
+bool CConditionSet::IsSuccessResult (EConditionResult iResult)
+
+//	IsSuccessResult
+//
+//	Returns TRUE if this is a result the means the condition was removed
+//	successfully.
+
+	{
+	switch (iResult)
+		{
+		case EConditionResult::alreadyApplied:
+		case EConditionResult::alreadyRemoved:
+		case EConditionResult::applied:
+		case EConditionResult::removed:
+			return true;
+
+		default:
+			return false;
+		}
+	}
+
 ECondition CConditionSet::ParseCondition (const CString &sCondition)
 
 //	ParseCondition
