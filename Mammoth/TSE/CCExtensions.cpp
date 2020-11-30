@@ -1479,13 +1479,23 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"isvi",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objApplyCondition",				fnObjSet,		FN_OBJ_APPLY_CONDITION,
-			"(objApplyCondition obj condition [options]) -> True/Nil/'alreadyApplied\n\n"
+			"(objApplyCondition obj condition [options]) -> result\n\n"
 			
 			"options:\n\n"
 			
 			"   applyTo: 'interior (optional)\n"
 			"   applyToItem: Item to apply to (optional)\n"
-			"   duration: Duration in ticks (optional)\n",
+			"   duration: Duration in ticks (optional)\n"
+			"\n"
+			"result:\n\n"
+			
+			"   resultCode: Result of applying condition\n"
+			"\n"
+			"resultCode:\n\n"
+			
+			"   'ok: Condition applied\n"
+			"   'alreadyApplied: Already in this condition\n"
+			"   'noEffect: Could not apply condition\n",
 
 			"is*",		PPFLAG_SIDEEFFECTS,	},
 
@@ -1494,12 +1504,22 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	0,	},
 
 		{	"objCanApplyCondition",				fnObjGet,		FN_OBJ_CAN_APPLY_CONDITION,
-			"(objCanApplyCondition obj condition [options]) -> True/Nil/'alreadyApplied\n\n"
+			"(objCanApplyCondition obj condition [options]) -> result\n\n"
 			
 			"options:\n\n"
 			
 			"   applyTo: 'interior (optional)\n"
-			"   applyToItem: Item to apply to (optional)\n",
+			"   applyToItem: Item to apply to (optional)\n"
+			"\n"
+			"result:\n\n"
+			
+			"   resultCode: Result of applying condition\n"
+			"\n"
+			"resultCode:\n\n"
+			
+			"   'ok: Condition applied\n"
+			"   'alreadyApplied: Already in this condition\n"
+			"   'noEffect: Could not apply condition\n",
 
 			"is*",		0,	},
 
@@ -1567,12 +1587,23 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iv*",	0,	},
 
 		{	"objCanRemoveCondition",				fnObjGet,		FN_OBJ_CAN_REMOVE_CONDITION,
-			"(objCanRemoveCondition obj condition [options]) -> True|Nil|'notApplied|'stillApplied\n\n"
+			"(objCanRemoveCondition obj condition [options]) -> result\n\n"
 
 			"options:\n\n"
 
 			"   applyTo: 'interior (optional)\n"
-			"   applyToItem: Item to apply to (optional)\n",
+			"   applyToItem: Item to apply to (optional)\n"
+			"\n"
+			"result:\n\n"
+			
+			"   resultCode: Result of applying condition\n"
+			"\n"
+			"resultCode:\n\n"
+			
+			"   'ok: Condition removed\n"
+			"   'alreadyRemoved: Does not have this condition\n"
+			"   'noEffect: Could not remove condition\n"
+			"   'stillApplied: Removed condition, but still affected\n",
 
 			"is*",		0,	},
 
@@ -2321,12 +2352,23 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveCondition",				fnObjSet,		FN_OBJ_REMOVE_CONDITION,
-			"(objRemoveCondition obj condition [options]) -> True|Nil|'notApplied|'stillApplied\n\n"
+			"(objRemoveCondition obj condition [options]) -> result\n\n"
 
 			"options:\n\n"
 
 			"   applyTo: 'interior (optional)\n"
-			"   applyToItem: Item to apply to (optional)\n",
+			"   applyToItem: Item to apply to (optional)\n"
+			"\n"
+			"result:\n\n"
+			
+			"   resultCode: Result of applying condition\n"
+			"\n"
+			"resultCode:\n\n"
+			
+			"   'ok: Condition removed\n"
+			"   'alreadyRemoved: Does not have this condition\n"
+			"   'noEffect: Could not remove condition\n"
+			"   'stillApplied: Removed condition, but still affected\n",
 
 			"is*",		PPFLAG_SIDEEFFECTS,	},
 
