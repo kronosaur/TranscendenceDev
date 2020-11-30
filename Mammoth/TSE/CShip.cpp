@@ -4145,7 +4145,7 @@ EConditionResult CShip::OnApplyCondition (ECondition iCondition, const SApplyCon
 				dwOptions |= ablOptionNoMessage;
 
 			SetAbility(ablShortRangeScanner, ablDamage, Options.iTimer, dwOptions);
-			return EConditionResult::applied;
+			return EConditionResult::ok;
 			}
 
 		case ECondition::disarmed:
@@ -4157,7 +4157,7 @@ EConditionResult CShip::OnApplyCondition (ECondition iCondition, const SApplyCon
 				else
 					m_iDisarmedTimer = Min(Options.iTimer, MAX_SHORT);
 
-				return EConditionResult::applied;
+				return EConditionResult::ok;
 				}
 			else
 				return EConditionResult::alreadyApplied;
@@ -4170,7 +4170,7 @@ EConditionResult CShip::OnApplyCondition (ECondition iCondition, const SApplyCon
 				dwOptions |= ablOptionNoMessage;
 
 			SetAbility(ablLongRangeScanner, ablDamage, Options.iTimer, 0);
-			return EConditionResult::applied;
+			return EConditionResult::ok;
 			}
 
 		case ECondition::paralyzed:
@@ -4182,7 +4182,7 @@ EConditionResult CShip::OnApplyCondition (ECondition iCondition, const SApplyCon
 				else
 					m_iParalysisTimer = Min(Options.iTimer, MAX_SHORT);
 
-				return EConditionResult::applied;
+				return EConditionResult::ok;
 				}
 			else
 				return EConditionResult::alreadyApplied;
@@ -4216,14 +4216,14 @@ EConditionResult CShip::OnApplyCondition (ECondition iCondition, const SApplyCon
 
 				m_fRadioactive = true;
 				m_pController->OnShipStatus(IShipController::statusRadiationWarning, m_iContaminationTimer);
-				return EConditionResult::applied;
+				return EConditionResult::ok;
 				}
 			else
 				return EConditionResult::alreadyApplied;
 			}
 
 		default:
-			return EConditionResult::nothing;
+			return EConditionResult::noEffect;
 		}
 	}
 
@@ -4297,7 +4297,7 @@ EConditionResult CShip::OnCanApplyCondition (ECondition iCondition, const SApply
 		//	Anything else, we do not handle.
 
 		default:
-			return EConditionResult::nothing;
+			return EConditionResult::noEffect;
 		}
 
 	//	Otherwise, see where we're applying the condition.
@@ -4308,7 +4308,7 @@ EConditionResult CShip::OnCanApplyCondition (ECondition iCondition, const SApply
 
 		case EObjectPart::interior:
 			{
-			return EConditionResult::applied;
+			return EConditionResult::ok;
 			}
 
 		//	We're apply the condition to an item (e.g., using a barrel on an 
@@ -4327,21 +4327,21 @@ EConditionResult CShip::OnCanApplyCondition (ECondition iCondition, const SApply
 					{
 					const CArmorItem ArmorItem = Options.ApplyTo.Item.AsArmorItem();
 					if (ArmorItem.IsImmune(iSpecialDamage))
-						return EConditionResult::nothing;
+						return EConditionResult::noEffect;
 
 					//	Still get a chance to test hull
 
 					if (m_pClass->GetHullDesc().IsImmuneTo(iSpecialDamage))
-						return EConditionResult::nothing;
+						return EConditionResult::noEffect;
 
-					return EConditionResult::applied;
+					return EConditionResult::ok;
 					}
 
 				//	Otherwise, we're applying to an item in cargo hold, so we
 				//	don't have any immunities.
 
 				else
-					return EConditionResult::applied;
+					return EConditionResult::ok;
 				}
 			else
 				{
@@ -4361,15 +4361,15 @@ EConditionResult CShip::OnCanApplyCondition (ECondition iCondition, const SApply
 			if (iSpecialDamage != specialNone)
 				{
 				if (m_Armor.IsImmune(iSpecialDamage))
-					return EConditionResult::nothing;
+					return EConditionResult::noEffect;
 
 				if (m_pClass->GetHullDesc().IsImmuneTo(iSpecialDamage))
-					return EConditionResult::nothing;
+					return EConditionResult::noEffect;
 
-				return EConditionResult::applied;
+				return EConditionResult::ok;
 				}
 			else
-				return EConditionResult::applied;
+				return EConditionResult::ok;
 
 			break;
 			}
@@ -4393,7 +4393,7 @@ EConditionResult CShip::OnCanRemoveCondition (ECondition iCondition, const SAppl
 
 		case EObjectPart::interior:
 			{
-			return EConditionResult::removed;
+			return EConditionResult::ok;
 			}
 
 		//	We're apply the condition to an item (e.g., using a barrel on an 
@@ -4401,14 +4401,14 @@ EConditionResult CShip::OnCanRemoveCondition (ECondition iCondition, const SAppl
 
 		case EObjectPart::item:
 			{
-			return EConditionResult::removed;
+			return EConditionResult::ok;
 			}
 
 		//	Default means treat the ship as a whole
 
 		default:
 			{
-			return EConditionResult::removed;
+			return EConditionResult::ok;
 			}
 		}
 	}
@@ -6119,13 +6119,13 @@ EConditionResult CShip::OnRemoveCondition (ECondition iCondition, const SApplyCo
 				dwOptions |= ablOptionNoMessage;
 
 			SetAbility(ablShortRangeScanner, ablRepair, -1, dwOptions);
-			return EConditionResult::removed;
+			return EConditionResult::ok;
 			}
 
 		case ECondition::disarmed:
 			{
 			m_iDisarmedTimer = 0;
-			return EConditionResult::removed;
+			return EConditionResult::ok;
 			}
 
 		case ECondition::LRSBlind:
@@ -6135,13 +6135,13 @@ EConditionResult CShip::OnRemoveCondition (ECondition iCondition, const SApplyCo
 				dwOptions |= ablOptionNoMessage;
 
 			SetAbility(ablLongRangeScanner, ablRepair, -1, dwOptions);
-			return EConditionResult::removed;
+			return EConditionResult::ok;
 			}
 
 		case ECondition::paralyzed:
 			{
 			m_iParalysisTimer = 0;
-			return EConditionResult::removed;
+			return EConditionResult::ok;
 			}
 
 		case ECondition::radioactive:
@@ -6157,14 +6157,14 @@ EConditionResult CShip::OnRemoveCondition (ECondition iCondition, const SApplyCo
 				m_iContaminationTimer = 0;
 				m_fRadioactive = false;
 				m_pController->OnShipStatus(IShipController::statusRadiationCleared);
-				return EConditionResult::removed;
+				return EConditionResult::ok;
 				}
 			else
 				return EConditionResult::alreadyRemoved;
 			}
 
 		default:
-			return EConditionResult::nothing;
+			return EConditionResult::noEffect;
 		}
 	}
 

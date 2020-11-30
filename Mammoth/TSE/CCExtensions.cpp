@@ -6644,17 +6644,10 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
 
 			auto iResult = pObj->CanApplyCondition(iCondition, Options);
-			switch (iResult)
-				{
-				case EConditionResult::nothing:
-					return pCC->CreateNil();
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("resultCode"), CConditionSet::AsID(iResult));
 
-				case EConditionResult::applied:
-					return pCC->CreateTrue();
-
-				default:
-					return pCC->CreateString(CConditionSet::AsID(iResult));
-				}
+			return pResult->Reference();
 			}
 
 		case FN_OBJ_CAN_REMOVE_CONDITION:
@@ -6675,17 +6668,10 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
 
 			auto iResult = pObj->CanRemoveCondition(iCondition, Options);
-			switch (iResult)
-				{
-				case EConditionResult::nothing:
-					return pCC->CreateNil();
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("resultCode"), CConditionSet::AsID(iResult));
 
-				case EConditionResult::removed:
-					return pCC->CreateTrue();
-
-				default:
-					return pCC->CreateString(CConditionSet::AsID(iResult));
-				}
+			return pResult->Reference();
 			}
 
 		case FN_OBJ_CAN_DESTROY_TARGET:
@@ -8343,17 +8329,10 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
 
 			auto iResult = pObj->ApplyCondition(iCondition, Options);
-			switch (iResult)
-				{
-				case EConditionResult::nothing:
-					return pCC->CreateNil();
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("resultCode"), CConditionSet::AsID(iResult));
 
-				case EConditionResult::applied:
-					return pCC->CreateTrue();
-
-				default:
-					return pCC->CreateString(CConditionSet::AsID(iResult));
-				}
+			return pResult->Reference();
 			}
 
 		case FN_OBJ_CHARGE:
@@ -9019,17 +8998,10 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
 
 			auto iResult = pObj->RemoveCondition(iCondition, Options);
-			switch (iResult)
-				{
-				case EConditionResult::nothing:
-					return pCC->CreateNil();
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("resultCode"), CConditionSet::AsID(iResult));
 
-				case EConditionResult::removed:
-					return pCC->CreateTrue();
-
-				default:
-					return pCC->CreateString(CConditionSet::AsID(iResult));
-				}
+			return pResult->Reference();
 			}
 
 		case FN_OBJ_REMOVE_ITEM_ENHANCEMENT:

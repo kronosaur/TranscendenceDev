@@ -1289,10 +1289,10 @@ class CSpaceObject
 		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }
-		virtual EConditionResult OnApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::nothing; }
+		virtual EConditionResult OnApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::noEffect; }
 		virtual void OnAscended (void) { }
-		virtual EConditionResult OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::nothing; }
-		virtual EConditionResult OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::nothing; }
+		virtual EConditionResult OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::noEffect; }
+		virtual EConditionResult OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::noEffect; }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damageNoDamage; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) { }
@@ -1311,7 +1311,7 @@ class CSpaceObject
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnPlace (const CVector &vOldPos) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
-		virtual EConditionResult OnRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::nothing; }
+		virtual EConditionResult OnRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::noEffect; }
 		virtual void OnRemoved (SDestroyCtx &Ctx) { }
 		virtual void OnSetEventFlags (void) { }
 		virtual void OnSetSovereign (CSovereign *pSovereign) { }

@@ -24,28 +24,40 @@
 						{	test:'(objCanApplyCondition gPlayerShip 'radioactive {
 								applyToItem: (@ (objGetItems gPlayerShip "aI") 0)
 								})
-																				result:True	}
+																				result:{ resultCode:'ok	}	}
+																				
+						{	test:'(objCanRemoveCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'alreadyRemoved	}	}
+																				
+						{	test:'(objRemoveCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'alreadyRemoved	}	}
 																				
 						{	test:'(objCanApplyCondition gPlayerShip 'radioactive {
 								applyTo: 'interior
 								})
-																				result:True	}
+																				result:{ resultCode:'ok	}	}
 																				
 						;	Hit an armor segment with radiation
 						
 						{	test:'(objApplyCondition gPlayerShip 'radioactive {
 								applyToItem: (@ (objGetItems gPlayerShip "aI") 0)
 								})
-																				result:True	}
+																				result:{ resultCode:'ok }	}
 																				
 						{	test:'(objGetCondition gPlayerShip 'radioactive)
 																				result:True	}
 
+						{	test:'(objCanApplyCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'alreadyApplied }	}
+
+						{	test:'(objApplyCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'alreadyApplied }	}
+
 						{	test:'(objCanRemoveCondition gPlayerShip 'radioactive)
-																				result:True	}
+																				result:{ resultCode:'ok }	}
 
 						{	test:'(objRemoveCondition gPlayerShip 'radioactive)
-																				result:True	}
+																				result:{ resultCode:'ok }	}
 																				
 						{	test:'(objGetCondition gPlayerShip 'radioactive)
 																				result:Nil	}
@@ -61,12 +73,15 @@
 						{	test:'(objCanApplyCondition gPlayerShip 'radioactive {
 								applyToItem: (@ (objGetItems gPlayerShip "aI") 0)
 								})
-																				result:Nil	}
+																				result:{ resultCode:'noEffect }	}
 																				
 						{	test:'(objApplyCondition gPlayerShip 'radioactive {
 								applyToItem: (@ (objGetItems gPlayerShip "aI") 0)
 								})
-																				result:Nil	}
+																				result:{ resultCode:'noEffect }	}
+																				
+						{	test:'(objApplyCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'noEffect }	}
 																				
 						{	test:'(objGetCondition gPlayerShip 'radioactive)
 																				result:Nil	}
@@ -76,11 +91,11 @@
 						{	test:'(objCanApplyCondition gPlayerShip 'radioactive {
 								applyTo: 'interior
 								})
-																				result:True	}
+																				result:{ resultCode:'ok }	}
 						{	test:'(objApplyCondition gPlayerShip 'radioactive {
 								applyTo: 'interior
 								})
-																				result:True	}
+																				result:{ resultCode:'ok }	}
 																				
 						{	test:'(objGetCondition gPlayerShip 'radioactive)
 																				result:True	}

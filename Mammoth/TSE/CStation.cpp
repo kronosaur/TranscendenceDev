@@ -2407,14 +2407,14 @@ EConditionResult CStation::OnApplyCondition (ECondition iCondition, const SApply
 			if (!m_fRadioactive)
 				{
 				m_fRadioactive = true;
-				return EConditionResult::applied;
+				return EConditionResult::ok;
 				}
 			else
 				return EConditionResult::alreadyApplied;
 			}
 
 		default:
-			return EConditionResult::nothing;
+			return EConditionResult::noEffect;
 		}
 	}
 
@@ -2438,7 +2438,7 @@ EConditionResult CStation::OnCanApplyCondition (ECondition iCondition, const SAp
 		//	Anything else, we do not handle.
 
 		default:
-			return EConditionResult::nothing;
+			return EConditionResult::noEffect;
 		}
 
 	//	Otherwise, see where we're applying the condition.
@@ -2450,7 +2450,7 @@ EConditionResult CStation::OnCanApplyCondition (ECondition iCondition, const SAp
 		case EObjectPart::interior:
 		case EObjectPart::item:
 			{
-			return EConditionResult::applied;
+			return EConditionResult::ok;
 			}
 
 		//	Default means treat the station as a whole
@@ -2461,12 +2461,12 @@ EConditionResult CStation::OnCanApplyCondition (ECondition iCondition, const SAp
 			if (iSpecialDamage != specialNone)
 				{
 				if (m_Hull.IsImmuneTo(iSpecialDamage))
-					return EConditionResult::nothing;
+					return EConditionResult::noEffect;
 
-				return EConditionResult::applied;
+				return EConditionResult::ok;
 				}
 			else
-				return EConditionResult::applied;
+				return EConditionResult::ok;
 
 			break;
 			}
@@ -2491,14 +2491,14 @@ EConditionResult CStation::OnCanRemoveCondition (ECondition iCondition, const SA
 		case EObjectPart::interior:
 		case EObjectPart::item:
 			{
-			return EConditionResult::removed;
+			return EConditionResult::ok;
 			}
 
 		//	Default means treat the station as a whole
 
 		default:
 			{
-			return EConditionResult::removed;
+			return EConditionResult::ok;
 			}
 		}
 	}
@@ -4234,14 +4234,14 @@ EConditionResult CStation::OnRemoveCondition (ECondition iCondition, const SAppl
 			if (m_fRadioactive)
 				{
 				m_fRadioactive = false;
-				return EConditionResult::removed;
+				return EConditionResult::ok;
 				}
 			else
 				return EConditionResult::alreadyRemoved;
 			}
 
 		default:
-			return EConditionResult::nothing;
+			return EConditionResult::noEffect;
 		}
 	}
 

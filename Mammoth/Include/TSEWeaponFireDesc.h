@@ -40,11 +40,10 @@ enum class EConditionResult
 	{
 	unknown,
 
-	nothing,				//	Unable to apply or remove
+	ok,						//	Success
+	noEffect,				//	Unable to apply or remove
 	alreadyApplied,			//	Condition already applied
 	alreadyRemoved,			//	Condition already removed
-	applied,				//	Condition applied
-	removed,				//	Condition removed
 	stillApplied,			//	Removed, but condition still exists
 	};
 

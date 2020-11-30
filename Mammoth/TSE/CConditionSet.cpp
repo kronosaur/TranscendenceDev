@@ -18,12 +18,11 @@ static TStaticStringTable<TStaticStringEntry<ECondition>, (int)ECondition::count
 	"timeStopped",			ECondition::timeStopped,
 	};
 
-static TStaticStringTable<TStaticStringEntry<EConditionResult>, 7> CONDITION_RESULT_TABLE = {
+static TStaticStringTable<TStaticStringEntry<EConditionResult>, 6> CONDITION_RESULT_TABLE = {
 	"alreadyApplied",		EConditionResult::alreadyApplied,
 	"alreadyRemoved",		EConditionResult::alreadyRemoved,
-	"applied",				EConditionResult::applied,
-	"nothing",				EConditionResult::nothing,
-	"removed",				EConditionResult::removed,
+	"noEffect",				EConditionResult::noEffect,
+	"ok",					EConditionResult::ok,
 	"stillApplied",			EConditionResult::stillApplied,
 	"unknown",				EConditionResult::unknown,
 	};
@@ -89,8 +88,7 @@ bool CConditionSet::IsSuccessResult (EConditionResult iResult)
 		{
 		case EConditionResult::alreadyApplied:
 		case EConditionResult::alreadyRemoved:
-		case EConditionResult::applied:
-		case EConditionResult::removed:
+		case EConditionResult::ok:
 			return true;
 
 		default:

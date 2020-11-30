@@ -577,7 +577,7 @@ EConditionResult CSpaceObject::ApplyCondition (ECondition iCondition, const SApp
 	//	Check to see if we're immune. If not, then we continue.
 
 	EConditionResult iResult = CanApplyCondition(iCondition, Options);
-	if (iResult != EConditionResult::applied)
+	if (iResult != EConditionResult::ok)
 		return iResult;
 
 	//	Handle some conditions ourselves.
@@ -587,7 +587,7 @@ EConditionResult CSpaceObject::ApplyCondition (ECondition iCondition, const SApp
 		case ECondition::timeStopped:
 			{
 			StopTime();
-			return EConditionResult::applied;
+			return EConditionResult::ok;
 			}
 
 		//	For others, let the descendant handle it.
@@ -895,7 +895,7 @@ EConditionResult CSpaceObject::CanApplyCondition (ECondition iCondition, const S
 	//	If we don't need to check immunities, then we continue.
 
 	if (Options.bNoImmunityCheck)
-		return EConditionResult::applied;
+		return EConditionResult::ok;
 
 	//	Let our descendants handle it.
 
@@ -1097,7 +1097,7 @@ EConditionResult CSpaceObject::CanRemoveCondition (ECondition iCondition, const 
 	//	condition, then just return.
 
 	if (Options.bNoImmunityCheck)
-		return EConditionResult::removed;
+		return EConditionResult::ok;
 
 	//	Let our descendants handle it.
 
@@ -7147,7 +7147,7 @@ EConditionResult CSpaceObject::RemoveCondition (ECondition iCondition, const SAp
 	//	Check to see if we can remove the condition
 
 	EConditionResult iResult = CanRemoveCondition(iCondition, Options);
-	if (iResult != EConditionResult::removed)
+	if (iResult != EConditionResult::ok)
 		return iResult;
 
 	//	Handle some conditions ourselves.
@@ -7172,7 +7172,7 @@ EConditionResult CSpaceObject::RemoveCondition (ECondition iCondition, const SAp
 	if (GetCondition(iCondition))
 		return EConditionResult::stillApplied;
 	else
-		return EConditionResult::removed;
+		return EConditionResult::ok;
 	}
 
 void CSpaceObject::RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID, bool bExpiredOnly)
