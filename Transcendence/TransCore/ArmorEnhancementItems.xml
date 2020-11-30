@@ -548,7 +548,6 @@
 					(result (objCanApplyCondition gSource 'radioactive { applyToItem:dstItem }))
 					(resultCode (@ result 'resultCode))
 					)
-					(dbgOutput result)
 					(switch
 						(= resultCode 'alreadyApplied)
 							{
@@ -589,7 +588,6 @@
 					(result (objApplyCondition gSource 'radioactive { applyToItem:dstItem }))
 					(resultCode (@ result 'resultCode))
 					)
-					(dbgOutput result)
 					(switch
 						(= resultCode 'alreadyApplied)
 							{

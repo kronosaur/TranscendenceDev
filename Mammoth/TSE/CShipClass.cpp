@@ -188,6 +188,7 @@
 #define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
 #define PROPERTY_HAS_TRADE_DESC					CONSTLIT("hasTradeDesc")
 #define PROPERTY_HAS_VARIANTS					CONSTLIT("hasVariants")
+#define PROPERTY_HULL_CARGO_SPACE				CONSTLIT("hullCargoSpace")
 #define PROPERTY_HULL_POINTS					CONSTLIT("hullPoints")
 #define PROPERTY_HULL_VALUE						CONSTLIT("hullValue")
 #define PROPERTY_IMAGE_ROTATION_COUNT			CONSTLIT("imageRotationCount")
@@ -3894,6 +3895,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_HAS_VARIANTS))
 		return ICCItemPtr(m_pDevices && m_pDevices->IsVariant());
+
+	else if (strEquals(sProperty, PROPERTY_HULL_CARGO_SPACE))
+		return ICCItemPtr(m_Hull.GetCargoSpace());
 
 	else if (strEquals(sProperty, PROPERTY_HULL_POINTS))
 		{

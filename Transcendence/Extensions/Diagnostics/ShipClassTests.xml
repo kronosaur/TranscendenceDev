@@ -15,6 +15,7 @@
 
 						{	test:'(typ@ &scMikeno; 'armorItem)					result:(itmCreate &itHeavyPlasteelPlate; 1)	}
 						{	test:'(typ@ &scMikeno; 'armorSpeedAdj)				result:Nil	}
+						{	test:'(typ@ &scEI500; 'cargoSpace)					result:200	}
 						{	test:'(typ@ &scMikeno; 'character)					result:Nil	}
 						{	test:'(typ@ &scMikeno; 'characterName)				result:Nil	}
 						{	test:'(typ@ &scMikeno; 'currency)					result:&ecCreditEconomy;	}
@@ -26,6 +27,7 @@
 						{	test:'(typ@ &scMikeno; 'fuelEfficiency)				result:295	}
 						{	test:'(typ@ &scMikeno; 'hasTradeDesc)				result:Nil	}
 						{	test:'(typ@ &scMikeno; 'hasVariants)				result:Nil	}
+						{	test:'(typ@ &scEI500; 'hullCargoSpace)				result:50	}
 						{	test:'(typ@ &scMikeno; 'hullPoints)					result:30	}
 						{	test:'(typ@ &scMikeno; 'hullValue)					result:2000	}
 						{	test:'(typ@ &scMikeno; 'imageRotationCount)			result:20	}
