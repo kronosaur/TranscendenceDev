@@ -1546,5 +1546,8 @@
     <ClCompile Include="CMissionCriteria.cpp">
       <Filter>Source Files\Missions</Filter>
     </ClCompile>
+    <ClCompile Include="CMenuData.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

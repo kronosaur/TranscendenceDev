@@ -1,9 +1,9 @@
 //	CMenuData.cpp
 //
 //	CMenuData class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
-#include "Transcendence.h"
 
 CMenuData::CMenuData (void) : m_iCount(0)
 
