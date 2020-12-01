@@ -63,7 +63,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 5> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 6> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -91,6 +91,33 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 		{
 		"escortingPlayer",	"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsPlayerEscort()); },
+		NULL,
+		},
+		
+		{
+		"usableItems",	"List of items that can be used",
+		[](const CSpaceObject &Obj, const CString &sProperty)
+			{
+			SUsableItemOptions Options;
+			CMenuData List = Obj.GetUsableItems(Options);
+			if (List.GetCount() == 0)
+				return ICCItemPtr::Nil();
+			else
+				{
+				const CItemList &ItemList = Obj.GetItemList();
+
+				ICCItemPtr pResult(ICCItem::List);
+				for (int i = 0; i < List.GetCount(); i++)
+					{
+					int iIndex = List.GetItemData(i);
+
+					ICCItemPtr pItem(CreateListFromItem(ItemList.GetItem(iIndex)));
+					pResult->Append(pItem);
+					}
+
+				return pResult;
+				}
+			},
 		NULL,
 		}
 		

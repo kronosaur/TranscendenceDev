@@ -821,112 +821,15 @@ bool CTranscendenceWnd::ShowUsePicker (void)
 	if (!GetPlayer())
 		return false;
 
-	CShip *pShip = GetPlayer()->GetShip();
-	char chUseKey = m_pTC->GetKeyMap().GetKeyIfChar(CGameKeys::keyUseItem);
-
 	//	Fill the menu with all usable items
 
-	m_MenuData.DeleteAll();
+	CShip *pShip = GetPlayer()->GetShip();
+	pShip->GetItemList().SortItems();
 
-	CItemList &List = pShip->GetItemList();
-	List.SortItems();
+	CSpaceObject::SUsableItemOptions Options;
+	Options.chUseKey = m_pTC->GetKeyMap().GetKeyIfChar(CGameKeys::keyUseItem);
 
-	//	Generate a sorted list of items
-
-	TSortMap<CString, int> SortedList;
-	for (int i = 0; i < List.GetCount(); i++)
-		{
-		CItem &Item = List.GetItem(i);
-		CItemType *pType = Item.GetType();
-		CItemCtx ItemCtx(&Item, pShip);
-
-		//	See if we can use this item, and get the use key
-
-		CString sUseKey;
-		if (!Item.CanBeUsed(&sUseKey))
-			continue;
-
-		//	Add to the list
-
-		bool bHasUseKey = (Item.IsKnown() && !sUseKey.IsBlank() && (*sUseKey.GetASCIIZPointer() != chUseKey));
-
-		//	Any items without use keys sort first (so that they are easier
-		//	to access).
-		//
-		//	Then we sort by level (higher-level first)
-		//
-		//	Then we sort by natural order
-		//
-		//	For items that use charges, we expand if there are multiple
-
-		if (pType->ShowChargesInUseMenu() && Item.IsKnown())
-			{
-			for (int j = 0; j < Item.GetCount(); j++)
-				{
-				SortedList.Insert(strPatternSubst(CONSTLIT("%d%s%04d%04d"),
-							(bHasUseKey ? 1 : 0),
-							(bHasUseKey ? strPatternSubst(CONSTLIT("%s0"), sUseKey) : strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - Item.GetLevel())),
-							i, j),
-						i);
-				}
-			}
-		else
-			SortedList.Insert(strPatternSubst(CONSTLIT("%d%s%04d%04d"),
-						(bHasUseKey ? 1 : 0),
-						(bHasUseKey ? strPatternSubst(CONSTLIT("%s0"), sUseKey) : strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - Item.GetLevel())),
-						i, 0),
-					i);
-		}
-
-	//	Now add all the items to the menu
-
-	for (int i = 0; i < SortedList.GetCount(); i++)
-		{
-		CString sSort = SortedList.GetKey(i);
-		CItem &Item = List.GetItem(SortedList.GetValue(i));
-		CItemType *pType = Item.GetType();
-
-		CItemType::SUseDesc UseDesc;
-		if (!pType->GetUseDesc(&UseDesc))
-			continue;
-
-		int iCount;
-		if (pType->ShowChargesInUseMenu() && Item.IsKnown())
-			iCount = Item.GetCharges();
-		else if (Item.GetCount() > 1)
-			iCount = Item.GetCount();
-		else
-			iCount = 0;
-
-		//	Installed
-
-		CString sExtra;
-		if (Item.IsInstalled())
-			sExtra = CONSTLIT("Installed");
-
-		//	Show the key only if the item is identified
-
-		CString sKey;
-		if (Item.IsKnown() && (*UseDesc.sUseKey.GetASCIIZPointer() != chUseKey))
-			sKey = UseDesc.sUseKey;
-
-		//	Name of item
-
-		CString sName = Item.GetNounPhrase();
-		sName = strPatternSubst(CONSTLIT("Use %s"), sName);
-
-		//	Add the item
-
-		m_MenuData.AddMenuItem(NULL_STR,
-				sKey,
-				sName,
-				&pType->GetImage(),
-				iCount,
-				sExtra,
-				NULL_STR,
-				0,
-				SortedList.GetValue(i));
-		}
+	m_MenuData = pShip->GetUsableItems(Options);
 
 	//	If no items, then no menu
 
