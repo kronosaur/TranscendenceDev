@@ -54,7 +54,7 @@ class CMenuData
 			FLAG_SORT_BY_KEY =		0x00000002,
 			};
 
-		CMenuData (void);
+		CMenuData (void) { }
 
 		void AddMenuItem (const CString &sID,
 						  const CString &sKey,
@@ -74,10 +74,10 @@ class CMenuData
 						  DWORD dwData2 = 0);
 		void SetTitle (const CString &sTitle) { m_sTitle = sTitle; }
 
-		void DeleteAll (void) { m_iCount = 0; }
+		void DeleteAll (void) { m_List.DeleteAll(); }
 		int FindItemByKey (const CString &sKey);
 		bool FindItemData (const CString &sKey, DWORD *retdwData = NULL, DWORD *retdwData2 = NULL);
-		int GetCount (void) const { return m_iCount; }
+		int GetCount (void) const { return m_List.GetCount(); }
 		int GetItemAcceleratorPos (int iIndex) const { return m_List[iIndex].iAcceleratorPos; }
 		DWORD GetItemData (int iIndex) const { return m_List[iIndex].dwData; }
 		DWORD GetItemData2 (int iIndex) const { return m_List[iIndex].dwData2; }
@@ -90,11 +90,9 @@ class CMenuData
 		const CString &GetItemKey (int iIndex) const { return m_List[iIndex].sKey; }
 		const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
 		const CString &GetTitle (void) const { return m_sTitle; }
-		bool IsEmpty (void) const { return m_iCount == 0; }
+		bool IsEmpty (void) const { return m_List.GetCount() == 0; }
 
 	private:
-		static constexpr int MAX_MENU_ITEMS = 100;
-
 		struct Entry
 			{
 			CString sID;
@@ -113,6 +111,5 @@ class CMenuData
 			};
 
 		CString m_sTitle;
-		int m_iCount;
-		Entry m_List[MAX_MENU_ITEMS];
+		TArray<Entry> m_List;
 	};
