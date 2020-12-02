@@ -6591,12 +6591,15 @@ void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 		//	Show bounds
 
 		if (Ctx.bShowBounds 
+				|| InDebugMode()
 				|| (GetUniverse().GetDebugOptions().IsShowNavPathsEnabled() && BlocksShips()))
 			{
 			CG32bitPixel rgbColor = GetSymbolColor();
 			int xHalf = mathRound(m_rBoundsX / g_KlicksPerPixel);
 			int yHalf = mathRound(m_rBoundsY / g_KlicksPerPixel);
 			CGDraw::RectOutline(Dest, x - xHalf, y - yHalf, 2 * xHalf, 2 * yHalf,rgbColor);
+
+			Dest.DrawDot(x, y, rgbColor, MarkerTypes::markerMediumCross);
 			}
 
 		//	Let the object paint additional annotations

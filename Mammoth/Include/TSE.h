@@ -866,6 +866,7 @@ class CSpaceObject
 		void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
 		void SetDataFromXML (CXMLElement *pData) { m_Data.SetFromXML(pData); }
 		void SetDataInteger (const CString &sAttrib, int iValue);
+		void SetDebugMode (bool bValue = true) { m_fDebugMode = bValue; }
 		void SetDestructionNotify (bool bNotify = true) { m_fNoObjectDestructionNotify = !bNotify; }
 		void SetHasGetDockScreenEvent (bool bHasEvent) { m_fHasGetDockScreenEvent = bHasEvent; }
 		void SetHasOnAttackedEvent (bool bHasEvent) { m_fHasOnAttackedEvent = bHasEvent; }
