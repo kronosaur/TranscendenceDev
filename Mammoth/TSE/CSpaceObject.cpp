@@ -162,76 +162,12 @@ CString ParseParam (char **ioPos);
 
 CSpaceObject::CSpaceObject (CUniverse &Universe) : 
 		m_Universe(Universe),
-		m_pSystem(NULL),
-		m_iIndex(-1),
-		m_rBoundsX(0.0),
-		m_rBoundsY(0.0),
-
-		m_iHighlightCountdown(0),
-		m_iHighlightChar(0),
-		m_iDesiredHighlightChar(0),
-
-		m_pFirstEffect(NULL),
-		m_pOverride(NULL),
-		m_pFirstJoint(NULL),
-
-		m_iControlsFrozen(0),
-		m_iSpare(0),
-
-		m_fHookObjectDestruction(false),
-		m_fNoObjectDestructionNotify(false),
-		m_fCannotBeHit(false),
-		m_fSelected(false),
-		m_fInPOVLRS(false),
-		m_fCanBounce(false),
-		m_fIsBarrier(false),
-
-		m_fNoFriendlyFire(false),
-		m_fTimeStop(false),
-		m_fPlayerTarget(false),
-		m_fHasOnObjDockedEvent(false),
-		m_fOnCreateCalled(false),
-		m_fNoFriendlyTarget(false),
-		m_fItemEventsValid(false),
-
-		m_fHasOnDamageEvent(false),
-		m_fHasOnAttackedEvent(false),
-		m_fInDamage(false),
-		m_fDestroyed(false),
-		m_fPlayerDestination(false),
-		m_fShowDistanceAndBearing(false),
-		m_fHasInterSystemEvent(false),
-		m_fAutoClearDestination(false),
-		m_fHasOnOrdersCompletedEvent(false),
-		m_fPlayerDocked(false),
-		m_fPaintNeeded(false),
-		m_fNonLinearMove(false),
-		m_fHasName(false),
-		m_fAscended(false),
-		m_fOutOfPlaneObj(false),
-		m_fPainted(false),
-		m_fAutoClearDestinationOnDock(false),
-		m_fAutoClearDestinationOnDestroy(false),
-		m_fShowHighlight(false),
-		m_fShowDamageBar(false),
-		m_fHasGravity(false),
-		m_fInsideBarrier(false),
-		m_fHasOnSubordinateAttackedEvent(false),
-		m_fHasGetDockScreenEvent(false),
-		m_fHasOnAttackedByPlayerEvent(false),
-		m_fHasOnOrderChangedEvent(false),
-		m_fManualAnchor(false),
-		m_fCollisionTestNeeded(false),
-		m_fHasDockScreenMaybe(false),
-		m_fAutoClearDestinationOnGate(false),
-		m_f3DExtra(false),
-		m_fAutoCreatedPorts(false)
+		m_iDestiny(mathRandom(0, g_DestinyRange - 1)),
+		m_dwID(Universe.CreateGlobalID())
 
 //	CSpaceObject constructor
 
 	{
-	m_iDestiny = mathRandom(0, g_DestinyRange - 1);
-	m_dwID = Universe.CreateGlobalID();
 	}
 
 CSpaceObject::~CSpaceObject (void)
@@ -1346,7 +1282,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	//	Create the object
 
 	DWORD dwLoad;
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	CSpaceObject *pObj = CreateFromClassID(Ctx.GetUniverse(), dwLoad);
 
 	//	Remember the type of object that we're loading (in case of crash)
@@ -1358,12 +1294,12 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	//	index will change relative to the new system). But this is the
 	//	index that other objects will refer to during load.
 
-	Ctx.pStream->Read((char *)&pObj->m_iIndex, sizeof(DWORD));
+	Ctx.pStream->Read(pObj->m_iIndex);
 
 	//	Load the global ID
 
 	if (Ctx.dwVersion >= 13)
-		Ctx.pStream->Read((char *)&pObj->m_dwID, sizeof(DWORD));
+		Ctx.pStream->Read(pObj->m_dwID);
 	else
 		pObj->m_dwID = Ctx.GetUniverse().CreateGlobalID();
 
@@ -1373,12 +1309,12 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 	//	Load other stuff
 
-	Ctx.pStream->Read((char *)&pObj->m_iDestiny, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&pObj->m_vPos, sizeof(CVector));
-	Ctx.pStream->Read((char *)&pObj->m_vVel, sizeof(CVector));
-	Ctx.pStream->Read((char *)&pObj->m_rBoundsX, sizeof(Metric));
-	Ctx.pStream->Read((char *)&pObj->m_rBoundsY, sizeof(Metric));
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(pObj->m_iDestiny);
+	pObj->m_vPos.ReadFromStream(*Ctx.pStream);
+	pObj->m_vVel.ReadFromStream(*Ctx.pStream);
+	Ctx.pStream->Read(pObj->m_rBoundsX);
+	Ctx.pStream->Read(pObj->m_rBoundsY);
+	Ctx.pStream->Read(dwLoad);
 	if (Ctx.dwVersion >= 99)
 		pObj->m_iDesiredHighlightChar = LOWORD(dwLoad);
 	else
@@ -1388,7 +1324,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	//	Override
 
 	if (Ctx.dwVersion >= 48
-			&& Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD)) == NOERROR
+			&& Ctx.pStream->Read(dwLoad) == NOERROR
 			&& dwLoad != 0)
 		pObj->m_pOverride = Ctx.GetUniverse().FindDesignType(dwLoad);
 	else
@@ -1400,12 +1336,12 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 	//	Load other stuff
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	pObj->m_iControlsFrozen = dwLoad;
 
 	//	Load flags
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	pObj->m_fHookObjectDestruction =	((dwLoad & 0x00000001) ? true : false);
 	pObj->m_fNoObjectDestructionNotify = ((dwLoad & 0x00000002) ? true : false);
 	pObj->m_fCannotBeHit =				((dwLoad & 0x00000004) ? true : false);
@@ -1442,7 +1378,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	//	More flags
 
 	if (Ctx.dwVersion >= 136)
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 	else
 		dwLoad = 0;
 
@@ -1453,6 +1389,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fManualAnchor =				((dwLoad & 0x00000010) ? true : false);
 	pObj->m_f3DExtra =					((dwLoad & 0x00000020) ? true : false);
 	pObj->m_fAutoCreatedPorts =			((dwLoad & 0x00000040) ? true : false);
+	pObj->m_fDebugMode =				((dwLoad & 0x00000080) ? true : false);
 
 	//	No need to save the following
 
@@ -1472,7 +1409,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	//	Load additional data
 
 	if (bSavedOldPos && Ctx.dwVersion >= 65)
-		Ctx.pStream->Read((char *)&pObj->m_vOldPos, sizeof(CVector));
+		pObj->m_vOldPos.ReadFromStream(*Ctx.pStream);
 	else
 		pObj->m_vOldPos = pObj->m_vPos - (pObj->m_vVel * g_SecondsPerUpdate);
 
@@ -1491,11 +1428,11 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	while (pEffect)
 		{
 		int x, y, iTick, iRotation;
-		Ctx.pStream->Read((char *)&x, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&y, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&iTick, sizeof(DWORD));
+		Ctx.pStream->Read(x);
+		Ctx.pStream->Read(y);
+		Ctx.pStream->Read(iTick);
 		if (Ctx.dwVersion >= 51)
-			Ctx.pStream->Read((char *)&iRotation, sizeof(DWORD));
+			Ctx.pStream->Read(iRotation);
 		else
 			iRotation = 0;
 
@@ -7897,21 +7834,21 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 
 	//	Save out stuff
 
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	pStream->Write((char *)&m_iIndex, sizeof(DWORD));
-	pStream->Write((char *)&m_dwID, sizeof(DWORD));
-	pStream->Write((char *)&m_iDestiny, sizeof(DWORD));
-	pStream->Write((char *)&m_vPos, sizeof(m_vPos));
-	pStream->Write((char *)&m_vVel, sizeof(m_vVel));
-	pStream->Write((char *)&m_rBoundsX, sizeof(m_rBoundsX));
-	pStream->Write((char *)&m_rBoundsY, sizeof(m_rBoundsY));
+	pStream->Write(dwSave);
+	pStream->Write(m_iIndex);
+	pStream->Write(m_dwID);
+	pStream->Write(m_iDestiny);
+	m_vPos.WriteToStream(*pStream);
+	m_vVel.WriteToStream(*pStream);
+	pStream->Write(m_rBoundsX);
+	pStream->Write(m_rBoundsY);
 	dwSave = MAKELONG((WORD)(BYTE)m_iDesiredHighlightChar, m_iHighlightCountdown);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Override
 
 	dwSave = (m_pOverride ? m_pOverride->GetUNID() : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Write out the list of items
 
@@ -7920,7 +7857,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	//	More Data
 
 	dwSave = m_iControlsFrozen;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Write out flags
 
@@ -7958,7 +7895,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fInsideBarrier				? 0x40000000 : 0);
 	dwSave |= (m_fHasOnSubordinateAttackedEvent	? 0x80000000 : 0);
 	//	No need to save m_fHasName because it is set by CSystem on load.
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	More flags
 
@@ -7970,7 +7907,8 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fManualAnchor				? 0x00000010 : 0);
 	dwSave |= (m_f3DExtra					? 0x00000020 : 0);
 	dwSave |= (m_fAutoCreatedPorts			? 0x00000040 : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	dwSave |= (m_fDebugMode					? 0x00000080 : 0);
+	pStream->Write(dwSave);
 
 	//	Write out the opaque data
 
@@ -7979,7 +7917,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	//	Write out other stuff
 
 	if (!IsAnchored())
-		pStream->Write((char *)&m_vOldPos, sizeof(CVector));
+		m_vOldPos.WriteToStream(*pStream);
 
 	//	Subscriptions
 
@@ -7992,10 +7930,10 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 		{
 		CEffectCreator::WritePainterToStream(pStream, pNext->pPainter);
 
-		pStream->Write((char *)&pNext->xOffset, sizeof(DWORD));
-		pStream->Write((char *)&pNext->yOffset, sizeof(DWORD));
-		pStream->Write((char *)&pNext->iTick, sizeof(DWORD));
-		pStream->Write((char *)&pNext->iRotation, sizeof(DWORD));
+		pStream->Write(pNext->xOffset);
+		pStream->Write(pNext->yOffset);
+		pStream->Write(pNext->iTick);
+		pStream->Write(pNext->iRotation);
 
 		pNext = pNext->pNext;
 		}
