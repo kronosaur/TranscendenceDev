@@ -1171,6 +1171,7 @@ class CSpaceObject
 		virtual Metric GetCargoSpaceLeft (void) const { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }
 		virtual int GetCounterIncrementRate (void) const { return 0; }
+		virtual bool GetCounterIsHeat (void) const { return false; }
 		virtual int GetCounterValue (void) const { return 0; }
 		virtual int GetCyberDefenseLevel (void) const { return GetLevel(); }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
@@ -1184,7 +1185,7 @@ class CSpaceObject
 		virtual int GetLastFireTime (void) const { return 0; }
 		virtual int GetLastHitTime (void) const { return 0; }
 		virtual int GetLevel (void) const { return 1; }
-		virtual int GetMaxCounterValue(void) { return 0; }
+		virtual int GetMaxCounterValue (void) const { return 0; }
 		virtual int GetMaxPower (void) const { return 0; }
 		virtual int GetMaxLightDistance (void) const { return 0; }
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
@@ -1196,6 +1197,8 @@ class CSpaceObject
 		virtual int GetShieldLevel (void) const { return -1; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
 		virtual int GetStealth (void) const { return stealthNormal; }
+		virtual int GetStealthAdj(void) const { return 0; }
+		virtual int GetStealthAdjAtMaxHeat(void) const { return 0; }
 		virtual int GetVisibleDamage (void) { return 0; }
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const { Damage = SVisibleDamage(); }
 		virtual void IncCounterValue(int iCounterValue) { }

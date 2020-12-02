@@ -720,7 +720,7 @@ class CWeaponFireDesc
 		Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
 		CWeaponFireDesc *GetScaledDesc (int iLevel) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
-		int GetStealth (void) const { return m_iStealth; }
+		int GetStealth (void) const { return m_iStealthFromArmor; }
 		bool GetTargetable (void) const { return m_fTargetable; }
 		FireTypes GetType (void) const { return m_iFireType; }
 		const CString &GetUNID (void) const { return m_sUNID; }
@@ -819,7 +819,7 @@ class CWeaponFireDesc
 		//	Missile stuff (m_iFireType == ftMissile)
 		int m_iAccelerationFactor = 0;			//	% increase in speed per 10 ticks
 		Metric m_rMaxMissileSpeed = 0.0;		//	Max speed.
-		int m_iStealth = 0;						//	Missile stealth
+		int m_iStealthFromArmor = 0;						//	Missile stealth
 		int m_iHitPoints = 0;					//	HP before dissipating (0 = destroyed by any hit)
 		int m_iInteraction = 0;					//	Interaction opacity (0-100)
 		int m_iManeuverability = 0;				//	Tracking maneuverability (0 = none)

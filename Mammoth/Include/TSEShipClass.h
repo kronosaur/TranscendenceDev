@@ -164,6 +164,8 @@ class CHullDesc
 		int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
 		int GetMaxWeapons (void) const { return m_iMaxWeapons; }
 		int GetSize (void) const { return m_iSize; }
+		int GetStealthAdj (void) const { return m_iStealthAdj; }
+		int GetStealthAdjAtMaxHeat (void) const { return m_iStealthAdjAtMaxHeat; }
 		const CCurrencyAndValue &GetValue (void) const { return m_Value; }
 		bool HasArmorLimits (void) const { return m_ArmorLimits.HasArmorLimits(); }
 		bool IsImmuneTo (SpecialDamageTypes iSpecialDamage) const;
@@ -187,6 +189,8 @@ class CHullDesc
 		CCurrencyAndValue m_Value;			//	Value of hull alone (excluding any devices/armor)
 		int m_iCargoSpace = 0;				//	Default cargo space (tons)
 		int m_iCounterIncrementRate = 0;	//  Value by which temperature/capacitor counter is updated every tick
+		int m_iStealthAdj = 0;				//  Stealth value of the ship at zero heat to add to armor/nebula stealth value
+		int m_iStealthAdjAtMaxHeat = 0;		//  Stealth value of the ship at max heat to add to armor/nebula stealth value
 
 		CItemCriteria m_DeviceCriteria;		//	Allowable devices
 		CArmorLimits m_ArmorLimits;			//	Adjustments based on armor

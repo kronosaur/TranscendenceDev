@@ -1759,7 +1759,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 	//	Load stealth
 
-	m_iStealth = CSpaceObject::stealthNormal;
+	m_iStealthFromArmor = CSpaceObject::stealthNormal;
 
 	//	Load specific properties
 
@@ -1930,7 +1930,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Load stealth
 
-	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
+	m_iStealthFromArmor = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
 
 	//	Initialize interaction and hit points
 
@@ -2574,7 +2574,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 
 	m_iAccelerationFactor = Src.m_iAccelerationFactor;
 	m_rMaxMissileSpeed = Src.m_rMaxMissileSpeed;
-	m_iStealth = Src.m_iStealth;
+	m_iStealthFromArmor = Src.m_iStealthFromArmor;
 	m_iHitPoints = Src.m_iHitPoints;
 	m_iInteraction = Src.m_iInteraction;
 	m_iManeuverability = Src.m_iManeuverability;

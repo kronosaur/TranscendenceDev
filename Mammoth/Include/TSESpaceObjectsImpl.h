@@ -1137,6 +1137,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetCombatPower (void) override;
 		virtual int GetCounterValue (void) const override { return m_iCounterValue; }
 		virtual int GetCounterIncrementRate (void) const override { return m_pClass->GetHullDesc().GetCounterIncrementRate(); }
+		virtual bool GetCounterIsHeat (void) const override { return m_pClass->GetHullDesc().GetCounterIncrementRate() < 0; }
 		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override;
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetCyberDefenseLevel (void) const override { return m_pClass->GetCyberDefenseLevel(); }
@@ -1164,7 +1165,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetLevel (void) const override { return m_pClass->GetLevel(); }
 		virtual Metric GetMass (void) const override;
 		virtual int GetMaxPower (void) const override;
-		virtual int GetMaxCounterValue (void) override { return m_pClass->GetHullDesc().GetMaxCounter(); };
+		virtual int GetMaxCounterValue (void) const override { return m_pClass->GetHullDesc().GetMaxCounter(); };
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const override;
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) override;
@@ -1184,6 +1185,8 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual const CShipPerformanceDesc &GetShipPerformance (void) const override { return m_Perf; }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual int GetStealth (void) const override;
+		virtual int GetStealthAdj (void) const override { return m_pClass->GetHullDesc().GetStealthAdj(); }
+		virtual int GetStealthAdjAtMaxHeat (void) const override { return m_pClass->GetHullDesc().GetStealthAdjAtMaxHeat(); }
 		virtual Metric GetMaxSpeed (void) const override { return m_Perf.GetDriveDesc().GetMaxSpeed(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
@@ -1388,7 +1391,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 
 		mutable Metric m_rItemMass = 0.0;			//	Total mass of all items (including installed)
 		mutable Metric m_rCargoMass = 0.0;			//	Mass of cargo items (not including installed)
-		int m_iStealth = 0;							//	Computed stealth
+		int m_iStealthFromArmor = 0;				//	Computed stealth from armor
 		int m_iCounterValue = 0;					//	Heat/capacitor counter value
 
 		CSpaceObject *m_pDocked = NULL;				//	If not NULL, object we are docked to.
