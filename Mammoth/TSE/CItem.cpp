@@ -351,6 +351,9 @@ bool CItem::CanBeUsed (CString *retsUseKey) const
 	if (UseDesc.bOnlyIfUninstalled && IsInstalled())
 		return false;
 
+	if (UseDesc.bOnlyIfUndamaged && IsDamaged())
+		return false;
+
 	if (UseDesc.bOnlyIfEnabled)
 		{
 		const CInstalledDevice *pDevice = GetInstalledDevice();

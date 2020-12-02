@@ -16,7 +16,9 @@
 		virtual=	"true"
 		>
 		
-		<Invoke key="A">
+		<Invoke key="A"
+				undamagedOnly="true"
+				>
 			(switch
 				(itm@ gItem 'damaged)
 					(objSendMessage gSource Nil (typTranslate gType 'msgAutonDamaged))

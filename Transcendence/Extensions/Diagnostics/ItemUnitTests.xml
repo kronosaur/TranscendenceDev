@@ -941,6 +941,12 @@
 						{	test:'(obj@ gPlayerShip 'usableItems)							result:Nil }
 						{	test:'(objAddItem gPlayerShip &itAblativeArmorCoating; 1)		result:'ignore }
 						{	test:'(obj@ gPlayerShip 'usableItems)							result:(list (itmCreate &itAblativeArmorCoating; 1)) }
+						{	test:'(objRemoveItem gPlayerShip (itmCreate &itAblativeArmorCoating; 1))
+																							result:'ignore }
+						{	test:'(objAddItem gPlayerShip 
+									(itmSet@ (itmCreate &itAutoSentinel; 1) 'damaged True)
+									)														result:'ignore }
+						{	test:'(obj@ gPlayerShip 'usableItems)							result:Nil }
 						))
 
 					;	Clean up
