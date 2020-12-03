@@ -1549,5 +1549,8 @@
     <ClCompile Include="CMenuData.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="PowerProperties.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

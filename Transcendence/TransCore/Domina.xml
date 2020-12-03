@@ -56,6 +56,8 @@
 			<Data id="rank">1</Data>
 		</StaticData>
 
+		<Image imageID="&rsDominaPowers;"	imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Events>
 			<OnInvoke>
 				(block Nil
@@ -92,6 +94,8 @@
 		<StaticData>
 			<Data id="rank">2</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -165,6 +169,8 @@
 			<Data id="rank">2</Data>
 		</StaticData>
 
+		<Image imageID="&rsDominaPowers;"	imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Events>
 			<OnInvoke>
 				(block Nil
@@ -200,6 +206,8 @@
 		<StaticData>
 			<Data id="rank">3</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -242,6 +250,8 @@
 		<StaticData>
 			<Data id="rank">3</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="384" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -296,6 +306,8 @@
 			<Data id="rank">4</Data>
 		</StaticData>
 
+		<Image imageID="&rsDominaPowers;"	imageX="0" imageY="96" imageWidth="96" imageHeight="96"/>
+
 		<Events>
 			<OnInvoke>
 				(block (objVel)
@@ -336,6 +348,8 @@
 		<StaticData>
 			<Data id="rank">4</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -525,6 +539,8 @@
 			<Data id="rank">5</Data>
 		</StaticData>
 
+		<Image imageID="&rsDominaPowers;"	imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
 		<Events>
 			<OnDestroyCheck>
 				(if (= (typFireEvent gType 'GetInvokeStatus) 'ready)
@@ -581,6 +597,8 @@
 		<StaticData>
 			<Data id="rank">5</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="288" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -739,8 +757,8 @@
 			<Starburst
 					spikeCount=		"20"
 					spikeLength=	"4d8"
-					primaryColor=	"0x80, 0xff, 0xff"
-					secondaryColor=	"0x00, 0xff, 0xff"
+					primaryColor=	"#80ffbf"
+					secondaryColor=	"#00ff80"
 					/>
 		</Effect>
 	</OverlayType>
@@ -1090,6 +1108,7 @@
 
 	<!-- Resources -->
 
+	<Image UNID="&rsDominaPowers;"		bitmap="Resources\DominaPowers.jpg"		bitmask="Resources\DominaPowersMask.bmp"/>
 	<Image UNID="&rsDominaEffects1;"	bitmap="Resources\MediumEffects.jpg"	bitmask="Resources\MediumEffectsMask.bmp"/>
 	<Image UNID="&rsShatterShockwave;"	bitmap="Resources\ShatterShockwave.jpg"	bitmask="Resources\ShatterShockwaveMask.bmp"/>
 
