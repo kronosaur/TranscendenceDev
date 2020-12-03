@@ -117,3 +117,118 @@ ALERROR CGameSession::OnCommand (const CString &sCmd, void *pData)
 
 	return NOERROR;
 	}
+
+bool CGameSession::ShowInvokeMenu ()
+
+//	ShowInvokeMenu
+//
+//	Show the invoke menu.
+
+	{
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (!pPlayer)
+		return false;
+
+	CShip *pPlayerShip = pPlayer->GetShip();
+	if (!pPlayerShip)
+		return false;
+
+	g_pTrans->m_MenuData.SetTitle(CONSTLIT("Invoke Powers"));
+	g_pTrans->m_MenuData.DeleteAll();
+
+	bool bUseLetters = m_Settings.GetBoolean(CGameSettings::allowInvokeLetterHotKeys);
+
+	TSortMap<CString, bool> KeyMap;
+	char chInvokeKey = m_Settings.GetKeyMap().GetKeyIfChar(CGameKeys::keyInvokePower);
+	KeyMap.Insert(CString(&chInvokeKey, 1), true);
+
+	//	Add the powers
+
+	for (int i = 0; i < GetUniverse().GetPowerCount(); i++)
+		{
+		CPower *pPower = GetUniverse().GetPower(i);
+
+		CString sError;
+		if (pPower->OnShow(pPlayerShip, NULL, &sError))
+			{
+			CString sKey = pPower->GetInvokeKey();
+			if (sKey.IsBlank())
+				continue;
+
+			//	If we're the default letter keys, then make sure we don't
+			//	conflict.
+
+			if (bUseLetters)
+				{
+				//	Make sure key is one character long (we use a double-
+				//	letter syntax below).
+
+				sKey.Truncate(1);
+
+				//	If the key conflicts, then pick another key (the next 
+				//	key in the sequence).
+
+				while (!sKey.IsBlank() && KeyMap.GetAt(sKey) != NULL)
+					{
+					char chChar = (*sKey.GetASCIIZPointer()) + 1;
+					if (chChar == ':')
+						chChar = 'A';
+
+					if (chChar <= 'Z')
+						sKey = CString(&chChar, 1);
+					else
+						sKey = NULL_STR;
+					}
+				}
+
+			//	If we're not using letters, then convert to a number
+
+			else
+				{
+				char chLetter = *sKey.GetASCIIZPointer();
+				int iOrdinal = chLetter - 'A';
+
+				//	A double letter means that we really want a letter, so we
+				//	offset to increment past the numbers.
+
+				if (sKey.GetLength() == 2)
+					iOrdinal += 9;
+
+				sKey = CMenuDisplayOld::GetHotKeyFromOrdinal(&iOrdinal, KeyMap);
+				}
+
+			//	Add the menu. (We check again to see if the key is valid
+			//	because we might have collided and failed to find a substitute.)
+
+			if (!sKey.IsBlank())
+				{
+				g_pTrans->m_MenuData.AddMenuItem(NULL_STR,
+						sKey,
+						pPower->GetName(),
+						CMenuData::FLAG_SORT_BY_KEY,
+						(DWORD)pPower);
+
+				KeyMap.Insert(sKey, true);
+				}
+			}
+
+		if (!sError.IsBlank())
+			{
+			DisplayMessage(sError);
+			return false;
+			}
+		}
+
+	//	If no powers are available, say so
+
+	if (g_pTrans->m_MenuData.GetCount() == 0)
+		{
+		DisplayMessage(CONSTLIT("No Powers available"));
+		return false;
+		}
+
+	//	Show menu
+
+	g_pTrans->m_MenuDisplay.Invalidate();
+	return true;
+	}

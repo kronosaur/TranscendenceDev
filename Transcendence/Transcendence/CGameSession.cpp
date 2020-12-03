@@ -10,11 +10,11 @@
 
 CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*CreateCtx.pHI),
 		m_Settings(*CreateCtx.pSettings),
-        m_Model(*CreateCtx.pModel),
+		m_Model(*CreateCtx.pModel),
 		m_DebugConsole(*CreateCtx.pDebugConsole),
 		m_Soundtrack(*CreateCtx.pSoundtrack),
-        m_HUD(*CreateCtx.pHI, *CreateCtx.pModel),
-        m_SystemMap(*CreateCtx.pHI, *CreateCtx.pModel, m_HUD),
+		m_HUD(*CreateCtx.pHI, *CreateCtx.pModel),
+		m_SystemMap(*CreateCtx.pHI, *CreateCtx.pModel, m_HUD),
 		m_SystemStationsMenu(*CreateCtx.pHI, *CreateCtx.pModel, *this),
 		m_MessageDisplay(*CreateCtx.pHI),
 		m_Narrative(*CreateCtx.pHI),
@@ -230,7 +230,7 @@ void CGameSession::OnCleanUp (void)
 //
 //  We're going away
 
-    {
+	{
 	DEBUG_TRY
 
 	HideMenu();
@@ -247,7 +247,7 @@ void CGameSession::OnCleanUp (void)
 		m_Model.ExitScreenSession(true);
 
 	DEBUG_CATCH
-    }
+	}
 
 ALERROR CGameSession::OnInit (CString *retsError)
 
@@ -255,14 +255,14 @@ ALERROR CGameSession::OnInit (CString *retsError)
 //
 //  Initialize session
 
-    {
-    m_rcScreen = g_pTrans->m_rcScreen;
+	{
+	m_rcScreen = g_pTrans->m_rcScreen;
 	InitUI();
 
-    SetNoCursor(IsMouseAimEnabled());
+	SetNoCursor(IsMouseAimEnabled());
 
-    m_HUD.Init(m_rcScreen);
-    m_SystemMap.Init(m_rcScreen);
+	m_HUD.Init(m_rcScreen);
+	m_SystemMap.Init(m_rcScreen);
 	m_MenuDisplay.Init(m_rcScreen);
 	m_MessageDisplay.Init(m_rcScreen);
 
@@ -273,8 +273,8 @@ ALERROR CGameSession::OnInit (CString *retsError)
 
 	//	HUD
 
-    RECT rcCenter;
-    m_HUD.GetClearHorzRect(&rcCenter);
+	RECT rcCenter;
+	m_HUD.GetClearHorzRect(&rcCenter);
 	m_Narrative.Init(rcCenter);
 
 	//	Move the mouse cursor so that it points to where the ship is points.
@@ -289,8 +289,8 @@ ALERROR CGameSession::OnInit (CString *retsError)
 	if (!sWelcome.IsBlank())
 		DisplayMessage(sWelcome);
 
-    return NOERROR;
-    }
+	return NOERROR;
+	}
 
 void CGameSession::OnKeyboardMappingChanged (void)
 
@@ -310,7 +310,7 @@ void CGameSession::OnKeyboardMappingChanged (void)
 		m_bMouseAim = IsMouseAimConfigured();
 		pPlayer->OnMouseAimSetting(m_bMouseAim);
 
-	    SetNoCursor(IsMouseAimEnabled());
+		SetNoCursor(IsMouseAimEnabled());
 		ShowCursor(!IsMouseAimEnabled());
 
 		//	Move the mouse cursor so that it points to where the ship is points.
@@ -363,7 +363,7 @@ void CGameSession::OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph)
 //
 //  Player was destroyed
 
-    {
+	{
 	DEBUG_TRY
 
 	//	Clean up
@@ -381,7 +381,7 @@ void CGameSession::OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph)
 		sMsg = strSubString(sMsg, 4, -1);
 	sMsg.Capitalize(CString::capFirstLetter);
 	DisplayMessage(sMsg);
-    m_HUD.Invalidate(hudArmor);
+	m_HUD.Invalidate(hudArmor);
 
 	//	If we are insured, then set our state so that we come back to life
 	if (Ctx.bResurrectPending)
@@ -407,17 +407,17 @@ void CGameSession::OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph)
 		}
 
 	DEBUG_CATCH
-    }
-    
+	}
+	
 void CGameSession::OnPlayerEnteredStargate (CTopologyNode *pNode)
 
 //  OnPlayerEnteredStargate
 //
 //  Player entered the stargate
 
-    {
-    ShowSystemMap(false);
-    }
+	{
+	ShowSystemMap(false);
+	}
 
 void CGameSession::OnShowDockScreen (bool bShow)
 
@@ -425,7 +425,7 @@ void CGameSession::OnShowDockScreen (bool bShow)
 //
 //  Show or hide the dock screen.
 
-    {
+	{
 	if (bShow && g_pTrans->m_State != CTranscendenceWnd::gsDocked)
 		{
 		//	Show the cursor, if it was previously hidden
@@ -467,7 +467,7 @@ void CGameSession::OnShowDockScreen (bool bShow)
 
 		g_pTrans->m_pCurrentScreen = NULL;
 		}
-    }
+	}
 
 void CGameSession::PaintInfoText (CG32bitImage &Dest, const CString &sTitle, const TArray<CString> &Body, bool bAboveTargeting)
 
@@ -486,8 +486,8 @@ void CGameSession::PaintInfoText (CG32bitImage &Dest, const CString &sTitle, con
 	int cy = TitleFont.GetHeight() + Body.GetCount() * BodyFont.GetHeight();
 	int cySpacing = BodyFont.GetHeight() / 2;
 
-    RECT rcCenter;
-    m_HUD.GetClearHorzRect(&rcCenter);
+	RECT rcCenter;
+	m_HUD.GetClearHorzRect(&rcCenter);
 	int y = (bAboveTargeting ? rcCenter.bottom : m_rcScreen.bottom) - (cy + cySpacing);
 
 	Dest.DrawText(x,
@@ -603,7 +603,7 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			}
 
 		case menuInvoke:
-			if (!g_pTrans->ShowInvokeMenu())
+			if (!ShowInvokeMenu())
 				return false;
 			break;
 
@@ -661,17 +661,17 @@ void CGameSession::ShowSystemMap (bool bShow)
 //
 //  Shows or hides the system map.
 
-    {
-    if (m_bShowingSystemMap != bShow)
-        {
-        m_bShowingSystemMap = bShow;
+	{
+	if (m_bShowingSystemMap != bShow)
+		{
+		m_bShowingSystemMap = bShow;
 
-        if (m_bShowingSystemMap)
-            m_SystemMap.OnShowMap();
-        else
-            m_SystemMap.OnHideMap();
-        }
-    }
+		if (m_bShowingSystemMap)
+			m_SystemMap.OnShowMap();
+		else
+			m_SystemMap.OnHideMap();
+		}
+	}
 
 void CGameSession::SyncMouseToPlayerShip (void)
 

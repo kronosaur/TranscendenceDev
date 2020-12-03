@@ -1011,6 +1011,10 @@ class CSpaceObject
 		bool IsShowingHighlight (void) const { return m_fShowHighlight; }
 		void SetPlayerDestination (const SPlayerDestinationOptions &Options);
 
+		//	Powers
+
+		bool InvokePower (CPower &Power, CSpaceObject *pTarget);
+
 		//	Properties
 
 		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;

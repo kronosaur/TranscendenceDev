@@ -133,8 +133,8 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 							break;
 
 						case menuInvoke:
-							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
-							g_pTrans->DoInvocation((CPower *)dwData);
+							GetUniverse().PlaySound(NULL, GetUniverse().FindSound(UNID_DEFAULT_BUTTON_CLICK));
+							pPlayer->GetShip()->InvokePower(*(CPower *)dwData, pPlayer->GetTarget());
 							DismissMenu();
 							break;
 						}

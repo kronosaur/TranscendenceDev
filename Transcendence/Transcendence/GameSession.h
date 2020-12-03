@@ -123,6 +123,7 @@ class CGameSession : public IHISession
 		void PaintMenu (CG32bitImage &Screen);
 		void PaintSRS (CG32bitImage &Screen);
 		void SetMouseAimEnabled (bool bEnabled = true);
+		bool ShowInvokeMenu ();
 		bool ShowMenu (EMenuTypes iMenu);
 		void SyncMouseToPlayerShip (void);
 

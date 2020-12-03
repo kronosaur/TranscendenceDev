@@ -636,7 +636,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void DoCommsMenu (int iIndex);
 		void DoCommsSquadronMenu (const CString &sName, MessageTypes iOrder, DWORD dwData2);
 		void DoEnableDisableItemCommand (DWORD dwData);
-		void DoInvocation (CPower *pPower);
 		void DoUseItemCommand (DWORD dwData);
 		DWORD GetCommsStatus (void);
 		void HideCommsMenu (void);
@@ -645,7 +644,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		bool ShowCommsSquadronMenu (void);
 		bool ShowCommsTargetMenu (void);
 		bool ShowEnableDisablePicker (void);
-		bool ShowInvokeMenu (void);
 		bool ShowUsePicker (void);
 
 		void SetGameCreated (bool bValue = true) { m_bGameCreated = bValue; }

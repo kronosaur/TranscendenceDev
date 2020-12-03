@@ -9,9 +9,6 @@
 #define BEGIN_EXCEPTION_HANDLER		try
 #define END_EXCEPTION_HANDLER		catch (...) { g_pHI->GetScreenMgr().StopDX(); throw; }
 
-#define INVOKE_DISPLAY_WIDTH				200
-#define INVOKE_DISPLAY_HEIGHT				300
-
 #define MENU_DISPLAY_WIDTH					200
 #define MENU_DISPLAY_HEIGHT					600
 
@@ -169,25 +166,6 @@ void CTranscendenceWnd::DoEnableDisableItemCommand (DWORD dwData)
 		int iDev = Item.GetInstalled();
 		CInstalledDevice *pDevice = pShip->GetDevice(iDev);
 		pShip->EnableDevice(iDev, !pDevice->IsEnabled());
-		}
-	}
-
-void CTranscendenceWnd::DoInvocation (CPower *pPower)
-
-//	DoInvocation
-//
-//	Invoke power
-
-	{
-	if (GetPlayer())
-		{
-		CString sError;
-		pPower->InvokeByPlayer(GetPlayer()->GetShip(), GetPlayer()->GetTarget(), &sError);
-		if (!sError.IsBlank())
-			{
-			DisplayMessage(sError);
-			kernelDebugLogString(sError);
-			}
 		}
 	}
 
@@ -604,116 +582,6 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 		DisplayMessage(CONSTLIT("No carrier signal"));
 		return false;
 		}
-
-	m_MenuDisplay.Invalidate();
-	return true;
-	}
-
-bool CTranscendenceWnd::ShowInvokeMenu (void)
-
-//	ShowInvokeMenu
-//
-//	Shows menu of powers to invoke. Returns FALSE if no powers to invoke.
-
-	{
-	if (!GetPlayer())
-		return false;
-
-	m_MenuData.SetTitle(CONSTLIT("Invoke Powers"));
-	m_MenuData.DeleteAll();
-
-	bool bUseLetters = m_pTC->GetOptionBoolean(CGameSettings::allowInvokeLetterHotKeys);
-
-	TSortMap<CString, bool> KeyMap;
-	char chInvokeKey = m_pTC->GetKeyMap().GetKeyIfChar(CGameKeys::keyInvokePower);
-	KeyMap.Insert(CString(&chInvokeKey, 1), true);
-
-	//	Add the powers
-
-	for (int i = 0; i < g_pUniverse->GetPowerCount(); i++)
-		{
-		CPower *pPower = g_pUniverse->GetPower(i);
-
-		CString sError;
-		if (pPower->OnShow(GetPlayer()->GetShip(), NULL, &sError))
-			{
-			CString sKey = pPower->GetInvokeKey();
-			if (sKey.IsBlank())
-				continue;
-
-			//	If we're the default letter keys, then make sure we don't
-			//	conflict.
-
-			if (bUseLetters)
-				{
-				//	Make sure key is one character long (we use a double-
-				//	letter syntax below).
-
-				sKey.Truncate(1);
-
-				//	If the key conflicts, then pick another key (the next 
-				//	key in the sequence).
-
-				while (!sKey.IsBlank() && KeyMap.GetAt(sKey) != NULL)
-					{
-					char chChar = (*sKey.GetASCIIZPointer()) + 1;
-					if (chChar == ':')
-						chChar = 'A';
-
-					if (chChar <= 'Z')
-						sKey = CString(&chChar, 1);
-					else
-						sKey = NULL_STR;
-					}
-				}
-
-			//	If we're not using letters, then convert to a number
-
-			else
-				{
-				char chLetter = *sKey.GetASCIIZPointer();
-				int iOrdinal = chLetter - 'A';
-
-				//	A double letter means that we really want a letter, so we
-				//	offset to increment past the numbers.
-
-				if (sKey.GetLength() == 2)
-					iOrdinal += 9;
-
-				sKey = CMenuDisplayOld::GetHotKeyFromOrdinal(&iOrdinal, KeyMap);
-				}
-
-			//	Add the menu. (We check again to see if the key is valid
-			//	because we might have collided and failed to find a substitute.)
-
-			if (!sKey.IsBlank())
-				{
-				m_MenuData.AddMenuItem(NULL_STR,
-						sKey,
-						pPower->GetName(),
-						CMenuData::FLAG_SORT_BY_KEY,
-						(DWORD)pPower);
-
-				KeyMap.Insert(sKey, true);
-				}
-			}
-
-		if (!sError.IsBlank())
-			{
-			DisplayMessage(sError);
-			return false;
-			}
-		}
-
-	//	If no powers are available, say so
-
-	if (m_MenuData.GetCount() == 0)
-		{
-		DisplayMessage(CONSTLIT("No Powers available"));
-		return false;
-		}
-
-	//	Show menu
 
 	m_MenuDisplay.Invalidate();
 	return true;

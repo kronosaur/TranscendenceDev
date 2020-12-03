@@ -7726,6 +7726,38 @@ void CSpaceObject::UpdateExtended (const CTimeSpan &ExtraTime)
 	OnUpdateExtended(ExtraTime);
 	}
 
+bool CSpaceObject::InvokePower (CPower &Power, CSpaceObject *pTarget)
+
+//	InvokePower
+//
+//	Invokes the given power.
+
+	{
+	if (IsPlayer())
+		{
+		CString sError;
+		Power.InvokeByPlayer(this, pTarget, &sError);
+		if (!sError.IsBlank())
+			{
+			SendMessage(NULL, sError);
+			::kernelDebugLogString(sError);
+			return false;
+			}
+		}
+	else
+		{
+		CString sError;
+		Power.InvokeByNonPlayer(this, pTarget, &sError);
+		if (!sError.IsBlank())
+			{
+			::kernelDebugLogString(sError);
+			return false;
+			}
+		}
+
+	return true;
+	}
+
 bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 //	UseItem
