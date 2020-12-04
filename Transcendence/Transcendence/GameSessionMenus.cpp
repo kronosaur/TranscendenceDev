@@ -232,3 +232,193 @@ bool CGameSession::ShowInvokeMenu ()
 	g_pTrans->m_MenuDisplay.Invalidate();
 	return true;
 	}
+
+//	Enable/Disable Device Menu -------------------------------------------------
+
+void CGameSession::DoEnableDisableMenu (DWORD dwEntry)
+
+//	DoEnableDisableMenu
+//
+//	Select a device to enable/disable.
+
+	{
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (!pPlayer)
+		return;
+
+	CShip *pPlayerShip = pPlayer->GetShip();
+	if (!pPlayerShip)
+		return;
+
+	CItemList &ItemList = pPlayerShip->GetItemList();
+	CItem &Item = ItemList.GetItem(dwEntry);
+
+	if (Item.IsInstalled() && Item.GetType()->IsDevice())
+		{
+		int iDev = Item.GetInstalled();
+		CInstalledDevice *pDevice = pPlayerShip->GetDevice(iDev);
+		pPlayerShip->EnableDevice(iDev, !pDevice->IsEnabled());
+		}
+	}
+
+bool CGameSession::ShowEnableDisableMenu ()
+
+//	ShowEnableDisableMenu
+//
+//	Show menu to enable/disable devices.
+
+	{
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (!pPlayer)
+		return false;
+
+	CShip *pPlayerShip = pPlayer->GetShip();
+	if (!pPlayerShip)
+		return false;
+
+	//	Fill the menu with all usable items
+
+	g_pTrans->m_MenuData.DeleteAll();
+
+	CItemList &List = pPlayerShip->GetItemList();
+	List.SortItems();
+
+	char chKey = '1';
+	for (int i = 0; i < List.GetCount(); i++)
+		{
+		CItem &Item = List.GetItem(i);
+		CItemType *pType = Item.GetType();
+		CInstalledDevice *pDevice = pPlayerShip->FindDevice(Item);
+		CItemCtx ItemCtx(&Item, pPlayerShip, pDevice);
+
+		if (pDevice && pDevice->CanBeDisabled(ItemCtx))
+			{
+			//	Name of item
+
+			CString sName;
+			if (pDevice->IsEnabled())
+				sName = strPatternSubst(CONSTLIT("Disable %s"), Item.GetNounPhrase());
+			else
+				sName = strPatternSubst(CONSTLIT("Enable %s"), Item.GetNounPhrase());
+
+			//	Extra
+
+			CString sExtra;
+			if (!pDevice->IsEnabled())
+				sExtra = CONSTLIT("Disabled");
+
+			//	Help
+
+			CString sHelp;
+			if (pDevice->IsEnabled())
+				sHelp = CONSTLIT("[Enter] to disable; [Arrows] to select");
+			else
+				sHelp = CONSTLIT("[Enter] to enable; [Arrows] to select");
+
+			//	Key
+
+			CString sKey(&chKey, 1);
+
+			//	Add the item
+
+			g_pTrans->m_MenuData.AddMenuItem(NULL_STR,
+					sKey,
+					sName,
+					&pType->GetImage(),
+					0,
+					sExtra,
+					sHelp,
+					(pDevice->IsEnabled() ? 0 : CMenuData::FLAG_GRAYED),
+					i);
+
+			//	Next key
+
+			if (chKey == '9')
+				chKey = 'A';
+			else
+				chKey++;
+			}
+		}
+
+	//	If we've got items, then show the picker...
+
+	if (g_pTrans->m_MenuData.GetCount() == 0)
+		{
+		DisplayMessage(CONSTLIT("No installed devices"));
+		return false;
+		}
+
+	m_PickerDisplay.ResetSelection();
+	m_PickerDisplay.Invalidate();
+	m_PickerDisplay.SetHelpText(NULL_STR);
+	return true;
+	}
+
+//	Use Item Menu --------------------------------------------------------------
+
+void CGameSession::DoUseMenu (DWORD dwEntry)
+
+//	DoUseMenu
+//
+//	Select a entry in the Use menu.
+
+	{
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (!pPlayer)
+		return;
+
+	CShip *pPlayerShip = pPlayer->GetShip();
+	if (!pPlayerShip)
+		return;
+
+	//	Get the item
+
+	CItemList &ItemList = pPlayerShip->GetItemList();
+	CItem &Item = ItemList.GetItem(dwEntry);
+
+	//	Use it
+
+	m_Model.UseItem(Item);
+	}
+
+bool CGameSession::ShowUseMenu ()
+
+//	ShowUseMenu
+//
+//	Shows the list of items to use.
+
+	{
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (!pPlayer)
+		return false;
+
+	CShip *pPlayerShip = pPlayer->GetShip();
+	if (!pPlayerShip)
+		return false;
+
+	//	Fill the menu with all usable items
+
+	pPlayerShip->GetItemList().SortItems();
+
+	CSpaceObject::SUsableItemOptions Options;
+	Options.chUseKey = m_Settings.GetKeyMap().GetKeyIfChar(CGameKeys::keyUseItem);
+
+	g_pTrans->m_MenuData = pPlayerShip->GetUsableItems(Options);
+
+	//	If no items, then no menu
+
+	if (g_pTrans->m_MenuData.GetCount() == 0)
+		{
+		DisplayMessage(CONSTLIT("No usable items"));
+		return false;
+		}
+
+	//	Otherwise, show picker
+
+	pPlayer->SetUIMessageFollowed(uimsgUseItemHint);
+	m_PickerDisplay.ResetSelection();
+	m_PickerDisplay.SetHelpText(CONSTLIT("[Enter] to use; [Arrows] to select"));
+	m_PickerDisplay.Invalidate();
+
+	return true;
+	}

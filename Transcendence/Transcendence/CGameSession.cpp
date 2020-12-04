@@ -27,6 +27,20 @@ CGameSession::CGameSession (STranscendenceSessionCtx &CreateCtx) : IHISession(*C
 	{
 	}
 
+void CGameSession::CleanUpPlayerShip ()
+
+//	CleanUpPlayerShip
+//
+//	Player ship has been destroyed.
+
+	{
+	m_PickerDisplay.CleanUp();
+
+	//	Legacy
+
+	g_pTrans->CleanUpPlayerShip();
+	}
+
 void CGameSession::DismissMenu (void)
 
 //	DismissMenu
@@ -155,6 +169,22 @@ void CGameSession::InitUI (void)
 	//	about our current state.
 
 	pPlayer->OnMouseAimSetting(m_bMouseAim);
+
+	//	Initialize HUD
+
+	m_HUD.Init(m_rcScreen);
+
+	//	Initialize the picker menu
+
+	RECT rcRect;
+	rcRect.left = m_rcScreen.left + (RectWidth(m_rcScreen) - PICKER_DISPLAY_WIDTH) / 2;
+	rcRect.right = rcRect.left + PICKER_DISPLAY_WIDTH;
+	rcRect.top = m_rcScreen.bottom - 200 - PICKER_DISPLAY_HEIGHT;
+//  LATER: Once we move the picker display to m_HUD, this will be fixed
+//	rcRect.top = m_ArmorDisplay.GetRect().top - PICKER_DISPLAY_HEIGHT;
+	rcRect.bottom = rcRect.top + PICKER_DISPLAY_HEIGHT;
+	m_PickerDisplay.SetFontTable(&g_pTrans->m_Fonts);
+	m_PickerDisplay.Init(&g_pTrans->m_MenuData, rcRect);
 	}
 
 bool CGameSession::IsIconBarShown (void) const
@@ -261,7 +291,6 @@ ALERROR CGameSession::OnInit (CString *retsError)
 
 	SetNoCursor(IsMouseAimEnabled());
 
-	m_HUD.Init(m_rcScreen);
 	m_SystemMap.Init(m_rcScreen);
 	m_MenuDisplay.Init(m_rcScreen);
 	m_MessageDisplay.Init(m_rcScreen);
@@ -398,7 +427,7 @@ void CGameSession::OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph)
 		{
 		//	Done with ship screens
 
-		g_pTrans->CleanUpPlayerShip();
+		CleanUpPlayerShip();
 
 		//	Player destroyed
 
@@ -588,7 +617,7 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuEnableDevice:
-			if (!g_pTrans->ShowEnableDisablePicker())
+			if (!ShowEnableDisableMenu())
 				return false;
 			break;
 
@@ -622,7 +651,7 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 			break;
 
 		case menuUseItem:
-			if (!g_pTrans->ShowUsePicker())
+			if (!ShowUseMenu())
 				return false;
 			break;
 

@@ -635,16 +635,12 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 
 		void DoCommsMenu (int iIndex);
 		void DoCommsSquadronMenu (const CString &sName, MessageTypes iOrder, DWORD dwData2);
-		void DoEnableDisableItemCommand (DWORD dwData);
-		void DoUseItemCommand (DWORD dwData);
 		DWORD GetCommsStatus (void);
 		void HideCommsMenu (void);
 		void HideCommsTargetMenu (CSpaceObject *pExlude = NULL);
 		void ShowCommsMenu (CSpaceObject *pObj);
 		bool ShowCommsSquadronMenu (void);
 		bool ShowCommsTargetMenu (void);
-		bool ShowEnableDisablePicker (void);
-		bool ShowUsePicker (void);
 
 		void SetGameCreated (bool bValue = true) { m_bGameCreated = bValue; }
 		bool IsGameCreated (void) { return m_bGameCreated; }
@@ -736,7 +732,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 
 		CDeviceCounterDisplay m_DeviceDisplay;	//	Device counter display
 		CMenuDisplayOld m_MenuDisplay;			//	Menu display
-		CPickerDisplay m_PickerDisplay;		//	Picker display
 
 		CGameStats m_LastStats;				//	Last game stats
 

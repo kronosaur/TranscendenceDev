@@ -150,43 +150,6 @@ void CTranscendenceWnd::DoCommsSquadronMenu (const CString &sName, MessageTypes 
 		}
 	}
 
-void CTranscendenceWnd::DoEnableDisableItemCommand (DWORD dwData)
-
-//	DoEnableDisableItemCommand
-//
-//	Enable/disable an item
-
-	{
-	CShip *pShip = GetPlayer()->GetShip();
-	CItemList &ItemList = pShip->GetItemList();
-	CItem &Item = ItemList.GetItem(dwData);
-
-	if (Item.IsInstalled() && Item.GetType()->IsDevice())
-		{
-		int iDev = Item.GetInstalled();
-		CInstalledDevice *pDevice = pShip->GetDevice(iDev);
-		pShip->EnableDevice(iDev, !pDevice->IsEnabled());
-		}
-	}
-
-void CTranscendenceWnd::DoUseItemCommand (DWORD dwData)
-
-//	DoUseItemCommand
-//
-//	Use an item
-
-	{
-	//	Get the item
-
-	CShip *pShip = GetPlayer()->GetShip();
-	CItemList &ItemList = pShip->GetItemList();
-	CItem &Item = ItemList.GetItem(dwData);
-
-	//	Use it
-
-	GetModel().UseItem(Item);
-	}
-
 DWORD CTranscendenceWnd::GetCommsStatus (void)
 
 //	GetCommsStatus
@@ -306,15 +269,6 @@ ALERROR CTranscendenceWnd::InitDisplays (void)
 	rcRect.bottom = rcRect.top + MENU_DISPLAY_HEIGHT;
 	m_MenuDisplay.SetFontTable(&m_Fonts);
 	m_MenuDisplay.Init(&m_MenuData, rcRect);
-
-	rcRect.left = m_rcScreen.left + (RectWidth(m_rcScreen) - PICKER_DISPLAY_WIDTH) / 2;
-	rcRect.right = rcRect.left + PICKER_DISPLAY_WIDTH;
-	rcRect.top = m_rcScreen.bottom - 200 - PICKER_DISPLAY_HEIGHT;
-//  LATER: Once we move the picker display to m_HUD, this will be fixed
-//	rcRect.top = m_ArmorDisplay.GetRect().top - PICKER_DISPLAY_HEIGHT;
-	rcRect.bottom = rcRect.top + PICKER_DISPLAY_HEIGHT;
-	m_PickerDisplay.SetFontTable(&m_Fonts);
-	m_PickerDisplay.Init(&m_MenuData, rcRect);
 
 	rcRect.left = m_rcScreen.left + (RectWidth(m_rcScreen) - DEVICE_DISPLAY_WIDTH) / 2;
 	rcRect.right = rcRect.left + DEVICE_DISPLAY_WIDTH;
@@ -587,131 +541,5 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 	return true;
 	}
 
-bool CTranscendenceWnd::ShowEnableDisablePicker (void)
 
-//	ShowEnableDisablePicker
-//
-//	Show the picker to select devices to enable/disable. Returns FALSE if there
-//	are no devices to enable/disable.
 
-	{
-	if (!GetPlayer())
-		return false;
-
-	CShip *pShip = GetPlayer()->GetShip();
-
-	//	Fill the menu with all usable items
-
-	m_MenuData.DeleteAll();
-
-	CItemList &List = pShip->GetItemList();
-	List.SortItems();
-
-	char chKey = '1';
-	for (int i = 0; i < List.GetCount(); i++)
-		{
-		CItem &Item = List.GetItem(i);
-		CItemType *pType = Item.GetType();
-		CInstalledDevice *pDevice = pShip->FindDevice(Item);
-		CItemCtx ItemCtx(&Item, pShip, pDevice);
-
-		if (pDevice && pDevice->CanBeDisabled(ItemCtx))
-			{
-			//	Name of item
-
-			CString sName;
-			if (pDevice->IsEnabled())
-				sName = strPatternSubst(CONSTLIT("Disable %s"), Item.GetNounPhrase());
-			else
-				sName = strPatternSubst(CONSTLIT("Enable %s"), Item.GetNounPhrase());
-
-			//	Extra
-
-			CString sExtra;
-			if (!pDevice->IsEnabled())
-				sExtra = CONSTLIT("Disabled");
-
-			//	Help
-
-			CString sHelp;
-			if (pDevice->IsEnabled())
-				sHelp = CONSTLIT("[Enter] to disable; [Arrows] to select");
-			else
-				sHelp = CONSTLIT("[Enter] to enable; [Arrows] to select");
-
-			//	Key
-
-			CString sKey(&chKey, 1);
-
-			//	Add the item
-
-			m_MenuData.AddMenuItem(NULL_STR,
-					sKey,
-					sName,
-					&pType->GetImage(),
-					0,
-					sExtra,
-					sHelp,
-					(pDevice->IsEnabled() ? 0 : CMenuData::FLAG_GRAYED),
-					i);
-
-			//	Next key
-
-			if (chKey == '9')
-				chKey = 'A';
-			else
-				chKey++;
-			}
-		}
-
-	//	If we've got items, then show the picker...
-
-	if (m_MenuData.GetCount() == 0)
-		{
-		DisplayMessage(CONSTLIT("No installed devices"));
-		return false;
-		}
-
-	m_PickerDisplay.ResetSelection();
-	m_PickerDisplay.Invalidate();
-	m_PickerDisplay.SetHelpText(NULL_STR);
-	return true;
-	}
-
-bool CTranscendenceWnd::ShowUsePicker (void)
-
-//	ShowUsePicker
-//
-//	Show the picker to select an item to use. Returns FALSE if there are no 
-//	items to use.
-
-	{
-	if (!GetPlayer())
-		return false;
-
-	//	Fill the menu with all usable items
-
-	CShip *pShip = GetPlayer()->GetShip();
-	pShip->GetItemList().SortItems();
-
-	CSpaceObject::SUsableItemOptions Options;
-	Options.chUseKey = m_pTC->GetKeyMap().GetKeyIfChar(CGameKeys::keyUseItem);
-
-	m_MenuData = pShip->GetUsableItems(Options);
-
-	//	If no items, then no menu
-
-	if (m_MenuData.GetCount() == 0)
-		{
-		DisplayMessage(CONSTLIT("No usable items"));
-		return false;
-		}
-
-	//	Otherwise, show picker
-
-	GetPlayer()->SetUIMessageFollowed(uimsgUseItemHint);
-	m_PickerDisplay.ResetSelection();
-	m_PickerDisplay.SetHelpText(CONSTLIT("[Enter] to use; [Arrows] to select"));
-	m_PickerDisplay.Invalidate();
-	return true;
-	}

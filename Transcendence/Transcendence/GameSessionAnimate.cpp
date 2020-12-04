@@ -440,7 +440,7 @@ void CGameSession::PaintMenu (CG32bitImage &Screen)
 
 		case menuEnableDevice:
 		case menuUseItem:
-			g_pTrans->m_PickerDisplay.Paint(Screen);
+			m_PickerDisplay.Paint(Screen);
 			break;
 
 		case menuSystemStations:
