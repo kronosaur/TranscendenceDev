@@ -5,10 +5,10 @@
 
 #pragma once
 
-enum TargetTypes
+enum class ETargetClass
 	{
-	targetEnemies,
-	targetFriendlies,
+	enemies,
+	friendlies,
 	};
 
 enum UIMessageTypes
@@ -36,8 +36,9 @@ enum UIMessageTypes
 	uimsgStationDamageHint =		15,
 	uimsgMiningDamageTypeHint =		16,
 	uimsgFireWeaponHint =			17,
+	uimsgShipStatusHint =			18,
 
-	uimsgCount =					18,
+	uimsgCount =					19,
 	};
 
 class CUIMessageController
@@ -278,7 +279,7 @@ class CPlayerShipController : public IShipController
 		void DisplayTranslate (const CString &sID, const CString &sVar, const CString &sValue);
 		CSpaceObject *FindDockTarget (void);
 		bool HasCommsTarget (void);
-		void InitTargetList (TargetTypes iTargetType, bool bUpdate = false);
+		void InitTargetList (ETargetClass iTargetType, bool bUpdate = false);
 		void PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest) const;
 		void PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject &TargetObj) const;
 		void PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject &TargetObj, CInstalledDevice &Weapon) const;

@@ -38,6 +38,7 @@ static SUIMessageData g_MessageData[uimsgCount] =
 		{	CONSTDEF("stationDamageHint"),		FLAG_IS_HINT,	0,	240,	},
 		{	CONSTDEF("miningDamageTypeHint"),	FLAG_IS_HINT,	0,	240,	},
 		{	CONSTDEF("fireWeaponHint"),			FLAG_IS_HINT,	1,	240,	},
+		{	CONSTDEF("shipStatusHint"),			FLAG_IS_HINT,	1,	240,	},
 	};
 
 CUIMessageController::CUIMessageController (void)
@@ -154,8 +155,6 @@ void CUIMessageController::ReadFromStream (SLoadCtx &Ctx)
 //	Read from a save file
 
 	{
-	int i;
-
 	//	Read the number of bytes stored
 
 	DWORD dwLoad;
@@ -172,7 +171,7 @@ void CUIMessageController::ReadFromStream (SLoadCtx &Ctx)
 	//	(We don't use SetEnabled because that has special meaning for
 	//	certain message).
 
-	for (i = 0; i < Min((int)uimsgCount, (int)dwLoad); i++)
+	for (int i = 0; i < Min((int)uimsgCount, (int)dwLoad); i++)
 		m_Messages[i].bEnabled = (pLoad[i] ? true : false);
 
 	//	NOTE: If uimsgCount increases between version, that's OK because
@@ -180,7 +179,7 @@ void CUIMessageController::ReadFromStream (SLoadCtx &Ctx)
 
 	//	Done
 
-	delete pLoad;
+	delete [] pLoad;
 	}
 
 void CUIMessageController::SetEnabled (UIMessageTypes iMsg, bool bEnabled)

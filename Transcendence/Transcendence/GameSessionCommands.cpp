@@ -179,6 +179,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				{
 				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 				m_Model.ShowShipScreen();
+				pPlayer->SetUIMessageFollowed(uimsgShipStatusHint);
 				}
 			break;
 
