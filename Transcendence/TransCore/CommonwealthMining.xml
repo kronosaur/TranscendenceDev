@@ -28,7 +28,7 @@
 
 			<DynamicGlobal id="mining.rankIcon">
 				(block (
-					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+					(rankID (typ@ &unidMiningSkill; 'rpg.miningRankID))
 					)
 					(switch
 						(= rankID 'novice)
@@ -61,9 +61,20 @@
 		<Language>
 			<Code id="rankDetails">
 				(block (
-					(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
-					(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+					(miningLevels (typ@ &unidMiningSkill; 'rpg.miningLevels))
+					(rankID (typ@ &unidMiningSkill; 'rpg.miningRankID))
+					(yieldAdj (typ@ &unidMiningSkill; 'rpg.miningYieldAdj))
 					(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
+
+					(miningXP (typ@ &unidMiningSkill; 'rpg.miningXP))
+					(curLevel (typ@ &unidMiningSkill; 'rpg.miningRank))
+					(levelXP (@ (@ miningLevels curLevel) 'minXP))
+					(nextLevel (if (ls curLevel 6) (+ curLevel 1)))
+					(nextLevelXP (@ (@ miningLevels nextLevel) 'minXP))
+					(nextLevelID (@ (@ miningLevels nextLevel) 'id))
+					(totalXPNeeded (- nextLevelXP levelXP))
+					(XPSoFar (- miningXP levelXP))
+					(percentToNextLevel (if (gr totalXPNeeded 0) (round (* 100.0 (/ XPSoFar totalXPNeeded)))))
 
 					(totalAsteroids (count (sysFindObject Nil "t +property:canBeMined;")))
 					(exploredAsteroids (count (sysFindObject Nil "t +property:canBeMined; +property:explored;")))
@@ -74,10 +85,10 @@
 							)
 						)
 					)
-					(if (gr (typGetProperty &unidMiningSkill; 'rpg.miningXP) 0)
+					(if (gr miningXP 0)
 						{
 							title: (fmtNoun (typTranslate gType (cat "rank." rankID)) 1 'titleCapitalize)
-							largeIcon: (typGetProperty gType 'mining.rankIcon)
+							largeIcon: (typ@ gType 'mining.rankIcon)
 
 							details: (list
 								{
@@ -88,7 +99,7 @@
 									}
 								{
 									title: (typTranslate gType 'labelAsteroidsMined)
-									desc: (typTranslate gType 'rtfAsteroidsMined {
+									desc: (typTranslate gType 'rtfValue {
 										value: asteroidsMined
 										})
 									}
@@ -98,6 +109,16 @@
 										value: percentExplored
 										})
 									}
+								(if (ls curLevel 6)
+									{
+										title: (typTranslate gType 'labelNextLevel {
+											nextLevelName: (fmtNoun (typTranslate gType (cat 'rank. nextLevelID)) 1 'titleCapitalize)
+											})
+										desc: (typTranslate gType 'rtfValue {
+											value: (cat percentToNextLevel "%")
+											})
+										}
+									)
 								)
 
 							detailsStyle: 'stats
@@ -118,10 +139,11 @@
 			<Text id="labelSkill">Skill:</Text>
 			<Text id="labelAsteroidsMined">Asteroids Mined:</Text>
 			<Text id="labelSystem">%SystemName% System:</Text>
+			<Text id="labelNextLevel">Progress to %nextLevelName%:</Text>
 
 			<RTF id="rtfSkill">				{/rtf {/f:LargeBold;/c:#ffe667; %value% yield}}</RTF>
-			<RTF id="rtfAsteroidsMined">	{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
 			<RTF id="rtfExplored">			{/rtf {/f:LargeBold;/c:#ffe667; %value% explored}}</RTF>
+			<RTF id="rtfValue">             {/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
 		</Language>
 	</Type>
 
@@ -353,7 +375,7 @@
 						;	NOTE: Can't advance beyond wildcatter at a mining
 						;	colony; must join IMU.
 
-						(and (ls (typGetProperty &unidMiningSkill; 'rpg.miningRank) 3)
+						(and (ls (typ@ &unidMiningSkill; 'rpg.miningRank) 3)
 								(setq newRankDesc (typFireEvent &unidMiningSkill; 'CheckPromotion))
 								)
 							{
@@ -759,16 +781,16 @@
 			<Default>
 				<OnPaneInit>
 					(switch
-						(gr (typGetProperty &unidMiningSkill; 'rpg.miningXP) 0)
+						(gr (typ@ &unidMiningSkill; 'rpg.miningXP) 0)
 							(block (
-								(rank (typGetProperty &unidMiningSkill; 'rpg.miningRank))
-								(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
+								(rank (typ@ &unidMiningSkill; 'rpg.miningRank))
+								(rankID (typ@ &unidMiningSkill; 'rpg.miningRankID))
 
-								(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+								(yieldAdj (typ@ &unidMiningSkill; 'rpg.miningYieldAdj))
 								(asteroidsMined (plyGetStat gPlayer 'asteroidsMined))
 
 								(nextRank (min (+ rank 1) 6))
-								(nextYieldAdj (@ (@ (typGetProperty &unidMiningSkill; 'rpg.miningLevels) nextRank) 'yieldAdj))
+								(nextYieldAdj (@ (@ (typ@ &unidMiningSkill; 'rpg.miningLevels) nextRank) 'yieldAdj))
 								)
 								(scrSetDescTranslate gScreen (cat "descInfo." rankID) {
 									yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
@@ -888,8 +910,8 @@
 			<Default>
 				<OnPaneInit>
 					(block (
-						(rankID (typGetProperty &unidMiningSkill; 'rpg.miningRankID))
-						(yieldAdj (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj))
+						(rankID (typ@ &unidMiningSkill; 'rpg.miningRankID))
+						(yieldAdj (typ@ &unidMiningSkill; 'rpg.miningYieldAdj))
 						)
 						(scrSetDescTranslate gScreen (cat "descPromotion." rankID) {
 							yieldAdj: (cat "+" (round (* (- yieldAdj 1.0) 100)) "%")
