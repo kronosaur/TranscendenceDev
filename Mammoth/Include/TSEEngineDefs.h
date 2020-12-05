@@ -27,6 +27,12 @@
 
 #define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
 
+//	core.help
+//
+//	Power: A short line describing the power. Shown in the invoke menu.
+
+#define LANGID_CORE_HELP						CONSTLIT("core.help")
+
 //	core.launchedBy
 //
 //	This is a text pattern used to override the default text for the launcher of

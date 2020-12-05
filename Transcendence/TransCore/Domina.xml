@@ -68,8 +68,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Impenetrable shield protects ship</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Impenetrable shield protects ship</Text>
+			<Text id="core.desc">
 			
 				When invoked, an impenetrable shield protects you ship
 				from damage, but it also prevents you from firing your
@@ -142,8 +142,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Restores shields and armor</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Restores shields and armor</Text>
+			<Text id="core.desc">
 			
 				This power will recharge your shields if needed. If your shields do not need
 				recharging, it will repair your armor.
@@ -181,8 +181,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Temporarily increases weapon damage</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Temporarily increases weapon damage</Text>
+			<Text id="core.desc">
 			
 				When invoked, Strengthen will increase the damage dealt by your
 				weapons.
@@ -224,8 +224,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Invulnerable shield protects ship</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Invulnerable shield protects ship</Text>
+			<Text id="core.desc">
 			
 				Invoking Defend creates an invulnerable shield that protects
 				your ship from damage. Unlike Sustain, however, you are still
@@ -279,8 +279,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Reveals stations hidden in nebulae</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Reveals stations hidden in nebulae</Text>
+			<Text id="core.desc">
 			
 				Domina reveals the location of ships and stations hidden among 
 				the nebulae	of the system.
@@ -325,8 +325,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Damages ships and stations in range</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Damages ships and stations in range</Text>
+			<Text id="core.desc">
 			
 				This power creates an expanding circle of dark energy that
 				damages all ships caught in its path.
@@ -508,8 +508,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Reveals improvements to ship</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Reveals improvements to ship</Text>
+			<Text id="core.desc">
 			
 				Ingenuity channels Domina's superior knowledge to enhance and
 				upgrade your devices.
@@ -571,8 +571,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Saves ship from destruction</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Saves ship from destruction</Text>
+			<Text id="core.desc">
 			
 				When available, Desperate Escape invokes automatically to prevent
 				your ship from being destroyed by enemy damage.
@@ -617,8 +617,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Shatters ships in range</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Shatters ships in range</Text>
+			<Text id="core.desc">
 			
 				Shatter releases an expanding circle of dark matter causing heavy
 				damage to anything it touches.

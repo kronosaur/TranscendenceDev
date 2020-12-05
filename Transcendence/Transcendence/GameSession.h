@@ -106,7 +106,7 @@ class CGameSession : public IHISession
 		bool IsIconBarShown (void) const;
 		bool IsInPickerCompatible (void) const
 			{
-			return (m_CurrentMenu == menuEnableDevice || m_CurrentMenu == menuUseItem);
+			return (m_CurrentMenu == menuEnableDevice || m_CurrentMenu == menuUseItem || m_CurrentMenu == menuInvoke);
 			}
 
 		bool IsInMenu (void) const
@@ -118,8 +118,7 @@ class CGameSession : public IHISession
 			{
 			return (m_CurrentMenu == menuComms 
 					|| m_CurrentMenu == menuCommsSquadron 
-					|| m_CurrentMenu == menuCommsTarget 
-					|| m_CurrentMenu == menuInvoke);
+					|| m_CurrentMenu == menuCommsTarget);
 			}
 
 		bool IsMouseAimConfigured (void) const;
@@ -127,12 +126,14 @@ class CGameSession : public IHISession
 		void PaintMenu (CG32bitImage &Screen);
 		void PaintSRS (CG32bitImage &Screen);
 		void SetMouseAimEnabled (bool bEnabled = true);
-		bool ShowInvokeMenu ();
 		bool ShowMenu (EMenuTypes iMenu);
 		void SyncMouseToPlayerShip (void);
 
 		void DoEnableDisableMenu (DWORD dwEntry);
 		bool ShowEnableDisableMenu ();
+
+		void DoInvokeMenu (DWORD dwEntry);
+		bool ShowInvokeMenu ();
 
 		void DoUseMenu (DWORD dwEntry);
 		bool ShowUseMenu ();
