@@ -68,6 +68,10 @@ bool CDetailArea::Format (const RECT &rcRect) const
 	//	We need some fonts
 
 	const CG16bitFont &SubTitle = m_VI.GetFont(fontSubTitle);
+	const int cyTitle = SubTitle.GetHeight();
+	const int iIconSize = cyTitle * 4;
+	constexpr int xPadding = 20;
+	constexpr int yPadding = 20;
 
 	//	Calculate various metrics based on the style
 
@@ -103,7 +107,7 @@ bool CDetailArea::Format (const RECT &rcRect) const
 		case styleStats:
 			{
 			dwDetailFlags = CDetailList::FORMAT_MIRROR_COLUMNS | CDetailList::FORMAT_SINGLE_COLUMN | CDetailList::FORMAT_ALIGN_TOP;
-			cxDetailsFrame = RectWidth(rcRect) - (2 * SPACING_X);
+			cxDetailsFrame = RectWidth(rcRect) - (2 * xPadding) - iIconSize;
 			cyDetailsFrame = 0;
 			break;
 			}
@@ -129,11 +133,7 @@ bool CDetailArea::Format (const RECT &rcRect) const
 		{
 		case styleStats:
 			{
-			const int cyTitle = SubTitle.GetHeight();
-			const int iIconSize = cyTitle * 4;
 			const int cyHalfLineSpacing = SPACING_Y;
-			constexpr int xPadding = 20;
-			constexpr int yPadding = 20;
 
 			const int cyRight = (iIconSize / 2) + cyHalfLineSpacing + cyDetails;
 			const int cyArea = Max(cyRight, iIconSize);
@@ -166,7 +166,7 @@ bool CDetailArea::Format (const RECT &rcRect) const
 			m_rcTitle.right = m_rcFrame.right - xPadding;
 			m_rcTitle.bottom = m_rcTitle.top + cyTitle;
 
-			m_rcDetails.left = m_rcFrame.left + xPadding;
+			m_rcDetails.left = m_rcIcon.right;
 			m_rcDetails.right = m_rcFrame.right - xPadding;
 			m_rcDetails.top = yIconCenter + cyHalfLineSpacing;
 			m_rcDetails.bottom = m_rcDetails.top + cyDetails;
