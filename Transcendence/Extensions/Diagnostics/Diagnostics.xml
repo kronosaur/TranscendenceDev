@@ -68,6 +68,7 @@
 	<!-- 01D0-01FF TEST SHIP CLASSES -->
 
 	<!ENTITY unidShipClassTests			"0xA00101D0">
+	<!ENTITY scTestShipClassSlots		"0xA00101D1">
 
 	<!-- OTHER -->
 

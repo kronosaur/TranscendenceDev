@@ -364,6 +364,24 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	m_fLastActivateSuccessful = false;
 	m_fDuplicate = false;
 
+	//	Initialize based on slot definitions. We need to do this before the item
+	//	is actually installed (otherwise, the slot criteria may pick up 
+	//	definitions from the previous device).
+
+	if (!bInCreate)
+		{
+		//	Desc is initialized to defaults even if FindDeviceSlotDesc fails.
+
+		SDeviceDesc Desc;
+		m_pSource->FindDeviceSlotDesc(Item, &Desc);
+		if (m_pClass->IsExternal())
+			Desc.bExternal = true;
+
+		//	Set the device slot properties
+
+		InitFromDesc(Desc);
+		}
+
 	//	Call the class
 
 	m_pClass->OnInstall(this, m_pSource, ItemList);
@@ -388,52 +406,15 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 
 	m_iActivateDelay = m_pClass->GetActivateDelay(ItemCtx);
 
-	//	If we're installing a device after creation then we
-	//	zero-out the device position, etc. If necessary the
-	//	caller or the device can set these fields later.
-	//
-	//	Note: This will overwrite whatever values were set
-	//	at creation time.
+	//	Finish install, if necessary
 
 	if (!bInCreate)
 		{
-		//	Desc is initialized to defaults even if FindDeviceSlotDesc fails.
+		//	Event (when creating a ship we wait until the
+		//	whole ship is created before firing the event)
 
-		SDeviceDesc Desc;
-		m_pSource->FindDeviceSlotDesc(Item, &Desc);
-
-		//	Set the device slot properties
-
-		m_sID = Desc.sID;
-		m_iPosAngle = Desc.iPosAngle;
-		m_iPosRadius = Desc.iPosRadius;
-		m_iPosZ = Desc.iPosZ;
-		m_f3DPosition = Desc.b3DPosition;
-		m_fCannotBeEmpty = Desc.bCannotBeEmpty;
-		m_iShotSeparationScale = (unsigned int)(Desc.rShotSeparationScale * 32767);
-		m_iMaxFireRange = Desc.iMaxFireRange;
-
-		SetFate(Desc.iFate);
-
-		m_fExternal = (Desc.bExternal || m_pClass->IsExternal());
-
-		m_fOmniDirectional = Desc.bOmnidirectional;
-		m_iMinFireArc = Desc.iMinFireArc;
-		m_iMaxFireArc = Desc.iMaxFireArc;
-
-		SetLinkedFireOptions(Desc.dwLinkedFireOptions);
-		m_fSecondaryWeapon = Desc.bSecondary;
-
-		m_SlotEnhancements = Desc.Enhancements;
-		if (Desc.iSlotBonus != 0)
-			m_SlotEnhancements.InsertHPBonus(Desc.iSlotBonus);
-		}
-
-	//	Event (when creating a ship we wait until the
-	//	whole ship is created before firing the event)
-
-	if (!bInCreate)
 		FinishInstall();
+		}
 
 	DEBUG_CATCH
 	}
