@@ -36,16 +36,29 @@
 			<Default>
 				<OnPaneInit>
 					(block (
+						(translateType (@ gData 'translateType))
 						(entry (scrGetListEntry gScreen))
 						)
 						(switch
 							(@ entry 'descID)
-								(scrSetDescTranslate gScreen (@ entry 'descID) entry)
+								(scrSetDesc gScreen 
+									(or (scrTranslate gScreen (@ entry 'descID) entry)
+										(typTranslate translateType (@ entry 'descID) entry)
+										)
+									)
 
 							(@ entry 'description)
 								(scrSetDesc gScreen (@ entry 'description))
 
-							(scrSetDescTranslate gScreen (cat 'rpg.shipClassDesc.0x (hex (@ entry 'shipClass) 8)))
+							(block (
+								(shipDescID (cat 'rpg.shipClassDesc.0x (hex (@ entry 'shipClass) 8)))
+								)
+								(scrSetDesc gScreen 
+									(or (scrTranslate gScreen shipDescID)
+										(typTranslate translateType shipDescID)
+										)
+									)
+								)
 							)
 						)
 				</OnPaneInit>
