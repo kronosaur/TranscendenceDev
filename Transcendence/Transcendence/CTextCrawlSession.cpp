@@ -138,7 +138,6 @@ ALERROR CTextCrawlSession::OnCommand (const CString &sCmd, void *pData)
 		Helper.CreateSessionTitle(this, 
 				m_Service, 
 				NULL_STR, 
-				NULL, 
 				CUIHelper::OPTION_SESSION_NO_HEADER 
 					| CUIHelper::OPTION_SESSION_NO_CANCEL_BUTTON
 					| CUIHelper::OPTION_SESSION_OK_BUTTON, 
