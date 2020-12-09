@@ -2085,6 +2085,10 @@
 	<!ENTITY rsHammerheadHero			"0x0010033A">
 	<!ENTITY rsHammerhead2Hero			"0x0010033B">
 	<!ENTITY rsBorerHero				"0x0010033C">
+	<!ENTITY tbOutlawMineTreasure		"0x0010033D">
+	<!ENTITY tbOutlawMineDefenders		"0x0010033E">
+	<!ENTITY stOutlawHowitzer			"0x0010033F">
+	<!ENTITY scBorer-III				"0x00100340">
 
 	<!-- 0370-038F AUTONS -->
 
@@ -2406,6 +2410,7 @@
 	<!ENTITY itCarbonScrubbers			"0x0010070E">
 	<!ENTITY msResidentials02			"0x0010070F">
 	<!ENTITY msResidentials03			"0x00100710">
+	<!ENTITY scBorerIIIStock			"0x00100711">
 
 	<!-- 0740-075F RASIERMESSER -->
 
