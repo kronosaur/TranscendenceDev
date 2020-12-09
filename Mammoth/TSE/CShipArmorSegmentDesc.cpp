@@ -35,6 +35,23 @@ bool CShipArmorSegmentDesc::AngleInSegment (int iAngle) const
     return false;
     }
 
+void CShipArmorSegmentDesc::ApplyOverride (const CShipArmorSegmentDesc &Override)
+
+//	ApplyOverride
+//
+//	Apply the override.
+
+	{
+	if (Override.m_pArmor.GetUNID())
+		m_pArmor.SetUNID(Override.m_pArmor.GetUNID());
+
+	if (Override.m_iLevel != -1)
+		m_iLevel = Override.m_iLevel;
+
+	if (!Override.m_Enhanced.IsEmpty())
+		m_Enhanced = Override.m_Enhanced;
+	}
+
 ALERROR CShipArmorSegmentDesc::Bind (SDesignLoadCtx &Ctx)
 
 //  Bind

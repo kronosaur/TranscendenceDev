@@ -211,6 +211,7 @@ class CShipArmorSegmentDesc
 	{
 	public:
 		bool AngleInSegment (int iAngle) const;
+		void ApplyOverride (const CShipArmorSegmentDesc &Override);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		bool CreateArmorItem (CItem *retItem, CString *retsError = NULL) const;
 		CArmorClass *GetArmorClass (void) const { return m_pArmor; }
@@ -238,6 +239,7 @@ class CShipArmorDesc
 	{
 	public:
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
+		void ApplyOverride (SDesignLoadCtx &Ctx, const CShipArmorDesc &Override);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		Metric CalcMass (void) const;
 		int GetCount (void) const { return m_Segments.GetCount(); }

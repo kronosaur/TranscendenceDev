@@ -23,6 +23,41 @@ void CShipArmorDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
 		retTypesUsed->SetAt(GetSegment(i).GetArmorClass()->GetItemType()->GetUNID(), true);
 	}
 
+void CShipArmorDesc::ApplyOverride (SDesignLoadCtx &Ctx, const CShipArmorDesc &Override)
+
+//	ApplyOverride
+//
+//	Overrides descriptor, mostly the armor type.
+
+	{
+	//	If the override has no segments, then we're done.
+
+	if (Override.GetCount() == 0)
+		return;
+
+	//	If we don't have any segments defined, then we take the override 
+	//	completely.
+
+	else if (m_Segments.GetCount() == 0)
+		*this = Override;
+
+	//	Otherwise, loop over each of our segments and take properties from the
+	//	override.
+
+	else
+		{
+		int iSrcIndex = 0;
+
+		for (int i = 0; i < m_Segments.GetCount(); i++)
+			{
+			auto &SrcSeg = Override.GetSegment(iSrcIndex);
+			m_Segments[i].ApplyOverride(SrcSeg);
+
+			iSrcIndex = (iSrcIndex + 1) % Override.GetCount();
+			}
+		}
+	}
+
 ALERROR CShipArmorDesc::Bind (SDesignLoadCtx &Ctx)
 
 //  Bind
@@ -123,7 +158,7 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	if (pDesc->GetContentElementCount() == 0)
 		{
-		int iSegCount = pDesc->GetAttributeIntegerBounded(COUNT_ATTRIB, 1, -1, 4);
+		int iSegCount = pDesc->GetAttributeIntegerBounded(COUNT_ATTRIB, 1, -1, 1);
 		int iSegSize = Max(1, 360 / iSegCount);
 
 		//  Get all the parameters for the segment

@@ -2660,6 +2660,19 @@ const CObjectImageArray &CShipClass::GetImage (const CImageFilterStack *pFilters
 	return m_Image.GetImage(Ctx, CCompositeImageSelector::Null(), Modifiers);
 	}
 
+const CShipArmorDesc *CShipClass::GetInheritedArmorDesc (void) const
+
+//	GetInheritedArmorDesc
+//
+//	Returns the inherited armor desc of our parent (if any).
+
+	{
+	if (const CShipClass *pInheritClass = CShipClass::AsType(GetInheritFrom()))
+		return &pInheritClass->m_Armor;
+	else
+		return NULL;
+	}
+
 const CShipwreckDesc *CShipClass::GetInheritedShipwreckDesc (void) const
 
 //	GetInheritedShipwreckDesc
@@ -3198,6 +3211,7 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pDefaultSovereign.GetUNID(), true);
 
 	m_Armor.AddTypesUsed(retTypesUsed);
+	m_ArmorDesc.AddTypesUsed(retTypesUsed);
 	m_WreckDesc.AddTypesUsed(retTypesUsed);
 	m_Image.AddTypesUsed(retTypesUsed);
 
@@ -3293,6 +3307,14 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	if (error = m_Hull.Bind(Ctx))
 		return ComposeLoadError(Ctx, Ctx.sError);
+
+	if (const CShipArmorDesc *pInherited = GetInheritedArmorDesc())
+		{
+		m_Armor = *pInherited;
+		m_Armor.ApplyOverride(Ctx, m_ArmorDesc);
+		}
+	else
+		m_Armor = m_ArmorDesc;
 
 	if (error = m_Armor.Bind(Ctx))
 		return ComposeLoadError(Ctx, Ctx.sError);
@@ -3575,7 +3597,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pArmor = pDesc->GetContentElementByTag(ARMOR_TAG);
 	if (pArmor)
 		{
-		if (error = m_Armor.InitFromXML(Ctx, pArmor))
+		if (error = m_ArmorDesc.InitFromXML(Ctx, pArmor))
 			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 

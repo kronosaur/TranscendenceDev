@@ -254,6 +254,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 
 	//	Bind. Set the flag so that we do not recurse.
 
+	CDesignType *pOldType = Ctx.pType;
 	Ctx.pType = this;
 	m_bBindCalled = true;
 
@@ -263,7 +264,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		{
 		if (ALERROR error = m_pExtra->PropertyDefs.BindDesign(Ctx))
 			{
-			Ctx.pType = NULL;
+			Ctx.pType = pOldType;
 			return error;
 			}
 		}
@@ -299,14 +300,14 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		{
 		if (ALERROR error = OnBindDesign(Ctx))
 			{
-			Ctx.pType = NULL;
+			Ctx.pType = pOldType;
 			return error;
 			}
 		}
 	catch (...)
 		{
 		::kernelDebugLogPattern("Crash in OnBindDesign [UNID: %08x]", m_dwUNID);
-		Ctx.pType = NULL;
+		Ctx.pType = pOldType;
 		throw;
 		}
 
@@ -315,7 +316,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	if (Ctx.bTraceBind)
 		Ctx.iBindNesting--;
 
-	Ctx.pType = NULL;
+	Ctx.pType = pOldType;
 	return NOERROR;
 	}
 
@@ -2819,6 +2820,20 @@ bool CDesignType::InSelfReference (CDesignType *pType)
 		}
 
 	return false;
+	}
+
+void CDesignType::LogOutput (SDesignLoadCtx &Ctx, const CString &sError) const
+
+//	LogOutput
+//
+//	Output a log entry.
+
+	{
+	CString sEntity = GetEntityName();
+	if (sEntity.IsBlank())
+		sEntity = strPatternSubst("%08x", GetUNID());
+
+	Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("%s: %s"), sEntity, sError));
 	}
 
 bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria) const
