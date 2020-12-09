@@ -266,6 +266,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		printf("\n");
 		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
 		printf("      [/angles]	            Show angles for each frame.\n");
+		printf("      [/armor]	            Show angles for armor segments.\n");
 		printf("      [/driveimages]		Show all rotations with exhaust images.\n");
 		printf("      [/grid]               Show a grid centered on ship.\n");
 		printf("      [/interior]           Show interior compartment bounds.\n");

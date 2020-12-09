@@ -4356,6 +4356,28 @@ void CShipClass::Paint (CG32bitImage &Dest,
 #endif
 	}
 
+void CShipClass::PaintArmorSegmentArcs (CG32bitImage &Dest, int x, int y, int iShipRotation) const
+
+//	PaintArmorSegmentArcs
+//
+//	Paint the armor segments.
+
+	{
+	const int iLength = GetImage().GetImageWidth() / 2;
+	const CG32bitPixel rgbColor = CG32bitPixel(255, 255, 128);
+
+	for (int i = 0; i < m_Armor.GetCount(); i++)
+		{
+		auto &Segment = m_Armor.GetSegment(i);
+
+		CVector vEnd = CVector::FromPolar(::mathDegreesToRadians(Segment.GetStartAngle() + iShipRotation), iLength);
+		int xEnd = x + mathRound(vEnd.GetX());
+		int yEnd = y - mathRound(vEnd.GetY());
+
+		CGDraw::Line(Dest, x, y, xEnd, yEnd, 1, rgbColor);
+		}
+	}
+
 void CShipClass::PaintDevicePositions (CG32bitImage &Dest, int x, int y, const CDeviceDescList &Devices, int iShipRotation) const
 
 //	PaintDevicePositions
@@ -4363,10 +4385,9 @@ void CShipClass::PaintDevicePositions (CG32bitImage &Dest, int x, int y, const C
 //	Paint position and fire arc of devices.
 
 	{
-	int i;
 	int iScale = GetImageViewportSize();
 
-	for (i = 0; i < Devices.GetCount(); i++)
+	for (int i = 0; i < Devices.GetCount(); i++)
 		{
 		const SDeviceDesc &Desc = Devices.GetDeviceDesc(i);
 

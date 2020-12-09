@@ -34,6 +34,7 @@ void GenerateShipImage (CUniverse &Universe, CXMLElement *pCmdLine)
 	bool bWeaponPos = pCmdLine->GetAttributeBool(CONSTLIT("weaponpos"));
 	bool bInterior = pCmdLine->GetAttributeBool(CONSTLIT("interior"));
 	bool bAngles = pCmdLine->GetAttributeBool(CONSTLIT("angles"));
+	bool bArmor = pCmdLine->GetAttributeBool(CONSTLIT("armor"));
 
 	if (pCmdLine->GetAttributeBool(CONSTLIT("debug")))
 		{
@@ -169,6 +170,13 @@ void GenerateShipImage (CUniverse &Universe, CXMLElement *pCmdLine)
 		if (bPortPos)
 			{
 			pClass->PaintDockPortPositions(Output.GetImage(), x, y, Ctx.iRotation);
+			}
+
+		//	Armor segments
+
+		if (bArmor)
+			{
+			pClass->PaintArmorSegmentArcs(Output.GetImage(), x, y, Ctx.iRotation);
 			}
 
 		//	If requested, paint a polar grid
