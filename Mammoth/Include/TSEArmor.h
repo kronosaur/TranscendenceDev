@@ -221,7 +221,7 @@ class CShipArmorSegmentDesc
 		int GetSpan (void) const { return m_iSpan; }
 		int GetStartAngle (void) const { return m_iStartAt; }
 		ALERROR Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, DWORD dwDefaultUNID, int iDefaultLevel, int iDefaultAngle, const CRandomEnhancementGenerator &DefaultEnhancement, int *retiSpan = NULL);
 
 	private:
 		static DWORD ParseNonCritical (const CString &sList);
