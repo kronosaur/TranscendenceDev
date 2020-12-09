@@ -1321,11 +1321,6 @@
 								)
 							)
 						)
-
-					(dbgOutput "Level " (sysGetLevel) ": Created " (objGetName gSource))
-					(enum (sysFindObject gSource "sAH") theShip
-						(dbgOutput "Defender: " (objGetName theShip))
-						)
 					)
 			</OnCreate>
 			
