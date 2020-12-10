@@ -259,6 +259,7 @@ class IShipController
 
 			orderFireWeapon,			//	Data = weapon item to fire
 			orderUseItem,				//	Data = item to use
+			orderKeplerOrbit,			//	pTarget = center; dwData1 = radius; dwData2 = time; vData.x = startPosition; vData.y = eccentricity
 			};
 
 		enum EShipStatusNotifications
