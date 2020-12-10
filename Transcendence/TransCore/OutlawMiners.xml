@@ -1009,18 +1009,18 @@
 					<Ship levelFrequency="ucr-- -----"	count="1d4" class="&scHammerhead;"		orders="patrol:5"/>
 					<Ship levelFrequency="-ucr- -----"	count="1d4" class="&scHammerhead-II;"	orders="patrol:5"/>
 					<Ship levelFrequency="--ucr -----"	count="1d4" class="&scOromo;"			orders="patrol:5"/>
-					<Ship levelFrequency="---uc r----"	count="1d4" class="&scSotho;"			orders="patrol:5"/>
-					<Ship levelFrequency="----u cr---"	count="1d4" class="&scMolotokA;"		orders="patrol:5"/>
-					<Ship levelFrequency="----- ucrvv"	count="2d3" class="&scMolotokA;"		orders="patrol:5"/>
+					<Ship levelFrequency="---uc r----"	count="1d4" class="&scOromoII;"			orders="patrol:5"/>
+					<Ship levelFrequency="----u cr---"	count="1d4" class="&scSotho;"			orders="patrol:5"/>
+					<Ship levelFrequency="----- ucrvv"	count="2d3" class="&scSothoII;"			orders="patrol:5"/>
 				</LevelTable>
 
 				<!-- 40% of the time we have heavy defenders -->
 
 				<LevelTable chance="40">
 					<Ship levelFrequency="ucr-- -----"	count="1" class="&scOromo;"				orders="guard"/>
-					<Ship levelFrequency="-ucr- -----"	count="1" class="&scSotho;"				orders="guard"/>
-					<Ship levelFrequency="--ucr -----"	count="1" class="&scMolotokA;"			orders="guard"/>
-					<Ship levelFrequency="---uc rvvvv"	count="1" class="&scMolotokB;"			orders="guard"/>
+					<Ship levelFrequency="-ucr- -----"	count="1" class="&scOromoII;"			orders="guard"/>
+					<Ship levelFrequency="--ucr -----"	count="1" class="&scSotho;"				orders="guard"/>
+					<Ship levelFrequency="---uc rvvvv"	count="1" class="&scSothoII;"			orders="guard"/>
 				</LevelTable>
 			</Table>
 

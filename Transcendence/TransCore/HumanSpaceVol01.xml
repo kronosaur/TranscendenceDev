@@ -2089,6 +2089,10 @@
 	<!ENTITY tbOutlawMineDefenders		"0x0010033E">
 	<!ENTITY stOutlawHowitzer			"0x0010033F">
 	<!ENTITY scBorer-III				"0x00100340">
+	<!ENTITY scOromoII					"0x00100341">
+	<!ENTITY scSothoII					"0x00100342">
+	<!ENTITY itBallistaTurret			"0x00100343">
+	<!ENTITY itMarkIHowitzerTurret		"0x00100344">
 
 	<!-- 0370-038F AUTONS -->
 
