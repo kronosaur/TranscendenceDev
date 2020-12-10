@@ -133,6 +133,10 @@
 			<Main>
 				<Panes>
 					<Default descID="descWelcome">
+						<OnPaneInit>
+							(rpgSetLootAction gSource)
+						</OnPaneInit>
+
 						<Actions>
 							<Action id="actionLoot" default="1">
 								(scrShowScreen gScreen &dsRPGLoot;)
