@@ -23,28 +23,22 @@ void CKeplerOrbitOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	{
 	//	Compute the desired position.
 
-	DWORD dwTicksSinceStart = pShip->GetUniverse().GetTicks() - m_dwStartTick;
-	Metric rAngle = ::mathDegreesToRadians(dwTicksSinceStart * m_rAngularSpeed) + m_Orbit.GetObjectAngle();
+	Metric rAngle = ::mathDegreesToRadians(pShip->GetUniverse().GetTicks() * m_rAngularSpeed) + m_Orbit.GetObjectAngle();
 	CVector vOrbitPos = m_Orbit.GetPoint(rAngle);
 	CVector vPos = m_Objs[objBase]->GetPos() + vOrbitPos;
-	CVector vVel = (m_Orbit.GetPoint(rAngle + m_rAngularSpeed) - vOrbitPos) * g_SecondsPerUpdate;
+	CVector vVel = (m_Orbit.GetPoint(rAngle + ::mathDegreesToRadians(m_rAngularSpeed)) - vOrbitPos) / g_SecondsPerUpdate;
 
 	//	Maneuver
 
-#if 0
-	CVector vDeltaV;
-	Metric rDeltaPos2;
-	Metric rDeltaV2;
-	Ctx.CalcFormationParams(pShip, vPos, vVel, pShip->GetRotation(), &vDeltaV, &rDeltaPos2, &rDeltaV2);
-
-	pShip->AddForce(vDeltaV * pShip->GetMass() / 20000.0);
-#else
-	pShip->SetPos(vPos);
-	pShip->SetVel(vVel);
-#endif
+	pShip->Place(vPos, vVel);
 
 	Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget], NULL, true);
 	Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+
+	if (!m_Objs[objTarget])
+		{
+		Ctx.ImplementTurnTo(pShip, VectorToPolar(vVel));
+		}
 
 	//	See if our timer has expired
 
@@ -98,8 +92,6 @@ void CKeplerOrbitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpa
 
 		m_rAngularSpeed = 2.0;
 		}
-
-	m_dwStartTick = pShip->GetUniverse().GetTicks();
 
 	//	Set our timer
 

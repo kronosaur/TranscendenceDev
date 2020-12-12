@@ -338,6 +338,9 @@ bool IShipController::ParseOrderString (const CString &sValue, OrderTypes *retiO
 
 				pPos++;
 
+				DWORD dwRadius = 10;
+				DWORD dwAngle = 0;
+
 				while (*pPos != '\0')
 					{
 					pStart = pPos;
@@ -356,8 +359,10 @@ bool IShipController::ParseOrderString (const CString &sValue, OrderTypes *retiO
 					CString sValue(pStart, pPos - pStart);
 
 					if (strEquals(sField, CONSTLIT("radius")))
-						retData->dwData1 = strToInt(sValue, 0);
+						dwRadius = strToInt(sValue, 0);
 					else if (strEquals(sField, CONSTLIT("angle")))
+						dwAngle = strToInt(sValue, 0);
+					else if (strEquals(sField, CONSTLIT("speed")))
 						retData->vData.SetX(strToDouble(sValue, 0.0));
 					else if (strEquals(sField, CONSTLIT("eccentricity")))
 						retData->vData.SetY(strToDouble(sValue, 0.0));
@@ -367,6 +372,8 @@ bool IShipController::ParseOrderString (const CString &sValue, OrderTypes *retiO
 					if (*pPos == ':')
 						pPos++;
 					}
+
+				retData->dwData1 = (dwAngle << 16) | dwRadius;
 
 				break;
 				}
