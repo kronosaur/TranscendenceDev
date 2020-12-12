@@ -887,6 +887,7 @@ bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 		{
 		case IShipController::orderGuard:
 		case IShipController::orderPatrol:
+		case IShipController::orderOrbitExact:
 		case IShipController::orderSentry:
 			{
 			CSpaceObject *pBase = GetCurrentOrderTarget();

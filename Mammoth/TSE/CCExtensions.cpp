@@ -10452,7 +10452,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					break;
 					}
 
-				case IShipController::dataKeplerOrbit:
+				case IShipController::dataOrbitExact:
 					{
 					ICCItemPtr pOptions(ICCItem::SymbolTable);
 					pOptions->SetIntegerAt(CONSTLIT("radius"), LOWORD(Data.dwData1));

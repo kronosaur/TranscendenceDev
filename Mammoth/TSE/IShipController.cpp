@@ -60,7 +60,7 @@ const IShipController::SOrderTypeData IShipController::m_OrderTypes[] =
 
 		{	"fireWeapon",				"-",	"I",	0 },
 		{	"useItem",					"-",	"I",	0 },
-		{	"keplerOrbit",				"o",	"k",	0 },
+		{	"orbitExact",				"o",	"k",	0 },
 	};
 
 const int IShipController::ORDER_TYPES_COUNT = (sizeof(m_OrderTypes) / sizeof(m_OrderTypes[0]));
@@ -84,7 +84,7 @@ IShipController::EDataTypes IShipController::GetOrderDataType (OrderTypes iOrder
 			return dataItem;
 
 		case 'k':
-			return dataKeplerOrbit;
+			return dataOrbitExact;
 
 		case 's':
 			return dataString;
@@ -163,7 +163,7 @@ bool IShipController::ParseOrderData (CCodeChainCtx &CCX, OrderTypes iOrder, con
 					retData.iDataType = dataNone;
 				break;
 
-			case IShipController::dataKeplerOrbit:
+			case IShipController::dataOrbitExact:
 				{
 				retData.iDataType = iDataType;
 
@@ -331,7 +331,7 @@ bool IShipController::ParseOrderString (const CString &sValue, OrderTypes *retiO
 
 		switch (iDataType)
 			{
-			case dataKeplerOrbit:
+			case dataOrbitExact:
 				{
 				*retData = SData();
 				retData->iDataType = iDataType;
@@ -361,7 +361,12 @@ bool IShipController::ParseOrderString (const CString &sValue, OrderTypes *retiO
 					if (strEquals(sField, CONSTLIT("radius")))
 						dwRadius = strToInt(sValue, 0);
 					else if (strEquals(sField, CONSTLIT("angle")))
-						dwAngle = strToInt(sValue, 0);
+						{
+						if (strEquals(sValue, CONSTLIT("random")))
+							dwAngle = mathRandom(0, 359);
+						else
+							dwAngle = strToInt(sValue, 0);
+						}
 					else if (strEquals(sField, CONSTLIT("speed")))
 						retData->vData.SetX(strToDouble(sValue, 0.0));
 					else if (strEquals(sField, CONSTLIT("eccentricity")))

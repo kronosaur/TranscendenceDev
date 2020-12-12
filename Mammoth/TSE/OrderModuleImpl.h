@@ -220,10 +220,10 @@ class CGuardOrder : public IOrderModule
 		CSpaceObject *m_pBase;					//	Object that we're guarding
 	};
 
-class CKeplerOrbitOrder : public IOrderModule
+class COrbitExactOrder : public IOrderModule
 	{
 	public:
-		CKeplerOrbitOrder () : IOrderModule(objCount)
+		COrbitExactOrder () : IOrderModule(objCount)
 			{ }
 
 	protected:
@@ -234,7 +234,7 @@ class CKeplerOrbitOrder : public IOrderModule
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) override;
 		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
-		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderKeplerOrbit; }
+		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderOrbitExact; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;

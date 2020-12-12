@@ -91,10 +91,10 @@ void COrderList::CleanUp (SOrderEntry *pEntry)
 				}
 			break;
 
-		case IShipController::dataKeplerOrbit:
+		case IShipController::dataOrbitExact:
 			if (pEntry->dwData)
 				{
-				delete (SKeplerOrbitDesc *)pEntry->dwData;
+				delete (SOrbitExactDesc *)pEntry->dwData;
 				pEntry->dwData = 0;
 				}
 			break;
@@ -140,9 +140,9 @@ IShipController::OrderTypes COrderList::GetOrder (int iIndex, CSpaceObject **ret
 				retData->vData = (Entry.dwData ? *(CVector *)Entry.dwData : NullVector);
 				break;
 
-			case IShipController::dataKeplerOrbit:
+			case IShipController::dataOrbitExact:
 				{
-				const SKeplerOrbitDesc *pOrbitData = (const SKeplerOrbitDesc *)Entry.dwData;
+				const SOrbitExactDesc *pOrbitData = (const SOrbitExactDesc *)Entry.dwData;
 				if (pOrbitData)
 					{
 					retData->dwData1 = (pOrbitData->dwAngle << 16) | pOrbitData->dwRadius;
@@ -410,9 +410,9 @@ void COrderList::ReadFromStream (SLoadCtx &Ctx)
 					break;
 					}
 
-				case IShipController::dataKeplerOrbit:
+				case IShipController::dataOrbitExact:
 					{
-					SKeplerOrbitDesc *pOrbitData = new SKeplerOrbitDesc;
+					SOrbitExactDesc *pOrbitData = new SOrbitExactDesc;
 
 					DWORD dwLoad;
 					Ctx.pStream->Read(dwLoad);
@@ -490,9 +490,9 @@ void COrderList::SetEntryData (SOrderEntry *pEntry, const IShipController::SData
 			pEntry->dwData = (DWORD)(new CVector(Data.vData));
 			break;
 
-		case IShipController::dataKeplerOrbit:
+		case IShipController::dataOrbitExact:
 			{
-			SKeplerOrbitDesc *pOrbitData = new SKeplerOrbitDesc;
+			SOrbitExactDesc *pOrbitData = new SOrbitExactDesc;
 			pOrbitData->dwRadius = LOWORD(Data.dwData1);
 			pOrbitData->dwAngle = HIWORD(Data.dwData1);
 			pOrbitData->dwTicks = Data.dwData2;
@@ -579,9 +579,9 @@ void COrderList::WriteToStream (IWriteStream *pStream, CSystem *pSystem)
 				break;
 				}
 
-			case IShipController::dataKeplerOrbit:
+			case IShipController::dataOrbitExact:
 				{
-				const SKeplerOrbitDesc *pOrbitData = (const SKeplerOrbitDesc *)pEntry->dwData;
+				const SOrbitExactDesc *pOrbitData = (const SOrbitExactDesc *)pEntry->dwData;
 
 				DWORD dwSave = ((pOrbitData ? pOrbitData->dwAngle : 0) << 16) | (pOrbitData ? pOrbitData->dwRadius : 0);
 				pStream->Write(dwSave);

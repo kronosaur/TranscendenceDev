@@ -314,7 +314,7 @@ class COrderList
 			DWORD dwData;
 			};
 
-		struct SKeplerOrbitDesc
+		struct SOrbitExactDesc
 			{
 			DWORD dwRadius:16 = 0;
 			DWORD dwAngle:16 = 0;

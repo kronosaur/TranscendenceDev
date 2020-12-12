@@ -112,8 +112,8 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderFireEvent:
 			return new CFireEventOrder;
 
-		case IShipController::orderKeplerOrbit:
-			return new CKeplerOrbitOrder;
+		case IShipController::orderOrbitExact:
+			return new COrbitExactOrder;
 
 		case IShipController::orderDock:
 		case IShipController::orderGate:

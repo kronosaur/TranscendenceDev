@@ -1,11 +1,11 @@
-//	CKeplerOrbitOrder.cpp
+//	COrbitExactOrder.cpp
 //
-//	CKeplerOrbitOrder class
+//	COrbitExactOrder class
 //	Copyright (c) 2020 Kronosaur Productions. All Rights Reserved.
 
 #include "PreComp.h"
 
-void CKeplerOrbitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void COrbitExactOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -14,7 +14,7 @@ void CKeplerOrbitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 	{
 	}
 
-void CKeplerOrbitOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
+void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 //	OnBehavior
 //
@@ -46,7 +46,7 @@ void CKeplerOrbitOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		pShip->CancelCurrentOrder();
 	}
 
-void CKeplerOrbitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void COrbitExactOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
 
 //	OnBehaviorStart
 //
@@ -69,10 +69,10 @@ void CKeplerOrbitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpa
 
 	//	Compute the order from our data
 
-	if (Data.iDataType == IShipController::dataKeplerOrbit)
+	if (Data.iDataType == IShipController::dataOrbitExact)
 		{
 		DWORD dwRadius = LOWORD(Data.dwData1);
-		DWORD dwAngle = HIWORD(Data.dwData2);
+		DWORD dwAngle = HIWORD(Data.dwData1);
 
 		m_Orbit.SetSemiMajorAxis(dwRadius * LIGHT_SECOND);
 		m_Orbit.SetObjectAngle(::mathDegreesToRadians((Metric)dwAngle));
@@ -99,7 +99,7 @@ void CKeplerOrbitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpa
 	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
 	}
 
-void CKeplerOrbitOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder)
+void COrbitExactOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder)
 
 //	OnObjDestroyed
 //
@@ -108,7 +108,7 @@ void CKeplerOrbitOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, in
 	{
 	}
 
-void CKeplerOrbitOrder::OnReadFromStream (SLoadCtx &Ctx)
+void COrbitExactOrder::OnReadFromStream (SLoadCtx &Ctx)
 
 //	OnReadFromStream
 //
@@ -121,7 +121,7 @@ void CKeplerOrbitOrder::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read(m_iCountdown);
 	}
 
-void CKeplerOrbitOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void COrbitExactOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	OnWriteToStream
 //

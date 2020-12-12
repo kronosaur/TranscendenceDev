@@ -154,7 +154,7 @@ class IShipController
 			dataString,						//	dwData is a pointer to a CString
 			dataVector,						//	dwData is a pointer to a CVector
 			dataItem,						//	dwData is a pointer to a CItem
-			dataKeplerOrbit,				//	Encode orbit in SData
+			dataOrbitExact,				//	Encode orbit in SData
 			};
 
 		struct SData
@@ -260,7 +260,7 @@ class IShipController
 
 			orderFireWeapon,			//	Data = weapon item to fire
 			orderUseItem,				//	Data = item to use
-			orderKeplerOrbit,			//	pTarget = center; dwData1 = radius; dwData2 = timer; vData.x = startPosition; vData.y = eccentricity
+			orderOrbitExact,			//	pTarget = center; dwData1 = radius; dwData2 = timer; vData.x = startPosition; vData.y = eccentricity
 			};
 
 		enum EShipStatusNotifications
