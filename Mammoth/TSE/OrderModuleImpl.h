@@ -223,6 +223,8 @@ class CGuardOrder : public IOrderModule
 class CKeplerOrbitOrder : public IOrderModule
 	{
 	public:
+		CKeplerOrbitOrder () : IOrderModule(objCount)
+			{ }
 
 	protected:
 
@@ -231,9 +233,9 @@ class CKeplerOrbitOrder : public IOrderModule
 		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) override;
-		virtual CSpaceObject *OnGetBase (void) override;
+		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderKeplerOrbit; }
-		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objDest]; }
+		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
@@ -241,12 +243,15 @@ class CKeplerOrbitOrder : public IOrderModule
 	private:
 		enum Objs
 			{
-			objDest =		0,
+			objBase =		0,
+			objTarget =		1,
 
-			objCount =		1,
+			objCount =		2,
 			};
 
 		COrbit m_Orbit;							//	Orbit definition
+		DWORD m_dwStartTick = 0;				//	Tick at start angle
+		Metric m_rAngularSpeed = 2.0;			//	Orbit speed (degrees per tick)
 		int m_iCountdown = 0;					//	Stop after this time.
 	};
 

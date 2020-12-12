@@ -10451,6 +10451,18 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					pVector->Discard();
 					break;
 					}
+
+				case IShipController::dataKeplerOrbit:
+					{
+					ICCItemPtr pOptions(ICCItem::SymbolTable);
+					pOptions->SetIntegerAt(CONSTLIT("radius"), LOWORD(Data.dwData1));
+					pOptions->SetIntegerAt(CONSTLIT("angle"), HIWORD(Data.dwData1));
+					pOptions->SetDoubleAt(CONSTLIT("speed"), Data.vData.GetX());
+					pOptions->SetDoubleAt(CONSTLIT("eccentricity"), Data.vData.GetY());
+
+					pList->Append(pOptions);
+					break;
+					}
 				}
 
 			//	Done
@@ -11015,51 +11027,8 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Get the data
 
 			IShipController::SData Data;
-			if (pArgs->GetCount() > (iArg + 1))
-				{
-				if (pArgs->GetElement(iArg)->IsNil() && pArgs->GetElement(iArg+1)->IsNil())
-					{
-					//	If both arguments are Nil, then we omit them both. We do this
-					//	because some orders (like escort) behave differently depending
-					//	on whether arguments are nil or not.
-					}
-				else
-					{
-					Data.iDataType = IShipController::dataPair;
-					Data.dwData1 = pArgs->GetElement(iArg)->GetIntegerValue();
-					Data.dwData2 = pArgs->GetElement(iArg+1)->GetIntegerValue();
-					}
-				}
-			else if (pArgs->GetCount() > iArg)
-				{
-				IShipController::EDataTypes iDataType = IShipController::GetOrderDataType(iOrder);
-
-				if (pArgs->GetElement(iArg)->IsNil())
-					{
-					//	Nil argument is empty. We treat this the same as if the
-					//	caller specified no argument.
-					}
-				else if (iDataType == IShipController::dataItem)
-					{
-					Data.iDataType = iDataType;
-					Data.Item = pCtx->AsItem(pArgs->GetElement(iArg));
-					}
-				else if (iDataType == IShipController::dataString)
-					{
-					Data.iDataType = iDataType;
-					Data.sData = pArgs->GetElement(iArg)->GetStringValue();
-					}
-				else if (iDataType == IShipController::dataVector)
-					{
-					Data.iDataType = iDataType;
-					Data.vData = ::CreateVectorFromList(*pCC, pArgs->GetElement(iArg));
-					}
-				else
-					{
-					Data.iDataType = IShipController::dataInteger;
-					Data.dwData1 = pArgs->GetElement(iArg)->GetIntegerValue();
-					}
-				}
+			if (!IShipController::ParseOrderData(*pCtx, iOrder, *pArgs, iArg, Data))
+				return pCC->CreateNil();
 
 			//	Done
 

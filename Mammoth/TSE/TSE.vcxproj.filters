@@ -1552,5 +1552,8 @@
     <ClCompile Include="PowerProperties.cpp">
       <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
+    <ClCompile Include="CKeplerOrbitOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

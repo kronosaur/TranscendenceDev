@@ -431,7 +431,7 @@ class CItem
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		void ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, ICCItem *pBuffer);
+		void ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, const ICCItem *pBuffer);
 		ICCItem *WriteToCCItem (void) const;
 
 	private:

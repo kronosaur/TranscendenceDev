@@ -1857,7 +1857,7 @@ bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc);
 ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue);
 CShip *CreateShipObjFromItem (CCodeChain &CC, ICCItem *pArg);
 CStation *CreateStationObjFromItem (CCodeChain &CC, ICCItem *pArg);
-CVector CreateVectorFromList (CCodeChain &CC, ICCItem *pList);
+CVector CreateVectorFromList (CCodeChain &CC, const ICCItem *pList);
 CCXMLWrapper *CreateXMLElementFromItem (CCodeChain &CC, ICCItem *pItem);
 void DefineGlobalItem (CCodeChain &CC, const CString &sVar, const CItem &Item);
 void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, const CSpaceObject *pObj);
