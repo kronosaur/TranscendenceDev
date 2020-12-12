@@ -445,7 +445,7 @@ CStation *CreateStationObjFromItem (CCodeChain &CC, ICCItem *pArg)
 	return (pObj ? pObj->AsStation() : NULL);
 	}
 
-CVector CreateVectorFromList (CCodeChain &CC, ICCItem *pList)
+CVector CreateVectorFromList (CCodeChain &CC, const ICCItem *pList)
 
 //	CreateVectorFromList
 //

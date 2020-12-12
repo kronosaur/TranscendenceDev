@@ -2796,7 +2796,7 @@ DWORD CItem::ParseFlags (ICCItem *pItem)
 	return dwFlags;
 	}
 
-void CItem::ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, ICCItem *pBuffer)
+void CItem::ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, const ICCItem *pBuffer)
 
 //	ReadFromCCItem
 //
