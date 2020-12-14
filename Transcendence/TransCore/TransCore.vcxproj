@@ -689,6 +689,7 @@
     <Xml Include="SungCitadel.xml" />
     <Xml Include="SungFortress.xml" />
     <Xml Include="SungSlaveCamp.xml" />
+    <Xml Include="Tenhove.xml" />
     <Xml Include="TeratonResearch.xml" />
     <Xml Include="UndergroundCaverns.xml" />
     <Xml Include="UndergroundStructures.xml" />

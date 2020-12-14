@@ -2093,8 +2093,9 @@
 	<!ENTITY scSothoII					"0x00100342">
 	<!ENTITY itBallistaTurret			"0x00100343">
 	<!ENTITY itMarkIHowitzerTurret		"0x00100344">
+	<!ENTITY tbOutlawMineTurrets		"0x00100345">
 
-	<!-- 0370-038F AUTONS -->
+	<!-- 0370-038F OMNIDEFENSE SYSTEMS -->
 
 	<!ENTITY rsAutosentinelHD			"0x00100370">
 	<!ENTITY rsMediumAutonHD			"0x00100371">
@@ -2467,6 +2468,17 @@
 	<!ENTITY msBlackMarketMission02			"0x00100821">
 	<!ENTITY msBlackMarketSmuggle01			"0x00100822">
 
+	<!-- 0840-085F TENHOVE DEFENSE SYSTEM -->
+
+	<!ENTITY rsTA3Sentinel					"0x00100840">
+	<!ENTITY rsTA3SentinelHero				"0x00100841">
+	<!ENTITY scTR200Defender				"0x00100842">
+	<!ENTITY scTMA9BattleAuton				"0x00100843">
+	<!ENTITY rsTR200Defender				"0x00100844">
+	<!ENTITY rsTR200DefenderHero			"0x00100845">
+	<!ENTITY rsTMA9BattleAuton				"0x00100846">
+	<!ENTITY rsTMA9BattleAutonHero			"0x00100847">
+
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	
@@ -2603,6 +2615,7 @@
 	<Module filename="Makayev.xml"/>
 	<Module filename="Rasiermesser.xml"/>
 	<Module filename="RasiermesserMission01.xml"/>
+	<Module filename="Tenhove.xml"/>
 
 	<!-- Encounters -->
 

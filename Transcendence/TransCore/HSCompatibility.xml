@@ -6860,5 +6860,7 @@
 
 	<Image UNID="&rsCentauriHeavyRaiderImage;"	obsoleteVersion="51" bitmap="Resources\CentauriHeavyRaider.jpg" bitmask="Resources\CentauriHeavyRaiderMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCentauriRaiderImage;"		obsoleteVersion="51" bitmap="Resources\CentauriRaider.jpg" bitmask="Resources\CentauriRaiderMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsTenhoveHD;"			obsoleteVersion="51" bitmap="Resources\TenhoveHD.jpg" 	bitmask="Resources\TenhoveHDMask.bmp" loadOnUse="true"/>
+
 
 </TranscendenceModule>
