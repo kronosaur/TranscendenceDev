@@ -61,9 +61,14 @@
 		
 		<!-- Ships and Defenses -->
 		
-		<Ships minShips="2">
+		<Ships>
+			<Lookup table="&tbOutlawMineTurrets;"/>
 			<Lookup table="&tbOutlawMineDefenders;"/>
 		</Ships>
+
+		<Reinforcements minShips="2">
+			<Lookup table="&tbOutlawMineDefenders;"/>
+		</Reinforcements>
 		
 		<!-- Image and Effects -->
 		
@@ -158,10 +163,15 @@
 		
 		<!-- Ships and Defenses -->
 		
-		<Ships minShips="2">
+		<Ships>
+			<Lookup table="&tbOutlawMineTurrets;"/>
 			<Lookup table="&tbOutlawMineDefenders;"/>
 		</Ships>
 
+		<Reinforcements minShips="2">
+			<Lookup table="&tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
 		<!-- Image and Effects -->
 		
 		<ImageVariants>
@@ -252,24 +262,17 @@
 				regen=			"2"
 				/>
 		
-		<!-- Satellites -->
-
-		<Satellites overlapCheck="asteroids">
-			<Orbitals distance="9" angle="45">
-				<Station type="&stOutlawTurret;" imageVariant="2"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="225">
-				<Station type="&stOutlawTurret;" imageVariant="0"/>
-			</Orbitals>
-		</Satellites>
-
 		<!-- Ships and Defenses -->
 		
-		<Ships minShips="2">
+		<Ships>
+			<Lookup table="&tbOutlawMineTurrets;"/>
 			<Lookup table="&tbOutlawMineDefenders;"/>
 		</Ships>
 
+		<Reinforcements minShips="2">
+			<Lookup table="&tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
 		<!-- Image and Effects -->
 		
 		<ImageVariants>
@@ -362,32 +365,17 @@
 				regen=			"2"
 				/>
 		
-		<!-- Satellites -->
-
-		<Satellites overlapCheck="asteroids">
-			<Orbitals distance="9" angle="45">
-				<Station type="&stOutlawTurret;" imageVariant="2"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="135">
-				<Station type="&stOutlawTurret;" imageVariant="1"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="225">
-				<Station type="&stOutlawTurret;" imageVariant="0"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="315">
-				<Station type="&stOutlawTurret;" imageVariant="3"/>
-			</Orbitals>
-		</Satellites>
-
 		<!-- Ships and Defenses -->
 		
-		<Ships minShips="2">
+		<Ships>
+			<Lookup table="&tbOutlawMineTurrets;"/>
 			<Lookup table="&tbOutlawMineDefenders;"/>
 		</Ships>
 
+		<Reinforcements minShips="2">
+			<Lookup table="&tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
 		<!-- Image and Effects -->
 		
 		<ImageVariants>
@@ -480,32 +468,17 @@
 				regen=			"3"
 				/>
 		
-		<!-- Satellites -->
-		
-		<Satellites overlapCheck="asteroids">
-			<Orbitals distance="9" angle="45">
-				<Station type="&stOutlawHowitzer;" imageVariant="2"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="135">
-				<Station type="&stOutlawHowitzer;" imageVariant="1"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="225">
-				<Station type="&stOutlawHowitzer;" imageVariant="0"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="315">
-				<Station type="&stOutlawHowitzer;" imageVariant="3"/>
-			</Orbitals>
-		</Satellites>
-
 		<!-- Ships and Defenses -->
 		
-		<Ships minShips="2">
+		<Ships>
+			<Lookup table="&tbOutlawMineTurrets;"/>
 			<Lookup table="&tbOutlawMineDefenders;"/>
 		</Ships>
 
+		<Reinforcements minShips="2">
+			<Lookup table="&tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
 		<!-- Image and Effects -->
 		
 		<ImageVariants>
@@ -985,6 +958,49 @@
 		</Table>
 	</ItemTable>
 
+	<ShipTable unid="&tbOutlawMineTurrets;">
+		<LevelTable>
+			<Group levelFrequency="cr-- -----">
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+			</Group>
+			<Group levelFrequency="ucr-- -----">
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=90"/>
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=270"/>
+			</Group>
+			<Group levelFrequency="-ucr- -----">
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=180"/>
+			</Group>
+			<Group levelFrequency="--ucr -----">
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=90"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=270"/>
+			</Group>
+			<Group levelFrequency="---uc r----">
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=60"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=120"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=240"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=300"/>
+			</Group>
+			<Group levelFrequency="----u cr---">
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+			</Group>
+			<Group levelFrequency="----- ucrvv">
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=90"/>
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=270"/>
+			</Group>
+		</LevelTable>
+	</ShipTable>
+
 	<ShipTable unid="&tbOutlawMineDefenders;">
 		<Group>
 
@@ -1005,7 +1021,6 @@
 				<!-- 60% of the time we have lots of light defenders -->
 
 				<LevelTable chance="60">
-					<Ship levelFrequency="ucr-- -----"	count="1d4" class="&scTenhoveSentinel;"	orders="patrol:5"/>
 					<Ship levelFrequency="ucr-- -----"	count="1d4" class="&scHammerhead;"		orders="patrol:5"/>
 					<Ship levelFrequency="-ucr- -----"	count="1d4" class="&scHammerhead-II;"	orders="patrol:5"/>
 					<Ship levelFrequency="--ucr -----"	count="1d4" class="&scOromo;"			orders="patrol:5"/>
