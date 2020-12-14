@@ -21,6 +21,9 @@ void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Handle behavior
 
 	{
+	constexpr Metric MAX_THRESHOLD_ADJ = 1.1;
+	constexpr Metric MAX_THRESHOLD_ADJ2 = MAX_THRESHOLD_ADJ * MAX_THRESHOLD_ADJ;
+
 	//	Compute the desired position.
 
 	Metric rAngle = ::mathDegreesToRadians(pShip->GetUniverse().GetTicks() * m_rAngularSpeed) + m_Orbit.GetObjectAngle();
@@ -28,9 +31,34 @@ void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	CVector vPos = m_Objs[objBase]->GetPos() + vOrbitPos;
 	CVector vVel = (m_Orbit.GetPoint(rAngle + ::mathDegreesToRadians(m_rAngularSpeed)) - vOrbitPos) / g_SecondsPerUpdate;
 
+	//	If the ship is out of position and needs to be placed back in orbit, 
+	//	then we try to ease in.
+
+	const Metric rOrbitSpeed2 = vVel.Length2();
+	const Metric rMaxPosChange2 = rOrbitSpeed2 * MAX_THRESHOLD_ADJ2 * g_SecondsPerUpdate * g_SecondsPerUpdate;
+	const CVector vPosChange = vPos - pShip->GetPos();
+	const Metric rPosChange2 = vPosChange.Length2();
+
 	//	Maneuver
 
-	pShip->Place(vPos, vVel);
+	if (rPosChange2 > rMaxPosChange2)
+		{
+		const Metric rPosChange = sqrt(rPosChange2);
+		const Metric rOrbitSpeed = sqrt(rOrbitSpeed2);
+
+		const Metric EASE_FACTOR = 0.5;
+		const Metric rMaxEaseSpeed = Max(rOrbitSpeed, pShip->GetMaxSpeed());
+		const Metric rEaseSpeed = Min(EASE_FACTOR * rPosChange / g_SecondsPerUpdate, rMaxEaseSpeed);
+
+		const CVector vPosDir = vPosChange / rPosChange;
+
+		CVector vEaseVel = rEaseSpeed * vPosDir;
+		CVector vEasePos = pShip->GetPos() + (g_SecondsPerUpdate * vEaseVel);
+
+		pShip->Place(vEasePos, vEaseVel);
+		}
+	else
+		pShip->Place(vPos, vVel);
 
 	Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget], NULL, true);
 	Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
