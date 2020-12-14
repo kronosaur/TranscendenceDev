@@ -15,6 +15,7 @@
 #define ANGLE_ATTRIB							CONSTLIT("angle")
 #define BURST_TRACKS_TARGETS_ATTRIB				CONSTLIT("burstTracksTargets")
 #define CHARGES_ATTRIB							CONSTLIT("charges")
+#define CHARGE_TIME_ATTRIB						CONSTLIT("chargeTime")
 #define CONTINUOUS_CONSUME_PERSHOT_ATTRIB		CONSTLIT("consumeAmmoPerRepeatingShot")
 #define COOLING_RATE_ATTRIB						CONSTLIT("coolingRate")
 #define COUNTER_ATTRIB							CONSTLIT("counter")
@@ -55,6 +56,7 @@
 #define FIELD_AVERAGE_DAMAGE					CONSTLIT("averageDamage")	//	Average damage (1000x hp)
 #define FIELD_BALANCE							CONSTLIT("balance")
 #define FIELD_BALANCE_DAMAGE					CONSTLIT("balanceDamage")	//	Computed damage (per 180 ticks) based on balance 
+#define FIELD_CHARGE_TIME						CONSTLIT("chargeTime")
 #define FIELD_CONFIGURATION						CONSTLIT("configuration")
 #define FIELD_DAMAGE_180						CONSTLIT("damage")			//	HP damage per 180 ticks
 #define FIELD_DAMAGE_TYPE						CONSTLIT("damageType")
@@ -78,6 +80,7 @@
 #define PROPERTY_BALANCE_DAMAGE					CONSTLIT("balanceDamage")
 #define PROPERTY_BALANCE_COST 					CONSTLIT("balanceCost")
 #define PROPERTY_BALANCE_EXCLUDE_COST			CONSTLIT("balanceExcludeCost")
+#define PROPERTY_CHARGE_TIME					CONSTLIT("chargeTime")
 #define PROPERTY_CAN_FIRE_WHEN_BLIND			CONSTLIT("canFireWhenBlind")
 #define PROPERTY_DAMAGE_180						CONSTLIT("damage")			//	HP damage per 180 ticks
 #define PROPERTY_DAMAGE_PER_PROJECTILE			CONSTLIT("damagePerProjectile")
@@ -237,6 +240,7 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 	const CWeaponFireDesc *pShotDesc = GetWeaponFireDesc(Device);
 
 	ActivateCtx.iRepeatingCount = 0;
+	ActivateCtx.iChargeFrame = 0;
 	ActivateCtx.bConsumedItems = false;
 
 	//	If not enabled, no firing
@@ -252,9 +256,9 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 	if (!m_bCanFireWhenBlind && SourceObj.IsBlind())
 		ActivateCtx.pTarget = NULL;
 
-	//	Fire the weapon
+	//	Fire the weapon if it isn't a charging weapon
 
-	bool bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx);
+	bool bSuccess = GetChargeTime(*pShotDesc) > 0 ? true : FireWeapon(Device, *pShotDesc, ActivateCtx);
 
 	//	If firing the weapon destroyed the ship, then we bail out
 
@@ -264,6 +268,19 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 	//	Keep track of whether we succeeded or not so that we know whether to consume power
 
 	Device.SetLastActivateSuccessful(bSuccess);
+
+	//  If we have nonzero charge time then set continuous fire device data
+	//	We set to -1 because we skip the first Update after the call
+	//	to Activate (since it happens on the same tick)
+	//  Note that we can't combine this with the if block later on because
+	//  bSuccess is false here (we technically didn't fire any shots by charging)
+
+	if (GetChargeTime(*pShotDesc) > 0)
+		{
+		SetContinuousFire(&Device, CONTINUOUS_START);
+		//  Return true so we consume power
+		return true;
+		}
 
 	//	If we did not succeed, then we're done
 
@@ -1312,7 +1329,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 	//	For repeating weapons, we need the target stored in the device
 
-	if (ActivateCtx.iRepeatingCount != 0)
+	if (ActivateCtx.iRepeatingCount != 0 || ActivateCtx.iChargeFrame != 0)
 		{
 		CDeviceItem DeviceItem = Device.GetDeviceItem();
 		CSpaceObject &Source = Device.GetSourceOrThrow();
@@ -1898,6 +1915,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_iFailureChance = pDesc->GetAttributeInteger(FAILURE_CHANCE_ATTRIB);
 	pWeapon->m_iMinFireArc = AngleMod(pDesc->GetAttributeInteger(MIN_FIRE_ARC_ATTRIB));
 	pWeapon->m_iMaxFireArc = AngleMod(pDesc->GetAttributeInteger(MAX_FIRE_ARC_ATTRIB));
+	pWeapon->m_iChargeTime = pDesc->GetAttributeIntegerBounded(CHARGE_TIME_ATTRIB, 0, -1, 0);
 
 	pWeapon->m_bCharges = pDesc->GetAttributeBool(CHARGES_ATTRIB);
 	pWeapon->m_bOmnidirectional = pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB);
@@ -1905,7 +1923,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_bReportAmmo = pDesc->GetAttributeBool(REPORT_AMMO_ATTRIB);
 	pWeapon->m_bTargetStationsOnly = pDesc->GetAttributeBool(TARGET_STATIONS_ONLY_ATTRIB);
 	pWeapon->m_bContinuousConsumePerShot = pDesc->GetAttributeBool(CONTINUOUS_CONSUME_PERSHOT_ATTRIB);
-	pWeapon->m_iCounterPerShot = pDesc->GetAttributeIntegerBounded(SHIP_COUNTER_PER_SHOT_ATTRIB, 0, -1, 0);
+	pWeapon->m_iCounterPerShot = pDesc->GetAttributeIntegerBounded(SHIP_COUNTER_PER_SHOT_ATTRIB, 0, -1, 0); // TODO(heliogenesis): Enable shots to have this statistic too
 	pWeapon->m_bBurstTracksTargets = pDesc->GetAttributeBool(BURST_TRACKS_TARGETS_ATTRIB);
 	pWeapon->m_bCanFireWhenBlind = pDesc->GetAttributeBool(CAN_FIRE_WHEN_BLIND_ATTRIB);
 	pWeapon->m_bUsesLauncherControls = pDesc->GetAttributeBool(USES_LAUNCHER_CONTROLS_ATTRIB);
@@ -2160,6 +2178,8 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		}
 	else if (strEquals(sField, FIELD_IS_ALTERNATING))
 		*retsValue = (GetConfiguration(*pShot).IsAlternating() ? CString("True") : NULL_STR);
+	else if (strEquals(sField, FIELD_CHARGE_TIME))
+		*retsValue = strFromInt(GetChargeTime(*pShot));
 	else
 		return pShot->FindDataField(sField, retsValue);
 
@@ -2219,6 +2239,7 @@ bool CWeaponClass::FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc
 
 		//	Fire out to event, if the weapon has one.
 		//	Otherwise, we create weapon fire
+		//  TODO(heliogenesis): Add event to fire OnChargeWeapon here
 
 		if (FireOnFireWeapon(ItemCtx, 
 				ShotDesc, 
@@ -2415,9 +2436,10 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 	return true;
 	}
 
-bool CWeaponClass::FireWeapon (CInstalledDevice &Device, 
-							   const CWeaponFireDesc &ShotDesc, 
-							   SActivateCtx &ActivateCtx)
+bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
+							   const CWeaponFireDesc &ShotDesc,
+							   SActivateCtx &ActivateCtx,
+							   const bool IsCharging)
 
 //	FireWeapon
 //
@@ -2479,7 +2501,8 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	int iNewPolarity;
 	if ((ActivateCtx.iRepeatingCount == GetContinuous(ShotDesc))
-			&& GetConfiguration(ShotDesc).IncPolarity(GetAlternatingPos(&Device), &iNewPolarity))
+			&& GetConfiguration(ShotDesc).IncPolarity(GetAlternatingPos(&Device), &iNewPolarity)
+			&& (ActivateCtx.iChargeFrame == GetChargeTime(ShotDesc)))
 		SetAlternatingPos(&Device, iNewPolarity);
 
 	//	Remember last shot count
@@ -2648,6 +2671,25 @@ const CConfigurationDesc &CWeaponClass::GetConfiguration (const CWeaponFireDesc 
 		return ShotConfiguration;
 
 	return m_Configuration;
+	}
+
+int CWeaponClass::GetChargeTime (const CWeaponFireDesc &Shot) const
+
+//	GetContinous
+//
+//	If this is a weapon with charge time, we return the number of ticks before
+//	shots. 0 means no charge time.
+
+	{
+	//	Check the shot first, which can override the weapon.
+
+	int iChargeTime = Shot.GetChargeTime();
+	if (iChargeTime != -1)
+		return iChargeTime;
+
+	//	Check the weapon
+
+	return m_iChargeTime;
 	}
 
 int CWeaponClass::GetContinuous (const CWeaponFireDesc &Shot) const
@@ -2864,7 +2906,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
-		const SStdStats &Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
+		const SStdStats& Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
 
 		//  Compute the balance assuming that damage is standard.
 
@@ -2883,7 +2925,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
-		const SStdStats &Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
+		const SStdStats& Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
 
 		//  Compute the balance assuming that cost is standard.
 
@@ -2905,6 +2947,9 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 		return CC.CreateInteger(mathRound(Balance.rBalance - Balance.rCost));
 		}
+	else if (strEquals(sProperty, PROPERTY_CHARGE_TIME))
+		return CC.CreateInteger(GetChargeTime(*pShot));
+
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_180))
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(*pShot, pEnhancements);
@@ -5464,8 +5509,12 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 				}
 			}
 		}
+	//  TODO(heliogenesis): If we have charge frames, and are in charge frames, create a charge effect
+	//  instead of firing. We assume a delay of 0 when dealing with charge frames.
 
 	//	See if we continue to fire
+	//  dwContinouous starts at maximum repeating count and counts backwards towards zero; it represents
+	//  how many frames we have left in this burst
 
 	DWORD dwContinuous = GetContinuousFire(pDevice);
 	if (dwContinuous == CONTINUOUS_START)
@@ -5475,17 +5524,18 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			{
 			int iContinuous = GetContinuous(*pShot);
 			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
+			int iChargeTime = Max(0, GetChargeTime(*pShot));
 
 			//	-1 is used to skip the first update cycle
 			//	(which happens on the same tick as Activate)
 
 			if (iContinuousDelay > 1)
 				{
-				SetContinuousFire(pDevice, ((iContinuous + 1) * iContinuousDelay) - 1);
+				SetContinuousFire(pDevice, (iChargeTime + ((iContinuous + 1) * iContinuousDelay)) - 1);
 				}
 			else
 				{
-				SetContinuousFire(pDevice, iContinuous);
+				SetContinuousFire(pDevice, iContinuous + iChargeTime);
 				}
 			}
 		else
@@ -5501,14 +5551,21 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			{
 			int iContinuous = GetContinuous(*pShot);
 			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
+			int iChargeTime = Max(0, GetChargeTime(*pShot));
+			int iBurstLengthInFrames = iContinuousDelay > 1 ? (iChargeTime + ((iContinuous + 1) * iContinuousDelay)) - 1 : iContinuous + iChargeTime;
+			int iFireFrame = max(0, iBurstLengthInFrames - int(dwContinuous));
 
 			SActivateCtx ActivateCtx(Ctx);
 
-			if ((dwContinuous % iContinuousDelay) == 0)
+			if ((dwContinuous % iContinuousDelay) == 0 || (int(dwContinuous) > iBurstLengthInFrames))
 				{
-				ActivateCtx.iRepeatingCount = 1 + iContinuous - (dwContinuous / iContinuousDelay);
+				if (ActivateCtx.TargetList.IsEmpty())
+					ActivateCtx.TargetList = pSource->GetTargetList();
 
-				FireWeapon(*pDevice, *pShot, ActivateCtx);
+				ActivateCtx.iRepeatingCount = 1 + iContinuous - min(int(dwContinuous / iContinuousDelay), iContinuous + 1);
+				ActivateCtx.iChargeFrame = 1 + iBurstLengthInFrames - min((int(dwContinuous) - iBurstLengthInFrames), iBurstLengthInFrames + 1);
+
+				FireWeapon(*pDevice, *pShot, ActivateCtx, (int(dwContinuous) <= iBurstLengthInFrames));
 
 				if (pSource->IsDestroyed())
 					return;

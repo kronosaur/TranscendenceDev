@@ -887,6 +887,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'balanceDamage\n"
 			"   'balanceCost\n"
 			"   'balanceExcludeCost\n"
+			"   'chargeTime\n"
 			"   'damage              Average damage per 180 ticks\n"
 			"   'damagePerProjectile\n"
 			"   'damageWMD180        Average WMD damage per 180 ticks\n"

@@ -262,9 +262,10 @@ class CWeaponClass : public CDeviceClass
 							   int iFireAngle,
 							   int iRepeatingCount,
 							   SShotFireResult &retResult);
-		bool FireWeapon (CInstalledDevice &Device, 
-						 const CWeaponFireDesc &ShotDesc, 
-						 SActivateCtx &ActivateCtx);
+		bool FireWeapon (CInstalledDevice &Device,
+						 const CWeaponFireDesc &ShotDesc,
+						 SActivateCtx &ActivateCtx,
+						 const bool IsCharging = false);
 		void FireWeaponShot (CSpaceObject *pSource, 
 							 CInstalledDevice *pDevice, 
 							 const CWeaponFireDesc &ShotDesc, 
@@ -274,6 +275,7 @@ class CWeaponClass : public CDeviceClass
 							 CSpaceObject *pTarget,
 							 int iRepeatingCount,
 							 int iShotNumber);
+		int GetChargeTime(const CWeaponFireDesc& Shot) const;
 		const CConfigurationDesc &GetConfiguration (const CWeaponFireDesc &ShotDesc) const;
 		int GetContinuous (const CWeaponFireDesc &Shot) const;
 		int GetContinuousFireDelay (const CWeaponFireDesc &Shot) const;
@@ -334,6 +336,7 @@ class CWeaponClass : public CDeviceClass
 		int m_iCounterUpdate;					//	Inc/dec value per update
 		int m_iCounterActivate;					//	Inc/dec value per shot
 		int m_iCounterPerShot;					//	How much to increment the ship's counter by per shot
+		int m_iChargeTime;						//  Charge time before firing
 
 		bool m_bTargetStationsOnly;				//	Do not target ships
 

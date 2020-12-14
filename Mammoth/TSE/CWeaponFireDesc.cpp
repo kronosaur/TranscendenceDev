@@ -21,6 +21,7 @@
 #define AREA_DAMAGE_DENSITY_ATTRIB				CONSTLIT("areaDamageDensity")
 #define AUTO_TARGET_ATTRIB						CONSTLIT("autoAcquireTarget")
 #define CAN_HIT_SOURCE_ATTRIB					CONSTLIT("canHitSource")
+#define CHARGE_TIME_ATTRIB						CONSTLIT("chargeTime")
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define EXHAUST_RATE_ATTRIB						CONSTLIT("creationRate")
 #define DAMAGE_ATTRIB							CONSTLIT("damage")
@@ -2153,6 +2154,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	m_iContinuous = pDesc->GetAttributeIntegerBounded(BEAM_CONTINUOUS_ATTRIB, 0, -1, -1);
 	m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(CONTINUOUS_FIRE_DELAY_ATTRIB, 0, -1, -1);
+	m_iChargeTime = pDesc->GetAttributeIntegerBounded(CHARGE_TIME_ATTRIB, 0, -1, -1);
 
 	if (pDesc->FindAttributeInteger(PASSTHROUGH_ATTRIB, &m_iPassthrough))
 		{
