@@ -1646,6 +1646,9 @@
 	<!ENTITY rsAdventurerOutfitters		"0x00100053">
 	<!ENTITY dsCorporateAutonManage		"0x00100054">
 	<!ENTITY rsCorporateAutonDealer		"0x00100055">
+	<!ENTITY tbCorpAutonDefenders		"0x00100056">
+	<!ENTITY tbCorpMakayevDefenders		"0x00100057">
+	<!ENTITY tbCorpRasiermesserDefenders	"0x00100058">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	

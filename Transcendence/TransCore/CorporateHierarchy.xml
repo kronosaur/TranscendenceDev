@@ -192,17 +192,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="4-5">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -355,7 +350,7 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships standingCount="3">
+		<Ships standingCount="3-4">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
@@ -505,17 +500,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="3-4">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -617,17 +607,12 @@
 				>
 		</DockingPorts>
 		
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="4-5">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<Devices>
 			<Device deviceID="&itNeutronBlaster;"	omnidirectional="true"/>
@@ -756,8 +741,11 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="1d4+2" table="&tbCommPrivateCrafts;"/>
+		<Ships standingCount="4-6">
+			<Table>
+				<Lookup chance="50" table="&tbCorpDefenders;"/>
+				<Lookup chance="50" table="&tbCommPrivateCrafts;"/>
+			</Table>
 		</Ships>
 
 		<!-- Image and Effects -->
@@ -1035,17 +1023,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="1d2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="3">
+		<Ships standingCount="3-4">
 			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
+				<Lookup chance="50" table="&tbCorpDefenders;"/>
+				<Lookup chance="50" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -1173,8 +1156,11 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="1d4+2" table="&tbCommPrivateCrafts;"/>
+		<Ships standingCount="4-6">
+			<Table>
+				<Lookup chance="50" table="&tbCorpDefenders;"/>
+				<Lookup chance="50" table="&tbCommPrivateCrafts;"/>
+			</Table>
 		</Ships>
 
 		<!-- Image and Effects -->
@@ -1426,9 +1412,11 @@
 
 		<Image			imageID="&rsStations2;" imageX="0" imageY="256" imageWidth="192" imageHeight="256"/>
 
-		<Ships>
-			<Lookup count="1d2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
+		<Ships standingCount="4-5">
+			<Table>
+				<Lookup chance="25" table="&tbCorpDefenders;"/>
+				<Lookup chance="75" table="&tbCommPrivateCrafts;"/>
+			</Table>
 		</Ships>
 
 		<Trade currency="credit">
@@ -1617,8 +1605,9 @@
 		
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Ship			count="1d3+1"	class="&scTenhoveSentinel;"	orders="patrol" patrolDist="5"/>
+		<Ships standingCount="3-4">
+			<Lookup chance="50" table="&tbCorpAutonDefenders;"/>
+			<Lookup chance="50" table="&tbCommPrivateCrafts;"/>
 		</Ships>
 
 		<!-- Image and Effects -->
@@ -1785,18 +1774,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Ship chance="75" class="&scBritannia;" orders="guard"/>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="4-5">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -1883,17 +1866,12 @@
 
 		<Image			imageID="&rsStations5;" imageX="128" imageY="384" imageWidth="128" imageHeight="256"/>
 
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="4-5">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<Items>
 			<RandomItem count="20-30" 
@@ -2525,6 +2503,14 @@
 
 <!-- TABLES -->
 
+	<ShipTable unid="&tbCorpAutonDefenders;">
+		<LevelTable>
+			<Ship levelFrequency="uccr- -----" class="&scAutoSentinel;"			orders="orbitExact:radius=8:speed=1"	buildReinforcements="true"/>
+			<Ship levelFrequency="-uccr -----" class="&sc300DDefenderAuton;"	orders="orbitExact:radius=8:speed=1"	buildReinforcements="true"/>
+			<Ship levelFrequency="--ucc rvvvv" class="&sc1MBattleAuton;"		orders="orbitExact:radius=8:speed=1"	buildReinforcements="true"/>
+		</LevelTable>
+	</ShipTable>
+	
 	<ShipTable unid="&tbCorpDefenders;">
 		<LevelTable>
 			<Ship levelFrequency="cccr- -----" count="1" class="&scRoninA;" orders="guard"/>
