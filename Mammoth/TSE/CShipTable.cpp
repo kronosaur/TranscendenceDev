@@ -19,6 +19,7 @@
 #define TABLE_TAG					CONSTLIT("Table")
 
 #define BUILD_ATTRIB				CONSTLIT("build")
+#define BUILD_REINFORCEMENTS_ATTRIB	CONSTLIT("buildReinforcements")
 #define CHANCE_ATTRIB				CONSTLIT("chance")
 #define CLASS_ATTRIB				CONSTLIT("class")
 #define CONTROLLER_ATTRIB			CONSTLIT("controller")
@@ -1063,7 +1064,7 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 	//	Options
 
-	m_bBuild = pDesc->GetAttributeBool(BUILD_ATTRIB);
+	m_bBuild = pDesc->GetAttributeBool(BUILD_ATTRIB) || pDesc->GetAttributeBool(BUILD_REINFORCEMENTS_ATTRIB);
 
 	//	Validate
 
