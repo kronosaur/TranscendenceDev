@@ -765,15 +765,15 @@
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
-							<Action name="Corporate Level" default="1" key="C">
+							<Action id="actionCorporateLevel" default="1">
 								<Navigate screen="CorporateLevel" />
 							</Action>
 
-							<Action name="Residential Level" key="R" id="residentialLevel">
+							<Action id="actionResidentialLevel">
 								<ShowPane pane="ResidentialLevel"/>
 							</Action>
 
-							<Action name="Maintenance Level" key="M">
+							<Action id="actionMaintenanceLevel">
 								(if (objGetItems gPlayerShip "*NU +Illegal; -ID; +property:known;")
 									(scrShowPane gScreen "Illegals")
 									(scrShowPane gScreen "MaintenanceLevel")
@@ -790,7 +790,7 @@
 
 					<Illegals descID="descIllegals">
 						<Actions>
-							<Action name="Enter Maintenance Shop" default="1" key="E">
+							<Action id="actionEnterMaintenanceShop" default="1">
 								<ShowPane pane="MaintenanceShop"/>
 							</Action>
 
@@ -846,7 +846,7 @@
 									)
 							</Action>
 
-							<Action id="actionIllegalsDecline" name="&quot;Sorry, you have me confused with someone else.&quot;" cancel="1" key="S">
+							<Action id="actionIllegalsDecline" cancel="1">
 								<ShowPane pane="Illegals"/>
 							</Action>
 						</Actions>
@@ -886,6 +886,11 @@
 		<!-- Events and Data -->
 
 		<Language>
+			<Text id="actionCorporateLevel">[C]orporate Level</Text>
+			<Text id="actionResidentialLevel">[R]esidential Level</Text>
+			<Text id="actionMaintenanceLevel">[M]aintenance Level</Text>
+			<Text id="actionEnterMaintenanceShop">[E]nter Maintenance Shop</Text>
+
 			<Text id="descWelcome">
 
 				You are in the docking level of a corporate enclave. The 
@@ -941,6 +946,7 @@
 				resources. We are not interested in buying %itemName%.
 
 			</Text>
+
 			<String id="actionIllegalsAccept">"[S]ure, the merchandise is in my cargo hold."</String>
 			<String id="actionIllegalsDecline">"You've co[n]fused me with someone else, sorry."</String>
 
