@@ -816,6 +816,8 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 //	Returns an image of the station, including any satellite segments.
 
 	{
+	DEBUG_TRY
+
 	//	Get the main image
 
 	int iVariant;
@@ -909,6 +911,8 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 
 		return pCompositeImage;
 		}
+
+	DEBUG_CATCH
 	}
 
 bool CStationType::FindDataField (const CString &sField, CString *retsValue) const
