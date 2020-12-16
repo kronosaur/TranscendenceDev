@@ -6216,7 +6216,9 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &So
 				//	We cannot hit our friends (if our source can't)
 				&& ((CanHitFriends() && Source.CanHitFriends() && pObj->CanBeHitByFriends()) 
 					|| Source.IsAngryAt(*pObj, GetSovereign())
-					|| pObj->GetScale() == scaleWorld || pObj->GetScale() == scaleStar)
+					//	But we can always hit planets, stargates, etc. (Otherwise
+					//	the player can't hide from Quantumsphere shots.)
+					|| pObj->IsImmutable() || pObj->GetScale() == scaleWorld || pObj->GetScale() == scaleStar)
 
 				//	If our source is the player, then we cannot hit player wingmen
 
