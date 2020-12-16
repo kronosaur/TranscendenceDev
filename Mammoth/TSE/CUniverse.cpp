@@ -2743,7 +2743,22 @@ void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 
 		if ((pMission->IsCompletedNonPlayer() && pMission->CleanNonPlayer()) || pMission->IsDestroyed())
 			{
-			m_AllMissions.Delete(i);
+			if (!pMission->IsDestroyed())
+				{
+				if (m_Events.CancelEvent(pMission, false))
+					{
+					kernelDebugLogPattern("DEBUG: Canceled event for mission %s", pMission->GetNounPhrase());
+					}
+				}
+			else
+				{
+				if (m_Events.CancelEvent(pMission, false))
+					{
+					kernelDebugLogPattern("DEBUG: Canceled event for a destroyed mission %s", pMission->GetNounPhrase());
+					}
+				}
+
+			m_AllMissions.DeleteMission(i);
 			i--;
 			}
 		}
