@@ -490,7 +490,7 @@
 						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:0.75")	result:"kinetic:1d12; repel:5;"	}
 						{	test:'(itm@ &itTestWeaponFading; "damageDescAt:1.0")	result:"kinetic:0;"	}
 
-						;	Item Frequency -------------------------------------
+						;	Frequency ------------------------------------------
 
 						{	test:'(itm@ &itTestRareInNewBeyond1; 'frequency)		result:'common	}
 						{	test:'(itm@ &itTestRareInNewBeyond1; 'frequencyRate)	result:20	}
@@ -505,6 +505,12 @@
 																					result:2	}
 						{	test:'(sysGetItemFrequency 'C9 &itTestRareInNewBeyond2;)
 																					result:10	}
+
+						;	Interaction ----------------------------------------
+
+						{	test:'(itm@ &itQuantumsphereDisintegrator; 'interaction)
+																					result:'always	}
+
 
 						))
 

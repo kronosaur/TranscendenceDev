@@ -114,6 +114,8 @@
 #define PROPERTY_STD_INTERACTION				CONSTLIT("stdInteraction")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
+#define INTERACTION_ALWAYS						CONSTLIT("always")
+
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
 const CWeaponFireDesc CWeaponFireDesc::m_Null;
@@ -815,7 +817,12 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 		return CC.CreateString(Result.AsString());
 		}
 	else if (strEquals(sProperty, PROPERTY_INTERACTION))
-		return CC.CreateInteger(GetInteraction());
+		{
+		if (GetInteraction().AlwaysInteracts())
+			return CC.CreateString(CONSTLIT("always"));
+		else
+			return CC.CreateInteger(GetInteraction());
+		}
 
 	else if (strEquals(sProperty, PROPERTY_LIFETIME))
 		return CC.CreateNumber(m_Lifetime.GetAveValueFloat());
@@ -1773,7 +1780,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	//	Hit points and interaction
 
 	m_iHitPoints = 0;
-	m_iInteraction = 0;
+	m_Interaction = CInteractionLevel();
 	m_fDefaultHitPoints = false;
 	m_fDefaultInteraction = false;
 
@@ -2342,8 +2349,31 @@ bool CWeaponFireDesc::InitHitPoints (SDesignLoadCtx &Ctx, const CXMLElement &XML
 		m_iHitPoints = XMLDesc.GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0, -1, -1);
 		m_fDefaultHitPoints = (m_iHitPoints == -1);
 
-		m_iInteraction = XMLDesc.GetAttributeIntegerBounded(INTERACTION_ATTRIB, 0, 100, -1);
-		m_fDefaultInteraction = (m_iInteraction == -1);
+		CString sInteraction;
+		if (XMLDesc.FindAttribute(INTERACTION_ATTRIB, &sInteraction))
+			{
+			m_fDefaultInteraction = false;
+
+			if (strEquals(sInteraction, INTERACTION_ALWAYS))
+				m_Interaction = -1;
+			else
+				{
+				bool bFailed;
+				m_Interaction = strToInt(sInteraction, 0, &bFailed);
+
+				if (bFailed)
+					m_fDefaultInteraction = true;
+				else if (m_Interaction < 0)
+					m_Interaction = 0;
+				else if (m_Interaction > 100)
+					m_Interaction = 100;
+				}
+			}
+		else
+			{
+			m_Interaction = 0;
+			m_fDefaultInteraction = true;
+			}
 		}
 
 	//	Otherwise, none
@@ -2351,7 +2381,7 @@ bool CWeaponFireDesc::InitHitPoints (SDesignLoadCtx &Ctx, const CXMLElement &XML
 	else
 		{
 		m_iHitPoints = 0;
-		m_iInteraction = 100;
+		m_Interaction = CInteractionLevel(100);
 		m_fDefaultHitPoints = false;
 		m_fDefaultInteraction = false;
 		}
@@ -2576,7 +2606,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_rMaxMissileSpeed = Src.m_rMaxMissileSpeed;
 	m_iStealth = Src.m_iStealth;
 	m_iHitPoints = Src.m_iHitPoints;
-	m_iInteraction = Src.m_iInteraction;
+	m_Interaction = Src.m_Interaction;
 	m_iManeuverability = Src.m_iManeuverability;
 	m_iManeuverRate = Src.m_iManeuverRate;
 
@@ -2796,7 +2826,7 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 		m_iHitPoints = CalcDefaultHitPoints();
 
 	if (m_fDefaultInteraction)
-		m_iInteraction = CalcDefaultInteraction();
+		m_Interaction = CInteractionLevel(CalcDefaultInteraction());
 
 	//	Fragment
 

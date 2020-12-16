@@ -1116,7 +1116,7 @@ class CSpaceObject
 		virtual Categories GetCategory (void) const { return catOther; }
 		virtual DWORD GetClassUNID (void) { return 0; }
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
-		virtual int GetInteraction (void) const { return -1; }
+		virtual CInteractionLevel GetInteraction (void) const { return -1; }
 		virtual Metric GetInvMass (void) const { return 0.0; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
 		virtual Metric GetMass (void) const { return 0.0; }
@@ -1361,7 +1361,7 @@ class CSpaceObject
 		bool IsObjectDestructionHooked (void) { return (m_fHookObjectDestruction ? true : false); }
 		void ItemEnhancementModified (CItemListManipulator &ItemList) { OnItemEnhanced(ItemList); }
 		bool MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &Source, CWeaponFireDesc *pDesc) const;
-		static bool MissileCanInteract (const CSpaceObject &Obj, int iInteraction, const CSpaceObject *pTarget = NULL);
+		static bool MissileCanInteract (const CSpaceObject &Obj, CInteractionLevel Interaction, const CSpaceObject *pTarget = NULL);
 		void PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);

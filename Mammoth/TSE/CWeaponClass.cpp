@@ -470,8 +470,8 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 	//  Projectile HP and interaction
 
 	retBalance.rProjectileHP = 0.0;
-	if (pShotDesc->GetInteraction() < 100)
-		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100.0 - pShotDesc->GetInteraction()) / 100.0;
+	if (!pShotDesc->GetInteraction().InteractsAtMaxLevel())
+		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100.0 - (int)pShotDesc->GetInteraction()) / 100.0;
 
 	if (pShotDesc->GetHitPoints() > 0)
 		retBalance.rProjectileHP += BALANCE_HP_FACTOR * pShotDesc->GetHitPoints() / (Metric)Stats.iDamage;

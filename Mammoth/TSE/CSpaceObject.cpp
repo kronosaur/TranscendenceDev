@@ -6158,7 +6158,7 @@ bool CSpaceObject::MatchesCriteriaCategory (CSpaceObjectCriteria::SCtx &Ctx, con
 	return false;
 	}
 
-bool CSpaceObject::MissileCanInteract (const CSpaceObject &Obj, int iInteraction, const CSpaceObject *pTarget)
+bool CSpaceObject::MissileCanInteract (const CSpaceObject &Obj, CInteractionLevel Interaction, const CSpaceObject *pTarget)
 
 //	MissileCanInteract
 //
@@ -6166,27 +6166,7 @@ bool CSpaceObject::MissileCanInteract (const CSpaceObject &Obj, int iInteraction
 //	and the given target.
 
 	{
-	//	Interaction of -1 means that the object is a ship or station, which can
-	//	always be hit.
-
-	int iObjInteraction = Obj.GetInteraction();
-	if (iObjInteraction < 0)
-		return true;
-
-	//	Combine the interaction values.
-
-	int iResultInteraction;
-	if (pTarget && pTarget == Obj)
-		iResultInteraction = Max(iInteraction, iObjInteraction);
-	else
-		iResultInteraction = Min(iInteraction, iObjInteraction);
-
-	if (iResultInteraction >= 100)
-		return true;
-	else if (iResultInteraction <= 0)
-		return false;
-	else
-		return (mathRandom(1, 100) <= iResultInteraction);
+	return Interaction.CalcCanInteractWith(Obj.GetInteraction(), pTarget && pTarget == Obj);
 	}
 
 bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &Source, CWeaponFireDesc *pDesc) const

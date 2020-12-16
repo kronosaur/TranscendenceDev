@@ -381,7 +381,7 @@ class CVisibleMissileObjSelector
 
 		bool Matches (CSpaceObject &Obj, Metric rDist2) const
 			{
-			return (Obj.GetInteraction() >= 100
+			return (Obj.GetInteraction().InteractsAtMaxLevel()
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
 				&& !Obj.IsUnreal());
 			}

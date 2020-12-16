@@ -10,7 +10,6 @@
 const DWORD VAPOR_TRAIL_OPACITY =				80;
 
 const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
-const int MIN_MISSILE_INTERACTION =				10;
 
 CMissile::CMissile (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pExhaust(NULL),
@@ -226,7 +225,7 @@ ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpM
 	//	m_pHit is setup in Move and the object can go away between then
 	//	and our Update event.)
 
-	if (Ctx.pDesc->GetInteraction() == 0)
+	if (Ctx.pDesc->GetInteraction().NeverInteracts())
 		{
 		pMissile->DisableObjectDestructionNotify();
 		pMissile->SetCannotBeHit();
@@ -514,7 +513,7 @@ CSpaceObject::Categories CMissile::GetCategory (void) const
 	{
 	//	We count as a beam if we're type="beam"
 
-	return ((m_pDesc->GetFireType() == CWeaponFireDesc::ftBeam || m_pDesc->GetInteraction() < MIN_MISSILE_INTERACTION) ? catBeam : catMissile);
+	return ((m_pDesc->GetFireType() == CWeaponFireDesc::ftBeam || m_pDesc->GetInteraction().InteractsLikeBeam()) ? catBeam : catMissile);
 	}
 
 int CMissile::GetLastFireTime (void) const

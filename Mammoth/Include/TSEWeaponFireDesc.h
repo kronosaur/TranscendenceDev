@@ -431,6 +431,34 @@ class DamageTypeSet
 		DWORD m_dwSet;
 	};
 
+//	Interaction ----------------------------------------------------------------
+
+class CInteractionLevel
+	{
+	public:
+		CInteractionLevel () { }
+
+		CInteractionLevel (int iInteraction) :
+				m_iInteraction(iInteraction)
+			{
+			ASSERT(m_iInteraction == -1 || (m_iInteraction >= 0 && m_iInteraction <= 100));
+			}
+
+		operator int () const { return (m_iInteraction == -1 ? 100 : m_iInteraction); }
+
+		bool AlwaysInteracts () const { return m_iInteraction == -1; }
+		bool CalcCanInteractWith (const CInteractionLevel &Other, bool bTargetingOther, int *retiChance = NULL) const;
+		int CalcInteractionChanceWith (const CInteractionLevel &Other, bool bTargetingOther) const;
+		bool InteractsLikeBeam () const { return (m_iInteraction >= 0 && m_iInteraction < MIN_MISSILE_INTERACTION); }
+		bool InteractsAtMaxLevel () const { return (m_iInteraction == -1 || m_iInteraction == 100); }
+		bool NeverInteracts () const { return m_iInteraction == 0; }
+
+	private:
+		static constexpr int MIN_MISSILE_INTERACTION = 10;
+
+		int m_iInteraction = 0;						//	0-100; -1 = always interact
+	};
+
 //	Shots ----------------------------------------------------------------------
 
 struct SShotCreateCtx
@@ -703,7 +731,7 @@ class CWeaponFireDesc
 		const CObjectImageArray &GetImage (void) const { return GetOldEffects().Image; }
 		int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
 		Metric GetInitialSpeed (void) const;
-		int GetInteraction (void) const { return m_iInteraction; }
+		const CInteractionLevel &GetInteraction () const { return m_Interaction; }
 		int GetLevel (void) const;
 		int GetLifetime (void) const { return m_Lifetime.Roll(); }
 		int GetManeuverRate (void) const { return m_iManeuverRate; }
@@ -821,7 +849,7 @@ class CWeaponFireDesc
 		Metric m_rMaxMissileSpeed = 0.0;		//	Max speed.
 		int m_iStealth = 0;						//	Missile stealth
 		int m_iHitPoints = 0;					//	HP before dissipating (0 = destroyed by any hit)
-		int m_iInteraction = 0;					//	Interaction opacity (0-100)
+		CInteractionLevel m_Interaction;		//	Interaction opacity (0-100; -1 = always interact)
 		int m_iManeuverability = 0;				//	Tracking maneuverability (0 = none)
 		int m_iManeuverRate = 0;				//	Angle turned at each maneuverability point
 
