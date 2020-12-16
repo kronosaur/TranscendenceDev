@@ -67,7 +67,7 @@
 						accelerationFactor="125"
 						maxMissileSpeed="35"
 						maneuverRate=	"1"
-						lifetime=		"360"
+						lifetime=		"600"
 						
 						interaction=	"always"
 						noFriendlyFire=	"true"
