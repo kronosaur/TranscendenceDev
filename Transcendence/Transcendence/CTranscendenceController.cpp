@@ -732,6 +732,8 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 //	Handle commands from sessions, etc.
 
 	{
+	DEBUG_TRY
+
 	ALERROR error;
 	CString sError;
 
@@ -2048,6 +2050,8 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		return ERR_NOTFOUND;
 
 	return NOERROR;
+
+	DEBUG_CATCH_MSG1("Crash in CTranscendenceController::OnCommand: %s", sCmd);
 	}
 
 ALERROR CTranscendenceController::OnInit (CString *retsError)
