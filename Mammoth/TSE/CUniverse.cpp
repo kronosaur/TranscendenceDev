@@ -2954,6 +2954,19 @@ CTimeSpan CUniverse::StopGameTime (void)
 	return timeSpan(m_StartTime, StopTime);
 	}
 
+void CUniverse::StopSound (int iChannel)
+
+//	StopSound
+//
+//	Stops playing the given sound.
+
+	{
+	if (m_bNoSound || !m_pSoundMgr || iChannel == -1)
+		return;
+
+	m_pSoundMgr->Stop(iChannel);
+	}
+
 bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 
 //	Update

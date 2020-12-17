@@ -1147,6 +1147,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CSpaceObject *GetDockedObj (void) const override { return (m_fShipCompartment ? NULL : m_pDocked); }
 		virtual const CDockingPorts *GetDockingPorts (void) const override { return &m_DockingPorts; }
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
+		virtual const CSoundResource *GetDockScreenAmbientSound () const override;
 		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_Devices.GetDevice(iDev); }
 		virtual int GetDeviceCount (void) const override { return m_Devices.GetCount(); }
 		virtual CDeviceItem GetDeviceItem (int iDev) const override { return m_Devices.GetDeviceItem(iDev); }

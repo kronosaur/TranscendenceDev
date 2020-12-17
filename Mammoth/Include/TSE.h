@@ -549,6 +549,7 @@ class CSpaceObject
 		//	Dock Screens
 
 		virtual DWORD GetDefaultBkgnd (void) { return 0; }
+		virtual const CSoundResource *GetDockScreenAmbientSound () const { return NULL; }
 		virtual CXMLElement *GetScreen (const CString &sName);
 
 		CDesignType *GetFirstDockScreen (CString *retsScreen = NULL, ICCItemPtr *retpData = NULL);
@@ -1022,6 +1023,29 @@ class CSpaceObject
 		bool IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
+		//	Ships
+
+		virtual const CShipPerformanceDesc &GetShipPerformance (void) const { return CShipPerformanceDesc::Null(); }
+
+		//	Stargates (object is a stargate)
+
+		virtual CString GetStargateID (void) const { return NULL_STR; }
+		virtual bool IsActiveStargate (void) const { return false; }
+		virtual bool IsStargate (void) const { return false; }
+		virtual bool RequestGate (CSpaceObject *pObj);
+		virtual bool SupportsGating (void) { return false; }
+
+		Metric GetMaxGateDist2 (void) const;
+
+		//	Statics
+
+		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
+		static CString ConvertToID (InstallItemResults iResult);
+
+		//	Stations
+
+		virtual const CAsteroidDesc &GetAsteroidDesc (void) const { return CAsteroidDesc::Null(); }
+
 		//	Trade
 
 		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
@@ -1055,29 +1079,6 @@ class CSpaceObject
 		bool HasTradeUpgradeOnly (ETradeServiceTypes iService) const;
 		void RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
-
-		//	Ships
-
-		virtual const CShipPerformanceDesc &GetShipPerformance (void) const { return CShipPerformanceDesc::Null(); }
-
-		//	Stargates (object is a stargate)
-
-		virtual CString GetStargateID (void) const { return NULL_STR; }
-		virtual bool IsActiveStargate (void) const { return false; }
-		virtual bool IsStargate (void) const { return false; }
-		virtual bool RequestGate (CSpaceObject *pObj);
-		virtual bool SupportsGating (void) { return false; }
-
-		Metric GetMaxGateDist2 (void) const;
-
-		//	Statics
-
-		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
-		static CString ConvertToID (InstallItemResults iResult);
-
-		//	Stations
-
-		virtual const CAsteroidDesc &GetAsteroidDesc (void) const { return CAsteroidDesc::Null(); }
 
 		//	Wingmen
 

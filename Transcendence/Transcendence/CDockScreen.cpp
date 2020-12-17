@@ -762,7 +762,7 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 		return ICCItemPtr(GetDescription());
 
 	else if (strEquals(sProperty, PROPERTY_IN_FIRST_ON_INIT))
-		return ICCItemPtr(IsFirstOnInit());
+		return ICCItemPtr(GetUniverse().GetDockSession().IsFirstOnInit());
 
 	else if (strEquals(sProperty, PROPERTY_INPUT))
 		return ICCItemPtr(GetTextInput());
@@ -982,7 +982,7 @@ ALERROR CDockScreen::FireOnScreenInit (CSpaceObject *pSource, ICCItem *pData, CS
 		m_bInOnInit = false;
 		}
 
-	m_bFirstOnInit = false;
+	GetUniverse().GetDockSession().OnInitCalled();
 
 	return NOERROR;
 

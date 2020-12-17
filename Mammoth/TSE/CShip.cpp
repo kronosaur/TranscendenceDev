@@ -2714,6 +2714,21 @@ CDesignType *CShip::GetDefaultDockScreen (CString *retsName, ICCItemPtr *retpDat
 	return m_pClass->GetFirstDockScreen(retsName);
 	}
 
+const CSoundResource *CShip::GetDockScreenAmbientSound () const
+
+//	GetDockScreenAmbientSound
+//
+//	Returns the ambient sound for dock screen.
+
+	{
+	if (const CPlayerSettings *pPlayerSettings = m_pClass->GetPlayerSettings())
+		{
+		return pPlayerSettings->GetDockScreenVisuals(GetUniverse()).GetAmbient();
+		}
+	else
+		return NULL;
+	}
+
 CSpaceObject *CShip::GetEscortPrincipal (void) const
 
 //	GetEscortPrincipal

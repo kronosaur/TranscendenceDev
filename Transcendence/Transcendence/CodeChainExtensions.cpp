@@ -1655,6 +1655,7 @@ ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	ICCItem *pArgs;
 	ICCItem *pResult;
 
@@ -1690,7 +1691,7 @@ ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			break;
 
 		case FN_SCR_IS_FIRST_ON_INIT:
-			pResult = pCC->CreateBool(pScreen->IsFirstOnInit());
+			pCC->CreateBool(pCtx->GetUniverse().GetDockSession().IsFirstOnInit());
 			break;
 
 		case FN_SCR_LIST_ENTRY:
