@@ -137,6 +137,7 @@ class CSFXOptions
 		void SetManeuveringEffectEnabled (bool bEnabled = true) { m_bManeuveringEffect = bEnabled; }
 		void SetSFXQuality (ESFXQuality iQuality);
 		void SetSFXQualityAuto (void);
+		void SetSpaceBackground (bool bEnabled = true) { m_bSpaceBackground = bEnabled; }
 
 	private:
 		ESFXQuality m_iQuality;
