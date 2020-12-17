@@ -190,6 +190,8 @@ class CMapViewportCtx
 		int GetCenterX (void) const { return m_xCenter; }
 		int GetCenterY (void) const { return m_yCenter; }
 		CLabelPainter &GetLabelPainter (void) { return m_Labels; }
+		const CVector &GetLL () const { return m_vLL; }
+		const CVector &GetUR () const { return m_vUR; }
 		const RECT &GetViewportRect (void) const { return m_rcView; }
 		ViewportTransform &GetXform (void) { return m_Trans; }
 		bool IsInViewport (CSpaceObject *pObj) const;

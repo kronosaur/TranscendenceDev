@@ -196,7 +196,13 @@ class CGeometry
 		static void AddArcPoints (const CVector &vCenter, Metric rRadius, Metric rFromAngle, Metric rToAngle, TArray<CVector> *ioPoints, DWORD dwFlags = 0);
 		static int AngleArc (int iMinAngle, int iMaxAngle);
 		static void CombineArcs (int iMinAngle1, int iMaxAngle1, int iMinAngle2, int iMaxAngle2, int *retiMin, int *retiMax);
+		static bool ClipLineWithRect (const CVector &vLineStart, const CVector &vLineEnd, const CVector &vLL, const CVector &vUR, CVector *retvLineStart = NULL, CVector *retvLineEnd = NULL);
+		static bool IntersectLine (const CVector &vStart1, const CVector &vEnd1, const CVector &vStart2, const CVector &vEnd2, CVector *retvIntersection = NULL, Metric *retIntersectFraction = NULL);
 		static EIntersect IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1 = NULL, CVector *retvP2 = NULL);
+		static bool IntersectRect (const CVector &vLL, const CVector &vUR, const CVector &vPoint);
+
+	private:
+		static bool FindFirstIntersection (const CVector &vLL, const CVector &vUR, const CVector &vLineStart, const CVector &vLineEnd, CVector *retvIntersection = NULL);
 	};
 
 //	Transform class

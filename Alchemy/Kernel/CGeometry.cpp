@@ -137,6 +137,200 @@ int CGeometry::AngleArc (int iMinAngle, int iMaxAngle)
 		return (iMaxAngle - iMinAngle) % 360;
 	}
 
+bool CGeometry::ClipLineWithRect (const CVector &vLineStart, const CVector &vLineEnd, const CVector &vLL, const CVector &vUR, CVector *retvLineStart, CVector *retvLineEnd)
+
+//	ClipLineWithRect
+//
+//	Clips the given line to the rect and return TRUE if we end up with a non-
+//	empty line.
+
+	{
+	//	We handle the case where the line end is always at or above line start.
+
+	if (vLineEnd.GetY() < vLineStart.GetY())
+		return ClipLineWithRect(vLineEnd, vLineStart, vLL, vUR, retvLineEnd, retvLineStart);
+
+	//	If the line start is above our rect, then the whole line is outside.
+
+	else if (vLineStart.GetY() > vUR.GetY())
+		return false;
+
+	//	If the line end is below our rect, then the whole line is outside.
+
+	else if (vLineEnd.GetY() < vLL.GetY())
+		return false;
+
+	//	Handle case where the line move up and to the right.
+
+	else if (vLineEnd.GetX() >= vLineStart.GetX())
+		{
+		if (vLineStart.GetX() > vUR.GetX())
+			return false;
+		else if (vLineEnd.GetX() < vLL.GetX())
+			return false;
+		}
+
+	//	Otherwise, the line moves up and to the left.
+
+	else
+		{
+		if (vLineStart.GetX() < vLL.GetX())
+			return false;
+		else if (vLineEnd.GetX() > vUR.GetX())
+			return false;
+		}
+
+	//	See if the start point is inside the rectangle.
+
+	if (IntersectRect(vLL, vUR, vLineStart))
+		{
+		if (retvLineStart) *retvLineStart = vLineStart;
+
+		//	If both points are inside, then no need to clip.
+
+		if (IntersectRect(vLL, vUR, vLineEnd))
+			{
+			if (retvLineEnd) *retvLineEnd = vLineEnd;
+			return true;
+			}
+
+		//	Otherwise see which edge we intersect with.
+
+		else
+			{
+			return FindFirstIntersection(vLL, vUR, vLineStart, vLineEnd, retvLineEnd);
+			}
+		}
+
+	//	See if the end point is inside the rectangle.
+
+	else if (IntersectRect(vLL, vUR, vLineEnd))
+		{
+		if (retvLineEnd) *retvLineEnd = vLineEnd;
+
+		//	If both points are inside, then no need to clip.
+
+		if (IntersectRect(vLL, vUR, vLineStart))
+			{
+			if (retvLineStart) *retvLineStart = vLineStart;
+			return true;
+			}
+
+		//	Otherwise, see which edge we intersect with.
+
+		else
+			{
+			return FindFirstIntersection(vLL, vUR, vLineStart, vLineEnd, retvLineStart);
+			}
+		}
+
+	//	Neither point is inside.
+
+	else
+		{
+		//	Start of line is below the rectangle bottom edge
+
+		if (vLineStart.GetY() < vLL.GetY())
+			{
+			//	Intersection with bottom
+
+			if (IntersectLine(CVector(vUR.GetX(), vLL.GetY()), vLL, vLineStart, vLineEnd, retvLineStart))
+				{
+				//	Top
+
+				if (IntersectLine(CVector(vLL.GetX(), vUR.GetY()), vUR, vLineStart, vLineEnd, retvLineEnd))
+					return true;
+
+				//	Left
+
+				else if (IntersectLine(vLL, CVector(vLL.GetX(), vUR.GetY()), vLineStart, vLineEnd, retvLineEnd))
+					return true;
+
+				//	Right
+
+				else if (IntersectLine(vUR, CVector(vUR.GetX(), vLL.GetY()), vLineStart, vLineEnd, retvLineEnd))
+					return true;
+				else
+					return false;
+				}
+
+			//	Intersection with left
+
+			else if (IntersectLine(vLL, CVector(vLL.GetX(), vUR.GetY()), vLineStart, vLineEnd, retvLineStart))
+				{
+				//	Top
+
+				if (IntersectLine(CVector(vLL.GetX(), vUR.GetY()), vUR, vLineStart, vLineEnd, retvLineEnd))
+					return true;
+
+				//	Right
+
+				else if (IntersectLine(vUR, CVector(vUR.GetX(), vLL.GetY()), vLineStart, vLineEnd, retvLineEnd))
+					return true;
+				else
+					return false;
+				}
+
+			//	Intersection with right
+
+			else if (IntersectLine(vUR, CVector(vUR.GetX(), vLL.GetY()), vLineStart, vLineEnd, retvLineStart))
+				{
+				//	Top
+
+				if (IntersectLine(CVector(vLL.GetX(), vUR.GetY()), vUR, vLineStart, vLineEnd, retvLineEnd))
+					return true;
+
+				//	Left
+
+				else if (IntersectLine(vLL, CVector(vLL.GetX(), vUR.GetY()), vLineStart, vLineEnd, retvLineEnd))
+					return true;
+				else
+					return false;
+				}
+			else
+				return false;
+			}
+		else
+			{
+			//	Intersection with left
+
+			if (IntersectLine(vLL, CVector(vLL.GetX(), vUR.GetY()), vLineStart, vLineEnd, retvLineStart))
+				{
+				//	Top
+
+				if (IntersectLine(CVector(vLL.GetX(), vUR.GetY()), vUR, vLineStart, vLineEnd, retvLineEnd))
+					return true;
+
+				//	Right
+
+				else if (IntersectLine(vUR, CVector(vUR.GetX(), vLL.GetY()), vLineStart, vLineEnd, retvLineEnd))
+					return true;
+				else
+					return false;
+				}
+
+			//	Intersection with right
+
+			else if (IntersectLine(vUR, CVector(vUR.GetX(), vLL.GetY()), vLineStart, vLineEnd, retvLineStart))
+				{
+				//	Top
+
+				if (IntersectLine(CVector(vLL.GetX(), vUR.GetY()), vUR, vLineStart, vLineEnd, retvLineEnd))
+					return true;
+
+				//	Left
+
+				else if (IntersectLine(vLL, CVector(vLL.GetX(), vUR.GetY()), vLineStart, vLineEnd, retvLineEnd))
+					return true;
+				else
+					return false;
+				}
+			else
+				return false;
+			}
+		}
+	}
+
 void CGeometry::CombineArcs (int iMinAngle1, int iMaxAngle1, int iMinAngle2, int iMaxAngle2, int *retiMin, int *retiMax)
 
 //	CombineArcs
@@ -175,6 +369,92 @@ void CGeometry::CombineArcs (int iMinAngle1, int iMaxAngle1, int iMinAngle2, int
 		*retiMin = iMinAngle2;
 		*retiMax = iMaxAngle2;
 		}
+	}
+
+bool CGeometry::FindFirstIntersection (const CVector &vLL, const CVector &vUR, const CVector &vLineStart, const CVector &vLineEnd, CVector *retvIntersection)
+
+//	FindFirstIntersection
+//
+//	Intersects a line segment with each side of an axis-aligned rect, and return
+//	the first intersection point we find (or FALSE if we do not intersect).
+
+	{
+	//	Top
+
+	if (IntersectLine(CVector(vLL.GetX(), vUR.GetY()), vUR, vLineStart, vLineEnd, retvIntersection))
+		return true;
+	
+	//	Right
+
+	else if (IntersectLine(vUR, CVector(vUR.GetX(), vLL.GetY()), vLineStart, vLineEnd, retvIntersection))
+		return true;
+
+	//	Bottom
+
+	else if (IntersectLine(CVector(vUR.GetX(), vLL.GetY()), vLL, vLineStart, vLineEnd, retvIntersection))
+		return true;
+
+	//	Left
+
+	else if (IntersectLine(vLL, CVector(vLL.GetX(), vUR.GetY()), vLineStart, vLineEnd, retvIntersection))
+		return true;
+
+	//	No intersection
+
+	else
+		return false;
+	}
+
+bool CGeometry::IntersectLine (const CVector &vStart1, const CVector &vEnd1, const CVector &vStart2, const CVector &vEnd2, CVector *retvIntersection, Metric *retIntersectFraction)
+
+//	IntersectLine
+//
+//	Returns TRUE if the two line segments intersect and also returns
+//	the intersection point.
+//
+//	Coincident lines do not intersect.
+//
+//	Based on sample by Damian Coventry
+//	http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/example.cpp
+
+	{
+	Metric denom = ((vEnd2.GetY() - vStart2.GetY())*(vEnd1.GetX() - vStart1.GetX())) -
+			((vEnd2.GetX() - vStart2.GetX())*(vEnd1.GetY() - vStart1.GetY()));
+
+	Metric nume_a = ((vEnd2.GetX() - vStart2.GetX())*(vStart1.GetY() - vStart2.GetY())) -
+			((vEnd2.GetY() - vStart2.GetY())*(vStart1.GetX() - vStart2.GetX()));
+
+	Metric nume_b = ((vEnd1.GetX() - vStart1.GetX())*(vStart1.GetY() - vStart2.GetY())) -
+			((vEnd1.GetY() - vStart1.GetY())*(vStart1.GetX() - vStart2.GetX()));
+
+	if (denom == 0.0)
+		{
+		if (nume_a == 0.0 && nume_b == 0.0)
+			//	Coincident line
+			return false;
+
+		//	Parallel line
+		return false;
+		}
+
+	Metric ua = nume_a / denom;
+	Metric ub = nume_b / denom;
+
+	if (ua >= 0.0 && ua <= 1.0 && ub >= 0.0 && ub <= 1.0)
+		{
+		if (retvIntersection)
+			*retvIntersection = CVector(
+					vStart1.GetX() + ua * (vEnd1.GetX() - vStart1.GetX()),
+					vStart1.GetY() + ua * (vEnd1.GetY() - vStart1.GetY())
+					);
+
+		if (retIntersectFraction)
+			*retIntersectFraction = ua;
+
+		return true;
+		}
+
+	return false;
 	}
 
 CGeometry::EIntersect CGeometry::IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1, CVector *retvP2)
@@ -292,4 +572,17 @@ CGeometry::EIntersect CGeometry::IntersectLineCircle (const CVector &vFrom, cons
 			return EIntersect::TwoPoints;
 			}
 		}
+	}
+
+bool CGeometry::IntersectRect (const CVector &vLL, const CVector &vUR, const CVector &vPoint)
+
+//	IntersectRect
+//
+//	Returns TRUE if the point is inside the rect
+
+	{
+	return (vUR.GetX() > vPoint.GetX()
+			&& vLL.GetX() < vPoint.GetX()
+			&& vUR.GetY() > vPoint.GetY()
+			&& vLL.GetY() < vPoint.GetY());
 	}
