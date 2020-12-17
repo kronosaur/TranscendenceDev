@@ -413,6 +413,7 @@
 									displayCriteria: "n +stKatsMilitia;"
 									noMissionTextID: 'descNoMissions
 									maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
+									rankDetails: (typTranslate &unidCommonwealthMilitia; 'rankDetails)
 									})
 								)
 							)

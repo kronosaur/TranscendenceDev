@@ -22,6 +22,9 @@
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
 			>
+		<Properties>
+			<Data id="reward"></Data>
+		</Properties>
 
 		<Events>
 			<OnCreate>
@@ -33,12 +36,25 @@
 							(msnDestroy gSource)
 
 						;	Create the mission
-						(block (targetObj)
-							; Pick a random enemy station to destroy
-							(setq targetObj (seededRandom (objGetDestiny aOwnerObj) enemyStations))
+
+						(block (
+							;	Pick a random enemy station to destroy
+
+							(targetObj (seededRandom (objGetDestiny aOwnerObj) enemyStations))
+
+							;	The reward for the station is half of the standard
+							;	treasure value for the station.
+
+							(rewardExact (/ (obj@ targetObj 'stdTreasure) 2))
+
+							;	Round it to the nearest 100
+
+							(reward (max 100 (* 100 (round (/ rewardExact 100)))))
+							)
 
 							; Remember it
 							(msnSetData gSource 'targetID (objGetID targetObj))
+							(msnSet@ gSource 'reward reward)
 
 							; Register for events so we know when the target is destroyed
 							(msnRegisterForEvents gSource targetObj)
@@ -76,7 +92,7 @@
 				(msnTranslate gSource 'textSummary {
 					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
 					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textSummary">
@@ -92,24 +108,18 @@
 				displays. The commanding officer of the fortress looks up from 
 				his charts:
 
-				"Are you looking for a mission, captain?"
+				"Are you looking for a mission, pilot?"
 
 			</Text>
 
 			<Text id="Briefing">
 				(msnTranslate gSource 'textBriefing {
 					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
-			<Text id="textBriefing">
-
-				"%TargetName% in the system has been harassing traffic in the area.
-				We want you to take it out. Clear?"
-
-			</Text>
-
 			<String id="AcceptReply">
-				"Good luck, captain!"
+				"Good luck, pilot!"
 			</String>
 
 			<String id="DeclineReply">
@@ -122,9 +132,30 @@
 			<String id="FailureDebrief">
 				"You screwed that mission all the way to Sol and back. You better hit the sims, pilot!"
 			</String>
-			<String id="SuccessDebrief">
-				"Good work, captain! That was an outstanding mission."
-			</String>
+			<Text id="SuccessDebrief">
+				(list
+					{	descID:'textSuccessDebrief1		
+						data: {
+							payment: (fmtCurrency 'credit (msn@ gSource 'reward))
+							}
+						}
+					)
+			</Text>
+
+			<Text id="textBriefing">
+
+				"%TargetName% in the system has been harassing traffic in the area.
+				We want you to take it out.
+				
+				"We'll pay %payment% if you succeed. Clear?"
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+
+				"Well done! You dealt with that threat expertly. We've deposited
+				%payment% in your account."
+
+			</Text>
 		</Language>
 	</MissionType>
 
