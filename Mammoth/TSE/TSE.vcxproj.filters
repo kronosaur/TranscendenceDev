@@ -1555,5 +1555,8 @@
     <ClCompile Include="COrbitExactOrder.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
+    <ClCompile Include="CWeaponTargetDefinition.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

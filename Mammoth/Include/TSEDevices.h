@@ -7,6 +7,7 @@
 
 class CCargoDesc;
 class CTargetList;
+class CWeaponTargetDefinition;
 struct SShipPerformanceCtx;
 
 enum DeviceNames
@@ -625,6 +626,9 @@ class CInstalledDevice
 		void SetTimeUntilReady (int iDelay) { m_iTimeUntilReady = iDelay; }
 		void SetTriggered (bool bTriggered) { m_fTriggered = bTriggered; }
 		void SetWaiting (bool bWaiting) const { m_fWaiting = bWaiting; }
+		void SetWeaponTargetDefinition (Kernel::CString sCriteria) { m_pWeaponTargetDefinition = std::make_unique<CWeaponTargetDefinition>(sCriteria, true); }
+		void ClearWeaponTargetDefinition () { m_pWeaponTargetDefinition.reset(); }
+
 
 		//	These are wrapper methods for a CDeviceClass method of the same name.
 		//	We add our object pointer as a parameter to the call.
@@ -668,6 +672,7 @@ class CInstalledDevice
 		void GetStatus (const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) const { m_pClass->GetStatus(this, pSource, retiStatus, retiMaxStatus); }
 		CSpaceObject *GetTarget (CSpaceObject *pSource) const;
 		int GetValidVariantCount (CSpaceObject *pSource) { return m_pClass->GetValidVariantCount(pSource, this); }
+		CWeaponTargetDefinition *GetWeaponTargetDefinition (void) const { return (m_pWeaponTargetDefinition.get()); }
 		bool HasLastShots (void) const { return (m_LastShotIDs.GetCount() > 0); }
 		int IncCharges (CSpaceObject *pSource, int iChange);
 		bool IsAutomatedWeapon (void) { return m_pClass->IsAutomatedWeapon(); }
@@ -713,6 +718,7 @@ class CInstalledDevice
 		CEnhancementDesc m_SlotEnhancements;		//	Enhancements conferred by the slot
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	List of enhancements (may be NULL)
 		TArray<DWORD> m_LastShotIDs;				//	ObjID of last shots (only for continuous beams)
+		std::unique_ptr<CWeaponTargetDefinition> m_pWeaponTargetDefinition = nullptr;  //  Target definition for autofire weapons
 
 		DWORD m_dwData = 0;							//	Data specific to device class
 

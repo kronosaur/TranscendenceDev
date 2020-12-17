@@ -902,6 +902,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'repeating\n"
 			"	'shipCounterPerShot\n"
 			"   'stdCost\n"
+			"   'targetCriteria\n"
 			"\n"
 			"property (armor)\n\n"
 			"   'blindingImmune\n"
@@ -2160,6 +2161,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'pos\n"
 			"   'secondary\n"
 			"   'temperature\n"
+			"   'targetCriteria\n"
 			"\n"
 			"property (armor)\n\n"
 
