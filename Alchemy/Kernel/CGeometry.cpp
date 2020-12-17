@@ -177,7 +177,7 @@ void CGeometry::CombineArcs (int iMinAngle1, int iMaxAngle1, int iMinAngle2, int
 		}
 	}
 
-CGeometry::EIntersectResults CGeometry::IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1, CVector *retvP2)
+CGeometry::EIntersect CGeometry::IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1, CVector *retvP2)
 
 //	IntersectLineCircle
 //
@@ -195,20 +195,20 @@ CGeometry::EIntersectResults CGeometry::IntersectLineCircle (const CVector &vFro
 
 		Metric rD = vFrom.GetX() - vCenter.GetX();
 		if (rD > rRadius || -rD > rRadius)
-			return intersectNone;
+			return EIntersect::None;
 		else if (rD > rRadius - EPSILON)
 			{
 			if (retvP1)
 				*retvP1 = vCenter + CVector(rRadius, 0.0);
 
-			return intersectPoint;
+			return EIntersect::Point;
 			}
 		else if (-rD > rRadius - EPSILON)
 			{
 			if (retvP1)
 				*retvP1 = vCenter - CVector(rRadius, 0.0);
 
-			return intersectPoint;
+			return EIntersect::Point;
 			}
 		else
 			{
@@ -220,7 +220,7 @@ CGeometry::EIntersectResults CGeometry::IntersectLineCircle (const CVector &vFro
 			if (retvP2)
 				*retvP2 = vCenter + CVector(rD, -rH);
 
-			return intersect2Points;
+			return EIntersect::TwoPoints;
 			}
 		}
 
@@ -252,7 +252,7 @@ CGeometry::EIntersectResults CGeometry::IntersectLineCircle (const CVector &vFro
 		//	If imaginary, then we miss the circle
 
 		if (rD < -EPSILON)
-			return intersectNone;
+			return EIntersect::None;
 
 		//	If 0, then the line is tangent
 
@@ -266,7 +266,7 @@ CGeometry::EIntersectResults CGeometry::IntersectLineCircle (const CVector &vFro
 				*retvP1 = CVector(rX, rY);
 				}
 
-			return intersectPoint;
+			return EIntersect::Point;
 			}
 
 		//	Otherwise, two intersections
@@ -289,7 +289,7 @@ CGeometry::EIntersectResults CGeometry::IntersectLineCircle (const CVector &vFro
 				*retvP2 = CVector(rX, rY);
 				}
 
-			return intersect2Points;
+			return EIntersect::TwoPoints;
 			}
 		}
 	}
