@@ -14,14 +14,23 @@
 	=========================================================================== -->
 
 	<MissionType UNID="&msCMstKatsDestroyThreat;"
-			name=			"Destroy Threat"
-			attributes=		"commonwealthMilitia, rank0, rank1, stKatsMilitia"
+			name=				"Commonwealth Militia SK 01: Destroy Threat"
+			attributes=			"commonwealthMilitia, rank0, rank1, stKatsMilitia"
+			inherit=			"&baDestroyStationMission;"
 
-			level=			"4"
+			level=				"4"
+			maxAppearing=		"1-3"
 
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
 			>
+		<Properties>
+			<Variant id="targetDesc">
+				{
+					criteria: "TAE +populated; -questTarget; -uncharted;"
+					}
+			</Variant>
+		</Properties>
 
 		<Events>
 			<CanCreate>
@@ -37,6 +46,7 @@
 					)
 			</CanCreate>
 
+			<!--
 			<OnCreate>
 				(block (enemyStations)
 					(switch
@@ -74,6 +84,7 @@
 			<OnSetPlayerTarget>
 				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)))
 			</OnSetPlayerTarget>
+			-->
 
 			<OnCompleted>
 				(milMissionCompleted gSource aReason gData)
@@ -97,10 +108,12 @@
 					})
 			</Text>
 			<Text id="textSummary">
+
 				Your mission is to destroy %targetName% in %systemName%.
 
 				System: %systemName%\n
 				Payment: %payment%
+
 			</Text>
 
 			<Text id="Intro">
