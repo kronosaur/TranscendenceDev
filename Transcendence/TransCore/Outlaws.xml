@@ -589,7 +589,7 @@
 
 		<Maneuver
 			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
+			rotationAccel=		"2.0"
 			/>
 
 		<!-- Configuration -->
@@ -660,7 +660,7 @@
 
 		<Maneuver
 			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
+			rotationAccel=		"3.0"
 			/>
 
 		<!-- Configuration -->
@@ -876,7 +876,7 @@
 			/>
 
 		<Maneuver
-			maxRotationRate=	"9.0"
+			maxRotationRate=	"6.0"
 			rotationAccel=		"1.0"
 			/>
 
@@ -961,7 +961,7 @@
 			/>
 
 		<Maneuver
-			maxRotationRate=	"9.0"
+			maxRotationRate=	"6.0"
 			rotationAccel=		"1.0"
 			/>
 
