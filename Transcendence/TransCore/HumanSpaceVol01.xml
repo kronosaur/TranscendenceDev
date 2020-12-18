@@ -2033,6 +2033,7 @@
 	<!ENTITY dsKorolovEscortList		"0x0010029B">
 	<!ENTITY rsEI100HD					"0x0010029C">
 	<!ENTITY chKorolovAssistantDirectors	"0x0010029D">
+	<!ENTITY tbKorolovEscorts			"0x0010029E">
 
 	<!-- 02B0-02CF COMMONWEALTH MILITIA -->
 

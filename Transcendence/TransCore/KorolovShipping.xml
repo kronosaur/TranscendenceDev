@@ -1588,7 +1588,7 @@
 						(block (newShip)
 							(setq newShip
 								(sysCreateShip
-									(random '(&scRoninB; &scRoninB; &scRoninC; &scRoninC; &scRoninC; &scWolfen; &scCenturionBlock1;))
+									&tbKorolovEscorts;
 									(objGetNearestStargate homeObj)
 									&svCorporate;
 									)
@@ -1953,6 +1953,18 @@
 			)
 	</Globals>
 
+<!-- TABLES -->
+
+	<ShipTable unid="&tbKorolovEscorts;">
+		<LevelTable>
+			<Ship levelFrequency="ucr-- -----"	class="&scRoninB;"	/>
+			<Ship levelFrequency="uccr- -----"	class="&scRoninC;"	/>
+			<Ship levelFrequency="-rucr -----"	class="&scWolfenC;"	/>
+			<Ship levelFrequency="--ruc r----"	class="&scCenturionBlock1;"	/>
+			<Ship levelFrequency="---ru crvvv"	class="&scCenturionBlock2;"	/>
+		</LevelTable>
+	</ShipTable>
+	
 <!-- CHARACTERS -->
 
 	<Type unid="&chKorolovAssistantDirectors;"
