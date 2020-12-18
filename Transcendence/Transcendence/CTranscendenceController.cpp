@@ -971,7 +971,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		CG32bitImage *pCrawlImage = m_Model.GetCrawlImage();
 		const CString &sCrawlText = m_Model.GetCrawlText();
 
-		m_HI.ShowSession(new CTextCrawlSession(m_HI, m_Service, pCrawlImage, sCrawlText, CMD_SESSION_PROLOGUE_DONE, CONSTLIT("Creating Game")));
+		m_HI.ShowSession(new CTextCrawlSession(m_HI, m_Service, pCrawlImage, sCrawlText, CMD_SESSION_PROLOGUE_DONE, CONSTLIT("Creating Universe")));
 		m_iState = statePrologue;
 		m_Soundtrack.SetGameState(CSoundtrackManager::stateGamePrologue, m_Model.GetCrawlSoundtrack());
 		}
