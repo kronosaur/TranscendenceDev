@@ -2519,13 +2519,16 @@
 	
 	<ShipTable unid="&tbCorpDefenders;">
 		<LevelTable>
-			<Ship levelFrequency="cccr- -----" count="1" class="&scRoninA;" orders="guard"/>
-			<Ship levelFrequency="ruucc cr---" count="1" class="&scRoninB;" orders="guard"/>
-			<Ship levelFrequency="uuucc cur--" count="1" class="&scWolfen;" orders="guard"/>
-			<Ship levelFrequency="---uu ccccu" count="1" class="&scRoninC;" orders="guard"/>
-			<Ship levelFrequency="ccccc ccccc" count="1" class="&scCenturionBlock2;" orders="guard"/>
-			<Ship levelFrequency="--ruc cuuuu" count="1" class="&scManticore;" orders="guard"/>
-			<Ship levelFrequency="----- -uuuu" count="1" class="&scBritannia;" orders="guard"/>
+			<Ship levelFrequency="ccccc crvvv" count="1" class="&scCenturionBlock2;" orders="guard"/>
+
+			<Ship levelFrequency="ucrv- -----" count="1" class="&scRoninA;" orders="guard"/>
+			<Ship levelFrequency="rucrv -----" count="1" class="&scRoninB;" orders="guard"/>
+			<Ship levelFrequency="-rucr v----" count="1" class="&scRoninC;" orders="guard"/>
+			<Ship levelFrequency="--ruc rv---" count="1" class="&scWolfenC;" orders="guard"/>
+			<Ship levelFrequency="----r ucrv-" count="1" class="&scManticore;" orders="guard"/>
+			<Ship levelFrequency="----r ucrvv" count="1" class="&scBritannia;" orders="guard"/>
+
+			<Ship levelFrequency="----- --uur" count="1" class="&scCorporateCruiser;" orders="guard" maxCount="1"/>
 		</LevelTable>
 	</ShipTable>
 	
