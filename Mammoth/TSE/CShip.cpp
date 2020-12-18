@@ -2524,9 +2524,12 @@ CSpaceObject *CShip::GetBase (void) const
 //	Get the base for this ship
 
 	{
+	if (m_pDeferredOrders)
+		return m_pDeferredOrders->pBase;
+
 	//	If we're docked, then that's our base
 
-	if (m_pDocked)
+	else if (m_pDocked)
 		return m_pDocked;
 
 	//	Otherwise, ask the controller
