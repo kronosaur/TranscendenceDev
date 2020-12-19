@@ -63,7 +63,7 @@ CDeviceItem::ECalcTargetTypes CDeviceItem::CalcTargetType (void) const
 		//	If our options is "fire always" or "fire if selected" then our target is always the same
 		//	as the primary target. Same if we have auto fire enabled
 
-		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & dwLinkedFireSelected) || Device.GetWeaponTargetDefinition())
+		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & dwLinkedFireSelected) || (pSource->IsPlayer() && Device.IsAutomatedWeapon()))
 			{
 			return calcControllerTarget;
 			}

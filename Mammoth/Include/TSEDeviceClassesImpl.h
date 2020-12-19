@@ -22,6 +22,9 @@ class CWeaponTargetDefinition
 		Kernel::CString GetTargetCriteriaString () { return Kernel::CString(m_CriteriaString.c_str()); };
 		void SetCheckLineOfFire (bool bCheckLineOfFire) { m_bCheckLineOfFire = bCheckLineOfFire; };
 		void SetTargetCriteria (Kernel::CString sCriteria) { m_TargetCriteria.Init(sCriteria); m_CriteriaString = sCriteria; };
+
+		static std::unique_ptr<CWeaponTargetDefinition> ReadFromStream (SLoadCtx& Ctx);
+		void WriteToStream (IWriteStream* pStream) const;
 	private:
 		std::string m_CriteriaString = "";
 		CSpaceObjectCriteria m_TargetCriteria;
@@ -45,7 +48,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
 		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
-		virtual bool IsAutomatedWeapon (void) override { return true; }
+		virtual bool IsAutomatedWeapon (void) const override { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 

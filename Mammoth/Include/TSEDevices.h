@@ -338,7 +338,7 @@ class CDeviceClass
 		virtual int GetWeaponVariantCount (const CDeviceItem &DeviceItem) const { return 0; }
 		virtual bool IsAmmoWeapon (void) { return false; }
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const { return false; }
-		virtual bool IsAutomatedWeapon (void) { return false; }
+		virtual bool IsAutomatedWeapon (void) const { return false; }
 		virtual bool IsExternal (void) const { return (m_fExternal ? true : false); }
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return false; }
@@ -675,7 +675,7 @@ class CInstalledDevice
 		CWeaponTargetDefinition *GetWeaponTargetDefinition (void) const { return (m_pWeaponTargetDefinition.get()); }
 		bool HasLastShots (void) const { return (m_LastShotIDs.GetCount() > 0); }
 		int IncCharges (CSpaceObject *pSource, int iChange);
-		bool IsAutomatedWeapon (void) { return m_pClass->IsAutomatedWeapon(); }
+		bool IsAutomatedWeapon (void) const { return m_pClass->IsAutomatedWeapon() || (IsSecondaryWeapon() && m_pWeaponTargetDefinition != nullptr); }
 		bool IsFirstVariantSelected(CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsFirstVariantSelected(pSource, this) : true); }
 		bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return m_pClass->IsFuelCompatible(Ctx, FuelItem); }
 		bool IsLastVariantSelected(CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsLastVariantSelected(pSource, this) : true); }
@@ -772,5 +772,5 @@ class CInstalledDevice
 		DWORD m_fOnSegment:1 = false;				//	If TRUE, then device logically belongs to the segment specified by m_sID.
 		DWORD m_fOnUsedLastAmmo:1 = false;			//	If TRUE, remember the send statusUsedLastAmmo when done firing
 
-		DWORD m_dwSpare2:5;
+		DWORD m_dwSpare2:3;
 	};

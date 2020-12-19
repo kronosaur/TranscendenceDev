@@ -579,7 +579,7 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 		}
 	}
 
-void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
+void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx& Ctx)
 
 //	ReadFromStream
 //
@@ -733,35 +733,36 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 		}
 
 	Ctx.pStream->Read(dwLoad);
-	m_fOmniDirectional =	((dwLoad & 0x00000001) ? true : false);
-	m_f3DPosition =			(((dwLoad & 0x00000002) ? true : false) && (Ctx.dwVersion >= 73));
-	m_fFateSurvives =		(((dwLoad & 0x00000004) ? true : false) && (Ctx.dwVersion >= 58));
-	m_fOverdrive =			((dwLoad & 0x00000008) ? true : false);
-	m_fOptimized =			((dwLoad & 0x00000010) ? true : false);
-	m_fSecondaryWeapon =	((dwLoad & 0x00000020) ? true : false);
-	m_fFateDamaged =		(((dwLoad & 0x00000040) ? true : false) && (Ctx.dwVersion >= 58));
-	m_fEnabled =			((dwLoad & 0x00000080) ? true : false);
-	m_fWaiting =			((dwLoad & 0x00000100) ? true : false);
-	m_fTriggered =			((dwLoad & 0x00000200) ? true : false);
-	m_fRegenerating =		((dwLoad & 0x00000400) ? true : false);
+	m_fOmniDirectional = ((dwLoad & 0x00000001) ? true : false);
+	m_f3DPosition = (((dwLoad & 0x00000002) ? true : false) && (Ctx.dwVersion >= 73));
+	m_fFateSurvives = (((dwLoad & 0x00000004) ? true : false) && (Ctx.dwVersion >= 58));
+	m_fOverdrive = ((dwLoad & 0x00000008) ? true : false);
+	m_fOptimized = ((dwLoad & 0x00000010) ? true : false);
+	m_fSecondaryWeapon = ((dwLoad & 0x00000020) ? true : false);
+	m_fFateDamaged = (((dwLoad & 0x00000040) ? true : false) && (Ctx.dwVersion >= 58));
+	m_fEnabled = ((dwLoad & 0x00000080) ? true : false);
+	m_fWaiting = ((dwLoad & 0x00000100) ? true : false);
+	m_fTriggered = ((dwLoad & 0x00000200) ? true : false);
+	m_fRegenerating = ((dwLoad & 0x00000400) ? true : false);
 	m_fLastActivateSuccessful = ((dwLoad & 0x00000800) ? true : false);
 
-	m_fLinkedFireAlways =	((dwLoad & 0x00001000) ? true : false);
-	m_fLinkedFireTarget =	((dwLoad & 0x00002000) ? true : false);
-	m_fLinkedFireEnemy =	((dwLoad & 0x00004000) ? true : false);
-	m_fExternal =			((dwLoad & 0x00008000) ? true : false);
-	m_fDuplicate =			((dwLoad & 0x00010000) ? true : false);
-	m_fCannotBeEmpty =		((dwLoad & 0x00020000) ? true : false);
-	m_fFateDestroyed =		((dwLoad & 0x00040000) ? true : false);
-	m_fFateComponetized =	((dwLoad & 0x00080000) ? true : false);
-	bool bSlotEnhancements =((dwLoad & 0x00100000) ? true : false);
+	m_fLinkedFireAlways = ((dwLoad & 0x00001000) ? true : false);
+	m_fLinkedFireTarget = ((dwLoad & 0x00002000) ? true : false);
+	m_fLinkedFireEnemy = ((dwLoad & 0x00004000) ? true : false);
+	m_fExternal = ((dwLoad & 0x00008000) ? true : false);
+	m_fDuplicate = ((dwLoad & 0x00010000) ? true : false);
+	m_fCannotBeEmpty = ((dwLoad & 0x00020000) ? true : false);
+	m_fFateDestroyed = ((dwLoad & 0x00040000) ? true : false);
+	m_fFateComponetized = ((dwLoad & 0x00080000) ? true : false);
+	bool bSlotEnhancements = ((dwLoad & 0x00100000) ? true : false);
 	m_fLinkedFireSelected = ((dwLoad & 0x00200000) ? true : false);
-	m_fLinkedFireNever =	((dwLoad & 0x00400000) ? true : false);
+	m_fLinkedFireNever = ((dwLoad & 0x00400000) ? true : false);
 	m_fLinkedFireSelectedVariants = ((dwLoad & 0x00800000) ? true : false);
-	m_fCycleFire =		((dwLoad & 0x01000000) ? true : false);
-	m_fCanTargetMissiles =	((dwLoad & 0x02000000) ? true : false);
-	m_fOnSegment =			((dwLoad & 0x04000000) ? true : false);
-	m_fOnUsedLastAmmo =		((dwLoad & 0x08000000) ? true : false);
+	m_fCycleFire = ((dwLoad & 0x01000000) ? true : false);
+	m_fCanTargetMissiles = ((dwLoad & 0x02000000) ? true : false);
+	m_fOnSegment = ((dwLoad & 0x04000000) ? true : false);
+	m_fOnUsedLastAmmo = ((dwLoad & 0x08000000) ? true : false);
+	bool bLoadWeaponTargetDefinition = ((dwLoad & 0x10000000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -810,6 +811,9 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 
 	if (iSlotBonus != 0)
 		m_SlotEnhancements.InsertHPBonus(iSlotBonus);
+
+	if (bLoadWeaponTargetDefinition)
+		m_pWeaponTargetDefinition = CWeaponTargetDefinition::ReadFromStream(Ctx);
 	}
 
 int CInstalledDevice::IncCharges (CSpaceObject *pSource, int iChange)
@@ -1337,6 +1341,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //
 //	CItemEnhancementStack
 //	CEnhancementDesc
+//	CWeaponTargetDefinition
 
 	{
 	DWORD dwSave;
@@ -1406,10 +1411,15 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fCanTargetMissiles ?	0x02000000 : 0);
 	dwSave |= (m_fOnSegment ?			0x04000000 : 0);
 	dwSave |= (m_fOnUsedLastAmmo ?		0x08000000 : 0);
+	dwSave |= ((m_pWeaponTargetDefinition != nullptr) ?		0x10000000 : 0);
 	pStream->Write(dwSave);
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 
 	if (!m_SlotEnhancements.IsEmpty())
 		m_SlotEnhancements.WriteToStream(*pStream);
+
+	if (m_pWeaponTargetDefinition)
+		m_pWeaponTargetDefinition->WriteToStream(pStream);
+
 	}

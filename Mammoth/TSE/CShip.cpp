@@ -7985,7 +7985,7 @@ void CShip::SetWeaponTriggered (DeviceNames iDev, bool bTriggered)
 		//	is linked to the primary device, then activate it.
 
 		if (&Device == pPrimaryDevice
-				|| (Device.IsLinkedFire(iCat, pPrimaryDevice)))
+				|| (Device.IsLinkedFire(iCat, pPrimaryDevice) && !Device.IsAutomatedWeapon()))
 			Device.SetTriggered(bTriggered);
 		}
 	}
@@ -8010,7 +8010,7 @@ void CShip::SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered)
 		//	is linked to the primary device, then activate it.
 		CInstalledDevice* pDevice = &Device;
 		if (pDevice == pWeapon
-				|| (Device.IsLinkedFire(iCat, pWeapon)))
+				|| (Device.IsLinkedFire(iCat, pWeapon) && !Device.IsAutomatedWeapon()))
 			Device.SetTriggered(bTriggered);
 		}
 	}

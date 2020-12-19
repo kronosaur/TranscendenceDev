@@ -126,6 +126,9 @@ void CDeviceClass::AccumulateAttributes (const CDeviceItem &DeviceItem, const CI
 		DWORD dwOptions = DeviceItem.GetLinkedFireOptions();
 		if ((dwOptions != 0) && (dwOptions != CDeviceClass::lkfNever))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("linked-fire")));
+
+		if (IsAutomatedWeapon())
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("automatic")));
 		}
 
 	//	Let our subclasses add their own attributes
