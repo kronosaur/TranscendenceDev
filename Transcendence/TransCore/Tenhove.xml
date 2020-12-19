@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- SHIP CLASSES -->
+
+	<!-- Level 1: TA3 Sentinel -->
+
+	<ShipClass UNID="&scTenhoveSentinel;"
+			manufacturer=		"Tenhove Defense Systems"
+			class=				"TA3"
+			type=				"sentinel"
+			defaultSovereign=	"&svCommonwealth;"
+
+			attributes=			"auton, combatAuton, genericClass, tenhoveDefense"
+			>
+
+		<Properties>
+			<Definition id="core.noBiologicalEffects">True</Definition>
+			<Definition id="core.noRadiationDeath">True</Definition>
+		</Properties>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"13"
+			mass=				"2"
+			cargoSpace=			"0"
+
+			maxReactorPower=	"100"
+			maxCargoSpace=		"0"
+			maxDevices=			"1"
+
+			maxArmor=			"light"
+			stdArmor=			"light"
+			/>
+
+		<Reactor
+			reactorPower=		"30"
+			/>
+
+		<Drive
+			maxSpeed=			"5"
+			thrust=				"30"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"9.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itUltraLightTitaniumArmor;"
+			count=				"1"
+			/>
+
+		<Devices>
+			<Device deviceID="&itRecoillessCannon;"	posAngle="0" posRadius="18" posZ="15"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsTA3Sentinel;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rsTA3SentinelHero;" imageWidth="320" imageHeight="320"/>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"50"
+			fireAccuracy=		"80"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 3: TR-200 Defender -->
+
+	<ShipClass UNID="&scTR200Defender;"
+			manufacturer=		"Tenhove Defense Systems"
+			class=				"TR-200"
+			type=				"defender"
+			defaultSovereign=	"&svCommonwealth;"
+
+			attributes=			"auton, combatAuton, genericClass, tenhoveDefense"
+			>
+
+		<Properties>
+			<Definition id="core.noBiologicalEffects">True</Definition>
+			<Definition id="core.noRadiationDeath">True</Definition>
+		</Properties>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"13"
+			mass=				"2"
+			cargoSpace=			"0"
+
+			maxReactorPower=	"100"
+			maxCargoSpace=		"0"
+			maxDevices=			"2"
+
+			maxArmor=			"medium"
+			stdArmor=			"light"
+			/>
+
+		<Reactor
+			reactorPower=		"100"
+			/>
+
+		<Drive
+			maxSpeed=			"16"
+			thrust=				"50"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"9.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itLightPlasteelPlate;"
+			count=				"1"
+			/>
+
+		<Devices>
+			<Device deviceID="&itPartisanCannon;"	posAngle="0" posRadius="18" posZ="15"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsTR200Defender;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rsTR200DefenderHero;" imageWidth="320" imageHeight="320"/>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireAccuracy=		"85"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 6: TMA-9 Battle Auton -->
+
+	<ShipClass UNID="&scTMA9BattleAuton;"
+			manufacturer=		"Tenhove Defense Systems"
+			class=				"TMA-9"
+			type=				"battle auton"
+			defaultSovereign=	"&svCommonwealth;"
+
+			attributes=			"auton, combatAuton, genericClass, tenhoveDefense"
+			>
+
+		<Properties>
+			<Definition id="core.noBiologicalEffects">True</Definition>
+			<Definition id="core.noRadiationDeath">True</Definition>
+		</Properties>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"13"
+			mass=				"3"
+			cargoSpace=			"0"
+
+			maxReactorPower=	"1500"
+			maxCargoSpace=		"0"
+			maxDevices=			"1"
+
+			maxArmor=			"heavy"
+			stdArmor=			"heavy"
+			/>
+
+		<Reactor
+			reactorPower=		"450"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"60"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"9.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itHeavyCeralloyArmor;"
+			count=				"1"
+			/>
+
+		<Devices>
+			<Device deviceID="&itMarkIHowitzer;"	posAngle="0" posRadius="18" posZ="15"/>
+			<Device deviceID="&itCeratopsQuasiArmor1;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsTMA9BattleAuton;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&rsTMA9BattleAutonHero;" imageWidth="320" imageHeight="320"/>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsTA3Sentinel;"			bitmap="Resources\TA3Sentinel.jpg"	bitmask="Resources\TA3SentinelMask.bmp"	loadOnUse="true" />
+	<Image UNID="&rsTA3SentinelHero;"		bitmap="Resources\TA3SentinelLarge.jpg"	bitmask="Resources\TA3SentinelLargeMask.bmp"	loadOnUse="true" />
+
+	<Image UNID="&rsTMA9BattleAuton;"		bitmap="Resources\TMA9BattleAuton.jpg"	bitmask="Resources\TMA9BattleAutonMask.bmp"	loadOnUse="true" />
+	<Image UNID="&rsTMA9BattleAutonHero;"	bitmap="Resources\TMA9BattleAutonLarge.jpg"	bitmask="Resources\TMA9BattleAutonLargeMask.bmp"	loadOnUse="true" />
+
+	<Image UNID="&rsTR200Defender;"			bitmap="Resources\TR200Defender.jpg"	bitmask="Resources\TR200DefenderMask.bmp"	loadOnUse="true" />
+	<Image UNID="&rsTR200DefenderHero;"		bitmap="Resources\TR200DefenderLarge.jpg"	bitmask="Resources\TR200DefenderLargeMask.bmp"	loadOnUse="true" />
+
+</TranscendenceModule>

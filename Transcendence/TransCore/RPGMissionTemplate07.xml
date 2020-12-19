@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType unid="&baAssaultStationMission;"
+			inherit=			"&unidCommonText;"
+			expireTime=			"5400"
+			>
+		<Properties>
+			<!-- reward
+			
+				Override this to compute a reward when the mission is created.
+				Nil means no reward. In general this should be a Variant 
+				property (that is, a value initialized when the mission is
+				created).
+
+				-->
+			<Definition id="reward"></Definition>
+
+			<!-- rewardCurrency
+			
+				This is the currency in which the reward is given.
+
+				-->
+			<Constant id="rewardCurrency">(unv@ 'defaultCurrency)</Constant>
+
+			<!-- targetDesc
+
+				This is a description of the station to destroy.
+
+				-->
+			<Constant id="targetDesc">
+				{
+					criteria: "TAE +populated; -questTarget; -uncharted;"
+					}
+			</Constant>
+
+			<Definition id="rpg.deliveryMission">True</Definition>
+			<Data id="rpg.deliveryDestID"></Data>
+
+			<!-- These properties are internal and should not be overridden. -->
+
+			<Data id="targetID"></Data>
+		</Properties>
+
+		<Events>
+			<!-- OnTargetChosen
+
+				Subclasses may implement this event to react once a target has
+				been chosen. For example, they can set the reward value.
+
+				gData:
+
+					targetObj: The target chosen.
+			
+			-->
+
+			<OnTargetChosen>
+			</OnTargetChosen>
+
+			<CanCreate>
+				(switch
+					;	NOTE: We cannot check to see if the target station 
+					;	exists because we have not yet created the mission and
+					;	thus the targetDesc property is not set.
+
+					True
+					)
+			</CanCreate>
+
+			<OnCreate>
+				(block (
+					(targetDesc (msn@ gSource 'targetDesc))
+
+					;	Get a target list (filtered by targets that can actually 
+					;	be destroyed by the player).
+
+					(targetList 
+						(filter	(sysFindObject aOwnerObj (@ targetDesc 'criteria)) theObj
+							(objCanDestroyTarget gPlayerShip theObj)
+							)
+						)
+
+					(targetObj (seededRandom (objGetDestiny aOwnerObj) targetList))
+					)
+					(switch
+						;	If no target, we can't create the mission.
+
+						(not targetObj)
+							(msnDestroy gSource)
+
+						;	Create the mission
+
+						(block ()
+							(msnSet@ gSource 'targetID (objGetID targetObj))
+							(msnRegisterForEvents gSource targetObj)
+
+							;	Mission completes when we dock with the target.
+
+							(msnSet@ gSource 'rpg.deliveryDestID (objGetID targetObj))
+
+							;	Let our subclass do stuff like set the reward.
+
+							(msnFireEvent gSource 'OnTargetChosen { targetObj: targetObj })
+							)
+						)
+					)
+			</OnCreate>
+
+			<OnAccepted>
+				(msnRegisterForEvents gSource gPlayerShip)
+			</OnAccepted>
+
+			<OnSetPlayerTarget>
+				(block (
+					(targetObj (objGetObjByID (msn@ gSource 'targetID)))
+					(itemDesc (msn@ gSource 'itemDesc))
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+					)
+					(switch
+						(not (obj@ targetObj 'abandoned))
+							(rpgSetTarget gSource aReason targetObj)
+
+						(not (msn@ gSource 'isCompleted))
+							(rpgSetTarget gSource aReason targetObj 'dock)
+
+						(rpgSetTarget gSource aReason stationObj 'dock)
+						)
+					)
+			</OnSetPlayerTarget>
+			
+			<OnObjDestroyed>
+				(switch
+					(= (objGetID aObjDestroyed) (msn@ gSource 'targetID))
+						(block (
+							)
+							(msnSetPlayerTarget gSource)
+							)
+					)
+			</OnObjDestroyed>
+
+			<OnDeliveryMissionCompleted>
+				(msnTranslate gSource 'dlgAtStation {
+					missionObj: gSource
+					})
+			</OnDeliveryMissionCompleted>
+
+			<OnReward>
+				(block (
+					(reward (msn@ gSource 'reward))
+					(currency (msn@ gSource 'rewardCurrency))
+					)
+					(if reward
+						(rpgMissionRewardPayment reward currency)
+						)
+					)
+			</OnReward>
+		</Events>
+
+		<Language>
+			<Code id="dlgAtStation">
+				(block (
+					(missionObj gSource)
+					)
+					(list
+						{	descID: 'textDefault1	
+							code: (lambda ()
+								(block ()
+									(msnSuccess missionObj)
+									)
+								)
+							}
+						)
+					)
+			</Code>
+
+			<Text id="textDefault1">
+
+				You've completed the mission.
+
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

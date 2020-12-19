@@ -4,7 +4,7 @@
 
 	<MissionType UNID="&msCMVolunteer02;"
 			name=				"Commonwealth Volunteer 02: Destroy Enemy Station"
-			attributes=			"commonwealthMilitia, commonwealthVolunteer, metropolisMilitia, rank0"
+			attributes=			"commonwealthMilitia, commonwealthVolunteer, eridaniScript, metropolisMilitia, rank0"
 			inherit=			"&baDestroyStationMission;"
 
 			level=				"1-5"

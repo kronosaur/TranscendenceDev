@@ -347,7 +347,12 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem &System, CShipClass *pClass, CShi
 	//	ship class always has radioactive wrecks)
 
 	if ((pShip && pShip->IsRadioactive()) || IsRadioactive())
-		pWreck->SetCondition(ECondition::radioactive);
+		{
+		SApplyConditionOptions Options;
+		Options.bNoImmunityCheck = true;
+
+		pWreck->ApplyCondition(ECondition::radioactive, Options);
+		}
 
 	//	If the ship has been explicitly set to leave a wreck, then we assume
 	//	that it has something important, so we set the wreck to have the flag

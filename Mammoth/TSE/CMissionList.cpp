@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-bool CMissionList::CanCreateMissionInArc (const CMissionType &NewMissionType, const CSpaceObject *pSource, const CMission::SCriteria &CreateCriteria) const
+bool CMissionList::CanCreateMissionInArc (const CMissionType &NewMissionType, const CSpaceObject *pSource, const CMissionCriteria &CreateCriteria) const
 
 //	CreateCreateMissionInArc
 //
@@ -151,7 +151,7 @@ void CMissionList::DeleteAll (void)
 	m_List.DeleteAll();
 	}
 
-CMissionList CMissionList::Filter (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const
+CMissionList CMissionList::Filter (const CSpaceObject *pSource, const CMissionCriteria &Criteria) const
 
 //	Filter
 //
@@ -170,7 +170,7 @@ CMissionList CMissionList::Filter (const CSpaceObject *pSource, const CMission::
 
 	//	If we only want mission arcs, filter out the list
 
-	if (Criteria.bOnlyMissionArcs)
+	if (Criteria.MatchesOnlyMissionArcs())
 		return Result.FilterByArc();
 
 	//	Otherwise, return the full results.
@@ -377,7 +377,7 @@ void CMissionList::Insert (CMission *pMission)
 	m_List.Insert(pMission);
 	}
 
-bool CMissionList::Matches (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const
+bool CMissionList::Matches (const CSpaceObject *pSource, const CMissionCriteria &Criteria) const
 
 //	Matches
 //

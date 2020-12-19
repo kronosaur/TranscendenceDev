@@ -33,6 +33,7 @@
 
 		<MiscellaneousDevice
 				powerUse=		"500"
+				deviceSlots=	"0"
 				/>
 
 		<Events>

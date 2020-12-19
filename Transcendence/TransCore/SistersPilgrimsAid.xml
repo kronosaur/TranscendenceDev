@@ -236,7 +236,7 @@
 			>
 
 		<Display type="customPicker"
-				rowHeight="64"
+				rowHeight="96"
 				>
 			<OnDisplayInit>
 				(map (typFind "p +domina;") thePower
@@ -245,7 +245,8 @@
 						(rank (typGetStaticData thePower 'rank))
 						)
 						{
-						title: (typGetProperty thePower 'name)
+						title: (typ@ thePower 'name)
+						icon: (typ@ thePower 'imageDesc)
 						desc: (switch
 							(= status 'tooHighLevel)
 								(scrTranslate gScreen 'textNotAvailable)
@@ -253,7 +254,7 @@
 							(= status 'cooldown)
 								(scrTranslate gScreen 'textCooldown)
 
-							(or (typTranslate thePower 'power.lineDesc)
+							(or (typTranslate thePower 'core.help)
 								(scrTranslate gScreen 'textReadyToInvoke)
 								)
 							)
@@ -279,7 +280,7 @@
 						(scrSetControlValue gScreen 'powerDesc
 							(scrTranslate gScreen 'descPower {
 								powerName: (typGetProperty thePower 'name)
-								powerDesc: (typTranslate thePower 'power.desc)
+								powerDesc: (typTranslate thePower 'core.desc)
 								})
 							)
 

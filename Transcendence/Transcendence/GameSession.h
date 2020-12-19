@@ -43,7 +43,7 @@ class CGameSession : public IHISession
 		void OnExecuteActionDone (void) { m_Model.OnExecuteActionDone(); }
 		void OnKeyboardMappingChanged (void);
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
-		void OnPlayerChangedShips (CSpaceObject *pOldShip) { InitUI(); m_HUD.Init(m_rcScreen); g_pTrans->InitDisplays(); }
+		void OnPlayerChangedShips (CSpaceObject *pOldShip) { InitUI(); g_pTrans->InitDisplays(); }
 		void OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph);
 		void OnPlayerEnteredStargate (CTopologyNode *pNode);
 		void OnShowDockScreen (bool bShow);
@@ -92,6 +92,10 @@ class CGameSession : public IHISession
 
 	private:
 
+		static constexpr int PICKER_DISPLAY_WIDTH =				1024;
+		static constexpr int PICKER_DISPLAY_HEIGHT =			160;
+
+		void CleanUpPlayerShip ();
 		CMenuData CreateGameMenu (void) const;
 		CMenuData CreateSelfDestructMenu (void) const;
 		void DismissMenu (void);
@@ -102,7 +106,7 @@ class CGameSession : public IHISession
 		bool IsIconBarShown (void) const;
 		bool IsInPickerCompatible (void) const
 			{
-			return (m_CurrentMenu == menuEnableDevice || m_CurrentMenu == menuUseItem);
+			return (m_CurrentMenu == menuEnableDevice || m_CurrentMenu == menuUseItem || m_CurrentMenu == menuInvoke);
 			}
 
 		bool IsInMenu (void) const
@@ -114,8 +118,7 @@ class CGameSession : public IHISession
 			{
 			return (m_CurrentMenu == menuComms 
 					|| m_CurrentMenu == menuCommsSquadron 
-					|| m_CurrentMenu == menuCommsTarget 
-					|| m_CurrentMenu == menuInvoke);
+					|| m_CurrentMenu == menuCommsTarget);
 			}
 
 		bool IsMouseAimConfigured (void) const;
@@ -125,6 +128,15 @@ class CGameSession : public IHISession
 		void SetMouseAimEnabled (bool bEnabled = true);
 		bool ShowMenu (EMenuTypes iMenu);
 		void SyncMouseToPlayerShip (void);
+
+		void DoEnableDisableMenu (DWORD dwEntry);
+		bool ShowEnableDisableMenu ();
+
+		void DoInvokeMenu (DWORD dwEntry);
+		bool ShowInvokeMenu ();
+
+		void DoUseMenu (DWORD dwEntry);
+		bool ShowUseMenu ();
 
 		CGameSettings &m_Settings;
 		CTranscendenceModel &m_Model;
@@ -140,6 +152,8 @@ class CGameSession : public IHISession
 		EMenuTypes m_CurrentMenu = menuNone;	//	Current menu being displayed
 		CMenuDisplay m_MenuDisplay;				//	Menu
 		CSpaceObject *m_pCurrentComms = NULL;	//	Object that we're currently communicating with
+
+		CPickerDisplay m_PickerDisplay;			//	Picker display
 
 		CIconBarDisplay m_IconBar;				//	Icons to access various screens
 		CGameIconBarData m_IconBarData;			//	Data for icon bar

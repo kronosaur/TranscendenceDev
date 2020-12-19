@@ -16,7 +16,9 @@
 		virtual=	"true"
 		>
 		
-		<Invoke key="A">
+		<Invoke key="A"
+				undamagedOnly="true"
+				>
 			(switch
 				(itm@ gItem 'damaged)
 					(objSendMessage gSource Nil (typTranslate gType 'msgAutonDamaged))
@@ -517,6 +519,13 @@
 					(if (= autonSovereign &svFriendlyAuton;)
 						(objSet@ auton 'alwaysLeaveWreck True)
 						)
+
+					;	If the source is irradiated, then the auton is also 
+					;	radioactive.
+
+					(if (obj@ sourceObj 'radioactive)
+						(objApplyCondition auton 'radioactive)
+						)
 					
 					;	Welcome or error message
 					
@@ -577,6 +586,22 @@
 						(autonShipClass (itmGetStaticData autonItem 'autonShipClass))
 						(notEnoughSpace (gr (itmGetMass autonItem) (objGetCargoSpaceLeft aGateObj)))
 						)
+						;	If the auton is radioactive, then the source becomes
+						;	radioactive.
+
+						(if (and (obj@ gSource 'radioactive)
+								(not notEnoughSpace)
+								)
+							(block (
+								(result (objApplyCondition aGateObj 'radioactive { applyTo:'interior }))
+								(resultCode (@ result 'resultCode))
+								)
+								(objSendMessage aGateObj Nil (objTranslate gSource (cat 'msgRadiation. resultCode) {
+									autonName: (objGetName gSource 'definitePhrase)
+									}))
+								)
+							)
+
 						;	Add to cargo
 						(objAddItem aGateObj autonItem)
 						
@@ -652,6 +677,10 @@
 			<String id="UnableToComply">		Unable to comply</String>
 			<String id="WaitAck">				Auton order acknowledged</String>
 			<String id="WatchYourTargets"></String>
+
+			<String id="msgRadiation.ok">		%AutonName% has contaminated your ship</String>
+			<String id="msgRadiation.noEffect">	Your ship is immune to radiation</String>
+			<String id="msgRadiation.alreadyApplied"></String>
 		</Language>
 	</ShipClass>
 

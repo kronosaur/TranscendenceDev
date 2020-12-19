@@ -4,7 +4,7 @@
 
 	<MissionType UNID="&msCommonwealthMining04;"
 			name=				"Commonwealth Mining 04: Destroy Enemy Station"
-			attributes=			"commonwealthMining"
+			attributes=			"commonwealthMining, eridaniScript"
 			inherit=			"&baDestroyStationMission;"
 
 			level=				"1-4"
@@ -137,7 +137,7 @@
 			</Text>
 			<Text id="textIntro">
 			
-				The colony supervisor stands on a plaform at the center of the 
+				The colony supervisor stands on a platform at the center of the 
 				hall.
 
 				"Welcome to %stationName%! If you're looking for work, I might 

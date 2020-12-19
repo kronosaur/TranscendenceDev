@@ -195,7 +195,7 @@ Special System		[ ] Eta Ceti (Temple of Oracus)
 
 Notes				Warfront
 					Augmented Humans; Luddites; Pure Humans; AIs; Simples;
-					Zoanthropes; Enhanced Humans; Neo-Humans
+					Zoanthropes; Enhanced Humans; NeoHumans
 
 LEVEL IX
 -------------------------------------------------------------------------------
@@ -218,7 +218,7 @@ Special System		[ ] Ares Prime
 
 Notes				Warfront
 					Augmented Humans; Luddites; Pure Humans; AIs; Simples;
-					Enhanced Humans; Zoanthropes; Neo-Humans
+					Enhanced Humans; Zoanthropes; NeoHumans
 
 LEVEL X
 -------------------------------------------------------------------------------
@@ -240,4 +240,4 @@ Special System		[x] Heretic System
 
 Notes				Alien
 					Augmented Humans; Luddites; Pure Humans; AIs; Simples;
-					Enhanced Humans; Zoanthropes; Neo-Humans;
+					Enhanced Humans; Zoanthropes; NeoHumans;

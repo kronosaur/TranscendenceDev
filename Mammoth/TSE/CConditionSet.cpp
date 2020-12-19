@@ -18,6 +18,29 @@ static TStaticStringTable<TStaticStringEntry<ECondition>, (int)ECondition::count
 	"timeStopped",			ECondition::timeStopped,
 	};
 
+static TStaticStringTable<TStaticStringEntry<EConditionResult>, 6> CONDITION_RESULT_TABLE = {
+	"alreadyApplied",		EConditionResult::alreadyApplied,
+	"alreadyRemoved",		EConditionResult::alreadyRemoved,
+	"noEffect",				EConditionResult::noEffect,
+	"ok",					EConditionResult::ok,
+	"stillApplied",			EConditionResult::stillApplied,
+	"unknown",				EConditionResult::unknown,
+	};
+
+CString CConditionSet::AsID (EConditionResult iResult)
+
+//	AsID
+//
+//	Return the ID.
+
+	{
+	for (int i = 0; i < CONDITION_RESULT_TABLE.GetCount(); i++)
+		if (CONDITION_RESULT_TABLE[i].Value == iResult)
+			return CString(CONDITION_RESULT_TABLE[i].pszKey);
+
+	return NULL_STR;
+	}
+
 bool CConditionSet::Diff (const CConditionSet &OldSet, TArray<ECondition> &Added, TArray<ECondition> &Removed) const
 
 //	Diff
@@ -51,6 +74,26 @@ bool CConditionSet::Diff (const CConditionSet &OldSet, TArray<ECondition> &Added
 		}
 
 	return true;
+	}
+
+bool CConditionSet::IsSuccessResult (EConditionResult iResult)
+
+//	IsSuccessResult
+//
+//	Returns TRUE if this is a result the means the condition was removed
+//	successfully.
+
+	{
+	switch (iResult)
+		{
+		case EConditionResult::alreadyApplied:
+		case EConditionResult::alreadyRemoved:
+		case EConditionResult::ok:
+			return true;
+
+		default:
+			return false;
+		}
 	}
 
 ECondition CConditionSet::ParseCondition (const CString &sCondition)

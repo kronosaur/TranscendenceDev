@@ -80,18 +80,18 @@
 			<!-- We can't guarantee the outcome, so all possibilities use the
 				same message. -->
 
-			<Text id="rpg.canUse.ok">						You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.alreadyEnhanced">			You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.cantReplaceDefect">		You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.cantReplaceEnhancement">	You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.defectOK">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.defectRemoved">			You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.defectReplaced">			You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.degraded">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.enhancementRemoved">		You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.enhancementReplaced">		You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.improved">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.noEffect">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.ok">						You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.alreadyEnhanced">			You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.cantReplaceDefect">		You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.defectOK">					You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.defectRemoved">			You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.defectReplaced">			You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.degraded">					You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.enhancementRemoved">		You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.enhancementReplaced">		You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.improved">					You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.noEffect">					You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
 		</Language>
 	</ItemType>
 

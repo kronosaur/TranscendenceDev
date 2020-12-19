@@ -14,10 +14,10 @@
 
 <!-- STATION TYPES -->
 
-	<!-- Asteroid Mine, Titanium Ore -->
+	<!-- Level 2: Outlaw Mine -->
 
 	<StationType UNID="&stAsteroidMineTitanium;"
-			name=				"outlaw titanium mine"
+			name=				"level 2 outlaw mine"
 			sovereign=			"&svOutlawMiners;"
 			inherit=			"&baOutlawMine;"
 				 
@@ -30,8 +30,6 @@
 			>
 
 		<!-- Encounter Info -->
-
-		<Names noArticle="true">Asteroid T%1%0%0%0</Names>
 
 		<Encounter
 				systemCriteria=			"+outlawSpace;"
@@ -48,46 +46,29 @@
 		<!-- Trade and Items -->
 		
 		<Items>
-			<Group value="standard:level=2">
-				<Item count="2d6"	item="&itTitaniumOre;"/>
-				<Lookup chance="80"	table="&trStdTreasure;"/>
+			<Group value="standard:level=2:x=0.5">
+				<Lookup table="&tbOutlawMineTreasure;"/>
 			</Group>
 		</Items>
 
 		<!-- Configuration -->
 
 		<Hull 	hullType=		"asteroidHull"
-				armorID=		"&itCeramicPlate;"
-				hitPoints=		"75"
+				armorID=		"&itLightCeramicPlate;"
+				hitPoints=		"90"
 				regen=			"1"
 				/>
 		
 		<!-- Ships and Defenses -->
 		
 		<Ships>
-			<Table>
-				<Group chance="40">
-					<Ship			count="1d3"	class="&scBorer;"		orders="guard"/>
-					<Ship			count="2d3"	class="&scTenhoveSentinel;"	orders="patrol" patrolDist="5"/>
-				</Group>
-				<Group chance="20">
-					<Ship			count="1d3"	class="&scBorer;"	orders="guard"/>
-					<Ship			count="1d3"	class="&scHammerhead;"	orders="guard"/>
-				</Group>
-				<Group chance="20">
-					<Ship			count="1"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1d4"	class="&scHammerhead;"	orders="patrol" patrolDist="5"/>
-				</Group>
-				<Group chance="10">
-					<Ship			count="1"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1d4"	class="&scBorer;"		orders="guard"/>
-				</Group>
-				<Group chance="10">
-					<Ship			count="1d2"	class="&scBorer;"		orders="guard"/>
-					<Ship			count="1"	class="&scHammerhead-II;"	orders="guard"/>
-				</Group>
-			</Table>
+			<Lookup table="&tbOutlawMineTurrets;"/>
+			<Lookup table="&tbOutlawMineDefenders;"/>
 		</Ships>
+
+		<Reinforcements minShips="2">
+			<Lookup table="&tbOutlawMineDefenders;"/>
+		</Reinforcements>
 		
 		<!-- Image and Effects -->
 		
@@ -135,10 +116,10 @@
 
 	</StationType>
 
-	<!-- Asteroid Mine, Palladium Ore -->
+	<!-- Level 3: Outlaw Mine -->
 
 	<StationType UNID="&stAsteroidMinePalladium;"
-			name=				"outlaw palladium mine"
+			name=				"level 3 outlaw mine"
 			sovereign=			"&svOutlawMiners;"
 			inherit=			"&baOutlawMine;"
 				 
@@ -152,8 +133,6 @@
 
 		<!-- Encounter Info -->
 		
-		<Names noArticle="true">Asteroid L%1%0%0%0</Names>
-
 		<Encounter
 				systemCriteria=			"+outlawSpace;"
 				systemAffinity=			"+envEarth; -envAir;"
@@ -169,44 +148,30 @@
 		<!-- Trade and Items -->
 		
 		<Items>
-			<Group value="standard:level=3">
-				<Item count="2d6"	item="&itPalladiumOre;"/>
-				<Lookup chance="50"	table="&trStdTreasure;"/>
+			<Group value="standard:level=3:x=0.5">
+				<Lookup table="&tbOutlawMineTreasure;"/>
 			</Group>
 		</Items>
 
 		<!-- Configuration -->
 
 		<Hull 	hullType=		"asteroidHull"
-				armorID=		"&itHeavyCeramicPlate;"
-				hitPoints=		"90"
+				armorID=		"&itCeramicPlate;"
+				hitPoints=		"120"
 				regen=			"1"
 				/>
 		
 		<!-- Ships and Defenses -->
 		
 		<Ships>
-			<Table>
-				<Group chance="25">
-					<Ship			count="1d6"	class="&scBorer;"	orders="guard"/>
-					<Ship			count="1d2"	class="&scHammerhead-II;"	orders="patrol" patrolDist="5"/>
-				</Group>
-				<Group chance="40">
-					<Ship			count="1d4"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1"	class="&scHammerhead-II;"	orders="patrol" patrolDist="5"/>
-				</Group>
-				<Group chance="25">
-					<Ship			count="1d3"	class="&scTenhoveSentinel;"	orders="patrol" patrolDist="5"/>
-					<Ship			count="1d2"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1"	class="&scHammerhead-II;"	orders="guard"/>
-				</Group>
-				<Group chance="10">
-					<Ship			count="1d4"	class="&scHammerhead;"	orders="patrol" patrolDist="5"/>
-					<Ship			count="1d4"	class="&scBorer-II;"	orders="guard"/>
-				</Group>
-			</Table>
+			<Lookup table="&tbOutlawMineTurrets;"/>
+			<Lookup table="&tbOutlawMineDefenders;"/>
 		</Ships>
 
+		<Reinforcements minShips="2">
+			<Lookup table="&tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
 		<!-- Image and Effects -->
 		
 		<ImageVariants>
@@ -250,13 +215,12 @@
 				portRadius=		"120"
 				>
 		</DockingPorts>
-
 	</StationType>
 
-	<!-- Asteroid Mine, Ceralloy Ore -->
+	<!-- Level 4: Outlaw Mine -->
 
 	<StationType UNID="&stAsteroidMineCeralloy;"
-			name=				"outlaw ceralloy mine"
+			name=				"level 4 outlaw mine"
 			sovereign=			"&svOutlawMiners;"
 			inherit=			"&baOutlawMine;"
 				 
@@ -270,8 +234,6 @@
 
 		<!-- Encounter Info -->
 		
-		<Names noArticle="true">Asteroid C%1%0%0%0</Names>
-
 		<Encounter
 				systemCriteria=			"+outlawSpace;"
 				systemAffinity=			"+envEarth; -envAir;"
@@ -287,40 +249,30 @@
 		<!-- Trade and Items -->
 		
 		<Items>
-			<Group value="standard:level=4">
-				<Item count="2d6"	item="&itCeralloyOre;"/>
-				<Lookup chance="25"	table="&trStdTreasure;"/>
+			<Group value="standard:level=4:x=0.5">
+				<Lookup table="&tbOutlawMineTreasure;"/>
 			</Group>
 		</Items>
 
 		<!-- Configuration -->
 
 		<Hull 	hullType=		"asteroidHull"
-				armorID=		"&itPlasteelPlate;"
-				hitPoints=		"150"
+				armorID=		"&itHeavyCeramicPlate;"
+				hitPoints=		"160"
 				regen=			"2"
 				/>
 		
 		<!-- Ships and Defenses -->
 		
 		<Ships>
-			<Table>
-				<Group chance="25">
-					<Ship			count="1d6"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1d4"	class="&scOromo;"		orders="patrol" patrolDist="5"/>
-				</Group>
-				<Group chance="40">
-					<Ship			count="1d6"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1d2"	class="&scSotho;"		orders="patrol" patrolDist="5"/>
-				</Group>
-				<Group chance="35">
-					<Ship			count="2d3"	class="&scTenhoveSentinel;"	orders="patrol" patrolDist="5"/>
-					<Ship			count="1d4"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1"	class="&scSotho;"		orders="guard"/>
-				</Group>
-			</Table>
+			<Lookup table="&tbOutlawMineTurrets;"/>
+			<Lookup table="&tbOutlawMineDefenders;"/>
 		</Ships>
 
+		<Reinforcements minShips="2">
+			<Lookup table="&tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
 		<!-- Image and Effects -->
 		
 		<ImageVariants>
@@ -367,10 +319,10 @@
 
 	</StationType>
 
-	<!-- Asteroid Mine, Duranium Ore -->
+	<!-- Level 5: Outlaw Mine -->
 
 	<StationType UNID="&stAsteroidMineDuralloy;"
-			name=				"outlaw duranium mine"
+			name=				"level 5 outlaw mine"
 			sovereign=			"&svOutlawMiners;"
 			inherit=			"&baOutlawMine;"
 				 
@@ -384,8 +336,6 @@
 
 		<!-- Encounter Info -->
 		
-		<Names noArticle="true">Asteroid D%1%0%0%0</Names>
-
 		<Encounter
 				systemCriteria=			"+outlawSpace;"
 				systemAffinity=			"+envEarth; -envAir;"
@@ -402,56 +352,30 @@
 		<!-- Trade and Items -->
 		
 		<Items>
-			<Group value="standard:level=5">
-				<Item count="3d8"	item="&itDuralloyOre;"/>
-				<Lookup chance="25"	table="&trStdTreasure;"/>
+			<Group value="standard:level=5:x=0.5">
+				<Lookup table="&tbOutlawMineTreasure;"/>
 			</Group>
 		</Items>
 		
 		<!-- Configuration -->
 
 		<Hull 	hullType=		"asteroidHull"
-				armorID=		"&itPlasteelPlate;"
-				hitPoints=		"150"
+				armorID=		"&itPolyceramicPlate;"
+				hitPoints=		"210"
 				regen=			"2"
 				/>
 		
-		<!-- Satellites -->
-
-		<Satellites overlapCheck="asteroids">
-			<Orbitals distance="9" angle="45">
-				<Station type="&stOutlawTurret;" imageVariant="2"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="225">
-				<Station type="&stOutlawTurret;" imageVariant="0"/>
-			</Orbitals>
-		</Satellites>
-
 		<!-- Ships and Defenses -->
 		
 		<Ships>
-			<Table>
-				<Group chance="25">
-					<Ship			count="1d6"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1d2"	class="&scSotho;"	orders="patrol" patrolDist="5"/>
-				</Group>
-				<Group chance="40">
-					<Ship			count="1d4"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1d4"	class="&scSotho;"	orders="patrol" patrolDist="5"/>
-				</Group>
-				<Group chance="25">
-					<Ship			count="2d6"	class="&scTenhoveSentinel;"	orders="patrol" patrolDist="5"/>
-					<Ship			count="1d2"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1d2"	class="&scSotho;"	orders="guard"/>
-				</Group>
-				<Group chance="10">
-					<Ship			count="1d8"	class="&scOromo;"	orders="patrol" patrolDist="5"/>
-					<Ship			count="1d4"	class="&scBorer-II;"	orders="guard"/>
-				</Group>
-			</Table>
+			<Lookup table="&tbOutlawMineTurrets;"/>
+			<Lookup table="&tbOutlawMineDefenders;"/>
 		</Ships>
 
+		<Reinforcements minShips="2">
+			<Lookup table="&tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
 		<!-- Image and Effects -->
 		
 		<ImageVariants>
@@ -498,10 +422,10 @@
 		
 	</StationType>
 
-	<!-- Asteroid Mine, Pteracnium Ore -->
+	<!-- Level 6: Outlaw Mine -->
 
 	<StationType UNID="&stAsteroidMinePteracnium;"
-			name=				"outlaw pteracnium mine"
+			name=				"level 6 outlaw mine"
 			sovereign=			"&svOutlawMiners;"
 			inherit=			"&baOutlawMine;"
 				 
@@ -515,8 +439,6 @@
 
 		<!-- Encounter Info -->
 		
-		<Names noArticle="true">Asteroid P%1%0%0%0</Names>
-
 		<Encounter
 				systemCriteria=			"+outlawSpace;"
 				systemAffinity=			"+envEarth; -envAir;"
@@ -533,9 +455,8 @@
 		<!-- Trade and Items -->
 		
 		<Items>
-			<Group value="standard:level=6">
-				<Item count="2d6"	item="&itPteracniumOre;"/>
-				<Lookup chance="50"	table="&trStdTreasure;"/>
+			<Group value="standard:level=6:x=0.5">
+				<Lookup table="&tbOutlawMineTreasure;"/>
 			</Group>
 		</Items>
 			
@@ -543,50 +464,21 @@
 
 		<Hull 	hullType=		"asteroidHull"
 				armorID=		"&itCeralloyArmor;"
-				hitPoints=		"250"
-				regen=			"2"
+				hitPoints=		"280"
+				regen=			"3"
 				/>
 		
-		<!-- Satellites -->
-		
-		<Satellites overlapCheck="asteroids">
-			<Orbitals distance="9" angle="45">
-				<Station type="&stOutlawTurret;" imageVariant="2"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="135">
-				<Station type="&stOutlawTurret;" imageVariant="1"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="225">
-				<Station type="&stOutlawTurret;" imageVariant="0"/>
-			</Orbitals>
-
-			<Orbitals distance="9" angle="315">
-				<Station type="&stOutlawTurret;" imageVariant="3"/>
-			</Orbitals>
-		</Satellites>
-
 		<!-- Ships and Defenses -->
 		
 		<Ships>
-			<Table>
-				<Group chance="25">
-					<Ship			count="1d6"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1d2"	class="&scSotho;"		orders="patrol" patrolDist="5"/>
-				</Group>
-				<Group chance="40">
-					<Ship			count="1d4"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1d4"	class="&scSotho;"	orders="patrol" patrolDist="5"/>
-				</Group>
-				<Group chance="35">
-					<Ship			count="2d6"	class="&scTenhoveSentinel;"	orders="patrol" patrolDist="5"/>
-					<Ship			count="1d3"	class="&scBorer-II;"	orders="guard"/>
-					<Ship			count="1"	class="&scSotho;"	orders="guard"/>
-				</Group>
-			</Table>
+			<Lookup table="&tbOutlawMineTurrets;"/>
+			<Lookup table="&tbOutlawMineDefenders;"/>
 		</Ships>
 
+		<Reinforcements minShips="2">
+			<Lookup table="&tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
 		<!-- Image and Effects -->
 		
 		<ImageVariants>
@@ -633,7 +525,7 @@
 
 	</StationType>
 
-	<!-- Outlaw Turret -->
+	<!-- Level 5: Outlaw Turret -->
 
 	<StationType UNID="&stOutlawTurret;"
 			name=				"Outlaw defense turret"
@@ -675,9 +567,51 @@
 
 	</StationType>
 	
+	<!-- Level 6: Outlaw Howitzer -->
+
+	<StationType UNID="&stOutlawHowitzer;"
+			name=				"Outlaw howitzer"
+			sovereign=			"&svOutlawMiners;"
+				 
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+				 
+			mass=				"2000"
+			armorID=			"&itHeavyCeralloyArmor;"
+			hitPoints=			"120"
+			structuralHitPoints="25"
+			fireRateAdj=		"20"
+				 
+			ejectaType=			"&vtWreckEjecta;"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+			>
+
+		<!-- Configuration -->
+		
+		<Devices>
+			<Device deviceID="&itMarkIIIHowitzer;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+		
+		<ImageVariants>
+			<Image			imageID="&rsStations4;" imageX="192" imageY="448" imageWidth="42" imageHeight="42"/>
+			<Image			imageID="&rsStations4;" imageX="192" imageY="490" imageWidth="42" imageHeight="42"/>
+			<Image			imageID="&rsStations4;" imageX="192" imageY="532" imageWidth="42" imageHeight="42"/>
+			<Image			imageID="&rsStations4;" imageX="192" imageY="574" imageWidth="42" imageHeight="42"/>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+	</StationType>
+	
 <!-- SHIP CLASSES -->
 
-	<!-- Borer-class Gunship -->
+	<!-- Level 2: Borer-class Gunship -->
 
 	<ShipClass UNID="&scBorer;"
 			manufacturer=		"United African States"
@@ -685,7 +619,7 @@
 			type=				"gunship"
 			defaultSovereign=	"&svOutlawMiners;"
 
-			attributes=			"genericClass, outlawMiners"
+			attributes=			"genericClass, outlaws, outlawMiners"
 			inherit=			"&scBorerStock;"
 			>
 
@@ -724,7 +658,7 @@
 						(and aBaseObj (setq baseOre (random (objGetItems aBaseObj "t +Ore"))))
 							(objAddItemByValue gSource baseOre maxLootValue 'credit)
 
-						; Otherwise we ore appropriate to the system
+						; Otherwise we add ore appropriate to the system
 						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType) 1) maxLootValue 'credit)
 						)
 					)
@@ -732,7 +666,7 @@
 		</Events>
 	</ShipClass>
 
-	<!-- Borer II-class Gunship -->
+	<!-- Level 4: Borer II-class Gunship -->
 
 	<ShipClass UNID="&scBorer-II;"
 			manufacturer=		"United African States"
@@ -740,7 +674,7 @@
 			type=				"gunship"
 			defaultSovereign=	"&svOutlawMiners;"
 
-			attributes=			"genericClass, outlawMiners"
+			attributes=			"genericClass, outlaws, outlawMiners"
 			inherit=			"&scBorerIIStock;"
 			>
 
@@ -752,13 +686,9 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itMiningLaser;"/>
+			<Device deviceID="&itProtonDrill;"/>
 			<Device deviceID="&itClass1Deflector;"/>
 		</Devices>
-
-		<Items>
-			<Item count="1d6" item="&itHelium3FuelRod;"/>
-		</Items>
 
 		<!-- AI and Behavior -->
 		
@@ -777,14 +707,75 @@
 					(switch
 						; 20% chance of fuel rods instead of ore.
 						(leq (random 1 100) 20)
-							(objAddItem gSource (itmCreate &itHelium3FuelRod; (random 1 8)))
+							(objAddItem gSource (itmCreate &itHeliumAssembly; (random 1 8)))
 
 						; If we have a base and it has ore then we have some of
 						; that in our cargo.
 						(and aBaseObj (setq baseOre (random (objGetItems aBaseObj "t +Ore"))))
 							(objAddItemByValue gSource baseOre maxLootValue 'credit)
 								
-						; Otherwise we ore appropriate to the system
+						; Otherwise we add ore appropriate to the system
+						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType) 1) maxLootValue 'credit)
+						)
+						
+					; Chance of fuel rods in addition
+					(if (leq (random 1 100) 50)
+						(objAddItem gSource (itmCreate &itHelium3FuelRod; (random 1 4)))
+						)
+					)
+			</OnCreate>
+		</Events>
+	</ShipClass>
+
+	<!-- Level 6: Borer III-class Gunship -->
+
+	<ShipClass UNID="&scBorer-III;"
+			manufacturer=		"United African States"
+			class=				"Borer III"
+			type=				"gunship"
+			defaultSovereign=	"&svOutlawMiners;"
+
+			attributes=			"genericClass, outlaws, outlawMiners"
+			inherit=			"&scBorerIIIStock;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itBlastPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itPlasmaTorch;"/>
+			<Device deviceID="&itClass3Deflector;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<Events>
+			<OnCreate>
+				(block (baseOre maxLootValue)
+					; There is a chance that we have some small amount of ore
+					
+					(setq maxLootValue (random 250 1500))
+					(switch
+						; 20% chance of fuel rods instead of ore.
+						(leq (random 1 100) 20)
+							(objAddItem gSource (itmCreate &itXenotiteFuelRod; (random 1 8)))
+
+						; If we have a base and it has ore then we have some of
+						; that in our cargo.
+						(and aBaseObj (setq baseOre (random (objGetItems aBaseObj "t +Ore"))))
+							(objAddItemByValue gSource baseOre maxLootValue 'credit)
+								
+						; Otherwise we add ore appropriate to the system
 						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType) 1) maxLootValue 'credit)
 						)
 						
@@ -805,7 +796,7 @@
 			type=				"gunship"
 			defaultSovereign=	"&svOutlawMiners;"
 
-			attributes=			"EI, genericClass, outlawMiners"
+			attributes=			"EI, genericClass, outlaws, outlawMiners"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -882,7 +873,7 @@
 			thrustRatio=		"10"
 			maxSpeed=			"16"
 
-			attributes=			"EI, genericClass, outlawMiners"
+			attributes=			"EI, genericClass, outlaws, outlawMiners"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -952,8 +943,105 @@
 
 	</ShipClass>
 	
-<!-- MISCELLANEOUS -->
+<!-- TABLES -->
 
+	<ItemTable UNID="&tbOutlawMineTreasure;">
+		<Table>
+			<RandomItem chance="40"
+					criteria=			"* +miningEquipment; -notStandard;"
+					levelFrequency=		"systemLevel:vu|c|uv"
+					/>
+			<RandomItem chance="60"
+					criteria=			"* +consumable; -notStandard;"
+					levelFrequency=		"systemLevel:vu|c|uv"
+					/>
+		</Table>
+	</ItemTable>
+
+	<ShipTable unid="&tbOutlawMineTurrets;">
+		<LevelTable>
+			<Group levelFrequency="cr-- -----">
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+			</Group>
+			<Group levelFrequency="ucr-- -----">
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=90"/>
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=270"/>
+			</Group>
+			<Group levelFrequency="-ucr- -----">
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=180"/>
+			</Group>
+			<Group levelFrequency="--ucr -----">
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=90"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=270"/>
+			</Group>
+			<Group levelFrequency="---uc r----">
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=60"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=120"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=240"/>
+				<Ship class="&scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=300"/>
+			</Group>
+			<Group levelFrequency="----u cr---">
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+			</Group>
+			<Group levelFrequency="----- ucrvv">
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=90"/>
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=270"/>
+			</Group>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&tbOutlawMineDefenders;">
+		<Group>
+
+			<!-- We always have some Borers -->
+
+			<LevelTable>
+				<Ship levelFrequency="ucr-- -----"	count="1d2"		class="&scBorer;"		orders="guard"/>
+				<Ship levelFrequency="-ucr- -----"	count="1d2+1"	class="&scBorer;"		orders="patrol:5"/>
+				<Ship levelFrequency="--ucr -----"	count="1d2"		class="&scBorer-II;"	orders="patrol:5"/>
+				<Ship levelFrequency="---uc r----"	count="1d2+1"	class="&scBorer-II;"	orders="patrol:5"/>
+				<Ship levelFrequency="----u cr---"	count="1d2"		class="&scBorer-III;"	orders="patrol:5"/>
+				<Ship levelFrequency="----- ucr--"	count="1d2+1"	class="&scBorer-III;"	orders="patrol:5"/>
+			</LevelTable>
+
+			<!-- Add some guards too -->
+
+			<Table>
+				<!-- 60% of the time we have lots of light defenders -->
+
+				<LevelTable chance="60">
+					<Ship levelFrequency="ucr-- -----"	count="1d4" class="&scHammerhead;"		orders="patrol:5"/>
+					<Ship levelFrequency="-ucr- -----"	count="1d4" class="&scHammerhead-II;"	orders="patrol:5"/>
+					<Ship levelFrequency="--ucr -----"	count="1d4" class="&scOromo;"			orders="patrol:5"/>
+					<Ship levelFrequency="---uc r----"	count="1d4" class="&scOromoII;"			orders="patrol:5"/>
+					<Ship levelFrequency="----u cr---"	count="1d4" class="&scSotho;"			orders="patrol:5"/>
+					<Ship levelFrequency="----- ucrvv"	count="2d3" class="&scSothoII;"			orders="patrol:5"/>
+				</LevelTable>
+
+				<!-- 40% of the time we have heavy defenders -->
+
+				<LevelTable chance="40">
+					<Ship levelFrequency="ucr-- -----"	count="1" class="&scOromo;"				orders="guard"/>
+					<Ship levelFrequency="-ucr- -----"	count="1" class="&scOromoII;"			orders="guard"/>
+					<Ship levelFrequency="--ucr -----"	count="1" class="&scSotho;"				orders="guard"/>
+					<Ship levelFrequency="---uc rvvvv"	count="1" class="&scSothoII;"			orders="guard"/>
+				</LevelTable>
+			</Table>
+
+		</Group>
+	</ShipTable>
+		
 	<ShipTable unid="&tbOutlawMinerEncounters;">
 		<LevelTable>
 			<Ship levelFrequency="ucu-- -----" count="1"	 class="&scBorer;" eventHandler="&evOutlawMinerBehavior;">
@@ -1056,7 +1144,7 @@
 				</Escorts>
 			</Ship>
 		
-			<Ship levelFrequency="----u currr" count="1"	 class="&scBorer-II;" eventHandler="&evStdMiningBehavior;">
+			<Ship levelFrequency="----u currr" count="1"	 class="&scBorer-III;" eventHandler="&evStdMiningBehavior;">
 				<Escorts>
 					<Table>
 						<Ship chance="10"	   count="1d8"	 class="&scHammerhead;" orders="escort"/>
@@ -1202,20 +1290,41 @@
 <!-- BASE CLASSES -->
 	
 	<Type unid="&baOutlawMine;">
+		<Properties>
+			<Variant id="oreType">(sysGetRandomOreType)</Variant>
+		</Properties>
+
 		<Events>
 			<OnCreate>
-				(block (asteroidList)
-				
-					;	Get a list of all asteroids in the area
+				(block (
+					(asteroidList (sysFindObject gSource "tN:50 +asteroid"))
+
+					(oreNameFull (itmGetName (obj@ gSource 'oreType) 'short))
+					(oreSuffix (find oreNameFull " ore"))
+					(oreName (if oreSuffix (subset oreNameFull 0 oreSuffix) oreNameFull))
+					)
+					;	Name the station after the ore type
+
+					(objSetName gSource 
+						(objTranslate gSource 'namePattern {
+							oreType: oreName
+							})
+						)
+
+					;	Add some ore to our station
+
+					(objAddItem gSource (obj@ gSource 'oreType) (+ (random 1 6) (random 1 6)))
+
+					;	Add ore to asteroids in the neighborhood
 					
-					(if (setq asteroidList (sysFindObject gSource "tN:50 +asteroid"))
+					(if asteroidList
 					
 						;	Asteroids in the area have a greater chance of having ore.
 						;	(The station was built here for a reason.)
 						
 						(enum asteroidList asteroidObj
 							(if (leq (random 1 100) 20)
-								(objAddRandomItems asteroidObj &tbAsteroidOre; (random 1 2))
+								(objAddItem asteroidObj (obj@ gSource 'oreType) (random 1 8))
 								)
 							)
 							
@@ -1252,6 +1361,10 @@
 					)
 			</OnOreDepositFound>
 		</Events>
+
+		<Language>
+			<Text id="namePattern">:an outlaw %oreType% mine(s)</Text>
+		</Language>
 	</Type>
 	
 <!-- RESOURCES -->

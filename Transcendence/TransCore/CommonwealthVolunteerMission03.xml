@@ -4,7 +4,7 @@
 
 	<MissionType UNID="&msCMVolunteer03;"
 			name=				"Commonwealth Volunteer 03: Rescue Freighter"
-			attributes=			"commonwealthMilitia, commonwealthVolunteer, metropolisMilitia, rank0"
+			attributes=			"commonwealthMilitia, commonwealthVolunteer, eridaniScript, metropolisMilitia, rank0"
 
 			level=						"1-4"
 			maxAppearing=				"2-4"

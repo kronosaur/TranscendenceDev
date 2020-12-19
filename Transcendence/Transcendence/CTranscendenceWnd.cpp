@@ -57,7 +57,6 @@ void CTranscendenceWnd::CleanUpPlayerShip (void)
 
 	m_DeviceDisplay.CleanUp();
 	m_MenuDisplay.CleanUp();
-	m_PickerDisplay.CleanUp();
 
 	m_bPaused = false;
 

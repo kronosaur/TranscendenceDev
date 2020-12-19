@@ -240,7 +240,7 @@
 	<Module filename="Benedict00.xml"/>
 	<Module filename="Benedict01.xml"/>
 	<Module filename="Benedict02.xml"/>
-	<Module filename="Benedict03.xml"/>
+	<!-- Benedict03 is obsolete. -->
 	<Module filename="Benedict04.xml"/>
 	<Module filename="Benedict05.xml"/>
 	<Module filename="Benedict05A.xml"/>
@@ -266,6 +266,7 @@
 	<Module filename="HuaramarcaMission05.xml"/>
 	<Module filename="HuaramarcaMission06.xml"/>
 	<Module filename="HuaramarcaMission07.xml"/>
+	<Module filename="Part1Compatibility.xml"/>
 	<Module filename="PlayerShips.xml"/>
 	<Module filename="Psych00.xml"/>
 	<Module filename="Psych01.xml"/>

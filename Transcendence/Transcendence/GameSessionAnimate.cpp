@@ -434,13 +434,13 @@ void CGameSession::PaintMenu (CG32bitImage &Screen)
 		case menuComms:
 		case menuCommsSquadron:
 		case menuCommsTarget:
-		case menuInvoke:
 			g_pTrans->m_MenuDisplay.Paint(Screen);
 			break;
 
 		case menuEnableDevice:
+		case menuInvoke:
 		case menuUseItem:
-			g_pTrans->m_PickerDisplay.Paint(Screen);
+			m_PickerDisplay.Paint(Screen);
 			break;
 
 		case menuSystemStations:

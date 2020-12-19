@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType unid="&baRetrieveFromStationMission;"
+			inherit=			"&unidCommonText;"
+			expireTime=			"5400"
+			>
+		<Properties>
+			<!-- failureOn
+			
+				If set, this is the tick on which the mission fails.
+			-->
+			<Definition id="failureOn"></Definition>
+
+			<!-- itemDesc
+
+				This is a description of the item to retrieve from the target
+				station. Override as appropriate.
+
+				item: The item(s) to retrieve
+				create: How to create the item:
+
+					Nil: Do not create the item
+					'onDestroy: Create the item when target is destroyed
+			
+			-->
+			<Constant id="itemDesc">
+				{
+					item: (itmCreate &itHelium3FuelRod; 1)
+					create: 'onDestroy
+					}
+			</Constant>
+
+			<!-- reward
+			
+				Override this to compute a reward when the mission is created.
+				Nil means no reward. In general this should be a Variant 
+				property (that is, a value initialized when the mission is
+				created).
+
+				-->
+			<Definition id="reward"></Definition>
+
+			<!-- rewardCurrency
+			
+				This is the currency in which the reward is given.
+
+				-->
+			<Constant id="rewardCurrency">(unv@ 'defaultCurrency)</Constant>
+
+			<!-- targetDesc
+
+				This is a description of the station to destroy.
+
+				-->
+			<Constant id="targetDesc">
+				{
+					criteria: "TAE +populated; -questTarget; -uncharted;"
+					}
+			</Constant>
+
+			<!-- These properties are internal and should not be overridden. -->
+
+			<Data id="playerTookItem"></Data>
+			<Data id="targetID"></Data>
+		</Properties>
+
+		<Events>
+			<!-- OnTargetChosen
+
+				Subclasses may implement this event to react once a target has
+				been chosen. For example, they can set the reward value.
+
+				gData:
+
+					targetObj: The target chosen.
+			
+			-->
+
+			<OnTargetChosen>
+			</OnTargetChosen>
+
+			<CanCreate>
+				(switch
+					;	NOTE: We cannot check to see if the target station 
+					;	exists because we have not yet created the mission and
+					;	thus the targetDesc property is not set.
+
+					True
+					)
+			</CanCreate>
+
+			<OnCreate>
+				(block (
+					(targetDesc (msn@ gSource 'targetDesc))
+
+					;	Get a target list (filtered by targets that can actually 
+					;	be destroyed by the player).
+
+					(targetList 
+						(filter	(sysFindObject aOwnerObj (@ targetDesc 'criteria)) theObj
+							(objCanDestroyTarget gPlayerShip theObj)
+							)
+						)
+
+					(targetObj (seededRandom (objGetDestiny aOwnerObj) targetList))
+					)
+					(switch
+						;	If no target, we can't create the mission.
+
+						(not targetObj)
+							(msnDestroy gSource)
+
+						;	Create the mission
+
+						(block ()
+							(msnSet@ gSource 'targetID (objGetID targetObj))
+							(msnRegisterForEvents gSource targetObj)
+
+							;	Let our subclass do stuff like set the reward.
+
+							(msnFireEvent gSource 'OnTargetChosen { targetObj: targetObj })
+							)
+						)
+					)
+			</OnCreate>
+
+			<OnAccepted>
+				(msnRegisterForEvents gSource gPlayerShip)
+			</OnAccepted>
+
+			<OnSetPlayerTarget>
+				(block (
+					(targetObj (objGetObjByID (msn@ gSource 'targetID)))
+					(itemDesc (msn@ gSource 'itemDesc))
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+					)
+					(switch
+						(not (obj@ targetObj 'abandoned))
+							(rpgSetTarget gSource aReason targetObj)
+
+						(not (msn@ gSource 'playerTookItem))
+							(rpgSetTarget gSource aReason targetObj 'dock)
+
+						(rpgSetTarget gSource aReason stationObj 'dock)
+						)
+					)
+			</OnSetPlayerTarget>
+			
+			<OnObjDestroyed>
+				(switch
+					(= (objGetID aObjDestroyed) (msn@ gSource 'targetID))
+						(block (
+							(itemDesc (msn@ gSource 'itemDesc))
+							)
+							(if (= (@ itemDesc 'create) 'onDestroy)
+								(objAddItem aObjDestroyed (@ itemDesc 'item))
+								)
+
+							(msnSetPlayerTarget gSource)
+							)
+					)
+			</OnObjDestroyed>
+
+			<OnObjDocked>
+				(switch
+					(and (= aObjDocked gPlayerShip)
+							(= (objGetID aDockTarget) (msn@ gSource 'ownerID))
+							)
+						(block (
+							(itemDesc (msn@ gSource 'itemDesc))
+							(targetObj (objGetObjByID (msn@ gSource 'targetID)))
+							)
+							(switch
+								;	If target station is still alive, then we go
+								;	through the normal InProgress path.
+
+								(not (obj@ targetObj 'abandoned))
+									Nil
+
+								;	If the target station still has the item, 
+								;	then we go through the normal InProgress 
+								;	path.
+
+								(objHasItem targetObj (@ itemDesc 'item))
+									Nil
+
+								;	If mission already completed/failed, then nothing
+								;	to do.
+
+								(msn@ gSource 'isCompleted)
+									Nil
+
+								;	If the player doesn't have the item, then
+								;	they've lost it. We fail the mission.
+
+								(not (objHasItem gPlayerShip (@ itemDesc 'item)))
+									(msnFailure gSource)
+
+								;	If the player has the item, then success!
+
+								(block ()
+									(objRemoveItem gPlayerShip (@ itemDesc 'item))
+									(msnSuccess gSource)
+									)
+								)
+							)
+					)
+			</OnObjDocked>
+
+			<OnReward>
+				(block (
+					(reward (msn@ gSource 'reward))
+					(currency (msn@ gSource 'rewardCurrency))
+					)
+					(if reward
+						(rpgMissionRewardPayment reward currency)
+						)
+					)
+			</OnReward>
+
+			<OnUpdate>
+				(block (
+					(itemDesc (msn@ gSource 'itemDesc))
+					)
+					(switch
+						(and (msn@ gSource 'failureOn)
+								(geq (unvGetTick) (msn@ gSource 'failureOn))
+								(not (msn@ gSource 'isCompleted))
+								)
+							(msnFailure gSource)
+
+						(and (not (msn@ gSource 'playerTookItem))
+								(objHasItem gPlayerShip (@ itemDesc 'item))
+								)
+							(block ()
+								(msnSet@ gSource 'playerTookItem True)
+								(msnSetPlayerTarget gSource)
+								)
+						)
+					)
+			</OnUpdate>
+		</Events>
+	</MissionType>
+
+</TranscendenceModule>

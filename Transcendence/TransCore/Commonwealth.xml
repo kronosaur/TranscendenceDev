@@ -332,11 +332,13 @@
 		<Language>
 			<Text id="descWelcome">
 
-				You are in the docking bay of a Commonwealth colony. Except for a few shuttles,
-				the docking bay of this station is deserted. A loose hose spills dirty
-				water onto the landing pad; elsewhere, an automatic load-lifter moves forward
-				and back again as it unloads a ship's cargo hold. The air smells of liquid fuel
-				and exhaust.
+				You are in the docking bay of a Commonwealth colony filled with
+				shuttles and starships.
+				
+				A loose hose spills dirty water onto the landing pad; elsewhere,
+				an automatic load-lifter moves forward and back again as it 
+				unloads a ship's cargo hold. The air smells of liquid fuel and 
+				exhaust.
 
 			</Text>
 		</Language>
@@ -584,11 +586,15 @@
 		
 		<Language>
 			<Text id="descWelcome">
-				You are in the docking bay of a Commonwealth colony. Except for a few shuttles,
-				the docking bay of this station is deserted. A loose hose spills dirty
-				water onto the landing pad; elsewhere, an automatic load-lifter moves forward
-				and back again as it unloads a ship's cargo hold. The air smells of liquid fuel
-				and exhaust.
+
+				You are in the docking bay of a Commonwealth colony. Dockworkers
+				and professionals crisscross the bay, heads burried in datapads.
+
+				The walls are filled with blinking holopanes directing traffic 
+				or advertising various luxuries.
+
+				A squad of militia-members stands guard around a console.
+				
 			</Text>
 		</Language>
 	</StationType>
@@ -666,7 +672,7 @@
 				levelFrequency=	"systemLevel:r|c|cur"
 				/>
 			<RandomItem count="4-6" 
-				criteria=		"r L:3-7; +commonwealth; -defective; -illegal; -military; -notForSale; -notStandard;"
+				criteria=		"r L:3-7; +commonwealth; -alien; -defective; -illegal; -military; -notForSale; -notStandard;"
 				levelFrequency=	"systemLevel:ru|c|curv"
 				/>
 			<RandomItem count="10-12" 
@@ -736,7 +742,15 @@
 		<!-- Behavior & Language -->
 
 		<Language>
-			<Text id="descWelcome">Your ship is in dry dock.</Text>
+			<Text id="descWelcome">
+
+				You are in a large enclosed docking bay. Ship in varying stages
+				of repair line the docks around you. Workers in powered frames
+				dance around the ships.
+
+				Holopanes advertise the latest deals on new starships.
+
+			</Text>
 		</Language>
 
 	</StationType>
@@ -1016,7 +1030,14 @@
 		
 		<Language>
 			<Text id="descWelcome">
-				Welcome to Commonwealth Residentials.
+
+				You are in the docking bay of a residential station. You see a
+				mix of dockworkers, professionals, and families boarding 
+				shuttles and starships.
+
+				Scuffed and faded infopanes line the walls, and you smell the
+				stale exhaust of overworked ventilation systems.
+
 			</Text>
 		</Language>
 	</StationType>
@@ -1057,6 +1078,8 @@
 			</Variant>
 		</Properties>
 
+		<!-- Trade and Items -->
+
 		<Trade>
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="1"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="2"/>
@@ -1064,16 +1087,51 @@
 			<ConsumeTrade	criteria="{human.res}"		impact="1"/>
 		</Trade>
 
-		<ImageVariants>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="64" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="128" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="192" imageY="0" imageWidth="64" imageHeight="128"/>
-		</ImageVariants>
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
 		</Ships>
+
+		<!-- Image and Effects -->
+
+		<Image		imageID="&rsCommonwealthHabitat;" imageWidth="170" imageHeight="240" viewportRatio="0.02125"/>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"100"
+				/>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrSetDescTranslate gScreen 'descWelcome {objName: (objGetName gSource)})
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionMainHall" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: "n +commonwealthHabitat;"
+									maxPerStation: 1
+									missionGiver: (rpgCharacterGetInfo gSource 'stationMaster)
+									noMissionTextID: 'descNoMissions
+									})
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Behavior -->
 
 		<Events>
 			<GetGlobalAchievements>
@@ -1104,134 +1162,101 @@
 			</GetRumors>
 		</Events>
 
-		<DockScreens>
-			<Main>
-				<Panes>
-					<Default>
-						<OnPaneInit>
-							(scrSetDescTranslate gScreen 'descWelcome {objName: (objGetName gSource)})
-						</OnPaneInit>
-
-						<Actions>
-							<Action id="actionMainHall" default="1">
-								(rpgMissionAssignment {
-									missionCriteria: "n +commonwealthHabitat;"
-									maxActive: 1
-									missionGiver: (rpgCharacterGetInfo gSource 'stationMaster)
-									noMissionTextID: 'descNoMissions
-									})
-							</Action>
-
-							<Action id="actionUndock" cancel="1">
-								<Exit/>
-							</Action>
-						</Actions>
-					</Default>
-				</Panes>
-			</Main>
-		</DockScreens>
-
-		<DockingPorts>
-			<Port x="0"		y="80" />
-			<Port x="43"	y="56" />
-			<Port x="52"	y="8" />
-			<Port x="35"	y="-44" />
-			<Port x="-35"	y="-44" />
-			
-			<Port x="-52"	y="8" />
-			<Port x="-43"	y="56" />
-		</DockingPorts>
-
 		<Language>
 			<Text id="descWelcome">
 
-				The loud voices of a packed multitude bounce off every bulkhead and
-				corridor in the station. Old air scrubbers pump a thin, odorous
-				breeze out of rusty vents. Discarded packets of Salmonite and Red
-				Nebula beer huddle in the corner.
+				The loud voices of a packed multitude bounce off every bulkhead
+				and	corridor in the station. Old air scrubbers pump a thin, 
+				odorous breeze out of rusty vents. Discarded packets of 
+				Salmonite and Red Nebula beer huddle in the corner.
 
 				Welcome to %objName%!
 
 			</Text>
 			<Text id="descNoMissions">
 
-				The station master is working at %his@missionGiver% station. The comms channels
-				are quiet and %he@missionGiver% stops to chat:
+				The station master is working at %his@missionGiver% station. The
+				comms channels are quiet and %he@missionGiver% stops to chat:
 
-				"It's calm now, but I've been hearing a lot of military chatter lately."
+				"It's calm now, but I've been hearing a lot of military chatter
+				lately."
 
 			</Text>
 			<Text id="rpg.missionTypeDesc">Commonwealth habitat missions</Text>
 
 			<Text id="rumor.intro">
 
-				The station master is working at %his@rumorGiver% console. %He@rumorGiver% stops to chat:\n\n
+				The station master is working at %his@rumorGiver% console. 
+				%He@rumorGiver% stops to chat:\n\n
 
 			</Text>
 			<String id="rumor.commonwealthHabitat.1">
 
-				"You got a pretty nice ship there. Did your mom and dad buy it for you?"
+				"You got a pretty nice ship there. Did your mom and dad buy it 
+				for you?"
 
 			</String>
 			<Text id="rumor.commonwealthHabitat.2">
 
-				"Truth is, you gotta approach life philosophically, you know what I mean?
-				You gotta believe that it's all going to work out in the end, or else
-				what's the point?"
+				"Truth is, you gotta approach life philosophically, you know 
+				what I mean? You gotta believe that it's all going to work out 
+				in the end, or else what's the point?"
 
 			</Text>
 			<Text id="rumor.commonwealthHabitat.3">
 
-				"Nobody cares. Station needs a carbon scrubber? Get on the waiting list!
-				After the corporate suits get their grilled Icelandic salmon, then they
-				might pay attention to you. Nobody cares."
+				"Nobody cares. Station needs a carbon scrubber? Get on the 
+				waiting list! After the corporate suits get their grilled 
+				Icelandic salmon, then they might pay attention to you. Nobody
+				cares."
 
 			</Text>
 			<Text id="rumor.commonwealthHabitat.4">
 
-				"A station is not like a starship. If you get into trouble you can always
-				run away. All we can do is sit tight and repair the damage. Takes a
-				special kind of man to live like that."
+				"A station is not like a starship. If you get into trouble you 
+				can always run away. All we can do is sit tight and repair the 
+				damage. Takes a special kind of man to live like that."
 
 			</Text>
 			<Text id="rumor.commonwealthHabitat.pilgrim">
 
-				"I don't know what you're doing in this backwater system. You wanna get
-				to the Core? Go! What's stopping you? Kids today: they dream big, but
-				they'd rather watch the 3DVs."
+				"I don't know what you're doing in this backwater system. You 
+				wanna get to the Core? Go! What's stopping you? Kids today: they
+				dream big, but they'd rather watch the 3DVs."
 
 			</Text>
 			<Text id="rumor.commonwealthHabitat.freelancer">
 
-				"I don't know what you're doing in this backwater system. You wanna see
-				the galaxy? Go! What's stopping you? Kids today: they dream big, but
-				they'd rather watch the 3DVs."
+				"I don't know what you're doing in this backwater system. You 
+				wanna see the galaxy? Go! What's stopping you? Kids today: they
+				dream big, but they'd rather watch the 3DVs."
 
 			</Text>
 			<Text id="rumor.commonwealthHabitat.sapphire">
 
-				"How do you like your %shipName%? My daughter's friend had one once.
-				It was beautiful, but not very practical for long voyages."
+				"How do you like your %shipName%? My daughter's friend had one 
+				once. It was beautiful, but not very practical for long 
+				voyages."
 
 			</Text>
 			<Text id="rumor.commonwealthHabitat.ei100x">
 
-				"How do you like your %shipName%? My son pilots an older 200-series	in the
-				Cairn system. He's got it up-armored with polyceramic to protect against
-				pirate attacks."
+				"How do you like your %shipName%? My son pilots an older 
+				200-series in the Cairn system. He's got it up-armored with 
+				polyceramic to protect against pirate attacks."
 
 			</Text>
 			<Text id="rumor.commonwealthHabitat.wolfen">
 
-				"How do you like your %shipName%? I knew this guy John Tremaine who flew
-				one in the Militia. They're fast as hell on a whip, but a little flimsy.
-				Hope you've got some good shields on her."
+				"How do you like your %shipName%? I knew this guy John Tremaine 
+				who flew one in the Militia. They're fast as hell on a whip, but
+				a little flimsy. Hope you've got some good shields on her."
 
 			</Text>
 			<Text id="rumor.commonwealthHabitat.other">
 
-				"How do you like your %shipName%? I haven't seen a lot of ships like that.
-				Is it hard to get parts for it?"
+				"How do you like your %shipName%? I haven't seen a lot of ships 
+				like that. Is it hard to get parts for it?"
 
 			</Text>
 		</Language>
@@ -1398,11 +1423,12 @@
 
 		<Language>
 			<Text id="descWelcome">
-				You are in the docking bay of a Commonwealth settlement. Except for a few shuttles,
-				the docking bay of this station is deserted. A loose hose is spilling dirty
-				water onto the landing pad; elsewhere, an automatic load-lifter moves forward
-				and back again as it unloads a ship's cargo hold. The air smells of liquid fuel
-				and exhaust.
+
+				You are in the docking bay of a Commonwealth settlement. Except 
+				for a few shuttles, the docking bay of this station is deserted.
+				
+				A few stationers in flight suits wander around on various tasks.
+
 			</Text>
 		</Language>
 	</StationType>
@@ -1566,8 +1592,10 @@
 
 	<!-- Commonwealth Confiscate -->
 
-	<DockScreen UNID="&dsCommonwealthConfiscate;"	nestedScreen="true">
-
+	<DockScreen UNID="&dsCommonwealthConfiscate;"
+			nestedScreen=	"true"
+			inherit=		"&dsDockScreenBase;"
+			>
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -1595,23 +1623,14 @@
 							)
 
 						; Compose text
-						(setq desc "Commonwealth Customs has inspected your ship's cargo hold and confiscated ")
-						(if (eq (count itemsToConfiscate) 1)
-							(scrSetDesc gScreen (cat desc (itmGetName (item itemsToConfiscate 0) 8) "."))
-							(block (i)
-								(for i 0 (subtract (count itemsToConfiscate) 3)
-									(setq desc (cat desc (itmGetName (item ItemsToConfiscate i) 8) ", "))
-									)
-								(setq desc (cat desc (itmGetName (item ItemsToConfiscate (subtract (count itemsToConfiscate) 2)) 8) " and "))
-								(setq desc (cat desc (itmGetName (item ItemsToConfiscate (subtract (count itemsToConfiscate) 1)) 8) "."))
-								(scrSetDesc gScreen desc)
-								)
-							)
+						(scrSetDescTranslate gScreen 'descConfiscate {
+							itemList: (join (map itemsToConfiscate theItem (itmGetName theItem 'count)) 'oxfordComma)
+							})
 						)
 				</OnPaneInit>
 
 				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
+					<Action id="actionContinue" default="1" cancel="1">
 						(block Nil
 							(comSealedContainerHack)
 							(scrExitScreen gScreen)
@@ -1620,11 +1639,23 @@
 				</Actions>
 			</Default>
 		</Panes>
+
+		<Language>
+			<Text id="descConfiscate">
+
+				Commonwealth Customs has inspected your ship's cargo hold and
+				confiscated %itemList%.
+
+			</Text>
+		</Language>
 	</DockScreen>
 
 	<!-- Commonwealth Decontamination -->
 
-	<DockScreen UNID="&dsCommonwealthDecon;"	nestedScreen="true">
+	<DockScreen UNID="&dsCommonwealthDecon;"
+			nestedScreen=	"true"
+			inherit=		"&dsDockScreenBase;"
+			>
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -1644,7 +1675,7 @@
 				</OnPaneInit>
 
 				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
+					<Action id="actionContinue" default="1" cancel="1">
 						; If the ship is still radioactive, force undock.
 						; Otherwise, we just exit the screen and go back to the default screen
 						
@@ -1664,7 +1695,8 @@
 			<Text id="customs.cantAffordDecon">
 
 				Commonwealth Customs stops your ship for decontamination.
-				Unfortunately, you do not have %cost% to pay for decontamination.
+				Unfortunately, you do not have %cost% to pay for 
+				decontamination.
 
 			</Text>
 		</Language>
@@ -1672,8 +1704,10 @@
 
 	<!-- Commonwealth Free Slaves -->
 
-	<DockScreen UNID="&dsCommonwealthFreeSlaves;"	nestedScreen="true">
-
+	<DockScreen UNID="&dsCommonwealthFreeSlaves;"
+			nestedScreen="true"
+			inherit=		"&dsDockScreenBase;"
+			>
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -1691,23 +1725,20 @@
 						(objIncData gPlayerShip "slavesFreed" totalSlaves)
 
 						; Create description
-						(setq desc "As soon as you dock you inform the Commonwealth authorities that you have rescued ")
 						(switch
-							(eq totalSlaves 1)
-								(setq desc (cat desc "a slave. The jaded officer takes the slave coffin and files a routine report."))
+							(= totalSlaves 1)
+								(scrSetDescTranslate gScreen 'descRescue.1)
 
-							(eq totalSlaves 2)
-								(setq desc (cat desc "a couple of slaves. The jaded officer takes the two slave coffins and files a routine report."))
+							(= totalSlaves 2)
+								(scrSetDescTranslate gScreen 'descRescue.2)
 
-							(setq desc (cat desc "several slaves. The officer in charge thanks you for your role in the rescue: \"You must have a pretty good ship to have survived a fight against Slavers!\""))
+							(scrSetDescTranslate gScreen 'descRescue.several)
 							)
-
-						(scrSetDesc gScreen desc)
 						)
 				</OnPaneInit>
 
 				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
+					<Action id="actionContinue" default="1" cancel="1">
 						(block (freed rewarded)
 							(setq freed (objGetData gPlayerShip "slavesFreed"))
 							(setq rewarded (objGetData gPlayerShip "slaveReward"))
@@ -1744,12 +1775,14 @@
 
 						; Give it to the player
 						(objAddItem gPlayerShip reward)
-						(scrSetDesc gScreen (cat "Once revived, one of the former slaves turns to you and puts something in your hand. She turns and walks away without saying a word. When you open your hand you see: " (itmGetName reward 8) "."))
+						(scrSetDescTranslate gScreen 'descReward {
+							itemName: (itmGetName reward 'count)
+							})
 						)
 				</OnPaneInit>
 
 				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
+					<Action id="actionContinue" default="1" cancel="1">
 						(block Nil
 							(objSetData gPlayerShip "slaveReward" (objGetData gPlayerShip "slavesFreed"))
 							(scrExitScreen gScreen)
@@ -1759,23 +1792,65 @@
 			</Reward1>
 		</Panes>
 
+		<Language>
+			<Text id="descRescue.1">
+
+				As soon as you dock you inform the Commonwealth authorities that
+				you have rescued a slave.
+				
+				The jaded officer takes the slave coffin and files a routine 
+				report.
+			
+			</Text>
+			<Text id="descRescue.2">
+			
+				As soon as you dock you inform the Commonwealth authorities that
+				you have rescued a couple of slaves.
+				
+				The jaded officer takes the	two slave coffins and files a 
+				routine report.
+			
+			</Text>
+			<Text id="descRescue.several">
+
+				As soon as you dock you inform the Commonwealth authorities that
+				you have rescued several slaves. The officer in charge thanks 
+				you:
+
+				"You must have a pretty good ship to have survived a fight 
+				against Slavers!"
+				
+			</Text>
+			<Text id="descReward">
+
+				Medtechs revive one of the slaves, and after blinking away 
+				confusion, she thanks you with a barely audible whisper.
+				
+				She puts something in your hand, then turns and walks away 
+				without another word.
+				
+				When you open your hand you see %itemName%.
+			
+			</Text>
+		</Language>
 	</DockScreen>
 
 	<!-- Commonwealth Imprison -->
 
-	<DockScreen UNID="&dsCommonwealthImprison;"	nestedScreen="true">
+	<DockScreen UNID="&dsCommonwealthImprison;"	
+			nestedScreen=	"true"
+			inherit=		"&dsDockScreenBase;"
+			>
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(scrSetDesc gScreen 
-						"As you enter the station you are surrounded by heavily armed soldiers. "
-						"A Commonwealth official approaches you:\n\n"
-						"\"You are under arrest for " (objGetData gPlayerShip "commonCrime") ".\"" 
-						)
+					(scrSetDescTranslate gScreen 'descArrested {
+						crime: (objGetData gPlayerShip 'commonCrime)
+						})
 				</OnPaneInit>
 
 				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
+					<Action id="actionContinue" default="1" cancel="1">
 						(scrShowPane gScreen "TrialIntro")
 					</Action>
 				</Actions>
@@ -1783,24 +1858,18 @@
 			
 			<TrialIntro>
 				<OnPaneInit>
-					(scrSetDesc gScreen
-						"You appear before a magistrate who reads out the charges:\n\n"
-						"\"%name%, you are accused of " (objGetData gPlayerShip "commonCrime") ". "
-						"How do you plead?\""
-						)
+					(scrSetDescTranslate gScreen 'descTrialStart {
+						crime: (objGetData gPlayerShip "commonCrime")
+						})
 				</OnPaneInit>
 				
 				<Actions>
-					<Action name="&quot;Guilty.&quot;" default="1" cancel="1" key="G">
+					<Action id="actionGuilty" default="1" cancel="1">
 						(switch
 							; If this is a serious crime, then always prison
 							(eq (objGetData gPlayerShip "commonCrimeSeverity") 3)
 								(block Nil
-									(setq gResult (cat
-										"\"In view of the seriousness of the crime, the Court has no choice "
-										"but to sentence you to a minimum of ten years in a Commonwealth rehabilitation colony.\n\n"
-										"\"Court dismissed!\""
-										))
+									(setq gResult (scrTranslate gScreen 'descVerdictImprison1))
 									(scrShowPane gScreen "VerdictImprison")
 									)
 
@@ -1808,11 +1877,9 @@
 							(not (objGetData gPlayerShip "commonCrimeRecord"))
 								(block Nil
 									(setq gCost 5000)
-									(setq gResult (cat
-										"\"In view of your otherwise clean record, and your acceptance of responsibility, "
-										"the Commonwealth fines you the sum of " gCost " credits for your crimes.\n\n"
-										"\"Court dismissed!\""
-										))
+									(setq gResult (scrTranslate gScreen 'descVerdictFine1 {
+										fine: (fmtCurrency 'credit gCost)
+										}))
 									(scrShowPane gScreen "VerdictRelease")
 									)
 									
@@ -1820,49 +1887,33 @@
 							(eq (objGetData gPlayerShip "commonCrimeRecord") 1)
 								(block Nil
 									(setq gCost 25000)
-									(setq gResult (cat
-										"\"In view of your acceptance of responsibility, "
-										"the Commonwealth fines you the sum of " gCost " credits for your crimes.\n\n"
-										"\"Court dismissed!\""
-										))
+									(setq gResult (scrTranslate gScreen 'descVerdictFine2 {
+										fine: (fmtCurrency 'credit gCost)
+										}))
 									(scrShowPane gScreen "VerdictRelease")
 									)
 									
 							; Otherwise, locked away
 							(block Nil
-								(setq gResult (cat
-									"\"Your past criminal record gives me no expectation of future good behavior. "
-									"You are hereby sentenced to twenty years in a Commonwealth rehabilitation colony.\n\n"
-									"\"Court dismissed!\""
-									))
+								(setq gResult (scrTranslate gScreen 'descVerdictImprison2))
 								(scrShowPane gScreen "VerdictImprison")
 								)
 							)
 					</Action>
 					
-					<Action name="&quot;Not guilty!&quot;" key="N">
+					<Action id="actionNotGuilty">
 						(switch
 							; Sometimes there is not enough evidence
 							(leq (random 1 100) 25)
 								(block Nil
-									(setq gResult (cat
-										"After a lengthy trial, the Court finds you not guilty due to lack of evidence.\n\n"
-										"\"Our laws compel us to set you free. But if you are guilty, you may find "
-										"your conscience to be more of a torment than prison ever could.\n\n"
-										"\"Court dismissed!\""
-										))
+									(setq gResult (scrTranslate gScreen 'descVerdictNotGuilty))
 									(scrShowPane gScreen "VerdictNotGuilty")
 									)
 									
 							; If this is a serious crime, then always prison
 							(eq (objGetData gPlayerShip "commonCrimeSeverity") 3)
 								(block Nil
-									(setq gResult (cat
-										"After a trial, the Court finds you guilty as charged.\n\n"
-										"\"In view of the seriousness of the crime, the Court sentences you to "
-										"life without parole in a Commonwealth rehabilitation colony.\n\n"
-										"\"Court dismissed!\""
-										))
+									(setq gResult (scrTranslate gScreen 'descVerdictGuilty))
 									(scrShowPane gScreen "VerdictImprison")
 									)
 
@@ -1870,23 +1921,15 @@
 							(not (objGetData gPlayerShip "commonCrimeRecord"))
 								(block Nil
 									(setq gCost 25000)
-									(setq gResult (cat
-										"After a short trial, the Court finds you guilty as charged.\n\n"
-										"\"In view of your otherwise clean record "
-										"the Commonwealth fines you the sum of " gCost " credits for your crimes.\n\n"
-										"\"Court dismissed!\""
-										))
+									(setq gResult (scrTranslate gScreen 'descVerdictFine3 {
+										fine: (fmtCurrency 'credit gCost)
+										}))
 									(scrShowPane gScreen "VerdictRelease")
 									)
 									
 							; Otherwise, locked away
 							(block Nil
-								(setq gResult (cat
-									"After a trial, the Court finds you guilty as charged.\n\n"
-									"\"Your past criminal record gives me no expectation of future good behavior. "
-									"You are hereby sentenced to twenty years in a Commonwealth rehabilitation colony.\n\n"
-									"\"Court dismissed!\""
-									))
+								(setq gResult (scrTranslate gScreen 'descVerdictImprison2))
 								(scrShowPane gScreen "VerdictImprison")
 								)
 							)
@@ -1900,7 +1943,7 @@
 				</OnPaneInit>
 				
 				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
+					<Action id="actionContinue" default="1" cancel="1">
 						(block Nil
 							(objSetData gPlayerShip "commonCrimeSeverity" 0)
 							(objSetData gPlayerShip "commonCrime" Nil)
@@ -1917,7 +1960,7 @@
 				</OnPaneInit>
 				
 				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
+					<Action id="actionContinue" default="1" cancel="1">
 						(if (geq (plyGetCredits gPlayer) gCost)
 							(block Nil
 								(plyCharge gPlayer gCost)
@@ -1939,9 +1982,13 @@
 				</OnPaneInit>
 				
 				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
+					<Action id="actionContinue" default="1" cancel="1">
 						(block Nil
-							(plyDestroyed gPlayer (cat "was imprisoned for " (objGetData gPlayerShip "commonCrime")))
+							(plyDestroyed gPlayer 
+								(scrTranslate gScreen 'epitaphImprisoned {
+									crime: (objGetData gPlayerShip 'commonCrime)
+									})
+								)
 							(scrExitScreen gScreen 'forceUndock)
 							)
 					</Action>
@@ -1950,22 +1997,118 @@
 
 			<CantPay>
 				<OnPaneInit>
-					(scrSetDesc gScreen
-						"Unfortunately, you cannot afford to pay the fine. "
-						"The Commonwealth decides to sell your ship to cover your debt."
-						)
+					(scrSetDescTranslate gScreen 'descCannotAffordFine)
 				</OnPaneInit>
 				
 				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
+					<Action id="actionContinue" default="1" cancel="1">
 						(block Nil
-							(plyDestroyed gPlayer (plyComposeString gPlayer (cat "lost %his% ship after a criminal conviction")))
+							(plyDestroyed gPlayer 
+								(scrTranslate gScreen 'epitaphLostShip { })
+								)
 							(scrExitScreen gScreen 'forceUndock)
 							)
 					</Action>
 				</Actions>
 			</CantPay>
 		</Panes>
+
+		<Language>
+			<Text id="descArrested">
+
+				As you enter the station you are surrounded by heavily armed 
+				soldiers. A Commonwealth official approaches you:
+
+				"You are under arrest for %crime%."
+			
+			</Text>
+			<Text id="descTrialStart">
+			
+				You appear before a magistrate who reads out the charges:
+				
+				"%name%, you are accused of %crime%. How do you plead?"
+
+			</Text>
+			<Text id="descVerdictImprison1">
+
+				"In view of the seriousness of the crime, the Court has no 
+				choice but to sentence you to a minimum of ten years in a 
+				Commonwealth rehabilitation colony.
+
+				"Court dismissed!"
+			
+			</Text>
+			<Text id="descVerdictImprison2">
+
+				"Your past criminal record gives me no expectation of future 
+				good behavior. You are hereby sentenced to twenty years in a 
+				Commonwealth rehabilitation colony.
+
+				"Court dismissed!"
+			
+			</Text>
+			<Text id="descVerdictFine1">
+	
+				"In view of your otherwise clean record, and your acceptance of
+				responsibility, the Commonwealth fines you the sum of %fine% for
+				your crimes.
+
+				"Court dismissed!"
+
+			</Text>
+			<Text id="descVerdictFine2">
+
+				"In view of your acceptance of responsibility, the Commonwealth 
+				fines you the sum of %fine% for your crimes.
+
+				"Court dismissed!"
+			
+			</Text>
+			<Text id="descVerdictFine3">
+
+				After a short trial, the Court finds you guilty as charged.
+
+				"In view of your otherwise clean record the Commonwealth fines 
+				you the sum of %fine% for your crimes.
+
+				"Court dismissed!"
+			
+			</Text>
+			<Text id="descVerdictNotGuilty">
+			
+				After a lengthy trial, the Court finds you not guilty due to 
+				lack of evidence.
+
+				"Our laws compel us to set you free. But if you are guilty, you 
+				may find your conscience to be more of a torment than prison 
+				ever could.
+
+				"Court dismissed!"
+
+			</Text>
+			<Text id="descVerdictGuilty">
+
+				After a trial, the Court finds you guilty as charged.
+
+				"In view of the seriousness of the crime, the Court sentences 
+				you to life without parole in a Commonwealth rehabilitation 
+				colony.
+
+				"Court dismissed!"
+			
+			</Text>
+			<Text id="descCannotAffordFine">
+
+				Unfortunately, you cannot afford to pay the fine. The 
+				Commonwealth decides to sell your ship to cover your debt.
+			
+			</Text>
+			<String id="actionGuilty">"[G]uilty."</String>
+			<String id="actionNotGuilty">"[N]ot guilty."</String>
+
+			<Text id="epitaphImprisoned">was imprisoned for %crime%</Text>
+			<Text id="epitaphLostShip">lost %his% ship after a criminal conviction</Text>
+		</Language>
 	</DockScreen>
 
 <!-- BEHAVIORS -->
@@ -2216,9 +2359,11 @@
 	<Image UNID="&rsCommonwealthArmoredColony;"	bitmap="Resources\CommonwealthColonyArmored.jpg" bitmask="Resources\CommonwealthColonyArmoredMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthColony;"		bitmap="Resources\CommonwealthColony.jpg" bitmask="Resources\CommonwealthColonyMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthDryDock;"		bitmap="Resources\CommonwealthDryDock.jpg" bitmask="Resources\CommonwealthDryDockMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsCommonwealthHabitat;"		bitmap="Resources\CommonwealthHabitat.jpg" bitmask="Resources\CommonwealthHabitatMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthMedicalColony;"	bitmap="Resources\CommonwealthMedicalColony.jpg" bitmask="Resources\CommonwealthMedicalColonyMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthResidentials;"	bitmap="Resources\CommonwealthResidentials.jpg" bitmask="Resources\CommonwealthResidentialsMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthSettlement;"	bitmap="Resources\CommonwealthSettlement.jpg" bitmask="Resources\CommonwealthSettlementMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCommonwealthSlumsImage;"	bitmap="Resources\CommonwealthSlums.jpg" bitmask="Resources\CommonwealthSlumsMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsContainerHabitat;"			bitmap="Resources\CommonwealthContainerHabitat.jpg" bitmask="Resources\CommonwealthContainerHabitatMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

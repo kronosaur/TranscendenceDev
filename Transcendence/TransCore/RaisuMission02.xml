@@ -4,7 +4,7 @@
 
 	<MissionType UNID="&msRaisuStation02;"
 			name=				"Raisu 02: Defend Raisu Station"
-			attributes=			"commonwealth, raisuStation"
+			attributes=			"commonwealth, eridaniScript, raisuStation"
 			inherit=			"&baDefendStationMission;"
 
 			level=				"1"
@@ -53,7 +53,9 @@
 							(if missionObj
 								{
 									nextScreen: &dsRPGMission;
-									nextScreenData: { missionObj:missionObj }
+									nextScreenData: { 
+										missionObj:missionObj
+										}
 									}
 								)
 							)

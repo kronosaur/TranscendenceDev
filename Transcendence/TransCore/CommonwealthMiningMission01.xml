@@ -21,7 +21,7 @@
 
 	<MissionType UNID="&msSaveMiningShip;"
 			name=				"Rescue Mining Ship"
-			attributes=			"commonwealthMining"
+			attributes=			"commonwealthMining, eridaniScript"
 
 			level=				"1-4"
 

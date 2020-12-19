@@ -23,7 +23,7 @@
 
 	<MissionType UNID="&msRaisuStation01;"
 			name=				"Raisu 01: Liberate Raisu Station"
-			attributes=			"commonwealth, raisuStation, special, deliveryMission"
+			attributes=			"commonwealth, eridaniScript, raisuStation, special, deliveryMission"
 
 			level=				"1"
 
@@ -293,7 +293,9 @@
 							(if missionObj
 								{
 									nextScreen: &dsRPGMission;
-									nextScreenData: { missionObj:missionObj }
+									nextScreenData: { 
+										missionObj:missionObj
+										}
 									}
 								)
 							)
@@ -369,8 +371,6 @@
 			</SummonRaiders>
 		</Events>
 
-		<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>
-
 		<Language>
 			<!-- Code Points -->
 
@@ -419,98 +419,114 @@
 			<Text id="Name">Kill Arco Vaughn</Text>
 			<Text id="descSummary">
 
-				Centauri warlords have taken over Raisu Station. Help free the station by
-				killing the warlord Arco Vaughn.
+				Centauri warlords have taken over Raisu Station. Help free the 
+				station by killing the warlord Arco Vaughn.
 
 			</Text>
 			<Text id="descHiding">
 
-				The docking bay is completely empty. Old air scrubbers pump a thin, odorous breeze out of
-				rusty vents. Discarded packets of Salmonite and Red Nebula beer huddle in the corner.
+				The station master stands at her console. She turns her 
+				attention towards you:
+
+				"Arco Vaughn is the key! Kill him and we'll all rest easy. Until
+				then, we're gonna shelter in place."
 
 			</Text>
 
 			<Text id="descStationFearful0">
 
-				The station master stands at her console. She turns her attention towards you:
+				The station master stands at her console. She turns her 
+				attention towards you:
 
-				"You'd better leave before the warlords return. If they see an armed ship here they will 
-				kill you; and we will be punished. Go now!"
+				"You'd better leave before the warlords return. If they see an 
+				armed ship here they will kill you; and we will be punished. Go 
+				now!"
 
 			</Text>
 			<Text id="descStationFearful1">
 
-				The station master stands at her console. She turns her attention towards you:
+				The station master stands at her console. She turns her 
+				attention towards you:
 
-				"The Centauri warlords are furious that you've blown up one of their stations! 
-				Do you really think you're strong enough to stand up to them?! Please leave before 
-				you get us all killed!"
+				"The Centauri warlords are furious that you've blown up one of 
+				their stations! Do you really think you're strong enough to 
+				stand up to them?!
+				
+				"Please leave before you get us all killed!"
 
 			</Text>
 			<Text id="descStationFearful2">
 
-				The station master stands at her console. She turns her attention towards you:
+				The station master stands at her console. She turns her 
+				attention towards you:
 
-				"Please leave! You know what will happen if you try to destroy more Centauri 
-				bases? You'll be killed and we'll be punished! And if Arco Vaughn sees you here, 
-				we're all dead!"
+				"Please leave! You know what will happen if you try to destroy 
+				more Centauri bases? You'll be killed and we'll be punished! And
+				if Arco Vaughn sees you here, we're all dead!"
 
 			</Text>
 			<Text id="descMeetingHallHappy">
 
-				The meeting hall is busy with commercial activity; everyone goes about their 
-				business, sometimes stopping to say hello to you.
+				The meeting hall is busy with commercial activity; everyone goes
+				about their business, sometimes stopping to say hello to you.
 
 			</Text>
 
 			<Text id="Intro">
 
-				The station master stands at her console. She runs towards you tearfully:
+				The station master stands at her console. She runs towards you 
+				tearfully:
 
-				"Is it true? Have you fought the Centauri warlords? It's been so long since 
-				anyone stood up to them. Will you finish what you've begun? If you don't 
-				kill the rest of them now, we'll be the ones who suffer.
+				"Is it true? Have you fought the Centauri warlords? It's been so
+				long since anyone stood up to them. Will you finish what you've 
+				begun? If you don't kill the rest of them now, we'll be the ones
+				who suffer.
 				
-				"Arco Vaughn is the key. Kill him and the rest will leave us alone."
+				"Arco Vaughn is the key. Kill him and the rest will leave us 
+				alone."
 
 			</Text>
 			<Text id="Briefing">
 
-				"I can help you; I'm not afraid anymore. Arco Vaughn lives deep in the outer
-				belt&#x97;I can give you the coordinates. Kill him and we will all be free.
+				"I can help you; I'm not afraid anymore. Arco Vaughn lives deep 
+				in the outer belt&mdash;I can give you the coordinates. Kill him
+				and we will all be free.
 
 				"Will you help us?"
 
 			</Text>
 			<Text id="descMissionAcceptSingular">
 
-				"You will need all the power you can to kill him. I have a hidden %itemName%
-				that the warlords never found. It belonged to my husband...many years ago.
-				Take it! Take it and good luck!"
+				"You will need all the power you can to kill him. I have a 
+				hidden %itemName% that the warlords never found. It belonged to 
+				my husband...many years ago. Take it! Take it and good luck!"
 
 				She hugs you quickly and runs off.
 
 			</Text>
 			<Text id="descMissionAcceptPlural">
 
-				"You will need all the power you can to kill him. I have some hidden %itemName%
-				that the warlords never found. They belonged to my husband...many years ago.
-				Take them! Take them and good luck!"
+				"You will need all the power you can to kill him. I have some 
+				hidden %itemName% that the warlords never found. They belonged 
+				to my husband...many years ago. Take them! Take them and good 
+				luck!"
 
 				She hugs you quickly and runs off.
 
 			</Text>
 			<Text id="DeclineReply">
 
-				The station master stares at you in shock and then begins to weep.
+				The station master stares at you in shock and then begins to 
+				weep.
 
-				"Why did you start this war if you won't finish it! You've doomed us all!"
+				"Why did you start this war if you won't finish it! You've 
+				doomed us all!"
 
 			</Text>
 			<Text id="descMissionHiding">
 
-				The station master's console is empty. Everyone on the station is hiding in 
-				the central hub.
+				The station master's console is empty. Everyone on the station 
+				is hiding in the central hub.
 
 			</Text>
 			<Text id="descSuccessDebrief1">
@@ -563,61 +579,96 @@
 			</Text>
 
 			<Text id="rumor.commonwealthHabitat.1">
-				"The warlords are annoying, but they don't mean much. The only one that bothers
-				me is Arco Vaughn. He's trouble. Someone ought to air him out before things get
-				out of hand, you know?"
+
+				"The warlords are annoying, but they don't mean much. The only 
+				one that bothers me is Arco Vaughn. He's trouble. Someone ought 
+				to air him out before things get out of hand, you know?"
+
 			</Text>
 			<Text id="rumor.commonwealthHabitat.2">
-				"It's sad about Raisu Station, isn't it? If a corporate fuel station got taken
-				over by Centauri warlords they'd have Admiral Decker himself leading the
-				rescue. But no one cares about a poor, backwater station, I guess."
+
+				"It's sad about Raisu Station, isn't it? If a corporate fuel 
+				station got taken over by Centauri warlords they'd have Admiral 
+				Decker himself leading the rescue. But no one cares about a 
+				poor, backwater station, I guess."
+
 			</Text>
 			<Text id="rumor.commonwealthHabitat.3">
-				"If you're looking for Arco Vaughn, go to Raisu Station: the station master
-				there will help you out. But first you gotta convince her that you're serious."
+
+				"If you're looking for Arco Vaughn, go to Raisu Station: the 
+				station master there will help you out. But first you gotta 
+				convince her that you're serious."
+
 			</Text>
 			<Text id="rumor.commonwealthHabitat.4">
-				"If you need help against Arco Vaughn the station master at Raisu Station will
-				help you. But you'll have to prove that you're serious. Take out a few Centauri
-				stations and you might convince her."
+
+				"If you need help against Arco Vaughn the station master at 
+				Raisu Station will help you. But you'll have to prove that 
+				you're serious. Take out a few Centauri	stations and you might 
+				convince her."
+
 			</Text>
 			<Text id="rumor.commonwealthHabitat.5">
-				"Thank heavens that someone finally killed Arco Vaughn. Maybe now the warlords
-				will leave us alone."
+
+				"Thank heavens that someone finally killed Arco Vaughn. Maybe 
+				now the warlords will leave us alone."
+
 			</Text>
 			<Text id="rumor.commonwealthHabitat.6">
-				"It's shame what Raisu Station had to go through, isn't it? If a corporate
-				station had been occupied by warlords, they'd have sent Admiral Decker himself
-				to lead the rescue. But no one cares about a poor, backwater station, I guess."
+
+				"It's shame what Raisu Station had to go through, isn't it? If a
+				corporate station had been occupied by warlords, they'd have 
+				sent Admiral Decker himself to lead the rescue. But no one cares
+				about a poor, backwater station, I guess."
+
 			</Text>
 			<Text id="rumor.commonwealthHabitat.7">
-				"I hear that Arco Vaughn is finally dead. No one will mourn him. I really feel
-				for Erica and her team at Raisu&mdash;they went through hell."
+
+				"I hear that Arco Vaughn is finally dead. No one will mourn him.
+				I really feel for Erica and her team at Raisu&mdash;they went 
+				through hell."
+
 			</Text>
 			<Text id="rumor.commonwealthHabitat.8">
-				"We're all glad that Arco Vaughn is dead. I heard someone from Raisu Station
-				finally had enough and decided to chase him down."
+
+				"We're all glad that Arco Vaughn is dead. I heard someone from 
+				Raisu Station finally had enough and decided to chase him down."
+
 			</Text>
 			<Text id="rumor.commonwealthContainer.1">
-				"Watch out for Arco Vaughn. He is the most dangerous Centauri warlord;
-				his heavy raider is protected against lasers and recoilless cannons.
-				Avoid him if you want to live."
+
+				"Watch out for Arco Vaughn. He is the most dangerous Centauri 
+				warlord; his heavy raider is protected against lasers and 
+				recoilless cannons.
+				
+				"Avoid him if you want to live."
+
 			</Text>
 			<Text id="rumor.commonwealthContainer.2">
-				"Arco Vaughn flies an enhanced heavy raider. His armor is protected against
-				normal weapons; you'll need missiles to kill him."
+
+				"Arco Vaughn flies an enhanced heavy raider. His armor is 
+				protected against normal weapons; you'll need missiles to kill 
+				him."
+
 			</Text>
 			<Text id="rumor.commonwealthContainer.3">
-				"Raisu Station is in trouble. The Centauri warlords have taken it over;
-				don't go there unless you are armed and ready."
+
+				"Raisu Station is in trouble. The Centauri warlords have taken 
+				it over; don't go there unless you are armed and ready."
+
 			</Text>
 			<Text id="rumor.commonwealthContainer.4">
-				"If you want to find Arco Vaughn, go to Raisu Station. Talk to the station
-				master there. She will help you."
+
+				"If you want to find Arco Vaughn, go to Raisu Station. Talk to 
+				the station master there. She will help you."
+
 			</Text>
 			<Text id="rumor.commonwealthContainer.5">
-				"The Centauri warlords have many bases among the outer asteroids of Eridani;
-				but if you go there, watch out: Arco Vaughn is there too."
+
+				"The Centauri warlords have many bases among the outer asteroids
+				of Eridani;	but if you go there, watch out: Arco Vaughn is there
+				too."
+
 			</Text>
 
 			<Text id="achievement.liberated">Liberated Raisu station</Text>
@@ -650,7 +701,13 @@
 
 	-->
 
-	<Type UNID="&evArcoVaughn;">
+	<Type UNID="&evArcoVaughn;"
+			attributes=			"eridaniScript"
+			>
+		<Properties>
+			<Definition id="core.namePattern">": Arco Vaughn"</Definition>
+		</Properties>
+
 		<Events>
 			<OnEventHandlerInit>
 				(block Nil

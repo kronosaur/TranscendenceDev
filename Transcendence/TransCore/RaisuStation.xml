@@ -9,17 +9,19 @@
 			sovereign=			"&svCommonwealth;"
 			inherit=			"&baCommonwealthStation;"
 
+			attributes=			"commonwealth, commonwealthCustoms, eridaniScript, friendly, human, majorStation, populated, raisuStation"
+
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"3"
-			multiHull=			"true"
+			size=				"160"
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"150"
+			multiHull=			"true"
 			regen=				"1"
-			ejectaType=			"&vtWreckEjecta;"
 
-			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated, raisuStation"
+			ejectaType=			"&vtWreckEjecta;"
 			>
 
 		<Properties>
@@ -65,13 +67,6 @@
 				exclusionRadius="80"
 				/>
 
-		<ImageVariants>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="64" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="128" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="192" imageY="0" imageWidth="64" imageHeight="128"/>
-		</ImageVariants>
-
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
@@ -90,8 +85,25 @@
 			<Lookup table="&tbCommPrivateCrafts;"/>
 		</Ships>
 
+		<!-- Image and Effects -->
+
+		<Image			imageID="&rsRaisuStation;" imageWidth="170" imageHeight="170" viewportRatio="0.02125"/>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"100"
+				/>
+
+		<!-- Dock Screens -->
+
 		<DockScreens>
 			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(scrTranslate gScreen 'rpg.statusDetails)
+					</OnDisplayInit>
+				</Display>
+
 				<Panes>
 					<Default>
 						<OnPaneInit>
@@ -128,7 +140,7 @@
 									(msnFind "c +unid:&msRaisuStation01;;")
 										(rpgDockServices gPlayerShip { })
 
-									(scrShowScreen &dsRPGMessage;{
+									(scrShowScreen gScreen &dsRPGMessage; {
 										textID: 'descNoServices
 										})
 									)
@@ -143,15 +155,7 @@
 			</Main>
 		</DockScreens>
 
-		<DockingPorts>
-			<Port x="0"		y="80" />
-			<Port x="43"	y="56" />
-			<Port x="52"	y="8" />
-			<Port x="35"	y="-44" />
-			<Port x="-35"	y="-44" />
-			<Port x="-52"	y="8" />
-			<Port x="-43"	y="56" />
-		</DockingPorts>
+		<!-- Events and Behavior -->
 
 		<Events>
 			<OnDestroy>
@@ -217,12 +221,9 @@
 
 			<Text id="descWelcome.default">
 
-				The loud voices of a packed multitude bounce off every bulkhead 
-				and corridor in the station. Old air scrubbers pump a thin, 
-				odorous breeze out of rusty vents. Discarded packets of	
-				Salmonite and Red Nebula beer huddle in the corner.
-
-				Welcome to Raisu Station!
+				You enter a large but deserted docking bay. Trash and other 
+				debris is scattered around. A few dock workers are idling near
+				a hatchway, but they studiously ignore you.
 
 			</Text>
 			<Text id="descWelcome.ally">
@@ -260,6 +261,138 @@
 			
 			</Text>
 
+			<Code id="rpg.statusDetails">
+				(block (
+					(mission01Obj (msnFind "*P +unid:&msRaisuStation01;;"))
+					(mission02Obj (msnFind "*P +unid:&msRaisuStation02;;"))
+					(mission03Obj (msnFind "*P +unid:&msRaisuStation03;;"))
+					(globalStatus (typ@ &stRaisuStation; 'status))
+					(centauriLeft (count (sysFindObject gPlayerShip "TA +centauriWarlords; +populated; -occupation; -uncharted;")))
+					(centauriDestroyed (count (sysFindObject gPlayerShip "TK +centauriWarlords; +populated; -occupation; -uncharted;")))
+					(settlementObj (sysFindObject gPlayerShip "TAN +unid:&stCentauriSettlement;;"))
+
+					(raisuStatus
+						(switch
+							(msn@ mission03Obj 'isDeclined)
+								'uneasyPeace
+
+							(msn@ mission03obj 'isCompleted)
+								'victory
+
+							(msn@ mission03obj 'isOpen)
+								'retaliating
+
+							(msn@ mission02obj 'isCompleted)
+								'liberated
+
+							(msn@ mission02Obj 'isActive)
+								'defending
+
+							(msn@ mission02Obj 'isOpen)
+								'expectingAttack
+
+							(= globalStatus 'liberated)
+								'liberated
+
+							(msn@ mission01Obj 'isDeclined)
+								'hiding
+
+							(sysFindObject gSource "s +centauriWarlords; N:100;")
+								'hidingFromWarlords
+
+							(msn@ mission01Obj 'isActive)
+								'challengeArcoVaughn
+
+							(msn@ mission01Obj 'isOpen)
+								'hiding
+
+							'unknown
+							)
+						)
+					)
+					{
+						title: (scrTranslate gScreen 'status.title)
+						largeIcon: (objGetImageDesc gSource)
+
+						details: (list
+							{
+								title: (scrTranslate gScreen 'status.status)
+								desc: (scrTranslate gScreen 'status.rtfValue { 
+									value: (scrTranslate gScreen (cat 'status. raisuStatus))
+									})
+								}
+							{
+								title: (scrTranslate gScreen 'status.centauriLeft)
+								desc: (scrTranslate gScreen 'status.rtfValue { 
+									value: centauriLeft
+									})
+								}
+							(if (gr centauriDestroyed 0)
+								{
+									title: (scrTranslate gScreen 'status.centauriDestroyed)
+									desc: (scrTranslate gScreen 'status.rtfValue { 
+										value: centauriDestroyed
+										})
+									}
+								)
+							(if (typ@ &scArcoVaughnHeavyRaider; 'status)
+								{
+									title: (scrTranslate gScreen 'status.arcoVaughn)
+									desc: (scrTranslate gScreen 'status.rtfValue { 
+										value: (scrTranslate gScreen 'status.killed)
+										})
+									}
+								)
+							(switch
+								(not settlementObj)
+									{
+										title: (scrTranslate gScreen 'status.centauriSettlement)
+										desc: (scrTranslate gScreen 'status.rtfValue { 
+											value: (scrTranslate gScreen 'status.destroyed)
+											})
+										}
+
+								(= raisuStatus 'uneasyPeace)
+									{
+										title: (scrTranslate gScreen 'status.centauriSettlement)
+										desc: (scrTranslate gScreen 'status.rtfValue { 
+											value: (scrTranslate gScreen 'status.peaceful)
+											})
+										}
+								)
+							)
+
+						detailsStyle: 'stats
+						align: 'bottom
+						}
+					)
+			</Code>
+			<Text id="status.title">Raisu Station</Text>
+
+			<Text id="status.status">Status:</Text>
+			<Text id="status.hiding">Fearful of Warlords</Text>
+			<Text id="status.hidingFromWarlords">Hiding from Warlords</Text>
+			<Text id="status.challengeArcoVaughn">Hunting Arco Vaughn</Text>
+			<Text id="status.liberated">Freed from Warlord Occupation</Text>
+			<Text id="status.expectingAttack">Expecting Retaliation</Text>
+			<Text id="status.defending">Defending against Warlords</Text>
+			<Text id="status.retaliating">Threatening Warlord Settlement</Text>
+			<Text id="status.uneasyPeace">Coexisting with Warlord Settlement</Text>
+			<Text id="status.victory">Eliminated Warlord Settlement</Text>
+			<Text id="status.unknown">UNKNOWN</Text>
+
+			<Text id="status.centauriLeft">Active Centauri Stations:</Text>
+			<Text id="status.centauriDestroyed">Centauri Stations Destroyed:</Text>
+
+			<Text id="status.arcoVaughn">Arco Vaughn Status:</Text>
+			<Text id="status.killed">Killed</Text>
+
+			<Text id="status.centauriSettlement">Centauri Settlement Status:</Text>
+			<Text id="status.destroyed">Destroyed</Text>
+			<Text id="status.peaceful">Peaceful</Text>
+
+			<RTF id="status.rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+
 			<Text id="achievement.destroyed">Allowed Raisu Station to be destroyed</Text>
 			<Text id="achievement.destroyedByPlayer">Destroyed Raisu Station</Text>
 			<Text id="achievement.destroyedByWarlords">Failed to defend Raisu Station</Text>
@@ -267,5 +400,9 @@
 			<Text id="achievement.defended">Defended Raisu Station from Centauri warlord attack</Text>
 		</Language>
 	</StationType>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsRaisuStation;" bitmap="Resources\RaisuStation.jpg" bitmask="Resources\RaisuStationMask.bmp" loadOnUse="true" />
 
 </TranscendenceModule>

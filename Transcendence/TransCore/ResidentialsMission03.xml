@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&msResidentials03;"
+			name=				"Commonwealth Residentials 03: Rescue Leonor Ren"
+			attributes=			"commonwealthColony, commonwealthResidentials, eridaniScript"
+			inherit=			"&baAssaultStationMission;"
+
+			level=				"1-4"
+			maxAppearing=		"1"
+
+			noDebrief=			"true"
+			>
+		<Properties>
+			<Data id="reward"></Data>
+
+			<Variant id="targetDesc">
+				{
+					criteria: "TAE +outlawSmugglers; +populated; -questTarget; -uncharted;"
+					}
+			</Variant>
+		</Properties>
+
+		<Events>
+			<CanCreate>
+				(switch
+					;	Only valid in the New Beyond
+
+					(not (sysMatches "+newBeyond;"))
+						Nil
+
+					;	Success!
+
+					True
+					)
+			</CanCreate>
+
+			<OnTargetChosen>
+				(block (
+					(targetObj (@ gData 'targetObj))
+
+					;	The reward for the station is half of the standard
+					;	treasure value for the station.
+
+					(rewardExact (/ (obj@ targetObj 'stdTreasure) 2))
+
+					;	Round it to the nearest 100
+
+					(reward (max 100 (* 100 (round (/ rewardExact 100)))))
+					)
+					(msnSet@ gSource 'reward reward)
+					)
+			</OnTargetChosen>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Rescue Leonor Ren
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(list
+					{	descID:'textIntro1				labelID:'actionIntro1		}
+					{	descID:'textIntro2				}
+					)
+			</Text>
+			<Text id="Briefing">
+				(block (
+					(trData {
+						targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(list
+						{	descID:'textBriefing1				data:trData	}
+						)
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(list
+					{	descID:'textAcceptReply1	}
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(list
+					{	descID:'textDeclineReply1	}
+					)
+			</Text>
+			<Text id="InProgress">
+				(list
+					{	descID:'textInProgress1		}
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(trData {
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(list
+						{	descID:'textSuccess1				data:trData	}
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(list
+					{	descID:'textFailure1	}
+					)
+			</Text>
+
+			<Text id="textSummary">
+			
+				Help Solomon Ren to rescue his sister, who has been captured by 
+				outlaws.
+
+				Your mission is to destroy the outlaw base and allow Solomon to
+				enter the station to rescue his sister.
+
+				System: %systemName%\n
+				Payment: %reward%
+
+			</Text>
+			<Text id="textIntro1">
+
+				You enter the Main Hall and see a young man wearing a heavy 
+				backpack. He stops to introduce himself.
+
+				"My name is Solomon Ren. I saw your ship when you docked and I
+				want to hire you."
+
+			</Text>
+			<String id="actionIntro1">"[W]hat do you have in mind?"</String>
+			<Text id="textIntro2">
+
+				"My sister was abducted by outlaws a few months ago. I've spent
+				all that time trying to find her, and I finally caught a break.
+
+				"One of my contacts saw a transport loaded with people heading
+				for the outlaw base in this sytem."
+
+			</Text>
+			<Text id="textBriefing1">
+
+				"I want you to destroy the station and any defenders. Then I'll
+				board the station and look for my sister.
+
+				"I can pay you %reward%. What do you say?"
+
+			</Text>
+			<Text id="textAcceptReply1">
+
+				"Thank you. You don't know how much this means to me."
+
+			</Text>
+			<Text id="textDeclineReply1">
+
+				"I get it. You're scared of the outlaws. Thanks for your time."
+
+			</Text>
+			<Text id="textInProgress1">
+
+				"What's wrong? You said you could handle this mission! Get back 
+				out there and finish the job!"
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+
+			<Code id="dlgAtStation">
+				(block (
+					(missionObj gSource)
+					)
+					(list
+						{	descID: 'textRescue1		}
+						{	descID: 'textRescue2		labelID: 'actionRescue2	}
+						{	descID: 'textRescue3		labelID: 'actionRescue3	}
+						{	descID: 'textRescue4		labelID: 'actionRescue4	
+							code: (lambda ()
+								(block ()
+									(msnSuccess missionObj)
+									(msnReward missionObj)
+									)
+								)
+							}
+						{	descID: 'textRescue5		labelID: 'actionRescue5	}
+						)
+					)
+			</Code>
+
+			<Text id="textRescue1">
+
+				You enter the station with Solomon at your side. He leads the
+				way holding a small blaster in his hands.
+
+				Together you search the station, but find only debris and a few
+				shell-shocked outlaws.
+
+			</Text>
+			<Text id="textRescue2">
+
+				You find what looks like an infirmary. Displays and holopanes
+				line the walls, and in the center you see three open capsule
+				beds, large enough to fit a person.
+
+				Solomon frowns. "Oh, gods! No!"
+
+			</Text>
+			<String id="actionRescue2">"[W]hat is it?"</String>
+			<Text id="textRescue3">
+
+				Solomon sits on the ground, breathing hard.
+
+				"These are slave coffins. The Sung use them for their captives.
+				The outlaws must be working with them. They must have sold my
+				sister..."
+
+				His voice trails off.
+			
+			</Text>
+			<String id="actionRescue3">"[S]he's not here."</String>
+			<Text id="textRescue4">
+
+				Solomon stands up and activates one of the displays. He starts
+				scrolling through several pages of information.
+
+				"The Sung Slavers don't kill their captives. They keep them in
+				the coffins and use them for processing power. My sister is 
+				still alive somewhere.
+
+				"I just need to find where."
+			
+			</Text>
+			<String id="actionRescue4">"[H]ow will you do that?"</String>
+			<Text id="textRescue5">
+
+				Solomon turns to you.
+
+				"They track everything in this database. I should be able to 
+				figure out where they took her.
+
+				"Thanks for your help, %name%. I'll pay what I promised, since
+				you got me this far. I can take it from here."
+			
+			</Text>
+			<String id="actionRescue5">"[G]ood luck!"</String>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

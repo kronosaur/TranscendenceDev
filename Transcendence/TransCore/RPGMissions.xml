@@ -53,7 +53,7 @@
 
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(@ gData 'rankDetails)
+				(or (@ gData 'rankDetails) (objTranslate gSource 'rpg.statusDetails))
 			</OnDisplayInit>
 		</Display>
 
@@ -820,7 +820,8 @@
 	In order to take advantage of this screen, the mission object should have
 	the following characteristics:
 
-	1.	The mission type must have the "deliveryMission" attribute.
+	1.	The mission type must have the property rpg.deliveryMission set to 
+		non-nil, or must have the "deliveryMission" attribute.
 
 	2.	The mission object must have data of "destID" with the ID of the
 		recipient of the delivery.
@@ -845,14 +846,52 @@
 			>
 		<OnScreenInit>
 			(block (
+				(missionObj (@ gData 'missionObj))
+				(missionType (objGetType missionObj))
+
+				deliveryText
 				)
 				;	Store the mission object in screen data
-				(scrSetData gScreen 'missionObj (@ gData 'missionObj))
+				(scrSetData gScreen 'missionObj missionObj)
 
 				;	Invoke the event
-				(scrSetData gScreen 'deliveryText (msnFireEvent (@ gData 'missionObj) 'OnDeliveryMissionCompleted))
+				(setq deliveryText (msnFireEvent missionObj 'OnDeliveryMissionCompleted))
+
+				;	If necessary add the mission as a translation type.
+				(switch
+					(= (typeof deliveryText) 'struct)
+						(if (not (@ deliveryText 'translateType))
+							(set@ deliveryText 'translateType missionType)
+							)
+
+					(and (= (typeof deliveryText) 'list)
+							(= (typeof (@ deliveryText 0)) 'struct)
+							)
+						(setq deliveryText 
+							(map deliveryText theEntry
+								(if (not (@ theEntry 'translateType))
+									(struct theEntry { translateType:missionType })
+									theEntry
+									)
+								)
+							)
+					)
+
+				(scrSetData gScreen 'deliveryText deliveryText)
 				)
 		</OnScreenInit>
+
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(block (
+					(deliveryText (scrGetData gScreen 'deliveryText))
+					)
+					(if (= (typeof deliveryText) 'struct)
+						(or (@ deliveryText 'rankDetails) (objTranslate gSource 'rpg.statusDetails))
+						)
+					)
+			</OnDisplayInit>
+		</Display>
 
 		<Panes>
 			<Default>
@@ -916,20 +955,32 @@
 				; Find a delivery mission that is not completed and whose recipient
 				; is this station.
 
-				(block (missionObj)
-					(switch
-						(setq missionObj (@ 
-								(filter (msnFind gSource "a +deliveryMission;") theMission 
-									(and
-										(not (msnGetProperty theMission 'isCompleted))
-										(eq gSource 
-											(objGetObjByID 
-												(or (msn@ theMission 'destID) (msnGetData theMission 'destID))
-												)
-											)
-										)
+				(block (
+					(debugDelivery (typGetProperty &dsRPGMission; 'rpg.debug))
+
+					(allDeliveryMissions (msnFind gSource "a +deliveryMission; | a +property:rpg.deliveryMission;"))
+					(deliveryMissionsHere 
+						(filter allDeliveryMissions theMission 
+							(and
+								(not (msn@ theMission 'isCompleted))
+								(= (objGetID gSource)
+									(or (msn@ theMission 'rpg.deliveryDestID) (msn@ theMission 'destID) (msnGetData theMission 'destID))
 									)
-								0))
+								)
+							)
+						)
+
+					(missionObj (@ deliveryMissionsHere 0))
+					)
+					(if debugDelivery
+						(block ()
+							(dbgOutput "Delivery missions: " allDeliveryMissions)
+							(dbgOutput "Delivery to " (objGetName gSource) ": " deliveryMissionsHere)
+							)
+						)
+
+					(switch
+						missionObj
 							{	
 								screen: &dsRPGDeliveryMission;
 								priority: 4

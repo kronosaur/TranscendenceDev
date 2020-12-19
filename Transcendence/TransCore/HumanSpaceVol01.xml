@@ -2085,8 +2085,17 @@
 	<!ENTITY rsHammerheadHero			"0x0010033A">
 	<!ENTITY rsHammerhead2Hero			"0x0010033B">
 	<!ENTITY rsBorerHero				"0x0010033C">
+	<!ENTITY tbOutlawMineTreasure		"0x0010033D">
+	<!ENTITY tbOutlawMineDefenders		"0x0010033E">
+	<!ENTITY stOutlawHowitzer			"0x0010033F">
+	<!ENTITY scBorer-III				"0x00100340">
+	<!ENTITY scOromoII					"0x00100341">
+	<!ENTITY scSothoII					"0x00100342">
+	<!ENTITY itBallistaTurret			"0x00100343">
+	<!ENTITY itMarkIHowitzerTurret		"0x00100344">
+	<!ENTITY tbOutlawMineTurrets		"0x00100345">
 
-	<!-- 0370-038F AUTONS -->
+	<!-- 0370-038F OMNIDEFENSE SYSTEMS -->
 
 	<!ENTITY rsAutosentinelHD			"0x00100370">
 	<!ENTITY rsMediumAutonHD			"0x00100371">
@@ -2350,6 +2359,7 @@
 	<!ENTITY baHaloGem					"0x00100642">
 	<!ENTITY itGemOfFury				"0x00100643">
 	<!ENTITY ovGemOfFury				"0x00100644">
+	<!ENTITY rsDominaPowers				"0x00100645">
 
 	<!-- 0660-06BF COMMONWEALTH FLEET III -->
 
@@ -2399,6 +2409,13 @@
 	<!ENTITY scBorerStock				"0x00100708">
 	<!ENTITY scBorerIIStock				"0x00100709">
 	<!ENTITY itRejuvTankPatient			"0x0010070A">
+	<!ENTITY rsCommonwealthHabitat		"0x0010070B">
+	<!ENTITY rsContainerHabitat			"0x0010070C">
+	<!ENTITY msResidentials01			"0x0010070D">
+	<!ENTITY itCarbonScrubbers			"0x0010070E">
+	<!ENTITY msResidentials02			"0x0010070F">
+	<!ENTITY msResidentials03			"0x00100710">
+	<!ENTITY scBorerIIIStock			"0x00100711">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2416,6 +2433,7 @@
 	<!ENTITY tbRaisuStation02Revenge	"0x00100765">
 	<!ENTITY msRaisuStation03			"0x00100766">
 	<!ENTITY evRaisuStation03Settlement	"0x00100767">
+	<!ENTITY rsRaisuStation				"0x00100768">
 
 	<!-- 0780-079F QUANTUM CPU -->
 
@@ -2449,6 +2467,17 @@
 	<!ENTITY rsBlackMarketShipyard			"0x00100820">
 	<!ENTITY msBlackMarketMission02			"0x00100821">
 	<!ENTITY msBlackMarketSmuggle01			"0x00100822">
+
+	<!-- 0840-085F TENHOVE DEFENSE SYSTEM -->
+
+	<!ENTITY rsTA3Sentinel					"0x00100840">
+	<!ENTITY rsTA3SentinelHero				"0x00100841">
+	<!ENTITY scTR200Defender				"0x00100842">
+	<!ENTITY scTMA9BattleAuton				"0x00100843">
+	<!ENTITY rsTR200Defender				"0x00100844">
+	<!ENTITY rsTR200DefenderHero			"0x00100845">
+	<!ENTITY rsTMA9BattleAuton				"0x00100846">
+	<!ENTITY rsTMA9BattleAutonHero			"0x00100847">
 
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
@@ -2520,6 +2549,9 @@
 	<Module filename="CommonwealthRonins.xml"/>
 	<Module filename="CommonwealthShips.xml"/>
 	<Module filename="ContainerHabitat.xml"/>
+	<Module filename="ResidentialsMission01.xml"/>
+	<Module filename="ResidentialsMission02.xml"/>
+	<Module filename="ResidentialsMission03.xml"/>
 
 	<!-- Commonwealth Fleet -->
 
@@ -2583,6 +2615,7 @@
 	<Module filename="Makayev.xml"/>
 	<Module filename="Rasiermesser.xml"/>
 	<Module filename="RasiermesserMission01.xml"/>
+	<Module filename="Tenhove.xml"/>
 
 	<!-- Encounters -->
 

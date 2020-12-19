@@ -188,6 +188,7 @@
 #define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
 #define PROPERTY_HAS_TRADE_DESC					CONSTLIT("hasTradeDesc")
 #define PROPERTY_HAS_VARIANTS					CONSTLIT("hasVariants")
+#define PROPERTY_HULL_CARGO_SPACE				CONSTLIT("hullCargoSpace")
 #define PROPERTY_HULL_POINTS					CONSTLIT("hullPoints")
 #define PROPERTY_HULL_VALUE						CONSTLIT("hullValue")
 #define PROPERTY_IMAGE_ROTATION_COUNT			CONSTLIT("imageRotationCount")
@@ -2659,6 +2660,19 @@ const CObjectImageArray &CShipClass::GetImage (const CImageFilterStack *pFilters
 	return m_Image.GetImage(Ctx, CCompositeImageSelector::Null(), Modifiers);
 	}
 
+const CShipArmorDesc *CShipClass::GetInheritedArmorDesc (void) const
+
+//	GetInheritedArmorDesc
+//
+//	Returns the inherited armor desc of our parent (if any).
+
+	{
+	if (const CShipClass *pInheritClass = CShipClass::AsType(GetInheritFrom()))
+		return &pInheritClass->m_Armor;
+	else
+		return NULL;
+	}
+
 const CShipwreckDesc *CShipClass::GetInheritedShipwreckDesc (void) const
 
 //	GetInheritedShipwreckDesc
@@ -3197,6 +3211,7 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pDefaultSovereign.GetUNID(), true);
 
 	m_Armor.AddTypesUsed(retTypesUsed);
+	m_ArmorDesc.AddTypesUsed(retTypesUsed);
 	m_WreckDesc.AddTypesUsed(retTypesUsed);
 	m_Image.AddTypesUsed(retTypesUsed);
 
@@ -3292,6 +3307,14 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	if (error = m_Hull.Bind(Ctx))
 		return ComposeLoadError(Ctx, Ctx.sError);
+
+	if (const CShipArmorDesc *pInherited = GetInheritedArmorDesc())
+		{
+		m_Armor = *pInherited;
+		m_Armor.ApplyOverride(Ctx, m_ArmorDesc);
+		}
+	else
+		m_Armor = m_ArmorDesc;
 
 	if (error = m_Armor.Bind(Ctx))
 		return ComposeLoadError(Ctx, Ctx.sError);
@@ -3574,7 +3597,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pArmor = pDesc->GetContentElementByTag(ARMOR_TAG);
 	if (pArmor)
 		{
-		if (error = m_Armor.InitFromXML(Ctx, pArmor))
+		if (error = m_ArmorDesc.InitFromXML(Ctx, pArmor))
 			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
@@ -3894,6 +3917,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_HAS_VARIANTS))
 		return ICCItemPtr(m_pDevices && m_pDevices->IsVariant());
+
+	else if (strEquals(sProperty, PROPERTY_HULL_CARGO_SPACE))
+		return ICCItemPtr(m_Hull.GetCargoSpace());
 
 	else if (strEquals(sProperty, PROPERTY_HULL_POINTS))
 		{
@@ -4352,6 +4378,28 @@ void CShipClass::Paint (CG32bitImage &Dest,
 #endif
 	}
 
+void CShipClass::PaintArmorSegmentArcs (CG32bitImage &Dest, int x, int y, int iShipRotation) const
+
+//	PaintArmorSegmentArcs
+//
+//	Paint the armor segments.
+
+	{
+	const int iLength = GetImage().GetImageWidth() / 2;
+	const CG32bitPixel rgbColor = CG32bitPixel(255, 255, 128);
+
+	for (int i = 0; i < m_Armor.GetCount(); i++)
+		{
+		auto &Segment = m_Armor.GetSegment(i);
+
+		CVector vEnd = CVector::FromPolar(::mathDegreesToRadians(Segment.GetStartAngle() + iShipRotation), iLength);
+		int xEnd = x + mathRound(vEnd.GetX());
+		int yEnd = y - mathRound(vEnd.GetY());
+
+		CGDraw::Line(Dest, x, y, xEnd, yEnd, 1, rgbColor);
+		}
+	}
+
 void CShipClass::PaintDevicePositions (CG32bitImage &Dest, int x, int y, const CDeviceDescList &Devices, int iShipRotation) const
 
 //	PaintDevicePositions
@@ -4359,10 +4407,9 @@ void CShipClass::PaintDevicePositions (CG32bitImage &Dest, int x, int y, const C
 //	Paint position and fire arc of devices.
 
 	{
-	int i;
 	int iScale = GetImageViewportSize();
 
-	for (i = 0; i < Devices.GetCount(); i++)
+	for (int i = 0; i < Devices.GetCount(); i++)
 		{
 		const SDeviceDesc &Desc = Devices.GetDeviceDesc(i);
 

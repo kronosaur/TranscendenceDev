@@ -8,7 +8,7 @@
 
 	<MissionType UNID="&msCommonwealthMining05;"
 			name=				"Commonwealth Mining 05: Rescue Trapped Miners"
-			attributes=			"commonwealthMining"
+			attributes=			"commonwealthMining, eridaniScript"
 
 			level=				"1-4"
 			maxAppearing=		"3-5"
@@ -311,7 +311,7 @@
 			</Text>
 			<Text id="textIntro">
 				
-				The colony supervisor stands on a plaform at the center of the 
+				The colony supervisor stands on a platform at the center of the 
 				hall.
 
 				"%name%, I've got a priority mission for you."
@@ -352,7 +352,7 @@
 				but you managed to rescue all the miners!
 
 				"Congratulations! We've deposited %reward% in your account, and 
-				you	deserve every credit."
+				you deserve every credit."
 
 			</Text>
 			<Text id="textSuccessDebrief.someRescued">

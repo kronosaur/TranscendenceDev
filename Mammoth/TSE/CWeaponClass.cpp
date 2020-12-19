@@ -5329,6 +5329,24 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			&& (!pDevice->IsTriggered() || pDevice->GetTimeUntilReady() > 1))
 		pDevice->SetLastShotCount(0);
 
+	if (pDevice->GetWeaponTargetDefinition() && pSource->IsPlayer())
+		{
+		//  If the weapon is not ready, do not autofire.
+
+		if (!pDevice->IsReady())
+			return;
+
+		//	If the ship is disarmed or paralyzed, then we do not fire.
+
+		if (pSource->GetCondition(ECondition::paralyzed)
+			|| pSource->GetCondition(ECondition::disarmed))
+			return;
+		bool bActivateResult = pDevice->GetWeaponTargetDefinition()->AimAndFire(this, pDevice, pSource, Ctx);
+		if (bActivateResult) 
+			{
+			pDevice->SetTimeUntilReady(CalcActivateDelay(ItemCtx));
+			}
+		}
 	DEBUG_CATCH
 	}
 

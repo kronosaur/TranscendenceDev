@@ -13,7 +13,7 @@
 
 	<MissionType UNID="&msDestroyIllegalMiners;"
 			name=				"Destroy Illegal Miners"
-			attributes=			"commonwealthMining"
+			attributes=			"commonwealthMining, eridaniScript"
 
 			level=				"1-4"
 

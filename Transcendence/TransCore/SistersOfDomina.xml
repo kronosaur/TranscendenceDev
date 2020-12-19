@@ -26,7 +26,7 @@
 			>
 		<Properties>
 			<Definition id="gainPerPeriod">0.01</Definition>
-			<Definition id="periodInSeconds">60</Definition>
+			<Definition id="periodInSeconds">75</Definition>
 
 			<Global id="balance">0</Global>
 			<Global id="totalTithe">0</Global>
@@ -386,6 +386,10 @@
 			<Text id="core.mapDesc">
 				Contemplation and communion
 			</Text>
+
+			<Code id="rpg.statusDetails">
+				(typTranslate &unidPilgrimClass; 'rankDetails)
+			</Code>
 		</Language>
 	</StationType>
 	
@@ -417,7 +421,7 @@
 							(scrSetDescTranslate gScreen 'descNoMoney)
 							)
 							
-						(scrSetCounter gScreen maxCount)
+						(scrSetCounter gScreen 0)
 						)
 				</OnPaneInit>
 
@@ -432,7 +436,7 @@
 									(scrExitScreen gScreen)
 
 								(gr count maxCount)
-									(scrSetCounter gScreen maxCount)
+									(scrSetCounter gScreen 0)
 									
 								(block ()
 

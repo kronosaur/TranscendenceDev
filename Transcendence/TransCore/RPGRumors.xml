@@ -38,7 +38,9 @@
 			>
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(@ gData 'rankDetails)
+				(or (@ gData 'rankDetails)
+					(objTranslate gSource 'rpg.statusDetails)
+					)
 			</OnDisplayInit>
 		</Display>
 
@@ -151,18 +153,21 @@
 						priority: (or priority 10)
 						textID: (cat "rumor." attrib (if suf ".") suf)
 						data: data
-						onExitRumor: (switch
-							(isfunction special) special
-							(= special 'scan) 
-								(lambda (theRumor) 
-									(if (not (objGetProperty (@ theRumor 'sourceObj) 'known))
-										(block ()
-											(objSetKnown (@ theRumor 'sourceObj))
-											(objSetShowAsDestination (@ theRumor 'sourceObj) 'autoClear)
+						onExitRumor: 
+							(switch
+								(isfunction special) 
+									special
+
+								(= special 'scan) 
+									(lambda (theRumor) 
+										(if (not (objGetProperty (@ theRumor 'sourceObj) 'known))
+											(block ()
+												(objSetKnown (@ theRumor 'sourceObj))
+												(objSetShowAsDestination (@ theRumor 'sourceObj) 'autoClear)
+												)
 											)
 										)
-									)
-							)
+								)
 						}
 					)
 				))

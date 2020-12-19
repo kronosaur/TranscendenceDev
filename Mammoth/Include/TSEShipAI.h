@@ -155,6 +155,7 @@ class IShipController
 			dataString,						//	dwData is a pointer to a CString
 			dataVector,						//	dwData is a pointer to a CVector
 			dataItem,						//	dwData is a pointer to a CItem
+			dataOrbitExact,				//	Encode orbit in SData
 			};
 
 		struct SData
@@ -260,6 +261,7 @@ class IShipController
 
 			orderFireWeapon,			//	Data = weapon item to fire
 			orderUseItem,				//	Data = item to use
+			orderOrbitExact,			//	pTarget = center; dwData1 = radius; dwData2 = timer; vData.x = startPosition; vData.y = eccentricity
 			};
 
 		enum EShipStatusNotifications
@@ -384,6 +386,7 @@ class IShipController
 		static CString GetOrderName (OrderTypes iOrder) { return CString(m_OrderTypes[iOrder].szName); }
 		static OrderTypes GetOrderType (const CString &sString);
 		static bool OrderHasTarget (OrderTypes iOrder, bool *retbRequired = NULL);
+		static bool ParseOrderData (CCodeChainCtx &CCX, OrderTypes iOrder, const ICCItem &Args, int iFirstArg, SData &retData);
 		static bool ParseOrderString (const CString &sValue, OrderTypes *retiOrder, IShipController::SData *retData = NULL);
 
 	private:

@@ -226,7 +226,7 @@ CInstalledDevice *CCodeChainCtx::AsInstalledDevice (CSpaceObject *pObj, ICCItem 
 	return pDevice;
 	}
 
-CItem CCodeChainCtx::AsItem (ICCItem *pItem, bool *retbItemType) const
+CItem CCodeChainCtx::AsItem (const ICCItem *pItem, bool *retbItemType) const
 
 //	AsItem
 //

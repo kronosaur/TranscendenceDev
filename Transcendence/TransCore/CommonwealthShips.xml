@@ -272,79 +272,6 @@
 
 	</ShipClass>
 
-	<!-- Level 3: Borer II-class Gunship -->
-
-	<ShipClass UNID="&scBorerIIStock;"
-			manufacturer=		"United African States"
-			class=				"Borer II"
-			type=				"gunship"
-
-			attributes=			""
-			inherit=			"&baHumanTechShip;"
-			>
-
-		<!-- Hull -->
-
-		<Hull
-			size=				"31"
-			mass=				"120"
-			cargoSpace=			"250"
-
-			maxReactorPower=	"10000"
-			maxCargoSpace=		"500"
-			maxDevices=			"8"
-
-			maxArmor=			"massive"
-			stdArmor=			"heavy"
-			/>
-
-		<Drive
-			maxSpeed=			"12"
-			thrust=				"800"
-			/>
-
-		<Maneuver
-			maxRotationRate=	"3.0"
-			rotationAccel=		"0.5"
-			/>
-
-		<DeviceSlots>
-			<DeviceSlot criteria="w" posAngle="0" posRadius="36"/>
-		</DeviceSlots>
-
-		<!-- Configuration -->
-		
-		<Armor
-			armorID=			"&itHeavyReactiveArmor;"
-			count=				"4"
-			/>
-		
-		<Devices>
-			<Device deviceID="&itMiningLaser;"/>
-			<Device deviceID="&itClass1Deflector;"/>
-		</Devices>
-
-		<!-- Image and Effects -->
-		
-		<Image imageID="&rsBorerHD;" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.005625" />
-		<HeroImage imageID="&rsBorerHero;" imageWidth="320" imageHeight="320"/>
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="-25"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="122"	posRadius="25"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-122"	posRadius="25"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="25"	rotation="180"/>
-		</Effects>
-
-		<!-- AI and Behavior -->
-		
-		<AISettings
-			fireRateAdj=		"20"
-			fireAccuracy=		"90"
-			perception=			"4"
-			/>
-	</ShipClass>
-
 	<!-- Level 3: EI200 Freighter -->
 
 	<ShipClass UNID="&scEI200Stock;"
@@ -573,6 +500,79 @@
 			/>
 	</ShipClass>
 	
+	<!-- Level 4: Borer II-class Gunship -->
+
+	<ShipClass UNID="&scBorerIIStock;"
+			manufacturer=		"United African States"
+			class=				"Borer II"
+			type=				"gunship"
+
+			attributes=			""
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"31"
+			mass=				"120"
+			cargoSpace=			"250"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxArmor=			"massive"
+			stdArmor=			"heavy"
+			/>
+
+		<Drive
+			maxSpeed=			"12"
+			thrust=				"800"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3.0"
+			rotationAccel=		"0.5"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="36"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itAdvancedReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itProtonDrill;"/>
+			<Device deviceID="&itClass1Deflector;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsBorerHD;" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.005625" />
+		<HeroImage imageID="&rsBorerHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="-25"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="122"	posRadius="25"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-122"	posRadius="25"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="25"	rotation="180"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+	</ShipClass>
+
 	<!-- Level 4: EI500 Freighter -->
 
 	<ShipClass UNID="&scEI500Stock;"
@@ -1159,6 +1159,79 @@
 			combatStyle=		"standOff"
 			/>
 
+	</ShipClass>
+
+	<!-- Level 4: Borer III-class Gunship -->
+
+	<ShipClass UNID="&scBorerIIIStock;"
+			manufacturer=		"United African States"
+			class=				"Borer III"
+			type=				"gunship"
+
+			attributes=			""
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"31"
+			mass=				"120"
+			cargoSpace=			"250"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxArmor=			"massive"
+			stdArmor=			"heavy"
+			/>
+
+		<Drive
+			maxSpeed=			"12"
+			thrust=				"800"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3.0"
+			rotationAccel=		"0.5"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="36"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itBlastPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itPlasmaTorch;"/>
+			<Device deviceID="&itClass3Deflector;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsBorerHD;" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.005625" />
+		<HeroImage imageID="&rsBorerHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="-25"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="122"	posRadius="25"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-122"	posRadius="25"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="14"	posZ="25"	rotation="180"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
 	</ShipClass>
 
 	<!-- Level 6: Elixir-class Megayacht -->

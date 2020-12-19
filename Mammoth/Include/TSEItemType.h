@@ -37,32 +37,22 @@ class CItemType : public CDesignType
 
 		struct SUseDesc
 			{
-			SUseDesc (void) :
-					pExtension(NULL),
-					pCode(NULL),
-					pScreenRoot(NULL),
-					bUsable(false),
-					bUsableInCockpit(false),
-					bOnlyIfEnabled(false),
-					bOnlyIfInstalled(false),
-					bOnlyIfUninstalled(false),
-					bOnlyIfCompleteArmor(false),
-					bAsArmorSet(false)
-				{ }
+			SUseDesc (void)	{ }
 
-			CExtension *pExtension;			//	Extension the code came from
-			ICCItem *pCode;					//	Use code
-			CDesignType *pScreenRoot;
+			CExtension *pExtension = NULL;			//	Extension the code came from
+			ICCItem *pCode = NULL;					//	Use code
+			CDesignType *pScreenRoot = NULL;
 			CString sScreenName;
 
 			CString sUseKey;
-			bool bUsable;
-			bool bUsableInCockpit;
-			bool bOnlyIfEnabled;
-			bool bOnlyIfInstalled;
-			bool bOnlyIfUninstalled;
-			bool bOnlyIfCompleteArmor;
-			bool bAsArmorSet;
+			bool bUsable = false;
+			bool bUsableInCockpit = false;
+			bool bOnlyIfEnabled = false;
+			bool bOnlyIfInstalled = false;
+			bool bOnlyIfUninstalled = false;
+			bool bOnlyIfUndamaged = false;
+			bool bOnlyIfCompleteArmor = false;
+			bool bAsArmorSet = false;
 			};
 
 		struct SStdStats
@@ -245,23 +235,23 @@ class CItemType : public CDesignType
 		CG32bitImage m_FlotsamBitmap;			//	Image used for flotsam
 		CObjectImageArray m_FlotsamImage;		//	Image used for flotsam
 
-		DWORD m_fRandomDamaged:1;				//	Randomly damaged when found
-		DWORD m_fReference:1;					//	Does this type show reference info?
-		DWORD m_fDefaultReference:1;			//	TRUE if this shows reference by default
-		DWORD m_fInstanceData:1;				//	TRUE if we need to set instance data at create time
-		DWORD m_fVirtual:1;						//	TRUE if this is a virtual item needed for a weapon that invokes
-		DWORD m_fUseInstalled:1;				//	If TRUE, item can only be used when installed
-		DWORD m_fValueCharges:1;				//	TRUE if value should be adjusted based on charges
-		DWORD m_fUseUninstalled:1;				//	If TRUE, item can only be used when uninstalled
+		DWORD m_fRandomDamaged:1 = false;		//	Randomly damaged when found
+		DWORD m_fReference:1 = false;			//	Does this type show reference info?
+		DWORD m_fDefaultReference:1 = false;	//	TRUE if this shows reference by default
+		DWORD m_fInstanceData:1 = false;		//	TRUE if we need to set instance data at create time
+		DWORD m_fVirtual:1 = false;				//	TRUE if this is a virtual item needed for a weapon that invokes
+		DWORD m_fUseInstalled:1 = false;		//	If TRUE, item can only be used when installed
+		DWORD m_fValueCharges:1 = false;		//	TRUE if value should be adjusted based on charges
+		DWORD m_fUseUninstalled:1 = false;		//	If TRUE, item can only be used when uninstalled
 
-		DWORD m_fUseEnabled:1;					//	If TRUE, item can only be used when enabled
-		DWORD m_fScalable:1;                    //  If TRUE, VariantHigh adds to level.
-		DWORD m_fUseCompleteArmor:1;			//	If TRUE, item can be used as a complete armor set
-		DWORD m_fUseAsArmorSet:1;				//	If TRUE, we only show item once for armor set
-		DWORD m_fAmmoCharges:1;					//	If TRUE, charges are ammo
-		DWORD m_fNoSaleIfUsed:1;				//	If TRUE, cannot be sold once it's been used
-		DWORD m_fShowChargesInUseMenu:1;		//	If TRUE, the use menu shows charges instead of a count.
-		DWORD m_fSpare7:1;
+		DWORD m_fUseEnabled:1 = false;			//	If TRUE, item can only be used when enabled
+		DWORD m_fScalable:1 = false;			//  If TRUE, VariantHigh adds to level.
+		DWORD m_fUseCompleteArmor:1 = false;	//	If TRUE, item can be used as a complete armor set
+		DWORD m_fUseAsArmorSet:1 = false;		//	If TRUE, we only show item once for armor set
+		DWORD m_fAmmoCharges:1 = false;			//	If TRUE, charges are ammo
+		DWORD m_fNoSaleIfUsed:1 = false;		//	If TRUE, cannot be sold once it's been used
+		DWORD m_fShowChargesInUseMenu:1 = false;//	If TRUE, the use menu shows charges instead of a count.
+		DWORD m_fUseUndamaged:1 = false;		//	If TRUE, item can only be used if undamaged
 
 		DWORD m_dwSpare:16;
 

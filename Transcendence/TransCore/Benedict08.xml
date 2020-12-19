@@ -43,6 +43,11 @@
 						(not (msnFind "r +unid:&msRescueBenedict;; +property:isSuccess;"))
 							Nil
 
+						;	Stormhound must be alive
+						
+						(not (rpgCharacterIsAliveAndWell &unidStormhound;))
+							Nil
+
 						;	No mission if the Penitent station is already destroyed
 						
 						(not (setq targetObj (@ (sysFindObject Nil "TA +unid:&stPenitentMonastery;;") 0)))

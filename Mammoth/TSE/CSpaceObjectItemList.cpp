@@ -130,6 +130,121 @@ CItem CSpaceObject::GetItemForDevice (CInstalledDevice *pDevice)
 	return ItemList.GetItemAtCursor();
 	}
 
+CMenuData CSpaceObject::GetUsableItems (const SUsableItemOptions &Options) const
+
+//	GetUsableItems
+//
+//	Returns a list of items to use appropriate for showing to the UI.
+//
+//	The dwData member is the index of the item in the ItemList; thus we rely on
+//	the fact that the list does not change while the menu is up.
+
+	{
+	CMenuData MenuData;
+
+	const CItemList &List = GetItemList();
+
+	//	Generate a sorted list of items
+
+	TSortMap<CString, int> SortedList;
+	for (int i = 0; i < List.GetCount(); i++)
+		{
+		const CItem &Item = List.GetItem(i);
+		CItemType *pType = Item.GetType();
+
+		//	See if we can use this item, and get the use key
+
+		CString sUseKey;
+		if (!Item.CanBeUsed(&sUseKey))
+			continue;
+
+		//	Add to the list
+
+		bool bHasUseKey = (Item.IsKnown() && !sUseKey.IsBlank() && (*sUseKey.GetASCIIZPointer() != Options.chUseKey));
+
+		//	Any items without use keys sort first (so that they are easier
+		//	to access).
+		//
+		//	Then we sort by level (higher-level first)
+		//
+		//	Then we sort by natural order
+		//
+		//	For items that use charges, we expand if there are multiple
+
+		if (pType->ShowChargesInUseMenu() && Item.IsKnown())
+			{
+			for (int j = 0; j < Item.GetCount(); j++)
+				{
+				SortedList.Insert(strPatternSubst(CONSTLIT("%d%s%04d%04d"),
+							(bHasUseKey ? 1 : 0),
+							(bHasUseKey ? strPatternSubst(CONSTLIT("%s0"), sUseKey) : strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - Item.GetLevel())),
+							i, j),
+						i);
+				}
+			}
+		else
+			SortedList.Insert(strPatternSubst(CONSTLIT("%d%s%04d%04d"),
+						(bHasUseKey ? 1 : 0),
+						(bHasUseKey ? strPatternSubst(CONSTLIT("%s0"), sUseKey) : strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - Item.GetLevel())),
+						i, 0),
+					i);
+		}
+
+	//	Now add all the items to the menu
+
+	for (int i = 0; i < SortedList.GetCount(); i++)
+		{
+		CString sSort = SortedList.GetKey(i);
+		const CItem &Item = List.GetItem(SortedList.GetValue(i));
+		CItemType *pType = Item.GetType();
+
+		CItemType::SUseDesc UseDesc;
+		if (!pType->GetUseDesc(&UseDesc))
+			continue;
+
+		int iCount;
+		if (pType->ShowChargesInUseMenu() && Item.IsKnown())
+			iCount = Item.GetCharges();
+		else if (Item.GetCount() > 1)
+			iCount = Item.GetCount();
+		else
+			iCount = 0;
+
+		//	Installed
+
+		CString sExtra;
+		if (Item.IsInstalled())
+			sExtra = CONSTLIT("Installed");
+
+		//	Show the key only if the item is identified
+
+		CString sKey;
+		if (Item.IsKnown() && (*UseDesc.sUseKey.GetASCIIZPointer() != Options.chUseKey))
+			sKey = UseDesc.sUseKey;
+
+		//	Name of item
+
+		CString sName = Item.GetNounPhrase();
+		sName = strPatternSubst(CONSTLIT("Use %s"), sName);
+
+		//	Add the item
+
+		MenuData.AddMenuItem(NULL_STR,
+				sKey,
+				sName,
+				&pType->GetImage(),
+				iCount,
+				sExtra,
+				NULL_STR,
+				0,
+				SortedList.GetValue(i));
+		}
+
+	//	Done!
+
+	return MenuData;
+	}
+
 bool CSpaceObject::RemoveItem (const CItem &Item, DWORD dwItemMatchFlags, int iCount, int *retiCountRemoved, CString *retsError)
 
 //	RemoveItem

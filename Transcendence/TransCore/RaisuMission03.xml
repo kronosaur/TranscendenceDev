@@ -4,7 +4,7 @@
 
 	<MissionType UNID="&msRaisuStation03;"
 			name=				"Raisu 03: Destroy Centauri Settlement"
-			attributes=			"commonwealth, raisuStation"
+			attributes=			"commonwealth, eridaniScript, raisuStation"
 			inherit=			"&baDestroyStationMission;"
 
 			level=				"1"
@@ -267,8 +267,11 @@
 
 <!-- EVENT HANDLERS -->
 
-	<Type unid="&evRaisuStation03Settlement;">
+	<Type unid="&evRaisuStation03Settlement;"
+			attributes=		"eridaniScript"
+			>
 		<Properties>
+			<Definition id="core.namePattern">": Centauri settlement in Eridani"</Definition>
 			<Data id="raisu.showWelcome"></Data>
 		</Properties>
 

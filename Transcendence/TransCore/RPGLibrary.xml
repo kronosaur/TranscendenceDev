@@ -153,6 +153,9 @@
 	<!ENTITY baDestroyStationMission	"0x00010181">
 	<!ENTITY baVisitStationMission		"0x00010182">
 	<!ENTITY baDefendStationMission		"0x00010183">
+	<!ENTITY baRetrieveFromStationMission		"0x00010184">
+	<!ENTITY baEscortMission			"0x00010185">
+	<!ENTITY baAssaultStationMission	"0x00010186">
 	]>
 	
 <CoreLibrary
@@ -187,6 +190,9 @@
 	<Module filename="RPGMissionTemplate02.xml"/>
 	<Module filename="RPGMissionTemplate03.xml"/>
 	<Module filename="RPGMissionTemplate04.xml"/>
+	<Module filename="RPGMissionTemplate05.xml"/>
+	<Module filename="RPGMissionTemplate06.xml"/>
+	<Module filename="RPGMissionTemplate07.xml"/>
 	<Module filename="RPGMissions.xml"/>
 	<Module filename="RPGPlayer.xml"/>
 	<Module filename="RPGRumors.xml"/>

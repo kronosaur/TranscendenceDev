@@ -169,6 +169,7 @@ extern CUniverse *g_pUniverse;
 #include "TSEStorage.h"
 #include "TSEMultiverse.h"
 #include "TSEPaintUtil.h"
+#include "TSESpaceObjectDefs.h"
 #include "TSESystem.h"
 #include "TSEDockScreenSession.h"
 
@@ -253,6 +254,17 @@ class CAttackDetector
 
 #include "TSESpaceObjectUtil.h"
 #include "TSEOverlays.h"
+
+struct SApplyConditionOptions
+	{
+	CDamageSource Cause;
+
+	SObjectPartDesc ApplyTo;
+	int iTimer = -1;
+
+	bool bNoImmunityCheck = false;
+	bool bNoMessage = false;
+	};
 
 struct SUpdateCtx
 	{
@@ -425,6 +437,11 @@ class CSpaceObject
 			bool bShowHighlight = false;
 			};
 
+		struct SUsableItemOptions
+			{
+			char chUseKey = '\0';
+			};
+
 		//	Creation and Lifetime
 
 		CSpaceObject (CUniverse &Universe);
@@ -473,8 +490,11 @@ class CSpaceObject
 
 		//	Conditions
 
-		static constexpr DWORD FLAG_NO_MESSAGE = 0x00000001;
-		void ClearCondition (ECondition iCondition, DWORD dwFlags = 0);
+		EConditionResult ApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options);
+		EConditionResult CanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const;
+		EConditionResult CanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const;
+		EConditionResult RemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options);
+
 		bool GetCondition (ECondition iCondition) const;
 		CConditionSet GetConditions (void) const;
 		bool IsBlind (void) const { return GetCondition(ECondition::blind); }
@@ -484,7 +504,6 @@ class CSpaceObject
 		bool IsParalyzed (void) const { return GetCondition(ECondition::paralyzed); }
 		bool IsRadioactive (void) const { return GetCondition(ECondition::radioactive); }
 		bool IsTimeStopped (void) const { return GetCondition(ECondition::timeStopped); }
-		void SetCondition (ECondition iCondition, int iTimer = -1);
 		void SetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition);
 
 		//	Data
@@ -587,6 +606,7 @@ class CSpaceObject
 		const CItemList &GetItemList (void) const { return m_ItemList; }
 		CItemList &GetItemList (void) { return m_ItemList; }
 		ICCItemPtr GetItemProperty (CCodeChainCtx &CCX, const CItem &Item, const CString &sName) const;
+		CMenuData GetUsableItems (const SUsableItemOptions &Options) const;
 		bool IncItemProperty (const CItem &Item, const CString &sProperty, const ICCItem &Value, int iCount, CItem *retItem = NULL, ICCItemPtr *retNewValue = NULL, CString *retsError = NULL);
 		bool RemoveItem (const CItem &Item, DWORD dwItemMatchFlags, int iCount = -1, int *retiCountRemoved = NULL, CString *retsError = NULL);
 		void RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID, bool bExpiredOnly = false);
@@ -781,6 +801,7 @@ class CSpaceObject
 					&& (vUR.GetY() > m_vPos.GetY())
 					&& (vLL.GetX() < m_vPos.GetX())
 					&& (vLL.GetY() < m_vPos.GetY()); }
+		bool InDebugMode () const { return (m_fDebugMode ? true : false); }
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		bool IsAngryAt (const CDamageSource &Obj) const;
 		bool IsBarrier (void) const { return (m_fIsBarrier ? true : false); }
@@ -826,6 +847,7 @@ class CSpaceObject
 		bool NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		bool NotifyOthersWhenDestroyed (void) { return (m_fNoObjectDestructionNotify ? false : true); }
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
+		bool ParseConditionOptions (const ICCItem &Options, SApplyConditionOptions &retOptions) const;
 		bool PointInHitSizeBox (const CVector &vPos, Metric rRadius = 0.0) const
 			{ 
 			CVector vRelPos = vPos - GetPos();
@@ -844,6 +866,7 @@ class CSpaceObject
 		void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
 		void SetDataFromXML (CXMLElement *pData) { m_Data.SetFromXML(pData); }
 		void SetDataInteger (const CString &sAttrib, int iValue);
+		void SetDebugMode (bool bValue = true) { m_fDebugMode = bValue; }
 		void SetDestructionNotify (bool bNotify = true) { m_fNoObjectDestructionNotify = !bNotify; }
 		void SetHasGetDockScreenEvent (bool bHasEvent) { m_fHasGetDockScreenEvent = bHasEvent; }
 		void SetHasOnAttackedEvent (bool bHasEvent) { m_fHasOnAttackedEvent = bHasEvent; }
@@ -987,6 +1010,10 @@ class CSpaceObject
 		bool IsShowingDistanceAndBearing (void) const { return m_fShowDistanceAndBearing; }
 		bool IsShowingHighlight (void) const { return m_fShowHighlight; }
 		void SetPlayerDestination (const SPlayerDestinationOptions &Options);
+
+		//	Powers
+
+		bool InvokePower (CPower &Power, CSpaceObject *pTarget);
 
 		//	Properties
 
@@ -1274,8 +1301,10 @@ class CSpaceObject
 		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }
+		virtual EConditionResult OnApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::noEffect; }
 		virtual void OnAscended (void) { }
-		virtual void OnClearCondition (ECondition iCondition, DWORD dwFlags) { }
+		virtual EConditionResult OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::noEffect; }
+		virtual EConditionResult OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::noEffect; }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damageNoDamage; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) { }
@@ -1294,9 +1323,8 @@ class CSpaceObject
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnPlace (const CVector &vOldPos) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
+		virtual EConditionResult OnRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::noEffect; }
 		virtual void OnRemoved (SDestroyCtx &Ctx) { }
-		virtual void OnSetCondition (ECondition iCondition, int iTimer = -1) { }
-		virtual void OnSetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition) { }
 		virtual void OnSetEventFlags (void) { }
 		virtual void OnSetSovereign (CSovereign *pSovereign) { }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) { }
@@ -1382,89 +1410,89 @@ class CSpaceObject
 
 		static CSpaceObject *CreateFromClassID (CUniverse &Universe, DWORD dwClass);
 
-		CUniverse &m_Universe;					//	Our universe
-		CSystem *m_pSystem;						//	Current system (may be NULL)
-		int m_iIndex;							//	Index in system
-		DWORD m_dwID;							//	Universal ID
-		int m_iDestiny;							//	Random number 0..DestinyRange-1
-		CVector m_vPos;							//	Position of object in system
-		CVector m_vVel;							//	Velocity of object
-		CVector m_vOldPos;						//	Position last tick
-		Metric m_rBoundsX;						//	Object bounds
-		Metric m_rBoundsY;						//	Object bounds
+		CUniverse &m_Universe;							//	Our universe
+		CSystem *m_pSystem = NULL;						//	Current system (may be NULL)
+		int m_iIndex = -1;								//	Index in system
+		DWORD m_dwID = 0;								//	Universal ID
+		int m_iDestiny = 0;								//	Random number 0..DestinyRange-1
+		CVector m_vPos;									//	Position of object in system
+		CVector m_vVel;									//	Velocity of object
+		CVector m_vOldPos;								//	Position last tick
+		Metric m_rBoundsX = 0.0;						//	Object bounds
+		Metric m_rBoundsY = 0.0;						//	Object bounds
 
-		CString m_sHighlightText;				//	Show message text when highlighting
-		int m_iHighlightCountdown:16;			//	Frames left to highlight
-		int m_iHighlightChar:8;					//	Show character when painting (0 = none)
-		int m_iDesiredHighlightChar:8;			//	Desired character
+		CString m_sHighlightText;						//	Show message text when highlighting
+		int m_iHighlightCountdown:16 = 0;				//	Frames left to highlight
+		int m_iHighlightChar:8 = 0;						//	Show character when painting (0 = none)
+		int m_iDesiredHighlightChar:8 = 0;				//	Desired character
 
-		CItemList m_ItemList;					//	List of items
-		CAttributeDataBlock m_Data;				//	Opaque data
-		SEffectNode *m_pFirstEffect;			//	List of effects
-		CItemEventDispatcher m_ItemEvents;		//	Item event dispatcher
-		CDesignType *m_pOverride;				//	Override event handler
-		CSpaceObjectList m_SubscribedObjs;		//	List of objects to notify when something happens
-		CObjectJoint *m_pFirstJoint;			//	List of joints
-		CPhysicsForceDesc m_ForceDesc;			//	Temporary; valid only inside Update.
+		CItemList m_ItemList;							//	List of items
+		CAttributeDataBlock m_Data;						//	Opaque data
+		SEffectNode *m_pFirstEffect = NULL;				//	List of effects
+		CItemEventDispatcher m_ItemEvents;				//	Item event dispatcher
+		CDesignType *m_pOverride = NULL;				//	Override event handler
+		CSpaceObjectList m_SubscribedObjs;				//	List of objects to notify when something happens
+		CObjectJoint *m_pFirstJoint = NULL;				//	List of joints
+		CPhysicsForceDesc m_ForceDesc;					//	Temporary; valid only inside Update.
 
-		int m_iControlsFrozen:8;				//	Object will not respond to controls
-		int m_iSpare:24;
+		int m_iControlsFrozen:8 = 0;					//	Object will not respond to controls
+		int m_iSpare:24 = 0;
 
-		DWORD m_fHookObjectDestruction:1;		//	Call the object when another object is destroyed
-		DWORD m_fNoObjectDestructionNotify:1;	//	Do not call other objects when this one is destroyed
-		DWORD m_fCannotBeHit:1;					//	TRUE if it cannot be hit by other objects
-		DWORD m_fSelected:1;					//	TRUE if selected
-		DWORD m_fInPOVLRS:1;					//	TRUE if object appears in POV's LRS
-		DWORD m_fCanBounce:1;					//	TRUE if object can bounce off others
-		DWORD m_fIsBarrier:1;					//	TRUE if objects bounce off this object
-		DWORD m_fNoFriendlyFire:1;				//	TRUE if object cannot hit friendly objects
+		DWORD m_fHookObjectDestruction:1 = false;		//	Call the object when another object is destroyed
+		DWORD m_fNoObjectDestructionNotify:1 = false;	//	Do not call other objects when this one is destroyed
+		DWORD m_fCannotBeHit:1 = false;					//	TRUE if it cannot be hit by other objects
+		DWORD m_fSelected:1 = false;					//	TRUE if selected
+		DWORD m_fInPOVLRS:1 = false;					//	TRUE if object appears in POV's LRS
+		DWORD m_fCanBounce:1 = false;					//	TRUE if object can bounce off others
+		DWORD m_fIsBarrier:1 = false;					//	TRUE if objects bounce off this object
+		DWORD m_fNoFriendlyFire:1 = false;				//	TRUE if object cannot hit friendly objects
 
-		DWORD m_fTimeStop:1;					//	TRUE if time has stopped for this object
-		DWORD m_fPlayerTarget:1;				//	TRUE if this is a target for the player
-		DWORD m_fHasOnObjDockedEvent:1;			//	TRUE if this object has an OnObjDocked event
-		DWORD m_fOnCreateCalled:1;				//	TURE if OnCreate event has already been called
-		DWORD m_fNoFriendlyTarget:1;			//	TRUE if object cannot be hit by friends
-		DWORD m_fItemEventsValid:1;				//	TRUE if item event dispatcher is up to date
-		DWORD m_fHasOnDamageEvent:1;			//	TRUE if object has OnDamage event
-		DWORD m_fHasOnAttackedEvent:1;			//	TRUE if object has OnAttacked event
+		DWORD m_fTimeStop:1 = false;					//	TRUE if time has stopped for this object
+		DWORD m_fPlayerTarget:1 = false;				//	TRUE if this is a target for the player
+		DWORD m_fHasOnObjDockedEvent:1 = false;			//	TRUE if this object has an OnObjDocked event
+		DWORD m_fOnCreateCalled:1 = false;				//	TURE if OnCreate event has already been called
+		DWORD m_fNoFriendlyTarget:1 = false;			//	TRUE if object cannot be hit by friends
+		DWORD m_fItemEventsValid:1 = false;				//	TRUE if item event dispatcher is up to date
+		DWORD m_fHasOnDamageEvent:1 = false;			//	TRUE if object has OnDamage event
+		DWORD m_fHasOnAttackedEvent:1 = false;			//	TRUE if object has OnAttacked event
 
-		DWORD m_fInDamage:1;					//	TRUE if object is inside Damage call
-		DWORD m_fDestroyed:1;					//	TRUE if object is destroyed (but not yet deleted)
-		DWORD m_fPlayerDestination:1;			//	TRUE if object is a destination for the player
-		DWORD m_fShowDistanceAndBearing:1;		//	TRUE if we should show distance and bearing when a player destination
-		DWORD m_fHasInterSystemEvent:1;			//	TRUE if object has OnPlayerEnteredSystem or OnPlayerLeftSystem event
-		DWORD m_fAutoClearDestination:1;		//	TRUE if m_fPlayerDestination is cleared when object in SRS
-		DWORD m_fHasOnOrdersCompletedEvent:1;	//	TRUE if object has OnOrdersCompleted event
-		DWORD m_fPlayerDocked:1;				//	TRUE if player is docked with this object
+		DWORD m_fInDamage:1 = false;					//	TRUE if object is inside Damage call
+		DWORD m_fDestroyed:1 = false;					//	TRUE if object is destroyed (but not yet deleted)
+		DWORD m_fPlayerDestination:1 = false;			//	TRUE if object is a destination for the player
+		DWORD m_fShowDistanceAndBearing:1 = false;		//	TRUE if we should show distance and bearing when a player destination
+		DWORD m_fHasInterSystemEvent:1 = false;			//	TRUE if object has OnPlayerEnteredSystem or OnPlayerLeftSystem event
+		DWORD m_fAutoClearDestination:1 = false;		//	TRUE if m_fPlayerDestination is cleared when object in SRS
+		DWORD m_fHasOnOrdersCompletedEvent:1 = false;	//	TRUE if object has OnOrdersCompleted event
+		DWORD m_fPlayerDocked:1 = false;				//	TRUE if player is docked with this object
 
-		DWORD m_fPaintNeeded:1;					//	TRUE if object needs to be painted
-		DWORD m_fNonLinearMove:1;				//	TRUE if object updates its position inside OnMove
-		DWORD m_fHasName:1;						//	TRUE if object has been named (this is an optimization--it may have false positives)
-		DWORD m_fMarked:1;						//	Temporary marker for processing lists (not persistent)
-		DWORD m_fAscended:1;					//	TRUE if object is ascended (i.e., stored outside a system)
-		DWORD m_fOutOfPlaneObj:1;				//	TRUE if object is out of plane
-		DWORD m_fPainted:1;						//	TRUE if we painted the object last tick
-		DWORD m_fAutoClearDestinationOnDock:1;	//	TRUE if we should clear the destination when player docks
+		DWORD m_fPaintNeeded:1 = false;					//	TRUE if object needs to be painted
+		DWORD m_fNonLinearMove:1 = false;				//	TRUE if object updates its position inside OnMove
+		DWORD m_fHasName:1 = false;						//	TRUE if object has been named (this is an optimization--it may have false positives)
+		DWORD m_fMarked:1 = false;						//	Temporary marker for processing lists (not persistent)
+		DWORD m_fAscended:1 = false;					//	TRUE if object is ascended (i.e., stored outside a system)
+		DWORD m_fOutOfPlaneObj:1 = false;				//	TRUE if object is out of plane
+		DWORD m_fPainted:1 = false;						//	TRUE if we painted the object last tick
+		DWORD m_fAutoClearDestinationOnDock:1 = false;	//	TRUE if we should clear the destination when player docks
 
-		DWORD m_fShowHighlight:1;				//	TRUE if we should paint a target highlight in SRS
-		DWORD m_fAutoClearDestinationOnDestroy:1;//	TRUE if we should clear the destination when station is destroyed
-		DWORD m_fShowDamageBar:1;				//	TRUE if we should show damage bar
-		DWORD m_fHasGravity:1;					//	TRUE if object has gravity
-		DWORD m_fInsideBarrier:1;				//	TRUE if we got created inside a barrier
-		DWORD m_fHasOnSubordinateAttackedEvent:1;	//	TRUE if we have a <OnSubordinateAttacked> event
-		DWORD m_fHasGetDockScreenEvent:1;		//	TRUE if we have a <GetDockScreen> event
-		DWORD m_fHasOnAttackedByPlayerEvent:1;	//	TRUE if we have an <OnAttackedByPlayer> event
+		DWORD m_fShowHighlight:1 = false;				//	TRUE if we should paint a target highlight in SRS
+		DWORD m_fAutoClearDestinationOnDestroy:1 = false;//	TRUE if we should clear the destination when station is destroyed
+		DWORD m_fShowDamageBar:1 = false;				//	TRUE if we should show damage bar
+		DWORD m_fHasGravity:1 = false;					//	TRUE if object has gravity
+		DWORD m_fInsideBarrier:1 = false;				//	TRUE if we got created inside a barrier
+		DWORD m_fHasOnSubordinateAttackedEvent:1 = false;	//	TRUE if we have a <OnSubordinateAttacked> event
+		DWORD m_fHasGetDockScreenEvent:1 = false;		//	TRUE if we have a <GetDockScreen> event
+		DWORD m_fHasOnAttackedByPlayerEvent:1 = false;	//	TRUE if we have an <OnAttackedByPlayer> event
 
-		DWORD m_fHasOnOrderChangedEvent:1;		//	TRUE if we have an <OnOrderChanged> event
-		DWORD m_fManualAnchor:1;				//	TRUE if object is temporarily anchored
-		DWORD m_fCollisionTestNeeded:1;			//	TRUE if object needs to check collisions with barriers
-		DWORD m_fHasDockScreenMaybe:1;			//	TRUE if object has a dock screen for player (may be stale)
-		DWORD m_fAutoClearDestinationOnGate:1;	//	TRUE if we should clear the destination when player gates
-		DWORD m_f3DExtra:1;						//	TRUE if object is an optional 3D extra
-		DWORD m_fAutoCreatedPorts:1;			//	TRUE if we have auto created some docking ports
-		DWORD m_fSpare8:1;
+		DWORD m_fHasOnOrderChangedEvent:1 = false;		//	TRUE if we have an <OnOrderChanged> event
+		DWORD m_fManualAnchor:1 = false;				//	TRUE if object is temporarily anchored
+		DWORD m_fCollisionTestNeeded:1 = false;			//	TRUE if object needs to check collisions with barriers
+		DWORD m_fHasDockScreenMaybe:1 = false;			//	TRUE if object has a dock screen for player (may be stale)
+		DWORD m_fAutoClearDestinationOnGate:1 = false;	//	TRUE if we should clear the destination when player gates
+		DWORD m_f3DExtra:1 = false;						//	TRUE if object is an optional 3D extra
+		DWORD m_fAutoCreatedPorts:1 = false;			//	TRUE if we have auto created some docking ports
+		DWORD m_fDebugMode:1 = false;					//	TRUE if we want to show debug info for this object
 
-		DWORD m_dwSpare:16;
+		DWORD m_dwSpare:16 = 0;
 
 #ifdef DEBUG_VECTOR
 		CVector m_vDebugVector;			//	Draw a vector
@@ -1829,7 +1857,7 @@ bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc);
 ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue);
 CShip *CreateShipObjFromItem (CCodeChain &CC, ICCItem *pArg);
 CStation *CreateStationObjFromItem (CCodeChain &CC, ICCItem *pArg);
-CVector CreateVectorFromList (CCodeChain &CC, ICCItem *pList);
+CVector CreateVectorFromList (CCodeChain &CC, const ICCItem *pList);
 CCXMLWrapper *CreateXMLElementFromItem (CCodeChain &CC, ICCItem *pItem);
 void DefineGlobalItem (CCodeChain &CC, const CString &sVar, const CItem &Item);
 void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, const CSpaceObject *pObj);

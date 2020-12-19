@@ -5,7 +5,8 @@
 <!-- ERIDANI SYSTEM -->
 
 	<SystemType UNID="&ssStartonEridani;"
-				attributes=		"envWater"
+				attributes=		"envWater, eridaniScript"
+				noExtraEncounters=	"true"
 				>
 		<EncounterOverrides>
 			<Encounter unid="&stMiningColony;"		unique="inSystem"/>
@@ -177,7 +178,7 @@
 						<Lookup table="AsteroidRing100"/>
 					</ZAdjust>
 
-					<Orbitals count="6" distance="20-28" angle="equidistant">
+					<Orbitals count="6" distance="32-36" angle="equidistant">
 						<Location attributes="voermsOrbit"/>
 					</Orbitals>
 
@@ -221,6 +222,48 @@
 				(trnCreateOreDeposits (random 0 2))
 			</Code>
 
+			<!-- Create guaranteed friendly stations -->
+
+			<RandomLocation locationCriteria="*startonMetropolis">
+				<Lookup table="StartonMetropolis"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*sistersOfDomina">
+				<Group>
+					<Station type="&stSistersOfDomina;"/>
+
+					<Siblings radiusInc="8">
+						<Marker objName="Start"/>
+					</Siblings>
+				</Group>
+			</RandomLocation>
+
+			<!-- Create guaranteed enemy stations -->
+
+			<RandomLocation locationCriteria="*lancelotOrbit" exclusionRadius="0">
+				<Station type="&stCentauriCamp;"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*arcoVaughnBase" exclusionRadius="0">
+				<Station type="&stArcoVaughnHabitat;"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*voermsOrbit">
+				<Station type="&stCentauriSettlement;"/>
+			</RandomLocation>
+
+			<RandomLocation count="2-3" locationCriteria="*voermsOrbit">
+				<Station type="&stCentauriCamp;"/>
+			</RandomLocation>
+
+			<RandomLocation count="3" locationCriteria="*voermsRegion" exclusionRadius="100">
+				<RandomStation stationCriteria="*enemy; *property:challengeRating[6-7];"	maxCount="1"/>
+			</RandomLocation>
+
+			<RandomLocation count="1" locationCriteria="*eldirOrbit" exclusionRadius="100">
+				<RandomStation stationCriteria="*enemy; *property:challengeRating[7];"/>
+			</RandomLocation>
+
 			<!-- Populate Dante II Trojans -->
 
 			<RandomLocation count="2" locationCriteria="*danteTrojans" exclusionRadius="50" noWarnings="true">
@@ -251,52 +294,10 @@
 
 			<!-- Populate St. John's World -->
 
-			<RandomLocation locationCriteria="*startonMetropolis">
-				<Lookup table="StartonMetropolis"/>
-			</RandomLocation>
-
-			<RandomLocation locationCriteria="*sistersOfDomina">
-				<Group>
-					<Station type="&stSistersOfDomina;"/>
-
-					<Siblings radiusInc="8">
-						<Marker objName="Start"/>
-					</Siblings>
-				</Group>
-			</RandomLocation>
-
-			<RandomLocation locationCriteria="*lancelotOrbit" exclusionRadius="0">
-				<Station type="&stCentauriCamp;"/>
-			</RandomLocation>
-
 			<RandomLocation locationCriteria="*stJohnTrojans" exclusionRadius="50">
 				<Station type="&stRaisuStation;"/>
 				<Station type="&stMiningColony;"	optional="true"/>
 				<Lookup table="StJohnTrojanStations"/>
-			</RandomLocation>
-
-			<!-- Populate Voerms -->
-
-			<RandomLocation locationCriteria="*arcoVaughnBase" exclusionRadius="0">
-				<Station type="&stArcoVaughnHabitat;"/>
-			</RandomLocation>
-
-			<RandomLocation locationCriteria="*voermsOrbit">
-				<Station type="&stCentauriSettlement;"/>
-			</RandomLocation>
-
-			<RandomLocation count="2-3" locationCriteria="*voermsOrbit">
-				<Station type="&stCentauriCamp;"/>
-			</RandomLocation>
-
-			<RandomLocation count="3" locationCriteria="*voermsRegion" exclusionRadius="100">
-				<RandomStation stationCriteria="*enemy; *property:challengeRating[6-7];"	maxCount="1"/>
-			</RandomLocation>
-
-			<!-- Populate Eldir -->
-
-			<RandomLocation count="1" locationCriteria="*eldirOrbit" exclusionRadius="100">
-				<RandomStation stationCriteria="*enemy; *property:challengeRating[7];"/>
 			</RandomLocation>
 
 		</SystemGroup>

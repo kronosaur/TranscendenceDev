@@ -694,8 +694,15 @@ PLAYER DATA
 
 		<Armor
 			armorID=			"&itSuperHeavyBlastPlate;"
-			count=				"6"
-			/>
+			startAt=			"0"
+			>
+			<Armor span="40"/>
+			<Armor span="100"/>
+			<Armor span="40"/>
+			<Armor span="40"/>
+			<Armor span="100"/>
+			<Armor span="40"/>
+		</Armor>
 		
 		<Devices>
 			<Device deviceID="&itMarkVHowitzer;"/>
@@ -762,7 +769,6 @@ PLAYER DATA
 
 		<Armor
 			armorID=			"&itMassiveIthaliumArmor;"
-			count=				"6"
 			/>
 		
 		<Devices>

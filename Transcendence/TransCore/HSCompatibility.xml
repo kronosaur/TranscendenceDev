@@ -1783,7 +1783,7 @@
 
 				<Panes>
 					<Default
-							desc=	"You are docked at the lifeless ruins of a destroyed station. Amid wrecked machinery and smouldering bodies you find a woman who is still alive.&#x0a;&#x0a;She grabs your hand, &quot;Avenge us...the Fortress is in the system...kill them all...&quot;">
+							desc=	"You are docked at the lifeless ruins of a destroyed station. Amid wrecked machinery and smoldering bodies you find a woman who is still alive.&#x0a;&#x0a;She grabs your hand, &quot;Avenge us...the Fortress is in the system...kill them all...&quot;">
 
 						<Actions>
 							<Action name="Continue" default="1" cancel="1" key="C">
@@ -6860,5 +6860,7 @@
 
 	<Image UNID="&rsCentauriHeavyRaiderImage;"	obsoleteVersion="51" bitmap="Resources\CentauriHeavyRaider.jpg" bitmask="Resources\CentauriHeavyRaiderMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCentauriRaiderImage;"		obsoleteVersion="51" bitmap="Resources\CentauriRaider.jpg" bitmask="Resources\CentauriRaiderMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsTenhoveHD;"			obsoleteVersion="51" bitmap="Resources\TenhoveHD.jpg" 	bitmask="Resources\TenhoveHDMask.bmp" loadOnUse="true"/>
+
 
 </TranscendenceModule>

@@ -182,6 +182,7 @@
     <Xml Include="..\Extensions\Diagnostics\FunctionTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ItemUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\MissionUnitTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\RadiationTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\RPGUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ShipClassTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\SystemFunctionTests.xml" />
@@ -371,7 +372,7 @@
     <None Include="Benedict02.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Benedict03.xml">
+    <None Include="Part1Compatibility.xml">
       <SubType>Designer</SubType>
     </None>
     <None Include="Benedict01.xml">
@@ -643,6 +644,9 @@
     <Xml Include="RanxEmpire.xml" />
     <Xml Include="RasiermesserMission01.xml" />
     <Xml Include="RejuvTank.xml" />
+    <Xml Include="ResidentialsMission01.xml" />
+    <Xml Include="ResidentialsMission02.xml" />
+    <Xml Include="ResidentialsMission03.xml" />
     <Xml Include="RPGCommoditiesExchange.xml" />
     <Xml Include="RPGCommonText.xml" />
     <Xml Include="RPGComponents.xml">
@@ -657,6 +661,9 @@
     <Xml Include="RPGMissionTemplate02.xml" />
     <Xml Include="RPGMissionTemplate03.xml" />
     <Xml Include="RPGMissionTemplate04.xml" />
+    <Xml Include="RPGMissionTemplate05.xml" />
+    <Xml Include="RPGMissionTemplate06.xml" />
+    <Xml Include="RPGMissionTemplate07.xml" />
     <Xml Include="RPGRumors.xml" />
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>
@@ -682,6 +689,7 @@
     <Xml Include="SungCitadel.xml" />
     <Xml Include="SungFortress.xml" />
     <Xml Include="SungSlaveCamp.xml" />
+    <Xml Include="Tenhove.xml" />
     <Xml Include="TeratonResearch.xml" />
     <Xml Include="UndergroundCaverns.xml" />
     <Xml Include="UndergroundStructures.xml" />

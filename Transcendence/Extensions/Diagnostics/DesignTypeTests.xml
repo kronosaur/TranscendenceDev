@@ -20,6 +20,8 @@
 						{	test:'(typ@ &unidTestDescendantType1; 'diag.const1)	result:34	}
 						{	test:'(typ@ &unidTestDescendantType1; 'diag.const2)	result:4	}
 
+						{	test:'(typGetName &unidTestDescendantType1; 'article)	result:"a Descendant Test Type"	}
+
 						{	test:'(typ@ &unidTestDescendantType2; 'diag.def1)		result:17	}
 
 						{	test:'(typ@ &unidTestBaseType; 'diag.global1)			result:54	}
@@ -148,6 +150,8 @@
 
 	<Type unid="&unidTestBaseType;">
 		<Properties>
+			<Definition id="core.namePattern">":a Test Type"</Definition>
+
 			<Definition id="diag.def1">17</Definition>
 			<Definition id="diag.def2">"foo"</Definition>
 			<Definition id="diag.def3">(+ 2 3)</Definition>
@@ -170,6 +174,9 @@
 	<Type unid="&unidTestDescendantType1;"
 			inherit="&unidTestBaseType;"
 			>
+		<Properties>
+			<Definition id="core.namePattern">":a Descendant Test Type"</Definition>
+		</Properties>
 	</Type>
 
 	<Type unid="&unidTestDescendantType2;"

@@ -2,8 +2,11 @@
 
 <TranscendenceModule>
 
-	<Type unid="&chMuhammadCondi;">
+	<Type unid="&chMuhammadCondi;"
+			attributes=		"eridaniScript"
+			>
 		<Properties>
+			<Definition id="core.namePattern">": Muhammad Condi"</Definition>
 		</Properties>
 
 		<Language>

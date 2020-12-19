@@ -8,6 +8,69 @@
 class CParticleSystemDesc;
 class CWeaponFireDesc;
 
+//	Conditions -----------------------------------------------------------------
+
+enum class ECondition
+	{
+	none =					0x00000000,
+
+	blind =					0x00000001,		//	SRS-blind
+	paralyzed =				0x00000002,		//	EMP
+	radioactive =			0x00000004,		//	Radioactive
+	disarmed =				0x00000008,		//	Unable to fire weapons
+	dragged =				0x00000010,		//	Subject to drag
+	spinning =				0x00000020,		//	Spinning uncontrollably
+	timeStopped =			0x00000040,		//	Time-stopped
+	shipScreenDisabled =	0x00000080,		//	Source cannot bring up ship screen
+	LRSBlind =				0x00000100,		//	LRS-blind
+	shieldBlocked =			0x00000200,		//	Shields disabled
+
+	count =					10,
+	};
+
+enum class EConditionChange
+	{
+	unknown =				-1,
+
+	added =					0,
+	removed =				1,
+	};
+
+enum class EConditionResult
+	{
+	unknown,
+
+	ok,						//	Success
+	noEffect,				//	Unable to apply or remove
+	alreadyApplied,			//	Condition already applied
+	alreadyRemoved,			//	Condition already removed
+	stillApplied,			//	Removed, but condition still exists
+	};
+
+class CConditionSet
+	{
+	public:
+		void Clear (ECondition iCondition) { m_dwSet &= ~(DWORD)iCondition; }
+		void ClearAll (void) { m_dwSet = 0; }
+		bool Diff (const CConditionSet &OldSet, TArray<ECondition> &Added, TArray<ECondition> &Removed) const;
+		bool IsEmpty (void) const { return (m_dwSet == 0); }
+		bool IsSet (ECondition iCondition) const { return ((m_dwSet & (DWORD)iCondition) ? true : false); }
+		void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
+		void Set (ECondition iCondition) { m_dwSet |= (DWORD)iCondition; }
+		void Set (const CConditionSet &Conditions);
+		ICCItemPtr WriteAsCCItem (void) const;
+		void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
+
+		static CString AsID (EConditionResult iResult);
+		static bool IsSuccessResult (EConditionResult iResult);
+		static ECondition ParseCondition (const CString &sCondition);
+
+	private:
+		DWORD m_dwSet = 0;
+	};
+
+//	Damage ---------------------------------------------------------------------
+
 enum SpecialDamageTypes
 	{
 	specialNone				= -1,
@@ -150,6 +213,7 @@ class DamageDesc
 		static SpecialDamageTypes ConvertToSpecialDamageTypes (const CString &sValue);
 		static int GetDamageLevel (DamageTypes iType);
 		static int GetDamageTier (DamageTypes iType);
+		static SpecialDamageTypes GetSpecialDamageFromCondition (ECondition iCondition);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
 		static int GetMassDestructionAdjFromValue (int iValue);
 		static int GetMassDestructionLevelFromValue (int iValue);
@@ -193,6 +257,8 @@ class DamageDesc
 		BYTE m_TimeStopDamage = 0;				//	Time stop (level)
 		INT8 m_MomentumDamage = 0;				//	Impulse/Tractor (100 to -100)
 	};
+
+//	SDamageCtx -----------------------------------------------------------------
 
 enum EDamageResults
 	{
@@ -328,6 +394,8 @@ struct SDamageCtx
 		bool m_bFreeDesc = false;					//	If TRUE, we own pDesc.
 	};
 
+//	SDestroyCtx ----------------------------------------------------------------
+
 struct SDestroyCtx
 	{
 	SDestroyCtx (CSpaceObject &ObjArg) :
@@ -362,6 +430,8 @@ class DamageTypeSet
 	private:
 		DWORD m_dwSet;
 	};
+
+//	Shots ----------------------------------------------------------------------
 
 struct SShotCreateCtx
 	{
@@ -468,7 +538,7 @@ class CConfigurationDesc
 
 #include "TSEConfigurationDescInlines.h"
 
-//	WeaponFireDesc
+//	WeaponFireDesc -------------------------------------------------------------
 
 struct SExplosionType
 	{

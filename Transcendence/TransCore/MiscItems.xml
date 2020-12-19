@@ -34,7 +34,7 @@
 			numberAppearing=	"1"
 			attributes=			"Consumable; humanTech, Meds"
 
-			description=		"Autodocs are small, multi-limbed drones that treat simple wounds and dispense basic medicines. Though no replacement for a real doctor or even a good rejuv tank, autodocs are quite popular in remote stations."
+			description=		"Autodocs are small, multi-limbed drones that treat simple wounds and dispense basic medicines. Though no replacement for a real medtech or even a good rejuv tank, autodocs are quite popular in remote stations."
 
 			sortName=			"autodoc, portable"
 			>
@@ -153,6 +153,23 @@
 			attributes=			"Art; Consumable; humanTech, Lux"
 
 			description=		"This is a beautiful parchment scroll containing archaic Chinese calligraphy."
+			>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<!-- Carbon Scrubbers -->
+
+	<ItemType UNID="&itCarbonScrubbers;"
+			name=				"[case(s) of ]carbon dioxide scrubbers"
+			level=				"2"
+			value=				"200"
+			mass=				"500"
+			frequency=			"rare"
+			numberAppearing=	"1d4"
+			attributes=			"consumable, humanTech, res"
+
+			description=		"The technology for extracting carbon dioxide from breathable air has not changed in hundreds of years."
 			>
 
 		<Image imageID="&rsItems1;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>

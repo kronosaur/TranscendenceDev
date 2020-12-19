@@ -924,6 +924,35 @@
 
 					(objDestroy gPlayerShip)
 					(setq gPlayerShip Nil)
+
+					;	Unit Tests for Usable Items ----------------------------
+
+					(block (i)
+						(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+						(if (not gPlayerShip)
+							(error "Unable to create player ship.")
+							)
+						(shpOrder gPlayerShip 'hold)
+						)
+
+					;	Some tests
+
+					(diagEval (list
+						{	test:'(obj@ gPlayerShip 'usableItems)							result:Nil }
+						{	test:'(objAddItem gPlayerShip &itAblativeArmorCoating; 1)		result:'ignore }
+						{	test:'(obj@ gPlayerShip 'usableItems)							result:(list (itmCreate &itAblativeArmorCoating; 1)) }
+						{	test:'(objRemoveItem gPlayerShip (itmCreate &itAblativeArmorCoating; 1))
+																							result:'ignore }
+						{	test:'(objAddItem gPlayerShip 
+									(itmSet@ (itmCreate &itAutoSentinel; 1) 'damaged True)
+									)														result:'ignore }
+						{	test:'(obj@ gPlayerShip 'usableItems)							result:Nil }
+						))
+
+					;	Clean up
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
 					)
 			</OnGlobalStartDiagnostics>
 		</Events>

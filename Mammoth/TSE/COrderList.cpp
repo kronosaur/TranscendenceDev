@@ -90,6 +90,14 @@ void COrderList::CleanUp (SOrderEntry *pEntry)
 				pEntry->dwData = 0;
 				}
 			break;
+
+		case IShipController::dataOrbitExact:
+			if (pEntry->dwData)
+				{
+				delete (SOrbitExactDesc *)pEntry->dwData;
+				pEntry->dwData = 0;
+				}
+			break;
 		}
 	}
 
@@ -131,6 +139,24 @@ IShipController::OrderTypes COrderList::GetOrder (int iIndex, CSpaceObject **ret
 			case IShipController::dataVector:
 				retData->vData = (Entry.dwData ? *(CVector *)Entry.dwData : NullVector);
 				break;
+
+			case IShipController::dataOrbitExact:
+				{
+				const SOrbitExactDesc *pOrbitData = (const SOrbitExactDesc *)Entry.dwData;
+				if (pOrbitData)
+					{
+					retData->dwData1 = (pOrbitData->dwAngle << 16) | pOrbitData->dwRadius;
+					retData->dwData2 = pOrbitData->dwTicks;
+					retData->vData.SetX(pOrbitData->rSpeed);
+					retData->vData.SetY(pOrbitData->rEccentricity);
+					}
+				else
+					{
+					retData->iDataType = IShipController::dataNone;
+					retData->dwData1 = 0;
+					}
+				break;
+				}
 			}
 		}
 
@@ -383,6 +409,23 @@ void COrderList::ReadFromStream (SLoadCtx &Ctx)
 					pEntry->dwData = (DWORD)pVector;
 					break;
 					}
+
+				case IShipController::dataOrbitExact:
+					{
+					SOrbitExactDesc *pOrbitData = new SOrbitExactDesc;
+
+					DWORD dwLoad;
+					Ctx.pStream->Read(dwLoad);
+					pOrbitData->dwAngle = HIWORD(dwLoad);
+					pOrbitData->dwRadius = LOWORD(dwLoad);
+
+					Ctx.pStream->Read(pOrbitData->rSpeed);
+					Ctx.pStream->Read(pOrbitData->rEccentricity);
+					Ctx.pStream->Read(pOrbitData->dwTicks);
+
+					pEntry->dwData = (DWORD)pOrbitData;
+					break;
+					}
 				}
 			}
 		}
@@ -446,6 +489,19 @@ void COrderList::SetEntryData (SOrderEntry *pEntry, const IShipController::SData
 		case IShipController::dataVector:
 			pEntry->dwData = (DWORD)(new CVector(Data.vData));
 			break;
+
+		case IShipController::dataOrbitExact:
+			{
+			SOrbitExactDesc *pOrbitData = new SOrbitExactDesc;
+			pOrbitData->dwRadius = LOWORD(Data.dwData1);
+			pOrbitData->dwAngle = HIWORD(Data.dwData1);
+			pOrbitData->dwTicks = Data.dwData2;
+			pOrbitData->rSpeed = Data.vData.GetX();
+			pOrbitData->rEccentricity = Data.vData.GetY();
+
+			pEntry->dwData = (DWORD)pOrbitData;
+			break;
+			}
 
 		default:
 			pEntry->dwData = 0;
@@ -520,6 +576,19 @@ void COrderList::WriteToStream (IWriteStream *pStream, CSystem *pSystem)
 					pStream->Write((char *)pVector, sizeof(CVector));
 				else
 					pStream->Write((char *)&NullVector, sizeof(CVector));
+				break;
+				}
+
+			case IShipController::dataOrbitExact:
+				{
+				const SOrbitExactDesc *pOrbitData = (const SOrbitExactDesc *)pEntry->dwData;
+
+				DWORD dwSave = ((pOrbitData ? pOrbitData->dwAngle : 0) << 16) | (pOrbitData ? pOrbitData->dwRadius : 0);
+				pStream->Write(dwSave);
+				pStream->Write(pOrbitData ? pOrbitData->rSpeed : 0.0);
+				pStream->Write(pOrbitData ? pOrbitData->rEccentricity : 0.0);
+				pStream->Write(pOrbitData ? pOrbitData->dwTicks : (DWORD)0);
+
 				break;
 				}
 			}

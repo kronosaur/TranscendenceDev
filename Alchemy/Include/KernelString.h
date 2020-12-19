@@ -134,6 +134,59 @@ class CString
 		static PSTORESTRUCT g_pFreeStore;
 	};
 
+class CWordParser
+	{
+	public:
+		CWordParser (const char *pStart, const char *pEnd) :
+				m_pStart(pStart),
+				m_pEnd(pEnd),
+				m_pPos(pStart)
+			{ }
+
+		Kernel::CString ParseNextWord ();
+		void SetExcludePercentFields (bool bValue = true) { m_bExcludePercentFields = bValue; }
+		void SetHandleAccelerators (bool bValue = true) { m_bHandleAccelerators = bValue; }
+
+		static bool IsPunctuation (const char *pPos)
+			{
+			switch (*pPos)
+				{
+				case '!':
+				case '&':
+				case '(':
+				case ')':
+				case '[':
+				case ']':
+				case '{':
+				case '}':
+				case ',':
+				case '.':
+				case ':':
+				case ';':
+				case '?':
+				case '\'':
+				case '\"':
+				case '\x97':
+					return true;
+
+				default:
+					return false;
+				}
+			}
+
+	private:
+		const char *m_pStart = "";
+		const char *m_pEnd = "";
+
+		const char *m_pPos = "";
+
+		bool m_bExcludePercentFields = false;
+		bool m_bHandleAccelerators = false;
+
+		bool m_bInDoubleQuote = false;
+		bool m_bInSingleQuote = false;
+	};
+
 extern const Kernel::CString NULL_STR;
 extern bool g_bLowerCaseAbsoluteTableInit;
 extern char g_LowerCaseAbsoluteTable[256];
@@ -183,6 +236,7 @@ inline bool strIsASCIIControl (const char *pPos) { return ((BYTE)*pPos <= (BYTE)
 bool strIsASCIISymbol (const char *pPos);
 inline bool strIsDigit (const char *pPos) { return (*pPos >= '0' && *pPos <= '9'); }
 bool strIsInt (const Kernel::CString &sValue, DWORD dwFlags = 0, int *retiValue = NULL);
+bool strIsUpper (const char *pPos);
 inline bool strIsWhitespace (const char *pPos) { return *pPos == ' ' || *pPos == '\t' || *pPos == '\n' || *pPos == '\r'; }
 Kernel::CString strLoadFromRes (HINSTANCE hInst, int iResID);
 inline char strLowerCaseAbsolute (char chChar) { if (!Kernel::g_bLowerCaseAbsoluteTableInit) Kernel::CString::InitLowerCaseAbsoluteTable(); return Kernel::g_LowerCaseAbsoluteTable[(BYTE)chChar]; }
