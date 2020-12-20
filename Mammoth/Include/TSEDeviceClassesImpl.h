@@ -15,6 +15,7 @@ class CWeaponTargetDefinition
 	public:
 		class CWeaponTargetDefinition () { };
 		class CWeaponTargetDefinition (Kernel::CString sCriteria, bool bCheckLineOfFire = false) : m_bCheckLineOfFire(bCheckLineOfFire), m_CriteriaString(sCriteria) { m_TargetCriteria.Init(sCriteria); };
+		bool MatchesTarget (CSpaceObject* pSource, CSpaceObject* pTarget) const;
 		CSpaceObject* FindTarget (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CItemCtx& ItemCtx) const;
 		bool AimAndFire (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx) const;
 		bool GetCheckLineOfFire () { return m_bCheckLineOfFire; };
