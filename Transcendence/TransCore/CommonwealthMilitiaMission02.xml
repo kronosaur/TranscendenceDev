@@ -15,7 +15,7 @@
 	=========================================================================== -->
 
 	<MissionType UNID="&msCMDestroyConvoy;"
-			name=			"Destroy Convoy"
+			name=			"Commonwealth Militia 02: Destroy Convoy"
 			attributes=		"commonwealthMilitia, rank1"
 
 			level=			"3-7"
@@ -32,6 +32,8 @@
 					)
 			</Variant>
 		</Properties>
+
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="512" imageY="256" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<OnCreate>

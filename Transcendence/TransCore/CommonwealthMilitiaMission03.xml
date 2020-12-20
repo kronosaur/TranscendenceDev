@@ -14,7 +14,7 @@
 	=========================================================================== -->
 
 	<MissionType UNID="&msCMDestroyThreat;"
-			name=			"Destroy Threat"
+			name=			"Commonwealth Militia 03: Destroy Threat"
 			attributes=		"commonwealthMilitia, rank1"
 
 			level=			"3-7"
@@ -25,6 +25,8 @@
 		<Properties>
 			<Data id="reward"></Data>
 		</Properties>
+
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="512" imageY="256" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<OnCreate>

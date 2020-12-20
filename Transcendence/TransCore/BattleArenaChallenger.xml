@@ -29,7 +29,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBattleArenaChallenger;"
-			name=				"Battle Arena Fight"
+			name=				"Battle Arena 04: The Slicer"
 			attributes=			"battleArena, arenaCombat, gladiatorFight"
 			inherit=			"&msBattleArenaFight;"
 
@@ -37,6 +37,8 @@
 
 			maxAppearing=		"1"
 			>
+
+		<Image imageID="&rsBattleArenaMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

@@ -24,6 +24,8 @@
 			</Variant>
 		</Properties>
 
+		<Image imageID="&rsMiningColonyRocky;"	imageWidth="260" imageHeight="260"/>
+
 		<Events>
 			<CanCreate>
 				(switch

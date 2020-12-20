@@ -38,11 +38,13 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBattleArenaFight;"
-			name=				"Battle Arena Fight"
+			name=				"Battle Arena 02: Gladiators"
 			attributes=			"arenaCombat, gladiatorFight"
 
 			level=				"3"
 			>
+
+		<Image imageID="&rsBattleArenaMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

@@ -12,7 +12,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msCommonwealthRevenge01;"
-			name=						"Avenge Destroyed Station"
+			name=						"Commonwealth Revenge 01: Avenge Destroyed Station"
 			attributes=					"commonwealth, triage"
 			inherit=					"&unidCommonText;"
 
@@ -26,6 +26,8 @@
 
 			<Data id="targetNamePattern"></Data>
 		</Properties>
+
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<!-- CREATE MISSION -->

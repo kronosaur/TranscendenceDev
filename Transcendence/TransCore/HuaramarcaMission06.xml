@@ -9,7 +9,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msHuaramarcaArchcannon;"
-			name=				"Huaramarca Find Archcannon"
+			name=				"Huaramarca 06: Find Archcannon"
 			attributes=			"huariEmpire, huariTemple"
 
 			level=				"6"
@@ -19,6 +19,8 @@
 			noDecline=			"True"
 			noStats=			"true"
 			>
+
+		<Image	imageID="&rsHuariTemple;" imageWidth="330" imageHeight="330"/>
 
 		<Events>
 			<OnCreate>

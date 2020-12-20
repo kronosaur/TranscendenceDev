@@ -1566,7 +1566,8 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsBattleArenaBkgnd;" bitmap="Resources\BattleArenaScreen.jpg" bitmask="Resources\BattleArenaScreenMask.bmp" loadOnUse="true" />
-	<Image UNID="&rsBattleArenaSegments;" bitmap="Resources\BattleArenaSegments.jpg" bitmask="Resources\BattleArenaSegmentsMask.bmp" hitMask="Resources\BattleArenaSegmentsHitMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsBattleArenaBkgnd;"			bitmap="Resources\BattleArenaScreen.jpg" bitmask="Resources\BattleArenaScreenMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsBattleArenaSegments;"		bitmap="Resources\BattleArenaSegments.jpg" bitmask="Resources\BattleArenaSegmentsMask.bmp" hitMask="Resources\BattleArenaSegmentsHitMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsBattleArenaMissionTile;"	bitmap="Resources\BattleArenaMissionTile.jpg" loadOnUse="true" />
 
 </TranscendenceModule>

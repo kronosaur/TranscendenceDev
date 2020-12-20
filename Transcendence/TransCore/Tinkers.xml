@@ -831,7 +831,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msTinkerReminder;"
-			name=				"Tinkers Reminder"
+			name=				"Tinkers 01: Reminder"
 			attributes=			"tinkers"
 
 			level=				"1-10"
@@ -840,6 +840,8 @@
 			noDebrief=			"true"
 			noStats=			"true"
 			>
+
+		<Image	imageID="&rsTinkerStations;" imageX="0"   imageY="0"   imageWidth="130" imageHeight="130"/>
 
 		<Events>
 			<OnCreate>

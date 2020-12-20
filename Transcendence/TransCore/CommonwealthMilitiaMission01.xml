@@ -13,7 +13,7 @@
 	=========================================================================== -->
 
 	<MissionType UNID="&msCMGatePatrol;"
-			name=			"Patrol Orbital Lanes"
+			name=			"Commonwealth Militia 01: Patrol Orbital Lanes"
 			attributes=		"commonwealthMilitia, rank0"
 
 			level=			"2-7"
@@ -30,6 +30,8 @@
 					)
 			</Variant>
 		</Properties>
+
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="512" imageY="256" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<OnCreate>

@@ -31,6 +31,8 @@
 			noStats=			"true"
 			>
 
+		<Image	imageID="&rsBlackMarketInsignia;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+
 		<Events>
 			<CanCreate>
 				(block (

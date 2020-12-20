@@ -52,13 +52,15 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msCSCPointJunoAresAttack;"
-			name=			"Point Juno Ares Attack"
+			name=			"Point Juno 01: Ares Attack"
 			attributes=		"commonwealthFleet, cscPointJuno, rank4, rank5, rank6"
 
 			level=			"8"
 
 			maxAppearing=	"1"
 			>
+
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<Events>
 			<OnCreate>

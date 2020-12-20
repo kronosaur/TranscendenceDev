@@ -14,7 +14,7 @@
 	=========================================================================== -->
 
 	<MissionType UNID="&msCMEscortSuperFreighter;"
-			name=			"Escort Super Freighter"
+			name=			"Commonwealth Militia 04: Escort Super Freighter"
 			attributes=		"commonwealthMilitia, rank2"
 
 			level=			"4-7"
@@ -27,6 +27,8 @@
 				(@ (typ@ &unidCommonwealthMilitia; 'volunteerRewardTable) (min (sysGetLevel) 10))
 			</Variant>
 		</Properties>
+
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="512" imageY="256" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<OnCreate>

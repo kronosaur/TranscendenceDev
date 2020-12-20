@@ -21,7 +21,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHuariAttackConvoy;"
-			name=			"Intercept Sung transport"
+			name=			"Huari 01: Intercept Sung transport"
 			attributes=		"huariEmpire, huariFortress"
 
 			level=			"4-8"
@@ -66,6 +66,8 @@
 					)
 			</Data>
 		</StaticData>
+
+		<Image	imageID="&rsHuariFortress;" imageWidth="380" imageHeight="380"/>
 
 		<Events>
 			<OnCreate>

@@ -32,6 +32,8 @@
 			recordNonPlayer=	"true"
 			>
 
+		<Image imageID="&rsRaisuStation;"	imageWidth="170" imageHeight="170"/>
+
 		<Events>
 			<OnGlobalSystemStarted>
 				(block (raisuObj)

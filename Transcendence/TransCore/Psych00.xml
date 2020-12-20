@@ -10,6 +10,9 @@
 			maxAppearing=		"1"
 			priority=			"100"
 			>
+
+		<Image imageID="&rsCommonwealthMedicalColony;" imageWidth="320" imageHeight="290"/>
+
 		<Events>
 			<CanCreate>
 				(switch

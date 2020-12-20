@@ -13,7 +13,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msTeratonResearch;"
-			name=				"Teraton Research"
+			name=				"Teratons 01: Research"
 			attributes=			"teratonResearch"
 
 			level=				"8-9"
@@ -21,6 +21,8 @@
 			noDebrief=			"true"
 			noStats=			"true"
 			>
+
+		<Image	imageID="&rsStations9;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<OnCreate>

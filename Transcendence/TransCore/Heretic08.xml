@@ -15,13 +15,15 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticMRADExperiment;"
-			name=			"MRAD Experiment"
+			name=			"Heretic 08: MRAD Experiment"
 			attributes=		"commonwealthResearch, hereticMission"
 
 			level=			"10"
 
 			maxAppearing=	"1"
 			>
+
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

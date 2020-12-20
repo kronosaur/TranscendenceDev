@@ -16,6 +16,8 @@
 			<Global id="stationID"></Global>
 		</Properties>
 
+		<Image imageID="&rsCommonwealthMedicalColony;" imageWidth="320" imageHeight="290"/>
+
 		<Events>
 			<!-- CREATE MISSION -->
 

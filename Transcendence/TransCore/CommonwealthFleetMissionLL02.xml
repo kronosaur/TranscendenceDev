@@ -14,7 +14,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msCSCRescueScientists;"
-			name=			"Rescue Scientists"
+			name=			"Lamplighter 02: Rescue Scientists"
 			attributes=		"commonwealthFleet, cscTaskForce, rank3, lamplighter"
 
 			level=			"5-10"
@@ -23,6 +23,8 @@
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
 			>
+
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<Events>
 			<OnCreate>

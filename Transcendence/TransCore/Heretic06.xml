@@ -16,13 +16,15 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticIocrymArtifact;"
-			name=			"Iocrym Artifact"
+			name=			"Heretic 06: Iocrym Artifact"
 			attributes=		"taikonResearch, hereticMission"
 
 			level=			"10"
 
 			maxAppearing=	"1"
 			>
+
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

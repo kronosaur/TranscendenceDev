@@ -1776,6 +1776,7 @@
 	<!ENTITY dsBattleArenaOpponentList	"0x001000E6">
 	<!ENTITY msBattleArenaFight			"0x001000E7">
 	<!ENTITY msBattleArenaChallenger	"0x001000E8">
+	<!ENTITY rsBattleArenaMissionTile	"0x001000E9">
 
 	<!-- 00F0-00FF HELIOTROPES -->
 	
@@ -2482,6 +2483,10 @@
 	<!ENTITY rsTR200DefenderHero			"0x00100845">
 	<!ENTITY rsTMA9BattleAuton				"0x00100846">
 	<!ENTITY rsTMA9BattleAutonHero			"0x00100847">
+
+	<!-- 0860-087F HERETIC SYSTEM -->
+
+	<!ENTITY rsHereticMissionTile			"0x00100860">
 
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>

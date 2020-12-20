@@ -2020,8 +2020,9 @@
 
 <!-- Resources -->
 
-	<Image UNID="&rsIocrymManipulator;"	bitmap="Resources\IocrymManipulator.jpg" bitmask="Resources\IocrymManipulatorMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsIocrymManipulator;"		bitmap="Resources\IocrymManipulator.jpg" bitmask="Resources\IocrymManipulatorMask.bmp" loadOnUse="true"/>
 	
-	<Image UNID="&rsHereticItems;"		bitmap="Resources\HereticItems.jpg" bitmask="Resources\HereticItemsMask.bmp" />
+	<Image UNID="&rsHereticItems;"			bitmap="Resources\HereticItems.jpg" bitmask="Resources\HereticItemsMask.bmp" />
+	<Image UNID="&rsHereticMissionTile;"	bitmap="Resources\HereticMissionTile.jpg" />
 
 </TranscendenceModule>

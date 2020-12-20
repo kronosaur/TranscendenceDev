@@ -33,6 +33,8 @@
 			</Variant>
 		</Properties>
 
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="512" imageY="256" imageWidth="256" imageHeight="256"/>
+
 		<Events>
 			<CanCreate>
 				(switch

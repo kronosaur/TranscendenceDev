@@ -12,7 +12,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msDestroyIllegalMiners;"
-			name=				"Destroy Illegal Miners"
+			name=				"Commonwealth Mining 02: Destroy Illegal Miners"
 			attributes=			"commonwealthMining, eridaniScript"
 
 			level=				"1-4"
@@ -36,6 +36,8 @@
 				(@ (typ@ &unidIndependentMiner; 'missionRewardTable) (min (sysGetLevel) 10))
 			</Variant>
 		</Properties>
+
+		<Image imageID="&rsMiningColonyRocky;"	imageWidth="260" imageHeight="260"/>
 
 		<Events>
 			<OnCreate>

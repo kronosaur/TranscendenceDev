@@ -14,7 +14,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msCSCEscortFreighter2;"
-			name=			"Escort Freighter"
+			name=			"Commonwealth Fleet 06: Escort Freighter"
 			attributes=		"commonwealthFleet, cscTaskForce, rank3"
 
 			level=			"5-10"
@@ -22,6 +22,8 @@
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
 			>
+
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<Events>
 			<OnCreate>

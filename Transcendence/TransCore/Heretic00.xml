@@ -16,7 +16,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticIocrymAttack;"
-			name=			"Iocrym in Heretic"
+			name=			"Heretic 00: Iocrym Attack"
 			attributes=		""
 
 			level=			"10"
@@ -24,6 +24,8 @@
 			noDecline=		"true"
 			noDebrief=		"true"
 			>
+
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>
@@ -274,7 +276,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticIocrymAttackMsg;"
-			name=			"Iocrym Attack"
+			name=			"Heretic 00A: Iocrym Attack Message"
 			attributes=		""
 
 			level=			"10"
@@ -283,6 +285,7 @@
 			noDecline=		"true"
 			>
 
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

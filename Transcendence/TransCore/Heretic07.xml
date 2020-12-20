@@ -15,13 +15,15 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticIocrymOutpost;"
-			name=			"Iocrym Outpost"
+			name=			"Heretic 07: Iocrym Outpost"
 			attributes=		"aresResearch, hereticMission"
 
 			level=			"10"
 
 			maxAppearing=	"1"
 			>
+
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>
