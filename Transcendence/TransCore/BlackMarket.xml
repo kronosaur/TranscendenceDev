@@ -326,6 +326,9 @@ PLAYER DATA
 				Buys and sells illegal and military items
 
 			</Text>
+			<Code id="rpg.statusDetails">
+				(typTranslate &unidBlackMarketMember; 'rankDetails)
+			</Code>
 		</Language>
 	</StationType>
 
@@ -497,12 +500,6 @@ PLAYER DATA
 		</StaticData>
 		
 		<Language>
-			<Text id="rpg.stationWillNotBuy">
-
-				%StationName% buys illegal and military items. We are not 
-				interested in buying %itemName%.
-
-			</Text>
 			<Text id="core.mapDesc">
 
 				Refuels up to level 7 &mdash; Repairs/installs armor up to 
@@ -510,6 +507,15 @@ PLAYER DATA
 				sells illegal and military items
 
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys illegal and military items. We are not 
+				interested in buying %itemName%.
+
+			</Text>
+			<Code id="rpg.statusDetails">
+				(typTranslate &unidBlackMarketMember; 'rankDetails)
+			</Code>
 		</Language>
 	</StationType>
 
@@ -649,6 +655,9 @@ PLAYER DATA
 			<Text id="core.mapDesc">
 				"Sells illegal items"
 			</Text>
+			<Code id="rpg.statusDetails">
+				(typTranslate &unidBlackMarketMember; 'rankDetails)
+			</Code>
 		</Language>
 	</StationType>
 	

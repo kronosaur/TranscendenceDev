@@ -348,8 +348,19 @@
 			</OnDestroy>
 			
 			<OnEnteredGate>
-				(if (eq (objGetData gSource "behavior") 'goingHome)
-					(objSetCharacterData gSource 'status 'returnedHome)
+				(block (
+					(status (objGetCharacterData gSource 'status))			
+					)
+					(switch
+						(or (= status 'dead)
+								(= status 'destroyed)
+								(= status 'destroyedByPlayer)
+								)
+							Nil
+
+						(= (objGetData gSource "behavior") 'goingHome)
+							(objSetCharacterData gSource 'status 'returnedHome)
+						)
 					)
 			</OnEnteredGate>
 			

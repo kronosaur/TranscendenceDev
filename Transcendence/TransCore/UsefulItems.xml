@@ -647,9 +647,14 @@
 			virtual=		"true"
 			level=			"1"
 			>
+		<Properties>
+			<Data id="card.balance"></Data>
+		</Properties>
+
 		<Invoke>
 			(block (
 				(amount (or
+					(itm@ gItem 'card.balance)
 					(itmGetData gItem 'card.balance)
 					(eval (itmGetStaticData gItem 'card.balance))
 					))
