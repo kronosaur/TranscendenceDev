@@ -458,7 +458,6 @@ class CShieldClass : public CDeviceClass
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
-		virtual void PaintHitEffect(CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &DamageCtx, bool FlashEffect = false);
 		virtual void Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatus) override;
 		virtual bool RequiresItems (void) const override;
 		virtual void Reset (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
@@ -490,6 +489,7 @@ class CShieldClass : public CDeviceClass
 		static const DWORD FLAG_IGNORE_DISABLED = 0x00000001;
 		Metric CalcRegen180 (CItemCtx &Ctx, DWORD dwFlags = 0) const;
 
+		void CreateHitEffect (CInstalledDevice &Device, CSpaceObject &Ship, SDamageCtx &DamageCtx, CEffectCreator &Effect, const CVector &vPos) const;
 		bool IsDepleted (CInstalledDevice *pDevice);
 		int FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource, int iMaxHP) const;
 		void FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
@@ -500,9 +500,9 @@ class CShieldClass : public CDeviceClass
 		int GetMaxHP (CItemCtx &Ctx) const;
 		int GetReferenceDepletionDelay (void) const;
 		int GetReflectChance (const CDeviceItem &DeviceItem, const CItemEnhancementStack &Enhancements, const DamageDesc &Damage, int iHP, int iMaxHP) const;
-		bool UpdateDepleted (CInstalledDevice *pDevice);
 		void SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		void SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, int iHP, bool bConsumeCharges = false);
+		bool UpdateDepleted (CInstalledDevice *pDevice);
 
 		int m_iHitPoints;						//	Max HP
 		int m_iArmorShield;						//	If non-zero then this is the

@@ -136,6 +136,9 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	{
 	DEBUG_TRY
 
+	if (!pDevice || !pShip)
+		throw CException(ERR_FAIL);
+
 	CItemCtx ItemCtx(pShip, pDevice);
 	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItemOrThrow();
 	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
@@ -300,20 +303,19 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	//	Create shield effect
 
 	if ((Ctx.iAbsorb || Ctx.IsShotReflected())
-			&& m_pHitEffect
 			&& !Ctx.bNoHitEffect)
 		{
-		PaintHitEffect(pDevice, pShip, Ctx);
-		}
+		if (m_pHitEffect)
+			{
+			CreateHitEffect(*pDevice, *pShip, Ctx, *m_pHitEffect, Ctx.vHitPos);
+			}
 
-	if ((Ctx.iAbsorb || Ctx.IsShotReflected())
-		&& m_pFlashEffect
-		&& !Ctx.bNoHitEffect
-		&& pDevice->IsReady())
-	{
-		PaintHitEffect(pDevice, pShip, Ctx, true);
-		pDevice->SetTimeUntilReady(m_iTimeBetweenFlashEffects);
-	}
+		if (m_pFlashEffect && pDevice->IsReady())
+			{
+			CreateHitEffect(*pDevice, *pShip, Ctx, *m_pFlashEffect, pShip->GetPos());
+			pDevice->SetTimeUntilReady(m_iTimeBetweenFlashEffects);
+			}
+		}
 
 	//	Shield takes damage
 
@@ -333,35 +335,6 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	return (Ctx.iDamage == 0);
 
 	DEBUG_CATCH
-	}
-
-void CShieldClass::PaintHitEffect(CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &DamageCtx, bool FlashEffect)
-	{
-	//	Create the hit effect painter.
-	CSystem *pSystem = (pShip->GetSystem());
-
-	CCreatePainterCtx Ctx;
-	Ctx.SetDamageCtx(DamageCtx);
-
-	IEffectPainter *pPainter = FlashEffect ? m_pFlashEffect.CreatePainter(Ctx) : m_pHitEffect.CreatePainter(Ctx);
-	if (pPainter == NULL)
-	return;
-
-	//	Now create the effect
-
-	CEffect::SCreateOptions Options;
-	Options.pAnchor = ((DamageCtx.pObj && !DamageCtx.pObj->IsDestroyed()) ? DamageCtx.pObj : NULL);
-	Options.iRotation = DamageCtx.iDirection;
-
-	if (CEffect::Create(*pSystem,
-		pPainter,
-		FlashEffect ? DamageCtx.pObj->GetPos() : DamageCtx.vHitPos,
-		(DamageCtx.pObj ? DamageCtx.pObj->GetVel() : CVector()),
-		Options) != NOERROR)
-		{
-		delete pPainter;
-		return;
-		}
 	}
 
 bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon)
@@ -806,11 +779,13 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 			pDesc->GetContentElementByTag(HIT_EFFECT_TAG),
 			pDesc->GetAttribute(HIT_EFFECT_ATTRIB)))
 		return error;
+
 	if (error = pShield->m_pFlashEffect.LoadEffect(Ctx,
-		strPatternSubst(CONSTLIT("%d:h"), InitCtx.pType->GetUNID()),
-		pDesc->GetContentElementByTag(FLASH_EFFECT_TAG),
-		pDesc->GetAttribute(FLASH_EFFECT_ATTRIB)))
+			strPatternSubst(CONSTLIT("%d:f"), InitCtx.pType->GetUNID()),
+			pDesc->GetContentElementByTag(FLASH_EFFECT_TAG),
+			pDesc->GetAttribute(FLASH_EFFECT_ATTRIB)))
 		return error;
+
 	pShield->m_iTimeBetweenFlashEffects = pDesc->GetAttributeInteger(TIME_BETWEEN_FLASH_EFFECTS_ATTRIB);
 
 	//	Done
@@ -818,6 +793,43 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 	*retpShield = pShield;
 
 	return NOERROR;
+	}
+
+void CShieldClass::CreateHitEffect (CInstalledDevice &Device, CSpaceObject &Ship, SDamageCtx &DamageCtx, CEffectCreator &Effect, const CVector &vPos) const
+
+//	CreateHitEffect
+//
+//	Creates the given hit effect.
+
+	{
+	//	Create the hit effect painter.
+
+	CSystem *pSystem = (Ship.GetSystem());
+	if (!pSystem)
+		return;
+
+	CCreatePainterCtx Ctx;
+	Ctx.SetDamageCtx(DamageCtx);
+
+	IEffectPainter *pPainter = Effect.CreatePainter(Ctx);
+	if (!pPainter)
+		return;
+
+	//	Now create the effect
+
+	CEffect::SCreateOptions Options;
+	Options.pAnchor = (!Ship.IsDestroyed() ? &Ship : NULL);
+	Options.iRotation = DamageCtx.iDirection;
+
+	if (CEffect::Create(*pSystem,
+			pPainter,
+			vPos,
+			Ship.GetVel(),
+			Options) != NOERROR)
+		{
+		delete pPainter;
+		return;
+		}
 	}
 
 void CShieldClass::Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource)
@@ -1664,6 +1676,7 @@ ALERROR CShieldClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	if (error = m_pHitEffect.Bind(Ctx))
 		return error;
+
 	if (error = m_pFlashEffect.Bind(Ctx))
 		return error;
 
@@ -1699,10 +1712,7 @@ CEffectCreator *CShieldClass::OnFindEffectCreator (const CString &sUNID)
 			return m_pHitEffect;
 
 		case 'f':
-			if (m_pFlashEffect)
-				return m_pFlashEffect;
-			else
-				return NULL;
+			return m_pFlashEffect;
 
 		default:
 			return NULL;
@@ -1814,6 +1824,7 @@ void CShieldClass::OnMarkImages (void)
 	{
 	if (m_pHitEffect)
 		m_pHitEffect->MarkImages();
+
 	if (m_pFlashEffect)
 		m_pFlashEffect->MarkImages();
 	}
