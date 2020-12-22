@@ -221,6 +221,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 //		s			Include ships
 //		t			Include stations (including planets)
 //		v			Include intangible objects
+//		x			Include missiles where targetable='true'
 //		z			Include the player
 //
 //		A			Active objects only (i.e., objects that can attack)
@@ -488,7 +489,12 @@ void CSpaceObjectCriteria::ParseSubExpression (const char *pPos)
 			case 'X':
 				m_bTargetIsSource = true;
 				break;
-
+			
+			case 'x':
+				m_dwCategories |= CSpaceObject::catMissile;
+				m_bTargetableMissilesOnly = true;
+				break;
+			
 			case 'Y':
 				m_bAngryObjectsOnly = true;
 				break;
