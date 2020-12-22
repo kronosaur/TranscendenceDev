@@ -486,13 +486,13 @@ void CSpaceObjectCriteria::ParseSubExpression (const char *pPos)
 				m_bIncludeVirtual = true;
 				break;
 
-			case 'X':
-				m_bTargetIsSource = true;
-				break;
-			
 			case 'x':
 				m_dwCategories |= CSpaceObject::catMissile;
 				m_bTargetableMissilesOnly = true;
+				break;
+			
+			case 'X':
+				m_bTargetIsSource = true;
 				break;
 			
 			case 'Y':

@@ -6011,8 +6011,8 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 		return false;
 
 	if (Crit.MatchesTargetableMissilesOnly()
-		&& GetCategory() == CSpaceObject::catMissile
-		&& !(IsTargetableProjectile()))
+			&& GetCategory() == CSpaceObject::catMissile
+			&& !(IsTargetableProjectile()))
 		return false;
 
 	if (Crit.MatchesTargetIsSource() && GetTarget() != pSource)

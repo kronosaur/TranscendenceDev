@@ -480,7 +480,6 @@ class CSpaceObject
 
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 		virtual CTargetList GetTargetList (void) const { return CTargetList(); }
-		virtual bool IsTargetableProjectile (void) const { return true; }
 
 		int CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const;
 		CSpaceObject *CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
