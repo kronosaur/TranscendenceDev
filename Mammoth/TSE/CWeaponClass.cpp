@@ -1420,6 +1420,135 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 	return true;
 	}
 
+bool CWeaponClass::CanConsumeAmmo (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, int &retiAmmoToConsume) const
+
+//	CanConsumeAmmo
+//
+//	Return TRUE if we can consume ammo (i.e., if we have enough ammo to shoot).
+//	If we don't consume ammo we always return TRUE.
+
+	{
+	retiAmmoToConsume = 0;
+
+	//	Get source and device
+
+	const CSpaceObject *pSource = DeviceItem.GetSource();
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
+	const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+	if (!pDevice)
+		throw CException(ERR_FAIL);
+
+	//	If this is a repeating weapon then we only consume ammo on the first
+	//	shot (unless otherwise specified).
+
+	if (iRepeatingCount > 0 && !m_bContinuousConsumePerShot)
+		return true;
+
+	//	Figure out how much ammo we consume per shot.
+
+	CItemCtx ItemCtx(pSource, pDevice);
+	retiAmmoToConsume = FireGetAmmoToConsume(ItemCtx, ShotDesc, iRepeatingCount);
+	if (retiAmmoToConsume == 0)
+		return true;
+
+	//	Check based on the type of ammo
+
+	if (ShotDesc.GetAmmoType())
+		{
+		CItemListManipulator ItemList(const_cast<CSpaceObject *>(pSource)->GetItemList());
+		CItem Item(ShotDesc.GetAmmoType(), retiAmmoToConsume);
+
+		//	We look for the ammo item. If we're using magazines, then look for
+		//	the item with the least charges (use those up first).
+
+		DWORD dwFlags = CItem::FLAG_IGNORE_CHARGES;
+		if (ShotDesc.GetAmmoType()->AreChargesAmmo())
+			dwFlags |= CItem::FLAG_FIND_MIN_CHARGES;
+
+		//	Select the ammo. If we could not select it, then it means that we
+		//	have none, so we fail.
+
+		if (!ItemList.SetCursorAtItem(Item, dwFlags))
+			return false;
+
+		//	If the ammo uses charges, then we need a different algorithm.
+
+		if (ShotDesc.GetAmmoType()->AreChargesAmmo())
+			{
+			const CItem &AmmoItem = ItemList.GetItemAtCursor();
+
+			//	If we only have 1 charge left, we need to delete the item
+			//
+			//	(We should never have 0 charges because we delete items when we 
+			//	use up the last charge. But if somehow we get it, we destroy it
+			//	here too.)
+
+			if (AmmoItem.GetCharges() < retiAmmoToConsume)
+				return false;
+			}
+
+		//	Otherwise, consume an item
+
+		else
+			{
+			if (ItemList.GetItemAtCursor().GetCount() < retiAmmoToConsume)
+				return false;
+			}
+		}
+	else if (m_bCharges)
+		{
+		//	If no charges left, then we cannot consume
+
+		if (pDevice->GetCharges(pSource) < retiAmmoToConsume)
+			return false;
+		}
+
+	//	Success!
+
+	return true;
+	}
+
+bool CWeaponClass::CanConsumeShipCounter (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc) const
+
+//	CanConsumeShipCounter
+//
+//	Returns TRUE if we can consume/increment ship counter.
+
+	{
+	//	Short-circuit.
+
+	if (!m_iCounterPerShot)
+		return true;
+
+	//	Get source and device
+
+	const CSpaceObject *pSource = DeviceItem.GetSource();
+	if (!pSource)
+		return false;
+
+	//  If changing the ship counter leaves us out of range, then we cannot
+	//	consume.
+
+	if (m_iCounterPerShot > 0)
+		{
+		if (pSource->GetCounterValue() + m_iCounterPerShot > pSource->GetMaxCounterValue())
+			{
+			return false;
+			}
+		}
+	else if (m_iCounterPerShot < 0)
+		{
+		if (pSource->GetCounterValue() + m_iCounterPerShot < 0)
+			{
+			return false;
+			}
+		}
+
+	return true;
+	}
+
 CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, bool *retbConsumedItems)
 
 //	Consume
@@ -1444,6 +1573,17 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 
 	CFailureDesc::EFailureTypes iFailureMode = CFailureDesc::failNone;
 
+	//	If we're using ship counters, make sure we have enough.
+
+	if (!CanConsumeShipCounter(DeviceItem, ShotDesc))
+		return resFailure;
+
+	//	See if we have enough ammo/charges to fire
+
+	int iAmmoToConsume;
+	if (!CanConsumeAmmo(DeviceItem, ShotDesc, iRepeatingCount, iAmmoToConsume))
+		return resFailure;
+
 	//	Update capacitor counters
 
 	if (m_Counter == cntCapacitor)
@@ -1467,25 +1607,24 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 			}
 		}
 
+	//	If we get this far, then we're going to consume resources (ammo,
+	//	etc.) and iFailureMode is set correctly.
+
 	//  Update the ship energy/heat counter.
 
 	if (m_iCounterPerShot != 0)
-		{
-		if (!UpdateShipCounter(ItemCtx, ShotDesc))
-			return resFailure;
-		}
+		ConsumeShipCounter(DeviceItem, ShotDesc);
 	
+	//	Consume ammo/charges
+
+	if (iAmmoToConsume != 0)
+		ConsumeAmmo(ItemCtx, ShotDesc, iRepeatingCount, iAmmoToConsume, retbConsumedItems);
+
 	//	We can fail to fire but still update temperature and consume power.
 
 	if (iFailureMode == CFailureDesc::failNoFire)
 		return resNoEffect;
 	
-	//	See if we have enough ammo/charges to proceed. If we don't then we 
-	//	cannot continue.
-
-	if (!ConsumeAmmo(ItemCtx, ShotDesc, iRepeatingCount, retbConsumedItems))
-		return resFailure;
-
 	//	If we're damaged, disabled, or badly designed, we have a chance of 
 	//	failure.
 
@@ -1536,12 +1675,12 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 		return resNormal;
 	}
 
-bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, bool *retbConsumed)
+void CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, int iAmmoToConsume, bool *retbConsumed)
 
 //	ConsumeAmmo
 //
-//	Consumes ammunition from the source. Returns TRUE if we were able to consume
-//	all ammo. If no ammo needs to be consumed, we still return TRUE.
+//	Consumes ammunition from the source. We assume that we've already called
+//	CanConsumeAmmo.
 //
 //	retbConsumed is set to TRUE if we consumed either ammo or charges.
 
@@ -1555,21 +1694,17 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	if (pSource == NULL)
-		return false;
+		return;
 
 	CInstalledDevice *pDevice = ItemCtx.GetDevice();
 	if (pDevice == NULL)
-		return false;
+		return;
 
 	//	If this is a repeating weapon then we only consume ammo on the first
 	//	shot (unless otherwise specified).
 
 	if (iRepeatingCount > 0 && !m_bContinuousConsumePerShot)
-		return true;
-
-	//	Figure out how much ammo we consume per shot.
-
-	int iAmmoConsumed = FireGetAmmoToConsume(ItemCtx, ShotDesc, iRepeatingCount);
+		return;
 
 	//	Check based on the type of ammo
 
@@ -1577,7 +1712,7 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 	if (ShotDesc.GetAmmoType())
 		{
 		CItemListManipulator ItemList(pSource->GetItemList());
-		CItem Item(ShotDesc.GetAmmoType(), iAmmoConsumed);
+		CItem Item(ShotDesc.GetAmmoType(), iAmmoToConsume);
 
 		//	We look for the ammo item. If we're using magazines, then look for
 		//	the item with the least charges (use those up first).
@@ -1587,13 +1722,10 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 			dwFlags |= CItem::FLAG_FIND_MIN_CHARGES;
 
 		//	Select the ammo. If we could not select it, then it means that we
-		//	have none, so we fail.
+		//	have none, which means we forgot to call CanConsumeAmmo.
 
 		if (!ItemList.SetCursorAtItem(Item, dwFlags))
-			return false;
-
-		if (ItemList.GetItemAtCursor().GetCount() < iAmmoConsumed)
-			return false;
+			throw CException(ERR_FAIL);
 
 		//	If the ammo uses charges, then we need a different algorithm.
 
@@ -1607,7 +1739,7 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 			//	use up the last charge. But if somehow we get it, we destroy it
 			//	here too.)
 
-			if (AmmoItem.GetCharges() <= iAmmoConsumed)
+			if (AmmoItem.GetCharges() <= iAmmoToConsume)
 				{
 				ItemList.DeleteAtCursor(AmmoItem.GetCharges());
 
@@ -1621,20 +1753,23 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 			//	Otherwise, we decrement.
 
 			else
-				ItemList.SetChargesAtCursor(AmmoItem.GetCharges() - iAmmoConsumed);
+				ItemList.SetChargesAtCursor(AmmoItem.GetCharges() - iAmmoToConsume);
 			}
 
 		//	Otherwise, consume an item
 
 		else
 			{
+			if (ItemList.GetItemAtCursor().GetCount() < iAmmoToConsume)
+				throw CException(ERR_FAIL);
+
 			//	If we've exhausted our ammunition, remember to
 			//	select the next variant
 
-			if (ItemList.GetItemAtCursor().GetCount() == iAmmoConsumed)
+			if (ItemList.GetItemAtCursor().GetCount() == iAmmoToConsume)
 				bNextVariant = true;
 
-			ItemList.DeleteAtCursor(iAmmoConsumed);
+			ItemList.DeleteAtCursor(iAmmoToConsume);
 			}
 
 		//	We consumed an item
@@ -1646,12 +1781,12 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 		{
 		//	If no charges left, then we cannot consume
 
-		if (pDevice->GetCharges(pSource) < iAmmoConsumed)
-			return false;
+		if (pDevice->GetCharges(pSource) < iAmmoToConsume)
+			throw CException(ERR_FAIL);
 
 		//	Consume charges
 
-		pDevice->IncCharges(pSource, -iAmmoConsumed);
+		pDevice->IncCharges(pSource, -iAmmoToConsume);
 		if (retbConsumed)
 			*retbConsumed = true;
 		}
@@ -1671,10 +1806,6 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 		else
 			pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
 		}
-
-	//	Success!
-
-	return true;
 	}
 
 bool CWeaponClass::ConsumeCapacitor (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc)
@@ -1706,6 +1837,26 @@ bool CWeaponClass::ConsumeCapacitor (CItemCtx &ItemCtx, const CWeaponFireDesc &S
 	pSource->OnComponentChanged(comDeviceCounter);
 
 	return true;
+	}
+
+void CWeaponClass::ConsumeShipCounter (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc)
+
+//	ConsumeShipCounter
+//
+//	Updates ship counter. We assume that we've already called 
+//	CanConsumeShipCounter.
+
+	{
+	if (!m_iCounterPerShot)
+		return;
+
+	//	Get source and device
+
+	CSpaceObject *pSource = DeviceItem.GetSource();
+	if (pSource == NULL)
+		return;
+
+	pSource->IncCounterValue(m_iCounterPerShot);
 	}
 
 ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpWeapon)
@@ -2141,7 +2292,7 @@ bool CWeaponClass::FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, con
 		return false;
 	}
 
-int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount)
+int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount) const
 
 //	FireOnFireWeapon
 //
@@ -5331,45 +5482,6 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 	DEBUG_CATCH
 	}
-
-bool CWeaponClass::UpdateShipCounter(CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc)
-
-//	UpdateShipCounter
-//
-//	If ship counter is within bounds, we update it and return TRUE. Otherwise,
-//	we return FALSE.
-
-{
-	//	Get source and device
-
-	CSpaceObject *pSource = ItemCtx.GetSource();
-	if (pSource == NULL)
-		return false;
-
-	CInstalledDevice *pDevice = ItemCtx.GetDevice();
-	if (pDevice == NULL)
-		return false;
-
-	//  If we update the ship's counter, make sure that after increase/decrease we're
-	//  below/above the maximum/minimum counter, respectively.
-
-	if (m_iCounterPerShot > 0)
-	{
-		if (pSource->GetCounterValue() + m_iCounterPerShot > pSource->GetMaxCounterValue())
-		{
-			return false;
-		}
-	}
-	else if (m_iCounterPerShot < 0)
-	{
-		if (pSource->GetCounterValue() + m_iCounterPerShot < 0)
-		{
-			return false;
-		}
-	}
-	pSource->IncCounterValue(m_iCounterPerShot);
-	return true;
-}
 
 bool CWeaponClass::UpdateTemperature (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed)
 

@@ -1188,7 +1188,7 @@ class CSpaceObject
 		virtual int GetLastFireTime (void) const { return 0; }
 		virtual int GetLastHitTime (void) const { return 0; }
 		virtual int GetLevel (void) const { return 1; }
-		virtual int GetMaxCounterValue(void) { return 0; }
+		virtual int GetMaxCounterValue (void) const { return 0; }
 		virtual int GetMaxPower (void) const { return 0; }
 		virtual int GetMaxLightDistance (void) const { return 0; }
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
