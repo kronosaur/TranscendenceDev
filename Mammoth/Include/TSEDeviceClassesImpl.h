@@ -458,6 +458,7 @@ class CShieldClass : public CDeviceClass
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
+		virtual void PaintHitEffect(CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &DamageCtx, bool FlashEffect = false);
 		virtual void Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatus) override;
 		virtual bool RequiresItems (void) const override;
 		virtual void Reset (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
@@ -517,6 +518,7 @@ class CShieldClass : public CDeviceClass
 		int m_iIdlePowerUse;					//	Power used to maintain shields
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
+		int m_iTimeBetweenFlashEffects;			//  Minimum time between flash effects in ticks
 
 		int m_iExtraHPPerCharge;				//	Extra HP for each point of charge
 		int m_iExtraPowerPerCharge;				//	Extra power use for each point of charge (1/10 megawatt)
@@ -534,7 +536,8 @@ class CShieldClass : public CDeviceClass
 
 		SEventHandlerDesc m_CachedEvents[evtCount];		//	Cached events
 
-		CEffectCreatorRef m_pHitEffect;			//	Effect when shield is hit
+		CEffectCreatorRef m_pHitEffect;				//	Effect when shield is hit, appearing at hit location
+		CEffectCreatorRef m_pFlashEffect;			//	Effect when shield is hit, appearing on ship
 	};
 
 class CSolarDeviceClass : public CDeviceClass
