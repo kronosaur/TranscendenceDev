@@ -161,16 +161,18 @@ ICCItem *CCSymbolTable::CloneContainer (void) const
 //	Clone this item
 
 	{
-	int i;
+	DEBUG_TRY
 
 	ICCItem *pNew = CCodeChain::CreateSymbolTable();
 	CCSymbolTable *pNewTable = dynamic_cast<CCSymbolTable *>(pNew);
+	if (!pNewTable)
+		throw CException(ERR_FAIL);
+
 	pNewTable->CloneItem(this);
-	ASSERT(pNewTable);
 
 	//	Add all the items to the table
 
-	for (i = 0; i < m_Symbols.GetCount(); i++)
+	for (int i = 0; i < m_Symbols.GetCount(); i++)
 		{
 		CString sKey = m_Symbols.GetKey(i);
 		CObject *pValue = m_Symbols.GetValue(i);
@@ -189,6 +191,8 @@ ICCItem *CCSymbolTable::CloneContainer (void) const
 		}
 
 	return pNewTable;
+
+	DEBUG_CATCH
 	}
 
 ICCItem *CCSymbolTable::CloneDeep (CCodeChain *pCC)

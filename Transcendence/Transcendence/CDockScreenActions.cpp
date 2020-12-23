@@ -93,7 +93,7 @@ ALERROR CDockScreenActions::AddAction (const CString &sID, int iPos, const CStri
 
 	//	Set the label, etc.
 
-	SetLabelDesc(pAction, sLabel);
+	SetLabelDesc(*pAction, sLabel);
 
 	//	Done
 
@@ -588,7 +588,7 @@ ALERROR CDockScreenActions::InitFromXML (CExtension *pExtension, CXMLElement *pA
 
 		//	Label and key
 
-		SetLabelDesc(pAction, pActionDesc->GetAttribute(NAME_ATTRIB));
+		SetLabelDesc(*pAction, pActionDesc->GetAttribute(NAME_ATTRIB));
 
 		//	ID
 
@@ -713,7 +713,7 @@ int CDockScreenActions::Justify (CDesignType *pRoot, int cxJustify)
 			//	Set any special accelerators too (but only if we defined them).
 
 			if (Special.GetCount() > 0)
-				SetSpecial(pAction, Special);
+				SetSpecial(*pAction, Special);
 			}
 		else
 			{
@@ -857,16 +857,20 @@ void CDockScreenActions::SetLabel (int iAction, const CString &sLabelDesc, const
 //	Sets the label and key for the actions
 
 	{
-	SActionDesc *pAction = &m_Actions[iAction];
+	DEBUG_TRY
+
+	SActionDesc &Action = m_Actions[iAction];
 
 	if (!sLabelDesc.IsBlank())
-		SetLabelDesc(pAction, sLabelDesc, false);
+		SetLabelDesc(Action, sLabelDesc, false);
 
 	if (!sKey.IsBlank())
-		pAction->sKey = sKey;
+		Action.sKey = sKey;
+
+	DEBUG_CATCH
 	}
 
-void CDockScreenActions::SetLabelDesc (SActionDesc *pAction, const CString &sLabelDesc, bool bOverrideSpecial)
+void CDockScreenActions::SetLabelDesc (SActionDesc &Action, const CString &sLabelDesc, bool bOverrideSpecial)
 
 //	SetLabelDesc
 //
@@ -876,6 +880,8 @@ void CDockScreenActions::SetLabelDesc (SActionDesc *pAction, const CString &sLab
 //	those should happen after this call.
 
 	{
+	DEBUG_TRY
+
 	CString sLabel;
 	CString sKey;
 	int iKey;
@@ -883,31 +889,31 @@ void CDockScreenActions::SetLabelDesc (SActionDesc *pAction, const CString &sLab
 
 	CLanguage::ParseLabelDesc(sLabelDesc, &sLabel, &sKey, &iKey, &Special);
 
-	pAction->sLabel = sLabel;
-	pAction->sKey = sKey;
-	pAction->sKeyTmp = sKey;
-	pAction->iKeyTmp = iKey;
+	Action.sLabel = sLabel;
+	Action.sKey = sKey;
+	Action.sKeyTmp = sKey;
+	Action.iKeyTmp = iKey;
 
 	if (bOverrideSpecial || Special.GetCount() > 0)
-		SetSpecial(pAction, Special);
+		SetSpecial(Action, Special);
+
+	DEBUG_CATCH
 	}
 
-void CDockScreenActions::SetSpecial (SActionDesc *pAction, const TArray<CLanguage::ELabelAttribs> &Special)
+void CDockScreenActions::SetSpecial (SActionDesc &Action, const TArray<CLanguage::ELabelAttribs> &Special)
 
 //	SetSpecial
 //
 //	Sets all special attributes
 
 	{
-	int i;
+	Action.dwSpecial = CLanguage::specialNone;
 
-	pAction->dwSpecial = CLanguage::specialNone;
-
-	for (i = 0; i < Special.GetCount(); i++)
-		pAction->dwSpecial |= Special[i];
+	for (int i = 0; i < Special.GetCount(); i++)
+		Action.dwSpecial |= Special[i];
 	}
 
-void CDockScreenActions::SetSpecial (SActionDesc *pAction, CLanguage::ELabelAttribs iSpecial, bool bEnabled)
+void CDockScreenActions::SetSpecial (SActionDesc &Action, CLanguage::ELabelAttribs iSpecial, bool bEnabled)
 
 //	SetSpecial
 //
@@ -915,9 +921,9 @@ void CDockScreenActions::SetSpecial (SActionDesc *pAction, CLanguage::ELabelAttr
 
 	{
 	if (bEnabled)
-		pAction->dwSpecial |= iSpecial;
+		Action.dwSpecial |= iSpecial;
 	else
-		pAction->dwSpecial &= ~iSpecial;
+		Action.dwSpecial &= ~iSpecial;
 	}
 
 void CDockScreenActions::SetSpecial (int iAction, CLanguage::ELabelAttribs iSpecial, bool bEnabled)
@@ -927,7 +933,7 @@ void CDockScreenActions::SetSpecial (int iAction, CLanguage::ELabelAttribs iSpec
 //	Sets the special attribute for an action
 
 	{
-	SetSpecial(&m_Actions[iAction], iSpecial, bEnabled);
+	SetSpecial(m_Actions[iAction], iSpecial, bEnabled);
 	}
 
 bool CDockScreenActions::SetSpecial (CCodeChain &CC, int iAction, ICCItem *pSpecial, ICCItem **retpError)
@@ -937,7 +943,7 @@ bool CDockScreenActions::SetSpecial (CCodeChain &CC, int iAction, ICCItem *pSpec
 //	Sets the attributes based on a list of strings
 
 	{
-	int i;
+	DEBUG_TRY
 
 	//	Clear all the flags
 
@@ -945,7 +951,7 @@ bool CDockScreenActions::SetSpecial (CCodeChain &CC, int iAction, ICCItem *pSpec
 
 	//	Set them based on list
 
-	for (i = 0; i < pSpecial->GetCount(); i++)
+	for (int i = 0; i < pSpecial->GetCount(); i++)
 		{
 		CString sSpecial = pSpecial->GetElement(i)->GetStringValue();
 		CLanguage::ELabelAttribs iSpecial = GetSpecialFromName(sSpecial);
@@ -960,6 +966,8 @@ bool CDockScreenActions::SetSpecial (CCodeChain &CC, int iAction, ICCItem *pSpec
 		}
 
 	return true;
+
+	DEBUG_CATCH
 	}
 
 void CDockScreenActions::SetVisible (int iAction, bool bVisible)

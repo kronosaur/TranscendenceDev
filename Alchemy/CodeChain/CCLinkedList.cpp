@@ -101,6 +101,8 @@ ICCItem *CCLinkedList::CloneContainer (void) const
 //	Returns a copy of the item and any containers it contains
 
 	{
+	DEBUG_TRY
+
 	ICCItem *pNew;
 	CCLinkedList *pClone;
 	CCons *pCons;
@@ -125,6 +127,8 @@ ICCItem *CCLinkedList::CloneContainer (void) const
 		}
 
 	return pClone;
+
+	DEBUG_CATCH
 	}
 
 ICCItem *CCLinkedList::CloneDeep (CCodeChain *pCC)

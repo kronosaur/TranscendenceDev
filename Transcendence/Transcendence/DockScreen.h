@@ -249,9 +249,9 @@ class CDockScreenActions
 		void ExecuteCode (CDockScreen *pScreen, const CString &sID, CExtension *pExtension, ICCItem *pCode);
 		CLanguage::ELabelAttribs GetSpecialFromName (const CString &sSpecialName);
 		int Justify (CDesignType *pRoot, int cxJustify);
-		void SetLabelDesc (SActionDesc *pAction, const CString &sLabelDesc, bool bOverrideSpecial = true);
-		void SetSpecial (SActionDesc *pAction, const TArray<CLanguage::ELabelAttribs> &Special);
-		void SetSpecial (SActionDesc *pAction, CLanguage::ELabelAttribs iSpecial, bool bEnabled);
+		void SetLabelDesc (SActionDesc &Action, const CString &sLabelDesc, bool bOverrideSpecial = true);
+		void SetSpecial (SActionDesc &Action, const TArray<CLanguage::ELabelAttribs> &Special);
+		void SetSpecial (SActionDesc &Action, CLanguage::ELabelAttribs iSpecial, bool bEnabled);
 
 		TArray<SActionDesc> m_Actions;
 		ICCItem *m_pData;			//	Data passed in to scrShowScreen (may be NULL)

@@ -71,6 +71,7 @@ class CCodeChainCtx
 		CCodeChain &GetCC (void) { return m_CC; }
 		CExtension *GetExtension (void) const { return m_pExtension; }
 		CItemType *GetItemType (void) const { return m_pItemType; }
+		void *GetScreen () const { return m_pScreen; }
 		CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
 		SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
 		CUniverse &GetUniverse (void) const { return m_Universe; }
