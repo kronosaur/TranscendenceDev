@@ -91,6 +91,7 @@ class CTradingDesc
 		void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
 			{ AddOrder(pType, sCriteria, iPriceAdj, FLAG_SELLS); }
 
+		ICCItemPtr AsCCItem (CCodeChainCtx &CCX) const;
 		bool Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
 		bool Buys (STradeServiceCtx &Ctx, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
 		bool BuysShip (CSpaceObject *pObj, CShipClass *pClass, DWORD dwFlags, int *retiPrice = NULL);

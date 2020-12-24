@@ -244,6 +244,49 @@ int CTradingDesc::AdjustForSystemPrice (STradeServiceCtx &Ctx, int iPrice)
 	return Max(1, iPrice * iAdj / 100);
 	}
 
+ICCItemPtr CTradingDesc::AsCCItem (CCodeChainCtx &CCX) const
+
+//	AsCCItem
+//
+//	Returns a struct of services
+
+	{
+	//	We start by sorting everything by service type
+
+	TSortMap<CString, TArray<const SServiceDesc *>> Sorted;
+	for (int i = 0; i < m_List.GetCount(); i++)
+		{
+		const SServiceDesc &Service = m_List[i];
+
+		auto pList = Sorted.SetAt(ServiceToString(Service.iService));
+		pList->Insert(&Service);
+		}
+
+	//	Create a structure and output entries
+
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+	for (int i = 0; i < Sorted.GetCount(); i++)
+		{
+		const auto &Services = Sorted[i];
+
+		ICCItemPtr pList(ICCItem::List);
+		for (int j = 0; j < Services.GetCount(); j++)
+			{
+			const auto pService = Services[j];
+
+			ICCItemPtr pEntry(ICCItem::SymbolTable);
+			pEntry->SetStringAt(CONSTLIT("type"), Sorted.GetKey(i));
+			pEntry->SetStringAt(CONSTLIT("id"), pService->sID);
+
+			pList->Append(pEntry);
+			}
+
+		pResult->SetAt(Sorted.GetKey(i), pList);
+		}
+
+	return pResult;
+	}
+
 CurrencyValue CTradingDesc::CalcMaxBalance (int iLevel, const CEconomyType *pCurrency)
 
 //	CalcMaxBalance

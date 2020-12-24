@@ -109,6 +109,7 @@
 #define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
 #define PROPERTY_OBSOLETE_VERSION				CONSTLIT("obsoleteVersion")
 #define PROPERTY_REQUIRED_VERSION				CONSTLIT("requiredVersion")
+#define PROPERTY_TRADE_DESC						CONSTLIT("tradeDesc")
 #define PROPERTY_UNID							CONSTLIT("unid")
 
 #define FIELD_ENTITY							CONSTLIT("entity")
@@ -590,6 +591,16 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_REQUIRED_VERSION))
 		return (m_dwMinVersion > 0 ? CC.CreateInteger(m_dwMinVersion) : CC.CreateNil());
+
+	else if (strEquals(sProperty, PROPERTY_TRADE_DESC))
+		{
+		const CTradingDesc *pTrade = GetTradingDesc();
+		if (pTrade)
+			return pTrade->AsCCItem(Ctx)->Reference();
+		else
+			return CC.CreateNil();
+			
+		}
 
 	else if (strEquals(sProperty, PROPERTY_UNID))
 		return CC.CreateInteger(GetUNID());
