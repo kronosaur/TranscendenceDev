@@ -2759,7 +2759,9 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Done
 
-	if (bReduceMax || bReduceMin)
+	if (pResult->IsError())
+		return pResult;
+	else if (bReduceMax || bReduceMin)
 		{
 		pResult->Discard();
 		if (iBestItem == -1)
