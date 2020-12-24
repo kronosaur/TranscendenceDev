@@ -81,14 +81,22 @@
 			<Main>
 				<Display type="detailsPane">
 					<OnDisplayInit>
-						(typTranslate &unidPilgrimClass; 'rankDetails)
+						(typTranslate &svSistersOfDomina; 'statusDisplay)
 					</OnDisplayInit>
 				</Display>
 
 				<Panes>
 					<Default>
 						<OnPaneInit>
-							(scrSetDesc gScreen (objTranslate gSource 'descWelcome))
+							(block ()
+								(scrSetDesc gScreen (objTranslate gSource 'descWelcome))
+
+								;	No Sanctum if you're not a pilgrim
+
+								(if (!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+									(scrShowAction gScreen 'actionSanctum Nil)
+									)
+								)
 						</OnPaneInit>
 
 						<Actions>
@@ -140,10 +148,13 @@
 				conversation.
 
 			</Text>
-            
+
             <Text id="core.mapDesc">
                 Contemplation and communion
             </Text>
+			<Text id="rpg.statusDisplay">
+				(typTranslate &svSistersOfDomina; 'statusDisplay)
+			</Text>
 		</Language>
 	</StationType>
 	

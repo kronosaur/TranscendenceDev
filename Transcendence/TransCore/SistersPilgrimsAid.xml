@@ -14,7 +14,7 @@
 			>
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(typTranslate &unidPilgrimClass; 'rankDetails)
+				(typTranslate &svSistersOfDomina; 'statusDisplay)
 			</OnDisplayInit>
 		</Display>
 
@@ -27,10 +27,6 @@
 
 						(block ()							
 							(scrSetDesc gScreen (typTranslate &dsSistersDockServices; 'WelcomeNonPilgrim))
-
-							;	Help on Domina powers only available to pilgrims
-
-							(scrEnableAction gScreen 'actionPowersHelp Nil)
 							)
 						)
 				</OnPaneInit>
@@ -134,10 +130,6 @@
 							)
 					</Action>
 
-					<Action id="actionPowersHelp">
-						(scrShowScreen gScreen &dsDominaPowersHelp;)
-					</Action>
-
 					<Action id="actionDone" cancel="1">
 						(scrExitScreen gScreen)
 					</Action>
@@ -157,8 +149,6 @@
 		</Panes>
 		
 		<Language>
-			<Text id="actionPowersHelp">Domina [P]owers</Text>
-
 			<Text id="Welcome">
 
 				"Welcome, Pilgrim! Your journey to the Galactic Core will be 

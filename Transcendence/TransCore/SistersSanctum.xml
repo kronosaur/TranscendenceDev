@@ -12,7 +12,7 @@
 			>
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(typTranslate &unidPilgrimClass; 'rankDetails)
+				(typTranslate &svSistersOfDomina; 'statusDisplay)
 			</OnDisplayInit>
 		</Display>
 
@@ -51,6 +51,10 @@
 				</OnPaneInit>
 			
 				<Actions>
+					<Action id="actionOffer">
+						(scrShowScreen gScreen &dsSistersOffer;)
+					</Action>
+
 					<Action id="actionContemplate" default="1">
 						(block (
 							(roll (random 1 100))
@@ -151,9 +155,11 @@
 								)
 							)
 					</Action>
-					<Action id="actionOffer">
-						(scrShowScreen gScreen &dsSistersOffer;)
+
+					<Action id="actionPowersHelp">
+						(scrShowScreen gScreen &dsDominaPowersHelp;)
 					</Action>
+
 					<Action id="actionDone" default="1" cancel="1">
 						(scrExitScreen gScreen)
 					</Action>
@@ -215,7 +221,8 @@
 		<Language>
 			<Text id="actionContemplate">[C]ontemplate</Text>
 			<Text id="actionOffer">[O]ffer Item</Text>
-			
+			<Text id="actionPowersHelp">Domina [P]owers</Text>
+
 			<Text id="DominaRelationshipDesc">
 
 				Your disembodied mind hurtles through space. Stars dance like 

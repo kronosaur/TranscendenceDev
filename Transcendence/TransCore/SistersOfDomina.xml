@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>v
+<?xml version="1.0" encoding="utf-8"?>
 
 <TranscendenceModule>
 
@@ -100,6 +100,44 @@
 			<Text id="achievement.donations">Money donated to Sisters of Domina</Text>
 			<Text id="achievement.pilgrimsAidUsed">Pilgrims' Aid Usage</Text>
 			<Text id="achievement.neverUsedPilgrimsAid">Never used Pilgrims' Aid</Text>
+
+			<Code id="statusDisplay">
+				(switch
+					(= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+						(typTranslate &unidPilgrimClass; 'rankDetails)
+
+					(typTranslate gType 'nonPilgrimStatus)
+					)
+			</Code>
+
+			<Code id="nonPilgrimStatus">
+				(block (
+					(balance (typ@ gType 'balance))
+					)
+					(if (gr balance 0)
+						{
+							title: (typTranslate gType 'labelPilgrimsAid)
+							largeIcon: (typGetImageDesc &stCathedralOfDomina;)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelAidBudget)
+									desc: (typTranslate gType 'rtfValue {
+										value: (fmtCurrency 'credit balance)
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+
+			<Text id="labelPilgrimsAid">Pilgrims' Aid</Text>
+			<Text id="labelAidBudget">Budget:</Text>
+			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
 		</Language>
 	</Sovereign>
 	
@@ -243,7 +281,7 @@
 			<Main>
 				<Display type="detailsPane">
 					<OnDisplayInit>
-						(typTranslate &unidPilgrimClass; 'rankDetails)
+						(typTranslate &svSistersOfDomina; 'statusDisplay)
 					</OnDisplayInit>
 				</Display>
 
@@ -254,6 +292,12 @@
 								(if (objGetData gSource "freeSanctum")
 									(scrSetDescTranslate gScreen 'WelcomeFreeSanctum)
 									(scrSetDescTranslate gScreen 'Welcome)
+									)
+
+								;	No Sanctum if you're not a pilgrim
+
+								(if (!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+									(scrShowAction gScreen 'actionSanctum Nil)
 									)
 								)
 						</OnPaneInit>
@@ -388,7 +432,7 @@
 			</Text>
 
 			<Code id="rpg.statusDetails">
-				(typTranslate &unidPilgrimClass; 'rankDetails)
+				(typTranslate &svSistersOfDomina; 'statusDisplay)
 			</Code>
 		</Language>
 	</StationType>
@@ -403,7 +447,7 @@
 			>
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(typTranslate &unidPilgrimClass; 'rankDetails)
+				(typTranslate &svSistersOfDomina; 'statusDisplay)
 			</OnDisplayInit>
 		</Display>
 
@@ -501,7 +545,7 @@
 			>
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(typTranslate &unidPilgrimClass; 'rankDetails)
+				(typTranslate &svSistersOfDomina; 'statusDisplay)
 			</OnDisplayInit>
 		</Display>
 
