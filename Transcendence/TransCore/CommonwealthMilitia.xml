@@ -238,9 +238,6 @@
 					(soFar (max 0 (- rankSuccesses successForRank)))
 					(percentToNextLevel (if (gr totalNeeded 0) (round (* 100.0 (/ soFar totalNeeded)))))
 					)
-					(dbgOutput "successForRank: " successForRank)
-					(dbgOutput "successForNextRank: " successForNextRank)
-					(dbgOutput "soFar: " soFar " [" percentToNextLevel "%]")
 					(if rankID
 						{
 							title: (fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
