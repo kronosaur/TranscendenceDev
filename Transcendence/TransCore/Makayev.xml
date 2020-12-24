@@ -114,9 +114,7 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionDockServices" default="1">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionBuyItems">
@@ -293,9 +291,7 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionDockServices" default="1">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionBuyItems">

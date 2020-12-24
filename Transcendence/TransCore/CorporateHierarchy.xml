@@ -226,7 +226,6 @@
 						<Actions>
 							<Action id="actionDockServices" default="1">
 								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
 									upgradeInstallOnly: True
 									})
 							</Action>
@@ -377,7 +376,6 @@
 						<Actions>
 							<Action name="Armor and Shields" key="A" default="1">
 								(scrShowScreen gScreen &dsRPGManageArmor; {
-									checkMilitaryID: True
 									upgradeInstallOnly: True
 									})
 							</Action>
@@ -527,7 +525,6 @@
 						<Actions>
 							<Action id="actionWeapons" default="1">
 								(scrShowScreen gScreen &dsRPGManageWeapons; {
-									checkMilitaryID: True
 									upgradeInstallOnly: True
 									})
 							</Action>
@@ -1814,9 +1811,7 @@
 							</Action>
 
 							<Action id="actionDockServices" default="1">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -1914,7 +1909,6 @@
 						<Actions>
 							<Action id="actionDockServices" default="1">
 								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
 									upgradeInstallOnly: True
 									})
 							</Action>
@@ -2416,9 +2410,7 @@
 
 				<Actions>
 					<Action id="actionDockServices" default="1">
-						(rpgDockServices gPlayerShip {
-							checkMilitaryID: True
-							})
+						(rpgDockServices gPlayerShip)
 					</Action>
 
 					<Action id="actionBuyItems">
@@ -2475,12 +2467,12 @@
 			<!--
 			By default we accept any military ID (even ones from APD or ED).
 			-->
-			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</COnstant>
+			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
 
 			<!--
 			By default we reveal unknown items when they are for sale.
 			-->
-			<Constant	id="rpg.showActualItem">True</COnstant>
+			<Constant	id="rpg.showActualItem">True</Constant>
 		</Properties>
 
 		<Events>

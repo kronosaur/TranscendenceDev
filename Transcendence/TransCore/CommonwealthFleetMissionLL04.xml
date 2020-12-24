@@ -385,9 +385,7 @@
 					<Action id="actionContinue" default="1" cancel="1">
 						(block ()
 							(scrExitScreen gScreen)
-							(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+							(rpgDockServices gPlayerShip)
 							)
 					</Action>
 				</Actions>

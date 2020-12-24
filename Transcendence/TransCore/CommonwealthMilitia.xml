@@ -461,9 +461,7 @@
 
 							<Action id="actionDockServices">
 								(if (gr (typGetData &unidCommonwealthMilitia; 'rank) 0)
-									(rpgDockServices gPlayerShip {
-										checkMilitaryID: True
-										})
+									(rpgDockServices gPlayerShip)
 									(scrShowScreen gScreen &dsRPGMessage; { textID:'descNoDockServicesAccess })
 									)
 							</Action>

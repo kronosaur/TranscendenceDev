@@ -320,6 +320,11 @@
 					padding-bottom: 100
 					}
 			</DynamicData>
+
+			<!-- This is generally not used because we're not allowed to dock
+				without a military ID. But we add it here for completeness. -->
+
+			<Definition id="rpg.checkMilitaryID">"* +militaryID;"</Definition>
 		</Properties>
 
 		<!-- Hull -->
@@ -523,9 +528,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -951,9 +954,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">

@@ -532,9 +532,7 @@
 												desc: (scrTranslate gScreen 'descNoDockServicesAccess)
 												})
 
-										(rpgDockServices gPlayerShip {
-											checkMilitaryID: True
-											})
+										(rpgDockServices gPlayerShip)
 										)
 									)
 							</Action>
