@@ -665,6 +665,20 @@ bool CItemEnhancementStack::IsMissileDefense (void) const
 	return false;
 	}
 
+bool CItemEnhancementStack::IsNoAmmo () const
+
+//	IsNoAmmo
+//
+//	Returns TRUE if we give noAmmo.
+
+	{
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsNoAmmo())
+			return true;
+
+	return false;
+	}
+
 bool CItemEnhancementStack::IsPhotoRecharging (void) const
 
 //	IsPhotoRecharging

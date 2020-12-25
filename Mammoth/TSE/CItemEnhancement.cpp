@@ -238,6 +238,10 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 			retList->Insert(SDisplayAttribute(iDisplayType, (IsDisadvantage() ? CONSTLIT("-blinded") : CONSTLIT("+missileDefense")), true));
 			break;
 
+		case etNoAmmo:
+			retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+autofac"), true));
+			break;
+
 		case etLinkedFire:
 			{
 			DWORD dwOptions = (DWORD)GetDataX();
@@ -1701,6 +1705,7 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 			case etTracking:
 			case etOmnidirectional:
 			case etLinkedFire:
+			case etNoAmmo:
 				return 100;
 
 			default:
@@ -2104,6 +2109,10 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 	else if (strEquals(sID, CONSTLIT("missileDefense")))
 		{
 		m_dwMods = EncodeAX(etMissileDefense | (bDisadvantage ? etDisadvantage : 0));
+		}
+	else if (strEquals(sID, CONSTLIT("noAmmo")))
+		{
+		m_dwMods = EncodeAX(etNoAmmo);
 		}
 
 	//	Linked-fire

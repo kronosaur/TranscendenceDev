@@ -1457,6 +1457,12 @@ bool CWeaponClass::CanConsumeAmmo (const CDeviceItem &DeviceItem, const CWeaponF
 
 	if (ShotDesc.GetAmmoType())
 		{
+		//	If we're enhanced to no require ammo, then we always succeed.
+
+		const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
+		if (Enhancements.IsNoAmmo())
+			return true;
+
 		CItemListManipulator ItemList(const_cast<CSpaceObject *>(pSource)->GetItemList());
 		CItem Item(ShotDesc.GetAmmoType(), retiAmmoToConsume);
 
@@ -1711,6 +1717,12 @@ void CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 	bool bNextVariant = false;
 	if (ShotDesc.GetAmmoType())
 		{
+		//	If we're enhanced to no require ammo, then we always succeed.
+
+		const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+		if (Enhancements.IsNoAmmo())
+			return;
+
 		CItemListManipulator ItemList(pSource->GetItemList());
 		CItem Item(ShotDesc.GetAmmoType(), iAmmoToConsume);
 
@@ -2760,6 +2772,14 @@ bool CWeaponClass::HasAmmoLeft (CItemCtx &ItemCtx, const CWeaponFireDesc *pShot)
 
 	if (pShot->GetAmmoType())
 		{
+		//	If we're enhanced to not require ammo, then we always succeed.
+
+		const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+		if (Enhancements.IsNoAmmo())
+			return true;
+
+		//	Look for ammo
+
 		CItemListManipulator ItemList(pSource->GetItemList());
 		CItem Item(pShot->GetAmmoType(), 1);
 		if (!ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
@@ -3703,14 +3723,20 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 	else if (pShot->GetAmmoType())
 		{
 		CItem Item(pShot->GetAmmoType(), 1);
+		const CItemEnhancementStack &Enhancements = Ctx.GetEnhancements();
 
 		//	Calc ammo left
 
 		if (retiAmmoLeft)
 			{
+			//	If we no longer use ammo, set to -1.
+
+			if (Enhancements.IsNoAmmo())
+				*retiAmmoLeft = -1;
+
 			//	See if we use an event
 
-			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetDeviceItem(), *pShot, retiAmmoLeft))
+			else if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetDeviceItem(), *pShot, retiAmmoLeft))
 				{ }
 
 			//	If each ammo item uses charges, then we need a different method.
@@ -3899,9 +3925,11 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 	if (pShot == NULL)
 		return -100;
 
+	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
+
 	//	If we don't enough ammo, clearly we will not be effective
 
-	if (pSource && pShot->GetAmmoType())
+	if (pSource && pShot->GetAmmoType() && !Enhancements.IsNoAmmo())
 		{
 		CItemListManipulator ItemList(pSource->GetItemList());
 		CItem Item(pShot->GetAmmoType(), 1);
