@@ -299,6 +299,18 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		else
 			printf("Unregistered game.\n");
 
+		if (Game.IsGameResurrect() && Game.GetDifficulty() == CDifficultyOptions::ELevels::lvlPermadeath)
+			{
+			if (error = Game.ClearGameResurrect())
+				{
+				printf("ERROR: Unable to clear resurrect bit.\n");
+				::kernelSetDebugLog(NULL);
+				return;
+				}
+
+			printf("Cleared resurrect bit.\n");
+			}
+
 		if (Game.IsEndGame())
 			{
 			if (error = Game.ClearEndGame())
