@@ -20,7 +20,7 @@ CDamageSource::CDamageSource (CSpaceObject *pSource, DestructionTypes iCause, CS
 	m_pSecondarySource = (pSecondarySource && !pSecondarySource->IsDestroyed() ? pSecondarySource : NULL);
 	}
 
-bool CDamageSource::CanHit (CSpaceObject *pTarget) const
+bool CDamageSource::CanHit (const CSpaceObject &Target) const
 
 //	CanHit
 //
@@ -40,7 +40,7 @@ bool CDamageSource::CanHit (CSpaceObject *pTarget) const
 	//	If this is not a player escort then we allow the hit. NOTE: We check for
 	//	player escort, not player wingman, which is more restrictive.
 
-	if (!pTarget->IsPlayerEscort())
+	if (!Target.IsPlayerEscort())
 		return true;
 
 	//	If we don't protect wingmen, then we allow a hit
@@ -50,7 +50,7 @@ bool CDamageSource::CanHit (CSpaceObject *pTarget) const
 
 	//	If we're deliberately targeting pTarget, then we allow the hit.
 
-	if (pObj->GetTarget(IShipController::FLAG_ACTUAL_TARGET) == pTarget)
+	if (pObj->GetTarget(IShipController::FLAG_ACTUAL_TARGET) == Target)
 		return true;
 
 	//	Otherwise, pTarget should not be hit by us.
@@ -377,7 +377,7 @@ bool CDamageSource::IsEqual (const CDamageSource &Src) const
 			&& (GetCause() == killedByExplosion || GetCause() == killedByPlayerCreatedExplosion));
 	}
 
-bool CDamageSource::IsEqual (CSpaceObject *pSrc) const
+bool CDamageSource::IsEqual (const CSpaceObject &Src) const
 
 //	IsEqual
 //
@@ -386,7 +386,7 @@ bool CDamageSource::IsEqual (CSpaceObject *pSrc) const
 	{
 	//	If pSrc is equal to our secondary source, then we match
 
-	if (pSrc == m_pSecondarySource)
+	if (Src == m_pSecondarySource)
 		return true;
 
 	//	Otherwise, see if we match the primary source
@@ -397,7 +397,7 @@ bool CDamageSource::IsEqual (CSpaceObject *pSrc) const
 
 		//	If we have an ID, and it's the same as the given one, then we're equal.
 
-		return (dwID != OBJID_NULL && pSrc && dwID == pSrc->GetID());
+		return (dwID != OBJID_NULL && dwID == Src.GetID());
 		}
 	}
 

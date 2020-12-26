@@ -336,7 +336,7 @@
 						{	test:'(itm@ &itRecoillessCannon; 'speed)				result:40	}
 
 						{	test:'(itm@ &itOracusHarassPower; 'hp)				result:0	}
-						{	test:'(itm@ &itOracusHarassPower; 'interaction)		result:100	}
+						{	test:'(itm@ &itOracusHarassPower; 'interaction)		result:'always	}
 						{	test:'(itm@ &itOracusHarassPower; 'lifetime)			result:40	}
 						{	test:'(itm@ &itOracusHarassPower; 'range)				result:12	}
 						{	test:'(itm@ &itOracusHarassPower; 'speed)				result:0	}
@@ -348,7 +348,7 @@
 						{	test:'(itm@ &itMorningStarCannon; 'speed)				result:40	}
 
 						{	test:'(itm@ &itTestWeaponRelativistic; 'hp)			result:0	}
-						{	test:'(itm@ &itTestWeaponRelativistic; 'interaction)	result:100	}
+						{	test:'(itm@ &itTestWeaponRelativistic; 'interaction)	result:0	}
 						{	test:'(itm@ &itTestWeaponRelativistic; 'lifetime)		result:3	}
 						{	test:'(itm@ &itTestWeaponRelativistic; 'range)		result:60	}
 						{	test:'(itm@ &itTestWeaponRelativistic; 'speed)		result:1000	}

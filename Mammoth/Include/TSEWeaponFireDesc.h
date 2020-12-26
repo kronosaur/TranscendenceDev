@@ -668,7 +668,7 @@ class CWeaponFireDesc
 		DamageDesc CalcDamageDesc (const CItemEnhancementStack *pEnhancements, const CDamageSource &Attacker, Metric rAge) const;
 		bool CanAutoTarget (void) const { return (m_fAutoTarget ? true : false); }
 		bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
-		bool CanHit (CSpaceObject *pObj) const;
+		bool CanHit (const CSpaceObject &Obj) const;
 		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		IEffectPainter *CreateEffectPainter (SShotCreateCtx &CreateCtx);
 		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir) const;

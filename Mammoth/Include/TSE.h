@@ -1116,7 +1116,7 @@ class CSpaceObject
 		virtual Categories GetCategory (void) const { return catOther; }
 		virtual DWORD GetClassUNID (void) { return 0; }
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
-		virtual CInteractionLevel GetInteraction (void) const { return -1; }
+		CInteractionLevel GetInteraction (void) const { const CWeaponFireDesc *pDesc = GetWeaponFireDesc(); return (pDesc ? pDesc->GetInteraction() : CInteractionLevel(-1)); }
 		virtual Metric GetInvMass (void) const { return 0.0; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
 		virtual Metric GetMass (void) const { return 0.0; }
@@ -1252,7 +1252,7 @@ class CSpaceObject
 		virtual void DetonateNow (CSpaceObject *pHit) { }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) { return GetNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const { return CDamageSource::Null(); }
-		virtual CWeaponFireDesc *GetWeaponFireDesc (void) { return NULL; }
+		virtual const CWeaponFireDesc *GetWeaponFireDesc (void) const { return NULL; }
 		virtual CSpaceObject *GetSecondarySource (void) const { return NULL; }
 		virtual bool IsTargetableProjectile (void) const { return false; }
 
@@ -1361,8 +1361,7 @@ class CSpaceObject
 				const CObjectImageArray &Image2, int iTick2, int iRotation2, const CVector &vPos2);
 		bool IsObjectDestructionHooked (void) { return (m_fHookObjectDestruction ? true : false); }
 		void ItemEnhancementModified (CItemListManipulator &ItemList) { OnItemEnhanced(ItemList); }
-		bool MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &Source, CWeaponFireDesc *pDesc) const;
-		static bool MissileCanInteract (const CSpaceObject &Obj, CInteractionLevel Interaction, const CSpaceObject *pTarget = NULL);
+		bool MissileCanHitObj (const CSpaceObject &Obj, const CDamageSource &Source, const CWeaponFireDesc &Desc, CSpaceObject *pTarget = NULL) const;
 		void PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
