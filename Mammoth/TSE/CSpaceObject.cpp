@@ -3809,17 +3809,6 @@ CConditionSet CSpaceObject::GetConditions (void) const
 	return Conditions;
 	}
 
-int CSpaceObject::GetDataInteger (const CString &sAttrib) const
-
-//	GetDataInteger
-//
-//	Get integer value
-
-	{
-	ICCItemPtr pValue = GetData(sAttrib);
-	return pValue->GetIntegerValue();
-	}
-
 CDesignCollection &CSpaceObject::GetDesign (void) const
 
 //	GetDesign
@@ -7303,18 +7292,6 @@ void CSpaceObject::SetCursorAtRandomItem (CItemListManipulator &ItemList, const 
 		}
 
 	//	Done
-	}
-
-void CSpaceObject::SetDataInteger (const CString &sAttrib, int iValue)
-
-//	SetDataInteger
-//
-//	Set integer value
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItemPtr pValue(iValue);
-	SetData(sAttrib, pValue);
 	}
 
 void CSpaceObject::SetEventFlags (void)
