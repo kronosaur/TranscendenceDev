@@ -24,6 +24,7 @@
 #define RANDOM_ITEMS_SWITCH					CONSTLIT("randomitems")
 #define RANDOM_NUMBER_TEST					CONSTLIT("randomnumbertest")
 #define RUN_SWITCH							CONSTLIT("run")
+#define SCRIPT_SWITCH						CONSTLIT("script")
 #define SHIELD_TEST_SWITCH					CONSTLIT("shieldtest")
 #define SHIP_IMAGE_SWITCH					CONSTLIT("shipimage")
 #define SHIP_IMAGES_SWITCH					CONSTLIT("shipimages")
@@ -174,7 +175,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		{
 		printf("  /itemsim              Simulation of items encountered.\n");
 		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
-		printf("       /count:n             n iterations.\n");
+		printf("      [/count:n]            n iterations.\n");
 		}
 	else if (pCmdLine->GetAttributeBool(ITEM_TABLE_SWITCH))
 		{
@@ -222,9 +223,12 @@ void ShowHelp (CXMLElement *pCmdLine)
 	else if (pCmdLine->GetAttributeBool(LANGUAGE_SWITCH))
 		{
 		printf("  /language             Output language tables.\n");
-		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
-		printf("      /code                 Include code blocks.\n");
 		printf("      /criteria:n           Types to output.\n");
+		printf("\n");
+		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
+		printf("      [/code]               Include code blocks.\n");
+		printf("      [/lexicon]            Output as a word list.\n");
+		printf("      [/script]             Output as a script.\n");
 		}
 	else if (pCmdLine->GetAttributeBool(LOOT_SIM_SWITCH))
 		{
@@ -258,10 +262,11 @@ void ShowHelp (CXMLElement *pCmdLine)
 	else if (pCmdLine->GetAttributeBool(SHIP_IMAGE_SWITCH))
 		{
 		printf("  /shipimage            Generates image of a specific ship.\n");
-		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
 		printf("       /unid:n              unid of ship.\n");
 		printf("\n");
+		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
 		printf("      [/angles]	            Show angles for each frame.\n");
+		printf("      [/armor]	            Show angles for armor segments.\n");
 		printf("      [/driveimages]		Show all rotations with exhaust images.\n");
 		printf("      [/grid]               Show a grid centered on ship.\n");
 		printf("      [/interior]           Show interior compartment bounds.\n");
@@ -329,15 +334,15 @@ void ShowHelp (CXMLElement *pCmdLine)
 		{
 		printf("  /simtables            Generates tables for sim counts.\n");
 		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
-		printf("       /count:n             n iterations.\n");
+		printf("      [/count:n]            n iterations.\n");
 		}
 	else if (pCmdLine->GetAttributeBool(SMOKETEST_SWITCH))
 		{
 		printf("  /smoketest            Tests the game.\n");
 		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
-		printf("       /count:n             n iterations (default 100).\n");
-		printf("       /noDiagnostics       Do not run diagnostics.\n");
-		printf("       /updates:n           n updates per system (default 1000).\n");
+		printf("      [/count:n]            n iterations (default 100).\n");
+		printf("      [/noDiagnostics]      Do not run diagnostics.\n");
+		printf("      [/updates:n]          n updates per system (default 1000).\n");
 		}
 	else if (pCmdLine->GetAttributeBool(SNAPSHOT_SWITCH))
 		{
@@ -376,7 +381,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		{
 		printf("  /systemlabels         Generate counts for all labels.\n");
 		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
-		printf("       /count:n             n iterations.\n");
+		printf("      [/count:n]            n iterations.\n");
 		printf("      [/nodes]              Show node attribute counts instead.\n");
 		printf("      [/nodeDebug]          Output sample nodes with attributes instead.\n");
 		}
@@ -384,7 +389,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		{
 		printf("  /systemtest           Generates sample of all systems.\n");
 		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
-		printf("       /count:n             n iterations.\n");
+		printf("      [/count:n]            n iterations.\n");
 		}
 	else if (pCmdLine->GetAttributeBool(TOPOLOGY_MAP_SWITCH))
 		{
@@ -395,10 +400,11 @@ void ShowHelp (CXMLElement *pCmdLine)
 		}
 	else if (pCmdLine->GetAttributeBool(TYPE_TABLE_SWITCH))
 		{
-		printf("  /typeTable            Generates sample of all systems.\n");
+		printf("  /typeTable            Generates table of types.\n");
+		printf("      /criteria:xxx         Type of given criteria.\n");
+		printf("\n");
 		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
 		printf("      [/apiVersion:n]		Include obsolete types at this version.\n");
-		printf("      [/criteria:xxx]       Type of given criteria.\n");
 		printf("\n");
 		printf("      criteria:\n");
 		printf("          $                     EconomyType.\n");
@@ -477,6 +483,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 			printf("  /perftest             Performance test.\n");
 		printf("  /run                  Shows a TransLisp interpreter or runs a command.\n");
 		printf("  /runFile:filespec     Runs a TransLisp file.\n");
+		printf("  /script:scriptID      Outputs text by script ID.\n");
 		if (bDebug)
 			printf("  /shieldtest           Outputs capabilities of shield against weapons.\n");
 		printf("  /shipimage            Generates image of a specific ship class.\n");

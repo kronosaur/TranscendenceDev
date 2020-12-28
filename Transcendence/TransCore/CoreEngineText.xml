@@ -100,6 +100,7 @@
 			<Text id="hintFireWeapon">				Fire weapon</Text>
 			<Text id="hintNextMissile">				Switch missiles</Text>
 			<Text id="hintRefuel">					Access refueling screen</Text>
+			<Text id="hintShipStatus">				View ship status and cargo hold contents</Text>
 			<Text id="hintShowGalacticMap">			See the stargate network</Text>
 			<Text id="hintShowMap">					See a map of the system</Text>
 			<Text id="hintThrust">					Thrust forward</Text>

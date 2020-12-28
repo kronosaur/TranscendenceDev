@@ -250,9 +250,16 @@ class CUIHelper
 		void CreateSessionTitle (IHISession *pSession, 
 								 CCloudService &Service, 
 								 const CString &sTitle, 
-								 const TArray<SMenuEntry> *pMenu,
 								 DWORD dwOptions, 
-								 IAnimatron **retpControl) const;
+								 IAnimatron **retpControl) const
+			{ CreateSessionTitle(pSession, Service, sTitle, NULL, dwOptions, retpControl); }
+		void CreateSessionTitle (IHISession *pSession, 
+								 CCloudService &Service, 
+								 const CString &sTitle, 
+								 const TArray<SMenuEntry> &Menu,
+								 DWORD dwOptions, 
+								 IAnimatron **retpControl) const
+			{ CreateSessionTitle(pSession, Service, sTitle, &Menu, dwOptions, retpControl); }
 		void CreateSessionWaitAnimation (const CString &sID, const CString &sText, IAnimatron **retpControl) const;
 
 		void GenerateDockScreenRTF (const CString &sText, CString *retsRTF) const;
@@ -274,6 +281,12 @@ class CUIHelper
 
 		void CreateClassInfoSpecialItem (CItemType *pItemIcon, const CString &sText, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
 		void CreateBarButtons (CAniSequencer *pSeq, const RECT &rcRect, IHISession *pSession, const TArray<SMenuEntry> *pMenu, DWORD dwOptions) const;
+		void CreateSessionTitle (IHISession *pSession, 
+								 CCloudService &Service, 
+								 const CString &sTitle, 
+								 const TArray<SMenuEntry> *pMenu,
+								 DWORD dwOptions, 
+								 IAnimatron **retpControl) const;
 
 		CHumanInterface &m_HI;
 	};

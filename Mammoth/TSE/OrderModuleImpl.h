@@ -220,6 +220,49 @@ class CGuardOrder : public IOrderModule
 		CSpaceObject *m_pBase;					//	Object that we're guarding
 	};
 
+class COrbitExactOrder : public IOrderModule
+	{
+	public:
+		static constexpr DWORD AUTO_ANGLE = 0xffff;
+		static constexpr int DEFAULT_RADIUS = 10;
+		static constexpr Metric DEFAULT_SPEED = 1.0;
+
+		COrbitExactOrder () : IOrderModule(objCount)
+			{ }
+
+	protected:
+
+		//	IOrderModule virtuals
+
+		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
+		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
+		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) override;
+		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData);
+		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
+		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderOrbitExact; }
+		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
+		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+
+	private:
+		enum Objs
+			{
+			objBase =		0,
+			objTarget =		1,
+
+			objCount =		2,
+			};
+
+		static TArray<CShip *> GetOrbitMates (CSpaceObject &Source, DWORD dwRadius);
+		void DistributeOrbitAngles (CShip &Ship, CSpaceObject &Source, const TArray<CShip *> &Ships);
+
+		COrbit m_Orbit;							//	Orbit definition
+		DWORD m_dwStartTick = 0;				//	Tick at start angle
+		Metric m_rAngularSpeed = DEFAULT_SPEED;	//	Orbit speed (degrees per tick)
+		int m_iCountdown = 0;					//	Stop after this time.
+	};
+
 class CNavigateOrder : public IOrderModule
 	{
 	public:

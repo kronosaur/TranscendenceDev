@@ -417,7 +417,33 @@
 
 				<Panes>
 					<Default descID="descWelcome">
+						<OnPaneInit>
+							(block (
+								(playerLevel (typGetData &unidKorolovShipping; 'level))
+								)
+								(switch
+									(not playerLevel)
+										(block ()
+											(scrSetActionDesc gScreen 'actionDockServices (scrTranslate gScreen 'descNoDockServices.noRank))
+											(scrEnableAction gScreen 'actionDockServices Nil)
+
+											(scrShowAction gScreen 'actionServiceRecord Nil)
+											)
+
+									(= playerLevel -1)
+										(block ()
+											(scrSetActionDesc gScreen 'actionDockServices (scrTranslate gScreen 'descNoDockServices.blacklisted))
+											(scrEnableAction gScreen 'actionDockServices Nil)
+											)
+									)
+								)
+						</OnPaneInit>
+
 						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &dsRPGDialog; (objTranslate gSource 'korolov.info))
+							</Action>
+
 							<Action id="actionOperations" default="1">
 								(block (
 									(playerLevel (korGetPlayerLevel))
@@ -487,13 +513,8 @@
 									)
 							</Action>
 
-							<Action id="actionSituationScreen">
-								(if (typGetData &unidKorolovShipping; 'level)
-									(scrShowScreen gScreen "SituationBoard")
-									(scrShowScreen gScreen &dsRPGMessage; {
-										desc: (scrTranslate gScreen 'descNoServiceRecord)
-										})
-									)
+							<Action id="actionServiceRecord">
+								(scrShowScreen gScreen 'ServiceRecord)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -511,9 +532,7 @@
 												desc: (scrTranslate gScreen 'descNoDockServicesAccess)
 												})
 
-										(rpgDockServices gPlayerShip {
-											checkMilitaryID: True
-											})
+										(rpgDockServices gPlayerShip)
 										)
 									)
 							</Action>
@@ -526,58 +545,6 @@
 				</Panes>
 			</Dispatch>
 			
-			<SituationBoard
-				name=		"Situation Screen"
-				backgroundID=	"none"
-				>
-				<Display>
-					<Image left="207" top="69" width="152" height="150" transparent="true">
-						(resCreateImageDesc &rsKorolovLogo; 0 0 152 150)
-					</Image>
-
-					<Text left="11" top="234" width="546" height="32" font="SubTitle" color="131, 137, 130" align="center">
-						"Korolov Shipping Corporation"
-					</Text>
-
-					<Text left="11" top="266" width="546" height="32" font="LargeBold"  color="131, 137, 130" align="center">
-						"Situation Screen Interface"
-					</Text>
-				</Display>
-
-				<Panes>
-					<Default descID="descSelectOption">
-						<Actions>
-							<Action id="actionRecord">
-								(scrShowScreen gScreen "ServiceRecord")
-							</Action>
-
-							<Action id="actionFreighterData">
-								(block (
-									;	Get a list of freighter types and names so we can sort alphabetically
-									(shipList (map (korFreighterTypes) theType {ship:theType name:(shpGetClassName theType 1)}))
-									)
-									(scrShowScreen gScreen "ShipData" {
-										shipType: 'freighter
-										shipList: (map (sort shipList 'ascending 'name) theEntry (@ theEntry 'ship))
-										})
-									)
-							</Action>
-
-							<Action id="actionEnemyData">
-								(scrShowScreen gScreen "ShipData" {
-									shipType: 'warship
-									shipList: (typGetStaticData &stKorolovShipping; 'pirateShips)
-									})
-							</Action>
-
-							<Action id="actionDone" cancel="1">
-								(scrShowScreen gScreen "Dispatch")
-							</Action>
-						</Actions>
-					</Default>
-				</Panes>
-			</SituationBoard>
-
 			<ServiceRecord
 				name=			"Situation Screen"
 				backgroundID=	"none"
@@ -692,163 +659,16 @@
 
 						<Actions>
 							<Action id="actionDone" cancel="1" default="1">
-								(scrShowScreen gScreen "SituationBoard")
+								(scrShowScreen gScreen 'Dispatch)
 							</Action>
 						</Actions>
 					</Default>
 				</Panes>
 			</ServiceRecord>
-
-			<ShipData
-				name=			"Situation Screen"
-				backgroundID=	"none"
-				>
-				<OnScreenInit>
-					(block Nil
-						(scrSetData gScreen 'shipList (@ gData 'shipList))
-						(scrSetData gScreen 'shipType (@ gData 'shipType))
-						(scrSetData gScreen 'selIndex 0)
-						(scrSetData gScreen 'selData (@ (@ gData 'shipList) 0))
-						)
-				</OnScreenInit>
-
-				<Display>
-					<Image left="12" right="-44" top="62" height="100" align="center" valign="center" transparent="true">
-						(shpGetImageDesc (scrGetData gScreen 'selData) 0)
-					</Image>
-
-					<Text left="12" right="-44" top="150" height="40" align="center" font="SubTitle" color="255,210,152">
-						(shpGetClassName (scrGetData gScreen 'selData) 1)
-					</Text>
-
-					<Text left="12" width="250" top="190" bottom="-140" align="right" font="MediumBold" color="200,206,199">
-						(switch
-							(= (scrGetData gScreen 'shipType) 'freighter)
-								(cat
-									"cargo space:\n"
-									"max speed:\n"
-									"armor:\n"
-									"shields:\n"
-									"weapon:\n"
-									"manufacturer:\n"
-									)
-
-							(= (scrGetData gScreen 'shipType) 'warship)
-								(cat
-									"max speed:\n"
-									"armor:\n"
-									"shields:\n"
-									"weapon:\n"
-									"launcher:\n"
-									)
-							)
-					</Text>
-
-					<Text right="-44" width="250" top="190" bottom="-140" align="left" font="Medium" color="200,206,199">
-						(block (
-							(classUNID (scrGetData gScreen 'selData))
-							(armor (typGetProperty classUNID 'primaryArmor))
-							(shield (typGetProperty classUNID 'shield))
-							(weapon (typGetProperty classUNID 'primaryWeapon))
-							(launcher (typGetProperty classUNID 'launcher))
-							)
-							(switch
-								(= (scrGetData gScreen 'shipType) 'freighter)
-									(cat
-										(fmtNumber 'massTons (typGetProperty classUNID "cargoSpace")) "\n"
-										(fmtNumber 'speed (typGetProperty classUNID "maxSpeed")) "\n"
-										(if armor (strCapitalize armor) "None") "\n"
-										(if shield (strCapitalize shield) "None") "\n"
-										(if weapon (strCapitalize weapon) "None") "\n"
-										(typGetProperty classUNID "manufacturer") "\n"
-										)
-
-								(= (scrGetData gScreen 'shipType) 'warship)
-									(cat
-										(fmtNumber 'speed (typGetProperty classUNID "maxSpeed")) "\n"
-										(if armor (strCapitalize armor) "None") "\n"
-										(if shield (strCapitalize shield) "None") "\n"
-										(if weapon (strCapitalize weapon) "None") "\n"
-										(if launcher (strCapitalize launcher) "None") "\n"
-										)
-								)
-							)
-					</Text>
-
-					<Text left="52" right="-84" bottom="-32" height="120" align="center" font="Large" color="200,206,199">
-						(block (
-							(classUNID (scrGetData gScreen 'selData))
-							shipDesc
-							)
-							(switch
-								(setq shipDesc (typTranslate classUNID 'korolov.shipDesc))
-									shipDesc
-
-								(setq shipDesc (scrTranslate gScreen (cat "korolov.shipDesc." classUNID)))
-									shipDesc
-
-								""
-								)
-							)
-					</Text>
-				</Display>
-
-				<Panes>
-					<Default>
-						<OnPaneInit>
-							(block (
-								(shipList (scrGetData gScreen 'shipList))
-								(selIndex (scrGetData gScreen 'selIndex))
-								)
-								(scrSetDescTranslate gScreen 'descSelectOption)
-
-								(scrEnableAction gScreen 'actionNext (ls (+ selIndex 1) (count shipList)))
-								(scrEnableAction gScreen 'actionPrev (gr selIndex 0))
-								)
-						</OnPaneInit>
-
-						<Actions>
-							<Action id="actionNext" default="1" nextKey="1">
-								(block (
-									(shipList (scrGetData gScreen 'shipList))
-									(selIndex (scrGetData gScreen 'selIndex))
-									)
-									(setq selIndex (+ selIndex 1))
-									(scrSetData gScreen 'selIndex selIndex)
-									(scrSetData gScreen 'selData (@ shipList selIndex))
-									(scrShowPane gScreen "Default")
-									)
-							</Action>
-
-							<Action id="actionPrev" prevKey="1">
-								(block (
-									(shipList (scrGetData gScreen 'shipList))
-									(selIndex (scrGetData gScreen 'selIndex))
-									)
-									(setq selIndex (- selIndex 1))
-									(scrSetData gScreen 'selIndex selIndex)
-									(scrSetData gScreen 'selData (@ shipList selIndex))
-									(scrShowPane gScreen "Default")
-									)
-							</Action>
-
-							<Action id="actionDone" cancel="1">
-								(scrShowScreen gScreen "SituationBoard")
-							</Action>
-						</Actions>
-					</Default>
-				</Panes>
-			</ShipData>
 		</DockScreens>
 
 		<!-- Events and Data -->
 		
-		<StaticData>
-			<Data id="pirateShips">
-				(&scCorsair; &scViking; &scCorsair-II; &scViking-II; &scDrake; &scCharonFrigateRaider;)
-			</Data>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(block (charonStronghold)
@@ -916,10 +736,9 @@
 		</Events>
 
 		<Language>
+			<Text id="actionInformation">[I]nformation</Text>
 			<Text id="actionOperations">[O]perations Level</Text>
-			<Text id="actionSituationScreen">[S]ituation Screen</Text>
-			<Text id="actionRecord">[S]ervice Record</Text>
-			<Text id="actionFreighterData">[F]reighter Data</Text>
+			<Text id="actionServiceRecord">[S]ervice Record</Text>
 			<Text id="actionEnemyData">[E]nemy Intelligence</Text>
 			<Text id="actionNext">[N]ext Ship</Text>
 			<Text id="actionPrev">[P]revious Ship</Text>
@@ -927,6 +746,9 @@
 			<Text id="descNoServiceRecord">You have no service record with the Korolov Shipping Corporation.</Text>
 
 			<Text id="descNoDockServicesAccess">The dock services area is restricted to members only.</Text>
+
+			<Text id="descNoDockServices.noRank">Complete a mission to access dock services</Text>
+			<Text id="descNoDockServices.blacklisted">Access denied due to blacklist</Text>
 			
 			<Text id="descWelcome">
 				(block (
@@ -1016,6 +838,212 @@
 			
 			<Text id="descSelectOption">Select an option:</Text>
 
+			<Text id="korolov.info">
+				(list
+					{	id: 'welcome
+						descID: 'textInfo1
+						actions: (list
+							{	labelID: 'actionOurMission			nextPage:'ourMission	}
+							{	labelID: 'actionFreighterData		nextPage:'code
+								code: (lambda ()
+									(scrShowScreen gScreen &dsRPGShipClassViewer; {
+										list: (list
+
+											;	NOTE: If you add items to the list, make sure
+											;	you add a description in the Language section.
+
+											{	shipClass:&scEI100;	}
+											{	shipClass:&scEI200;	}
+											{	shipClass:&scEI7000;	}
+											{	shipClass:&scAntaresI;	}
+											{	shipClass:&scAntaresII;	}
+											{	shipClass:&scAntaresV;	}
+											)
+										})
+									)
+								}
+
+							{	labelID: 'actionEnemyIntel			nextPage:'code
+								code: (lambda ()
+									(scrShowScreen gScreen &dsRPGShipClassViewer; {
+										list: (list
+
+											;	NOTE: If you add items to the list, make sure
+											;	you add a description in the Language section.
+
+											{	shipClass:&scCorsair;	}
+											{	shipClass:&scViking;	}
+											{	shipClass:&scCorsair-II;	}
+											{	shipClass:&scViking-II;	}
+											{	shipClass:&scDrake;	}
+											{	shipClass:&scCharonFrigateRaider;	}
+											)
+										})
+									)
+								}
+
+							{	labelID: 'actionDone				nextPage:'exitScreen	}
+							)
+						}
+					{	id: 'ourMission
+						descID: 'textOurMission1		labelID: 'actionContinue
+						}
+					{	descID: 'textOurMission2		labelID: 'actionContinue	}
+					{	descID: 'textOurMission3		labelID: 'actionDone	nextPage: 'welcome	}
+					)
+			</Text>
+			<Text id="actionOurMission">[O]ur Mission</Text>
+			<Text id="actionFreighterData">[F]reighter Data</Text>
+			<Text id="actionEnemyIntel">[E]nemy Intelligence</Text>
+
+			<Text id="textInfo1">
+
+				The Korolov Shipping Corporation is largest and oldest shipping
+				company in Human Space.
+
+			</Text>
+			<Text id="textOurMission1">
+
+				Let's face it: most people don't consider interplanetary 
+				shipping to be a sexy occupation. 3DV catalogs are filled with 
+				the exploits of the Fleet or even the Commonwealth Militia, but 
+				(other than the fringe series 'Antares Heavy') no one chronicles
+				the day-to-day challenges of the lowly freighter or the men and 
+				women who keep it safe.
+
+				That's a shame because the life of a freighter escort captain 
+				can be very exciting. In the less-populated systems of the New 
+				Beyond, the dangers from pirates and outlaws can be extreme.
+				
+				Fighting off a wave of Corsair-class gunships while defending a 
+				12-kiloton freighter requires sharp skills and a strong 
+				protective instinct.
+				
+				And the pay is pretty good too.
+			
+			</Text>
+			<Text id="textOurMission2">
+
+				If you want to be an escort pilot for Korolov you'll want to 
+				make sure you and your ship are ready. Lasers are probably the 
+				best option against the kinds of threats you'll encounter, the
+				bigger the better.
+				
+				But don't neglect your shields: Sometimes you'll need to 
+				interpose yourself between the freighter you're protecting and 
+				an incoming missile.
+
+			</Text>
+			<Text id="textOurMission3">
+			
+				To be a successful escort pilot you also need to do some 
+				planning before you go out. The more valuable the cargo, the 
+				more powerful the threat against it. Don't accept a request to 
+				escort a cargo load beyond your abilities.
+				
+				At the same time, managers at Korolov like their escort pilots 
+				to have wide-ranging experience. Make sure you escort a variety
+				of freighters, from the tiny EI100s to the massive Antares Vs.
+			
+			</Text>
+			<Text id="rpg.shipClassDesc.&scEI100;">
+
+				The EI100 class freighter was designed for fast interplanetary 
+				transportation. Early in its history, it even carried 
+				passengers, but today it carries light commodities.
+				
+				Because of the relatively low value of its cargo, the EI100 is
+				often escorted by apprentice pilots.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scEI200;">
+
+				The EI200 class freighter is a larger and faster version of the 
+				100 series. It has double the cargo capacity and upgraded armor 
+				and weapons. It is designed to transport small quantities of 
+				high-value cargo.
+				
+				The EI200 is so well defended that even apprentices are allowed 
+				to escort them.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scEI7000;">
+
+				The 7000 is the most powerful member of the EI freighter series.
+				With a cargo capacity of 2 kilotons and heavy armor and weapons,
+				the EI7000 is ideal for high-value cargos.
+				
+				Only journeymen and masters are rated to escort the EI7000 
+				class.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scAntaresI;">
+
+				The Antares I design is more than a hundred years old, built 
+				originally by the massive Polyarny Shipyards orbiting Ceres. 
+				Slow and unencumbered by armor, the Antares I can haul 30 
+				kilotons of cargo, but only the most skilled pilots can protect
+				it from pirate attack.
+				
+				Only masters in the Korolov Shipping Corporation are rated to 
+				escort the Antares I class.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scAntaresII;">
+
+				While sacrificing none of its cargo capacity, the Antares II has
+				a top speed 50% higher than its predecessor.
+				
+				Escort pilots must have the rank of journeyman or master to 
+				defend the Antares II class.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scAntaresV;">
+
+				The Antares V is a stretched version of the earlier II series.
+				It has larger cargo capacity and upgraded weapons.
+				
+				Escort pilots must have the rank of journeyman or master to 
+				escort the Antares V class.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scCorsair;">
+
+				The backbone of the Charon Pirate fleet consists of these fast and
+				deadly gunships. Piloted by young and somewhat inexperienced pirates,
+				they are nonetheless dangerous in large numbers.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scViking;">
+
+				The Viking-class gunship is powerful and well-armored. It is slower
+				than a Corsair, but more than fast enough to chase down a freighter.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scCorsair-II;">
+
+				More than an upgrade, the Corsair-II sports shields and a missile launcher.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scViking-II;">
+
+				The Viking-II is an upgraded version with shields and dual turbolasers.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scDrake;">
+
+				The Drake is the pirates' mobile battering ram. Heavily armored and loaded
+				with missiles, the Drake will pummel you to pieces from long range.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scCharonFrigateRaider;">
+
+				The sight of these frigates brings fear to most freighter pilots. Fast,
+				silent, and loaded with hurt, a Charon frigate can destroy a small fleet of
+				escort ships. Do not challenge these ships unless you know what you're doing.
+
+			</Text>
+
 			<Text id="korolov.shipDesc.1454081">
 
 				The backbone of the Charon Pirate fleet consists of these fast and
@@ -1077,6 +1105,9 @@
 			<Text id="core.mapDescMain">
 				"Hires freighter escorts"
 			</Text>
+			<Code id="rpg.statusDetails">
+				(typTranslate &unidKorolovShipping; 'rankDetails)
+			</Code>
 		</Language>
 	</StationType>
 
@@ -1260,6 +1291,12 @@
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidKorolovShipping; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -1588,7 +1625,7 @@
 						(block (newShip)
 							(setq newShip
 								(sysCreateShip
-									(random '(&scRoninB; &scRoninB; &scRoninC; &scRoninC; &scRoninC; &scWolfen; &scCenturionBlock1;))
+									&tbKorolovEscorts;
 									(objGetNearestStargate homeObj)
 									&svCorporate;
 									)
@@ -1953,6 +1990,18 @@
 			)
 	</Globals>
 
+<!-- TABLES -->
+
+	<ShipTable unid="&tbKorolovEscorts;">
+		<LevelTable>
+			<Ship levelFrequency="ucr-- -----"	class="&scRoninB;"	/>
+			<Ship levelFrequency="uccr- -----"	class="&scRoninC;"	/>
+			<Ship levelFrequency="-rucr -----"	class="&scWolfenC;"	/>
+			<Ship levelFrequency="--ruc r----"	class="&scCenturionBlock1;"	/>
+			<Ship levelFrequency="---ru crvvv"	class="&scCenturionBlock2;"	/>
+		</LevelTable>
+	</ShipTable>
+	
 <!-- CHARACTERS -->
 
 	<Type unid="&chKorolovAssistantDirectors;"

@@ -50,6 +50,10 @@
 	<Type unid="&chRama;"
 			inherit=	"&baStdWingmanBase;">
 
+		<Properties>
+			<Definition id="core.namePattern">": Rama"</Definition>
+		</Properties>
+
 		<StaticData>
 			<Name>Rama</Name>
 			<Sovereign>&svCommonwealth;</Sovereign>

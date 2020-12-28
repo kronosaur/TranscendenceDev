@@ -57,6 +57,9 @@ class CDockScreenDetailsPane : public IDockScreenDisplay
 		virtual void OnShowPane (bool bNoListNavigation) override;
 
 	private:
+		bool EvalValue (CString *retsError);
+
+		ICCItemPtr m_pExp;
 		CGDetailsArea *m_pControl = NULL;
 		DWORD m_dwID = 0;
 	};

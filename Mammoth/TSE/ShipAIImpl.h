@@ -315,6 +315,15 @@ class COrderList
 			DWORD dwData;
 			};
 
+		struct SOrbitExactDesc
+			{
+			DWORD dwRadius:16 = 0;
+			DWORD dwAngle:16 = 0;
+			DWORD dwTicks = 0;
+			Metric rSpeed = 0.0;
+			Metric rEccentricity = 0.0;
+			};
+
 		void CleanUp (SOrderEntry *pEntry);
 		const SOrderEntry &GetCurrentEntry (void) const { return (m_List.GetCount() > 0 ? m_List[0] : m_NullOrder); }
 		SOrderEntry &GetCurrentEntryActual (void) { return (m_List.GetCount() > 0 ? m_List[0] : m_NullOrder); }

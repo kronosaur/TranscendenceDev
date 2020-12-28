@@ -13,8 +13,10 @@
 #define ID_CTRL_TITLE						CONSTLIT("title")
 
 #define CMD_OK_SESSION						CONSTLIT("cmdOKSession")
+#define CMD_CONTINUE						CONSTLIT("cmdContinue")
 #define CMD_SHOW_OK_BUTTON					CONSTLIT("cmdShowOKButton")
 #define CMD_SHOW_WAIT_ANIMATION				CONSTLIT("cmdShowWaitAnimation")
+#define CMD_WAIT							CONSTLIT("cmdWait")
 
 const int TEXT_CRAWL_X =					512;
 const int TEXT_CRAWL_HEIGHT =				512;
@@ -35,12 +37,14 @@ CTextCrawlSession::CTextCrawlSession (CHumanInterface &HI,
 									  CCloudService &Service,
 									  const CG32bitImage *pImage,
 									  const CString &sText,
-									  const CString &sCmdDone) : IHISession(HI),
+									  const CString &sCmdDone,
+									  const CString &sWaitingText) : IHISession(HI),
 		m_Service(Service),
 		m_pImage(pImage),
 		m_sText(sText),
 		m_sCmdDone(sCmdDone),
-		m_bWaitAnimation(false)
+		m_sWaitingText(sWaitingText),
+		m_bWaiting(!sWaitingText.IsBlank())
 
 //	CTextCrawSession constructor
 
@@ -128,34 +132,44 @@ ALERROR CTextCrawlSession::OnCommand (const CString &sCmd, void *pData)
 	{
 	if (strEquals(sCmd, CMD_OK_SESSION))
 		{
-		OnCommand(CMD_SHOW_WAIT_ANIMATION);
-		m_HI.HICommand(m_sCmdDone);
+		if (!m_bWaiting)
+			m_HI.HICommand(m_sCmdDone);
 		}
-	else if (strEquals(sCmd, CMD_SHOW_OK_BUTTON))
+	else if (strEquals(sCmd, CMD_CONTINUE))
 		{
-		CUIHelper Helper(m_HI);
-		IAnimatron *pTitle;
-		Helper.CreateSessionTitle(this, 
-				m_Service, 
-				NULL_STR, 
-				NULL, 
-				CUIHelper::OPTION_SESSION_NO_HEADER 
-					| CUIHelper::OPTION_SESSION_NO_CANCEL_BUTTON
-					| CUIHelper::OPTION_SESSION_OK_BUTTON, 
-				&pTitle);
-		StartPerformance(pTitle, ID_CTRL_TITLE, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
-		}
-	else if (strEquals(sCmd, CMD_SHOW_WAIT_ANIMATION))
-		{
-		if (!m_bWaitAnimation)
+		if (m_bWaiting)
 			{
+			ShowOKButton();
+
+			//	Stop wait animation
+
+			StopPerformance(ID_CTRL_WAIT);
+
+			m_bWaiting = false;
+
+			if (m_bContinueWhenDoneWaiting)
+				m_HI.HICommand(m_sCmdDone);
+			}
+		}
+	else if (strEquals(sCmd, CMD_WAIT))
+		{
+		if (!m_bWaiting)
+			{
+			CString sText;
+			if (pData)
+				sText = *(CString *)pData;
+			else
+				sText = CONSTLIT("Wait");
+
 			CUIHelper Helper(m_HI);
 
 			IAnimatron *pAni;
-			Helper.CreateSessionWaitAnimation(ID_CTRL_WAIT, CONSTLIT("Creating Game"), &pAni);
+			Helper.CreateSessionWaitAnimation(ID_CTRL_WAIT, sText, &pAni);
 			StartPerformance(pAni, ID_CTRL_WAIT, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 
-			m_bWaitAnimation = true;
+			StopPerformance(ID_CTRL_TITLE);
+
+			m_bWaiting = true;
 			}
 		}
 
@@ -187,6 +201,20 @@ ALERROR CTextCrawlSession::OnInit (CString *retsError)
 	CreateCrawlAnimation(m_sText, rcRect, &pAni);
 	StartPerformance(pAni, ID_TEXT_CRAWL_PERFORMANCE, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 
+	//	Show the create game animation, if necessary
+
+	if (m_bWaiting)
+		{
+		CUIHelper Helper(m_HI);
+
+		Helper.CreateSessionWaitAnimation(ID_CTRL_WAIT, m_sWaitingText, &pAni);
+		StartPerformance(pAni, ID_CTRL_WAIT, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
+		}
+	else
+		{
+		ShowOKButton();
+		}
+
 	return NOERROR;
 	}
 
@@ -204,6 +232,9 @@ void CTextCrawlSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 			break;
 
 		default:
+			if (m_bWaiting)
+				m_bContinueWhenDoneWaiting = true;
+
 			OnCommand(CMD_OK_SESSION);
 			break;
 		}
@@ -253,4 +284,26 @@ void CTextCrawlSession::OnUpdate (bool bTopMost)
 //	Update
 
 	{
+	}
+
+void CTextCrawlSession::ShowOKButton ()
+
+//	ShowOKButton
+//
+//	Show the OK button.
+
+	{
+	CUIHelper Helper(m_HI);
+
+	//	Show the OK button
+
+	IAnimatron *pTitle;
+	Helper.CreateSessionTitle(this, 
+			m_Service, 
+			NULL_STR, 
+			CUIHelper::OPTION_SESSION_NO_HEADER 
+				| CUIHelper::OPTION_SESSION_NO_CANCEL_BUTTON
+				| CUIHelper::OPTION_SESSION_OK_BUTTON, 
+			&pTitle);
+	StartPerformance(pTitle, ID_CTRL_TITLE, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 	}

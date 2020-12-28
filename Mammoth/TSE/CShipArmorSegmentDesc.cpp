@@ -35,6 +35,23 @@ bool CShipArmorSegmentDesc::AngleInSegment (int iAngle) const
     return false;
     }
 
+void CShipArmorSegmentDesc::ApplyOverride (const CShipArmorSegmentDesc &Override)
+
+//	ApplyOverride
+//
+//	Apply the override.
+
+	{
+	if (Override.m_pArmor.GetUNID())
+		m_pArmor.SetUNID(Override.m_pArmor.GetUNID());
+
+	if (Override.m_iLevel != -1)
+		m_iLevel = Override.m_iLevel;
+
+	if (!Override.m_Enhanced.IsEmpty())
+		m_Enhanced = Override.m_Enhanced;
+	}
+
 ALERROR CShipArmorSegmentDesc::Bind (SDesignLoadCtx &Ctx)
 
 //  Bind
@@ -118,7 +135,13 @@ ALERROR CShipArmorSegmentDesc::Init (int iStartAt, int iSpan, DWORD dwArmorUNID,
     return NOERROR;
     }
 
-ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx, 
+											const CXMLElement &Desc, 
+											DWORD dwDefaultUNID, 
+											int iDefaultLevel, 
+											int iDefaultAngle, 
+											const CRandomEnhancementGenerator &DefaultEnhancement, 
+											int *retiSpan)
 
 //  InitFromXML
 //
@@ -127,17 +150,31 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
     {
     ALERROR error;
 
-	m_iStartAt = pDesc->GetAttributeInteger(START_ATTRIB);
-	m_iSpan = pDesc->GetAttributeInteger(SPAN_ATTRIB);
+	if (!Desc.FindAttributeInteger(START_ATTRIB, &m_iStartAt))
+		m_iStartAt = iDefaultAngle;
 
-	if (error = m_pArmor.LoadUNID(Ctx, pDesc->GetAttribute(ARMOR_ID_ATTRIB)))
-		return error;
+	m_iSpan = Desc.GetAttributeInteger(SPAN_ATTRIB);
+	if (retiSpan)
+		*retiSpan = m_iSpan;
 
-    m_iLevel = pDesc->GetAttributeIntegerBounded(LEVEL_ATTRIB, 1, MAX_ITEM_LEVEL, -1);
-    if (error = m_Enhanced.InitFromXML(Ctx, pDesc))
+	CString sArmorID;
+	if (Desc.FindAttribute(ARMOR_ID_ATTRIB, &sArmorID))
+		{
+		if (error = m_pArmor.LoadUNID(Ctx, sArmorID))
+			return error;
+		}
+	else
+		m_pArmor.SetUNID(dwDefaultUNID);
+
+    m_iLevel = Desc.GetAttributeIntegerBounded(LEVEL_ATTRIB, 1, MAX_ITEM_LEVEL, iDefaultLevel);
+
+    if (error = m_Enhanced.InitFromXML(Ctx, &Desc))
         return error;
 
-	m_dwAreaSet = ParseNonCritical(pDesc->GetAttribute(NON_CRITICAL_ATTRIB));
+	if (m_Enhanced.IsEmpty())
+		m_Enhanced = DefaultEnhancement;
+
+	m_dwAreaSet = ParseNonCritical(Desc.GetAttribute(NON_CRITICAL_ATTRIB));
 
     return NOERROR;
     }

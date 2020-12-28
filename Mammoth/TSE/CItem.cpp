@@ -43,6 +43,7 @@
 #define PROPERTY_PRICE							CONSTLIT("price")
 #define PROPERTY_REFERENCE						CONSTLIT("reference")
 #define PROPERTY_ROOT_NAME						CONSTLIT("rootName")
+#define PROPERTY_SLOT_INDEX						CONSTLIT("slotIndex")
 #define PROPERTY_TRADE_ID						CONSTLIT("tradeID")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 #define PROPERTY_VARIANT						CONSTLIT("variant")
@@ -349,6 +350,9 @@ bool CItem::CanBeUsed (CString *retsUseKey) const
 		return false;
 
 	if (UseDesc.bOnlyIfUninstalled && IsInstalled())
+		return false;
+
+	if (UseDesc.bOnlyIfUndamaged && IsDamaged())
 		return false;
 
 	if (UseDesc.bOnlyIfEnabled)
@@ -1875,6 +1879,13 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 			return CC.CreateString(strPatternSubst(CONSTLIT("%s, %s"), sRoot, sModifier));
 		}
 
+	else if (strEquals(sProperty, PROPERTY_SLOT_INDEX))
+		{
+		if (IsInstalled())
+			return CC.CreateInteger(GetInstalled());
+		else
+			return CC.CreateNil();
+		}
 	else if (strEquals(sProperty, PROPERTY_TRADE_ID))
 		{
 		TArray<SDisplayAttribute> Attribs;
@@ -2785,7 +2796,7 @@ DWORD CItem::ParseFlags (ICCItem *pItem)
 	return dwFlags;
 	}
 
-void CItem::ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, ICCItem *pBuffer)
+void CItem::ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, const ICCItem *pBuffer)
 
 //	ReadFromCCItem
 //

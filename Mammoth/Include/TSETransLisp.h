@@ -71,6 +71,7 @@ class CCodeChainCtx
 		CCodeChain &GetCC (void) { return m_CC; }
 		CExtension *GetExtension (void) const { return m_pExtension; }
 		CItemType *GetItemType (void) const { return m_pItemType; }
+		void *GetScreen () const { return m_pScreen; }
 		CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
 		SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
 		CUniverse &GetUniverse (void) const { return m_Universe; }
@@ -107,7 +108,7 @@ class CCodeChainCtx
 		bool AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, bool *retbOmnidirectional = NULL);
 		CInstalledArmor *AsInstalledArmor (CSpaceObject *pObj, ICCItem *pItem) const;
 		CInstalledDevice *AsInstalledDevice (CSpaceObject *pObj, ICCItem *pItem) const;
-		CItem AsItem (ICCItem *pItem, bool *retbItemType = NULL) const;
+		CItem AsItem (const ICCItem *pItem, bool *retbItemType = NULL) const;
 		CItemType *AsItemType (ICCItem *pItem) const;
 		DWORD AsNameFlags (ICCItem *pItem);
 		CSpaceObject *AsSpaceObject (ICCItem *pItem);

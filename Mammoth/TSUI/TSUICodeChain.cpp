@@ -43,6 +43,7 @@ static PRIMITIVEPROCDEF g_Primitives[] =
 
 			"Key is a string, all alphanumeric keys as well as the following are supported:\n\n"
 
+			"   'Alt\n"
 			"   'Backquote\n"
 			"   'Backslash\n"
 			"   'Backspace\n"

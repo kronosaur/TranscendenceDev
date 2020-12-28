@@ -45,17 +45,30 @@ void CSimpleOrder::OrderFireWeapon (CShip *pShip, CAIBehaviorCtx &Ctx) const
 	CSpaceObject *pTarget;
 	IShipController::SData Data;
 	pShip->GetCurrentOrder(&pTarget, &Data);
-	const CItem &WeaponItem = Data.AsItem();
 
 	//	Select the specified weapon.
 
-	DeviceNames iDev = pShip->SelectWeapon(WeaponItem);
 	CInstalledDevice *pWeapon;
-	if (iDev == devNone
-			|| (pWeapon = pShip->GetNamedDevice(iDev)) == NULL)
+
+	const CItem &WeaponItem = Data.AsItem();
+	if (!WeaponItem.IsEmpty())
 		{
-		pShip->CancelCurrentOrder();
-		return;
+		DeviceNames iDev = pShip->SelectWeapon(WeaponItem);
+		if (iDev == devNone
+				|| (pWeapon = pShip->GetNamedDevice(iDev)) == NULL)
+			{
+			pShip->CancelCurrentOrder();
+			return;
+			}
+		}
+	else
+		{
+		pWeapon = pShip->GetNamedDevice(devPrimaryWeapon);
+		if (!pWeapon)
+			{
+			pShip->CancelCurrentOrder();
+			return;
+			}
 		}
 
 	//	If the weapon is not yet ready, then wait

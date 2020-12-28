@@ -51,6 +51,7 @@
 #define SHOW_REFERENCE_ATTRIB					CONSTLIT("showReference")
 #define SORT_NAME_ATTRIB						CONSTLIT("sortName")
 #define UNID_ATTRIB								CONSTLIT("UNID")
+#define UNDAMAGED_ONLY_ATTRIB					CONSTLIT("undamagedOnly")
 #define UNINSTALLED_ONLY_ATTRIB					CONSTLIT("uninstalledOnly")
 #define UNKNOWN_TYPE_ATTRIB						CONSTLIT("unknownType")
 #define USE_AS_ARMOR_SET_ATTRIB					CONSTLIT("useAsArmorSet")
@@ -59,6 +60,7 @@
 #define USE_INSTALLED_ONLY_ATTRIB				CONSTLIT("useInstalledOnly")
 #define USE_KEY_ATTRIB							CONSTLIT("useKey")
 #define USE_SCREEN_ATTRIB						CONSTLIT("useScreen")
+#define USE_UNDAMAGED_ONLY_ATTRIB				CONSTLIT("useUndamagedOnly")
 #define USE_UNINSTALLED_ONLY_ATTRIB				CONSTLIT("useUninstalledOnly")
 #define VALUE_ATTRIB							CONSTLIT("value")
 #define VALUE_BONUS_PER_CHARGE_ATTRIB			CONSTLIT("valueBonusPerCharge")
@@ -1077,6 +1079,7 @@ bool CItemType::GetUseDesc (SUseDesc *retDesc) const
 			retDesc->bOnlyIfEnabled = m_fUseEnabled;
 			retDesc->bOnlyIfInstalled = m_fUseInstalled;
 			retDesc->bOnlyIfUninstalled = m_fUseUninstalled;
+			retDesc->bOnlyIfUndamaged = m_fUseUndamaged;
 			retDesc->bOnlyIfCompleteArmor = m_fUseCompleteArmor;
 			retDesc->bAsArmorSet = m_fUseAsArmorSet;
 			}
@@ -1605,6 +1608,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fUseInstalled = pDesc->GetAttributeBool(USE_INSTALLED_ONLY_ATTRIB);
 	m_fUseUninstalled = pDesc->GetAttributeBool(USE_UNINSTALLED_ONLY_ATTRIB);
 	m_fUseEnabled = pDesc->GetAttributeBool(USE_ENABLED_ONLY_ATTRIB);
+	m_fUseUndamaged = pDesc->GetAttributeBool(USE_UNDAMAGED_ONLY_ATTRIB);
 	m_fUseCompleteArmor = pDesc->GetAttributeBool(USE_COMPLETE_ARMOR_ONLY_ATTRIB);
 	m_fUseAsArmorSet = pDesc->GetAttributeBool(USE_AS_ARMOR_SET_ATTRIB);
 	m_fShowChargesInUseMenu = pDesc->GetAttributeBool(SHOW_CHARGES_IN_USE_MENU);
@@ -1649,6 +1653,9 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 			if (pSubDesc->FindAttributeBool(ENABLED_ONLY_ATTRIB, &bValue))
 				m_fUseEnabled = bValue;
+
+			if (pSubDesc->FindAttributeBool(UNDAMAGED_ONLY_ATTRIB, &bValue))
+				m_fUseUndamaged = bValue;
 
 			if (pSubDesc->FindAttributeBool(COMPLETE_ARMOR_ONLY_ATTRIB, &bValue))
 				m_fUseCompleteArmor = bValue;

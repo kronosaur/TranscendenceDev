@@ -43,10 +43,37 @@
 		<Properties>
 			<Definition id="rankTable">
 				(list
-					{	rank:0		id:'volunteer	icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0   0 256 256)	}
-					{	rank:1		id:'lieutenant	icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia; 256   0 256 256)	}
-					{	rank:2		id:'captain		icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia; 512   0 256 256)	}
-					{	rank:3		id:'major		icon:(resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0 256 256 256)	}
+					{	rank: 0		
+						id: 'volunteer	
+						icon: (resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0   0 256 256)
+
+						minTotalSuccess: 0
+						minNetSuccess: 0
+						}
+
+					{	rank: 1
+						id: 'lieutenant
+						icon: (resCreateImageDesc &rsCommonwealthMilitiaInsignia; 256   0 256 256)
+
+						minTotalSuccess: 1
+						minNetSuccess: 1		;	Must have 1 more success than failure to achieve rank
+						}
+
+					{	rank: 2
+						id: 'captain
+						icon: (resCreateImageDesc &rsCommonwealthMilitiaInsignia; 512   0 256 256)
+
+						minTotalSuccess: 3
+						minNetSuccess: 2
+						}
+
+					{	rank: 3
+						id: 'major
+						icon: (resCreateImageDesc &rsCommonwealthMilitiaInsignia;   0 256 256 256)
+
+						minTotalSuccess: 6
+						minNetSuccess: 4
+						}
 					)
 			</Definition>
 			<DynamicGlobal id="rank">(typGetData gType 'rank)</DynamicGlobal>
@@ -82,6 +109,12 @@
 			</DynamicGlobal>
 			<DynamicGlobal id="rankNoun">
 				(typTranslate gType (cat "rank." (typ@ gType 'rankID)) { gender:(plyGetGenome gPlayer) })
+			</DynamicGlobal>
+			<DynamicGlobal id="rankFailureCount">
+				(count (msnFind "r +commonwealthMilitia; -commonwealthVolunteer; +property:isFailure;"))
+			</DynamicGlobal>
+			<DynamicGlobal id="rankSuccessCount">
+				(count (msnFind "r +commonwealthMilitia; -commonwealthVolunteer; +property:isSuccess;"))
 			</DynamicGlobal>
 
 			<Definition id="volunteerRewardTable">
@@ -170,6 +203,40 @@
 					(rankID (typ@ gType 'rankID))
 					(successList (plyGetKeyEventStat gPlayer 'missionSuccess Nil "* +commonwealthMilitia;"))
 					(failureList (plyGetKeyEventStat gPlayer 'missionFailure Nil "* +commonwealthMilitia;"))
+
+					(rank (or (typ@ gType 'rank) 0))
+					(rankTable (typ@ gType 'rankTable))
+					(rankDesc 
+						(if (!= rank -1)
+							(@ rankTable rank)
+							)
+						)
+					(nextRankDesc
+						(if (and (!= rank -1) (ls rank 3))
+							(@ rankTable (+ rank 1))
+							)
+						)
+
+					;	NOTE: These counts are different from the shown success/failure 
+					;	counts because we don't count volunteer missions for rank.
+
+					(rankSuccesses (typ@ gType 'rankSuccessCount))
+					(rankFailures (typ@ gType 'rankFailureCount))
+
+					(successForRank 
+						(max (@ rankDesc 'minTotalSuccess) 
+							(+ rankFailures (@ rankDesc 'minNetSuccess))
+							)
+						)
+					(successForNextRank
+						(max (@ nextRankDesc 'minTotalSuccess) 
+							(+ rankFailures (@ nextRankDesc 'minNetSuccess))
+							)
+						)
+
+					(totalNeeded (- successForNextRank successForRank))
+					(soFar (max 0 (- rankSuccesses successForRank)))
+					(percentToNextLevel (if (gr totalNeeded 0) (round (* 100.0 (/ soFar totalNeeded)))))
 					)
 					(if rankID
 						{
@@ -189,6 +256,21 @@
 										value: (count failureList)
 										})
 									}
+								(if (and percentToNextLevel nextRankDesc (gr rank 0))
+									{
+										title: (typTranslate gType 'labelNextLevel {
+											nextLevelName: 
+												(fmtNoun
+													(typTranslate gType (cat "rank." (@ nextRankDesc 'id)) { gender:(plyGetGenome gPlayer) })
+													1
+													'titleCapitalize
+													)
+											})
+										desc: (typTranslate gType 'rtfValue {
+											value: (cat percentToNextLevel "%")
+											})
+										}
+									)
 								)
 
 							detailsStyle: 'stats
@@ -205,6 +287,7 @@
 
 			<Text id="labelSuccesses">Mission Successes:</Text>
 			<Text id="labelFailures">Mission Failures:</Text>
+			<Text id="labelNextLevel">Progress to %nextLevelName%:</Text>
 			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
 
 			<Text id="rpg.missionTypeDesc">Commonwealth militia missions</Text>
@@ -378,9 +461,7 @@
 
 							<Action id="actionDockServices">
 								(if (gr (typGetData &unidCommonwealthMilitia; 'rank) 0)
-									(rpgDockServices gPlayerShip {
-										checkMilitaryID: True
-										})
+									(rpgDockServices gPlayerShip)
 									(scrShowScreen gScreen &dsRPGMessage; { textID:'descNoDockServicesAccess })
 									)
 							</Action>
@@ -539,7 +620,7 @@
 				A man and a woman sit next to you. The woman starts a conversation with you:
 				"We're students from St. Katharine's Star! It's so exciting to be
 				here where all the action is! We're writing a doctoral thesis on
-				the role of minority neo-humans on reductive militia policy. Wish us luck!"
+				the role of minority neohumans on reductive militia policy. Wish us luck!"
 
 			</Text>
 			<Text id="rumor.commonwealthMilitiaOC.3">
@@ -975,6 +1056,9 @@
 			<Text id="core.mapDescMain">
 				Commonwealth Militia HQ
 			</Text>
+			<Code id="rpg.statusDetails">
+				(typTranslate &unidCommonwealthMilitia; 'rankDetails)
+			</Code>
 		</Language>
 	</StationType>
 
@@ -1059,6 +1143,7 @@
 					(gr (typGetData &unidCommonwealthMilitia; 'rank) 0)
 					(gr (typGetData &stBattleArena; "arenaSkill") 200)
 					(gr (typGetData &unidKorolovShipping; "xp") 0)
+					(msnFind "r +commonwealthVolunteer; +property:isSuccess;")
 					(objGetItems gPlayerShip "*+MilitaryID")
 					)
 				))
@@ -1066,8 +1151,8 @@
 			(setq milMissionCompleted (lambda (missionObj reason data)
 				(block (
 					(rank (typGetData &unidCommonwealthMilitia; 'rank))
-					(success (count (msnFind "r +commonwealthMilitia; -commonwealthVolunteer; +property:isSuccess;")))
-					(failure (count (msnFind "r +commonwealthMilitia; -commonwealthVolunteer; +property:isFailure;")))
+					(success (typ@ &unidCommonwealthMilitia; 'rankSuccessCount))
+					(failure (typ@ &unidCommonwealthMilitia; 'rankFailureCount))
 					promoted
 					)
 					;	Add current mission to success/failure counts
@@ -1110,9 +1195,13 @@
 				))
 
 			(setq milGiveReward (lambda (missionObj)
-				(block Nil
+				(block (
+					(reward (msn@ missionObj 'reward))
+					)
 					;	Pay the player and record the award
-					(rpgMissionRewardPayment (msnGetData missionObj 'reward))
+					(if reward
+						(rpgMissionRewardPayment reward)
+						)
 
 					;	Increase XP
 					(typIncData &unidCommonwealthMilitia; 'xp (msnGetData missionObj 'missionXP))

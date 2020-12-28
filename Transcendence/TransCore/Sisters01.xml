@@ -30,6 +30,8 @@
 			<Data id="treasureItem"></Data>
 		</Properties>
 
+		<Image	imageID="&rsSistersAbbey;" imageWidth="224" imageHeight="330"/>
+
 		<Events>
 			<!-- CREATE MISSION -->
 

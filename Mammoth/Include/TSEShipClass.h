@@ -475,6 +475,7 @@ class CShipClass : public CDesignType
 					bool bThrusting = false,
 					bool bRadioactive = false,
 					DWORD byInvisible = 0) const;
+		void PaintArmorSegmentArcs (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
 		void PaintDevicePositions (CG32bitImage &Dest, int x, int y, const CDeviceDescList &Devices, int iShipRotation) const;
 		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
 		void PaintInteriorCompartments (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
@@ -579,6 +580,7 @@ class CShipClass : public CDesignType
 		void FindBestMissile (CDeviceClass *pLauncher, IItemGenerator *pItems, CItemType **retpMissile) const;
 		void FindBestMissile (CDeviceClass *pLauncher, const CItemList &Items, CItemType **retpMissile) const;
 		CString GetGenericName (DWORD *retdwFlags = NULL) const;
+		const CShipArmorDesc *GetInheritedArmorDesc (void) const;
 		const CShipwreckDesc *GetInheritedShipwreckDesc (void) const;
 		int GetManeuverDelay (void) const { return m_Perf.GetIntegralRotationDesc().GetManeuverDelay(); }
 		void InitShipNamesIndices (void);
@@ -614,7 +616,8 @@ class CShipClass : public CDesignType
 
 		//  Armor, Devices, Equipment, Etc.
 
-		CShipArmorDesc m_Armor;                 //  Armor descriptor
+		CShipArmorDesc m_Armor;                 //  Armor descriptor (including inheritance)
+		CShipArmorDesc m_ArmorDesc;				//	Armor desc for this type
 		CShipInteriorDesc m_Interior;			//	Interior structure
 		IDeviceGenerator *m_pDeviceSlots = NULL;	//	Device slots
 		IDeviceGenerator *m_pDevices = NULL;	//	Generator of devices

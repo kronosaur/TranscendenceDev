@@ -269,6 +269,8 @@
 	<DockScreen UNID="&dsBenedictIntro;"
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
+
+			attributes=			"eridaniScript"
 			>
 
 		<Panes>

@@ -130,7 +130,7 @@
 			sovereign=			"&svOutlaw;"
 
 			level=				"1"
-			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, populated"
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, outlawSmugglers, populated"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
@@ -226,7 +226,7 @@
 			name=				"outlaw base"
 			sovereign=			"&svOutlaw;"
 
-			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, populated"
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, outlawSmugglers, populated"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
@@ -309,7 +309,7 @@
 			name=				"outlaw haven"
 			sovereign=			"&svOutlaw;"
 
-			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlawHaven, outlaws, populated"
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlawHaven, outlaws, outlawSmugglers, populated"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
@@ -369,14 +369,14 @@
 				</Group>
 				<Group chance="20">
 					<Ship			count="1d4"	class="&scZulu-II;"		orders="guard"/>
-					<Ship			count="1"	class="&scSotho;"		orders="guard"/>
+					<Ship			count="1"	class="&scOromoII;"		orders="guard"/>
 				</Group>
 				<Group chance="20">
 					<Ship			count="1d2"	class="&scOromo;"		orders="guard"/>
-					<Ship			count="1d2"	class="&scSotho;"		orders="guard"/>
+					<Ship			count="1d2"	class="&scOromoII;"		orders="guard"/>
 				</Group>
 				<Ship chance="10"	count="1d4"	class="&scOromo;"		orders="guard"/>
-				<Ship chance="10"	count="1d4"	class="&scSotho;"		orders="guard"/>
+				<Ship chance="10"	count="1d4"	class="&scOromoII;"		orders="guard"/>
 			</Table>
 
 			<Ship class="&scT31ArmedTransport;" count="1d2" orders="gateOnThreat">
@@ -395,7 +395,7 @@
 				<Ship chance="25"	count="1d6"	class="&scZulu;"		orders="guard"/>
 				<Ship chance="35"	count="1d3"	class="&scZulu-II;"		orders="guard"/>
 				<Ship chance="20"	count="1d2"	class="&scOromo;"		orders="guard"/>
-				<Ship chance="20"	count="1d4"	class="&scSotho;"		orders="guard"/>
+				<Ship chance="20"	count="1d4"	class="&scOromoII;"		orders="guard"/>
 			</Table>
 		</Reinforcements>
 
@@ -416,7 +416,147 @@
 
 <!-- SHIP CLASSES -->
 
-	<!-- Oromo-class Gunship -->
+	<!-- Level 1: Zulu-class Gunship -->
+
+	<ShipClass UNID="&scZulu;"
+			manufacturer=		"United African States"
+			class=				"Zulu"
+			type=				"gunship"
+			defaultSovereign=	"&svOutlaw;"
+
+			attributes=			"genericClass, outlaws"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"24"
+			mass=				"25"
+			cargoSpace=			"5"
+			maxCargoSpace=		"25"
+			maxDevices=			"6"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"medium"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"200"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itLightCeramicPlate;"
+			count=				"2"
+			/>
+
+		<Devices>
+			<Device deviceID="&itRecoillessCannon;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsZuluHD;" imageX="0" imageY="0" imageWidth="55" imageHeight="55" rotationCount="120" rotationColumns="12" viewportRatio="0.0040625"/>
+		<HeroImage imageID="&rsZuluHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="150"	posRadius="20"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-150"	posRadius="20"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"50"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"80"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 2: Zulu II-class Gunship -->
+
+	<ShipClass UNID="&scZulu-II;"
+			manufacturer=		"United African States"
+			class=				"Zulu II"
+			type=				"gunship"
+			defaultSovereign=	"&svOutlaw;"
+
+			attributes=			"genericClass, outlaws"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"24"
+			mass=				"25"
+			cargoSpace=			"5"
+			maxCargoSpace=		"25"
+			maxDevices=			"6"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"medium"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"200"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itLightCeramicPlate;"
+			count=				"2"
+			/>
+
+		<Devices>
+			<Device deviceID="&itHeavyRecoillessCannon;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsZulu2HD;" imageX="0" imageY="0" imageWidth="55" imageHeight="55" rotationCount="120" rotationColumns="12" viewportRatio="0.0040625"/>
+		<HeroImage imageID="&rsZulu2Hero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="150"	posRadius="20"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-150"	posRadius="20"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireRangeAdj=		"70"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 3: Oromo-class Gunship -->
 
 	<ShipClass UNID="&scOromo;"
 			manufacturer=		"United African States"
@@ -425,13 +565,32 @@
 			defaultSovereign=	"&svOutlaw;"
 
 			attributes=			"genericClass, outlaws"
-			   
-			size=				"53"
-			mass=				"100"
-			thrust=				"475"
-			maxSpeed=			"20"
-			cargoSpace=			"100"
 			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"53"
+			mass=				"500"
+			cargoSpace=			"100"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"2400"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"2.0"
+			/>
 
 		<!-- Configuration -->
 		
@@ -444,10 +603,76 @@
 			<Device deviceID="&itArbalestCannon;"/>
 		</Devices>
 
+		<Items>
+			<Item count="1d6" item="&itHeliumAssembly;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsOromoHD;" imageX="0" imageY="0" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="12"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="37"	posZ="0"	rotation="180"	sendToBack="angles:0-60, 120-180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"85"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+	</ShipClass>
+
+	<!-- Level 4: Oromo II-class Gunship -->
+
+	<ShipClass UNID="&scOromoII;"
+			manufacturer=		"United African States"
+			class=				"Oromo II"
+			type=				"heavy gunship"
+			defaultSovereign=	"&svOutlaw;"
+
+			attributes=			"genericClass, outlaws"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"53"
+			mass=				"500"
+			cargoSpace=			"100"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"2400"
+			/>
+
 		<Maneuver
 			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
+			rotationAccel=		"3.0"
 			/>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itPolyceramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itMoskvaDualCannon;"/>
+		</Devices>
 
 		<Items>
 			<Item count="1d6" item="&itHeliumAssembly;"/>
@@ -465,15 +690,14 @@
 
 		<AISettings
 			fireRateAdj=		"20"
-			fireRangeAdj=		"50"
-			fireAccuracy=		"85"
+			fireAccuracy=		"90"
 			perception=			"4"
 			
 			combatStyle=		"advanced"
 			/>
 	</ShipClass>
 
-	<!-- Sotho-class Gunship -->
+	<!-- Level 5: Sotho-class Gunship -->
 
 	<ShipClass UNID="&scSotho;"
 			manufacturer=		"United African States"
@@ -482,33 +706,47 @@
 			defaultSovereign=	"&svOutlaw;"
 
 			attributes=			"genericClass, outlaws"
-			   
-			size=				"45"
-			mass=				"120"
-			thrust=				"950"
-			maxSpeed=			"18"
-			cargoSpace=			"200"
 			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"45"
+			mass=				"600"
+			cargoSpace=			"200"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"18"
+			thrust=				"2400"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"6.0"
+			rotationAccel=		"1.0"
+			/>
 
 		<!-- Configuration -->
 		
 		<Armor
-			armorID=			"&itPolyceramicPlate;"
+			armorID=			"&itCeralloyArmor;"
 			count=				"4"
 			/>
 		
 		<Devices>
-			<Device deviceID="&itArbalestCannon;" omnidirectional="true"	posAngle="180" posRadius="7" posZ="20"/>
-			<Device deviceID="&itClass1Deflector;"/>
+			<Device deviceID="&itBallistaTurret;"	posAngle="180" posRadius="7" posZ="20"/>
+			<Device deviceID="&itClass2Deflector;"/>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
-			/>
-
 		<Items>
-			<Item count="2d6" item="&itHeliumAssembly;"/>
+			<Item count="2d6" item="&itXenotiteFuelRod;"/>
 		</Items>
 
 		<!-- Image and Effects -->
@@ -524,7 +762,80 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"30"
+			fireRateAdj=		"40"
+			fireAccuracy=		"85"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+	</ShipClass>
+
+	<!-- Level 6: Sotho II-class Gunship -->
+
+	<ShipClass UNID="&scSothoII;"
+			manufacturer=		"United African States"
+			class=				"Sotho II"
+			type=				"heavy gunship"
+			defaultSovereign=	"&svOutlaw;"
+
+			attributes=			"genericClass, outlaws"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"45"
+			mass=				"600"
+			cargoSpace=			"200"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"18"
+			thrust=				"2400"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"6.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itHeavyCeralloyArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itMarkIHowitzerTurret;"	posAngle="180" posRadius="7" posZ="20"/>
+			<Device deviceID="&itClass3Deflector;"/>
+		</Devices>
+
+		<Items>
+			<Item count="2d6" item="&itXenotiteFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsSotho120;" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.00625"/>
+		<HeroImage imageID="&rsSothoHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="164"	posRadius="30"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-164"	posRadius="30"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"25"
 			fireAccuracy=		"90"
 			perception=			"4"
 			
@@ -565,7 +876,7 @@
 			/>
 
 		<Maneuver
-			maxRotationRate=	"9.0"
+			maxRotationRate=	"6.0"
 			rotationAccel=		"1.0"
 			/>
 
@@ -650,7 +961,7 @@
 			/>
 
 		<Maneuver
-			maxRotationRate=	"9.0"
+			maxRotationRate=	"6.0"
 			rotationAccel=		"1.0"
 			/>
 
@@ -693,117 +1004,79 @@
 
 	</ShipClass>
 
-	<!-- Zulu-class Gunship -->
+<!-- ITEM TYPES -->
 
-	<ShipClass UNID="&scZulu;"
-			manufacturer=		"United African States"
-			class=				"Zulu"
-			type=				"gunship"
-			defaultSovereign=	"&svOutlaw;"
+	<!-- Level 5: Ballista Turret -->
 
-			attributes=			"genericClass, outlaws"
-			   
-			size=				"24"
-			mass=				"25"
-			thrustRatio=		"8"
-			maxSpeed=			"20"
-			cargoSpace=			"5"
+	<ItemType UNID="&itBallistaTurret;"
+			name=				"Ballista turret"
+			attributes=			"majorItem, outlaws, NAMI"
+			  
+			level=				"5"
+			frequency=			"veryrare"
+
+			value=				"13000"
+			mass=				"8000"
+			  
+			description=		"Outlaw engineers have mounted a Ballista cannon on an RK15 mount."
 			>
 
-		<!-- Configuration -->
+		<Image imageID="&rsItemsNAMI3;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
 
-		<Armor
-			armorID=			"&itLightCeramicPlate;"
-			count=				"2"
-			/>
+		<Weapon
+				type=				"missile"
 
-		<Devices>
-			<Device deviceID="&itRecoillessCannon;"/>
-		</Devices>
+				omnidirectional=	"true"
+				damage=				"kinetic:14d8; momentum:5; WMD:5"
+				fireRate=			"50"
+				missileSpeed=		"45"
+				hitPoints=			"5"
+				lifetime=			"67"
+				powerUse=			"200"
 
-		<Maneuver
-			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
-			/>
+				effect=				"&efKineticBoltDefault;"
+				sound=				"&snRecoillessCannon;"
+				>
+		</Weapon>
+	</ItemType>
 
-		<!-- Image and Effects -->
-		
-		<Image imageID="&rsZuluHD;" imageX="0" imageY="0" imageWidth="55" imageHeight="55" rotationCount="120" rotationColumns="12" viewportRatio="0.0040625"/>
-		<HeroImage imageID="&rsZuluHero;" imageWidth="320" imageHeight="320"/>
+	<!-- Level 6: Mark I Howitzer Turret -->
 
-		<Effects>
-			<Effect type="thrustMain"		posAngle="150"	posRadius="20"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-150"	posRadius="20"	posZ="0"	rotation="180"/>
-		</Effects>
-		
-		<!-- AI and Behavior -->
-		
-		<AISettings
-			fireRateAdj=		"50"
-			fireRangeAdj=		"50"
-			fireAccuracy=		"80"
-			perception=			"4"
-			
-			combatStyle=		"advanced"
-			/>
+	<ItemType UNID="&itMarkIHowitzerTurret;"
+			name=				"mark I howitzer turret"
+			attributes=			"howitzer, majorItem, makayev, outlaws"
+			  
+			level=				"6"
+			frequency=			"veryrare"
 
-	</ShipClass>
-
-	<!-- Zulu II-class Gunship -->
-
-	<ShipClass UNID="&scZulu-II;"
-			manufacturer=		"United African States"
-			class=				"Zulu II"
-			type=				"gunship"
-			defaultSovereign=	"&svOutlaw;"
-
-			attributes=			"genericClass, outlaws"
-			   
-			size=				"24"
-			mass=				"25"
-			thrustRatio=		"8"
-			maxSpeed=			"20"
-			cargoSpace=			"5"
+			value=				"24000"
+			mass=				"6500"
+			  
+			description=		"This is a mark I howitzer on an omnidirectional turret."
 			>
 
-		<!-- Configuration -->
+		<Image imageID="&rsItemsMakayev1;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>
 
-		<Armor
-			armorID=			"&itLightCeramicPlate;"
-			count=				"2"
-			/>
+		<Weapon
+				type=				"missile"
 
-		<Devices>
-			<Device deviceID="&itHeavyRecoillessCannon;"/>
-		</Devices>
+				omnidirectional=	"true"
+				damage=				"blast:5d12; momentum:3; WMD:4"
+				fireRate=			"50"
+				missileSpeed=		"50"
+				lifetime=			"120"
+				hitPoints=			"6"
+				powerUse=			"280"
+				recoil=				"2"
 
-		<Maneuver
-			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
-			/>
+				effect=				"&efBlastShellDefault;"
+				sound=				"&snRecoillessCannon;"
+				>
+		</Weapon>
 
-		<!-- Image and Effects -->
+	</ItemType>
 
-		<Image imageID="&rsZulu2HD;" imageX="0" imageY="0" imageWidth="55" imageHeight="55" rotationCount="120" rotationColumns="12" viewportRatio="0.0040625"/>
-		<HeroImage imageID="&rsZulu2Hero;" imageWidth="320" imageHeight="320"/>
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="150"	posRadius="20"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-150"	posRadius="20"	posZ="0"	rotation="180"/>
-		</Effects>
-		
-		<!-- AI and Behavior -->
-
-		<AISettings
-			fireRateAdj=		"30"
-			fireRangeAdj=		"70"
-			fireAccuracy=		"90"
-			perception=			"4"
-			
-			combatStyle=		"advanced"
-			/>
-
-	</ShipClass>
+<!-- TABLES -->
 
 	<ShipTable UNID="&tbOutlawEncounters;">
 		<LevelTable>
@@ -846,13 +1119,13 @@
 				</Escorts>
 			</Ship>
 
-			<Ship levelFrequency="-rcur -----" count="1"	class="&scSotho;" eventHandler="&evStdPatrolEncounterBehavior;">
+			<Ship levelFrequency="-rcur -----" count="1"	class="&scOromoII;" eventHandler="&evStdPatrolEncounterBehavior;">
 				<Escorts>
 					<Table>
 						<Ship chance="40"	   count="1d6"	class="&scZulu;" orders="escort"/>
 						<Ship chance="40"	   count="1d2"	class="&scZulu-II;" orders="escort"/>
 						<Ship chance="10"	   count="1d2"	class="&scOromo;" orders="escort"/>
-						<Ship chance="10"	   count="1"	class="&scSotho;" orders="escort"/>
+						<Ship chance="10"	   count="1"	class="&scOromoII;" orders="escort"/>
 					</Table>
 				</Escorts>
 			</Ship>

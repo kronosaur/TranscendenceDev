@@ -59,6 +59,7 @@
 #define PROPERTY_SHIP_REINFORCEMENT_REQUESTED	CONSTLIT("shipReinforcementRequested")
 #define PROPERTY_SHOW_MAP_LABEL					CONSTLIT("showMapLabel")
 #define PROPERTY_SHOW_MAP_ORBIT					CONSTLIT("showMapOrbit")
+#define PROPERTY_STARGATE						CONSTLIT("stargate")
 #define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
 #define PROPERTY_STRUCTURAL_HP					CONSTLIT("structuralHP")
 #define PROPERTY_SUBORDINATE_ID					CONSTLIT("subordinateID")
@@ -1185,7 +1186,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pStation->Place(CreateCtx.vPos, CreateCtx.vVel);
 	pStation->m_pTrade = NULL;
 	pStation->m_iDestroyedAnimation = 0;
-	pStation->m_fKnown = false;
+	pStation->m_fKnown = pType->IsBeacon();
 	pStation->m_fReconned = false;
 	pStation->m_fExplored = false;
 	pStation->m_fFireReconEvent = false;
@@ -1380,7 +1381,12 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	//	Make radioactive, if necessary
 
 	if (pType->IsRadioactive())
-		pStation->SetCondition(ECondition::radioactive);
+		{
+		SApplyConditionOptions Options;
+		Options.bNoImmunityCheck = true;
+
+		pStation->ApplyCondition(ECondition::radioactive, Options);
+		}
 
 	//	Add to system (note that we must add the station to the system
 	//	before creating any ships).
@@ -2088,6 +2094,9 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_ORBIT))
 		return CC.CreateBool(m_pMapOrbit && m_fShowMapOrbit);
 
+	else if (strEquals(sName, PROPERTY_STARGATE))
+		return CC.CreateBool(IsStargate());
+
 	else if (strEquals(sName, PROPERTY_STARGATE_ID))
 		{
 		CSystem *pSystem;
@@ -2382,18 +2391,115 @@ bool CStation::IsShownInGalacticMap (void) const
 	return true;
 	}
 
-void CStation::OnClearCondition (ECondition iCondition, DWORD dwFlags)
+EConditionResult CStation::OnApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options)
 
-//	OnClearCondition
+//	OnApplyCondition
 //
-//	Clears a condition
+//	Apply the condition.
 
 	{
+	//	Set the condition
+
 	switch (iCondition)
 		{
 		case ECondition::radioactive:
-			m_fRadioactive = false;
+			{
+			if (!m_fRadioactive)
+				{
+				m_fRadioactive = true;
+				return EConditionResult::ok;
+				}
+			else
+				return EConditionResult::alreadyApplied;
+			}
+
+		default:
+			return EConditionResult::noEffect;
+		}
+	}
+
+EConditionResult CStation::OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const
+
+//	OnCanApplyCondition
+//
+//	Returns result if trying to apply a condition.
+
+	{
+	//	There are some conditions that we do not handle at this level. They need
+	//	to be applied as an overlay or such.
+
+	switch (iCondition)
+		{
+		//	These we handle.
+
+		case ECondition::radioactive:
 			break;
+
+		//	Anything else, we do not handle.
+
+		default:
+			return EConditionResult::noEffect;
+		}
+
+	//	Otherwise, see where we're applying the condition.
+
+	switch (Options.ApplyTo.iPart)
+		{
+		//	If applying to interior, then we don't get benefit of armor or hull.
+
+		case EObjectPart::interior:
+		case EObjectPart::item:
+			{
+			return EConditionResult::ok;
+			}
+
+		//	Default means treat the station as a whole
+
+		default:
+			{
+			SpecialDamageTypes iSpecialDamage = DamageDesc::GetSpecialDamageFromCondition(iCondition);
+			if (iSpecialDamage != specialNone)
+				{
+				if (m_Hull.IsImmuneTo(iSpecialDamage))
+					return EConditionResult::noEffect;
+
+				return EConditionResult::ok;
+				}
+			else
+				return EConditionResult::ok;
+
+			break;
+			}
+		}
+	}
+
+EConditionResult CStation::OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const
+
+//	OnCanRemoveCondition
+//
+//	Returns result when attempting to remove condition.
+//	NOTE: We only return whether we are able to remove the condition from the
+//	ship. We do not check to see if the condition is acquired a different way.
+
+	{
+	//	Otherwise, see where we're applying the condition.
+
+	switch (Options.ApplyTo.iPart)
+		{
+		//	If applying to interior, then we don't get benefit of armor or hull.
+
+		case EObjectPart::interior:
+		case EObjectPart::item:
+			{
+			return EConditionResult::ok;
+			}
+
+		//	Default means treat the station as a whole
+
+		default:
+			{
+			return EConditionResult::ok;
+			}
 		}
 	}
 
@@ -2530,7 +2636,9 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 		{
 		int iChance = 4 * iRadioactive * iRadioactive;
 		if (mathRandom(1, 100) <= iChance)
-			SetCondition(ECondition::radioactive);
+			{
+			ApplyCondition(ECondition::radioactive, SApplyConditionOptions());
+			}
 		}
 
 	//	If we have mining damage then call OnMining
@@ -2916,21 +3024,6 @@ void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
 	//	move along with it.
 
 	m_DockingPorts.MoveAll(this);
-	}
-
-void CStation::OnSetCondition (ECondition iCondition, int iTimer)
-
-//	OnSetCondition
-//
-//	Sets a condition
-
-	{
-	switch (iCondition)
-		{
-		case ECondition::radioactive:
-			m_fRadioactive = true;
-			break;
-		}
 	}
 
 void CStation::AvengeAttack (CSpaceObject *pTarget)
@@ -4124,6 +4217,31 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 					}
 				}
 			}
+		}
+	}
+
+EConditionResult CStation::OnRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options)
+
+//	OnRemoveCondition
+//
+//	Remove the condition.
+
+	{
+	switch (iCondition)
+		{
+		case ECondition::radioactive:
+			{
+			if (m_fRadioactive)
+				{
+				m_fRadioactive = false;
+				return EConditionResult::ok;
+				}
+			else
+				return EConditionResult::alreadyRemoved;
+			}
+
+		default:
+			return EConditionResult::noEffect;
 		}
 	}
 
@@ -5484,10 +5602,14 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		}
 	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
 		{
+		SApplyConditionOptions Options;
+		Options.bNoImmunityCheck = true;
+
 		if (pValue->IsNil())
-			ClearCondition(ECondition::radioactive);
+			RemoveCondition(ECondition::radioactive, Options);
 		else
-			SetCondition(ECondition::radioactive);
+			ApplyCondition(ECondition::radioactive, Options);
+
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))

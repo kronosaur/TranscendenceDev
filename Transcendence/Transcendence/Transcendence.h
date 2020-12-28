@@ -159,78 +159,6 @@ class CTextCrawlDisplay
 		TArray<CString> m_EpilogLines;
 	};
 
-#define MAX_MENU_ITEMS				100
-
-class CMenuData
-	{
-	public:
-		enum Flags
-			{
-			FLAG_GRAYED =			0x00000001,
-			FLAG_SORT_BY_KEY =		0x00000002,
-			};
-
-		CMenuData (void);
-
-		void AddMenuItem (const CString &sID,
-						  const CString &sKey,
-						  const CString &sLabel,
-						  DWORD dwFlags = 0,
-						  DWORD dwData = 0,
-						  DWORD dwData2 = 0) { AddMenuItem(sID, sKey, sLabel, NULL, 0, NULL_STR, NULL_STR, dwFlags, dwData, dwData2); }
-		void AddMenuItem (const CString &sID,
-						  const CString &sKey,
-						  const CString &sLabel,
-						  const CObjectImageArray *pImage,
-						  int iCount,
-						  const CString &sExtra,
-						  const CString &sHelp,
-						  DWORD dwFlags,
-						  DWORD dwData,
-						  DWORD dwData2 = 0);
-		void SetTitle (const CString &sTitle) { m_sTitle = sTitle; }
-
-		void DeleteAll (void) { m_iCount = 0; }
-		int FindItemByKey (const CString &sKey);
-		bool FindItemData (const CString &sKey, DWORD *retdwData = NULL, DWORD *retdwData2 = NULL);
-		int GetCount (void) const { return m_iCount; }
-		int GetItemAcceleratorPos (int iIndex) const { return m_List[iIndex].iAcceleratorPos; }
-		DWORD GetItemData (int iIndex) const { return m_List[iIndex].dwData; }
-		DWORD GetItemData2 (int iIndex) const { return m_List[iIndex].dwData2; }
-		int GetItemCount (int iIndex) const { return m_List[iIndex].iCount; }
-		const CString &GetItemExtra (int iIndex) const { return m_List[iIndex].sExtra; }
-		const CString &GetItemHelpText (int iIndex) const { return m_List[iIndex].sHelp; }
-		const CString &GetItemID (int iIndex) const { return m_List[iIndex].sID; }
-		const CObjectImageArray *GetItemImage (int iIndex) const { return m_List[iIndex].pImage; }
-		DWORD GetItemFlags (int iIndex) const { return m_List[iIndex].dwFlags; }
-		const CString &GetItemKey (int iIndex) const { return m_List[iIndex].sKey; }
-		const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
-		const CString &GetTitle (void) const { return m_sTitle; }
-		bool IsEmpty (void) const { return m_iCount == 0; }
-
-	private:
-		struct Entry
-			{
-			CString sID;
-			CString sKey;
-			CString sLabel;
-			CString sAccelerator;
-			int iAcceleratorPos = -1;
-			const CObjectImageArray *pImage = NULL;
-			int iCount = 0;
-			CString sExtra;
-			CString sHelp;
-			DWORD dwFlags = 0;
-
-			DWORD dwData = 0;
-			DWORD dwData2 = 0;
-			};
-
-		CString m_sTitle;
-		int m_iCount;
-		Entry m_List[MAX_MENU_ITEMS];
-	};
-
 class CMenuDisplayOld
 	{
 	public:
@@ -707,18 +635,12 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 
 		void DoCommsMenu (int iIndex);
 		void DoCommsSquadronMenu (const CString &sName, MessageTypes iOrder, DWORD dwData2);
-		void DoEnableDisableItemCommand (DWORD dwData);
-		void DoInvocation (CPower *pPower);
-		void DoUseItemCommand (DWORD dwData);
 		DWORD GetCommsStatus (void);
 		void HideCommsMenu (void);
 		void HideCommsTargetMenu (CSpaceObject *pExlude = NULL);
 		void ShowCommsMenu (CSpaceObject *pObj);
 		bool ShowCommsSquadronMenu (void);
 		bool ShowCommsTargetMenu (void);
-		bool ShowEnableDisablePicker (void);
-		bool ShowInvokeMenu (void);
-		bool ShowUsePicker (void);
 
 		void SetGameCreated (bool bValue = true) { m_bGameCreated = bValue; }
 		bool IsGameCreated (void) { return m_bGameCreated; }
@@ -810,7 +732,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 
 		CDeviceCounterDisplay m_DeviceDisplay;	//	Device counter display
 		CMenuDisplayOld m_MenuDisplay;			//	Menu display
-		CPickerDisplay m_PickerDisplay;		//	Picker display
 
 		CGameStats m_LastStats;				//	Last game stats
 

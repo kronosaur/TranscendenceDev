@@ -817,43 +817,20 @@ ALERROR CTranscendenceModel::EnterScreenSession (CSpaceObject *pLocation, CDesig
 //	If pRoot is NULL then we attempt to resolve it using sScreen
 //	and m_pDefaultScreensRoot
 //
-//	NOTE: Eventually thes function should probably move to the game session (maybe).
+//	NOTE: Eventually these function should probably move to the game session (maybe).
 
 	{
 	ALERROR error;
-	ASSERT(pLocation);
+	if (!pLocation)
+		throw CException(ERR_FAIL);
 
 	CGameSession *pSession  = GetPlayer()->GetGameSession();
 	if (pSession == NULL)
 		return ERR_FAIL;
-			
-	bool bFirstFrame = GetScreenStack().IsEmpty();
 
-	//	Mark the object so that it knows that the player is docked with it.
-	//	We need this so that the object can tell us if its items change.
+	//	Add to the stack
 
-	bool bOldPlayerDocked = pLocation->IsPlayerDocked();
-	pLocation->SetPlayerDocked();
-
-	//	If this is our first frame, then this is the first OnInit
-
-	if (bFirstFrame)
-		pSession->GetDockScreen().ResetFirstOnInit();
-
-	//	Add a new frame.
-	//	Note that pRoot might be NULL and sScreen might be [DefaultScreen] at
-	//	this point.
-
-	SDockFrame NewFrame;
-	NewFrame.pLocation = pLocation;
-	NewFrame.pRoot = pRoot;
-	NewFrame.sScreen = sScreen;
-	NewFrame.sPane = sPane;
-	if (pData)
-		NewFrame.pInitialData = ICCItemPtr(pData->Reference());
-	NewFrame.pResolvedRoot = pRoot;
-	NewFrame.sResolvedScreen = (pRoot ? sScreen : NULL_STR);
-	GetScreenStack().Push(NewFrame);
+	bool bFirstFrame = GetDockSession().ShowScreen(*pLocation, pRoot, sScreen, sPane, pData);
 
 	//	From this point forward we are considered in a screen session.
 	//	[We use this to determine whether a call to scrShowScreen switches
@@ -871,13 +848,7 @@ ALERROR CTranscendenceModel::EnterScreenSession (CSpaceObject *pLocation, CDesig
 
 	if (error = ShowScreen(Ctx, retsError))
 		{
-		//	Undo
-
-		GetScreenStack().Pop();
-
-		if (!bOldPlayerDocked)
-			pLocation->ClearPlayerDocked();
-
+		GetDockSession().ExitScreen();
 		return error;
 		}
 
@@ -890,6 +861,8 @@ ALERROR CTranscendenceModel::EnterScreenSession (CSpaceObject *pLocation, CDesig
 
     if (bFirstFrame)
         {
+		GetDockSession().PlayAmbientSound();
+
         //  NOTE: Eventually, EnterScreenSession should be part of CGameSession
         //  instead of the model.
 
@@ -973,6 +946,10 @@ void CTranscendenceModel::ExitScreenSession (bool bForceUndock)
 			else
 				SaveGame(CGameFile::FLAG_CHECKPOINT);
 			}
+
+		//	Stop playing ambient sound.
+
+		GetDockSession().StopAmbientSound();
 		}
 
 	DEBUG_CATCH
@@ -1163,6 +1140,9 @@ ALERROR CTranscendenceModel::InitBackground (const CGameSettings &Settings, cons
 
 	if (Settings.GetBoolean(CGameSettings::no3DExtras))
 		m_Universe.GetSFXOptions().Set3DExtrasEnabled(false);
+
+	if (Settings.GetBoolean(CGameSettings::noSpaceBackground))
+		m_Universe.GetSFXOptions().SetSpaceBackground(false);
 
 	DWORD dwAdventure = Settings.GetInteger(CGameSettings::lastAdventure);
 	if (dwAdventure == 0)

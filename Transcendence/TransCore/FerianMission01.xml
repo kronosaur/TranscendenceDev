@@ -18,6 +18,8 @@
 			level=						"4-8"
 			>
 
+		<Image imageID="&rsFerianColonyRocky;"	imageWidth="260" imageHeight="260"/>
+
 		<Events>
 			<!-- CREATE MISSION -->
 

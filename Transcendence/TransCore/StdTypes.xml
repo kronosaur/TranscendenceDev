@@ -69,8 +69,6 @@
 	<Image UNID="&rsEndGameEscaped;"	bitmap="Resources\GameOverEscape.jpg"			loadOnUse="true" />
 	<Image UNID="&rsEndGameDestroyed;"	bitmap="Resources\GameOver.jpg"				loadOnUse="true" />
 
-	<Image UNID="&rsTenhoveHD;"		bitmap="Resources\TenhoveHD.jpg" 	bitmask="Resources\TenhoveHDMask.bmp" loadOnUse="true"/>
-
 	<Image UNID="&rsStations1;"		bitmap="Resources\Stations1.jpg"		bitmask="Resources\Stations1Mask.bmp"  />
 	<Image UNID="&rsStations2;"		bitmap="Resources\Stations2.jpg"		bitmask="Resources\Stations2Mask.bmp"  />
 	<Image UNID="&rsStations3;"		bitmap="Resources\Stations3.jpg"		bitmask="Resources\Stations3Mask.bmp"  />
@@ -931,58 +929,6 @@
 			perception=			"4"
 			
 			combatStyle=		"standOff"
-			/>
-
-	</ShipClass>
-
-	<!-- Tenhove Sentinel -->
-
-	<ShipClass UNID="&scTenhoveSentinel;"
-			manufacturer=		"Tenhove Defense Systems"
-			class=				"TA3"
-			type=				"sentinel"
-			defaultSovereign=	"&svCommonwealth;"
-
-			attributes=			"auton, combatAuton, genericClass, tenhoveDefense"
-
-			size=				"13"
-			mass=				"2"
-			thrustRatio=		"3"
-			maxSpeed=			"5"
-			cargoSpace=			"0"
-			>
-
-		<Properties>
-			<Definition id="core.noBiologicalEffects">True</Definition>
-			<Definition id="core.noRadiationDeath">True</Definition>
-		</Properties>
-
-		<!-- Configuration -->
-
-		<Armor
-			armorID=			"&itUltraLightTitaniumArmor;"
-			count=				"1"
-			/>
-
-		<Devices>
-			<Device deviceID="&itLaserCannon;"/>
-		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"18.0"
-			rotationAccel=		"9.0"
-			/>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsTenhoveHD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
-
-		<!-- AI and Behavior -->
-
-		<AISettings
-			fireRateAdj=		"50"
-			fireAccuracy=		"80"
-			perception=			"4"
 			/>
 
 	</ShipClass>

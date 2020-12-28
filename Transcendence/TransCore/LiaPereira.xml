@@ -4,6 +4,7 @@
 
 	<Type unid="&chLiaPereira;">
 		<Properties>
+			<Definition id="core.namePattern">": Lia Pereira"</Definition>
 		</Properties>
 
 		<Language>

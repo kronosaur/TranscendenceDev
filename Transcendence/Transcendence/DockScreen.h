@@ -249,9 +249,9 @@ class CDockScreenActions
 		void ExecuteCode (CDockScreen *pScreen, const CString &sID, CExtension *pExtension, ICCItem *pCode);
 		CLanguage::ELabelAttribs GetSpecialFromName (const CString &sSpecialName);
 		int Justify (CDesignType *pRoot, int cxJustify);
-		void SetLabelDesc (SActionDesc *pAction, const CString &sLabelDesc, bool bOverrideSpecial = true);
-		void SetSpecial (SActionDesc *pAction, const TArray<CLanguage::ELabelAttribs> &Special);
-		void SetSpecial (SActionDesc *pAction, CLanguage::ELabelAttribs iSpecial, bool bEnabled);
+		void SetLabelDesc (SActionDesc &Action, const CString &sLabelDesc, bool bOverrideSpecial = true);
+		void SetSpecial (SActionDesc &Action, const TArray<CLanguage::ELabelAttribs> &Special);
+		void SetSpecial (SActionDesc &Action, CLanguage::ELabelAttribs iSpecial, bool bEnabled);
 
 		TArray<SActionDesc> m_Actions;
 		ICCItem *m_pData;			//	Data passed in to scrShowScreen (may be NULL)
@@ -471,10 +471,8 @@ class CDockScreen : public IScreenController,
 							AGScreen **retpScreen,
 							CString *retsError = NULL);
 		bool InOnInit (void) const { return m_bInOnInit; }
-		bool IsFirstOnInit (void) const { return m_bFirstOnInit; }
 		bool IsValid (void) const { return (m_pScreen != NULL); }
 		ALERROR ReportError (const CString &sError);
-		void ResetFirstOnInit (void) { m_bFirstOnInit = true; }
 		void SelectListFilter (const CString &sID);
 		void SetListFilter (const CItemCriteria &Filter);
 		void SetLocation (CSpaceObject *pLocation);
@@ -587,7 +585,6 @@ class CDockScreen : public IScreenController,
 		ICCItemPtr m_pData = NULL;
 		CExtension *m_pExtension = NULL;
 		CXMLElement *m_pDesc = NULL;
-		bool m_bFirstOnInit = true;
 		bool m_bInOnInit = false;
 
 		//	Screen and metrics

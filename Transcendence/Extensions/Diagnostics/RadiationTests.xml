@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidTestRadiation;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					)
+					;	Set up a player ship
+
+					(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+					(if (not gPlayerShip)
+						(error "Unable to create player ship.")
+						)
+					(shpOrder gPlayerShip 'hold)
+					
+					;	Test
+					
+					(diagEval (list
+						{	test:'(objGetCondition gPlayerShip 'radioactive)
+																				result:Nil	}
+
+						{	test:'(objCanApplyCondition gPlayerShip 'radioactive {
+								applyToItem: (@ (objGetItems gPlayerShip "aI") 0)
+								})
+																				result:{ resultCode:'ok	}	}
+																				
+						{	test:'(objCanRemoveCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'alreadyRemoved	}	}
+																				
+						{	test:'(objRemoveCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'alreadyRemoved	}	}
+																				
+						{	test:'(objCanApplyCondition gPlayerShip 'radioactive {
+								applyTo: 'interior
+								})
+																				result:{ resultCode:'ok	}	}
+																				
+						;	Hit an armor segment with radiation
+						
+						{	test:'(objApplyCondition gPlayerShip 'radioactive {
+								applyToItem: (@ (objGetItems gPlayerShip "aI") 0)
+								})
+																				result:{ resultCode:'ok }	}
+																				
+						{	test:'(objGetCondition gPlayerShip 'radioactive)
+																				result:True	}
+
+						{	test:'(objCanApplyCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'alreadyApplied }	}
+
+						{	test:'(objApplyCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'alreadyApplied }	}
+
+						{	test:'(objCanRemoveCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'ok }	}
+
+						{	test:'(objRemoveCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'ok }	}
+																				
+						{	test:'(objGetCondition gPlayerShip 'radioactive)
+																				result:Nil	}
+																				
+						;	Add radiation immune armor
+						
+						{	test:'(objAddItem gPlayerShip &itHardenedReactiveArmor; 4)
+																				result:'ignore	}
+
+						{	test:'(for i 0 3 (shpInstallArmor gPlayerShip (itmCreate &itHardenedReactiveArmor; 1) i))
+																				result:'ignore	}
+
+						{	test:'(objCanApplyCondition gPlayerShip 'radioactive {
+								applyToItem: (@ (objGetItems gPlayerShip "aI") 0)
+								})
+																				result:{ resultCode:'noEffect }	}
+																				
+						{	test:'(objApplyCondition gPlayerShip 'radioactive {
+								applyToItem: (@ (objGetItems gPlayerShip "aI") 0)
+								})
+																				result:{ resultCode:'noEffect }	}
+																				
+						{	test:'(objApplyCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'noEffect }	}
+																				
+						{	test:'(objGetCondition gPlayerShip 'radioactive)
+																				result:Nil	}
+
+						;	But we can still contaminate internally
+						
+						{	test:'(objCanApplyCondition gPlayerShip 'radioactive {
+								applyTo: 'interior
+								})
+																				result:{ resultCode:'ok }	}
+						{	test:'(objApplyCondition gPlayerShip 'radioactive {
+								applyTo: 'interior
+								})
+																				result:{ resultCode:'ok }	}
+																				
+						{	test:'(objGetCondition gPlayerShip 'radioactive)
+																				result:True	}
+						)
+
+						{
+						})
+						
+
+					;	Done
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

@@ -98,7 +98,7 @@ bool CStationEncounterCtx::CanBeEncounteredInSystem (CSystem &System, const CSta
 	return CanBeEncountered(Desc);
 	}
 
-int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode &Node, const CStationType &Station, const CStationEncounterDesc &Desc) const
+int CStationEncounterCtx::GetBaseFrequencyForNode (const CTopologyNode &Node, const CStationEncounterDesc &Desc) const
 
 //  GetBaseFrequencyForNode
 //
@@ -191,7 +191,7 @@ int CStationEncounterCtx::GetFrequencyForNode (CTopologyNode &Node, const CStati
 
 	//  Return based on the frequency for this node
 
-	return GetBaseFrequencyForNode(Node, StationType, Desc);
+	return GetBaseFrequencyForNode(Node, Desc);
 	}
 
 int CStationEncounterCtx::GetFrequencyForSystem (CSystem &System, const CStationType &StationType, const CStationEncounterDesc &Desc) const
@@ -222,7 +222,7 @@ int CStationEncounterCtx::GetFrequencyForSystem (CSystem &System, const CStation
 	//	Otherwise, let the descriptor figure out the chance
 
 	if (CTopologyNode *pNode = System.GetTopology())
-		return GetBaseFrequencyForNode(*pNode, StationType, Desc);
+		return GetBaseFrequencyForNode(*pNode, Desc);
 	else
 		return 0;
 	}
@@ -280,6 +280,31 @@ void CStationEncounterCtx::IncMinimumForNode (CTopologyNode &Node, int iInc)
 	{
 	SEncounterStats *pStats = m_ByNode.SetAt(Node.GetID());
 	pStats->iMinimum += iInc;
+	}
+
+bool CStationEncounterCtx::IsEncounteredIn (const CTopologyNode &Node, const CStationEncounterDesc &Desc) const
+
+//	IsEncounteredIn
+//
+//	Returns TRUE if we can be randomly encountered in the given node.
+//
+//	NOTE: We ignore current limits. If the station is ever found in this node,
+//	then we return TRUE, regardless of whether we can create a new station
+//	right now (for that semantic, use CanBeEncountered).
+
+	{
+	return (GetBaseFrequencyForNode(Node, Desc) > 0);
+	}
+
+bool CStationEncounterCtx::IsEncounteredIn (int iLevel, const CStationEncounterDesc &Desc) const
+
+//	IsEncounteredIn
+//
+//	Returns TRUE if we can be randomly encountered in systems of the given 
+//	level.
+
+	{
+	return (Desc.GetFrequencyByLevel(iLevel) > 0);
 	}
 
 void CStationEncounterCtx::ReadFromStream (SUniverseLoadCtx &Ctx)

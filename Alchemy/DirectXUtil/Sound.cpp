@@ -470,7 +470,7 @@ ALERROR CSoundMgr::LoadWaveFromBuffer (IReadBlock &Data, int *retiChannel)
 	return NOERROR;
 	}
 
-void CSoundMgr::Play (int iChannel, int iVolume, int iPan)
+void CSoundMgr::Play (int iChannel, int iVolume, int iPan, bool bLoop)
 
 //	Play
 //
@@ -553,6 +553,14 @@ void CSoundMgr::Play (int iChannel, int iVolume, int iPan)
 
 	else if (dwStatus & DSBSTATUS_PLAYING)
 		{
+		//	If this is a loop and we're already playing, then we don't need to
+		//	do anything.
+
+		if (bLoop || pChannel->bLooping)
+			return;
+
+		//	Get another channel
+
 		SChannel *pLastChannel = pChannel;
 		pChannel = pChannel->pNext;
 		while (pChannel)
@@ -594,9 +602,15 @@ void CSoundMgr::Play (int iChannel, int iVolume, int iPan)
 
 	//	pChannel now points to a valid buffer. Play it!
 
+	pChannel->bLooping = bLoop;
 	pChannel->pBuffer->SetVolume(iVolume);
 	pChannel->pBuffer->SetPan(iPan);
-	pChannel->pBuffer->Play(0, 0, 0);
+
+	DWORD dwFlags = 0;
+	if (bLoop)
+		dwFlags |= DSBPLAY_LOOPING;
+
+	pChannel->pBuffer->Play(0, 0, dwFlags);
 
 	//	Clean-up any channels after us that are done playing
 
@@ -689,6 +703,48 @@ int CSoundMgr::SetMusicVolume (int iVolumeLevel)
 	m_iMusicVolume = iVolumeLevel;
 	MCIWndSetVolume(m_hMusic, MUSIC_LEVEL_FACTOR * iVolumeLevel);
 	return m_iMusicVolume;
+	}
+
+void CSoundMgr::Stop (int iChannel)
+
+//	Stop
+//
+//	Stop playing the channel.
+
+	{
+	if (m_pDS == NULL || m_iSoundVolume == 0)
+		return;
+
+	SChannel *pChannel = GetChannel(iChannel);
+	if (pChannel->pBuffer == NULL)
+		return;
+
+	//	If the buffer is not playing, then nothing to do.
+
+	DWORD dwStatus;
+	pChannel->pBuffer->GetStatus(&dwStatus);
+	if (!(dwStatus & DSBSTATUS_PLAYING))
+		return;
+
+	pChannel->pBuffer->Stop();
+
+	//	Clean up any other buffers
+
+	SChannel *pChannelToDelete = pChannel->pNext;
+	while (pChannelToDelete)
+		{
+		pChannelToDelete->pBuffer->GetStatus(&dwStatus);
+		if (dwStatus & DSBSTATUS_PLAYING)
+			pChannelToDelete->pBuffer->Stop();
+
+		pChannelToDelete->pBuffer->Release();
+		SChannel *pNextChannel = pChannelToDelete->pNext;
+
+		delete pChannelToDelete;
+		pChannelToDelete = pNextChannel;
+		}
+
+	pChannel->pNext = NULL;
 	}
 
 void CSoundMgr::StopMusic (void)

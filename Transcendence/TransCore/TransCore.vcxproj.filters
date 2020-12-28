@@ -169,9 +169,6 @@
     <None Include="Benedict02.xml">
       <Filter>Part I</Filter>
     </None>
-    <None Include="Benedict03.xml">
-      <Filter>Part I</Filter>
-    </None>
     <None Include="BenedictStoryArc.xml">
       <Filter>Part I</Filter>
     </None>
@@ -402,6 +399,9 @@
     </None>
     <None Include="CommonwealthMetropolis.xml">
       <Filter>Human Space Library\Commonwealth Metropolis</Filter>
+    </None>
+    <None Include="Part1Compatibility.xml">
+      <Filter>Part I</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1034,6 +1034,30 @@
     </Xml>
     <Xml Include="RaisuMission03.xml">
       <Filter>Human Space Library\Eridani</Filter>
+    </Xml>
+    <Xml Include="ResidentialsMission01.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate05.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate06.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="ResidentialsMission02.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate07.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="ResidentialsMission03.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
+    <Xml Include="..\Extensions\Diagnostics\RadiationTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="Tenhove.xml">
+      <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </Xml>
   </ItemGroup>
 </Project>

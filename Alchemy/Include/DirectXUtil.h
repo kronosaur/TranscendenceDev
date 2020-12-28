@@ -243,8 +243,9 @@ class CSoundMgr
 		void Delete (int iChannel);
 		ALERROR LoadWaveFile (const CString &sFilename, int *retiChannel);
 		ALERROR LoadWaveFromBuffer (IReadBlock &Data, int *retiChannel);
-		void Play (int iChannel, int iVolume, int iPan);
+		void Play (int iChannel, int iVolume, int iPan, bool bLoop = false);
 		void SetWaveVolume (int iVolumeLevel) { m_iSoundVolume = iVolumeLevel; }
+		void Stop (int iChannel);
 
 		bool CanPlayMusic (const CString &sFilename);
 		void GetMusicCatalog (const CString &sMusicFolder, TArray<CString> *retCatalog);
@@ -259,7 +260,9 @@ class CSoundMgr
 			{
 			LPDIRECTSOUNDBUFFER pBuffer;
 			CString sFilename;
-			SChannel *pNext;
+			bool bLooping = false;
+
+			SChannel *pNext = NULL;
 			};
 
 		void AddMusicFolder (const CString &sFolder, TArray<CString> *retCatalog);

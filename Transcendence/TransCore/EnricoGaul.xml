@@ -4,7 +4,50 @@
 
 	<Type unid="&chEnricoGaul;">
 		<Properties>
+			<Definition id="core.namePattern">": [Captain ]Enrico Gaul"</Definition>
 		</Properties>
+
+		<Events>
+			<GetGlobalRumors>
+				(block (
+					;	Find the nearest Commonwealth Fortress to the player.
+
+					(allFortresses (unvFindObject "TA +unid:&stCommonwealthFortress;;"))
+					(bestEntry
+						(map allFortresses '(original reduceMin excludeNil) theEntry
+							(block (
+								(nodeID (@ theEntry 2))
+								)
+								(if (!= nodeID (sysGetNode))
+									(sysGetTopologyDistance (sysGetNode) nodeID)
+									)
+								)
+							)
+						)
+					)
+					(append
+						(if bestEntry
+							(block (
+								(nodeID (@ bestEntry 2))
+								)
+								(rpgRumorAdd 'metropolisMilitia 'nearestFortress nil 
+
+									(lambda (theRumor)
+										(block ()
+											(sysSetKnown nodeID)
+											(unvSetObjectKnown nodeID "* +unid:&stCommonwealthFortress;;")
+											)
+										)
+
+									{
+									systemName: (sysGetName nodeID)
+									})
+								)
+							)
+						)
+					)
+			</GetGlobalRumors>
+		</Events>
 
 		<Language>
 			<Code id="missionIntro">
@@ -115,7 +158,7 @@
 
 				"You're just passing through, %boy%. Sooner or later you'll be
 				done with us and off to the next system. You think you're a 
-				hero? Heros stay and fight day after day, even when it's easier
+				hero? Heroes stay and fight day after day, even when it's easier
 				to run."
 
 			</Text>
@@ -174,7 +217,7 @@
 
 				"Guess what!? I got another smuggler for you to air out. 
 				Shocking, isn't it? Why bother getting a job when you can just
-				fast-foward your life on tempus?
+				fast-forward your life on tempus?
 
 				"We'll pay %reward% if you succeed. Clear?"
 
@@ -337,6 +380,20 @@
 				firefight.
 
 				"We'll pay %reward% if you can defend the freighter. Clear?"
+
+			</Text>
+
+			<Text id="rumor.metropolisMilitia.nearestFortress">
+			
+				Captain Gaul slumps in his chair, reeking of gin. He smiles as
+				you enter, and straightens out his shirt.
+
+				"I'm proud of you, %boy%. Maybe the universe is going to be OK
+				after all.
+
+				"There's a militia fortress in the %systemName% System. Go there
+				when you're ready. You're not going to learn any more from a 
+				washout like me."
 
 			</Text>
 		</Language>

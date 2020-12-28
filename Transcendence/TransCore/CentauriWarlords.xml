@@ -266,10 +266,10 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"90"
-			regen=				"1"
+			hitPoints=			"250"
+			regen=				"2"
 			fireRateAdj=		"40"
-			explosionType=		"&vtKineticExplosion2;"
+			explosionType=		"&vtKineticExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
@@ -281,6 +281,7 @@
 				levelFrequency=			"vrur- ----- ----- ----- -----"
 
 				locationCriteria=		"+outerSystem, +planetary"
+				unique=					"inSystem"
 				/>
 
 		<!-- Trade and Items -->
@@ -431,24 +432,34 @@
 	<StationType UNID="&stCentauriOccupation;"
 			name=				"occupied Commonwealth habitat"
 			sovereign=			"&svCommonwealth;"
+			controllingSovereign="&svCentauriWarlords;"
 			inherit=			"&baCommonwealthStation;"
 				 
-			controllingSovereign="&svCentauriWarlords;"
+			attributes=			"centauriWarlords, enemy, envWater, envAvoidsEarth, human, occupation, populated"
+
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			allowEnemyDocking=	"true"
 			ignoreFriendlyFire=	"true"
 
 			level=				"4"
-			multiHull=			"true"
+			size=				"160"
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"150"
+			multiHull=			"true"
 			regen=              "1"
+
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"centauriWarlords, enemy, envWater, envAvoidsEarth, human, occupation, populated"
 			>
+
+		<Names noArticle="true">Arenius Habitat; Baja Habitat; Clearspace Station; Durin Habitat;
+				Earthnight Habitat; Fairmoon Settlement; Greenfield Habitat;
+				Hector Habitat; Ionfalls Habitat; Jovian Clouds Settlement; Keller Station;
+				Lama Habitat; Murchenson Settlement; Nightfall Habitat; Oort Settlement;
+				Pallas Station; Queequeg Habitat; Radiant Settlement; Star's End Station;
+				Terra Ex Habitat; Uriel Station; Venuslight Habitat; Weathermoon Habitat
+		</Names>
 
 		<!-- Encounter Info -->
 
@@ -461,24 +472,7 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<Names noArticle="true">Arenius Habitat; Baja Habitat; Clearspace Station; Durin Habitat;
-				Earthnight Habitat; Fairmoon Settlement; Greenfield Habitat;
-				Hector Habitat; Ionfalls Habitat; Jovian Clouds Settlement; Keller Station;
-				Lama Habitat; Murchenson Settlement; Nightfall Habitat; Oort Settlement;
-				Pallas Station; Queequeg Habitat; Radiant Settlement; Star's End Station;
-				Terra Ex Habitat; Uriel Station; Venuslight Habitat; Weathermoon Habitat
-		</Names>
-
-		<ImageVariants>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="64" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="128" imageY="0" imageWidth="64" imageHeight="128"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="192" imageY="0" imageWidth="64" imageHeight="128"/>
-		</ImageVariants>
-
-		<Ships>
-			<Ship count="1d4+1"	class="&scCentauriRaider;"	orders="guard"	sovereign="&svCentauriWarlords;"/>
-		</Ships>
+		<!-- Trade and Items -->
 
 		<Items>
 			<Table>
@@ -488,36 +482,22 @@
 			</Table>
 		</Items>
 
-		<Encounters frequency="uncommon">
-			<Lookup table="&tbCentauriEncounters;"/>
-		</Encounters>
+		<!-- Ships and Defenses -->
 
-		<Events>
-			<OnCreate>
-				; Register events for when subordinates are destroyed
-				(enum (sysFindObject gSource "sA O:guard;") tObj
-					(objRegisterForEvents gSource tObj)
-					)
-			</OnCreate>
+		<Ships>
+			<Ship count="1d4+1"	class="&scCentauriRaider;"	orders="guard"	sovereign="&svCentauriWarlords;"/>
+		</Ships>
 
-			<OnObjDestroyed>
-				; If the player destroys any of the warlords then she
-				; counts as the liberator
-				(if (and gPlayerShip (eq aOrderGiver gPlayerShip))
-					(objSetData gSource "LiberatedByPlayer" True)
-					)
-			</OnObjDestroyed>
+		<!-- Image and Effects -->
 
-			<GetRumors>
-				{
-					attributes: "commonwealthPub"
-					priority: 10
-					textID: 'rumor.commonwealthPub
-					data: {station: (objGetName gSource)}
-					onExitRumor: (lambda (theRumor) (objSetKnown (@ theRumor 'sourceObj)))
-					}
-			</GetRumors>
-		</Events>
+		<Image		imageID="&rsCommonwealthHabitat;" imageWidth="170" imageHeight="240" viewportRatio="0.02125"/>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"100"
+				/>
+
+		<!-- Dock Screens -->
 
 		<DockScreens>
 			<Main>
@@ -602,19 +582,36 @@
 
 				</Panes>
 			</Main>
-
 		</DockScreens>
 
-		<DockingPorts>
-			<Port x="0"		y="80" />
-			<Port x="43"	y="56" />
-			<Port x="52"	y="8" />
-			<Port x="35"	y="-44" />
-			<Port x="-35"	y="-44" />
-			
-			<Port x="-52"	y="8" />
-			<Port x="-43"	y="56" />
-		</DockingPorts>
+		<!-- Events and Behavior -->
+
+		<Events>
+			<OnCreate>
+				; Register events for when subordinates are destroyed
+				(enum (sysFindObject gSource "sA O:guard;") tObj
+					(objRegisterForEvents gSource tObj)
+					)
+			</OnCreate>
+
+			<OnObjDestroyed>
+				; If the player destroys any of the warlords then she
+				; counts as the liberator
+				(if (and gPlayerShip (eq aOrderGiver gPlayerShip))
+					(objSetData gSource "LiberatedByPlayer" True)
+					)
+			</OnObjDestroyed>
+
+			<GetRumors>
+				{
+					attributes: "commonwealthPub"
+					priority: 10
+					textID: 'rumor.commonwealthPub
+					data: {station: (objGetName gSource)}
+					onExitRumor: (lambda (theRumor) (objSetKnown (@ theRumor 'sourceObj)))
+					}
+			</GetRumors>
+		</Events>
 
 		<Language>
 			<Text id="descWelcome">
@@ -658,6 +655,10 @@
 
 			</Text>
 		</Language>
+
+		<Encounters frequency="uncommon">
+			<Lookup table="&tbCentauriEncounters;"/>
+		</Encounters>
 	</StationType>
 
 <!-- SHIP CLASSES -->

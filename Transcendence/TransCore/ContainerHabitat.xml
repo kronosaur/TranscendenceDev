@@ -240,21 +240,16 @@
 
 		<!-- Image and Effects -->
 
-		<ImageVariants>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="128" imageWidth="64" imageHeight="64"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="64" imageY="128" imageWidth="64" imageHeight="64"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="128" imageY="128" imageWidth="64" imageHeight="64"/>
-			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="192" imageY="128" imageWidth="64" imageHeight="64"/>
-		</ImageVariants>
+		<Image		imageID="&rsContainerHabitat;" imageWidth="180" imageHeight="180" viewportRatio="0.02125"/>
 
 		<DockingPorts>
-			<Port x="0"		y="70" />
-			<Port x="61"	y="35" />
-			<Port x="61"	y="-35" />
-			<Port x="0"		y="-70" />
-			<Port x="-61"	y="-35" />
-			
-			<Port x="-61"	y="35" />
+			<Port posAngle="-30"  posRadius="75" posZ="0"/>
+			<Port posAngle="60"   posRadius="75" posZ="0"/>
+			<Port posAngle="150"  posRadius="75" posZ="0"/>
+			<Port posAngle="240"  posRadius="75" posZ="0"/>
+
+			<Port posAngle="-10"  posRadius="60" posZ="0"	rotation="240"	sendToBack="true"/>
+			<Port posAngle="-50"  posRadius="60" posZ="0"	rotation="60"/>
 		</DockingPorts>
 		
 		<!-- Dock Screen -->

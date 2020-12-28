@@ -27,6 +27,12 @@
 
 #define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
 
+//	core.help
+//
+//	Power: A short line describing the power. Shown in the invoke menu.
+
+#define LANGID_CORE_HELP						CONSTLIT("core.help")
+
 //	core.launchedBy
 //
 //	This is a text pattern used to override the default text for the launcher of
@@ -117,6 +123,13 @@
 //	asteroid type, but an object can override it with this property.
 
 #define PROPERTY_CORE_MINING_DIFFICULTY			CONSTLIT("core.miningDifficulty")
+
+//	core.namePattern
+//
+//	Type Property: For generic type definitions (<Type>), this defines the name
+//	of the type. This is mostly used for debugging and TransData lists.
+
+#define PROPERTY_CORE_NAME_PATTERN				CONSTLIT("core.namePattern")
 
 //	core.noBiologicalEffects
 //

@@ -80,6 +80,7 @@ class CStationHull
 		int IncStructuralHP (int iInc) { m_iStructuralHP = Max(0, m_iStructuralHP + iInc); return m_iStructuralHP; }
 		void Init (const CStationHullDesc &Desc);
 		bool IsAbandoned (void) const { return (m_iHitPoints == 0 && !m_fImmutable); }
+		bool IsImmuneTo (SpecialDamageTypes iSpecialDamage) const { return false; }
 		bool IsImmutable (void) const { return (m_fImmutable ? true : false); }
 		bool IsWrecked (void) const { return (IsAbandoned() && m_iMaxHitPoints > 0); }
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -209,6 +210,8 @@ class CStationEncounterCtx
 		int GetTotalLimit (void) const { return m_Total.iLimit; }
 		int GetTotalMinimum (void) const { return m_Total.iMinimum; }
 		void IncMinimumForNode (CTopologyNode &Node, int iInc = 1);
+		bool IsEncounteredIn (const CTopologyNode &Node, const CStationEncounterDesc &Desc) const;
+		bool IsEncounteredIn (int iLevel, const CStationEncounterDesc &Dest) const;
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Reinit (const CStationEncounterDesc &Desc);
 		void WriteToStream (IWriteStream *pStream) const;
@@ -225,7 +228,7 @@ class CStationEncounterCtx
 			mutable int iNodeCriteria = -1;		//  Cached frequency for node (-1 = unknown)
 			};
 
-		int GetBaseFrequencyForNode (CTopologyNode &Node, const CStationType &StationType, const CStationEncounterDesc &Desc) const;
+		int GetBaseFrequencyForNode (const CTopologyNode &Node, const CStationEncounterDesc &Desc) const;
 		int GetCountInSystem (CSystem &System, const CStationType &StationType) const;
 
 		SEncounterStats m_Total;			//	Encounters in entire game

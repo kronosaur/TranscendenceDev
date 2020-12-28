@@ -187,6 +187,7 @@
 
 #define MAX_ATTACK_DISTANCE						(g_KlicksPerPixel * 512)
 
+#define SPECIAL_IS_ENCOUNTERED_IN				CONSTLIT("isEncounteredIn:")
 #define SPECIAL_IS_ENEMY_OF						CONSTLIT("isEnemyOf:")
 #define SPECIAL_IS_SHIP_ENCOUNTER				CONSTLIT("isShipEncounter:")
 #define SPECIAL_IS_STATION_ENCOUNTER			CONSTLIT("isStationEncounter:")
@@ -815,6 +816,8 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 //	Returns an image of the station, including any satellite segments.
 
 	{
+	DEBUG_TRY
+
 	//	Get the main image
 
 	int iVariant;
@@ -908,6 +911,8 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 
 		return pCompositeImage;
 		}
+
+	DEBUG_CATCH
 	}
 
 bool CStationType::FindDataField (const CString &sField, CString *retsValue) const
@@ -2173,6 +2178,22 @@ bool CStationType::OnHasSpecialAttribute (const CString &sAttrib) const
 //	Returns TRUE if we have the special attribute
 
 	{
+	if (strStartsWith(sAttrib, SPECIAL_IS_ENCOUNTERED_IN))
+		{
+		CString sValue = strSubString(sAttrib, SPECIAL_IS_ENCOUNTERED_IN.GetLength());
+		if (int iLevel = strToInt(sValue, 0))
+			{
+			return m_EncounterRecord.IsEncounteredIn(iLevel, m_EncounterDesc);
+			}
+		else
+			{
+			const CTopologyNode *pNode = GetUniverse().GetTopology().FindTopologyNode(sValue);
+			if (pNode == NULL)
+				return false;
+
+			return m_EncounterRecord.IsEncounteredIn(*pNode, m_EncounterDesc);
+			}
+		}
 	if (strStartsWith(sAttrib, SPECIAL_IS_ENEMY_OF))
 		{
 		CString sValue = strSubString(sAttrib, SPECIAL_IS_ENEMY_OF.GetLength());

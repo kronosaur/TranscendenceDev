@@ -147,17 +147,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="3-4">
 			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
+				<Lookup chance="75" table="&tbCorpRasiermesserDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -185,9 +180,7 @@
 							</Action>
 
 							<Action id="actionDockServices" default="1">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionBuyItems">
@@ -233,7 +226,7 @@
 				We install Rasiermesser items up to tech level %maxLevel%.
 
 			</Text>
-            
+			
 			<Text id="core.mapDesc">
 
 				Repairs armor up to level 7 &mdash;
@@ -370,17 +363,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="3-4">
 			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
+				<Lookup chance="75" table="&tbCorpRasiermesserDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -435,9 +423,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -961,33 +947,51 @@
 				Please, accept %itemName%. I made them specially for you!"
 
 			</Text>
-            
-            <Text id="core.mapDescCustom">
+			
+			<Text id="core.mapDescCustom">
 				(if (objGetProperty gSource 'Dvalin)
 					(cat (typTranslate gType 'mapDescDvalin) " "
 						(typTranslate gType 'core.mapDesc)
 						)
 					(typTranslate gType 'core.mapDesc)
 					)
-            </Text>
+			</Text>
 			<Text id="mapDescDvalin">
 
 				Dvalin's Research Lab &mdash;
 
 			</Text>
-            <Text id="core.mapDesc">
+			<Text id="core.mapDesc">
 
-                Refuels up to level 9 &mdash; 
+				Refuels up to level 9 &mdash; 
 				Repairs armor up to level 9 &mdash;
 				Installs Rasiermesser armor up to level 8 &mdash;
 				Installs Rasiermesser devices up to level 9 &mdash;
 				Sells Rasiermesser products
 
-            </Text>
+			</Text>
 		</Language>
 
 	</StationType>
 
+<!-- TABLES -->
+
+	<ShipTable unid="&tbCorpRasiermesserDefenders;">
+		<!--
+			There are no Rasiermesser ships in Core, so we just pick normal 
+			defenders. Corporate Command overrides this. 
+		-->
+		<LevelTable>
+			<Ship levelFrequency="cccr- -----" count="1" class="&scRoninA;" orders="guard"/>
+			<Ship levelFrequency="ruucc cr---" count="1" class="&scRoninB;" orders="guard"/>
+			<Ship levelFrequency="uuucc cur--" count="1" class="&scWolfen;" orders="guard"/>
+			<Ship levelFrequency="---uu ccccu" count="1" class="&scRoninC;" orders="guard"/>
+			<Ship levelFrequency="ccccc ccccc" count="1" class="&scCenturionBlock2;" orders="guard"/>
+			<Ship levelFrequency="--ruc cuuuu" count="1" class="&scManticore;" orders="guard"/>
+			<Ship levelFrequency="----- -uuuu" count="1" class="&scBritannia;" orders="guard"/>
+		</LevelTable>
+	</ShipTable>
+	
 	<Globals>
 		(block Nil
 			(setq intRasiermesserArmorEnhancement (lambda Nil
@@ -1020,7 +1024,7 @@
 			)
 	</Globals>
 
-	<!-- Resources -->
+<!-- RESOURCES -->
 
 	<Image UNID="&rsRasiermesserFactory;" bitmap="Resources\RasiermesserFactory.jpg" bitmask="Resources\RasiermesserFactoryMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsRasiermesserFactoryBkgnd;" bitmap="Resources\RasiermesserFactoryScreen.jpg" loadOnUse="true" />

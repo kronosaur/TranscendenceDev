@@ -6,6 +6,39 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
+bool CDockScreenDetailsPane::EvalValue (CString *retsError)
+
+//	EvalValue
+//
+//	Evalues the details pane value.
+
+	{
+	if (!m_pExp)
+		throw CException(ERR_FAIL);
+
+	//	Evaluate the function
+
+	CCodeChainCtx CCX(GetUniverse());
+	CCX.SetScreen(&m_DockScreen);
+	CCX.DefineContainingType(m_DockScreen.GetRoot());
+	CCX.SaveAndDefineSourceVar(m_pLocation);
+	CCX.SaveAndDefineDataVar(m_pData);
+
+	ICCItemPtr pResult = CCX.RunCode(m_pExp);	//	LATER:Event
+
+	if (pResult->IsError())
+		{
+		if (retsError) *retsError = pResult->GetStringValue();
+		return false;
+		}
+
+	//	Set this expression as the list
+
+	m_pControl->SetData(pResult);
+
+	return true;
+	}
+
 ICCItem *CDockScreenDetailsPane::OnGetCurrentListEntry (void) const
 
 //	OnGetCurrentListEntry
@@ -84,27 +117,12 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 
 	//	Get the list to show
 
-	ICCItemPtr pExp = CCodeChain::LinkCode(Options.sCode);
+	m_pExp = CCodeChain::LinkCode(Options.sCode);
 
 	//	Evaluate the function
 
-	CCodeChainCtx CCCtx(GetUniverse());
-	CCCtx.SetScreen(&m_DockScreen);
-	CCCtx.DefineContainingType(m_DockScreen.GetRoot());
-	CCCtx.SaveAndDefineSourceVar(m_pLocation);
-	CCCtx.SaveAndDefineDataVar(m_pData);
-
-	ICCItemPtr pResult = CCCtx.RunCode(pExp);	//	LATER:Event
-
-	if (pResult->IsError())
-		{
-		*retsError = pResult->GetStringValue();
+	if (!EvalValue(retsError))
 		return ERR_FAIL;
-		}
-
-	//	Set this expression as the list
-
-	m_pControl->SetData(pResult);
 
 	return NOERROR;
 
@@ -118,6 +136,11 @@ void CDockScreenDetailsPane::OnShowItem (void)
 //	Show the current item
 
 	{
+	CString sError;
+	if (!EvalValue(&sError))
+		{
+		GetUniverse().LogOutput(strPatternSubst(CONSTLIT("CDockScreenDetailsPane: %s"), sError));
+		}
 	}
 
 void CDockScreenDetailsPane::OnShowPane (bool bNoListNavigation)

@@ -114,6 +114,8 @@
 #define PROPERTY_STD_INTERACTION				CONSTLIT("stdInteraction")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
+#define INTERACTION_ALWAYS						CONSTLIT("always")
+
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
 const CWeaponFireDesc CWeaponFireDesc::m_Null;
@@ -354,8 +356,20 @@ int CWeaponFireDesc::CalcDefaultInteraction (void) const
 	if ((iDefault = GetUniverse().GetEngineOptions().GetDefaultInteraction()) != -1)
 		return iDefault;
 
-	else if (m_iFireType == ftBeam)
+	else if (m_iFireType == ftBeam || m_iFireType == ftContinuousBeam)
 		return 0;
+
+	else if (m_iFireType == ftArea || m_iFireType == ftRadius)
+		return -1;
+
+	else if (m_iFireType == ftParticles)
+		{
+		//	Particle clouds have interaction of 100, decreasing linearly above
+		//	0.5c to 0.
+
+		Metric rInteraction = Max(Min(1.0, 2.0 * (1.0 - (GetRatedSpeed() / LIGHT_SPEED))), 0.0);
+		return mathRound(100.0 * Max(0.0, Min(rInteraction, 1.0)));
+		}
 
 	else if (m_pAmmoType)
 		return 100;
@@ -440,7 +454,7 @@ Metric CWeaponFireDesc::CalcSpeed (Metric rPercentOfLight, bool bRelativistic)
 	return rSpeed;
 	}
 
-bool CWeaponFireDesc::CanHit (CSpaceObject *pObj) const
+bool CWeaponFireDesc::CanHit (const CSpaceObject &Obj) const
 
 //	CanHit
 //
@@ -450,31 +464,31 @@ bool CWeaponFireDesc::CanHit (CSpaceObject *pObj) const
 	//	Can we hit worlds?
 	
 	if (m_fNoWorldHits 
-			&& (pObj->GetScale() == scaleWorld || pObj->GetScale() == scaleStar))
+			&& (Obj.GetScale() == scaleWorld || Obj.GetScale() == scaleStar))
 		return false;
 
 	//	Can we hit immutables?
 
 	if (m_fNoImmutableHits
-			&& pObj->IsImmutable())
+			&& Obj.IsImmutable())
 		return false;
 
 	//	Can we hit stations
 
 	if (m_fNoStationHits
-			&& pObj->GetScale() == scaleStructure)
+			&& Obj.GetScale() == scaleStructure)
 		return false;
 
 	//	Can we hit immobile objects
 
 	if (m_fNoImmobileHits
-			&& !pObj->CanThrust())
+			&& !Obj.CanThrust())
 		return false;
 
 	//	Can we hit ships?
 
 	if (m_fNoShipHits
-			&& pObj->GetScale() == scaleShip)
+			&& Obj.GetScale() == scaleShip)
 		return false;
 
 	//	OK
@@ -815,7 +829,12 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 		return CC.CreateString(Result.AsString());
 		}
 	else if (strEquals(sProperty, PROPERTY_INTERACTION))
-		return CC.CreateInteger(GetInteraction());
+		{
+		if (GetInteraction().AlwaysInteracts())
+			return CC.CreateString(CONSTLIT("always"));
+		else
+			return CC.CreateInteger(GetInteraction());
+		}
 
 	else if (strEquals(sProperty, PROPERTY_LIFETIME))
 		return CC.CreateNumber(m_Lifetime.GetAveValueFloat());
@@ -824,7 +843,13 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 		return CC.CreateInteger(CalcDefaultHitPoints());
 
 	else if (strEquals(sProperty, PROPERTY_STD_INTERACTION))
-		return CC.CreateInteger(CalcDefaultInteraction());
+		{
+		CInteractionLevel Interaction(CalcDefaultInteraction());
+		if (Interaction.AlwaysInteracts())
+			return CC.CreateString(CONSTLIT("always"));
+		else
+			return CC.CreateInteger(Interaction);
+		}
 
 	else if (strEquals(sProperty, PROPERTY_TRACKING))
 		return CC.CreateBool(IsTrackingOrHasTrackingFragments());
@@ -1773,7 +1798,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	//	Hit points and interaction
 
 	m_iHitPoints = 0;
-	m_iInteraction = 0;
+	m_Interaction = CInteractionLevel();
 	m_fDefaultHitPoints = false;
 	m_fDefaultInteraction = false;
 
@@ -2335,15 +2360,12 @@ bool CWeaponFireDesc::InitHitPoints (SDesignLoadCtx &Ctx, const CXMLElement &XML
 //	m_fDefaultHitPoints
 
 	{
-	//	Beams and missiles get non-zero interaction and hit points.
+	//	Beams and missiles get non-zero hit points.
 
 	if (m_iFireType == ftBeam || m_iFireType == ftMissile)
 		{
 		m_iHitPoints = XMLDesc.GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0, -1, -1);
 		m_fDefaultHitPoints = (m_iHitPoints == -1);
-
-		m_iInteraction = XMLDesc.GetAttributeIntegerBounded(INTERACTION_ATTRIB, 0, 100, -1);
-		m_fDefaultInteraction = (m_iInteraction == -1);
 		}
 
 	//	Otherwise, none
@@ -2351,9 +2373,35 @@ bool CWeaponFireDesc::InitHitPoints (SDesignLoadCtx &Ctx, const CXMLElement &XML
 	else
 		{
 		m_iHitPoints = 0;
-		m_iInteraction = 100;
 		m_fDefaultHitPoints = false;
+		}
+
+	//	Load interaction
+
+	CString sInteraction;
+	if (XMLDesc.FindAttribute(INTERACTION_ATTRIB, &sInteraction))
+		{
 		m_fDefaultInteraction = false;
+
+		if (strEquals(sInteraction, INTERACTION_ALWAYS))
+			m_Interaction = -1;
+		else
+			{
+			bool bFailed;
+			m_Interaction = strToInt(sInteraction, 0, &bFailed);
+
+			if (bFailed)
+				m_fDefaultInteraction = true;
+			else if (m_Interaction < 0)
+				m_Interaction = 0;
+			else if (m_Interaction > 100)
+				m_Interaction = 100;
+			}
+		}
+	else
+		{
+		m_Interaction = 0;
+		m_fDefaultInteraction = true;
 		}
 
 	return true;
@@ -2576,7 +2624,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_rMaxMissileSpeed = Src.m_rMaxMissileSpeed;
 	m_iStealth = Src.m_iStealth;
 	m_iHitPoints = Src.m_iHitPoints;
-	m_iInteraction = Src.m_iInteraction;
+	m_Interaction = Src.m_Interaction;
 	m_iManeuverability = Src.m_iManeuverability;
 	m_iManeuverRate = Src.m_iManeuverRate;
 
@@ -2796,7 +2844,7 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 		m_iHitPoints = CalcDefaultHitPoints();
 
 	if (m_fDefaultInteraction)
-		m_iInteraction = CalcDefaultInteraction();
+		m_Interaction = CInteractionLevel(CalcDefaultInteraction());
 
 	//	Fragment
 

@@ -50,6 +50,10 @@
 	<Type unid="&chJenna;"
 			inherit=	"&baStdWingmanBase;">
 
+		<Properties>
+			<Definition id="core.namePattern">": Jenna"</Definition>
+		</Properties>
+
 		<StaticData>
 			<Name>Jenna</Name>
 			<Sovereign>&svCommonwealth;</Sovereign>

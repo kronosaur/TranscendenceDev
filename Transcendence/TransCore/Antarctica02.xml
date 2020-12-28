@@ -66,7 +66,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msEscapeFromDantalion;"
-			name=				"Escape from Dantalion"
+			name=				"Antarctica 02: Escape from Dantalion"
 			attributes=			"antarcticaMission, onDockMission"
 
 			level=				"9"
@@ -75,6 +75,7 @@
 			noDebrief=			"true"
 			>
 
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<Events>
 			<CanCreate>

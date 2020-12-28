@@ -56,6 +56,8 @@
 			<Data id="rank">1</Data>
 		</StaticData>
 
+		<Image imageID="&rsDominaPowers;"	imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Events>
 			<OnInvoke>
 				(block Nil
@@ -66,8 +68,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Impenetrable shield protects ship</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Impenetrable shield protects ship</Text>
+			<Text id="core.desc">
 			
 				When invoked, an impenetrable shield protects you ship
 				from damage, but it also prevents you from firing your
@@ -92,6 +94,8 @@
 		<StaticData>
 			<Data id="rank">2</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -138,8 +142,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Restores shields and armor</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Restores shields and armor</Text>
+			<Text id="core.desc">
 			
 				This power will recharge your shields if needed. If your shields do not need
 				recharging, it will repair your armor.
@@ -165,6 +169,8 @@
 			<Data id="rank">2</Data>
 		</StaticData>
 
+		<Image imageID="&rsDominaPowers;"	imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Events>
 			<OnInvoke>
 				(block Nil
@@ -175,8 +181,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Temporarily increases weapon damage</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Temporarily increases weapon damage</Text>
+			<Text id="core.desc">
 			
 				When invoked, Strengthen will increase the damage dealt by your
 				weapons.
@@ -201,6 +207,8 @@
 			<Data id="rank">3</Data>
 		</StaticData>
 
+		<Image imageID="&rsDominaPowers;"	imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Events>
 			<OnInvoke>
 				(block (level duration)
@@ -216,8 +224,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Invulnerable shield protects ship</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Invulnerable shield protects ship</Text>
+			<Text id="core.desc">
 			
 				Invoking Defend creates an invulnerable shield that protects
 				your ship from damage. Unlike Sustain, however, you are still
@@ -242,6 +250,8 @@
 		<StaticData>
 			<Data id="rank">3</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="384" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -269,8 +279,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Reveals stations hidden in nebulae</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Reveals stations hidden in nebulae</Text>
+			<Text id="core.desc">
 			
 				Domina reveals the location of ships and stations hidden among 
 				the nebulae	of the system.
@@ -296,6 +306,8 @@
 			<Data id="rank">4</Data>
 		</StaticData>
 
+		<Image imageID="&rsDominaPowers;"	imageX="0" imageY="96" imageWidth="96" imageHeight="96"/>
+
 		<Events>
 			<OnInvoke>
 				(block (objVel)
@@ -313,8 +325,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Damages ships and stations in range</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Damages ships and stations in range</Text>
+			<Text id="core.desc">
 			
 				This power creates an expanding circle of dark energy that
 				damages all ships caught in its path.
@@ -336,6 +348,8 @@
 		<StaticData>
 			<Data id="rank">4</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -494,8 +508,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Reveals improvements to ship</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Reveals improvements to ship</Text>
+			<Text id="core.desc">
 			
 				Ingenuity channels Domina's superior knowledge to enhance and
 				upgrade your devices.
@@ -524,6 +538,8 @@
 		<StaticData>
 			<Data id="rank">5</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnDestroyCheck>
@@ -555,8 +571,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Saves ship from destruction</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Saves ship from destruction</Text>
+			<Text id="core.desc">
 			
 				When available, Desperate Escape invokes automatically to prevent
 				your ship from being destroyed by enemy damage.
@@ -582,6 +598,8 @@
 			<Data id="rank">5</Data>
 		</StaticData>
 
+		<Image imageID="&rsDominaPowers;"	imageX="288" imageY="96" imageWidth="96" imageHeight="96"/>
+
 		<Events>
 			<OnInvoke>
 				(block (objVel)
@@ -599,8 +617,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Shatters ships in range</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Shatters ships in range</Text>
+			<Text id="core.desc">
 			
 				Shatter releases an expanding circle of dark matter causing heavy
 				damage to anything it touches.
@@ -701,7 +719,7 @@
 	</ItemType>
 
 	<OverlayType UNID="&sfSustain;"
-            attributes=     "dominaPower, energyField, temporary"
+			attributes=     "dominaPower, energyField, temporary"
 
 			absorbAdj=		"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
 			weaponSuppress=	"*"
@@ -731,23 +749,23 @@
 	</OverlayType>
 
 	<OverlayType UNID="&sfStrengthen;"
-            attributes=     "dominaPower, effect, temporary"
-                 
+			attributes=     "dominaPower, effect, temporary"
+				 
 			weaponBonusAdj=	"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
 			>
 		<Effect>
 			<Starburst
 					spikeCount=		"20"
 					spikeLength=	"4d8"
-					primaryColor=	"0x80, 0xff, 0xff"
-					secondaryColor=	"0x00, 0xff, 0xff"
+					primaryColor=	"#80ffbf"
+					secondaryColor=	"#00ff80"
 					/>
 		</Effect>
 	</OverlayType>
 
 	<OverlayType UNID="&sfDefend;"
-            attributes=     "dominaPower, energyField, temporary"
-                 
+			attributes=     "dominaPower, energyField, temporary"
+				 
 			absorbAdj=		"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
 			>
 		<Effect>
@@ -874,7 +892,7 @@
 	
 	<DockScreen UNID="&dsPilgrimBeringStation;">
 		<Panes>
-			<Default descID="descWelcome">
+			<Default descID="descPilgrimWelcome">
 				<Actions>
 					<Action name="Go to Level 5" key="G" default="1">
 						(scrShowPane gScreen "Level5")
@@ -920,12 +938,14 @@
 		</Panes>
 
 		<Language>
-			<Text id="descWelcome">
+			<Text id="descPilgrimWelcome">
 
-				You are docked with a Commonwealth residential station.
+				You are in the docking bay of a residential station. You see a
+				mix of dockworkers, professionals, and families boarding 
+				shuttles and starships.
 
-				You feel nervous and uneasy as you walk through the familiar 
-				halls of the station.
+				You feel nervous and uneasy as you walk through its familiar 
+				halls.
 
 			</Text>
 			<Text id="descLevel5">
@@ -1088,6 +1108,7 @@
 
 	<!-- Resources -->
 
+	<Image UNID="&rsDominaPowers;"		bitmap="Resources\DominaPowers.jpg"		bitmask="Resources\DominaPowersMask.bmp"/>
 	<Image UNID="&rsDominaEffects1;"	bitmap="Resources\MediumEffects.jpg"	bitmask="Resources\MediumEffectsMask.bmp"/>
 	<Image UNID="&rsShatterShockwave;"	bitmap="Resources\ShatterShockwave.jpg"	bitmask="Resources\ShatterShockwaveMask.bmp"/>
 

@@ -797,7 +797,7 @@ void CPlayerShipController::Init (CTranscendenceWnd *pTrans)
 		Undock();
 	}
 
-void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdate)
+void CPlayerShipController::InitTargetList (ETargetClass iTargetType, bool bUpdate)
 
 //	InitTargetList
 //
@@ -845,9 +845,9 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 			//	we're looking for friendly targets
 
 			int iMainKey = -1;
-			if ((iTargetType == targetEnemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanBeAttacked()))
+			if ((iTargetType == ETargetClass::enemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanBeAttacked()))
 				{
-				if (iTargetType == targetEnemies)
+				if (iTargetType == ETargetClass::enemies)
 					{
 					if (pObj->GetScale() == scaleShip || pObj->GetScale() == scaleStructure)
 						iMainKey = 0;
@@ -2690,7 +2690,7 @@ void CPlayerShipController::SelectNearestTarget (void)
 
 	//	Initialize target list
 
-	InitTargetList(targetEnemies);
+	InitTargetList(ETargetClass::enemies);
 	if (m_TargetList.GetCount() > 0)
 		SetTarget(m_TargetList[0]);
 	else
@@ -2812,7 +2812,7 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 
 	if (m_pTarget && !(m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanBeAttacked()))
 		{
-		InitTargetList(targetFriendlies, true);
+		InitTargetList(ETargetClass::friendlies, true);
 
 		//	If we're going forwards, we default to first target; otherwise
 		//	we default to last target
@@ -2851,7 +2851,7 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 
 	else
 		{
-		InitTargetList(targetFriendlies);
+		InitTargetList(ETargetClass::friendlies);
 
 		if (m_TargetList.GetCount() > 0)
 			SetTarget(m_TargetList[iDir == 1 ? 0 : m_TargetList.GetCount() - 1]);
@@ -2880,7 +2880,7 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 
 	if (m_pTarget && m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanBeAttacked())
 		{
-		InitTargetList(targetEnemies, true);
+		InitTargetList(ETargetClass::enemies, true);
 
 		//	If we're going forwards, we default to first target; otherwise
 		//	we default to last target
@@ -2919,7 +2919,7 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 
 	else
 		{
-		InitTargetList(targetEnemies);
+		InitTargetList(ETargetClass::enemies);
 
 		if (m_TargetList.GetCount() > 0)
 			SetTarget(m_TargetList[iDir == 1 ? 0 : m_TargetList.GetCount() - 1]);
@@ -3257,6 +3257,27 @@ void CPlayerShipController::UpdateHelp (int iTick)
 				&& m_UIMsgs.ShowMessage(m_Universe, uimsgUseItemHint))
 			{
 			DisplayCommandHint(CGameKeys::keyUseItem, Translate(CONSTLIT("hintUseItem")));
+			m_iLastHelpTick = iTick;
+			return;
+			}
+		}
+
+	//	If we have something in our cargo hold other than fuel (or usable items)
+	//	then tell the player how to view inventory.
+
+	if (m_UIMsgs.IsEnabled(uimsgShipStatusHint) && !bEnemiesInRange)
+		{
+		CItemListManipulator ItemList(m_pShip->GetItemList());
+		CItemCriteria NonFuelItems(CONSTLIT("*~fU"));
+		ItemList.SetFilter(NonFuelItems);
+		bool bHasNonFuelItems = ItemList.MoveCursorForward();
+
+		if (!m_pSession->InSystemMap()
+				&& bHasNonFuelItems
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgShipStatusHint)
+				&& CanShowShipStatus())
+			{
+			DisplayCommandHint(CGameKeys::keyShipStatus, Translate(CONSTLIT("hintShipStatus")));
 			m_iLastHelpTick = iTick;
 			return;
 			}

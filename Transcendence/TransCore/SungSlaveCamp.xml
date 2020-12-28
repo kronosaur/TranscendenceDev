@@ -217,6 +217,17 @@
 				lasers stop you see that the coffin is gone.
 			
 			</Text>
+			<Text id="sisters.donateDesc.plural">
+				
+				Seeing your concern, the abbess explains:
+
+				"Don't worry, they are unharmed. Domina will free their minds 
+				and give them a normal life."
+
+				You feel your connection to Domina strengthening, but when the
+				lasers stop you see that the coffins are gone.
+			
+			</Text>
 		</Language>
 	</ItemType>
 

@@ -10,7 +10,7 @@
 			inherit=			"&baCommonwealthStation;"
 				 
 			level=				"4"
-			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated, startonEridani"
+			attributes=			"commonwealth, commonwealthCustoms, eridaniScript, friendly, human, majorStation, populated, startonEridani"
 				 
 			dockScreen=			"&dsCommonwealthStation;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
@@ -152,12 +152,15 @@
 			
 			<Text id="textInfo1">
 				
-				Welcome to the Eridani system and to Starton Eridani! Settled in
-				2176, our small star system is one of the most friendly in all 
-				the Commonwealth. Whatever your purpose here, whether business or
-				pleasure, we're sure that you will enjoy your stay!
+				Welcome to the Eridani system and to Starton Eridani! Settled 
+				more than two-hundred years ago, our small star system blends
+				the relaxed pace of the New Beyond with the amenities of a major
+				metropolis.
+
+				Whether seeking business or	pleasure, we're sure you'll enjoy 
+				your stay!
 				
-				Please select your topic of interest:
+				Please select a topic of interest:
 				
 			</Text>
 			<Text id="textTouristInfo1">
@@ -212,7 +215,8 @@
 			</Text>
 			<Text id="funFact.1">
 				
-				Starton is more than seven stargates away from St. Katharine's Star.
+				Starton is more than seven stargates away from St. Katharine's
+				Star.
 				
 			</Text>
 			<Text id="funFact.2">

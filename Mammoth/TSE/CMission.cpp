@@ -510,27 +510,30 @@ bool CMission::HasSpecialAttribute (const CString &sAttrib) const
 		return CSpaceObject::HasSpecialAttribute(sAttrib);
 	}
 
-bool CMission::MatchesCriteria (const CSpaceObject *pSource, const SCriteria &Criteria) const
+bool CMission::MatchesCriteria (const CSpaceObject *pSource, const CMissionCriteria &Criteria) const
 
 //	MatchesCriteria
 //
 //	Returns TRUE if the given mission matches the criteria
 
 	{
-	int i;
+	//	If we have an OR expression and that matches, then we're done.
+
+	if (Criteria.HasORExpression() && MatchesCriteria(pSource, Criteria.GetORExpression()))
+		return true;
 
 	//	By status
 
-	if (!(Criteria.bIncludeActive && IsActive())
-			&& !(Criteria.bIncludeOpen && IsOpen())
-			&& !(Criteria.bIncludeRecorded && IsRecorded())
-			&& !(Criteria.bIncludeCompleted && IsCompleted())
-			&& !(Criteria.bIncludeUnavailable && IsUnavailable()))
+	if (!(Criteria.IncludesActive() && IsActive())
+			&& !(Criteria.IncludesOpen() && IsOpen())
+			&& !(Criteria.IncludesRecorded() && IsRecorded())
+			&& !(Criteria.IncludesCompleted() && IsCompleted())
+			&& !(Criteria.IncludesUnavailable() && IsUnavailable()))
 		return false;
 			
 	//	Owned by source
 
-	if (Criteria.bOnlySourceOwner)
+	if (Criteria.MatchesOnlySourceOwner())
 		{
 		if (pSource)
 			{
@@ -544,7 +547,7 @@ bool CMission::MatchesCriteria (const CSpaceObject *pSource, const SCriteria &Cr
 			}
 		}
 
-	if (Criteria.bOnlySourceDebriefer)
+	if (Criteria.MatchesOnlySourceDebriefer())
 		{
 		if (m_pDebriefer.GetID() != OBJID_NULL)
 			{
@@ -568,26 +571,26 @@ bool CMission::MatchesCriteria (const CSpaceObject *pSource, const SCriteria &Cr
 
 	//	Check required attributes
 
-	for (i = 0; i < Criteria.AttribsRequired.GetCount(); i++)
-		if (!HasAttribute(Criteria.AttribsRequired[i]))
+	for (int i = 0; i < Criteria.GetAttribsRequired().GetCount(); i++)
+		if (!HasAttribute(Criteria.GetAttribsRequired()[i]))
 			return false;
 
 	//	Check attributes not allowed
 
-	for (i = 0; i < Criteria.AttribsNotAllowed.GetCount(); i++)
-		if (HasAttribute(Criteria.AttribsNotAllowed[i]))
+	for (int i = 0; i < Criteria.GetAttribsNotAllowed().GetCount(); i++)
+		if (HasAttribute(Criteria.GetAttribsNotAllowed()[i]))
 			return false;
 
 	//	Check special attribs required
 
-	for (i = 0; i < Criteria.SpecialRequired.GetCount(); i++)
-		if (!HasSpecialAttribute(Criteria.SpecialRequired[i]))
+	for (int i = 0; i < Criteria.GetSpecialRequired().GetCount(); i++)
+		if (!HasSpecialAttribute(Criteria.GetSpecialRequired()[i]))
 			return false;
 
 	//	Check special attribs not allowed
 
-	for (i = 0; i < Criteria.SpecialNotAllowed.GetCount(); i++)
-		if (HasSpecialAttribute(Criteria.SpecialNotAllowed[i]))
+	for (int i = 0; i < Criteria.GetSpecialNotAllowed().GetCount(); i++)
+		if (HasSpecialAttribute(Criteria.GetSpecialNotAllowed()[i]))
 			return false;
 
 	//	Match
@@ -988,126 +991,6 @@ void CMission::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write(dwSave);
 	}
 
-bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
-
-//	ParseCriteria
-//
-//	Parses criteria. Returns TRUE if successful.
-
-	{
-	//	Initialize
-
-	*retCriteria = SCriteria();
-
-	//	Parse
-
-	const char *pPos = sCriteria.GetPointer();
-	while (*pPos != '\0')
-		{
-		switch (*pPos)
-			{
-			case '*':
-				retCriteria->bIncludeActive = true;
-				retCriteria->bIncludeOpen = true;
-				retCriteria->bIncludeRecorded = true;
-				retCriteria->bIncludeUnavailable = true;
-				break;
-
-			case 'a':
-				retCriteria->bIncludeActive = true;
-				break;
-
-			case 'c':
-				//	This includes missions that have been completed (successfully
-				//	or not). These missions may or may not have been debriefed, thus
-				//	some of these missions are Active and some are Recorded.
-				//
-				//	NOTE: We don't include this category in * because * already
-				//	includes all active and all recorded missions.
-
-				retCriteria->bIncludeCompleted = true;
-				break;
-
-			//	This character is used in typFind to return mission objects. For
-			//	compatibility, we allow this character here (even though it does
-			//	nothing).
-
-			case 'n':
-				break;
-
-			case 'o':
-				retCriteria->bIncludeOpen = true;
-				break;
-
-			case 'r':
-				retCriteria->bIncludeRecorded = true;
-				break;
-
-			case 'u':
-				retCriteria->bIncludeUnavailable = true;
-				break;
-
-			case 'A':
-				retCriteria->bOnlyMissionArcs = true;
-				break;
-
-			case 'D':
-				retCriteria->bOnlySourceDebriefer = true;
-				break;
-
-			case 'P':
-				retCriteria->bPriorityOnly = true;
-				break;
-
-			case 'S':
-				retCriteria->bOnlySourceOwner = true;
-				break;
-
-			case '+':
-			case '-':
-				{
-				bool bRequired = (*pPos == '+');
-				bool bBinaryParam;
-				CString sParam = ParseCriteriaParam(&pPos, false, &bBinaryParam);
-
-				if (bRequired)
-					{
-					if (bBinaryParam)
-						retCriteria->SpecialRequired.Insert(sParam);
-					else
-						retCriteria->AttribsRequired.Insert(sParam);
-					}
-				else
-					{
-					if (bBinaryParam)
-						retCriteria->SpecialNotAllowed.Insert(sParam);
-					else
-						retCriteria->AttribsNotAllowed.Insert(sParam);
-					}
-				break;
-				}
-			}
-
-		pPos++;
-		}
-
-	//	Make sure we include some missions
-
-	if (!retCriteria->bIncludeUnavailable
-			&& !retCriteria->bIncludeActive
-			&& !retCriteria->bIncludeCompleted
-			&& !retCriteria->bIncludeRecorded
-			&& !retCriteria->bIncludeOpen)
-		{
-		retCriteria->bIncludeActive = true;
-		retCriteria->bIncludeOpen = true;
-		retCriteria->bIncludeRecorded = true;
-		retCriteria->bIncludeUnavailable = true;
-		}
-
-	return true;
-	}
-
 bool CMission::RefreshSummary (void)
 
 //	RefreshSummary
@@ -1158,9 +1041,12 @@ bool CMission::Reward (ICCItem *pData, ICCItem **retpResult)
 
 	//	Set debriefed to true as a convenience
 
-	m_fDebriefed = true;
-	FireOnSetPlayerTarget(REASON_DEBRIEFED);
-	CloseMission();
+	if (!m_fDebriefed)
+		{
+		m_fDebriefed = true;
+		FireOnSetPlayerTarget(REASON_DEBRIEFED);
+		CloseMission();
+		}
 
 	//	Done
 

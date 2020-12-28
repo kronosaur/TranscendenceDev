@@ -57,6 +57,7 @@ enum ItemEnhancementTypes
 	etRepairDevice =					0x1b00,	//	Repair the device, if damaged
 												//		B = max level (0 = all levels)
 	etMissileDefense =					0x1c00,	//	weapon gains missile defense
+	etNoAmmo =							0x1d00,	//	Non-launcher Weapon no longer requires ammo
 
 	etData1Mask =						0x000f,	//	4-bits of data (generally for damage adj)
 	etData2Mask =						0x00f0,	//	4-bits of data (generally for damage type)
@@ -166,6 +167,7 @@ class CItemEnhancement
 		bool IsEnhancement (void) const { return (m_dwMods && !IsDisadvantage()); }
 		bool IsEqual (const CItemEnhancement &Comp) const;
 		bool IsMissileDefense (void) const { return ((GetType() == etMissileDefense) && !IsDisadvantage()); }
+		bool IsNoAmmo () const { return ((GetType() == etNoAmmo) && !IsDisadvantage()); }
 		bool IsNotEmpty (void) const { return !IsEmpty(); }
 		bool IsPhotoRecharge (void) const { return ((GetType() == etPhotoRecharge) && !IsDisadvantage()); }
 		bool IsPhotoRegenerating (void) const { return ((GetType() == etPhotoRegenerate) && !IsDisadvantage()); }
@@ -188,6 +190,7 @@ class CItemEnhancement
 		void SetModEfficiency (int iAdj) { m_dwMods = (iAdj > 0 ? EncodeABC(etPowerEfficiency, iAdj) : EncodeABC(etPowerEfficiency | etDisadvantage, -iAdj)); }
 		void SetModLinkedFire (DWORD dwOptions) { m_dwMods = EncodeAX(etLinkedFire, 0, dwOptions); }
 		void SetModMissileDefense (void) { m_dwMods = EncodeAX(etMissileDefense); }
+		void SetModNoAmmo () { m_dwMods = EncodeAX(etNoAmmo); }
 		void SetModOmnidirectional (int iFireArc) { m_dwMods = EncodeAX(etOmnidirectional, 0, Max(0, iFireArc)); }
 		void SetModReflect (DamageTypes iDamageType) { m_dwMods = Encode12(etReflect, DEFAULT_REFLECT_LEVEL, (int)iDamageType); }
 		void SetModResistDamage (DamageTypes iDamageType, int iAdj) { m_dwMods = Encode12(etResistByDamage | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj), (int)iDamageType); }
@@ -275,6 +278,7 @@ class CItemEnhancementStack
 		bool IsDisintegrationImmune (void) const;
 		bool IsEMPImmune (void) const;
 		bool IsMissileDefense (void) const;
+		bool IsNoAmmo () const;
 		bool IsPhotoRegenerating (void) const;
 		bool IsPhotoRecharging (void) const;
 		bool IsRadiationImmune (void) const;
@@ -308,6 +312,7 @@ class CRandomEnhancementGenerator
 		void EnhanceItem (CItem &Item) const;
 		int GetChance (void) const { return m_iChance; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc);
+		bool IsEmpty () const { return (m_iChance == 0 && m_Mods.IsEmpty() && !m_pCode); }
 		bool IsVariant (void) const;
 
 	private:

@@ -16,7 +16,9 @@
 		virtual=	"true"
 		>
 		
-		<Invoke key="A">
+		<Invoke key="A"
+				undamagedOnly="true"
+				>
 			(switch
 				(itm@ gItem 'damaged)
 					(objSendMessage gSource Nil (typTranslate gType 'msgAutonDamaged))
@@ -297,6 +299,38 @@
 				</Invoke>
 			</Message>
 
+			<Message id="msgStatus" name="Status" key="S">
+				<OnShow>
+					(obj@ gSource 'playerWingman)
+				</OnShow>
+				
+				<Invoke>
+					(block (
+						(damageDesc (objGetProperty gSource 'damageDesc))
+						(shieldLevel (@ damageDesc 'shieldLevel))
+						(armorLevel (@ damageDesc 'armorIntegrity))
+						(hullLevel (@ damageDesc 'hullIntegrity))
+						)
+						(objSendMessage gSender gSource
+							(switch
+								(and hullLevel (ls hullLevel 100))
+									(objTranslate gSource 'msgHullDamage damageDesc)
+									
+								(and armorLevel (ls armorLevel 100))
+									(objTranslate gSource 'msgArmorDamage damageDesc)
+									
+								(and shieldLevel (ls shieldLevel 100))
+									(objTranslate gSource 'msgShieldDamage damageDesc)
+
+								(objTranslate gSource 'msgNoDamage)
+								)
+							)
+							
+						(objSetShowAsDestination gSource 'autoclear)
+						)
+				</Invoke>
+			</Message>
+
 			<Message id="msgWait" name="Wait" key="W">
 				<OnShow>
 					(and (neq (objGetData gSource 'behavior) 'waiting)
@@ -517,6 +551,13 @@
 					(if (= autonSovereign &svFriendlyAuton;)
 						(objSet@ auton 'alwaysLeaveWreck True)
 						)
+
+					;	If the source is irradiated, then the auton is also 
+					;	radioactive.
+
+					(if (obj@ sourceObj 'radioactive)
+						(objApplyCondition auton 'radioactive)
+						)
 					
 					;	Welcome or error message
 					
@@ -577,6 +618,22 @@
 						(autonShipClass (itmGetStaticData autonItem 'autonShipClass))
 						(notEnoughSpace (gr (itmGetMass autonItem) (objGetCargoSpaceLeft aGateObj)))
 						)
+						;	If the auton is radioactive, then the source becomes
+						;	radioactive.
+
+						(if (and (obj@ gSource 'radioactive)
+								(not notEnoughSpace)
+								)
+							(block (
+								(result (objApplyCondition aGateObj 'radioactive { applyTo:'interior }))
+								(resultCode (@ result 'resultCode))
+								)
+								(objSendMessage aGateObj Nil (objTranslate gSource (cat 'msgRadiation. resultCode) {
+									autonName: (objGetName gSource 'definitePhrase)
+									}))
+								)
+							)
+
 						;	Add to cargo
 						(objAddItem aGateObj autonItem)
 						
@@ -652,6 +709,15 @@
 			<String id="UnableToComply">		Unable to comply</String>
 			<String id="WaitAck">				Auton order acknowledged</String>
 			<String id="WatchYourTargets"></String>
+
+			<String id="msgRadiation.ok">		%AutonName% has contaminated your ship</String>
+			<String id="msgRadiation.noEffect">	Your ship is immune to radiation</String>
+			<String id="msgRadiation.alreadyApplied"></String>
+
+			<String id="msgNoDamage">			No damage</String>
+			<String id="msgArmorDamage">		Armor integrity at %armorIntegrity%%</String>
+			<String id="msgShieldDamage">		Shields at %shieldLevel%%</String>
+			<String id="msgHullDamage">			Hull integrity at %hullIntegrity%%</String>
 		</Language>
 	</ShipClass>
 

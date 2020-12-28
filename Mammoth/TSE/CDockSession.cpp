@@ -43,6 +43,7 @@ bool CDockSession::ExitScreen (DWORD dwFlags)
 		//	Unmark the object
 
 		Frame.pLocation->ClearPlayerDocked();
+		ClearAmbientSound();
 
 		//	Clean up
 
@@ -357,6 +358,38 @@ void CDockSession::OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignT
 		}
 	}
 
+void CDockSession::PlayAmbientSound ()
+
+//	PlayAmbientSound
+//
+//	Plays the currently selected ambient sound.
+
+	{
+	if (m_pAmbientSound == m_pAmbientSoundPlaying)
+		return;
+
+	if (m_pAmbientSoundPlaying)
+		GetUniverse().StopSound(m_pAmbientSoundPlaying->GetSound());
+
+	if (m_pAmbientSound)
+		GetUniverse().PlaySound(NULL, m_pAmbientSound->GetSound());
+
+	m_pAmbientSoundPlaying = m_pAmbientSound;
+	}
+
+void CDockSession::SetAmbientSound (const CSoundResource *pSound)
+
+//	SetAmbientSound
+//
+//	Sets the current ambient sound.
+
+	{
+	if (m_pAmbientSound != pSound)
+		{
+		m_pAmbientSound = pSound;
+		}
+	}
+
 bool CDockSession::SetData (const CString &sAttrib, const ICCItem *pData)
 
 //	SetData
@@ -475,6 +508,49 @@ bool CDockSession::SetScreenSet (const ICCItem &ScreenSet)
 		Frame.sCurrentTab = NULL_STR;
 
 	return true;
+	}
+
+bool CDockSession::ShowScreen (CSpaceObject &Location, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
+
+//	ShowScreen
+//
+//	Adds a new frame. Returns TRUE if this is the first frame.
+
+	{
+	bool bFirstFrame = m_DockFrames.IsEmpty();
+
+	//	If this is our first frame, then this is the first OnInit
+
+	if (bFirstFrame)
+		{
+		ClearOnInitFlag();
+
+		//	Mark the object so that it knows that the player is docked with it.
+		//	We need this so that the object can tell us if its items change.
+
+		Location.SetPlayerDocked();
+
+		//	Initialize the ambient sound.
+
+		SetAmbientSound(Location.GetDockScreenAmbientSound());
+		}
+
+	//	Add a new frame.
+	//	Note that pRoot might be NULL and sScreen might be [DefaultScreen] at
+	//	this point.
+
+	SDockFrame NewFrame;
+	NewFrame.pLocation = &Location;
+	NewFrame.pRoot = pRoot;
+	NewFrame.sScreen = sScreen;
+	NewFrame.sPane = sPane;
+	if (pData)
+		NewFrame.pInitialData = ICCItemPtr(pData->Reference());
+	NewFrame.pResolvedRoot = pRoot;
+	NewFrame.sResolvedScreen = (pRoot ? sScreen : NULL_STR);
+	m_DockFrames.Push(NewFrame);
+
+	return bFirstFrame;
 	}
 
 bool CDockSession::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError) const

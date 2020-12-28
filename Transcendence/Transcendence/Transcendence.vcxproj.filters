@@ -149,9 +149,6 @@
     <ClCompile Include="CHighScoreList.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="CMenuData.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="CUIResources.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>

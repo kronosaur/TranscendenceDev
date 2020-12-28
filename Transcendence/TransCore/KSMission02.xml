@@ -133,6 +133,8 @@
 							(msnFireEvent gSource 'CreateGatePirates)
 							)
 						)
+
+					(objSetKnown gateObj)
 					(sysAddObjTimerEvent (add gateTime 300) gSource "OnFreighterArrives")
 					)
 			</OnAccepted>

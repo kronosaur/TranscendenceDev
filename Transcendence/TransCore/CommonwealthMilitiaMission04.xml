@@ -14,7 +14,7 @@
 	=========================================================================== -->
 
 	<MissionType UNID="&msCMEscortSuperFreighter;"
-			name=			"Escort Super Freighter"
+			name=			"Commonwealth Militia 04: Escort Super Freighter"
 			attributes=		"commonwealthMilitia, rank2"
 
 			level=			"4-7"
@@ -22,6 +22,13 @@
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
 			>
+		<Properties>
+			<Variant id="reward">
+				(@ (typ@ &unidCommonwealthMilitia; 'volunteerRewardTable) (min (sysGetLevel) 10))
+			</Variant>
+		</Properties>
+
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="512" imageY="256" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<OnCreate>
@@ -126,14 +133,16 @@
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
 					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textSummary">
+
 				Escort super-freighter back to Commonwealth Fortress.
 
 				System: %systemName%\n
 				Payment: %payment%
+
 			</Text>
 
 			<Text id="Intro">
@@ -142,22 +151,20 @@
 				displays. The commanding officer of the fortress looks up from 
 				his charts:
 
-				"Are you looking for a mission, captain?"
+				"Are you looking for a mission, pilot?"
 
 			</Text>
-
 			<Text id="Briefing">
-
-				"We're receiving a distress signal from a super-freighter at the 
-				edge of the system. Check it out, and if necessary, escort the 
-				freighter back. We'll feed the coordinates into your computer.
-				
-				"What are you standing around for? Get moving!"
-
+				(list
+					{	descID:'textBriefing1
+						data: {
+							payment: (fmtCurrency 'credit (msn@ gSource 'reward))
+							}
+						}
+					)
 			</Text>
-
 			<String id="AcceptReply">
-				"Good luck, captain!"
+				"Good luck, pilot!"
 			</String>
 
 			<String id="DeclineReply">
@@ -170,9 +177,34 @@
 			<String id="FailureDebrief">
 				"You screwed that mission all the way to Sol and back. You better hit the sims, pilot!"
 			</String>
-			<String id="SuccessDebrief">
-				"Good work, captain! That was an outstanding mission."
-			</String>
+			<Text id="SuccessDebrief">
+				(list
+					{	descID:'textSuccessDebrief1		
+						data: {
+							payment: (fmtCurrency 'credit (msn@ gSource 'reward))
+							}
+						}
+					)
+			</Text>
+
+			<Text id="textBriefing1">
+			
+				"We're receiving a distress signal from a super-freighter at the 
+				edge of the system. Check it out, and if necessary, escort the 
+				freighter back.
+
+				"We'll pay %payment% if you succeed.
+				
+				"Well, what are you standing around for? Get moving!"
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+
+				"Good work, pilot! That was an outstanding mission.
+
+				"We've deposited %payment% to your account."
+
+			</Text>
 		</Language>
 	</MissionType>
 

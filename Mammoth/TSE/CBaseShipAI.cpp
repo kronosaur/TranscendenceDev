@@ -587,7 +587,7 @@ void CBaseShipAI::FireOnOrderChanged (void)
 	if (m_fUseOrderModules)
 		InitOrderModule();
 
-	//	Give descendents a chance
+	//	Give descendants a chance
 
 	OnOrderChanged();
 
@@ -887,6 +887,7 @@ bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 		{
 		case IShipController::orderGuard:
 		case IShipController::orderPatrol:
+		case IShipController::orderOrbitExact:
 		case IShipController::orderSentry:
 			{
 			CSpaceObject *pBase = GetCurrentOrderTarget();

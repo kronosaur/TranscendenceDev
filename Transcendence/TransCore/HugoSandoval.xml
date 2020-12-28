@@ -5,6 +5,10 @@
 	<!-- Hugo Sandoval -->
 	
 	<Type UNID="&unidHugoSandoval;">
+		<Properties>
+			<Definition id="core.namePattern">": Hugo Sandoval"</Definition>
+		</Properties>
+
 		<StaticData>
 			<Data id="MissionAttribute">"hugoSandovalMission"</Data>
 			<Data id="Name">"Hugo Sandoval"</Data>

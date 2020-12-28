@@ -20,8 +20,8 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msDestroyThreatToSlums;"
-			name=						"Destroy Threat to Commonwealth Habitat"
-			attributes=					"commonwealth, commonwealthHabitat"
+			name=						"Commonwealth Habitat 01: Destroy Threat"
+			attributes=					"commonwealth, commonwealthHabitat, eridaniScript"
 
 			level=						"1-10"
 			scope=						"system"
@@ -43,6 +43,8 @@
 			noStats=					"false"
 			recordNonPlayer=			"false"
 			>
+
+		<Image		imageID="&rsCommonwealthHabitat;" imageWidth="170" imageHeight="240"/>
 
 		<Events>
 			<!-- CREATE MISSION -->
@@ -71,14 +73,23 @@
 				;	gData: Arbitrary data passed in to msnCreate
 				;	aOwnerObj: Object that created the mission (or nil)
 
-				(block (enemyStations)
+				(block (
+					;	Make a list of target stations and make sure the player
+					;	can destroy it (e.g., has WMD if needed).
+
+					(enemyStations 
+						(filter (sysFindObject aOwnerObj "TAE +populated; -questTarget; -uncharted; N:450;") theObj
+							(objCanDestroyTarget gPlayerShip theObj)
+							)
+						)
+					)
 
 					(switch
 
 						; Get a list of enemy stations in the region. If we cannot find any
 						; suitable targets then we don't have a mission.
 
-						(not (setq enemyStations (sysFindObject aOwnerObj "TAE +populated; -questTarget; -uncharted; N:450;")))
+						(not enemyStations)
 							(msnDestroy gSource)
 
 						; Otherwise we can create a mission

@@ -29,7 +29,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBattleArenaChallenger;"
-			name=				"Battle Arena Fight"
+			name=				"Battle Arena 04: The Slicer"
 			attributes=			"battleArena, arenaCombat, gladiatorFight"
 			inherit=			"&msBattleArenaFight;"
 
@@ -37,6 +37,8 @@
 
 			maxAppearing=		"1"
 			>
+
+		<Image imageID="&rsBattleArenaMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>
@@ -163,7 +165,7 @@
 			<Text id="SuccessDebrief:empty">
 
 				Pandemonium greets you as you enter the gladiators' quarters.
-				Partiers and hanger-ons celebrate your victory. In the corner
+				Partiers and hangers-on celebrate your victory. In the corner
 				of the room you see a small memorial for Mr. Katami in danger
 				of being trampled by the wild partying.
 

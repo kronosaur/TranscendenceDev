@@ -489,6 +489,7 @@ class CShieldClass : public CDeviceClass
 		static const DWORD FLAG_IGNORE_DISABLED = 0x00000001;
 		Metric CalcRegen180 (CItemCtx &Ctx, DWORD dwFlags = 0) const;
 
+		void CreateHitEffect (CInstalledDevice &Device, CSpaceObject &Ship, SDamageCtx &DamageCtx, CEffectCreator &Effect, const CVector &vPos) const;
 		bool IsDepleted (CInstalledDevice *pDevice);
 		int FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource, int iMaxHP) const;
 		void FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
@@ -499,9 +500,9 @@ class CShieldClass : public CDeviceClass
 		int GetMaxHP (CItemCtx &Ctx) const;
 		int GetReferenceDepletionDelay (void) const;
 		int GetReflectChance (const CDeviceItem &DeviceItem, const CItemEnhancementStack &Enhancements, const DamageDesc &Damage, int iHP, int iMaxHP) const;
-		bool UpdateDepleted (CInstalledDevice *pDevice);
 		void SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		void SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, int iHP, bool bConsumeCharges = false);
+		bool UpdateDepleted (CInstalledDevice *pDevice);
 
 		int m_iHitPoints;						//	Max HP
 		int m_iArmorShield;						//	If non-zero then this is the
@@ -517,6 +518,7 @@ class CShieldClass : public CDeviceClass
 		int m_iIdlePowerUse;					//	Power used to maintain shields
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
+		int m_iTimeBetweenFlashEffects;			//  Minimum time between flash effects in ticks
 
 		int m_iExtraHPPerCharge;				//	Extra HP for each point of charge
 		int m_iExtraPowerPerCharge;				//	Extra power use for each point of charge (1/10 megawatt)
@@ -534,7 +536,8 @@ class CShieldClass : public CDeviceClass
 
 		SEventHandlerDesc m_CachedEvents[evtCount];		//	Cached events
 
-		CEffectCreatorRef m_pHitEffect;			//	Effect when shield is hit
+		CEffectCreatorRef m_pHitEffect;				//	Effect when shield is hit, appearing at hit location
+		CEffectCreatorRef m_pFlashEffect;			//	Effect when shield is hit, appearing on ship
 	};
 
 class CSolarDeviceClass : public CDeviceClass

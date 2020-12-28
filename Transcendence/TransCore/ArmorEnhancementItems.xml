@@ -544,30 +544,34 @@
 					(trData {
 						dstItem: (itmGetName dstItem 'noModifiers)
 						})
+
+					(result (objCanApplyCondition gSource 'radioactive { applyToItem:dstItem }))
+					(resultCode (@ result 'resultCode))
 					)
 					(switch
-						(objGetCondition gSource 'radioactive)
+						(= resultCode 'alreadyApplied)
 							{
 								resultCode: 'noEffect
 								desc: (itmTranslate gItem 'rpg.canUse.alreadyRadioactive trData)
 								}
 
-						(and (itmMatches dstItem "aI") (shpIsRadiationImmune gSource dstItem))
+						(= resultCode 'noEffect)
 							{
 								resultCode: 'noEffect
 								desc: (itmTranslate gItem 'rpg.canUse.immune trData)
 								}
 
-						(itmMatches dstItem "aI")
+						(and (= resultCode 'ok) (itmMatches dstItem "aI"))
 							{
 								resultCode: 'damaged
 								desc: (itmTranslate gItem 'rpg.canUse.contaminateArmor trData)
 								}
 
-						{
-							resultCode: 'damaged
-							desc: (itmTranslate gItem 'rpg.canUse.contaminateCargo trData)
-							}
+						(= resultCode 'ok)
+							{
+								resultCode: 'damaged
+								desc: (itmTranslate gItem 'rpg.canUse.contaminateCargo trData)
+								}
 						)
 					)
 			</CanEnhanceItem>
@@ -578,38 +582,38 @@
 					(trData {
 						dstItem: (itmGetName dstItem 'noModifiers)
 						})
+
+					;	Do it
+
+					(result (objApplyCondition gSource 'radioactive { applyToItem:dstItem }))
+					(resultCode (@ result 'resultCode))
 					)
 					(switch
-						(objGetCondition gSource 'radioactive)
+						(= resultCode 'alreadyApplied)
 							{
 								resultCode: 'noEffect
 								desc: (itmTranslate gItem 'rpg.useResult.alreadyRadioactive trData)
 								}
 
-						(and (itmMatches dstItem "aI") (shpIsRadiationImmune gSource dstItem))
+						(= resultCode 'noEffect)
 							{
 								resultCode: 'noEffect
 								desc: (itmTranslate gItem 'rpg.useResult.immune trData)
 								}
 
-						(itmMatches dstItem "aI")
-							(block ()
-								(shpMakeRadioactive gSource)
-								{
-									resultCode: 'damaged
-									desc: (itmTranslate gItem 'rpg.useResult.contaminateArmor trData)
-									nextScreen: 'forceUndock
-									}
-								)
+						(and (= resultCode 'ok) (itmMatches dstItem "aI"))
+							{
+								resultCode: 'damaged
+								desc: (itmTranslate gItem 'rpg.useResult.contaminateArmor trData)
+								nextScreen: 'forceUndock
+								}
 
-						(block ()
-							(shpMakeRadioactive gSource)
+						(= resultCode 'ok)
 							{
 								resultCode: 'damaged
 								desc: (itmTranslate gItem 'rpg.useResult.contaminateCargo trData)
 								nextScreen: 'forceUndock
 								}
-							)
 						)
 					)
 			</OnEnhanceItem>

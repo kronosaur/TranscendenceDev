@@ -194,7 +194,7 @@ CSpaceObject::Categories CParticleDamage::GetCategory (void) const
 	{
 	//	We count as a beam if have low interaction levels
 
-	return ((m_pDesc->GetInteraction() < MIN_MISSILE_INTERACTION) ? catBeam : catMissile);
+	return (m_pDesc->GetInteraction().InteractsLikeBeam() ? catBeam : catMissile);
 	}
 
 CString CParticleDamage::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const

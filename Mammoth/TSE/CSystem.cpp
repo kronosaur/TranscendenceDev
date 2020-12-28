@@ -1431,6 +1431,17 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 		return NOERROR;
 		}
 
+	//	Set debug mode.
+	//
+	//	LATER: Instead of doing this here we should probably handle it in the
+	//	CSpaceObject base class.
+
+	if (CSpaceObject *pSource = Ctx.Source.GetObj())
+		{
+		if (pSource->InDebugMode())
+			pShot->SetDebugMode(true);
+		}
+
 	//	Fire OnCreateShot event
 
 	Ctx.pDesc->FireOnCreateShot(Ctx.Source, pShot, Ctx.pTarget);

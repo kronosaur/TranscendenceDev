@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&msResidentials01;"
+			name=				"Commonwealth Residentials 01: Retrieve CO2 Scrubbers from Enemy Station"
+			attributes=			"commonwealthResidentials, eridaniScript"
+			inherit=			"&baRetrieveFromStationMission;"
+
+			level=				"1-5"
+			maxAppearing=		"1-3"
+			>
+		<Properties>
+			<Data id="casualtiesReported"></Data>
+			<Data id="hasCasualties"></Data>
+			<Data id="reward"></Data>
+
+			<!-- If the player does not return the scrubbers before this tick, 
+				the station will suffer casualties, and the reward wil be 
+				decreased. After failureOn, then mission fails. -->
+
+			<Data id="casualtiesOn"></Data>
+			<Data id="failureOn"></Data>
+
+			<Variant id="itemDesc">
+				{
+					item:(itmCreate &itCarbonScrubbers; 1)
+					create:'onDestroy
+					}
+			</Variant>
+			<Variant id="targetDesc">
+				{
+					criteria: "TAE +populated; -questTarget; -uncharted;"
+					}
+			</Variant>
+		</Properties>
+
+		<Image imageID="&rsCommonwealthResidentials;" imageWidth="320" imageHeight="290"/>
+
+		<Events>
+			<OnTargetChosen>
+				(block (
+					(targetObj (@ gData 'targetObj))
+
+					;	The reward for the station is half of the standard
+					;	treasure value for the station.
+
+					(rewardExact (/ (obj@ targetObj 'stdTreasure) 2))
+
+					;	Round it to the nearest 100
+
+					(reward (max 100 (* 100 (round (/ rewardExact 100)))))
+
+					;	Distance to station
+
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+					(dist (objGetDistance stationObj targetObj))
+					(travelTime (sysCalcTravelTime dist (obj@ gPlayerShip 'maxSpeed)))
+
+					;	Calculate how much time before casualties (assume 300 ticks
+					;	to destroy the station.
+
+					(casualtiesOn (+ (unvGetTick) travelTime 450 travelTime))
+					(failureOn (+ casualtiesOn 450))
+					)
+					(msnSet@ gSource 'reward reward)
+					(msnSet@ gSource 'casualtiesOn casualtiesOn)
+					(msnSet@ gSource 'failureOn failureOn)
+					)
+			</OnTargetChosen>
+
+			<OnCompleted>
+
+				;	Called when the mission ends (generally because msnSuccess 
+				;	or msnFailure were called).
+				;
+				;	gSource: Mission object.
+				;	gData: Arbitrary data passed in to msnSuccess or msnFailure
+				;	aReason:
+				;		'failure: Mission failed
+				;		'success: Mission completed successfully
+
+				(switch
+					(= aReason 'failure)
+						Nil
+
+					;	If we succeed but we took too long, we adjust the 
+					;	reward.
+
+					(and (= aReason 'success)
+							(gr (unvGetTick) (msn@ gSource 'casualtiesOn))
+							)
+						(block (
+							;	Reward is cut in half.
+							(newReward (divide (msn@ gSource 'reward) 2))
+							)
+							(msnSet@ gSource 'hasCasualties True)
+							(msnSet@ gSource 'reward newReward)
+							)
+					)
+
+			</OnCompleted>
+
+			<OnUpdate>
+				(block ()
+					(if (and (not (msn@ gSource 'casualtiesReported)) 
+							(geq (unvGetTick) (msn@ gSource 'casualtiesOn))
+							)
+						(block (
+							(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+							)
+							(objSendMessage gPlayerShip stationObj (msnTranslate gSource 'msgCasualtiesReport))
+							(msnSet@ gSource 'casualtiesReported True)
+							)
+						)
+
+					(typFireObjEvent &baRetrieveFromStationMission; gSource 'OnUpdate gData)
+					)
+			</OnUpdate>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Recover CO2 Scrubbers from Enemy Station
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(list
+					{	descID:'textIntro1				labelID:'actionIntro1		}
+					{	descID:'textIntro2				}
+					)
+			</Text>
+			<Text id="Briefing">
+				(block (
+					(trData {
+						targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(list
+						{	descID:'textBriefing1				data:trData	}
+						)
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(list
+					{	descID:'textAcceptReply1	}
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(list
+					{	descID:'textDeclineReply1	}
+					)
+			</Text>
+			<Text id="InProgress">
+				(list
+					{	descID:'textInProgress1		}
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(trData {
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(if (msn@ gSource 'hasCasualties)
+						(list
+							{	descID:'textSuccess1.withCasualties		data:trData	}
+							)
+						(list
+							{	descID:'textSuccess1				data:trData	}
+							)
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(list
+					{	descID:'textFailure1	}
+					)
+			</Text>
+
+			<Text id="textSummary">
+			
+				%TargetName% has stolen a batch of carbon dioxide scrubbers and
+				we need them back! Your mission is to destroy the station, 
+				retrieve the scrubbers and bring them back to us.
+
+				System: %systemName%\n
+				Payment: %reward%
+
+			</Text>
+			<Text id="textIntro1">
+
+				You enter the Main Hall and see a woman sitting at a central 
+				console. She wears administrator's attire and her dark hair is
+				streaked with gray. She waves you away without looking up.
+
+				"I'm sorry, I've got a crisis on my hands. You'll have to come
+				back later."
+
+			</Text>
+			<String id="actionIntro1">"[W]hat's wrong? Maybe I can help."</String>
+			<Text id="textIntro2">
+
+				The woman stares at you and nods.
+
+				"Yes, maybe you can."
+			
+			</Text>
+			<Text id="textBriefing1">
+
+				"Our shipment of carbon dioxide scrubbers has been stolen, and
+				the station air is starting to get stale.
+
+				"I want you to destroy %targetName% in this system and bring
+				back our scrubbers.
+
+				"We can pay you %reward% if you succeed! What do you say?"
+
+			</Text>
+			<Text id="textAcceptReply1">
+
+				The woman smiles.
+
+				"Thank you! But there's no time to waste. We'll start to feel
+				ill soon.
+
+				"Go out there, destroy the station, and bring back our scrubbers
+				before it's too late!"
+
+			</Text>
+			<Text id="textDeclineReply1">
+
+				The woman shakes her head.
+
+				"Then I have to get back to work. Unless we get some scrubbers,
+				we'll all start to feel ill soon."
+
+			</Text>
+			<Text id="textInProgress1">
+
+				"What's wrong? You said you could handle this mission! Get back 
+				out there and finish the job!"
+
+			</Text>
+			<Text id="textSuccess1">
+
+				The woman smiles as you enter.
+
+				"I knew you'd come through for us! We'll get the scrubbers 
+				installed right away.
+
+				"Thank you! You've saved the station."
+
+			</Text>
+			<Text id="textSuccess1.withCasualties">
+
+				The woman frowns as she sees you.
+
+				"Your late! We've already got a hundred people in the infirmary.
+				I'm going to withhold half your reward for taking too long.
+
+				"But at least we can recover now."
+
+			</Text>
+			<Text id="textFailure1">
+
+				The woman frowns as she sees you.
+
+				"You're too late! I had to get scrubbers from another source. 
+				And it's a good thing I did: If I'd waited for you the whole
+				station would be dead!"
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+
+			<Text id="msgCasualtiesReport">Hurry up, we're running out of time!</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

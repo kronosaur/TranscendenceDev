@@ -329,7 +329,6 @@
 
 		<Armor
 			armorID=			"&itSuperHeavyBlastPlate;"
-			count=				"6"
 			/>
 
 		<Devices>
@@ -367,7 +366,6 @@
 
 		<Armor
 			armorID=			"&itMassiveIthaliumArmor;"
-			count=				"6"
 			/>
 		
 		<Devices>

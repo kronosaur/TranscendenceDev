@@ -399,7 +399,7 @@
 				We sell weapon upgrades up to level %maxLevel%.
 
 			</Text>
-			<Text id="actionWeapons:noBetterUpgrades">
+			<Text id="actionWeapons.noBetterUpgrades">
 
 				We sell weapons up to level %maxLevel%, but none are as good as what your ship has.
 

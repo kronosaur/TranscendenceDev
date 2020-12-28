@@ -8,38 +8,35 @@
 class CPower : public CDesignType
 	{
 	public:
-		enum ECachedHandlers
+		enum class EEvent
 			{
 			//	This list must match CACHED_EVENTS array in CPower.cpp
 
-			evtCode						= 0,
-			evtOnShow					= 1,
-			evtOnInvokedByPlayer		= 2,
-			evtOnInvokedByNonPlayer		= 3,
-			evtOnDestroyCheck			= 4,
+			Code					= 0,
+			OnShow					= 1,
+			OnInvokedByPlayer		= 2,
+			OnInvokedByNonPlayer	= 3,
+			OnDestroyCheck			= 4,
 
-			evtCount					= 5,
+			count					= 5,
 			};
 
 		CPower (void);
 		virtual ~CPower (void);
 
-		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+		bool FindEventHandler (EEvent iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
-			if (!m_CachedEvents[iEvent].pCode)
+			if (!m_CachedEvents[(int)iEvent].pCode)
 				return false;
 
-			if (retEvent) *retEvent = m_CachedEvents[iEvent];
+			if (retEvent) *retEvent = m_CachedEvents[(int)iEvent];
 			return true;
 			}
 
-//		inline ICCItem *GetCode (void) { return m_pCode; }
-		inline int GetInvokeCost (void) const { return m_iInvokeCost; }
-		inline const CString &GetInvokeKey (void) const { return m_sInvokeKey; }
-		inline const CString &GetName (void) const { return m_sName; }
-//		inline ICCItem *GetOnInvokedByPlayer (void) { return m_pOnInvokedByPlayer; }
-//		inline ICCItem *GetOnInvokedByNonPlayer (void) { return m_pOnInvokedByNonPlayer; }
-//		inline ICCItem *GetOnShow (void) { return m_pOnShow; }
+		const CObjectImageArray &GetImage (void) const;
+		int GetInvokeCost (void) const { return m_iInvokeCost; }
+		const CString &GetInvokeKey (void) const { return m_sInvokeKey; }
+		const CString &GetName (void) const { return m_sName; }
 		void Invoke (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
 		void InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
 		void InvokeByNonPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
@@ -49,19 +46,23 @@ class CPower : public CDesignType
 		//	CDesignType overrides
 		static CPower *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designPower) ? (CPower *)pType : NULL); }
 		virtual DesignTypes GetType (void) const override { return designPower; }
+		virtual const CObjectImageArray &GetTypeSimpleImage (void) const override { return m_Image; }
 
 	protected:
 		//	CDesignType overrides
+		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
+		virtual void OnMarkImages (void) override;
 
 	private:
-		void InitOldStyleEvent (ECachedHandlers iEvent, ICCItem *pCode);
+		void InitOldStyleEvent (EEvent iEvent, ICCItem *pCode);
 
 		CString m_sName;
-		int m_iInvokeCost;
+		int m_iInvokeCost = 0;
 		CString m_sInvokeKey;
+		CObjectImageArray m_Image;				//	Image of power
 
 		ICCItemPtr m_pCode;						//	Invoke event
 		ICCItemPtr m_pOnShow;					//	OnShow event checks if the power should show up in the Invoke menu
@@ -69,6 +70,9 @@ class CPower : public CDesignType
 		ICCItemPtr m_pOnInvokedByNonPlayer;		//	OnInvokedByNonPlayer event checks if a non-player should be allowed to invoke
 		ICCItemPtr m_pOnDestroyCheck;			//	OnDestroyCheck event fires before the player is about to be destroyed
 
-		SEventHandlerDesc m_CachedEvents[evtCount];
-	};
+		SEventHandlerDesc m_CachedEvents[(int)EEvent::count];
 
+		//	Property table
+
+		static TPropertyHandler<CPower> m_PropertyTable;
+	};

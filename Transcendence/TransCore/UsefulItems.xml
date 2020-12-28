@@ -165,32 +165,34 @@
 		<Image imageID="&rsItems1;" imageX="0" imageY="384" imageWidth="96" imageHeight="96"/>
 
 		<Invoke>
-			(block Nil
-				(switch
-					(shpIsRadioactive gSource)
-						(objSendMessage gSource Nil (typTranslate gType 'msgMore))
+			(block (result)
 
-					(shpIsRadiationImmune gSource)
-						(objSendMessage gSource Nil (typTranslate gType 'msgImmune))
+				;	Do it
 
-					(block Nil
-						(shpMakeRadioactive gSource)
-						(objSendMessage gSource Nil (typTranslate gType 'msgResult))
+				(setq result (objApplyCondition gSource 'radioactive { applyTo:'interior }))
+
+				;	Report result
+
+				(objSendMessage gSource Nil	
+					(typTranslate gType 
+						(cat 'msgResult. (@ result 'resultCode))
 						)
 					)
 
 				; Identify the box
+
 				(itmSetKnown gItem)
 
 				; Remove box
+
 				(objRemoveItem gSource gItem 1)
 				)
 		</Invoke>
 
 		<Language>
-			<Text id="msgMore">The box contained more radioactive waste</Text>
-			<Text id="msgImmune">The box contained leaky radioactive ordnance; your ship is unaffected</Text>
-			<Text id="msgResult">The box contained leaky radioactive ordnance</Text>
+			<Text id="msgResult.ok">The box contained leaky radioactive ordnance</Text>
+			<Text id="msgResult.noEffect">The box contained leaky radioactive ordnance; your ship is unaffected</Text>
+			<Text id="msgResult.alreadyApplied">The box contained more radioactive waste</Text>
 		</Language>
 	</ItemType>
 
@@ -645,9 +647,14 @@
 			virtual=		"true"
 			level=			"1"
 			>
+		<Properties>
+			<Data id="card.balance"></Data>
+		</Properties>
+
 		<Invoke>
 			(block (
 				(amount (or
+					(itm@ gItem 'card.balance)
 					(itmGetData gItem 'card.balance)
 					(eval (itmGetStaticData gItem 'card.balance))
 					))

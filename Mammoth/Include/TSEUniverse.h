@@ -137,6 +137,7 @@ class CSFXOptions
 		void SetManeuveringEffectEnabled (bool bEnabled = true) { m_bManeuveringEffect = bEnabled; }
 		void SetSFXQuality (ESFXQuality iQuality);
 		void SetSFXQualityAuto (void);
+		void SetSpaceBackground (bool bEnabled = true) { m_bSpaceBackground = bEnabled; }
 
 	private:
 		ESFXQuality m_iQuality;
@@ -458,6 +459,7 @@ class CUniverse
 		void SetSound (bool bSound = true) { m_bNoSound = !bSound; }
 		void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
+		void StopSound (int iChannel);
 		CTimeSpan StopGameTime (void);
 		CString TranslateEngineText (const CString &sID, ICCItem *pData = NULL) const { return m_Language.Translate(sID, pData); }
 		void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }

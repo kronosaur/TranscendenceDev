@@ -501,6 +501,16 @@ bool CLanguageDataBlock::IsCode (const CString &sText) const
 		return false;
 	}
 
+bool CLanguageDataBlock::IsScriptEntry (const SEntryDesc &Entry)
+
+//	IsScriptEntry
+//
+//	Returns TRUE if this is a script entry block.
+
+	{
+	return strStartsWith(Entry.sID, SCRIPT_ID_PREFIX);
+	}
+
 void CLanguageDataBlock::MergeFrom (const CLanguageDataBlock &Source)
 
 //	MergeFrom

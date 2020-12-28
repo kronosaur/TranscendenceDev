@@ -18,7 +18,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msCSCCollectDataROM;"
-			name=			"Collect Lamplighter ROM"
+			name=			"Lamplighter 01: Collect Lamplighter ROM"
 			attributes=		"commonwealthFleet, cscTaskForce, rank1, lamplighter"
 
 			level=			"5-9"
@@ -27,6 +27,8 @@
 			expireTime=		"5400"
 			failureAfterOutOfSystem="5400"
 			>
+
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<Events>
 			<OnCreate>

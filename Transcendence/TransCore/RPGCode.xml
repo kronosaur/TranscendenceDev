@@ -1272,6 +1272,21 @@
 										)
 								}
 
+						;	If we install devices with an upgrade, but we got 
+						;	this far, then it means the player already has
+						;	weapons at a higher level.
+
+						(objHasTradeService dockObj 'installDevice {
+								itemCriteria: "w"
+								})
+							{
+								visible: True
+								enabled: Nil
+								desc: (or (objTranslate dockObj "dockServices.noBetterUpgrades" { maxLevel:maxLevel })
+										(scrTranslate gScreen "actionWeapons.noBetterUpgrades" { maxLevel:maxLevel })
+										)
+								}
+
 						;	Otherwise, nothing
 						
 						{

@@ -60,6 +60,7 @@ const IShipController::SOrderTypeData IShipController::m_OrderTypes[] =
 
 		{	"fireWeapon",				"-",	"I",	0 },
 		{	"useItem",					"-",	"I",	0 },
+		{	"orbitExact",				"o",	"k",	0 },
 	};
 
 const int IShipController::ORDER_TYPES_COUNT = (sizeof(m_OrderTypes) / sizeof(m_OrderTypes[0]));
@@ -81,6 +82,9 @@ IShipController::EDataTypes IShipController::GetOrderDataType (OrderTypes iOrder
 
 		case 'I':
 			return dataItem;
+
+		case 'k':
+			return dataOrbitExact;
 
 		case 's':
 			return dataString;
@@ -125,6 +129,165 @@ bool IShipController::OrderHasTarget (IShipController::OrderTypes iOrder, bool *
 	return (*m_OrderTypes[iOrder].szTarget != '-');
 	}
 
+bool IShipController::ParseOrderData (CCodeChainCtx &CCX, OrderTypes iOrder, const ICCItem &Args, int iFirstArg, SData &retData)
+
+//	ParseOrderData
+//
+//	Parses order data arguments to (shpOrder ...)
+
+	{
+	IShipController::EDataTypes iDataType = IShipController::GetOrderDataType(iOrder);
+
+	//	If we don't have at least one argument, then we have null data.
+
+	if (Args.GetCount() <= iFirstArg)
+		{
+		retData.iDataType = dataNone;
+		}
+
+	//	Handle based on the data type we expect.
+
+	else
+		{
+		const ICCItem &Value = *Args.GetElement(iFirstArg);
+
+		switch (iDataType)
+			{
+			case IShipController::dataItem:
+				if (!Value.IsNil())
+					{
+					retData.iDataType = iDataType;
+					retData.Item = CCX.AsItem(&Value);
+					}
+				else
+					retData.iDataType = dataNone;
+				break;
+
+			case IShipController::dataOrbitExact:
+				{
+				retData.iDataType = iDataType;
+
+				//	If we have a struct, then these are orbital parameters.
+
+				if (Value.IsSymbolTable())
+					{
+					//	Radius in light-seconds
+
+					DWORD dwRadius;
+					if (const ICCItem *pRadius = Value.GetElement(CONSTLIT("radius")))
+						dwRadius = pRadius->GetIntegerValue();
+					else
+						dwRadius = COrbitExactOrder::DEFAULT_RADIUS;
+
+					//	Initial angle (degrees)
+
+					DWORD dwAngle;
+					if (const ICCItem *pAngle = Value.GetElement(CONSTLIT("angle")))
+						dwAngle = pAngle->GetIntegerValue();
+					else
+						dwAngle = COrbitExactOrder::AUTO_ANGLE;
+
+					retData.dwData1 = (dwAngle << 16) | dwRadius;
+
+					//	Angular speed in degrees per tick.
+
+					if (const ICCItem *pSpeed = Value.GetElement(CONSTLIT("speed")))
+						retData.vData.SetX(pSpeed->GetDoubleValue());
+					else
+						retData.vData.SetX(COrbitExactOrder::DEFAULT_SPEED);
+
+					if (const ICCItem *pEccentricity = Value.GetElement(CONSTLIT("eccentricity")))
+						retData.vData.SetY(pEccentricity->GetDoubleValue());
+					else
+						retData.vData.SetY(0.0);
+					}
+
+				//	Otherwise, we assume just a radius (in light-seconds).
+
+				else
+					{
+					DWORD dwRadius = Value.GetIntegerValue();
+					if (dwRadius == 0)
+						dwRadius = COrbitExactOrder::DEFAULT_RADIUS;
+
+					retData.dwData1 = (COrbitExactOrder::AUTO_ANGLE << 16) | dwRadius;
+					retData.vData.SetX(COrbitExactOrder::DEFAULT_SPEED);
+					retData.vData.SetY(0.0);
+					}
+
+				//	If we have a second parameter, then it is a timer in ticks.
+
+				if (Args.GetCount() > (iFirstArg + 1))
+					{
+					const ICCItem &Value2 = *Args.GetElement(iFirstArg + 1);
+					retData.dwData2 = Value2.GetIntegerValue();
+					}
+				else
+					retData.dwData2 = 0;
+
+				break;
+				}
+
+			case IShipController::dataString:
+				if (!Value.IsNil())
+					{
+					retData.iDataType = iDataType;
+					retData.sData = Value.GetStringValue();
+					}
+				else
+					retData.iDataType = dataNone;
+				break;
+
+			case IShipController::dataVector:
+				if (!Value.IsNil())
+					{
+					retData.iDataType = iDataType;
+					retData.vData = ::CreateVectorFromList(CCX.GetCC(), &Value);
+					}
+				else
+					retData.iDataType = dataNone;
+				break;
+
+			//	Assume 1 or 2 integers
+
+			default:
+				{
+				if (Args.GetCount() > (iFirstArg + 1))
+					{
+					const ICCItem &Value2 = *Args.GetElement(iFirstArg + 1);
+
+					if (!Value.IsNil() || !Value2.IsNil())
+						{
+						retData.iDataType = IShipController::dataPair;
+						retData.dwData1 = Value.GetIntegerValue();
+						retData.dwData2 = Value2.GetIntegerValue();
+						}
+					else
+						{
+						//	If both arguments are Nil, then we omit them both. We do this
+						//	because some orders (like escort) behave differently depending
+						//	on whether arguments are nil or not.
+
+						retData.iDataType = dataNone;
+						}
+					}
+				else
+					{
+					if (!Value.IsNil())
+						{
+						retData.iDataType = IShipController::dataInteger;
+						retData.dwData1 = Value.GetIntegerValue();
+						}
+					else
+						retData.iDataType = dataNone;
+					}
+				}
+			}
+		}
+
+	return true;
+	}
+
 bool IShipController::ParseOrderString (const CString &sValue, OrderTypes *retiOrder, IShipController::SData *retData)
 
 //	ParseOrderString
@@ -134,11 +297,11 @@ bool IShipController::ParseOrderString (const CString &sValue, OrderTypes *retiO
 //	{order}:{d1}:{d2}
 
 	{
-	char *pPos = sValue.GetASCIIZPointer();
+	const char *pPos = sValue.GetASCIIZPointer();
 
 	//	Parse the order name
 
-	char *pStart = pPos;
+	const char *pStart = pPos;
 	while (*pPos != '\0' && *pPos != ':')
 		pPos++;
 
@@ -161,36 +324,97 @@ bool IShipController::ParseOrderString (const CString &sValue, OrderTypes *retiO
 
 	//	Get additional data
 
-	if (retData)
+	if (!retData)
+		{ }
+	else if (*pPos != ':')
+		*retData = SData();
+	else
 		{
-		DWORD dwData1 = 0;
-		DWORD dwData2 = 0;
+		IShipController::EDataTypes iDataType = IShipController::GetOrderDataType(iOrder);
 
-		if (*pPos != ':')
-			*retData = SData();
-		else
+		switch (iDataType)
 			{
-			pPos++;
-			pStart = pPos;
-			while (*pPos != '\0' && *pPos != ':')
+			case dataOrbitExact:
+				{
+				*retData = SData();
+				retData->iDataType = iDataType;
+
 				pPos++;
 
-			CString sData(pStart, (int)(pPos - pStart));
-			dwData1 = strToInt(sData, 0);
+				DWORD dwRadius = 10;
+				DWORD dwAngle = 0xffff;
 
-			if (*pPos != ':')
-				*retData = SData(dwData1);
-			else
+				while (*pPos != '\0')
+					{
+					pStart = pPos;
+					while (*pPos != '\0' && *pPos != '=')
+						pPos++;
+
+					CString sField(pStart, pPos - pStart);
+					if (*pPos != '=')
+						return false;
+
+					pPos++;
+					pStart = pPos;
+					while (*pPos != '\0' && *pPos != ':')
+						pPos++;
+
+					CString sValue(pStart, pPos - pStart);
+
+					if (strEquals(sField, CONSTLIT("radius")))
+						dwRadius = strToInt(sValue, 0);
+					else if (strEquals(sField, CONSTLIT("angle")))
+						{
+						if (strEquals(sValue, CONSTLIT("random")))
+							dwAngle = mathRandom(0, 359);
+						else
+							dwAngle = strToInt(sValue, 0);
+						}
+					else if (strEquals(sField, CONSTLIT("speed")))
+						retData->vData.SetX(strToDouble(sValue, 0.0));
+					else if (strEquals(sField, CONSTLIT("eccentricity")))
+						retData->vData.SetY(strToDouble(sValue, 0.0));
+					else if (strEquals(sField, CONSTLIT("time")))
+						retData->dwData2 = strToInt(sValue, 0);
+
+					if (*pPos == ':')
+						pPos++;
+					}
+
+				retData->dwData1 = (dwAngle << 16) | dwRadius;
+
+				break;
+				}
+
+			default:
 				{
+				DWORD dwData1 = 0;
+				DWORD dwData2 = 0;
+
 				pPos++;
 				pStart = pPos;
-				while (*pPos != '\0')
+				while (*pPos != '\0' && *pPos != ':')
 					pPos++;
 
 				CString sData(pStart, (int)(pPos - pStart));
-				dwData2 = strToInt(sData, 0);
+				dwData1 = strToInt(sData, 0);
 
-				*retData = SData(dwData1, dwData2);
+				if (*pPos != ':')
+					*retData = SData(dwData1);
+				else
+					{
+					pPos++;
+					pStart = pPos;
+					while (*pPos != '\0')
+						pPos++;
+
+					CString sData(pStart, (int)(pPos - pStart));
+					dwData2 = strToInt(sData, 0);
+
+					*retData = SData(dwData1, dwData2);
+					}
+
+				break;
 				}
 			}
 		}

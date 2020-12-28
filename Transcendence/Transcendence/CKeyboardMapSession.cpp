@@ -734,7 +734,7 @@ ALERROR CKeyboardMapSession::OnInit (CString *retsError)
 	CUIHelper Helper(m_HI);
 	IAnimatron *pTitle;
 	DWORD dwOptions = CUIHelper::OPTION_SESSION_OK_BUTTON;
-	Helper.CreateSessionTitle(this, m_Service, CONSTLIT("Keyboard Settings"), &Menu, dwOptions, &pTitle);
+	Helper.CreateSessionTitle(this, m_Service, CONSTLIT("Keyboard Settings"), Menu, dwOptions, &pTitle);
 	StartPerformance(pTitle, ID_CTRL_TITLE, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 
 	UpdateMenu();

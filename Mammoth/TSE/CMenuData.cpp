@@ -1,16 +1,9 @@
 //	CMenuData.cpp
 //
 //	CMenuData class
+//	Copyright (c) 2020 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
-#include "Transcendence.h"
-
-CMenuData::CMenuData (void) : m_iCount(0)
-
-//	CMenuData constructor
-
-	{
-	}
 
 void CMenuData::AddMenuItem (const CString &sID,
 							 const CString &sKey,
@@ -28,9 +21,8 @@ void CMenuData::AddMenuItem (const CString &sID,
 //	Add an item
 
 	{
-	ASSERT(m_iCount < MAX_MENU_ITEMS);
-	if (m_iCount == MAX_MENU_ITEMS)
-		return;
+	int iListCount = m_List.GetCount();
+	m_List.InsertEmpty();
 
 	//	See if the label has an accelerator
 
@@ -44,18 +36,18 @@ void CMenuData::AddMenuItem (const CString &sID,
 
 	int iPos;
 	if (sKey.IsBlank() || !(dwFlags & FLAG_SORT_BY_KEY))
-		iPos = m_iCount;
+		iPos = iListCount;
 	else
 		{
 		iPos = 0;
-		while (iPos < m_iCount 
+		while (iPos < iListCount
 				&& !m_List[iPos].sKey.IsBlank()
 				&& strCompareAbsolute(sKey, m_List[iPos].sKey) > 0)
 			iPos++;
 
 		//	Move other items up
 
-		for (int i = m_iCount - 1; i >= iPos; i--)
+		for (int i = iListCount - 1; i >= iPos; i--)
 			m_List[i+1] = m_List[i];
 		}
 
@@ -73,8 +65,6 @@ void CMenuData::AddMenuItem (const CString &sID,
 	m_List[iPos].sHelp = sHelp;
 	m_List[iPos].dwFlags = dwFlags;
 	m_List[iPos].pImage = pImage;
-
-	m_iCount++;
 	}
 
 int CMenuData::FindItemByKey (const CString &sKey)
@@ -84,7 +74,7 @@ int CMenuData::FindItemByKey (const CString &sKey)
 //	Returns the index of the menu item with the given key
 
 	{
-	for (int i = 0; i < m_iCount; i++)
+	for (int i = 0; i < m_List.GetCount(); i++)
 		if (strEquals(sKey, m_List[i].sKey)
 				|| strEquals(sKey, m_List[i].sAccelerator))
 			return i;

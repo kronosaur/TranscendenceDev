@@ -563,6 +563,7 @@
     </ClCompile>
     <ClCompile Include="CThreadPool.cpp" />
     <ClCompile Include="CVoronoiTessellation.cpp" />
+    <ClCompile Include="CWordParser.cpp" />
     <ClCompile Include="CXForm3D.cpp" />
     <ClCompile Include="ILog.cpp" />
     <ClCompile Include="Kernel.cpp">
