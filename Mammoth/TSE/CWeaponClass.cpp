@@ -5329,7 +5329,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			&& (!pDevice->IsTriggered() || pDevice->GetTimeUntilReady() > 1))
 		pDevice->SetLastShotCount(0);
 
-	if (pDevice->GetWeaponTargetDefinition() && pSource->IsPlayer())
+	if (pDevice->GetWeaponTargetDefinition() && pSource->IsPlayer() && pDevice->IsSecondaryWeapon())
 		{
 		//  If the weapon is not ready, do not autofire.
 
