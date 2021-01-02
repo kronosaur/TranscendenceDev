@@ -1599,9 +1599,7 @@
 									(if (leq xp 0)
 										(scrShowPane gScreen "CantUseDockServices")
 										
-										(rpgDockServices gPlayerShip {
-											checkMilitaryID: True
-											})
+										(rpgDockServices gPlayerShip)
 										)
 									)
 							</Action>
@@ -1959,9 +1957,7 @@
 							</Action>
 
 							<Action name="Dock Services" key="D">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action name="Undock" cancel="1" key="U">
@@ -2973,9 +2969,7 @@
 			<Default descID="descWelcome">
 				<Actions>
 					<Action id="actionDockServices" default="1">
-						(rpgDockServices gPlayerShip {
-							checkMilitaryID: True
-							})
+						(rpgDockServices gPlayerShip)
 					</Action>
 					
 					<Action id="actionUndock" cancel="1">
@@ -3106,9 +3100,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: Nil
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -3955,9 +3947,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -4410,9 +4400,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">

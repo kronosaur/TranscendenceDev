@@ -543,6 +543,12 @@
 	<!-- Black Market Promotion -->
 
 	<DockScreen UNID="&dsBlackMarketPromotion;"	nestedScreen="true">
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidBlackMarketMember; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>

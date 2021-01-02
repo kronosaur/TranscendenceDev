@@ -20,13 +20,15 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticHuygensExplorer;"
-			name=			"Huygens Explorer"
+			name=			"Heretic 05: Huygens Explorer"
 			attributes=		"ringersResearch, hereticMission, deliveryMission"
 
 			level=			"10"
 
 			maxAppearing=	"1"
 			>
+
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

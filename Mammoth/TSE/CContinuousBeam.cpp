@@ -276,7 +276,6 @@ bool CContinuousBeam::HitTestSegment (SSegment &Segment, CVector *retvHitPos)
 //	we return TRUE and retvHitPos is where the segment got stopped.
 
 	{
-	int iInteraction = m_pDesc->GetInteraction();
 	CVector vNewPos = Segment.vPos + Segment.vDeltaPos;
 
 	//	Get our bounds

@@ -1646,6 +1646,9 @@
 	<!ENTITY rsAdventurerOutfitters		"0x00100053">
 	<!ENTITY dsCorporateAutonManage		"0x00100054">
 	<!ENTITY rsCorporateAutonDealer		"0x00100055">
+	<!ENTITY tbCorpAutonDefenders		"0x00100056">
+	<!ENTITY tbCorpMakayevDefenders		"0x00100057">
+	<!ENTITY tbCorpRasiermesserDefenders	"0x00100058">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	
@@ -1773,6 +1776,7 @@
 	<!ENTITY dsBattleArenaOpponentList	"0x001000E6">
 	<!ENTITY msBattleArenaFight			"0x001000E7">
 	<!ENTITY msBattleArenaChallenger	"0x001000E8">
+	<!ENTITY rsBattleArenaMissionTile	"0x001000E9">
 
 	<!-- 00F0-00FF HELIOTROPES -->
 	
@@ -2030,6 +2034,7 @@
 	<!ENTITY dsKorolovEscortList		"0x0010029B">
 	<!ENTITY rsEI100HD					"0x0010029C">
 	<!ENTITY chKorolovAssistantDirectors	"0x0010029D">
+	<!ENTITY tbKorolovEscorts			"0x0010029E">
 
 	<!-- 02B0-02CF COMMONWEALTH MILITIA -->
 
@@ -2478,6 +2483,10 @@
 	<!ENTITY rsTR200DefenderHero			"0x00100845">
 	<!ENTITY rsTMA9BattleAuton				"0x00100846">
 	<!ENTITY rsTMA9BattleAutonHero			"0x00100847">
+
+	<!-- 0860-087F HERETIC SYSTEM -->
+
+	<!ENTITY rsHereticMissionTile			"0x00100860">
 
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>

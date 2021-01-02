@@ -350,9 +350,7 @@
 					</Action>
 
 					<Action id="actionDockServices">
-						(rpgDockServices gPlayerShip {
-							checkMilitaryID: True
-							})
+						(rpgDockServices gPlayerShip)
 					</Action>
 
 					<Action id="actionUndock" cancel="1">
@@ -413,6 +411,7 @@
 									displayCriteria: "n +stKatsMilitia;"
 									noMissionTextID: 'descNoMissions
 									maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
+									rankDetails: (typTranslate &unidCommonwealthMilitia; 'rankDetails)
 									})
 								)
 							)

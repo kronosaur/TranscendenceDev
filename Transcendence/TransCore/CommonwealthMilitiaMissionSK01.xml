@@ -14,14 +14,26 @@
 	=========================================================================== -->
 
 	<MissionType UNID="&msCMstKatsDestroyThreat;"
-			name=			"Destroy Threat"
-			attributes=		"commonwealthMilitia, rank0, rank1, stKatsMilitia"
+			name=				"Commonwealth Militia SK 01: Destroy Threat"
+			attributes=			"commonwealthMilitia, rank0, rank1, stKatsMilitia"
+			inherit=			"&baDestroyStationMission;"
 
-			level=			"4"
+			level=				"4"
+			maxAppearing=		"1-3"
 
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
 			>
+		<Properties>
+			<Data id="reward"></Data>
+			<Variant id="targetDesc">
+				{
+					criteria: "TAE +populated; -questTarget; -uncharted;"
+					}
+			</Variant>
+		</Properties>
+
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="512" imageY="256" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<CanCreate>
@@ -37,43 +49,22 @@
 					)
 			</CanCreate>
 
-			<OnCreate>
-				(block (enemyStations)
-					(switch
-						;	Get a list of enemy stations in the region. If we cannot find any
-						;	suitable targets then we don't have a mission.
-						(not (setq enemyStations (append
-								(sysFindObject Nil "TAE +sapiensCompound;")
-								(sysFindObject Nil "TAE +sungSlaveCamp;")
-								(sysFindObject Nil "TAE +marauderCompound;")
-								)))
-							(msnDestroy gSource)
+			<OnTargetChosen>
+				(block (
+					(targetObj (@ gData 'targetObj))
 
-						;	Create the mission
-						(block (targetObj)
-							; Pick a random enemy station to destroy
-							(setq targetObj (seededRandom (objGetDestiny aOwnerObj) enemyStations))
+					;	The reward for the station is half of the standard
+					;	treasure value for the station.
 
-							; Remember it
-							(msnSetData gSource 'targetID (objGetID targetObj))
+					(rewardExact (/ (obj@ targetObj 'stdTreasure) 2))
 
-							; Register for events so we know when the target is destroyed
-							(msnRegisterForEvents gSource targetObj)
-							)
-						)
+					;	Round it to the nearest 100
+
+					(reward (max 100 (* 100 (round (/ rewardExact 100)))))
 					)
-			</OnCreate>
-
-			<OnObjDestroyed>
-				(switch
-					(= (objGetID aObjDestroyed) (msnGetData gSource 'targetID))
-						(msnSuccess gSource)
+					(msnSet@ gSource 'reward reward)
 					)
-			</OnObjDestroyed>
-
-			<OnSetPlayerTarget>
-				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)))
-			</OnSetPlayerTarget>
+			</OnTargetChosen>
 
 			<OnCompleted>
 				(milMissionCompleted gSource aReason gData)
@@ -86,61 +77,118 @@
 
 		<Language>
 			<Text id="Name">
-				Destroy Enemy Station
+				Destroy Threat to Commonwealth
 			</Text>
-
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
-					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
 					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
+			<Text id="Intro">
+				(list
+					{	descID:'textIntro1		}
+					)
+			</Text>
+			<Text id="Briefing">
+				(block (
+					(trData {
+						targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+						payment: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(list
+						{	descID:'textBriefing1		data:trData	}
+						)
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(list
+					{	descID:'textAcceptReply1	}
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(list
+					{	descID:'textDeclineReply1	}
+					)
+			</Text>
+			<Text id="InProgress">
+				(list
+					{	descID:'textInProgress1	}
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(trData {
+						payment: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(list
+						{	descID:'textSuccessDebrief1		data:trData	}
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(list
+					{	descID:'textFailureDebrief1	}
+					)
+			</Text>
+
 			<Text id="textSummary">
+
 				Your mission is to destroy %targetName% in %systemName%.
 
 				System: %systemName%\n
 				Payment: %payment%
+
 			</Text>
-
-			<Text id="Intro">
-
+			<Text id="textIntro1">
+				
 				You are at Commonwealth Militia Headquarters. The officer of the 
 				watch looks up from his displays:
 
-				"Are you looking for a mission, captain?"
+				"Are you looking for a mission, pilot?"
 
 			</Text>
-
-			<Text id="Briefing">
-				(msnTranslate gSource 'textBriefing {
-					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
-					})
-			</Text>
-			<Text id="textBriefing">
+			<Text id="textBriefing1">
 
 				"%TargetName% is hiding among the outer asteroids. We want you to
-				go out there and destroy it. Clear?"
+				go out there and destroy it.
+
+				"We'll pay you %payment% if you succeed. Clear?"
 
 			</Text>
+			<Text id="textAcceptReply1">
 
-			<String id="AcceptReply">
-				"We've uploaded the coordinates of the target to your computer. Good luck, captain!"
-			</String>
+				"We've uploaded the coordinates of the target to your computer. 
+				Good luck, pilot!"
 
-			<String id="DeclineReply">
-				"Why don't you make yourself useful and get us some tea or something."
-			</String>
+			</Text>
+			<Text id="textDeclineReply1">
 
-			<String id="InProgress">
-				"You haven't completed your mission! Don't return until you have!"
-			</String>
-			<String id="FailureDebrief">
-				"You screwed that mission all the way to Sol and back. You better hit the sims, pilot!"
-			</String>
-			<String id="SuccessDebrief">
-				"Well done! You dealt with that threat expertly."
-			</String>
+				"Why don't you make yourself useful and get us some tea or 
+				something."
+
+			</Text>
+			<Text id="textInProgress1">
+
+				"You haven't completed your mission! Don't return until you 
+				have!"
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+
+				"Well done! You dealt with that threat expertly. We've deposited
+				%payment% in your account."
+
+			</Text>
+			<Text id="textFailureDebrief1">
+
+				"You screwed that mission all the way to Sol and back. You 
+				better hit the sims, pilot!"
+
+			</Text>
 		</Language>
 	</MissionType>
 

@@ -303,6 +303,8 @@
 	<Sound UNID="&snShieldHit1;"			filename="Resources\ShieldHit1.wav"/>
 	<Sound UNID="&snMissileLauncher;"		filename="Resources\MissileLaunch1.wav"/>
 
+	<Sound unid="&snDefaultShipScreenAmbient;"		filename="Resources\DefaultShipScreenAmbient.wav"/>
+
 <!-- RESOURCES =================================================================
 
 	These resources are used by these effects.

@@ -12,7 +12,7 @@
 			>
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(typTranslate &unidPilgrimClass; 'rankDetails)
+				(typTranslate &svSistersOfDomina; 'statusDisplay)
 			</OnDisplayInit>
 		</Display>
 
@@ -51,6 +51,10 @@
 				</OnPaneInit>
 			
 				<Actions>
+					<Action id="actionOffer">
+						(scrShowScreen gScreen &dsSistersOffer;)
+					</Action>
+
 					<Action id="actionContemplate" default="1">
 						(block (
 							(roll (random 1 100))
@@ -151,9 +155,11 @@
 								)
 							)
 					</Action>
-					<Action id="actionOffer">
-						(scrShowScreen gScreen &dsSistersOffer;)
+
+					<Action id="actionPowersHelp">
+						(scrShowScreen gScreen &dsDominaPowersHelp;)
 					</Action>
+
 					<Action id="actionDone" default="1" cancel="1">
 						(scrExitScreen gScreen)
 					</Action>
@@ -215,7 +221,8 @@
 		<Language>
 			<Text id="actionContemplate">[C]ontemplate</Text>
 			<Text id="actionOffer">[O]ffer Item</Text>
-			
+			<Text id="actionPowersHelp">Domina [P]owers</Text>
+
 			<Text id="DominaRelationshipDesc">
 
 				Your disembodied mind hurtles through space. Stars dance like 
@@ -441,8 +448,8 @@
 			<Donate noListNavigation="true">
 				<OnPaneInit>
 					(block (
-						(theItem (scrGetItem gScreen))
 						(countDonated (scrGetData gScreen 'countDonated))
+						(theItem (itmSetCount (scrGetItem gScreen) countDonated))
 
 						(entry (domGetDonationDesc theItem))
 						(rel (@ entry 'dominaRel))
@@ -470,7 +477,7 @@
 								(scrSetDesc gScreen 
 									(cat 
 										(scrTranslate gScreen 'descDonate.intro {
-											itemName: (itmGetName theItem Nil)
+											itemName: (itmGetName theItem 'countOnly)
 											})
 										"\n\n"
 										(or desc (scrTranslate gScreen 'descDonate.default))
@@ -484,8 +491,8 @@
 				<Actions>
 					<Action id="actionContinue" cancel="1" default="1">
 						(block (
-							(theItem (scrGetItem gScreen))
 							(countDonated (scrGetData gScreen 'countDonated))
+							(theItem (itmSetCount (scrGetItem gScreen) countDonated))
 
 							(entry (domGetDonationDesc theItem))
 							(rel (@ entry 'dominaRel))
@@ -495,7 +502,7 @@
 							(objFireItemEvent gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
 
 							(domGainXP incRel)
-							(typIncGlobalData &stDomina; 'psionicsOffered (itmGetCount theItem))
+							(typIncGlobalData &stDomina; 'psionicsOffered countDonated)
 
 							(scrExitScreen gScreen)
 							(if (typ@ &unidPilgrimClass; 'nextLevelNotification)
@@ -574,7 +581,18 @@
 			(setq domGetDonationDesc (lambda (theItem)
 				(block (
 					(customRel (itm@ theItem 'sisters.donateRel))
-					(customDesc (typTranslate (itmGetType theItem) 'sisters.donateDesc))
+					(trData {
+						itemName: (itmGetName theItem 'noDeterminer)
+						itemNameWithCount: (itmGetName theItem 'countOnly)
+						})
+					(customDesc 
+						(if (gr (itmGetCount theItem) 1)
+							(or (typTranslate (itmGetType theItem) 'sisters.donateDesc.plural trData)
+								(typTranslate (itmGetType theItem) 'sisters.donateDesc trData)
+								)
+							(typTranslate (itmGetType theItem) 'sisters.donateDesc trData)
+							)
+						)
 					)
 					(switch
 						(not theItem)

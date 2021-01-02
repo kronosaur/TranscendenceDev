@@ -10,7 +10,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msHuntForAntarctica;"
-			name=				"Hunt for CSC Antarctica"
+			name=				"Antarctica 03: Hunt for CSC Antarctica"
 			attributes=			"commonwealthFleet, cscTerra, rank5, rank6"
 
 			level=				"9"
@@ -18,6 +18,8 @@
 			maxAppearing=		"1"
 			noDecline=			"true"
 			>
+
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<Events>
 			<OnCreate>

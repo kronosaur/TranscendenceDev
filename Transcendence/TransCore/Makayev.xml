@@ -89,17 +89,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="3-4">
 			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
+				<Lookup chance="75" table="&tbCorpMakayevDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -119,9 +114,7 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionDockServices" default="1">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionBuyItems">
@@ -267,19 +260,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Ship	count="1" class="&scManticore;" orders="guard"/>
-			<Lookup count="1" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="4-5">
 			<Table>
-				<Ship	chance="40" class="&scManticore;" orders="guard"/>
-				<Lookup chance="35" table="&tbCorpDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
+				<Lookup chance="50" table="&tbCorpMakayevDefenders;"/>
+				<Lookup chance="50" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -305,9 +291,7 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionDockServices" default="1">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionBuyItems">
@@ -362,6 +346,16 @@
 		</Language>
 	</StationType>
 
+<!-- TABLES -->
+
+	<ShipTable unid="&tbCorpMakayevDefenders;">
+		<LevelTable>
+			<Ship levelFrequency="vrucc r----" count="1" class="&scMolotokA;" orders="guard"/>
+			<Ship levelFrequency="--ruc cr---" count="1" class="&scMolotokB;" orders="guard"/>
+			<Ship levelFrequency="---ru ccrvv" count="1" class="&scManticore;" orders="guard"/>
+		</LevelTable>
+	</ShipTable>
+	
 <!-- RESOURCE -->
 
 	<Image UNID="&rsMakayevFactory;"		bitmap="Resources\MakayevFactory.jpg" bitmask="Resources\MakayevFactoryMask.bmp" loadOnUse="true"/>

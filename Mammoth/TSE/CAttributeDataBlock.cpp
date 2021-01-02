@@ -237,7 +237,10 @@ ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
 			pResult->SetAt(m_Data.GetKey(i), pValue);
 			}
 
-		return pResult;
+		if (pResult->GetCount() == 0)
+			return ICCItemPtr::Nil();
+		else
+			return pResult;
 		}
 	else
 		{
@@ -633,9 +636,25 @@ void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
 //	Sets string data associated with attribute
 
 	{
+	if (strEquals(sAttrib, CONSTLIT("*")))
+		{
+		m_Data.DeleteAll();
+
+		if (!pItem || pItem->IsNil())
+			{ }
+		else if (pItem->IsSymbolTable())
+			{
+			for (int i = 0; i < pItem->GetCount(); i++)
+				{
+				SDataEntry *pEntry = m_Data.SetAt(pItem->GetKey(i));
+				pEntry->pData = ICCItemPtr(pItem->GetElement(i)->CloneContainer());
+				}
+			}
+		}
+
 	//	If the value is Nil, then we delete the entry
 
-	if (pItem == NULL || pItem->IsNil())
+	else if (pItem == NULL || pItem->IsNil())
 		{
 		m_Data.DeleteAt(sAttrib);
 		}

@@ -167,61 +167,6 @@ Metric CalcInterceptTime (const CVector &vTarget, const CVector &vTargetVel, Met
 	return R2;
 	}
 
-bool IntersectLine (const CVector &vStart1, const CVector &vEnd1, 
-					const CVector &vStart2, const CVector &vEnd2, 
-					CVector *retvIntersection,
-					Metric *retIntersectFraction)
-
-//	IntersectLine
-//
-//	Returns TRUE if the two line segments intersect and also returns
-//	the intersection point.
-//
-//	Coincident lines do not intersect.
-//
-//	Based on sample by Damian Coventry
-//	http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/example.cpp
-
-	{
-	Metric denom = ((vEnd2.GetY() - vStart2.GetY())*(vEnd1.GetX() - vStart1.GetX())) -
-			((vEnd2.GetX() - vStart2.GetX())*(vEnd1.GetY() - vStart1.GetY()));
-
-    Metric nume_a = ((vEnd2.GetX() - vStart2.GetX())*(vStart1.GetY() - vStart2.GetY())) -
-			((vEnd2.GetY() - vStart2.GetY())*(vStart1.GetX() - vStart2.GetX()));
-
-    Metric nume_b = ((vEnd1.GetX() - vStart1.GetX())*(vStart1.GetY() - vStart2.GetY())) -
-			((vEnd1.GetY() - vStart1.GetY())*(vStart1.GetX() - vStart2.GetX()));
-
-	if (denom == 0.0)
-		{
-        if (nume_a == 0.0 && nume_b == 0.0)
-			//	Coincident line
-            return false;
-
-		//	Parallel line
-		return false;
-		}
-
-	Metric ua = nume_a / denom;
-	Metric ub = nume_b / denom;
-
-	if (ua >= 0.0 && ua <= 1.0 && ub >= 0.0 && ub <= 1.0)
-		{
-		if (retvIntersection)
-			*retvIntersection = CVector(
-					vStart1.GetX() + ua * (vEnd1.GetX() - vStart1.GetX()),
-					vStart1.GetY() + ua * (vEnd1.GetY() - vStart1.GetY())
-					);
-
-		if (retIntersectFraction)
-			*retIntersectFraction = ua;
-
-		return true;
-		}
-
-	return false;
-	}
-
 bool IntersectRect(const CVector &vUR1, const CVector &vLL1,
 				   const CVector &vUR2, const CVector &vLL2)
 

@@ -83,8 +83,8 @@
 		</Devices>
 
 		<Maneuver
-			maxRotationRate=	"9.0"
-			rotationAccel=		"3.0"
+			maxRotationRate=	"8.0"
+			rotationAccel=		"2.0"
 			/>
 
 		<Items>

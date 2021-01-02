@@ -200,10 +200,10 @@ bool CGShape::ArcQuadrilateral (const CVector &vCenter, const CVector &vInnerPos
 	CVector vP1;
 	CVector vP2;
 	CVector vInnerCornerUp;
-	CGeometry::EIntersectResults iResult = CGeometry::IntersectLineCircle(vInnerPos + vHalfWidth, vOuterPos + vHalfWidth, CVector(), rInnerRadius, &vP1, &vP2);
-	if (iResult == CGeometry::intersectNone)
+	CGeometry::EIntersect iResult = CGeometry::IntersectLineCircle(vInnerPos + vHalfWidth, vOuterPos + vHalfWidth, CVector(), rInnerRadius, &vP1, &vP2);
+	if (iResult == CGeometry::EIntersect::None)
 		bNoInnerIntersect = true;
-	else if (iResult == CGeometry::intersectPoint)
+	else if (iResult == CGeometry::EIntersect::Point)
 		vInnerCornerUp = vP1;
 	else
 		vInnerCornerUp = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
@@ -212,9 +212,9 @@ bool CGShape::ArcQuadrilateral (const CVector &vCenter, const CVector &vInnerPos
 
 	CVector vInnerCornerDown;
 	iResult = CGeometry::IntersectLineCircle(vInnerPos - vHalfWidth, vOuterPos - vHalfWidth, CVector(), rInnerRadius, &vP1, &vP2);
-	if (iResult == CGeometry::intersectNone)
+	if (iResult == CGeometry::EIntersect::None)
 		bNoInnerIntersect = true;
-	else if (iResult == CGeometry::intersectPoint)
+	else if (iResult == CGeometry::EIntersect::Point)
 		vInnerCornerDown = vP1;
 	else
 		vInnerCornerDown = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
@@ -232,9 +232,9 @@ bool CGShape::ArcQuadrilateral (const CVector &vCenter, const CVector &vInnerPos
 	bool bNoOuterIntersect = false;
 	CVector vOuterCornerUp;
 	iResult = CGeometry::IntersectLineCircle(vInnerPos + vHalfWidth, vOuterPos + vHalfWidth, CVector(), rOuterRadius, &vP1, &vP2);
-	if (iResult == CGeometry::intersectNone)
+	if (iResult == CGeometry::EIntersect::None)
 		bNoOuterIntersect = true;
-	else if (iResult == CGeometry::intersectPoint)
+	else if (iResult == CGeometry::EIntersect::Point)
 		vOuterCornerUp = vP1;
 	else
 		vOuterCornerUp = ((vP1 - vOuterPos).Length2() < (vP2 - vOuterPos).Length2() ? vP1 : vP2);
@@ -243,9 +243,9 @@ bool CGShape::ArcQuadrilateral (const CVector &vCenter, const CVector &vInnerPos
 
 	CVector vOuterCornerDown;
 	iResult = CGeometry::IntersectLineCircle(vInnerPos - vHalfWidth, vOuterPos - vHalfWidth, CVector(), rOuterRadius, &vP1, &vP2);
-	if (iResult == CGeometry::intersectNone)
+	if (iResult == CGeometry::EIntersect::None)
 		bNoOuterIntersect = true;
-	else if (iResult == CGeometry::intersectPoint)
+	else if (iResult == CGeometry::EIntersect::Point)
 		vOuterCornerDown = vP1;
 	else
 		vOuterCornerDown = ((vP1 - vOuterPos).Length2() < (vP2 - vOuterPos).Length2() ? vP1 : vP2);

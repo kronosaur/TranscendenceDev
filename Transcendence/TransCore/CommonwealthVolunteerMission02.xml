@@ -22,6 +22,8 @@
 			</Variant>
 		</Properties>
 
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+
 		<Events>
 			<OnTargetChosen>
 				(block (

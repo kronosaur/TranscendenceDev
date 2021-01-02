@@ -63,6 +63,8 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, co
 //  if we fail to create the pane.
 
     {
+	DEBUG_TRY
+
     //  Get the list of objects at this node
 
     TSortMap<CString, SObjDesc> Objs;
@@ -88,7 +90,7 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, co
 
 	//	Now that we know the size of the text, resize
 
-	pHeaderBack->SetPropertyVector(PROP_SCALE, CVector(RectWidth(m_rcPane) - 2, cyHeader - 1));
+	pHeaderBack->SetPropertyVector(PROP_SCALE, CVector(RectWidth(m_rcPane) - 2.0, cyHeader - 1.0));
 
 	//	Compute the size of the list area
 
@@ -150,6 +152,8 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, co
     *retpAni = pRoot;
 
     return true;
+
+	DEBUG_CATCH
     }
 
 void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, int cxWidth, IAnimatron **retpAni, int *retcyHeight)
@@ -275,6 +279,8 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
 //  icon.
 
     {
+	DEBUG_TRY
+
 	if (Obj.pType == NULL)
 		return false;
 
@@ -343,6 +349,8 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
 
     *retpIcon = pIcon;
     return true;
+
+	DEBUG_CATCH
     }
 
 void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, const CTopologyNode &Node, const SOptions &Options, int *retcyHeight) const

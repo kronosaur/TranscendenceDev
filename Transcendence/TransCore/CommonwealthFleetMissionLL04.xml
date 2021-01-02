@@ -12,7 +12,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msCSCLamplighterLost;"
-			name=			"Lamplighter Lost"
+			name=			"Lamplighter 04: Lost"
 			attributes=		"commonwealthFleet, cscTerra, rank5, rank6, lamplighter"
 
 			expireTime=		"1800"
@@ -20,6 +20,8 @@
 			level=			"8-10"
 			priority=		"100"
 			>
+
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<Events>
 			<OnCreate>
@@ -71,12 +73,14 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msCSCLamplighterTesting;"
-			name=			"Lamplighter testing"
+			name=			"Lamplighter 04: Testing"
 			attributes=		"commonwealthFleet, cscTerra, rank5, rank6, paneInitMission, lamplighter"
 
 			level=			"8-10"
 			maxAppearing=	"1"
 			>
+
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<Events>
 			<OnCreate>
@@ -381,9 +385,7 @@
 					<Action id="actionContinue" default="1" cancel="1">
 						(block ()
 							(scrExitScreen gScreen)
-							(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+							(rpgDockServices gPlayerShip)
 							)
 					</Action>
 				</Actions>

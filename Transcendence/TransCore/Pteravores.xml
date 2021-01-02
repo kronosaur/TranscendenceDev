@@ -154,7 +154,8 @@
 				powerUse=			"100"
 
 				hitPoints=			"20"
-				interaction=		"100"
+				interaction=		"always"
+				noWorldHits=		"true"
 
 				sound=				"&snRecoillessCannon;"
 				>

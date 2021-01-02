@@ -2743,7 +2743,22 @@ void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 
 		if ((pMission->IsCompletedNonPlayer() && pMission->CleanNonPlayer()) || pMission->IsDestroyed())
 			{
-			m_AllMissions.Delete(i);
+			if (!pMission->IsDestroyed())
+				{
+				if (m_Events.CancelEvent(pMission, false))
+					{
+					kernelDebugLogPattern("DEBUG: Canceled event for mission %s", pMission->GetNounPhrase());
+					}
+				}
+			else
+				{
+				if (m_Events.CancelEvent(pMission, false))
+					{
+					kernelDebugLogPattern("DEBUG: Canceled event for a destroyed mission %s", pMission->GetNounPhrase());
+					}
+				}
+
+			m_AllMissions.DeleteMission(i);
 			i--;
 			}
 		}
@@ -2937,6 +2952,19 @@ CTimeSpan CUniverse::StopGameTime (void)
 	{
 	CTimeDate StopTime(CTimeDate::Now);
 	return timeSpan(m_StartTime, StopTime);
+	}
+
+void CUniverse::StopSound (int iChannel)
+
+//	StopSound
+//
+//	Stops playing the given sound.
+
+	{
+	if (m_bNoSound || !m_pSoundMgr || iChannel == -1)
+		return;
+
+	m_pSoundMgr->Stop(iChannel);
 	}
 
 bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)

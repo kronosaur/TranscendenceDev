@@ -457,6 +457,7 @@
     <ClCompile Include="CInputKeyPainter.cpp" />
     <ClCompile Include="CIntegerRangeCriteria.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
+    <ClCompile Include="CInteractionLevel.cpp" />
     <ClCompile Include="CItemCriteria.cpp" />
     <ClCompile Include="CItemEncounterDefinitions.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />

@@ -21,13 +21,15 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msDallSphere;"
-			name=				"Dall Sphere"
+			name=				"Dall 01: The Sphere"
 			attributes=			"stKatsTaikon"
 
 			level=				"4"
 			maxAppearing=		"1"
 			noDebrief=			"true"
 			>
+
+		<Image imageID="&rsDallSphere;" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnCreate>

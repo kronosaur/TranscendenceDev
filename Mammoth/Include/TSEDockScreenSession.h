@@ -141,6 +141,7 @@ class CDockSession
 
 		//	FLAG_FORCE_UNDOCK
 
+		void ClearOnInitFlag () { m_bOnInitCalled = false; }
 		bool ExitScreen (DWORD dwFlags = 0);
 		bool FindScreenRoot (const CString &sScreen, CDesignType **retpRoot, CString *retsScreen, ICCItemPtr *retpData) const;
 		const SScreenSetTab *FindTab (const CString &sID) const;
@@ -156,25 +157,35 @@ class CDockSession
 		void IncData (const CString &sAttrib, ICCItem *pOptionalInc, ICCItemPtr *retpResult);
 		void InitCustomProperties (void);
 		bool InSession (void) const { return !m_DockFrames.IsEmpty(); }
+		bool IsFirstOnInit () const { return !m_bOnInitCalled; }
+		void OnInitCalled () { m_bOnInitCalled = true; }
 		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const { if (ModifyItemNotificationNeeded(Source)) m_pDockScreenUI->OnModifyItemBegin(Ctx, Source, Item); }
 		void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { if (ModifyItemNotificationNeeded(Source)) m_pDockScreenUI->OnModifyItemComplete(Ctx, Source, Result); }
 		CSpaceObject *OnPlayerDocked (IDockScreenUI &DockScreenUI, CSpaceObject *pObj);
 		void OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignType *pDefaultScreensRoot);
+		void PlayAmbientSound ();
 		void SetBackgroundDesc (const SDockScreenBackgroundDesc &BackgroundDesc) { m_DockFrames.SetBackgroundDesc(BackgroundDesc); }
 		void SetCurrentPane (const CString &sPane) { m_DockFrames.SetCurrentPane(sPane); }
 		bool SetData (const CString &sAttrib, const ICCItem *pValue);
 		bool SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
 		bool SetReturnData (const CString &sAttrib, ICCItem *pValues);
 		bool SetScreenSet (const ICCItem &ScreenSet);
+		bool ShowScreen (CSpaceObject &Location, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData);
+		void StopAmbientSound () { PlayAmbientSound(); }
 		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError = NULL) const;
 
 	private:
+		void ClearAmbientSound () { SetAmbientSound(NULL); }
 		void InitCustomProperties (const CDesignType &Type, const SDockFrame &Frame);
 		bool ModifyItemNotificationNeeded (const CSpaceObject &Source) const;
+		void SetAmbientSound (const CSoundResource *pSound);
 
 		IDockScreenUI *m_pDockScreenUI = &m_NullUI;		//	Wormhole to dockscreen UI
 		CDesignType *m_pDefaultScreensRoot = NULL;		//	Default root to look for local screens
 		CDockScreenStack m_DockFrames;					//	Stack of dock screens
+		const CSoundResource *m_pAmbientSound = NULL;	//	Current ambient sound
+		const CSoundResource *m_pAmbientSoundPlaying = NULL;
+		bool m_bOnInitCalled = false;					//	TRUE if we've already called OnInit
 
 		static TPropertyHandler<CDockSession> m_PropertyTable;
 		static IDockScreenUI m_NullUI;

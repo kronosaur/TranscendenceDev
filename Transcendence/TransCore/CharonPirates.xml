@@ -233,7 +233,7 @@
 			multiHull=			"true"
 			armorID=			"&itHeavyReactiveArmor;"
 			hitPoints=			"200"
-            regen=              "5"
+			regen=              "5"
 			fireRateAdj=		"40"
 			explosionType=		"&vtKineticExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -2010,24 +2010,35 @@
 
 					; If it does not exist, create one
 					(if (not strongholdObj)
-						(block (bestDist strongholdPos strongholdType stars planets badAngles triesLeft firstStar)
-							; Find the closest star
-							(setq stars (sysFindObject sourceObj "t +star; S:d;"))
-							(setq firstStar (@ stars 0))
-							
-							; Find the most distant planet in that star's system
-							(setq planets (sysFindObject firstStar "t +isPlanet:true; S:D;"))
-							(enumWhile planets (not bestDist) thePlanet
-								(if (eq firstStar (sysFindObject thePlanet "tN +star;"))
-									(setq bestDist (sysVectorDistance thePlanet firstStar))
+						(block (
+							;	Find the closest star
+
+							(stars (sysFindObject sourceObj "t +star; S:d;"))
+							(firstStar (@ stars 0))
+							(planets (sysFindObject firstStar "t +isPlanet:true; S:D;"))
+
+							;	Find the farthest planet
+
+							(farthestPlanetDist
+								(map planets '(reduceMax excludeNil) thePlanet
+									(if (= firstStar (sysFindObject thePlanet "tN +star;"))
+										(sysVectorDistance thePlanet firstStar)
+										)
 									)
 								)
-								
-							(if (ls bestDist 360)
-								(setq bestDist (random 480 600))
-								(setq bestDist (add bestDist (random 120 240)))
+
+							;	Compute best distance
+
+							(bestDist
+								(if (ls farthestPlanetDist 360)
+									(random 480 600)
+									(+ farthestPlanetDist (random 120 240))
+									)
 								)
 
+							strongholdPos strongholdType badAngles triesLeft
+							)
+							
 							; Compute the position of the primary stronghold. It must be
 							; in the outer system far from anything else.
 							; Also try to avoid being too close to the path to another star.
@@ -2050,7 +2061,6 @@
 									)
 								)
 									
-
 							; Create a different stronghold depending on the system level
 							(switch
 								(eq (sysGetLevel) 1)

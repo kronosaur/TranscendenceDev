@@ -160,7 +160,7 @@ class IShipController
 
 		struct SData
 			{
-			SData (void) : iDataType(dataNone)
+			SData (void)
 				{ }
 
 			SData (DWORD dwData) : iDataType(dataInteger),
@@ -189,10 +189,10 @@ class IShipController
 			const CItem &AsItem (void) const { if (iDataType == dataItem) return Item; else return CItem::NullItem(); }
 			bool IsIntegerOrPair (void) const { return (iDataType == dataInteger || iDataType == dataPair); }
 
-			EDataTypes iDataType;
+			EDataTypes iDataType = dataNone;
 
-			DWORD dwData1;
-			DWORD dwData2;
+			DWORD dwData1 = 0;
+			DWORD dwData2 = 0;
 			CString sData;
 			CVector vData;
 			CItem Item;

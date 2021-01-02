@@ -21,6 +21,8 @@
 			noDebrief=			"true"
 			>
 
+		<Image	imageID="&rsBlackMarketInsignia;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+
 		<Events>
 			<OnCreate>
 				(switch
@@ -119,7 +121,7 @@
 				%destination% system.
 
 				System: %systemName%\n
-				Payment: %payment%
+				Payment: None
 
 			</Text>
 			<Text id="Briefing">

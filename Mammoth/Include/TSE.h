@@ -480,7 +480,6 @@ class CSpaceObject
 
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 		virtual CTargetList GetTargetList (void) const { return CTargetList(); }
-		virtual bool IsTargetableProjectile (void) const { return false; }
 
 		int CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const;
 		CSpaceObject *CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
@@ -508,10 +507,20 @@ class CSpaceObject
 
 		//	Data
 
+		void ClearObjReferences (void) { m_Data.OnSystemChanged(NULL); }
 		CAttributeDataBlock &GetData (void) { return m_Data; }
 		const CAttributeDataBlock &GetData (void) const { return m_Data; }
+		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
+		CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		ICCItemPtr GetGlobalData (const CString &sAttribute) const;
+		CSpaceObject *GetObjRefData (const CString &sAttrib) { return m_Data.GetObjRefData(sAttrib); }
+		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
+		void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
+		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
+		void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
+		void SetDataFromXML (CXMLElement *pData) { m_Data.SetFromXML(pData); }
 		void SetGlobalData (const CString &sAttribute, ICCItem *pData);
+		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj) { m_Data.SetObjRefData(sAttrib, pObj); }
 
 		//	Devices
 
@@ -549,6 +558,7 @@ class CSpaceObject
 		//	Dock Screens
 
 		virtual DWORD GetDefaultBkgnd (void) { return 0; }
+		virtual const CSoundResource *GetDockScreenAmbientSound () const { return NULL; }
 		virtual CXMLElement *GetScreen (const CString &sName);
 
 		CDesignType *GetFirstDockScreen (CString *retsScreen = NULL, ICCItemPtr *retpData = NULL);
@@ -739,9 +749,6 @@ class CSpaceObject
 		Metric GetBoundsRadius (void) const { return Max(m_rBoundsX, m_rBoundsY); }
 		CCommunicationsHandler *GetCommsHandler (void);
 		int GetCommsMessageCount (void);
-		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
-		CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
-		int GetDataInteger (const CString &sAttrib) const;
 		CString GetDesiredCommsKey (void) const;
 		int GetDestiny (void) const { return m_iDestiny; }
 		Metric GetDetectionRange (int iPerception) const { return CPerceptionCalc::GetRange(GetDetectionRangeIndex(iPerception)); }
@@ -763,7 +770,6 @@ class CSpaceObject
 		CSpaceObject *GetNearestVisibleEnemy (Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		CSpaceObject *GetNearestVisibleEnemyInArc (int iMinFireArc, int iMaxFireArc, Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
-		CSpaceObject *GetObjRefData (const CString &sAttrib) { return m_Data.GetObjRefData(sAttrib); }
 		CSpaceObject *GetOrderGiver (DestructionTypes iCause = killedNone);
 		CDesignType *GetOverride (void) { return m_pOverride; }
 		CSpaceObject *GetPlayerShip (void) const { return (m_pSystem ? m_pSystem->GetPlayerShip() : NULL); }
@@ -802,7 +808,6 @@ class CSpaceObject
 					&& (vLL.GetX() < m_vPos.GetX())
 					&& (vLL.GetY() < m_vPos.GetY()); }
 		bool InDebugMode () const { return (m_fDebugMode ? true : false); }
-		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		bool IsAngryAt (const CDamageSource &Obj) const;
 		bool IsBarrier (void) const { return (m_fIsBarrier ? true : false); }
 		bool IsCollisionTestNeeded (void) const { return m_fCollisionTestNeeded; }
@@ -840,7 +845,6 @@ class CSpaceObject
 		bool IsShowingDamageBar (void) const { return m_fShowDamageBar; }
 		bool IsStargateInRange (Metric rMaxRange);
 		bool IsUnderAttack (void) const;
-		void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
 		void NotifyOnNewSystem (CSystem *pNewSystem);
 		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
 		void NotifyOnObjDocked (CSpaceObject *pDockTarget);
@@ -862,10 +866,6 @@ class CSpaceObject
 		void Reconned (void);
 		void RestartTime (void) { m_fTimeStop = false; }
 		void SetCollisionTestNeeded (bool bNeeded = true) { m_fCollisionTestNeeded = bNeeded; }
-		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
-		void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
-		void SetDataFromXML (CXMLElement *pData) { m_Data.SetFromXML(pData); }
-		void SetDataInteger (const CString &sAttrib, int iValue);
 		void SetDebugMode (bool bValue = true) { m_fDebugMode = bValue; }
 		void SetDestructionNotify (bool bNotify = true) { m_fNoObjectDestructionNotify = !bNotify; }
 		void SetHasGetDockScreenEvent (bool bHasEvent) { m_fHasGetDockScreenEvent = bHasEvent; }
@@ -881,7 +881,6 @@ class CSpaceObject
 		void SetMarked (bool bMarked = true) { m_fMarked = bMarked; }
 		void SetNamed (bool bNamed = true) { m_fHasName = bNamed; }
 		void SetNoFriendlyTarget (bool bValue = true) { m_fNoFriendlyTarget = bValue; }
-		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj) { m_Data.SetObjRefData(sAttrib, pObj); }
 		void SetOverride (CDesignType *pOverride);
 
 		void SetPlayerDocked (void) { m_fPlayerDocked = true; }
@@ -1022,6 +1021,29 @@ class CSpaceObject
 		bool IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
+		//	Ships
+
+		virtual const CShipPerformanceDesc &GetShipPerformance (void) const { return CShipPerformanceDesc::Null(); }
+
+		//	Stargates (object is a stargate)
+
+		virtual CString GetStargateID (void) const { return NULL_STR; }
+		virtual bool IsActiveStargate (void) const { return false; }
+		virtual bool IsStargate (void) const { return false; }
+		virtual bool RequestGate (CSpaceObject *pObj);
+		virtual bool SupportsGating (void) { return false; }
+
+		Metric GetMaxGateDist2 (void) const;
+
+		//	Statics
+
+		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
+		static CString ConvertToID (InstallItemResults iResult);
+
+		//	Stations
+
+		virtual const CAsteroidDesc &GetAsteroidDesc (void) const { return CAsteroidDesc::Null(); }
+
 		//	Trade
 
 		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
@@ -1055,29 +1077,6 @@ class CSpaceObject
 		bool HasTradeUpgradeOnly (ETradeServiceTypes iService) const;
 		void RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
-
-		//	Ships
-
-		virtual const CShipPerformanceDesc &GetShipPerformance (void) const { return CShipPerformanceDesc::Null(); }
-
-		//	Stargates (object is a stargate)
-
-		virtual CString GetStargateID (void) const { return NULL_STR; }
-		virtual bool IsActiveStargate (void) const { return false; }
-		virtual bool IsStargate (void) const { return false; }
-		virtual bool RequestGate (CSpaceObject *pObj);
-		virtual bool SupportsGating (void) { return false; }
-
-		Metric GetMaxGateDist2 (void) const;
-
-		//	Statics
-
-		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
-		static CString ConvertToID (InstallItemResults iResult);
-
-		//	Stations
-
-		virtual const CAsteroidDesc &GetAsteroidDesc (void) const { return CAsteroidDesc::Null(); }
 
 		//	Wingmen
 
@@ -1116,7 +1115,7 @@ class CSpaceObject
 		virtual Categories GetCategory (void) const { return catOther; }
 		virtual DWORD GetClassUNID (void) { return 0; }
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
-		virtual int GetInteraction (void) const { return -1; }
+		CInteractionLevel GetInteraction (void) const { const CWeaponFireDesc *pDesc = GetWeaponFireDesc(); return (pDesc ? pDesc->GetInteraction() : CInteractionLevel(-1)); }
 		virtual Metric GetInvMass (void) const { return 0.0; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
 		virtual Metric GetMass (void) const { return 0.0; }
@@ -1188,7 +1187,7 @@ class CSpaceObject
 		virtual int GetLastFireTime (void) const { return 0; }
 		virtual int GetLastHitTime (void) const { return 0; }
 		virtual int GetLevel (void) const { return 1; }
-		virtual int GetMaxCounterValue(void) { return 0; }
+		virtual int GetMaxCounterValue (void) const { return 0; }
 		virtual int GetMaxPower (void) const { return 0; }
 		virtual int GetMaxLightDistance (void) const { return 0; }
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
@@ -1252,8 +1251,9 @@ class CSpaceObject
 		virtual void DetonateNow (CSpaceObject *pHit) { }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) { return GetNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const { return CDamageSource::Null(); }
-		virtual CWeaponFireDesc *GetWeaponFireDesc (void) { return NULL; }
+		virtual const CWeaponFireDesc *GetWeaponFireDesc (void) const { return NULL; }
 		virtual CSpaceObject *GetSecondarySource (void) const { return NULL; }
+		virtual bool IsTargetableProjectile (void) const { return false; }
 
 		//	...for ships
 
@@ -1348,7 +1348,6 @@ class CSpaceObject
 		void ClearCannotBeHit (void) { m_fCannotBeHit = false; }
 		void ClearInDamageCode (void) { m_fInDamage = false; }
 		void ClearNoFriendlyFire(void) { m_fNoFriendlyFire = false; }
-		void ClearObjReferences (void) { m_Data.OnSystemChanged(NULL); }
 		void ClearPainted (void) { m_fPainted = false; }
 		void DisableObjectDestructionNotify (void) { m_fNoObjectDestructionNotify = true; }
 		const Metric &GetBounds (void) { return m_rBoundsX; }
@@ -1360,8 +1359,7 @@ class CSpaceObject
 				const CObjectImageArray &Image2, int iTick2, int iRotation2, const CVector &vPos2);
 		bool IsObjectDestructionHooked (void) { return (m_fHookObjectDestruction ? true : false); }
 		void ItemEnhancementModified (CItemListManipulator &ItemList) { OnItemEnhanced(ItemList); }
-		bool MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &Source, CWeaponFireDesc *pDesc) const;
-		static bool MissileCanInteract (const CSpaceObject &Obj, int iInteraction, const CSpaceObject *pTarget = NULL);
+		bool MissileCanHitObj (const CSpaceObject &Obj, const CDamageSource &Source, const CWeaponFireDesc &Desc, CSpaceObject *pTarget = NULL) const;
 		void PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);

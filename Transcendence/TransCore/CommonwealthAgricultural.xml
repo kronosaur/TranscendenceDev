@@ -123,9 +123,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -176,7 +174,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msCommAgriDefend;"
-			name=				"Defend Agricultural Station"
+			name=				"Commonwealth Agricultural 01: Defend Station"
 			attributes=			"commonwealthAgricultural, deliveryMission"
 
 			level=				"1-5"
@@ -185,6 +183,8 @@
 			noDebrief=			"true"
 			failureAfterOutOfSystem="0"
 			>
+
+		<Image imageID="&rsCommonwealthAgriculturalColony;" imageWidth="320" imageHeight="290"/>
 
 		<StaticData>
 			<Attackers>

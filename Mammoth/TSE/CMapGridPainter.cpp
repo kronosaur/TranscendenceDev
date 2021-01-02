@@ -219,11 +219,16 @@ void CMapGridPainter::Paint (CG32bitImage &Dest, CMapViewportCtx &PaintCtx, cons
 
 	for (i = 0; i < Lines.GetCount(); i++)
 		{
+		CVector vFrom;
+		CVector vTo;
+		if (!CGeometry::ClipLineWithRect(Lines[i].vFrom, Lines[i].vTo, PaintCtx.GetLL(), PaintCtx.GetUR(), &vFrom, &vTo))
+			continue;
+
 		int xFrom, yFrom;
-		PaintCtx.Transform(Lines[i].vFrom, &xFrom, &yFrom);
+		PaintCtx.Transform(vFrom, &xFrom, &yFrom);
 
 		int xTo, yTo;
-		PaintCtx.Transform(Lines[i].vTo, &xTo, &yTo);
+		PaintCtx.Transform(vTo, &xTo, &yTo);
 
 		Dest.DrawLine(xFrom, yFrom, xTo, yTo, 1, RGB_GRID_LINE);
 		}

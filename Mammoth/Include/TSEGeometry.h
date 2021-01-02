@@ -29,7 +29,9 @@ Metric CalcDistanceToPath (const CVector &Pos,
 						   CVector *retvNearestPoint = NULL,
 						   CVector *retvAway = NULL);
 Metric CalcInterceptTime (const CVector &vTarget, const CVector &vTargetVel, Metric rMissileSpeed, Metric *retrRange = NULL);
-bool IntersectLine (const CVector &vStart1, const CVector &vEnd1, const CVector &vStart2, const CVector &vEnd2, CVector *retvIntersection = NULL, Metric *retIntersectFraction = NULL);
+inline bool IntersectLine (const CVector &vStart1, const CVector &vEnd1, const CVector &vStart2, const CVector &vEnd2, CVector *retvIntersection = NULL, Metric *retIntersectFraction = NULL)
+	{ return CGeometry::IntersectLine(vStart1, vEnd1, vStart2, vEnd2, retvIntersection, retIntersectFraction); }
+
 bool IntersectRect (const CVector &vUR1, const CVector &vLL1,
 					const CVector &vUR2, const CVector &vLL2);
 bool IntersectRect (const CVector &vUR, const CVector &vLL, const CVector &vPoint);

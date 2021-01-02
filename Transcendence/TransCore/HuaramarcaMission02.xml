@@ -10,7 +10,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msHuaramarcaDreamTest;"
-			name=				"Huaramarca Dream Test"
+			name=				"Huaramarca 02: Dream Test"
 			attributes=			"huariTemple"
 
 			level=				"6"
@@ -30,6 +30,8 @@
 					}
 			</Data>
 		</StaticData>
+
+		<Image	imageID="&rsHuariTemple;" imageWidth="330" imageHeight="330"/>
 
 		<Events>
 			<OnCreate>

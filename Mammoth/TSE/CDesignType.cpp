@@ -103,12 +103,15 @@
 #define PROPERTY_DEFAULT_CURRENCY				CONSTLIT("defaultCurrency")
 #define PROPERTY_DEFAULT_CURRENCY_EXCHANGE		CONSTLIT("defaultCurrencyExchange")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
+#define PROPERTY_GLOBAL_DATA					CONSTLIT("globalData")
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
 #define PROPERTY_MAX_BALANCE					CONSTLIT("maxBalance")
 #define PROPERTY_MERGED							CONSTLIT("merged")
 #define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
 #define PROPERTY_OBSOLETE_VERSION				CONSTLIT("obsoleteVersion")
 #define PROPERTY_REQUIRED_VERSION				CONSTLIT("requiredVersion")
+#define PROPERTY_STATIC_DATA					CONSTLIT("staticData")
+#define PROPERTY_TRADE_DESC						CONSTLIT("tradeDesc")
 #define PROPERTY_UNID							CONSTLIT("unid")
 
 #define FIELD_ENTITY							CONSTLIT("entity")
@@ -525,6 +528,14 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 	else if (strEquals(sProperty, PROPERTY_CLASS))
 		return CC.CreateString(GetTypeClassName());
 
+	else if (strEquals(sProperty, PROPERTY_GLOBAL_DATA))
+		{
+		if (m_pExtra)
+			return m_pExtra->GlobalData.GetDataAsItem(CONSTLIT("*"))->Reference();
+		else
+			return CC.CreateNil();
+		}
+
 	else if (strEquals(sProperty, PROPERTY_DEFAULT_CURRENCY))
 		{
 		const CTradingDesc *pTrade = GetTradingDesc();
@@ -590,6 +601,24 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_REQUIRED_VERSION))
 		return (m_dwMinVersion > 0 ? CC.CreateInteger(m_dwMinVersion) : CC.CreateNil());
+
+	else if (strEquals(sProperty, PROPERTY_STATIC_DATA))
+		{
+		if (m_pExtra)
+			return m_pExtra->StaticData.GetDataAsItem(CONSTLIT("*"))->Reference();
+		else
+			return CC.CreateNil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_TRADE_DESC))
+		{
+		const CTradingDesc *pTrade = GetTradingDesc();
+		if (pTrade)
+			return pTrade->AsCCItem(Ctx)->Reference();
+		else
+			return CC.CreateNil();
+			
+		}
 
 	else if (strEquals(sProperty, PROPERTY_UNID))
 		return CC.CreateInteger(GetUNID());
@@ -3023,10 +3052,7 @@ bool CDesignType::SetTypeProperty (const CString &sProperty, const ICCItem &Valu
 	ICCItemPtr pDummy;
 	EPropertyType iType;
 
-	if (OnSetTypeProperty(sProperty, Value))
-		return true;
-
-	else if (FindCustomPropertyRaw(sProperty, pDummy, &iType))
+	if (FindCustomPropertyRaw(sProperty, pDummy, &iType))
 		{
 		switch (iType)
 			{
@@ -3037,6 +3063,14 @@ bool CDesignType::SetTypeProperty (const CString &sProperty, const ICCItem &Valu
 			default:
 				return false;
 			}
+		}
+	else if (OnSetTypeProperty(sProperty, Value))
+		return true;
+
+	else if (strEquals(sProperty, PROPERTY_GLOBAL_DATA))
+		{
+		SetGlobalData(CONSTLIT("*"), &Value);
+		return true;
 		}
 	else
 		return false;

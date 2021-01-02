@@ -13,7 +13,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHuariDestroyStation;"
-			name=			"Destroy Sung Station"
+			name=			"Huari 03: Destroy Sung Station"
 			attributes=		"huariEmpire, huariFortress"
 
 			level=			"4-8"
@@ -21,6 +21,8 @@
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
 			>
+
+		<Image	imageID="&rsHuariFortress;" imageWidth="380" imageHeight="380"/>
 
 		<Events>
 			<OnCreate>

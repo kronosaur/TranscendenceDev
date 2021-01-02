@@ -86,40 +86,41 @@ class CTradingDesc
 		void AddOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj);
 		void AddOrders (const CTradingDesc &Trade);
 
-		inline void AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
+		void AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
 			{ AddOrder(pType, sCriteria, iPriceAdj, FLAG_BUYS); }
-		inline void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
+		void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
 			{ AddOrder(pType, sCriteria, iPriceAdj, FLAG_SELLS); }
 
+		ICCItemPtr AsCCItem (CCodeChainCtx &CCX) const;
 		bool Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
 		bool Buys (STradeServiceCtx &Ctx, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
 		bool BuysShip (CSpaceObject *pObj, CShipClass *pClass, DWORD dwFlags, int *retiPrice = NULL);
 		bool BuysShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		int Charge (CSpaceObject *pObj, int iCharge);
-        bool ComposeDescription (CUniverse &Universe, CString *retsDesc) const;
+		bool ComposeDescription (CUniverse &Universe, CString *retsDesc) const;
 		bool GetArmorInstallPrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
 		bool GetArmorRepairPrice (const CSpaceObject &Obj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
 		bool GetDeviceInstallPrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
 		bool GetDeviceRemovePrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
-		inline const CEconomyType *GetEconomyType (void) const { return m_pCurrency; }
-		inline CurrencyValue GetMaxBalance (CSpaceObject *pObj) const { return CalcMaxBalance(pObj); }
+		const CEconomyType *GetEconomyType (void) const { return m_pCurrency; }
+		CurrencyValue GetMaxBalance (CSpaceObject *pObj) const { return CalcMaxBalance(pObj); }
 		CurrencyValue GetMaxBalance (int iLevel) const { return (m_iMaxCurrency ? m_iMaxCurrency : CalcMaxBalance(iLevel, m_pCurrency)); }
 		int GetMaxLevelMatched (CUniverse &Universe, ETradeServiceTypes iService, bool bDescriptionOnly = false) const;
 		bool GetRefuelItemAndPrice (const CSpaceObject &Obj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const;
-		inline int GetReplenishCurrency (void) { return m_iReplenishCurrency; }
-		inline int GetServiceCount (void) const { return m_List.GetCount(); }
+		int GetReplenishCurrency (void) { return m_iReplenishCurrency; }
+		int GetServiceCount (void) const { return m_List.GetCount(); }
 		void GetServiceInfo (int iIndex, SServiceInfo &Result) const;
 		bool HasConsumerService (void) const;
 		bool HasService (CUniverse &Universe, ETradeServiceTypes iService, const SHasServiceOptions &Options = SHasServiceOptions()) const;
 		bool HasServiceUpgradeOnly (ETradeServiceTypes iService) const;
-        inline bool HasServices (void) const { return (m_List.GetCount() > 0); }
+		bool HasServices (void) const { return (m_List.GetCount() > 0); }
 		void Init (const CTradingDesc &Src);
 		bool Sells (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL);
 		bool SellsShip (CSpaceObject *pObj, CShipClass *pClass, DWORD dwFlags, int *retiPrice = NULL);
 		bool SellsShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
-		inline void SetEconomyType (const CEconomyType *pCurrency) { m_pCurrency.Set(pCurrency); }
-		inline void SetDefaultMaxBalance (int iMaxCurrency) { m_iMaxCurrency = iMaxCurrency; }
-		inline void SetDefaultReplenish (int iReplenishCurrency) { m_iReplenishCurrency = iReplenishCurrency; }
+		void SetEconomyType (const CEconomyType *pCurrency) { m_pCurrency.Set(pCurrency); }
+		void SetDefaultMaxBalance (int iMaxCurrency) { m_iMaxCurrency = iMaxCurrency; }
+		void SetDefaultReplenish (int iReplenishCurrency) { m_iReplenishCurrency = iReplenishCurrency; }
 
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, CTradingDesc **retpTrade);
 		void OnCreate (CSpaceObject *pObj);
@@ -143,7 +144,7 @@ class CTradingDesc
 			FLAG_ACTUAL_PRICE =			0x00000004,	//	TRUE if we compute actual price
 			FLAG_INVENTORY_ADJ =		0x00000008,	//	TRUE if we adjust the inventory
 			FLAG_UPGRADE_INSTALL_ONLY =	0x00000020,	//	TRUE if we must purchase an item to install
-            FLAG_NO_DESCRIPTION =       0x00000040, //  If TRUE, we exclude this service from ComposeDescription
+			FLAG_NO_DESCRIPTION =       0x00000040, //  If TRUE, we exclude this service from ComposeDescription
 
 			//	DEPRECATED: We don't store these flags, but we require the values
 			//	for older versions.
@@ -171,12 +172,12 @@ class CTradingDesc
 			DWORD dwFlags = 0;					//	Flags
 			};
 
-        struct SServiceTypeInfo
-            {
-            bool bAvailable;                    //  Service available
-            int iMaxLevel;                      //  Max level for this service
-            bool bUpdateInstallOnly;            //  Requires purchase
-            };
+		struct SServiceTypeInfo
+			{
+			bool bAvailable;                    //  Service available
+			int iMaxLevel;                      //  Max level for this service
+			bool bUpdateInstallOnly;            //  Requires purchase
+			};
 
 		void AddOrder (CItemType *pItemType, const CString &sCriteria, int iPriceAdj, DWORD dwFlags);
 		CString ComputeID (ETradeServiceTypes iService, DWORD dwUNID, const CString &sCriteria, DWORD dwFlags);
@@ -186,7 +187,7 @@ class CTradingDesc
 		bool FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc);
 		bool FindService (ETradeServiceTypes iService, CDesignType *pType, const SServiceDesc **retpDesc);
 		bool FindServiceToOverride (const SServiceDesc &NewService, int *retiIndex = NULL) const;
-        bool GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes iService, SServiceTypeInfo &Info) const;
+		bool GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes iService, SServiceTypeInfo &Info) const;
 		bool HasServiceDescription (ETradeServiceTypes iService) const;
 		bool Matches (const CItem &Item, const SServiceDesc &Commodity) const;
 		bool Matches (CDesignType *pType, const SServiceDesc &Commodity) const;

@@ -20,7 +20,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticControlPoint;"
-			name=			"Svalbard"
+			name=			"Heretic 02: Iocrym Control Point"
 			attributes=		"hereticControlPoint"
 
 			level=			"10"
@@ -29,6 +29,8 @@
 			noDecline=		"true"
 			noDebrief=		"true"
 			>
+
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>
@@ -326,7 +328,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticFurtherResearch;"
-			name=			"Sentinel Virus"
+			name=			"Heretic 02A: Sentinel Virus"
 			attributes=		"hereticControlPoint"
 
 			level=			"10"
@@ -334,6 +336,8 @@
 			noDebrief=		"true"
 			noStats=		"true"
 			>
+
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

@@ -10,7 +10,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msHuaramarcaAttackBase;"
-			name=				"Huaramarca Attack Sung Base"
+			name=				"Huaramarca 04: Attack Sung Base"
 			attributes=			"huariEmpire, huariTemple, huariDreamChoice"
 
 			level=				"6"
@@ -19,6 +19,8 @@
 			
 			noDecline=			"True"
 			>
+
+		<Image	imageID="&rsHuariTemple;" imageWidth="330" imageHeight="330"/>
 
 		<Events>
 			<OnCreate>

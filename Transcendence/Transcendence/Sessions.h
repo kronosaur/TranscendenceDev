@@ -636,7 +636,8 @@ class CTextCrawlSession : public IHISession
 						   CCloudService &Service,
 						   const CG32bitImage *pImage,
 						   const CString &sText,
-						   const CString &sCmdDone);
+						   const CString &sCmdDone,
+						   const CString &sWaitingText = NULL_STR);
 
 		//	IHISession virtuals
 		virtual void OnCleanUp (void) override;
@@ -650,12 +651,15 @@ class CTextCrawlSession : public IHISession
 
 	private:
 		void CreateCrawlAnimation (const CString &sText, const RECT &rcRect, IAnimatron **retpAni);
+		void ShowOKButton ();
 
 		CCloudService &m_Service;
-		const CG32bitImage *m_pImage;
+		const CG32bitImage *m_pImage = NULL;
 		CString m_sText;
 		CString m_sCmdDone;
-		bool m_bWaitAnimation;
+		CString m_sWaitingText;
+		bool m_bWaiting = false;
+		bool m_bContinueWhenDoneWaiting = false;
 	};
 
 class CWaitSession : public IHISession

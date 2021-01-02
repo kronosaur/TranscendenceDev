@@ -35,6 +35,8 @@
 			</Variant>
 		</Properties>
 
+		<Image imageID="&rsCommonwealthResidentials;" imageWidth="320" imageHeight="290"/>
+
 		<Events>
 			<OnTargetChosen>
 				(block (

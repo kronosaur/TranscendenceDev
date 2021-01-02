@@ -98,6 +98,13 @@
 			paintLayer=			"overhang"
 			>
 
+		<Properties>
+			<!--
+			By default we accept any military ID (even ones from APD or ED).
+			-->
+			<Definition	id="rpg.checkMilitaryID">"* +militaryID;"</Definition>
+		</Properties>
+
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
@@ -354,9 +361,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -1566,7 +1571,8 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsBattleArenaBkgnd;" bitmap="Resources\BattleArenaScreen.jpg" bitmask="Resources\BattleArenaScreenMask.bmp" loadOnUse="true" />
-	<Image UNID="&rsBattleArenaSegments;" bitmap="Resources\BattleArenaSegments.jpg" bitmask="Resources\BattleArenaSegmentsMask.bmp" hitMask="Resources\BattleArenaSegmentsHitMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsBattleArenaBkgnd;"			bitmap="Resources\BattleArenaScreen.jpg" bitmask="Resources\BattleArenaScreenMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsBattleArenaSegments;"		bitmap="Resources\BattleArenaSegments.jpg" bitmask="Resources\BattleArenaSegmentsMask.bmp" hitMask="Resources\BattleArenaSegmentsHitMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsBattleArenaMissionTile;"	bitmap="Resources\BattleArenaMissionTile.jpg" loadOnUse="true" />
 
 </TranscendenceModule>

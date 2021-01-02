@@ -223,6 +223,10 @@ class CGuardOrder : public IOrderModule
 class COrbitExactOrder : public IOrderModule
 	{
 	public:
+		static constexpr DWORD AUTO_ANGLE = 0xffff;
+		static constexpr int DEFAULT_RADIUS = 10;
+		static constexpr Metric DEFAULT_SPEED = 1.0;
+
 		COrbitExactOrder () : IOrderModule(objCount)
 			{ }
 
@@ -233,6 +237,7 @@ class COrbitExactOrder : public IOrderModule
 		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) override;
+		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData);
 		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderOrbitExact; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
@@ -249,9 +254,12 @@ class COrbitExactOrder : public IOrderModule
 			objCount =		2,
 			};
 
+		static TArray<CShip *> GetOrbitMates (CSpaceObject &Source, DWORD dwRadius);
+		void DistributeOrbitAngles (CShip &Ship, CSpaceObject &Source, const TArray<CShip *> &Ships);
+
 		COrbit m_Orbit;							//	Orbit definition
 		DWORD m_dwStartTick = 0;				//	Tick at start angle
-		Metric m_rAngularSpeed = 2.0;			//	Orbit speed (degrees per tick)
+		Metric m_rAngularSpeed = DEFAULT_SPEED;	//	Orbit speed (degrees per tick)
 		int m_iCountdown = 0;					//	Stop after this time.
 	};
 

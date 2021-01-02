@@ -529,7 +529,7 @@ class CDamageSource
 		CDamageSource (void) { }
 		CDamageSource (CSpaceObject *pSource, DestructionTypes iCause = killedByDamage, CSpaceObject *pSecondarySource = NULL, const CString &sSourceName = NULL_STR, DWORD dwSourceFlags = 0);
 
-		bool CanHit (CSpaceObject *pTarget) const;
+		bool CanHit (const CSpaceObject &Target) const;
 		bool CanHitFriends (void) const;
 		DestructionTypes GetCause (void) const { return m_iCause; }
 		CString GetDamageCauseNounPhrase (DWORD dwFlags);
@@ -550,7 +550,7 @@ class CDamageSource
 		bool IsEmpty (void) const { return (GetObj() == NULL); }
 		bool IsEnemy (CDamageSource &Src) const;
 		bool IsEqual (const CDamageSource &Src) const;
-		bool IsEqual (CSpaceObject *pSrc) const;
+		bool IsEqual (const CSpaceObject &Src) const;
 		bool IsFriend (CSovereign *pSovereign) const;
 		bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
 		void OnLeaveSystem (void);

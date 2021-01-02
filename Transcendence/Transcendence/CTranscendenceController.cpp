@@ -55,6 +55,7 @@
 
 #define CMD_NULL								CONSTLIT("null")
 
+#define CMD_CONTINUE							CONSTLIT("cmdContinue")
 #define CMD_DISABLE_EXTENSION					CONSTLIT("cmdDisableExtension")
 #define CMD_ENABLE_EXTENSION					CONSTLIT("cmdEnableExtension")
 #define CMD_LOAD_COLLECTION						CONSTLIT("cmdLoadCollection")
@@ -73,6 +74,7 @@
 #define CMD_SOUNDTRACK_STOP_MISSION_TRACK_TRAVEL	CONSTLIT("cmdSoundtrackStopMissionTrackTravel")
 #define CMD_SOUNDTRACK_UPDATE_PLAY_POS			CONSTLIT("cmdSoundtrackUpdatePlayPos")
 #define CMD_UPDATE_HIGH_SCORE_LIST				CONSTLIT("cmdUpdateHighScoreList")
+#define CMD_WAIT								CONSTLIT("cmdWait")
 
 #define CMD_GAME_ADVENTURE						CONSTLIT("gameAdventure")
 #define CMD_GAME_CREATE							CONSTLIT("gameCreate")
@@ -732,6 +734,8 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 //	Handle commands from sessions, etc.
 
 	{
+	DEBUG_TRY
+
 	ALERROR error;
 	CString sError;
 
@@ -967,7 +971,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		CG32bitImage *pCrawlImage = m_Model.GetCrawlImage();
 		const CString &sCrawlText = m_Model.GetCrawlText();
 
-		m_HI.ShowSession(new CTextCrawlSession(m_HI, m_Service, pCrawlImage, sCrawlText, CMD_SESSION_PROLOGUE_DONE));
+		m_HI.ShowSession(new CTextCrawlSession(m_HI, m_Service, pCrawlImage, sCrawlText, CMD_SESSION_PROLOGUE_DONE, CONSTLIT("Creating Universe")));
 		m_iState = statePrologue;
 		m_Soundtrack.SetGameState(CSoundtrackManager::stateGamePrologue, m_Model.GetCrawlSoundtrack());
 		}
@@ -984,12 +988,16 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		//	If we're done create the new game then we can continue
 
 		else if (g_pTrans->IsGameCreated())
+			{
+			CString sWaitText = CONSTLIT("Loading System");
+			m_HI.HISessionCommand(CMD_WAIT, &sWaitText);
 			HICommand(CMD_UI_START_GAME);
+			}
 
 		//	Otherwise start wait animation
 
 		else
-			m_HI.HISessionCommand(CMD_SHOW_WAIT_ANIMATION);
+			m_HI.HISessionCommand(CMD_WAIT);
 
 		//	We set state so we don't repeat any of the actions above. [This 
 		//	could happen if the client sends us this message twice, e.g.,
@@ -1021,6 +1029,8 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		if (m_iState == statePrologueDone)
 			HICommand(CMD_UI_START_GAME);
+		else
+			m_HI.HISessionCommand(CMD_CONTINUE);
 		}
 
 	//	Start the game
@@ -2048,6 +2058,8 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		return ERR_NOTFOUND;
 
 	return NOERROR;
+
+	DEBUG_CATCH_MSG1("Crash in CTranscendenceController::OnCommand: %s", sCmd);
 	}
 
 ALERROR CTranscendenceController::OnInit (CString *retsError)

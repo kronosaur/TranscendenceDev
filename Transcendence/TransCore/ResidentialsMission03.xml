@@ -22,6 +22,8 @@
 			</Variant>
 		</Properties>
 
+		<Image imageID="&rsCommonwealthResidentials;" imageWidth="320" imageHeight="290"/>
+
 		<Events>
 			<CanCreate>
 				(switch

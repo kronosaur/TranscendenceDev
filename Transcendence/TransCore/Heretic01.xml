@@ -22,7 +22,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticSvalbard;"
-			name=			"Svalbard"
+			name=			"Heretic 01: Svalbard Explorer"
 			attributes=		"svalbardMission, hereticMission"
 
 			level=			"10"
@@ -32,6 +32,8 @@
 			noDecline=		"true"
 			noDebrief=		"true"
 			>
+
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

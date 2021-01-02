@@ -1186,7 +1186,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pStation->Place(CreateCtx.vPos, CreateCtx.vVel);
 	pStation->m_pTrade = NULL;
 	pStation->m_iDestroyedAnimation = 0;
-	pStation->m_fKnown = false;
+	pStation->m_fKnown = pType->IsBeacon();
 	pStation->m_fReconned = false;
 	pStation->m_fExplored = false;
 	pStation->m_fFireReconEvent = false;

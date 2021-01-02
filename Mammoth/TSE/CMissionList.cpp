@@ -108,7 +108,7 @@ void CMissionList::CloseMissionsInArc (const CMissionType &NewMissionType)
 		}
 	}
 
-void CMissionList::Delete (int iIndex)
+void CMissionList::DeleteMission (int iIndex)
 
 //	Delete
 //
@@ -121,7 +121,7 @@ void CMissionList::Delete (int iIndex)
 	m_List.Delete(iIndex);
 	}
 
-void CMissionList::Delete (CMission *pMission)
+void CMissionList::DeleteMission (CMission *pMission)
 
 //	Delete
 //
@@ -130,7 +130,7 @@ void CMissionList::Delete (CMission *pMission)
 	{
 	int iIndex;
 	if (m_List.Find(pMission, &iIndex))
-		Delete(iIndex);
+		DeleteMission(iIndex);
 	}
 
 void CMissionList::DeleteAll (void)

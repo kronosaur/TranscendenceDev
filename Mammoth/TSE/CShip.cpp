@@ -2524,9 +2524,12 @@ CSpaceObject *CShip::GetBase (void) const
 //	Get the base for this ship
 
 	{
+	if (m_pDeferredOrders)
+		return m_pDeferredOrders->pBase;
+
 	//	If we're docked, then that's our base
 
-	if (m_pDocked)
+	else if (m_pDocked)
 		return m_pDocked;
 
 	//	Otherwise, ask the controller
@@ -2712,6 +2715,21 @@ CDesignType *CShip::GetDefaultDockScreen (CString *retsName, ICCItemPtr *retpDat
 		*retpData = NULL;
 
 	return m_pClass->GetFirstDockScreen(retsName);
+	}
+
+const CSoundResource *CShip::GetDockScreenAmbientSound () const
+
+//	GetDockScreenAmbientSound
+//
+//	Returns the ambient sound for dock screen.
+
+	{
+	if (const CPlayerSettings *pPlayerSettings = m_pClass->GetPlayerSettings())
+		{
+		return pPlayerSettings->GetDockScreenVisuals(GetUniverse()).GetAmbient();
+		}
+	else
+		return NULL;
 	}
 
 CSpaceObject *CShip::GetEscortPrincipal (void) const

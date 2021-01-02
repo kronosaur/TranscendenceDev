@@ -609,6 +609,15 @@
 				When you open your eyes, the cadaver is gone.
 
 			</Text>
+			<Text id="sisters.donateDesc.plural">
+
+				You sense the presence of Domina examining the cadavers. You 
+				imagine her hand reaching into each skull and kneading the brain
+				like a lump of putty.
+
+				When you open your eyes, the cadavers are gone.
+
+			</Text>
 		</Language>
 	</ItemType>
 
@@ -971,7 +980,7 @@
 		<Language>
 			<Text id="sisters.donateDesc">
 				
-				You feel the presence of Domina examining the neural processor.
+				You feel the presence of Domina examining the %itemName%.
 				She wrings out every last quantum bit of information.
 
 			</Text>
@@ -1077,7 +1086,7 @@
 		<Language>
 			<Text id="sisters.donateDesc">
 
-				You feel the presence of Domina examining the knowledge array.
+				You feel the presence of Domina examining the %itemName%.
 				She wrings out every last quantum bit of information.
 
 			</Text>

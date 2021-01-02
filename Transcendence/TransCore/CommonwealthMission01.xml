@@ -20,7 +20,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msDestroyThreatToSlums;"
-			name=						"Destroy Threat to Commonwealth Habitat"
+			name=						"Commonwealth Habitat 01: Destroy Threat"
 			attributes=					"commonwealth, commonwealthHabitat, eridaniScript"
 
 			level=						"1-10"
@@ -43,6 +43,8 @@
 			noStats=					"false"
 			recordNonPlayer=			"false"
 			>
+
+		<Image		imageID="&rsCommonwealthHabitat;" imageWidth="170" imageHeight="240"/>
 
 		<Events>
 			<!-- CREATE MISSION -->

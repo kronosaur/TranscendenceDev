@@ -4,6 +4,7 @@
 //	Copyright (c) 2011 by George Moromisato. All Rights Reserved.
 
 #include "PreComp.h"
+#include <map>
 
 constexpr Metric ATTACK_RANGE =				(20.0 * LIGHT_SECOND);
 constexpr Metric CLOSE_RANGE =				(50.0 * LIGHT_SECOND);

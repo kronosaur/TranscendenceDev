@@ -15,7 +15,7 @@
 	=========================================================================== -->
 
 	<MissionType UNID="&msCMDestroyConvoy;"
-			name=			"Destroy Convoy"
+			name=			"Commonwealth Militia 02: Destroy Convoy"
 			attributes=		"commonwealthMilitia, rank1"
 
 			level=			"3-7"
@@ -23,6 +23,17 @@
 			expireTime=			"5400"
 			failureAfterOutOfSystem="1800"
 			>
+		<Properties>
+			<Variant id="reward">
+				;	Half the standard reward because this is an easy mission.
+				(divide 
+					(@ (typ@ &unidCommonwealthMilitia; 'volunteerRewardTable) (min (sysGetLevel) 10))
+					2
+					)
+			</Variant>
+		</Properties>
+
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="512" imageY="256" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<OnCreate>
@@ -156,7 +167,7 @@
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
 					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textSummary">
@@ -172,26 +183,26 @@
 				displays. The commanding officer of the fortress looks up from 
 				his charts:
 
-				"Are you looking for a mission, captain?"
+				"Are you looking for a mission, pilot?"
 
 			</Text>
-
 			<Text id="Briefing">
 				(msnTranslate gSource (cat "Briefing:" (msnGetData gSource 'enemy)) {
 					gateName: (objGetName (objGetObjByID (msnGetData gSource 'entryGate)) 'article)
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
-			<Text id="Briefing:marauders">
-				"We have received information that a marauder convoy will be entering the system at %gateName%.
-				Your mission is to destroy the convoy before it leaves the system."
+			<Text id="SuccessDebrief">
+				(list
+					{	descID:'textSuccessDebrief1		
+						data: {
+							payment: (fmtCurrency 'credit (msn@ gSource 'reward))
+							}
+						}
+					)
 			</Text>
-			<Text id="Briefing:slavers">
-				"We have received information that a slaver convoy will be entering the system at %gateName%.
-				Your mission is to destroy the convoy before it leaves the system."
-			</Text>
-
 			<String id="AcceptReply">
-				"Good luck, captain!"
+				"Good luck, pilot!"
 			</String>
 
 			<String id="DeclineReply">
@@ -204,9 +215,32 @@
 			<String id="FailureDebrief">
 				"You screwed that mission all the way to Sol and back. You better hit the sims, pilot!"
 			</String>
-			<String id="SuccessDebrief">
-				"Good work, captain! That was an outstanding mission."
-			</String>
+
+			<Text id="Briefing:marauders">
+
+				"We have received information that a marauder convoy will be 
+				entering the system at %gateName%. Your mission is to destroy 
+				the convoy before it leaves the system.
+
+				"We'll pay %payment% if you succeed."
+
+			</Text>
+			<Text id="Briefing:slavers">
+
+				"We have received information that a slaver convoy will be 
+				entering the system at %gateName%. Your mission is to destroy 
+				the convoy before it leaves the system.
+
+				"We'll pay %payment% if you succeed."
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+			
+				"Good work, pilot! That was an outstanding mission.
+
+				"We've deposited %payment% to your account."
+
+			</Text>
 		</Language>
 	</MissionType>
 

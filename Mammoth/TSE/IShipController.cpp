@@ -177,7 +177,7 @@ bool IShipController::ParseOrderData (CCodeChainCtx &CCX, OrderTypes iOrder, con
 					if (const ICCItem *pRadius = Value.GetElement(CONSTLIT("radius")))
 						dwRadius = pRadius->GetIntegerValue();
 					else
-						dwRadius = 10;
+						dwRadius = COrbitExactOrder::DEFAULT_RADIUS;
 
 					//	Initial angle (degrees)
 
@@ -185,7 +185,7 @@ bool IShipController::ParseOrderData (CCodeChainCtx &CCX, OrderTypes iOrder, con
 					if (const ICCItem *pAngle = Value.GetElement(CONSTLIT("angle")))
 						dwAngle = pAngle->GetIntegerValue();
 					else
-						dwAngle = 0;
+						dwAngle = COrbitExactOrder::AUTO_ANGLE;
 
 					retData.dwData1 = (dwAngle << 16) | dwRadius;
 
@@ -194,7 +194,7 @@ bool IShipController::ParseOrderData (CCodeChainCtx &CCX, OrderTypes iOrder, con
 					if (const ICCItem *pSpeed = Value.GetElement(CONSTLIT("speed")))
 						retData.vData.SetX(pSpeed->GetDoubleValue());
 					else
-						retData.vData.SetX(2.0);
+						retData.vData.SetX(COrbitExactOrder::DEFAULT_SPEED);
 
 					if (const ICCItem *pEccentricity = Value.GetElement(CONSTLIT("eccentricity")))
 						retData.vData.SetY(pEccentricity->GetDoubleValue());
@@ -206,10 +206,13 @@ bool IShipController::ParseOrderData (CCodeChainCtx &CCX, OrderTypes iOrder, con
 
 				else
 					{
-					retData.dwData1 = Value.GetIntegerValue();
-					if (retData.dwData1 == 0)
-						retData.dwData1 = 10;
-					retData.vData = CVector();
+					DWORD dwRadius = Value.GetIntegerValue();
+					if (dwRadius == 0)
+						dwRadius = COrbitExactOrder::DEFAULT_RADIUS;
+
+					retData.dwData1 = (COrbitExactOrder::AUTO_ANGLE << 16) | dwRadius;
+					retData.vData.SetX(COrbitExactOrder::DEFAULT_SPEED);
+					retData.vData.SetY(0.0);
 					}
 
 				//	If we have a second parameter, then it is a timer in ticks.
@@ -339,7 +342,7 @@ bool IShipController::ParseOrderString (const CString &sValue, OrderTypes *retiO
 				pPos++;
 
 				DWORD dwRadius = 10;
-				DWORD dwAngle = 0;
+				DWORD dwAngle = 0xffff;
 
 				while (*pPos != '\0')
 					{

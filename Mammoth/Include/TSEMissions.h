@@ -146,8 +146,8 @@ class CMissionList
 
 		bool CanCreateMissionInArc (const CMissionType &NewMissionType, const CSpaceObject *pSource, const CMissionCriteria &CreateCriteria) const;
 		void CloseMissionsInArc (const CMissionType &NewMissionType);
-		void Delete (int iIndex);
-		void Delete (CMission *pMission);
+		void DeleteMission (int iIndex);
+		void DeleteMission (CMission *pMission);
 		void DeleteAll (void);
 		CMissionList Filter (const CSpaceObject *pSource, const CMissionCriteria &Criteria) const;
 		CMissionList FilterByArc (void) const;

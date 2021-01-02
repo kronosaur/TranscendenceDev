@@ -29,6 +29,10 @@
 
 		<PlayerSettings>
 
+			<DockScreenDisplay
+					ambient=		"&snDefaultShipScreenAmbient;"
+					/>
+
 			<ArmorDisplay 
 					style=			"circular"
 					/>

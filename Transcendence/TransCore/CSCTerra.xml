@@ -126,9 +126,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">

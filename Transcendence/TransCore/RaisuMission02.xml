@@ -28,6 +28,8 @@
 			</Definition>
 		</Properties>
 
+		<Image imageID="&rsRaisuStation;"	imageWidth="170" imageHeight="170"/>
+
 		<Events>
 			<OnCompleted>
 				(switch
