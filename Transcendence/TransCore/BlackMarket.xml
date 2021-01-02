@@ -133,8 +133,15 @@ PLAYER DATA
 		<!-- Configuration -->
 		
 		<Devices>
-			<Device deviceID="&itSlamCannon;"	omnidirectional="true" posAngle="45"  posRadius="60"/>
-			<Device deviceID="&itSlamCannon;"	omnidirectional="true" posAngle="215" posRadius="60"/>
+			<Device deviceID="&itSlamCannon;"	posAngle="60"   posRadius="60"	posZ="35"	fireAngle="60"   fireArc="120" />
+			<Device deviceID="&itSlamCannon;"	posAngle="150"  posRadius="60"	posZ="35"	fireAngle="150"  fireArc="120" />
+			<Device deviceID="&itSlamCannon;"	posAngle="-30"  posRadius="60"	posZ="35"	fireAngle="-30"  fireArc="120" />
+			<Device deviceID="&itSlamCannon;"	posAngle="-120" posRadius="60"	posZ="35"	fireAngle="-120" fireArc="120" />
+
+			<Device deviceID="&itArbalestCannon;"	posAngle="15"  posRadius="110" posZ="10"		fireAngle="15"   fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="105" posRadius="110" posZ="10"		fireAngle="105"  fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="195" posRadius="110" posZ="10"		fireAngle="195"  fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="285" posRadius="110" posZ="10"		fireAngle="285"  fireArc="180"	missileDefense="true" />
 		</Devices>
 
 		<!-- Ships and Defenses -->
@@ -418,8 +425,15 @@ PLAYER DATA
 		<!-- Configuration -->
 		
 		<Devices>
-			<Device deviceID="&itSlamCannon;"	omnidirectional="true" posAngle="45"  posRadius="60"/>
-			<Device deviceID="&itSlamCannon;"	omnidirectional="true" posAngle="215" posRadius="60"/>
+			<Device deviceID="&itSlamCannon;"	posAngle="15"   posRadius="60"	posZ="30"	fireAngle="15"   fireArc="180" />
+			<Device deviceID="&itSlamCannon;"	posAngle="105"  posRadius="60"	posZ="30"	fireAngle="105"  fireArc="180" />
+			<Device deviceID="&itSlamCannon;"	posAngle="195"  posRadius="60"	posZ="30"	fireAngle="195"  fireArc="180" />
+			<Device deviceID="&itSlamCannon;"	posAngle="285"  posRadius="60"	posZ="30"	fireAngle="285"  fireArc="180" />
+
+			<Device deviceID="&itArbalestCannon;"	posAngle="15"  posRadius="110" posZ="10"		fireAngle="15"   fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="105" posRadius="110" posZ="10"		fireAngle="105"  fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="195" posRadius="110" posZ="10"		fireAngle="195"  fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="285" posRadius="110" posZ="10"		fireAngle="285"  fireArc="180"	missileDefense="true" />
 		</Devices>
 
 		<!-- Ships and Defenses -->
