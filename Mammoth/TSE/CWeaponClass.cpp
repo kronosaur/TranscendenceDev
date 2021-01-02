@@ -3772,6 +3772,16 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 			return -100;
 		}
 
+	//	If we have a weapon target definition, the target must fit this definition.
+	if (pTarget && DeviceItem.GetInstalledDevice())
+		{
+		auto pWeaponTargetDefinition = DeviceItem.GetInstalledDevice()->GetWeaponTargetDefinition();
+		if ((pWeaponTargetDefinition && !pWeaponTargetDefinition->MatchesTarget(pSource, pTarget)))
+			{
+			return -100;
+			}
+		}
+
 	//	Check our state
 
 	if (const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice())
