@@ -2204,6 +2204,14 @@
 	<!ENTITY rsHornetHD					"0x00100431">
 	<!ENTITY smAnarchistSpace			"0x00100432">
 	<!ENTITY rsHornetHero				"0x00100433">
+	<!ENTITY rsEarthZone100				"0x00100434">
+	<!ENTITY rsEarthZone100Hero			"0x00100435">
+	<!ENTITY scEarthZone1200			"0x00100436">
+	<!ENTITY rsEarthZone1200			"0x00100437">
+	<!ENTITY rsEarthZone1200Hero		"0x00100438">
+	<!ENTITY scEarthZone5000			"0x00100439">
+	<!ENTITY rsEarthZone5000			"0x0010043A">
+	<!ENTITY rsEarthZone5000Hero		"0x0010043B">
 
 	<!-- 0450-046F RANX EMPIRE -->
 

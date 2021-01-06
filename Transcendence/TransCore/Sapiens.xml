@@ -241,38 +241,10 @@
 			defaultSovereign=	"&svSapiens;"
 
 			attributes=			"genericClass,sapiens"
+			inherit=			"&scEarthzone1200;"
 
 			radioactiveWreck=	"true"
 			>
-
-		<!-- Hull -->
-
-		<Hull
-			size=				"29"
-			mass=				"120"
-			cargoSpace=			"100"
-
-			maxReactorPower=	"10000"
-			maxCargoSpace=		"200"
-			maxDevices=			"8"
-
-			maxArmor=			"heavy"
-			stdArmor=			"medium"
-			/>
-
-		<Drive
-			maxSpeed=			"18"
-			thrust=				"480"
-			/>
-
-		<Maneuver
-			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
-			/>
-
-		<DeviceSlots>
-			<DeviceSlot criteria="w" posAngle="0" posRadius="24" posZ="0"/>
-		</DeviceSlots>
 
 		<!-- Configuration -->
 
@@ -296,11 +268,6 @@
 		<Image imageID="&rsPlague;" imageWidth="58" imageHeight="58" rotationCount="120" rotationColumns="12" viewportRatio="0.004375"/>
 		<HeroImage imageID="&rsPlagueHero;" imageWidth="320" imageHeight="320"/>
 
-		<Effects>
-			<Effect type="thrustMain"		posAngle="148"	posRadius="13"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-148"	posRadius="13"	posZ="0"	rotation="180"/>
-		</Effects>
-
 		<!-- Events and Behavior -->
 		
 		<AISettings
@@ -322,40 +289,11 @@
 			defaultSovereign=	"&svSapiens;"
 
 			attributes=			"genericClass,sapiens"
+			inherit=			"&scEarthzone5000;"
 
 			radioactiveWreck=	"true"
 			explosionType=		"&vtRadioactiveExplosion1;"
 			>
-
-		<!-- Hull -->
-
-		<Hull
-			size=				"34"
-			mass=				"250"
-			cargoSpace=			"100"
-
-			maxReactorPower=	"10000"
-			maxCargoSpace=		"200"
-			maxDevices=			"8"
-
-			maxArmor=			"heavy"
-			stdArmor=			"medium"
-			/>
-
-		<Drive
-			maxSpeed=			"16"
-			thrust=				"720"
-			/>
-
-		<Maneuver
-			maxRotationRate=	"3.0"
-			rotationAccel=		"0.5"
-			/>
-
-		<DeviceSlots>
-			<DeviceSlot criteria="w +property:omnidirectional;" posAngle="0" posRadius="9" posZ="10"/>
-			<DeviceSlot criteria="w" posAngle="0" posRadius="24" posZ="0"/>
-		</DeviceSlots>
 
 		<!-- Configuration -->
 
@@ -384,12 +322,6 @@
 		<Image imageID="&rsRevelations;" imageWidth="66" imageHeight="66" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
 		<HeroImage imageID="&rsRevelationsHero;" imageWidth="320" imageHeight="320"/>
 
-		<Effects>
-			<Effect type="thrustMain"		posAngle="152"	posRadius="29"	posZ="-1"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="26"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-152"	posRadius="29"	posZ="-1"	rotation="180"/>
-		</Effects>
-		
 		<!-- Events and Behavior -->
 
 		<AISettings
