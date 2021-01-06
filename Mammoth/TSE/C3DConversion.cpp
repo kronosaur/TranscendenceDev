@@ -358,7 +358,7 @@ void C3DConversion::InitComplete (int iDirectionCount, int iScale, int iFacing)
 //	Completes the initialization based on stored parameters.
 
 	{
-	if (m_bUseCompatible)
+	if (m_bUseCompatible || iScale <= 0)
 		InitCompatible(iDirectionCount, m_iAngle, m_iRadius, iFacing);
 	else
 		Init(iDirectionCount, iScale, m_iAngle, m_iRadius, m_iZ, iFacing);
