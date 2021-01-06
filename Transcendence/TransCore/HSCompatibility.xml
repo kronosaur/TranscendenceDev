@@ -6851,6 +6851,6 @@
 	<Image UNID="&rsTenhoveHD;"			obsoleteVersion="51" bitmap="Resources\TenhoveHD.jpg" 	bitmask="Resources\TenhoveHDMask.bmp" loadOnUse="true"/>
 
 	<Image UNID="&rsPlagueHD;"			obsoleteVersion="52"				bitmap="Resources\PlagueHD.jpg"			bitmask="Resources\PlagueHDMask.bmp"		loadOnUse="true"/>
-
+	<Image UNID="&rsRevelationsHD;"			obsoleteVersion="52" bitmap="Resources\RevelationsHD.jpg"	bitmask="Resources\RevelationsHDMask.bmp"	loadOnUse="true"/>
 
 </TranscendenceModule>

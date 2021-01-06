@@ -2167,6 +2167,8 @@
 	<!ENTITY rsSapiensCompound			"0x001003B4">
 	<!ENTITY rsPlague					"0x001003B5">
 	<!ENTITY rsPlagueHero				"0x001003B6">
+	<!ENTITY rsRevelations				"0x001003B7">
+	<!ENTITY rsRevelationsHero			"0x001003B8">
 
 	<!-- 03D0-03EF DEATH DRUGS CARTEL -->
 
