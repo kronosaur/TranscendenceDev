@@ -2169,6 +2169,9 @@
 	<!ENTITY rsPlagueHero				"0x001003B6">
 	<!ENTITY rsRevelations				"0x001003B7">
 	<!ENTITY rsRevelationsHero			"0x001003B8">
+	<!ENTITY itSapiensRadiationMine		"0x001003B9">
+	<!ENTITY vtSapiensMineLauncher		"0x001003BA">
+	<!ENTITY rsSapiensRadiationMine		"0x001003BB">
 
 	<!-- 03D0-03EF DEATH DRUGS CARTEL -->
 

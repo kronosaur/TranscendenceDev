@@ -66,6 +66,7 @@
 		
 		<Devices>
 			<Device deviceID="&itFlenserCannon;"	omnidirectional="true"/>
+			<Device deviceID="&vtSapiensMineLauncher;"/>
 		</Devices>
 
 		<!-- Ships and Defenses -->
@@ -169,6 +170,7 @@
 		
 		<Devices>
 			<Device deviceID="&itNAMIMissileLauncher;"	omnidirectional="true"/>
+			<Device deviceID="&vtSapiensMineLauncher;"/>
 		</Devices>
 
 		<!-- Ships and Defenses -->
@@ -337,7 +339,7 @@
 
 <!-- ITEM TYPES -->
 
-	<!-- Actinide Waste Cannon -->
+	<!-- Level 4: Actinide Waste Cannon -->
 
 	<ItemType UNID="&itWasteCannon;"
 			name=				"actinide waste cannon"
@@ -407,7 +409,118 @@
 		</Weapon>
 	</ItemType>
 
-	<!-- Sapiens Encounter Table -->
+	<!-- Level 4: Mine Launcher -->
+
+	<ItemType UNID="&vtSapiensMineLauncher;"
+			name=				"(Sapiens mine launcher)"
+			level=				"4"
+			virtual=			"true"
+			>
+		<MiscellaneousDevice>
+		</MiscellaneousDevice>
+
+		<Events>
+			<OnUpdate>
+				(switch
+					(obj@ gSource 'abandoned)
+						Nil
+
+					(gr (random 1 100) 50)
+						Nil
+
+					(sysCreateWeaponFire &itSapiensRadiationMine; 
+							{
+								obj: gSource
+								namePattern: (typ@ &itSapiensRadiationMine; 'namePattern)
+								}
+							gSource 
+							(random 0 359)
+							20 
+							nil)
+					)
+			</OnUpdate>
+		</Events>
+	</ItemType>
+
+	<!-- Level 4: Radiation Mine -->
+
+	<ItemType UNID="&itSapiensRadiationMine;"
+			name=				"Sapiens radiation mine(s)"
+			attributes=			"consumable, illegal, sapiens, notStandard"
+			  
+			level=				"4"
+			frequency=			"rare"
+			numberAppearing=	"8-24"
+
+			value=				"10"
+			mass=				"40"
+			  
+			description=		"This radioactive mine triggers when an enemy ship comes within range."
+			>
+
+		<Image imageID="&rsItems4;" imageX="0" imageY="384" imageWidth="96" imageHeight="96"/>
+		
+		<Missile
+				type=			"missile"
+
+				missileSpeed=	"15"
+				accelerationFactor="60"
+				lifetime=		"4800"
+				hitPoints=		"10"
+				stealth=		"15"
+
+				noFriendlyFire=	"true"
+				noDetonationOnEndOfLife="true"
+
+				hitEffect=		"&efBlastHitDefault;"
+				sound=			"&snMissileLauncher;"
+				>
+
+			<Effect>
+				<Image imageID="&rsSapiensRadiationMine;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" imageFrameCount="120" animationColumns="12" imageTicksPerFrame="2"/>
+			</Effect>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+
+					damage=			"blast:3d8; radiation:2; momentum:2; WMD:2"
+					minRadius=		"1"
+					maxRadius=		"4"
+					missileSpeed=	"0"
+					
+					hitEffect=		"&efRadioactiveHitEffect;"
+					>
+				<Effect>
+					<Orb	style=			"fireblast"
+							animate=		"explode"
+							radius=			"110"
+							lifetime=		"43"
+							intensity=		"100"
+							distortion=		"50"
+							detail=			"40"
+					
+							blendMode=		"normal"
+							primaryColor=	"#00ff2b"
+							secondaryColor=	"#008015"
+							/>
+			
+					<Orb	style=			"smooth"
+							animate=		"fade"
+							radius=			"50"
+							lifetime=		"23"
+							intensity=		"60"
+					
+							blendMode=		"screen"
+							primaryColor=	"#fffff0"
+							secondaryColor=	"#ccff99"
+							/>
+				</Effect>
+			</Fragment>
+		</Missile>
+	</ItemType>
+
+<!-- TABLES -->
 	
 	<ShipTable unid="&tbSapiensEncounters;">
 		<LevelTable>
@@ -454,5 +567,7 @@
 
 	<Image UNID="&rsRevelations;"			bitmap="Resources\Revelations.jpg"	bitmask="Resources\RevelationsMask.bmp"		loadOnUse="true"/>
 	<Image UNID="&rsRevelationsHero;"		bitmap="Resources\RevelationsLarge.jpg"	bitmask="Resources\RevelationsLargeMask.bmp"		loadOnUse="true"/>
+
+	<Image UNID="&rsSapiensRadiationMine;"	bitmap="Resources\SapiensMine.jpg"	bitmask="Resources\SapiensMineMask.bmp"		loadOnUse="true"/>
 
 </TranscendenceModule>
