@@ -164,7 +164,11 @@ void CImageEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPain
 		Modifiers.SetRotation(Ctx.iRotation);
 
 		CObjectImageArray &Image = m_Image.GetImage(ImageCtx, CCompositeImageSelector(), Modifiers);
-		Image.PaintImage(Dest, x, y, iTick, 0);
+
+		if (Ctx.byShimmer)
+			Image.PaintImageShimmering(Dest, x, y, iTick, 0, Ctx.byShimmer);
+		else
+			Image.PaintImage(Dest, x, y, iTick, 0);
 		}
 
 	//	Otherwise, if we've been asked to rotate the image procedurally, do that.
@@ -182,7 +186,10 @@ void CImageEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPain
 		CObjectImageArray &Image = m_Image.GetImage(ImageCtx, CCompositeImageSelector());
 		int iFrame = (m_bDirectional ? Angle2Direction(Ctx.iRotation, m_iVariants) : (Ctx.iVariant % m_iVariants));
 
-		Image.PaintImage(Dest, x, y, iTick, iFrame);
+		if (Ctx.byShimmer)
+			Image.PaintImageShimmering(Dest, x, y, iTick, iFrame, Ctx.byShimmer);
+		else
+			Image.PaintImage(Dest, x, y, iTick, iFrame);
 		}
 	}
 

@@ -57,6 +57,7 @@ struct SViewportPaintCtx
 			pFrame->iVariant = iVariant;
 			pFrame->yAnnotations = yAnnotations;
 			pFrame->rcObjBounds = rcObjBounds;
+			pFrame->byShimmer = byShimmer;
 			}
 
 		void Restore (void)
@@ -75,6 +76,7 @@ struct SViewportPaintCtx
 				iVariant = pFrame->iVariant;
 				yAnnotations = pFrame->yAnnotations;
 				rcObjBounds = pFrame->rcObjBounds;
+				byShimmer = pFrame->byShimmer;
 
 				m_SaveStack.Delete(iLastIndex);
 				}
@@ -142,6 +144,7 @@ struct SViewportPaintCtx
 		int iMaxLength = -1;					//	Max length of object (used for projectiles); -1 == no limit
 		int iStartFade = 0;						//	If bFade is TRUE this is the tick on which we started fading
 		Metric rOffsetScale = 1.0;				//	Scale of Group offsets
+		DWORD byShimmer = 0;					//	If 1-255, paint stealth shimmer
 
 	private:
 		struct SVariants
@@ -155,6 +158,7 @@ struct SViewportPaintCtx
 			int iMaxLength;
 			int yAnnotations;
 			RECT rcObjBounds;
+			DWORD byShimmer;
 			};
 
 		//	Stack of modifications
