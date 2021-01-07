@@ -215,18 +215,15 @@
 	<StationType UNID="&stAnarchistSettlement;"
 			name=				"Anarchist settlement"
 			sovereign=			"&svAnarchists;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
-			multiHull=			"true"
-			armorID=			"&itLightPlasteelPlate;"
-			hitPoints=			"250"
-			regen=              "5"
+			attributes=			"anarchists, enemy, envEarth, envAvoidsAir, freeworldAnarchists, generic, human, populated"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"237"
 			fireRateAdj=		"30"
 			explosionType=		"&vtKineticExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"anarchists, enemy, envEarth, envAvoidsAir, freeworldAnarchists, generic, human, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -240,8 +237,18 @@
 				enemyExclusionRadius=	"75"
 				/>
 
-		<Image		imageID="&rsAnarchistStations;" imageX="0"   imageY="244" imageWidth="260" imageHeight="260"/>
+		<Encounters frequency="common">
+			<Lookup table="&tbAnarchistEncounters;"/>
+		</Encounters>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itLightPlasteelPlate;"
+				hitPoints=		"250"
+				regen=			"5"
+				/>
+		
 		<Devices>
 			<Device deviceID="&itLaserCannon;"	posAngle="0"   posRadius="60" posZ="10" fireAngle="0"   fireArc="180"  missileDefense="true"/>
 			<Device deviceID="&itLaserCannon;"	posAngle="60"  posRadius="60" posZ="10" fireAngle="60"  fireArc="180"  missileDefense="true"/>
@@ -250,6 +257,8 @@
 			<Device deviceID="&itLaserCannon;"	posAngle="240" posRadius="60" posZ="10" fireAngle="240" fireArc="180"  missileDefense="true"/>
 			<Device deviceID="&itLaserCannon;"	posAngle="300" posRadius="60" posZ="10" fireAngle="300" fireArc="180"  missileDefense="true"/>
 		</Devices>
+
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<!-- Docked -->
@@ -273,6 +282,8 @@
 			</LevelTable>
 		</Ships>
 
+		<!-- Treasure -->
+
 		<Items value="standard:level=3:x=3">
 			<RandomItem count="1d2"
 					criteria=			"* +Info; -Alien; -NotStandard;"
@@ -281,9 +292,33 @@
 			<Lookup count="1d3" table="&trStdTreasure;"/>
 		</Items>
 
-		<Encounters frequency="common">
-			<Lookup table="&tbAnarchistEncounters;"/>
-		</Encounters>
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<Image		imageID="&rsAnarchistSettlement;" imageX="0"    imageY="0"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+			<Image		imageID="&rsAnarchistSettlement;" imageX="260"  imageY="0"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+			<Image		imageID="&rsAnarchistSettlement;" imageX="0"    imageY="260"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+			<Image		imageID="&rsAnarchistSettlement;" imageX="260"  imageY="260"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+		</ImageVariants>
+
+		<DockingPorts>
+			<Port posAngle="45" posRadius="110" rotation="-135"/>
+			<Port posAngle="65" posRadius="119" rotation="-135"/>
+			<Port posAngle="25" posRadius="119" rotation="-135"/>
+
+			<Port posAngle="135" posRadius="110" rotation="-45"/>
+			<Port posAngle="155" posRadius="119" rotation="-45"/>
+			<Port posAngle="115" posRadius="119" rotation="-45"/>
+
+			<Port posAngle="225" posRadius="110" rotation="45"/>
+			<Port posAngle="245" posRadius="119" rotation="45"/>
+			<Port posAngle="205" posRadius="119" rotation="45"/>
+
+			<Port posAngle="315" posRadius="110" rotation="135"/>
+			<Port posAngle="335" posRadius="119" rotation="135"/>
+			<Port posAngle="295" posRadius="119" rotation="135"/>
+		</DockingPorts>
+
 	</StationType>
 	
 <!-- SHIP CLASSES -->
@@ -627,6 +662,7 @@
 <!-- RESOURCES -->
 
 	<Image UNID="&rsAnarchistStations;"				bitmap="Resources\AnarchistStations.jpg"		bitmask="Resources\AnarchistStationsMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsAnarchistSettlement;"			bitmap="Resources\AnarchistSettlement.jpg"		bitmask="Resources\AnarchistSettlementMask.bmp"	loadOnUse="true"/>
 
 	<Image UNID="&rsEarthZone100;"					bitmap="Resources\EarthZone100.jpg"					bitmask="Resources\EarthZone100Mask.bmp"  			loadOnUse="true"/>
 	<Image UNID="&rsEarthZone100Hero;"				bitmap="Resources\EarthZone100Large.jpg"					bitmask="Resources\EarthZone100LargeMask.bmp"  			loadOnUse="true"/>
