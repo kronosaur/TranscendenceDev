@@ -54,6 +54,7 @@
 #define MIN_RADIUS_ATTRIB						CONSTLIT("minRadius")
 #define MISSILE_SPEED_ATTRIB					CONSTLIT("missileSpeed")
 #define MULTI_TARGET_ATTRIB						CONSTLIT("multiTarget")
+#define NO_DETONATION_ON_END_OF_LIFE_ATTRIB		CONSTLIT("noDetonationOnEndOfLife")
 #define NO_FRIENDLY_FIRE_ATTRIB					CONSTLIT("noFriendlyFire")
 #define NO_IMMOBILE_HITS_ATTRIB					CONSTLIT("noImmobileHits")
 #define NO_IMMUTABLE_HITS_ATTRIB				CONSTLIT("noImmutableHits")
@@ -1758,6 +1759,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_fMIRV = false;
 	m_fNoMiningHint = false;
 	m_fNoWMDHint = false;
+	m_fNoDetonationOnEndOfLife = false;
 	m_InitialDelay.SetConstant(0);
 
 	//	Hit criteria
@@ -2145,6 +2147,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	m_fMIRV = pDesc->GetAttributeBool(MULTI_TARGET_ATTRIB);
 	m_fNoMiningHint = pDesc->GetAttributeBool(NO_MINING_HINT_ATTRIB);
 	m_fNoWMDHint = pDesc->GetAttributeBool(NO_WMD_HINT_ATTRIB);
+	m_fNoDetonationOnEndOfLife = pDesc->GetAttributeBool(NO_DETONATION_ON_END_OF_LIFE_ATTRIB);
 
 	//	Load continuous and passthrough
 
@@ -2656,6 +2659,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_fMIRV = Src.m_fMIRV;
 	m_fNoMiningHint = Src.m_fNoMiningHint;
 	m_fNoWMDHint = Src.m_fNoWMDHint;
+	m_fNoDetonationOnEndOfLife = Src.m_fNoDetonationOnEndOfLife;
 
 	m_pEffect = Src.m_pEffect;
 	m_pHitEffect = Src.m_pHitEffect;

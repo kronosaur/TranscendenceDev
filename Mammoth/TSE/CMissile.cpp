@@ -1317,7 +1317,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			//	If this is a fragmentation weapon, then we explode at the end of life
 
-			if (!bDestroy && m_pDesc->ProximityBlast())
+			if (!bDestroy && m_pDesc->IsDetonatingOnEndOfLife())
 				CreateFragments(GetPos());
 
 			//	If the missile should fade, then we leave it alive. Otherwise, 
