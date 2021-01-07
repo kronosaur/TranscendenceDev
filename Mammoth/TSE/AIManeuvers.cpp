@@ -1557,10 +1557,12 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 		}
 
 	int iWeaponIndex = 0;
+	std::vector<std::pair<int, int>> aimAngles;
 	for (auto& pWeaponToFire : pWeaponsToFire)
 		{
 		//	See if the chosen weapon can hit the target
 		Metric rWeaponRange = rWeaponRanges[iWeaponIndex];
+		auto weaponDeviceItem = pWeaponToFire->GetDeviceItem();
 
 		int iAimAngle = pShip->GetRotation();
 		int iFireAngle = -1;
@@ -1572,6 +1574,7 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 			&iFireAngle,
 			&iFacingAngle);
 		bool bAimError = false;
+		int iAngleToTarget = iAimAngle;
 
 		//	iAimAngle is the direction that we should fire in order to hit
 		//	the target.
@@ -1679,12 +1682,48 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 			}
 
 		//	Turn to aim, even if weapon is already approximately aligned
+		//	If 'FireAllPrimaryWeapons' is set, though, we should ignore guns that have large fire arcs
+		//	and that are already approximately aligned (e.g. we can hit the target with those guns)
+		//	We can do this by assigning a weight to each gun; guns that have larger firing arcs and that can hit targets have
+		//	smaller weights, and guns that are more closely aligned with the target have higher weights.
+		//	The former can be done by assigning weight penalties to guns that have the target in the firing arc based
+		//	on how far we have to turn before they are no longer in the firing arc.
+		//	Damaged guns or those where GetWeaponEffectiveness returns a negative value should be ignored entirely, along with omni guns.
+		//	TODO(heliogenesis): We can greatly improve performance with a std::map, so we only do the calculation if the aim angle in question
+		//	is NOT in the std::map (aim angle is the key) and take the highest possible priority we can get (priority is the value)
+		if (UsesAllPrimaryWeapons())
+			{
+			int iMinFireArc = pWeaponToFire->GetMinFireArc();
+			int iMaxFireArc = pWeaponToFire->GetMaxFireArc();
+			int iDistanceToFireBoundary = min(min(abs(iMinFireArc - iAngleToTarget), abs(iMaxFireArc - iAngleToTarget)), min(abs((iMinFireArc - 360) - iAngleToTarget), abs((360 + iMaxFireArc) - iAngleToTarget)));
+			bool bIgnoreThisGun = (weaponDeviceItem.GetWeaponEffectiveness(pTarget) < 0) || pWeaponToFire->IsDamaged() || pWeaponToFire->IsOmniDirectional();
+			if (!bIgnoreThisGun)
+				aimAngles.push_back(std::make_pair(iDistanceToFireBoundary, iFacingAngle));
+			}
+		else
+			{
+			if (retiFireDir)
+				*retiFireDir = iFacingAngle;
+			}
 
-		if (retiFireDir)
-			*retiFireDir = iFacingAngle;
 		iWeaponIndex++;
 		}
 
+	if (UsesAllPrimaryWeapons())
+		{
+		int iLowestScore = 360;
+		int iFacingAngle = -1;
+		for (const auto& aimAngle : aimAngles)
+			{
+			if (aimAngle.first < iLowestScore)
+				{
+				iLowestScore = aimAngle.first;
+				iFacingAngle = aimAngle.second;
+				}
+			}
+		if (retiFireDir && iFacingAngle >= 0)
+			*retiFireDir = iFacingAngle;
+		}
 
 
 	DEBUG_CATCH
