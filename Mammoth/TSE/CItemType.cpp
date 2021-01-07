@@ -1268,9 +1268,19 @@ CWeaponFireDesc *CItemType::GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError
 		if (!CDeviceClass::FindWeaponFor(Ammo.GetType(), &pDeviceClass)
 				|| (pWeaponClass = pDeviceClass->AsWeaponClass()) == NULL)
 			{
-			if (retsError)
-				*retsError = strPatternSubst("Item %08x is not a weapon or missile.", GetUNID());
-			return NULL;
+			//	Sometimes we have ammo without a weapon.
+
+			if (m_pMissile)
+				return m_pMissile;
+
+			//	Otherwise, error.
+
+			else
+				{
+				if (retsError)
+					*retsError = strPatternSubst("Item %08x is not a weapon or missile.", GetUNID());
+				return NULL;
+				}
 			}
 
 		WeaponCtx = CItemCtx(pWeaponClass->GetItemType());
