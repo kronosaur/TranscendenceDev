@@ -1764,6 +1764,12 @@
 	<!ENTITY smUrakSpace				"0x001000D2">
 	<!ENTITY rsUrakSentinelHero			"0x001000D3">
 	<!ENTITY rsUrakDestroyerHero		"0x001000D4">
+
+	<!ENTITY rsUrakMineIcy				"0x001000D5">
+	<!ENTITY rsUrakMineMetallic			"0x001000D6">
+	<!ENTITY rsUrakMinePrimordial		"0x001000D7">
+	<!ENTITY rsUrakMineRocky			"0x001000D8">
+	<!ENTITY rsUrakMineVolcanic			"0x001000D9">
 	
 	<!-- 00E0-00EF BATTLE ARENA MAXIMUS -->
 	
