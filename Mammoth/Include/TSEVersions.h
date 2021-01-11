@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							51;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					194;
+constexpr DWORD SYSTEM_SAVE_VERSION =					195;
 
 //	Uncomment out the following define when building a stable release
 
@@ -704,3 +704,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					194;
 //
 //	194: 1.9 Beta 2
 //		m_fAllowEnemyDocking in CStation
+//
+//	195: 1.9 Beta 4
+//		COrderDesc

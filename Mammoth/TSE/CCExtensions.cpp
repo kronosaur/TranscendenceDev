@@ -10546,7 +10546,7 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			IShipController *pController = pShip->GetController();
 			if (pController)
 				{
-				CString sOrder = IShipController::GetOrderName(pController->GetCurrentOrderEx());
+				CString sOrder = IShipController::GetOrderName(pController->GetCurrentOrderDesc().GetOrder());
 				if (!sOrder.IsBlank())
 					pResult = pCC->CreateString(sOrder);
 				else
@@ -10559,16 +10559,13 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 		case FN_SHIP_ORDER_TARGET:
 			{
-			IShipController *pController = pShip->GetController();
-			if (pController)
-				{
-				CSpaceObject *pTarget;
-				IShipController::OrderTypes iOrder = pController->GetCurrentOrderEx(&pTarget);
-				if (IShipController::OrderHasTarget(iOrder) && pTarget)
-					pResult = pCC->CreateInteger((int)pTarget);
-				else
-					pResult = pCC->CreateNil();
-				}
+			const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
+
+			CSpaceObject *pTarget = OrderDesc.GetTarget();
+			IShipController::OrderTypes iOrder = OrderDesc.GetOrder();
+
+			if (IShipController::OrderHasTarget(iOrder) && pTarget)
+				pResult = pCC->CreateInteger((int)pTarget);
 			else
 				pResult = pCC->CreateNil();
 			break;
@@ -10946,7 +10943,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the data
 
-			COrderDesc OrderDesc = COrderDesc::ParseFromCCItem(*pCC, iOrder, *pArgs, iArg);
+			COrderDesc OrderDesc = COrderDesc::ParseFromCCItem(*pCtx, iOrder, pTarget, *pArgs, iArg);
 			if (!OrderDesc)
 				return pCC->CreateNil();
 
@@ -10962,7 +10959,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderGoTo, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderGoTo, pObj));
 				return pCC->CreateTrue();
 				}
 			else
@@ -11215,7 +11212,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderDestroyTarget, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderDestroyTarget, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11230,7 +11227,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderDock, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderDock, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11248,7 +11245,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderEscort, pObj, IShipController::SData(dwFormation));
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderEscort, pObj, (int)dwFormation));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11263,7 +11260,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderFollow, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderFollow, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11281,7 +11278,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			if (pGate == NULL || !pGate->IsDestroyed())
 				{
 				//	Note: OK if pGate == NULL.
-				pShip->GetController()->AddOrder(IShipController::orderGate, pGate, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderGate, pGate));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11297,7 +11294,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderGuard, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderGuard, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11312,7 +11309,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderLoot, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderLoot, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11327,7 +11324,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderMine, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderMine, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11345,7 +11342,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 				if (pCenter && !pCenter->IsDestroyed())
 					{
-					pShip->GetController()->AddOrder(IShipController::orderPatrol, pCenter, IShipController::SData(iRadius));
+					pShip->GetController()->AddOrder(COrderDesc(IShipController::orderPatrol, pCenter, iRadius));
 					pResult = pCC->CreateTrue();
 					}
 				else
@@ -11361,7 +11358,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			{
 			int iWaitTime = pArgs->GetElement(1)->GetIntegerValue();
 			pArgs->Discard();
-			pShip->GetController()->AddOrder(IShipController::orderWait, NULL, IShipController::SData(iWaitTime));
+			pShip->GetController()->AddOrder(COrderDesc(IShipController::orderWait, NULL, iWaitTime));
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -11372,7 +11369,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			if (pArgs->GetCount() >= 2)
 				iWaitTime = pArgs->GetElement(1)->GetIntegerValue();
 			pArgs->Discard();
-			pShip->GetController()->AddOrder(IShipController::orderHold, NULL, IShipController::SData(iWaitTime));
+			pShip->GetController()->AddOrder(COrderDesc(IShipController::orderHold, NULL, iWaitTime));
 			pResult = pCC->CreateTrue();
 			break;
 			}

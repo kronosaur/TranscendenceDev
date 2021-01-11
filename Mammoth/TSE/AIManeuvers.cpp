@@ -75,8 +75,8 @@ void CAIBehaviorCtx::CalcEscortFormation (CShip *pShip, CSpaceObject *pLeader, C
 		auto &OrderDesc = pShip->GetCurrentOrderDesc();
 		if (OrderDesc.IsIntegerOrPair())
 			{
-			int iAngle = OrderDesc.AsInteger();
-			int iDistance = OrderDesc.AsInteger2();
+			int iAngle = OrderDesc.GetDataInteger();
+			int iDistance = OrderDesc.GetDataInteger2();
 			if (iDistance == 0)
 				iDistance = 6;
 

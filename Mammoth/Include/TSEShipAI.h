@@ -140,61 +140,11 @@ static constexpr DWORD ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP =		0x00000002;	//	Up
 static constexpr DWORD ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED =		0x00000004;	//	Notify controller when any station destroyed
 static constexpr DWORD ORDER_FLAG_DELETE_ON_OLD_SHIP_WAITS =		0x00000008;	//	Delete if player switched ships and old ship is waiting
 
+class COrderDesc;
+
 class IShipController
 	{
 	public:
-#if 0
-		enum EDataTypes
-			{
-			dataNone,						//	dwData is ignored
-			dataInteger,					//	dwData is a 32-bit integer
-			dataPair,						//	dwData is two 16-bit integers
-			dataString,						//	dwData is a pointer to a CString
-			dataVector,						//	dwData is a pointer to a CVector
-			dataItem,						//	dwData is a pointer to a CItem
-			dataOrbitExact,				//	Encode orbit in SData
-			};
-
-		struct SData
-			{
-			SData (void)
-				{ }
-
-			SData (DWORD dwData) : iDataType(dataInteger),
-					dwData1(dwData)
-				{ }
-
-			SData (DWORD dwData1Arg, DWORD dwData2Arg) : iDataType(dataPair),
-					dwData1(dwData1Arg),
-					dwData2(dwData2Arg)
-				{ }
-
-			SData (const CString &sDataArg) : iDataType(dataString),
-					sData(sDataArg)
-				{ }
-
-			SData (const CVector &vDataArg) : iDataType(dataVector),
-					vData(vDataArg)
-				{ }
-
-			SData (const CItem &ItemArg) : iDataType(dataItem),
-					Item(ItemArg)
-				{ }
-
-			DWORD AsInteger (void) const { if (iDataType == dataInteger || iDataType == dataPair) return dwData1; else return 0; }
-			DWORD AsInteger2 (void) const { if (iDataType == dataPair) return dwData2; else return 0; }
-			const CItem &AsItem (void) const { if (iDataType == dataItem) return Item; else return CItem::NullItem(); }
-			bool IsIntegerOrPair (void) const { return (iDataType == dataInteger || iDataType == dataPair); }
-
-			EDataTypes iDataType = dataNone;
-
-			DWORD dwData1 = 0;
-			DWORD dwData2 = 0;
-			CString sData;
-			CVector vData;
-			CItem Item;
-			};
-#endif
 
 		//	TO ADD A NEW ORDER:
 		//
@@ -381,6 +331,7 @@ class IShipController
 		static DWORD GetOrderFlags (OrderTypes iOrder) { return m_OrderTypes[iOrder].dwFlags; }
 		static CString GetOrderName (OrderTypes iOrder) { return CString(m_OrderTypes[iOrder].szName); }
 		static OrderTypes GetOrderType (const CString &sString);
+		static char GetOrderDataType (OrderTypes iOrder);
 		static bool OrderHasTarget (OrderTypes iOrder, bool *retbRequired = NULL);
 
 	private:
@@ -394,6 +345,7 @@ class IShipController
 
 			const char *szData;
 			//	-		no data
+			//	?		any
 			//	i		integer (may be optional)
 			//	I		CItem
 			//	2		two integers (encoded in a DWORD)
@@ -438,10 +390,16 @@ class COrderDesc
 		const CVector &GetDataVector () const { if (GetDataType() == EDataType::Vector) return *(CVector *)m_pData; else return NullVector; }
 		IShipController::OrderTypes GetOrder () const { return (IShipController::OrderTypes)m_dwOrderType; }
 		CSpaceObject *GetTarget () const { return m_pTarget; }
+		bool IsCCItem () const { return (GetDataType() == EDataType::CCItem); }
 		bool IsEmpty () const { return GetOrder() == IShipController::orderNone; }
 		bool IsIntegerOrPair () const { return (GetDataType() == EDataType::Int32 || GetDataType() == EDataType::Int16Pair); }
+		bool IsVector () const { return (GetDataType() == EDataType::Vector); }
+		void ReadFromStream (SLoadCtx &Ctx);
+		void SetDataInteger (DWORD dwData);
+		void SetTarget (CSpaceObject *pTarget) { m_pTarget = pTarget; }
+		void WriteToStream (IWriteStream &Stream, CSystem &System) const;
 
-		static COrderDesc ParseFromCCItem (CCodeChainCtx &CCX, IShipController::OrderTypes iOrder, const ICCItem &Args, int iFirstArg);
+		static COrderDesc ParseFromCCItem (CCodeChainCtx &CCX, IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const ICCItem &Args, int iFirstArg);
 		static COrderDesc ParseFromString (const CString &sValue);
 
 		static COrderDesc Null;
@@ -457,6 +415,14 @@ class COrderDesc
 			Item,						//	pData is a pointer to a CItem
 			CCItem,						//	pData is a pointer to an ICCItem
 			};
+
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_NONE = 0;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_INTEGER = 1;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_PAIR = 2;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_STRING = 3;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_VECTOR = 4;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_ITEM = 5;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_ORBIT_EXACT = 6;
 
 		void CleanUp ();
 		void Copy (const COrderDesc &Src);

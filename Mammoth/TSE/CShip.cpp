@@ -3972,13 +3972,12 @@ bool CShip::IsPlayerEscort (void) const
 	if (m_pController->IsPlayerEscort())
 		return true;
 
-	CSpaceObject *pTarget;
-	IShipController::OrderTypes iOrder = GetCurrentOrder(&pTarget);
-	switch (iOrder)
+	const COrderDesc &OrderDesc = GetCurrentOrderDesc();
+	switch (OrderDesc.GetOrder())
 		{
 		case IShipController::orderEscort:
 		case IShipController::orderFollow:
-			return (pTarget && pTarget->IsPlayer());
+			return (OrderDesc.GetTarget() && OrderDesc.GetTarget()->IsPlayer());
 
 		default:
 			return false;
@@ -7469,19 +7468,18 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 
 	//	If the ship still has no orders, then set them based on orders= attribute
 
-	if (GetController()->GetCurrentOrderEx() == IShipController::orderNone)
+	if (GetCurrentOrderDesc().GetOrder() == IShipController::orderNone)
 		{
-		CSpaceObject *pOrderTarget = NULL;
 		bool bDockWithBase = false;
 		bool bIsSubordinate = false;
 		bool bNeedsDockOrder = false;
-		switch (Ctx.iOrder)
+		switch (Ctx.OrderDesc.GetOrder())
 			{
 			case IShipController::orderNone:
 				//	If a ship has no orders and it has a base, then dock with the base
 				if (Ctx.pBase 
 						&& Ctx.pBase->CanObjRequestDock(this)
-						&& GetController()->GetCurrentOrderEx() == IShipController::orderNone)
+						&& GetCurrentOrderDesc().GetOrder() == IShipController::orderNone)
 					{
 					bDockWithBase = true;
 					bNeedsDockOrder = true;
@@ -7489,12 +7487,12 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 				break;
 
 			case IShipController::orderDock:
-				pOrderTarget = ((Ctx.pBase && Ctx.pBase->CanObjRequestDock(this)) ? Ctx.pBase : NULL);
+				Ctx.OrderDesc.SetTarget((Ctx.pBase && Ctx.pBase->CanObjRequestDock(this)) ? Ctx.pBase : NULL);
 				bDockWithBase = true;
 				break;
 
 			case IShipController::orderGuard:
-				pOrderTarget = Ctx.pBase;
+				Ctx.OrderDesc.SetTarget(Ctx.pBase);
 				bIsSubordinate = true;
 				bDockWithBase = true;
 				break;
@@ -7503,12 +7501,12 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderPatrol:
 			case IShipController::orderOrbitExact:
 			case IShipController::orderSentry:
-				pOrderTarget = Ctx.pBase;
+				Ctx.OrderDesc.SetTarget(Ctx.pBase);
 				bIsSubordinate = true;
 				break;
 
 			case IShipController::orderGateOnThreat:
-				pOrderTarget = Ctx.pBase;
+				Ctx.OrderDesc.SetTarget(Ctx.pBase);
 				bNeedsDockOrder = true;
 				bDockWithBase = true;
 				break;
@@ -7517,22 +7515,21 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 				//	For backwards compatibility...
 				if (Ctx.pBase)
 					{
-					Ctx.iOrder = IShipController::orderGateOnThreat;
-					pOrderTarget = Ctx.pBase;
+					Ctx.OrderDesc = COrderDesc(IShipController::orderGateOnThreat, Ctx.pBase);
 					bNeedsDockOrder = true;
 					bDockWithBase = true;
 					}
 				else
 					{
 					//	OK if this is NULL...we just go to closest gate
-					pOrderTarget = Ctx.pTarget;
+					Ctx.OrderDesc.SetTarget(Ctx.pTarget);
 					}
 
 				break;
 
 			case IShipController::orderEscort:
 			case IShipController::orderFollow:
-				pOrderTarget = Ctx.pBase;
+				Ctx.OrderDesc.SetTarget(Ctx.pBase);
 				break;
 
 			case IShipController::orderDestroyTarget:
@@ -7540,7 +7537,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderDestroyTargetHold:
 			case IShipController::orderAttackStation:
 			case IShipController::orderBombard:
-				pOrderTarget = Ctx.pTarget;
+				Ctx.OrderDesc.SetTarget(Ctx.pTarget);
 				break;
 			}
 
@@ -7562,32 +7559,32 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 		else if (bNeedsDockOrder)
 			{
 			if (Ctx.pBase)
-				GetController()->AddOrder(IShipController::orderDock, Ctx.pBase, IShipController::SData());
+				GetController()->AddOrder(COrderDesc(IShipController::orderDock, Ctx.pBase));
 			else
 				kernelDebugLogPattern("Unable to add ship order %d to ship class %x; no target specified", IShipController::orderDock, GetType()->GetUNID());
 			}
 
 		//	Add main order
 
-		if (Ctx.iOrder != IShipController::orderNone)
+		if (Ctx.OrderDesc.GetOrder() != IShipController::orderNone)
 			{
 			//	If this order requires a target, make sure we have one
 
 			bool bTargetRequired;
-			IShipController::OrderHasTarget(Ctx.iOrder, &bTargetRequired);
-			if (bTargetRequired && pOrderTarget == NULL)
-				kernelDebugLogPattern("Unable to add ship order %d to ship class %x; no target specified", Ctx.iOrder, GetType()->GetUNID());
+			IShipController::OrderHasTarget(Ctx.OrderDesc.GetOrder(), &bTargetRequired);
+			if (bTargetRequired && Ctx.OrderDesc.GetTarget() == NULL)
+				kernelDebugLogPattern("Unable to add ship order %d to ship class %x; no target specified", Ctx.OrderDesc.GetOrder(), GetType()->GetUNID());
 
 			//	Add the order
 
 			else
-				GetController()->AddOrder(Ctx.iOrder, pOrderTarget, Ctx.OrderData);
+				GetController()->AddOrder(Ctx.OrderDesc);
 			}
 
 		//	If necessary, append an order to attack nearest enemy ships
 
 		if (Ctx.dwCreateFlags & SShipCreateCtx::ATTACK_NEAREST_ENEMY)
-			GetController()->AddOrder(IShipController::orderAttackNearestEnemy, NULL, IShipController::SData());
+			GetController()->AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
 
 		//	If this ship is ordered to guard then it counts as a subordinate
 

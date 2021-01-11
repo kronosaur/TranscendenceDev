@@ -292,7 +292,7 @@ class COrderList
 		void OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, SPlayerChangedShipsCtx &Options, bool *retbCurrentChanged);
 		void OnStationDestroyed (CSpaceObject *pObj, bool *retbCurrentChanged);
 		void ReadFromStream (SLoadCtx &Ctx);
-		void SetCurrentOrderData (const COrderDesc &OrderDesc);
+		void SetCurrentOrderDataInteger (DWORD dwData);
 		void WriteToStream (IWriteStream *pStream, CSystem *pSystem);
 
 	private:
@@ -385,6 +385,7 @@ class CBaseShipAI : public IShipController
 		void FireOnOrdersCompleted (void);
 		IShipController::OrderTypes GetCurrentOrder (void) const { return m_Orders.GetCurrentOrder(); }
 		CSpaceObject *GetCurrentOrderTarget (void) const { return m_Orders.GetCurrentOrderTarget(); }
+		DWORD GetCurrentOrderDataInteger (void) const { return m_Orders.GetCurrentOrderDesc().GetDataInteger(); }
 		Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length(); }
 		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length2(); }
 		CSpaceObject *GetPlayerOrderGiver (void) const;

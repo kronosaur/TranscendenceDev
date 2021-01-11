@@ -180,7 +180,7 @@ void CAttackStationOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, con
 
 	//	See if we have a time limit
 
-	DWORD dwTimer = OrderDesc.AsInteger();
+	DWORD dwTimer = OrderDesc.GetDataInteger();
 	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
 
 	DEBUG_CATCH

@@ -130,7 +130,7 @@ CSpaceObject *CAttackOrder::GetTargetArea (CShip *pShip, Metric *retrRange)
 	auto &OrderDesc = pShip->GetCurrentOrderDesc();
 
 	if (OrderDesc.IsIntegerOrPair())
-		*retrRange = LIGHT_SECOND * OrderDesc.AsInteger();
+		*retrRange = LIGHT_SECOND * OrderDesc.GetDataInteger();
 	else
 		*retrRange = LIGHT_SECOND * 100.0;
 
@@ -412,7 +412,7 @@ void CAttackOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrd
 
 	//	See if we have a time limit
 
-	DWORD dwTimer = (m_fInRangeOfObject ? OrderDesc.AsInteger2() : OrderDesc.AsInteger());
+	DWORD dwTimer = (m_fInRangeOfObject ? OrderDesc.GetDataInteger2() : OrderDesc.GetDataInteger());
 	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
 
 	DEBUG_CATCH

@@ -180,7 +180,7 @@ CString IOrderModule::DebugCrashInfo (CShip *pShip)
 	CString sResult;
 
 	sResult.Append(CONSTLIT("IOrderModule\r\n"));
-	sResult.Append(strPatternSubst(CONSTLIT("Order: %d\r\n"), (int)pShip->GetCurrentOrder()));
+	sResult.Append(strPatternSubst(CONSTLIT("Order: %d\r\n"), (int)pShip->GetCurrentOrderDesc().GetOrder()));
 
 	for (i = 0; i < m_iObjCount; i++)
 		sResult.Append(strPatternSubst(CONSTLIT("m_Objs[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(m_Objs[i])));
@@ -302,7 +302,7 @@ void CGuardOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	{
 	}
 
-void CGuardOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CGuardOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //

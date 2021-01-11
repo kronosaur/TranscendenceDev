@@ -122,7 +122,7 @@ void CApproachOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const CO
 	//	Set our basic data
 
 	m_Objs[objDest] = OrderDesc.GetTarget();
-	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)OrderDesc.AsInteger());
+	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
 	m_rMinDist2 *= m_rMinDist2;
 
 	//	See if we should take a nav path
