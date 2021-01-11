@@ -72,12 +72,11 @@ void CAIBehaviorCtx::CalcEscortFormation (CShip *pShip, CSpaceObject *pLeader, C
 
 		//	Escort position is encoded in order data
 
-		IShipController::SData Data;
-		pShip->GetCurrentOrder(NULL, &Data);
-		if (Data.IsIntegerOrPair())
+		auto &OrderDesc = pShip->GetCurrentOrderDesc();
+		if (OrderDesc.IsIntegerOrPair())
 			{
-			int iAngle = Data.AsInteger();
-			int iDistance = Data.AsInteger2();
+			int iAngle = OrderDesc.AsInteger();
+			int iDistance = OrderDesc.AsInteger2();
 			if (iDistance == 0)
 				iDistance = 6;
 
@@ -802,7 +801,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			if (IsWaitingForShieldsToRegen()
 					&& bWeAreFaster
-					&& pShip->GetController()->GetCurrentOrderEx() != IShipController::orderEscort)
+					&& pShip->GetCurrentOrderDesc().GetOrder() != IShipController::orderEscort)
 				{
 				DebugAIOutput(pShip, "Wait for shields");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 75));

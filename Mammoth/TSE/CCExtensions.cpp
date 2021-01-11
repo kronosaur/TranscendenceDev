@@ -10385,90 +10385,9 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SHIP_ORDER_DESC:
 			{
-			IShipController *pController = pShip->GetController();
-			if (pController == NULL)
-				return pCC->CreateNil();
-
 			int iIndex = (pArgs->GetCount() > 1 ? pArgs->GetElement(1)->GetIntegerValue() : 0);
-
-			CSpaceObject *pTarget;
-			IShipController::SData Data;
-			IShipController::OrderTypes iOrder = pController->GetOrder(iIndex, &pTarget, &Data);
-			if (iOrder == IShipController::orderNone)
-				return pCC->CreateNil();
-
-			//	Create result list
-
-			ICCItem *pResult = pCC->CreateLinkedList();
-			if (pResult->IsError())
-				return pResult;
-
-			CCLinkedList *pList = (CCLinkedList *)pResult;
-
-			//	Add order name
-
-			ICCItem *pItem = pCC->CreateString(IShipController::GetOrderName(iOrder));
-			pList->Append(pItem);
-			pItem->Discard();
-
-			//	Add the target
-
-			if (IShipController::OrderHasTarget(iOrder))
-				{
-				pItem = pCC->CreateInteger((int)pTarget);
-				pList->Append(pItem);
-				pItem->Discard();
-				}
-
-			//	Add order data
-
-			switch (Data.iDataType)
-				{
-				case IShipController::dataInteger:
-					pList->AppendInteger(Data.dwData1);
-					break;
-
-				case IShipController::dataItem:
-					{
-					ICCItem *pItem = ::CreateListFromItem(Data.Item);
-					pList->Append(pItem);
-					pItem->Discard();
-					break;
-					}
-
-				case IShipController::dataPair:
-					pList->AppendInteger(Data.dwData1);
-					pList->AppendInteger(Data.dwData2);
-					break;
-
-				case IShipController::dataString:
-					pList->AppendString(Data.sData);
-					break;
-
-				case IShipController::dataVector:
-					{
-					ICCItem *pVector = ::CreateListFromVector(Data.vData);
-					pList->Append(pVector);
-					pVector->Discard();
-					break;
-					}
-
-				case IShipController::dataOrbitExact:
-					{
-					ICCItemPtr pOptions(ICCItem::SymbolTable);
-					pOptions->SetIntegerAt(CONSTLIT("radius"), LOWORD(Data.dwData1));
-					pOptions->SetIntegerAt(CONSTLIT("angle"), HIWORD(Data.dwData1));
-					pOptions->SetDoubleAt(CONSTLIT("speed"), Data.vData.GetX());
-					pOptions->SetDoubleAt(CONSTLIT("eccentricity"), Data.vData.GetY());
-
-					pList->Append(pOptions);
-					break;
-					}
-				}
-
-			//	Done
-
-			return pResult;
+			const COrderDesc &OrderDesc = pShip->GetOrderDesc(iIndex);
+			return OrderDesc.AsCCItemList()->Reference();
 			}
 
 		default:
@@ -11027,13 +10946,13 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the data
 
-			IShipController::SData Data;
-			if (!IShipController::ParseOrderData(*pCtx, iOrder, *pArgs, iArg, Data))
+			COrderDesc OrderDesc = COrderDesc::ParseFromCCItem(*pCC, iOrder, *pArgs, iArg);
+			if (!OrderDesc)
 				return pCC->CreateNil();
 
 			//	Done
 
-			pShip->GetController()->AddOrder(iOrder, pTarget, Data, (dwData == FN_SHIP_ORDER_IMMEDIATE));
+			pShip->GetController()->AddOrder(OrderDesc, (dwData == FN_SHIP_ORDER_IMMEDIATE));
 			return pCC->CreateTrue();
 			}
 

@@ -65,6 +65,16 @@ const IShipController::SOrderTypeData IShipController::m_OrderTypes[] =
 
 const int IShipController::ORDER_TYPES_COUNT = (sizeof(m_OrderTypes) / sizeof(m_OrderTypes[0]));
 
+const COrderDesc &IShipController::GetCurrentOrderEx () const
+	{
+	return COrderDesc::Null;
+	}
+
+const COrderDesc &IShipController::GetOrder (int iIndex) const
+	{
+	return COrderDesc::Null;
+	}
+
 IShipController::EDataTypes IShipController::GetOrderDataType (OrderTypes iOrder)
 
 //	GetOrderDataType
