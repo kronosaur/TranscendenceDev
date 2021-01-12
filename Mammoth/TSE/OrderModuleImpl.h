@@ -301,8 +301,7 @@ class COrbitExactOrder : public IOrderModule
 
 		void DistributeOrbitAngles (CShip &Ship, CSpaceObject &Source, const TArray<CShip *> &Ships);
 		static TArray<CShip *> GetOrbitMates (CSpaceObject &Source, DWORD dwRadius);
-		static DWORD GetRadius (const COrderDesc &OrderDesc);
-		static bool IsAutoAngle (const COrderDesc &OrderDesc);
+		static bool IsAutoAngle (const COrderDesc &OrderDesc, Metric *retrAngleInRadians = NULL);
 
 		COrbit m_Orbit;							//	Orbit definition
 		DWORD m_dwStartTick = 0;				//	Tick at start angle

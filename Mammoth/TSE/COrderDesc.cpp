@@ -234,6 +234,26 @@ void COrderDesc::Copy (const COrderDesc &Src)
 		}
 	}
 
+Metric COrderDesc::GetDataDouble (const CString &sField, Metric rDefault) const
+
+//	GetDataDouble
+//
+//	Gets a double value of the given field.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			return pValue->GetDoubleValue();
+		else
+			return rDefault;
+		}
+	else
+		return rDefault;
+	}
+
 DWORD COrderDesc::GetDataInteger () const
 
 //	AsInteger
@@ -254,6 +274,40 @@ DWORD COrderDesc::GetDataInteger () const
 		}
 	}
 
+DWORD COrderDesc::GetDataInteger (const CString &sField, bool bDefaultField, DWORD dwDefault) const
+
+//	GetDataInteger
+//
+//	Returns an integer.
+
+	{
+	switch (GetDataType())
+		{
+		case EDataType::CCItem:
+			{
+			ICCItemPtr pData = GetDataCCItem();
+
+			if (const ICCItem *pValue = pData->GetElement(sField))
+				return pValue->GetIntegerValue();
+			else
+				return dwDefault;
+			}
+
+		case EDataType::Int16Pair:
+		case EDataType::Int32:
+			{
+			DWORD dwValue = GetDataInteger();
+			if (bDefaultField && dwValue)
+				return dwValue;
+			else
+				return dwDefault;
+			}
+
+		default:
+			return dwDefault;
+		}
+	}
+
 DWORD COrderDesc::GetDataInteger2 () const
 
 //	AsInteger2
@@ -269,6 +323,47 @@ DWORD COrderDesc::GetDataInteger2 () const
 		default:
 			return 0;
 		}
+	}
+
+int COrderDesc::GetDataTicksLeft () const
+
+//	GetDataTicksLeft
+//
+//	Returns the ticks left (or -1 if no expiration).
+
+	{
+	DWORD dwSecondsLeft = 0;
+
+	switch (GetDataType())
+		{
+		case EDataType::CCItem:
+			{
+			ICCItemPtr pData = GetDataCCItem();
+
+			if (const ICCItem *pValue = pData->GetElement(CONSTLIT("timer")))
+				dwSecondsLeft = pValue->GetIntegerValue();
+			else
+				return -1;
+
+			break;
+			}
+
+		case EDataType::Int32:
+			dwSecondsLeft = GetDataInteger();
+			break;
+
+		case EDataType::Int16Pair:
+			dwSecondsLeft = GetDataInteger2();
+			break;
+
+		default:
+			return -1;
+		}
+
+	if (dwSecondsLeft)
+		return 1 + g_TicksPerSecond * dwSecondsLeft;
+	else
+		return -1;
 	}
 
 void COrderDesc::Move (COrderDesc &Src)
@@ -634,6 +729,9 @@ void COrderDesc::ReadFromStream (SLoadCtx &Ctx)
 
 				if (dwTimer)
 					pData->SetIntegerAt(CONSTLIT("timer"), dwTimer);
+
+				m_dwDataType = (DWORD)EDataType::CCItem;
+				m_pData = pData->Reference();
 				break;
 				}
 			}

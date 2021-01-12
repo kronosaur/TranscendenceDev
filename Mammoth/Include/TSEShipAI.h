@@ -382,11 +382,14 @@ class COrderDesc
 		explicit operator bool () const { return !IsEmpty(); }
 
 		ICCItemPtr AsCCItemList () const;
+		Metric GetDataDouble (const CString &sField, Metric rDefault = 0.0) const;
 		ICCItemPtr GetDataCCItem () const { if (GetDataType() == EDataType::CCItem) return ICCItemPtr(((ICCItem *)m_pData)->Reference()); else return ICCItemPtr::Nil(); }
 		DWORD GetDataInteger () const;
+		DWORD GetDataInteger (const CString &sField, bool bDefaultField = false, DWORD dwDefault = 0) const;
 		DWORD GetDataInteger2 () const;
 		const CItem &GetDataItem () const { if (GetDataType() == EDataType::Item) return *(CItem *)m_pData; else return CItem::NullItem(); }
 		const CString &GetDataString () const { if (GetDataType() == EDataType::String) return *(CString *)m_pData; else return NULL_STR; }
+		int GetDataTicksLeft () const;
 		const CVector &GetDataVector () const { if (GetDataType() == EDataType::Vector) return *(CVector *)m_pData; else return NullVector; }
 		IShipController::OrderTypes GetOrder () const { return (IShipController::OrderTypes)m_dwOrderType; }
 		CSpaceObject *GetTarget () const { return m_pTarget; }

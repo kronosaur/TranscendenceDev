@@ -5,35 +5,7 @@
 
 #include "PreComp.h"
 
-DWORD COrbitExactOrder::GetRadius (const COrderDesc &OrderDesc)
-
-//	GetRadius
-//
-//	Returns the radius (in light-seconds) from an order description.
-
-	{
-	if (OrderDesc.IsCCItem())
-		{
-		ICCItemPtr pData = OrderDesc.GetDataCCItem();
-
-		//	Radius in light-seconds
-
-		if (const ICCItem *pRadius = pData->GetElement(CONSTLIT("radius")))
-			return pRadius->GetIntegerValue();
-		else
-			return DEFAULT_RADIUS;
-		}
-	else
-		{
-		DWORD dwRadius = OrderDesc.GetDataInteger();
-		if (dwRadius)
-			return dwRadius;
-		else
-			return DEFAULT_RADIUS;
-		}
-	}
-
-bool COrbitExactOrder::IsAutoAngle (const COrderDesc &OrderDesc)
+bool COrbitExactOrder::IsAutoAngle (const COrderDesc &OrderDesc, Metric *retrAngleInRadians)
 
 //	IsAutoAngle
 //
@@ -45,7 +17,11 @@ bool COrbitExactOrder::IsAutoAngle (const COrderDesc &OrderDesc)
 		ICCItemPtr pData = OrderDesc.GetDataCCItem();
 
 		if (const ICCItem *pAngle = pData->GetElement(CONSTLIT("angle")))
+			{
+			if (retrAngleInRadians)
+				*retrAngleInRadians = ::mathDegreesToRadians(pAngle->GetDoubleValue());
 			return false;
+			}
 		else
 			return true;
 		}
@@ -146,70 +122,23 @@ void COrbitExactOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const 
 
 	//	Compute the order from our data
 
-	DWORD dwRadius;
-	DWORD dwTimer;
-	bool bAutoAngle = false;
-	if (OrderDesc.IsCCItem())
-		{
-		ICCItemPtr pData = OrderDesc.GetDataCCItem();
+	DWORD dwRadius = OrderDesc.GetDataInteger(CONSTLIT("radius"), true, DEFAULT_RADIUS);
+	m_Orbit.SetSemiMajorAxis(dwRadius * LIGHT_SECOND);
+	m_Orbit.SetEccentricity(OrderDesc.GetDataDouble(CONSTLIT("eccentricity"), 0.0));
+	m_rAngularSpeed = OrderDesc.GetDataDouble(CONSTLIT("speed"), DEFAULT_SPEED);
 
-		//	Radius in light-seconds
-
-		if (const ICCItem *pRadius = pData->GetElement(CONSTLIT("radius")))
-			dwRadius = pRadius->GetIntegerValue();
-		else
-			dwRadius = DEFAULT_RADIUS;
-
-		m_Orbit.SetSemiMajorAxis(dwRadius * LIGHT_SECOND);
-
-		//	Initial angle (degrees)
-
-		if (const ICCItem *pAngle = pData->GetElement(CONSTLIT("angle")))
-			m_Orbit.SetObjectAngle(::mathDegreesToRadians((Metric)pAngle->GetIntegerValue()));
-		else
-			bAutoAngle = true;
-
-		//	Angular speed in degrees per tick.
-
-		if (const ICCItem *pSpeed = pData->GetElement(CONSTLIT("speed")))
-			m_rAngularSpeed = pSpeed->GetDoubleValue();
-		else
-			m_rAngularSpeed = COrbitExactOrder::DEFAULT_SPEED;
-
-		if (const ICCItem *pEccentricity = pData->GetElement(CONSTLIT("eccentricity")))
-			m_Orbit.SetEccentricity(pEccentricity->GetDoubleValue());
-		else
-			m_Orbit.SetEccentricity(0.0);
-
-		dwTimer = pData->GetIntegerAt(CONSTLIT("timer"));
-		}
-	else
-		{
-		dwRadius = OrderDesc.GetDataInteger();
-		if (dwRadius == 0)
-			dwRadius = DEFAULT_RADIUS;
-
-		m_Orbit.SetSemiMajorAxis(dwRadius * LIGHT_SECOND);
-		m_Orbit.SetEccentricity(0.0);
-
-		m_rAngularSpeed = DEFAULT_SPEED;
-		bAutoAngle = true;
-
-		dwTimer = 0;
-		}
-
-	//	Set our timer
-
-	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
-
-	//	In autoAngle mode we set the orbital angle for all peer ships at the
-	//	same radius.
-
-	if (bAutoAngle)
+	Metric rAngle;
+	if (IsAutoAngle(OrderDesc, &rAngle))
 		{
 		TArray<CShip *> OrbitMates = GetOrbitMates(*pOrderTarget, dwRadius);
 		DistributeOrbitAngles(Ship, *pOrderTarget, OrbitMates);
 		}
+	else
+		{
+		m_Orbit.SetObjectAngle(rAngle);
+		}
+
+	m_iCountdown = OrderDesc.GetDataTicksLeft();
 	}
 
 DWORD COrbitExactOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
@@ -311,7 +240,7 @@ TArray<CShip *> COrbitExactOrder::GetOrbitMates (CSpaceObject &Source, DWORD dwR
 		if (OrderDesc.GetTarget() != Source)
 			continue;
 
-		if (!IsAutoAngle(OrderDesc) || GetRadius(OrderDesc) != dwRadius)
+		if (!IsAutoAngle(OrderDesc) || OrderDesc.GetDataInteger(CONSTLIT("radius"), true, DEFAULT_RADIUS) != dwRadius)
 			continue;
 
 		Result.Insert(pShip);
