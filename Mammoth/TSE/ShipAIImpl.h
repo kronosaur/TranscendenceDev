@@ -276,8 +276,6 @@ class IOrderModule
 class COrderList
 	{
 	public:
-		~COrderList (void);
-
 		void Delete (int iIndex);
 		void DeleteAll (void);
 		void DeleteCurrent (void);
@@ -375,7 +373,6 @@ class CBaseShipAI : public IShipController
 		virtual int GetOrderCount (void) const override { return m_Orders.GetCount(); }
 
 	protected:
-		CSpaceObject *CalcEnemyShipInRange (CSpaceObject *pCenter, Metric rRange, CSpaceObject *pExcludeObj = NULL);
 		Metric CalcShipIntercept (const CVector &vRelPos, const CVector &vAbsVel, Metric rMaxSpeed);
 		void CancelDocking (CSpaceObject *pTarget);
 		bool CheckForEnemiesInRange (CSpaceObject *pCenter, Metric rRange, int iInterval, CSpaceObject **retpTarget);

@@ -7,14 +7,6 @@
 
 COrderDesc COrderList::m_NullOrder;
 
-COrderList::~COrderList (void)
-
-//	COrderList destructor
-
-	{
-	DeleteAll();
-	}
-
 void COrderList::Delete (int iIndex)
 
 //	Delete

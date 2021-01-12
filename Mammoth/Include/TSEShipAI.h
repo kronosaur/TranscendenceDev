@@ -209,7 +209,18 @@ class IShipController
 
 			orderFireWeapon,			//	Data = weapon item to fire
 			orderUseItem,				//	Data = item to use
-			orderOrbitExact,			//	pTarget = center; dwData1 = radius; dwData2 = timer; vData.x = startPosition; vData.y = eccentricity
+			orderOrbitExact,			//	pTarget = center
+										//		"radius": Orbit radius (light-seconds)
+										//		"speed": Angular speed (degrees)
+										//		"eccentricity": Orbital eccentricity
+										//		"angle": Starting position in order (degrees) 0 == auto angle.
+										//		"timer": Seconds left in order
+			orderOrbitPatrol,			//	pTarget = center
+										//		"radius": Orbit radius (light-seconds)
+										//		"speed": Angular speed (degrees)
+										//		"eccentricity": Orbital eccentricity
+										//		"angle": Starting position in order (degrees) 0 == auto angle.
+										//		"timer": Seconds left in order
 			};
 
 		enum EShipStatusNotifications
@@ -382,6 +393,7 @@ class COrderDesc
 		explicit operator bool () const { return !IsEmpty(); }
 
 		ICCItemPtr AsCCItemList () const;
+		DiceRange GetDataDiceRange (const CString &sField, int iDefault = 0, CString *retsSuffix = NULL) const;
 		Metric GetDataDouble (const CString &sField, Metric rDefault = 0.0) const;
 		ICCItemPtr GetDataCCItem () const { if (GetDataType() == EDataType::CCItem) return ICCItemPtr(((ICCItem *)m_pData)->Reference()); else return ICCItemPtr::Nil(); }
 		DWORD GetDataInteger () const;

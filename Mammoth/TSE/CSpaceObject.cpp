@@ -4501,7 +4501,6 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 	{
 	DEBUG_TRY_OBJ_LOOP
 
-	int i;
 	Metric rMaxRange2 = rMaxRange * rMaxRange;
 
 	//	Compute this object's perception and perception range
@@ -4535,7 +4534,7 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 
 	const CSpaceObjectList &ObjList = pSovereign->GetEnemyObjectList(GetSystem());
 	int iCount = ObjList.GetCount();
-	for (i = 0; i < iCount; i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		pObj = ObjList.GetObj(i);
 

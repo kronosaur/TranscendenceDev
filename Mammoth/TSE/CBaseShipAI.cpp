@@ -195,6 +195,12 @@ bool CBaseShipAI::InitOrderModule (void)
 		if (m_pOrderModule->GetOrder() == iOrder)
 			{
 			m_pOrderModule->BehaviorStart(*m_pShip, m_AICtx, GetCurrentOrderDesc());
+
+			//	NOTE: We cannot make any assumptions after calling BehaviorStart
+			//	because we might have added a new order, and m_pOrderModule 
+			//	might point to a different order or by NULL.
+
+			return (m_pOrderModule != NULL);
 			}
 
 		//	Otherwise, we delete the order module and allow it to be recreated.
@@ -237,93 +243,6 @@ bool CBaseShipAI::InitOrderModule (void)
 	//	return FALSE in that case.
 
 	return (m_pOrderModule != NULL);
-	}
-
-CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric rRange, CSpaceObject *pExcludeObj)
-
-//	CalcEnemyShipInRange
-//
-//	Returns the first enemy ship that it finds in range of pCenter. Returns NULL if none
-//	are found.
-
-	{
-	DEBUG_TRY
-
-	int i;
-	Metric rMaxRange2 = rRange * rRange;
-
-	//	Compute this object's perception and perception range
-
-	CPerceptionCalc Perception(m_pShip->GetPerception());
-
-	//	The player is a special case (because sometimes a station is angry at the 
-	//	player even though she is not an enemy)
-
-	CSpaceObject *pPlayer = m_pShip->GetPlayerShip();
-	if (pPlayer 
-			&& pCenter->IsAngryAt(pPlayer)
-			&& pPlayer != pExcludeObj
-			&& !pPlayer->IsEscortingFriendOf(m_pShip))
-		{
-		CVector vRange = pPlayer->GetPos() - pCenter->GetPos();
-		Metric rDistance2 = vRange.Dot(vRange);
-
-		if (rDistance2 < rMaxRange2
-				&& Perception.CanBeTargeted(pPlayer, rDistance2))
-			return pPlayer;
-		}
-
-	//	Get the sovereign
-
-	CSovereign *pSovereign = m_pShip->GetSovereignToDefend();
-	if (pSovereign == NULL || m_pShip->GetSystem() == NULL)
-		return NULL;
-
-	//	Loop
-
-	const CSpaceObjectList &ObjList = pSovereign->GetEnemyObjectList(m_pShip->GetSystem());
-	int iCount = ObjList.GetCount();
-	for (i = 0; i < iCount; i++)
-		{
-		CSpaceObject *pObj = ObjList.GetObj(i);
-
-		if (pObj->GetCategory() == CSpaceObject::catShip
-				&& pObj->CanAttack()
-				&& pObj != m_pShip)
-			{
-			CVector vRange = pObj->GetPos() - pCenter->GetPos();
-			Metric rDistance2 = vRange.Dot(vRange);
-
-			if (rDistance2 < rMaxRange2
-					&& Perception.CanBeTargeted(pObj, rDistance2)
-					&& pObj != pExcludeObj
-					&& !pObj->IsEscortingFriendOf(m_pShip))
-				return pObj;
-			}
-		}
-
-	return NULL;
-
-	DEBUG_CATCH_CONTINUE
-
-	CSpaceObject *pPlayer = m_pShip->GetPlayerShip();
-	::kernelDebugLogPattern("Player Ship: %s", CSpaceObject::DebugDescribe(pPlayer));
-
-	CSovereign *pSovereign = m_pShip->GetSovereignToDefend();
-	if (pSovereign)
-		{
-		int i;
-
-		::kernelDebugLogPattern("Sovereign: %x", pSovereign->GetUNID());
-
-		const CSpaceObjectList &ObjList = pSovereign->GetEnemyObjectList(m_pShip->GetSystem());
-		for (i = 0; i < ObjList.GetCount(); i++)
-			::kernelDebugLogPattern("Enemy Obj %d: %s", i, CSpaceObject::DebugDescribe(ObjList.GetObj(i)));
-		}
-	else
-		::kernelDebugLogPattern("Sovereign: none");
-
-	throw CException(ERR_FAIL);
 	}
 
 Metric CBaseShipAI::CalcShipIntercept (const CVector &vRelPos, const CVector &vAbsVel, Metric rMaxSpeed)
@@ -471,7 +390,7 @@ bool CBaseShipAI::CheckForEnemiesInRange (CSpaceObject *pCenter, Metric rRange, 
 	{
 	if (m_pShip->IsDestinyTime(iInterval))
 		{
-		*retpTarget = CalcEnemyShipInRange(pCenter, rRange);
+		*retpTarget = m_pShip->GetVisibleEnemyInRange(pCenter, rRange);
 
 		if (*retpTarget)
 			return true;
@@ -882,6 +801,7 @@ bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 		case IShipController::orderGuard:
 		case IShipController::orderPatrol:
 		case IShipController::orderOrbitExact:
+		case IShipController::orderOrbitPatrol:
 		case IShipController::orderSentry:
 			{
 			CSpaceObject *pBase = GetCurrentOrderTarget();

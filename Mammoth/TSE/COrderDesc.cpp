@@ -234,6 +234,57 @@ void COrderDesc::Copy (const COrderDesc &Src)
 		}
 	}
 
+DiceRange COrderDesc::GetDataDiceRange (const CString &sField, int iDefault, CString *retsSuffix) const
+
+//	GetDataDiceRange
+//
+//	Returns a dice range value.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			{
+			if (pValue->IsIdentifier())
+				{
+				DiceRange Value;
+				if (Value.LoadFromXML(pValue->GetStringValue(), iDefault, retsSuffix) != NOERROR)
+					{
+					if (retsSuffix)
+						*retsSuffix = NULL_STR;
+
+					return DiceRange(0, 0, iDefault);
+					}
+
+				return Value;
+				}
+			else
+				{
+				if (retsSuffix)
+					*retsSuffix = NULL_STR;
+
+				return DiceRange(0, 0, pValue->GetIntegerValue());
+				}
+			}
+		else
+			{
+			if (retsSuffix)
+				*retsSuffix = NULL_STR;
+
+			return DiceRange(0, 0, iDefault);
+			}
+		}
+	else
+		{
+		if (retsSuffix)
+			*retsSuffix = NULL_STR;
+
+		return DiceRange(0, 0, iDefault);
+		}
+	}
+
 Metric COrderDesc::GetDataDouble (const CString &sField, Metric rDefault) const
 
 //	GetDataDouble
@@ -554,26 +605,7 @@ COrderDesc COrderDesc::ParseFromString (const CString &sValue)
 					pPos++;
 
 				CString sValue(pStart, pPos - pStart);
-				if (strIsDigit(pStart))
-					{
-					bool bHasDecimal = false;
-					char *pSearch = sValue.GetASCIIZPointer();
-					while (*pSearch != '\0')
-						if (*pSearch == '.')
-							{
-							bHasDecimal = true;
-							break;
-							}
-						else
-							pSearch++;
-
-					if (bHasDecimal)
-						pData->SetDoubleAt(sField, strToDouble(sValue, 0.0));
-					else
-						pData->SetIntegerAt(sField, strToInt(sValue, 0));
-					}
-				else
-					pData->SetStringAt(sField, sValue);
+				pData->SetAt(sField, CCodeChain::CreateLiteral(sValue));
 
 				while (strIsWhitespace(pPos))
 					pPos++;

@@ -327,7 +327,7 @@ void CFleetShipAI::Behavior (SUpdateCtx &Ctx)
 			if (m_pShip->IsDestinyTime(30))
 				{
 				CSpaceObject *pPrincipal = GetCurrentOrderTarget();
-				CSpaceObject *pTarget = CalcEnemyShipInRange(pPrincipal, PATROL_SENSOR_RANGE, m_pDest);
+				CSpaceObject *pTarget = m_pShip->GetVisibleEnemyInRange(pPrincipal, PATROL_SENSOR_RANGE, false, m_pDest);
 				if (pTarget)
 					{
 					SetState(stateAttackOnPatrol);

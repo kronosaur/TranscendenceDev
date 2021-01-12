@@ -477,7 +477,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 			if (m_pShip->IsDestinyTime(30) && !IsWaitingForShieldsToRegen())
 				{
 				CSpaceObject *pPrincipal = GetCurrentOrderTarget();
-				CSpaceObject *pTarget = CalcEnemyShipInRange(pPrincipal, PATROL_SENSOR_RANGE);
+				CSpaceObject *pTarget = m_pShip->GetVisibleEnemyInRange(pPrincipal, PATROL_SENSOR_RANGE);
 				if (pTarget)
 					{
 					SetState(stateAttackingThreat);
@@ -537,7 +537,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 			if (m_pShip->IsDestinyTime(30)
 					&& !m_AICtx.NoAttackOnThreat())
 				{
-				CSpaceObject *pTarget = CalcEnemyShipInRange(m_pShip, PATROL_SENSOR_RANGE);
+				CSpaceObject *pTarget = m_pShip->GetVisibleEnemyInRange(m_pShip, PATROL_SENSOR_RANGE);
 				if (pTarget)
 					{
 					SetState(stateDeterTargetNoChase);
@@ -922,7 +922,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 				DEBUG_TRY
 				
 				CSpaceObject *pPrincipal = GetCurrentOrderTarget();
-				CSpaceObject *pTarget = CalcEnemyShipInRange(pPrincipal, PATROL_SENSOR_RANGE, m_pDest);
+				CSpaceObject *pTarget = m_pShip->GetVisibleEnemyInRange(pPrincipal, PATROL_SENSOR_RANGE, false, m_pDest);
 				if (pTarget)
 					{
 					SetState(stateAttackingOnPatrol);
@@ -963,7 +963,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 			if (m_pShip->IsDestinyTime(30))
 				{
 				CSpaceObject *pPrincipal = GetCurrentOrderTarget();
-				CSpaceObject *pTarget = CalcEnemyShipInRange(pPrincipal, PATROL_SENSOR_RANGE);
+				CSpaceObject *pTarget = m_pShip->GetVisibleEnemyInRange(pPrincipal, PATROL_SENSOR_RANGE);
 				if (pTarget)
 					{
 					SetState(stateAttackingThreat);
@@ -1071,7 +1071,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 			if (m_pShip->IsDestinyTime(30))
 				{
 				ASSERT(m_pDest);
-				CSpaceObject *pTarget = CalcEnemyShipInRange(m_pDest, PATROL_SENSOR_RANGE);
+				CSpaceObject *pTarget = m_pShip->GetVisibleEnemyInRange(m_pDest, PATROL_SENSOR_RANGE);
 
 				//	If there are enemy ships in range, then attack them.
 

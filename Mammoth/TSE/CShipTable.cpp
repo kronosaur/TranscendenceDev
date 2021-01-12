@@ -739,6 +739,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 			case IShipController::orderGateOnThreat:
 			case IShipController::orderGuard:
 			case IShipController::orderOrbitExact:
+			case IShipController::orderOrbitPatrol:
 			case IShipController::orderMine:
 			case IShipController::orderPatrol:
 			case IShipController::orderSentry:

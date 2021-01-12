@@ -275,6 +275,11 @@ class COrbitExactOrder : public IOrderModule
 		COrbitExactOrder () : IOrderModule(objCount)
 			{ }
 
+		static TArray<CShip *> GetOrbitMates (CSpaceObject &Source, DWORD dwRadius);
+		static Metric CalcRadiusInLightSeconds (const COrderDesc &OrderDesc);
+		static bool IsAutoAngle (const COrderDesc &OrderDesc, Metric *retrAngleInRadians = NULL);
+		static void DistributeOrbitAngles (CShip &Ship, CSpaceObject &Source, const TArray<CShip *> &Ships, Metric &retrShipAngle);
+
 	protected:
 
 		//	IOrderModule virtuals
@@ -299,13 +304,66 @@ class COrbitExactOrder : public IOrderModule
 			objCount =		2,
 			};
 
-		void DistributeOrbitAngles (CShip &Ship, CSpaceObject &Source, const TArray<CShip *> &Ships);
-		static TArray<CShip *> GetOrbitMates (CSpaceObject &Source, DWORD dwRadius);
-		static bool IsAutoAngle (const COrderDesc &OrderDesc, Metric *retrAngleInRadians = NULL);
 
 		COrbit m_Orbit;							//	Orbit definition
 		DWORD m_dwStartTick = 0;				//	Tick at start angle
 		Metric m_rAngularSpeed = DEFAULT_SPEED;	//	Orbit speed (degrees per tick)
+		int m_iCountdown = 0;					//	Stop after this time.
+	};
+
+class COrbitPatrolOrder : public IOrderModule
+	{
+	public:
+		COrbitPatrolOrder () : IOrderModule(objCount)
+			{ }
+
+	protected:
+
+		//	IOrderModule virtuals
+
+		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
+		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
+		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
+		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData);
+		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
+		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
+		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderOrbitExact; }
+		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
+		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+
+	private:
+		static constexpr Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
+		static constexpr Metric PATROL_DETER_RANGE =		80.0 * LIGHT_SECOND;
+		static constexpr Metric PATROL_DETER_RANGE2 =		PATROL_DETER_RANGE * PATROL_DETER_RANGE;
+		static constexpr Metric STOP_ATTACK_RANGE =			(120.0 * LIGHT_SECOND);
+
+		static constexpr Metric NAV_PATH_THRESHOLD =		(3.0 * PATROL_SENSOR_RANGE);
+		static constexpr Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
+
+		enum Objs
+			{
+			objBase =		0,
+			objTarget =		1,
+
+			objCount =		2,
+			};
+
+		enum class EState
+			{
+			Orbiting,
+			Attacking,
+			};
+
+		void BehaviorAttacking (CShip &Ship, CAIBehaviorCtx &Ctx);
+		void BehaviorOrbiting (CShip &Ship, CAIBehaviorCtx &Ctx);
+		void CalcIntermediates ();
+
+		EState m_iState = EState::Orbiting;		//	Current state
+		COrbit m_Orbit;							//	Orbit definition
+		Metric m_rAngularSpeed = 0.0;			//	Orbit speed (degrees per tick)
+		Metric m_rNavThreshold2 = 0.0;			//	If further that this from center, nav back
 		int m_iCountdown = 0;					//	Stop after this time.
 	};
 

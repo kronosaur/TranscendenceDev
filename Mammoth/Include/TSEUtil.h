@@ -390,7 +390,7 @@ class CIntegerRangeCriteria
 class DiceRange
 	{
 	public:
-		DiceRange (void) : m_iFaces(0), m_iCount(0), m_iBonus(0) { }
+		DiceRange (void) { }
 		DiceRange (int iFaces, int iCount, int iBonus);
 
 		int GetAveValue (void) const { return (m_iCount * (m_iFaces + 1) / 2) + m_iBonus; }
@@ -415,9 +415,9 @@ class DiceRange
 		static bool LoadIfValid (const CString &sAttrib, DiceRange *retValue);
 
 	private:
-		int m_iFaces;
-		int m_iCount;
-		int m_iBonus;
+		int m_iFaces = 0;
+		int m_iCount = 0;
+		int m_iBonus = 0;
 	};
 
 class CCurrencyBlock

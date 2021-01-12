@@ -976,6 +976,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 										SShipGeneratorCtx *pCtx,
 										CShip **retpShip);
 		//	Orders
+		void AddOrder (const COrderDesc &OrderDesc, bool bAddBefore = false) { m_pController->AddOrder(OrderDesc, bAddBefore); }
 		void CancelCurrentOrder (void) { m_pController->CancelCurrentOrder(); }
 		const COrderDesc &GetCurrentOrderDesc () const { return m_pController->GetCurrentOrderDesc(); }
 		const COrderDesc &GetOrderDesc (int iIndex) const { return m_pController->GetOrderDesc(iIndex); }

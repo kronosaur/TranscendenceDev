@@ -63,6 +63,8 @@ class CSystemType : public CDesignType
 		static CSystemType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemType) ? (CSystemType *)pType : NULL); }
 		virtual DesignTypes GetType (void) const override { return designSystemType; }
 
+		static Metric ParseScale (const CString &sValue);
+
 	protected:
 		//	CDesignType overrides
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;

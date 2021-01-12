@@ -7500,6 +7500,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderMine:
 			case IShipController::orderPatrol:
 			case IShipController::orderOrbitExact:
+			case IShipController::orderOrbitPatrol:
 			case IShipController::orderSentry:
 				Ctx.OrderDesc.SetTarget(Ctx.pBase);
 				bIsSubordinate = true;
