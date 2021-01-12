@@ -117,14 +117,13 @@ bool CSpaceObjectCriteria::MatchesOrder (const CSpaceObject *pSource, const CSpa
 
 		default:
 			{
-			IShipController::OrderTypes iOrder = IShipController::orderNone;
-			CSpaceObject *pTarget = NULL;
+			const COrderDesc *pOrderDesc = NULL;
 
 			CShip *pShip = const_cast<CSpaceObject *>(&Obj)->AsShip();
-			if (pShip && pShip->GetController())
-				iOrder = pShip->GetController()->GetCurrentOrderEx(&pTarget);
+			if (pShip)
+				pOrderDesc = &pShip->GetCurrentOrderDesc();
 
-			return (m_iOrder == iOrder && pSource == pTarget);
+			return (pOrderDesc && m_iOrder == pOrderDesc->GetOrder() && pSource == pOrderDesc->GetTarget());
 			}
 		}
 	}

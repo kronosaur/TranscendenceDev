@@ -10385,90 +10385,9 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SHIP_ORDER_DESC:
 			{
-			IShipController *pController = pShip->GetController();
-			if (pController == NULL)
-				return pCC->CreateNil();
-
 			int iIndex = (pArgs->GetCount() > 1 ? pArgs->GetElement(1)->GetIntegerValue() : 0);
-
-			CSpaceObject *pTarget;
-			IShipController::SData Data;
-			IShipController::OrderTypes iOrder = pController->GetOrder(iIndex, &pTarget, &Data);
-			if (iOrder == IShipController::orderNone)
-				return pCC->CreateNil();
-
-			//	Create result list
-
-			ICCItem *pResult = pCC->CreateLinkedList();
-			if (pResult->IsError())
-				return pResult;
-
-			CCLinkedList *pList = (CCLinkedList *)pResult;
-
-			//	Add order name
-
-			ICCItem *pItem = pCC->CreateString(IShipController::GetOrderName(iOrder));
-			pList->Append(pItem);
-			pItem->Discard();
-
-			//	Add the target
-
-			if (IShipController::OrderHasTarget(iOrder))
-				{
-				pItem = pCC->CreateInteger((int)pTarget);
-				pList->Append(pItem);
-				pItem->Discard();
-				}
-
-			//	Add order data
-
-			switch (Data.iDataType)
-				{
-				case IShipController::dataInteger:
-					pList->AppendInteger(Data.dwData1);
-					break;
-
-				case IShipController::dataItem:
-					{
-					ICCItem *pItem = ::CreateListFromItem(Data.Item);
-					pList->Append(pItem);
-					pItem->Discard();
-					break;
-					}
-
-				case IShipController::dataPair:
-					pList->AppendInteger(Data.dwData1);
-					pList->AppendInteger(Data.dwData2);
-					break;
-
-				case IShipController::dataString:
-					pList->AppendString(Data.sData);
-					break;
-
-				case IShipController::dataVector:
-					{
-					ICCItem *pVector = ::CreateListFromVector(Data.vData);
-					pList->Append(pVector);
-					pVector->Discard();
-					break;
-					}
-
-				case IShipController::dataOrbitExact:
-					{
-					ICCItemPtr pOptions(ICCItem::SymbolTable);
-					pOptions->SetIntegerAt(CONSTLIT("radius"), LOWORD(Data.dwData1));
-					pOptions->SetIntegerAt(CONSTLIT("angle"), HIWORD(Data.dwData1));
-					pOptions->SetDoubleAt(CONSTLIT("speed"), Data.vData.GetX());
-					pOptions->SetDoubleAt(CONSTLIT("eccentricity"), Data.vData.GetY());
-
-					pList->Append(pOptions);
-					break;
-					}
-				}
-
-			//	Done
-
-			return pResult;
+			const COrderDesc &OrderDesc = pShip->GetOrderDesc(iIndex);
+			return OrderDesc.AsCCItemList()->Reference();
 			}
 
 		default:
@@ -10627,7 +10546,7 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			IShipController *pController = pShip->GetController();
 			if (pController)
 				{
-				CString sOrder = IShipController::GetOrderName(pController->GetCurrentOrderEx());
+				CString sOrder = IShipController::GetOrderName(pController->GetCurrentOrderDesc().GetOrder());
 				if (!sOrder.IsBlank())
 					pResult = pCC->CreateString(sOrder);
 				else
@@ -10640,16 +10559,13 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 		case FN_SHIP_ORDER_TARGET:
 			{
-			IShipController *pController = pShip->GetController();
-			if (pController)
-				{
-				CSpaceObject *pTarget;
-				IShipController::OrderTypes iOrder = pController->GetCurrentOrderEx(&pTarget);
-				if (IShipController::OrderHasTarget(iOrder) && pTarget)
-					pResult = pCC->CreateInteger((int)pTarget);
-				else
-					pResult = pCC->CreateNil();
-				}
+			const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
+
+			CSpaceObject *pTarget = OrderDesc.GetTarget();
+			IShipController::OrderTypes iOrder = OrderDesc.GetOrder();
+
+			if (IShipController::OrderHasTarget(iOrder) && pTarget)
+				pResult = pCC->CreateInteger((int)pTarget);
 			else
 				pResult = pCC->CreateNil();
 			break;
@@ -11027,13 +10943,13 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the data
 
-			IShipController::SData Data;
-			if (!IShipController::ParseOrderData(*pCtx, iOrder, *pArgs, iArg, Data))
+			COrderDesc OrderDesc = COrderDesc::ParseFromCCItem(*pCtx, iOrder, pTarget, *pArgs, iArg);
+			if (!OrderDesc)
 				return pCC->CreateNil();
 
 			//	Done
 
-			pShip->GetController()->AddOrder(iOrder, pTarget, Data, (dwData == FN_SHIP_ORDER_IMMEDIATE));
+			pShip->GetController()->AddOrder(OrderDesc, (dwData == FN_SHIP_ORDER_IMMEDIATE));
 			return pCC->CreateTrue();
 			}
 
@@ -11043,7 +10959,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderGoTo, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderGoTo, pObj));
 				return pCC->CreateTrue();
 				}
 			else
@@ -11296,7 +11212,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderDestroyTarget, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderDestroyTarget, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11311,7 +11227,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderDock, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderDock, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11329,7 +11245,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderEscort, pObj, IShipController::SData(dwFormation));
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderEscort, pObj, (int)dwFormation));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11344,7 +11260,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderFollow, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderFollow, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11362,7 +11278,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			if (pGate == NULL || !pGate->IsDestroyed())
 				{
 				//	Note: OK if pGate == NULL.
-				pShip->GetController()->AddOrder(IShipController::orderGate, pGate, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderGate, pGate));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11378,7 +11294,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderGuard, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderGuard, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11393,7 +11309,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderLoot, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderLoot, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11408,7 +11324,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderMine, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderMine, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11426,7 +11342,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 				if (pCenter && !pCenter->IsDestroyed())
 					{
-					pShip->GetController()->AddOrder(IShipController::orderPatrol, pCenter, IShipController::SData(iRadius));
+					pShip->GetController()->AddOrder(COrderDesc(IShipController::orderPatrol, pCenter, iRadius));
 					pResult = pCC->CreateTrue();
 					}
 				else
@@ -11442,7 +11358,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			{
 			int iWaitTime = pArgs->GetElement(1)->GetIntegerValue();
 			pArgs->Discard();
-			pShip->GetController()->AddOrder(IShipController::orderWait, NULL, IShipController::SData(iWaitTime));
+			pShip->GetController()->AddOrder(COrderDesc(IShipController::orderWait, NULL, iWaitTime));
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -11453,7 +11369,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			if (pArgs->GetCount() >= 2)
 				iWaitTime = pArgs->GetElement(1)->GetIntegerValue();
 			pArgs->Discard();
-			pShip->GetController()->AddOrder(IShipController::orderHold, NULL, IShipController::SData(iWaitTime));
+			pShip->GetController()->AddOrder(COrderDesc(IShipController::orderHold, NULL, iWaitTime));
 			pResult = pCC->CreateTrue();
 			break;
 			}

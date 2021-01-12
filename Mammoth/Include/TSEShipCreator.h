@@ -113,27 +113,17 @@ class IShipGenerator
 
 struct SShipGeneratorCtx
 	{
-	SShipGeneratorCtx (void) :
-			pItems(NULL),
-			pOnCreate(NULL),
-			iOrder(IShipController::orderNone),
-			pBase(NULL),
-			pTarget(NULL),
-			dwCreateFlags(0)
-		{ }
-
 	CString sName;								//	If not blank, use as name of ship
-	DWORD dwNameFlags;							//	Name flags (only if sName is not blank)
-	IItemGenerator *pItems;						//	Items to add to ship (may be NULL)
+	DWORD dwNameFlags = 0;						//	Name flags (only if sName is not blank)
+	IItemGenerator *pItems = NULL;				//	Items to add to ship (may be NULL)
 	CAttributeDataBlock InitialData;			//	Initial data
-	ICCItem *pOnCreate;							//	Additional OnCreate code (may be NULL)
-	DWORD dwCreateFlags;
+	ICCItem *pOnCreate = NULL;					//	Additional OnCreate code (may be NULL)
+	DWORD dwCreateFlags = 0;
 
-	IShipController::OrderTypes iOrder;			//	Order for ship
-	IShipController::SData OrderData;			//	Order data
+	COrderDesc OrderDesc;						//	Order for ship
 
-	CSpaceObject *pBase;						//	Base for ship (may be NULL)
-	CSpaceObject *pTarget;						//	Target for ship (may be NULL)
+	CSpaceObject *pBase = NULL;					//	Base for ship (may be NULL)
+	CSpaceObject *pTarget = NULL;				//	Target for ship (may be NULL)
 	};
 
 //	CShipTable ----------------------------------------------------------------

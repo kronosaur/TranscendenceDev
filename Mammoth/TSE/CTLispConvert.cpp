@@ -188,6 +188,19 @@ ICCItemPtr CTLispConvert::CreateCurrencyValue (CurrencyValue Value)
 		return ICCItemPtr((int)Value);
 	}
 
+ICCItemPtr CTLispConvert::CreateItem (const CItem &Value)
+
+//	CreateItem
+//
+//	Creates an item value.
+
+	{
+	if (!Value.IsEmpty())
+		return ICCItemPtr(::CreateListFromItem(Value));
+	else
+		return ICCItemPtr::Nil();
+	}
+
 ICCItemPtr CTLispConvert::CreateObject (const CSpaceObject *pObj)
 
 //	CreateObject
@@ -195,7 +208,10 @@ ICCItemPtr CTLispConvert::CreateObject (const CSpaceObject *pObj)
 //	Returns an object pointer.
 
 	{
-	return ICCItemPtr((int)pObj);
+	if (pObj)
+		return ICCItemPtr((int)pObj);
+	else
+		return ICCItemPtr::Nil();
 	}
 
 ICCItemPtr CTLispConvert::CreateObjectList (const CSpaceObjectList &List)
@@ -232,6 +248,16 @@ ICCItemPtr CTLispConvert::CreatePowerResultMW (int iPower)
 		return ICCItemPtr((double)iPower / 10.0);
 	else
 		return ICCItemPtr(iPower / 10);
+	}
+
+ICCItemPtr CTLispConvert::CreateVector (const CVector &vValue)
+
+//	CreateVector
+//
+//	Create vector value.
+
+	{
+	return ICCItemPtr(::CreateListFromVector(vValue));
 	}
 
 ICCItemPtr CTLispConvert::GetElementAt (ICCItem *pItem, const CString &sField)

@@ -185,7 +185,7 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CNavigateOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -196,16 +196,17 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 
 	//	If we want to dock and are already docked, then nothing else to do.
 
+	CSpaceObject *pOrderTarget = OrderDesc.GetTarget();
 	if (m_fDockAtDestination
-			&& pShip->GetDockedObj() == pOrderTarget)
+			&& Ship.GetDockedObj() == pOrderTarget)
 		{
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 		return;
 		}
 
 	//	Make sure we're undocked because we're going flying
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	Set our basic data. We initialize the following:
 	//
@@ -216,15 +217,15 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 	Metric rMinDist;
 	if (m_fTargetVector)
 		{
-		if (Data.iDataType == IShipController::dataVector)
-			m_vDest = Data.vData;
+		if (OrderDesc.IsVector())
+			m_vDest = OrderDesc.GetDataVector();
 		else
-			m_vDest = pShip->GetPos();
+			m_vDest = Ship.GetPos();
 		}
 	else
 		{
 		if (pOrderTarget == NULL && m_fGateAtDestination)
-			pOrderTarget = pShip->GetNearestStargate(true);
+			pOrderTarget = Ship.GetNearestStargate(true);
 
 		if (pOrderTarget)
 			{
@@ -232,34 +233,34 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 			m_vDest = pOrderTarget->GetPos();
 			}
 		else
-			m_vDest = pShip->GetPos();
+			m_vDest = Ship.GetPos();
 		}
 
 	//	Get the minimum distance
 
 	if (m_fVariableMinDist)
-		rMinDist = LIGHT_SECOND * Max(1, (int)Data.AsInteger());
+		rMinDist = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
 	else
 		rMinDist = LIGHT_SECOND;
 
 	m_rMinDist2 = (rMinDist * rMinDist);
-	m_iDestFacing = ::VectorToPolar(m_vDest - pShip->GetPos());
+	m_iDestFacing = ::VectorToPolar(m_vDest - Ship.GetPos());
 
 	//	See if we should take a nav path
 
-	Metric rCurDist2 = (m_vDest - pShip->GetPos()).Length2();
+	Metric rCurDist2 = (m_vDest - Ship.GetPos()).Length2();
 	if (rCurDist2 > NAV_PATH_THRESHOLD2)
 		{
 		//	If we have a destination object, then calculate a nav path to it.
 
 		if (m_Objs[objDest])
-			m_fIsFollowingNavPath = Ctx.CalcNavPath(pShip, m_Objs[objDest]);
+			m_fIsFollowingNavPath = Ctx.CalcNavPath(&Ship, m_Objs[objDest]);
 
 		//	If we don't have a destination object, then we calculate a nav path
 		//	based on a position
 
 		else
-			m_fIsFollowingNavPath = Ctx.CalcNavPath(pShip, m_vDest);
+			m_fIsFollowingNavPath = Ctx.CalcNavPath(&Ship, m_vDest);
 		}
 
 	DEBUG_CATCH

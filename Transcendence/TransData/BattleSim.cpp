@@ -155,8 +155,8 @@ ALERROR AttackRandomEnemy(TArray<CShip *>& vShips, TArray<CShip *>& vTargets)
 	{
 	if (vTargets.GetCount() == 0)
 		return NOERROR;
-	int i;
-	for (i = 0; i < vShips.GetCount(); i++)
+
+	for (int i = 0; i < vShips.GetCount(); i++)
 		{
 		CShip* pShip = vShips[i];
 		IShipController *pController = pShip->GetController();
@@ -165,12 +165,15 @@ ALERROR AttackRandomEnemy(TArray<CShip *>& vShips, TArray<CShip *>& vTargets)
 			printf("ERROR: No controller for ship.\n");
 			return ERR_FAIL;
 			}
-		CSpaceObject *pTarget;
-		IShipController::OrderTypes iOrder = pController->GetCurrentOrderEx(&pTarget);
-		if (!pTarget || pTarget->IsDestroyed() || iOrder == IShipController::orderNone)
+		const COrderDesc &OrderDesc = pController->GetCurrentOrderDesc();
+		CSpaceObject *pTarget = OrderDesc.GetTarget();
+		if (!pTarget || pTarget->IsDestroyed() || OrderDesc.GetOrder() == IShipController::orderNone)
+			{
 			pTarget = vTargets[mathRandom(0, vTargets.GetCount() - 1)];
+
 			pController->CancelAllOrders();
-			pController->AddOrder(IShipController::orderDestroyTarget, pTarget, IShipController::SData());
+			pController->AddOrder(COrderDesc(IShipController::orderDestroyTarget, pTarget));
+			}
 		}
 	return NOERROR;
 	}

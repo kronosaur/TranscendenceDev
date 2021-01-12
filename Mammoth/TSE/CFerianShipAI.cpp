@@ -282,7 +282,7 @@ void CFerianShipAI::BehaviorStart (void)
 				FireOnOrdersCompleted();
 
 				if (GetCurrentOrder() == IShipController::orderNone)
-					AddOrder(IShipController::orderGate, NULL, IShipController::SData());
+					AddOrder(COrderDesc(IShipController::orderGate));
 				}
 			break;
 			}
@@ -559,9 +559,9 @@ void CFerianShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 				if (Ctx.Attacker.IsCausedByNonFriendOf(m_pShip) 
 						&& Ctx.Attacker.GetObj()
 						&& (pTarget = m_pShip->CalcTargetToAttack(Ctx.Attacker.GetObj(), Ctx.GetOrderGiver())))
-					AddOrder(orderDestroyTarget, pTarget, SData());
+					AddOrder(COrderDesc(orderDestroyTarget, pTarget));
 				else if (m_State == stateAttackingThreat)
-					AddOrder(orderDestroyTarget, m_pTarget, SData());
+					AddOrder(COrderDesc(orderDestroyTarget, m_pTarget));
 				}
 			break;
 			}

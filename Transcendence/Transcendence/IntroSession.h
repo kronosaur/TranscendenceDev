@@ -178,12 +178,12 @@ class CIntroShipController : public IShipController
 		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_pDelegate->SetManeuver(iManeuver); }
 		virtual void SetThrust (bool bThrust) override { m_pDelegate->SetThrust(bThrust); }
 
-		virtual void AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false) override { m_pDelegate->AddOrder(Order, pTarget, Data, bAddBefore); }
+		virtual void AddOrder (const COrderDesc &Order, bool bAddBefore = false) override { m_pDelegate->AddOrder(Order, bAddBefore); }
 		virtual void CancelAllOrders (void) override { m_pDelegate->CancelAllOrders(); }
 		virtual void CancelCurrentOrder (void) override { m_pDelegate->CancelCurrentOrder(); }
 		virtual bool CancelOrder (int iIndex) override { return m_pDelegate->CancelOrder(iIndex); }
-		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) override { return m_pDelegate->GetCurrentOrderEx(retpTarget, retData); }
-		virtual OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const override { return m_pDelegate->GetOrder(iIndex, retpTarget, retData); }
+		virtual const COrderDesc &GetCurrentOrderDesc () const override { return m_pDelegate->GetCurrentOrderDesc(); }
+		virtual const COrderDesc &GetOrderDesc (int iIndex) const override { return m_pDelegate->GetOrderDesc(iIndex); }
 		virtual int GetOrderCount (void) const override { return m_pDelegate->GetOrderCount(); }
 
 		//	Events

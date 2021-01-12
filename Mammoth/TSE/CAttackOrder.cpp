@@ -127,17 +127,14 @@ CSpaceObject *CAttackOrder::GetTargetArea (CShip *pShip, Metric *retrRange)
 	if (!m_fInRangeOfObject)
 		return NULL;
 
-	CSpaceObject *pCenter;
-	IShipController::SData Data;
-	pShip->GetCurrentOrder(&pCenter, &Data);
+	auto &OrderDesc = pShip->GetCurrentOrderDesc();
 
-	if (Data.iDataType == IShipController::dataInteger
-			|| Data.iDataType == IShipController::dataPair)
-		*retrRange = LIGHT_SECOND * Data.dwData1;
+	if (OrderDesc.IsIntegerOrPair())
+		*retrRange = LIGHT_SECOND * OrderDesc.GetDataInteger();
 	else
 		*retrRange = LIGHT_SECOND * 100.0;
 
-	return pCenter;
+	return OrderDesc.GetTarget();
 	}
 
 bool CAttackOrder::IsBetterTarget (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOldTarget, CSpaceObject *pNewTarget)
@@ -373,7 +370,7 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CAttackOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CAttackOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -384,23 +381,24 @@ void CAttackOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 
 	//	Make sure we're undocked because we're going flying
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	If we don't have a target and we're looking for the nearest enemy, then
 	//	find it now.
 
+	CSpaceObject *pOrderTarget = OrderDesc.GetTarget();
 	if (m_fNearestTarget)
 		{
-		pOrderTarget = GetBestTarget(pShip);
+		pOrderTarget = GetBestTarget(&Ship);
 		if (pOrderTarget == NULL)
 			{
-			pShip->CancelCurrentOrder();
+			Ship.CancelCurrentOrder();
 			return;
 			}
 		}
 	else if (pOrderTarget == NULL || pOrderTarget->IsDestroyed())
 		{
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 		return;
 		}
 
@@ -414,7 +412,7 @@ void CAttackOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 
 	//	See if we have a time limit
 
-	DWORD dwTimer = (m_fInRangeOfObject ? Data.AsInteger2() : Data.AsInteger());
+	DWORD dwTimer = (m_fInRangeOfObject ? OrderDesc.GetDataInteger2() : OrderDesc.GetDataInteger());
 	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
 
 	DEBUG_CATCH

@@ -16,9 +16,9 @@ void CFireEventOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	//	Get the current order data
 
-	CSpaceObject *pListener;
-	IShipController::SData Data;
-	pShip->GetCurrentOrder(&pListener, &Data);
+	auto &OrderDesc = pShip->GetCurrentOrderDesc();
+	CSpaceObject *pListener = OrderDesc.GetTarget();
+	const CString &sEvent = OrderDesc.GetDataString();
 
 	//	Done with the order.
 	//
@@ -28,8 +28,8 @@ void CFireEventOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	//	Fire the event
 
-	if (pListener && !Data.sData.IsBlank())
-		pListener->FireCustomShipOrderEvent(Data.sData, pShip);
+	if (pListener && !sEvent.IsBlank())
+		pListener->FireCustomShipOrderEvent(sEvent, pShip);
 
 	DEBUG_CATCH
 	}
