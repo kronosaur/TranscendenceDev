@@ -16,9 +16,9 @@ class CShipChallengeCtx
 
 		void AddShip (CSpaceObject *pObj);
 		void AddShips (CSpaceObjectList &List);
-		inline Metric GetTotalCombat (void) const { return m_rTotalCombat; }
-		inline int GetTotalCount (void) const { return m_iTotalCount; }
-		inline int GetTotalScore (void) const { return m_iTotalScore; }
+		Metric GetTotalCombat (void) const { return m_rTotalCombat; }
+		int GetTotalCount (void) const { return m_iTotalCount; }
+		int GetTotalScore (void) const { return m_iTotalScore; }
 
 	private:
 		int m_iTotalCount;
@@ -47,11 +47,12 @@ class CShipChallengeDesc
 				m_iType(countNone)
 			{ }
 
-		inline ECountTypes GetCountType (void) const { return m_iType; }
+		ECountTypes GetCountType (void) const { return m_iType; }
+		Metric GetChallengeStrength (int iLevel) const { return CalcChallengeStrength(m_iType, iLevel); }
 		bool Init (ECountTypes iType, int iCount = 0);
 		bool Init (ECountTypes iType, const CString &sCount);
 		bool InitFromChallengeRating (const CString &sChallenge);
-		inline bool IsEmpty (void) const { return m_iType == countNone; }
+		bool IsEmpty (void) const { return m_iType == countNone; }
 		bool NeedsMoreInitialShips (CSpaceObject *pBase, const CShipChallengeCtx &Ctx) const;
 		bool NeedsMoreReinforcements (CSpaceObject *pBase) const;
 
@@ -134,8 +135,8 @@ class CShipTable : public CDesignType
 		CShipTable (void);
 		virtual ~CShipTable (void);
 
-		inline void CreateShips (SShipCreateCtx &Ctx) { if (m_pGenerator) m_pGenerator->CreateShips(Ctx); }
-		inline Metric GetAverageLevelStrength (int iLevel) { return (m_pGenerator ? m_pGenerator->GetAverageLevelStrength(iLevel) : 0.0); }
+		void CreateShips (SShipCreateCtx &Ctx) { if (m_pGenerator) m_pGenerator->CreateShips(Ctx); }
+		Metric GetAverageLevelStrength (int iLevel) { return (m_pGenerator ? m_pGenerator->GetAverageLevelStrength(iLevel) : 0.0); }
 		ALERROR ValidateForRandomEncounter (void) { if (m_pGenerator) return m_pGenerator->ValidateForRandomEncounter(); }
 
 		//	CDesignType overrides
