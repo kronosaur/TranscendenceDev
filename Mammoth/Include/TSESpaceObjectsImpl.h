@@ -977,8 +977,8 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 										CShip **retpShip);
 		//	Orders
 		void CancelCurrentOrder (void) { m_pController->CancelCurrentOrder(); }
-		IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const { return m_pController->GetCurrentOrderEx(retpTarget, retData); }
-		DWORD GetCurrentOrderData (void) { return m_pController->GetCurrentOrderData(); }
+		const COrderDesc &GetCurrentOrderDesc () const { return m_pController->GetCurrentOrderDesc(); }
+		const COrderDesc &GetOrderDesc (int iIndex) const { return m_pController->GetOrderDesc(iIndex); }
 
 		//	Armor methods
 		CInstalledArmor *GetArmorSection (int iSect) { return &m_Armor.GetSegment(iSect); }

@@ -479,6 +479,7 @@
     <ClCompile Include="CObjectJointList.cpp" />
     <ClCompile Include="CObjectTrackerCriteria.cpp" />
     <ClCompile Include="COrbitFocusGenerator.cpp" />
+    <ClCompile Include="COrderDesc.cpp" />
     <ClCompile Include="COverlay.cpp" />
     <ClCompile Include="COverlayCounterDesc.cpp" />
     <ClCompile Include="COverlayList.cpp" />

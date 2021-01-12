@@ -103,7 +103,7 @@ void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CApproachOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CApproachOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -112,22 +112,23 @@ void CApproachOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 	{
 	DEBUG_TRY
 
-	ASSERT(pOrderTarget);
+	if (!OrderDesc.GetTarget())
+		throw CException(ERR_FAIL);
 
 	//	Make sure we're undocked because we're going flying
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	Set our basic data
 
-	m_Objs[objDest] = pOrderTarget;
-	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)Data.AsInteger());
+	m_Objs[objDest] = OrderDesc.GetTarget();
+	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
 	m_rMinDist2 *= m_rMinDist2;
 
 	//	See if we should take a nav path
 
-	if (pShip->GetDistance2(pOrderTarget) > NAV_PATH_THRESHOLD2
-			&& Ctx.CalcNavPath(pShip, pOrderTarget))
+	if (Ship.GetDistance2(OrderDesc.GetTarget()) > NAV_PATH_THRESHOLD2
+			&& Ctx.CalcNavPath(&Ship, OrderDesc.GetTarget()))
 		m_iState = stateOnCourseViaNavPath;
 
 	//	Otherwise, go there

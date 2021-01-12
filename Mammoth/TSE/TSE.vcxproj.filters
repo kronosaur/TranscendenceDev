@@ -1558,5 +1558,8 @@
     <ClCompile Include="CInteractionLevel.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="COrderDesc.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

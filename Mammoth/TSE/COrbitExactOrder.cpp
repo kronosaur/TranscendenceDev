@@ -5,6 +5,30 @@
 
 #include "PreComp.h"
 
+bool COrbitExactOrder::IsAutoAngle (const COrderDesc &OrderDesc, Metric *retrAngleInRadians)
+
+//	IsAutoAngle
+//
+//	Returns TRUE if we're set for auto-angle.
+
+	{
+	if (OrderDesc.IsCCItem())
+		{
+		ICCItemPtr pData = OrderDesc.GetDataCCItem();
+
+		if (const ICCItem *pAngle = pData->GetElement(CONSTLIT("angle")))
+			{
+			if (retrAngleInRadians)
+				*retrAngleInRadians = ::mathDegreesToRadians(pAngle->GetDoubleValue());
+			return false;
+			}
+		else
+			return true;
+		}
+	else
+		return true;
+	}
+
 void COrbitExactOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
@@ -74,7 +98,7 @@ void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		pShip->CancelCurrentOrder();
 	}
 
-void COrbitExactOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void COrbitExactOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -83,61 +107,38 @@ void COrbitExactOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpac
 	{
 	//	Make sure we're undocked because we're going flying
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	Must have a center
 
+	CSpaceObject *pOrderTarget = OrderDesc.GetTarget();
 	if (pOrderTarget)
 		m_Objs[objBase] = pOrderTarget;
 	else
 		{
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 		return;
 		}
 
 	//	Compute the order from our data
 
-	DWORD dwRadius;
-	bool bAutoAngle = false;
-	if (Data.iDataType == IShipController::dataOrbitExact)
+	DWORD dwRadius = OrderDesc.GetDataInteger(CONSTLIT("radius"), true, DEFAULT_RADIUS);
+	m_Orbit.SetSemiMajorAxis(dwRadius * LIGHT_SECOND);
+	m_Orbit.SetEccentricity(OrderDesc.GetDataDouble(CONSTLIT("eccentricity"), 0.0));
+	m_rAngularSpeed = OrderDesc.GetDataDouble(CONSTLIT("speed"), DEFAULT_SPEED);
+
+	Metric rAngle;
+	if (IsAutoAngle(OrderDesc, &rAngle))
 		{
-		dwRadius = LOWORD(Data.dwData1);
-		DWORD dwAngle = HIWORD(Data.dwData1);
-		bAutoAngle = (dwAngle == AUTO_ANGLE);
-
-		m_Orbit.SetSemiMajorAxis(dwRadius * LIGHT_SECOND);
-		m_Orbit.SetEccentricity(Data.vData.GetY());
-		if (!bAutoAngle)
-			m_Orbit.SetObjectAngle(::mathDegreesToRadians((Metric)dwAngle));
-
-		m_rAngularSpeed = Data.vData.GetX();
+		TArray<CShip *> OrbitMates = GetOrbitMates(*pOrderTarget, dwRadius);
+		DistributeOrbitAngles(Ship, *pOrderTarget, OrbitMates);
 		}
 	else
 		{
-		dwRadius = Data.AsInteger();
-		if (dwRadius == 0)
-			dwRadius = DEFAULT_RADIUS;
-
-		m_Orbit.SetSemiMajorAxis(dwRadius * LIGHT_SECOND);
-		m_Orbit.SetEccentricity(0.0);
-
-		m_rAngularSpeed = DEFAULT_SPEED;
-		bAutoAngle = true;
+		m_Orbit.SetObjectAngle(rAngle);
 		}
 
-	//	Set our timer
-
-	DWORD dwTimer = Data.dwData2;
-	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
-
-	//	In autoAngle mode we set the orbital angle for all peer ships at the
-	//	same radius.
-
-	if (bAutoAngle)
-		{
-		TArray<CShip *> OrbitMates = GetOrbitMates(*pOrderTarget, dwRadius);
-		DistributeOrbitAngles(*pShip, *pOrderTarget, OrbitMates);
-		}
+	m_iCountdown = OrderDesc.GetDataTicksLeft();
 	}
 
 DWORD COrbitExactOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
@@ -232,23 +233,14 @@ TArray<CShip *> COrbitExactOrder::GetOrbitMates (CSpaceObject &Source, DWORD dwR
 		if (!pShip)
 			continue;
 
-		IShipController *pController = pShip->GetController();
-		CSpaceObject *pOrderTarget;
-		IShipController::SData OrderData;
-		IShipController::OrderTypes iOrder = pController->GetOrder(0, &pOrderTarget, &OrderData);
-		if (iOrder != IShipController::orderOrbitExact)
+		const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
+		if (OrderDesc.GetOrder() != IShipController::orderOrbitExact)
 			continue;
 
-		if (pOrderTarget != Source)
+		if (OrderDesc.GetTarget() != Source)
 			continue;
 
-		if (OrderData.iDataType != IShipController::dataOrbitExact)
-			continue;
-
-		DWORD dwOrderRadius = LOWORD(OrderData.dwData1);
-		DWORD dwOrderAngle = HIWORD(OrderData.dwData1);
-
-		if (dwOrderAngle != AUTO_ANGLE || dwOrderRadius != dwRadius)
+		if (!IsAutoAngle(OrderDesc) || OrderDesc.GetDataInteger(CONSTLIT("radius"), true, DEFAULT_RADIUS) != dwRadius)
 			continue;
 
 		Result.Insert(pShip);

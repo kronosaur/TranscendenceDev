@@ -52,7 +52,7 @@ void CZoanthropeAI::Behavior (SUpdateCtx &Ctx)
 
 			//	See if we're out of our zone
 
-			Metric rRange = LIGHT_SECOND * GetCurrentOrderData();
+			Metric rRange = LIGHT_SECOND * GetCurrentOrderDataInteger();
 			if (CheckOutOfZone(GetCurrentOrderTarget(),
 					rRange - PATROL_SENSOR_RANGE,
 					rRange + PATROL_SENSOR_RANGE,
@@ -126,7 +126,7 @@ void CZoanthropeAI::Behavior (SUpdateCtx &Ctx)
 				}
 			else
 				{
-				m_AICtx.ImplementOrbit(m_pShip, m_pBase, LIGHT_SECOND * GetCurrentOrderData());
+				m_AICtx.ImplementOrbit(m_pShip, m_pBase, LIGHT_SECOND * GetCurrentOrderDataInteger());
 				m_AICtx.ImplementAttackNearestTarget(m_pShip, m_AICtx.GetMaxWeaponRange(), &m_pTarget);
 				m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip);
 				}
@@ -187,7 +187,7 @@ void CZoanthropeAI::BehaviorStart (void)
 		case IShipController::orderNone:
 			{
 			if (m_pShip->GetDockedObj() == NULL)
-				AddOrder(IShipController::orderGate, NULL, IShipController::SData());
+				AddOrder(COrderDesc(IShipController::orderGate));
 			break;
 			}
 

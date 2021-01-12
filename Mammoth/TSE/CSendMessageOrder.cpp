@@ -14,14 +14,13 @@ void CSendMessageOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	{
 	//	Get the current order data
 
-	CSpaceObject *pRecipient;
-	IShipController::SData Data;
-	pShip->GetCurrentOrder(&pRecipient, &Data);
+	const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
+	CSpaceObject *pRecipient = OrderDesc.GetTarget();
 
 	//	Send the message
 
-	if (pRecipient && !Data.sData.IsBlank())
-		pRecipient->SendMessage(pShip, Data.sData);
+	if (pRecipient && !OrderDesc.GetDataString().IsBlank())
+		pRecipient->SendMessage(pShip, OrderDesc.GetDataString());
 
 	//	Done with the order.
 

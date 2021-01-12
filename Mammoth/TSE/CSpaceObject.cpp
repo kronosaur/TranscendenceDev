@@ -5404,11 +5404,10 @@ bool CSpaceObject::IsPlayerEscortTarget (CSpaceObject *pPlayer)
 
 	//	Check the player's target
 
-	CSpaceObject *pTarget;
-	IShipController::OrderTypes iOrder = pPlayerShip->GetController()->GetCurrentOrderEx(&pTarget);
+	const COrderDesc &OrderDesc = pPlayerShip->GetCurrentOrderDesc();
 
-	return (pTarget == this
-			&& (iOrder == IShipController::orderGuard || iOrder == IShipController::orderEscort));
+	return (OrderDesc.GetTarget() == this
+			&& (OrderDesc.GetOrder() == IShipController::orderGuard || OrderDesc.GetOrder() == IShipController::orderEscort));
 	}
 
 bool CSpaceObject::IsStargateInRange (Metric rMaxRange)

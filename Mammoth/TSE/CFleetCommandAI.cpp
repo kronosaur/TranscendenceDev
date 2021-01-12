@@ -241,7 +241,7 @@ void CFleetCommandAI::BehaviorStart (void)
 		{
 		case IShipController::orderNone:
 			if (m_pShip->GetDockedObj() == NULL)
-				AddOrder(IShipController::orderGate, NULL, IShipController::SData());
+				AddOrder(COrderDesc(IShipController::orderGate));
 			break;
 
 		case IShipController::orderDestroyTarget:
@@ -288,7 +288,7 @@ void CFleetCommandAI::BehaviorStart (void)
 
 		case IShipController::orderWait:
 			{
-			DWORD dwWaitTime = GetCurrentOrderData();
+			DWORD dwWaitTime = GetCurrentOrderDataInteger();
 
 			SetState(stateWaiting);
 			if (dwWaitTime == 0)
@@ -772,7 +772,7 @@ void CFleetCommandAI::OnNewSystemNotify (void)
 		{
 		if (m_pAssets[i].pAsset->GetSystem() != pNewSystem)
 			{
-			IShipController::OrderTypes iOrder = m_pAssets[i].pAsset->AsShip()->GetController()->GetCurrentOrderEx();
+			IShipController::OrderTypes iOrder = m_pAssets[i].pAsset->AsShip()->GetController()->GetCurrentOrderDesc().GetOrder();
 			m_pAssets[i].pAsset = NULL;
 			iNewCount--;
 			}
