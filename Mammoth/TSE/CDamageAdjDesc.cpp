@@ -117,6 +117,22 @@ int CDamageAdjDesc::GetAbsorbAdj (DamageTypes iDamageType) const
 		return 0;
 	}
 
+int CDamageAdjDesc::GetAdj (DamageTypes iDamageType, const CItemEnhancementStack *pEnhancements) const
+
+//	GetAdj
+//
+//	Get adjustment.
+
+	{
+	if (pEnhancements)
+		{
+		DamageDesc Damage(iDamageType, DiceRange(0, 0, 1));
+		return GetAdj(iDamageType) * pEnhancements->GetDamageAdj(Damage) / 100;
+		}
+	else
+		return GetAdj(iDamageType);
+	}
+
 void CDamageAdjDesc::GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const
 
 //	GetAdjAndDefault
@@ -214,6 +230,24 @@ int CDamageAdjDesc::GetHPBonus (DamageTypes iDamageType) const
 		}
 	}
 
+int CDamageAdjDesc::GetHPBonus (DamageTypes iDamageType, const CItemEnhancementStack *pEnhancements) const
+
+//	GetHPBonus
+//
+//	Returns the HP bonus including enhancements.
+
+	{
+	DamageDesc Damage(iDamageType, DiceRange(0, 0, 1));
+
+	int iDefault;
+	int iDamageAdj;
+	GetAdjAndDefault(iDamageType, &iDamageAdj, &iDefault);
+	if (pEnhancements)
+		iDamageAdj = iDamageAdj * pEnhancements->GetDamageAdj(Damage) / 100;
+
+	return GetBonusFromAdj(iDamageAdj, iDefault);
+	}
+
 ICCItem *CDamageAdjDesc::GetDamageAdjProperty (const CItemEnhancementStack *pEnhancements) const
 
 //	GetDamageAdjProperty
@@ -228,14 +262,8 @@ ICCItem *CDamageAdjDesc::GetDamageAdjProperty (const CItemEnhancementStack *pEnh
 	for (i = 0; i < damageCount; i++)
 		{
 		DamageTypes iDamageType = (DamageTypes)i;
-		DamageDesc Damage(iDamageType, DiceRange(0, 0, 1));
 
-		int iDefault;
-		int iDamageAdj;
-		GetAdjAndDefault(iDamageType, &iDamageAdj, &iDefault);
-		if (pEnhancements)
-			iDamageAdj = iDamageAdj * pEnhancements->GetDamageAdj(Damage) / 100;
-
+		int iDamageAdj = GetAdj(iDamageType, pEnhancements);
 		pResult->SetIntegerAt(::GetDamageType(iDamageType), iDamageAdj);
 		}
 
@@ -256,15 +284,8 @@ ICCItem *CDamageAdjDesc::GetHPBonusProperty (const CItemEnhancementStack *pEnhan
 	for (i = 0; i < damageCount; i++)
 		{
 		DamageTypes iDamageType = (DamageTypes)i;
-		DamageDesc Damage(iDamageType, DiceRange(0, 0, 1));
 
-		int iDefault;
-		int iDamageAdj;
-		GetAdjAndDefault(iDamageType, &iDamageAdj, &iDefault);
-		if (pEnhancements)
-			iDamageAdj = iDamageAdj * pEnhancements->GetDamageAdj(Damage) / 100;
-
-		int iBonus = GetBonusFromAdj(iDamageAdj, iDefault);
+		int iBonus = GetHPBonus(iDamageType, pEnhancements);
 		if (iBonus == -100)
 			pResult->SetStringAt(::GetDamageType(iDamageType), CONSTLIT("immune"));
 		else if (iBonus != 0)
@@ -523,4 +544,30 @@ bool CDamageAdjDesc::IsEmpty (void) const
 			return false;
 
 	return true;
+	}
+
+DamageTypes CDamageAdjDesc::ParseDamageTypeFromProperty (const CString &sProperty)
+
+//	ParseDamageTypeFromProperty
+//
+//	Returns the damageType from a property encoded as xyz.damageType.
+//
+//	EXAMPLE
+//
+//	damageAdj.laser
+//
+//	If no damage type is encoded, we return damageGeneric. If there is a parsing
+//	error, we return damageError.
+
+	{
+	const char *pPos = sProperty.GetASCIIZPointer();
+	while (*pPos != '.' && *pPos != '\0')
+		pPos++;
+
+	if (*pPos == '\0')
+		return damageGeneric;
+
+	pPos++;
+	CString sDamage(pPos);
+	return ::LoadDamageTypeFromXML(sDamage);
 	}

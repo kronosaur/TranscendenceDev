@@ -603,8 +603,10 @@ class CDamageAdjDesc
 		ALERROR Bind (SDesignLoadCtx &Ctx, const CDamageAdjDesc *pDefault);
 		int GetAbsorbAdj (DamageTypes iDamageType) const;
 		int GetAdj (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? 100 : m_iDamageAdj[iDamageType]); }
+		int GetAdj (DamageTypes iDamageType, const CItemEnhancementStack *pEnhancements) const;
 		void GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const;
 		int GetHPBonus (DamageTypes iDamageType) const;
+		int GetHPBonus (DamageTypes iDamageType, const CItemEnhancementStack *pEnhancements) const;
 		ICCItem *GetDamageAdjProperty (const CItemEnhancementStack *pEnhancements = NULL) const;
 		ICCItem *GetHPBonusProperty (const CItemEnhancementStack *pEnhancements = NULL) const;
 		ALERROR InitFromArray (int *pTable);
@@ -616,6 +618,7 @@ class CDamageAdjDesc
 		static int GetBonusFromAdj (int iDamageAdj, int iDefault = 100);
 		static int GetDamageAdjFromHPBonus (int iBonus);
 		static Metric GetDamageTypeFraction (int iLevel, DamageTypes iDamageType);
+		static DamageTypes ParseDamageTypeFromProperty (const CString &sProperty);
 
 	private:
 		enum EAdjustmentTypes
