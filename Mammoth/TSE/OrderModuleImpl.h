@@ -327,7 +327,7 @@ class COrbitPatrolOrder : public IOrderModule
 		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData);
 		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
 		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
-		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderOrbitExact; }
+		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderOrbitPatrol; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;

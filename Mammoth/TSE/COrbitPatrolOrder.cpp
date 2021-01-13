@@ -138,9 +138,18 @@ void COrbitPatrolOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 //	Ship was attacked while executing order.
 
 	{
+	//	If we have a valid attacker, then we try to respond. We ignore friendly
+	//	fire because that's handled by CBaseShipAI.
+
+	if (pAttacker == NULL
+			|| !pAttacker->CanAttack()
+			|| bFriendlyFire)
+		return;
+
 	switch (m_iState)
 		{
 		case EState::Orbiting:
+
 			m_Objs[objTarget] = pAttacker;
 			m_iState = EState::Attacking;
 
