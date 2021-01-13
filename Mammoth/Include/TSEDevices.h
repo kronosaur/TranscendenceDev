@@ -463,7 +463,7 @@ class CDeviceDescList
 		int GetFireArc (int iIndex) const;
 		const CItem &GetItem (int iIndex) const { return m_List[iIndex].Item; }
 		CDeviceClass *GetNamedDevice (DeviceNames iDev) const;
-		void SetSecondary (bool bValue = true) { for (int i = 0; i < GetCount(); i++) m_List[i].bSecondary = bValue; }
+		void SetSecondary (bool bValue = true);
 
 	private:
 		TArray<SDeviceDesc> m_List;
