@@ -76,14 +76,6 @@ static LPCSTR STYLE_TABLE[] =
 		NULL,
 	};
 
-CDisintegrateEffectCreator::CDisintegrateEffectCreator (void) :
-			m_pSingleton(NULL)
-
-//	CDisintegrateEffectCreator constructor
-
-	{
-	}
-
 CDisintegrateEffectCreator::~CDisintegrateEffectCreator (void)
 
 //	CDisintegrateEffectCreator destructor

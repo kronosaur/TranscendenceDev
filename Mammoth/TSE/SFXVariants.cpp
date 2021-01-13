@@ -22,13 +22,6 @@ class CEffectVariantPainter : public IEffectPainter
 		TArray<CEffectPainterRef> m_Cache;
 	};
 
-CEffectVariantCreator::CEffectVariantCreator (void)
-
-//	CEffectVariantCreator constructor
-
-	{
-	}
-
 CEffectVariantCreator::~CEffectVariantCreator (void)
 
 //	CEffectVariantCreator destructor

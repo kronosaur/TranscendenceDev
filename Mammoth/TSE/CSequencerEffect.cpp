@@ -4,16 +4,6 @@
 
 #include "PreComp.h"
 
-CSequencerEffect::CSequencerEffect (CUniverse &Universe) : TSpaceObjectImpl(Universe),
-		m_pType(NULL),
-		m_pAnchor(NULL),
-		m_iStartTime(0)
-
-//	CSequencerEffect constructor
-
-	{
-	}
-
 ALERROR CSequencerEffect::Create (CSystem &System,
 								  CEffectSequencerCreator *pType,
 								  CSpaceObject *pAnchor,

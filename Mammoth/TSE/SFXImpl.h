@@ -1,9 +1,9 @@
 //	TSESFXImpl.h
 //
 //	Transcendence IEffectPainter classes
+//	Copyright (c) 2021 Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_SFX
-#define INCL_TSE_SFX
+#pragma once
 
 class CBeamEffectCreator : public CEffectCreator,
 		public IEffectPainter
@@ -73,10 +73,10 @@ class CBeamEffectCreator : public CEffectCreator,
 
 		static BeamTypes ParseBeamType (const CString &sValue);
 
-		BeamTypes m_iType;
-		int m_iIntensity;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
+		BeamTypes m_iType = beamUnknown;
+		int m_iIntensity = 100;
+		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
 	};
 
 class CBoltEffectCreator : public CEffectCreator,
@@ -104,16 +104,16 @@ class CBoltEffectCreator : public CEffectCreator,
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) override;
 
 	private:
-		int m_iLength;
-		int m_iWidth;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
+		int m_iLength = 10;
+		int m_iWidth = 1;
+		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
 	};
 
 class CDisintegrateEffectCreator : public CEffectCreator
 	{
 	public:
-		CDisintegrateEffectCreator (void);
+		CDisintegrateEffectCreator (void) { }
 		~CDisintegrateEffectCreator (void);
 			
 		virtual CString GetTag (void) override { return GetClassTag(); }
@@ -133,13 +133,13 @@ class CDisintegrateEffectCreator : public CEffectCreator
 		CEffectParamDesc m_PrimaryColor;	//	primaryColor: Primary color
 		CEffectParamDesc m_SecondaryColor;	//	secondaryColor: Secondary color
 
-		IEffectPainter *m_pSingleton;
+		IEffectPainter *m_pSingleton = NULL;
 	};
 
 class CEffectGroupCreator : public CEffectCreator
 	{
 	public:
-		CEffectGroupCreator (void);
+		CEffectGroupCreator (void) { }
 
 		void ApplyOffsets (SViewportPaintCtx *ioCtx, int *retx, int *rety);
 		IEffectPainter *CreateSubPainter (CCreatePainterCtx &Ctx, int iIndex) { return m_pCreators[iIndex].CreatePainter(Ctx); }
@@ -148,7 +148,7 @@ class CEffectGroupCreator : public CEffectCreator
 		static CString GetClassTag (void) { return CONSTLIT("Group"); }
 		CVector GetOffsetPos (int iRotation);
 		int GetRotationAdj (void) const { return m_iRotationAdj; }
-		virtual CString GetTag (void) { return GetClassTag(); }
+		virtual CString GetTag (void) override { return GetClassTag(); }
 		bool HasOffsets (void) { return m_bHasOffsets; }
 
 		//	Virtuals
@@ -175,15 +175,15 @@ class CEffectGroupCreator : public CEffectCreator
 		virtual void OnEffectMarkResources (void) override;
 
 	private:
-		int m_iCount;
-		CEffectCreatorRef *m_pCreators;
+		int m_iCount = 0;
+		CEffectCreatorRef *m_pCreators = NULL;
 
-		bool m_bHasOffsets;
-		int m_xOffset;						//	Cartessian coords (pixels)
-		int m_yOffset;
-		int m_iAngleOffset;
-		int m_iRadiusOffset;				//	Pixels
-		int m_iRotationAdj;
+		bool m_bHasOffsets = false;
+		int m_xOffset = 0;						//	Cartessian coords (pixels)
+		int m_yOffset = 0;
+		int m_iAngleOffset = 0;
+		int m_iRadiusOffset = 0;				//	Pixels
+		int m_iRotationAdj = 0;
 	};
 
 class CEffectSequencerCreator : public CEffectCreator
@@ -236,7 +236,7 @@ class CEffectSequencerCreator : public CEffectCreator
 class CEffectVariantCreator : public CEffectCreator
 	{
 	public:
-		CEffectVariantCreator (void);
+		CEffectVariantCreator (void) { }
 		virtual ~CEffectVariantCreator (void);
 
 		static CString GetClassTag (void) { return CONSTLIT("Variants"); }
@@ -304,15 +304,15 @@ class CEllipseEffectCreator : public CEffectCreator,
 	private:
 		CVector GetPoint (Metric rAngle) const;
 
-		Metric m_rSemiMajorAxis;
-		Metric m_rEccentricity;
-		Metric m_rRotation;
+		Metric m_rSemiMajorAxis = 10.0;
+		Metric m_rEccentricity = 0.0;
+		Metric m_rRotation = 0.0;
 
-		CG32bitPixel m_rgbLineColor;
-		int m_iLineWidth;
+		CG32bitPixel m_rgbLineColor = CG32bitPixel(255, 255, 255);
+		int m_iLineWidth = 1;
 		CString m_sLineStyle;
 
-		int m_iLifetime;
+		int m_iLifetime = 0;
 	};
 
 class CFlareEffectCreator : public CEffectCreator
@@ -344,11 +344,11 @@ class CFlareEffectCreator : public CEffectCreator
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
 
 	private:
-		Styles m_iStyle;
-		int m_iRadius;									//	Radius in pixels
-		int m_iLifetime;								//	Lifetime (ticks)
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
+		Styles m_iStyle = stylePlain;
+		int m_iRadius = 10;									//	Radius in pixels
+		int m_iLifetime = 0;								//	Lifetime (ticks)
+		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
 	};
 
 class CGlowEffectCreator : public CEffectCreator
@@ -395,7 +395,7 @@ class CImageEffectCreator : public CEffectCreator,
 			{ }
 
 		static CString GetClassTag (void) { return CONSTLIT("Image"); }
-		virtual CString GetTag (void) { return GetClassTag(); }
+		virtual CString GetTag (void) override { return GetClassTag(); }
 
 		CCompositeImageDesc &GetImage (void) { return m_Image; }
 		bool HasRandomStartFrame (void) const { return m_bRandomStartFrame; }
@@ -403,8 +403,8 @@ class CImageEffectCreator : public CEffectCreator,
 		bool IsDirectional (void) const { return m_bDirectional; }
 
 		//	CEffectCreator virtuals
-		virtual int GetLifetime (void) { return m_iLifetime; }
-		virtual void SetVariants (int iVariants);
+		virtual int GetLifetime (void) override { return m_iLifetime; }
+		virtual void SetVariants (int iVariants) override;
 
 		//	IEffectPainter virtuals
 		virtual bool CanPaintComposite (void) override { return true; }
@@ -424,11 +424,11 @@ class CImageEffectCreator : public CEffectCreator,
 
 	private:
 		CCompositeImageDesc m_Image;
-		int m_iLifetime;
-		int m_iVariants;
-		bool m_bRotateImage;
-		bool m_bRandomStartFrame;
-		bool m_bDirectional;
+		int m_iLifetime = 0;
+		int m_iVariants = 0;
+		bool m_bRotateImage = false;
+		bool m_bRandomStartFrame = false;
+		bool m_bDirectional = false;
 	};
 
 class CImageAndTailEffectCreator : public CEffectCreator,
@@ -459,14 +459,14 @@ class CImageAndTailEffectCreator : public CEffectCreator,
 
 	private:
 		CObjectImageArray m_Image;
-		int m_iLifetime;
-		int m_iVariants;
-		bool m_bRandomStartFrame;
+		int m_iLifetime = 0;
+		int m_iVariants = 0;
+		bool m_bRandomStartFrame = false;
 
-		int m_iLength;
-		int m_iWidth;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
+		int m_iLength = 10;
+		int m_iWidth = 1;
+		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
 	};
 
 class CImageFractureEffectCreator : public CEffectCreator
@@ -498,7 +498,7 @@ class CImageFractureEffectCreator : public CEffectCreator
 class CLightningStormEffectCreator : public CEffectCreator
 	{
 	public:
-		CLightningStormEffectCreator (void);
+		CLightningStormEffectCreator (void) { }
 		~CLightningStormEffectCreator (void);
 			
 		virtual CString GetTag (void) override { return GetClassTag(); }
@@ -521,7 +521,7 @@ class CLightningStormEffectCreator : public CEffectCreator
 
 		CEffectParamDesc m_Lifetime;		//	lifetime: Lifetime in ticks (optional)
 
-		IEffectPainter *m_pSingleton;
+		IEffectPainter *m_pSingleton = NULL;
 	};
 
 class CMoltenBoltEffectCreator : public CEffectCreator,
@@ -550,11 +550,11 @@ class CMoltenBoltEffectCreator : public CEffectCreator,
 	private:
 		void CreateBoltShape (int iAngle, int iLength, int iWidth, SPoint *Poly);
 
-		int m_iWidth;
-		int m_iLength;
-		int m_iGrowth;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
+		int m_iWidth = 1;
+		int m_iLength = 10;
+		int m_iGrowth = 0;
+		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
 	};
 
 class CNullEffectCreator : public CEffectCreator,
@@ -582,7 +582,7 @@ class CNullEffectCreator : public CEffectCreator,
 class COrbEffectCreator : public CEffectCreator
 	{
 	public:
-		COrbEffectCreator (void);
+		COrbEffectCreator (void) { }
 		~COrbEffectCreator (void);
 			
 		virtual CString GetTag (void) override { return GetClassTag(); }
@@ -613,7 +613,7 @@ class COrbEffectCreator : public CEffectCreator
 		CEffectParamDesc m_Animate;				//	animate: Animation styles
 		CEffectParamDesc m_Lifetime;			//	lifetime: Lifetime in ticks (optional)
 
-		IEffectPainter *m_pSingleton;
+		IEffectPainter *m_pSingleton = NULL;
 	};
 
 class CParticleCloudEffectCreator : public CEffectCreator
@@ -628,8 +628,7 @@ class CParticleCloudEffectCreator : public CEffectCreator
 			styleExhaust,
 			};
 
-		CParticleCloudEffectCreator (void) : m_pParticleEffect(NULL)
-			{ }
+		CParticleCloudEffectCreator (void) { }
 
 		static CString GetClassTag (void) { return CONSTLIT("ParticleCloud"); }
 		virtual CString GetTag (void) override { return GetClassTag(); }
@@ -666,37 +665,37 @@ class CParticleCloudEffectCreator : public CEffectCreator
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) override;
 
 	private:
-		Styles m_iStyle;								//	Effect style
-		Metric m_rSlowMotionFactor;						//	Slow motion
+		Styles m_iStyle = styleCloud;					//	Effect style
+		Metric m_rSlowMotionFactor = 0.0;				//	Slow motion
 		DiceRange m_Lifetime;							//	Lifetime of effect
 		DiceRange m_ParticleCount;						//	Initial number of particles
 		DiceRange m_ParticleLifetime;					//	Lifetime of each particle
 
-		int m_iEmitLifetime;							//	% time that it emits particles
-		int m_iEmitRotation;							//	Rotation
+		int m_iEmitLifetime = 0;						//	% time that it emits particles
+		int m_iEmitRotation = 0;						//	Rotation
 		DiceRange m_NewParticles;						//	Number of new particles per tick
 		DiceRange m_InitSpeed;							//	Initial speed of each particle
 		DiceRange m_Spread;								//	Spread angle (for jet and exhaust)
 
-		Metric m_rRingRadius;							//	If non-zero, particles form a ring at this radius
-		Metric m_rMaxRadius;							//	If RingRadius is non-zero, this is the outer edge of ring
+		Metric m_rRingRadius = 0.0;						//	If non-zero, particles form a ring at this radius
+		Metric m_rMaxRadius = 0.0;						//	If RingRadius is non-zero, this is the outer edge of ring
 														//		Otherwise, it is the max radius of a sphere
-		Metric m_rMinRadius;							//	If RingRadius is non-zero, this is the inner edge of ring
+		Metric m_rMinRadius = 0.0;						//	If RingRadius is non-zero, this is the inner edge of ring
 														//		Otherwise, it is ignored
 
-		int m_iCohesion;								//	Strength of force keeping particles together (0-100)
-		int m_iViscosity;								//	Drag on particles while inside bounds (0-100)
-		int m_iWakePotential;							//	Influence of moving objects (0-100)
+		int m_iCohesion = 0;							//	Strength of force keeping particles together (0-100)
+		int m_iViscosity = 0;							//	Drag on particles while inside bounds (0-100)
+		int m_iWakePotential = 0;						//	Influence of moving objects (0-100)
 
-		Metric m_rDrag;									//	Drag when source object is moving
+		Metric m_rDrag = 0.0;							//	Drag when source object is moving
 
-		CEffectCreator *m_pParticleEffect;				//	Effect to use to paint particles
+		CEffectCreator *m_pParticleEffect = NULL;		//	Effect to use to paint particles
 	};
 
 class CParticlePatternEffectCreator : public CEffectCreator
 	{
 	public:
-		CParticlePatternEffectCreator (void);
+		CParticlePatternEffectCreator (void) { }
 		virtual ~CParticlePatternEffectCreator (void);
 
 		CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
@@ -726,9 +725,9 @@ class CParticlePatternEffectCreator : public CEffectCreator
 		CEffectParamDesc m_ParticleSpeed;	//	Speed of particles along path
 		CEffectParamDesc m_JitterLength;
 
-		CEffectCreator *m_pParticleEffect;	//	Effect to use to paint particles (may be NULL)
+		CEffectCreator *m_pParticleEffect = NULL;	//	Effect to use to paint particles (may be NULL)
 
-		IEffectPainter *m_pSingleton;
+		IEffectPainter *m_pSingleton = NULL;
 	};
 
 class CParticleExplosionEffectCreator : public CEffectCreator
@@ -756,15 +755,15 @@ class CParticleExplosionEffectCreator : public CEffectCreator
 	private:
 		DiceRange m_Lifetime;							//	Total lifetime
 		DiceRange m_ParticleCount;						//	Number of particles
-		Metric m_rParticleSpeed;						//	Speed of particles
-		int m_iParticleLifetime;						//	Particle lifespan
+		Metric m_rParticleSpeed = 0.0;					//	Speed of particles
+		int m_iParticleLifetime = 0;					//	Particle lifespan
 		CObjectImageArray m_Image;						//	Images
 	};
 
 class CParticleSystemEffectCreator : public CEffectCreator
 	{
 	public:
-		CParticleSystemEffectCreator (void);
+		CParticleSystemEffectCreator (void) { }
 		~CParticleSystemEffectCreator (void);
 			
 		CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
@@ -801,9 +800,9 @@ class CParticleSystemEffectCreator : public CEffectCreator
 		CEffectParamDesc m_XformRotation;	//	XformRotation: Rotations (degrees)
 		CEffectParamDesc m_XformTime;		//	XformTime: 100 = normal speed; <100 = slower
 
-		CEffectCreator *m_pParticleEffect;	//	Effect to use to paint particles
+		CEffectCreator *m_pParticleEffect = NULL;	//	Effect to use to paint particles
 
-		IEffectPainter *m_pSingleton;
+		IEffectPainter *m_pSingleton = NULL;
 	};
 
 class CPlasmaSphereEffectCreator : public CEffectCreator,
@@ -833,8 +832,8 @@ class CPlasmaSphereEffectCreator : public CEffectCreator,
 		DiceRange m_Radius;
 		DiceRange m_SpikeCount;
 		DiceRange m_SpikeLength;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
 	};
 
 class CPolyflashEffectCreator : public CEffectCreator
@@ -854,7 +853,7 @@ class CPolyflashEffectCreator : public CEffectCreator
 class CRayEffectCreator : public CEffectCreator
 	{
 	public:
-		CRayEffectCreator (void);
+		CRayEffectCreator (void) { }
 		~CRayEffectCreator (void);
 			
 		virtual CString GetTag (void) override { return GetClassTag(); }
@@ -884,13 +883,13 @@ class CRayEffectCreator : public CEffectCreator
 
 		CEffectParamDesc m_AnimateOpacity;	//	animate opacity
 
-		IEffectPainter *m_pSingleton;
+		IEffectPainter *m_pSingleton = NULL;
 	};
 
 class CShapeEffectCreator : public CEffectCreator
 	{
 	public:
-		CShapeEffectCreator (void) : m_Points(NULL), m_TransBuffer(NULL) { }
+		CShapeEffectCreator (void) { }
 		static CString GetClassTag (void) { return CONSTLIT("Shape"); }
 		virtual CString GetTag (void) override { return GetClassTag(); }
 
@@ -913,28 +912,28 @@ class CShapeEffectCreator : public CEffectCreator
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
 
 	private:
-		int m_iWidth;								//	Scale factor: pixel width of 100 units
-		int m_iLength;								//	Scale factor: pixel length of 100 units
+		int m_iWidth = 100;								//	Scale factor: pixel width of 100 units
+		int m_iLength = 100;							//	Scale factor: pixel length of 100 units
 
-		bool m_bDirectional;						//	If TRUE, rotate shape based on Ctx.iRotation
-		int m_iWidthInc;							//	Increment width every tick
-		int m_iLengthInc;							//	Increment length every tick
+		bool m_bDirectional = false;					//	If TRUE, rotate shape based on Ctx.iRotation
+		int m_iWidthInc = 0;							//	Increment width every tick
+		int m_iLengthInc = 0;							//	Increment length every tick
 
-		CG32bitPixel m_rgbColor;								//	Shape color
-		DWORD m_byOpacity;							//	Shape opacity
-		CGDraw::EBlendModes m_iBlendMode;
+		CG32bitPixel m_rgbColor = CG32bitPixel(255, 255, 255);								//	Shape color
+		DWORD m_byOpacity = 0xff;						//	Shape opacity
+		CGDraw::EBlendModes m_iBlendMode = CGDraw::blendNormal;
 
-		int m_iPointCount;
-		SPoint *m_Points;
-		bool m_bConvexPolygon;						//	TRUE if simple polygon
+		int m_iPointCount = 0;
+		SPoint *m_Points = NULL;
+		bool m_bConvexPolygon = false;					//	TRUE if simple polygon
 
-		SPoint *m_TransBuffer;						//	Buffer used for transforms
+		SPoint *m_TransBuffer = NULL;					//	Buffer used for transforms
 	};
 
 class CShockwaveEffectCreator : public CEffectCreator
 	{
 	public:
-		CShockwaveEffectCreator (void);
+		CShockwaveEffectCreator (void) { }
 		~CShockwaveEffectCreator (void);
 			
 		virtual CString GetTag (void) override { return GetClassTag(); }
@@ -967,13 +966,13 @@ class CShockwaveEffectCreator : public CEffectCreator
 		CEffectParamDesc m_PrimaryColor;
 		CEffectParamDesc m_SecondaryColor;
 
-		IEffectPainter *m_pSingleton;
+		IEffectPainter *m_pSingleton = NULL;
 	};
 
 class CSingleParticleEffectCreator : public CEffectCreator
 	{
 	public:
-		CSingleParticleEffectCreator (void);
+		CSingleParticleEffectCreator (void) { }
 		~CSingleParticleEffectCreator (void);
 
 		static CString GetClassTag (void) { return CONSTLIT("Particle"); }
@@ -990,7 +989,7 @@ class CSingleParticleEffectCreator : public CEffectCreator
 		CEffectParamDesc m_PrimaryColor;
 		CEffectParamDesc m_SecondaryColor;
 
-		IEffectPainter *m_pSingleton;
+		IEffectPainter *m_pSingleton = NULL;
 	};
 
 class CSmokeTrailEffectCreator : public CEffectCreator
@@ -1025,11 +1024,11 @@ class CSmokeTrailEffectCreator : public CEffectCreator
 		DiceRange m_InitSpeed;							//	Initial speed of each particle
 		DiceRange m_ParticleLifetime;					//	Lifetime of each particle
 
-		int m_iLifetime;								//	Lifetime of effect
-		int m_iEmitLifetime;							//	% time that it emits particles
-		int m_iRotation;								//	Direction of emission (defaults to 180)
+		int m_iLifetime = 0;							//	Lifetime of effect
+		int m_iEmitLifetime = 0;						//	% time that it emits particles
+		int m_iRotation = 0;							//	Direction of emission (defaults to 180)
 
-		CEffectCreator *m_pParticleEffect;				//	Effect to use to paint particles
+		CEffectCreator *m_pParticleEffect = NULL;		//	Effect to use to paint particles
 	};
 
 class CStarburstEffectCreator : public CEffectCreator,
@@ -1067,22 +1066,18 @@ class CStarburstEffectCreator : public CEffectCreator,
 
 		void CreateDiamondSpike (int iAngle, int iLength, int iWidthAngle, SPoint *Poly);
 
-		Styles m_iStyle;
+		Styles m_iStyle = stylePlain;
 		DiceRange m_SpikeCount;
 		DiceRange m_SpikeLength;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
-		int m_iLifetime;
+		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
+		int m_iLifetime = 0;
 	};
 
 class CTextEffectCreator : public CEffectCreator
 	{
 	public:
-		CTextEffectCreator (void) : m_pFont(NULL),
-				m_byOpacity(0xff),
-				m_dwAlignment(CG16bitFont::AlignCenter),
-				m_iLifetime(-1)
-			{ }
+		CTextEffectCreator (void) { }
 
 		static CString GetClassTag (void) { return CONSTLIT("Text"); }
 		virtual CString GetTag (void) override { return GetClassTag(); }
@@ -1102,12 +1097,12 @@ class CTextEffectCreator : public CEffectCreator
 	private:
 		CString m_sDefaultText;
 
-		const CG16bitFont *m_pFont;
-		CG32bitPixel m_rgbPrimaryColor;
-		DWORD m_byOpacity;
-		DWORD m_dwAlignment;
+		const CG16bitFont *m_pFont = NULL;
+		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		DWORD m_byOpacity = 0xff;
+		DWORD m_dwAlignment = CG16bitFont::AlignCenter;
 
-		int m_iLifetime;
+		int m_iLifetime = -1;
 	};
 
 //	Space Object Implementations -----------------------------------------------
@@ -1115,7 +1110,8 @@ class CTextEffectCreator : public CEffectCreator
 class CSequencerEffect : public TSpaceObjectImpl<OBJID_CSEQUENCEREFFECT>
 	{
 	public:
-		CSequencerEffect (CUniverse &Universe);
+		CSequencerEffect (CUniverse &Universe) : TSpaceObjectImpl(Universe)
+			{ }
 
 		static ALERROR Create (CSystem &System,
 							   CEffectSequencerCreator *pType,
@@ -1137,13 +1133,12 @@ class CSequencerEffect : public TSpaceObjectImpl<OBJID_CSEQUENCEREFFECT>
 
 	private:
 
-		CEffectSequencerCreator *m_pType;
-		CSpaceObject *m_pAnchor;
+		CEffectSequencerCreator *m_pType = NULL;
+		CSpaceObject *m_pAnchor = NULL;
 		CVector m_vAnchorOffset;
-		int m_iStartTime;
-		int m_iTimeCursor;
+		int m_iStartTime = 0;
+		int m_iTimeCursor = 0;
 
 	friend CObjectClass<CSequencerEffect>;
 	};
 
-#endif

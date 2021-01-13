@@ -77,11 +77,10 @@ class CEffectParamDesc
 			typeImage =						8,
 			};
 
-		CEffectParamDesc (void) : m_iType(typeNull)
-			{ }
+		CEffectParamDesc (void) { }
 
-		CEffectParamDesc (const CEffectParamDesc &Src)
-			{ Copy(Src); }
+		CEffectParamDesc (const CEffectParamDesc &Src) { Copy(Src); }
+		CEffectParamDesc (CEffectParamDesc &&Src) noexcept { Move(Src); }
 
 		CEffectParamDesc (int iValue) : m_iType(typeIntegerConstant), m_dwData(iValue) { }
 		CEffectParamDesc (bool bValue) : m_iType(typeBoolConstant), m_dwData(bValue ? 1 : 0) { }
@@ -91,8 +90,8 @@ class CEffectParamDesc
 
 		~CEffectParamDesc (void);
 
-		CEffectParamDesc &operator= (const CEffectParamDesc &Src)
-			{ CleanUp(); Copy(Src); return *this; }
+		CEffectParamDesc &operator= (const CEffectParamDesc &Src) { CleanUp(); Copy(Src); return *this; }
+		CEffectParamDesc &operator= (CEffectParamDesc &&Src) noexcept { CleanUp(); Move(Src); return *this; }
 
 		ICCItemPtr AsItem (void) const;
 		ALERROR Bind (SDesignLoadCtx &Ctx) { if (m_iType == typeImage) return m_pImage->OnDesignLoadComplete(Ctx); return NOERROR; }
@@ -132,17 +131,18 @@ class CEffectParamDesc
 		static bool FindIdentifier (const CString &sValue, LPCSTR *pIDMap, DWORD *retdwID = NULL);
 
 	private:
-		void CleanUp (void);
+		void CleanUp (void) noexcept;
 		void Copy (const CEffectParamDesc &Src);
+		void Move (CEffectParamDesc &Src) noexcept;
 
-		EDataTypes m_iType;
+		EDataTypes m_iType = typeNull;
 
 		CString m_sData;
 		DiceRange m_DiceRange;
 
 		union
 			{
-			DWORD m_dwData;
+			DWORD m_dwData = 0;
 			CObjectImageArray *m_pImage;
 			ICCItem *m_pItem;
 			CVector *m_pVector;
@@ -239,8 +239,7 @@ class CCreatePainterCtx
 class IEffectPainter
 	{
 	public:
-		IEffectPainter (bool bSingleton = false) : m_bSingleton(bSingleton),
-				m_bNoSound(false)
+		IEffectPainter (bool bSingleton = false) : m_bSingleton(bSingleton)
 			{ }
 
 		void GetBounds (RECT *retRect);
@@ -319,8 +318,8 @@ class IEffectPainter
 	private:
 		int GetInitialLifetime (void);
 
-		bool m_bSingleton;
-		bool m_bNoSound;
+		bool m_bSingleton = false;
+		bool m_bNoSound = false;
 	};
 
 class CEffectPainterRef
@@ -439,7 +438,7 @@ class CEffectCreator : public CDesignType
 			instCreator,
 			};
 
-		CEffectCreator (void);
+		CEffectCreator (void) { }
 		virtual ~CEffectCreator (void);
 
 		static ALERROR CreateBeamEffect (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CEffectCreator **retpCreator);

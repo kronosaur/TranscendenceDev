@@ -449,21 +449,6 @@ void CEffectGroupPainter::SetVariants (int iVariants)
 
 //	CEffectGroupCreator --------------------------------------------------------
 
-CEffectGroupCreator::CEffectGroupCreator (void) : 
-		m_pCreators(NULL), 
-		m_iCount(0),
-		m_iAngleOffset(0),
-		m_iRadiusOffset(0),
-		m_xOffset(0),
-		m_yOffset(0),
-		m_iRotationAdj(0),
-		m_bHasOffsets(false)
-
-//	CEffectGroupCreator constructor
-
-	{
-	}
-
 CEffectGroupCreator::~CEffectGroupCreator (void)
 
 //	CEffectGroupCreator destructor

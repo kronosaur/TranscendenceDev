@@ -99,7 +99,7 @@ ICCItemPtr CEffectParamDesc::AsItem (void) const
 		}
 	}
 
-void CEffectParamDesc::CleanUp (void)
+void CEffectParamDesc::CleanUp (void) noexcept
 
 //	CleanUp
 //
@@ -623,6 +623,43 @@ bool CEffectParamDesc::IsConstant (void)
 		default:
 			return false;
 		}
+	}
+
+void CEffectParamDesc::Move (CEffectParamDesc &Src) noexcept
+
+//	Move
+//
+//	Moves from the source.
+
+	{
+	m_iType = Src.m_iType;
+
+	switch (Src.m_iType)
+		{
+		case typeBoolConstant:
+		case typeColorConstant:
+		case typeIntegerConstant:
+			m_dwData = Src.m_dwData;
+			break;
+
+		case typeImage:
+			m_pImage = Src.m_pImage;
+			break;
+
+		case typeIntegerDiceRange:
+			m_DiceRange = Src.m_DiceRange;
+			break;
+
+		case typeStringConstant:
+			m_sData = Src.m_sData;
+			break;
+
+		case typeVectorConstant:
+			m_pVector = Src.m_pVector;
+			break;
+		}
+
+	Src.m_iType = typeNull;
 	}
 
 void CEffectParamDesc::ReadFromStream (SLoadCtx &Ctx)

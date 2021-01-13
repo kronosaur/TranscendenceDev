@@ -94,15 +94,6 @@ static LPCSTR OLD_STYLE_TABLE[] =
 		NULL,
 	};
 
-CParticleSystemEffectCreator::CParticleSystemEffectCreator (void) :
-			m_pParticleEffect(NULL),
-			m_pSingleton(NULL)
-
-//	CRayEffectCreator constructor
-
-	{
-	}
-
 CParticleSystemEffectCreator::~CParticleSystemEffectCreator (void)
 
 //	CRayEffectCreator destructor
