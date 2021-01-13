@@ -527,6 +527,19 @@ CSpaceObject::Categories CMissile::GetCategory (void) const
 	return ((m_pDesc->GetFireType() == CWeaponFireDesc::ftBeam || m_pDesc->GetInteraction().InteractsLikeBeam()) ? catBeam : catMissile);
 	}
 
+const CObjectImageArray &CMissile::GetImage (int *retiRotationFrameIndex) const
+
+//	GetImage
+//
+//	Returns the missile image.
+
+	{
+	if (m_pPainter)
+		return m_pPainter->GetImage(GetRotation(), retiRotationFrameIndex);
+	else
+		return CObjectImageArray::Null();
+	}
+
 int CMissile::GetLastFireTime (void) const
 
 //	GetLastFireTime

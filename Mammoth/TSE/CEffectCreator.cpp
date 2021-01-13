@@ -891,6 +891,14 @@ void IEffectPainter::GetBounds (const CVector &vPos, CVector *retvUR, CVector *r
 	*retvLL = vPos + CVector(rcRect.left * g_KlicksPerPixel, -rcRect.bottom * g_KlicksPerPixel);
 	}
 
+const CObjectImageArray &IEffectPainter::GetImage (int iRotation, int *retiRotationFrameIndex) const
+	{
+	if (retiRotationFrameIndex)
+		*retiRotationFrameIndex = 0;
+
+	return CObjectImageArray::Null();
+	}
+
 int IEffectPainter::GetInitialLifetime (void)
 	{
 	return GetCreator()->GetLifetime();

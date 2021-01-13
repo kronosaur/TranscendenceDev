@@ -226,7 +226,12 @@ void CLightningStormEffectPainter::CalcMetrics (CG32bitImage &Dest, int x, int y
 			//	Compute the object size (as a radius).
 
 			if (Ctx.pObj)
+				{
+				//	LATER: Handle the case where the object doesn't have a 
+				//	bitmap image.
+
 				m_iComputedRadius = RectWidth(Ctx.pObj->GetImage().GetImageRect()) / 2;
+				}
 			else
 				m_iComputedRadius = DEFAULT_OBJ_RADIUS;
 

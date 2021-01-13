@@ -284,6 +284,7 @@ class IEffectPainter
 		virtual void Delete (void) { if (!m_bSingleton) delete this; }
 		virtual CEffectCreator *GetCreator (void) = 0;
 		virtual int GetFadeLifetime (bool bHit) const { return 0; }
+		virtual const CObjectImageArray &GetImage (int iRotation, int *retiRotationFrameIndex = NULL) const;
 		virtual int GetLifetime (void) { return GetInitialLifetime(); }
 		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const { return false; }
 		virtual bool GetParamList (TArray<CString> *retList) const { return false; }

@@ -523,6 +523,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual Categories GetCategory (void) const override;
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
+		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const override;
 		virtual int GetLastFireTime (void) const override;
 		virtual int GetLevel (void) const override { return m_pDesc->GetLevel(); }
 		virtual Metric GetMaxSpeed (void) const override { return m_pDesc->GetRatedSpeed(); }

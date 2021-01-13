@@ -409,6 +409,7 @@ class CImageEffectCreator : public CEffectCreator,
 		//	IEffectPainter virtuals
 		virtual bool CanPaintComposite (void) override { return true; }
 		virtual CEffectCreator *GetCreator (void) override { return this; }
+		virtual const CObjectImageArray &GetImage (int iRotation, int *retiRotationFrameIndex = NULL) const;
 		virtual bool GetParticlePaintDesc (SParticlePaintDesc *retDesc) override;
 		virtual void GetRect (RECT *retRect) const override;
 		virtual int GetVariants (void) const override { return m_iVariants; }
