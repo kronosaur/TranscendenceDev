@@ -2067,6 +2067,9 @@
 	<!ENTITY smDwargSpace				"0x001002D4">
 	<!ENTITY rsDwargMasterHero			"0x001002D5">
 	<!ENTITY rsZoanthropeRaiderHero		"0x001002D6">
+	<!ENTITY vtDwargMissileDefense		"0x001002D7">
+	<!ENTITY vtDwargMissileDefenseWeapon	"0x001002D8">
+	<!ENTITY efDwargMissileDefense		"0x001002D9">
 
 	<!-- 02F0-030F RINGERS -->
 

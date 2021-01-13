@@ -45,7 +45,7 @@
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 
-			attributes=			"dwarg, dwargColony, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, neoHuman, populated, zoanthrope"
+			attributes=			"dwarg, dwargColony, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, neoHuman, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -99,7 +99,7 @@
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 
-			attributes=			"dwarg, dwargColony, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, neoHuman, populated, zoanthrope"
+			attributes=			"dwarg, dwargColony, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, neoHuman, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -117,6 +117,7 @@
 
 		<Devices>
 			<Device deviceID="&itDwargXiphonCannon;"	omnidirectional="true"/>
+			<Device deviceID="&vtDwargMissileDefense;"/>
 		</Devices>
 
 		<Ships challenge="standard">
@@ -190,7 +191,7 @@
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 
-			attributes=			"dwarg, dwargRaiders, enemy, envWater, envAvoidsEarth, neoHuman, populated, zoanthrope"
+			attributes=			"dwarg, dwargRaiders, enemy, envWater, envAvoidsEarth, neoHuman, populated"
 			enemyExclusionRadius="50"
 			>
 
@@ -234,7 +235,7 @@
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 
-			attributes=			"dwarg, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, majorStation, neoHuman, populated, zoanthrope"
+			attributes=			"dwarg, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, majorStation, neoHuman, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -261,6 +262,8 @@
 			<Device deviceID="&itDwargBehemothCannon;"	posAngle="225" posRadius="90" posZ="0" fireAngle="220" fireArc="180" />
 			<Device deviceID="&itDwargXiphonCannon;"	posAngle="150" posRadius="90" posZ="0" fireAngle="155" fireArc="180" />
 			<Device deviceID="&itDwargBehemothCannon;"	posAngle="105" posRadius="90" posZ="0" fireAngle="112" fireArc="180" />
+
+			<Device deviceID="&vtDwargMissileDefense;"/>
 		</Devices>
 
 		<Ships challenge="deadly">
@@ -391,6 +394,7 @@
 				</Items>
 			</Device>
 			<Device deviceID="&itDwargXiphonCannon;" secondaryWeapon="true" omnidirectional="true"/>
+			<Device deviceID="&vtDwargMissileDefense;"/>
 		</Devices>
 
 		<Maneuver
@@ -506,7 +510,7 @@
 
 <!-- ITEM TYPES -->
 
-	<!-- Dwarg Chiton Armor -->
+	<!-- Level 3: Dwarg Chiton Armor -->
 
 	<ItemType UNID="&itDwargChitonArmor;"
 			name=				"[segment(s) of ]Dwarg chiton armor"
@@ -531,7 +535,89 @@
 
 	</ItemType>
 
-	<!-- Dwarg Xiphon Cannon -->
+	<!-- Level 4: Dwarg Missile Defense -->
+
+	<ItemType UNID="&vtDwargMissileDefense;"
+			name=				"Dwarg missile defense system"
+			level=				"4"
+			virtual=			"true"
+			>
+		<AutoDefenseDevice
+				target=			"missiles"
+				weapon=			"&vtDwargMissileDefenseWeapon;"
+				fireRate=		"15"
+				interceptRange=	"20"
+				/>
+	</ItemType>
+
+	<ItemType UNID="&vtDwargMissileDefenseWeapon;"
+			name=				"Dwarg missile defense weapon"
+			level=				"4"
+			virtual=			"true" 
+			>
+		<Weapon
+				type=				"beam"
+
+				damage=				"laser:1d8+4"
+				fireRate=			"15"
+				lifetime=			"30"
+				powerUse=			"10"
+
+				noFriendlyFire=		"true"
+
+				effect=				"&efNullEffect;"
+				fireEffect=			"&efNullEffect;"
+				>
+		</Weapon>
+
+		<Events>
+			<OnFireWeapon>
+				;	gSource: Dwarg ship/station
+				;	aTargetObj: Missile to disable
+
+				(block (
+					curTarget allDwarg missileDir
+					)
+					(switch
+						;	If the missile cannot maneuver, then we cannot 
+						;	influence it.
+
+						(not (obj@ aTargetObj 'tracking))
+							Nil
+
+						;	If the missile target is not a Dwarg master (or equivalent)
+						;	then we don't care.
+
+						(or (not (setq curTarget (obj@ aTargetObj 'target)))
+								(not (objMatches curTarget Nil "sTA +dwarg; -zoanthrope;"))
+								)
+							Nil
+
+						;	Make a list of all Dwarg zoanthropes within 20 light-seconds
+						;	of the missile.
+
+						(not (setq allDwarg (sysFindObject aTargetObj "s N:20; +dwarg; +zoanthrope;")))
+							(dbgOutput "No zoanthropes in range")
+
+						(block ()
+							;	Change the missile target to one of the Dwarg in the
+							;	path.
+
+							(objSet@ aTargetObj 'target (random allDwarg))
+							(objAddOverlay aTargetObj &efDwargMissileDefense; 30)
+							(dbgOutput "Changed missile target to: " (objGetName (obj@ aTargetObj 'target)))
+							)
+						)
+
+					;	We always return True, indicating that we handled the "shot"
+
+					True
+					)
+			</OnFireWeapon>
+		</Events>
+	</ItemType>
+
+	<!-- Level 4: Dwarg Xiphon Cannon -->
 
 	<ItemType UNID="&itDwargXiphonCannon;"
 			name=				"Dwarg xiphon cannon"
@@ -566,7 +652,7 @@
 
 	</ItemType>
 
-	<!-- Dwarg Catoptric Armor -->
+	<!-- Level 5: Dwarg Catoptric Armor -->
 
 	<ItemType UNID="&itDwargCatoptricArmor;"
 			name=				"[segment(s) of ]Dwarg catoptric armor"
@@ -593,7 +679,7 @@
 
 	</ItemType>
 
-	<!-- Cnidocyst Cannon -->
+	<!-- Level 5: Cnidocyst Cannon -->
 
 	<ItemType UNID="&itDwargCnidocystCannon;"
 			name=				"Dwarg cnidocyst cannon"
@@ -652,7 +738,7 @@
 		</Weapon>
 	</ItemType>
 
-	<!-- Cnidocyst Nodule -->
+	<!-- Level 5: Cnidocyst Nodule -->
 
 	<ItemType UNID="&itDwargCnidocystNodule;"
 			name=				"Dwarg cnidocyst nodule"
@@ -671,7 +757,7 @@
 		<Image imageID="&rsItems1;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
-	<!-- Dwarg behemoth Cannon -->
+	<!-- Level 6: Dwarg behemoth Cannon -->
 
 	<ItemType UNID="&itDwargBehemothCannon;"
 			name=				"Dwarg behemoth cannon"
@@ -705,7 +791,7 @@
 
 	</ItemType>
 
-	<!-- Dwarg Holochroal Armor -->
+	<!-- Level 7: Dwarg Holochroal Armor -->
 
 	<ItemType UNID="&itDwargHolochroalArmor;"
 			name=				"[segment(s) of ]Dwarg holochroal armor"
@@ -820,7 +906,23 @@
 			<Text id="NiceShooting">""</Text>
 		</Language>
 	</Type>
-	
+
+<!-- EFFECTS -->
+
+	<OverlayType UNID="&efDwargMissileDefense;"
+			attributes=     "dwarg, effect, temporary"
+			>
+		<Effect>
+			<LightningStorm
+					style=			"objectArcs"
+					intensity=		"50"
+					lifetime=		"30"
+
+					primaryColor=	"#00a9ff"
+					/>
+		</Effect>
+	</OverlayType>
+
 <!-- RESOURCES -->
 	
 	<Image UNID="&rsDwargBehemothHD;"		bitmap="Resources\DwargBehemothHD.jpg"	bitmask="Resources\DwargBehemothHDMask.bmp" 	loadOnUse="true" />
