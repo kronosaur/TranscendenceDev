@@ -20,6 +20,7 @@ class CImagePainter : public IEffectPainter
 
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
+		virtual const CObjectImageArray &GetImage (int iRotation, int *retiRotationFrameIndex = NULL) const;
 		virtual bool GetParticlePaintDesc (SParticlePaintDesc *retDesc);
 		virtual void GetRect (RECT *retRect) const;
 		virtual int GetVariants (void) const;
@@ -46,6 +47,56 @@ IEffectPainter *CImageEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 		return this;
 	else
 		return new CImagePainter(this);
+	}
+
+const CObjectImageArray &CImageEffectCreator::GetImage (int iRotation, int *retiRotationFrameIndex) const
+
+//	GetImage
+//
+//	Return the image.
+
+	{
+	SGetImageCtx ImageCtx(GetUniverse());
+
+	//	If this image has a rotation count, then we get the rotation from the
+	//	context block.
+
+	if (m_Image.IsRotatable() && m_bDirectional)
+		{
+		CCompositeImageModifiers Modifiers;
+		Modifiers.SetRotation(iRotation);
+
+		CObjectImageArray &Image = m_Image.GetImage(ImageCtx, CCompositeImageSelector(), Modifiers);
+
+		if (retiRotationFrameIndex)
+			*retiRotationFrameIndex = 0;
+
+		return Image;
+		}
+
+	//	Otherwise, if we've been asked to rotate the image procedurally, do that.
+
+	else if (m_bRotateImage)
+		{
+		CObjectImageArray &Image = m_Image.GetImage(ImageCtx, CCompositeImageSelector());
+
+		if (retiRotationFrameIndex)
+			*retiRotationFrameIndex = 0;
+
+		return Image;
+		}
+
+	//	Otherwise we assume we have the entire image
+
+	else
+		{
+		CObjectImageArray &Image = m_Image.GetImage(ImageCtx, CCompositeImageSelector());
+
+		if (retiRotationFrameIndex)
+			*retiRotationFrameIndex = (m_bDirectional ? Angle2Direction(iRotation, m_iVariants) : 0);
+
+		return Image;
+		}
 	}
 
 bool CImageEffectCreator::GetParticlePaintDesc (SParticlePaintDesc *retDesc)
@@ -257,6 +308,16 @@ CImagePainter::CImagePainter (CImageEffectCreator *pCreator) : m_pCreator(pCreat
 	SSelectorInitCtx InitCtx;
 
 	m_pCreator->GetImage().InitSelector(InitCtx, &m_Sel);
+	}
+
+const CObjectImageArray &CImagePainter::GetImage (int iRotation, int *retiRotationFrameIndex) const
+
+//	GetImage
+//
+//	Returns the image.
+
+	{
+	return m_pCreator->GetImage(iRotation, retiRotationFrameIndex);
 	}
 
 bool CImagePainter::GetParticlePaintDesc (SParticlePaintDesc *retDesc)

@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							51;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					195;
+constexpr DWORD SYSTEM_SAVE_VERSION =					196;
 
 //	Uncomment out the following define when building a stable release
 
@@ -707,3 +707,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					195;
 //
 //	195: 1.9 Beta 4
 //		COrderDesc
+//
+//	196: 1.9 Beta 4
+//		m_Overlays in CMissile

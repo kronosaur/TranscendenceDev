@@ -11,14 +11,7 @@ const DWORD VAPOR_TRAIL_OPACITY =				80;
 
 const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
 
-CMissile::CMissile (CUniverse &Universe) : TSpaceObjectImpl(Universe),
-		m_pExhaust(NULL),
-		m_pPainter(NULL),
-		m_pVaporTrailRegions(NULL),
-		m_iSavedRotationsCount(0),
-		m_pSavedRotations(NULL),
-		m_pHit(NULL),
-		m_iHitDir(-1)
+CMissile::CMissile (CUniverse &Universe) : TSpaceObjectImpl(Universe)
 
 //	CMissile constructor
 
@@ -41,6 +34,20 @@ CMissile::~CMissile (void)
 
 	if (m_pSavedRotations)
 		delete [] m_pSavedRotations;
+	}
+
+void CMissile::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifeLeft, DWORD *retdwID)
+
+//	AddOverlay
+//
+//	Adds an overlay to the missile
+
+	{
+	ASSERT(pType);
+	if (pType == NULL)
+		return;
+
+	m_Overlays.AddField(*this, *pType, iPosAngle, iPosRadius, iRotation, iPosZ, iLifeLeft, retdwID);
 	}
 
 int CMissile::ComputeVaporTrail (void)
@@ -477,6 +484,10 @@ CString CMissile::DebugCrashInfo (void)
 		ReportCrashObj(&sResult, m_pHit);
 		}
 
+	//	Overlays
+
+	sResult.Append(m_Overlays.DebugCrashInfo());
+
 	return sResult;
 	}
 
@@ -710,6 +721,7 @@ void CMissile::OnDestroyed (SDestroyCtx &Ctx)
 	//	Fire on destroyed
 
 	m_pDesc->FireOnDestroyShot(this);
+	m_Overlays.FireOnObjDestroyed(this, Ctx);
 	}
 
 void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
@@ -832,6 +844,11 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 //	Paint the station
 
 	{
+	//	Paints overlay background
+
+	if (!m_fDestroyOnAnimationDone && (m_pHit == NULL || m_fPassthrough))
+		m_Overlays.PaintBackground(Dest, x, y, Ctx);
+
 	//	Paint with painter
 
 	if (m_pPainter)
@@ -926,6 +943,11 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 				break;
 			}
 		}
+
+	//	Paint energy fields
+
+	if (!m_fDestroyOnAnimationDone && (m_pHit == NULL || m_fPassthrough))
+		m_Overlays.Paint(Dest, m_pDesc->GetImage().GetImageViewportSize(), x, y, Ctx);
 	}
 
 void CMissile::OnReadFromStream (SLoadCtx &Ctx)
@@ -959,6 +981,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		rotation[]
 //
 //	CItemEnhancementStack	m_pEnhancements
+//	COverlayList	m_Overlays
 
 	{
 	DWORD dwLoad;
@@ -1065,6 +1088,11 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 92)
 		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
+
+	//	Overlays
+
+	if (Ctx.dwVersion >= 196)
+		m_Overlays.ReadFromStream(Ctx, this);
 	}
 
 void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
@@ -1238,6 +1266,17 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			m_pSavedRotations[0] = iDirection;
 			if (m_iSavedRotationsCount < m_pDesc->GetVaporTrail().iVaporTrailLength)
 				m_iSavedRotationsCount++;
+			}
+
+		//	Overlays
+
+		if (!m_Overlays.IsEmpty())
+			{
+			bool bModified;
+
+			m_Overlays.Update(this, m_pDesc->GetImage().GetImageViewportSize(), GetRotation(), &bModified);
+			if (IsDestroyed())
+				return;
 			}
 
 		//	Programmed detonation
@@ -1428,6 +1467,10 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 	//	Enhancements
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
+
+	//	Overlays
+
+	m_Overlays.WriteToStream(pStream);
 	}
 
 void CMissile::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
@@ -1468,6 +1511,16 @@ bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos) 
 		return m_pDesc->GetImage().PointInImage(x, y, m_iTick, (m_pDesc->IsDirectionalImage() ? Angle2Direction(m_iRotation, g_RotationRange) : 0));
 
 	DEBUG_CATCH
+	}
+
+void CMissile::RemoveOverlay (DWORD dwID)
+
+//	RemoveOverlay
+//
+//	Removes an overlay from the missile
+	
+	{
+	m_Overlays.RemoveField(this, dwID);
 	}
 
 bool CMissile::SetMissileFade (void)

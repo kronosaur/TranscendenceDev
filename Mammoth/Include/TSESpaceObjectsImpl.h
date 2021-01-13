@@ -510,6 +510,8 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 
 		//	CSpaceObject virtuals
 
+		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifetime, DWORD *retdwID = NULL) override;
+		using CSpaceObject::AddOverlay;
 		virtual CMissile *AsMissile (void) override { return this; }
 		virtual bool CanAttack (void) const override { return m_fTargetable; }
 		virtual bool CanBeAttacked (void) const override { return m_fTargetable; }
@@ -526,6 +528,8 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual Metric GetMaxSpeed (void) const override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CMissile"); }
+		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
+		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }
 		virtual int GetRotation (void) const override { return m_iRotation; }
 		virtual CSpaceObject *GetSecondarySource (void) const override { return m_Source.GetSecondaryObj(); }
@@ -541,8 +545,10 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual bool IsTargetableProjectile (void) const override { return m_fTargetable; }
 		virtual bool IsUnreal (void) const override { return (IsInactive() || IsSuspended() || IsDestroyed()); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnOverlayConditionChanged (ECondition iCondition, EConditionChange iChange) override { }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
+		virtual void RemoveOverlay (DWORD dwID) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
 
 	protected:
@@ -574,34 +580,35 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		bool IsTrackingTime (int iTick) const;
 		bool SetMissileFade (void);
 
-		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
+		CWeaponFireDesc *m_pDesc = NULL;			//	Weapon descriptor
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Stack of enhancements
-		int m_iLifeLeft;						//	Ticks left
-		int m_iHitPoints;						//	HP left
-		IEffectPainter *m_pPainter;				//	Effect painter
-		CDamageSource m_Source;					//	Object that fired missile
-		CSovereign *m_pSovereign;				//	Sovereign
-		CSpaceObject *m_pHit;					//	Object hit
-		CVector m_vHitPos;						//	Position hit
-		int m_iHitDir;							//	Direction hit
-		int m_iNextDetonation;					//	Detonate on this tick (-1 = none)
-		int m_iRotation;						//	Current rotation (degrees)
-		CSpaceObject *m_pTarget;				//	Target
-		int m_iTick;							//	Number of ticks of life so far
-		TQueue<SExhaustParticle> *m_pExhaust;	//	Array of exhaust particles
-		CG16bitBinaryRegion *m_pVaporTrailRegions;	//	Array of vapor trail regions
-		int m_iSavedRotationsCount;				//	Number of saved rotations
-		int *m_pSavedRotations;					//	Array of saved rotation angles
+		COverlayList m_Overlays;					//	List of energy fields
+		int m_iLifeLeft = 0;						//	Ticks left
+		int m_iHitPoints = 0;						//	HP left
+		IEffectPainter *m_pPainter = NULL;			//	Effect painter
+		CDamageSource m_Source;						//	Object that fired missile
+		CSovereign *m_pSovereign = NULL;			//	Sovereign
+		CSpaceObject *m_pHit = NULL;				//	Object hit
+		CVector m_vHitPos;							//	Position hit
+		int m_iHitDir = -1;							//	Direction hit
+		int m_iNextDetonation = -1;					//	Detonate on this tick (-1 = none)
+		int m_iRotation = 0;						//	Current rotation (degrees)
+		CSpaceObject *m_pTarget = NULL;				//	Target
+		int m_iTick = 0;							//	Number of ticks of life so far
+		TQueue<SExhaustParticle> *m_pExhaust = NULL;//	Array of exhaust particles
+		CG16bitBinaryRegion *m_pVaporTrailRegions = NULL;	//	Array of vapor trail regions
+		int m_iSavedRotationsCount = 0;				//	Number of saved rotations
+		int *m_pSavedRotations = NULL;				//	Array of saved rotation angles
 
-		DWORD m_fDestroyOnAnimationDone:1;		//	TRUE if destroyed (only around to paint effect)
-		DWORD m_fReflection:1;					//	TRUE if this is a reflection
-		DWORD m_fDetonate:1;					//	TRUE if we should detonate on next update
-		DWORD m_fPassthrough:1;					//	TRUE if shot passed through
-		DWORD m_fPainterFade:1;					//	TRUE if we need to paint a fading painter
-		DWORD m_fFragment:1;					//	TRUE if we're a fragment
-		DWORD m_fTargetable:1;					//	TRUE if we can be targetted
+		DWORD m_fDestroyOnAnimationDone:1 = false;	//	TRUE if destroyed (only around to paint effect)
+		DWORD m_fReflection:1 = false;				//	TRUE if this is a reflection
+		DWORD m_fDetonate:1 = false;				//	TRUE if we should detonate on next update
+		DWORD m_fPassthrough:1 = false;				//	TRUE if shot passed through
+		DWORD m_fPainterFade:1 = false;				//	TRUE if we need to paint a fading painter
+		DWORD m_fFragment:1 = false;				//	TRUE if we're a fragment
+		DWORD m_fTargetable:1 = false;				//	TRUE if we can be targetted
 
-		DWORD m_dwSpareFlags:25;				//	Flags
+		DWORD m_dwSpareFlags:25 = 0;				//	Flags
 
 		//	Property table
 
