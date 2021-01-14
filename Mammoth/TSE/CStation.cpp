@@ -942,7 +942,8 @@ bool CStation::ClassCanAttack (void)
 //	Only returns FALSE if this object can never attack
 
 	{
-	return (m_pType->ForceCanAttack() && !m_pType->ForceCannotAttack());
+	return (!m_pType->ForceCannotAttack()
+			&& (GetScale() == scaleStructure || m_pType->ForceCanAttack()));
 	}
 
 void CStation::ClearBlacklist (CSpaceObject *pObj)
