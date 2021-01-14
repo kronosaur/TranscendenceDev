@@ -1790,6 +1790,10 @@
 	<!ENTITY rsHeliotropeGunshipHD		"0x001000F1">
 	<!ENTITY smHeliotropeSpace			"0x001000F2">
 	<!ENTITY rsHeliotropeFrigateHero	"0x001000F3">
+
+	<!ENTITY itHeliotropeDefenseGridI	"0x001000F4">
+	<!ENTITY itHeliotropeDefenseGridII	"0x001000F5">
+	<!ENTITY efHeliotropeDefenseGrid	"0x001000F6">
 	
 	<!-- 0100-011F CHARON PIRATES AND MARAUDERS -->
 	
