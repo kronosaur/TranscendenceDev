@@ -810,6 +810,8 @@ void CShieldClass::CreateHitEffect (CInstalledDevice &Device, CSpaceObject &Ship
 
 	CCreatePainterCtx Ctx;
 	Ctx.SetDamageCtx(DamageCtx);
+	if (!Ship.IsDestroyed())
+		Ctx.SetAnchor(&Ship);
 
 	IEffectPainter *pPainter = Effect.CreatePainter(Ctx);
 	if (!pPainter)
