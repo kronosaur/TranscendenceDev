@@ -24,22 +24,19 @@
 
 <!-- ENCOUNTERS -->
 
-	<!-- Ranx Outpost -->
+	<!-- Level 7: Ranx Outpost -->
 
 	<StationType UNID="&stRanxOutpost;"
 			name=				"Ranx outpost"
 			sovereign=			"&svRanxEmpire;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
-
-			multiHull=			"true"
-			armorID=			"&itLightOrthoSteel;"
-			hitPoints=			"370"
-            regen=              "4"
-			explosionType=		"&vtThermoExplosion2;"
-			ejectaType=			"&vtWreckEjecta;"
 
 			attributes=			"enemy, envEarth, envAvoidsAir, generic, human, populated, ranx"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"300"
+			explosionType=		"&vtThermoExplosion2;"
+			ejectaType=			"&vtWreckEjecta;"
 			>
 
 		<!-- Encounter Info -->
@@ -53,19 +50,26 @@
 				enemyExclusionRadius=	"60"
 				/>
 
-		<Image			imageID="&rsStations7;" imageX="0" imageY="256" imageWidth="192" imageHeight="192"/>
+		<Encounters frequency="uncommon">
+			<Lookup table="&tbRanxEncounters;"/>
+		</Encounters>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itLightOrthoSteel;"
+				hitPoints=		"370"
+				regen=			"4"
+				/>
+		
 		<Devices>
+			<Device deviceID="&itAkan30Cannon;"	posAngle="7"    posRadius="48" posZ="35" fireAngle="7"  fireArc="120"		missileDefense="true"/>
+			<Device deviceID="&itAkan30Cannon;"	posAngle="97"   posRadius="48" posZ="35" fireAngle="97"  fireArc="120"		missileDefense="true"/>
+			<Device deviceID="&itAkan30Cannon;"	posAngle="187"  posRadius="48" posZ="35" fireAngle="187"  fireArc="120"		missileDefense="true"/>
+			<Device deviceID="&itAkan30Cannon;"	posAngle="277"  posRadius="48" posZ="35" fireAngle="277"  fireArc="120"		missileDefense="true"/>
 		</Devices>
 
-		<Items value="standard:level=7:x=1.2">
-			<Item count="8d100"	item="&itAkan30CannonShell;" />
-			<Table chance="50">
-				<Lookup chance="40" count="1" table="&trConsumables8;"/>
-				<Lookup chance="40" count="1" table="&trMinorItem8;"/>
-				<Lookup chance="20" count="1" table="&trMajorItem8;"/>
-			</Table>
-		</Items>
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<Ship			count="2d4"	class="&scRanxGunship;"	orders="patrol" patrolDist="5"/>
@@ -76,9 +80,34 @@
 			<Ship		count="1d4"		class="&scRanxGunship;" orders="patrol" patrolDist="5"/>
 		</Reinforcements>
 
-		<Encounters frequency="uncommon">
-			<Lookup table="&tbRanxEncounters;"/>
-		</Encounters>
+		<!-- Treasure -->
+
+		<Items value="standard:level=7:x=1.2">
+			<Item count="8d100"	item="&itAkan30CannonShell;" />
+			<Table chance="50">
+				<Lookup chance="40" count="1" table="&trConsumables8;"/>
+				<Lookup chance="40" count="1" table="&trMinorItem8;"/>
+				<Lookup chance="20" count="1" table="&trMajorItem8;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsRanxOutpost;"			imageWidth="300" imageHeight="300"	viewportRatio="0.03875"/>
+
+		<DockingPorts>
+			<Port posAngle="65" posRadius="82" rotation="255" />
+			<Port posAngle="85" posRadius="82" rotation="255"/>
+
+			<Port posAngle="155" posRadius="82" rotation="345" />
+			<Port posAngle="175" posRadius="82" rotation="345"/>
+
+			<Port posAngle="245" posRadius="82" rotation="75" />
+			<Port posAngle="265" posRadius="82" rotation="75"/>
+
+			<Port posAngle="335" posRadius="82" rotation="165" />
+			<Port posAngle="355" posRadius="82" rotation="165"/>
+		</DockingPorts>
 
 	</StationType>
 
@@ -154,7 +183,7 @@
 	
 <!-- SHIP CLASSES -->
 
-	<!-- Ranx Gunship -->
+	<!-- Level 6: Ranx Gunship -->
 
 	<ShipClass UNID="&scRanxGunship;"
 			manufacturer=		"Ranx"
@@ -461,6 +490,8 @@
 	</ShipTable>
 
 <!-- RESOURCES -->
+
+	<Image UNID="&rsRanxOutpost;"			bitmap="Resources\RanxOutpost.jpg"		bitmask="Resources\RanxOutpostMask.bmp"  	loadOnUse="true"/>
 
 	<Image UNID="&rsRanxDreadnoughtHD;"		bitmap="Resources\RanxDreadnoughtHD.jpg" bitmask="Resources\RanxDreadnoughtHDMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsRanxDreadnoughtHero;"	bitmap="Resources\RanxDreadnoughtLarge.jpg" bitmask="Resources\RanxDreadnoughtLargeMask.bmp" loadOnUse="true"/>
