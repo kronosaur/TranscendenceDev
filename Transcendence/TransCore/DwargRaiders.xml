@@ -597,7 +597,7 @@
 						;	of the missile.
 
 						(not (setq allDwarg (sysFindObject aTargetObj "s N:20; +dwarg; +zoanthrope;")))
-							(dbgOutput "No zoanthropes in range")
+							Nil
 
 						(block ()
 							;	Change the missile target to one of the Dwarg in the
@@ -605,7 +605,6 @@
 
 							(objSet@ aTargetObj 'target (random allDwarg))
 							(objAddOverlay aTargetObj &efDwargMissileDefense; 30)
-							(dbgOutput "Changed missile target to: " (objGetName (obj@ aTargetObj 'target)))
 							)
 						)
 
