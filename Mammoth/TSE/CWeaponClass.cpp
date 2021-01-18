@@ -2457,6 +2457,13 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	if (Shots.GetCount() == 0)
 		return false;
 
+	//	If we're charging, then we don't fire shots - instead we only increment the ship counter (if needed),
+	//	create the fire effect, and return True (so that we consume power).
+	if (IsCharging)
+		{
+		return true;
+		}
+
 	//	Figure out when happens when we try to consume ammo, etc.
 
 	EFireResults iResult = Consume(DeviceItem, ShotDesc, ActivateCtx.iRepeatingCount, &ActivateCtx.bConsumedItems);
@@ -5552,7 +5559,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			int iContinuous = GetContinuous(*pShot);
 			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
 			int iChargeTime = Max(0, GetChargeTime(*pShot));
-			int iBurstLengthInFrames = iContinuousDelay > 1 ? (iChargeTime + ((iContinuous + 1) * iContinuousDelay)) - 1 : iContinuous + iChargeTime;
+			int iBurstLengthInFrames = iContinuousDelay > 1 ? ((iContinuous + 1) * iContinuousDelay) - 1 : iContinuous;
 			int iFireFrame = max(0, iBurstLengthInFrames - int(dwContinuous));
 
 			SActivateCtx ActivateCtx(Ctx);
@@ -5563,9 +5570,9 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 					ActivateCtx.TargetList = pSource->GetTargetList();
 
 				ActivateCtx.iRepeatingCount = 1 + iContinuous - min(int(dwContinuous / iContinuousDelay), iContinuous + 1);
-				ActivateCtx.iChargeFrame = 1 + iBurstLengthInFrames - min((int(dwContinuous) - iBurstLengthInFrames), iBurstLengthInFrames + 1);
+				ActivateCtx.iChargeFrame = 1 + iChargeTime - min((int(dwContinuous) - iBurstLengthInFrames) + 1, iChargeTime + 1);
 
-				FireWeapon(*pDevice, *pShot, ActivateCtx, (int(dwContinuous) <= iBurstLengthInFrames));
+				FireWeapon(*pDevice, *pShot, ActivateCtx, (int(dwContinuous) > iBurstLengthInFrames + 1));
 
 				if (pSource->IsDestroyed())
 					return;
