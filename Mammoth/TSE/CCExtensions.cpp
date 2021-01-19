@@ -8788,9 +8788,11 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *p_OldWeaponBonus = pCC->LookupGlobal(CONSTLIT("aWeaponBonus"), pCtx);
 				ICCItem *p_OldWeaponType = pCC->LookupGlobal(CONSTLIT("aWeaponType"), pCtx);
 
+				SUpdateCtx ObjCtx;
+
 				// Set the weapon's linked fire option to lkfAlways before firing, then set it back so that it will fire regardless of linked fire options.
 				pDevice->SetLinkedFireOptions(CDeviceClass::lkfAlways);
-				CDeviceClass::SActivateCtx ActivateCtx(pTarget, TargetList);
+				CDeviceClass::SActivateCtx ActivateCtx(ObjCtx, pTarget, TargetList);
 				bSuccess = pDevice->Activate(ActivateCtx);
 
 				pCtx->DefineInteger(CONSTLIT("aFireAngle"), p_OldFireAngle->GetIntegerValue());

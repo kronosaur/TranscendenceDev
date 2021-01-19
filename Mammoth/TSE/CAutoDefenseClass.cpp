@@ -562,7 +562,7 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 
 	//	Fire
 
-	SActivateCtx ActivateCtx(pTarget, Ctx.TargetList, iFireAngle);
+	SActivateCtx ActivateCtx(Ctx, pTarget, iFireAngle);
 
 	pWeapon->Activate(*pDevice, ActivateCtx);
 

@@ -899,3 +899,20 @@ ESetPropertyResult CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &
 	return ESetPropertyResult::notFound;
 	}
 
+//	SActivateCtx ---------------------------------------------------------------
+
+CTargetList &CDeviceClass::SActivateCtx::GetTargetList ()
+	{
+	if (!m_pTargetList)
+		m_pTargetList = &m_ObjCtx.GetTargetList();
+
+	return *m_pTargetList;
+	}
+
+CTargetList &CDeviceClass::SDeviceUpdateCtx::GetTargetList ()
+	{
+	if (!m_pTargetList)
+		m_pTargetList = &m_ObjCtx.GetTargetList();
+
+	return *m_pTargetList;
+	}

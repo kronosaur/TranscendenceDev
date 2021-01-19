@@ -1224,7 +1224,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 		//	Get a list of targets
 
-		auto Targets = CalcMIRVTargets(Device, ActivateCtx.TargetList, Shots.GetCount());
+		auto Targets = CalcMIRVTargets(Device, ActivateCtx.GetTargetList(), Shots.GetCount());
 
 		//	Depending on our linked-fire state, we might not fire if we have no
 		//	targets.
@@ -1345,7 +1345,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 					if (ShotDesc.CanAutoTarget())
 						{
-						retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
+						retpTarget = CalcBestTarget(Device, ActivateCtx.GetTargetList(), NULL, &retiFireAngle);
 						if (!retpTarget)
 							retiFireAngle = -1;
 						}
@@ -1400,7 +1400,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 			case CDeviceItem::calcWeaponTarget:
 				{
-				retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
+				retpTarget = CalcBestTarget(Device, ActivateCtx.GetTargetList(), NULL, &retiFireAngle);
 				if (retpTarget == NULL)
 					return false;
 
@@ -5476,13 +5476,10 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			int iContinuous = GetContinuous(*pShot);
 			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
 
-			SActivateCtx ActivateCtx(NULL, Ctx.TargetList);
+			SActivateCtx ActivateCtx(Ctx);
 
 			if ((dwContinuous % iContinuousDelay) == 0)
 				{
-				if (ActivateCtx.TargetList.IsEmpty())
-					ActivateCtx.TargetList = pSource->GetTargetList();
-
 				ActivateCtx.iRepeatingCount = 1 + iContinuous - (dwContinuous / iContinuousDelay);
 
 				FireWeapon(*pDevice, *pShot, ActivateCtx);

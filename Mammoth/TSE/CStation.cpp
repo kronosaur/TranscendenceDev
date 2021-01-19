@@ -5855,7 +5855,7 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 					|| !Weapon.IsReady())
 				continue;
 
-			CDeviceClass::SActivateCtx ActivateCtx(NULL, m_WeaponTargets);
+			CDeviceClass::SActivateCtx ActivateCtx(Ctx, NULL, m_WeaponTargets);
 			Weapon.Activate(ActivateCtx);
 			if (IsDestroyed())
 				return false;
@@ -5911,7 +5911,7 @@ bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, CTargetList &TargetLis
 //	update.
 
 	{
-	CDeviceClass::SDeviceUpdateCtx DeviceCtx(TargetList, iTick);
+	CDeviceClass::SDeviceUpdateCtx DeviceCtx(Ctx, TargetList, iTick);
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
