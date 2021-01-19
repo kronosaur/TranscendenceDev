@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							51;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					196;
+constexpr DWORD SYSTEM_SAVE_VERSION =					197;
 
 //	Uncomment out the following define when building a stable release
 
@@ -710,3 +710,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					196;
 //
 //	196: 1.9 Beta 4
 //		m_Overlays in CMissile
+//
+//	197: 1.9 Beta 4
+//		Add fields to CAISettings

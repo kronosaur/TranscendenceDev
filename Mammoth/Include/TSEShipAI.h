@@ -62,9 +62,20 @@ enum class AIFlockingStyle
 	Random =								3,	//	Random, fixed positions around leader
 	};
 
+enum class AIReaction
+	{
+	Default =								0,	//	Default reaction based on order
+	None =									1,	//	Do not react
+	DeterWithSecondaries =					2,	//	Deter with secondaries, but do not turn or maneuver
+	Deter =									3,	//	Turn to attack attacker, but do not chase
+	Chase =									4,	//	Chase attacker
+	};
+
 class CAISettings
 	{
 	public:
+		static constexpr int DEFAULT_THREAT_RANGE = 30;
+
 		CAISettings (void) { }
 
 		bool AscendOnGate (void) const { return m_fAscendOnGate; }
@@ -75,6 +86,8 @@ class CAISettings
 		AIFlockingStyle GetFlockingStyle (void) const { return m_iFlockingStyle; }
 		Metric GetMinCombatSeparation (void) const { return m_rMinCombatSeparation; }
 		int GetPerception (void) const { return m_iPerception; }
+		AIReaction GetReactToAttack () const { return m_iReactToAttack; }
+		AIReaction GetReactToThreat () const { return m_iReactToThreat; }
 		CString GetValue (const CString &sSetting);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitToDefault (void);
@@ -97,18 +110,23 @@ class CAISettings
 
 		static AICombatStyle ConvertToAICombatStyle (const CString &sValue);
 		static AIFlockingStyle ConvertToFlockingStyle (const CString &sValue);
+		static AIReaction ConvertToAIReaction (const CString &sValue);
 		static CString ConvertToID (AICombatStyle iStyle);
 		static CString ConvertToID (AIFlockingStyle iStyle);
+		static CString ConvertToID (AIReaction iStyle);
 
 	private:
 		AICombatStyle m_iCombatStyle = AICombatStyle::Standard;			//	Combat style
 		AIFlockingStyle m_iFlockingStyle = AIFlockingStyle::None;		//	Flocking style
+		AIReaction m_iReactToAttack = AIReaction::Default;
+		AIReaction m_iReactToThreat = AIReaction::Default;
 
 		int m_iFireRateAdj = 10;					//	Adjustment to weapon's fire rate (10 = normal; 20 = double delay)
 		int m_iFireRangeAdj = 100;					//	Adjustment to range (100 = normal; 50 = half range)
 		int m_iFireAccuracy = 100;					//	Percent chance of hitting
 		int m_iPerception = 4;						//	Perception (LATER: We need to refer to CSpaceObject::perceptNormal)
 
+		Metric m_rThreatRange = DEFAULT_THREAT_RANGE * LIGHT_SECOND;	//	React to threats in this range
 		Metric m_rMinCombatSeparation = -1.0;		//	Min separation from other ships while in combat (-1.0 == based on image size)
 
 		DWORD m_fNoShieldRetreat:1 = false;			//	Ship does not retreat when shields go down

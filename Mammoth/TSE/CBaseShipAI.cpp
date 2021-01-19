@@ -486,7 +486,7 @@ void CBaseShipAI::FireOnOrderChanged (void)
 	if (m_pShip->HasOnOrderChangedEvent() && !m_fInOnOrderChanged)
 		{
 		m_fInOnOrderChanged = true;
- 		m_pShip->FireOnOrderChanged();
+		m_pShip->FireOnOrderChanged();
 		m_fInOnOrderChanged = false;
 		}
 
@@ -517,7 +517,7 @@ void CBaseShipAI::FireOnOrdersCompleted (void)
 	if (m_pShip->HasOnOrdersCompletedEvent() && !m_fInOnOrdersCompleted)
 		{
 		m_fInOnOrdersCompleted = true;
- 		m_pShip->FireOnOrdersCompleted();
+		m_pShip->FireOnOrdersCompleted();
 		m_fInOnOrdersCompleted = false;
 		}
 	}
@@ -1567,7 +1567,7 @@ void CBaseShipAI::UpgradeShieldBehavior (void)
 	CInstalledDevice *pDevice = m_pShip->GetNamedDevice(devShields);
 	if (pDevice)
 		{
-        iBestLevel = pDevice->GetLevel();
+		iBestLevel = pDevice->GetLevel();
 		bReplace = true;
 		}
 
