@@ -210,7 +210,7 @@ CVector CGladiatorAI::ComputePotential (void)
 			CVector vTargetN = vTarget.Normal(&rDist);
 			Metric rTargetDist2 = rDist * rDist;
 
-			if (m_AICtx.GetCombatStyle() == aicombatStandOff)
+			if (m_AICtx.GetCombatStyle() == AICombatStyle::StandOff)
 				{
 				Metric rMaxRange2 = m_AICtx.GetBestWeaponRange2();
 				Metric rIdealRange2 = 0.45 * rMaxRange2;

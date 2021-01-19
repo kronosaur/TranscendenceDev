@@ -55,7 +55,7 @@ class CAIBehaviorCtx
 		DeviceNames GetBestWeaponIndex (void) const { return m_iBestWeapon; }
 		Metric GetBestWeaponRange (void) const { return m_rBestWeaponRange; }
 		Metric GetBestWeaponRange2 (void) const { return m_rBestWeaponRange * m_rBestWeaponRange; }
-		AICombatStyles GetCombatStyle (void) const { return m_AISettings.GetCombatStyle(); }
+		AICombatStyle GetCombatStyle (void) const { return m_AISettings.GetCombatStyle(); }
 		int GetFireAccuracy (void) const { return m_AISettings.GetFireAccuracy(); }
 		int GetFireRangeAdj (void) const { return m_AISettings.GetFireRangeAdj(); }
 		int GetFireRateAdj (void) const { return m_AISettings.GetFireRateAdj(); }

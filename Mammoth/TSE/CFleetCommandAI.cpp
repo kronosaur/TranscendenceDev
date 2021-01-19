@@ -387,7 +387,7 @@ CVector CFleetCommandAI::ComputeRallyPointEx (int iBearing, CSpaceObject *pTarge
 	//	rally inside of our weapon range.
 
 	Metric rDistance;
-	if (m_AICtx.GetCombatStyle() == aicombatStandOff)
+	if (m_AICtx.GetCombatStyle() == AICombatStyle::StandOff)
 		{
 		m_AICtx.CalcBestWeapon(m_pShip, NULL, 0.0);
 		CInstalledDevice *pBestWeapon = m_AICtx.GetBestWeapon();
@@ -637,7 +637,7 @@ void CFleetCommandAI::ImplementFormAtRallyPoint (void)
 		//	We are at the rally point, do the appropriate action based on 
 		//	the kind of ship that we are.
 
-		if (m_AICtx.GetCombatStyle() == aicombatStandOff)
+		if (m_AICtx.GetCombatStyle() == AICombatStyle::StandOff)
 			{
 			SetState(stateAttackFromRallyPoint);
 			m_pObjective = GetCurrentOrderTarget();

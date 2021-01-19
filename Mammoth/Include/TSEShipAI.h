@@ -41,43 +41,45 @@ struct SPlayerChangedShipsCtx
 
 //  CAISettings ----------------------------------------------------------------
 
-enum AICombatStyles
+//	NOTE: These values are saved; do not change them.
+
+enum class AICombatStyle
 	{
-	aicombatStandard =						0,	//	Normal dogfighting
-	aicombatStandOff =						1,	//	Missile ship combat
-	aicombatFlyby =							2,	//	Maximize relative speed wrt target
-	aicombatNoRetreat =						3,	//	Do not turn away from target
-	aicombatChase =							4,	//	Get in position behind the target
-	aicombatAdvanced =						5,	//	Dogfight, keeping proper distance from target
+	Standard =								0,	//	Normal dogfighting
+	StandOff =								1,	//	Missile ship combat
+	Flyby =									2,	//	Maximize relative speed wrt target
+	NoRetreat =								3,	//	Do not turn away from target
+	Chase =									4,	//	Get in position behind the target
+	Advanced =								5,	//	Dogfight, keeping proper distance from target
+	};
+
+enum class AIFlockingStyle
+	{
+	None =									0,	//	No flocking behavior
+
+	Cloud =									1,	//	Old-style cloud flocking
+	Compact =								2,	//	Crowd around leader
+	Random =								3,	//	Random, fixed positions around leader
 	};
 
 class CAISettings
 	{
 	public:
-		enum EFlockingStyles
-			{
-			flockNone =						0,	//	No flocking behavior
-
-			flockCloud =					1,	//	Old-style cloud flocking
-			flockCompact =					2,	//	Crowd around leader
-			flockRandom =					3,	//	Random, fixed positions around leader
-			};
-
-		CAISettings (void);
+		CAISettings (void) { }
 
 		bool AscendOnGate (void) const { return m_fAscendOnGate; }
-		AICombatStyles GetCombatStyle (void) const { return m_iCombatStyle; }
+		AICombatStyle GetCombatStyle (void) const { return m_iCombatStyle; }
 		int GetFireAccuracy (void) const { return m_iFireAccuracy; }
 		int GetFireRangeAdj (void) const { return m_iFireRangeAdj; }
 		int GetFireRateAdj (void) const { return m_iFireRateAdj; }
-		EFlockingStyles GetFlockingStyle (void) const { return m_iFlockingStyle; }
+		AIFlockingStyle GetFlockingStyle (void) const { return m_iFlockingStyle; }
 		Metric GetMinCombatSeparation (void) const { return m_rMinCombatSeparation; }
 		int GetPerception (void) const { return m_iPerception; }
 		CString GetValue (const CString &sSetting);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitToDefault (void);
 		bool IsAggressor (void) const { return m_fAggressor; }
-		bool IsFlocker (void) const { return (m_iFlockingStyle != flockNone); }
+		bool IsFlocker (void) const { return (m_iFlockingStyle != AIFlockingStyle::None); }
 		bool IsNonCombatant (void) const { return m_fNonCombatant; }
 		bool IsPlayer (void) const { return m_fIsPlayer; }
 		bool NoAttackOnThreat (void) const { return m_fNoAttackOnThreat; }
@@ -93,42 +95,42 @@ class CAISettings
 		CString SetValue (const CString &sSetting, const CString &sValue);
 		void WriteToStream (IWriteStream *pStream);
 
-		static AICombatStyles ConvertToAICombatStyle (const CString &sValue);
-		static EFlockingStyles ConvertToFlockingStyle (const CString &sValue);
-		static CString ConvertToID (AICombatStyles iStyle);
-		static CString ConvertToID (EFlockingStyles iStyle);
+		static AICombatStyle ConvertToAICombatStyle (const CString &sValue);
+		static AIFlockingStyle ConvertToFlockingStyle (const CString &sValue);
+		static CString ConvertToID (AICombatStyle iStyle);
+		static CString ConvertToID (AIFlockingStyle iStyle);
 
 	private:
-		AICombatStyles m_iCombatStyle;			//	Combat style
-		EFlockingStyles m_iFlockingStyle;		//	Flocking style
+		AICombatStyle m_iCombatStyle = AICombatStyle::Standard;			//	Combat style
+		AIFlockingStyle m_iFlockingStyle = AIFlockingStyle::None;		//	Flocking style
 
-		int m_iFireRateAdj;						//	Adjustment to weapon's fire rate (10 = normal; 20 = double delay)
-		int m_iFireRangeAdj;					//	Adjustment to range (100 = normal; 50 = half range)
-		int m_iFireAccuracy;					//	Percent chance of hitting
-		int m_iPerception;						//	Perception
+		int m_iFireRateAdj = 10;					//	Adjustment to weapon's fire rate (10 = normal; 20 = double delay)
+		int m_iFireRangeAdj = 100;					//	Adjustment to range (100 = normal; 50 = half range)
+		int m_iFireAccuracy = 100;					//	Percent chance of hitting
+		int m_iPerception = 4;						//	Perception (LATER: We need to refer to CSpaceObject::perceptNormal)
 
-		Metric m_rMinCombatSeparation;			//	Min separation from other ships while in combat
+		Metric m_rMinCombatSeparation = -1.0;		//	Min separation from other ships while in combat (-1.0 == based on image size)
 
-		DWORD m_fNoShieldRetreat:1;				//	Ship does not retreat when shields go down
-		DWORD m_fNoDogfights:1;					//	Don't turn ship to face target
-		DWORD m_fNonCombatant:1;				//	Tries to stay out of trouble
-		DWORD m_fNoFriendlyFire:1;				//	Cannot hit friends
-		DWORD m_fAggressor:1;					//	Attack targets of opportunity even if they haven't attacked
-		DWORD m_fNoFriendlyFireCheck:1;			//	Do not check to see if friends are in line of fire
-		DWORD m_fNoOrderGiver:1;				//	Always treated as the decider
-		DWORD m_fAscendOnGate:1;				//	If TRUE, we ascend when the ship gates out
+		DWORD m_fNoShieldRetreat:1 = false;			//	Ship does not retreat when shields go down
+		DWORD m_fNoDogfights:1 = false;				//	Don't turn ship to face target
+		DWORD m_fNonCombatant:1 = false;			//	Tries to stay out of trouble
+		DWORD m_fNoFriendlyFire:1 = false;			//	Cannot hit friends
+		DWORD m_fAggressor:1 = false;				//	Attack targets of opportunity even if they haven't attacked
+		DWORD m_fNoFriendlyFireCheck:1 = false;		//	Do not check to see if friends are in line of fire
+		DWORD m_fNoOrderGiver:1 = false;			//	Always treated as the decider
+		DWORD m_fAscendOnGate:1 = false;			//	If TRUE, we ascend when the ship gates out
 
-		DWORD m_fNoNavPaths:1;					//	If TRUE, do not use nav paths
-		DWORD m_fNoAttackOnThreat:1;			//	Do not attack enemies while escorting (unless ordered)
-		DWORD m_fNoTargetsOfOpportunity:1;		//	If TRUE, do not attack targets of opportunity
-		DWORD m_fIsPlayer:1;					//	If TRUE, we're controlling the player ship (this is usually
-												//		for debugging only).
-		DWORD m_fSpare5:1;
-		DWORD m_fSpare6:1;
-		DWORD m_fSpare7:1;
-		DWORD m_fSpare8:1;
+		DWORD m_fNoNavPaths:1 = false;				//	If TRUE, do not use nav paths
+		DWORD m_fNoAttackOnThreat:1 = false;		//	Do not attack enemies while escorting (unless ordered)
+		DWORD m_fNoTargetsOfOpportunity:1 = false;	//	If TRUE, do not attack targets of opportunity
+		DWORD m_fIsPlayer:1 = false;				//	If TRUE, we're controlling the player ship (this is usually
+													//		for debugging only).
+		DWORD m_fSpare5:1 = false;
+		DWORD m_fSpare6:1 = false;
+		DWORD m_fSpare7:1 = false;
+		DWORD m_fSpare8:1 = false;
 
-		DWORD m_dwSpare:16;
+		DWORD m_dwSpare:16 = 0;
 	};
 
 //	IShipController ------------------------------------------------------------

@@ -116,11 +116,11 @@ bool CAIBehaviorCtx::CalcFlockingFormation (CShip *pShip,
 
 	switch (m_AISettings.GetFlockingStyle())
 		{
-		case CAISettings::flockCompact:
+		case AIFlockingStyle::Compact:
 			//	LATER: Not Yet Implemented.
 			return CalcFlockingFormationRandom(pShip, pLeader, retvPos, retvVel, retiFacing);
 
-		case CAISettings::flockRandom:
+		case AIFlockingStyle::Random:
 			return CalcFlockingFormationRandom(pShip, pLeader, retvPos, retvVel, retiFacing);
 
 		default:
@@ -668,7 +668,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 	switch (GetCombatStyle())
 		{
-		case aicombatStandard:
+		case AICombatStyle::Standard:
 			{
 			bool bFaster = (pShip->GetMaxSpeed() > pTarget->GetMaxSpeed());
 
@@ -757,7 +757,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			break;
 			}
 
-		case aicombatAdvanced:
+		case AICombatStyle::Advanced:
 			{
 			bool bWeAreFaster = (pShip->GetMaxSpeed() >= pTarget->GetMaxSpeed());
 			bool bUsingStandOffWeapon = (m_pBestWeapon && m_pBestWeapon->GetDeviceItem().IsAreaWeapon());
@@ -911,7 +911,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			break;
 			}
 
-		case aicombatStandOff:
+		case AICombatStyle::StandOff:
 			{
 			Metric rMaxRange2 = m_rBestWeaponRange * m_rBestWeaponRange;
 			Metric rIdealRange2 = 0.45 * rMaxRange2;
@@ -938,7 +938,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			break;
 			}
 
-		case aicombatChase:
+		case AICombatStyle::Chase:
 			{
 			Metric rMaxRange2 = m_rBestWeaponRange * m_rBestWeaponRange;
 
@@ -981,7 +981,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			break;
 			}
 
-		case aicombatFlyby:
+		case AICombatStyle::Flyby:
 			{
 			Metric rCloseRange2 = 0.25 * GetPrimaryAimRange2();
 
@@ -1035,7 +1035,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			break;
 			}
 
-		case aicombatNoRetreat:
+		case AICombatStyle::NoRetreat:
 			{
 			//	If we're not well in range of our primary weapon then
 			//	get closer to the target. (Or if we are not moving)

@@ -270,7 +270,7 @@ void CFleetShipAI::Behavior (SUpdateCtx &Ctx)
 
 				Metric rRange;
 				int iCounterAdj;
-				if (m_AICtx.GetCombatStyle() == aicombatStandOff)
+				if (m_AICtx.GetCombatStyle() == AICombatStyle::StandOff)
 					{
 					rRange = Max(m_pTarget->GetHitSize(), (0.5 * m_AICtx.GetBestWeaponRange()));
 					iCounterAdj = 2;

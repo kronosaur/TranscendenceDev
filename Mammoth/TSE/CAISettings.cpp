@@ -41,14 +41,7 @@
 
 #define STR_TRUE								CONSTLIT("True")
 
-CAISettings::CAISettings (void)
-
-//	CAISettings constructor
-
-	{
-	}
-
-AICombatStyles CAISettings::ConvertToAICombatStyle (const CString &sValue)
+AICombatStyle CAISettings::ConvertToAICombatStyle (const CString &sValue)
 
 //	ConvertToAICombatStyle
 //
@@ -56,22 +49,22 @@ AICombatStyles CAISettings::ConvertToAICombatStyle (const CString &sValue)
 
 	{
 	if (strEquals(sValue, COMBAT_STYLE_ADVANCED))
-		return aicombatAdvanced;
+		return AICombatStyle::Advanced;
 	else if (strEquals(sValue, COMBAT_STYLE_CHASE))
-		return aicombatChase;
+		return AICombatStyle::Chase;
 	else if (strEquals(sValue, COMBAT_STYLE_FLYBY))
-		return aicombatFlyby;
+		return AICombatStyle::Flyby;
 	else if (strEquals(sValue, COMBAT_STYLE_NO_RETREAT))
-		return aicombatNoRetreat;
+		return AICombatStyle::NoRetreat;
 	else if (strEquals(sValue, COMBAT_STYLE_STANDARD))
-		return aicombatStandOff;
+		return AICombatStyle::StandOff;
 	else if (strEquals(sValue, COMBAT_STYLE_STAND_OFF))
-		return aicombatStandOff;
+		return AICombatStyle::StandOff;
 	else
-		return aicombatStandard;
+		return AICombatStyle::Standard;
 	}
 
-CAISettings::EFlockingStyles CAISettings::ConvertToFlockingStyle (const CString &sValue)
+AIFlockingStyle CAISettings::ConvertToFlockingStyle (const CString &sValue)
 
 //	ConvertToFlockingStyle
 //
@@ -79,16 +72,16 @@ CAISettings::EFlockingStyles CAISettings::ConvertToFlockingStyle (const CString 
 
 	{
 	if (strEquals(sValue, FLOCKING_STYLE_CLOUD))
-		return flockCloud;
+		return AIFlockingStyle::Cloud;
 	else if (strEquals(sValue, FLOCKING_STYLE_COMPACT))
-		return flockCompact;
+		return AIFlockingStyle::Compact;
 	else if (strEquals(sValue, FLOCKING_STYLE_RANDOM))
-		return flockRandom;
+		return AIFlockingStyle::Random;
 	else
-		return flockNone;
+		return AIFlockingStyle::None;
 	}
 
-CString CAISettings::ConvertToID (AICombatStyles iStyle)
+CString CAISettings::ConvertToID (AICombatStyle iStyle)
 
 //	ConvertToID
 //
@@ -97,22 +90,22 @@ CString CAISettings::ConvertToID (AICombatStyles iStyle)
 	{
 	switch (iStyle)
 		{
-		case aicombatStandard:
+		case AICombatStyle::Standard:
 			return COMBAT_STYLE_STANDARD;
 
-		case aicombatStandOff:
+		case AICombatStyle::StandOff:
 			return COMBAT_STYLE_STAND_OFF;
 
-		case aicombatFlyby:
+		case AICombatStyle::Flyby:
 			return COMBAT_STYLE_FLYBY;
 
-		case aicombatNoRetreat:
+		case AICombatStyle::NoRetreat:
 			return COMBAT_STYLE_NO_RETREAT;
 
-		case aicombatChase:
+		case AICombatStyle::Chase:
 			return COMBAT_STYLE_CHASE;
 
-		case aicombatAdvanced:
+		case AICombatStyle::Advanced:
 			return COMBAT_STYLE_ADVANCED;
 
 		default:
@@ -120,7 +113,7 @@ CString CAISettings::ConvertToID (AICombatStyles iStyle)
 		}
 	}
 
-CString CAISettings::ConvertToID (EFlockingStyles iStyle)
+CString CAISettings::ConvertToID (AIFlockingStyle iStyle)
 
 //	ConvertToID
 //
@@ -129,13 +122,13 @@ CString CAISettings::ConvertToID (EFlockingStyles iStyle)
 	{
 	switch (iStyle)
 		{
-		case flockCloud:
+		case AIFlockingStyle::Cloud:
 			return FLOCKING_STYLE_CLOUD;
 
-		case flockCompact:
+		case AIFlockingStyle::Compact:
 			return FLOCKING_STYLE_COMPACT;
 
-		case flockRandom:
+		case AIFlockingStyle::Random:
 			return FLOCKING_STYLE_RANDOM;
 
 		default:
@@ -167,7 +160,7 @@ CString CAISettings::GetValue (const CString &sSetting)
 	else if (strEquals(sSetting, FLOCKING_STYLE_ATTRIB))
 		return ConvertToID(m_iFlockingStyle);
 	else if (strEquals(sSetting, FLOCK_FORMATION_ATTRIB))
-		return (m_iFlockingStyle == flockCloud ? STR_TRUE : NULL_STR);
+		return (m_iFlockingStyle == AIFlockingStyle::Cloud ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, IS_PLAYER_ATTRIB))
 		return (m_fIsPlayer ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, NO_ATTACK_ON_THREAT_ATTRIB))
@@ -211,11 +204,11 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		//	Compatibility with version < 0.97
 
 		if (pDesc->GetAttributeBool(FLYBY_COMBAT_ATTRIB))
-			m_iCombatStyle = aicombatFlyby;
+			m_iCombatStyle = AICombatStyle::Flyby;
 		else if (pDesc->GetAttributeBool(STAND_OFF_COMBAT_ATTRIB))
-			m_iCombatStyle = aicombatStandOff;
+			m_iCombatStyle = AICombatStyle::StandOff;
 		else
-			m_iCombatStyle = aicombatStandard;
+			m_iCombatStyle = AICombatStyle::Standard;
 		}
 
 	//	Flocking style
@@ -227,9 +220,9 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		bool bValue;
 		if (pDesc->FindAttributeBool(FLOCK_FORMATION_ATTRIB, &bValue) && bValue)
-			m_iFlockingStyle = flockCloud;
+			m_iFlockingStyle = AIFlockingStyle::Cloud;
 		else
-			m_iFlockingStyle = flockNone;
+			m_iFlockingStyle = AIFlockingStyle::None;
 		}
 
 	//	Parameters
@@ -273,27 +266,7 @@ void CAISettings::InitToDefault (void)
 //	Initialize to default settings
 
 	{
-	m_iCombatStyle = aicombatStandard;
-	m_iFlockingStyle = flockNone;
-	m_iFireRateAdj = 10;					//	Normal fire rate
-	m_iFireRangeAdj = 100;					//	100% of fire range
-	m_iFireAccuracy = 100;					//	100% accuracy
-	m_iPerception = CSpaceObject::perceptNormal;
-	m_rMinCombatSeparation = -1.0;			//	Compute based on image size
-
-	m_fNoShieldRetreat = false;
-	m_fNoDogfights = false;
-	m_fNonCombatant = false;
-	m_fNoFriendlyFire = false;
-	m_fAggressor = false;
-	m_fNoFriendlyFireCheck = false;
-	m_fNoOrderGiver = false;
-	m_fAscendOnGate = false;
-
-	m_fNoNavPaths = false;
-	m_fNoAttackOnThreat = false;
-	m_fNoTargetsOfOpportunity = false;
-	m_fIsPlayer = false;
+	*this = CAISettings();
 	}
 
 void CAISettings::ReadFromStream (SLoadCtx &Ctx)
@@ -314,13 +287,13 @@ void CAISettings::ReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	if (Ctx.dwVersion >= 125)
 		{
-		m_iCombatStyle = (AICombatStyles)LOWORD(dwLoad);
-		m_iFlockingStyle = (EFlockingStyles)HIWORD(dwLoad);
+		m_iCombatStyle = (AICombatStyle)LOWORD(dwLoad);
+		m_iFlockingStyle = (AIFlockingStyle)HIWORD(dwLoad);
 		}
 	else
 		{
-		m_iCombatStyle = (AICombatStyles)dwLoad;
-		m_iFlockingStyle = flockNone;
+		m_iCombatStyle = (AICombatStyle)dwLoad;
+		m_iFlockingStyle = AIFlockingStyle::None;
 		}
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
@@ -350,7 +323,7 @@ void CAISettings::ReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 125)
 		{
 		if (dwLoad & 0x00000800)
-			m_iFlockingStyle = flockCloud;
+			m_iFlockingStyle = AIFlockingStyle::Cloud;
 		m_fIsPlayer = false;
 		}
 	else
@@ -381,7 +354,7 @@ CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
 	else if (strEquals(sSetting, FLOCKING_STYLE_ATTRIB))
 		m_iFlockingStyle = ConvertToFlockingStyle(sValue);
 	else if (strEquals(sSetting, FLOCK_FORMATION_ATTRIB))
-		m_iFlockingStyle = (!sValue.IsBlank() ? flockCloud : flockNone);
+		m_iFlockingStyle = (!sValue.IsBlank() ? AIFlockingStyle::Cloud : AIFlockingStyle::None);
 	else if (strEquals(sSetting, IS_PLAYER_ATTRIB))
 		m_fIsPlayer = !sValue.IsBlank();
 	else if (strEquals(sSetting, NO_ATTACK_ON_THREAT_ATTRIB))
