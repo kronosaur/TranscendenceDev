@@ -6,7 +6,7 @@
 #include "PreComp.h"
 #include "TargetListImpl.h"
 
-void CTargetList::AddTarget (const STargetPriority &Priority, ETargetTypes iType, CSpaceObject &Obj) const
+void CTargetList::AddTarget (const STargetPriority &Priority, ETargetType iType, CSpaceObject &Obj) const
 
 //	AddTarget
 //
@@ -14,11 +14,11 @@ void CTargetList::AddTarget (const STargetPriority &Priority, ETargetTypes iType
 
 	{
 	STargetDesc *pEntry = m_Targets.Insert(Priority);
-	pEntry->dwType = iType;
+	pEntry->iType = iType;
 	pEntry->pObj = &Obj;
 	}
 
-CTargetList::EPriorityClass CTargetList::CalcPriority (ETargetTypes iType, CSpaceObject &Obj)
+CTargetList::EPriorityClass CTargetList::CalcPriority (ETargetType iType, CSpaceObject &Obj)
 
 //	CalcPriority
 //
@@ -27,17 +27,40 @@ CTargetList::EPriorityClass CTargetList::CalcPriority (ETargetTypes iType, CSpac
 	{
 	switch (iType)
 		{
-		case typeAttacker:
-		case typeMissile:
-		case typeTargetableMissile:
+		case ETargetType::AttackerCompatible:
+		case ETargetType::Missile:
+		case ETargetType::TargetableMissile:
+		case ETargetType::AggressiveShip:
+		case ETargetType::Station:
 			return prioritySecondary;
 
-		case typeFortification:
-		case typeMinable:
+		case ETargetType::Fortification:
+		case ETargetType::Minable:
+		case ETargetType::NonAggressiveShip:
 			return priorityTertiary;
 
 		default:
 			return priorityLowest;
+		}
+	}
+
+CTargetList::ETargetType CTargetList::CalcType (const CSpaceObject &Obj)
+
+//	CalcType
+//
+//	Calculates the type of the given object.
+
+	{
+	if (Obj.GetScale() == scaleStructure)
+		return ETargetType::Station;
+	else
+		{
+		int iAggressorThreshold = (Obj.GetUniverse().GetTicks() - CSpaceObject::AGGRESSOR_THRESHOLD);
+
+		if (Obj.GetLastFireTime() > iAggressorThreshold)
+			return ETargetType::NonAggressiveShip;
+		else
+			return ETargetType::AggressiveShip;
 		}
 	}
 
@@ -69,6 +92,29 @@ void CTargetList::Delete (CSpaceObject &Obj)
 				}
 			}
 		}
+	}
+
+CSpaceObject *CTargetList::FindBestTarget (DWORD dwTargetTypes, Metric rMaxRange) const
+
+//	FindBestTarget
+//
+//	Returns the best target in the list that matches the type and range.
+
+	{
+	Metric rMaxRange2 = rMaxRange * rMaxRange;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		if (((DWORD)GetTargetType(i) & dwTargetTypes) == 0)
+			continue;
+
+		if (rMaxRange > 0.0 && GetTargetDist2(i) > rMaxRange2)
+			continue;
+
+		return GetTarget(i);
+		}
+
+	return NULL;
 	}
 
 void CTargetList::Init (CSpaceObject &SourceObj, const STargetOptions &Options)
@@ -139,14 +185,14 @@ void CTargetList::ReadFromStream (SLoadCtx &Ctx)
 			{
 			DWORD dwLoad;
 			Ctx.pStream->Read(dwLoad);
-			ETargetTypes iTargetType = (ETargetTypes)(dwLoad & 0xffff);
+			ETargetType iTargetType = (ETargetType)(dwLoad & 0xffff);
 			EPriorityClass iPriority = (EPriorityClass)(dwLoad >> 16);
 
 			Metric rDist2;
 			Ctx.pStream->Read(rDist2);
 
 			m_Targets.InsertSorted(STargetPriority(iPriority, rDist2), STargetDesc());
-			m_Targets.GetValue(i).dwType = iTargetType;
+			m_Targets.GetValue(i).iType = iTargetType;
 			CSystem::ReadObjRefFromStream(Ctx, &m_Targets.GetValue(i).pObj);
 			}
 		}
@@ -191,7 +237,7 @@ void CTargetList::Realize (void) const
 			CSpaceObject *pObj = Grid.EnumGetNextFast(i);
 
 			Metric rDist2;
-			ETargetTypes iTargetType;
+			ETargetType iTargetType;
 			if (Selector.MatchesCategory(*pObj)
 					&& Range.Matches(*pObj, &rDist2)
 					&& Selector.Matches(*pObj, rDist2, &iTargetType))
@@ -229,7 +275,7 @@ void CTargetList::Realize (void) const
 			Metric rDist2 = (pAddPlayer->GetPos() - m_pSourceObj->GetPos()).Length2();
 			if (Selector.MatchesCanBeTargeted(*pAddPlayer, rDist2))
 				{
-				AddTarget(STargetPriority(priorityPrimary, rDist2), typeAttacker, *pAddPlayer);
+				AddTarget(STargetPriority(priorityPrimary, rDist2), ETargetType::AggressiveShip, *pAddPlayer);
 				}
 			}
 
@@ -238,7 +284,7 @@ void CTargetList::Realize (void) const
 			Metric rDist2 = (pAddSourceTarget->GetPos() - m_pSourceObj->GetPos()).Length2();
 			if (Selector.MatchesCanBeTargeted(*pAddSourceTarget, rDist2))
 				{
-				AddTarget(STargetPriority(priorityPrimary, rDist2), typeAttacker, *pAddSourceTarget);
+				AddTarget(STargetPriority(priorityPrimary, rDist2), CalcType(*pAddSourceTarget), *pAddSourceTarget);
 				}
 			}
 
@@ -291,7 +337,7 @@ void CTargetList::WriteToStream (CSystem &System, IWriteStream &Stream) const
 
 		for (int i = 0; i < m_Targets.GetCount(); i++)
 			{
-			DWORD dwSave = ((DWORD)m_Targets.GetKey(i).iType << 16) | (m_Targets[i].dwType & 0xffff);
+			DWORD dwSave = ((DWORD)m_Targets.GetKey(i).iType << 16) | ((DWORD)m_Targets[i].iType & 0xffff);
 			Stream.Write(dwSave);
 
 			Stream.Write(m_Targets.GetKey(i).rDist2);

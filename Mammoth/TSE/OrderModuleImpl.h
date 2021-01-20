@@ -1,9 +1,9 @@
 //	OrderModuleImpl.h
 //
 //	Transcendence IOrderModule classes
+//	Copyright (c) 2021 Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_ORDER_MODULES
-#define INCL_TSE_ORDER_MODULES
+#pragma once
 
 class CApproachOrder : public IOrderModule
 	{
@@ -17,6 +17,8 @@ class CApproachOrder : public IOrderModule
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderApproach; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
+		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::DeterWithSecondaries; }
+		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::None; }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
@@ -29,14 +31,15 @@ class CApproachOrder : public IOrderModule
 			objCount =		2,
 			};
 
-		enum States
+		enum class EState
 			{
-			stateOnCourseViaNavPath,
-			stateApproaching,
+			None =						-1,
+			OnCourseViaNavPath =		0,
+			Approaching =				1,
 			};
 
-		States m_iState;						//	Current behavior state
-		Metric m_rMinDist2;						//	Minimum distance to target
+		EState m_iState = EState::None;			//	Current behavior state
+		Metric m_rMinDist2 = 0.0;				//	Minimum distance to target
 	};
 
 class CAttackOrder : public IOrderModule
@@ -131,6 +134,54 @@ class CAttackStationOrder : public IOrderModule
 
 		States m_iState;						//	Current behavior state
 		int m_iCountdown;						//	Stop attacking after this time
+	};
+
+class CDeterChaseOrder : public IOrderModule
+	{
+	public:
+		CDeterChaseOrder () : IOrderModule(objCount)
+			{ }
+
+		static COrderDesc Create (CSpaceObject &TargetObj, CSpaceObject *pBase, Metric rMaxRange = 0.0, int iTimer = 0);
+
+	protected:
+
+		//	IOrderModule virtuals
+
+		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
+		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
+		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
+		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData);
+		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
+		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
+		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderDeterChase; }
+		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
+		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+
+	private:
+		static constexpr Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
+		static constexpr Metric PATROL_DETER_RANGE =		80.0 * LIGHT_SECOND;
+		static constexpr Metric PATROL_DETER_RANGE2 =		PATROL_DETER_RANGE * PATROL_DETER_RANGE;
+		static constexpr Metric STOP_ATTACK_RANGE =			(120.0 * LIGHT_SECOND);
+
+		static constexpr Metric NAV_PATH_THRESHOLD =		(3.0 * PATROL_SENSOR_RANGE);
+		static constexpr Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
+
+		enum Objs
+			{
+			objBase =		0,
+			objTarget =		1,
+
+			objCount =		2,
+			};
+
+		void BehaviorAttacking (CShip &Ship, CAIBehaviorCtx &Ctx);
+		void BehaviorOrbiting (CShip &Ship, CAIBehaviorCtx &Ctx);
+
+		Metric m_rMaxRange2 = 0.0;				//	Stop if we're too far from our base
+		int m_iCountdown = 0;					//	Stop after this time.
 	};
 
 class CFireEventOrder : public IOrderModule
@@ -235,6 +286,8 @@ class CNavigateOrder : public IOrderModule
 		virtual CSpaceObject *OnGetBase (void) override;
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return m_iOrder; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
+		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::DeterWithSecondaries; }
+		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::None; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
@@ -248,21 +301,21 @@ class CNavigateOrder : public IOrderModule
 			objCount =		2,
 			};
 
-		IShipController::OrderTypes m_iOrder;
+		IShipController::OrderTypes m_iOrder = IShipController::orderNone;
 		CVector m_vDest;						//	Destination
-		int m_iDestFacing;						//	Ship should face at this angle
-		Metric m_rMinDist2;						//	Minimum distance to target
+		int m_iDestFacing = -1;					//	Ship should face at this angle
+		Metric m_rMinDist2 = 0.0;				//	Minimum distance to target
 
-		DWORD m_fTargetVector:1;				//	Destination is m_vDest
-		DWORD m_fTargetObj:1;					//	Destination is objDest
-		DWORD m_fIsFollowingNavPath:1;			//	We're following the current nav path
-		DWORD m_fDockAtDestination:1;			//	When we reach our destination, dock
-		DWORD m_fVariableMinDist:1;				//	If TRUE, order parameter specifies min distance
-		DWORD m_fNavPathOnly:1;					//	If TRUE, we're done as soon as the nav path completes
-		DWORD m_fGateAtDestination:1;			//	When we reach our destination, gate
-		DWORD m_fSpare8:1;
+		DWORD m_fTargetVector:1 = false;		//	Destination is m_vDest
+		DWORD m_fTargetObj:1 = false;			//	Destination is objDest
+		DWORD m_fIsFollowingNavPath:1 = false;	//	We're following the current nav path
+		DWORD m_fDockAtDestination:1 = false;	//	When we reach our destination, dock
+		DWORD m_fVariableMinDist:1 = false;		//	If TRUE, order parameter specifies min distance
+		DWORD m_fNavPathOnly:1 = false;			//	If TRUE, we're done as soon as the nav path completes
+		DWORD m_fGateAtDestination:1 = false;	//	When we reach our destination, gate
+		DWORD m_fSpare8:1 = false;
 
-		DWORD m_dwSpare:24;
+		DWORD m_dwSpare:24 = 0;
 	};
 
 class COrbitExactOrder : public IOrderModule
@@ -497,4 +550,3 @@ class CWaitOrder : public IOrderModule
 		DWORD m_dwSpare:24;
 	};
 
-#endif

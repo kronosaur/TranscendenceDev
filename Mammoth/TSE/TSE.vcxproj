@@ -363,6 +363,7 @@
     <ClCompile Include="CAccessibilitySettings.cpp" />
     <ClCompile Include="CAdventureHighScoreList.cpp" />
     <ClCompile Include="CAdventureRecord.cpp" />
+    <ClCompile Include="CAIDeterModule.cpp" />
     <ClCompile Include="CAISettings.cpp" />
     <ClCompile Include="CAngleGenerator.cpp" />
     <ClCompile Include="CApproachOrder.cpp" />
@@ -411,6 +412,7 @@
     <ClCompile Include="CDelaunayStargateGenerator.cpp" />
     <ClCompile Include="CDesignPropertyDefinitions.cpp" />
     <ClCompile Include="CDesignTypeCriteria.cpp" />
+    <ClCompile Include="CDeterChaseOrder.cpp" />
     <ClCompile Include="CDeviceItem.cpp" />
     <ClCompile Include="CDeviceSystem.cpp" />
     <ClCompile Include="CDifferentiatedItem.cpp" />

@@ -1,9 +1,9 @@
 //	ShipAIImpl.h
 //
 //	Transcendence IShipController classes
+//	Copyright (c) 2021 Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_SHIP_CONTROLLERS
-#define INCL_TSE_SHIP_CONTROLLERS
+#pragma once
 
 class CBaseShipAI;
 
@@ -35,6 +35,15 @@ class CAIShipControls
 class CAIBehaviorCtx
 	{
 	public:
+		//	If we're deterring an attack, and we haven't been attacked for this
+		//	many ticks, then stop deterring.
+
+		static constexpr int DETER_ATTACK_TIME_THRESHOLD =	450;
+
+		//	If we're chasing an enemy, stop after this many ticks.
+
+		static constexpr int DETER_CHASE_MAX_TIME = 450;
+
 		CAIBehaviorCtx (void) { }
 		CAIBehaviorCtx (const CAIBehaviorCtx &Src) = delete;
 		CAIBehaviorCtx (CAIBehaviorCtx &&Src) = delete;
@@ -67,6 +76,7 @@ class CAIBehaviorCtx
 		EManeuverTypes GetManeuver (void) const { return m_ShipControls.GetManeuver(); }
 		int GetMaxTurnCount (void) const { return m_iMaxTurnCount; }
 		Metric GetMaxWeaponRange (void) const { return m_rMaxWeaponRange; }
+		Metric GetMaxWeaponRange2 (void) const { return m_rMaxWeaponRange * m_rMaxWeaponRange; }
 		Metric GetMinCombatSeparation (void) const { return m_AISettings.GetMinCombatSeparation(); }
 		CNavigationPath *GetNavPath (void) const { return m_pNavPath; }
 		int GetPerception (void) const { return m_AISettings.GetPerception(); }
@@ -155,6 +165,7 @@ class CAIBehaviorCtx
 		bool CalcFlockingFormation (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		void CalcInvariants (CShip *pShip);
 		bool CalcIsBetterTarget (CShip *pShip, CSpaceObject *pCurTarget, CSpaceObject *pNewTarget) const;
+		bool CalcIsDeterNeeded (CShip &Ship, CSpaceObject &Target) const;
 		bool CalcNavPath (CShip *pShip, const CVector &vTo);
 		bool CalcNavPath (CShip *pShip, CSpaceObject *pTo);
 		void CalcNavPath (CShip *pShip, CSpaceObject *pFrom, CSpaceObject *pTo);
@@ -195,7 +206,7 @@ class CAIBehaviorCtx
 		DWORD m_fWaitForShieldsToRegen:1 = false;	//	TRUE if ship is waiting for shields to regen
 		DWORD m_fShipSpeedLowered:1 = false;		//	TRUE if ship is traveling slower than normal
 													//		(due to navigation).
-		DWORD m_dwSpare1:29;
+		DWORD m_dwSpare1:29 = 0;
 
 		//	Cached values
 		SUpdateCtx *m_pUpdateCtx = NULL;			//	System update context
@@ -224,11 +235,27 @@ class CAIBehaviorCtx
 		DWORD m_fHasAvoidPotential:1 = false;		//	TRUE if there is something to avoid
 		DWORD m_fShootTargetableMissiles:1 = false;	//	TRUE if we try to hit targetable missiles with secondaries
 		DWORD m_fShootAllMissiles:1 = false;		//	TRUE if we try to hit all missiles with secondaries
-		DWORD m_fSpare6:1;
-		DWORD m_fSpare7:1;
-		DWORD m_fSpare8:1;
+		DWORD m_fSpare6:1 = false;
+		DWORD m_fSpare7:1 = false;
+		DWORD m_fSpare8:1 = false;
 
-		DWORD m_dwSpare:16;
+		DWORD m_dwSpare:16 = 0;
+	};
+
+class CAIDeterModule
+	{
+	public:
+		bool Behavior (CShip &Ship, CAIBehaviorCtx &Ctx);
+		void BehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &TargetObj, bool bNoTurn);
+		void Cancel () { m_pTarget = NULL; }
+		bool IsEnabled () const { return m_pTarget != NULL; }
+		void OnObjDestroyed (CSpaceObject &Obj);
+		void ReadFromStream (SLoadCtx &Ctx);
+		void WriteToStream (CSystem &System, IWriteStream &Stream) const;
+
+	private:
+		CSpaceObject *m_pTarget = NULL;
+		bool m_bNoTurn = false;
 	};
 
 const int MAX_OBJS =	4;
@@ -248,9 +275,12 @@ class IOrderModule
 		void Destroyed (CShip *pShip, SDestroyCtx &Ctx);
 		CSpaceObject *GetBase (void) { return OnGetBase(); }
 		IShipController::OrderTypes GetOrder (void) { return OnGetOrder(); }
+		AIReaction GetReactToAttack () const { return OnGetReactToAttack(); }
+		AIReaction GetReactToThreat () const { return OnGetReactToThreat(); }
 		CSpaceObject *GetTarget (void) { return OnGetTarget(); }
 		void ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx);
 		void ReadFromStream (SLoadCtx &Ctx);
+		bool SupportsReactions () const { return (OnGetReactToThreat() != AIReaction::Default); }
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
 	protected:
@@ -264,6 +294,8 @@ class IOrderModule
 		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) { }
 		virtual CSpaceObject *OnGetBase (void) { return NULL; }
 		virtual IShipController::OrderTypes OnGetOrder (void) = 0;
+		virtual AIReaction OnGetReactToAttack () const { return OnGetReactToThreat(); }
+		virtual AIReaction OnGetReactToThreat () const { return AIReaction::Default; }
 		virtual CSpaceObject *OnGetTarget (void) { return NULL; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
@@ -386,6 +418,8 @@ class CBaseShipAI : public IShipController
 		Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length(); }
 		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length2(); }
 		CSpaceObject *GetPlayerOrderGiver (void) const;
+		AIReaction GetReactToAttack () const;
+		AIReaction GetReactToThreat () const;
 		CUniverse &GetUniverse (void) const { return (m_pShip ? m_pShip->GetUniverse() : *g_pUniverse); }
 		bool InitOrderModule (void);
 		bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
@@ -393,7 +427,9 @@ class CBaseShipAI : public IShipController
 		bool IsWaitingForShieldsToRegen (void) { return m_AICtx.IsWaitingForShieldsToRegen(); }
 		void HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		bool IsDockingRequested (void) { return m_AICtx.IsDockingRequested(); }
+		void ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Damage);
 		void ResetBehavior (void);
+		void UpdateReactions (SUpdateCtx &Ctx);
 		void UpgradeShieldBehavior (void);
 		void UpgradeWeaponBehavior (void);
 		void UseItemsBehavior (void);
@@ -426,6 +462,7 @@ class CBaseShipAI : public IShipController
 		ICCItem *m_pCommandCode = NULL;				//	Code to generate orders (may be NULL)
 
 		CAIBehaviorCtx m_AICtx;						//	Ctx for behavior
+		CAIDeterModule m_DeterModule;				//	Deterring an enemy ship
 		IOrderModule *m_pOrderModule = NULL;		//	Current order module (may be NULL)
 
 		CAttackDetector m_Blacklist;				//	Player blacklisted
@@ -464,4 +501,3 @@ inline bool CAIShipControls::GetThrust (CShip *pShip) const
 		}
 	}
 
-#endif

@@ -88,6 +88,7 @@ class CAISettings
 		int GetPerception (void) const { return m_iPerception; }
 		AIReaction GetReactToAttack () const { return m_iReactToAttack; }
 		AIReaction GetReactToThreat () const { return m_iReactToThreat; }
+		Metric GetThreatRange () const { return m_rThreatRange; }
 		CString GetValue (const CString &sSetting);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitToDefault (void);
@@ -241,6 +242,10 @@ class IShipController
 										//		"eccentricity": Orbital eccentricity
 										//		"angle": Starting position in order (degrees) 0 == auto angle.
 										//		"timer": Seconds left in order
+			orderDeterChase,			//	pTarget = target to chase
+										//		"base": ID of base object (optional)
+										//		"radius": Max distance from base (optional)
+										//		"timer": Seconds left in order (optional)
 			};
 
 		enum EShipStatusNotifications
@@ -419,7 +424,9 @@ class COrderDesc
 		DWORD GetDataInteger () const;
 		DWORD GetDataInteger (const CString &sField, bool bDefaultField = false, DWORD dwDefault = 0) const;
 		DWORD GetDataInteger2 () const;
+		DWORD GetDataIntegerOptional (const CString &sField, DWORD dwDefault = 0) const;
 		const CItem &GetDataItem () const { if (GetDataType() == EDataType::Item) return *(CItem *)m_pData; else return CItem::NullItem(); }
+		CSpaceObject *GetDataObject (CSpaceObject &SourceObj, const CString &sField) const;
 		const CString &GetDataString () const { if (GetDataType() == EDataType::String) return *(CString *)m_pData; else return NULL_STR; }
 		int GetDataTicksLeft () const;
 		const CVector &GetDataVector () const { if (GetDataType() == EDataType::Vector) return *(CVector *)m_pData; else return NullVector; }

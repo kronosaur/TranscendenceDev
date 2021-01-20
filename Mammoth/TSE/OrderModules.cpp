@@ -105,6 +105,9 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderAttackStation:
 			return new CAttackStationOrder;
 
+		case IShipController::orderDeterChase:
+			return new CDeterChaseOrder;
+
 		case IShipController::orderEscort:
 		case IShipController::orderFollow:
 			return new CEscortOrder(iOrder);

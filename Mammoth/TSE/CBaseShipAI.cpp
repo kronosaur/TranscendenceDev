@@ -1,6 +1,7 @@
 //	CBaseShipAI.cpp
 //
 //	CBaseShipAI class
+//	Copyright (c) 2021 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -161,6 +162,10 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 		else if (m_fOldStyleBehaviors)
 			OnBehavior(Ctx);
 		}
+
+	//	Update reactions (such as deterring target).
+
+	UpdateReactions(Ctx);
 
 	//	Done
 
@@ -687,6 +692,100 @@ CSpaceObject *CBaseShipAI::GetPlayerOrderGiver (void) const
 		return m_pShip;
 	}
 
+AIReaction CBaseShipAI::GetReactToAttack () const
+
+//	GetReactToAttack
+//
+//	Returns the current setting for reacting to an attack.
+
+	{
+	//	If our current order does not support reactions, then we don't do 
+	//	anything. This can happen if (e.g.,) the current order is itself a 
+	//	reaction (such as CDeterChaseOrder).
+
+	if (!m_pOrderModule || !m_pOrderModule->SupportsReactions())
+		return AIReaction::None;
+
+	//	Otherwise, get reaction from settings.
+
+	else
+		{
+		AIReaction iReaction = m_AICtx.GetAISettings().GetReactToAttack();
+		if (iReaction == AIReaction::Default)
+			iReaction = m_pOrderModule->GetReactToAttack();
+
+		//	Do additional checks.
+
+		switch (iReaction)
+			{
+			case AIReaction::Chase:
+				if (m_AICtx.IsNonCombatant())
+					return AIReaction::None;
+				else if (m_AICtx.IsImmobile() || m_AICtx.GetAISettings().NoAttackOnThreat())
+					return AIReaction::Deter;
+				else
+					return iReaction;
+
+			case AIReaction::Deter:
+			case AIReaction::DeterWithSecondaries:
+				if (m_AICtx.IsNonCombatant())
+					return AIReaction::None;
+				else
+					return iReaction;
+
+			default:
+				return AIReaction::None;
+			}
+		}
+	}
+
+AIReaction CBaseShipAI::GetReactToThreat () const
+
+//	GetReactToThreat
+//
+//	Returns the current setting for reacting to a threat.
+
+	{
+	//	If our current order does not support reactions, then we don't do 
+	//	anything. This can happen if (e.g.,) the current order is itself a 
+	//	reaction (such as CDeterChaseOrder).
+
+	if (!m_pOrderModule || !m_pOrderModule->SupportsReactions())
+		return AIReaction::None;
+
+	//	Otherwise, get reaction from settings.
+
+	else
+		{
+		AIReaction iReaction = m_AICtx.GetAISettings().GetReactToThreat();
+		if (iReaction == AIReaction::Default)
+			iReaction = m_pOrderModule->GetReactToThreat();
+
+		//	Do additional checks.
+
+		switch (iReaction)
+			{
+			case AIReaction::Chase:
+				if (m_AICtx.IsNonCombatant())
+					return AIReaction::None;
+				else if (m_AICtx.IsImmobile() || m_AICtx.GetAISettings().NoAttackOnThreat())
+					return AIReaction::Deter;
+				else
+					return iReaction;
+
+			case AIReaction::Deter:
+			case AIReaction::DeterWithSecondaries:
+				if (m_AICtx.IsNonCombatant() || m_AICtx.GetAISettings().NoTargetsOfOpportunity())
+					return AIReaction::None;
+				else
+					return iReaction;
+
+			default:
+				return AIReaction::None;
+			}
+		}
+	}
+
 CSpaceObject *CBaseShipAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFlags) const
 
 //	GetTarget
@@ -712,7 +811,7 @@ CTargetList CBaseShipAI::GetTargetList (void) const
 	
 	//	Range
 
-	Options.rMaxDist = m_AICtx.GetBestWeaponRange();
+	Options.rMaxDist = Max(m_AICtx.GetBestWeaponRange(), m_AICtx.GetAISettings().GetThreatRange());
 
 	//	Include our target
 
@@ -803,6 +902,7 @@ bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 		case IShipController::orderOrbitExact:
 		case IShipController::orderOrbitPatrol:
 		case IShipController::orderSentry:
+		case IShipController::orderDeterChase:
 			{
 			CSpaceObject *pBase = GetCurrentOrderTarget();
 			return (pBase && pBase->IsAngryAt(pObj));
@@ -885,6 +985,11 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 
 			bFriendlyFire = true;
 			}
+
+		//	Otherwise, react to an attack
+
+		else
+			ReactToAttack(*pAttacker, Damage);
 		}
 
 	//	Notify our order module (or derived class if we're doing it old-style)
@@ -1127,6 +1232,10 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 	else
 		OnObjDestroyedNotify(Ctx);
 
+	//	Deter module
+
+	m_DeterModule.OnObjDestroyed(Ctx.Obj);
+
 	//	Loop over all our future orders and make sure that we
 	//	delete any that refer to this object.
 
@@ -1263,6 +1372,60 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 		FireOnOrderChanged();
 	}
 
+void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Damage)
+
+//	ReactToAttack
+//
+//	React to an attack.
+
+	{
+	switch (GetReactToAttack())
+		{
+		case AIReaction::None:
+			break;
+
+		case AIReaction::Chase:
+			{
+			//	If the attacker is a valid threat, then add an order
+
+			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+				{
+				int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
+				AddOrder(CDeterChaseOrder::Create(AttackerObj, GetBase(), m_AICtx.GetAISettings().GetThreatRange(), iMaxTime), true);
+				}
+
+			break;
+			}
+
+		case AIReaction::Deter:
+			{
+			//	Enable deter module
+
+			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+				{
+				m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, AttackerObj, false);
+				}
+
+			break;
+			}
+
+		case AIReaction::DeterWithSecondaries:
+			{
+			//	Enable deter module (but with no turning)
+
+			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+				{
+				m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, AttackerObj, true);
+				}
+
+			break;
+			}
+				
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
 void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 //	ReadFromStream
@@ -1276,6 +1439,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 //
 //	DWORD		order (for order module)
 //	IOrderModule
+//	CDeterModule	m_DeterModule
 //
 //	DWORD		No of orders
 //	DWORD		order: Order
@@ -1294,7 +1458,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 	//	Read stuff
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	CShipClass *pClass = Ctx.GetUniverse().FindShipClass(dwLoad);
 	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pShip);
 	if (m_pShip == NULL)
@@ -1304,16 +1468,16 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 	if (Ctx.dwVersion < 75)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_AICtx.SetManeuver((EManeuverTypes)dwLoad);
 
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_AICtx.SetThrustDir((int)dwLoad);
 
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_AICtx.SetLastTurn((EManeuverTypes)dwLoad);
 
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_AICtx.SetLastTurnCount(dwLoad);
 		}
 
@@ -1330,7 +1494,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 		if (Ctx.dwVersion >= 33)
 			{
-			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+			Ctx.pStream->Read(dwLoad);
 			m_AICtx.SetManeuverCounter(dwLoad);
 			}
 
@@ -1339,7 +1503,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 		if (Ctx.dwVersion >= 34)
 			{
 			CVector vPotential;
-			Ctx.pStream->Read((char *)&vPotential, sizeof(CVector));
+			vPotential.ReadFromStream(*Ctx.pStream);
 			m_AICtx.SetPotential(vPotential);
 			}
 		}
@@ -1362,11 +1526,16 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 	if (Ctx.dwVersion >= 75)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_pOrderModule = IOrderModule::Create((IShipController::OrderTypes)dwLoad);
 		if (m_pOrderModule)
 			m_pOrderModule->ReadFromStream(Ctx);
 		}
+
+	//	Deter module
+
+	if (Ctx.dwVersion >= 197)
+		m_DeterModule.ReadFromStream(Ctx);
 
 	//	Read navpath info
 
@@ -1377,13 +1546,13 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 			CNavigationPath *pNavPath;
 			int iNavPathPos;
 
-			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+			Ctx.pStream->Read(dwLoad);
 			if (dwLoad)
 				pNavPath = Ctx.pSystem->GetNavPathByID(dwLoad);
 			else
 				pNavPath = NULL;
 
-			Ctx.pStream->Read((char *)&iNavPathPos, sizeof(DWORD));
+			Ctx.pStream->Read(iNavPathPos);
 			if (pNavPath == NULL)
 				iNavPathPos = -1;
 
@@ -1411,7 +1580,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 	//	Flags
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_fDeviceActivate =			((dwLoad & 0x00000001) ? true : false);
 	m_fPlayerBlacklisted =		((dwLoad & 0x00000002) && (Ctx.dwVersion >= 75) ? true : false);
 	//	0x00000004 unused at 75
@@ -1526,18 +1695,6 @@ void CBaseShipAI::SetCommandCode (ICCItem *pCode)
 		m_pCommandCode = pCode->Reference();
 	}
 
-#if 0
-void CBaseShipAI::SetCurrentOrderData (const SData &Data)
-
-//	SetCurrentOrderData
-//
-//	Set the data for current order
-
-	{
-	m_Orders.SetCurrentOrderData(Data);
-	}
-#endif
-
 void CBaseShipAI::SetShipToControl (CShip *pShip)
 
 //	SetShipToControl
@@ -1549,6 +1706,62 @@ void CBaseShipAI::SetShipToControl (CShip *pShip)
 
 	m_pShip = pShip;
 	m_AICtx.SetAISettings(pShip->GetClass()->GetAISettings());
+	}
+
+void CBaseShipAI::UpdateReactions (SUpdateCtx &Ctx)
+
+//	UpdateReactions
+//
+//	Deal with threats (e.g., enemy ships in range).
+
+	{
+	AIReaction iReaction;
+
+	//	Update reaction if we've got a current reaction. For example, if we're 
+	//	currently deterring an enemy ship, this will turn to fire at the enemy.
+
+	if (m_DeterModule.Behavior(*m_pShip, m_AICtx))
+		{ }
+
+	//	Figure out how we should react to threats. If no reaction, then there's
+	//	nothing to do.
+
+	else if ((iReaction = GetReactToThreat()) == AIReaction::None)
+		{ }
+
+	//	Otherwise, look for threats (but not every tick).
+
+	else if (m_pShip->IsDestinyTime(11))
+		{
+		DWORD dwTypes = (DWORD)CTargetList::ETargetType::AggressiveShip;
+		if (m_AICtx.IsAggressor())
+			dwTypes |= (DWORD)CTargetList::ETargetType::NonAggressiveShip;
+
+		if (CSpaceObject *pTarget = Ctx.GetTargetList().FindBestTarget(dwTypes))
+			{
+			switch (iReaction)
+				{
+				case AIReaction::Chase:
+					{
+					int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
+					AddOrder(CDeterChaseOrder::Create(*pTarget, GetBase(), m_AICtx.GetAISettings().GetThreatRange(), iMaxTime), true);
+					break;
+					}
+
+				case AIReaction::Deter:
+					{
+					m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, *pTarget, false);
+					break;
+					}
+
+				case AIReaction::DeterWithSecondaries:
+					{
+					m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, *pTarget, true);
+					break;
+					}
+				}
+			}
+		}
 	}
 
 void CBaseShipAI::UpgradeShieldBehavior (void)
@@ -1753,6 +1966,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 //
 //	DWORD		order (for order module)
 //	IOrderModule
+//	CDeterModule	m_DeterModule
 //
 //	DWORD		No of orders
 //	DWORD		order: Order
@@ -1771,7 +1985,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 	GetClass().WriteToStream(pStream);
 
 	dwSave = m_pShip->GetClass()->GetUNID();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	m_pShip->WriteObjRefToStream(m_pShip, pStream);
 	m_Blacklist.WriteToStream(pStream);
@@ -1783,9 +1997,13 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 	//	Order module
 
 	dwSave = (DWORD)(m_pOrderModule ? m_pOrderModule->GetOrder() : IShipController::orderNone);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	if (m_pOrderModule)
 		m_pOrderModule->WriteToStream(m_pShip->GetSystem(), pStream);
+
+	//	Deter module
+
+	m_DeterModule.WriteToStream(*m_pShip->GetSystem(), *pStream);
 
 	//	Orders
 
@@ -1808,7 +2026,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fAvoidWalls ?				0x00000010 : 0);
 	dwSave |= (m_fIsPlayerWingman ?			0x00000020 : 0);
 	dwSave |= (m_fIsPlayerEscort ?			0x00000040 : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Subclasses
 

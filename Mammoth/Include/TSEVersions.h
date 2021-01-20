@@ -713,3 +713,4 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					197;
 //
 //	197: 1.9 Beta 4
 //		Add fields to CAISettings
+//		Add m_DeterModule to CBaseShipAI

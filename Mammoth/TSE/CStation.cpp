@@ -676,7 +676,7 @@ void CStation::CalcDeviceBonus (void)
 		//	to do this AFTER we set up the enhancements stack, since this 
 		//	usually comes from the device slot.
 
-		if (DeviceItem.GetTargetTypes() & CTargetList::typeMissile)
+		if (DeviceItem.GetTargetTypes() & CTargetList::SELECT_MISSILE)
 			m_fHasMissileDefense = true;
 		}
 
