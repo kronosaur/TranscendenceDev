@@ -177,6 +177,7 @@ class CAIBehaviorCtx
 			{ return (NoFriendlyFireCheck() || pShip->IsLineOfFireClear(pDevice, pTarget, iFireAngle, rMaxRange)); }
 		CVector CombinePotential (const CVector &vDir)
 			{ return GetPotential() + (vDir.Normal() * 100.0 * g_KlicksPerPixel);	}
+		void CommunicateWithBaseAttackDeter (CShip &Ship, CSpaceObject &AttackerObj, CSpaceObject *pOrderGiver = NULL);
 		void CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage, CSpaceObject *pParam1 = NULL, DWORD dwParam2 = 0);
 		void Undock (CShip *pShip);
 

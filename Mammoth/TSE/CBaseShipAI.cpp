@@ -1394,6 +1394,7 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 				AddOrder(CDeterChaseOrder::Create(AttackerObj, GetBase(), m_AICtx.GetAISettings().GetThreatRange(), iMaxTime), true);
 				}
 
+			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
 			break;
 			}
 
@@ -1406,6 +1407,7 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 				m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, AttackerObj, false);
 				}
 
+			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
 			break;
 			}
 
@@ -1418,6 +1420,7 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 				m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, AttackerObj, true);
 				}
 
+			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
 			break;
 			}
 				

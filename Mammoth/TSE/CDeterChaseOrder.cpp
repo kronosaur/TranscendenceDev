@@ -43,9 +43,9 @@ void CDeterChaseOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 
 	//	See if the attacker is a better target.
 
-	if (Ctx.CalcIsBetterTarget(pShip, m_Objs[objTarget], pAttacker))
+	if (Ctx.CalcIsBetterTarget(pShip, m_Objs[OBJ_TARGET], pAttacker))
 		{
-		m_Objs[objTarget] = pAttacker;
+		m_Objs[OBJ_TARGET] = pAttacker;
 		}
 
 	//	Tell our base, if necessary.
@@ -53,10 +53,10 @@ void CDeterChaseOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 	CSpaceObject *pOrderGiver = Damage.GetOrderGiver();
 	CSpaceObject *pTarget;
 	if (Ctx.IsSecondAttack()
-			&& m_Objs[objBase]
-			&& m_Objs[objBase]->IsAngryAt(pAttacker)
-			&& (pTarget = m_Objs[objBase]->CalcTargetToAttack(pAttacker, pOrderGiver)))
-		pShip->Communicate(m_Objs[objBase], msgAttackDeter, pTarget);
+			&& m_Objs[OBJ_BASE]
+			&& m_Objs[OBJ_BASE]->IsAngryAt(pAttacker)
+			&& (pTarget = m_Objs[OBJ_BASE]->CalcTargetToAttack(pAttacker, pOrderGiver)))
+		pShip->Communicate(m_Objs[OBJ_BASE], msgAttackDeter, pTarget);
 	}
 
 void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
@@ -72,9 +72,9 @@ void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		{
 		//	If we're too far from our base, then we're done.
 
-		if (m_Objs[objBase] 
+		if (m_Objs[OBJ_BASE] 
 				&& m_rMaxRange2 > 0.0
-				&& pShip->GetDistance2(m_Objs[objBase]) > m_rMaxRange2)
+				&& pShip->GetDistance2(m_Objs[OBJ_BASE]) > m_rMaxRange2)
 			{
 			pShip->CancelCurrentOrder();
 			return;
@@ -82,7 +82,7 @@ void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 		//	Otherwise, if we should stop deterring, then we're done.
 
-		else if (!Ctx.CalcIsDeterNeeded(*pShip, *m_Objs[objTarget]))
+		else if (!Ctx.CalcIsDeterNeeded(*pShip, *m_Objs[OBJ_BASE]))
 			{
 			pShip->CancelCurrentOrder();
 			return;
@@ -99,8 +99,8 @@ void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	//	Chase
 
-	Ctx.ImplementAttackTarget(pShip, m_Objs[objTarget]);
-	Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+	Ctx.ImplementAttackTarget(pShip, m_Objs[OBJ_TARGET]);
+	Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[OBJ_TARGET]);
 	}
 
 void CDeterChaseOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
@@ -116,8 +116,8 @@ void CDeterChaseOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const 
 
 	//	Target is required.
 
-	m_Objs[objTarget] = OrderDesc.GetTarget();
-	if (!m_Objs[objTarget])
+	m_Objs[OBJ_TARGET] = OrderDesc.GetTarget();
+	if (!m_Objs[OBJ_TARGET])
 		{
 		Ship.CancelCurrentOrder();
 		return;
@@ -125,7 +125,7 @@ void CDeterChaseOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const 
 
 	//	Base is optional.
 
-	m_Objs[objBase] = OrderDesc.GetDataObject(Ship, CONSTLIT("base"));
+	m_Objs[OBJ_BASE] = OrderDesc.GetDataObject(Ship, CONSTLIT("base"));
 
 	//	Radius is optional
 
@@ -163,9 +163,9 @@ DWORD CDeterChaseOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpace
 		case msgBaseDestroyedByTarget:
 			{
 			if (pParam1
-					&& Ctx.CalcIsBetterTarget(pShip, m_Objs[objTarget], pParam1))
+					&& Ctx.CalcIsBetterTarget(pShip, m_Objs[OBJ_TARGET], pParam1))
 				{
-				m_Objs[objTarget] = pParam1;
+				m_Objs[OBJ_TARGET] = pParam1;
 				return resAck;
 				}
 			else
@@ -189,10 +189,10 @@ void CDeterChaseOrder::OnDestroyed (CShip *pShip, SDestroyCtx &Ctx)
 	{
 	//	If we've been destroyed, then ask our station to avenge us
 
-	if (m_Objs[objBase]
-			&& !m_Objs[objBase]->IsEnemy(pShip)
-			&& !m_Objs[objBase]->IsDestroyed())
-		m_Objs[objBase]->OnSubordinateDestroyed(Ctx);
+	if (m_Objs[OBJ_BASE]
+			&& !m_Objs[OBJ_BASE]->IsEnemy(pShip)
+			&& !m_Objs[OBJ_BASE]->IsDestroyed())
+		m_Objs[OBJ_BASE]->OnSubordinateDestroyed(Ctx);
 	}
 
 void CDeterChaseOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder)
@@ -202,7 +202,7 @@ void CDeterChaseOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int
 //	An object was destroyed.
 
 	{
-	if (iObj == objTarget)
+	if (iObj == OBJ_TARGET)
 		{
 		//	If a friend destroyed our target then thank them
 
@@ -213,7 +213,7 @@ void CDeterChaseOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int
 
 		pShip->CancelCurrentOrder();
 		}
-	else if (iObj == objBase)
+	else if (iObj == OBJ_BASE)
 		{
 		//	If our base got destroyed, we continue.
 		}

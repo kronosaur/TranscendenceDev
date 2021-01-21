@@ -48,7 +48,7 @@ static TStaticStringTable<TStaticStringEntry<AIReaction>, 5> REACTION_TABLE = {
 	"chase",				AIReaction::Chase,
 	"default",				AIReaction::Default,
 	"deter",				AIReaction::Deter,
-	"deterWithSecondaries",	AIReaction::DeterWithSecondaries,
+	"deterNoManeuvers",		AIReaction::DeterWithSecondaries,
 	"none",					AIReaction::None,
 	};
 

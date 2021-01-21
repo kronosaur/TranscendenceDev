@@ -1413,7 +1413,19 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'fireAccuracy {percent}\n"
 			"   'fireRangeAdj {percent}\n"
 			"   'fireRateAdj {value; 10 = normal; 20 = twice as slow}\n"
-			"   'perception {value}",
+			"   'perception {value}\n"
+			"\n"
+			"   'reactToAttack\n"
+			"      = 'chase\n"
+			"      = 'default\n"
+			"      = 'deter\n"
+			"      = 'deterNoManeuvers\n"
+			"      = 'none\n"
+			"\n"
+			"   'reactToThreat\n"
+			"      = {same as reactToAttack}\n"
+			"\n"
+			"   'threatRange {light-seconds}\n",
 
 			"isv",	0,	},
 

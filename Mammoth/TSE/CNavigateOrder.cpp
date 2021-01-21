@@ -59,26 +59,6 @@ CNavigateOrder::CNavigateOrder (IShipController::OrderTypes iOrder) : IOrderModu
 		}
 	}
 
-void CNavigateOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
-
-//	OnAttacked
-//
-//	Deal with attacks.
-
-	{
-	DEBUG_TRY
-
-	//	If we get attacked, at least attack back.
-
-	if (pAttacker
-			&& pAttacker->CanAttack()
-			&& !bFriendlyFire
-			&& m_Objs[objTarget] == NULL)
-		m_Objs[objTarget] = pAttacker;
-
-	DEBUG_CATCH
-	}
-
 void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 //	OnBehavior

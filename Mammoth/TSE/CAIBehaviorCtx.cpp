@@ -918,6 +918,25 @@ void CAIBehaviorCtx::ClearNavPath (void)
 		}
 	}
 
+void CAIBehaviorCtx::CommunicateWithBaseAttackDeter (CShip &Ship, CSpaceObject &AttackerObj, CSpaceObject *pOrderGiver)
+
+//	CommunicateWithBaseAttackDeter
+//
+//	Sends a message to our base that we were attacked.
+
+	{
+	//	If we were attacked twice (excluding multi-shot weapons)
+	//	then we tell our station about this
+
+	CSpaceObject *pBase;
+	CSpaceObject *pTarget;
+	if (IsSecondAttack()
+			&& (pBase = Ship.GetBase())
+			&& pBase->IsAngryAt(&AttackerObj)
+			&& (pTarget = pBase->CalcTargetToAttack(&AttackerObj, pOrderGiver)))
+		Ship.Communicate(pBase, msgAttackDeter, pTarget);
+	}
+
 void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
 
 //	CommunicateWithEscorts

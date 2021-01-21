@@ -139,7 +139,7 @@ class CAttackStationOrder : public IOrderModule
 class CDeterChaseOrder : public IOrderModule
 	{
 	public:
-		CDeterChaseOrder () : IOrderModule(objCount)
+		CDeterChaseOrder () : IOrderModule(OBJ_COUNT)
 			{ }
 
 		static COrderDesc Create (CSpaceObject &TargetObj, CSpaceObject *pBase, Metric rMaxRange = 0.0, int iTimer = 0);
@@ -153,32 +153,17 @@ class CDeterChaseOrder : public IOrderModule
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData);
 		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
-		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
+		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[OBJ_BASE]; }
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderDeterChase; }
-		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
+		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[OBJ_TARGET]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:
-		static constexpr Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
-		static constexpr Metric PATROL_DETER_RANGE =		80.0 * LIGHT_SECOND;
-		static constexpr Metric PATROL_DETER_RANGE2 =		PATROL_DETER_RANGE * PATROL_DETER_RANGE;
-		static constexpr Metric STOP_ATTACK_RANGE =			(120.0 * LIGHT_SECOND);
-
-		static constexpr Metric NAV_PATH_THRESHOLD =		(3.0 * PATROL_SENSOR_RANGE);
-		static constexpr Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
-
-		enum Objs
-			{
-			objBase =		0,
-			objTarget =		1,
-
-			objCount =		2,
-			};
-
-		void BehaviorAttacking (CShip &Ship, CAIBehaviorCtx &Ctx);
-		void BehaviorOrbiting (CShip &Ship, CAIBehaviorCtx &Ctx);
+		static constexpr int OBJ_BASE =		0;
+		static constexpr int OBJ_TARGET =	1;
+		static constexpr int OBJ_COUNT =	2;
 
 		Metric m_rMaxRange2 = 0.0;				//	Stop if we're too far from our base
 		int m_iCountdown = 0;					//	Stop after this time.
@@ -280,7 +265,6 @@ class CNavigateOrder : public IOrderModule
 
 		//	IOrderModule virtuals
 
-		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual CSpaceObject *OnGetBase (void) override;
