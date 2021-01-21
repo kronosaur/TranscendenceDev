@@ -376,6 +376,69 @@ DWORD COrderDesc::GetDataInteger2 () const
 		}
 	}
 
+DWORD COrderDesc::GetDataIntegerOptional (const CString &sField, DWORD dwDefault) const
+
+//	GetDataIntegerOptional
+//
+//	Returns an integer.
+
+	{
+	switch (GetDataType())
+		{
+		case EDataType::CCItem:
+			{
+			ICCItemPtr pData = GetDataCCItem();
+
+			if (const ICCItem *pValue = pData->GetElement(sField))
+				return pValue->GetIntegerValue();
+			else
+				return dwDefault;
+			}
+
+		case EDataType::Int16Pair:
+			return GetDataInteger();
+
+		case EDataType::Int32:
+			return dwDefault;
+
+		default:
+			return dwDefault;
+		}
+	}
+
+CSpaceObject *COrderDesc::GetDataObject (CSpaceObject &SourceObj, const CString &sField) const
+
+//	GetDataObject
+//
+//	Returns an object stored as an ID. Returns NULL if not found.
+
+	{
+	DWORD dwObjID;
+
+	switch (GetDataType())
+		{
+		case EDataType::CCItem:
+			{
+			ICCItemPtr pData = GetDataCCItem();
+
+			if (const ICCItem *pValue = pData->GetElement(sField))
+				dwObjID = pValue->GetIntegerValue();
+			else
+				return NULL;
+			break;
+			}
+
+		default:
+			return NULL;
+		}
+
+	CSystem *pSystem = SourceObj.GetSystem();
+	if (!pSystem)
+		return NULL;
+
+	return pSystem->FindObject(dwObjID);
+	}
+
 int COrderDesc::GetDataTicksLeft () const
 
 //	GetDataTicksLeft

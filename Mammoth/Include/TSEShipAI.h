@@ -62,9 +62,22 @@ enum class AIFlockingStyle
 	Random =								3,	//	Random, fixed positions around leader
 	};
 
+enum class AIReaction
+	{
+	Default =								0,	//	Default reaction based on order
+	None =									1,	//	Do not react
+	DeterWithSecondaries =					2,	//	Deter with secondaries, but do not turn or maneuver
+	Deter =									3,	//	Turn to attack attacker, but do not chase
+	Chase =									4,	//	Chase attacker
+	Destroy =								5,	//	Destroy attacker
+	Gate =									6,	//	Gate out
+	};
+
 class CAISettings
 	{
 	public:
+		static constexpr int DEFAULT_THREAT_RANGE = 30;
+
 		CAISettings (void) { }
 
 		bool AscendOnGate (void) const { return m_fAscendOnGate; }
@@ -75,6 +88,9 @@ class CAISettings
 		AIFlockingStyle GetFlockingStyle (void) const { return m_iFlockingStyle; }
 		Metric GetMinCombatSeparation (void) const { return m_rMinCombatSeparation; }
 		int GetPerception (void) const { return m_iPerception; }
+		AIReaction GetReactToAttack () const { return m_iReactToAttack; }
+		AIReaction GetReactToThreat () const { return m_iReactToThreat; }
+		Metric GetThreatRange () const { return m_rThreatRange; }
 		CString GetValue (const CString &sSetting);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitToDefault (void);
@@ -97,18 +113,23 @@ class CAISettings
 
 		static AICombatStyle ConvertToAICombatStyle (const CString &sValue);
 		static AIFlockingStyle ConvertToFlockingStyle (const CString &sValue);
+		static AIReaction ConvertToAIReaction (const CString &sValue);
 		static CString ConvertToID (AICombatStyle iStyle);
 		static CString ConvertToID (AIFlockingStyle iStyle);
+		static CString ConvertToID (AIReaction iStyle);
 
 	private:
 		AICombatStyle m_iCombatStyle = AICombatStyle::Standard;			//	Combat style
 		AIFlockingStyle m_iFlockingStyle = AIFlockingStyle::None;		//	Flocking style
+		AIReaction m_iReactToAttack = AIReaction::Default;
+		AIReaction m_iReactToThreat = AIReaction::Default;
 
 		int m_iFireRateAdj = 10;					//	Adjustment to weapon's fire rate (10 = normal; 20 = double delay)
 		int m_iFireRangeAdj = 100;					//	Adjustment to range (100 = normal; 50 = half range)
 		int m_iFireAccuracy = 100;					//	Percent chance of hitting
 		int m_iPerception = 4;						//	Perception (LATER: We need to refer to CSpaceObject::perceptNormal)
 
+		Metric m_rThreatRange = DEFAULT_THREAT_RANGE * LIGHT_SECOND;	//	React to threats in this range
 		Metric m_rMinCombatSeparation = -1.0;		//	Min separation from other ships while in combat (-1.0 == based on image size)
 
 		DWORD m_fNoShieldRetreat:1 = false;			//	Ship does not retreat when shields go down
@@ -223,6 +244,10 @@ class IShipController
 										//		"eccentricity": Orbital eccentricity
 										//		"angle": Starting position in order (degrees) 0 == auto angle.
 										//		"timer": Seconds left in order
+			orderDeterChase,			//	pTarget = target to chase
+										//		"base": ID of base object (optional)
+										//		"radius": Max distance from base (optional)
+										//		"timer": Seconds left in order (optional)
 			};
 
 		enum EShipStatusNotifications
@@ -401,7 +426,9 @@ class COrderDesc
 		DWORD GetDataInteger () const;
 		DWORD GetDataInteger (const CString &sField, bool bDefaultField = false, DWORD dwDefault = 0) const;
 		DWORD GetDataInteger2 () const;
+		DWORD GetDataIntegerOptional (const CString &sField, DWORD dwDefault = 0) const;
 		const CItem &GetDataItem () const { if (GetDataType() == EDataType::Item) return *(CItem *)m_pData; else return CItem::NullItem(); }
+		CSpaceObject *GetDataObject (CSpaceObject &SourceObj, const CString &sField) const;
 		const CString &GetDataString () const { if (GetDataType() == EDataType::String) return *(CString *)m_pData; else return NULL_STR; }
 		int GetDataTicksLeft () const;
 		const CVector &GetDataVector () const { if (GetDataType() == EDataType::Vector) return *(CVector *)m_pData; else return NullVector; }

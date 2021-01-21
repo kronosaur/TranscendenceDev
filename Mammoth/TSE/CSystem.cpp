@@ -4771,6 +4771,8 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		iUpdateObj++;
 #endif
 		}
+
+	Ctx.OnEndUpdate();
 	DebugStopTimer("Updating objects");
 
 	//	Initialize a structure that holds context for motion

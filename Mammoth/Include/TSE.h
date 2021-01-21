@@ -270,7 +270,9 @@ struct SUpdateCtx
 	{
 	public:
 		int GetLightIntensity (CSpaceObject *pObj) const;
+		CTargetList &GetTargetList ();
 		bool IsTimeStopped (void) const { return m_bTimeStopped; }
+		void OnEndUpdate () { m_pObj = NULL; }
 		void OnStartUpdate (CSpaceObject &Obj);
 
 		CSystem *pSystem = NULL;					//	Current system
@@ -292,12 +294,15 @@ struct SUpdateCtx
 
 		//	About the object being updated
 
+		CSpaceObject *m_pObj = NULL;				//	Object being updated
+		CTargetList m_TargetList;					//	Cached target list
 		bool m_bTimeStopped = false;				//	Object is currently time-stopped (cached for perf).
 
 		//	Cached computed values
 
 		mutable CSpaceObject *m_pCacheObj = NULL;	//	Cached values apply to this object.
 		mutable int m_iLightIntensity = -1;			//	Light intensity at pCacheObj (-1 if not computed).
+		mutable bool m_bTargetListValid = false;	//	TRUE if m_TargetList is initialized
 	};
 
 //	CSpaceObject ---------------------------------------------------------------

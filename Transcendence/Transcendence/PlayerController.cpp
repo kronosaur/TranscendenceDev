@@ -2041,10 +2041,10 @@ CTargetList CPlayerShipController::GetTargetList (void) const
 
 	DWORD dwTargetTypes = m_pShip->GetDeviceSystem().GetTargetTypes();
 
-	if (dwTargetTypes & CTargetList::typeMissile)
+	if (dwTargetTypes & CTargetList::SELECT_MISSILE)
 		Options.bIncludeMissiles = true;
 
-	if (dwTargetTypes & CTargetList::typeMinable)
+	if (dwTargetTypes & CTargetList::SELECT_MINABLE)
 		Options.bIncludeMinable = true;
 
 	//	Done

@@ -59,26 +59,6 @@ CNavigateOrder::CNavigateOrder (IShipController::OrderTypes iOrder) : IOrderModu
 		}
 	}
 
-void CNavigateOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
-
-//	OnAttacked
-//
-//	Deal with attacks.
-
-	{
-	DEBUG_TRY
-
-	//	If we get attacked, at least attack back.
-
-	if (pAttacker
-			&& pAttacker->CanAttack()
-			&& !bFriendlyFire
-			&& m_Objs[objTarget] == NULL)
-		m_Objs[objTarget] = pAttacker;
-
-	DEBUG_CATCH
-	}
-
 void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 //	OnBehavior
@@ -92,9 +72,6 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	if (m_fIsFollowingNavPath)
 		{
-		Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-		Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
-
 		//	Check to see if our destination has moved. If it has, then we stop
 		//	following the nav path. This can happen if we pick a ship as a 
 		//	destination.
@@ -137,8 +114,6 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		else
 			{
 			Ctx.ImplementDocking(pShip, m_Objs[objDest]);
-			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget], m_Objs[objDest]);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget], m_Objs[objDest]);
 			}
 		}
 
@@ -154,8 +129,6 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		if (m_Objs[objDest] != NULL)
 			{
 			Ctx.ImplementGating(pShip, m_Objs[objDest]);
-			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
 			}
 		}
 
@@ -163,9 +136,6 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	else
 		{
-		Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-		Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
-
 		//	Maneuver
 
 		CVector vTarget = m_vDest - pShip->GetPos();

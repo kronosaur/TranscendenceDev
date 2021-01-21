@@ -107,7 +107,7 @@ class CCyberDeckClass : public CDeviceClass
 											 int *retiAmmoLeft,
 											 CItemType **retpType = NULL,
 											 bool bUseCustomAmmoCountHandler = false) override;
-		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override { return CTargetList::typeAttacker | CTargetList::typeFortification; }
+		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override { return CTargetList::SELECT_ATTACKERS | CTargetList::SELECT_FORTIFICATION; }
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return 1; }
 		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }

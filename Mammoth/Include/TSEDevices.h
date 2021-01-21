@@ -8,6 +8,7 @@
 class CCargoDesc;
 class CTargetList;
 struct SShipPerformanceCtx;
+struct SUpdateCtx;
 
 enum DeviceNames
 	{
@@ -185,37 +186,22 @@ class CDeviceClass
 			evtCount					= 1,
 			};
 
-		struct SActivateCtx
-			{
-			SActivateCtx (CSpaceObject *pTargetArg, CTargetList &TargetListArg, int iFireAngleArg = -1) :
-					pTarget(pTargetArg),
-					TargetList(TargetListArg),
-					iFireAngle(iFireAngleArg)
-				{ }
-
-			//	Inputs to Activate
-
-			CSpaceObject *pTarget = NULL;
-			int iFireAngle = -1;
-			CTargetList &TargetList;
-
-			//	Used internally
-
-			int iRepeatingCount = 0;
-
-			//	Status results
-
-			bool bConsumedItems = false;
-			};
-
 		struct SDeviceUpdateCtx
 			{
-			SDeviceUpdateCtx (CTargetList &TargetListArg, int iTickArg = 0) :
-					TargetList(TargetListArg),
+			SDeviceUpdateCtx (SUpdateCtx &Ctx, int iTickArg = 0) :
+					m_ObjCtx(Ctx),
 					iTick(iTickArg)
-				{
-				ResetOutputs();
-				}
+				{ }
+
+			SDeviceUpdateCtx (SUpdateCtx &Ctx, CTargetList &TargetListArg, int iTickArg = 0) :
+					m_ObjCtx(Ctx),
+					m_pTargetList(&TargetListArg),
+					iTick(iTickArg)
+				{ }
+
+			SUpdateCtx &GetObjCtx () { return m_ObjCtx; }
+			CTargetList &GetTargetList ();
+			CTargetList *GetTargetListOverride () const { return m_pTargetList; }
 
 			void ResetOutputs (void)
 				{
@@ -225,15 +211,65 @@ class CDeviceClass
 				bSetDisabled = false;
 				}
 					
-			int iTick;
-			CTargetList &TargetList;
+			int iTick = 0;
 
 			//	Outputs
 
-			bool bConsumedItems;
-			bool bDisrupted;
-			bool bRepaired;
-			bool bSetDisabled;
+			bool bConsumedItems = false;
+			bool bDisrupted = false;
+			bool bRepaired = false;
+			bool bSetDisabled = false;
+
+			private:
+				SUpdateCtx &m_ObjCtx;
+				CTargetList *m_pTargetList = NULL;	//	Overrides ObjCtx.GetTargetList()
+			};
+
+		struct SActivateCtx
+			{
+			SActivateCtx (SUpdateCtx &Ctx, CSpaceObject *pTargetArg, int iFireAngleArg = -1) :
+					m_ObjCtx(Ctx),
+					pTarget(pTargetArg),
+					iFireAngle(iFireAngleArg)
+				{ }
+
+			SActivateCtx (SUpdateCtx &Ctx, CSpaceObject *pTargetArg, CTargetList &TargetListArg, int iFireAngleArg = -1) :
+					m_ObjCtx(Ctx),
+					pTarget(pTargetArg),
+					m_pTargetList(&TargetListArg),
+					iFireAngle(iFireAngleArg)
+				{ }
+
+			SActivateCtx (SDeviceUpdateCtx &UpdateCtx, CSpaceObject *pTargetArg = NULL, int iFireAngleArg = -1) :
+					m_ObjCtx(UpdateCtx.GetObjCtx()),
+					m_pTargetList(UpdateCtx.GetTargetListOverride()),
+					pTarget(pTargetArg),
+					iFireAngle(iFireAngleArg)
+				{
+				}
+
+			CTargetList &GetTargetList ();
+			void SetTargetList (CTargetList &TargetListArg)
+				{
+				m_pTargetList = &TargetListArg;
+				}
+
+			//	Inputs to Activate
+
+			CSpaceObject *pTarget = NULL;
+			int iFireAngle = -1;
+
+			//	Used internally
+
+			int iRepeatingCount = 0;
+
+			//	Status results
+
+			bool bConsumedItems = false;
+
+			private:
+				SUpdateCtx &m_ObjCtx;
+				CTargetList *m_pTargetList = NULL;	//	Overrides ObjCtx.GetTargetList()
 			};
 
 		//	NOTES

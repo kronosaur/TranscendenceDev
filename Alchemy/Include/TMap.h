@@ -665,6 +665,15 @@ template <class ENTRY, size_t N> class TStaticStringTable
 		ENTRY &operator [] (int iIndex) { ASSERT(iIndex >= 0 && iIndex < N); return m_Array[iIndex]; }
 
 		const ENTRY &operator [] (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < N); return m_Array[iIndex]; }
+
+		template <class VALUE> CString FindKey (const VALUE &Value) const
+			{
+			for (int i = 0; i < N; i++)
+				if (m_Array[i].Value == Value)
+					return CString(m_Array[i].pszKey);
+
+			return NULL_STR;
+			}
 		
 		bool FindPos (const CString &sKey, int *retiPos = NULL) const
 			{

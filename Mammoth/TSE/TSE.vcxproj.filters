@@ -1561,7 +1561,10 @@
     <ClCompile Include="COrderDesc.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
-    <ClCompile Include="COrbitPatrolOrder.cpp">
+    <ClCompile Include="CAIDeterModule.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CDeterChaseOrder.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
   </ItemGroup>
