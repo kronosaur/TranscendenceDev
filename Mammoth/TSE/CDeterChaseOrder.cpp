@@ -66,6 +66,9 @@ void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Handle behavior
 
 	{
+	if (!m_Objs[OBJ_TARGET] || !m_Objs[OBJ_BASE])
+		throw CException(ERR_FAIL);
+
 	//	See if it's time to stop chasing.
 
 	if (pShip->IsDestinyTime(19)) 

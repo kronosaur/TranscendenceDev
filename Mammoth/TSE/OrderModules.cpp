@@ -116,10 +116,8 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 			return new CFireEventOrder;
 
 		case IShipController::orderOrbitExact:
-			return new COrbitExactOrder;
-
 		case IShipController::orderOrbitPatrol:
-			return new COrbitPatrolOrder;
+			return new COrbitExactOrder(iOrder);
 
 		case IShipController::orderDock:
 		case IShipController::orderGate:

@@ -69,6 +69,8 @@ enum class AIReaction
 	DeterWithSecondaries =					2,	//	Deter with secondaries, but do not turn or maneuver
 	Deter =									3,	//	Turn to attack attacker, but do not chase
 	Chase =									4,	//	Chase attacker
+	Destroy =								5,	//	Destroy attacker
+	Gate =									6,	//	Gate out
 	};
 
 class CAISettings

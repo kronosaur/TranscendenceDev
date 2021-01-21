@@ -44,11 +44,13 @@
 
 #define STR_TRUE								CONSTLIT("True")
 
-static TStaticStringTable<TStaticStringEntry<AIReaction>, 5> REACTION_TABLE = {
+static TStaticStringTable<TStaticStringEntry<AIReaction>, 7> REACTION_TABLE = {
 	"chase",				AIReaction::Chase,
 	"default",				AIReaction::Default,
+	"destroy",				AIReaction::Destroy,
 	"deter",				AIReaction::Deter,
 	"deterNoManeuvers",		AIReaction::DeterWithSecondaries,
+	"gate",					AIReaction::Gate,
 	"none",					AIReaction::None,
 	};
 

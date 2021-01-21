@@ -5,6 +5,22 @@
 
 #include "PreComp.h"
 
+void COrbitExactOrder::CalcIntermediates ()
+
+//	CalcIntermediates
+//
+//	Initializes cached calculations:
+//
+//	m_rNavThreshold2
+
+	{
+	static constexpr Metric RADIUS_LIMIT_ADJ = 5.0 * LIGHT_SECOND;
+	Metric rRadiusLimit = m_Orbit.GetSemiMajorAxis() + RADIUS_LIMIT_ADJ;
+	Metric rRadiusLimit2 = rRadiusLimit * rRadiusLimit;
+
+	m_rNavThreshold2 = Max(rRadiusLimit2, NAV_PATH_THRESHOLD2);
+	}
+
 Metric COrbitExactOrder::CalcRadiusInLightSeconds (const COrderDesc &OrderDesc)
 
 //	CalcRadiusInLightSeconds
@@ -37,15 +53,6 @@ bool COrbitExactOrder::IsAutoAngle (const COrderDesc &OrderDesc, Metric *retrAng
 	return false;
 	}
 
-void COrbitExactOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
-
-//	OnAttacked
-//
-//	Ship was attacked while executing order.
-
-	{
-	}
-
 void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 //	OnBehavior
@@ -56,11 +63,19 @@ void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	constexpr Metric MAX_THRESHOLD_ADJ = 1.1;
 	constexpr Metric MAX_THRESHOLD_ADJ2 = MAX_THRESHOLD_ADJ * MAX_THRESHOLD_ADJ;
 
+	//	If we're too far away, then use a nav path to get closer
+
+	if ((pShip->GetPos() - m_Objs[OBJ_BASE]->GetPos()).Length2() > m_rNavThreshold2)
+		{
+		pShip->AddOrder(COrderDesc(IShipController::orderApproach, m_Objs[OBJ_BASE], mathRound(m_Orbit.GetSemiMajorAxis() / LIGHT_SECOND)), true);
+		return;
+		}
+
 	//	Compute the desired position.
 
 	Metric rAngle = ::mathDegreesToRadians(pShip->GetUniverse().GetTicks() * m_rAngularSpeed) + m_Orbit.GetObjectAngle();
 	CVector vOrbitPos = m_Orbit.GetPoint(rAngle);
-	CVector vPos = m_Objs[objBase]->GetPos() + vOrbitPos;
+	CVector vPos = m_Objs[OBJ_BASE]->GetPos() + vOrbitPos;
 	CVector vVel = (m_Orbit.GetPoint(rAngle + ::mathDegreesToRadians(m_rAngularSpeed)) - vOrbitPos) / g_SecondsPerUpdate;
 
 	//	If the ship is out of position and needs to be placed back in orbit, 
@@ -92,10 +107,7 @@ void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	else
 		pShip->Place(vPos, vVel);
 
-	Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget], NULL, true);
-	Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
-
-	if (!m_Objs[objTarget])
+	if (!pShip->GetTarget())
 		{
 		Ctx.ImplementTurnTo(pShip, VectorToPolar(vVel));
 		}
@@ -121,7 +133,7 @@ void COrbitExactOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const 
 
 	CSpaceObject *pOrderTarget = OrderDesc.GetTarget();
 	if (pOrderTarget)
-		m_Objs[objBase] = pOrderTarget;
+		m_Objs[OBJ_BASE] = pOrderTarget;
 	else
 		{
 		Ship.CancelCurrentOrder();
@@ -149,6 +161,10 @@ void COrbitExactOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const 
 		}
 
 	m_iCountdown = OrderDesc.GetDataTicksLeft();
+
+	//	Cache some calculations
+
+	CalcIntermediates();
 	}
 
 DWORD COrbitExactOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
@@ -160,21 +176,6 @@ DWORD COrbitExactOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpace
 	{
 	switch (iMessage)
 		{
-		case msgAttackDeter:
-			m_Objs[objTarget] = pParam1;
-			return resAck;
-
-		case msgBaseDestroyedByTarget:
-			{
-			if (pParam1 == NULL
-					|| pParam1->IsDestroyed()
-					|| Ctx.IsNonCombatant())
-				return resNoAnswer;
-
-			m_Objs[objTarget] = pParam1;
-			return resAck;
-			}
-
 		case msgFormUp:
 			{
 			DWORD dwAngle = dwParam2;
@@ -186,6 +187,71 @@ DWORD COrbitExactOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpace
 		default:
 			return resNoAnswer;
 		}
+	}
+
+void COrbitExactOrder::OnDestroyed (CShip *pShip, SDestroyCtx &Ctx)
+
+//	OnDestroyed
+//
+//	We've been destroyed.
+
+	{
+	//	If we've been destroyed, then ask our station to avenge us
+
+	if (m_Objs[OBJ_BASE]
+			&& !m_Objs[OBJ_BASE]->IsEnemy(pShip)
+			&& !m_Objs[OBJ_BASE]->IsDestroyed())
+		m_Objs[OBJ_BASE]->OnSubordinateDestroyed(Ctx);
+	}
+
+AIReaction COrbitExactOrder::OnGetReactToAttack () const
+
+//	OnGetReactToAttack
+//
+//	Returns our default reaction to an attack.
+
+	{
+	switch (m_iOrder)
+		{
+		case IShipController::orderOrbitExact:
+			return AIReaction::Deter;
+
+		case IShipController::orderOrbitPatrol:
+			return AIReaction::Chase;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+AIReaction COrbitExactOrder::OnGetReactToThreat () const
+
+//	OnGetReactToThreat
+//
+//	Returns our default reaction to a threat.
+
+	{
+	switch (m_iOrder)
+		{
+		case IShipController::orderOrbitExact:
+			return AIReaction::Deter;
+
+		case IShipController::orderOrbitPatrol:
+			return AIReaction::Chase;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+Metric COrbitExactOrder::OnGetThreatRange (void) const
+
+//	OnGetThreatRange
+//
+//	Returns the range at which we should stop chasing threats.
+
+	{
+	return Max(m_Orbit.GetSemiMajorAxis() + PATROL_SENSOR_RANGE, STOP_ATTACK_RANGE);
 	}
 
 void COrbitExactOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder)
@@ -208,6 +274,8 @@ void COrbitExactOrder::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read(m_dwStartTick);
 	Ctx.pStream->Read(m_rAngularSpeed);
 	Ctx.pStream->Read(m_iCountdown);
+
+	CalcIntermediates();
 	}
 
 void COrbitExactOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)

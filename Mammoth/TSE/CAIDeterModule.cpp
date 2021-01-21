@@ -64,15 +64,24 @@ void CAIDeterModule::BehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObje
 	m_bNoTurn = bNoTurn;
 	}
 
-void CAIDeterModule::OnObjDestroyed (CSpaceObject &Obj)
+void CAIDeterModule::OnObjDestroyed (CShip &Ship, const SDestroyCtx &Ctx)
 
 //	OnObjDestroy
 //
 //	Object has been destroyed.
 
 	{
-	if (Obj == m_pTarget)
+	if (Ctx.Obj == m_pTarget)
+		{
+		//	If a friend destroyed our target then thank them
+
+		if (Ctx.Attacker.IsCausedByFriendOf(&Ship) && Ctx.Attacker.GetObj())
+			Ship.Communicate(Ctx.Attacker.GetObj(), msgNiceShooting);
+
+		//	Done
+
 		Cancel();
+		}
 	}
 
 void CAIDeterModule::ReadFromStream (SLoadCtx &Ctx)

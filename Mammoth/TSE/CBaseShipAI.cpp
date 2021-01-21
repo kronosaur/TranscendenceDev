@@ -82,6 +82,42 @@ void CBaseShipAI::AddOrder (const COrderDesc &OrderDesc, bool bAddBefore)
 		FireOnOrderChanged();
 	}
 
+AIReaction CBaseShipAI::AdjReaction (AIReaction iReaction) const
+
+//	AdjReaction
+//
+//	Adjust reaction to account for setting of the ship.
+
+	{
+	switch (iReaction)
+		{
+		case AIReaction::Chase:
+		case AIReaction::Destroy:
+			if (m_AICtx.IsNonCombatant())
+				return AIReaction::None;
+			else if (m_AICtx.IsImmobile())
+				return AIReaction::Deter;
+			else
+				return iReaction;
+
+		case AIReaction::Deter:
+		case AIReaction::DeterWithSecondaries:
+			if (m_AICtx.IsNonCombatant())
+				return AIReaction::None;
+			else
+				return iReaction;
+
+		case AIReaction::Gate:
+			if (m_AICtx.IsImmobile())
+				return AIReaction::None;
+			else
+				return iReaction;
+
+		default:
+			return AIReaction::None;
+		}
+	}
+
 void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
@@ -172,6 +208,19 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 	m_AICtx.SetSystemUpdateCtx(NULL);
 
 	DEBUG_CATCH
+	}
+
+Metric CBaseShipAI::CalcThreatRange () const
+
+//	CalcThreatRange
+//
+//	Computes the range at which we stop chasing threats.
+
+	{
+	if (m_pOrderModule)
+		return Max(m_pOrderModule->GetThreatRange(), m_AICtx.GetAISettings().GetThreatRange());
+	else
+		return m_AICtx.GetAISettings().GetThreatRange();
 	}
 
 bool CBaseShipAI::InitOrderModule (void)
@@ -714,28 +763,30 @@ AIReaction CBaseShipAI::GetReactToAttack () const
 		if (iReaction == AIReaction::Default)
 			iReaction = m_pOrderModule->GetReactToAttack();
 
-		//	Do additional checks.
+		return AdjReaction(iReaction);
+		}
+	}
 
-		switch (iReaction)
-			{
-			case AIReaction::Chase:
-				if (m_AICtx.IsNonCombatant())
-					return AIReaction::None;
-				else if (m_AICtx.IsImmobile() || m_AICtx.GetAISettings().NoAttackOnThreat())
-					return AIReaction::Deter;
-				else
-					return iReaction;
+AIReaction CBaseShipAI::GetReactToBaseDestroyed () const
 
-			case AIReaction::Deter:
-			case AIReaction::DeterWithSecondaries:
-				if (m_AICtx.IsNonCombatant())
-					return AIReaction::None;
-				else
-					return iReaction;
+//	GetReactToBaseDestroyed
+//
+//	Returns the current setting for reacting to our base being destroyed.
 
-			default:
-				return AIReaction::None;
-			}
+	{
+	//	If our current order does not support reactions, then we don't do 
+	//	anything. This can happen if (e.g.,) the current order is itself a 
+	//	reaction (such as CDeterChaseOrder).
+
+	if (!m_pOrderModule || !m_pOrderModule->SupportsReactions())
+		return AIReaction::None;
+
+	//	Otherwise, get reaction from settings.
+
+	else
+		{
+		AIReaction iReaction = m_pOrderModule->GetReactToBaseDestroyed();
+		return AdjReaction(iReaction);
 		}
 	}
 
@@ -761,28 +812,7 @@ AIReaction CBaseShipAI::GetReactToThreat () const
 		if (iReaction == AIReaction::Default)
 			iReaction = m_pOrderModule->GetReactToThreat();
 
-		//	Do additional checks.
-
-		switch (iReaction)
-			{
-			case AIReaction::Chase:
-				if (m_AICtx.IsNonCombatant())
-					return AIReaction::None;
-				else if (m_AICtx.IsImmobile() || m_AICtx.GetAISettings().NoAttackOnThreat())
-					return AIReaction::Deter;
-				else
-					return iReaction;
-
-			case AIReaction::Deter:
-			case AIReaction::DeterWithSecondaries:
-				if (m_AICtx.IsNonCombatant() || m_AICtx.GetAISettings().NoTargetsOfOpportunity())
-					return AIReaction::None;
-				else
-					return iReaction;
-
-			default:
-				return AIReaction::None;
-			}
+		return AdjReaction(iReaction);
 		}
 	}
 
@@ -793,7 +823,9 @@ CSpaceObject *CBaseShipAI::GetTarget (const CDeviceItem *pDeviceItem, DWORD dwFl
 //	Returns the target that this ship is attacking
 	
 	{
-	if (m_pOrderModule)
+	if (m_DeterModule.IsEnabled())
+		return m_DeterModule.GetTarget();
+	else if (m_pOrderModule)
 		return m_pOrderModule->GetTarget();
 	else
 		return OnGetTarget(dwFlags);
@@ -1013,10 +1045,52 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 //	Handle communications from other objects
 
 	{
-	if (m_pOrderModule)
-		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
-	else
+	if (!m_pOrderModule)
 		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2, pData);
+
+	//	Some messages we handle ourselves
+
+	switch (iMessage)
+		{
+		case msgAttack:
+		case msgAttackDeter:
+			{
+			if (m_pOrderModule->SupportsReactions() && pParam1)
+				{
+				if (ReactToDeterMessage(*pParam1))
+					return resAck;
+				else
+					return resNoAnswer;
+				}
+			else
+				return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
+			}
+
+		case msgDestroyBroadcast:
+		case msgBaseDestroyedByTarget:
+			{
+			if (m_pOrderModule->SupportsReactions() && pParam1)
+				{
+				if (ReactToBaseDestroyed(*pParam1))
+					return resAck;
+				else
+					return resNoAnswer;
+				}
+			else
+				return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
+			}
+
+		case msgQueryAttackStatus:
+			{
+			if (m_pOrderModule->SupportsReactions() && m_DeterModule.IsEnabled())
+				return resAck;
+			else
+				return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
+			}
+
+		default:
+			return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
+		}
 	}
 
 void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)
@@ -1234,7 +1308,7 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	//	Deter module
 
-	m_DeterModule.OnObjDestroyed(Ctx.Obj);
+	m_DeterModule.OnObjDestroyed(*m_pShip, Ctx);
 
 	//	Loop over all our future orders and make sure that we
 	//	delete any that refer to this object.
@@ -1372,6 +1446,63 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 		FireOnOrderChanged();
 	}
 
+bool CBaseShipAI::React (AIReaction iReaction)
+
+//	React
+//
+//	React
+
+	{
+	switch (iReaction)
+		{
+		case AIReaction::None:
+			return false;
+
+		case AIReaction::Gate:
+			AddOrder(COrderDesc(IShipController::orderGate), true);
+			return true;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+bool CBaseShipAI::React (AIReaction iReaction, CSpaceObject &TargetObj)
+
+//	React
+//
+//	React
+
+	{
+	switch (iReaction)
+		{
+		case AIReaction::None:
+			return false;
+
+		case AIReaction::Chase:
+			{
+			int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
+			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatRange(), iMaxTime), true);
+			return true;
+			}
+
+		case AIReaction::Destroy:
+			AddOrder(COrderDesc(IShipController::orderDestroyTarget, &TargetObj), true);
+			return true;
+
+		case AIReaction::Deter:
+			m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, TargetObj, false);
+			return true;
+
+		case AIReaction::DeterWithSecondaries:
+			m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, TargetObj, true);
+			return true;
+
+		default:
+			return React(iReaction);
+		}
+	}
+
 void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Damage)
 
 //	ReactToAttack
@@ -1379,51 +1510,106 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 //	React to an attack.
 
 	{
-	switch (GetReactToAttack())
+	AIReaction iReaction = GetReactToAttack();
+	switch (iReaction)
 		{
 		case AIReaction::None:
 			break;
 
 		case AIReaction::Chase:
+		case AIReaction::Destroy:
+		case AIReaction::Deter:
+		case AIReaction::DeterWithSecondaries:
 			{
 			//	If the attacker is a valid threat, then add an order
 
 			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
-				{
-				int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
-				AddOrder(CDeterChaseOrder::Create(AttackerObj, GetBase(), m_AICtx.GetAISettings().GetThreatRange(), iMaxTime), true);
-				}
+				React(iReaction, AttackerObj);
 
 			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
 			break;
 			}
 
+		case AIReaction::Gate:
+			React(iReaction);
+			break;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+bool CBaseShipAI::ReactToBaseDestroyed (CSpaceObject &AttackerObj)
+
+//	ReactToBaseDestroyed
+//
+//	React to our base being destroyed
+
+	{
+	AIReaction iReaction = GetReactToBaseDestroyed();
+	switch (iReaction)
+		{
+		case AIReaction::None:
+			return false;
+
+		case AIReaction::Chase:
+		case AIReaction::Destroy:
 		case AIReaction::Deter:
+		case AIReaction::DeterWithSecondaries:
 			{
 			//	Enable deter module
 
 			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
 				{
-				m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, AttackerObj, false);
+				React(iReaction, AttackerObj);
+				return true;
 				}
-
-			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
-			break;
+			else
+				return false;
 			}
 
+		case AIReaction::Gate:
+			React(iReaction);
+			return true;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+bool CBaseShipAI::ReactToDeterMessage (CSpaceObject &AttackerObj)
+
+//	ReactToDeterMessage
+//
+//	React to a message from our station to deter a target.
+
+	{
+	AIReaction iReaction = GetReactToAttack();
+	switch (iReaction)
+		{
+		case AIReaction::None:
+			return false;
+
+		case AIReaction::Chase:
+		case AIReaction::Destroy:
+		case AIReaction::Deter:
 		case AIReaction::DeterWithSecondaries:
 			{
-			//	Enable deter module (but with no turning)
+			//	If the attacker is a valid threat, then react
 
 			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
 				{
-				m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, AttackerObj, true);
+				React(iReaction, AttackerObj);
+				return true;
 				}
-
-			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
-			break;
+			else
+				return false;
 			}
-				
+
+		case AIReaction::Gate:
+			React(iReaction);
+			return true;
+
 		default:
 			throw CException(ERR_FAIL);
 		}
@@ -1718,51 +1904,47 @@ void CBaseShipAI::UpdateReactions (SUpdateCtx &Ctx)
 //	Deal with threats (e.g., enemy ships in range).
 
 	{
-	AIReaction iReaction;
-
 	//	Update reaction if we've got a current reaction. For example, if we're 
 	//	currently deterring an enemy ship, this will turn to fire at the enemy.
 
 	if (m_DeterModule.Behavior(*m_pShip, m_AICtx))
 		{ }
 
-	//	Figure out how we should react to threats. If no reaction, then there's
-	//	nothing to do.
+	//	Otherwise, calc reaction to threats
 
-	else if ((iReaction = GetReactToThreat()) == AIReaction::None)
-		{ }
-
-	//	Otherwise, look for threats (but not every tick).
-
-	else if (m_pShip->IsDestinyTime(11))
+	else
 		{
-		DWORD dwTypes = (DWORD)CTargetList::ETargetType::AggressiveShip;
-		if (m_AICtx.IsAggressor())
-			dwTypes |= (DWORD)CTargetList::ETargetType::NonAggressiveShip;
-
-		if (CSpaceObject *pTarget = Ctx.GetTargetList().FindBestTarget(dwTypes))
+		AIReaction iReaction = GetReactToThreat();
+		switch (iReaction)
 			{
-			switch (iReaction)
+			case AIReaction::None:
+				break;
+
+			case AIReaction::Chase:
+			case AIReaction::Destroy:
+			case AIReaction::Deter:
+			case AIReaction::DeterWithSecondaries:
+			case AIReaction::Gate:
 				{
-				case AIReaction::Chase:
+				//	Every once in a while, look for a target
+
+				if (m_pShip->IsDestinyTime(11))
 					{
-					int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
-					AddOrder(CDeterChaseOrder::Create(*pTarget, GetBase(), m_AICtx.GetAISettings().GetThreatRange(), iMaxTime), true);
-					break;
+					DWORD dwTypes = (DWORD)CTargetList::ETargetType::AggressiveShip;
+					if (m_AICtx.IsAggressor())
+						dwTypes |= (DWORD)CTargetList::ETargetType::NonAggressiveShip;
+
+					if (CSpaceObject *pTarget = Ctx.GetTargetList().FindBestTarget(dwTypes))
+						{
+						React(iReaction, *pTarget);
+						}
 					}
 
-				case AIReaction::Deter:
-					{
-					m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, *pTarget, false);
-					break;
-					}
-
-				case AIReaction::DeterWithSecondaries:
-					{
-					m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, *pTarget, true);
-					break;
-					}
+				break;
 				}
+
+			default:
+				throw CException(ERR_FAIL);
 			}
 		}
 	}

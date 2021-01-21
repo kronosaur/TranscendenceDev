@@ -309,7 +309,8 @@ class COrbitExactOrder : public IOrderModule
 		static constexpr int DEFAULT_RADIUS = 10;
 		static constexpr Metric DEFAULT_SPEED = 1.0;
 
-		COrbitExactOrder () : IOrderModule(objCount)
+		COrbitExactOrder (IShipController::OrderTypes iOrder) : IOrderModule(OBJ_COUNT),
+				m_iOrder(iOrder)
 			{ }
 
 		static TArray<CShip *> GetOrbitMates (CSpaceObject &Source, DWORD dwRadius);
@@ -321,31 +322,41 @@ class COrbitExactOrder : public IOrderModule
 
 		//	IOrderModule virtuals
 
-		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData);
-		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
-		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderOrbitExact; }
-		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
+		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
+		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[OBJ_BASE]; }
+		virtual IShipController::OrderTypes OnGetOrder (void) override { return m_iOrder; }
+		virtual AIReaction OnGetReactToAttack () const override;
+		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::Destroy; }
+		virtual AIReaction OnGetReactToThreat () const override;
+		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[OBJ_TARGET]; }
+		virtual Metric OnGetThreatRange (void) const override;
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:
-		enum Objs
-			{
-			objBase =		0,
-			objTarget =		1,
+		static constexpr int OBJ_BASE =		0;
+		static constexpr int OBJ_TARGET =	1;
+		static constexpr int OBJ_COUNT =	2;
 
-			objCount =		2,
-			};
+		static constexpr Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
+		static constexpr Metric STOP_ATTACK_RANGE =			(120.0 * LIGHT_SECOND);
 
+		static constexpr Metric NAV_PATH_THRESHOLD =		(50.0 * LIGHT_SECOND);
+		static constexpr Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 
+		void CalcIntermediates ();
+
+		IShipController::OrderTypes m_iOrder = IShipController::orderNone;
 		COrbit m_Orbit;							//	Orbit definition
 		DWORD m_dwStartTick = 0;				//	Tick at start angle
 		Metric m_rAngularSpeed = DEFAULT_SPEED;	//	Orbit speed (degrees per tick)
 		int m_iCountdown = 0;					//	Stop after this time.
+
+		Metric m_rNavThreshold2 = 0.0;			//	If further that this from center, nav back
 	};
 
 class COrbitPatrolOrder : public IOrderModule

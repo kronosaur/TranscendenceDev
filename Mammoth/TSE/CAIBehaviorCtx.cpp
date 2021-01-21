@@ -529,7 +529,8 @@ bool CAIBehaviorCtx::CalcIsDeterNeeded (CShip &Ship, CSpaceObject &Target) const
 	//	Must be a valid target
 
 	if (Target.IsDestroyed()
-			|| !Target.CanAttack())
+			|| !Target.CanAttack()
+			|| IsNonCombatant())
 		return false;
 
 	//	If the target is beyond our weapon range, then stop.
@@ -550,6 +551,33 @@ bool CAIBehaviorCtx::CalcIsDeterNeeded (CShip &Ship, CSpaceObject &Target) const
 		return false;
 
 	//	Otherwise, continue deterring.
+
+	return true;
+	}
+
+bool CAIBehaviorCtx::CalcIsPossibleTarget (CShip &Ship, CSpaceObject &Target) const
+
+//	CalcIsPossibleTarget
+//
+//	Returns TRUE if we can target and destroy the object.
+
+	{
+	//	Must be a valid target
+
+	if (Target.IsDestroyed()
+			|| !Target.CanAttack()
+			|| IsNonCombatant())
+		return false;
+
+	//	If the target is no longer visible, then stop.
+
+	Metric rDist2 = (Target.GetPos() - Ship.GetPos()).Length2();
+
+	CPerceptionCalc Perception(Ship.GetPerception());
+	if (!Perception.CanBeTargeted(&Target, rDist2))
+		return false;
+
+	//	Otherwise, valid target
 
 	return true;
 	}

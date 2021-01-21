@@ -166,6 +166,7 @@ class CAIBehaviorCtx
 		void CalcInvariants (CShip *pShip);
 		bool CalcIsBetterTarget (CShip *pShip, CSpaceObject *pCurTarget, CSpaceObject *pNewTarget) const;
 		bool CalcIsDeterNeeded (CShip &Ship, CSpaceObject &Target) const;
+		bool CalcIsPossibleTarget (CShip &Ship, CSpaceObject &Target) const;
 		bool CalcNavPath (CShip *pShip, const CVector &vTo);
 		bool CalcNavPath (CShip *pShip, CSpaceObject *pTo);
 		void CalcNavPath (CShip *pShip, CSpaceObject *pFrom, CSpaceObject *pTo);
@@ -250,7 +251,8 @@ class CAIDeterModule
 		void BehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &TargetObj, bool bNoTurn);
 		void Cancel () { m_pTarget = NULL; }
 		bool IsEnabled () const { return m_pTarget != NULL; }
-		void OnObjDestroyed (CSpaceObject &Obj);
+		CSpaceObject *GetTarget () const { return m_pTarget; }
+		void OnObjDestroyed (CShip &Ship, const SDestroyCtx &Ctx);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (CSystem &System, IWriteStream &Stream) const;
 
@@ -277,8 +279,10 @@ class IOrderModule
 		CSpaceObject *GetBase (void) { return OnGetBase(); }
 		IShipController::OrderTypes GetOrder (void) { return OnGetOrder(); }
 		AIReaction GetReactToAttack () const { return OnGetReactToAttack(); }
+		AIReaction GetReactToBaseDestroyed () const { return OnGetReactToBaseDestroyed(); }
 		AIReaction GetReactToThreat () const { return OnGetReactToThreat(); }
 		CSpaceObject *GetTarget (void) { return OnGetTarget(); }
+		Metric GetThreatRange () const { return OnGetThreatRange(); }
 		void ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx);
 		void ReadFromStream (SLoadCtx &Ctx);
 		bool SupportsReactions () const { return (OnGetReactToThreat() != AIReaction::Default); }
@@ -296,8 +300,10 @@ class IOrderModule
 		virtual CSpaceObject *OnGetBase (void) { return NULL; }
 		virtual IShipController::OrderTypes OnGetOrder (void) = 0;
 		virtual AIReaction OnGetReactToAttack () const { return OnGetReactToThreat(); }
+		virtual AIReaction OnGetReactToBaseDestroyed () const { return AIReaction::None; }
 		virtual AIReaction OnGetReactToThreat () const { return AIReaction::Default; }
 		virtual CSpaceObject *OnGetTarget (void) { return NULL; }
+		virtual Metric OnGetThreatRange (void) const { return 0.0; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) { }
@@ -406,7 +412,9 @@ class CBaseShipAI : public IShipController
 		virtual int GetOrderCount (void) const override { return m_Orders.GetCount(); }
 
 	protected:
+		AIReaction AdjReaction (AIReaction iReaction) const;
 		Metric CalcShipIntercept (const CVector &vRelPos, const CVector &vAbsVel, Metric rMaxSpeed);
+		Metric CalcThreatRange () const;
 		void CancelDocking (CSpaceObject *pTarget);
 		bool CheckForEnemiesInRange (CSpaceObject *pCenter, Metric rRange, int iInterval, CSpaceObject **retpTarget);
 		bool CheckOutOfRange (CSpaceObject *pTarget, Metric rRange, int iInterval);
@@ -420,6 +428,7 @@ class CBaseShipAI : public IShipController
 		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length2(); }
 		CSpaceObject *GetPlayerOrderGiver (void) const;
 		AIReaction GetReactToAttack () const;
+		AIReaction GetReactToBaseDestroyed () const;
 		AIReaction GetReactToThreat () const;
 		CUniverse &GetUniverse (void) const { return (m_pShip ? m_pShip->GetUniverse() : *g_pUniverse); }
 		bool InitOrderModule (void);
@@ -428,7 +437,11 @@ class CBaseShipAI : public IShipController
 		bool IsWaitingForShieldsToRegen (void) { return m_AICtx.IsWaitingForShieldsToRegen(); }
 		void HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		bool IsDockingRequested (void) { return m_AICtx.IsDockingRequested(); }
+		bool React (AIReaction iReaction);
+		bool React (AIReaction iReaction, CSpaceObject &TargetObj);
 		void ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Damage);
+		bool ReactToBaseDestroyed (CSpaceObject &AttackerObj);
+		bool ReactToDeterMessage (CSpaceObject &AttackerObj);
 		void ResetBehavior (void);
 		void UpdateReactions (SUpdateCtx &Ctx);
 		void UpgradeShieldBehavior (void);
