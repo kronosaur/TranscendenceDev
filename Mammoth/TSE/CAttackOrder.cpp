@@ -23,31 +23,23 @@ CAttackOrder::CAttackOrder (IShipController::OrderTypes iOrder) : IOrderModule(O
 	switch (m_iOrder)
 		{
 		case IShipController::orderDestroyTarget:
-			m_fNearestTarget = false;
-			m_fInRangeOfObject = false;
-			m_fHold = false;
-            m_fStayInArea = false;
+			break;
+
+		case IShipController::orderAttackOrRetreat:
+			m_fRetreatIfNecessary = true;
 			break;
 
 		case IShipController::orderAttackNearestEnemy:
 			m_fNearestTarget = true;
-			m_fInRangeOfObject = false;
-			m_fHold = false;
-            m_fStayInArea = false;
 			break;
 
 		case IShipController::orderAttackArea:
 			m_fNearestTarget = true;
 			m_fInRangeOfObject = true;
-			m_fHold = false;
-            m_fStayInArea = true;
 			break;
 
 		case IShipController::orderHoldAndAttack:
-			m_fNearestTarget = false;
-			m_fInRangeOfObject = false;
 			m_fHold = true;
-            m_fStayInArea = false;
 			break;
 
 		default:
@@ -191,6 +183,26 @@ bool CAttackOrder::IsInTargetArea (CShip *pShip, CSpaceObject *pObj)
 	return true;
 	}
 
+bool CAttackOrder::MustRetreat (CShip &Ship) const
+
+//	MustRetreat
+//
+//	Returns TRUE if we're so damaged that we need to retreat.
+
+	{
+	SVisibleDamage Damage;
+	Ship.GetVisibleDamageDesc(Damage);
+
+	//	If we have interior HP then we retreat when we get below 50% integrity.
+
+	if (Damage.iHullLevel != -1)
+		return (Damage.iHullLevel < 50);
+
+	//	Otherwise, we retreat when below 25% armor integrity.
+
+	return (Damage.iArmorLevel < 25);
+	}
+
 void CAttackOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
@@ -225,6 +237,18 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	if (!pShip)
 		throw CException(ERR_FAIL);
 
+	//	See if we need to retreat
+
+	if (m_fRetreatIfNecessary
+			&& pShip->IsDestinyTime(11)
+			&& MustRetreat(*pShip))
+		{
+		pShip->CancelCurrentOrder();
+		return;
+		}
+
+	//	Based on state
+
 	switch (m_iState)
 		{
 		case EState::AttackingTargetAndAvoiding:
@@ -255,20 +279,20 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 					}
 				}
 
-            //  See if we've wandered outside our area
+			//  See if we've wandered outside our area
 
-            else if (m_fStayInArea && pShip->IsDestinyTime(29) && m_Objs[OBJ_TARGET]->CanThrust())
-                {
-                Metric rDist;
-                CSpaceObject *pCenter = GetTargetArea(pShip, &rDist);
-                if (pCenter
-                        && pShip->GetDistance(pCenter) > rDist + STAY_IN_AREA_THRESHOLD)
-                    {
-                    m_Objs[OBJ_TARGET] = GetBestTarget(pShip);
-                    if (m_Objs[OBJ_TARGET] == NULL)
-                        pShip->CancelCurrentOrder();
-                    }
-                }
+			else if (m_fStayInArea && pShip->IsDestinyTime(29) && m_Objs[OBJ_TARGET]->CanThrust())
+				{
+				Metric rDist;
+				CSpaceObject *pCenter = GetTargetArea(pShip, &rDist);
+				if (pCenter
+						&& pShip->GetDistance(pCenter) > rDist + STAY_IN_AREA_THRESHOLD)
+					{
+					m_Objs[OBJ_TARGET] = GetBestTarget(pShip);
+					if (m_Objs[OBJ_TARGET] == NULL)
+						pShip->CancelCurrentOrder();
+					}
+				}
 
 			break;
 			}

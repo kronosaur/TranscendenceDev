@@ -248,6 +248,8 @@ class IShipController
 										//		"base": ID of base object (optional)
 										//		"radius": Max distance from base (optional)
 										//		"timer": Seconds left in order (optional)
+			orderAttackOrRetreat,		//	pTarget = target to destroy
+										//		"timer": Seconds left in order (optional)
 			};
 
 		enum EShipStatusNotifications

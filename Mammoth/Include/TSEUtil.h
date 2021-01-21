@@ -644,15 +644,9 @@ class CDamageAdjDesc
 
 struct SVisibleDamage
 	{
-	SVisibleDamage (void) :
-			iShieldLevel(-1),
-			iArmorLevel(-1),
-			iHullLevel(-1)
-		{ }
-
-	int iShieldLevel;				//	0-100: shield level; -1 = no shields
-	int iArmorLevel;				//	0-100: armor integrity; -1 = no armor
-	int iHullLevel;					//	0-100: hull integrity; -1 = no interior compartments
+	int iShieldLevel = -1;				//	0-100: shield level; -1 = no shields
+	int iArmorLevel = -1;				//	0-100: armor integrity; -1 = no armor
+	int iHullLevel = -1;				//	0-100: hull integrity; -1 = no interior compartments
 	};
 
 class CPerceptionCalc

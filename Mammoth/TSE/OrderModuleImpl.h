@@ -77,6 +77,7 @@ class CAttackOrder : public IOrderModule
 		CSpaceObject *GetTargetArea (CShip *pShip, Metric *retrRange);
 		bool IsBetterTarget (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOldTarget, CSpaceObject *pNewTarget);
 		bool IsInTargetArea (CShip *pShip, CSpaceObject *pObj);
+		bool MustRetreat (CShip &Ship) const;
 
 		IShipController::OrderTypes m_iOrder = IShipController::orderNone;
 		EState m_iState = EState::None;				//	Current behavior state
@@ -86,8 +87,8 @@ class CAttackOrder : public IOrderModule
 		DWORD m_fInRangeOfObject:1 = false;			//	If TRUE, new target must be in range of order object
 		DWORD m_fHold:1 = false;					//	If TRUE, hold position
 		DWORD m_fStayInArea:1 = false;				//  If TRUE, do not wander more than 50 ls beyond target area
+		DWORD m_fRetreatIfNecessary:1 = false;		//	If TRUE, we cancel order after a certain amount of damage
 
-		DWORD m_fSpare5:1 = false;
 		DWORD m_fSpare6:1 = false;
 		DWORD m_fSpare7:1 = false;
 		DWORD m_fSpare8:1 = false;

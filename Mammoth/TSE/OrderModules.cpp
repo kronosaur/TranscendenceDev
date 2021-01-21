@@ -96,9 +96,10 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderApproach:
 			return new CApproachOrder;
 
-		case IShipController::orderDestroyTarget:
-		case IShipController::orderAttackNearestEnemy:
 		case IShipController::orderAttackArea:
+		case IShipController::orderAttackNearestEnemy:
+		case IShipController::orderAttackOrRetreat:
+		case IShipController::orderDestroyTarget:
 		case IShipController::orderHoldAndAttack:
 			return new CAttackOrder(iOrder);
 
