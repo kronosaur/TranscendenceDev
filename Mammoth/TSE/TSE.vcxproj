@@ -328,6 +328,7 @@
     <ClInclude Include="..\Include\TSEConfigurationDescInlines.h" />
     <ClInclude Include="ItemGeneratorImpl.h" />
     <ClInclude Include="ScriptParserImpl.h" />
+    <ClInclude Include="StationImpl.h" />
     <ClInclude Include="SystemCreateImpl.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="GameFileCompatibility.h" />
@@ -381,6 +382,7 @@
     <ClCompile Include="CAutoMiningCalc.cpp" />
     <ClCompile Include="CAutoTargetCalc.cpp" />
     <ClCompile Include="CCargoDesc.cpp" />
+    <ClCompile Include="CChallengeRatingCalculator.cpp" />
     <ClCompile Include="CCircleRadiusDisruptor.cpp" />
     <ClCompile Include="CCommunicationsHandler.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

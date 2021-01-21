@@ -17,6 +17,10 @@
 #include "CrewAIImpl.h"
 #include "LegacyAIImpl.h"
 
+//	Stations
+
+#include "StationImpl.h"
+
 //	Systems
 
 #include "SystemImpl.h"

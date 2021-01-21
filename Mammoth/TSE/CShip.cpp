@@ -55,6 +55,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
 #define PROPERTY_COUNTER_VALUE					CONSTLIT("counterValue")
 #define PROPERTY_COUNTER_VALUE_INCREMENT		CONSTLIT("counterValueIncrement")
+#define PROPERTY_CHALLENGE_RATING				CONSTLIT("challengeRating")
 #define PROPERTY_CHARACTER						CONSTLIT("character")
 #define PROPERTY_CHARACTER_NAME					CONSTLIT("characterName")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
@@ -3120,6 +3121,9 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_COUNTER_INCREMENT_RATE))
 		return CC.CreateInteger(GetCounterIncrementRate());
 
+	else if (strEquals(sName, PROPERTY_CHALLENGE_RATING))
+		return CC.CreateInteger(CChallengeRatingCalculator::CalcChallengeRating(*this));
+		
 	else if (strEquals(sName, PROPERTY_CHARACTER))
 		return (m_pCharacter ? CC.CreateInteger(m_pCharacter->GetUNID()) : CC.CreateNil());
 

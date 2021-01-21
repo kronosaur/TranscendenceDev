@@ -34,6 +34,7 @@
 #define PROPERTY_ANGRY							CONSTLIT("angry")
 #define PROPERTY_BARRIER						CONSTLIT("barrier")
 #define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
+#define PROPERTY_CHALLENGE_RATING				CONSTLIT("challengeRating")
 #define PROPERTY_DEST_NODE_ID					CONSTLIT("destNodeID")
 #define PROPERTY_DEST_STARGATE_ID				CONSTLIT("destStargateID")
 #define PROPERTY_DESTROY_WHEN_EMPTY				CONSTLIT("destroyWhenEmpty")
@@ -1991,6 +1992,9 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 
 	else if (strEquals(sName, PROPERTY_CAN_BE_MINED))
 		return CC.CreateBool(!IsOutOfPlaneObj() && m_pType->ShowsUnexploredAnnotation());
+
+	else if (strEquals(sName, PROPERTY_CHALLENGE_RATING))
+		return CC.CreateInteger(CChallengeRatingCalculator::CalcChallengeRating(*this));
 
 	else if (strEquals(sName, PROPERTY_DEST_NODE_ID))
 		return (IsStargate() ? CC.CreateString(m_sStargateDestNode) : CC.CreateNil());

@@ -389,6 +389,9 @@
     <ClInclude Include="..\Include\TSESpaceObjectDefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StationImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1566,6 +1569,9 @@
     </ClCompile>
     <ClCompile Include="CDeterChaseOrder.cpp">
       <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CChallengeRatingCalculator.cpp">
+      <Filter>Source Files\Stations</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

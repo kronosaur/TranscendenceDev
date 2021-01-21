@@ -1092,6 +1092,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		//	Miscellaneous
 		IShipController *GetController (void) { return m_pController; }
 		CShipClass *GetClass (void) { return m_pClass; }
+		const CShipClass &GetClass (void) const { return *m_pClass; }
 		void SetController (IShipController *pController, bool bFreeOldController = true);
 		void SetControllerEnabled (bool bEnabled = true) { m_fControllerDisabled = !bEnabled; }
 		void SetCommandCode (ICCItem *pCode);
@@ -1481,7 +1482,9 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void Abandon (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc = NULL);
 		void ClearFireReconEvent (void) { m_fFireReconEvent = false; }
 		void ClearReconned (void) { m_fReconned = false; }
-		const CStationHull &GetHull (void) const { return m_Hull; }
+		int GetFireRateAdj () const { return m_pType->GetFireRateAdj(); }
+		const CStationHull &GetHull () const { return m_Hull; }
+		const CStationHullDesc &GetHullDesc () const { return m_pType->GetHullDesc(); }
 		int GetImageVariant (void);
 		int GetImageVariantCount (void) { return m_pType->GetImageVariants(); }
 		int GetSubordinateCount (void) const { return m_Subordinates.GetCount(); }

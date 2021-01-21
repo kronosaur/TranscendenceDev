@@ -567,6 +567,7 @@ class CStationType : public CDesignType
 		static Metric CalcSatelliteHitsToDestroy (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
 		static Metric CalcSatelliteStrength (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
 		static Metric CalcSatelliteTreasureValue (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
+		static Metric GetStdChallenge (int iLevel);
 		static int GetStdChallengeRating (int iLevel) { return CalcChallengeRating(iLevel, 1.0); }
 		static ScaleTypes LoadScaleType (DWORD dwLoad) { return (ScaleTypes)dwLoad; }
 		static ScaleTypes ParseScale (const CString sValue);

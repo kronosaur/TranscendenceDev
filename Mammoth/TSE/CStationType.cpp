@@ -368,6 +368,14 @@ Metric CStationType::CalcBalanceHitsAdj (int iLevel) const
 	return Min(MAX_HITS_ADJ, sqrt((Metric)CalcHitsToDestroy(iLevel) / BALANCE_STD_HITS_TO_DESTROY));
 	}
 
+Metric CStationType::GetStdChallenge (int iLevel)
+	{
+	if (iLevel < 1 || iLevel > MAX_SYSTEM_LEVEL)
+		return 0.0;
+
+	return STD_STATION_DATA[iLevel].rChallenge;
+	}
+
 int CStationType::CalcChallengeRating (const int iLevel, const Metric rBalance)
 
 //	CalcChallengeRating
