@@ -382,7 +382,6 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			aggressor=			"true"
 			fireRateAdj=		"35"
 			fireAccuracy=		"90"
 			perception=			"6"
@@ -528,7 +527,7 @@
 				</Escorts>
 			</Ship>
 			
-			<Ship levelFrequency="----- -rrrr" count="1"	class="&scRanxDreadnought;"	orders="wander"	maxShips="4">
+			<Ship levelFrequency="----- -rrrr" count="1"	class="&scRanxDreadnought;"	eventHandler="&evStdWanderBehavior;"	maxShips="4">
 				<Escorts>
 					<Ship					   count="1d4"	class="&scRanxGunship;"	orders="escort"/>
 				</Escorts>

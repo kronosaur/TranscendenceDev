@@ -166,7 +166,7 @@
 		</DockingPorts>
 
 		<Encounters frequency="uncommon">
-			<Ship				count="1"		class="&scDwargMaster;" orders="wander" maxShips="3">
+			<Ship				count="1"		class="&scDwargMaster;"		eventHandler="&evStdWanderBehavior;"	maxShips="3">
 				<Escorts>
 					<Ship				count="1d4+4"	class="&scDwargRaider;"		orders="escort"	/>
 				</Escorts>
@@ -301,7 +301,7 @@
 		</DockingPorts>
 
 		<Encounters frequency="common">
-			<Ship				count="1"		class="&scDwargMaster;" orders="wander" maxShips="4">
+			<Ship				count="1"		class="&scDwargMaster;" eventHandler="&evStdWanderBehavior;" maxShips="4">
 				<Escorts>
 					<Ship				count="2d4+8"	class="&scDwargRaider;"		orders="escort"	/>
 				</Escorts>
@@ -354,7 +354,6 @@
 		</Effects>
 
 		<AISettings
-			aggressor=			"true"
 			fireRateAdj=		"30"
 			fireRangeAdj=		"50"
 			fireAccuracy=		"90"
@@ -414,7 +413,6 @@
 		</Effects>
 		
 		<AISettings
-			aggressor=			"true"
 			combatStyle=		"standOff"
 			fireRateAdj=		"20"
 			fireAccuracy=		"95"

@@ -45,7 +45,7 @@
 				/>
 
 		<Ships>
-			<Ship	count="1"	class="&scXenophobeDefender;" orders="wander" eventHandler="&evXenophobeFleetBehavior;">
+			<Ship	count="1"	class="&scXenophobeDefender;" eventHandler="&evXenophobeFleetBehavior;">
 				<Escorts>
 					<Ship		count="1d4+1"	class="&scXenophobeFighter;"	orders="escort"/>
 				</Escorts>
@@ -101,7 +101,7 @@
 		</DockingPorts>
 		
 		<Ships>
-			<Ship	count="1"	class="&scXenophobeWorldship;" orders="wander" sovereign="&svXenophobes;" eventHandler="&evXenophobeFleetBehavior;">
+			<Ship	count="1"	class="&scXenophobeWorldship;" sovereign="&svXenophobes;" eventHandler="&evXenophobeFleetBehavior;">
 				<Escorts>
 					<Ship		count="1d3+1"	class="&scXenophobeDefender;"	orders="escort">
 						<Escorts>
@@ -168,7 +168,6 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			aggressor=			"true"
 			fireRateAdj=		"30"
 			fireAccuracy=		"90"
 			perception=			"4"
@@ -283,7 +282,6 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			aggressor=			"true"
 			fireRateAdj=		"40"
 			fireAccuracy=		"90"
 			perception=			"4"
@@ -382,7 +380,6 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			aggressor=			"true"
 			fireRateAdj=		"40"
 			fireAccuracy=		"90"
 			perception=			"6"
@@ -758,7 +755,8 @@
 
 <!-- BEHAVIORS -->
 
-	<Type unid="&evXenophobeFleetBehavior;">
+	<Type unid="&evXenophobeFleetBehavior;"
+			inherit="&evStdWanderBehavior;">
 		<Events>
 			<GetRumors>
 				{

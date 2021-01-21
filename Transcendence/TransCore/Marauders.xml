@@ -663,7 +663,7 @@
 				</Escorts>
 			</Ship>
 			
-			<Ship levelFrequency="---ru ccur-" count="1"	class="&scMarauderRaidPlatform;"	orders="wander"	 maxShips="4"/>
+			<Ship levelFrequency="---ru ccur-" count="1"	class="&scMarauderRaidPlatform;"	eventHandler="&evStdWanderBehavior;"	 maxShips="4"/>
 		</LevelTable>
 	</ShipTable>
 

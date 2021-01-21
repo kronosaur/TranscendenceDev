@@ -80,7 +80,7 @@
 		</Reinforcements>
 
 		<Encounters frequency="common">
-			<Ship count="1"	class="&scVentariDestroyer;" orders="wander"	maxShips="6"/>
+			<Ship count="1"	class="&scVentariDestroyer;"	eventHandler="&evStdWanderBehavior;"	maxShips="6"/>
 		</Encounters>
 
 	</StationType>
@@ -161,7 +161,6 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			aggressor=			"true"
 			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"6"
