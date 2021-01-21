@@ -55,25 +55,22 @@ class CAttackOrder : public IOrderModule
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual CString OnDebugCrashInfo (void) override;
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return m_iOrder; }
-		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
+		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[OBJ_TARGET]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:
-		enum Objs
-			{
-			objTarget =		0,
-			objAvoid =		1,
+		static constexpr int OBJ_TARGET =	0;
+		static constexpr int OBJ_AVOID =	1;
+		static constexpr int OBJ_COUNT =	2;
 
-			objCount =		2,
-			};
-
-		enum States
+		enum class EState
 			{
-			stateAttackingTargetAndAvoiding =		0,
-			stateAvoidingEnemyStation =				1,
-			stateAttackingTargetAndHolding =		2,
+			None =							-1,
+			AttackingTargetAndAvoiding =	0,
+			AvoidingEnemyStation =			1,
+			AttackingTargetAndHolding =		2,
 			};
 
 		CSpaceObject *GetBestTarget (CShip *pShip);
@@ -81,20 +78,20 @@ class CAttackOrder : public IOrderModule
 		bool IsBetterTarget (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOldTarget, CSpaceObject *pNewTarget);
 		bool IsInTargetArea (CShip *pShip, CSpaceObject *pObj);
 
-		IShipController::OrderTypes m_iOrder;
-		States m_iState;						//	Current behavior state
-		int m_iCountdown;						//	Stop attacking after this time (-1 = no limit)
+		IShipController::OrderTypes m_iOrder = IShipController::orderNone;
+		EState m_iState = EState::None;				//	Current behavior state
+		int m_iCountdown = -1;						//	Stop attacking after this time (-1 = no limit)
 
-		DWORD m_fNearestTarget:1;				//	If TRUE, continue attacking other targets
-		DWORD m_fInRangeOfObject:1;				//	If TRUE, new target must be in range of order object
-		DWORD m_fHold:1;						//	If TRUE, hold position
-		DWORD m_fStayInArea:1;                  //  If TRUE, do not wander more than 50 ls beyond target area
+		DWORD m_fNearestTarget:1 = false;			//	If TRUE, continue attacking other targets
+		DWORD m_fInRangeOfObject:1 = false;			//	If TRUE, new target must be in range of order object
+		DWORD m_fHold:1 = false;					//	If TRUE, hold position
+		DWORD m_fStayInArea:1 = false;				//  If TRUE, do not wander more than 50 ls beyond target area
 
-		DWORD m_fSpare5:1;
-		DWORD m_fSpare6:1;
-		DWORD m_fSpare7:1;
-		DWORD m_fSpare8:1;
-		DWORD m_dwSpare:24;
+		DWORD m_fSpare5:1 = false;
+		DWORD m_fSpare6:1 = false;
+		DWORD m_fSpare7:1 = false;
+		DWORD m_fSpare8:1 = false;
+		DWORD m_dwSpare:24 = 0;
 	};
 
 class CAttackStationOrder : public IOrderModule

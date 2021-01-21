@@ -14,7 +14,7 @@ const Metric WANDER_SAFETY_RANGE2 =		(WANDER_SAFETY_RANGE * WANDER_SAFETY_RANGE)
 
 const Metric STAY_IN_AREA_THRESHOLD =   (50.0 * LIGHT_SECOND);
 
-CAttackOrder::CAttackOrder (IShipController::OrderTypes iOrder) : IOrderModule(objCount),
+CAttackOrder::CAttackOrder (IShipController::OrderTypes iOrder) : IOrderModule(OBJ_COUNT),
 		m_iOrder(iOrder)
 
 //	CAttackOrder constructor
@@ -51,7 +51,7 @@ CAttackOrder::CAttackOrder (IShipController::OrderTypes iOrder) : IOrderModule(o
 			break;
 
 		default:
-			ASSERT(false);
+			throw CException(ERR_FAIL);
 		}
 	}
 
@@ -206,9 +206,9 @@ void CAttackOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 	if (m_fNearestTarget 
 			&& pAttacker
 			&& !bFriendlyFire
-			&& pAttacker != m_Objs[objTarget]
-			&& IsBetterTarget(pShip, Ctx, m_Objs[objTarget], pAttacker))
-		m_Objs[objTarget] = pAttacker;
+			&& pAttacker != m_Objs[OBJ_TARGET]
+			&& IsBetterTarget(pShip, Ctx, m_Objs[OBJ_TARGET], pAttacker))
+		m_Objs[OBJ_TARGET] = pAttacker;
 
 	DEBUG_CATCH
 	}
@@ -222,13 +222,18 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	{
 	DEBUG_TRY
 
+	if (!pShip)
+		throw CException(ERR_FAIL);
+
 	switch (m_iState)
 		{
-		case stateAttackingTargetAndAvoiding:
+		case EState::AttackingTargetAndAvoiding:
 			{
-			ASSERT(m_Objs[objTarget]);
-			Ctx.ImplementAttackTarget(pShip, m_Objs[objTarget]);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+			if (!m_Objs[OBJ_TARGET])
+				throw CException(ERR_FAIL);
+
+			Ctx.ImplementAttackTarget(pShip, m_Objs[OBJ_TARGET]);
+			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[OBJ_TARGET]);
 
 			//	See if our timer has expired
 
@@ -238,29 +243,29 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			//	Every once in a while check to see if we've wandered near
 			//	an enemy station
 
-			else if (pShip->IsDestinyTime(41) && !Ctx.IsImmobile() && m_Objs[objTarget]->CanThrust())
+			else if (pShip->IsDestinyTime(41) && !Ctx.IsImmobile() && m_Objs[OBJ_TARGET]->CanThrust())
 				{
 				CSpaceObject *pEnemy = pShip->GetNearestEnemyStation(WANDER_SAFETY_RANGE);
 				if (pEnemy 
-						&& pEnemy != m_Objs[objTarget]
-						&& m_Objs[objTarget]->GetDistance2(pEnemy) < WANDER_SAFETY_RANGE2)
+						&& pEnemy != m_Objs[OBJ_TARGET]
+						&& m_Objs[OBJ_TARGET]->GetDistance2(pEnemy) < WANDER_SAFETY_RANGE2)
 					{
-					m_iState = stateAvoidingEnemyStation;
-					m_Objs[objAvoid] = pEnemy;
+					m_iState = EState::AvoidingEnemyStation;
+					m_Objs[OBJ_AVOID] = pEnemy;
 					}
 				}
 
             //  See if we've wandered outside our area
 
-            else if (m_fStayInArea && pShip->IsDestinyTime(29) && m_Objs[objTarget]->CanThrust())
+            else if (m_fStayInArea && pShip->IsDestinyTime(29) && m_Objs[OBJ_TARGET]->CanThrust())
                 {
                 Metric rDist;
                 CSpaceObject *pCenter = GetTargetArea(pShip, &rDist);
                 if (pCenter
                         && pShip->GetDistance(pCenter) > rDist + STAY_IN_AREA_THRESHOLD)
                     {
-                    m_Objs[objTarget] = GetBestTarget(pShip);
-                    if (m_Objs[objTarget] == NULL)
+                    m_Objs[OBJ_TARGET] = GetBestTarget(pShip);
+                    if (m_Objs[OBJ_TARGET] == NULL)
                         pShip->CancelCurrentOrder();
                     }
                 }
@@ -268,12 +273,14 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			break;
 			}
 
-		case stateAttackingTargetAndHolding:
+		case EState::AttackingTargetAndHolding:
 			{
-			ASSERT(m_Objs[objTarget]);
+			if (!m_Objs[OBJ_TARGET])
+				throw CException(ERR_FAIL);
+
 			Ctx.ImplementHold(pShip);
-			Ctx.ImplementAttackTarget(pShip, m_Objs[objTarget], true);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+			Ctx.ImplementAttackTarget(pShip, m_Objs[OBJ_TARGET], true);
+			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[OBJ_TARGET]);
 
 			//	See if our timer has expired
 
@@ -283,15 +290,15 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			break;
 			}
 
-		case stateAvoidingEnemyStation:
+		case EState::AvoidingEnemyStation:
 			{
-			ASSERT(m_Objs[objTarget]);
-			ASSERT(m_Objs[objAvoid]);
+			if (!m_Objs[OBJ_TARGET] || !m_Objs[OBJ_AVOID])
+				throw CException(ERR_FAIL);
 
 			int iTick = pShip->GetSystem()->GetTick();
-			CVector vTarget = m_Objs[objTarget]->GetPos() - pShip->GetPos();
+			CVector vTarget = m_Objs[OBJ_TARGET]->GetPos() - pShip->GetPos();
 			Metric rTargetDist2 = vTarget.Length2();
-			CVector vDest = m_Objs[objAvoid]->GetPos() - pShip->GetPos();
+			CVector vDest = m_Objs[OBJ_AVOID]->GetPos() - pShip->GetPos();
 
 			//	We only spiral in/out part of the time (we leave ourselves some time to fight)
 
@@ -314,8 +321,8 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 			//	Attack target, if we can
 
-			Ctx.ImplementAttackTarget(pShip, m_Objs[objTarget], true);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+			Ctx.ImplementAttackTarget(pShip, m_Objs[OBJ_TARGET], true);
+			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[OBJ_TARGET]);
 
 			//	Check to see if we should do something else
 
@@ -332,9 +339,9 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 					{
 					//	Note: We don't set stateNone because we want to preserve the timer value
 
-					m_iState = stateAttackingTargetAndAvoiding;
-					m_Objs[objAvoid] = NULL;
-					ASSERT(m_Objs[objTarget]);
+					m_iState = EState::AttackingTargetAndAvoiding;
+					m_Objs[OBJ_AVOID] = NULL;
+					ASSERT(m_Objs[OBJ_TARGET]);
 					}
 
 				//	Otherwise, if we're attacking any target, see if there is something 
@@ -343,16 +350,16 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 				else if (m_fNearestTarget)
 					{
 					CSpaceObject *pNewTarget = GetBestTarget(pShip);
-					if (pNewTarget && pNewTarget != m_Objs[objTarget])
+					if (pNewTarget && pNewTarget != m_Objs[OBJ_TARGET])
 						{
 						CVector vNewTarget = pNewTarget->GetPos() - pShip->GetPos();
 						Metric rNewTargetDist2 = vNewTarget.Length2();
 						if (rNewTargetDist2 > WANDER_SAFETY_RANGE2
 								&& Absolute(AngleBearing(VectorToPolar(vNewTarget), iAngleToStation)) > 45)
 							{
-							m_iState = stateAttackingTargetAndAvoiding;
-							m_Objs[objAvoid] = NULL;
-							m_Objs[objTarget] = pNewTarget;
+							m_iState = EState::AttackingTargetAndAvoiding;
+							m_Objs[OBJ_AVOID] = NULL;
+							m_Objs[OBJ_TARGET] = pNewTarget;
 							}
 						}
 					}
@@ -404,11 +411,11 @@ void CAttackOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrd
 
 	//	Set our state
 
-	m_iState = (m_fHold ? stateAttackingTargetAndHolding : stateAttackingTargetAndAvoiding);
-	m_Objs[objTarget] = pOrderTarget;
-	m_Objs[objAvoid] = NULL;
-	ASSERT(m_Objs[objTarget]);
-	ASSERT(m_Objs[objTarget]->DebugIsValid() && m_Objs[objTarget]->NotifyOthersWhenDestroyed());
+	m_iState = (m_fHold ? EState::AttackingTargetAndHolding : EState::AttackingTargetAndAvoiding);
+	m_Objs[OBJ_TARGET] = pOrderTarget;
+	m_Objs[OBJ_AVOID] = NULL;
+	ASSERT(m_Objs[OBJ_TARGET]);
+	ASSERT(m_Objs[OBJ_TARGET]->DebugIsValid() && m_Objs[OBJ_TARGET]->NotifyOthersWhenDestroyed());
 
 	//	See if we have a time limit
 
@@ -443,19 +450,19 @@ void CAttackOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 	{
 	//	If the object we're avoiding was destroyed
 
-	if (iObj == objAvoid)
+	if (iObj == OBJ_AVOID)
 		{
 		//	No need to avoid anymore. Reset our state
 
-		if (m_iState == stateAvoidingEnemyStation)
-			m_iState = stateAttackingTargetAndAvoiding;
-		ASSERT(m_Objs[objTarget]);
+		if (m_iState == EState::AvoidingEnemyStation)
+			m_iState = EState::AttackingTargetAndAvoiding;
+		ASSERT(m_Objs[OBJ_TARGET]);
 		}
 
 	//	If our target was destroyed and we need to attack the nearest
 	//	target, then go for it.
 
-	else if (m_fNearestTarget && iObj == objTarget)
+	else if (m_fNearestTarget && iObj == OBJ_TARGET)
 		{
 		CSpaceObject *pNewTarget = GetBestTarget(pShip);
 		if (pNewTarget == NULL)
@@ -464,7 +471,7 @@ void CAttackOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 			return;
 			}
 
-		m_Objs[objTarget] = pNewTarget;
+		m_Objs[OBJ_TARGET] = pNewTarget;
 		}
 	}
 
@@ -482,14 +489,14 @@ void CAttackOrder::OnReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion >= 76)
 		{
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_iState = (States)dwLoad;
+		m_iState = (EState)dwLoad;
 		}
 	else
 		{
-		if (m_Objs[objAvoid])
-			m_iState = stateAvoidingEnemyStation;
+		if (m_Objs[OBJ_AVOID])
+			m_iState = EState::AvoidingEnemyStation;
 		else
-			m_iState = stateAttackingTargetAndAvoiding;
+			m_iState = EState::AttackingTargetAndAvoiding;
 		}
 
 	//	Read the rest
