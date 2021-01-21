@@ -58,9 +58,9 @@ CTargetList::ETargetType CTargetList::CalcType (const CSpaceObject &Obj)
 		int iAggressorThreshold = (Obj.GetUniverse().GetTicks() - CSpaceObject::AGGRESSOR_THRESHOLD);
 
 		if (Obj.GetLastFireTime() > iAggressorThreshold)
-			return ETargetType::NonAggressiveShip;
-		else
 			return ETargetType::AggressiveShip;
+		else
+			return ETargetType::NonAggressiveShip;
 		}
 	}
 
@@ -101,6 +101,8 @@ CSpaceObject *CTargetList::FindBestTarget (DWORD dwTargetTypes, Metric rMaxRange
 //	Returns the best target in the list that matches the type and range.
 
 	{
+	Realize();
+
 	Metric rMaxRange2 = rMaxRange * rMaxRange;
 
 	for (int i = 0; i < GetCount(); i++)
