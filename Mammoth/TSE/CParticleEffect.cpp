@@ -1214,7 +1214,7 @@ void CParticleEffect::OnWriteToStream (IWriteStream *pStream)
 	m_sName.WriteToStream(pStream);
 	WriteObjRefToStream(m_pAnchor, pStream);
 
-	m_Source.WriteToStream(GetSystem(), pStream);
+	m_Source.WriteToStream(pStream);
 
 	//	Save each group
 

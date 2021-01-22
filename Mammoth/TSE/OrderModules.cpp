@@ -275,25 +275,23 @@ void IOrderModule::ReadFromStream (SLoadCtx &Ctx)
 	OnReadFromStream(Ctx); 
 	}
 
-void IOrderModule::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void IOrderModule::WriteToStream (IWriteStream *pStream) const
 
 //	WriteToStream
 //
 //	Write to save file
 	
 	{
-	int i;
-
 	//	Save the objects
 
 	DWORD dwCount = m_iObjCount;
 	pStream->Write((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
-		pSystem->WriteObjRefToStream(m_Objs[i], pStream);
+	for (int i = 0; i < (int)dwCount; i++)
+		CSystem::WriteObjRefToStream(*pStream, m_Objs[i]);
 
 	//	Let our derived class save
 
-	OnWriteToStream(pSystem, pStream);
+	OnWriteToStream(pStream);
 	}
 
 //	CGuardOrder ----------------------------------------------------------------
@@ -352,7 +350,7 @@ void CGuardOrder::OnReadFromStream (SLoadCtx &Ctx)
 	CSystem::ReadObjRefFromStream(Ctx, &m_pBase);
 	}
 
-void CGuardOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CGuardOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //
@@ -364,5 +362,5 @@ void CGuardOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	dwSave = (DWORD)m_iState;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	pSystem->WriteObjRefToStream(m_pBase, pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pBase);
 	}

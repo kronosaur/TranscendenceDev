@@ -233,7 +233,7 @@ void CDeterChaseOrder::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read(m_iCountdown);
 	}
 
-void CDeterChaseOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CDeterChaseOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

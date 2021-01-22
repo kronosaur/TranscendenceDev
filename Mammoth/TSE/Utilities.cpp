@@ -2423,7 +2423,7 @@ void ParseUNIDList (const CString &sList, DWORD dwFlags, TArray<DWORD> *retList)
 		}
 	}
 
-void ReportCrashObj (CString *retsMessage, CSpaceObject *pCrashObj)
+void ReportCrashObj (CString *retsMessage, const CSpaceObject *pCrashObj)
 
 //	ReportCrashObj
 //

@@ -108,7 +108,7 @@ void CSequencerEffect::OnWriteToStream (IWriteStream *pStream)
 	CString sUNID = (m_pType ? m_pType->GetUNIDString() : NULL_STR);
 	sUNID.WriteToStream(pStream);
 
-	GetSystem()->WriteObjRefToStream(m_pAnchor, pStream, this);
+	WriteObjRefToStream(m_pAnchor, pStream);
 
 	pStream->Write((char *)&m_vAnchorOffset, sizeof(CVector));
 	pStream->Write((char *)&m_iStartTime, sizeof(DWORD));

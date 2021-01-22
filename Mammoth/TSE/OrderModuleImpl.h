@@ -20,7 +20,7 @@ class CApproachOrder : public IOrderModule
 		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::DeterWithSecondaries; }
 		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::None; }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
 		enum Objs
@@ -58,7 +58,7 @@ class CAttackOrder : public IOrderModule
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[OBJ_TARGET]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
 		static constexpr int OBJ_TARGET =	0;
@@ -112,7 +112,7 @@ class CAttackStationOrder : public IOrderModule
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
 		enum Objs
@@ -156,7 +156,7 @@ class CDeterChaseOrder : public IOrderModule
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[OBJ_TARGET]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
 		static constexpr int OBJ_BASE =		0;
@@ -195,7 +195,7 @@ class CEscortOrder : public IOrderModule
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
 		enum Objs
@@ -240,7 +240,7 @@ class CGuardOrder : public IOrderModule
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderGuard; }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
 		enum States
@@ -272,7 +272,7 @@ class CNavigateOrder : public IOrderModule
 		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::None; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
 		enum Objs
@@ -333,7 +333,7 @@ class COrbitExactOrder : public IOrderModule
 		virtual Metric OnGetThreatRange (void) const override;
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
 		static constexpr int OBJ_BASE =		0;
@@ -388,7 +388,7 @@ class CSentryOrder : public IOrderModule
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
 		enum Objs
@@ -457,7 +457,7 @@ class CWaitOrder : public IOrderModule
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
 		enum Objs

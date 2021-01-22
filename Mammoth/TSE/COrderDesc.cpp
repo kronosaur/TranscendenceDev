@@ -860,7 +860,7 @@ void COrderDesc::SetDataInteger (DWORD dwData)
 	m_pData = (void *)dwData;
 	}
 
-void COrderDesc::WriteToStream (IWriteStream &Stream, CSystem &System) const
+void COrderDesc::WriteToStream (IWriteStream &Stream, const CShip &Ship) const
 
 //	WriteToStream
 //
@@ -870,7 +870,7 @@ void COrderDesc::WriteToStream (IWriteStream &Stream, CSystem &System) const
 	DWORD dwSave = MAKELONG(m_dwOrderType, m_dwDataType);
 	Stream.Write(dwSave);
 
-	System.WriteObjRefToStream(m_pTarget, &Stream);
+	Ship.WriteObjRefToStream(m_pTarget, &Stream);
 
 	switch (GetDataType())
 		{

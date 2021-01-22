@@ -528,7 +528,7 @@ void CAttackOrder::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&m_iCountdown, sizeof(DWORD));
 	}
 
-void CAttackOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CAttackOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

@@ -1863,7 +1863,7 @@ void CShip::DeactivateShields (void)
 		EnableDevice(iShieldDev, false);
 	}
 
-CString CShip::DebugCrashInfo (void)
+CString CShip::DebugCrashInfo (void) const
 
 //	DebugCrashInfo
 //
@@ -6323,7 +6323,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	dwSave = m_pClass->GetUNID();
 	pStream->Write(dwSave);
-	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
 
 	m_sName.WriteToStream(pStream);
 	pStream->Write(m_dwNameFlags);
@@ -6444,7 +6444,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	//	Irradiated by
 
 	if (m_pIrradiatedBy)
-		m_pIrradiatedBy->WriteToStream(GetSystem(), pStream);
+		m_pIrradiatedBy->WriteToStream(pStream);
 
 	//	Controller
 

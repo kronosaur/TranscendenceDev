@@ -78,7 +78,7 @@ class CTargetList
 		bool NoRangeCheck (void) const { return m_Options.bNoRangeCheck; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Realize (void) const;
-		void WriteToStream (CSystem &System, IWriteStream &Stream) const;
+		void WriteToStream (IWriteStream &Stream) const;
 
 	private:
 		static constexpr DWORD SPECIAL_INVALID_COUNT = 0xffffffff;

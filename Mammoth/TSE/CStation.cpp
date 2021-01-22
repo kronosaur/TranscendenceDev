@@ -1632,7 +1632,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 	GetUniverse().PlaySound(this, GetUniverse().FindSound(g_ShipExplosionSoundUNID));
 	}
 
-CString CStation::DebugCrashInfo (void)
+CString CStation::DebugCrashInfo (void) const
 
 //	DebugCrashInfo
 //
@@ -4571,7 +4571,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write(dwSave);
 	m_sName.WriteToStream(pStream);
 	pStream->Write(m_dwNameFlags);
-	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
 	pStream->Write((DWORD)m_Scale);
 	pStream->Write(m_rMass);
 	m_ImageSelector.WriteToStream(pStream);
@@ -4599,10 +4599,10 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	m_Overlays.WriteToStream(pStream);
 	m_DockingPorts.WriteToStream(this, pStream);
 
-	GetSystem()->WriteObjRefToStream(m_pBase, pStream, this);
+	WriteObjRefToStream(m_pBase, pStream);
 	m_sSubordinateID.WriteToStream(pStream);
-	m_Subordinates.WriteToStream(GetSystem(), pStream);
-	m_Targets.WriteToStream(GetSystem(), pStream);
+	m_Subordinates.WriteToStream(pStream);
+	m_Targets.WriteToStream(pStream);
 
 	m_Blacklist.WriteToStream(pStream);
 	pStream->Write(m_iAngryCounter);
@@ -4682,7 +4682,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	//	Weapon targets
 
 	if (m_fArmed)
-		m_WeaponTargets.WriteToStream(*GetSystem(), *pStream);
+		m_WeaponTargets.WriteToStream(*pStream);
 	}
 
 void CStation::MarkImages (void)

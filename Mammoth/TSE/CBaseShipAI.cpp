@@ -340,6 +340,7 @@ void CBaseShipAI::CancelAllOrders (void)
 	{
 	m_AICtx.ClearNavPath();
 	m_Orders.DeleteAll();
+	m_DeterModule.Cancel();
 	FireOnOrderChanged();
 	}
 
@@ -353,6 +354,7 @@ void CBaseShipAI::CancelCurrentOrder (void)
 	if (m_Orders.GetCount() > 0)
 		{
 		m_Orders.DeleteCurrent();
+		m_DeterModule.Cancel();
 		FireOnOrderChanged();
 		}
 	}
@@ -2177,22 +2179,22 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 
 	//	Context
 
-	m_AICtx.WriteToStream(m_pShip->GetSystem(), pStream);
+	m_AICtx.WriteToStream(pStream);
 
 	//	Order module
 
 	dwSave = (DWORD)(m_pOrderModule ? m_pOrderModule->GetOrder() : IShipController::orderNone);
 	pStream->Write(dwSave);
 	if (m_pOrderModule)
-		m_pOrderModule->WriteToStream(m_pShip->GetSystem(), pStream);
+		m_pOrderModule->WriteToStream(pStream);
 
 	//	Deter module
 
-	m_DeterModule.WriteToStream(*m_pShip->GetSystem(), *pStream);
+	m_DeterModule.WriteToStream(*pStream);
 
 	//	Orders
 
-	m_Orders.WriteToStream(pStream, m_pShip->GetSystem());
+	m_Orders.WriteToStream(*pStream, *m_pShip);
 
 	//	Command code
 

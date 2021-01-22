@@ -559,7 +559,7 @@ class CDamageSource
 		void SetAutomatedWeapon (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_AUTOMATED_WEAPON; else m_dwFlags &= FLAG_IS_AUTOMATED_WEAPON; }
 		void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
 		void SetObj (CSpaceObject *pSource);
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream);
 
 		static const CDamageSource &Null (void) { return m_Null; }
 		
@@ -802,7 +802,7 @@ class CSpaceObjectList
 		void SetAllocSize (int iNewCount);
 		void SetObj (int iIndex, CSpaceObject *pObj) { m_List[iIndex] = pObj; }
 		void Subtract (const CSpaceObjectList &List);
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream);
 
 	private:
 		static void ResolveObjProc (void *pCtx, DWORD dwObjID, CSpaceObject *pObj);
@@ -1128,14 +1128,14 @@ template <class TYPE> class TSEListNode
 				}
 			}
 
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+		void WriteToStream (IWriteStream *pStream)
 			{
 			DWORD dwCount = GetCount();
 			pStream->Write((char *)&dwCount, sizeof(DWORD));
 			TYPE *pNext = GetNext();
 			while (pNext)
 				{
-				pNext->OnWriteToStream(pSystem, pStream);
+				pNext->OnWriteToStream(pStream);
 				pNext = pNext->GetNext();
 				}
 			}

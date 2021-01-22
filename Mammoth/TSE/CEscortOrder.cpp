@@ -351,7 +351,7 @@ void CEscortOrder::OnReadFromStream (SLoadCtx &Ctx)
 	m_iState = (States)dwLoad;
 	}
 
-void CEscortOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CEscortOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

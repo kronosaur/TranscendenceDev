@@ -7791,6 +7791,25 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 	return true;
 	}
 
+void CSpaceObject::WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream) const
+
+//	WriteObjRefToStream
+//
+//	Writes an object reference.
+
+	{
+	//	If we have a system, save through that. We do this because it has some
+	//	extra debug checks.
+
+	if (CSystem *pSystem = GetSystem())
+		pSystem->WriteObjRefToStream(pObj, pStream, this);
+
+	//	Otherwise, we can write it without the debug checks.
+
+	else
+		CSystem::WriteObjRefToStream(*pStream, pObj);
+	}
+
 void CSpaceObject::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
@@ -7915,7 +7934,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 
 	//	Subscriptions
 
-	m_SubscribedObjs.WriteToStream(m_pSystem, pStream);
+	m_SubscribedObjs.WriteToStream(pStream);
 
 	//	Write out the effect list
 

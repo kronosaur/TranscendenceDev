@@ -243,7 +243,7 @@ void COrderList::SetCurrentOrderDataInteger (DWORD dwData)
 		m_List[0].SetDataInteger(dwData);
 	}
 
-void COrderList::WriteToStream (IWriteStream *pStream, CSystem *pSystem)
+void COrderList::WriteToStream (IWriteStream &Stream, const CShip &Ship)
 
 //	WriteToStream
 //
@@ -259,14 +259,11 @@ void COrderList::WriteToStream (IWriteStream *pStream, CSystem *pSystem)
 //	CString
 
 	{
-	if (!pStream || !pSystem)
-		throw CException(ERR_FAIL);
-
 	DWORD dwSave = m_List.GetCount();
-	pStream->Write(dwSave);
+	Stream.Write(dwSave);
 
 	for (int i = 0; i < m_List.GetCount(); i++)
 		{
-		m_List[i].WriteToStream(*pStream, *pSystem);
+		m_List[i].WriteToStream(Stream, Ship);
 		}
 	}

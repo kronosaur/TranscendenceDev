@@ -561,7 +561,7 @@ void CDamageSource::SetObj (CSpaceObject *pSource)
 		}
 	}
 
-void CDamageSource::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CDamageSource::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
 //
@@ -588,11 +588,11 @@ void CDamageSource::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	//	Otherwise, save a reference
 
 	else
-		pSystem->WriteObjRefToStream(m_pSource, pStream);
+		CSystem::WriteObjRefToStream(*pStream, m_pSource);
 
 	m_sSourceName.WriteToStream(pStream);
 	pStream->Write((char *)&m_dwSourceNameFlags, sizeof(DWORD));
-	pSystem->WriteObjRefToStream(m_pSecondarySource, pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pSecondarySource);
 
 	dwSave = m_iCause;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));

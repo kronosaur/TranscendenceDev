@@ -283,7 +283,7 @@ void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx)
 	m_fIsFollowingNavPath = ((dwLoad & 0x00000001) ? true : false);
 	}
 
-void CNavigateOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CNavigateOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

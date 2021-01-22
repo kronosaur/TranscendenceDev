@@ -98,7 +98,7 @@ class CManeuverController
 		bool IsThrustActive (void) const;
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Update (SUpdateCtx &Ctx, CShip *pShip);
-		void WriteToStream (IWriteStream &Stream, CSystem *pSystem);
+		void WriteToStream (IWriteStream &Stream);
 
 	private:
 		void UpdateMoveTo (SUpdateCtx &Ctx, CShip *pShip);

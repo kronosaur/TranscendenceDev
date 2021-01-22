@@ -294,7 +294,7 @@ void CTargetList::Realize (void) const
 		}
 	}
 
-void CTargetList::WriteToStream (CSystem &System, IWriteStream &Stream) const
+void CTargetList::WriteToStream (IWriteStream &Stream) const
 
 //	WriteToStream
 //
@@ -314,12 +314,12 @@ void CTargetList::WriteToStream (CSystem &System, IWriteStream &Stream) const
 //	DWORD		objID
 
 	{
-	System.WriteObjRefToStream(m_pSourceObj, &Stream);
+	CSystem::WriteObjRefToStream(Stream, m_pSourceObj);
 
 	Stream.Write(m_Options.iMaxTargets);
 	Stream.Write(m_Options.rMaxDist);
-	System.WriteObjRefToStream(m_Options.pExcludeObj, &Stream);
-	System.WriteObjRefToStream(m_Options.pPerceptionObj, &Stream);
+	CSystem::WriteObjRefToStream(Stream, m_Options.pExcludeObj);
+	CSystem::WriteObjRefToStream(Stream, m_Options.pPerceptionObj);
 
 	DWORD dwFlags = 0;
 	dwFlags |= (m_Options.bIncludeMinable				? 0x00000001 : 0);
@@ -344,7 +344,7 @@ void CTargetList::WriteToStream (CSystem &System, IWriteStream &Stream) const
 
 			Stream.Write(m_Targets.GetKey(i).rDist2);
 
-			System.WriteObjRefToStream(m_Targets[i].pObj, &Stream);
+			CSystem::WriteObjRefToStream(Stream, m_Targets[i].pObj);
 			}
 		}
 	else

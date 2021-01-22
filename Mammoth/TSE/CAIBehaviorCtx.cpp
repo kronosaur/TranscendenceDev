@@ -1213,7 +1213,7 @@ void CAIBehaviorCtx::Update (CShip *pShip)
 		pShip->Highlight();
 	}
 
-void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CAIBehaviorCtx::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
 //
@@ -1239,7 +1239,7 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	//	CAISettings
 
 	m_AISettings.WriteToStream(pStream);
-	m_ShipControls.WriteToStream(pSystem, pStream);
+	m_ShipControls.WriteToStream(pStream);
 
 	//	State
 
@@ -1281,7 +1281,7 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 		dwSave = m_iNavPathPos;
 		pStream->Write(dwSave);
 
-		m_pNavPath->OnWriteToStream(pSystem, pStream);
+		m_pNavPath->OnWriteToStream(pStream);
 		}
 
 	//	Flags

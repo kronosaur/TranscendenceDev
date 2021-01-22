@@ -411,7 +411,7 @@ void CMissile::CreateReflection (const CVector &vPos, int iDirection, CMissile *
 		}
 	}
 
-CString CMissile::DebugCrashInfo (void)
+CString CMissile::DebugCrashInfo (void) const
 
 //	DebugCrashInfo
 //
@@ -1425,8 +1425,8 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 	m_pDesc->GetUNID().WriteToStream(pStream);
 	pStream->Write((char *)&m_iHitPoints, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(DWORD));
-	m_Source.WriteToStream(GetSystem(), pStream);
-	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
+	m_Source.WriteToStream(pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
 	WriteObjRefToStream(m_pHit, pStream);
 	pStream->Write((char *)&m_vHitPos, sizeof(m_vHitPos));
 	pStream->Write((char *)&m_iHitDir, sizeof(DWORD));

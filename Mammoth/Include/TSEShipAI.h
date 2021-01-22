@@ -443,7 +443,7 @@ class COrderDesc
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetDataInteger (DWORD dwData);
 		void SetTarget (CSpaceObject *pTarget) { m_pTarget = pTarget; }
-		void WriteToStream (IWriteStream &Stream, CSystem &System) const;
+		void WriteToStream (IWriteStream &Stream, const CShip &Ship) const;
 
 		static COrderDesc ParseFromCCItem (CCodeChainCtx &CCX, IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const ICCItem &Args, int iFirstArg);
 		static COrderDesc ParseFromString (const CString &sValue);

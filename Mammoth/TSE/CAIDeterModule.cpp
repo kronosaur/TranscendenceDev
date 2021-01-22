@@ -98,14 +98,14 @@ void CAIDeterModule::ReadFromStream (SLoadCtx &Ctx)
 	m_bNoTurn = ((dwFlags & 0x00000001) ? true : false);
 	}
 
-void CAIDeterModule::WriteToStream (CSystem &System, IWriteStream &Stream) const
+void CAIDeterModule::WriteToStream (IWriteStream &Stream) const
 
 //	WriteToStream
 //
 //	Writes the object to a stream.
 
 	{
-	System.WriteObjRefToStream(m_pTarget, &Stream);
+	CSystem::WriteObjRefToStream(Stream, m_pTarget);
 
 	DWORD dwFlags = 0;
 	dwFlags |= (m_bNoTurn ? 0x00000001 : 0);

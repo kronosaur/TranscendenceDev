@@ -278,7 +278,7 @@ void COrbitExactOrder::OnReadFromStream (SLoadCtx &Ctx)
 	CalcIntermediates();
 	}
 
-void COrbitExactOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void COrbitExactOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

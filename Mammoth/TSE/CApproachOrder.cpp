@@ -151,7 +151,7 @@ void CApproachOrder::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&m_rMinDist2, sizeof(Metric));
 	}
 
-void CApproachOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CApproachOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

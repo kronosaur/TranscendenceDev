@@ -300,8 +300,8 @@ void CTimedEncounterEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStr
 
 	{
 	pStream->Write(m_dwEncounterTableUNID);
-	m_Targets.WriteToStream(pSystem, pStream);
-	pSystem->WriteObjRefToStream(m_pGate, pStream);
+	m_Targets.WriteToStream(pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pGate);
 	pStream->Write(m_rDistance);
 	m_vPos.WriteToStream(*pStream);
 	}
@@ -401,7 +401,7 @@ void CTimedCustomEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream
 //	CString		m_sEvent
 
 	{
-	pSystem->WriteObjRefToStream(m_pObj, pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pObj);
 	m_sEvent.WriteToStream(pStream);
 	}
 
@@ -503,9 +503,9 @@ void CTimedRecurringEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStr
 //	DWORD		m_iInterval
 
 	{
-	pSystem->WriteObjRefToStream(m_pObj, pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pObj);
 	m_sEvent.WriteToStream(pStream);
-	pStream->Write((char *)&m_iInterval, sizeof(DWORD));
+	pStream->Write(m_iInterval);
 	}
 
 //	CTimedTypeEvent ------------------------------------------------------------

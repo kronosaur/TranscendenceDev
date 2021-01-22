@@ -380,7 +380,7 @@ void CWaitOrder::OnReadFromStream (SLoadCtx &Ctx)
 	m_fIsDeterring = ((dwLoad & 0x00000001) ? true : false);
 	}
 
-void CWaitOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CWaitOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

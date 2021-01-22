@@ -3429,7 +3429,7 @@ void CPlayerShipController::WriteToStream (IWriteStream *pStream)
 	m_pShip->WriteObjRefToStream(m_pTarget, pStream);
 	m_pShip->WriteObjRefToStream(m_pDestination, pStream);
 
-	m_OrderDesc.WriteToStream(*pStream, *m_pShip->GetSystem());
+	m_OrderDesc.WriteToStream(*pStream, *m_pShip);
 
 	pStream->Write((DWORD)m_iManeuver);
 	m_Credits.WriteToStream(pStream);
@@ -3459,5 +3459,5 @@ void CPlayerShipController::WriteToStream (IWriteStream *pStream)
 
 	//	Maneuver controller
 
-	m_ManeuverController.WriteToStream(*pStream, m_pShip->GetSystem());
+	m_ManeuverController.WriteToStream(*pStream);
 	}

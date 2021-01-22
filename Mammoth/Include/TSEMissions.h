@@ -75,7 +75,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 	protected:
 		//	CSpaceObject virtuals
 
-		virtual CString GetObjClassName (void) override { return CONSTLIT("CMission"); }
+		virtual CString GetObjClassName (void) const override { return CONSTLIT("CMission"); }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
 		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const override;
 		virtual void OnObjDestroyedNotify (SDestroyCtx &Ctx) override;

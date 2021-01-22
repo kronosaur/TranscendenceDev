@@ -582,7 +582,7 @@ void CNavigationPath::OnReadFromStream (SLoadCtx &Ctx)
 	ComputeWaypointRange();
 	}
 
-void CNavigationPath::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const
+void CNavigationPath::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //
@@ -601,7 +601,7 @@ void CNavigationPath::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) 
 
 	{
 	pStream->Write(m_dwID);
-	pSystem->WriteSovereignRefToStream(m_pSovereign, pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
 	pStream->Write(m_iStartIndex);
 	pStream->Write(m_iEndIndex);
 

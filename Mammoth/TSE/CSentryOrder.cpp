@@ -237,7 +237,7 @@ void CSentryOrder::OnReadFromStream (SLoadCtx &Ctx)
 	m_fIsAttacking = ((dwLoad & 0x00000001) ? true : false);
 	}
 
-void CSentryOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CSentryOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

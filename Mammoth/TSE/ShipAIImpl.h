@@ -25,7 +25,7 @@ class CAIShipControls
 		void SetManeuver (EManeuverTypes iManeuver) { m_iManeuver = iManeuver; }
 		void SetThrust (bool bThrust) { m_iThrustDir = (bThrust ? constAlwaysThrust : constNeverThrust); }
 		void SetThrustDir (int iDir) { m_iThrustDir = iDir; }
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream);
 
 	private:
 		EManeuverTypes m_iManeuver;	//	Current maneuver (turn)
@@ -127,7 +127,7 @@ class CAIBehaviorCtx
 		void SetWaitingForShieldsToRegen (bool bValue = true) { m_fWaitForShieldsToRegen = bValue; }
 		bool ThrustsThroughTurn (void) const { return m_fThrustThroughTurn; }
 		void Update (CShip *pShip);
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream);
 
 		//	Maneuvers
 		CVector CalcManeuverCloseOnTarget (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2, bool bFlank = false);
@@ -254,7 +254,7 @@ class CAIDeterModule
 		CSpaceObject *GetTarget () const { return m_pTarget; }
 		void OnObjDestroyed (CShip &Ship, const SDestroyCtx &Ctx);
 		void ReadFromStream (SLoadCtx &Ctx);
-		void WriteToStream (CSystem &System, IWriteStream &Stream) const;
+		void WriteToStream (IWriteStream &Stream) const;
 
 	private:
 		CSpaceObject *m_pTarget = NULL;
@@ -286,7 +286,7 @@ class IOrderModule
 		void ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx);
 		void ReadFromStream (SLoadCtx &Ctx);
 		bool SupportsReactions () const { return (OnGetReactToThreat() != AIReaction::Default); }
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream) const;
 
 	protected:
 		//	IOrderModule virtuals
@@ -306,7 +306,7 @@ class IOrderModule
 		virtual Metric OnGetThreatRange (void) const { return 0.0; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) { }
+		virtual void OnWriteToStream (IWriteStream *pStream) const { }
 
 		int m_iObjCount;
 		CSpaceObject *m_Objs[MAX_OBJS];
@@ -330,7 +330,7 @@ class COrderList
 		void OnStationDestroyed (CSpaceObject *pObj, bool *retbCurrentChanged);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetCurrentOrderDataInteger (DWORD dwData);
-		void WriteToStream (IWriteStream *pStream, CSystem *pSystem);
+		void WriteToStream (IWriteStream &Stream, const CShip &Ship);
 
 	private:
 

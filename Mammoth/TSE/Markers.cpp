@@ -210,7 +210,7 @@ void CMarker::OnWriteToStream (IWriteStream *pStream)
 
 	{
 	m_sName.WriteToStream(pStream);
-	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
 
     DWORD dwSave = (DWORD)m_iStyle;
     pStream->Write((char *)&dwSave, sizeof(DWORD));
