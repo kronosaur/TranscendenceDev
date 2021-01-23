@@ -380,6 +380,7 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
+			aggressor=			"true"
 			fireRateAdj=		"40"
 			fireAccuracy=		"90"
 			perception=			"6"

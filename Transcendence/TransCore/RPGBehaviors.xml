@@ -322,6 +322,9 @@
 		Use this for wandering encounters, such as Xenophobe fleets. Ships will
 		wander around the system avoiding enemy stations, but fighting back when
 		threats come too close.
+
+		If the ship is an aggressor (aggressor="true" in AI settings) then it 
+		will retaliate against stations when attacked. Otherwise, it will not.
 	
 	-->
 
