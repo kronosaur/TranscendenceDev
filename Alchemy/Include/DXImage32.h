@@ -212,6 +212,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		bool WriteToWindowsBMP (IWriteStream *pStream);
 
 	private:
+		bool AllocRGBA (int iSize);
 		static int CalcBufferSize (int cxWidth, int cyHeight) { return (cxWidth * cyHeight); }
 		void Copy (const CG32bitImage &Src);
 		void InitBMI (BITMAPINFO **retpbi) const;
