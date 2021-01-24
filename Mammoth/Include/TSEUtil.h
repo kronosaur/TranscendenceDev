@@ -652,11 +652,8 @@ struct SVisibleDamage
 class CPerceptionCalc
 	{
 	public:
-		enum EConstants
-			{
-			RANGE_ARRAY_SIZE = 256,
-			RANGE_ARRAY_BASE_RANGE_INDEX = 128, //  index at which detection range is 100
-			};
+		static constexpr int RANGE_ARRAY_SIZE =					256;
+		static constexpr int RANGE_ARRAY_BASE_RANGE_INDEX =		128;
 
 		CPerceptionCalc (int iPerception = -1);
 
@@ -675,10 +672,15 @@ class CPerceptionCalc
 		static int GetRangeIndex (int iStealth, int iPerception);
 
 	private:
+		//	Perception cannot be too much higher than stealth or else we will
+		//	overflow a 32-bit integer. At 65 we're at 1.4 billion light-seconds.
+
+		static constexpr int MAX_DELTA = 65;
+
 		bool IsVisibleDueToAttack (CSpaceObject *pTarget) const;
 
 		static void InitRangeTable (void);
-		static Metric CalcPerceptionRange (int iStealth, int iPerception) { return 100.0 * std::pow(1.2, float(iPerception - iStealth)); };
+		static Metric CalcPerceptionRange (int iStealth, int iPerception) { return 100.0 * std::pow(1.2, Metric(Min(MAX_DELTA, iPerception - iStealth))); };
 
 		int m_iPerception;
 		DWORD m_dwLastAttackThreshold;			//	Last attack on or after means visible
