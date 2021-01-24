@@ -513,7 +513,7 @@ class CStationType : public CDesignType
 		const CRegenDesc &GetShipRegenDesc (void) { return m_ShipRegen; }
 		CSovereign *GetSovereign (void) const { return m_pSovereign; }
 		CG32bitPixel GetSpaceColor (void) const { return m_Star.GetSpaceColor(); }
-		int GetStealth (void) const { return m_iStealth; }
+		int GetStealth (void) const { return m_iStealthFromArmor; }
 		int GetTempChance (void) const { return m_iChance; }
 		bool HasAnimations (void) const { return (m_pAnimations != NULL); }
 		bool HasGravity (void) const { return m_Star.HasGravity(); }
@@ -639,7 +639,7 @@ class CStationType : public CDesignType
 
 		//	Armor & Hull
 		CStationHullDesc m_HullDesc;					//	Hull descriptor
-		int m_iStealth = 0;								//	Stealth
+		int m_iStealthFromArmor = 0;								//	Stealth
 
 		//	Devices
 		IDeviceGenerator *m_pDevices = NULL;			//	Devices for the station

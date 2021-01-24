@@ -901,13 +901,13 @@ int CArmorClass::CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance 
 
 	//	Stealth
 
-	if (m_iStealth >= 12)
+	if (m_iStealthFromArmor >= 12)
 		retBalance.rStealth = 4.0 * STEALTH_BALANCE_BONUS;
-	else if (m_iStealth >= 10)
+	else if (m_iStealthFromArmor >= 10)
 		retBalance.rStealth = 3.0 * STEALTH_BALANCE_BONUS;
-	else if (m_iStealth >= 8)
+	else if (m_iStealthFromArmor >= 8)
 		retBalance.rStealth = 2.0 * STEALTH_BALANCE_BONUS;
-	else if (m_iStealth >= 6)
+	else if (m_iStealthFromArmor >= 6)
 		retBalance.rStealth = 1.0 * STEALTH_BALANCE_BONUS;
 	else
 		retBalance.rStealth = 0.0;
@@ -1628,9 +1628,9 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	//	Stealth
 
-	pArmor->m_iStealth = pDesc->GetAttributeInteger(STEALTH_ATTRIB);
-	if (pArmor->m_iStealth == 0)
-		pArmor->m_iStealth = CSpaceObject::stealthNormal;
+	pArmor->m_iStealthFromArmor = pDesc->GetAttributeInteger(STEALTH_ATTRIB);
+	if (pArmor->m_iStealthFromArmor == 0)
+		pArmor->m_iStealthFromArmor = CSpaceObject::stealthNormal;
 
 	pArmor->m_iMaxHPBonus = pDesc->GetAttributeIntegerBounded(MAX_HP_BONUS_ATTRIB, 0, -1, 150);
 
