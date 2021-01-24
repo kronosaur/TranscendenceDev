@@ -250,6 +250,33 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 			break;
 			}
 
+		case etCyberDefense:
+			{
+			if (IsDisadvantage())
+				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("-cyber defense %d"), GetDataA()), true));
+			else
+				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("+cyber defense %d"), GetDataA()), true));
+			break;
+			}
+
+		case etPerception:
+			{
+			if (IsDisadvantage())
+				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("-perception %d"), GetDataA()), true));
+			else
+				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("+perception %d"), GetDataA()), true));
+			break;
+			}
+
+		case etStealth:
+			{
+			if (IsDisadvantage())
+				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("-stealth %d"), GetDataA()), true));
+			else
+				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("+stealth %d"), GetDataA()), true));
+			break;
+			}
+
 		default:
 			retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+unknown"), true));
 			break;
@@ -1187,6 +1214,23 @@ int CItemEnhancement::GetAbsorbAdj (const DamageDesc &Damage) const
 		}
 	}
 
+int CItemEnhancement::GetCyberDefenseAdj () const
+
+//	GetCyberDefenseAdj
+//
+//	Get adjustment to perception.
+
+	{
+	switch (GetType())
+		{
+		case etCyberDefense:
+			return (IsDisadvantage() ? -GetDataA() : GetDataA());
+
+		default:
+			return 0;
+		}
+	}
+
 int CItemEnhancement::GetDamageAdj (void) const
 
 //	GetDamageAdj
@@ -1488,6 +1532,23 @@ int CItemEnhancement::GetManeuverRate (void) const
 		}
 	}
 
+int CItemEnhancement::GetPerceptionAdj () const
+
+//	GetPerceptionAdj
+//
+//	Get adjustment to perception.
+
+	{
+	switch (GetType())
+		{
+		case etPerception:
+			return (IsDisadvantage() ? -GetDataA() : GetDataA());
+
+		default:
+			return 0;
+		}
+	}
+
 int CItemEnhancement::GetPowerAdj (void) const
 
 //	GetPowerAdj
@@ -1610,6 +1671,23 @@ SpecialDamageTypes CItemEnhancement::GetSpecialDamage (int *retiLevel) const
 		*retiLevel = iLevel;
 
 	return iSpecial;
+	}
+
+int CItemEnhancement::GetStealthAdj () const
+
+//	GetStealthAdj
+//
+//	Get adjustment to stealth.
+
+	{
+	switch (GetType())
+		{
+		case etStealth:
+			return (IsDisadvantage() ? -GetDataA() : GetDataA());
+
+		default:
+			return 0;
+		}
 	}
 
 int CItemEnhancement::GetValueAdj (const CItem &Item) const
@@ -1743,6 +1821,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //
 //	{number}					Interpret as a mod code
 //	+armor:{n}					Add	armor special damage, where n is an item level
+//	+cyberDefense:{n}			+/-A to cyberdefense
 //	+efficient:{n}				+/- n% power use.
 //									E.g., +efficient:20 = (100 - 20) = 80% power use
 //	+hpBonus:{n}				Add hp bonus.
@@ -1750,6 +1829,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //	+immunity:{s}				Immunity to special damage s.
 //	+missileDefense				Add missile defense to weapons
 //	+omnidirectional			Omnidirectional.
+//	+perception:{n}				+/-A to perception
 //	+reflect:{s}				Reflects damage type s.
 //	+regen						Regenerate
 //	+regen:{n}					Regenerate
@@ -1760,6 +1840,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //	+resistEnergy:{n}			DamageAdj for energy damage set to n
 //	+resistMatter:{n}			DamageAdj for matter damage set to n
 //	+shield:{n}					Add shield disrupt special damage, where n is an item level
+//	+stealth:{n}				+/-A to stealth
 //	+speed:{n}					Faster. n is new delay value as a percent of normal
 //	+swivel:{n}					Swivel n degrees
 //	+tracking:{n}				n is maneuver rate
@@ -2142,6 +2223,36 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			}
 
 		m_dwMods = EncodeABC(etRepairDevice, 0, iValue);
+		}
+
+	//	Cyber defense
+
+	else if (strEquals(sID, CONSTLIT("cyberDefense")))
+		{
+		if (bDisadvantage || iValue < 0)
+			m_dwMods = EncodeABC(etCyberDefense | etDisadvantage, Absolute(iValue));
+		else
+			m_dwMods = EncodeABC(etCyberDefense, iValue);
+		}
+
+	//	Perception
+
+	else if (strEquals(sID, CONSTLIT("perception")))
+		{
+		if (bDisadvantage || iValue < 0)
+			m_dwMods = EncodeABC(etPerception | etDisadvantage, Absolute(iValue));
+		else
+			m_dwMods = EncodeABC(etPerception, iValue);
+		}
+
+	//	Stealth
+
+	else if (strEquals(sID, CONSTLIT("stealth")))
+		{
+		if (bDisadvantage || iValue < 0)
+			m_dwMods = EncodeABC(etStealth | etDisadvantage, Absolute(iValue));
+		else
+			m_dwMods = EncodeABC(etStealth, iValue);
 		}
 
 	//	Binary enhancement

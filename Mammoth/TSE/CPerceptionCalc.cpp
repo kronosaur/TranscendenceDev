@@ -28,6 +28,26 @@ CPerceptionCalc::CPerceptionCalc (int iPerception) :
 		InitRangeTable();
 	}
 
+int CPerceptionCalc::AdjPerception (int iValue, int iAdj)
+
+//	AdjPerception
+//
+//	Adjusts perception, keeping result in range.
+
+	{
+	return Max((int)CSpaceObject::perceptMin, Min(iValue + iAdj, (int)CSpaceObject::perceptMax));
+	}
+
+int CPerceptionCalc::AdjStealth (int iValue, int iAdj)
+
+//	AdjStealth
+//
+//	Adjusts stealth, keeping result in range.
+
+	{
+	return Max((int)CSpaceObject::stealthMin, Min(iValue + iAdj, (int)CSpaceObject::stealthMax));
+	}
+
 bool CPerceptionCalc::CanBeTargeted (CSpaceObject *pTarget, Metric rTargetDist2) const
 
 //	CanBeTargeted

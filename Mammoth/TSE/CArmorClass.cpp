@@ -639,8 +639,9 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 
 	//	Stealth
 
-	if (GetStealth() < Ctx.iStealthFromArmor)
-		Ctx.iStealthFromArmor = GetStealth();
+	int iStealth = GetStealth(&Enhancements);
+	if (iStealth < Ctx.iStealthFromArmor)
+		Ctx.iStealthFromArmor = iStealth;
 
 	//  Done
 
@@ -2157,7 +2158,7 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 
 	else if (strEquals(sName, PROPERTY_STEALTH))
 		{
-		int iStealth = GetStealth();
+		int iStealth = GetStealth(&Enhancements);
 		if (iStealth <= CSpaceObject::stealthNormal)
 			return ICCItemPtr(ICCItem::Nil);
 		else
@@ -2497,6 +2498,19 @@ const CArmorClass::SStdStats &CArmorClass::GetStdStats (int iLevel)
 	{
 	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
 	return STD_STATS[iLevel - 1];
+	}
+
+int CArmorClass::GetStealth (const CItemEnhancementStack *pEnhancements) const
+
+//	GetStealth
+//
+//	Returns the armor's stealth.
+
+	{
+	if (pEnhancements)
+		return CPerceptionCalc::AdjStealth(m_iStealthFromArmor, pEnhancements->GetStealthAdj());
+	else
+		return m_iStealthFromArmor;
 	}
 
 CUniverse &CArmorClass::GetUniverse (void) const

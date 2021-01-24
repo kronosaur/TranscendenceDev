@@ -639,7 +639,7 @@ class CStationType : public CDesignType
 
 		//	Armor & Hull
 		CStationHullDesc m_HullDesc;					//	Hull descriptor
-		int m_iStealthFromArmor = 0;								//	Stealth
+		int m_iStealthFromArmor = 0;					//	Stealth
 
 		//	Devices
 		IDeviceGenerator *m_pDevices = NULL;			//	Devices for the station

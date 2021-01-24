@@ -64,7 +64,6 @@ class CArmorClass
 		int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline CString GetName (void) const;
 		CString GetShortName (void);
-		int GetStealth (void) const { return m_iStealthFromArmor; }
 		DWORD GetUNID (void);
 		bool IsScalable (void) const { return (m_pScalable != NULL); }
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
@@ -151,6 +150,7 @@ class CArmorClass
 		CurrencyValue GetRepairCost (const CArmorItem &ArmorItem, int iHPToRepair = 1) const;
 		int GetRepairLevel (const CArmorItem &ArmorItem) const;
 		const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
+		int GetStealth (const CItemEnhancementStack *pEnhancements) const;
 		CUniverse &GetUniverse (void) const;
 
 		Metric CalcRegen180 (CItemCtx &ItemCtx) const;
@@ -166,7 +166,7 @@ class CArmorClass
 		int m_iRepairTech;						//	Tech required to repair
 		int m_iArmorCompleteBonus;				//	Extra HP if armor is complete
 		int m_iHPBonusPerCharge;				//	Extra HP for each charge
-		int m_iStealthFromArmor;							//	Stealth level
+		int m_iStealthFromArmor;				//	Stealth level
 		int m_iPowerUse;						//	Power consumed (1/10th MWs)
 		int m_iIdlePowerUse;					//	Power consumed when not regenerating
 		int m_iPowerGen;						//	Power generation, usually solar (1/10th MWs)

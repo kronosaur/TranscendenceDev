@@ -1399,7 +1399,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 
 		mutable Metric m_rItemMass = 0.0;			//	Total mass of all items (including installed)
 		mutable Metric m_rCargoMass = 0.0;			//	Mass of cargo items (not including installed)
-		int m_iStealthFromArmor = 0;				//	Computed stealth from armor
 		int m_iCounterValue = 0;					//	Heat/capacitor counter value
 
 		CSpaceObject *m_pDocked = NULL;				//	If not NULL, object we are docked to.

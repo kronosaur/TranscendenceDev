@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							51;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					197;
+constexpr DWORD SYSTEM_SAVE_VERSION =					198;
 
 //	Uncomment out the following define when building a stable release
 
@@ -714,3 +714,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					197;
 //	197: 1.9 Beta 4
 //		Add fields to CAISettings
 //		Add m_DeterModule to CBaseShipAI
+//
+//	198: 1.9 Beta 4
+//		Remove m_iStealth from CShip

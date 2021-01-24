@@ -301,6 +301,21 @@ int CItemEnhancementStack::GetBonus (void) const
 	return m_iBonus;
 	}
 
+int CItemEnhancementStack::GetCyberDefenseAdj () const
+
+//	GetCyberDefenseAdj
+//
+//	Returns accumulated adjustment to cyberdefense.
+
+	{
+	int iAdj = 0;
+
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		iAdj += m_Stack[i].GetCyberDefenseAdj();
+
+	return iAdj;
+	}
+
 const DamageDesc &CItemEnhancementStack::GetDamage (void) const
 
 //	GetDamage
@@ -401,6 +416,21 @@ int CItemEnhancementStack::GetManeuverRate (void) const
 		iRate = Max(iRate, m_Stack[i].GetManeuverRate());
 
 	return iRate;
+	}
+
+int CItemEnhancementStack::GetPerceptionAdj () const
+
+//	GetPerceptionAdj
+//
+//	Returns accumulated adjustment to perception.
+
+	{
+	int iAdj = 0;
+
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		iAdj += m_Stack[i].GetPerceptionAdj();
+
+	return iAdj;
 	}
 
 int CItemEnhancementStack::GetPowerAdj (void) const
@@ -513,6 +543,21 @@ int CItemEnhancementStack::GetSpecialDamage (SpecialDamageTypes iSpecial) const
 		}
 
 	return iResult;
+	}
+
+int CItemEnhancementStack::GetStealthAdj () const
+
+//	GetStealthAdj
+//
+//	Returns accumulated adjustment to stealth.
+
+	{
+	int iAdj = 0;
+
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		iAdj += m_Stack[i].GetStealthAdj();
+
+	return iAdj;
 	}
 
 bool CItemEnhancementStack::HasSpecialDamage (SpecialDamageTypes iSpecial) const

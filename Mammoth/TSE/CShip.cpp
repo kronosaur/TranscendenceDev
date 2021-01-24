@@ -326,8 +326,6 @@ void CShip::CalcArmorBonus (void)
 
 	//	Loop over all armor segments and compute some values.
 
-	m_iStealthFromArmor = stealthMax;
-
 	for (i = 0; i < SegmentsByType.GetCount(); i++)
 		{
 		for (j = 0; j < SegmentsByType[i].GetCount(); j++)
@@ -368,11 +366,6 @@ void CShip::CalcArmorBonus (void)
 			//	Set the enhancement stack
 
 			pArmor->SetEnhancements(this, pEnhancements);
-
-			//	Compute stealth
-
-			if (pArmor->GetClass()->GetStealth() < m_iStealthFromArmor)
-				m_iStealthFromArmor = pArmor->GetClass()->GetStealth();
 			}
 		}
 
@@ -3424,7 +3417,7 @@ int CShip::GetStealth (void) const
 //	Returns the stealth of the ship
 
 	{
-	int iStealth = m_iStealthFromArmor;
+	int iStealth = m_Perf.GetStealth();
 
 	//	+6 stealth if in nebula, which decreases detection range by about 3.
 
@@ -5689,7 +5682,6 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	CArmorSystem m_Armor
 //
 //	CAbilitySet	m_Ability
-//	DWORD		m_iStealthFromArmor
 //
 //	CPowerConsumption	m_pPowerUse (if tracking fuel)
 //
@@ -5934,10 +5926,11 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Stealth
 
-	if (Ctx.dwVersion >= 5)
-		Ctx.pStream->Read(m_iStealthFromArmor);
-	else
-		m_iStealthFromArmor = stealthNormal;
+	if (Ctx.dwVersion >= 5 && Ctx.dwVersion < 198)
+		{
+		int iDummy;
+		Ctx.pStream->Read(iDummy);
+		}
 
 	//	Fuel consumption
 
@@ -6306,7 +6299,6 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //  CArmorSystem m_Armor
 //
 //	CAbilitySet	m_Ability
-//	DWORD		m_iStealthFromArmor
 //
 //	CPowerConsumption	m_pPowerUse (if tracking fuel)
 //
@@ -6407,10 +6399,6 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	//	Abilities
 
 	m_Abilities.WriteToStream(pStream);
-
-	//	Stealth
-
-	pStream->Write(m_iStealthFromArmor);
 
 	//	Fuel consumption
 
