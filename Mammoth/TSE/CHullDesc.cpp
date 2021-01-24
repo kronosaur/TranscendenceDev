@@ -22,6 +22,8 @@
 #define MAX_REACTOR_POWER_ATTRIB				CONSTLIT("maxReactorPower")
 #define MAX_WEAPONS_ATTRIB						CONSTLIT("maxWeapons")
 #define SIZE_ATTRIB								CONSTLIT("size")
+#define STEALTH_ADJ_ATTRIB						CONSTLIT("stealthAdj")
+#define STEALTH_ADJ_AT_MAX_HEAT_ATTRIB			CONSTLIT("stealthAdjAtMaxHeat")
 #define TIME_STOP_IMMUNE_ATTRIB					CONSTLIT("timeStopImmune")
 #define VALUE_ATTRIB							CONSTLIT("value")
 #define VALUE_ADJ_ATTRIB						CONSTLIT("valueAdj")
@@ -130,6 +132,8 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	
 	m_iCounterIncrementRate = pHull->GetAttributeInteger(COUNTER_INCREMENT_RATE_ATTRIB);
 	m_iMaxCounter = pHull->GetAttributeInteger(MAX_COUNTER_ATTRIB);
+	m_iStealthAdj = pHull->GetAttributeInteger(STEALTH_ADJ_ATTRIB);
+	m_iStealthAdjAtMaxHeat = pHull->GetAttributeInteger(STEALTH_ADJ_AT_MAX_HEAT_ATTRIB);
 
 	//	If we've got our own element (<Hull>) then parse any children
 
