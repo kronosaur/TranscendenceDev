@@ -505,6 +505,7 @@
     <ClCompile Include="CPhysicsForceResolver.cpp" />
     <ClCompile Include="CPlayerGameStats.cpp" />
     <ClCompile Include="CPowerConsumption.cpp" />
+    <ClCompile Include="CProgramDesc.cpp" />
     <ClCompile Include="CPropertyCompare.cpp" />
     <ClCompile Include="CRandomEncounterDesc.cpp" />
     <ClCompile Include="CRandomEncounterObjTable.cpp" />

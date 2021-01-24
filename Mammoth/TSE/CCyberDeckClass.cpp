@@ -5,7 +5,6 @@
 
 #include "PreComp.h"
 
-
 #define RANGE_ATTRIB							CONSTLIT("range")
 #define ATTACK_CHANCE_ATTRIB					CONSTLIT("attackChance")
 #define AI_LEVEL_ATTRIB							CONSTLIT("aiLevel")

@@ -3064,8 +3064,6 @@ void CShipClass::InitPerformance (SShipPerformanceCtx &Ctx) const
 	Ctx.ReactorDesc = m_ReactorDesc;
 	Ctx.DriveDesc = m_DriveDesc;
 	Ctx.CargoDesc = CCargoDesc(m_Hull.GetCargoSpace());
-	Ctx.iCyberDefense = m_Hull.GetCyberDefenseLevel();
-	Ctx.iPerception = m_AISettings.GetPerception();
 	Ctx.iStealthFromArmor = CSpaceObject::stealthMax;
 
 	//	Track maximum speed after bonuses. We start with the class speed; 
@@ -3910,7 +3908,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return ICCItemPtr(GetEconomyType()->GetSID());
 		
 	else if (strEquals(sProperty, PROPERTY_CYBER_DEFENSE_LEVEL))
-		return ICCItemPtr(m_Perf.GetCyberDefense());
+		return ICCItemPtr(CProgramDesc::CalcLevel(m_Hull.GetCyberDefenseLevel(), m_Perf.GetCyberDefenseAdj()));
 
 	else if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
 		return (m_pDefaultSovereign.GetUNID() ? ICCItemPtr(m_pDefaultSovereign.GetUNID()) : ICCItemPtr(ICCItem::Nil));
@@ -4005,7 +4003,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		}
 
 	else if (strEquals(sProperty, PROPERTY_PERCEPTION))
-		return ICCItemPtr(m_Perf.GetPerception());
+		return ICCItemPtr(Max((int)CSpaceObject::perceptMin, Min(GetAISettings().GetPerception() + m_Perf.GetPerceptionAdj(), (int)CSpaceObject::perceptMax)));
 
 	else if (strEquals(sProperty, PROPERTY_PRICE))
 		return ICCItemPtr((int)GetTradePrice(NULL, true).GetValue());

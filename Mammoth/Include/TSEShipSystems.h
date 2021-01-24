@@ -43,6 +43,12 @@ struct ProgramDesc
 	ICCItem *ProgramCode;
 	};
 
+class CProgramDesc
+	{
+	public:
+		static int CalcLevel (int iLevel, int iAdj);
+	};
+
 //	Armor ----------------------------------------------------------------------
 
 class CArmorSystem
@@ -819,8 +825,8 @@ struct SShipPerformanceCtx
     CCargoDesc CargoDesc;                   //  Cargo space descriptor
     int iMaxCargoSpace = 0;					//  Max cargo space limit imposed by class
                                             //      0 = no limit
-	int iCyberDefense = 0;
-	int iPerception = 0;
+	int iCyberDefenseAdj = 0;				//	Accumulated bonus/penalty to cyber defense
+	int iPerceptionAdj = 0;					//	Accumulated bonus/penalty to perception
 	int iStealthFromArmor = 0;
 
 	bool bShieldInterference = false;		//	Meteorsteel (or something) is interfering
@@ -834,10 +840,10 @@ class CShipPerformanceDesc
 
 		const CAbilitySet &GetAbilities (void) const { return m_Abilities; }
         const CCargoDesc &GetCargoDesc (void) const { return m_CargoDesc; }
-		int GetCyberDefense () const { return m_iCyberDefense; }
+		int GetCyberDefenseAdj () const { return m_iCyberDefenseAdj; }
         const CDriveDesc &GetDriveDesc (void) const { return m_DriveDesc; }
         const CIntegralRotationDesc &GetIntegralRotationDesc (void) const { return m_IntegralRotationDesc; }
-		int GetPerception () const { return m_iPerception; }
+		int GetPerceptionAdj () const { return m_iPerceptionAdj; }
         const CReactorDesc &GetReactorDesc (void) const { return m_ReactorDesc; }
         const CRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
 		int GetStealth () const { return m_iStealth; }
@@ -862,8 +868,8 @@ class CShipPerformanceDesc
         CDriveDesc m_DriveDesc;
         CCargoDesc m_CargoDesc;
 		CAbilitySet m_Abilities;
-		int m_iCyberDefense = 0;
-		int m_iPerception = 0;
+		int m_iCyberDefenseAdj = 0;
+		int m_iPerceptionAdj = 0;
 		int m_iStealth = 0;
 
 		DWORD m_fInitialized:1 = false;				//	TRUE if Init called

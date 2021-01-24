@@ -401,7 +401,7 @@ class CShipClass : public CDesignType
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0) const;
 
 		CString GenerateShipName (DWORD *retdwFlags) const;
-		const CAISettings &GetAISettings (void) { return m_AISettings; }
+		const CAISettings &GetAISettings (void) const { return m_AISettings; }
 		const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
 		DWORD GetCategoryFlags (void) const;
 		const CCargoDesc &GetCargoDesc (const CItem **retpCargoItem = NULL) const;

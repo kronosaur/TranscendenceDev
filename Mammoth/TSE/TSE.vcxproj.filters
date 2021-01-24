@@ -1573,5 +1573,8 @@
     <ClCompile Include="CChallengeRatingCalculator.cpp">
       <Filter>Source Files\Stations</Filter>
     </ClCompile>
+    <ClCompile Include="CProgramDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

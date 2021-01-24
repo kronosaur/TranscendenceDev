@@ -96,6 +96,16 @@ CDeviceItem::ECalcTargetTypes CDeviceItem::CalcTargetType (void) const
 		}
 	}
 
+int CDeviceItem::GetCyberDefenseLevel () const
+
+//	GetCyberDefenseLevel
+//
+//	Returns the cyber defense level of the device.
+
+	{
+	return CProgramDesc::CalcLevel(GetLevel(), GetEnhancements().GetCyberDefenseAdj());
+	}
+
 TSharedPtr<CItemEnhancementStack> CDeviceItem::GetEnhancementStack (void) const
 
 //	GetEnhancementStack

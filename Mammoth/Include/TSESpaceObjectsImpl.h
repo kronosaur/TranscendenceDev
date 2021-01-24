@@ -1147,7 +1147,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool GetCounterIsHeat (void) const override { return m_pClass->GetHullDesc().GetCounterIncrementRate() < 0; }
 		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override;
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
-		virtual int GetCyberDefenseLevel (void) const override { return m_pClass->GetCyberDefenseLevel(); }
+		virtual int GetCyberDefenseLevel (void) const override;
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
 		virtual DamageTypes GetDamageType (void) override;
 		virtual DWORD GetDefaultBkgnd (void) override { return m_pClass->GetDefaultBkgnd(); }

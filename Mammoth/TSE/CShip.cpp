@@ -2626,6 +2626,16 @@ CCurrencyBlock *CShip::GetCurrencyBlock (bool bCreate)
 	return m_pMoney;
 	}
 
+int CShip::GetCyberDefenseLevel (void) const 
+
+//	GetCyberDefenseLevel
+//
+//	Returns cyber defense level.
+
+	{
+	return CProgramDesc::CalcLevel(m_pClass->GetCyberDefenseLevel(), m_Perf.GetCyberDefenseAdj());
+	}
+
 int CShip::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon)
 
 //	GetDamageEffectiveness
@@ -3024,9 +3034,9 @@ int CShip::GetPerception (void) const
 	{
 	//	calculate perception
 
-	int iPerception = m_pClass->GetAISettings().GetPerception();
+	int iPerception = m_pClass->GetAISettings().GetPerception() + m_Perf.GetPerceptionAdj();
 
-	return Max((int)perceptMin, iPerception);
+	return Max((int)perceptMin, Min(iPerception, (int)perceptMax));
 	}
 
 int CShip::GetPowerConsumption (void) const
@@ -6712,6 +6722,7 @@ void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
 				//	The chance of success is 50% plus 10% for every level
 				//	that the program is greater than the shields
 
+				int iTargetLevel = pShields->GetDeviceItem().GetCyberDefenseLevel();
 				int iSuccess = 50 + 10 * (Program.iAILevel - pShields->GetLevel());
 				if (mathRandom(1, 100) <= iSuccess)
 					pShields->Deplete(this);
@@ -6726,9 +6737,9 @@ void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
 			CInstalledDevice *pWeapon;
 
 			if (pWeapon = GetNamedDevice(devPrimaryWeapon))
-				iTargetLevel = pWeapon->GetLevel();
+				iTargetLevel = pWeapon->GetDeviceItem().GetCyberDefenseLevel();
 			else if (pWeapon = GetNamedDevice(devMissileWeapon))
-				iTargetLevel = pWeapon->GetLevel();
+				iTargetLevel = pWeapon->GetDeviceItem().GetCyberDefenseLevel();
 			else
 				iTargetLevel = GetCyberDefenseLevel();
 

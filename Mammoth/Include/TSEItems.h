@@ -163,6 +163,7 @@ class CDeviceItem : public CDifferentiatedItem
 
 		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
 		ECalcTargetTypes CalcTargetType (void) const;
+		int GetCyberDefenseLevel () const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);
 		inline int GetDeviceSlot (void) const;

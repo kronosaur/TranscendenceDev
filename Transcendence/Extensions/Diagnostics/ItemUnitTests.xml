@@ -278,6 +278,7 @@
 						{	test:'(itm@ &itLaserCannon; 'balanceCost)				result:385	}
 						{	test:'(itm@ &itLaserCannon; 'balanceExcludeCost)		result:5	}
 						{	test:'(itm@ &itLaserCannon; 'canFireWhenBlind)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'cyberDefenseLevel)		result:1	}
 						{	test:'(itm@ &itLaserCannon; 'damage)					result:90	}
 						{	test:'(itm@ &itLaserCannon; 'damagePerProjectile)		result:2.5	}
 						{	test:'(itm@ &itLaserCannon; 'damageTypeID)			result:'laser	}
@@ -374,6 +375,7 @@
 						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceCost)				result:599	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceExcludeCost)		result:-13	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'canFireWhenBlind)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'cyberDefenseLevel)			result:3	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damage)					result:168	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damagePerProjectile)		result:14.0	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageTypeID)			result:'blast	}
