@@ -419,11 +419,6 @@ bool CShipwreckDesc::CreateWreckImage (const CShipClass *pClass, int iRotationFr
 	{
 	int i;
 
-	//	Must have damage effect image
-
-	if (!m_pDamageBitmap)
-		return false;
-
 	//	Get the original ship class image
 
 	const CObjectImageArray &ShipImage = pClass->GetTypeImage().GetSimpleImage();
@@ -457,6 +452,11 @@ bool CShipwreckDesc::CreateWreckImage (const CShipClass *pClass, int iRotationFr
 	//	Add some destruction
 
 	InitDamageImage();
+
+	//	Must have damage effect image
+
+	if (!m_pDamageBitmap)
+		return false;
 
 	int iCount = cxWidth * 2;
 	for (i = 0; i < iCount; i++)
