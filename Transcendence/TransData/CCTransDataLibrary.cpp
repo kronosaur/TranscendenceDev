@@ -12,6 +12,7 @@ static constexpr DWORD FN_TSE_UPDATE_SYSTEM =			4;
 static constexpr DWORD FN_TSE_AFFINITY_CRITERIA =		5;
 static constexpr DWORD FN_TSE_SET_PLAYER_SHIP =			6;
 static constexpr DWORD FN_TSE_REGEN_DESC =				7;
+static constexpr DWORD FN_TSE_PERCEPTION_RANGE =		8;
 
 ICCItem *fnNil (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -50,6 +51,10 @@ static PRIMITIVEPROCDEF g_Library[] =
 		{	"tsePattern",					fnTransEngine,		FN_TSE_PATTERN,
 			"(tsePattern pattern ...) -> string",
 			"s*",	0,	},
+
+		{	"tsePerceptionRange",			fnTransEngine,		FN_TSE_PERCEPTION_RANGE,
+			"(tsePerceptionRange perception stealth) -> range (light-seconds)",
+			"ii",	0,	},
 
 		{	"tseRegenDesc",					fnTransEngine,		FN_TSE_REGEN_DESC,
 			"(tseRegenDesc regen [ticksPerCycle]) -> desc of hp to regen",
@@ -209,6 +214,14 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 
 			return pCC->CreateString(sResult);
+			}
+
+		case FN_TSE_PERCEPTION_RANGE:
+			{
+			int iPerception = pArgs->GetElement(0)->GetIntegerValue();
+			int iStealth = pArgs->GetElement(1)->GetIntegerValue();
+			Metric rDist = CPerceptionCalc::GetRange(CPerceptionCalc::GetRangeIndex(iStealth, iPerception));
+			return pCC->CreateInteger(mathRound(rDist / LIGHT_SECOND));
 			}
 
 		case FN_TSE_SET_PLAYER_SHIP:

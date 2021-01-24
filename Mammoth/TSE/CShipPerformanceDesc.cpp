@@ -69,6 +69,9 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 
 	//	Other flags
 
+	m_iCyberDefense = Ctx.iCyberDefense;
+	m_iPerception = Ctx.iPerception;
+	m_iStealth = Ctx.iStealthFromArmor;
 	m_fShieldInterference = Ctx.bShieldInterference;
 
 	//	Done

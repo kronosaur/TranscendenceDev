@@ -181,6 +181,7 @@
 #define PROPERTY_CHARACTER_NAME					CONSTLIT("characterName")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
+#define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_FREQUENCY						CONSTLIT("frequency")
@@ -202,6 +203,7 @@
 #define PROPERTY_MAX_SPEED_AT_MIN_ARMOR			CONSTLIT("maxSpeedAtMinArmor")
 #define PROPERTY_MAX_SPEED_BY_ARMOR_MASS		CONSTLIT("maxSpeedByArmorMass")
 #define PROPERTY_MISC_DEVICE_ITEMS				CONSTLIT("miscDeviceItems")
+#define PROPERTY_PERCEPTION						CONSTLIT("perception")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_PRICE							CONSTLIT("price")
 #define PROPERTY_RATED_POWER					CONSTLIT("ratedPower")
@@ -209,6 +211,7 @@
 #define PROPERTY_STD_ARMOR_CLASS				CONSTLIT("stdArmorClass")
 #define PROPERTY_STD_ARMOR_CLASS_NAME			CONSTLIT("stdArmorClassName")
 #define PROPERTY_STD_ARMOR_MASS					CONSTLIT("stdArmorMass")
+#define PROPERTY_STEALTH						CONSTLIT("stealth")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_RATIO					CONSTLIT("thrustRatio")
 #define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
@@ -3061,6 +3064,9 @@ void CShipClass::InitPerformance (SShipPerformanceCtx &Ctx) const
 	Ctx.ReactorDesc = m_ReactorDesc;
 	Ctx.DriveDesc = m_DriveDesc;
 	Ctx.CargoDesc = CCargoDesc(m_Hull.GetCargoSpace());
+	Ctx.iCyberDefense = m_Hull.GetCyberDefenseLevel();
+	Ctx.iPerception = m_AISettings.GetPerception();
+	Ctx.iStealthFromArmor = CSpaceObject::stealthMax;
 
 	//	Track maximum speed after bonuses. We start with the class speed; 
 	//	devices and other items should increase this in their handling of
@@ -3424,21 +3430,24 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (m_Armor.IsEmpty() && m_Interior.IsEmpty() && !IsVirtual())
 		m_fVirtual = true;
 
-	//  Compute performance based on average devices
-
-	CalcPerformance();
-
-	//	Compute score and level
-
-	if (!m_fScoreOverride)
-		m_iScore = CalcScore();
+	//	Compute level. We need this before we compute cyberdefense level
+	//	(and we need that before we compute performance)
 
 	if (!m_fLevelOverride)
 		m_iLevel = CalcLevel();
 
-	m_iLevelType = CalcBalanceType(NULL, &m_rCombatStrength);
-
 	m_Hull.InitCyberDefenseLevel(m_iLevel);
+
+	//  Compute performance based on average devices
+
+	CalcPerformance();
+
+	//	Compute score
+
+	if (!m_fScoreOverride)
+		m_iScore = CalcScore();
+
+	m_iLevelType = CalcBalanceType(NULL, &m_rCombatStrength);
 
 	//	Compute hull value, if necessary
 
@@ -3900,6 +3909,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	else if (strEquals(sProperty, PROPERTY_CURRENCY_NAME))
 		return ICCItemPtr(GetEconomyType()->GetSID());
 		
+	else if (strEquals(sProperty, PROPERTY_CYBER_DEFENSE_LEVEL))
+		return ICCItemPtr(m_Perf.GetCyberDefense());
+
 	else if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
 		return (m_pDefaultSovereign.GetUNID() ? ICCItemPtr(m_pDefaultSovereign.GetUNID()) : ICCItemPtr(ICCItem::Nil));
 
@@ -3992,6 +4004,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return pResult;
 		}
 
+	else if (strEquals(sProperty, PROPERTY_PERCEPTION))
+		return ICCItemPtr(m_Perf.GetPerception());
+
 	else if (strEquals(sProperty, PROPERTY_PRICE))
 		return ICCItemPtr((int)GetTradePrice(NULL, true).GetValue());
 
@@ -4026,6 +4041,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_MASS))
 		return (m_Hull.GetArmorLimits().GetStdArmorMass() > 0 ? ICCItemPtr(m_Hull.GetArmorLimits().GetStdArmorMass()) : ICCItemPtr(ICCItem::Nil));
+
+	else if (strEquals(sProperty, PROPERTY_STEALTH))
+		return ICCItemPtr(m_Perf.GetStealth());
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_HAS_ITEMS))
 		return ICCItemPtr(m_WreckDesc.AreItemsAddedToWreck());

@@ -819,6 +819,9 @@ struct SShipPerformanceCtx
     CCargoDesc CargoDesc;                   //  Cargo space descriptor
     int iMaxCargoSpace = 0;					//  Max cargo space limit imposed by class
                                             //      0 = no limit
+	int iCyberDefense = 0;
+	int iPerception = 0;
+	int iStealthFromArmor = 0;
 
 	bool bShieldInterference = false;		//	Meteorsteel (or something) is interfering
     };
@@ -826,17 +829,18 @@ struct SShipPerformanceCtx
 class CShipPerformanceDesc
     {
     public:
-		CShipPerformanceDesc (void) : 
-				m_fInitialized(false),
-				m_fShieldInterference(false)
+		CShipPerformanceDesc (void)
 			{ }
 
 		const CAbilitySet &GetAbilities (void) const { return m_Abilities; }
         const CCargoDesc &GetCargoDesc (void) const { return m_CargoDesc; }
+		int GetCyberDefense () const { return m_iCyberDefense; }
         const CDriveDesc &GetDriveDesc (void) const { return m_DriveDesc; }
         const CIntegralRotationDesc &GetIntegralRotationDesc (void) const { return m_IntegralRotationDesc; }
+		int GetPerception () const { return m_iPerception; }
         const CReactorDesc &GetReactorDesc (void) const { return m_ReactorDesc; }
         const CRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
+		int GetStealth () const { return m_iStealth; }
 		bool HasShieldInterference (void) const { return (m_fShieldInterference ? true : false); }
         void Init (SShipPerformanceCtx &Ctx);
 		bool IsEmpty (void) const { return (m_fInitialized ? false : true); }
@@ -858,9 +862,12 @@ class CShipPerformanceDesc
         CDriveDesc m_DriveDesc;
         CCargoDesc m_CargoDesc;
 		CAbilitySet m_Abilities;
+		int m_iCyberDefense = 0;
+		int m_iPerception = 0;
+		int m_iStealth = 0;
 
-		DWORD m_fInitialized:1;				//	TRUE if Init called
-		DWORD m_fShieldInterference:1;		//	TRUE if energy shields are suppressed (e.g., by meteorsteel)
+		DWORD m_fInitialized:1 = false;				//	TRUE if Init called
+		DWORD m_fShieldInterference:1 = false;		//	TRUE if energy shields are suppressed (e.g., by meteorsteel)
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;

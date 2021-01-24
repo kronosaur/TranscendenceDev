@@ -637,6 +637,11 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 		bModified = true;
 		}
 
+	//	Stealth
+
+	if (GetStealth() < Ctx.iStealthFromArmor)
+		Ctx.iStealthFromArmor = GetStealth();
+
 	//  Done
 
 	return bModified;
