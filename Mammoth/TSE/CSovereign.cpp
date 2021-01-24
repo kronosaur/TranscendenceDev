@@ -35,6 +35,7 @@
 
 #define FIELD_NAME								CONSTLIT("name")
 
+#define PROPERTY_ENEMY_OBJECT_CACHE				CONSTLIT("enemyObjectCache")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_PLAYER_THREAT_LEVEL			CONSTLIT("playerThreatLevel")
 #define PROPERTY_PLURAL							CONSTLIT("plural")
@@ -771,7 +772,21 @@ ICCItemPtr CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 
-	if (strEquals(sProperty, PROPERTY_NAME))
+	if (strEquals(sProperty, PROPERTY_ENEMY_OBJECT_CACHE))
+		{
+		const CSystem *pSystem = GetUniverse().GetCurrentSystem();
+		if (!pSystem)
+			return ICCItemPtr::Nil();
+
+		InitEnemyObjectList(pSystem);
+		ICCItemPtr pResult(ICCItem::List);
+		for (int i = 0; i < m_EnemyObjects.GetCount(); i++)
+			pResult->Append(CTLispConvert::CreateObject(m_EnemyObjects.GetObj(i)));
+
+		return pResult;
+		}
+
+	else if (strEquals(sProperty, PROPERTY_NAME))
 		return ICCItemPtr(GetNounPhrase());
 
 	else if (strEquals(sProperty, PROPERTY_PLAYER_THREAT_LEVEL))

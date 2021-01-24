@@ -98,7 +98,7 @@ class CManeuverController
 		bool IsThrustActive (void) const;
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Update (SUpdateCtx &Ctx, CShip *pShip);
-		void WriteToStream (IWriteStream &Stream, CSystem *pSystem);
+		void WriteToStream (IWriteStream &Stream);
 
 	private:
 		void UpdateMoveTo (SUpdateCtx &Ctx, CShip *pShip);
@@ -204,7 +204,7 @@ class CPlayerShipController : public IShipController
 
 		//	IShipController virtuals
 
-		virtual void AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false) override;
+		virtual void AddOrder (const COrderDesc &OrderDesc, bool bAddBefore = false) override;
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual void CancelAllOrders (void) override;
 		virtual void CancelCurrentOrder (void) override;
@@ -218,13 +218,13 @@ class CPlayerShipController : public IShipController
 		virtual int GetCombatPower (void) override;
 		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override { return &m_Credits; }
 		virtual CCurrencyBlock *GetCurrencyBlock (void) override { return &m_Credits; }
-		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) override;
+		virtual const COrderDesc &GetCurrentOrderDesc () const override;
 		virtual CSpaceObject *GetDestination (void) const override { return m_pDestination; }
 		virtual bool GetDeviceActivate (void) override;
 		virtual int GetFireDelay (void) override { return mathRound(5.0 / STD_SECONDS_PER_UPDATE); }
 		virtual EManeuverTypes GetManeuver (void) override;
-		virtual OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const override;
-		virtual int GetOrderCount (void) const override { return (m_iOrder == IShipController::orderNone ? 0 : 1); }
+		virtual const COrderDesc &GetOrderDesc (int iIndex) const override;
+		virtual int GetOrderCount (void) const override { return (m_OrderDesc.GetOrder() == IShipController::orderNone ? 0 : 1); }
 		virtual CSpaceObject *GetOrderGiver (void) override { return m_pShip; }
 		virtual bool GetReverseThrust (void) override;
 		virtual bool GetStopThrust (void) override;
@@ -298,7 +298,7 @@ class CPlayerShipController : public IShipController
 		CGameSession *m_pSession = NULL;            //  Game session
 		CShip *m_pShip = NULL;
 
-		OrderTypes m_iOrder = orderNone;			//	Last order
+		COrderDesc m_OrderDesc;						//	Last order
 		CSpaceObject *m_pTarget = NULL;
 		CSpaceObject *m_pDestination = NULL;
 		TSortMap<CString, CSpaceObject *> m_TargetList;

@@ -650,10 +650,10 @@ CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTar
 	bool bCheckLineOfFire = !TargetList.NoLineOfFireCheck();
 	bool bCheckRange = !TargetList.NoRangeCheck() || (Device.GetMaxFireRangeLS() != 0);
 	DWORD dwTargetTypes = DeviceItem.GetTargetTypes();
-	if (dwTargetTypes & CTargetList::typeMissile)
+	if (dwTargetTypes & CTargetList::SELECT_MISSILE)
 		{
 		//  If we can target missiles, then we can target targetable missiles as well
-		dwTargetTypes |= CTargetList::typeTargetableMissile;
+		dwTargetTypes |= CTargetList::SELECT_TARGETABLE_MISSILE;
 		}
 
 	Metric rMaxRange = DeviceItem.GetMaxEffectiveRange();
@@ -667,7 +667,7 @@ CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTar
 		Metric rDist2 = TargetList.GetTargetDist2(i);
 
 		if ((!bCheckRange || rDist2 < rMaxRange2)
-				&& (TargetList.GetTargetType(i) & dwTargetTypes)
+				&& ((DWORD)TargetList.GetTargetType(i) & dwTargetTypes)
 				&& DeviceItem.GetWeaponEffectiveness(pTarget) >= 0
 				&& IsTargetReachable(Device, *pTarget, -1, &iFireAngle)
 				&& (!bCheckLineOfFire || SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange)))
@@ -710,7 +710,7 @@ TArray<CTargetList::STargetResult> CWeaponClass::CalcMIRVTargets (CInstalledDevi
 		Metric rDist2 = TargetList.GetTargetDist2(i);
 
 		if ((!bCheckRange || rDist2 < rMaxRange2)
-				&& (TargetList.GetTargetType(i) & dwTargetTypes)
+				&& ((DWORD)TargetList.GetTargetType(i) & dwTargetTypes)
 				&& DeviceItem.GetWeaponEffectiveness(pTarget) >= 0
 				&& IsTargetReachable(Device, *pTarget, -1, &iFireAngle)
 				&& (!bCheckLineOfFire || SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange)))
@@ -1224,7 +1224,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 		//	Get a list of targets
 
-		auto Targets = CalcMIRVTargets(Device, ActivateCtx.TargetList, Shots.GetCount());
+		auto Targets = CalcMIRVTargets(Device, ActivateCtx.GetTargetList(), Shots.GetCount());
 
 		//	Depending on our linked-fire state, we might not fire if we have no
 		//	targets.
@@ -1345,7 +1345,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 					if (ShotDesc.CanAutoTarget())
 						{
-						retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
+						retpTarget = CalcBestTarget(Device, ActivateCtx.GetTargetList(), NULL, &retiFireAngle);
 						if (!retpTarget)
 							retiFireAngle = -1;
 						}
@@ -1400,7 +1400,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 			case CDeviceItem::calcWeaponTarget:
 				{
-				retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
+				retpTarget = CalcBestTarget(Device, ActivateCtx.GetTargetList(), NULL, &retiFireAngle);
 				if (retpTarget == NULL)
 					return false;
 
@@ -2720,7 +2720,7 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 
 	//	We can always hit ships, etc.
 
-	DWORD dwTargetTypes = CTargetList::typeAttacker | CTargetList::typeFortification;
+	DWORD dwTargetTypes = CTargetList::SELECT_ATTACKERS | CTargetList::SELECT_FORTIFICATION;
 
 	//	If we swivel or have tracking, then check to see if there are other
 	//	targets that we need.
@@ -2733,21 +2733,21 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 
 		const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
 		if (Enhancements.IsMissileDefense())
-			dwTargetTypes |= CTargetList::typeMissile;
+			dwTargetTypes |= CTargetList::SELECT_MISSILE;
 
 		//	Check targetable missiles (compatibility)
 
 		if (const CInstalledDevice *pInstalled = DeviceItem.GetInstalledDevice())
 			{
 			if (pInstalled->CanTargetMissiles())
-				dwTargetTypes |= CTargetList::typeTargetableMissile;
+				dwTargetTypes |= CTargetList::SELECT_TARGETABLE_MISSILE;
 			}
 
 		//	See if we have mining capability
 
 		if (pShotDesc->GetDamage().GetMiningDamage() > 0
 				|| Enhancements.HasSpecialDamage(specialMining))
-			dwTargetTypes |= CTargetList::typeMinable;
+			dwTargetTypes |= CTargetList::SELECT_MINABLE;
 		}
 
 	return dwTargetTypes;
@@ -3947,7 +3947,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 
 	if (pTarget && pTarget->GetCategory() == CSpaceObject::catMissile)
 		{
-		if (!(DeviceItem.GetTargetTypes() & (CTargetList::typeMissile | CTargetList::typeTargetableMissile)))
+		if (!(DeviceItem.GetTargetTypes() & CTargetList::SELECT_ANY_MISSILE))
 			return -100;
 		}
 
@@ -5502,13 +5502,10 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			int iContinuous = GetContinuous(*pShot);
 			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
 
-			SActivateCtx ActivateCtx(NULL, Ctx.TargetList);
+			SActivateCtx ActivateCtx(Ctx);
 
 			if ((dwContinuous % iContinuousDelay) == 0)
 				{
-				if (ActivateCtx.TargetList.IsEmpty())
-					ActivateCtx.TargetList = pSource->GetTargetList();
-
 				ActivateCtx.iRepeatingCount = 1 + iContinuous - (dwContinuous / iContinuousDelay);
 
 				FireWeapon(*pDevice, *pShot, ActivateCtx);

@@ -15,7 +15,25 @@ int SUpdateCtx::GetLightIntensity (CSpaceObject *pObj) const
 	return m_iLightIntensity;
 	}
 
+CTargetList &SUpdateCtx::GetTargetList ()
+
+//	GetTargetList
+//
+//	Initializes and returns the target list.
+
+	{
+	if (!m_bTargetListValid && m_pObj)
+		{
+		m_TargetList = m_pObj->GetTargetList();
+		m_bTargetListValid = true;
+		}
+
+	return m_TargetList;
+	}
+
 void SUpdateCtx::OnStartUpdate (CSpaceObject &Obj)
 	{
+	m_pObj = &Obj;
 	m_bTimeStopped = Obj.IsTimeStopped();
+	m_bTargetListValid = false;
 	}

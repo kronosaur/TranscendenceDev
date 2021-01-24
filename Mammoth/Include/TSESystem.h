@@ -36,7 +36,7 @@ class CNavigationPath : public TSEListNode<CNavigationPath>
 		CVector GetPathEnd (void) const { return GetNavPoint(GetNavPointCount() - 1); }
 		bool Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);
 		void OnReadFromStream (SLoadCtx &Ctx);
-		void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const;
+		void OnWriteToStream (IWriteStream *pStream) const;
 
 	private:
 		static constexpr Metric DEFAULT_NAV_POINT_RADIUS = 24.0 * LIGHT_SECOND;
@@ -84,7 +84,7 @@ class CSystemEventHandler : public TSEListNode<CSystemEventHandler>
 		bool OnObjDestroyed (CSpaceObject *pObjDestroyed);
 		void OnReadFromStream (SLoadCtx &Ctx);
 		bool OnUnregister (CSpaceObject *pObj);
-		void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const;
+		void OnWriteToStream (IWriteStream *pStream) const;
 		void SetRange (Metric rMaxRange) { m_rMaxRange2 = rMaxRange * rMaxRange; }
 
 	private:
@@ -587,8 +587,9 @@ class CSystem
 		void ValidateExclusionRadius (void) const;
 		void ValidateExclusionRadius (CSpaceObject *pObj, const CStationEncounterDesc::SExclusionDesc &Exclusion) const;
 		void VectorToTile (const CVector &vPos, int *retx, int *rety) const;
-		void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream, CSpaceObject *pReferrer = NULL);
-		void WriteSovereignRefToStream (CSovereign *pSovereign, IWriteStream *pStream);
+		void WriteObjRefToStream (const CSpaceObject *pObj, IWriteStream *pStream, const CSpaceObject *pReferrer = NULL) const;
+		static void WriteObjRefToStream (IWriteStream &Stream, const CSpaceObject *pObj);
+		static void WriteSovereignRefToStream (CSovereign *pSovereign, IWriteStream *pStream);
 
 		//	Locations & Territories
 		ALERROR AddTerritory (CTerritoryDef *pTerritory);

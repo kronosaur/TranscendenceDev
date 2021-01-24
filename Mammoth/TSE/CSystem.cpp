@@ -4291,12 +4291,12 @@ ALERROR CSystem::SaveToStream (IWriteStream *pStream)
 
 	//	Save navigation paths
 
-	m_NavPaths.WriteToStream(this, pStream);
+	m_NavPaths.WriteToStream(pStream);
 
 	//	Save event handlers
 
 	m_EventHandlers.FlushDeletedObjs();
-	m_EventHandlers.WriteToStream(this, pStream);
+	m_EventHandlers.WriteToStream(pStream);
 
 	//	Save all objects in the system
 
@@ -4771,6 +4771,8 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		iUpdateObj++;
 #endif
 		}
+
+	Ctx.OnEndUpdate();
 	DebugStopTimer("Updating objects");
 
 	//	Initialize a structure that holds context for motion
@@ -5144,7 +5146,25 @@ void CSystem::VectorToTile (const CVector &vPos, int *retx, int *rety) const
 	m_pEnvironment->VectorToTile(vPos, retx, rety);
 	}
 
-void CSystem::WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream, CSpaceObject *pReferrer)
+void CSystem::WriteObjRefToStream (IWriteStream &Stream, const CSpaceObject *pObj)
+
+//	WriteObjRefToStream
+//
+//	DWORD		0xffffffff if NULL
+//				Otherwise, index of object in system
+
+	{
+	DWORD dwSave = OBJID_NULL;
+	if (pObj)
+		{
+		dwSave = pObj->GetID();
+		ASSERT(dwSave != 0xDDDDDDDD);
+		}
+
+	Stream.Write(dwSave);
+	}
+
+void CSystem::WriteObjRefToStream (const CSpaceObject *pObj, IWriteStream *pStream, const CSpaceObject *pReferrer) const
 
 //	WriteObjRefToStream
 //
@@ -5185,7 +5205,7 @@ void CSystem::WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream, CS
 			}
 		}
 
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	}
 
 void CSystem::WriteSovereignRefToStream (CSovereign *pSovereign, IWriteStream *pStream)

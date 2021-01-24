@@ -113,7 +113,7 @@ bool CWeaponTargetDefinition::AimAndFire(CWeaponClass* pWeapon, CInstalledDevice
 
 	//	Fire
 
-	CDeviceClass::SActivateCtx ActivateCtx(pTarget, Ctx.TargetList, iFireAngle);
+	CDeviceClass::SActivateCtx ActivateCtx(Ctx, pTarget, iFireAngle);
 	CWeaponFireDesc* pShot = pWeapon->GetWeaponFireDesc(ItemCtx);
 
 	bool bActivateResult = pWeapon->Activate(*pDevice, ActivateCtx);

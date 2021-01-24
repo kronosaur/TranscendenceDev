@@ -762,6 +762,7 @@ class CWeaponFireDesc
 		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pMissile, const SInitOptions &Options);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const SInitOptions &Options);
 		ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, CWeaponClass *pWeapon);
+		bool IsDetonatingOnEndOfLife () const { return (ProximityBlast() && !m_fNoDetonationOnEndOfLife); }
 		bool IsCurvedBeam (void) const { return false; }
 		bool IsDirectionalImage (void) const { return m_fDirectional; }
 		bool IsFragment (void) const { return m_fFragment; }
@@ -905,7 +906,7 @@ class CWeaponFireDesc
 		DWORD m_fMIRV:1 = false;				//	If TRUE, shots require their own target.
 		DWORD m_fNoWMDHint:1 = false;			//	If TRUE, do not show WMD-needed hint
 		DWORD m_fNoMiningHint:1 = false;		//	If TRUE, do not show mining-needed hint
-		DWORD m_fSpare5:1;
+		DWORD m_fNoDetonationOnEndOfLife:1 = false;	//	If TRUE, do not detonate when life expires
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;

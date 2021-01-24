@@ -115,15 +115,6 @@ class CParticlePatternEffectPainter : public IEffectPainter
 
 //	CParticlePatternEffectCreator object
 
-CParticlePatternEffectCreator::CParticlePatternEffectCreator (void) : 
-		m_pParticleEffect(NULL),
-		m_pSingleton(NULL)
-
-//	CParticlePatternEffectCreator constructor
-
-	{
-	}
-
 CParticlePatternEffectCreator::~CParticlePatternEffectCreator (void)
 
 //	CParticlePatternEffectCreator destructor

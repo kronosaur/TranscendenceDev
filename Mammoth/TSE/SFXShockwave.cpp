@@ -113,14 +113,6 @@ static LPCSTR STYLE_TABLE[] =
 
 //	CShockwaveEffectCreator object
 
-CShockwaveEffectCreator::CShockwaveEffectCreator (void) :
-		m_pSingleton(NULL)
-
-//	CShockwaveEffectCreator constructor
-
-	{
-	}
-
 CShockwaveEffectCreator::~CShockwaveEffectCreator (void)
 
 //	CShockwaveEffectCreator destructor

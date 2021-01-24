@@ -2542,7 +2542,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	dwSave = OBJID_NULL;
 	if (m_pPOV && m_pPOV->GetSystem())
 		{
-		m_pPOV->GetSystem()->WriteObjRefToStream(m_pPOV, pStream);
+		m_pPOV->WriteObjRefToStream(m_pPOV, pStream);
 
 		if (!m_pPOV->IsPlayer())
 			kernelDebugLogPattern("ERROR: Saving without player ship.");

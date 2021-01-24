@@ -16,9 +16,9 @@ class CShipChallengeCtx
 
 		void AddShip (CSpaceObject *pObj);
 		void AddShips (CSpaceObjectList &List);
-		inline Metric GetTotalCombat (void) const { return m_rTotalCombat; }
-		inline int GetTotalCount (void) const { return m_iTotalCount; }
-		inline int GetTotalScore (void) const { return m_iTotalScore; }
+		Metric GetTotalCombat (void) const { return m_rTotalCombat; }
+		int GetTotalCount (void) const { return m_iTotalCount; }
+		int GetTotalScore (void) const { return m_iTotalScore; }
 
 	private:
 		int m_iTotalCount;
@@ -47,11 +47,12 @@ class CShipChallengeDesc
 				m_iType(countNone)
 			{ }
 
-		inline ECountTypes GetCountType (void) const { return m_iType; }
+		ECountTypes GetCountType (void) const { return m_iType; }
+		Metric GetChallengeStrength (int iLevel) const { return CalcChallengeStrength(m_iType, iLevel); }
 		bool Init (ECountTypes iType, int iCount = 0);
 		bool Init (ECountTypes iType, const CString &sCount);
 		bool InitFromChallengeRating (const CString &sChallenge);
-		inline bool IsEmpty (void) const { return m_iType == countNone; }
+		bool IsEmpty (void) const { return m_iType == countNone; }
 		bool NeedsMoreInitialShips (CSpaceObject *pBase, const CShipChallengeCtx &Ctx) const;
 		bool NeedsMoreReinforcements (CSpaceObject *pBase) const;
 
@@ -113,27 +114,17 @@ class IShipGenerator
 
 struct SShipGeneratorCtx
 	{
-	SShipGeneratorCtx (void) :
-			pItems(NULL),
-			pOnCreate(NULL),
-			iOrder(IShipController::orderNone),
-			pBase(NULL),
-			pTarget(NULL),
-			dwCreateFlags(0)
-		{ }
-
 	CString sName;								//	If not blank, use as name of ship
-	DWORD dwNameFlags;							//	Name flags (only if sName is not blank)
-	IItemGenerator *pItems;						//	Items to add to ship (may be NULL)
+	DWORD dwNameFlags = 0;						//	Name flags (only if sName is not blank)
+	IItemGenerator *pItems = NULL;				//	Items to add to ship (may be NULL)
 	CAttributeDataBlock InitialData;			//	Initial data
-	ICCItem *pOnCreate;							//	Additional OnCreate code (may be NULL)
-	DWORD dwCreateFlags;
+	ICCItem *pOnCreate = NULL;					//	Additional OnCreate code (may be NULL)
+	DWORD dwCreateFlags = 0;
 
-	IShipController::OrderTypes iOrder;			//	Order for ship
-	IShipController::SData OrderData;			//	Order data
+	COrderDesc OrderDesc;						//	Order for ship
 
-	CSpaceObject *pBase;						//	Base for ship (may be NULL)
-	CSpaceObject *pTarget;						//	Target for ship (may be NULL)
+	CSpaceObject *pBase = NULL;					//	Base for ship (may be NULL)
+	CSpaceObject *pTarget = NULL;				//	Target for ship (may be NULL)
 	};
 
 //	CShipTable ----------------------------------------------------------------
@@ -144,8 +135,8 @@ class CShipTable : public CDesignType
 		CShipTable (void);
 		virtual ~CShipTable (void);
 
-		inline void CreateShips (SShipCreateCtx &Ctx) { if (m_pGenerator) m_pGenerator->CreateShips(Ctx); }
-		inline Metric GetAverageLevelStrength (int iLevel) { return (m_pGenerator ? m_pGenerator->GetAverageLevelStrength(iLevel) : 0.0); }
+		void CreateShips (SShipCreateCtx &Ctx) { if (m_pGenerator) m_pGenerator->CreateShips(Ctx); }
+		Metric GetAverageLevelStrength (int iLevel) { return (m_pGenerator ? m_pGenerator->GetAverageLevelStrength(iLevel) : 0.0); }
 		ALERROR ValidateForRandomEncounter (void) { if (m_pGenerator) return m_pGenerator->ValidateForRandomEncounter(); }
 
 		//	CDesignType overrides

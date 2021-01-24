@@ -10,7 +10,7 @@
 #define PROPERTY_SOURCE							CONSTLIT("source")
 #define PROPERTY_TARGET							CONSTLIT("target")
 
-TPropertyHandler<CMissile> CMissile::m_PropertyTable = std::array<TPropertyHandler<CMissile>::SPropertyDef, 4> {{
+TPropertyHandler<CMissile> CMissile::m_PropertyTable = std::array<TPropertyHandler<CMissile>::SPropertyDef, 5> {{
 		{
 		"lifeLeft",			"ticks",
 		[](const CMissile &Obj, const CString &sProperty) 
@@ -37,6 +37,12 @@ TPropertyHandler<CMissile> CMissile::m_PropertyTable = std::array<TPropertyHandl
 		[](const CMissile &Obj, const CString &sProperty) { return ICCItemPtr(::CreateObjPointer(Obj.GetUniverse().GetCC(), Obj.m_pTarget)); },
 		NULL,
 		},
+
+		{
+		"tracking",			"missile is tracking",
+		[](const CMissile &Obj, const CString &sProperty) { return ICCItemPtr(Obj.m_pDesc->IsTracking()); },
+		NULL,
+		}
 	}};
 
 ICCItemPtr CMissile::OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const
@@ -51,6 +57,13 @@ ICCItemPtr CMissile::OnFindProperty (CCodeChainCtx &CCX, const CString &sPropert
 	ICCItemPtr pValue;
 	if (m_PropertyTable.FindProperty(*this, sProperty, pValue))
 		return pValue;
+
+	//	Check the weapon fire descriptor
+
+	else if (ICCItem *pValue = m_pDesc->FindProperty(sProperty))
+		{
+		return ICCItemPtr(pValue);
+		}
 
 	//	Otherwise, not found
 

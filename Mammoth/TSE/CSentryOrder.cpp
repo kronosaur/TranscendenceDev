@@ -134,7 +134,7 @@ void CSentryOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CSentryOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CSentryOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -145,15 +145,15 @@ void CSentryOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 
 	//	Undock, if necessary
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	Set our base
 
-	m_Objs[objBase] = pOrderTarget;
+	m_Objs[objBase] = OrderDesc.GetTarget();
 
 	//	Set the timer in ticks
 
-	DWORD dwTimer = Data.AsInteger();
+	DWORD dwTimer = OrderDesc.GetDataInteger();
 	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
 
 	DEBUG_CATCH
@@ -237,7 +237,7 @@ void CSentryOrder::OnReadFromStream (SLoadCtx &Ctx)
 	m_fIsAttacking = ((dwLoad & 0x00000001) ? true : false);
 	}
 
-void CSentryOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CSentryOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

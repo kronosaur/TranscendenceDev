@@ -180,7 +180,7 @@ CString ComposeDamageAdjReference (int *AdjRow, int *StdRow);
 int NLCompare (TArray<CString> &Input, TArray<CString> &Pattern);
 void NLSplit (const CString &sPhrase, TArray<CString> *retArray);
 
-void ReportCrashObj (CString *retsMessage, CSpaceObject *pCrashObj = NULL);
+void ReportCrashObj (CString *retsMessage, const CSpaceObject *pCrashObj = NULL);
 
 //	Miscellaneous Structures & Classes
 
@@ -213,7 +213,7 @@ class CHitCtx
 		const CVector &GetHitPos (void) const { return m_vHitPos; }
 
 		void ReadFromStream (SLoadCtx &Ctx);
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream) const;
+		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
 		CSpaceObject *m_pHit;
@@ -270,7 +270,9 @@ struct SUpdateCtx
 	{
 	public:
 		int GetLightIntensity (CSpaceObject *pObj) const;
+		CTargetList &GetTargetList ();
 		bool IsTimeStopped (void) const { return m_bTimeStopped; }
+		void OnEndUpdate () { m_pObj = NULL; }
 		void OnStartUpdate (CSpaceObject &Obj);
 
 		CSystem *pSystem = NULL;					//	Current system
@@ -292,12 +294,15 @@ struct SUpdateCtx
 
 		//	About the object being updated
 
+		CSpaceObject *m_pObj = NULL;				//	Object being updated
+		CTargetList m_TargetList;					//	Cached target list
 		bool m_bTimeStopped = false;				//	Object is currently time-stopped (cached for perf).
 
 		//	Cached computed values
 
 		mutable CSpaceObject *m_pCacheObj = NULL;	//	Cached values apply to this object.
 		mutable int m_iLightIntensity = -1;			//	Light intensity at pCacheObj (-1 if not computed).
+		mutable bool m_bTargetListValid = false;	//	TRUE if m_TargetList is initialized
 	};
 
 //	CSpaceObject ---------------------------------------------------------------
@@ -899,7 +904,7 @@ class CSpaceObject
 		void UpdateExtended (const CTimeSpan &ExtraTime);
 		void UpdatePlayer (SUpdateCtx &Ctx) { OnUpdatePlayer(Ctx); }
 		void WriteToStream (IWriteStream *pStream);
-		void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream) { GetSystem()->WriteObjRefToStream(pObj, pStream, this); }
+		void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream) const;
 
 		bool MatchesCriteria (const CSpaceObjectCriteria &Crit) const { CSpaceObjectCriteria::SCtx Ctx(NULL, Crit); return MatchesCriteria(Ctx, Crit); }
 		bool MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const;
@@ -1085,7 +1090,7 @@ class CSpaceObject
 
 		//	DEBUG
 
-		virtual CString DebugCrashInfo (void) { return NULL_STR; }
+		virtual CString DebugCrashInfo (void) const { return NULL_STR; }
 
 #ifdef DEBUG_VECTOR
 		void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
@@ -1120,7 +1125,7 @@ class CSpaceObject
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
 		virtual Metric GetMass (void) const { return 0.0; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return LITERAL("unknown object"); }
-		virtual CString GetObjClassName (void) { return CONSTLIT("unknown"); }
+		virtual CString GetObjClassName (void) const { return CONSTLIT("unknown"); }
 		virtual Metric GetParallaxDist (void) { return 0.0; }
 		virtual EDamageResults GetPassthroughDefault (void) { return damageNoDamage; }
 		virtual int GetPlanetarySize (void) const { return 0; }

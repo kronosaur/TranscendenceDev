@@ -123,8 +123,7 @@ class CSingleShip : public IShipGenerator
 
 		CDesignTypeRef<CDesignType> m_pOverride;	//	Override (event handler)
 		CString m_sController;						//	Controller to use (or "" to use default)
-		IShipController::OrderTypes m_iOrder;		//	Ship order
-		IShipController::SData m_OrderData;			//	Order data
+		COrderDesc m_OrderDesc;						//	Ship order
 	};
 
 class CTableOfShipGenerators : public IShipGenerator
@@ -719,8 +718,10 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 	GeneratorCtx.pOnCreate = m_pOnCreate;
 	GeneratorCtx.dwCreateFlags = Ctx.dwFlags;
 
-	GeneratorCtx.iOrder = (m_iOrder != IShipController::orderNone ? m_iOrder : Ctx.iDefaultOrder);
-	GeneratorCtx.OrderData = m_OrderData;
+	if (m_OrderDesc)
+		GeneratorCtx.OrderDesc = m_OrderDesc;
+	else
+		GeneratorCtx.OrderDesc = COrderDesc(Ctx.iDefaultOrder);
 
 	GeneratorCtx.pBase = Ctx.pBase;
 	GeneratorCtx.pTarget = Ctx.pTarget;
@@ -731,13 +732,14 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	if (Ctx.pBase == NULL && Ctx.pGate != NULL)
 		{
-		switch (GeneratorCtx.iOrder)
+		switch (GeneratorCtx.OrderDesc.GetOrder())
 			{
 			case IShipController::orderEscort:
 			case IShipController::orderFollow:
 			case IShipController::orderGateOnThreat:
 			case IShipController::orderGuard:
 			case IShipController::orderOrbitExact:
+			case IShipController::orderOrbitPatrol:
 			case IShipController::orderMine:
 			case IShipController::orderPatrol:
 			case IShipController::orderSentry:
@@ -1017,17 +1019,22 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 	//	Load orders
 
-	if (!IShipController::ParseOrderString(pDesc->GetAttribute(ORDERS_ATTRIB), &m_iOrder, &m_OrderData))
+	CString sOrder;
+	if (pDesc->FindAttribute(ORDERS_ATTRIB, &sOrder))
 		{
-		Ctx.sError = strPatternSubst("Invalid order: %s", pDesc->GetAttribute(ORDERS_ATTRIB));
-		return ERR_FAIL;
+		m_OrderDesc = COrderDesc::ParseFromString(sOrder);
+		if (!m_OrderDesc)
+			{
+			Ctx.sError = strPatternSubst("Invalid order: %s", pDesc->GetAttribute(ORDERS_ATTRIB));
+			return ERR_FAIL;
+			}
 		}
 
 	//	If we have no orders, warn
 
 #ifdef DEBUG
 	if (g_pUniverse->InDebugMode()
-			&& m_iOrder == IShipController::orderNone
+			&& !m_OrderDesc
 			&& Ctx.pType
 			&& Ctx.pType->GetType() != designShipTable
 			&& m_pOverride.GetUNID() == 0
@@ -1040,11 +1047,11 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 	//	For backwards compatibility, handle patrol distance
 
-	switch (m_iOrder)
+	switch (m_OrderDesc.GetOrder())
 		{
 		case IShipController::orderPatrol:
-			if (m_OrderData.AsInteger() == 0)
-				m_OrderData = IShipController::SData(pDesc->GetAttributeIntegerBounded(PATROL_DIST_ATTRIB, 1, -1, 1));
+			if (m_OrderDesc.GetDataInteger() == 0)
+				m_OrderDesc.SetDataInteger(pDesc->GetAttributeIntegerBounded(PATROL_DIST_ATTRIB, 1, -1, 1));
 			break;
 		}
 

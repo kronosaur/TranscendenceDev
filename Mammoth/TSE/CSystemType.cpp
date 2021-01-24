@@ -33,6 +33,16 @@ static const char *CACHED_EVENTS[CSystemType::evtCount] =
 		"OnObjJumpPosAdj",
 	};
 
+static TStaticStringTable<TStaticStringEntry<Metric>, 7> SCALE_TABLE = {
+	"au",					g_AU,
+	"light-minute",			LIGHT_MINUTE,
+	"light-second",			LIGHT_SECOND,
+	"lm",					LIGHT_MINUTE,
+	"ls",					LIGHT_SECOND,
+	"mls",					LIGHT_SECOND / 1000.0,
+	"pixel",				g_KlicksPerPixel,
+	};
+
 CSystemType::CSystemType (void) : 
 		m_pDesc(NULL),
 		m_pLocalTables(NULL)
@@ -269,5 +279,23 @@ void CSystemType::OnMarkImages (void)
 		TSharedPtr<CObjectImage> pImage = GetUniverse().FindLibraryImage(m_dwBackgroundUNID);
 		if (pImage)
 			pImage->Mark();
+		}
+	}
+
+Metric CSystemType::ParseScale (const CString &sValue)
+
+//	ParseScale
+//
+//	Parses a scale unit and returns the unit length in kilometers.
+
+	{
+	if (sValue.IsBlank())
+		return LIGHT_SECOND;
+	else
+		{
+		if (auto pEntry = SCALE_TABLE.GetAt(sValue))
+			return pEntry->Value;
+		else
+			return LIGHT_SECOND;
 		}
 	}

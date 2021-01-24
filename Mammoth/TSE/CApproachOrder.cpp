@@ -26,19 +26,16 @@ void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	switch (m_iState)
 		{
-		case stateOnCourseViaNavPath:
+		case EState::OnCourseViaNavPath:
 			{
 			Metric rDest2;
-
-			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
 
 			bool bAtDest;
 			Ctx.ImplementFollowNavPath(pShip, &bAtDest);
 			if (bAtDest)
 				{
 				Ctx.ClearNavPath();
-				m_iState = stateApproaching;
+				m_iState = EState::Approaching;
 				}
 			else if ((rDest2 = (m_Objs[objDest]->GetPos() - pShip->GetPos()).Length2()) < m_rMinDist2)
 				{
@@ -64,18 +61,15 @@ void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 				else
 					{
 					Ctx.ClearNavPath();
-					m_iState = stateApproaching;
+					m_iState = EState::Approaching;
 					}
 				}
 
 			break;
 			}
 
-		case stateApproaching:
+		case EState::Approaching:
 			{
-			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
-
 			//	Maneuver
 
 			CVector vTarget = m_Objs[objDest]->GetPos() - pShip->GetPos();
@@ -98,12 +92,15 @@ void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 			break;
 			}
+
+		default:
+			throw CException(ERR_FAIL);
 		}
 
 	DEBUG_CATCH
 	}
 
-void CApproachOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CApproachOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -112,28 +109,29 @@ void CApproachOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 	{
 	DEBUG_TRY
 
-	ASSERT(pOrderTarget);
+	if (!OrderDesc.GetTarget())
+		throw CException(ERR_FAIL);
 
 	//	Make sure we're undocked because we're going flying
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	Set our basic data
 
-	m_Objs[objDest] = pOrderTarget;
-	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)Data.AsInteger());
+	m_Objs[objDest] = OrderDesc.GetTarget();
+	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
 	m_rMinDist2 *= m_rMinDist2;
 
 	//	See if we should take a nav path
 
-	if (pShip->GetDistance2(pOrderTarget) > NAV_PATH_THRESHOLD2
-			&& Ctx.CalcNavPath(pShip, pOrderTarget))
-		m_iState = stateOnCourseViaNavPath;
+	if (Ship.GetDistance2(OrderDesc.GetTarget()) > NAV_PATH_THRESHOLD2
+			&& Ctx.CalcNavPath(&Ship, OrderDesc.GetTarget()))
+		m_iState = EState::OnCourseViaNavPath;
 
 	//	Otherwise, go there
 
 	else
-		m_iState = stateApproaching;
+		m_iState = EState::Approaching;
 
 	DEBUG_CATCH
 	}
@@ -148,12 +146,12 @@ void CApproachOrder::OnReadFromStream (SLoadCtx &Ctx)
 	DWORD dwLoad;
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_iState = (States)dwLoad;
+	m_iState = (EState)dwLoad;
 
 	Ctx.pStream->Read((char *)&m_rMinDist2, sizeof(Metric));
 	}
 
-void CApproachOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CApproachOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

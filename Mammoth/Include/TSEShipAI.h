@@ -41,43 +41,61 @@ struct SPlayerChangedShipsCtx
 
 //  CAISettings ----------------------------------------------------------------
 
-enum AICombatStyles
+//	NOTE: These values are saved; do not change them.
+
+enum class AICombatStyle
 	{
-	aicombatStandard =						0,	//	Normal dogfighting
-	aicombatStandOff =						1,	//	Missile ship combat
-	aicombatFlyby =							2,	//	Maximize relative speed wrt target
-	aicombatNoRetreat =						3,	//	Do not turn away from target
-	aicombatChase =							4,	//	Get in position behind the target
-	aicombatAdvanced =						5,	//	Dogfight, keeping proper distance from target
+	Standard =								0,	//	Normal dogfighting
+	StandOff =								1,	//	Missile ship combat
+	Flyby =									2,	//	Maximize relative speed wrt target
+	NoRetreat =								3,	//	Do not turn away from target
+	Chase =									4,	//	Get in position behind the target
+	Advanced =								5,	//	Dogfight, keeping proper distance from target
+	};
+
+enum class AIFlockingStyle
+	{
+	None =									0,	//	No flocking behavior
+
+	Cloud =									1,	//	Old-style cloud flocking
+	Compact =								2,	//	Crowd around leader
+	Random =								3,	//	Random, fixed positions around leader
+	};
+
+enum class AIReaction
+	{
+	Default =								0,	//	Default reaction based on order
+	None =									1,	//	Do not react
+	DeterWithSecondaries =					2,	//	Deter with secondaries, but do not turn or maneuver
+	Deter =									3,	//	Turn to attack attacker, but do not chase
+	Chase =									4,	//	Chase attacker
+	Destroy =								5,	//	Destroy attacker
+	Gate =									6,	//	Gate out
 	};
 
 class CAISettings
 	{
 	public:
-		enum EFlockingStyles
-			{
-			flockNone =						0,	//	No flocking behavior
+		static constexpr int DEFAULT_THREAT_RANGE = 30;
 
-			flockCloud =					1,	//	Old-style cloud flocking
-			flockCompact =					2,	//	Crowd around leader
-			flockRandom =					3,	//	Random, fixed positions around leader
-			};
-
-		CAISettings (void);
+		CAISettings (void) { }
 
 		bool AscendOnGate (void) const { return m_fAscendOnGate; }
-		AICombatStyles GetCombatStyle (void) const { return m_iCombatStyle; }
+		AICombatStyle GetCombatStyle (void) const { return m_iCombatStyle; }
 		int GetFireAccuracy (void) const { return m_iFireAccuracy; }
 		int GetFireRangeAdj (void) const { return m_iFireRangeAdj; }
 		int GetFireRateAdj (void) const { return m_iFireRateAdj; }
-		EFlockingStyles GetFlockingStyle (void) const { return m_iFlockingStyle; }
+		AIFlockingStyle GetFlockingStyle (void) const { return m_iFlockingStyle; }
 		Metric GetMinCombatSeparation (void) const { return m_rMinCombatSeparation; }
 		int GetPerception (void) const { return m_iPerception; }
+		AIReaction GetReactToAttack () const { return m_iReactToAttack; }
+		AIReaction GetReactToThreat () const { return m_iReactToThreat; }
+		Metric GetThreatRange () const { return m_rThreatRange; }
 		CString GetValue (const CString &sSetting);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitToDefault (void);
 		bool IsAggressor (void) const { return m_fAggressor; }
-		bool IsFlocker (void) const { return (m_iFlockingStyle != flockNone); }
+		bool IsFlocker (void) const { return (m_iFlockingStyle != AIFlockingStyle::None); }
 		bool IsNonCombatant (void) const { return m_fNonCombatant; }
 		bool IsPlayer (void) const { return m_fIsPlayer; }
 		bool NoAttackOnThreat (void) const { return m_fNoAttackOnThreat; }
@@ -94,109 +112,63 @@ class CAISettings
 		bool UseAllPrimaryWeapons (void) const { return m_fUseAllPrimaryWeapons; }
 		void WriteToStream (IWriteStream *pStream);
 
-		static AICombatStyles ConvertToAICombatStyle (const CString &sValue);
-		static EFlockingStyles ConvertToFlockingStyle (const CString &sValue);
-		static CString ConvertToID (AICombatStyles iStyle);
-		static CString ConvertToID (EFlockingStyles iStyle);
+		static AICombatStyle ConvertToAICombatStyle (const CString &sValue);
+		static AIFlockingStyle ConvertToFlockingStyle (const CString &sValue);
+		static AIReaction ConvertToAIReaction (const CString &sValue);
+		static CString ConvertToID (AICombatStyle iStyle);
+		static CString ConvertToID (AIFlockingStyle iStyle);
+		static CString ConvertToID (AIReaction iStyle);
 
 	private:
-		AICombatStyles m_iCombatStyle;			//	Combat style
-		EFlockingStyles m_iFlockingStyle;		//	Flocking style
+		AICombatStyle m_iCombatStyle = AICombatStyle::Standard;			//	Combat style
+		AIFlockingStyle m_iFlockingStyle = AIFlockingStyle::None;		//	Flocking style
+		AIReaction m_iReactToAttack = AIReaction::Default;
+		AIReaction m_iReactToThreat = AIReaction::Default;
 
-		int m_iFireRateAdj;						//	Adjustment to weapon's fire rate (10 = normal; 20 = double delay)
-		int m_iFireRangeAdj;					//	Adjustment to range (100 = normal; 50 = half range)
-		int m_iFireAccuracy;					//	Percent chance of hitting
-		int m_iPerception;						//	Perception
+		int m_iFireRateAdj = 10;					//	Adjustment to weapon's fire rate (10 = normal; 20 = double delay)
+		int m_iFireRangeAdj = 100;					//	Adjustment to range (100 = normal; 50 = half range)
+		int m_iFireAccuracy = 100;					//	Percent chance of hitting
+		int m_iPerception = 4;						//	Perception (LATER: We need to refer to CSpaceObject::perceptNormal)
 
-		Metric m_rMinCombatSeparation;			//	Min separation from other ships while in combat
+		Metric m_rThreatRange = DEFAULT_THREAT_RANGE * LIGHT_SECOND;	//	React to threats in this range
+		Metric m_rMinCombatSeparation = -1.0;		//	Min separation from other ships while in combat (-1.0 == based on image size)
 
-		DWORD m_fNoShieldRetreat:1;				//	Ship does not retreat when shields go down
-		DWORD m_fNoDogfights:1;					//	Don't turn ship to face target
-		DWORD m_fNonCombatant:1;				//	Tries to stay out of trouble
-		DWORD m_fNoFriendlyFire:1;				//	Cannot hit friends
-		DWORD m_fAggressor:1;					//	Attack targets of opportunity even if they haven't attacked
-		DWORD m_fNoFriendlyFireCheck:1;			//	Do not check to see if friends are in line of fire
-		DWORD m_fNoOrderGiver:1;				//	Always treated as the decider
-		DWORD m_fAscendOnGate:1;				//	If TRUE, we ascend when the ship gates out
+		DWORD m_fNoShieldRetreat:1 = false;			//	Ship does not retreat when shields go down
+		DWORD m_fNoDogfights:1 = false;				//	Don't turn ship to face target
+		DWORD m_fNonCombatant:1 = false;			//	Tries to stay out of trouble
+		DWORD m_fNoFriendlyFire:1 = false;			//	Cannot hit friends
+		DWORD m_fAggressor:1 = false;				//	Attack targets of opportunity even if they haven't attacked
+		DWORD m_fNoFriendlyFireCheck:1 = false;		//	Do not check to see if friends are in line of fire
+		DWORD m_fNoOrderGiver:1 = false;			//	Always treated as the decider
+		DWORD m_fAscendOnGate:1 = false;			//	If TRUE, we ascend when the ship gates out
 
-		DWORD m_fNoNavPaths:1;					//	If TRUE, do not use nav paths
-		DWORD m_fNoAttackOnThreat:1;			//	Do not attack enemies while escorting (unless ordered)
-		DWORD m_fNoTargetsOfOpportunity:1;		//	If TRUE, do not attack targets of opportunity
-		DWORD m_fIsPlayer:1;					//	If TRUE, we're controlling the player ship (this is usually
-												//		for debugging only).
+		DWORD m_fNoNavPaths:1 = false;				//	If TRUE, do not use nav paths
+		DWORD m_fNoAttackOnThreat:1 = false;		//	Do not attack enemies while escorting (unless ordered)
+		DWORD m_fNoTargetsOfOpportunity:1 = false;	//	If TRUE, do not attack targets of opportunity
+		DWORD m_fIsPlayer:1 = false;				//	If TRUE, we're controlling the player ship (this is usually
+													//		for debugging only).
 		DWORD m_fUseAllPrimaryWeapons:1;		//  If TRUE, we try to shoot all primary weapons at the same time
-		DWORD m_fSpare6:1;
-		DWORD m_fSpare7:1;
-		DWORD m_fSpare8:1;
+		DWORD m_fSpare6:1 = false;
+		DWORD m_fSpare7:1 = false;
+		DWORD m_fSpare8:1 = false;
 
-		DWORD m_dwSpare:16;
+		DWORD m_dwSpare:16 = 0;
 	};
 
 //	IShipController ------------------------------------------------------------
 //
 //	This abstract class is the root of all ship AI classes.
 
-enum EOrderFlags
-	{
-	ORDER_FLAG_DELETE_ON_STATION_DESTROYED =	0x00000001,	//	Delete the order when target is station destroyed
-	ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP =		0x00000002,	//	Update target if player changes ship
-	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED =	0x00000004,	//	Notify controller when any station destroyed
-	ORDER_FLAG_DELETE_ON_OLD_SHIP_WAITS =		0x00000008,	//	Delete if player switched ships and old ship is waiting
-	};
+static constexpr DWORD ORDER_FLAG_DELETE_ON_STATION_DESTROYED =		0x00000001;	//	Delete the order when target is station destroyed
+static constexpr DWORD ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP =		0x00000002;	//	Update target if player changes ship
+static constexpr DWORD ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED =		0x00000004;	//	Notify controller when any station destroyed
+static constexpr DWORD ORDER_FLAG_DELETE_ON_OLD_SHIP_WAITS =		0x00000008;	//	Delete if player switched ships and old ship is waiting
+
+class COrderDesc;
 
 class IShipController
 	{
 	public:
-		enum EDataTypes
-			{
-			dataNone,						//	dwData is ignored
-			dataInteger,					//	dwData is a 32-bit integer
-			dataPair,						//	dwData is two 16-bit integers
-			dataString,						//	dwData is a pointer to a CString
-			dataVector,						//	dwData is a pointer to a CVector
-			dataItem,						//	dwData is a pointer to a CItem
-			dataOrbitExact,				//	Encode orbit in SData
-			};
-
-		struct SData
-			{
-			SData (void)
-				{ }
-
-			SData (DWORD dwData) : iDataType(dataInteger),
-					dwData1(dwData)
-				{ }
-
-			SData (DWORD dwData1Arg, DWORD dwData2Arg) : iDataType(dataPair),
-					dwData1(dwData1Arg),
-					dwData2(dwData2Arg)
-				{ }
-
-			SData (const CString &sDataArg) : iDataType(dataString),
-					sData(sDataArg)
-				{ }
-
-			SData (const CVector &vDataArg) : iDataType(dataVector),
-					vData(vDataArg)
-				{ }
-
-			SData (const CItem &ItemArg) : iDataType(dataItem),
-					Item(ItemArg)
-				{ }
-
-			DWORD AsInteger (void) const { if (iDataType == dataInteger || iDataType == dataPair) return dwData1; else return 0; }
-			DWORD AsInteger2 (void) const { if (iDataType == dataPair) return dwData2; else return 0; }
-			const CItem &AsItem (void) const { if (iDataType == dataItem) return Item; else return CItem::NullItem(); }
-			bool IsIntegerOrPair (void) const { return (iDataType == dataInteger || iDataType == dataPair); }
-
-			EDataTypes iDataType = dataNone;
-
-			DWORD dwData1 = 0;
-			DWORD dwData2 = 0;
-			CString sData;
-			CVector vData;
-			CItem Item;
-			};
 
 		//	TO ADD A NEW ORDER:
 		//
@@ -261,7 +233,24 @@ class IShipController
 
 			orderFireWeapon,			//	Data = weapon item to fire
 			orderUseItem,				//	Data = item to use
-			orderOrbitExact,			//	pTarget = center; dwData1 = radius; dwData2 = timer; vData.x = startPosition; vData.y = eccentricity
+			orderOrbitExact,			//	pTarget = center
+										//		"radius": Orbit radius (light-seconds)
+										//		"speed": Angular speed (degrees)
+										//		"eccentricity": Orbital eccentricity
+										//		"angle": Starting position in order (degrees) 0 == auto angle.
+										//		"timer": Seconds left in order
+			orderOrbitPatrol,			//	pTarget = center
+										//		"radius": Orbit radius (light-seconds)
+										//		"speed": Angular speed (degrees)
+										//		"eccentricity": Orbital eccentricity
+										//		"angle": Starting position in order (degrees) 0 == auto angle.
+										//		"timer": Seconds left in order
+			orderDeterChase,			//	pTarget = target to chase
+										//		"base": ID of base object (optional)
+										//		"radius": Max distance from base (optional)
+										//		"timer": Seconds left in order (optional)
+			orderAttackOrRetreat,		//	pTarget = target to destroy
+										//		"timer": Seconds left in order (optional)
 			};
 
 		enum EShipStatusNotifications
@@ -286,7 +275,7 @@ class IShipController
 		virtual bool CanObjRequestDock (CSpaceObject *pObj = NULL) const { return true; }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
-        virtual ICCItem *FindProperty (const CString &sProperty) { return NULL; }
+		virtual ICCItem *FindProperty (const CString &sProperty) { return NULL; }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
 		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
@@ -331,13 +320,12 @@ class IShipController
 		virtual ESetPropertyResult SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL) { return ESetPropertyResult::notFound; }
 		virtual void WriteToStream (IWriteStream *pStream) { ASSERT(false); }
 
-		virtual void AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false) { }
+		virtual void AddOrder (const COrderDesc &Order, bool bAddBefore = false) { }
 		virtual void CancelAllOrders (void) { }
 		virtual void CancelCurrentOrder (void) { }
 		virtual bool CancelOrder (int iIndex) { return false; }
-		virtual DWORD GetCurrentOrderData (void) { return 0; }
-		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) { return orderNone; }
-		virtual OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const { return orderNone; }
+		virtual const COrderDesc &GetCurrentOrderDesc () const;
+		virtual const COrderDesc &GetOrderDesc (int iIndex) const;
 		virtual int GetOrderCount (void) const { return 0; }
 
 		//	Events
@@ -355,7 +343,7 @@ class IShipController
 		virtual void OnDocked (CSpaceObject *pObj) { }
 		virtual void OnDockingStop (void) { }
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { }
-        virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) { }
+		virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) { }
 		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos) { CancelDocking(); }
 		virtual void OnItemBought (const CItem &Item, CurrencyValue iTotalPrice) { }
 		virtual void OnItemDamaged (const CItem &Item, int iHP) { }
@@ -381,13 +369,11 @@ class IShipController
 		virtual void OnWeaponStatusChanged (void) { }
 		virtual void OnWreckCreated (CSpaceObject *pWreck) { }
 
-		static EDataTypes GetOrderDataType (OrderTypes iOrder);
 		static DWORD GetOrderFlags (OrderTypes iOrder) { return m_OrderTypes[iOrder].dwFlags; }
 		static CString GetOrderName (OrderTypes iOrder) { return CString(m_OrderTypes[iOrder].szName); }
 		static OrderTypes GetOrderType (const CString &sString);
+		static char GetOrderDataType (OrderTypes iOrder);
 		static bool OrderHasTarget (OrderTypes iOrder, bool *retbRequired = NULL);
-		static bool ParseOrderData (CCodeChainCtx &CCX, OrderTypes iOrder, const ICCItem &Args, int iFirstArg, SData &retData);
-		static bool ParseOrderString (const CString &sValue, OrderTypes *retiOrder, IShipController::SData *retData = NULL);
 
 	private:
 		struct SOrderTypeData
@@ -400,6 +386,7 @@ class IShipController
 
 			const char *szData;
 			//	-		no data
+			//	?		any
 			//	i		integer (may be optional)
 			//	I		CItem
 			//	2		two integers (encoded in a DWORD)
@@ -411,6 +398,90 @@ class IShipController
 
 		static const SOrderTypeData m_OrderTypes[];
 		static const int ORDER_TYPES_COUNT;
+	};
+
+class COrderDesc
+	{
+	public:
+		COrderDesc () { }
+		COrderDesc (const COrderDesc &Src) { Copy(Src); }
+		COrderDesc (COrderDesc &&Src) noexcept { Move(Src); }
+
+		COrderDesc (IShipController::OrderTypes iOrder);
+		COrderDesc (IShipController::OrderTypes iOrder, CSpaceObject *pTarget);
+		COrderDesc (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, int iData);
+		COrderDesc (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, int iData1, int iData2);
+		COrderDesc (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const CString &sData);
+		COrderDesc (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const CVector &vData);
+		COrderDesc (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const CItem &Data);
+		COrderDesc (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const ICCItem &Data);
+
+		~COrderDesc () { CleanUp(); }
+
+		COrderDesc &operator= (const COrderDesc &Src) { CleanUp(); Copy(Src); return *this; }
+		COrderDesc &operator= (COrderDesc &&Src) noexcept { CleanUp(); Move(Src); return *this; }
+		explicit operator bool () const { return !IsEmpty(); }
+
+		ICCItemPtr AsCCItemList () const;
+		DiceRange GetDataDiceRange (const CString &sField, int iDefault = 0, CString *retsSuffix = NULL) const;
+		Metric GetDataDouble (const CString &sField, Metric rDefault = 0.0) const;
+		ICCItemPtr GetDataCCItem () const { if (GetDataType() == EDataType::CCItem) return ICCItemPtr(((ICCItem *)m_pData)->Reference()); else return ICCItemPtr::Nil(); }
+		DWORD GetDataInteger () const;
+		DWORD GetDataInteger (const CString &sField, bool bDefaultField = false, DWORD dwDefault = 0) const;
+		DWORD GetDataInteger2 () const;
+		DWORD GetDataIntegerOptional (const CString &sField, DWORD dwDefault = 0) const;
+		const CItem &GetDataItem () const { if (GetDataType() == EDataType::Item) return *(CItem *)m_pData; else return CItem::NullItem(); }
+		CSpaceObject *GetDataObject (CSpaceObject &SourceObj, const CString &sField) const;
+		const CString &GetDataString () const { if (GetDataType() == EDataType::String) return *(CString *)m_pData; else return NULL_STR; }
+		int GetDataTicksLeft () const;
+		const CVector &GetDataVector () const { if (GetDataType() == EDataType::Vector) return *(CVector *)m_pData; else return NullVector; }
+		IShipController::OrderTypes GetOrder () const { return (IShipController::OrderTypes)m_dwOrderType; }
+		CSpaceObject *GetTarget () const { return m_pTarget; }
+		bool IsCCItem () const { return (GetDataType() == EDataType::CCItem); }
+		bool IsEmpty () const { return GetOrder() == IShipController::orderNone; }
+		bool IsIntegerOrPair () const { return (GetDataType() == EDataType::Int32 || GetDataType() == EDataType::Int16Pair); }
+		bool IsVector () const { return (GetDataType() == EDataType::Vector); }
+		void ReadFromStream (SLoadCtx &Ctx);
+		void SetDataInteger (DWORD dwData);
+		void SetTarget (CSpaceObject *pTarget) { m_pTarget = pTarget; }
+		void WriteToStream (IWriteStream &Stream, const CShip &Ship) const;
+
+		static COrderDesc ParseFromCCItem (CCodeChainCtx &CCX, IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const ICCItem &Args, int iFirstArg);
+		static COrderDesc ParseFromString (const CString &sValue);
+
+		static COrderDesc Null;
+
+	private:
+		enum class EDataType
+			{
+			None = 0,					//	pData is ignored
+			Int32,						//	pData is 32-bit integer
+			Int16Pair,					//	pData is two 16-bit integers
+			String,						//	pData is a pointer to a CString
+			Vector,						//	pData is a pointer to a CVector
+			Item,						//	pData is a pointer to a CItem
+			CCItem,						//	pData is a pointer to an ICCItem
+			};
+
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_NONE = 0;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_INTEGER = 1;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_PAIR = 2;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_STRING = 3;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_VECTOR = 4;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_ITEM = 5;
+		static constexpr DWORD COMPATIBLE_DATA_TYPE_ORBIT_EXACT = 6;
+
+		void CleanUp ();
+		void Copy (const COrderDesc &Src);
+		EDataType GetDataType () const { return (EDataType)m_dwDataType; }
+		void Move (COrderDesc &Src);
+
+		DWORD m_dwOrderType:8 = 0;		//	IShipController::OrderTypes
+		DWORD m_dwDataType:8 = 0;		//	EDataType
+		DWORD m_dwSpare:16 = 0;
+
+		CSpaceObject *m_pTarget = NULL;	//	Order target
+		void *m_pData = NULL;			//	Depends on dwDataType
 	};
 
 class CShipAIHelper

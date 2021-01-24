@@ -241,7 +241,7 @@ void CFleetCommandAI::BehaviorStart (void)
 		{
 		case IShipController::orderNone:
 			if (m_pShip->GetDockedObj() == NULL)
-				AddOrder(IShipController::orderGate, NULL, IShipController::SData());
+				AddOrder(COrderDesc(IShipController::orderGate));
 			break;
 
 		case IShipController::orderDestroyTarget:
@@ -288,7 +288,7 @@ void CFleetCommandAI::BehaviorStart (void)
 
 		case IShipController::orderWait:
 			{
-			DWORD dwWaitTime = GetCurrentOrderData();
+			DWORD dwWaitTime = GetCurrentOrderDataInteger();
 
 			SetState(stateWaiting);
 			if (dwWaitTime == 0)
@@ -387,7 +387,7 @@ CVector CFleetCommandAI::ComputeRallyPointEx (int iBearing, CSpaceObject *pTarge
 	//	rally inside of our weapon range.
 
 	Metric rDistance;
-	if (m_AICtx.GetCombatStyle() == aicombatStandOff)
+	if (m_AICtx.GetCombatStyle() == AICombatStyle::StandOff)
 		{
 		m_AICtx.CalcBestWeapon(m_pShip, NULL, 0.0);
 		CInstalledDevice *pBestWeapon = m_AICtx.GetBestWeapon();
@@ -637,7 +637,7 @@ void CFleetCommandAI::ImplementFormAtRallyPoint (void)
 		//	We are at the rally point, do the appropriate action based on 
 		//	the kind of ship that we are.
 
-		if (m_AICtx.GetCombatStyle() == aicombatStandOff)
+		if (m_AICtx.GetCombatStyle() == AICombatStyle::StandOff)
 			{
 			SetState(stateAttackFromRallyPoint);
 			m_pObjective = GetCurrentOrderTarget();
@@ -772,7 +772,7 @@ void CFleetCommandAI::OnNewSystemNotify (void)
 		{
 		if (m_pAssets[i].pAsset->GetSystem() != pNewSystem)
 			{
-			IShipController::OrderTypes iOrder = m_pAssets[i].pAsset->AsShip()->GetController()->GetCurrentOrderEx();
+			IShipController::OrderTypes iOrder = m_pAssets[i].pAsset->AsShip()->GetController()->GetCurrentOrderDesc().GetOrder();
 			m_pAssets[i].pAsset = NULL;
 			iNewCount--;
 			}

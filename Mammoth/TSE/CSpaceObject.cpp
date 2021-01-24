@@ -4501,7 +4501,6 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 	{
 	DEBUG_TRY_OBJ_LOOP
 
-	int i;
 	Metric rMaxRange2 = rMaxRange * rMaxRange;
 
 	//	Compute this object's perception and perception range
@@ -4535,7 +4534,7 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 
 	const CSpaceObjectList &ObjList = pSovereign->GetEnemyObjectList(GetSystem());
 	int iCount = ObjList.GetCount();
-	for (i = 0; i < iCount; i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		pObj = ObjList.GetObj(i);
 
@@ -5404,11 +5403,10 @@ bool CSpaceObject::IsPlayerEscortTarget (CSpaceObject *pPlayer)
 
 	//	Check the player's target
 
-	CSpaceObject *pTarget;
-	IShipController::OrderTypes iOrder = pPlayerShip->GetController()->GetCurrentOrderEx(&pTarget);
+	const COrderDesc &OrderDesc = pPlayerShip->GetCurrentOrderDesc();
 
-	return (pTarget == this
-			&& (iOrder == IShipController::orderGuard || iOrder == IShipController::orderEscort));
+	return (OrderDesc.GetTarget() == this
+			&& (OrderDesc.GetOrder() == IShipController::orderGuard || OrderDesc.GetOrder() == IShipController::orderEscort));
 	}
 
 bool CSpaceObject::IsStargateInRange (Metric rMaxRange)
@@ -7793,6 +7791,25 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 	return true;
 	}
 
+void CSpaceObject::WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream) const
+
+//	WriteObjRefToStream
+//
+//	Writes an object reference.
+
+	{
+	//	If we have a system, save through that. We do this because it has some
+	//	extra debug checks.
+
+	if (CSystem *pSystem = GetSystem())
+		pSystem->WriteObjRefToStream(pObj, pStream, this);
+
+	//	Otherwise, we can write it without the debug checks.
+
+	else
+		CSystem::WriteObjRefToStream(*pStream, pObj);
+	}
+
 void CSpaceObject::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
@@ -7917,7 +7934,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 
 	//	Subscriptions
 
-	m_SubscribedObjs.WriteToStream(m_pSystem, pStream);
+	m_SubscribedObjs.WriteToStream(pStream);
 
 	//	Write out the effect list
 

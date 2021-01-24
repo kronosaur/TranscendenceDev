@@ -1764,6 +1764,12 @@
 	<!ENTITY smUrakSpace				"0x001000D2">
 	<!ENTITY rsUrakSentinelHero			"0x001000D3">
 	<!ENTITY rsUrakDestroyerHero		"0x001000D4">
+
+	<!ENTITY rsUrakMineIcy				"0x001000D5">
+	<!ENTITY rsUrakMineMetallic			"0x001000D6">
+	<!ENTITY rsUrakMinePrimordial		"0x001000D7">
+	<!ENTITY rsUrakMineRocky			"0x001000D8">
+	<!ENTITY rsUrakMineVolcanic			"0x001000D9">
 	
 	<!-- 00E0-00EF BATTLE ARENA MAXIMUS -->
 	
@@ -1784,6 +1790,10 @@
 	<!ENTITY rsHeliotropeGunshipHD		"0x001000F1">
 	<!ENTITY smHeliotropeSpace			"0x001000F2">
 	<!ENTITY rsHeliotropeFrigateHero	"0x001000F3">
+
+	<!ENTITY itHeliotropeDefenseGridI	"0x001000F4">
+	<!ENTITY itHeliotropeDefenseGridII	"0x001000F5">
+	<!ENTITY efHeliotropeDefenseGrid	"0x001000F6">
 	
 	<!-- 0100-011F CHARON PIRATES AND MARAUDERS -->
 	
@@ -2061,6 +2071,9 @@
 	<!ENTITY smDwargSpace				"0x001002D4">
 	<!ENTITY rsDwargMasterHero			"0x001002D5">
 	<!ENTITY rsZoanthropeRaiderHero		"0x001002D6">
+	<!ENTITY vtDwargMissileDefense		"0x001002D7">
+	<!ENTITY vtDwargMissileDefenseWeapon	"0x001002D8">
+	<!ENTITY efDwargMissileDefense		"0x001002D9">
 
 	<!-- 02F0-030F RINGERS -->
 
@@ -2163,6 +2176,15 @@
 	<!ENTITY rsPlagueHD					"0x001003B0">
 	<!ENTITY rsRevelationsHD			"0x001003B1">
 	<!ENTITY smSapiensSpace				"0x001003B2">
+	<!ENTITY rsSapiensOutpost			"0x001003B3">
+	<!ENTITY rsSapiensCompound			"0x001003B4">
+	<!ENTITY rsPlague					"0x001003B5">
+	<!ENTITY rsPlagueHero				"0x001003B6">
+	<!ENTITY rsRevelations				"0x001003B7">
+	<!ENTITY rsRevelationsHero			"0x001003B8">
+	<!ENTITY itSapiensRadiationMine		"0x001003B9">
+	<!ENTITY vtSapiensMineLauncher		"0x001003BA">
+	<!ENTITY rsSapiensRadiationMine		"0x001003BB">
 
 	<!-- 03D0-03EF DEATH DRUGS CARTEL -->
 
@@ -2198,12 +2220,23 @@
 	<!ENTITY rsHornetHD					"0x00100431">
 	<!ENTITY smAnarchistSpace			"0x00100432">
 	<!ENTITY rsHornetHero				"0x00100433">
+	<!ENTITY rsEarthZone100				"0x00100434">
+	<!ENTITY rsEarthZone100Hero			"0x00100435">
+	<!ENTITY scEarthZone1200			"0x00100436">
+	<!ENTITY rsEarthZone1200			"0x00100437">
+	<!ENTITY rsEarthZone1200Hero		"0x00100438">
+	<!ENTITY scEarthZone5000			"0x00100439">
+	<!ENTITY rsEarthZone5000			"0x0010043A">
+	<!ENTITY rsEarthZone5000Hero		"0x0010043B">
+	<!ENTITY rsAnarchistSettlement		"0x0010043C">
 
 	<!-- 0450-046F RANX EMPIRE -->
 
 	<!ENTITY rsRanxGunshipHD			"0x00100450">
 	<!ENTITY smRanxSpace				"0x00100451">
 	<!ENTITY rsRanxDreadnoughtHero		"0x00100452">
+	<!ENTITY rsRanxOutpost				"0x00100453">
+	<!ENTITY rsRanxFortress				"0x00100454">
 
 	<!-- 0470-048F FERIANS -->
 

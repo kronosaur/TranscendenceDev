@@ -11,16 +11,27 @@ class CTargetList
 		static constexpr DWORD FLAG_INCLUDE_STATIONS =			0x00000001;
 		static constexpr DWORD FLAG_INCLUDE_NON_AGGRESSORS =	0x00000002;
 
-		enum ETargetTypes
+		enum class ETargetType
 			{
-			typeUnknown =				0x00000000,
+			Unknown =					0x00000000,
 
-			typeAttacker =				0x00000001,		//	Ship or station that can attack
-			typeFortification =			0x00000002,		//	Target that cannot attack
-			typeMissile =				0x00000004,		//	Missile
-			typeTargetableMissile =		0x00000008,		//	Targetable missile (compatibility)
-			typeMinable =				0x00000010,		//	Minable asteroid
+			AttackerCompatible =		0x00000001,		//	Ship or station that can attack
+			Fortification =				0x00000002,		//	Target that cannot attack
+			Missile =					0x00000004,		//	Missile
+			TargetableMissile =			0x00000008,		//	Targetable missile (compatibility)
+			Minable =					0x00000010,		//	Minable asteroid
+			AggressiveShip =			0x00000020,		//	A ship that has fired recently
+			NonAggressiveShip =			0x00000040,		//	A ship that has not fired recently
+			Station =					0x00000080,		//	A station that can attack
 			};
+
+		static constexpr DWORD SELECT_ALL =					0xffff;
+		static constexpr DWORD SELECT_ANY_MISSILE =			(DWORD)ETargetType::Missile | (DWORD)ETargetType::TargetableMissile;
+		static constexpr DWORD SELECT_ATTACKERS =			(DWORD)ETargetType::AggressiveShip | (DWORD)ETargetType::NonAggressiveShip | (DWORD)ETargetType::Station | (DWORD)ETargetType::AttackerCompatible;
+		static constexpr DWORD SELECT_FORTIFICATION =		(DWORD)ETargetType::Fortification;
+		static constexpr DWORD SELECT_MINABLE =				(DWORD)ETargetType::Minable;
+		static constexpr DWORD SELECT_MISSILE =				(DWORD)ETargetType::Missile;
+		static constexpr DWORD SELECT_TARGETABLE_MISSILE =	(DWORD)ETargetType::TargetableMissile;
 
 		struct STargetOptions
 			{
@@ -54,18 +65,20 @@ class CTargetList
 		CTargetList (CSpaceObject &SourceObj, const STargetOptions &Options)
 			{ Init(SourceObj, Options);	}
 
+		static ETargetType CalcType (const CSpaceObject &Obj);
 		void Delete (CSpaceObject &Obj);
+		CSpaceObject *FindBestTarget (DWORD dwTargetTypes = SELECT_ALL, Metric rMaxRange = -1.0) const;
 		int GetCount (void) const { return m_Targets.GetCount(); }
 		CSpaceObject *GetTarget (int iIndex) const { return m_Targets[iIndex].pObj; }
 		Metric GetTargetDist2 (int iIndex) const { return m_Targets.GetKey(iIndex).rDist2; }
-		ETargetTypes GetTargetType (int iIndex) const { return (ETargetTypes)m_Targets[iIndex].dwType; }
+		ETargetType GetTargetType (int iIndex) const { return m_Targets[iIndex].iType; }
 		void Init (CSpaceObject &SourceObj, const STargetOptions &Options);
 		bool IsEmpty (void) const { return m_pSourceObj == NULL; }
 		bool NoLineOfFireCheck (void) const { return m_Options.bNoLineOfFireCheck; }
 		bool NoRangeCheck (void) const { return m_Options.bNoRangeCheck; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Realize (void) const;
-		void WriteToStream (CSystem &System, IWriteStream &Stream) const;
+		void WriteToStream (IWriteStream &Stream) const;
 
 	private:
 		static constexpr DWORD SPECIAL_INVALID_COUNT = 0xffffffff;
@@ -118,12 +131,12 @@ class CTargetList
 
 		struct STargetDesc
 			{
-			DWORD dwType = 0;
+			ETargetType iType = ETargetType::Unknown;
 			CSpaceObject *pObj = NULL;
 			};
 
-		void AddTarget (const STargetPriority &Priority, ETargetTypes iType, CSpaceObject &Obj) const;
-		static EPriorityClass CalcPriority (ETargetTypes iType, CSpaceObject &Obj);
+		void AddTarget (const STargetPriority &Priority, ETargetType iType, CSpaceObject &Obj) const;
+		static EPriorityClass CalcPriority (ETargetType iType, CSpaceObject &Obj);
 		void CleanUp (void) { m_pSourceObj = NULL; Invalidate(); }
 		void Invalidate (void) const { m_Targets.DeleteAll(); m_bValid = false; }
 

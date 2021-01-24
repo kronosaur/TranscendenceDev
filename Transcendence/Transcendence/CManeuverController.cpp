@@ -217,7 +217,7 @@ void CManeuverController::UpdateMoveTo (SUpdateCtx &Ctx, CShip *pShip)
 		}
 	}
 
-void CManeuverController::WriteToStream (IWriteStream &Stream, CSystem *pSystem)
+void CManeuverController::WriteToStream (IWriteStream &Stream)
 
 //	WriteToStream
 //
@@ -237,6 +237,6 @@ void CManeuverController::WriteToStream (IWriteStream &Stream, CSystem *pSystem)
 	Stream.Write(m_iAngle);
 	m_vPos.WriteToStream(Stream);
 
-	pSystem->WriteObjRefToStream(m_pTarget, &Stream);
+	CSystem::WriteObjRefToStream(Stream, m_pTarget);
 	}
 

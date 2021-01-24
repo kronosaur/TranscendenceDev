@@ -119,8 +119,6 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<Image			imageID="&rsStations3;" imageX="0" imageY="608" imageWidth="192" imageHeight="192"/>
-
 		<!-- Configuration -->
 
 		<Hull 	hullType=		"asteroidHull"
@@ -133,6 +131,8 @@
 			<Device deviceID="&itUrakHowitzer;" omnidirectional="true"/>
 		</Devices>
 
+		<!-- Ships and Defenses -->
+
 		<Ships>
 			<Ship				count="1d4" class="&scUrakSentinel;" orders="patrol" patrolDist="5"/>
 		</Ships>
@@ -140,6 +140,8 @@
 		<Reinforcements minShips="3">
 			<Ship				count="1d2" class="&scUrakSentinel;" orders="patrol" patrolDist="5"/>
 		</Reinforcements>
+
+		<!-- Treasure -->
 
 		<Items>
 			<RandomItem count="1d4"
@@ -159,13 +161,23 @@
 			</Table>
 		</Items>
 
-		<DockingPorts>
-			<Port x="-31"	y="100" />
-			<Port x="28"	y="122" />
-			<Port x="100"	y="99" />
-			<Port x="114"	y="32" />
-			<Port x="86"	y="-38" />
-			<Port x="32"	y="-60" />
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<LocationCriteriaTable>
+				<Image criteria="*ice"			imageID="&rsUrakMineIcy;"			imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				<Image criteria="*metallic"		imageID="&rsUrakMineMetallic;"		imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				<Image criteria="*primordial"	imageID="&rsUrakMinePrimordial;"		imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				<Image criteria="*volcanic"		imageID="&rsUrakMineVolcanic;"		imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				
+				<Image criteria="*~"			imageID="&rsUrakMineRocky;"			imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+			</LocationCriteriaTable>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"120"
+				>
 		</DockingPorts>
 
 	</StationType>
@@ -577,10 +589,16 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsUrakDestroyerHD;"	bitmap="Resources\UrakDestroyerHD.jpg" 	bitmask="Resources\UrakDestroyerHDMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsUrakDestroyerHero;"	bitmap="Resources\UrakDestroyerLarge.jpg" 	bitmask="Resources\UrakDestroyerLargeMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsUrakDestroyerHD;"		bitmap="Resources\UrakDestroyerHD.jpg" 	bitmask="Resources\UrakDestroyerHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsUrakDestroyerHero;"		bitmap="Resources\UrakDestroyerLarge.jpg" 	bitmask="Resources\UrakDestroyerLargeMask.bmp" loadOnUse="true"/>
 
-	<Image UNID="&rsUrakSentinelHD;"	bitmap="Resources\UrakSentinelHD.jpg" 	bitmask="Resources\UrakSentinelHDMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsUrakSentinelHero;"	bitmap="Resources\UrakSentinelLarge.jpg" 	bitmask="Resources\UrakSentinelLargeMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsUrakSentinelHD;"		bitmap="Resources\UrakSentinelHD.jpg" 	bitmask="Resources\UrakSentinelHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsUrakSentinelHero;"		bitmap="Resources\UrakSentinelLarge.jpg" 	bitmask="Resources\UrakSentinelLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsUrakMineIcy;"			bitmap="Resources\UrakMineIcy.jpg"		bitmask="Resources\UrakMineIcyMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsUrakMineMetallic;"		bitmap="Resources\UrakMineMetallic.jpg"		bitmask="Resources\UrakMineMetallicMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsUrakMinePrimordial;"	bitmap="Resources\UrakMinePrimordial.jpg"		bitmask="Resources\UrakMinePrimordialMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsUrakMineRocky;"			bitmap="Resources\UrakMineRocky.jpg"		bitmask="Resources\UrakMineRockyMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsUrakMineVolcanic;"		bitmap="Resources\UrakMineVolcanic.jpg"		bitmask="Resources\UrakMineVolcanicMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

@@ -38,7 +38,7 @@
 			armorID=			"&itSolarArmor;"
 			hitPoints=			"420"
 			multiHull=			"true"
-            regen=              "8"
+			regen=              "8"
 				 
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion2;"
@@ -68,6 +68,7 @@
 
 		<Devices>
 			<Device deviceID="&itSunflareCannon;"	omnidirectional="true"/>
+			<Device deviceID="&itHeliotropeDefenseGridII;"/>
 		</Devices>
 
 		<!-- Ships and Defenses -->
@@ -112,7 +113,7 @@
 				 
 			armorID=			"&itHeavyCeramicPlate;"
 			hitPoints=			"120"
-            regen=              "1"
+			regen=              "1"
 				 
 			fireRateAdj=		"40"
 			explosionType=		"&vtBlastExplosion3;"
@@ -145,6 +146,7 @@
 		
 		<Devices>
 			<Device deviceID="&itSunflareCannon;"	omnidirectional="true"/>
+			<Device deviceID="&itHeliotropeDefenseGridI;"/>
 		</Devices>
 
 		<!-- Ships and Defenses -->
@@ -172,7 +174,7 @@
 
 <!-- SHIP CLASSES -->
 
-	<!-- Heliotrope Frigate -->
+	<!-- Level 5: Heliotrope Frigate -->
 
 	<ShipClass UNID="&scHeliotropeFrigate;"
 			manufacturer=		"Heliotrope"
@@ -252,7 +254,7 @@
 
 	</ShipClass>
 
-	<!-- Heliotrope Gunship -->
+	<!-- Level 3: Heliotrope Gunship -->
 
 	<ShipClass UNID="&scHeliotropeGunship;"
 			manufacturer=		"Heliotrope"
@@ -305,7 +307,92 @@
 
 <!-- ITEM TYPES -->
 	
-	<!-- Heliotrope Fuel -->
+	<!-- Level 3: Blinder Cannon -->
+
+	<ItemType UNID="&itBlinderCannon;"
+			name=				"blinder cannon"
+			level=				"3"
+			value=				"1350"
+			mass=				"2000"
+			frequency=			"rare"
+			numberAppearing=	"1"
+			attributes=			"EnergyWeapon; Heliotropes; MajorItem; NotForSale; NotStandard;"
+
+			description=		"A blinder cannon shoots out a thin stream of ionized particles that disrupts a ship's sensors."
+			>
+
+		<Image imageID="&rsItems3;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"beam"
+
+				damage=				"ion:2d8+2; blinding:3"
+				fireRate=			"15"
+				lifetime=			"30"
+				powerUse=			"50"
+
+				effect=				"&efIonizingBeam;"
+				sound=				"&snLaserCannon;"
+				>
+		</Weapon>
+
+	</ItemType>
+
+	<!-- Level 4: Heliotrope Defense Grid I -->
+
+	<ItemType UNID="&itHeliotropeDefenseGridI;"
+			name=				"Heliotrope defense grid I"
+			level=				"4"
+			value=				"9500"
+			mass=				"6000"
+			frequency=			"veryrare"
+			attributes=			"heliotropes, majorItem, notForSale, notStandard"
+
+			description=		"Heliotrope stations generate so much power that they can afford to protect them with a large energy field."
+			>
+
+		<Image imageID="&rsItemsEI2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Shields
+				hitPoints=		"160"
+				hpBonus=		"   +0, +100,  +0,+100,  +0, +0"
+				regen=			"19"
+				powerUse=		"500"
+				deviceSlots=	"2"
+
+				flashEffect=	"&efHeliotropeDefenseGrid;"
+				>
+		</Shields>
+	</ItemType>
+
+	<!-- Level 5: Heliotrope Defense Grid II -->
+
+	<ItemType UNID="&itHeliotropeDefenseGridII;"
+			name=				"Heliotrope defense grid II"
+			level=				"5"
+			value=				"20000"
+			mass=				"10000"
+			frequency=			"veryrare"
+			attributes=			"heliotropes, majorItem, notForSale, notStandard"
+
+			description=		"This is a more powerful defense grid used on larger stations."
+			>
+
+		<Image imageID="&rsItemsEI2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Shields
+				hitPoints=		"200"
+				hpBonus=		"   +0, +50,  +0,+200,  +0, +25"
+				regen=			"25"
+				powerUse=		"1000"
+				deviceSlots=	"2"
+
+				flashEffect=	"&efHeliotropeDefenseGrid;"
+				>
+		</Shields>
+	</ItemType>
+
+	<!-- Level 5: Heliotrope Fuel -->
 
 	<ItemType UNID="&itHeliotropeFuel;"
 			name=				"Heliotrope fuel cylinder"
@@ -347,7 +434,7 @@
 		</Events>
 	</ItemType>
 
-	<!-- Sunflare Cannon -->
+	<!-- Level 5: Sunflare Cannon -->
 
 	<ItemType UNID="&itSunflareCannon;"
 			name=				"sunflare cannon"
@@ -366,10 +453,10 @@
 		<Weapon
 				type=				"beam"
 
-				damage=				"particle:6d8; WMD2"
+				damage=				"particle:7d8; WMD:4"
 				fireRate=			"30"
 				lifetime=			"40"
-				powerUse=			"200"
+				powerUse=			"300"
 
 				effect=				"&efSunflareCannonEffect;"
 				sound=				"&snLaserCannon;"
@@ -377,67 +464,7 @@
 		</Weapon>
 	</ItemType>
 
-	<EffectType UNID="&efSunflareCannonEffect;"
-			instance=			"owner"
-			>
-		<Effect>
-			<Lookup effect="&efParticleBeamDefault;"/>
-			
-			<Ray
-					style=			"smooth"
-					shape=			"tapered"
-					primaryColor=	"#e6ff6f"
-					secondaryColor=	"#d8ff00"
-					>
-				<Events>
-					<GetParameters>
-						(block (damageHP)
-							(setq damageHP (@ gData 'damageHP))
-
-							{
-								length:	(mathScale damageHP 5 64 60 220 50)
-								width: (mathScale damageHP 5 64 10 20 50)
-								intensity: 20
-								}
-							)
-					</GetParameters>
-				</Events>
-			</Ray>
-		</Effect>
-	</EffectType>
-
-	<!-- Blinder Cannon -->
-
-	<ItemType UNID="&itBlinderCannon;"
-			name=				"blinder cannon"
-			level=				"3"
-			value=				"1350"
-			mass=				"2000"
-			frequency=			"rare"
-			numberAppearing=	"1"
-			attributes=			"EnergyWeapon; Heliotropes; MajorItem; NotForSale; NotStandard;"
-
-			description=		"A blinder cannon shoots out a thin stream of ionized particles that disrupts a ship's sensors."
-			>
-
-		<Image imageID="&rsItems3;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
-
-		<Weapon
-				type=				"beam"
-
-				damage=				"ion:2d8+2; blinding:3"
-				fireRate=			"15"
-				lifetime=			"30"
-				powerUse=			"50"
-
-				effect=				"&efIonizingBeam;"
-				sound=				"&snLaserCannon;"
-				>
-		</Weapon>
-
-	</ItemType>
-
-	<!-- Heliotrope Encounters -->
+<!-- TABLES -->
 
 	<ShipTable UNID="&tbHeliotropeEncounters;">
 		<LevelTable>
@@ -469,7 +496,63 @@
 		</LevelTable>
 	</ShipTable>
 
-	<!-- Resources -->
+<!-- EFFECTS -->
+
+	<EffectType unid="&efHeliotropeDefenseGrid;"
+			instance=	"owner"
+			>
+		<Effect>
+			<Orb	style=				"cloudshell"
+					animate=			"dim"
+					intensity=			"75"
+					lifetime=			"8"
+					
+					primaryColor=		"#80d082"
+					secondaryColor=		"#197a1a"
+					opacity=			"255"
+					secondaryOpacity=	"0"
+					>
+				<Events>
+					<GetParameters>
+						{
+							radius: (round (* 0.6 (obj@ (@ gData 'anchorObj) 'sizePixels)))
+							}
+					</GetParameters>
+				</Events>
+			</Orb>
+		</Effect>
+	</EffectType>
+
+	<EffectType UNID="&efSunflareCannonEffect;"
+			instance=			"owner"
+			>
+		<Effect>
+			<Lookup effect="&efParticleBeamDefault;"/>
+			
+			<Ray
+					style=			"smooth"
+					shape=			"tapered"
+					primaryColor=	"#e6ff6f"
+					secondaryColor=	"#d8ff00"
+					>
+				<Events>
+					<GetParameters>
+						(block (damageHP)
+							(setq damageHP (@ gData 'damageHP))
+
+							{
+								length:	(mathScale damageHP 5 64 60 220 50)
+								width: (mathScale damageHP 5 64 10 20 50)
+								intensity: 20
+								}
+							)
+					</GetParameters>
+				</Events>
+			</Ray>
+		</Effect>
+	</EffectType>
+
+<!-- RESOURCES -->
 
 	<Image UNID="&rsHeliotropeFrigateHD;"			bitmap="Resources\HeliotropeFrigateHD.jpg"		bitmask="Resources\HeliotropeFrigateHDMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsHeliotropeFrigateHero;"			bitmap="Resources\HeliotropeFrigateLarge.jpg"		bitmask="Resources\HeliotropeFrigateLargeMask.bmp"  loadOnUse="true"/>

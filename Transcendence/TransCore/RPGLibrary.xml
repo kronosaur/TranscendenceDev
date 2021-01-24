@@ -97,6 +97,7 @@
 	<!-- 0050-006F BEHAVIORS -->
 	
 	<!ENTITY evStdMiningBehavior		"0x00010050">
+	<!ENTITY evStdWanderBehavior		"0x00010051">
 	
 	<!-- 0070-008F DOCK SCREENS -->
 

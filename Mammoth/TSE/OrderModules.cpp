@@ -96,14 +96,18 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderApproach:
 			return new CApproachOrder;
 
-		case IShipController::orderDestroyTarget:
-		case IShipController::orderAttackNearestEnemy:
 		case IShipController::orderAttackArea:
+		case IShipController::orderAttackNearestEnemy:
+		case IShipController::orderAttackOrRetreat:
+		case IShipController::orderDestroyTarget:
 		case IShipController::orderHoldAndAttack:
 			return new CAttackOrder(iOrder);
 
 		case IShipController::orderAttackStation:
 			return new CAttackStationOrder;
+
+		case IShipController::orderDeterChase:
+			return new CDeterChaseOrder;
 
 		case IShipController::orderEscort:
 		case IShipController::orderFollow:
@@ -113,7 +117,8 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 			return new CFireEventOrder;
 
 		case IShipController::orderOrbitExact:
-			return new COrbitExactOrder;
+		case IShipController::orderOrbitPatrol:
+			return new COrbitExactOrder(iOrder);
 
 		case IShipController::orderDock:
 		case IShipController::orderGate:
@@ -180,7 +185,7 @@ CString IOrderModule::DebugCrashInfo (CShip *pShip)
 	CString sResult;
 
 	sResult.Append(CONSTLIT("IOrderModule\r\n"));
-	sResult.Append(strPatternSubst(CONSTLIT("Order: %d\r\n"), (int)pShip->GetCurrentOrder()));
+	sResult.Append(strPatternSubst(CONSTLIT("Order: %d\r\n"), (int)pShip->GetCurrentOrderDesc().GetOrder()));
 
 	for (i = 0; i < m_iObjCount; i++)
 		sResult.Append(strPatternSubst(CONSTLIT("m_Objs[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(m_Objs[i])));
@@ -270,25 +275,23 @@ void IOrderModule::ReadFromStream (SLoadCtx &Ctx)
 	OnReadFromStream(Ctx); 
 	}
 
-void IOrderModule::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void IOrderModule::WriteToStream (IWriteStream *pStream) const
 
 //	WriteToStream
 //
 //	Write to save file
 	
 	{
-	int i;
-
 	//	Save the objects
 
 	DWORD dwCount = m_iObjCount;
 	pStream->Write((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
-		pSystem->WriteObjRefToStream(m_Objs[i], pStream);
+	for (int i = 0; i < (int)dwCount; i++)
+		CSystem::WriteObjRefToStream(*pStream, m_Objs[i]);
 
 	//	Let our derived class save
 
-	OnWriteToStream(pSystem, pStream);
+	OnWriteToStream(pStream);
 	}
 
 //	CGuardOrder ----------------------------------------------------------------
@@ -302,7 +305,7 @@ void CGuardOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	{
 	}
 
-void CGuardOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CGuardOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -347,7 +350,7 @@ void CGuardOrder::OnReadFromStream (SLoadCtx &Ctx)
 	CSystem::ReadObjRefFromStream(Ctx, &m_pBase);
 	}
 
-void CGuardOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CGuardOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //
@@ -359,5 +362,5 @@ void CGuardOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	dwSave = (DWORD)m_iState;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	pSystem->WriteObjRefToStream(m_pBase, pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pBase);
 	}

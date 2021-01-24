@@ -215,18 +215,15 @@
 	<StationType UNID="&stAnarchistSettlement;"
 			name=				"Anarchist settlement"
 			sovereign=			"&svAnarchists;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
-			multiHull=			"true"
-			armorID=			"&itLightPlasteelPlate;"
-			hitPoints=			"250"
-            regen=              "5"
+			attributes=			"anarchists, enemy, envEarth, envAvoidsAir, freeworldAnarchists, generic, human, populated"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"237"
 			fireRateAdj=		"30"
 			explosionType=		"&vtKineticExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"anarchists, enemy, envEarth, envAvoidsAir, freeworldAnarchists, generic, human, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -240,8 +237,18 @@
 				enemyExclusionRadius=	"75"
 				/>
 
-		<Image		imageID="&rsAnarchistStations;" imageX="0"   imageY="244" imageWidth="260" imageHeight="260"/>
+		<Encounters frequency="common">
+			<Lookup table="&tbAnarchistEncounters;"/>
+		</Encounters>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itLightPlasteelPlate;"
+				hitPoints=		"250"
+				regen=			"5"
+				/>
+		
 		<Devices>
 			<Device deviceID="&itLaserCannon;"	posAngle="0"   posRadius="60" posZ="10" fireAngle="0"   fireArc="180"  missileDefense="true"/>
 			<Device deviceID="&itLaserCannon;"	posAngle="60"  posRadius="60" posZ="10" fireAngle="60"  fireArc="180"  missileDefense="true"/>
@@ -250,6 +257,8 @@
 			<Device deviceID="&itLaserCannon;"	posAngle="240" posRadius="60" posZ="10" fireAngle="240" fireArc="180"  missileDefense="true"/>
 			<Device deviceID="&itLaserCannon;"	posAngle="300" posRadius="60" posZ="10" fireAngle="300" fireArc="180"  missileDefense="true"/>
 		</Devices>
+
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<!-- Docked -->
@@ -273,6 +282,8 @@
 			</LevelTable>
 		</Ships>
 
+		<!-- Treasure -->
+
 		<Items value="standard:level=3:x=3">
 			<RandomItem count="1d2"
 					criteria=			"* +Info; -Alien; -NotStandard;"
@@ -281,72 +292,36 @@
 			<Lookup count="1d3" table="&trStdTreasure;"/>
 		</Items>
 
-		<Encounters frequency="common">
-			<Lookup table="&tbAnarchistEncounters;"/>
-		</Encounters>
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<Image		imageID="&rsAnarchistSettlement;" imageX="0"    imageY="0"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+			<Image		imageID="&rsAnarchistSettlement;" imageX="260"  imageY="0"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+			<Image		imageID="&rsAnarchistSettlement;" imageX="0"    imageY="260"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+			<Image		imageID="&rsAnarchistSettlement;" imageX="260"  imageY="260"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+		</ImageVariants>
+
+		<DockingPorts>
+			<Port posAngle="45" posRadius="110" rotation="-135"/>
+			<Port posAngle="65" posRadius="119" rotation="-135"/>
+			<Port posAngle="25" posRadius="119" rotation="-135"/>
+
+			<Port posAngle="135" posRadius="110" rotation="-45"/>
+			<Port posAngle="155" posRadius="119" rotation="-45"/>
+			<Port posAngle="115" posRadius="119" rotation="-45"/>
+
+			<Port posAngle="225" posRadius="110" rotation="45"/>
+			<Port posAngle="245" posRadius="119" rotation="45"/>
+			<Port posAngle="205" posRadius="119" rotation="45"/>
+
+			<Port posAngle="315" posRadius="110" rotation="135"/>
+			<Port posAngle="335" posRadius="119" rotation="135"/>
+			<Port posAngle="295" posRadius="119" rotation="135"/>
+		</DockingPorts>
+
 	</StationType>
 	
 <!-- SHIP CLASSES -->
-
-	<!-- Earthzone Armed Shuttle -->
-
-	<ShipClass UNID="&scEarthzone;"
-			manufacturer=		"Revolution Designs"
-			class=				"Earthzone"
-			type=				"armed shuttle"
-			defaultSovereign=	"&svAnarchists;"
-
-			attributes=			"anarchists, genericClass"
-			   
-			size=				"27"
-			mass=				"50"
-			thrustRatio=		"4"
-			maxSpeed=			"20"
-			cargoSpace=			"50"
-			>
-
-		<!-- Configuration -->
-
-		<Armor
-			armorID=			"&itLightTitaniumArmor;"
-			count=				"4"
-			/>
-
-		<Devices>
-			<Device deviceID="&itLaserCannon;"/>
-			<Device deviceID="&itAClassDefenseScreen;"/>
-		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
-			/>
-
-		<Items>
-			<Item count="1d6" item="&itHelium3FuelRod;"/>
-		</Items>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsEarthzoneHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="158"	posRadius="18"	posZ="0"	rotation="180"	sendToBack="*"/>
-			<Effect type="thrustMain"		posAngle="-158"	posRadius="18"	posZ="0"	rotation="180"	sendToBack="*"/>
-		</Effects>
-		
-		<!-- AI and Behavior -->
-
-		<AISettings
-			fireRateAdj=		"20"
-			fireRangeAdj=		"50"
-			fireAccuracy=		"85"
-			perception=			"4"
-			
-			combatStyle=		"advanced"
-			/>
-
-	</ShipClass>
 
 	<!-- Level 1: Hornet Battlepod -->
 
@@ -393,6 +368,258 @@
 
 	</ShipClass>
 
+	<!-- Level 1: Earthzone 100 Armed Shuttle -->
+
+	<ShipClass UNID="&scEarthzone;"
+			manufacturer=		"Revolution Designs"
+			class=				"Earthzone 100"
+			type=				"armed shuttle"
+			defaultSovereign=	"&svAnarchists;"
+
+			attributes=			"anarchists, genericClass"
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"26"
+			mass=				"50"
+			cargoSpace=			"50"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"150"
+			maxDevices=			"6"
+
+			maxArmor=			"heavy"
+			stdArmor=			"light"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"240"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="20" posZ="0"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itLightTitaniumArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&itLaserCannon;"/>
+			<Device deviceID="&itAClassDefenseScreen;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsEarthzone100;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.00325"/>
+		<HeroImage imageID="&rsEarthZone100Hero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="21"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"85"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 3: Earthzone 1200 Gunship -->
+
+	<ShipClass UNID="&scEarthzone1200;"
+			manufacturer=		"Revolution Designs"
+			class=				"Earthzone 1200"
+			type=				"gunship"
+			defaultSovereign=	"&svAnarchists;"
+
+			attributes=			"anarchists, genericClass"
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"29"
+			mass=				"120"
+			cargoSpace=			"100"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"8"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"18"
+			thrust=				"480"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="24" posZ="0"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itLightPlasteelPlate;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&itTurbolaserCannon;"/>
+			<Device deviceID="&itClass2Deflector;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsEarthzone1200;" imageWidth="58" imageHeight="58" rotationCount="120" rotationColumns="12" viewportRatio="0.004375"/>
+		<HeroImage imageID="&rsEarthzone1200Hero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="148"	posRadius="13"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-148"	posRadius="13"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"25"
+			fireAccuracy=		"85"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 4: Earthzone 5000 Missileship -->
+
+	<ShipClass UNID="&scEarthzone5000;"
+			manufacturer=		"Revolution Designs"
+			class=				"Earthzone 5000"
+			type=				"missileship"
+			defaultSovereign=	"&svSapiens;"
+
+			attributes=			"anarchists, genericClass"
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"34"
+			mass=				"250"
+			cargoSpace=			"100"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"8"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"16"
+			thrust=				"720"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3.0"
+			rotationAccel=		"0.5"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w +property:omnidirectional;" posAngle="0" posRadius="9" posZ="10"/>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="24" posZ="0"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itPlasteelPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itNAMIMissileLauncher;" minFireArc="300" maxFireArc="60">
+				<Items>
+					<Item count="4d6" item="&itKM120Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&itOmniTurbolaserCannon;" secondaryWeapon="true"/>
+			<Device deviceID="&itCyclotronDeflectorIII;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="2d6" item="&itHeliumAssembly;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsEarthzone5000;" imageWidth="66" imageHeight="66" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&rsEarthzone5000Hero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="152"	posRadius="29"	posZ="-1"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="26"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-152"	posRadius="29"	posZ="-1"	rotation="180"/>
+		</Effects>
+		
+		<!-- Events and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+<!-- TABLES -->
+
 	<!-- Anarchist Random Encounter Table -->
 	
 	<ShipTable UNID="&tbAnarchistEncounters;">
@@ -432,10 +659,18 @@
 		</LevelTable>
 	</ShipTable>
 	
-	<!-- RESOURCES -->
+<!-- RESOURCES -->
 
 	<Image UNID="&rsAnarchistStations;"				bitmap="Resources\AnarchistStations.jpg"		bitmask="Resources\AnarchistStationsMask.bmp"	loadOnUse="true"/>
-	<Image UNID="&rsEarthzoneHD;"					bitmap="Resources\EarthzoneHD.jpg"				bitmask="Resources\EarthzoneHDMask.bmp"  		loadOnUse="true"/>
+	<Image UNID="&rsAnarchistSettlement;"			bitmap="Resources\AnarchistSettlement.jpg"		bitmask="Resources\AnarchistSettlementMask.bmp"	loadOnUse="true"/>
+
+	<Image UNID="&rsEarthZone100;"					bitmap="Resources\EarthZone100.jpg"					bitmask="Resources\EarthZone100Mask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&rsEarthZone100Hero;"				bitmap="Resources\EarthZone100Large.jpg"					bitmask="Resources\EarthZone100LargeMask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&rsEarthZone1200;"					bitmap="Resources\EarthZone1200.jpg"					bitmask="Resources\EarthZone1200Mask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&rsEarthZone1200Hero;"				bitmap="Resources\EarthZone1200Large.jpg"					bitmask="Resources\EarthZone1200LargeMask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&rsEarthZone5000;"					bitmap="Resources\EarthZone5000.jpg"					bitmask="Resources\EarthZone5000Mask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&rsEarthZone5000Hero;"				bitmap="Resources\EarthZone5000Large.jpg"					bitmask="Resources\EarthZone5000LargeMask.bmp"  			loadOnUse="true"/>
+
 	<Image UNID="&rsHornetHD;"						bitmap="Resources\HornetHD.jpg"					bitmask="Resources\HornetHDMask.bmp"  			loadOnUse="true"/>
 	<Image UNID="&rsHornetHero;"					bitmap="Resources\HornetLarge.jpg"				bitmask="Resources\HornetLargeMask.bmp"  			loadOnUse="true"/>
 	

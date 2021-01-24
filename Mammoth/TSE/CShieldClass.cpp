@@ -810,6 +810,8 @@ void CShieldClass::CreateHitEffect (CInstalledDevice &Device, CSpaceObject &Ship
 
 	CCreatePainterCtx Ctx;
 	Ctx.SetDamageCtx(DamageCtx);
+	if (!Ship.IsDestroyed())
+		Ctx.SetAnchor(&Ship);
 
 	IEffectPainter *pPainter = Effect.CreatePainter(Ctx);
 	if (!pPainter)
@@ -1272,14 +1274,44 @@ ICCItem *CShieldClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 			return pResult->Reference();
 		}
 
-	else if (strEquals(sName, PROPERTY_DAMAGE_ADJ))
-		return m_DamageAdj.GetDamageAdjProperty(pEnhancements);
+	else if (strStartsWith(sName, PROPERTY_DAMAGE_ADJ))
+		{
+		if (sName.GetLength() <= PROPERTY_DAMAGE_ADJ.GetLength())
+			return m_DamageAdj.GetDamageAdjProperty(pEnhancements);
+		else
+			{
+			DamageTypes iDamage = CDamageAdjDesc::ParseDamageTypeFromProperty(sName);
+			if (iDamage == damageError)
+				return CC.CreateNil();
+
+			int iAdj = m_DamageAdj.GetAdj(iDamage, pEnhancements);
+			if (iAdj == 100)
+				return CC.CreateNil();
+			else
+				return CC.CreateInteger(iAdj);
+			}
+		}
 
 	else if (strEquals(sName, PROPERTY_HP))
 		return CC.CreateInteger(GetHPLeft(Ctx));
 
-	else if (strEquals(sName, PROPERTY_HP_BONUS))
-		return m_DamageAdj.GetHPBonusProperty(pEnhancements);
+	else if (strStartsWith(sName, PROPERTY_HP_BONUS))
+		{
+		if (sName.GetLength() <= PROPERTY_HP_BONUS.GetLength())
+			return m_DamageAdj.GetHPBonusProperty(pEnhancements);
+		else
+			{
+			DamageTypes iDamage = CDamageAdjDesc::ParseDamageTypeFromProperty(sName);
+			if (iDamage == damageError)
+				return CC.CreateNil();
+
+			int iBonus = m_DamageAdj.GetHPBonus(iDamage, pEnhancements);
+			if (iBonus == 0)
+				return CC.CreateNil();
+			else
+				return CC.CreateInteger(iBonus);
+			}
+		}
 
 	else if (strEquals(sName, PROPERTY_MAX_HP))
 		return CC.CreateInteger(GetMaxHP(Ctx));

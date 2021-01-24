@@ -248,7 +248,7 @@ void CWaitOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CWaitOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -262,16 +262,16 @@ void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObjec
 	//	If we're attacking enemies, then we can't be docked.
 
 	if (m_fAttackEnemies)
-		Ctx.Undock(pShip);
+		Ctx.Undock(&Ship);
 
 	//	Waiting for leader to undock: we need a leader and an optional timer.
 
 	if (m_fWaitUntilLeaderUndocks)
 		{
-		m_Objs[objLeader] = pOrderTarget;
+		m_Objs[objLeader] = OrderDesc.GetTarget();
 		ASSERT(m_Objs[objLeader]->DebugIsValid() && m_Objs[objLeader]->NotifyOthersWhenDestroyed());
 
-		dwTimer = Data.AsInteger();
+		dwTimer = OrderDesc.GetDataInteger();
 		}
 
 	//	Waiting for leader to approach: we need a leader, a distance (which may be 0)
@@ -279,17 +279,17 @@ void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObjec
 
 	else if (m_fWaitForLeaderToApproach)
 		{
-		m_Objs[objLeader] = pOrderTarget;
+		m_Objs[objLeader] = OrderDesc.GetTarget();
 		ASSERT(m_Objs[objLeader]->DebugIsValid() && m_Objs[objLeader]->NotifyOthersWhenDestroyed());
 
-		m_rDistance = LIGHT_SECOND * Data.AsInteger();
-		dwTimer = Data.AsInteger2();
+		m_rDistance = LIGHT_SECOND * OrderDesc.GetDataInteger();
+		dwTimer = OrderDesc.GetDataInteger2();
 		}
 
 	//	Otherwise, just get a timer.
 
 	else
-		dwTimer = Data.AsInteger();
+		dwTimer = OrderDesc.GetDataInteger();
 
 	//	Set the timer in ticks
 
@@ -380,7 +380,7 @@ void CWaitOrder::OnReadFromStream (SLoadCtx &Ctx)
 	m_fIsDeterring = ((dwLoad & 0x00000001) ? true : false);
 	}
 
-void CWaitOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CWaitOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

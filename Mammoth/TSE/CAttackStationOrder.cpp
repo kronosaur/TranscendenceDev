@@ -138,7 +138,7 @@ void CAttackStationOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CAttackStationOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CAttackStationOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -149,15 +149,16 @@ void CAttackStationOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CS
 
 	//	Make sure we're undocked because we're going flying
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	If our target is already destroyed, then we're done
 
+	CSpaceObject *pOrderTarget = OrderDesc.GetTarget();
 	if (pOrderTarget == NULL 
 			|| pOrderTarget->IsDestroyed() 
 			|| pOrderTarget->IsAbandoned())
 		{
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 		return;
 		}
 
@@ -171,15 +172,15 @@ void CAttackStationOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CS
 	//	Set our state. If we are too far away from the target then we need to use
 	//	a nav path.
 
-	if (pShip->GetDistance2(pOrderTarget) > NAV_PATH_THRESHOLD2
-			&& Ctx.CalcNavPath(pShip, pOrderTarget))
+	if (Ship.GetDistance2(pOrderTarget) > NAV_PATH_THRESHOLD2
+			&& Ctx.CalcNavPath(&Ship, pOrderTarget))
 		m_iState = stateFollowingNavPath;
 	else
 		m_iState = stateAttackingTarget;
 
 	//	See if we have a time limit
 
-	DWORD dwTimer = Data.AsInteger();
+	DWORD dwTimer = OrderDesc.GetDataInteger();
 	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
 
 	DEBUG_CATCH
@@ -246,7 +247,7 @@ void CAttackStationOrder::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&m_iCountdown, sizeof(DWORD));
 	}
 
-void CAttackStationOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CAttackStationOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

@@ -295,8 +295,8 @@ void CBeam::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_vPaintTo, sizeof(m_vPaintTo));
 	pStream->Write((char *)&m_iTick, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));
-	m_Source.WriteToStream(GetSystem(), pStream);
-	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
+	m_Source.WriteToStream(pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
 	WriteObjRefToStream(m_pHit, pStream);
 	pStream->Write((char *)&m_iHitDir, sizeof(DWORD));
 	}

@@ -47,11 +47,6 @@
 #define INTER_SYSTEM_FOLLOW_PLAYER			CONSTLIT("followPlayer")
 #define INTER_SYSTEM_WAIT_FOR_PLAYER		CONSTLIT("waitForPlayer")
 
-#define SCALE_AU							CONSTLIT("AU")
-#define SCALE_LIGHT_MINUTE					CONSTLIT("light-minute")
-#define SCALE_LIGHT_SECOND					CONSTLIT("light-second")
-#define SCALE_PIXEL							CONSTLIT("pixel")
-
 #define STORAGE_DEVICE						CONSTLIT("local")
 #define STORAGE_SERVICE_EXTENSION			CONSTLIT("serviceExtension")
 #define STORAGE_SERVICE_USER				CONSTLIT("serviceUser")
@@ -1298,17 +1293,7 @@ Metric GetScale (CXMLElement *pObj)
 //	Returns the scale for this element
 
 	{
-	CString sScale = pObj->GetAttribute(SCALE_ATTRIB);
-	if (sScale.IsBlank())
-		return LIGHT_SECOND;
-	else if (strEquals(sScale, SCALE_AU))
-		return g_AU;
-	else if (strEquals(sScale, SCALE_LIGHT_MINUTE))
-		return LIGHT_MINUTE;
-	else if (strEquals(sScale, SCALE_PIXEL))
-		return g_KlicksPerPixel;
-	else
-		return LIGHT_SECOND;
+	return CSystemType::ParseScale(pObj->GetAttribute(SCALE_ATTRIB));
 	}
 
 CSpaceObject::InterSystemResults GetInterSystemResult (const CString &sString)
@@ -2438,7 +2423,7 @@ void ParseUNIDList (const CString &sList, DWORD dwFlags, TArray<DWORD> *retList)
 		}
 	}
 
-void ReportCrashObj (CString *retsMessage, CSpaceObject *pCrashObj)
+void ReportCrashObj (CString *retsMessage, const CSpaceObject *pCrashObj)
 
 //	ReportCrashObj
 //

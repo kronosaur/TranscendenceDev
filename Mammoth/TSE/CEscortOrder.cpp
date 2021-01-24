@@ -154,7 +154,7 @@ void CEscortOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CEscortOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CEscortOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -163,11 +163,12 @@ void CEscortOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 	{
 	DEBUG_TRY
 
-	ASSERT(pOrderTarget);
+	if (!OrderDesc.GetTarget())
+		throw CException(ERR_FAIL);
 
 	//	Make sure we're undocked because we're going flying
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	Set state
 
@@ -175,8 +176,8 @@ void CEscortOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 
 	//	Remember the principal and report in
 
-	m_Objs[objPrincipal] = pOrderTarget;
-	pShip->Communicate(pOrderTarget, msgEscortReportingIn, pShip);
+	m_Objs[objPrincipal] = OrderDesc.GetTarget();
+	Ship.Communicate(OrderDesc.GetTarget(), msgEscortReportingIn, &Ship);
 
 	DEBUG_CATCH
 	}
@@ -234,10 +235,7 @@ DWORD CEscortOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 					|| pParam1->IsDestroyed())
 				return resNoAnswer;
 
-			pShip->GetController()->AddOrder(IShipController::orderDestroyTarget,
-						pParam1,
-						IShipController::SData(),
-						true);
+			pShip->GetController()->AddOrder(COrderDesc(IShipController::orderDestroyTarget, pParam1), true);
 
 			return resAck;
 			}
@@ -324,9 +322,9 @@ void CEscortOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 			if (Ctx.Attacker.IsCausedByNonFriendOf(pShip) 
 					&& Ctx.Attacker.GetObj()
 					&& (pTarget = pShip->CalcTargetToAttack(Ctx.Attacker.GetObj(), Ctx.GetOrderGiver())))
-				pShip->GetController()->AddOrder(IShipController::orderDestroyTarget, pTarget, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderDestroyTarget, pTarget));
 			else
-				pShip->GetController()->AddOrder(IShipController::orderAttackNearestEnemy, NULL, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
 			}
 
 		//	Cancel our order
@@ -353,7 +351,7 @@ void CEscortOrder::OnReadFromStream (SLoadCtx &Ctx)
 	m_iState = (States)dwLoad;
 	}
 
-void CEscortOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CEscortOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

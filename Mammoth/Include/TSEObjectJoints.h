@@ -64,7 +64,7 @@ class CObjectJoint
 			CObjectJoint *pNext;			//	Next joint for this object
 			};
 
-		void WriteToStream (CSystem *pSystem, IWriteStream &Stream, const SAttachPoint &Point);
+		void WriteToStream (IWriteStream &Stream, const SAttachPoint &Point);
 
 		static void ReadFromStream (SLoadCtx &Ctx, SAttachPoint &Point);
 

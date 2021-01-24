@@ -177,14 +177,6 @@ static LPCSTR STYLE_TABLE[] =
 		NULL,
 	};
 
-COrbEffectCreator::COrbEffectCreator (void) :
-			m_pSingleton(NULL)
-
-//	COrbEffectCreator constructor
-
-	{
-	}
-
 COrbEffectCreator::~COrbEffectCreator (void)
 
 //	COrbEffectCreator destructor
@@ -1081,10 +1073,10 @@ void COrbEffectPainter::CompositeFlareRay (CG32bitImage &Dest, int xCenter, int 
 	int xOffset = (int)vHalf.GetX();
 	int yOffset = (int)vHalf.GetY();
 
-    //  Paint the line
+	//  Paint the line
 
-    CFlareRayRasterizer<CGBlendComposite> Flare;
-    Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
+	CFlareRayRasterizer<CGBlendComposite> Flare;
+	Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
 	}
 
 void COrbEffectPainter::CompositeFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)
@@ -1361,10 +1353,10 @@ void COrbEffectPainter::PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCen
 	int xOffset = (int)vHalf.GetX();
 	int yOffset = (int)vHalf.GetY();
 
-    //  Paint the line
+	//  Paint the line
 
-    CFlareRayRasterizer<CGBlendBlend> Flare;
-    Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
+	CFlareRayRasterizer<CGBlendBlend> Flare;
+	Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
 	}
 
 void COrbEffectPainter::PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)

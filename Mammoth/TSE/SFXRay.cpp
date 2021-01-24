@@ -209,14 +209,6 @@ static LPCSTR STYLE_TABLE[] =
 		NULL,
 	};
 
-CRayEffectCreator::CRayEffectCreator (void) :
-			m_pSingleton(NULL)
-
-//	CRayEffectCreator constructor
-
-	{
-	}
-
 CRayEffectCreator::~CRayEffectCreator (void)
 
 //	CRayEffectCreator destructor

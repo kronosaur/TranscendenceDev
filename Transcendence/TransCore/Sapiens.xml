@@ -25,22 +25,20 @@
 
 <!-- ENCOUNTERS -->
 
-	<!-- Terrorist Camp -->
+	<!-- Level 3: Sapiens Outpost -->
 
 	<StationType UNID="&stTerroristCamp;"
-			name=				"Sapiens camp"
+			name=				"Sapiens outpost(s)"
 			sovereign=			"&svSapiens;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
-			armorID=			"&itHardenedReactiveArmor;"
-			hitPoints=			"120"
-            regen=              "1"
+			attributes=			"enemy, envFire, envAvoidsWater, generic, human, populated, sapiens, sapiensCamp"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"252"
 			fireRateAdj=		"30"
 			explosionType=		"&vtRadioactiveExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"enemy, envFire, envAvoidsWater, generic, human, populated, sapiens, sapiensCamp"
 			>
 
 		<!-- Encounter Info -->
@@ -54,14 +52,24 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<ImageVariants>
-			<Image			imageID="&rsStations1;" imageX="64" imageY="384" imageWidth="64" imageHeight="64"/>
-			<Image			imageID="&rsStations1;" imageX="64" imageY="448" imageWidth="64" imageHeight="64"/>
-		</ImageVariants>
+		<Encounters frequency="common">
+			<Lookup table="&tbSapiensEncounters;"/>
+		</Encounters>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itHardenedReactiveArmor;"
+				hitPoints=		"120"
+				regen=			"1"
+				/>
+		
 		<Devices>
 			<Device deviceID="&itFlenserCannon;"	omnidirectional="true"/>
+			<Device deviceID="&vtSapiensMineLauncher;"/>
 		</Devices>
+
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<Table>
@@ -74,6 +82,8 @@
 			</Table>
 		</Ships>
 
+		<!-- Treasure -->
+
 		<Items>
 			<Group value="standard:level=3:x=1.3">
 				<Item		chance="50"	count="1d4"	  item="&itFusionTrigger;"/>
@@ -82,9 +92,17 @@
 			</Group>
 		</Items>
 
-		<Encounters frequency="common">
-			<Lookup table="&tbSapiensEncounters;"/>
-		</Encounters>
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsSapiensOutpost;"			imageWidth="230" imageHeight="230"	viewportRatio="0.0325"/>
+
+		<DockingPorts
+				portAngle=		"-8"
+				portCount=		"8"
+				portRadius=		"90"
+				/>
+
+		<!-- Events and Behavior -->
 
 		<Events>
 			<GetRumors>
@@ -99,33 +117,32 @@
 
 		<Language>
 			<Text id="rumor.commonwealthPub">
+
 				You spend 5 credits and listen to a nuclear technician:
 
 				"I just got paid ten kilocreds to install a radiation room at
-				the Sapiens camp! Those flippers scare me&mdash;with all their
-				talk about 'human purity' they seem a little short on the
+				the Sapiens outpost! Those flippers scare me&mdash;with all 
+				their talk about 'human purity' they seem a little short on the
 				brain scale."
+
 			</Text>
 		</Language>
 	</StationType>
 
-	<!-- Terrorist Compound -->
+	<!-- Level 4: Sapiens Compound -->
 
 	<StationType UNID="&stTerroristCompound;"
 			name=				"Sapiens compound"
 			sovereign=			"&svSapiens;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
-			multiHull=			"true"
-			armorID=			"&itHardenedReactiveArmor;"
-			hitPoints=			"320"
-            regen=              "6"
+			attributes=			"enemy, envFire, envAvoidsWater, generic, human, populated, sapiens, sapiensCompound"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"279"
 			fireRateAdj=		"20"
 			explosionType=		"&vtRadioactiveExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"enemy, envFire, envAvoidsWater, generic, human, populated, sapiens, sapiensCompound"
 			>
 
 		<!-- Encounter Info -->
@@ -139,11 +156,24 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<Image			imageID="&rsStations1;" imageX="0" imageY="256" imageWidth="128" imageHeight="128"/>
+		<Encounters frequency="common">
+			<Lookup table="&tbSapiensEncounters;"/>
+		</Encounters>
+		
+		<!-- Configuration -->
 
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itHardenedReactiveArmor;"
+				hitPoints=		"320"
+				regen=			"6"
+				/>
+		
 		<Devices>
 			<Device deviceID="&itNAMIMissileLauncher;"	omnidirectional="true"/>
+			<Device deviceID="&vtSapiensMineLauncher;"/>
 		</Devices>
+
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<Table>
@@ -156,6 +186,8 @@
 			</Table>
 		</Ships>
 
+		<!-- Treasure -->
+
 		<Items>
 			<Group value="standard:level=4:x=2.0">
 				<Item chance="60"		count="2d8"	  item="&itXM300Missile;"/>
@@ -165,10 +197,18 @@
 			</Group>
 		</Items>
 
-		<Encounters frequency="common">
-			<Lookup table="&tbSapiensEncounters;"/>
-		</Encounters>
-		
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsSapiensCompound;"			imageWidth="262" imageHeight="262"	viewportRatio="0.04"/>
+
+		<DockingPorts
+				portAngle=		"0"
+				portCount=		"12"
+				portRadius=		"116"
+				/>
+
+		<!-- Events and Behavior -->
+
 		<Events>
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnProduceMissiles")
@@ -194,7 +234,7 @@
 	
 <!-- SHIP CLASSES -->
 
-	<!-- Plague Gunship -->
+	<!-- Level 4: Plague Gunship -->
 
 	<ShipClass UNID="&scPlague;"
 			manufacturer=		"Revolution Designs"
@@ -202,40 +242,35 @@
 			type=				"gunship"
 			defaultSovereign=	"&svSapiens;"
 
-			mass=				"50"
-			cargoSpace=			"50"
-			thrustRatio=		"4"
-			maxSpeed=			"18"
+			attributes=			"genericClass,sapiens"
+			inherit=			"&scEarthzone1200;"
 
 			radioactiveWreck=	"true"
-
-			attributes=			"genericClass,sapiens"
 			>
 
-		<Armor>
-			<ArmorSection start="270" span="180" armorID="&itHardenedReactiveArmor;" areaSet="0,2,3,7" />
-			<ArmorSection start="90"  span="180" armorID="&itHardenedReactiveArmor;" areaSet="1,4" />
-		</Armor>
+		<!-- Configuration -->
 
+		<Armor
+			armorID=			"&itHardenedReactiveArmor;"
+			count=				"4"
+			/>
+		
 		<Devices>
 			<Device deviceID="&itWasteCannon;"/>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
-			/>
+		<!-- Treasure -->
 
 		<Items>
 			<Item count="1d6" item="&itHeliumAssembly;"/>
 		</Items>
 
-		<Image imageID="&rsPlagueHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
+		<!-- Image and Effects -->
 
-		<Effects>
-			<Effect type="thrustMain"		posAngle="148"	posRadius="18"	posZ="0"	rotation="180"	sendToBack="*"/>
-			<Effect type="thrustMain"		posAngle="-148"	posRadius="18"	posZ="0"	rotation="180"	sendToBack="*"/>
-		</Effects>
+		<Image imageID="&rsPlague;" imageWidth="58" imageHeight="58" rotationCount="120" rotationColumns="12" viewportRatio="0.004375"/>
+		<HeroImage imageID="&rsPlagueHero;" imageWidth="320" imageHeight="320"/>
+
+		<!-- Events and Behavior -->
 		
 		<AISettings
 			fireRateAdj=		"15"
@@ -247,7 +282,7 @@
 
 	</ShipClass>
 
-	<!-- Revelations Missileship -->
+	<!-- Level 5: Revelations Missileship -->
 
 	<ShipClass UNID="&scRevelations;"
 			manufacturer=		"Revolution Designs"
@@ -255,27 +290,22 @@
 			type=				"missileship"
 			defaultSovereign=	"&svSapiens;"
 
-			mass=				"150"
-			cargoSpace=			"150"
-			thrustRatio=		"2.5"
-			maxSpeed=			"16"
+			attributes=			"genericClass,sapiens"
+			inherit=			"&scEarthzone5000;"
 
 			radioactiveWreck=	"true"
-
-			attributes=			"genericClass,sapiens"
-			   
 			explosionType=		"&vtRadioactiveExplosion1;"
 			>
 
-		<Armor>
-			<ArmorSection start="315" span="90" armorID="&itHardenedPlasteelPlate;" areaSet="0,2" />
-			<ArmorSection start="225" span="90" armorID="&itHardenedPlasteelPlate;" areaSet="3,4" />
-			<ArmorSection start="135" span="90" armorID="&itHardenedPlasteelPlate;" areaSet="1,6" />
-			<ArmorSection start="45"  span="90" armorID="&itHardenedPlasteelPlate;" areaSet="7,13" />
-		</Armor>
+		<!-- Configuration -->
 
+		<Armor
+			armorID=			"&itHardenedPlasteelPlate;"
+			count=				"4"
+			/>
+		
 		<Devices>
-			<Device deviceID="&itNAMIMissileLauncher;" minFireArc="300" maxFireArc="60" posAngle="0" posRadius="16">
+			<Device deviceID="&itNAMIMissileLauncher;" minFireArc="300" maxFireArc="60">
 				<Items>
 					<Item count="4d6" item="&itXM300Missile;"/>
 				</Items>
@@ -283,22 +313,19 @@
 			<Device deviceID="&itOmniPartisanCannon;" secondaryWeapon="true"/>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"3.0"
-			rotationAccel=		"0.5"
-			/>
+		<!-- Treasure -->
 
 		<Items>
 			<Item count="2d6" item="&itHeliumAssembly;"/>
 		</Items>
 
-		<Image imageID="&rsRevelationsHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />
+		<!-- Image and Effects -->
 
-		<Effects>
-			<Effect type="thrustMain"		posAngle="158"	posRadius="22"	posZ="0"	rotation="180"	sendToBack="*"/>
-			<Effect type="thrustMain"		posAngle="-158"	posRadius="22"	posZ="0"	rotation="180"	sendToBack="*"/>
-		</Effects>
-		
+		<Image imageID="&rsRevelations;" imageWidth="66" imageHeight="66" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&rsRevelationsHero;" imageWidth="320" imageHeight="320"/>
+
+		<!-- Events and Behavior -->
+
 		<AISettings
 			aggressor=			"true"
 			fireRateAdj=		"30"
@@ -312,7 +339,7 @@
 
 <!-- ITEM TYPES -->
 
-	<!-- Actinide Waste Cannon -->
+	<!-- Level 4: Actinide Waste Cannon -->
 
 	<ItemType UNID="&itWasteCannon;"
 			name=				"actinide waste cannon"
@@ -382,7 +409,118 @@
 		</Weapon>
 	</ItemType>
 
-	<!-- Sapiens Encounter Table -->
+	<!-- Level 4: Mine Launcher -->
+
+	<ItemType UNID="&vtSapiensMineLauncher;"
+			name=				"(Sapiens mine launcher)"
+			level=				"4"
+			virtual=			"true"
+			>
+		<MiscellaneousDevice>
+		</MiscellaneousDevice>
+
+		<Events>
+			<OnUpdate>
+				(switch
+					(obj@ gSource 'abandoned)
+						Nil
+
+					(gr (random 1 100) 50)
+						Nil
+
+					(sysCreateWeaponFire &itSapiensRadiationMine; 
+							{
+								obj: gSource
+								namePattern: (typ@ &itSapiensRadiationMine; 'namePattern)
+								}
+							gSource 
+							(random 0 359)
+							20 
+							nil)
+					)
+			</OnUpdate>
+		</Events>
+	</ItemType>
+
+	<!-- Level 4: Radiation Mine -->
+
+	<ItemType UNID="&itSapiensRadiationMine;"
+			name=				"Sapiens radiation mine(s)"
+			attributes=			"consumable, illegal, sapiens, notStandard"
+			  
+			level=				"4"
+			frequency=			"rare"
+			numberAppearing=	"8-24"
+
+			value=				"10"
+			mass=				"40"
+			  
+			description=		"This radioactive mine triggers when an enemy ship comes within range."
+			>
+
+		<Image imageID="&rsItems4;" imageX="0" imageY="384" imageWidth="96" imageHeight="96"/>
+		
+		<Missile
+				type=			"missile"
+
+				missileSpeed=	"15"
+				accelerationFactor="60"
+				lifetime=		"4800"
+				hitPoints=		"10"
+				stealth=		"15"
+
+				noFriendlyFire=	"true"
+				noDetonationOnEndOfLife="true"
+
+				hitEffect=		"&efBlastHitDefault;"
+				sound=			"&snMissileLauncher;"
+				>
+
+			<Effect>
+				<Image imageID="&rsSapiensRadiationMine;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" imageFrameCount="120" animationColumns="12" imageTicksPerFrame="2"/>
+			</Effect>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+
+					damage=			"blast:3d8; radiation:2; momentum:2; WMD:2"
+					minRadius=		"1"
+					maxRadius=		"4"
+					missileSpeed=	"0"
+					
+					hitEffect=		"&efRadioactiveHitEffect;"
+					>
+				<Effect>
+					<Orb	style=			"fireblast"
+							animate=		"explode"
+							radius=			"110"
+							lifetime=		"43"
+							intensity=		"100"
+							distortion=		"50"
+							detail=			"40"
+					
+							blendMode=		"normal"
+							primaryColor=	"#00ff2b"
+							secondaryColor=	"#008015"
+							/>
+			
+					<Orb	style=			"smooth"
+							animate=		"fade"
+							radius=			"50"
+							lifetime=		"23"
+							intensity=		"60"
+					
+							blendMode=		"screen"
+							primaryColor=	"#fffff0"
+							secondaryColor=	"#ccff99"
+							/>
+				</Effect>
+			</Fragment>
+		</Missile>
+	</ItemType>
+
+<!-- TABLES -->
 	
 	<ShipTable unid="&tbSapiensEncounters;">
 		<LevelTable>
@@ -421,7 +559,15 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsPlagueHD;"				bitmap="Resources\PlagueHD.jpg"			bitmask="Resources\PlagueHDMask.bmp"		loadOnUse="true"/>
-	<Image UNID="&rsRevelationsHD;"			bitmap="Resources\RevelationsHD.jpg"	bitmask="Resources\RevelationsHDMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsSapiensOutpost;"		bitmap="Resources\SapiensOutpost.jpg"	bitmask="Resources\SapiensOutpostMask.bmp"		loadOnUse="true"/>
+	<Image UNID="&rsSapiensCompound;"		bitmap="Resources\SapiensCompound.jpg"	bitmask="Resources\SapiensCompoundMask.bmp"		loadOnUse="true"/>
+
+	<Image UNID="&rsPlague;"				bitmap="Resources\Plague.jpg"	bitmask="Resources\PlagueMask.bmp"		loadOnUse="true"/>
+	<Image UNID="&rsPlagueHero;"			bitmap="Resources\PlagueLarge.jpg"	bitmask="Resources\PlagueLargeMask.bmp"		loadOnUse="true"/>
+
+	<Image UNID="&rsRevelations;"			bitmap="Resources\Revelations.jpg"	bitmask="Resources\RevelationsMask.bmp"		loadOnUse="true"/>
+	<Image UNID="&rsRevelationsHero;"		bitmap="Resources\RevelationsLarge.jpg"	bitmask="Resources\RevelationsLargeMask.bmp"		loadOnUse="true"/>
+
+	<Image UNID="&rsSapiensRadiationMine;"	bitmap="Resources\SapiensMine.jpg"	bitmask="Resources\SapiensMineMask.bmp"		loadOnUse="true"/>
 
 </TranscendenceModule>

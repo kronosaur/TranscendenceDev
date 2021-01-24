@@ -24,6 +24,7 @@ class CEffectGroupPainter : public IEffectPainter
 		virtual bool CanPaintComposite (void) override;
 		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
 		virtual int GetFadeLifetime (bool bHit) const override;
+		virtual const CObjectImageArray &GetImage (int iRotation, int *retiRotationFrameIndex = NULL) const;
 		virtual int GetLifetime (void) override;
 		virtual void GetRect (RECT *retRect) const override;
 		virtual void OnBeginFade (void) override;
@@ -162,6 +163,27 @@ int CEffectGroupPainter::GetFadeLifetime (bool bHit) const
 			iMaxLifetime = Max(iMaxLifetime, m_Painters[i]->GetFadeLifetime(bHit));
 
 	return iMaxLifetime;
+	}
+
+const CObjectImageArray &CEffectGroupPainter::GetImage (int iRotation, int *retiRotationFrameIndex) const
+
+//	GetImage
+//
+//	Returns an image.
+
+	{
+	for (int i = 0; i < m_Painters.GetCount(); i++)
+		if (m_Painters[i])
+			{
+			auto &Image = m_Painters[i]->GetImage(iRotation, retiRotationFrameIndex);
+			if (!Image.IsEmpty())
+				return Image;
+			}
+
+	if (retiRotationFrameIndex)
+		*retiRotationFrameIndex = 0;
+
+	return CObjectImageArray::Null();
 	}
 
 int CEffectGroupPainter::GetLifetime (void)
@@ -448,21 +470,6 @@ void CEffectGroupPainter::SetVariants (int iVariants)
 	}
 
 //	CEffectGroupCreator --------------------------------------------------------
-
-CEffectGroupCreator::CEffectGroupCreator (void) : 
-		m_pCreators(NULL), 
-		m_iCount(0),
-		m_iAngleOffset(0),
-		m_iRadiusOffset(0),
-		m_xOffset(0),
-		m_yOffset(0),
-		m_iRotationAdj(0),
-		m_bHasOffsets(false)
-
-//	CEffectGroupCreator constructor
-
-	{
-	}
 
 CEffectGroupCreator::~CEffectGroupCreator (void)
 

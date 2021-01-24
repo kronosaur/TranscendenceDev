@@ -312,8 +312,8 @@ void CAreaDamage::OnWriteToStream (IWriteStream *pStream)
 	m_pDesc->GetUNID().WriteToStream(pStream);
 	pStream->Write((char *)&m_iInitialDelay, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));
-	m_Source.WriteToStream(GetSystem(), pStream);
-	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
+	m_Source.WriteToStream(pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
 	pStream->Write((char *)&m_iTick, sizeof(m_iTick));
 
 	CEffectCreator::WritePainterToStream(pStream, m_pPainter);

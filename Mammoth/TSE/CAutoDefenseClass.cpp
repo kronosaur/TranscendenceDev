@@ -218,17 +218,17 @@ DWORD CAutoDefenseClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 	switch (m_iTargeting)
 		{
 		case trgMissiles:
-			return CTargetList::typeMissile;
+			return CTargetList::SELECT_MISSILE;
 
 		case trgCriteria:
 			{
 			DWORD dwTargetTypes = 0;
 
 			if (m_TargetCriteria.DeepMatchesCategory(CSpaceObject::catMissile))
-				dwTargetTypes |= CTargetList::typeMissile;
+				dwTargetTypes |= CTargetList::SELECT_MISSILE;
 
 			if (m_TargetCriteria.DeepMatchesCategory(CSpaceObject::catShip | CSpaceObject::catStation))
-				dwTargetTypes |= CTargetList::typeAttacker | CTargetList::typeFortification;
+				dwTargetTypes |= CTargetList::SELECT_ATTACKERS | CTargetList::SELECT_FORTIFICATION;
 
 			return dwTargetTypes;
 			}
@@ -562,7 +562,7 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 
 	//	Fire
 
-	SActivateCtx ActivateCtx(pTarget, Ctx.TargetList, iFireAngle);
+	SActivateCtx ActivateCtx(Ctx, pTarget, iFireAngle);
 
 	pWeapon->Activate(*pDevice, ActivateCtx);
 

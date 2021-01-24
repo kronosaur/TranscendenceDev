@@ -89,10 +89,14 @@ CString CDamageSource::GetDamageCauseNounPhrase (DWORD dwFlags)
 //	Returns the name of the damage source
 
 	{
-	if (IsObjPointer())
-		return m_pSource->GetDamageCauseNounPhrase(dwFlags);
-	else if (!m_sSourceName.IsBlank())
+	//	If we have a source name, we always use that, even if we have a pointer.
+	//	This allows us to have both a real object (for purposes of friendly 
+	//	fire) AND a custom epitaph string.
+
+	if (!m_sSourceName.IsBlank())
 		return CLanguage::ComposeNounPhrase(m_sSourceName, 1, NULL_STR, m_dwSourceNameFlags, dwFlags);
+	else if (IsObjPointer())
+		return m_pSource->GetDamageCauseNounPhrase(dwFlags);
 	else
 		return CONSTLIT("damage");
 	}
@@ -557,7 +561,7 @@ void CDamageSource::SetObj (CSpaceObject *pSource)
 		}
 	}
 
-void CDamageSource::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CDamageSource::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
 //
@@ -584,11 +588,11 @@ void CDamageSource::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	//	Otherwise, save a reference
 
 	else
-		pSystem->WriteObjRefToStream(m_pSource, pStream);
+		CSystem::WriteObjRefToStream(*pStream, m_pSource);
 
 	m_sSourceName.WriteToStream(pStream);
 	pStream->Write((char *)&m_dwSourceNameFlags, sizeof(DWORD));
-	pSystem->WriteObjRefToStream(m_pSecondarySource, pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pSecondarySource);
 
 	dwSave = m_iCause;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));

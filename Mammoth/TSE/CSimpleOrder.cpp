@@ -42,15 +42,13 @@ void CSimpleOrder::OrderFireWeapon (CShip *pShip, CAIBehaviorCtx &Ctx) const
 	{
 	//	Get the current order data
 
-	CSpaceObject *pTarget;
-	IShipController::SData Data;
-	pShip->GetCurrentOrder(&pTarget, &Data);
+	const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
 
 	//	Select the specified weapon.
 
 	CInstalledDevice *pWeapon;
 
-	const CItem &WeaponItem = Data.AsItem();
+	const CItem &WeaponItem = OrderDesc.GetDataItem();
 	if (!WeaponItem.IsEmpty())
 		{
 		DeviceNames iDev = pShip->SelectWeapon(WeaponItem);
@@ -94,10 +92,8 @@ void CSimpleOrder::OrderUseItem (CShip *pShip, CAIBehaviorCtx &Ctx) const
 	{
 	//	Get the current order data
 
-	CSpaceObject *pTarget;
-	IShipController::SData Data;
-	pShip->GetCurrentOrder(&pTarget, &Data);
-	const CItem &Item = Data.AsItem();
+	const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
+	const CItem &Item = OrderDesc.GetDataItem();
 
 	//	Validate the item
 

@@ -5,13 +5,52 @@
 
 #include "PreComp.h"
 
-void COrbitExactOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void COrbitExactOrder::CalcIntermediates ()
 
-//	OnAttacked
+//	CalcIntermediates
 //
-//	Ship was attacked while executing order.
+//	Initializes cached calculations:
+//
+//	m_rNavThreshold2
 
 	{
+	static constexpr Metric RADIUS_LIMIT_ADJ = 5.0 * LIGHT_SECOND;
+	Metric rRadiusLimit = m_Orbit.GetSemiMajorAxis() + RADIUS_LIMIT_ADJ;
+	Metric rRadiusLimit2 = rRadiusLimit * rRadiusLimit;
+
+	m_rNavThreshold2 = Max(rRadiusLimit2, NAV_PATH_THRESHOLD2);
+	}
+
+Metric COrbitExactOrder::CalcRadiusInLightSeconds (const COrderDesc &OrderDesc)
+
+//	CalcRadiusInLightSeconds
+//
+//	Returns the orbit radius in light-seconds. NOTE: This is not in kilometers,
+//	like most metric distances. Callers must still multiply by LIGHT_SECOND.
+
+	{
+	CString sScale;
+	DiceRange RadiusRange = OrderDesc.GetDataDiceRange(CONSTLIT("radius"), DEFAULT_RADIUS, &sScale);
+
+	Metric rRadiusKM = (Metric)RadiusRange.Roll() * CSystemType::ParseScale(sScale);
+	return rRadiusKM / LIGHT_SECOND;
+	}
+
+bool COrbitExactOrder::IsAutoAngle (const COrderDesc &OrderDesc, Metric *retrAngleInRadians)
+
+//	IsAutoAngle
+//
+//	Returns TRUE if we're set for auto-angle.
+
+	{
+	DiceRange AngleRange = OrderDesc.GetDataDiceRange(CONSTLIT("angle"), -1);
+	if (AngleRange.IsConstant() && AngleRange.GetBonus() == -1)
+		return true;
+
+	if (retrAngleInRadians)
+		*retrAngleInRadians = ::mathDegreesToRadians(AngleRange.Roll());
+
+	return false;
 	}
 
 void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
@@ -24,11 +63,19 @@ void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	constexpr Metric MAX_THRESHOLD_ADJ = 1.1;
 	constexpr Metric MAX_THRESHOLD_ADJ2 = MAX_THRESHOLD_ADJ * MAX_THRESHOLD_ADJ;
 
+	//	If we're too far away, then use a nav path to get closer
+
+	if ((pShip->GetPos() - m_Objs[OBJ_BASE]->GetPos()).Length2() > m_rNavThreshold2)
+		{
+		pShip->AddOrder(COrderDesc(IShipController::orderApproach, m_Objs[OBJ_BASE], mathRound(m_Orbit.GetSemiMajorAxis() / LIGHT_SECOND)), true);
+		return;
+		}
+
 	//	Compute the desired position.
 
 	Metric rAngle = ::mathDegreesToRadians(pShip->GetUniverse().GetTicks() * m_rAngularSpeed) + m_Orbit.GetObjectAngle();
 	CVector vOrbitPos = m_Orbit.GetPoint(rAngle);
-	CVector vPos = m_Objs[objBase]->GetPos() + vOrbitPos;
+	CVector vPos = m_Objs[OBJ_BASE]->GetPos() + vOrbitPos;
 	CVector vVel = (m_Orbit.GetPoint(rAngle + ::mathDegreesToRadians(m_rAngularSpeed)) - vOrbitPos) / g_SecondsPerUpdate;
 
 	//	If the ship is out of position and needs to be placed back in orbit, 
@@ -60,10 +107,7 @@ void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	else
 		pShip->Place(vPos, vVel);
 
-	Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget], NULL, true);
-	Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
-
-	if (!m_Objs[objTarget])
+	if (!pShip->GetTarget())
 		{
 		Ctx.ImplementTurnTo(pShip, VectorToPolar(vVel));
 		}
@@ -74,7 +118,7 @@ void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		pShip->CancelCurrentOrder();
 	}
 
-void COrbitExactOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void COrbitExactOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -83,61 +127,44 @@ void COrbitExactOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpac
 	{
 	//	Make sure we're undocked because we're going flying
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	Must have a center
 
+	CSpaceObject *pOrderTarget = OrderDesc.GetTarget();
 	if (pOrderTarget)
-		m_Objs[objBase] = pOrderTarget;
+		m_Objs[OBJ_BASE] = pOrderTarget;
 	else
 		{
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 		return;
 		}
 
 	//	Compute the order from our data
 
-	DWORD dwRadius;
-	bool bAutoAngle = false;
-	if (Data.iDataType == IShipController::dataOrbitExact)
+	Metric rRadiusLS = CalcRadiusInLightSeconds(OrderDesc);
+	m_Orbit.SetSemiMajorAxis(rRadiusLS * LIGHT_SECOND);
+	m_Orbit.SetEccentricity(OrderDesc.GetDataDouble(CONSTLIT("eccentricity"), 0.0));
+	m_rAngularSpeed = OrderDesc.GetDataDouble(CONSTLIT("speed"), DEFAULT_SPEED);
+
+	Metric rAngle;
+	if (IsAutoAngle(OrderDesc, &rAngle))
 		{
-		dwRadius = LOWORD(Data.dwData1);
-		DWORD dwAngle = HIWORD(Data.dwData1);
-		bAutoAngle = (dwAngle == AUTO_ANGLE);
+		TArray<CShip *> OrbitMates = GetOrbitMates(*pOrderTarget, mathRound(rRadiusLS));
 
-		m_Orbit.SetSemiMajorAxis(dwRadius * LIGHT_SECOND);
-		m_Orbit.SetEccentricity(Data.vData.GetY());
-		if (!bAutoAngle)
-			m_Orbit.SetObjectAngle(::mathDegreesToRadians((Metric)dwAngle));
-
-		m_rAngularSpeed = Data.vData.GetX();
+		DistributeOrbitAngles(Ship, *pOrderTarget, OrbitMates, rAngle);
+		m_Orbit.SetObjectAngle(rAngle);
 		}
 	else
 		{
-		dwRadius = Data.AsInteger();
-		if (dwRadius == 0)
-			dwRadius = DEFAULT_RADIUS;
-
-		m_Orbit.SetSemiMajorAxis(dwRadius * LIGHT_SECOND);
-		m_Orbit.SetEccentricity(0.0);
-
-		m_rAngularSpeed = DEFAULT_SPEED;
-		bAutoAngle = true;
+		m_Orbit.SetObjectAngle(rAngle);
 		}
 
-	//	Set our timer
+	m_iCountdown = OrderDesc.GetDataTicksLeft();
 
-	DWORD dwTimer = Data.dwData2;
-	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
+	//	Cache some calculations
 
-	//	In autoAngle mode we set the orbital angle for all peer ships at the
-	//	same radius.
-
-	if (bAutoAngle)
-		{
-		TArray<CShip *> OrbitMates = GetOrbitMates(*pOrderTarget, dwRadius);
-		DistributeOrbitAngles(*pShip, *pOrderTarget, OrbitMates);
-		}
+	CalcIntermediates();
 	}
 
 DWORD COrbitExactOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
@@ -149,21 +176,6 @@ DWORD COrbitExactOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpace
 	{
 	switch (iMessage)
 		{
-		case msgAttackDeter:
-			m_Objs[objTarget] = pParam1;
-			return resAck;
-
-		case msgBaseDestroyedByTarget:
-			{
-			if (pParam1 == NULL
-					|| pParam1->IsDestroyed()
-					|| Ctx.IsNonCombatant())
-				return resNoAnswer;
-
-			m_Objs[objTarget] = pParam1;
-			return resAck;
-			}
-
 		case msgFormUp:
 			{
 			DWORD dwAngle = dwParam2;
@@ -175,6 +187,71 @@ DWORD COrbitExactOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpace
 		default:
 			return resNoAnswer;
 		}
+	}
+
+void COrbitExactOrder::OnDestroyed (CShip *pShip, SDestroyCtx &Ctx)
+
+//	OnDestroyed
+//
+//	We've been destroyed.
+
+	{
+	//	If we've been destroyed, then ask our station to avenge us
+
+	if (m_Objs[OBJ_BASE]
+			&& !m_Objs[OBJ_BASE]->IsEnemy(pShip)
+			&& !m_Objs[OBJ_BASE]->IsDestroyed())
+		m_Objs[OBJ_BASE]->OnSubordinateDestroyed(Ctx);
+	}
+
+AIReaction COrbitExactOrder::OnGetReactToAttack () const
+
+//	OnGetReactToAttack
+//
+//	Returns our default reaction to an attack.
+
+	{
+	switch (m_iOrder)
+		{
+		case IShipController::orderOrbitExact:
+			return AIReaction::Deter;
+
+		case IShipController::orderOrbitPatrol:
+			return AIReaction::Chase;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+AIReaction COrbitExactOrder::OnGetReactToThreat () const
+
+//	OnGetReactToThreat
+//
+//	Returns our default reaction to a threat.
+
+	{
+	switch (m_iOrder)
+		{
+		case IShipController::orderOrbitExact:
+			return AIReaction::Deter;
+
+		case IShipController::orderOrbitPatrol:
+			return AIReaction::Chase;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+Metric COrbitExactOrder::OnGetThreatRange (void) const
+
+//	OnGetThreatRange
+//
+//	Returns the range at which we should stop chasing threats.
+
+	{
+	return Max(m_Orbit.GetSemiMajorAxis() + PATROL_SENSOR_RANGE, STOP_ATTACK_RANGE);
 	}
 
 void COrbitExactOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder)
@@ -197,9 +274,11 @@ void COrbitExactOrder::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read(m_dwStartTick);
 	Ctx.pStream->Read(m_rAngularSpeed);
 	Ctx.pStream->Read(m_iCountdown);
+
+	CalcIntermediates();
 	}
 
-void COrbitExactOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void COrbitExactOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //
@@ -232,23 +311,14 @@ TArray<CShip *> COrbitExactOrder::GetOrbitMates (CSpaceObject &Source, DWORD dwR
 		if (!pShip)
 			continue;
 
-		IShipController *pController = pShip->GetController();
-		CSpaceObject *pOrderTarget;
-		IShipController::SData OrderData;
-		IShipController::OrderTypes iOrder = pController->GetOrder(0, &pOrderTarget, &OrderData);
-		if (iOrder != IShipController::orderOrbitExact)
+		const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
+		if (OrderDesc.GetOrder() != IShipController::orderOrbitExact)
 			continue;
 
-		if (pOrderTarget != Source)
+		if (OrderDesc.GetTarget() != Source)
 			continue;
 
-		if (OrderData.iDataType != IShipController::dataOrbitExact)
-			continue;
-
-		DWORD dwOrderRadius = LOWORD(OrderData.dwData1);
-		DWORD dwOrderAngle = HIWORD(OrderData.dwData1);
-
-		if (dwOrderAngle != AUTO_ANGLE || dwOrderRadius != dwRadius)
+		if (!IsAutoAngle(OrderDesc) || OrderDesc.GetDataInteger(CONSTLIT("radius"), true, DEFAULT_RADIUS) != dwRadius)
 			continue;
 
 		Result.Insert(pShip);
@@ -257,7 +327,7 @@ TArray<CShip *> COrbitExactOrder::GetOrbitMates (CSpaceObject &Source, DWORD dwR
 	return Result;
 	}
 
-void COrbitExactOrder::DistributeOrbitAngles (CShip &Ship, CSpaceObject &Source, const TArray<CShip *> &Ships)
+void COrbitExactOrder::DistributeOrbitAngles (CShip &Ship, CSpaceObject &Source, const TArray<CShip *> &Ships, Metric &retrShipAngle)
 
 //	DistributeAngles
 //
@@ -265,7 +335,10 @@ void COrbitExactOrder::DistributeOrbitAngles (CShip &Ship, CSpaceObject &Source,
 
 	{
 	if (!Ships.GetCount())
+		{
+		retrShipAngle = 0.0;
 		return;
+		}
 
 	const Metric rInterval = 360.0 / Ships.GetCount();
 	Metric rAngle = 0.0;
@@ -273,7 +346,10 @@ void COrbitExactOrder::DistributeOrbitAngles (CShip &Ship, CSpaceObject &Source,
 		{
 		DWORD dwAngle = mathRound(rAngle);
 		if (Ships[i] == Ship)
-			m_Orbit.SetObjectAngle(::mathDegreesToRadians((Metric)dwAngle));
+			{
+			//	Return the angle desired for the ship.
+			retrShipAngle = ::mathDegreesToRadians((Metric)dwAngle);
+			}
 		else
 			Source.Communicate(Ships[i], msgFormUp, &Source, dwAngle);
 

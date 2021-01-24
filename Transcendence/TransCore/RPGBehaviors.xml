@@ -151,7 +151,7 @@
 
 						(setq asteroidObj (random
 								(filter (sysFindObject gSource "tN:50 +asteroid") theObj
-                                    ;   LATER: API 30 allows passing a criteria to objGetOverlays
+									;   LATER: API 30 allows passing a criteria to objGetOverlays
 									(filter (objGetOverlays theObj) theOverlayID
 										(typHasAttribute (objGetOverlayType theObj theOverlayID) 'oreCount)
 										)
@@ -314,6 +314,164 @@
 			</OnOrdersCompleted>
 		</Events>
 	</ShipClass>
+
+	<!-- Wander Behavior
+	
+		USAGE NOTES
+
+		Use this for wandering encounters, such as Xenophobe fleets. Ships will
+		wander around the system avoiding enemy stations, but fighting back when
+		threats come too close.
+	
+	-->
+
+	<Type unid="&evStdWanderBehavior;">
+		<Properties>
+			<Definition id="wander.angleInc">60</Definition>
+
+			<Data id="wander.centerID">(objGetID (sysFindObject gSource "tN +star"))</Data>
+			<Data id="wander.radius">(random 200 900)</Data>
+
+			<!-- wander.status
+			
+				Status can be one of the following values:
+
+				'wandering: Ship is wandering around the system.
+				'attacking: Ship is attacking a target.
+
+			-->
+			<Data id="wander.status">'wandering</Data>
+
+			<Data id="wander.lastEnemyCheck"></Data>
+			<Data id="wander.testRadius">0</Data>
+			<Variant id="wander.maxCR">(obj@ gSource 'challengeRating)</Variant>
+		</Properties>
+
+		<Events>
+			<OnEventHandlerInit>
+				(block ()
+					;	Deter any ship that gets too close
+
+					(shpSetAISetting gSource 'reactToThreat 'deterNoManeuvers)
+					(shpSetAISetting gSource 'threatRange 20)
+					)
+			</OnEventHandlerInit>
+
+			<OnAttacked>
+				(block (
+					(status (obj@ gSource 'wander.status))
+
+					allTargets
+					filteredTargets
+					)
+					(switch
+						;	Only if we're aggressive
+
+						(not (shpGetAISetting gSource 'aggressor))
+							Nil
+
+						;	If we're not wandering, then ignore
+
+						(!= status 'wandering)
+							Nil
+
+						;	If no order giver, nothing to do.
+
+						(not aOrderGiver)
+							Nil
+
+						;	If order giver is not an enemy, then nothing
+
+						(not (objIsEnemy gSource aOrderGiver))
+							Nil
+
+						;	Don't check too often
+
+						(gr (+ (obj@ gSource 'wander.lastEnemyCheck) 150) (unvGetTick))
+							Nil
+
+						;	Only if we're healthy
+
+						(gr (objGetVisibleDamage gSource) 50)
+							Nil
+
+						;	Look for an enemy station matching the sovereign of the
+						;	order giver.
+
+						(not (setq allTargets (sysFindObject aOrderGiver "TA J N:100 +populated; | sA J N:50")))
+							Nil
+
+						;	Filter down to those that are visible to us and have
+						;	a reasonable challenge rating.
+
+						(not (setq filteredTargets
+								(filter allTargets theObj
+									(and (leq (obj@ theObj 'challengeRating) (obj@ gSource 'wander.maxCR))
+											(objCanDetectTarget gSource theObj)
+											(gr (obj@ gSource 'maxSpeed) (obj@ theObj 'maxSpeed))
+											)
+									)
+								))
+							Nil
+
+						;	Attack the given target
+
+						(block (
+							(targetObj (random filteredTargets))
+							)
+							(shpCancelOrders gSource)
+							(shpOrder gSource 'attackOrRetreat targetObj)
+							(objSet@ gSource 'wander.status 'attacking)
+							)
+						)
+					)
+			</OnAttacked>
+
+			<OnOrdersCompleted>
+				(block (
+					(centerObj (objGetObjByID (obj@ gSource 'wander.centerID)))
+					(radius (obj@ gSource 'wander.radius))
+
+					;	Compute our angle relative to the center.
+
+					(curAngle (sysVectorAngle gSource centerObj))
+
+					;	Advance to the next point in the orbit
+
+					(newAngle (+ curAngle (obj@ gSource 'wander.angleInc)))
+					(newPoint (sysVectorPolarOffset centerObj newAngle radius))
+
+					;	Figure out the next point on our path. We advance along the
+					;	orbit and find a point away from any station.
+
+					(radiusFunc (lambda ()
+						(block (
+							(radius (obj@ gSource 'wander.testRadius))
+							)
+							(objInc@ gSource 'wander.testRadius 20)
+							radius
+							)
+						))
+					(reset (objSet@ gSource 'wander.testRadius 0))
+					(newDest (sysVectorRandom newPoint radiusFunc 100 "sTA"))
+					)
+					(switch
+						;	If no center object then nothing to do
+
+						(not centerObj)
+							Nil
+
+						;	Navigate to the new destination
+
+						(block ()
+							(shpOrder gSource 'gotoPos newDest)
+							(objSet@ gSource 'wander.status 'wandering)
+							)
+						)
+					)
+			</OnOrdersCompleted>
+		</Events>
+	</Type>
 	
 	<!-- Zone Encounter Behavior
 	

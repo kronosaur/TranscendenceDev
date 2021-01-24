@@ -270,7 +270,7 @@ void CFleetShipAI::Behavior (SUpdateCtx &Ctx)
 
 				Metric rRange;
 				int iCounterAdj;
-				if (m_AICtx.GetCombatStyle() == aicombatStandOff)
+				if (m_AICtx.GetCombatStyle() == AICombatStyle::StandOff)
 					{
 					rRange = Max(m_pTarget->GetHitSize(), (0.5 * m_AICtx.GetBestWeaponRange()));
 					iCounterAdj = 2;
@@ -327,7 +327,7 @@ void CFleetShipAI::Behavior (SUpdateCtx &Ctx)
 			if (m_pShip->IsDestinyTime(30))
 				{
 				CSpaceObject *pPrincipal = GetCurrentOrderTarget();
-				CSpaceObject *pTarget = CalcEnemyShipInRange(pPrincipal, PATROL_SENSOR_RANGE, m_pDest);
+				CSpaceObject *pTarget = m_pShip->GetVisibleEnemyInRange(pPrincipal, PATROL_SENSOR_RANGE, false, m_pDest);
 				if (pTarget)
 					{
 					SetState(stateAttackOnPatrol);
@@ -361,7 +361,7 @@ void CFleetShipAI::BehaviorStart (void)
 		case IShipController::orderNone:
 			{
 			if (m_pShip->GetDockedObj() == NULL)
-				AddOrder(IShipController::orderGate, NULL, IShipController::SData());
+				AddOrder(COrderDesc(IShipController::orderGate));
 			break;
 			}
 
@@ -416,8 +416,8 @@ void CFleetShipAI::BehaviorStart (void)
 			m_pLeader = GetCurrentOrderTarget();
 			ASSERT(m_pLeader);
 
-			m_iFormation = (int)HIWORD(GetCurrentOrderData());
-			m_iPlace = (int)LOWORD(GetCurrentOrderData());
+			m_iFormation = GetCurrentOrderDesc().GetDataInteger2();
+			m_iPlace = GetCurrentOrderDesc().GetDataInteger();
 			ASSERT(m_iFormation < FORMATIONS_COUNT);
 
 			//	If there is no place for this ship in the formation, then
@@ -629,7 +629,7 @@ DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage,
 			if (GetCurrentOrder() == IShipController::orderEscort)
 				{
 				if (dwParam2 != 0xffffffff)
-					SetCurrentOrderData(SData(dwParam2));
+					m_Orders.SetCurrentOrderDataInteger(dwParam2);
 
 				SetState(stateNone);
 				return resAck;
@@ -736,39 +736,40 @@ void CFleetShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 				//	Get the orders of the leader
 
-				IShipController::OrderTypes iLeaderOrders = IShipController::orderNone;
-				CSpaceObject *pLeaderTarget = NULL;
+				COrderDesc LeaderOrders;
 				if (Ctx.Obj.GetCategory() == CSpaceObject::catShip)
 					{
 					CShip *pLeader = Ctx.Obj.AsShip();
 					if (pLeader)
-						iLeaderOrders = pLeader->GetController()->GetCurrentOrderEx(&pLeaderTarget);
+						{
+						LeaderOrders = pLeader->GetCurrentOrderDesc();
+						}
 					}
 
 				//	Avenge the leader
 
-				int iAvengeChance = (pLeaderTarget ? 40 : 100);
+				int iAvengeChance = (LeaderOrders.GetTarget() ? 40 : 100);
 				CSpaceObject *pAttacker = Ctx.Attacker.GetObj();
 				if (pAttacker
 						&& Ctx.Attacker.IsCausedByNonFriendOf(m_pShip) 
-						&& pAttacker != pLeaderTarget
+						&& pAttacker != LeaderOrders.GetTarget()
 						&& mathRandom(1, 100) <= iAvengeChance)
-					AddOrder(IShipController::orderDestroyTarget, pAttacker, IShipController::SData());
+					AddOrder(COrderDesc(IShipController::orderDestroyTarget, pAttacker));
 
 				//	Take on leader's orders
 
-				switch (iLeaderOrders)
+				switch (LeaderOrders.GetOrder())
 					{
 					case IShipController::orderDestroyTarget:
 					case IShipController::orderGuard:
-						if (pLeaderTarget)
-							AddOrder(iLeaderOrders, pLeaderTarget, IShipController::SData());
+						if (LeaderOrders.GetTarget())
+							AddOrder(LeaderOrders);
 						break;
 					}
 
 				//	Attack other enemies
 
-				AddOrder(IShipController::orderAttackNearestEnemy, NULL, IShipController::SData());
+				AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
 				}
 			break;
 

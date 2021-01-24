@@ -164,6 +164,7 @@
 #define PROPERTY_CHALLENGE_RATING				CONSTLIT("challengeRating")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
+#define PROPERTY_DEFENDER_COMBAT_STRENGTH_TARGET	CONSTLIT("defenderCombatStrengthTarget")
 #define PROPERTY_ENCOUNTERED_BY_NODE			CONSTLIT("encounteredByNode")
 #define PROPERTY_ENCOUNTERED_TOTAL				CONSTLIT("encounteredTotal")
 #define PROPERTY_HULL_TYPE						CONSTLIT("hullType")
@@ -365,6 +366,14 @@ Metric CStationType::CalcBalanceHitsAdj (int iLevel) const
 	static constexpr Metric MAX_HITS_ADJ = 2.0;
 
 	return Min(MAX_HITS_ADJ, sqrt((Metric)CalcHitsToDestroy(iLevel) / BALANCE_STD_HITS_TO_DESTROY));
+	}
+
+Metric CStationType::GetStdChallenge (int iLevel)
+	{
+	if (iLevel < 1 || iLevel > MAX_SYSTEM_LEVEL)
+		return 0.0;
+
+	return STD_STATION_DATA[iLevel].rChallenge;
 	}
 
 int CStationType::CalcChallengeRating (const int iLevel, const Metric rBalance)
@@ -2048,6 +2057,14 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 			return ICCItemPtr::Nil();
 		}
 
+	else if (strEquals(sProperty, PROPERTY_DEFENDER_COMBAT_STRENGTH_TARGET))
+		{
+		Metric rStrength = m_DefenderCount.GetChallengeStrength(GetLevel());
+		if (rStrength)
+			return ICCItemPtr(rStrength);
+		else
+			return ICCItemPtr::Nil();
+		}
 	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_BY_NODE))
 		{
 		ICCItemPtr pResult(ICCItem::SymbolTable);

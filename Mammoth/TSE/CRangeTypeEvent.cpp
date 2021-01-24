@@ -201,7 +201,7 @@ void CRangeTypeEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 	m_sEvent.WriteToStream(pStream);
 
-	pSystem->WriteObjRefToStream(m_pCenter, pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pCenter);
 	pStream->Write((char *)&m_vCenter, sizeof(CVector));
 	pStream->Write((char *)&m_rRadius, sizeof(Metric));
 	m_sCriteria.WriteToStream(pStream);

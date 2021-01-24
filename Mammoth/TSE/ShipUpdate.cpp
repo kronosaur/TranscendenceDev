@@ -46,12 +46,6 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	if ((iTick % TRADE_UPDATE_FREQUENCY) == 0)
 		UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
 
-	//	We keep a target list across all device activations/update in case 
-	//	multiple weapons on the ship want to access a target list (otherwise we
-	//	would have to re-create the target list for every weapon).
-
-	CTargetList TargetList;
-
 	//	Check controls
 
 	if (!IsParalyzed())
@@ -61,7 +55,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		if (!IsDisarmed())
 			{
-			CDeviceClass::SActivateCtx ActivateCtx(NULL, TargetList);
+			CDeviceClass::SActivateCtx ActivateCtx(Ctx, NULL);
 			if (!UpdateTriggerAllDevices(ActivateCtx, UpdateFlags))
 				return;
 			}
@@ -135,7 +129,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Update each device
 
-	CDeviceClass::SDeviceUpdateCtx DeviceCtx(TargetList, iTick);
+	CDeviceClass::SDeviceUpdateCtx DeviceCtx(Ctx, iTick);
 	if (!UpdateAllDevices(DeviceCtx, UpdateFlags))
 		return;
 
@@ -653,9 +647,6 @@ bool CShip::UpdateTriggerAllDevices (CDeviceClass::SActivateCtx &ActivateCtx, CS
 			//
 			//	Inside the Activate method, a weapon will Realize() the
 			//	target list if necessary.
-
-			if (ActivateCtx.TargetList.IsEmpty())
-				ActivateCtx.TargetList = GetTargetList();
 
 			ActivateCtx.pTarget = m_pController->GetTarget(&DeviceItem);
 

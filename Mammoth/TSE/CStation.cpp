@@ -34,6 +34,7 @@
 #define PROPERTY_ANGRY							CONSTLIT("angry")
 #define PROPERTY_BARRIER						CONSTLIT("barrier")
 #define PROPERTY_CAN_BE_MINED					CONSTLIT("canBeMined")
+#define PROPERTY_CHALLENGE_RATING				CONSTLIT("challengeRating")
 #define PROPERTY_DEST_NODE_ID					CONSTLIT("destNodeID")
 #define PROPERTY_DEST_STARGATE_ID				CONSTLIT("destStargateID")
 #define PROPERTY_DESTROY_WHEN_EMPTY				CONSTLIT("destroyWhenEmpty")
@@ -676,7 +677,7 @@ void CStation::CalcDeviceBonus (void)
 		//	to do this AFTER we set up the enhancements stack, since this 
 		//	usually comes from the device slot.
 
-		if (DeviceItem.GetTargetTypes() & CTargetList::typeMissile)
+		if (DeviceItem.GetTargetTypes() & CTargetList::SELECT_MISSILE)
 			m_fHasMissileDefense = true;
 		}
 
@@ -942,7 +943,8 @@ bool CStation::ClassCanAttack (void)
 //	Only returns FALSE if this object can never attack
 
 	{
-	return (m_pType->ForceCanAttack() && !m_pType->ForceCannotAttack());
+	return (!m_pType->ForceCannotAttack()
+			&& (GetScale() == scaleStructure || m_pType->ForceCanAttack()));
 	}
 
 void CStation::ClearBlacklist (CSpaceObject *pObj)
@@ -1630,7 +1632,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 	GetUniverse().PlaySound(this, GetUniverse().FindSound(g_ShipExplosionSoundUNID));
 	}
 
-CString CStation::DebugCrashInfo (void)
+CString CStation::DebugCrashInfo (void) const
 
 //	DebugCrashInfo
 //
@@ -1990,6 +1992,9 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 
 	else if (strEquals(sName, PROPERTY_CAN_BE_MINED))
 		return CC.CreateBool(!IsOutOfPlaneObj() && m_pType->ShowsUnexploredAnnotation());
+
+	else if (strEquals(sName, PROPERTY_CHALLENGE_RATING))
+		return CC.CreateInteger(CChallengeRatingCalculator::CalcChallengeRating(*this));
 
 	else if (strEquals(sName, PROPERTY_DEST_NODE_ID))
 		return (IsStargate() ? CC.CreateString(m_sStargateDestNode) : CC.CreateNil());
@@ -4566,7 +4571,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write(dwSave);
 	m_sName.WriteToStream(pStream);
 	pStream->Write(m_dwNameFlags);
-	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
 	pStream->Write((DWORD)m_Scale);
 	pStream->Write(m_rMass);
 	m_ImageSelector.WriteToStream(pStream);
@@ -4594,10 +4599,10 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	m_Overlays.WriteToStream(pStream);
 	m_DockingPorts.WriteToStream(this, pStream);
 
-	GetSystem()->WriteObjRefToStream(m_pBase, pStream, this);
+	WriteObjRefToStream(m_pBase, pStream);
 	m_sSubordinateID.WriteToStream(pStream);
-	m_Subordinates.WriteToStream(GetSystem(), pStream);
-	m_Targets.WriteToStream(GetSystem(), pStream);
+	m_Subordinates.WriteToStream(pStream);
+	m_Targets.WriteToStream(pStream);
 
 	m_Blacklist.WriteToStream(pStream);
 	pStream->Write(m_iAngryCounter);
@@ -4677,7 +4682,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	//	Weapon targets
 
 	if (m_fArmed)
-		m_WeaponTargets.WriteToStream(*GetSystem(), *pStream);
+		m_WeaponTargets.WriteToStream(*pStream);
 	}
 
 void CStation::MarkImages (void)
@@ -5854,7 +5859,7 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 					|| !Weapon.IsReady())
 				continue;
 
-			CDeviceClass::SActivateCtx ActivateCtx(NULL, m_WeaponTargets);
+			CDeviceClass::SActivateCtx ActivateCtx(Ctx, NULL, m_WeaponTargets);
 			Weapon.Activate(ActivateCtx);
 			if (IsDestroyed())
 				return false;
@@ -5910,7 +5915,7 @@ bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, CTargetList &TargetLis
 //	update.
 
 	{
-	CDeviceClass::SDeviceUpdateCtx DeviceCtx(TargetList, iTick);
+	CDeviceClass::SDeviceUpdateCtx DeviceCtx(Ctx, TargetList, iTick);
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();

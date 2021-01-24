@@ -32,7 +32,7 @@
 			armorID=			"&itLightTharsisPlate;"
 			hitPoints=			"370"
 			multiHull=			"true"
-            regen=              "4"
+			regen=              "4"
 
 			fireRateAdj=		"40"
 			explosionType=		"&vtThermoExplosion1;"
@@ -109,7 +109,7 @@
 			armorID=			"&itTharsisPlate;"
 			hitPoints=			"2400"
 			multiHull=			"true"
-            regen=              "25"
+			regen=              "25"
 
 			explosionType=		"&vtThermoExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -210,7 +210,7 @@
 			armorID=			"&itMassiveTharsisPlate;"
 			hitPoints=			"3600"
 			multiHull=			"true"
-            regen=              "22"
+			regen=              "22"
 
 			explosionType=		"&vtPlasmaExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -254,24 +254,24 @@
 		<!-- Ships and Defenses -->
 
 		<Ships>
-			<Ship		count="1d2"		class="&scTundra;" orders="guard"/>
-			<Ship		count="1d6"		class="&scSandstorm;" orders="patrol" patrolDist="5"/>
+			<Ship		count="1d2"		class="&scTundra;"					orders="guard"/>
+			<Ship		count="1d6"		class="&scSandstorm;"				orders="patrol:5"/>
 			<Table>
-				<Ship	chance="40"	count="1d4+2"	class="&scChasm;" orders="patrol" patrolDist="5"/>
-				<Ship	chance="40" count="1d2" class="&scDeimos;" orders="patrol" patrolDist="8"/>
-				<Ship	chance="10" count="4d6"	class="&scSandstorm;" orders="patrol" patrolDist="8"/>
-				<Ship	chance="10" count="1"	class="&scPhobos;"	orders="guard"/>
+				<Ship	chance="40"	count="1d4+2"	class="&scChasm;"		orders="patrol:5"/>
+				<Ship	chance="40" count="1d2"		class="&scDeimos;"		orders="patrol:8"/>
+				<Ship	chance="10" count="4d6"		class="&scSandstorm;"	orders="patrol:8"/>
+				<Ship	chance="10" count="1"		class="&scPhobos;"		orders="guard"/>
 			</Table>
 		</Ships>
 
 		<Construction constructionRate="500" maxConstruction="10">
 			<Table>
-				<Ship chance="40"	count="1"	class="&scSandstorm;"	 orders="patrol" patrolDist="5"/>
-				<Ship chance="20"	count="1"	class="&scChasm;"		 orders="patrol" patrolDist="5"/>
-				<Ship chance="20"	count="1"	class="&scTundra;"		 orders="patrol" patrolDist="8"/>
-				<Ship chance="10"	count="1"	class="&scDeimos;"		 orders="patrol" patrolDist="8"/>
-				<Ship chance="5"	count="1"	class="&scDeimos;"		 orders="wander"/>
-				<Ship chance="5"	count="1"	class="&scPhobos;"		 orders="patrol" patrolDist="150"/>
+				<Ship chance="40"	count="1"	class="&scSandstorm;"		orders="patrol:5"/>
+				<Ship chance="20"	count="1"	class="&scChasm;"			orders="patrol:5"/>
+				<Ship chance="20"	count="1"	class="&scTundra;"			orders="patrol:8"/>
+				<Ship chance="10"	count="1"	class="&scDeimos;"			orders="patrol:8"/>
+				<Ship chance="5"	count="1"	class="&scPhobos;"			orders="patrol:50"/>
+				<Ship chance="5"	count="1"	class="&scDeimos;"			eventHandler="&evStdWanderBehavior;"/>
 			</Table>
 		</Construction>
 
