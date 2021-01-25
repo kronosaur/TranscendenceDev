@@ -265,3 +265,21 @@ class CTradingComputer
 
 		static int GetItemBuyPrice (const CUniverse &Universe, const CTopologyNode *pNode, const CDesignTypeCriteria &Criteria, const CItem &Item, DWORD *retdwObjID = NULL);
 	};
+
+class CTradingServices
+	{
+	public:
+		CTradingServices () { }
+		CTradingServices (const CSpaceObject &Source);
+		
+		bool GetArmorInstallPrice (const CSpaceObject &Source, CArmorItem ArmorItem, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
+		bool GetArmorRepairPrice (const CSpaceObject &Source, CArmorItem ArmorItem, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
+		bool GetDeviceInstallPrice (const CSpaceObject &Source, CDeviceItem DeviceItem, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
+		bool GetDeviceRemovePrice (const CSpaceObject &Source, CDeviceItem DeviceItem, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
+		bool GetItemInstallPrice (const CSpaceObject &Source, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
+		bool GetItemRemovePrice (const CSpaceObject &Source, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
+
+	private:
+		const CTradingDesc *m_pOverride = NULL;
+		const CTradingDesc *m_pDesc = NULL;
+	};

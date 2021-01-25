@@ -6602,8 +6602,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Ask the object
 
+			CTradingServices Services(*pObj);
 			int iPrice;
-			if (!pObj->GetArmorRepairPrice(pSource, Item, iHPToRepair, 0, &iPrice))
+			if (!Services.GetArmorRepairPrice(*pObj, Item.AsArmorItem(), iHPToRepair, 0, &iPrice))
 				return pCC->CreateNil();
 
 			//	Done
@@ -6619,8 +6620,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Ask the object
 
+			CTradingServices Services(*pObj);
 			int iPrice;
-			if (!pObj->GetArmorInstallPrice(Item, 0, &iPrice))
+			if (!Services.GetArmorInstallPrice(*pObj, Item.AsArmorItem(), 0, &iPrice))
 				return pCC->CreateNil();
 
 			//	Done

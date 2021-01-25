@@ -1576,5 +1576,8 @@
     <ClCompile Include="CProgramDesc.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
+    <ClCompile Include="CTradingServices.cpp">
+      <Filter>Source Files\Trading</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

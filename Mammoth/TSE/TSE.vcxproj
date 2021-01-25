@@ -606,6 +606,7 @@
     <ClCompile Include="CTradingComputer.cpp" />
     <ClCompile Include="CTradingDesc.cpp" />
     <ClCompile Include="CTradingEconomy.cpp" />
+    <ClCompile Include="CTradingServices.cpp" />
     <ClCompile Include="CTreePathStagateGenerator.cpp" />
     <ClCompile Include="CUniverse.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>

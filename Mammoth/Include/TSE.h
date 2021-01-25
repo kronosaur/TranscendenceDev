@@ -1057,20 +1057,17 @@ class CSpaceObject
 		virtual CTradingDesc *GetTradeDescOverride (void) const { return NULL; }
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const { return CCurrencyAndValue(0, GetDefaultEconomy()); }
 
+		CTradingServices GetTradeServices () const { return CTradingServices(*this); }
 		void AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
 		void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
 		void AddTradeDesc (const CTradingDesc &Trade);
 		void AddTradeOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj);
 		CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
-		bool GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
-		bool GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice);
 		CurrencyValue GetBalance (DWORD dwEconomyUNID) const;
 		int GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCount = NULL);
 		const CEconomyType *GetDefaultEconomy (void) const;
 		DWORD GetDefaultEconomyUNID (void) const;
-		bool GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
-		bool GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
 		bool GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType **retpItemType, int *retiPrice);
 		int GetSellPrice (const CItem &Item, DWORD dwFlags);
 		bool GetShipBuyPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
