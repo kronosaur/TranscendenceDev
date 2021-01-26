@@ -184,7 +184,7 @@
 							
 							(not cost)
 								(scrSetDescTranslate gScreen 'core.cannotDecon transData)
-								
+
 							;	If we cannot afford the decontamination cost, then we 
 							;	refues dock.
 							
@@ -199,10 +199,14 @@
 							;	Decontaminate
 
 							(block ()
-								(scrSetDesc gScreen
-									(or (scrTranslate gScreen (@ gData 'descDeconID) transData)
-										(scrTranslate gScreen 'core.deconDesc transData)
-										(scrTranslate gScreen 'descDecon transData)
+								(if (= cost 0)
+									(scrSetDescTranslate gScreen 'core.deconFree transData)
+
+									(scrSetDesc gScreen
+										(or (scrTranslate gScreen (@ gData 'descDeconID) transData)
+											(scrTranslate gScreen 'core.deconDesc transData)
+											(scrTranslate gScreen 'descDecon transData)
+											)
 										)
 									)
 									
@@ -271,6 +275,11 @@
 				You are automatically charged %deconCost% for decontaminating 
 				your ship.
 
+			</Text>
+			<Text id="core.deconFree">
+
+				The dockmaster decontaminates your ship for free.
+			
 			</Text>
 			<Text id="core.cannotAffordDecon">
 

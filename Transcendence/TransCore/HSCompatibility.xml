@@ -3882,6 +3882,7 @@
 			<ReplaceArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 		
 		<StaticData>
@@ -4376,6 +4377,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<DockScreens>
@@ -6785,6 +6787,31 @@
 				imageFrameCount="16"
 				imageTicksPerFrame="2"/>
 	</Effect>
+
+	<!-- Fleet Decontamination -->
+
+	<DockScreen UNID="&dsFleetDecon;"	
+			obsoleteVersion="52"
+			nestedScreen="true"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block Nil
+						(scrSetDesc gScreen "The dockmaster decontaminates your ship before you are allowed to exit the airlock.")
+						(shpDecontaminate gPlayerShip)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" default="1" cancel="1" key="C">
+						(scrExitScreen gScreen (shpIsRadioactive gPlayerShip))
+					</Action>
+				</Actions>
+
+			</Default>
+		</Panes>
+	</DockScreen>
 
 	<!-- Commonwealth Decontamination -->
 

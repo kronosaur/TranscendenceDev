@@ -243,6 +243,7 @@
 			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100" actualPrice="true"/>
 
 			<Refuel			criteria="f +basicFuel; L:1-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<Items>
@@ -589,30 +590,34 @@
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(switch
-						;	If the player has more money than we do, then we refuse dock
+					(block (
+						(deconCost (objGetRemoveConditionPrice gSource gPlayerShip 'radioactive))
+						)
+						(switch
+							;	If the player has more money than we do, then we refuse dock
 						
-						(gr (plyGetCredits gPlayer) (typ@ &svSistersOfDomina; 'balance))
-							(scrSetDescTranslate gScreen 'descCantDock)
+							(gr (plyGetCredits gPlayer) (typ@ &svSistersOfDomina; 'balance))
+								(scrSetDescTranslate gScreen 'descCantDock)
 							
-						;	Sisters must have at least 250 credits
+							;	Sisters must have enough money
 						
-						(ls (typ@ &svSistersOfDomina; 'balance) 250)
-							(scrSetDescTranslate gScreen 'descCantDock)
+							(ls (typ@ &svSistersOfDomina; 'balance) deconCost)
+								(scrSetDescTranslate gScreen 'descCantDock)
 							
-						;	Decontaminate
+							;	Decontaminate
 						
-						(block ()
-							(typInc@ &svSistersOfDomina; 'balance -250)
-							(shpDecontaminate gPlayerShip)
-							(scrSetDescTranslate gScreen 'descDecon)
+							(block ()
+								(typInc@ &svSistersOfDomina; 'balance (- deconCost))
+								(objRemoveCondition gPlayerShip 'radioactive)
+								(scrSetDescTranslate gScreen 'descDecon)
+								)
 							)
 						)
 				</OnPaneInit>
 
 				<Actions>
 					<Action name="Continue" default="1" cancel="1" key="C">
-						(scrExitScreen gScreen (shpIsRadioactive gPlayerShip))
+						(scrExitScreen gScreen (objGetCondition gPlayerShip 'radioactive))
 					</Action>
 				</Actions>
 			</Default>
@@ -736,6 +741,10 @@
 	<Type unid="&baSistersStation;"
 			inherit="&unidCommonText;"
 			>
+		<Properties>
+			<Definition id="rpg.checkRadioactive">True</Definition>
+		</Properties>
+
 		<Events>
 			<GetDockScreen>
 				(switch
@@ -745,9 +754,10 @@
 						Nil
 
 					;	If the player ship is radioactive, then we need to
-					;	decontaminate.
+					;	decontaminate. We have a custom screen because we use
+					;	Pilgrims' Aid budget.
 					
-					(shpIsRadioactive gPlayerShip)
+					(objGetCondition gPlayerShip 'radioactive)
 						{	screen:&dsSistersDecon;			priority:10		overrideOnly:true	}
 						
 					Nil

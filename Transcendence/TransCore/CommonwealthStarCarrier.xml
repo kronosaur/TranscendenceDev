@@ -325,6 +325,8 @@
 				without a military ID. But we add it here for completeness. -->
 
 			<Definition id="rpg.checkMilitaryID">"* +militaryID;"</Definition>
+
+			<Definition id="rpg.checkRadioactive">True</Definition>
 		</Properties>
 
 		<!-- Hull -->
@@ -476,6 +478,7 @@
 			<ReplaceArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 		
 		<Items>
@@ -909,6 +912,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<Items>
@@ -1367,6 +1371,25 @@
 		</Events>
 
 		<Language>
+			<Text id="core.deconDesc">
+
+				The dockmaster automatically charges you %cost% for 
+				decontaminating your ship.
+
+			</Text>
+			<Text id="core.deconFree">
+
+				The dockmaster decontaminates your ship for free.
+			
+			</Text>
+			<Text id="core.cannotAffordDecon">
+
+				The dockmaster stops your ship due to high radiation levels. 
+				
+				"Sorry, you cannot afford %cost% for decontamination."
+
+			</Text>
+
 			<Text id="csc.info">
 				(list
 					{	id: 'welcome

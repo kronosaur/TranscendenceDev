@@ -361,6 +361,10 @@
 								(gr (objGetOpenDockingPortCount theObj) 0)
 								(not (objIsAngryAt theObj gPlayerShip))
 								(or
+									(not (objGetCondition theSource 'radioactive))
+									(objGetRemoveConditionPrice theObj theSource 'radioactive)
+									)
+								(or
 									(geq (objGetProperty theObj 'repairArmorMaxLevel) minLevel)
 									(and
 										(setq theServiceEntry (lookup (objGetStaticData theObj "NPCService") 'repairArmor 0))
