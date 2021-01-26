@@ -255,6 +255,7 @@
 						(and (eq behavior 'escorting)
 								(or (geq (setq armorDamage (objGetVisibleDamage gSource)) 10)
 									(objGetCondition gSource 'radioactive)
+									(objGetCondition gSource 'fouled)
 									)
 								(not (objIsUnderAttack gSource))
 								)
@@ -394,13 +395,8 @@
 					(if (eq behavior 'repairingArmor)
 						(block Nil
 							(intArmorRepairAll gSource)
-							(shpDecontaminate gSource)
-							
-							;	Remove any overlays that shouldn't be there (e.g., pteravores)
-							
-							(enum (objGetOverlays gSource) theOverlay
-								(objFireOverlayEvent gSource theOverlay 'OnRemoveAtDockServices)
-								)
+							(objRemoveCondition gSource 'radioactive)
+							(objRemoveCondition gSource 'fouled)
 							
 							;	Tell player what happened
 							
