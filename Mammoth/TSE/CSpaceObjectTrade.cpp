@@ -537,7 +537,7 @@ void CSpaceObject::RefitDockedObjs (int iTick, int iRepairCycle)
 
 	//	Radiation
 
-	bool bDecontaminate = true;
+	bool bDecontaminate = !DefaultRepair.IsEmpty() || Services.HasService(serviceDecontaminate);
 
 	//	Loop over all ports and repair docked ships.
 
