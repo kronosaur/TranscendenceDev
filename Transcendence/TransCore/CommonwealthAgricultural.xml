@@ -65,6 +65,7 @@
 			<Refuel			criteria="f +BasicFuel; L:1-5;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-5;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a L:1-5;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="2"/>
 			<ConsumeTrade	criteria="{human.lux}"		impact="1"/>

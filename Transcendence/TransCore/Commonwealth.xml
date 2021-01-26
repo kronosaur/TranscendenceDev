@@ -82,11 +82,9 @@
 					; If customs is temporarily disabled, then we don't do anything.
 					(= (objFireEvent gSource 'GetCommonwealthCustomsStatus) 'disabled)
 						Nil
-
-					; If the player ship is radioactive, then we need to
-					; decontaminate.
-					(shpIsRadioactive gPlayerShip)
-						{	screen:&dsCommonwealthDecon;		priority:10		overrideOnly:true	}
+						
+					;	NOTE: No need to check for radiation because it is handled
+					;	by dsRPGDecontamination because we set rpg.checkRadioactive
 
 					; If the player has sold slaves then he/she is arrested.
 					(geq (int (objGetData gPlayerShip "commonCrimeSeverity")) 2)
@@ -232,6 +230,7 @@
 			<ReplaceArmor	criteria="a L:1-5;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-5;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-5;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="2"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="5"/>
@@ -464,6 +463,7 @@
 			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-7;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{core.antimatterFuel}"	impact="2"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="5"/>
@@ -651,6 +651,7 @@
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-7;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
 			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
@@ -810,6 +811,7 @@
 			<Sell	criteria="*NU +Meds; -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="*NU +Food; -Illegal;"	priceAdj="100"/>
 			<Buy	criteria="*NU +Lux; -Illegal;"	priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="2"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="3"/>
@@ -972,6 +974,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+			
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="1"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="5"/>
 			<ConsumeTrade	criteria="{human.lux}"		impact="2"/>
@@ -1075,6 +1079,8 @@
 		<!-- Trade and Items -->
 
 		<Trade>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+			
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="1"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="2"/>
 			<ConsumeTrade	criteria="{human.meds}"		impact="2"/>
@@ -1307,6 +1313,7 @@
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{core.antimatterFuel}"	impact="2"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="5"/>
@@ -2259,6 +2266,13 @@
 			By default we accept any military ID (even ones from APD or ED).
 			-->
 			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+			
+			<!--
+			Check radioactive status when player docks. If the player is 
+			radioactive, we check to see if the station decontaminates (using
+			trade descriptions). If not, we refuse dock.
+			-->
+			<Definition	id="rpg.checkRadioactive">True</Definition>
 
 			<!--
 			By default we reveal unknown items when they are for sale.

@@ -28,6 +28,7 @@
 
 		<Properties>
 			<Constant		id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+			<Constant		id="rpg.checkRadioactive">True</Constant>
 			<Constant		id="rpg.showActualItem">True</Constant>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
@@ -47,6 +48,7 @@
 			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-7;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
 			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>

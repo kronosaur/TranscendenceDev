@@ -61,6 +61,7 @@
 			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-6;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="5"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="10"/>
@@ -204,6 +205,7 @@
 			<ReplaceArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
 			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>

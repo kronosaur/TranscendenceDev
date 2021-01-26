@@ -29,6 +29,10 @@
 		<Image imageID="&rsIocrymMonument;" imageWidth="208" imageHeight="260"/>
 		<HeroImage imageID="&rsIocrymMonumentScreen;" imageWidth="950" imageHeight="650"/>
 		
+		<Trade currency="credit">
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+		
 		<Ships>
 			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
 		</Ships>
