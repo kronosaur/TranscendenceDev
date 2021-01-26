@@ -994,6 +994,7 @@
 
 			<Refuel			criteria="f +BasicFuel; L:1-4;" priceAdj="90"/>
 			<Refuel			criteria="f +BasicFuel; L:5-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="120"/>
 
 			<ProduceTrade	criteria="{core.fusionFuel}"		impact="20"/>
 		</Trade>
