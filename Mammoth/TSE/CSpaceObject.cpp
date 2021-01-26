@@ -102,6 +102,7 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define SPECIAL_IS_PLANET						CONSTLIT("isPlanet:")
 #define SPECIAL_LOCATION						CONSTLIT("location:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
+#define SPECIAL_SERVICE							CONSTLIT("service:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
 #define SPECIAL_VALUE_TRUE						CONSTLIT("true")
@@ -4749,6 +4750,16 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 
 		ICCItemPtr pValue = GetProperty(CCX, Compare.GetProperty());
 		return Compare.Eval(pValue);
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_SERVICE))
+		{
+		CString sValue = strSubString(sAttrib, SPECIAL_SERVICE.GetLength());
+		ETradeServiceTypes iService = CTradingDesc::ParseService(sValue);
+		if (iService == serviceNone)
+			return false;
+
+		CTradingServices Services(*this);
+		return Services.HasService(iService);
 		}
 	else
 		{

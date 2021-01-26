@@ -94,6 +94,7 @@
 #define SPECIAL_EXTENSION						CONSTLIT("extension:")
 #define SPECIAL_INHERIT							CONSTLIT("inherit:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
+#define SPECIAL_SERVICE							CONSTLIT("service:")
 #define SPECIAL_SYSTEM_LEVEL					CONSTLIT("systemLevel:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
@@ -2534,6 +2535,16 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 
 		ICCItemPtr pValue = GetProperty(CCX, Compare.GetProperty());
 		return Compare.Eval(pValue);
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_SERVICE))
+		{
+		CString sValue = strSubString(sAttrib, SPECIAL_SERVICE.GetLength());
+		ETradeServiceTypes iService = CTradingDesc::ParseService(sValue);
+		if (iService == serviceNone)
+			return false;
+
+		CTradingServices Services(*this);
+		return Services.HasService(iService);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_LEVEL))
 		{
