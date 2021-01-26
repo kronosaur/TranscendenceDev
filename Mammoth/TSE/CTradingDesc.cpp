@@ -1135,7 +1135,7 @@ bool CTradingDesc::HasSameCriteria (const SServiceDesc &S1, const SServiceDesc &
 		}
 	}
 
-bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
+bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
 
 //	GetArmorInstallPrice
 //
@@ -1146,7 +1146,7 @@ bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject &Obj, const CItem &I
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceReplaceArmor;
-	Ctx.pProvider = &Obj;
+	Ctx.pProvider = pProvider;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
@@ -1181,7 +1181,7 @@ bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject &Obj, const CItem &I
 	return false;
 	}
 
-bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject &Obj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const
+bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject *pProvider, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const
 
 //	GetArmorRepairPrice
 //
@@ -1192,7 +1192,7 @@ bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject &Obj, CSpaceObject *p
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRepairArmor;
-	Ctx.pProvider = &Obj;
+	Ctx.pProvider = pProvider;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pObj = pSource;
 	Ctx.pItem = &Item;
@@ -1221,7 +1221,7 @@ bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject &Obj, CSpaceObject *p
 	return false;
 	}
 
-bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
+bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
 
 //	GetDeviceInstallPrice
 //
@@ -1232,7 +1232,7 @@ bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject &Obj, const CItem &
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceInstallDevice;
-	Ctx.pProvider = &Obj;
+	Ctx.pProvider = pProvider;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
@@ -1274,7 +1274,7 @@ bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject &Obj, const CItem &
 	return false;
 	}
 
-bool CTradingDesc::GetDeviceRemovePrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags) const
+bool CTradingDesc::GetDeviceRemovePrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags) const
 
 //	GetDeviceRemovePrice
 //
@@ -1285,7 +1285,7 @@ bool CTradingDesc::GetDeviceRemovePrice (const CSpaceObject &Obj, const CItem &I
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRemoveDevice;
-	Ctx.pProvider = &Obj;
+	Ctx.pProvider = pProvider;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
@@ -1360,23 +1360,23 @@ int CTradingDesc::GetMaxLevelMatched (CUniverse &Universe, ETradeServiceTypes iS
 	return iMaxLevel;
 	}
 
-bool CTradingDesc::GetRefuelItemAndPrice (const CSpaceObject &Obj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const
+bool CTradingDesc::GetRefuelItemAndPrice (const CSpaceObject *pProvider, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const
 
 //	GetRefuelItemAndPrice
 //
 //	Returns the appropriate fuel and price to refuel the given object.
 
 	{
-	CUniverse &Universe = Obj.GetUniverse();
-
 	int i, j;
 	CShip *pShipToRefuel = pObjToRefuel->AsShip();
 	if (pShipToRefuel == NULL)
 		return false;
 
+	CUniverse &Universe = pShipToRefuel->GetUniverse();
+
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRefuel;
-	Ctx.pProvider = &Obj;
+	Ctx.pProvider = pProvider;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.iCount = 1;
 

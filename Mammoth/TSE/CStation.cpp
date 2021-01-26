@@ -4406,68 +4406,75 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	bool bCalcBounds = false;
 	bool bCalcDeviceBonus = false;
-	int iTick = GetSystem()->GetTick() + GetDestiny();
 
-	//	If we need to destroy this station, do it now
+	//	This code only happens for non-static stations (i.e., not needed for 
+	//	asteroids).
 
-	if (m_fDestroyIfEmpty 
-			&& GetItemList().GetCount() == 0
-			&& m_DockingPorts.GetPortsInUseCount(this) == 0)
+	if (!m_pType->IsStatic())
 		{
-		Destroy(removedFromSystem, CDamageSource());
-		return;
-		}
+		int iTick = GetSystem()->GetTick() + GetDestiny();
 
-	//	Active station attack, etc.
+		//	If we need to destroy this station, do it now
 
-	if (!IsAbandoned())
-		{
-		//	Update blacklist counter
-		//	NOTE: Once the player is blacklisted by this station, there is
-		//	no way to get off the blacklist. (At least no automatic way).
-
-		m_Blacklist.Update(iTick);
-
-		//	Update attacks
-
-		if (m_fArmed && !m_pType->IsVirtual()
-				&& (m_pType->CanAttackIndependently() || (m_pBase && !m_pBase->IsAbandoned())))
+		if (m_fDestroyIfEmpty 
+				&& GetItemList().GetCount() == 0
+				&& m_DockingPorts.GetPortsInUseCount(this) == 0)
 			{
-			if (!UpdateAttacking(Ctx, iTick))
+			Destroy(removedFromSystem, CDamageSource());
+			return;
+			}
+
+		//	Active station attack, etc.
+
+		if (!IsAbandoned())
+			{
+			//	Update blacklist counter
+			//	NOTE: Once the player is blacklisted by this station, there is
+			//	no way to get off the blacklist. (At least no automatic way).
+
+			m_Blacklist.Update(iTick);
+
+			//	Update attacks
+
+			if (m_fArmed && !m_pType->IsVirtual()
+					&& (m_pType->CanAttackIndependently() || (m_pBase && !m_pBase->IsAbandoned())))
+				{
+				if (!UpdateAttacking(Ctx, iTick))
+					return;
+				}
+
+			//	Update reinforcements
+
+			UpdateReinforcements(iTick);
+
+			//	Update trade
+
+			if ((iTick % TRADE_UPDATE_FREQUENCY) == 0)
+				UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
+			}
+
+		//	Update docking ports
+
+		m_DockingPorts.UpdateAll(Ctx, this);
+
+		//	Update each device. If updating destroys the station, then we're done.
+
+		if (!m_Devices.IsEmpty())
+			{
+			if (!UpdateDevices(Ctx, iTick, m_WeaponTargets, bCalcDeviceBonus))
 				return;
 			}
 
-		//	Update reinforcements
+		//	Update destroy animation
 
-		UpdateReinforcements(iTick);
+		if (m_iDestroyedAnimation)
+			UpdateDestroyedAnimation();
 
-		//	Update trade
+		//	If we're moving, slow down
 
-		if ((iTick % TRADE_UPDATE_FREQUENCY) == 0)
-			UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
+		if (!IsAnchored() && !GetVel().IsNull())
+			AddDrag(g_SpaceDragFactor);
 		}
-
-	//	Update docking ports
-
-	m_DockingPorts.UpdateAll(Ctx, this);
-
-	//	Update each device. If updating destroys the station, then we're done.
-
-	if (!m_Devices.IsEmpty())
-		{
-		if (!UpdateDevices(Ctx, iTick, m_WeaponTargets, bCalcDeviceBonus))
-			return;
-		}
-
-	//	Update destroy animation
-
-	if (m_iDestroyedAnimation)
-		UpdateDestroyedAnimation();
-
-	//	If we're moving, slow down
-
-	if (!IsAnchored() && !GetVel().IsNull())
-		AddDrag(g_SpaceDragFactor);
 
 	//	Overlays
 
@@ -5987,8 +5994,8 @@ void CStation::UpdateReinforcements (int iTick)
 
 		//	Repair damage to ships
 
-		if (!m_pType->GetShipRegenDesc().IsEmpty())
-			m_DockingPorts.RepairAll(this, m_pType->GetShipRegenDesc().GetRegen(iTick, STATION_REPAIR_FREQUENCY));
+		if (!m_pType->GetShipRegenDesc().IsEmpty() || HasTradeService(serviceRepairArmor))
+			RefitDockedObjs(iTick, STATION_REPAIR_FREQUENCY);
 		}
 
 	//	Construction

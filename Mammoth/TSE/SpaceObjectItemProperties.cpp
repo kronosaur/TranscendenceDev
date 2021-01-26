@@ -52,7 +52,7 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		{
 		CTradingServices Services(*this);
 		int iPrice;
-		if (!Services.GetDeviceInstallPrice(*this, Item.AsDeviceItem(), 0, &iPrice))
+		if (!Services.GetDeviceInstallPrice(Item.AsDeviceItem(), 0, &iPrice))
 			return ICCItemPtr::Nil();
 
 		return ICCItemPtr(iPrice);
@@ -72,7 +72,7 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		int iPrice;
 		DWORD dwPriceFlags;
 
-		bool bCanInstall = Services.GetDeviceInstallPrice(*this, Item.AsDeviceItem(), 0, &iPrice, &sMessageID, &dwPriceFlags);
+		bool bCanInstall = Services.GetDeviceInstallPrice(Item.AsDeviceItem(), 0, &iPrice, &sMessageID, &dwPriceFlags);
 
 		//	Create the structure
 
@@ -102,7 +102,7 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		int iPrice;
 		DWORD dwPriceFlags;
 
-		bool bCanInstall = Services.GetItemInstallPrice(*this, Item, 0, &iPrice, &sMessageID, &dwPriceFlags);
+		bool bCanInstall = Services.GetItemInstallPrice(Item, 0, &iPrice, &sMessageID, &dwPriceFlags);
 
 		//	Create the structure
 
@@ -125,7 +125,7 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		CTradingServices Services(*this);
 
 		int iPrice;
-		if (!Services.GetDeviceRemovePrice(*this, Item.AsDeviceItem(), 0, &iPrice))
+		if (!Services.GetDeviceRemovePrice(Item.AsDeviceItem(), 0, &iPrice))
 			return ICCItemPtr::Nil();
 
 		return ICCItemPtr(iPrice);
@@ -145,7 +145,7 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		int iPrice;
 		DWORD dwPriceFlags = 0;
 
-		bool bCanRemove = Services.GetItemRemovePrice(*this, Item, 0, &iPrice, &dwPriceFlags);
+		bool bCanRemove = Services.GetItemRemovePrice(Item, 0, &iPrice, &dwPriceFlags);
 
 		//	Create the structure
 

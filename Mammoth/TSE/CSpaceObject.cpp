@@ -7164,7 +7164,7 @@ bool CSpaceObject::RequestGate (CSpaceObject *pObj)
 	return true;
 	}
 
-void CSpaceObject::ScrapeOverlays (void)
+void CSpaceObject::ScrapeOverlays ()
 
 //	ScrapeOverlays
 //

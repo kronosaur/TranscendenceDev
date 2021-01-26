@@ -1054,6 +1054,7 @@ class CSpaceObject
 		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
 		virtual const CCurrencyBlock *GetCurrencyBlock (void) const { return NULL; }
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) { return NULL; }
+		virtual const CRegenDesc &GetDefaultShipRepair () const { return CRegenDesc::Null; }
 		virtual CTradingDesc *GetTradeDescOverride (void) const { return NULL; }
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const { return CCurrencyAndValue(0, GetDefaultEconomy()); }
 
@@ -1074,10 +1075,10 @@ class CSpaceObject
 		bool GetShipBuyPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
 		bool GetShipSellPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
 		bool GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
-		int GetTradeMaxLevel (ETradeServiceTypes iService) const;
 		bool HasTradeService (ETradeServiceTypes iService, const CTradingDesc::SHasServiceOptions &Options = CTradingDesc::SHasServiceOptions());
 		bool HasTradeUpgradeOnly (ETradeServiceTypes iService) const;
 		void RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
+		void RefitDockedObjs (int iTick, int iRepairCycle);
 		void SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
 
 		//	Wingmen
@@ -1270,7 +1271,7 @@ class CSpaceObject
 		virtual void RepairDamage (int iHitPoints) { }
 		virtual void Resume (void) { }
 		virtual void Suspend (void) { }
-		void ScrapeOverlays (void);
+		void ScrapeOverlays ();
 
 		//	...for stations
 

@@ -49,6 +49,7 @@
 #define PROPERTY_REFUEL_MAX_LEVEL				CONSTLIT("refuelMaxLevel")
 #define PROPERTY_REMOVE_DEVICE_MAX_LEVEL		CONSTLIT("removeDeviceMaxLevel")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
+#define PROPERTY_REPAIR_ARMOR_RATE				CONSTLIT("repairArmorRate")
 #define PROPERTY_SCALE							CONSTLIT("scale")
 #define PROPERTY_SHOW_AS_DESTINATION			CONSTLIT("showAsDestination")
 #define PROPERTY_SIZE_PIXELS					CONSTLIT("sizePixels")
@@ -369,13 +370,15 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 
 	else if (strEquals(sName, PROPERTY_INSTALL_ARMOR_MAX_LEVEL))
 		{
-		int iMaxLevel = GetTradeMaxLevel(serviceReplaceArmor);
+		CTradingServices Services(*this);
+		int iMaxLevel = Services.GetMaxLevel(serviceReplaceArmor);
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
 		}
 
 	else if (strEquals(sName, PROPERTY_INSTALL_DEVICE_MAX_LEVEL))
 		{
-		int iMaxLevel = GetTradeMaxLevel(serviceInstallDevice);
+		CTradingServices Services(*this);
+		int iMaxLevel = Services.GetMaxLevel(serviceInstallDevice);
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
 		}
 
@@ -417,20 +420,36 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 
 	else if (strEquals(sName, PROPERTY_REFUEL_MAX_LEVEL))
 		{
-		int iMaxLevel = GetTradeMaxLevel(serviceRefuel);
+		CTradingServices Services(*this);
+		int iMaxLevel = Services.GetMaxLevel(serviceRefuel);
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
 		}
 
 	else if (strEquals(sName, PROPERTY_REMOVE_DEVICE_MAX_LEVEL))
 		{
-		int iMaxLevel = GetTradeMaxLevel(serviceRemoveDevice);
+		CTradingServices Services(*this);
+		int iMaxLevel = Services.GetMaxLevel(serviceRemoveDevice);
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
 		}
 
 	else if (strEquals(sName, PROPERTY_REPAIR_ARMOR_MAX_LEVEL))
 		{
-		int iMaxLevel = GetTradeMaxLevel(serviceRepairArmor);
+		CTradingServices Services(*this);
+		int iMaxLevel = Services.GetMaxLevel(serviceRepairArmor);
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
+		}
+
+	else if (strEquals(sName, PROPERTY_REPAIR_ARMOR_RATE))
+		{
+		CTradingServices Services(*this);
+		CRegenDesc Regen = Services.GetArmorRepairRate(0, GetDefaultShipRepair());
+		Metric rHP = Regen.GetHPPer180(CTradingServices::DEFAULT_REPAIR_CYCLE);
+		if (rHP == 0.0)
+			return CC.CreateNil();
+		else if (rHP == (Metric)(int)rHP)
+			return CC.CreateInteger((int)rHP);
+		else
+			return CC.CreateDouble(rHP);
 		}
 
 	else if (strEquals(sName, PROPERTY_SCALE))

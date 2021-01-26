@@ -510,7 +510,7 @@ class CStationType : public CDesignType
 		ScaleTypes GetScale (void) const { return m_iScale; }
 		int GetSize (void) const { return m_iSize; }
 		int GetShipConstructionRate (void) { return m_iShipConstructionRate; }
-		const CRegenDesc &GetShipRegenDesc (void) { return m_ShipRegen; }
+		const CRegenDesc &GetShipRegenDesc (void) const { return m_ShipRegen; }
 		CSovereign *GetSovereign (void) const { return m_pSovereign; }
 		CG32bitPixel GetSpaceColor (void) const { return m_Star.GetSpaceColor(); }
 		int GetStealth (void) const { return m_iStealthFromArmor; }

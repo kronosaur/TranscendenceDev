@@ -168,11 +168,15 @@
 #define PROPERTY_ENCOUNTERED_BY_NODE			CONSTLIT("encounteredByNode")
 #define PROPERTY_ENCOUNTERED_TOTAL				CONSTLIT("encounteredTotal")
 #define PROPERTY_HULL_TYPE						CONSTLIT("hullType")
+#define PROPERTY_INANIMATE						CONSTLIT("inanimate")
 #define PROPERTY_LEVEL_FREQUENCY				CONSTLIT("levelFrequency")
 #define PROPERTY_MAX_BALANCE					CONSTLIT("maxBalance")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_PRIMARY_WEAPON					CONSTLIT("primaryWeapon")
 #define PROPERTY_PRIMARY_WEAPON_LEVEL			CONSTLIT("primaryWeaponLevel")
+#define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
+#define PROPERTY_REPAIR_ARMOR_RATE				CONSTLIT("repairArmorRate")
+#define PROPERTY_REPAIR_ARMOR_RATE_EXPLICIT		CONSTLIT("repairArmorRateExplicit")
 #define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
@@ -1523,6 +1527,8 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 			&& (m_pEncounters == NULL)
 			&& (m_pConstruction == NULL)
 			&& (m_pItems == NULL)
+			&& (m_pTrade == NULL)
+			&& m_ShipRegen.IsEmpty()
 			&& !HasEvents()
 			&& (m_pBarrierEffect == NULL)
 			&& !m_fMobile
@@ -2089,6 +2095,9 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 			return ICCItemPtr(CStationHullDesc::GetID(m_HullDesc.GetHullType()));
 		}
 
+	else if (strEquals(sProperty, PROPERTY_INANIMATE))
+		return ICCItemPtr(m_fStatic ? true : false);
+
 	else if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
 		return ICCItemPtr(GetEncounterDesc().GetLevelFrequency());
 
@@ -2110,6 +2119,38 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		{
 		CItem PrimaryWeapon = GetPrimaryWeapon();
 		return (PrimaryWeapon.IsEmpty() ? ICCItemPtr(ICCItem::Nil) : ICCItemPtr(PrimaryWeapon.GetLevel()));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_REPAIR_ARMOR_MAX_LEVEL))
+		{
+		CTradingServices Services(*this);
+		int iMaxLevel = Services.GetMaxLevel(serviceRepairArmor);
+		return (iMaxLevel != -1 ? ICCItemPtr(iMaxLevel) : ICCItemPtr::Nil());
+		}
+
+	else if (strEquals(sProperty, PROPERTY_REPAIR_ARMOR_RATE))
+		{
+		CTradingServices Services(*this);
+		CRegenDesc Regen = Services.GetArmorRepairRate(0, GetShipRegenDesc());
+		Metric rHP = Regen.GetHPPer180(CTradingServices::DEFAULT_REPAIR_CYCLE);
+		if (rHP == 0.0)
+			return ICCItemPtr::Nil();
+		else if (rHP == (Metric)(int)rHP)
+			return ICCItemPtr((int)rHP);
+		else
+			return ICCItemPtr(rHP);
+		}
+
+	else if (strEquals(sProperty, PROPERTY_REPAIR_ARMOR_RATE_EXPLICIT))
+		{
+		CRegenDesc Regen = GetShipRegenDesc();
+		Metric rHP = Regen.GetHPPer180(CTradingServices::DEFAULT_REPAIR_CYCLE);
+		if (rHP == 0.0)
+			return ICCItemPtr::Nil();
+		else if (rHP == (Metric)(int)rHP)
+			return ICCItemPtr((int)rHP);
+		else
+			return ICCItemPtr(rHP);
 		}
 
 	else if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))

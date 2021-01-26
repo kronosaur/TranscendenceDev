@@ -197,7 +197,7 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetRefuelItemAndPrice(*this, pObjToRefuel, 0, retpItemType, retiPrice))
+	if (pTradeOverride && pTradeOverride->GetRefuelItemAndPrice(this, pObjToRefuel, 0, retpItemType, retiPrice))
 		return true;
 
 	//	Otherwise, ask our design type
@@ -207,7 +207,7 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 		return false;
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetRefuelItemAndPrice(*this, pObjToRefuel, 0, retpItemType, retiPrice))
+	if (pTrade && pTrade->GetRefuelItemAndPrice(this, pObjToRefuel, 0, retpItemType, retiPrice))
 		return true;
 
 	//	For compatibility, any ship prior to version 23 has a default.
@@ -473,39 +473,6 @@ bool CSpaceObject::GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *re
 	return false;
 	}
 
-int CSpaceObject::GetTradeMaxLevel (ETradeServiceTypes iService) const
-
-//	GetTradeMaxLevel
-//
-//	Returns the max tech level for this service.
-
-	{
-	int iMaxLevel = -1;
-
-	//	See if we have an override
-
-	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride)
-		{
-		int iLevel = pTradeOverride->GetMaxLevelMatched(GetUniverse(), iService);
-		if (iLevel > iMaxLevel)
-			iMaxLevel = iLevel;
-		}
-
-	//	Ask base type
-
-	CDesignType *pType = GetType();
-	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
-	if (pTrade)
-		{
-		int iLevel = pTrade->GetMaxLevelMatched(GetUniverse(), iService);
-		if (iLevel > iMaxLevel)
-			iMaxLevel = iLevel;
-		}
-
-	return iMaxLevel;
-	}
-
 bool CSpaceObject::HasTradeService (ETradeServiceTypes iService, const CTradingDesc::SHasServiceOptions &Options)
 
 //	HasTradeService
@@ -513,22 +480,8 @@ bool CSpaceObject::HasTradeService (ETradeServiceTypes iService, const CTradingD
 //	Returns TRUE if we provide the given service.
 
 	{
-	//	See if we have an override
-
-	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->HasService(GetUniverse(), iService, Options))
-		return true;
-
-	//	Ask base type
-
-	CDesignType *pType = GetType();
-	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
-	if (pTrade && pTrade->HasService(GetUniverse(), iService, Options))
-		return true;
-
-	//	No service
-
-	return false;
+	CTradingServices Services(*this);
+	return Services.HasService(iService, Options);
 	}
 
 bool CSpaceObject::HasTradeUpgradeOnly (ETradeServiceTypes iService) const
@@ -554,6 +507,68 @@ bool CSpaceObject::HasTradeUpgradeOnly (ETradeServiceTypes iService) const
 	//	No service
 
 	return false;
+	}
+
+void CSpaceObject::RefitDockedObjs (int iTick, int iRepairCycle)
+
+//	RefitDockedObjs
+//
+//	Repairs and resupplies all docked objects based on our capabilities.
+
+	{
+	const CDockingPorts *pPorts = GetDockingPorts();
+	if (!pPorts)
+		return;
+
+	CTradingServices Services(*this);
+	const CRegenDesc &DefaultRepair = GetDefaultShipRepair();
+	if (Services.IsEmpty() && DefaultRepair.IsEmpty())
+		return;
+
+	//	Figure out the max armor level that we repair. For now we don't handle 
+	//	the case where stations repair a subset of armor types.
+
+	int iMaxRepairLevel = Services.GetMaxLevel(serviceRepairArmor);
+
+	//	Figure out our repair rate.
+
+	CRegenDesc Repair = Services.GetArmorRepairRate(0, DefaultRepair);
+	int iHPToRepair = Repair.GetRegen(iTick, iRepairCycle);
+
+	//	Radiation
+
+	bool bDecontaminate = true;
+
+	//	Loop over all ports and repair docked ships.
+
+	for (int i = 0; i < pPorts->GetPortCount(); i++)
+		{
+		CSpaceObject *pObj = pPorts->GetObjAtPort(*this, i);
+		if (!pObj 
+				|| IsEnemy(pObj)
+				|| pObj->IsPlayer())
+			continue;
+
+		//	Decontaminate, if necessary
+
+		if (bDecontaminate)
+			pObj->RemoveCondition(ECondition::radioactive, SApplyConditionOptions());
+
+		//	See if we can repair the armor. If not, skip
+
+		const CArmorSystem *pArmor = pObj->GetArmorSystem();
+		if (pArmor 
+				&& pArmor->GetMaxLevel() <= iMaxRepairLevel
+				&& iHPToRepair > 0)
+			{
+			pObj->RepairDamage(iHPToRepair);
+			pObj->ScrapeOverlays();
+			}
+
+		//	Resupply ammo
+
+
+		}
 	}
 
 void CSpaceObject::SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency)

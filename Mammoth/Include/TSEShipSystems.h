@@ -124,6 +124,7 @@ class CArmorSystem
 		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
 		int CalcTotalHitPoints (int *retiMaxHP = NULL) const;
         int GetHealerLeft (void) const { return m_iHealerLeft; }
+		int GetMaxLevel () const;
 		CInstalledArmor &GetSegment (int iSeg) { return m_Segments[iSeg]; }
 		int GetSegmentCount (void) const { return m_Segments.GetCount(); }
         int IncHealerLeft (int iInc) { SetHealerLeft(m_iHealerLeft + iInc); return m_iHealerLeft; }

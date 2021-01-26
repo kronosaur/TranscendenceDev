@@ -1155,7 +1155,7 @@ template <class TYPE> class TSEListNode
 class CRegenDesc
 	{
 	public:
-		CRegenDesc (void) : m_bEmpty(true), m_iHPPerCycle(0), m_iHPPerEraRemainder(0), m_iCyclesPerBurst(1) { }
+		CRegenDesc (void) { }
 		CRegenDesc (int iHPPerEra);
 
 		void Add (const CRegenDesc &Desc);
@@ -1178,13 +1178,15 @@ class CRegenDesc
 							 int iTicksPerCycle = 1);
 		bool IsEmpty (void) const { return m_bEmpty; }
 
+		static const CRegenDesc Null;
+
 	private:
-		int m_iHPPerCycle;					//	HP gained per cycle
-		int m_iHPPerEraRemainder;			//	Extra HP to gain per era (1 era = 360 cycles)
+		int m_iHPPerCycle = 0;					//	HP gained per cycle
+		int m_iHPPerEraRemainder = 0;			//	Extra HP to gain per era (1 era = 360 cycles)
 
-		int m_iCyclesPerBurst;				//	Regen in bursts; each burst is this many cycles
+		int m_iCyclesPerBurst = 1;				//	Regen in bursts; each burst is this many cycles
 
-		bool m_bEmpty;						//	If TRUE, no regen
+		bool m_bEmpty = true;					//	If TRUE, no regen
 	};
 
 //	CZoneGrid ------------------------------------------------------------------

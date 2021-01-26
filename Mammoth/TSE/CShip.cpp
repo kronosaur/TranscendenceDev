@@ -7037,10 +7037,10 @@ void CShip::RepairDamage (int iHPToRepair)
 //	across all segments and sections.
 
 	{
+	//	If we've got internal damage, repair that first.
+
 	int iHP;
 	int iMaxHP;
-
-	//	If we've got internal damage, repair that first.
 
 	m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iHP, &iMaxHP);
 	if (iHP < iMaxHP)
