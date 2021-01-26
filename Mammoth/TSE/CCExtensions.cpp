@@ -1822,6 +1822,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'blind\n"
 			"   'disarmed\n"
+			"   'fouled\n"
 			"   'lrsBlind\n"
 			"   'paralyzed\n"
 			"   'radioactive\n"

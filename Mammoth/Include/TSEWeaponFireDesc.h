@@ -24,8 +24,10 @@ enum class ECondition
 	shipScreenDisabled =	0x00000080,		//	Source cannot bring up ship screen
 	LRSBlind =				0x00000100,		//	LRS-blind
 	shieldBlocked =			0x00000200,		//	Shields disabled
+	fouled =				0x00000400,		//	Harmful object attached
 
-	count =					10,
+
+	count =					11,
 	};
 
 enum class EConditionChange

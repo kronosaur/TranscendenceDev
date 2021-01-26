@@ -1012,12 +1012,18 @@ EConditionResult CSpaceObject::CanRemoveCondition (ECondition iCondition, const 
 	//	If we don't need to check for cases in which we cannot remove the
 	//	condition, then just return.
 
-	if (Options.bNoImmunityCheck)
+	else if (Options.bNoImmunityCheck)
+		return EConditionResult::ok;
+
+	//	For fouling, we know how to remove it.
+
+	else if (iCondition == ECondition::fouled)
 		return EConditionResult::ok;
 
 	//	Let our descendants handle it.
 
-	return OnCanRemoveCondition(iCondition, Options);
+	else
+		return OnCanRemoveCondition(iCondition, Options);
 	}
 
 void CSpaceObject::CommsMessageFrom (CSpaceObject *pSender, int iIndex)
@@ -7045,6 +7051,12 @@ EConditionResult CSpaceObject::RemoveCondition (ECondition iCondition, const SAp
 
 	switch (iCondition)
 		{
+		case ECondition::fouled:
+			{
+			ScrapeOverlays();
+			break;
+			}
+
 		case ECondition::timeStopped:
 			{
 			RestartTime();

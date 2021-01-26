@@ -9,6 +9,7 @@ static TStaticStringTable<TStaticStringEntry<ECondition>, (int)ECondition::count
 	"blind",				ECondition::blind,
 	"disarmed",				ECondition::disarmed,
 	"dragged",				ECondition::dragged,
+	"fouled",				ECondition::fouled,
 	"lrsBlind",				ECondition::LRSBlind,
 	"paralyzed",			ECondition::paralyzed,
 	"radioactive",			ECondition::radioactive,
