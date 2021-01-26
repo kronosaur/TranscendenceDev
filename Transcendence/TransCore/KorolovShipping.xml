@@ -348,6 +348,7 @@
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-6;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<BalanceTrade	criteria="{human.basicFood}"	impact="10"/>
 			<BalanceTrade	criteria="{human.lux}"		impact="10"/>

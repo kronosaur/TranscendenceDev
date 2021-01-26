@@ -175,7 +175,7 @@
 
 						(transData {
 							currency:currency
-							cost:cost
+							cost:(fmtCurrency currency cost)
 							deconCost:(fmtCurrency currency cost)
 							})
 						)

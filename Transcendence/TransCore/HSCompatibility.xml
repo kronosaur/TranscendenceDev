@@ -1427,6 +1427,7 @@
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-6" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 		
 		<Items>
@@ -6784,6 +6785,59 @@
 				imageFrameCount="16"
 				imageTicksPerFrame="2"/>
 	</Effect>
+
+	<!-- Commonwealth Decontamination -->
+
+	<DockScreen UNID="&dsCommonwealthDecon;"
+			obsoleteVersion="52"
+			nestedScreen=	"true"
+			inherit=		"&dsDockScreenBase;"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(currencyUsed (objGetProperty gSource 'currency))
+						(cost (ecoExchange 250 'credit currencyUsed))
+						)
+						(if (geq (objGetBalance gPlayerShip currencyUsed) cost)
+							(block Nil
+								(scrSetDescTranslate gScreen 'customs.chargedForDecon { cost:(fmtCurrency currencyUsed cost) })
+								(objCharge gPlayerShip currencyUsed cost)
+								(shpDecontaminate gPlayerShip)
+								)
+							(scrSetDescTranslate gScreen 'customs.cantAffordDecon { cost:(fmtCurrency currencyUsed cost) })
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						; If the ship is still radioactive, force undock.
+						; Otherwise, we just exit the screen and go back to the default screen
+						
+						(scrExitScreen gScreen (shpIsRadioactive gPlayerShip))
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="customs.chargedForDecon">
+
+				Commonwealth Customs stops your ship for decontamination. You 
+				are automatically charged %cost% for decontaminating your ship.
+
+			</Text>
+			<Text id="customs.cantAffordDecon">
+
+				Commonwealth Customs stops your ship for decontamination.
+				Unfortunately, you do not have %cost% to pay for 
+				decontamination.
+
+			</Text>
+		</Language>
+	</DockScreen>
 
 	<!-- Old Image -->
 

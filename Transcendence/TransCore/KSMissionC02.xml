@@ -186,6 +186,10 @@
 		</Properties>
 
 		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
 		
 		<!-- Ships and Defenses -->
 		
