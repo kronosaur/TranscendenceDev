@@ -112,7 +112,7 @@
 						(shpOrder gPlayerShip 'hold)
 						)
 
-					;	Some tests
+					;	Some device install tests
 
 					(diagEval (list
 						{	test:'(objAddItem gPlayerShip &itSmartCannon; 1)		result:'ignore }

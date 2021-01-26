@@ -26,8 +26,9 @@ enum ETradeServiceTypes
 	serviceConsume =					15,	//	Object consumes items (and thus makes them more expensive)
 	serviceProduce =					16,	//	Object produces items (and thus makes them cheaper)
 	serviceTrade =						17,	//	Object balance trade (consumption/production)
+	serviceDecontaminate =				18,	//	Object balance trade (consumption/production)
 
-	serviceCount =						18,
+	serviceCount =						19,
 	};
 
 struct STradeServiceCtx
@@ -39,13 +40,17 @@ struct STradeServiceCtx
 
 	int iCount = 0;									//	Number of items
 	const CItem *pItem = NULL;						//	For item-based services
-	CDesignType *pType = NULL;						//	For type-based services (e.g., serviceSellShip)
-	CSpaceObject *pObj = NULL;						//	For obj-based services (e.g., serviceSellShip)
+	const CDesignType *pType = NULL;				//	For type-based services (e.g., serviceSellShip)
+	const CSpaceObject *pObj = NULL;				//	For obj-based services (e.g., serviceSellShip)
 	};
 
 class CTradingDesc
 	{
 	public:
+		//	Equivalent HP of repair to decontaminate armor segment.
+
+		static constexpr int DECON_COST_FACTOR =	20;
+
 		enum Flags
 			{
 			FLAG_NO_INVENTORY_CHECK =	0x00000001,	//	Do not check to see if item exists
@@ -115,6 +120,8 @@ class CTradingDesc
 		bool HasServiceUpgradeOnly (ETradeServiceTypes iService) const;
 		bool HasServices (void) const { return (m_List.GetCount() > 0); }
 		void Init (const CTradingDesc &Src);
+		bool RemovesCondition (const CSpaceObject *pProvider, const CShipClass &Class, ECondition iCondition, DWORD dwFlags, int *retiPrice = NULL) const;
+		bool RemovesCondition (const CSpaceObject *pProvider, const CSpaceObject &Ship, ECondition iCondition, DWORD dwFlags, int *retiPrice = NULL) const;
 		bool Sells (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL);
 		bool SellsShip (CSpaceObject *pObj, CShipClass *pClass, DWORD dwFlags, int *retiPrice = NULL);
 		bool SellsShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
@@ -182,15 +189,16 @@ class CTradingDesc
 		void AddOrder (CItemType *pItemType, const CString &sCriteria, int iPriceAdj, DWORD dwFlags);
 		CString ComputeID (ETradeServiceTypes iService, DWORD dwUNID, const CString &sCriteria, DWORD dwFlags);
 		CurrencyValue CalcMaxBalance (CSpaceObject *pObj, CurrencyValue *retReplenish = NULL) const;
-		int ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags);
+		int ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags) const;
+		static CCurrencyAndValue ComputeDecontaminationBasePrice (STradeServiceCtx &Ctx);
 		bool FindByID (const CString &sID, int *retiIndex = NULL) const;
-		bool FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc);
-		bool FindService (ETradeServiceTypes iService, CDesignType *pType, const SServiceDesc **retpDesc);
+		bool FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc) const;
+		bool FindService (ETradeServiceTypes iService, const CDesignType *pType, const SServiceDesc **retpDesc) const;
 		bool FindServiceToOverride (const SServiceDesc &NewService, int *retiIndex = NULL) const;
 		bool GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes iService, SServiceTypeInfo &Info) const;
 		bool HasServiceDescription (ETradeServiceTypes iService) const;
 		bool Matches (const CItem &Item, const SServiceDesc &Commodity) const;
-		bool Matches (CDesignType *pType, const SServiceDesc &Commodity) const;
+		bool Matches (const CDesignType *pType, const SServiceDesc &Commodity) const;
 		bool MatchesHasServiceOptions (CUniverse &Universe, const SHasServiceOptions &Options, const SServiceDesc &Service) const;
 		void ReadServiceFromFlags (DWORD dwFlags, ETradeServiceTypes *retiService, DWORD *retdwFlags);
 		bool SetInventoryCount (CSpaceObject *pObj, SServiceDesc &Desc, CItemType *pItemType);
@@ -285,6 +293,8 @@ class CTradingServices
 		bool GetItemInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
 		bool GetItemRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, DWORD *retdwPriceFlags = NULL) const;
 		int GetMaxLevel (ETradeServiceTypes iService) const;
+		bool GetRemoveConditionPrice (const CShipClass &Class, ECondition iCondition, DWORD dwFlags, int *retiPrice = NULL) const;
+		bool GetRemoveConditionPrice (const CSpaceObject &Ship, ECondition iCondition, DWORD dwFlags, int *retiPrice = NULL) const;
 		bool HasService (ETradeServiceTypes iService, const CTradingDesc::SHasServiceOptions &Options = CTradingDesc::SHasServiceOptions()) const;
 		bool IsEmpty () const { return (!m_pOverride && !m_pDesc); }
 

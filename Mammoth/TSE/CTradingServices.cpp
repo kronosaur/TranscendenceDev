@@ -304,6 +304,56 @@ int CTradingServices::GetMaxLevelMatched (ETradeServiceTypes iService) const
 	return iMaxLevel;
 	}
 
+bool CTradingServices::GetRemoveConditionPrice (const CShipClass &Class, ECondition iCondition, DWORD dwFlags, int *retiPrice) const
+
+//	GetRemoveConditionPrice
+//
+//	Returns TRUE if we remove the given condition on the given class.
+
+	{
+	if (m_pProvider && m_pProvider->IsAbandoned())
+		return false;
+
+	//	See if we have an override price
+
+	if (m_pOverride && m_pOverride->RemovesCondition(m_pProvider, Class, iCondition, dwFlags, retiPrice))
+		return true;
+
+	//	Otherwise, ask our design type
+
+	if (m_pDesc && m_pDesc->RemovesCondition(m_pProvider, Class, iCondition, dwFlags, retiPrice))
+		return true;
+
+	//	Otherwise, we do not decontaminate.
+
+	return false;
+	}
+
+bool CTradingServices::GetRemoveConditionPrice (const CSpaceObject &Ship, ECondition iCondition, DWORD dwFlags, int *retiPrice) const
+
+//	GetRemoveConditionPrice
+//
+//	Returns TRUE if we remove the given condition on the given class.
+
+	{
+	if (m_pProvider && m_pProvider->IsAbandoned())
+		return false;
+
+	//	See if we have an override price
+
+	if (m_pOverride && m_pOverride->RemovesCondition(m_pProvider, Ship, iCondition, dwFlags, retiPrice))
+		return true;
+
+	//	Otherwise, ask our design type
+
+	if (m_pDesc && m_pDesc->RemovesCondition(m_pProvider, Ship, iCondition, dwFlags, retiPrice))
+		return true;
+
+	//	Otherwise, we do not decontaminate.
+
+	return false;
+	}
+
 CUniverse &CTradingServices::GetUniverse () const
 
 //	GetUniverse

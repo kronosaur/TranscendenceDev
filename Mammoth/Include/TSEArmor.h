@@ -243,6 +243,7 @@ class CShipArmorDesc
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		Metric CalcMass (void) const;
 		int GetCount (void) const { return m_Segments.GetCount(); }
+		int GetMaxLevel () const;
 		const CShipArmorSegmentDesc &GetSegment (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < m_Segments.GetCount()); return m_Segments[iIndex]; }
 		int GetSegmentAtAngle (int iAngle) const;
 		CString GetSegmentName (int iIndex) const;

@@ -22,6 +22,7 @@
 						{	test:'(typ@ &stDwargColony; 'explosionType)				result:"blast explosion 2"	}
 						{	test:'(typ@ &stDwargColony; 'fireRateAdj)				result:200	}
 						{	test:'(typ@ &stDwargColony; 'hitsToDestroy)				result:53	}
+						{	test:'(typ@ &stDwargColony; 'inanimate)					result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'installDeviceMaxLevel)		result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'hp)						result:160	}
 						{	test:'(typ@ &stDwargColony; 'level)						result:4	}
@@ -30,6 +31,9 @@
 						{	test:'(typ@ &stDwargColony; 'maxLightRadius)			result:500	}
 						{	test:'(typ@ &stDwargColony; 'name)						result:"Dwarg colony"	}
 						{	test:'(typ@ &stDwargColony; 'regen)						result:2	}
+						{	test:'(typ@ &stDwargColony; 'repairArmorMaxLevel)		result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'repairArmorRate)			result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'repairArmorRateExplicit)	result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'satelliteStrength)			result:0	}
 						{	test:'(typ@ &stDwargColony; 'showsUnexploredAnnotation)	result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'size)						result:0	}
@@ -45,6 +49,40 @@
 						))
 					)
 			</OnGlobalStartDiagnostics>
+
+			<OnGlobalSystemDiagnostics>
+				(block (
+					(curSystem (sysGetNode))
+					)
+					(switch
+						(= curSystem 'SE)
+							(block (
+								(startonObj (sysFindObject Nil "TN +unid:stStartonEridani;"))
+								)
+								(if (not startonObj)
+									(error "Unable to find Starton Eridani.")
+									)
+
+								(dbgOutput "Starton Eridani: " startonObj)
+
+								;	Test some trade properties on Starton Eridani.
+
+								(diagEval (list
+									{	test:'(objGetName (@ data 'startonObj))		result:"Starton Eridani"	}
+
+									{	test:'(objGetBuyPrice (@ data 'startonObj) (itmCreate &itLaserCannon; 1))
+																					result:190	}
+
+									{	test:'(objGetRemoveConditionPrice (@ data 'startonObj) { shipClass:&scSapphireYacht; } 'radioactive)
+																					result:80	}
+									)
+									{
+										startonObj:startonObj
+									})
+								)
+						)
+					)
+			</OnGlobalSystemDiagnostics>
 		</Events>
 	</Type>
 

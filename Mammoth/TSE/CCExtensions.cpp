@@ -252,6 +252,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_REMOVE_CONDITION		145
 #define FN_OBJ_MAKE_RADIOACTIVE		146
 #define FN_OBJ_DECONTAMINATE		147
+#define FN_OBJ_GET_REMOVE_CONDITION_PRICE	148
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -2193,6 +2194,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objGetRefuelItemAndPrice",		fnObjGet,		FN_OBJ_GET_REFUEL_ITEM,	
 			"(objGetRefuelItemAndPrice obj objToRefuel) -> (item price)",
 			"ii",		0,	},
+
+		{	"objGetRemoveConditionPrice",			fnObjGet,		FN_OBJ_GET_REMOVE_CONDITION_PRICE,	
+			"(objGetRemoveConditionPrice obj shipObj condition) -> price (at which obj restores ship)",
+			"ivs",		0,	},
 
 		{	"objGetSellPrice",				fnObjGet,		FN_OBJ_GET_SELL_PRICE,	
 			"(objGetSellPrice obj item [options]) -> price (at which obj sells item)\n\n"
@@ -7377,6 +7382,58 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Done
 
 			return pResult;
+			}
+
+		case FN_OBJ_GET_REMOVE_CONDITION_PRICE:
+			{
+			auto sCondition = pArgs->GetElement(2)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(2));
+
+			ICCItem *pArg;
+			switch (CTLispConvert::ArgType(pArgs->GetElement(1), CTLispConvert::typeSpaceObject, &pArg))
+				{
+				case CTLispConvert::typeShipClass:
+					{
+					CShipClass *pClass = pCtx->GetUniverse().FindShipClass(pArg->GetIntegerValue());
+					if (pClass == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship class"), pArg);
+
+					//	Get the value from the station that is selling
+
+					CTradingServices Services(*pObj);
+
+					int iValue;
+					if (!Services.GetRemoveConditionPrice(*pClass, iCondition, 0, &iValue))
+						return pCC->CreateNil();
+
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeSpaceObject:
+					{
+					CSpaceObject *pShip = CreateObjFromItem(pArg);
+					if (pShip == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+
+					//	Get the value from the station that is selling
+
+					CTradingServices Services(*pObj);
+
+					int iValue;
+					if (!Services.GetRemoveConditionPrice(*pShip, iCondition, 0, &iValue))
+						return pCC->CreateNil();
+
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeNil:
+					return pCC->CreateNil();
+
+				default:
+					return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+				}
 			}
 
 		case FN_OBJ_GET_SELL_PRICE:
