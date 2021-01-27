@@ -64,4 +64,72 @@
 		</Events>
 	</Type>
 
+	<Type unid="&unidCriminalSystemUnitTests;">
+		<Events>
+			<OnGlobalRunDiagnostics>
+				(block (
+					)
+					;	Set up
+
+					(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+					(if (not gPlayerShip)
+						(error "Unable to create player ship.")
+						)
+					(shpOrder gPlayerShip 'hold)
+
+					;	Tests
+
+					(diagEval (list
+
+						{	test:'(rpgCrimeCommitted &unidTestCriminalSystem; {
+								severity: 1
+								desc: "smuggling illegal goods"
+								penalty: 1000
+								})
+																							
+							result: {
+								desc: "smuggling illegal goods"
+								penalty: 1000
+								severity: 1
+								time: 2
+								}
+							}
+
+						{	test:'(@ (typFireEvent &unidTestCriminalSystem; 'OnCrimeJudged {
+								sourceObj: gPlayerShip
+								}) 'status)
+																							result:'lostShip	}
+
+						{	test:'(typ@ &unidTestCriminalSystem; 'keyCrime)
+
+							result: {
+								desc: "smuggling illegal goods"
+								penalty: 1000
+								severity: 1
+								time: 2
+								}
+							}
+
+						{	test:'(typ@ &unidTestCriminalSystem; 'penaltyOwed)				result: 1000	}
+
+						{	test:'(typFireEvent &unidTestCriminalSystem; 'OnCrimeRecordCleared)
+																							result: True }
+						))
+
+					;	Clean up
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
+					)
+			</OnGlobalRunDiagnostics>
+		</Events>
+	</Type>
+
+	<Type unid="&unidTestCriminalSystem;"
+			inherit="&baRPGCriminalRecord;">
+		<Properties>
+			<Definition id="justice.sovereign">&svPirates;</Definition>
+		</Properties>
+	</Type>
+
 </TranscendenceModule>

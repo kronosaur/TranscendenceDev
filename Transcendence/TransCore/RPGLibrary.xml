@@ -158,6 +158,12 @@
 	<!ENTITY baRetrieveFromStationMission		"0x00010184">
 	<!ENTITY baEscortMission			"0x00010185">
 	<!ENTITY baAssaultStationMission	"0x00010186">
+
+	<!-- 01C0-01FF CRIME -->
+
+	<!ENTITY baRPGCriminalRecord		"0x000101C0">
+	<!ENTITY dsRPGCriminalArrest		"0x000101C1">
+	<!ENTITY unidTestCriminalRecord		"0x000101C2">
 	]>
 	
 <CoreLibrary
@@ -181,6 +187,7 @@
 	<Module filename="RPGCommonText.xml"/>
 	<Module filename="RPGCompatibility.xml"/>
 	<Module filename="RPGComponents.xml"/>
+	<Module filename="RPGCrime.xml"/>
 	<Module filename="RPGDeviceDockScreens.xml"/>
 	<Module filename="RPGDialog.xml"/>
 	<Module filename="RPGDockManagement.xml"/>

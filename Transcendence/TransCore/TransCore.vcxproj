@@ -652,6 +652,7 @@
     <Xml Include="RPGComponents.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="RPGCrime.xml" />
     <Xml Include="RPGDockManagement.xml" />
     <Xml Include="RPGLibrary.xml" />
     <Xml Include="GalaxyLibrary.xml" />

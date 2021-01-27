@@ -1059,5 +1059,8 @@
     <Xml Include="Tenhove.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </Xml>
+    <Xml Include="RPGCrime.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
