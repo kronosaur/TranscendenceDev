@@ -63,8 +63,6 @@
 									(error "Unable to find Starton Eridani.")
 									)
 
-								(dbgOutput "Starton Eridani: " startonObj)
-
 								;	Test some trade properties on Starton Eridani.
 
 								(diagEval (list

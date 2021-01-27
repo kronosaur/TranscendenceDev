@@ -132,6 +132,132 @@
 		</Language>
 	</DockScreen>
 
+<!-- CONFISCATE ================================================================
+
+	This screen checks for contraband and confiscates it.
+
+	PROPERTIES
+
+		rpg.confiscateContraband: This property is a criteria defining the items
+				that are considered contraband by the station. If set the True, 
+				then we	default to "* +illegal; | * +military;".
+
+	In all cases, if we have a smuggler's cargo hold, we do not confiscate. 
+	And we do not confiscate military items if the player has any valid military
+	ID.
+
+-->
+
+	<DockScreen UNID="&dsRPGConfiscate;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(itemsToConfiscate (@ gData 'itemsToConfiscate))
+						)
+						;	Remove items
+
+						(enum itemsToConfiscate theItem
+							(objRemoveItem gPlayerShip theItem)
+							)
+
+						;	Compose text
+
+						(scrSetDescTranslate gScreen 'core.confiscateDesc {
+							itemList: (join (map itemsToConfiscate theItem (itmGetName theItem 'count)) 'oxfordComma)
+							})
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block Nil
+							(objFireEvent gSource 'OnItemsConfiscated gData)
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Events>
+			<GetGlobalDockScreen>
+				(block (
+					(confiscateContraband (obj@ gSource 'rpg.confiscateContraband))
+					(contrabandCriteria 
+						(switch
+							(= confiscateContraband True)
+								"*U +illegal; -id; | *U +military; -id;"
+
+							confiscateContraband
+							)
+						)
+
+					hasMilitaryID
+					itemsToConfiscate
+					)
+					(switch
+						;	Station must check for contraband
+
+						(or (not contrabandCriteria)
+								(obj@ gSource 'abandoned)
+								)
+							Nil
+
+						;	If player has a smuggler's cargo hold, then nothing to do.
+
+						(objGetItems gPlayerShip "*I +smugglersHold;")
+							Nil
+
+						;	Remember if we have a military ID
+
+						(block () (setq hasMilitaryID (objGetItems gPlayerShip "* +militaryID;")) nil)
+							Nil
+
+						;	Make a list of items to confiscate
+
+						(not (setq itemsToConfiscate
+								(map (objGetItems gPlayerShip contrabandCriteria) 'excludeNil theItem
+									(switch
+										;	Don't confiscate military items if we have a military ID.
+
+										(and hasMilitaryID
+												(itmHasAttribute theItem 'military)
+												)
+											Nil
+
+										theItem
+										)
+									)
+								))
+							Nil
+						
+						;	Bring up the screen
+					
+						{	screen:&dsRPGConfiscate;
+							priority: 5
+							overrideOnly: True
+
+							itemsToConfiscate: itemsToConfiscate
+							}
+						)
+					)
+			</GetGlobalDockScreen>
+		</Events>
+
+		<Language>
+			<Text id="core.confiscateDesc">
+			
+				Customs has inspected your ship's cargo hold and confiscated
+				%itemList%.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
 <!-- DECONTAMINATION ===========================================================
 
 	This screen allows a station to decontaminate the player's ship.

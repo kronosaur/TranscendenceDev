@@ -139,6 +139,7 @@
 
 	<!ENTITY dsRPGShipClassViewer		"0x00010120">
 	<!ENTITY dsRPGUseItemOnShields		"0x00010121">
+	<!ENTITY dsRPGConfiscate			"0x00010122">
 
 	<!-- 0140-015F MINING -->
 
