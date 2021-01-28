@@ -27,11 +27,20 @@
 				is a subclass of this base class.
 			-->
 			<Definition id="justice.sovereign"></Definition>
+			<Definition id="justice.currency"></Definition>
 
 			<!-- Subclasses may override these definition to customize the 
 				criminal justice system.
+
+				The values can be 1, 2, or 3, indicating the severity at which
+				we carry out the given consequence.
+
+				Or they can be one of the following values:
+
+					'secondImprisonCrime: Consequence happens the second time
+						the player commits a crime that causes imprisonment.
+
 			-->
-			<Definition id="justice.currency"></Definition>
 			<Definition id="justice.imprisonOn">2</Definition>
 			<Definition id="justice.makeEnemyOn">3</Definition>
 			<Definition id="justice.makeNeutralOn">2</Definition>
@@ -109,6 +118,10 @@
 
 					(oldSeverity (@ (typ@ gType 'keyCrime) 'severity))
 					(newSeverity (max (@ crimeRecord 'severity) oldSeverity))
+
+					(makeEnemyOn (typ@ gType 'justice.makeEnemyOn))
+					(makeNeutralOn (typ@ gType 'justice.makeNeutralOn))
+					(imprisonOn (typ@ gType 'justice.imprisonOn))
 					)
 					;	Always append to the record
 
@@ -128,31 +141,48 @@
 						(typInc@ gType 'penaltyOwed (@ crimeRecord 'penalty))
 						)
 
-					;	If our severity has increased, we may have consequences.
+					;	See if we change disposition
 
-					(if (!= oldSeverity newSeverity)
-						(block ()
-
-							;	See if we change our disposition, if necessary
-
-							(switch
-								(and (typ@ gType 'justice.makeEnemyOn)
-										(geq newSeverity (typ@ gType 'justice.makeEnemyOn))
-										)
-									(block ()
-										(sovSetDisposition sovereignID &svPlayer; 'enemy)
-										(sovSetDisposition &svPlayer; sovereignID 'enemy)
-										)
-
-								(and (typ@ gType 'justice.makeNeutralOn)
-										(geq newSeverity (typ@ gType 'justice.makeNeutralOn))
-										)
-									(block ()
-										(sovSetDisposition sovereignID &svPlayer; 'neutral)
-										(sovSetDisposition &svPlayer; sovereignID 'neutral)
-										)
+					(switch
+						(and (= makeEnemyOn 'secondImprisonCrime)
+								(isint imprisonOn)
+								(geq (@ crimeRecord 'severity) imprisonOn)
+								(geq (@ (@ gType 'keyCrime) 'severity) imprisonOn)
+								(!= (sovGetDisposition sovereignID &svPlayer;) 'enemy)
 								)
-							)
+							(block ()
+								(sovSetDisposition sovereignID &svPlayer; 'enemy)
+								(sovSetDisposition &svPlayer; sovereignID 'enemy)
+								)
+
+						(and (isint makeEnemyOn)
+								(geq newSeverity makeEnemyOn)
+								(!= oldSeverity newSeverity)
+								)
+							(block ()
+								(sovSetDisposition sovereignID &svPlayer; 'enemy)
+								(sovSetDisposition &svPlayer; sovereignID 'enemy)
+								)
+
+						(and (= makeNeutralOn 'secondImprisonCrime)
+								(isint imprisonOn)
+								(geq (@ crimeRecord 'severity) imprisonOn)
+								(geq (@ (@ gType 'keyCrime) 'severity) imprisonOn)
+								(= (sovGetDisposition sovereignID &svPlayer;) 'friend)
+								)
+							(block ()
+								(sovSetDisposition sovereignID &svPlayer; 'neutral)
+								(sovSetDisposition &svPlayer; sovereignID 'neutral)
+								)
+
+						(and (isint makeNeutralOn)
+								(geq newSeverity makeNeutralOn)
+								(!= oldSeverity newSeverity)
+								)
+							(block ()
+								(sovSetDisposition sovereignID &svPlayer; 'neutral)
+								(sovSetDisposition &svPlayer; sovereignID 'neutral)
+								)
 						)
 
 					;	Done
@@ -234,7 +264,7 @@
 									crimeDesc: (@ keyCrime 'desc)
 									})
 
-								penaltyOwed: penaltyOwed
+								penalty: penaltyOwed
 								currency: currency
 								}
 
@@ -250,7 +280,7 @@
 									crimeDesc: (@ keyCrime 'desc)
 									})
 
-								penaltyOwed: penaltyOwed
+								penalty: penaltyOwed
 								currency: currency
 								}
 
@@ -377,8 +407,6 @@
 						(sovereignID (@ gData 'sovereignID))
 						(keyCrime (typ@ crimeSystem 'keyCrime))
 						)
-						(dbgOutput "Crime system: " crimeSystem)
-						(dbgOutput keyCrime)
 						(scrSetDesc gScreen
 							(typTranslate crimeSystem 'justice.arrestedDesc {
 								severity: (@ keyCrime 'severity)
