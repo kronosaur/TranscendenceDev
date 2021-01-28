@@ -3100,7 +3100,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   O:escort;   Ships ordered to escort source\n"
 			"   O:guard;    Ships ordered to guard source\n"
 			"   P           Only objects that can be detected (perceived) by source\n"
-			//"   Q           (unused)\n"
+			"   Q           Only objects that can perceive the source\n"
 			"   R           Return only the farthest object from the source\n"
 			"   R:nn;       Return only objects greater than nn light-seconds away\n"
 			"   S:sort;     Sort order ('d' = distance ascending; 'D' = distance descending\n"

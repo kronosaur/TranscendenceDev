@@ -421,6 +421,10 @@ void CSpaceObjectCriteria::ParseSubExpression (const char *pPos)
 				m_bPerceivableOnly = true;
 				break;
 
+			case 'Q':
+				m_bCanPerceiveSourceOnly = true;
+				break;
+
 			case 'R':
 				sParam = ParseCriteriaParam(&pPos);
 				if (sParam.IsBlank())
@@ -603,6 +607,11 @@ CSpaceObjectCriteria::SCtx::SCtx (CSpaceObject *pSourceArg, const CSpaceObjectCr
 		iSourcePerception = (pSource ? pSource->GetPerception() : 0);
 	else
 		iSourcePerception = 0;
+
+	if (Crit.NeedsSourceStealth())
+		iSourceStealth = (pSource ? pSource->GetStealth() : 0);
+	else
+		iSourceStealth = 0;
 
 	if (Crit.NeedsSourceSovereign())
 		dwSourceSovereignUNID = (pSource ? pSource->GetSovereignUNID() : 0);

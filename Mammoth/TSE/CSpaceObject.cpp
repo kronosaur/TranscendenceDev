@@ -6079,6 +6079,10 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 	if (Crit.MatchesPerceivableOnly() && rObjDist2 > GetDetectionRange2(Ctx.iSourcePerception))
 		return false;
 
+	if (Crit.MatchesCanPerceiveSourceOnly() 
+			&& rObjDist2 > CPerceptionCalc::GetRange2(CPerceptionCalc::GetRangeIndex(Ctx.iSourceStealth, GetPerception())))
+		return false;
+
 	//	Angle
 	//
 	//	Only bother checking if rDist > 0 (we always intersect with an
