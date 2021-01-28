@@ -3703,7 +3703,7 @@ void CSpaceObject::FireOnUpdate (void)
 		}
 	}
 
-void CSpaceObject::GetBoundingRect (CVector *retvUR, CVector *retvLL)
+void CSpaceObject::GetBoundingRect (CVector *retvUR, CVector *retvLL) const
 
 //	GetBoundingRect
 //
@@ -4955,6 +4955,8 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 	{
 	DEBUG_TRY_OBJ_LOOP
 
+	CUsePerformanceCounter Counter(GetUniverse(), CONSTLIT("update.hitTestProximity"));
+
 	const Metric OBJ_RADIUS_ADJ = 0.25;
 
 	//	Get the list of objects that intersect the object
@@ -4966,6 +4968,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 	int iSteps = 0;
 	CVector vStep;
+	bool bIsStatic = GetVel().IsNull();
 
 	//	We need some variables to track the closest object
 
@@ -5003,7 +5006,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 		//	Prepare for point in object calculations
 
 		SPointInObjectCtx PiOCtx;
-		pObj->PointInObjectInit(PiOCtx);
+		bool bInitNeeded = true;
 
 		//	Do we need to calculate proximity detonation for this object?
 
@@ -5025,17 +5028,26 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 			{
 			//	If we hit this object then we're done.
 
-			if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vTest))
+			if (pObj->PointInBounds(vTest))
 				{
-				if (retvHitPos)
-					*retvHitPos = vTest;
+				if (bInitNeeded)
+					{
+					pObj->PointInObjectInit(PiOCtx);
+					bInitNeeded = false;
+					}
 
-				//	Figure out the direction that the hit came from
+				if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vTest))
+					{
+					if (retvHitPos)
+						*retvHitPos = vTest;
 
-				if (retiHitDir)
-					*retiHitDir = VectorToPolar(-vStep, NULL);
+					//	Figure out the direction that the hit came from
 
-				return pObj;
+					if (retiHitDir)
+						*retiHitDir = VectorToPolar(-vStep, NULL);
+
+					return pObj;
+					}
 				}
 
 			//	Otherwise, if we're calculating proximity, calculate
@@ -5063,16 +5075,29 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 		//
 		//	NOTE that in this case we do this for all objects (including asteroids, etc.).
 
-		CVector vNextPos = GetPos() + (GetVel() * g_SecondsPerUpdate);
-		if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vNextPos))
+		if (!bIsStatic)
 			{
-			if (retvHitPos)
-				*retvHitPos = GetPos();
+			CVector vNextPos = GetPos() + (GetVel() * g_SecondsPerUpdate);
 
-			if (retiHitDir)
-				*retiHitDir = -1;
+			if (pObj->PointInBounds(vNextPos))
+				{
+				if (bInitNeeded)
+					{
+					pObj->PointInObjectInit(PiOCtx);
+					bInitNeeded = false;
+					}
 
-			return pObj;
+				if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vNextPos))
+					{
+					if (retvHitPos)
+						*retvHitPos = GetPos();
+
+					if (retiHitDir)
+						*retiHitDir = -1;
+
+					return pObj;
+					}
+				}
 			}
 		}
 

@@ -477,6 +477,60 @@ class CSpaceObject
 		virtual CDesignType *GetType (void) const { return NULL; }
 		void SetSovereign (CSovereign *pSovereign);
 
+		//	Bounds
+
+		void GetBoundingRect (CVector *retvUR, CVector *retvLL) const;
+		const Metric &GetBounds (void) { return m_rBoundsX; }
+		CVector GetBoundsDiag (void) const { return CVector(m_rBoundsX, m_rBoundsY); }
+		Metric GetBoundsRadius (void) const { return Max(m_rBoundsX, m_rBoundsY); }
+
+		void GetHitRect (CVector *retvUR, CVector *retvLL) const;
+		Metric GetHitSize (void) const { return GetHitSizePixels() * g_KlicksPerPixel; }
+		int GetHitSizePixels (void) const;
+		int GetHitSizeHalfAngle (Metric rDist) const { return Max((int)(180.0 * atan(0.5 * GetHitSize() / rDist) / PI), 1); }
+
+		bool InBox (const CVector &vUR, const CVector &vLL) const 
+			{ return (vUR.GetX() > m_vPos.GetX() - m_rBoundsX) 
+					&& (vUR.GetY() > m_vPos.GetY() - m_rBoundsY)
+					&& (vLL.GetX() < m_vPos.GetX() + m_rBoundsX)
+					&& (vLL.GetY() < m_vPos.GetY() + m_rBoundsY); }
+		bool InBoxPoint (const CVector &vUR, const CVector &vLL) const
+			{ return (vUR.GetX() > m_vPos.GetX()) 
+					&& (vUR.GetY() > m_vPos.GetY())
+					&& (vLL.GetX() < m_vPos.GetX())
+					&& (vLL.GetY() < m_vPos.GetY()); }
+		bool IsPartlyVisibleInBox (const CVector &vUR, const CVector &vLL)
+			{
+			Metric rHalfSize = 0.25 * GetHitSize();
+			return (vUR.GetX() > m_vPos.GetX() - rHalfSize) 
+				&& (vUR.GetY() > m_vPos.GetY() - rHalfSize)
+				&& (vLL.GetX() < m_vPos.GetX() + rHalfSize)
+				&& (vLL.GetY() < m_vPos.GetY() + rHalfSize);
+			}
+		bool PointInBounds (const CVector &vPos) const
+			{
+			return (vPos.GetX() < m_vPos.GetX() + m_rBoundsX)
+					&& (vPos.GetY() < m_vPos.GetY() + m_rBoundsY)
+					&& (vPos.GetX() > m_vPos.GetX() - m_rBoundsX)
+					&& (vPos.GetY() > m_vPos.GetY() - m_rBoundsY);
+			}
+
+		virtual void RefreshBounds (void) { }
+
+		void SetBounds (Metric rBounds) { m_rBoundsX = rBounds; m_rBoundsY = rBounds; }
+		void SetBounds (Metric rBoundsX, Metric rBoundsY) { m_rBoundsX = rBoundsX; m_rBoundsY = rBoundsY; }
+		void SetBounds (const RECT &rcRect, Metric rParallaxDist = 1.0)
+			{
+			m_rBoundsX = Max(1.0, rParallaxDist) * g_KlicksPerPixel * (RectWidth(rcRect) / 2);
+			m_rBoundsY = Max(1.0, rParallaxDist) * g_KlicksPerPixel * (RectHeight(rcRect) / 2);
+			}
+		void SetBounds (IEffectPainter *pPainter)
+			{
+			RECT rcRect;
+			pPainter->GetBounds(&rcRect);
+			SetBounds(rcRect);
+			}
+
 		//	Characters
 
 		virtual CDesignType *GetCharacter (void) const { return NULL; }
@@ -749,9 +803,6 @@ class CSpaceObject
 		bool FireOnTranslateMessage (const CString &sMessage, CString *retsMessage);
 		void FireOnUpdate (void);
 		DWORD GetAPIVersion (void) const { CDesignType *pType = GetType(); return (pType ? pType->GetAPIVersion() : API_VERSION); }
-		void GetBoundingRect (CVector *retvUR, CVector *retvLL);
-		CVector GetBoundsDiag (void) const { return CVector(m_rBoundsX, m_rBoundsY); }
-		Metric GetBoundsRadius (void) const { return Max(m_rBoundsX, m_rBoundsY); }
 		CCommunicationsHandler *GetCommsHandler (void);
 		int GetCommsMessageCount (void);
 		CString GetDesiredCommsKey (void) const;
@@ -764,10 +815,6 @@ class CSpaceObject
 		Metric GetDistance (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
 		Metric GetDistance2 (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
 		const CString &GetHighlightText (void) const { return m_sHighlightText; }
-		void GetHitRect (CVector *retvUR, CVector *retvLL) const;
-		Metric GetHitSize (void) const { return GetHitSizePixels() * g_KlicksPerPixel; }
-		int GetHitSizePixels (void) const;
-		int GetHitSizeHalfAngle (Metric rDist) const { return Max((int)(180.0 * atan(0.5 * GetHitSize() / rDist) / PI), 1); }
 		DWORD GetID (void) const { return m_dwID; }
 		int GetIndex (void) const { return m_iIndex; }
 		CSpaceObject *GetNearestEnemyStation (Metric rMaxRange = g_InfiniteDistance);
@@ -802,16 +849,6 @@ class CSpaceObject
 		void Highlight (const CString &sText = NULL_STR);
 		void HighlightAppend (const CString &sText = NULL_STR);
 		bool InBarrier (const CVector &vPos);
-		bool InBox (const CVector &vUR, const CVector &vLL) const 
-			{ return (vUR.GetX() > m_vPos.GetX() - m_rBoundsX) 
-					&& (vUR.GetY() > m_vPos.GetY() - m_rBoundsY)
-					&& (vLL.GetX() < m_vPos.GetX() + m_rBoundsX)
-					&& (vLL.GetY() < m_vPos.GetY() + m_rBoundsY); }
-		bool InBoxPoint (const CVector &vUR, const CVector &vLL) const
-			{ return (vUR.GetX() > m_vPos.GetX()) 
-					&& (vUR.GetY() > m_vPos.GetY())
-					&& (vLL.GetX() < m_vPos.GetX())
-					&& (vLL.GetY() < m_vPos.GetY()); }
 		bool InDebugMode () const { return (m_fDebugMode ? true : false); }
 		bool IsAngryAt (const CDamageSource &Obj) const;
 		bool IsBarrier (void) const { return (m_fIsBarrier ? true : false); }
@@ -835,14 +872,6 @@ class CSpaceObject
 		bool IsInDamageCode (void) const { return (m_fInDamage ? true : false); }
 		bool IsMarked (void) const { return m_fMarked; }
 		bool IsNamed (void) const { return m_fHasName; }
-		bool IsPartlyVisibleInBox (const CVector &vUR, const CVector &vLL)
-			{
-			Metric rHalfSize = 0.25 * GetHitSize();
-			return (vUR.GetX() > m_vPos.GetX() - rHalfSize) 
-				&& (vUR.GetY() > m_vPos.GetY() - rHalfSize)
-				&& (vLL.GetX() < m_vPos.GetX() + rHalfSize)
-				&& (vLL.GetY() < m_vPos.GetY() + rHalfSize);
-			}
 		bool IsPlayerAttackJustified (void) const;
 		bool IsPlayerDocked (void) { return m_fPlayerDocked; }
 		bool IsPlayerEscortTarget (CSpaceObject *pPlayer = NULL);
@@ -1148,7 +1177,6 @@ class CSpaceObject
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const { return false; }
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) const { return PointInObject(vObjPos, vPointPos); }
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) const { }
-		virtual void RefreshBounds (void) { }
 		virtual void SetExplored (bool bExplored = true) { }
 		virtual void SetKnown (bool bKnown = true) { }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) { }
@@ -1356,7 +1384,6 @@ class CSpaceObject
 		void ClearNoFriendlyFire(void) { m_fNoFriendlyFire = false; }
 		void ClearPainted (void) { m_fPainted = false; }
 		void DisableObjectDestructionNotify (void) { m_fNoObjectDestructionNotify = true; }
-		const Metric &GetBounds (void) { return m_rBoundsX; }
 		const CEnhancementDesc *GetSystemEnhancements (void) const;
 		ICCItemPtr GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		CSpaceObject *HitTest (const CVector &vStart, const DamageDesc &Damage, CVector *retvHitPos, int *retiHitDir);
@@ -1373,19 +1400,6 @@ class CSpaceObject
 		void SetObjectDestructionHook (void) { m_fHookObjectDestruction = true; }
 		void SetCannotBeHit (void) { m_fCannotBeHit = true; }
 		void SetCanBounce (void) { m_fCanBounce = true; }
-		void SetBounds (Metric rBounds) { m_rBoundsX = rBounds; m_rBoundsY = rBounds; }
-		void SetBounds (Metric rBoundsX, Metric rBoundsY) { m_rBoundsX = rBoundsX; m_rBoundsY = rBoundsY; }
-		void SetBounds (const RECT &rcRect, Metric rParallaxDist = 1.0)
-			{
-			m_rBoundsX = Max(1.0, rParallaxDist) * g_KlicksPerPixel * (RectWidth(rcRect) / 2);
-			m_rBoundsY = Max(1.0, rParallaxDist) * g_KlicksPerPixel * (RectHeight(rcRect) / 2);
-			}
-		void SetBounds (IEffectPainter *pPainter)
-			{
-			RECT rcRect;
-			pPainter->GetBounds(&rcRect);
-			SetBounds(rcRect);
-			}
 		void SetDestroyed (bool bValue = true) { m_fDestroyed = bValue; }
 		void SetHasGravity (bool bGravity = true) { m_fHasGravity = bGravity; }
 		void SetIsBarrier (void) { m_fIsBarrier = true; }
