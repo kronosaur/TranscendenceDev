@@ -512,16 +512,6 @@ class CStationType : public CDesignType
 		virtual ~CStationType (void);
 		static void Reinit (void);
 
-#if 0
-		bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
-		IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }
-		const CShipChallengeDesc &GetDefenderCount (void) const { return m_DefenderCount; }
-		IShipGenerator *GetInitialShips (void) const { return m_pInitialShips; }
-		int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
-		int GetShipConstructionRate (void) { return m_iShipConstructionRate; }
-		IShipGenerator *GetReinforcementsTable (void);
-#endif
-
 		bool AlertWhenAttacked (void) { return (mathRandom(1, 100) <= m_iAlertWhenAttacked); }
 		bool AlertWhenDestroyed (void) { return (mathRandom(1, 100) <= m_iAlertWhenDestroyed); }
 		bool CanAttack () const;

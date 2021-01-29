@@ -1226,32 +1226,6 @@ CItem CStationType::GetPrimaryWeapon (void) const
 		return CItem();
 	}
 
-#if 0
-IShipGenerator *CStationType::GetReinforcementsTable (void)
-
-//	GetReinforcementsTable
-//
-//	Return the reinforcements table.
-	
-	{
-	//	If we have a ship count structure, then we always use the main ship 
-	//	table.
-
-	if (m_DefenderCount.GetCountType() == CShipChallengeDesc::countStanding)
-		return m_pInitialShips;
-
-	//	Otherwise, if we have an explicit reinforcements table, use that.
-
-	else if (m_pReinforcements)
-		return m_pReinforcements;
-
-	//	Otherwise, we use the main table.
-
-	else
-		return m_pInitialShips;
-	}
-#endif
-
 const CIntegralRotationDesc &CStationType::GetRotationDesc (void)
 
 //	GetRotationDesc
