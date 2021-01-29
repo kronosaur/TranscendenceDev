@@ -39,6 +39,99 @@ Metric CShipChallengeDesc::CalcChallengeStrength (ECountTypes iType, int iLevel)
 		}
 	}
 
+ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase, const CSpaceObjectList *pCurrent) const
+
+//	GetDesc
+//
+//	Returns a descriptor (usually for debugging).
+
+	{
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+
+	//	Add type
+
+	switch (m_iType)
+		{
+		case countNone:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("none"));
+			break;
+
+		case countInitial:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("initial"));
+			break;
+
+		case countReinforcements:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("reinforcements"));
+			break;
+			
+		case countScore:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("score"));
+			break;
+			
+		case countStanding:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("standing"));
+			break;
+			
+		case countChallengeEasy:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("challengeEasy"));
+			break;
+			
+		case countChallengeStandard:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("challengeStandard"));
+			break;
+			
+		case countChallengeHard:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("challengeHard"));
+			break;
+			
+		case countChallengeDeadly:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("challengeDealy"));
+			break;
+
+		default:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("unknown"));
+			break;
+		}
+
+	//	Add count
+
+	switch (m_iType)
+		{
+		case countInitial:
+		case countReinforcements:
+		case countScore:
+		case countStanding:
+			{
+			int iCount;
+			if (pBase)
+				iCount = m_Count.RollSeeded(pBase->GetDestiny());
+			else
+				iCount = m_Count.GetAveValue();
+
+			if (m_iType == countScore)
+				pResult->SetIntegerAt(CONSTLIT("score"), iCount);
+			else
+				pResult->SetIntegerAt(CONSTLIT("count"), iCount);
+			break;
+			}
+
+		case countChallengeEasy:
+		case countChallengeStandard:
+		case countChallengeHard:
+		case countChallengeDeadly:
+			{
+			if (pBase)
+				{
+				Metric rStrength = CalcChallengeStrength(m_iType, pBase->GetSystem()->GetLevel());
+				pResult->SetDoubleAt(CONSTLIT("strength"), rStrength);
+				}
+			break;
+			}
+		}
+
+	return pResult;
+	}
+
 bool CShipChallengeDesc::Init (ECountTypes iType, int iCount)
 
 //	Init
@@ -48,6 +141,7 @@ bool CShipChallengeDesc::Init (ECountTypes iType, int iCount)
 	{
 	switch (iType)
 		{
+		case countInitial:
 		case countReinforcements:
 		case countScore:
 		case countStanding:
@@ -72,6 +166,7 @@ bool CShipChallengeDesc::Init (ECountTypes iType, const CString &sCount)
 	{
 	switch (iType)
 		{
+		case countInitial:
 		case countReinforcements:
 		case countScore:
 		case countStanding:
@@ -127,6 +222,7 @@ bool CShipChallengeDesc::NeedsMoreInitialShips (CSpaceObject *pBase, const CShip
 		case countReinforcements:
 			return (Ctx.GetTotalCount() == 0);
 
+		case countInitial:
 		case countStanding:
 			return (Ctx.GetTotalCount() < m_Count.RollSeeded(pBase->GetDestiny()));
 
@@ -157,7 +253,7 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpa
 
 	//	If no set count, then we're done.
 
-	if (m_iType == countNone)
+	if (m_iType == countNone || m_iType == countInitial)
 		return false;
 
 	//	Add up the number of defenders for this station (and the total score).
@@ -218,7 +314,7 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject *pBase) const
 
 	//	If no set count, then we're done.
 
-	if (m_iType == countNone)
+	if (m_iType == countNone || m_iType == countInitial)
 		return false;
 
 	//	Add up the number of defenders for this station (and the total score).

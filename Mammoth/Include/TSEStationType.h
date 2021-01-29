@@ -321,6 +321,7 @@ class CSquadronDesc
 
 	private:
 		void CleanUp ();
+		bool InitDefenderCount (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
 		void Move (CSquadronDesc &Src) noexcept;
 
 		CString m_sID;									//	Squadron ID

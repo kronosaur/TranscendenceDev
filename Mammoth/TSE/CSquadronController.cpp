@@ -102,6 +102,61 @@ int CSquadronController::GetReinforceRequestCount () const
 	return iTotal;
 	}
 
+ICCItemPtr CSquadronController::GetStatus (const CSpaceObject &SourceObj) const
+
+//	GetStatus
+//
+//	Returns current status. We return a struct indexed by squadron ID. For each
+//	squadron we include:
+//
+//		squadron: List of objects in the squadron
+//		shipTable: List of ship classes in table
+//		desc: A struct describing reinforcement policy.
+//		lastReinforcementRequestOn: Tick on which we last requested
+//				reinforcements.
+//		reinforcementRequestCount: Consecutive request counts
+//		totalDestroyed: Number of ships destroyed.
+
+	{
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+
+	for (int i = 0; i < m_Squadrons.GetCount(); i++)
+		{
+		ICCItemPtr pEntry(ICCItem::SymbolTable);
+
+		//	Squadron
+
+		ICCItemPtr pShipList(ICCItem::List);
+		for (int j = 0; j < m_Squadrons[i].Squadron.GetCount(); j++)
+			{
+			pShipList->Append(CTLispConvert::CreateObject(m_Squadrons[i].Squadron.GetObj(j)));
+			}
+		pEntry->SetAt(CONSTLIT("squadron"), pShipList);
+
+		//	Other
+
+		pEntry->SetIntegerAt(CONSTLIT("lastReinforcementRequestOn"), m_Squadrons[i].dwLastReinforcementRequestOn);
+		pEntry->SetIntegerAt(CONSTLIT("reinforcementRequestCount"), m_Squadrons[i].iReinforceRequestCount);
+		pEntry->SetIntegerAt(CONSTLIT("totalDestroyed"), m_Squadrons[i].iTotalDestroyed);
+
+		//	Descriptor elements
+
+		if (m_Squadrons[i].pDesc)
+			{
+			if (const IShipGenerator *pGenerator = m_Squadrons[i].pDesc->GetInitialShips())
+				pEntry->SetAt(CONSTLIT("shipTable"), pGenerator->GetShipsReferenced(SourceObj.GetUniverse()));
+
+			pEntry->SetAt(CONSTLIT("desc"), m_Squadrons[i].pDesc->GetChallengeDesc().GetDesc(&SourceObj, &m_Squadrons[i].Squadron));
+			}
+
+		//	Add it
+
+		pResult->SetAt(m_Squadrons[i].sID, pEntry);
+		}
+
+	return pResult;
+	}
+
 void CSquadronController::OnObjDestroyed (CSpaceObject &SourceObj, const SDestroyCtx &Ctx)
 
 //	OnObjDestroyed

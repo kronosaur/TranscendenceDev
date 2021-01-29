@@ -33,6 +33,7 @@ class CShipChallengeDesc
 			{
 			countNone,
 
+			countInitial,					//	Use m_Count as initial number
 			countReinforcements,			//	Use m_Count as minimum number
 			countScore,						//	Use m_Count as desired total score
 			countStanding,					//	Use m_Count as minimum number
@@ -49,6 +50,7 @@ class CShipChallengeDesc
 
 		ECountTypes GetCountType (void) const { return m_iType; }
 		Metric GetChallengeStrength (int iLevel) const { return CalcChallengeStrength(m_iType, iLevel); }
+		ICCItemPtr GetDesc (const CSpaceObject *pBase = NULL, const CSpaceObjectList *pCurrent = NULL) const;
 		bool Init (ECountTypes iType, int iCount = 0);
 		bool Init (ECountTypes iType, const CString &sCount);
 		bool InitFromChallengeRating (const CString &sChallenge);
@@ -102,6 +104,7 @@ struct SShipCreateCtx
 class IShipGenerator
 	{
 	public:
+		static ALERROR CreateAsLookup (SDesignLoadCtx &Ctx, const CString &sTable, IShipGenerator **retpGenerator);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IShipGenerator **retpGenerator);
 		static ALERROR CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, IShipGenerator **retpGenerator);
 

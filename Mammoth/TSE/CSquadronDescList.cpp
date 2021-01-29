@@ -161,8 +161,6 @@ bool CSquadronDescList::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Sta
 		for (int i = 0; i < pSquadrons->GetContentElementCount(); i++)
 			{
 			const CXMLElement *pChild = pSquadrons->GetContentElement(i);
-			if (!pChild)
-				throw CException(ERR_FAIL);
 
 			if (!InsertSquadronFromXML(Ctx, *pChild))
 				return false;

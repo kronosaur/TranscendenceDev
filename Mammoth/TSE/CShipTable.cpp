@@ -71,6 +71,8 @@ class CLevelTableOfShipGenerators : public IShipGenerator
 class CLookupShipTable : public IShipGenerator
 	{
 	public:
+		ALERROR Load (SDesignLoadCtx &Ctx, const CString &sTable, const CString &sCount = NULL_STR);
+
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const override;
 		virtual void CreateShips (SShipCreateCtx &Ctx) const override;
 		virtual Metric GetAverageLevelStrength (int iLevel) const override { return m_Count.GetAveValueFloat() * m_pTable->GetAverageLevelStrength(iLevel); }
@@ -179,6 +181,25 @@ class CGroupOfShipGenerators : public IShipGenerator
 		int m_iTableCount;
 		SEntry *m_Table;
 	};
+
+ALERROR IShipGenerator::CreateAsLookup (SDesignLoadCtx &Ctx, const CString &sTable, IShipGenerator **retpGenerator)
+
+//	CreateAsLookup
+//
+//	Creates a table lookup.
+
+	{
+	CLookupShipTable *pGenerator = new CLookupShipTable;
+	if (ALERROR error = pGenerator->Load(Ctx, sTable))
+		{
+		delete pGenerator;
+		return error;
+		}
+
+	*retpGenerator = pGenerator;
+
+	return NOERROR;
+	}
 
 ALERROR IShipGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IShipGenerator **retpGenerator)
 
@@ -570,20 +591,20 @@ void CLookupShipTable::CreateShips (SShipCreateCtx &Ctx) const
 	DEBUG_CATCH
 	}
 
-ALERROR CLookupShipTable::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
+ALERROR CLookupShipTable::Load (SDesignLoadCtx &Ctx, const CString &sTable, const CString &sCount)
 
-//	LoadFromXML
+//	Load
 //
-//	Load from XML
+//	Loads from table reference and count.
 
 	{
 	ALERROR error;
 
-	m_Count.LoadFromXML(pDesc->GetAttribute(COUNT_ATTRIB));
+	m_Count.LoadFromXML(sCount);
 	if (m_Count.IsEmpty())
 		m_Count.SetConstant(1);
 
-	if (error = m_pTable.LoadUNID(Ctx, pDesc->GetAttribute(TABLE_ATTRIB)))
+	if (error = m_pTable.LoadUNID(Ctx, sTable))
 		return error;
 
 	if (m_pTable.GetUNID() == 0)
@@ -593,6 +614,16 @@ ALERROR CLookupShipTable::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *p
 		}
 
 	return NOERROR;
+	}
+
+ALERROR CLookupShipTable::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
+
+//	LoadFromXML
+//
+//	Load from XML
+
+	{
+	return Load(Ctx, pDesc->GetAttribute(TABLE_ATTRIB), pDesc->GetAttribute(COUNT_ATTRIB));
 	}
 
 ALERROR CLookupShipTable::OnDesignLoadComplete (SDesignLoadCtx &Ctx)

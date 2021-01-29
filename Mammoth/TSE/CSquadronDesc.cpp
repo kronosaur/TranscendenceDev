@@ -8,9 +8,12 @@
 #define BUILD_REINFORCEMENTS_ATTRIB				CONSTLIT("buildReinforcements")
 #define CHALLENGE_ATTRIB						CONSTLIT("challenge")
 #define CONSTRUCTION_RATE_ATTRIB				CONSTLIT("constructionRate")
+#define COUNT_ATTRIB							CONSTLIT("count")
+#define MIN_COUNT_ATTRIB						CONSTLIT("minCount")
 #define MIN_SHIPS_ATTRIB						CONSTLIT("minShips")
 #define MAX_CONSTRUCTION_ATTRIB					CONSTLIT("maxConstruction")
 #define STANDING_COUNT_ATTRIB					CONSTLIT("standingCount")
+#define TABLE_ATTRIB							CONSTLIT("table")
 
 void CSquadronDesc::AddTypesUsed (TSortMap<DWORD, bool> &retTypesUsed) const
 
@@ -126,6 +129,7 @@ bool CSquadronDesc::Init (SDesignLoadCtx &Ctx, const CString &sID, const CXMLEle
 	{
 	CleanUp();
 
+	m_sID = sID;
 
 	if (pShips)
 		{
@@ -138,37 +142,10 @@ bool CSquadronDesc::Init (SDesignLoadCtx &Ctx, const CString &sID, const CXMLEle
 		//	See if we have a challenge rating; in that case, we use it as both
 		//	initial ships and reinforcements.
 
-		CString sCount;
-		if (pShips->FindAttribute(CHALLENGE_ATTRIB, &sCount))
+		if (!InitDefenderCount(Ctx, *pShips))
 			{
-			if (!m_DefenderCount.InitFromChallengeRating(sCount))
-				{
-				Ctx.sError = CONSTLIT("Invalid challenge attribute in <Ships>");
-				return false;
-				}
-			}
-
-		//	If defined, we use this count to create initial ships AND reinforcements.
-
-		else if (pShips->FindAttribute(STANDING_COUNT_ATTRIB, &sCount))
-			{
-			if (!m_DefenderCount.Init(CShipChallengeDesc::countStanding, sCount))
-				{
-				Ctx.sError = CONSTLIT("Invalid count attribute in <Ships>");
-				return false;
-				}
-			}
-
-		//	Otherwise, see if we define minShips, in which case we use that value for
-		//	reinforcements only.
-
-		else if (pShips->FindAttribute(MIN_SHIPS_ATTRIB, &sCount))
-			{
-			if (!m_DefenderCount.Init(CShipChallengeDesc::countReinforcements, sCount))
-				{
-				Ctx.sError = CONSTLIT("Invalid count attribute in <Ships>");
-				return false;
-				}
+			Ctx.sError = strPatternSubst(CONSTLIT("<Ships>: %s"), Ctx.sError);
+			return false;
 			}
 
 		//	Build instead of gate in
@@ -220,6 +197,64 @@ bool CSquadronDesc::Init (SDesignLoadCtx &Ctx, const CString &sID, const CXMLEle
 	return true;
 	}
 
+bool CSquadronDesc::InitDefenderCount (SDesignLoadCtx &Ctx, const CXMLElement &Desc)
+
+//	InitDefenderCount
+//
+//	Initializes m_DefenderCount from XML.
+
+	{
+	//	See if we have a challenge rating; in that case, we use it as both
+	//	initial ships and reinforcements.
+
+	CString sCount;
+	if (Desc.FindAttribute(CHALLENGE_ATTRIB, &sCount))
+		{
+		if (!m_DefenderCount.InitFromChallengeRating(sCount))
+			{
+			Ctx.sError = CONSTLIT("Invalid challenge attribute.");
+			return false;
+			}
+		}
+
+	//	If defined, we use this count to create initial ships AND reinforcements.
+
+	else if (Desc.FindAttribute(STANDING_COUNT_ATTRIB, &sCount))
+		{
+		if (!m_DefenderCount.Init(CShipChallengeDesc::countStanding, sCount))
+			{
+			Ctx.sError = CONSTLIT("Invalid standingCount attribute.");
+			return false;
+			}
+		}
+
+	//	Otherwise, see if we define minShips, in which case we use that value for
+	//	reinforcements only.
+
+	else if (Desc.FindAttribute(MIN_COUNT_ATTRIB, &sCount) || Desc.FindAttribute(MIN_SHIPS_ATTRIB, &sCount))
+		{
+		if (!m_DefenderCount.Init(CShipChallengeDesc::countReinforcements, sCount))
+			{
+			Ctx.sError = CONSTLIT("Invalid minCount attribute.");
+			return false;
+			}
+		}
+
+	//	If all we have is a count, then we create this number of initial ships
+	//	but never request reinforcements.
+
+	else if (Desc.FindAttribute(COUNT_ATTRIB, &sCount))
+		{
+		if (!m_DefenderCount.Init(CShipChallengeDesc::countInitial, sCount))
+			{
+			Ctx.sError = CONSTLIT("Invalid count attribute.");
+			return false;
+			}
+		}
+
+	return true;
+	}
+
 bool CSquadronDesc::InitFromXML (SDesignLoadCtx &Ctx, const CString &sID, const CXMLElement &Desc)
 
 //	InitFromXML
@@ -227,7 +262,34 @@ bool CSquadronDesc::InitFromXML (SDesignLoadCtx &Ctx, const CString &sID, const 
 //	Initialize from XML element.
 
 	{
-	return false;
+	m_sID = sID;
+
+	if (!InitDefenderCount(Ctx, Desc))
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Squadron %s: %s"), sID, Ctx.sError);
+		return false;
+		}
+
+	m_bBuildReinforcements = Desc.GetAttributeBool(BUILD_REINFORCEMENTS_ATTRIB);
+
+	//	If we have a table referenced, then we use this as the ship table.
+
+	CString sTable;
+	if (Desc.FindAttribute(TABLE_ATTRIB, &sTable))
+		{
+		if (IShipGenerator::CreateAsLookup(Ctx, sTable, &m_pInitialShips) != NOERROR)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Squadron %s: %s"), sID, Ctx.sError);
+			return false;
+			}
+		}
+	else
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Squadron %s: Missing table reference."), sID);
+		return false;
+		}
+
+	return true;
 	}
 
 void CSquadronDesc::Move (CSquadronDesc &Src) noexcept

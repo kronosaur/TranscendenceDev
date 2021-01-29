@@ -28,6 +28,7 @@ class CSquadronController
 
 		void CreateInitialShips (CSpaceObject &SourceObj, const CSquadronDescList &Desc);
 		int GetReinforceRequestCount () const;
+		ICCItemPtr GetStatus (const CSpaceObject &SourceObj) const;
 		void OnObjDestroyed (CSpaceObject &SourceObj, const SDestroyCtx &Ctx);
 		void ReadFromStream (SLoadCtx &Ctx, const CSquadronDescList &Desc);
 		void SetReinforceRequestCount (int iValue);
