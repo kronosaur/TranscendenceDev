@@ -104,12 +104,15 @@ class IShipGenerator
 		static ALERROR CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, IShipGenerator **retpGenerator);
 
 		virtual ~IShipGenerator (void) { }
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
+
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const { }
 		virtual void CreateShips (SShipCreateCtx &Ctx) const { }
 		virtual Metric GetAverageLevelStrength (int iLevel) const { return 0.0; }
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual ALERROR ValidateForRandomEncounter (void) { return NOERROR; }
+
+		ICCItemPtr GetShipsReferenced (CUniverse &Universe) const;
 	};
 
 struct SShipGeneratorCtx

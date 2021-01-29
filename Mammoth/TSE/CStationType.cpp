@@ -177,6 +177,12 @@
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
 #define PROPERTY_REPAIR_ARMOR_RATE				CONSTLIT("repairArmorRate")
 #define PROPERTY_REPAIR_ARMOR_RATE_EXPLICIT		CONSTLIT("repairArmorRateExplicit")
+#define PROPERTY_SHIP_TABLE						CONSTLIT("shipTable")
+#define PROPERTY_SHIP_CONSTRUCTION_MAX_COUNT	CONSTLIT("shipConstructionMaxCount")
+#define PROPERTY_SHIP_CONSTRUCTION_RATE			CONSTLIT("shipConstructionRate")
+#define PROPERTY_SHIP_CONSTRUCTION_TABLE		CONSTLIT("shipConstructionTable")
+#define PROPERTY_SHIP_ENCOUNTER_TABLE			CONSTLIT("shipEncounterTable")
+#define PROPERTY_SHIP_REINFORCEMENTS_TABLE		CONSTLIT("shipReinforcementsTable")
 #define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
@@ -2151,6 +2157,44 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 			return ICCItemPtr((int)rHP);
 		else
 			return ICCItemPtr(rHP);
+		}
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_TABLE))
+		{
+		if (m_pInitialShips)
+			return m_pInitialShips->GetShipsReferenced(GetUniverse());
+		else
+			return ICCItemPtr::Nil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_CONSTRUCTION_RATE))
+		return (m_iShipConstructionRate ? ICCItemPtr(m_iShipConstructionRate) : ICCItemPtr::Nil());
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_CONSTRUCTION_MAX_COUNT))
+		return (m_iMaxConstruction ? ICCItemPtr(m_iMaxConstruction) : ICCItemPtr::Nil());
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_CONSTRUCTION_TABLE))
+		{
+		if (m_pConstruction)
+			return m_pConstruction->GetShipsReferenced(GetUniverse());
+		else
+			return ICCItemPtr::Nil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_ENCOUNTER_TABLE))
+		{
+		if (m_pEncounters)
+			return m_pEncounters->GetShipsReferenced(GetUniverse());
+		else
+			return ICCItemPtr::Nil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_REINFORCEMENTS_TABLE))
+		{
+		if (m_pReinforcements)
+			return m_pReinforcements->GetShipsReferenced(GetUniverse());
+		else
+			return ICCItemPtr::Nil();
 		}
 
 	else if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))
