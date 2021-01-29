@@ -2060,26 +2060,16 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		}
 
 	else if (strEquals(sProperty, PROPERTY_SHIP_TABLE))
-		{
-		if (m_pInitialShips)
-			return m_pInitialShips->GetShipsReferenced(GetUniverse());
-		else
-			return ICCItemPtr::Nil();
-		}
+		return m_Squadrons.GetInitialShipsReferenced(GetUniverse());
 
 	else if (strEquals(sProperty, PROPERTY_SHIP_CONSTRUCTION_RATE))
-		return (m_iShipConstructionRate ? ICCItemPtr(m_iShipConstructionRate) : ICCItemPtr::Nil());
+		return ICCItemPtr::IntegerOrNil(m_Squadrons.GetConstructionRate());
 
 	else if (strEquals(sProperty, PROPERTY_SHIP_CONSTRUCTION_MAX_COUNT))
-		return (m_iMaxConstruction ? ICCItemPtr(m_iMaxConstruction) : ICCItemPtr::Nil());
+		return ICCItemPtr::IntegerOrNil(m_Squadrons.GetConstructionMaxCount());
 
 	else if (strEquals(sProperty, PROPERTY_SHIP_CONSTRUCTION_TABLE))
-		{
-		if (m_pConstruction)
-			return m_pConstruction->GetShipsReferenced(GetUniverse());
-		else
-			return ICCItemPtr::Nil();
-		}
+		return m_Squadrons.GetConstructionShipsReferenced(GetUniverse());
 
 	else if (strEquals(sProperty, PROPERTY_SHIP_ENCOUNTER_TABLE))
 		{
@@ -2090,12 +2080,7 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		}
 
 	else if (strEquals(sProperty, PROPERTY_SHIP_REINFORCEMENTS_TABLE))
-		{
-		if (m_pReinforcements)
-			return m_pReinforcements->GetShipsReferenced(GetUniverse());
-		else
-			return ICCItemPtr::Nil();
-		}
+		return m_Squadrons.GetReinforcementShipsReferenced(GetUniverse());
 
 	else if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))
 		return ICCItemPtr(ShowsUnexploredAnnotation());

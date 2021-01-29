@@ -343,6 +343,11 @@ class CSquadronDescList
 		const CSquadronDesc *FindSquadron (const CString &sID) const { auto pEntry = m_Squadrons.GetAt(sID); if (pEntry) return (*pEntry); else return NULL; }
 		Metric GetChallengeStrength (int iLevel) const;
 		int GetCount () const { return m_Squadrons.GetCount(); }
+		ICCItemPtr GetConstructionShipsReferenced (CUniverse &Universe) const;
+		ICCItemPtr GetInitialShipsReferenced (CUniverse &Universe) const;
+		ICCItemPtr GetReinforcementShipsReferenced (CUniverse &Universe) const;
+		int GetConstructionRate () const;
+		int GetConstructionMaxCount () const;
 		const CSquadronDesc &GetSquadron (int iIndex) const { return *m_Squadrons[iIndex]; }
 		bool InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &StationXML);
 		bool IsEmpty () const { return m_Squadrons.GetCount() == 0; }

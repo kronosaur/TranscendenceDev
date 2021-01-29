@@ -115,6 +115,7 @@ class IShipGenerator
 		virtual ALERROR ValidateForRandomEncounter (void) { return NOERROR; }
 
 		ICCItemPtr GetShipsReferenced (CUniverse &Universe) const;
+		static ICCItemPtr GetShipsReferenced (CUniverse &Universe, const TSortMap<DWORD, bool> &AllTypes);
 	};
 
 struct SShipGeneratorCtx

@@ -39,7 +39,7 @@
 						{	test:'(typ@ &stDwargColony; 'shipTable)					result:'(&scDwargRaider;)	}
 						{	test:'(typ@ &stDwargColony; 'shipConstructionTable)		result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'shipEncounterTable)		result:Nil	}
-						{	test:'(typ@ &stDwargColony; 'shipReinforcementsTable)	result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'shipReinforcementsTable)	result:'(&scDwargRaider;)	}
 						{	test:'(typ@ &stDwargColony; 'showsUnexploredAnnotation)	result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'size)						result:0	}
 						{	test:'(typ@ &stDwargColony; 'sovereign)					result:&svDwargRaiders;	}

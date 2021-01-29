@@ -254,6 +254,16 @@ ICCItemPtr IShipGenerator::GetShipsReferenced (CUniverse &Universe) const
 	TSortMap<DWORD, bool> AllTypes;
 	AddTypesUsed(&AllTypes);
 
+	return GetShipsReferenced(Universe, AllTypes);
+	}
+
+ICCItemPtr IShipGenerator::GetShipsReferenced (CUniverse &Universe, const TSortMap<DWORD, bool> &AllTypes)
+
+//	GetShipsReferenced
+//
+//	Converts to a list of ship classes.
+
+	{
 	ICCItemPtr pResult(ICCItem::List);
 	for (int i = 0; i < AllTypes.GetCount(); i++)
 		{

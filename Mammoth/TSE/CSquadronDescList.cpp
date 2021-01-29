@@ -51,7 +51,7 @@ Metric CSquadronDescList::CalcDefenderStrength (int iLevel) const
 	Metric rTotal = 0.0;
 
 	for (int i = 0; i < m_Squadrons.GetCount(); i++)
-		rTotal += m_Squadrons[i]->CalcDefenderStrength(i);
+		rTotal += m_Squadrons[i]->CalcDefenderStrength(iLevel);
 
 	return rTotal;
 	}
@@ -65,10 +65,87 @@ Metric CSquadronDescList::GetChallengeStrength (int iLevel) const
 	{
 	Metric rTotal = 0.0;
 
-	for (int i = 0; m_Squadrons.GetCount(); i++)
+	for (int i = 0; i < m_Squadrons.GetCount(); i++)
 		rTotal += m_Squadrons[i]->GetChallengeStrength(iLevel);
 
 	return rTotal;
+	}
+
+ICCItemPtr CSquadronDescList::GetConstructionShipsReferenced (CUniverse &Universe) const
+
+//	GetConstructionShipsReferenced
+//
+//	Returns a list of all ship types referenced.
+
+	{
+	TSortMap<DWORD, bool> AllTypes;
+	for (int i = 0; i < m_Squadrons.GetCount(); i++)
+		if (const IShipGenerator *pGenerator = m_Squadrons[i]->GetConstructionTable())
+			pGenerator->AddTypesUsed(&AllTypes);
+
+	return IShipGenerator::GetShipsReferenced(Universe, AllTypes);
+	}
+
+ICCItemPtr CSquadronDescList::GetInitialShipsReferenced (CUniverse &Universe) const
+
+//	GetInitialShipsReferenced
+//
+//	Returns a list of all ship types referenced.
+
+	{
+	TSortMap<DWORD, bool> AllTypes;
+	for (int i = 0; i < m_Squadrons.GetCount(); i++)
+		if (const IShipGenerator *pGenerator = m_Squadrons[i]->GetInitialShips())
+			pGenerator->AddTypesUsed(&AllTypes);
+
+	return IShipGenerator::GetShipsReferenced(Universe, AllTypes);
+	}
+
+ICCItemPtr CSquadronDescList::GetReinforcementShipsReferenced (CUniverse &Universe) const
+
+//	GetReinforcementShipsReferenced
+//
+//	Returns a list of all ship types referenced.
+
+	{
+	TSortMap<DWORD, bool> AllTypes;
+	for (int i = 0; i < m_Squadrons.GetCount(); i++)
+		if (const IShipGenerator *pGenerator = m_Squadrons[i]->GetReinforcementsTable())
+			pGenerator->AddTypesUsed(&AllTypes);
+
+	return IShipGenerator::GetShipsReferenced(Universe, AllTypes);
+	}
+
+int CSquadronDescList::GetConstructionRate () const
+
+//	GetConstructionRate
+//
+//	Returns the greatest construction rate.
+
+	{
+	int iBest = 0;
+	for (int i = 0; i < m_Squadrons.GetCount(); i++)
+		{
+		int iRate = m_Squadrons[i]->GetShipConstructionRate();
+		if (iRate && (iBest == 0 || iRate < iBest))
+			iBest = iRate;
+		}
+
+	return iBest;
+	}
+
+int CSquadronDescList::GetConstructionMaxCount () const
+
+//	GetConstructionMaxCount
+//
+//	Returns the total maximum count.
+
+	{
+	int iTotal = 0;
+	for (int i = 0; i < m_Squadrons.GetCount(); i++)
+		iTotal += m_Squadrons[i]->GetShipConstructionMax();
+
+	return iTotal;
 	}
 
 bool CSquadronDescList::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &StationXML)

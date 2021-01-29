@@ -110,8 +110,11 @@ const IShipGenerator *CSquadronDesc::GetReinforcementsTable (void) const
 
 	//	Otherwise, we use the main table.
 
-	else
+	else if (m_DefenderCount.GetCountType() != CShipChallengeDesc::countNone)
 		return m_pInitialShips;
+
+	else
+		return NULL;
 	}
 
 bool CSquadronDesc::Init (SDesignLoadCtx &Ctx, const CString &sID, const CXMLElement *pShips, const CXMLElement *pReinforcements, const CXMLElement *pConstruction)
