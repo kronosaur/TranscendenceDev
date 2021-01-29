@@ -307,6 +307,7 @@
     <ClInclude Include="..\Include\TSESovereign.h" />
     <ClInclude Include="..\Include\TSESpaceEnvironment.h" />
     <ClInclude Include="..\Include\TSESpaceObjectsEnum.h" />
+    <ClInclude Include="..\Include\TSEStationImpl.h" />
     <ClInclude Include="..\Include\TSEStationType.h" />
     <ClInclude Include="..\Include\TSESystem.h" />
     <ClInclude Include="..\Include\TSESystemCreate.h" />
@@ -583,6 +584,10 @@
     <ClCompile Include="CSpaceObjectProperties.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />
+    <ClCompile Include="CSquadronController.cpp" />
+    <ClCompile Include="CSquadronDesc.cpp" />
+    <ClCompile Include="CSquadronDescList.cpp" />
+    <ClCompile Include="CSquadronID.cpp" />
     <ClCompile Include="CStarDesc.cpp" />
     <ClCompile Include="CStargateDesc.cpp" />
     <ClCompile Include="CStationCreateOptions.cpp" />

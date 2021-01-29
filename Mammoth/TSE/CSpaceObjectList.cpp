@@ -377,7 +377,7 @@ void CSpaceObjectList::Subtract (const CSpaceObjectList &List)
 	m_List.TakeHandoff(NewList);
 	}
 
-void CSpaceObjectList::WriteToStream (IWriteStream *pStream)
+void CSpaceObjectList::WriteToStream (IWriteStream *pStream) const
 
 //	WriteToStream
 //

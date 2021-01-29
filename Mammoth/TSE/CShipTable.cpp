@@ -785,6 +785,11 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 	if (Ctx.dwFlags & SShipCreateCtx::RETURN_RESULT)
 		Ctx.Result.Add(pShip);
 
+	//	Set the squadron info
+
+	if (!Ctx.SquadronID.IsEmpty())
+		pShip->SetSquadronID(Ctx.SquadronID);
+
 	//	Add encounter info, if necessary
 
 	if (Ctx.pEncounterInfo)

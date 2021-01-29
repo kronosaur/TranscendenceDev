@@ -647,6 +647,11 @@ class CSpaceObject
 
 		bool HasFuelItem (void);
 
+		//	Groups
+
+		virtual const CSquadronID &GetSquadronID () const { return CSquadronID::Null; }
+		virtual void SetSquadronID (const CSquadronID &ID) { }
+
 		//	Images
 
 		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
@@ -1793,7 +1798,9 @@ class CAscendedObjectList
 #include "TSEListImpl.h"
 #include "TSEDeviceClassesImpl.h"
 #include "TSESpaceObjectsImpl.h"
+#include "TSEStationImpl.h"
 #include "TSEMissions.h"
+
 #include "TSEPlayer.h"
 #include "TSEArtifactAwakening.h"
 #include "TSEEventsImpl.h"

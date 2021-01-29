@@ -145,6 +145,65 @@ bool CShipChallengeDesc::NeedsMoreInitialShips (CSpaceObject *pBase, const CShip
 		}
 	}
 
+bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current) const
+
+//	NeedsMoreReinforcements
+//
+//	Returns TRUE if pBase needs more defenders, as specified by our challenge
+//	rating.
+
+	{
+	DEBUG_TRY
+
+	//	If no set count, then we're done.
+
+	if (m_iType == countNone)
+		return false;
+
+	//	Add up the number of defenders for this station (and the total score).
+
+	int iCurCount = 0;
+	int iCurScore = 0;
+	Metric rCurCombat = 0.0;
+	for (int i = 0; i < Current.GetCount(); i++)
+		{
+		CSpaceObject *pObj = Current.GetObj(i);
+
+		iCurCount++;
+		iCurScore += pObj->GetScore();
+
+		CShip *pShip = pObj->AsShip();
+		rCurCombat += pShip->GetClass()->GetCombatStrength();
+		}
+
+	//	Now figure out if we have enough of them.
+
+	switch (m_iType)
+		{
+		case countReinforcements:
+		case countStanding:
+			return (iCurCount < m_Count.RollSeeded(Base.GetDestiny()));
+
+		case countScore:
+			return (iCurScore < m_Count.RollSeeded(Base.GetDestiny()));
+
+		case countChallengeEasy:
+		case countChallengeStandard:
+		case countChallengeHard:
+		case countChallengeDeadly:
+			{
+			int iLevel = Base.GetSystem()->GetLevel();
+			return (rCurCombat < CalcChallengeStrength(m_iType, iLevel));
+			}
+			
+		default:
+			ASSERT(false);
+			return false;
+		}
+
+	DEBUG_CATCH
+	}
+
 bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject *pBase) const
 
 //	NeedsMoreReinforcements

@@ -55,6 +55,7 @@ class CShipChallengeDesc
 		bool IsEmpty (void) const { return m_iType == countNone; }
 		bool NeedsMoreInitialShips (CSpaceObject *pBase, const CShipChallengeCtx &Ctx) const;
 		bool NeedsMoreReinforcements (CSpaceObject *pBase) const;
+		bool NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current) const;
 
 	private:
 		static Metric CalcChallengeStrength (ECountTypes iType, int iLevel);
@@ -77,6 +78,7 @@ struct SShipCreateCtx
 	CSpaceObject *pGate = NULL;					//	Gate where ship will appear (may be NULL)
 	CVector vPos;								//	Position where ship will appear (only if pGate is NULL)
 	DiceRange PosSpread;						//	Distance from vPos (in light-seconds)
+	CSquadronID SquadronID;						//	Set squadron ID (for principals only)
 	CSpaceObject *pBase = NULL;					//	Base for this ship (may be NULL)
 	CSovereign *pBaseSovereign = NULL;			//	Only if pBase is NULL
 	IShipController::OrderTypes iDefaultOrder = IShipController::orderNone;
