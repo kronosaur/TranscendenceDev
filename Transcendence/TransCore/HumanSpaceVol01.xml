@@ -2237,6 +2237,9 @@
 	<!ENTITY rsRanxDreadnoughtHero		"0x00100452">
 	<!ENTITY rsRanxOutpost				"0x00100453">
 	<!ENTITY rsRanxFortress				"0x00100454">
+	<!ENTITY scRanxFreighter			"0x00100457">
+	<!ENTITY rsRanxFreighter			"0x00100458">
+	<!ENTITY rsRanxFreighterHero		"0x00100459">
 
 	<!-- 0470-048F FERIANS -->
 
