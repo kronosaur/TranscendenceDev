@@ -307,12 +307,14 @@ class CSquadronDesc
 		void AddTypesUsed (TSortMap<DWORD, bool> &retTypesUsed) const;
 		bool BindDesign (SDesignLoadCtx &Ctx);
 		bool BuildsReinforcements () const { return m_bBuildReinforcements; }
+		ICCItemPtr GetDesc (CUniverse &Universe) const;
 		Metric CalcDefenderStrength (int iLevel) const;
-		Metric GetChallengeStrength (int iLevel) const { return m_DefenderCount.GetChallengeStrength(iLevel); }
-		const CShipChallengeDesc &GetChallengeDesc () const { return m_DefenderCount; }
+		Metric GetChallengeStrength (int iLevel) const { return m_Count.GetChallengeStrength(iLevel); }
+		const CShipChallengeDesc &GetChallengeDesc () const { return m_Count; }
+		const CShipChallengeDesc &GetReinforceDesc () const { return m_Reinforcement; }
 		const IShipGenerator *GetConstructionTable () const { return m_pConstruction; }
 		const CString &GetID () const { return m_sID; }
-		const IShipGenerator *GetInitialShips () const { return m_pInitialShips; }
+		const IShipGenerator *GetInitialShips () const { return m_pShipTable; }
 		const IShipGenerator *GetReinforcementsTable (void) const;
 		int GetShipConstructionRate () const { return m_iShipConstructionRate; }
 		int GetShipConstructionMax () const { return m_iMaxConstruction; }
@@ -321,12 +323,14 @@ class CSquadronDesc
 
 	private:
 		void CleanUp ();
-		bool InitDefenderCount (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool InitDefenderCountCompatible (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
 		void Move (CSquadronDesc &Src) noexcept;
 
 		CString m_sID;									//	Squadron ID
-		CShipChallengeDesc m_DefenderCount;				//	Squadron should have this number of ships
-		IShipGenerator *m_pInitialShips = NULL;			//	Ships at creation time
+		CShipChallengeDesc m_Count;						//	Squadron should have this number of ships
+		CShipChallengeDesc m_Reinforcement;				//	Defines when reinforcements are called
+		IShipGenerator *m_pShipTable = NULL;			//	Ships at creation time
+
 		IShipGenerator *m_pReinforcements = NULL;		//	Reinforcements table
 		IShipGenerator *m_pConstruction = NULL;			//	Ships built by station
 		int m_iShipConstructionRate = 0;				//	Ticks between each construction
@@ -345,6 +349,7 @@ class CSquadronDescList
 		Metric GetChallengeStrength (int iLevel) const;
 		int GetCount () const { return m_Squadrons.GetCount(); }
 		ICCItemPtr GetConstructionShipsReferenced (CUniverse &Universe) const;
+		ICCItemPtr GetDesc (CUniverse &Universe) const;
 		ICCItemPtr GetInitialShipsReferenced (CUniverse &Universe) const;
 		ICCItemPtr GetReinforcementShipsReferenced (CUniverse &Universe) const;
 		int GetConstructionRate () const;

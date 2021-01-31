@@ -186,6 +186,7 @@
 #define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
+#define PROPERTY_SQUADRON_DESC					CONSTLIT("squadronDesc")
 #define PROPERTY_STD_TREASURE					CONSTLIT("stdTreasure")
 #define PROPERTY_SYSTEM_CRITERIA				CONSTLIT("systemCriteria")
 #define PROPERTY_TREASURE_DESIRED_VALUE			CONSTLIT("treasureDesiredValue")
@@ -2069,6 +2070,9 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 		return m_pSovereign->GetProperty(Ctx, PROPERTY_NAME);
 		}
+	else if (strEquals(sProperty, PROPERTY_SQUADRON_DESC))
+		return m_Squadrons.GetDesc(GetUniverse());
+
 	else if (strEquals(sProperty, PROPERTY_STD_TREASURE))
 		{
 		Metric rTreasure = (Metric)GetBalancedTreasure();

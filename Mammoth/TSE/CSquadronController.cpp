@@ -46,7 +46,7 @@ void CSquadronController::CreateInitialShips (CSpaceObject &SourceObj, const CSq
 	CShipChallengeCtx CreatedSoFar;
 
 	int iMaxLoops = 20;
-	while (iMaxLoops-- > 0 && SquadronDesc.GetChallengeDesc().NeedsMoreInitialShips(&SourceObj, CreatedSoFar))
+	while (iMaxLoops-- > 0 && SquadronDesc.GetChallengeDesc().NeedsMoreShips(SourceObj, CreatedSoFar))
 		{
 		//	These accumulate, so we need to clear it each time.
 
@@ -146,7 +146,8 @@ ICCItemPtr CSquadronController::GetStatus (const CSpaceObject &SourceObj) const
 			if (const IShipGenerator *pGenerator = m_Squadrons[i].pDesc->GetInitialShips())
 				pEntry->SetAt(CONSTLIT("shipTable"), pGenerator->GetShipsReferenced(SourceObj.GetUniverse()));
 
-			pEntry->SetAt(CONSTLIT("desc"), m_Squadrons[i].pDesc->GetChallengeDesc().GetDesc(&SourceObj, &m_Squadrons[i].Squadron));
+			pEntry->SetAt(CONSTLIT("shipDesc"), m_Squadrons[i].pDesc->GetChallengeDesc().GetDesc(&SourceObj));
+			pEntry->SetAt(CONSTLIT("reinforceDesc"), m_Squadrons[i].pDesc->GetReinforceDesc().GetDesc(&SourceObj));
 			}
 
 		//	Add it
@@ -310,7 +311,7 @@ void CSquadronController::Update (SUpdateCtx &Ctx, const CSquadronDesc &Desc)
 			{
 			SSquadronEntry &Entry = SetAt(Desc);
 
-			if (Desc.GetChallengeDesc().NeedsMoreReinforcements(Ctx.SourceObj, Entry.Squadron))
+			if (Desc.GetChallengeDesc().NeedsMoreReinforcements(Ctx.SourceObj, Entry.Squadron, Desc.GetReinforceDesc()))
 				{
 				//	If we've requested several rounds of reinforcements but have
 				//	never received any, then it's likely that they are being

@@ -1525,7 +1525,7 @@ void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, const CS
 	CShipChallengeCtx CreatedSoFar;
 
 	int iMaxLoops = 20;
-	while (iMaxLoops-- > 0 && Needed.NeedsMoreInitialShips(this, CreatedSoFar))
+	while (iMaxLoops-- > 0 && Needed.NeedsMoreShips(*this, CreatedSoFar))
 		{
 		//	These accumulate, so we need to clear it each time.
 

@@ -5,6 +5,11 @@
 
 #include "PreComp.h"
 
+#define TYPE_AUTO								CONSTLIT("auto")
+#define TYPE_CHALLENGE							CONSTLIT("challenge")
+#define TYPE_NONE								CONSTLIT("none")
+#define TYPE_PROPERTY							CONSTLIT("property")
+
 static TStaticStringTable<TStaticStringEntry<CShipChallengeDesc::ECountTypes>, 4> CHALLENGE_TYPE_TABLE = {
 	"deadly",				CShipChallengeDesc::countChallengeDeadly,
 	"easy",					CShipChallengeDesc::countChallengeEasy,
@@ -39,7 +44,7 @@ Metric CShipChallengeDesc::CalcChallengeStrength (ECountTypes iType, int iLevel)
 		}
 	}
 
-ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase, const CSpaceObjectList *pCurrent) const
+ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 
 //	GetDesc
 //
@@ -56,20 +61,20 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase, const CSpaceO
 			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("none"));
 			break;
 
-		case countInitial:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("initial"));
+		case countAuto:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("auto"));
 			break;
 
-		case countReinforcements:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("reinforcements"));
+		case countProperty:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("property"));
 			break;
 			
 		case countScore:
 			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("score"));
 			break;
 			
-		case countStanding:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("standing"));
+		case countShips:
+			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("ships"));
 			break;
 			
 		case countChallengeEasy:
@@ -97,10 +102,8 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase, const CSpaceO
 
 	switch (m_iType)
 		{
-		case countInitial:
-		case countReinforcements:
 		case countScore:
-		case countStanding:
+		case countShips:
 			{
 			int iCount;
 			if (pBase)
@@ -127,6 +130,10 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase, const CSpaceO
 				}
 			break;
 			}
+
+		case countProperty:
+			pResult->SetStringAt(CONSTLIT("property"), m_sValue);
+			break;
 		}
 
 	return pResult;
@@ -141,13 +148,14 @@ bool CShipChallengeDesc::Init (ECountTypes iType, int iCount)
 	{
 	switch (iType)
 		{
-		case countInitial:
-		case countReinforcements:
 		case countScore:
-		case countStanding:
+		case countShips:
 			m_iType = iType;
 			m_Count.SetConstant(iCount);
 			break;
+
+		case countProperty:
+			return false;
 
 		default:
 			m_iType = iType;
@@ -164,19 +172,20 @@ bool CShipChallengeDesc::Init (ECountTypes iType, const CString &sCount)
 //	Initialize
 
 	{
+	m_iType = iType;
+
 	switch (iType)
 		{
-		case countInitial:
-		case countReinforcements:
 		case countScore:
-		case countStanding:
-			m_iType = iType;
+		case countShips:
 			if (m_Count.LoadFromXML(sCount) != NOERROR)
 				return false;
 			break;
 
+		case countProperty:
+			return false;
+
 		default:
-			m_iType = iType;
 			break;
 		}
 
@@ -209,7 +218,69 @@ bool CShipChallengeDesc::InitFromChallengeRating (const CString &sChallenge)
 	return true;
 	}
 
-bool CShipChallengeDesc::NeedsMoreInitialShips (CSpaceObject *pBase, const CShipChallengeCtx &Ctx) const
+bool CShipChallengeDesc::InitFromXML (const CString &sValue)
+
+//	InitFromXML
+//
+//	Initialize from an XML parameter value. We support the following values:
+//
+//	"none"
+//	"auto"
+//	"4"						A number
+//	"1d4"					A dice range
+//	"challenge:standard"	A challenge rating
+//	"property:xyz"			A property
+
+	{
+	const char *pPos = sValue.GetASCIIZPointer();
+
+	if (sValue.IsBlank())
+		m_iType = countAuto;
+
+	else if (strIsDigit(pPos))
+		{
+		m_iType = countShips;
+		if (m_Count.LoadFromXML(sValue) != NOERROR)
+			return false;
+		}
+	else
+		{
+		const char *pStart = pPos;
+		while (*pPos != ':' && *pPos != '\0')
+			pPos++;
+
+		CString sType(pStart, pPos - pStart);
+		if (*pPos == ':')
+			pPos++;
+
+		CString sParam(pPos);
+
+		if (strEquals(sType, TYPE_AUTO))
+			{
+			m_iType = countAuto;
+			}
+		else if (strEquals(sType, TYPE_CHALLENGE))
+			{
+			if (!InitFromChallengeRating(sParam))
+				return false;
+			}
+		else if (strEquals(sType, TYPE_NONE))
+			{
+			m_iType = countNone;
+			}
+		else if (strEquals(sType, TYPE_PROPERTY) && !sParam.IsBlank())
+			{
+			m_iType = countProperty;
+			m_sValue = sParam;
+			}
+		else
+			return false;
+		}
+
+	return true;
+	}
+
+bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChallengeCtx &Ctx) const
 
 //	NeedsMoreInitialShips
 //
@@ -219,21 +290,33 @@ bool CShipChallengeDesc::NeedsMoreInitialShips (CSpaceObject *pBase, const CShip
 	switch (m_iType)
 		{
 		case countNone:
-		case countReinforcements:
+			return false;
+
+		case countAuto:
 			return (Ctx.GetTotalCount() == 0);
 
-		case countInitial:
-		case countStanding:
-			return (Ctx.GetTotalCount() < m_Count.RollSeeded(pBase->GetDestiny()));
+		case countShips:
+			return (Ctx.GetTotalCount() < m_Count.RollSeeded(Base.GetDestiny()));
+
+		case countProperty:
+			{
+			ICCItemPtr pResult = Base.GetProperty(m_sValue);
+			if (!pResult || pResult->IsNil())
+				return false;
+			else if (pResult->IsNumber())
+				return (Ctx.GetTotalCount() < pResult->GetIntegerValue());
+			else
+				return (Ctx.GetTotalCount() == 0);
+			}
 
 		case countScore:
-			return (Ctx.GetTotalScore() < m_Count.RollSeeded(pBase->GetDestiny()));
+			return (Ctx.GetTotalScore() < m_Count.RollSeeded(Base.GetDestiny()));
 
 		case countChallengeEasy:
 		case countChallengeStandard:
 		case countChallengeHard:
 		case countChallengeDeadly:
-			return (Ctx.GetTotalCombat() < CalcChallengeStrength(m_iType, pBase->GetSystem()->GetLevel()));
+			return (Ctx.GetTotalCombat() < CalcChallengeStrength(m_iType, Base.GetSystem()->GetLevel()));
 
 		default:
 			ASSERT(false);
@@ -241,7 +324,7 @@ bool CShipChallengeDesc::NeedsMoreInitialShips (CSpaceObject *pBase, const CShip
 		}
 	}
 
-bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current) const
+bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current, const CShipChallengeDesc &Reinforce) const
 
 //	NeedsMoreReinforcements
 //
@@ -251,117 +334,44 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpa
 	{
 	DEBUG_TRY
 
-	//	If no set count, then we're done.
-
-	if (m_iType == countNone || m_iType == countInitial)
-		return false;
-
-	//	Add up the number of defenders for this station (and the total score).
-
-	int iCurCount = 0;
-	int iCurScore = 0;
-	Metric rCurCombat = 0.0;
-	for (int i = 0; i < Current.GetCount(); i++)
+	switch (Reinforce.m_iType)
 		{
-		CSpaceObject *pObj = Current.GetObj(i);
+		case countNone:
+			return false;
 
-		iCurCount++;
-		iCurScore += pObj->GetScore();
+		case countAuto:
+			{
+			//	Can't both be auto
 
-		CShip *pShip = pObj->AsShip();
-		rCurCombat += pShip->GetClass()->GetCombatStrength();
-		}
+			if (m_iType == countAuto)
+				return false;
+			else
+				{
+				CShipChallengeCtx Ctx(Current);
+				return NeedsMoreShips(Base, Ctx);
+				}
+			}
 
-	//	Now figure out if we have enough of them.
-
-	switch (m_iType)
-		{
-		case countReinforcements:
-		case countStanding:
-			return (iCurCount < m_Count.RollSeeded(Base.GetDestiny()));
-
+		case countShips:
+		case countProperty:
 		case countScore:
-			return (iCurScore < m_Count.RollSeeded(Base.GetDestiny()));
-
 		case countChallengeEasy:
 		case countChallengeStandard:
 		case countChallengeHard:
 		case countChallengeDeadly:
 			{
-			int iLevel = Base.GetSystem()->GetLevel();
-			return (rCurCombat < CalcChallengeStrength(m_iType, iLevel));
+			CShipChallengeCtx Ctx(Current);
+
+			if (Reinforce.NeedsMoreShips(Base, Ctx))
+				return true;
+			else if (m_iType != countAuto && NeedsMoreShips(Base, Ctx))
+				return true;
+			else
+				return false;
 			}
-			
+
 		default:
-			ASSERT(false);
-			return false;
-		}
-
-	DEBUG_CATCH
-	}
-
-bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject *pBase) const
-
-//	NeedsMoreReinforcements
-//
-//	Returns TRUE if pBase needs more defenders, as specified by our challenge
-//	rating.
-
-	{
-	DEBUG_TRY
-
-	int i;
-
-	//	If no set count, then we're done.
-
-	if (m_iType == countNone || m_iType == countInitial)
-		return false;
-
-	//	Add up the number of defenders for this station (and the total score).
-
-	int iCurCount = 0;
-	int iCurScore = 0;
-	Metric rCurCombat = 0.0;
-	CSystem *pSystem = pBase->GetSystem();
-
-	for (i = 0; i < pSystem->GetObjectCount(); i++)
-		{
-		CSpaceObject *pObj = pSystem->GetObject(i);
-
-		if (pObj
-				&& pObj->GetBase() == pBase
-				&& pObj->GetCategory() == CSpaceObject::catShip
-				&& pObj->CanAttack()	//	Excludes attached ship sections
-				&& pObj != pBase)
-			{
-			iCurCount++;
-			iCurScore += pObj->GetScore();
-
-			CShip *pShip = pObj->AsShip();
-			rCurCombat += pShip->GetClass()->GetCombatStrength();
-			}
-		}
-
-	//	Now figure out if we have enough of them.
-
-	switch (m_iType)
-		{
-		case countReinforcements:
-		case countStanding:
-			return (iCurCount < m_Count.RollSeeded(pBase->GetDestiny()));
-
-		case countScore:
-			return (iCurScore < m_Count.RollSeeded(pBase->GetDestiny()));
-
-		case countChallengeEasy:
-		case countChallengeStandard:
-		case countChallengeHard:
-		case countChallengeDeadly:
-			return (rCurCombat < CalcChallengeStrength(m_iType, pSystem->GetLevel()));
-			
-		default:
-			ASSERT(false);
-			return false;
+			throw CException(ERR_FAIL);
 		}
 
 	DEBUG_CATCH
@@ -399,7 +409,7 @@ void CShipChallengeCtx::AddShip (CSpaceObject *pObj)
 	m_rTotalCombat += pShip->GetClass()->GetCombatStrength();
 	}
 
-void CShipChallengeCtx::AddShips (CSpaceObjectList &List)
+void CShipChallengeCtx::AddShips (const CSpaceObjectList &List)
 
 //	AddShips
 //

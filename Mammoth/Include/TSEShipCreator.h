@@ -8,22 +8,21 @@
 class CShipChallengeCtx
 	{
 	public:
-		CShipChallengeCtx (void) :
-				m_iTotalCount(0),
-				m_iTotalScore(0),
-				m_rTotalCombat(0.0)
+		CShipChallengeCtx (void)
 			{ }
 
+		CShipChallengeCtx (const CSpaceObjectList &List) { AddShips(List); }
+
 		void AddShip (CSpaceObject *pObj);
-		void AddShips (CSpaceObjectList &List);
+		void AddShips (const CSpaceObjectList &List);
 		Metric GetTotalCombat (void) const { return m_rTotalCombat; }
 		int GetTotalCount (void) const { return m_iTotalCount; }
 		int GetTotalScore (void) const { return m_iTotalScore; }
 
 	private:
-		int m_iTotalCount;
-		int m_iTotalScore;
-		Metric m_rTotalCombat;
+		int m_iTotalCount = 0;
+		int m_iTotalScore = 0;
+		Metric m_rTotalCombat = 0.0;
 	};
 
 class CShipChallengeDesc
@@ -32,11 +31,11 @@ class CShipChallengeDesc
 		enum ECountTypes
 			{
 			countNone,
+			countAuto,						//	Default
 
-			countInitial,					//	Use m_Count as initial number
-			countReinforcements,			//	Use m_Count as minimum number
+			countShips,						//	Use m_Count as number of ships
 			countScore,						//	Use m_Count as desired total score
-			countStanding,					//	Use m_Count as minimum number
+			countProperty,					//	Count comes from property
 
 			countChallengeEasy,				//	1.5x ships of system level (by score)
 			countChallengeStandard,			//	2.5x
@@ -50,14 +49,14 @@ class CShipChallengeDesc
 
 		ECountTypes GetCountType (void) const { return m_iType; }
 		Metric GetChallengeStrength (int iLevel) const { return CalcChallengeStrength(m_iType, iLevel); }
-		ICCItemPtr GetDesc (const CSpaceObject *pBase = NULL, const CSpaceObjectList *pCurrent = NULL) const;
+		ICCItemPtr GetDesc (const CSpaceObject *pBase = NULL) const;
 		bool Init (ECountTypes iType, int iCount = 0);
 		bool Init (ECountTypes iType, const CString &sCount);
 		bool InitFromChallengeRating (const CString &sChallenge);
+		bool InitFromXML (const CString &sValue);
 		bool IsEmpty (void) const { return m_iType == countNone; }
-		bool NeedsMoreInitialShips (CSpaceObject *pBase, const CShipChallengeCtx &Ctx) const;
-		bool NeedsMoreReinforcements (CSpaceObject *pBase) const;
-		bool NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current) const;
+		bool NeedsMoreShips (CSpaceObject &Base, const CShipChallengeCtx &Ctx) const;
+		bool NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current, const CShipChallengeDesc &Reinforce) const;
 
 	private:
 		static Metric CalcChallengeStrength (ECountTypes iType, int iLevel);
@@ -65,6 +64,7 @@ class CShipChallengeDesc
 
 		ECountTypes m_iType;				//	Method for determining ships numbers
 		DiceRange m_Count;
+		CString m_sValue;					//	Used for property-based reinforce
 	};
 
 //	IShipGenerator

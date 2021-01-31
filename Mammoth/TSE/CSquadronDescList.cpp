@@ -86,6 +86,30 @@ ICCItemPtr CSquadronDescList::GetConstructionShipsReferenced (CUniverse &Univers
 	return IShipGenerator::GetShipsReferenced(Universe, AllTypes);
 	}
 
+ICCItemPtr CSquadronDescList::GetDesc (CUniverse &Universe) const
+
+//	GetDesc
+//
+//	Returns a descriptor
+
+	{
+	if (m_Squadrons.GetCount() == 0)
+		return ICCItemPtr::Nil();
+
+	else if (m_Squadrons.GetCount() == 1)
+		return m_Squadrons[0]->GetDesc(Universe);
+
+	else
+		{
+		ICCItemPtr pResult(ICCItem::List);
+
+		for (int i = 0; i < m_Squadrons.GetCount(); i++)
+			pResult->Append(m_Squadrons[i]->GetDesc(Universe));
+
+		return pResult;
+		}
+	}
+
 ICCItemPtr CSquadronDescList::GetInitialShipsReferenced (CUniverse &Universe) const
 
 //	GetInitialShipsReferenced
