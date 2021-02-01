@@ -57,6 +57,7 @@ class CShipChallengeDesc
 		bool IsEmpty (void) const { return m_iType == countNone; }
 		bool NeedsMoreShips (CSpaceObject &Base, const CShipChallengeCtx &Ctx) const;
 		bool NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current, const CShipChallengeDesc &Reinforce) const;
+		bool NeedsMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const;
 
 	private:
 		static Metric CalcChallengeStrength (ECountTypes iType, int iLevel);
@@ -118,6 +119,7 @@ class IShipGenerator
 		virtual ALERROR ValidateForRandomEncounter (void) { return NOERROR; }
 
 		ICCItemPtr GetShipsReferenced (CUniverse &Universe) const;
+		bool HasType (const CDesignType &Type) const;
 		static ICCItemPtr GetShipsReferenced (CUniverse &Universe, const TSortMap<DWORD, bool> &AllTypes);
 	};
 

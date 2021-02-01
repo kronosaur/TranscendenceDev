@@ -27,6 +27,7 @@ class CSquadronController
 			};
 
 		void CreateInitialShips (CSpaceObject &SourceObj, const CSquadronDescList &Desc);
+		void FixupDefenders (CSpaceObject &SourceObj, const CSquadronDescList &Desc, const CSpaceObjectList &Subordinates);
 		int GetReinforceRequestCount () const;
 		ICCItemPtr GetStatus (const CSpaceObject &SourceObj) const;
 		void OnObjDestroyed (CSpaceObject &SourceObj, const SDestroyCtx &Ctx);
@@ -48,10 +49,12 @@ class CSquadronController
 			int iTotalDestroyed = 0;					//	Ships destroyed in total
 			};
 
-		void CreateInitialShips (CSpaceObject &SourceObj, const CSquadronDesc &SquadronDesc);
+		void CreateInitialShips (CSpaceObject &SourceObj, const CSquadronDesc &SquadronDesc, bool bDebug);
+		void CreateReinforcements (CSpaceObject &SourceObj, const CSquadronDesc &SquadronDesc, SSquadronEntry &Entry, const IShipGenerator &ShipTable, CSpaceObject &GateObj, bool bDebug);
 		SSquadronEntry *GetAt (const CString &sID);
+		static void DebugOutput (CSpaceObject &SourceObj, const CString &sLine, const SSquadronEntry *pEntry = NULL, bool bDebug = true);
 		SSquadronEntry &SetAt (const CSquadronDesc &SquadronDesc);
-		void Update (SUpdateCtx &Ctx, const CSquadronDesc &Desc);
+		void Update (SUpdateCtx &Ctx, const CSquadronDesc &Desc, bool bDebug);
 		void UpdateConstruction (SUpdateCtx &Ctx, const CSquadronDesc &Desc, const IShipGenerator &ConstructionTable);
 
 		TArray<SSquadronEntry> m_Squadrons;
@@ -221,6 +224,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void OnSubordinateDestroyed (SDestroyCtx &Ctx) override;
 		virtual void OnSubordinateHit (SDamageCtx &Ctx) override;
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) override;
+		virtual void OnSystemLoaded (SLoadCtx &Ctx) override;
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;

@@ -54,6 +54,7 @@
 #define PROPERTY_SHOW_AS_DESTINATION			CONSTLIT("showAsDestination")
 #define PROPERTY_SIZE_PIXELS					CONSTLIT("sizePixels")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
+#define PROPERTY_SQUADRON_ID					CONSTLIT("squadronID")
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
 #define PROPERTY_SUSPENDED						CONSTLIT("suspended")
 #define PROPERTY_TYPE							CONSTLIT("type")
@@ -504,6 +505,20 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 			return CC.CreateInteger(pSovereign->GetUNID());
 		else
 			return CC.CreateNil();
+		}
+
+	else if (strEquals(sName, PROPERTY_SQUADRON_ID))
+		{
+		CSquadronID ID = GetSquadronID();
+		if (ID.IsEmpty())
+			return CC.CreateNil();
+		else
+			{
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetIntegerAt(CONSTLIT("leaderID"), ID.GetLeaderID());
+			pResult->SetStringAt(CONSTLIT("squadronID"), ID.GetID());
+			return pResult->Reference();
+			}
 		}
 
 	else if (strEquals(sName, PROPERTY_STEALTH))

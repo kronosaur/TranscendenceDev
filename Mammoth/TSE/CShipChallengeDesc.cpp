@@ -365,12 +365,12 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpa
 			else
 				{
 				CShipChallengeCtx Ctx(Current);
-				return NeedsMoreShips(Base, Ctx);
+				return NeedsMoreReinforcements(Base, Ctx, Reinforce);
 				}
 			}
 
-		case countShips:
 		case countProperty:
+		case countShips:
 		case countScore:
 		case countChallengeEasy:
 		case countChallengeStandard:
@@ -378,7 +378,69 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpa
 		case countChallengeDeadly:
 			{
 			CShipChallengeCtx Ctx(Current);
+			return NeedsMoreReinforcements(Base, Ctx, Reinforce);
+			}
 
+		default:
+			throw CException(ERR_FAIL);
+		}
+
+	DEBUG_CATCH
+	}
+
+bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const
+
+//	NeedsMoreReinforcements
+//
+//	Returns TRUE if we need more reinforcements.
+
+	{
+	switch (Reinforce.m_iType)
+		{
+		case countNone:
+			return false;
+
+		case countAuto:
+			{
+			//	Can't both be auto
+
+			if (m_iType == countAuto)
+				return false;
+			else
+				{
+				return NeedsMoreShips(Base, Ctx);
+				}
+			}
+
+		case countProperty:
+			{
+			ICCItemPtr pResult = Base.GetProperty(Reinforce.m_sValue);
+
+			//	If the value of the property is Nil, then we never reinforce
+			//	(treat it as none).
+
+			if (!pResult || pResult->IsNil())
+				return false;
+
+			//	If we return a number, then we assume this is the minimum number
+			//	of ships that we want.
+
+			else if (pResult->IsNumber())
+				return (Ctx.GetTotalCount() < pResult->GetIntegerValue());
+
+			//	Otherwise, we treat it as auto.
+
+			else
+				return NeedsMoreShips(Base, Ctx);
+			}
+
+		case countShips:
+		case countScore:
+		case countChallengeEasy:
+		case countChallengeStandard:
+		case countChallengeHard:
+		case countChallengeDeadly:
+			{
 			if (Reinforce.NeedsMoreShips(Base, Ctx))
 				return true;
 			else if (m_iType != countAuto && NeedsMoreShips(Base, Ctx))
@@ -390,8 +452,6 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpa
 		default:
 			throw CException(ERR_FAIL);
 		}
-
-	DEBUG_CATCH
 	}
 
 CShipChallengeDesc::ECountTypes CShipChallengeDesc::ParseChallengeType (const CString &sValue)

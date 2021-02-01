@@ -6279,7 +6279,7 @@ void CShip::OnSystemCreated (SSystemCreateCtx &CreateCtx)
 	FinishCreation(m_pDeferredOrders, &CreateCtx);
 	}
 
-void CShip::OnSystemLoaded (void)
+void CShip::OnSystemLoaded (SLoadCtx &Ctx)
 
 //	OnSystemLoaded
 //

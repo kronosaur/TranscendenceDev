@@ -302,6 +302,19 @@ ICCItemPtr IShipGenerator::GetShipsReferenced (CUniverse &Universe, const TSortM
 		return ICCItemPtr::Nil();
 	}
 
+bool IShipGenerator::HasType (const CDesignType &Type) const
+
+//	HasType
+//
+//	Returns TRUE if we reference the given type.
+
+	{
+	TSortMap<DWORD, bool> AllTypes;
+	AddTypesUsed(&AllTypes);
+
+	return AllTypes.GetAt(Type.GetUNID()) != NULL;
+	}
+
 //	CShipTable ----------------------------------------------------------------
 
 CShipTable::CShipTable (void) : 

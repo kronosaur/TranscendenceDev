@@ -160,6 +160,25 @@ const IShipGenerator *CSquadronDesc::GetReinforcementsTable (void) const
 		return NULL;
 	}
 
+bool CSquadronDesc::HasShipClass (const CShipClass &ShipClass) const
+
+//	HasShipClass
+//
+//	Returns TRUE if we have this ship class.
+
+	{
+	if (m_pShipTable && m_pShipTable->HasType(ShipClass))
+		return true;
+		
+	if (m_pReinforcements && m_pReinforcements->HasType(ShipClass))
+		return true;
+
+	if (m_pConstruction && m_pConstruction->HasType(ShipClass))
+		return true;
+
+	return false;
+	}
+
 bool CSquadronDesc::Init (SDesignLoadCtx &Ctx, const CString &sID, const CXMLElement *pShips, const CXMLElement *pReinforcements, const CXMLElement *pConstruction)
 
 //	Init

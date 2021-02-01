@@ -323,6 +323,7 @@ class CSquadronDesc
 		const IShipGenerator *GetReinforcementsTable (void) const;
 		int GetShipConstructionRate () const { return m_iShipConstructionRate; }
 		int GetShipConstructionMax () const { return m_iMaxConstruction; }
+		bool HasShipClass (const CShipClass &ShipClass) const;
 		bool Init (SDesignLoadCtx &Ctx, const CString &sID, const CXMLElement *pShips, const CXMLElement *pReinforcements, const CXMLElement *pConstruction);
 		bool InitFromXML (SDesignLoadCtx &Ctx, const CString &sID, const CXMLElement &Desc);
 
@@ -352,6 +353,7 @@ class CSquadronDescList
 		bool BindDesign (SDesignLoadCtx &Ctx);
 		Metric CalcDefenderStrength (int iLevel) const;
 		const CSquadronDesc *FindSquadron (const CString &sID) const { auto pEntry = m_Squadrons.GetAt(sID); if (pEntry) return (*pEntry); else return NULL; }
+		const CSquadronDesc *FindMatchingSquadron (const CShipClass &ShipClass) const;
 		Metric GetChallengeStrength (int iLevel) const;
 		int GetCount () const { return m_Squadrons.GetCount(); }
 		ICCItemPtr GetConstructionShipsReferenced (CUniverse &Universe) const;
@@ -362,12 +364,14 @@ class CSquadronDescList
 		int GetConstructionMaxCount () const;
 		const CSquadronDesc &GetSquadron (int iIndex) const { return *m_Squadrons[iIndex]; }
 		bool InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &StationXML);
+		bool IsDebug () const { return m_bDebug; }
 		bool IsEmpty () const { return m_Squadrons.GetCount() == 0; }
 
 	private:
 		bool InsertSquadronFromXML (SDesignLoadCtx &Ctx, const CXMLElement &DescXML);
 
 		TSortMap<CString, TUniquePtr<CSquadronDesc>> m_Squadrons;
+		bool m_bDebug = false;
 	};
 
 //	CStationType --------------------------------------------------------------

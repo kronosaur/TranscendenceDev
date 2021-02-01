@@ -3032,6 +3032,17 @@ void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
 	m_DockingPorts.MoveAll(this);
 	}
 
+void CStation::OnSystemLoaded (SLoadCtx &Ctx)
+
+//	OnSystemLoaded
+//
+//	System has just been loaded. This is our change to make some fixes.
+
+	{
+	if (Ctx.dwVersion < 199)
+		m_Squadrons.FixupDefenders(*this, m_pType->GetSquadronDesc(), m_Subordinates);
+	}
+
 void CStation::AvengeAttack (CSpaceObject *pTarget)
 
 //	AvengeAttack

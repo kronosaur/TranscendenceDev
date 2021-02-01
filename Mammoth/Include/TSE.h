@@ -1178,7 +1178,7 @@ class CSpaceObject
 		virtual bool IsWreck (void) const { return false; }
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options) { }
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) { }
-		virtual void OnSystemLoaded (void) { }
+		virtual void OnSystemLoaded (SLoadCtx &Ctx) { }
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const { return false; }
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) const { return PointInObject(vObjPos, vPointPos); }
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) const { }

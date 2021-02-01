@@ -11,6 +11,7 @@
 #define SQUADRON_TAG							CONSTLIT("Squadron")
 #define SQUADRONS_TAG							CONSTLIT("Squadrons")
 
+#define DEBUG_ATTRIB							CONSTLIT("debug")
 #define ID_ATTRIB								CONSTLIT("id")
 #define SHIP_REGEN_ATTRIB						CONSTLIT("shipRegen")
 #define SHIP_REPAIR_RATE_ATTRIB					CONSTLIT("shipRepairRate")
@@ -54,6 +55,22 @@ Metric CSquadronDescList::CalcDefenderStrength (int iLevel) const
 		rTotal += m_Squadrons[i]->CalcDefenderStrength(iLevel);
 
 	return rTotal;
+	}
+
+const CSquadronDesc *CSquadronDescList::FindMatchingSquadron (const CShipClass &ShipClass) const
+
+//	FindMatchingSquadron
+//
+//	Returns the first squadron descriptor that includes this ship class.
+
+	{
+	for (int i = 0; i < m_Squadrons.GetCount(); i++)
+		{
+		if (m_Squadrons[i]->HasShipClass(ShipClass))
+			return m_Squadrons[i];
+		}
+
+	return NULL;
 	}
 
 Metric CSquadronDescList::GetChallengeStrength (int iLevel) const
@@ -189,11 +206,15 @@ bool CSquadronDescList::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Sta
 			if (!InsertSquadronFromXML(Ctx, *pChild))
 				return false;
 			}
+
+		m_bDebug = pSquadrons->GetAttributeBool(DEBUG_ATTRIB);
 		}
 	else if (const CXMLElement *pSquadron = StationXML.GetContentElementByTag(SQUADRON_TAG))
 		{
 		if (!InsertSquadronFromXML(Ctx, *pSquadron))
 			return false;
+
+		m_bDebug = pSquadron->GetAttributeBool(DEBUG_ATTRIB);
 		}
 
 	//	Otherwise, we expect the backwards compatible method in which each is
