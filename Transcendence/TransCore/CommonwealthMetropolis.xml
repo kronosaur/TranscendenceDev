@@ -107,19 +107,12 @@
 		</Satellites>
 		
 		<!-- Ships and Defenses -->
+
+		<Squadrons>
+			<Squadron table="&tbCommEliteDefenders;"	count="2-4"/>
+			<Squadron table="&tbCommPrivateCrafts;"		count="1-4"/>
+		</Squadrons>
 		
-		<Ships>
-			<Lookup count="3" table="&tbCommEliteDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="5">
-			<Table>
-				<Lookup chance="75" table="&tbCommEliteDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
 		<!-- Image and Effects -->
 		
 		<Image			imageID="&rsCommonwealthMetropolis;" imageWidth="480" imageHeight="480"/>
@@ -264,18 +257,11 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="3" table="&tbCommEliteDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="5">
-			<Table>
-				<Lookup chance="75" table="&tbCommEliteDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
+		<Squadrons>
+			<Squadron table="&tbCommEliteDefenders;"	count="3-4"/>
+			<Squadron table="&tbCommPrivateCrafts;"		count="1-4"/>
+		</Squadrons>
+		
 		<!-- Image and Effects -->
 		
 		<Image			imageID="&rsCommonwealthMetropolisArmored;" imageWidth="480" imageHeight="480"/>
