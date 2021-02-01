@@ -5676,6 +5676,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_pSovereign (CSovereign ref)
 //	CString		m_sName;
 //	DWORD		m_dwNameFlags
+//	CSquadronID	m_SquadronID
 //	CIntegralRotation	m_Rotation
 //	DWORD		low = unused; hi = m_iContaminationTimer
 //	DWORD		low = m_iBlindnessTimer; hi = m_iParalysisTimer
@@ -5781,6 +5782,11 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		else
 			m_dwNameFlags = 0;
 		}
+
+	//	Squadron ID
+
+	if (Ctx.dwVersion >= 199)
+		m_SquadronID.ReadFromStream(Ctx);
 
 	//	Load rotation
 
@@ -6273,7 +6279,7 @@ void CShip::OnSystemCreated (SSystemCreateCtx &CreateCtx)
 	FinishCreation(m_pDeferredOrders, &CreateCtx);
 	}
 
-void CShip::OnSystemLoaded (void)
+void CShip::OnSystemLoaded (SLoadCtx &Ctx)
 
 //	OnSystemLoaded
 //
@@ -6293,6 +6299,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_pSovereign (CSovereign ref)
 //	CString		m_sName
 //	DWORD		m_dwNameFlags
+//	CSquadronID	m_SquadronID
 //	CIntegralRotation m_Rotation
 //	DWORD		low = unused; hi = m_iContaminationTimer
 //	DWORD		low = m_iBlindnessTimer; hi = m_iParalysisTimer
@@ -6352,6 +6359,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	m_sName.WriteToStream(pStream);
 	pStream->Write(m_dwNameFlags);
 
+	m_SquadronID.WriteToStream(*pStream);
 	m_Rotation.WriteToStream(pStream);
 
 	dwSave = MAKELONG(0, m_iContaminationTimer);

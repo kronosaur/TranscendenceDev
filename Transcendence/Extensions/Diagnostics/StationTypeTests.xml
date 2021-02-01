@@ -39,11 +39,12 @@
 						{	test:'(typ@ &stDwargColony; 'shipTable)					result:'(&scDwargRaider;)	}
 						{	test:'(typ@ &stDwargColony; 'shipConstructionTable)		result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'shipEncounterTable)		result:Nil	}
-						{	test:'(typ@ &stDwargColony; 'shipReinforcementsTable)	result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'shipReinforcementsTable)	result:'(&scDwargRaider;)	}
 						{	test:'(typ@ &stDwargColony; 'showsUnexploredAnnotation)	result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'size)						result:0	}
 						{	test:'(typ@ &stDwargColony; 'sovereign)					result:&svDwargRaiders;	}
 						{	test:'(typ@ &stDwargColony; 'sovereignName)				result:"Dwarg civilization"	}
+						{	test:'(typ@ &stDwargColony; 'squadronDesc)				result:{ count:'challengeHard id:"0" reinforce:'auto  shipTable:'(&scDwargRaider;) 	} }
 						{	test:'(typ@ &stDwargColony; 'stdTreasure)				result:3437.0	}
 						{	test:'(typ@ &stDwargColony; 'systemCriteria)			result:"+dwargSpace;"	}
 						{	test:'(typ@ &stDwargColony; 'treasureBalance)			result:93	}
@@ -59,6 +60,7 @@
 						{	test:'(typ@ &stAresShipyard; 'shipConstructionTable)	result:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;)	}
 						{	test:'(typ@ &stAresShipyard; 'shipEncounterTable)		result:'(&scSandstorm; &scPolar; &scTundra; &scChasm;)	}
 						{	test:'(typ@ &stAresShipyard; 'shipReinforcementsTable)	result:Nil	}
+						{	test:'(typ@ &stAresShipyard; 'squadronDesc)				result:{ constructionMaxCount:10 constructionRate:500 constructionTable:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;) count:'auto id:"0" reinforce:'none shipTable:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;) }	}
 						))
 					)
 			</OnGlobalStartDiagnostics>

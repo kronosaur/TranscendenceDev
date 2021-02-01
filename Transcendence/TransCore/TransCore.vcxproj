@@ -186,13 +186,13 @@
     <Xml Include="..\Extensions\Diagnostics\RPGUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ShipClassTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\SystemFunctionTests.xml" />
-    <Xml Include="..\Extensions\Diagnostics\TestArmorClasses.xml" />
+    <Xml Include="..\Extensions\Diagnostics\ArmorClassTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ItemEnhancementUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestItems.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestMissions.xml" />
-    <Xml Include="..\Extensions\Diagnostics\TestOverlays.xml" />
-    <Xml Include="..\Extensions\Diagnostics\TestStationTypes.xml" />
-    <Xml Include="..\Extensions\Diagnostics\TestTSE.xml" />
+    <Xml Include="..\Extensions\Diagnostics\OverlayTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\StationTypeTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\TSETests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml" />
     <Xml Include="Abbasid.xml" />
     <Xml Include="Analyzers.xml" />

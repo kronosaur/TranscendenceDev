@@ -808,7 +808,7 @@ class CSpaceObjectList
 		void SetAllocSize (int iNewCount);
 		void SetObj (int iIndex, CSpaceObject *pObj) { m_List[iIndex] = pObj; }
 		void Subtract (const CSpaceObjectList &List);
-		void WriteToStream (IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
 		static void ResolveObjProc (void *pCtx, DWORD dwObjID, CSpaceObject *pObj);

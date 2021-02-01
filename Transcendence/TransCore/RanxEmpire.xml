@@ -331,6 +331,108 @@
 
 	</ShipClass>
 
+	<!-- Level 8: Ranx Freighter -->
+
+	<ShipClass UNID="&scRanxFreighter;"
+			manufacturer=		"Ranx"
+			class=				""
+			type=				"freighter"
+			defaultSovereign=	"&svRanxEmpire;"
+
+			attributes=			"freighter, genericClass, majorShip, ranx"
+			   
+			explosionType=		"&vtThermoExplosion2;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"220"
+			mass=				"20000"
+			cargoSpace=			"20000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"20000"
+			maxDevices=			"8"
+
+			maxArmor=			"heavy"
+			stdArmor=			"heavy"
+			/>
+
+		<Drive
+			maxSpeed=			"8"
+			thrust=				"10000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"2.0"
+			rotationAccel=		"0.4"
+			/>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itTransuranicPlate;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itAkan30Cannon;"	 secondaryWeapon="true" omnidirectional="true"	posAngle="180" posRadius="10" posZ="20">
+				<Items>
+					<Item	count="1000-1200"	item="&itAkan30CannonShell;" />
+				</Items>
+			</Device>
+			<Device deviceID="&itAkan30Cannon;"	 secondaryWeapon="true" omnidirectional="true"	posAngle="0"   posRadius="18" posZ="20"/>
+			<Device deviceID="&itPatchSpider;"/>
+			<Device deviceID="&itPatchSpider;"/>
+		</Devices>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"200"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"50"
+
+					posX=		"-77"
+					posY=		"0"
+					sizeX=		"44"
+					sizeY=		"30"
+					/>
+		</Interior>
+
+		<Items>
+			<Item	count="2d6"		item="&itPteracniumFuelRod;"/>
+			<Table>
+				<Lookup	chance="40"	count="1d4"		table="&trConsumables7;"/>
+				<Lookup	chance="30"	count="1d2"		table="&trMinorItem7;"/>
+				<Lookup	chance="30"	count="1"		table="&trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsRanxFreighter;"	imageWidth="200" imageHeight="200"	rotationCount="120" rotationColumns="12" viewportRatio="0.0275"/>
+		<HeroImage imageID="&rsRanxFreighterHero;" imageWidth="320" imageHighet="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="100"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"35"
+			fireAccuracy=		"90"
+			perception=			"6"
+			
+			combatStyle=		"standOff"
+			/>
+
+	</ShipClass>
+
 	<!-- Level 9: Ranx Dreadnought -->
 
 	<ShipClass UNID="&scRanxDreadnought;"
@@ -622,6 +724,9 @@
 
 	<Image UNID="&rsRanxDreadnoughtHD;"		bitmap="Resources\RanxDreadnoughtHD.jpg" bitmask="Resources\RanxDreadnoughtHDMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsRanxDreadnoughtHero;"	bitmap="Resources\RanxDreadnoughtLarge.jpg" bitmask="Resources\RanxDreadnoughtLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsRanxFreighter;"			bitmap="Resources\RanxFreighter.jpg" bitmask="Resources\RanxFreighterMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsRanxFreighterHero;"		bitmap="Resources\RanxFreighterLarge.jpg" bitmask="Resources\RanxFreighterLargeMask.bmp" loadOnUse="true"/>
 
 	<Image UNID="&rsRanxGunshipHD;"				bitmap="Resources\RanxGunshipHD.jpg"		bitmask="Resources\RanxGunshipHDMask.bmp"  	loadOnUse="true"/>
 

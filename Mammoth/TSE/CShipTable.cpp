@@ -71,6 +71,8 @@ class CLevelTableOfShipGenerators : public IShipGenerator
 class CLookupShipTable : public IShipGenerator
 	{
 	public:
+		ALERROR Load (SDesignLoadCtx &Ctx, const CString &sTable, const CString &sCount = NULL_STR);
+
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const override;
 		virtual void CreateShips (SShipCreateCtx &Ctx) const override;
 		virtual Metric GetAverageLevelStrength (int iLevel) const override { return m_Count.GetAveValueFloat() * m_pTable->GetAverageLevelStrength(iLevel); }
@@ -180,6 +182,25 @@ class CGroupOfShipGenerators : public IShipGenerator
 		SEntry *m_Table;
 	};
 
+ALERROR IShipGenerator::CreateAsLookup (SDesignLoadCtx &Ctx, const CString &sTable, IShipGenerator **retpGenerator)
+
+//	CreateAsLookup
+//
+//	Creates a table lookup.
+
+	{
+	CLookupShipTable *pGenerator = new CLookupShipTable;
+	if (ALERROR error = pGenerator->Load(Ctx, sTable))
+		{
+		delete pGenerator;
+		return error;
+		}
+
+	*retpGenerator = pGenerator;
+
+	return NOERROR;
+	}
+
 ALERROR IShipGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IShipGenerator **retpGenerator)
 
 //	CreateFromXML
@@ -254,6 +275,16 @@ ICCItemPtr IShipGenerator::GetShipsReferenced (CUniverse &Universe) const
 	TSortMap<DWORD, bool> AllTypes;
 	AddTypesUsed(&AllTypes);
 
+	return GetShipsReferenced(Universe, AllTypes);
+	}
+
+ICCItemPtr IShipGenerator::GetShipsReferenced (CUniverse &Universe, const TSortMap<DWORD, bool> &AllTypes)
+
+//	GetShipsReferenced
+//
+//	Converts to a list of ship classes.
+
+	{
 	ICCItemPtr pResult(ICCItem::List);
 	for (int i = 0; i < AllTypes.GetCount(); i++)
 		{
@@ -269,6 +300,19 @@ ICCItemPtr IShipGenerator::GetShipsReferenced (CUniverse &Universe) const
 		return pResult;
 	else
 		return ICCItemPtr::Nil();
+	}
+
+bool IShipGenerator::HasType (const CDesignType &Type) const
+
+//	HasType
+//
+//	Returns TRUE if we reference the given type.
+
+	{
+	TSortMap<DWORD, bool> AllTypes;
+	AddTypesUsed(&AllTypes);
+
+	return AllTypes.GetAt(Type.GetUNID()) != NULL;
 	}
 
 //	CShipTable ----------------------------------------------------------------
@@ -560,20 +604,20 @@ void CLookupShipTable::CreateShips (SShipCreateCtx &Ctx) const
 	DEBUG_CATCH
 	}
 
-ALERROR CLookupShipTable::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
+ALERROR CLookupShipTable::Load (SDesignLoadCtx &Ctx, const CString &sTable, const CString &sCount)
 
-//	LoadFromXML
+//	Load
 //
-//	Load from XML
+//	Loads from table reference and count.
 
 	{
 	ALERROR error;
 
-	m_Count.LoadFromXML(pDesc->GetAttribute(COUNT_ATTRIB));
+	m_Count.LoadFromXML(sCount);
 	if (m_Count.IsEmpty())
 		m_Count.SetConstant(1);
 
-	if (error = m_pTable.LoadUNID(Ctx, pDesc->GetAttribute(TABLE_ATTRIB)))
+	if (error = m_pTable.LoadUNID(Ctx, sTable))
 		return error;
 
 	if (m_pTable.GetUNID() == 0)
@@ -583,6 +627,16 @@ ALERROR CLookupShipTable::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *p
 		}
 
 	return NOERROR;
+	}
+
+ALERROR CLookupShipTable::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
+
+//	LoadFromXML
+//
+//	Load from XML
+
+	{
+	return Load(Ctx, pDesc->GetAttribute(TABLE_ATTRIB), pDesc->GetAttribute(COUNT_ATTRIB));
 	}
 
 ALERROR CLookupShipTable::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -811,6 +865,11 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	if (Ctx.dwFlags & SShipCreateCtx::RETURN_RESULT)
 		Ctx.Result.Add(pShip);
+
+	//	Set the squadron info
+
+	if (!Ctx.SquadronID.IsEmpty())
+		pShip->SetSquadronID(Ctx.SquadronID);
 
 	//	Add encounter info, if necessary
 

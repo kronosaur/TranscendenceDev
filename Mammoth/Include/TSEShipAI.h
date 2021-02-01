@@ -39,6 +39,28 @@ struct SPlayerChangedShipsCtx
 	bool bIdentifyInstalled = false;		//	If TRUE, identify installed items in the new ship
 	};
 
+class CSquadronID
+	{
+	public:
+		CSquadronID () { }
+		CSquadronID (DWORD dwLeaderID, const CString &sID) :
+				m_dwLeaderID(dwLeaderID),
+				m_sID(sID)
+			{ }
+
+		const CString &GetID () const { return m_sID; }
+		DWORD GetLeaderID () const { return m_dwLeaderID; }
+		bool IsEmpty () const { return m_dwLeaderID == 0; }
+		void ReadFromStream (SLoadCtx &Ctx);
+		void WriteToStream (IWriteStream &Stream);
+
+		static const CSquadronID Null;
+
+	private:
+		DWORD m_dwLeaderID = 0;				//	Object ID of leader
+		CString m_sID;						//	ID of squadron
+	};
+
 //  CAISettings ----------------------------------------------------------------
 
 //	NOTE: These values are saved; do not change them.

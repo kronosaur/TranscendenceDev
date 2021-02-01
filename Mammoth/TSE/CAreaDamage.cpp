@@ -236,15 +236,6 @@ void CAreaDamage::OnReadFromStream (SLoadCtx &Ctx)
 		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
 	}
 
-void CAreaDamage::OnSystemLoaded (void)
-
-//	OnSystemLoaded
-//
-//	System done loading
-
-	{
-	}
-
 void CAreaDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 //	OnUpdate
