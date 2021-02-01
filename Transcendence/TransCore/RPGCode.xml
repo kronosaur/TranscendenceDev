@@ -53,6 +53,44 @@
 					)
 				))
 
+			(setq rpgCalcSuppliesNeeded (lambda (sourceObj supplyList)
+				(block (
+					;	This is the minimum items needed
+
+					(supplyList (map supplyList theEntry
+						(itmCreate 
+							(@ theEntry 'itemType)
+							(* (itm@ (@ theEntry 'itemType) 'averageCount) 
+								(@ theEntry 'multiplier)
+								)
+							)
+						))
+
+					;	This is how much we actually have
+
+					(itemList
+						(map supplyList theItem {
+							theItem: theItem
+							needed: (itmGetCount theItem)
+							avail: (or (objHasItem sourceObj theItem 1) 0)
+							})
+						)
+
+					;	Now make a list of all items that we have less than half 
+					;	the needed amount.
+
+					(resupplyList (map itemList 'excludeNil theEntry
+						(if (ls (@ theEntry 'avail) (/ (@ theEntry 'needed) 2))
+							(@ theEntry 'theItem)
+							)
+						))
+					)
+					;(dbgOutput (objGetID sourceObj) ": " itemList)
+
+					resupplyList
+					)
+				))
+
 			(setq rpgDockServices (lambda (targetObj options)
 				(block Nil
 				

@@ -315,6 +315,80 @@
 		</Events>
 	</ShipClass>
 
+	<!-- Resupply Behavior
+	
+		This behavior is for freighters resupplying a station when needed. The
+		ship will enter the system at some stargate loaded with supplies. It 
+		will dock with its base and transfer supplies. Then it will gate out.
+
+		USAGE
+
+		We expect the station to have the following properties:
+
+		rpg.suppliesNeeded: This is a list of items for the station.
+	
+	-->
+
+	<Type unid="&evStdResupplyBehavior;">
+		<Events>
+			<OnCreateOrders>
+
+				;	aBaseObj is our base station.
+
+				(block (
+					(suppliesNeeded (obj@ aBaseObj 'rpg.suppliesNeeded))
+					)
+					;	Remember the list of supplies, so we don't deliver extra
+					;	stuff. Then add all the items to the ship.
+
+					(objSetData gSource 'rpg.resupplyList suppliesNeeded)
+					(enum suppliesNeeded theItem
+						(objAddItem gSource theItem)
+						)
+
+					;	Remember our base
+
+					(objSetData gSource 'rpg.baseID (objGetID aBaseObj))
+
+					;	Order to dock with base
+
+					(if aBaseObj
+						(shpOrder gSource 'dock aBaseObj)
+						)
+
+					;(dbgOutput "Resupply " (objGetID aBaseObj) " with " (itmGetName (@ suppliesNeeded 0) 'count))
+					)
+			</OnCreateOrders>
+
+			<OnOrdersCompleted>
+				(switch
+					;	If we're docked at our station, then dump our items and
+					;	leave the system.
+
+					(= (obj@ gSource 'dockedAtID) (objGetData gSource 'rpg.baseID))
+						(block (
+							(suppliesToTransfer (objGetData gSource 'rpg.resupplyList))
+							(baseObj (objGetObjByID (objGetData gSource 'rpg.baseID)))
+							)
+							(enum suppliesToTransfer theItem
+								(block ()
+									(objRemoveItem gSource theItem)
+									(objAddItem baseObj theItem)
+
+									;(dbgOutput "Transfered " (itmGetName theItem 'count) " to " (objGetID baseObj))
+									)
+								)
+
+							;	Wait and then gate out
+
+							(shpOrder gSource 'wait (random 3 8))
+							(shpOrder gSource 'gate)
+							)
+					)
+			</OnOrdersCompleted>
+		</Events>
+	</Type>
+
 	<!-- Wander Behavior
 	
 		USAGE NOTES
