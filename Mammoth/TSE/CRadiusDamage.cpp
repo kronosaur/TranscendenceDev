@@ -367,15 +367,6 @@ void CRadiusDamage::OnReadFromStream (SLoadCtx &Ctx)
 		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
 	}
 
-void CRadiusDamage::OnSystemLoaded (void)
-
-//	OnSystemLoaded
-//
-//	System done loading
-
-	{
-	}
-
 void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 //	OnUpdate

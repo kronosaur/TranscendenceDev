@@ -17,6 +17,7 @@
 						{	test:'(typ@ &stDwargColony; 'canAttack)					result:True	}
 						{	test:'(typ@ &stDwargColony; 'category)					result:"02-Enemy"	}
 						{	test:'(typ@ &stDwargColony; 'challengeRating)			result:10	}
+						{	test:'(typ@ &stDwargColony; 'defenderCombatStrengthTarget)			result:	87.807999999999979 }
 						{	test:'(typ@ &stDwargColony; 'defenderStrength)			result:642	}
 						{	test:'(typ@ &stDwargColony; 'dockScreen)				result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'explosionType)				result:"blast explosion 2"	}
@@ -35,10 +36,15 @@
 						{	test:'(typ@ &stDwargColony; 'repairArmorRate)			result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'repairArmorRateExplicit)	result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'satelliteStrength)			result:0	}
+						{	test:'(typ@ &stDwargColony; 'shipTable)					result:'(&scDwargRaider;)	}
+						{	test:'(typ@ &stDwargColony; 'shipConstructionTable)		result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'shipEncounterTable)		result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'shipReinforcementsTable)	result:'(&scDwargRaider;)	}
 						{	test:'(typ@ &stDwargColony; 'showsUnexploredAnnotation)	result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'size)						result:0	}
 						{	test:'(typ@ &stDwargColony; 'sovereign)					result:&svDwargRaiders;	}
 						{	test:'(typ@ &stDwargColony; 'sovereignName)				result:"Dwarg civilization"	}
+						{	test:'(typ@ &stDwargColony; 'squadronDesc)				result:{ count:'challengeHard id:"0" reinforce:'auto  shipTable:'(&scDwargRaider;) 	} }
 						{	test:'(typ@ &stDwargColony; 'stdTreasure)				result:3437.0	}
 						{	test:'(typ@ &stDwargColony; 'systemCriteria)			result:"+dwargSpace;"	}
 						{	test:'(typ@ &stDwargColony; 'treasureBalance)			result:93	}
@@ -46,6 +52,15 @@
 						{	test:'(typ@ &stDwargColony; 'treasureValue)				result:3200	}
 						{	test:'(typ@ &stDwargColony; 'unid)						result:&stDwargColony;	}
 						{	test:'(typ@ &stDwargColony; 'weaponStrength)			result:80	}
+
+						{	test:'(typ@ &stAresShipyard; 'defenderCombatStrengthTarget)			result:	Nil }
+						{	test:'(typ@ &stAresShipyard; 'shipTable)				result:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;)	}
+						{	test:'(typ@ &stAresShipyard; 'shipConstructionMaxCount)	result:10	}
+						{	test:'(typ@ &stAresShipyard; 'shipConstructionRate)		result:500	}
+						{	test:'(typ@ &stAresShipyard; 'shipConstructionTable)	result:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;)	}
+						{	test:'(typ@ &stAresShipyard; 'shipEncounterTable)		result:'(&scSandstorm; &scPolar; &scTundra; &scChasm;)	}
+						{	test:'(typ@ &stAresShipyard; 'shipReinforcementsTable)	result:Nil	}
+						{	test:'(typ@ &stAresShipyard; 'squadronDesc)				result:{ constructionMaxCount:10 constructionRate:500 constructionTable:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;) count:'auto id:"0" reinforce:'none shipTable:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;) }	}
 						))
 					)
 			</OnGlobalStartDiagnostics>

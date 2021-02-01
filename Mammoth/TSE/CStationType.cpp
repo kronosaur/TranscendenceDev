@@ -177,9 +177,16 @@
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
 #define PROPERTY_REPAIR_ARMOR_RATE				CONSTLIT("repairArmorRate")
 #define PROPERTY_REPAIR_ARMOR_RATE_EXPLICIT		CONSTLIT("repairArmorRateExplicit")
+#define PROPERTY_SHIP_TABLE						CONSTLIT("shipTable")
+#define PROPERTY_SHIP_CONSTRUCTION_MAX_COUNT	CONSTLIT("shipConstructionMaxCount")
+#define PROPERTY_SHIP_CONSTRUCTION_RATE			CONSTLIT("shipConstructionRate")
+#define PROPERTY_SHIP_CONSTRUCTION_TABLE		CONSTLIT("shipConstructionTable")
+#define PROPERTY_SHIP_ENCOUNTER_TABLE			CONSTLIT("shipEncounterTable")
+#define PROPERTY_SHIP_REINFORCEMENTS_TABLE		CONSTLIT("shipReinforcementsTable")
 #define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
+#define PROPERTY_SQUADRON_DESC					CONSTLIT("squadronDesc")
 #define PROPERTY_STD_TREASURE					CONSTLIT("stdTreasure")
 #define PROPERTY_SYSTEM_CRITERIA				CONSTLIT("systemCriteria")
 #define PROPERTY_TREASURE_DESIRED_VALUE			CONSTLIT("treasureDesiredValue")
@@ -302,15 +309,6 @@ CStationType::~CStationType (void)
 	if (m_pItems)
 		delete m_pItems;
 
-	if (m_pInitialShips)
-		delete m_pInitialShips;
-
-	if (m_pReinforcements)
-		delete m_pReinforcements;
-
-	if (m_pConstruction)
-		delete m_pConstruction;
-
 	if (m_pEncounters)
 		delete m_pEncounters;
 
@@ -405,12 +403,9 @@ Metric CStationType::CalcDefenderStrength (int iLevel) const
 //	1.0 = 1 defender of station level.
 
 	{
-	Metric rTotal = 0.0;
-
 	//	Add ship defenders
 
-	if (m_pInitialShips)
-		rTotal += m_pInitialShips->GetAverageLevelStrength(iLevel);
+	Metric rTotal = m_Squadrons.CalcDefenderStrength(iLevel);
 
 	//	Add satellite defenses
 
@@ -1232,30 +1227,6 @@ CItem CStationType::GetPrimaryWeapon (void) const
 		return CItem();
 	}
 
-IShipGenerator *CStationType::GetReinforcementsTable (void)
-
-//	GetReinforcementsTable
-//
-//	Return the reinforcements table.
-	
-	{
-	//	If we have a ship count structure, then we always use the main ship 
-	//	table.
-
-	if (m_DefenderCount.GetCountType() == CShipChallengeDesc::countStanding)
-		return m_pInitialShips;
-
-	//	Otherwise, if we have an explicit reinforcements table, use that.
-
-	else if (m_pReinforcements)
-		return m_pReinforcements;
-
-	//	Otherwise, we use the main table.
-
-	else
-		return m_pInitialShips;
-	}
-
 const CIntegralRotationDesc &CStationType::GetRotationDesc (void)
 
 //	GetRotationDesc
@@ -1377,20 +1348,13 @@ void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(strToInt(m_pAbandonedDockScreen.GetUNID(), 0), true);
 	retTypesUsed->SetAt(m_dwDefaultBkgnd, true);
 
+	m_Squadrons.AddTypesUsed(*retTypesUsed);
+
 	if (m_pSatellitesDesc)
 		AddTypesUsedByXML(m_pSatellitesDesc, retTypesUsed);
 
-	if (m_pInitialShips)
-		m_pInitialShips->AddTypesUsed(retTypesUsed);
-
-	if (m_pReinforcements)
-		m_pReinforcements->AddTypesUsed(retTypesUsed);
-
 	if (m_pEncounters)
 		m_pEncounters->AddTypesUsed(retTypesUsed);
-
-	if (m_pConstruction)
-		m_pConstruction->AddTypesUsed(retTypesUsed);
 
 	retTypesUsed->SetAt(m_pExplosionType.GetUNID(), true);
 	retTypesUsed->SetAt(m_pEjectaType.GetUNID(), true);
@@ -1467,17 +1431,8 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Ships
 
-	if (m_pInitialShips)
-		if (error = m_pInitialShips->OnDesignLoadComplete(Ctx))
-			return ComposeLoadError(Ctx, Ctx.sError);
-
-	if (m_pReinforcements)
-		if (error = m_pReinforcements->OnDesignLoadComplete(Ctx))
-			return ComposeLoadError(Ctx, Ctx.sError);
-
-	if (m_pConstruction)
-		if (error = m_pConstruction->OnDesignLoadComplete(Ctx))
-			return ComposeLoadError(Ctx, Ctx.sError);
+	if (!m_Squadrons.BindDesign(Ctx))
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pEncounters)
 		if (error = m_pEncounters->OnDesignLoadComplete(Ctx))
@@ -1522,13 +1477,10 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 			&& (m_pDevices == NULL)
 			&& (GetAbandonedScreen() == NULL)
 			&& (GetFirstDockScreen() == NULL)
-			&& (m_pInitialShips == NULL)
-			&& (m_pReinforcements == NULL)
+			&& m_Squadrons.IsEmpty()
 			&& (m_pEncounters == NULL)
-			&& (m_pConstruction == NULL)
 			&& (m_pItems == NULL)
 			&& (m_pTrade == NULL)
-			&& m_ShipRegen.IsEmpty()
 			&& !HasEvents()
 			&& (m_pBarrierEffect == NULL)
 			&& !m_fMobile
@@ -1875,69 +1827,14 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_fCommsHandlerInit = false;
 
-	//	Load initial ships
+	//	Load squadron desc
 
-	m_fBuildReinforcements = false;
+	if (!m_Squadrons.InitFromXML(Ctx, *pDesc))
+		return ERR_FAIL;
 
-	CXMLElement *pShips = pDesc->GetContentElementByTag(SHIPS_TAG);
-	if (pShips)
-		{
-		if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pShips, &m_pInitialShips))
-			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Ships>: %s"), Ctx.sError));
+	//	Load satellites
 
-		//	See if we have a challenge rating; in that case, we use it as both
-		//	initial ships and reinforcements.
-
-		CString sCount;
-		if (pShips->FindAttribute(CHALLENGE_ATTRIB, &sCount))
-			{
-			if (!m_DefenderCount.InitFromChallengeRating(sCount))
-				return ComposeLoadError(Ctx, CONSTLIT("Invalid challenge attribute in <Ships>"));
-			}
-
-		//	If defined, we use this count to create initial ships AND reinforcements.
-
-		else if (pShips->FindAttribute(STANDING_COUNT_ATTRIB, &sCount))
-			{
-			if (!m_DefenderCount.Init(CShipChallengeDesc::countStanding, sCount))
-				return ComposeLoadError(Ctx, CONSTLIT("Invalid count attribute in <Ships>"));
-			}
-
-		//	Otherwise, see if we define minShips, in which case we use that value for
-		//	reinforcements only.
-
-		else if (pShips->FindAttribute(MIN_SHIPS_ATTRIB, &sCount))
-			{
-			if (!m_DefenderCount.Init(CShipChallengeDesc::countReinforcements, sCount))
-				return ComposeLoadError(Ctx, CONSTLIT("Invalid count attribute in <Ships>"));
-			}
-
-		//	Build instead of gate in
-
-		bool bValue;
-		if (pShips->FindAttributeBool(BUILD_REINFORCEMENTS_ATTRIB, &bValue) && bValue)
-			m_fBuildReinforcements = true;
-		}
-
-	//	Load reinforcements
-
-	CXMLElement *pReinforcements = m_pDesc->GetContentElementByTag(REINFORCEMENTS_TAG);
-	if (pReinforcements)
-		{
-		if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pReinforcements, &m_pReinforcements))
-			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Reinforcements>: %s"), Ctx.sError));
-
-		//	Figure out the minimum number of reinforcements at this base
-
-		if (!m_DefenderCount.Init(CShipChallengeDesc::countReinforcements, pReinforcements->GetAttribute(MIN_SHIPS_ATTRIB)))
-			return ComposeLoadError(Ctx, CONSTLIT("Invalid count attribute in <Reinforcements>"));
-
-		//	Build instead of gate in
-
-		bool bValue;
-		if (pReinforcements->FindAttributeBool(BUILD_REINFORCEMENTS_ATTRIB, &bValue) && bValue)
-			m_fBuildReinforcements = true;
-		}
+	m_pSatellitesDesc = pDesc->GetContentElementByTag(SATELLITES_TAG);
 
 	//	Load encounter table
 
@@ -1957,22 +1854,6 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_iEncounterFrequency = GetFrequency(pDesc->GetAttribute(RANDOM_ENCOUNTERS_ATTRIB));
 		m_pEncounters = NULL;
 		}
-
-	//	Load construction table
-
-	CXMLElement *pConstruction = m_pDesc->GetContentElementByTag(CONSTRUCTION_TAG);
-	if (pConstruction)
-		{
-		if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pConstruction, &m_pConstruction))
-			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Construction>: %s"), Ctx.sError));
-
-		m_iShipConstructionRate = pConstruction->GetAttributeInteger(CONSTRUCTION_RATE_ATTRIB);
-		m_iMaxConstruction = pConstruction->GetAttributeInteger(MAX_CONSTRUCTION_ATTRIB);
-		}
-
-	//	Load satellites
-
-	m_pSatellitesDesc = pDesc->GetContentElementByTag(SATELLITES_TAG);
 
 	//	Explosion
 
@@ -2065,7 +1946,7 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_DEFENDER_COMBAT_STRENGTH_TARGET))
 		{
-		Metric rStrength = m_DefenderCount.GetChallengeStrength(GetLevel());
+		Metric rStrength = m_Squadrons.GetChallengeStrength(GetLevel());
 		if (rStrength)
 			return ICCItemPtr(rStrength);
 		else
@@ -2153,6 +2034,29 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 			return ICCItemPtr(rHP);
 		}
 
+	else if (strEquals(sProperty, PROPERTY_SHIP_TABLE))
+		return m_Squadrons.GetInitialShipsReferenced(GetUniverse());
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_CONSTRUCTION_RATE))
+		return ICCItemPtr::IntegerOrNil(m_Squadrons.GetConstructionRate());
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_CONSTRUCTION_MAX_COUNT))
+		return ICCItemPtr::IntegerOrNil(m_Squadrons.GetConstructionMaxCount());
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_CONSTRUCTION_TABLE))
+		return m_Squadrons.GetConstructionShipsReferenced(GetUniverse());
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_ENCOUNTER_TABLE))
+		{
+		if (m_pEncounters)
+			return m_pEncounters->GetShipsReferenced(GetUniverse());
+		else
+			return ICCItemPtr::Nil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_SHIP_REINFORCEMENTS_TABLE))
+		return m_Squadrons.GetReinforcementShipsReferenced(GetUniverse());
+
 	else if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))
 		return ICCItemPtr(ShowsUnexploredAnnotation());
 
@@ -2166,6 +2070,9 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 		return m_pSovereign->GetProperty(Ctx, PROPERTY_NAME);
 		}
+	else if (strEquals(sProperty, PROPERTY_SQUADRON_DESC))
+		return m_Squadrons.GetDesc(GetUniverse());
+
 	else if (strEquals(sProperty, PROPERTY_STD_TREASURE))
 		{
 		Metric rTreasure = (Metric)GetBalancedTreasure();

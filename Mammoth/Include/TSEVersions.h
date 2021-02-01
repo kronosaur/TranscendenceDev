@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							51;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					198;
+constexpr DWORD SYSTEM_SAVE_VERSION =					199;
 
 //	Uncomment out the following define when building a stable release
 
@@ -717,3 +717,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					198;
 //
 //	198: 1.9 Beta 4
 //		Remove m_iStealth from CShip
+//
+//	199: 1.9 Beta 4
+//		Added m_SquadronID for CShip

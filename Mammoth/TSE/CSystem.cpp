@@ -1016,7 +1016,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 		if (pObj)
 			{
 			pObj->LoadObjReferences(Ctx.pSystem);
-			pObj->OnSystemLoaded();
+			pObj->OnSystemLoaded(Ctx);
 
 			pObj->FireOnLoad(Ctx);
 			}

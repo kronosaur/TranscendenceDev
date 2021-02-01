@@ -392,6 +392,9 @@
     <ClInclude Include="StationImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEStationImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1578,6 +1581,18 @@
     </ClCompile>
     <ClCompile Include="CTradingServices.cpp">
       <Filter>Source Files\Trading</Filter>
+    </ClCompile>
+    <ClCompile Include="CSquadronDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CSquadronDescList.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CSquadronController.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CSquadronID.cpp">
+      <Filter>Source Files\Ships</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

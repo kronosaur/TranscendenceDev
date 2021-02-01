@@ -90,23 +90,23 @@
 	<Library unid="&unidRPGLibrary;"/>
 	<Library unid="&unidHumanSpaceLibrary;"/>
 
+	<Module filename="ArmorClassTests.xml"/>
 	<Module filename="DesignTypeTests.xml"/>
 	<Module filename="DockScreenTests.xml"/>
 	<Module filename="FunctionTests.xml"/>
 	<Module filename="ItemEnhancementUnitTests.xml"/>
 	<Module filename="ItemUnitTests.xml"/>
 	<Module filename="MissionUnitTests.xml"/>
+	<Module filename="OverlayTests.xml"/>
 	<Module filename="RadiationTests.xml"/>
 	<Module filename="RPGUnitTests.xml"/>
 	<Module filename="ShipClassTests.xml"/>
+	<Module filename="StationTypeTests.xml"/>
 	<Module filename="SystemFunctionTests.xml"/>
-	<Module filename="TestArmorClasses.xml"/>
 	<Module filename="TestItems.xml"/>
 	<Module filename="TestMissions.xml"/>
-	<Module filename="TestOverlays.xml"/>
-	<Module filename="TestStationTypes.xml"/>
-	<Module filename="TestTSE.xml"/>
 	<Module filename="TopologyTests.xml"/>
+	<Module filename="TSETests.xml"/>
 
 <!-- DIAGNOSTICS -->
 
