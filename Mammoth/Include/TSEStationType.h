@@ -295,6 +295,9 @@ class CStationEncounterOverrideTable
 class CSquadronDesc
 	{
 	public:
+		static constexpr int DEFAULT_INTERVAL_SECONDS = 20;
+		static constexpr int DEFAULT_INTERVAL_TICKS = DEFAULT_INTERVAL_SECONDS * g_TicksPerSecond;
+
 		CSquadronDesc () { }
 		CSquadronDesc (const CSquadronDesc &Src) = delete;
 		CSquadronDesc (CSquadronDesc &&Src) noexcept { Move(Src); }
@@ -312,6 +315,8 @@ class CSquadronDesc
 		Metric GetChallengeStrength (int iLevel) const { return m_Count.GetChallengeStrength(iLevel); }
 		const CShipChallengeDesc &GetChallengeDesc () const { return m_Count; }
 		const CShipChallengeDesc &GetReinforceDesc () const { return m_Reinforcement; }
+		DWORD GetReinforceInterval () const { return (DWORD)m_iReinforceInterval; }
+		int GetReinforceLimit () const { return m_iReinforceLimit; }
 		const IShipGenerator *GetConstructionTable () const { return m_pConstruction; }
 		const CString &GetID () const { return m_sID; }
 		const IShipGenerator *GetInitialShips () const { return m_pShipTable; }
@@ -330,13 +335,14 @@ class CSquadronDesc
 		CShipChallengeDesc m_Count;						//	Squadron should have this number of ships
 		CShipChallengeDesc m_Reinforcement;				//	Defines when reinforcements are called
 		IShipGenerator *m_pShipTable = NULL;			//	Ships at creation time
+		int m_iReinforceLimit = 0;						//	If >0, we stop after this number of reinforcement calls
+		int m_iReinforceInterval = DEFAULT_INTERVAL_TICKS;
+		bool m_bBuildReinforcements = false;			//	Build instead of gating
 
 		IShipGenerator *m_pReinforcements = NULL;		//	Reinforcements table
 		IShipGenerator *m_pConstruction = NULL;			//	Ships built by station
 		int m_iShipConstructionRate = 0;				//	Ticks between each construction
 		int m_iMaxConstruction = 0;						//	Stop building when we get this many ships
-
-		bool m_bBuildReinforcements = false;			//	Build instead of gating
 	};
 
 class CSquadronDescList

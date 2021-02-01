@@ -43,6 +43,7 @@ class CSquadronController
 			CSpaceObjectList Squadron;					//	List of squadron members
 
 			DWORD dwLastReinforcementRequestOn = 0;		//	Tick on which we last requested
+			int iTotalReinforceCount = 0;				//	Total requests for reinforcements
 			int iReinforceRequestCount = 0;				//	Consecutive requests for reinforcements
 			int iTotalDestroyed = 0;					//	Ships destroyed in total
 			};
@@ -51,6 +52,7 @@ class CSquadronController
 		SSquadronEntry *GetAt (const CString &sID);
 		SSquadronEntry &SetAt (const CSquadronDesc &SquadronDesc);
 		void Update (SUpdateCtx &Ctx, const CSquadronDesc &Desc);
+		void UpdateConstruction (SUpdateCtx &Ctx, const CSquadronDesc &Desc, const IShipGenerator &ConstructionTable);
 
 		TArray<SSquadronEntry> m_Squadrons;
 	};

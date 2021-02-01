@@ -189,6 +189,7 @@ void CSquadronController::ReadFromStream (SLoadCtx &Ctx, const CSquadronDescList
 //	CSpaceObjectList	Squadron
 //	DWORD				dwLastReinforceRequestOn
 //	DWORD				iReinforceRequestCount
+//	DWORD				iTotalReinforceCount
 //	DWORD				iTotalDestroyed
 
 	{
@@ -202,6 +203,7 @@ void CSquadronController::ReadFromStream (SLoadCtx &Ctx, const CSquadronDescList
 		m_Squadrons[i].Squadron.ReadFromStream(Ctx, true);
 		Ctx.pStream->Read(m_Squadrons[i].dwLastReinforcementRequestOn);
 		Ctx.pStream->Read(m_Squadrons[i].iReinforceRequestCount);
+		Ctx.pStream->Read(m_Squadrons[i].iTotalReinforceCount);
 		Ctx.pStream->Read(m_Squadrons[i].iTotalDestroyed);
 
 		//	NOTE: This might come back NULL if we changed the squadron 
@@ -249,9 +251,26 @@ void CSquadronController::Update (SUpdateCtx &Ctx, const CSquadronDescList &Desc
 //	Called during update.
 
 	{
-	for (int i = 0; i < Desc.GetCount(); i++)
+	//	Normal reinforcements
+
+	if ((Ctx.iTick % STATION_REINFORCEMENT_FREQUENCY) == 0
+			&& !Ctx.bNoReinforcements)
 		{
-		Update(Ctx, Desc.GetSquadron(i));
+		for (int i = 0; i < Desc.GetCount(); i++)
+			Update(Ctx, Desc.GetSquadron(i));
+		}
+
+	//	Backwards compatible construction
+
+	const IShipGenerator *pConstructionTable;
+	int iConstructionRate;
+	if (Desc.GetCount() == 1 
+			&& (pConstructionTable = Desc.GetSquadron(0).GetConstructionTable())
+			&& (iConstructionRate = Desc.GetSquadron(0).GetShipConstructionRate())
+			&& ((Ctx.iTick % iConstructionRate) == 0)
+			&& !Ctx.bNoConstruction)
+		{
+		UpdateConstruction(Ctx, Desc.GetSquadron(0), *pConstructionTable);
 		}
 	}
 
@@ -262,103 +281,117 @@ void CSquadronController::Update (SUpdateCtx &Ctx, const CSquadronDesc &Desc)
 //	Updates a single squadron descriptor.
 
 	{
-	//	Construction
+	const IShipGenerator *pReinforcements = Desc.GetReinforcementsTable();
+	if (!pReinforcements)
+		return;
 
-	if (Desc.GetShipConstructionRate()
-			&& !Ctx.bNoConstruction
-			&& (Ctx.iTick % Desc.GetShipConstructionRate()) == 0)
+	SSquadronEntry &Entry = SetAt(Desc);
+
+	//	Short-circuit certain cases.
+
+	if (Desc.GetReinforceLimit() && Entry.iTotalReinforceCount >= Desc.GetReinforceLimit())
+		{ }
+	else if (Entry.dwLastReinforcementRequestOn 
+			&& Entry.dwLastReinforcementRequestOn + Desc.GetReinforceInterval() < Ctx.SourceObj.GetUniverse().GetTicks())
+		{ }
+
+	//	If we have successfully received some reinforcements, reset the counter
+	//	because it means at least some reinforcements are getting through.
+
+	else if (!Desc.GetChallengeDesc().NeedsMoreReinforcements(Ctx.SourceObj, Entry.Squadron, Desc.GetReinforceDesc()))
 		{
-		if (const IShipGenerator *pConstruction = Desc.GetConstructionTable())
-			{
-			SSquadronEntry &Entry = SetAt(Desc);
+		//	We have successfully received some reinforcements, so reset the 
+		//	counter.
 
-			//	Iterate over all ships and count the number that are
-			//	associated with the station.
-
-			int iCount = Entry.Squadron.GetCount();
-
-			//	If we already have the maximum number, then don't bother
-
-			if (iCount < Desc.GetShipConstructionMax())
-				{
-				SShipCreateCtx CreateCtx;
-				CreateCtx.pSystem = Ctx.SourceObj.GetSystem();
-				CreateCtx.pBase = &Ctx.SourceObj;
-				CreateCtx.pGate = &Ctx.SourceObj;
-				CreateCtx.SquadronID = CSquadronID(Ctx.SourceObj.GetID(), Entry.sID);
-				CreateCtx.dwFlags = SShipCreateCtx::RETURN_RESULT;
-
-				pConstruction->CreateShips(CreateCtx);
-
-				//	Add new ships to squadron
-
-				for (int i = 0; i < CreateCtx.Result.GetCount(); i++)
-					{
-					CSpaceObject *pNewShip = CreateCtx.Result.GetObj(i);
-					if (pNewShip->GetSquadronID().GetLeaderID() == Ctx.SourceObj.GetID())
-						Entry.Squadron.FastAdd(pNewShip);
-					}
-				}
-			}
+		Entry.iReinforceRequestCount = 0;
 		}
 
-	//	Get reinforcements
+	//	Request reinforcements.
 
-	if ((Ctx.iTick % STATION_REINFORCEMENT_FREQUENCY) == 0
-			&& !Ctx.bNoReinforcements)
+	else
 		{
-		if (const IShipGenerator *pReinforcements = Desc.GetReinforcementsTable())
+		//	If we've requested several rounds of reinforcements but have
+		//	never received any, then it's likely that they are being
+		//	destroyed at the gate, so we stop requesting so many
+
+		if (Entry.iReinforceRequestCount > 0)
 			{
-			SSquadronEntry &Entry = SetAt(Desc);
+			int iLongTick = (Ctx.iTick / STATION_REINFORCEMENT_FREQUENCY);
+			int iCycle = Min(32, Entry.iReinforceRequestCount * Entry.iReinforceRequestCount);
+			if ((iLongTick % iCycle) != 0)
+				return;
+			}
 
-			if (Desc.GetChallengeDesc().NeedsMoreReinforcements(Ctx.SourceObj, Entry.Squadron, Desc.GetReinforceDesc()))
-				{
-				//	If we've requested several rounds of reinforcements but have
-				//	never received any, then it's likely that they are being
-				//	destroyed at the gate, so we stop requesting so many
+		//	We either bring in ships from the nearest gate or we build
+		//	them ourselves.
 
-				if (Entry.iReinforceRequestCount > 0)
-					{
-					int iLongTick = (Ctx.iTick / STATION_REINFORCEMENT_FREQUENCY);
-					int iCycle = Min(32, Entry.iReinforceRequestCount * Entry.iReinforceRequestCount);
-					if ((iLongTick % iCycle) != 0)
-						return;
-					}
+		CSpaceObject *pGate;
+		if (Desc.BuildsReinforcements()
+				|| (pGate = Ctx.SourceObj.GetNearestStargate(true)) == NULL)
+			pGate = &Ctx.SourceObj;
 
-				//	We either bring in ships from the nearest gate or we build
-				//	them ourselves.
+		//	Generate reinforcements
 
-				CSpaceObject *pGate;
-				if (Desc.BuildsReinforcements()
-						|| (pGate = Ctx.SourceObj.GetNearestStargate(true)) == NULL)
-					pGate = &Ctx.SourceObj;
+		SShipCreateCtx CreateCtx;
+		CreateCtx.pSystem = Ctx.SourceObj.GetSystem();
+		CreateCtx.pBase = &Ctx.SourceObj;
+		CreateCtx.pGate = pGate;
+		CreateCtx.SquadronID = CSquadronID(Ctx.SourceObj.GetID(), Entry.sID);
+		CreateCtx.dwFlags = SShipCreateCtx::RETURN_RESULT;
 
-				//	Generate reinforcements
+		pReinforcements->CreateShips(CreateCtx);
 
-				SShipCreateCtx CreateCtx;
-				CreateCtx.pSystem = Ctx.SourceObj.GetSystem();
-				CreateCtx.pBase = &Ctx.SourceObj;
-				CreateCtx.pGate = pGate;
-				CreateCtx.SquadronID = CSquadronID(Ctx.SourceObj.GetID(), Entry.sID);
-				CreateCtx.dwFlags = SShipCreateCtx::RETURN_RESULT;
+		//	Add new ships to squadron
 
-				pReinforcements->CreateShips(CreateCtx);
+		for (int i = 0; i < CreateCtx.Result.GetCount(); i++)
+			{
+			CSpaceObject *pNewShip = CreateCtx.Result.GetObj(i);
+			if (pNewShip->GetSquadronID().GetLeaderID() == Ctx.SourceObj.GetID())
+				Entry.Squadron.FastAdd(pNewShip);
+			}
 
-				//	Add new ships to squadron
+		//	Increment counters
 
-				for (int i = 0; i < CreateCtx.Result.GetCount(); i++)
-					{
-					CSpaceObject *pNewShip = CreateCtx.Result.GetObj(i);
-					if (pNewShip->GetSquadronID().GetLeaderID() == Ctx.SourceObj.GetID())
-						Entry.Squadron.FastAdd(pNewShip);
-					}
+		Entry.dwLastReinforcementRequestOn = Ctx.SourceObj.GetUniverse().GetTicks();
+		Entry.iTotalReinforceCount++;
+		Entry.iReinforceRequestCount++;
+		}
+	}
 
-				//	Increment counter
+void CSquadronController::UpdateConstruction (SUpdateCtx &Ctx, const CSquadronDesc &Desc, const IShipGenerator &ConstructionTable)
 
-				Entry.iReinforceRequestCount++;
-				}
-			else
-				Entry.iReinforceRequestCount = 0;
+//	UpdateConstruction
+//
+//	Updates backwards compatible construction.
+
+	{
+	SSquadronEntry &Entry = SetAt(Desc);
+
+	//	Iterate over all ships and count the number that are
+	//	associated with the station.
+
+	int iCount = Entry.Squadron.GetCount();
+
+	//	If we already have the maximum number, then don't bother
+
+	if (iCount < Desc.GetShipConstructionMax())
+		{
+		SShipCreateCtx CreateCtx;
+		CreateCtx.pSystem = Ctx.SourceObj.GetSystem();
+		CreateCtx.pBase = &Ctx.SourceObj;
+		CreateCtx.pGate = &Ctx.SourceObj;
+		CreateCtx.SquadronID = CSquadronID(Ctx.SourceObj.GetID(), Entry.sID);
+		CreateCtx.dwFlags = SShipCreateCtx::RETURN_RESULT;
+
+		ConstructionTable.CreateShips(CreateCtx);
+
+		//	Add new ships to squadron
+
+		for (int i = 0; i < CreateCtx.Result.GetCount(); i++)
+			{
+			CSpaceObject *pNewShip = CreateCtx.Result.GetObj(i);
+			if (pNewShip->GetSquadronID().GetLeaderID() == Ctx.SourceObj.GetID())
+				Entry.Squadron.FastAdd(pNewShip);
 			}
 		}
 	}
@@ -372,6 +405,7 @@ void CSquadronController::WriteToStream (IWriteStream &Stream) const
 //	CSpaceObjectList	Squadron
 //	DWORD				dwLastReinforceRequestOn
 //	DWORD				iReinforceRequestCount
+//	DWORD				iTotalReinforceCount
 //	DWORD				iTotalDestroyed
 
 	{
@@ -384,6 +418,7 @@ void CSquadronController::WriteToStream (IWriteStream &Stream) const
 		m_Squadrons[i].Squadron.WriteToStream(&Stream);
 		Stream.Write(m_Squadrons[i].dwLastReinforcementRequestOn);
 		Stream.Write(m_Squadrons[i].iReinforceRequestCount);
+		Stream.Write(m_Squadrons[i].iTotalReinforceCount);
 		Stream.Write(m_Squadrons[i].iTotalDestroyed);
 		}
 	}

@@ -51,50 +51,49 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 //	Returns a descriptor (usually for debugging).
 
 	{
-	ICCItemPtr pResult(ICCItem::SymbolTable);
-
 	//	Add type
 
+	CString sType;
 	switch (m_iType)
 		{
 		case countNone:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("none"));
+			sType = CONSTLIT("none");
 			break;
 
 		case countAuto:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("auto"));
+			sType = CONSTLIT("auto");
 			break;
 
 		case countProperty:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("property"));
+			sType = CONSTLIT("property");
 			break;
 			
 		case countScore:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("score"));
+			sType = CONSTLIT("score");
 			break;
 			
 		case countShips:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("ships"));
+			sType = CONSTLIT("ships");
 			break;
 			
 		case countChallengeEasy:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("challengeEasy"));
+			sType = CONSTLIT("challengeEasy");
 			break;
 			
 		case countChallengeStandard:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("challengeStandard"));
+			sType = CONSTLIT("challengeStandard");
 			break;
 			
 		case countChallengeHard:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("challengeHard"));
+			sType = CONSTLIT("challengeHard");
 			break;
 			
 		case countChallengeDeadly:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("challengeDealy"));
+			sType = CONSTLIT("challengeDealy");
 			break;
 
 		default:
-			pResult->SetStringAt(CONSTLIT("type"), CONSTLIT("unknown"));
+			sType = CONSTLIT("unknown");
 			break;
 		}
 
@@ -103,19 +102,30 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 	switch (m_iType)
 		{
 		case countScore:
-		case countShips:
 			{
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("type"), sType);
+
 			int iCount;
 			if (pBase)
 				iCount = m_Count.RollSeeded(pBase->GetDestiny());
 			else
 				iCount = m_Count.GetAveValue();
 
-			if (m_iType == countScore)
-				pResult->SetIntegerAt(CONSTLIT("score"), iCount);
+			pResult->SetIntegerAt(CONSTLIT("score"), iCount);
+
+			return pResult;
+			}
+
+		case countShips:
+			{
+			if (pBase)
+				{
+				int iCount = m_Count.RollSeeded(pBase->GetDestiny());
+				return ICCItemPtr(iCount);
+				}
 			else
-				pResult->SetIntegerAt(CONSTLIT("count"), iCount);
-			break;
+				return ICCItemPtr(m_Count.SaveToXML());
 			}
 
 		case countChallengeEasy:
@@ -125,18 +135,25 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 			{
 			if (pBase)
 				{
+				ICCItemPtr pResult(ICCItem::SymbolTable);
+				pResult->SetStringAt(CONSTLIT("type"), sType);
+
 				Metric rStrength = CalcChallengeStrength(m_iType, pBase->GetSystem()->GetLevel());
 				pResult->SetDoubleAt(CONSTLIT("strength"), rStrength);
+
+				return pResult;
 				}
-			break;
+			else
+				return ICCItemPtr(sType);
 			}
 
 		case countProperty:
-			pResult->SetStringAt(CONSTLIT("property"), m_sValue);
+			return ICCItemPtr(strPatternSubst(CONSTLIT("property:%s"), m_sValue));
 			break;
-		}
 
-	return pResult;
+		default:
+			return ICCItemPtr(sType);
+		}
 	}
 
 bool CShipChallengeDesc::Init (ECountTypes iType, int iCount)

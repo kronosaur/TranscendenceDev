@@ -14,6 +14,8 @@
 #define MAX_CONSTRUCTION_ATTRIB					CONSTLIT("maxConstruction")
 #define REINFORCE_ATTRIB						CONSTLIT("reinforce")
 #define REINFORCE_FROM_ATTRIB					CONSTLIT("reinforceFrom")
+#define REINFORCE_LIMIT_ATTRIB					CONSTLIT("reinforceLimit")
+#define REINFORCE_MIN_INTERVAL_ATTRIB			CONSTLIT("reinforceMinInterval")
 #define STANDING_COUNT_ATTRIB					CONSTLIT("standingCount")
 #define TABLE_ATTRIB							CONSTLIT("table")
 
@@ -110,7 +112,13 @@ ICCItemPtr CSquadronDesc::GetDesc (CUniverse &Universe) const
 	pResult->SetStringAt(CONSTLIT("id"), m_sID);
 	pResult->SetAt(CONSTLIT("count"), m_Count.GetDesc());
 	pResult->SetAt(CONSTLIT("reinforce"), m_Reinforcement.GetDesc());
-	
+
+	if (m_iReinforceInterval != DEFAULT_INTERVAL_TICKS)
+		pResult->SetIntegerAt(CONSTLIT("reinforceInterval"), m_iReinforceInterval / g_TicksPerSecond);
+
+	if (m_iReinforceLimit)
+		pResult->SetIntegerAt(CONSTLIT("reinforceLimit"), m_iReinforceLimit);
+
 	if (m_pShipTable)
 		pResult->SetAt(CONSTLIT("shipTable"), m_pShipTable->GetShipsReferenced(Universe));
 
@@ -321,6 +329,9 @@ bool CSquadronDesc::InitFromXML (SDesignLoadCtx &Ctx, const CString &sID, const 
 		Ctx.sError = strPatternSubst(CONSTLIT("Squadron %s: Invalid reinforceFrom parameter: %s."), sID, sBuild);
 		return false;
 		}
+
+	m_iReinforceInterval = Desc.GetAttributeIntegerBounded(REINFORCE_MIN_INTERVAL_ATTRIB, 1, -1, DEFAULT_INTERVAL_SECONDS) * g_TicksPerSecond;
+	m_iReinforceLimit = Desc.GetAttributeIntegerBounded(REINFORCE_LIMIT_ATTRIB, 0, -1, 0);
 
 	//	If we have a table referenced, then we use this as the ship table.
 
