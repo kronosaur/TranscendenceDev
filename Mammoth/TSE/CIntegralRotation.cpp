@@ -265,6 +265,14 @@ void CIntegralRotation::ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDe
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_iRotationSpeed = (int)dwLoad;
 
+	//	Convert from older constants
+
+	if (Ctx.dwVersion < 200)
+		{
+		m_iRotationFrame = mathRound((Metric)CIntegralRotationDesc::ROTATION_FRACTION * (Metric)m_iRotationFrame / (Metric)ROTATION_FRACTION_OLD);
+		m_iRotationSpeed = mathRound((Metric)CIntegralRotationDesc::ROTATION_FRACTION * (Metric)m_iRotationSpeed / (Metric)ROTATION_FRACTION_OLD);
+		}
+
 	//	Make sure our frame is within bounds; this can change if the ship's
 	//	rotation count is altered in the XML.
 

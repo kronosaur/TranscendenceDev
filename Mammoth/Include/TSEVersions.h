@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							51;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					199;
+constexpr DWORD SYSTEM_SAVE_VERSION =					200;
 
 //	Uncomment out the following define when building a stable release
 
@@ -720,3 +720,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					199;
 //
 //	199: 1.9 Beta 4
 //		Added m_SquadronID for CShip
+//
+//	200: 1.9 Beta 4
+//		Changed CIntegralRotationDesc::ROTATION_FRACTION

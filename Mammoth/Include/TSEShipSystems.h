@@ -479,7 +479,10 @@ class CRotationDesc
 class CIntegralRotationDesc
 	{
 	public:
-		static constexpr int ROTATION_FRACTION =	1024;
+		//	This is 3x360. For 120 rotation frames, this ends up being 360 
+		//	values per degree.
+
+		static constexpr int ROTATION_FRACTION =		1080;
 
 		CIntegralRotationDesc (void) { }
 		explicit CIntegralRotationDesc (const CRotationDesc &Desc) { InitFromDesc(Desc); }
@@ -489,6 +492,7 @@ class CIntegralRotationDesc
 		int GetFrameAngle (void) const { return (m_iCount > 0 ? mathRound(360.0 / m_iCount) : 0); }
 		int GetFrameCount (void) const { return m_iCount; }
 		int GetFrameIndex (int iAngle) const { return (m_iCount > 0 ? (m_FacingsData[m_iCount].AngleToFrameIndex[AngleMod(iAngle)]) : 0); }
+		int GetFrameRotationExact (int iAngle) const { return (m_iCount > 0 ? GetFrameRotationExact(m_iCount, iAngle) : 0); }
 		int GetManeuverDelay (void) const;
 		Metric GetManeuverRatio (void) const { return (Metric)m_iMaxRotationRate / ROTATION_FRACTION; }
 		int GetMaxRotationSpeed (void) const { return m_iMaxRotationRate; }
@@ -502,6 +506,7 @@ class CIntegralRotationDesc
 
 		static int GetFrameIndex (int iCount, int iAngle) { return (InitFacingsData(iCount) ? m_FacingsData[iCount].AngleToFrameIndex[AngleMod(iAngle)] : 0); }
 		static int GetRotationAngle (int iCount, int iIndex) { return (InitFacingsData(iCount) ? m_FacingsData[iCount].FrameIndexToAngle[iIndex % iCount] : 0); }
+		static int GetFrameRotationExact (int iCount, int iAngle) { return ROTATION_FRACTION / 360 * iCount * AngleMod(90 + ((int)(0.5 * 360.0 / iCount)) - iAngle); }
 
 	private:
 		struct SFacingsData
@@ -548,6 +553,8 @@ class CIntegralRotation
 		static ICCItemPtr Diagnostics (int iFrameCount, Metric rMaxRotationSpeed, Metric rAccel, Metric rAccelStop);
 
 	private:
+		static constexpr int ROTATION_FRACTION_OLD =	1024;
+
 		int GetFrameIndex (int iFrame) const { return (iFrame / CIntegralRotationDesc::ROTATION_FRACTION); }
 
 		int m_iRotationFrame = 0;				//	Current rotation (in 1/1000ths of a rotation)
