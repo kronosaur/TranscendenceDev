@@ -10,17 +10,6 @@ const Metric MAX_INERTIA_RATIO =				9.0;
 
 CIntegralRotationDesc::SFacingsData CIntegralRotationDesc::m_FacingsData[360 + 1];
 
-CIntegralRotationDesc::CIntegralRotationDesc (void) :
-        m_iCount(20),
-        m_iMaxRotationRate(0),
-        m_iRotationAccel(0),
-        m_iRotationAccelStop(0)
-
-//  CIntegralRotationDesc constructor
-
-    {
-    }
-
 int CIntegralRotationDesc::CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed) const
 
 //	CalcFinalRotationFrame
