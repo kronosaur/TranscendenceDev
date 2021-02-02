@@ -280,7 +280,7 @@ class CInstalledArmor
 		int GetHitPointsPercent (CSpaceObject *pSource);
 		CItem *GetItem (void) const { return m_pItem; }
 		inline int GetLevel (void) const;
-		inline int GetMaxHP (CSpaceObject *pSource) const;
+		inline int GetMaxHP (const CSpaceObject *pSource) const;
 		int GetSect (void) const { return m_iSect; }
 		CSpaceObject *GetSource (void) const { return m_pSource; }
 		int IncCharges (CSpaceObject *pSource, int iChange);

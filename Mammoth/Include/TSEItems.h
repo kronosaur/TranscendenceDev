@@ -163,6 +163,7 @@ class CDeviceItem : public CDifferentiatedItem
 
 		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
 		ECalcTargetTypes CalcTargetType (void) const;
+		TArray<const CItemType *> GetConsumableTypes () const;
 		int GetCyberDefenseLevel () const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);
@@ -505,6 +506,7 @@ class CItemList
 		void DeleteAll (void);
 		void DeleteItem (int iIndex);
 		int GetCount (void) const { return m_List.GetCount(); }
+		int GetCountOf (const CItemType &Type) const;
 		CItem &GetItem (int iIndex) { return *m_List[iIndex]; }
 		const CItem &GetItem (int iIndex) const { return *m_List[iIndex]; }
 		void ReadFromStream (SLoadCtx &Ctx);

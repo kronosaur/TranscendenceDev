@@ -53,6 +53,76 @@ void CSpaceObject::AddTradeOrder (ETradeServiceTypes iService, const CString &sC
 	pTrade->AddOrder(iService, sCriteria, pItemType, iPriceAdj);
 	}
 
+CSpaceObject::SRefitObjCtx CSpaceObject::CalcRefitObjCtx (int iTick, int iRepairCycle) const
+
+//	CalcRefitObjCtx
+//
+//	Returns the object's ability to refit docked ships.
+
+	{
+	SRefitObjCtx Ctx;
+
+	CTradingServices Services(*this);
+	const CRegenDesc &DefaultRepair = GetDefaultShipRepair();
+	if (Services.IsEmpty() && DefaultRepair.IsEmpty())
+		return Ctx;
+
+	//	Figure out the max armor level that we repair. For now we don't handle 
+	//	the case where stations repair a subset of armor types.
+
+	Ctx.iMaxRepairLevel = Services.GetMaxLevel(serviceRepairArmor);
+
+	//	Figure out our repair rate.
+
+	CRegenDesc Repair = Services.GetArmorRepairRate(0, DefaultRepair);
+	Ctx.iMaxHPToRepair = Repair.GetRegen(iTick, iRepairCycle);
+
+	//	Conditions
+
+	Ctx.bDecontaminate = !DefaultRepair.IsEmpty() || Services.HasService(serviceDecontaminate);
+	Ctx.bScrapeOverlays = true;
+
+	//	Consumables
+
+	Ctx.bResupplyAmmo = true;
+
+	//	Done
+
+	return Ctx;
+	}
+
+bool CSpaceObject::CanRefitObj (const CSpaceObject &ShipObj, const SRefitObjCtx &Ctx) const
+
+//	CanRefitObj
+//
+//	Returns TRUE if the station can refit the ship. We return FALSE if we cannot
+//	or if the ship does not need refitting.
+
+	{
+	if (Ctx.bDecontaminate
+			&& ShipObj.GetCondition(ECondition::radioactive))
+		return true;
+
+	const CArmorSystem &Armor = ShipObj.GetArmorSystem();
+	if (Armor.GetMaxLevel() <= Ctx.iMaxRepairLevel
+			&& Ctx.iMaxHPToRepair > 0
+			&& ShipObj.GetVisibleDamage() > 0)
+		return true;
+
+	if (Ctx.bScrapeOverlays
+			&& ShipObj.GetCondition(ECondition::fouled))
+		return true;
+
+	if (Ctx.bResupplyAmmo)
+		{
+		CItemList ConsumablesNeeded = ShipObj.GetConsumablesNeeded(*this);
+		if (ConsumablesNeeded.GetCount())
+			return true;
+		}
+
+	return false;
+	}
+
 CurrencyValue CSpaceObject::ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
 
 //	ChargeMoney
@@ -147,6 +217,62 @@ int CSpaceObject::GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCou
 	//	Otherwise, we will not buy the item
 
 	return -1;
+	}
+
+CItemList CSpaceObject::GetConsumablesNeeded (const CSpaceObject &Base) const
+
+//	GetConsumablesNeeded
+//
+//	Returns a list of consumable items that we need (e.g., ammo) and that we're 
+//	able to acquire from the base.
+
+	{
+	CItemList Needed;
+
+	const CItemList &ItemList = GetItemList();
+	for (int i = 0; i < ItemList.GetCount(); i++)
+		{
+		const CItem &Item = ItemList.GetItem(i);
+		if (!Item.IsInstalled())
+			continue;
+
+		else if (Item.IsDevice())
+			{
+			//	If this is an ammo weapon, then we see how much ammo we have.
+
+			CDeviceItem DeviceItem = Item.AsDeviceItemOrThrow();
+			auto ConsumableTypes = DeviceItem.GetConsumableTypes();
+
+			for (int i = 0; i < ConsumableTypes.GetCount(); i++)
+				{
+				int iAvail = ItemList.GetCountOf(*ConsumableTypes[i]);
+
+				//	If we have any amount of ammo, then we don't need any more
+
+				if (iAvail > 0)
+					continue;
+
+				//	For ammo, we can resupply from a station regardless of 
+				//	whether the station has any.
+
+				else if (ConsumableTypes[i]->IsAmmunition())
+					{
+					Needed.AddItem(CItem(const_cast<CItemType *>(ConsumableTypes[i]), ConsumableTypes[i]->GetNumberAppearing().GetAveValue()));
+					}
+
+				//	For missiles, we resupply only if the station has some,
+				//	and if we're high enough level.
+
+				else if (Base.GetItemList().GetCountOf(*ConsumableTypes[i])
+						&& GetLevel() >= ConsumableTypes[i]->GetLevel())
+					{
+					Needed.AddItem(CItem(const_cast<CItemType *>(ConsumableTypes[i]), ConsumableTypes[i]->GetNumberAppearing().GetAveValue()));
+					}
+				}
+			}
+		}
+
+	return Needed;
 	}
 
 const CEconomyType *CSpaceObject::GetDefaultEconomy (void) const
@@ -520,24 +646,9 @@ void CSpaceObject::RefitDockedObjs (int iTick, int iRepairCycle)
 	if (!pPorts)
 		return;
 
-	CTradingServices Services(*this);
-	const CRegenDesc &DefaultRepair = GetDefaultShipRepair();
-	if (Services.IsEmpty() && DefaultRepair.IsEmpty())
+	SRefitObjCtx RefitCtx(CalcRefitObjCtx(iTick, iRepairCycle));
+	if (RefitCtx.bIsEmpty())
 		return;
-
-	//	Figure out the max armor level that we repair. For now we don't handle 
-	//	the case where stations repair a subset of armor types.
-
-	int iMaxRepairLevel = Services.GetMaxLevel(serviceRepairArmor);
-
-	//	Figure out our repair rate.
-
-	CRegenDesc Repair = Services.GetArmorRepairRate(0, DefaultRepair);
-	int iHPToRepair = Repair.GetRegen(iTick, iRepairCycle);
-
-	//	Radiation
-
-	bool bDecontaminate = !DefaultRepair.IsEmpty() || Services.HasService(serviceDecontaminate);
 
 	//	Loop over all ports and repair docked ships.
 
@@ -549,25 +660,77 @@ void CSpaceObject::RefitDockedObjs (int iTick, int iRepairCycle)
 				|| pObj->IsPlayer())
 			continue;
 
-		//	Decontaminate, if necessary
+		RefitObj(*pObj, RefitCtx);
+		}
+	}
 
-		if (bDecontaminate)
-			pObj->RemoveCondition(ECondition::radioactive, SApplyConditionOptions());
+void CSpaceObject::RefitObj (CSpaceObject &ShipObj, const SRefitObjCtx &Ctx)
 
-		//	See if we can repair the armor. If not, skip
+//	RefitObject
+//
+//	Refits the given object (usually a ship).
 
-		const CArmorSystem *pArmor = pObj->GetArmorSystem();
-		if (pArmor 
-				&& pArmor->GetMaxLevel() <= iMaxRepairLevel
-				&& iHPToRepair > 0)
+	{
+	//	Decontaminate, if necessary
+
+	if (Ctx.bDecontaminate)
+		ShipObj.RemoveCondition(ECondition::radioactive, SApplyConditionOptions());
+
+	//	See if we can repair the armor. If not, skip
+
+	const CArmorSystem *pArmor = ShipObj.GetArmorSystem();
+	if (pArmor 
+			&& pArmor->GetMaxLevel() <= Ctx.iMaxRepairLevel
+			&& Ctx.iMaxHPToRepair > 0)
+		{
+		ShipObj.RepairDamage(Ctx.iMaxHPToRepair);
+		if (Ctx.bScrapeOverlays)
+			ShipObj.ScrapeOverlays();
+		}
+
+	//	Resupply ammo
+
+	if (Ctx.bResupplyAmmo)
+		{
+		CItemList ConsumablesNeeded = ShipObj.GetConsumablesNeeded(*this);
+
+		for (int i = 0; i < ConsumablesNeeded.GetCount(); i++)
 			{
-			pObj->RepairDamage(iHPToRepair);
-			pObj->ScrapeOverlays();
+			const CItem &Consumable = ConsumablesNeeded.GetItem(i);
+			int iCountToAdd = Consumable.GetCount();
+
+			//	See how much space we have on the ship.
+
+			if (Consumable.GetMass() > 0.0)
+				{
+				Metric rCargoSpaceLeft = ShipObj.GetCargoSpaceLeft();
+				int iFit = (int)(rCargoSpaceLeft / (Consumable.GetMass()));
+				if (iFit < iCountToAdd)
+					iCountToAdd = iFit;
+				}
+
+			//	If this is ammunition, then the station doesn't need to have a
+			//	stock. Otherwise, we can't take more than the station has.
+
+			if (!Consumable.GetType()->IsAmmunition())
+				{
+				int iCountOnStation = GetItemList().GetCountOf(*Consumable.GetType());
+				if (iCountOnStation < iCountToAdd)
+					iCountToAdd = iCountOnStation;
+				}
+
+			//	Add to ship.
+
+			if (iCountToAdd > 0)
+				{
+				ShipObj.AddItem(CItem(Consumable.GetType(), iCountToAdd));
+
+				//	Remove from station
+
+				if (!Consumable.GetType()->IsAmmunition())
+					RemoveItem(CItem(Consumable.GetType(), iCountToAdd), 0);
+				}
 			}
-
-		//	Resupply ammo
-
-
 		}
 	}
 

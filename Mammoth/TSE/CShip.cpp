@@ -3538,7 +3538,7 @@ CCurrencyAndValue CShip::GetTradePrice (const CSpaceObject *pProvider) const
 	return Value;
 	}
 
-int CShip::GetVisibleDamage (void)
+int CShip::GetVisibleDamage (void) const
 
 //	GetVisibleDamage
 //
@@ -3563,12 +3563,12 @@ int CShip::GetVisibleDamage (void)
 
 		for (i = 0; i < GetArmorSectionCount(); i++)
 			{
-			CInstalledArmor *pArmor = GetArmorSection(i);
+			const CInstalledArmor &Armor = GetArmorSection(i);
 
-			int iMaxHP = pArmor->GetMaxHP(this);
+			int iMaxHP = Armor.GetMaxHP(this);
 			iTotalMaxArmor += iMaxHP;
 
-			int iLeft = pArmor->GetHitPoints();
+			int iLeft = Armor.GetHitPoints();
 			iTotalArmorLeft += iLeft;
 
 			int iDamage = (iMaxHP > 0 ? 100 - (iLeft * 100 / iMaxHP) : 100);
@@ -3603,10 +3603,10 @@ int CShip::GetVisibleDamage (void)
 
 		for (i = 0; i < GetArmorSectionCount(); i++)
 			{
-			CInstalledArmor *pArmor = GetArmorSection(i);
+			const CInstalledArmor &Armor = GetArmorSection(i);
 
-			int iMaxHP = pArmor->GetMaxHP(this);
-			int iDamage = (iMaxHP > 0 ? 100 - (pArmor->GetHitPoints() * 100 / iMaxHP) : 100);
+			int iMaxHP = Armor.GetMaxHP(this);
+			int iDamage = (iMaxHP > 0 ? 100 - (Armor.GetHitPoints() * 100 / iMaxHP) : 100);
 			if (iDamage > iMaxPercent)
 				iMaxPercent = iDamage;
 			}

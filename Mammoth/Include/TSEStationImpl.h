@@ -188,7 +188,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
-		virtual int GetVisibleDamage (void) override { return m_Hull.GetVisibleDamage(); }
+		virtual int GetVisibleDamage (void) const override { return m_Hull.GetVisibleDamage(); }
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const override { return m_Hull.GetVisibleDamageDesc(Damage); }
 		virtual CDesignType *GetWreckType (void) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;

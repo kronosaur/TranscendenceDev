@@ -442,6 +442,21 @@ class CSpaceObject
 			bool bShowHighlight = false;
 			};
 
+		struct SRefitObjCtx
+			{
+			bool bIsEmpty () const
+				{
+				return (iMaxHPToRepair == 0 && !bDecontaminate && !bResupplyAmmo);
+				}
+
+			int iMaxRepairLevel = 0;
+			int iMaxHPToRepair = 0;
+
+			bool bDecontaminate = false;
+			bool bResupplyAmmo = false;
+			bool bScrapeOverlays = false;
+			};
+
 		struct SUsableItemOptions
 			{
 			char chUseKey = '\0';
@@ -1097,10 +1112,13 @@ class CSpaceObject
 		void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
 		void AddTradeDesc (const CTradingDesc &Trade);
 		void AddTradeOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj);
+		SRefitObjCtx CalcRefitObjCtx (int iTick, int iRepairCycle) const;
+		bool CanRefitObj (const CSpaceObject &ShipObj, const SRefitObjCtx &Ctx) const;
 		CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		CurrencyValue GetBalance (DWORD dwEconomyUNID) const;
 		int GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCount = NULL);
+		CItemList GetConsumablesNeeded (const CSpaceObject &Base) const;
 		const CEconomyType *GetDefaultEconomy (void) const;
 		DWORD GetDefaultEconomyUNID (void) const;
 		bool GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType **retpItemType, int *retiPrice);
@@ -1113,6 +1131,7 @@ class CSpaceObject
 		bool HasTradeUpgradeOnly (ETradeServiceTypes iService) const;
 		void RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void RefitDockedObjs (int iTick, int iRepairCycle);
+		void RefitObj (CSpaceObject &ShipObj, const SRefitObjCtx &Ctx);
 		void SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
 
 		//	Wingmen
@@ -1238,7 +1257,7 @@ class CSpaceObject
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual int GetStealthAdj (void) const { return 0; }
 		virtual int GetStealthAdjAtMaxHeat (void) const { return 0; }
-		virtual int GetVisibleDamage (void) { return 0; }
+		virtual int GetVisibleDamage (void) const { return 0; }
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const { Damage = SVisibleDamage(); }
 		virtual void IncCounterValue(int iCounterValue) { }
 		virtual bool IsAngry (void) { return false; }

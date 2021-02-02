@@ -989,6 +989,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 
 		//	Armor methods
 		CInstalledArmor *GetArmorSection (int iSect) { return &m_Armor.GetSegment(iSect); }
+		const CInstalledArmor &GetArmorSection (int iSect) const { return m_Armor.GetSegment(iSect); }
 		int GetArmorSectionCount (void) const { return m_Armor.GetSegmentCount(); }
 		int DamageArmor (int iSect, DamageDesc &Damage);
 		void InstallItemAsArmor (CItemListManipulator &ItemList, int iSect);
@@ -1201,7 +1202,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const override;
 		virtual CDesignType *GetType (void) const override { return m_pClass; }
-		virtual int GetVisibleDamage (void) override;
+		virtual int GetVisibleDamage (void) const override;
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;

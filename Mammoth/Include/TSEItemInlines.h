@@ -271,7 +271,7 @@ inline int CInstalledArmor::GetLevel (void) const
 	return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetItemType()->GetLevel()); 
 	}
 
-inline int CInstalledArmor::GetMaxHP (CSpaceObject *pSource) const 
+inline int CInstalledArmor::GetMaxHP (const CSpaceObject *pSource) const 
 	{
 	return m_pItem->AsArmorItemOrThrow().GetMaxHP();
 	}
