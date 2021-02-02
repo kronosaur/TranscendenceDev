@@ -660,6 +660,12 @@ void CSpaceObject::RefitDockedObjs (int iTick, int iRepairCycle)
 				|| pObj->IsPlayer())
 			continue;
 
+		//	We restock ammo only if the same sovereign.
+
+		RefitCtx.bResupplyAmmo = (pObj->GetSovereign() == GetSovereign());
+
+		//	Refit the object
+
 		RefitObj(*pObj, RefitCtx);
 		}
 	}
