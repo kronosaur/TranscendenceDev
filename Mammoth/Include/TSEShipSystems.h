@@ -527,13 +527,8 @@ class CIntegralRotationDesc
 class CIntegralRotation
 	{
 	public:
-		CIntegralRotation (void) :
-				m_iRotationFrame(0),
-				m_iRotationSpeed(0),
-				m_iLastManeuver(NoRotation)
+		CIntegralRotation (void)
 			{ }
-
-		~CIntegralRotation (void);
 
 		int CalcFinalRotationFrame (const CIntegralRotationDesc &Desc) const { return Desc.CalcFinalRotationFrame(m_iRotationFrame, m_iRotationSpeed); }
 		int GetFrameIndex (void) const { return GetFrameIndex(m_iRotationFrame); }
@@ -541,6 +536,7 @@ class CIntegralRotation
 		EManeuverTypes GetManeuverToFace (const CIntegralRotationDesc &Desc, int iAngle) const;
 		int GetRotationAngle (const CIntegralRotationDesc &Desc) const;
 		Metric GetRotationSpeedDegrees (const CIntegralRotationDesc &Desc) const;
+		ICCItemPtr GetStatus (const CIntegralRotationDesc &Desc) const;
 		void Init (const CIntegralRotationDesc &Desc, int iRotationAngle = -1);
 		bool IsPointingTo (const CIntegralRotationDesc &Desc, int iAngle) const { return (GetManeuverToFace(Desc, iAngle) == NoRotation); }
 		void ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDesc &Desc);
@@ -549,12 +545,14 @@ class CIntegralRotation
 		void Update (const CIntegralRotationDesc &Desc, EManeuverTypes iManeuver);
 		void WriteToStream (IWriteStream *pStream) const;
 
+		static ICCItemPtr Diagnostics (int iFrameCount, Metric rMaxRotationSpeed, Metric rAccel, Metric rAccelStop);
+
 	private:
 		int GetFrameIndex (int iFrame) const { return (iFrame / CIntegralRotationDesc::ROTATION_FRACTION); }
 
-		int m_iRotationFrame;				//	Current rotation (in 1/1000ths of a rotation)
-		int m_iRotationSpeed;				//	Current rotation speed (+ clockwise; - counterclockwise; in 1/1000ths)
-		EManeuverTypes m_iLastManeuver;		//	Maneuver on last update
+		int m_iRotationFrame = 0;				//	Current rotation (in 1/1000ths of a rotation)
+		int m_iRotationSpeed = 0;				//	Current rotation speed (+ clockwise; - counterclockwise; in 1/1000ths)
+		EManeuverTypes m_iLastManeuver = NoRotation;		//	Maneuver on last update
 	};
 
 //  Cargo ----------------------------------------------------------------------

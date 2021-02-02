@@ -13,6 +13,7 @@ static constexpr DWORD FN_TSE_AFFINITY_CRITERIA =		5;
 static constexpr DWORD FN_TSE_SET_PLAYER_SHIP =			6;
 static constexpr DWORD FN_TSE_REGEN_DESC =				7;
 static constexpr DWORD FN_TSE_PERCEPTION_RANGE =		8;
+static constexpr DWORD FN_TSE_ROTATION_TEST =			9;
 
 ICCItem *fnNil (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -59,6 +60,10 @@ static PRIMITIVEPROCDEF g_Library[] =
 		{	"tseRegenDesc",					fnTransEngine,		FN_TSE_REGEN_DESC,
 			"(tseRegenDesc regen [ticksPerCycle]) -> desc of hp to regen",
 			"n*",	0,	},
+
+		{	"tseRotationTest",				fnTransEngine,		FN_TSE_ROTATION_TEST,
+			"(tseRotationTest frameCount maxRotationSpeed accel accelStop) -> test output",
+			"nnnn",	0,	},
 	};
 
 static constexpr int FUNCTION_COUNT	=	((sizeof g_Library) / (sizeof g_Library[0]));
@@ -222,6 +227,17 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int iStealth = pArgs->GetElement(1)->GetIntegerValue();
 			Metric rDist = CPerceptionCalc::GetRange(CPerceptionCalc::GetRangeIndex(iStealth, iPerception));
 			return pCC->CreateInteger(mathRound(rDist / LIGHT_SECOND));
+			}
+
+		case FN_TSE_ROTATION_TEST:
+			{
+			int iFrameCount = pArgs->GetElement(0)->GetIntegerValue();
+			Metric rMaxRotationSpeed = pArgs->GetElement(1)->GetDoubleValue();
+			Metric rAccel = pArgs->GetElement(2)->GetDoubleValue();
+			Metric rAccelStop = pArgs->GetElement(3)->GetDoubleValue();
+
+			ICCItemPtr pResult = CIntegralRotation::Diagnostics(iFrameCount, rMaxRotationSpeed, rAccel, rAccelStop);
+			return pResult->Reference();
 			}
 
 		case FN_TSE_SET_PLAYER_SHIP:

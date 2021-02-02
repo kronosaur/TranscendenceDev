@@ -10,11 +10,85 @@
 const Metric MANEUVER_MASS_FACTOR =				1.0;
 const Metric MAX_INERTIA_RATIO =				9.0;
 
-CIntegralRotation::~CIntegralRotation (void)
+ICCItemPtr CIntegralRotation::Diagnostics (int iFrameCount, Metric rMaxRotationSpeed, Metric rAccel, Metric rAccelStop)
 
-//	CIntegralRotation destructor
+//	Diagnostics
+//
+//	Returns diagnostics on implementation.
 
 	{
+	try
+		{
+		static constexpr int TURN_COUNT = 10;
+
+		ICCItemPtr pResult(ICCItem::List);
+
+		CIntegralRotationDesc Desc;
+		Desc.Init(iFrameCount, rMaxRotationSpeed, rAccel, rAccelStop);
+
+		CIntegralRotation Rotation;
+		Rotation.Init(Desc, 0);
+
+		pResult->Append(Rotation.GetStatus(Desc));
+
+		int iStartFrame = Rotation.m_iRotationFrame;
+		int iStartSpeed = Rotation.m_iRotationSpeed;
+
+		//	Turn 10 ticks clockwise
+
+		for (int i = 0; i < TURN_COUNT; i++)
+			{
+			Rotation.Update(Desc, RotateRight);
+			pResult->Append(Rotation.GetStatus(Desc));
+			}
+
+		Rotation.SetRotationSpeedDegrees(Desc, 0.0);
+		pResult->Append(Rotation.GetStatus(Desc));
+
+		//	Turn 10 ticks counter-clockwise
+
+		for (int i = 0; i < TURN_COUNT; i++)
+			{
+			Rotation.Update(Desc, RotateLeft);
+			pResult->Append(Rotation.GetStatus(Desc));
+			}
+
+		if (Rotation.m_iRotationFrame != iStartFrame)
+			pResult->Append(ICCItemPtr(CONSTLIT("Asymmetric rotation detected.")));
+
+		Rotation.Init(Desc, 0);
+		pResult->Append(Rotation.GetStatus(Desc));
+
+		//	Turn 10 ticks counter-clockwise.
+
+		for (int i = 0; i < TURN_COUNT; i++)
+			{
+			Rotation.Update(Desc, RotateLeft);
+			pResult->Append(Rotation.GetStatus(Desc));
+			}
+
+		Rotation.SetRotationSpeedDegrees(Desc, 0.0);
+		pResult->Append(Rotation.GetStatus(Desc));
+
+		//	Turn 10 ticks clockwise
+
+		for (int i = 0; i < TURN_COUNT; i++)
+			{
+			Rotation.Update(Desc, RotateRight);
+			pResult->Append(Rotation.GetStatus(Desc));
+			}
+
+		if (Rotation.m_iRotationFrame != iStartFrame)
+			pResult->Append(ICCItemPtr(CONSTLIT("Asymmetric rotation detected.")));
+
+		//	Done
+
+		return pResult;
+		}
+	catch (...)
+		{
+		return ICCItemPtr::Error(CONSTLIT("Crash in CIntegralRotation::Diagnostics."));
+		}
 	}
 
 EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc &Desc, int iAngle) const
@@ -129,6 +203,33 @@ Metric CIntegralRotation::GetRotationSpeedDegrees (const CIntegralRotationDesc &
 	return (360.0 * m_iRotationSpeed) / (Desc.GetFrameCount() * CIntegralRotationDesc::ROTATION_FRACTION);
 	}
 
+ICCItemPtr CIntegralRotation::GetStatus (const CIntegralRotationDesc &Desc) const
+
+//	GetStatus
+//
+//	Returns the current rotation state.
+
+	{
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+
+	pResult->SetIntegerAt(CONSTLIT("frame"), GetFrameIndex());
+	pResult->SetDoubleAt(CONSTLIT("speed"), GetRotationSpeedDegrees(Desc));
+
+	pResult->SetIntegerAt(CONSTLIT("currentFrameVar"), m_iRotationFrame);
+	pResult->SetIntegerAt(CONSTLIT("currentSpeedVar"), m_iRotationSpeed);
+	
+	if (m_iLastManeuver == NoRotation)
+		pResult->SetStringAt(CONSTLIT("lastManeuver"), CONSTLIT("none"));
+	else if (m_iLastManeuver == RotateLeft)
+		pResult->SetStringAt(CONSTLIT("lastManeuver"), CONSTLIT("left"));
+	else if (m_iLastManeuver == RotateRight)
+		pResult->SetStringAt(CONSTLIT("lastManeuver"), CONSTLIT("right"));
+	else
+		pResult->SetStringAt(CONSTLIT("lastManeuver"), CONSTLIT("unknown"));
+
+	return pResult;
+	}
+
 void CIntegralRotation::Init (const CIntegralRotationDesc &Desc, int iRotationAngle)
 
 //	Init
@@ -140,6 +241,11 @@ void CIntegralRotation::Init (const CIntegralRotationDesc &Desc, int iRotationAn
 
 	if (iRotationAngle != -1)
 		SetRotationAngle(Desc, iRotationAngle);
+	else
+		SetRotationAngle(Desc, 0);
+
+	m_iRotationSpeed = 0;
+	m_iLastManeuver = NoRotation;
 	}
 
 void CIntegralRotation::ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDesc &Desc)
