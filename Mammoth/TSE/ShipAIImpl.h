@@ -18,17 +18,17 @@ class CAIShipControls
 
 		CAIShipControls (void);
 
-		EManeuverTypes GetManeuver (void) const { return m_iManeuver; }
+		EManeuver GetManeuver (void) const { return m_iManeuver; }
 		inline bool GetThrust (CShip *pShip) const;
 		int GetThrustDir (void) const { return m_iThrustDir; }
 		void ReadFromStream (SLoadCtx &Ctx);
-		void SetManeuver (EManeuverTypes iManeuver) { m_iManeuver = iManeuver; }
+		void SetManeuver (EManeuver iManeuver) { m_iManeuver = iManeuver; }
 		void SetThrust (bool bThrust) { m_iThrustDir = (bThrust ? constAlwaysThrust : constNeverThrust); }
 		void SetThrustDir (int iDir) { m_iThrustDir = iDir; }
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
-		EManeuverTypes m_iManeuver;	//	Current maneuver (turn)
+		EManeuver m_iManeuver;	//	Current maneuver (turn)
 		int m_iThrustDir;						//	Thrust if facing given direction
 	};
 
@@ -71,9 +71,9 @@ class CAIBehaviorCtx
 		Metric GetFlankDist (void) const { return m_rFlankDist; }
 		Metric GetFlankRange2 (void) const { return 1.5 * m_rFlankDist * m_rFlankDist; }
 		int GetLastAttack (void) const { return m_iLastAttack; }
-		EManeuverTypes GetLastTurn (void) const { return m_iLastTurn; }
+		EManeuver GetLastTurn (void) const { return m_iLastTurn; }
 		int GetLastTurnCount (void) const { return m_iLastTurnCount; }
-		EManeuverTypes GetManeuver (void) const { return m_ShipControls.GetManeuver(); }
+		EManeuver GetManeuver (void) const { return m_ShipControls.GetManeuver(); }
 		int GetMaxTurnCount (void) const { return m_iMaxTurnCount; }
 		Metric GetMaxWeaponRange (void) const { return m_rMaxWeaponRange; }
 		Metric GetMaxWeaponRange2 (void) const { return m_rMaxWeaponRange * m_rMaxWeaponRange; }
@@ -115,9 +115,9 @@ class CAIBehaviorCtx
 		void SetDockingRequested (bool bValue = true) { m_fDockingRequested = bValue; }
 		void SetHasEscorts (bool bValue = true) { m_fHasEscorts = bValue; }
 		void SetLastAttack (int iTick);
-		void SetLastTurn (EManeuverTypes iTurn) { m_iLastTurn = iTurn; }
+		void SetLastTurn (EManeuver iTurn) { m_iLastTurn = iTurn; }
 		void SetLastTurnCount (int iCount) { m_iLastTurnCount = iCount; }
-		void SetManeuver (EManeuverTypes iManeuver) { m_ShipControls.SetManeuver(iManeuver); }
+		void SetManeuver (EManeuver iManeuver) { m_ShipControls.SetManeuver(iManeuver); }
 		void SetManeuverCounter (int iCount) { m_iManeuverCounter = iCount; }
 		void SetNavPath (CNavigationPath *pNavPath, int iNavPathPos, bool bOwned = false) { ClearNavPath(); m_pNavPath = pNavPath; m_iNavPathPos = iNavPathPos; m_fFreeNavPath = bOwned; }
 		void SetPotential (const CVector &vVec) { m_vPotential = vVec; }
@@ -195,7 +195,7 @@ class CAIBehaviorCtx
 		CAIShipControls m_ShipControls;				//	Current ship control state
 
 		//	State
-		EManeuverTypes m_iLastTurn = NoRotation;	//	Last turn direction
+		EManeuver m_iLastTurn = EManeuver::None;	//	Last turn direction
 		int m_iLastTurnCount = 0;					//	Number of updates turning
 		int m_iManeuverCounter = 0;					//	Counter used by maneuvers
 		int m_iLastAttack = 0;						//	Tick of last attack on us
@@ -362,7 +362,7 @@ class CBaseShipAI : public IShipController
 		virtual bool GetDeviceActivate (void) override { return m_fDeviceActivate; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const override;
 		virtual int GetFireRateAdj (void) override { return m_AICtx.GetFireRateAdj(); }
-		virtual EManeuverTypes GetManeuver (void) override { return m_AICtx.GetManeuver(); }
+		virtual EManeuver GetManeuver (void) const override { return m_AICtx.GetManeuver(); }
 		virtual CSpaceObject *GetOrderGiver (void) override;
 		virtual bool GetReverseThrust (void) override { return false; }
 		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
@@ -394,7 +394,7 @@ class CBaseShipAI : public IShipController
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override;
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override;
 		virtual void SetCommandCode (ICCItem *pCode) override;
-		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_AICtx.SetManeuver(iManeuver); }
+		virtual void SetManeuver (EManeuver iManeuver) override { m_AICtx.SetManeuver(iManeuver); }
 		virtual void SetShipToControl (CShip *pShip) override;
 		virtual void SetThrust (bool bThrust) override { m_AICtx.SetThrust(bThrust); }
 		virtual void SetPlayerBlacklisted (bool bValue) override { m_fPlayerBlacklisted = bValue; }

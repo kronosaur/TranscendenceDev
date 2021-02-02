@@ -1660,13 +1660,13 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	if (Ctx.dwVersion < 75)
 		{
 		Ctx.pStream->Read(dwLoad);
-		m_AICtx.SetManeuver((EManeuverTypes)dwLoad);
+		m_AICtx.SetManeuver((EManeuver)dwLoad);
 
 		Ctx.pStream->Read(dwLoad);
 		m_AICtx.SetThrustDir((int)dwLoad);
 
 		Ctx.pStream->Read(dwLoad);
-		m_AICtx.SetLastTurn((EManeuverTypes)dwLoad);
+		m_AICtx.SetLastTurn((EManeuver)dwLoad);
 
 		Ctx.pStream->Read(dwLoad);
 		m_AICtx.SetLastTurnCount(dwLoad);

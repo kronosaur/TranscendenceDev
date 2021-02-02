@@ -156,7 +156,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 			if (pPlayer)
 				{
 				pPlayer->SetThrust(false);
-				pPlayer->SetManeuver(NoRotation);
+				pPlayer->SetManeuver(EManeuver::None);
 				pPlayer->SetFireMain(false);
 				pPlayer->SetFireMissile(false);
 				}
@@ -224,7 +224,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 					&& !pPlayer->GetShip()->IsTimeStopped())
 				{
 				g_pTrans->Autopilot(false);
-				pPlayer->SetManeuver(RotateLeft);
+				pPlayer->SetManeuver(EManeuver::RotateLeft);
 				pPlayer->SetUIMessageFollowed(uimsgKeyboardManeuverHint);
 				}
 			break;
@@ -234,7 +234,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 					&& !pPlayer->GetShip()->IsTimeStopped())
 				{
 				g_pTrans->Autopilot(false);
-				pPlayer->SetManeuver(RotateRight);
+				pPlayer->SetManeuver(EManeuver::RotateRight);
 				pPlayer->SetUIMessageFollowed(uimsgKeyboardManeuverHint);
 				}
 			break;
@@ -387,13 +387,13 @@ void CGameSession::ExecuteCommandEnd (CPlayerShipController *pPlayer, CGameKeys:
 			break;
 
 		case CGameKeys::keyRotateLeft:
-			if (pPlayer->GetManeuver() == RotateLeft)
-				pPlayer->SetManeuver(NoRotation);
+			if (pPlayer->GetManeuver() == EManeuver::RotateLeft)
+				pPlayer->SetManeuver(EManeuver::None);
 			break;
 
 		case CGameKeys::keyRotateRight:
-			if (pPlayer->GetManeuver() == RotateRight)
-				pPlayer->SetManeuver(NoRotation);
+			if (pPlayer->GetManeuver() == EManeuver::RotateRight)
+				pPlayer->SetManeuver(EManeuver::None);
 			break;
 
 		case CGameKeys::keyStop:
@@ -447,9 +447,9 @@ void CGameSession::ExecuteCommandRefresh (CPlayerShipController &Player)
 	Player.SetFireMissile(Keys.IsKeyDown(CGameKeys::keyFireMissile) && iCmdTrigger != CGameKeys::keyFireMissile);
 
 	if (Keys.IsKeyDown(CGameKeys::keyRotateLeft))
-		Player.SetManeuver(RotateLeft);
+		Player.SetManeuver(EManeuver::RotateLeft);
 	else if (Keys.IsKeyDown(CGameKeys::keyRotateRight))
-		Player.SetManeuver(RotateRight);
+		Player.SetManeuver(EManeuver::RotateRight);
 	else
-		Player.SetManeuver(NoRotation);
+		Player.SetManeuver(EManeuver::None);
 	}

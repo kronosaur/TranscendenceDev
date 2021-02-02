@@ -1151,7 +1151,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 		pShip->Place(vDest);
 		pShip->OnDockingStop();
 		IShipController *pController = pShip->GetController();
-		pController->SetManeuver(NoRotation);
+		pController->SetManeuver(EManeuver::None);
 
 		Port.iStatus = psInUse;
 

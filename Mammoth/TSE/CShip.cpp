@@ -795,11 +795,11 @@ DWORD CShip::CalcEffectsMask (void)
 	
 	switch (m_Rotation.GetLastManeuver())
 		{
-		case RotateLeft:
+		case EManeuver::RotateLeft:
 			dwEffects |= CObjectEffectDesc::effectThrustLeft;
 			break;
 
-		case RotateRight:
+		case EManeuver::RotateRight:
 			dwEffects |= CObjectEffectDesc::effectThrustRight;
 			break;
 		}

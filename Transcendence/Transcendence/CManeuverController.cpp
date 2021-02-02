@@ -34,7 +34,7 @@ bool CManeuverController::CmdCancel (void)
 	m_vPos = CVector();
 	m_pTarget = NULL;
 
-	m_iManeuver = NoRotation;
+	m_iManeuver = EManeuver::None;
 	m_bThrust = false;
 
 	return true;
@@ -70,7 +70,7 @@ bool CManeuverController::CmdMoveTo (const CVector &vPos)
 	return true;
 	}
 
-EManeuverTypes CManeuverController::GetManeuver (CShip *pShip) const
+EManeuver CManeuverController::GetManeuver (CShip *pShip) const
 
 //	GetManeuver
 //
@@ -83,7 +83,7 @@ EManeuverTypes CManeuverController::GetManeuver (CShip *pShip) const
 			if (m_iAngle == -1
 					|| pShip->IsOutOfPower()
 					|| pShip->IsTimeStopped())
-				return NoRotation;
+				return EManeuver::None;
 
 			return pShip->GetManeuverToFace(m_iAngle);
 
@@ -91,7 +91,7 @@ EManeuverTypes CManeuverController::GetManeuver (CShip *pShip) const
 			return m_iManeuver;
 			
 		default:
-			return NoRotation;
+			return EManeuver::None;
 		}
 	}
 
@@ -190,7 +190,7 @@ void CManeuverController::UpdateMoveTo (SUpdateCtx &Ctx, CShip *pShip)
 		if (!pShip->IsParalyzed())
 			pShip->AddForce(vDeltaV * pShip->GetMass() / 2000.0);
 
-		m_iManeuver = NoRotation;
+		m_iManeuver = EManeuver::None;
 		m_bThrust = false;
 
 		//	If we're close enough to the destination, then the command is done
@@ -213,7 +213,7 @@ void CManeuverController::UpdateMoveTo (SUpdateCtx &Ctx, CShip *pShip)
 
 		//	If we don't need to turn, engage thrust
 
-		m_bThrust = (m_iManeuver == NoRotation);
+		m_bThrust = (m_iManeuver == EManeuver::None);
 		}
 	}
 

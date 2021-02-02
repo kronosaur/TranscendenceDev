@@ -311,7 +311,7 @@ class IShipController
 		virtual CSpaceObject *GetEscortPrincipal (void) const { return NULL; }
 		virtual int GetFireDelay (void) { return 0; }
 		virtual int GetFireRateAdj (void) { return 10; }
-		virtual EManeuverTypes GetManeuver (void) = 0;
+		virtual EManeuver GetManeuver (void) const = 0;
 		virtual CSpaceObject *GetOrderGiver (void) = 0;
 		virtual bool GetReverseThrust (void) = 0;
 		virtual CSpaceObject *GetShip (void) { return NULL; }
@@ -332,7 +332,7 @@ class IShipController
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
 		virtual void SetCommandCode (ICCItem *pCode) { }
-		virtual void SetManeuver (EManeuverTypes iManeuver) { }
+		virtual void SetManeuver (EManeuver iManeuver) { }
 		virtual void SetShipToControl (CShip *pShip) { }
 		virtual void SetThrust (bool bThrust) { }
 		virtual void SetPlayerBlacklisted (bool bValue) { }

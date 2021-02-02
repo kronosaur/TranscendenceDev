@@ -473,7 +473,7 @@ void CPlayerShipController::Dock (void)
 	SetActivate(false);
 	SetFireMain(false);
 	SetFireMissile(false);
-	SetManeuver(NoRotation);
+	SetManeuver(EManeuver::None);
 	SetThrust(false);
 
 	SetUIMessageFollowed(uimsgDockHint);
@@ -1184,7 +1184,7 @@ void CPlayerShipController::OnDestroyed (SDestroyCtx &Ctx)
 
 	//	Reset everything else
 
-	m_iManeuver = NoRotation;
+	m_iManeuver = EManeuver::None;
 	m_bThrust = false;
 	m_bStopThrust = false;
 	SetFireMain(false);
@@ -1486,7 +1486,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 				//	Stop
 
 				SetThrust(false);
-				SetManeuver(NoRotation);
+				SetManeuver(EManeuver::None);
 				SetFireMain(false);
 				SetFireMissile(false);
 				}
@@ -1566,7 +1566,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			DisplayTranslate(CONSTLIT("msgReactorNoPower"));
 
 			SetThrust(false);
-			SetManeuver(NoRotation);
+			SetManeuver(EManeuver::None);
 			SetFireMain(false);
 			SetFireMissile(false);
 			break;
@@ -1586,7 +1586,7 @@ void CPlayerShipController::OnStartGame (void)
 //	Game (either new or loaded) has just started
 
 	{
-	m_iManeuver = NoRotation;
+	m_iManeuver = EManeuver::None;
 	m_bThrust = false;
 	m_bStopThrust = false;
 	SetFireMain(false);
@@ -1933,7 +1933,7 @@ bool CPlayerShipController::ToggleEnableDevice (int iDeviceIndex)
 	return false;
 	}
 
-EManeuverTypes CPlayerShipController::GetManeuver (void)
+EManeuver CPlayerShipController::GetManeuver (void) const
 	{
 	if (m_ManeuverController.IsManeuverActive())
 		return m_ManeuverController.GetManeuver(m_pShip);
@@ -2458,7 +2458,7 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 		m_OrderDesc = COrderDesc();
 
 	Ctx.pStream->Read(dwLoad);
-	m_iManeuver = (EManeuverTypes)dwLoad;
+	m_iManeuver = (EManeuver)dwLoad;
 
 	if (Ctx.dwVersion >= 49)
 		m_Credits.ReadFromStream(Ctx);
@@ -3078,7 +3078,7 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	SetTarget(NULL);
 	SetDestination(NULL);
 	m_pAutoDock = NULL;
-	m_iManeuver = NoRotation;
+	m_iManeuver = EManeuver::None;
 	m_bThrust = false;
 	m_bStopThrust = false;
 	SetFireMain(false);

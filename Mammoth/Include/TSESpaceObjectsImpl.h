@@ -1076,7 +1076,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetIntegralRotationDesc(); }
 		int GetRotationRange (void) { return m_pClass->GetRotationRange(); }
 		const CIntegralRotation &GetRotationState (void) const { return m_Rotation; }
-		EManeuverTypes GetManeuverToFace (int iAngle) const { return m_Rotation.GetManeuverToFace(m_Perf.GetIntegralRotationDesc(), iAngle); }
+		EManeuver GetManeuverToFace (int iAngle) const { return m_Rotation.GetManeuverToFace(m_Perf.GetIntegralRotationDesc(), iAngle); }
 		Metric GetThrust (void) const { return m_Perf.GetDriveDesc().GetThrust(); }
 		Metric GetThrustProperty (void) const { return m_Perf.GetDriveDesc().GetThrustProperty(); }
 		Metric GetMaxAcceleration (void);

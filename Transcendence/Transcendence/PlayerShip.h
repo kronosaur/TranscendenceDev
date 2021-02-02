@@ -91,7 +91,7 @@ class CManeuverController
 		bool CmdCancel (void);
 		bool CmdMouseAim (int iAngle);
 		bool CmdMoveTo (const CVector &vPos);
-		EManeuverTypes GetManeuver (CShip *pShip) const;
+		EManeuver GetManeuver (CShip *pShip) const;
 		bool GetThrust (CShip *pShip) const;
 		bool IsActive (void) const { return m_iCommand != cmdNone; }
 		bool IsManeuverActive (void) const { return m_iCommand != cmdNone; }
@@ -110,7 +110,7 @@ class CManeuverController
 
 		//	Temporary variables during update (no need to save)
 
-		EManeuverTypes m_iManeuver;
+		EManeuver m_iManeuver;
 		bool m_bThrust;
 	};
 
@@ -222,7 +222,7 @@ class CPlayerShipController : public IShipController
 		virtual CSpaceObject *GetDestination (void) const override { return m_pDestination; }
 		virtual bool GetDeviceActivate (void) override;
 		virtual int GetFireDelay (void) override { return mathRound(5.0 / STD_SECONDS_PER_UPDATE); }
-		virtual EManeuverTypes GetManeuver (void) override;
+		virtual EManeuver GetManeuver (void) const override;
 		virtual const COrderDesc &GetOrderDesc (int iIndex) const override;
 		virtual int GetOrderCount (void) const override { return (m_OrderDesc.GetOrder() == IShipController::orderNone ? 0 : 1); }
 		virtual CSpaceObject *GetOrderGiver (void) override { return m_pShip; }
@@ -234,7 +234,7 @@ class CPlayerShipController : public IShipController
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayer (void) const override { return true; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
-		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_iManeuver = iManeuver; }
+		virtual void SetManeuver (EManeuver iManeuver) override { m_iManeuver = iManeuver; }
 		virtual ESetPropertyResult SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL) override;
 		virtual void SetThrust (bool bThrust) override { m_bThrust = bThrust; }
 		virtual void WriteToStream (IWriteStream *pStream) override;
@@ -311,7 +311,7 @@ class CPlayerShipController : public IShipController
 		int m_iLastHelpTick = 0;
 
 		CManeuverController m_ManeuverController;
-		EManeuverTypes m_iManeuver = NoRotation;
+		EManeuver m_iManeuver = EManeuver::None;
 		bool m_bThrust = false;
 		bool m_bActivate = false;
 		bool m_bStopThrust = false;

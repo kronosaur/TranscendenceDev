@@ -163,7 +163,7 @@ class CIntroShipController : public IShipController
 		virtual CSpaceObject *GetEscortPrincipal (void) const override { return m_pDelegate->GetEscortPrincipal(); }
 		virtual int GetFireDelay (void) override { return m_pDelegate->GetFireDelay(); }
 		virtual int GetFireRateAdj (void) override { return m_pDelegate->GetFireRateAdj(); }
-		virtual EManeuverTypes GetManeuver (void) override { return m_pDelegate->GetManeuver(); }
+		virtual EManeuver GetManeuver (void) const override { return m_pDelegate->GetManeuver(); }
 		virtual CSpaceObject *GetOrderGiver (void) override { return m_pShip; }
 		virtual bool GetReverseThrust (void) override { return m_pDelegate->GetReverseThrust(); }
 		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
@@ -175,7 +175,7 @@ class CIntroShipController : public IShipController
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override { return m_pDelegate->SetAISettingInteger(sSetting, iValue); }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override { return m_pDelegate->SetAISettingString(sSetting, sValue); }
 		virtual void SetCommandCode (ICCItem *pCode) override { m_pDelegate->SetCommandCode(pCode); }
-		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_pDelegate->SetManeuver(iManeuver); }
+		virtual void SetManeuver (EManeuver iManeuver) override { m_pDelegate->SetManeuver(iManeuver); }
 		virtual void SetThrust (bool bThrust) override { m_pDelegate->SetThrust(bThrust); }
 
 		virtual void AddOrder (const COrderDesc &Order, bool bAddBefore = false) override { m_pDelegate->AddOrder(Order, bAddBefore); }

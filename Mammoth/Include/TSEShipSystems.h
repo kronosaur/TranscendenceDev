@@ -437,12 +437,12 @@ class CShipInterior
 //  a ship. Only CShip objects have (or need) this class. It is initialized from
 //  a CIntegralRotationDesc and generally refers to it when doing calculations.
 
-enum EManeuverTypes
+enum class EManeuver
 	{
-	NoRotation,
+	None =				0,
 
-	RotateLeft,
-	RotateRight,
+	RotateLeft =		1,
+	RotateRight =		2,
 	};
 
 class CRotationDesc
@@ -532,17 +532,17 @@ class CIntegralRotation
 
 		int CalcFinalRotationFrame (const CIntegralRotationDesc &Desc) const { return Desc.CalcFinalRotationFrame(m_iRotationFrame, m_iRotationSpeed); }
 		int GetFrameIndex (void) const { return GetFrameIndex(m_iRotationFrame); }
-		EManeuverTypes GetLastManeuver (void) const { return m_iLastManeuver; }
-		EManeuverTypes GetManeuverToFace (const CIntegralRotationDesc &Desc, int iAngle) const;
+		EManeuver GetLastManeuver (void) const { return m_iLastManeuver; }
+		EManeuver GetManeuverToFace (const CIntegralRotationDesc &Desc, int iAngle) const;
 		int GetRotationAngle (const CIntegralRotationDesc &Desc) const;
 		Metric GetRotationSpeedDegrees (const CIntegralRotationDesc &Desc) const;
 		ICCItemPtr GetStatus (const CIntegralRotationDesc &Desc) const;
 		void Init (const CIntegralRotationDesc &Desc, int iRotationAngle = -1);
-		bool IsPointingTo (const CIntegralRotationDesc &Desc, int iAngle) const { return (GetManeuverToFace(Desc, iAngle) == NoRotation); }
+		bool IsPointingTo (const CIntegralRotationDesc &Desc, int iAngle) const { return (GetManeuverToFace(Desc, iAngle) == EManeuver::None); }
 		void ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDesc &Desc);
 		void SetRotationAngle (const CIntegralRotationDesc &Desc, int iAngle);
 		void SetRotationSpeedDegrees (const CIntegralRotationDesc &Desc, Metric rDegreesPerTick);
-		void Update (const CIntegralRotationDesc &Desc, EManeuverTypes iManeuver);
+		void Update (const CIntegralRotationDesc &Desc, EManeuver iManeuver);
 		void WriteToStream (IWriteStream *pStream) const;
 
 		static ICCItemPtr Diagnostics (int iFrameCount, Metric rMaxRotationSpeed, Metric rAccel, Metric rAccelStop);
@@ -552,7 +552,7 @@ class CIntegralRotation
 
 		int m_iRotationFrame = 0;				//	Current rotation (in 1/1000ths of a rotation)
 		int m_iRotationSpeed = 0;				//	Current rotation speed (+ clockwise; - counterclockwise; in 1/1000ths)
-		EManeuverTypes m_iLastManeuver = NoRotation;		//	Maneuver on last update
+		EManeuver m_iLastManeuver = EManeuver::None;		//	Maneuver on last update
 	};
 
 //  Cargo ----------------------------------------------------------------------

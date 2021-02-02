@@ -1665,7 +1665,7 @@ void CAIBehaviorCtx::ImplementFormationManeuver (CShip *pShip, const CVector vDe
 
 		//	If we don't need to turn, engage thrust
 
-		if (GetManeuver() == NoRotation)
+		if (GetManeuver() == EManeuver::None)
 			SetThrustDir(CAIShipControls::constAlwaysThrust);
 		}
 
@@ -1778,7 +1778,7 @@ void CAIBehaviorCtx::ImplementHold (CShip *pShip, bool *retbInPlace)
 
 		//	If we don't need to turn, engage thrust
 
-		if (GetManeuver() == NoRotation)
+		if (GetManeuver() == EManeuver::None)
 			SetThrustDir(CAIShipControls::constAlwaysThrust);
 
 		bInPlace = false;
@@ -1849,15 +1849,15 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 		//	If we're within a few degrees of where we want to be, then
 		//	don't bother changing
 
-		EManeuverTypes iNewManeuver = pShip->GetManeuverToFace(iDir);
-		if (iNewManeuver != NoRotation)
+		EManeuver iNewManeuver = pShip->GetManeuverToFace(iDir);
+		if (iNewManeuver != EManeuver::None)
 			{
 			SetManeuver(iNewManeuver);
 
 			//	If we're turning in a new direction now, then reset
 			//	our counter
 
-			if (GetManeuver() != NoRotation)
+			if (GetManeuver() != EManeuver::None)
 				{
 				if (GetManeuver() != m_iLastTurn)
 					{
@@ -1874,10 +1874,10 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 
 					if (m_iLastTurnCount > m_iMaxTurnCount)
 						{
-						if (GetManeuver() == RotateRight)
-							SetManeuver(RotateLeft);
+						if (GetManeuver() == EManeuver::RotateRight)
+							SetManeuver(EManeuver::RotateLeft);
 						else
-							SetManeuver(RotateRight);
+							SetManeuver(EManeuver::RotateRight);
 #ifdef DEBUG_SHIP
 						if (bDebug)
 							pShip->GetUniverse().DebugOutput("Reverse direction");
@@ -1889,8 +1889,8 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 #ifdef DEBUG_SHIP
 			if (bDebug)
 				pShip->GetUniverse().DebugOutput("Turn: %s (%d -> %d)",
-						(GetManeuver() == RotateRight ? "right" : 
-							(GetManeuver() == RotateLeft ? "left" : "none")),
+						(GetManeuver() == EManeuver::RotateRight ? "right" : 
+							(GetManeuver() == EManeuver::RotateLeft ? "left" : "none")),
 						iCurrentDir,
 						iDir);
 #endif

@@ -1082,7 +1082,7 @@ void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
 
 	int iValue;
 	Ctx.pStream->Read(iValue);
-	m_iLastTurn = (EManeuverTypes)iValue;
+	m_iLastTurn = (EManeuver)iValue;
 
 	Ctx.pStream->Read(m_iLastTurnCount);
 	Ctx.pStream->Read(m_iManeuverCounter);
@@ -1200,7 +1200,7 @@ void CAIBehaviorCtx::Update (CShip *pShip)
 	{
 	if (!IsDockingRequested())
 		{
-		SetManeuver(NoRotation);
+		SetManeuver(EManeuver::None);
 		SetThrustDir(CAIShipControls::constNeverThrust);
 		}
 
@@ -1243,7 +1243,7 @@ void CAIBehaviorCtx::WriteToStream (IWriteStream *pStream)
 
 	//	State
 
-	pStream->Write(m_iLastTurn);
+	pStream->Write((DWORD)m_iLastTurn);
 	pStream->Write(m_iLastTurnCount);
 	pStream->Write(m_iManeuverCounter);
 	pStream->Write(m_iLastAttack);
