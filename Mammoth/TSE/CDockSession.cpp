@@ -50,6 +50,7 @@ bool CDockSession::ExitScreen (DWORD dwFlags)
 		m_pDockScreenUI = &m_NullUI;
 		m_pDefaultScreensRoot = NULL;
 		m_DockFrames.DeleteAll();
+		m_pStoredData.Delete();
 
 		return false;
 		}
@@ -218,6 +219,23 @@ ICCItemPtr CDockSession::GetReturnData (const CString &sAttrib) const
 		}
 
 	return ICCItemPtr(ICCItem::Nil);
+	}
+
+ICCItemPtr CDockSession::GetSessionData (const CString &sAttrib) const
+
+//	GetSessionData
+//
+//	Returns data for the whole session.
+
+	{
+	if (!InSession() || !m_pStoredData)
+		return ICCItemPtr(ICCItem::Nil);
+
+	else if (ICCItem *pValue = m_pStoredData->GetElement(sAttrib))
+		return ICCItemPtr(pValue->Reference());
+
+	else
+		return ICCItemPtr(ICCItem::Nil);
 	}
 
 void CDockSession::IncData (const CString &sAttrib, ICCItem *pOptionalInc, ICCItemPtr *retpResult)
@@ -507,6 +525,27 @@ bool CDockSession::SetScreenSet (const ICCItem &ScreenSet)
 	else
 		Frame.sCurrentTab = NULL_STR;
 
+	return true;
+	}
+
+bool CDockSession::SetSessionData (const CString &sAttrib, ICCItem *pData)
+
+//	SetSessionData
+//
+//	Sets data associated with the whole session.
+
+	{
+	if (!InSession())
+		return false;
+
+	//	If necessary, create the stored data block
+
+	if (!m_pStoredData)
+		m_pStoredData = ICCItemPtr(ICCItem::SymbolTable);
+
+	//	Add the entry
+
+	m_pStoredData->SetAt(sAttrib, pData);
 	return true;
 	}
 

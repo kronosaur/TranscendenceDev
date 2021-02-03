@@ -952,7 +952,7 @@ bool CDesignCollection::FireOnGlobalObjGateCheck (CSpaceObject *pObj, CTopologyN
 	return bResult;
 	}
 
-void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
+void CDesignCollection::FireOnGlobalPaneInit (CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
 
 //	FireOnGlobalPaneInit
 //
@@ -975,7 +975,6 @@ void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot,
 		CDesignType *pType = m_EventsCache[evtOnGlobalDockPaneInit]->GetEntry(i, &Event);
 
 		if (pType->FireOnGlobalDockPaneInit(Event,
-				pScreen,
 				dwRootUNID,
 				sScreenUNID,
 				sScreen,

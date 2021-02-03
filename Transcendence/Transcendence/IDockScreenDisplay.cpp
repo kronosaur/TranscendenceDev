@@ -318,7 +318,6 @@ bool IDockScreenDisplay::EvalBool (const CString &sCode, bool *retbResult, CStri
 
 	{
 	CCodeChainCtx Ctx(GetUniverse());
-	Ctx.SetScreen(&m_DockScreen);
 	Ctx.DefineContainingType(m_DockScreen.GetRoot());
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
@@ -353,7 +352,6 @@ CSpaceObject *IDockScreenDisplay::EvalListSource (const CString &sString, CStrin
 	if (*pPos == '=')
 		{
 		CCodeChainCtx Ctx(GetUniverse());
-		Ctx.SetScreen(&m_DockScreen);
 		Ctx.DefineContainingType(m_DockScreen.GetRoot());
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);
@@ -401,7 +399,6 @@ bool IDockScreenDisplay::EvalString (const CString &sString, bool bPlain, ECodeC
 	{
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetEvent(iEvent);
-	Ctx.SetScreen(&m_DockScreen);
 	Ctx.DefineContainingType(m_DockScreen.GetRoot());
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);

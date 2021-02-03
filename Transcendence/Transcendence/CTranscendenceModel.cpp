@@ -130,7 +130,7 @@ CTranscendenceModel::CTranscendenceModel (CHumanInterface &HI) :
 		m_bForceTDB(false),
 		m_bNoSound(false),
 		m_bNoMissionCheckpoint(false),
-        m_bNoCollectionLoad(false),
+		m_bNoCollectionLoad(false),
 		m_pPlayer(NULL),
 		m_pResurrectType(NULL),
 		m_pCrawlImage(NULL),
@@ -859,17 +859,17 @@ ALERROR CTranscendenceModel::EnterScreenSession (CSpaceObject *pLocation, CDesig
 
 	//	Switch state
 
-    if (bFirstFrame)
-        {
+	if (bFirstFrame)
+		{
 		GetDockSession().PlayAmbientSound();
 
-        //  NOTE: Eventually, EnterScreenSession should be part of CGameSession
-        //  instead of the model.
+		//  NOTE: Eventually, EnterScreenSession should be part of CGameSession
+		//  instead of the model.
 
-        CGameSession *pSession = GetPlayer()->GetGameSession();
-        if (pSession)
-            pSession->OnShowDockScreen(true);
-        }
+		CGameSession *pSession = GetPlayer()->GetGameSession();
+		if (pSession)
+			pSession->OnShowDockScreen(true);
+		}
 
 	return NOERROR;
 	}
@@ -1090,7 +1090,7 @@ ALERROR CTranscendenceModel::Init (const CGameSettings &Settings)
 	m_bForceTDB = Settings.GetBoolean(CGameSettings::useTDB);
 	m_bNoMissionCheckpoint = Settings.GetBoolean(CGameSettings::noMissionCheckpoint);
 	m_bNoSound = Settings.GetBoolean(CGameSettings::noSound);
-    m_bNoCollectionLoad = Settings.GetBoolean(CGameSettings::noCollectionLoad);
+	m_bNoCollectionLoad = Settings.GetBoolean(CGameSettings::noCollectionLoad);
 	m_bForcePermadeath = Settings.GetBoolean(CGameSettings::forcePermadeath);
 	m_sAccessibilityColorPlayer = Settings.GetString(CGameSettings::colorIFFPlayer);
 	m_sAccessibilityColorEscort = Settings.GetString(CGameSettings::colorIFFEscort);
@@ -1148,10 +1148,10 @@ ALERROR CTranscendenceModel::InitBackground (const CGameSettings &Settings, cons
 	if (dwAdventure == 0)
 		dwAdventure = DEFAULT_ADVENTURE_EXTENSION_UNID;
 
-    //  Get the default list of extensions for the default adventure
+	//  Get the default list of extensions for the default adventure
 
-    TArray<DWORD> Extensions;
-    Settings.GetDefaultExtensions(dwAdventure, m_bDebugMode, &Extensions);
+	TArray<DWORD> Extensions;
+	Settings.GetDefaultExtensions(dwAdventure, m_bDebugMode, &Extensions);
 
 	//	Load the universe
 
@@ -1469,9 +1469,9 @@ ALERROR CTranscendenceModel::LoadUniverse (const CString &sCollectionFolder,
 		Ctx.pHost = g_pTrans;
 		Ctx.bDebugMode = m_bDebugMode;
 		Ctx.dwAdventure = dwAdventure;
-        Ctx.ExtensionUNIDs = Extensions;
+		Ctx.ExtensionUNIDs = Extensions;
 		Ctx.bForceTDB = m_bForceTDB;
-        Ctx.bNoCollectionLoad = m_bNoCollectionLoad;
+		Ctx.bNoCollectionLoad = m_bNoCollectionLoad;
 		Ctx.DisabledExtensions = DisabledExtensions;
 
 		//	Try to recover if loading the adventure or its extensions runs into
@@ -2081,10 +2081,10 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 	ASSERT(m_GameFile.IsOpen());
 	m_Universe.FireOnGlobalUniverseSave();
 
-    //  Make sure we've updated current system data to global data.
+	//  Make sure we've updated current system data to global data.
 
 	CSystem *pSystem = m_pPlayer->GetShip()->GetSystem();
-    m_Universe.GetGlobalObjects().Refresh(pSystem);
+	m_Universe.GetGlobalObjects().Refresh(pSystem);
 
 	//	Generate and save game stats
 
@@ -2522,9 +2522,9 @@ ALERROR CTranscendenceModel::StartGame (bool bNewGame)
 		m_pPlayer->GetGameStats().OnSwitchPlayerShip(*m_pPlayer->GetShip());
 		}
 
-    //  Initialize some thumbnails
+	//  Initialize some thumbnails
 
-    m_SystemMapThumbnails.Init(m_Universe.GetGlobalObjects());
+	m_SystemMapThumbnails.Init(m_Universe.GetGlobalObjects());
 
 	//	Done
 

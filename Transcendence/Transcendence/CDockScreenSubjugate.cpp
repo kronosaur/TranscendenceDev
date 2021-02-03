@@ -68,7 +68,6 @@ void CDockScreenSubjugate::FireOnCompleted (const CString &sReason)
 		return;
 
 	CCodeChainCtx Ctx(GetUniverse());
-	Ctx.SetScreen(&m_DockScreen);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
 	Ctx.DefineString(PARAM_REASON, sReason);

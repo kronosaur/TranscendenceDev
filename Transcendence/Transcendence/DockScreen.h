@@ -483,12 +483,9 @@ class CDockScreen : public IScreenController,
 		int GetCounter (void) const { return m_CurrentPane.GetCounterValue(); }
 		const CItem &GetCurrentItem (void) const { return m_pDisplay->GetCurrentItem(); }
 		ICCItem *GetCurrentListEntry (void);
-		const CString &GetDescription (void) const { return m_CurrentPane.GetDescriptionString(); }
 		CG32bitImage *GetDisplayCanvas (const CString &sID);
 		CDockSession *GetDockSession (void) const { return m_pDockSession; }
 		CItemListManipulator &GetItemListManipulator (void) { return m_pDisplay->GetItemListManipulator(); }
-		ICCItemPtr GetListAsCCItem (void) const;
-		int GetListCursor (void) const { return m_pDisplay->GetListCursor(); }
 		IListData *GetListData (void) const { return m_pDisplay->GetListData(); }
         CGameSession &GetGameSession (void) { return m_Session; }
 		CString GetTextInput (void) const { return m_CurrentPane.GetTextInputValue(); }
@@ -513,12 +510,15 @@ class CDockScreen : public IScreenController,
 		virtual void Action (DWORD dwTag, DWORD dwData = 0) override;
 
 		//	IDockScreenUI
+		virtual const CString &GetDescription (void) const override { return m_CurrentPane.GetDescriptionString(); }
+		virtual void *GetDockScreen () const override { return (void *)this; }
+		virtual ICCItemPtr GetListAsCCItem (void) const override;
+		virtual int GetListCursor (void) const override { return (m_pDisplay ? m_pDisplay->GetListCursor() : -1); }
 		virtual ICCItemPtr GetProperty (const CString &sProperty) const override;
 		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const override;
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) override;
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override;
 		virtual bool SetProperty (const CString &sProperty, const ICCItem &Value) override;
-
 
 	private:
 		enum EControlTypes

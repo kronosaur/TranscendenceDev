@@ -31,6 +31,10 @@ class IDockScreenUI
 			int iOriginalCursor = -1;
 			};
 
+		virtual const CString &GetDescription () const { return NULL_STR; }
+		virtual void *GetDockScreen () const { return NULL; }
+		virtual ICCItemPtr GetListAsCCItem (void) const { return ICCItemPtr::Nil(); }
+		virtual int GetListCursor (void) const { return -1; }
 		virtual ICCItemPtr GetProperty (const CString &sProperty) const { return NULL; }
 		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const { }
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { }
@@ -152,6 +156,7 @@ class CDockSession
 		ICCItemPtr GetProperty (const CString &sProperty) const;
 		ICCItemPtr GetPropertyFrameStack (void) const;
 		ICCItemPtr GetReturnData (const CString &sAttrib) const;
+		ICCItemPtr GetSessionData (const CString &sAttrib) const;
 		IDockScreenUI &GetUI (void) const { return *m_pDockScreenUI; }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		void IncData (const CString &sAttrib, ICCItem *pOptionalInc, ICCItemPtr *retpResult);
@@ -170,6 +175,7 @@ class CDockSession
 		bool SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
 		bool SetReturnData (const CString &sAttrib, ICCItem *pValues);
 		bool SetScreenSet (const ICCItem &ScreenSet);
+		bool SetSessionData (const CString &sAttrib, ICCItem *pValues);
 		bool ShowScreen (CSpaceObject &Location, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData);
 		void StopAmbientSound () { PlayAmbientSound(); }
 		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError = NULL) const;
@@ -183,6 +189,7 @@ class CDockSession
 		IDockScreenUI *m_pDockScreenUI = &m_NullUI;		//	Wormhole to dockscreen UI
 		CDesignType *m_pDefaultScreensRoot = NULL;		//	Default root to look for local screens
 		CDockScreenStack m_DockFrames;					//	Stack of dock screens
+		ICCItemPtr m_pStoredData;						//	Session data
 		const CSoundResource *m_pAmbientSound = NULL;	//	Current ambient sound
 		const CSoundResource *m_pAmbientSoundPlaying = NULL;
 		bool m_bOnInitCalled = false;					//	TRUE if we've already called OnInit

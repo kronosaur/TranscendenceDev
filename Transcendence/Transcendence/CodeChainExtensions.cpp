@@ -95,6 +95,7 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 #define FN_SCR_SCREEN_SET			35
 #define FN_SCR_SHOW_TAB				36
 #define FN_SCR_LIST					37
+#define FN_SCR_SESSION_DATA			38
 
 ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -293,6 +294,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrGetReturnData screen attrib) -> data",
 			"is",	0,	},
 
+		{	"scrGetSessionData",			fnScrGet,		FN_SCR_SESSION_DATA,
+			"(scrGetSessionData screen attrib) -> data",
+			"is",	0,	},
+
 		{	"scrIncData",					fnScrSet,		FN_SCR_INC_DATA,
 			"(scrIncData screen attrib [increment]) -> value",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
@@ -386,6 +391,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"scrSetReturnData",					fnScrSet,		FN_SCR_RETURN_DATA,
 			"(scrSetReturnData screen attrib data) -> True/Nil",
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"scrSetSessionData",				fnScrSet,		FN_SCR_SESSION_DATA,
+			"(scrSetSessionData screen attrib data) -> True/Nil",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"scrSetTabSet",					fnScrSet,		FN_SCR_SCREEN_SET,
@@ -1558,10 +1567,6 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into a dock screen object
 
-	CDockScreen *pScreen = GetDockScreenArg(*pCtx, pArgs->GetElement(0));
-	if (pScreen == NULL)
-		return pCC->CreateError(CONSTLIT("Screen expected"), pArgs->GetElement(0));
-
 	CDockSession &DockSession = pCtx->GetUniverse().GetDockSession();
 
 	//	Do the appropriate command
@@ -1569,17 +1574,17 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	switch (dwData)
 		{
 		case FN_SCR_LIST:
-			return pScreen->GetListAsCCItem()->Reference();
+			return DockSession.GetUI().GetListAsCCItem()->Reference();
 
 		case FN_SCR_LIST_CURSOR:
-			return pCC->CreateInteger(pScreen->GetListCursor());
+			return pCC->CreateInteger(DockSession.GetUI().GetListCursor());
 
 		case FN_SCR_DATA:
 			return DockSession.GetData(pArgs->GetElement(1)->GetStringValue())->Reference();
 
 		case FN_SCR_DESC:
 			{
-			const CString &sDesc = pScreen->GetDescription();
+			const CString &sDesc = DockSession.GetUI().GetDescription();
 			if (sDesc.IsBlank())
 				return pCC->CreateNil();
 
@@ -1603,7 +1608,8 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Only if valid
 
-			if (!pScreen->IsValid())
+			CDockScreen *pScreen = (CDockScreen *)DockSession.GetUI().GetDockScreen();
+			if (!pScreen || !pScreen->IsValid())
 				return pCC->CreateNil();
 
 			//	Parameters
@@ -1618,6 +1624,9 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SCR_RETURN_DATA:
 			return DockSession.GetReturnData(pArgs->GetElement(1)->GetStringValue())->Reference();
+
+		case FN_SCR_SESSION_DATA:
+			return DockSession.GetSessionData(pArgs->GetElement(1)->GetStringValue())->Reference();
 
 		case FN_SCR_TRANSLATE:
 			{
@@ -2016,6 +2025,9 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pScreenSet = pArgs->GetElement(1);
 			return pCC->CreateBool(DockSession.SetScreenSet(*pScreenSet));
 			}
+
+		case FN_SCR_SESSION_DATA:
+			return pCC->CreateBool(DockSession.SetSessionData(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2)));
 
 		case FN_SCR_SHOW_TAB:
 			{

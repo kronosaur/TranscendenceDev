@@ -4396,6 +4396,7 @@ ALERROR CUniverse::InitCodeChainPrimitives (void)
 	m_CC.DefineGlobal(CONSTLIT("gPlayerShip"), m_CC.GetNil());
 	m_CC.DefineGlobal(CONSTLIT("gSource"), m_CC.GetNil());
 	m_CC.DefineGlobal(CONSTLIT("gItem"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gScreen"), m_CC.GetNil());
 	m_CC.DefineGlobal(CONSTLIT("gType"), m_CC.GetNil());
 
 	//	Register primitives
