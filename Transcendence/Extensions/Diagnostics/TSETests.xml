@@ -149,8 +149,14 @@
 						(lambda ()
 							(block ()
 								(for i 0 359
-									(if (!= (divide (tseRotationFrameVar 120 i) 1080) (tseRotationFrameIndex 120 i))
-										(error "CIntegralRotationDesc: Frame index does not match frame variable.")
+									(block ()
+										(if (!= (divide (tseRotationFrameVar 120 i) 1080) (tseRotationFrameIndex 120 i))
+											(error "CIntegralRotationDesc: Frame index does not match frame variable.")
+											)
+
+										(if (!= (tseRotationAngleFromFrameVar 120 (tseRotationFrameVar 120 i)) i)
+											(error "CIntegralRotationDesc: Inconsistent rotation angle to rotation frame conversion.")
+											)
 										)
 									)
 								)

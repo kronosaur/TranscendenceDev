@@ -16,6 +16,7 @@ static constexpr DWORD FN_TSE_PERCEPTION_RANGE =		8;
 static constexpr DWORD FN_TSE_ROTATION_TEST =			9;
 static constexpr DWORD FN_TSE_ROTATION_FRAME_INDEX =	10;
 static constexpr DWORD FN_TSE_ROTATION_FRAME_VAR =		11;
+static constexpr DWORD FN_TSE_ROTATION_ANGLE_FROM_FRAME_VAR =		12;
 
 ICCItem *fnNil (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -62,6 +63,10 @@ static PRIMITIVEPROCDEF g_Library[] =
 		{	"tseRegenDesc",					fnTransEngine,		FN_TSE_REGEN_DESC,
 			"(tseRegenDesc regen [ticksPerCycle]) -> desc of hp to regen",
 			"n*",	0,	},
+
+		{	"tseRotationAngleFromFrameVar",		fnTransEngine,		FN_TSE_ROTATION_ANGLE_FROM_FRAME_VAR,
+			"(tseRotationAngleFromFrameVar frameCount frameVar) -> angle",
+			"ii",	0,	},
 
 		{	"tseRotationFrameIndex",		fnTransEngine,		FN_TSE_ROTATION_FRAME_INDEX,
 			"(tseRotationFrameIndex frameCount angle) -> frameIndex",
@@ -239,6 +244,14 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(mathRound(rDist / LIGHT_SECOND));
 			}
 
+		case FN_TSE_ROTATION_ANGLE_FROM_FRAME_VAR:
+			{
+			int iFrameCount = pArgs->GetElement(0)->GetIntegerValue();
+			int iFrameVar = pArgs->GetElement(1)->GetIntegerValue();
+
+			return pCC->CreateInteger(CIntegralRotationDesc::GetRotationAngleExact(iFrameCount, iFrameVar));
+			}
+
 		case FN_TSE_ROTATION_FRAME_INDEX:
 			{
 			int iFrameCount = pArgs->GetElement(0)->GetIntegerValue();
@@ -252,7 +265,7 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int iFrameCount = pArgs->GetElement(0)->GetIntegerValue();
 			Metric rAngleDegrees = pArgs->GetElement(1)->GetDoubleValue();
 
-			return pCC->CreateInteger(CIntegralRotationDesc::GetFrameRotationExact(iFrameCount, mathRound(rAngleDegrees)));
+			return pCC->CreateInteger(CIntegralRotationDesc::GetRotationFrameExact(iFrameCount, mathRound(rAngleDegrees)));
 			}
 
 		case FN_TSE_ROTATION_TEST:

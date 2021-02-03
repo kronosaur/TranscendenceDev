@@ -492,7 +492,6 @@ class CIntegralRotationDesc
 		int GetFrameAngle (void) const { return (m_iCount > 0 ? mathRound(360.0 / m_iCount) : 0); }
 		int GetFrameCount (void) const { return m_iCount; }
 		int GetFrameIndex (int iAngle) const { return (m_iCount > 0 ? (m_FacingsData[m_iCount].AngleToFrameIndex[AngleMod(iAngle)]) : 0); }
-		int GetFrameRotationExact (int iAngle) const { return (m_iCount > 0 ? GetFrameRotationExact(m_iCount, iAngle) : 0); }
 		int GetManeuverDelay (void) const;
 		Metric GetManeuverRatio (void) const { return (Metric)m_iMaxRotationRate / ROTATION_FRACTION; }
 		int GetMaxRotationSpeed (void) const { return m_iMaxRotationRate; }
@@ -501,24 +500,26 @@ class CIntegralRotationDesc
 		int GetRotationAccel (void) const { return m_iRotationAccel; }
 		int GetRotationAccelStop (void) const { return m_iRotationAccelStop; }
 		int GetRotationAngle (int iIndex) const { return (m_iCount > 0 ? m_FacingsData[m_iCount].FrameIndexToAngle[iIndex % m_iCount] : 0); }
+		int GetRotationAngleExact (int iRotationFrameExact) const { return (m_iCount > 0 ? GetRotationAngleExact(m_iCount, iRotationFrameExact) : 0); }
+		int GetRotationFrameExact (int iAngle) const { return (m_iCount > 0 ? GetRotationFrameExact(m_iCount, iAngle) : 0); }
 		void InitFromDesc (const CRotationDesc &Desc);
 		void Init (int iFrameCount, Metric rMaxRotation = 360.0, Metric rAccel = 1.0, Metric rAccelStop = 1.0);
 
 		static int GetFrameIndex (int iCount, int iAngle) { return (InitFacingsData(iCount) ? m_FacingsData[iCount].AngleToFrameIndex[AngleMod(iAngle)] : 0); }
 		static int GetRotationAngle (int iCount, int iIndex) { return (InitFacingsData(iCount) ? m_FacingsData[iCount].FrameIndexToAngle[iIndex % iCount] : 0); }
-		static int GetFrameRotationExact (int iCount, int iAngle) { return ROTATION_FRACTION / 360 * iCount * AngleMod(90 + ((int)(0.5 * 360.0 / iCount)) - iAngle); }
+		static int GetRotationAngleExact (int iCount, int iRotationFrameExact) { return AngleMod(90 - (((iRotationFrameExact * 360) / (ROTATION_FRACTION * iCount)) - GetHalfFrameDegrees(iCount))); }
+		static int GetRotationFrameExact (int iCount, int iAngle) { return (ROTATION_FRACTION / 360 * iCount * AngleMod(90 + GetHalfFrameDegrees(iCount) - iAngle)) + GetHalfDegreeInRotationFrameExact(iCount); }
 
 	private:
 		struct SFacingsData
 			{
-			SFacingsData (void) :
-					bInitialized(false)
-				{ }
-
-			bool bInitialized;
+			bool bInitialized = false;
 			TArray<int> AngleToFrameIndex;
 			TArray<int> FrameIndexToAngle;
 			};
+
+		static int GetHalfFrameDegrees (int iCount) { return (int)(0.5 * 360.0 / iCount); }
+		static int GetHalfDegreeInRotationFrameExact (int iCount) { return mathRound(ROTATION_FRACTION / (2.0 * 360.0 / iCount)); }
 
 		int m_iCount = 20;						//  Number of frames
 		int m_iMaxRotationRate = 0;				//	Rotations per tick (in 1/1000ths of a rotation)
@@ -536,6 +537,7 @@ class CIntegralRotation
 			{ }
 
 		int CalcFinalRotationFrame (const CIntegralRotationDesc &Desc) const { return Desc.CalcFinalRotationFrame(m_iRotationFrame, m_iRotationSpeed); }
+		int GetFrameAlignedRotationAngle (const CIntegralRotationDesc &Desc) const;
 		int GetFrameIndex (void) const { return GetFrameIndex(m_iRotationFrame); }
 		EManeuver GetLastManeuver (void) const { return m_iLastManeuver; }
 		EManeuver GetManeuverToFace (const CIntegralRotationDesc &Desc, int iAngle) const;
@@ -554,6 +556,36 @@ class CIntegralRotation
 
 	private:
 		static constexpr int ROTATION_FRACTION_OLD =	1024;
+
+		static bool UpdateRotateLeft (int &iRotationSpeed, const CIntegralRotationDesc &Desc)
+			{
+			if (iRotationSpeed > -Desc.GetMaxRotationSpeed())
+				{
+				if (iRotationSpeed > 0)
+					iRotationSpeed = Max(-Desc.GetMaxRotationSpeed(), iRotationSpeed - Desc.GetRotationAccelStop());
+				else
+					iRotationSpeed = Max(-Desc.GetMaxRotationSpeed(), iRotationSpeed - Desc.GetRotationAccel());
+
+				return true;
+				}
+			else
+				return false;
+			}
+
+		static bool UpdateRotateRight (int &iRotationSpeed, const CIntegralRotationDesc &Desc)
+			{
+			if (iRotationSpeed < Desc.GetMaxRotationSpeed())
+				{
+				if (iRotationSpeed < 0)
+					iRotationSpeed = Min(Desc.GetMaxRotationSpeed(), iRotationSpeed + Desc.GetRotationAccelStop());
+				else
+					iRotationSpeed = Min(Desc.GetMaxRotationSpeed(), iRotationSpeed + Desc.GetRotationAccel());
+
+				return true;
+				}
+			else
+				return false;
+			}
 
 		int GetFrameIndex (int iFrame) const { return (iFrame / CIntegralRotationDesc::ROTATION_FRACTION); }
 
