@@ -546,6 +546,8 @@ class CIntegralRotation
 		ICCItemPtr GetStatus (const CIntegralRotationDesc &Desc) const;
 		void Init (const CIntegralRotationDesc &Desc, int iRotationAngle = -1);
 		bool IsPointingTo (const CIntegralRotationDesc &Desc, int iAngle) const { return (GetManeuverToFace(Desc, iAngle) == EManeuver::None); }
+		bool IsTurningLeft () const { return m_iRotationSpeed < 0; }
+		bool IsTurningRight () const { return m_iRotationSpeed > 0; }
 		void ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDesc &Desc);
 		void SetRotationAngle (const CIntegralRotationDesc &Desc, int iAngle);
 		void SetRotationSpeedDegrees (const CIntegralRotationDesc &Desc, Metric rDegreesPerTick);
@@ -556,6 +558,9 @@ class CIntegralRotation
 
 	private:
 		static constexpr int ROTATION_FRACTION_OLD =	1024;
+
+		int CalcFinalRotationFrame (const CIntegralRotationDesc &Desc, EManeuver iManeuver) const;
+		int GetFrameIndex (int iFrame) const { return (iFrame / CIntegralRotationDesc::ROTATION_FRACTION); }
 
 		static bool UpdateRotateLeft (int &iRotationSpeed, const CIntegralRotationDesc &Desc)
 			{
@@ -587,7 +592,7 @@ class CIntegralRotation
 				return false;
 			}
 
-		int GetFrameIndex (int iFrame) const { return (iFrame / CIntegralRotationDesc::ROTATION_FRACTION); }
+		static int UpdateRotationFrame (int iRotationFrame, int iRotationSpeed, const CIntegralRotationDesc &Desc);
 
 		int m_iRotationFrame = 0;				//	Current rotation (in 1/1000ths of a rotation)
 		int m_iRotationSpeed = 0;				//	Current rotation speed (+ clockwise; - counterclockwise; in 1/1000ths)

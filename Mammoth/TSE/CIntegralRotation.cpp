@@ -10,6 +10,37 @@
 const Metric MANEUVER_MASS_FACTOR =				1.0;
 const Metric MAX_INERTIA_RATIO =				9.0;
 
+int CIntegralRotation::CalcFinalRotationFrame (const CIntegralRotationDesc &Desc, EManeuver iManeuver) const
+
+//	CalcFinalRotationFrame
+//
+//	Computes the final rotation frame if the next maneuver is given.
+
+	{
+	switch (iManeuver)
+		{
+		case EManeuver::RotateLeft:
+		case EManeuver::RotateRight:
+			{
+			//	Calculate our new state next tick.
+
+			int iRotationFrame = m_iRotationFrame;
+			int iRotationSpeed = m_iRotationSpeed;
+
+			if (iManeuver == EManeuver::RotateLeft)
+				UpdateRotateLeft(iRotationSpeed, Desc);
+			else
+				UpdateRotateRight(iRotationFrame, Desc);
+
+			iRotationFrame = UpdateRotationFrame(iRotationFrame, iRotationSpeed, Desc);
+			return Desc.CalcFinalRotationFrame(iRotationFrame, iRotationSpeed);
+			}
+
+		default:
+			return CalcFinalRotationFrame(Desc);
+		}
+	}
+
 ICCItemPtr CIntegralRotation::Diagnostics (int iFrameCount, Metric rMaxRotationSpeed, Metric rAccel, Metric rAccelStop)
 
 //	Diagnostics
@@ -111,24 +142,24 @@ EManeuver CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc &Des
 	{
 	//	Figure out where we will point if we stop turning right now.
 
-	int iCurrentAngle = Desc.GetRotationAngleExact(CalcFinalRotationFrame(Desc));
+	int iFinalAngle = Desc.GetRotationAngleExact(CalcFinalRotationFrame(Desc));
 	int iDesiredAngle = iAngle;
 
 	//	If we're going to be in the right spot by doing nothing, then just stop
 	//	rotating.
 
-	if (iCurrentAngle == iDesiredAngle)
+	if (iFinalAngle == iDesiredAngle)
 		return EManeuver::None;
 
 	//	Otherwise, figure out how many frames we need to turn (and the 
 	//	direction).
 
-	int iDegreeDiff = ClockDiff(iDesiredAngle, iCurrentAngle, 360);
+	int iDegreeDiff = ClockDiff(iDesiredAngle, iFinalAngle, 360);
 
 	//	Are we turning left?
 
-	int iNewRotationSpeed;
-	Metric rMaxRotationSpeed = Desc.GetMaxRotationSpeedDegrees();
+	const Metric rMaxRotationSpeed = Desc.GetMaxRotationSpeedDegrees();
+	int iNewRotationFrame;
 	if (iDegreeDiff > 0)
 		{
 		//	If we have a ways to go, then just turn
@@ -137,10 +168,9 @@ EManeuver CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc &Des
 			return EManeuver::RotateLeft;
 
 		//	Otherwise we need to calculate better. Figure out what our new
-		//	rotation speed will be if we turn right.
+		//	rotation speed will be if we turn left.
 
-		iNewRotationSpeed = m_iRotationSpeed;
-		UpdateRotateLeft(iNewRotationSpeed, Desc);
+		iNewRotationFrame = CalcFinalRotationFrame(Desc, EManeuver::RotateLeft);
 		}
 
 	//	Or right
@@ -153,29 +183,32 @@ EManeuver CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc &Des
 			return EManeuver::RotateRight;
 
 		//	Otherwise we need a better calculation. Figure out what our new
-		//	rotation speed will be if we turn left.
+		//	rotation speed will be if we turn right.
 
-		iNewRotationSpeed = m_iRotationSpeed;
-		UpdateRotateRight(iNewRotationSpeed, Desc);
+		iNewRotationFrame = CalcFinalRotationFrame(Desc, EManeuver::RotateRight);
 		}
 
 	//	Figure out where we will end up next tick given our new rotation speed.
-
-	int iNewRotationFrame = m_iRotationFrame;
-	int iFrameMax = Desc.GetFrameCount() * CIntegralRotationDesc::ROTATION_FRACTION;
-	iNewRotationFrame = (iNewRotationFrame + iNewRotationSpeed) % iFrameMax;
-	if (iNewRotationFrame < 0)
-		iNewRotationFrame += iFrameMax;
 
 	int iNewAngle = Desc.GetRotationAngleExact(iNewRotationFrame);
 	int iNewDegreeDiff = ClockDiff(iDesiredAngle, iNewAngle, 360);
 
 	//	If we're closer to the target, then do it.
 
-	if (iNewDegreeDiff == iDegreeDiff || Absolute(iNewDegreeDiff) < Absolute(iDegreeDiff))
-		return (iDegreeDiff < 0 ? EManeuver::RotateRight : EManeuver::RotateLeft);
+	if (iDegreeDiff > 0)
+		{
+		if (iNewDegreeDiff >= 0 && iNewDegreeDiff < iDegreeDiff)
+			return EManeuver::RotateLeft;
+		else
+			return EManeuver::None;
+		}
 	else
-		return EManeuver::None;
+		{
+		if (iNewDegreeDiff <= 0 && iNewDegreeDiff > iDegreeDiff)
+			return EManeuver::RotateRight;
+		else
+			return EManeuver::None;
+		}
 	}
 
 int CIntegralRotation::GetRotationAngle (const CIntegralRotationDesc &Desc) const
@@ -353,16 +386,28 @@ void CIntegralRotation::Update (const CIntegralRotationDesc &Desc, EManeuver iMa
 
 	//	Now rotate
 
-	if (m_iRotationSpeed != 0)
-		{
-		int iFrameMax = Desc.GetFrameCount() * CIntegralRotationDesc::ROTATION_FRACTION;
-
-		m_iRotationFrame = (m_iRotationFrame + m_iRotationSpeed) % iFrameMax;
-		if (m_iRotationFrame < 0)
-			m_iRotationFrame += iFrameMax;
-		}
+	m_iRotationFrame = UpdateRotationFrame(m_iRotationFrame, m_iRotationSpeed, Desc);
 
 	DEBUG_CATCH
+	}
+
+int CIntegralRotation::UpdateRotationFrame (int iRotationFrame, int iRotationSpeed, const CIntegralRotationDesc &Desc)
+
+//	UpdateRotationFrame
+//
+//	Returns the new rotation frame based on the current speed.
+
+	{
+	if (iRotationSpeed != 0)
+		{
+		const int iFrameMax = Desc.GetFrameCount() * CIntegralRotationDesc::ROTATION_FRACTION;
+
+		iRotationFrame = (iRotationFrame + iRotationSpeed) % iFrameMax;
+		if (iRotationFrame < 0)
+			iRotationFrame += iFrameMax;
+		}
+
+	return iRotationFrame;
 	}
 
 void CIntegralRotation::WriteToStream (IWriteStream *pStream) const
