@@ -548,6 +548,7 @@ class CConfigurationDesc
 		bool IncPolarity (int iPolarity, int *retiNewPolarity = NULL) const;
 		ALERROR InitFromWeaponClassXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, ETypes iDefault = ctSingle);
 		bool IsAlternating (void) const { return (m_bCustomAlternating || m_iType == ctDualAlternating); }
+		bool IsDualPointOrigin (void) const;
 		bool IsEmpty (void) const { return m_iType == ctUnknown; }
 		bool IsSinglePointOrigin (void) const;
 

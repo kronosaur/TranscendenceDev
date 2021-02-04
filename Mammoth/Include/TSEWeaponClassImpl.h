@@ -282,6 +282,7 @@ class CWeaponClass : public CDeviceClass
 		int GetSelectVariantCount (void) const;
 		bool HasAmmoLeft (CItemCtx &ItemCtx, const CWeaponFireDesc *pShot) const;
 		ALERROR InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType);
+		bool IsDualPointOrigin (void) const { return m_Configuration.IsDualPointOrigin(); }
 		bool IsCapacitorEnabled (void) { return (m_Counter == cntCapacitor); }
 		bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
 		bool IsLauncher (void) const { return (m_iVariantType == varLauncher); }

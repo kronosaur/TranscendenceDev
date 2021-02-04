@@ -84,6 +84,7 @@
 #define PROPERTY_DAMAGE_TYPE_ID					CONSTLIT("damageTypeID")
 #define PROPERTY_DAMAGE_WMD_180					CONSTLIT("damageWMD180")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
+#define PROPERTY_DUAL_POINT_ORIGIN				CONSTLIT("dualPointOrigin")
 #define PROPERTY_EFFECTIVE_RANGE				CONSTLIT("effectiveRange")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_FIRE_DELAY						CONSTLIT("fireDelay")
@@ -2924,6 +2925,9 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		int iDelay = CalcActivateDelay(Ctx);
 		return CC.CreateInteger(iDelay > 0 ? mathRound(rDamagePerShot * 180.0 / iDelay) : mathRound(rDamagePerShot));
 		}
+
+	else if (strEquals(sProperty, PROPERTY_DUAL_POINT_ORIGIN))
+		return CC.CreateBool(IsDualPointOrigin());
 
 	else if (strEquals(sProperty, PROPERTY_EFFECTIVE_RANGE))
 		return CC.CreateInteger(mathRound(pShot->GetEffectiveRange() / LIGHT_SECOND));
