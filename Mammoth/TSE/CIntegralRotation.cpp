@@ -30,7 +30,7 @@ int CIntegralRotation::CalcFinalRotationFrame (const CIntegralRotationDesc &Desc
 			if (iManeuver == EManeuver::RotateLeft)
 				UpdateRotateLeft(iRotationSpeed, Desc);
 			else
-				UpdateRotateRight(iRotationFrame, Desc);
+				UpdateRotateRight(iRotationSpeed, Desc);
 
 			iRotationFrame = UpdateRotationFrame(iRotationFrame, iRotationSpeed, Desc);
 			return Desc.CalcFinalRotationFrame(iRotationFrame, iRotationSpeed);
