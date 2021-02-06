@@ -162,6 +162,7 @@
 <!-- SANCTUARY STAR SYSTEM -->
 
 	<SystemType UNID="&ssSanctuary;"
+				name=				"Sanctuary"
 				attributes=			"envAir"
 				backgroundID=		"&rsLightNebulaSpace;"
 				spaceColor=			"#282a3c"

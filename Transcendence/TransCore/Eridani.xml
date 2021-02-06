@@ -5,6 +5,7 @@
 <!-- ERIDANI SYSTEM -->
 
 	<SystemType UNID="&ssStartonEridani;"
+				name=			"Eridani"
 				attributes=		"envWater, eridaniScript"
 				noExtraEncounters=	"true"
 				>

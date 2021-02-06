@@ -1978,6 +1978,21 @@ TSortMap<DWORD, DWORD> CDesignType::GetXMLMergeFlags (void) const
 	return MergeFlags;
 	}
 
+CString CDesignType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
+
+//	GetNamePattern
+//
+//	Default implementation
+
+	{
+	CCodeChainCtx CCX(GetUniverse());
+	
+	if (retdwFlags)
+		*retdwFlags = 0;
+
+	return GetProperty(CCX, CONSTLIT("name"))->GetStringValue();
+	}
+
 CString CDesignType::GetNounPhrase (DWORD dwFlags) const
 
 //  GetNounPhrase

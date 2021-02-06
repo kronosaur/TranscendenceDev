@@ -1712,6 +1712,8 @@
 	-->
 
 	<SystemType UNID="&ssHeretic;" 
+			name=				"Heretic"
+			attributes=			"nonExtensible"
 			backgroundID=		"&rsLightNebulaSpace;"
 			spaceColor=			"#282a3c"
 			spaceEnvironmentTileSize=	"large"

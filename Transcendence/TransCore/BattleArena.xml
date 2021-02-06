@@ -983,6 +983,7 @@
 	<!-- Rigel Aurelius system -->
 
 	<SystemType UNID="&ssBattleArena;" 
+				name="Rigel Aurelius"
 				noRandomEncounters=	"true"
 				noExtraEncounters=	"true"
 				>

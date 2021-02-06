@@ -1,6 +1,7 @@
 //	CSystemType.cpp
 //
 //	CSystemType class
+//	Copyright (c) 2021 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -12,6 +13,7 @@
 
 #define BACKGROUND_ID_ATTRIB					CONSTLIT("backgroundID")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
+#define NAME_ATTRIB								CONSTLIT("name")
 #define NO_EXTRA_ENCOUNTERS_ATTRIB				CONSTLIT("noExtraEncounters")
 #define NO_RANDOM_ENCOUNTERS_ATTRIB				CONSTLIT("noRandomEncounters")
 #define SPACE_COLOR_ATTRIB						CONSTLIT("spaceColor")
@@ -179,6 +181,9 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	{
 	ALERROR error;
+
+	if (!pDesc->FindAttribute(NAME_ATTRIB, &m_sName))
+		m_sName = strPatternSubst(CONSTLIT("SystemType %08x"), GetUNID());
 
 	//	Load the background image UNID. If we have an explicit definition, then
 	//	take it, even if it is 0. Otherwise, we default to the core background.

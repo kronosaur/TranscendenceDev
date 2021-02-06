@@ -150,6 +150,7 @@
 	<!-- Charon Pirate Fortress System -->
 
 	<SystemType UNID="&ssCharonPirateFortress;"
+				name=				"Charon"
 				attributes=			"envAir"
 				backgroundID=		"&rsRedDwarfSpace;"
 				spaceColor=			"#10131d"

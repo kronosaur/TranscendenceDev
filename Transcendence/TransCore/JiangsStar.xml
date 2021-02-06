@@ -5,6 +5,7 @@
 <!-- JIANG'S STAR SYSTEM TYPE -->
 
 	<SystemType UNID="&ssJiangsStar;"
+				name=				"Jiang's Star"
 				attributes=			"envFire"
 				backgroundID=		"&rsRedGiantSpace;"
 				spaceColor=			"#200f0a"

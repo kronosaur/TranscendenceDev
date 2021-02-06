@@ -691,6 +691,7 @@
     <ClCompile Include="SpaceObjectItemProperties.cpp" />
     <ClCompile Include="SUpdateCtx.cpp" />
     <ClCompile Include="SystemProperties.cpp" />
+    <ClCompile Include="SystemTypeProperties.cpp" />
     <ClCompile Include="XMLLoader.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>

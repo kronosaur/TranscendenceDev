@@ -422,6 +422,8 @@
 	<!-- Point Juno System -->
 
 	<SystemType UNID="&ssPointJuno;" 
+				name=				"Point Juno"
+				attributes=			"nonExtensible"
 				backgroundID=		"&rsLightNebulaSpace;"
 				spaceColor=			"#282a3c"
 				spaceEnvironmentTileSize=	"large"
