@@ -55,12 +55,29 @@
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 #define PROPERTY_WRECK_TYPE_NAME				CONSTLIT("wreckTypeName")
 
-TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 1> {{
+TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 2> {{
 		{
 		"character",			"UNID of associated character",
 		[](const CShipClass &ShipClass, const CString &sProperty) 
 			{
 			return (ShipClass.m_Character.GetUNID() ? ICCItemPtr(ShipClass.m_Character.GetUNID()) : ICCItemPtr::Nil());
+			},
+		NULL,
+		},
+
+		{
+		"compartmentRegen",		"Regeneration level for compartments",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			for (int i = 0; i < ShipClass.m_AverageDevices.GetCount(); i++)
+				{
+				const CDeviceItem DeviceItem = ShipClass.m_AverageDevices.GetDeviceItem(i);
+				ICCItemPtr pResult = DeviceItem.GetProperty(CONSTLIT("compartmentRegen"));
+				if (!pResult->IsNil())
+					return pResult;
+				}
+
+			return ICCItemPtr::Nil();
 			},
 		NULL,
 		},

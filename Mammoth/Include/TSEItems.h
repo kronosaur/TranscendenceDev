@@ -60,6 +60,7 @@ class CDifferentiatedItem
 		inline int GetMassKg (void) const;
 		inline int GetMinLevel (void) const;
 		inline CString GetNounPhrase (DWORD dwFlags = 0) const;
+		inline ICCItemPtr GetProperty (const CString &sProperty) const;
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
 		inline int GetVariantNumber (void) const;

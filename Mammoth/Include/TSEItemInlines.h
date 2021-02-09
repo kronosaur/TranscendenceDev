@@ -116,6 +116,17 @@ inline CString CDifferentiatedItem::GetNounPhrase (DWORD dwFlags) const
 	return m_Item.GetNounPhrase(dwFlags);
 	}
 
+inline ICCItemPtr CDifferentiatedItem::GetProperty (const CString &sProperty) const
+	{
+	CCodeChainCtx CCX(m_Item.GetUniverse());
+	CItemCtx ItemCtx(m_Item);
+	ICCItem *pResult = m_Item.GetItemProperty(CCX, ItemCtx, sProperty, false);
+	if (pResult)
+		return ICCItemPtr(pResult);
+	else
+		return ICCItemPtr::Nil();
+	}
+
 inline int CDifferentiatedItem::GetVariantNumber (void) const
 	{
 	return m_Item.GetVariantNumber();
