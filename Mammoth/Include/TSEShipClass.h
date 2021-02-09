@@ -694,4 +694,8 @@ class CShipClass : public CDesignType
 
 		static CPlayerSettings m_DefaultPlayerSettings;
 		static bool m_bDefaultPlayerSettingsBound;
+
+		//	Property table
+
+		static TPropertyHandler<CShipClass> m_PropertyTable;
 	};

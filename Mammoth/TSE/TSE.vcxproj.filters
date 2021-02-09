@@ -1600,5 +1600,8 @@
     <ClCompile Include="RepairerClassProperties.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
+    <ClCompile Include="ShipClassProperties.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
