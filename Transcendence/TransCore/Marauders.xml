@@ -596,7 +596,9 @@
 			<Device slotID="port2"		deviceID="&itTurbolaserCannon;"/>
 			<Device slotID="starboard1"	deviceID="&itTurbolaserCannon;"/>
 			<Device slotID="starboard2"	deviceID="&itTurbolaserCannon;"/>
+
 			<Device deviceID="&itClass3Deflector;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="6"/>
 			<Device deviceID="&it100MWReactor;"/>
 		</Devices>
 

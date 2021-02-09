@@ -540,7 +540,7 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, S
 	//	Short-circuit various cases
 
 	CShip *pShip = pSource->AsShip();
-	if (!pShip == NULL
+	if (!pShip
 			|| !pDevice
 			|| (Ctx.iTick % REPAIR_CYCLE_TIME) != 0
 			|| !pDevice->IsWorking())
@@ -556,13 +556,16 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, S
 
 	//	Armor is repaired next, if necessary
 
-	if (RepairShipArmor(RepairerItem, Ctx))
-		return;
+	if (Desc.ArmorRepair.GetCount() > 0)
+		{
+		if (RepairShipArmor(RepairerItem, Ctx))
+			return;
 
-	//	Otherwise, if we have attached objects, try to repair those.
+		//	Otherwise, if we have attached objects, try to repair those.
 
-	if (pShip->HasAttachedSections() && RepairShipAttachedSections(RepairerItem, Ctx))
-		return;
+		if (pShip->HasAttachedSections() && RepairShipAttachedSections(RepairerItem, Ctx))
+			return;
+		}
 
 	DEBUG_CATCH
 	}

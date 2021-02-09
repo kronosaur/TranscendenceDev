@@ -130,6 +130,7 @@
 			<Device deviceID="&itThermoCannon;" secondaryWeapon="true" minFireArc="225" maxFireArc="315" posAngle="270" posRadius="45" posZ="30"/>
 
 			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 		</Devices>
 
 		<Maneuver

@@ -2005,6 +2005,7 @@
 
 		<Devices>
 			<Device deviceID="&itPlasmaShieldGenerator;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="8"/>
 		</Devices>
 
 		<Items>
@@ -2102,6 +2103,7 @@
 			</Device>
 			<Device slotID="starboardArm1"	deviceID="&itRasiermesserLauncher;"/>
 			<Device deviceID="&itPlasmaShieldGenerator;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 		</Devices>
 
 		<Items>

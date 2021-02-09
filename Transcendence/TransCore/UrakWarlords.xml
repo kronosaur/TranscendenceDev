@@ -342,6 +342,8 @@
 			<Device deviceID="&itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="90"  maxFireArc="270" posAngle="180" posRadius="30" posZ="30"/>
 			<Device deviceID="&itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="350" maxFireArc="170" posAngle="30"  posRadius="30" posZ="30"/>
 			<Device deviceID="&itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="190" maxFireArc="10"  posAngle="-30" posRadius="30" posZ="30"/>
+
+			<Device deviceID="&vtStdDamageControl;"		level="5"/>
 			<Device deviceID="&it100MWReactor;"/>
 		</Devices>
 

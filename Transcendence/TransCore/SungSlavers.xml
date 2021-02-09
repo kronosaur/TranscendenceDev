@@ -290,6 +290,7 @@
 
 			<Device deviceID="&itCyberDeckLowerShields;"/>
 			<Device deviceID="&itYoroiS100;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="6"/>
 		</Devices>
 
 		<Items>

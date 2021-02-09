@@ -96,4 +96,34 @@
 		</Events>
 	</ShipClass>
 
+<!-- Standard Items -->
+
+	<!-- Level 1-10: Damage Control Party
+	
+		This device is used by capital ships to repair damage while in flight.
+
+	-->
+
+	<ItemType UNID="&vtStdDamageControl;"
+			name=				"(damage control party)"
+			level=				"1-10"
+			virtual=			"true"
+			>
+
+		<RepairerDevice>
+			<Scaling>
+				<Desc level="1"		regen="0.8"	compartmentRegen="0.8"	powerUse="1"/>
+				<Desc level="2"		regen="1.0"	compartmentRegen="1.0"	powerUse="2"/>
+				<Desc level="3"		regen="1.4"	compartmentRegen="1.4"	powerUse="5"/>
+				<Desc level="4"		regen="1.8"	compartmentRegen="1.8"	powerUse="10"/>
+				<Desc level="5"		regen="2.3"	compartmentRegen="2.3"	powerUse="20"/>
+				<Desc level="6"		regen="3"	compartmentRegen="3"	powerUse="30"/>
+				<Desc level="7"		regen="3.5"	compartmentRegen="3.5"	powerUse="50"/>
+				<Desc level="8"		regen="4"	compartmentRegen="4"	powerUse="100"/>
+				<Desc level="9"		regen="4.5"	compartmentRegen="4.5"	powerUse="200"/>
+				<Desc level="10"	regen="8"	compartmentRegen="8"	powerUse="300"/>
+			</Scaling>
+		</RepairerDevice>
+	</ItemType>
+
 </TranscendenceModule>

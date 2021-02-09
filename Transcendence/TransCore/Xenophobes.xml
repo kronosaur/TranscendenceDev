@@ -249,6 +249,8 @@
 			<Device slotID="mainTurret"			deviceID="&itMarkIIIHowitzer;"/>
 			<Device slotID="portTurret"			deviceID="&itLancerCannon;"/>
 			<Device slotID="starboardTurret"	deviceID="&itLancerCannon;"/>
+
+			<Device deviceID="&vtStdDamageControl;"		level="6"/>
 		</Devices>
 
 		<!-- Items -->
@@ -330,6 +332,7 @@
 			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="180" maxFireArc="285" posAngle="-138" posRadius="49" posZ="0"/>
 
 			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
+			<Device deviceID="&vtStdDamageControl;"		level="8"/>
 			<Device deviceID="&it500MWReactor;"/>
 		</Devices>
 
@@ -453,6 +456,7 @@
 			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="-105" posRadius="82" posZ="114"/>
 
 			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 			<Device deviceID="&it1GWReactor;"/>
 		</Devices>
 

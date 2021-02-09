@@ -462,6 +462,7 @@
 				</Items>
 			</Device>
 			<Device deviceID="&itLightningCannon;" secondaryWeapon="true" omnidirectional="true" posAngle="0" posRadius="12" posZ="20" />
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 			<Device deviceID="&itCydonianShields;"/>
 		</Devices>
 
@@ -546,6 +547,7 @@
 			<Device deviceID="&itHecatesCannon;" posAngle="0" posRadius="48" posZ="0" minFireArc="345" maxFireArc="15" />
 			<Device deviceID="&itLightningTurret;" secondaryWeapon="true"/>
 			<Device deviceID="&itCydonianHeavyShields;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 			<Device deviceID="&it250MWReactor;"/>
 		</Devices>
 
@@ -713,6 +715,7 @@
 			<Device deviceID="&itAresPlasmaCannon;" posAngle="0" posRadius="80" posZ="0"/>
 			<Device deviceID="&itLightningTurret;" secondaryWeapon="true" posAngle="30"  posRadius="50" posZ="0"/>
 			<Device deviceID="&itLightningTurret;" secondaryWeapon="true" posAngle="330" posRadius="50" posZ="0"/>
+			<Device deviceID="&vtStdDamageControl;"		level="10"/>
 			<Device deviceID="&itKaidunShields;"/>
 		</Devices>
 

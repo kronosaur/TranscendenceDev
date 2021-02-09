@@ -2243,6 +2243,7 @@
 	<!ENTITY rsRanxFreighter			"0x00100458">
 	<!ENTITY rsRanxFreighterHero		"0x00100459">
 	<!ENTITY tbRanxDreadnoughtPatrol	"0x0010045A">
+	<!ENTITY vtRanxDamageControl		"0x0010045B">
 
 	<!-- 0470-048F FERIANS -->
 
@@ -2381,6 +2382,7 @@
 	<!ENTITY baCashCard					"0x001005E2">
 	<!ENTITY baAnalyzer					"0x001005E3">
 	<!ENTITY baFieldCrystal				"0x001005E4">
+	<!ENTITY vtStdDamageControl			"0x001005E5">
 
 	<!-- 0600-061F ABBASID -->
 

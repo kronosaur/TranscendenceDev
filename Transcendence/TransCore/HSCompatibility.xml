@@ -3194,6 +3194,7 @@
 			<Device deviceID="&itRasiermesserLauncher;" secondaryWeapon="true" minFireArc="340" maxFireArc="200"	posAngle="110" posRadius="60" posZ="0"/>
 			<Device deviceID="&itRasiermesserLauncher;" secondaryWeapon="true" minFireArc="160" maxFireArc="20"		posAngle="250" posRadius="60" posZ="0"/>
 			<Device deviceID="&itPlasmaShieldGenerator;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 		</Devices>
 
 		<Maneuver

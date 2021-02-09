@@ -477,6 +477,7 @@
 			<Device deviceID="&itAkan30Cannon;"	 secondaryWeapon="true" minFireArc="100" maxFireArc="260"	posAngle="180" posRadius="90" posZ="10"/>
 			<Device deviceID="&itPatchSpider;"/>
 			<Device deviceID="&itPatchSpider;"/>
+			<Device deviceID="&vtRanxDamageControl;"/>
 		</Devices>
 
 		<Maneuver
@@ -534,7 +535,7 @@
 
 <!-- ITEM TYPES -->
 
-	<!-- Segment of Depleted Uranium Armor -->
+	<!-- Level 4: Segment of Depleted Uranium Armor -->
 
 	<ItemType UNID="&itDepletedUraniumArmor;"
 			name=				"[segment(s) of ]depleted uranium armor"
@@ -559,7 +560,20 @@
 				/>
 	</ItemType>
 
-	<!-- Kiloton Cannon -->
+	<!-- Level 7: Damage Control Party -->
+
+	<ItemType UNID="&vtRanxDamageControl;"
+			name=				"(damage control party)"
+			level=				"7"
+			virtual=			"true"
+			>
+		<RepairerDevice
+				compartmentRegen=	"5"
+				powerUse=			"50"
+				/>
+	</ItemType>
+
+	<!-- Level 7: Kiloton Cannon -->
 
 	<ItemType UNID="&itKilotonCannon;"
 			name=				"kiloton cannon"
@@ -633,7 +647,7 @@
 		</Weapon>
 	</ItemType>
 
-	<!-- Kiloton Cannon Shell -->
+	<!-- Level 7: Kiloton Cannon Shell -->
 
 	<ItemType UNID="&itKilotonCannonShell;"
 			name=				"kiloton cannon shell"
