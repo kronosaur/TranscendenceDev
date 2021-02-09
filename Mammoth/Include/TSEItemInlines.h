@@ -310,6 +310,16 @@ inline CDeviceClass &CDeviceItem::GetDeviceClass (void)
 	return *GetType().GetDeviceClass();
 	}
 
+inline const CRepairerClass &CDeviceItem::GetDeviceClassRepairer () const
+	{
+	const CDeviceClass &DeviceClass = GetDeviceClass();
+	const CRepairerClass *pRepairerClass = DeviceClass.AsRepairerClass();
+	if (!pRepairerClass)
+		throw CException(ERR_FAIL);
+
+	return *pRepairerClass;
+	}
+
 inline int CDeviceItem::GetDeviceSlot (void) const
 	{
 	if (const CInstalledDevice *pDevice = GetInstalledDevice())
@@ -409,6 +419,12 @@ inline bool CDeviceItem::IsWeaponVariantValid (int iVariant) const
 inline bool CDeviceItem::NeedsAutoTarget (int *retiMinFireArc, int *retiMaxFireArc) const
 	{
 	return GetType().GetDeviceClass()->NeedsAutoTarget(*this, retiMinFireArc, retiMaxFireArc);
+	}
+
+inline void CDeviceItem::SetData (DWORD dwData)
+	{
+	if (CInstalledDevice *pDevice = GetInstalledDevice())
+		pDevice->SetData(dwData);
 	}
 
 //	CInstalledDevice Inlines ---------------------------------------------------

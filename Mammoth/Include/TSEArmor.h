@@ -287,6 +287,7 @@ class CInstalledArmor
 		int IncHitPoints (int iChange) { m_iHitPoints = Max(0, m_iHitPoints + iChange); return m_iHitPoints; }
 		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iSect, bool bInCreate = false);
 		bool IsComplete (void) const { return (m_fComplete ? true : false); }
+		bool IsDamaged () const;
 		bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
 		void SetComplete (CSpaceObject *pSource, bool bComplete = true);
 		void SetConsumePower (bool bValue = true) { m_fConsumePower = bValue; }

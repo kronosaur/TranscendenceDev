@@ -8,6 +8,7 @@
 class CInstalledArmor;
 class CInstalledDevice;
 class CItemList;
+class CRepairerClass;
 class CShipClass;
 
 //	ITEM -----------------------------------------------------------------------
@@ -167,6 +168,7 @@ class CDeviceItem : public CDifferentiatedItem
 		int GetCyberDefenseLevel () const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);
+		inline const CRepairerClass &GetDeviceClassRepairer () const;
 		inline int GetDeviceSlot (void) const;
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
 		int GetFireArc (void) const;
@@ -192,6 +194,7 @@ class CDeviceItem : public CDifferentiatedItem
 		inline bool IsWeaponVariantValid (int iVariant) const;
 		inline bool NeedsAutoTarget (int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const;
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
+		inline void SetData (DWORD dwData);
 
 	private:
 		CDeviceItem (CItem &Item) : CDifferentiatedItem(Item)

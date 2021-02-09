@@ -328,26 +328,15 @@ class CReactorClass : public CDeviceClass
 class CRepairerClass : public CDeviceClass
 	{
 	public:
-		enum ECachedHandlers
-			{
-			evtGetArmorRegen			= 0,
-
-			evtCount					= 1,
-			};
+		static constexpr int REPAIR_CYCLE_TIME =			10;
 
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
-		bool FindEventHandlerRepairerClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
-			{
-			if (!m_CachedEvents[iEvent].pCode)
-				return false;
-
-			if (retEvent) *retEvent = m_CachedEvents[iEvent];
-			return true;
-			}
 
 		//	CDeviceClass virtuals
 
+		virtual const CRepairerClass *AsRepairerClass (void) const override { return this; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
@@ -355,18 +344,42 @@ class CRepairerClass : public CDeviceClass
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 	private:
-		CRepairerClass (void);
 
-		void CalcRegen (CInstalledDevice *pDevice, CShip *pShip, int iSegment, int iTick, int *retiHP, int *retiPower);
-		bool RepairShipArmor (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx);
-		bool RepairShipAttachedSections (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx);
-		bool RepairShipInterior (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx);
+		enum class EEventCache
+			{
+			GetArmorRegen			= 0,
 
-		TArray<CRegenDesc> m_Repair;			//	Repair descriptor (by level)
-		CRegenDesc m_CompartmentRepair;			//	Repair compartments
-		int m_iPowerUse;						//	Power used while repairing
+			Count					= 1,
+			};
 
-		SEventHandlerDesc m_CachedEvents[evtCount];		//	Cached events
+		struct SRepairerDesc
+			{
+			int iLevel = 0;
+			TArray<CRegenDesc> ArmorRepair;		//	Armor repair by armor level.
+			CRegenDesc CompartmentRepair;		//	Compartment repair
+			int iPowerUse = 0;					//	Power used per armor repair
+			};
+
+		CRepairerClass (void) { }
+
+		void CalcArmorRegen (const CDeviceItem &RepairerItem, int iSegment, int iTick, int *retiHP, int *retiPower) const;
+		bool FindEventHandlerRepairerClass (EEventCache iEvent, SEventHandlerDesc *retEvent = NULL) const;
+		static const CXMLElement *FindLevelDesc (SDesignLoadCtx &Ctx, const CXMLElement &Scaling, int iLevel);
+		const CRegenDesc &GetArmorRegen (const SRepairerDesc &Desc, const CArmorItem &ArmorItem) const;
+		const SRepairerDesc &GetDesc (const CDeviceItem &RepairerItem) const;
+		static bool InitDescFromXML (SDesignLoadCtx &Ctx, int iLevel, const CXMLElement &DescXML, SRepairerDesc &retDesc);
+		bool RepairShipArmor (CDeviceItem &RepairerItem, SDeviceUpdateCtx &Ctx);
+		bool RepairShipAttachedSections (CDeviceItem &RepairerItem, SDeviceUpdateCtx &Ctx);
+		bool RepairShipInterior (CDeviceItem &RepairerItem, SDeviceUpdateCtx &Ctx);
+
+		TArray<SRepairerDesc> m_Desc;			//	Descriptors by scaled level.
+
+		SEventHandlerDesc m_CachedEvents[(int)EEventCache::Count];		//	Cached events
+
+		//	Property table
+
+		static TPropertyHandler<CDeviceItem> m_PropertyTable;
+		static const SRepairerDesc m_NullDesc;
 	};
 
 class CShieldClass : public CDeviceClass
@@ -470,7 +483,6 @@ class CShieldClass : public CDeviceClass
 		static int GetStdHP (int iLevel);
 		static int GetStdPower (int iLevel);
 		static int GetStdRegen (int iLevel);
-
 
 	protected:
 		virtual void OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const override;

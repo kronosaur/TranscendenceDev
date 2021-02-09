@@ -1597,5 +1597,8 @@
     <ClCompile Include="SystemTypeProperties.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
+    <ClCompile Include="RepairerClassProperties.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

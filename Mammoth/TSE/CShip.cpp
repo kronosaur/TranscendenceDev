@@ -3956,8 +3956,11 @@ bool CShip::IsArmorDamaged (int iSect)
 //	Returns TRUE if the given armor section is damaged
 
 	{
-	CInstalledArmor *pSect = GetArmorSection(iSect);
-	return (pSect->GetHitPoints() < pSect->GetMaxHP(this));
+	const CInstalledArmor *pSect = GetArmorSection(iSect);
+	if (!pSect)
+		throw CException(ERR_FAIL);
+
+	return pSect->IsDamaged();
 	}
 
 bool CShip::IsDeviceSlotAvailable (ItemCategories iItemCat, int *retiSlot)
