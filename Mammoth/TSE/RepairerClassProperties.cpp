@@ -18,7 +18,7 @@ TPropertyHandler<CDeviceItem> CRepairerClass::m_PropertyTable = std::array<TProp
 			else if (Desc.ArmorRepair.GetCount() == 1)
 				{
 				if (!Desc.ArmorRepair[0].IsEmpty())
-					return ICCItemPtr(mathRound(Desc.ArmorRepair[0].GetHPPer180(REPAIR_CYCLE_TIME)));
+					return ICCItemPtr::DoubleOrInt(Desc.ArmorRepair[0].GetHPPer180(REPAIR_CYCLE_TIME));
 				else
 					return ICCItemPtr::Nil();
 				}
@@ -29,7 +29,7 @@ TPropertyHandler<CDeviceItem> CRepairerClass::m_PropertyTable = std::array<TProp
 					{
 					if (!Desc.ArmorRepair[i].IsEmpty())
 						{
-						pResult->SetIntegerAt(strFromInt(i + 1), mathRound(Desc.ArmorRepair[i].GetHPPer180(REPAIR_CYCLE_TIME)));
+						pResult->SetAt(strFromInt(i + 1), ICCItemPtr::DoubleOrInt(Desc.ArmorRepair[i].GetHPPer180(REPAIR_CYCLE_TIME)));
 						}
 					}
 
@@ -48,7 +48,7 @@ TPropertyHandler<CDeviceItem> CRepairerClass::m_PropertyTable = std::array<TProp
 			if (Desc.CompartmentRepair.IsEmpty())
 				return ICCItemPtr::Nil();
 			else
-				return ICCItemPtr(mathRound(Desc.CompartmentRepair.GetHPPer180(REPAIR_CYCLE_TIME)));
+				return ICCItemPtr::DoubleOrInt(Desc.CompartmentRepair.GetHPPer180(REPAIR_CYCLE_TIME));
 			},
 		NULL,
 		}
