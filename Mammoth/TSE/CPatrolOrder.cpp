@@ -33,7 +33,7 @@ void CPatrolOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	//	NOTE: We guarantee that NavThreshold is always greater than 
 	//	PatrolRadius.
 
-	if ((pShip->GetPos() - m_Objs[OBJ_BASE]->GetPos()).Length2() > m_rNavThreshold2)
+	else if ((pShip->GetPos() - m_Objs[OBJ_BASE]->GetPos()).Length2() > m_rNavThreshold2)
 		{
 		pShip->AddOrder(COrderDesc(IShipController::orderApproach, m_Objs[OBJ_BASE], mathRound(m_rPatrolRadius / LIGHT_SECOND)), true);
 		}

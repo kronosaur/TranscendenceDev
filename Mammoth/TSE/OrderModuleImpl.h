@@ -347,6 +347,8 @@ class COrbitExactOrder : public IOrderModule
 		static constexpr Metric NAV_PATH_THRESHOLD =		(50.0 * LIGHT_SECOND);
 		static constexpr Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 
+		static constexpr int RESUPPLY_CHECK_TIME =			151;
+
 		void CalcIntermediates ();
 
 		IShipController::OrderTypes m_iOrder = IShipController::orderNone;
