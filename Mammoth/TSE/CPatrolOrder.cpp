@@ -36,23 +36,32 @@ void CPatrolOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	if ((pShip->GetPos() - m_Objs[OBJ_BASE]->GetPos()).Length2() > m_rNavThreshold2)
 		{
 		pShip->AddOrder(COrderDesc(IShipController::orderApproach, m_Objs[OBJ_BASE], mathRound(m_rPatrolRadius / LIGHT_SECOND)), true);
-		return;
 		}
 
-	//	Compute
+	//	Every once in a while we check to see if we need to dock with our base
+	//	to resupply.
 
-	CVector vTarget = m_Objs[OBJ_BASE]->GetPos() - pShip->GetPos();
-	Metric rTargetDist2 = vTarget.Dot(vTarget);
+	else if (pShip->IsDestinyTime(RESUPPLY_CHECK_TIME) 
+			&& Ctx.ImplementResupplyCheck(*pShip, *m_Objs[OBJ_BASE]))
+		{ }
 
-	Metric rMaxDist = m_rPatrolRadius * 1.1;
-	Metric rMinDist = m_rPatrolRadius * 0.9;
+	//	Normal behavior
 
-	if (rTargetDist2 > (rMaxDist * rMaxDist))
-		Ctx.ImplementSpiralIn(pShip, vTarget);
-	else if (rTargetDist2 < (rMinDist * rMinDist))
-		Ctx.ImplementSpiralOut(pShip, vTarget);
 	else
-		Ctx.ImplementSpiralOut(pShip, vTarget, 0);
+		{
+		CVector vTarget = m_Objs[OBJ_BASE]->GetPos() - pShip->GetPos();
+		Metric rTargetDist2 = vTarget.Dot(vTarget);
+
+		Metric rMaxDist = m_rPatrolRadius * 1.1;
+		Metric rMinDist = m_rPatrolRadius * 0.9;
+
+		if (rTargetDist2 > (rMaxDist * rMaxDist))
+			Ctx.ImplementSpiralIn(pShip, vTarget);
+		else if (rTargetDist2 < (rMinDist * rMinDist))
+			Ctx.ImplementSpiralOut(pShip, vTarget);
+		else
+			Ctx.ImplementSpiralOut(pShip, vTarget, 0);
+		}
 	}
 
 void CPatrolOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)

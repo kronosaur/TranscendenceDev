@@ -1347,6 +1347,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapViewportCtx &Ctx);
 		void PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx);
 		void ReactorOverload (int iPowerDrain);
+		void RepairAllDamage ();
 		ALERROR ReportCreateError (const CString &sError) const;
 		void SetFireDelayForCycleWeapons (CInstalledDevice &Device);
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);

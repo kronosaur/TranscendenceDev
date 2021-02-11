@@ -450,7 +450,7 @@ class CSpaceObject
 				}
 
 			int iMaxRepairLevel = 0;
-			int iMaxHPToRepair = 0;
+			int iMaxHPToRepair = 0;			//	-1 = repair all damage
 
 			bool bDecontaminate = false;
 			bool bResupplyAmmo = false;
@@ -1113,7 +1113,7 @@ class CSpaceObject
 		void AddTradeDesc (const CTradingDesc &Trade);
 		void AddTradeOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj);
 		SRefitObjCtx CalcRefitObjCtx (int iTick, int iRepairCycle) const;
-		bool CanRefitObj (const CSpaceObject &ShipObj, const SRefitObjCtx &Ctx) const;
+		bool CanRefitObj (const CSpaceObject &ShipObj, const SRefitObjCtx &Ctx, int iMinDamage = 0) const;
 		CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		CurrencyValue GetBalance (DWORD dwEconomyUNID) const;

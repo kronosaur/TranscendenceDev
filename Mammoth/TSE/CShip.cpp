@@ -7029,6 +7029,39 @@ void CShip::RemoveOverlay (DWORD dwID)
 	//	is not actually removed until Update (at which point we recalc).
 	}
 
+void CShip::RepairAllDamage ()
+
+//	RepairAllDamage
+//
+//	Repairs all damage, including armor and compartment damage.
+
+	{
+	bool bNotify = false;
+
+	int iHP;
+	int iMaxHP;
+	m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iHP, &iMaxHP);
+	if (iHP < iMaxHP)
+		{
+		m_Interior.SetHitPoints(this, m_pClass->GetInteriorDesc(), iMaxHP);
+		bNotify = true;
+		}
+
+	//	See if we need to repair armor
+
+	iHP = GetTotalArmorHP(&iMaxHP);
+	if (iHP < iMaxHP)
+		{
+		SetTotalArmorHP(iMaxHP);
+		bNotify = true;
+		}
+
+	//	Notify UI (if necessary)
+
+	if (bNotify)
+		m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
+	}
+
 void CShip::RepairArmor (int iSect, int iHitPoints, int *retiHPRepaired)
 
 //	RepairArmor
@@ -7048,39 +7081,35 @@ void CShip::RepairDamage (int iHPToRepair)
 //	across all segments and sections.
 
 	{
-	//	If we've got internal damage, repair that first.
+	//	A negative number means repair all damage
 
-	int iHP;
-	int iMaxHP;
+	if (iHPToRepair < 0)
+		RepairAllDamage();
 
-	m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iHP, &iMaxHP);
-	if (iHP < iMaxHP)
+	else if (iHPToRepair > 0)
 		{
-		//	Negative HP means we repair all
+		//	If we've got internal damage, repair that first.
 
-		if (iHPToRepair < 0)
-			m_Interior.SetHitPoints(this, m_pClass->GetInteriorDesc(), iMaxHP);
-		else
-			m_Interior.SetHitPoints(this, m_pClass->GetInteriorDesc(), Min(iHP + iHPToRepair, iMaxHP));
-		}
+		int iHP;
+		int iMaxHP;
 
-	//	Otherwise, repair armor damage
-
-	else
-		{
-		iHP = GetTotalArmorHP(&iMaxHP);
+		m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iHP, &iMaxHP);
 		if (iHP < iMaxHP)
 			{
-			//	Negative HP means we repair all
-
-			if (iHPToRepair < 0)
-				SetTotalArmorHP(iMaxHP);
-			else
-				SetTotalArmorHP(Min(iHP + iHPToRepair, iMaxHP));
-
-			//	Notify UI (if necessary)
-
+			m_Interior.SetHitPoints(this, m_pClass->GetInteriorDesc(), Min(iHP + iHPToRepair, iMaxHP));
 			m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
+			}
+
+		//	See if we need to repair armor
+
+		else
+			{
+			iHP = GetTotalArmorHP(&iMaxHP);
+			if (iHP < iMaxHP)
+				{
+				SetTotalArmorHP(Min(iHP + iHPToRepair, iMaxHP));
+				m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
+				}
 			}
 		}
 	}

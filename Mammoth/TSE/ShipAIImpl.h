@@ -152,6 +152,7 @@ class CAIBehaviorCtx
 		void ImplementHold (CShip *pShip, bool *retbInPlace = NULL);
 		void ImplementOrbit (CShip *pShip, CSpaceObject *pBase, Metric rDistance);
 		void ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bool bNoThrustThroughTurn = false);
+		bool ImplementResupplyCheck (CShip &Ship, CSpaceObject &BaseObj);
 		void ImplementSpiralIn (CShip *pShip, const CVector &vTarget);
 		void ImplementSpiralOut (CShip *pShip, const CVector &vTarget, int iTrajectory = 30);
 		void ImplementStop (CShip *pShip);

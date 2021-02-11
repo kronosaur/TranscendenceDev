@@ -75,7 +75,15 @@ CSpaceObject::SRefitObjCtx CSpaceObject::CalcRefitObjCtx (int iTick, int iRepair
 	//	Figure out our repair rate.
 
 	CRegenDesc Repair = Services.GetArmorRepairRate(0, DefaultRepair);
-	Ctx.iMaxHPToRepair = Repair.GetRegen(iTick, iRepairCycle);
+	if (iRepairCycle == 0)
+		{
+		//	iRepairCycle == 0 means that we want to repair all damage. In that
+		//	case we initialize it if and only if we repair any damage at all.
+
+		Ctx.iMaxHPToRepair = (!Repair.IsEmpty() ? -1 : 0);
+		}
+	else
+		Ctx.iMaxHPToRepair = Repair.GetRegen(iTick, iRepairCycle);
 
 	//	Conditions
 
@@ -91,7 +99,7 @@ CSpaceObject::SRefitObjCtx CSpaceObject::CalcRefitObjCtx (int iTick, int iRepair
 	return Ctx;
 	}
 
-bool CSpaceObject::CanRefitObj (const CSpaceObject &ShipObj, const SRefitObjCtx &Ctx) const
+bool CSpaceObject::CanRefitObj (const CSpaceObject &ShipObj, const SRefitObjCtx &Ctx, int iMinDamage) const
 
 //	CanRefitObj
 //
@@ -105,8 +113,8 @@ bool CSpaceObject::CanRefitObj (const CSpaceObject &ShipObj, const SRefitObjCtx 
 
 	const CArmorSystem &Armor = ShipObj.GetArmorSystem();
 	if (Armor.GetMaxLevel() <= Ctx.iMaxRepairLevel
-			&& Ctx.iMaxHPToRepair > 0
-			&& ShipObj.GetVisibleDamage() > 0)
+			&& (Ctx.iMaxHPToRepair > 0 || Ctx.iMaxHPToRepair == -1)
+			&& ShipObj.GetVisibleDamage() > iMinDamage)
 		return true;
 
 	if (Ctx.bScrapeOverlays
@@ -687,7 +695,7 @@ void CSpaceObject::RefitObj (CSpaceObject &ShipObj, const SRefitObjCtx &Ctx)
 	const CArmorSystem *pArmor = ShipObj.GetArmorSystem();
 	if (pArmor 
 			&& pArmor->GetMaxLevel() <= Ctx.iMaxRepairLevel
-			&& Ctx.iMaxHPToRepair > 0)
+			&& (Ctx.iMaxHPToRepair > 0 || Ctx.iMaxHPToRepair == -1))
 		{
 		ShipObj.RepairDamage(Ctx.iMaxHPToRepair);
 		if (Ctx.bScrapeOverlays)

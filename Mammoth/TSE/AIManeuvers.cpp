@@ -1928,6 +1928,29 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 		}
 	}
 
+bool CAIBehaviorCtx::ImplementResupplyCheck (CShip &Ship, CSpaceObject &BaseObj)
+
+//	ImplementResupplyCheck
+//
+//	Checks to see if the ship needs to (and can be) resupplied from the given 
+//	base. If so, it adds orders to implement resupply and returns TRUE. 
+//	Otherwise, we return FALSE.
+
+	{
+	CSpaceObject::SRefitObjCtx RefitCtx(BaseObj.CalcRefitObjCtx(0, 0));
+
+	if (!BaseObj.CanRefitObj(Ship, RefitCtx, 50))
+		return false;
+
+	//	Add orders to dock and resupply.
+
+	Ship.AddOrder(COrderDesc(IShipController::orderResupply), true);
+	Ship.AddOrder(COrderDesc(IShipController::orderWait, NULL, mathRandom(5, 10)), true);
+	Ship.AddOrder(COrderDesc(IShipController::orderDock, &BaseObj), true);
+
+	return true;
+	}
+
 void CAIBehaviorCtx::ImplementSpiralIn (CShip *pShip, const CVector &vTarget)
 
 //	SpiralIn

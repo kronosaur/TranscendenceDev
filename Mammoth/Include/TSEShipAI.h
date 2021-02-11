@@ -273,6 +273,7 @@ class IShipController
 										//		"timer": Seconds left in order (optional)
 			orderAttackOrRetreat,		//	pTarget = target to destroy
 										//		"timer": Seconds left in order (optional)
+			orderResupply,				//	Resupplies from currently docked at object.
 			};
 
 		enum EShipStatusNotifications

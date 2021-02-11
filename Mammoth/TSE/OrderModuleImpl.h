@@ -269,6 +269,7 @@ class CNavigateOrder : public IOrderModule
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return m_iOrder; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::DeterWithSecondaries; }
+		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::None; }
 		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::None; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
@@ -393,6 +394,8 @@ class CPatrolOrder : public IOrderModule
 		static constexpr Metric NAV_PATH_THRESHOLD =		(4.0 * PATROL_SENSOR_RANGE);
 		static constexpr Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 
+		static constexpr int RESUPPLY_CHECK_TIME =			151;
+
 		void CalcIntermediates ();
 
 		Metric m_rPatrolRadius = 0.0;
@@ -472,6 +475,7 @@ class CSimpleOrder : public IOrderModule
 
 	private:
 		void OrderFireWeapon (CShip *pShip, CAIBehaviorCtx &Ctx) const;
+		void OrderResupply (CShip &Ship, CAIBehaviorCtx &Ctx) const;
 		void OrderUseItem (CShip *pShip, CAIBehaviorCtx &Ctx) const;
 
 		IShipController::OrderTypes m_iOrder;
