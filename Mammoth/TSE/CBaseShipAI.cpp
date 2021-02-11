@@ -651,7 +651,22 @@ CSpaceObject *CBaseShipAI::GetBase (void) const
 	if (m_pOrderModule)
 		return m_pOrderModule->GetBase();
 	else
-		return OnGetBase();
+		{
+		switch (GetCurrentOrder())
+			{
+			//	There are some edge conditions in which we don't have an order
+			//	module, but no longer handle the orders in the base class
+			//	(this mostly happens when upgrading save file versions).
+			//	In that case, we handle it here.
+
+			case IShipController::orderDock:
+			case IShipController::orderPatrol:
+				return GetCurrentOrderTarget();
+
+			default:
+				return OnGetBase();
+			}
+		}
 	}
 
 int CBaseShipAI::GetCombatPower (void)
@@ -1830,30 +1845,23 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	m_fIsPlayerWingman =		((dwLoad & 0x00000020) ? true : false);
 	m_fIsPlayerEscort =			((dwLoad & 0x00000040) ? true : false);
 
-	//	Before version 75 we always used old style behaviors
+	//	Unfortunately, the only way to tell if we're using an order
+	//	modules it to try to create one. [There is an edge condition
+	//	if we saved the game before we got to create an order module,
+	//	which happens when saving missions.]
 
-	if (Ctx.dwVersion < 75)
-		m_fOldStyleBehaviors = true;
+	if (m_pOrderModule)
+		m_fOldStyleBehaviors = false;
 	else
 		{
-		//	Unfortunately, the only way to tell if we're using an order
-		//	modules it to try to create one. [There is an edge condition
-		//	if we saved the game before we got to create an order module,
-		//	which happens when saving missions.]
-
-		if (m_pOrderModule)
-			m_fOldStyleBehaviors = false;
-		else
+		IOrderModule *pDummy = IOrderModule::Create(GetCurrentOrder());
+		if (pDummy)
 			{
-			IOrderModule *pDummy = IOrderModule::Create(GetCurrentOrder());
-			if (pDummy)
-				{
-				m_fOldStyleBehaviors = false;
-				delete pDummy;
-				}
-			else
-				m_fOldStyleBehaviors = true;
+			m_fOldStyleBehaviors = false;
+			delete pDummy;
 			}
+		else
+			m_fOldStyleBehaviors = true;
 		}
 
 	//	In version 75 some flags were moved to the AI context
