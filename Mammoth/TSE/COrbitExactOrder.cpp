@@ -224,6 +224,26 @@ AIReaction COrbitExactOrder::OnGetReactToAttack () const
 		}
 	}
 
+AIReaction COrbitExactOrder::OnGetReactToBaseDestroyed () const
+
+//	OnGetReactToBaseDestroyed
+//
+//	Returns our default reaction to our base getting destroyed.
+
+	{
+	switch (m_iOrder)
+		{
+		case IShipController::orderOrbitExact:
+			return AIReaction::Destroy;
+
+		case IShipController::orderOrbitPatrol:
+			return AIReaction::DestroyAndRetaliate;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
 AIReaction COrbitExactOrder::OnGetReactToThreat () const
 
 //	OnGetReactToThreat

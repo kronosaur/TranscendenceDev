@@ -93,6 +93,7 @@ AIReaction CBaseShipAI::AdjReaction (AIReaction iReaction) const
 		{
 		case AIReaction::Chase:
 		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 			if (m_AICtx.IsNonCombatant())
 				return AIReaction::None;
 			else if (m_AICtx.IsImmobile())
@@ -854,7 +855,8 @@ CTargetList CBaseShipAI::GetTargetList (void) const
 	//	If we are aggressive, then include ships that haven't fired 
 	//	their weapons recently
 
-	if (m_AICtx.IsAggressor())
+	DWORD dwTypes = GetThreatTargetTypes();
+	if (dwTypes & (DWORD)CTargetList::ETargetType::NonAggressiveShip)
 		Options.bIncludeNonAggressors = true;
 
 	//	Include the player if they are blacklisted
@@ -876,6 +878,34 @@ CTargetList CBaseShipAI::GetTargetList (void) const
 	//	Done
 
 	return CTargetList(*m_pShip, Options);
+	}
+
+DWORD CBaseShipAI::GetThreatTargetTypes () const
+
+//	GetThreatTargetTypes
+//
+//	Returns the set of targets that we consider threatening.
+
+	{
+	//	See if the order module defines this.
+
+	DWORD dwTypes;
+	if (m_pOrderModule
+			&& (dwTypes = m_pOrderModule->GetThreatTargetTypes()))
+		{
+		return dwTypes;
+		}
+
+	//	Otherwise, default threat
+
+	else
+		{
+		DWORD dwTypes = (DWORD)CTargetList::ETargetType::AggressiveShip;
+		if (m_AICtx.IsAggressor())
+			dwTypes |= (DWORD)CTargetList::ETargetType::NonAggressiveShip;
+
+		return dwTypes;
+		}
 	}
 
 void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)
@@ -938,7 +968,8 @@ bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 		case IShipController::orderSentry:
 		case IShipController::orderDeterChase:
 			{
-			CSpaceObject *pBase = GetCurrentOrderTarget();
+			CSpaceObject *pBase = GetBase();
+
 			return (pBase && pBase->IsAngryAt(pObj));
 			}
 
@@ -1489,6 +1520,7 @@ bool CBaseShipAI::React (AIReaction iReaction, CSpaceObject &TargetObj)
 			}
 
 		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 			AddOrder(COrderDesc(IShipController::orderDestroyTarget, &TargetObj), true);
 			return true;
 
@@ -1520,9 +1552,15 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 
 		case AIReaction::Chase:
 		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
 		case AIReaction::DeterWithSecondaries:
 			{
+			//	Continue attacks.
+
+			if (iReaction == AIReaction::DestroyAndRetaliate)
+				AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
+
 			//	If the attacker is a valid threat, then add an order
 
 			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
@@ -1556,12 +1594,18 @@ bool CBaseShipAI::ReactToBaseDestroyed (CSpaceObject &AttackerObj)
 
 		case AIReaction::Chase:
 		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
 		case AIReaction::DeterWithSecondaries:
 			{
+			//	Continue attacks.
+
+			if (iReaction == AIReaction::DestroyAndRetaliate)
+				AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
+
 			//	Enable deter module
 
-			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+			if (m_AICtx.CalcIsPossibleTarget(*m_pShip, AttackerObj))
 				{
 				React(iReaction, AttackerObj);
 				return true;
@@ -1594,9 +1638,15 @@ bool CBaseShipAI::ReactToDeterMessage (CSpaceObject &AttackerObj)
 
 		case AIReaction::Chase:
 		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
 		case AIReaction::DeterWithSecondaries:
 			{
+			//	Continue attacks.
+
+			if (iReaction == AIReaction::DestroyAndRetaliate)
+				AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
+
 			//	If the attacker is a valid threat, then react
 
 			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
@@ -1924,6 +1974,7 @@ void CBaseShipAI::UpdateReactions (SUpdateCtx &Ctx)
 
 			case AIReaction::Chase:
 			case AIReaction::Destroy:
+			case AIReaction::DestroyAndRetaliate:
 			case AIReaction::Deter:
 			case AIReaction::DeterWithSecondaries:
 			case AIReaction::Gate:
@@ -1932,11 +1983,7 @@ void CBaseShipAI::UpdateReactions (SUpdateCtx &Ctx)
 
 				if (m_pShip->IsDestinyTime(11))
 					{
-					DWORD dwTypes = (DWORD)CTargetList::ETargetType::AggressiveShip;
-					if (m_AICtx.IsAggressor())
-						dwTypes |= (DWORD)CTargetList::ETargetType::NonAggressiveShip;
-
-					if (CSpaceObject *pTarget = Ctx.GetTargetList().FindBestTarget(dwTypes))
+					if (CSpaceObject *pTarget = Ctx.GetTargetList().FindBestTarget(GetThreatTargetTypes()))
 						{
 						React(iReaction, *pTarget);
 						}

@@ -1603,5 +1603,8 @@
     <ClCompile Include="ShipClassProperties.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
+    <ClCompile Include="CPatrolOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

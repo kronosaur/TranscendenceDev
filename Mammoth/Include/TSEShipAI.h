@@ -93,6 +93,7 @@ enum class AIReaction
 	Chase =									4,	//	Chase attacker
 	Destroy =								5,	//	Destroy attacker
 	Gate =									6,	//	Gate out
+	DestroyAndRetaliate =					7,	//	Destroy attacker and attack nearest enemies
 	};
 
 class CAISettings

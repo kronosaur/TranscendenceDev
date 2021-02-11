@@ -499,6 +499,7 @@
     <ClCompile Include="CIntegralRotation.cpp" />
     <ClCompile Include="COverlayUndergroundDesc.cpp" />
     <ClCompile Include="CPaintOrder.cpp" />
+    <ClCompile Include="CPatrolOrder.cpp" />
     <ClCompile Include="CPerceptionCalc.cpp" />
     <ClCompile Include="CPerformanceCounters.cpp" />
     <ClCompile Include="CPhysicsContact.cpp" />

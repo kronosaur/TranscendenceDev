@@ -283,6 +283,7 @@ class IOrderModule
 		AIReaction GetReactToThreat () const { return OnGetReactToThreat(); }
 		CSpaceObject *GetTarget (void) { return OnGetTarget(); }
 		Metric GetThreatRange () const { return OnGetThreatRange(); }
+		DWORD GetThreatTargetTypes () const { return OnGetThreatTargetTypes(); }
 		void ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx);
 		void ReadFromStream (SLoadCtx &Ctx);
 		bool SupportsReactions () const { return (OnGetReactToThreat() != AIReaction::Default); }
@@ -304,6 +305,7 @@ class IOrderModule
 		virtual AIReaction OnGetReactToThreat () const { return AIReaction::Default; }
 		virtual CSpaceObject *OnGetTarget (void) { return NULL; }
 		virtual Metric OnGetThreatRange (void) const { return 0.0; }
+		virtual DWORD OnGetThreatTargetTypes () const { return 0; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
 		virtual void OnWriteToStream (IWriteStream *pStream) const { }
@@ -430,6 +432,7 @@ class CBaseShipAI : public IShipController
 		AIReaction GetReactToAttack () const;
 		AIReaction GetReactToBaseDestroyed () const;
 		AIReaction GetReactToThreat () const;
+		DWORD GetThreatTargetTypes () const;
 		CUniverse &GetUniverse (void) const { return (m_pShip ? m_pShip->GetUniverse() : *g_pUniverse); }
 		bool InitOrderModule (void);
 		bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
