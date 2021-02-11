@@ -32,9 +32,9 @@
 						{	test:'(typ@ &stDwargColony; 'maxLightRadius)			result:500	}
 						{	test:'(typ@ &stDwargColony; 'name)						result:"Dwarg colony"	}
 						{	test:'(typ@ &stDwargColony; 'regen)						result:2	}
-						{	test:'(typ@ &stDwargColony; 'repairArmorMaxLevel)		result:Nil	}
-						{	test:'(typ@ &stDwargColony; 'repairArmorRate)			result:Nil	}
-						{	test:'(typ@ &stDwargColony; 'repairArmorRateExplicit)	result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'repairArmorMaxLevel)		result:7	}
+						{	test:'(typ@ &stDwargColony; 'repairArmorRate)			result:1	}
+						{	test:'(typ@ &stDwargColony; 'repairArmorRateExplicit)	result:1	}
 						{	test:'(typ@ &stDwargColony; 'satelliteStrength)			result:0	}
 						{	test:'(typ@ &stDwargColony; 'shipTable)					result:'(&scDwargRaider;)	}
 						{	test:'(typ@ &stDwargColony; 'shipConstructionTable)		result:Nil	}
