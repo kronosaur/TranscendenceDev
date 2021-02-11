@@ -670,6 +670,8 @@ class CStationType : public CDesignType
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
+		static constexpr double DEFAULT_SHIP_REGEN_PER_STATION_REGEN = 0.5;
+
 		struct SAnimationSection
 			{
 			int m_x;

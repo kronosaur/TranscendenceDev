@@ -1638,18 +1638,6 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_fShipEncounter = pDesc->GetAttributeBool(SHIP_ENCOUNTER_ATTRIB);
 		}
 
-	//	Ship repair rate
-
-	CString sRegen;
-	int iRepairRate;
-	if (pDesc->FindAttribute(SHIP_REGEN_ATTRIB, &sRegen))
-		{
-		if (error = m_ShipRegen.InitFromRegenString(Ctx, sRegen, STATION_REPAIR_FREQUENCY))
-			return error;
-		}
-	else if (pDesc->FindAttributeInteger(SHIP_REPAIR_RATE_ATTRIB, &iRepairRate) && iRepairRate > 0)
-		m_ShipRegen.InitFromRegen(6.0 * iRepairRate, STATION_REPAIR_FREQUENCY);
-
 	//	Starting in API 23 we change the default to 40 instead of 80
 
 	int iDefaultFireRateAdj = (GetAPIVersion() >= 23 ? 40 : 80);
@@ -1685,6 +1673,24 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			m_rMass = 1.0;	//	1 Earth mass or 1 solar mass.
 		else
 			m_rMass = 1000000.0;
+		}
+
+	//	Ship repair rate. NOTE: This needs to be after the hull descriptor 
+	//	because we use it to set defalts.
+
+	CString sRegen;
+	int iRepairRate;
+	if (pDesc->FindAttribute(SHIP_REGEN_ATTRIB, &sRegen))
+		{
+		if (error = m_ShipRegen.InitFromRegenString(Ctx, sRegen, STATION_REPAIR_FREQUENCY))
+			return error;
+		}
+	else if (pDesc->FindAttributeInteger(SHIP_REPAIR_RATE_ATTRIB, &iRepairRate) && iRepairRate > 0)
+		m_ShipRegen.InitFromRegen(6.0 * iRepairRate, STATION_REPAIR_FREQUENCY);
+	else if (!m_HullDesc.GetRegenDesc().IsEmpty())
+		{
+		double rStationRegen = m_HullDesc.GetRegenDesc().GetHPPer180(STATION_REPAIR_FREQUENCY);
+		m_ShipRegen.InitFromRegen(DEFAULT_SHIP_REGEN_PER_STATION_REGEN * rStationRegen, STATION_REPAIR_FREQUENCY);
 		}
 
 	//	Load devices
