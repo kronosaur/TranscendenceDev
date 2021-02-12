@@ -15,7 +15,7 @@ class CResourceDb
 		IXMLParserController *GetEntities (void) const { return m_pEntities; }
 		IXMLParserController *GetEntitiesHandoff (bool *retbFree) { IXMLParserController *pEntities = m_pEntities; *retbFree = m_bFreeEntities; m_pEntities = NULL; m_bFreeEntities = false; return pEntities; }
 		const CString &GetFilespec (void) const { return m_sFilespec; }
-		CString GetRootTag (void);
+		CString GetRootTag (CString *retsError = NULL);
 		bool ImageExists (const CString &sFolder, const CString &sFilename);
 		bool IsTDB (void) const { return (m_pDb != NULL); }
 		bool IsUsingExternalGameFile (void) const { return !m_bGameFileInDb; }
