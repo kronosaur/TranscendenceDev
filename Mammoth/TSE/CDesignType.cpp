@@ -105,6 +105,7 @@
 #define PROPERTY_DEFAULT_CURRENCY_EXCHANGE		CONSTLIT("defaultCurrencyExchange")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
 #define PROPERTY_GLOBAL_DATA					CONSTLIT("globalData")
+#define PROPERTY_INHERIT_FROM					CONSTLIT("inheritFrom")
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
 #define PROPERTY_MAX_BALANCE					CONSTLIT("maxBalance")
 #define PROPERTY_MERGED							CONSTLIT("merged")
@@ -533,6 +534,14 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 		{
 		if (m_pExtra)
 			return m_pExtra->GlobalData.GetDataAsItem(CONSTLIT("*"))->Reference();
+		else
+			return CC.CreateNil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_INHERIT_FROM))
+		{
+		if (m_pInheritFrom)
+			return CC.CreateInteger(m_pInheritFrom->GetUNID());
 		else
 			return CC.CreateNil();
 		}
