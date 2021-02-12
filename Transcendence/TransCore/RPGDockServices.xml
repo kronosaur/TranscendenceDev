@@ -1827,7 +1827,10 @@
 			<Text id="rpg.noCompatibleDeviceInCargo:device">You do not have any compatible devices in your cargo hold.</Text>
 
 			<Text id="rpg.noTechToInstallDevice">%We% do not have the technology to install %itemName% on %yourShip%</Text>
-
+			
+			<Text id="rpg.warningDamagedItem">
+				Note: %ItemName% is damaged and may not function properly.
+			</Text>
 			<Text id="rpg.warningLevelDowngrade">
 				Note: Your currently installed %itemName% is higher level.
 			</Text>

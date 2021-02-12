@@ -2233,6 +2233,15 @@
 							;	See if we need warning
 
 							(switch
+								;	If this is a damaged device, we warn the player.
+
+								(and canInstall
+										(itm@ thisItem 'damaged)
+										)
+									(setq descWarning (translate installerObj 'rpg.warningDamagedItem {
+										itemName: (itmGetName thisItem '(demonstrative escapeQuotes noModifiers))
+										}))
+
 								;	If we're installing a device that is lower level than the current,
 								;	then warn the player.
 
