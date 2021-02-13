@@ -362,12 +362,14 @@ class CDesignType
 		void InitItemData (CItem &Item) const;
 		void InitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const;
 		void InitTypeData (CDesignType &Type) const;
+		bool IsHierarchyResolved () const { return m_bHierarchyResolved; }
 		bool IsMerged (void) const { return m_bIsMerged; }
 		bool IsModification (void) const { return m_bIsModification; }
 		bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_dwMinVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
 		void MarkImages (void) { OnMarkImages(); }
 		void ReportEventError (const CString &sEvent, const ICCItem *pError) const;
 		void SetGlobalData (const CString &sAttrib, const ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
+		void SetHierarchyResolved (bool bValue = true) { m_bHierarchyResolved = bValue; }
 		void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		void SetMerged (bool bValue = true) { m_bIsMerged = true; }
 		void SetModification (bool bValue = true) { m_bIsModification = true; }
@@ -484,6 +486,7 @@ class CDesignType
 		bool m_bBindCalled = false;						//	TRUE if we've bound this type
 		bool m_bIsModification = false;					//	TRUE if this modifies the type it overrides
 		bool m_bIsMerged = false;						//	TRUE if we created this type by merging (inheritance)
+		bool m_bHierarchyResolved = false;				//	TRUE if we've resolved the inheritance hierarchy
 
 		DWORD m_fHasCustomMapDescLang:1;				//	Cached for efficiency
 	};
@@ -882,6 +885,7 @@ class CDesignTable
 		CDesignType *GetEntry (int iIndex) const { return m_Table.GetValue(iIndex); }
 		ALERROR Merge (const CDesignTable &Source, CDesignList &Override, const TArray<DWORD> &ExtensionsIncluded, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion);
 		ALERROR Merge (const CDynamicDesignTable &Source, CDesignList *ioOverride = NULL);
+		void SetHierarchyResolved (bool bValue = true);
 
 	private:
 		TSortMap<DWORD, CDesignType *> m_Table;
@@ -1438,9 +1442,10 @@ class CDesignCollection
 		bool InitAdventure (SDesignLoadCtx &Ctx);
 		bool InitEconomyTypes (SDesignLoadCtx &Ctx);
 		bool OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLElement &OverridesXML);
-		ALERROR ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, CDesignType **retpNewType = NULL);
-		ALERROR ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed);
-		ALERROR ResolveTypeHierarchy (SDesignLoadCtx &Ctx);
+		ALERROR ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, const TSortMap<DWORD, bool> &TypesUsed, CDesignType **retpNewType = NULL);
+		ALERROR ResolveTypeHierarchy (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed);
+		ALERROR ResolveType (SDesignLoadCtx &Ctx, CDesignType &Type, const TSortMap<DWORD, bool> &TypesUsed, CDesignType **retpNewType = NULL);
+		ALERROR ResolveTypeOverride (SDesignLoadCtx &Ctx, CDesignType &Type, CDesignType &Override, const TSortMap<DWORD, bool> &TypesUsed, CDesignType **retpNewType = NULL);
 		void Unbind (void);
 
 		//	Loaded types. These are initialized at load-time and never change.
