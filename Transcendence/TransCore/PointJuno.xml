@@ -524,7 +524,7 @@
 					</ZAdjust>
 
 					<Orbitals count="2-3" distance="24" angle="equidistant">
-						<Location attributes="zhelingIVOrbit"/>
+						<Location attributes="zhelingIVOrbit" required="true"/>
 					</Orbitals>
 
 					<!-- Wreck of CSC Europa is near the gas giant -->
