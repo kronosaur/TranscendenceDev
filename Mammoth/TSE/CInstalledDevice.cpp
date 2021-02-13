@@ -756,12 +756,27 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	if (m_pClass != NULL && m_iDeviceSlot != -1)
 		{
 		CItemListManipulator ItemList(Source.GetItemList());
-		Source.SetCursorAtDevice(ItemList, this);
-		if (ItemList.IsCursorValid())
+		if (Source.SetCursorAtDevice(ItemList, this))
 			{
 			m_pSource = &Source;
 			m_pItem = ItemList.GetItemPointerAtCursor();
 			m_pItem->SetInstalled(*this);
+			}
+		else
+			{
+			//	If we can't find the item, then the save file is corrupt,
+			//	because it must be there at save time. But we try to fix it up
+			//	anyway.
+
+			if (Source.GetUniverse().InDebugMode())
+				throw CException(ERR_FAIL);
+			else
+				{
+				ItemList.AddItem(CItem(*m_pClass->GetItemType(), 1));
+				ItemList.SetInstalledAtCursor(*this);
+				m_pSource = &Source;
+				m_pItem = ItemList.GetItemPointerAtCursor();
+				}
 			}
 
 		//	In previous versions we automatically offset weapon positions.

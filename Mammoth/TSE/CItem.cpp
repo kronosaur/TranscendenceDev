@@ -57,10 +57,7 @@
 CItemEnhancement CItem::m_NullMod;
 CItem CItem::m_NullItem;
 
-CItem::CItem (void) : 
-		m_dwCount(0),
-		m_dwFlags(0),
-		m_dwInstalled(0xff)
+CItem::CItem (void)
 
 //	CItem constructor
 
@@ -75,7 +72,6 @@ CItem::CItem (const CItem &Copy)
 	m_pItemType = Copy.m_pItemType;
 	m_dwCount = Copy.m_dwCount;
 	m_dwFlags = Copy.m_dwFlags;
-	m_dwInstalled = Copy.m_dwInstalled;
 
 	if (Copy.m_pExtra)
 		m_pExtra = new SExtra(*Copy.m_pExtra);
@@ -83,17 +79,38 @@ CItem::CItem (const CItem &Copy)
 		m_pExtra = NULL;
 	}
 
+CItem::CItem (CItemType &ItemType, int iCount)
+
+//	CItem constructor
+
+	{
+	m_pItemType = &ItemType;
+	m_dwCount = (DWORD)iCount;
+	m_dwFlags = 0;
+	m_pExtra = NULL;
+
+	int iCharges = ItemType.GetCharges();
+	if (iCharges)
+		SetCharges(iCharges);
+
+	int iUnknownIndex = ItemType.GetRandomUnknownTypeIndex();
+	if (iUnknownIndex != -1)
+		SetUnknownIndex(iUnknownIndex);
+
+	m_pItemType->InitItemData(*this);
+	}
+
 CItem::CItem (CItemType *pItemType, int iCount)
 
 //	CItem constructor
 
 	{
-	ASSERT(pItemType);
+	if (!pItemType)
+		throw CException(ERR_FAIL);
 
 	m_pItemType = pItemType;
 	m_dwCount = (DWORD)iCount;
 	m_dwFlags = 0;
-	m_dwInstalled = 0xff;
 	m_pExtra = NULL;
 
 	int iCharges = pItemType->GetCharges();
@@ -127,7 +144,6 @@ CItem &CItem::operator= (const CItem &Copy)
 	m_pItemType = Copy.m_pItemType;
 	m_dwCount = Copy.m_dwCount;
 	m_dwFlags = Copy.m_dwFlags;
-	m_dwInstalled = Copy.m_dwInstalled;
 
 	if (Copy.m_pExtra)
 		m_pExtra = new SExtra(*Copy.m_pExtra);
@@ -414,10 +430,9 @@ void CItem::ClearInstalled (void)
 	if (m_pExtra)
 		{
 		m_pExtra->m_pInstalled = NULL;
-		m_pExtra->m_iInstalled = installedNone;
+		m_pExtra->m_iInstalled = EInstalled::None;
+		m_pExtra->m_iInstalledIndex = -1;
 		}
-
-	m_dwInstalled = (BYTE)(char)-1;
 	}
 
 CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName)
@@ -2203,13 +2218,13 @@ CSpaceObject *CItem::GetSource (void) const
 
 	switch (m_pExtra->m_iInstalled)
 		{
-		case installedArmor:
+		case EInstalled::Armor:
 			{
 			const CInstalledArmor *pArmor = GetInstalledArmor();
 			return pArmor->GetSource();
 			}
 
-		case installedDevice:
+		case EInstalled::Device:
 			{
 			const CInstalledDevice *pDevice = GetInstalledDevice();
 			return pDevice->GetSource();
@@ -2506,11 +2521,8 @@ bool CItem::IsEqual (const CItem &Item, DWORD dwFlags) const
 //	item except for the count
 
 	{
-	const bool bIgnoreInstalled = (dwFlags & FLAG_IGNORE_INSTALLED ? true : false);
-
 	return (m_pItemType == Item.m_pItemType
 			&& IsFlagsEqual(Item, dwFlags)
-			&& (bIgnoreInstalled || m_dwInstalled == Item.m_dwInstalled)
 			&& IsExtraEqual(Item.m_pExtra, dwFlags));
 	}
 
@@ -2526,11 +2538,13 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags, DWORD dwNow)
 	const bool bIgnoreData = (dwFlags & FLAG_IGNORE_DATA ? true : false);
 	const bool bIgnoreDisrupted = (dwFlags & FLAG_IGNORE_DISRUPTED ? true : false);
 	const bool bIgnoreEnhancements = (dwFlags & FLAG_IGNORE_ENHANCEMENTS ? true : false);
+	const bool bIgnoreInstalled = (dwFlags & FLAG_IGNORE_INSTALLED ? true : false);
 
 	return ((bIgnoreCharges || pExtra->m_dwCharges == 0)
 			&& pExtra->m_dwLevel == 0
 			&& pExtra->m_dwVariantCounter == 0
 			&& pExtra->m_iDamagedHP == 0
+			&& (bIgnoreInstalled || pExtra->m_iInstalledIndex == -1)
 			&& (bIgnoreDisrupted || (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < dwNow))
 			&& (bIgnoreEnhancements || pExtra->m_Mods.IsEmpty())
 			&& (bIgnoreData || pExtra->m_Data.IsEmpty()));
@@ -2559,11 +2573,13 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 		const bool bIgnoreData = (dwFlags & FLAG_IGNORE_DATA ? true : false);
 		const bool bIgnoreDisrupted = (dwFlags & FLAG_IGNORE_DISRUPTED ? true : false);
 		const bool bIgnoreEnhancements = (dwFlags & FLAG_IGNORE_ENHANCEMENTS ? true : false);
+		const bool bIgnoreInstalled = (dwFlags & FLAG_IGNORE_INSTALLED ? true : false);
 
 		return ((bIgnoreCharges || m_pExtra->m_dwCharges == pSrc->m_dwCharges)
 				&& m_pExtra->m_dwLevel == pSrc->m_dwLevel
 				&& m_pExtra->m_dwVariantCounter == pSrc->m_dwVariantCounter
 				&& m_pExtra->m_iDamagedHP == pSrc->m_iDamagedHP
+				&& (bIgnoreInstalled || m_pExtra->m_iInstalledIndex == pSrc->m_iInstalledIndex)
 				&& (bIgnoreDisrupted || IsDisruptionEqual(GetUniverse().GetTicks(), m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime))
 				&& (bIgnoreEnhancements || m_pExtra->m_Mods.IsEqual(pSrc->m_Mods))
 				&& (bIgnoreData || m_pExtra->m_Data.IsEqual(pSrc->m_Data)));
@@ -2820,8 +2836,9 @@ void CItem::ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, c
 
 		//	Next is the count, flags, and installed
 
+		DWORD dwSavedData = (DWORD)pBuffer->GetElement(1)->GetIntegerValue();
 		DWORD *pDest = (DWORD *)this;
-		pDest[1] = (DWORD)pBuffer->GetElement(1)->GetIntegerValue();
+		pDest[1] = dwSavedData;
 
 		//	Previous version
 
@@ -2864,23 +2881,38 @@ void CItem::ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, c
 				DWORD dwObjID = pBuffer->GetElement(iStart)->GetIntegerValue();
 				iStart++;
 
-				CSpaceObject *pSource;
-				if (dwObjID > 0 && pSystem && IsInstalled() && (pSource = pSystem->FindObject(dwObjID)))
+				if (dwObjID > 0)
 					{
-					CArmorSystem *pArmorSys;
-					if (IsArmor() 
-							&& (pArmorSys = pSource->GetArmorSystem())
-							&& GetInstalled() >= 0 && GetInstalled() < pArmorSys->GetSegmentCount())
-						{
-						m_pExtra->m_iInstalled = installedArmor;
-						m_pExtra->m_pInstalled = &pArmorSys->GetSegment(GetInstalled());
-						}
+					int iInstalledIndex;
 
-					else if (IsDevice()
-							&& GetInstalled() >= 0 && GetInstalled() < pSource->GetDeviceCount())
+					if (dwVersion >= 201)
 						{
-						m_pExtra->m_iInstalled = installedDevice;
-						m_pExtra->m_pInstalled = pSource->GetDevice(GetInstalled());
+						iInstalledIndex = pBuffer->GetElement(iStart)->GetIntegerValue();
+						iStart++;
+						}
+					else
+						iInstalledIndex = (int)(char)(BYTE)((dwSavedData & 0xff000000) >> 24);
+
+					CSpaceObject *pSource;
+					if (pSystem && iInstalledIndex != -1 && (pSource = pSystem->FindObject(dwObjID)))
+						{
+						CArmorSystem *pArmorSys;
+						if (IsArmor() 
+								&& (pArmorSys = pSource->GetArmorSystem())
+								&& iInstalledIndex >= 0 && iInstalledIndex < pArmorSys->GetSegmentCount())
+							{
+							m_pExtra->m_iInstalled = EInstalled::Armor;
+							m_pExtra->m_pInstalled = &pArmorSys->GetSegment(iInstalledIndex);
+							m_pExtra->m_iInstalledIndex = iInstalledIndex;
+							}
+
+						else if (IsDevice()
+								&& iInstalledIndex >= 0 && iInstalledIndex < pSource->GetDeviceCount())
+							{
+							m_pExtra->m_iInstalled = EInstalled::Device;
+							m_pExtra->m_pInstalled = pSource->GetDevice(iInstalledIndex);
+							m_pExtra->m_iInstalledIndex = iInstalledIndex;
+							}
 						}
 					}
 				}
@@ -2952,7 +2984,8 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read(dwLoad);
 	m_dwCount = LOWORD(dwLoad);
 	m_dwFlags = LOBYTE(HIWORD(dwLoad));
-	m_dwInstalled = HIBYTE(HIWORD(dwLoad));
+
+	BYTE byOldInstalled = HIBYTE(HIWORD(dwLoad));
 
 	//	Load SExtra struct
 
@@ -2962,6 +2995,16 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 		if (dwLoad)
 			{
 			m_pExtra = new SExtra;
+
+			//	NOTE: We don't need to restore the source or install struct 
+			//	because it doesn't exist yet. It will get fixed up later. But
+			//	we do need to load the install index because that's what we use
+			//	to fix up the connection.
+
+			if (Ctx.dwVersion >= 201)
+				Ctx.pStream->Read(m_pExtra->m_iInstalledIndex);
+			else
+				m_pExtra->m_iInstalledIndex = (int)(char)byOldInstalled;
 
 			if (Ctx.dwVersion >= 71)
 				{
@@ -3022,6 +3065,11 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 			}
 		else
 			m_pExtra = NULL;
+		}
+
+	if (Ctx.dwVersion < 201 && !m_pExtra && byOldInstalled != 0xff)
+		{
+		int i = 0;
 		}
 	}
 
@@ -3143,9 +3191,8 @@ void CItem::SetInstalled (CInstalledArmor &Installed)
 
 	Extra();
 	m_pExtra->m_pInstalled = &Installed;
-	m_pExtra->m_iInstalled = installedArmor;
-
-	m_dwInstalled = (BYTE)(char)Installed.GetSect();
+	m_pExtra->m_iInstalled = EInstalled::Armor;
+	m_pExtra->m_iInstalledIndex = Installed.GetSect();
 	}
 
 void CItem::SetInstalled (CInstalledDevice &Installed)
@@ -3160,9 +3207,8 @@ void CItem::SetInstalled (CInstalledDevice &Installed)
 
 	Extra();
 	m_pExtra->m_pInstalled = &Installed;
-	m_pExtra->m_iInstalled = installedDevice;
-
-	m_dwInstalled = (BYTE)(char)Installed.GetDeviceSlot();
+	m_pExtra->m_iInstalled = EInstalled::Device;
+	m_pExtra->m_iInstalledIndex = Installed.GetDeviceSlot();
 	}
 
 void CItem::SetKnown (bool bKnown) const
@@ -3214,10 +3260,9 @@ void CItem::SetPrepareUninstalled (void)
 	if (m_pExtra)
 		{
 		m_pExtra->m_pInstalled = NULL;
-		m_pExtra->m_iInstalled = installedNone;
+		m_pExtra->m_iInstalled = EInstalled::None;
+		m_pExtra->m_iInstalledIndex = -2;
 		}
-
-	m_dwInstalled = (BYTE)(char)-2;
 	}
 
 ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError)
@@ -3428,9 +3473,15 @@ ICCItem *CItem::WriteToCCItem (void) const
 		//	Save any installation info
 
 		if (const CInstalledArmor *pArmor = GetInstalledArmor())
+			{
 			pList->AppendInteger(pArmor->GetSource()->GetID());
+			pList->AppendInteger(GetInstalled());
+			}
 		else if (const CInstalledDevice *pDevice = GetInstalledDevice())
+			{
 			pList->AppendInteger(pDevice->GetSource()->GetID());
+			pList->AppendInteger(GetInstalled());
+			}
 		else
 			pList->AppendInteger(0);
 
@@ -3473,10 +3524,11 @@ void CItem::WriteToStream (IWriteStream *pStream) const
 //	Writes to a stream
 //
 //	DWORD		item type UNID
-//	DWORD		low = m_dwCount; high = (low = m_dwFlags; high = m_dwInstalled)
+//	DWORD		low = m_dwCount; high = (low = m_dwFlags; high = unused)
 //	DWORD		non-zero if SExtra follows
 //
 //	SExtra
+//	DWORD		m_iInstalledIndex
 //	DWORD		m_dwCharges
 //	DWORD		m_dwCondition
 //	DWORD		m_dwDisruptedTime
@@ -3489,7 +3541,7 @@ void CItem::WriteToStream (IWriteStream *pStream) const
 	DWORD dwSave = m_pItemType->GetUNID();
 	pStream->Write(dwSave);
 
-	dwSave = MAKELONG(m_dwCount, MAKEWORD(m_dwFlags, m_dwInstalled));
+	dwSave = MAKELONG(m_dwCount, MAKEWORD(m_dwFlags, 0));
 	pStream->Write(dwSave);
 
 	//	Save SExtra
@@ -3498,6 +3550,11 @@ void CItem::WriteToStream (IWriteStream *pStream) const
 	pStream->Write(dwSave);
 	if (m_pExtra)
 		{
+		//	NOTE: We don't need to save the source or install struct because it
+		//	it gets fixed up after load. We do need to save the install index 
+		//	because that's what we use to fix up the connection.
+
+		pStream->Write(m_pExtra->m_iInstalledIndex);
 		pStream->Write(m_pExtra->m_dwCharges);
 		pStream->Write(m_pExtra->m_dwLevel);
 		pStream->Write(m_pExtra->m_dwDisruptedTime);

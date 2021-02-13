@@ -268,7 +268,9 @@ class CItem
 
 		CItem (void);
 		CItem (const CItem &Copy);
+		CItem (CItemType &ItemType, int iCount);
 		CItem (CItemType *pItemType, int iCount);
+
 		~CItem (void);
 		CItem &operator= (const CItem &Copy);
 
@@ -319,11 +321,11 @@ class CItem
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
 		inline const CObjectImageArray &GetImage (void) const;
 		int GetInstallCost (void) const;
-		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
-		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
-		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
-		const CInstalledDevice *GetInstalledDevice (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedDevice) return (const CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
-		CInstalledDevice *GetInstalledDevice (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedDevice) return (CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
+		int GetInstalled (void) const { return (m_pExtra ? m_pExtra->m_iInstalledIndex : -1); }
+		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Armor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
+		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Armor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
+		const CInstalledDevice *GetInstalledDevice (void) const { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Device) return (const CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
+		CInstalledDevice *GetInstalledDevice (void) { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Device) return (CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
 		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const;
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
@@ -362,7 +364,16 @@ class CItem
 		bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
 		bool IsEnhancementEffective (const CItemEnhancement &Enhancement) const;
 		bool IsExtraEmpty (DWORD dwFlags = 0);
-		bool IsInstalled (void) const { return (m_dwInstalled != 0xff); }
+
+		//	NOTE: We use installed index instead of m_iInstalled because during 
+		//	load the index is set up, but the enum has not yet been initialized
+		//	(because that happens later). In the future we could initialized 
+		//	m_iInstalled at load time based on m_iInstalledIndex to some value
+		//	that means "in the process of being fixed up". Note that we also 
+		//	might want to use a similar technique for SetPreprareUninstalled.
+
+		bool IsInstalled (void) const { return (m_pExtra && m_pExtra->m_iInstalledIndex != -1); }
+
 		bool IsKnown (int *retiUnknownIndex = NULL) const;
 		bool IsMarkedForDelete (void) { return (m_dwCount == 0xffff); }
 		bool IsVirtual (void) const;
@@ -441,12 +452,12 @@ class CItem
 		ICCItem *WriteToCCItem (void) const;
 
 	private:
-		enum EInstallTypes
+		enum class EInstalled
 			{
-			installedNone,
+			None,
 
-			installedArmor,
-			installedDevice,
+			Armor,
+			Device,
 			};
 
 		static constexpr DWORD UNKNOWN_INDEX_LOWER_MASK = (flagUnknownBit0 | flagUnknownBit1 | flagUnknownBit2);
@@ -456,8 +467,9 @@ class CItem
 
 		struct SExtra
 			{
-			EInstallTypes m_iInstalled = installedNone;
+			EInstalled m_iInstalled = EInstalled::None;
 			void *m_pInstalled = NULL;			//	Pointer to either CInstalledArmor or CInstalledDevice
+			int m_iInstalledIndex = -1;			//	Install location
 
 			DWORD m_dwCharges = 0;				//	Charges for items
 			DWORD m_dwLevel = 0;				//	For scalable items, this stores the level
@@ -485,9 +497,9 @@ class CItem
 
 		CItemType *m_pItemType = NULL;
 
-		DWORD m_dwCount:16;						//	Number of items
-		DWORD m_dwFlags:8;						//	Miscellaneous flags
-		DWORD m_dwInstalled:8;					//	Location where item is installed
+		DWORD m_dwCount:16 = 0;					//	Number of items
+		DWORD m_dwFlags:8 = 0;					//	Miscellaneous flags
+		DWORD m_dwUnused:8 = 0;					//	Spare
 
 		SExtra *m_pExtra = NULL;				//	Extra data (may be NULL)
 
