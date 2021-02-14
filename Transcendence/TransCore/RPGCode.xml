@@ -1815,6 +1815,7 @@
 					(militaryCheck (rpgCheckMilitaryIDPolicy installerObj (@ data 'checkMilitaryID)))
 					(illegalCheck 
 						(or (@ data 'checkMilitaryID)
+							(obj@ installerObj 'rpg.checkMilitaryID)
 							(obj@ installerObj 'rpg.checkIllegals)
 							)
 						)
