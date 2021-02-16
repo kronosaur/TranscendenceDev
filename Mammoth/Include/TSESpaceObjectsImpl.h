@@ -1292,6 +1292,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
+		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const override;
 		virtual bool OnGetCondition (ECondition iCondition) const override;
 		virtual CSpaceObject *OnGetOrderGiver (void) override;
 		virtual bool OnIsImmuneTo (SpecialDamageTypes iSpecialDamage) const override;
@@ -1439,6 +1440,10 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:8;
+
+		//	Property table
+
+		static TPropertyHandler<CShip> m_PropertyTable;
 	};
 
 class CStaticEffect : public TSpaceObjectImpl<OBJID_CSTATICEFFECT>

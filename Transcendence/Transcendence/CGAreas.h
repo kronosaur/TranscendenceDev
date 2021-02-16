@@ -269,6 +269,82 @@ class CGDrawArea : public AGArea
 		bool m_bTransBackground;
 	};
 
+class CGIconListArea : public AGArea
+	{
+	public:
+		static constexpr DWORD NOTIFY_SELECTION_CHANGED =		1;
+
+		CGIconListArea (CUniverse &Universe, const CVisualPalette &VI, const CDockScreenVisuals &Theme) :
+				m_Universe(Universe),
+				m_VI(VI),
+				m_Theme(Theme)
+			{
+			InitFromTheme(VI, Theme);
+			}
+
+		int GetCount () const { return m_List.GetCount(); }
+		ICCItemPtr GetEntry (int iIndex) const { if (iIndex < 0 || iIndex >= m_List.GetCount()) throw CException(ERR_FAIL); return m_List[iIndex].pData; }
+		TArray<int> GetSelection () const;
+		ICCItemPtr GetSelectionAsCCItem () const;
+		bool SetData (const ICCItem &List, CString *retsError = NULL);
+		void SetTabRegion (int cyHeight) { m_cyTabRegion = cyHeight; }
+
+		//	AGArea virtuals
+
+		virtual bool LButtonDown (int x, int y) override;
+		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
+
+	private:
+		static constexpr int DEFAULT_ICON_SIZE = 96;
+		static constexpr int FRAME_PADDING_HORZ = 20;
+		static constexpr int FRAME_PADDING_VERT = 20;
+		static constexpr int ENTRY_SPACING = 10;
+		static constexpr int ENTRY_PADDING_TOP = 2;
+		static constexpr int ENTRY_PADDING_LEFT = 4;
+		static constexpr int ENTRY_PADDING_RIGHT = 4;
+
+		struct SEntry
+			{
+			ICCItemPtr pData;
+
+			bool bSelected = false;
+
+			CString sTitle;
+			const CG32bitImage *pIcon = NULL;
+			RECT rcIconSrc = { 0 };
+
+			//	Computed in Format
+
+			mutable RECT rcRect = { 0 };		//	Location, relative to control rect
+			};
+
+		bool DeselectAll ();
+		bool Format (const RECT &rcRect) const;
+		int HitTestEntry (int x, int y) const;
+		bool InitEntry (SEntry &Entry, const ICCItem &Data, CString *retsError = NULL);
+		void InitFromTheme (const CVisualPalette &VI, const CDockScreenVisuals &Theme);
+		void PaintBackground (CG32bitImage &Dest, const RECT &rcRect) const;
+		void PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const;
+		void Reformat () { m_bFormatted = false; Invalidate(); }
+
+		CUniverse &m_Universe;
+		const CVisualPalette &m_VI;
+		const CDockScreenVisuals &m_Theme;
+		TArray<SEntry> m_List;
+
+		int m_cxIcon = DEFAULT_ICON_SIZE;
+		int m_cyIcon = DEFAULT_ICON_SIZE;
+		int m_cyTabRegion = 0;
+		CG32bitPixel m_rgbText = CG32bitPixel(0, 0, 0);
+		CG32bitPixel m_rgbBack = CG32bitPixel(255, 255, 255);
+		int m_iBorderRadius = 0;
+
+		//	These are computed in Format
+
+		mutable bool m_bFormatted = false;
+		mutable RECT m_rcFrame = { 0 };
+	};
+
 class CGItemDisplayArea : public AGArea
 	{
 	public:

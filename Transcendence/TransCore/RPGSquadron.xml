@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- Squadron Management UI -->
+
+	<DockScreen unid="&dsRPGSquadron;"
+			inherit=		"&dsDockScreenBase;"
+			nestedScreen=	"true"
+			>
+		<Display type="iconList">
+			<OnDisplayInit>
+				(map (obj@ gPlayerShip 'squadron) theEntry
+					(block (
+						(shipObj (@ theEntry 'obj))
+						)
+						{
+							title: (@ theEntry 'name)
+							icon: (objGetImageDesc shipObj)
+							}
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(entry (scrGetListEntry gScreen))
+						)
+						(scrSetDesc gScreen "LATER: " entry)
+						)
+				</OnPaneInit>
+				<Actions>
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+	</DockScreen>
+
+</TranscendenceModule>

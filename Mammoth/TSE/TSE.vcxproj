@@ -689,6 +689,7 @@
     <ClCompile Include="SFXParticleSystem.cpp" />
     <ClCompile Include="SFXRay.cpp" />
     <ClCompile Include="ShipClassProperties.cpp" />
+    <ClCompile Include="ShipProperties.cpp" />
     <ClCompile Include="ShipUpdate.cpp" />
     <ClCompile Include="CPhysicsForceDesc.cpp" />
     <ClCompile Include="SpaceObjectItemProperties.cpp" />

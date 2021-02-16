@@ -63,6 +63,7 @@
 #define SCREEN_TYPE_CUSTOM_ITEM_PICKER	CONSTLIT("customItemPicker")
 #define SCREEN_TYPE_DETAILS_PANE		CONSTLIT("detailsPane")
 #define SCREEN_TYPE_DEVICE_SELECTOR		CONSTLIT("deviceSelector")
+#define SCREEN_TYPE_ICON_LIST			CONSTLIT("iconList")
 #define SCREEN_TYPE_ITEM_PICKER			CONSTLIT("itemPicker")
 #define SCREEN_TYPE_MISC_SELECTOR		CONSTLIT("miscSelector")
 #define SCREEN_TYPE_SUBJUGATE_MINIGAME	CONSTLIT("subjugateMinigame")
@@ -102,6 +103,9 @@ IDockScreenDisplay *IDockScreenDisplay::Create (CDockScreen &DockScreen, const C
 
 	else if (strEquals(sType, SCREEN_TYPE_DETAILS_PANE))
 		return new CDockScreenDetailsPane(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_ICON_LIST))
+		return new CDockScreenIconList(DockScreen);
 
 	else if (strEquals(sType, SCREEN_TYPE_ARMOR_SELECTOR))
 		return new CDockScreenSelector(DockScreen, CGSelectorArea::configArmor);

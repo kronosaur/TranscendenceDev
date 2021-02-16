@@ -169,6 +169,31 @@ class CDockScreenCustomList : public CDockScreenList
 		virtual ALERROR OnInitList (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;
 	};
 
+class CDockScreenIconList : public IDockScreenDisplay
+	{
+	public:
+		CDockScreenIconList (CDockScreen &DockScreen) : IDockScreenDisplay(DockScreen)
+			{ }
+
+	protected:
+
+		//	IDockScreenDisplay
+
+		virtual ICCItem *OnGetCurrentListEntry (void) const override;
+		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override;
+		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;
+		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;
+		virtual void OnShowItem (void) override;
+		virtual void OnShowPane (bool bNoListNavigation) override;
+
+	private:
+		bool EvalList (CString *retsError = NULL);
+
+		ICCItemPtr m_pExp;
+		CGIconListArea *m_pControl = NULL;
+		DWORD m_dwID = 0;
+	};
+
 class CDockScreenItemList : public CDockScreenList
 	{
 	public:

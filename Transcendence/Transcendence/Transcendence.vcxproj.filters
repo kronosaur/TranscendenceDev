@@ -323,6 +323,12 @@
     <ClCompile Include="CGameIconBarData.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
+    <ClCompile Include="CDockScreenIconList.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CGIconListArea.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BackgroundTasks.h">

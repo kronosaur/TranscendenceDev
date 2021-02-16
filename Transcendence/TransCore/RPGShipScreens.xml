@@ -42,6 +42,10 @@
 							)
 					</Action>
 
+					<Action id="actionSquadron">
+						(scrShowScreen gScreen &dsRPGSquadron;)
+					</Action>
+
 					<Action id="actionMissions">
 						(scrShowScreen gScreen &dsRPGMissionJournal;)
 					</Action>
@@ -68,6 +72,7 @@
 			<Text id="core.name">Ship's Interior</Text>
 
 			<Text id="actionShipConfig">[S]hip Configuration</Text>
+			<Text id="actionSquadron">S[q]uadron</Text>
 			<Text id="actionMissions">[M]issions</Text>
 			<Text id="actionViewCargo">[V]iew Cargo Hold</Text>
 			<Text id="actionRefuelReactor">[R]efuel Reactor</Text>
