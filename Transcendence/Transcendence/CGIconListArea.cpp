@@ -87,6 +87,24 @@ bool CGIconListArea::Format (const RECT &rcRect) const
 		}
 	}
 
+ICCItemPtr CGIconListArea::GetList () const
+
+//	GetList
+//
+//	Returns the list of entries (or Nil)
+
+	{
+	ICCItemPtr pResult(ICCItem::List);
+
+	for (int i = 0; i < m_List.GetCount(); i++)
+		pResult->Append(m_List[i].pData);
+
+	if (pResult->GetCount() == 0)
+		return ICCItemPtr::Nil();
+	else
+		return pResult;
+	}
+
 TArray<int> CGIconListArea::GetSelection () const
 
 //	GetSelection

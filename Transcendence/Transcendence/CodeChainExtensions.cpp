@@ -1794,7 +1794,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CDockScreenActions &Actions = pScreen->GetActions();
 			CString sID = pArgs->GetElement(1)->GetStringValue();
 			int iPos = (pArgs->GetElement(2)->IsNil() ? -1 : pArgs->GetElement(2)->GetIntegerValue());
-			CString sLabel = pArgs->GetElement(3)->GetStringValue();
+			CString sLabel = (pArgs->GetElement(3)->IsNil() ? NULL_STR : pArgs->GetElement(3)->GetStringValue());
             bool bMinor = (dwData == FN_SCR_ADD_MINOR_ACTION);
 			
 			int iArg = 4;

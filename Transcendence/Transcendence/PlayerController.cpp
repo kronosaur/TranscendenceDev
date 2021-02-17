@@ -745,7 +745,7 @@ bool CPlayerShipController::HasCommsTarget (void)
 		CSpaceObject *pObj = pSystem->GetObject(i);
 
 		if (pObj 
-				&& pObj->CanCommunicateWith(m_pShip)
+				&& pObj->CanCommunicateWith(*m_pShip)
 				&& pObj != m_pShip)
 			return true;
 		}

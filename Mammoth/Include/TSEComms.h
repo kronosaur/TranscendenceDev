@@ -81,7 +81,7 @@ class CCommunicationsHandler
 		int FindMessageByName (const CString &sMessage) const;
 		void FireInvoke (const CString &sID, CSpaceObject *pObj, CSovereign *pSender, ICCItem *pData);
 		inline int GetCount (void) const { return m_Messages.GetCount(); }
-		inline const SMessage &GetMessage (int iIndex) { return m_Messages[iIndex]; }
+		inline const SMessage &GetMessage (int iIndex) const { return m_Messages[iIndex]; }
 		void Merge (CCommunicationsHandler &New);
 
 	private:

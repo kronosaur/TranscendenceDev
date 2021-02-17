@@ -75,7 +75,7 @@
 #define STR_NEXT								CONSTLIT("next")
 #define STR_PREV								CONSTLIT("prev")
 
-TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CShip>::SPropertyDef, 1> {{
+TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CShip>::SPropertyDef, 2> {{
 		{
 		"squadron",			"Desc of each member of squadron",
 		[](const CShip &ShipObj, const CString &sProperty) 
@@ -90,11 +90,10 @@ TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CSh
 				{
 				const CSpaceObject *pObj = System.GetObject(i);
 
-				if (pObj 
-						&& pObj->GetEscortPrincipal() == ShipObj
-						&& pObj != ShipObj)
+				if (pObj && ShipObj.IsOurWingmate(*pObj))
 					{
 					ICCItemPtr pEntry(ICCItem::SymbolTable);
+					pEntry->SetStringAt(CONSTLIT("status"), CONSTLIT("deployed"));
 					pEntry->SetAt(CONSTLIT("obj"), CTLispConvert::CreateObject(pObj));
 					pEntry->SetIntegerAt(CONSTLIT("objID"), pObj->GetID());
 					pEntry->SetStringAt(CONSTLIT("name"), pObj->GetNounPhrase());
@@ -113,6 +112,43 @@ TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CSh
 			},
 		NULL,
 		},
+
+		{
+		"squadronCommsStatus",		"List of valid squadron messages",
+		[](const CShip &ShipObj, const CString &sProperty) 
+			{
+			DWORD dwStatus = ShipObj.GetSquadronCommsStatus();
+			if (dwStatus == 0)
+				return ICCItemPtr::Nil();
+
+			ICCItemPtr pResult(ICCItem::List);
+
+			if (dwStatus & resCanAttack)
+				pResult->Append(ICCItemPtr(CONSTLIT("msgAttackTarget")));
+
+			if (dwStatus & resCanBreakAndAttack)
+				pResult->Append(ICCItemPtr(CONSTLIT("msgBreakAndAttack")));
+
+			if ((dwStatus & resCanFormUp) || (dwStatus & resCanAbortAttack))
+				pResult->Append(ICCItemPtr(CONSTLIT("msgFormUp")));
+
+			if (dwStatus & resCanAttackInFormation)
+				pResult->Append(ICCItemPtr(CONSTLIT("msgAttackInFormation")));
+
+			if (dwStatus & resCanWait)
+				pResult->Append(ICCItemPtr(CONSTLIT("msgWait")));
+
+			if (dwStatus & resCanBeInFormation)
+				pResult->Append(ICCItemPtr(CONSTLIT("msgSetFormation")));
+
+			if (pResult->GetCount())
+				return pResult;
+			else
+				return ICCItemPtr::Nil();
+			},
+		NULL,
+		},
+
 	}};
 
 ICCItemPtr CShip::OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const

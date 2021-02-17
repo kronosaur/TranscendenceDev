@@ -253,6 +253,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_MAKE_RADIOACTIVE		146
 #define FN_OBJ_DECONTAMINATE		147
 #define FN_OBJ_GET_REMOVE_CONDITION_PRICE	148
+#define FN_OBJ_SQUADRON_COMMS		149
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -2607,6 +2608,28 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objSetVel",					fnObjSet,		FN_OBJ_VELOCITY,
 			"(objSetVel obj velVector)",
 			"il",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSquadronComms",					fnObjSet,		FN_OBJ_SQUADRON_COMMS,
+			"(objSquadronComms obj receiver msg [options]) -> Result\n\n"
+			
+			"receiver:\n\n"
+			
+			"   'squadron\n"
+			"   obj\n"
+			"   list of objs\n"
+			"\n"
+			"msg:\n\n"
+			
+			"   'msgAttackInFormation\n"
+			"   'msgAttackTarget\n"
+			"   'msgBreakAndAttack\n"
+			"   'msgFormationAlpha\n"
+			"   'msgFormationBeta\n"
+			"   'msgFormationGamma\n"
+			"   'msgFormUp\n"
+			"   'msgWait\n",
+
+			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSuspend",					fnObjSet,		FN_OBJ_SUSPEND,
 			"(objSuspend obj)",
@@ -6088,7 +6111,7 @@ ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		if (iIndex == -1)
 			return pCC->CreateNil();
 
-		if (!pObj->IsCommsMessageValidFrom(pSender, iIndex))
+		if (!pObj->IsCommsMessageValidFrom(*pSender, iIndex))
 			return pCC->CreateNil();
 
 		//	Invoke the message

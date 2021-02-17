@@ -819,18 +819,16 @@ EConditionResult CSpaceObject::CanApplyCondition (ECondition iCondition, const S
 	return OnCanApplyCondition(iCondition, Options); 
 	}
 
-bool CSpaceObject::CanCommunicateWith (CSpaceObject *pSender)
+bool CSpaceObject::CanCommunicateWith (const CSpaceObject &SenderObj) const
 
 //	CanCommunicateWith
 //
 //	Returns TRUE if this object can receive communications from pSender
 
 	{
-	int i;
-
 	//	We can't communicate if we don't have a handler
 
-	CCommunicationsHandler *pHandler = GetCommsHandler();
+	const CCommunicationsHandler *pHandler = GetCommsHandler();
 	if (pHandler == NULL)
 		return false;
 
@@ -852,13 +850,13 @@ bool CSpaceObject::CanCommunicateWith (CSpaceObject *pSender)
 
 	//	We can't communicate if we are out of range
 
-	if ((pSender->GetPos() - m_vPos).Length2() > g_rMaxCommsRange2)
+	if ((SenderObj.GetPos() - m_vPos).Length2() > g_rMaxCommsRange2)
 		return false;
 
 	//	See if any of the messages are valid. If at least
 	//	one is, then we can communicate.
 
-	for (i = 0; i < pHandler->GetCount(); i++)
+	for (int i = 0; i < pHandler->GetCount(); i++)
 		{
 		if (pHandler->GetMessage(i).OnShowEvent.pCode == NULL)
 			return true;
@@ -870,27 +868,21 @@ bool CSpaceObject::CanCommunicateWith (CSpaceObject *pSender)
 
 			Ctx.DefineContainingType(this);
 			Ctx.SaveAndDefineSourceVar(this);
-			Ctx.DefineSpaceObject(CONSTLIT("gSender"), pSender);
+			Ctx.DefineSpaceObject(CONSTLIT("gSender"), SenderObj);
 
 			//	Execute
 
-			bool bShow;
-
-			ICCItem *pResult = Ctx.Run(pHandler->GetMessage(i).OnShowEvent);
+			ICCItemPtr pResult = Ctx.RunCode(pHandler->GetMessage(i).OnShowEvent);
 
 			if (pResult->IsNil())
-				bShow = false;
+				return false;
 			else if (pResult->IsError())
 				{
-				pSender->SendMessage(this, pResult->GetStringValue());
-				bShow = false;
+				SenderObj.SendMessage(this, pResult->GetStringValue());
+				return false;
 				}
 			else
-				bShow = true;
-
-			Ctx.Discard(pResult);
-			if (bShow)
-				return bShow;
+				return true;
 			}
 		}
 
@@ -3734,6 +3726,25 @@ CCommunicationsHandler *CSpaceObject::GetCommsHandler (void)
 	return NULL;
 	}
 
+const CCommunicationsHandler *CSpaceObject::GetCommsHandler (void) const
+
+//	GetCommsHandler
+//
+//	Returns the comms handler for the object
+
+	{
+	CCommunicationsHandler *pHandler;
+
+	if (m_pOverride && (pHandler = m_pOverride->GetCommsHandler()))
+		return pHandler;
+
+	CDesignType *pType = GetType();
+	if (pType && (pHandler = pType->GetCommsHandler()))
+		return pHandler;
+
+	return NULL;
+	}
+
 int CSpaceObject::GetCommsMessageCount (void)
 
 //	GetCommsMessageCount
@@ -4281,6 +4292,75 @@ CSovereign *CSpaceObject::GetSovereignToDefend (void) const
 		return pPrincipal->GetSovereign();
 	else
 		return GetSovereign();
+	}
+
+#define SO_ATTACK_IN_FORMATION				CONSTLIT("Attack in formation")
+#define SO_BREAK_AND_ATTACK					CONSTLIT("Break & attack")
+#define SO_FORM_UP							CONSTLIT("Form up")
+#define SO_ATTACK_TARGET					CONSTLIT("Attack target")
+#define SO_WAIT								CONSTLIT("Wait")
+#define SO_CANCEL_ATTACK					CONSTLIT("Cancel attack")
+#define SO_ALPHA_FORMATION					CONSTLIT("Alpha formation")
+#define SO_BETA_FORMATION					CONSTLIT("Beta formation")
+#define SO_GAMMA_FORMATION					CONSTLIT("Gamma formation")
+
+DWORD CSpaceObject::GetSquadronCommsStatus () const
+
+//	GetSquadronCommsStatus
+//
+//	Returns the set of messages accepted by this ship's squadron.
+
+	{
+	CSystem *pSystem = GetSystem();
+	if (!pSystem)
+		return 0;
+
+	DWORD dwStatus = 0;
+
+	for (int i = 0; i < pSystem->GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = pSystem->GetObject(i);
+
+		if (pObj && IsOurWingmate(*pObj))
+			{
+			//	First add messages from the old-style "fleet" controller.
+
+			dwStatus |= Communicate(pObj, msgQueryCommunications);
+
+			//	Next add in messages accepted through the communications struct
+
+			int iIndex;
+			if ((iIndex = pObj->FindCommsMessageByName(SO_ATTACK_IN_FORMATION)) != -1
+					&& pObj->IsCommsMessageValidFrom(*this, iIndex))
+				dwStatus |= resCanAttackInFormation;
+
+			if ((iIndex = pObj->FindCommsMessageByName(SO_BREAK_AND_ATTACK)) != -1
+					&& pObj->IsCommsMessageValidFrom(*this, iIndex))
+				dwStatus |= resCanBreakAndAttack;
+
+			if ((iIndex = pObj->FindCommsMessageByName(SO_FORM_UP)) != -1
+					&& pObj->IsCommsMessageValidFrom(*this, iIndex))
+				dwStatus |= resCanFormUp;
+
+			if ((iIndex = pObj->FindCommsMessageByName(SO_ATTACK_TARGET)) != -1
+					&& pObj->IsCommsMessageValidFrom(*this, iIndex))
+				dwStatus |= resCanAttack;
+
+			if ((iIndex = pObj->FindCommsMessageByName(SO_WAIT)) != -1
+					&& pObj->IsCommsMessageValidFrom(*this, iIndex))
+				dwStatus |= resCanWait;
+
+			if ((iIndex = pObj->FindCommsMessageByName(SO_CANCEL_ATTACK)) != -1
+					&& pObj->IsCommsMessageValidFrom(*this, iIndex))
+				dwStatus |= resCanAbortAttack;
+
+			if ((iIndex = pObj->FindCommsMessageByName(SO_ALPHA_FORMATION)) != -1
+					&& pObj->IsCommsMessageValidFrom(*this, iIndex))
+				dwStatus |= resCanBeInFormation;
+			}
+		}
+
+	return dwStatus;
 	}
 
 ICCItemPtr CSpaceObject::GetStaticData (const CString &sAttrib)
@@ -5352,9 +5432,9 @@ bool CSpaceObject::IsEscortingFriendOf (const CSpaceObject *pObj) const
 
 bool CSpaceObject::IsEscorting (const CSpaceObject* pObj) const
 
-//	IsEscortingFriendOf
+//	IsEscorting
 //
-//	Returns TRUE if we're escorting a friend of pObj
+//	Returns TRUE if we're escorting pObj
 
 	{
 	CSpaceObject* pPrincipal = GetEscortPrincipal();
@@ -5362,6 +5442,18 @@ bool CSpaceObject::IsEscorting (const CSpaceObject* pObj) const
 		return pObj == pPrincipal;
 	else
 		return false;
+	}
+
+bool CSpaceObject::IsOurWingmate (const CSpaceObject &Obj) const
+
+//	IsOurWingmate
+//
+//	Returns TRUE if the given object is part of our squadron.
+
+	{
+	return (Obj.GetEscortPrincipal() == this
+			&& Obj != this
+			&& !Obj.IsDestroyed());
 	}
 
 bool CSpaceObject::IsPlayerAttackJustified (void) const
@@ -5480,7 +5572,7 @@ bool CSpaceObject::IsUnderAttack (void) const
 	return false;
 	}
 
-bool CSpaceObject::IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, CString *retsMsg, CString *retsKey)
+bool CSpaceObject::IsCommsMessageValidFrom (const CSpaceObject &SenderObj, int iIndex, CString *retsMsg, CString *retsKey) const
 
 //	IsCommsMessageValidFrom
 //
@@ -5488,7 +5580,7 @@ bool CSpaceObject::IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, C
 //	this object
 
 	{
-	CCommunicationsHandler *pHandler = GetCommsHandler();
+	const CCommunicationsHandler *pHandler = GetCommsHandler();
 	ASSERT(pHandler && iIndex < pHandler->GetCount());
 	const CCommunicationsHandler::SMessage &Msg = pHandler->GetMessage(iIndex);
 
@@ -5503,7 +5595,7 @@ bool CSpaceObject::IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, C
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
-		Ctx.DefineSpaceObject(CONSTLIT("gSender"), pSender);
+		Ctx.DefineSpaceObject(CONSTLIT("gSender"), SenderObj);
 
 		//	Execute
 
@@ -5513,7 +5605,7 @@ bool CSpaceObject::IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, C
 			return false;
 		else if (pResult->IsError())
 			{
-			pSender->SendMessage(this, pResult->GetStringValue());
+			SenderObj.SendMessage(this, pResult->GetStringValue());
 			return false;
 			}
 

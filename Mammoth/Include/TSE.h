@@ -561,6 +561,20 @@ class CSpaceObject
 		bool IsPlayerTarget (void) const { return m_fPlayerTarget; }
 		void SetPlayerTarget (void) { m_fPlayerTarget = true; }
 
+		//	Communications
+
+		bool CanCommunicateWith (const CSpaceObject &SenderObj) const;
+		void CommsMessageFrom (CSpaceObject *pSender, int iIndex);
+		DWORD Communicate (CSpaceObject *pReceiver, MessageTypes iMessage, CSpaceObject *pParam1 = NULL, DWORD dwParam2 = 0, ICCItem *pData = NULL) const { return pReceiver->OnCommunicate(const_cast<CSpaceObject *>(this), iMessage, pParam1, dwParam2, pData); }
+		int FindCommsMessage (const CString &sID);
+		int FindCommsMessageByName (const CString &sName);
+		CCommunicationsHandler *GetCommsHandler (void);
+		const CCommunicationsHandler *GetCommsHandler (void) const;
+		int GetCommsMessageCount (void);
+		CString GetDesiredCommsKey (void) const;
+		DWORD GetSquadronCommsStatus () const;
+		bool IsCommsMessageValidFrom (const CSpaceObject &SenderObj, int iIndex, CString *retsMsg = NULL, CString *retsKey = NULL) const;
+
 		//	Conditions
 
 		EConditionResult ApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options);
@@ -743,7 +757,6 @@ class CSpaceObject
 		bool CanBeHit (void) const { return (!m_fCannotBeHit && !m_fOutOfPlaneObj); }
 		bool CanBeHitByFriends (void) const { return !m_fNoFriendlyTarget; }
 		bool CanDetect (int Perception, CSpaceObject *pObj);
-		bool CanCommunicateWith (CSpaceObject *pSender);
 		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		void ClearNoFriendlyTarget (void) { m_fNoFriendlyTarget = false; }
 		void ClearPlayerDocked (void) { m_fPlayerDocked = false; }
@@ -751,8 +764,6 @@ class CSpaceObject
 		void ClearPOVLRS (void) { m_fInPOVLRS = false; }
 		void ClearSelection (void) { m_fSelected = false; }
 		void ClearShowDamageBar (void) { m_fShowDamageBar = false; }
-		void CommsMessageFrom (CSpaceObject *pSender, int iIndex);
-		DWORD Communicate (CSpaceObject *pReceiver, MessageTypes iMessage, CSpaceObject *pParam1 = NULL, DWORD dwParam2 = 0, ICCItem *pData = NULL) { return pReceiver->OnCommunicate(this, iMessage, pParam1, dwParam2, pData); }
 		void CopyDataFromObj (CSpaceObject *pSource);
 		ALERROR CreateRandomItems (CXMLElement *pItems, CSystem *pSystem);
 		ALERROR CreateRandomItems (IItemGenerator *pItems, CSystem *pSystem);
@@ -761,8 +772,6 @@ class CSpaceObject
 		bool DebugIsValid (void) { return (DWORD)m_pSystem != 0xdddddddd; }
 		static CString DebugLoadError (SLoadCtx &Ctx);
 		void EnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend = false);
-		int FindCommsMessage (const CString &sID);
-		int FindCommsMessageByName (const CString &sName);
 		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);
 		bool FireCanDockAsPlayer (CSpaceObject *pDockTarget, CString *retsError);
 		bool FireCanInstallItem (const CItem &Item, int iSlot, CString *retsResult);
@@ -823,9 +832,6 @@ class CSpaceObject
 		bool FireOnTranslateMessage (const CString &sMessage, CString *retsMessage);
 		void FireOnUpdate (void);
 		DWORD GetAPIVersion (void) const { CDesignType *pType = GetType(); return (pType ? pType->GetAPIVersion() : API_VERSION); }
-		CCommunicationsHandler *GetCommsHandler (void);
-		int GetCommsMessageCount (void);
-		CString GetDesiredCommsKey (void) const;
 		int GetDestiny (void) const { return m_iDestiny; }
 		Metric GetDetectionRange (int iPerception) const { return CPerceptionCalc::GetRange(GetDetectionRangeIndex(iPerception)); }
 		Metric GetDetectionRange2 (int iPerception) const;
@@ -873,7 +879,6 @@ class CSpaceObject
 		bool IsAngryAt (const CDamageSource &Obj) const;
 		bool IsBarrier (void) const { return (m_fIsBarrier ? true : false); }
 		bool IsCollisionTestNeeded (void) const { return m_fCollisionTestNeeded; }
-		bool IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, CString *retsMsg = NULL, CString *retsKey = NULL);
 		bool IsCovering (CSpaceObject *pObj);
 		bool IsCreated (void) const { return m_fOnCreateCalled; }
 		bool IsDestinyTime (int iCycle, int iOffset = 0);
@@ -1136,6 +1141,7 @@ class CSpaceObject
 
 		//	Wingmen
 
+		bool IsOurWingmate (const CSpaceObject &Obj) const;
 		virtual bool IsPlayerEscort (void) const { return false; }
 		virtual bool IsPlayerWingman (void) const { return false; }
 
@@ -1280,7 +1286,7 @@ class CSpaceObject
 		virtual void OnSubordinateDestroyed (SDestroyCtx &Ctx) { }
 		virtual void OnSubordinateHit (SDamageCtx &Ctx) { }
 		virtual void ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program) { }
-		virtual void SendMessage (const CSpaceObject *pSender, const CString &sMsg) { }
+		virtual void SendMessage (const CSpaceObject *pSender, const CString &sMsg) const { }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
 		virtual void SetCounterValue(int iCounterValue) { }

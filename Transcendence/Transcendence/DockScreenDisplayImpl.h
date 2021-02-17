@@ -181,6 +181,7 @@ class CDockScreenIconList : public IDockScreenDisplay
 
 		virtual ICCItem *OnGetCurrentListEntry (void) const override;
 		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override;
+		virtual ICCItemPtr OnGetListAsCCItem (void) const override;
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;
 		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;
 		virtual void OnShowItem (void) override;

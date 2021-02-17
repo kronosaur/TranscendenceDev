@@ -284,6 +284,7 @@ class CGIconListArea : public AGArea
 
 		int GetCount () const { return m_List.GetCount(); }
 		ICCItemPtr GetEntry (int iIndex) const { if (iIndex < 0 || iIndex >= m_List.GetCount()) throw CException(ERR_FAIL); return m_List[iIndex].pData; }
+		ICCItemPtr GetList () const;
 		TArray<int> GetSelection () const;
 		ICCItemPtr GetSelectionAsCCItem () const;
 		bool SetData (const ICCItem &List, CString *retsError = NULL);

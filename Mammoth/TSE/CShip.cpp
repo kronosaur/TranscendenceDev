@@ -6807,7 +6807,7 @@ DeviceNames CShip::SelectWeapon (const CItem &Item)
 	return SelectWeapon(iDev, iVariant);
 	}
 
-void CShip::SendMessage (const CSpaceObject *pSender, const CString &sMsg)
+void CShip::SendMessage (const CSpaceObject *pSender, const CString &sMsg) const
 
 //	SendMessage
 //

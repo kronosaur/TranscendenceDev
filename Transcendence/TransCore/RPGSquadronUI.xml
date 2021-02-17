@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- Squadron Management UI -->
+
+	<DockScreen unid="&dsRPGSquadron;"
+			inherit=		"&dsDockScreenBase;"
+			nestedScreen=	"true"
+			>
+		<Display type="iconList">
+			<OnDisplayInit>
+				(map (obj@ gPlayerShip 'squadron) theEntry
+					(block (
+						(shipObj (@ theEntry 'obj))
+						)
+						{
+							title: (@ theEntry 'name)
+							icon: (objGetImageDesc shipObj)
+
+							status: (@ theEntry 'status)
+							obj: (@ theEntry 'obj)
+							objID: (@ theEntry 'objID)
+							type: (@ theEntry 'type)
+							}
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(squadronList (scrGetList gScreen))
+						(entry (scrGetListEntry gScreen))
+						)
+						(switch
+
+							;	If nothing is selected, then we show commands that
+							;	apply to the whole squadron.
+
+							(not entry)
+								(block (
+									(actionPos -1)
+									(nextActionPos (lambda () (setq actionPos (+ actionPos 1))))
+									(squadronComms (obj@ gPlayerShip 'squadronCommsStatus))
+
+									(deployedCount (map squadronList 'reduceSum theEntry
+										(if (= (@ theEntry 'status) 'deployed) 1)
+										))
+									)
+									;	Add squadon orders
+
+									(if (find squadronComms 'msgAttackTarget)
+										(scrAddAction gScreen 'msgAttackTarget (nextActionPos) Nil
+											(lambda () (objSquadronComms gPlayerShip 'squadron 'msgAttackTarget))
+											)
+										)
+
+									(if (find squadronComms 'msgBreakAndAttack)
+										(scrAddAction gScreen 'msgBreakAndAttack (nextActionPos) Nil
+											(lambda () (objSquadronComms gPlayerShip 'squadron 'msgBreakAndAttack))
+											)
+										)
+
+									(if (find squadronComms 'msgAttackInFormation)
+										(scrAddAction gScreen 'msgAttackInFormation (nextActionPos) Nil
+											(lambda () (objSquadronComms gPlayerShip 'squadron 'msgAttackInFormation))
+											)
+										)
+
+									(if (find squadronComms 'msgFormUp)
+										(scrAddAction gScreen 'msgFormUp (nextActionPos) Nil
+											(lambda () (objSquadronComms gPlayerShip 'squadron 'msgFormUp))
+											)
+										)
+
+									(if (find squadronComms 'msgSetFormation)
+										(block ()
+											(scrAddAction gScreen 'msgFormation1 (nextActionPos) Nil
+												(lambda () (objSquadronComms gPlayerShip 'squadron 'msgFormationAlpha))
+												)
+											(scrAddAction gScreen 'msgFormation2 (nextActionPos) Nil
+												(lambda () (objSquadronComms gPlayerShip 'squadron 'msgFormationBeta))
+												)
+											(scrAddAction gScreen 'msgFormation3 (nextActionPos) Nil
+												(lambda () (objSquadronComms gPlayerShip 'squadron 'msgFormationGamma))
+												)
+											)
+										)
+
+									(if (find squadronComms 'msgWait)
+										(scrAddAction gScreen 'msgWait (nextActionPos) Nil
+											(lambda () (objSquadronComms gPlayerShip 'squadron 'msgWait))
+											)
+										)
+
+									;	Set the descriptor
+
+									(switch
+										(gr deployedCount 0)
+											(scrSetDescTranslate gScreen 'descSquadronDeployed {
+												shipCount: (fmtNoun (scrTranslate gScreen 'nounShip) deployedCount 'countAlways)
+												})
+
+										(scrSetDescTranslate gScreen 'descNoSquadron)
+										)
+									)
+
+							(scrSetDesc gScreen "LATER: " entry)
+							)
+						)
+				</OnPaneInit>
+				<Actions>
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="msgAttackInFormation">Order Attack [i]n Formation</Text>
+			<Text id="msgAttackTarget">Order [A]ttack Target</Text>
+			<Text id="msgBreakAndAttack">Order [B]reak &amp; Attack</Text>
+			<Text id="msgFormUp">Order [F]orm Up</Text>
+			<Text id="msgFormation1">Order Formation [1] Alpha</Text>
+			<Text id="msgFormation2">Order Formation [2] Beta</Text>
+			<Text id="msgFormation3">Order Formation [3] Gamma</Text>
+			<Text id="msgWait">Order [W]ait</Text>
+
+			<Text id="descSquadronDeployed">
+			
+				You have %shipCount% deployed in the system.
+				
+			</Text>
+			<Text id="descNoSquadron">
+			
+				None of your ships are deployed in this system.
+				
+			</Text>
+
+			<Text id="nounShip">ship(s)</Text>
+		</Language>
+	</DockScreen>
+
+</TranscendenceModule>

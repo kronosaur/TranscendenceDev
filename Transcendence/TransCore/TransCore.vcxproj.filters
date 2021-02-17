@@ -1062,7 +1062,7 @@
     <Xml Include="..\Extensions\Diagnostics\TSETests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="RPGSquadron.xml">
+    <Xml Include="RPGSquadronUI.xml">
       <Filter>RPG Library</Filter>
     </Xml>
   </ItemGroup>

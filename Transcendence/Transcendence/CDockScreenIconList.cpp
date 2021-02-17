@@ -59,6 +59,19 @@ bool CDockScreenIconList::OnGetDefaultBackground (SDockScreenBackgroundDesc *ret
 	return true;
 	}
 
+ICCItemPtr CDockScreenIconList::OnGetListAsCCItem (void) const
+
+//	OnGetListAsCCItem
+//
+//	Returns the entire list.
+
+	{
+	if (m_pControl)
+		return m_pControl->GetList();
+	else
+		return ICCItemPtr::Nil();
+	}
+
 IDockScreenDisplay::EResults CDockScreenIconList::OnHandleAction (DWORD dwTag, DWORD dwData)
 
 //	OnHandleAction
