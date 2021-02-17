@@ -90,7 +90,7 @@ TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CSh
 				{
 				const CSpaceObject *pObj = System.GetObject(i);
 
-				if (pObj && ShipObj.IsOurWingmate(*pObj))
+				if (pObj && ShipObj.IsInOurSquadron(*pObj))
 					{
 					ICCItemPtr pEntry(ICCItem::SymbolTable);
 					pEntry->SetStringAt(CONSTLIT("status"), CONSTLIT("deployed"));

@@ -574,6 +574,8 @@ class CSpaceObject
 		CString GetDesiredCommsKey (void) const;
 		DWORD GetSquadronCommsStatus () const;
 		bool IsCommsMessageValidFrom (const CSpaceObject &SenderObj, int iIndex, CString *retsMsg = NULL, CString *retsKey = NULL) const;
+		void SendSquadronMessage (const CString &sMsg);
+		void SendSquadronMessage (CSpaceObject &ReceiverObj, const CString &sMsg);
 
 		//	Conditions
 
@@ -1141,7 +1143,7 @@ class CSpaceObject
 
 		//	Wingmen
 
-		bool IsOurWingmate (const CSpaceObject &Obj) const;
+		bool IsInOurSquadron (const CSpaceObject &Obj) const;
 		virtual bool IsPlayerEscort (void) const { return false; }
 		virtual bool IsPlayerWingman (void) const { return false; }
 

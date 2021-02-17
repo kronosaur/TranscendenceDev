@@ -585,6 +585,7 @@
     <ClCompile Include="CSpaceObjectProperties.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />
+    <ClCompile Include="CSquadronCommunications.cpp" />
     <ClCompile Include="CSquadronController.cpp" />
     <ClCompile Include="CSquadronDesc.cpp" />
     <ClCompile Include="CSquadronDescList.cpp" />

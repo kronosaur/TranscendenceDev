@@ -1890,7 +1890,17 @@ int CSpaceObject::FindCommsMessage (const CString &sID)
 	if (pHandler == NULL)
 		return -1;
 
-	return pHandler->FindMessageByID(sID);
+	int iIndex = pHandler->FindMessageByID(sID);
+	if (iIndex == -1)
+		{
+		//	For backwards compatibility we handle some special IDs.
+
+
+		}
+
+	//	Success!
+
+	return iIndex;
 	}
 
 int CSpaceObject::FindCommsMessageByName (const CString &sName)
@@ -4321,7 +4331,7 @@ DWORD CSpaceObject::GetSquadronCommsStatus () const
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
 
-		if (pObj && IsOurWingmate(*pObj))
+		if (pObj && IsInOurSquadron(*pObj))
 			{
 			//	First add messages from the old-style "fleet" controller.
 
@@ -5444,9 +5454,9 @@ bool CSpaceObject::IsEscorting (const CSpaceObject* pObj) const
 		return false;
 	}
 
-bool CSpaceObject::IsOurWingmate (const CSpaceObject &Obj) const
+bool CSpaceObject::IsInOurSquadron (const CSpaceObject &Obj) const
 
-//	IsOurWingmate
+//	IsInOurSquadron
 //
 //	Returns TRUE if the given object is part of our squadron.
 
@@ -7320,6 +7330,38 @@ void CSpaceObject::ScrapeOverlays ()
 		return;
 
 	pOverlays->ScrapeHarmfulOverlays(this);
+	}
+
+void CSpaceObject::SendSquadronMessage (const CString &sMsg)
+
+//	SendSquadronMessage
+//
+//	Sends the message to all deployed objects in our squadron.
+
+	{
+	CSystem *pSystem = GetSystem();
+	if (!pSystem)
+		return;
+
+	//	Add all autons/wingmates in the system.
+
+	for (int i = 0; i < pSystem->GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = pSystem->GetObject(i);
+
+		if (pObj && IsInOurSquadron(*pObj))
+			SendSquadronMessage(*pObj, sMsg);
+		}
+	}
+
+void CSpaceObject::SendSquadronMessage (CSpaceObject &ReceiverObj, const CString &sMsg)
+
+//	SendSquadronMessage
+//
+//	Sends the message to the given object in our squadron.
+
+	{
+
 	}
 
 void CSpaceObject::SetCursorAtArmor (CItemListManipulator &ItemList, CInstalledArmor *pArmor)

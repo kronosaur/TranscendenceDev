@@ -105,3 +105,48 @@ class CCommunicationsStack
 		CCommunicationsHandler m_Composite;
 		bool m_bInitialized;
 	};
+
+class CSquadronCommunications
+	{
+	public:
+		CSquadronCommunications (CSpaceObject &LeaderObj);
+		CSquadronCommunications (CSpaceObject &LeaderObj, const TArray<CSpaceObject *> &List);
+
+		DWORD GetSquadronCommsStatus ();
+		void Send (const CString &sMsg) const;
+
+	private:
+		enum class ESquadronMsg
+			{
+			None,
+
+			Attack,
+			AttackInFormation,
+			BreakAndAttack,
+			FormUp,
+			FormationAlpha,
+			FormationBeta,
+			FormationGamma,
+			Wait
+			};
+
+		struct SSquadronMsgDesc
+			{
+			ESquadronMsg iMsg = ESquadronMsg::None;
+			const char *pszID = "";
+			const char *pszName = "";
+			MessageTypes iSend = msgNone;
+			ResponseTypes iResponse = resNoAnswer;
+			};
+
+		CUniverse &GetUniverse () const;
+		bool IsMessageValidFor (CSpaceObject &Obj, const SSquadronMsgDesc &MsgDesc, int *retiIndex = NULL) const;
+		void Send (const SSquadronMsgDesc &MsgDesc) const;
+		void Send (CSpaceObject &ReceiverObj, const CString &sMsg) const;
+		bool Send (CSpaceObject &ReceiverObj, const SSquadronMsgDesc &MsgDesc, DWORD dwFormationPos = 0) const;
+
+		CSpaceObject &m_LeaderObj;
+		TArray<CSpaceObject *> m_Squadron;
+
+		static TStaticStringTable<TStaticStringEntry<SSquadronMsgDesc>, 8> m_SquadronMsgTable;
+	};

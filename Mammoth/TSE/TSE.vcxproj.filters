@@ -1609,5 +1609,8 @@
     <ClCompile Include="ShipProperties.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
+    <ClCompile Include="CSquadronCommunications.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

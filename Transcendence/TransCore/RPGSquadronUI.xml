@@ -49,51 +49,46 @@
 									(deployedCount (map squadronList 'reduceSum theEntry
 										(if (= (@ theEntry 'status) 'deployed) 1)
 										))
+
+									(addAction (lambda (msgID)
+										(scrAddAction gScreen msgID (nextActionPos) Nil
+											(lambda ()
+												(block ()
+													(objSquadronComms gPlayerShip 'squadron msgID)
+													(scrExitScreen gScreen 'forceUndock)
+													)
+												)
+											)
+										))
 									)
 									;	Add squadon orders
 
 									(if (find squadronComms 'msgAttackTarget)
-										(scrAddAction gScreen 'msgAttackTarget (nextActionPos) Nil
-											(lambda () (objSquadronComms gPlayerShip 'squadron 'msgAttackTarget))
-											)
+										(addAction 'msgAttackTarget)
 										)
 
 									(if (find squadronComms 'msgBreakAndAttack)
-										(scrAddAction gScreen 'msgBreakAndAttack (nextActionPos) Nil
-											(lambda () (objSquadronComms gPlayerShip 'squadron 'msgBreakAndAttack))
-											)
+										(addAction 'msgBreakAndAttack)
 										)
 
 									(if (find squadronComms 'msgAttackInFormation)
-										(scrAddAction gScreen 'msgAttackInFormation (nextActionPos) Nil
-											(lambda () (objSquadronComms gPlayerShip 'squadron 'msgAttackInFormation))
-											)
+										(addAction 'msgAttackInFormation)
 										)
 
 									(if (find squadronComms 'msgFormUp)
-										(scrAddAction gScreen 'msgFormUp (nextActionPos) Nil
-											(lambda () (objSquadronComms gPlayerShip 'squadron 'msgFormUp))
-											)
+										(addAction 'msgFormUp)
 										)
 
 									(if (find squadronComms 'msgSetFormation)
 										(block ()
-											(scrAddAction gScreen 'msgFormation1 (nextActionPos) Nil
-												(lambda () (objSquadronComms gPlayerShip 'squadron 'msgFormationAlpha))
-												)
-											(scrAddAction gScreen 'msgFormation2 (nextActionPos) Nil
-												(lambda () (objSquadronComms gPlayerShip 'squadron 'msgFormationBeta))
-												)
-											(scrAddAction gScreen 'msgFormation3 (nextActionPos) Nil
-												(lambda () (objSquadronComms gPlayerShip 'squadron 'msgFormationGamma))
-												)
+											(addAction 'msgFormationAlpha)
+											(addAction 'msgFormationBeta)
+											(addAction 'msgFormationGamma)
 											)
 										)
 
 									(if (find squadronComms 'msgWait)
-										(scrAddAction gScreen 'msgWait (nextActionPos) Nil
-											(lambda () (objSquadronComms gPlayerShip 'squadron 'msgWait))
-											)
+										(addAction 'msgWait)
 										)
 
 									;	Set the descriptor
@@ -125,9 +120,9 @@
 			<Text id="msgAttackTarget">Order [A]ttack Target</Text>
 			<Text id="msgBreakAndAttack">Order [B]reak &amp; Attack</Text>
 			<Text id="msgFormUp">Order [F]orm Up</Text>
-			<Text id="msgFormation1">Order Formation [1] Alpha</Text>
-			<Text id="msgFormation2">Order Formation [2] Beta</Text>
-			<Text id="msgFormation3">Order Formation [3] Gamma</Text>
+			<Text id="msgFormationAlpha">Order Formation [1] Alpha</Text>
+			<Text id="msgFormationBeta">Order Formation [2] Beta</Text>
+			<Text id="msgFormationGamma">Order Formation [3] Gamma</Text>
 			<Text id="msgWait">Order [W]ait</Text>
 
 			<Text id="descSquadronDeployed">

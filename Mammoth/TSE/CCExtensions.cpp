@@ -9456,6 +9456,66 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_OBJ_SQUADRON_COMMS:
+			{
+			const ICCItem *pReceiver = pArgs->GetElement(1);
+			CString sMsg = pArgs->GetElement(2)->GetStringValue();
+
+			//	If we have a list, then this is a list of squadron members.
+
+			if (pReceiver->IsList())
+				{
+				TArray<CSpaceObject *> List;
+				for (int i = 0; i < pReceiver->GetCount(); i++)
+					{
+					CSpaceObject *pObj = CTLispConvert::AsObject(pReceiver->GetElement(i));
+					if (!pObj)
+						continue;
+
+					List.Insert(pObj);
+					}
+
+				CSquadronCommunications Comms(*pObj, List);
+				Comms.Send(sMsg);
+
+				return pCC->CreateTrue();
+				}
+
+			//	Otherwise, if this is the keyword "squadron" then it applies to 
+			//	the entire (active) squadron.
+
+			else if (pReceiver->IsIdentifier())
+				{
+				CString sID = pReceiver->GetStringValue();
+				if (strEquals(sID, CONSTLIT("squadron")))
+					{
+					CSquadronCommunications Comms(*pObj);
+					Comms.Send(sMsg);
+
+					return pCC->CreateTrue();
+					}
+				else
+					return pCC->CreateError(CONSTLIT("Unknown receiver"), pReceiver);
+				}
+
+			//	Otherwise, we expect a single object
+
+			else
+				{
+				CSpaceObject *pReceiverObj = CTLispConvert::AsObject(pReceiver);
+				if (!pReceiverObj)
+					return pCC->CreateError(CONSTLIT("Invalid receiver"), pReceiver);
+
+				TArray<CSpaceObject *> List;
+				List.Insert(pReceiverObj);
+
+				CSquadronCommunications Comms(*pObj, List);
+				Comms.Send(sMsg);
+
+				return pCC->CreateTrue();
+				}
+			}
+
 		case FN_OBJ_SUSPEND:
 			if (pObj->IsDestroyed())
 				return pCC->CreateNil();
