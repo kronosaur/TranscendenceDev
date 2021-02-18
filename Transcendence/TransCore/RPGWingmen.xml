@@ -241,6 +241,12 @@
 				%name% refuses to switch ships.
 
 			</Text>
+
+			<Text id="action.msgAttackTarget">[A]ttack Target</Text>
+			<Text id="action.msgBreakAndAttack">[B]reak &amp; Attack</Text>
+			<Text id="action.msgFormUp">[F]orm Up</Text>
+			<Text id="action.msgStatus">[S]tatus</Text>
+			<Text id="action.msgWait">[W]ait</Text>
 		</Language>
 		
 		<Events>

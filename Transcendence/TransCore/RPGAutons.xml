@@ -718,6 +718,13 @@
 			<String id="msgArmorDamage">		Armor integrity at %armorIntegrity%%</String>
 			<String id="msgShieldDamage">		Shields at %shieldLevel%%</String>
 			<String id="msgHullDamage">			Hull integrity at %hullIntegrity%%</String>
+
+			<Text id="action.msgAttackTarget">[A]ttack Target</Text>
+			<Text id="action.msgBreakAndAttack">[B]reak &amp; Attack</Text>
+			<Text id="action.msgFormUp">[F]orm Up</Text>
+			<Text id="action.msgReturnToShip">[R]eturn to Ship</Text>
+			<Text id="action.msgStatus">[S]tatus</Text>
+			<Text id="action.msgWait">[W]ait</Text>
 		</Language>
 	</ShipClass>
 

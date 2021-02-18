@@ -30,6 +30,7 @@ class CTLispConvert
 		static ICCItemPtr CreateObject (const CSpaceObject *pObj);
 		static ICCItemPtr CreateObjectList (const CSpaceObjectList &List);
 		static ICCItemPtr CreatePowerResultMW (int iPower);
+		static ICCItemPtr CreateStringList (const TArray<CString> &List);
 		static ICCItemPtr CreateVector (const CVector &vValue);
 		static ICCItemPtr GetElementAt (ICCItem *pItem, const CString &sField);
 	};

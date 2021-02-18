@@ -250,6 +250,23 @@ ICCItemPtr CTLispConvert::CreatePowerResultMW (int iPower)
 		return ICCItemPtr(iPower / 10);
 	}
 
+ICCItemPtr CTLispConvert::CreateStringList (const TArray<CString> &List)
+
+//	CreateStringList
+//
+//	Creates a list of strings.
+
+	{
+	if (List.GetCount() == 0)
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pResult(ICCItem::List);
+	for (int i = 0; i < List.GetCount(); i++)
+		pResult->Append(ICCItemPtr(List[i]));
+
+	return pResult;
+	}
+
 ICCItemPtr CTLispConvert::CreateVector (const CVector &vValue)
 
 //	CreateVector

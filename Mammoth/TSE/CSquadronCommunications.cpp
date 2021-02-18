@@ -47,6 +47,77 @@ CSquadronCommunications::CSquadronCommunications (CSpaceObject &LeaderObj, const
 	{
 	}
 
+void CSquadronCommunications::AccumulateMessageList (CSpaceObject &Obj, TSortMap<CString, int> &retList) const
+
+//	AccumulateMessageList
+//
+//	Add the list of messages that we handle to the list.
+
+	{
+	//	If we have a communications stack then we use it to fill the message list.
+
+	if (const CCommunicationsHandler *pHandler = Obj.GetCommsHandler())
+		{
+		for (int i = 0; i < pHandler->GetCount(); i++)
+			{
+			const auto &Msg = pHandler->GetMessage(i);
+			if (!Msg.sID.IsBlank()
+					&& Obj.IsCommsMessageValidFrom(m_LeaderObj, i))
+				{
+				bool bNew;
+				int *pCount = retList.SetAt(Msg.sID, &bNew);
+				if (bNew)
+					*pCount = 1;
+				else
+					(*pCount) += 1;
+				}
+			}
+		}
+
+	//	Otherwise, we use the old-style comms infrastructure
+
+	else
+		{
+		DWORD dwStatus = m_LeaderObj.Communicate(&Obj, msgQueryCommunications);
+
+		for (int i = 0; i < m_SquadronMsgTable.GetCount(); i++)
+			{
+			const auto &Entry = m_SquadronMsgTable[i].Value;
+			if (dwStatus & (DWORD)Entry.iResponse)
+				{
+				bool bNew;
+				int *pCount = retList.SetAt(CString(Entry.pszID), &bNew);
+				if (bNew)
+					*pCount = 1;
+				else
+					(*pCount) += 1;
+				}
+			}
+		}
+	}
+
+TArray<CString> CSquadronCommunications::GetMessageList () const
+
+//	GetMessageList
+//
+//	Returns the list of messages that ALL objects in the squadron handle.
+
+	{
+	TSortMap<CString, int> AllMessages;
+
+	for (int i = 0; i < m_Squadron.GetCount(); i++)
+		{
+		AccumulateMessageList(*m_Squadron[i], AllMessages);
+		}
+
+	TArray<CString> Result;
+	for (int i = 0; i < AllMessages.GetCount(); i++)
+		if (AllMessages[i] == m_Squadron.GetCount())
+			Result.Insert(AllMessages.GetKey(i));
+
+	return Result;
+	}
+
 DWORD CSquadronCommunications::GetSquadronCommsStatus ()
 
 //	GetSquandronCommsStatus

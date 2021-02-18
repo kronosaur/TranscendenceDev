@@ -112,6 +112,7 @@ class CSquadronCommunications
 		CSquadronCommunications (CSpaceObject &LeaderObj);
 		CSquadronCommunications (CSpaceObject &LeaderObj, const TArray<CSpaceObject *> &List);
 
+		TArray<CString> GetMessageList () const;
 		DWORD GetSquadronCommsStatus ();
 		void Send (const CString &sMsg) const;
 
@@ -139,6 +140,7 @@ class CSquadronCommunications
 			ResponseTypes iResponse = resNoAnswer;
 			};
 
+		void AccumulateMessageList (CSpaceObject &Obj, TSortMap<CString, int> &retList) const;
 		CUniverse &GetUniverse () const;
 		bool IsMessageValidFor (CSpaceObject &Obj, const SSquadronMsgDesc &MsgDesc, int *retiIndex = NULL) const;
 		void Send (const SSquadronMsgDesc &MsgDesc) const;

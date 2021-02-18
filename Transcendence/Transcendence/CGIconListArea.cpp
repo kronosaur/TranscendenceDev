@@ -74,9 +74,9 @@ bool CGIconListArea::Format (const RECT &rcRect) const
 			const int cxRowWidth = (iRowCount * cxEntry) + (iRowCount - 1) * ENTRY_SPACING;
 			const int xStart = rcRect.left + (RectWidth(rcRect) - cxRowWidth) / 2;
 
-			Entry.rcRect.left = xStart + (iCol * cxEntry) + (iCol > 0 ? (iCol - 1) * ENTRY_SPACING : 0);
+			Entry.rcRect.left = xStart + iCol * (cxEntry + ENTRY_SPACING);
 			Entry.rcRect.right = Entry.rcRect.left + cxEntry;
-			Entry.rcRect.top = yStart + (iRow * cyEntry) + (iRow > 0 ? (iRow - 1) * ENTRY_SPACING : 0);
+			Entry.rcRect.top = yStart + iRow * (cyEntry + ENTRY_SPACING);
 			Entry.rcRect.bottom = Entry.rcRect.top + cyEntry;
 			}
 
@@ -139,15 +139,15 @@ ICCItemPtr CGIconListArea::GetSelectionAsCCItem () const
 		return ICCItemPtr::Nil();
 
 	else if (Selection.GetCount() == 1)
-		return m_List[0].pData;
+		return m_List[Selection[0]].pData;
 
 	else
 		{
 		ICCItemPtr pResult(ICCItem::List);
 
-		for (int i = 0; i < m_List.GetCount(); i++)
+		for (int i = 0; i < Selection.GetCount(); i++)
 			{
-			pResult->Append(m_List[i].pData);
+			pResult->Append(m_List[Selection[i]].pData);
 			}
 
 		return pResult;

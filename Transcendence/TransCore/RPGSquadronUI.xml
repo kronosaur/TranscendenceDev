@@ -34,6 +34,34 @@
 					(block (
 						(squadronList (scrGetList gScreen))
 						(entry (scrGetListEntry gScreen))
+
+						(deployedCount (map squadronList 'reduceSum theEntry
+							(if (= (@ theEntry 'status) 'deployed) 1)
+							))
+
+						(selection
+							(switch
+								(= (typeof entry) 'struct)
+									(list entry)
+
+								entry
+								)
+							)
+						(selectionDeployed (filter selection theEntry
+							(= (@ theEntry 'status) 'deployed)
+							))
+
+						(deployedObjs
+							(switch
+								(= (count selection) (count selectionDeployed))
+									(map selection theEntry
+										(@ theEntry 'obj)
+										)
+								)
+							)
+
+						(actionPos -1)
+						(nextActionPos (lambda () (setq actionPos (+ actionPos 1))))
 						)
 						(switch
 
@@ -42,13 +70,7 @@
 
 							(not entry)
 								(block (
-									(actionPos -1)
-									(nextActionPos (lambda () (setq actionPos (+ actionPos 1))))
 									(squadronComms (obj@ gPlayerShip 'squadronCommsStatus))
-
-									(deployedCount (map squadronList 'reduceSum theEntry
-										(if (= (@ theEntry 'status) 'deployed) 1)
-										))
 
 									(addAction (lambda (msgID)
 										(scrAddAction gScreen msgID (nextActionPos) Nil
@@ -103,11 +125,94 @@
 										)
 									)
 
+							;	If we have only deployed objects selected, then we show
+							;	commands that apply to the selection.
+
+							deployedObjs
+								(block (
+									(squadronComms (objSquadronCommsMessages gPlayerShip deployedObjs))
+									(skipList '(msgFormationAlpha msgFormationBeta msgFormationGamma msgStatus))
+
+									;	Generate a list of messages
+
+									(squadronActions
+										(sort
+											(map squadronComms 'excludeNil msgID
+												(if (not (find skipList msgID))
+													{
+														msgID: msgID
+														label: (objTranslate (@ deployedObjs 0) (cat "action." msgID))
+														}
+													)
+												)
+											'label
+											)
+										)
+
+									objName objNameGeneric
+									)
+
+									;	If we only have a single object, then add an action to view
+									;	configuration.
+
+									(if (= (count deployedObjs) 1)
+										(scrAddAction gScreen 'actionShowConfiguration (nextActionPos) Nil
+											(lambda ()
+												Nil
+												)
+											)
+										)
+
+									;	Add commands
+
+									(enum squadronActions theEntry
+										(block (
+											(msgID (@ theEntry 'msgID))
+											(label (@ theEntry 'label))
+											)
+											(scrAddAction gScreen msgID (nextActionPos) label
+												(lambda ()
+													(block ()
+														(objSquadronComms gPlayerShip deployedObjs msgID)
+														(scrExitScreen gScreen 'forceUndock)
+														)
+													)
+												)
+											)
+										)
+
+									;	Set the descriptor
+
+									(switch
+										(gr (count deployedObjs) 1)
+											(scrSetDescTranslate gScreen 'descShipsSelected {
+												shipCount: (fmtNoun (scrTranslate gScreen 'nounShip) (count deployedObjs) 'countAlways)
+												})
+
+										(!= (setq objName (objGetName (@ deployedObjs 0)))
+												(setq objNameGeneric (objGetName (@ deployedObjs 0) 'generic))
+												)
+											(scrSetDescTranslate gScreen 'descCharacterSelected {
+												name: objName
+												shipClass: (objGetName (@ deployedObjs 0) '(article generic))
+												})
+
+										(scrSetDescTranslate gScreen 'descShipSelected {
+											shipClass: objNameGeneric
+											})
+										)
+
+									(dbgOutput "Selection: " selection)
+									(dbgOutput "Name: " (objGetname (@ deployedObjs 0)))
+									(dbgOutput "Class: " (objGetName (@ deployedObjs 0) 'generic))
+									)
+
 							(scrSetDesc gScreen "LATER: " entry)
 							)
 						)
 				</OnPaneInit>
 				<Actions>
+
 					<Action id="actionDone" cancel="1">
 						(scrExitScreen gScreen)
 					</Action>
@@ -116,6 +221,8 @@
 		</Panes>
 
 		<Language>
+			<Text id="actionShowConfiguration">[C]onfiguration</Text>
+
 			<Text id="msgAttackInFormation">Order Attack [i]n Formation</Text>
 			<Text id="msgAttackTarget">Order [A]ttack Target</Text>
 			<Text id="msgBreakAndAttack">Order [B]reak &amp; Attack</Text>
@@ -134,6 +241,21 @@
 			
 				None of your ships are deployed in this system.
 				
+			</Text>
+			<Text id="descShipsSelected">
+
+				You've selected %shipCount% in your squadron.
+			
+			</Text>
+			<Text id="descShipSelected">
+
+				%ShipClass% selected.
+
+			</Text>
+			<Text id="descCharacterSelected">
+
+				%Name% is flying %shipClass%.
+			
 			</Text>
 
 			<Text id="nounShip">ship(s)</Text>
