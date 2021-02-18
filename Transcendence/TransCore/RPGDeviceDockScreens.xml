@@ -30,9 +30,10 @@
 			list=		"aU"
 			>
 			(block (
+				(shipObj (or (@ gData 'shipObj) gPlayerShip))
 				(criteria (or (@ gData 'criteria) "aU"))
 				(armorSeg (@ gData 'armorSeg))
-				(armorToReplace (shpGetArmor gPlayerShip armorSeg))
+				(armorToReplace (shpGetArmor shipObj armorSeg))
 				)
 				
 				(scrSetListFilter gScreen (lambda (theItem)
@@ -78,27 +79,32 @@
 				dataFrom=	"=(or (@ gData 'sourceObj) 'source)"
 				list=		"*"
 				>
-			(scrSetListFilter gScreen (lambda (theItem)
-				(and
-					(itmMatches theItem "aU")
-					(objGetSellPrice gSource theItem)
-					(objGetArmorReplacePrice gSource theItem)
-					(geq (itmGetLevel theItem) (itmGetLevel (shpGetArmor gPlayerShip (@ gData 'armorSeg))))
-					(!= (@ (objCanInstallItem gPlayerShip theItem) 1) 'notCompatible)
-					)
-				))
+			(block (
+				(shipObj (or (@ gData 'shipObj) gPlayerShip))
+				)
+				(scrSetListFilter gScreen (lambda (theItem)
+					(and
+						(itmMatches theItem "aU")
+						(objGetSellPrice gSource theItem)
+						(objGetArmorReplacePrice gSource theItem)
+						(geq (itmGetLevel theItem) (itmGetLevel (shpGetArmor shipObj (@ gData 'armorSeg))))
+						(!= (@ (objCanInstallItem shipObj theItem) 1) 'notCompatible)
+						)
+					))
+				)
 		</ListOptions>
 
 		<Panes>
 			<Default>
 				<OnPaneInit>
 					(block (
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
 						(armorSeg (@ gData 'armorSeg))
 						(thisItem (scrGetItem gScreen))
-						(oldItem (shpGetArmor gPlayerShip armorSeg))
+						(oldItem (shpGetArmor shipObj armorSeg))
 						(currencyUsed (objGetDefaultCurrency gSource))
 						
-						(result (if thisItem (objCanInstallItem gPlayerShip thisItem armorSeg)))
+						(result (if thisItem (objCanInstallItem shipObj thisItem armorSeg)))
 						(resultCode (@ result 1))
 
 						(installStatus (objGetItemProperty gSource thisItem 'installItemStatus))
@@ -122,7 +128,7 @@
 						;	Show the current armor
 						
 						(scrSetControlValue gScreen 'currentItem {
-							source: gPlayerShip
+							source: shipObj
 							item: oldItem
 							})
 						
@@ -155,14 +161,14 @@
 
 							(not (@ installStatus 'canInstall))
 								(setq desc (or
-									(objTranslate gSource (@ installStatus 'descID) { item:thisItem itemName:(itmGetName thisItem 'article) targetObj:gPlayerShip })
+									(objTranslate gSource (@ installStatus 'descID) { item:thisItem itemName:(itmGetName thisItem 'article) targetObj:shipObj })
 									(scrTranslate gScreen 'descNoTech { armorShort:(itmGetName thisItem 'short) })
 									))
 
-							(gr cargoNeeded (objGetCargoSpaceLeft gPlayerShip))
+							(gr cargoNeeded (objGetCargoSpaceLeft shipObj))
 								(setq descID 'descNotEnoughRoom)
 							
-							(gr totalCost (objGetBalance gPlayerShip currencyUsed))
+							(gr totalCost (objGetBalance shipObj currencyUsed))
 								(setq descID 'descCannotAfford)
 								
 							(= totalCost 0)
@@ -221,23 +227,25 @@
 				<Actions>
 					<Action id="actionBuyAndInstall" default="1">
 						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
 							(thisItem (scrRemoveItem gScreen 1))
 							)
 							(rpgBuyItem gSource thisItem (scrGetData gScreen 'cost) (objGetDefaultCurrency gSource))
-							(shpInstallArmor gPlayerShip thisItem (@ gData 'armorSeg))
+							(shpInstallArmor shipObj thisItem (@ gData 'armorSeg))
 							(scrExitScreen gScreen)
 							)
 					</Action>
 
 					<Action id="actionInstallArmor" default="1">
 						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
 							(thisItem (scrRemoveItem gScreen 1))
 							(currencyUsed (objGetDefaultCurrency gSource))
 							(installCost (scrGetData gScreen 'cost))
 							)
-							(objAddItem gPlayerShip thisItem 1)
-							(shpInstallArmor gPlayerShip thisItem (@ gData 'armorSeg))
-							(objCharge gPlayerShip currencyUsed installCost)
+							(objAddItem shipObj thisItem 1)
+							(shpInstallArmor shipObj thisItem (@ gData 'armorSeg))
+							(objCharge shipObj currencyUsed installCost)
 							(objCredit gSource currencyUsed installCost)
 							(scrExitScreen gScreen)
 							)
@@ -326,7 +334,11 @@
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(block (thisItem theResult)
+					(block (
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
+						thisItem
+						theResult
+						)
 						(setq theResult (rpgInstallDevicePrep {
 							item: (scrGetItem gScreen)
 
@@ -340,7 +352,7 @@
 
 						(if (@ gData 'replaceItem)
 							(scrSetControlValue gScreen 'currentItem {
-								source: gPlayerShip
+								source: shipObj
 								item: (@ gData 'replaceItem)
 								})
 							)
@@ -369,6 +381,7 @@
 					<Action id="actionInstall" default="1">
 						(if gCanInstall
 							(block (
+								(shipObj (or (@ gData 'shipObj) gPlayerShip))
 								(recommendedSlot {
 									deviceSlot: 
 										(if (and (@ gData 'replaceItem)
@@ -381,19 +394,19 @@
 									})
 								)
 								
-								(shpInstallDevice gPlayerShip (scrGetItem gScreen) recommendedSlot)
-								(objCharge gPlayerShip (objGetDefaultCurrency gSource) gCost)
+								(shpInstallDevice shipObj (scrGetItem gScreen) recommendedSlot)
+								(objCharge shipObj (objGetDefaultCurrency gSource) gCost)
 								(objCredit gSource (objGetDefaultCurrency gSource) gCost)
 								(typSetData &svPlayer; 'tutorialInstalled True)
 								
 								;	If the original item is still installed, then uninstall it
 							
 								(if (and (@ gData 'replaceItem)
-										(filter (objGetItems gPlayerShip "dI") theItem
+										(filter (objGetItems shipObj "dI") theItem
 											(itmIsEqual theItem (@ gData 'replaceItem))
 											)
 										)
-									(shpRemoveDevice gPlayerShip (@ gData 'replaceItem))
+									(shpRemoveDevice shipObj (@ gData 'replaceItem))
 									)
 								
 								;	Done
@@ -454,6 +467,7 @@
             <Default>
                 <onPaneInit>
 					(block (
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
 						(theItem (scrGetItem gScreen))
 						(currencyUsed (objGetDefaultCurrency gSource))
 						currentItem
@@ -488,23 +502,23 @@
 								(switch
 									(@ result 'itemToReplace)
 										(scrSetControlValue gScreen 'currentItem {
-											source: gPlayerShip
+											source: shipObj
 											item: (@ result 'itemToReplace)
 											})
 
 									(and (= itemCategory 'launcher)
-											(setq currentItem (@ (objGetItems gPlayerShip "lI") 0))
+											(setq currentItem (@ (objGetItems shipObj "lI") 0))
 											)
 										(scrSetControlValue gScreen 'currentItem {
-											source: gPlayerShip
+											source: shipObj
 											item: currentItem
 											})
 
 									(and (= itemCategory 'shields)
-											(setq currentItem (@ (objGetItems gPlayerShip "sI") 0))
+											(setq currentItem (@ (objGetItems shipObj "sI") 0))
 											)
 										(scrSetControlValue gScreen 'currentItem {
-											source: gPlayerShip
+											source: shipObj
 											item: currentItem
 											})
 
@@ -542,12 +556,13 @@
                 <Actions>
                     <Action id="actionInstall" default="1">
 						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
 							(theItem (scrGetData gScreen 'theItem))
 							(result (scrGetData gScreen 'result))
 							(cost (@ result 'price))
 							)
 							(rpgBuyItem gSource theItem cost (objGetDefaultCurrency gSource))
-							(shpInstallDevice gPlayerShip theItem)
+							(shpInstallDevice shipObj theItem)
 							(typSetData &svPlayer; 'tutorialInstalled True)
 
 							(scrSetReturnData gScreen 'installed True)
@@ -626,6 +641,7 @@
 				>
 			<OnDisplayInit>
 				(block (
+					(shipObj (or (@ gData 'shipObj) gPlayerShip))
 					(criteria (scrGetProperty gScreen 'rpg.criteria))
 					(replaceItem (scrGetProperty gScreen 'rpg.replaceItem))
 					(minLevel (or (itmGetLevel replaceItem) 1))
@@ -644,7 +660,7 @@
 								(geq (itmGetLevel theItem) minLevel)
 								(= (itmGetProperty theItem 'category) 'cargoHold)
 								)
-							(!= (@ (objCanInstallItem gPlayerShip theItem) 1) 'notCompatible)
+							(!= (@ (objCanInstallItem shipObj theItem) 1) 'notCompatible)
 							)
 						))
 
@@ -659,6 +675,7 @@
 			<Default>
 				<OnPaneInit>
 					(block (
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
 						(replaceItem (scrGetProperty gScreen 'rpg.replaceItem))
 						thisItem theResult
 						)
@@ -676,7 +693,7 @@
 
 						(if replaceItem
 							(scrSetControlValue gScreen 'currentItem {
-								source: gPlayerShip
+								source: shipObj
 								item: replaceItem
 								})
 							)
@@ -704,6 +721,7 @@
 				<Actions>
 					<Action id="actionBuyAndInstall" default="1">
 						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
 							(theItem (itmSetCount (scrGetItem gScreen) 1))
 							(recommendedSlot {
 								deviceSlot: 
@@ -719,18 +737,18 @@
 							)
 							
 							(rpgBuyItem gSource theItem (scrGetData gScreen 'cost) (objGetDefaultCurrency gSource))
-							(shpInstallDevice gPlayerShip theItem recommendedSlot)
+							(shpInstallDevice shipObj theItem recommendedSlot)
 							(typSetData &svPlayer; 'tutorialInstalled True)
 							(objRemoveItem sourceObj theItem)
 							
 							;	If the original item is still installed, then uninstall it
 							
 							(if (and (@ gData 'replaceItem)
-									(filter (objGetItems gPlayerShip "dI") theItem
+									(filter (objGetItems shipObj "dI") theItem
 										(itmIsEqual theItem (@ gData 'replaceItem))
 										)
 									)
-								(shpRemoveDevice gPlayerShip (@ gData 'replaceItem))
+								(shpRemoveDevice shipObj (@ gData 'replaceItem))
 								)
 								
 							;	Done
@@ -781,7 +799,10 @@
 		<Panes>
 			<Default descID="descNoItems">
 				<OnPaneInit>
-					(block (thisItem currencyUsed)
+					(block (
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
+						thisItem currencyUsed
+						)
 						(setq thisItem (scrGetItem gScreen))
 						(setq currencyUsed (objGetDefaultCurrency gSource))
 						(setq gResult Nil)
@@ -795,7 +816,7 @@
 								(setq gCost (divide (multiply stdRepairCost (@ gData 'priceAdj)) 100))
 
 								(switch
-									(gr gCost (objGetBalance gPlayerShip currencyUsed))
+									(gr gCost (objGetBalance shipObj currencyUsed))
 										(setq desc (cat "It will cost " (fmtCurrency currencyUsed gCost) " to repair " (itmGetName thisItem 0x04) ". Unfortunately, you cannot afford the cost."))
 
 									(block Nil
@@ -814,11 +835,13 @@
 
 				<Actions>
 					<Action id="actionRepairItem" default="1">
-						(block Nil
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
 							(setq gItem (scrGetItem gScreen))
 							
-							(shpEnhanceItem gPlayerShip gItem)
-							(objCharge gPlayerShip (objGetDefaultCurrency gSource) gCost)
+							(shpEnhanceItem shipObj gItem)
+							(objCharge shipObj (objGetDefaultCurrency gSource) gCost)
 							(objCredit gSource (objGetDefaultCurrency gSource) gCost)
 
 							(scrShowPane gScreen "Success")

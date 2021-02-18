@@ -158,7 +158,10 @@
 									(if (= (count deployedObjs) 1)
 										(scrAddAction gScreen 'actionShowConfiguration (nextActionPos) Nil
 											(lambda ()
-												Nil
+												(scrShowScreen gScreen (obj@ (@ deployedObjs 0) 'shipConfigScreen) {
+													shipObj: (@ deployedObjs 0)
+													shipConfig: True
+													})
 												)
 											)
 										)
@@ -223,14 +226,14 @@
 		<Language>
 			<Text id="actionShowConfiguration">[C]onfiguration</Text>
 
-			<Text id="msgAttackInFormation">Order Attack [i]n Formation</Text>
-			<Text id="msgAttackTarget">Order [A]ttack Target</Text>
-			<Text id="msgBreakAndAttack">Order [B]reak &amp; Attack</Text>
-			<Text id="msgFormUp">Order [F]orm Up</Text>
-			<Text id="msgFormationAlpha">Order Formation [1] Alpha</Text>
-			<Text id="msgFormationBeta">Order Formation [2] Beta</Text>
-			<Text id="msgFormationGamma">Order Formation [3] Gamma</Text>
-			<Text id="msgWait">Order [W]ait</Text>
+			<Text id="msgAttackInFormation">Attack [i]n Formation</Text>
+			<Text id="msgAttackTarget">[A]ttack Target</Text>
+			<Text id="msgBreakAndAttack">[B]reak &amp; Attack</Text>
+			<Text id="msgFormUp">[F]orm Up</Text>
+			<Text id="msgFormationAlpha">Formation [1] Alpha</Text>
+			<Text id="msgFormationBeta">Formation [2] Beta</Text>
+			<Text id="msgFormationGamma">Formation [3] Gamma</Text>
+			<Text id="msgWait">[W]ait</Text>
 
 			<Text id="descSquadronDeployed">
 			

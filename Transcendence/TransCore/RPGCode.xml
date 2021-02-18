@@ -160,7 +160,7 @@
 					)
 					
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: True
 								enabled: True
@@ -256,7 +256,7 @@
 						})
 					)
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: Nil
 								}
@@ -304,7 +304,7 @@
 					allItems
 					)
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: Nil
 								}
@@ -400,7 +400,7 @@
 					)
 					
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: True
 								enabled: True
@@ -479,7 +479,7 @@
 					)
 
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: Nil
 								}
@@ -593,7 +593,7 @@
 				
 			(setq rpgCalcDockServiceRemoveAction (lambda (dockObj shipObj theItem options)
 				(switch
-					(= dockObj shipObj)
+					(or (@ options 'shipConfig) (= dockObj shipObj))
 						{
 							visible: Nil
 							}
@@ -703,7 +703,7 @@
 				
 			(setq rpgCalcDockServiceRepairAction (lambda (dockObj shipObj theItem options)
 				(switch
-					(= dockObj shipObj)
+					(or (@ options 'shipConfig) (= dockObj shipObj))
 						{
 							visible: Nil
 							}
@@ -776,7 +776,7 @@
 				
 			(setq rpgCalcDockServiceReplaceAction (lambda (dockObj shipObj theItem options)
 				(switch
-					(= dockObj shipObj)
+					(or (@ options 'shipConfig) (= dockObj shipObj))
 						{
 							visible: Nil
 							}
@@ -932,7 +932,7 @@
 				
 			(setq rpgCalcDockServiceUpgradeAction (lambda (dockObj shipObj theItem options)
 				(switch
-					(= dockObj shipObj)
+					(or (@ options 'shipConfig) (= dockObj shipObj))
 						{
 							visible: Nil
 							}
@@ -1244,7 +1244,7 @@
 					)
 					
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: True
 								enabled: True
@@ -1346,6 +1346,13 @@
 						;	If not a reactor, then this doesn't apply
 						
 						(not (itmMatches theItem "rI"))
+							{
+								visible: Nil
+								}
+
+						;	Only the player ship can be refueled
+
+						(!= shipObj gPlayerShip)
 							{
 								visible: Nil
 								}
