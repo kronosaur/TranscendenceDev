@@ -189,41 +189,18 @@ void CPaintHelper::PaintStatusBar (CG32bitImage &Dest, int x, int y, int iTick, 
 //	Paints a status bar
 
 	{
-	if (iMaxPos == 0)
-		return;
+	CStatusBarPainter Painter(*g_pUniverse);
 
-	CG32bitPixel rgbNormal = CG32bitPixel(rgbColor, 220);
-	CG32bitPixel rgbDark = CG32bitPixel(rgbColor, 128);
-	CG32bitPixel rgbBlack = CG32bitPixel(CG32bitPixel(0), 128);
-
-	int xStart = x - (STATUS_BAR_WIDTH / 2);
-	int yStart = y;
-
-	int iFill = Max(1, iPos * STATUS_BAR_WIDTH / iMaxPos);
-
-	//	Draw
-
-	Dest.Fill(xStart, yStart + 1, iFill, STATUS_BAR_HEIGHT - 2, rgbNormal);
-	Dest.Fill(xStart + iFill, yStart + 1, STATUS_BAR_WIDTH - iFill, STATUS_BAR_HEIGHT - 2, rgbBlack);
-
-	Dest.DrawLine(xStart, yStart, xStart + STATUS_BAR_WIDTH, yStart, 1, rgbDark);
-	Dest.DrawLine(xStart, yStart + STATUS_BAR_HEIGHT - 1, xStart + STATUS_BAR_WIDTH, yStart + STATUS_BAR_HEIGHT - 1, 1, rgbDark);
-	Dest.DrawLine(xStart - 1, yStart, xStart - 1, yStart + STATUS_BAR_HEIGHT, 1, rgbDark);
-	Dest.DrawLine(xStart + STATUS_BAR_WIDTH, yStart, xStart + STATUS_BAR_WIDTH, yStart + STATUS_BAR_HEIGHT, 1, rgbDark);
-
-	//	Draw the label
-
-	if (!sLabel.IsBlank())
-		{
-		const CG16bitFont &Font = g_pUniverse->GetNamedFont(CUniverse::fontSRSObjCounter);
-		CG32bitPixel rgbLabelColor = CG32bitPixel(255, 255, 255);
-		Font.DrawText(Dest, x, y, rgbLabelColor, sLabel, CG16bitFont::AlignCenter);
-		}
-
-	//	Return height
+	CStatusBarPainter::SOptions Options;
+	Options.iMaxStatus = iMaxPos;
+	Options.cxBar = STATUS_BAR_WIDTH;
+	Options.cyBar = STATUS_BAR_HEIGHT;
+	Painter.Init(iPos, sLabel, rgbColor, Options);
 
 	if (retcyHeight)
-		*retcyHeight = STATUS_BAR_HEIGHT;
+		*retcyHeight = Painter.GetHeight();
+
+	Painter.Paint(Dest, x, y);
 	}
 
 void CPaintHelper::PaintTargetHighlight (CG32bitImage &Dest, int x, int y, int iTick, int iRadius, int iRingSpacing, int iDelay, CG32bitPixel rgbColor)

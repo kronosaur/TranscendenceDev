@@ -8,6 +8,8 @@
 
 #define FIELD_DESC							CONSTLIT("desc")
 #define FIELD_ICON							CONSTLIT("icon")
+#define FIELD_STATUS_BAR					CONSTLIT("statusBar")
+#define FIELD_STATUS_BAR_COLOR				CONSTLIT("statusBarColor")
 #define FIELD_TITLE							CONSTLIT("title")
 
 bool CGIconListArea::DeselectAll ()
@@ -188,12 +190,23 @@ bool CGIconListArea::InitEntry (SEntry &Entry, const ICCItem &Data, CString *ret
 
 	Entry.sTitle = Data.GetStringAt(FIELD_TITLE);
 
-	const ICCItem *pIcon = Data.GetElement(FIELD_ICON);
-	if (pIcon)
+	if (const ICCItem *pIcon = Data.GetElement(FIELD_ICON))
 		{
 		DWORD dwIcon = CTLispConvert::AsImageDesc(pIcon, &Entry.rcIconSrc);
 		if (dwIcon)
 			Entry.pIcon = m_Universe.GetLibraryBitmap(dwIcon);
+		}
+
+	//	Status bar (usually used for damage)
+
+	if (const ICCItem *pStatus = Data.GetElement(FIELD_STATUS_BAR))
+		{
+		Entry.iStatusBar = pStatus->GetIntegerValue();
+
+		if (const ICCItem *pStatusColor = Data.GetElement(FIELD_STATUS_BAR_COLOR))
+			{
+			Entry.rgbStatusBar = CTLispConvert::AsRGB(pStatusColor);
+			}
 		}
 
 	return true;
@@ -301,13 +314,14 @@ void CGIconListArea::PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const
 	const int xBackMargin = 3;
 	const int yBackMargin = 3;
 	const int iSelectionWidth = 2;
-	CG32bitPixel rgbFadeBackColor = CG32bitPixel(CG32bitPixel::Darken(m_rgbBack, 220), 220);
+	const CG16bitFont &LabelFont = m_VI.GetFont(fontMedium);
+	const CG32bitPixel rgbFadeBackColor = CG32bitPixel(CG32bitPixel::Darken(m_rgbBack, 220), 220);
+	const CG32bitPixel rgbBackColor = (Entry.bSelected ? m_rgbBack : rgbFadeBackColor);
 
 	RECT rcRegion = Entry.rcRect;
+	int yPaint = rcRegion.top + ENTRY_PADDING_TOP;
 
 	//	Paint the background of the entry
-
-	CG32bitPixel rgbBackColor = (Entry.bSelected ? m_rgbBack : rgbFadeBackColor);
 
 	CGDraw::RoundedRect(Dest, 
 			rcRegion.left - xBackMargin, 
@@ -320,12 +334,12 @@ void CGIconListArea::PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const
 	//	Paint the actual region
 
 	int xIcon = rcRegion.left + (RectWidth(rcRegion) - m_cxIcon) / 2;
-	int yIcon = rcRegion.top + ENTRY_PADDING_TOP;
+	int yIcon = yPaint;
 	if (Entry.pIcon)
 		{
 		CGDraw::BltTransformed(Dest,
-				xIcon + (m_cxIcon / 2),
-				yIcon + (m_cyIcon / 2),
+				(Metric)xIcon + (m_cxIcon / 2.0),
+				(Metric)yIcon + (m_cyIcon / 2.0),
 				(Metric)m_cxIcon / (Metric)RectWidth(Entry.rcIconSrc),
 				(Metric)m_cyIcon / (Metric)RectHeight(Entry.rcIconSrc),
 				0.0,
@@ -336,20 +350,43 @@ void CGIconListArea::PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const
 				RectHeight(Entry.rcIconSrc));
 		}
 
-	//	Paint the name
+	//	Increment paint position even if we have no icon.
+
+	yPaint += m_cyIcon;
+
+	//	Paint the name (we truncate if it doesn't fit in one line because
+	//	we need foorm for other indicators).
 
 	RECT rcText;
 	rcText.left = rcRegion.left + ENTRY_PADDING_LEFT;
 	rcText.right = rcRegion.right - ENTRY_PADDING_RIGHT;
-	rcText.top = yIcon + m_cyIcon;
-	rcText.bottom = rcRegion.bottom;
+	rcText.top = yPaint;
+	rcText.bottom = rcText.top + LabelFont.GetHeight();
 
-	m_VI.GetFont(fontMedium).DrawText(Dest, 
+	LabelFont.DrawText(Dest, 
 			rcText,
 			m_rgbText,
 			Entry.sTitle,
 			0,
-			CG16bitFont::AlignCenter);
+			CG16bitFont::AlignCenter | CG16bitFont::TruncateBlock);
+
+	yPaint += LabelFont.GetHeight();
+
+	//	Paint the status bar, if necessary.
+
+	if (Entry.iStatusBar != -1)
+		{
+		CStatusBarPainter StatusPainter(m_Universe);
+
+		CStatusBarPainter::SOptions Options;
+		Options.cxBar = RectWidth(rcText);
+		Options.cyBar = Options.cxBar / 10;
+
+		StatusPainter.Init(Entry.iStatusBar, NULL_STR, Entry.rgbStatusBar, Options);
+		StatusPainter.Paint(Dest, rcRegion.left + RectWidth(rcRegion) / 2, yPaint);
+
+		yPaint += StatusPainter.GetHeight();
+		}
 
 	//	Draw outline if we're selected
 

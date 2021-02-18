@@ -105,6 +105,19 @@ CSpaceObject *CTLispConvert::AsObject (const ICCItem *pItem)
 		return NULL;
 	}
 
+CG32bitPixel CTLispConvert::AsRGB (const ICCItem *pItem, CG32bitPixel rgbDefault)
+
+//	AsRGB
+//
+//	Converts to an RGB value.
+
+	{
+	if (!pItem || pItem->IsNil())
+		return rgbDefault;
+	else
+		return ::LoadRGBColor(pItem->GetStringValue(), rgbDefault);
+	}
+
 bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector)
 
 //	AsScreen

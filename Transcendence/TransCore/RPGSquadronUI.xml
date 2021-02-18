@@ -14,15 +14,36 @@
 					(block (
 						(shipObj (@ theEntry 'obj))
 						)
-						{
-							title: (@ theEntry 'name)
-							icon: (objGetImageDesc shipObj)
+						(switch
+							;	This is a stored auton
 
-							status: (@ theEntry 'status)
-							obj: (@ theEntry 'obj)
-							objID: (@ theEntry 'objID)
-							type: (@ theEntry 'type)
-							}
+							(@ theEntry 'item)
+								{
+									title: (@ theEntry 'name)
+									icon: (itmGetImageDesc (@ theEntry 'item))
+
+									status: (@ theEntry 'status)
+									item: (@ theEntry 'item)
+									}
+
+							;	This is an active ship in the system
+
+							(block (
+								(integrity (- 100 (objGetVisibleDamage shipObj)))
+								)
+								{
+									title: (@ theEntry 'name)
+									icon: (objGetImageDesc shipObj)
+									statusBar: integrity
+									statusBarColor: (obj@ shipObj 'hudColor)
+
+									status: (@ theEntry 'status)
+									obj: shipObj
+									objID: (@ theEntry 'objID)
+									type: (@ theEntry 'type)
+									}
+								)
+							)
 						)
 					)
 			</OnDisplayInit>
@@ -56,6 +77,19 @@
 								(= (count selection) (count selectionDeployed))
 									(map selection theEntry
 										(@ theEntry 'obj)
+										)
+								)
+							)
+
+						(selectionStored (filter selection theEntry
+							(= (@ theEntry 'status) 'stored)
+							))
+
+						(storedItems
+							(switch
+								(= (count selection) (count selectionStored))
+									(map selection theEntry
+										(@ theEntry 'item)
 										)
 								)
 							)
@@ -161,6 +195,9 @@
 												(scrShowScreen gScreen (obj@ (@ deployedObjs 0) 'shipConfigScreen) {
 													shipObj: (@ deployedObjs 0)
 													shipConfig: True
+													dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
+														shipClass: (objGetName (@ deployedObjs 0) 'generic)
+														})
 													})
 												)
 											)
@@ -184,7 +221,7 @@
 											)
 										)
 
-									;	Set the descriptor
+									;	Set the description
 
 									(switch
 										(gr (count deployedObjs) 1)
@@ -204,10 +241,81 @@
 											shipClass: objNameGeneric
 											})
 										)
+									)
 
-									(dbgOutput "Selection: " selection)
-									(dbgOutput "Name: " (objGetname (@ deployedObjs 0)))
-									(dbgOutput "Class: " (objGetName (@ deployedObjs 0) 'generic))
+							storedItems
+								(block (
+									(canDeploy (map storedItems 'excludeNil theItem
+										(obj@ gPlayerShip theItem 'canBeUsed)
+										))
+									)
+
+									;	Add action to deploy
+
+									(scrAddAction gScreen 'actionDeploy (nextActionPos) Nil
+										(lambda ()
+											(enum storedItems theItem
+												(switch
+													(not (obj@ gPlayerShip theItem 'canBeUsed))
+														Nil
+
+													(obj@ gPlayerShip theItem 'hasUseScreen)
+														Nil
+
+													(block ()
+														(plyUseItem gPlayer theItem)
+														(scrExitScreen gScreen 'forceUndock)
+														)
+													)
+												)
+											)
+										)
+
+									;	Action is disabled if none of the items can be used.
+
+									(scrEnableAction gScreen 'actionDeploy canDeploy)
+
+									;	If there is a single item selected, show configuration
+
+									(if (and (= (count storedItems) 1)
+											(itmHasAttribute (@ storedItems 0) 'auton)
+											)
+										(scrAddAction gScreen 'actionShowConfiguration (nextActionPos) Nil
+											(lambda ()
+												(block (
+													(autonObj (rpgCreateSuspendedAuton gPlayerShip (@ storedItems 0)))
+													)
+													(scrShowScreen gScreen (obj@ autonObj 'shipConfigScreen) {
+														shipObj: autonObj
+														shipConfig: True
+														dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
+															shipClass: (objGetName autonObj 'generic)
+															})
+
+														onExit: (lambda ()
+															(block ()
+																(dbgOutput "Auton returned")
+																(rpgCleanUpSuspendedAuton gPlayerShip)
+																)
+															)
+														})
+													)
+												)
+											)
+										)
+
+									;	Set the description
+
+									(switch
+										(gr (count storedItems) 1)
+											(scrSetDescTranslate gScreen 'descItemsSelected {
+												itemCount: (fmtNoun (scrTranslate gScreen 'nounAuton) (count storedItems) 'countAlways)
+												})
+
+										(scrSetDescTranslate gScreen 'descItemSelected {
+											itemName: (itmGetName (@ storedItems 0) 0)
+											})
+										)
 									)
 
 							(scrSetDesc gScreen "LATER: " entry)
@@ -224,6 +332,7 @@
 		</Panes>
 
 		<Language>
+			<Text id="actionDeploy">[D]eploy</Text>
 			<Text id="actionShowConfiguration">[C]onfiguration</Text>
 
 			<Text id="msgAttackInFormation">Attack [i]n Formation</Text>
@@ -252,7 +361,7 @@
 			</Text>
 			<Text id="descShipSelected">
 
-				%ShipClass% selected.
+				The %ShipClass% is deployed.
 
 			</Text>
 			<Text id="descCharacterSelected">
@@ -260,7 +369,23 @@
 				%Name% is flying %shipClass%.
 			
 			</Text>
+			<Text id="descItemsSelected">
 
+				You've selected %itemCount% in your cargo hold.
+			
+			</Text>
+			<Text id="descItemSelected">
+
+				The %itemName% is in your cargo hold.
+			
+			</Text>
+			<Text id="descConfiguration">
+
+				%ShipClass%.
+			
+			</Text>
+
+			<Text id="nounAuton">auton(s)</Text>
 			<Text id="nounShip">ship(s)</Text>
 		</Language>
 	</DockScreen>

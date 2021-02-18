@@ -32,6 +32,16 @@ CG32bitPixel::CG32bitPixel (const CGRealRGB &rgbColor)
 	m_dwPixel = ((DWORD)byAlpha << 24) | ((DWORD)byRed << 16) | ((DWORD)byGreen << 8) | ((DWORD)byBlue);
 	}
 
+CString CG32bitPixel::AsHTMLColor () const
+
+//	AsHTMLColor
+//
+//	Returns the color as "#RRGGBB" format.
+
+	{
+	return strPatternSubst("#%02x%02x%02x", GetRed(), GetGreen(), GetBlue());
+	}
+
 CG32bitPixel CG32bitPixel::Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
 
 //	Blend

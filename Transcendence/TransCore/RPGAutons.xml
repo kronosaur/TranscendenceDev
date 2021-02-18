@@ -963,6 +963,7 @@
 								
 							;	Remember the suspended auton, in case we need it later.
 							
+							(rpgCleanUpSuspendedAuton sourceObj)
 							(objSetObjRefData sourceObj 'rpgSuspendedAuton auton)
 							
 							;	Done
@@ -1307,6 +1308,10 @@
 					nextID
 					)
 				))
+			
+			(setq rpgGetSuspendedAuton (lambda (sourceObj)
+				(objGetObjRefData sourceObj 'rpgSuspendedAuton)
+				))
 				
 			(setq rpgSanitizeAutonName (lambda (theName)
 				(block (tempName newName)
@@ -1339,7 +1344,6 @@
 					(if (or (not newName) (eq "" (apply cat (split newName " ")))) Nil (strCapitalize newName))
 					)
 				))
-			
 			)
 	</Globals>
 

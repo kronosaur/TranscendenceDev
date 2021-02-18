@@ -19,20 +19,25 @@
 		dockMasterLabel: Label for talking with dockmaster
 
 		dockMasterDesc: Description for talking with dockmaster
+
+		dockServiceDesc: If non-Nil, the description to show.
+
+		onExit: If non-Nil, this is a function to execute when we exit the 
+				screen.
 		
 		reactorUpgrade: If non-Nil, this must be a list generate with
 				rpgGetReactorUpgradeList. Otherwise, we do not offer a reactor
 				upgrade at this station.
 
-		'shipConfig: If True, then we're showing ship configuration and we want
+		shipConfig: If True, then we're showing ship configuration and we want
 				to see all screens even if we can't do anything.
 
-		'shipObj: If not Nil, show dock services on this ship (defaults to
+		shipObj: If not Nil, show dock services on this ship (defaults to
 				gPlayerShip).
 				
-		'sourceObj: If not Nil, use this as the object for inventory purposes.
+		sourceObj: If not Nil, use this as the object for inventory purposes.
 	
-		'upgradeInstallOnly: If True, we only offer device installation services if
+		upgradeInstallOnly: If True, we only offer device installation services if
 				the player buys an upgrade.
 	
 -->
@@ -206,13 +211,14 @@
 						;	Description
 						
 						(scrSetDesc gScreen
-							(or (objTranslate gSource 'core.dockServicesDesc)
-									(objTranslate shipObj "dockServices:shipDesc")
-									(objGetProperty shipObj 'playerDesc)
-									(scrTranslate gScreen 'shipConfigScreenDesc {
-										objName:(objGetName shipObj 'article)
-										})
-									)
+							(or (@ gData 'dockServicesDesc)
+								(objTranslate gSource 'core.dockServicesDesc)
+								(objTranslate shipObj "dockServices:shipDesc")
+								(objGetProperty shipObj 'playerDesc)
+								(scrTranslate gScreen 'shipConfigScreenDesc {
+									objName:(objGetName shipObj 'article)
+									})
+								)
 							)
 						)
 				</OnPaneInit>
@@ -251,7 +257,13 @@
 					</Action>
 
 					<Action id="actionDone">
-						(scrExitScreen gScreen)
+						(block ()
+							(scrExitScreen gScreen)
+
+							(if (@ gData 'onExit)
+								((@ gData 'onExit))
+								)
+							)
 					</Action>
 				</Actions>
 			</Default>

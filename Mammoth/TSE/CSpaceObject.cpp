@@ -4398,7 +4398,7 @@ ICCItemPtr CSpaceObject::GetStaticData (const CString &sAttrib)
 	return ICCItemPtr(GetUniverse().GetCC().CreateNil());
 	}
 
-CG32bitPixel CSpaceObject::GetSymbolColor (void)
+CG32bitPixel CSpaceObject::GetSymbolColor (void) const
 
 //	GetSymbolColor
 //

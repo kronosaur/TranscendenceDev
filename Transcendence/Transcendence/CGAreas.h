@@ -296,7 +296,7 @@ class CGIconListArea : public AGArea
 		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
 
 	private:
-		static constexpr int DEFAULT_ICON_SIZE = 96;
+		static constexpr int DEFAULT_ICON_SIZE = 64;
 		static constexpr int FRAME_PADDING_HORZ = 20;
 		static constexpr int FRAME_PADDING_VERT = 20;
 		static constexpr int ENTRY_SPACING = 10;
@@ -310,9 +310,12 @@ class CGIconListArea : public AGArea
 
 			bool bSelected = false;
 
-			CString sTitle;
-			const CG32bitImage *pIcon = NULL;
-			RECT rcIconSrc = { 0 };
+			CString sTitle;						//	Entry label
+			const CG32bitImage *pIcon = NULL;	//	Icon for entry
+			RECT rcIconSrc = { 0 };				//	Source RECT for entry
+			int iStatusBar = -1;				//	Status bar position (0-100) or -1 = not used.
+			CG32bitPixel rgbStatusBar;			//	Status bar color.
+			CString sStatusBarLabel;			//	Label for status bar.
 
 			//	Computed in Format
 

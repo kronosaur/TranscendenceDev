@@ -103,6 +103,30 @@ TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CSh
 					}
 				}
 
+			//	Now add all autons that can be deployed
+
+			const CItemList &ItemList = ShipObj.GetItemList();
+			for (int i = 0; i < ItemList.GetCount(); i++)
+				{
+				const CItem &Item = ItemList.GetItem(i);
+				if (Item.CanBeUsed()
+						&& Item.HasAttribute(CONSTLIT("auton")))
+					{
+					CItem SingleItem = Item;
+					SingleItem.SetCount(1);
+
+					for (int j = 0; j < Item.GetCount(); j++)
+						{
+						ICCItemPtr pEntry(ICCItem::SymbolTable);
+						pEntry->SetStringAt(CONSTLIT("status"), CONSTLIT("stored"));
+						pEntry->SetStringAt(CONSTLIT("name"), Item.GetNounPhrase());
+						pEntry->SetAt(CONSTLIT("item"), CTLispConvert::CreateItem(SingleItem));
+
+						pResult->Append(pEntry);
+						}
+					}
+				}
+
 			//	Done
 
 			if (pResult->GetCount() > 0)
