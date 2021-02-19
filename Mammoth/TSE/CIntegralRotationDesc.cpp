@@ -18,6 +18,9 @@ int CIntegralRotationDesc::CalcFinalRotationFrame (int iRotationFrame, int iRota
 //	thrusting and turned on inertia only.
 
 	{
+	if (m_iCount == 0)
+		return iRotationFrame;
+
 	while (iRotationSpeed > m_iRotationAccelStop || iRotationSpeed < -m_iRotationAccelStop)
 		{
 		if (iRotationSpeed > 0)
