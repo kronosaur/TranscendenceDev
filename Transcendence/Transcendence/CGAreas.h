@@ -327,7 +327,6 @@ class CGIconListArea : public AGArea
 		int HitTestEntry (int x, int y) const;
 		bool InitEntry (SEntry &Entry, const ICCItem &Data, CString *retsError = NULL);
 		void InitFromTheme (const CVisualPalette &VI, const CDockScreenVisuals &Theme);
-		void PaintBackground (CG32bitImage &Dest, const RECT &rcRect) const;
 		void PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const;
 		void Reformat () { m_bFormatted = false; Invalidate(); }
 

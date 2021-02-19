@@ -29,13 +29,13 @@
 							;	This is an active ship in the system
 
 							(block (
-								(integrity (- 100 (objGetVisibleDamage shipObj)))
+								(integrity (- 100 (obj@ shipObj 'visibleDamage)))
 								)
 								{
 									title: (@ theEntry 'name)
 									icon: (objGetImageDesc shipObj)
 									statusBar: integrity
-									statusBarColor: (obj@ shipObj 'hudColor)
+									statusBarColor: (obj@ shipObj 'visibleDamageColor)
 
 									status: (@ theEntry 'status)
 									obj: shipObj
@@ -195,6 +195,7 @@
 												(scrShowScreen gScreen (obj@ (@ deployedObjs 0) 'shipConfigScreen) {
 													shipObj: (@ deployedObjs 0)
 													shipConfig: True
+													title: (scrTranslate gScreen 'core.name)
 													dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
 														shipClass: (objGetName (@ deployedObjs 0) 'generic)
 														})
@@ -288,6 +289,7 @@
 													(scrShowScreen gScreen (obj@ autonObj 'shipConfigScreen) {
 														shipObj: autonObj
 														shipConfig: True
+														title: (scrTranslate gScreen 'core.name)
 														dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
 															shipClass: (objGetName autonObj 'generic)
 															})
@@ -332,6 +334,8 @@
 		</Panes>
 
 		<Language>
+			<Text id="core.name">Squadron</Text>
+
 			<Text id="actionDeploy">[D]eploy</Text>
 			<Text id="actionShowConfiguration">[C]onfiguration</Text>
 

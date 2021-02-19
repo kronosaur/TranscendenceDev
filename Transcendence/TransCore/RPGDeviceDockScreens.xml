@@ -16,6 +16,7 @@
 -->
 
 	<DockScreen UNID="&dsRPGReplaceArmor;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=				"itemPicker"
 			inherit=		"&dsRPGUpgradeArmor;"
 			nestedScreen=		"true"
@@ -70,6 +71,7 @@
 -->
 
 	<DockScreen UNID="&dsRPGUpgradeArmor;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=				"itemPicker"
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
@@ -306,6 +308,7 @@
 -->
 
 	<DockScreen UNID="&dsRPGInstallDevice;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=				"itemPicker"
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
@@ -454,6 +457,7 @@
 -->
 
 	<DockScreen UNID="&dsRPGInstallDeviceFromList;"
+			name=			"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=           "customItemPicker"
 			inherit=		"&dsDockScreenBase;"
 			nestedScreen=   "true"
@@ -624,6 +628,7 @@
 -->
 
 	<DockScreen UNID="&dsRPGUpgradeDevice;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
 			>
@@ -784,6 +789,7 @@
 
 -->
 	<DockScreen UNID="&dsRPGRepairItem;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=				"itemPicker"
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"

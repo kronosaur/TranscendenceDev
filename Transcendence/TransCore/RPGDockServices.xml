@@ -37,12 +37,15 @@
 				
 		sourceObj: If not Nil, use this as the object for inventory purposes.
 	
+		title: Title for screen (or Nil for station name)
+
 		upgradeInstallOnly: If True, we only offer device installation services if
 				the player buys an upgrade.
 	
 -->
 	
 	<DockScreen unid="&dsRPGDockServices;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			inherit=			"&dsRPGDockServicesBase;"
 			nestedScreen=		"true"
 			>
@@ -505,6 +508,7 @@
 -->
 
 	<DockScreen UNID="&dsRPGManageArmor;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=				"armorSelector"
 			inherit=			"&dsRPGDockServicesBase;"
 			nestedScreen=		"true"
@@ -726,6 +730,7 @@
 								(scrShowScreen gScreen &dsRPGUpgradeArmor; {
 									armorSeg: (scrGetData gScreen 'armorSeg)
 									checkMilitaryID: (@ gData 'checkMilitaryID)
+									title: (@ gData 'title)
 									sourceObj: (@ gData 'sourceObj)
 									shipObj: (@ gData 'shipObj)
 									})
@@ -736,6 +741,7 @@
 								criteria: "sUN"
 								checkMilitaryID: (@ gData 'checkMilitaryID)
 								replaceItem: (scrGetItem gScreen)
+								title: (@ gData 'title)
 								sourceObj: (@ gData 'sourceObj)
 								shipObj: (@ gData 'shipObj)
 								})
@@ -746,6 +752,7 @@
 						(scrShowScreen gScreen &dsRPGInstallDevice; {
 							criteria: "sUN"
 							checkMilitaryID: (@ gData 'checkMilitaryID)
+							title: (@ gData 'title)
 							shipObj: (@ gData 'shipObj)
 							})
 					</Action>
@@ -758,6 +765,7 @@
 								(scrShowScreen gScreen &dsRPGReplaceArmor; {
 									armorSeg: (scrGetData gScreen 'armorSeg)
 									checkMilitaryID: (@ gData 'checkMilitaryID)
+									title: (@ gData 'title)
 									shipObj: (@ gData 'shipObj)
 									})
 									
@@ -767,6 +775,7 @@
 								(scrShowScreen gScreen &dsRPGInstallDevice; {
 									criteria: "sUN"
 									checkMilitaryID: (@ gData 'checkMilitaryID)
+									title: (@ gData 'title)
 									shipObj: (@ gData 'shipObj)
 									})
 							)
@@ -830,6 +839,7 @@
 -->
 
 	<DockScreen UNID="&dsRPGManageMiscDevices;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=				"miscSelector"
 			inherit=			"&dsRPGDockServicesBase;"
 			nestedScreen=		"true"
@@ -1013,7 +1023,9 @@
 								;	If refueling from cargo, bring up the screen
 							
 								(= gSource shipObj)
-									(scrShowScreen gScreen &dsManualRefuel;)
+									(scrShowScreen gScreen &dsManualRefuel; {
+										title: (@ gData 'title)
+										})
 								
 								;	If free fuel, refuel now
 							
@@ -1049,6 +1061,7 @@
 								checkMilitaryID: (@ gData 'checkMilitaryID)
 								replaceItem: (scrGetItem gScreen)
 								slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
+								title: (@ gData 'title)
 								sourceObj: (@ gData 'sourceObj)
 								shipObj: (@ gData 'shipObj)
 								})
@@ -1072,6 +1085,7 @@
 								criteria: (scrGetData gScreen 'categoryCriteria)
 								checkMilitaryID: (@ gData 'checkMilitaryID)
 								slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
+								title: (@ gData 'title)
 								shipObj: (@ gData 'shipObj)
 								})
 							)
@@ -1082,6 +1096,7 @@
 							criteria: (scrGetData gScreen 'categoryCriteria)
 							checkMilitaryID: (@ gData 'checkMilitaryID)
 							replaceItem: (scrGetItem gScreen)
+							title: (@ gData 'title)
 							shipObj: (@ gData 'shipObj)
 							})
 					</Action>
@@ -1194,6 +1209,7 @@
 -->
 
 	<DockScreen UNID="&dsRPGManageWeapons;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=				"weaponsSelector"
 			inherit=			"&dsRPGDockServicesBase;"
 			nestedScreen=		"true"
@@ -1368,6 +1384,7 @@
 							rpg.checkMilitaryID: (@ gData 'checkMilitaryID)
 							rpg.criteria: (cat "m +launchedBy:" (itmGetType (scrGetItem gScreen)) ";")
 							rpg.sourceObj: (@ gData 'sourceObj)
+							title: (@ gData 'title)
 							})
 					</Action>
 					
@@ -1389,6 +1406,7 @@
 								checkMilitaryID: (@ gData 'checkMilitaryID)
 								replaceItem: (scrGetItem gScreen)
 								slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
+								title: (@ gData 'title)
 								sourceObj: (@ gData 'sourceObj)
 								shipObj: (@ gData 'shipObj)
 								})
@@ -1412,6 +1430,7 @@
 								criteria: (scrGetData gScreen 'categoryCriteria)
 								checkMilitaryID: (@ gData 'checkMilitaryID)
 								slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
+								title: (@ gData 'title)
 								shipObj: (@ gData 'shipObj)
 								})
 							)
@@ -1422,6 +1441,7 @@
 							criteria: (scrGetData gScreen 'categoryCriteria)
 							checkMilitaryID: (@ gData 'checkMilitaryID)
 							replaceItem: (scrGetItem gScreen)
+							title: (@ gData 'title)
 							shipObj: (@ gData 'shipObj)
 							})
 					</Action>

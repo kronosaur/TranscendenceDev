@@ -276,7 +276,8 @@ void CGIconListArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 	//	Paint background
 
-	PaintBackground(Dest, rcRect);
+	CDockScreenPainter Painter(m_Theme, m_cyTabRegion);
+	Painter.PaintDisplayBackground(Dest, rcRect);
 
 	//	Paint each entry.
 
@@ -284,23 +285,10 @@ void CGIconListArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 		{
 		PaintEntry(Dest, m_List[i]);
 		}
-	}
 
-void CGIconListArea::PaintBackground (CG32bitImage &Dest, const RECT &rcRect) const
+	//	Paint the frame
 
-//	PaintBackground
-//
-//	Paints the background frame.
-
-	{
-	CG32bitPixel rgbFadeBackColor = CG32bitPixel(CG32bitPixel::Darken(m_rgbBack, 220), 220);
-	CGDraw::RoundedRect(Dest,
-			rcRect.left,
-			rcRect.top + m_cyTabRegion,
-			RectWidth(rcRect),
-			RectHeight(rcRect) - m_cyTabRegion,
-			m_iBorderRadius + 1,
-			rgbFadeBackColor);
+	Painter.PaintDisplayFrame(Dest, rcRect);
 	}
 
 void CGIconListArea::PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const
@@ -379,8 +367,8 @@ void CGIconListArea::PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const
 		CStatusBarPainter StatusPainter(m_Universe);
 
 		CStatusBarPainter::SOptions Options;
-		Options.cxBar = RectWidth(rcText);
-		Options.cyBar = Options.cxBar / 10;
+		Options.cxBar = RectWidth(rcText) - FRAME_PADDING_HORZ;
+		Options.cyBar = Options.cxBar / 9;
 
 		StatusPainter.Init(Entry.iStatusBar, NULL_STR, Entry.rgbStatusBar, Options);
 		StatusPainter.Paint(Dest, rcRegion.left + RectWidth(rcRegion) / 2, yPaint);

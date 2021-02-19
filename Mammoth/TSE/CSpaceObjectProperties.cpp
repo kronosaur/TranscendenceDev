@@ -66,7 +66,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 9> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 11> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -140,7 +140,28 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 				}
 			},
 		NULL,
-		}
+		},
+		
+		{
+		"visibleDamage",		"0-100: 0 = no damage.",
+		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.GetVisibleDamage()); },
+		NULL,
+		},
+		
+		{
+		"visibleDamageColor",	"Green if <50; Yellow if 50-74; Red if >= 75",
+		[](const CSpaceObject &Obj, const CString &sProperty)
+			{
+			int iVisibleDamage = Obj.GetVisibleDamage();
+			if (iVisibleDamage >= 75)
+				return ICCItemPtr(CG32bitPixel(255, 80, 80).AsHTMLColor());
+			else if (iVisibleDamage >= 50)
+				return ICCItemPtr(CG32bitPixel(255, 255, 80).AsHTMLColor());
+			else
+				return ICCItemPtr(CG32bitPixel(80, 255, 80).AsHTMLColor());
+			},
+		NULL,
+		},
 		
 		}};
 

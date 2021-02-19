@@ -180,6 +180,8 @@ class CStatusBarPainter
 			int iMaxStatus = 100;
 			int cxBar = DEFAULT_BAR_WIDTH;
 			int cyBar = DEFAULT_BAR_HEIGHT;
+			BYTE byFillOpacity = 128;
+			BYTE byOutlineOpacity = 220;
 			const CG16bitFont *pLabelFont = NULL;
 			};
 

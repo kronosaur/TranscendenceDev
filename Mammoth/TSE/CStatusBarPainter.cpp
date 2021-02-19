@@ -33,9 +33,9 @@ void CStatusBarPainter::Paint (CG32bitImage &Dest, int x, int y) const
 	if (m_Options.iMaxStatus <= 0)
 		return;
 
-	CG32bitPixel rgbNormal = CG32bitPixel(m_rgbColor, 220);
-	CG32bitPixel rgbDark = CG32bitPixel(m_rgbColor, 128);
-	CG32bitPixel rgbBlack = CG32bitPixel(CG32bitPixel(0), 128);
+	CG32bitPixel rgbFill = CG32bitPixel(m_rgbColor, m_Options.byFillOpacity);
+	CG32bitPixel rgbOutline = CG32bitPixel(m_rgbColor, m_Options.byOutlineOpacity);
+	CG32bitPixel rgbBlack = CG32bitPixel(CG32bitPixel(0), m_Options.byFillOpacity);
 
 	int xStart = x - (m_Options.cxBar / 2);
 	int yStart = y;
@@ -44,13 +44,13 @@ void CStatusBarPainter::Paint (CG32bitImage &Dest, int x, int y) const
 
 	//	Draw
 
-	Dest.Fill(xStart, yStart + 1, iFill, m_Options.cyBar - 2, rgbNormal);
+	Dest.Fill(xStart, yStart + 1, iFill, m_Options.cyBar - 2, rgbFill);
 	Dest.Fill(xStart + iFill, yStart + 1, m_Options.cxBar - iFill, m_Options.cyBar - 2, rgbBlack);
 
-	Dest.DrawLine(xStart, yStart, xStart + m_Options.cxBar, yStart, 1, rgbDark);
-	Dest.DrawLine(xStart, yStart + m_Options.cyBar - 1, xStart + m_Options.cxBar, yStart + m_Options.cyBar - 1, 1, rgbDark);
-	Dest.DrawLine(xStart - 1, yStart, xStart - 1, yStart + m_Options.cyBar, 1, rgbDark);
-	Dest.DrawLine(xStart + m_Options.cxBar, yStart, xStart + m_Options.cxBar, yStart + m_Options.cyBar, 1, rgbDark);
+	Dest.DrawLine(xStart, yStart, xStart + m_Options.cxBar, yStart, 1, rgbOutline);
+	Dest.DrawLine(xStart, yStart + m_Options.cyBar - 1, xStart + m_Options.cxBar, yStart + m_Options.cyBar - 1, 1, rgbOutline);
+	Dest.DrawLine(xStart - 1, yStart, xStart - 1, yStart + m_Options.cyBar, 1, rgbOutline);
+	Dest.DrawLine(xStart + m_Options.cxBar, yStart, xStart + m_Options.cxBar, yStart + m_Options.cyBar, 1, rgbOutline);
 
 	//	Draw the label
 

@@ -2248,10 +2248,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetVel obj) -> velVector",
 			"i",		0,	},
 
-		{	"objGetVisibleDamage",			fnObjGetOld,		FN_OBJ_VISIBLE_DAMAGE,
-			"(objGetVisibleDamage obj) -> damage %",
-			NULL,	0,	},
-
 		{	"objHasAttribute",				fnObjGetOld,		FN_OBJ_ATTRIBUTE,
 			"(objHasAttribute obj attrib) -> True/Nil",
 			NULL,	0,	},
@@ -4082,6 +4078,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
+
+		{	"objGetVisibleDamage",			fnObjGetOld,		FN_OBJ_VISIBLE_DAMAGE,
+			"DEPRECATED: Use (obj@ obj 'visibleDamage)",
+			NULL,	0,	},
 
 		{	"shpMakeRadioactive",			fnObjSet,		FN_OBJ_MAKE_RADIOACTIVE,
 			"DEPRECATED: Use (objApplyCondition ...) instead.",
