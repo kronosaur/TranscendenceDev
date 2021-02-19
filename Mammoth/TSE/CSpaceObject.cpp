@@ -5463,6 +5463,7 @@ bool CSpaceObject::IsInOurSquadron (const CSpaceObject &Obj) const
 	{
 	return (Obj.GetEscortPrincipal() == this
 			&& Obj != this
+			&& !Obj.IsSuspended()
 			&& !Obj.IsDestroyed());
 	}
 
