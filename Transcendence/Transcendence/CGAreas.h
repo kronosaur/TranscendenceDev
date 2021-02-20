@@ -316,6 +316,7 @@ class CGIconListArea : public AGArea
 			int iStatusBar = -1;				//	Status bar position (0-100) or -1 = not used.
 			CG32bitPixel rgbStatusBar;			//	Status bar color.
 			CString sStatusBarLabel;			//	Label for status bar.
+			bool bMinor = false;				//	Draw faded
 
 			//	Computed in Format
 
@@ -328,6 +329,7 @@ class CGIconListArea : public AGArea
 		bool InitEntry (SEntry &Entry, const ICCItem &Data, CString *retsError = NULL);
 		void InitFromTheme (const CVisualPalette &VI, const CDockScreenVisuals &Theme);
 		void PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const;
+		void PaintEntryIcon (CG32bitImage &Dest, const SEntry &Entry, int x, int y) const;
 		void Reformat () { m_bFormatted = false; Invalidate(); }
 
 		CUniverse &m_Universe;

@@ -103,14 +103,13 @@ TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CSh
 					}
 				}
 
-			//	Now add all autons that can be deployed
+			//	Now add all autons (even damaged ones).
 
 			const CItemList &ItemList = ShipObj.GetItemList();
 			for (int i = 0; i < ItemList.GetCount(); i++)
 				{
 				const CItem &Item = ItemList.GetItem(i);
-				if (Item.CanBeUsed()
-						&& Item.HasAttribute(CONSTLIT("auton")))
+				if (Item.HasAttribute(CONSTLIT("auton")))
 					{
 					CItem SingleItem = Item;
 					SingleItem.SetCount(1);

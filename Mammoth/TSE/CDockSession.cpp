@@ -478,7 +478,7 @@ bool CDockSession::SetScreenSet (const ICCItem &ScreenSet)
 //
 //	Sets the current screen set.
 //
-//	We expect ScreenSet to be an array of structs; each struc has the following
+//	We expect ScreenSet to be an array of structs; each struct has the following
 //	fields:
 //
 //		id: ID of the tab (if Nil, we assign one)

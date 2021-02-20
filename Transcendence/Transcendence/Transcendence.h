@@ -836,7 +836,7 @@ class CTranscendenceModel
 		void RefreshScreenSession (void);
 		ALERROR ShowPane (const CString &sPane);
 		ALERROR ShowScreen (SShowScreenCtx &Ctx, CString *retsError = NULL);
-		void ShowShipScreen (void);
+		void ShowShipScreen (DWORD dwUNID = 0);
 		bool ShowShipScreen (CDesignType *pDefaultScreensRoot, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData, CString *retsError);
 		void UseItem (CItem &Item);
 

@@ -1009,6 +1009,65 @@
 					(rpgGetAutonDefaultConfig autonItem)
 					)
 				))
+
+			(setq rpgGetAutonDamageDesc (lambda (autonItem)
+				(block (
+					(autonConfig (rpgGetAutonConfig autonItem))
+
+					;	Armor integrity is the integrity of the most damaged
+					;	armor segment (this is consistent with how ships show
+					;	damage.
+
+					(armorIntegrity
+						(map (@ autonConfig 'armor) 'reduceMin armorDesc
+							(block (
+								(armorHP (@ armorDesc 'hp))
+								(armorMaxHP (itm@ (@ armorDesc 'item) 'completeHP))
+								)
+								(round (* 100.0 (/ armorHP armorMaxHP)))
+								)
+							)
+						)
+
+					(hullMaxHP (@ autonConfig 'maxHullHP))
+					(hullHP (@ autonConfig 'hullHP))
+					(hullIntegrity (if (gr hullMaxHP 0)
+						(round (* 100.0 (/ hullHP hullMaxHP)))
+						))
+
+					(shieldItem
+						(@ (map (@ autonConfig 'devices) 'excludeNil deviceDesc
+								(if (= (itm@ (@ deviceDesc 'item) 'category) 'shields)
+									(@ deviceDesc 'item)
+									)
+								)
+							0)
+						)
+
+					(shieldDesc (if shieldItem
+						(rpgGetAutonItemShieldStatus autonConfig)
+						))
+
+					(shieldLevel (@ shieldDesc 'percent))
+
+					(visibleIntegrity
+						(if hullIntegrity
+							(round (* (/ hullIntegrity 100.0) armorIntegrity))
+							armorIntegrity
+							)
+						)
+					)
+					(if autonConfig
+						{
+							shieldLevel: shieldLevel
+							armorIntegrity: armorIntegrity
+							hullIntegrity: hullIntegrity
+
+							visibleDamage: (- 100 visibleIntegrity)
+							}
+						)
+					)
+				))
 			
 			(setq rpgGetAutonDefaultConfig (lambda (autonItem)
 				;
@@ -1281,7 +1340,8 @@
 								)
 							{
 								hp: hp
-								percent: (divide (* hp 100) maxHP)
+								maxHP: maxHP
+								percent: (round (* 100.0 (/ hp maxHP)))
 								}
 							)
 							

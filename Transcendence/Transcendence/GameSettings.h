@@ -113,8 +113,9 @@ class CGameKeys
 			keyAimShip =				82,
 			keyInteract =				83,
 			keyCycleTarget =			84,
+			keySquadronUI =				85,
 
-			keyCount =					85,
+			keyCount =					86,
 			};
 
 		struct SBindingDesc

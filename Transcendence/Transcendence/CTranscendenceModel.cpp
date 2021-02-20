@@ -2387,7 +2387,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	DEBUG_CATCH
 	}
 
-void CTranscendenceModel::ShowShipScreen (void)
+void CTranscendenceModel::ShowShipScreen (DWORD dwUNID)
 
 //	ShowShipScreen
 //
@@ -2405,7 +2405,15 @@ void CTranscendenceModel::ShowShipScreen (void)
 		return;
 
 	CString sScreen;
-	CDesignType *pRoot = pSettings->GetShipScreen().GetDockScreen(pShip->GetClass(), &sScreen);
+	CDesignType *pRoot;
+	if (dwUNID)
+		{
+		pRoot = m_Universe.FindDesignType(dwUNID);
+		if (!pRoot || pRoot->GetType() != designDockScreen)
+			return;
+		}
+	else
+		pRoot = pSettings->GetShipScreen().GetDockScreen(pShip->GetClass(), &sScreen);
 
 	CString sError;
 	if (!ShowShipScreen(NULL, pRoot, sScreen, NULL_STR, NULL, &sError))

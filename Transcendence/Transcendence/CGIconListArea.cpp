@@ -8,6 +8,7 @@
 
 #define FIELD_DESC							CONSTLIT("desc")
 #define FIELD_ICON							CONSTLIT("icon")
+#define FIELD_MINOR							CONSTLIT("minor")
 #define FIELD_STATUS_BAR					CONSTLIT("statusBar")
 #define FIELD_STATUS_BAR_COLOR				CONSTLIT("statusBarColor")
 #define FIELD_TITLE							CONSTLIT("title")
@@ -209,6 +210,11 @@ bool CGIconListArea::InitEntry (SEntry &Entry, const ICCItem &Data, CString *ret
 			}
 		}
 
+	if (const ICCItem *pMinor = Data.GetElement(FIELD_MINOR))
+		{
+		Entry.bMinor = !pMinor->IsNil();
+		}
+
 	return true;
 	}
 
@@ -325,17 +331,7 @@ void CGIconListArea::PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const
 	int yIcon = yPaint;
 	if (Entry.pIcon)
 		{
-		CGDraw::BltTransformed(Dest,
-				(Metric)xIcon + (m_cxIcon / 2.0),
-				(Metric)yIcon + (m_cyIcon / 2.0),
-				(Metric)m_cxIcon / (Metric)RectWidth(Entry.rcIconSrc),
-				(Metric)m_cyIcon / (Metric)RectHeight(Entry.rcIconSrc),
-				0.0,
-				*Entry.pIcon,
-				Entry.rcIconSrc.left,
-				Entry.rcIconSrc.top,
-				RectWidth(Entry.rcIconSrc),
-				RectHeight(Entry.rcIconSrc));
+		PaintEntryIcon(Dest, Entry, xIcon, yIcon);
 		}
 
 	//	Increment paint position even if we have no icon.
@@ -399,6 +395,45 @@ void CGIconListArea::PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const
 				iCornerRadius,
 				1,
 				m_VI.GetColor(colorTextFade));
+		}
+	}
+
+void CGIconListArea::PaintEntryIcon (CG32bitImage &Dest, const SEntry &Entry, int x, int y) const
+
+//	PaintEntryIcon
+//
+//	Paints the icon.
+
+	{
+	const int cxSrc = RectWidth(Entry.rcIconSrc);
+	const int cySrc = RectHeight(Entry.rcIconSrc);
+	const BYTE byOpacity = (Entry.bMinor ? 128 : 255);
+
+	if (cxSrc <= m_cxIcon && cySrc <= m_cyIcon)
+		{
+		Dest.Blt(Entry.rcIconSrc.left,
+				Entry.rcIconSrc.top,
+				cxSrc,
+				cySrc,
+				byOpacity,
+				*Entry.pIcon,
+				x + (m_cxIcon - cxSrc) / 2,
+				y + (m_cyIcon - cySrc) / 2);
+		}
+	else
+		{
+		CGDraw::BltTransformed(Dest,
+				(Metric)x + (m_cxIcon / 2.0),
+				(Metric)y + (m_cyIcon / 2.0),
+				(Metric)m_cxIcon / (Metric)RectWidth(Entry.rcIconSrc),
+				(Metric)m_cyIcon / (Metric)RectHeight(Entry.rcIconSrc),
+				0.0,
+				*Entry.pIcon,
+				Entry.rcIconSrc.left,
+				Entry.rcIconSrc.top,
+				RectWidth(Entry.rcIconSrc),
+				RectHeight(Entry.rcIconSrc),
+				byOpacity);
 		}
 	}
 

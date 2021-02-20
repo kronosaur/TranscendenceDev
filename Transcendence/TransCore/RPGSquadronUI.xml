@@ -18,13 +18,34 @@
 							;	This is a stored auton
 
 							(@ theEntry 'item)
-								{
-									title: (@ theEntry 'name)
-									icon: (itmGetImageDesc (@ theEntry 'item))
+								(block (
+									(damageDesc (rpgGetAutonDamageDesc (@ theEntry 'item)))
+									(visibleDamage (@ damageDesc 'visibleDamage))
+									(integrity (- 100 visibleDamage))
+									(barColor
+										(switch
+											(geq visibleDamage 75)
+												"#ff5050"
 
-									status: (@ theEntry 'status)
-									item: (@ theEntry 'item)
-									}
+											(geq visibleDamage 50)
+												"#ffff50"
+
+											"#50ff50"
+											)
+										)
+									)
+									(dbgOutput "Damage: " damageDesc)
+									{
+										title: (@ theEntry 'name)
+										icon: (itmGetImageDesc (@ theEntry 'item))
+										statusBar: integrity
+										statusBarColor: barColor
+										minor: True
+
+										status: (@ theEntry 'status)
+										item: (@ theEntry 'item)
+										}
+									)
 
 							;	This is an active ship in the system
 
@@ -324,8 +345,8 @@
 							)
 						)
 				</OnPaneInit>
-				<Actions>
 
+				<Actions>
 					<Action id="actionDone" cancel="1">
 						(scrExitScreen gScreen)
 					</Action>
