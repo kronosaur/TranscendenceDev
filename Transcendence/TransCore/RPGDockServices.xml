@@ -22,9 +22,6 @@
 
 		dockServiceDesc: If non-Nil, the description to show.
 
-		onExit: If non-Nil, this is a function to execute when we exit the 
-				screen.
-		
 		reactorUpgrade: If non-Nil, this must be a list generate with
 				rpgGetReactorUpgradeList. Otherwise, we do not offer a reactor
 				upgrade at this station.
@@ -260,13 +257,7 @@
 					</Action>
 
 					<Action id="actionDone">
-						(block ()
-							(scrExitScreen gScreen)
-
-							(if (@ gData 'onExit)
-								((@ gData 'onExit))
-								)
-							)
+						(scrExitScreen gScreen)
 					</Action>
 				</Actions>
 			</Default>

@@ -96,6 +96,7 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 #define FN_SCR_SHOW_TAB				36
 #define FN_SCR_LIST					37
 #define FN_SCR_SESSION_DATA			38
+#define FN_SCR_ADD_UNDOCK_EVENT		39
 
 ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -221,6 +222,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"scrAddMinorAction",			fnScrSet,		FN_SCR_ADD_MINOR_ACTION,
 			"(scrAddMinorAction screen actionID pos label [key] [special] code) -> True/Nil",
 			"isis*c",	PPFLAG_SIDEEFFECTS, },
+
+		{	"scrAddUndockCode",				fnScrSet,		FN_SCR_ADD_UNDOCK_EVENT,
+			"(scrAddUndockCode screen id code) -> True/Nil",
+			"isc",	PPFLAG_SIDEEFFECTS, },
 
 		{	"scrEnableAction",				fnScrSet,		FN_SCR_ENABLE_ACTION,
 			"(scrEnableAction screen actionID enabled) -> True/Nil",
@@ -1856,6 +1861,14 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pScreen->AddListFilter(sID, sLabel, Filter);
 
+			return pCC->CreateTrue();
+			}
+
+		case FN_SCR_ADD_UNDOCK_EVENT:
+			{
+			CString sID = pArgs->GetElement(1)->GetStringValue();
+			ICCItem *pCode = pArgs->GetElement(2);
+			DockSession.AddUndockCode(sID, *pCode);
 			return pCC->CreateTrue();
 			}
 

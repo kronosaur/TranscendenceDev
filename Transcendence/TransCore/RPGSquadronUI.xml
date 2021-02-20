@@ -8,6 +8,22 @@
 			inherit=		"&dsDockScreenBase;"
 			nestedScreen=	"true"
 			>
+		<OnScreenInit>
+			(block ()
+				;	We need to clean up the suspended auton in case we ever 
+				;	create it.
+
+				(scrAddUndockCode gScreen 'cleanUpAuton
+					(lambda ()
+						(block ()
+							(rpgCleanUpSuspendedAuton gPlayerShip)
+							(dbgOutput "Exit!")
+							)
+						)
+					)
+				)
+		</OnScreenInit>
+
 		<Display type="iconList">
 			<OnDisplayInit>
 				(map (obj@ gPlayerShip 'squadron) theEntry
@@ -314,13 +330,6 @@
 														dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
 															shipClass: (objGetName autonObj 'generic)
 															})
-
-														onExit: (lambda ()
-															(block ()
-																(dbgOutput "Auton returned")
-																(rpgCleanUpSuspendedAuton gPlayerShip)
-																)
-															)
 														})
 													)
 												)

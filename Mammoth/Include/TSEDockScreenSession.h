@@ -143,10 +143,12 @@ class CDockSession
 	public:
 		static constexpr DWORD FLAG_FORCE_UNDOCK =	0x00000001;
 
-		//	FLAG_FORCE_UNDOCK
-
+		void AddUndockCode (const CString &sID, ICCItem &Code) { *m_UndockCode.SetAt(sID) = ICCItemPtr(Code); }
 		void ClearOnInitFlag () { m_bOnInitCalled = false; }
+
+		//	FLAG_FORCE_UNDOCK
 		bool ExitScreen (DWORD dwFlags = 0);
+
 		bool FindScreenRoot (const CString &sScreen, CDesignType **retpRoot, CString *retsScreen, ICCItemPtr *retpData) const;
 		const SScreenSetTab *FindTab (const CString &sID) const;
 		const SDockFrame &GetCurrentFrame (void) const { return m_DockFrames.GetCurrent(); }
@@ -184,12 +186,14 @@ class CDockSession
 		void ClearAmbientSound () { SetAmbientSound(NULL); }
 		void InitCustomProperties (const CDesignType &Type, const SDockFrame &Frame);
 		bool ModifyItemNotificationNeeded (const CSpaceObject &Source) const;
+		void RunExitCode ();
 		void SetAmbientSound (const CSoundResource *pSound);
 
 		IDockScreenUI *m_pDockScreenUI = &m_NullUI;		//	Wormhole to dockscreen UI
 		CDesignType *m_pDefaultScreensRoot = NULL;		//	Default root to look for local screens
 		CDockScreenStack m_DockFrames;					//	Stack of dock screens
 		ICCItemPtr m_pStoredData;						//	Session data
+		TSortMap<CString, ICCItemPtr> m_UndockCode;		//	Code to run when undocking
 		const CSoundResource *m_pAmbientSound = NULL;	//	Current ambient sound
 		const CSoundResource *m_pAmbientSoundPlaying = NULL;
 		bool m_bOnInitCalled = false;					//	TRUE if we've already called OnInit
