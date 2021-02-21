@@ -965,6 +965,19 @@
 							
 							(rpgCleanUpSuspendedAuton sourceObj)
 							(objSetObjRefData sourceObj 'rpgSuspendedAuton auton)
+
+							;	Register an event so that we clean up this auton 
+							;	when we exit dock screen mode.
+
+							(if (scr@ gScreen 'screen)
+								(scrAddUndockCode gScreen (cat 'rpg.cleanUpAuton. (objGetID sourceObj))
+									(lambda ()
+										(block ()
+											(rpgCleanUpSuspendedAuton sourceObj)
+											)
+										)
+									)
+								)
 							
 							;	Done
 							
@@ -1347,6 +1360,24 @@
 							
 						{ percent: 100 }
 						)
+					)
+				))
+
+			(setq rpgGetAutonRepairDesc (lambda (sourceObj autonItem)
+
+				;	Loop over all installed devices and ask if they repair
+				;	the given item.
+				;
+				;	We return an array of structs. Each struct has the following
+				;	fields:
+				;
+				;		repairDesc: Description of whether we're repairing or 
+				;			not.
+
+				(map (objGetItems sourceObj "dI") 'excludeNil theDevice
+					(objFireItemEvent sourceObj theDevice 'GetAutonRepairDesc {
+						item: autonItem
+						})
 					)
 				))
 			

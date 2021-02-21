@@ -5,13 +5,26 @@
 
 #include "PreComp.h"
 
-TPropertyHandler<CDockSession> CDockSession::m_PropertyTable = std::array<TPropertyHandler<CDockSession>::SPropertyDef, 1> {
+TPropertyHandler<CDockSession> CDockSession::m_PropertyTable = std::array<TPropertyHandler<CDockSession>::SPropertyDef, 2> {{
+	{	"screen",
+		"Returns current screen (or Nil if not in a screen).",
+		[](const CDockSession &DockSession, const CString &sProperty) 
+			{
+            if (!DockSession.InSession())
+                return ICCItemPtr::Nil();
+
+            const SDockFrame &CurFrame = DockSession.GetCurrentFrame();
+			return CDockScreenStack::AsCCItem(CurFrame);
+			},
+		NULL
+		},
+
 	{	"stack",
 		"List of screens on stack.",
 		[](const CDockSession &DockSession, const CString &sProperty) { return DockSession.GetPropertyFrameStack(); },
 		NULL
 		},
-	};
+	}};
 
 ICCItemPtr CDockSession::GetProperty (const CString &sProperty) const
 

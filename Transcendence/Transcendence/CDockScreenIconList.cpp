@@ -134,6 +134,12 @@ ALERROR CDockScreenIconList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
 	m_pExp = CCodeChain::LinkCode(Options.sCode);
 
+	//	The display can optional specify the data source. This helps us to 
+	//	refresh appropriately when items or something changes. It is OK if this
+	//	is NULL.
+
+	m_pSource = EvalListSource(Options.sDataFrom, retsError);
+
 	//	Evaluate the function
 
 	if (!EvalList(retsError))
@@ -142,6 +148,22 @@ ALERROR CDockScreenIconList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 	return NOERROR;
 
 	DEBUG_CATCH
+	}
+
+IDockScreenDisplay::EResults CDockScreenIconList::OnResetList (CSpaceObject *pLocation)
+
+//	OnResetList
+//
+//	Refresh the list because it has changed.
+
+	{
+	if (pLocation == m_pSource)
+		{
+		ShowItem();
+		return resultShowPane;
+		}
+	else
+		return resultNone;
 	}
 
 void CDockScreenIconList::OnShowItem (void)

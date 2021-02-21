@@ -10,21 +10,18 @@
 			>
 		<OnScreenInit>
 			(block ()
-				;	We need to clean up the suspended auton in case we ever 
-				;	create it.
+				;	Remove any suspended autons, in case we return to this 
+				;	screen from a dock services sub-screen. We want to get rid
+				;	of the suspended auton because it stops the Auton Bay from
+				;	working.
 
-				(scrAddUndockCode gScreen 'cleanUpAuton
-					(lambda ()
-						(block ()
-							(rpgCleanUpSuspendedAuton gPlayerShip)
-							(dbgOutput "Exit!")
-							)
-						)
-					)
+				(rpgCleanUpSuspendedAuton gPlayerShip)
 				)
 		</OnScreenInit>
 
-		<Display type="iconList">
+		<Display type="iconList"
+				dataFrom="player"
+				>
 			<OnDisplayInit>
 				(map (obj@ gPlayerShip 'squadron) theEntry
 					(block (
@@ -49,8 +46,8 @@
 											"#50ff50"
 											)
 										)
+									(repairDesc (if (ls integrity 100) (rpgGetAutonRepairDesc gPlayerShip (@ theEntry 'item))))
 									)
-									(dbgOutput "Damage: " damageDesc)
 									{
 										title: (@ theEntry 'name)
 										icon: (itmGetImageDesc (@ theEntry 'item))
@@ -60,6 +57,7 @@
 
 										status: (@ theEntry 'status)
 										item: (@ theEntry 'item)
+										repairDesc: (@ (@ repairDesc 0) 'repairText)
 										}
 									)
 
@@ -343,6 +341,9 @@
 											(scrSetDescTranslate gScreen 'descItemsSelected {
 												itemCount: (fmtNoun (scrTranslate gScreen 'nounAuton) (count storedItems) 'countAlways)
 												})
+
+										(@ entry 'repairDesc)
+											(scrSetDesc gScreen (@ entry 'repairDesc))
 
 										(scrSetDescTranslate gScreen 'descItemSelected {
 											itemName: (itmGetName (@ storedItems 0) 0)

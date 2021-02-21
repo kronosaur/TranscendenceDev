@@ -275,7 +275,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'counter"
 			"   'description"
 			"   'inFirstOnInit"
-			"   'input",
+			"   'input"
+			"   'screen"
+			"   'stack",
 
 			"is",	0,	},
 
