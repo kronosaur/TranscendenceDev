@@ -542,4 +542,120 @@
 		</Language>
 	</DockScreen>
 
+	<DockScreen unid="&dsRPGSquadronWaiting;"
+			inherit=		"&dsDockScreenBase;"
+			nestedScreen=	"true"
+			>
+		<OnScreenInit>
+		</OnScreenInit>
+
+		<Display type="iconList"
+				>
+			<OnDisplayInit>
+				(map (obj@ gPlayerShip 'squadron) 'excludeNil theEntry
+					(block (
+						)
+						(switch
+							;	This is a waiting ship
+
+							(= (@ theEntry 'status) 'waiting)
+								(block (
+									)
+									{
+										title: (@ theEntry 'name)
+										icon: (shpGetImageDesc (@ theEntry 'type))
+
+										status: (@ theEntry 'status)
+										namePattern: (@ theEntry 'namePattern)
+										nodeID: (@ theEntry 'nodeID)
+										}
+									)
+							)
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(squadronList (scrGetList gScreen))
+						(entry (scrGetListEntry gScreen))
+
+						(selection
+							(switch
+								(= (typeof entry) 'struct)
+									(list entry)
+
+								entry
+								)
+							)
+
+						(actionPos -1)
+						(nextActionPos (lambda () (setq actionPos (+ actionPos 1))))
+						)
+						(switch
+
+							;	If nothing is selected, then no commands
+
+							(not entry)
+								(block ()
+									(scrSetDescTranslate gScreen 'descShipsWaiting {
+										shipCount: (fmtNoun (scrTranslate gScreen 'nounShip) (count squadronList) 'countAlways)
+										})
+									)
+
+							(block (
+								)
+
+								;	Set the description
+
+								(switch
+									(gr (count selection) 1)
+										(scrSetDescTranslate gScreen 'descShipsSelected {
+											shipCount: (fmtNoun (scrTranslate gScreen 'nounShip) (count selection) 'countAlways)
+											})
+
+									(scrSetDescTranslate gScreen 'descShipSelected {
+										shipName: (fmtNoun (@ entry 'namePattern) 1 'definitePhrase)
+										sysName: (sysGetName (@ entry 'nodeID))
+										})
+									)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="core.name">Squadron</Text>
+
+			<Text id="descShipsWaiting">
+
+				You have %shipCount% waiting in other systems.
+			
+			</Text>
+			<Text id="descShipsSelected">
+
+				You've selected %shipCount% waiting in other systems.
+			
+			</Text>
+			<Text id="descShipSelected">
+
+				%ShipName% is waiting in the %sysName% System.
+			
+			</Text>
+
+			<Text id="nounShip">ship(s)</Text>
+		</Language>
+	</DockScreen>
+
 </TranscendenceModule>

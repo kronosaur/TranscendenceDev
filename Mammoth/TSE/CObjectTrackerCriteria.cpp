@@ -40,6 +40,10 @@ bool CObjectTrackerCriteria::ParseCriteria (const CString &sCriteria)
 				m_bKnownOnly = true;
 				break;
 
+			case 'Q':
+				m_bInPlayerSquadronOnly = true;
+				break;
+
 			case 'U':
 				m_bUnknownOnly = true;
 				break;

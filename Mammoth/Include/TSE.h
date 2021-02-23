@@ -1599,11 +1599,12 @@ class CObjectTrackerCriteria
 	{
 	public:
 		const CDesignTypeCriteria &GetTypeCriteria (void) const { return m_TypeCriteria; }
-		bool NeedsRefresh (void) const { return (m_bActiveOnly || m_bKilledOnly); }
+		bool NeedsRefresh (void) const { return (m_bActiveOnly || m_bKilledOnly || m_bInPlayerSquadronOnly); }
 		bool ParseCriteria (const CString &sCriteria);
 		bool SelectsActiveOnly (void) const { return m_bActiveOnly; }
 		bool SelectsKilledOnly (void) const { return m_bKilledOnly; }
 		bool SelectsKnownOnly (void) const { return m_bKnownOnly; }
+		bool SelectsInPlayerSquadronOnly () const { return m_bInPlayerSquadronOnly; }
 		bool SelectsUnknownOnly (void) const { return m_bUnknownOnly; }
 		
 	private:
@@ -1612,6 +1613,7 @@ class CObjectTrackerCriteria
 		bool m_bKilledOnly = false;
 		bool m_bKnownOnly = false;
 		bool m_bUnknownOnly = false;
+		bool m_bInPlayerSquadronOnly = false;
 	};
 
 class CObjectTracker
@@ -1619,17 +1621,6 @@ class CObjectTracker
 	public:
 		struct SObjEntry
 			{
-			SObjEntry (void) :
-					fKnown(false),
-					fShowDestroyed(false),
-					fShowInMap(false),
-					fFriendly(false),
-					fEnemy(false),
-					fInactive(false),
-					fPlayerBlacklisted(false),
-					fIsStargate(false)
-				{ }
-
 			CTopologyNode *pNode = NULL;
 			CDesignType *pType = NULL;
 			DWORD dwObjID = 0;
@@ -1638,21 +1629,22 @@ class CObjectTracker
 			CCompositeImageSelector ImageSel;
 			CString sNotes;
 
-			DWORD fKnown:1;
-			DWORD fShowDestroyed:1;
-			DWORD fShowInMap:1;
-			DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
-			DWORD fEnemy:1;
-			DWORD fInactive:1;				//	pObj->IsInactive()
-			DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
-			DWORD fIsStargate:1;			//	TRUE if this is a stargate
+			DWORD fKnown:1 = false;
+			DWORD fShowDestroyed:1 = false;
+			DWORD fShowInMap:1 = false;
+			DWORD fFriendly:1 = false;          //  If neither friend or enemy, then neutral
+			DWORD fEnemy:1 = false;
+			DWORD fInactive:1 = false;			//	pObj->IsInactive()
+			DWORD fPlayerBlacklisted:1 = false;	//	TRUE if player is blacklisted
+			DWORD fIsStargate:1 = false;		//	TRUE if this is a stargate
+			DWORD fInPlayerSquadron:1 = false;	//	TRUE if part of player's squadron
 			};
 
 		struct SBackgroundObjEntry
 			{
-			CStationType *pType;
+			CStationType *pType = NULL;
 			CVector vPos;
-			CCompositeImageSelector *pImageSel;
+			CCompositeImageSelector *pImageSel = NULL;
 			};
 
 		~CObjectTracker (void);
@@ -1704,17 +1696,6 @@ class CObjectTracker
 
 		struct SObjBasics
 			{
-			SObjBasics (void) :
-					fKnown(false),
-					fShowDestroyed(false),
-					fShowInMap(false),
-					fFriendly(false),
-					fEnemy(false),
-					fInactive(false),
-					fPlayerBlacklisted(false),
-					fIsStargate(false)
-				{ }
-
 			void DeleteExtra (void)
 				{
 				pExtra.Delete();
@@ -1728,18 +1709,19 @@ class CObjectTracker
 				return *pExtra;
 				}
 
-			CVector vPos;                   //  Position of object in its system
+			CVector vPos;						//  Position of object in its system
 
-			DWORD fKnown:1;                 //  TRUE if player knows about this obj
-			DWORD fShowDestroyed:1;         //  TRUE if we need to paint station as destroyed
-			DWORD fShowInMap:1;             //  TRUE if we can dock with the obj
-			DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
-			DWORD fEnemy:1;
-			DWORD fInactive:1;				//	TRUE if pObj->IsInactive()
-			DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
-			DWORD fIsStargate:1;			//	TRUE if this is a stargate
+			DWORD fKnown:1 = false;             //  TRUE if player knows about this obj
+			DWORD fShowDestroyed:1 = false;     //  TRUE if we need to paint station as destroyed
+			DWORD fShowInMap:1 = false;         //  TRUE if we can dock with the obj
+			DWORD fFriendly:1 = false;          //  If neither friend or enemy, then neutral
+			DWORD fEnemy:1 = false;
+			DWORD fInactive:1 = false;			//	TRUE if pObj->IsInactive()
+			DWORD fPlayerBlacklisted:1 = false;	//	TRUE if player is blacklisted
+			DWORD fIsStargate:1 = false;		//	TRUE if this is a stargate
+			DWORD fInPlayerSquadron:1 = false;	//	TRUE if part of player's squadron
 
-			DWORD dwSpare:24;
+			DWORD dwSpare:23 = 0;
 
 			TUniquePtr<SObjExtra> pExtra;
 			};

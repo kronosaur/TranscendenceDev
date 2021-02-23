@@ -126,6 +126,36 @@ TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CSh
 					}
 				}
 
+			//	Lastly, add all wingmates in other systems.
+
+			CObjectTrackerCriteria Criteria;
+			if (!Criteria.ParseCriteria(CONSTLIT("sQ")))
+				return ICCItemPtr::Error(CONSTLIT("INTERNAL ERROR: Invalid object tracker criteria."));
+				
+			TArray<CObjectTracker::SObjEntry> WaitingList;
+			System.GetUniverse().GetGlobalObjects().Find(NULL_STR, Criteria, &WaitingList);
+			for (int i = 0; i < WaitingList.GetCount(); i++)
+				{
+				const CObjectTracker::SObjEntry &Entry = WaitingList[i];
+				if (Entry.pNode != System.GetTopology())
+					{
+					ICCItemPtr pEntry(ICCItem::SymbolTable);
+					pEntry->SetStringAt(CONSTLIT("status"), CONSTLIT("waiting"));
+					pEntry->SetIntegerAt(CONSTLIT("objID"), Entry.dwObjID);
+					pEntry->SetStringAt(CONSTLIT("nodeID"), Entry.pNode->GetID());
+					pEntry->SetIntegerAt(CONSTLIT("type"), Entry.pType->GetUNID());
+
+					pEntry->SetStringAt(CONSTLIT("name"), CLanguage::ComposeNounPhrase(Entry.sName, 1, NULL_STR, Entry.dwNameFlags, 0));
+
+					ICCItemPtr pName(ICCItem::SymbolTable);
+					pName->SetStringAt(CONSTLIT("pattern"), Entry.sName);
+					pName->SetIntegerAt(CONSTLIT("flags"), Entry.dwNameFlags);
+					pEntry->SetAt(CONSTLIT("namePattern"), pName);
+
+					pResult->Append(pEntry);
+					}
+				}
+
 			//	Done
 
 			if (pResult->GetCount() > 0)
