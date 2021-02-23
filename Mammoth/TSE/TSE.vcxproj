@@ -691,6 +691,7 @@
     <ClCompile Include="ShipClassProperties.cpp" />
     <ClCompile Include="ShipUpdate.cpp" />
     <ClCompile Include="CPhysicsForceDesc.cpp" />
+    <ClCompile Include="SovereignProperties.cpp" />
     <ClCompile Include="SpaceObjectItemProperties.cpp" />
     <ClCompile Include="SUpdateCtx.cpp" />
     <ClCompile Include="SystemProperties.cpp" />
