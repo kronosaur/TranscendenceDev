@@ -9,13 +9,47 @@
 			nestedScreen=	"true"
 			>
 		<OnScreenInit>
-			(block ()
+			(block (
+				(allStatuses
+					(map (obj@ gPlayerShip 'squadron) 'theEntry
+						(@ theEntry 'status)
+						)
+					)
+				)
 				;	Remove any suspended autons, in case we return to this 
 				;	screen from a dock services sub-screen. We want to get rid
 				;	of the suspended auton because it stops the Auton Bay from
 				;	working.
 
 				(rpgCleanUpSuspendedAuton gPlayerShip)
+
+				;	Create tab sets as necessary
+
+				(scrSetTabSet gScreen (list
+					(if (find allStatuses 'deployed)
+						{	id: 'squadronDeployed
+							label: (scrTranslate gScreen 'labelDeployed)
+							screen: &dsRPGSquadron;
+							data: gData
+							}
+						)
+
+					(if (find allStatuses 'stored)
+						{	id: 'squadronStored
+							label: (scrTranslate gScreen 'labelInCargo)
+							screen: &dsRPGSquadronInCargoHold;
+							data: gData
+							}
+						)
+
+					(if (find allStatuses 'waiting)
+						{	id: 'squadronWaiting
+							label: (scrTranslate gScreen 'labelWaiting)
+							screen: &dsRPGSquadronWaiting;
+							data: gData
+							}
+						)
+					))
 				)
 		</OnScreenInit>
 
@@ -23,49 +57,15 @@
 				dataFrom="player"
 				>
 			<OnDisplayInit>
-				(map (obj@ gPlayerShip 'squadron) theEntry
+				(map (obj@ gPlayerShip 'squadron) 'excludeNil theEntry
 					(block (
 						(shipObj (@ theEntry 'obj))
+						(integrity (- 100 (obj@ shipObj 'visibleDamage)))
 						)
 						(switch
-							;	This is a stored auton
-
-							(@ theEntry 'item)
-								(block (
-									(damageDesc (rpgGetAutonDamageDesc (@ theEntry 'item)))
-									(visibleDamage (@ damageDesc 'visibleDamage))
-									(integrity (- 100 visibleDamage))
-									(barColor
-										(switch
-											(geq visibleDamage 75)
-												"#ff5050"
-
-											(geq visibleDamage 50)
-												"#ffff50"
-
-											"#50ff50"
-											)
-										)
-									(repairDesc (if (ls integrity 100) (rpgGetAutonRepairDesc gPlayerShip (@ theEntry 'item))))
-									)
-									{
-										title: (@ theEntry 'name)
-										icon: (itmGetImageDesc (@ theEntry 'item))
-										statusBar: integrity
-										statusBarColor: barColor
-										minor: True
-
-										status: (@ theEntry 'status)
-										item: (@ theEntry 'item)
-										repairDesc: (@ (@ repairDesc 0) 'repairText)
-										}
-									)
-
 							;	This is an active ship in the system
 
-							(block (
-								(integrity (- 100 (obj@ shipObj 'visibleDamage)))
-								)
+							(= (@ theEntry 'status) 'deployed)
 								{
 									title: (@ theEntry 'name)
 									icon: (objGetImageDesc shipObj)
@@ -77,7 +77,6 @@
 									objID: (@ theEntry 'objID)
 									type: (@ theEntry 'type)
 									}
-								)
 							)
 						)
 					)
@@ -108,24 +107,8 @@
 							))
 
 						(deployedObjs
-							(switch
-								(= (count selection) (count selectionDeployed))
-									(map selection theEntry
-										(@ theEntry 'obj)
-										)
-								)
-							)
-
-						(selectionStored (filter selection theEntry
-							(= (@ theEntry 'status) 'stored)
-							))
-
-						(storedItems
-							(switch
-								(= (count selection) (count selectionStored))
-									(map selection theEntry
-										(@ theEntry 'item)
-										)
+							(map selection theEntry
+								(@ theEntry 'obj)
 								)
 							)
 
@@ -279,6 +262,169 @@
 										)
 									)
 
+							(scrSetDesc gScreen "LATER: " entry)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="core.name">Squadron</Text>
+
+			<Text id="labelDeployed">Deployed</Text>
+			<Text id="labelInCargo">Cargo Hold</Text>
+			<Text id="labelWaiting">Waiting</Text>
+
+			<Text id="actionShowConfiguration">[C]onfiguration</Text>
+
+			<Text id="msgAttackInFormation">Attack [i]n Formation</Text>
+			<Text id="msgAttackTarget">[A]ttack Target</Text>
+			<Text id="msgBreakAndAttack">[B]reak &amp; Attack</Text>
+			<Text id="msgFormUp">[F]orm Up</Text>
+			<Text id="msgFormationAlpha">Formation [1] Alpha</Text>
+			<Text id="msgFormationBeta">Formation [2] Beta</Text>
+			<Text id="msgFormationGamma">Formation [3] Gamma</Text>
+			<Text id="msgWait">[W]ait</Text>
+
+			<Text id="descSquadronDeployed">
+			
+				You have %shipCount% deployed in the system.
+				
+			</Text>
+			<Text id="descNoSquadron">
+			
+				None of your ships are deployed in this system.
+				
+			</Text>
+			<Text id="descShipsSelected">
+
+				You've selected %shipCount% in your squadron.
+			
+			</Text>
+			<Text id="descShipSelected">
+
+				The %ShipClass% is deployed.
+
+			</Text>
+			<Text id="descCharacterSelected">
+
+				%Name% is flying %shipClass%.
+			
+			</Text>
+			<Text id="descConfiguration">
+
+				%ShipClass%.
+			
+			</Text>
+
+			<Text id="nounShip">ship(s)</Text>
+		</Language>
+	</DockScreen>
+
+	<DockScreen unid="&dsRPGSquadronInCargoHold;"
+			inherit=		"&dsDockScreenBase;"
+			nestedScreen=	"true"
+			>
+		<OnScreenInit>
+			(block (
+				)
+				;	Remove any suspended autons, in case we return to this 
+				;	screen from a dock services sub-screen. We want to get rid
+				;	of the suspended auton because it stops the Auton Bay from
+				;	working.
+
+				(rpgCleanUpSuspendedAuton gPlayerShip)
+				)
+		</OnScreenInit>
+
+		<Display type="iconList"
+				dataFrom="player"
+				>
+			<OnDisplayInit>
+				(map (obj@ gPlayerShip 'squadron) 'excludeNil theEntry
+					(block (
+						)
+						(switch
+							;	This is a stored auton
+
+							(@ theEntry 'item)
+								(block (
+									(damageDesc (rpgGetAutonDamageDesc (@ theEntry 'item)))
+									(visibleDamage (@ damageDesc 'visibleDamage))
+									(integrity (- 100 visibleDamage))
+									(barColor
+										(switch
+											(geq visibleDamage 75)
+												"#ff5050"
+
+											(geq visibleDamage 50)
+												"#ffff50"
+
+											"#50ff50"
+											)
+										)
+									(repairDesc (if (ls integrity 100) (rpgGetAutonRepairDesc gPlayerShip (@ theEntry 'item))))
+									)
+									{
+										title: (@ theEntry 'name)
+										icon: (itmGetImageDesc (@ theEntry 'item))
+										statusBar: integrity
+										statusBarColor: barColor
+
+										status: (@ theEntry 'status)
+										item: (@ theEntry 'item)
+										repairDesc: (@ (@ repairDesc 0) 'repairText)
+										}
+									)
+							)
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(squadronList (scrGetList gScreen))
+						(entry (scrGetListEntry gScreen))
+
+						(selection
+							(switch
+								(= (typeof entry) 'struct)
+									(list entry)
+
+								entry
+								)
+							)
+						(storedItems
+							(map selection theEntry
+								(@ theEntry 'item)
+								)
+							)
+
+						(actionPos -1)
+						(nextActionPos (lambda () (setq actionPos (+ actionPos 1))))
+						)
+						(switch
+
+							;	If nothing is selected, then no commands
+
+							(not entry)
+								(block ()
+									(scrSetDescTranslate gScreen 'descItemsInCargo {
+										itemCount: (fmtNoun (scrTranslate gScreen 'nounAuton) (count squadronList) 'countAlways)
+										})
+
+									)
+
 							storedItems
 								(block (
 									(canDeploy (map storedItems 'excludeNil theItem
@@ -370,38 +516,9 @@
 			<Text id="actionDeploy">[D]eploy</Text>
 			<Text id="actionShowConfiguration">[C]onfiguration</Text>
 
-			<Text id="msgAttackInFormation">Attack [i]n Formation</Text>
-			<Text id="msgAttackTarget">[A]ttack Target</Text>
-			<Text id="msgBreakAndAttack">[B]reak &amp; Attack</Text>
-			<Text id="msgFormUp">[F]orm Up</Text>
-			<Text id="msgFormationAlpha">Formation [1] Alpha</Text>
-			<Text id="msgFormationBeta">Formation [2] Beta</Text>
-			<Text id="msgFormationGamma">Formation [3] Gamma</Text>
-			<Text id="msgWait">[W]ait</Text>
+			<Text id="descItemsInCargo">
 
-			<Text id="descSquadronDeployed">
-			
-				You have %shipCount% deployed in the system.
-				
-			</Text>
-			<Text id="descNoSquadron">
-			
-				None of your ships are deployed in this system.
-				
-			</Text>
-			<Text id="descShipsSelected">
-
-				You've selected %shipCount% in your squadron.
-			
-			</Text>
-			<Text id="descShipSelected">
-
-				The %ShipClass% is deployed.
-
-			</Text>
-			<Text id="descCharacterSelected">
-
-				%Name% is flying %shipClass%.
+				You have %itemCount% in your cargo hold.
 			
 			</Text>
 			<Text id="descItemsSelected">
